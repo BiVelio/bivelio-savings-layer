@@ -132,6 +132,11 @@ import { StreamAbortedError } from "./errors.js";
 import { normalizarAjustes } from "../verification/ajustes.js";
 import { ComprobadorAB, type SumideroDeVerificacion } from "../verification/comprobador.js";
 import type { ViaDeServicio } from "../verification/clasificar.js";
+import {
+  comprobarTopeDePeticion,
+  salidaEstimadaDeReferencia,
+  topeDeSalida,
+} from "../contracts/tope-de-salida.js";
 
 /**
  * Build-time flag: the published npm SDK sets this to `false` (tsup `define`) so the
@@ -568,6 +573,9 @@ export class SavingsPipeline {
    */
   async generate<T = unknown>(request: SavingsRequest): Promise<SavingsResult<T>> {
     this.assertLicensed();
+    // Un tope de petición inválido es un error de quien llama: se dice ANTES del
+    // try del fail-open, que si no lo mandaría crudo al proveedor como 400.
+    comprobarTopeDePeticion(request);
     request = this.conPalancasPorDefecto(request);
     // Testigo de facturación de ESTA petición. No puede ser un campo de la
     // instancia: una misma capa sirve peticiones concurrentes.
@@ -663,6 +671,7 @@ export class SavingsPipeline {
       }
       // Arriba del try/catch del fail-open, por la misma razón que en generate().
       this.assertLicensed();
+      comprobarTopeDePeticion(request);
       // Síncrono tras la comprobación de abort: no hay hueco en el que un abort
       // llegue sin saber si ya hay que cancelar al proveedor.
       canal.entrarEnVivo();
@@ -1727,7 +1736,7 @@ export class SavingsPipeline {
     techoDelEsquema: number | null,
     aprendido: boolean,
   ): void {
-    const tope = request.response?.maxOutputTokens;
+    const tope = topeDeSalida(request);
     const contrato = contractKey(request) || "(no contractId)";
     // Lo que la capa hará por su cuenta a partir de ahora, dicho solo cuando de
     // verdad lo va a hacer. Un aviso que anuncia una corrección que no ocurre es
@@ -1897,7 +1906,7 @@ export class SavingsPipeline {
 
     // Baseline: the naive prompt cost if none of the layer ran.
     const baselineInput = this.tokensFor(this.assembleBaselinePrompt(request), request);
-    const baselineOutput = request.response?.maxOutputTokens ?? 256;
+    const baselineOutput = salidaEstimadaDeReferencia(request);
     // La huella byte a byte de ESTA petición, perezosa: solo se paga el SHA-256
     // de la petición entera en un acierto que traiga un registro de referencia.
     let huella: string | undefined;
@@ -2009,8 +2018,8 @@ export class SavingsPipeline {
       // respuesta: un seguidor que difiera en cualquiera de los dos NO puede
       // recibir la respuesta (recortada/truncada) del líder. Ver buildInflightKey.
       toolDiscovery: toggles.toolDiscovery === true,
-      ...(request.response?.maxOutputTokens != null
-        ? { maxOutputTokens: request.response.maxOutputTokens }
+      ...(topeDeSalida(request) != null
+        ? { maxOutputTokens: topeDeSalida(request)! }
         : {}),
     });
     const runExpensive = async (): Promise<SavingsResult<T>> => {
@@ -2362,8 +2371,9 @@ export class SavingsPipeline {
     // nuestra salida válida cae a 27/40, mientras el brazo naive —con el MISMO
     // tope y SIN pista— cumple 39/40. La pista provocaba el fallo que pretende
     // evitar.
-    const techoPorTokens = request.response?.maxOutputTokens != null
-      ? Math.floor(request.response.maxOutputTokens * 3.2) // ~3,2 car/token en prosa, conservador
+    const topeEfectivo = topeDeSalida(request);
+    const techoPorTokens = topeEfectivo != null
+      ? Math.floor(topeEfectivo * 3.2) // ~3,2 car/token en prosa, conservador
       : null;
     const reglasDeValor = this.contratosQueIncumplen.has(idContrato)
       ? describeValueConstraints(request.response?.schema, "", techoPorTokens)
@@ -2988,8 +2998,8 @@ export class SavingsPipeline {
       // sobre CUÁL es: el esquema no está en `messages`, así que no entra en el
       // prefijo que se marca ni mueve su frontera.
       ...(esquemaAlProveedor ? { schema: esquemaAlProveedor } : {}),
-      ...(request.response?.maxOutputTokens != null
-        ? { maxOutputTokens: request.response.maxOutputTokens }
+      ...(topeDeSalida(request) != null
+        ? { maxOutputTokens: topeDeSalida(request)! }
         : {}),
       ...(request.temperature != null ? { temperature: request.temperature } : {}),
       ...(request.seed != null ? { seed: request.seed } : {}),
@@ -3639,13 +3649,13 @@ export class SavingsPipeline {
         // Se exige `maxOutputTokens` declarado: sin él, el corte lo puso un tope
         // del proveedor que no conocemos (la API de Anthropic exige `max_tokens` y
         // el adaptador manda 4096), y "cabe" no sería una afirmación demostrable.
-        const tope = request.response?.maxOutputTokens ?? null;
+        const tope = topeDeSalida(request) ?? null;
         const desbordaSuContrato =
           techoDelEsquema !== null && tope != null && techoDelEsquema <= tope;
         if (desbordaSuContrato) this.contratosQueIncumplen.add(contractKey(request));
         trace.record("validation", "repair-skipped", {
           reason: "output truncated by maxOutputTokens; a retry with the same cap would truncate again",
-          maxOutputTokens: request.response?.maxOutputTokens ?? null,
+          maxOutputTokens: topeDeSalida(request) ?? null,
           outputTokens: response.usage.outputTokens,
           model: modeloServido,
           ...(techoDelEsquema !== null ? { schemaAllowsTokens: techoDelEsquema } : {}),
@@ -3747,7 +3757,7 @@ export class SavingsPipeline {
         const entradaEstimada = Math.round(k * reparacionEnLocal);
         const salidaEstimada = Math.min(
           response.usage.outputTokens,
-          request.response?.maxOutputTokens ?? Number.POSITIVE_INFINITY,
+          topeDeSalida(request) ?? Number.POSITIVE_INFINITY,
         );
         // Sin tarifa cacheada: el prompt de reparación es corto y nuevo, no
         // comparte prefijo con nada, así que no hay acierto de caché que aplicar.
@@ -3818,8 +3828,8 @@ export class SavingsPipeline {
             model: modeloServido,
             messages: mensajesReparacion,
             schema,
-            ...(request.response?.maxOutputTokens != null
-              ? { maxOutputTokens: request.response.maxOutputTokens }
+            ...(topeDeSalida(request) != null
+              ? { maxOutputTokens: topeDeSalida(request)! }
               : {}),
           }, testigo);
           usoReparacion = response.usage;
@@ -4308,8 +4318,8 @@ export class SavingsPipeline {
         // produjo lo servido.
         final: {
           ...(response.finishReason !== undefined ? { finishReason: response.finishReason } : {}),
-          ...(request.response?.maxOutputTokens != null
-            ? { topeDelLlamante: request.response.maxOutputTokens }
+          ...(topeDeSalida(request) != null
+            ? { topeDelLlamante: topeDeSalida(request)! }
             : {}),
         },
       },
@@ -4538,7 +4548,7 @@ export class SavingsPipeline {
         candidatas.map((t) => ({ risk: t.risk, tokens: esquemaDe(t) })),
         MAX_LECTURAS_DE_LA_SEGUNDA,
       ),
-      salidaFinal: request.response?.maxOutputTokens ?? 256,
+      salidaFinal: salidaEstimadaDeReferencia(request),
       salidaDelSondeo: SALIDA_DEL_SONDEO_TOKENS,
       precio: costModel,
     });
@@ -5215,8 +5225,8 @@ export class SavingsPipeline {
       messages,
       ...(request.tools?.length ? { tools: request.tools } : {}),
       ...(schema ? { schema } : {}),
-      ...(request.response?.maxOutputTokens != null
-        ? { maxOutputTokens: request.response.maxOutputTokens }
+      ...(topeDeSalida(request) != null
+        ? { maxOutputTokens: topeDeSalida(request)! }
         : {}),
       ...(request.temperature != null ? { temperature: request.temperature } : {}),
       ...(request.seed != null ? { seed: request.seed } : {}),
@@ -5251,8 +5261,8 @@ export class SavingsPipeline {
       origen: "fail_open",
       final: {
         ...(response.finishReason !== undefined ? { finishReason: response.finishReason } : {}),
-        ...(request.response?.maxOutputTokens != null
-          ? { topeDelLlamante: request.response.maxOutputTokens }
+        ...(topeDeSalida(request) != null
+          ? { topeDelLlamante: topeDeSalida(request)! }
           : {}),
       },
     };
@@ -5479,7 +5489,7 @@ export class SavingsPipeline {
         precio: this.precioDocumentado(ctx.request.model),
         determinista: muestreoDeterminista(ctx.request),
         salidaDelModelo: salidaNoRepetible(ctx.request.model),
-        topeDeSalida: ctx.request.response?.maxOutputTokens,
+        topeDeSalida: topeDeSalida(ctx.request),
         diferible: ctx.toggles.deferrable === true,
       });
     } catch {

@@ -809,6 +809,35 @@ console.log(data.answer); // 8
 </details>
 
 <details>
+<summary><b>Output cap — with or without a contract</b></summary>
+
+`maxOutputTokens` on the request caps the answer of any request, free text
+included. With `response.maxOutputTokens` as well, the smaller of the two is sent.
+
+```ts
+const { text, finishReason } = await layer.generate({
+  model: "openai/gpt-5-mini",
+  messages: [{ role: "user", content: "Summarize this in two sentences: …" }],
+  maxOutputTokens: 300,
+});
+```
+
+On the wire it becomes Anthropic's `max_tokens`; on Chat Completions,
+`max_completion_tokens` when `baseUrl` is OpenAI's own API (`max_tokens` is
+deprecated there and its reasoning models, o-series and gpt-5.x, reject it) and
+`max_tokens` on any other OpenAI-compatible endpoint, which is the field they all
+understand. If an endpoint answers 400 naming the field it got as unsupported, the
+request is repeated once with the other one (nothing was generated, so nothing is
+billed twice) and the model is remembered. To choose the field yourself:
+`new OpenAICompatibleProvider({ baseUrl, maxTokensParam: "max_completion_tokens" })`.
+
+The cap is yours, not a saving: it is never credited as output avoided. An answer
+it cut (`finishReason: "length"`) is not cached, and
+`report.qualityLedger.truncation` says the limit was yours.
+
+</details>
+
+<details>
 <summary><b>Tool calls</b></summary>
 
 When you pass `tools` and the model asks to invoke one, the reply is not the final

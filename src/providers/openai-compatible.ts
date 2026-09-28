@@ -67,6 +67,57 @@ export interface OpenAICompatibleOptions {
    * saving. Benchmarks that make real cost claims must set this.
    */
   requireUsage?: boolean;
+  /**
+   * Which Chat Completions field carries the output cap (`maxOutputTokens`).
+   *
+   * Default (undefined): `max_completion_tokens` when `baseUrl` is OpenAI's own
+   * API (https://api.openai.com), `max_tokens` everywhere else. OpenAI
+   * deprecated `max_tokens` when it introduced `max_completion_tokens`
+   * (2024-09-12) and its reasoning models (o-series, gpt-5.x) reject it with a
+   * 400; `max_completion_tokens` is accepted by every current OpenAI chat
+   * model. OpenAI-compatible servers (proxies, self-hosted inference servers,
+   * routers, Azure with an older api-version, a local gateway) understand
+   * `max_tokens`, and some silently IGNORE a field they do not know, which
+   * would drop the cap without an error.
+   *
+   * With the default, a 400/422 that names the field sent as unsupported is
+   * retried once with the other one (it is rejected before any token is
+   * generated, so nothing is billed twice) and the model is remembered. An
+   * explicit value always wins and is never switched.
+   */
+  maxTokensParam?: "max_tokens" | "max_completion_tokens";
+}
+
+/** El campo de Chat Completions que lleva el tope de salida. */
+type CampoDeTope = "max_tokens" | "max_completion_tokens";
+
+/**
+ * ¿Este 400/422 dice que el proveedor NO ADMITE el campo de tope que se mandó?
+ *
+ * Medido en vivo con gpt-5.4-mini (0.4.30, banco GSM8K): «Unsupported
+ * parameter: 'max_tokens' is not supported with this model. Use
+ * 'max_completion_tokens' instead.» Para `max_tokens` se exige además que el
+ * mensaje nombre `max_completion_tokens`: así «max_tokens is too large» (el
+ * valor, no el campo) no se confunde con un rechazo del campo. Para
+ * `max_completion_tokens`, un servidor que no lo conoce dice «Unrecognized
+ * request argument», «unknown parameter» o, con pydantic, «Extra inputs are
+ * not permitted»; un valor fuera de rango («integer below minimum value») no
+ * es eso y no se toca.
+ */
+function campoDeTopeRechazado(detalle: string, enviado: CampoDeTope): boolean {
+  if (enviado === "max_tokens") {
+    return (
+      /\bmax_tokens\b/i.test(detalle) &&
+      /max_completion_tokens/i.test(detalle) &&
+      /unsupported|not supported|unrecognized|unknown parameter|use 'max_completion_tokens'/i.test(detalle)
+    );
+  }
+  return (
+    /max_completion_tokens/i.test(detalle) &&
+    /unsupported|not supported|unrecognized|unknown (parameter|field|argument)|extra (inputs|fields) (are )?not permitted|not permitted/i.test(
+      detalle,
+    )
+  );
 }
 
 /**
@@ -253,6 +304,10 @@ export class OpenAICompatibleProvider implements Provider {
   // property of the server, not of the model, so a single flag is enough; once
   // set, streamed requests go out without it and report incomplete usage.
   private streamOptionsRejected = false;
+  // El campo de tope APRENDIDO por modelo tras un 400 que rechazó el otro. Es
+  // propiedad del modelo (gpt-4o-mini admite los dos, gpt-5.x solo el nuevo),
+  // no del endpoint, así que va por modelo como `sinResponseFormat`.
+  private readonly campoDeTopeAprendido = new Map<string, CampoDeTope>();
   // El API oficial con el que habla, por el host de `baseUrl`. Se declara al
   // pipeline (que decide el modo explícito ANTES de llamar) y se atestigua en
   // cada respuesta.
@@ -332,24 +387,32 @@ export class OpenAICompatibleProvider implements Provider {
     // Por eso tampoco cuenta como `retries` en el libro: el intento rechazado no
     // consumió tokens ni llegó a facturarse, y apuntarlo inflaría un contador que
     // el cliente contrasta con su factura.
-    if (!response.ok && response.status === 400 && nativo) {
+    //
+    // El mismo razonamiento vale para el CAMPO DEL TOPE (`max_tokens` frente a
+    // `max_completion_tokens`, ver `campoDeTope`): también se rechaza antes de
+    // generar. Como las dos causas pueden darse en la misma petición (gpt-4 con
+    // contrato detrás de un servidor que solo conoce uno de los campos), se
+    // admiten hasta dos correcciones, cada una una sola vez.
+    for (let correcciones = 0; correcciones < 2 && !response.ok; correcciones++) {
+      if (response.status !== 400 && response.status !== 422) break;
       const detalle = await safeText(response);
-      if (!esResponseFormatNoSoportado(detalle)) {
+      if (response.status === 400 && nativo && esResponseFormatNoSoportado(detalle)) {
+        this.sinResponseFormat.add(model);
+        avisarDelProveedor(
+          this,
+          `sin-response-format:${model}`,
+          `[bvsala] Model "${model}" rejects \`response_format\` with a 400: it has no ` +
+            "structured outputs. The request is repeated asking for the JSON via prompt (once only: " +
+            "the model is noted and the following requests go straight there). The schema still travels " +
+            "and the layer still validates, but the guarantee comes from the layer, not the provider, " +
+            'and the report says so: `constraints.backend: "none"`. To recover the native guarantee, ' +
+            "use a model with structured outputs (gpt-4o or later).",
+        );
+        nativo = false;
+      } else if (!this.corregirCampoDeTope(model, req, response.status, detalle)) {
         throw new Error(`provider ${response.status}: ${detalle}`);
       }
-      this.sinResponseFormat.add(model);
-      avisarDelProveedor(
-        this,
-        `sin-response-format:${model}`,
-        `[bvsala] Model "${model}" rejects \`response_format\` with a 400: it has no ` +
-          "structured outputs. The request is repeated asking for the JSON via prompt (once only: " +
-          "the model is noted and the following requests go straight there). The schema still travels " +
-          "and the layer still validates, but the guarantee comes from the layer, not the provider, " +
-          'and the report says so: `constraints.backend: "none"`. To recover the native guarantee, ' +
-          "use a model with structured outputs (gpt-4o or later).",
-      );
-      nativo = false;
-      response = await this.enviar(model, req, false, undefined, senal);
+      response = await this.enviar(model, req, nativo, undefined, senal);
     }
 
     if (!response.ok) {
@@ -386,18 +449,26 @@ export class OpenAICompatibleProvider implements Provider {
     const model = quitarPrefijoDeProveedor(req.model, this.opts.stripProviderPrefix, this.opts.baseUrl);
     const signal = options.signal;
     const conUso = !this.streamOptionsRejected;
-    let response = await this.enviar(model, req, false, {
-      includeUsage: conUso,
-      ...(signal ? { signal } : {}),
-    });
+    let pidiendoUso = conUso;
+    const enviarStream = (includeUsage: boolean): Promise<Response> =>
+      this.enviar(model, req, false, { includeUsage, ...(signal ? { signal } : {}) });
+    let response = await enviarStream(pidiendoUso);
 
     // Un endpoint que no conoce `stream_options` contesta 400 (OpenAI-compatibles
     // viejos) o 422 (validadores estrictos tipo pydantic). Se rechaza ANTES de
     // generar nada, así que repetir sin la opción no duplica ningún gasto: es el
     // mismo razonamiento que la degradación de `response_format` de generate().
-    if (!response.ok && conUso && (response.status === 400 || response.status === 422)) {
+    // Y el mismo vale para el campo del tope (`corregirCampoDeTope`), que se
+    // mira PRIMERO: un 422 de pydantic por `max_completion_tokens` no es un
+    // rechazo de `stream_options`, y quitárselas dejaría el stream sin usage.
+    for (let correcciones = 0; correcciones < 2 && !response.ok; correcciones++) {
+      if (response.status !== 400 && response.status !== 422) break;
       const detalle = await safeText(response);
-      if (response.status !== 422 && !/stream_options|include_usage/i.test(detalle)) {
+      if (this.corregirCampoDeTope(model, req, response.status, detalle)) {
+        response = await enviarStream(pidiendoUso);
+        continue;
+      }
+      if (!pidiendoUso || (response.status !== 422 && !/stream_options|include_usage/i.test(detalle))) {
         throw new Error(`provider ${response.status}: ${detalle}`);
       }
       if (this.opts.requireUsage) {
@@ -406,24 +477,22 @@ export class OpenAICompatibleProvider implements Provider {
             `would carry no usage and requireUsage is set. ${detalle}`,
         );
       }
-      response = await this.enviar(model, req, false, {
-        includeUsage: false,
-        ...(signal ? { signal } : {}),
-      });
-      // Solo se anota (y se avisa) si SIN la opción pasó: un 422 por otra cosa
-      // (un validador que rechaza los mensajes) vuelve a fallar sin ella, y
-      // anotarlo antes quitaba el usage a todos los streams del proceso por un
-      // error que no era de `stream_options`.
-      if (response.ok) {
-        this.streamOptionsRejected = true;
-        avisarDelProveedor(
-          this,
-          `sin-stream-options:${this.opts.baseUrl}`,
-          "[bvsala] This endpoint rejects `stream_options`, so streamed answers from it carry no usage: " +
-            "they are reported as `unmeasured` and never billed. Use `generate()` for a measured figure, " +
-            "or an endpoint that reports usage when streaming.",
-        );
-      }
+      pidiendoUso = false;
+      response = await enviarStream(false);
+    }
+    // Solo se anota (y se avisa) si SIN la opción pasó: un 422 por otra cosa
+    // (un validador que rechaza los mensajes) vuelve a fallar sin ella, y
+    // anotarlo antes quitaba el usage a todos los streams del proceso por un
+    // error que no era de `stream_options`.
+    if (conUso && !pidiendoUso && response.ok) {
+      this.streamOptionsRejected = true;
+      avisarDelProveedor(
+        this,
+        `sin-stream-options:${this.opts.baseUrl}`,
+        "[bvsala] This endpoint rejects `stream_options`, so streamed answers from it carry no usage: " +
+          "they are reported as `unmeasured` and never billed. Use `generate()` for a measured figure, " +
+          "or an endpoint that reports usage when streaming.",
+      );
     }
 
     if (!response.ok) {
@@ -565,6 +634,52 @@ export class OpenAICompatibleProvider implements Provider {
     };
   }
 
+  // QUÉ CAMPO LLEVA EL TOPE. La opción explícita manda siempre; si no, lo que
+  // este modelo ya enseñó con un 400; si no, el host:
+  //
+  //   · el API oficial de OpenAI → `max_completion_tokens`. `max_tokens` está
+  //     deprecado desde el 2024-09-12 (el día de o1; SDK oficial openai-node
+  //     4.60.0: «This value is now deprecated in favor of
+  //     `max_completion_tokens`, and is not compatible with o-series models») y
+  //     los modelos de razonamiento —o-series, gpt-5.x— lo rechazan con 400. El
+  //     nuevo lo admiten todos sus modelos de chat actuales, gpt-4o-mini incluido.
+  //   · cualquier otro endpoint → `max_tokens`, el que entiende TODO servidor
+  //     compatible (LiteLLM, vLLM, Ollama, OpenRouter, TGI, el endpoint de
+  //     Gemini, Azure con api-version antigua). El nuevo no: hay servidores que
+  //     ignoran en silencio un campo que no conocen, y ahí el tope se perdería
+  //     sin error, que es peor que un 400. Un proxy delante de un modelo de
+  //     razonamiento de OpenAI (LiteLLM, OpenRouter) traduce él, y si no lo
+  //     hace, su 400 lo corrige `corregirCampoDeTope`.
+  private campoDeTope(model: string): CampoDeTope {
+    return (
+      this.opts.maxTokensParam ??
+      this.campoDeTopeAprendido.get(model) ??
+      (this.origen === "openai" ? "max_completion_tokens" : "max_tokens")
+    );
+  }
+
+  // ¿Se puede corregir este rechazo cambiando de campo? Solo sin opción
+  // explícita (quien la fijó decidió), solo si la petición llevaba tope, solo
+  // si el rechazo nombra el campo que se mandó y solo UNA vez por modelo: un
+  // modelo que ya aprendió su campo y lo vuelve a ver rechazado no oscila.
+  private corregirCampoDeTope(model: string, req: ProviderRequest, status: number, detalle: string): boolean {
+    if (this.opts.maxTokensParam !== undefined || req.maxOutputTokens == null) return false;
+    if (this.campoDeTopeAprendido.has(model)) return false;
+    const enviado = this.campoDeTope(model);
+    if (!campoDeTopeRechazado(detalle, enviado)) return false;
+    const otro: CampoDeTope = enviado === "max_tokens" ? "max_completion_tokens" : "max_tokens";
+    this.campoDeTopeAprendido.set(model, otro);
+    avisarDelProveedor(
+      this,
+      `campo-de-tope:${this.opts.baseUrl}:${model}`,
+      `[bvsala] This endpoint rejects \`${enviado}\` for model "${model}" with a ${status}, so the output cap ` +
+        `is sent as \`${otro}\` instead (the rejected request was not billed; the model is noted and ` +
+        "the following requests go straight there). To choose the field yourself, set " +
+        "`maxTokensParam` on OpenAICompatibleProvider.",
+    );
+    return true;
+  }
+
   // Arma el cuerpo y lo envía. `nativo` elige la vía `response_format`; `stream`
   // pide la respuesta en SSE (y, con `includeUsage`, el chunk final de usage).
   // Sin `stream`, el cuerpo es byte a byte el de siempre.
@@ -655,7 +770,8 @@ export class OpenAICompatibleProvider implements Provider {
       model,
       messages: mensajes,
     };
-    if (req.maxOutputTokens != null) body["max_tokens"] = req.maxOutputTokens;
+    // EL TOPE, CON EL NOMBRE QUE ENTIENDE ESTE ENDPOINT. Ver `campoDeTope`.
+    if (req.maxOutputTokens != null) body[this.campoDeTope(model)] = req.maxOutputTokens;
     if (req.temperature != null) body["temperature"] = req.temperature;
     if (req.seed != null) body["seed"] = req.seed;
     // OpenAI cachea el prefijo SOLA —no hay puntos de ruptura que marcar— pero
