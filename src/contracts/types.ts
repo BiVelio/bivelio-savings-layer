@@ -725,6 +725,14 @@ export interface SavingsResult<T = unknown> {
    * (caché/resolver), que solo sirven respuestas finales completas.
    */
   finishReason?: string;
+  /**
+   * The refusal message the model returned instead of an answer (OpenAI
+   * Structured Outputs: `message.refusal`, with `finish_reason: "stop"` and no
+   * content). When present, the request was refused: `text` is empty and no
+   * output contract was met. It is measured like any call, and it is never
+   * repaired, cached or replayed.
+   */
+  refusal?: string;
   report: SavingsReport;
 }
 
@@ -912,8 +920,9 @@ export interface QualityRepairCheck {
    * - `decode_time_constraint`: generation was already constrained, so a retry
    *   would not change the outcome.
    * - `provider_refusal`: the provider refused the request (`finishReason:
-   *   "content_filter"`, Anthropic's `stop_reason: "refusal"`); a repair on the
-   *   same model would be refused, and may be billed, again.
+   *   "content_filter"`, Anthropic's `stop_reason: "refusal"`, or OpenAI's
+   *   `message.refusal`); a repair on the same model would be refused, and may
+   *   be billed, again.
    */
   skipReason?:
     | "output_truncated"
