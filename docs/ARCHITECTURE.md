@@ -81,9 +81,10 @@ The worst failure is not a cache miss — it is confidently returning a wrong
 answer. The `policy` engine gates every saving:
 
 - Exact cache keys include tenant, scope, model family/version, system-prompt
-  hash, contract/schema version, toolset, locale, sampling, knowledge epoch,
-  freshness bucket, and safety policy version. A hash of the user text is **not**
-  a safe key.
+  hash, contract/schema version, toolset, tool-loop fields (calls, the call each
+  result answers, `isError`), locale, sampling, knowledge epoch, freshness
+  bucket, and safety policy version. A hash of the user text is **not** a safe
+  key.
 - Semantic cache is read-only, non-personalized, non-fresh, deterministic-enough
   **and** must pass metadata filters + a verifier + a freshness check + a
   contract-compatibility check. Its headline metric is hit *precision*, not hit

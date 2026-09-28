@@ -79,6 +79,13 @@ export interface SemanticRecord {
   safetyPolicyVersion: string;
   /** Hash of the declared tool catalog (ids, risk and parameters). */
   toolsetHash: string;
+  /**
+   * Hash of the tool-loop fields of the conversation (tool calls, the call each
+   * tool result answers, its error flag and name); absent when it had none.
+   * Compared for equality like the other identity fields: similarity is scored
+   * on text only, and never decides between two tool loops.
+   */
+  toolTurnsHash?: string;
   /** Sampling temperature of the request, or null when it set none. */
   temperature: number | null;
   /** Sampling seed of the request, or null when it set none. */
@@ -539,6 +546,17 @@ export class InMemorySemanticCache {
       // podía contestar el modelo. Van antes de puntuar, como los demás: un
       // candidato con otra identidad no llega ni a compararse.
       if (record.toolsetHash !== c.toolsetHash) continue;
+      // Y LOS CAMPOS DEL BUCLE DE HERRAMIENTAS, que la clave exacta también lleva
+      // (`toolTurnsHash`). Solo importan con `"include-agentic"` —sin él la
+      // política ni siquiera consulta esta caché con llamadas o resultados de
+      // herramienta—, y ahí son justo lo que el texto no ve: un resultado marcado
+      // como error y el mismo texto como dato tienen el MISMO `normalizedText`, y
+      // el embebedor y `keyTokensMatch` los darían por iguales. Igualdad estricta,
+      // no similitud: con esto la caché solo sirve entre bucles cuyas llamadas,
+      // argumentos, emparejamientos y marcas de error coinciden; nunca es más
+      // permisiva que antes. Ausente de los dos lados (sin campos) sigue casando
+      // como siempre.
+      if (record.toolTurnsHash !== c.toolTurnsHash) continue;
       if (record.temperature !== c.temperature) continue;
       if (record.seed !== c.seed) continue;
       if (
@@ -803,6 +821,7 @@ export class InMemorySemanticCache {
       schemaVersion: c.schemaVersion,
       safetyPolicyVersion: c.safetyPolicyVersion,
       toolsetHash: c.toolsetHash,
+      ...(c.toolTurnsHash !== undefined ? { toolTurnsHash: c.toolTurnsHash } : {}),
       temperature: c.temperature,
       seed: c.seed,
       storedAtMs: this.now(),

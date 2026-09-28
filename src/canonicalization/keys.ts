@@ -18,15 +18,34 @@ import { modelFamilyOf, sha256, stableStringify } from "./canonicalize.js";
  * escalonado —dos versiones del SDK contra el mismo Redis— escribe en dos
  * espacios separados en vez de mezclarse. `n1` es, por convenio, la generación
  * sin marca: la que publicaron las versiones hasta la 0.2.3.
+ *
+ * LOS CAMPOS DE HERRAMIENTA NO LA SUBIERON (2026-09-28), y es a propósito.
+ * `toolTurnsHash` entra en el material SOLO cuando la petición lleva alguno, así
+ * que el material de una petición sin ellos es byte a byte el de antes y su
+ * clave no cambia: subir la generación habría dejado huérfana TODA la caché viva
+ * de cada cliente para cambiar la clave de una parte (las conversaciones con
+ * herramientas). Las entradas de esa parte escritas antes quedan sin lector y
+ * caducan con su TTL; no se pueden acotar con un `SCAN`, y es el precio.
  */
 const GENERACION = "n2";
+
+/**
+ * Los campos del bucle de herramientas, solo si la petición lleva alguno. Con
+ * `undefined` no se añade la propiedad, y `stableStringify` produce el mismo
+ * JSON que antes de que existiera (ver `hashDeHerramientas` en
+ * canonicalize.ts).
+ */
+function conHerramientas(c: CanonicalRequest): { toolTurns?: string } {
+  return c.toolTurnsHash !== undefined ? { toolTurns: c.toolTurnsHash } : {};
+}
 
 /**
  * Exact-cache key.
  *
  * A hash of the user text alone is NOT a safe cache key. Two requests may share
  * text but differ in tenant, permission scope, model version, system prompt,
- * schema, toolset, locale, sampling, knowledge epoch or safety policy — any of
+ * schema, toolset, tool-loop fields (tool calls, the call a tool result answers,
+ * its error flag), locale, sampling, knowledge epoch or safety policy — any of
  * which can change the correct answer. The exact key includes all of them.
  *
  * `servedModel` CARRIES THE MODEL THAT WILL ACTUALLY ANSWER, not the one the
@@ -56,6 +75,7 @@ export function buildExactKey(
     contract: c.contractId,
     schema: c.schemaVersion,
     tools: c.toolsetHash,
+    ...conHerramientas(c),
     data: c.structuredDataHash,
     locale: c.locale,
     temperature: c.temperature,
@@ -146,6 +166,9 @@ export function buildInflightKey(
     contract: c.contractId,
     schema: c.schemaVersion,
     tools: c.toolsetHash,
+    // El SEGUIDOR recibe el texto del líder tal cual: un resultado marcado como
+    // error, otros argumentos u otro emparejamiento son otra petición.
+    ...conHerramientas(c),
     data: c.structuredDataHash,
     temperature: c.temperature,
     seed: c.seed,

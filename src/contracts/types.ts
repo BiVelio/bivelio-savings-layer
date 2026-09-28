@@ -56,7 +56,12 @@ export interface ChatMessage {
    * ids included.
    */
   toolCalls?: ToolCallRequest[];
-  /** Opaque provider metadata; never used for the exact-cache key. */
+  /**
+   * Opaque provider metadata; never used for the exact-cache key. The one
+   * exception is `tool_call_id` on a `role: "tool"` message: the OpenAI
+   * adapter still sends it as the call id when `toolCallId` is absent,
+   * so the key reads it as that same field.
+   */
   metadata?: Record<string, unknown>;
 }
 
