@@ -282,6 +282,21 @@ nothing either. The same rule applies in the gateway. Any other refusal is price
 its `usage` as usual. That covers `bio`, `frontier_llm` and `reasoning_extraction`, a
 refusal after partial output, and a category the table does not list.
 
+Most refusals carry no signal from the API: the model writes "I can't help with that."
+as ordinary text and ends with `end_turn` or `stop`. The layer also looks for these,
+with a conservative text heuristic. It checks only the opening of the answer, or the
+whole answer when it is short, and it needs a real refusal clause, such as "I'm sorry,
+but I can't help with that", "I cannot assist" or "As an AI, I cannot provide". A
+single word is not enough. It covers English, Spanish, Catalan, French, German,
+Italian and Portuguese. A match is measured and served as usual. It is not written to
+the exact or semantic cache, and it is not replayed by reference. A concurrent
+identical request served from it is `estimated`. The trace says why
+(`skipReason: "text_refusal"`). A refusal already stored by an earlier version is not
+served either. In the gateway, the coalesced twin of such a response is `estimated`
+(`primary-text-refusal`). A false positive costs one cache hit. A normal answer that
+starts with "Sorry for the delay, here is…", or has "I can't" later on, is cached as
+before.
+
 **Streaming.** `generateStream()` takes the same request and hands you the answer as
 the provider writes it, then the same `SavingsReport`:
 

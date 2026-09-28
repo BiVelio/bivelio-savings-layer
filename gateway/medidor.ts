@@ -8,6 +8,7 @@ import type { SavingsReport } from "../src/contracts/types.js";
 import { PRIMA_ESCRITURA_CACHE, PRIMA_ESCRITURA_CACHE_1H, primaDeEscritura } from "../src/pricing/primas.js";
 import { extraDeCompactacion } from "../src/providers/iteraciones-de-compactacion.js";
 import { negativaNoCobrada } from "../src/providers/anthropic-uso.js";
+import { negativaEnTexto } from "../src/providers/negativa-en-texto.js";
 import { SseParser, type SseMessage } from "../src/providers/sse.js";
 import type { HuellaDeLaPrimaria } from "./coalescencia.js";
 import type { CambioDeModelo } from "./hermano.js";
@@ -60,6 +61,7 @@ export class ObservadorSse {
   private elisionObservada: ElisionAplicada | null = null;
   private paradaFinal: string | null = null;
   private detallesDeParada: unknown = undefined;
+  private readonly texto = new InicioDelTexto();
   readonly eventos: Record<string, number> = {};
 
   observar(chunk: Buffer | string): void {
@@ -70,6 +72,18 @@ export class ObservadorSse {
       this.resto = this.resto.slice(idx + 2);
       const ev = /^event: (.+)$/m.exec(bloque)?.[1];
       if (ev) this.eventos[ev] = (this.eventos[ev] ?? 0) + 1;
+      // E7-quater · el INICIO del texto, para ver una negativa escrita como
+      // texto (`negativaEnTexto`). Solo hasta el techo: luego ni se parsea.
+      if (ev === "content_block_delta" && !this.texto.lleno()) {
+        const data = /^data: (.+)$/m.exec(bloque)?.[1];
+        try {
+          const d = data ? (JSON.parse(data) as { delta?: { type?: unknown; text?: unknown } }) : null;
+          if (d?.delta?.type === "text_delta") this.texto.sumar(d.delta.text);
+        } catch {
+          /* un data ilegible no puede tumbar el passthrough */
+        }
+        continue;
+      }
       if (ev !== "message_start" && ev !== "message_delta") continue;
       const data = /^data: (.+)$/m.exec(bloque)?.[1];
       if (!data) continue;
@@ -122,6 +136,11 @@ export class ObservadorSse {
   /** E7 · ¿cerró el stream con `stop_reason: "refusal"`? (ver `negativaEnJson`). */
   negativa(): boolean {
     return this.paradaFinal === "refusal";
+  }
+
+  /** E7-quater · el inicio del texto que escribió el modelo (ver `negativaEnTextoDeRespuesta`). */
+  textoInicial(): string {
+    return this.texto.valor();
   }
 
   /**
@@ -290,6 +309,7 @@ export class ObservadorResponses {
   private uso: UsoSse | null = null;
   private final: EstadoFinalResponses | null = null;
   private negada = false;
+  private readonly texto = new InicioDelTexto();
   readonly eventos: Record<string, number> = {};
 
   observar(chunk: Buffer | string): void {
@@ -306,6 +326,7 @@ export class ObservadorResponses {
         const d = JSON.parse(data) as { type?: string; response?: { usage?: UsoResponses | null } };
         const tipo = ev ?? d.type;
         if (eventoDeNegativaResponses(tipo, d)) this.negada = true;
+        if (tipo === "response.output_text.delta") this.texto.sumar((d as { delta?: unknown }).delta);
         // Object.hasOwn: el literal hereda de Object.prototype, y un evento
         // `constructor` o `toString` no puede pasar por un final.
         const final = tipo !== undefined && Object.hasOwn(FINALES_RESPONSES, tipo) ? FINALES_RESPONSES[tipo] : undefined;
@@ -338,6 +359,11 @@ export class ObservadorResponses {
   /** E7 · ¿trajo el stream una parte `refusal`? (ver `negativaEnJson`). */
   negativa(): boolean {
     return this.negada;
+  }
+
+  /** E7-quater · el inicio del texto que escribió el modelo (ver `negativaEnTextoDeRespuesta`). */
+  textoInicial(): string {
+    return this.texto.valor();
   }
 }
 
@@ -448,10 +474,17 @@ export class ObservadorChatCompletions {
   private vioUsoFinal = false;
   private vioDone = false;
   private filtrada = false;
+  private readonly texto = new InicioDelTexto();
   readonly eventos: Record<string, number> = {};
 
   observar(chunk: Buffer | string): void {
     for (const m of this.parser.push(chunk)) this.mensaje(m);
+  }
+
+  /** E7-quater · el inicio del texto que escribió el modelo (ver `negativaEnTextoDeRespuesta`). */
+  textoInicial(): string {
+    for (const m of this.parser.end()) this.mensaje(m);
+    return this.texto.valor();
   }
 
   /**
@@ -493,6 +526,10 @@ export class ObservadorChatCompletions {
     if (d === null || typeof d !== "object") return;
     this.eventos["chunk"] = (this.eventos["chunk"] ?? 0) + 1;
     if (eleccionNegada(d.choices)) this.filtrada = true;
+    if (Array.isArray(d.choices) && !this.texto.lleno()) {
+      const primera = d.choices[0] as { delta?: { content?: unknown } } | undefined;
+      this.texto.sumar(primera?.delta?.content);
+    }
     if (d.usage === null || typeof d.usage !== "object") return;
     const mapeado = mapearUsoChat(d.usage as UsoChat);
     if (mapeado === null) return;
@@ -768,6 +805,74 @@ export function negativaEnJson(path: string, cuerpo: Buffer | string): boolean {
 }
 
 /**
+ * E7-quater · lo que hace falta para ver una negativa ESCRITA COMO TEXTO: el
+ * inicio del texto de la respuesta, sin tocar el passthrough. Un tope de
+ * caracteres, porque la heurística solo mira el principio (o la respuesta
+ * entera si es corta).
+ */
+const TOPE_DEL_TEXTO_INICIAL = 1200;
+class InicioDelTexto {
+  private t = "";
+  sumar(trozo: unknown): void {
+    if (typeof trozo === "string" && this.t.length < TOPE_DEL_TEXTO_INICIAL) this.t = (this.t + trozo).slice(0, TOPE_DEL_TEXTO_INICIAL);
+  }
+  lleno(): boolean {
+    return this.t.length >= TOPE_DEL_TEXTO_INICIAL;
+  }
+  valor(): string {
+    return this.t;
+  }
+}
+
+/**
+ * E7-quater · el texto de una respuesta JSON (`stream: false`), por ruta: los
+ * bloques `text` de Mensajes, el `message.content` de la primera elección de
+ * Chat Completions (cadena o partes `text`) y las partes `output_text` de la
+ * Responses API. Lo ilegible, o una ruta sin dialecto, es "".
+ */
+export function textoDeRespuestaJson(path: string, cuerpo: Buffer | string): string {
+  try {
+    const d = JSON.parse(typeof cuerpo === "string" ? cuerpo : cuerpo.toString("utf8")) as Record<string, unknown> | null;
+    if (d === null || typeof d !== "object") return "";
+    const partes = (xs: unknown, tipo: string, campo: "text"): string =>
+      Array.isArray(xs)
+        ? xs
+            .filter((p) => p !== null && typeof p === "object" && (p as { type?: unknown }).type === tipo)
+            .map((p) => (p as Record<string, unknown>)[campo])
+            .filter((t): t is string => typeof t === "string")
+            .join("")
+        : "";
+    if (path === "/v1/messages") return partes(d["content"], "text", "text");
+    if (path.endsWith("/chat/completions")) {
+      const c = Array.isArray(d["choices"]) ? (d["choices"][0] as { message?: { content?: unknown } } | undefined) : undefined;
+      const contenido = c?.message?.content;
+      return typeof contenido === "string" ? contenido : partes(contenido, "text", "text");
+    }
+    if (path.endsWith("/responses") && Array.isArray(d["output"])) {
+      return d["output"]
+        .map((item) => (item !== null && typeof item === "object" ? partes((item as { content?: unknown }).content, "output_text", "text") : ""))
+        .join("");
+    }
+    return "";
+  } catch {
+    return "";
+  }
+}
+
+/**
+ * E7-quater · ¿la respuesta es una negativa que el modelo escribió como TEXTO
+ * normal (`end_turn`/`stop`, sin señal del API)? La misma heurística
+ * conservadora que el SDK (`negativaEnTexto`, src/providers/negativa-en-texto.ts):
+ * solo el inicio del texto, o el texto entero si es corto. La gemela coalescida
+ * de una primaria así no se valora por referencia (`primary-text-refusal`). Un
+ * falso positivo cuesta una gemela `estimated` en vez de `reference`; la
+ * respuesta llega igual al cliente.
+ */
+export function negativaEnTextoDeRespuesta(texto: string): boolean {
+  return negativaEnTexto(texto) !== null;
+}
+
+/**
  * ¿La respuesta JSON (`stream: false`) de `/v1/messages` es una negativa que
  * Anthropic documenta como NO cobrada? `stop_reason: "refusal"`, `content`
  * vacío, `output_tokens` 0 y una categoría que la tabla oficial marca «no»
@@ -1010,6 +1115,10 @@ export function informeMedido(
  *                         `refusal` de la Responses API). Se mide, pero no se
  *                         repite como llamada evitada: en las categorías que
  *                         Anthropic no cobra, la repetición habría costado 0 $.
+ * - `primary-text-refusal` — la primaria fue una negativa que el MODELO escribió
+ *                         como texto normal (`end_turn`/`stop`, sin señal del
+ *                         API; heurística `negativaEnTexto`). Se mide, pero una
+ *                         negativa no es una respuesta que repetir ni cobrar.
  * - `client-disconnected` — el cliente de la gemela se fue antes de recibir la
  *                         réplica entera: sin la capa se habría cortado igual,
  *                         y una llamada que nadie recibió no es una llamada
@@ -1027,6 +1136,7 @@ export type MotivoSinReferenciaGateway =
   | "layer-changed-request"
   | "primary-failed"
   | "primary-refused"
+  | "primary-text-refusal"
   | "client-disconnected"
   | "service-tier"
   | "no-cached-price"
@@ -1126,6 +1236,7 @@ export function valorarGemelaPorReferencia(
   if (!primaria.intacta) return { ok: false, reason: "layer-changed-request" };
   if (primaria.fallida) return { ok: false, reason: "primary-failed" };
   if (primaria.negativa === true) return { ok: false, reason: "primary-refused" };
+  if (primaria.negativaEnTexto === true) return { ok: false, reason: "primary-text-refusal" };
   if (!gemela.entregada) return { ok: false, reason: "client-disconnected" };
 
   const json = cuerpo !== null && typeof cuerpo === "object" && !Array.isArray(cuerpo) ? (cuerpo as Record<string, unknown>) : {};

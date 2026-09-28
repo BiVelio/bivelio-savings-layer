@@ -24,6 +24,8 @@ import {
   sueloDeReferencia,
   respuestaJsonFallida,
   negativaEnJson,
+  negativaEnTextoDeRespuesta,
+  textoDeRespuestaJson,
   negativaNoCobradaEnJson,
   tierServidoDeRespuesta,
   type Atribucion,
@@ -1469,6 +1471,17 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
         const negativa =
           (observador !== null && observador.negativa()) ||
           (respuestaJson !== null && negativaEnJson(url.pathname, respuestaJson));
+        // E7-quater · y la que el modelo escribe como TEXTO, sin señal del API:
+        // la misma heurística que el SDK, sobre el inicio del texto servido.
+        const negativaEscrita =
+          !negativa &&
+          negativaEnTextoDeRespuesta(
+            observador !== null
+              ? observador.textoInicial()
+              : respuestaJson !== null
+                ? textoDeRespuestaJson(url.pathname, respuestaJson)
+                : "",
+          );
         captura.terminar(upstream.status, cabeceras, {
           requestId,
           at: Date.now(),
@@ -1478,6 +1491,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
           suscripcion,
           fallida,
           ...(negativa ? { negativa } : {}),
+          ...(negativaEscrita ? { negativaEnTexto: true } : {}),
         });
       }
 
