@@ -11,7 +11,7 @@ import { cuerpoBrazoA, diferenciasDelCable, leerRespuesta, normalizarBase } from
 import { costeDeUso, crearCable, Presupuesto, PresupuestoAgotado, Semaforo, sinSecretos, unidadEnCurso, usoDeRespuesta, type LlamadaDelCable } from "../benchmarks/publicados/bfcl/cable.js";
 import type { EntradaAst, FuncionBfcl } from "../benchmarks/publicados/bfcl/datos.js";
 import { herramientaDe } from "../benchmarks/publicados/bfcl/esquema.js";
-import { cargarSdk, COMMIT_DEL_TAG, INTEGRIDAD_NPM, instalarVerjaDeHosts, SHA256_DIST_NPM, TAG_RELEASE, VERSION_PAQUETE } from "../benchmarks/publicados/bfcl/procedencia.js";
+import { COMMIT_DEL_TAG, INTEGRIDAD_NPM, instalarVerjaDeHosts, SHA256_DIST_NPM, TAG_RELEASE, VERSION_PAQUETE } from "../benchmarks/publicados/bfcl/procedencia.js";
 import { claveSimulada, fetchSimulado } from "../benchmarks/publicados/bfcl/simulador.js";
 import { AnthropicProvider, createSavingsLayer, OpenAICompatibleProvider } from "../src/index.js";
 
@@ -259,7 +259,9 @@ describe("BFCL · extremo a extremo sin red", () => {
   it("con la 0.4.31 un catálogo sin tipar de más de 8 herramientas sale ENTERO al cable (#382)", async () => {
     const hs = Array.from({ length: 20 }, (_, i) => herramientaDe({ ...area, name: `tool_${i}` }));
     const respuestas = new Map([[claveSimulada("Area?", hs.map((h) => h.nombre)), [{ nombre: "tool_17", args: { base: 10, height: 5.5 } }]]]);
-    const { sdk } = await cargarSdk();
+    // El fuente del repo (≥ 0.4.31, con #382), no el de la etiqueta: la CI hace el
+    // checkout sin etiquetas y `cargarSdk` solo hace falta en las tiradas de verdad.
+    const sdk = { AnthropicProvider, OpenAICompatibleProvider, createSavingsLayer };
     for (const familia of ["anthropic", "openai"] as const) {
       const reg: LlamadaDelCable[] = [];
       const cable = crearCable({ familia, presupuesto: new Presupuesto("m", 1), precio: { inputPer1k: 0.001, outputPer1k: 0.005 }, prima: 1.25, semaforo: new Semaforo(2), base: fetchSimulado(respuestas) });
