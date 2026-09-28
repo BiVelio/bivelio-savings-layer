@@ -15,9 +15,9 @@
  * equilibrio de la elisión (src/pricing/aptitud-de-elision.ts) las necesita.
  * Los ficheros de `gateway/` las re-exportan, así que ningún llamante cambia.
  *
- * HONESTIDAD: esto DEDUPLICA el literal; no lo mete bajo el vigía de precios,
- * que compara contra una referencia pública de precios por token y no publica
- * primas de escritura. Sigue siendo un número tecleado, pero ahora es UNO.
+ * HONESTIDAD: esto DEDUPLICA el literal. Sigue siendo un número tecleado, pero
+ * ahora es UNO, y el contraste semanal del catálogo (scripts/contraste-catalogo.ts)
+ * compara la escritura que sale de él (entrada × prima) con la de LiteLLM.
  */
 
 /**

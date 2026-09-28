@@ -7,7 +7,8 @@
  * BerriAI/litellm, licencia MIT) FIJADA a un commit, y lista cada discrepancia
  * como ALARMA.
  *
- * DOCTRINA (la del vigía de 2026-08-23, scripts/vigia-precios.mjs): la tabla de
+ * DOCTRINA (la del vigía de precios de 2026-08-23, retirado el 2026-09-28 porque
+ * este contraste compara todo lo que él comparaba y más): la tabla de
  * LiteLLM es una ALARMA, nunca una fuente. Este script no escribe en
  * src/pricing/ ni propone líneas para pegar: una discrepancia se resuelve
  * leyendo la página OFICIAL del proveedor, y lo que esa página diga queda

@@ -47,7 +47,7 @@ describe("buscarEnLiteLLM: la entrada del MISMO proveedor", () => {
   });
 
   it("sin clave desnuda, la instantánea con fecha MÁS RECIENTE", () => {
-    expect(buscarEnLiteLLM(TABLA, "claude-3-haiku", "anthropic")?.clave).toBe("claude-3-haiku-20240307");
+    expect(buscarEnLiteLLM(TABLA, "claude-3-5-haiku", "anthropic")?.clave).toBe("claude-3-5-haiku-20241022");
     expect(buscarEnLiteLLM(TABLA, "claude-3-5-sonnet", "anthropic")?.clave).toBe("claude-3-5-sonnet-20241022");
   });
 
@@ -95,14 +95,15 @@ describe("contrastar", () => {
     expect(fila(inf, "gemini-3.8-flash").estado).toBe("coincide");
   });
 
-  it("⛔ una diferencia sin revisar es ALARMA (la escritura de Haiku 3 y una salida cambiada)", () => {
-    const haiku3 = fila(inf, "claude-3-haiku");
-    expect(haiku3.estado).toBe("difiere");
-    expect(haiku3.diferencias).toEqual([
-      { campo: "escritura", tipo: "difiere", nuestro: expect.closeTo(0.0003125, 12), suyo: expect.closeTo(0.0003, 12) },
+  it("⛔ una diferencia sin revisar es ALARMA (una escritura y una salida cambiadas)", () => {
+    const haiku35 = fila(inf, "claude-3-5-haiku");
+    expect(haiku35.estado).toBe("difiere");
+    expect(haiku35.claveLiteLLM).toBe("claude-3-5-haiku-20241022");
+    expect(haiku35.diferencias).toEqual([
+      { campo: "escritura", tipo: "difiere", nuestro: expect.closeTo(0.001, 12), suyo: expect.closeTo(0.00096, 12) },
     ]);
     const al = alarmas(inf).map(({ fila: f, diferencia: d }) => `${f.clave}/${f.tramo}/${d.campo}`);
-    expect(al.sort()).toEqual(["claude-3-haiku/estandar/escritura", "claude-sonnet-5/estandar/salida"]);
+    expect(al.sort()).toEqual(["claude-3-5-haiku/estandar/escritura", "claude-sonnet-5/estandar/salida"]);
     expect(inf.resumen.alarmas).toBe(2);
   });
 
@@ -123,6 +124,11 @@ describe("contrastar", () => {
   it("lo que solo publica LiteLLM es informativo (o3-pro sin lectura de caché a propósito)", () => {
     expect(fila(inf, "o3-pro").diferencias).toEqual([{ campo: "lectura", tipo: "solo-suyo", suyo: expect.closeTo(0.005, 12) }]);
     expect(fila(inf, "o3-pro").estado).toBe("coincide");
+  });
+
+  it("una entrada de LiteLLM sin fila nuestra no se contrasta: claude-3-haiku, retirado, ya no es del catálogo", () => {
+    expect(TABLA["claude-3-haiku-20240307"]).toBeDefined();
+    expect(inf.filas.some((f) => f.clave.startsWith("claude-3-haiku") || f.claveLiteLLM === "claude-3-haiku-20240307")).toBe(false);
   });
 
   it("sin entrada del proveedor → sin referencia, nunca comparado con la de otro", () => {
@@ -150,7 +156,7 @@ describe("⛔ ALARMA, nunca fuente", () => {
   it("el informe dice ALARMA y no ofrece cifras para pegar en el catálogo", () => {
     const texto = informeEnTexto(contrastar(TABLA, { dia: DIA }), "fixture");
     expect(texto).toContain("ALARMA");
-    expect(texto).toContain("⛔ claude-3-haiku [estandar] escritura");
+    expect(texto).toContain("⛔ claude-3-5-haiku [estandar] escritura");
     expect(texto).toContain("es una alarma, no una fuente");
     expect(texto).not.toMatch(/inputPer1k|línea lista|outputPer1k/);
   });

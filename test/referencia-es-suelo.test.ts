@@ -366,7 +366,6 @@ describe("la guarda de salida: temperatura ignorada y modelos sin clasificar", (
       [
         "claude-3-5-haiku",
         "claude-3-5-sonnet",
-        "claude-3-haiku",
         "claude-3-opus",
         "claude-haiku-4-5",
         "claude-opus-4",

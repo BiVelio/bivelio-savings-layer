@@ -111,7 +111,6 @@ export const RAZONA_POR_FILA: Readonly<Record<string, boolean>> = {
   "claude-3-5-sonnet": false,
   "claude-3-5-haiku": false,
   "claude-3-opus": false,
-  "claude-3-haiku": false,
   // ── Google (Gemini) ──
   "gemini-3.8-flash": true,
   "gemini-3.7-flash": true,

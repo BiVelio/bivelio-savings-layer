@@ -75,24 +75,6 @@ describe("la vigencia del catálogo", () => {
     for (const k of Object.keys(CATALOGO)) expect(precioDeListaPropio(k, AL_DIA), k).toBe(CATALOGO[k]);
   });
 
-  it("los tramos anunciados no cambian lo que lee el vigía: su regex solo ve las filas de CATALOGO", () => {
-    // La misma expresión que scripts/vigia-precios.mjs. Si un tramo futuro casara,
-    // pisaría la fila de hoy en su mapa y el vigía compararía el precio de 2027
-    // contra la referencia de 2026: rojo falso cada semana.
-    const src = readFileSync(new URL("../src/pricing/catalogo.ts", import.meta.url), "utf8");
-    const rx = /"([a-z0-9.\-]+)":\s*\{\s*inputPer1k:\s*([\d.]+),\s*outputPer1k:\s*([\d.]+)(?:,\s*cachedInputPer1k:\s*([\d.]+))?/g;
-    const vistos = new Map<string, { inputPer1k: number; outputPer1k: number; cachedInputPer1k?: number }>();
-    for (const m of src.matchAll(rx)) {
-      vistos.set(m[1]!, {
-        inputPer1k: Number(m[2]),
-        outputPer1k: Number(m[3]),
-        ...(m[4] !== undefined ? { cachedInputPer1k: Number(m[4]) } : {}),
-      });
-    }
-    expect([...vistos.keys()].sort()).toEqual(Object.keys(CATALOGO).sort());
-    for (const [k, v] of vistos) expect(v, k).toEqual(CATALOGO[k]);
-  });
-
   it("y los techos del ingest SÍ ven los tramos anunciados (leen todo precio del fichero)", () => {
     // techo-precio-lectura.test.ts lee `cachedInputPer1k:` y `outputPer1k:` de todo
     // el fichero: un precio futuro por encima del techo lo pondría rojo HOY, antes
