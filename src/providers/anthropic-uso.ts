@@ -178,3 +178,73 @@ export function traducirParada(parada: string): string {
       return parada;
   }
 }
+
+// ── LAS NEGATIVAS QUE ANTHROPIC NO COBRA ──────────────────────────────────
+//
+// Documentación oficial, consultada el 2026-09-28:
+//   · https://platform.claude.com/docs/en/build-with-claude/refusals-and-fallback
+//     («What a refusal looks like», la tabla de categorías con su columna
+//     «Billed before any output», y «How refusals are billed»)
+//   · https://platform.claude.com/docs/en/release-notes/api (24-sep-2026)
+//
+// Lo que dice, literal: «a refusal that arrives before any output is billed
+// when its `stop_details.category` is "bio", "frontier_llm", or
+// "reasoning_extraction" [...]. A refusal before any output in any other
+// category, or with a `null` category, is not billed. Either way, `content` is
+// empty and token counts appear in `usage`.» Y: «A mid-stream refusal bills the
+// input tokens and the output already streamed at normal rates.» La tabla marca
+// «No» en `cyber` y `general_harms`. «The billed categories may change».
+//
+// Así que una negativa NO se cobra solo si se cumplen TODAS estas condiciones,
+// y ante cualquier duda se trata como cobrada (lo de siempre):
+//   · `stop_reason: "refusal"` y un `stop_details` de tipo `refusal`;
+//   · `stop_details.category` presente y `null`, `"cyber"` o `"general_harms"`:
+//     las que la tabla publicada marca «No». Una categoría que la tabla no
+//     nombra (una nueva) NO se da por no cobrada: la lista «may change» y una
+//     categoría desconocida es justo la señal de que cambió después de esta
+//     consulta;
+//   · ANTES DE CUALQUIER SALIDA: ningún bloque de contenido y `output_tokens`
+//     exactamente 0. Con un bloque o un token de salida es una negativa a mitad
+//     de respuesta, y esa se cobra;
+//   · sin `usage.iterations` de más de una entrada: con `fallbacks` o con la
+//     compactación del servidor el `usage` de primer nivel es solo el del
+//     intento devuelto, y cada intento se factura por su cuenta.
+
+/** Las categorías que la tabla oficial marca «Billed before any output: No» (2026-09-28). */
+export const CATEGORIAS_DE_NEGATIVA_NO_COBRADA: ReadonlySet<string | null> = new Set<string | null>([
+  null,
+  "cyber",
+  "general_harms",
+]);
+
+/** Lo que hace falta de una respuesta de Mensajes para saber si su negativa se cobra. */
+export interface HechosDeLaNegativa {
+  /** `stop_reason` final (en stream, el de `message_delta`). */
+  stopReason: unknown;
+  /** `stop_details` final (en stream, `message_delta.delta.stop_details`). */
+  stopDetails: unknown;
+  /** Cuántos bloques de contenido trajo la respuesta (`content.length`, o los `content_block_start`). */
+  bloques: number;
+  /** El `output_tokens` FINAL. */
+  outputTokens: unknown;
+  /** `usage.iterations`, si vino. */
+  iterations?: unknown;
+}
+
+/**
+ * ¿Es una negativa de la API de Mensajes que Anthropic documenta como NO
+ * cobrada? Ver el bloque de arriba: todas las condiciones, y ante la duda, no.
+ */
+export function negativaNoCobrada(h: HechosDeLaNegativa): boolean {
+  if (h.stopReason !== "refusal") return false;
+  const d = h.stopDetails;
+  if (d === null || typeof d !== "object" || Array.isArray(d)) return false;
+  const detalles = d as { type?: unknown; category?: unknown };
+  if (detalles.type !== "refusal" || !("category" in detalles)) return false;
+  const categoria = detalles.category;
+  if (categoria !== null && typeof categoria !== "string") return false;
+  if (!CATEGORIAS_DE_NEGATIVA_NO_COBRADA.has(categoria)) return false;
+  if (h.bloques !== 0 || h.outputTokens !== 0) return false;
+  if (Array.isArray(h.iterations) && h.iterations.length > 1) return false;
+  return true;
+}

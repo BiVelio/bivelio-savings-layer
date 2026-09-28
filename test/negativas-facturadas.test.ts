@@ -5,7 +5,10 @@ import Anthropic from "@anthropic-ai/sdk";
 import { parseUsageRecords } from "../apps/web/lib/metering/usage.js";
 import { arrancarGateway, type GatewayArrancado } from "../gateway/servidor.js";
 import {
+  costeMedido,
+  informeMedido,
   negativaEnJson,
+  negativaNoCobradaEnJson,
   ObservadorChatCompletions,
   ObservadorResponses,
   ObservadorSse,
@@ -18,6 +21,7 @@ import { InMemoryExactCache } from "../src/cache/exact.js";
 import { AnthropicProvider } from "../src/providers/anthropic.js";
 import { OpenAICompatibleProvider } from "../src/providers/openai-compatible.js";
 import { CATALOGO } from "../src/pricing/catalogo.js";
+import { SavingsLedger } from "../src/tokenizer/accounting.js";
 import type { Provider } from "../src/providers/types.js";
 import type { SavingsRequest, SavingsResult } from "../src/contracts/types.js";
 import { testLicense } from "./helpers/test-license.js";
@@ -81,6 +85,14 @@ import { medicion, prohibirLaRed, vaciar } from "./adaptadores/ayudas.js";
  *   · https://developers.openai.com/api/reference/resources/responses/streaming-events
  *     (`response.refusal.delta`, `response.refusal.done`, la parte `refusal` en
  *     `response.content_part.added`)
+ *
+ * 2026-09-28 · LAS NEGATIVAS QUE ANTHROPIC NO COBRA (sección 5, decisión del
+ * dueño: bitácora 2026-09-26 §8). Una negativa antes de cualquier salida en
+ * `cyber`, `general_harms` o categoría nula no se factura («A refusal before any
+ * output in any other category, or with a `null` category, is not billed»,
+ * «How refusals are billed», consultada el 2026-09-28). Se mide a coste 0 y NO
+ * acredita ningún ahorro: ni measured, ni estimated, ni reference. Las cobradas
+ * (secciones 1 a 3, `frontier_llm`) siguen exactamente igual.
  *
  * Ninguna petición sale de 127.0.0.1.
  */
@@ -916,5 +928,287 @@ describe("E7 · el adaptador del SDK oficial de Anthropic (@anthropic-ai/sdk)", 
     await c.messages.stream(PEDIDO).finalMessage();
     expect(n.llamadas).toHaveLength(3);
     s.close();
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 5 · LAS NEGATIVAS QUE ANTHROPIC NO COBRA: coste 0 y ningún ahorro
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// La forma es el ejemplo oficial de «What a refusal looks like» (`category:
+// "cyber"`, 412 de entrada, 0 de salida, `content: []`). La tabla de categorías
+// marca «Billed before any output: No» en `cyber` y `general_harms`, y la
+// categoría nula tampoco se cobra.
+
+const DETALLES_CYBER = {
+  type: "refusal",
+  category: "cyber",
+  explanation: "This request was declined because it could enable cyber harm.",
+};
+
+function negativaJsonCon(detalles: unknown, extra: Record<string, unknown> = {}) {
+  return { ...NEGATIVA_JSON, id: "msg_negativa_gratis", stop_details: detalles, ...extra };
+}
+
+function negativaSseCon(detalles: unknown): string {
+  return NEGATIVA_SSE.replace(JSON.stringify(STOP_DETAILS), JSON.stringify(detalles));
+}
+
+/** Una negativa A MITAD de respuesta: un bloque de texto emitido y salida contada. Se cobra. */
+const NEGATIVA_A_MITAD_SSE =
+  ev("message_start", {
+    type: "message_start",
+    message: { id: "msg_mitad", type: "message", role: "assistant", model: MODELO, content: [], stop_reason: null, usage: { input_tokens: ENTRADA, output_tokens: 1 } },
+  }) +
+  ev("content_block_start", { type: "content_block_start", index: 0, content_block: { type: "text", text: "" } }) +
+  ev("content_block_delta", { type: "content_block_delta", index: 0, delta: { type: "text_delta", text: "Sure, first" } }) +
+  ev("content_block_stop", { type: "content_block_stop", index: 0 }) +
+  ev("message_delta", { type: "message_delta", delta: { stop_reason: "refusal", stop_sequence: null, stop_details: DETALLES_CYBER }, usage: { output_tokens: 3 } }) +
+  ev("message_stop", { type: "message_stop" });
+
+describe("E7-ter · detectar la negativa NO cobrada (solo lo que la documentación respalda)", () => {
+  it("JSON de /v1/messages: cyber, general_harms y categoría nula no se cobran; bio, frontier_llm y reasoning_extraction sí", () => {
+    const con = (category: unknown) => JSON.stringify(negativaJsonCon({ type: "refusal", category, explanation: null }));
+    expect(negativaNoCobradaEnJson("/v1/messages", con("cyber"))).toBe(true);
+    expect(negativaNoCobradaEnJson("/v1/messages", con("general_harms"))).toBe(true);
+    expect(negativaNoCobradaEnJson("/v1/messages", con(null))).toBe(true);
+    // Controles: las cobradas siguen cobradas.
+    expect(negativaNoCobradaEnJson("/v1/messages", con("bio"))).toBe(false);
+    expect(negativaNoCobradaEnJson("/v1/messages", con("frontier_llm"))).toBe(false);
+    expect(negativaNoCobradaEnJson("/v1/messages", con("reasoning_extraction"))).toBe(false);
+  });
+
+  it("ante la duda, cobrada: categoría desconocida, sin stop_details, con salida, con bloques, con iteraciones o fuera de /v1/messages", () => {
+    const base = negativaJsonCon(DETALLES_CYBER);
+    // La lista «may change»: una categoría que la tabla no nombra no se da por gratis.
+    expect(negativaNoCobradaEnJson("/v1/messages", JSON.stringify(negativaJsonCon({ type: "refusal", category: "nueva", explanation: null })))).toBe(false);
+    expect(negativaNoCobradaEnJson("/v1/messages", JSON.stringify({ ...base, stop_details: undefined }))).toBe(false);
+    expect(negativaNoCobradaEnJson("/v1/messages", JSON.stringify(negativaJsonCon({ type: "refusal" })))).toBe(false);
+    // A mitad de respuesta: «bills the input tokens and the output already streamed».
+    expect(negativaNoCobradaEnJson("/v1/messages", JSON.stringify({ ...base, usage: { input_tokens: ENTRADA, output_tokens: 5 } }))).toBe(false);
+    expect(negativaNoCobradaEnJson("/v1/messages", JSON.stringify({ ...base, content: [{ type: "text", text: "Sure" }] }))).toBe(false);
+    // Con `fallbacks` o compactación cada intento se factura por su cuenta.
+    expect(
+      negativaNoCobradaEnJson("/v1/messages", JSON.stringify({ ...base, usage: { input_tokens: ENTRADA, output_tokens: 0, iterations: [{}, {}] } })),
+    ).toBe(false);
+    expect(negativaNoCobradaEnJson("/v1/messages", JSON.stringify({ ...base, stop_reason: "end_turn" }))).toBe(false);
+    expect(negativaNoCobradaEnJson("/v1/chat/completions", JSON.stringify(base))).toBe(false);
+    expect(negativaNoCobradaEnJson("/v1/messages", "{no es json")).toBe(false);
+  });
+
+  it("SSE: el observador la ve antes de cualquier salida, y no a mitad de respuesta ni sin el usage final", () => {
+    const gratis = new ObservadorSse();
+    const texto = negativaSseCon(DETALLES_CYBER);
+    for (let i = 0; i < texto.length; i += 29) gratis.observar(texto.slice(i, i + 29));
+    expect(gratis.negativa()).toBe(true);
+    expect(gratis.negativaNoCobrada()).toBe(true);
+
+    const cobrada = new ObservadorSse();
+    cobrada.observar(NEGATIVA_SSE); // frontier_llm
+    expect(cobrada.negativa()).toBe(true);
+    expect(cobrada.negativaNoCobrada()).toBe(false);
+
+    const aMitad = new ObservadorSse();
+    aMitad.observar(NEGATIVA_A_MITAD_SSE);
+    expect(aMitad.negativa()).toBe(true);
+    expect(aMitad.negativaNoCobrada()).toBe(false);
+
+    const cortado = new ObservadorSse();
+    cortado.observar(texto.slice(0, texto.indexOf("event: message_delta")));
+    expect(cortado.negativaNoCobrada()).toBe(false);
+  });
+});
+
+describe("E7-ter · el gateway: una negativa no cobrada se mide a 0 $ y no acredita nada", () => {
+  for (const tipo of ["json", "sse"] as const) {
+    it(`⛔ ${tipo === "json" ? "stream:false (JSON)" : "stream:true (SSE)"}: measured, tokens contados, coste 0 y netSavings 0`, async () => {
+      const lotes: unknown[][] = [];
+      const ingeridos: Record<string, unknown>[] = [];
+      const lineas: string[] = [];
+      const cuerpoDelProveedor = tipo === "json" ? JSON.stringify(negativaJsonCon(DETALLES_CYBER)) : negativaSseCon(DETALLES_CYBER);
+      const upstream = await upstreamQueNiega(cuerpoDelProveedor, tipo, { hits: 0 });
+      const ingesta = await ingestaFalsa(lotes, ingeridos);
+      const gw = await gatewayMedido(upstream, ingesta, lineas);
+      const r = await fetch(`http://127.0.0.1:${gw.puerto}/v1/messages`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ model: MODELO, max_tokens: 64, messages: [{ role: "user", content: "hola" }], stream: tipo === "sse" }),
+      });
+      // El cliente recibe la negativa tal cual.
+      expect(await r.text()).toBe(cuerpoDelProveedor);
+      await gw.cerrar();
+      await esperar(() => lotes.flat().length > 0);
+      const reg = (lotes.flat() as Record<string, unknown>[])[0]!;
+      expect(reg["basis"]).toBe("measured");
+      expect(reg["actualLlm"]).toBe(1);
+      // Los tokens son lo que dijo el proveedor; el dinero, lo que factura: 0.
+      expect(reg["actualInputTokens"]).toBe(ENTRADA);
+      // Antes: 412 × precio de entrada (0,001648 $).
+      expect(reg["actualCost"]).toBe(0);
+      expect(reg["baselineCost"]).toBe(0);
+      expect(reg["netSavings"]).toBe(0);
+      expect(ingeridos[0]!["actualCost"]).toBe(0);
+      expect(lineas.join("\n")).toContain("refusal the provider does not bill: measured at $0, no saving credited");
+    });
+  }
+
+  it("⛔ coalescencia: la gemela de una negativa no cobrada no acredita nada (antes: estimated al 100 % sobre 0 $)", async () => {
+    const lotes: unknown[][] = [];
+    const ingeridos: Record<string, unknown>[] = [];
+    const contador = { hits: 0 };
+    const respuesta = negativaSseCon(DETALLES_CYBER);
+    const upstream = await upstreamQueNiega(respuesta, "sse", contador, 150);
+    const ingesta = await ingestaFalsa(lotes, ingeridos);
+    const gw = await gatewayMedido(upstream, ingesta, [], { coalescer: true });
+    const cuerpo = JSON.stringify({ model: MODELO, max_tokens: 64, temperature: 0, messages: [{ role: "user", content: "hola" }], stream: true });
+    const pedir = () => fetch(`http://127.0.0.1:${gw.puerto}/v1/messages`, { method: "POST", body: cuerpo }).then((r) => r.text());
+    const p1 = pedir();
+    await new Promise((r) => setTimeout(r, 40));
+    const p2 = pedir();
+    expect(await Promise.all([p1, p2])).toEqual([respuesta, respuesta]);
+    expect(contador.hits).toBe(1);
+    await gw.cerrar();
+    await esperar(() => lotes.flat().length >= 2);
+    const regs = lotes.flat() as Record<string, unknown>[];
+    const medida = regs.find((r) => r["basis"] === "measured")!;
+    const gemela = regs.find((r) => r["cacheResult"] === "singleflight")!;
+    expect(medida["actualCost"]).toBe(0);
+    expect(gemela["avoidedLlm"]).toBe(1);
+    expect(gemela["basis"]).toBe("estimated");
+    expect(gemela["baselineCost"]).toBe(0);
+    expect(gemela["netSavings"]).toBe(0);
+    expect(ingeridos.find((r) => r["requestId"] === gemela["requestId"])!["netSavings"]).toBe(0);
+  });
+
+  it("⛔ con palancas (rebaja de TTL y elisión atribuible) una negativa no cobrada no acredita ni un céntimo; control: la cobrada sí", () => {
+    const uso = {
+      input_tokens: ENTRADA,
+      output_tokens: 0,
+      cache_creation_input_tokens: 2048,
+      cache_creation: { ephemeral_5m_input_tokens: 2048, ephemeral_1h_input_tokens: 0 },
+    };
+    const medido = costeMedido(MODELO, uso, Date.parse("2026-09-28T12:00:00Z"))!;
+    const rebaja = { rebajadas: 1, yaEran5m: 0, herramientaDeServidor: false };
+    const elision = { borrados: 1, tokensLimpiados: 5000, tokensLimpiadosToolUses: 5000, atribuible: true };
+    type Coste = { cost: { baselineEstimate: number; actual: number; netSavings: number; basis: string; eliminatedInputFloorCost?: number } };
+    // Control: la MISMA respuesta cobrada acredita la rebaja y el suelo de la elisión.
+    const cobrada = informeMedido("req-cobrada", MODELO, medido, undefined, elision, rebaja) as unknown as Coste;
+    expect(cobrada.cost.baselineEstimate).toBeGreaterThan(cobrada.cost.actual);
+    expect(cobrada.cost.netSavings).toBeGreaterThan(0);
+    expect(cobrada.cost.eliminatedInputFloorCost).toBeGreaterThan(0);
+    // Sin cobro: 0 $ y nada que acreditar.
+    const gratis = informeMedido("req-gratis", MODELO, medido, undefined, elision, rebaja, null, false, false, true) as unknown as Coste;
+    expect(gratis.cost).toEqual({ baselineEstimate: 0, actual: 0, netSavings: 0, basis: "measured" });
+  });
+});
+
+describe("E7-ter · el SDK: una negativa no cobrada se mide a 0 $ y no acredita nada", () => {
+  const NEGATIVA_GRATIS_JSON = negativaJsonCon(DETALLES_CYBER);
+  const NEGATIVA_GRATIS_SSE = negativaSseCon(DETALLES_CYBER);
+
+  function esperarGratis(r: SavingsResult): void {
+    expect(r.finishReason).toBe("content_filter");
+    expect(r.report.cost.basis).toBe("measured");
+    expect(r.report.calls).toMatchObject({ actualLlm: 1, avoidedLlm: 0 });
+    // Los tokens, contados; el dinero, 0.
+    expect(r.report.tokens.actualInput).toBe(ENTRADA);
+    expect(r.report.cost.actual).toBe(0);
+    expect(r.report.cost.baselineEstimate).toBe(0);
+    expect(r.report.cost.netSavings).toBe(0);
+    expect(r.report.traces.some((t) => t.stage === "cost" && t.outcome.startsWith("unbilled refusal"))).toBe(true);
+  }
+
+  it("⛔ generate() y generateStream() con el proveedor de Anthropic: coste 0 (antes: 412 × precio)", async () => {
+    const s = proveedorQueNiega(NEGATIVA_GRATIS_JSON, NEGATIVA_GRATIS_SSE);
+    const layer = capa(new AnthropicProvider({ fetchImpl: s.fetchImpl }));
+    esperarGratis(await layer.generate(PETICION));
+    esperarGratis(await layer.generateStream(PETICION).result);
+    // Y sigue sin cachearse: cada repetición vuelve a llamar.
+    expect(s.enviados).toHaveLength(2);
+  });
+
+  it("control: la negativa COBRADA (frontier_llm) y una a mitad de respuesta siguen midiéndose con su coste", async () => {
+    const s = proveedorQueNiega(NEGATIVA_JSON, NEGATIVA_A_MITAD_SSE);
+    const layer = capa(new AnthropicProvider({ fetchImpl: s.fetchImpl }));
+    const cobrada = await layer.generate(PETICION);
+    expect(cobrada.report.cost.actual).toBeCloseTo(COSTE, 9);
+    const aMitad = await layer.generateStream(PETICION).result;
+    expect(aMitad.report.cost.actual).toBeCloseTo((ENTRADA / 1000) * PRECIO.inputPer1k + (3 / 1000) * PRECIO.outputPer1k, 9);
+    expect(aMitad.report.traces.some((t) => t.stage === "cost" && t.outcome.startsWith("unbilled refusal"))).toBe(false);
+  });
+
+  it("⛔ singleflight: el seguidor de una negativa no cobrada no acredita un ahorro estimado sobre 0 $", async () => {
+    let soltar!: () => void;
+    const barrera = new Promise<void>((r) => (soltar = r));
+    const fetchImpl = (async () => {
+      await barrera;
+      return new Response(JSON.stringify(NEGATIVA_GRATIS_JSON), { status: 200, headers: { "content-type": "application/json" } });
+    }) as unknown as typeof fetch;
+    const layer = capa(new AnthropicProvider({ fetchImpl }));
+    const lider = layer.generate(PETICION);
+    const seguidor = layer.generate(PETICION);
+    await new Promise((r) => setTimeout(r, 20));
+    soltar();
+    const [a, b] = await Promise.all([lider, seguidor]);
+    const medida = [a, b].find((r) => r.report.calls.actualLlm === 1)!;
+    const evitada = [a, b].find((r) => r.report.calls.actualLlm === 0)!;
+    esperarGratis(medida);
+    expect(evitada.report.cache.result).toBe("singleflight");
+    expect(evitada.report.cost.basis).toBe("estimated");
+    // Antes: baseline estimado > 0 y netSavings 1 (una llamada «evitada» de 0 $).
+    expect(evitada.report.cost.baselineEstimate).toBe(0);
+    expect(evitada.report.cost.actual).toBe(0);
+    expect(evitada.report.cost.netSavings).toBe(0);
+  });
+
+  it("⛔ el adaptador del SDK oficial (messages.create y messages.stream): coste 0 y netSavings 0", async () => {
+    const restaurar = prohibirLaRed();
+    try {
+      const f = (async (_url: string | URL, init?: RequestInit) => {
+        const pedido = JSON.parse(String(init?.body ?? "")) as { stream?: boolean };
+        return pedido.stream
+          ? new Response(NEGATIVA_GRATIS_SSE, { status: 200, headers: { "content-type": "text/event-stream", "request-id": "req_neg" } })
+          : new Response(JSON.stringify(NEGATIVA_GRATIS_JSON), { status: 200, headers: { "content-type": "application/json", "request-id": "req_neg" } });
+      }) as unknown as typeof fetch;
+      const { opciones, registros } = medicion();
+      const s = anthropicSavings({ silenceWarnings: true, ...opciones });
+      const c = new Anthropic({ apiKey: "test-not-a-key", fetch: f, middleware: [s.middleware], maxRetries: 0 });
+      const pedido = { model: MODELO, max_tokens: 64, temperature: 0, messages: [{ role: "user" as const, content: "Write a keylogger." }] };
+      const m = await c.messages.create(pedido);
+      expect(m.stop_reason).toBe("refusal");
+      const fm = await c.messages.stream(pedido).finalMessage();
+      for (const informe of [s.reportFor(m)!, s.reportFor(fm)!]) {
+        expect(informe.cost.basis).toBe("measured");
+        expect(informe.tokens.actualInput).toBe(ENTRADA);
+        expect(informe.cost.actual).toBe(0);
+        expect(informe.cost.baselineEstimate).toBe(0);
+        expect(informe.cost.netSavings).toBe(0);
+      }
+      await vaciar();
+      expect(registros.length).toBeGreaterThanOrEqual(1);
+      expect(registros.every((r) => r["actualCost"] === 0 && r["netSavings"] === 0)).toBe(true);
+      s.close();
+    } finally {
+      restaurar();
+    }
+  });
+
+  it("⛔ el ledger: con tokens quitados (ahorro estimado) y lo servido siendo una negativa no cobrada, nada que acreditar; control sin ella", () => {
+    const precio = { inputPer1k: PRECIO.inputPer1k, outputPer1k: PRECIO.outputPer1k, cachedInputPer1k: PRECIO.cachedInputPer1k };
+    const preparar = (): SavingsLedger => {
+      const l = new SavingsLedger();
+      l.actualLlm = 1;
+      l.actualInput = ENTRADA;
+      l.sentInputLocal = ENTRADA;
+      l.removedInputLocal = 300; // la compresión quitó 300 tokens
+      return l;
+    };
+    const control = preparar().estimateCost(precio);
+    expect(control.basis).toBe("estimated");
+    expect(control.baselineEstimate).toBeGreaterThan(control.actual);
+    const l = preparar();
+    l.unbilledCall({ inputTokens: ENTRADA, outputTokens: 0 });
+    l.servedUnbilledRefusal = true;
+    expect(l.estimateCost(precio)).toEqual({ baselineEstimate: 0, actual: 0, netSavings: 0, basis: "measured" });
   });
 });

@@ -401,6 +401,30 @@ export class SavingsLedger {
   // con el `CostModel` que recibe, y el informe publica la aritmética completa
   // para que el cliente recalcule `baselineEstimate` sin creernos.
 
+  // NEGATIVAS QUE EL PROVEEDOR NO COBRA (decisión del dueño, 2026-09-28). Una
+  // negativa de Anthropic antes de cualquier salida en una categoría que su
+  // tabla marca «no cobrada» trae `usage` con tokens, pero la factura es 0 $.
+  // Sus tokens siguen en `actualInput`/`actualOutput` (es lo que contó el
+  // proveedor), y aquí se apartan para tarifarlos a 0. Y si lo SERVIDO es esa
+  // negativa, la petición no acredita ningún ahorro: ni medido, ni estimado, ni
+  // por referencia. Tarifarla a `usage` × precio habría dejado que una palanca
+  // acreditara ahorro sobre una petición de 0 $.
+  /** Input tokens of calls the provider documents as not billed; already included in `actualInput`. */
+  unbilledInput = 0;
+  /** Output tokens of those calls; already included in `actualOutput`. */
+  unbilledOutput = 0;
+  /** Provider-cached input tokens of those calls; already included in `providerCachedInput`. */
+  unbilledCachedInput = 0;
+  /** True when the answer served is a refusal the provider does not bill: no saving is credited. */
+  servedUnbilledRefusal = false;
+
+  /** Record a call the provider documents as not billed: its tokens stay counted and are priced at 0. */
+  unbilledCall(usage: { inputTokens: number; outputTokens: number; cachedInputTokens?: number }): void {
+    this.unbilledInput += Math.max(0, usage.inputTokens);
+    this.unbilledOutput += Math.max(0, usage.outputTokens);
+    this.unbilledCachedInput += Math.max(0, usage.cachedInputTokens ?? 0);
+  }
+
   /** Set when an avoided call is valued against the provider counter of an identical call that ran. */
   reference: ReferenceCredit | null = null;
   /** Set when an avoided cache or coalesced hit could not be valued by reference: why it stays estimated. */
@@ -574,7 +598,11 @@ export class SavingsLedger {
     // Ahí sí se puede demostrar que el acierto lo provocó la capa. Aquí no, y
     // por eso aquí se cuenta y no se cobra.
     const cachedRate = model.cachedInputPer1k ?? model.inputPer1k;
-    const cached = Math.min(this.providerCachedInput, this.actualInput);
+    // Lo que el proveedor no cobró sale de lo facturable: sus tokens siguen
+    // contados en el informe, pero valen 0 (ver `unbilledCall`).
+    const entradaFacturada = Math.max(0, this.actualInput - this.unbilledInput);
+    const salidaFacturada = Math.max(0, this.actualOutput - this.unbilledOutput);
+    const cached = Math.min(Math.max(0, this.providerCachedInput - this.unbilledCachedInput), entradaFacturada);
     const precioEntrada = (facturable: number): number =>
       (Math.max(0, facturable - cached) / 1000) * model.inputPer1k +
       (cached / 1000) * cachedRate;
@@ -590,20 +618,29 @@ export class SavingsLedger {
     // La prima que el proveedor cobra por su cuenta (ver el campo): a los dos
     // lados, y solo en una llamada que corrió — en una evitada no hubo escritura.
     const primaDelProveedor = ranCall ? this.providerCacheWritePremiumUsd : 0;
-    const baselineEstimate = r
+    const baselineEstimate = this.servedUnbilledRefusal
+      ? 0
+      : r
       ? r.tierFactor *
         ((this.baselineInput / 1000) * r.cachedInputPer1k +
           (this.baselineOutput / 1000) * r.outputPer1k)
       : precioEntrada(this.baselineInput) + (baselineOutputHonesto / 1000) * model.outputPer1k + primaDelProveedor;
     if (r) basis = baselineEstimate > 0 ? "reference" : "estimated";
+    // Lo servido es una negativa que no se cobró: nada que acreditar. En una
+    // llamada que corrió el contador es del proveedor (0 $ documentado), así que
+    // sigue siendo `measured` salvo que faltara el contador.
+    if (this.servedUnbilledRefusal) {
+      if (r) basis = "estimated";
+      else if (ranCall && basis === "estimated") basis = "measured";
+    }
     // `extraCostUsd` SOLO aquí, y ésa es toda la asimetría: el intento con el
     // modelo barato es dinero que el cliente pagó de verdad, así que tiene que
     // estar en `actual`; y es una llamada que puso la capa, así que no puede
     // estar en aquello contra lo que se compara. Una petición que escaló sale con
     // ahorro NEGATIVO, que es exactamente lo que le pasó a su factura.
     const actual =
-      precioEntrada(this.actualInput) +
-      (this.actualOutput / 1000) * model.outputPer1k +
+      precioEntrada(entradaFacturada) +
+      (salidaFacturada / 1000) * model.outputPer1k +
       this.extraCostUsd +
       // Ya viene en dólares, tarifada con el precio del modelo que marcó — ver
       // `cacheWritePremiumUsd`. Con multiplicador 1 (OpenAI, proveedor
