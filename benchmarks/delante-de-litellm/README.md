@@ -41,6 +41,12 @@ verdad (las guarda la evidencia).
 
 ## Resultado del 2026-09-27 (LiteLLM 1.102.1, Apple M4 Pro, Node 25.9.0)
 
+> Es la evidencia fechada, ANTERIOR a los cierres del 2026-09-28. Lo que dice el
+> código de hoy, y exigen el test de CI y `e2e.ts`: en S1 y S3 (y S4) la
+> repetición sale `estimated` (`unofficial-origin`) y **no** entra en la base, y
+> en S8 el gateway no acredita la rebaja. Falta volver a pasar `pnpm litellm:e2e`
+> contra LiteLLM de verdad para tener la evidencia nueva.
+
 | # | Escenario | Resultado |
 |---|---|---|
 | S1 | SDK → LiteLLM (Chat Completions), `openai/gpt-4o-mini` con `stripProviderPrefix` | 1.ª `measured`, 2.ª `reference` (acierto exacto); al upstream llega **una** |
@@ -53,11 +59,13 @@ verdad (las guarda la evidencia).
 | S7 | `cache_control` con `ttl: "1h"` a través de LiteLLM | Llega intacto al upstream |
 | S8 | Palanca de TTL del gateway con LiteLLM de upstream | El `ttl` rebajado a `5m` cruza LiteLLM hasta el upstream |
 
-**(a) se cumple** en los dos dialectos. **(b) se cumple solo en el gateway.** Tres
-huecos, fijados en el test tal como se comportan hoy (no cambian facturación en
-este PR; los decide el dueño):
+**(a) se cumple** en los dos dialectos. **(b)** el 2026-09-27 se cumplía solo en
+el gateway; desde el 2026-09-28 se cumple **en los dos**. Los tres huecos que
+encontró la prueba están fijados en el test; el dueño cerró el 1 y el 2 el
+2026-09-28 (#363 y #362) y el test y `e2e.ts` exigen ya el comportamiento nuevo.
+El 3 sigue abierto:
 
-1. **SDK — CERRADO el 2026-09-28** (el dueño: alinear el SDK con el gateway). El
+1. **SDK — CERRADO el 2026-09-28** (#363; el dueño: alinear el SDK con el gateway). El
    SDK decidía el origen oficial por el host solo para el tier y la caché
    explícita; la regla de la referencia (`src/pipeline/referencia.ts`) no lo
    miraba. Detrás de LiteLLM, una repetición con un id del catálogo (o con
@@ -69,11 +77,18 @@ este PR; los decide el dueño):
    la repetición `estimated`, fuera de la base, como el gateway
    (`esUpstreamOficial`). La tabla de arriba es la de la evidencia del
    2026-09-27, anterior al cambio.
-2. **Gateway, palanca de TTL:** su ahorro `measured` (prima de 1 h frente a 5 min,
-   a precio de lista) solo se excluye con tráfico de suscripción, no con un
-   upstream no oficial. El test lo demuestra con un upstream que declara
-   escrituras a 5 min detrás del doble.
-3. **Caché de LiteLLM:** un acierto llega como respuesta normal con el `usage`
+2. **Gateway, palanca de TTL — CERRADO el 2026-09-28** (#362). Su ahorro
+   `measured` (prima de 1 h frente a 5 min, a precio de lista) solo se excluía
+   con tráfico de suscripción, no con un upstream no oficial. Ahora detrás de un
+   upstream no oficial (`esUpstreamOficial`) el gateway aplica la palanca, mide
+   el coste y no acredita nada —ni la rebaja de TTL, ni el modelo hermano, ni el
+   suelo de la elisión—, y la línea de log lo dice («unofficial upstream: lever
+   applied, saving not credited»). El test lo demuestra con un upstream que
+   declara escrituras a 5 min detrás del doble (ahorro 0, fuera de la base); en
+   `e2e.ts`, S8 exige esa línea, porque el upstream falso no declara escrituras
+   y el ahorro 0 no lo probaría por sí solo. La fila S8 de la tabla sigue siendo
+   cierta: el `ttl` rebajado cruza LiteLLM igual.
+3. **Caché de LiteLLM — ABIERTO:** un acierto llega como respuesta normal con el `usage`
    original; el SDK lo reporta `measured` a precio completo. Hasta el 2026-09-28
    dejaba además un registro de referencia con ese contador; desde el cierre del
    hueco 1, no. No mueve la comisión (lo medido sin palanca tiene ahorro 0), pero
