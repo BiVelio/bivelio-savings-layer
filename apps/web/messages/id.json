@@ -264,7 +264,7 @@
       "statusNext": "berikutnya",
       "statusPending": "menunggu",
       "nextLabel": "Berikutnya: {label}",
-      "installComment": "# tempatkan di depan penyedia Anda — prompt Anda tidak pernah keluar dari infrastruktur Anda",
+      "installComment": "# mendeteksi stack Anda dan mencetak cara menyambungkannya dengan tepat — prompt Anda tidak pernah keluar dari infrastruktur Anda",
       "hintLicense": "Tempel kunci lisensi BiVelio Anda agar SDK membuka fitur terkelola dan melaporkan penggunaan.",
       "hintFirstReport": "Bungkus panggilan penyedia yang sebenarnya — SavingsReport pertama tiba di sini dan meteran Anda menjadi aktif.",
       "hintDefault": "Ini terbuka begitu baris usage_daily pertama Anda tiba."

@@ -264,7 +264,7 @@
       "statusNext": "següent",
       "statusPending": "pendent",
       "nextLabel": "Següent: {label}",
-      "installComment": "# col·loca'l davant del teu proveïdor — els teus prompts mai no surten de la teva infraestructura",
+      "installComment": "# detecta la teva pila i imprimeix la connexió exacta — els teus prompts mai no surten de la teva infraestructura",
       "hintLicense": "Enganxa la teva clau de llicència de BiVelio perquè el SDK desbloquegi les funcions gestionades i informi de l'ús.",
       "hintFirstReport": "Embolcalla una crida real al proveïdor: el primer SavingsReport arriba aquí i el teu mesurador s'activa.",
       "hintDefault": "Això es desbloqueja en el moment que arriba la teva primera fila usage_daily."

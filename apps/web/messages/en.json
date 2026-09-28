@@ -264,7 +264,7 @@
       "statusNext": "next",
       "statusPending": "pending",
       "nextLabel": "Next: {label}",
-      "installComment": "# drop it in front of your provider — your prompts never leave your infra",
+      "installComment": "# detects your stack and prints the exact wiring — your prompts never leave your infra",
       "hintLicense": "Paste your BiVelio license key so the SDK unlocks the managed features and reports usage.",
       "hintFirstReport": "Wrap a real provider call — the first SavingsReport lands here and your meter goes live.",
       "hintDefault": "This unlocks the moment your first usage_daily row lands."

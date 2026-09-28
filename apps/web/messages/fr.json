@@ -264,7 +264,7 @@
       "statusNext": "suivant",
       "statusPending": "en attente",
       "nextLabel": "Suivant : {label}",
-      "installComment": "# placez-le devant votre fournisseur — vos prompts ne quittent jamais votre infrastructure",
+      "installComment": "# détecte votre stack et affiche le branchement exact — vos prompts ne quittent jamais votre infrastructure",
       "hintLicense": "Collez votre clé de licence BiVelio pour que le SDK débloque les fonctionnalités gérées et rapporte l'utilisation.",
       "hintFirstReport": "Encapsulez un vrai appel au fournisseur — le premier SavingsReport arrive ici et votre compteur s'active.",
       "hintDefault": "Cela se débloque dès que votre première ligne usage_daily arrive."

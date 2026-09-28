@@ -264,7 +264,7 @@
       "statusNext": "siguiente",
       "statusPending": "pendiente",
       "nextLabel": "Siguiente: {label}",
-      "installComment": "# colócalo delante de tu proveedor — tus prompts nunca salen de tu infraestructura",
+      "installComment": "# detecta tu pila e imprime el cableado exacto — tus prompts nunca salen de tu infraestructura",
       "hintLicense": "Pega tu clave de licencia de BiVelio para que el SDK desbloquee las funciones gestionadas y reporte el uso.",
       "hintFirstReport": "Envuelve una llamada real al proveedor — el primer SavingsReport llega aquí y tu medidor se activa.",
       "hintDefault": "Esto se desbloquea en cuanto llegue tu primera fila usage_daily."
