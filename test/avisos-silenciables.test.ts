@@ -1,3 +1,4 @@
+import { generateKeyPairSync, sign } from "node:crypto";
 import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -8,6 +9,7 @@ import { OpenAICompatibleProvider } from "../src/providers/openai-compatible.js"
 import { MockProvider } from "../src/providers/mock.js";
 import { RevocationPoller } from "../src/license/poller.js";
 import { RevocationSnapshot } from "../src/license/revocation.js";
+import { LicenseRefresher } from "../src/license/refresher.js";
 import { reiniciarAvisos } from "../src/util/warn-once.js";
 import type { Provider, ProviderRequest } from "../src/providers/types.js";
 import type { JsonSchema, ToolDescriptor } from "../src/contracts/types.js";
@@ -269,6 +271,169 @@ MCowBQYDK2VwAyEAWBiklf0kmDIVmM7nMiCxwiEAkwQIiqWGuRiRDJonsFY=
     await p.pollOnce();
     await p.pollOnce();
     expect(avisos).toEqual([]);
+  });
+});
+
+// ── La excepción: la credencial de renovación rechazada ─────────────────────
+
+/**
+ * EL ÚNICO AVISO QUE `silenceWarnings` NO CALLA.
+ *
+ * #366 dejó abierta la pregunta y el dueño la cerró: cuando la recogida del
+ * token renovado devuelve 401/403/404, el SDK va a dejar de funcionar al acabar
+ * la gracia, y el fallo ocurre dentro del SDK, donde la observabilidad del
+ * cliente no llega. Callarlo sería dejar que el cliente se entere por el
+ * LicenseError del día ~45. Sale igualmente, una vez por causa y por capa —no
+ * en cada vuelta del renovador— y sin la clave dentro.
+ */
+describe("⛔ la credencial de renovación rechazada NO se calla con `silenceWarnings`", () => {
+  const DIA = 86400;
+  const EMITIDO = 1_800_000_000;
+  const par = generateKeyPairSync("ed25519", {
+    publicKeyEncoding: { type: "spki", format: "pem" },
+    privateKeyEncoding: { type: "pkcs8", format: "pem" },
+  });
+  const b64 = (b: Buffer | string) => Buffer.from(b).toString("base64url");
+  const cabeza = b64(JSON.stringify({ alg: "EdDSA", typ: "BVL", v: 1 }));
+  const cuerpo = b64(
+    JSON.stringify({
+      plan: "pro",
+      seats: 1,
+      features: ["semantic_cache"],
+      grace_days: 14,
+      jti: "v",
+      org_id: "org-1",
+      issued_at: EMITIDO,
+      expires_at: EMITIDO + 30 * DIA,
+    }),
+  );
+  // Día 40: el token está en gracia, así que el renovador sale a buscar.
+  const TOKEN = `${cabeza}.${cuerpo}.${b64(sign(null, Buffer.from(`${cabeza}.${cuerpo}`), par.privateKey))}`;
+  const AHORA_MS = (EMITIDO + 40 * DIA) * 1000;
+  // Una clave con pinta de real (inventada para el test): es lo que NO puede
+  // aparecer en el aviso, ni entera ni a trozos.
+  const CLAVE_SERVICIO = "bvk_live_Q7xK2mP9vR4tW8zN3bJ6hF1cY5";
+  const CREDENCIAL = /automatic pickup of the renewed license is failing with HTTP/;
+
+  const cp = (status: number) =>
+    vi.fn(async (url: string) =>
+      String(url).includes("/api/license/current")
+        ? json({}, status)
+        : json({}, 503), // revocaciones: el sondeo conserva su snapshot, sin aviso al primer fallo
+    ) as unknown as typeof fetch;
+  const llamadasDeRecogida = (f: typeof fetch): number =>
+    (f as unknown as { mock: { calls: [string][] } }).mock.calls.filter(([u]) => String(u).includes("/api/license/current"))
+      .length;
+
+  const renovador = (fetchImpl: typeof fetch, extra: Record<string, unknown> = {}) =>
+    new LicenseRefresher({
+      url: "https://cp.test/api/license/current",
+      serviceAccountKey: CLAVE_SERVICIO,
+      publicKey: par.publicKey,
+      initialToken: TOKEN,
+      onNewToken: () => {},
+      fetchImpl,
+      now: () => AHORA_MS,
+      ...extra,
+    } as never);
+
+  /** La capa entera, con un renovador que da una vuelta cada 5 ms. */
+  const capa = (fetchImpl: typeof fetch, extra: Record<string, unknown> = {}) =>
+    createSavingsLayer({
+      provider: new MockProvider(),
+      licenseKey: TOKEN,
+      licensePublicKey: par.publicKey,
+      licenseServerUrl: "https://cp.test",
+      serviceAccountKey: CLAVE_SERVICIO,
+      metering: { enabled: false },
+      licenseFetch: fetchImpl,
+      licenseRefresh: { intervalMs: 5 },
+      licenseRevocation: { maxStalenessSeconds: 365 * DIA },
+      now: () => AHORA_MS,
+      // Un aviso callable más en la misma capa: la verificación con una tasa
+      // imposible. Prueba que el interruptor sigue callando todo lo demás.
+      verification: { sampleRate: 5 },
+      ...extra,
+    });
+
+  it("por la vía pública: con `silenceWarnings: true` sale igualmente, UNA vez en varias renovaciones, y lo demás calla", async () => {
+    const f = cp(401);
+    const c = capa(f, { silenceWarnings: true });
+    try {
+      await vi.waitFor(() => expect(llamadasDeRecogida(f)).toBeGreaterThanOrEqual(4));
+    } finally {
+      c.close();
+    }
+    expect(avisos.filter((a) => CREDENCIAL.test(a))).toHaveLength(1);
+    // Y NADA más: el aviso de la verificación inválida sí obedece al interruptor.
+    expect(avisos).toHaveLength(1);
+  });
+
+  it("control: sin el interruptor, el aviso callable de la misma capa SÍ sale (el test de arriba no pasa por vacío)", async () => {
+    const f = cp(401);
+    const c = capa(f);
+    try {
+      await vi.waitFor(() => expect(llamadasDeRecogida(f)).toBeGreaterThanOrEqual(4));
+    } finally {
+      c.close();
+    }
+    expect(avisos.filter((a) => CREDENCIAL.test(a))).toHaveLength(1);
+    expect(avisos.length).toBeGreaterThan(1);
+  });
+
+  it("el renovador suelto: ni pasándole `silenceWarnings` a la fuerza se calla, y sale una vez en cinco vueltas", async () => {
+    const f = cp(401);
+    const r = renovador(f, { silenceWarnings: true, silenciarAvisos: true });
+    for (let i = 0; i < 5; i++) await r.checkNow();
+    expect(llamadasDeRecogida(f)).toBe(5);
+    expect(avisos.filter((a) => CREDENCIAL.test(a))).toHaveLength(1);
+    expect(avisos[0]).toContain("HTTP 401");
+  });
+
+  it("una vez por CAUSA: 401 y 403 son dos avisos, repetir cualquiera de los dos no añade ninguno", async () => {
+    let status = 401;
+    const f = vi.fn(async () => json({}, status)) as unknown as typeof fetch;
+    const r = renovador(f);
+    for (const s of [401, 401, 403, 403, 401, 403]) {
+      status = s;
+      await r.checkNow();
+    }
+    expect(avisos.filter((a) => CREDENCIAL.test(a))).toHaveLength(2);
+    expect(avisos.some((a) => a.includes("HTTP 401"))).toBe(true);
+    expect(avisos.some((a) => a.includes("HTTP 403"))).toBe(true);
+  });
+
+  it("un 5xx NO es credencial rechazada: se cura solo y no avisa", async () => {
+    const r = renovador(cp(503));
+    for (let i = 0; i < 3; i++) await r.checkNow();
+    expect(avisos).toEqual([]);
+  });
+
+  it("⛔ el texto no contiene la clave de servicio, ni entera ni ningún trozo de 6 caracteres", async () => {
+    const r = renovador(vi.fn(async () => json({}, 401)) as unknown as typeof fetch);
+    await r.checkNow();
+    expect(avisos).toHaveLength(1);
+    const [aviso] = avisos;
+    // La parte secreta: todo lo que va detrás del prefijo público `bvk_live_`.
+    const secreto = CLAVE_SERVICIO.slice("bvk_live_".length);
+    const trozos: string[] = [];
+    for (let i = 0; i + 6 <= secreto.length; i++) trozos.push(secreto.slice(i, i + 6));
+    expect(aviso).not.toContain(CLAVE_SERVICIO);
+    expect(trozos.filter((t) => aviso!.includes(t))).toEqual([]);
+    expect(aviso).not.toMatch(/Bearer/i);
+  });
+
+  it("⛔ verja: nadie cablea el interruptor al renovador", () => {
+    const leer = (ruta: string): string => readFileSync(fileURLToPath(new URL(ruta, import.meta.url)), "utf8");
+    const renov = leer("../src/license/refresher.ts");
+    // Ni opción en su interfaz ni lectura en el código (en los comentarios sí se nombra).
+    expect(renov).not.toMatch(/^\s*(silenceWarnings|silenciarAvisos)\??\s*:/m);
+    expect(renov).not.toMatch(/\.(silenceWarnings|silenciarAvisos)\b/);
+    const create = leer("../src/pipeline/create.ts");
+    const inicio = create.indexOf("new LicenseRefresher(");
+    expect(inicio).toBeGreaterThan(-1);
+    const bloque = create.slice(inicio, create.indexOf("refresher.start()", inicio));
+    expect(bloque).not.toMatch(/silenceWarnings|silenciarAvisos/);
   });
 });
 

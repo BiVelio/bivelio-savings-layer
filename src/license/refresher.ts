@@ -64,7 +64,8 @@ export class LicenseRefresher {
   private enVuelo = false;
   private parado = false;
   private controller: AbortController | null = null;
-  private avisadoDeCredencial = false;
+  /** Estados HTTP de credencial rechazada ya avisados por ESTA instancia. */
+  private readonly credencialAvisada = new Set<number>();
   /** Unix s de la caducidad del token vigente; 0 si el inicial no verifica
    *  (entonces se intenta recoger uno bueno desde ya). */
   private currentExpiresAt: number;
@@ -103,6 +104,40 @@ export class LicenseRefresher {
     this.controller = null;
   }
 
+  /**
+   * LA CREDENCIAL DE LA RECOGIDA HA SIDO RECHAZADA (401/403/404).
+   *
+   * Una credencial mala NO se cura sola, a diferencia de un 5xx. Sin este aviso,
+   * rotar la clave de servicio y olvidar actualizarla daba 401 en silencio cada
+   * hora durante semanas y el único síntoma era el LicenseError del día ~45, que
+   * no apunta a la causa.
+   *
+   * ⛔ NO OBEDECE `silenceWarnings`, Y ES A PROPÓSITO (decisión del dueño). Los
+   * avisos que calla el interruptor señalan algo que se degrada sin romper nada;
+   * este anuncia que el SDK DEJARÁ DE FUNCIONAR cuando acabe la gracia, y la
+   * observabilidad propia del cliente no lo ve: el 401 ocurre dentro del SDK y
+   * nunca llega a sus métricas. Por eso esta clase ni recibe el interruptor, y
+   * un test en `avisos-silenciables.test.ts` falla si alguien se lo cablea.
+   *
+   * Sale UNA vez por estado y por instancia, no en cada vuelta: con la cadencia
+   * por defecto (1 h) repetirlo sería spam durante semanas. Estados distintos son
+   * causas distintas —clave rotada (401), clave de otra org (403), URL
+   * equivocada (404)— y cada uno se avisa una vez.
+   *
+   * El texto NUNCA incluye la clave de servicio, ni un trozo: solo el estado y la
+   * URL. Hay un test que lo comprueba.
+   */
+  private avisarCredencialRechazada(status: number): void {
+    if (this.credencialAvisada.has(status)) return;
+    this.credencialAvisada.add(status);
+    console.warn(
+      `[bv-sala] automatic pickup of the renewed license is failing with HTTP ${status} ` +
+        `at ${this.opts.url}. Check 'serviceAccountKey' (rotated? from another organization?) and ` +
+        `'licenseServerUrl': until this works, the token will NOT renew itself and the SDK will ` +
+        `stop operating when the grace period ends. (This warning is not muted by 'silenceWarnings'.)`,
+    );
+  }
+
   private nowSeconds(): number {
     return Math.floor((this.opts.now ? this.opts.now() : Date.now()) / 1000);
   }
@@ -136,19 +171,7 @@ export class LicenseRefresher {
         },
       });
       if (!res.ok) {
-        // Una credencial mala NO se cura sola, a diferencia de un 5xx. Sin este
-        // aviso, rotar la clave de servicio y olvidar actualizarla daba 401 en
-        // silencio cada hora durante semanas y el único síntoma era el
-        // LicenseError del día ~45, que no apunta a la causa.
-        if ((res.status === 401 || res.status === 403 || res.status === 404) && !this.avisadoDeCredencial) {
-          this.avisadoDeCredencial = true;
-          console.warn(
-            `[bv-sala] automatic pickup of the renewed license is failing with HTTP ${res.status} ` +
-              `at ${this.opts.url}. Check 'serviceAccountKey' (rotated? from another organization?) and ` +
-              `'licenseServerUrl': until this works, the token will NOT renew itself and the SDK will ` +
-              `stop operating when the grace period ends.`,
-          );
-        }
+        if (res.status === 401 || res.status === 403 || res.status === 404) this.avisarCredencialRechazada(res.status);
         return false;
       }
       const body = (await res.json()) as { token?: unknown };
