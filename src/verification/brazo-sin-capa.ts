@@ -1,4 +1,5 @@
 import type { SavingsRequest } from "../contracts/types.js";
+import { topeDeSalida } from "../contracts/tope-de-salida.js";
 import type { ProviderRequest } from "../providers/types.js";
 
 // LA PETICIÓN QUE EL CLIENTE MANDARÍA SIN LA CAPA (D7): el brazo B0 del banco
@@ -25,9 +26,7 @@ export function construirPeticionSinCapa(request: SavingsRequest): ProviderReque
     messages,
     ...(request.tools && request.tools.length > 0 ? { tools: [...request.tools] } : {}),
     ...(request.response?.schema ? { schema: request.response.schema } : {}),
-    ...(request.response?.maxOutputTokens != null
-      ? { maxOutputTokens: request.response.maxOutputTokens }
-      : {}),
+    ...(topeDeSalida(request) != null ? { maxOutputTokens: topeDeSalida(request)! } : {}),
     ...(request.temperature !== undefined ? { temperature: request.temperature } : {}),
     ...(request.seed !== undefined ? { seed: request.seed } : {}),
   };

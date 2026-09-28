@@ -222,8 +222,10 @@ export function renderizarDocumento(a: Artefacto, meta: MetaDocumento): string {
       "downstream flags it; a missed reuse only costs the provider call you would have made anyway.",
   );
   l.push(
-    "- **It is opt-in three times over:** `savings.semanticCache` on the request, a `semanticCache` passed to " +
-      "`createSavingsLayer`, and the `semantic_cache` feature on your license.",
+    "- **It is opt-in three times over:** `savings.semanticCache` on the request (or `semanticCacheDefault` on " +
+      "`createSavingsLayer`, for every request), a `semanticCache` passed to `createSavingsLayer`, and the " +
+      "`semantic_cache` feature on your license. Passing the cache alone switches nothing on, and the layer warns " +
+      "once when it has a cache that a request does not ask for.",
   );
   l.push(
     "- **It stays off on agentic traffic** (requests that declare tools, carry tool calls or tool results, or hold more " +

@@ -117,12 +117,24 @@ describe("admiteReferencia — la verja de la regla de la referencia", () => {
     expect(compararVersiones(VERSION_MINIMA_REFERENCIA, "0.4.28")).toBeGreaterThan(0);
   });
 
+  it("va por delante de la 0.4.30: hasta la 0.4.30 el SDK repetía la negativa que el modelo escribe como texto", () => {
+    // #384 (0.4.31) la detecta sin señal del API y ni la guarda ni la acredita.
+    // Bajar de aquí la reabre (decisión del dueño, 2026-09-28).
+    expect(compararVersiones(VERSION_MINIMA_REFERENCIA, "0.4.30")).toBeGreaterThan(0);
+  });
+
   it("sdk/ desde la mínima: sí; anteriores, preliminares de la mínima o sin versión: no", () => {
-    for (const si of ["sdk/0.4.29", "sdk/0.4.30", "sdk/0.5.0", "sdk/1.0.0", "sdk/0.4.30-rc.1"]) {
+    for (const si of ["sdk/0.4.31", "sdk/0.4.32", "sdk/0.5.0", "sdk/1.0.0", "sdk/0.4.32-rc.1"]) {
       expect(admiteReferencia(si), si).toBe(true);
     }
-    for (const no of [null, "sdk/0.4.23", "sdk/0.4.22", "sdk/0.4.29-rc.1", "0.4.29"]) {
+    for (const no of [null, "sdk/0.4.23", "sdk/0.4.22", "sdk/0.4.31-rc.1", "0.4.31"]) {
       expect(admiteReferencia(no), String(no)).toBe(false);
+    }
+  });
+
+  it("0.4.29 y 0.4.30 ya no: repetían la negativa que el modelo escribe como texto (#384, en la 0.4.31)", () => {
+    for (const no of ["sdk/0.4.29", "sdk/0.4.30", "sdk/0.4.30-hotfix"]) {
+      expect(admiteReferencia(no), no).toBe(false);
     }
   });
 
@@ -133,15 +145,15 @@ describe("admiteReferencia — la verja de la regla de la referencia", () => {
   });
 
   it("gateway/ nunca, sea cual sea la versión: la regla v2 vive en el pipeline del SDK y el gateway no pasa por él", () => {
-    for (const no of ["gateway/0.4.23", "gateway/0.4.24", "gateway/0.4.29", "gateway/0.4.29-dev", "gateway/0.5.0", "gateway/9.9.9"]) {
+    for (const no of ["gateway/0.4.23", "gateway/0.4.24", "gateway/0.4.31", "gateway/0.4.31-dev", "gateway/0.5.0", "gateway/9.9.9"]) {
       expect(admiteReferencia(no), no).toBe(false);
     }
   });
 
   it("encadenada con versionDeclarada: una cabecera rara es «sin versión» y tampoco admite", () => {
-    expect(admiteReferencia(versionDeclarada("sdk/0.4.29, sdk/0.4.29"))).toBe(false);
-    expect(admiteReferencia(versionDeclarada("cli/0.4.29"))).toBe(false);
-    expect(admiteReferencia(versionDeclarada(" sdk/0.4.29 "))).toBe(true);
-    expect(admiteReferencia(versionDeclarada(" sdk/0.4.26 "))).toBe(false);
+    expect(admiteReferencia(versionDeclarada("sdk/0.4.31, sdk/0.4.31"))).toBe(false);
+    expect(admiteReferencia(versionDeclarada("cli/0.4.31"))).toBe(false);
+    expect(admiteReferencia(versionDeclarada(" sdk/0.4.31 "))).toBe(true);
+    expect(admiteReferencia(versionDeclarada(" sdk/0.4.30 "))).toBe(false);
   });
 });

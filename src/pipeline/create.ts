@@ -285,6 +285,19 @@ export function createSavingsLayer(
   // LA VERIFICACIÓN A/B OPCIONAL («tu propio banco»). Apagada por defecto; con
   // un valor inválido, APAGADA y avisada (nunca recortada: cada copia es gasto
   // real del cliente). Sin destino para los pares no se manda ninguna copia.
+  // UN ALMACÉN QUE NADIE LEE. `cacheBreakpointStore` solo lo usa el colocador de
+  // `cacheBreakpoints: "auto"`; con `"fixed"` (el valor por defecto) se acepta y
+  // no se toca nunca, y quien lo pasó cree estar compartiendo una medición entre
+  // instancias. Aquí se sabe al construir, así que se dice al construir.
+  if (config.cacheBreakpointStore && config.cacheBreakpoints !== "auto") {
+    avisar(
+      "almacen-de-colocacion-sin-auto",
+      "[bv-sala] `cacheBreakpointStore` was given but `cacheBreakpoints` is not \"auto\", so the store " +
+        "is never read or written: it only holds the measurement of `cacheBreakpoints: \"auto\"`. Set " +
+        "`cacheBreakpoints: \"auto\"` to use it, or remove it.",
+    );
+  }
+
   const ajustesVerif = normalizarAjustes(config.verification);
   if (!ajustesVerif.activo && ajustesVerif.motivo === "invalido") {
     avisar("verificacion-invalida", avisoDeVerificacionInvalida(config.verification));
