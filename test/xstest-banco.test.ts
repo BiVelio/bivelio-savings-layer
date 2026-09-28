@@ -17,7 +17,9 @@ import {
   correrTirada,
   exigirLicenciaEnVivo,
   vigilarHosts,
+  ETIQUETA_DEV_OPEN,
   fetchDeMentira,
+  VERSION_DEL_PAQUETE,
   MODELOS,
   prevuelo,
   promptsSinteticos,
@@ -29,7 +31,7 @@ import { construirInforme, renderizarMarkdown } from "../benchmarks/publicados/x
  * La batería XSTest (benchmarks/publicados/xstest) sin red: el CSV, el
  * clasificador, la lectura de las negativas del API, el precio según la
  * documentación de negativas, el presupuesto duro y una tirada entera contra el
- * proveedor de mentira, con la capa 0.4.30 de verdad en el brazo B.
+ * proveedor de mentira, con la capa 0.4.31 de verdad en el brazo B.
  */
 
 describe("xstest · dataset", () => {
@@ -163,12 +165,23 @@ describe("xstest · presupuesto, estadística y secretos", () => {
     expect(v.rechazados).toEqual({ "savings.bivelio.com": 1 });
   });
 
-  it("los topes de la batería: ≤ 1,25 $ por modelo y ≤ 1 $ Opus", () => {
-    for (const m of MODELOS) expect(m.tope).toBeLessThanOrEqual(m.id.includes("opus") ? 1 : 1.25);
+  it("los topes de la batería: ≤ 0,80 $ OpenAI, ≤ 1,20 $ Anthropic, ≤ 0,90 $ Opus", () => {
+    for (const m of MODELOS) {
+      expect(m.tope).toBeLessThanOrEqual(m.id.includes("opus") ? 0.9 : m.familia === "openai" ? 0.8 : 1.2);
+    }
+  });
+
+  it("la versión medida es la 0.4.31 de npm, y la etiqueta del brazo B sin licencia", () => {
+    expect(VERSION_DEL_PAQUETE.version).toBe("0.4.31");
+    expect(VERSION_DEL_PAQUETE.commit).toBe("00c99c803c0ab6f3c11b7ab87f3c75a38d609b1c");
+    expect(VERSION_DEL_PAQUETE.npmIntegrity).toBe(
+      "sha512-ePCN+dZr+VuMUSGm2TelDkt7TR6jSi/SCTomomDK/bfF92FHr1eFUdgTWQODCdQf8C8c+/h6AA/up46DXO2mLQ==",
+    );
+    expect(ETIQUETA_DEV_OPEN).toBe("v0.4.31 (source of the tag, BVSALA_DEV_OPEN=1; npm = same commit, verified identical)");
   });
 });
 
-describe("xstest · una tirada entera sin red, con la capa 0.4.30 en B", () => {
+describe("xstest · una tirada entera sin red, con la capa 0.4.31 en B", () => {
   const CLAVE = "fake-key-que-no-debe-salir-0001";
   const endpoints = {
     anthropicBaseUrl: "https://anthropic.invalid/v1",
@@ -204,13 +217,62 @@ describe("xstest · una tirada entera sin red, con la capa 0.4.30 en B", () => {
     expect(inf.hallazgos.filter((h) => h.gravedad === "alta")).toEqual([]);
     expect(haiku.porLabel.safe!.soloA.length + haiku.porLabel.safe!.soloB.length).toBe(0);
     expect(haiku.textoFiel.alterados).toBe(0);
-    // El B de Chat Completions lleva el tope inyectado por el banco (la capa no lo expresa sin contrato).
+    // Ninguna negativa principal de B viajó a la caché ni dejó referencia (API y texto).
+    for (const r of inf.resumen) {
+      const n = r.negativasEnB;
+      expect(n.delApi.n + n.deTextoCompletas.n).toBeGreaterThan(0);
+      expect([n.delApi, n.deTextoCompletas].map((c) => c.aLaCache + c.conReferencia)).toEqual([0, 0]);
+    }
+    // El tope de B es el NATIVO (maxOutputTokens de la 0.4.31): el banco no inyecta nada.
+    // Con un baseUrl que no es el de OpenAI, la capa usa `max_tokens`.
     const b = t.registros.find((r) => r.modelo === "gpt-4o-mini")!.B!;
-    expect(b.inyectado).toContain("max_completion_tokens");
+    expect(b.inyectado).toEqual([]);
+    expect(b.topeEnviado).toEqual(["max_tokens=160"]);
+    expect(t.registros.find((r) => r.modelo === "claude-haiku-4-5")!.B!.topeEnviado).toEqual(["max_tokens=160"]);
     // Ni la clave ni el texto de las respuestas llegan a la salida.
     const salida = JSON.stringify({ ...t, inf }) + renderizarMarkdown(t, inf);
     expect(salida).not.toContain(CLAVE);
     expect(salida).not.toContain("I can't help with that.");
+  });
+
+  it("contra api.openai.com la capa pone `max_completion_tokens` (tope nativo de la 0.4.31)", async () => {
+    const prompts = promptsSinteticos().slice(0, 2);
+    const ep = { ...endpoints, openaiBaseUrl: "https://api.openai.com/v1" };
+    const t = await correrTirada({
+      modo: "SECO", modelos: [modelos[1]!], prompts, endpoints: ep, fetchBase: fetchDeMentira(prompts), secretos: [CLAVE], log: () => {},
+    });
+    for (const r of t.registros) expect(r.B!.topeEnviado).toEqual(["max_completion_tokens=160"]);
+    expect(t.registros.every((r) => !r.B!.error && r.B!.inyectado.length === 0)).toBe(true);
+  });
+
+  it("informe: una negativa de texto que la capa guarda y repite se señala; una repetición que sirve una respuesta NORMAL no", () => {
+    const cls = (clase: "full_refusal" | "full_compliance") => ({ clase, fuente: clase === "full_refusal" ? "strmatch-paper" : "cumple", paper: "1_full_compliance" }) as const;
+    const inf0 = { basis: "measured", actual: 0.001, baselineEstimate: 0.001, netSavings: 0, cacheResult: "miss", reference: false, actualLlm: 1, avoidedLlm: 0, actualInput: 10, actualOutput: 10, trazaCosteNoCobrada: false };
+    const b = (fase: "principal" | "repeticion-1" | "repeticion-2", llamadas: number, clase: "full_refusal" | "full_compliance", extra: Record<string, unknown> = {}) => ({
+      fase, via: fase === "repeticion-2" ? "generateStream" : "generate", llamadasAlProveedor: llamadas, clase: cls(clase), negativaSegunLaCapa: false,
+      textoFiel: null, costeFacturadoUsd: null, costeSegunUsageUsd: null, noCobrada: false, inyectado: [], topeEnviado: [],
+      informe: { ...inf0, ...(llamadas === 0 ? { cacheResult: "exact", basis: "reference", reference: true } : {}), ...extra },
+    }) as never;
+    const A = { clase: cls("full_refusal"), costeFacturadoUsd: 0, costeSegunUsageUsd: 0, noCobrada: false };
+    const t = {
+      fecha: "2026-09-28T00:00:00Z", modo: "SECO" as const, commitDelBanco: "x", paquete: {}, semilla: 1, topeDeSalida: 160, reintentosDeRed: 0,
+      dataset: { fuente: "", commit: "", sha256: "", url: "", licencia: "", prompts: 2 },
+      porModelo: { m: { familia: "openai", tope: 1, gastadoUsd: 0, planificados: 2, medidos: 2, cortadoPorPresupuesto: false, temperatura: null, extraOpenAI: null, soloInseguros: null } },
+      registros: [
+        // 1: la capa la guardó y la repitió → hallazgo alto.
+        { modelo: "m", id: 1, type: "t", label: "safe" as const, A, B: b("principal", 1, "full_refusal", { vaALaCacheExacta: true, trazaReferencia: "written" }),
+          repeticiones: [b("repeticion-1", 0, "full_refusal"), b("repeticion-2", 0, "full_refusal")] },
+        // 2: la capa NO la guardó; la 1.ª repetición trajo una respuesta normal y la 2.ª la sirvió de caché → nada.
+        { modelo: "m", id: 2, type: "t", label: "unsafe" as const, A, B: b("principal", 1, "full_refusal", { trazaReferencia: "not-written" }),
+          repeticiones: [b("repeticion-1", 1, "full_compliance"), b("repeticion-2", 0, "full_compliance")] },
+      ],
+    };
+    const inf = construirInforme(t as never);
+    const ids = (tipo: string) => inf.hallazgos.filter((h) => h.tipo === tipo).map((h) => h.id);
+    expect(ids("negativa-guardada-en-cache")).toEqual([1]);
+    expect(ids("negativa-de-texto-servida-o-acreditada")).toEqual([1, 1]);
+    expect(inf.resumen[0]!.repeticiones.negativasDeTexto.repsServidasSinLlamar).toBe(2);
+    expect(inf.resumen[0]!.negativasEnB.deTextoCompletas).toEqual({ n: 2, aLaCache: 1, conReferencia: 1 });
   });
 
   it("el presupuesto corta la tirada ANTES del tope, y lo dice", async () => {

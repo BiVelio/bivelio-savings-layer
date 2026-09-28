@@ -4,14 +4,16 @@
  * Uso:
  *   pnpm bench:xstest                 # SECO: sin red (fetch de mentira), plan y peor caso
  *   pnpm bench:xstest -- --vivo       # tirada de pago contra los proveedores
- *   opciones: --modelos=a,b  --n=N  --semilla=S  --salida=dir
+ *   opciones: --modelos=a,b  --n=N  --semilla=S  --salida=dir  --nombre=xstest-0431
+ *   pnpm bench:xstest -- --desde=docs/…/xstest-0431.json   # rehace el informe sin red
  *
  * DISEÑO (el mismo que benchmarks/ab-live.ts, reducido a lo que XSTest mide):
  *   A · directo al proveedor: `fetch` a /v1/messages o /chat/completions con el
  *       prompt como único turno de usuario, el mismo tope de salida y la misma
  *       temperatura que B.
- *   B · el mismo prompt por `createSavingsLayer` de @bivelio/savings-layer 0.4.30
- *       con la configuración por defecto (caché exacta en memoria encendida).
+ *   B · el mismo prompt por `createSavingsLayer` de @bivelio/savings-layer 0.4.31
+ *       con la configuración por defecto (caché exacta en memoria encendida) y el
+ *       tope NATIVO de la petición (`maxOutputTokens`, nuevo en 0.4.31).
  *       Ver `VERSION_DEL_PAQUETE` más abajo: por qué es el fuente de la release y
  *       por qué es byte a byte el mismo código que el tarball de npm.
  *
@@ -78,25 +80,32 @@ const RAIZ = resolve(AQUI, "../../..");
 
 // ── La versión del paquete que se mide ──────────────────────────────────────
 /**
- * npm tiene 0.4.30 (integrity abajo). El build publicado NO tiene modo sin
- * licencia (`__BV_SALA_ALLOW_DEV_OPEN__ = false`), así que la tirada VIVA exige
- * `BIVELIO_LICENSE_KEY` en el entorno y aborta antes de la primera llamada sin
- * ella. El brazo B carga el FUENTE del commit de release 0.4.30 (946f5d5) con esa
- * licencia; `pnpm build` de ese fuente reproduce `dist/index.js` y
- * `dist/adapters/anthropic-sdk.js` del tarball de npm con el MISMO sha256, y el
- * `src/` es idéntico al de la copia limpia usada para publicar. SECO y la verja
- * usan `devUnlicensed` (solo el fuente lo honra) y no gastan nada.
+ * npm tiene 0.4.31 (integrity abajo; `npm pack` del registro verificado el
+ * 2026-09-28). El build publicado NO tiene modo sin licencia
+ * (`__BV_SALA_ALLOW_DEV_OPEN__ = false`), así que el brazo B carga el FUENTE de
+ * la etiqueta v0.4.31 (00c99c8) vía tsx: en VIVO con `BIVELIO_LICENSE_KEY` o con
+ * `BVSALA_DEV_OPEN=1` (decisión del dueño del 2026-09-28), en SECO y en la verja
+ * con `devUnlicensed`. `pnpm build` de ese fuente —y del de esta rama— reproduce
+ * los seis `dist/**.js` del tarball de npm con el MISMO sha256. `git diff v0.4.31
+ * -- src/ packages/` solo toca `src/version.ts` (#385: un comentario y
+ * `VERSION_MINIMA_REFERENCIA`, una constante del ingest que no entra en ningún
+ * bundle del SDK); el código que ejecuta la capa es el de la etiqueta.
  */
 export const VERSION_DEL_PAQUETE = {
   paquete: "@bivelio/savings-layer",
-  version: "0.4.30",
-  npmIntegrity: "sha512-73eFHgLeCQnJlCzkDnnpxJjRCbBDXYxiJIJZ4iglVrN0IrFhGleCYRdE7nyYMzguLzaw5KmexjDyPMpt8BxL+w==",
-  npmShasum: "df3b228413dd09c906658ab083550c3e5adeb2c9",
-  distIndexSha256: "12c709712ee5886b7fe056f026ee820c24c43e93aa470f56aaf4b7d61efb8a88",
+  version: "0.4.31",
+  commit: "00c99c803c0ab6f3c11b7ab87f3c75a38d609b1c",
+  etiqueta: "v0.4.31",
+  npmIntegrity: "sha512-ePCN+dZr+VuMUSGm2TelDkt7TR6jSi/SCTomomDK/bfF92FHr1eFUdgTWQODCdQf8C8c+/h6AA/up46DXO2mLQ==",
+  npmShasum: "7873565508afb4f01c77e84007e0619b51b64ba4",
+  distIndexSha256: "b52f99cacf9804ecd3153e56f26ec3adcdc2510d52a8446a369ecf914e0b5731",
   comoSeEjecuta:
-    "fuente del commit de release 0.4.30 (946f5d5) vía tsx; VIVO con BIVELIO_LICENSE_KEY (obligatoria), SECO con devUnlicensed. " +
-    "`pnpm build` de ese fuente reproduce byte a byte dist/index.js y dist/adapters/anthropic-sdk.js del tarball de npm (mismo sha256).",
+    "fuente de la etiqueta v0.4.31 (00c99c8) vía tsx; VIVO con BIVELIO_LICENSE_KEY o BVSALA_DEV_OPEN=1, SECO con devUnlicensed. " +
+    "`pnpm build` de ese fuente reproduce byte a byte los seis dist/**.js del tarball de npm (mismo sha256).",
 } as const;
+
+/** La etiqueta del brazo B cuando corre sin licencia, con la licencia de desarrollo abierta. */
+export const ETIQUETA_DEV_OPEN = "v0.4.31 (source of the tag, BVSALA_DEV_OPEN=1; npm = same commit, verified identical)";
 
 // ── Los modelos ─────────────────────────────────────────────────────────────
 
@@ -116,12 +125,11 @@ export interface ConfigDeModelo {
 export const MODELOS: ConfigDeModelo[] = [
   { id: "claude-haiku-4-5", familia: "anthropic", tope: 1.2, temperatura: 0 },
   { id: "claude-sonnet-5", familia: "anthropic", tope: 1.2, temperatura: 0 },
-  // 0,85 $ y no 1,20: una primera tirada del 2026-09-28 se interrumpió a mano
-  // sin escribir resultados y su gasto en OpenAI no quedó medido; se le reservan
-  // hasta 0,40 $ para que el total de la batería siga bajo 1,25 $ por modelo.
-  { id: "gpt-4o-mini", familia: "openai", tope: 0.85, temperatura: 0 },
+  // 0,80 $ por modelo de OpenAI (A + B + repeticiones): tope duro del coordinador
+  // para la tirada de la 0.4.31, con otras tres baterías gastando las mismas claves.
+  { id: "gpt-4o-mini", familia: "openai", tope: 0.8, temperatura: 0 },
   // gpt-5.x razona: sin esfuerzo mínimo, el tope de salida se lo comería el razonamiento.
-  { id: "gpt-5.4-mini", familia: "openai", tope: 0.85, extraOpenAI: { reasoning_effort: "none" } },
+  { id: "gpt-5.4-mini", familia: "openai", tope: 0.8, extraOpenAI: { reasoning_effort: "none" } },
   { id: "claude-opus-5-5", familia: "anthropic", tope: 0.9, temperatura: 0, soloInseguros: 20 },
 ];
 
@@ -146,6 +154,8 @@ interface Contexto {
   brazo: "A" | "B";
   lecturas: LecturaDelProveedor[];
   inyectado: Set<string>;
+  /** El campo de tope de salida y su valor en cada cuerpo que salió (B: lo que puso la capa). */
+  topes: string[];
   alGastar: (usd: number) => void;
 }
 
@@ -180,11 +190,17 @@ export interface Red {
 
 /**
  * El `fetch` de los dos brazos. Limita la concurrencia por proveedor, reintenta
- * 429/5xx con backoff (el proveedor de la capa nunca ve el 429), iguala en B los
- * parámetros que la capa no sabe expresar sin contrato de salida (tope de salida
- * y esfuerzo en Chat Completions, SOLO si el cuerpo no los trae) y lee el
- * `usage`, la parada y la negativa de cada respuesta. El texto se clasifica y se
- * descarta: nunca sale de este proceso.
+ * 429/5xx con backoff (el proveedor de la capa nunca ve el 429), iguala en B el
+ * único parámetro que la capa no sabe expresar (`reasoning_effort` en Chat
+ * Completions, SOLO si el cuerpo no lo trae) y lee el `usage`, la parada y la
+ * negativa de cada respuesta. El texto se clasifica y se descarta: nunca sale de
+ * este proceso.
+ *
+ * El tope de salida YA NO se inyecta: desde la 0.4.31 la petición lo lleva
+ * (`maxOutputTokens`) y la capa lo traduce a `max_tokens` /
+ * `max_completion_tokens`. Aquí solo se ANOTA qué campo salió y con qué valor; un
+ * cuerpo sin tope no sale (el presupuesto reserva con el tope, y sin él el peor
+ * caso no está acotado).
  */
 export function crearRed(base: typeof fetch, modelos: ConfigDeModelo[], dormirImpl = dormir): Red {
   const semaforos: Record<Familia, Semaforo> = {
@@ -201,11 +217,10 @@ export function crearRed(base: typeof fetch, modelos: ConfigDeModelo[], dormirIm
     if (typeof cuerpo === "string") {
       const b = JSON.parse(cuerpo) as Record<string, unknown>;
       esStream = b["stream"] === true;
+      const campo = (["max_tokens", "max_completion_tokens"] as const).find((k) => b[k] !== undefined);
+      if (!campo) throw new Error(`banco: el cuerpo del brazo ${ctx.brazo} salió sin tope de salida — no se envía`);
+      ctx.topes.push(`${campo}=${String(b[campo])}`);
       if (ctx.brazo === "B" && ctx.familia === "openai") {
-        if (b["max_tokens"] === undefined && b["max_completion_tokens"] === undefined) {
-          b["max_completion_tokens"] = TOPE_DE_SALIDA;
-          ctx.inyectado.add("max_completion_tokens");
-        }
         for (const [k, v] of Object.entries(cfg.extraOpenAI ?? {})) {
           if (b[k] === undefined) {
             b[k] = v;
@@ -289,6 +304,8 @@ export interface RegistroB {
   costeSegunUsageUsd: number | null;
   noCobrada: boolean;
   inyectado: string[];
+  /** Tope de salida que la capa puso en el cuerpo (p. ej. `max_completion_tokens=160`), por llamada. */
+  topeEnviado: string[];
   informe?: {
     basis: string;
     actual: number;
@@ -330,10 +347,10 @@ export interface Endpoints {
 }
 
 async function enContexto<T>(
-  ctx: Omit<Contexto, "lecturas" | "inyectado">,
+  ctx: Omit<Contexto, "lecturas" | "inyectado" | "topes">,
   f: () => Promise<T>,
 ): Promise<{ v?: T; e?: unknown; ctx: Contexto }> {
-  const c: Contexto = { ...ctx, lecturas: [], inyectado: new Set() };
+  const c: Contexto = { ...ctx, lecturas: [], inyectado: new Set(), topes: [] };
   try {
     const v = await contexto.run(c, f);
     return { v, ctx: c };
@@ -413,7 +430,6 @@ export function crearCapa(red: Red, ep: Endpoints, cfg: ConfigDeModelo, licencia
           ...(ep.anthropicApiKey ? { apiKey: ep.anthropicApiKey } : {}),
           stripProviderPrefix: true,
           requireUsage: true,
-          defaultMaxOutputTokens: TOPE_DE_SALIDA,
           fetchImpl: red.fetch,
         })
       : new OpenAICompatibleProvider({
@@ -446,6 +462,8 @@ async function brazoB(
   const req = {
     model: `${cfg.familia}/${cfg.id}`,
     messages: [{ role: "user" as const, content: prompt }],
+    // El tope NATIVO de la 0.4.31 (el mismo valor que A); ya no lo inyecta el banco.
+    maxOutputTokens: TOPE_DE_SALIDA,
     ...(cfg.temperatura !== undefined ? { temperature: cfg.temperatura } : {}),
   };
   const { v: r, e, ctx } = await enContexto({ modelo: cfg.id, familia: cfg.familia, brazo: "B", alGastar }, async () => {
@@ -467,6 +485,7 @@ async function brazoB(
     costeSegunUsageUsd: l ? ctx.lecturas.reduce((s, x) => s + costeSegunUsage(cfg.familia, x, precio), 0) : null,
     noCobrada: !!l && ctx.lecturas.length === 1 && esNegativaNoCobrada(cfg.familia, l),
     inyectado: [...ctx.inyectado].sort(),
+    topeEnviado: [...ctx.topes],
     ...(l ? { proveedor: resumir(l) } : {}),
   };
   if (e || !r) {
@@ -805,7 +824,7 @@ export async function prevuelo(ep: Endpoints, modelos: ConfigDeModelo[], f: type
 /**
  * Sin licencia no hay tirada de pago: se lanza ANTES de cualquier llamada de red.
  * Dos formas válidas: `BIVELIO_LICENSE_KEY`, o `BVSALA_DEV_OPEN=1` (el fuente del
- * tag v0.4.30 con la licencia de desarrollo abierta, como `pnpm ab`; decisión del
+ * tag v0.4.31 con la licencia de desarrollo abierta, como `pnpm ab`; decisión del
  * dueño del 2026-09-28: el npm sale del mismo commit y es idéntico).
  */
 export function exigirLicenciaEnVivo(vivo: boolean, licencia: string | undefined, devOpen = false): void {
@@ -847,7 +866,24 @@ function argumento(nombre: string): string | undefined {
   return a?.slice(nombre.length + 3);
 }
 
+/**
+ * `--desde=<xstest.json>`: rehace el informe (JSON y Markdown) desde los registros
+ * de una tirada ya hecha, sin red y sin gastar. Sirve cuando cambia una regla del
+ * informe: los datos medidos no se tocan.
+ */
+function rehacerDesde(ruta: string): void {
+  const guardado = JSON.parse(readFileSync(ruta, "utf8")) as Tirada & { informe?: unknown };
+  const { informe: _viejo, ...tirada } = guardado;
+  const informe = construirInforme(tirada);
+  const json = limpiarSecretos(JSON.stringify({ ...tirada, informe }, null, 2), []);
+  writeFileSync(ruta, json + "\n");
+  writeFileSync(ruta.replace(/\.json$/, ".md"), limpiarSecretos(renderizarMarkdown(tirada, informe), []));
+  console.log(`[xstest] informe rehecho desde ${ruta} (${informe.hallazgos.length} hallazgos)`);
+}
+
 async function principal(): Promise<void> {
+  const desde = argumento("desde");
+  if (desde) return rehacerDesde(desde);
   const vivo = process.argv.includes("--vivo");
   // Las claves se leen UNA vez, a variables locales; del entorno se borra todo lo que parezca un secreto.
   const env = process.env;
@@ -860,7 +896,7 @@ async function principal(): Promise<void> {
   };
   const licencia = env["BIVELIO_LICENSE_KEY"]?.trim() || undefined;
   for (const k of Object.keys(env)) if (/KEY|TOKEN|SECRET/i.test(k)) delete env[k];
-  // SIN LICENCIA NO HAY TIRADA DE PAGO. El build publicado de 0.4.30 no arranca
+  // SIN LICENCIA NO HAY TIRADA DE PAGO. El build publicado de 0.4.31 no arranca
   // sin `licenseKey`, y medir el brazo B con `devUnlicensed` no sería medir lo que
   // se instala. Se aborta ANTES de cualquier llamada de red (ni prevuelo ni descarga).
   const devOpen = env["BVSALA_DEV_OPEN"] === "1";
@@ -935,9 +971,7 @@ async function principal(): Promise<void> {
     tirada.red = { hostsVistos: { ...hosts.vistos }, hostsRechazados: { ...hosts.rechazados } };
     console.log(`[xstest] hosts vistos: ${JSON.stringify(hosts.vistos)} · rechazados: ${JSON.stringify(hosts.rechazados)}`);
   }
-  tirada.paquete["comoSeEjecuta"] = vivo && !licencia
-    ? "v0.4.30 (fuente del tag, BVSALA_DEV_OPEN=1; npm = mismo commit, verificado idéntico)"
-    : tirada.paquete["comoSeEjecuta"]!;
+  tirada.paquete["comoSeEjecuta"] = vivo && !licencia ? ETIQUETA_DEV_OPEN : tirada.paquete["comoSeEjecuta"]!;
   const informe = construirInforme(tirada);
   const salida =
     argumento("salida") ?? (vivo ? join(RAIZ, "docs", "benchmarks", "2026-09-28") : join(RAIZ, "node_modules", ".cache", "bvsala-xstest", "seco"));
@@ -945,9 +979,11 @@ async function principal(): Promise<void> {
   const json = limpiarSecretos(JSON.stringify({ ...tirada, informe }, null, 2), secretos);
   const md = limpiarSecretos(renderizarMarkdown(tirada, informe), secretos);
   if (contieneSecreto(json, secretos) || contieneSecreto(md, secretos)) throw new Error("⛔ un secreto llegó a la salida: no se escribe nada");
-  writeFileSync(join(salida, "xstest.json"), json + "\n");
-  writeFileSync(join(salida, "xstest.md"), md);
-  console.log(`[xstest] escrito ${join(salida, "xstest.{json,md}")}`);
+  const nombre = argumento("nombre") ?? "xstest";
+  if (!/^[a-z0-9._-]+$/i.test(nombre)) throw new Error(`--nombre inválido: ${nombre}`);
+  writeFileSync(join(salida, `${nombre}.json`), json + "\n");
+  writeFileSync(join(salida, `${nombre}.md`), md);
+  console.log(`[xstest] escrito ${join(salida, `${nombre}.{json,md}`)}`);
   for (const h of informe.hallazgos.slice(0, 40)) {
     console.log(`[xstest] hallazgo ${h.gravedad} · ${h.modelo} · id ${h.id} · ${h.tipo}: ${h.detalle}`);
   }

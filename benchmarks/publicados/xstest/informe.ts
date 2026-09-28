@@ -73,6 +73,18 @@ export interface ResumenDeModelo {
     discrepanciasDeCoste: number;
   };
   textoFiel: { comprobados: number; alterados: number };
+  /**
+   * La llamada PRINCIPAL de B que fue negativa (del API o de texto): ¿viajó a la
+   * caché exacta, o dejó un registro de referencia? Desde la 0.4.31 ninguna
+   * debería (#356/#367/#374 para las del API, #384 para las de texto).
+   */
+  negativasEnB: {
+    delApi: { n: number; aLaCache: number; conReferencia: number };
+    deTextoCompletas: { n: number; aLaCache: number; conReferencia: number };
+    deTextoParciales: { n: number; aLaCache: number; conReferencia: number };
+  };
+  /** Campo y valor del tope de salida que la capa puso en los cuerpos de B (conteo). */
+  topesEnB: Record<string, number>;
 }
 
 export interface Hallazgo {
@@ -205,28 +217,26 @@ export function construirInforme(t: Tirada): Informe {
         }
       } else if (r.B?.clase && esNegativa(r.B.clase.clase)) {
         rep.negativasDeTexto.items++;
-        for (const x of reps) {
+        for (const [i, x] of reps.entries()) {
+          // Solo cuenta si lo SERVIDO es una negativa. Sin temperatura (gpt-5.4-mini), la
+          // repetición 1 puede volver al proveedor, recibir una respuesta normal y cachearla;
+          // que la 2.ª la sirva desde la caché es lo correcto, no una negativa repetida.
+          const servida = !!x.clase && esNegativa(x.clase.clase);
+          if (!servida) continue;
           if (x.llamadasAlProveedor === 0) rep.negativasDeTexto.repsServidasSinLlamar++;
           if (x.informe?.reference || x.informe?.basis === "reference") rep.negativasDeTexto.repsConReferencia++;
           rep.negativasDeTexto.ahorroAcreditadoUsd += Math.max(0, ahorroUsd(x));
+          if (x.llamadasAlProveedor === 0 || x.informe?.reference || x.informe?.basis === "reference") {
+            hallazgos.push({
+              gravedad: r.B.clase.clase === "full_refusal" ? "alta" : "media",
+              tipo: "negativa-de-texto-servida-o-acreditada",
+              modelo,
+              id: r.id,
+              detalle: `${r.B.clase.clase} (${r.B.clase.fuente}${r.label === "safe" ? ", prompt seguro" : ""}) · repetición ${i + 1} (${x.via}): ${x.llamadasAlProveedor} llamadas, cache ${x.informe?.cacheResult}, basis ${x.informe?.basis}, reference ${x.informe?.reference}`,
+            });
+          }
         }
       }
-    }
-    if (rep.negativasDeTexto.repsServidasSinLlamar > 0) {
-      hallazgos.push({
-        gravedad: "media",
-        tipo: "negativa-de-texto-cacheada-y-acreditada",
-        modelo,
-        id: null,
-        detalle:
-          `${rep.negativasDeTexto.items} negativas escritas como texto (stop normal, sin señal del API) se guardaron en la caché exacta: ` +
-          `${rep.negativasDeTexto.repsServidasSinLlamar} repeticiones servidas sin llamar, ${rep.negativasDeTexto.repsConReferencia} valoradas por referencia, ` +
-          `${redondear(rep.negativasDeTexto.ahorroAcreditadoUsd)} $ de ahorro acreditado. Por diseño (#356 solo excluye las negativas señaladas por el API), ` +
-          `pero en los prompts SEGUROS es la negativa exagerada congelada. Ids: ${rs
-            .filter((r) => r.repeticiones.some((x) => x.fase !== "control-cache" && x.llamadasAlProveedor === 0) && !(r.B?.negativaSegunLaCapa || r.B?.proveedor?.negativaDelApi))
-            .map((r) => `${r.id}${r.label === "safe" ? "(seguro)" : ""}`)
-            .join(",")}`,
-      });
     }
     if (rep.itemsConNegativa > 0 && rep.controles.n > 0 && rep.controles.aciertosDeCache === 0) {
       hallazgos.push({
@@ -242,6 +252,9 @@ export function construirInforme(t: Tirada): Informe {
     let aF = 0, aU = 0, bF = 0, bU = 0, bI = 0, bAh = 0, disc = 0;
     const nc = { n: 0, informeACero: 0, sinAhorro: 0, conTrazaDeNoCobrada: 0 };
     let comprobados = 0, alterados = 0;
+    const cero = () => ({ n: 0, aLaCache: 0, conReferencia: 0 });
+    const neg = { delApi: cero(), deTextoCompletas: cero(), deTextoParciales: cero() };
+    const topes: Record<string, number> = {};
     for (const r of rs) {
       aF += r.A?.costeFacturadoUsd ?? 0;
       aU += r.A?.costeSegunUsageUsd ?? 0;
@@ -290,6 +303,28 @@ export function construirInforme(t: Tirada): Informe {
           hallazgos.push({ gravedad: "info", tipo: "ahorro-en-llamada-principal", modelo, id: r.id, detalle: `netSavings ${x.informe?.netSavings} = ${ahorroUsd(x)} $ (${x.informe?.basis})` });
         }
       }
+      // La principal de B negativa: ni a la caché ni con referencia.
+      if (r.B?.clase && r.B.informe && !r.B.error && (esNegativa(r.B.clase.clase) || r.B.negativaSegunLaCapa)) {
+        const deApi = r.B.negativaSegunLaCapa || !!r.B.proveedor?.negativaDelApi;
+        const cubo = deApi ? neg.delApi : r.B.clase.clase === "full_refusal" ? neg.deTextoCompletas : neg.deTextoParciales;
+        cubo.n++;
+        const aLaCache = r.B.informe.vaALaCacheExacta === true;
+        const conRef = (r.B.informe.trazaReferencia ?? "").startsWith("written");
+        if (aLaCache) cubo.aLaCache++;
+        if (conRef) cubo.conReferencia++;
+        if (aLaCache || conRef) {
+          hallazgos.push({
+            gravedad: deApi || r.B.clase.clase === "full_refusal" ? "alta" : "media",
+            tipo: aLaCache ? "negativa-guardada-en-cache" : "negativa-con-registro-de-referencia",
+            modelo,
+            id: r.id,
+            detalle:
+              `${deApi ? "negativa del API" : `${r.B.clase.clase} de texto (${r.B.clase.fuente})`}${r.label === "safe" ? " en prompt seguro" : ""}: exactCache ${r.B.informe.vaALaCacheExacta}, traza reference «${r.B.informe.trazaReferencia ?? "—"}»` +
+              (aLaCache ? "" : " — la capa la juzgó reutilizable (E7 exige `cacheable`); no viajó a la caché solo por la política de ese prompt"),
+          });
+        }
+      }
+      for (const x of todasLasB(r)) for (const tp of x.topeEnviado ?? []) contar(topes, tp);
       if (r.A?.error) hallazgos.push({ gravedad: "info", tipo: "error-A", modelo, id: r.id, detalle: r.A.error });
       if (r.B?.error) hallazgos.push({ gravedad: r.A?.error ? "info" : "media", tipo: "error-B", modelo, id: r.id, detalle: r.B.error });
     }
@@ -309,6 +344,8 @@ export function construirInforme(t: Tirada): Informe {
         discrepanciasDeCoste: disc,
       },
       textoFiel: { comprobados, alterados },
+      negativasEnB: neg,
+      topesEnB: topes,
     });
   }
   const orden = { alta: 0, media: 1, info: 2 } as const;
@@ -390,6 +427,21 @@ export function renderizarMarkdown(t: Tirada, inf: Informe): string {
   }
   l.push("");
 
+  l.push("## ¿Alguna negativa a la caché o con referencia? (llamada principal de B)", "");
+  l.push("| modelo | del API: n · a la caché · con referencia | de texto completas: n · caché · ref. | de texto parciales: n · caché · ref. | tope que puso la capa en B |");
+  l.push("|---|---|---|---|---|");
+  for (const r of inf.resumen) {
+    const f = (c: { n: number; aLaCache: number; conReferencia: number }) => `${c.n} · ${c.aLaCache} · ${c.conReferencia}`;
+    const tp = Object.entries(r.topesEnB).map(([k, v]) => `\`${k}\` ×${v}`).join(", ") || "—";
+    l.push(`| ${r.modelo} | ${f(r.negativasEnB.delApi)} | ${f(r.negativasEnB.deTextoCompletas)} | ${f(r.negativasEnB.deTextoParciales)} | ${tp} |`);
+  }
+  l.push(
+    "",
+    "«a la caché» = la traza `reference` de la llamada dice `exactCache: true`; «con referencia» = se escribió un registro de referencia (`reference: written`). " +
+      "Las «parciales» son la heurística del banco (empieza cumpliendo y luego dice «I can't help…»); la de la capa (#384) solo mira el inicio, así que ahí se espera que las guarde.",
+    "",
+  );
+
   l.push("## Gasto real", "");
   l.push("| modelo | tope | A (usage×tarifa) | B + repeticiones (usage×tarifa) | total | A facturable (regla de negativas) |");
   l.push("|---|---|---|---|---|---|");
@@ -424,11 +476,11 @@ export function renderizarMarkdown(t: Tirada, inf: Informe): string {
   l.push("");
   l.push("## Limitaciones", "");
   l.push(
-    "- El brazo B ejecuta el fuente de la release 0.4.30 (con licencia en VIVO, `devUnlicensed` en SECO); su build reproduce el `dist/` de npm byte a byte (ver arriba).",
+    `- El brazo B ejecuta el fuente de la etiqueta ${t.paquete["etiqueta"] ?? t.paquete["version"]} (sin licencia real: \`BVSALA_DEV_OPEN=1\` en VIVO, \`devUnlicensed\` en SECO); su build reproduce los \`dist/**.js\` de npm byte a byte (ver arriba).`,
     "- Muestreo sin temperatura 0 garantizada (gpt-5.4-mini sin `temperature`): parte de la discordancia A/B es ruido del proveedor, no de la capa. McNemar lo mide.",
     `- Tope de salida ${t.topeDeSalida} tokens en los dos brazos: la clasificación de la paper mira el principio de la respuesta; una negativa que llegara después del corte se clasificaría como cumplimiento en ambos brazos.`,
     "- Clasificador por reglas (sin juez LLM): los prefijos de la paper más una ampliación declarada; «parcial» es heurístico. Se aplica igual a A y B, así que la comparación A/B no depende de él, la tasa absoluta sí.",
-    "- En Chat Completions la capa no envía tope de salida sin contrato: el banco inyecta `max_completion_tokens` (y `reasoning_effort` en gpt-5.4-mini) en el cuerpo de B solo si faltan, con los mismos valores que A. Queda anotado por llamada (`inyectado`).",
+    "- El tope de salida de B es el NATIVO de la petición (`maxOutputTokens`, 0.4.31) y la capa lo traduce (Anthropic `max_tokens`, OpenAI `max_completion_tokens`); el banco solo lo anota (`topeEnviado`) y no deja salir un cuerpo sin tope. Lo único que sigue inyectando es `reasoning_effort` en gpt-5.4-mini (la capa no lo expresa), con el mismo valor que A (`inyectado`).",
     "- Las negativas por clasificador (`stop_reason: \"refusal\"`) solo aparecen en ciertos modelos de Anthropic; si no aparece ninguna, la parte de coste de negativas no cobradas se queda sin caso real y lo cubren los tests con la forma de la documentación.",
     "",
   );
