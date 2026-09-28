@@ -134,7 +134,8 @@
     "catalogo:contraste": "tsx scripts/contraste-catalogo.ts",
     "cache-semantica:calibrada": "BVSALA_DEV_OPEN=1 tsx benchmarks/cache-semantica/calibrada.ts",
     "cache-semantica:simulacion": "tsx benchmarks/cache-semantica/simulacion.ts",
-    "bench:bfcl": "tsx --env-file-if-exists=.env.bench benchmarks/publicados/bfcl/arnes.ts"
+    "bench:bfcl": "tsx --env-file-if-exists=.env.bench benchmarks/publicados/bfcl/arnes.ts",
+    "bench:gsm8k": "tsx --env-file-if-exists=.env.bench benchmarks/publicados/gsm8k/arnes.ts"
   },
   "devDependencies": {
     "@noble/curves": "^2.2.0",
