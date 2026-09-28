@@ -30,6 +30,8 @@ export interface Tirada {
     }
   >;
   registros: RegistroDeItem[];
+  /** Solo en VIVO: los hosts a los que habló el proceso (y los que se rechazaron). */
+  red?: { hostsVistos: Record<string, number>; hostsRechazados: Record<string, number> };
 }
 
 export interface TasaDeBrazo {
@@ -328,6 +330,14 @@ export function renderizarMarkdown(t: Tirada, inf: Informe): string {
     "",
   );
   l.push(`**Cómo se ejecuta el paquete.** ${t.paquete["comoSeEjecuta"]}`, "");
+  if (t.red) {
+    l.push(
+      `**Red.** Hosts contactados por el proceso: ${Object.entries(t.red.hostsVistos).map(([h, n]) => `${h} (${n})`).join(", ") || "ninguno"}; ` +
+        `rechazados: ${Object.entries(t.red.hostsRechazados).map(([h, n]) => `${h} (${n})`).join(", ") || "ninguno"}. ` +
+        "La capa se crea sin `licenseServerUrl`, sin `serviceAccountKey` y sin ingest: ningún tráfico a metering, licencias ni telemetría.",
+      "",
+    );
+  }
   l.push(
     "A = petición directa al proveedor. B = la misma petición por `createSavingsLayer` con la configuración por defecto (caché exacta en memoria). " +
       "Clasificación: prefijos de `classify_completions_strmatch.py` de la paper, ampliados con fórmulas de negativa de modelos actuales, " +

@@ -116,9 +116,12 @@ export interface ConfigDeModelo {
 export const MODELOS: ConfigDeModelo[] = [
   { id: "claude-haiku-4-5", familia: "anthropic", tope: 1.2, temperatura: 0 },
   { id: "claude-sonnet-5", familia: "anthropic", tope: 1.2, temperatura: 0 },
-  { id: "gpt-4o-mini", familia: "openai", tope: 1.2, temperatura: 0 },
+  // 0,85 $ y no 1,20: una primera tirada del 2026-09-28 se interrumpió a mano
+  // sin escribir resultados y su gasto en OpenAI no quedó medido; se le reservan
+  // hasta 0,40 $ para que el total de la batería siga bajo 1,25 $ por modelo.
+  { id: "gpt-4o-mini", familia: "openai", tope: 0.85, temperatura: 0 },
   // gpt-5.x razona: sin esfuerzo mínimo, el tope de salida se lo comería el razonamiento.
-  { id: "gpt-5.4-mini", familia: "openai", tope: 1.2, extraOpenAI: { reasoning_effort: "none" } },
+  { id: "gpt-5.4-mini", familia: "openai", tope: 0.85, extraOpenAI: { reasoning_effort: "none" } },
   { id: "claude-opus-5-5", familia: "anthropic", tope: 0.9, temperatura: 0, soloInseguros: 20 },
 ];
 
@@ -799,14 +802,42 @@ export async function prevuelo(ep: Endpoints, modelos: ConfigDeModelo[], f: type
   return fuera;
 }
 
-/** Sin licencia no hay tirada de pago: se lanza ANTES de cualquier llamada de red. */
-export function exigirLicenciaEnVivo(vivo: boolean, licencia: string | undefined): void {
-  if (vivo && !licencia) {
+/**
+ * Sin licencia no hay tirada de pago: se lanza ANTES de cualquier llamada de red.
+ * Dos formas válidas: `BIVELIO_LICENSE_KEY`, o `BVSALA_DEV_OPEN=1` (el fuente del
+ * tag v0.4.30 con la licencia de desarrollo abierta, como `pnpm ab`; decisión del
+ * dueño del 2026-09-28: el npm sale del mismo commit y es idéntico).
+ */
+export function exigirLicenciaEnVivo(vivo: boolean, licencia: string | undefined, devOpen = false): void {
+  if (vivo && !licencia && !devOpen) {
     throw new Error(
-      "VIVO sin BIVELIO_LICENSE_KEY en el entorno: el paquete publicado exige licencia. " +
+      "VIVO sin BIVELIO_LICENSE_KEY ni BVSALA_DEV_OPEN=1: el paquete publicado exige licencia. " +
         "No se hace ninguna llamada. (El modo SECO no la necesita.)",
     );
   }
+}
+
+/** Los únicos hosts a los que una tirada VIVA puede hablar (el dataset se baja antes de crear ninguna capa). */
+export const HOSTS_PERMITIDOS = new Set(["api.anthropic.com", "api.openai.com", "raw.githubusercontent.com"]);
+
+/**
+ * Envuelve un `fetch` para que solo hable con `HOSTS_PERMITIDOS` y cuente los
+ * hosts que vio (solo el host: ni ruta, ni cabeceras). Cualquier otro destino
+ * —ingest de uso, licencias, telemetría— se RECHAZA y queda anotado.
+ */
+export function vigilarHosts(base: typeof fetch, permitidos: ReadonlySet<string> = HOSTS_PERMITIDOS) {
+  const vistos: Record<string, number> = {};
+  const rechazados: Record<string, number> = {};
+  const f = (async (url: string | URL | Request, init?: RequestInit) => {
+    const u = new URL(typeof url === "string" ? url : url instanceof URL ? url.href : url.url);
+    if (!permitidos.has(u.host)) {
+      rechazados[u.host] = (rechazados[u.host] ?? 0) + 1;
+      throw new Error(`xstest: host no permitido ${u.host}`);
+    }
+    vistos[u.host] = (vistos[u.host] ?? 0) + 1;
+    return base(url, init);
+  }) as typeof fetch;
+  return { fetch: f, vistos, rechazados };
 }
 
 // ── Principal ───────────────────────────────────────────────────────────────
@@ -832,7 +863,8 @@ async function principal(): Promise<void> {
   // SIN LICENCIA NO HAY TIRADA DE PAGO. El build publicado de 0.4.30 no arranca
   // sin `licenseKey`, y medir el brazo B con `devUnlicensed` no sería medir lo que
   // se instala. Se aborta ANTES de cualquier llamada de red (ni prevuelo ni descarga).
-  exigirLicenciaEnVivo(vivo, licencia);
+  const devOpen = env["BVSALA_DEV_OPEN"] === "1";
+  exigirLicenciaEnVivo(vivo, licencia, devOpen);
   const secretos = [endpoints.anthropicApiKey, endpoints.openaiApiKey, licencia].filter((s): s is string => !!s);
 
   const filtro = argumento("modelos")?.split(",").map((s) => s.trim());
@@ -869,9 +901,15 @@ async function principal(): Promise<void> {
 
   let fetchBase: typeof fetch;
   let noMedibles: Record<string, string> = {};
+  let hosts: { vistos: Record<string, number>; rechazados: Record<string, number> } | undefined;
   if (vivo) {
     if (!endpoints.anthropicApiKey || !endpoints.openaiApiKey) throw new Error("VIVO sin claves en el entorno (tsx --env-file=…/.env.bench)");
-    fetchBase = globalThis.fetch.bind(globalThis);
+    // TODO el tráfico del proceso, no solo el de los brazos: también cualquier
+    // `fetch` global que la capa hiciera por su cuenta (metering, licencias).
+    const vigia = vigilarHosts(globalThis.fetch.bind(globalThis));
+    globalThis.fetch = vigia.fetch;
+    hosts = vigia;
+    fetchBase = vigia.fetch;
     noMedibles = await prevuelo(endpoints, modelos, fetchBase);
     for (const [m, motivo] of Object.entries(noMedibles)) console.log(`[xstest] prevuelo: ${m} — ${limpiarSecretos(motivo, secretos)}`);
   } else {
@@ -893,6 +931,13 @@ async function principal(): Promise<void> {
     ...(vivo && licencia ? { licencia } : {}),
     ...(n !== undefined ? { n } : {}),
   });
+  if (hosts) {
+    tirada.red = { hostsVistos: { ...hosts.vistos }, hostsRechazados: { ...hosts.rechazados } };
+    console.log(`[xstest] hosts vistos: ${JSON.stringify(hosts.vistos)} · rechazados: ${JSON.stringify(hosts.rechazados)}`);
+  }
+  tirada.paquete["comoSeEjecuta"] = vivo && !licencia
+    ? "v0.4.30 (fuente del tag, BVSALA_DEV_OPEN=1; npm = mismo commit, verificado idéntico)"
+    : tirada.paquete["comoSeEjecuta"]!;
   const informe = construirInforme(tirada);
   const salida =
     argumento("salida") ?? (vivo ? join(RAIZ, "docs", "benchmarks", "2026-09-28") : join(RAIZ, "node_modules", ".cache", "bvsala-xstest", "seco"));

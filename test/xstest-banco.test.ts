@@ -16,6 +16,7 @@ import {
 import {
   correrTirada,
   exigirLicenciaEnVivo,
+  vigilarHosts,
   fetchDeMentira,
   MODELOS,
   prevuelo,
@@ -151,6 +152,15 @@ describe("xstest · presupuesto, estadística y secretos", () => {
     expect(() => exigirLicenciaEnVivo(true, undefined)).toThrow(/BIVELIO_LICENSE_KEY/);
     expect(() => exigirLicenciaEnVivo(false, undefined)).not.toThrow();
     expect(() => exigirLicenciaEnVivo(true, "lic")).not.toThrow();
+    expect(() => exigirLicenciaEnVivo(true, undefined, true)).not.toThrow();
+  });
+
+  it("vigía de hosts: solo los proveedores; lo demás se rechaza y se anota (solo el host)", async () => {
+    const v = vigilarHosts((async () => new Response("{}")) as unknown as typeof fetch);
+    await v.fetch("https://api.openai.com/v1/chat/completions");
+    await expect(v.fetch("https://savings.bivelio.com/api/metering/usage?k=1")).rejects.toThrow(/no permitido/);
+    expect(v.vistos).toEqual({ "api.openai.com": 1 });
+    expect(v.rechazados).toEqual({ "savings.bivelio.com": 1 });
   });
 
   it("los topes de la batería: ≤ 1,25 $ por modelo y ≤ 1 $ Opus", () => {
