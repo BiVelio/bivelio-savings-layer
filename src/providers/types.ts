@@ -206,6 +206,19 @@ export interface ProviderResponse {
    */
   refusal?: string;
   /**
+   * True when this answer is a refusal the provider documents as NOT billed:
+   * Anthropic's Messages API refusal that arrives before any output, in a
+   * category its published table marks as not billed (`cyber`,
+   * `general_harms`, or a `null` category). See
+   * https://platform.claude.com/docs/en/build-with-claude/refusals-and-fallback
+   * («How refusals are billed»).
+   *
+   * The layer then measures this call at cost 0 and credits no saving on the
+   * request at all (measured, estimated or by reference). Absent means billed
+   * like any other call. Set it only from the provider's own response.
+   */
+  unbilledRefusal?: boolean;
+  /**
    * Llamadas a herramienta que pidió el modelo, tal cual las devolvió el
    * proveedor.
    *

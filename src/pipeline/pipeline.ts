@@ -500,6 +500,11 @@ export class SavingsPipeline {
   // lo queda: hace su propia llamada (ver las dos puertas del singleflight).
   private readonly noReproducibles = new WeakSet<object>();
 
+  // Los resultados de un líder que sirvió una negativa que el proveedor NO
+  // cobra (`ProviderResponse.unbilledRefusal`). Un seguidor de singleflight
+  // que la reciba no evitó una llamada con precio: tampoco acredita nada.
+  private readonly negativasSinCobro = new WeakSet<object>();
+
   /**
    * La verificación A/B opcional («tu propio banco»). Solo existe con
    * `verification` activa Y un destino para los pares (lo decide create.ts, que
@@ -3101,6 +3106,9 @@ export class SavingsPipeline {
     // acierto que nunca tuvo ocasión de producirse y apagaría la verja por una
     // medición que no es sobre ella.
     const usoDeLaLlamadaMarcada = response.usage;
+    // Y si esa llamada fue una negativa que el proveedor no cobra: entonces no
+    // hubo prima de escritura que pagar (ver `unbilledCall` en el ledger).
+    const marcadaSinCobro = response.unbilledRefusal === true;
     // Lo que el colocador apunta de la respuesta marcada además del contador:
     // su id y, si se pidió, el diagnóstico de caché. De la PRIMARIA, como el uso.
     const respuestaMarcada = {
@@ -3135,9 +3143,13 @@ export class SavingsPipeline {
         // Con la prima de escritura que el proveedor cobra por su cuenta (OpenAI
         // GPT-5.6+), salvo que la llamada la haya cargado ya por el camino de la
         // marca (más abajo, con `cacheWritePremium`): esta ES la llamada marcada.
+        // Una negativa del barato que el proveedor no cobra se cuenta (tokens)
+        // pero no se paga: su dinero es 0.
         ledger.cascadeAttempt(
           response.usage,
-          cascada.precioBarato ?? costModel,
+          response.unbilledRefusal === true
+            ? { inputPer1k: 0, outputPer1k: 0, cachedInputPer1k: 0 }
+            : (cascada.precioBarato ?? costModel),
           marcado.marcar && marcado.cacheWriteMultiplier > 1 ? 1 : primaDeEscrituraAutomatica(cascada.modeloServido),
         );
         ledger.actualLlm += 1;
@@ -3167,6 +3179,9 @@ export class SavingsPipeline {
     // precio y sumarla aquí la tarifaría al precio equivocado.
     ledger.actualInput += response.usage.inputTokens;
     ledger.actualOutput += response.usage.outputTokens;
+    // Una negativa que el proveedor documenta como NO cobrada: sus tokens se
+    // cuentan, pero se tarifan a 0 (ver `unbilledCall` en el ledger).
+    if (response.unbilledRefusal === true) ledger.unbilledCall(response.usage);
     // EL CONTADOR DE LA PRIMARIA, para el registro de referencia (etapa 12). Es
     // el de la llamada que produjo lo servido —la del fuerte si la cascada
     // escaló—, capturado AQUÍ porque la reparación reasigna `response`. El
@@ -3284,7 +3299,12 @@ export class SavingsPipeline {
     // llamada servida es la del fuerte, que viaja sin marca.
     const primaDelProveedor = primaDeEscrituraAutomatica(modeloServido);
     const primaYaCargada = !escalo && marcado.marcar && marcado.cacheWriteMultiplier > 1;
-    if (primaDelProveedor > 1 && !primaYaCargada && (response.usage.cacheWriteInputTokens ?? 0) > 0) {
+    if (
+      primaDelProveedor > 1 &&
+      !primaYaCargada &&
+      response.unbilledRefusal !== true &&
+      (response.usage.cacheWriteInputTokens ?? 0) > 0
+    ) {
       ledger.providerCacheWritePremium(response.usage.cacheWriteInputTokens ?? 0, primaDelProveedor, precioServido);
     }
 
@@ -3298,6 +3318,11 @@ export class SavingsPipeline {
       // hundiría la tasa de aciertos de la huella con un dato que no existe, y
       // la verja se apagaría por una lectura que nadie hizo.
       trace.record("prefix-cache", "not measured: the provider reported no usage for this call");
+    } else if (marcado.marcar && marcadaSinCobro) {
+      // La llamada marcada fue una negativa que el proveedor no cobra: no hubo
+      // prima que pagar, y un contador que no se facturó tampoco es una medición
+      // del acierto de la marca.
+      trace.record("prefix-cache", "not measured: the marked call was a refusal the provider does not bill");
     } else if (marcado.marcar) {
       // LA PRIMA DE ESCRITURA (1,25x en Anthropic) es un coste que ESTA marca
       // provoca, así que deja de quedarse solo en la traza y se carga en
@@ -3781,6 +3806,8 @@ export class SavingsPipeline {
           // así que el reintento se pagaba a sí mismo: una petición que costó el
           // doble que el camino naive se publicaba con ahorro POSITIVO.
           ledger.repairInput += response.usage.inputTokens;
+          // Si la reparación volvió como una negativa que no se cobra, vale 0.
+          if (response.unbilledRefusal === true) ledger.unbilledCall(response.usage);
           // SIN las herramientas: la llamada de reparación no las envía (mírala
           // arriba, no lleva `tools`). Contarlas aquí metía en la lectura local
           // tokens que el proveedor nunca facturó, y descuadraba la calibración
@@ -4155,6 +4182,37 @@ export class SavingsPipeline {
     // Ni un paso antes: la verja de reparación de arriba compara contra el
     // baseline de la petición, y la guarda es sobre la cifra que se PUBLICA.
     ledger.callsWithoutUsage = testigo.sinContador;
+    // UNA NEGATIVA QUE EL PROVEEDOR NO COBRA no acredita ningún ahorro
+    // (decisión del dueño, 2026-09-28): coste 0, baseline 0 y netSavings 0, y
+    // tampoco las palancas de precio que viajan al lado (tier diferido, prima de
+    // escritura evitada, el cambio de modelo de la cascada). Anthropic documenta
+    // que una negativa antes de cualquier salida en `cyber`, `general_harms` o
+    // categoría nula no se factura; tarifarla a `usage` × precio dejaba que una
+    // palanca acreditara ahorro sobre una petición de 0 $.
+    const sinCobro = response.unbilledRefusal === true;
+    if (sinCobro) {
+      ledger.servedUnbilledRefusal = true;
+      trace.record("cost", "unbilled refusal: measured at 0, no saving credited", {
+        reason:
+          "the provider documents a refusal before any output in this category as not billed; its tokens " +
+          "stay counted, priced at 0, and nothing is credited against a request that cost nothing",
+      });
+    }
+    const diferidoPublicado: DeferredExecutionReport | undefined =
+      sinCobro && diferido?.credited
+        ? {
+            ...(diferido.requestedTier ? { requestedTier: diferido.requestedTier } : {}),
+            ...(diferido.servedTier ? { servedTier: diferido.servedTier } : {}),
+            credited: false,
+            creditedLedger: "none",
+            latency: diferido.latency,
+            reason: "the provider did not bill this call (a refusal it documents as not billed), so no tier discount is credited",
+          }
+        : diferido;
+    const escriturasPublicadas: CacheWriteReport | undefined =
+      sinCobro && escrituras?.avoidedWritePremium
+        ? { mode: escrituras.mode, breakpoints: escrituras.breakpoints, reason: escrituras.reason }
+        : escrituras;
     const result = this.finish<T>(
       request, canonical, answer, "miss", ledger, precioServido, trace,
       route, formatChoice, undefined, undefined, structurallyValid,
@@ -4169,7 +4227,7 @@ export class SavingsPipeline {
         // peticiones ELEGIBLES: dar la cifra de un cambio que nunca podría
         // hacerse (sin contrato, con herramientas de escritura) sería enseñar un
         // ahorro que no está en la mesa.
-        ...(cascada.elegible && cascada.precioBarato
+        ...(cascada.elegible && cascada.precioBarato && !sinCobro
           ? {
               estimatedSwapSaving: ahorroDelCambio(
                 ledger,
@@ -4207,9 +4265,9 @@ export class SavingsPipeline {
       // `precioServido`, que es el precio de quien contesto. Las dos cosas tienen
       // que venir de la misma llamada, o el descuento se aplicaria a los tokens de
       // una y al precio de otra.
-      diferido,
+      diferidoPublicado,
       requestIdDeEsta,
-      escrituras,
+      escriturasPublicadas,
       {
         ...hechos,
         // Del `response` FINAL: tras la reparación o la escalada, que es el que
@@ -4227,6 +4285,8 @@ export class SavingsPipeline {
     if (typeof registro === "object") this.referenciasDeLider.set(result, registro);
     // Y si no se puede repetir, sus seguidores lo sabrán por aquí.
     if (noReproducible) this.noReproducibles.add(result);
+    // Y si lo servido es una negativa que no se cobró, sus seguidores tampoco acreditan.
+    if (sinCobro) this.negativasSinCobro.add(result);
     // Las tool calls y el finishReason viajan HASTA EL LLAMANTE. Se quedaban en
     // ProviderResponse: el arreglo del adaptador (content:null + tool_calls)
     // moría una capa más arriba porque aquí solo se copiaba `text`, y el cliente
@@ -5137,10 +5197,15 @@ export class SavingsPipeline {
     ledger.baselineInput = response.usage.inputTokens;
     ledger.baselineOutput = response.usage.outputTokens;
     if (response.usage.cachedInputTokens) ledger.providerCached(response.usage.cachedInputTokens);
+    // Una negativa que el proveedor no cobra: contada, tarifada a 0 y sin ahorro.
+    if (response.unbilledRefusal === true) {
+      ledger.unbilledCall(response.usage);
+      ledger.servedUnbilledRefusal = true;
+    }
     // La prima de escritura que el proveedor cobra por su cuenta (OpenAI
     // GPT-5.6+): a los dos lados, como en el camino optimizado.
     const primaDelProveedor = primaDeEscrituraAutomatica(request.model);
-    if (primaDelProveedor > 1 && (response.usage.cacheWriteInputTokens ?? 0) > 0) {
+    if (primaDelProveedor > 1 && response.unbilledRefusal !== true && (response.usage.cacheWriteInputTokens ?? 0) > 0) {
       ledger.providerCacheWritePremium(response.usage.cacheWriteInputTokens ?? 0, primaDelProveedor, costModel);
     }
     // El camino directo tampoco llama «medido» a un contador que falta.
@@ -5232,6 +5297,9 @@ export class SavingsPipeline {
     evaluacion: EvaluacionDeReferencia = { ok: false, reason: "absent" },
   ): SavingsResult<T> {
     const ledger = new SavingsLedger();
+    // El líder sirvió una negativa que el proveedor no cobra: la llamada que
+    // este seguidor «evitó» habría costado 0 $, así que no acredita nada.
+    if (this.negativasSinCobro.has(leader)) ledger.servedUnbilledRefusal = true;
     if (evaluacion.ok) {
       // La llamada del líder corrió intacta y la del seguidor es la misma byte
       // a byte: su evitada se valora con el contador del líder.

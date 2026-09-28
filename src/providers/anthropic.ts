@@ -16,6 +16,7 @@ import { MemoriaDeBusquedas, paresDeBusqueda, type BloqueCrudo } from "./busqued
 import {
   esBloqueDeRazonamiento,
   fusionarUso,
+  negativaNoCobrada,
   tierServidoDe,
   traducirParada,
   usoDeMensajes,
@@ -362,6 +363,10 @@ export class AnthropicProvider implements Provider {
     let vioDelta = false;
     let vioStop = false;
     let stopReason: string | undefined;
+    // Para saber si una negativa se cobra (negativaNoCobrada): el `stop_details`
+    // del `message_delta` y si llegó a abrirse algún bloque de contenido.
+    let stopDetails: unknown;
+    let bloquesVistos = 0;
     let razono = false;
     let idDelMensaje: string | undefined;
     let diagnostico: unknown;
@@ -382,6 +387,7 @@ export class AnthropicProvider implements Provider {
         // El diagnóstico llega en `message_start` («diagnostics appears on the message_start event»).
         diagnostico = data.message?.diagnostics;
       } else if (tipo === "content_block_start") {
+        bloquesVistos += 1;
         const b = data.content_block;
         if (esBloqueDeRazonamiento(b?.type)) razono = true;
         if (typeof data.index === "number" && b) {
@@ -413,6 +419,7 @@ export class AnthropicProvider implements Provider {
       } else if (tipo === "message_delta") {
         vioDelta = true;
         stopReason = data.delta?.stop_reason ?? stopReason;
+        if (data.delta && "stop_details" in data.delta) stopDetails = data.delta.stop_details;
         if (data.usage) usoDelta = fusionarUso(usoDelta, data.usage);
       } else if (tipo === "message_stop") {
         vioStop = true;
@@ -497,6 +504,16 @@ export class AnthropicProvider implements Provider {
           text,
           ...(toolCalls.length > 0 ? { toolCalls } : {}),
           ...(stopReason ? { finishReason: traducirParada(stopReason) } : {}),
+          ...(vioDelta &&
+          negativaNoCobrada({
+            stopReason,
+            stopDetails,
+            bloques: bloquesVistos,
+            outputTokens: usoDelta?.output_tokens,
+            iterations: (merged as { iterations?: unknown }).iterations,
+          })
+            ? { unbilledRefusal: true }
+            : {}),
           ...(servedServiceTier ? { servedServiceTier } : {}),
           ...(busqueda ? { toolSearch: busqueda } : {}),
           ...(idDelMensaje ? { providerMessageId: idDelMensaje } : {}),
@@ -1186,6 +1203,16 @@ export class AnthropicProvider implements Provider {
         text: textoFinal,
         ...(toolCalls.length > 0 ? { toolCalls } : {}),
         ...(json.stop_reason ? { finishReason: traducirParada(json.stop_reason) } : {}),
+        // Una negativa que Anthropic documenta como NO cobrada (anthropic-uso.ts).
+        ...(negativaNoCobrada({
+          stopReason: json.stop_reason,
+          stopDetails: json.stop_details,
+          bloques: Array.isArray(json.content) ? json.content.length : 0,
+          outputTokens: uso?.output_tokens,
+          iterations: uso?.iterations,
+        })
+          ? { unbilledRefusal: true }
+          : {}),
         ...(servedServiceTier ? { servedServiceTier } : {}),
         usage,
         structuredNatively: req.schema != null && contratoNativo,
@@ -1522,6 +1549,8 @@ interface RespuestaAnthropic {
     content?: unknown;
   }[];
   stop_reason?: string;
+  /** Con `stop_reason: "refusal"`: `{ type, category, explanation }`; null en las demás. */
+  stop_details?: unknown;
   usage?: {
     input_tokens?: number;
     output_tokens?: number;
@@ -1540,7 +1569,7 @@ interface EventoAnthropic {
   index?: number;
   message?: { id?: string; usage?: UsoAnthropic; diagnostics?: unknown };
   content_block?: { type?: string; id?: string; name?: string; content?: unknown };
-  delta?: { type?: string; text?: string; partial_json?: string; stop_reason?: string | null };
+  delta?: { type?: string; text?: string; partial_json?: string; stop_reason?: string | null; stop_details?: unknown };
   usage?: UsoAnthropic;
   error?: { type?: string; message?: string };
 }

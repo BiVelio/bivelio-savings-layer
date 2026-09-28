@@ -24,6 +24,7 @@ import {
   sueloDeReferencia,
   respuestaJsonFallida,
   negativaEnJson,
+  negativaNoCobradaEnJson,
   tierServidoDeRespuesta,
   type Atribucion,
   type ElisionAplicada,
@@ -588,6 +589,13 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
      * lado seguro.
      */
     entrega?: { entregada: boolean; tierServido?: string | undefined },
+    /**
+     * La respuesta es una negativa que Anthropic documenta como NO cobrada
+     * (antes de cualquier salida, en `cyber`, `general_harms` o categoría nula):
+     * se mide a coste 0 y no acredita ningún ahorro. En una gemela, la de su
+     * primaria (es la misma respuesta).
+     */
+    sinCobro?: boolean,
   ): void => {
     if (!emisor || !uso) {
       buzon.noMedido(
@@ -634,8 +642,10 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
           })
         : null;
       const informe = coalescida
-        ? informeCoalescido(requestId, model, medido, atribucion, valoracion?.ok ? valoracion.credit : null)
-        : informeMedido(requestId, servido, medido, atribucion, elision, rebaja, hermano, suscripcion === true, !upstreamOficial);
+        ? informeCoalescido(requestId, model, medido, atribucion, valoracion?.ok ? valoracion.credit : null, sinCobro === true)
+        : informeMedido(
+            requestId, servido, medido, atribucion, elision, rebaja, hermano, suscripcion === true, !upstreamOficial, sinCobro === true,
+          );
       emisor.record(informe);
       if (coalescida) recuento.replica();
       else recuento.medida();
@@ -648,7 +658,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       log(
         `[gateway] POST ${path} ${coalescida ? "· COALESCED (call avoided)" : ""} · ` +
           `${servido !== model ? `${model}→${servido} (sibling model)` : model} · ` +
-          `$${medido.costeUsd.toFixed(6)} (in ${medido.tokens.entrada}, cache↑${medido.tokens.cacheEscrita}` +
+          `$${(sinCobro ? 0 : medido.costeUsd).toFixed(6)} (in ${medido.tokens.entrada}, cache↑${medido.tokens.cacheEscrita}` +
           `${medido.tokens.cacheEscrita1h ? ` (1h ${medido.tokens.cacheEscrita1h})` : ""} ` +
           `cache↓${medido.tokens.cacheLeida}, out ${medido.tokens.salida})` +
           // S4a · el borrado que el PROVEEDOR declaró para esta respuesta. El
@@ -667,6 +677,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
                     ? " · thinking only (your config): counted, not credited"
                     : "")
             : "") +
+          (sinCobro ? " · refusal the provider does not bill: measured at $0, no saving credited" : "") +
           (suscripcion && !coalescida && (rebaja || hermano)
             ? " · subscription traffic: lever applied, saving not credited (no per-token invoice)"
             : "") +
@@ -1018,6 +1029,11 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
               suscripcionGemela,
               replica.primaria ?? null,
               { entregada, tierServido: tierServidoDeRespuesta(url.pathname, Buffer.concat(replica.chunks)) },
+              // La réplica ES la respuesta de la primaria: si esa negativa no se
+              // cobró, la llamada que la gemela evitó valía 0 $.
+              url.pathname === "/v1/messages" &&
+                ((obs instanceof ObservadorSse && obs.negativaNoCobrada()) ||
+                  negativaNoCobradaEnJson(url.pathname, Buffer.concat(replica.chunks))),
             );
             return;
           }
@@ -1479,7 +1495,11 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
           noMedido(requestId, req.method ?? "POST", url.pathname, upstream.status, true, porQue.motivo, porQue.aviso);
         } else {
           const elision = atribuir(observador instanceof ObservadorSse ? observador.elision() : null, uso);
-          medir(requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, elision, rebaja, inicioMs, hermano, suscripcion);
+          const sinCobro = url.pathname === "/v1/messages" && observador instanceof ObservadorSse && observador.negativaNoCobrada();
+          medir(
+            requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, elision, rebaja, inicioMs, hermano, suscripcion,
+            undefined, undefined, sinCobro,
+          );
           vigilarCache(url.pathname, cuerpo, codificacion, uso, ttlReescrito, sesionId);
         }
         // SIN clave no hay emisor y medir() vuelve en silencio: hasta 0.4.20
@@ -1500,7 +1520,10 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
         } else {
           // La elisión del proveedor (context_management) solo existe en Anthropic.
           const elision = url.pathname === "/v1/messages" ? elisionDeJson(respuesta) : null;
-          medir(requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, atribuir(elision, uso), rebaja, inicioMs, hermano, suscripcion);
+          medir(
+            requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, atribuir(elision, uso), rebaja, inicioMs, hermano, suscripcion,
+            undefined, undefined, negativaNoCobradaEnJson(url.pathname, respuesta),
+          );
           vigilarCache(url.pathname, cuerpo, codificacion, uso, ttlReescrito, sesionId);
         }
       } else if (jsonDesbordado) {
@@ -1562,7 +1585,11 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
           // Sin rebaja (la atribución de A exige el camino completo) pero CON el
           // hermano: el precio del modelo servido se pagó igual aunque el
           // cliente cerrara.
-          medir(requestId, cuerpoPeticion, uso, false, url.pathname, codificacion, atribucion, elision, undefined, inicioMs, hermano, suscripcion);
+          const sinCobro = url.pathname === "/v1/messages" && observador instanceof ObservadorSse && observador.negativaNoCobrada();
+          medir(
+            requestId, cuerpoPeticion, uso, false, url.pathname, codificacion, atribucion, elision, undefined, inicioMs, hermano, suscripcion,
+            undefined, undefined, sinCobro,
+          );
           vigilarCache(url.pathname, cuerpoPeticion, codificacion, uso, ttlReescrito, sesionId);
         } else {
           log(`[gateway] ${req.method} ${url.pathname} → client aborted; upstream cancelled`);

@@ -269,6 +269,19 @@ does not expose its base URL), the rule applies as it always has. The layer read
 configured base URL, not the wire: a custom `fetch` that sends the request elsewhere
 is not seen.
 
+**Provider refusals.** A refusal is measured like any other call and is never cached,
+repaired or replayed by reference. One kind is priced at 0: an Anthropic
+`stop_reason: "refusal"` that arrives before any output (no content block, zero output
+tokens) with `stop_details.category` set to `cyber`, `general_harms` or `null`. Anthropic
+documents these as
+[not billed](https://platform.claude.com/docs/en/build-with-claude/refusals-and-fallback#how-refusals-are-billed).
+Its tokens still appear in `report.tokens`. `cost.actual`, `cost.baselineEstimate` and
+`cost.netSavings` are all 0, so the request credits no saving: not measured, not
+estimated and not by reference. A concurrent identical request served from it credits
+nothing either. The same rule applies in the gateway. Any other refusal is priced from
+its `usage` as usual. That covers `bio`, `frontier_llm` and `reasoning_extraction`, a
+refusal after partial output, and a category the table does not list.
+
 **Streaming.** `generateStream()` takes the same request and hands you the answer as
 the provider writes it, then the same `SavingsReport`:
 

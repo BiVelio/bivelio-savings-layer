@@ -13,6 +13,7 @@ import type {
 import {
   esBloqueDeRazonamiento,
   fusionarUso,
+  negativaNoCobrada,
   tierServidoDe,
   traducirParada,
   usoDeMensajes,
@@ -200,6 +201,9 @@ class RespuestaDeMensajes {
   razono = false;
   reproducible = true;
   parada: string | undefined;
+  // Para saber si una negativa se cobra (ver negativaNoCobrada).
+  detallesDeParada: unknown;
+  bloquesVistos = 0;
   usoInicio: UsoAnthropic | undefined;
   usoDelta: UsoAnthropic | undefined;
   vioDelta = false;
@@ -209,6 +213,7 @@ class RespuestaDeMensajes {
   private readonly toolCallsJson: ToolCallRequest[] = [];
 
   bloque(b: Registro): void {
+    this.bloquesVistos += 1;
     if (esBloqueDeRazonamiento(b.type as string | undefined)) {
       this.razono = true;
       this.reproducible = false;
@@ -233,6 +238,7 @@ class RespuestaDeMensajes {
       }
     }
     this.parada = typeof msg.stop_reason === "string" ? msg.stop_reason : undefined;
+    this.detallesDeParada = msg.stop_details;
     this.usoInicio = esRegistro(msg.usage) ? (msg.usage as UsoAnthropic) : undefined;
     this.usoDelta = this.usoInicio;
     this.vioDelta = true;
@@ -285,6 +291,7 @@ class RespuestaDeMensajes {
         this.vioDelta = true;
         const d = esRegistro(data.delta) ? data.delta : {};
         if (typeof d.stop_reason === "string") this.parada = d.stop_reason;
+        if ("stop_details" in d) this.detallesDeParada = d.stop_details;
         if (esRegistro(data.usage)) this.usoDelta = fusionarUso(this.usoDelta, data.usage as UsoAnthropic);
         return undefined;
       }
@@ -327,6 +334,16 @@ class RespuestaDeMensajes {
       text: this.texto,
       ...(toolCalls.length > 0 ? { toolCalls } : {}),
       ...(this.parada ? { finishReason: traducirParada(this.parada) } : {}),
+      ...(this.vioDelta &&
+      negativaNoCobrada({
+        stopReason: this.parada,
+        stopDetails: this.detallesDeParada,
+        bloques: this.bloquesVistos,
+        outputTokens: this.usoDelta?.output_tokens,
+        iterations: iteraciones,
+      })
+        ? { unbilledRefusal: true }
+        : {}),
       ...(tier ? { servedServiceTier: tier } : {}),
       usage,
       ...(this.reproducible && this.parada === "end_turn" ? {} : { replayable: false }),

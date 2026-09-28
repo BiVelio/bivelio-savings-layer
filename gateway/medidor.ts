@@ -7,6 +7,7 @@ import { REFERENCE_OUTPUT_SHARE, type CostModel, type ReferenceCredit } from "..
 import type { SavingsReport } from "../src/contracts/types.js";
 import { PRIMA_ESCRITURA_CACHE, PRIMA_ESCRITURA_CACHE_1H, primaDeEscritura } from "../src/pricing/primas.js";
 import { extraDeCompactacion } from "../src/providers/iteraciones-de-compactacion.js";
+import { negativaNoCobrada } from "../src/providers/anthropic-uso.js";
 import { SseParser, type SseMessage } from "../src/providers/sse.js";
 import type { HuellaDeLaPrimaria } from "./coalescencia.js";
 import type { CambioDeModelo } from "./hermano.js";
@@ -58,6 +59,7 @@ export class ObservadorSse {
   private uso: UsoSse | null = null;
   private elisionObservada: ElisionAplicada | null = null;
   private paradaFinal: string | null = null;
+  private detallesDeParada: unknown = undefined;
   readonly eventos: Record<string, number> = {};
 
   observar(chunk: Buffer | string): void {
@@ -76,11 +78,12 @@ export class ObservadorSse {
           usage?: UsoSse;
           message?: { usage?: UsoSse };
           context_management?: unknown;
-          delta?: { stop_reason?: unknown };
+          delta?: { stop_reason?: unknown; stop_details?: unknown };
         };
         // E7 · el motivo de parada viaja en message_delta (en message_start va a
         // null). Solo se apunta: el passthrough no lo mira.
         if (ev === "message_delta" && typeof d.delta?.stop_reason === "string") this.paradaFinal = d.delta.stop_reason;
+        if (ev === "message_delta" && d.delta && "stop_details" in d.delta) this.detallesDeParada = d.delta.stop_details;
         // S4a · el borrado del proveedor viaja en el evento message_delta
         // (sondeado en vivo el 04-09: en message_start va a null).
         const elision = elisionDeContextManagement(d.context_management);
@@ -119,6 +122,26 @@ export class ObservadorSse {
   /** E7 · ¿cerró el stream con `stop_reason: "refusal"`? (ver `negativaEnJson`). */
   negativa(): boolean {
     return this.paradaFinal === "refusal";
+  }
+
+  /**
+   * ¿Es una negativa que Anthropic documenta como NO cobrada? Antes de
+   * cualquier salida (ningún `content_block_start` y `output_tokens` final 0) y
+   * en una categoría que su tabla marca «no» (ver `negativaNoCobrada`). Solo con
+   * el usage FINAL: sin él no hay nada que afirmar.
+   */
+  negativaNoCobrada(): boolean {
+    const uso = this.usageFinal();
+    return (
+      uso !== null &&
+      negativaNoCobrada({
+        stopReason: this.paradaFinal,
+        stopDetails: this.detallesDeParada,
+        bloques: this.eventos["content_block_start"] ?? 0,
+        outputTokens: uso.output_tokens,
+        iterations: uso.iterations,
+      })
+    );
   }
 }
 
@@ -745,6 +768,36 @@ export function negativaEnJson(path: string, cuerpo: Buffer | string): boolean {
 }
 
 /**
+ * ¿La respuesta JSON (`stream: false`) de `/v1/messages` es una negativa que
+ * Anthropic documenta como NO cobrada? `stop_reason: "refusal"`, `content`
+ * vacío, `output_tokens` 0 y una categoría que la tabla oficial marca «no»
+ * (`negativaNoCobrada`, src/providers/anthropic-uso.ts). Solo la API de
+ * Mensajes: OpenAI cuenta sus negativas en `usage` como salida y las cobra. Lo
+ * ilegible es false (se mide como siempre).
+ */
+export function negativaNoCobradaEnJson(path: string, cuerpo: Buffer | string): boolean {
+  if (path !== "/v1/messages") return false;
+  try {
+    const d = JSON.parse(typeof cuerpo === "string" ? cuerpo : cuerpo.toString("utf8")) as {
+      stop_reason?: unknown;
+      stop_details?: unknown;
+      content?: unknown;
+      usage?: { output_tokens?: unknown; iterations?: unknown } | null;
+    } | null;
+    if (d === null || typeof d !== "object") return false;
+    return negativaNoCobrada({
+      stopReason: d.stop_reason,
+      stopDetails: d.stop_details,
+      bloques: Array.isArray(d.content) ? d.content.length : -1,
+      outputTokens: d.usage?.output_tokens,
+      iterations: d.usage?.iterations,
+    });
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Parte G · el `service_tier` que el proveedor dice haber SERVIDO, leído de la
  * respuesta entera (la réplica que recibe la gemela), cada dialecto en su sitio:
  *   · `/v1/messages` (Anthropic): `usage.service_tier` — en el JSON, o en
@@ -923,8 +976,16 @@ export function informeMedido(
    * LiteLLM, un revendedor): tampoco se acredita dinero. Ver construirInforme.
    */
   upstreamNoOficial?: boolean,
+  /**
+   * true → la respuesta es una negativa que Anthropic documenta como NO
+   * cobrada (`negativaNoCobradaEnJson`, `ObservadorSse.negativaNoCobrada`): se
+   * mide a coste 0 y no se acredita nada. Ver construirInforme.
+   */
+  sinCobro?: boolean,
 ): SavingsReport {
-  return construirInforme(requestId, model, medido, false, atribucion, elision, rebaja, hermano, subscription, upstreamNoOficial);
+  return construirInforme(
+    requestId, model, medido, false, atribucion, elision, rebaja, hermano, subscription, upstreamNoOficial, sinCobro === true,
+  );
 }
 
 /**
@@ -1138,10 +1199,18 @@ export function informeCoalescido(
   medidoPrimaria: RegistroMedido,
   atribucion?: Atribucion,
   referencia?: ReferenceCredit | null,
+  /**
+   * true → la primaria fue una negativa que Anthropic no cobra: la llamada
+   * evitada habría costado 0 $ y la gemela no acredita nada (ni por referencia,
+   * que `primary-refused` ya descarta, ni estimado).
+   */
+  sinCobro?: boolean,
 ): SavingsReport {
   const suelo = referencia ? sueloDeReferencia(referencia) : 0;
-  if (!referencia || !(suelo > 0) || !Number.isFinite(suelo)) {
-    return construirInforme(requestId, model, medidoPrimaria, true, atribucion);
+  if (sinCobro === true || !referencia || !(suelo > 0) || !Number.isFinite(suelo)) {
+    return construirInforme(
+      requestId, model, medidoPrimaria, true, atribucion, undefined, undefined, undefined, false, false, sinCobro === true,
+    );
   }
   const informe = {
     requestId,
@@ -1242,7 +1311,17 @@ function construirInforme(
   hermano?: CambioDeModelo | null,
   subscription = false,
   upstreamNoOficial = false,
+  sinCobro = false,
 ): SavingsReport {
+  // UNA NEGATIVA QUE ANTHROPIC NO COBRA (decisión del dueño, 2026-09-28): una
+  // negativa antes de cualquier salida en `cyber`, `general_harms` o categoría
+  // nula trae `usage` con tokens, pero la factura es 0 $ (documentación oficial,
+  // «How refusals are billed»). Se mide a coste 0 —los tokens siguen contados:
+  // es lo que dijo el proveedor— y no acredita NINGÚN ahorro: ni la rebaja de
+  // TTL, ni el hermano, ni el suelo de la elisión, ni, en una gemela, la
+  // llamada evitada. Sin esto, una palanca podía acreditar ahorro `measured`
+  // sobre una petición que no se cobró.
+  if (sinCobro) medido = { ...medido, costeUsd: 0 };
   const entradaTotal = medido.tokens.entrada + medido.tokens.cacheLeida + medido.tokens.cacheEscrita;
   // ── LA PALANCA DE TARIFA · el primer euro MEDIDO de verdad ──────────────
   //
@@ -1282,17 +1361,19 @@ function construirInforme(
   // (`unofficial-upstream`), ahora también con la rebaja de TTL, el hermano y el
   // suelo de la elisión, que es dinero a precio de lectura de caché de lista.
   const acreditable = !coalescida && !subscription && !upstreamNoOficial;
+  // Y una negativa que no se cobró tampoco acredita palanca alguna (arriba).
+  const acreditaPalancas = acreditable && !sinCobro;
   const escrita5m = medido.tokens.cacheEscrita - medido.tokens.cacheEscrita1h;
   const sobrecosteEvitado =
-    acreditable && rebaja && rebaja.rebajadas > 0 && rebaja.yaEran5m === 0 && !rebaja.herramientaDeServidor && escrita5m > 0
+    acreditaPalancas && rebaja && rebaja.rebajadas > 0 && rebaja.yaEran5m === 0 && !rebaja.herramientaDeServidor && escrita5m > 0
       ? (escrita5m / 1_000) * medido.precio.inputPer1k * (PRIMA_ESCRITURA_CACHE_1H - PRIMA_ESCRITURA_CACHE)
       : 0;
-  const ahorroHermano = acreditable && hermano ? ahorroDeHermano(hermano, medido) : 0;
+  const ahorroHermano = acreditaPalancas && hermano ? ahorroDeHermano(hermano, medido) : 0;
   const baselineMedido = medido.costeUsd + sobrecosteEvitado + ahorroHermano;
   const ahorroMedido = sobrecosteEvitado + ahorroHermano;
   // B2 · el suelo de la elisión del proveedor (ver sueloDeElision). Una gemela
   // coalescida no viajó: no elidió nada y no tiene suelo.
-  const sueloElision = coalescida || upstreamNoOficial ? 0 : sueloDeElision(medido.precio, elision);
+  const sueloElision = coalescida || upstreamNoOficial || sinCobro ? 0 : sueloDeElision(medido.precio, elision);
   const informe = {
     requestId,
     model,
@@ -1321,7 +1402,8 @@ function construirInforme(
           // y si la primaria costó > $1 (opus caro) el ingest rechazaba el LOTE
           // completo por `> 1` — se perdían hasta 50 registros. Ver el contrato
           // en src/tokenizer/accounting.ts y la verja en lib/metering/usage.ts.
-          netSavings: 1,
+          // Sin cobro no hubo nada que evitar: 0, no el 100 %.
+          netSavings: sinCobro ? 0 : 1,
           basis: "estimated" as const,
         }
       : {
