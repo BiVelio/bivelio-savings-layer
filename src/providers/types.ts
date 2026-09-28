@@ -16,6 +16,10 @@ export interface ProviderRequest {
   tools?: ToolDescriptor[];
   /** Output contract to enforce via constrained decoding, when available. */
   schema?: JsonSchema;
+  /**
+   * Output cap chosen by the caller: the smaller of `SavingsRequest.maxOutputTokens`
+   * and `response.maxOutputTokens`. Each adapter maps it to its own field.
+   */
   maxOutputTokens?: number;
   temperature?: number;
   seed?: number;

@@ -1,6 +1,6 @@
 {
   "name": "@bivelio/savings-layer",
-  "version": "0.4.30",
+  "version": "0.4.31",
   "description": "The savings layer for your LLM bill: a library inside your code that lets through only what has to be paid for and returns a SavingsReport per call, measured with your provider's own meter and kept apart from estimates. Commercial license, paid per seat, commission only on measured savings. Your prompts never leave your infrastructure.",
   "keywords": [
     "llm",
@@ -134,6 +134,7 @@
     "catalogo:contraste": "tsx scripts/contraste-catalogo.ts",
     "cache-semantica:calibrada": "BVSALA_DEV_OPEN=1 tsx benchmarks/cache-semantica/calibrada.ts",
     "cache-semantica:simulacion": "tsx benchmarks/cache-semantica/simulacion.ts",
+    "bench:bfcl": "tsx --env-file-if-exists=.env.bench benchmarks/publicados/bfcl/arnes.ts",
     "bench:gsm8k": "tsx --env-file-if-exists=.env.bench benchmarks/publicados/gsm8k/arnes.ts"
   },
   "devDependencies": {

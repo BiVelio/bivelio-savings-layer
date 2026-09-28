@@ -16,7 +16,8 @@ import {
 } from "../benchmarks/delante-de-litellm/nucleo.js";
 import { arrancarUpstreamFalso, type UpstreamFalso } from "../benchmarks/latencia-gateways/upstream-falso.js";
 import { CATALOGO } from "../src/pricing/catalogo.js";
-import { BV_SALA_VERSION } from "../src/version.js";
+import { compararVersiones } from "../apps/web/lib/version/semver.js";
+import { BV_SALA_VERSION, VERSION_MINIMA_REFERENCIA } from "../src/version.js";
 
 /**
  * E6 · BV-SALA DELANTE DE LITELLM, en CI: sin Python ni red.
@@ -243,8 +244,11 @@ describe("HUECOS · los que contradecían (b): dos cerrados por el dueño (2026-
       const { doble } = await montar();
       const r = await repetirConElSdk({ protocolo: "openai", base: `${doble.origen}/v1`, modelo: "openai/gpt-4o-mini" });
       const repeticion = r.veredictos.find((v) => v.requestId === r.segunda.requestId)!;
-      // La versión del SDK sigue admitiendo referencia: lo que falta es el registro.
-      expect(r.lotes.every((l) => versionAdmiteReferencia(l.version))).toBe(true);
+      // Lo que falta es el registro, no la versión: el propio SDK ya lo emite
+      // `estimated` (basisEmitido), antes de la verja de versión del ingest, que
+      // hasta el PR de release de la mínima (0.4.31) también degradaría lo que
+      // declara `sdk/${BV_SALA_VERSION}`.
+      expect(r.lotes.every((l) => l.version === `sdk/${BV_SALA_VERSION}`)).toBe(true);
       expect(r.primera.referenceNotWritten).toBe("unofficial-origin");
       expect(repeticion.basisEmitido).toBe("estimated");
       expect(repeticion.basisIngerido).toBe("estimated");
@@ -345,25 +349,37 @@ describe("HUECOS · los que contradecían (b): dos cerrados por el dueño (2026-
  * constante de src/version.ts; la web la ata por texto en version.test.ts).
  * 0.4.24-0.4.28 podían repetir una negativa del proveedor como referencia:
  * #356 cerró `content_filter`/`refusal` en la 0.4.27 y #367 la de salidas
- * estructuradas de OpenAI en la 0.4.29 (BITACORA-2026-09-26 §8).
+ * estructuradas de OpenAI en la 0.4.29 (BITACORA-2026-09-26 §8). Y hasta la
+ * 0.4.30 la que el modelo escribe como TEXTO, sin señal del API: #384, en la
+ * 0.4.31 (dueño, 2026-09-28).
  */
-describe("VERSION_MINIMA_REFERENCIA — 0.4.29, la primera que no repite ninguna negativa", () => {
-  it("una referencia de 0.4.24-0.4.28 ya no es comisionable; de 0.4.29 en adelante sí", () => {
-    for (const no of ["sdk/0.4.24", "sdk/0.4.25", "sdk/0.4.26", "sdk/0.4.27", "sdk/0.4.28"]) {
+describe("VERSION_MINIMA_REFERENCIA — 0.4.31, la primera que no repite ninguna negativa", () => {
+  it("una referencia de 0.4.24-0.4.30 ya no es comisionable; de 0.4.31 en adelante sí", () => {
+    for (const no of ["sdk/0.4.24", "sdk/0.4.25", "sdk/0.4.26", "sdk/0.4.27", "sdk/0.4.28", "sdk/0.4.29", "sdk/0.4.30"]) {
       expect(versionAdmiteReferencia(no), no).toBe(false);
     }
-    for (const si of ["sdk/0.4.29", "sdk/0.4.30", "sdk/0.5.0"]) {
+    for (const si of ["sdk/0.4.31", "sdk/0.4.32", "sdk/0.5.0"]) {
       expect(versionAdmiteReferencia(si), si).toBe(true);
     }
   });
 
   it("controles: el gateway, una preliminar de la mínima y «sin versión» siguen fuera", () => {
-    for (const no of ["gateway/0.4.29", "sdk/0.4.29-rc.1", null]) {
+    for (const no of ["gateway/0.4.31", "sdk/0.4.31-rc.1", null]) {
       expect(versionAdmiteReferencia(no), String(no)).toBe(false);
     }
   });
 
-  it("lo que emite ESTE código entra: BV_SALA_VERSION no va por detrás de la mínima", () => {
-    expect(versionAdmiteReferencia(`sdk/${BV_SALA_VERSION}`)).toBe(true);
+  it("BV_SALA_VERSION: o ya alcanza la mínima (y entra), o la mínima es su siguiente parche", () => {
+    // La mínima va por DELANTE de BV_SALA_VERSION hasta el PR de release que la
+    // publique (src/version.ts): mientras tanto lo que emite este código entra
+    // como estimado, que es el lado seguro. Pero nunca más allá del siguiente
+    // parche: una errata degradaría para siempre.
+    if (compararVersiones(BV_SALA_VERSION, VERSION_MINIMA_REFERENCIA) >= 0) {
+      expect(versionAdmiteReferencia(`sdk/${BV_SALA_VERSION}`)).toBe(true);
+    } else {
+      const [a, b, c] = BV_SALA_VERSION.split(".").map(Number) as [number, number, number];
+      expect(VERSION_MINIMA_REFERENCIA).toBe(`${a}.${b}.${c + 1}`);
+      expect(versionAdmiteReferencia(`sdk/${BV_SALA_VERSION}`)).toBe(false);
+    }
   });
 });

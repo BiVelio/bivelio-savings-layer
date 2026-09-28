@@ -64,7 +64,7 @@ Scorer self-check: on all the triplets, the scorer used on this page reproduces 
 ## What this means for you
 
 - **Precision is the number to read.** A wrong reuse serves the answer to a different question and nothing downstream flags it; a missed reuse only costs the provider call you would have made anyway.
-- **It is opt-in three times over:** `savings.semanticCache` on the request, a `semanticCache` passed to `createSavingsLayer`, and the `semantic_cache` feature on your license.
+- **It is opt-in three times over:** `savings.semanticCache` on the request (or `semanticCacheDefault` on `createSavingsLayer`, for every request), a `semanticCache` passed to `createSavingsLayer`, and the `semantic_cache` feature on your license. Passing the cache alone switches nothing on, and the layer warns once when it has a cache that a request does not ask for.
 - **It stays off on agentic traffic** (requests that declare tools, carry tool calls or tool results, or hold more than one user turn) unless you set `savings.semanticCache: "include-agentic"`.
 - **Measure it on your own traffic before you rely on it.** Every semantic reuse reports its similarity and the floors it cleared in `report.qualityLedger.cacheMatch`, and `report.qualityStatus` marks it `task_equivalent`, never `exact`.
 - This page measures whether a reused answer was right to reuse. It does not measure, and does not claim, what a reuse saves.

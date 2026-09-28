@@ -4,6 +4,7 @@ import type {
   SavingsStream,
   SavingsStreamOptions,
 } from "../contracts/types.js";
+import { topeDeSalida } from "../contracts/tope-de-salida.js";
 import type { SavingsLayer } from "../pipeline/create.js";
 import { StreamAbortedError } from "../pipeline/errors.js";
 import { BV_SALA_VERSION } from "../version.js";
@@ -99,7 +100,7 @@ function atributosDePeticion(
   };
   numero(GEN_AI.temperatura, request.temperature);
   numero(GEN_AI.semilla, request.seed);
-  numero(GEN_AI.maxTokens, request.response?.maxOutputTokens);
+  numero(GEN_AI.maxTokens, topeDeSalida(request));
   if (stream) a[GEN_AI.stream] = true;
   const sesion = request.context?.sessionId;
   if (typeof sesion === "string" && sesion !== "") a[GEN_AI.conversacion] = sesion;

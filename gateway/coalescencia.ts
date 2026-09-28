@@ -78,6 +78,13 @@ export interface HuellaDeLaPrimaria {
    * la llamada evitada habría costado 0 $. Ausente = no.
    */
   negativa?: boolean;
+  /**
+   * E7-quater · la primaria fue una negativa que el MODELO escribió como texto
+   * normal (`end_turn`/`stop`, sin señal del API): la heurística conservadora
+   * `negativaEnTexto` (src/providers/negativa-en-texto.ts). Se mide, pero no se
+   * repite por referencia. Ausente = no.
+   */
+  negativaEnTexto?: boolean;
 }
 
 export interface RespuestaCapturada {

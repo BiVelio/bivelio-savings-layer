@@ -128,16 +128,18 @@ export function decidirAvisoVersion(
  * gateways sin dinero medido y excluye los SDK; esta solo mira SDK. Los dos
  * avisos pueden salir a la vez sin pisarse.
  *
- * Desde la 0.4.29 (decisión del dueño, BITACORA-2026-09-26 §8) el ingest
- * degrada a `estimated` toda referencia de un SDK anterior a
- * `VERSION_MINIMA_REFERENCIA` (lib/metering/version.ts, el espejo de
- * src/version.ts; nunca una copia aquí): de la 0.4.24 a la 0.4.28 el SDK podía
- * repetir una negativa del proveedor como referencia. Las repeticiones de esas
- * máquinas siguen en los totales, pero fuera de la base, hasta que actualicen.
+ * Desde la mínima 0.4.29 (decisión del dueño, BITACORA-2026-09-26 §8), hoy
+ * 0.4.31 (decisión del dueño, 2026-09-28), el ingest degrada a `estimated` toda
+ * referencia de un SDK anterior a `VERSION_MINIMA_REFERENCIA`
+ * (lib/metering/version.ts, el espejo de src/version.ts; nunca una copia aquí):
+ * de la 0.4.24 a la 0.4.28 el SDK podía repetir una negativa del proveedor como
+ * referencia, y hasta la 0.4.30 la que el modelo escribe como texto (#384).
+ * Las repeticiones de esas máquinas siguen en los totales, pero fuera de la
+ * base, hasta que actualicen.
  *
  * Mismo campo que el chip de versión (`versionMin`, que prefiere la ventana de
  * 7 días) y la MISMA verja que el ingest (`admiteReferencia`), no una
- * comparación propia: así una preliminar de la mínima (`sdk/0.4.29-rc.1`), que
+ * comparación propia: así una preliminar de la mínima (`sdk/0.4.31-rc.1`), que
  * el ingest degrada, también avisa.
  *   · Solo asientos NO CI vistos en 7 días, como el aviso del gateway.
  *   · Solo SDK: `surface` (la mayor versión) y `versionMin` declaran `sdk/`.

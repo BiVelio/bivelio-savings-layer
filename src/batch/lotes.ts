@@ -11,6 +11,7 @@ import type {
 } from "../contracts/batch.js";
 import type { JsonSchema, PriceLeverSaving, SavingsRequest } from "../contracts/types.js";
 import { validateAgainstSchema } from "../constraints/validate.js";
+import { topeDeSalida } from "../contracts/tope-de-salida.js";
 import { valorarTierServido, type MotivoSinValoracion } from "../economics/tier-diferido.js";
 import { BatchSubmitError } from "../pipeline/errors.js";
 import { tryParse } from "../pipeline/pipeline.js";
@@ -282,7 +283,7 @@ function aPeticionDeProveedor(r: SavingsRequest, marcarPrefijo: boolean): Provid
     messages: r.messages,
     ...(r.tools && r.tools.length > 0 ? { tools: r.tools } : {}),
     ...(r.response?.schema ? { schema: r.response.schema } : {}),
-    ...(r.response?.maxOutputTokens != null ? { maxOutputTokens: r.response.maxOutputTokens } : {}),
+    ...(topeDeSalida(r) != null ? { maxOutputTokens: topeDeSalida(r)! } : {}),
     ...(r.temperature != null ? { temperature: r.temperature } : {}),
     ...(r.seed != null ? { seed: r.seed } : {}),
     ...(marcarPrefijo && cabecera > 0 ? { stablePrefixMessages: cabecera } : {}),

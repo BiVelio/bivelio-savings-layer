@@ -282,6 +282,21 @@ nothing either. The same rule applies in the gateway. Any other refusal is price
 its `usage` as usual. That covers `bio`, `frontier_llm` and `reasoning_extraction`, a
 refusal after partial output, and a category the table does not list.
 
+Most refusals carry no signal from the API: the model writes "I can't help with that."
+as ordinary text and ends with `end_turn` or `stop`. The layer also looks for these,
+with a conservative text heuristic. It checks only the opening of the answer, or the
+whole answer when it is short, and it needs a real refusal clause, such as "I'm sorry,
+but I can't help with that", "I cannot assist" or "As an AI, I cannot provide". A
+single word is not enough. It covers English, Spanish, Catalan, French, German,
+Italian and Portuguese. A match is measured and served as usual. It is not written to
+the exact or semantic cache, and it is not replayed by reference. A concurrent
+identical request served from it is `estimated`. The trace says why
+(`skipReason: "text_refusal"`). A refusal already stored by an earlier version is not
+served either. In the gateway, the coalesced twin of such a response is `estimated`
+(`primary-text-refusal`). A false positive costs one cache hit. A normal answer that
+starts with "Sorry for the delay, here is…", or has "I can't" later on, is cached as
+before.
+
 **Streaming.** `generateStream()` takes the same request and hands you the answer as
 the provider writes it, then the same `SavingsReport`:
 
@@ -711,7 +726,11 @@ const placedLayer = createSavingsLayer({
 Calibrated reuse and `cacheBreakpoints: "auto"` learn from your traffic, and by default
 what they learn lives in the process. On serverless platforms (Vercel Functions, AWS
 Lambda) an instance may serve one request or live a few minutes, so neither would ever
-get past its starting point. Give each one somewhere to keep it:
+get past its starting point. Give each one somewhere to keep it. Giving the layer a
+`semanticCache` only says where reworded questions are kept; `semanticCacheDefault: true`
+is what switches reuse on for every request (a request's own `savings.semanticCache`
+still wins), and without it, or `savings.semanticCache` on each request, the cache
+stays empty and learns nothing:
 
 ```ts
 import { InMemorySemanticCache } from "@bivelio/savings-layer";
@@ -731,6 +750,8 @@ async function serverlessLayer(kv: SharedKeyValue) {
     provider,
     licenseKey: process.env.BIVELIO_LICENSE_KEY,
     semanticCache,
+    // Passing the cache does not switch it on; this asks for it on every request.
+    semanticCacheDefault: true,
     cacheBreakpoints: "auto",
     cacheBreakpointStore: {
       get: (key) => kv.get(key),
@@ -803,6 +824,35 @@ console.log(data.answer); // 8
 </details>
 
 <details>
+<summary><b>Output cap — with or without a contract</b></summary>
+
+`maxOutputTokens` on the request caps the answer of any request, free text
+included. With `response.maxOutputTokens` as well, the smaller of the two is sent.
+
+```ts
+const { text, finishReason } = await layer.generate({
+  model: "openai/gpt-5-mini",
+  messages: [{ role: "user", content: "Summarize this in two sentences: …" }],
+  maxOutputTokens: 300,
+});
+```
+
+On the wire it becomes Anthropic's `max_tokens`; on Chat Completions,
+`max_completion_tokens` when `baseUrl` is OpenAI's own API (`max_tokens` is
+deprecated there and its reasoning models, o-series and gpt-5.x, reject it) and
+`max_tokens` on any other OpenAI-compatible endpoint, which is the field they all
+understand. If an endpoint answers 400 naming the field it got as unsupported, the
+request is repeated once with the other one (nothing was generated, so nothing is
+billed twice) and the model is remembered. To choose the field yourself:
+`new OpenAICompatibleProvider({ baseUrl, maxTokensParam: "max_completion_tokens" })`.
+
+The cap is yours, not a saving: it is never credited as output avoided. An answer
+it cut (`finishReason: "length"`) is not cached, and
+`report.qualityLedger.truncation` says the limit was yours.
+
+</details>
+
+<details>
 <summary><b>Tool calls</b></summary>
 
 When you pass `tools` and the model asks to invoke one, the reply is not the final
@@ -862,13 +912,21 @@ each result answers and its `isError`. Two conversations that differ only there 
 share a cached answer; the fresh call ids of a new run of the same loop are not a
 difference.
 
+**Which tools reach the model.** The layer never cuts a catalogue it cannot rank. If
+your tools declare no `intents` and no `risk` (the usual shape of MCP and OpenAI tool
+lists), or you pass `savings: { router: false }`, every tool goes to the provider
+exactly as you sent it, and the layer credits nothing for the tool block. Only when
+your tools declare `intents`/`risk` does the selector keep the relevant ones, up to
+`new ToolSelector({ maxTools })` (8 by default), and hold back write tools from a
+request that is not an action. Whatever it leaves out, the model cannot call in that
+request: the report's `tool-selector` trace lists it, the tokens count as eliminated
+input, and the SDK warns once per process (`silenceWarnings` turns the warning off).
+
 **Large catalogues: let the provider search them (opt‑in).** With hundreds of tools
 (several MCP servers, say), `savings: { toolSearch: "auto" }` sends every tool deferred
-behind the provider's own tool search instead of letting the layer's selector keep a
-few. A catalogue that declares no `intents` or `risk` gives the selector nothing to go
-on, so it keeps the first ones and the model cannot call the rest; with the provider's
-search the model looks up what it needs, no tool you declared is out of reach, and the
-cached prompt prefix stays the same from one question to the next.
+behind the provider's own tool search instead of putting the whole catalogue in every
+request's prompt. The model looks up what it needs, no tool you declared is out of
+reach, and the cached prompt prefix stays the same from one question to the next.
 
 - **Where.** The Anthropic adapter, on models in Anthropic's tool search compatibility
   table. OpenAI documents its tool search for the Responses and Agents APIs, not for

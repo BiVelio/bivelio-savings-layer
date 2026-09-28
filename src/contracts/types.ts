@@ -122,7 +122,11 @@ export interface OutputContract {
   /** Stable identifier, e.g. "research-answer:v3". */
   contractId: string;
   schema: JsonSchema;
-  /** Hard ceiling on generated tokens. */
+  /**
+   * Hard ceiling on generated tokens for this contract. A free-text request (no
+   * schema) sets its ceiling with {@link SavingsRequest.maxOutputTokens}; when
+   * both are set, the smaller one is sent.
+   */
   maxOutputTokens?: number;
   /** Version marker included in the exact-cache key. */
   version?: string;
@@ -691,6 +695,19 @@ export interface SavingsRequest {
   /** Sampling controls that participate in the exact-cache key. */
   temperature?: number;
   seed?: number;
+  /**
+   * Hard ceiling on generated tokens for this request, with or without an
+   * output contract. It travels to every adapter: Anthropic `max_tokens`,
+   * Chat Completions `max_completion_tokens` on OpenAI's own API and
+   * `max_tokens` on any other OpenAI-compatible endpoint (see
+   * `OpenAICompatibleOptions.maxTokensParam`). When `response.maxOutputTokens`
+   * is also set, the smaller of the two is sent. Unset, nothing changes.
+   *
+   * It is a limit you set, not a saving: it never raises the estimated output
+   * of an avoided call and is never credited as output avoided. An answer cut
+   * by it (`finishReason: "length"`) is not cached. Must be a positive integer.
+   */
+  maxOutputTokens?: number;
   /** Tokenizer id to cost against; defaults to a model-derived estimate. */
   tokenizer?: string;
   /** Arbitrary structured payload to be serialized into the prompt. */
@@ -944,11 +961,12 @@ export interface QualityTruncationCheck {
   /** The stop reason exactly as the provider named it; absent when it reported none. */
   finishReason?: string;
   /**
-   * Whether you set the limit (`response.maxOutputTokens`). When false, any
+   * Whether you set the limit (`maxOutputTokens` on the request or on
+   * `response`). When false, any
    * limit that applied was a provider or adapter default.
    */
   capSetByCaller: boolean;
-  /** The limit you set, in output tokens. Present only when `capSetByCaller`. */
+  /** The limit that was sent (the smaller of the two when both were set). Present only when `capSetByCaller`. */
   outputLimit?: number;
 }
 

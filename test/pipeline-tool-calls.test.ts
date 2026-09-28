@@ -294,8 +294,8 @@ describe("el informe no certifica un contrato que no ha mirado", () => {
   });
 });
 
-describe("router:false respeta el presupuesto de esquemas", () => {
-  it("acota a maxTools en vez de mandar la lista entera al proveedor", async () => {
+describe("router:false manda las herramientas del llamante tal cual", () => {
+  it("no recorta a maxTools: las 30 llegan al proveedor y ninguna se acredita", async () => {
     const proveedor = new ProveedorConHerramientas(() => ({
       text: "ok",
       usage: { inputTokens: 10, outputTokens: 2 },
@@ -306,14 +306,16 @@ describe("router:false respeta el presupuesto de esquemas", () => {
       intents: [`intent ${i}`],
       risk: "read" as const,
     }));
-    await capa.generate({
+    const { report } = await capa.generate({
       model: "openai/gpt-4o-mini",
       messages: [{ role: "user", content: "haz algo" }],
       tools: muchas,
       savings: { router: false },
     });
-    // Sin el tope, 200 herramientas serían un 400 del proveedor y la petición
-    // fallaría en duro, sin rescate del fail-open.
-    expect((proveedor.llamadas[0]!.tools ?? []).length).toBe(8);
+    // Antes: las 8 primeras por posición («200 serían un 400 del proveedor»).
+    // También lo serían sin la capa; lo que la capa no puede hacer es dejar al
+    // modelo sin las herramientas 9 a 30 y acreditarlo como ahorro.
+    expect((proveedor.llamadas[0]!.tools ?? []).map((t) => t.id)).toEqual(muchas.map((t) => t.id));
+    expect(report.tokens.eliminatedInput).toBe(0);
   });
 });
