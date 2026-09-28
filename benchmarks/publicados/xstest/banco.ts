@@ -64,6 +64,7 @@ import {
   sha256Hex,
   TOPE_DURO_OPUS_USD,
   TOPE_DURO_POR_MODELO_USD,
+  VERSION_DEL_CLASIFICADOR,
   XSTEST_COMMIT,
   XSTEST_SHA256,
   XSTEST_URL,
@@ -561,6 +562,7 @@ export async function correrTirada(o: OpcionesDeTirada): Promise<Tirada> {
           familia: cfg.familia, tope, gastadoUsd: 0, planificados: 0, medidos: 0, cortadoPorPresupuesto: false,
           temperatura: cfg.temperatura ?? null, extraOpenAI: cfg.extraOpenAI ?? null, soloInseguros: cfg.soloInseguros ?? null,
           noMedible: motivo,
+          clasificador: VERSION_DEL_CLASIFICADOR,
         };
         log(`[xstest] ${cfg.id}: NO MEDIBLE — ${motivo}`);
         return;
@@ -630,6 +632,7 @@ export async function correrTirada(o: OpcionesDeTirada): Promise<Tirada> {
         temperatura: cfg.temperatura ?? null,
         extraOpenAI: cfg.extraOpenAI ?? null,
         soloInseguros: cfg.soloInseguros ?? null,
+        clasificador: VERSION_DEL_CLASIFICADOR,
       };
       log(`[xstest] ${cfg.id}: ${hechos}/${planificados} ítems, gastado ${presupuesto.gastado.toFixed(4)} $ (tope ${tope} $)`);
     }),

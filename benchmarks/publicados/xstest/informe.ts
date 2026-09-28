@@ -27,9 +27,13 @@ export interface Tirada {
       extraOpenAI: Record<string, unknown> | null;
       soloInseguros: number | null;
       noMedible?: string;
+      /** `VERSION_DEL_CLASIFICADOR` con el que se clasificaron sus respuestas (ausente = v1). */
+      clasificador?: string;
     }
   >;
   registros: RegistroDeItem[];
+  /** Si el documento junta modelos de más de una tirada: qué viene de cuál. */
+  fusion?: string;
   /** Solo en VIVO: los hosts a los que habló el proceso (y los que se rechazaron). */
   red?: { hostsVistos: Record<string, number>; hostsRechazados: Record<string, number> };
 }
@@ -228,7 +232,7 @@ export function construirInforme(t: Tirada): Informe {
           rep.negativasDeTexto.ahorroAcreditadoUsd += Math.max(0, ahorroUsd(x));
           if (x.llamadasAlProveedor === 0 || x.informe?.reference || x.informe?.basis === "reference") {
             hallazgos.push({
-              gravedad: r.B.clase.clase === "full_refusal" ? "alta" : "media",
+              gravedad: r.B.clase.clase === "full_refusal" && r.B.clase.fuente !== "redireccion" ? "alta" : "media",
               tipo: "negativa-de-texto-servida-o-acreditada",
               modelo,
               id: r.id,
@@ -314,7 +318,9 @@ export function construirInforme(t: Tirada): Informe {
         if (conRef) cubo.conReferencia++;
         if (aLaCache || conRef) {
           hallazgos.push({
-            gravedad: deApi || r.B.clase.clase === "full_refusal" ? "alta" : "media",
+            // Una derivación sin cláusula de negativa («I'm sorry to hear… talk to a mental health
+            // professional») queda fuera del diseño de #384 (exige una cláusula): media, no alta.
+            gravedad: deApi || (r.B.clase.clase === "full_refusal" && r.B.clase.fuente !== "redireccion") ? "alta" : "media",
             tipo: aLaCache ? "negativa-guardada-en-cache" : "negativa-con-registro-de-referencia",
             modelo,
             id: r.id,
@@ -367,6 +373,7 @@ export function renderizarMarkdown(t: Tirada, inf: Informe): string {
     "",
   );
   l.push(`**Cómo se ejecuta el paquete.** ${t.paquete["comoSeEjecuta"]}`, "");
+  if (t.fusion) l.push(`**Tiradas.** ${t.fusion}`, "");
   if (t.red) {
     l.push(
       `**Red.** Hosts contactados por el proceso: ${Object.entries(t.red.hostsVistos).map(([h, n]) => `${h} (${n})`).join(", ") || "ninguno"}; ` +
@@ -470,7 +477,7 @@ export function renderizarMarkdown(t: Tirada, inf: Informe): string {
   l.push("## Configuración por modelo", "");
   for (const [m, c] of Object.entries(t.porModelo)) {
     l.push(
-      `- ${m}: temperatura ${c.temperatura ?? "por defecto"}${c.extraOpenAI ? `, ${JSON.stringify(c.extraOpenAI)}` : ""}${c.soloInseguros ? `, solo ${c.soloInseguros} inseguros` : ""}; tope ${c.tope} $.`,
+      `- ${m}: temperatura ${c.temperatura ?? "por defecto"}${c.extraOpenAI ? `, ${JSON.stringify(c.extraOpenAI)}` : ""}${c.soloInseguros ? `, solo ${c.soloInseguros} inseguros` : ""}; tope ${c.tope} $; clasificador ${c.clasificador ?? "v1"}.`,
     );
   }
   l.push("");
