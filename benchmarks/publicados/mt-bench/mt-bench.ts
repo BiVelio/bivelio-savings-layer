@@ -292,7 +292,7 @@ async function cargarPaquete(): Promise<{ mod: ModuloDelPaquete; integrity: stri
   const { dir, integrityInstalada } = asegurarPaquete();
   const entrada = join(dir, "node_modules", "@bivelio", "savings-layer", "dist", "index.js");
   const mod = (await import(pathToFileURL(entrada).href)) as ModuloDelPaquete;
-  if (mod.BV_SALA_VERSION !== PAQUETE.version) {
+  if ((mod.BV_SALA_VERSION as string) !== PAQUETE.version) {
     throw new Error(`MT-Bench: el paquete cargado dice ser ${mod.BV_SALA_VERSION}, esperado ${PAQUETE.version}`);
   }
   return { mod, integrity: integrityInstalada };
