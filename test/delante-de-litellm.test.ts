@@ -310,6 +310,9 @@ describe("HUECOS · los que contradecían (b): dos cerrados por el dueño (2026-
       // Antes: 50.000 × entrada de haiku-4-5 × 0,75 acreditados y en la base.
       expect(v.ahorroUsd).toBe(0);
       expect(v.enLaBase).toBe(false);
+      // Y la línea de log lo dice: es lo que la prueba con LiteLLM de verdad
+      // (e2e.ts, S8) comprueba, porque allí el upstream no declara escrituras.
+      expect(r.lineas.some((l) => l.includes("unofficial upstream: lever applied, saving not credited"))).toBe(true);
     },
     PLAZO,
   );

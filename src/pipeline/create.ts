@@ -138,6 +138,13 @@ export function createSavingsLayer(
   config: Omit<SavingsLayerConfig, "tokenizer"> &
     Partial<Pick<SavingsLayerConfig, "tokenizer">>,
 ): SavingsLayer {
+  // EL PORTERO DE LOS AVISOS DE ESTE FICHERO: una vez por causa y por proceso, y
+  // nada con `silenceWarnings`. Todo aviso de aquí pasa por él —crear diez capas
+  // no son diez avisos iguales, y el interruptor no admite excepciones—; hay un
+  // test que recorre el fichero y falla si aparece un `console.warn` suelto.
+  const avisar = (clave: string, mensaje: string): void => {
+    if (config.silenceWarnings !== true) avisarUnaVez(clave, mensaje);
+  };
   // En el paquete PUBLICADO se descarta cualquier `licenseGate` inyectado por el
   // llamante. Era la vía MÁS FÁCIL de saltarse el pago —más aún que la clave
   // falsa que ya cerramos, porque no exige ni firmar un token—: bastaba
@@ -153,7 +160,8 @@ export function createSavingsLayer(
     // publicado en npm y leído en cualquier parte del mundo: quien lo recibía no
     // sabía si era un aviso, un error o una traza, y encima llega justo cuando ya
     // está atascado con la licencia.
-    console.warn(
+    avisar(
+      "licenseGate-ignorado",
       "[bvsala] Ignoring the injected `licenseGate`: in the published package a license is " +
         "only accepted as a `licenseKey` verified against BiVelio's embedded public key. " +
         "Get yours at https://savings.bivelio.com/dashboard/install",
@@ -278,11 +286,8 @@ export function createSavingsLayer(
   // un valor inválido, APAGADA y avisada (nunca recortada: cada copia es gasto
   // real del cliente). Sin destino para los pares no se manda ninguna copia.
   const ajustesVerif = normalizarAjustes(config.verification);
-  const avisarVerif = (clave: string, mensaje: string): void => {
-    if (config.silenceWarnings !== true) avisarUnaVez(clave, mensaje);
-  };
   if (!ajustesVerif.activo && ajustesVerif.motivo === "invalido") {
-    avisarVerif("verificacion-invalida", avisoDeVerificacionInvalida(config.verification));
+    avisar("verificacion-invalida", avisoDeVerificacionInvalida(config.verification));
   }
   let emisorVerif: EmisorDeVerificacion | undefined;
   let sumideroVerif: SumideroDeVerificacion | undefined;
@@ -299,7 +304,7 @@ export function createSavingsLayer(
       }
     }
     if (!urlVerif && !ajustesVerif.onCheck) {
-      avisarVerif("verificacion-sin-destino", AVISO_VERIFICACION_SIN_DESTINO);
+      avisar("verificacion-sin-destino", AVISO_VERIFICACION_SIN_DESTINO);
     } else {
       if (urlVerif && config.serviceAccountKey) {
         emisorVerif = new EmisorDeVerificacion({
@@ -324,7 +329,7 @@ export function createSavingsLayer(
       };
       // Una vez por capa (la clave lleva la tasa: dos capas con tasas distintas
       // avisan cada una de lo suyo).
-      avisarVerif(`verificacion-activa:${ajustesVerif.tasa}`, avisoDeVerificacionActiva(ajustesVerif.tasa));
+      avisar(`verificacion-activa:${ajustesVerif.tasa}`, avisoDeVerificacionActiva(ajustesVerif.tasa));
     }
   }
 
@@ -340,12 +345,13 @@ export function createSavingsLayer(
       (config.licenseServerUrl
         ? `${config.licenseServerUrl.replace(/\/+$/, "")}/api/metering/usage`
         : undefined);
-    if (!meteringUrl && config.silenceWarnings !== true) {
+    if (!meteringUrl) {
       // Silently doing nothing was the failure mode: the customer pasted the
       // snippet, dropped `licenseServerUrl`, and got a layer that neither metered
       // nor picked up the renewed token — so the dashboard stayed empty and the
       // license died fail-closed at the end of the cycle, paid up. Say it once.
-      console.warn(
+      avisar(
+        "clave-de-servicio-sin-servidor",
         "[bvsala] `serviceAccountKey` is set but there is no `licenseServerUrl` (or `meteringUrl`): " +
           "seat metering and automatic license renewal are OFF, so nothing will reach your " +
           "dashboard and a renewed license will not be picked up. Add " +
@@ -411,8 +417,8 @@ export function createSavingsLayer(
       const result = await pipeline.generate<T>(request);
       // Después de la petición, no antes: un llamante sin licencia debe ver el
       // error de licencia, no un aviso sobre el tokenizador.
-      if (!exacto && config.silenceWarnings !== true && MODELOS_CON_EXACTO.has(request.model)) {
-        avisarUnaVez("tokenizador-exacto-ausente", AVISO_TOKENIZADOR);
+      if (!exacto && MODELOS_CON_EXACTO.has(request.model)) {
+        avisar("tokenizador-exacto-ausente", AVISO_TOKENIZADOR);
       }
       if (emitter) {
         try {
@@ -442,8 +448,8 @@ export function createSavingsLayer(
             }
           }
           const exacto = await exactoListo;
-          if (!exacto && config.silenceWarnings !== true && MODELOS_CON_EXACTO.has(request.model)) {
-            avisarUnaVez("tokenizador-exacto-ausente", AVISO_TOKENIZADOR);
+          if (!exacto && MODELOS_CON_EXACTO.has(request.model)) {
+            avisar("tokenizador-exacto-ausente", AVISO_TOKENIZADOR);
           }
         },
         () => {},

@@ -264,7 +264,7 @@
       "statusNext": "sıradaki",
       "statusPending": "beklemede",
       "nextLabel": "Sıradaki: {label}",
-      "installComment": "# sağlayıcınızın önüne yerleştirin — prompt'larınız altyapınızdan asla çıkmaz",
+      "installComment": "# yığınınızı algılar ve tam bağlantı kodunu yazdırır — prompt'larınız altyapınızdan asla çıkmaz",
       "hintLicense": "BiVelio lisans anahtarınızı yapıştırın; böylece SDK, yönetilen özellikleri açar ve kullanımı raporlar.",
       "hintFirstReport": "Gerçek bir sağlayıcı çağrısını sarmalayın — ilk SavingsReport buraya düşer ve sayacınız canlanır.",
       "hintDefault": "Bu, ilk usage_daily satırınız geldiği anda açılır."

@@ -264,7 +264,7 @@
       "statusNext": "als Nächstes",
       "statusPending": "ausstehend",
       "nextLabel": "Als Nächstes: {label}",
-      "installComment": "# setze es vor deinen Provider — deine Prompts verlassen niemals deine Infrastruktur",
+      "installComment": "# erkennt deinen Stack und gibt die genaue Einbindung aus — deine Prompts verlassen niemals deine Infrastruktur",
       "hintLicense": "Füge deinen BiVelio-Lizenzschlüssel ein, damit das SDK die verwalteten Funktionen freischaltet und die Nutzung meldet.",
       "hintFirstReport": "Umschließe einen echten Provider-Aufruf — der erste SavingsReport landet hier und dein Zähler geht live.",
       "hintDefault": "Das wird freigeschaltet, sobald deine erste usage_daily-Zeile eintrifft."

@@ -126,7 +126,6 @@ export class RevocationPoller {
   private consecutiveFailures = 0;
   private stopped = false;
   private started = false;
-  private warnedNoFetch = false;
   /** ETag of the last 200; sent as If-None-Match so an unchanged list 304s (cheap no-op). */
   private lastEtag: string | null = null;
   /** 304 seguidos; al llegar al tope se fuerza una descarga firmada. */
@@ -151,12 +150,11 @@ export class RevocationPoller {
   async pollOnce(): Promise<void> {
     const f = this.resolveFetch();
     if (!f) {
-      if (!this.warnedNoFetch) {
-        this.warnedNoFetch = true;
-        console.warn(
-          "[bv-sala] no global fetch available; revocation call-home disabled (offline). License expiry is still enforced from the token.",
-        );
-      }
+      // Por el portero, como los demás: una vez y callado con `silenceWarnings`.
+      this.avisar(
+        "sin-fetch",
+        "[bv-sala] no global fetch available; revocation call-home disabled (offline). License expiry is still enforced from the token.",
+      );
       this.opts.onEvent?.({ type: "no-fetch" });
       return;
     }

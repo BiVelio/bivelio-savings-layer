@@ -264,7 +264,7 @@
       "statusNext": "następny",
       "statusPending": "oczekuje",
       "nextLabel": "Następny: {label}",
-      "installComment": "# umieść to przed swoim dostawcą — Twoje prompty nigdy nie opuszczają Twojej infrastruktury",
+      "installComment": "# wykrywa Twój stos i wypisuje dokładne podłączenie — Twoje prompty nigdy nie opuszczają Twojej infrastruktury",
       "hintLicense": "Wklej klucz licencyjny BiVelio, aby SDK odblokował funkcje zarządzane i raportował użycie.",
       "hintFirstReport": "Opakuj prawdziwe wywołanie dostawcy — pierwszy SavingsReport trafi tutaj, a Twój licznik ruszy na żywo.",
       "hintDefault": "To odblokuje się w chwili, gdy pojawi się Twój pierwszy wiersz usage_daily."

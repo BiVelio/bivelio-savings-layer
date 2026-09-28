@@ -85,3 +85,61 @@ describe("el panel de instalación renderiza en los 12 idiomas", () => {
     });
   }
 });
+
+/**
+ * EL PASO «SDK installed» DEL INICIO DEL PANEL DICE LO MISMO QUE EL PANEL DE
+ * INSTALACIÓN. Seguía mostrando `pnpm add @bivelio/savings-layer` cuando el panel
+ * ya recomendaba `init` (#355): la primera pantalla tras entrar mandaba por la
+ * vía que la segunda presentaba como la alternativa.
+ */
+const { InstrumentationSpine } = await import("./components/InstrumentationSpine");
+
+const PASOS = ["Account created", "SDK installed", "License active", "First report", "Live meter"] as const;
+
+async function renderizarEspina(loc: string, actual: (typeof PASOS)[number]): Promise<string> {
+  estado.locale = loc;
+  estado.messages = mensajesDe(loc) as Record<string, unknown>;
+  const t = createTranslator({ locale: loc, messages: estado.messages as AbstractIntlMessages, namespace: "dashboard" as never, onError: lanzar });
+  const claves: Record<(typeof PASOS)[number], string> = {
+    "Account created": "overview.steps.accountCreated",
+    "SDK installed": "overview.steps.sdkInstalled",
+    "License active": "overview.steps.licenseActive",
+    "First report": "overview.steps.firstReport",
+    "Live meter": "overview.steps.liveMeter",
+  };
+  const i = PASOS.indexOf(actual);
+  const steps = PASOS.map((id, j) => ({
+    id,
+    label: t(claves[id] as never),
+    status: j < i ? ("done" as const) : j === i ? ("current" as const) : ("pending" as const),
+  }));
+  const arbol = await InstrumentationSpine({ steps });
+  return renderToString(
+    createElement(NextIntlClientProvider, {
+      locale: loc,
+      messages: estado.messages as AbstractIntlMessages,
+      timeZone: "UTC",
+      onError: lanzar,
+      children: arbol,
+    }),
+  );
+}
+
+describe("el paso «SDK installed» del inicio recomienda `init`, en los 12 idiomas", () => {
+  for (const loc of LOCALES) {
+    it(loc, async () => {
+      const html = await renderizarEspina(loc, "SDK installed");
+      expect(html).toContain("npx @bivelio/savings-layer@latest init");
+      expect(html).not.toContain("pnpm add");
+    });
+  }
+
+  it("las pistas de los pasos siguientes salen por el `id`, no por la etiqueta traducida", async () => {
+    // La etiqueta va traducida; comparar contra «License active» solo casaba en
+    // inglés y en los otros 11 idiomas salía la pista genérica.
+    const es = mensajesDe("es") as { dashboard: { instrumentationSpine: Record<string, string> } };
+    const pistas = es.dashboard.instrumentationSpine;
+    expect(await renderizarEspina("es", "License active")).toContain(pistas["hintLicense"]!.slice(0, 30));
+    expect(await renderizarEspina("es", "First report")).toContain(pistas["hintFirstReport"]!.slice(0, 30));
+  });
+});

@@ -264,7 +264,7 @@
       "statusNext": "prossimo",
       "statusPending": "in attesa",
       "nextLabel": "Prossimo: {label}",
-      "installComment": "# mettilo davanti al tuo provider — i tuoi prompt non lasciano mai la tua infrastruttura",
+      "installComment": "# rileva il tuo stack e stampa il collegamento esatto — i tuoi prompt non lasciano mai la tua infrastruttura",
       "hintLicense": "Incolla la tua chiave di licenza BiVelio affinché l'SDK sblocchi le funzionalità gestite e riporti l'utilizzo.",
       "hintFirstReport": "Avvolgi una chiamata reale al provider: il primo SavingsReport arriva qui e il tuo contatore si attiva.",
       "hintDefault": "Si sblocca nel momento in cui arriva la tua prima riga usage_daily."

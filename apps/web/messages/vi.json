@@ -264,7 +264,7 @@
       "statusNext": "tiếp theo",
       "statusPending": "đang chờ",
       "nextLabel": "Tiếp theo: {label}",
-      "installComment": "# đặt nó trước nhà cung cấp của bạn — prompt của bạn không bao giờ rời khỏi hạ tầng của bạn",
+      "installComment": "# phát hiện stack của bạn và in ra cách kết nối chính xác — prompt của bạn không bao giờ rời khỏi hạ tầng của bạn",
       "hintLicense": "Dán khóa cấp phép BiVelio của bạn để SDK mở khóa các tính năng được quản lý và báo cáo mức sử dụng.",
       "hintFirstReport": "Bao bọc một lệnh gọi nhà cung cấp thực — SavingsReport đầu tiên sẽ xuất hiện ở đây và đồng hồ đo của bạn được kích hoạt.",
       "hintDefault": "Điều này được mở khóa ngay khi hàng usage_daily đầu tiên của bạn xuất hiện."

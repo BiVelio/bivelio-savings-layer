@@ -264,7 +264,7 @@
       "statusNext": "volgende",
       "statusPending": "in behandeling",
       "nextLabel": "Volgende: {label}",
-      "installComment": "# plaats het vóór je provider — je prompts verlaten nooit je eigen infrastructuur",
+      "installComment": "# herkent je stack en drukt de exacte koppeling af — je prompts verlaten nooit je eigen infrastructuur",
       "hintLicense": "Plak je BiVelio-licentiesleutel zodat de SDK de beheerde functies ontgrendelt en het gebruik rapporteert.",
       "hintFirstReport": "Wikkel een echte provideraanroep in — het eerste SavingsReport landt hier en je meter gaat live.",
       "hintDefault": "Dit wordt ontgrendeld zodra je eerste usage_daily-rij binnenkomt."

@@ -217,10 +217,12 @@ async function main(): Promise<void> {
     const s5 = await repetirConElSdk({ protocolo: "openai", base: `${conCache.origen}/v1`, modelo: "openai/gpt-4o-mini", capas: 2 });
     const llegaron5 = (upstream.recuento()["chat"] ?? 0) - antes5;
     const aciertoLiteLLM = s5.cabecerasDelProxy[1]?.["x-litellm-cache-key"] !== undefined;
-    // HUECO 3: el acierto de la caché de LiteLLM llega al SDK como una llamada
-    // normal, con el `usage` original, y el SDK la da por `measured`.
-    comprobar("S5 HUECO caché de LiteLLM", llegaron5 === 1 && aciertoLiteLLM && s5.segunda.basis === "measured",
-      `al upstream llegaron ${llegaron5}; la segunda instancia recibió un acierto de LiteLLM (${aciertoLiteLLM}) y el SDK lo reporta ${s5.segunda.basis} con actual ${s5.segunda.actualUsd.toExponential(3)} USD; cabecera de coste 1ª ${s5.cabecerasDelProxy[0]?.["x-litellm-response-cost"]} · 2ª ${s5.cabecerasDelProxy[1]?.["x-litellm-response-cost"]}`);
+    // HUECO 3 (abierto): el acierto de la caché de LiteLLM llega al SDK como una
+    // llamada normal, con el `usage` original, y el SDK la da por `measured`. Lo
+    // que sí cambió con el CERRADO 1 (#363): ese contador copiado ya no deja
+    // registro de referencia (`unofficial-origin`).
+    comprobar("S5 HUECO caché de LiteLLM", llegaron5 === 1 && aciertoLiteLLM && s5.segunda.basis === "measured" && s5.segunda.referenceNotWritten === "unofficial-origin",
+      `al upstream llegaron ${llegaron5}; la segunda instancia recibió un acierto de LiteLLM (${aciertoLiteLLM}) y el SDK lo reporta ${s5.segunda.basis} (sin registro: ${s5.segunda.referenceNotWritten ?? "—"}) con actual ${s5.segunda.actualUsd.toExponential(3)} USD; cabecera de coste 1ª ${s5.cabecerasDelProxy[0]?.["x-litellm-response-cost"]} · 2ª ${s5.cabecerasDelProxy[1]?.["x-litellm-response-cost"]}`);
 
     // S6 · el gateway con LiteLLM como upstream: la gemela coalescida.
     const antes6 = upstream.recuento()["chat"] ?? 0;
@@ -250,10 +252,15 @@ async function main(): Promise<void> {
     const s8 = await rebajarTtlConElGateway({ upstream: plano.origen });
     const recibida8 = JSON.parse(await ultimaPeticion(origenUpstream)) as { system?: { cache_control?: { ttl?: string } }[] };
     const ttl8 = recibida8.system?.[0]?.cache_control?.ttl;
-    // HUECO 2 (lo ata el test de CI con un upstream que declara escrituras): la
-    // rebaja llega al proveedor a través de LiteLLM y se acredita a precio de
-    // lista aunque el upstream no sea oficial.
-    comprobar("S8 palanca de TTL por LiteLLM", s8.estados[0] === 200 && ttl8 === "5m", `el upstream recibió ttl=${ttl8 ?? "(ninguno)"}; registro ${s8.veredictos[0]?.basisEmitido} con ahorro ${s8.veredictos[0]?.ahorroUsd} USD (el upstream falso no declara escrituras de caché)`);
+    // CERRADO 2 (2026-09-28, #362; lo ata el test de CI con un upstream que SÍ
+    // declara escrituras): la rebaja cruza LiteLLM hasta el proveedor, pero
+    // detrás de un upstream no oficial el gateway mide y no acredita, y la línea
+    // de log lo dice. El ahorro 0 de aquí no lo demuestra por sí solo —el
+    // upstream falso no declara escrituras de caché—; lo demuestra la línea.
+    const v8 = s8.veredictos[0];
+    const noAcreditado8 = s8.lineas.some((l) => l.includes("unofficial upstream: lever applied, saving not credited"));
+    comprobar("S8 CERRADO palanca de TTL por LiteLLM", s8.estados[0] === 200 && ttl8 === "5m" && noAcreditado8 && v8?.ahorroUsd === 0 && v8.enLaBase === false,
+      `el upstream recibió ttl=${ttl8 ?? "(ninguno)"}; el gateway dice «no acreditado» por upstream no oficial: ${noAcreditado8 ? "sí" : "NO"}; registro ${v8?.basisEmitido} con ahorro ${v8?.ahorroUsd} USD, en la base: ${v8?.enLaBase ? "SÍ" : "no"}`);
 
     const evidencia = {
       experimento: "E6 · BV-SALA delante de LiteLLM (informe de competencia 2026-09-27, §10)",
@@ -303,9 +310,11 @@ async function main(): Promise<void> {
     await upstream.cerrar();
     rmSync(casa, { recursive: true, force: true });
   }
-  // «Como se esperaba» = como dice el código de hoy. Las líneas HUECO son
-  // comportamiento actual que contradice la hipótesis (b) y decide el dueño.
-  console.log(`\n${fallos === 0 ? "Todo como dice el código de hoy (las líneas HUECO las decide el dueño)." : `${fallos} comprobación(es) no salieron como dice el código de hoy.`}`);
+  // «Como se esperaba» = como dice el código de hoy. Las líneas CERRADO son los
+  // huecos 1 y 2 que el dueño cerró el 2026-09-28 (#363 y #362) y ya exigen el
+  // comportamiento nuevo; la línea HUECO (el 3, la caché de LiteLLM) es
+  // comportamiento actual que contradice la hipótesis (b) y sigue abierto.
+  console.log(`\n${fallos === 0 ? "Todo como dice el código de hoy (la línea HUECO, la caché de LiteLLM, sigue abierta)." : `${fallos} comprobación(es) no salieron como dice el código de hoy.`}`);
   process.exitCode = fallos === 0 ? 0 : 1;
 }
 

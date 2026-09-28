@@ -1,6 +1,6 @@
 import { TIER_DIFERIBLE_OPENAI } from "../economics/tier-diferido.js";
 import { explicitaAplicable } from "../economics/escrituras-de-cache.js";
-import { avisarUnaVez } from "../util/warn-once.js";
+import { avisarDelProveedor } from "./atestado-del-cable.js";
 import {
   atestiguar,
   atestiguarOrigen,
@@ -338,7 +338,8 @@ export class OpenAICompatibleProvider implements Provider {
         throw new Error(`provider ${response.status}: ${detalle}`);
       }
       this.sinResponseFormat.add(model);
-      avisarUnaVez(
+      avisarDelProveedor(
+        this,
         `sin-response-format:${model}`,
         `[bvsala] Model "${model}" rejects \`response_format\` with a 400: it has no ` +
           "structured outputs. The request is repeated asking for the JSON via prompt (once only: " +
@@ -415,7 +416,8 @@ export class OpenAICompatibleProvider implements Provider {
       // error que no era de `stream_options`.
       if (response.ok) {
         this.streamOptionsRejected = true;
-        avisarUnaVez(
+        avisarDelProveedor(
+          this,
           `sin-stream-options:${this.opts.baseUrl}`,
           "[bvsala] This endpoint rejects `stream_options`, so streamed answers from it carry no usage: " +
             "they are reported as `unmeasured` and never billed. Use `generate()` for a measured figure, " +
@@ -698,7 +700,8 @@ export class OpenAICompatibleProvider implements Provider {
       // verdad sobre lo que se sirvió.
       const strict = isStrictCompatible(req.schema);
       if (!strict) {
-        avisarUnaVez(
+        avisarDelProveedor(
+          this,
           "strict-incompatible",
           "[bvsala] The response contract does not meet OpenAI's `strict` mode " +
             "(in strict, `required` must list ALL the keys in `properties`, and every object " +
