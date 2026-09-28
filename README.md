@@ -897,13 +897,21 @@ each result answers and its `isError`. Two conversations that differ only there 
 share a cached answer; the fresh call ids of a new run of the same loop are not a
 difference.
 
+**Which tools reach the model.** The layer never cuts a catalogue it cannot rank. If
+your tools declare no `intents` and no `risk` (the usual shape of MCP and OpenAI tool
+lists), or you pass `savings: { router: false }`, every tool goes to the provider
+exactly as you sent it, and the layer credits nothing for the tool block. Only when
+your tools declare `intents`/`risk` does the selector keep the relevant ones, up to
+`new ToolSelector({ maxTools })` (8 by default), and hold back write tools from a
+request that is not an action. Whatever it leaves out, the model cannot call in that
+request: the report's `tool-selector` trace lists it, the tokens count as eliminated
+input, and the SDK warns once per process (`silenceWarnings` turns the warning off).
+
 **Large catalogues: let the provider search them (opt‑in).** With hundreds of tools
 (several MCP servers, say), `savings: { toolSearch: "auto" }` sends every tool deferred
-behind the provider's own tool search instead of letting the layer's selector keep a
-few. A catalogue that declares no `intents` or `risk` gives the selector nothing to go
-on, so it keeps the first ones and the model cannot call the rest; with the provider's
-search the model looks up what it needs, no tool you declared is out of reach, and the
-cached prompt prefix stays the same from one question to the next.
+behind the provider's own tool search instead of putting the whole catalogue in every
+request's prompt. The model looks up what it needs, no tool you declared is out of
+reach, and the cached prompt prefix stays the same from one question to the next.
 
 - **Where.** The Anthropic adapter, on models in Anthropic's tool search compatibility
   table. OpenAI documents its tool search for the Responses and Agents APIs, not for

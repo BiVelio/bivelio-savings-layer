@@ -19,8 +19,9 @@ import type { SavingsRequest, SavingsReport, ToolDescriptor } from "../src/contr
  *      no diferidas y el `system` hasta el punto de ruptura— es el MISMO byte a
  *      byte pregunte lo que se pregunte y aunque el catálogo diferido crezca.
  *      Es la ley del 10-09 cumplida: nada se borra a mitad del prompt.
- *   2. Ninguna herramienta del llamante se queda fuera (el selector, con un
- *      catálogo sin tipar, manda solo las 8 primeras).
+ *   2. Ninguna herramienta del llamante se queda fuera (hasta 0.4.30 el
+ *      selector, con un catálogo sin tipar, mandaba solo las 8 primeras; hoy
+ *      las manda todas, sin diferir y en el prefijo).
  *   3. La capa no se apunta nada: ni libro 2, ni ahorro, ni registro por
  *      referencia.
  */
@@ -308,7 +309,8 @@ describe("el pipeline con `savings.toolSearch`", () => {
       peticion("¿Qué pedidos del servicio 17 siguen abiertos?", tools, { toolSearch: "auto" }),
     );
     expect(herramientasDe(auto[0]!).some(esBusqueda)).toBe(false);
-    expect(herramientasDe(auto[0]!)).toHaveLength(8);
+    // El selector, sin señal en un catálogo sin tipar, las manda TODAS.
+    expect(herramientasDe(auto[0]!)).toHaveLength(200);
     expect(traza(r1.report, "tool-search")[0]!.outcome).toBe("selector");
 
     const siempre: Cuerpo[] = [];
@@ -395,19 +397,39 @@ describe("el pipeline con `savings.toolSearch`", () => {
     expect(hizo.detail).toMatchObject({ searches: 1, loaded: ["servicio_17_consultar"], errors: 0 });
   });
 
-  it("con la palanca APAGADA y un catálogo sin tipar recortado, avisa UNA vez de que existe la búsqueda nativa", async () => {
-    const p = capa(new AnthropicProvider({ fetchImpl: fetchEspia([]) }));
+  it("con la palanca APAGADA y un catálogo sin tipar: viaja entero y no hay nada que avisar", async () => {
+    const capturas: Cuerpo[] = [];
+    const p = capa(new AnthropicProvider({ fetchImpl: fetchEspia(capturas) }));
     await p.generate(peticion("¿Qué pedidos del servicio 17 siguen abiertos?", catalogoMcp(20)));
-    await p.generate(peticion("Otra pregunta", catalogoMcp(20)));
-    const avisos = aviso.mock.calls.map((c) => String(c[0])).filter((m) => m.includes("toolSearch"));
-    expect(avisos).toHaveLength(1);
-    expect(avisos[0]).toContain("first 8 of 20");
+    // Antes: las 8 primeras y un aviso que solo existía en Anthropic.
+    expect(herramientasDe(capturas[0]!)).toHaveLength(20);
+    expect(aviso.mock.calls.map((c) => String(c[0])).filter((m) => m.includes("tool selector"))).toHaveLength(0);
   });
 
-  it("no avisa si el modelo no admite la búsqueda nativa, ni si el catálogo cabe entero", async () => {
+  it("con un catálogo TIPADO que el selector poda, avisa UNA vez y, en un modelo con búsqueda nativa, la menciona", async () => {
+    const tipadas: ToolDescriptor[] = Array.from({ length: 20 }, (_, i) => ({
+      id: `leer_${i}`,
+      intents: [i === 17 ? "pedidos abiertos" : `consultar cosa ${i}`],
+      risk: "read" as const,
+    }));
     const p = capa(new AnthropicProvider({ fetchImpl: fetchEspia([]) }));
-    await p.generate(peticion("¿Qué pedidos siguen abiertos?", catalogoMcp(20), {}, { model: "anthropic/claude-sonnet-5" }));
-    await p.generate(peticion("¿Qué pedidos siguen abiertos?", catalogoMcp(5)));
-    expect(aviso.mock.calls.map((c) => String(c[0])).filter((m) => m.includes("toolSearch"))).toHaveLength(0);
+    await p.generate(peticion("¿Qué pedidos abiertos hay?", tipadas));
+    await p.generate(peticion("Otra vez: ¿qué pedidos abiertos hay?", tipadas));
+    const avisos = aviso.mock.calls.map((c) => String(c[0])).filter((m) => m.includes("tool selector"));
+    expect(avisos).toHaveLength(1);
+    expect(avisos[0]).toContain("sent 1 of 20");
+    expect(avisos[0]).toContain("toolSearch");
+  });
+
+  it("en un modelo sin búsqueda nativa avisa igual, pero sin ofrecerla", async () => {
+    const tipadas: ToolDescriptor[] = [
+      { id: "pedidos", intents: ["pedidos abiertos"], risk: "read" },
+      { id: "stock", intents: ["stock"], risk: "read" },
+    ];
+    const p = capa(new AnthropicProvider({ fetchImpl: fetchEspia([]) }));
+    await p.generate(peticion("¿Qué pedidos abiertos hay?", tipadas, {}, { model: "anthropic/claude-sonnet-5" }));
+    const avisos = aviso.mock.calls.map((c) => String(c[0])).filter((m) => m.includes("tool selector"));
+    expect(avisos).toHaveLength(1);
+    expect(avisos[0]).not.toContain("toolSearch");
   });
 });

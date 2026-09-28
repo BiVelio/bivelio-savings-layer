@@ -13,7 +13,6 @@ import {
 import {
   admiteBusquedaNativa,
   candidatasPorRiesgo,
-  catalogoSinTipar,
   decidirBusquedaNativa,
   normalizarBusqueda,
 } from "../router/busqueda-nativa.js";
@@ -2228,10 +2227,7 @@ export class SavingsPipeline {
           // entrada; congelando, la misma poda ahorra el 14,3 %).
           canonical.toolsetHash,
         );
-    // Solo con la palanca APAGADA: si se pidió y no aplicó, la traza ya dice por qué.
-    if (!nativa && normalizarBusqueda(toggles.toolSearch).modo === "off") {
-      this.avisarDeCatalogoRecortado(request, toolSelection, cascada.modeloServido);
-    }
+    if (!nativa) this.avisarDeHerramientasPodadas(request, toolSelection, cascada.modeloServido);
     ledger.actualTools = toolSelection.tools.length;
     if (toolSelection.droppedIds.length) {
       // LIBRO 2. Hasta ahora `SavingsLedger.eliminate()` no tenía NI UN llamante
@@ -4459,23 +4455,31 @@ export class SavingsPipeline {
     return { tools: candidatas, tokensLocalesDelSondeo: 0, aplicado: false };
   }
 
-  // EL AVISO QUE HACE VISIBLE UNA PÉRDIDA DE FUNCIÓN SILENCIOSA. Con un catálogo
-  // sin `intents` ni `risk` —como llegan los de MCP— el selector no tiene señal
-  // y pasa solo las `maxTools` primeras POR POSICIÓN: el modelo no puede llamar
-  // a las demás y nada lo dice. Si además este adaptador y este modelo admiten
-  // la búsqueda nativa, hay una salida que no deja ninguna fuera; se avisa una
-  // vez por proceso y el aviso es silenciable.
-  private avisarDeCatalogoRecortado(request: SavingsRequest, seleccion: ToolSelection, modelo: string): void {
+  // UNA HERRAMIENTA QUE EL MODELO NO VE NO SE QUITA NUNCA EN SILENCIO.
+  //
+  // Desde el arreglo del recorte posicional el selector solo quita herramientas
+  // cuando tiene SEÑAL: un catálogo que declara `intents`/`risk`, con el router
+  // encendido (un catálogo sin tipar y `router:false` pasan íntegros, ver
+  // `ToolSelector.passthrough`). Aun así, lo que quita el modelo no lo puede
+  // llamar, y hasta ahora eso solo quedaba en `report.traces`: el aviso que había
+  // saltaba únicamente donde existe la búsqueda nativa, o sea NUNCA en OpenAI, que
+  // es justo donde BFCL lo destapó. Ahora avisa en cualquier proveedor, una vez
+  // por proceso y silenciable (`silenceWarnings`), y si este adaptador y este
+  // modelo admiten la búsqueda nativa dice que existe.
+  private avisarDeHerramientasPodadas(request: SavingsRequest, seleccion: ToolSelection, modelo: string): void {
     const tools = request.tools ?? [];
-    if (seleccion.droppedIds.length === 0 || !catalogoSinTipar(tools)) return;
-    if (busquedaNativaDelProveedor(this.config.provider) === undefined || !admiteBusquedaNativa(modelo)) return;
+    if (seleccion.droppedIds.length === 0) return;
+    const nativa = busquedaNativaDelProveedor(this.config.provider) !== undefined && admiteBusquedaNativa(modelo);
     this.avisar(
-      "catalogo-recortado-con-busqueda-nativa",
-      `[bv-sala] Your tool catalogue declares no \`intents\` or \`risk\`, so the tool selector has nothing to ` +
-        `select on and sent only the first ${seleccion.tools.length} of ${tools.length} tools: the model cannot call ` +
-        `the others. This provider and model support native tool search: \`savings: { toolSearch: "auto" }\` sends ` +
-        "all of them deferred and lets the model search, without breaking the prompt cache. Its effect is the " +
-        "provider's and the layer credits nothing for it.",
+      "herramientas-podadas-por-el-selector",
+      `[bv-sala] The tool selector sent ${seleccion.tools.length} of ${tools.length} tools, chosen by the ` +
+        "`intents`/`risk` your tools declare: the model cannot call the other " +
+        `${seleccion.droppedIds.length} in that request (they are listed in the report's \`tool-selector\` trace). ` +
+        "A catalogue with no `intents` and no `risk`, or `savings: { router: false }`, is sent whole." +
+        (nativa
+          ? " This provider and model also support native tool search: `savings: { toolSearch: \"auto\" }` sends " +
+            "every tool deferred and lets the model search, without breaking the prompt cache."
+          : ""),
     );
   }
 
