@@ -266,6 +266,7 @@ export class ObservadorResponses {
   private resto = "";
   private uso: UsoSse | null = null;
   private final: EstadoFinalResponses | null = null;
+  private negada = false;
   readonly eventos: Record<string, number> = {};
 
   observar(chunk: Buffer | string): void {
@@ -281,6 +282,7 @@ export class ObservadorResponses {
       try {
         const d = JSON.parse(data) as { type?: string; response?: { usage?: UsoResponses | null } };
         const tipo = ev ?? d.type;
+        if (eventoDeNegativaResponses(tipo, d)) this.negada = true;
         // Object.hasOwn: el literal hereda de Object.prototype, y un evento
         // `constructor` o `toString` no puede pasar por un final.
         const final = tipo !== undefined && Object.hasOwn(FINALES_RESPONSES, tipo) ? FINALES_RESPONSES[tipo] : undefined;
@@ -309,6 +311,47 @@ export class ObservadorResponses {
   estadoFinal(): EstadoFinalResponses | null {
     return this.final;
   }
+
+  /** E7 · ¿trajo el stream una parte `refusal`? (ver `negativaEnJson`). */
+  negativa(): boolean {
+    return this.negada;
+  }
+}
+
+/**
+ * E7 · ¿este evento del stream de la Responses API delata una negativa? La
+ * negativa es una PARTE de contenido `{ type: "refusal", refusal }` dentro de un
+ * item `message`, y el stream la anuncia de varias formas; basta una:
+ *   · `response.refusal.delta` / `response.refusal.done` (su texto);
+ *   · `response.content_part.added` / `.done` con `part.type: "refusal"`;
+ *   · `response.output_item.added` / `.done` con esa parte en `item.content`;
+ *   · el evento final (`response.completed`, …) con esa parte en `response.output`.
+ * Referencia oficial de los eventos de stream de Responses, consultada el
+ * 2026-09-28: https://developers.openai.com/api/reference/resources/responses/streaming-events
+ */
+function eventoDeNegativaResponses(tipo: string | undefined, d: unknown): boolean {
+  if (tipo === "response.refusal.delta" || tipo === "response.refusal.done") return true;
+  if (d === null || typeof d !== "object") return false;
+  const o = d as { part?: unknown; item?: unknown; response?: unknown };
+  if (esParteDeNegativa(o.part) || salidaConNegativa([o.item])) return true;
+  return o.response !== null && typeof o.response === "object" && salidaConNegativa((o.response as { output?: unknown }).output);
+}
+
+/** `{ type: "refusal" }`: la parte de contenido con la que la Responses API niega. */
+function esParteDeNegativa(p: unknown): boolean {
+  return p !== null && typeof p === "object" && (p as { type?: unknown }).type === "refusal";
+}
+
+/** ¿Algún item de `output` (Responses API) trae una parte `refusal` en su `content`? */
+function salidaConNegativa(output: unknown): boolean {
+  return (
+    Array.isArray(output) &&
+    output.some((item) => {
+      if (item === null || typeof item !== "object") return false;
+      const contenido = (item as { content?: unknown }).content;
+      return Array.isArray(contenido) && contenido.some(esParteDeNegativa);
+    })
+  );
 }
 
 /** El evento terminal de un stream de la Responses API. */
@@ -388,7 +431,10 @@ export class ObservadorChatCompletions {
     for (const m of this.parser.push(chunk)) this.mensaje(m);
   }
 
-  /** E7 · ¿algún chunk cerró su elección con `finish_reason: "content_filter"`? */
+  /**
+   * E7 · ¿algún chunk cerró su elección con `finish_reason: "content_filter"`, o
+   * trajo un `delta.refusal` no vacío (la negativa de salidas estructuradas)?
+   */
   negativa(): boolean {
     return this.filtrada;
   }
@@ -423,7 +469,7 @@ export class ObservadorChatCompletions {
     }
     if (d === null || typeof d !== "object") return;
     this.eventos["chunk"] = (this.eventos["chunk"] ?? 0) + 1;
-    if (eleccionFiltrada(d.choices)) this.filtrada = true;
+    if (eleccionNegada(d.choices)) this.filtrada = true;
     if (d.usage === null || typeof d.usage !== "object") return;
     const mapeado = mapearUsoChat(d.usage as UsoChat);
     if (mapeado === null) return;
@@ -640,31 +686,59 @@ export function respuestaJsonFallida(path: string, cuerpo: Buffer | string): boo
   }
 }
 
-/** ¿Alguna elección de Chat Completions cerró con `finish_reason: "content_filter"`? */
-function eleccionFiltrada(choices: unknown): boolean {
+/**
+ * ¿Alguna elección de Chat Completions es una negativa? `finish_reason:
+ * "content_filter"`, o la negativa de salidas estructuradas: un `refusal` no
+ * vacío en `message` (JSON) o en `delta` (stream), que llega con
+ * `finish_reason: "stop"` y sin `content`. El `refusal: null` de toda respuesta
+ * normal no cuenta, y un `content` vacío sin `refusal` tampoco.
+ */
+function eleccionNegada(choices: unknown): boolean {
+  const conNegativa = (m: unknown): boolean => {
+    const r = m !== null && typeof m === "object" ? (m as { refusal?: unknown }).refusal : undefined;
+    return typeof r === "string" && r !== "";
+  };
   return (
     Array.isArray(choices) &&
-    choices.some((c) => c !== null && typeof c === "object" && (c as { finish_reason?: unknown }).finish_reason === "content_filter")
+    choices.some((c) => {
+      if (c === null || typeof c !== "object") return false;
+      const e = c as { finish_reason?: unknown; message?: unknown; delta?: unknown };
+      return e.finish_reason === "content_filter" || conNegativa(e.message) || conNegativa(e.delta);
+    })
   );
 }
 
 /**
- * E7 · ¿la respuesta JSON (`stream: false`) es una NEGATIVA del proveedor? En
- * `/v1/messages`, `stop_reason: "refusal"` (llega con `content: []` y con
- * `usage`); en `…/chat/completions`, `finish_reason: "content_filter"`. La
- * negativa se MIDE como cualquier petición —Anthropic cobra desde el 24-09-2026
- * las de `bio`, `frontier_llm` y `reasoning_extraction`—, pero la gemela
- * coalescida de una negativa no se valora por referencia (`primary-refused`):
- * en las demás categorías la repetición no se habría cobrado. Lo ilegible es
- * false. La Responses API no entra: su negativa es una parte `refusal` dentro
- * de una respuesta `completed`.
+ * E7 · ¿la respuesta JSON (`stream: false`) es una NEGATIVA del proveedor?
+ *   · `/v1/messages`: `stop_reason: "refusal"` (llega con `content: []` y con
+ *     `usage`);
+ *   · `…/chat/completions`: `finish_reason: "content_filter"`, o un
+ *     `message.refusal` no vacío (salidas estructuradas, con `finish_reason:
+ *     "stop"`);
+ *   · `…/responses`: una parte `{ type: "refusal" }` en el `content` de algún
+ *     item de `output`, dentro de una respuesta `status: "completed"`.
+ * Documentación oficial de OpenAI, consultada el 2026-09-28:
+ * https://developers.openai.com/api/docs/guides/structured-outputs («Refusals
+ * with Structured Outputs») y https://developers.openai.com/api/reference/resources/chat.
+ *
+ * La negativa se MIDE como cualquier petición —Anthropic cobra desde el
+ * 24-09-2026 las de `bio`, `frontier_llm` y `reasoning_extraction`, y el
+ * `usage` de OpenAI cuenta la negativa como salida—, pero la gemela coalescida de
+ * una negativa no se valora por referencia (`primary-refused`): en las
+ * categorías que no se cobran la repetición habría costado 0 $, y una negativa
+ * no es una respuesta que valga la pena repetir. Lo ilegible es false.
  */
 export function negativaEnJson(path: string, cuerpo: Buffer | string): boolean {
-  if (path !== "/v1/messages" && !path.endsWith("/chat/completions")) return false;
+  if (path !== "/v1/messages" && !path.endsWith("/chat/completions") && !path.endsWith("/responses")) return false;
   try {
-    const d = JSON.parse(typeof cuerpo === "string" ? cuerpo : cuerpo.toString("utf8")) as { stop_reason?: unknown; choices?: unknown } | null;
+    const d = JSON.parse(typeof cuerpo === "string" ? cuerpo : cuerpo.toString("utf8")) as {
+      stop_reason?: unknown;
+      choices?: unknown;
+      output?: unknown;
+    } | null;
     if (d === null || typeof d !== "object") return false;
-    return path === "/v1/messages" ? d.stop_reason === "refusal" : eleccionFiltrada(d.choices);
+    if (path === "/v1/messages") return d.stop_reason === "refusal";
+    return path.endsWith("/chat/completions") ? eleccionNegada(d.choices) : salidaConNegativa(d.output);
   } catch {
     return false;
   }
@@ -870,10 +944,11 @@ export function informeMedido(
  * - `primary-failed`    — la primaria cerró con `response.failed` (o
  *                         `status: "failed"` en el JSON).
  * - `primary-refused`   — la primaria fue una NEGATIVA del proveedor (E7:
- *                         `stop_reason: "refusal"` o `finish_reason:
- *                         "content_filter"`). Se mide, pero no se repite como
- *                         llamada evitada: en las categorías que Anthropic no
- *                         cobra, la repetición habría costado 0 $.
+ *                         `stop_reason: "refusal"`, `finish_reason:
+ *                         "content_filter"`, `message.refusal` o una parte
+ *                         `refusal` de la Responses API). Se mide, pero no se
+ *                         repite como llamada evitada: en las categorías que
+ *                         Anthropic no cobra, la repetición habría costado 0 $.
  * - `client-disconnected` — el cliente de la gemela se fue antes de recibir la
  *                         réplica entera: sin la capa se habría cortado igual,
  *                         y una llamada que nadie recibió no es una llamada

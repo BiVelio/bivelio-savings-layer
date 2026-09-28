@@ -455,6 +455,10 @@ export class OpenAICompatibleProvider implements Provider {
     let uso: UsoDeChat | undefined;
     let servedServiceTier: string | undefined;
     let huboTextoDeRazonamiento = false;
+    // La negativa también llega troceada (`delta.refusal`, referencia de los
+    // eventos de stream de Chat Completions): se concatena y NO se emite como
+    // texto de la respuesta.
+    let negativa = "";
 
     for await (const msg of sseMessages(fuente)) {
       if (msg.data === "[DONE]") break;
@@ -479,6 +483,7 @@ export class OpenAICompatibleProvider implements Provider {
         text += delta.content;
         yield { type: "text", delta: delta.content };
       }
+      if (typeof delta?.refusal === "string") negativa += delta.refusal;
       for (const tc of delta?.tool_calls ?? []) {
         const idx = typeof tc.index === "number" ? tc.index : 0;
         const acc = herramientas.get(idx) ?? { args: "" };
@@ -543,6 +548,7 @@ export class OpenAICompatibleProvider implements Provider {
           text,
           ...(toolCalls.length > 0 ? { toolCalls } : {}),
           finishReason,
+          ...(negativa !== "" ? { refusal: negativa } : {}),
           ...(servedServiceTier ? { servedServiceTier } : {}),
           usage,
           structuredNatively: false,
@@ -763,12 +769,25 @@ export class OpenAICompatibleProvider implements Provider {
     const mensaje = json.choices?.[0]?.message as
       | {
           content?: string | null;
+          refusal?: unknown;
           tool_calls?: { id?: string; function?: { name?: string; arguments?: string } }[];
           reasoning_content?: unknown;
           reasoning?: unknown;
         }
       | undefined;
     const text = mensaje?.content ?? "";
+    // LA NEGATIVA DE SALIDAS ESTRUCTURADAS. Con `response_format: json_schema`
+    // OpenAI no mete la negativa en `content` (no cumpliría el esquema): llega en
+    // `message.refusal`, sin `content` y con `finish_reason: "stop"`, y sus
+    // tokens cuentan como salida en `usage` (el ejemplo oficial trae
+    // `completion_tokens: 11`). Documentación oficial, consultada el
+    // 2026-09-28: https://developers.openai.com/api/docs/guides/structured-outputs
+    // («Refusals with Structured Outputs») y la referencia de Chat Completions
+    // (`message.refusal: string or null`). Solo cuenta una cadena NO vacía: el
+    // `refusal: null` de toda respuesta normal no es una negativa, y un `content`
+    // vacío sin `refusal` tampoco. El `finish_reason` se deja como lo dijo el
+    // proveedor; quien decide que no se repara ni se repite es el pipeline.
+    const negativa = typeof mensaje?.refusal === "string" && mensaje.refusal !== "" ? mensaje.refusal : undefined;
 
     // Cuando el modelo invoca una herramienta devuelve `content: null` +
     // `tool_calls`. El `?? ""` de arriba convertía eso en cadena vacía y la
@@ -840,6 +859,7 @@ export class OpenAICompatibleProvider implements Provider {
         text,
         ...(toolCalls.length > 0 ? { toolCalls } : {}),
         ...(finishReason ? { finishReason } : {}),
+        ...(negativa !== undefined ? { refusal: negativa } : {}),
         ...(servedServiceTier ? { servedServiceTier } : {}),
         ...(req.deferrable === true ? { requestedServiceTier: TIER_DIFERIBLE_OPENAI } : {}),
         usage: {
@@ -938,6 +958,7 @@ interface TrozoDeChat {
   choices?: {
     delta?: {
       content?: string | null;
+      refusal?: string | null;
       reasoning_content?: unknown;
       reasoning?: unknown;
       tool_calls?: {

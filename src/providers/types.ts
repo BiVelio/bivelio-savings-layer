@@ -195,6 +195,17 @@ export interface ProviderResponse {
    */
   finishReason?: "stop" | "length" | "content_filter" | "tool_calls" | (string & {});
   /**
+   * The refusal message the model returned INSTEAD of an answer, exactly as the
+   * provider wrote it: OpenAI's `message.refusal` (Chat Completions with
+   * Structured Outputs), which arrives with `finish_reason: "stop"` and no
+   * `content`. Present only when non-empty.
+   *
+   * The layer treats it like `finishReason: "content_filter"`: the call is
+   * measured, and the answer is never repaired against its contract, cached, or
+   * replayed by reference. `text` and `finishReason` stay what the provider said.
+   */
+  refusal?: string;
+  /**
    * Llamadas a herramienta que pidió el modelo, tal cual las devolvió el
    * proveedor.
    *

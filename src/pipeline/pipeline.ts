@@ -3507,7 +3507,10 @@ export class SavingsPipeline {
       // `bio`, `frontier_llm` y `reasoning_extraction` la segunda negativa
       // también se cobra (desde el 24-09-2026). Medido con el adaptador real:
       // dos llamadas pagadas y `netSavings: -1` por una respuesta que no existe.
-      const negativaDelProveedor = response.finishReason === "content_filter";
+      // Y la de salidas estructuradas de OpenAI (`message.refusal` con
+      // `finish_reason: "stop"`), que sin `esNegativaDelProveedor` pagaba la
+      // misma reparación (2026-09-28).
+      const negativaDelProveedor = esNegativaDelProveedor(response);
       // Un fallo cuya causa es el ESQUEMA del cliente (un `pattern` que no
       // compila) no se puede reparar: ningún texto cumple un regex invalido, asi
       // que el reintento fallaria igual y seria otra llamada pagada — la segunda
@@ -3531,8 +3534,10 @@ export class SavingsPipeline {
       } else if (!validation.valid && negativaDelProveedor) {
         trace.record("validation", "repair-skipped", {
           reason:
-            "the provider refused the request (finish reason content_filter); a repair on the same model " +
-            "would be refused, and may be billed, again",
+            (response.refusal !== undefined
+              ? "the provider refused the request (a refusal message instead of an answer)"
+              : "the provider refused the request (finish reason content_filter)") +
+            "; a repair on the same model would be refused, and may be billed, again",
           model: modeloServido,
         });
         hechos.reparacion = { outcome: "skipped", skipReason: "provider_refusal" };
@@ -3947,7 +3952,12 @@ export class SavingsPipeline {
     // repite), tampoco un seguidor de singleflight la valora por referencia. Es
     // la misma regla que ya aplican los adaptadores de frameworks: solo se
     // reutiliza una parada `stop`/`end_turn`.
-    const negativa = response.finishReason === "content_filter";
+    //
+    // La negativa de salidas estructuradas de OpenAI (`message.refusal`) cierra
+    // con `finish_reason: "stop"` y ESA parada sí se reutilizaba: sin contrato,
+    // un `content` vacío con su `refusal` se guardaba y se repetía por referencia
+    // como si fuera una respuesta (2026-09-28). La cuenta `esNegativaDelProveedor`.
+    const negativa = esNegativaDelProveedor(response);
     const cacheable =
       structurallyValid !== false &&
       !pidioHerramientas &&
@@ -4054,7 +4064,8 @@ export class SavingsPipeline {
                 : noReproducible
                   ? "skipped: the provider answer carries content this layer cannot replay"
                   : negativa
-                    ? "skipped: the provider refused (stop_reason \"refusal\" / finish_reason \"content_filter\"); " +
+                    ? "skipped: the provider refused (stop_reason \"refusal\" / finish_reason \"content_filter\" / " +
+                      "a refusal message); " +
                       "a refusal is not an answer, and replaying it would credit an avoided call the provider " +
                       "may not have billed"
                     : "skipped: answered with a reduced tool view (tool discovery), so it must not be replayed",
@@ -4222,6 +4233,9 @@ export class SavingsPipeline {
     // recibía cadena vacía como si fuera la respuesta buena.
     if (pidioHerramientas) result.toolCalls = response.toolCalls!;
     if (response.finishReason !== undefined) result.finishReason = response.finishReason;
+    // La negativa también llega al llamante: sin ella, una negativa de salidas
+    // estructuradas era un `text` vacío que incumplía el contrato sin decir por qué.
+    if (response.refusal !== undefined) result.refusal = response.refusal;
     return result;
   }
 
@@ -5204,6 +5218,7 @@ export class SavingsPipeline {
       text: response.text,
       ...(pidioHerramientas ? { toolCalls: response.toolCalls! } : {}),
       ...(response.finishReason !== undefined ? { finishReason: response.finishReason } : {}),
+      ...(response.refusal !== undefined ? { refusal: response.refusal } : {}),
       report,
     };
   }
@@ -5970,6 +5985,29 @@ function contractKey(request: SavingsRequest): string {
   const r = request.response;
   if (!r) return "";
   return r.contractId ?? r.version ?? JSON.stringify(r.schema ?? {}).slice(0, 200);
+}
+
+/**
+ * E7 · ¿ES UNA NEGATIVA DEL PROVEEDOR? Las tres formas que conoce la capa:
+ *   · `finishReason: "content_filter"`: el `finish_reason` de Chat Completions,
+ *     y el `stop_reason: "refusal"` de la API de Mensajes ya traducido
+ *     (`traducirParada`, src/providers/anthropic-uso.ts);
+ *   · `refusal` no vacío: la negativa de salidas estructuradas de OpenAI
+ *     (`message.refusal`), que llega con `finish_reason: "stop"` y sin
+ *     `content` (https://developers.openai.com/api/docs/guides/structured-outputs,
+ *     «Refusals with Structured Outputs», consultada el 2026-09-28).
+ * Un `content` vacío con `finish_reason: "stop"` y sin `refusal` NO lo es: es
+ * una respuesta vacía, y se trata como cualquier otra respuesta.
+ *
+ * Una negativa se MIDE como cualquier llamada, pero no se repara, no se guarda
+ * en caché y no se repite por referencia (ni desde caché ni a un seguidor de
+ * singleflight): solo puede bajar lo acreditado, nunca subirlo.
+ */
+function esNegativaDelProveedor(response: ProviderResponse): boolean {
+  return (
+    response.finishReason === "content_filter" ||
+    (typeof response.refusal === "string" && response.refusal !== "")
+  );
 }
 
 /**

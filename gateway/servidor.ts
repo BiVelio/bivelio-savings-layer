@@ -1448,8 +1448,10 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
           (observador instanceof ObservadorResponses && observador.estadoFinal() === "failed") ||
           (respuestaJson !== null && respuestaJsonFallida(url.pathname, respuestaJson));
         // E7 · una negativa se mide, pero su gemela no se valora por referencia.
+        // Los tres observadores la ven (Mensajes, Chat Completions y, desde el
+        // 2026-09-28, la parte `refusal` de la Responses API).
         const negativa =
-          ((observador instanceof ObservadorSse || observador instanceof ObservadorChatCompletions) && observador.negativa()) ||
+          (observador !== null && observador.negativa()) ||
           (respuestaJson !== null && negativaEnJson(url.pathname, respuestaJson));
         captura.terminar(upstream.status, cabeceras, {
           requestId,
