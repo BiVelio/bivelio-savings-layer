@@ -6,12 +6,12 @@
 import { describe, expect, it } from "vitest";
 
 import { comprobarEntrada, NumJ, normalizarCadena, parsearJson, salidaDeLlamadas, type ValorJ } from "../benchmarks/publicados/bfcl/ast.js";
-import { conArgumentoCambiado, muestraEstratificada, violacionesDeCache, type VarianteMultiTurno } from "../benchmarks/publicados/bfcl/arnes.js";
+import { conArgumentoCambiado, familiaDe, muestraEstratificada, NOMBRE_POR_DEFECTO, TOPE_MAXIMO, violacionesDeCache, type VarianteMultiTurno } from "../benchmarks/publicados/bfcl/arnes.js";
 import { cuerpoBrazoA, diferenciasDelCable, leerRespuesta, normalizarBase } from "../benchmarks/publicados/bfcl/brazos.js";
 import { costeDeUso, crearCable, Presupuesto, PresupuestoAgotado, Semaforo, sinSecretos, unidadEnCurso, usoDeRespuesta, type LlamadaDelCable } from "../benchmarks/publicados/bfcl/cable.js";
 import type { EntradaAst, FuncionBfcl } from "../benchmarks/publicados/bfcl/datos.js";
 import { herramientaDe } from "../benchmarks/publicados/bfcl/esquema.js";
-import { instalarVerjaDeHosts } from "../benchmarks/publicados/bfcl/procedencia.js";
+import { COMMIT_DEL_TAG, INTEGRIDAD_NPM, instalarVerjaDeHosts, SHA256_DIST_NPM, TAG_RELEASE, VERSION_PAQUETE } from "../benchmarks/publicados/bfcl/procedencia.js";
 import { claveSimulada, fetchSimulado } from "../benchmarks/publicados/bfcl/simulador.js";
 import { AnthropicProvider, createSavingsLayer, OpenAICompatibleProvider } from "../src/index.js";
 
@@ -254,5 +254,45 @@ describe("BFCL · extremo a extremo sin red", () => {
     } finally {
       verja.retirar();
     }
+  });
+
+  it("con la 0.4.31 un catálogo sin tipar de más de 8 herramientas sale ENTERO al cable (#382)", async () => {
+    const hs = Array.from({ length: 20 }, (_, i) => herramientaDe({ ...area, name: `tool_${i}` }));
+    const respuestas = new Map([[claveSimulada("Area?", hs.map((h) => h.nombre)), [{ nombre: "tool_17", args: { base: 10, height: 5.5 } }]]]);
+    // El fuente del repo (≥ 0.4.31, con #382), no el de la etiqueta: la CI hace el
+    // checkout sin etiquetas y `cargarSdk` solo hace falta en las tiradas de verdad.
+    const sdk = { AnthropicProvider, OpenAICompatibleProvider, createSavingsLayer };
+    for (const familia of ["anthropic", "openai"] as const) {
+      const reg: LlamadaDelCable[] = [];
+      const cable = crearCable({ familia, presupuesto: new Presupuesto("m", 1), precio: { inputPer1k: 0.001, outputPer1k: 0.005 }, prima: 1.25, semaforo: new Semaforo(2), base: fetchSimulado(respuestas) });
+      const provider =
+        familia === "anthropic"
+          ? new sdk.AnthropicProvider({ apiKey: "k", baseUrl: "https://mock.invalid/v1", fetchImpl: cable, stripProviderPrefix: true })
+          : new sdk.OpenAICompatibleProvider({ apiKey: "k", baseUrl: "https://mock.invalid/v1", fetchImpl: cable, stripProviderPrefix: true });
+      const capa = sdk.createSavingsLayer({ provider, devUnlicensed: true, silenceWarnings: true });
+      const r = await unidadEnCurso.run({ unidad: "u", brazo: "B", registro: reg }, () =>
+        capa.generate({ model: `${familia}/m`, messages: [{ role: "user", content: "Area?" }], tools: hs.map((h) => ({ id: h.nombre, description: h.descripcion, parameters: h.parametros })) as never }),
+      );
+      expect(((reg[0]!.peticion as Record<string, unknown>)["tools"] as unknown[]).length).toBe(20);
+      expect(r.toolCalls?.[0]?.name).toBe("tool_17");
+      expect(r.report.tokens.eliminatedInput).toBe(0);
+    }
+  }, 60_000);
+});
+
+describe("BFCL · procedencia y tope de la tirada 0.4.31", () => {
+  it("el brazo B está fijado a la 0.4.31 del tag y de npm", () => {
+    expect(VERSION_PAQUETE).toBe("0.4.31");
+    expect(TAG_RELEASE).toBe("v0.4.31");
+    expect(COMMIT_DEL_TAG).toBe("00c99c803c0ab6f3c11b7ab87f3c75a38d609b1c");
+    expect(INTEGRIDAD_NPM).toBe("sha512-ePCN+dZr+VuMUSGm2TelDkt7TR6jSi/SCTomomDK/bfF92FHr1eFUdgTWQODCdQf8C8c+/h6AA/up46DXO2mLQ==");
+    expect(SHA256_DIST_NPM).toMatch(/^[0-9a-f]{64}$/);
+    expect(NOMBRE_POR_DEFECTO).toBe("bfcl-0431");
+  });
+
+  it("el tope duro por modelo es 0,80 $ en OpenAI y 1,25 $ en Anthropic", () => {
+    expect(TOPE_MAXIMO).toEqual({ openai: 0.8, anthropic: 1.25 });
+    expect(familiaDe("openai/gpt-4o-mini")).toBe("openai");
+    expect(familiaDe("anthropic/claude-sonnet-5")).toBe("anthropic");
   });
 });

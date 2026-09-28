@@ -8,7 +8,14 @@
  *
  * Opciones: --modelos=a,b  --n=<por categoría AST>  --multi=<entradas multi-turn>
  *   --repes=<repeticiones AST deliberadas>  --tope=<$ por modelo, A+B>  --semilla=<n>
- *   --salida=<dir de bfcl.json/bfcl.md>  --concurrencia=<por proveedor, ≤4>
+ *   --salida=<dir>  --nombre=<base de <nombre>.json/.md, por defecto bfcl-0431>
+ *   --comparar=<artefacto de una tirada anterior (la 0.4.30) para la sección de comparación>
+ *   --concurrencia=<por proveedor, ≤4>
+ *
+ * TOPE DURO POR FAMILIA (en código, `TOPE_MAXIMO`): 0,80 $ por modelo OpenAI y
+ * 1,25 $ por modelo Anthropic, A+B, entre TODAS las tiradas de la batería. `--tope`
+ * solo puede bajarlo. Antes de gastar en Anthropic se prueba la clave con
+ * `GET /v1/models` (gratis): un 401 deja el modelo «no medible: clave inválida».
  *
  * DOCTRINA (la de benchmarks/README.md, sección A/B):
  *   · los dos brazos se miden con el `usage` real del proveedor y la MISMA
@@ -72,7 +79,7 @@ import {
 } from "./datos.js";
 import { herramientaDe, type HerramientaNeutral } from "./esquema.js";
 import { escribirInforme, resumir, type ResumenDeModelo } from "./informe.js";
-import { cargarSdk, instalarVerjaDeHosts, type ProcedenciaDelBrazoB, type SdkCargado } from "./procedencia.js";
+import { cargarSdk, instalarVerjaDeHosts, VERSION_PAQUETE, type ProcedenciaDelBrazoB, type SdkCargado } from "./procedencia.js";
 import { claveSimulada, fetchSimulado, respuestaDeReferencia, type RespuestaSimulada } from "./simulador.js";
 
 const AQUI = dirname(fileURLToPath(import.meta.url));
@@ -84,6 +91,12 @@ export const MODELOS_POR_DEFECTO = [
   "openai/gpt-4o-mini",
   "openai/gpt-5.4-mini",
 ] as const;
+
+/** El techo autorizado por el dueño para ESTA batería, por modelo y A+B. `--tope` solo lo baja. */
+export const TOPE_MAXIMO: Record<Familia, number> = { openai: 0.8, anthropic: 1.25 };
+
+/** Nombre de fichero por defecto: «bfcl-0431» para la 0.4.31. */
+export const NOMBRE_POR_DEFECTO = `bfcl-${VERSION_PAQUETE.replace(/\./g, "")}`;
 
 // ── Tipos del artefacto ───────────────────────────────────────────────────
 
@@ -199,6 +212,10 @@ export interface Artefacto {
   config: { n: number; multi: number; repes: number; tope: number; semilla: number; concurrencia: number; gastoPrevioDescontado: Record<string, number> };
   modelos: TiradaDeModelo[];
   resumen?: ResumenDeModelo[];
+  /** Modelos que no se midieron sin gastar nada (p. ej. la prueba gratuita de la clave dio 401). */
+  noMedibles?: { modelo: string; motivo: string }[];
+  /** La tirada anterior (otra versión del paquete) con la que se compara, tal como se publicó. */
+  comparacion?: { fichero: string; version: string; tag: string; commitDelTag: string; fecha: string; config: Artefacto["config"]; resumen: ResumenDeModelo[]; multiTurno: Record<string, { id: string; herramientasEnCable: { A: number; B: number } }[]> };
   /** Tiradas unidas con --fusionar. */
   partes?: { fecha: string; config: Artefacto["config"]; modelos: string[] }[];
 }
@@ -235,7 +252,7 @@ export function muestraEstratificada(porCategoria: Map<CategoriaAst, EntradaAst[
   return out;
 }
 
-function familiaDe(modelo: string): Familia {
+export function familiaDe(modelo: string): Familia {
   if (modelo.startsWith("anthropic/") || /^claude/.test(modelo)) return "anthropic";
   return "openai";
 }
@@ -638,6 +655,43 @@ async function correrModelo(
 
 // ── Principal ─────────────────────────────────────────────────────────────
 
+/**
+ * GET /v1/models con la clave de Anthropic: no factura. Devuelve el motivo para no
+ * medir (401 → «clave inválida») o null si la clave responde. La clave solo viaja en
+ * la cabecera; en el motivo solo va el estado HTTP.
+ */
+async function probarClaveAnthropic(): Promise<string | null> {
+  const apiKey = process.env["BVSALA_DEMO_ANTHROPIC_API_KEY"] ?? "";
+  if (!apiKey) return "not measurable: no Anthropic key in the environment (checked by existence)";
+  const base = normalizarBase(process.env["BVSALA_DEMO_ANTHROPIC_BASE_URL"] ?? "https://api.anthropic.com");
+  try {
+    const r = await fetch(`${base}/models`, { headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01" } });
+    if (r.status === 401 || r.status === 403) return `not measurable: invalid key (free check GET /v1/models → HTTP ${r.status})`;
+    if (!r.ok) return `not measurable: free key check GET /v1/models → HTTP ${r.status}`;
+    return null;
+  } catch (e) {
+    return sinSecretos(`not measurable: free key check failed (${(e as Error).message})`).slice(0, 200);
+  }
+}
+
+/** Lo que se publica de la tirada anterior para compararla: su resumen y el recorte del multi-turno. */
+function comparacionCon(fichero: string, raiz: string): Artefacto["comparacion"] {
+  const p = JSON.parse(readFileSync(fichero, "utf8")) as Artefacto;
+  const medidos = p.modelos.filter((t) => t.ast.some((r) => r.A.ok) || t.multiTurno.some((m) => !m.paso0.A.error));
+  return {
+    fichero: fichero.startsWith(raiz) ? fichero.slice(raiz.length + 1) : fichero,
+    version: p.paquete.version,
+    tag: p.paquete.tag,
+    commitDelTag: p.paquete.commitDelTag,
+    fecha: p.fecha,
+    config: p.config,
+    resumen: medidos.map(resumir),
+    multiTurno: Object.fromEntries(
+      medidos.map((t) => [t.modelo, t.multiTurno.map((m) => ({ id: m.id, herramientasEnCable: { A: m.paso0.A.herramientasEnCable, B: m.paso0.B.herramientasEnCable } }))]),
+    ),
+  };
+}
+
 async function principal(): Promise<void> {
   const mock = arg("mock") !== undefined;
   const fusionar = arg("fusionar");
@@ -653,6 +707,7 @@ async function principal(): Promise<void> {
     const modelos = partes.flatMap((p) => p.modelos);
     const unido: Artefacto = {
       ...base,
+      noMedibles: partes.flatMap((p) => p.noMedibles ?? []),
       paquete: {
         ...base.paquete,
         hostsVistos: [...new Set(partes.flatMap((p) => p.paquete.hostsVistos))].sort(),
@@ -663,10 +718,11 @@ async function principal(): Promise<void> {
       partes: partes.map((p) => ({ fecha: p.fecha, config: p.config, modelos: p.modelos.map((t) => t.modelo) })),
     };
     const dir = resolve(RAIZ, arg("salida") ?? "docs/benchmarks/2026-09-28");
+    const nombreF = arg("nombre") ?? NOMBRE_POR_DEFECTO;
     mkdirSync(dir, { recursive: true });
-    writeFileSync(join(dir, "bfcl.json"), `${JSON.stringify(unido, null, 2)}\n`);
-    writeFileSync(join(dir, "bfcl.md"), escribirInforme(unido));
-    console.log(`→ ${join(dir, "bfcl.json")} y bfcl.md (${partes.length} tiradas unidas)`);
+    writeFileSync(join(dir, `${nombreF}.json`), `${JSON.stringify(unido, null, 2)}\n`);
+    writeFileSync(join(dir, `${nombreF}.md`), escribirInforme(unido));
+    console.log(`→ ${join(dir, `${nombreF}.json`)} y .md (${partes.length} tiradas unidas)`);
     return;
   }
   const soloPreparar = arg("preparar") !== undefined;
@@ -675,18 +731,20 @@ async function principal(): Promise<void> {
     console.log(`BFCL ${COMMIT_BFCL.slice(0, 12)}: dataset descargado y verificado en ${DIR_CACHE}`);
     return;
   }
-  // ANTES de gastar: el fuente es el tag v0.4.30 (si no, aborta).
+  // ANTES de gastar: el fuente cargado es el del tag (si no, aborta).
   const cargado = await cargarSdk();
   const paquete = cargado.procedencia;
   const modelos = (arg("modelos") ?? MODELOS_POR_DEFECTO.join(",")).split(",").map((s) => s.trim()).filter(Boolean);
   const n = Number(arg("n") ?? 25);
   const multi = Number(arg("multi") ?? 4);
   const repes = Number(arg("repes") ?? 5);
-  const tope = Number(arg("tope") ?? 1.25);
+  const tope = Number(arg("tope") ?? Math.max(...Object.values(TOPE_MAXIMO)));
+  const topeDe = (m: string) => Math.min(tope, TOPE_MAXIMO[familiaDe(m)]);
   // EL TOPE ES POR MODELO Y ENTRE TODAS LAS TIRADAS DE ESTA BATERÍA: cada llamada LIVE queda en una
   // bitácora del cable (.cache/cable-live-*.jsonl), y su coste se descuenta del tope antes de empezar.
   // Así un piloto, una tirada abortada o una repetición nunca suman más de lo autorizado.
   const previo = new Map<string, number>();
+  mkdirSync(join(AQUI, ".cache"), { recursive: true });
   if (!mock) {
     for (const f of readdirSync(join(AQUI, ".cache")).filter((x) => /^cable-live-.*\.jsonl$/.test(x))) {
       for (const linea of readFileSync(join(AQUI, ".cache", f), "utf8").split("\n")) {
@@ -699,7 +757,8 @@ async function principal(): Promise<void> {
   const semilla = Number(arg("semilla") ?? 20260928);
   const concurrencia = Math.min(4, Math.max(1, Number(arg("concurrencia") ?? 3)));
   const salida = resolve(RAIZ, arg("salida") ?? (mock ? join(AQUI, ".cache", "mock") : "docs/benchmarks/2026-09-28"));
-  if (!(tope > 0 && tope <= 1.25)) throw new Error("--tope debe estar en (0, 1.25]: es el techo autorizado por modelo para esta batería");
+  const nombre = arg("nombre") ?? NOMBRE_POR_DEFECTO;
+  if (!(tope > 0)) throw new Error("--tope debe ser > 0 (y nunca sube del techo por familia, TOPE_MAXIMO)");
 
   const porCategoria = new Map<CategoriaAst, EntradaAst[]>();
   for (const c of CATEGORIAS_AST) porCategoria.set(c, await cargarCategoria(c, { descargar: !mock }));
@@ -719,27 +778,37 @@ async function principal(): Promise<void> {
   }
   const verja = instalarVerjaDeHosts(hostsPermitidos);
 
+  // LA PRUEBA GRATUITA DE LA CLAVE DE ANTHROPIC (GET /v1/models, no factura): un 401 = «no medible», sin gastar.
+  const noMedibles: { modelo: string; motivo: string }[] = [];
+  if (!mock && modelos.some((m) => familiaDe(m) === "anthropic")) {
+    const motivo = await probarClaveAnthropic();
+    if (motivo) {
+      for (const m of modelos.filter((x) => familiaDe(x) === "anthropic")) noMedibles.push({ modelo: m, motivo });
+      console.log(`  anthropic: ${motivo} — no se mide y no se gasta`);
+    }
+  }
+  const aMedir = modelos.filter((m) => !noMedibles.some((x) => x.modelo === m));
+
   const avisos: string[] = [];
   const warnOriginal = console.warn;
   console.warn = (...xs: unknown[]) => {
     avisos.push(sinSecretos(xs.map(String).join(" ")).slice(0, 600));
   };
   const semaforos: Record<Familia, Semaforo> = { anthropic: new Semaforo(concurrencia), openai: new Semaforo(concurrencia) };
-  mkdirSync(join(AQUI, ".cache"), { recursive: true });
   const diario = join(AQUI, ".cache", `cable-${mock ? "mock" : "live"}-${new Date().toISOString().replace(/[:.]/g, "-")}.jsonl`);
   console.log(
     `BFCL A/B · ${mock ? "MOCK (proveedor simulado, sin red)" : "LIVE"} · dataset ${REPO_BFCL}@${COMMIT_BFCL.slice(0, 12)} (${LICENCIA_BFCL}) · ` +
-      `${ast.length} AST (${n}/categoría) + ${repesE.length} repeticiones + ${multiE.length} multi-turn · tope ${tope} $/modelo`,
+      `${ast.length} AST (${n}/categoría) + ${repesE.length} repeticiones + ${multiE.length} multi-turn · tope ${aMedir.map((m) => `${m} ${topeDe(m)} $`).join(", ")}`,
   );
   // Los modelos de proveedores distintos corren en paralelo; los del mismo, en serie (comparten clave y semáforo).
   const porFamilia = new Map<Familia, string[]>();
-  for (const m of modelos) porFamilia.set(familiaDe(m), [...(porFamilia.get(familiaDe(m)) ?? []), m]);
+  for (const m of aMedir) porFamilia.set(familiaDe(m), [...(porFamilia.get(familiaDe(m)) ?? []), m]);
   const tiradas: TiradaDeModelo[] = [];
   await Promise.all(
     [...porFamilia.values()].map(async (ms) => {
       for (const m of ms) {
         const inicio = avisos.length;
-        const t = await correrModelo(m, { ast, repes: repesE, multi: multiE }, { mock, cargado, tope: Math.max(0, tope - (previo.get(m) ?? 0)), semaforos, respuestas, concurrencia, diario });
+        const t = await correrModelo(m, { ast, repes: repesE, multi: multiE }, { mock, cargado, tope: Math.max(0, topeDe(m) - (previo.get(m) ?? 0)), semaforos, respuestas, concurrencia, diario });
         t.avisosDeLaCapa = [...new Set(avisos.slice(inicio))];
         tiradas.push(t);
         console.log(
@@ -769,8 +838,11 @@ async function principal(): Promise<void> {
     paquete,
     config: { n, multi, repes, tope, semilla, concurrencia, gastoPrevioDescontado: Object.fromEntries(previo) },
     modelos: tiradas,
+    ...(noMedibles.length ? { noMedibles } : {}),
   };
   artefacto.resumen = tiradas.map(resumir);
+  const comparar = arg("comparar") ?? (mock ? undefined : "docs/benchmarks/2026-09-28/bfcl.json");
+  if (comparar) artefacto.comparacion = comparacionCon(resolve(RAIZ, comparar), RAIZ);
   mkdirSync(salida, { recursive: true });
   const json = JSON.stringify(artefacto, null, 2);
   // Ninguna clave puede acabar en el artefacto: se compara contra los VALORES del entorno sin imprimirlos.
@@ -778,9 +850,9 @@ async function principal(): Promise<void> {
   if (claves.some((k) => json.includes(k)) || /\bsk-(?:ant-)?[A-Za-z0-9_-]{20,}/.test(json)) {
     throw new Error("the artifact contains a credential-shaped string: not written");
   }
-  writeFileSync(join(salida, "bfcl.json"), `${json}\n`);
-  writeFileSync(join(salida, "bfcl.md"), escribirInforme(artefacto));
-  console.log(`→ ${join(salida, "bfcl.json")} y bfcl.md · cable (sin cabeceras) en ${diario}`);
+  writeFileSync(join(salida, `${nombre}.json`), `${json}\n`);
+  writeFileSync(join(salida, `${nombre}.md`), escribirInforme(artefacto));
+  console.log(`→ ${join(salida, `${nombre}.json`)} y .md · cable (sin cabeceras) en ${diario}`);
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
