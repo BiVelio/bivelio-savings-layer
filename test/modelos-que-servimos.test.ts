@@ -55,6 +55,7 @@ const MODELOS_QUE_SERVIMOS: Readonly<Record<string, string>> = {
   "gpt-5.6-terra": "familia gpt-5.6",
   "gpt-5.6-luna": "familia gpt-5.6",
   "gemini-3.8-flash": "banco 2026 (Gemini 3.x Flash)",
+  "gpt-5.4-mini": "benchmarks/publicados/bfcl (batería pública BFCL, 2026-09-28)",
 };
 
 /** Lo que el barrido encuentra y NO es un id de modelo, con el porqué. */

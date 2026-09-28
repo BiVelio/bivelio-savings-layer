@@ -6,7 +6,7 @@
  * on the customer's machine. `test/version-declarada.test.ts` ties this
  * constant to package.json so the two can never drift.
  */
-export const BV_SALA_VERSION = "0.4.30";
+export const BV_SALA_VERSION = "0.4.31";
 
 // ---------------------------------------------------------------------------
 // Lo de abajo es INTERNO: no sale por src/index.ts (la superficie pública solo
@@ -42,7 +42,7 @@ export const VERSION_MINIMA_PALANCA_TARIFA = "0.4.16";
 /**
  * Política A MANO: la primera versión que emite registros `basis: "reference"`
  * con la regla v2 (`reference-v2`) y que ya no repite una negativa del proveedor
- * como `reference`. Dos subidas:
+ * como `reference`. Tres subidas:
  *
  *   · 0.4.24 (#323): la etiqueta v0.4.23 se cortó con la regla v1 (abajo).
  *   · 0.4.29 (decisión del dueño, BITACORA-2026-09-26 §8): de la 0.4.24 a la
@@ -54,6 +54,16 @@ export const VERSION_MINIMA_PALANCA_TARIFA = "0.4.16";
  *     todavía guardaban y repetían. La mínima es la primera que cierra las dos.
  *     El coste, aceptado: las referencias honestas de 0.4.24-0.4.28 también
  *     entran como `estimated`.
+ *   · 0.4.31 (decisión del dueño, 2026-09-28): hasta la 0.4.30 el SDK guardaba
+ *     en caché y repetía como `reference` una negativa que el modelo escribe
+ *     como TEXTO normal («I'm sorry, but I can't help with that.» con
+ *     `end_turn`/`stop`), sin ninguna señal del API: ni `refusal`, ni
+ *     `message.refusal`, ni `content_filter`. #356, #367 y #374 solo excluían
+ *     las que señala el API. #384 (commit edb168c, que no está en la v0.4.30)
+ *     las detecta con una heurística conservadora y ni las guarda ni las
+ *     acredita; sale en la 0.4.31. Mismo criterio que la subida anterior: la
+ *     primera versión que cierra el agujero, y el coste aceptado —las
+ *     referencias honestas de 0.4.29 y 0.4.30 también entran como `estimated`.
  *
  * La etiqueta v0.4.23 se cortó con la regla v1
  * (formato de registro `v: 1`, sin guarda de razonamiento y sin el esquema
@@ -76,4 +86,4 @@ export const VERSION_MINIMA_PALANCA_TARIFA = "0.4.16";
  * caso en que el SDK emitía una referencia que no debía? → esta MINIMA sube a
  * la versión que lo publica, o se deja escrito por qué no».
  */
-export const VERSION_MINIMA_REFERENCIA = "0.4.29";
+export const VERSION_MINIMA_REFERENCIA = "0.4.31";

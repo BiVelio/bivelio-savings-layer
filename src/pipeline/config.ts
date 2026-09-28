@@ -43,7 +43,28 @@ export interface SavingsLayerConfig {
   tokenizer: TokenizerRegistry;
 
   exactCache?: ExactCache;
+  /**
+   * WHERE reworded questions are looked up and stored. Giving the layer a cache
+   * does NOT switch it on: a request still has to ask for it with
+   * `savings.semanticCache`, or you set {@link semanticCacheDefault} to ask for
+   * it on every request. A layer that has a cache and a request that neither
+   * asks for it nor turns it off gets a one-time console warning (silenced by
+   * `silenceWarnings`, or by setting `semanticCacheDefault`, `false` included).
+   */
   semanticCache?: InMemorySemanticCache;
+  /**
+   * Default for `savings.semanticCache` on every request of this layer. A
+   * request's own value always wins, `false` included. Unset, the semantic cache
+   * is used only by requests that ask for it.
+   *
+   * OPT-IN, and deliberately a separate field from {@link semanticCache}: the
+   * cache is the backend, this is the decision to serve answers to reworded
+   * questions, which can serve a wrong answer. Prefer it with a cache built with
+   * `calibration`, which serves nothing until your own traffic certifies a
+   * floor. `false` states that you switch it on per request, and silences the
+   * warning about a cache that no request uses.
+   */
+  semanticCacheDefault?: boolean | "safe-only" | "include-agentic";
   singleflight?: Singleflight;
   resolvers?: ResolverRegistry;
   router?: ExecutionRouter;

@@ -16,9 +16,12 @@ import type { CostModel } from "../tokenizer/accounting.js";
 // cambio de dos cosas que no se ven en la factura pero sí en la función:
 //
 //   · con un catálogo SIN TIPAR (ninguno de los 10.636 catálogos MCP del corpus
-//     declaraba `intents` ni `risk`) no hay señal y pasan las `maxTools`
-//     primeras POR POSICIÓN: la novena herramienta no existe para el modelo;
-//   · con uno tipado, lo que no entra en el conjunto congelado tampoco.
+//     declaraba `intents` ni `risk`) no hay señal y el selector lo manda ENTERO
+//     (hasta 0.4.30 pasaban las `maxTools` primeras POR POSICIÓN y la novena
+//     herramienta no existía para el modelo): no se pierde función, pero el
+//     catálogo entero va en el prefijo en cada petición;
+//   · con uno tipado, lo que no entra en el conjunto congelado no existe para
+//     el modelo.
 //
 // La búsqueda nativa de Anthropic lo resuelve en el lado del proveedor: se
 // mandan TODAS las definiciones con `defer_loading: true`, el proveedor las
@@ -155,8 +158,8 @@ export function normalizarBusqueda(valor: ToolSearchMode | ToolSearchOptions | u
  *     comisión por haber roto la petición.
  *
  * Con un catálogo así no hay nada que seleccionar: no hay señal. El selector lo
- * pasa íntegro (acotado por presupuesto) y la búsqueda nativa no le aplica la
- * verja de riesgo. Vive aquí, y no en `tool-selector.ts`, para que las dos rutas
+ * pasa íntegro (sin tope: `maxTools` solo acota lo que se elige por relevancia)
+ * y la búsqueda nativa no le aplica la verja de riesgo. Vive aquí, y no en `tool-selector.ts`, para que las dos rutas
  * usen la misma regla.
  */
 export function catalogoSinTipar(tools: readonly ToolDescriptor[]): boolean {

@@ -28,7 +28,20 @@ export interface ToolSelection {
 }
 
 export interface ToolSelectorOptions {
-  /** Max tools to include (schema-token budget guard). */
+  /**
+   * Max tools the selector keeps when it has a SIGNAL to select on: a catalogue
+   * whose tools declare `intents` and/or `risk`, with the router on. Default 8.
+   *
+   * It never truncates a catalogue it cannot rank. A catalogue that declares no
+   * `intents` and no `risk` (the usual case: MCP and OpenAI tool lists) and every
+   * request with `savings: { router: false }` go to the provider WHOLE, exactly as
+   * the caller sent them, and the layer credits nothing for the tool block:
+   * cutting by position left the model unable to call the rest (on BFCL
+   * multi-turn, gpt-4o-mini hit the reference call 8/10 times directly and 1/10
+   * through the layer). When the selector does prune a typed catalogue, the
+   * report's `tool-selector` trace lists what was left out and the SDK warns
+   * (once per process, silenced by `silenceWarnings`).
+   */
   maxTools?: number;
   /** Tokenizer-aware scorer for tie-breaking (optional). */
   scoreIntentMatch?: (text: string, tool: ToolDescriptor) => number;
@@ -88,33 +101,38 @@ export class ToolSelector {
   }
 
   /**
-   * Todas las herramientas que pasó el llamante, acotadas SOLO por el
-   * presupuesto de esquema (`maxTools`).
-   *
-   * Se usa cuando el llamante apaga el router (`savings:{router:false}`): sin
-   * clasificación no hay de dónde derivar el riesgo, y filtrar sobre el
-   * `defaultRoute()` tiraba en silencio las herramientas de escritura. Apagar el
-   * router significa "yo elijo las herramientas", así que la relevancia pasa a
-   * ser del llamante — pero el tope de presupuesto NO se levanta: mandar 200
-   * esquemas al proveedor es un 400 seguro y una petición que antes funcionaba
-   * pasaría a fallar en duro.
+   * Every tool the caller passed, as passed: none left out, none credited.
+   * Used when there is no signal to select on (`savings: { router: false }`,
+   * or a catalogue with no `intents` and no `risk`).
    */
   passthrough(tools: ToolDescriptor[] | undefined): ToolSelection {
     if (!tools || tools.length === 0) {
       return { tools: [], droppedIds: [], reason: "no tools provided", setIsStable: true };
     }
-    const selected = tools.slice(0, this.maxTools);
-    const droppedIds = tools.slice(this.maxTools).map((t) => t.id);
+    // ANTES ESTO CORTABA A `maxTools` POR POSICIÓN, y era el peor fallo posible
+    // con aspecto de ahorro. Medido en vivo con BFCL multi-turno sobre 0.4.30
+    // (`docs/benchmarks/2026-09-28/bfcl.md`, PR #379): catálogos de 17 a 36
+    // herramientas salían a 8, el primer paso acertaba la llamada de referencia
+    // 8/10 veces directo y 1/10 por la capa con gpt-4o-mini, y la mitad de las
+    // respuestas eran «no tengo acceso a eso». En OpenAI, sin ningún aviso. Y lo
+    // quitado iba al libro 2 como ahorro: cobrábamos comisión por haberle quitado
+    // la función al cliente.
+    //
+    // El argumento del tope era que 200 esquemas son un 400 del proveedor. Lo son
+    // también sin la capa. La capa no puede empeorar la respuesta de la llamada
+    // directa: mandar lo mismo que ella no la empeora; recortar a ciegas, sí.
+    //
+    // Apagar el router sigue significando "yo elijo las herramientas": sin
+    // clasificación no hay riesgo del que derivar nada, y filtrar sobre el
+    // `defaultRoute()` tiraba en silencio las de escritura.
     return {
-      tools: selected,
-      droppedIds,
+      tools: [...tools],
+      // Nada se quita, así que nada se acredita en el libro 2.
+      droppedIds: [],
       reason:
-        `router off: caller tools passed through unfiltered ` +
-        `(${selected.length}/${tools.length}, capped at maxTools=${this.maxTools}; ` +
+        `router off: caller tools passed through whole (${tools.length}/${tools.length}; ` +
         `risk gating is the caller's responsibility while routing is off)`,
-      // Aquí el conjunto lo decide el LLAMANTE y el corte es posicional, no por
-      // puntuación: con la misma lista de entrada sale el mismo conjunto,
-      // pregunte lo que pregunte. Eso sí es estable.
+      // El conjunto es el del LLAMANTE: no depende de la pregunta.
       setIsStable: true,
     };
   }
@@ -134,14 +152,16 @@ export class ToolSelector {
       return { tools: [], droppedIds: [], reason: "no tools provided", setIsStable: true };
     }
 
-    // Catálogo real sin tipar: no hay señal que seleccionar. Pasa íntegro.
+    // Catálogo real sin tipar: no hay señal que seleccionar. Pasa ÍNTEGRO, sin
+    // tope: `maxTools` solo acota lo que se elige por relevancia (ver
+    // `passthrough`).
     if (catalogoSinTipar(tools)) {
       const paso = this.passthrough(tools);
       return {
         ...paso,
         reason:
           `catalogue declares no \`intents\` and no \`risk\`: nothing to select on, ` +
-          `passed through (${paso.tools.length}/${tools.length}, capped at maxTools=${this.maxTools}). ` +
+          `passed through whole (${paso.tools.length}/${tools.length}). ` +
           `Declare ToolDescriptor.intents/risk to enable pruning`,
       };
     }

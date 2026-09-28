@@ -177,7 +177,8 @@ describe("la superficie pública del paquete", () => {
   it("el español en los comentarios no crece", () => {
     // 2026-09-03: bajó de 91 a 81 al traducir los bloques de CostBasis y
     // cost.basis (la doctrina del carril sombra nació ya en inglés).
-    const TECHO = 81;
+    // 2026-09-28: a 76 al pasar al inglés el JSDoc de `ToolSelector.passthrough`.
+    const TECHO = 76;
     const cuantas = lineas.filter((l) => /[áéíóúñ¿¡]/.test(l)).length;
     expect(
       cuantas,

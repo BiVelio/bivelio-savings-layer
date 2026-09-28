@@ -13,7 +13,6 @@ import {
 import {
   admiteBusquedaNativa,
   candidatasPorRiesgo,
-  catalogoSinTipar,
   decidirBusquedaNativa,
   normalizarBusqueda,
 } from "../router/busqueda-nativa.js";
@@ -129,9 +128,15 @@ import {
 import { CanalDeStream, type MotivoEntero, type SumideroDeStream } from "./stream.js";
 import { libroDeCalidad, libroDelSeguidor, type HechosDeCalidad } from "./libro-de-calidad.js";
 import { StreamAbortedError } from "./errors.js";
+import { negativaEnTexto } from "../providers/negativa-en-texto.js";
 import { normalizarAjustes } from "../verification/ajustes.js";
 import { ComprobadorAB, type SumideroDeVerificacion } from "../verification/comprobador.js";
 import type { ViaDeServicio } from "../verification/clasificar.js";
+import {
+  comprobarTopeDePeticion,
+  salidaEstimadaDeReferencia,
+  topeDeSalida,
+} from "../contracts/tope-de-salida.js";
 
 /**
  * Build-time flag: the published npm SDK sets this to `false` (tsup `define`) so the
@@ -568,6 +573,9 @@ export class SavingsPipeline {
    */
   async generate<T = unknown>(request: SavingsRequest): Promise<SavingsResult<T>> {
     this.assertLicensed();
+    // Un tope de petición inválido es un error de quien llama: se dice ANTES del
+    // try del fail-open, que si no lo mandaría crudo al proveedor como 400.
+    comprobarTopeDePeticion(request);
     request = this.conPalancasPorDefecto(request);
     // Testigo de facturación de ESTA petición. No puede ser un campo de la
     // instancia: una misma capa sirve peticiones concurrentes.
@@ -663,6 +671,7 @@ export class SavingsPipeline {
       }
       // Arriba del try/catch del fail-open, por la misma razón que en generate().
       this.assertLicensed();
+      comprobarTopeDePeticion(request);
       // Síncrono tras la comprobación de abort: no hay hueco en el que un abort
       // llegue sin saber si ya hay que cancelar al proveedor.
       canal.entrarEnVivo();
@@ -709,17 +718,26 @@ export class SavingsPipeline {
    */
   private conPalancasPorDefecto(request: SavingsRequest): SavingsRequest {
     const pl = this.config.priceLevers;
-    if (!pl) return request;
     const s = request.savings;
-    const ponerDiferible = pl.deferrable === true && s?.deferrable === undefined;
-    const ponerStandalone = pl.standalone === true && s?.standalone === undefined;
-    if (!ponerDiferible && !ponerStandalone) return request;
+    const ponerDiferible = pl?.deferrable === true && s?.deferrable === undefined;
+    const ponerStandalone = pl?.standalone === true && s?.standalone === undefined;
+    // LA CACHÉ SEMÁNTICA POR DEFECTO DE LA CAPA (`semanticCacheDefault`). Entra
+    // aquí, en la petición, y no como un «o» más abajo, porque la política lee
+    // `original.savings.semanticCache` para admitir lo agéntico: un
+    // `"include-agentic"` puesto por la capa tiene que valer igual que uno
+    // declarado. Solo un valor que ENCIENDE; `false` no escribe nada (la petición
+    // sin valor ya es «apagada»), y la petición que dice algo gana siempre.
+    const semDefecto = this.config.semanticCacheDefault;
+    const ponerSemantica =
+      semDefecto !== undefined && semDefecto !== false && s?.semanticCache === undefined;
+    if (!ponerDiferible && !ponerStandalone && !ponerSemantica) return request;
     return {
       ...request,
       savings: {
         ...(s ?? {}),
         ...(ponerDiferible ? { deferrable: true } : {}),
         ...(ponerStandalone ? { standalone: true } : {}),
+        ...(ponerSemantica ? { semanticCache: semDefecto } : {}),
       },
     };
   }
@@ -1718,7 +1736,7 @@ export class SavingsPipeline {
     techoDelEsquema: number | null,
     aprendido: boolean,
   ): void {
-    const tope = request.response?.maxOutputTokens;
+    const tope = topeDeSalida(request);
     const contrato = contractKey(request) || "(no contractId)";
     // Lo que la capa hará por su cuenta a partir de ahora, dicho solo cuando de
     // verdad lo va a hacer. Un aviso que anuncia una corrección que no ocurre es
@@ -1781,6 +1799,31 @@ export class SavingsPipeline {
           "It is not on by default because it needs an embedder, which is your own cost and provider: " +
           "plug it in with `createSavingsLayer({ semanticCache: new InMemorySemanticCache({ embed }) })`. " +
           "The exact cache and the rest of the layer keep working.",
+      );
+    }
+
+    // EL CASO CONTRARIO, Y EL QUE SE VIO EN EL BANCO: la capa TIENE caché
+    // semántica y ninguna petición la pide. 0 registros tras 5.813 peticiones y
+    // ni una señal, porque el ejemplo «Serverless» del README la pasaba al
+    // constructor y daba por hecho que eso la encendía. No la enciende —y NO debe
+    // encenderla sola: puede servir la respuesta de otra pregunta—, pero se dice.
+    // Solo cuando la petición no dice nada: un `false` explícito (los adaptadores
+    // lo fuerzan) es una decisión, no un olvido. Y `semanticCacheDefault`, con
+    // cualquier valor, también es una decisión.
+    if (
+      this.deps.semanticCache &&
+      toggles.semanticCache === undefined &&
+      this.config.semanticCacheDefault === undefined
+    ) {
+      this.avisar(
+        "cache-semantica-sin-pedir",
+        "[bv-sala] This layer was given a `semanticCache`, but this request does not ask for it, so " +
+          "the semantic cache was neither consulted nor written: every reworded question is paid to the " +
+          "provider and a calibrating cache collects no labels. Passing the cache to `createSavingsLayer` " +
+          "does not switch it on. Ask for it per request with `savings: { semanticCache: true }`, or on " +
+          "every request with `createSavingsLayer({ semanticCache, semanticCacheDefault: true })` — " +
+          "preferably with a cache built with `calibration`. If you switch it on per request on purpose, " +
+          "set `semanticCacheDefault: false` to say so and this warning goes away.",
       );
     }
   }
@@ -1863,7 +1906,7 @@ export class SavingsPipeline {
 
     // Baseline: the naive prompt cost if none of the layer ran.
     const baselineInput = this.tokensFor(this.assembleBaselinePrompt(request), request);
-    const baselineOutput = request.response?.maxOutputTokens ?? 256;
+    const baselineOutput = salidaEstimadaDeReferencia(request);
     // La huella byte a byte de ESTA petición, perezosa: solo se paga el SHA-256
     // de la petición entera en un acierto que traiga un registro de referencia.
     let huella: string | undefined;
@@ -1912,7 +1955,21 @@ export class SavingsPipeline {
     // proceso ni desde otro que comparta el Redis.
     const exactKey = buildExactKey(canonical, { servedModel: cascada.modeloServido });
     if (policy.allowExactCache && toggles.exactCache !== false) {
-      const hit = await this.deps.exactCache.get<T>(exactKey);
+      const guardada = await this.deps.exactCache.get<T>(exactKey);
+      // UNA NEGATIVA EN TEXTO NO SE SIRVE DESDE LA CACHÉ, aunque esté guardada:
+      // la escribió una versión anterior a esta regla (0.4.30 o antes) o otro
+      // proceso que comparte el Redis. Se ignora como si no estuviera: la
+      // petición va al proveedor y se mide. La misma heurística que la escritura
+      // (etapa 12), con el mismo coste si se equivoca: un acierto.
+      const reglaGuardada = guardada ? negativaEnTexto(guardada.text) : null;
+      if (reglaGuardada !== null) {
+        trace.record(
+          "exact-cache",
+          "ignored: the stored answer reads as a refusal written as text (text_refusal); it is not replayed",
+          { skipReason: "text_refusal", rule: reglaGuardada },
+        );
+      }
+      const hit = reglaGuardada === null ? guardada : null;
       if (hit) {
         // MEDIDO POR REFERENCIA, o estimado como siempre. Si la entrada trae el
         // contador de la llamada intacta que la escribió y pasa L0-L7, la
@@ -1975,8 +2032,8 @@ export class SavingsPipeline {
       // respuesta: un seguidor que difiera en cualquiera de los dos NO puede
       // recibir la respuesta (recortada/truncada) del líder. Ver buildInflightKey.
       toolDiscovery: toggles.toolDiscovery === true,
-      ...(request.response?.maxOutputTokens != null
-        ? { maxOutputTokens: request.response.maxOutputTokens }
+      ...(topeDeSalida(request) != null
+        ? { maxOutputTokens: topeDeSalida(request)! }
         : {}),
     });
     const runExpensive = async (): Promise<SavingsResult<T>> => {
@@ -2108,7 +2165,19 @@ export class SavingsPipeline {
       const consulta = cacheSemantica.calibrated
         ? await cacheSemantica.lookup(canonical, { agentic: policy.isAgentic })
         : { hit: await cacheSemantica.find(canonical), probe: null };
-      const hit = consulta.hit;
+      // La misma guarda que la caché exacta: una negativa en texto guardada por
+      // una versión anterior no se sirve como respuesta a una pregunta parecida.
+      const reglaSemantica = consulta.hit
+        ? negativaEnTexto((consulta.hit.record.answer as CachedAnswer<T>).text)
+        : null;
+      if (reglaSemantica !== null) {
+        trace.record(
+          "semantic-cache",
+          "ignored: the stored answer reads as a refusal written as text (text_refusal); it is not replayed",
+          { skipReason: "text_refusal", rule: reglaSemantica },
+        );
+      }
+      const hit = reglaSemantica === null ? consulta.hit : null;
       sondaSemantica = consulta.probe;
       if (hit) {
         // Measured avoided-output baseline (the cached answer is the real output).
@@ -2185,10 +2254,7 @@ export class SavingsPipeline {
           // entrada; congelando, la misma poda ahorra el 14,3 %).
           canonical.toolsetHash,
         );
-    // Solo con la palanca APAGADA: si se pidió y no aplicó, la traza ya dice por qué.
-    if (!nativa && normalizarBusqueda(toggles.toolSearch).modo === "off") {
-      this.avisarDeCatalogoRecortado(request, toolSelection, cascada.modeloServido);
-    }
+    if (!nativa) this.avisarDeHerramientasPodadas(request, toolSelection, cascada.modeloServido);
     ledger.actualTools = toolSelection.tools.length;
     if (toolSelection.droppedIds.length) {
       // LIBRO 2. Hasta ahora `SavingsLedger.eliminate()` no tenía NI UN llamante
@@ -2328,8 +2394,9 @@ export class SavingsPipeline {
     // nuestra salida válida cae a 27/40, mientras el brazo naive —con el MISMO
     // tope y SIN pista— cumple 39/40. La pista provocaba el fallo que pretende
     // evitar.
-    const techoPorTokens = request.response?.maxOutputTokens != null
-      ? Math.floor(request.response.maxOutputTokens * 3.2) // ~3,2 car/token en prosa, conservador
+    const topeEfectivo = topeDeSalida(request);
+    const techoPorTokens = topeEfectivo != null
+      ? Math.floor(topeEfectivo * 3.2) // ~3,2 car/token en prosa, conservador
       : null;
     const reglasDeValor = this.contratosQueIncumplen.has(idContrato)
       ? describeValueConstraints(request.response?.schema, "", techoPorTokens)
@@ -2954,8 +3021,8 @@ export class SavingsPipeline {
       // sobre CUÁL es: el esquema no está en `messages`, así que no entra en el
       // prefijo que se marca ni mueve su frontera.
       ...(esquemaAlProveedor ? { schema: esquemaAlProveedor } : {}),
-      ...(request.response?.maxOutputTokens != null
-        ? { maxOutputTokens: request.response.maxOutputTokens }
+      ...(topeDeSalida(request) != null
+        ? { maxOutputTokens: topeDeSalida(request)! }
         : {}),
       ...(request.temperature != null ? { temperature: request.temperature } : {}),
       ...(request.seed != null ? { seed: request.seed } : {}),
@@ -3605,13 +3672,13 @@ export class SavingsPipeline {
         // Se exige `maxOutputTokens` declarado: sin él, el corte lo puso un tope
         // del proveedor que no conocemos (la API de Anthropic exige `max_tokens` y
         // el adaptador manda 4096), y "cabe" no sería una afirmación demostrable.
-        const tope = request.response?.maxOutputTokens ?? null;
+        const tope = topeDeSalida(request) ?? null;
         const desbordaSuContrato =
           techoDelEsquema !== null && tope != null && techoDelEsquema <= tope;
         if (desbordaSuContrato) this.contratosQueIncumplen.add(contractKey(request));
         trace.record("validation", "repair-skipped", {
           reason: "output truncated by maxOutputTokens; a retry with the same cap would truncate again",
-          maxOutputTokens: request.response?.maxOutputTokens ?? null,
+          maxOutputTokens: topeDeSalida(request) ?? null,
           outputTokens: response.usage.outputTokens,
           model: modeloServido,
           ...(techoDelEsquema !== null ? { schemaAllowsTokens: techoDelEsquema } : {}),
@@ -3713,7 +3780,7 @@ export class SavingsPipeline {
         const entradaEstimada = Math.round(k * reparacionEnLocal);
         const salidaEstimada = Math.min(
           response.usage.outputTokens,
-          request.response?.maxOutputTokens ?? Number.POSITIVE_INFINITY,
+          topeDeSalida(request) ?? Number.POSITIVE_INFINITY,
         );
         // Sin tarifa cacheada: el prompt de reparación es corto y nuevo, no
         // comparte prefijo con nada, así que no hay acierto de caché que aplicar.
@@ -3784,8 +3851,8 @@ export class SavingsPipeline {
             model: modeloServido,
             messages: mensajesReparacion,
             schema,
-            ...(request.response?.maxOutputTokens != null
-              ? { maxOutputTokens: request.response.maxOutputTokens }
+            ...(topeDeSalida(request) != null
+              ? { maxOutputTokens: topeDeSalida(request)! }
               : {}),
           }, testigo);
           usoReparacion = response.usage;
@@ -3985,13 +4052,27 @@ export class SavingsPipeline {
     // un `content` vacío con su `refusal` se guardaba y se repetía por referencia
     // como si fuera una respuesta (2026-09-28). La cuenta `esNegativaDelProveedor`.
     const negativa = esNegativaDelProveedor(response);
+    // Y LA SÉPTIMA: LA NEGATIVA QUE EL MODELO ESCRIBE COMO TEXTO (2026-09-28).
+    // «I can't help with that.» con `end_turn`/`stop`, sin señal del API: la
+    // caché exacta la guardaba 24 h y cada repetición salía `reference`
+    // (comisionable), congelando una negativa por exceso de cautela en un prompt
+    // seguro (XSTest). La detecta una heurística conservadora
+    // (`negativaEnTexto`, src/providers/negativa-en-texto.ts) que solo mira el
+    // inicio de la respuesta, o la respuesta entera si es corta. Se equivoca
+    // hacia el lado barato: un falso positivo cuesta un acierto de caché —la
+    // respuesta se mide y se sirve igual, y ni la reparación ni el coste cambian—,
+    // y un falso negativo deja el comportamiento de antes. Sin registro por
+    // referencia (E7 de referencia.ts), tampoco un seguidor de singleflight la
+    // valora por referencia: sale `estimated`, fuera de la comisión.
+    const reglaDeNegativaEnTexto = negativa || pidioHerramientas ? null : negativaEnTexto(textoServido);
     const cacheable =
       structurallyValid !== false &&
       !pidioHerramientas &&
       !vistaRecortada &&
       !cortadaPorElTope &&
       !noReproducible &&
-      !negativa;
+      !negativa &&
+      reglaDeNegativaEnTexto === null;
 
     // --- Etapa 12-bis: el registro de MEDIDO POR REFERENCIA. ---
     //
@@ -4095,7 +4176,18 @@ export class SavingsPipeline {
                       "a refusal message); " +
                       "a refusal is not an answer, and replaying it would credit an avoided call the provider " +
                       "may not have billed"
-                    : "skipped: answered with a reduced tool view (tool discovery), so it must not be replayed",
+                    : reglaDeNegativaEnTexto !== null
+                      ? "skipped: the answer reads as a refusal written as text (text_refusal); it was measured " +
+                        "and served as usual, but a refusal is not an answer to replay or to credit as an avoided call"
+                      : "skipped: answered with a reduced tool view (tool discovery), so it must not be replayed",
+          // El motivo va en `detail` solo si es el que da la línea de arriba.
+          reglaDeNegativaEnTexto !== null &&
+            !pidioHerramientas &&
+            structurallyValid !== false &&
+            !cortadaPorElTope &&
+            !noReproducible
+            ? { skipReason: "text_refusal", rule: reglaDeNegativaEnTexto }
+            : undefined,
         );
       }
 
@@ -4274,8 +4366,8 @@ export class SavingsPipeline {
         // produjo lo servido.
         final: {
           ...(response.finishReason !== undefined ? { finishReason: response.finishReason } : {}),
-          ...(request.response?.maxOutputTokens != null
-            ? { topeDelLlamante: request.response.maxOutputTokens }
+          ...(topeDeSalida(request) != null
+            ? { topeDelLlamante: topeDeSalida(request)! }
             : {}),
         },
       },
@@ -4415,23 +4507,31 @@ export class SavingsPipeline {
     return { tools: candidatas, tokensLocalesDelSondeo: 0, aplicado: false };
   }
 
-  // EL AVISO QUE HACE VISIBLE UNA PÉRDIDA DE FUNCIÓN SILENCIOSA. Con un catálogo
-  // sin `intents` ni `risk` —como llegan los de MCP— el selector no tiene señal
-  // y pasa solo las `maxTools` primeras POR POSICIÓN: el modelo no puede llamar
-  // a las demás y nada lo dice. Si además este adaptador y este modelo admiten
-  // la búsqueda nativa, hay una salida que no deja ninguna fuera; se avisa una
-  // vez por proceso y el aviso es silenciable.
-  private avisarDeCatalogoRecortado(request: SavingsRequest, seleccion: ToolSelection, modelo: string): void {
+  // UNA HERRAMIENTA QUE EL MODELO NO VE NO SE QUITA NUNCA EN SILENCIO.
+  //
+  // Desde el arreglo del recorte posicional el selector solo quita herramientas
+  // cuando tiene SEÑAL: un catálogo que declara `intents`/`risk`, con el router
+  // encendido (un catálogo sin tipar y `router:false` pasan íntegros, ver
+  // `ToolSelector.passthrough`). Aun así, lo que quita el modelo no lo puede
+  // llamar, y hasta ahora eso solo quedaba en `report.traces`: el aviso que había
+  // saltaba únicamente donde existe la búsqueda nativa, o sea NUNCA en OpenAI, que
+  // es justo donde BFCL lo destapó. Ahora avisa en cualquier proveedor, una vez
+  // por proceso y silenciable (`silenceWarnings`), y si este adaptador y este
+  // modelo admiten la búsqueda nativa dice que existe.
+  private avisarDeHerramientasPodadas(request: SavingsRequest, seleccion: ToolSelection, modelo: string): void {
     const tools = request.tools ?? [];
-    if (seleccion.droppedIds.length === 0 || !catalogoSinTipar(tools)) return;
-    if (busquedaNativaDelProveedor(this.config.provider) === undefined || !admiteBusquedaNativa(modelo)) return;
+    if (seleccion.droppedIds.length === 0) return;
+    const nativa = busquedaNativaDelProveedor(this.config.provider) !== undefined && admiteBusquedaNativa(modelo);
     this.avisar(
-      "catalogo-recortado-con-busqueda-nativa",
-      `[bv-sala] Your tool catalogue declares no \`intents\` or \`risk\`, so the tool selector has nothing to ` +
-        `select on and sent only the first ${seleccion.tools.length} of ${tools.length} tools: the model cannot call ` +
-        `the others. This provider and model support native tool search: \`savings: { toolSearch: "auto" }\` sends ` +
-        "all of them deferred and lets the model search, without breaking the prompt cache. Its effect is the " +
-        "provider's and the layer credits nothing for it.",
+      "herramientas-podadas-por-el-selector",
+      `[bv-sala] The tool selector sent ${seleccion.tools.length} of ${tools.length} tools, chosen by the ` +
+        "`intents`/`risk` your tools declare: the model cannot call the other " +
+        `${seleccion.droppedIds.length} in that request (they are listed in the report's \`tool-selector\` trace). ` +
+        "A catalogue with no `intents` and no `risk`, or `savings: { router: false }`, is sent whole." +
+        (nativa
+          ? " This provider and model also support native tool search: `savings: { toolSearch: \"auto\" }` sends " +
+            "every tool deferred and lets the model search, without breaking the prompt cache."
+          : ""),
     );
   }
 
@@ -4504,7 +4604,7 @@ export class SavingsPipeline {
         candidatas.map((t) => ({ risk: t.risk, tokens: esquemaDe(t) })),
         MAX_LECTURAS_DE_LA_SEGUNDA,
       ),
-      salidaFinal: request.response?.maxOutputTokens ?? 256,
+      salidaFinal: salidaEstimadaDeReferencia(request),
       salidaDelSondeo: SALIDA_DEL_SONDEO_TOKENS,
       precio: costModel,
     });
@@ -5181,8 +5281,8 @@ export class SavingsPipeline {
       messages,
       ...(request.tools?.length ? { tools: request.tools } : {}),
       ...(schema ? { schema } : {}),
-      ...(request.response?.maxOutputTokens != null
-        ? { maxOutputTokens: request.response.maxOutputTokens }
+      ...(topeDeSalida(request) != null
+        ? { maxOutputTokens: topeDeSalida(request)! }
         : {}),
       ...(request.temperature != null ? { temperature: request.temperature } : {}),
       ...(request.seed != null ? { seed: request.seed } : {}),
@@ -5217,8 +5317,8 @@ export class SavingsPipeline {
       origen: "fail_open",
       final: {
         ...(response.finishReason !== undefined ? { finishReason: response.finishReason } : {}),
-        ...(request.response?.maxOutputTokens != null
-          ? { topeDelLlamante: request.response.maxOutputTokens }
+        ...(topeDeSalida(request) != null
+          ? { topeDelLlamante: topeDeSalida(request)! }
           : {}),
       },
     };
@@ -5445,7 +5545,7 @@ export class SavingsPipeline {
         precio: this.precioDocumentado(ctx.request.model),
         determinista: muestreoDeterminista(ctx.request),
         salidaDelModelo: salidaNoRepetible(ctx.request.model),
-        topeDeSalida: ctx.request.response?.maxOutputTokens,
+        topeDeSalida: topeDeSalida(ctx.request),
         diferible: ctx.toggles.deferrable === true,
       });
     } catch {

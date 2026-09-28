@@ -17,6 +17,7 @@ import {
   type SemanticCalibrationState,
   type SemanticCalibrationStatus,
 } from "./calibration.js";
+import { cantidadesEnLetra } from "./cantidades-en-letra.js";
 import { embebedorLocal, UMBRAL_LOCAL } from "./embedder-local.js";
 import type { CachedAnswer } from "./exact.js";
 
@@ -154,8 +155,13 @@ export interface SemanticCacheOptions {
    *
    * Pass your own for true semantics; the local one only sees LEXICAL closeness.
    * Either way the deterministic guard below still rejects a candidate whose
-   * numbers, negation or entities differ, so a weaker vector can only cost you a
-   * cache miss — never a wrong answer.
+   * numbers (in digits or spelled out in en/es/ca: "three", "twice", "half"),
+   * negation parity or content words differ beyond its overlap floor. It is a
+   * lexical guard, not a proof: a one-word entity swap in a long query can
+   * still clear the overlap floor, and through 0.4.30 a number written in words
+   * cleared it too (GSM8K: 477 of 564 such variants got their original's
+   * answer). Calibrate on your own traffic before trusting it with answers
+   * that differ by one word.
    */
   embed?: EmbeddingFn;
   /**
@@ -216,7 +222,8 @@ export function cosine(a: number[], b: number[]): number {
 // multiset of numeric/date tokens, on negation parity, and on a content-token
 // overlap floor. A rejection only forgoes a cache hit (we make the real call) —
 // it can never produce a wrong answer. (The stopword list is English/es/ca; the
-// numeric and overlap checks are language-agnostic.)
+// digit and overlap checks are language-agnostic; numbers spelled out in words
+// are read in en/es/ca only — see `cantidades-en-letra.ts`.)
 // LA LISTA ERA SOLO INGLESA, Y ESO SÍ ERA UN AGUJERO DE CORRECCIÓN — no de ahorro.
 // Con la paridad de negación ciega al castellano y al catalán, dos preguntas de
 // significado OPUESTO contaban ambas 0 negaciones, pasaban la verja y la caché
@@ -377,7 +384,16 @@ export function keyTokensMatch(a: string, b: string): boolean {
 /** Las mismas tres comprobaciones, sobre el texto de UN turno ya sin su rol. */
 function hechosCoinciden(a: string, b: string): boolean {
   // 1. Numbers/dates must match exactly, as a multiset (100 vs 200; Jul 20 vs 21).
-  if (!multisetEqual(numericTokens(a), numericTokens(b))) return false;
+  //    LAS CANTIDADES EN LETRA TAMBIÉN. Solo con dígitos, «three baskets» y
+  //    «four baskets» tenían el mismo multiconjunto (vacío) y el Jaccard las
+  //    dejaba pasar: sin red, 477 de 564 variantes de GSM8K así recibían la
+  //    respuesta de su original. Los tokens en letra llevan prefijo (`n:3`,
+  //    `m:2`, `f:1/2`…) y no comparten valor con los de dígito, así que esto
+  //    solo AÑADE cortes: nada que antes se cortara pasa ahora. Detalle y
+  //    decisiones (falsos positivos, idiomas) en `cantidades-en-letra.ts`.
+  const na = [...numericTokens(a), ...cantidadesEnLetra(a)];
+  const nb = [...numericTokens(b), ...cantidadesEnLetra(b)];
+  if (!multisetEqual(na, nb)) return false;
   const ta = words(a);
   const tb = words(b);
   // 2. Negation parity ("aspirin safe" vs "aspirin not safe").

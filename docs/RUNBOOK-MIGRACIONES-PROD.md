@@ -458,12 +458,12 @@ cacheada; salida solo con muestreo determinista, con un modelo del catálogo que
 no razona y honra ese muestreo, y sin razonamiento oculto en la llamada que
 corrió — regla `reference-v2`, ver `src/pipeline/referencia.ts`). El ingest solo
 admite `reference` de procesos que declaran `sdk/` desde
-`VERSION_MINIMA_REFERENCIA` (0.4.29); el resto entra como `estimated`, porque la
-etiqueta v0.4.23 lleva la regla v1, de la 0.4.24 a la 0.4.28 el SDK podía
-repetir una negativa del proveedor como referencia, y la regla no viaja en el
-registro. La verja actúa en el ingest, antes de la RPC, y no reescribe lo que
+`VERSION_MINIMA_REFERENCIA` (0.4.31); el resto entra como `estimated`, porque la
+etiqueta v0.4.23 lleva la regla v1, de la 0.4.24 a la 0.4.30 el SDK podía
+repetir una negativa del proveedor como referencia (hasta la 0.4.30, la que el
+modelo escribe como texto: #384), y la regla no viaja en el registro. La verja actúa en el ingest, antes de la RPC, y no reescribe lo que
 ya esté en `reference_*`; `reference_hits` no guarda la versión, así que una
-referencia de 0.4.24-0.4.28 que entrara antes de desplegar la mínima 0.4.29 no
+referencia de 0.4.24-0.4.30 que entrara antes de desplegar la mínima 0.4.31 no
 se podría separar después. De ahí el orden de abajo. El
 `gateway/` tampoco entra, a ninguna versión, hasta que un PR le lleve la regla
 v2 y abra su verja en `apps/web/lib/metering/version.ts`. Añade:
@@ -495,9 +495,9 @@ la web (`COMISIONAR_REFERENCIA`, `apps/web/lib/billing/tarifa.ts`); el de
 acumulación, en la ruta del ingest (`BVSALA_INGEST_REFERENCE_AS_ESTIMATED=1`).
 
 - **Orden:** 0029 → `vercel --prod` desde la raíz del repo → SOLO ENTONCES npm
-  con el SDK que emite `basis: "reference"`. Desde que la 0.4.24-0.4.28 están
-  en npm, la web desplegada tiene que llevar ya la mínima 0.4.29
-  (`apps/web/lib/metering/version.ts`) ANTES de aplicar 0029: si no, las
+  con el SDK que emite `basis: "reference"`. Desde que la 0.4.24-0.4.30 están
+  en npm, la web desplegada tiene que llevar ya la mínima 0.4.31
+  (`apps/web/lib/metering/version.ts`) ANTES de aplicar 0029-0031: si no, las
   referencias de esas versiones entran en `reference_*` durante el hueco. 0029 lleva guard de precondición y
   ABORTA si falta la base 0025 (o `extractos`, 0016) — ese aborto es el
   resultado *bueno*: aplicar 0024/0025 en orden y volver a lanzar 0029. Es
