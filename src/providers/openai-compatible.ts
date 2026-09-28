@@ -3,11 +3,13 @@ import { explicitaAplicable } from "../economics/escrituras-de-cache.js";
 import { avisarUnaVez } from "../util/warn-once.js";
 import {
   atestiguar,
+  atestiguarOrigen,
   declararOrigen,
   herramientasSinParametros,
   sinContrato,
 } from "./atestado-del-cable.js";
 import { endpointLimpio, registrarLotes, rutaRelativa } from "./lotes-del-proveedor.js";
+import { apiOficialDe, origenDeLaUrl } from "./origen-oficial.js";
 import { sseMessages } from "./sse.js";
 import type {
   Provider,
@@ -169,27 +171,21 @@ export function quitarPrefijoDeProveedor(
 }
 
 // EL ORIGEN OFICIAL, POR EL HOST Y SOLO POR EL HOST. Es la condición M2 del
-// ahorro de tier (`economics/tier-diferido.ts`) y la que enciende el modo
-// explícito de caché: la tarifa publicada solo es la factura cuando se habla con
-// el API del propio proveedor. Cualquier otro host —un proxy, Vercel AI Gateway,
-// un endpoint regional o FedRAMP (+10 % según la página de precios de OpenAI),
-// Azure (sin documentar aquí)— da `null`, y con `null` el ahorro es como mucho
-// `estimated`. Solo https: un host oficial por http no es el API oficial.
-const HOSTS_OFICIALES: Readonly<Record<string, "openai" | "google">> = {
-  "api.openai.com": "openai",
-  "generativelanguage.googleapis.com": "google",
-};
-
+// ahorro de tier (`economics/tier-diferido.ts`), la que enciende el modo
+// explícito de caché y la E0-bis de la referencia (`pipeline/referencia.ts`): la
+// tarifa publicada solo es la factura cuando se habla con el API del propio
+// proveedor. Cualquier otro host —un proxy, Vercel AI Gateway, un endpoint
+// regional o FedRAMP (+10 % según la página de precios de OpenAI), Azure (sin
+// documentar aquí)— da `null`, y con `null` el ahorro es como mucho
+// `estimated`. La lista y la comparación (https, host exacto, puerto por
+// defecto) viven en `origen-oficial.ts`, compartidas con el adaptador de
+// Anthropic y con los adaptadores de marcos.
+//
 // El API propio del proveedor que es este endpoint, o `null`. NO se exporta: el
 // barril de proveedores reexporta este fichero entero hacia `dist/index.d.ts`.
 function origenOficial(baseUrl: string): "openai" | "google" | null {
-  try {
-    const u = new URL(baseUrl);
-    if (u.protocol !== "https:") return null;
-    return HOSTS_OFICIALES[u.hostname.toLowerCase()] ?? null;
-  } catch {
-    return null;
-  }
+  const api = apiOficialDe(baseUrl);
+  return api === "openai" || api === "google" ? api : null;
 }
 
 // La cabecera con la que Google dice qué tier sirvió: el anuncio oficial de Flex
@@ -268,6 +264,12 @@ export class OpenAICompatibleProvider implements Provider {
     this.fetchImpl = opts.fetchImpl ?? fetch;
     this.origen = origenOficial(opts.baseUrl);
     declararOrigen(this, this.origen);
+    // Y a la referencia (E0-bis), el mismo host dicho en dos palabras: fuera del
+    // API oficial, una repetición no se valora contra el contador de esta
+    // llamada. Aquí cuenta también Anthropic (su capa de compatibilidad con el
+    // SDK de OpenAI vive en api.anthropic.com y factura a su precio de lista),
+    // que `origen` no nombra porque ni su tier ni su caché explícita se piden así.
+    atestiguarOrigen(this, origenDeLaUrl(opts.baseUrl));
     // LA BATCH API (Files + Batches), para `layer.batches`. La línea `body` de
     // cada petición es el MISMO cuerpo que generate() (sin `stream`, sin tier) y
     // la lectura es la misma. Ver lotes-del-proveedor.ts. Un host compatible que

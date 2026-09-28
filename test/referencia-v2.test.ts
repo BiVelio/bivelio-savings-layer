@@ -748,8 +748,16 @@ describe("revisión · la salida de un modelo que razona, ignora temperature o n
   // ignora por defecto los parámetros que el modelo no admite. `temperature: 0`
   // llega a un modelo que no lo honra, el razonamiento adaptativo decide no
   // pensar y el contador dice 0: aun así, la salida de esa llamada fue muestreada.
-  const openrouter = (fetchImpl: typeof fetch) =>
-    new OpenAICompatibleProvider({ baseUrl: "https://openrouter.ai/api/v1", fetchImpl });
+  //
+  // Desde la E0-bis (2026-09-28), el adaptador PROPIO atestigua que OpenRouter
+  // no es el origen oficial de nadie y esa llamada ya no deja referencia (el
+  // último caso de este bloque). La guarda de SALIDA no depende del origen: se
+  // mira con el mismo cable envuelto en un proveedor PROPIO del cliente, que no
+  // atestigua a quién habla (desconocido: la regla sigue como se publicó).
+  const openrouter = (fetchImpl: typeof fetch): Provider => {
+    const adaptador = new OpenAICompatibleProvider({ baseUrl: "https://openrouter.ai/api/v1", fetchImpl });
+    return { id: "propio-del-cliente", generate: (req, o) => adaptador.generate(req, o) };
+  };
 
   for (const [modelo, motivo] of [
     ["anthropic/claude-opus-5", "reasoning-model"],
@@ -785,6 +793,22 @@ describe("revisión · la salida de un modelo que razona, ignora temperature o n
     expect(hit.report.cache.reference?.creditedInputTokens).toBe(1736);
     expect(hit.report.cache.reference?.creditedOutputTokens).toBe(0);
     expect(trazaDelAcierto(hit)?.detail?.["outputNotCredited"]).toBe("unclassified-model");
+  });
+
+  it("…y por el adaptador PROPIO, OpenRouter no es un origen oficial: sin registro (unofficial-origin), repetición estimated", async () => {
+    const s = servidor([completion("Paris is the capital of France.", USO_OPENAI(0))]);
+    const { layer } = montar(
+      new OpenAICompatibleProvider({ baseUrl: "https://openrouter.ai/api/v1", fetchImpl: s.fetchImpl }),
+    );
+    const req = peticion({ model: "anthropic/claude-opus-5", temperature: 0 });
+    const primera = await layer.generate(req);
+    const hit = await layer.generate(req);
+    expect(s.enviados).toHaveLength(1);
+    expect(trazaDeReferencia(primera)?.outcome).toBe("not-written");
+    expect(trazaDeReferencia(primera)?.detail).toEqual({ reason: "unofficial-origin" });
+    expect(hit.report.cache.result).toBe("exact");
+    expect(hit.report.cost.basis).toBe("estimated");
+    expect(hit.report.cache.referenceRejected).toBe("absent");
   });
 
   it("Claude 4.6 por su adaptador propio, temperature 0 y sin bloque de razonamiento: la salida sí cuenta", async () => {

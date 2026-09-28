@@ -5,6 +5,7 @@ import {
   atestadoDelCable,
   busquedaNativaDelProveedor,
   heredarAtestado,
+  origenAtestiguado,
   origenDelProveedor,
   silenciarAvisosDelProveedor,
   type AtestadoDelCable,
@@ -3176,6 +3177,10 @@ export class SavingsPipeline {
     // referencia), por la misma razón: la reparación reasigna `response`.
     const esquemaNativoPrimario = response.structuredNatively === true;
     const atestadoPrimario = atestadoDelCable(response);
+    // Y a quién habló (E0-bis): lo atestigua el adaptador. Se lee AQUÍ, dentro de
+    // la petición y justo tras la primaria, porque el puente de un adaptador de
+    // marco contesta por la llamada del marco en curso (ver atestado-del-cable.ts).
+    const origenPrimario = origenAtestiguado(this.config.provider);
     let usoReparacion: ProviderResponse["usage"] | undefined;
 
     if (codebook?.applied) {
@@ -3968,6 +3973,9 @@ export class SavingsPipeline {
       registro = registroDeReferencia({
         // E0: el contador del mock lo inventa un estimador; no hay factura.
         contadorSimulado: isBuiltInDemoProvider(this.config.provider),
+        // E0-bis: un origen atestiguado como no oficial (un proxy, un gateway)
+        // no tiene el precio de lista por factura. Desconocido no cambia nada.
+        origen: origenPrimario,
         usoPrimario,
         usoReparacion,
         tierServido: tierPrimario,

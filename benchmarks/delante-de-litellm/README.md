@@ -57,21 +57,27 @@ verdad (las guarda la evidencia).
 huecos, fijados en el test tal como se comportan hoy (no cambian facturación en
 este PR; los decide el dueño):
 
-1. **SDK:** el SDK decide el origen oficial por el host solo para el tier y la
-   caché explícita; la regla de la referencia (`src/pipeline/referencia.ts`) no lo
-   mira y el registro de uso no dice a quién se habló. Detrás de LiteLLM, una
-   repetición con un id del catálogo (o con `costModels`) entra en la base de la
-   comisión a precio de lista, aunque LiteLLM pueda enrutar ese nombre a Azure,
-   Bedrock, un modelo propio o un respaldo. El gateway sí lo mira
-   (`esUpstreamOficial`).
+1. **SDK — CERRADO el 2026-09-28** (el dueño: alinear el SDK con el gateway). El
+   SDK decidía el origen oficial por el host solo para el tier y la caché
+   explícita; la regla de la referencia (`src/pipeline/referencia.ts`) no lo
+   miraba. Detrás de LiteLLM, una repetición con un id del catálogo (o con
+   `costModels`) entraba en la base de la comisión a precio de lista, aunque
+   LiteLLM pueda enrutar ese nombre a Azure, Bedrock, un modelo propio o un
+   respaldo. Ahora `OpenAICompatibleProvider` y `AnthropicProvider` atestiguan el
+   origen por su `baseUrl` y, detrás de un origen no oficial, la llamada que corre
+   no deja registro de referencia (E0-bis, `unofficial-origin`): S1, S3 y S4 dan
+   la repetición `estimated`, fuera de la base, como el gateway
+   (`esUpstreamOficial`). La tabla de arriba es la de la evidencia del
+   2026-09-27, anterior al cambio.
 2. **Gateway, palanca de TTL:** su ahorro `measured` (prima de 1 h frente a 5 min,
    a precio de lista) solo se excluye con tráfico de suscripción, no con un
    upstream no oficial. El test lo demuestra con un upstream que declara
    escrituras a 5 min detrás del doble.
 3. **Caché de LiteLLM:** un acierto llega como respuesta normal con el `usage`
-   original; el SDK lo reporta `measured` a precio completo y deja un registro de
-   referencia con ese contador. No mueve la comisión (lo medido sin palanca tiene
-   ahorro 0), pero el `actual` de esa fila no está en ninguna factura.
+   original; el SDK lo reporta `measured` a precio completo. Hasta el 2026-09-28
+   dejaba además un registro de referencia con ese contador; desde el cierre del
+   hueco 1, no. No mueve la comisión (lo medido sin palanca tiene ahorro 0), pero
+   el `actual` de esa fila no está en ninguna factura.
 
 ## Límites
 

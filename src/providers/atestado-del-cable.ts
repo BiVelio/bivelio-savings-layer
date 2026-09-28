@@ -1,3 +1,4 @@
+import { CLAVE_DEL_ORIGEN, type OrigenAtestiguado } from "./origen-oficial.js";
 import type { ProviderResponse } from "./types.js";
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -126,6 +127,46 @@ export function declararOrigen(proveedor: object, origen: "openai" | "google" | 
 /** El origen que un adaptador propio declaró; `undefined` para un proveedor de terceros. */
 export function origenDelProveedor(proveedor: unknown): "openai" | "google" | null | undefined {
   return typeof proveedor === "object" && proveedor !== null ? origenes.get(proveedor) : undefined;
+}
+
+// EL ORIGEN DE LA FACTURA, para la referencia (E0-bis de
+// `pipeline/referencia.ts`). No es el de arriba: aquél nombra el API (openai,
+// google) para el tier y la caché explícita, y el adaptador de Anthropic no lo
+// declara. Éste dice solo si el contador que va a leer el pipeline sale del
+// origen OFICIAL del proveedor (`origen-oficial.ts`) o de otro sitio —un proxy
+// como LiteLLM, un gateway, Azure, Bedrock—, donde el precio de lista no es la
+// factura. Mismo patrón: WeakMap privado, solo lo escriben los adaptadores de
+// este paquete, y AUSENTE es desconocido (un proveedor de terceros), que deja
+// la regla como estaba.
+const origenesAtestiguados = new WeakMap<object, OrigenAtestiguado>();
+
+/** Atestigua a quién habla un adaptador propio. Solo lo llaman los adaptadores de este paquete. */
+export function atestiguarOrigen(proveedor: object, origen: OrigenAtestiguado): void {
+  origenesAtestiguados.set(proveedor, origen);
+}
+
+/**
+ * El origen atestiguado de la llamada en curso, o `undefined` (desconocido).
+ *
+ * Primero el WeakMap (los adaptadores propios lo declaran al construirse: su
+ * `baseUrl` no cambia). Si no está, el canal de los adaptadores de MARCOS
+ * (`CLAVE_DEL_ORIGEN`, ver `origen-oficial.ts`): una función del proveedor
+ * puente que contesta por la llamada del marco en curso, así que el pipeline
+ * la consulta DENTRO de la petición, justo tras la llamada primaria. Cualquier
+ * otra cosa que devuelva, o que lance, es desconocido.
+ */
+export function origenAtestiguado(proveedor: unknown): OrigenAtestiguado | undefined {
+  if (typeof proveedor !== "object" || proveedor === null) return undefined;
+  const propio = origenesAtestiguados.get(proveedor);
+  if (propio !== undefined) return propio;
+  try {
+    const canal = (proveedor as Record<symbol, unknown>)[CLAVE_DEL_ORIGEN];
+    if (typeof canal !== "function") return undefined;
+    const v: unknown = canal.call(proveedor);
+    return v === "oficial" || v === "no-oficial" ? v : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 /**

@@ -256,6 +256,19 @@ exists, as for Anthropic models), and `"unmeasured"` when the provider returned 
 usage. Only `measured` and `reference` figures reach your invoice; estimated ones
 never do.
 
+A repeat is valued by reference only when the call that ran reached the provider's
+own API (`https://api.openai.com`, `https://api.anthropic.com` or
+`https://generativelanguage.googleapis.com`), because the list price it is valued at
+is the invoice only there. When `OpenAICompatibleProvider` or `AnthropicProvider`
+points anywhere else — a proxy such as LiteLLM, a gateway, Azure, Bedrock, Vertex —
+or when the Anthropic SDK or LangChain adapter reads that its client does, that call
+leaves no reference: its repeats stay `estimated`, and the `reference` trace of the
+call that ran says `unofficial-origin`. When the layer cannot tell where the call
+went (a provider of your own, the AI SDK and Mastra adapters, a LangChain model that
+does not expose its base URL), the rule applies as it always has. The layer reads the
+configured base URL, not the wire: a custom `fetch` that sends the request elsewhere
+is not seen.
+
 **Streaming.** `generateStream()` takes the same request and hands you the answer as
 the provider writes it, then the same `SavingsReport`:
 

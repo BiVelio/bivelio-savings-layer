@@ -2,8 +2,9 @@
 //
 // It sends the same question twice through your LiteLLM proxy. The first call goes
 // through LiteLLM to your provider; the second is an exact repeat that the layer
-// answers in this process, so neither LiteLLM nor your provider sees it. It prints
-// `ok: …` or `not ok: …` and exits 0 or 1.
+// answers in this process, so neither LiteLLM nor your provider sees it. Behind a
+// proxy that repeat is `estimated`, not valued by reference (README.md, § 4). It
+// prints `ok: …` or `not ok: …` and exits 0 or 1.
 //
 //   LITELLM_BASE_URL=http://localhost:4000 LITELLM_API_KEY=… BIVELIO_LICENSE_KEY=… node check.mjs
 //
@@ -34,18 +35,21 @@ const request = {
 try {
   const first = await layer.generate(request);
   const repeat = await layer.generate(request);
+  // Why the call that ran left no provider counter to value repeats against:
+  // `unofficial-origin` behind a proxy.
+  const noReference = first.report.traces.find((t) => t.stage === "reference" && t.outcome === "not-written")
+    ?.detail?.["reason"];
   const ok =
     first.report.calls.actualLlm === 1 &&
     repeat.report.calls.avoidedLlm === 1 &&
-    repeat.report.cache.result === "exact" &&
-    repeat.report.cost.basis === "reference";
+    repeat.report.cache.result === "exact";
   console.log(
     ok
       ? `ok: the first call went through LiteLLM (basis: ${first.report.cost.basis}); the repeat was answered here ` +
-          `without calling LiteLLM (basis: reference, valued against request ${repeat.report.cache.reference?.requestId}).`
+          `without calling LiteLLM (basis: ${repeat.report.cost.basis}` +
+          `${typeof noReference === "string" ? `, not by reference: ${noReference}` : ""}).`
       : `not ok: first ${first.report.cost.basis} (${first.report.cache.result}), repeat ${repeat.report.cost.basis} ` +
-          `(${repeat.report.cache.result}${repeat.report.cache.referenceRejected ? `, ${repeat.report.cache.referenceRejected}` : ""}). ` +
-          "A repeat that stays `estimated` with `no-cached-price` means the model id has no list price: see README.md, Model names.",
+          `(${repeat.report.cache.result}). The repeat should be an exact hit answered here: see README.md, § 4.`,
   );
   if (!ok) process.exitCode = 1;
 } catch (err) {

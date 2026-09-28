@@ -38,6 +38,13 @@ import { nuevaLlamada, registrarDesenlace } from "./comun/puente.js";
 // puede contestar sin llamar; si no, llama al modelo EXACTAMENTE como lo iba a
 // llamar el framework y mide la respuesta con el contador del proveedor. Nunca
 // reescribe los parámetros.
+//
+// EL ORIGEN, DESCONOCIDO. El middleware ve del modelo `provider` y `modelId`
+// ("openai.chat", "gpt-4o-mini"), y los dos son iguales con la base URL oficial
+// que con un proxy: la de `createOpenAI({ baseURL })` vive en la configuración
+// privada del modelo y la especificación de LanguageModel no la publica. Sin una
+// API pública que la diga, este adaptador no atestigua a quién habla, y la E0-bis
+// de la referencia (pipeline/referencia.ts) no cambia nada para él.
 
 /** Options for {@link savingsMiddleware}. */
 export interface SavingsMiddlewareOptions extends SavingsAdapterOptions {
