@@ -174,9 +174,13 @@ v1, y la regla con la que un SDK valoró una repetición no viaja en el registro
 de uso: el cierre sella `reference-v2` para el extracto entero. Para que ese
 sello sea cierto se publique lo que se publique, el ingest degrada a
 `estimated` toda referencia de un proceso que no declara versión o que declara
-una anterior a `VERSION_MINIMA_REFERENCIA` (0.4.24, `src/version.ts` y su
+una anterior a `VERSION_MINIMA_REFERENCIA` (0.4.29, `src/version.ts` y su
 espejo en `apps/web/lib/metering/version.ts`). Sigue en los totales; no entra
-en `reference_*` ni en la base. Lo mismo para toda referencia que declare
+en `reference_*` ni en la base. La mínima fue 0.4.24 hasta el 2026-09-28: de la
+0.4.24 a la 0.4.28 el SDK podía guardar una negativa del proveedor en caché y
+repetirla como referencia (#356 cerró `content_filter`/`refusal` en la 0.4.27;
+#367, la de salidas estructuradas de OpenAI en la 0.4.29), y el dueño aceptó
+degradar también las referencias honestas de esas versiones. Lo mismo para toda referencia que declare
 `gateway/`, a cualquier versión: la regla v2 vive en el pipeline del SDK y el
 gateway no pasa por él, así que su gemela coalescida (Parte G) entra como
 `estimated` hasta que el PR que le lleve la regla v2 abra su verja.

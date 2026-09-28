@@ -102,7 +102,8 @@ export const COMISIONAR_REFERENCIA: boolean = true;
  * texto que ve el cliente es `dashboard.extracto.parametrosReferencia`.
  *
  * QUÉ HACE CIERTO ESTE SELLO: no el orden de publicación. La etiqueta v0.4.23
- * se cortó con la regla v1 y la regla no viaja en el registro de uso, así que el
+ * se cortó con la regla v1, de la 0.4.24 a la 0.4.28 el SDK podía repetir una
+ * negativa del proveedor como referencia, y la regla no viaja en el registro de uso, así que el
  * ingest (app/api/metering/usage/route.ts) degrada a "estimated" toda
  * referencia de un proceso que no declara versión, que declara una anterior a
  * VERSION_MINIMA_REFERENCIA, o que es el gateway, que no pasa por el pipeline

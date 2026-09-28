@@ -29,10 +29,18 @@ export const CABECERA_VERSION = "x-bvsala-version";
 /**
  * Espejo de `VERSION_MINIMA_REFERENCIA` (src/version.ts): la primera versión
  * del proceso emisor cuyos registros `basis: "reference"` siguen la regla que
- * sella el extracto (`REGLA_REFERENCIA.version`, lib/billing/tarifa.ts). Se cambia
- * aquí y en el SDK a la vez; `version.test.ts` ata los dos.
+ * sella el extracto (`REGLA_REFERENCIA.version`, lib/billing/tarifa.ts) y que
+ * ya no repiten una negativa del proveedor como referencia. Se cambia aquí y en
+ * el SDK a la vez; `version.test.ts` ata los dos.
+ *
+ * 0.4.29 (antes 0.4.24): de la 0.4.24 a la 0.4.28 el SDK podía guardar una
+ * negativa en caché y repetirla como `reference`. #356 (0.4.27) cerró la de
+ * `content_filter`/`refusal`; #367 (0.4.29) la de salidas estructuradas de
+ * OpenAI (`message.refusal`). Decisión del dueño (BITACORA-2026-09-26 §8): el
+ * coste —las referencias honestas de 0.4.24-0.4.28 también entran como
+ * `estimated`— se acepta. El detalle, en src/version.ts.
  */
-export const VERSION_MINIMA_REFERENCIA = "0.4.24";
+export const VERSION_MINIMA_REFERENCIA = "0.4.29";
 
 /**
  * ¿Puede entrar como `reference` un registro de un proceso que declara esta
@@ -52,11 +60,13 @@ export const VERSION_MINIMA_REFERENCIA = "0.4.24";
  * en el registro de uso, y el cierre sella la del servidor para el extracto
  * entero. La etiqueta v0.4.23 lleva la regla v1 (salida acreditada sin guarda
  * de razonamiento, esquema admitido sin modo estricto): si alguien la publica,
- * sus referencias no pueden sellarse como «reference-v2». Entran como
- * `estimated`, que siguen contando en los totales pero no en la base.
+ * sus referencias no pueden sellarse como «reference-v2». Y de la 0.4.24 a la
+ * 0.4.28 una referencia puede ser la repetición de una negativa, que no es una
+ * respuesta. Entran como `estimated`, que siguen contando en los totales pero
+ * no en la base.
  *
  * El lado seguro en cada duda: sin versión declarada → no; una preliminar de la
- * propia mínima (`0.4.24-rc.1`, que en semver va ANTES de `0.4.24`) → no.
+ * propia mínima (`0.4.29-rc.1`, que en semver va ANTES de `0.4.29`) → no.
  */
 export function admiteReferencia(version: string | null): boolean {
   const v = parsearVersion(version);
