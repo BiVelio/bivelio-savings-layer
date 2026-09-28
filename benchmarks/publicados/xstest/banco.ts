@@ -897,7 +897,7 @@ async function principal(): Promise<void> {
         (peor > m.tope ? " → se cortará por presupuesto (prefijo estratificado)" : ""),
     );
   }
-  if (BV_SALA_VERSION !== VERSION_DEL_PAQUETE.version) throw new Error(`el fuente es ${BV_SALA_VERSION}, no ${VERSION_DEL_PAQUETE.version}`);
+  if ((BV_SALA_VERSION as string) !== VERSION_DEL_PAQUETE.version) throw new Error(`el fuente es ${BV_SALA_VERSION}, no ${VERSION_DEL_PAQUETE.version}`);
 
   let fetchBase: typeof fetch;
   let noMedibles: Record<string, string> = {};
