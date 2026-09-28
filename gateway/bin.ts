@@ -92,7 +92,9 @@ Commands:
                          Needs BIVELIO_SERVICE_KEY and an active BiVelio license.
                          --upstream openai | anthropic | an origin URL (default: anthropic).
                          One gateway talks to ONE upstream: run a second one on another port
-                         for the other provider.
+                         for the other provider. Behind an origin that is not the provider's
+                         own API (a proxy such as LiteLLM), requests are metered but no
+                         saving is credited: list prices only hold at the provider's API.
   claude [args…]         Run Claude Code through the gateway. No configuration needed.
   codex [args…]          Run Codex CLI through the gateway (API key: api.openai.com;
                          ChatGPT auth: chatgpt.com/backend-api/codex, metered with no commission).

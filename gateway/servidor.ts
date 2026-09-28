@@ -635,7 +635,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
         : null;
       const informe = coalescida
         ? informeCoalescido(requestId, model, medido, atribucion, valoracion?.ok ? valoracion.credit : null)
-        : informeMedido(requestId, servido, medido, atribucion, elision, rebaja, hermano, suscripcion === true);
+        : informeMedido(requestId, servido, medido, atribucion, elision, rebaja, hermano, suscripcion === true, !upstreamOficial);
       emisor.record(informe);
       if (coalescida) recuento.replica();
       else recuento.medida();
@@ -669,6 +669,9 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
             : "") +
           (suscripcion && !coalescida && (rebaja || hermano)
             ? " · subscription traffic: lever applied, saving not credited (no per-token invoice)"
+            : "") +
+          (!upstreamOficial && !suscripcion && !coalescida && (rebaja || hermano || elision?.atribuible)
+            ? " · unofficial upstream: lever applied, saving not credited (list prices only hold at the provider's own API)"
             : "") +
           (valoracion
             ? valoracion.ok

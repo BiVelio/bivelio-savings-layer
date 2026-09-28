@@ -305,7 +305,10 @@ describe("la LICENSE nombra la comisión sin copiar cifras", () => {
       /Traffic the Software identifies as a flat-rate provider subscription \(a Claude or ChatGPT subscription used through the local gateway\) is metered but credited no measured saving/,
     );
     expect(s6).not.toMatch(/no per-token provider invoice \(such as a flat-rate provider subscription\)/);
-    expect(leer("../gateway/medidor.ts")).toContain("const acreditable = !coalescida && !subscription;");
+    // Desde el 2026-09-28 tampoco se acredita detrás de un upstream no oficial
+    // (decisión del dueño). Es una exclusión MÁS a favor del cliente: la §6 sigue
+    // siendo cierta sin tocarla, y la suscripción sigue fuera.
+    expect(leer("../gateway/medidor.ts")).toContain("const acreditable = !coalescida && !subscription && !upstreamNoOficial;");
   });
 
   it("⛔ la calibración se define como la calcula el cierre, no remite a «tu primer mes» de la web", () => {
