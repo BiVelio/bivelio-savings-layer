@@ -175,6 +175,48 @@ export function noMedido(t: TiradaDeModelo): string | null {
   return intentos === 0 ? "no entry ran" : null;
 }
 
+/** La sección que compara esta tirada con la de otra versión del paquete (la 0.4.30), modelo a modelo. */
+function comparacion(a: Artefacto, rs: ResumenDeModelo[]): string[] {
+  const c = a.comparacion!;
+  const l: string[] = [];
+  l.push(`## ${c.version} → ${a.paquete.version}: what changed`);
+  l.push("");
+  l.push(
+    `Previous run: \`${c.fichero}\` (${c.tag}, tag commit \`${c.commitDelTag.slice(0, 7)}\`, ${c.fecha.slice(0, 10)}; ${c.config.n}/category AST, ${c.config.multi} multi-turn, seed ${c.config.semilla}). ` +
+      `Same dataset commit, same seed, so the same AST entries and the same multi_turn_base entries${c.config.semilla === a.config.semilla && c.config.multi === a.config.multi ? "" : " (**config differs: see both artifacts**)"}. ` +
+      "Arm A is re-measured in each run (the models are nondeterministic), so compare B against its own A first, then across versions.",
+  );
+  l.push("");
+  l.push(`### Multi-turn step 0 (the #382 fix: an untyped catalogue is no longer cut to 8 tools)`);
+  l.push("");
+  l.push(`| Model | version | tools on the wire A → B | entries B sent fewer tools | step 0 in BFCL's reference turn 1, A / B | step 0 no tool call, A / B |`);
+  l.push("|---|---|---|---|---|---|");
+  for (const r of rs) {
+    const antes = c.resumen.find((x) => x.modelo === r.modelo);
+    const t = a.modelos.find((x) => x.modelo === r.modelo)!;
+    const fila = (v: string, x: ResumenDeModelo, cable: string) =>
+      `| ${r.modelo} | ${v} | ${cable} | ${x.multiTurno.herramientasOmitidasPorB}/${x.multiTurno.entradas} | ${x.multiTurno.paso0EnReferencia.A} / ${x.multiTurno.paso0EnReferencia.B} | ${x.multiTurno.paso0SinLlamada.A} / ${x.multiTurno.paso0SinLlamada.B} |`;
+    if (antes) l.push(fila(c.version, antes, (c.multiTurno[r.modelo] ?? []).map((m) => `${m.herramientasEnCable.A}→${m.herramientasEnCable.B}`).join(", ")));
+    l.push(fila(a.paquete.version, r, t.multiTurno.map((m) => `${m.paso0.A.herramientasEnCable}→${m.paso0.B.herramientasEnCable}`).join(", ")));
+  }
+  l.push("");
+  l.push("### AST");
+  l.push("");
+  l.push("| Model | version | n | acc. A | acc. B | B − A (paired) | same calls | layer changed a call | saving (measured) |");
+  l.push("|---|---|---|---|---|---|---|---|---|");
+  for (const r of rs) {
+    const antes = c.resumen.find((x) => x.modelo === r.modelo);
+    const fila = (v: string, x: ResumenDeModelo) =>
+      `| ${r.modelo} | ${v} | ${x.n} | ${ci(x.exactitudA)} | ${ci(x.exactitudB)} | ${pp(x.diferenciaExactitud)} | ${x.mismasLlamadas}/${x.n} | ${x.infieles.length} | ${ci(x.coste.ahorro)} |`;
+    if (antes) l.push(fila(c.version, antes));
+    l.push(fila(a.paquete.version, r));
+  }
+  l.push("");
+  const sinPrevio = rs.filter((r) => !c.resumen.some((x) => x.modelo === r.modelo)).map((r) => r.modelo);
+  if (sinPrevio.length) l.push(`Not in the previous run (nothing to compare): ${sinPrevio.join(", ")}.\n`);
+  return l;
+}
+
 export function escribirInforme(a: Artefacto): string {
   const sinMedir = a.modelos.filter((t) => noMedido(t) !== null);
   a = { ...a, modelos: a.modelos.filter((t) => noMedido(t) === null) };
@@ -185,13 +227,22 @@ export function escribirInforme(a: Artefacto): string {
   if (a.modo === "MOCK") l.push("> **MOCK**: simulated provider, no network. Nothing here is a measurement.\n");
   l.push(`- **Dataset:** Berkeley Function Calling Leaderboard, \`${a.dataset.repo}@${a.dataset.commit}\` (${a.dataset.licencia}), fetched at run time and sha256-checked per file (\`benchmarks/publicados/bfcl/datos.ts\`); not vendored.`);
   l.push(`- **Arm A:** direct provider call with native tools (Anthropic Messages \`tool_use\` / OpenAI Chat Completions \`tools\`), hand-written, no layer.`);
-  l.push(`- **Arm B:** ${a.paquete.etiqueta} — tag commit \`${a.paquete.commitDelTag.slice(0, 7)}\`, \`git diff v0.4.30 -- src/ packages/\` empty; npm integrity \`${a.paquete.integridadNpm.slice(0, 24)}…\`, dist sha256 \`${a.paquete.sha256DistNpm.slice(0, 12)}…\`. Default config: provider only (no licenseServerUrl, no service key, no exporters).`);
-  l.push(`- **Hosts contacted during the run:** ${a.paquete.hostsVistos.join(", ") || "(none)"}; refused by the host guard: ${a.paquete.hostsRechazados.join(", ") || "none"}.`);
-  l.push(`- **Sample:** ${a.config.n} per AST category (simple, multiple, parallel, parallel_multiple), stratified, seed ${a.config.semilla}, round-robin order; ${a.config.repes} deliberate AST repeats; ${a.config.multi} multi_turn_base entries for the cache-isolation probe. Budget ${a.config.tope} $ per model (A+B), enforced before every call.`);
+  const origen =
+    a.paquete.origenDelFuente === "git-archive"
+      ? `loaded from \`git archive ${a.paquete.tag} src\` (this tree differs from the tag in ${(a.paquete.diferenciasDelArbol ?? []).map((f) => `\`${f}\``).join(", ")}, so the tree was NOT measured)`
+      : `\`git diff ${a.paquete.tag} -- src/ packages/\` empty`;
+  l.push(`- **Arm B:** ${a.paquete.etiqueta} — tag commit \`${a.paquete.commitDelTag.slice(0, 7)}\`, ${origen}; npm integrity \`${a.paquete.integridadNpm.slice(0, 24)}…\`, dist sha256 \`${a.paquete.sha256DistNpm.slice(0, 12)}…\`. Default config: provider only (no licenseServerUrl, no service key, no exporters).`);
+  l.push(`- **Hosts contacted during the run:** ${a.paquete.hostsVistos.join(", ") || "(none)"}; refused by the host guard: ${a.paquete.hostsRechazados.join(", ") || "none"}.${
+    (a.noMedibles ?? []).some((x) => x.modelo.startsWith("anthropic/")) && !a.modelos.some((t) => t.familia === "anthropic")
+      ? " api.anthropic.com was contacted only by the free key check (`GET /v1/models`), which returned 401: no Anthropic model was billed."
+      : ""
+  }`);
+  l.push(`- **Sample:** ${a.config.n} per AST category (simple, multiple, parallel, parallel_multiple), stratified, seed ${a.config.semilla}, round-robin order; ${a.config.repes} deliberate AST repeats; ${a.config.multi} multi_turn_base entries for the cache-isolation probe. Budget per model (A+B, hard cap in code): ${a.modelos.map((t) => `${t.modelo} ${usd(t.tope + (a.config.gastoPrevioDescontado?.[t.modelo] ?? 0))}`).join(", ") || "—"}; enforced before every call.`);
   l.push("");
-  if (sinMedir.length) {
+  if (sinMedir.length || a.noMedibles?.length) {
     l.push("## Not measured");
     l.push("");
+    for (const x of a.noMedibles ?? []) l.push(`- **${x.modelo}**: ${x.motivo}. No paid call was made (spend 0.0000 $). Not a finding about the layer.`);
     for (const t of sinMedir) {
       l.push(`- **${t.modelo}**: every call failed in BOTH arms before any tokens were billed (spend ${usd(t.gastado)}): \`${(noMedido(t) ?? "").slice(0, 220)}\`. Not a finding about the layer.`);
     }
@@ -281,14 +332,14 @@ export function escribirInforme(a: Artefacto): string {
     }
     if (r.multiTurno.herramientasOmitidasPorB) {
       hubo = true;
+      const recortes = t.multiTurno
+        .filter((m) => m.paso0.B.herramientasEnCable > 0 && m.paso0.B.herramientasEnCable < m.paso0.A.herramientasEnCable)
+        .map((m) => `${m.paso0.A.herramientasEnCable}→${m.paso0.B.herramientasEnCable}`);
       l.push(
-        `- **${r.modelo}: in ${r.multiTurno.herramientasOmitidasPorB}/${r.multiTurno.entradas} multi-turn entries the layer sent only 8 of the caller's tools** ` +
-          "(catalogue without `intents`/`risk` → `ToolSelector.passthrough` capped at `maxTools=8`, the first 8 in declaration order). " +
+        `- **${r.modelo}: in ${r.multiTurno.herramientasOmitidasPorB}/${r.multiTurno.entradas} multi-turn entries the layer sent fewer tools than the caller declared** (${recortes.join(", ")}). ` +
           `Step 0 hit a function of BFCL's reference first turn in ${r.multiTurno.paso0EnReferencia.A}/${r.multiTurno.entradas} entries without the layer and ` +
           `${r.multiTurno.paso0EnReferencia.B}/${r.multiTurno.entradas} with it; with the layer the model made no tool call at all in ${r.multiTurno.paso0SinLlamada.B}/${r.multiTurno.entradas}. ` +
-          (a.modelos.find((x) => x.modelo === r.modelo)!.avisosDeLaCapa.length === 0
-            ? "The layer printed NO warning for it on this provider (the console warning only fires where native tool search exists); the only trace is `report.traces` (`tool-selector`)."
-            : "The layer printed a warning (below)."),
+          (t.avisosDeLaCapa.length === 0 ? "The layer printed NO warning for it; the only trace is `report.traces` (`tool-selector`)." : "The layer printed a warning (below)."),
       );
     }
     for (const v of r.multiTurno.violaciones) {
@@ -309,6 +360,7 @@ export function escribirInforme(a: Artefacto): string {
     for (const w of avisos) l.push(`- \`${w.slice(0, 400).replace(/`/g, "'")}\``);
     l.push("");
   }
+  if (a.comparacion) l.push(...comparacion(a, rs));
   l.push("## Spend");
   l.push("");
   l.push("| Model | A | B | this run | earlier runs of this battery (pilot, aborted) | total | budget | calls A / B |");
@@ -316,7 +368,7 @@ export function escribirInforme(a: Artefacto): string {
   const previo = (m: string) => a.config.gastoPrevioDescontado?.[m] ?? 0;
   for (const r of rs) {
     l.push(
-      `| ${r.modelo} | ${usd(r.gasto.A)} | ${usd(r.gasto.B)} | ${usd(r.gasto.total)} | ${usd(previo(r.modelo))} | ${usd(r.gasto.total + previo(r.modelo))} | ${a.config.tope} $ | ${r.gasto.llamadas.A} / ${r.gasto.llamadas.B} |`,
+      `| ${r.modelo} | ${usd(r.gasto.A)} | ${usd(r.gasto.B)} | ${usd(r.gasto.total)} | ${usd(previo(r.modelo))} | ${usd(r.gasto.total + previo(r.modelo))} | ${usd(r.gasto.tope + previo(r.modelo))} | ${r.gasto.llamadas.A} / ${r.gasto.llamadas.B} |`,
     );
   }
   l.push("");
