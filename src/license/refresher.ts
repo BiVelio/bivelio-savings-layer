@@ -52,6 +52,25 @@ export interface LicenseRefresherOptions {
   requestTimeoutMs?: number;
 }
 
+/**
+ * La URL tal como se puede imprimir: sin `usuario:contraseña@`, sin query y sin
+ * fragmento, que son los tres sitios donde viaja un token en una URL. Si no se
+ * puede parsear, no se imprime nada de ella: mejor un aviso menos preciso que
+ * uno que filtra.
+ */
+export function urlSinSecretos(url: string): string {
+  try {
+    const u = new URL(url);
+    u.username = "";
+    u.password = "";
+    u.search = "";
+    u.hash = "";
+    return u.toString();
+  } catch {
+    return "the configured licenseServerUrl";
+  }
+}
+
 const DEFAULT_POLL_INTERVAL_MS = 3600_000;
 const DEFAULT_REFRESH_LEAD_SECONDS = 7 * 86400;
 const DEFAULT_REQUEST_TIMEOUT_MS = 30_000;
@@ -122,17 +141,19 @@ export class LicenseRefresher {
    * Sale UNA vez por estado y por instancia, no en cada vuelta: con la cadencia
    * por defecto (1 h) repetirlo sería spam durante semanas. Estados distintos son
    * causas distintas —clave rotada (401), clave de otra org (403), URL
-   * equivocada (404)— y cada uno se avisa una vez.
+   * equivocada (404)— y cada uno se avisa una vez. Una respuesta 2xx rearma el
+   * aviso: arreglar la clave y volver a romperla es otro episodio y vuelve a salir.
    *
    * El texto NUNCA incluye la clave de servicio, ni un trozo: solo el estado y la
-   * URL. Hay un test que lo comprueba.
+   * URL, y la URL pasa antes por {@link urlSinSecretos} — `user:pass@`, query y
+   * fragmento fuera. Hay tests que lo comprueban.
    */
   private avisarCredencialRechazada(status: number): void {
     if (this.credencialAvisada.has(status)) return;
     this.credencialAvisada.add(status);
     console.warn(
       `[bv-sala] automatic pickup of the renewed license is failing with HTTP ${status} ` +
-        `at ${this.opts.url}. Check 'serviceAccountKey' (rotated? from another organization?) and ` +
+        `at ${urlSinSecretos(this.opts.url)}. Check 'serviceAccountKey' (rotated? from another organization?) and ` +
         `'licenseServerUrl': until this works, the token will NOT renew itself and the SDK will ` +
         `stop operating when the grace period ends. (This warning is not muted by 'silenceWarnings'.)`,
     );
@@ -174,6 +195,10 @@ export class LicenseRefresher {
         if (res.status === 401 || res.status === 403 || res.status === 404) this.avisarCredencialRechazada(res.status);
         return false;
       }
+      // El CP ha aceptado la credencial: se rearma el aviso. Si la clave se
+      // arregla y vuelve a romperse en el mismo proceso, es un episodio nuevo y
+      // se avisa otra vez — una sola vez por episodio.
+      this.credencialAvisada.clear();
       const body = (await res.json()) as { token?: unknown };
       if (typeof body.token !== "string") return false;
       // Por red también se normaliza: lo que se entrega a `onNewToken` es lo

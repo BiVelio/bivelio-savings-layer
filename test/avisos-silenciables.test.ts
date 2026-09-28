@@ -403,6 +403,42 @@ describe("⛔ la credencial de renovación rechazada NO se calla con `silenceWar
     expect(avisos.some((a) => a.includes("HTTP 403"))).toBe(true);
   });
 
+  it("se rearma tras una renovación correcta: 401 → 200 → 401 son DOS avisos (dos episodios)", async () => {
+    let status = 401;
+    const f = vi.fn(async () => json({}, status)) as unknown as typeof fetch;
+    const r = renovador(f);
+    for (const s of [401, 200, 401]) {
+      status = s;
+      await r.checkNow();
+    }
+    expect(avisos.filter((a) => CREDENCIAL.test(a))).toHaveLength(2);
+  });
+
+  it("control: 401 → 401 → 401 sigue siendo UN aviso (un solo episodio)", async () => {
+    const r = renovador(vi.fn(async () => json({}, 401)) as unknown as typeof fetch);
+    for (let i = 0; i < 3; i++) await r.checkNow();
+    expect(avisos.filter((a) => CREDENCIAL.test(a))).toHaveLength(1);
+  });
+
+  it("⛔ la URL sale sin `usuario:secreto@`, sin query y sin fragmento, pero con el host", async () => {
+    const f = cp(401);
+    const c = capa(f, {
+      licenseServerUrl: "https://usuario:secreto@cp.example.test/base?token=x#frag",
+      silenceWarnings: true,
+    });
+    try {
+      await vi.waitFor(() => expect(avisos.filter((a) => CREDENCIAL.test(a))).toHaveLength(1));
+    } finally {
+      c.close();
+    }
+    const aviso = avisos.find((a) => CREDENCIAL.test(a))!;
+    expect(aviso).toContain("cp.example.test");
+    expect(aviso).not.toContain("usuario");
+    expect(aviso).not.toContain("secreto");
+    expect(aviso).not.toContain("token=x");
+    expect(aviso).not.toContain("frag");
+  });
+
   it("un 5xx NO es credencial rechazada: se cura solo y no avisa", async () => {
     const r = renovador(cp(503));
     for (let i = 0; i < 3; i++) await r.checkNow();
