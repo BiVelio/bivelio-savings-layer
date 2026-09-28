@@ -367,6 +367,11 @@
       "noLever": "{n, plural, one {# machine is up to date} other {# machines are up to date}}, but the lever has not acted there. If it stays that way after updating, write to support@bivelio.com.",
       "action": "Update @bivelio/savings-layer on that machine and restart the terminal; the machines table below shows what each one declares."
     },
+    "sdkReferencia": {
+      "title": "Some machines run an SDK older than {minima}: their repeats are not measured by reference",
+      "summary": "{n, plural, one {# machine runs} other {# machines run}} an SDK older than {minima} (the oldest declares {antigua}). Until they update, their repeated requests count as estimated, not as measured by reference: they stay in your totals, but out of the base.",
+      "action": "Update the SDK to {minima} or later on that machine and restart the process:"
+    },
     "maquinas": {
       "title": "machines (30 days)",
       "colSeat": "Machine",

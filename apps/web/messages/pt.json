@@ -367,6 +367,11 @@
       "noLever": "{n, plural, one {# máquina está atualizada} other {# máquinas estão atualizadas}}, mas a alavanca não atuou aí. Se continuar igual depois de atualizar, escreve para support@bivelio.com.",
       "action": "Atualiza @bivelio/savings-layer nessa máquina e reinicia o terminal; a tabela de máquinas abaixo mostra o que cada uma declara."
     },
+    "sdkReferencia": {
+      "title": "Algumas máquinas correm um SDK anterior a {minima}: as suas repetições não são medidas por referência",
+      "summary": "{n, plural, one {# máquina corre} other {# máquinas correm}} um SDK anterior a {minima} (a mais antiga declara {antigua}). Até serem atualizadas, os seus pedidos repetidos contam como estimados, não como medidos por referência: continuam nos teus totais, mas fora da base.",
+      "action": "Atualiza o SDK para {minima} ou posterior nessa máquina e reinicia o processo:"
+    },
     "maquinas": {
       "title": "máquinas (30 dias)",
       "colSeat": "Máquina",

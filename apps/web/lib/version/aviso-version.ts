@@ -33,8 +33,9 @@
  *     ignorarlo (misma regla que BillingStateBanner).
  */
 
+import { VERSION_MINIMA_REFERENCIA, admiteReferencia } from "../metering/version";
 import { VERSION_MINIMA_PALANCA_TARIFA } from "./minima";
-import { compararVersiones, parsearVersion } from "./semver";
+import { compararVersiones, parsearVersion, superficieDe } from "./semver";
 
 export const DIA_MS = 86_400_000;
 export const VENTANA_AVISO_DIAS = 7;
@@ -119,4 +120,67 @@ export function decidirAvisoVersion(
     }
   }
   return { tipo: "gatewaySinAhorro", activas: activas.length, desactualizadas, sinDeclarar, sinPalanca, minima };
+}
+
+/**
+ * ¿Hay máquinas con un SDK que ya no puede cobrar por referencia? Decisión
+ * PURA, hermana de `decidirAvisoVersion` e independiente de ella: aquella mira
+ * gateways sin dinero medido y excluye los SDK; esta solo mira SDK. Los dos
+ * avisos pueden salir a la vez sin pisarse.
+ *
+ * Desde la 0.4.29 (decisión del dueño, BITACORA-2026-09-26 §8) el ingest
+ * degrada a `estimated` toda referencia de un SDK anterior a
+ * `VERSION_MINIMA_REFERENCIA` (lib/metering/version.ts, el espejo de
+ * src/version.ts; nunca una copia aquí): de la 0.4.24 a la 0.4.28 el SDK podía
+ * repetir una negativa del proveedor como referencia. Las repeticiones de esas
+ * máquinas siguen en los totales, pero fuera de la base, hasta que actualicen.
+ *
+ * Mismo campo que el chip de versión (`versionMin`, que prefiere la ventana de
+ * 7 días) y la MISMA verja que el ingest (`admiteReferencia`), no una
+ * comparación propia: así una preliminar de la mínima (`sdk/0.4.29-rc.1`), que
+ * el ingest degrada, también avisa.
+ *   · Solo asientos NO CI vistos en 7 días, como el aviso del gateway.
+ *   · Solo SDK: `surface` (la mayor versión) y `versionMin` declaran `sdk/`.
+ *     El gateway no emite referencias comisionables a ninguna versión, así que
+ *     avisarle de esto sería falso; un asiento que mezcla gateway y SDK no se
+ *     puede atribuir y no entra (lado de no avisar en falso).
+ *   · Sin versión (nunca declaró, o algún registro sin versión en 7 días):
+ *     `estadoVersion` dice «desconocida» y no entra. No se afirma lo que no se
+ *     sabe; el ingest ya trata esas referencias como `estimated` igualmente.
+ *   · Se decide por VERSIÓN, no por dinero: el dinero que se pierde está en
+ *     `estimated`, que no se reparte por asiento como referencia.
+ */
+export interface AvisoReferencia {
+  tipo: "sdkSinReferencia";
+  /** Asientos SDK, no CI, vistos en 7 días, con versión declarada por debajo de la mínima. */
+  desactualizadas: number;
+  /** La menor versión que declaran esos asientos (para el texto). */
+  versionMasAntigua: string;
+  minima: string;
+}
+
+export function decidirAvisoReferencia(asientos: readonly AsientoVisto[], nowMs: number): AvisoReferencia | null {
+  let desactualizadas = 0;
+  let versionMasAntigua: string | null = null;
+  for (const a of asientos) {
+    if (a.isCi) continue;
+    if (a.surface !== "sdk" || superficieDe(a.versionMin) !== "sdk") continue;
+    const visto = Date.parse(a.lastSeenAt);
+    if (Number.isNaN(visto)) continue;
+    const hace = nowMs - visto;
+    if (hace < 0 || hace > VENTANA_AVISO_DIAS * DIA_MS) continue;
+    if (estadoVersion(a) === "desconocida") continue;
+    if (admiteReferencia(a.versionMin)) continue;
+    desactualizadas++;
+    if (versionMasAntigua === null || compararVersiones(a.versionMin!, versionMasAntigua) < 0) {
+      versionMasAntigua = a.versionMin!;
+    }
+  }
+  if (desactualizadas === 0) return null;
+  return {
+    tipo: "sdkSinReferencia",
+    desactualizadas,
+    versionMasAntigua: versionMasAntigua!,
+    minima: VERSION_MINIMA_REFERENCIA,
+  };
 }

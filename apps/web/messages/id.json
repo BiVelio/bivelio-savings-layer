@@ -367,6 +367,11 @@
       "noLever": "{n, plural, other {# mesin sudah mutakhir}}, tetapi tuasnya tidak bekerja di sana. Jika tetap sama setelah memperbarui, tulis ke support@bivelio.com.",
       "action": "Perbarui @bivelio/savings-layer di mesin itu dan mulai ulang terminal; tabel mesin di bawah menunjukkan apa yang dideklarasikan masing-masing."
     },
+    "sdkReferencia": {
+      "title": "Beberapa mesin menjalankan SDK yang lebih lama dari {minima}: pengulangannya tidak diukur berdasarkan referensi",
+      "summary": "{n, plural, other {# mesin menjalankan}} SDK yang lebih lama dari {minima} (yang tertua mendeklarasikan {antigua}). Sampai diperbarui, permintaan berulangnya dihitung sebagai estimasi, bukan diukur berdasarkan referensi: tetap ada di total Anda, tetapi di luar basis.",
+      "action": "Perbarui SDK ke {minima} atau lebih baru di mesin itu dan mulai ulang prosesnya:"
+    },
     "maquinas": {
       "title": "mesin (30 hari)",
       "colSeat": "Mesin",

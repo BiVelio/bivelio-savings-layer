@@ -10,6 +10,7 @@ import { RANGO_POR_DEFECTO, rangoDesdeParametro } from "./rango";
 import { createReadOnlyClient } from "@/lib/supabase/server";
 import { BillingStateBanner } from "./components/BillingStateBanner";
 import { GatewayVersionBanner } from "./components/GatewayVersionBanner";
+import { SdkReferenciaBanner } from "./components/SdkReferenciaBanner";
 import { InstrumentationSpine } from "./components/InstrumentationSpine";
 import { LiveLedgerTiles } from "./components/LiveLedgerTiles";
 import { RitmoCard } from "./components/RitmoCard";
@@ -67,6 +68,9 @@ export default async function OverviewPage({
       {/* Y justo detrás, si alguna máquina con gateway lleva una semana sin un
           euro MEDIDO: decide el dinero por asiento, la versión solo explica. */}
       <GatewayVersionBanner asientos={asientos} />
+      {/* Y si alguna máquina corre un SDK por debajo de la mínima de la
+          referencia: sus repeticiones entran como estimated, no en la base. */}
+      <SdkReferenciaBanner asientos={asientos} />
 
       <InstrumentationSpine steps={steps} />
 
