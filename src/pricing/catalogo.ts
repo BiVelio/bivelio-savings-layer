@@ -119,9 +119,9 @@ export const CATALOGO: Readonly<Record<string, CostModel>> = {
   // de precios de OpenAI (developers.openai.com/api/docs/pricing, tabla
   // «Standard», USD por 1M: o3 $2 / $0.50 / $8; o3-mini $1.10 / $0.55 / $4.40;
   // o4-mini $1.10 / $0.275 / $4.40; o3-pro $20 / sin precio cacheado / $80) y,
-  // el mismo día, contra la referencia del vigía (scripts/vigia-precios.mjs:
-  // model_prices_and_context_window.json de BerriAI/litellm), que da las mismas
-  // cifras. o3-pro NO lleva precio de lectura porque la tabla oficial no lo
+  // el mismo día, contra la referencia del vigía de precios (hoy el contraste
+  // semanal, scripts/contraste-catalogo.ts: model_prices_and_context_window.json
+  // de BerriAI/litellm), que da las mismas cifras. o3-pro NO lleva precio de lectura porque la tabla oficial no lo
   // publica: sin él, sus tokens cacheados se tarifan a entrada, el lado que no
   // infla nada.
   //
@@ -202,10 +202,15 @@ export const CATALOGO: Readonly<Record<string, CostModel>> = {
   "claude-3-5-sonnet": { inputPer1k: 0.003,  outputPer1k: 0.015, cachedInputPer1k: 0.0003  },
   "claude-3-5-haiku":  { inputPer1k: 0.0008, outputPer1k: 0.004, cachedInputPer1k: 0.00008 },
   "claude-3-opus":     { inputPer1k: 0.015,  outputPer1k: 0.075, cachedInputPer1k: 0.0015  },
-  // Caché a 0.00003 y NO al 10% de la entrada: Claude 3 Haiku era la excepción
-  // documentada de Anthropic ($0.03/MTok). La cazó el vigía en su primera
-  // corrida (2026-08-23) y se verificó contra la referencia histórica oficial.
-  "claude-3-haiku":    { inputPer1k: 0.00025, outputPer1k: 0.00125, cachedInputPer1k: 0.00003 },
+  // `claude-3-haiku` ya NO tiene fila. Anthropic lo retiró del API el
+  // 2026-04-20 (anunciado el 2026-02-19; sustituto recomendado
+  // claude-haiku-4-5-20251001): https://platform.claude.com/docs/en/about-claude/model-deprecations,
+  // consultada el 2026-09-28. Un id retirado no recibe tráfico de nadie que
+  // facture, y una fila sin tráfico es una cifra que nadie revisa. Si un
+  // cliente aún lo manda, se trata como cualquier modelo fuera de catálogo:
+  // precio ilustrativo con aviso y sin referencia comisionable
+  // (test/medido-por-referencia.test.ts, «claude-3-haiku, retirado»). Ningún
+  // otro id hereda nada: ninguna clave es prefijo de `claude-3-haiku`.
 
   // ── Google (Gemini) ───────────────────────────────────────────────────────
   // Gemini bills an implicit-cache read at 10% of the input rate, with no write
@@ -485,7 +490,7 @@ export function clavesPorLongitud(catalogo: Readonly<Record<string, unknown>>): 
  */
 const SIN_FILA_PROPIA: readonly string[] = [
   // OpenAI, sin precio publicado: la página oficial no los lista (comprobado el
-  // 2026-09-25 y de nuevo el 2026-09-27; la referencia comunitaria del vigía
+  // 2026-09-25 y de nuevo el 2026-09-27; la tabla comunitaria de LiteLLM
   // puede listarlos, pero no es la factura de nadie). Sin veto, `o3-deep-research`
   // heredaría `o3` y se tarifaría a un quinto de lo que factura.
   "o3-deep-research",

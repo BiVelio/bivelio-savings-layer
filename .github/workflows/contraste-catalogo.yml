@@ -7,11 +7,12 @@ name: contraste-catalogo
 # proveedor es una ALARMA y pone el run en rojo. El informe queda como artefacto.
 #
 # Solo lee: sin permisos de escritura, sin secretos, sin tocar el catálogo. La
-# corrección, si hace falta, es humana, fechada y con su fuente (doctrina del
-# vigía de precios, scripts/vigia-precios.mjs, que sigue corriendo aparte).
+# corrección, si hace falta, es humana, fechada y con su fuente (la doctrina del
+# vigía de precios de 2026-08-23, al que este contraste sustituye desde el
+# 2026-09-28: comparaba menos —entrada, salida y lectura— contra la misma tabla).
 on:
   schedule:
-    - cron: "30 6 * * 1" # lunes, 06:30 UTC (el vigía de precios va a las 06:00)
+    - cron: "30 6 * * 1" # lunes, 06:30 UTC
   workflow_dispatch: {}
 
 permissions:

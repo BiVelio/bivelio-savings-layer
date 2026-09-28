@@ -190,10 +190,12 @@ export function economiaDelPar(
  * lo COMPRUEBA derivándolo — si mañana un precio cambia y un par deja de valer la
  * pena, el test se pone rojo en vez de que la tabla mienta en silencio.
  *
- * Lo que NO está aquí importa igual: `gpt-4o-mini`, `gpt-4.1-nano`,
- * `claude-haiku-4-5` y `claude-3-haiku` no aparecen como CLAVE. Ya son el suelo
- * de su familia; por debajo no queda nada barato que justifique el riesgo
- * (r=0,667 y r=0,800 dan Pmax negativo).
+ * Lo que NO está aquí importa igual: `gpt-4o-mini`, `gpt-4.1-nano` y
+ * `claude-haiku-4-5` no aparecen como CLAVE. Ya son el suelo de su familia; por
+ * debajo no queda nada barato que justifique el riesgo (r=0,667 y r=0,800 dan
+ * Pmax negativo). Y `claude-3-opus` tampoco: su par era `claude-3-haiku`, que
+ * Anthropic retiró del API el 2026-04-20 y ya no tiene fila en el catálogo;
+ * enrutar a un modelo retirado no ahorra, falla.
  */
 export const PARES_POR_DEFECTO: Readonly<Record<string, string>> = {
   "gpt-4": "gpt-4o",
@@ -205,7 +207,6 @@ export const PARES_POR_DEFECTO: Readonly<Record<string, string>> = {
   "gpt-4.1": "gpt-4.1-mini",
   "claude-opus-4": "claude-haiku-4-5",
   "claude-sonnet-4": "claude-haiku-4-5",
-  "claude-3-opus": "claude-3-haiku",
   "claude-3-5-sonnet": "claude-3-5-haiku",
 };
 

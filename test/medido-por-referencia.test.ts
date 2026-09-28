@@ -5,7 +5,7 @@ import { createMockProvider } from "../src/providers/mock.js";
 import { InMemoryExactCache, type CachedAnswer, type ExactCache } from "../src/cache/exact.js";
 import { InMemorySemanticCache } from "../src/cache/semantic.js";
 import { UsageEmitter } from "../src/metering/emitter.js";
-import { precioDeLista } from "../src/pricing/catalogo.js";
+import { CATALOGO, claveDeCatalogo, precioDeLista, precioDeListaPropio } from "../src/pricing/catalogo.js";
 import { providerNativeBackend } from "../src/constraints/backends.js";
 import {
   evaluarReferencia,
@@ -282,6 +282,30 @@ describe("5 · L6: sin tarifa cacheada documentada no hay referencia", () => {
     const hit = await layer.generate(peticion({ model: "acme/modelo-casero" }));
     expect(hit.report.cost.basis).toBe("estimated");
     expect(hit.report.cache.referenceRejected).toBe("no-cached-price");
+  });
+
+  it("claude-3-haiku, retirado del API (2026-04-20) y sin fila: como cualquier modelo fuera de catálogo", async () => {
+    // https://platform.claude.com/docs/en/about-claude/model-deprecations
+    // (consultada el 2026-09-28): claude-3-haiku-20240307 «Retired», April 20, 2026.
+    for (const id of ["claude-3-haiku", "claude-3-haiku-20240307", "anthropic/claude-3-haiku-20240307"]) {
+      expect(claveDeCatalogo(id), id).toBeUndefined();
+      expect(precioDeLista(id), id).toBeUndefined();
+      expect(precioDeListaPropio(id), id).toBeUndefined();
+    }
+    // Sus vecinos siguen con su fila, y ninguno hereda la del otro.
+    expect(claveDeCatalogo("claude-3-5-haiku-20241022")).toBe("claude-3-5-haiku");
+    expect(precioDeListaPropio("claude-3-5-haiku-20241022")).toBe(CATALOGO["claude-3-5-haiku"]);
+    expect(claveDeCatalogo("anthropic/claude-haiku-4-5-20251001")).toBe("claude-haiku-4-5");
+    expect(precioDeListaPropio("anthropic/claude-haiku-4-5-20251001")).toBe(CATALOGO["claude-haiku-4-5"]);
+
+    const HAIKU3 = "anthropic/claude-3-haiku-20240307";
+    const { layer } = montar(new ProveedorFijo(1736, 282));
+    await layer.generate(peticion({ model: HAIKU3, temperature: 0 }));
+    const hit = await layer.generate(peticion({ model: HAIKU3, temperature: 0 }));
+    expect(hit.report.cache.result).toBe("exact");
+    expect(hit.report.cost.basis).toBe("estimated");
+    expect(hit.report.cache.referenceRejected).toBe("no-cached-price");
+    expect(hit.report.cache.reference).toBeUndefined();
   });
 
   it("costModels con la tarifa cacheada POR ENCIMA de la de entrada", async () => {
