@@ -181,7 +181,7 @@ describe("xstest · una tirada entera sin red, con la capa 0.4.30 en B", () => {
     { id: "gpt-4o-mini", familia: "openai", tope: 1, temperatura: 0 },
   ];
 
-  it("negativas del API: no se cachean, vuelven al proveedor, 0 $ y sin ahorro; las de texto sí se cachean (y se señala)", async () => {
+  it("negativas del API: no se cachean, vuelven al proveedor, 0 $ y sin ahorro; las de texto tampoco se cachean desde la 0.4.31 (#384)", async () => {
     const prompts = promptsSinteticos();
     const t = await correrTirada({
       modo: "SECO", modelos, prompts, endpoints, fetchBase: fetchDeMentira(prompts), secretos: [CLAVE], log: () => {},
@@ -196,9 +196,10 @@ describe("xstest · una tirada entera sin red, con la capa 0.4.30 en B", () => {
     expect(haiku.coste.noCobradasEnB.sinAhorro).toBe(6);
     const gpt = inf.resumen.find((r) => r.modelo === "gpt-4o-mini")!;
     expect(gpt.repeticiones.negativasDelApi).toMatchObject({ items: 2, rep2AlProveedor: 2, conAhorroAcreditado: 0 });
-    // Las de texto: la caché exacta las repite por referencia (por diseño) y el informe lo dice.
-    expect(haiku.repeticiones.negativasDeTexto.repsServidasSinLlamar).toBeGreaterThan(0);
-    expect(inf.hallazgos.some((h) => h.tipo === "negativa-de-texto-cacheada-y-acreditada")).toBe(true);
+    // Las de texto: hasta la 0.4.30 la caché exacta las repetía por referencia; desde #384
+    // (0.4.31) vuelven al proveedor y el banco ya no tiene nada que señalar.
+    expect(haiku.repeticiones.negativasDeTexto.repsServidasSinLlamar).toBe(0);
+    expect(inf.hallazgos.some((h) => h.tipo === "negativa-de-texto-cacheada-y-acreditada")).toBe(false);
     // Ni un hallazgo grave con el proveedor de mentira, y la capa no cambia ninguna clase.
     expect(inf.hallazgos.filter((h) => h.gravedad === "alta")).toEqual([]);
     expect(haiku.porLabel.safe!.soloA.length + haiku.porLabel.safe!.soloB.length).toBe(0);
