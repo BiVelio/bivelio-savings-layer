@@ -21,6 +21,7 @@ import {
 } from "../gateway/degradacion.js";
 import { CAMPOS_DEL_REGISTRO_DE_USO, parseUsageRecords } from "../apps/web/lib/metering/usage.js";
 import { testLicense } from "./helpers/test-license.js";
+import { oficialHaciaElMock } from "./helpers/gateway-oficial.js";
 
 /**
  * LA GARANTÍA DE «NO EMPEORAR» DEL GATEWAY — la batería que citan el README y
@@ -150,7 +151,7 @@ async function gateway(
   const g = await arrancarGateway({
     license: testLicense(),
     puerto: 0,
-    upstream: `http://127.0.0.1:${upstream}`,
+    ...oficialHaciaElMock(upstream),
     ...(plataforma !== undefined
       ? { serviceAccountKey: "bvk_test", meteringUrl: `http://127.0.0.1:${plataforma}/api/metering/usage`, seatId: "seat-test" }
       : {}),

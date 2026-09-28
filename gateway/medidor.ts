@@ -844,8 +844,13 @@ export function informeMedido(
   hermano?: CambioDeModelo | null,
   /** true → no se acredita ahorro de rebaja ni de hermano: baseline == actual. */
   subscription?: boolean,
+  /**
+   * true → el gateway no habla con el origen oficial del proveedor (un proxy,
+   * LiteLLM, un revendedor): tampoco se acredita dinero. Ver construirInforme.
+   */
+  upstreamNoOficial?: boolean,
 ): SavingsReport {
-  return construirInforme(requestId, model, medido, false, atribucion, elision, rebaja, hermano, subscription);
+  return construirInforme(requestId, model, medido, false, atribucion, elision, rebaja, hermano, subscription, upstreamNoOficial);
 }
 
 /**
@@ -1161,6 +1166,7 @@ function construirInforme(
   rebaja?: RebajaAplicada | null,
   hermano?: CambioDeModelo | null,
   subscription = false,
+  upstreamNoOficial = false,
 ): SavingsReport {
   const entradaTotal = medido.tokens.entrada + medido.tokens.cacheLeida + medido.tokens.cacheEscrita;
   // ── LA PALANCA DE TARIFA · el primer euro MEDIDO de verdad ──────────────
@@ -1191,7 +1197,16 @@ function construirInforme(
   // restas de arriba son entre precios de LISTA, y un suscriptor no paga lista:
   // acreditarlas sería cobrar comisión sobre una diferencia que no aparece en
   // ninguna factura suya. Con `subscription`, baseline == actual por diseño.
-  const acreditable = !coalescida && !subscription;
+  //
+  // Upstream NO OFICIAL (decisión del dueño, 2026-09-28): la misma razón. Las
+  // restas son entre precios de lista, y el precio de lista solo está en la
+  // factura del ORIGEN del proveedor (esUpstreamOficial). Detrás de LiteLLM, un
+  // revendedor o un modelo propio, esa diferencia no aparece en ninguna factura
+  // que podamos defender: se aplica la palanca, se mide el coste y no se
+  // acredita nada. Es lo que la Parte G ya hace con la gemela coalescida
+  // (`unofficial-upstream`), ahora también con la rebaja de TTL, el hermano y el
+  // suelo de la elisión, que es dinero a precio de lectura de caché de lista.
+  const acreditable = !coalescida && !subscription && !upstreamNoOficial;
   const escrita5m = medido.tokens.cacheEscrita - medido.tokens.cacheEscrita1h;
   const sobrecosteEvitado =
     acreditable && rebaja && rebaja.rebajadas > 0 && rebaja.yaEran5m === 0 && !rebaja.herramientaDeServidor && escrita5m > 0
@@ -1202,7 +1217,7 @@ function construirInforme(
   const ahorroMedido = sobrecosteEvitado + ahorroHermano;
   // B2 · el suelo de la elisión del proveedor (ver sueloDeElision). Una gemela
   // coalescida no viajó: no elidió nada y no tiene suelo.
-  const sueloElision = coalescida ? 0 : sueloDeElision(medido.precio, elision);
+  const sueloElision = coalescida || upstreamNoOficial ? 0 : sueloDeElision(medido.precio, elision);
   const informe = {
     requestId,
     model,

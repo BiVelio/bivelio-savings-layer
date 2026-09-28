@@ -36,8 +36,10 @@ import { CATALOGO } from "../src/pricing/catalogo.js";
  * el dueño decida cambiarlos el test lo diga (no cambian facturación en este PR):
  *   1. el SDK no sabe que habla con un proxy: su repetición `reference` entra en
  *      la base de la comisión a precio de lista;
- *   2. la palanca de TTL del gateway acredita su ahorro `measured` a precio de
- *      lista aunque el upstream sea el proxy;
+ *   2. CERRADO el 2026-09-28 por decisión del dueño: la palanca de TTL del
+ *      gateway acreditaba su ahorro `measured` a precio de lista aunque el
+ *      upstream fuera el proxy; ahora detrás de un upstream no oficial el
+ *      gateway mide y no acredita (ni TTL, ni hermano, ni suelo de elisión);
  *   3. un acierto de la caché del proxy llega al SDK como una llamada normal con
  *      el `usage` original y se reporta `measured`.
  */
@@ -236,7 +238,7 @@ describe("HUECOS · comportamiento de hoy que contradice (b) y decide el dueño"
   );
 
   it(
-    "HUECO 2 · gateway: la rebaja de TTL llega al proveedor a través del proxy y su ahorro `measured` entra en la base",
+    "CERRADO 2 · gateway: la rebaja de TTL cruza el proxy, pero detrás de un upstream no oficial su ahorro NO se acredita (dueño, 2026-09-28)",
     async () => {
       // Un upstream que declara escrituras de caché a 5 min, como haría
       // Anthropic tras la rebaja. El proxy lo reenvía tal cual.
@@ -274,10 +276,13 @@ describe("HUECOS · comportamiento de hoy que contradice (b) y decide el dueño"
       // La palanca actuó y su TTL cruzó el proxy.
       expect((JSON.parse(recibidos[0]!) as { system: { cache_control: { ttl: string } }[] }).system[0]!.cache_control.ttl).toBe("5m");
       const v = r.veredictos[0]!;
+      // Se mide el coste, como siempre…
       expect(v.basisEmitido).toBe("measured");
-      // 50.000 escritas × entrada de haiku-4-5 × (2 − 1,25): la prima evitada a precio de LISTA.
-      expect(v.ahorroUsd).toBeCloseTo((50_000 / 1000) * CATALOGO["claude-haiku-4-5"]!.inputPer1k * 0.75, 10);
-      expect(v.enLaBase).toBe(true);
+      // …pero la prima evitada es una resta entre precios de LISTA, y detrás del
+      // proxy no hay factura de lista que la respalde: baseline == actual.
+      // Antes: 50.000 × entrada de haiku-4-5 × 0,75 acreditados y en la base.
+      expect(v.ahorroUsd).toBe(0);
+      expect(v.enLaBase).toBe(false);
     },
     PLAZO,
   );

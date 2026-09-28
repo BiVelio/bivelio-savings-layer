@@ -14,6 +14,7 @@ import {
 import { ahorroDeHermano, costeDeTokens, costeMedido, informeMedido } from "../gateway/medidor.js";
 import { claveDeCatalogo, precioDeLista } from "../src/pricing/catalogo.js";
 import { PRIMA_ESCRITURA_CACHE, PRIMA_ESCRITURA_CACHE_1H, primaDeEscritura } from "../src/pricing/primas.js";
+import { oficialHaciaElMock } from "./helpers/gateway-oficial.js";
 
 /**
  * Palanca C · el MODELO HERMANO (fable-5 → fable-5-1), de punta a punta.
@@ -370,7 +371,7 @@ async function gatewayCon(opciones: {
   const g = await arrancarGateway({
     license: testLicense(),
     puerto: 0,
-    upstream: `http://127.0.0.1:${opciones.upstream}`,
+    ...oficialHaciaElMock(opciones.upstream),
     ...(opciones.clave !== undefined ? { serviceAccountKey: opciones.clave } : {}),
     ...(opciones.plataforma !== undefined
       ? { meteringUrl: `http://127.0.0.1:${opciones.plataforma}/api/metering/usage` }

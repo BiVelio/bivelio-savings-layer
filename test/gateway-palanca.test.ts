@@ -14,6 +14,7 @@ import {
   DIAL_CLEAR_AT_LEAST_INPUT_TOKENS,
   TRIGGER_POR_DEFECTO_DE_LA_API,
 } from "../gateway/diales.js";
+import { oficialHaciaElMock } from "./helpers/gateway-oficial.js";
 
 /**
  * S4a · la palanca de diales, de punta a punta contra servidores FALSOS
@@ -155,7 +156,7 @@ async function gatewayCon(opciones: {
   const g = await arrancarGateway({
     license: testLicense(),
     puerto: 0,
-    upstream: `http://127.0.0.1:${opciones.upstream}`,
+    ...oficialHaciaElMock(opciones.upstream),
     ...(opciones.clave !== undefined ? { serviceAccountKey: opciones.clave } : {}),
     ...(opciones.plataforma !== undefined
       ? { meteringUrl: `http://127.0.0.1:${opciones.plataforma}/api/metering/usage` }

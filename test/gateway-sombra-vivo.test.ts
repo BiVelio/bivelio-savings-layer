@@ -13,6 +13,7 @@ import {
   simularSesion,
   type TurnoSombra,
 } from "../gateway/sombra.js";
+import { oficialHaciaElMock } from "./helpers/gateway-oficial.js";
 
 /**
  * S2.4-vivo · El carril sombra del gateway. Tres verjas:
@@ -159,7 +160,7 @@ describe("el gateway con BVSALA_GATEWAY_SHADOW", () => {
     const gw = await arrancarGateway({
       license: testLicense(),
       puerto: 0 as never,
-      upstream: `http://127.0.0.1:${upstream}`,
+      ...oficialHaciaElMock(upstream),
       serviceAccountKey: "bvk_test",
       meteringUrl: `http://127.0.0.1:${ingesta}`,
       seatId: "test-01",
@@ -212,7 +213,7 @@ describe("el gateway con BVSALA_GATEWAY_SHADOW", () => {
     const gw = await arrancarGateway({
       license: testLicense(),
       puerto: 0 as never,
-      upstream: `http://127.0.0.1:${upstream}`,
+      ...oficialHaciaElMock(upstream),
       serviceAccountKey: "bvk_test",
       meteringUrl: `http://127.0.0.1:${ingesta}`,
       seatId: "test-01",
@@ -250,7 +251,7 @@ describe("B2-4 · sombra y borrado del proveedor no se solapan", () => {
     const gw = await arrancarGateway({
       license: testLicense(),
       puerto: 0 as never,
-      upstream: `http://127.0.0.1:${upstream}`,
+      ...oficialHaciaElMock(upstream),
       serviceAccountKey: "bvk_test",
       meteringUrl: `http://127.0.0.1:${ingesta}`,
       seatId: "test-01",
