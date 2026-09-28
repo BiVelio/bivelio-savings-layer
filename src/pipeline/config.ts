@@ -367,6 +367,17 @@ export interface SavingsLayerConfig {
    * it when you have your own observability. Applies to the pipeline, the usage
    * emitter, the revocation poller and the provider adapters shipped in this
    * package alike.
+   *
+   * **One warning is NOT silenced: a rejected renewal credential.** When the
+   * automatic pickup of the renewed license gets HTTP 401, 403 or 404 (the
+   * `serviceAccountKey` was rotated, belongs to another organization, or
+   * `licenseServerUrl` is wrong), the SDK warns even with this flag on. That is
+   * not a degraded saving: the token will not renew and the layer will stop
+   * operating when the grace period ends, and the failure happens inside the SDK
+   * where your own observability cannot see it. It is printed once per status
+   * code per layer, never on every renewal attempt, and it never contains the
+   * key or any part of it. Fix the credential, or turn the pickup off with
+   * {@link licenseRefresh}`.enabled = false`, to make it go away.
    */
   silenceWarnings?: boolean;
   /**

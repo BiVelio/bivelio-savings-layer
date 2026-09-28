@@ -1044,6 +1044,9 @@ provider invoice; `estimated` has its own column on purpose.
 - **Set `serviceAccountKey` on every long‑running deployment.** Renewals mint a new
   license token each billing period; with the service‑account key (`bvk_…`, same
   dashboard) the SDK picks the renewed token up by itself, without a restart.
+  If that pickup is rejected (HTTP 401/403/404: rotated key, key from another
+  organization, wrong `licenseServerUrl`), the SDK warns once per cause even with
+  `silenceWarnings: true`, because the license will stop renewing.
 - **Set `BVSALA_SEAT_ID` (one stable value per replica) on Kubernetes or any fleet
   with dynamic hostnames**, so each replica counts as what it is:
 
