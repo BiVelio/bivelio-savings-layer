@@ -128,6 +128,7 @@ import {
 import { CanalDeStream, type MotivoEntero, type SumideroDeStream } from "./stream.js";
 import { libroDeCalidad, libroDelSeguidor, type HechosDeCalidad } from "./libro-de-calidad.js";
 import { StreamAbortedError } from "./errors.js";
+import { negativaEnTexto } from "../providers/negativa-en-texto.js";
 import { normalizarAjustes } from "../verification/ajustes.js";
 import { ComprobadorAB, type SumideroDeVerificacion } from "../verification/comprobador.js";
 import type { ViaDeServicio } from "../verification/clasificar.js";
@@ -1954,7 +1955,21 @@ export class SavingsPipeline {
     // proceso ni desde otro que comparta el Redis.
     const exactKey = buildExactKey(canonical, { servedModel: cascada.modeloServido });
     if (policy.allowExactCache && toggles.exactCache !== false) {
-      const hit = await this.deps.exactCache.get<T>(exactKey);
+      const guardada = await this.deps.exactCache.get<T>(exactKey);
+      // UNA NEGATIVA EN TEXTO NO SE SIRVE DESDE LA CACHÉ, aunque esté guardada:
+      // la escribió una versión anterior a esta regla (0.4.30 o antes) o otro
+      // proceso que comparte el Redis. Se ignora como si no estuviera: la
+      // petición va al proveedor y se mide. La misma heurística que la escritura
+      // (etapa 12), con el mismo coste si se equivoca: un acierto.
+      const reglaGuardada = guardada ? negativaEnTexto(guardada.text) : null;
+      if (reglaGuardada !== null) {
+        trace.record(
+          "exact-cache",
+          "ignored: the stored answer reads as a refusal written as text (text_refusal); it is not replayed",
+          { skipReason: "text_refusal", rule: reglaGuardada },
+        );
+      }
+      const hit = reglaGuardada === null ? guardada : null;
       if (hit) {
         // MEDIDO POR REFERENCIA, o estimado como siempre. Si la entrada trae el
         // contador de la llamada intacta que la escribió y pasa L0-L7, la
@@ -2150,7 +2165,19 @@ export class SavingsPipeline {
       const consulta = cacheSemantica.calibrated
         ? await cacheSemantica.lookup(canonical, { agentic: policy.isAgentic })
         : { hit: await cacheSemantica.find(canonical), probe: null };
-      const hit = consulta.hit;
+      // La misma guarda que la caché exacta: una negativa en texto guardada por
+      // una versión anterior no se sirve como respuesta a una pregunta parecida.
+      const reglaSemantica = consulta.hit
+        ? negativaEnTexto((consulta.hit.record.answer as CachedAnswer<T>).text)
+        : null;
+      if (reglaSemantica !== null) {
+        trace.record(
+          "semantic-cache",
+          "ignored: the stored answer reads as a refusal written as text (text_refusal); it is not replayed",
+          { skipReason: "text_refusal", rule: reglaSemantica },
+        );
+      }
+      const hit = reglaSemantica === null ? consulta.hit : null;
       sondaSemantica = consulta.probe;
       if (hit) {
         // Measured avoided-output baseline (the cached answer is the real output).
@@ -4025,13 +4052,27 @@ export class SavingsPipeline {
     // un `content` vacío con su `refusal` se guardaba y se repetía por referencia
     // como si fuera una respuesta (2026-09-28). La cuenta `esNegativaDelProveedor`.
     const negativa = esNegativaDelProveedor(response);
+    // Y LA SÉPTIMA: LA NEGATIVA QUE EL MODELO ESCRIBE COMO TEXTO (2026-09-28).
+    // «I can't help with that.» con `end_turn`/`stop`, sin señal del API: la
+    // caché exacta la guardaba 24 h y cada repetición salía `reference`
+    // (comisionable), congelando una negativa por exceso de cautela en un prompt
+    // seguro (XSTest). La detecta una heurística conservadora
+    // (`negativaEnTexto`, src/providers/negativa-en-texto.ts) que solo mira el
+    // inicio de la respuesta, o la respuesta entera si es corta. Se equivoca
+    // hacia el lado barato: un falso positivo cuesta un acierto de caché —la
+    // respuesta se mide y se sirve igual, y ni la reparación ni el coste cambian—,
+    // y un falso negativo deja el comportamiento de antes. Sin registro por
+    // referencia (E7 de referencia.ts), tampoco un seguidor de singleflight la
+    // valora por referencia: sale `estimated`, fuera de la comisión.
+    const reglaDeNegativaEnTexto = negativa || pidioHerramientas ? null : negativaEnTexto(textoServido);
     const cacheable =
       structurallyValid !== false &&
       !pidioHerramientas &&
       !vistaRecortada &&
       !cortadaPorElTope &&
       !noReproducible &&
-      !negativa;
+      !negativa &&
+      reglaDeNegativaEnTexto === null;
 
     // --- Etapa 12-bis: el registro de MEDIDO POR REFERENCIA. ---
     //
@@ -4135,7 +4176,18 @@ export class SavingsPipeline {
                       "a refusal message); " +
                       "a refusal is not an answer, and replaying it would credit an avoided call the provider " +
                       "may not have billed"
-                    : "skipped: answered with a reduced tool view (tool discovery), so it must not be replayed",
+                    : reglaDeNegativaEnTexto !== null
+                      ? "skipped: the answer reads as a refusal written as text (text_refusal); it was measured " +
+                        "and served as usual, but a refusal is not an answer to replay or to credit as an avoided call"
+                      : "skipped: answered with a reduced tool view (tool discovery), so it must not be replayed",
+          // El motivo va en `detail` solo si es el que da la línea de arriba.
+          reglaDeNegativaEnTexto !== null &&
+            !pidioHerramientas &&
+            structurallyValid !== false &&
+            !cortadaPorElTope &&
+            !noReproducible
+            ? { skipReason: "text_refusal", rule: reglaDeNegativaEnTexto }
+            : undefined,
         );
       }
 
