@@ -365,7 +365,8 @@ export interface SavingsLayerConfig {
    * revocation list going stale. Nothing here throws and nothing here changes
    * what the layer does — turning it on only removes the console noise, so set
    * it when you have your own observability. Applies to the pipeline, the usage
-   * emitter and the revocation poller alike.
+   * emitter, the revocation poller and the provider adapters shipped in this
+   * package alike.
    */
   silenceWarnings?: boolean;
   /**

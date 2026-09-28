@@ -1,8 +1,7 @@
-import { avisarUnaVez } from "../util/warn-once.js";
 import {
   atestiguar,
   atestiguarOrigen,
-  avisosDelProveedorSilenciados,
+  avisarDelProveedor,
   declararBusquedaNativa,
   herramientasSinParametros,
   sinContrato,
@@ -742,7 +741,7 @@ export class AnthropicProvider implements Provider {
       if (nombreOcupado) {
         system.push({ type: "text", text: instruccionDeJsonPorPrompt(req.schema) });
         esquemaPorPrompt = true;
-        avisarUnaVez(
+        this.avisar(
           "anthropic-contrato-nombre-ocupado",
           `[bvsala] One of your tools is already named \`${HERRAMIENTA_DE_CONTRATO}\`, so the output ` +
             "contract cannot travel as a tool without colliding with it (duplicate tool names are a " +
@@ -751,7 +750,7 @@ export class AnthropicProvider implements Provider {
         );
       } else {
         if (!strict && !traeHerramientas) {
-          avisarUnaVez(
+          this.avisar(
             "anthropic-strict-incompatible",
             "[bvsala] The response contract does not meet `strict` mode (in strict, `required` must " +
               "list ALL the keys in `properties`, and every object needs " +
@@ -775,7 +774,7 @@ export class AnthropicProvider implements Provider {
         });
         if (traeHerramientas) {
           forzarCualquiera = this.opts.forceAnswerThroughTool !== false;
-          avisarUnaVez(
+          this.avisar(
             "anthropic-contrato-con-herramientas",
             "[bvsala] This request carries BOTH your tools and an output contract. On Anthropic's " +
               "Messages API a specific shape is only GUARANTEED by forcing that exact tool, and " +
@@ -838,7 +837,7 @@ export class AnthropicProvider implements Provider {
     // lee y dirá `standard` — que es la prueba, no la suposición, de que no hubo
     // descuento.
     if (req.deferrable === true) {
-      avisarUnaVez(
+      this.avisar(
         "anthropic-sin-tier-diferible",
         "[bvsala] This request was declared deferrable, but the Anthropic Messages API has NO " +
           "cheaper synchronous tier: its `service_tier` chooses between priority capacity (more " +
@@ -963,8 +962,7 @@ export class AnthropicProvider implements Provider {
   // Un aviso por proceso y por causa, salvo que la capa que usa este adaptador
   // se creara con `silenceWarnings` (ver `silenciarAvisosDelProveedor`).
   private avisar(clave: string, mensaje: string): void {
-    if (avisosDelProveedorSilenciados(this)) return;
-    avisarUnaVez(clave, mensaje);
+    avisarDelProveedor(this, clave, mensaje);
   }
 
   // Coloca los puntos de ruptura de cache.

@@ -1,3 +1,4 @@
+import { avisarUnaVez } from "../util/warn-once.js";
 import { CLAVE_DEL_ORIGEN, type OrigenAtestiguado } from "./origen-oficial.js";
 import type { ProviderResponse } from "./types.js";
 
@@ -218,4 +219,18 @@ export function silenciarAvisosDelProveedor(proveedor: unknown): void {
 /** ¿Pidió alguna capa callar los avisos de este proveedor? */
 export function avisosDelProveedorSilenciados(proveedor: object): boolean {
   return silenciados.has(proveedor);
+}
+
+/**
+ * EL PORTERO DE LOS AVISOS DE UN ADAPTADOR PROPIO: una vez por causa y por
+ * proceso (`avisarUnaVez`), y nada si alguna capa que lo usa se creó con
+ * `silenceWarnings`. Todo aviso de un adaptador de este paquete pasa por aquí:
+ * `avisarUnaVez` a pelo respeta el «una vez» pero NO el interruptor, y ese era
+ * el agujero de los avisos anteriores al bucle de herramientas (el contrato que
+ * choca con una herramienta del cliente, `strict`, el tier diferible…). Hay un
+ * test que recorre los adaptadores y falla si vuelve a aparecer uno suelto.
+ */
+export function avisarDelProveedor(proveedor: object, clave: string, mensaje: string): void {
+  if (avisosDelProveedorSilenciados(proveedor)) return;
+  avisarUnaVez(clave, mensaje);
 }
