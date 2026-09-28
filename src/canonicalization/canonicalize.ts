@@ -19,6 +19,25 @@ export interface CanonicalRequest {
   normalizedText: string;
   systemPromptHash: string;
   toolsetHash: string;
+  /**
+   * Hash of the tool-loop fields of the conversation, the part of each turn
+   * that `normalizedText` does not carry: the calls on an assistant turn (name,
+   * arguments and id) and, on a `role: "tool"` message, the call it answers,
+   * its error flag and its name. Part of the exact key, the in-flight key and
+   * the semantic filter, so two conversations that differ only there never
+   * share an answer.
+   *
+   * Call ids count by what they pair, not by their value: results matched to
+   * other calls give another hash, while the same conversation with its ids
+   * consistently renamed (a new run of the same agent loop gets fresh ids from
+   * the provider) keeps it.
+   *
+   * Absent when the request carries none of them: the keys are then built from
+   * exactly the same material as before this field existed. A field that is
+   * present but empty or false (`toolCalls: []`, `isError: false`, `name: ""`)
+   * reaches the provider exactly as an absent one, and counts as absent.
+   */
+  toolTurnsHash?: string;
   /** Hash of the structured payload; part of the cache key so different data never collides. */
   structuredDataHash: string;
   schemaVersion: string;
@@ -223,8 +242,107 @@ export function modelFamilyOf(model: string): string {
   return noVersion.replace(/[-_](mini|nano|small|large|latest)$/i, "");
 }
 
+// ─── Los campos del bucle de herramientas ────────────────────────────────────
+//
+// POR QUÉ ENTRAN. La clave exacta llevaba de cada turno el ROL y el TEXTO. Los
+// campos de herramienta no son texto pero el modelo los VE: el adaptador de
+// Anthropic manda las llamadas como `tool_use {id, name, input}` y cada
+// resultado como `tool_result {tool_use_id, is_error}`, y el de OpenAI como
+// `tool_calls` y `tool_call_id` (más `name` en el resultado). Sin ellos en la
+// clave, un resultado marcado como error y el mismo texto como dato, la misma
+// llamada con otros argumentos, o los mismos resultados emparejados al revés,
+// compartían clave: la segunda conversación recibía la respuesta de la primera
+// como un acierto de caché.
+//
+// QUÉ ENTRA, Y CON QUÉ CRITERIO. Lo que sale por el cable de ALGÚN adaptador de
+// este paquete, en el turno en que lo leen, y nada más:
+//   · `assistant`: `toolCalls` no vacío → cada llamada con su id, `name` y
+//     `arguments` CRUDOS. Crudos a propósito: Anthropic parsea los argumentos
+//     (`{"a":1}` y `{"a": 1}` le llegan igual) pero OpenAI los manda tal cual, y
+//     la clave tiene que separar lo que separe cualquiera de los dos.
+//   · `tool`: el id de la llamada que contesta —`toolCallId` o, si falta,
+//     `metadata.tool_call_id`, que el adaptador de OpenAI sigue aceptando como
+//     ortografía vieja del mismo campo y manda como `tool_call_id`—, `isError`
+//     solo si es `true` (el único valor que viaja) y `name` solo si no es vacío
+//     (OpenAI lo omite si lo es).
+// El resto de `metadata` es opaco y no entra; `name` en un turno que no es
+// `tool` tampoco: ningún adaptador lo manda. Un campo presente pero vacío o
+// falso sale por los dos cables igual que ausente, y canoniza igual
+// (`test/clave-exacta-con-herramientas.test.ts` lo comprueba contra los cuerpos
+// que construyen los dos adaptadores).
+//
+// LOS IDS ENTRAN POR SU ESTRUCTURA, NO POR SU VALOR. Lo que el id le dice al
+// modelo es QUÉ resultado contesta a QUÉ llamada, y eso sí entra: dos
+// resultados emparejados al revés, o uno que contesta a una llamada que no está,
+// dan otra clave. Su valor no: el turno que pide la herramienta nunca sale de
+// caché, así que cada ejecución de un agente trae ids NUEVOS del proveedor
+// (`toolu_…`, `call_…`) para la misma conversación, y con el valor en la clave la
+// respuesta final de un bucle no volvería a acertar nunca. Es la misma decisión
+// que ya tomó la huella de los adaptadores de marcos (D5,
+// `adapters/comun/peticion.ts`: «ids de llamadas a herramienta… cambian en cada
+// ejecución sin cambiar la petición»). Así que cada id no vacío se sustituye por
+// el ordinal de su primera aparición en la conversación: dos conversaciones dan
+// la misma clave si y solo si una es la otra con los ids renombrados
+// consistentemente. No se reclama de más por ello: la huella de la referencia
+// (L4) compara bytes crudos, así que un acierto entre dos ejecuciones con ids
+// distintos se sirve `estimated`, nunca `reference`.
+//
+// Un id ausente, `null` o `""` no es un token opaco, es la FALTA de uno (y el
+// cable lo trata aparte: OpenAI pone `call_<i>` o lo manda vacío, Anthropic
+// manda el intercambio como texto), así que entra tal cual. Límite conocido: dos
+// ids distintos que el adaptador de Anthropic junta al sanear sus caracteres
+// (`a.b` y `a_b`) cuentan como distintos; ningún proveedor los genera así.
+//
+// POR QUÉ ES OPCIONAL. Una petición sin ninguno de estos campos no lleva
+// `toolTurnsHash`, y `buildExactKey`/`buildInflightKey` construyen entonces
+// EXACTAMENTE el mismo material que antes: la caché exacta viva de un cliente
+// (Redis, KV) sigue acertando tras actualizar, y los registros de referencia
+// escritos con esas claves siguen valiendo. Lo mismo en un resultado de
+// herramienta sin ids (el adaptador de Anthropic lo manda como texto): no lleva
+// campos, y su clave no se mueve.
+function hashDeHerramientas(messages: readonly ChatMessage[]): string | undefined {
+  const ordinales = new Map<string, number>();
+  const idCanonico = (id: unknown): unknown => {
+    if (typeof id !== "string" || id === "") return { sin: id ?? null };
+    let n = ordinales.get(id);
+    if (n === undefined) ordinales.set(id, (n = ordinales.size));
+    return n;
+  };
+
+  // Por POSICIÓN: el turno al que pertenece cada campo es parte de lo que se
+  // manda (qué resultado sigue a qué llamada). Los ordinales se asignan en el
+  // orden de la conversación, llamadas y resultados por igual.
+  const porTurno = messages.map((m): Record<string, unknown> | null => {
+    if (m.role === "assistant") {
+      if (!m.toolCalls || m.toolCalls.length === 0) return null;
+      return {
+        calls: m.toolCalls.map((c) => ({
+          // `id: null` sale como ausente en los dos cables (OpenAI pone
+          // `call_<i>`, Anthropic lo manda como texto); `""` no (OpenAI lo manda
+          // tal cual).
+          ...(c.id != null ? { id: idCanonico(c.id) } : {}),
+          name: c.name,
+          arguments: c.arguments,
+        })),
+      };
+    }
+    if (m.role !== "tool") return null;
+    // La misma expresión que el adaptador de OpenAI pone en `tool_call_id`.
+    const id: unknown = m.toolCallId ?? m.metadata?.["tool_call_id"];
+    const campos: Record<string, unknown> = {
+      ...(id !== undefined ? { id: idCanonico(id) } : {}),
+      ...(m.isError === true ? { isError: true } : {}),
+      ...(m.name ? { name: m.name } : {}),
+    };
+    return Object.keys(campos).length > 0 ? campos : null;
+  });
+  if (porTurno.every((t) => t === null)) return undefined;
+  return sha256(stableStringify(porTurno));
+}
+
 export function canonicalize(request: SavingsRequest): CanonicalRequest {
   const ctx = request.context ?? {};
+  const toolTurnsHash = hashDeHerramientas(request.messages);
 
   const systemMessages = request.messages
     .filter((m) => m.role === "system")
@@ -247,6 +365,7 @@ export function canonicalize(request: SavingsRequest): CanonicalRequest {
     normalizedText: conversational,
     systemPromptHash: sha256(systemMessages),
     toolsetHash: sha256(stableStringify(tools)),
+    ...(toolTurnsHash !== undefined ? { toolTurnsHash } : {}),
     structuredDataHash:
       request.structuredData !== undefined
         ? sha256(stableStringify(request.structuredData))

@@ -843,7 +843,11 @@ console.log(res.text);
   Anthropic receives it as `is_error`; providers without such a flag get the text.
 
 A tool‑call turn is never served from cache and never counted as an avoided call:
-an action that has not run yet cannot be a saving.
+an action that has not run yet cannot be a saving. The answer that follows a tool loop
+can be, and its cache key covers the loop: each call's name and arguments, which call
+each result answers and its `isError`. Two conversations that differ only there never
+share a cached answer; the fresh call ids of a new run of the same loop are not a
+difference.
 
 **Large catalogues: let the provider search them (opt‑in).** With hundreds of tools
 (several MCP servers, say), `savings: { toolSearch: "auto" }` sends every tool deferred
