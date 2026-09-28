@@ -1,8 +1,9 @@
 /**
  * DE DÓNDE SALE LA CAPA DEL BRAZO B — y por qué se aborta sin licencia.
  *
- * Por defecto, del PAQUETE PUBLICADO: `@bivelio/savings-layer@0.4.30` bajado de
- * npm con `npm pack`, comprobado por sha256 (tarball y `dist/index.js`) y cargado
+ * Por defecto, del PAQUETE PUBLICADO: `@bivelio/savings-layer@0.4.31` bajado de
+ * npm con `npm pack`, comprobado por el `integrity` sha512 del registro y por
+ * sha256 (tarball y `dist/index.js`) y cargado
  * desde `benchmarks/out/gsm8k/paquete/` (git lo ignora). Ese build no tiene modo
  * sin licencia, así que exige `BIVELIO_LICENSE_KEY` en el entorno; sin ella la
  * tirada LIVE aborta ANTES de la primera llamada de pago. La licencia se pasa
@@ -10,11 +11,16 @@
  * metering, para que el tráfico del banco no entre en ningún panel de producción.
  *
  * `--desde-fuente` es la alternativa declarada, nunca la de por defecto: el fuente
- * de la etiqueta 0.4.30 con `devUnlicensed: true`. Es el mismo código (el
- * `dist/index.js` que construye este árbol tiene el sha256 del tarball), pero no
- * es «el paquete tal como se instala» y el artefacto lo dice.
+ * de la etiqueta v0.4.31 con `devUnlicensed: true`. Es el mismo código (el
+ * `dist/index.js` que construye este árbol, y el de `git archive v0.4.31`, tienen
+ * el sha256 del tarball; comprobado el 2026-09-28), pero no es «el paquete tal
+ * como se instala» y el artefacto lo dice.
+ *
+ * La tirada anterior (0.4.30, docs/benchmarks/2026-09-28/gsm8k.{json,md}) queda
+ * como está: su artefacto lleva sus propios sha256 en `procedencia`.
  */
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -25,9 +31,14 @@ import { DIR_SALIDA_GSM8K } from "./fuente.js";
 
 export const PAQUETE_NPM = {
   nombre: "@bivelio/savings-layer",
-  version: "0.4.30",
-  tarballSha256: "1734b46ebc5cd4db12088f2ad04416180e9997873115e823e511a6338bdd3a7f",
-  distIndexSha256: "12c709712ee5886b7fe056f026ee820c24c43e93aa470f56aaf4b7d61efb8a88",
+  version: "0.4.31",
+  /** El `integrity` que publica el registro (`npm view @bivelio/savings-layer@0.4.31 dist.integrity`). */
+  integrity: "sha512-ePCN+dZr+VuMUSGm2TelDkt7TR6jSi/SCTomomDK/bfF92FHr1eFUdgTWQODCdQf8C8c+/h6AA/up46DXO2mLQ==",
+  tarballSha256: "7f44816f0518e762a00821d03b5beb186772a290efd3ac4bf40006ca421a61ca",
+  distIndexSha256: "b52f99cacf9804ecd3153e56f26ec3adcdc2510d52a8446a369ecf914e0b5731",
+  /** La etiqueta y su commit: `git rev-parse v0.4.31^{commit}`. */
+  etiqueta: "v0.4.31",
+  commit: "00c99c803c0ab6f3c11b7ab87f3c75a38d609b1c",
 } as const;
 
 type ApiDeLaCapa = Pick<typeof fuente, "createSavingsLayer" | "InMemorySemanticCache">;
@@ -43,14 +54,17 @@ export const DIR_PAQUETE = join(DIR_SALIDA_GSM8K, "paquete");
 
 /** Baja (si falta) y verifica el tarball de npm; devuelve la ruta de `dist/index.js`. */
 export function paqueteVerificado(dir = DIR_PAQUETE): string {
-  const tgz = join(dir, "bivelio-savings-layer-0.4.30.tgz");
+  const tgz = join(dir, `bivelio-savings-layer-${PAQUETE_NPM.version}.tgz`);
   if (!existsSync(tgz)) {
     mkdirSync(dir, { recursive: true });
     execFileSync("npm", ["pack", `${PAQUETE_NPM.nombre}@${PAQUETE_NPM.version}`, "--pack-destination", dir, "--silent"], {
       stdio: ["ignore", "ignore", "inherit"],
     });
   }
-  const sha = sha256Hex(readFileSync(tgz));
+  const bytes = readFileSync(tgz);
+  const integrity = `sha512-${createHash("sha512").update(bytes).digest("base64")}`;
+  if (integrity !== PAQUETE_NPM.integrity) throw new Error(`npm tarball integrity mismatch: ${integrity}`);
+  const sha = sha256Hex(bytes);
   if (sha !== PAQUETE_NPM.tarballSha256) throw new Error(`npm tarball sha256 mismatch: ${sha}`);
   const index = join(dir, "package", "dist", "index.js");
   if (!existsSync(index)) execFileSync("tar", ["xzf", tgz, "-C", dir]);
@@ -62,8 +76,8 @@ export function paqueteVerificado(dir = DIR_PAQUETE): string {
 export class SinLicencia extends Error {
   constructor() {
     super(
-      "BIVELIO_LICENSE_KEY is not set: the published 0.4.30 build has no unlicensed mode, so arm B cannot run. " +
-        "Aborting before any paid call. (--desde-fuente runs the identical 0.4.30 source unlicensed, and the artifact says so.)",
+      `BIVELIO_LICENSE_KEY is not set: the published ${PAQUETE_NPM.version} build has no unlicensed mode, so arm B cannot run. ` +
+        `Aborting before any paid call. (--desde-fuente runs the identical ${PAQUETE_NPM.version} source unlicensed, and the artifact says so.)`,
     );
     this.name = "SinLicencia";
   }

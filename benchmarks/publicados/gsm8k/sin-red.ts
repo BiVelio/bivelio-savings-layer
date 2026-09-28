@@ -33,14 +33,26 @@ import {
 
 /**
  * `semantica-sin-interruptor` es la caché pasada a `createSavingsLayer` SIN
- * `savings.semanticCache: true` en la petición, como en el fragmento «Serverless»
- * del README: se mide para enseñar que así no se consulta ni se escribe nunca.
+ * `savings.semanticCache: true` en la petición ni `semanticCacheDefault`: así no
+ * se consulta ni se escribe nunca (en la 0.4.31, además, avisa; aquí se silencia).
+ *
+ * `semantica-defecto-capa` (nueva en la 0.4.31, #380) es el fragmento «Serverless»
+ * del README de la 0.4.31: la caché sin calibrar y `semanticCacheDefault: true` en
+ * el constructor, sin nada en la petición. `semantica-envio` es la misma caché con
+ * el interruptor en cada petición, como en la tirada de la 0.4.30: las dos tienen
+ * que decidir lo mismo.
  */
-export type ConfigSinRed = "defecto" | "semantica-sin-interruptor" | "semantica-envio" | "semantica-calibrada";
+export type ConfigSinRed =
+  | "defecto"
+  | "semantica-sin-interruptor"
+  | "semantica-envio"
+  | "semantica-defecto-capa"
+  | "semantica-calibrada";
 export const CONFIGS_SIN_RED: readonly ConfigSinRed[] = [
   "defecto",
   "semantica-sin-interruptor",
   "semantica-envio",
+  "semantica-defecto-capa",
   "semantica-calibrada",
 ];
 
@@ -52,7 +64,9 @@ export function juezNumerico(guardada: { text: string }, fresca: { text: string 
 
 export function cacheSemanticaPara(config: ConfigSinRed, capa: FabricaDeCapa): InMemorySemanticCache | undefined {
   const { InMemorySemanticCache } = capa.api;
-  if (config === "semantica-envio" || config === "semantica-sin-interruptor") return new InMemorySemanticCache();
+  if (config === "semantica-envio" || config === "semantica-sin-interruptor" || config === "semantica-defecto-capa") {
+    return new InMemorySemanticCache();
+  }
   if (config === "semantica-calibrada") {
     return new InMemorySemanticCache({
       calibration: { maxErrorRate: 0.02, judge: juezNumerico, judgeId: JUEZ_ID, random: mulberry32(0xca11b) },
@@ -75,7 +89,7 @@ export interface EvidenciaDeReuso {
 
 export interface ResultadoSinRed {
   config: ConfigSinRed;
-  /** Qué código tomó las decisiones: el paquete de npm o el fuente 0.4.30 idéntico. */
+  /** Qué código tomó las decisiones: el paquete de npm o el fuente idéntico de la etiqueta. */
   origenDeLaCapa: FabricaDeCapa["origen"];
   peticiones: number;
   porClase: Record<string, { n: number; exacta: number; semantica: number; resolver: number; coalescida: number; proveedor: number; erroneas: number }>;
@@ -154,6 +168,7 @@ export async function repetirSinRed(
     ...capa.licencia,
     silenceWarnings: true,
     ...(semanticCache ? { semanticCache } : {}),
+    ...(config === "semantica-defecto-capa" ? { semanticCacheDefault: true } : {}),
   });
   const porClase: ResultadoSinRed["porClase"] = {};
   const evidencias: EvidenciaDeReuso[] = [];
@@ -169,7 +184,7 @@ export async function repetirSinRed(
       ],
       temperature: 0,
       seed: 7,
-      ...(semanticCache && config !== "semantica-sin-interruptor" ? { savings: { semanticCache: true } } : {}),
+      ...(config === "semantica-envio" || config === "semantica-calibrada" ? { savings: { semanticCache: true } } : {}),
     });
     const fila = (porClase[p.clase] ??= { n: 0, exacta: 0, semantica: 0, resolver: 0, coalescida: 0, proveedor: 0, erroneas: 0 });
     fila.n++;

@@ -6,22 +6,24 @@
  *   --sin-red              solo la repetición sin red sobre el split de test entero
  *   --modelos a,b          por defecto los cuatro de la batería
  *   --n-unicos N           tope de problemas únicos por modelo (por defecto 100)
- *   --presupuesto USD      tope DURO por modelo, todos los brazos juntos (máximo 1,25)
+ *   --presupuesto USD      tope DURO por modelo, todos los brazos juntos (máximo 0,80 en OpenAI y 1,25 en Anthropic)
+ *   --mismo-flujo-que F    fija los únicos de cada modelo a los del artefacto F (misma semilla ⇒ el
+ *                          MISMO flujo, petición a petición) y compara con él; la caja sigue mandando
  *   --brazos A,B,S,E       por defecto los cuatro (ver DESCRIPCION_DE_BRAZOS en medir.ts)
- *   --docs                 escribe docs/benchmarks/2026-09-28/gsm8k.{json,md}
+ *   --docs                 escribe docs/benchmarks/2026-09-28/gsm8k-0431.{json,md} (el nombre sale de la versión)
  *
  * Las claves se leen SOLO del entorno (`tsx --env-file=…`) y solo se pasan al
  * adaptador: nada de aquí imprime cabeceras, URLs completas ni configuración de
  * clientes, y todo texto de error pasa por `sinSecretos` antes de guardarse.
  *
- *   --desde-fuente         brazo B con el FUENTE 0.4.30 sin licencia en vez del paquete de npm (ver capa.ts)
+ *   --desde-fuente         brazos con capa desde el FUENTE de la etiqueta sin licencia en vez del paquete de npm (ver capa.ts)
  *
- * SOBRE «LA CAPA 0.4.30». Por defecto el brazo B carga el paquete PUBLICADO de
+ * SOBRE «LA CAPA» (0.4.31 desde el 2026-09-28; la tirada de la 0.4.30 es gsm8k.{json,md}). Por defecto el brazo B carga el paquete PUBLICADO de
  * npm (verificado por sha256) con `BIVELIO_LICENSE_KEY`; sin esa variable la
  * tirada LIVE aborta antes de la primera llamada de pago (`capa.ts`).
  */
 import { createHash, randomBytes } from "node:crypto";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -35,6 +37,7 @@ import { muestreoPareadoPara } from "../../scenarios.js";
 import { mulberry32 } from "../../stats.js";
 import { endpointDeModelo, fetchConPlazo, proveedorDelBanco, sinSecretos, type ConfigDeTransporte } from "../../transporte.js";
 import { fabricaDeCapa, PAQUETE_NPM, SinLicencia, type FabricaDeCapa } from "./capa.js";
+import { comparar, type ArtefactoComparable, type Comparacion0430 } from "./comparar.js";
 import { escribirDocumento } from "./documento.js";
 import {
   construirFlujo,
@@ -65,7 +68,13 @@ export const MODELOS_DE_LA_BATERIA = [
   "openai/gpt-5.4-mini",
 ] as const;
 export const TOPE_DURO_POR_MODELO_USD = 1.25;
-export const HOSTS_PERMITIDOS: readonly string[] = ["api.openai.com", "api.anthropic.com"];
+/** Tope DURO de un modelo de OpenAI, todos los brazos juntos (decisión del 2026-09-28 para la tirada 0.4.31). */
+export const TOPE_DURO_OPENAI_USD = 0.8;
+export function topeDuroPara(model: string): number {
+  return model.startsWith("openai/") ? TOPE_DURO_OPENAI_USD : TOPE_DURO_POR_MODELO_USD;
+}
+/** Los proveedores y, solo para los datos de GSM8K (verificados por sha256), raw.githubusercontent.com. */
+export const HOSTS_PERMITIDOS: readonly string[] = ["api.openai.com", "api.anthropic.com", "raw.githubusercontent.com"];
 export const SEMILLA = 20260928;
 export const FECHA = "2026-09-28";
 
@@ -75,29 +84,36 @@ export function procedencia(origen: FabricaDeCapa["origen"]) {
     paquete: PAQUETE_NPM.nombre,
     version: BV_SALA_VERSION,
     npmLatest: PAQUETE_NPM.version,
+    npmIntegrity: PAQUETE_NPM.integrity,
     tarballSha256: PAQUETE_NPM.tarballSha256,
     distIndexSha256: PAQUETE_NPM.distIndexSha256,
-    commitDelFuente: "946f5d5 (chore(release): 0.4.30)",
+    commitDelFuente: `${PAQUETE_NPM.commit} (${PAQUETE_NPM.etiqueta}, chore(release): ${PAQUETE_NPM.version})`,
     origen,
     modo:
       origen === "npm"
         ? "the published npm tarball (npm pack, sha256-verified), licensed offline with BIVELIO_LICENSE_KEY; no licenseServerUrl, no metering"
-        : "v0.4.30 (source of the tag, BVSALA_DEV_OPEN=1; npm = same commit, verified identical): `git diff v0.4.30 -- src/ packages/` " +
-          "is empty and `pnpm build` of this tree gives a dist/index.js with the npm tarball's sha256",
+        : `${PAQUETE_NPM.etiqueta} (source of the tag, BVSALA_DEV_OPEN=1, devUnlicensed: true; npm = same commit, verified identical): ` +
+          `\`git diff ${PAQUETE_NPM.etiqueta} -- src/ packages/\` only touches a comment and VERSION_MINIMA_REFERENCIA in src/version.ts, which the bundle does not contain; ` +
+          `\`pnpm build\` of this tree and of \`git archive ${PAQUETE_NPM.etiqueta}\` both give a dist/index.js with the npm tarball's sha256`,
   };
 }
 
 /**
- * El tope de salida: NINGUNO, en ningún brazo. En la 0.4.30 un tope solo viaja
- * dentro de un `OutputContract` (`response.maxOutputTokens`), que exige
- * `contractId` y `schema`: una petición de texto libre no puede declararlo a
- * través de la capa. Para que el par sea el mismo, el brazo A tampoco lo manda
- * (OpenAI: sin tope; Anthropic: el `max_tokens` por defecto del adaptador, 4096,
- * igual en los dos brazos). Y aunque se pudiera, en gpt-5.x el adaptador lo
- * mandaría como `max_tokens`, que gpt-5.4-mini rechaza con un 400.
+ * El tope de salida: 1024 tokens, el MISMO en todos los brazos. Hasta la 0.4.30
+ * un tope solo viajaba dentro de un `OutputContract` (que exige `schema`) y la
+ * tirada de la 0.4.30 fue sin tope. La 0.4.31 (#381) acepta
+ * `SavingsRequest.maxOutputTokens` en texto libre y, contra api.openai.com, lo
+ * manda como `max_completion_tokens` (gpt-5.x rechaza `max_tokens`). El brazo A
+ * lo lleva en su `ProviderRequest`, por el mismo adaptador.
+ *
+ * Por qué 1024: la salida más larga de la tirada 0.4.30 (sin tope) fue 957 tokens
+ * en gpt-4o-mini y 391 en gpt-5.4-mini (p99: 572 y 207). Con 1024 ninguna de
+ * aquellas respuestas se habría cortado, así que el tope no cambia lo que se
+ * compara con la 0.4.30 y sí baja la peor llamada que la caja reserva (4096 → 1024).
  */
+export const TOPE_DE_SALIDA = 1024;
 export function topeDeSalida(_model: string): number | null {
-  return null;
+  return TOPE_DE_SALIDA;
 }
 /** Para la caja: el peor caso de salida de una llamada sin tope declarado. */
 export const SALIDA_PEOR_CASO = 4096;
@@ -200,6 +216,13 @@ export interface OpcionesDeModelo {
   sistema: string;
   brazos: readonly Brazo[];
   nUnicosMax: number;
+  /**
+   * Únicos FIJOS (los de una tirada anterior, para repetir su flujo exacto). Se
+   * usan aunque la previsión diga menos: la caja sigue siendo dura y, si se
+   * agota, el flujo se corta en un prefijo del mismo flujo, que sigue siendo
+   * comparable petición a petición.
+   */
+  nUnicosFijo?: number;
   topeUsd: number;
   /** Fábrica del proveedor crudo de cada brazo. En LIVE, el del banco; en seco, el falso. */
   crudo: () => Provider;
@@ -221,7 +244,7 @@ export interface MedicionDeModelo {
   nUnicos?: number;
   flujo?: Flujo["cuenta"];
   peticionesCompletadas?: number;
-  estimacion?: { porPeticionUsd: number; peorLlamadaUsd: number; previstoUsd: number };
+  estimacion?: { porPeticionUsd: number; peorLlamadaUsd: number; previstoUsd: number; nUnicosPrevisto?: number };
   gasto: { topeUsd: number; totalUsd: number; porBrazo: Partial<Record<Brazo | "sonda", number>> };
   resumen?: Resumen;
   calibracionS?: unknown;
@@ -246,8 +269,12 @@ export interface Evidencia {
 const huella = (t: string): string => createHash("sha256").update(t).digest("hex").slice(0, 12);
 const salSistema = (runId: string, carril: string, sistema: string): string => `[run ${runId} lane ${carril}]\n${sistema}`;
 
-function peticionDe(model: string, sistema: string, texto: string, tope: number | null, semantica: boolean): SavingsRequest {
-  if (tope !== null) throw new Error("free-text requests cannot carry an output cap through the 0.4.30 layer");
+/**
+ * La petición de los brazos. La caché semántica NO se pide aquí: en la 0.4.31 la
+ * enciende la capa con `semanticCacheDefault: true` (#380), como el fragmento
+ * «Serverless» del README.
+ */
+export function peticionDe(model: string, sistema: string, texto: string, tope: number | null): SavingsRequest {
   return {
     model,
     messages: [
@@ -255,8 +282,13 @@ function peticionDe(model: string, sistema: string, texto: string, tope: number 
       { role: "user", content: mensajeDeUsuario(texto) },
     ],
     ...muestreoPareadoPara(model),
-    ...(semantica ? { savings: { semanticCache: true } } : {}),
+    ...(tope !== null ? { maxOutputTokens: tope } : {}),
   };
+}
+
+/** El brazo A: el naive del banco con el MISMO tope que la capa (construirBrazoNaive solo copia el del contrato). */
+export function peticionDirecta(req: SavingsRequest, model: string): ProviderRequest {
+  return { ...construirBrazoNaive(req, model), ...(req.maxOutputTokens != null ? { maxOutputTokens: req.maxOutputTokens } : {}) };
 }
 
 export async function medirModelo(o: OpcionesDeModelo): Promise<MedicionDeModelo> {
@@ -264,7 +296,7 @@ export async function medirModelo(o: OpcionesDeModelo): Promise<MedicionDeModelo
   const { model } = o;
   const { precio, conocido } = precioYPrima(model);
   const tope = topeDeSalida(model);
-  const caja: Caja = { tope: Math.min(o.topeUsd, TOPE_DURO_POR_MODELO_USD), gasto: 0, peorLlamada: 0 };
+  const caja: Caja = { tope: Math.min(o.topeUsd, topeDuroPara(model)), gasto: 0, peorLlamada: 0 };
   const entradaEst = Math.ceil((o.sistema.length + 1200) / 3.2); // conservador: ~3,2 caracteres por token
   caja.peorLlamada = (entradaEst / 1000) * precio.inputPer1k + ((tope ?? SALIDA_PEOR_CASO) / 1000) * precio.outputPer1k;
   const base: MedicionDeModelo = {
@@ -283,7 +315,7 @@ export async function medirModelo(o: OpcionesDeModelo): Promise<MedicionDeModelo
   const sondaTextos = [0, 1, 2].map((i) => o.test[(i * 419) % o.test.length]!.question.trim());
   try {
     for (const t of sondaTextos) {
-      await provSonda.generate(construirBrazoNaive(peticionDe(model, salSistema(o.runId, "p", o.sistema), t, tope, false), model));
+      await provSonda.generate(peticionDirecta(peticionDe(model, salSistema(o.runId, "p", o.sistema), t, tope), model));
     }
   } catch (err) {
     base.gasto.totalUsd = caja.gasto;
@@ -299,13 +331,17 @@ export async function medirModelo(o: OpcionesDeModelo): Promise<MedicionDeModelo
   const porLlamada = (entradaEst / 1000) * precio.inputPer1k + ((salidaMedia * 1.3) / 1000) * precio.outputPer1k;
   const porPeticion = porLlamada * (1 + 0.8 * (o.brazos.length - 1));
   const queda = caja.tope - caja.gasto;
-  const nUnicos = Math.max(0, Math.min(o.nUnicosMax, Math.floor((0.85 * queda) / (2 * porPeticion))));
-  base.estimacion = { porPeticionUsd: porPeticion, peorLlamadaUsd: caja.peorLlamada, previstoUsd: porPeticion * 2 * nUnicos };
+  const nPrevisto = Math.max(0, Math.min(o.nUnicosMax, Math.floor((0.85 * queda) / (2 * porPeticion))));
+  const nUnicos = o.nUnicosFijo !== undefined ? Math.min(o.nUnicosFijo, o.test.length) : nPrevisto;
+  base.estimacion = { porPeticionUsd: porPeticion, peorLlamadaUsd: caja.peorLlamada, previstoUsd: porPeticion * 2 * nUnicos, nUnicosPrevisto: nPrevisto };
   if (nUnicos < 10) return { ...base, estado: "no-medible", motivo: `budget fits only ${nUnicos} unique problems` };
   const flujo = construirFlujo(o.test, { nUnicos, semilla: SEMILLA });
   base.nUnicos = nUnicos;
   base.flujo = flujo.cuenta;
-  log(`  ${model}: ${nUnicos} únicos, ${flujo.peticiones.length} peticiones, previsto ~$${base.estimacion.previstoUsd.toFixed(3)} (tope $${caja.tope})`);
+  log(
+    `  ${model}: ${nUnicos} únicos${o.nUnicosFijo !== undefined ? ` (fijados; la previsión conservadora daba ${nPrevisto})` : ""}, ` +
+      `${flujo.peticiones.length} peticiones, previsto ~$${base.estimacion.previstoUsd.toFixed(3)} (tope $${caja.tope})`,
+  );
 
   // 3. Los brazos.
   const cont: Partial<Record<Brazo, Contador>> = {};
@@ -333,7 +369,7 @@ export async function medirModelo(o: OpcionesDeModelo): Promise<MedicionDeModelo
           provider: prov[b]!,
           ...o.capa.licencia,
           silenceWarnings: true,
-          ...(caches[b] ? { semanticCache: caches[b] } : {}),
+          ...(caches[b] ? { semanticCache: caches[b], semanticCacheDefault: true } : {}),
         }),
       ]),
   );
@@ -356,11 +392,11 @@ export async function medirModelo(o: OpcionesDeModelo): Promise<MedicionDeModelo
     let texto = "";
     try {
       if (b === "A") {
-        const r = await prov.A!.generate(construirBrazoNaive(peticionDe(model, salSistema(o.runId, "a", o.sistema), q.texto, tope, false), model));
+        const r = await prov.A!.generate(peticionDirecta(peticionDe(model, salSistema(o.runId, "a", o.sistema), q.texto, tope), model));
         texto = r.text;
       } else {
         const carril = b.toLowerCase();
-        const r = await capas[b]!.generate(peticionDe(model, salSistema(o.runId, carril, o.sistema), q.texto, tope, b === "S" || b === "E"));
+        const r = await capas[b]!.generate(peticionDe(model, salSistema(o.runId, carril, o.sistema), q.texto, tope));
         texto = r.text;
         const rep = r.report;
         fila.fuente = rep.qualityLedger?.source ?? (rep.cache.result === "miss" ? "provider" : rep.cache.result);
@@ -484,9 +520,15 @@ export interface Artefacto {
   };
   flujo: { semilla: number; fraccionRepeticiones: number; fraccionParafrasis: number; nUnicosMax: number };
   brazos: Partial<Record<Brazo, string>>;
-  presupuesto: { topePorModeloUsd: number; gastoTotalUsd: number };
+  presupuesto: { topePorModeloUsd: number; topesPorModelo?: Record<string, number>; gastoTotalUsd: number };
+  /** Tope de salida de todos los brazos (maxOutputTokens), o null si no hubo. */
+  topeDeSalida?: number | null;
+  /** Cómo se enciende la caché semántica en S y E. */
+  interruptorSemantico?: string;
   modelos: MedicionDeModelo[];
   sinRed?: { preguntas: number; resultados: ResultadoSinRed[] };
+  /** La misma tirada con la versión anterior (`--mismo-flujo-que`), comparada petición a petición. */
+  comparacion?: Comparacion0430;
   limitaciones: string[];
 }
 
@@ -503,6 +545,8 @@ async function principal(): Promise<void> {
   const modelos = (arg("modelos") ?? MODELOS_DE_LA_BATERIA.join(",")).split(",").map((s) => s.trim());
   const nUnicosMax = Number(arg("n-unicos") ?? (seco ? 20 : 100));
   const topeUsd = Number(arg("presupuesto") ?? TOPE_DURO_POR_MODELO_USD);
+  const rutaAnterior = arg("mismo-flujo-que");
+  const anterior = rutaAnterior ? (JSON.parse(readFileSync(rutaAnterior, "utf8")) as Artefacto & ArtefactoComparable) : null;
   if (!(topeUsd > 0 && topeUsd <= TOPE_DURO_POR_MODELO_USD)) {
     throw new Error(`--presupuesto must be in (0, ${TOPE_DURO_POR_MODELO_USD}] USD per model`);
   }
@@ -558,7 +602,13 @@ async function principal(): Promise<void> {
     },
     flujo: { semilla: SEMILLA, fraccionRepeticiones: 0.3, fraccionParafrasis: 0.2, nUnicosMax },
     brazos: Object.fromEntries(brazos.map((b) => [b, DESCRIPCION_DE_BRAZOS[b]])),
-    presupuesto: { topePorModeloUsd: topeUsd, gastoTotalUsd: 0 },
+    presupuesto: {
+      topePorModeloUsd: topeUsd,
+      topesPorModelo: Object.fromEntries(modelos.map((m) => [m, Math.min(topeUsd, topeDuroPara(m))])),
+      gastoTotalUsd: 0,
+    },
+    topeDeSalida: TOPE_DE_SALIDA,
+    interruptorSemantico: "createSavingsLayer({ semanticCache, semanticCacheDefault: true }) — #380, new in 0.4.31; nothing on the request",
     modelos: [],
     limitaciones: [],
   };
@@ -579,9 +629,22 @@ async function principal(): Promise<void> {
         });
         continue;
       }
+      if (!seco && e!.transporte === "anthropic-nativo") {
+        const clave = await claveAnthropicValida(e!.baseUrl!, e!.apiKey);
+        if (clave !== "ok") {
+          log(`• ${model}: no medible — ${clave}`);
+          art.modelos.push({
+            modelo: model, estado: "no-medible", motivo: clave, host: e!.host,
+            muestreo: muestreoPareadoPara(model), topeDeSalida: topeDeSalida(model), gasto: { topeUsd: Math.min(topeUsd, topeDuroPara(model)), totalUsd: 0, porBrazo: {} },
+          });
+          continue;
+        }
+      }
+      const nFijo = anterior?.modelos.find((x) => x.modelo === model)?.nUnicos;
       log(`• ${model} (${seco ? "seco" : e!.host})`);
       const m = await medirModelo({
         model, test, sistema, brazos, nUnicosMax, topeUsd, runId, log, capa,
+        ...(nFijo !== undefined ? { nUnicosFijo: nFijo } : {}),
         host: seco ? null : e!.host,
         crudo: seco ? () => proveedorSeco(oros) : () => proveedorDelBanco(model, cfg),
       });
@@ -603,6 +666,7 @@ async function principal(): Promise<void> {
     art.sinRed = { preguntas: preguntas.length, resultados };
   }
 
+  if (anterior) art.comparacion = comparar(anterior, art);
   art.limitaciones = limitaciones(art);
   mkdirSync(DIR_SALIDA_GSM8K, { recursive: true });
   const nombre = seco ? "seco.json" : soloSinRed ? "sin-red.json" : "resultado.json";
@@ -613,9 +677,33 @@ async function principal(): Promise<void> {
     if (seco) throw new Error("--docs refuses a dry run: SECO figures are not measurements");
     const dir = fileURLToPath(new URL(`../../../docs/benchmarks/${FECHA}/`, import.meta.url));
     mkdirSync(dir, { recursive: true });
-    writeFileSync(join(dir, "gsm8k.json"), JSON.stringify(art, null, 2));
-    writeFileSync(join(dir, "gsm8k.md"), escribirDocumento(art));
-    log(`escrito ${join(dir, "gsm8k.{json,md}")}`);
+    const base = nombreDelDocumento(art.procedencia.version);
+    writeFileSync(join(dir, `${base}.json`), JSON.stringify(art, null, 2));
+    writeFileSync(join(dir, `${base}.md`), escribirDocumento(art));
+    log(`escrito ${join(dir, `${base}.{json,md}`)}`);
+  }
+}
+
+/** `gsm8k-0431` para la 0.4.31: el de la 0.4.30 (`gsm8k`) no se pisa. */
+export function nombreDelDocumento(version: string): string {
+  return `gsm8k-${version.replaceAll(".", "")}`;
+}
+
+/**
+ * La comprobación GRATUITA de la clave de Anthropic: `GET /v1/models` no genera
+ * nada y no se factura. 401/403 ⇒ «no medibles: clave inválida» sin gastar la
+ * sonda. La clave solo viaja en la cabecera; el texto de error pasa por `sinSecretos`.
+ */
+export async function claveAnthropicValida(baseUrl: string, apiKey: string | undefined, f: typeof fetch = fetch): Promise<"ok" | string> {
+  if (!apiKey) return "no medibles: sin clave de Anthropic en el entorno";
+  const base = baseUrl.replace(/\/$/, "");
+  try {
+    const r = await f(`${base}/models?limit=1`, { headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01" } });
+    if (r.status === 401 || r.status === 403) return `no medibles: clave inválida (${r.status} en GET /v1/models, comprobación sin coste)`;
+    if (!r.ok) return sinSecretos(`no medibles: GET /v1/models respondió ${r.status}`);
+    return "ok";
+  } catch (err) {
+    return sinSecretos(`no medibles: ${err instanceof Error ? err.message : String(err)}`).slice(0, 200);
   }
 }
 
@@ -630,12 +718,30 @@ export function limitaciones(art: Artefacto): string[] {
   ];
   if (art.procedencia.origen === "fuente") {
     l.unshift(
-      "Arm B ran the 0.4.30 SOURCE with devUnlicensed: true (--desde-fuente), not the npm tarball: the npm build has no unlicensed mode. The dist built from this source is byte-identical to the tarball's dist/index.js (sha256 in `procedencia`).",
+      `Arms B, S and E ran the ${art.procedencia.version} SOURCE of the tag with devUnlicensed: true (--desde-fuente), not the npm tarball: the npm build has no unlicensed mode. The dist built from this source is byte-identical to the tarball's dist/index.js (sha256 in \`procedencia\`).`,
     );
   }
   l.push(
-    "No arm sends an output cap: in 0.4.30 a cap travels only inside an OutputContract, which requires a schema, so a free-text request cannot declare one through the layer; arm A matches it (Anthropic gets the adapter's default max_tokens of 4096 in both arms).",
+    `Every arm sends the same output cap, maxOutputTokens ${TOPE_DE_SALIDA} (0.4.31, #381: free-text requests can carry it; on api.openai.com it travels as max_completion_tokens). The 0.4.30 run had no cap; its longest answers were 957 (gpt-4o-mini) and 391 (gpt-5.4-mini) tokens, so this cap would not have cut any of them.`,
+    "Semantic cache in S and E is switched on with semanticCacheDefault: true on the layer (0.4.31, #380), not with savings.semanticCache on each request as in the 0.4.30 run. The no-network replay runs both mechanisms side by side (semantica-envio vs semantica-defecto-capa) to show they decide the same.",
   );
+  if (art.comparacion) {
+    const fijos = art.modelos
+      .filter((m) => m.nUnicos !== undefined && m.estimacion?.nUnicosPrevisto !== undefined && m.estimacion.nUnicosPrevisto !== m.nUnicos)
+      .map((m) => `${m.modelo} ${m.nUnicos} (the conservative forecast gave ${m.estimacion!.nUnicosPrevisto})`);
+    l.push(
+      `Uniques per model were FIXED to those of the ${art.comparacion.versionAntes} run (run ${art.comparacion.runAntes}) so both runs ask the same stream; the hard budget still applied to every call.` +
+        (fijos.length ? ` Fixed above the forecast: ${fijos.join(", ")}.` : ""),
+      `Accuracy changes between ${art.comparacion.versionAntes} and ${art.comparacion.versionDespues} of one or two answers are within the model's own run-to-run noise: arm A (no layer, same code in both runs) moved too. Served-from-another-question counts, cache sources and provider calls are the layer's decisions and do not share that noise.`,
+    );
+    for (const c of art.comparacion.modelos) {
+      if (!c.mismoFlujo) {
+        l.push(
+          `${c.modelo}: the 0.4.30 comparison is NOT on an identical stream (${c.nUnicosAntes} vs ${c.nUnicosDespues} uniques, ${c.discrepancias} positions with a different question); read it as indicative.`,
+        );
+      }
+    }
+  }
   for (const m of art.modelos.filter((x) => x.estado === "no-medible")) {
     l.push(`${m.modelo} not measured: ${m.motivo}`);
   }
