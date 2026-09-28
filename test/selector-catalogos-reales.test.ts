@@ -9,7 +9,9 @@ import type { ToolDescriptor } from "../src/contracts/types.js";
  *
  *  1. UN CATÁLOGO REAL NO TRAE `intents` NI `risk`. Cero de 10.636 los declaraban.
  *     Antes eso significaba emitir CERO herramientas (se le rompe la función al
- *     cliente) o reventar con TypeError. Ahora pasa íntegro.
+ *     cliente) o reventar con TypeError; después, las `maxTools` primeras por
+ *     posición (el mismo fallo con otra cara, destapado por BFCL). Ahora pasa
+ *     ÍNTEGRO, sin tope.
  *  2. EL CONJUNTO SE CONGELA. `tools` va lo primero del prompt, así que un
  *     conjunto que cambia con la pregunta invalida la caché de prefijo detrás.
  *     Podar sin congelar multiplicaba por 6,1 la factura de entrada.
@@ -28,8 +30,8 @@ describe("catálogo real sin tipar: pasa íntegro, no se rompe ni se inventa aho
   it("NO emite cero herramientas (antes el modelo se quedaba sin capacidades)", () => {
     const sel = new ToolSelector({ maxTools: 8 });
     const r = sel.select("lee el fichero", catalogoReal(55), "SINGLE_RETRIEVAL");
-    expect(r.tools.length).toBe(8);
-    expect(r.tools.length).toBeGreaterThan(0);
+    // Ni cero ni las 8 primeras: las 55. Sin señal no hay nada que recortar.
+    expect(r.tools.length).toBe(55);
   });
 
   it("la ruta TOOL_ACTION ya NO lanza TypeError al puntuar", () => {
@@ -37,11 +39,12 @@ describe("catálogo real sin tipar: pasa íntegro, no se rompe ni se inventa aho
     expect(() => sel.select("borra el fichero", catalogoReal(55), "TOOL_ACTION")).not.toThrow();
   });
 
-  it("no acredita ahorro fantasma: solo cae lo que no cabe en el presupuesto", () => {
+  it("no acredita ahorro fantasma: no cae NINGUNA, así que el libro 2 no se apunta nada", () => {
     const sel = new ToolSelector({ maxTools: 8 });
     const r = sel.select("lee el fichero", catalogoReal(55), "SINGLE_RETRIEVAL");
-    // 55 − 8 = 47 por presupuesto. Nunca las 55, que era el ahorro inventado.
-    expect(r.droppedIds).toHaveLength(47);
+    // Antes: 47 «por presupuesto», acreditadas como ahorro. Eran 47 herramientas
+    // que el modelo no podía llamar.
+    expect(r.droppedIds).toEqual([]);
     expect(r.reason).toContain("intents");
   });
 
