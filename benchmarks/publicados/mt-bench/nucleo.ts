@@ -271,13 +271,13 @@ export interface ModeloDeLaBateria {
   id: string;
   familia: Familia;
   /**
-   * Tope de salida por llamada, IGUAL en los dos brazos. En Anthropic es
-   * `max_tokens` (obligatorio en ese API; a la capa se le pasa como
-   * `defaultMaxOutputTokens` de su adaptador). En OpenAI la capa 0.4.30 no
-   * tiene forma de fijar un tope de salida en una petición de texto libre (solo
-   * con un contrato `response`), así que el TRANSPORTE del banco añade
-   * `max_completion_tokens` a las dos ramas por igual: es el techo de gasto, no
-   * una palanca, y el diff del cable lo excluye y lo declara.
+   * Tope de salida por llamada, IGUAL en los dos brazos. Desde la 0.4.31 (#381)
+   * es el tope NATIVO de la capa: el brazo B lo pasa como
+   * `SavingsRequest.maxOutputTokens`, y la capa lo manda como `max_tokens` a
+   * Anthropic y como `max_completion_tokens` al API oficial de OpenAI. El brazo
+   * A manda ese mismo campo con el mismo valor. El transporte del banco ya NO
+   * inyecta nada: si una petición sale sin tope, no sale (ver
+   * `topeDelCuerpo`), y el diff del cable compara también ese campo.
    */
   maxSalida: number;
   /** false → no se manda `temperature` en ningún brazo (modelos de razonamiento que la rechazan). */
@@ -303,9 +303,41 @@ export function idCualificado(m: ModeloDeLaBateria): string {
 
 // ── El presupuesto duro ─────────────────────────────────────────────────────
 
-/** 5 $ por modelo entre 4 baterías → 1,25 $ por modelo (A+B) aquí; 1 $ para el juez. */
-export const TOPE_POR_MODELO_USD = 1.25;
-export const TOPE_DEL_JUEZ_USD = 1.0;
+/**
+ * Topes duros de esta tirada (0.4.31): 0,80 $ por modelo de OpenAI y 1,25 $ por
+ * modelo de Anthropic (A+B juntos), y 0,50 $ de juez EN TOTAL para la batería.
+ */
+export const TOPE_POR_FAMILIA_USD: Readonly<Record<Familia, number>> = { openai: 0.8, anthropic: 1.25 };
+export const TOPE_DEL_JUEZ_USD = 0.5;
+
+export function topePorModelo(m: Pick<ModeloDeLaBateria, "familia">): number {
+  return TOPE_POR_FAMILIA_USD[m.familia];
+}
+
+/**
+ * La parte del juez que le toca a un modelo: lo que QUEDA del tope total
+ * repartido a partes iguales entre los modelos que faltan por juzgar (este
+ * incluido). Lo que un modelo no gaste pasa a los siguientes; la suma nunca
+ * supera el total.
+ */
+export function parteDelJuez(totalUsd: number, gastadoUsd: number, modelosPendientes: number): number {
+  if (modelosPendientes <= 0) return 0;
+  return Math.max(0, totalUsd - gastadoUsd) / modelosPendientes;
+}
+
+/**
+ * El tope de salida que lleva un cuerpo de petición (`max_tokens` o
+ * `max_completion_tokens`), o null si no lleva ninguno. Una petición de
+ * generación sin tope no tiene peor caso acotado, así que el transporte no la
+ * envía: el tope lo pone quien llama (la capa o el brazo A), nunca el banco.
+ */
+export function topeDelCuerpo(cuerpo: Record<string, unknown>): number | null {
+  for (const k of ["max_tokens", "max_completion_tokens"]) {
+    const v = cuerpo[k];
+    if (typeof v === "number" && Number.isInteger(v) && v > 0) return v;
+  }
+  return null;
+}
 
 export class PresupuestoAgotado extends Error {
   constructor(
@@ -489,8 +521,12 @@ export function promptDelJuez(
 
 // ── El cable: qué cambió la capa ─────────────────────────────────────────────
 
-/** Campos que el banco añade por igual a los dos brazos y que no son de la capa. */
-export const CAMPOS_DEL_BANCO = ["max_completion_tokens"] as const;
+/**
+ * Campos que el banco añade por igual a los dos brazos y que no son de la capa.
+ * Con la 0.4.31 está VACÍO: el tope de salida lo pone la capa (brazo B) y el
+ * brazo A por su cuenta, y si no coinciden el diff del cable lo enseña.
+ */
+export const CAMPOS_DEL_BANCO: readonly string[] = [];
 
 /**
  * Forma normal de un cuerpo de petición para compararlo con el otro brazo:
@@ -527,16 +563,164 @@ export function normalizarCuerpo(cuerpo: unknown): unknown {
   return rec(cuerpo, null);
 }
 
-/** Claves de primer nivel en las que difieren dos cuerpos normalizados. */
+/**
+ * El cuerpo del brazo A con el texto de SUS respuestas anteriores cambiado por
+ * las del brazo B, en orden. En el turno 2 cada brazo lleva en `messages` su
+ * propia respuesta al turno 1, que por muestreo casi nunca coincide: sin esto
+ * el diff del cable diría «messages» en todos los turnos 2 aunque la capa no
+ * hubiera tocado nada. Con esto, lo que queda es lo que la capa cambió.
+ */
+export function conRespuestasDe(cuerpo: unknown, respuestas: readonly string[]): unknown {
+  if (!cuerpo || typeof cuerpo !== "object") return cuerpo;
+  const c = cuerpo as { messages?: unknown };
+  if (!Array.isArray(c.messages)) return cuerpo;
+  let k = 0;
+  const messages = c.messages.map((m) => {
+    const msg = m as { role?: unknown };
+    if (msg && msg.role === "assistant" && k < respuestas.length) return { ...(m as object), content: respuestas[k++] };
+    return m;
+  });
+  return { ...(cuerpo as object), messages };
+}
+
+function sinMarcasDeCache(v: unknown): unknown {
+  if (Array.isArray(v)) return v.map(sinMarcasDeCache);
+  if (v && typeof v === "object") {
+    const o: Record<string, unknown> = {};
+    for (const [k, x] of Object.entries(v)) if (k !== "cache_control") o[k] = sinMarcasDeCache(x);
+    return o;
+  }
+  return v;
+}
+
+/**
+ * Claves de primer nivel en las que difieren dos cuerpos normalizados. Una clave
+ * que solo difiere en marcas `cache_control` sale como `clave:cache_control`.
+ */
 export function diferenciasDeCuerpo(a: unknown, b: unknown): string[] {
   const na = normalizarCuerpo(a) as Record<string, unknown>;
   const nb = normalizarCuerpo(b) as Record<string, unknown>;
   const claves = new Set([...Object.keys(na ?? {}), ...Object.keys(nb ?? {})]);
   const d: string[] = [];
   for (const k of [...claves].sort()) {
-    if (JSON.stringify(na?.[k]) !== JSON.stringify(nb?.[k])) d.push(k);
+    if (JSON.stringify(na?.[k]) === JSON.stringify(nb?.[k])) continue;
+    // Si lo ÚNICO que cambia son marcas `cache_control`, se dice cuál es el cambio.
+    const sa = normalizarCuerpo(sinMarcasDeCache(na?.[k]));
+    const sb = normalizarCuerpo(sinMarcasDeCache(nb?.[k]));
+    d.push(JSON.stringify(sa) === JSON.stringify(sb) ? `${k}:cache_control` : k);
   }
   return d;
+}
+
+// ── La clase del ahorro ─────────────────────────────────────────────────────
+
+export type ClaseDelAhorro = "ahorro" | "sobrecoste" | "indistinguible de 0" | "muestra insuficiente" | "sin datos";
+
+/** Por debajo de esto un bootstrap no da un intervalo que signifique nada. */
+export const MINIMO_DE_PREGUNTAS_PARA_CLASE = 10;
+
+/**
+ * Lo que se puede afirmar del ahorro medido con su IC95: «ahorro» solo si el
+ * extremo inferior es > 0, «sobrecoste» solo si el superior es < 0; si el
+ * intervalo contiene el 0, no se distingue de no hacer nada. Con menos de
+ * `MINIMO_DE_PREGUNTAS_PARA_CLASE` preguntas pareadas no se clasifica.
+ */
+export function claseDelAhorro(ci: { lower: number; upper: number } | null, n: number): ClaseDelAhorro {
+  if (!ci || n === 0) return "sin datos";
+  if (n < MINIMO_DE_PREGUNTAS_PARA_CLASE) return "muestra insuficiente";
+  if (ci.lower > 0) return "ahorro";
+  if (ci.upper < 0) return "sobrecoste";
+  return "indistinguible de 0";
+}
+
+/**
+ * Campos que la capa puede añadir al cable SIN cambiar lo que se factura por sí
+ * mismos: `prompt_cache_key` solo agrupa peticiones para la caché de prefijo de
+ * OpenAI; si no hay aciertos de caché, no mueve un token.
+ */
+export const CAMPOS_SIN_EFECTO_DIRECTO_EN_COSTE: readonly string[] = ["prompt_cache_key"];
+
+export interface Atribucion {
+  atribuible: boolean | null;
+  motivo: string;
+}
+
+/**
+ * ¿Se le puede atribuir a la capa una diferencia de coste medida? NO, si el
+ * cable de B solo difiere del de A en campos sin efecto directo en coste, B no
+ * leyó de caché más que A y la capa no declara ahorro: entonces las dos
+ * peticiones eran la misma y la diferencia es muestreo de la SALIDA (longitud
+ * de la respuesta), por significativo que salga el IC.
+ */
+export function atribucionDelAhorro(e: {
+  clase: ClaseDelAhorro;
+  diferenciasDelCable: Record<string, number>;
+  lecturasDeCacheA: number;
+  lecturasDeCacheB: number;
+  ahorroDeclaradoUsd: number;
+}): Atribucion {
+  if (e.clase === "sin datos" || e.clase === "muestra insuficiente") return { atribuible: null, motivo: "sin muestra suficiente" };
+  const conEfecto = Object.keys(e.diferenciasDelCable).filter((k) => !CAMPOS_SIN_EFECTO_DIRECTO_EN_COSTE.includes(k));
+  const cacheExtra = e.lecturasDeCacheB > e.lecturasDeCacheA;
+  if (conEfecto.length === 0 && !cacheExtra && Math.abs(e.ahorroDeclaradoUsd) < 1e-9) {
+    const soloEstos = Object.keys(e.diferenciasDelCable);
+    return {
+      atribuible: false,
+      motivo:
+        `el cable de B solo difiere de A en ${soloEstos.length ? soloEstos.map((k) => `\`${k}\``).join(", ") : "nada"}, ` +
+        `B no leyó de caché más que A (${e.lecturasDeCacheB} frente a ${e.lecturasDeCacheA} llamadas) y la capa declara 0 $ de ahorro: ` +
+        "la diferencia de coste es muestreo de la salida, no la capa",
+    };
+  }
+  const razones = [
+    ...(conEfecto.length ? [`el cable difiere en ${conEfecto.map((k) => `\`${k}\``).join(", ")}`] : []),
+    ...(cacheExtra ? [`B leyó de caché en ${e.lecturasDeCacheB} llamadas frente a ${e.lecturasDeCacheA} de A`] : []),
+    ...(Math.abs(e.ahorroDeclaradoUsd) >= 1e-9 ? ["la capa declara ahorro"] : []),
+  ];
+  return { atribuible: true, motivo: `posible efecto de la capa: ${razones.join("; ")}` };
+}
+
+// ── La guarda de hosts ──────────────────────────────────────────────────────
+
+/**
+ * Los ÚNICOS hosts a los que puede salir el proceso en una tirada: los dos
+ * proveedores, la pasarela del juez y el dataset. Nada de medición, licencias
+ * ni telemetría: el brazo B corre desde el fuente con la licencia de
+ * desarrollo abierta y su tráfico no debe tocar el plano de control.
+ */
+export const HOSTS_PERMITIDOS = ["api.anthropic.com", "api.openai.com", "ai-gateway.vercel.sh", "raw.githubusercontent.com"] as const;
+
+export function hostDe(url: string): string {
+  try {
+    return new URL(url).host.toLowerCase();
+  } catch {
+    return "(url no parseable)";
+  }
+}
+
+export function hostPermitido(url: string): boolean {
+  const u = (() => {
+    try {
+      return new URL(url);
+    } catch {
+      return null;
+    }
+  })();
+  return !!u && u.protocol === "https:" && (HOSTS_PERMITIDOS as readonly string[]).includes(u.host.toLowerCase());
+}
+
+// ── La verificación del fuente ──────────────────────────────────────────────
+
+/**
+ * Compara dos listados `ruta → hash de blob de git`: el de la etiqueta y el
+ * del árbol que se va a cargar. Devuelve las rutas que difieren, sobran o
+ * faltan: vacío ⇔ `git diff <etiqueta> -- <rutas>` vacío.
+ */
+export function diferenciasDeArbol(etiqueta: Map<string, string>, arbol: Map<string, string>): string[] {
+  const d: string[] = [];
+  for (const [ruta, h] of etiqueta) if (arbol.get(ruta) !== h) d.push(arbol.has(ruta) ? `M ${ruta}` : `D ${ruta}`);
+  for (const ruta of arbol.keys()) if (!etiqueta.has(ruta)) d.push(`A ${ruta}`);
+  return d.sort();
 }
 
 // ── Utilidades de informe ───────────────────────────────────────────────────

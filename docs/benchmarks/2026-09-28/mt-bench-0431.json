@@ -1,0 +1,587 @@
+{
+  "bateria": "mt-bench",
+  "fecha": "2026-09-28",
+  "modo": "LIVE",
+  "commitDelRepo": "54100e3fe0fff4a1444bc6e5d7e98f32079d8f11",
+  "paquete": {
+    "nombre": "@bivelio/savings-layer",
+    "version": "0.4.31",
+    "integrity": "sha512-ePCN+dZr+VuMUSGm2TelDkt7TR6jSi/SCTomomDK/bfF92FHr1eFUdgTWQODCdQf8C8c+/h6AA/up46DXO2mLQ== (tarball de npm; dist/index.js sha256 b52f99cacf9804ecd3153e56f26ec3adcdc2510d52a8446a369ecf914e0b5731 = build del fuente)",
+    "origen": "fuente de v0.4.31 (00c99c803c0ab6f3c11b7ab87f3c75a38d609b1c), verificado idéntico al tarball de npm"
+  },
+  "brazoB": "v0.4.31 (source of the tag, BVSALA_DEV_OPEN=1; npm = same commit, verified identical)",
+  "verificacionDelFuente": {
+    "etiqueta": "v0.4.31",
+    "commit": "00c99c803c0ab6f3c11b7ab87f3c75a38d609b1c",
+    "fetchDeEtiquetas": "ok",
+    "diffDelRepo": [
+      "M src/version.ts"
+    ],
+    "arbolCargado": "benchmarks/out/mt-bench/.fuente-v0.4.31 (git archive v0.4.31)",
+    "ficherosVerificados": 173,
+    "diffDelArbolCargado": [],
+    "npm": {
+      "tarball": "@bivelio/savings-layer@0.4.31 (npm pack)",
+      "integrity": "sha512-ePCN+dZr+VuMUSGm2TelDkt7TR6jSi/SCTomomDK/bfF92FHr1eFUdgTWQODCdQf8C8c+/h6AA/up46DXO2mLQ==",
+      "sha256DistIndex": "b52f99cacf9804ecd3153e56f26ec3adcdc2510d52a8446a369ecf914e0b5731"
+    },
+    "build": {
+      "sha256DistIndex": "b52f99cacf9804ecd3153e56f26ec3adcdc2510d52a8446a369ecf914e0b5731"
+    },
+    "distIdentico": true,
+    "versionCargada": "0.4.31"
+  },
+  "dataset": {
+    "origen": "fastchat-fijado",
+    "repo": "lm-sys/FastChat",
+    "commit": "587d5cfa1609a43d192cedb8441cac3c17db105d",
+    "license": "Apache-2.0",
+    "ficheros": {
+      "preguntas": {
+        "path": "fastchat/llm_judge/data/mt_bench/question.jsonl",
+        "sha256": "119565adbab82227089cefdb44c8d7e2cf04dc0a0ec233634c82e7d4e2a944f7"
+      },
+      "referencias": {
+        "path": "fastchat/llm_judge/data/mt_bench/reference_answer/gpt-4.jsonl",
+        "sha256": "f957a5bc977badb66885ec970e6cd08527845780313f0995764260e5777b9b3f"
+      },
+      "promptsDelJuez": {
+        "path": "fastchat/llm_judge/data/judge_prompts.jsonl",
+        "sha256": "fd283293406d024f44c174b094ef48031d0687a4682fd3a56b29b138f80281b6"
+      }
+    }
+  },
+  "juez": {
+    "modelo": "openai/gpt-4o",
+    "topeUsd": 0.5
+  },
+  "topes": {
+    "porFamiliaUsd": {
+      "openai": 0.8,
+      "anthropic": 1.25
+    },
+    "juezTotalUsd": 0.5
+  },
+  "semilla": 20260928,
+  "gastoTotal": {
+    "generacion": 0.6085250999999995,
+    "juez": 0.39679000000000003
+  },
+  "gastoAcumuladoEntreTiradas": {
+    "generacion": {
+      "gpt-4o-mini": 0.09112829999999995,
+      "gpt-5.4-mini": 0.5358922499999995
+    },
+    "juez": {
+      "gpt-4o-mini": 0.12427500000000001,
+      "gpt-5.4-mini": 0.272515
+    }
+  },
+  "hosts": {
+    "permitidos": [
+      "api.anthropic.com",
+      "api.openai.com",
+      "ai-gateway.vercel.sh",
+      "raw.githubusercontent.com"
+    ],
+    "vistos": {
+      "api.anthropic.com": 1,
+      "api.openai.com": 640,
+      "ai-gateway.vercel.sh": 55
+    },
+    "bloqueados": {}
+  },
+  "modelos": [
+    {
+      "modelo": "gpt-4o-mini",
+      "idCualificado": "openai/gpt-4o-mini",
+      "familia": "openai",
+      "maxSalida": 1024,
+      "temperatura": "FastChat por categoría (igual en A y B)",
+      "precio": {
+        "inputPer1k": 0.00015,
+        "outputPer1k": 0.0006,
+        "cachedInputPer1k": 0.000075
+      },
+      "precioConocido": true,
+      "preguntas": {
+        "planificadas": 80,
+        "completas": 80,
+        "conError": 0,
+        "porCategoria": {
+          "writing": 10,
+          "roleplay": 10,
+          "reasoning": 10,
+          "math": 10,
+          "coding": 10,
+          "extraction": 10,
+          "stem": 10,
+          "humanities": 10
+        },
+        "cortePorPresupuesto": false
+      },
+      "gasto": {
+        "generacionA": 0.04503134999999998,
+        "generacionB": 0.043524750000000015,
+        "total": 0.08855609999999996,
+        "tope": 0.8,
+        "excesosDeReserva": 0,
+        "juez": 0.12427500000000001,
+        "topeJuez": 0.181445
+      },
+      "coste": {
+        "A": 0.04503134999999999,
+        "B": 0.043524750000000015,
+        "ahorroPooled": {
+          "point": 0.033456691838019026,
+          "lower": 0.007808487281834475,
+          "upper": 0.059807498836283335
+        },
+        "ahorroEstratificadoPorCategoria": {
+          "point": 0.03345669183801936,
+          "lower": 0.008409477141616106,
+          "upper": 0.05851454586214622
+        },
+        "clase": "ahorro",
+        "atribucion": {
+          "atribuible": false,
+          "motivo": "el cable de B solo difiere de A en `prompt_cache_key`, B no leyó de caché más que A (0 frente a 0 llamadas) y la capa declara 0 $ de ahorro: la diferencia de coste es muestreo de la salida, no la capa"
+        },
+        "controlAA": {
+          "preguntas": 80,
+          "ahorro": {
+            "point": 0.014506715022382988,
+            "lower": -0.012216878969200096,
+            "upper": 0.04031457811875183
+          },
+          "clase": "indistinguible de 0"
+        },
+        "deltaMedioPorPreguntaUsd": {
+          "point": 0.000018832500000000003,
+          "lower": 0.000004188750000000005,
+          "upper": 0.000035234999999999984
+        },
+        "wilcoxonP": 0.026189612962627562
+      },
+      "tokens": {
+        "A": {
+          "entrada": 43397,
+          "cacheLeida": 0,
+          "cacheEscrita": 0,
+          "salida": 64203,
+          "razonamiento": 0
+        },
+        "B": {
+          "entrada": 42949,
+          "cacheLeida": 0,
+          "cacheEscrita": 0,
+          "salida": 61804,
+          "razonamiento": 0
+        }
+      },
+      "cacheDePrefijo": {
+        "llamadas": 320,
+        "llamadasConLecturaA": 0,
+        "llamadasConLecturaB": 0,
+        "llamadasConEscrituraA": 0,
+        "llamadasConEscrituraB": 0
+      },
+      "latencia": {
+        "A": {
+          "p50": 3479,
+          "p95": 7647
+        },
+        "B": {
+          "p50": 3345,
+          "p95": 7305
+        },
+        "deltaMedioMs": {
+          "point": -162.3125,
+          "lower": -301.69375,
+          "upper": -30.25
+        },
+        "llamadasSinReintento": 320
+      },
+      "truncadas": {
+        "A": 2,
+        "B": 2
+      },
+      "cable": {
+        "turnos": 160,
+        "identicos": 80,
+        "diferencias": {
+          "prompt_cache_key": 80
+        },
+        "modelosServidosA": [
+          "gpt-4o-mini-2024-07-18"
+        ],
+        "modelosServidosB": [
+          "gpt-4o-mini-2024-07-18"
+        ]
+      },
+      "capa": {
+        "basis": {
+          "measured": 160
+        },
+        "ahorroDeclaradoUsd": 0,
+        "ahorroDeclaradoPorBasis": {
+          "measured": 0
+        },
+        "costeDeclaradoUsd": 0.043524750000000015,
+        "costeMedidoB": 0.043524750000000015,
+        "tokensQueNoCuadran": 0,
+        "cacheResult": {
+          "miss": 160
+        },
+        "executionClass": {
+          "NO_RETRIEVAL": 50,
+          "SINGLE_RETRIEVAL": 82,
+          "MULTI_HOP_RETRIEVAL": 28
+        },
+        "llamadasExtraAlProveedor": 0,
+        "etapas": {
+          "canonicalize:done": 160,
+          "policy:stochastic sampling (temp>0.3, no seed)": 12,
+          "router:NO_RETRIEVAL": 50,
+          "constraints:none": 160,
+          "reference:written": 158,
+          "policy:personalized/account-scoped request; stochastic sampling (temp>0.3, no seed); personalized request with no principal (context.sessionId) → exact cache off; agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\")": 9,
+          "router:SINGLE_RETRIEVAL": 82,
+          "prefix-cache:marked": 80,
+          "prefix-cache:measured": 80,
+          "policy:personalized/account-scoped request; stochastic sampling (temp>0.3, no seed); personalized request with no principal (context.sessionId) → exact cache off": 6,
+          "policy:freshness-sensitive request; freshness-sensitive without a freshness bucket → exact cache off": 3,
+          "policy:freshness-sensitive request; freshness-sensitive without a freshness bucket → exact cache off; agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\")": 27,
+          "policy:no restrictions": 52,
+          "exact-cache:miss": 73,
+          "elision:skipped": 73,
+          "router:MULTI_HOP_RETRIEVAL": 28,
+          "policy:personalized/account-scoped request; personalized request with no principal (context.sessionId) → exact cache off": 5,
+          "policy:personalized/account-scoped request; personalized request with no principal (context.sessionId) → exact cache off; agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\")": 8,
+          "policy:agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\")": 21,
+          "reference:not-written": 2,
+          "cache-write:skipped: answer cut off by the output cap (finish_reason \"length\"); replaying half an answer would bill it as a 100% avoided call": 2,
+          "policy:freshness-sensitive request; personalized/account-scoped request; stochastic sampling (temp>0.3, no seed); freshness-sensitive without a freshness bucket → exact cache off; personalized request with no principal (context.sessionId) → exact cache off; agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\")": 3,
+          "policy:freshness-sensitive request; personalized/account-scoped request; freshness-sensitive without a freshness bucket → exact cache off; personalized request with no principal (context.sessionId) → exact cache off; agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\")": 4,
+          "policy:stochastic sampling (temp>0.3, no seed); agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\")": 5,
+          "policy:freshness-sensitive request; stochastic sampling (temp>0.3, no seed); freshness-sensitive without a freshness bucket → exact cache off": 2,
+          "policy:freshness-sensitive request; stochastic sampling (temp>0.3, no seed); freshness-sensitive without a freshness bucket → exact cache off; agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\")": 3
+        }
+      },
+      "calidad": {
+        "juzgada": true,
+        "turnosJuzgados": 9,
+        "victoriasB": 1,
+        "victoriasA": 0,
+        "empates": 8,
+        "inconsistentes": 5,
+        "identicas": 1,
+        "errores": 0,
+        "turnosSinPresupuesto": 1,
+        "tasaDeVictoriaB": {
+          "point": 0.55,
+          "lower": 0.5,
+          "upper": 0.65
+        },
+        "porCategoria": {
+          "writing": {
+            "n": 2,
+            "B": 0,
+            "A": 0,
+            "empate": 2
+          },
+          "roleplay": {
+            "n": 2,
+            "B": 0,
+            "A": 0,
+            "empate": 2
+          },
+          "reasoning": {
+            "n": 2,
+            "B": 0,
+            "A": 0,
+            "empate": 2
+          },
+          "math": {
+            "n": 2,
+            "B": 1,
+            "A": 0,
+            "empate": 1
+          },
+          "coding": {
+            "n": 1,
+            "B": 0,
+            "A": 0,
+            "empate": 1
+          }
+        },
+        "llamadasAlJuez": 16,
+        "preguntasJuzgadas": 5,
+        "cortePorPresupuesto": true
+      },
+      "respuestasIdenticasPorTurno": 30,
+      "errores": []
+    },
+    {
+      "modelo": "gpt-5.4-mini",
+      "idCualificado": "openai/gpt-5.4-mini",
+      "familia": "openai",
+      "maxSalida": 4096,
+      "temperatura": "no se envía (modelo de razonamiento), en ningún brazo",
+      "precio": {
+        "inputPer1k": 0.00075,
+        "outputPer1k": 0.0045,
+        "cachedInputPer1k": 0.000075
+      },
+      "precioConocido": true,
+      "preguntas": {
+        "planificadas": 80,
+        "completas": 80,
+        "conError": 0,
+        "porCategoria": {
+          "writing": 10,
+          "roleplay": 10,
+          "reasoning": 10,
+          "math": 10,
+          "coding": 10,
+          "extraction": 10,
+          "stem": 10,
+          "humanities": 10
+        },
+        "cortePorPresupuesto": false
+      },
+      "gasto": {
+        "generacionA": 0.25551075000000006,
+        "generacionB": 0.26445824999999995,
+        "total": 0.5199689999999996,
+        "tope": 0.8,
+        "excesosDeReserva": 0,
+        "juez": 0.272515,
+        "topeJuez": 0.375725
+      },
+      "coste": {
+        "A": 0.25551075,
+        "B": 0.26445825,
+        "ahorroPooled": {
+          "point": -0.035018096107502394,
+          "lower": -0.08578268269270417,
+          "upper": 0.01636763726875934
+        },
+        "ahorroEstratificadoPorCategoria": {
+          "point": -0.03501809610750217,
+          "lower": -0.0844346263873903,
+          "upper": 0.016954695384962304
+        },
+        "clase": "indistinguible de 0",
+        "atribucion": {
+          "atribuible": false,
+          "motivo": "el cable de B solo difiere de A en `prompt_cache_key`, B no leyó de caché más que A (0 frente a 1 llamadas) y la capa declara 0 $ de ahorro: la diferencia de coste es muestreo de la salida, no la capa"
+        },
+        "controlAA": {
+          "preguntas": 80,
+          "ahorro": {
+            "point": -0.048412232589204685,
+            "lower": -0.12699301482425107,
+            "upper": 0.024174584453544257
+          },
+          "clase": "indistinguible de 0"
+        },
+        "deltaMedioPorPreguntaUsd": {
+          "point": -0.00011184374999999999,
+          "lower": -0.00027613125000000013,
+          "upper": 0.00005293124999999998
+        },
+        "wilcoxonP": 0.8453089673117107
+      },
+      "tokens": {
+        "A": {
+          "entrada": 36155,
+          "cacheLeida": 1280,
+          "cacheEscrita": 0,
+          "salida": 50733,
+          "razonamiento": 0
+        },
+        "B": {
+          "entrada": 38637,
+          "cacheLeida": 0,
+          "cacheEscrita": 0,
+          "salida": 52329,
+          "razonamiento": 0
+        }
+      },
+      "cacheDePrefijo": {
+        "llamadas": 320,
+        "llamadasConLecturaA": 1,
+        "llamadasConLecturaB": 0,
+        "llamadasConEscrituraA": 0,
+        "llamadasConEscrituraB": 0
+      },
+      "latencia": {
+        "A": {
+          "p50": 2056,
+          "p95": 10465
+        },
+        "B": {
+          "p50": 2185,
+          "p95": 9102
+        },
+        "deltaMedioMs": {
+          "point": 2.89375,
+          "lower": -135.33125,
+          "upper": 134.90625
+        },
+        "llamadasSinReintento": 320
+      },
+      "truncadas": {
+        "A": 0,
+        "B": 0
+      },
+      "cable": {
+        "turnos": 160,
+        "identicos": 80,
+        "diferencias": {
+          "prompt_cache_key": 80
+        },
+        "modelosServidosA": [
+          "gpt-5.4-mini-2026-03-17"
+        ],
+        "modelosServidosB": [
+          "gpt-5.4-mini-2026-03-17"
+        ]
+      },
+      "capa": {
+        "basis": {
+          "measured": 160
+        },
+        "ahorroDeclaradoUsd": 0,
+        "ahorroDeclaradoPorBasis": {
+          "measured": 0
+        },
+        "costeDeclaradoUsd": 0.26445824999999995,
+        "costeMedidoB": 0.26445825,
+        "tokensQueNoCuadran": 0,
+        "cacheResult": {
+          "miss": 160
+        },
+        "executionClass": {
+          "NO_RETRIEVAL": 52,
+          "SINGLE_RETRIEVAL": 84,
+          "MULTI_HOP_RETRIEVAL": 24
+        },
+        "llamadasExtraAlProveedor": 0,
+        "etapas": {
+          "canonicalize:done": 160,
+          "policy:no restrictions": 64,
+          "exact-cache:miss": 100,
+          "router:NO_RETRIEVAL": 52,
+          "elision:skipped": 100,
+          "constraints:none": 160,
+          "reference:written": 157,
+          "policy:freshness-sensitive request; personalized/account-scoped request; freshness-sensitive without a freshness bucket → exact cache off; personalized request with no principal (context.sessionId) → exact cache off; agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\")": 10,
+          "router:SINGLE_RETRIEVAL": 84,
+          "prefix-cache:marked": 80,
+          "prefix-cache:measured": 80,
+          "policy:personalized/account-scoped request; personalized request with no principal (context.sessionId) → exact cache off": 11,
+          "policy:freshness-sensitive request; freshness-sensitive without a freshness bucket → exact cache off": 5,
+          "policy:freshness-sensitive request; freshness-sensitive without a freshness bucket → exact cache off; agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\")": 22,
+          "policy:agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\")": 36,
+          "router:MULTI_HOP_RETRIEVAL": 24,
+          "policy:personalized/account-scoped request; personalized request with no principal (context.sessionId) → exact cache off; agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\")": 12,
+          "reference:not-written": 3,
+          "cache-write:skipped: the answer reads as a refusal written as text (text_refusal); it was measured and served as usual, but a refusal is not an answer to replay or to credit as an avoided call": 3
+        }
+      },
+      "calidad": {
+        "juzgada": true,
+        "turnosJuzgados": 19,
+        "victoriasB": 6,
+        "victoriasA": 1,
+        "empates": 12,
+        "inconsistentes": 6,
+        "identicas": 0,
+        "errores": 0,
+        "turnosSinPresupuesto": 1,
+        "tasaDeVictoriaB": {
+          "point": 0.65,
+          "lower": 0.5,
+          "upper": 0.8
+        },
+        "porCategoria": {
+          "writing": {
+            "n": 4,
+            "B": 0,
+            "A": 0,
+            "empate": 4
+          },
+          "roleplay": {
+            "n": 3,
+            "B": 1,
+            "A": 0,
+            "empate": 2
+          },
+          "reasoning": {
+            "n": 2,
+            "B": 1,
+            "A": 0,
+            "empate": 1
+          },
+          "math": {
+            "n": 2,
+            "B": 0,
+            "A": 0,
+            "empate": 2
+          },
+          "coding": {
+            "n": 2,
+            "B": 0,
+            "A": 0,
+            "empate": 2
+          },
+          "extraction": {
+            "n": 2,
+            "B": 0,
+            "A": 1,
+            "empate": 1
+          },
+          "stem": {
+            "n": 2,
+            "B": 2,
+            "A": 0,
+            "empate": 0
+          },
+          "humanities": {
+            "n": 2,
+            "B": 2,
+            "A": 0,
+            "empate": 0
+          }
+        },
+        "llamadasAlJuez": 39,
+        "preguntasJuzgadas": 10,
+        "cortePorPresupuesto": true
+      },
+      "respuestasIdenticasPorTurno": 6,
+      "errores": []
+    }
+  ],
+  "modelosFallidos": [
+    {
+      "modelo": "claude-haiku-4-5",
+      "error": "no medible: clave inválida (GET /v1/models → 401; comprobación gratuita, 0 $ gastados)"
+    },
+    {
+      "modelo": "claude-sonnet-5",
+      "error": "no medible: clave inválida (GET /v1/models → 401; comprobación gratuita, 0 $ gastados)"
+    }
+  ],
+  "limitaciones": [
+    "MT-Bench es conversación de 2 turnos, prompts cortos (cientos de tokens) y sin herramientas ni contrato de salida: casi ninguna palanca de la capa tiene forma sobre la que actuar, y la caché de prefijo del proveedor no llega al mínimo de tramo (1024 tokens en OpenAI) en la mayoría de turnos. Este banco mide sobre todo que la capa NO empeore (coste, latencia, calidad) en tráfico de chat, no cuánto ahorra en tráfico agéntico.",
+    "Una capa NUEVA por pregunta (caché y memoria frías): no hay repeticiones entre preguntas, así que la caché exacta/semántica de la capa no tiene ocasión de acertar. Es a propósito: el tráfico repetido va en otra batería.",
+    "Subconjunto estratificado con semilla cuando las 80 preguntas no caben en el tope por modelo ($0.8000 OpenAI / $1.2500 Anthropic); la calidad, además, solo se juzga en las preguntas que caben en $0.5000 de juez EN TOTAL (repartidos entre los modelos medidos), así que su intervalo es ancho.",
+    "El juez es gpt-4o por Vercel AI Gateway: sesgos conocidos de juez LLM (verbosidad, autopreferencia de familia OpenAI). Las posiciones intercambiadas controlan el sesgo de posición, no los demás.",
+    "Temperatura de FastChat por categoría (0,7 en writing/roleplay): parte de las diferencias de calidad entre A y B en esas categorías es muestreo, no la capa. Los dos brazos muestrean igual; gpt-5.4-mini no acepta temperature y no se manda en ningún brazo.",
+    "El dinero es modelado: tokens medidos × precio de lista del catálogo del paquete. Descuentos negociados, batch o niveles no entran.",
+    "Tope de salida NATIVO de la 0.4.31 en el brazo B (`maxOutputTokens` → `max_completion_tokens` en OpenAI, `max_tokens` en Anthropic) y el mismo campo y valor en el brazo A. gpt-5.4-mini lleva 4096 (su razonamiento cuenta dentro); FastChat usa 1024.",
+    "La latencia es de pared desde este portátil, con A y B lanzados a la vez para cada turno; incluye la red doméstica y la carga del proveedor en ese momento. Los reintentos por 429 se excluyen de p50/p95 por llamada. Otros tres bancos compartían las claves a la vez."
+  ]
+}
