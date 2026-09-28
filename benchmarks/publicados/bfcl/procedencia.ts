@@ -62,7 +62,7 @@ export interface SdkCargado {
 
 /** Comprueba que el fuente ES el tag y lo carga con la puerta de desarrollo abierta. */
 export async function cargarSdk(): Promise<SdkCargado> {
-  if (BV_SALA_VERSION !== VERSION_PAQUETE) throw new Error(`el fuente es ${BV_SALA_VERSION}, no ${VERSION_PAQUETE}`);
+  if ((BV_SALA_VERSION as string) !== VERSION_PAQUETE) throw new Error(`el fuente es ${BV_SALA_VERSION}, no ${VERSION_PAQUETE}`);
   const commitDelTag = git(["rev-parse", `${TAG_RELEASE}^{commit}`]);
   const diff = git(["diff", "--stat", TAG_RELEASE, "--", "src/", "packages/"]);
   if (diff !== "") throw new Error(`src/ o packages/ difieren de ${TAG_RELEASE}: el brazo B no sería la 0.4.30`);
