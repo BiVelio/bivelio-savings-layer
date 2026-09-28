@@ -179,13 +179,14 @@ async function main(): Promise<void> {
     const antes1 = upstream.recuento()["chat"] ?? 0;
     const s1 = await repetirConElSdk({ protocolo: "openai", base: `${plano.origen}/v1`, modelo: "openai/gpt-4o-mini" });
     const llegaron1 = (upstream.recuento()["chat"] ?? 0) - antes1;
-    comprobar("S1 (a) OpenAI por LiteLLM", s1.primera.basis === "measured" && s1.segunda.basis === "reference" && llegaron1 === 1,
-      `primera ${s1.primera.basis}, segunda ${s1.segunda.basis} (${s1.segunda.cacheResult}, referencia → ${s1.segunda.referenceRequestId ?? "—"}); al upstream llegaron ${llegaron1}`);
+    // Desde el 2026-09-28 (CERRADO 1): la repetición se sirve sin llegar a
+    // LiteLLM, pero sale `estimated`: la llamada que corrió detrás del proxy no
+    // dejó registro de referencia (`unofficial-origin`).
+    comprobar("S1 (a) OpenAI por LiteLLM", s1.primera.basis === "measured" && s1.segunda.cacheResult === "exact" && s1.segunda.basis === "estimated" && llegaron1 === 1,
+      `primera ${s1.primera.basis} (sin registro: ${s1.primera.referenceNotWritten ?? "—"}), segunda ${s1.segunda.basis} (${s1.segunda.cacheResult}); al upstream llegaron ${llegaron1}`);
     const v1 = s1.veredictos.find((v) => v.requestId === s1.segunda.requestId);
-    // HUECO 1 (decisión del dueño): el SDK no sabe que habla con un proxy y la
-    // repetición detrás de LiteLLM entra en la base, a precio de lista.
-    comprobar("S1 HUECO (b) en el SDK", v1?.enLaBase === true,
-      `ingerida como ${v1?.basisIngerido}, en la base de la comisión: ${v1?.enLaBase ? "SÍ" : "no"} (${v1?.ahorroUsd.toExponential(3)} USD)`);
+    comprobar("S1 CERRADO (b) en el SDK", s1.primera.referenceNotWritten === "unofficial-origin" && v1?.enLaBase === false,
+      `ingerida como ${v1?.basisIngerido}, en la base de la comisión: ${v1?.enLaBase ? "SÍ" : "no"}`);
 
     // S2 · alias propio sin precio de lista.
     const s2 = await repetirConElSdk({ protocolo: "openai", base: `${plano.origen}/v1`, modelo: "equipo-rapido" });
@@ -201,15 +202,15 @@ async function main(): Promise<void> {
       costModels: { "equipo-rapido": { inputPer1k: 0.00015, outputPer1k: 0.0006, cachedInputPer1k: 0.000075 } },
     });
     const v3 = s3.veredictos.find((v) => v.requestId === s3.segunda.requestId);
-    comprobar("S3 alias con costModels", s3.segunda.basis === "reference",
-      `segunda ${s3.segunda.basis}; en la base: ${v3?.enLaBase ? "SÍ" : "no"}`);
+    comprobar("S3 alias con costModels", s3.segunda.basis === "estimated" && v3?.enLaBase === false,
+      `segunda ${s3.segunda.basis} (sin registro: ${s3.primera.referenceNotWritten ?? "—"}); en la base: ${v3?.enLaBase ? "SÍ" : "no"}`);
 
     // S4 · el paso de Anthropic (/v1/messages).
     const antes4 = upstream.recuento()["messages"] ?? 0;
     const s4 = await repetirConElSdk({ protocolo: "anthropic", base: `${plano.origen}/v1`, modelo: "anthropic/claude-haiku-4-5" });
     const llegaron4 = (upstream.recuento()["messages"] ?? 0) - antes4;
-    comprobar("S4 (a) Anthropic por LiteLLM", s4.primera.basis === "measured" && s4.segunda.basis === "reference" && llegaron4 === 1,
-      `primera ${s4.primera.basis}, segunda ${s4.segunda.basis}; al upstream llegaron ${llegaron4}`);
+    comprobar("S4 (a) Anthropic por LiteLLM", s4.primera.basis === "measured" && s4.segunda.cacheResult === "exact" && s4.segunda.basis === "estimated" && llegaron4 === 1,
+      `primera ${s4.primera.basis} (sin registro: ${s4.primera.referenceNotWritten ?? "—"}), segunda ${s4.segunda.basis}; al upstream llegaron ${llegaron4}`);
 
     // S5 · dos instancias de la app detrás de un LiteLLM con caché.
     const antes5 = upstream.recuento()["chat"] ?? 0;

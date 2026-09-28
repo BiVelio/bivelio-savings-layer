@@ -47,6 +47,12 @@ import { nuevaLlamada, type LlamadaDelMarco } from "./comun/puente.js";
 // Las peticiones idénticas en vuelo no se comparten aquí: una llamada pendiente
 // depende de que Mastra vuelva a este proceso con su respuesta, y un seguidor
 // esperándola quedaría colgado del mismo plazo.
+//
+// EL ORIGEN, DESCONOCIDO. Los ganchos reciben el modelo del AI SDK (o el router
+// de modelos de Mastra) con `provider`, `modelId` y, en el router, `gatewayId`;
+// la base URL vive en su configuración privada. Sin una API pública que la
+// diga, este adaptador no atestigua a quién habla, y la E0-bis de la referencia
+// (pipeline/referencia.ts) no cambia nada para él.
 
 /** Options for {@link savingsProcessor}. */
 export interface SavingsProcessorOptions extends SavingsAdapterOptions {

@@ -27,15 +27,22 @@ import { CATALOGO } from "../src/pricing/catalogo.js";
  * (`repetirConElSdk`, `coalescerConElGateway`, `rebajarTtlConElGateway`).
  *
  * Qué queda demostrado:
- *   (a) una repetición idéntica detrás del proxy sale `reference`, en Chat
- *       Completions y en Messages;
- *   (b) en el GATEWAY, la gemela coalescida detrás del proxy sigue `estimated`
- *       (`unofficial-upstream`): sin comisión.
+ *   (a) una repetición idéntica detrás del proxy se sirve desde el SDK sin
+ *       llegar al proxy, en Chat Completions y en Messages. Salía `reference`
+ *       hasta el 2026-09-28; desde entonces sale `estimated` (ver CERRADO 1);
+ *   (b) detrás del proxy no hay comisión por una llamada evitada: ni en el SDK
+ *       (la llamada que corre no deja registro de referencia,
+ *       `unofficial-origin`) ni en el GATEWAY (la gemela coalescida sigue
+ *       `estimated`, `unofficial-upstream`).
  *
- * Y tres HUECOS, fijados tal como se comporta hoy el código para que el día que
- * el dueño decida cambiarlos el test lo diga (no cambian facturación en este PR):
- *   1. el SDK no sabe que habla con un proxy: su repetición `reference` entra en
- *      la base de la comisión a precio de lista;
+ * Y tres HUECOS, fijados tal como se comporta el código para que el día que
+ * el dueño decida cambiarlos el test lo diga:
+ *   1. CERRADO el 2026-09-28 por decisión del dueño (alinear el SDK con el
+ *      gateway): el SDK no sabía que hablaba con un proxy y su repetición
+ *      `reference` entraba en la base de la comisión a precio de lista; ahora
+ *      sus adaptadores atestiguan el origen por su `baseUrl`, y detrás de un
+ *      origen no oficial la llamada que corre no deja registro (E0-bis de
+ *      src/pipeline/referencia.ts): la repetición sale `estimated`;
  *   2. CERRADO el 2026-09-28 por decisión del dueño: la palanca de TTL del
  *      gateway acreditaba su ahorro `measured` a precio de lista aunque el
  *      upstream fuera el proxy; ahora detrás de un upstream no oficial el
@@ -139,51 +146,64 @@ describe("el doble se porta como el LiteLLM 1.102.1 que se midió", () => {
   });
 });
 
-describe("(a) el SDK delante del proxy: la repetición idéntica sale `reference`", () => {
+describe("(a) el SDK delante del proxy: la repetición idéntica se sirve sin llamar, y sale `estimated` (unofficial-origin)", () => {
   it(
-    "Chat Completions (`openai/gpt-4o-mini`, `stripProviderPrefix`): measured y luego reference, con un solo viaje",
+    "Chat Completions (`openai/gpt-4o-mini`, `stripProviderPrefix`): measured y luego una repetición estimated, con un solo viaje",
     async () => {
       const { upstream, doble } = await montar();
       const r = await repetirConElSdk({ protocolo: "openai", base: `${doble.origen}/v1`, modelo: "openai/gpt-4o-mini" });
       expect(r.primera.basis).toBe("measured");
       expect(r.primera.cacheResult).toBe("miss");
-      expect(r.segunda.basis).toBe("reference");
+      // E0-bis: el adaptador atestigua que habla con un origen no oficial, y la
+      // llamada que corrió no deja registro de referencia.
+      expect(r.primera.referenceNotWritten).toBe("unofficial-origin");
       expect(r.segunda.cacheResult).toBe("exact");
-      expect(r.segunda.referenceRequestId).toBe(r.primera.requestId);
+      expect(r.segunda.basis).toBe("estimated");
+      expect(r.segunda.referenceRejected).toBe("absent");
+      expect(r.segunda.referenceRequestId).toBeUndefined();
       expect(r.segunda.actualUsd).toBe(0);
-      // El suelo: la entrada a precio de LECTURA de caché, nunca la cifra halagüeña.
-      expect(r.segunda.baselineUsd).toBeGreaterThan(0);
-      expect(r.segunda.baselineUsd).toBeLessThan(r.primera.actualUsd);
       expect(upstream.recuento()["chat"]).toBe(1);
       expect(doble.reenviadas()).toBe(1);
       // El SDK vio la cabecera de coste del proxy y no la usa: su cifra sale del
       // contador del proveedor y de su catálogo.
       expect(r.cabecerasDelProxy[0]!["x-litellm-response-cost"]).toBeDefined();
+      // Y la verja REAL del ingest la deja fuera de la base.
+      const repeticion = r.veredictos.find((v) => v.requestId === r.segunda.requestId)!;
+      expect(repeticion.basisIngerido).toBe("estimated");
+      expect(repeticion.enLaBase).toBe(false);
+      expect(r.veredictos.filter((v) => v.enLaBase)).toEqual([]);
     },
     PLAZO,
   );
 
   it(
-    "Messages (el paso de Anthropic, `/v1/messages`): measured y luego reference",
+    "Messages (el paso de Anthropic, `/v1/messages`): measured y luego una repetición estimated",
     async () => {
       const { upstream, doble } = await montar();
       const r = await repetirConElSdk({ protocolo: "anthropic", base: `${doble.origen}/v1`, modelo: "anthropic/claude-haiku-4-5" });
       expect(r.primera.basis).toBe("measured");
-      expect(r.segunda.basis).toBe("reference");
-      expect(r.segunda.referenceRequestId).toBe(r.primera.requestId);
+      expect(r.primera.referenceNotWritten).toBe("unofficial-origin");
+      expect(r.segunda.cacheResult).toBe("exact");
+      expect(r.segunda.basis).toBe("estimated");
+      expect(r.segunda.referenceRejected).toBe("absent");
       expect(upstream.recuento()["messages"]).toBe(1);
+      const repeticion = r.veredictos.find((v) => v.requestId === r.segunda.requestId)!;
+      expect(repeticion.basisIngerido).toBe("estimated");
+      expect(repeticion.enLaBase).toBe(false);
     },
     PLAZO,
   );
 
   it(
-    "un alias propio del proxy sin precio de lista: la repetición queda `estimated` (no-cached-price) y fuera de la base",
+    "un alias propio del proxy sin precio de lista: la repetición queda `estimated` y fuera de la base",
     async () => {
       const { doble } = await montar();
       const r = await repetirConElSdk({ protocolo: "openai", base: `${doble.origen}/v1`, modelo: "equipo-rapido" });
+      // Antes lo paraba la lectura (`no-cached-price`); ahora ni se escribe.
+      expect(r.primera.referenceNotWritten).toBe("unofficial-origin");
       expect(r.segunda.cacheResult).toBe("exact");
       expect(r.segunda.basis).toBe("estimated");
-      expect(r.segunda.referenceRejected).toBe("no-cached-price");
+      expect(r.segunda.referenceRejected).toBe("absent");
       expect(r.veredictos.every((v) => !v.enLaBase)).toBe(true);
     },
     PLAZO,
@@ -209,30 +229,37 @@ describe("(b) el GATEWAY delante del proxy: sin comisión", () => {
   );
 });
 
-describe("HUECOS · comportamiento de hoy que contradice (b) y decide el dueño", () => {
+describe("HUECOS · los que contradecían (b): dos cerrados por el dueño (2026-09-28) y uno abierto", () => {
   it(
-    "HUECO 1 · SDK: la repetición detrás del proxy entra en la base de la comisión a precio de lista",
+    "CERRADO 1 · SDK: la repetición detrás del proxy ya NO entra en la base de la comisión (dueño, 2026-09-28)",
     async () => {
-      // El SDK decide el origen oficial por el host SOLO para el tier y la
-      // caché explícita; la regla de la referencia (src/pipeline/referencia.ts)
-      // no lo mira, y el registro no dice a quién se habló. El gateway sí
-      // (`esUpstreamOficial`, gateway/upstream.ts). Si el dueño alinea el SDK
-      // con el gateway, esta repetición pasa a `estimated` y este test cambia.
+      // El SDK decidía el origen oficial por el host SOLO para el tier y la
+      // caché explícita, y la regla de la referencia no lo miraba. Ahora el
+      // adaptador lo atestigua y la E0-bis (src/pipeline/referencia.ts) lo mira,
+      // como el gateway (`esUpstreamOficial`, gateway/upstream.ts): la llamada
+      // que corre detrás del proxy no deja registro, y su repetición sale
+      // `estimated`. Sin cambiar la versión de la regla ni la mínima del ingest.
       const { doble } = await montar();
       const r = await repetirConElSdk({ protocolo: "openai", base: `${doble.origen}/v1`, modelo: "openai/gpt-4o-mini" });
       const repeticion = r.veredictos.find((v) => v.requestId === r.segunda.requestId)!;
+      // La versión del SDK sigue admitiendo referencia: lo que falta es el registro.
       expect(r.lotes.every((l) => versionAdmiteReferencia(l.version))).toBe(true);
-      expect(repeticion.basisIngerido).toBe("reference");
-      expect(repeticion.enLaBase).toBe(true);
-      expect(repeticion.ahorroUsd).toBeGreaterThan(0);
-      // Lo mismo con un alias al que el cliente le declara precio propio.
+      expect(r.primera.referenceNotWritten).toBe("unofficial-origin");
+      expect(repeticion.basisEmitido).toBe("estimated");
+      expect(repeticion.basisIngerido).toBe("estimated");
+      expect(repeticion.enLaBase).toBe(false);
+      // Lo mismo con un alias al que el cliente le declara precio propio: su
+      // precio no cambia a quién se habló.
       const conPrecio = await repetirConElSdk({
         protocolo: "openai",
         base: `${doble.origen}/v1`,
         modelo: "equipo-rapido",
         costModels: { "equipo-rapido": { ...CATALOGO["gpt-4o-mini"]! } },
       });
-      expect(conPrecio.veredictos.find((v) => v.requestId === conPrecio.segunda.requestId)!.enLaBase).toBe(true);
+      expect(conPrecio.primera.referenceNotWritten).toBe("unofficial-origin");
+      expect(conPrecio.segunda.basis).toBe("estimated");
+      expect(conPrecio.veredictos.find((v) => v.requestId === conPrecio.segunda.requestId)!.enLaBase).toBe(false);
+      expect(conPrecio.veredictos.filter((v) => v.enLaBase)).toEqual([]);
     },
     PLAZO,
   );
@@ -301,6 +328,9 @@ describe("HUECOS · comportamiento de hoy que contradice (b) y decide el dueño"
       // El proveedor no cobró esta llamada; el `actual` repite el de la primera.
       expect(r.segunda.actualUsd).toBe(r.primera.actualUsd);
       expect(r.segunda.actualUsd).toBeGreaterThan(0);
+      // Lo que sí cambió con CERRADO 1: ese contador copiado ya no deja un
+      // registro de referencia contra el que valorar repeticiones.
+      expect(r.segunda.referenceNotWritten).toBe("unofficial-origin");
     },
     PLAZO,
   );

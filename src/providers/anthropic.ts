@@ -1,11 +1,13 @@
 import { avisarUnaVez } from "../util/warn-once.js";
 import {
   atestiguar,
+  atestiguarOrigen,
   avisosDelProveedorSilenciados,
   declararBusquedaNativa,
   herramientasSinParametros,
   sinContrato,
 } from "./atestado-del-cable.js";
+import { apiOficialDe, origenDeLaUrl } from "./origen-oficial.js";
 import { HERRAMIENTA_DE_BUSQUEDA } from "../router/busqueda-nativa.js";
 import { instruccionDeJsonPorPrompt } from "./json-por-prompt.js";
 import { endpointLimpio, registrarLotes, rutaRelativa } from "./lotes-del-proveedor.js";
@@ -238,6 +240,13 @@ export class AnthropicProvider implements Provider {
     // bloques de la búsqueda (es lo mismo que hace Claude Code con un base URL
     // ajeno).
     declararBusquedaNativa(this, esHostOficial(opts.baseUrl) ? "oficial" : "compatible");
+    // A la referencia (E0-bis de pipeline/referencia.ts): ¿es este contador el
+    // del API oficial de Anthropic, a su precio de lista? Solo con https y
+    // `api.anthropic.com` exacto (`origen-oficial.ts`), más estricto que
+    // `esHostOficial`, que decide la FORMA del cable y no la factura. Contra
+    // LiteLLM, un gateway, Bedrock o Vertex: no, y una repetición no se valora
+    // contra él. Sin `baseUrl`, la del API oficial.
+    atestiguarOrigen(this, origenDeLaUrl(opts.baseUrl ?? "https://api.anthropic.com/v1"));
     // LA MESSAGE BATCHES API, para `layer.batches`. Mismo cuerpo que generate()
     // (sin `stream`, que un lote rechaza) y misma lectura; la HTTP va contra la
     // MISMA base y con las MISMAS cabeceras. Ver lotes-del-proveedor.ts.
@@ -1622,16 +1631,11 @@ async function safeText(response: Response): Promise<string> {
   }
 }
 
-// EL API OFICIAL DE ANTHROPIC, por el host y solo por el host: https y
-// `api.anthropic.com` exacto. Un proxy, un gateway, Bedrock o Vertex dan `null`
-// —otra lista de precios, u otra factura—, y con `null` lo que valga un lote es
-// como mucho `estimated`. NO se exporta: el barril de proveedores reexporta este
+// EL API OFICIAL DE ANTHROPIC, por el host y solo por el host: https,
+// `api.anthropic.com` exacto y puerto por defecto (`origen-oficial.ts`). Un
+// proxy, un gateway, Bedrock o Vertex dan `null` —otra lista de precios, u otra
+// factura—, y con `null` lo que valga un lote es como mucho `estimated`. NO se exporta: el barril de proveedores reexporta este
 // fichero entero hacia los tipos publicados.
 function origenAnthropic(base: string): "anthropic" | null {
-  try {
-    const u = new URL(base);
-    return u.protocol === "https:" && u.hostname.toLowerCase() === "api.anthropic.com" ? "anthropic" : null;
-  } catch {
-    return null;
-  }
+  return apiOficialDe(base) === "anthropic" ? "anthropic" : null;
 }

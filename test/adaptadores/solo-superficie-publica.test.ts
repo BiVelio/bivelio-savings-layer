@@ -13,9 +13,10 @@ import { describe, expect, it } from "vitest";
  * `createSavingsLayer(...).generate()`, que gatea y registra. Esto lo hace
  * imposible por construcción, y esta verja lo mantiene así.
  *
- * Se permiten, además, dos módulos internos PUROS del proveedor de Anthropic
- * (el parser de SSE y la aritmética del contador), que no deciden nada sobre
- * licencia ni medición: van copiados dentro del adaptador que los usa.
+ * Se permiten, además, módulos internos PUROS de los proveedores (el parser de
+ * SSE, la aritmética del contador de Anthropic y la lista de orígenes oficiales),
+ * que no deciden nada sobre licencia ni medición: van copiados dentro del
+ * adaptador que los usa.
  */
 
 const RAIZ = fileURLToPath(new URL("../..", import.meta.url));
@@ -43,6 +44,10 @@ const PERMITIDOS_RELATIVOS = new Set([
   // La suma de las iteraciones de compactación (#333): pura, sin imports, y la
   // usa anthropic-uso.ts para que proveedor y adaptador cuenten igual.
   "src/providers/iteraciones-de-compactacion.ts",
+  // Los orígenes oficiales (https, host exacto) y la clave del canal por el que
+  // el puente le dice al núcleo a quién habla la llamada del marco (E0-bis de la
+  // referencia). Puro y sin imports: la MISMA lista que usan los proveedores.
+  "src/providers/origen-oficial.ts",
 ]);
 
 describe("los adaptadores solo usan la superficie pública", () => {

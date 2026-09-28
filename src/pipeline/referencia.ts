@@ -1,5 +1,6 @@
 import { sha256, stableStringify } from "../canonicalization/canonicalize.js";
 import type { SavingsRequest } from "../contracts/types.js";
+import type { OrigenAtestiguado } from "../providers/origen-oficial.js";
 import { FACTOR_DIFERIDO_MINIMO, veredictoDelTier } from "../economics/tier-diferido.js";
 import type { SalidaNoRepetible } from "../pricing/razonamiento.js";
 import {
@@ -28,12 +29,36 @@ import {
 //   · ESCRITURA (E0-E7, `registroDeReferencia`): cuándo la llamada que corrió
 //     deja un registro de su contador. Solo si fue INTACTA: su contador tiene
 //     que ser el de la petición del cliente, no el de una petición que la capa
-//     reescribió.
+//     reescribió. Y antes (E0, E0-bis), solo si ese contador es de verdad el de
+//     una factura a precio de lista: ni el del proveedor de demo ni el de un
+//     origen que no es el API oficial del proveedor.
 //   · LECTURA (L0-L7, `leerRegistroDeReferencia` + `evaluarReferencia`): cuándo
 //     un acierto exacto o un seguidor de singleflight se valora con ese
 //     contador. La primera condición que falla da el motivo, se publica en
 //     `report.cache.referenceRejected`, y la evitada sigue `estimated` como
 //     siempre. Nunca se lanza nada y nunca se reclama de más.
+//
+// E0-BIS · EL ORIGEN (2026-09-28, alineado con el gateway). Una repetición se
+// valora al precio cacheado de LISTA del catálogo, y ese precio solo es la
+// factura cuando la llamada que corrió habló con el origen oficial del
+// proveedor (`providers/origen-oficial.ts`: api.anthropic.com, api.openai.com,
+// generativelanguage.googleapis.com; https, host exacto). Detrás de LiteLLM u
+// otro proxy, de un gateway, de Azure, Bedrock o Vertex, el nombre del modelo
+// puede acabar en otro despliegue, otro modelo u otra tarifa, y nadie puede
+// enseñar la factura que respalde ese suelo. El gateway ya lo aplicaba
+// (`unofficial-upstream`, gateway/medidor.ts); el SDK lo aplica al escribir:
+// sin registro, motivo `unofficial-origin`, y la repetición sigue `estimated`.
+//
+// Quién lo sabe: solo un adaptador de ESTE paquete, que lo ATESTIGUA
+// (`atestiguarOrigen`, `providers/atestado-del-cable.ts`): `AnthropicProvider`
+// y `OpenAICompatibleProvider` por su `baseUrl`, y los adaptadores de marcos
+// que pueden leer la base URL de su cliente por una API pública (el middleware
+// del SDK de Anthropic, por la URL de la petición; LangChain, con `ChatOpenAI` y
+// `ChatAnthropic`). Con origen DESCONOCIDO —un proveedor propio del cliente, el
+// AI SDK y Mastra, que no enseñan su host, o un modelo de LangChain que no lo
+// dice— la regla NO cambia: no hay a quién preguntar, y la regla v2 sigue como
+// se publicó. Tampoco se ve un `fetch` propio que mande la petición a otro sitio
+// que su base URL: se atestigua la base URL, no el cable.
 //
 // El pipeline solo cablea: aquí no hay estado ni E/S, y por eso se prueba suelto
 // (`test/referencia-es-suelo.test.ts` recorre cada fila del catálogo y, además,
@@ -115,6 +140,10 @@ export interface RegistroDeReferencia {
 export type MotivoSinReferencia =
   // E0: el contador no es de un proveedor, lo fabricó el proveedor de demo.
   | "simulated-provider"
+  // E0-bis: el adaptador atestigua que habló con un origen que NO es el API
+  // oficial del proveedor (un proxy, un gateway, Azure, Bedrock…): su precio de
+  // lista no es la factura. El gateway lo llama `unofficial-upstream`.
+  | "unofficial-origin"
   | "no-usage"
   | "layer-changed-request"
   | "codebook"
@@ -192,6 +221,12 @@ export interface HechosDeLaPoblada {
   /** ¿Contestó el proveedor de demo interno? Su usage lo fabrica un estimador,
    *  no lo midió ningún proveedor ni está en ninguna factura. */
   contadorSimulado: boolean;
+  /**
+   * A quién habló la llamada primaria, según lo ATESTIGUA el adaptador
+   * (`providers/atestado-del-cable.ts`). `undefined` = desconocido (proveedor
+   * de terceros, marco que no enseña su host): no cambia nada.
+   */
+  origen?: OrigenAtestiguado | undefined;
   /** Usage de la llamada primaria que sirvió (post-escalada). */
   usoPrimario: UsoDeLaPoblada | undefined;
   /** Usage de la reparación, si la hubo. */
@@ -261,7 +296,8 @@ function razonamientoDeclarado(p: UsoDeLaPoblada, rep: UsoDeLaPoblada | undefine
  * la petición del cliente: ni libro 2 ni libro 3, sin elisión, sin contenido
  * añadido (salvo el mensaje de datos, ±2 de ruido de unión), sin codebook, sin
  * sondeo, sin esquema por prompt y con el modelo servido igual al pedido. Y
- * antes de todo eso (E0), el contador tiene que venir de un proveedor de verdad.
+ * antes de todo eso, el contador tiene que venir de un proveedor de verdad (E0)
+ * y no de un origen que el adaptador atestigua como no oficial (E0-bis).
  */
 export function registroDeReferencia(h: HechosDeLaPoblada): RegistroDeReferencia | MotivoSinReferencia {
   // E0 · Contador REAL. El proveedor de demo (el mock) inventa su usage con el
@@ -272,6 +308,12 @@ export function registroDeReferencia(h: HechosDeLaPoblada): RegistroDeReferencia
   // carril ese montaje no ganaba nada (medidas con ahorro 0, aciertos
   // `estimated`), y así sigue.
   if (h.contadorSimulado) return "simulated-provider";
+  // E0-bis · Origen OFICIAL. Un contador leído detrás de un proxy, un gateway,
+  // Azure o Bedrock es un contador de verdad, pero de una factura que no es la
+  // del precio de lista con el que se valoraría la repetición: el nombre del
+  // modelo pudo acabar en otro despliegue, otro modelo o una tarifa negociada.
+  // Solo lo corta un "no-oficial" ATESTIGUADO; desconocido sigue como estaba.
+  if (h.origen === "no-oficial") return "unofficial-origin";
   // E1 · Usage. Enteros, que es lo que L0 exige al leer: escribir algo que el
   // lector va a declarar mal formado no sirve de nada. Y COMPLETO: con
   // `complete === false` el proveedor no dio uno de los dos contadores (un

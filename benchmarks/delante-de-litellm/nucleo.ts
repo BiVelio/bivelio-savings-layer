@@ -11,6 +11,10 @@
  *   (a) una repetición idéntica sale con base `reference`;
  *   (b) detrás de un upstream no oficial no hay comisión.
  *
+ * Desde el 2026-09-28 el dueño decidió (b) por encima de (a) también en el SDK:
+ * detrás del proxy la repetición se sirve igual, pero sale `estimated`
+ * (`unofficial-origin`, E0-bis de src/pipeline/referencia.ts).
+ *
  * Aquí viven las piezas, puras o casi (servidores HTTP en 127.0.0.1 y nada
  * más):
  *
@@ -480,6 +484,11 @@ export interface InformeResumido {
   baselineUsd: number;
   referenceRequestId?: string;
   referenceRejected?: string;
+  /**
+   * Por qué ESTA llamada, si corrió, no dejó registro de referencia (la traza
+   * `reference` · `not-written`): `unofficial-origin` detrás del proxy.
+   */
+  referenceNotWritten?: string;
 }
 
 export interface ResultadoDeRepeticion {
@@ -493,6 +502,7 @@ export interface ResultadoDeRepeticion {
 
 function resumen(r: SavingsReport): InformeResumido {
   const cache = r.cache as SavingsReport["cache"] & { reference?: { requestId: string }; referenceRejected?: string };
+  const sinRegistro = r.traces.find((t) => t.stage === "reference" && t.outcome === "not-written")?.detail?.["reason"];
   return {
     requestId: r.requestId,
     basis: String(r.cost.basis),
@@ -501,6 +511,7 @@ function resumen(r: SavingsReport): InformeResumido {
     baselineUsd: r.cost.baselineEstimate,
     ...(cache.reference ? { referenceRequestId: cache.reference.requestId } : {}),
     ...(cache.referenceRejected ? { referenceRejected: cache.referenceRejected } : {}),
+    ...(typeof sinRegistro === "string" ? { referenceNotWritten: sinRegistro } : {}),
   };
 }
 

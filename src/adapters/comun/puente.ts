@@ -8,6 +8,7 @@ import type {
   ProviderStreamEvent,
   ToolDescriptor,
 } from "@bivelio/savings-layer";
+import { CLAVE_DEL_ORIGEN, type OrigenAtestiguado } from "../../providers/origen-oficial.js";
 
 // EL PROVEEDOR PUENTE.
 //
@@ -30,6 +31,12 @@ import type {
 //   R2 · Una sola llamada. El puente admite UNA llamada al framework por
 //        petición de la capa. La segunda lanza sin llamar: una segunda llamada
 //        sería gasto del cliente que el adaptador no le ha pedido nadie.
+//
+// Y un atestado: A QUIÉN HABLA la llamada del marco en curso, si el adaptador
+// lo pudo leer por una API pública del marco (`LlamadaDelMarco.origen`). El
+// núcleo lo necesita para la E0-bis de la referencia y no puede recibirlo por su
+// WeakMap, que vive en otro bundle; se lo da el puente bajo `CLAVE_DEL_ORIGEN`
+// (ver providers/origen-oficial.ts), leído del mismo `AsyncLocalStorage`.
 
 export const ERROR_REESCRITA =
   "[bvsala] internal: the layer changed a request this adapter must forward unchanged; nothing was sent.";
@@ -61,12 +68,19 @@ export interface LlamadaDelMarco {
   completada: boolean;
   /** Lo que lanzó el framework, para devolvérselo al llamante tal cual. */
   errorDelMarco?: { error: unknown };
+  /**
+   * A quién habla esta llamada del framework, leído por una API PÚBLICA del
+   * marco (la URL de la petición, la configuración del modelo). Ausente =
+   * desconocido, y entonces la regla de la referencia no cambia.
+   */
+  readonly origen?: OrigenAtestiguado;
 }
 
 export function nuevaLlamada(
   renderizado: Renderizado,
   generar: LlamadaDelMarco["generar"],
   transmitir?: LlamadaDelMarco["transmitir"],
+  origen?: OrigenAtestiguado,
 ): LlamadaDelMarco {
   return {
     renderizado,
@@ -74,6 +88,7 @@ export function nuevaLlamada(
     ...(transmitir ? { transmitir } : {}),
     invocada: false,
     completada: false,
+    ...(origen !== undefined ? { origen } : {}),
   };
 }
 
@@ -125,7 +140,7 @@ export function crearPuente(marco: string, als: AsyncLocalStorage<LlamadaDelMarc
     llamada.invocada = true;
     return llamada;
   };
-  return {
+  const puente: Provider = {
     id: `bivelio-adapter:${marco}`,
     async generate(req, options) {
       return tomar(req).generar(options?.signal);
@@ -142,6 +157,11 @@ export function crearPuente(marco: string, als: AsyncLocalStorage<LlamadaDelMarc
       yield { type: "done", response: r };
     },
   };
+  // El origen de la llamada del marco EN CURSO: el núcleo lo pregunta dentro de
+  // la petición, así que el almacén es el de esta llamada. No enumerable: no es
+  // parte del proveedor, y nadie que lo recorra lo ve.
+  Object.defineProperty(puente, CLAVE_DEL_ORIGEN, { value: () => als.getStore()?.origen });
+  return puente;
 }
 
 export function crearAlmacen(): AsyncLocalStorage<LlamadaDelMarco> {

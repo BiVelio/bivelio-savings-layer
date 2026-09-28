@@ -2,9 +2,8 @@
 
 > **Draft recipe (experiment E6), not linked from the main README.** Tested on
 > 2026‑09‑27 with LiteLLM proxy 1.102.1 and `@bivelio/savings-layer` 0.4.26 from
-> source. Publishing it is the owner's call, and so is how a `reference` saving
-> behind a proxy is billed (open question in the PR); this draft says nothing
-> about billing on purpose.
+> source; updated on 2026‑09‑28, when the SDK stopped valuing repeats by reference
+> behind a proxy. Publishing it is the owner's call.
 
 Already routing your models through a [LiteLLM](https://github.com/BerriAI/litellm)
 proxy? Keep it. BV‑SALA goes **inside your application**, in front of the proxy:
@@ -79,8 +78,7 @@ model_list:
 
 A name of your own (`team-fast`) tells BV‑SALA nothing about the price. The call is
 still metered in tokens, but its cost falls back to an illustrative default (the SDK
-warns once), and an exact repeat stays `estimated` (`report.cache.referenceRejected:
-"no-cached-price"`). Declare what you pay for it:
+warns once). Declare what you pay for it:
 
 ```ts
 createSavingsLayer({
@@ -99,8 +97,7 @@ always wins over it.
 | What happened | `report.cache.result` | `report.cost.basis` |
 |---|---|---|
 | The call went through LiteLLM to your provider | `miss` | `measured`: the usage LiteLLM relayed from the provider, at the model's list price (or your `costModels`) |
-| A byte‑identical repeat answered in your process | `exact` | `reference`: valued at the provider's cached‑input rate against the counter of the call that ran (`report.cache.reference.requestId`); output tokens count only with `temperature: 0`. LiteLLM and your provider are not called |
-| The model has no price (see § 3) | `exact` | `estimated`, never billed |
+| A byte‑identical repeat answered in your process | `exact` | `estimated`, never billed. LiteLLM and your provider are not called, but the repeat is not valued by reference: the list price it would be valued at is the invoice only on the provider's own API, and LiteLLM may route that name to another deployment, model or rate. The `reference` trace of the call that ran says `unofficial-origin` |
 
 The exact cache lives in the layer instance: create the layer once per process and
 reuse it. With several instances of your app, each one keeps its own cache unless
@@ -118,8 +115,8 @@ its figures come from the provider's usage counter and its price catalog.
 ## 5 · Check it
 
 `check.ts` in this folder sends the same question twice through your proxy and
-prints `ok` when the second one comes back as an exact repeat with basis
-`reference`:
+prints `ok` when the second one comes back as an exact repeat answered in your
+process (basis `estimated`, as § 4 explains):
 
 ```bash
 LITELLM_BASE_URL=http://localhost:4000 LITELLM_API_KEY=… BIVELIO_LICENSE_KEY=… npx tsx check.ts
@@ -136,5 +133,5 @@ bvsala gateway --upstream http://localhost:4000 --port 8403
 ```
 
 and your client points at `http://127.0.0.1:8403/v1` (see the main README, *Python
-and any other language*). Behind a proxy the gateway never values an avoided
-duplicate by reference: a coalesced duplicate stays `estimated`.
+and any other language*). Behind a proxy the gateway, like the SDK, never values an
+avoided duplicate by reference: a coalesced duplicate stays `estimated`.

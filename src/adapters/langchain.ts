@@ -13,6 +13,7 @@ import type {
   ToolCallRequest,
   ToolDescriptor,
 } from "@bivelio/savings-layer";
+import { origenDeLaUrl, type OrigenAtestiguado } from "../providers/origen-oficial.js";
 import { crearCapaDelAdaptador } from "./comun/capa.js";
 import { construirPeticion, herramienta } from "./comun/peticion.js";
 import { nuevaLlamada, registrarDesenlace } from "./comun/puente.js";
@@ -218,6 +219,36 @@ function nombreDeModelo(model: unknown): string {
   return tipo !== "" ? `${tipo}/${nombre}` : nombre;
 }
 
+// A QUIÉN HABLA EL MODELO (E0-bis de la referencia), solo por su configuración
+// PÚBLICA:
+//   · `ChatOpenAI` y las clases que heredan de él: `identifyingParams()`, método
+//     público que devuelve sus `ClientOptions` con `baseURL` ya resuelto (la
+//     opción `configuration.baseURL` o `OPENAI_BASE_URL`);
+//   · `ChatAnthropic` (`_llmType()` "anthropic"): su campo público `apiUrl`, que
+//     el constructor resuelve de `anthropicApiUrl`, `clientOptions.baseURL` o
+//     `ANTHROPIC_BASE_URL` (@langchain/anthropic 1.5).
+// Sin una URL ahí, DESCONOCIDO, y la regla no cambia: el modelo en cadena de
+// `createAgent` (`"openai:gpt-4o-mini"`, un `ConfigurableModel` que la guarda en
+// campos internos), un `ChatAnthropic` sin URL (puede tener un `createClient`
+// propio, Vertex por ejemplo) o cualquier otro modelo. No se leen campos
+// internos (`clientConfig`, `client`, `_defaultConfig`), y de lo que devuelve
+// `identifyingParams()` —que incluye la clave— solo se mira `baseURL`.
+function origenDelModelo(model: unknown): OrigenAtestiguado | undefined {
+  if (!esRegistro(model)) return undefined;
+  try {
+    if (typeof model.identifyingParams === "function") {
+      const p: unknown = (model.identifyingParams as () => unknown).call(model);
+      const base = esRegistro(p) ? p.baseURL : undefined;
+      if (typeof base === "string" && base !== "") return origenDeLaUrl(base);
+    }
+  } catch {
+    // Un modelo cuyos parámetros no se pueden leer: se sigue con lo demás.
+  }
+  const url = model.apiUrl;
+  if (tipoDeModelo(model) === "anthropic" && typeof url === "string" && url !== "") return origenDeLaUrl(url);
+  return undefined;
+}
+
 function parametrosDelModelo(model: unknown): unknown {
   try {
     const p = (model as { invocationParams?: (o?: unknown) => unknown }).invocationParams?.({});
@@ -391,6 +422,8 @@ export function savingsAgentMiddleware(options: SavingsAgentMiddlewareOptions): 
           original = await registrarDesenlace(llamada, async () => handler(request));
           return respuestaDe(original as unknown as Registro, fiable);
         },
+        undefined,
+        origenDelModelo(model),
       );
       const d = await capa.generar(req, llamada);
       if (d.tipo === "sin-informe") return original as AIMessage;

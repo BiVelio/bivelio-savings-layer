@@ -18,6 +18,7 @@ import {
   usoDeMensajes,
   type UsoAnthropic,
 } from "../providers/anthropic-uso.js";
+import { origenDeLaUrl } from "../providers/origen-oficial.js";
 import { SseParser, type SseMessage } from "../providers/sse.js";
 import { crearCapaDelAdaptador, promesaDeApertura, type CapaDelAdaptador, type LlamadaEnStream } from "./comun/capa.js";
 import { Cola } from "./comun/cola.js";
@@ -40,6 +41,13 @@ import { nuevaLlamada, type LlamadaDelMarco } from "./comun/puente.js";
 //
 // La aritmética del contador es la de `AnthropicProvider` (anthropic-uso.ts),
 // la misma función: una factura se cuenta igual entre por donde entre.
+//
+// Y el ORIGEN también se decide igual: por la URL de la petición que ve el
+// middleware (`request.url`, API pública del SDK), que es la base URL del
+// cliente más `/v1/messages`. Contra `https://api.anthropic.com`, oficial;
+// contra LiteLLM, un gateway o el host de Bedrock, Vertex o Foundry, no, y la
+// repetición no se valora por referencia (E0-bis de pipeline/referencia.ts). Un
+// `fetch` propio del cliente que mande la petición a otro sitio no se ve.
 
 /** Options for {@link anthropicSavings}. */
 export interface AnthropicSavingsOptions extends SavingsAdapterOptions {
@@ -463,6 +471,8 @@ export function anthropicSavings(options: AnthropicSavingsOptions): AnthropicSav
       restricciones: { sinResolvers: pideFormaEstricta(cuerpo) },
     });
     const renderizado = { model: req.model, messages: req.messages, ...(req.tools ? { tools: req.tools } : {}) };
+    // A quién va esta petición: el host de su URL (ver la cabecera).
+    const origen = origenDeLaUrl(request.url);
 
     // El intento, a través de `next`, con la petición INTACTA (el cuerpo no se
     // reserializa). Un rechazo del proveedor se guarda para devolverlo al SDK.
@@ -491,13 +501,18 @@ export function anthropicSavings(options: AnthropicSavingsOptions): AnthropicSav
     if (cuerpo.stream !== true) {
       let original: Response | undefined;
       let idOriginal: string | undefined;
-      const llamada = nuevaLlamada(renderizado, async () => {
-        original = await intentar(llamada);
-        const estado = new RespuestaDeMensajes();
-        estado.json((await original.clone().json()) as Registro);
-        idOriginal = estado.id;
-        return estado.respuesta();
-      });
+      const llamada = nuevaLlamada(
+        renderizado,
+        async () => {
+          original = await intentar(llamada);
+          const estado = new RespuestaDeMensajes();
+          estado.json((await original.clone().json()) as Registro);
+          idOriginal = estado.id;
+          return estado.respuesta();
+        },
+        undefined,
+        origen,
+      );
       let d;
       try {
         d = await capa.generar(req, llamada);
@@ -542,6 +557,7 @@ export function anthropicSavings(options: AnthropicSavingsOptions): AnthropicSav
           );
           return cola;
         },
+        origen,
       ),
       { abierta },
     );
