@@ -1,0 +1,46 @@
+{
+  "bateria": "mt-bench",
+  "fecha": "2026-09-28",
+  "modo": "NO-EJECUTADO",
+  "estado": "bloqueado-antes-de-gastar",
+  "motivo": "El brazo B es @bivelio/savings-layer 0.4.30 tal como se instala de npm, y el paquete publicado es fail-closed: solo corre con un licenseKey verificado contra la clave embebida (un licenseGate inyectado se ignora en el build publicado). .env.bench no trae BIVELIO_LICENSE_KEY, así que el arnés aborta en el prevuelo con código 2 antes de la primera llamada de pago. No se ha medido nada y no se publica ninguna cifra.",
+  "comoDesbloquear": "Añadir BIVELIO_LICENSE_KEY (la licencia de la org, del panel /dashboard/install) al .env.bench y correr `pnpm bench:mt-bench` (o `pnpm exec tsx --env-file=<ruta>/.env.bench benchmarks/publicados/mt-bench/mt-bench.ts`). La tirada LIVE sobrescribe este fichero y el .md con los resultados.",
+  "paquete": {
+    "nombre": "@bivelio/savings-layer",
+    "version": "0.4.30",
+    "origen": "npm registry (`npm view @bivelio/savings-layer version` = 0.4.30 el 2026-09-28); no el tarball local",
+    "integrity": "sha512-73eFHgLeCQnJlCzkDnnpxJjRCbBDXYxiJIJZ4iglVrN0IrFhGleCYRdE7nyYMzguLzaw5KmexjDyPMpt8BxL+w==",
+    "shasum": "df3b228413dd09c906658ab083550c3e5adeb2c9",
+    "tokenizador": "gpt-tokenizer@3.4.0"
+  },
+  "dataset": {
+    "repo": "lm-sys/FastChat",
+    "commit": "587d5cfa1609a43d192cedb8441cac3c17db105d",
+    "license": "Apache-2.0",
+    "versionado": false,
+    "ficheros": {
+      "fastchat/llm_judge/data/mt_bench/question.jsonl": "119565adbab82227089cefdb44c8d7e2cf04dc0a0ec233634c82e7d4e2a944f7",
+      "fastchat/llm_judge/data/mt_bench/reference_answer/gpt-4.jsonl": "f957a5bc977badb66885ec970e6cd08527845780313f0995764260e5777b9b3f",
+      "fastchat/llm_judge/data/judge_prompts.jsonl": "fd283293406d024f44c174b094ef48031d0687a4682fd3a56b29b138f80281b6"
+    }
+  },
+  "modelos": [
+    { "id": "claude-haiku-4-5", "familia": "anthropic", "maxSalida": 1024, "precioPor1k": { "entrada": 0.001, "salida": 0.005, "cacheada": 0.0001 } },
+    { "id": "claude-sonnet-5", "familia": "anthropic", "maxSalida": 1024, "precioPor1k": { "entrada": 0.002, "salida": 0.01, "cacheada": 0.0002 } },
+    { "id": "gpt-4o-mini", "familia": "openai", "maxSalida": 1024, "precioPor1k": { "entrada": 0.00015, "salida": 0.0006, "cacheada": 0.000075 } },
+    { "id": "gpt-5.4-mini", "familia": "openai", "maxSalida": 4096, "precioPor1k": { "entrada": 0.00075, "salida": 0.0045, "cacheada": 0.000075 } }
+  ],
+  "topes": { "porModeloUsd": 1.25, "juezUsd": 1.0, "juezPorModeloUsd": 0.25 },
+  "gastoReal": {
+    "claude-haiku-4-5": 0,
+    "claude-sonnet-5": 0,
+    "gpt-4o-mini": 0,
+    "gpt-5.4-mini": 0,
+    "juez": 0
+  },
+  "validacionSinRed": {
+    "mock": "pnpm bench:mt-bench --mock: 4 modelos × 80 preguntas (dataset real en caché, sha256 verificado) y × 16 (dataset sintético sin caché) recorren transporte medido, tope, juez con posiciones intercambiadas, estadística e informe. El brazo B del mock es un STUB declarado, no la capa.",
+    "tests": "test/mt-bench-publicado.test.ts (14 tests: fijación del dataset, orden estratificado y equilibrio de cualquier prefijo, lectura de usage de Anthropic y OpenAI, tope duro con reservas en vuelo, veredicto y combinación de partidas, prompts con referencia, diff del cable, redacción de credenciales)",
+    "prevueloLive": "Con las claves de .env.bench y sin BIVELIO_LICENSE_KEY: exit 2, «No se ha hecho ninguna llamada de pago»."
+  }
+}

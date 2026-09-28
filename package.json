@@ -107,6 +107,7 @@
     "web:dev": "node apps/web/serve.mjs",
     "prepublishOnly": "pnpm run build",
     "ab:publish": "tsx benchmarks/publish.ts",
+    "bench:mt-bench": "tsx --env-file-if-exists=.env.bench benchmarks/publicados/mt-bench/mt-bench.ts",
     "ab:sonda": "BVSALA_DEV_OPEN=1 tsx --env-file-if-exists=.env.bench benchmarks/sonda-del-banco.ts",
     "medicion:reproducir": "node apps/web/public/measure/reproduce.mjs",
     "verja:calibrar": "tsx corpus/calibrar-la-verja.ts",
