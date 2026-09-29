@@ -54,6 +54,7 @@ import {
   costeSegunUsage,
   esNegativa,
   esNegativaNoCobrada,
+  esParadaDeFiltro,
   leerJson,
   leerSse,
   limpiarSecretos,
@@ -117,8 +118,10 @@ export interface ConfigDeModelo {
   tope: number;
   /** `temperature` en los dos brazos (omitida si el modelo no la admite). */
   temperatura?: number;
-  /** Campos extra del cuerpo de Chat Completions en los dos brazos (p. ej. `reasoning_effort`). */
+  /** Campos extra del cuerpo de Chat Completions (OpenAI y Gemini compatible) en los dos brazos (p. ej. `reasoning_effort`). */
   extraOpenAI?: Record<string, unknown>;
+  /** Tope de salida de ESTE modelo en A y B (por defecto `TOPE_DE_SALIDA`). Gemini Pro solo piensa: el tope incluye el pensamiento. */
+  topeDeSalida?: number;
   /**
    * Campos extra del cuerpo de Mensajes en los dos brazos (p. ej. `thinking`,
    * `output_config`). La 0.4.31 no los expresa, así que en B el banco los pone SOLO
@@ -144,17 +147,44 @@ export const MODELOS: ConfigDeModelo[] = [
   { id: "gpt-5.4-mini", familia: "openai", tope: 0.8, extraOpenAI: { reasoning_effort: "none" } },
   // Opus 5.5: solo inseguros, los que quepan en 0,90 $ (el presupuesto corta el prefijo estratificado).
   { id: "claude-opus-5-5", familia: "anthropic", tope: 0.84, extraAnthropic: { output_config: { effort: "low" } }, soloInseguros: 200 },
+  // ── Gama alta (2026-09-29): 1,25 $ por modelo (A + B + repeticiones), tope duro del coordinador.
+  // Sonnet 5.5 rechaza `temperature` («deprecated for this model», 400): sin ella en A y B.
+  { id: "claude-sonnet-5-5", familia: "anthropic", tope: 1.25 },
+  // gpt-5.5 y gpt-5.6-sol aceptan `reasoning_effort: "none"` con `temperature: 0` (sonda del 2026-09-29).
+  { id: "gpt-5.5", familia: "openai", tope: 1.25, temperatura: 0, extraOpenAI: { reasoning_effort: "none" } },
+  { id: "gpt-5.6-sol", familia: "openai", tope: 1.25, temperatura: 0, extraOpenAI: { reasoning_effort: "none" } },
+  // Gemini por el endpoint compatible. 3.8 Flash admite `reasoning_effort: "none"` (0 tokens de pensamiento).
+  { id: "gemini-3.8-flash", familia: "google", tope: 1.25, temperatura: 0, extraOpenAI: { reasoning_effort: "none" } },
+  // 3.1 Pro «only works in thinking mode» (400 con "none"; "minimal" no admitido): "low", y el tope sube
+  // a 1024 porque el pensamiento cuenta dentro de `max_tokens` (con 160 se corta antes de escribir nada).
+  { id: "gemini-3.1-pro-preview", familia: "google", tope: 1.25, temperatura: 0, extraOpenAI: { reasoning_effort: "low" }, topeDeSalida: 1024 },
 ];
+
+/**
+ * Precio OFICIAL citado para un modelo SIN fila en `CATALOGO` (el catálogo no se
+ * toca desde un banco). Solo sirve para el presupuesto y la cuenta del banco; la
+ * capa sigue valorando con su catálogo (sin fila → respaldo ilustrativo).
+ */
+export const PRECIOS_CITADOS: Record<string, { precio: Precio; fuente: string }> = {
+  "claude-sonnet-5-5": {
+    precio: { inputPer1k: 0.002, outputPer1k: 0.01, cachedInputPer1k: 0.0002 },
+    fuente:
+      "https://platform.claude.com/docs/en/about-claude/pricing (consultada el 2026-09-29): «Claude Sonnet 5.5 | $2 / MTok | $2.50 / MTok | $4 / MTok | $0.20 / MTok | $10 / MTok»",
+  },
+};
 
 /** Tope de tokens de salida, igual en A y B. La clasificación de la paper mira el principio. */
 export const TOPE_DE_SALIDA = 160;
 export const SEMILLA = 20260928;
-const CONCURRENCIA_POR_PROVEEDOR = 4;
+/** ≤ 3 peticiones simultáneas por proveedor: otras baterías gastan las mismas claves a la vez. */
+const CONCURRENCIA_POR_PROVEEDOR = 3;
 const ITEMS_EN_VUELO_POR_MODELO = 2;
 const CONTROLES_POR_MODELO = 5;
 
-function precioDe(modelo: string): Precio {
-  const p = (CATALOGO as Record<string, Precio | undefined>)[modelo];
+const topeDe = (cfg: ConfigDeModelo): number => cfg.topeDeSalida ?? TOPE_DE_SALIDA;
+
+export function precioDe(modelo: string): Precio {
+  const p = (CATALOGO as Record<string, Precio | undefined>)[modelo] ?? PRECIOS_CITADOS[modelo]?.precio;
   if (!p) throw new Error(`sin fila de catálogo para ${modelo}: no se puede presupuestar`);
   return p;
 }
@@ -219,6 +249,7 @@ export function crearRed(base: typeof fetch, modelos: ConfigDeModelo[], dormirIm
   const semaforos: Record<Familia, Semaforo> = {
     anthropic: new Semaforo(CONCURRENCIA_POR_PROVEEDOR),
     openai: new Semaforo(CONCURRENCIA_POR_PROVEEDOR),
+    google: new Semaforo(CONCURRENCIA_POR_PROVEEDOR),
   };
   const red: Red = { reintentos: 0, fetch: undefined as unknown as typeof fetch };
   red.fetch = (async (url: string | URL | Request, init?: RequestInit) => {
@@ -234,7 +265,7 @@ export function crearRed(base: typeof fetch, modelos: ConfigDeModelo[], dormirIm
       if (!campo) throw new Error(`banco: el cuerpo del brazo ${ctx.brazo} salió sin tope de salida — no se envía`);
       ctx.topes.push(`${campo}=${String(b[campo])}`);
       if (ctx.brazo === "B") {
-        const extra = ctx.familia === "openai" ? cfg.extraOpenAI : cfg.extraAnthropic;
+        const extra = ctx.familia === "anthropic" ? cfg.extraAnthropic : cfg.extraOpenAI;
         for (const [k, v] of Object.entries(extra ?? {})) {
           if (b[k] === undefined) {
             b[k] = v;
@@ -358,6 +389,17 @@ export interface Endpoints {
   anthropicApiKey?: string;
   openaiBaseUrl: string;
   openaiApiKey?: string;
+  /** Gemini por su endpoint compatible con OpenAI (`…/v1beta/openai`). */
+  googleBaseUrl?: string;
+  googleApiKey?: string;
+}
+
+function chatDe(ep: Endpoints, familia: Familia): { base: string; clave?: string } {
+  if (familia === "google") {
+    if (!ep.googleBaseUrl) throw new Error("banco: modelo de Google sin googleBaseUrl");
+    return { base: ep.googleBaseUrl, ...(ep.googleApiKey ? { clave: ep.googleApiKey } : {}) };
+  }
+  return { base: ep.openaiBaseUrl, ...(ep.openaiApiKey ? { clave: ep.openaiApiKey } : {}) };
 }
 
 async function enContexto<T>(
@@ -394,24 +436,27 @@ async function brazoA(
         },
         body: JSON.stringify({
           model: cfg.id,
-          max_tokens: TOPE_DE_SALIDA,
+          max_tokens: topeDe(cfg),
           messages: [{ role: "user", content: prompt }],
           ...(cfg.temperatura !== undefined ? { temperature: cfg.temperatura } : {}),
           ...(cfg.extraAnthropic ?? {}),
         }),
       });
     } else {
-      const base = ep.openaiBaseUrl.replace(/\/$/, "");
+      const { base: b0, clave } = chatDe(ep, cfg.familia);
+      const base = b0.replace(/\/$/, "");
       await red.fetch(`${base}/chat/completions`, {
         method: "POST",
         headers: {
           "content-type": "application/json",
-          ...(ep.openaiApiKey ? { authorization: `Bearer ${ep.openaiApiKey}` } : {}),
+          ...(clave ? { authorization: `Bearer ${clave}` } : {}),
         },
         body: JSON.stringify({
           model: cfg.id,
           messages: [{ role: "user", content: prompt }],
-          max_completion_tokens: TOPE_DE_SALIDA,
+          // El campo que pone la capa contra cada API oficial: `max_completion_tokens` en
+          // api.openai.com, `max_tokens` en el endpoint compatible de Gemini.
+          ...(cfg.familia === "google" ? { max_tokens: topeDe(cfg) } : { max_completion_tokens: topeDe(cfg) }),
           ...(cfg.temperatura !== undefined ? { temperature: cfg.temperatura } : {}),
           ...(cfg.extraOpenAI ?? {}),
         }),
@@ -448,8 +493,8 @@ export function crearCapa(red: Red, ep: Endpoints, cfg: ConfigDeModelo, licencia
           fetchImpl: red.fetch,
         })
       : new OpenAICompatibleProvider({
-          baseUrl: ep.openaiBaseUrl,
-          ...(ep.openaiApiKey ? { apiKey: ep.openaiApiKey } : {}),
+          baseUrl: chatDe(ep, cfg.familia).base,
+          ...(chatDe(ep, cfg.familia).clave ? { apiKey: chatDe(ep, cfg.familia).clave! } : {}),
           stripProviderPrefix: true,
           requireUsage: true,
           fetchImpl: red.fetch,
@@ -478,7 +523,7 @@ async function brazoB(
     model: `${cfg.familia}/${cfg.id}`,
     messages: [{ role: "user" as const, content: prompt }],
     // El tope NATIVO de la 0.4.31 (el mismo valor que A); ya no lo inyecta el banco.
-    maxOutputTokens: TOPE_DE_SALIDA,
+    maxOutputTokens: topeDe(cfg),
     ...(cfg.temperatura !== undefined ? { temperature: cfg.temperatura } : {}),
   };
   const { v: r, e, ctx } = await enContexto({ modelo: cfg.id, familia: cfg.familia, brazo: "B", alGastar }, async () => {
@@ -517,7 +562,9 @@ async function brazoB(
   const detRef = res.report.traces.find((t) => t.stage === "reference")?.detail as { exactCache?: unknown } | undefined;
   return {
     ...base,
-    clase: clasificar(res.text ?? "", negativaCapa),
+    // La negativa la decide el PROVEEDOR cuando la llamada fue a él (Gemini: `content_filter: OTHER`,
+    // que la capa no reconoce); si la sirvió la caché, lo que diga la capa.
+    clase: clasificar(res.text ?? "", negativaCapa || (ctx.lecturas.length === 1 && !!l?.negativaDelApi)),
     negativaSegunLaCapa: negativaCapa,
     textoFiel: l && ctx.lecturas.length === 1 ? sha256Hex(res.text ?? "") === sha256Hex(l.texto) : null,
     informe: {
@@ -595,7 +642,7 @@ export async function correrTirada(o: OpcionesDeTirada): Promise<Tirada> {
       const trabajador = async () => {
         while (siguiente < lista.length && !cortadoPorPresupuesto) {
           const p = lista[siguiente++]!;
-          const unaLlamada = peorCasoDeLlamada(p.prompt, TOPE_DE_SALIDA, precio);
+          const unaLlamada = peorCasoDeLlamada(p.prompt, topeDe(cfg), precio);
           // A + B + dos repeticiones (o un control): el peor caso ENTERO del ítem.
           const reserva = unaLlamada * 4;
           if (!presupuesto.reservar(reserva)) {
@@ -647,6 +694,8 @@ export async function correrTirada(o: OpcionesDeTirada): Promise<Tirada> {
         extraOpenAI: cfg.extraOpenAI ?? null, extraAnthropic: cfg.extraAnthropic ?? null,
         soloInseguros: cfg.soloInseguros ?? null,
         clasificador: VERSION_DEL_CLASIFICADOR,
+        topeDeSalida: topeDe(cfg),
+        ...(PRECIOS_CITADOS[cfg.id] ? { precioCitado: PRECIOS_CITADOS[cfg.id]!.fuente } : {}),
       };
       log(`[xstest] ${cfg.id}: ${hechos}/${planificados} ítems, gastado ${presupuesto.gastado.toFixed(4)} $ (tope ${tope} $)`);
     }),
@@ -815,11 +864,12 @@ export async function prevuelo(ep: Endpoints, modelos: ConfigDeModelo[], f: type
   const fuera: Record<string, string> = {};
   for (const m of modelos) {
     const anth = m.familia === "anthropic";
-    const base = (anth ? ep.anthropicBaseUrl : ep.openaiBaseUrl).replace(/\/$/, "");
+    const chat = anth ? undefined : chatDe(ep, m.familia);
+    const base = (anth ? ep.anthropicBaseUrl : chat!.base).replace(/\/$/, "");
     const headers: Record<string, string> = anth
       ? { "anthropic-version": "2023-06-01", ...(ep.anthropicApiKey ? { "x-api-key": ep.anthropicApiKey } : {}) }
-      : ep.openaiApiKey
-        ? { authorization: `Bearer ${ep.openaiApiKey}` }
+      : chat!.clave
+        ? { authorization: `Bearer ${chat!.clave}` }
         : {};
     try {
       const r = await f(`${base}/models/${encodeURIComponent(m.id)}`, { headers, signal: AbortSignal.timeout(30_000) });
@@ -854,7 +904,12 @@ export function exigirLicenciaEnVivo(vivo: boolean, licencia: string | undefined
 }
 
 /** Los únicos hosts a los que una tirada VIVA puede hablar (el dataset se baja antes de crear ninguna capa). */
-export const HOSTS_PERMITIDOS = new Set(["api.anthropic.com", "api.openai.com", "raw.githubusercontent.com"]);
+export const HOSTS_PERMITIDOS = new Set([
+  "api.anthropic.com",
+  "api.openai.com",
+  "generativelanguage.googleapis.com",
+  "raw.githubusercontent.com",
+]);
 
 /**
  * Envuelve un `fetch` para que solo hable con `HOSTS_PERMITIDOS` y cuente los
@@ -888,9 +943,41 @@ function argumento(nombre: string): string | undefined {
  * de una tirada ya hecha, sin red y sin gastar. Sirve cuando cambia una regla del
  * informe: los datos medidos no se tocan.
  */
+/**
+ * Reinterpreta, sin red y sin texto, los registros de una tirada hecha antes de
+ * `esParadaDeFiltro`: una parada `content_filter: <motivo>` (Gemini) es negativa
+ * del API, y la clase de esa llamada pasa a `full_refusal` / `api` —lo mismo que
+ * `clasificar(texto, true)` habría dicho, porque la señal del API manda sobre el
+ * texto—. Una repetición servida SIN llamar no se toca: no hubo parada. Devuelve
+ * cuántas lecturas cambió (idempotente: 0 la segunda vez).
+ */
+export function reinterpretarParadas(t: Tirada): number {
+  let n = 0;
+  const arreglar = (x: { proveedor?: ResumenDeLectura; clase?: Clasificacion } | undefined, llamadas = 1) => {
+    const p = x?.proveedor;
+    if (!x || !p || p.negativaDelApi || !esParadaDeFiltro(p.stopReason) || llamadas !== 1) return;
+    p.negativaDelApi = true;
+    x.clase = { clase: "full_refusal", fuente: "api", paper: x.clase?.paper ?? "1_full_compliance" };
+    n++;
+  };
+  for (const r of t.registros) {
+    if (t.porModelo[r.modelo]?.familia === "anthropic") continue;
+    arreglar(r.A);
+    arreglar(r.B, r.B?.llamadasAlProveedor);
+    for (const x of r.repeticiones) arreglar(x, x.llamadasAlProveedor);
+  }
+  return n;
+}
+
 function rehacerDesde(ruta: string): void {
   const guardado = JSON.parse(readFileSync(ruta, "utf8")) as Tirada & { informe?: unknown };
   const { informe: _viejo, ...tirada } = guardado;
+  const cambiadas = reinterpretarParadas(tirada);
+  if (cambiadas) {
+    tirada.reinterpretado =
+      `${cambiadas} lecturas con \`finish_reason: "content_filter: <motivo>"\` (Gemini, endpoint compatible) reinterpretadas como negativa del API ` +
+      "sin red (`reinterpretarParadas`): la tirada las había tomado por respuestas vacías.";
+  }
   const informe = construirInforme(tirada);
   const json = limpiarSecretos(JSON.stringify({ ...tirada, informe }, null, 2), []);
   writeFileSync(ruta, json + "\n");
@@ -910,6 +997,9 @@ async function principal(): Promise<void> {
     ...(env["BVSALA_DEMO_ANTHROPIC_API_KEY"] ? { anthropicApiKey: env["BVSALA_DEMO_ANTHROPIC_API_KEY"] } : {}),
     openaiBaseUrl: env["BVSALA_DEMO_OPENAI_BASE_URL"] || env["BVSALA_DEMO_BASE_URL"] || "https://api.openai.com/v1",
     ...(claveOpenAI ? { openaiApiKey: claveOpenAI } : {}),
+    // Gemini: el origen oficial desde #363, por su endpoint compatible con OpenAI.
+    googleBaseUrl: env["BVSALA_SONDA_BASE_URL"] || "https://generativelanguage.googleapis.com/v1beta/openai",
+    ...(env["BVSALA_SONDA_API_KEY"] ? { googleApiKey: env["BVSALA_SONDA_API_KEY"] } : {}),
   };
   const licencia = env["BIVELIO_LICENSE_KEY"]?.trim() || undefined;
   for (const k of Object.keys(env)) if (/KEY|TOKEN|SECRET/i.test(k)) delete env[k];
@@ -918,7 +1008,7 @@ async function principal(): Promise<void> {
   // se instala. Se aborta ANTES de cualquier llamada de red (ni prevuelo ni descarga).
   const devOpen = env["BVSALA_DEV_OPEN"] === "1";
   exigirLicenciaEnVivo(vivo, licencia, devOpen);
-  const secretos = [endpoints.anthropicApiKey, endpoints.openaiApiKey, licencia].filter((s): s is string => !!s);
+  const secretos = [endpoints.anthropicApiKey, endpoints.openaiApiKey, endpoints.googleApiKey, licencia].filter((s): s is string => !!s);
 
   const filtro = argumento("modelos")?.split(",").map((s) => s.trim());
   const modelos = filtro ? MODELOS.filter((m) => filtro.includes(m.id)) : MODELOS;
@@ -944,7 +1034,7 @@ async function principal(): Promise<void> {
     const nn = Math.min(lista.length, n ?? Infinity);
     const peor = lista
       .slice(0, nn)
-      .reduce((s, p) => s + peorCasoDeLlamada(p.prompt, TOPE_DE_SALIDA, precioDe(m.id)) * (p.label === "unsafe" ? 4 : 2), 0);
+      .reduce((s, p) => s + peorCasoDeLlamada(p.prompt, topeDe(m), precioDe(m.id)) * (p.label === "unsafe" ? 4 : 2), 0);
     console.log(
       `[xstest]   ${m.id.padEnd(18)} ${nn} prompts · peor caso ${peor.toFixed(3)} $ · tope ${m.tope} $` +
         (peor > m.tope ? " → se cortará por presupuesto (prefijo estratificado)" : ""),
@@ -956,7 +1046,10 @@ async function principal(): Promise<void> {
   let noMedibles: Record<string, string> = {};
   let hosts: { vistos: Record<string, number>; rechazados: Record<string, number> } | undefined;
   if (vivo) {
-    if (!endpoints.anthropicApiKey || !endpoints.openaiApiKey) throw new Error("VIVO sin claves en el entorno (tsx --env-file=…/.env.bench)");
+    const falta = modelos.find((m) =>
+      m.familia === "anthropic" ? !endpoints.anthropicApiKey : m.familia === "openai" ? !endpoints.openaiApiKey : !endpoints.googleApiKey,
+    );
+    if (falta) throw new Error(`VIVO sin la clave de ${falta.familia} en el entorno (tsx --env-file=…/.env.bench)`);
     // TODO el tráfico del proceso, no solo el de los brazos: también cualquier
     // `fetch` global que la capa hiciera por su cuenta (metering, licencias).
     const vigia = vigilarHosts(globalThis.fetch.bind(globalThis));
