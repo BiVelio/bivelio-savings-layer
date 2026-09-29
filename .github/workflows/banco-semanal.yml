@@ -1,0 +1,114 @@
+name: banco-semanal
+
+# EL BANCO SEMANAL EN VIVO. Decisión del dueño (2026-09-29): las cuatro baterías
+# publicadas (GSM8K, BFCL, XSTest, MT-Bench) contra el FUENTE de main, con diez
+# modelos y 50 $ por semana como máximo, y la release bloqueada si algo empeora.
+#
+# QUÉ SE MIDE. El fuente de main con la licencia de desarrollo abierta
+# (`BVSALA_DEV_OPEN=1`, como `pnpm ab`): la CI es nuestra y lo que se quiere saber
+# es si lo que va a salir en la próxima release empeora algo, no medir una ya
+# publicada. El orquestador (benchmarks/banco-semanal/orquestador.ts) lanza cada
+# arnés una vez por modelo y lee su artefacto; no reimplementa ninguna batería.
+#
+# EL DINERO, en código y no aquí (benchmarks/banco-semanal/plan.ts): un tope duro
+# por modelo y batería, otro para el juez de MT-Bench, y una caja global de 50 $
+# que reserva el tope entero de cada celda antes de lanzarla y aborta lo que no
+# quepa. test/banco-semanal.test.ts rompe si el reparto pasa de 50 $.
+#
+# QUÉ HACE FALLAR EL TRABAJO: benchmarks/banco-semanal/umbrales.ts (una respuesta
+# de otra pregunta, una llamada a herramienta cambiada, una negativa cacheada o
+# acreditada, un error causado por la capa, exactitud B−A significativamente
+# negativa, el informe de la capa fuera de ±2 % de la factura, o un banco que no
+# pudo medir). Un workflow programado que falla manda un correo al dueño.
+#
+# LA PUERTA: publish.yml no publica si el último run EN VIVO de este workflow en
+# main falló o tiene más de 8 días (benchmarks/banco-semanal/puerta.ts). Por eso
+# el `run-name` lleva el modo: la puerta solo cuenta los «(vivo)».
+#
+# SECRETOS: se referencian por NOMBRE; los da de alta el dueño con `gh secret set`
+# (lista y coste en docs/BANCO-SEMANAL.md). Solo los recibe el paso que corre el
+# banco, y solo en modo vivo.
+run-name: "banco semanal (${{ inputs.modo || 'vivo' }})"
+
+on:
+  schedule:
+    # Los lunes a las 04:17 UTC. Con la puerta de 8 días, un lunes perdido todavía
+    # deja un día para relanzarlo a mano antes de que bloquee una release.
+    - cron: "17 4 * * 1"
+  workflow_dispatch:
+    inputs:
+      modo:
+        description: "vivo (gasta, hasta 50 $) o seco (sin red de proveedor, 0 $: valida la fontanería)"
+        type: choice
+        options: [vivo, seco]
+        default: vivo
+
+permissions: {}
+
+# Nunca dos bancos a la vez (gastarían el doble), y uno en curso NO se cancela:
+# ya ha gastado, y cortarlo tiraría la medición pagada.
+concurrency:
+  group: banco-semanal
+  cancel-in-progress: false
+
+jobs:
+  banco:
+    runs-on: ubuntu-latest
+    # El máximo de un trabajo en GitHub es 360 min; cada celda tiene además su
+    # propio plazo (plan.ts: PLAZO_DE_CELDA_MS).
+    timeout-minutes: 350
+    permissions:
+      contents: read
+    env:
+      MODO: ${{ inputs.modo || 'vivo' }}
+    steps:
+      # Se gasta dinero solo midiendo main: un banco en vivo desde otra rama no
+      # certifica nada y la puerta no lo contaría.
+      - name: En vivo, solo desde main
+        run: |
+          if [ "$MODO" = "vivo" ] && [ "$GITHUB_REF" != "refs/heads/main" ]; then
+            echo "::error::El banco en vivo solo corre sobre main (esto es $GITHUB_REF). En otra rama, usa modo seco."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Habilitar pnpm (desde packageManager)
+        run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      # src/ importa @bivelio/license-client y @bivelio/protocol por su dist/.
+      - run: pnpm run build:packages
+
+      - name: Banco
+        env:
+          # Hosts oficiales de cada proveedor (no son secretos).
+          BVSALA_DEMO_ANTHROPIC_BASE_URL: https://api.anthropic.com/v1
+          BVSALA_DEMO_OPENAI_BASE_URL: https://api.openai.com/v1
+          BVSALA_DEMO_BASE_URL: https://api.openai.com/v1
+          BVSALA_DEMO_GOOGLE_BASE_URL: https://generativelanguage.googleapis.com/v1beta/openai
+          # Las claves, por nombre y SOLO en vivo: en seco el banco no las ve.
+          BVSALA_DEMO_ANTHROPIC_API_KEY: ${{ inputs.modo != 'seco' && secrets.ANTHROPIC_API_KEY || '' }}
+          BVSALA_DEMO_OPENAI_API_KEY: ${{ inputs.modo != 'seco' && secrets.OPENAI_API_KEY || '' }}
+          BVSALA_DEMO_API_KEY: ${{ inputs.modo != 'seco' && secrets.OPENAI_API_KEY || '' }}
+          BVSALA_DEMO_GOOGLE_API_KEY: ${{ inputs.modo != 'seco' && secrets.GEMINI_API_KEY || '' }}
+          BVSALA_JUDGE_API_KEY: ${{ inputs.modo != 'seco' && secrets.AI_GATEWAY_API_KEY || '' }}
+        run: pnpm exec tsx benchmarks/banco-semanal/orquestador.ts "--$MODO" --salida banco-semanal-salida
+
+      - name: Resumen en el job summary
+        if: always()
+        run: |
+          if [ -f banco-semanal-salida/resumen.md ]; then
+            cat banco-semanal-salida/resumen.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "El banco no llegó a escribir su resumen: mira el log del paso «Banco»." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: banco-semanal
+          path: banco-semanal-salida/
+          if-no-files-found: warn
+          retention-days: 90

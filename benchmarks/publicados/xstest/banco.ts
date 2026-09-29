@@ -604,6 +604,8 @@ export interface OpcionesDeTirada {
   licencia?: string;
   /** Modelos que el prevuelo descartó, con su motivo: no se mide nada de ellos. */
   noMedibles?: Record<string, string>;
+  /** `--tope=` (banco semanal): tope por modelo que solo puede BAJAR el de `MODELOS` y el duro. */
+  topeMaximoUsd?: number;
 }
 
 export async function correrTirada(o: OpcionesDeTirada): Promise<Tirada> {
@@ -616,7 +618,11 @@ export async function correrTirada(o: OpcionesDeTirada): Promise<Tirada> {
 
   await Promise.all(
     o.modelos.map(async (cfg) => {
-      const tope = Math.min(cfg.tope, cfg.id.startsWith("claude-opus") ? TOPE_DURO_OPUS_USD : TOPE_DURO_POR_MODELO_USD);
+      const tope = Math.min(
+        cfg.tope,
+        cfg.id.startsWith("claude-opus") ? TOPE_DURO_OPUS_USD : TOPE_DURO_POR_MODELO_USD,
+        o.topeMaximoUsd ?? Infinity,
+      );
       const motivo = o.noMedibles?.[cfg.id];
       if (motivo) {
         porModelo[cfg.id] = {
@@ -1017,6 +1023,12 @@ async function principal(): Promise<void> {
   }
   const n = argumento("n") ? Number(argumento("n")) : undefined;
   const semilla = argumento("semilla") ? Number(argumento("semilla")) : SEMILLA;
+  // `--tope=USD` (banco semanal, benchmarks/banco-semanal): solo BAJA el tope de cada modelo.
+  const topeMaximoUsd = argumento("tope") !== undefined ? Number(argumento("tope")) : undefined;
+  if (topeMaximoUsd !== undefined && !(topeMaximoUsd > 0)) throw new Error(`--tope inválido: ${argumento("tope")}`);
+  // `--fuente-de-main` (banco semanal): el brazo B es el fuente de ESTE árbol, sea la versión que sea
+  // (lo que main lleva hoy, no una release), con BVSALA_DEV_OPEN=1. El artefacto lo dice.
+  const fuenteDeMain = process.argv.includes("--fuente-de-main");
 
   let prompts = await cargarDataset(vivo);
   if (!prompts) {
@@ -1036,11 +1048,11 @@ async function principal(): Promise<void> {
       .slice(0, nn)
       .reduce((s, p) => s + peorCasoDeLlamada(p.prompt, topeDe(m), precioDe(m.id)) * (p.label === "unsafe" ? 4 : 2), 0);
     console.log(
-      `[xstest]   ${m.id.padEnd(18)} ${nn} prompts · peor caso ${peor.toFixed(3)} $ · tope ${m.tope} $` +
-        (peor > m.tope ? " → se cortará por presupuesto (prefijo estratificado)" : ""),
+      `[xstest]   ${m.id.padEnd(18)} ${nn} prompts · peor caso ${peor.toFixed(3)} $ · tope ${Math.min(m.tope, topeMaximoUsd ?? Infinity)} $` +
+        (peor > Math.min(m.tope, topeMaximoUsd ?? Infinity) ? " → se cortará por presupuesto (prefijo estratificado)" : ""),
     );
   }
-  if ((BV_SALA_VERSION as string) !== VERSION_DEL_PAQUETE.version) throw new Error(`el fuente es ${BV_SALA_VERSION}, no ${VERSION_DEL_PAQUETE.version}`);
+  if (!fuenteDeMain && (BV_SALA_VERSION as string) !== VERSION_DEL_PAQUETE.version) throw new Error(`el fuente es ${BV_SALA_VERSION}, no ${VERSION_DEL_PAQUETE.version}`);
 
   let fetchBase: typeof fetch;
   let noMedibles: Record<string, string> = {};
@@ -1076,12 +1088,17 @@ async function principal(): Promise<void> {
     noMedibles,
     ...(vivo && licencia ? { licencia } : {}),
     ...(n !== undefined ? { n } : {}),
+    ...(topeMaximoUsd !== undefined ? { topeMaximoUsd } : {}),
   });
   if (hosts) {
     tirada.red = { hostsVistos: { ...hosts.vistos }, hostsRechazados: { ...hosts.rechazados } };
     console.log(`[xstest] hosts vistos: ${JSON.stringify(hosts.vistos)} · rechazados: ${JSON.stringify(hosts.rechazados)}`);
   }
-  tirada.paquete["comoSeEjecuta"] = vivo && !licencia ? ETIQUETA_DEV_OPEN : tirada.paquete["comoSeEjecuta"]!;
+  tirada.paquete["comoSeEjecuta"] = fuenteDeMain
+    ? `fuente de este árbol (${BV_SALA_VERSION}, commit ${tirada.commitDelBanco}) vía tsx, ${licencia ? "BIVELIO_LICENSE_KEY" : "BVSALA_DEV_OPEN=1"}: banco semanal, no una release`
+    : vivo && !licencia
+      ? ETIQUETA_DEV_OPEN
+      : tirada.paquete["comoSeEjecuta"]!;
   const informe = construirInforme(tirada);
   const salida =
     argumento("salida") ?? (vivo ? join(RAIZ, "docs", "benchmarks", "2026-09-28") : join(RAIZ, "node_modules", ".cache", "bvsala-xstest", "seco"));
