@@ -4,7 +4,11 @@ build-backend = "hatchling.build"
 
 [project]
 name = "bivelio-savings-layer"
-version = "0.1.0"
+# La versión vive en UN sitio, src/bvsala/__init__.py (`__version__`), y hatch la
+# lee de ahí: la que devuelve `bvsala.__version__` es la que sube a PyPI.
+# Política: versión PROPIA, no la del paquete de npm (docs/PUBLICAR-PYPI.md). La
+# etiqueta de la Release es `py-v<versión>` y publish-pypi.yml exige que coincida.
+dynamic = ["version"]
 description = "Python client for the BiVelio Savings Layer gateway: route the official OpenAI and Anthropic SDKs through your local bvsala gateway and get each request's report, measured with your provider's own usage counter."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -15,6 +19,9 @@ license-files = ["LICENSE"]
 authors = [{ name = "BiVelio Inc.", email = "support@bivelio.com" }]
 keywords = ["llm", "cost-optimization", "llm-costs", "token-accounting", "openai", "anthropic"]
 classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.10",
@@ -22,15 +29,24 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
+  "Topic :: Software Development :: Libraries :: Python Modules",
   "Typing :: Typed",
 ]
+# Sin clasificador «License :: …»: con `license` como expresión SPDX (PEP 639)
+# están prohibidos, y PyPI rechaza la subida si van los dos.
 # Sin dependencias: solo la biblioteca estándar. Los SDK de OpenAI y Anthropic
 # los trae el usuario; este paquete no los importa.
 dependencies = []
 
+# Sin «Repository»: el repositorio es privado y el enlace daría un 404 en PyPI.
 [project.urls]
 Homepage = "https://savings.bivelio.com"
+Pricing = "https://savings.bivelio.com/pricing"
 Privacy = "https://savings.bivelio.com/privacy"
+"Gateway (npm)" = "https://www.npmjs.com/package/@bivelio/savings-layer"
+
+[tool.hatch.version]
+path = "src/bvsala/__init__.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/bvsala"]
