@@ -15,6 +15,7 @@ Lo decidió el dueño el 2026-09-29. El código está en `benchmarks/banco-seman
 | `extraer.ts` | Lee el artefacto de cada arnés |
 | `soporte.ts` | Decide qué modelos sabe medir cada arnés |
 | `orquestador.ts` | Lanza los arneses |
+| `factura.ts` | Cuadra lo medido contra la factura real del proveedor |
 | `resumen.ts` | Escribe el resumen del trabajo |
 | `puerta.ts` | La puerta de `publish.yml` |
 
@@ -69,6 +70,11 @@ El workflow los pasa a los arneses con estos nombres:
 Las URL base son las oficiales de cada proveedor. Van en claro en el YAML, porque
 no son secretos. La de Google es la de la API nativa,
 `https://generativelanguage.googleapis.com/v1beta`.
+
+Para cuadrar contra la **factura real** hacen falta además dos claves de
+administrador y los ids de dónde vive el gasto del banco. Están explicados en
+[La factura real](#la-factura-real). Sin ellos, el banco corre igual y avisa de
+que la factura real no se comprobó.
 
 Si falta una clave, o el proveedor la rechaza, sus modelos salen como **no
 medibles**. Eso es un aviso y no hace fallar el banco. Hay dos excepciones:
@@ -179,6 +185,7 @@ en una sola celda**.
 | `capa-falla` | Cualquier batería: un error en el brazo con la capa cuando el brazo sin ella, en la misma pregunta, no lo tuvo. En XSTest cuenta también un texto entregado distinto del recibido, y en BFCL una violación del aislamiento de caché |
 | `exactitud-peor` | B − A significativamente negativa. Según la batería: el IC 95 % entero por debajo de 0 (GSM8K, BFCL); la tasa de victoria de B ante el juez con el IC entero por debajo de 0,5 (MT-Bench); o McNemar p < 0,05 en la dirección mala (XSTest: más negativas en prompts seguros, o menos en inseguros) |
 | `informe-vs-factura` | El coste que dice el informe de la capa, sumado por brazo, se sale de ±2 % de lo que factura el proveedor según su `usage`. Hay una holgura absoluta de 0,0001 $ |
+| `factura-no-cuadra` | Lo que el proveedor **factura** según su API de costes, en el workspace o proyecto del banco y en los días de la tirada, se sale de ±2 % de lo que el banco midió. Solo actúa con clave de administrador. Ver [La factura real](#la-factura-real) |
 | `arnes-falla` | Un arnés murió, pasó de su plazo (75 min) o no dejó un artefacto legible |
 | `tope-excedido` | Una celda gastó más que su tope más 0,01 $ |
 | `tope-global` | La caja global abortó |
@@ -195,12 +202,148 @@ en una sola celda**.
 
 Dos cosas que conviene saber al leer estas reglas:
 
-- **La «factura»** es el `usage` que devuelve el proveedor, multiplicado por el
-  precio de lista del catálogo. Es la misma cuenta que publica cada batería. No
-  es la factura mensual del proveedor.
+- **La «factura» de `informe-vs-factura`** es el `usage` que devuelve el
+  proveedor, multiplicado por el precio de lista del catálogo. Es la misma
+  cuenta que publica cada batería, y usa el mismo catálogo que la capa: un
+  precio mal puesto no lo detectaría. La que cobra el proveedor de verdad la
+  mira `factura-no-cuadra`.
 - **`capa-falla` no existe como campo en ningún arnés.** Se calcula igual en las
   cuatro baterías: un error que solo aparece en el brazo con la capa. Un 429 que
   la capa agota y que A no vio también cuenta. Es conservador a propósito.
+
+## La factura real
+
+Es el criterio 4 de `docs/CAMINO-A-0.5.md`: «el informe cuadra con la factura
+±2 %, con el ahorro nativo aparte». Tras las celdas, `factura.ts` pregunta a la
+API de costes de cada proveedor cuánto cobró y lo compara con lo que midió el
+banco.
+
+### Qué se compara
+
+Por proveedor, dos cifras:
+
+- **Lo medido:** la suma del gasto de cada celda que ese proveedor factura
+  directamente. Incluye el brazo A, el brazo B y los demás brazos y repeticiones
+  de cada arnés, todo contado con los contadores de `usage`. El juez de MT-Bench
+  solo entra si va directo a `api.openai.com`. Por defecto va por
+  `ai-gateway.vercel.sh`, y eso lo factura Vercel.
+- **Lo facturado:** el coste que da la API del proveedor para el workspace o
+  proyecto del banco, en los días UTC que cubre la tirada.
+
+Si no están a ±2 % el uno del otro, el banco falla con `factura-no-cuadra`.
+
+**El ahorro nativo va aparte.** El descuento de la caché de prefijo del
+proveedor ya está dentro de la factura, porque los tokens leídos de caché se
+cobran a su tarifa. También está dentro de lo medido, porque los arneses los
+tarifan igual. Por eso no se suma ni se resta en ningún lado: ni
+`report.nativeSavings` ni el ahorro de la capa entran en el cuadre. El resumen
+enseña en una línea propia cuánto de la factura fue caché del proveedor, para
+que quede claro que ese dinero no es de la capa.
+
+**Google no se comprueba.** Su factura sale de la exportación de facturación de
+Google Cloud, que no está integrada. El resumen lo dice.
+
+### Las APIs
+
+| Proveedor | Coste | Uso (para ver tráfico ajeno) |
+| --- | --- | --- |
+| Anthropic | `GET /v1/organizations/cost_report`: solo por día, en céntimos, agrupado por `workspace_id` | `GET /v1/organizations/usage_report/messages`: por minuto, filtrado por `workspace_ids[]` y agrupado por `api_key_id` |
+| OpenAI | `GET /v1/organization/costs`: solo por día, en dólares, filtrado por `project_ids[]` y `api_key_ids[]` | `GET /v1/organization/usage/completions`: por minuto, con los mismos filtros |
+
+La documentación, consultada el 2026-09-29:
+[Anthropic](https://platform.claude.com/docs/en/manage-claude/usage-cost-api) y
+[OpenAI](https://developers.openai.com/api/reference/resources/admin/subresources/organization/subresources/usage/methods/costs).
+
+### El retraso, y por qué el cuadre va en dos fases
+
+Las dos APIs de coste solo dan **días enteros**, y los datos llegan con retraso.
+Anthropic dice que «normalmente» tardan menos de 5 minutos. OpenAI no publica
+ninguna cifra. Pero la factura de un workspace dedicado **solo puede crecer**
+mientras llegan datos, y eso permite decidir sin ambigüedad:
+
+- **Dentro de ±2 %:** cuadra.
+- **Más de un 2 % por encima:** no cuadra, sin esperar. El retraso no infla una
+  factura.
+- **Por debajo:** puede ser el retraso. Se vuelve a leer cada 5 minutos durante
+  un máximo de 20 (`BANCO_FACTURA_INTERVALO_S` y `BANCO_FACTURA_ESPERA_MIN`).
+  Si no llega, queda **pendiente**: sale como aviso y se guarda en
+  `resultados.json`.
+
+**La tirada siguiente decide los pendientes.** El workflow baja el artefacto de
+la última tirada en vivo (por eso tiene `actions: read`) y vuelve a leer su
+factura. Para entonces ese día ha cerrado hace una semana: si sigue por debajo,
+la tirada nueva falla con `factura-no-cuadra` y la puerta de `publish.yml`
+cierra.
+
+Se hizo así, y no con un trabajo aparte que espere a medianoche, porque la
+puerta solo mira el último run «(vivo)» de este workflow. Un segundo workflow no
+la cerraría sin tocar `puerta.ts`. Y esperar horas dentro del trabajo chocaría
+con su límite de 360 minutos.
+
+### Qué hace falta: claves, permisos y aislamiento
+
+**Aislar el gasto del banco es obligatorio.** La factura va por días y por
+workspace o proyecto. Si en esos días entra otro tráfico, la factura ya no es la
+del banco. Por eso el banco necesita:
+
+- **Anthropic:** un **workspace dedicado** al banco (por ejemplo,
+  `banco-semanal`), con la clave `ANTHROPIC_API_KEY` del banco creada **dentro**
+  de ese workspace. Nadie más lo usa.
+- **OpenAI:** un **proyecto dedicado** al banco, con la clave `OPENAI_API_KEY`
+  del banco creada dentro de ese proyecto. Nadie más lo usa.
+
+Con eso, el dueño da de alta:
+
+```bash
+# Secretos: claves de administrador. Solo leen uso y coste.
+gh secret set ANTHROPIC_ADMIN_API_KEY   # sk-ant-admin01-…  (Console → Settings → Admin keys)
+gh secret set OPENAI_ADMIN_API_KEY      # clave de administrador (platform.openai.com → Settings → Organization → Admin keys)
+
+# Variables: son ids, no secretos.
+gh variable set BANCO_ANTHROPIC_WORKSPACE_ID --body wrkspc_…   # el workspace del banco (obligatorio)
+gh variable set BANCO_ANTHROPIC_API_KEY_ID   --body apikey_…   # el id de la clave del banco (opcional: detecta otras claves)
+gh variable set BANCO_OPENAI_PROJECT_ID      --body proj_…     # el proyecto del banco
+gh variable set BANCO_OPENAI_API_KEY_ID      --body key_…      # el id de la clave del banco (opcional si hay proyecto)
+```
+
+**Los permisos mínimos:**
+
+- **Anthropic:** una Admin API key (`sk-ant-admin01-…`). Anthropic no ofrece
+  claves de administrador de solo lectura: cualquier Admin key puede gestionar la
+  organización. Por eso esta clave va **solo** como secreto del workflow, solo
+  la recibe el paso del banco, solo en modo vivo, y solo se usa para dos `GET`.
+  Una clave de un workspace no sirve para estas APIs.
+- **OpenAI:** una Admin key con permiso de **solo lectura** sobre *Usage*, si la
+  consola lo ofrece al crearla. Solo se usa para dos `GET`.
+
+Las claves solo viajan en la cabecera de esas llamadas. Ningún texto que escribe
+el banco las incluye, y los registros pasan además por el mismo filtro de
+secretos que el resto del banco. Se comprueban **por existencia**
+(`gh secret list`), nunca por su valor.
+
+### Lo que sale cuando algo falta
+
+Ninguno de estos casos hace fallar el banco. Todos salen como aviso en la
+sección «Factura real» del resumen:
+
+| Situación | Aviso |
+| --- | --- |
+| Sin clave de administrador | «factura real no comprobada (sin clave de administrador: …)» |
+| Clave, pero sin workspace o proyecto del banco | «factura real no comprobada (sin workspace dedicado …)» |
+| Tráfico ajeno en esos días: otras claves, o uso fuera de la ventana de la tirada | «factura real no comprobada: tráfico ajeno …» |
+| La API rechaza la clave o no responde | «factura real no comprobada: … HTTP 403 …» |
+| Una celda murió sin artefacto y su gasto no se conoce | «factura real no comprobada: N celdas murieron sin artefacto …» |
+| Los datos no llegaron a tiempo | «pendiente»: lo decide la tirada siguiente |
+
+**Cuidado al relanzar el banco en vivo el mismo día UTC.** La factura de ese día
+mezcla las dos tiradas y no hay forma de separarlas, así que las dos quedan como
+«tráfico ajeno», sin comprobar. Si hace falta el cuadre, relanza al día
+siguiente.
+
+Mientras no haya claves de administrador, el criterio 4 se da por cumplido
+**solo contra el precio de lista** (§4.4 de `docs/CAMINO-A-0.5.md`). Una semana
+cuyo resumen diga «cuadra» en Anthropic y en OpenAI es la que lo certifica
+contra la factura.
 
 ## Cómo leer los resultados
 
@@ -210,8 +353,9 @@ Dos cosas que conviene saber al leer estas reglas:
 - **El artefacto `banco-semanal`** se guarda 90 días
   (`gh run download <id> -n banco-semanal`) y contiene:
   - `resumen.md`: lo mismo que el job summary.
-  - `resultados.json`: el plan, el reparto, cada celda con su medición y el
-    veredicto.
+  - `resultados.json`: el plan, el reparto, cada celda con su medición, el
+    veredicto y el cuadre de la factura (`factura`), que es lo que la tirada
+    siguiente lee para decidir los pendientes.
   - `<batería>/<modelo>/`: el JSON y el Markdown del propio arnés, más
     `registro.log`, que es su salida. Los valores de las variables con nombre de
     secreto se sustituyen por `[redactado]` antes de guardarla. En MT-Bench está

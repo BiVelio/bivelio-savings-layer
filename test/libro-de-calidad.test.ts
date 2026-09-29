@@ -57,6 +57,7 @@ class ProveedorGuion implements Provider {
       text: paso.text ?? "",
       usage: paso.usage ?? { inputTokens: 100, outputTokens: 10 },
       ...(paso.finishReason !== undefined ? { finishReason: paso.finishReason } : {}),
+      ...(paso.finishReasonDetail !== undefined ? { finishReasonDetail: paso.finishReasonDetail } : {}),
       ...(paso.toolCalls !== undefined ? { toolCalls: paso.toolCalls } : {}),
     };
   }
@@ -91,6 +92,8 @@ const VOCABULARIO = new Set([
   "accepted", "escalated", "not_routed", "not_applied",
   // `finishReason`, tal cual lo nombra el proveedor.
   "stop", "length", "tool_calls", "content_filter",
+  // `finishReasonDetail`: el motivo propio del proveedor (Gemini compatible).
+  "OTHER",
 ]);
 
 // «MEASURED» ES UNA PALABRA DE DINERO EN ESTE REPO: la base de lo leído del
@@ -195,6 +198,22 @@ describe("el contrato de salida: validación, rescate y reparación", () => {
     expect(l.schema).toEqual({ outcome: "passed", decodeTimeConstraint: false, errorCount: 0 });
     expect(l.truncation).toEqual({ truncated: false, finishReason: "stop", capSetByCaller: false });
     expect(l.repair).toBeUndefined();
+  });
+
+  it("el motivo propio del proveedor viaja en `truncation.finishReasonDetail`, como en `SavingsResult`", async () => {
+    // Simétrico con `SavingsResult.finishReason`/`finishReasonDetail`: en la 0.5
+    // `finishReason` pasa al conjunto cerrado y el literal queda en el detalle.
+    const r = await generar(
+      capa(new ProveedorGuion([{ text: "", finishReason: "content_filter", finishReasonDetail: "OTHER" }])),
+      pide("tell me something"),
+    );
+    expect(r.finishReasonDetail).toBe("OTHER");
+    expect(r.report.qualityLedger!.truncation).toEqual({
+      truncated: false,
+      finishReason: "content_filter",
+      finishReasonDetail: "OTHER",
+      capSetByCaller: false,
+    });
   });
 
   it("JSON envuelto en prosa: unwrapped, y sin reparación", async () => {
