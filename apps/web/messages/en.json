@@ -561,6 +561,18 @@
       "detalle": "{requests} credited requests",
       "nota": "The count is the provider's (applied_edits). It is not a measured saving and never enters your commission; money will follow once the net per model is measured — clearing rewrites the prefix cache, and on some models the net is negative."
     },
+    "ahorroNativo": {
+      "title": "Native savings unlocked",
+      "detalle": "{requests} requests with provider cache · reads {lectura} − write premium {prima}",
+      "nota": "This is your provider's own prefix-cache discount (Anthropic with cache_control, OpenAI automatic, Gemini implicit), net of the cache-write premium it bills, computed from its own counter at list price. You see it on your provider's invoice, not ours: it is kept apart from the credited savings and never enters your commission.",
+      "vacio": "No requests read or wrote your provider's prefix cache in this period yet.",
+      "proveedor": {
+        "anthropic": "Anthropic",
+        "openai": "OpenAI",
+        "google": "Gemini",
+        "other": "Other"
+      }
+    },
     "ritmo": {
       "title": "Pace and projection",
       "badgeEstimacion": "Estimate",
@@ -716,7 +728,8 @@
         "libros": "The four ledgers",
         "trafico": "Traffic",
         "sesiones": "Sessions",
-        "maquinas": "Machines"
+        "maquinas": "Machines",
+        "nativo": "Native savings unlocked"
       }
     },
     "team": {
@@ -1300,7 +1313,7 @@
         },
         "cost": {
           "title": "Cost",
-          "body": "Cost figures computed by the Software from its price catalogue, or from a cost model you supply: baseline cost, actual cost, the net-saving ratio, the basis of the figures (measured, reference, estimated, shadow or unmeasured), and the value, at the provider's cache-read price, of input tokens your provider reported as cleared from context."
+          "body": "Cost figures computed by the Software from its price catalogue, or from a cost model you supply: baseline cost, actual cost, the net-saving ratio, the basis of the figures (measured, reference, estimated, shadow or unmeasured), and the value, at the provider's cache-read price, of input tokens your provider reported as cleared from context. Shown apart and never used to calculate the fees: the discount your provider's own prompt cache gave the request and the cache-write premium it billed."
         }
       }
     },

@@ -43,6 +43,16 @@ interface UsageWire {
    */
   eliminatedInputFloorCost?: number;
   /**
+   * El AHORRO NATIVO de la caché de prefijo del proveedor (report.nativeSavings),
+   * en dos cifras NO NEGATIVAS: el descuento de lectura y la prima de escritura,
+   * en USD. OPCIONALES y solo con `nativeSavings.basis === "measured"` y alguna
+   * > 0. Carril propio en el servidor (migración 0032): jamás measured_*, jamás
+   * la comisión. SERVIDOR PRIMERO: la lista blanca y 0032 antes que el npm que
+   * los emite (un 4xx descarta el lote sin reintento).
+   */
+  nativeCacheReadSavings?: number;
+  nativeCacheWritePremium?: number;
+  /**
    * Medido por referencia: el `requestId` de la llamada que corrió y cuyo
    * contador valora esta evitada, y cuándo se leyó ese contador. Identificadores
    * y un instante, nunca contenido. Solo con `basis: "reference"`.
@@ -359,6 +369,9 @@ export class UsageEmitter {
       r.tokens.eliminatedInput > 0
         ? { eliminatedInputFloorCost: r.cost.eliminatedInputFloorCost }
         : {}),
+      // El ahorro nativo: dos cifras ≥ 0 y finitas, solo medidas, solo si alguna
+      // es > 0. Un número raro se omite aquí en vez de arriesgar el lote.
+      ...camposNativos(r),
       // `report.qualityStatus` NO viaja todavía, y es a propósito. El ingest
       // valida con LISTA BLANCA y rechaza el registro entero ante un campo
       // desconocido —ese rechazo es el cortafuegos que impide que se cuele
@@ -434,7 +447,7 @@ export function informeSombraDeMedir(r: SavingsReport): SavingsReport | null {
   if (!/^[A-Za-z0-9._:/-]{1,128}$/.test(requestId)) return null;
   const pagado = Math.max(0, r.cost.actual);
   const hipotetico = Math.max(0, pagado - ahorro);
-  const { measure: _m, ...resto } = r;
+  const { measure: _m, nativeSavings: _n, ...resto } = r;
   return {
     ...resto,
     requestId,
@@ -445,5 +458,18 @@ export function informeSombraDeMedir(r: SavingsReport): SavingsReport | null {
       netSavings: pagado > 0 ? Math.min(1, (pagado - hipotetico) / pagado) : 0,
       basis: "shadow",
     },
+  };
+}
+
+/** Las dos cifras del ahorro nativo que viajan, o nada. */
+function camposNativos(r: SavingsReport): Pick<UsageWire, "nativeCacheReadSavings" | "nativeCacheWritePremium"> {
+  const n = r.nativeSavings;
+  if (!n || n.basis !== "measured") return {};
+  const ok = (v: number) => Number.isFinite(v) && v >= 0;
+  if (!ok(n.readDiscountUsd) || !ok(n.writePremiumUsd)) return {};
+  if (!(n.readDiscountUsd > 0) && !(n.writePremiumUsd > 0)) return {};
+  return {
+    ...(n.readDiscountUsd > 0 ? { nativeCacheReadSavings: n.readDiscountUsd } : {}),
+    ...(n.writePremiumUsd > 0 ? { nativeCacheWritePremium: n.writePremiumUsd } : {}),
   };
 }

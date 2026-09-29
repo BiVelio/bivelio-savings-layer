@@ -561,6 +561,18 @@
       "detalle": "{requests} richieste accreditate",
       "nota": "Il conteggio è del provider (applied_edits). Non è un risparmio misurato e non entra mai nella tua commissione; il denaro arriverà quando il netto per modello sarà misurato — cancellare riscrive la cache di prefisso, e su alcuni modelli il netto è negativo."
     },
+    "ahorroNativo": {
+      "title": "Risparmio nativo attivato",
+      "detalle": "{requests} richieste con cache del fornitore · letture {lectura} − sovrapprezzo di scrittura {prima}",
+      "nota": "È lo sconto della cache di prefisso del tuo fornitore (Anthropic con cache_control, OpenAI automatica, Gemini implicita), al netto del sovrapprezzo di scrittura che applica, calcolato con il suo stesso contatore a prezzo di listino. Lo vedi nella fattura del tuo fornitore, non nella nostra: resta separato dal risparmio accreditato e non entra mai nella tua commissione.",
+      "vacio": "In questo periodo nessuna richiesta ha ancora letto o scritto la cache di prefisso del tuo fornitore.",
+      "proveedor": {
+        "anthropic": "Anthropic",
+        "openai": "OpenAI",
+        "google": "Gemini",
+        "other": "Altri"
+      }
+    },
     "ritmo": {
       "title": "Ritmo e proiezione",
       "badgeEstimacion": "Stima",
@@ -716,7 +728,8 @@
         "libros": "I quattro registri",
         "trafico": "Traffico",
         "sesiones": "Sessioni",
-        "maquinas": "Macchine"
+        "maquinas": "Macchine",
+        "nativo": "Risparmio nativo attivato"
       }
     },
     "team": {
@@ -1300,7 +1313,7 @@
         },
         "cost": {
           "title": "Costo",
-          "body": "Cifre di costo calcolate dal Software con il suo catalogo prezzi o con un modello di costo che fornisci tu: costo di riferimento, costo effettivo, il rapporto di risparmio netto, la base delle cifre (measured, reference, estimated, shadow o unmeasured) e il valore, al prezzo di lettura della cache del provider, dei token di input che il tuo provider ha dichiarato rimossi dal contesto."
+          "body": "Cifre di costo calcolate dal Software con il suo catalogo prezzi o con un modello di costo che fornisci tu: costo di riferimento, costo effettivo, il rapporto di risparmio netto, la base delle cifre (measured, reference, estimated, shadow o unmeasured) e il valore, al prezzo di lettura della cache del provider, dei token di input che il tuo provider ha dichiarato rimossi dal contesto. Mostrati a parte e mai usati per calcolare le tariffe: lo sconto che la cache dei prompt del tuo fornitore ha dato alla richiesta e il sovrapprezzo di scrittura in cache che ha fatturato."
         }
       }
     },

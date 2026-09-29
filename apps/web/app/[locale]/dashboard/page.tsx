@@ -12,6 +12,7 @@ import { BillingStateBanner } from "./components/BillingStateBanner";
 import { GatewayVersionBanner } from "./components/GatewayVersionBanner";
 import { SdkReferenciaBanner } from "./components/SdkReferenciaBanner";
 import { InstrumentationSpine } from "./components/InstrumentationSpine";
+import { AhorroNativoCard } from "./components/AhorroNativoCard";
 import { LiveLedgerTiles } from "./components/LiveLedgerTiles";
 import { RitmoCard } from "./components/RitmoCard";
 import { TokenTotalsTiles } from "./components/TokenTotalsTiles";
@@ -50,6 +51,7 @@ export default async function OverviewPage({
   // completo: uno es un cálculo de calendario y el otro una historia de alta.
   const rango = rangoDesdeParametro((await searchParams).range);
   const usage = rango === RANGO_POR_DEFECTO ? usageCompleto : cortarPorPeriodo(usageCompleto, rango);
+  const porModelo = rango === RANGO_POR_DEFECTO ? porModeloCompleto : cortarPorPeriodo(porModeloCompleto, rango);
   const steps = await activationSteps(true, ctx, usageCompleto);
   // Coste por sesión (0019) y máquinas (0024): lecturas aparte y tolerantes —
   // sin tabla o sin columnas (migración por detrás del deploy) o sin filas, la
@@ -95,6 +97,16 @@ export default async function OverviewPage({
               // Justo detrás del titular: a qué velocidad va y dónde acaba el mes.
               // Mira el mes completo, no el rango: es un cálculo de calendario.
               { id: "ritmo", titulo: t("panel.cards.ritmo"), contenido: <RitmoCard usage={usageCompleto} /> },
+              // EL AHORRO NATIVO de la caché del proveedor, APARTE del titular
+              // (0032, decisión del dueño): lo que la caché de prefijo del
+              // proveedor le quitó a su factura. Sin comisión: el titular no lo
+              // suma y el extracto no lo lee. Está para que el panel cuadre con
+              // la factura del proveedor.
+              {
+                id: "nativo",
+                titulo: t("panel.cards.nativo"),
+                contenido: <AhorroNativoCard usage={usage} porModelo={porModelo} />,
+              },
               // Los TOTALES antes que la atribución por libro: "cuántos tokens he
               // gastado" es la pregunta que se hace primero, y los cuatro libros de
               // abajo la responden por partes que NO se pueden sumar entre sí.

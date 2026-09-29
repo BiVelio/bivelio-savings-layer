@@ -11,7 +11,12 @@
  * cannot become a value channel for content.
  */
 import { REGLA_REFERENCIA } from "../billing/tarifa";
-import { recortarSuelo, TECHO_PRECIO_LECTURA_PER_1K, TECHO_PRECIO_SALIDA_PER_1K } from "./techo-precio-lectura";
+import {
+  recortarNativo,
+  recortarSuelo,
+  TECHO_PRECIO_LECTURA_PER_1K,
+  TECHO_PRECIO_SALIDA_PER_1K,
+} from "./techo-precio-lectura";
 
 export class UsageValidationError extends Error {
   constructor(message: string) {
@@ -68,12 +73,28 @@ const USAGE_OPTIONAL_MONEY_FIELDS = ["eliminatedInputFloorCost"] as const;
  */
 const USAGE_OPTIONAL_REFERENCE_FIELDS = ["referenceRequestId", "referenceAt"] as const;
 
+/**
+ * El AHORRO NATIVO (migración 0032): lo que la caché de prefijo DEL PROVEEDOR le
+ * quitó a la factura de la petición, en dos cifras no negativas —el descuento de
+ * lectura y la prima de escritura, USD— calculadas por el cliente con el
+ * contador del proveedor a precio de lista (report.nativeSavings).
+ *
+ * NUNCA COMISIONABLE, por construcción y no por interruptor: van a sus columnas
+ * propias (native_*), jamás a baseline/actual ni a measured_*, y
+ * lib/billing/extracto.ts no las lee para la base. No cambian `basis` ni ningún
+ * otro campo del registro (usage-nativo.test.ts lo afirma). OPCIONALES: un
+ * cliente anterior no las manda y sigue en 202. RECORTE, NO RECHAZO en el
+ * dominio (techo de entrada por token); tipo y signo sí se rechazan.
+ */
+const USAGE_OPTIONAL_NATIVE_FIELDS = ["nativeCacheReadSavings", "nativeCacheWritePremium"] as const;
+
 const USAGE_ALLOWED_FIELDS = new Set<string>([
   "orgId", "seatId", "ci", "cacheResult", "basis", "sessionId", "agentId",
   ...USAGE_ID_FIELDS,
   ...USAGE_NUMBER_FIELDS,
   ...USAGE_OPTIONAL_MONEY_FIELDS,
   ...USAGE_OPTIONAL_REFERENCE_FIELDS,
+  ...USAGE_OPTIONAL_NATIVE_FIELDS,
 ]);
 
 /**
@@ -115,6 +136,10 @@ export interface UsageRecord {
   orgId: string;
   /** Opcional (0025): tokens borrados por el proveedor valorados a precio SUELO de lectura. Recortado al techo; jamás en measured. */
   eliminatedInputFloorCost?: number;
+  /** Opcional (0032): descuento de la caché del proveedor en lectura, USD. Carril propio; jamás comisionable. */
+  nativeCacheReadSavings?: number;
+  /** Opcional (0032): prima de escritura de la caché del proveedor, USD. Carril propio; jamás comisionable. */
+  nativeCacheWritePremium?: number;
   /** Opcional (0029), solo con basis "reference": el report.requestId de la petición que sirvió de referencia. */
   referenceRequestId?: string;
   /** Opcional (0029), solo con basis "reference": epoch ms en que se leyó el contador de esa petición. */
@@ -255,6 +280,20 @@ export function parseUsageRecord(
     const recortado = recortarSuelo(v, tokens);
     if (recortado !== v) recortes.push({ recibido: v, tokens, guardado: recortado });
     rec["eliminatedInputFloorCost"] = recortado;
+  }
+  // 0032 · el AHORRO NATIVO. Tipo y signo se rechazan (bug del emisor); el
+  // dominio se RECORTA: la lectura, a leídos × techo de entrada; la prima, a
+  // entrada × techo. Sin conteo, 0. Nada de esto toca otro campo del registro.
+  for (const [campo, tokens] of [
+    ["nativeCacheReadSavings", rec["providerCachedInputTokens"] as number],
+    ["nativeCacheWritePremium", rec["actualInputTokens"] as number],
+  ] as const) {
+    if (input[campo] === undefined) continue;
+    const v = input[campo];
+    if (typeof v !== "number" || !Number.isFinite(v) || v < 0) {
+      throw new UsageValidationError(`field "${campo}" must be a finite number >= 0`);
+    }
+    rec[campo] = recortarNativo(v, tokens);
   }
   if (input["seatId"] !== undefined) {
     const s = input["seatId"];

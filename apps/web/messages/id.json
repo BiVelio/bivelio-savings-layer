@@ -561,6 +561,18 @@
       "detalle": "{requests} permintaan dikreditkan",
       "nota": "Hitungan ini milik penyedia (applied_edits). Bukan penghematan terukur dan tidak pernah masuk ke komisimu; uangnya menyusul setelah neto per model terukur — penghapusan menulis ulang cache prefiks, dan pada beberapa model netonya negatif."
     },
+    "ahorroNativo": {
+      "title": "Penghematan native yang diaktifkan",
+      "detalle": "{requests} permintaan dengan cache penyedia · baca {lectura} − premi tulis {prima}",
+      "nota": "Ini adalah diskon cache prefiks milik penyedia Anda (Anthropic dengan cache_control, OpenAI otomatis, Gemini implisit), dikurangi premi tulis cache yang ditagihkannya, dihitung dari penghitungnya sendiri dengan harga daftar. Anda melihatnya di tagihan penyedia Anda, bukan tagihan kami: dipisahkan dari penghematan yang dikreditkan dan tidak pernah masuk ke komisi Anda.",
+      "vacio": "Belum ada permintaan yang membaca atau menulis cache prefiks penyedia Anda pada periode ini.",
+      "proveedor": {
+        "anthropic": "Anthropic",
+        "openai": "OpenAI",
+        "google": "Gemini",
+        "other": "Lainnya"
+      }
+    },
     "ritmo": {
       "title": "Laju dan proyeksi",
       "badgeEstimacion": "Perkiraan",
@@ -716,7 +728,8 @@
         "libros": "Empat buku besar",
         "trafico": "Lalu lintas",
         "sesiones": "Sesi",
-        "maquinas": "Mesin"
+        "maquinas": "Mesin",
+        "nativo": "Penghematan native yang diaktifkan"
       }
     },
     "team": {
@@ -1300,7 +1313,7 @@
         },
         "cost": {
           "title": "Biaya",
-          "body": "Angka biaya yang dihitung Perangkat Lunak dari katalog harganya, atau dari model biaya yang kamu berikan: biaya dasar, biaya aktual, rasio penghematan bersih, dasar angka-angka itu (measured, reference, estimated, shadow, atau unmeasured), dan nilai, dengan harga baca cache penyedia, dari token input yang dilaporkan penyediamu sebagai dihapus dari konteks."
+          "body": "Angka biaya yang dihitung Perangkat Lunak dari katalog harganya, atau dari model biaya yang kamu berikan: biaya dasar, biaya aktual, rasio penghematan bersih, dasar angka-angka itu (measured, reference, estimated, shadow, atau unmeasured), dan nilai, dengan harga baca cache penyedia, dari token input yang dilaporkan penyediamu sebagai dihapus dari konteks. Ditampilkan terpisah dan tidak pernah dipakai untuk menghitung biaya: diskon yang diberikan cache prompt milik penyedia Anda pada permintaan tersebut dan premi tulis cache yang ditagihkannya."
         }
       }
     },

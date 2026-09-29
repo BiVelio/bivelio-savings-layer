@@ -561,6 +561,18 @@
       "detalle": "{requests} peticions acreditades",
       "nota": "El recompte és del proveïdor (applied_edits). No és un estalvi mesurat i mai no entra a la teva comissió; el diner arribarà quan el net per model estigui mesurat — esborrar reescriu la memòria cau de prefix, i en alguns models el net surt negatiu."
     },
+    "ahorroNativo": {
+      "title": "Estalvi natiu activat",
+      "detalle": "{requests} peticions amb memòria cau del proveïdor · lectura {lectura} − prima d'escriptura {prima}",
+      "nota": "És el descompte de la memòria cau de prefix del teu proveïdor (Anthropic amb cache_control, OpenAI automàtica, Gemini implícita), net de la prima d'escriptura que cobra, calculat amb el seu propi comptador a preu de llista. El veus a la factura del teu proveïdor, no a la nostra: va a part de l'estalvi acreditat i mai no entra a la teva comissió.",
+      "vacio": "Encara no hi ha peticions que hagin llegit o escrit la memòria cau de prefix del teu proveïdor en aquest període.",
+      "proveedor": {
+        "anthropic": "Anthropic",
+        "openai": "OpenAI",
+        "google": "Gemini",
+        "other": "Altres"
+      }
+    },
     "ritmo": {
       "title": "Ritme i projecció",
       "badgeEstimacion": "Estimació",
@@ -716,7 +728,8 @@
         "libros": "Els quatre llibres",
         "trafico": "Trànsit",
         "sesiones": "Sessions",
-        "maquinas": "Màquines"
+        "maquinas": "Màquines",
+        "nativo": "Estalvi natiu activat"
       }
     },
     "team": {
@@ -1300,7 +1313,7 @@
         },
         "cost": {
           "title": "Cost",
-          "body": "Xifres de cost que calcula el Software amb el seu catàleg de preus o amb un model de costos que aportis tu: cost de referència, cost real, la proporció d'estalvi net, la base de les xifres (measured, reference, estimated, shadow o unmeasured) i el valor, al preu de lectura de memòria cau del proveïdor, dels tokens d'entrada que el teu proveïdor va declarar esborrats del context."
+          "body": "Xifres de cost que calcula el Software amb el seu catàleg de preus o amb un model de costos que aportis tu: cost de referència, cost real, la proporció d'estalvi net, la base de les xifres (measured, reference, estimated, shadow o unmeasured) i el valor, al preu de lectura de memòria cau del proveïdor, dels tokens d'entrada que el teu proveïdor va declarar esborrats del context. A part, i sense fer-se servir mai per calcular les tarifes: el descompte que la memòria cau de prefix del teu proveïdor va donar a la petició i la prima d'escriptura de memòria cau que va facturar."
         }
       }
     },

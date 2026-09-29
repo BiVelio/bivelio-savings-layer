@@ -63,7 +63,8 @@ describe("el paquete publicado", () => {
     // 450 KB: el techo vigila que el minificado siga ahí, no el tamaño del
     // producto. Sin minificar (y sin comentarios) el bundle mide ~750 KB; con él,
     // ~409 KB desde el adaptador nativo de Gemini (+11 KB), que dejó el
-    // techo anterior (400 KB) sin margen. La licencia Medir (+4 KB) cabe.
+    // techo anterior (400 KB) sin margen. La licencia Medir (+4 KB) y el carril
+    // del ahorro nativo (0032) caben.
     expect(src.length).toBeLessThan(450_000);
   });
 });

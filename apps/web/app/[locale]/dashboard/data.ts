@@ -331,6 +331,15 @@ export interface UsageRollup {
   referenceRequests?: number;
   referenceBaselineCost?: number;
   referenceActualCost?: number;
+  /**
+   * El AHORRO NATIVO de la caché de prefijo del proveedor (migración 0032): el
+   * descuento de lectura y la prima de escritura (USD, ≥ 0) y las peticiones
+   * que los traen. Del proveedor: se enseña APARTE, jamás en el titular ni en
+   * la comisión. Opcionales: sin la columna, «no disponible», no 0.
+   */
+  nativeCacheReadSavings?: number;
+  nativeCacheWritePremium?: number;
+  nativeRequests?: number;
 }
 
 /** Reads usage_daily. Returns [] today (no metering pipeline). Never invents rows. */
@@ -362,6 +371,8 @@ const COLUMNAS_SOMBRA = "shadow_requests, shadow_baseline_cost, shadow_actual_co
 const COLUMNAS_ELISION = "eliminated_floor_cost, eliminated_credited_requests";
 /** El carril medido por referencia que añade 0029. */
 const COLUMNAS_REFERENCIA = "reference_requests, reference_baseline_cost, reference_actual_cost";
+/** El carril del ahorro nativo de la caché del proveedor que añade 0032. */
+const COLUMNAS_NATIVO = "native_cache_read_savings, native_cache_write_premium, native_requests";
 
 export async function getUsageRollups(supabase: SupabaseClient, orgId: string): Promise<UsageResult> {
   try {
@@ -378,7 +389,7 @@ export async function getUsageRollups(supabase: SupabaseClient, orgId: string): 
         .order("day", { ascending: true });
 
     let { data, error } = await leer(
-      `${COLUMNAS_BASE}, ${COLUMNAS_TOKENS}, ${COLUMNAS_SOMBRA}, ${COLUMNAS_ELISION}, ${COLUMNAS_REFERENCIA}`,
+      `${COLUMNAS_BASE}, ${COLUMNAS_TOKENS}, ${COLUMNAS_SOMBRA}, ${COLUMNAS_ELISION}, ${COLUMNAS_REFERENCIA}, ${COLUMNAS_NATIVO}`,
     );
     // EL DESPLIEGUE PUEDE ADELANTAR A LA MIGRACIÓN, y sin esto eso tumbaba el
     // panel ENTERO. PostgREST responde 42703 cuando una columna no existe; si
@@ -386,9 +397,18 @@ export async function getUsageRollups(supabase: SupabaseClient, orgId: string): 
     // `failed` de abajo le pinta "la lectura falló" a un cliente cuyos datos
     // están intactos — y no solo en la tarjeta nueva, sino en todo lo demás.
     //
-    // Se reintenta en escalera (0029 → 0025 → 0021 → 0015 → base). Las filas
+    // Se reintenta en escalera (0032 → 0029 → 0025 → 0021 → 0015 → base). Las filas
     // salen sin las columnas que falten, que es exactamente lo que son: no
     // disponibles todavía. Las tarjetas lo dirán así, y el resto del panel sigue.
+    if (error && esColumnaInexistente(error)) {
+      console.warn(
+        "[dashboard] usage_daily sin las columnas del ahorro nativo (¿falta la migración 0032?); " +
+          "se lee sin ellas y la tarjeta del ahorro nativo no saldrá",
+      );
+      ({ data, error } = await leer(
+        `${COLUMNAS_BASE}, ${COLUMNAS_TOKENS}, ${COLUMNAS_SOMBRA}, ${COLUMNAS_ELISION}, ${COLUMNAS_REFERENCIA}`,
+      ));
+    }
     if (error && esColumnaInexistente(error)) {
       console.warn(
         "[dashboard] usage_daily sin las columnas del carril medido por referencia (¿falta la migración 0029?); " +
@@ -471,6 +491,13 @@ export async function getUsageRollups(supabase: SupabaseClient, orgId: string): 
             referenceRequests: Number(r["reference_requests"]),
             referenceBaselineCost: Number(r["reference_baseline_cost"] ?? 0),
             referenceActualCost: Number(r["reference_actual_cost"] ?? 0),
+          }
+        : {}),
+      ...(r["native_requests"] != null
+        ? {
+            nativeRequests: Number(r["native_requests"]),
+            nativeCacheReadSavings: Number(r["native_cache_read_savings"] ?? 0),
+            nativeCacheWritePremium: Number(r["native_cache_write_premium"] ?? 0),
           }
         : {}),
     }));
@@ -615,6 +642,9 @@ export interface ModelDia {
   actualCost: number;
   actualInputTokens: number;
   actualOutputTokens: number;
+  /** El ahorro nativo por modelo (0032), USD. Opcionales: sin la columna, no vienen. */
+  nativeCacheReadSavings?: number;
+  nativeCacheWritePremium?: number;
 }
 
 /**
@@ -631,13 +661,19 @@ export async function getUsageByModel(
 ): Promise<{ rows: ModelDia[]; failed: boolean }> {
   try {
     const since = new Date(Date.now() - 120 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-    const { data, error } = await supabase
-      .schema("bvsala")
-      .from("usage_daily_by_model")
-      .select("day, model, requests, baseline_cost, actual_cost, actual_input_tokens, actual_output_tokens")
-      .eq("org_id", orgId)
-      .gte("day", since)
-      .order("day", { ascending: true });
+    const leer = (columnas: string) =>
+      supabase
+        .schema("bvsala")
+        .from("usage_daily_by_model")
+        .select(columnas)
+        .eq("org_id", orgId)
+        .gte("day", since)
+        .order("day", { ascending: true });
+    const COLUMNAS = "day, model, requests, baseline_cost, actual_cost, actual_input_tokens, actual_output_tokens";
+    let { data, error } = await leer(`${COLUMNAS}, native_cache_read_savings, native_cache_write_premium`);
+    // Sin 0032 las dos columnas nativas no existen: se relee sin ellas y el
+    // desglose por proveedor del ahorro nativo no sale; el explorador, igual.
+    if (error && esColumnaInexistente(error)) ({ data, error } = await leer(COLUMNAS));
     if (error) {
       if (esTablaInexistente(error)) return { rows: [], failed: false };
       console.error("[dashboard] usage_daily_by_model read failed:", error.code, error.message);
@@ -651,6 +687,12 @@ export async function getUsageByModel(
       actualCost: Number(r["actual_cost"] ?? 0),
       actualInputTokens: Number(r["actual_input_tokens"] ?? 0),
       actualOutputTokens: Number(r["actual_output_tokens"] ?? 0),
+      ...(r["native_cache_read_savings"] != null
+        ? {
+            nativeCacheReadSavings: Number(r["native_cache_read_savings"]),
+            nativeCacheWritePremium: Number(r["native_cache_write_premium"] ?? 0),
+          }
+        : {}),
     }));
     return { rows, failed: false };
   } catch (err) {

@@ -43,3 +43,24 @@ export function recortarSuelo(suelo: number, tokens: number): number {
  * a "estimated" en la verja del ingest (usage.ts, `referenciaCoherente`).
  */
 export const TECHO_PRECIO_SALIDA_PER_1K = 0.08;
+
+/**
+ * EL TECHO DE ENTRADA del carril del AHORRO NATIVO (0032), en USD por 1.000
+ * tokens: ≥ el mayor `inputPer1k` del catálogo y de las tablas de tier (hoy
+ * 0,03). Un test lo ata leyendo el catálogo como texto.
+ *
+ * Acota las dos cifras que el cliente manda por registro: el descuento de
+ * lectura (`nativeCacheReadSavings` ≤ leídos × techo: el descuento nunca pasa
+ * del precio de entrada entero) y la prima de escritura
+ * (`nativeCacheWritePremium` ≤ entrada × techo: la prima más cara, la de una
+ * hora, es 1× la entrada extra, y las escrituras están dentro de la entrada).
+ * RECORTE, NO RECHAZO, como el suelo: un throw tumba el lote entero. Y es
+ * inocuo para el dinero: este carril jamás entra en la comisión.
+ */
+export const TECHO_PRECIO_ENTRADA_PER_1K = 0.04;
+
+/** Una cifra del ahorro nativo recortada a `tokens × techo de entrada` (0 sin conteo). */
+export function recortarNativo(usd: number, tokens: number): number {
+  if (!(tokens > 0)) return 0;
+  return Math.min(usd, (tokens / 1_000) * TECHO_PRECIO_ENTRADA_PER_1K);
+}
