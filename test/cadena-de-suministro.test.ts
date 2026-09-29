@@ -157,7 +157,7 @@ describe("publish.yml publica con trusted publishing y provenance", () => {
     // Y las únicas acciones que ejecuta son estas dos.
     const acciones = [...publicar.matchAll(/uses: ([^\s@]+)@/g)].map((m) => m[1]);
     expect(acciones.sort()).toEqual(["actions/download-artifact", "actions/setup-node"]);
-    expect(publicar).toMatch(/needs: verificar/);
+    expect(publicar).toMatch(/needs: \[verificar, banco-semanal\]/);
   });
 
   it("el trabajo que publica está atado al entorno `npm` que se configura en npmjs.com", () => {

@@ -82,7 +82,7 @@ import {
 } from "./datos.js";
 import { herramientaDe, type HerramientaNeutral } from "./esquema.js";
 import { escribirInforme, resumir, type ResumenDeModelo } from "./informe.js";
-import { cargarSdk, instalarVerjaDeHosts, VERSION_PAQUETE, type ProcedenciaDelBrazoB, type SdkCargado } from "./procedencia.js";
+import { cargarSdk, cargarSdkDelArbol, instalarVerjaDeHosts, VERSION_PAQUETE, type ProcedenciaDelBrazoB, type SdkCargado } from "./procedencia.js";
 import { claveSimulada, fetchSimulado, respuestaDeReferencia, type RespuestaSimulada } from "./simulador.js";
 
 const AQUI = dirname(fileURLToPath(import.meta.url));
@@ -886,8 +886,9 @@ async function principal(): Promise<void> {
     console.log(`BFCL ${COMMIT_BFCL.slice(0, 12)}: dataset descargado y verificado en ${DIR_CACHE}`);
     return;
   }
-  // ANTES de gastar: el fuente cargado es el del tag (si no, aborta).
-  const cargado = await cargarSdk();
+  // ANTES de gastar: el fuente cargado es el del tag (si no, aborta). Con `--fuente-de-main`
+  // (banco semanal), el de este árbol, y la procedencia lo dice.
+  const cargado = arg("fuente-de-main") !== undefined ? await cargarSdkDelArbol() : await cargarSdk();
   const paquete = cargado.procedencia;
   const modelos = (arg("modelos") ?? MODELOS_POR_DEFECTO.join(",")).split(",").map((s) => s.trim()).filter(Boolean);
   const n = Number(arg("n") ?? 25);
