@@ -35,6 +35,7 @@ function metricas(r: ResultadoDeCelda): string {
     const nombre = r.bateria === "mt-bench" ? "victoria de B" : "B−A";
     partes.push(e.ic95 ? `${nombre} ${e.valor.toFixed(3)} [${e.ic95.lower.toFixed(3)}, ${e.ic95.upper.toFixed(3)}]` : `${nombre} ${e.valor.toFixed(3)}${e.p !== undefined ? ` p=${e.p.toPrecision(2)}` : ""}`);
   }
+  if (m.calidadSinMedir) partes.push(`calidad sin medir (${m.calidadSinMedir})`);
   const f = m.informeVsFactura.find((x) => x.brazo === "B") ?? m.informeVsFactura[0];
   if (f && f.facturaUsd > 0) partes.push(`informe/factura ${(((f.informeUsd - f.facturaUsd) / f.facturaUsd) * 100).toFixed(2)} %`);
   return partes.join(" · ");

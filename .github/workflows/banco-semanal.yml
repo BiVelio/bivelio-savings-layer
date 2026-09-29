@@ -87,7 +87,10 @@ jobs:
           BVSALA_DEMO_ANTHROPIC_BASE_URL: https://api.anthropic.com/v1
           BVSALA_DEMO_OPENAI_BASE_URL: https://api.openai.com/v1
           BVSALA_DEMO_BASE_URL: https://api.openai.com/v1
-          BVSALA_DEMO_GOOGLE_BASE_URL: https://generativelanguage.googleapis.com/v1beta/openai
+          # Gemini por su API NATIVA (generateContent, GoogleProvider), la que recomienda
+          # la 0.5; `…/v1beta/openai` volvería al endpoint compatible
+          # (benchmarks/gemini-nativo.ts).
+          BVSALA_DEMO_GOOGLE_BASE_URL: https://generativelanguage.googleapis.com/v1beta
           # Las claves, por nombre y SOLO en vivo: en seco el banco no las ve.
           BVSALA_DEMO_ANTHROPIC_API_KEY: ${{ inputs.modo != 'seco' && secrets.ANTHROPIC_API_KEY || '' }}
           BVSALA_DEMO_OPENAI_API_KEY: ${{ inputs.modo != 'seco' && secrets.OPENAI_API_KEY || '' }}

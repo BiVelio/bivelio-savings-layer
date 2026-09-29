@@ -66,7 +66,24 @@ export interface Medicion {
   ejemplosDeFallos: string[];
   exactitud: Exactitud[];
   informeVsFactura: InformeVsFactura[];
+  /**
+   * MT-Bench: por qué NO hay tasa de victoria aunque la celda se midiera (el juez
+   * juzgó menos de `MINIMO_DE_TURNOS_JUZGADOS` turnos). Va al resumen y a los
+   * avisos: una calidad sin medir no puede pasar por un empate.
+   */
+  calidadSinMedir?: string;
 }
+
+/**
+ * EL MÍNIMO DE TURNOS JUZGADOS para publicar la tasa de victoria de B en
+ * MT-Bench. Hallazgo del run 36611942632: las cuatro celdas medidas dieron
+ * «victoria de B 0.500 [0.500, 0.500]» con UN turno juzgado (el juez se cortó en
+ * la primera pregunta por su tope; ver TOPE_DEL_JUEZ_POR_MODELO_USD en plan.ts),
+ * y ese turno era un empate por partidas discrepantes. Un intervalo [0,5, 0,5]
+ * sobre un turno no es «sin diferencia»: es «sin medir». Con 8 turnos el
+ * bootstrap ya no degenera en un punto.
+ */
+export const MINIMO_DE_TURNOS_JUZGADOS = 8;
 
 type J = Record<string, unknown>;
 
@@ -313,9 +330,18 @@ export function extraerMtBench(art: unknown, modelo: ModeloDelBanco, crudo?: { m
     return { ...base, estado: "no-medible", motivo: NINGUNO, gastoUsd, n: 0, cortadaPorTope: campo<boolean>(r, "preguntas.cortePorPresupuesto"), fallosDeLaCapa: 0 };
   }
   const juzgada = campo<boolean>(r, "calidad.juzgada");
-  const tasa = juzgada ? campo<IntervaloDeConfianza | null>(r, "calidad.tasaDeVictoriaB") : null;
+  const turnos = juzgada ? campo<number>(r, "calidad.turnosJuzgados") : 0;
+  const suficiente = juzgada && turnos >= MINIMO_DE_TURNOS_JUZGADOS;
+  const tasa = suficiente ? campo<IntervaloDeConfianza | null>(r, "calidad.tasaDeVictoriaB") : null;
+  const calidadSinMedir = !juzgada
+    ? "el arnés corrió sin juez: no hay tasa de victoria"
+    : !suficiente
+      ? `el juez solo juzgó ${turnos} turno${turnos === 1 ? "" : "s"} (mínimo ${MINIMO_DE_TURNOS_JUZGADOS})` +
+        `${campo<boolean>(r, "calidad.cortePorPresupuesto") ? ", cortado por su tope" : ""}: sin tasa de victoria`
+      : undefined;
   return {
     ...base,
+    ...(calidadSinMedir ? { calidadSinMedir } : {}),
     estado: "medido",
     gastoUsd,
     n: campo<number>(r, "preguntas.completas"),

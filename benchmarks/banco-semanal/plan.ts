@@ -22,10 +22,12 @@
  *      ENTERA: sin artefacto no hay forma de saber cuánto gastó, y la caja no
  *      puede suponer que poco.
  *
- * El reparto asigna 41,70 $ (lo que suman las celdas y el juez); los 8,30 $ que
+ * El reparto asigna 44,20 $ (lo que suman las celdas y el juez); los 5,80 $ que
  * faltan hasta 50 NO se asignan a nada: son el margen que hace que el tope
  * global salte por un fallo de contabilidad de un arnés, nunca por el gasto
  * previsto. `test/banco-semanal.test.ts` rompe si el reparto supera los 50 $.
+ * (Hasta el 2026-09-29 el juez tenía 0,15 $ por modelo y el reparto era de
+ * 41,70 $: ver `TOPE_DEL_JUEZ_POR_MODELO_USD`.)
  */
 
 export const PRESUPUESTO_SEMANAL_USD = 50;
@@ -73,8 +75,22 @@ export const MODELOS_DEL_BANCO: readonly ModeloDelBanco[] = [
 
 /** Tope DURO por celda (modelo × batería), en USD. */
 export const TOPE_POR_GAMA_USD: Readonly<Record<Gama, number>> = { barata: 0.75, media: 1.1, cara: 1.25 };
-/** Tope DURO del juez de MT-Bench (gpt-4o por AI Gateway) por modelo juzgado. */
-export const TOPE_DEL_JUEZ_POR_MODELO_USD = 0.15;
+/**
+ * Tope DURO del juez de MT-Bench (gpt-4o por AI Gateway) por modelo juzgado.
+ *
+ * Era 0,15 $, y con eso el juez NO juzgaba: cada partida reserva su peor caso
+ * antes de salir (gpt-4o, 2048 tokens de salida y las dos conversaciones de
+ * entrada: 0,02–0,10 $), y con los dos turnos y las dos partidas a la vez la
+ * cuarta reserva ya no cabía. En el run 36611942632 las cuatro celdas medidas
+ * se cortaron en la PRIMERA pregunta (1 turno juzgado, 3 llamadas, ~0,027 $) y
+ * el resumen publicó «victoria de B 0.500 [0.500, 0.500]» — un empate de un
+ * solo turno, no una medición. Ahora el arnés juzga en serie en el banco
+ * semanal (una reserva viva a la vez) y el tope es 0,40 $: a ~0,009 $ por
+ * partida real, unas 40 partidas ≈ 10 preguntas y 20 turnos por modelo. El
+ * resumen exige un mínimo de turnos juzgados (extraer.ts) antes de dar la tasa.
+ * El arnés no admite más de 0,50 $ (TOPE_DEL_JUEZ_USD de mt-bench/nucleo.ts).
+ */
+export const TOPE_DEL_JUEZ_POR_MODELO_USD = 0.4;
 
 /**
  * SUBMUESTRAS: estratificadas y con semilla fija DENTRO de cada arnés (BFCL por

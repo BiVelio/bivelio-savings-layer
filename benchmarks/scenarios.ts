@@ -123,7 +123,7 @@ export interface EstadoDePalanca {
  * pasarela que habla el protocolo de OpenAI no hay campo donde ponerlo, así que
  * la palanca no es que no ahorre: es que no se ejecuta.
  */
-export type TransporteDelBanco = "mock" | "openai-compatible" | "anthropic-nativo";
+export type TransporteDelBanco = "mock" | "openai-compatible" | "anthropic-nativo" | "google-nativo";
 
 /**
  * Una palanca que el TRANSPORTE configurado no puede ejercitar, con lo que
