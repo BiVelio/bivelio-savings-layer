@@ -79,7 +79,8 @@ describe("el panel de instalación renderiza en los 12 idiomas", () => {
       }
       expect(html).toContain("GitHub Copilot CLI");
       // La nota de Python con el comando exacto del README de packages/python.
-      expect(html).toContain("<code>pip install ./packages/python</code>");
+      expect(html).toContain("<code>pip install bivelio-savings-layer</code>");
+      expect(html).toContain("<code>import bvsala</code>");
       // Ninguna etiqueta rich sin sustituir.
       expect(html).not.toMatch(/&lt;\/?(b|code)&gt;/);
     });

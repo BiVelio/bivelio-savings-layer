@@ -267,9 +267,10 @@ export async function InstallLicensePanel({ ctx }: { ctx: OrgContext }) {
       </p>
       {/* Python: el cliente `bvsala` de packages/python habla con este mismo
           gateway y le pide el informe de cada petición (rutas locales, 0.4.26 o
-          posterior). No está en PyPI y el repositorio es privado: la nota da la
-          instalación que documenta packages/python/README.md y dice las dos
-          cosas, en vez de inventar un `pip install` de PyPI que no existe. */}
+          posterior). Está en PyPI como `bivelio-savings-layer`
+          (docs/PUBLICAR-PYPI.md): la nota da el `pip install` que documenta
+          packages/python/README.md, y el `import bvsala` que no se deduce del
+          nombre del paquete. */}
       <p className="ck-note" style={{ marginTop: 10 }}>
         {t.rich("installLicensePanel.pythonNote", {
           b: (chunks) => <b>{chunks}</b>,
