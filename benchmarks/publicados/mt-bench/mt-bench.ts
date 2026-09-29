@@ -232,6 +232,18 @@ interface Opciones {
    * los ficheros publicados de la anterior, y su tope es el suyo.
    */
   sufijo: string;
+  /**
+   * `--fuente-de-main` (banco semanal, benchmarks/banco-semanal): el brazo B es el
+   * fuente de ESTE árbol, sea la versión que sea (lo que main lleva hoy, no una
+   * release), con `BVSALA_DEV_OPEN=1`. Sin verificación contra etiqueta ni npm.
+   */
+  fuenteDeMain: boolean;
+  /** `--tope=USD`: tope de generación por modelo; solo BAJA `topePorModelo`. */
+  tope?: number;
+  /** `--tope-juez=USD`: tope del juez para esta invocación; solo BAJA `TOPE_DEL_JUEZ_USD`. */
+  topeJuez?: number;
+  /** `--salida=DIR`: dónde se escriben el .json y el .md (por defecto, los de siempre). */
+  salida?: string;
 }
 
 function leerOpciones(argv: string[]): Opciones {
@@ -248,7 +260,21 @@ function leerOpciones(argv: string[]): Opciones {
       })
     : lista;
   const max = Number(valor("max-preguntas") ?? 80);
+  const usd = (n: string): number | undefined => {
+    const v = valor(n);
+    if (v === undefined) return undefined;
+    const x = Number(v);
+    if (!Number.isFinite(x) || x < 0) throw new Error(`--${n} inválido: ${v}`);
+    return x;
+  };
+  const tope = usd("tope");
+  const topeJuez = usd("tope-juez");
+  const salida = valor("salida");
   return {
+    fuenteDeMain: argv.includes("--fuente-de-main"),
+    ...(tope !== undefined ? { tope } : {}),
+    ...(topeJuez !== undefined ? { topeJuez } : {}),
+    ...(salida ? { salida } : {}),
     mock: argv.includes("--mock"),
     fuente: argv.includes("--fuente"),
     mockAnthropic401: argv.includes("--mock-anthropic-401"),
@@ -545,6 +571,12 @@ async function cargarFuente(): Promise<{ mod: ModuloDelPaquete; verificacion: Ve
   return { mod, verificacion };
 }
 
+/** `--fuente-de-main`: el fuente de este árbol, sin etiqueta ni npm (banco semanal). */
+async function cargarArbol(): Promise<ModuloDelPaquete> {
+  process.env.BVSALA_DEV_OPEN = "1";
+  return (await import(pathToFileURL(join(RAIZ, "src", "index.ts")).href)) as ModuloDelPaquete;
+}
+
 // ── La guarda de hosts ──────────────────────────────────────────────────────
 
 const hostsVistos = new Map<string, number>();
@@ -816,11 +848,15 @@ interface FabricaDeCapa {
   crear(m: ModeloDeLaBateria, f: typeof fetch): CapaCargada;
 }
 
-function fabricaReal(mod: ModuloDelPaquete, cred: Credenciales, origen: { tipo: "npm" } | { tipo: "fuente" }): FabricaDeCapa {
+function fabricaReal(
+  mod: ModuloDelPaquete,
+  cred: Credenciales,
+  origen: { tipo: "npm" } | { tipo: "fuente"; descripcion?: string },
+): FabricaDeCapa {
   return {
     descripcion:
       origen.tipo === "fuente"
-        ? FUENTE.brazoB
+        ? (origen.descripcion ?? FUENTE.brazoB)
         : `${PAQUETE.nombre}@${mod.BV_SALA_VERSION} de npm, licenseKey del cliente, sin licenseServerUrl (ruta offline: sin metering ni llamada a casa)`,
     crear(m, f) {
       // Sin `defaultMaxOutputTokens`: el tope va POR PETICIÓN (`maxOutputTokens`),
@@ -1661,7 +1697,7 @@ async function main(): Promise<void> {
         ...(anterior && op.juez && !cred.juez.clave ? ["BVSALA_JUDGE_API_KEY"] : []),
       ]
     : [
-        !op.fuente && !cred.licencia && "BIVELIO_LICENSE_KEY (el paquete publicado es fail-closed: sin licencia el brazo B no existe; o --fuente)",
+        !op.fuente && !op.fuenteDeMain && !cred.licencia && "BIVELIO_LICENSE_KEY (el paquete publicado es fail-closed: sin licencia el brazo B no existe; o --fuente)",
         op.modelos.some((m) => m.familia === "anthropic") && !cred.anthropic.clave && "BVSALA_DEMO_ANTHROPIC_API_KEY",
         op.modelos.some((m) => m.familia === "openai") && !cred.openai.clave && "BVSALA_DEMO_API_KEY",
         op.modelos.some((m) => m.familia === "google") && !cred.google.clave && "BVSALA_SONDA_API_KEY",
@@ -1688,6 +1724,19 @@ async function main(): Promise<void> {
     verificacion = anterior.informe.verificacionDelFuente;
     for (const [h, n] of Object.entries(anterior.informe.hosts.vistos)) hostsVistos.set(h, (hostsVistos.get(h) ?? 0) + n);
     for (const [h, n] of Object.entries(anterior.informe.hosts.bloqueados)) hostsBloqueados.set(h, (hostsBloqueados.get(h) ?? 0) + n);
+  } else if (op.fuenteDeMain) {
+    const mod = await cargarArbol();
+    let commitDelArbol = "?";
+    try {
+      commitDelArbol = git(["rev-parse", "--short", "HEAD"]).trim();
+    } catch {
+      /* sin git */
+    }
+    const descripcion = `${mod.BV_SALA_VERSION} at ${commitDelArbol} (working-tree source, BVSALA_DEV_OPEN=1; weekly bench, not a release)${op.mock ? " — con un proveedor FALSO (--mock)" : ""}`;
+    fabrica = fabricaReal(mod, cred, { tipo: "fuente", descripcion });
+    catalogo = mod.CATALOGO;
+    version = mod.BV_SALA_VERSION;
+    origenDelPaquete = `fuente del árbol de trabajo (${commitDelArbol}), BVSALA_DEV_OPEN=1`;
   } else if (op.fuente) {
     const f = await cargarFuente();
     verificacion = f.verificacion;
@@ -1765,7 +1814,8 @@ async function main(): Promise<void> {
       guardarLibro(libro, op.sufijo);
     };
     const previo = desdeCrudo?.get(m.id) ?? null;
-    const tope = new Tope(`generación ${m.id}`, previo ? TIRADA.topeDe(m) : Math.max(0, TIRADA.topeDe(m) - previoGen), anotar("generacion"));
+    const topeDelModelo = Math.min(TIRADA.topeDe(m), op.tope ?? Infinity);
+    const tope = new Tope(`generación ${m.id}`, previo ? topeDelModelo : Math.max(0, topeDelModelo - previoGen), anotar("generacion"));
     let corte: string | undefined;
     const t0 = Date.now();
     let resultados: ResultadoDePregunta[];
@@ -1822,7 +1872,7 @@ async function main(): Promise<void> {
     const previoJuez = previo ? (libro.juez[m.id] ?? 0) : 0;
     if ((op.juez || previo) && precioJuez) {
       const juezGastadoHastaAhora = Object.values(libro.juez).reduce((s, x) => s + x, 0) + (op.mock ? gastoJuez : 0);
-      const parte = op.juez ? parteDelJuez(TOPE_DEL_JUEZ_USD, juezGastadoHastaAhora, modelos.length - indice) : 0;
+      const parte = op.juez ? parteDelJuez(Math.min(TOPE_DEL_JUEZ_USD, op.topeJuez ?? Infinity), juezGastadoHastaAhora, modelos.length - indice) : 0;
       // El tope de ESTE modelo = lo que ya gastó en tiradas anteriores + su parte de lo que queda.
       topeJuez = new Tope(`juez ${m.id}`, previoJuez + parte, anotar("juez"));
       topeJuez.gastado = previoJuez;
@@ -1933,7 +1983,7 @@ async function main(): Promise<void> {
     ],
   };
 
-  const destinoDir = op.mock ? DIR_TRABAJO : DIR_PUBLICADO;
+  const destinoDir = op.salida ?? (op.mock ? DIR_TRABAJO : DIR_PUBLICADO);
   mkdirSync(destinoDir, { recursive: true });
   // Última barrera: ningún valor de credencial sale a disco. Si aparece el VALOR
   // de una clave cargada, no se escribe nada (es un fallo del arnés y hay que
