@@ -1226,10 +1226,50 @@
       "arms": "<b>Two arms, the same request.</b> A goes straight to the provider, without the layer; B goes through the layer with its default configuration. Same prompt, same sampling, same output cap.",
       "cost": "<b>The provider counts the cost.</b> Each arm is priced from the <code>usage</code> the API returns on every call, at list price. Savings are 1 − cost(B) / cost(A) of the same run, not what the layer says about itself.",
       "intervals": "<b>{nivel} intervals.</b> Each harness computes them (resampling whole question families, Wilson for refusal rates). An interval that crosses zero means “indistinguishable from zero”, and we say so.",
-      "package": "<b>The package you install.</b> Arm B runs the source of tag {version}; its <code>dist/index.js</code> is byte-identical to the npm tarball's (sha256 <code>{sha}</code>).",
+      "package": "<b>The package you install.</b> The A/B runs in the tables below were made on {version}: arm B runs the source of that tag, and its <code>dist/index.js</code> is byte-identical to the npm tarball's (sha256 <code>{sha}</code>). The weekly live bench is different: on every run it measures the source of main as it stands that day, before it is released.",
       "guard": "<b>No shortcuts.</b> Each harness watches the hosts it talks to and carries a per-model spend cap written in code. A model that could not be measured is reported as “not measured”, with the reason.",
       "batteriesTitle": "Four batteries, public datasets, pinned",
       "commitOnly": "pinned by commit"
+    },
+    "weekly": {
+      "title": "Weekly live bench",
+      "intro": "Every week, and whenever we launch it by hand, one run takes every battery against every model: arm A straight to the provider, arm B through the layer built from the source of main at that moment. It is not a released version: it is what is about to be released. The run fails if any rule breaks, and a cell that could not be measured says why.",
+      "meta": "Run of {fecha} · source of main at commit {commit} (package version {version}) · spent {gasto} of a {tope} cap · {medidas} of {celdas} cells measured.",
+      "verdictOk": "Verdict: no regressions.",
+      "verdictFailed": "Verdict: the run failed (rules broken: {n}).",
+      "status": {
+        "measured": "measured",
+        "cut": "measured (stopped at its spend cap)",
+        "notMeasurable": "not measurable: {motivo}",
+        "unsupported": "no support: {motivo}",
+        "harnessFailed": "the harness failed: {motivo}"
+      },
+      "reason": {
+        "sin-clave": "no key for this provider in the bench's environment",
+        "proveedor": "no valid response from the provider in arm A",
+        "tope-global": "the run's overall spend cap was reached",
+        "arnes-proveedor": "this battery's harness only talks to Anthropic and OpenAI",
+        "arnes-modelo": "this battery's harness has no entry for this model",
+        "arnes": "error or timeout in the harness",
+        "otro": "not enough data"
+      },
+      "counts": {
+        "otherQuestion": "another question's answer: {n}",
+        "changedCalls": "tool calls changed: {n}",
+        "refusals": "refusals cached: {cacheadas} · credited: {acreditadas}"
+      },
+      "diff": {
+        "accuracy": "accuracy {d} pp [{inf}, {sup}]",
+        "accuracyNoCi": "accuracy {d} pp",
+        "win": "B preferred {w} [{inf} – {sup}]",
+        "winNoCi": "B preferred {w}",
+        "safe": "safe {d} pp (p = {p})",
+        "unsafe": "unsafe {d} pp (p = {p})"
+      },
+      "note": "“Layer failures” are errors in arm B that arm A did not have. “B − A” is the accuracy difference in GSM8K and BFCL, the refusal-rate difference in XSTest (McNemar's p, paired prompts) and, in MT-Bench, how often the judge prefers B (one half is a tie). “Report vs invoice” is how far the cost the layer reports for arm B strays from what the provider bills.",
+      "earlierTitle": "Earlier weekly runs",
+      "earlierOk": "{fecha} · commit {commit} · no regressions.",
+      "earlierFailed": "{fecha} · commit {commit} · failed (rules broken: {n})."
     },
     "batteries": {
       "gsm8k": "Math word problems with repeats and paraphrases: how much the cache saves and whether accuracy drops.",
@@ -1254,7 +1294,13 @@
       "safe": "Refusals, safe prompts (A → B)",
       "unsafe": "Refusals, unsafe prompts (A → B)",
       "verdict": "Reading",
-      "reports": "Reports"
+      "reports": "Reports",
+      "status": "Status",
+      "spend": "Spend / cap",
+      "layerFails": "Layer failures",
+      "counts": "What it counts",
+      "diff": "B − A",
+      "reportVsInvoice": "Report vs invoice"
     },
     "savings": {
       "title": "Measured savings per model",
@@ -1269,7 +1315,8 @@
       "tools": {
         "title": "The layer never changed a tool call",
         "titleBroken": "The layer changed {n} tool calls",
-        "body": "{alteradas} altered calls in {comparaciones} BFCL comparisons, {modelos} models, since {desde}. If the layer fails (an error in B that A did not have), it is not counted here: it is under “Bugs the bench found”."
+        "body": "{alteradas} altered calls in {comparaciones} BFCL comparisons, {modelos} models, since {desde}. If the layer fails (an error in B that A did not have), it is not counted here: it is under “Bugs the bench found”.",
+        "note": "How it is counted: every comparison of every live run since that version, so a model measured twice (a pilot and the full run) adds both. That is why the figure can exceed the n of the tables, which show one run per model."
       },
       "other": {
         "title": "No answer from another question since {desde}",
@@ -1281,7 +1328,8 @@
         "title": "The same refusal rate, with and without the layer",
         "titleBroken": "The refusal rate changed for {n} models",
         "body": "XSTest, {modelos} models measured: no A/B difference below p = {umbral} (McNemar, paired prompts). The layer delivered the text of {comprobados} responses unaltered ({alterados} altered).",
-        "caption": "Refusal rate per model, without the layer (A) and with it (B), on the same prompts."
+        "caption": "Refusal rate per model, without the layer (A) and with it (B), on the same prompts.",
+        "note": "How it is counted: responses, not prompts. Every arm-B response is compared with the provider's text, repeats of the same prompt included, so there are more responses than prompts in the table."
       }
     },
     "noSavings": {
@@ -1316,10 +1364,17 @@
       "title": "Bugs the bench found",
       "intro": "The bench is not there to look good: it is there to find the bugs before you do. It found these, with the version they appeared in and the one that fixes them.",
       "found": "Found in {version}: {ocurrencias} of {sobre}.",
+      "foundWeekly": "Found by the weekly live bench on {fecha} (source of main, commit {commit}): {cacheadas} refusals served from or written to the cache and {acreditadas} credited, over {sobre} XSTest prompts on {modelos} models.",
       "fixed": "Fixed in {version} ({prs}).",
       "verified": "Verified live on {version}: {ocurrencias} of {sobre}.",
       "stillSeen": "Still seen on {version}: {ocurrencias} of {sobre}.",
+      "remeasuredWeekly": "Re-measured live by the weekly bench on {fecha} (source of main with the fix, commit {commit}): {cacheadas} refusals cached and {acreditadas} credited, over {sobre} XSTest prompts on {modelos} models.",
+      "stillSeenWeekly": "Still seen by the weekly bench on {fecha} (source of main, commit {commit}): {cacheadas} refusals cached and {acreditadas} credited, over {sobre} XSTest prompts on {modelos} models.",
       "pending": "Waiting to be re-measured live on {version}.",
+      "notRemeasured": {
+        "notMeasurable": "Not re-measured live yet: the weekly bench of {fecha} (commit {commit}) could not measure Gemini ({motivo}). Until a run measures it, we do not count it as verified.",
+        "unsupported": "Not re-measured live yet: in the weekly bench of {fecha} (commit {commit}) this battery has no Gemini support ({motivo}). Until a run measures it, we do not count it as verified."
+      },
       "items": {
         "otra-pregunta": {
           "title": "The uncalibrated semantic cache served another question's answer",
@@ -1332,6 +1387,10 @@
         "negativas-de-texto": {
           "title": "Some refusals written as text were cached",
           "body": "A refusal the model writes as text (without the API's signal) could be cached, repeated and credited as savings. Counted in XSTest prompts."
+        },
+        "negativas-parciales": {
+          "title": "Partial refusals were cached and credited",
+          "body": "A response that starts by complying and refuses further on (“If you mean harming someone, I can't help…”), or an apology followed by “I don't have access…”, was not recognized as a refusal: the layer could cache it, repeat it and credit it as savings. Counted in the weekly bench's XSTest prompts, with OpenAI and Claude models."
         },
         "gemini-filtro-cacheado": {
           "title": "A Gemini content filter was cached as an answer",

@@ -1226,10 +1226,50 @@
       "arms": "<b>İki kol, aynı istek.</b> A, katman olmadan doğrudan sağlayıcıya gider; B, varsayılan yapılandırmasıyla katmandan geçer. Aynı prompt, aynı örnekleme, aynı çıktı sınırı.",
       "cost": "<b>Maliyeti sağlayıcı sayar.</b> Her kol, API'nin her çağrıda döndürdüğü <code>usage</code> değeriyle, liste fiyatı üzerinden fiyatlandırılır. Tasarruf, aynı koşunun 1 − maliyet(B) / maliyet(A) değeridir, katmanın kendisi hakkında söyledikleri değil.",
       "intervals": "<b>{nivel} aralıkları.</b> Bunları her test düzeneği hesaplar (bütün soru ailelerinin yeniden örneklenmesi, ret oranları için Wilson). Sıfırı kesen bir aralık “sıfırdan ayırt edilemez” demektir ve bunu böyle söylüyoruz.",
-      "package": "<b>Kurduğunuz paket.</b> B kolu, {version} etiketinin kaynağını çalıştırır; <code>dist/index.js</code> dosyası npm paketininkiyle bayt bayt aynıdır (sha256 <code>{sha}</code>).",
+      "package": "<b>Kurduğunuz paket.</b> Aşağıdaki tablolardaki A/B koşuları {version} ile yapıldı: B kolu o etiketin kaynak kodunu çalıştırır ve <code>dist/index.js</code> dosyası npm tarball'ındakiyle bayt bayt aynıdır (sha256 <code>{sha}</code>). Haftalık canlı test ise başka bir şey: her koşuda main'in o günkü kaynak kodunu, yayımlanmadan önce ölçer.",
       "guard": "<b>Kestirme yok.</b> Her test düzeneği konuştuğu sunucuları izler ve kod içinde yazılı, model başına bir harcama sınırı taşır. Ölçülemeyen bir model, nedeniyle birlikte “ölçülmedi” olarak raporlanır.",
       "batteriesTitle": "Dört batarya, herkese açık veri kümeleri, sabitlenmiş",
       "commitOnly": "commit ile sabitlenmiş"
+    },
+    "weekly": {
+      "title": "Haftalık canlı test",
+      "intro": "Her hafta ve elle her başlattığımızda, bir koşu tüm bataryaları tüm modellerden geçirir: A kolu doğrudan sağlayıcıya gider, B kolu o anki main kaynak kodundan derlenen katmandan geçer. Bu yayımlanmış bir sürüm değildir: yayımlanmak üzere olan şeydir. Herhangi bir kural bozulursa koşu başarısız olur ve ölçülemeyen bir hücre nedenini söyler.",
+      "meta": "{fecha} koşusu · {commit} commit'indeki main kaynak kodu (paket sürümü {version}) · {tope} tavanın {gasto} kadarı harcandı · {celdas} hücreden {medidas} tanesi ölçüldü.",
+      "verdictOk": "Karar: gerileme yok.",
+      "verdictFailed": "Karar: koşu başarısız (bozulan kurallar: {n}).",
+      "status": {
+        "measured": "ölçüldü",
+        "cut": "ölçüldü (harcama tavanında durdu)",
+        "notMeasurable": "ölçülemez: {motivo}",
+        "unsupported": "destek yok: {motivo}",
+        "harnessFailed": "test düzeneği başarısız: {motivo}"
+      },
+      "reason": {
+        "sin-clave": "testin ortamında bu sağlayıcının anahtarı yok",
+        "proveedor": "A kolunda sağlayıcıdan geçerli yanıt yok",
+        "tope-global": "koşunun genel harcama tavanına ulaşıldı",
+        "arnes-proveedor": "bu bataryanın test düzeneği yalnızca Anthropic ve OpenAI ile konuşur",
+        "arnes-modelo": "bu bataryanın test düzeneğinde bu model yok",
+        "arnes": "test düzeneğinde hata veya zaman aşımı",
+        "otro": "yetersiz veri"
+      },
+      "counts": {
+        "otherQuestion": "başka bir sorunun yanıtı: {n}",
+        "changedCalls": "değişen araç çağrıları: {n}",
+        "refusals": "önbelleğe alınan retler: {cacheadas} · kredilendirilen: {acreditadas}"
+      },
+      "diff": {
+        "accuracy": "doğruluk {d} pp [{inf}, {sup}]",
+        "accuracyNoCi": "doğruluk {d} pp",
+        "win": "B tercih edildi {w} [{inf} – {sup}]",
+        "winNoCi": "B tercih edildi {w}",
+        "safe": "güvenli {d} pp (p = {p})",
+        "unsafe": "güvensiz {d} pp (p = {p})"
+      },
+      "note": "“Katman hataları”, A kolunda olmayıp B kolunda çıkan hatalardır. “B − A”, GSM8K ve BFCL'de doğruluk farkı, XSTest'te ret oranı farkı (McNemar p değeri, eşleştirilmiş promptlar), MT-Bench'te ise hakemin B'yi ne sıklıkla tercih ettiğidir (yarısı beraberlik demektir). “Rapor ile fatura”, katmanın B kolu için bildirdiği maliyetin sağlayıcının faturaladığından ne kadar saptığıdır.",
+      "earlierTitle": "Önceki haftalık koşular",
+      "earlierOk": "{fecha} · commit {commit} · gerileme yok.",
+      "earlierFailed": "{fecha} · commit {commit} · başarısız (bozulan kurallar: {n})."
     },
     "batteries": {
       "gsm8k": "Tekrarlar ve başka sözcüklerle ifade edilmiş halleriyle matematik problemleri: önbelleğin ne kadar tasarruf sağladığı ve doğruluğun düşüp düşmediği.",
@@ -1254,7 +1294,13 @@
       "safe": "Reddler, güvenli promptlar (A → B)",
       "unsafe": "Reddler, güvensiz promptlar (A → B)",
       "verdict": "Yorum",
-      "reports": "Raporlar"
+      "reports": "Raporlar",
+      "status": "Durum",
+      "spend": "Harcama / tavan",
+      "layerFails": "Katman hataları",
+      "counts": "Ne sayar",
+      "diff": "B − A",
+      "reportVsInvoice": "Rapor ile fatura"
     },
     "savings": {
       "title": "Model başına ölçülen tasarruf",
@@ -1269,7 +1315,8 @@
       "tools": {
         "title": "Katman hiçbir zaman bir araç çağrısını değiştirmedi",
         "titleBroken": "Katman {n} araç çağrısını değiştirdi",
-        "body": "{comparaciones} BFCL karşılaştırmasında, {modelos} modelde, {desde} tarihinden bu yana {alteradas} değiştirilmiş çağrı. Katman başarısız olursa (B'de A'da olmayan bir hata varsa), bu burada sayılmaz: “Testin bulduğu hatalar” altındadır."
+        "body": "{comparaciones} BFCL karşılaştırmasında, {modelos} modelde, {desde} tarihinden bu yana {alteradas} değiştirilmiş çağrı. Katman başarısız olursa (B'de A'da olmayan bir hata varsa), bu burada sayılmaz: “Testin bulduğu hatalar” altındadır.",
+        "note": "Nasıl sayılır: o sürümden beri her canlı koşudaki her karşılaştırma; yani iki kez ölçülen bir model (bir pilot ve tam koşu) iki kez sayılır. Bu yüzden sayı, model başına tek koşu gösteren tablolardaki n'yi aşabilir."
       },
       "other": {
         "title": "{desde} tarihinden bu yana başka bir sorudan cevap yok",
@@ -1281,7 +1328,8 @@
         "title": "Katmanla ve katmansız aynı ret oranı",
         "titleBroken": "Ret oranı {n} modelde değişti",
         "body": "XSTest, {modelos} model ölçüldü: p = {umbral} altında A/B farkı yok (McNemar, eşleştirilmiş promptlar). Katman, {comprobados} yanıtın metnini değiştirmeden teslim etti ({alterados} değiştirilmiş).",
-        "caption": "Aynı promptlar üzerinde, katman olmadan (A) ve katmanla (B), model başına ret oranı."
+        "caption": "Aynı promptlar üzerinde, katman olmadan (A) ve katmanla (B), model başına ret oranı.",
+        "note": "Nasıl sayılır: promptlar değil, yanıtlar. B kolunun her yanıtı, aynı promptun tekrarları dahil, sağlayıcının metniyle karşılaştırılır; bu yüzden tabloda promptlardan daha fazla yanıt vardır."
       }
     },
     "noSavings": {
@@ -1316,10 +1364,17 @@
       "title": "Testin bulduğu hatalar",
       "intro": "Test iyi görünmek için değil, hataları siz bulmadan önce bulmak için var. Ortaya çıktıkları sürümle ve onları düzelten sürümle birlikte şunları buldu.",
       "found": "{version} sürümünde bulundu: {sobre} üzerinden {ocurrencias}.",
+      "foundWeekly": "Haftalık canlı test tarafından {fecha} tarihinde bulundu (main kaynak kodu, commit {commit}): önbellekten sunulan veya önbelleğe yazılan {cacheadas} ret ve kredilendirilen {acreditadas} ret; {sobre} XSTest promptunda, {modelos} modelde.",
       "fixed": "{version} sürümünde düzeltildi ({prs}).",
       "verified": "{version} sürümünde canlı olarak doğrulandı: {sobre} üzerinden {ocurrencias}.",
       "stillSeen": "{version} sürümünde hâlâ görülüyor: {sobre} üzerinden {ocurrencias}.",
+      "remeasuredWeekly": "Haftalık test tarafından {fecha} tarihinde canlı olarak yeniden ölçüldü (düzeltmeyi içeren main kaynak kodu, commit {commit}): önbelleğe alınan {cacheadas} ret ve kredilendirilen {acreditadas} ret; {sobre} XSTest promptunda, {modelos} modelde.",
+      "stillSeenWeekly": "Haftalık test {fecha} tarihinde hâlâ görüyor (main kaynak kodu, commit {commit}): önbelleğe alınan {cacheadas} ret ve kredilendirilen {acreditadas} ret; {sobre} XSTest promptunda, {modelos} modelde.",
       "pending": "{version} sürümünde canlı olarak yeniden ölçülmeyi bekliyor.",
+      "notRemeasured": {
+        "notMeasurable": "Henüz canlı olarak yeniden ölçülmedi: {fecha} tarihli haftalık test (commit {commit}) Gemini'yi ölçemedi ({motivo}). Bir koşu ölçene kadar doğrulanmış saymıyoruz.",
+        "unsupported": "Henüz canlı olarak yeniden ölçülmedi: {fecha} tarihli haftalık testte (commit {commit}) bu bataryanın Gemini desteği yok ({motivo}). Bir koşu ölçene kadar doğrulanmış saymıyoruz."
+      },
       "items": {
         "otra-pregunta": {
           "title": "Kalibre edilmemiş anlamsal önbellek, başka bir sorunun cevabını sundu",
@@ -1332,6 +1387,10 @@
         "negativas-de-texto": {
           "title": "Metin olarak yazılan bazı reddler önbelleğe alındı",
           "body": "Modelin metin olarak yazdığı bir ret (API sinyali olmadan) önbelleğe alınabilir, tekrarlanabilir ve tasarruf olarak hesaba geçirilebilirdi. XSTest promptlarında sayıldı."
+        },
+        "negativas-parciales": {
+          "title": "Kısmi retler önbelleğe alınıp kredilendiriliyordu",
+          "body": "İsteğe uyarak başlayıp ilerleyen kısımda reddeden bir yanıt (“If you mean harming someone, I can't help…”) ya da ardından “erişimim yok…” gelen bir özür, ret olarak tanınmıyordu: katman bunu önbelleğe alabiliyor, tekrarlayabiliyor ve tasarruf olarak kredilendirebiliyordu. Haftalık testin XSTest promptlarında, OpenAI ve Claude modelleriyle sayıldı."
         },
         "gemini-filtro-cacheado": {
           "title": "Bir Gemini içerik filtresi cevap olarak önbelleğe alındı",

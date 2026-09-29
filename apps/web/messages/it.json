@@ -1226,10 +1226,50 @@
       "arms": "<b>Due bracci, la stessa richiesta.</b> A va direttamente al fornitore, senza il livello; B passa attraverso il livello con la sua configurazione predefinita. Stesso prompt, stesso campionamento, stesso limite di output.",
       "cost": "<b>Il costo lo conta il fornitore.</b> Ogni braccio viene valutato in base all'<code>usage</code> restituito dall'API a ogni chiamata, al prezzo di listino. Il risparmio è 1 − costo(B) / costo(A) della stessa esecuzione, non ciò che il livello dice di sé stesso.",
       "intervals": "<b>Intervalli al {nivel}.</b> Li calcola ciascun harness (ricampionamento per famiglie di domande, Wilson per i tassi di rifiuto). Un intervallo che attraversa lo zero significa «indistinguibile da zero», e lo diciamo.",
-      "package": "<b>Il pacchetto che si installa.</b> Il braccio B esegue il sorgente del tag {version}; il suo <code>dist/index.js</code> è identico byte per byte a quello del tarball npm (sha256 <code>{sha}</code>).",
+      "package": "<b>Il pacchetto che installi.</b> Le esecuzioni A/B delle tabelle qui sotto sono state fatte con la {version}: il braccio B esegue il sorgente di quel tag, e il suo <code>dist/index.js</code> è identico byte per byte a quello del tarball npm (sha256 <code>{sha}</code>). Il banco settimanale dal vivo è un'altra cosa: a ogni esecuzione misura il sorgente di main così com'è quel giorno, prima che venga pubblicato.",
       "guard": "<b>Nessuna scorciatoia.</b> Ogni harness sorveglia gli host con cui comunica e applica un limite di spesa per modello scritto nel codice. Un modello che non è stato possibile misurare risulta «non misurato», con il motivo.",
       "batteriesTitle": "Quattro batterie, dataset pubblici, fissati",
       "commitOnly": "fissato per commit"
+    },
+    "weekly": {
+      "title": "Banco settimanale dal vivo",
+      "intro": "Ogni settimana, e ogni volta che lo lanciamo a mano, un'esecuzione passa tutte le batterie su tutti i modelli: il braccio A va diretto al fornitore, il B passa per il livello costruito dal sorgente di main in quel momento. Non è una versione pubblicata: è ciò che sta per esserlo. L'esecuzione fallisce se si rompe una qualsiasi regola, e una cella che non si è potuta misurare dice perché.",
+      "meta": "Esecuzione del {fecha} · sorgente di main al commit {commit} (versione del pacchetto {version}) · spesa {gasto} su un tetto di {tope} · {medidas} celle misurate su {celdas}.",
+      "verdictOk": "Verdetto: nessuna regressione.",
+      "verdictFailed": "Verdetto: l'esecuzione è fallita (regole violate: {n}).",
+      "status": {
+        "measured": "misurata",
+        "cut": "misurata (fermata al suo tetto di spesa)",
+        "notMeasurable": "non misurabile: {motivo}",
+        "unsupported": "non supportata: {motivo}",
+        "harnessFailed": "l'harness è fallito: {motivo}"
+      },
+      "reason": {
+        "sin-clave": "nessuna chiave di questo fornitore nell'ambiente del banco",
+        "proveedor": "nessuna risposta valida del fornitore nel braccio A",
+        "tope-global": "raggiunto il tetto di spesa globale dell'esecuzione",
+        "arnes-proveedor": "l'harness di questa batteria parla solo con Anthropic e OpenAI",
+        "arnes-modelo": "l'harness di questa batteria non ha questo modello",
+        "arnes": "errore o tempo scaduto nell'harness",
+        "otro": "dati insufficienti"
+      },
+      "counts": {
+        "otherQuestion": "risposta di un'altra domanda: {n}",
+        "changedCalls": "chiamate a strumenti cambiate: {n}",
+        "refusals": "rifiuti in cache: {cacheadas} · accreditati: {acreditadas}"
+      },
+      "diff": {
+        "accuracy": "accuratezza {d} pp [{inf}, {sup}]",
+        "accuracyNoCi": "accuratezza {d} pp",
+        "win": "B preferita {w} [{inf} – {sup}]",
+        "winNoCi": "B preferita {w}",
+        "safe": "sicuri {d} pp (p = {p})",
+        "unsafe": "non sicuri {d} pp (p = {p})"
+      },
+      "note": "Gli «errori del livello» sono errori del braccio B che il braccio A non ha avuto. «B − A» è la differenza di accuratezza in GSM8K e BFCL, quella del tasso di rifiuto in XSTest (p di McNemar, prompt appaiati) e, in MT-Bench, quanto spesso il giudice preferisce B (la metà è un pareggio). «Report rispetto alla fattura» è quanto il costo che il livello riporta per il braccio B si discosta da ciò che fattura il fornitore.",
+      "earlierTitle": "Esecuzioni settimanali precedenti",
+      "earlierOk": "{fecha} · commit {commit} · nessuna regressione.",
+      "earlierFailed": "{fecha} · commit {commit} · fallita (regole violate: {n})."
     },
     "batteries": {
       "gsm8k": "Problemi matematici a parole con ripetizioni e parafrasi: quanto fa risparmiare la cache e se l'accuratezza cala.",
@@ -1254,7 +1294,13 @@
       "safe": "Rifiuti, prompt sicuri (A → B)",
       "unsafe": "Rifiuti, prompt non sicuri (A → B)",
       "verdict": "Lettura",
-      "reports": "Report"
+      "reports": "Report",
+      "status": "Stato",
+      "spend": "Spesa / tetto",
+      "layerFails": "Errori del livello",
+      "counts": "Cosa conta",
+      "diff": "B − A",
+      "reportVsInvoice": "Report rispetto alla fattura"
     },
     "savings": {
       "title": "Risparmio misurato per modello",
@@ -1269,7 +1315,8 @@
       "tools": {
         "title": "Il livello non ha mai cambiato una chiamata a strumenti",
         "titleBroken": "Il livello ha cambiato {n} chiamate a strumenti",
-        "body": "{alteradas} chiamate alterate su {comparaciones} confronti BFCL, {modelos} modelli, da {desde}. Se il livello fallisce (un errore in B che A non aveva), non viene contato qui: è sotto «Bug trovati dal banco di prova»."
+        "body": "{alteradas} chiamate alterate su {comparaciones} confronti BFCL, {modelos} modelli, da {desde}. Se il livello fallisce (un errore in B che A non aveva), non viene contato qui: è sotto «Bug trovati dal banco di prova».",
+        "note": "Come si conta: ogni confronto di ogni esecuzione dal vivo da quella versione, quindi un modello misurato due volte (un pilota e l'esecuzione completa) conta entrambe. Per questo la cifra può superare la n delle tabelle, che mostrano un'esecuzione per modello."
       },
       "other": {
         "title": "Nessuna risposta di un'altra domanda da {desde}",
@@ -1281,7 +1328,8 @@
         "title": "Lo stesso tasso di rifiuto, con e senza il livello",
         "titleBroken": "Il tasso di rifiuto è cambiato per {n} modelli",
         "body": "XSTest, {modelos} modelli misurati: nessuna differenza A/B sotto p = {umbral} (McNemar, prompt appaiati). Il livello ha consegnato senza alterazioni il testo di {comprobados} risposte ({alterados} alterate).",
-        "caption": "Tasso di rifiuto per modello, senza il livello (A) e con esso (B), sugli stessi prompt."
+        "caption": "Tasso di rifiuto per modello, senza il livello (A) e con esso (B), sugli stessi prompt.",
+        "note": "Come si conta: risposte, non prompt. Ogni risposta del braccio B viene confrontata con il testo del fornitore, ripetizioni dello stesso prompt incluse, quindi ci sono più risposte che prompt in tabella."
       }
     },
     "noSavings": {
@@ -1316,10 +1364,17 @@
       "title": "Bug trovati dal banco di prova",
       "intro": "Il banco di prova non c'è per fare bella figura: c'è per trovare i bug prima di te. Ha trovato questi, con la versione in cui sono comparsi e quella che li corregge.",
       "found": "Trovato nella {version}: {ocurrencias} su {sobre}.",
+      "foundWeekly": "Trovato dal banco settimanale dal vivo il {fecha} (sorgente di main, commit {commit}): {cacheadas} rifiuti serviti dalla cache o scritti in essa e {acreditadas} accreditati, su {sobre} prompt di XSTest e {modelos} modelli.",
       "fixed": "Corretto nella {version} ({prs}).",
       "verified": "Verificato dal vivo sulla {version}: {ocurrencias} su {sobre}.",
       "stillSeen": "Ancora visto sulla {version}: {ocurrencias} su {sobre}.",
+      "remeasuredWeekly": "Rimisurato dal vivo dal banco settimanale il {fecha} (sorgente di main con la correzione, commit {commit}): {cacheadas} rifiuti in cache e {acreditadas} accreditati, su {sobre} prompt di XSTest e {modelos} modelli.",
+      "stillSeenWeekly": "Il banco settimanale lo vede ancora il {fecha} (sorgente di main, commit {commit}): {cacheadas} rifiuti in cache e {acreditadas} accreditati, su {sobre} prompt di XSTest e {modelos} modelli.",
       "pending": "In attesa di essere rimisurato dal vivo sulla {version}.",
+      "notRemeasured": {
+        "notMeasurable": "Non ancora rimisurato dal vivo: il banco settimanale del {fecha} (commit {commit}) non ha potuto misurare Gemini ({motivo}). Finché un'esecuzione non lo misura, non lo consideriamo verificato.",
+        "unsupported": "Non ancora rimisurato dal vivo: nel banco settimanale del {fecha} (commit {commit}) questa batteria non supporta Gemini ({motivo}). Finché un'esecuzione non lo misura, non lo consideriamo verificato."
+      },
       "items": {
         "otra-pregunta": {
           "title": "La cache semantica non calibrata serviva la risposta di un'altra domanda",
@@ -1332,6 +1387,10 @@
         "negativas-de-texto": {
           "title": "Alcuni rifiuti scritti come testo venivano messi in cache",
           "body": "Un rifiuto che il modello scrive come testo (senza il segnale dell'API) poteva essere messo in cache, ripetuto e accreditato come risparmio. Contato nei prompt di XSTest."
+        },
+        "negativas-parciales": {
+          "title": "I rifiuti parziali venivano messi in cache e accreditati",
+          "body": "Una risposta che inizia assecondando e più avanti rifiuta («If you mean harming someone, I can't help…»), o una scusa seguita da «non ho accesso…», non veniva riconosciuta come rifiuto: il livello poteva metterla in cache, ripeterla e accreditarla come risparmio. Contato nei prompt di XSTest del banco settimanale, con modelli di OpenAI e Claude."
         },
         "gemini-filtro-cacheado": {
           "title": "Un filtro di contenuto di Gemini veniva messo in cache come risposta",

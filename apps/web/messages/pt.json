@@ -1226,10 +1226,50 @@
       "arms": "<b>Dois braços, o mesmo pedido.</b> A vai direto ao fornecedor, sem a camada; B passa pela camada com a sua configuração predefinida. Mesmo prompt, mesma amostragem, mesmo limite de saída.",
       "cost": "<b>O custo é contado pelo fornecedor.</b> Cada braço é avaliado a partir do <code>usage</code> que a API devolve em cada chamada, ao preço de tabela. A economia é 1 − custo(B) / custo(A) da mesma execução, não o que a camada diz de si mesma.",
       "intervals": "<b>Intervalos ao {nivel}.</b> Cada harness calcula-os (reamostragem por famílias de perguntas, Wilson para as taxas de recusa). Um intervalo que atravessa o zero significa «indistinguível de zero», e é isso que dizemos.",
-      "package": "<b>O pacote que se instala.</b> O braço B executa a fonte da tag {version}; o seu <code>dist/index.js</code> é idêntico byte a byte ao do tarball do npm (sha256 <code>{sha}</code>).",
+      "package": "<b>O pacote que você instala.</b> As rodadas A/B das tabelas abaixo foram feitas com a {version}: o braço B executa o código-fonte dessa tag, e o seu <code>dist/index.js</code> é idêntico byte a byte ao do tarball do npm (sha256 <code>{sha}</code>). O banco semanal ao vivo é outra coisa: em cada rodada mede o código-fonte do main tal como está nesse dia, antes de ser publicado.",
       "guard": "<b>Sem atalhos.</b> Cada harness vigia os hosts com que fala e traz um limite de gasto por modelo escrito no código. Um modelo que não pôde ser medido aparece como «não medido», com o motivo.",
       "batteriesTitle": "Quatro baterias, conjuntos de dados públicos, fixados",
       "commitOnly": "fixado por commit"
+    },
+    "weekly": {
+      "title": "Banco semanal ao vivo",
+      "intro": "Toda semana, e sempre que o disparamos à mão, uma rodada passa todas as baterias por todos os modelos: o braço A vai direto ao provedor e o B passa pela camada construída a partir do código-fonte do main nesse momento. Não é uma versão publicada: é o que está prestes a ser publicado. A rodada falha se qualquer regra for quebrada, e uma célula que não pôde ser medida diz por quê.",
+      "meta": "Rodada de {fecha} · código-fonte do main no commit {commit} (versão do pacote {version}) · gasto de {gasto} num teto de {tope} · {medidas} de {celdas} células medidas.",
+      "verdictOk": "Veredito: sem regressões.",
+      "verdictFailed": "Veredito: a rodada falhou (regras quebradas: {n}).",
+      "status": {
+        "measured": "medida",
+        "cut": "medida (parada no seu teto de gasto)",
+        "notMeasurable": "não mensurável: {motivo}",
+        "unsupported": "sem suporte: {motivo}",
+        "harnessFailed": "o harness falhou: {motivo}"
+      },
+      "reason": {
+        "sin-clave": "sem chave deste provedor no ambiente do banco",
+        "proveedor": "nenhuma resposta válida do provedor no braço A",
+        "tope-global": "o teto de gasto global da rodada foi atingido",
+        "arnes-proveedor": "o harness desta bateria só fala com a Anthropic e a OpenAI",
+        "arnes-modelo": "o harness desta bateria não tem este modelo",
+        "arnes": "erro ou tempo esgotado no harness",
+        "otro": "dados insuficientes"
+      },
+      "counts": {
+        "otherQuestion": "resposta de outra pergunta: {n}",
+        "changedCalls": "chamadas a ferramentas alteradas: {n}",
+        "refusals": "recusas em cache: {cacheadas} · creditadas: {acreditadas}"
+      },
+      "diff": {
+        "accuracy": "exatidão {d} pp [{inf}, {sup}]",
+        "accuracyNoCi": "exatidão {d} pp",
+        "win": "B preferida {w} [{inf} – {sup}]",
+        "winNoCi": "B preferida {w}",
+        "safe": "seguros {d} pp (p = {p})",
+        "unsafe": "inseguros {d} pp (p = {p})"
+      },
+      "note": "“Falhas da camada” são erros no braço B que o braço A não teve. “B − A” é a diferença de exatidão no GSM8K e no BFCL, a da taxa de recusas no XSTest (p de McNemar, prompts emparelhados) e, no MT-Bench, com que frequência o juiz prefere B (metade é empate). “Relatório vs fatura” é quanto o custo que a camada informa para o braço B se afasta do que o provedor fatura.",
+      "earlierTitle": "Rodadas semanais anteriores",
+      "earlierOk": "{fecha} · commit {commit} · sem regressões.",
+      "earlierFailed": "{fecha} · commit {commit} · falhou (regras quebradas: {n})."
     },
     "batteries": {
       "gsm8k": "Problemas matemáticos em texto com repetições e paráfrases: quanto a cache economiza e se a precisão cai.",
@@ -1254,7 +1294,13 @@
       "safe": "Recusas, prompts seguros (A → B)",
       "unsafe": "Recusas, prompts inseguros (A → B)",
       "verdict": "Leitura",
-      "reports": "Relatórios"
+      "reports": "Relatórios",
+      "status": "Estado",
+      "spend": "Gasto / teto",
+      "layerFails": "Falhas da camada",
+      "counts": "O que conta",
+      "diff": "B − A",
+      "reportVsInvoice": "Relatório vs fatura"
     },
     "savings": {
       "title": "Economia medida por modelo",
@@ -1269,7 +1315,8 @@
       "tools": {
         "title": "A camada nunca alterou uma chamada a ferramentas",
         "titleBroken": "A camada alterou {n} chamadas a ferramentas",
-        "body": "{alteradas} chamadas alteradas em {comparaciones} comparações do BFCL, {modelos} modelos, desde {desde}. Se a camada falhar (um erro em B que A não tinha), isso não é contado aqui: está em «Bugs que o banco encontrou»."
+        "body": "{alteradas} chamadas alteradas em {comparaciones} comparações do BFCL, {modelos} modelos, desde {desde}. Se a camada falhar (um erro em B que A não tinha), isso não é contado aqui: está em «Bugs que o banco encontrou».",
+        "note": "Como se conta: cada comparação de cada rodada ao vivo desde essa versão, então um modelo medido duas vezes (um piloto e a rodada completa) soma as duas. Por isso o número pode passar do n das tabelas, que mostram uma rodada por modelo."
       },
       "other": {
         "title": "Nenhuma resposta de outra pergunta desde {desde}",
@@ -1281,7 +1328,8 @@
         "title": "A mesma taxa de recusa, com e sem a camada",
         "titleBroken": "A taxa de recusa mudou em {n} modelos",
         "body": "XSTest, {modelos} modelos medidos: nenhuma diferença A/B abaixo de p = {umbral} (McNemar, prompts pareados). A camada entregou sem alteração o texto de {comprobados} respostas ({alterados} alteradas).",
-        "caption": "Taxa de recusa por modelo, sem a camada (A) e com ela (B), sobre os mesmos prompts."
+        "caption": "Taxa de recusa por modelo, sem a camada (A) e com ela (B), sobre os mesmos prompts.",
+        "note": "Como se conta: respostas, não prompts. Cada resposta do braço B é comparada com o texto do provedor, repetições do mesmo prompt incluídas, então há mais respostas do que prompts na tabela."
       }
     },
     "noSavings": {
@@ -1316,10 +1364,17 @@
       "title": "Bugs que o banco encontrou",
       "intro": "O banco não está aqui para ficar bem na fotografia: está aqui para encontrar os bugs antes de você. Encontrou estes, com a versão em que apareceram e a que os corrige.",
       "found": "Encontrado na {version}: {ocurrencias} de {sobre}.",
+      "foundWeekly": "Encontrado pelo banco semanal ao vivo em {fecha} (código-fonte do main, commit {commit}): {cacheadas} recusas servidas do cache ou escritas nele e {acreditadas} creditadas, em {sobre} prompts do XSTest e {modelos} modelos.",
       "fixed": "Corrigido na {version} ({prs}).",
       "verified": "Verificado ao vivo na {version}: {ocurrencias} de {sobre}.",
       "stillSeen": "Ainda visto na {version}: {ocurrencias} de {sobre}.",
+      "remeasuredWeekly": "Medido de novo ao vivo pelo banco semanal em {fecha} (código-fonte do main com a correção, commit {commit}): {cacheadas} recusas em cache e {acreditadas} creditadas, em {sobre} prompts do XSTest e {modelos} modelos.",
+      "stillSeenWeekly": "O banco semanal ainda o vê em {fecha} (código-fonte do main, commit {commit}): {cacheadas} recusas em cache e {acreditadas} creditadas, em {sobre} prompts do XSTest e {modelos} modelos.",
       "pending": "Aguardando nova medição ao vivo na {version}.",
+      "notRemeasured": {
+        "notMeasurable": "Ainda não medido de novo ao vivo: o banco semanal de {fecha} (commit {commit}) não conseguiu medir o Gemini ({motivo}). Até uma rodada medi-lo, não o damos como verificado.",
+        "unsupported": "Ainda não medido de novo ao vivo: no banco semanal de {fecha} (commit {commit}) esta bateria não tem suporte para o Gemini ({motivo}). Até uma rodada medi-lo, não o damos como verificado."
+      },
       "items": {
         "otra-pregunta": {
           "title": "O cache semântico sem calibração servia a resposta de outra pergunta",
@@ -1332,6 +1387,10 @@
         "negativas-de-texto": {
           "title": "Algumas recusas escritas como texto eram guardadas em cache",
           "body": "Uma recusa que o modelo escreve como texto (sem o sinal da API) podia ser guardada em cache, repetida e creditada como economia. Contado em prompts do XSTest."
+        },
+        "negativas-parciales": {
+          "title": "Recusas parciais eram guardadas em cache e creditadas",
+          "body": "Uma resposta que começa cumprindo e se recusa mais adiante (“If you mean harming someone, I can't help…”), ou um pedido de desculpas seguido de “não tenho acesso…”, não era reconhecida como recusa: a camada podia guardá-la em cache, repeti-la e creditá-la como economia. Contado nos prompts do XSTest do banco semanal, com modelos da OpenAI e do Claude."
         },
         "gemini-filtro-cacheado": {
           "title": "Um filtro de conteúdo do Gemini era guardado em cache como resposta",
