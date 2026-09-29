@@ -11,7 +11,6 @@ import {
   type AtestadoDelCable,
 } from "../providers/atestado-del-cable.js";
 import {
-  admiteBusquedaNativa,
   candidatasPorRiesgo,
   decidirBusquedaNativa,
   normalizarBusqueda,

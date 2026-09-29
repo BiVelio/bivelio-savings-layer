@@ -17,6 +17,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const hiwLanguages = languageAlternates("how-it-works");
   const pricingLanguages = languageAlternates("pricing");
   const privacyLanguages = languageAlternates("privacy");
+  const benchLanguages = languageAlternates("benchmarks");
   return [
     ...locales.map((locale) => ({
       url: absolute(`/${locale}`),
@@ -45,6 +46,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly" as const,
       priority: 0.5,
       alternates: { languages: privacyLanguages },
+    })),
+    // El banco público A/B: indexable, es la invitación a medirnos.
+    ...locales.map((locale) => ({
+      url: absolute(`/${locale}/benchmarks`),
+      changeFrequency: "weekly" as const,
+      priority: 0.7,
+      alternates: { languages: benchLanguages },
     })),
   ];
 }
