@@ -97,7 +97,8 @@ export async function GET(req: Request): Promise<NextResponse> {
     try {
       const { data: lics, error: licErr } = await admin
         .from("licenses")
-        .select("revoked, expires_at, grace_days")
+        // `plan` para que una licencia Medir (gratuita) no cuente como pagada.
+        .select("revoked, expires_at, grace_days, plan")
         .eq("org_id", fila.org_id ?? "");
       if (licErr) throw licErr;
       licenciaViva = hasValidLicense((lics ?? []) as LicenseRow[], ahora);
