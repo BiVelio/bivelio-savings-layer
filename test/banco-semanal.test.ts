@@ -502,7 +502,7 @@ describe("banco semanal · banco-semanal.yml", () => {
 
   it("los secretos van por NOMBRE, solo al paso del banco y solo en vivo; nada da de alta ni lee secretos", () => {
     const refs = [...banco.matchAll(/secrets\.([A-Z_]+)/g)].map((m) => m[1]);
-    expect(new Set(refs)).toEqual(new Set(["ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GEMINI_API_KEY", "AI_GATEWAY_API_KEY"]));
+    expect(new Set(refs)).toEqual(new Set(["ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GEMINI_API_KEY", "AI_GATEWAY_API_KEY", "ANTHROPIC_ADMIN_API_KEY", "OPENAI_ADMIN_API_KEY"]));
     for (const l of banco.split("\n").filter((x) => /secrets\./.test(x))) {
       expect(l).toMatch(/\$\{\{ inputs\.modo != 'seco' && secrets\.[A-Z_]+ \|\| '' \}\}/);
     }
@@ -517,9 +517,23 @@ describe("banco semanal · banco-semanal.yml", () => {
     expect(banco).toMatch(/- uses: actions\/upload-artifact@v4\n\s+if: always\(\)\n\s+with:\n\s+name: banco-semanal/);
   });
 
+  it("la factura real: ids como variables (no secretos), y la tirada anterior se baja solo en vivo con actions: read", () => {
+    for (const v of ["BANCO_ANTHROPIC_WORKSPACE_ID", "BANCO_ANTHROPIC_API_KEY_ID", "BANCO_OPENAI_PROJECT_ID", "BANCO_OPENAI_API_KEY_ID"]) {
+      expect(banco).toContain(`${v}: \${{ vars.${v} }}`);
+    }
+    const t = trabajo(banco, "banco");
+    expect(t).toMatch(/^ {4}permissions:\n {6}contents: read\n {6}actions: read$/m);
+    expect(t).toMatch(/- name: Tirada anterior \(su factura pendiente\)\n\s+if: \$\{\{ inputs\.modo != 'seco' \}\}/);
+    expect(t).toMatch(/gh run download "\$id" --repo "\$GITHUB_REPOSITORY" -n banco-semanal -D banco-semanal-previa/);
+    expect(t).toMatch(/--previa banco-semanal-previa$/m);
+  });
+
   it("docs/BANCO-SEMANAL.md nombra cada secreto que el workflow espera, con su `gh secret set`", () => {
-    for (const s of ["ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GEMINI_API_KEY", "AI_GATEWAY_API_KEY"]) {
+    for (const s of ["ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GEMINI_API_KEY", "AI_GATEWAY_API_KEY", "ANTHROPIC_ADMIN_API_KEY", "OPENAI_ADMIN_API_KEY"]) {
       expect(doc).toContain(`gh secret set ${s}`);
+    }
+    for (const v of ["BANCO_ANTHROPIC_WORKSPACE_ID", "BANCO_ANTHROPIC_API_KEY_ID", "BANCO_OPENAI_PROJECT_ID", "BANCO_OPENAI_API_KEY_ID"]) {
+      expect(doc).toContain(`gh variable set ${v}`);
     }
     expect(doc).toContain("BANCO_SEMANAL_EMERGENCIA");
   });

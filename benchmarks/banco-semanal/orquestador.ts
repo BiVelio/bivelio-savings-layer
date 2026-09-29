@@ -8,6 +8,8 @@
  *   --salida DIR           por defecto benchmarks/out/banco-semanal/<runId>
  *   --modelos a,b          filtra por id (openai/gpt-4o-mini) o id corto (gpt-4o-mini)
  *   --baterias a,b         filtra baterías (gsm8k,bfcl,xstest,mt-bench)
+ *   --previa DIR           la salida de la tirada EN VIVO anterior: sus cuadres de
+ *                          factura pendientes se vuelven a leer (factura.ts)
  *
  * NO REIMPLEMENTA NINGUNA BATERÍA: lanza cada arnés como proceso aparte, una
  * celda (modelo × batería) por proceso, con sus flags, y lee su artefacto.
@@ -32,6 +34,7 @@ import { fileURLToPath } from "node:url";
 
 import { BV_SALA_VERSION } from "../../src/version.js";
 import { extraer, type PreguntaCrudaMtBench } from "./extraer.js";
+import { cuadrarLaFactura, cuadresPendientesDe, type Cuadre } from "./factura.js";
 import {
   argumentosDe,
   BATERIAS,
@@ -294,7 +297,20 @@ async function principal(): Promise<void> {
     ),
   );
   const resultados = porBateria.flat();
-  const bruto = evaluar(resultados, caja.motivoDelAborto);
+  // La factura real (criterio 4): solo en vivo, cuando ya no queda ninguna llamada en vuelo.
+  const finDeCeldas = new Date().toISOString();
+  let factura: Cuadre[] = [];
+  if (modo === "vivo") {
+    const previa = arg("previa") ? join(resolve(RAIZ, arg("previa")!), "resultados.json") : null;
+    let previos: Cuadre[] = [];
+    try {
+      if (previa && existsSync(previa)) previos = cuadresPendientesDe(JSON.parse(readFileSync(previa, "utf8")));
+    } catch (e) {
+      console.log(`[banco] factura · la tirada anterior no se pudo leer (${(e as Error).name}): sus pendientes no se re-comprueban`);
+    }
+    factura = await cuadrarLaFactura({ runId, ventana: { inicio, fin: finDeCeldas }, resultados, env: process.env, previos, log: (s) => console.log(s) });
+  }
+  const bruto = evaluar(resultados, caja.motivoDelAborto, factura);
   const veredicto =
     modo === "vivo"
       ? bruto
@@ -317,6 +333,7 @@ async function principal(): Promise<void> {
     reparto: r,
     resultados,
     veredicto,
+    factura,
   };
   writeFileSync(join(raiz, "resultados.json"), redactar(JSON.stringify({ runId, ...datos, plan }, null, 2), secretos) + "\n");
   const md = redactar(resumenMarkdown(datos), secretos);
