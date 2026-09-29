@@ -13,8 +13,10 @@
  *   --concurrencia=<por proveedor, ≤4>
  *
  * TOPE DURO POR FAMILIA (en código, `TOPE_MAXIMO`): 0,80 $ por modelo OpenAI y
- * 1,25 $ por modelo Anthropic, A+B, entre TODAS las tiradas de la batería. `--tope`
- * solo puede bajarlo. Antes de gastar en Anthropic se prueba la clave con
+ * 1,25 $ por modelo Anthropic, A+B, entre TODAS las tiradas de la batería; los
+ * modelos de gama alta (`MODELOS_GAMA_ALTA`, Gemini incluido) tienen 1,25 $ cada
+ * uno (`techoDe`). `--tope` solo puede bajarlo. Gemini se habla por el endpoint
+ * compatible con OpenAI de Google (BVSALA_SONDA_BASE_URL, host oficial). Antes de gastar en Anthropic se prueba la clave con
  * `GET /v1/models` (gratis): un 401 deja el modelo «no medible: clave inválida».
  *
  * DOCTRINA (la de benchmarks/README.md, sección A/B):
@@ -95,6 +97,57 @@ export const MODELOS_POR_DEFECTO = [
 /** El techo autorizado por el dueño para ESTA batería, por modelo y A+B. `--tope` solo lo baja. */
 export const TOPE_MAXIMO: Record<Familia, number> = { openai: 0.8, anthropic: 1.25 };
 
+/**
+ * La batería de GAMA ALTA (2026-09-29): el dueño autorizó 1,25 $ por modelo, A+B,
+ * para cada uno de estos, sea cual sea su proveedor. Un modelo de esta lista usa
+ * este techo en vez del de su familia; `--tope` sigue pudiendo bajarlo, nunca subirlo.
+ */
+export const MODELOS_GAMA_ALTA = [
+  "anthropic/claude-opus-5-5",
+  "anthropic/claude-sonnet-5-5",
+  "openai/gpt-5.5",
+  "openai/gpt-5.6-sol",
+  "google/gemini-3.8-flash",
+  "google/gemini-3.1-pro-preview",
+] as const;
+export const TOPE_GAMA_ALTA = 1.25;
+
+/** El techo de un modelo: el de gama alta si está en esa lista; si no, el de su familia. */
+export function techoDe(modelo: string): number {
+  return (MODELOS_GAMA_ALTA as readonly string[]).includes(modelo) ? TOPE_GAMA_ALTA : TOPE_MAXIMO[familiaDe(modelo)];
+}
+
+/**
+ * Precios OFICIALES citados para modelos SIN fila en el catálogo del SDK. El
+ * catálogo NO se toca (es del producto, no del banco); el banco solo mide con
+ * un precio que pueda citar con URL y fecha. Sin entrada aquí ni fila en el
+ * catálogo, el modelo no se mide.
+ */
+export const PRECIOS_CITADOS: Record<string, { precio: { inputPer1k: number; outputPer1k: number; cachedInputPer1k: number }; prima: number; fuente: string }> = {
+  // https://platform.claude.com/docs/en/about-claude/pricing, consultada el 2026-09-29:
+  // «Claude Sonnet 5.5 | $2 / MTok | $2.50 / MTok | $4 / MTok | $0.20 / MTok | $10 / MTok»
+  // (entrada, escritura 5 min = 1,25×, escritura 1 h = 2×, lectura = 0,1×, salida).
+  "claude-sonnet-5-5": {
+    precio: { inputPer1k: 0.002, outputPer1k: 0.01, cachedInputPer1k: 0.0002 },
+    prima: 1.25,
+    fuente: "https://platform.claude.com/docs/en/about-claude/pricing (consultada 2026-09-29): Claude Sonnet 5.5 $2 / $2.50 (5m write) / $4 (1h write) / $0.20 (cache hit) / $10 per MTok",
+  },
+};
+
+/** El proveedor (a quién se paga y con qué clave), distinto del dialecto del cable (`Familia`). */
+export type Proveedor = "anthropic" | "openai" | "google";
+export function proveedorDe(modelo: string): Proveedor {
+  if (modelo.startsWith("google/") || /^gemini/.test(modelo)) return "google";
+  return familiaDe(modelo);
+}
+
+/** Los únicos hosts a los que la tirada puede hablar: los API oficiales de cada proveedor. */
+export const HOSTS_OFICIALES: Record<Proveedor, string> = {
+  anthropic: "api.anthropic.com",
+  openai: "api.openai.com",
+  google: "generativelanguage.googleapis.com",
+};
+
 /** Nombre de fichero por defecto: «bfcl-0431» para la 0.4.31. */
 export const NOMBRE_POR_DEFECTO = `bfcl-${VERSION_PAQUETE.replace(/\./g, "")}`;
 
@@ -169,6 +222,10 @@ export interface VarianteMultiTurno {
   /** Trazas de la capa (política, caché, herramientas) de la llamada B: dicen POR QUÉ acertó o no. */
   trazasB?: string[];
   error?: string;
+  /** Error del brazo A en esta variante (HTTP del proveedor). */
+  errorA?: string;
+  /** En qué difiere el cuerpo que mandó B del de A en esta variante (p. ej. un `extra_content` perdido). */
+  diferenciasDelCableB?: string[];
 }
 
 export interface RegistroMultiTurno {
@@ -190,7 +247,10 @@ export interface TiradaDeModelo {
   modelo: string;
   familia: Familia;
   muestreo: Muestreo;
-  precio: { inputPer1k: number; outputPer1k: number; cachedInputPer1k?: number; primaEscritura: number; claveCatalogo?: string };
+  precio: { inputPer1k: number; outputPer1k: number; cachedInputPer1k?: number; primaEscritura: number; claveCatalogo?: string; fuente?: string };
+  proveedor?: Proveedor;
+  /** La mayor salida (tokens, pensamiento incluido) de UNA llamada: el peor caso reservado supone 4096. */
+  salidaMaximaPorLlamada?: number;
   tope: number;
   gastado: number;
   gastoPorBrazo: { A: number; B: number };
@@ -216,6 +276,8 @@ export interface Artefacto {
   noMedibles?: { modelo: string; motivo: string }[];
   /** La tirada anterior (otra versión del paquete) con la que se compara, tal como se publicó. */
   comparacion?: { fichero: string; version: string; tag: string; commitDelTag: string; fecha: string; config: Artefacto["config"]; resumen: ResumenDeModelo[]; multiTurno: Record<string, { id: string; herramientasEnCable: { A: number; B: number } }[]> };
+  /** Notas del operador con evidencia (lo que el arnés no puede redactar solo); se publican tal cual. */
+  notas?: string[];
   /** Tiradas unidas con --fusionar. */
   partes?: { fecha: string; config: Artefacto["config"]; modelos: string[] }[];
 }
@@ -252,6 +314,7 @@ export function muestraEstratificada(porCategoria: Map<CategoriaAst, EntradaAst[
   return out;
 }
 
+/** El DIALECTO del cable: Gemini se habla por su endpoint compatible con OpenAI. */
 export function familiaDe(modelo: string): Familia {
   if (modelo.startsWith("anthropic/") || /^claude/.test(modelo)) return "anthropic";
   return "openai";
@@ -316,6 +379,23 @@ interface Contexto {
   muestreo: Muestreo;
   presupuesto: Presupuesto;
   diario: string;
+  precio: CostModelDelBanco;
+}
+type CostModelDelBanco = { inputPer1k: number; outputPer1k: number; cachedInputPer1k?: number };
+
+/** La mayor salida de una llamada de este modelo en el diario del cable de ESTA tirada. */
+function maximaSalida(diario: string, modelo: string): number {
+  let max = 0;
+  try {
+    for (const l of readFileSync(diario, "utf8").split("\n")) {
+      if (!l.trim()) continue;
+      const c = JSON.parse(l) as { modelo: string; uso?: { salida?: number } | null };
+      if (c.modelo === modelo) max = Math.max(max, c.uso?.salida ?? 0);
+    }
+  } catch {
+    /* sin diario (nada corrió) */
+  }
+  return max;
 }
 
 function volcar(ctx: Contexto, reg: LlamadaDelCable[]): void {
@@ -445,12 +525,32 @@ function resultadoSintetico(l: LlamadaHerramienta): string {
   return JSON.stringify({ status: "ok", function: l.name, result: "done" });
 }
 
+/**
+ * Reserva el peor caso de UN paso (una llamada por brazo, más media de margen para
+ * una llamada extra de la capa), calculado del cuerpo REAL del brazo A. Sin sitio
+ * → `PresupuestoAgotado`, antes de gastar nada en ese paso.
+ */
+function peorPaso(ctx: Contexto, turnos: Turno[], hs: HerramientaNeutral[]): number {
+  return 2.5 * peorCasoDeLlamada(JSON.stringify(cuerpoBrazoA(ctx.familia, ctx.modelo, turnos, hs, ctx.muestreo)), ctx.precio);
+}
+async function conReserva<T>(ctx: Contexto, monto: number, f: () => Promise<T>): Promise<T> {
+  if (!ctx.presupuesto.reservar(monto)) throw new PresupuestoAgotado(ctx.modelo, ctx.presupuesto.gastado, ctx.presupuesto.tope);
+  try {
+    return await f();
+  } finally {
+    ctx.presupuesto.liberar(monto);
+  }
+}
+
 async function unidadMultiTurno(ctx: Contexto, e: EntradaMultiTurno): Promise<RegistroMultiTurno> {
   const hs = e.funciones.map((f) => herramientaDe(f));
   const usuario: Turno = { role: "user", content: e.turnos[0]?.map((q) => q.content).join("\n") ?? "" };
   const reg0: LlamadaDelCable[] = [];
-  const a0 = await correrA(ctx, `${e.id}#paso0`, [usuario], hs, reg0);
-  const b0 = await correrB(ctx, `${e.id}#paso0`, [usuario], hs, reg0);
+  const [a0, b0] = await conReserva(ctx, peorPaso(ctx, [usuario], hs), async () => {
+    const a = await correrA(ctx, `${e.id}#paso0`, [usuario], hs, reg0);
+    const b = await correrB(ctx, `${e.id}#paso0`, [usuario], hs, reg0);
+    return [a, b] as const;
+  });
   volcar(ctx, reg0);
   const primeraB = reg0.find((c) => c.brazo === "B");
   const herramientasEn = (p: Record<string, unknown> | null | undefined) => ((p?.["tools"] as unknown[]) ?? []).length;
@@ -499,10 +599,25 @@ async function unidadMultiTurno(ctx: Contexto, e: EntradaMultiTurno): Promise<Re
     const unidad = `${e.id}#${variante}`;
     // Orden alterno: el prefijo caliente que deja el primero (caché automática de OpenAI) no favorece siempre al mismo brazo.
     const bPrimero = registro.variantes.length % 2 === 1;
-    const b = bPrimero ? await correrB(ctx, unidad, turnos, hs, reg) : null;
-    const a = await correrA(ctx, unidad, turnos, hs, reg);
-    const bb = b ?? (await correrB(ctx, unidad, turnos, hs, reg));
+    let a!: Awaited<ReturnType<typeof correrA>>;
+    let bb!: Awaited<ReturnType<typeof correrB>>;
+    try {
+      await conReserva(ctx, peorPaso(ctx, turnos, hs), async () => {
+        const b = bPrimero ? await correrB(ctx, unidad, turnos, hs, reg) : null;
+        a = await correrA(ctx, unidad, turnos, hs, reg);
+        bb = b ?? (await correrB(ctx, unidad, turnos, hs, reg));
+      });
+    } catch (err) {
+      volcar(ctx, reg);
+      if (err instanceof PresupuestoAgotado) {
+        registro.omitido = `presupuesto agotado antes de ${variante} (${registro.variantes.length} variantes hechas)`;
+        registro.violaciones = violacionesDeCache(registro.variantes);
+        throw Object.assign(err, { parcial: registro });
+      }
+      throw err;
+    }
     volcar(ctx, reg);
+    const primeraBv = reg.find((c) => c.brazo === "B");
     registro.variantes.push({
       variante,
       costeA: sumaDelCable(reg, "A").coste,
@@ -514,6 +629,8 @@ async function unidadMultiTurno(ctx: Contexto, e: EntradaMultiTurno): Promise<Re
       textoA: a.texto,
       basisB: bb.ok ? String(bb.r.report.cost.basis) : "error",
       ...(bb.ok ? { trazasB: resumenDelInforme(bb.r).trazas } : { error: bb.error }),
+      ...(a.ok ? {} : { errorA: a.error }),
+      diferenciasDelCableB: primeraBv?.peticion ? diferenciasDelCable(a.cuerpo, primeraBv.peticion).diferencias : ["B made no provider call"],
     });
   }
   registro.violaciones = violacionesDeCache(registro.variantes);
@@ -545,42 +662,60 @@ export function violacionesDeCache(vs: VarianteMultiTurno[]): string[] {
 async function correrModelo(
   modelo: string,
   entradas: { ast: EntradaAst[]; repes: EntradaAst[]; multi: EntradaMultiTurno[] },
-  op: { mock: boolean; cargado: SdkCargado; tope: number; semaforos: Record<Familia, Semaforo>; respuestas: Map<string, RespuestaSimulada>; concurrencia: number; diario: string },
+  op: { mock: boolean; cargado: SdkCargado; tope: number; semaforos: Record<Proveedor, Semaforo>; respuestas: Map<string, RespuestaSimulada>; concurrencia: number; diario: string },
 ): Promise<TiradaDeModelo> {
   const familia = familiaDe(modelo);
-  const pp = precioYPrima(modelo);
-  if (!pp.conocido) throw new Error(`${modelo}: sin fila propia en el catálogo; no se mide`);
+  const proveedor = proveedorDe(modelo);
+  const catalogo = precioYPrima(modelo);
+  const citado = PRECIOS_CITADOS[modelo.slice(modelo.lastIndexOf("/") + 1)];
+  if (!catalogo.conocido && !citado) throw new Error(`${modelo}: sin fila propia en el catálogo ni precio oficial citado; no se mide`);
+  const pp = catalogo.conocido ? catalogo : { precio: citado!.precio, prima: citado!.prima, conocido: true, fuente: citado!.fuente };
   const presupuesto = new Presupuesto(modelo, op.tope);
   const env = process.env;
   const ep: Endpoint = op.mock
-    ? { familia, baseUrl: familia === "anthropic" ? "https://mock.invalid/v1" : "https://mock-openai.invalid/v1", apiKey: "mock" }
-    : familia === "anthropic"
+    ? { familia, baseUrl: familia === "anthropic" ? "https://mock.invalid/v1" : `https://mock-${proveedor}.invalid/v1`, apiKey: "mock" }
+    : proveedor === "anthropic"
       ? { familia, baseUrl: normalizarBase(env["BVSALA_DEMO_ANTHROPIC_BASE_URL"] ?? ""), apiKey: env["BVSALA_DEMO_ANTHROPIC_API_KEY"] ?? "" }
-      : { familia, baseUrl: normalizarBase(env["BVSALA_DEMO_BASE_URL"] ?? ""), apiKey: env["BVSALA_DEMO_API_KEY"] ?? "" };
-  if (!op.mock && !ep.apiKey) throw new Error(`${modelo}: falta la clave de ${familia} en el entorno (se comprueba por existencia)`);
+      : proveedor === "google"
+        ? { familia, baseUrl: normalizarBase(env["BVSALA_SONDA_BASE_URL"] ?? ""), apiKey: env["BVSALA_SONDA_API_KEY"] ?? "" }
+        : { familia, baseUrl: normalizarBase(env["BVSALA_DEMO_BASE_URL"] ?? ""), apiKey: env["BVSALA_DEMO_API_KEY"] ?? "" };
+  if (!op.mock && !ep.apiKey) throw new Error(`${modelo}: falta la clave de ${proveedor} en el entorno (se comprueba por existencia)`);
+  if (!op.mock && new URL(ep.baseUrl).host !== HOSTS_OFICIALES[proveedor]) throw new Error(`${modelo}: el endpoint no es el API oficial de ${proveedor}`);
   const cable = crearCable({
     familia,
     presupuesto,
     precio: pp.precio,
     prima: pp.prima,
-    semaforo: op.semaforos[familia],
+    semaforo: op.semaforos[proveedor],
     ...(op.mock ? { base: fetchSimulado(op.respuestas), pausasMs: [1] } : {}),
   });
   const { sdk } = op.cargado;
   const provider =
     familia === "anthropic"
       ? new sdk.AnthropicProvider({ apiKey: ep.apiKey, baseUrl: ep.baseUrl, fetchImpl: cable, ...(op.mock ? { stripProviderPrefix: true } : {}) })
-      : new sdk.OpenAICompatibleProvider({ apiKey: ep.apiKey, baseUrl: ep.baseUrl, fetchImpl: cable, ...(op.mock ? { stripProviderPrefix: true } : {}) });
+      : new sdk.OpenAICompatibleProvider({
+          apiKey: ep.apiKey,
+          baseUrl: ep.baseUrl,
+          fetchImpl: cable,
+          // Gemini por su endpoint compatible: el id va sin `google/` (el adaptador solo lo quita solo en api.openai.com).
+          ...(op.mock || proveedor === "google" ? { stripProviderPrefix: true } : {}),
+        });
   // Configuración por defecto: SOLO el proveedor. Sin licenseServerUrl, sin serviceAccountKey, sin
   // exportadores: nada de metering ni telemetría (y la verja de hosts lo comprueba).
   const capa = sdk.createSavingsLayer({ provider, devUnlicensed: true });
   const muestreo = muestreoPareadoPara(modelo) as Muestreo;
-  const ctx: Contexto = { modelo, familia, ep, cable, capa, muestreo, presupuesto, diario: op.diario };
+  const ctx: Contexto = { modelo, familia, ep, cable, capa, muestreo, presupuesto, diario: op.diario, precio: pp.precio };
   const tirada: TiradaDeModelo = {
     modelo,
     familia,
+    proveedor,
     muestreo,
-    precio: { ...pp.precio, primaEscritura: pp.prima, ...(pp.clave ? { claveCatalogo: pp.clave } : {}) },
+    precio: {
+      ...pp.precio,
+      primaEscritura: pp.prima,
+      ...("clave" in pp && pp.clave ? { claveCatalogo: pp.clave } : {}),
+      ...("fuente" in pp ? { fuente: pp.fuente } : {}),
+    },
     tope: op.tope,
     gastado: 0,
     gastoPorBrazo: { A: 0, B: 0 },
@@ -592,9 +727,9 @@ async function correrModelo(
     avisosDeLaCapa: [],
     errores: [],
   };
-  const peorUnidad = (hs: number, turnos: number) =>
-    // Un cuerpo típico por herramienta y turno, a lo alto; dos brazos; margen para una llamada extra de la capa.
-    3 * peorCasoDeLlamada("x".repeat(1200 * hs + 600 * turnos), pp.precio);
+  // Peor caso de una unidad AST: el cuerpo REAL del brazo A, dos brazos y media llamada de margen.
+  const peorAst = (e: EntradaAst) =>
+    peorPaso(ctx, e.pregunta.map((q) => ({ role: "user", content: q.content })), e.funciones.map((f) => herramientaDe(f)));
 
   const trabajar = async <T>(xs: T[], reserva: (x: T) => number, f: (x: T, i: number) => Promise<void>) => {
     let i = 0;
@@ -604,7 +739,14 @@ async function correrModelo(
         const k = i++;
         if (k >= xs.length) return;
         const monto = reserva(xs[k]!);
-        if (!presupuesto.reservar(monto)) return;
+        // Si no cabe porque OTRAS unidades retienen su reserva, se espera a que acaben;
+        // solo se para cuando ni con todo liberado cabe.
+        let r = presupuesto.intentarReservar(monto);
+        while (r === "esperar") {
+          await new Promise((ok) => setTimeout(ok, 250));
+          r = presupuesto.intentarReservar(monto);
+        }
+        if (r === "no") return;
         try {
           await f(xs[k]!, k);
         } catch (e) {
@@ -622,32 +764,44 @@ async function correrModelo(
   };
 
   // 1) Multi-turn primero (es lo que comprueba #368 y la parte más cara por entrada), en serie.
+  // La reserva va POR PASO (paso 0 y cada variante), no por entrada: una entrada entera
+  // (12 llamadas a 4096 de salida) no cabe en 1,25 $ en los modelos caros aunque su gasto real sí.
   for (const e of entradas.multi) {
     if (presupuesto.agotado) break;
-    const monto = 12 * peorUnidad(e.funciones.length, 3) / 3;
-    if (!presupuesto.reservar(monto)) break;
     try {
       tirada.multiTurno.push(await unidadMultiTurno(ctx, e));
     } catch (err) {
-      if (err instanceof PresupuestoAgotado) break;
+      if (err instanceof PresupuestoAgotado) {
+        const parcial = (err as PresupuestoAgotado & { parcial?: RegistroMultiTurno }).parcial;
+        if (parcial) tirada.multiTurno.push(parcial);
+        presupuesto.agotado = true;
+        break;
+      }
       tirada.errores.push(sinSecretos(`${(err as Error).name}: ${(err as Error).message}`).slice(0, 400));
-    } finally {
-      presupuesto.liberar(monto);
     }
   }
-  // 2) AST.
-  await trabajar(entradas.ast, (e) => peorUnidad(e.funciones.length, 1), async (e, k) => {
+  // 2) AST, en dos tramos: hasta la última entrada que se repite, luego las repeticiones (3) y
+  // después el resto. Así un recorte por presupuesto cae en la COLA del AST (que sigue
+  // estratificada: turno rotatorio) y no se come las repeticiones, que necesitan que la capa
+  // haya visto antes su entrada.
+  const ultima = Math.max(-1, ...entradas.repes.map((r) => entradas.ast.findIndex((e) => e.id === r.id)));
+  await trabajar(entradas.ast.slice(0, ultima + 1), peorAst, async (e, k) => {
     tirada.ast.push(await unidadAst(ctx, e, k));
   });
   // 3) Repeticiones deliberadas de AST (la capa ya vio esas preguntas).
-  await trabajar(entradas.repes, (e) => peorUnidad(e.funciones.length, 1), async (e) => {
+  await trabajar(entradas.repes, peorAst, async (e) => {
     tirada.repeticiones.push(await unidadRepeticion(ctx, e));
+  });
+  // 2b) El resto del AST.
+  await trabajar(entradas.ast.slice(ultima + 1), peorAst, async (e, k) => {
+    tirada.ast.push(await unidadAst(ctx, e, ultima + 1 + k));
   });
 
   tirada.gastado = presupuesto.gastado;
   tirada.gastoPorBrazo = { ...presupuesto.porBrazo };
   tirada.llamadasPorBrazo = { ...presupuesto.llamadas };
   tirada.abortadoPorPresupuesto = presupuesto.agotado;
+  tirada.salidaMaximaPorLlamada = maximaSalida(op.diario, modelo);
   const orden = new Map(entradas.ast.map((e, i) => [e.id, i]));
   tirada.ast.sort((x, y) => (orden.get(x.id) ?? 0) - (orden.get(y.id) ?? 0));
   return tirada;
@@ -739,7 +893,7 @@ async function principal(): Promise<void> {
   const multi = Number(arg("multi") ?? 4);
   const repes = Number(arg("repes") ?? 5);
   const tope = Number(arg("tope") ?? Math.max(...Object.values(TOPE_MAXIMO)));
-  const topeDe = (m: string) => Math.min(tope, TOPE_MAXIMO[familiaDe(m)]);
+  const topeDe = (m: string) => Math.min(tope, techoDe(m));
   // EL TOPE ES POR MODELO Y ENTRE TODAS LAS TIRADAS DE ESTA BATERÍA: cada llamada LIVE queda en una
   // bitácora del cable (.cache/cable-live-*.jsonl), y su coste se descuenta del tope antes de empezar.
   // Así un piloto, una tirada abortada o una repetición nunca suman más de lo autorizado.
@@ -770,11 +924,13 @@ async function principal(): Promise<void> {
   if (mock) for (const e of ast) respuestas.set(claveSimulada(e.pregunta.map((q) => q.content).join(""), e.funciones.map((f) => herramientaDe(f).nombre)), respuestaDeReferencia(e.respuesta as never));
 
   // LA VERJA DE HOSTS, antes de crear ningún proveedor: solo los hosts de los proveedores.
+  // Solo los hosts de los proveedores de los modelos pedidos; y solo si son los API oficiales.
+  const variableDeBase: Record<Proveedor, string> = { anthropic: "BVSALA_DEMO_ANTHROPIC_BASE_URL", openai: "BVSALA_DEMO_BASE_URL", google: "BVSALA_SONDA_BASE_URL" };
   const hostsPermitidos = mock
     ? []
-    : [...new Set(["BVSALA_DEMO_ANTHROPIC_BASE_URL", "BVSALA_DEMO_BASE_URL"].map((k) => new URL(normalizarBase(process.env[k] ?? "")).host))];
+    : [...new Set(modelos.map((m) => new URL(normalizarBase(process.env[variableDeBase[proveedorDe(m)]] ?? "")).host))];
   for (const h of hostsPermitidos) {
-    if (h !== "api.anthropic.com" && h !== "api.openai.com") throw new Error(`endpoint ${h} is not a provider's own API host: the run only talks to api.anthropic.com and api.openai.com`);
+    if (!Object.values(HOSTS_OFICIALES).includes(h)) throw new Error(`endpoint ${h} is not a provider's own API host: the run only talks to ${Object.values(HOSTS_OFICIALES).join(", ")}`);
   }
   const verja = instalarVerjaDeHosts(hostsPermitidos);
 
@@ -794,21 +950,28 @@ async function principal(): Promise<void> {
   console.warn = (...xs: unknown[]) => {
     avisos.push(sinSecretos(xs.map(String).join(" ")).slice(0, 600));
   };
-  const semaforos: Record<Familia, Semaforo> = { anthropic: new Semaforo(concurrencia), openai: new Semaforo(concurrencia) };
+  const semaforos: Record<Proveedor, Semaforo> = { anthropic: new Semaforo(concurrencia), openai: new Semaforo(concurrencia), google: new Semaforo(concurrencia) };
   const diario = join(AQUI, ".cache", `cable-${mock ? "mock" : "live"}-${new Date().toISOString().replace(/[:.]/g, "-")}.jsonl`);
   console.log(
     `BFCL A/B · ${mock ? "MOCK (proveedor simulado, sin red)" : "LIVE"} · dataset ${REPO_BFCL}@${COMMIT_BFCL.slice(0, 12)} (${LICENCIA_BFCL}) · ` +
       `${ast.length} AST (${n}/categoría) + ${repesE.length} repeticiones + ${multiE.length} multi-turn · tope ${aMedir.map((m) => `${m} ${topeDe(m)} $`).join(", ")}`,
   );
   // Los modelos de proveedores distintos corren en paralelo; los del mismo, en serie (comparten clave y semáforo).
-  const porFamilia = new Map<Familia, string[]>();
-  for (const m of aMedir) porFamilia.set(familiaDe(m), [...(porFamilia.get(familiaDe(m)) ?? []), m]);
+  const porFamilia = new Map<Proveedor, string[]>();
+  for (const m of aMedir) porFamilia.set(proveedorDe(m), [...(porFamilia.get(proveedorDe(m)) ?? []), m]);
   const tiradas: TiradaDeModelo[] = [];
   await Promise.all(
     [...porFamilia.values()].map(async (ms) => {
       for (const m of ms) {
         const inicio = avisos.length;
-        const t = await correrModelo(m, { ast, repes: repesE, multi: multiE }, { mock, cargado, tope: Math.max(0, topeDe(m) - (previo.get(m) ?? 0)), semaforos, respuestas, concurrencia, diario });
+        let t: TiradaDeModelo;
+        try {
+          t = await correrModelo(m, { ast, repes: repesE, multi: multiE }, { mock, cargado, tope: Math.max(0, topeDe(m) - (previo.get(m) ?? 0)), semaforos, respuestas, concurrencia, diario });
+        } catch (e) {
+          noMedibles.push({ modelo: m, motivo: sinSecretos((e as Error).message).slice(0, 300) });
+          console.log(`  ${m}: ${(e as Error).message}`);
+          continue;
+        }
         t.avisosDeLaCapa = [...new Set(avisos.slice(inicio))];
         tiradas.push(t);
         console.log(
@@ -842,12 +1005,12 @@ async function principal(): Promise<void> {
   };
   artefacto.resumen = tiradas.map(resumir);
   const comparar = arg("comparar") ?? (mock ? undefined : "docs/benchmarks/2026-09-28/bfcl.json");
-  if (comparar) artefacto.comparacion = comparacionCon(resolve(RAIZ, comparar), RAIZ);
+  if (comparar && comparar !== "no") artefacto.comparacion = comparacionCon(resolve(RAIZ, comparar), RAIZ);
   mkdirSync(salida, { recursive: true });
   const json = JSON.stringify(artefacto, null, 2);
   // Ninguna clave puede acabar en el artefacto: se compara contra los VALORES del entorno sin imprimirlos.
-  const claves = ["BVSALA_DEMO_ANTHROPIC_API_KEY", "BVSALA_DEMO_API_KEY"].map((k) => process.env[k]).filter((v): v is string => !!v && v.length > 8);
-  if (claves.some((k) => json.includes(k)) || /\bsk-(?:ant-)?[A-Za-z0-9_-]{20,}/.test(json)) {
+  const claves = ["BVSALA_DEMO_ANTHROPIC_API_KEY", "BVSALA_DEMO_API_KEY", "BVSALA_SONDA_API_KEY"].map((k) => process.env[k]).filter((v): v is string => !!v && v.length > 8);
+  if (claves.some((k) => json.includes(k)) || /\bsk-(?:ant-)?[A-Za-z0-9_-]{20,}/.test(json) || /\bAIza[0-9A-Za-z_-]{30,}/.test(json)) {
     throw new Error("the artifact contains a credential-shaped string: not written");
   }
   writeFileSync(join(salida, `${nombre}.json`), `${json}\n`);

@@ -226,7 +226,13 @@ export function escribirInforme(a: Artefacto): string {
   l.push("");
   if (a.modo === "MOCK") l.push("> **MOCK**: simulated provider, no network. Nothing here is a measurement.\n");
   l.push(`- **Dataset:** Berkeley Function Calling Leaderboard, \`${a.dataset.repo}@${a.dataset.commit}\` (${a.dataset.licencia}), fetched at run time and sha256-checked per file (\`benchmarks/publicados/bfcl/datos.ts\`); not vendored.`);
-  l.push(`- **Arm A:** direct provider call with native tools (Anthropic Messages \`tool_use\` / OpenAI Chat Completions \`tools\`), hand-written, no layer.`);
+  const hayGoogle = a.modelos.some((t) => t.proveedor === "google") || (a.noMedibles ?? []).some((x) => x.modelo.startsWith("google/"));
+  l.push(
+    `- **Arm A:** direct provider call with native tools (Anthropic Messages \`tool_use\` / OpenAI Chat Completions \`tools\`), hand-written, no layer.` +
+      (hayGoogle
+        ? " Gemini is spoken through Google's OWN OpenAI-compatible endpoint (`generativelanguage.googleapis.com/v1beta/openai`, same origin and same bill as the native API): the harness has no native Gemini dialect, and neither does the layer's 0.4.31 (`OpenAICompatibleProvider`). Arm A echoes back each tool call's `extra_content` (Gemini 3's `thought_signature`) as an integrator must; arm B receives it too, as an extra field on each tool call."
+        : ""),
+  );
   const origen =
     a.paquete.origenDelFuente === "git-archive"
       ? `loaded from \`git archive ${a.paquete.tag} src\` (this tree differs from the tag in ${(a.paquete.diferenciasDelArbol ?? []).map((f) => `\`${f}\``).join(", ")}, so the tree was NOT measured)`
@@ -237,7 +243,7 @@ export function escribirInforme(a: Artefacto): string {
       ? " api.anthropic.com was contacted only by the free key check (`GET /v1/models`), which returned 401: no Anthropic model was billed."
       : ""
   }`);
-  l.push(`- **Sample:** ${a.config.n} per AST category (simple, multiple, parallel, parallel_multiple), stratified, seed ${a.config.semilla}, round-robin order; ${a.config.repes} deliberate AST repeats; ${a.config.multi} multi_turn_base entries for the cache-isolation probe. Budget per model (A+B, hard cap in code): ${a.modelos.map((t) => `${t.modelo} ${usd(t.tope + (a.config.gastoPrevioDescontado?.[t.modelo] ?? 0))}`).join(", ") || "—"}; enforced before every call.`);
+  l.push(`- **Sample:** ${a.config.n} per AST category requested (a model whose budget runs out stops at the tail of the round-robin order, so its sample stays stratified; its real \`n\` is in the tables) (simple, multiple, parallel, parallel_multiple), stratified, seed ${a.config.semilla}, round-robin order; ${a.config.repes} deliberate AST repeats; ${a.config.multi} multi_turn_base entries for the cache-isolation probe. Budget per model (A+B, hard cap in code): ${a.modelos.map((t) => `${t.modelo} ${usd(t.tope + (a.config.gastoPrevioDescontado?.[t.modelo] ?? 0))}`).join(", ") || "—"}; enforced before every call.`);
   l.push("");
   if (sinMedir.length || a.noMedibles?.length) {
     l.push("## Not measured");
@@ -248,13 +254,22 @@ export function escribirInforme(a: Artefacto): string {
     }
     l.push("");
   }
+  const citados = a.modelos.filter((t) => t.precio.fuente);
+  if (citados.length) {
+    l.push("## Prices not in the SDK catalogue");
+    l.push("");
+    for (const t of citados) l.push(`- **${t.modelo}** has no row in \`src/pricing/catalogo.ts\` (not touched). Both arms are priced with the official list price, cited: ${t.precio.fuente}. The layer's OWN report for it uses its illustrative fallback price, so its modelled figures for this model are meaningless.`);
+    l.push("");
+  }
   l.push("## Per model");
+  l.push("");
+  l.push("Order of work per model: the multi-turn probe first (the priority), then AST up to the last entry that is repeated, then the repeats, then the rest of AST. A model that runs out of budget therefore loses AST from the tail.");
   l.push("");
   l.push("| Model | n | AST acc. A | AST acc. B | B − A (paired) | same calls | layer changed a call | cost A | cost B | saving (measured, stratified) | spend (A+B, all parts) |");
   l.push("|---|---|---|---|---|---|---|---|---|---|---|");
   for (const r of rs) {
     l.push(
-      `| ${r.modelo} | ${r.n} | ${ci(r.exactitudA)} | ${ci(r.exactitudB)} | ${pp(r.diferenciaExactitud)} | ${r.mismasLlamadas}/${r.n} | ${r.infieles.length} | ${usd(r.coste.A)} | ${usd(r.coste.B)} | ${ci(r.coste.ahorro)} | ${usd(r.gasto.total)}${r.gasto.abortado ? " (stopped by budget)" : ""} |`,
+      `| ${r.modelo} | ${r.n} | ${ci(r.exactitudA)} | ${ci(r.exactitudB)} | ${r.n ? pp(r.diferenciaExactitud) : "—"} | ${r.mismasLlamadas}/${r.n} | ${r.infieles.length} | ${usd(r.coste.A)} | ${usd(r.coste.B)} | ${r.n ? ci(r.coste.ahorro) : "—"} | ${usd(r.gasto.total)}${r.gasto.abortado ? " (stopped by budget)" : ""} |`,
     );
   }
   l.push("");
@@ -346,6 +361,36 @@ export function escribirInforme(a: Artefacto): string {
       hubo = true;
       l.push(`- **${r.modelo}: cache isolation violated** — ${v}`);
     }
+    const vs = t.multiTurno.flatMap((m) => m.variantes.map((v) => ({ id: m.id, v })));
+    const soloB = vs.filter((x) => x.v.error && !x.v.errorA);
+    const soloA = vs.filter((x) => x.v.errorA && !x.v.error);
+    const ambos = vs.filter((x) => x.v.errorA && x.v.error);
+    if (soloB.length) {
+      hubo = true;
+      l.push(`- **${r.modelo}: in ${soloB.length}/${vs.length} multi-turn continuations arm B failed and arm A did not** (e.g. ${soloB[0]!.id} ${soloB[0]!.v.variante}: \`${(soloB[0]!.v.error ?? "").replace(/\s+/g, " ").slice(0, 300)}\`).`);
+    }
+    if (soloA.length) {
+      hubo = true;
+      l.push(`- ${r.modelo}: in ${soloA.length}/${vs.length} multi-turn continuations arm A failed and arm B did not (e.g. ${soloA[0]!.id} ${soloA[0]!.v.variante}: \`${(soloA[0]!.v.errorA ?? "").replace(/\s+/g, " ").slice(0, 300)}\`).`);
+    }
+    if (ambos.length) {
+      hubo = true;
+      l.push(`- ${r.modelo}: in ${ambos.length}/${vs.length} multi-turn continuations BOTH arms failed (e.g. A: \`${(ambos[0]!.v.errorA ?? "").replace(/\s+/g, " ").slice(0, 200)}\`).`);
+    }
+    const difV: Record<string, { casos: number; ejemplo: string }> = {};
+    for (const x of vs) {
+      // Una respuesta servida de la caché exacta de la capa no llega al cable: no es una diferencia.
+      const golpe = x.v.cacheB !== "miss" && x.v.cacheB !== "error";
+      const claves = new Set((x.v.diferenciasDelCableB ?? []).filter((d) => !(golpe && d === "B made no provider call")).map((d) => d.replace(/\[.*?\]/, "[]").split(":")[0]!.trim()));
+      for (const k of claves) {
+        const d = (x.v.diferenciasDelCableB ?? []).find((y) => y.replace(/\[.*?\]/, "[]").split(":")[0]!.trim() === k)!;
+        (difV[k] ??= { casos: 0, ejemplo: `${x.id} ${x.v.variante} → ${d}` }).casos++;
+      }
+    }
+    for (const [k, v] of Object.entries(difV)) {
+      hubo = true;
+      l.push(`- ${r.modelo}: multi-turn continuation body differs from arm A in \`${k}\` in ${v.casos}/${vs.length} continuations (e.g. \`${v.ejemplo.slice(0, 300)}\`).`);
+    }
     for (const e of t.errores) {
       hubo = true;
       l.push(`- ${r.modelo}: harness error — \`${e}\``);
@@ -360,15 +405,21 @@ export function escribirInforme(a: Artefacto): string {
     for (const w of avisos) l.push(`- \`${w.slice(0, 400).replace(/`/g, "'")}\``);
     l.push("");
   }
+  if (a.notas?.length) {
+    l.push("## Operator notes (with evidence)");
+    l.push("");
+    for (const n of a.notas) l.push(`- ${n}`);
+    l.push("");
+  }
   if (a.comparacion) l.push(...comparacion(a, rs));
   l.push("## Spend");
   l.push("");
-  l.push("| Model | A | B | this run | earlier runs of this battery (pilot, aborted) | total | budget | calls A / B |");
-  l.push("|---|---|---|---|---|---|---|---|");
+  l.push("| Model | A | B | this run | earlier runs of this battery (pilot, aborted) | total | budget | calls A / B | max output tokens in one call |");
+  l.push("|---|---|---|---|---|---|---|---|---|");
   const previo = (m: string) => a.config.gastoPrevioDescontado?.[m] ?? 0;
   for (const r of rs) {
     l.push(
-      `| ${r.modelo} | ${usd(r.gasto.A)} | ${usd(r.gasto.B)} | ${usd(r.gasto.total)} | ${usd(previo(r.modelo))} | ${usd(r.gasto.total + previo(r.modelo))} | ${usd(r.gasto.tope + previo(r.modelo))} | ${r.gasto.llamadas.A} / ${r.gasto.llamadas.B} |`,
+      `| ${r.modelo} | ${usd(r.gasto.A)} | ${usd(r.gasto.B)} | ${usd(r.gasto.total)} | ${usd(previo(r.modelo))} | ${usd(r.gasto.total + previo(r.modelo))} | ${usd(r.gasto.tope + previo(r.modelo))} | ${r.gasto.llamadas.A} / ${r.gasto.llamadas.B} | ${a.modelos.find((t) => t.modelo === r.modelo)?.salidaMaximaPorLlamada ?? "—"} |`,
     );
   }
   l.push("");
@@ -379,8 +430,10 @@ export function escribirInforme(a: Artefacto): string {
   l.push("- A stratified subsample, not the full BFCL categories; intervals are conditional on it.");
   l.push("- The AST checker is a TypeScript port of BFCL's Python checker (`ast.ts`, pinned by tests). On Anthropic both arms read `tool_use.input` through `JSON.parse`, so `5` and `5.0` are indistinguishable there (the int-vs-float check is slightly more lenient than BFCL's Python on that provider, equally for both arms).");
   l.push("- Multi-turn: only the first user turn and one synthetic tool round per entry; BFCL's state-based multi-turn scoring is not reproduced.");
-  l.push("- Models are nondeterministic (sonnet-5 and gpt-5.4-mini reason and do not take temperature 0), so A≠B in *which* call was made is expected noise; a call the layer changed after the provider returned it is not, and is checked separately (`layer changed a call`).");
-  l.push("- Costs use list prices from the SDK catalogue, not the invoice.");
+  l.push("- Models are nondeterministic (reasoning models get no temperature/seed from either arm), so A≠B in *which* call was made is expected noise; a call the layer changed after the provider returned it is not, and is checked separately (`layer changed a call`).");
+  l.push("- Costs use list prices (SDK catalogue, or the official page cited above), not the invoice.");
+  l.push("- The per-call worst case reserved before sending assumes ≤ 4096 output tokens. Anthropic enforces it (`max_tokens` 4096 in both arms); OpenAI and Gemini get no output cap from either arm (the layer's adapter sends none), so there it is an estimate, not a bound — the largest output actually seen per call is in the spend table.");
+  if (hayGoogle) l.push("- Gemini's OpenAI-compatible endpoint leaves thinking tokens OUT of `completion_tokens` but counts them in `total_tokens`; Google bills them as output, so the harness prices `total − prompt` as output (`cable.ts`). The layer's own report reads `completion_tokens` only, so its modelled cost for Gemini understates the bill.");
   l.push("");
   return `${l.join("\n")}\n`;
 }
