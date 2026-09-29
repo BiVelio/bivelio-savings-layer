@@ -58,6 +58,11 @@ permissions: {}
 
 jobs:
   verificar:
+    # Las Release `py-v*` son del cliente de Python y las publica
+    # publish-pypi.yml. Sin este salto, cortar `py-v0.1.0` lanzaría también
+    # esta cadena, que caería en «La etiqueta coincide con package.json». Con
+    # `verificar` saltado, `publicar` y `sbom` no corren.
+    if: ${{ !startsWith(github.event.release.tag_name, 'py-v') }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
