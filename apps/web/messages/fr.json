@@ -1148,10 +1148,50 @@
       "arms": "<b>Deux bras, la même requête.</b> A va directement au fournisseur, sans la couche ; B passe par la couche avec sa configuration par défaut. Même prompt, même échantillonnage, même plafond de sortie.",
       "cost": "<b>Le coût est compté par le fournisseur.</b> Chaque bras est valorisé à partir de l'<code>usage</code> que l'API renvoie à chaque appel, au prix catalogue. L'économie est 1 − coût(B) / coût(A) de la même exécution, pas ce que la couche dit d'elle-même.",
       "intervals": "<b>Intervalles au {nivel}.</b> Chaque harnais les calcule (rééchantillonnage par familles de questions, Wilson pour les taux de refus). Un intervalle qui traverse zéro veut dire « indiscernable de zéro », et nous le disons.",
-      "package": "<b>Le paquet que vous installez.</b> Le bras B exécute la source du tag {version} ; son <code>dist/index.js</code> est identique octet pour octet à celui du tarball npm (sha256 <code>{sha}</code>).",
+      "package": "<b>Le paquet que vous installez.</b> Les passes A/B des tableaux ci-dessous ont été faites avec la {version} : le bras B exécute le code source de ce tag, et son <code>dist/index.js</code> est identique octet pour octet à celui du tarball npm (sha256 <code>{sha}</code>). Le banc hebdomadaire en direct est autre chose : à chaque passe, il mesure le code source de main tel qu'il est ce jour-là, avant sa publication.",
       "guard": "<b>Pas de raccourcis.</b> Chaque harnais surveille les hôtes auxquels il parle et porte un plafond de dépense par modèle écrit dans le code. Un modèle qui n'a pas pu être mesuré apparaît comme « non mesuré », avec le motif.",
       "batteriesTitle": "Quatre batteries, jeux de données publics, figés",
       "commitOnly": "figé par commit"
+    },
+    "weekly": {
+      "title": "Banc hebdomadaire en direct",
+      "intro": "Chaque semaine, et chaque fois que nous le lançons à la main, une passe fait tourner toutes les batteries sur tous les modèles : le bras A va directement au fournisseur, le bras B passe par la couche construite à partir du code source de main à ce moment-là. Ce n'est pas une version publiée : c'est ce qui est sur le point de l'être. La passe échoue si une règle est enfreinte, et une cellule qui n'a pas pu être mesurée dit pourquoi.",
+      "meta": "Passe du {fecha} · code source de main au commit {commit} (version du paquet {version}) · dépense {gasto} sur un plafond de {tope} · {medidas} cellules mesurées sur {celdas}.",
+      "verdictOk": "Verdict : aucune régression.",
+      "verdictFailed": "Verdict : la passe a échoué (règles enfreintes : {n}).",
+      "status": {
+        "measured": "mesurée",
+        "cut": "mesurée (arrêtée à son plafond de dépense)",
+        "notMeasurable": "non mesurable : {motivo}",
+        "unsupported": "non prise en charge : {motivo}",
+        "harnessFailed": "le harnais a échoué : {motivo}"
+      },
+      "reason": {
+        "sin-clave": "pas de clé pour ce fournisseur dans l'environnement du banc",
+        "proveedor": "aucune réponse valide du fournisseur dans le bras A",
+        "tope-global": "le plafond de dépense global de la passe a été atteint",
+        "arnes-proveedor": "le harnais de cette batterie ne parle qu'à Anthropic et OpenAI",
+        "arnes-modelo": "le harnais de cette batterie n'a pas ce modèle",
+        "arnes": "erreur ou délai dépassé dans le harnais",
+        "otro": "données insuffisantes"
+      },
+      "counts": {
+        "otherQuestion": "réponse d'une autre question : {n}",
+        "changedCalls": "appels d'outils modifiés : {n}",
+        "refusals": "refus mis en cache : {cacheadas} · crédités : {acreditadas}"
+      },
+      "diff": {
+        "accuracy": "exactitude {d} pp [{inf}, {sup}]",
+        "accuracyNoCi": "exactitude {d} pp",
+        "win": "B préférée {w} [{inf} – {sup}]",
+        "winNoCi": "B préférée {w}",
+        "safe": "sûrs {d} pp (p = {p})",
+        "unsafe": "dangereux {d} pp (p = {p})"
+      },
+      "note": "Les « échecs de la couche » sont des erreurs du bras B que le bras A n'a pas eues. « B − A » est l'écart d'exactitude pour GSM8K et BFCL, l'écart du taux de refus pour XSTest (p de McNemar, prompts appariés) et, pour MT-Bench, la fréquence à laquelle le juge préfère B (la moitié est une égalité). « Rapport vs facture » mesure l'écart entre le coût que la couche déclare pour le bras B et ce que facture le fournisseur.",
+      "earlierTitle": "Passes hebdomadaires précédentes",
+      "earlierOk": "{fecha} · commit {commit} · aucune régression.",
+      "earlierFailed": "{fecha} · commit {commit} · échec (règles enfreintes : {n})."
     },
     "batteries": {
       "gsm8k": "Problèmes de mathématiques avec répétitions et paraphrases : combien le cache fait économiser et si l'exactitude baisse.",
@@ -1176,7 +1216,13 @@
       "safe": "Refus, prompts sûrs (A → B)",
       "unsafe": "Refus, prompts dangereux (A → B)",
       "verdict": "Lecture",
-      "reports": "Rapports"
+      "reports": "Rapports",
+      "status": "État",
+      "spend": "Dépense / plafond",
+      "layerFails": "Échecs de la couche",
+      "counts": "Ce qu'il compte",
+      "diff": "B − A",
+      "reportVsInvoice": "Rapport vs facture"
     },
     "savings": {
       "title": "Économie mesurée par modèle",
@@ -1191,7 +1237,8 @@
       "tools": {
         "title": "La couche n'a jamais changé un appel d'outil",
         "titleBroken": "La couche a changé {n} appels d'outils",
-        "body": "{alteradas} appels modifiés sur {comparaciones} comparaisons BFCL, {modelos} modèles, depuis {desde}. Si la couche échoue (une erreur en B que A n'avait pas), ce n'est pas compté ici : c'est sous « Bugs trouvés par le banc »."
+        "body": "{alteradas} appels modifiés sur {comparaciones} comparaisons BFCL, {modelos} modèles, depuis {desde}. Si la couche échoue (une erreur en B que A n'avait pas), ce n'est pas compté ici : c'est sous « Bugs trouvés par le banc ».",
+        "note": "Comment c'est compté : chaque comparaison de chaque passe en direct depuis cette version ; un modèle mesuré deux fois (un pilote et la passe complète) compte donc deux fois. C'est pourquoi le chiffre peut dépasser le n des tableaux, qui montrent une passe par modèle."
       },
       "other": {
         "title": "Aucune réponse d'une autre question depuis {desde}",
@@ -1203,7 +1250,8 @@
         "title": "Le même taux de refus, avec et sans la couche",
         "titleBroken": "Le taux de refus a changé pour {n} modèles",
         "body": "XSTest, {modelos} modèles mesurés : aucune différence A/B en dessous de p = {umbral} (McNemar, prompts appariés). La couche a livré sans altération le texte de {comprobados} réponses ({alterados} altérées).",
-        "caption": "Taux de refus par modèle, sans la couche (A) et avec elle (B), sur les mêmes prompts."
+        "caption": "Taux de refus par modèle, sans la couche (A) et avec elle (B), sur les mêmes prompts.",
+        "note": "Comment c'est compté : des réponses, pas des prompts. Chaque réponse du bras B est comparée au texte du fournisseur, répétitions d'un même prompt comprises ; il y a donc plus de réponses que de prompts dans le tableau."
       }
     },
     "noSavings": {
@@ -1238,10 +1286,17 @@
       "title": "Bugs trouvés par le banc",
       "intro": "Le banc n'est pas là pour bien paraître : il est là pour trouver les bugs avant vous. Il a trouvé ceux-ci, avec la version où ils sont apparus et celle qui les corrige.",
       "found": "Trouvé dans la {version} : {ocurrencias} sur {sobre}.",
+      "foundWeekly": "Trouvé par le banc hebdomadaire en direct le {fecha} (code source de main, commit {commit}) : {cacheadas} refus servis depuis le cache ou écrits dedans et {acreditadas} crédités, sur {sobre} prompts XSTest et {modelos} modèles.",
       "fixed": "Corrigé dans la {version} ({prs}).",
       "verified": "Vérifié en direct sur la {version} : {ocurrencias} sur {sobre}.",
       "stillSeen": "Encore observé sur la {version} : {ocurrencias} sur {sobre}.",
+      "remeasuredWeekly": "Remesuré en direct par le banc hebdomadaire le {fecha} (code source de main avec le correctif, commit {commit}) : {cacheadas} refus mis en cache et {acreditadas} crédités, sur {sobre} prompts XSTest et {modelos} modèles.",
+      "stillSeenWeekly": "Encore vu par le banc hebdomadaire le {fecha} (code source de main, commit {commit}) : {cacheadas} refus mis en cache et {acreditadas} crédités, sur {sobre} prompts XSTest et {modelos} modèles.",
       "pending": "En attente d'être remesuré en direct sur la {version}.",
+      "notRemeasured": {
+        "notMeasurable": "Pas encore remesuré en direct : le banc hebdomadaire du {fecha} (commit {commit}) n'a pas pu mesurer Gemini ({motivo}). Tant qu'aucune passe ne le mesure, nous ne le considérons pas comme vérifié.",
+        "unsupported": "Pas encore remesuré en direct : dans le banc hebdomadaire du {fecha} (commit {commit}), cette batterie ne prend pas en charge Gemini ({motivo}). Tant qu'aucune passe ne le mesure, nous ne le considérons pas comme vérifié."
+      },
       "items": {
         "otra-pregunta": {
           "title": "Le cache sémantique non calibré servait la réponse d'une autre question",
@@ -1254,6 +1309,10 @@
         "negativas-de-texto": {
           "title": "Certains refus écrits en texte étaient mis en cache",
           "body": "Un refus que le modèle écrit en texte (sans le signal de l'API) pouvait être mis en cache, répété et crédité comme une économie. Compté dans les prompts XSTest."
+        },
+        "negativas-parciales": {
+          "title": "Des refus partiels étaient mis en cache et crédités",
+          "body": "Une réponse qui commence par obtempérer et refuse plus loin (« If you mean harming someone, I can't help… »), ou des excuses suivies de « je n'ai pas accès… », n'étaient pas reconnues comme un refus : la couche pouvait les mettre en cache, les répéter et les créditer comme une économie. Compté dans les prompts XSTest du banc hebdomadaire, avec des modèles d'OpenAI et de Claude."
         },
         "gemini-filtro-cacheado": {
           "title": "Un filtre de contenu de Gemini était mis en cache comme une réponse",

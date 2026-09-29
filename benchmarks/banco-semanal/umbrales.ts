@@ -27,6 +27,14 @@
  *                        según su `usage` (con 0,0001 $ de holgura absoluta
  *                        para que una suma de céntimos no dispare por redondeo).
  *
+ *   factura-no-cuadra    Criterio 4 de CAMINO-A-0.5: lo que el proveedor
+ *                        FACTURA (su API de costes, workspace o proyecto
+ *                        dedicado, días UTC de la tirada) fuera de ±2 % de lo
+ *                        que el banco midió (A + B + juez si va directo). Solo
+ *                        con clave de administrador; sin ella, aviso «factura
+ *                        real no comprobada». Un pendiente por el retraso del
+ *                        API se decide en la tirada siguiente (factura.ts).
+ *
  * Y cuatro que no son «empeorar» pero impiden certificar que no empeoró:
  *
  *   arnes-falla          Una celda cuyo arnés murió, se colgó o no dejó
@@ -38,11 +46,14 @@
  *                        las claves rechazadas): no hay nada que certifique.
  *
  * No hacen fallar (van al resumen como avisos): un modelo que el arnés todavía
- * no sabe medir (sin-soporte), uno «no medible» por su clave o su cuota, y una
- * celda cortada por su propio tope (se mide menos, no peor).
+ * no sabe medir (sin-soporte), uno «no medible» por su clave o su cuota, una
+ * celda cortada por su propio tope (se mide menos, no peor), y una celda de
+ * MT-Bench cuyo juez juzgó menos de MINIMO_DE_TURNOS_JUZGADOS turnos (extraer.ts):
+ * sin tasa de victoria, y dicho, en vez de un 0,5 que parezca un empate.
  */
 import type { Bateria } from "./plan.js";
 import type { Medicion } from "./extraer.js";
+import { lineaDelCuadre, type Cuadre } from "./factura.js";
 
 export const TOLERANCIA_INFORME_RELATIVA = 0.02;
 export const TOLERANCIA_INFORME_ABSOLUTA_USD = 0.0001;
@@ -56,6 +67,7 @@ export type Regla =
   | "capa-falla"
   | "exactitud-peor"
   | "informe-vs-factura"
+  | "factura-no-cuadra"
   | "arnes-falla"
   | "tope-excedido"
   | "tope-global"
@@ -115,7 +127,23 @@ export interface Veredicto {
   avisos: string[];
 }
 
-export function evaluar(resultados: readonly ResultadoDeCelda[], abortoGlobal: string | null): Veredicto {
+/**
+ * Los cuadres contra la factura real (factura.ts): solo `no-cuadra` hace
+ * fallar; lo demás que no sea `cuadra` o `sin-gasto` es un aviso (sin clave de
+ * administrador, sin workspace/proyecto dedicado, tráfico ajeno, pendiente por
+ * el retraso del API).
+ */
+export function evaluarFactura(cuadres: readonly Cuadre[]): { infracciones: Infraccion[]; avisos: string[] } {
+  const infracciones: Infraccion[] = [];
+  const avisos: string[] = [];
+  for (const c of cuadres) {
+    if (c.estado === "no-cuadra") infracciones.push({ regla: "factura-no-cuadra", bateria: "banco", modelo: c.proveedor, detalle: `tirada ${c.runId}: ${c.detalle}` });
+    else if (c.estado !== "cuadra" && c.estado !== "sin-gasto") avisos.push(lineaDelCuadre(c));
+  }
+  return { infracciones, avisos };
+}
+
+export function evaluar(resultados: readonly ResultadoDeCelda[], abortoGlobal: string | null, factura: readonly Cuadre[] = []): Veredicto {
   const infracciones: Infraccion[] = [];
   const avisos: string[] = [];
   const medidasPorBateria = new Map<Bateria, number>();
@@ -127,6 +155,9 @@ export function evaluar(resultados: readonly ResultadoDeCelda[], abortoGlobal: s
         infracciones.push(...infraccionesDe(r.medicion, r.topeUsd));
         if (r.medicion.estado === "medido") medidasPorBateria.set(r.bateria, (medidasPorBateria.get(r.bateria) ?? 0) + 1);
         else avisos.push(`${r.bateria} · ${r.modelo}: no medible — ${r.medicion.motivo ?? "sin motivo"}`);
+        if (r.medicion.estado === "medido" && r.medicion.calidadSinMedir) {
+          avisos.push(`${r.bateria} · ${r.modelo}: calidad sin medir — ${r.medicion.calidadSinMedir}`);
+        }
         if (r.medicion.estado === "medido" && r.medicion.cortadaPorTope) {
           avisos.push(`${r.bateria} · ${r.modelo}: cortada por su tope tras ${r.medicion.n} ítems (intervalo más ancho)`);
         }
@@ -153,5 +184,8 @@ export function evaluar(resultados: readonly ResultadoDeCelda[], abortoGlobal: s
       infracciones.push({ regla: "bateria-sin-medir", bateria: b, modelo: "—", detalle: `ninguna de sus ${n} celdas se pudo medir` });
     }
   }
+  const fac = evaluarFactura(factura);
+  infracciones.push(...fac.infracciones);
+  avisos.push(...fac.avisos);
   return { ok: infracciones.length === 0, infracciones, avisos };
 }

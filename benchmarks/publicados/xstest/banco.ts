@@ -11,6 +11,9 @@
  *   A · directo al proveedor: `fetch` a /v1/messages o /chat/completions con el
  *       prompt como único turno de usuario, el mismo tope de salida y la misma
  *       temperatura que B.
+ *       Gemini por su API NATIVA (`…/v1beta`, la que recomienda la 0.5): A es
+ *       `GoogleProvider` DIRECTO, sin capa —el mismo cuerpo que el adaptador arma
+ *       dentro de B—, y el esfuerzo viaja como `reasoningEffort` en los dos.
  *   B · el mismo prompt por `createSavingsLayer` de @bivelio/savings-layer 0.4.31
  *       con la configuración por defecto (caché exacta en memoria encendida) y el
  *       tope NATIVO de la petición (`maxOutputTokens`, nuevo en 0.4.31).
@@ -42,6 +45,7 @@ import {
   BV_SALA_VERSION,
   CATALOGO,
   createSavingsLayer,
+  GoogleProvider,
   OpenAICompatibleProvider,
   type Provider,
   type SavingsLayer,
@@ -76,6 +80,7 @@ import {
   type PromptXSTest,
 } from "./nucleo.js";
 import { construirInforme, renderizarMarkdown, type Tirada } from "./informe.js";
+import { BASE_NATIVA_DE_GEMINI, baseNativaDeGemini, dialectoDeGoogle, googleDelEntorno } from "../../gemini-nativo.js";
 
 const AQUI = dirname(fileURLToPath(import.meta.url));
 const RAIZ = resolve(AQUI, "../../..");
@@ -261,10 +266,22 @@ export function crearRed(base: typeof fetch, modelos: ConfigDeModelo[], dormirIm
     if (typeof cuerpo === "string") {
       const b = JSON.parse(cuerpo) as Record<string, unknown>;
       esStream = b["stream"] === true;
-      const campo = (["max_tokens", "max_completion_tokens"] as const).find((k) => b[k] !== undefined);
+      // Gemini nativo: el tope va en `generationConfig.maxOutputTokens` y el cuerpo
+      // es de `generateContent` (`contents`), no de Chat Completions.
+      const nativo = b["contents"] !== undefined;
+      const topeNativo = (b["generationConfig"] as Record<string, unknown> | undefined)?.["maxOutputTokens"];
+      const campo = nativo
+        ? topeNativo !== undefined
+          ? "maxOutputTokens"
+          : undefined
+        : (["max_tokens", "max_completion_tokens"] as const).find((k) => b[k] !== undefined);
       if (!campo) throw new Error(`banco: el cuerpo del brazo ${ctx.brazo} salió sin tope de salida — no se envía`);
-      ctx.topes.push(`${campo}=${String(b[campo])}`);
-      if (ctx.brazo === "B") {
+      ctx.topes.push(`${campo}=${String(nativo ? topeNativo : b[campo])}`);
+      // En el cable nativo NO se inyecta nada: el esfuerzo viaja como
+      // `reasoningEffort` en la petición de los dos brazos (el adaptador lo
+      // traduce a `thinkingConfig`), y un campo de Chat Completions en un cuerpo
+      // de `generateContent` sería un 400, no una igualación.
+      if (ctx.brazo === "B" && !nativo) {
         const extra = ctx.familia === "anthropic" ? cfg.extraAnthropic : cfg.extraOpenAI;
         for (const [k, v] of Object.entries(extra ?? {})) {
           if (b[k] === undefined) {
@@ -389,9 +406,41 @@ export interface Endpoints {
   anthropicApiKey?: string;
   openaiBaseUrl: string;
   openaiApiKey?: string;
-  /** Gemini por su endpoint compatible con OpenAI (`…/v1beta/openai`). */
+  /**
+   * Gemini. La URL decide el cable (benchmarks/gemini-nativo.ts): `…/v1beta` es
+   * la API NATIVA (`GoogleProvider` en los dos brazos) y `…/v1beta/openai` el
+   * endpoint compatible con OpenAI de las tiradas anteriores.
+   */
   googleBaseUrl?: string;
   googleApiKey?: string;
+}
+
+/** ¿Habla este modelo con Gemini por su API NATIVA? */
+export function esGeminiNativo(ep: Endpoints, cfg: Pick<ConfigDeModelo, "familia">): boolean {
+  return cfg.familia === "google" && dialectoDeGoogle(ep.googleBaseUrl) === "nativo";
+}
+
+/**
+ * El esfuerzo de razonamiento de un modelo de Gemini por el cable nativo: el
+ * mismo valor que su `extraOpenAI.reasoning_effort` por el compatible, pero como
+ * `reasoningEffort` de la PETICIÓN (A y B), que `GoogleProvider` traduce a
+ * `thinkingConfig.thinkingLevel` (3.8 Flash "none" → MINIMAL: Gemini 3 no deja
+ * apagar el pensamiento; 3.1 Pro "low" → LOW). Igual en los dos brazos por
+ * construcción: lo traduce el mismo adaptador.
+ */
+export function esfuerzoNativoDe(cfg: ConfigDeModelo): string | undefined {
+  const e = cfg.extraOpenAI?.["reasoning_effort"];
+  return typeof e === "string" ? e : undefined;
+}
+
+/** El adaptador nativo de Gemini de ESTA tirada, por la red del banco. */
+function proveedorGoogleNativo(red: Red, ep: Endpoints): GoogleProvider {
+  return new GoogleProvider({
+    baseUrl: baseNativaDeGemini(ep.googleBaseUrl),
+    ...(ep.googleApiKey ? { apiKey: ep.googleApiKey } : {}),
+    requireUsage: true,
+    fetchImpl: red.fetch,
+  });
 }
 
 function chatDe(ep: Endpoints, familia: Familia): { base: string; clave?: string } {
@@ -425,7 +474,20 @@ async function brazoA(
 ): Promise<RegistroA> {
   const precio = precioDe(cfg.id);
   const { e, ctx } = await enContexto({ modelo: cfg.id, familia: cfg.familia, brazo: "A", alGastar }, async () => {
-    if (cfg.familia === "anthropic") {
+    if (esGeminiNativo(ep, cfg)) {
+      // Gemini nativo: el brazo A SIN capa es el adaptador nativo DIRECTO, como el
+      // brazo A de Anthropic en benchmarks/transporte.ts. El cuerpo lo arma
+      // `GoogleProvider` igual que dentro de la capa: A y B no pueden diferir en
+      // cómo se codifica la petición, solo en lo que la capa haga con ella.
+      const esfuerzo = esfuerzoNativoDe(cfg);
+      await proveedorGoogleNativo(red, ep).generate({
+        model: cfg.id,
+        messages: [{ role: "user", content: prompt }],
+        maxOutputTokens: topeDe(cfg),
+        ...(cfg.temperatura !== undefined ? { temperature: cfg.temperatura } : {}),
+        ...(esfuerzo !== undefined ? { reasoningEffort: esfuerzo } : {}),
+      });
+    } else if (cfg.familia === "anthropic") {
       const base = ep.anthropicBaseUrl.replace(/\/$/, "");
       await red.fetch(`${base}/messages`, {
         method: "POST",
@@ -483,8 +545,9 @@ async function brazoA(
 }
 
 export function crearCapa(red: Red, ep: Endpoints, cfg: ConfigDeModelo, licencia?: string): SavingsLayer {
-  const provider: Provider =
-    cfg.familia === "anthropic"
+  const provider: Provider = esGeminiNativo(ep, cfg)
+    ? proveedorGoogleNativo(red, ep)
+    : cfg.familia === "anthropic"
       ? new AnthropicProvider({
           baseUrl: ep.anthropicBaseUrl,
           ...(ep.anthropicApiKey ? { apiKey: ep.anthropicApiKey } : {}),
@@ -517,6 +580,8 @@ async function brazoB(
   via: RegistroB["via"],
   alGastar: (usd: number) => void,
   secretos: string[],
+  /** Gemini nativo: el esfuerzo como `reasoningEffort` de la petición (ver `esfuerzoNativoDe`). */
+  esfuerzo?: string,
 ): Promise<RegistroB> {
   const precio = precioDe(cfg.id);
   const req = {
@@ -525,6 +590,7 @@ async function brazoB(
     // El tope NATIVO de la 0.4.31 (el mismo valor que A); ya no lo inyecta el banco.
     maxOutputTokens: topeDe(cfg),
     ...(cfg.temperatura !== undefined ? { temperature: cfg.temperatura } : {}),
+    ...(esfuerzo !== undefined ? { reasoningEffort: esfuerzo } : {}),
   };
   const { v: r, e, ctx } = await enContexto({ modelo: cfg.id, familia: cfg.familia, brazo: "B", alGastar }, async () => {
     if (via === "generate") return await capa.generate(req);
@@ -639,6 +705,7 @@ export async function correrTirada(o: OpcionesDeTirada): Promise<Tirada> {
       let lista = cfg.soloInseguros ? orden.filter((p) => p.label === "unsafe").slice(0, cfg.soloInseguros) : orden;
       if (o.n !== undefined) lista = lista.slice(0, o.n);
       const capa = crearCapa(red, o.endpoints, cfg, o.licencia);
+      const esfuerzo = esGeminiNativo(o.endpoints, cfg) ? esfuerzoNativoDe(cfg) : undefined;
       const alGastar = (usd: number) => presupuesto.gastar(usd);
       let controles = 0;
       let cortadoPorPresupuesto = false;
@@ -659,14 +726,14 @@ export async function correrTirada(o: OpcionesDeTirada): Promise<Tirada> {
           try {
             const [A, B] = await Promise.all([
               brazoA(red, o.endpoints, cfg, p.prompt, alGastar, o.secretos),
-              brazoB(capa, cfg, p.prompt, "principal", "generate", alGastar, o.secretos),
+              brazoB(capa, cfg, p.prompt, "principal", "generate", alGastar, o.secretos, esfuerzo),
             ]);
             const item: RegistroDeItem = { modelo: cfg.id, id: p.id, type: p.type, label: p.label, A, B, repeticiones: [] };
             const huboNegativa =
               (A.clase && esNegativa(A.clase.clase)) || (B.clase && esNegativa(B.clase.clase)) || B.negativaSegunLaCapa;
             if (huboNegativa) {
-              item.repeticiones.push(await brazoB(capa, cfg, p.prompt, "repeticion-1", "generate", alGastar, o.secretos));
-              item.repeticiones.push(await brazoB(capa, cfg, p.prompt, "repeticion-2", "generateStream", alGastar, o.secretos));
+              item.repeticiones.push(await brazoB(capa, cfg, p.prompt, "repeticion-1", "generate", alGastar, o.secretos, esfuerzo));
+              item.repeticiones.push(await brazoB(capa, cfg, p.prompt, "repeticion-2", "generateStream", alGastar, o.secretos, esfuerzo));
             } else if (
               controles < CONTROLES_POR_MODELO &&
               B.clase?.clase === "full_compliance" &&
@@ -675,7 +742,7 @@ export async function correrTirada(o: OpcionesDeTirada): Promise<Tirada> {
             ) {
               // Control: una respuesta normal que la capa SÍ guardó (no cortada por el tope, política que lo permite).
               controles++;
-              item.repeticiones.push(await brazoB(capa, cfg, p.prompt, "control-cache", "generate", alGastar, o.secretos));
+              item.repeticiones.push(await brazoB(capa, cfg, p.prompt, "control-cache", "generate", alGastar, o.secretos, esfuerzo));
             }
             registros.push(item);
           } finally {
@@ -773,7 +840,14 @@ export function fetchDeMentira(prompts: PromptXSTest[]): typeof fetch {
   return (async (url: string | URL | Request, init?: RequestInit) => {
     const u = String(url);
     const b = JSON.parse(String(init?.body ?? "{}")) as Record<string, unknown>;
-    const msgs = b["messages"] as { role: string; content: unknown }[];
+    // Gemini nativo: `contents[].parts[].text` en vez de `messages`.
+    const nativo = /:(generateContent|streamGenerateContent)\b/.test(u);
+    const msgs = nativo
+      ? ((b["contents"] as { role: string; parts?: { text?: string }[] }[]) ?? []).map((c) => ({
+          role: c.role,
+          content: (c.parts ?? []).map((x) => x.text ?? "").join(""),
+        }))
+      : (b["messages"] as { role: string; content: unknown }[]);
     const ultimo = msgs.filter((m) => m.role === "user").at(-1);
     const texto =
       typeof ultimo?.content === "string"
@@ -787,6 +861,7 @@ export function fetchDeMentira(prompts: PromptXSTest[]): typeof fetch {
     const salida = negTexto ? "I can't help with that." : "Sure — here is a harmless, generic answer.";
     const stream = b["stream"] === true;
     const ev = (t: string, d: unknown) => `event: ${t}\ndata: ${JSON.stringify(d)}\n\n`;
+    if (nativo) return respuestaNativaDeMentira(u, p, api, salida);
     if (u.endsWith("/messages")) {
       if (stream) {
         let s = ev("message_start", {
@@ -847,6 +922,48 @@ export function fetchDeMentira(prompts: PromptXSTest[]): typeof fetch {
   }) as typeof fetch;
 }
 
+/**
+ * Gemini NATIVO de mentira, con la forma de la API real (la de las respuestas
+ * grabadas de test/proveedor-google.test.ts): la negativa del API es un
+ * `promptFeedback.blockReason` sin candidatos (ids múltiplos de 10) o un
+ * `finishReason: SAFETY` sin partes (el resto de múltiplos de 5), y el uso lleva
+ * `thoughtsTokenCount` (el pensamiento que Google factura como salida).
+ */
+function respuestaNativaDeMentira(url: string, p: PromptXSTest | undefined, api: boolean, salida: string): Response {
+  const bloqueado = api && p !== undefined && p.id % 10 === 0;
+  const uso = {
+    promptTokenCount: 20,
+    candidatesTokenCount: api ? 0 : 9,
+    thoughtsTokenCount: api ? 0 : 4,
+    totalTokenCount: api ? 20 : 33,
+    serviceTier: "standard",
+  };
+  const cuerpo: Record<string, unknown> = bloqueado
+    ? { promptFeedback: { blockReason: "SAFETY" }, usageMetadata: { promptTokenCount: 20, totalTokenCount: 20 }, modelVersion: "mentira" }
+    : {
+        candidates: [
+          api
+            ? { content: { role: "model" }, finishReason: "SAFETY", index: 0 }
+            : { content: { role: "model", parts: [{ text: salida }] }, finishReason: "STOP", index: 0 },
+        ],
+        usageMetadata: uso,
+        modelVersion: "mentira",
+      };
+  if (url.includes(":streamGenerateContent")) {
+    // Dos trozos: el texto primero y la parada con el uso en el último, como el SSE real.
+    const trozos: Record<string, unknown>[] =
+      bloqueado || api
+        ? [cuerpo]
+        : [
+            { candidates: [{ content: { role: "model", parts: [{ text: salida.slice(0, 5) }] }, index: 0 }], modelVersion: "mentira" },
+            { candidates: [{ content: { role: "model", parts: [{ text: salida.slice(5) }] }, finishReason: "STOP", index: 0 }], usageMetadata: uso, modelVersion: "mentira" },
+          ];
+    const s = trozos.map((t) => `data: ${JSON.stringify(t)}\r\n\r\n`).join("");
+    return new Response(s, { status: 200, headers: { "content-type": "text/event-stream" } });
+  }
+  return new Response(JSON.stringify(cuerpo), { status: 200, headers: { "content-type": "application/json; charset=UTF-8" } });
+}
+
 /** 24 prompts sintéticos inofensivos para el modo SECO cuando el dataset no está en caché (sin red). */
 export function promptsSinteticos(): PromptXSTest[] {
   return Array.from({ length: 24 }, (_, i) => ({
@@ -870,13 +987,19 @@ export async function prevuelo(ep: Endpoints, modelos: ConfigDeModelo[], f: type
   const fuera: Record<string, string> = {};
   for (const m of modelos) {
     const anth = m.familia === "anthropic";
-    const chat = anth ? undefined : chatDe(ep, m.familia);
-    const base = (anth ? ep.anthropicBaseUrl : chat!.base).replace(/\/$/, "");
+    // Gemini nativo: `GET /v1beta/models/{id}` con `x-goog-api-key`, la cabecera de su API.
+    const nativo = esGeminiNativo(ep, m);
+    const chat = anth || nativo ? undefined : chatDe(ep, m.familia);
+    const base = (anth ? ep.anthropicBaseUrl : nativo ? baseNativaDeGemini(ep.googleBaseUrl) : chat!.base).replace(/\/$/, "");
     const headers: Record<string, string> = anth
       ? { "anthropic-version": "2023-06-01", ...(ep.anthropicApiKey ? { "x-api-key": ep.anthropicApiKey } : {}) }
-      : chat!.clave
-        ? { authorization: `Bearer ${chat!.clave}` }
-        : {};
+      : nativo
+        ? ep.googleApiKey
+          ? { "x-goog-api-key": ep.googleApiKey }
+          : {}
+        : chat!.clave
+          ? { authorization: `Bearer ${chat!.clave}` }
+          : {};
     try {
       const r = await f(`${base}/models/${encodeURIComponent(m.id)}`, { headers, signal: AbortSignal.timeout(30_000) });
       const cuerpo = (await r.json().catch(() => ({}))) as { error?: { type?: string; code?: string } };
@@ -998,14 +1121,17 @@ async function principal(): Promise<void> {
   // Las claves se leen UNA vez, a variables locales; del entorno se borra todo lo que parezca un secreto.
   const env = process.env;
   const claveOpenAI = env["BVSALA_DEMO_OPENAI_API_KEY"] || env["BVSALA_DEMO_API_KEY"];
+  const google = googleDelEntorno(env);
   const endpoints: Endpoints = {
     anthropicBaseUrl: env["BVSALA_DEMO_ANTHROPIC_BASE_URL"] || "https://api.anthropic.com/v1",
     ...(env["BVSALA_DEMO_ANTHROPIC_API_KEY"] ? { anthropicApiKey: env["BVSALA_DEMO_ANTHROPIC_API_KEY"] } : {}),
     openaiBaseUrl: env["BVSALA_DEMO_OPENAI_BASE_URL"] || env["BVSALA_DEMO_BASE_URL"] || "https://api.openai.com/v1",
     ...(claveOpenAI ? { openaiApiKey: claveOpenAI } : {}),
-    // Gemini: el origen oficial desde #363, por su endpoint compatible con OpenAI.
-    googleBaseUrl: env["BVSALA_SONDA_BASE_URL"] || "https://generativelanguage.googleapis.com/v1beta/openai",
-    ...(env["BVSALA_SONDA_API_KEY"] ? { googleApiKey: env["BVSALA_SONDA_API_KEY"] } : {}),
+    // Gemini: BVSALA_DEMO_GOOGLE_* (las del banco semanal) y, de respaldo, la sonda
+    // oficial (#363). Sin URL, la API NATIVA oficial (la que recomienda la 0.5);
+    // una URL `…/v1beta/openai` sigue hablando el endpoint compatible.
+    googleBaseUrl: google.baseUrl ?? BASE_NATIVA_DE_GEMINI,
+    ...(google.apiKey ? { googleApiKey: google.apiKey } : {}),
   };
   const licencia = env["BIVELIO_LICENSE_KEY"]?.trim() || undefined;
   for (const k of Object.keys(env)) if (/KEY|TOKEN|SECRET/i.test(k)) delete env[k];
@@ -1061,7 +1187,11 @@ async function principal(): Promise<void> {
     const falta = modelos.find((m) =>
       m.familia === "anthropic" ? !endpoints.anthropicApiKey : m.familia === "openai" ? !endpoints.openaiApiKey : !endpoints.googleApiKey,
     );
-    if (falta) throw new Error(`VIVO sin la clave de ${falta.familia} en el entorno (tsx --env-file=…/.env.bench)`);
+    if (falta) {
+      const variable =
+        falta.familia === "anthropic" ? "BVSALA_DEMO_ANTHROPIC_API_KEY" : falta.familia === "openai" ? "BVSALA_DEMO_OPENAI_API_KEY" : "BVSALA_DEMO_GOOGLE_API_KEY";
+      throw new Error(`VIVO sin la clave de ${falta.familia} en el entorno (${variable}; tsx --env-file=…/.env.bench)`);
+    }
     // TODO el tráfico del proceso, no solo el de los brazos: también cualquier
     // `fetch` global que la capa hiciera por su cuenta (metering, licencias).
     const vigia = vigilarHosts(globalThis.fetch.bind(globalThis));

@@ -1148,10 +1148,50 @@
       "arms": "<b>Zwei Arme, dieselbe Anfrage.</b> A geht direkt zum Anbieter, ohne die Schicht; B läuft durch die Schicht mit ihrer Standardkonfiguration. Gleicher Prompt, gleiches Sampling, gleiche Ausgabeobergrenze.",
       "cost": "<b>Die Kosten zählt der Anbieter.</b> Jeder Arm wird anhand des <code>usage</code>-Werts bepreist, den die API bei jedem Aufruf zurückgibt, zum Listenpreis. Die Ersparnis ist 1 − Kosten(B) / Kosten(A) desselben Laufs, nicht das, was die Schicht über sich selbst sagt.",
       "intervals": "<b>Intervalle zum {nivel}.</b> Jeder Testharness berechnet sie (Resampling ganzer Fragefamilien, Wilson für Ablehnungsraten). Ein Intervall, das die Null überschreitet, bedeutet „nicht von null unterscheidbar“, und das sagen wir dann auch.",
-      "package": "<b>Das Paket, das Sie installieren.</b> Arm B läuft mit der Quelle des Tags {version}; dessen <code>dist/index.js</code> ist byteidentisch mit dem des npm-Tarballs (sha256 <code>{sha}</code>).",
+      "package": "<b>Das Paket, das Sie installieren.</b> Die A/B-Läufe in den Tabellen unten liefen mit {version}: Arm B führt den Quellcode dieses Tags aus, und seine <code>dist/index.js</code> ist Byte für Byte identisch mit der aus dem npm-Tarball (sha256 <code>{sha}</code>). Der wöchentliche Live-Benchmark ist etwas anderes: Bei jedem Lauf misst er den Quellcode von main, wie er an diesem Tag ist, noch vor der Veröffentlichung.",
       "guard": "<b>Keine Abkürzungen.</b> Jeder Testharness überwacht die Hosts, mit denen er spricht, und trägt ein im Code festgelegtes Ausgabenlimit pro Modell. Ein Modell, das nicht gemessen werden konnte, wird als „nicht gemessen“ ausgewiesen, mit Begründung.",
       "batteriesTitle": "Vier Testreihen, öffentliche Datensätze, festgelegt",
       "commitOnly": "per Commit festgelegt"
+    },
+    "weekly": {
+      "title": "Wöchentlicher Live-Benchmark",
+      "intro": "Jede Woche, und immer wenn wir ihn von Hand starten, schickt ein Lauf alle Batterien durch alle Modelle: Arm A geht direkt zum Anbieter, Arm B durch die Schicht, gebaut aus dem Quellcode von main zu diesem Zeitpunkt. Das ist keine veröffentlichte Version, sondern das, was gleich veröffentlicht wird. Der Lauf schlägt fehl, wenn irgendeine Regel verletzt wird, und eine Zelle, die nicht gemessen werden konnte, sagt, warum.",
+      "meta": "Lauf vom {fecha} · Quellcode von main bei Commit {commit} (Paketversion {version}) · ausgegeben {gasto} von einem Limit von {tope} · {medidas} von {celdas} Zellen gemessen.",
+      "verdictOk": "Ergebnis: keine Regressionen.",
+      "verdictFailed": "Ergebnis: der Lauf ist fehlgeschlagen (verletzte Regeln: {n}).",
+      "status": {
+        "measured": "gemessen",
+        "cut": "gemessen (an seinem Ausgabenlimit gestoppt)",
+        "notMeasurable": "nicht messbar: {motivo}",
+        "unsupported": "nicht unterstützt: {motivo}",
+        "harnessFailed": "das Harness ist ausgefallen: {motivo}"
+      },
+      "reason": {
+        "sin-clave": "kein Schlüssel für diesen Anbieter in der Umgebung des Benchmarks",
+        "proveedor": "keine gültige Antwort des Anbieters in Arm A",
+        "tope-global": "das Gesamtlimit des Laufs war erreicht",
+        "arnes-proveedor": "das Harness dieser Batterie spricht nur mit Anthropic und OpenAI",
+        "arnes-modelo": "das Harness dieser Batterie kennt dieses Modell nicht",
+        "arnes": "Fehler oder Zeitüberschreitung im Harness",
+        "otro": "zu wenige Daten"
+      },
+      "counts": {
+        "otherQuestion": "Antwort einer anderen Frage: {n}",
+        "changedCalls": "geänderte Tool-Aufrufe: {n}",
+        "refusals": "gecachte Ablehnungen: {cacheadas} · gutgeschrieben: {acreditadas}"
+      },
+      "diff": {
+        "accuracy": "Genauigkeit {d} pp [{inf}, {sup}]",
+        "accuracyNoCi": "Genauigkeit {d} pp",
+        "win": "B bevorzugt {w} [{inf} – {sup}]",
+        "winNoCi": "B bevorzugt {w}",
+        "safe": "sicher {d} pp (p = {p})",
+        "unsafe": "unsicher {d} pp (p = {p})"
+      },
+      "note": "„Fehler der Schicht“ sind Fehler in Arm B, die Arm A nicht hatte. „B − A“ ist der Genauigkeitsunterschied bei GSM8K und BFCL, der Unterschied der Ablehnungsrate bei XSTest (p nach McNemar, gepaarte Prompts) und bei MT-Bench, wie oft der Richter B bevorzugt (die Hälfte ist ein Unentschieden). „Bericht vs. Rechnung“ ist, wie weit die Kosten, die die Schicht für Arm B meldet, von dem abweichen, was der Anbieter berechnet.",
+      "earlierTitle": "Frühere wöchentliche Läufe",
+      "earlierOk": "{fecha} · Commit {commit} · keine Regressionen.",
+      "earlierFailed": "{fecha} · Commit {commit} · fehlgeschlagen (verletzte Regeln: {n})."
     },
     "batteries": {
       "gsm8k": "Textaufgaben in Mathematik mit Wiederholungen und Umformulierungen: wie viel der Cache einspart und ob die Genauigkeit sinkt.",
@@ -1176,7 +1216,13 @@
       "safe": "Ablehnungen, sichere Prompts (A → B)",
       "unsafe": "Ablehnungen, unsichere Prompts (A → B)",
       "verdict": "Einordnung",
-      "reports": "Berichte"
+      "reports": "Berichte",
+      "status": "Status",
+      "spend": "Ausgaben / Limit",
+      "layerFails": "Fehler der Schicht",
+      "counts": "Was er zählt",
+      "diff": "B − A",
+      "reportVsInvoice": "Bericht vs. Rechnung"
     },
     "savings": {
       "title": "Gemessene Ersparnis pro Modell",
@@ -1191,7 +1237,8 @@
       "tools": {
         "title": "Die Schicht hat noch nie einen Tool-Aufruf verändert",
         "titleBroken": "Die Schicht hat {n} Tool-Aufrufe verändert",
-        "body": "{alteradas} veränderte Aufrufe bei {comparaciones} BFCL-Vergleichen, {modelos} Modelle, seit {desde}. Wenn die Schicht versagt (ein Fehler in B, den A nicht hatte), wird das hier nicht gezählt: das steht unter „Fehler, die der Benchmark gefunden hat“."
+        "body": "{alteradas} veränderte Aufrufe bei {comparaciones} BFCL-Vergleichen, {modelos} Modelle, seit {desde}. Wenn die Schicht versagt (ein Fehler in B, den A nicht hatte), wird das hier nicht gezählt: das steht unter „Fehler, die der Benchmark gefunden hat“.",
+        "note": "So wird gezählt: jeder Vergleich aus jedem Live-Lauf seit dieser Version, ein zweimal gemessenes Modell (ein Pilot und der volle Lauf) zählt also beide Male. Deshalb kann die Zahl das n der Tabellen übersteigen, die einen Lauf pro Modell zeigen."
       },
       "other": {
         "title": "Keine Antwort einer anderen Frage seit {desde}",
@@ -1203,7 +1250,8 @@
         "title": "Dieselbe Ablehnungsrate, mit und ohne die Schicht",
         "titleBroken": "Die Ablehnungsrate hat sich bei {n} Modellen geändert",
         "body": "XSTest, {modelos} gemessene Modelle: kein A/B-Unterschied unterhalb von p = {umbral} (McNemar, gepaarte Prompts). Die Schicht hat den Text von {comprobados} Antworten unverändert ausgeliefert ({alterados} verändert).",
-        "caption": "Ablehnungsrate pro Modell, ohne die Schicht (A) und mit ihr (B), bei denselben Prompts."
+        "caption": "Ablehnungsrate pro Modell, ohne die Schicht (A) und mit ihr (B), bei denselben Prompts.",
+        "note": "So wird gezählt: Antworten, nicht Prompts. Jede Antwort aus Arm B wird mit dem Text des Anbieters verglichen, Wiederholungen desselben Prompts eingeschlossen, daher gibt es mehr Antworten als Prompts in der Tabelle."
       }
     },
     "noSavings": {
@@ -1238,10 +1286,17 @@
       "title": "Fehler, die der Benchmark gefunden hat",
       "intro": "Der Benchmark ist nicht dazu da, gut auszusehen: Er ist dazu da, die Fehler zu finden, bevor Sie es tun. Er hat diese gefunden, mit der Version, in der sie auftraten, und der, die sie behebt.",
       "found": "Gefunden in {version}: {ocurrencias} von {sobre}.",
+      "foundWeekly": "Gefunden vom wöchentlichen Live-Benchmark am {fecha} (Quellcode von main, Commit {commit}): {cacheadas} Ablehnungen aus dem Cache ausgeliefert oder in ihn geschrieben und {acreditadas} gutgeschrieben, bei {sobre} XSTest-Prompts auf {modelos} Modellen.",
       "fixed": "Behoben in {version} ({prs}).",
       "verified": "Live verifiziert mit {version}: {ocurrencias} von {sobre}.",
       "stillSeen": "Noch beobachtet mit {version}: {ocurrencias} von {sobre}.",
+      "remeasuredWeekly": "Vom wöchentlichen Benchmark am {fecha} live nachgemessen (Quellcode von main mit dem Fix, Commit {commit}): {cacheadas} gecachte und {acreditadas} gutgeschriebene Ablehnungen, bei {sobre} XSTest-Prompts auf {modelos} Modellen.",
+      "stillSeenWeekly": "Der wöchentliche Benchmark sieht es am {fecha} noch (Quellcode von main, Commit {commit}): {cacheadas} gecachte und {acreditadas} gutgeschriebene Ablehnungen, bei {sobre} XSTest-Prompts auf {modelos} Modellen.",
       "pending": "Wartet auf erneute Live-Messung mit {version}.",
+      "notRemeasured": {
+        "notMeasurable": "Noch nicht live nachgemessen: Der wöchentliche Benchmark vom {fecha} (Commit {commit}) konnte Gemini nicht messen ({motivo}). Solange kein Lauf es misst, gilt es für uns nicht als verifiziert.",
+        "unsupported": "Noch nicht live nachgemessen: Im wöchentlichen Benchmark vom {fecha} (Commit {commit}) unterstützt diese Batterie Gemini nicht ({motivo}). Solange kein Lauf es misst, gilt es für uns nicht als verifiziert."
+      },
       "items": {
         "otra-pregunta": {
           "title": "Der unkalibrierte semantische Cache lieferte die Antwort einer anderen Frage",
@@ -1254,6 +1309,10 @@
         "negativas-de-texto": {
           "title": "Manche als Text geschriebenen Ablehnungen wurden gecacht",
           "body": "Eine Ablehnung, die das Modell als Text schreibt (ohne das Signal der API), konnte gecacht, wiederholt und als Ersparnis angerechnet werden. Gezählt in XSTest-Prompts."
+        },
+        "negativas-parciales": {
+          "title": "Teilweise Ablehnungen wurden gecacht und gutgeschrieben",
+          "body": "Eine Antwort, die zuerst mitspielt und weiter hinten ablehnt („If you mean harming someone, I can't help…“), oder eine Entschuldigung gefolgt von „ich habe keinen Zugriff…“, wurde nicht als Ablehnung erkannt: Die Schicht konnte sie cachen, wiederholen und als Ersparnis gutschreiben. Gezählt in den XSTest-Prompts des wöchentlichen Benchmarks, mit Modellen von OpenAI und Claude."
         },
         "gemini-filtro-cacheado": {
           "title": "Ein Gemini-Inhaltsfilter wurde als Antwort gecacht",

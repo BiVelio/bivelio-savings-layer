@@ -19,10 +19,12 @@
 import {
   AnthropicProvider,
   createMockProvider,
+  GoogleProvider,
   OpenAICompatibleProvider,
   type Provider,
 } from "../src/index.js";
 import type { ProviderRequest } from "../src/providers/types.js";
+import { dialectoDeGoogle } from "./gemini-nativo.js";
 import { conAjustesNativos, type PlanNativo } from "./nativo.js";
 import { familiaDeModelo, type TransporteDelBanco } from "./scenarios.js";
 
@@ -53,7 +55,11 @@ export interface ConfigDeTransporte {
    */
   openaiBaseUrl?: string | undefined;
   openaiApiKey?: string | undefined;
-  /** Gemini por su endpoint OpenAI-compatible (`…/v1beta/openai`). */
+  /**
+   * Gemini. La URL decide el dialecto (benchmarks/gemini-nativo.ts): `…/v1beta`
+   * es la API NATIVA (`GoogleProvider`, la que recomienda la 0.5) y
+   * `…/v1beta/openai` el endpoint compatible con OpenAI de antes.
+   */
   googleBaseUrl?: string | undefined;
   googleApiKey?: string | undefined;
   /**
@@ -128,7 +134,10 @@ export function endpointDeModelo(model: string | null, cfg: ConfigDeTransporte):
     return directo("anthropic-nativo", cfg.anthropicBaseUrl, cfg.anthropicApiKey);
   }
   if (familia === "openai" && cfg.openaiBaseUrl) return directo("openai-compatible", cfg.openaiBaseUrl, cfg.openaiApiKey);
-  if (familia === "google" && cfg.googleBaseUrl) return directo("openai-compatible", cfg.googleBaseUrl, cfg.googleApiKey);
+  if (familia === "google" && cfg.googleBaseUrl) {
+    const dialecto = dialectoDeGoogle(cfg.googleBaseUrl) === "nativo" ? "google-nativo" : "openai-compatible";
+    return directo(dialecto, cfg.googleBaseUrl, cfg.googleApiKey);
+  }
   if (cfg.baseUrl) {
     return {
       transporte: "openai-compatible",
@@ -168,6 +177,8 @@ export function proveedorDelBanco(model: string | null, cfg: ConfigDeTransporte)
       return createMockProvider();
     case "anthropic-nativo":
       return proveedorAnthropicNativo(e, cfg);
+    case "google-nativo":
+      return proveedorGoogleNativo(e, cfg);
     case "openai-compatible":
       return new OpenAICompatibleProvider({
         baseUrl: e.baseUrl!,
@@ -298,6 +309,27 @@ export function conReintentos(
  */
 function proveedorAnthropicNativo(e: EndpointDeModelo, cfg: ConfigDeTransporte): Provider {
   const nativo = new AnthropicProvider({
+    baseUrl: e.baseUrl!,
+    ...(e.apiKey ? { apiKey: e.apiKey } : {}),
+    requireUsage: true,
+    fetchImpl: cfg.fetchImpl ?? fetchConPlazo(),
+  });
+  return {
+    id: nativo.id,
+    generate: (r) => nativo.generate({ ...r, model: r.model.replace(/^[^/]+\//, "") }),
+  };
+}
+
+/**
+ * GEMINI POR SU API NATIVA: `GoogleProvider`, el adaptador que recomienda la
+ * 0.5, con el mismo trato que el de Anthropic: `requireUsage` (sin
+ * `usageMetadata` no hay coste medible), el `fetch` con plazo del banco y el
+ * prefijo `google/` quitado (en la ruta `models/{model}` ese prefijo es un 404).
+ * El brazo A lo llama directo y el B lo recibe dentro de la capa: el mismo
+ * cuerpo en los dos por construcción.
+ */
+function proveedorGoogleNativo(e: EndpointDeModelo, cfg: ConfigDeTransporte): Provider {
+  const nativo = new GoogleProvider({
     baseUrl: e.baseUrl!,
     ...(e.apiKey ? { apiKey: e.apiKey } : {}),
     requireUsage: true,

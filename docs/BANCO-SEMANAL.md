@@ -15,6 +15,7 @@ Lo decidió el dueño el 2026-09-29. El código está en `benchmarks/banco-seman
 | `extraer.ts` | Lee el artefacto de cada arnés |
 | `soporte.ts` | Decide qué modelos sabe medir cada arnés |
 | `orquestador.ts` | Lanza los arneses |
+| `factura.ts` | Cuadra lo medido contra la factura real del proveedor |
 | `resumen.ts` | Escribe el resumen del trabajo |
 | `puerta.ts` | La puerta de `publish.yml` |
 
@@ -28,6 +29,16 @@ Cada celda compara dos brazos con el mismo modelo y las mismas preguntas:
 - **Brazo A:** el proveedor, llamado directamente.
 - **Brazo B:** la capa, cargada desde el fuente de `main` con la licencia de
   desarrollo abierta (`BVSALA_DEV_OPEN=1`), igual que en `pnpm ab`.
+
+**Gemini va por su API nativa** (`generateContent`, `GoogleProvider`, la que
+recomienda la 0.5) en las cuatro baterías. El brazo B lleva `GoogleProvider`
+dentro de la capa. El brazo A llama a ese mismo adaptador **directamente, sin
+la capa**, como hace el brazo A de Anthropic con `AnthropicProvider`. Así los
+dos brazos mandan, por construcción, el cuerpo que arma el adaptador. El uso se
+lee del `usageMetadata` crudo con la aritmética del banco: el pensamiento
+(`thoughtsTokenCount`) se cobra como salida. La URL base decide el dialecto
+(`benchmarks/gemini-nativo.ts`): `…/v1beta` es la nativa, y `…/v1beta/openai`
+volvería al endpoint compatible de antes.
 
 Así se mide lo que va a salir en la próxima release, no una versión que ya está
 en npm. Por eso los arneses de BFCL, XSTest y MT-Bench aceptan ahora
@@ -57,7 +68,13 @@ El workflow los pasa a los arneses con estos nombres:
 | `AI_GATEWAY_API_KEY` | `BVSALA_JUDGE_API_KEY` |
 
 Las URL base son las oficiales de cada proveedor. Van en claro en el YAML, porque
-no son secretos.
+no son secretos. La de Google es la de la API nativa,
+`https://generativelanguage.googleapis.com/v1beta`.
+
+Para cuadrar contra la **factura real** hacen falta además dos claves de
+administrador y los ids de dónde vive el gasto del banco. Están explicados en
+[La factura real](#la-factura-real). Sin ellos, el banco corre igual y avisa de
+que la factura real no se comprobó.
 
 Si falta una clave, o el proveedor la rechaza, sus modelos salen como **no
 medibles**. Eso es un aviso y no hace fallar el banco. Hay dos excepciones:
@@ -102,10 +119,10 @@ Hay tres topes. Los tres son **duros**, y los tres están en el código de
 | barata | gpt-4o-mini, gpt-5.4-mini, claude-haiku-4-5, gemini-3.8-flash | 0,75 $ | 3,00 $ por modelo |
 | media | claude-sonnet-5, claude-sonnet-5-5, gemini-3.1-pro-preview | 1,10 $ | 4,40 $ por modelo |
 | cara | gpt-5.5, gpt-5.6-sol, claude-opus-5-5 | 1,25 $ | 5,00 $ por modelo |
-| juez de MT-Bench | los diez | 0,15 $ | 1,50 $ en total |
+| juez de MT-Bench | los diez | 0,40 $ | 4,00 $ en total |
 
-La suma es: 12,00 $ (baratas) + 13,20 $ (medias) + 15,00 $ (caras) + 1,50 $
-(juez) = **41,70 $ asignados**. Los **8,30 $** que faltan hasta 50 **no se
+La suma es: 12,00 $ (baratas) + 13,20 $ (medias) + 15,00 $ (caras) + 4,00 $
+(juez) = **44,20 $ asignados**. Los **5,80 $** que faltan hasta 50 **no se
 asignan** a nada. Sirven para que el tope global solo salte si un arnés lleva
 mal la cuenta, nunca por el gasto previsto. `test/banco-semanal.test.ts` rompe
 si el reparto pasa de 50 $.
@@ -125,17 +142,32 @@ caso de una entrada multi-turn entera, y con gpt-5.5 u Opus esa reserva no cabe
 en el tope. Cuando pasa eso, el arnés deja de medir también el AST. Lo
 comprobamos en seco: salieron 0 entradas.
 
+**El juez de MT-Bench.** Tenía 0,15 $ por modelo, y con eso no juzgaba. Cada
+partida reserva su peor caso antes de salir: con gpt-4o, 2048 tokens de salida
+y las dos conversaciones de entrada, entre 0,02 y 0,10 $. Además, los dos turnos
+y las dos partidas salían a la vez, y la cuarta reserva ya no cabía. En el run
+36611942632 del 2026-09-29, las cuatro celdas medidas se cortaron en la
+**primera** pregunta: un turno juzgado y tres llamadas al juez. El resumen
+publicó «victoria de B 0.500 [0.500, 0.500]», que era el empate de ese único
+turno y no una medición. Se arregló en tres sitios:
+
+- En el banco semanal, el arnés juzga **en serie**: una sola reserva viva a la
+  vez.
+- El tope del juez sube a 0,40 $ por modelo. Una partida real cuesta unos
+  0,009 $, así que alcanza para unas 40 partidas, es decir, unas 10 preguntas o
+  20 turnos.
+- `extraer.ts` exige **8 turnos juzgados** (`MINIMO_DE_TURNOS_JUZGADOS`) antes
+  de dar la tasa de victoria. Con menos, la celda sale como «calidad sin medir»,
+  con un aviso.
+
 ### Coste esperado
 
-- **Hoy:** 25 de las 40 celdas tienen soporte (ver *Cobertura*). Con los
-  techos de cada arnés, el máximo posible es **22,80 $ por semana**. GSM8K ajusta
-  su muestra al tope, así que gasta casi todo lo suyo. Las demás baterías suelen
-  quedarse por debajo: en la tirada publicada de la 0.4.31, BFCL gastó entre
-  0,08 y 0,81 $ por modelo. Es una estimación, no una medida: una semana normal
-  debería costar **del orden de 12 a 20 $**.
-- **Con las cuatro baterías midiendo los diez modelos** (PR #396, #397, #398 y
-  #400), el
-  máximo sube a los **41,70 $** asignados.
+- **Hoy:** las 40 celdas tienen soporte (ver *Cobertura*). El máximo es lo
+  asignado, **44,20 $**. GSM8K ajusta su muestra al tope, así que gasta casi
+  todo lo suyo. Las demás baterías suelen quedarse muy por debajo: en el run en
+  vivo del 2026-09-29 (26 celdas, sin Gemini ni la gama alta de MT-Bench) se
+  gastaron 13,74 $. Es una estimación, no una medida: con las 40 celdas, una
+  semana normal debería costar **del orden de 22 a 30 $**.
 
 El gasto real de cada semana aparece en la cabecera del resumen.
 
@@ -153,6 +185,7 @@ en una sola celda**.
 | `capa-falla` | Cualquier batería: un error en el brazo con la capa cuando el brazo sin ella, en la misma pregunta, no lo tuvo. En XSTest cuenta también un texto entregado distinto del recibido, y en BFCL una violación del aislamiento de caché |
 | `exactitud-peor` | B − A significativamente negativa. Según la batería: el IC 95 % entero por debajo de 0 (GSM8K, BFCL); la tasa de victoria de B ante el juez con el IC entero por debajo de 0,5 (MT-Bench); o McNemar p < 0,05 en la dirección mala (XSTest: más negativas en prompts seguros, o menos en inseguros) |
 | `informe-vs-factura` | El coste que dice el informe de la capa, sumado por brazo, se sale de ±2 % de lo que factura el proveedor según su `usage`. Hay una holgura absoluta de 0,0001 $ |
+| `factura-no-cuadra` | Lo que el proveedor **factura** según su API de costes, en el workspace o proyecto del banco y en los días de la tirada, se sale de ±2 % de lo que el banco midió. Solo actúa con clave de administrador. Ver [La factura real](#la-factura-real) |
 | `arnes-falla` | Un arnés murió, pasó de su plazo (75 min) o no dejó un artefacto legible |
 | `tope-excedido` | Una celda gastó más que su tope más 0,01 $ |
 | `tope-global` | La caja global abortó |
@@ -164,15 +197,153 @@ en una sola celda**.
 - Un modelo **no medible**: por su clave, por su cuota, o porque su tope no
   alcanza para un solo ítem.
 - Una celda **cortada por su tope**: se midió menos, pero no peor.
+- Una celda de MT-Bench con la **calidad sin medir**: el juez juzgó menos de 8
+  turnos. No se da tasa de victoria, en vez de un 0,5 que parezca un empate.
 
 Dos cosas que conviene saber al leer estas reglas:
 
-- **La «factura»** es el `usage` que devuelve el proveedor, multiplicado por el
-  precio de lista del catálogo. Es la misma cuenta que publica cada batería. No
-  es la factura mensual del proveedor.
+- **La «factura» de `informe-vs-factura`** es el `usage` que devuelve el
+  proveedor, multiplicado por el precio de lista del catálogo. Es la misma
+  cuenta que publica cada batería, y usa el mismo catálogo que la capa: un
+  precio mal puesto no lo detectaría. La que cobra el proveedor de verdad la
+  mira `factura-no-cuadra`.
 - **`capa-falla` no existe como campo en ningún arnés.** Se calcula igual en las
   cuatro baterías: un error que solo aparece en el brazo con la capa. Un 429 que
   la capa agota y que A no vio también cuenta. Es conservador a propósito.
+
+## La factura real
+
+Es el criterio 4 de `docs/CAMINO-A-0.5.md`: «el informe cuadra con la factura
+±2 %, con el ahorro nativo aparte». Tras las celdas, `factura.ts` pregunta a la
+API de costes de cada proveedor cuánto cobró y lo compara con lo que midió el
+banco.
+
+### Qué se compara
+
+Por proveedor, dos cifras:
+
+- **Lo medido:** la suma del gasto de cada celda que ese proveedor factura
+  directamente. Incluye el brazo A, el brazo B y los demás brazos y repeticiones
+  de cada arnés, todo contado con los contadores de `usage`. El juez de MT-Bench
+  solo entra si va directo a `api.openai.com`. Por defecto va por
+  `ai-gateway.vercel.sh`, y eso lo factura Vercel.
+- **Lo facturado:** el coste que da la API del proveedor para el workspace o
+  proyecto del banco, en los días UTC que cubre la tirada.
+
+Si no están a ±2 % el uno del otro, el banco falla con `factura-no-cuadra`.
+
+**El ahorro nativo va aparte.** El descuento de la caché de prefijo del
+proveedor ya está dentro de la factura, porque los tokens leídos de caché se
+cobran a su tarifa. También está dentro de lo medido, porque los arneses los
+tarifan igual. Por eso no se suma ni se resta en ningún lado: ni
+`report.nativeSavings` ni el ahorro de la capa entran en el cuadre. El resumen
+enseña en una línea propia cuánto de la factura fue caché del proveedor, para
+que quede claro que ese dinero no es de la capa.
+
+**Google no se comprueba.** Su factura sale de la exportación de facturación de
+Google Cloud, que no está integrada. El resumen lo dice.
+
+### Las APIs
+
+| Proveedor | Coste | Uso (para ver tráfico ajeno) |
+| --- | --- | --- |
+| Anthropic | `GET /v1/organizations/cost_report`: solo por día, en céntimos, agrupado por `workspace_id` | `GET /v1/organizations/usage_report/messages`: por minuto, filtrado por `workspace_ids[]` y agrupado por `api_key_id` |
+| OpenAI | `GET /v1/organization/costs`: solo por día, en dólares, filtrado por `project_ids[]` y `api_key_ids[]` | `GET /v1/organization/usage/completions`: por minuto, con los mismos filtros |
+
+La documentación, consultada el 2026-09-29:
+[Anthropic](https://platform.claude.com/docs/en/manage-claude/usage-cost-api) y
+[OpenAI](https://developers.openai.com/api/reference/resources/admin/subresources/organization/subresources/usage/methods/costs).
+
+### El retraso, y por qué el cuadre va en dos fases
+
+Las dos APIs de coste solo dan **días enteros**, y los datos llegan con retraso.
+Anthropic dice que «normalmente» tardan menos de 5 minutos. OpenAI no publica
+ninguna cifra. Pero la factura de un workspace dedicado **solo puede crecer**
+mientras llegan datos, y eso permite decidir sin ambigüedad:
+
+- **Dentro de ±2 %:** cuadra.
+- **Más de un 2 % por encima:** no cuadra, sin esperar. El retraso no infla una
+  factura.
+- **Por debajo:** puede ser el retraso. Se vuelve a leer cada 5 minutos durante
+  un máximo de 20 (`BANCO_FACTURA_INTERVALO_S` y `BANCO_FACTURA_ESPERA_MIN`).
+  Si no llega, queda **pendiente**: sale como aviso y se guarda en
+  `resultados.json`.
+
+**La tirada siguiente decide los pendientes.** El workflow baja el artefacto de
+la última tirada en vivo (por eso tiene `actions: read`) y vuelve a leer su
+factura. Para entonces ese día ha cerrado hace una semana: si sigue por debajo,
+la tirada nueva falla con `factura-no-cuadra` y la puerta de `publish.yml`
+cierra.
+
+Se hizo así, y no con un trabajo aparte que espere a medianoche, porque la
+puerta solo mira el último run «(vivo)» de este workflow. Un segundo workflow no
+la cerraría sin tocar `puerta.ts`. Y esperar horas dentro del trabajo chocaría
+con su límite de 360 minutos.
+
+### Qué hace falta: claves, permisos y aislamiento
+
+**Aislar el gasto del banco es obligatorio.** La factura va por días y por
+workspace o proyecto. Si en esos días entra otro tráfico, la factura ya no es la
+del banco. Por eso el banco necesita:
+
+- **Anthropic:** un **workspace dedicado** al banco (por ejemplo,
+  `banco-semanal`), con la clave `ANTHROPIC_API_KEY` del banco creada **dentro**
+  de ese workspace. Nadie más lo usa.
+- **OpenAI:** un **proyecto dedicado** al banco, con la clave `OPENAI_API_KEY`
+  del banco creada dentro de ese proyecto. Nadie más lo usa.
+
+Con eso, el dueño da de alta:
+
+```bash
+# Secretos: claves de administrador. Solo leen uso y coste.
+gh secret set ANTHROPIC_ADMIN_API_KEY   # sk-ant-admin01-…  (Console → Settings → Admin keys)
+gh secret set OPENAI_ADMIN_API_KEY      # clave de administrador (platform.openai.com → Settings → Organization → Admin keys)
+
+# Variables: son ids, no secretos.
+gh variable set BANCO_ANTHROPIC_WORKSPACE_ID --body wrkspc_…   # el workspace del banco (obligatorio)
+gh variable set BANCO_ANTHROPIC_API_KEY_ID   --body apikey_…   # el id de la clave del banco (opcional: detecta otras claves)
+gh variable set BANCO_OPENAI_PROJECT_ID      --body proj_…     # el proyecto del banco
+gh variable set BANCO_OPENAI_API_KEY_ID      --body key_…      # el id de la clave del banco (opcional si hay proyecto)
+```
+
+**Los permisos mínimos:**
+
+- **Anthropic:** una Admin API key (`sk-ant-admin01-…`). Anthropic no ofrece
+  claves de administrador de solo lectura: cualquier Admin key puede gestionar la
+  organización. Por eso esta clave va **solo** como secreto del workflow, solo
+  la recibe el paso del banco, solo en modo vivo, y solo se usa para dos `GET`.
+  Una clave de un workspace no sirve para estas APIs.
+- **OpenAI:** una Admin key con permiso de **solo lectura** sobre *Usage*, si la
+  consola lo ofrece al crearla. Solo se usa para dos `GET`.
+
+Las claves solo viajan en la cabecera de esas llamadas. Ningún texto que escribe
+el banco las incluye, y los registros pasan además por el mismo filtro de
+secretos que el resto del banco. Se comprueban **por existencia**
+(`gh secret list`), nunca por su valor.
+
+### Lo que sale cuando algo falta
+
+Ninguno de estos casos hace fallar el banco. Todos salen como aviso en la
+sección «Factura real» del resumen:
+
+| Situación | Aviso |
+| --- | --- |
+| Sin clave de administrador | «factura real no comprobada (sin clave de administrador: …)» |
+| Clave, pero sin workspace o proyecto del banco | «factura real no comprobada (sin workspace dedicado …)» |
+| Tráfico ajeno en esos días: otras claves, o uso fuera de la ventana de la tirada | «factura real no comprobada: tráfico ajeno …» |
+| La API rechaza la clave o no responde | «factura real no comprobada: … HTTP 403 …» |
+| Una celda murió sin artefacto y su gasto no se conoce | «factura real no comprobada: N celdas murieron sin artefacto …» |
+| Los datos no llegaron a tiempo | «pendiente»: lo decide la tirada siguiente |
+
+**Cuidado al relanzar el banco en vivo el mismo día UTC.** La factura de ese día
+mezcla las dos tiradas y no hay forma de separarlas, así que las dos quedan como
+«tráfico ajeno», sin comprobar. Si hace falta el cuadre, relanza al día
+siguiente.
+
+Mientras no haya claves de administrador, el criterio 4 se da por cumplido
+**solo contra el precio de lista** (§4.4 de `docs/CAMINO-A-0.5.md`). Una semana
+cuyo resumen diga «cuadra» en Anthropic y en OpenAI es la que lo certifica
+contra la factura.
 
 ## Cómo leer los resultados
 
@@ -182,8 +353,9 @@ Dos cosas que conviene saber al leer estas reglas:
 - **El artefacto `banco-semanal`** se guarda 90 días
   (`gh run download <id> -n banco-semanal`) y contiene:
   - `resumen.md`: lo mismo que el job summary.
-  - `resultados.json`: el plan, el reparto, cada celda con su medición y el
-    veredicto.
+  - `resultados.json`: el plan, el reparto, cada celda con su medición, el
+    veredicto y el cuadre de la factura (`factura`), que es lo que la tirada
+    siguiente lee para decidir los pendientes.
   - `<batería>/<modelo>/`: el JSON y el Markdown del propio arnés, más
     `registro.log`, que es su salida. Los valores de las variables con nombre de
     secreto se sustituyen por `[redactado]` antes de guardarla. En MT-Bench está
@@ -230,28 +402,50 @@ se sigue construyendo y subiendo como artefacto aunque la puerta esté cerrada.
   **se salta el banco**, así que es decisión del dueño y hay que anotarla igual
   que cualquier publicación a mano.
 
-## Cobertura: lo que hoy falta
+## Cobertura: lo que mide el banco
 
 `soporte.ts` le pregunta a cada arnés con sus **propias** listas: la verja de
-hosts de GSM8K, los hosts de BFCL, `MODELOS` de XSTest y `MODELOS_POR_DEFECTO`
-de MT-Bench. En `main`, hoy (2026-09-29), 15 celdas salen **sin soporte**:
+hosts de GSM8K, `HOSTS_OFICIALES` de BFCL, `MODELOS` de XSTest y
+`MODELOS_MEDIBLES` de MT-Bench (su lista de siempre más la de gama alta). Desde
+el 2026-09-29 **las 40 celdas tienen soporte**. `test/banco-semanal.test.ts`
+rompe si alguna deja de tenerlo.
 
-| Batería | Sin soporte |
-| --- | --- |
-| GSM8K | gemini-3.8-flash, gemini-3.1-pro-preview (la verja de hosts no deja pasar a Google) |
-| BFCL | los dos Gemini (solo habla con api.anthropic.com y api.openai.com) |
-| XSTest | gpt-5.5, gpt-5.6-sol, claude-sonnet-5-5, los dos Gemini |
-| MT-Bench | gpt-5.5, gpt-5.6-sol, claude-sonnet-5-5, claude-opus-5-5, los dos Gemini |
+| Batería | OpenAI | Anthropic | Gemini (API nativa) |
+| --- | --- | --- | --- |
+| GSM8K | los cuatro | los cuatro | los dos, por `transporte.ts` («google-nativo») |
+| BFCL | los cuatro; gpt-5.6-sol con `reasoning_effort: "none"` | los cuatro | los dos |
+| XSTest | los cuatro | los cuatro | los dos |
+| MT-Bench | los cuatro, gama alta incluida | los cuatro, gama alta incluida | los dos |
 
-Los PR «gama alta» (#396, #397, #398 y #400) añaden esos modelos a sus arneses.
-Cuando se fusionen, el banco empezará a medirlos solo, sin tocar nada aquí. Hasta
-entonces, cada semana aparecen como avisos en el resumen, para que nadie los tome
-por medidos.
+Lo que cambió ese día, a partir del run en vivo 36611942632:
 
-Hay otra limitación. BFCL tiene un techo de 0,80 $ para OpenAI y reserva el peor
-caso por entrada (4096 tokens de salida). Con esas dos cosas, **gpt-5.5 y
-gpt-5.6-sol** solo miden unas pocas entradas AST por semana. La celda sale como
-«cortada por tope», con un intervalo ancho.
+- **Gemini en BFCL y MT-Bench.** Salían «sin soporte». BFCL estaba copiado a
+  mano en `soporte.ts` («solo Anthropic y OpenAI») aunque el arnés ya hablaba con
+  Google. MT-Bench miraba solo su lista por defecto. Ahora los dos hablan con la
+  API nativa, como GSM8K y XSTest.
+- **La gama alta en MT-Bench** (gpt-5.5, gpt-5.6-sol, claude-sonnet-5-5 y
+  claude-opus-5-5). El orquestador lanza el arnés con `--modelos=<id>` y sin
+  `--gama-alta`, y el arnés solo buscaba el id en su lista por defecto. Ahora lo
+  busca en las dos. Un modelo de gama alta lleva su tope, su prima de escritura y
+  su tope de salida. No se le envía `temperature`, porque Opus y Sonnet 5.5 y los
+  gpt-5.x la rechazan con un 400.
+- **BFCL con gpt-5.6-sol.** Salía «no medible — ninguna respuesta válida del
+  proveedor en el brazo A». gpt-5.6-* rechaza herramientas en Chat Completions
+  con su esfuerzo por defecto: *«Function tools with reasoning_effort are not
+  supported for gpt-5.6-sol in /v1/chat/completions … set reasoning_effort to
+  'none'»*. Se reprodujo en vivo con una sola herramienta: sin el campo, 400; con
+  `"none"`, 200 con la llamada. Ahora los **dos** brazos lo mandan: A en el
+  cuerpo y B como `reasoningEffort` de la capa. Así siguen comparando la misma
+  petición, y el artefacto lo declara en `muestreo`.
+- **El juez de MT-Bench** (ver *El dinero*).
+
+Lo que sigue limitado:
+
+- Las caras miden pocas preguntas en MT-Bench (16 como mucho, y menos si el tope
+  corta antes) y pocas entradas en BFCL. Sus celdas salen «cortadas por tope»,
+  con el intervalo ancho.
+- La clave de Gemini (`GEMINI_API_KEY`) no estaba dada de alta el 2026-09-29.
+  Sin ella, las ocho celdas de Gemini salen «no medible (sin clave)».
 
 ## En local
 

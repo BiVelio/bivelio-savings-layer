@@ -1148,10 +1148,50 @@
       "arms": "<b>Dos braços, la mateixa petició.</b> A va directament al proveïdor, sense la capa; B passa per la capa amb la seva configuració per defecte. Mateix prompt, mateix mostreig i mateix límit de sortida.",
       "cost": "<b>El cost el compta el proveïdor.</b> Cada braç es valora amb l'<code>usage</code> que retorna l'API a cada crida, al preu de llista. L'estalvi és 1 − cost(B) / cost(A) de la mateixa execució, no el que la capa diu de si mateixa.",
       "intervals": "<b>Intervals al {nivel}.</b> Els calcula cada arnès (remostreig per famílies de preguntes, Wilson en les taxes de negativa). Un interval que travessa el zero és un «indistingible de zero», i així ho diem.",
-      "package": "<b>El paquet, el que s'instal·la.</b> El braç B executa la font de l'etiqueta {version}; el seu <code>dist/index.js</code> és idèntic byte a byte al del tarball d'npm (sha256 <code>{sha}</code>).",
+      "package": "<b>El paquet que instal·les.</b> Les tirades A/B de les taules de sota es van fer amb la {version}: el braç B executa el codi font d'aquesta etiqueta, i el seu <code>dist/index.js</code> és idèntic byte a byte al del tarball de npm (sha256 <code>{sha}</code>). El banc setmanal en viu és una altra cosa: a cada tirada mesura el codi font de main tal com és aquell dia, abans de publicar-se.",
       "guard": "<b>Sense dreceres.</b> Cada arnès vigila els hosts amb què parla i porta un límit de despesa per model escrit al codi. Un model que no s'ha pogut mesurar surt com a «no mesurat», amb el motiu.",
       "batteriesTitle": "Quatre bateries, conjunts de dades públics, fixats",
       "commitOnly": "fixat per commit"
+    },
+    "weekly": {
+      "title": "Banc setmanal en viu",
+      "intro": "Cada setmana, i cada vegada que el llancem a mà, una tirada passa totes les bateries per tots els models: el braç A va directe al proveïdor i el B passa per la capa construïda des del codi font de main en aquell moment. No és una versió publicada: és el que està a punt de publicar-se. La tirada falla si es trenca qualsevol regla, i una cel·la que no s'ha pogut mesurar diu per què.",
+      "meta": "Tirada del {fecha} · codi font de main al commit {commit} (versió del paquet {version}) · despesa {gasto} d'un límit de {tope} · {medidas} de {celdas} cel·les mesurades.",
+      "verdictOk": "Veredicte: sense regressions.",
+      "verdictFailed": "Veredicte: la tirada ha fallat (regles trencades: {n}).",
+      "status": {
+        "measured": "mesurada",
+        "cut": "mesurada (aturada al seu límit de despesa)",
+        "notMeasurable": "no mesurable: {motivo}",
+        "unsupported": "sense suport: {motivo}",
+        "harnessFailed": "ha fallat l'arnès: {motivo}"
+      },
+      "reason": {
+        "sin-clave": "sense clau d'aquest proveïdor a l'entorn del banc",
+        "proveedor": "cap resposta vàlida del proveïdor al braç A",
+        "tope-global": "s'ha arribat al límit de despesa global de la tirada",
+        "arnes-proveedor": "l'arnès d'aquesta bateria només parla amb Anthropic i OpenAI",
+        "arnes-modelo": "l'arnès d'aquesta bateria no té aquest model",
+        "arnes": "error o temps esgotat a l'arnès",
+        "otro": "dades insuficients"
+      },
+      "counts": {
+        "otherQuestion": "resposta d'una altra pregunta: {n}",
+        "changedCalls": "crides a eines canviades: {n}",
+        "refusals": "negatives en memòria cau: {cacheadas} · acreditades: {acreditadas}"
+      },
+      "diff": {
+        "accuracy": "exactitud {d} pp [{inf}, {sup}]",
+        "accuracyNoCi": "exactitud {d} pp",
+        "win": "B preferida {w} [{inf} – {sup}]",
+        "winNoCi": "B preferida {w}",
+        "safe": "segurs {d} pp (p = {p})",
+        "unsafe": "insegurs {d} pp (p = {p})"
+      },
+      "note": "«Errors de la capa» són errors al braç B que l'A no va tenir. «B − A» és la diferència d'exactitud a GSM8K i BFCL, la de la taxa de negatives a XSTest (p de McNemar, prompts aparellats) i, a MT-Bench, quantes vegades el jutge prefereix B (la meitat és empat). «Informe davant factura» és quant s'aparta el cost que informa la capa per al braç B del que factura el proveïdor.",
+      "earlierTitle": "Tirades setmanals anteriors",
+      "earlierOk": "{fecha} · commit {commit} · sense regressions.",
+      "earlierFailed": "{fecha} · commit {commit} · ha fallat (regles trencades: {n})."
     },
     "batteries": {
       "gsm8k": "Problemes matemàtics amb repeticions i paràfrasis: quant estalvia la memòria cau i si es perd exactitud.",
@@ -1176,7 +1216,13 @@
       "safe": "Negatives, prompts segurs (A → B)",
       "unsafe": "Negatives, prompts insegurs (A → B)",
       "verdict": "Lectura",
-      "reports": "Informes"
+      "reports": "Informes",
+      "status": "Estat",
+      "spend": "Despesa / límit",
+      "layerFails": "Errors de la capa",
+      "counts": "Què compta",
+      "diff": "B − A",
+      "reportVsInvoice": "Informe davant factura"
     },
     "savings": {
       "title": "Estalvi mesurat per model",
@@ -1191,7 +1237,8 @@
       "tools": {
         "title": "La capa mai no ha canviat una crida a eines",
         "titleBroken": "La capa ha canviat {n} crides a eines",
-        "body": "{alteradas} crides alterades en {comparaciones} comparacions de BFCL, {modelos} models, des de {desde}. Si la capa falla (un error a B que A no tenia), no compta aquí: és a «Errors que el banc ha trobat»."
+        "body": "{alteradas} crides alterades en {comparaciones} comparacions de BFCL, {modelos} models, des de {desde}. Si la capa falla (un error a B que A no tenia), no compta aquí: és a «Errors que el banc ha trobat».",
+        "note": "Com es compta: cada comparació de cada tirada en viu des d'aquesta versió, així que un model mesurat dues vegades (un pilot i la tirada completa) suma les dues. Per això la xifra pot superar la n de les taules, que mostren una tirada per model."
       },
       "other": {
         "title": "Cap resposta d'una altra pregunta des de {desde}",
@@ -1203,7 +1250,8 @@
         "title": "La mateixa taxa de negatives, amb i sense la capa",
         "titleBroken": "La taxa de negatives ha canviat en {n} models",
         "body": "XSTest, {modelos} models mesurats: cap diferència A/B per sota de p = {umbral} (McNemar, prompts aparellats). La capa ha lliurat sense alterar el text de {comprobados} respostes ({alterados} alterades).",
-        "caption": "Taxa de negativa per model, sense la capa (A) i amb ella (B), sobre els mateixos prompts."
+        "caption": "Taxa de negativa per model, sense la capa (A) i amb ella (B), sobre els mateixos prompts.",
+        "note": "Com es compta: respostes, no prompts. Cada resposta del braç B es compara amb el text del proveïdor, repeticions del mateix prompt incloses, així que hi ha més respostes que prompts a la taula."
       }
     },
     "noSavings": {
@@ -1238,10 +1286,17 @@
       "title": "Errors que el banc ha trobat",
       "intro": "El banc no hi és per quedar bé: hi és per trobar els errors abans que tu. Ha trobat aquests, amb la versió en què van aparèixer i la que els arregla.",
       "found": "Trobat a la {version}: {ocurrencias} de {sobre}.",
+      "foundWeekly": "El va trobar el banc setmanal en viu el {fecha} (codi font de main, commit {commit}): {cacheadas} negatives servides des de la memòria cau o escrites-hi i {acreditadas} acreditades, sobre {sobre} prompts de XSTest en {modelos} models.",
       "fixed": "Arreglat a la {version} ({prs}).",
       "verified": "Verificat en directe a la {version}: {ocurrencias} de {sobre}.",
       "stillSeen": "Encara vist a la {version}: {ocurrencias} de {sobre}.",
+      "remeasuredWeekly": "Tornat a mesurar en viu pel banc setmanal el {fecha} (codi font de main amb l'arranjament, commit {commit}): {cacheadas} negatives en memòria cau i {acreditadas} acreditades, sobre {sobre} prompts de XSTest en {modelos} models.",
+      "stillSeenWeekly": "El banc setmanal encara el veu el {fecha} (codi font de main, commit {commit}): {cacheadas} negatives en memòria cau i {acreditadas} acreditades, sobre {sobre} prompts de XSTest en {modelos} models.",
       "pending": "Pendent de tornar a mesurar en directe a la {version}.",
+      "notRemeasured": {
+        "notMeasurable": "Encara no s'ha tornat a mesurar en viu: el banc setmanal del {fecha} (commit {commit}) no va poder mesurar Gemini ({motivo}). Fins que una tirada el mesuri, no el donem per verificat.",
+        "unsupported": "Encara no s'ha tornat a mesurar en viu: al banc setmanal del {fecha} (commit {commit}) aquesta bateria no té suport per a Gemini ({motivo}). Fins que una tirada el mesuri, no el donem per verificat."
+      },
       "items": {
         "otra-pregunta": {
           "title": "La memòria cau semàntica sense calibrar servia la resposta d'una altra pregunta",
@@ -1254,6 +1309,10 @@
         "negativas-de-texto": {
           "title": "Algunes negatives escrites com a text es desaven a la memòria cau",
           "body": "Una negativa que el model escriu com a text (sense el senyal de l'API) podia desar-se a la memòria cau, repetir-se i acreditar-se com a estalvi. Comptat en prompts de XSTest."
+        },
+        "negativas-parciales": {
+          "title": "Es desaven a la memòria cau i s'acreditaven negatives parcials",
+          "body": "Una resposta que comença complint i es nega més endavant («If you mean harming someone, I can't help…»), o una disculpa seguida de «no tinc accés…», no es reconeixia com a negativa: la capa podia desar-la a la memòria cau, repetir-la i acreditar-la com a estalvi. Comptat als prompts de XSTest del banc setmanal, amb models d'OpenAI i Claude."
         },
         "gemini-filtro-cacheado": {
           "title": "Un filtre de contingut de Gemini es desava a la memòria cau com a resposta",

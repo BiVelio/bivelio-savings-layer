@@ -10,6 +10,7 @@
  *
  * La red, la capa y los informes están en `mt-bench.ts`.
  */
+import { usoNativoDeGemini } from "../../gemini-nativo.js";
 import { mulberry32 } from "../../stats.js";
 
 // ── El dataset, fijado ──────────────────────────────────────────────────────
@@ -249,6 +250,9 @@ export function usoDeOpenAI(cuerpo: unknown): UsoMedido {
  * lo que se piensa: error, nunca un 0.
  */
 export function usoDeGoogle(cuerpo: unknown): UsoMedido {
+  // La API NATIVA (`generateContent`) trae `usageMetadata`, no `usage`: el
+  // pensamiento viene aparte (`thoughtsTokenCount`) y se factura como salida.
+  if (cuerpo && typeof cuerpo === "object" && "usageMetadata" in cuerpo) return usoDeGeminiNativo(cuerpo);
   const u = (cuerpo as { usage?: Record<string, unknown> } | null)?.usage;
   if (!u || typeof u.prompt_tokens !== "number" || typeof u.completion_tokens !== "number" || typeof u.total_tokens !== "number") {
     throw new SinUsage("respuesta de Gemini sin usage completo (prompt/completion/total): no se inventa un 0");
@@ -264,6 +268,19 @@ export function usoDeGoogle(cuerpo: unknown): UsoMedido {
     salida,
     razonamiento: salida - num(u.completion_tokens),
   };
+}
+
+/**
+ * `generateContent` (la API nativa de Gemini, la que usa `GoogleProvider`):
+ * `promptTokenCount` incluye lo leído de la caché implícita
+ * (`cachedContentTokenCount`), y la salida facturada es visible + pensamiento
+ * («Output price (including thinking tokens)»). El lector es el del banco
+ * (benchmarks/gemini-nativo.ts), no el del adaptador. Sin contadores: error.
+ */
+export function usoDeGeminiNativo(cuerpo: unknown): UsoMedido {
+  const u = usoNativoDeGemini(cuerpo);
+  if (!u) throw new SinUsage("respuesta nativa de Gemini sin usageMetadata completo: no se inventa un 0");
+  return { entrada: u.entrada - u.cacheLeida, cacheLeida: u.cacheLeida, cacheEscrita: 0, salida: u.salida, razonamiento: u.pensamiento };
 }
 
 /** El lector de usage de cada familia (el MISMO para los dos brazos). */
@@ -386,6 +403,23 @@ export const MODELOS_GAMA_ALTA: ModeloDeLaBateria[] = [
 /** Tope duro de la tirada gama alta: 1,25 $ por modelo (A+B), cualquiera que sea su familia. */
 export const TOPE_GAMA_ALTA_POR_MODELO_USD = 1.25;
 
+/**
+ * TODOS los modelos que la batería sabe medir: los de siempre y los de gama
+ * alta. El banco semanal lanza `--modelos=<id>` sin `--gama-alta`, así que un
+ * id se resuelve en la unión (benchmarks/banco-semanal/soporte.ts pregunta aquí).
+ */
+export const MODELOS_MEDIBLES: readonly ModeloDeLaBateria[] = [...MODELOS_POR_DEFECTO, ...MODELOS_GAMA_ALTA];
+
+/** El modelo de la batería con ese id (primero en la lista de siempre, luego en la de gama alta), o undefined. */
+export function modeloDeMtBench(id: string): ModeloDeLaBateria | undefined {
+  return MODELOS_POR_DEFECTO.find((m) => m.id === id) ?? MODELOS_GAMA_ALTA.find((m) => m.id === id);
+}
+
+/** ¿Es de la lista de gama alta? Entonces lleva SU tope y SU prima por modelo, se corra o no con `--gama-alta`. */
+export function esDeGamaAlta(m: Pick<ModeloDeLaBateria, "id">): boolean {
+  return MODELOS_GAMA_ALTA.some((x) => x.id === m.id);
+}
+
 /** Id con prefijo de proveedor, como lo espera la capa (precio, claves de caché, informe). */
 export function idCualificado(m: ModeloDeLaBateria): string {
   return `${m.familia}/${m.id}`;
@@ -422,8 +456,10 @@ export function parteDelJuez(totalUsd: number, gastadoUsd: number, modelosPendie
  * envía: el tope lo pone quien llama (la capa o el brazo A), nunca el banco.
  */
 export function topeDelCuerpo(cuerpo: Record<string, unknown>): number | null {
-  for (const k of ["max_tokens", "max_completion_tokens"]) {
-    const v = cuerpo[k];
+  // La API nativa de Gemini lo lleva dentro de `generationConfig`.
+  const gc = cuerpo["generationConfig"];
+  const nativo = gc && typeof gc === "object" ? (gc as Record<string, unknown>)["maxOutputTokens"] : undefined;
+  for (const v of [cuerpo["max_tokens"], cuerpo["max_completion_tokens"], nativo]) {
     if (typeof v === "number" && Number.isInteger(v) && v > 0) return v;
   }
   return null;
@@ -552,6 +588,32 @@ export function combinarPartidas(
   return { ganador: "empate", inconsistente: true };
 }
 
+/** El juicio de un turno, tal como lo guarda el arnés. */
+export interface JuicioDeTurno {
+  turno: 1 | 2;
+  prompt: string;
+  partida1: Ganador | "idéntica";
+  partida2: Ganador | "idéntica";
+  ganador: "A" | "B" | "empate" | "error";
+  inconsistente: boolean;
+  identicas: boolean;
+  /** Una de sus partidas no cupo en el tope del juez: el turno queda sin juzgar (no es un error de lectura). */
+  sinPresupuesto?: boolean;
+  /** Partidas que salieron de verdad hacia el juez (0-2). */
+  partidas?: number;
+}
+
+/**
+ * Los turnos que CUENTAN para la tasa de victoria: los que tienen ganador. Un
+ * turno sin presupuesto (una partida no cupo en el tope del juez) o con una
+ * partida ilegible NO es un empate: no se juzgó, y meterlo como ½ empujaría la
+ * tasa hacia 0,5 — que es exactamente el 0,500 [0,500, 0,500] que dio el banco
+ * semanal del 2026-09-29 con el juez cortado en la primera pregunta.
+ */
+export function turnosValidos<T extends Pick<JuicioDeTurno, "ganador">>(js: readonly T[]): (T & { ganador: "A" | "B" | "empate" })[] {
+  return js.filter((j): j is T & { ganador: "A" | "B" | "empate" } => j.ganador !== "error");
+}
+
 /** Puntuación del brazo B (la capa) frente al A en un turno: 1 gana, 0,5 empate, 0 pierde. */
 export function puntuacionDeB(g: "A" | "B" | "empate"): number {
   return g === "B" ? 1 : g === "A" ? 0 : 0.5;
@@ -662,6 +724,17 @@ export function normalizarCuerpo(cuerpo: unknown): unknown {
  */
 export function conRespuestasDe(cuerpo: unknown, respuestas: readonly string[]): unknown {
   if (!cuerpo || typeof cuerpo !== "object") return cuerpo;
+  const nat = cuerpo as { contents?: unknown };
+  if (Array.isArray(nat.contents)) {
+    // La API nativa de Gemini: los turnos del asistente son `role: "model"` con partes de texto.
+    let j = 0;
+    const contents = nat.contents.map((c) => {
+      const t = c as { role?: unknown };
+      if (t && t.role === "model" && j < respuestas.length) return { ...(c as object), parts: [{ text: respuestas[j++] }] };
+      return c;
+    });
+    return { ...(cuerpo as object), contents };
+  }
   const c = cuerpo as { messages?: unknown };
   if (!Array.isArray(c.messages)) return cuerpo;
   let k = 0;
@@ -795,7 +868,7 @@ export function atribucionDelAhorro(e: {
 export const HOSTS_PERMITIDOS = [
   "api.anthropic.com",
   "api.openai.com",
-  // Gemini, por su endpoint compatible con OpenAI (`/v1beta/openai`): el arnés no tiene familia nativa de Google.
+  // Gemini: su API nativa (`/v1beta/models/…:generateContent`) o su endpoint compatible (`/v1beta/openai`).
   "generativelanguage.googleapis.com",
   "ai-gateway.vercel.sh",
   "raw.githubusercontent.com",

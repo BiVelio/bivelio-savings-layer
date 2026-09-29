@@ -1148,10 +1148,50 @@
       "arms": "<b>Dua lengan, permintaan yang sama.</b> A langsung ke penyedia, tanpa lapisan; B melewati lapisan dengan konfigurasi bawaannya. Prompt yang sama, sampling yang sama, batas output yang sama.",
       "cost": "<b>Penyedia yang menghitung biaya.</b> Setiap lengan dihargai berdasarkan <code>usage</code> yang dikembalikan API pada setiap panggilan, pada harga daftar. Penghematan adalah 1 − biaya(B) / biaya(A) dari jalan uji yang sama, bukan yang diklaim lapisan tentang dirinya sendiri.",
       "intervals": "<b>Interval {nivel}.</b> Dihitung oleh setiap harness (resampling seluruh keluarga pertanyaan, Wilson untuk tingkat penolakan). Interval yang melintasi nol berarti “tidak dapat dibedakan dari nol”, dan begitulah kami menyebutnya.",
-      "package": "<b>Paket yang Anda instal.</b> Lengan B menjalankan sumber dari tag {version}; <code>dist/index.js</code>-nya identik byte demi byte dengan tarball npm-nya (sha256 <code>{sha}</code>).",
+      "package": "<b>Paket yang Anda pasang.</b> Putaran A/B di tabel-tabel di bawah dibuat dengan {version}: lengan B menjalankan kode sumber tag itu, dan <code>dist/index.js</code>-nya identik byte demi byte dengan milik tarball npm (sha256 <code>{sha}</code>). Bench mingguan langsung berbeda: di setiap putaran ia mengukur kode sumber main apa adanya pada hari itu, sebelum dirilis.",
       "guard": "<b>Tanpa jalan pintas.</b> Setiap harness mengawasi host yang dihubunginya dan membawa batas pengeluaran per model yang tertulis dalam kode. Model yang tidak dapat diukur dilaporkan sebagai “tidak diukur”, beserta alasannya.",
       "batteriesTitle": "Empat baterai, dataset publik, dipatok",
       "commitOnly": "dipatok pada commit"
+    },
+    "weekly": {
+      "title": "Bench mingguan langsung",
+      "intro": "Setiap minggu, dan setiap kali kami menjalankannya secara manual, satu putaran membawa semua baterai ke semua model: lengan A langsung ke penyedia, lengan B melalui lapisan yang dibangun dari kode sumber main saat itu. Ini bukan versi yang sudah dirilis: ini yang akan segera dirilis. Putaran gagal jika ada aturan yang dilanggar, dan sel yang tidak bisa diukur menyebutkan alasannya.",
+      "meta": "Putaran {fecha} · kode sumber main di commit {commit} (versi paket {version}) · biaya {gasto} dari batas {tope} · {medidas} dari {celdas} sel terukur.",
+      "verdictOk": "Putusan: tanpa regresi.",
+      "verdictFailed": "Putusan: putaran gagal (aturan yang dilanggar: {n}).",
+      "status": {
+        "measured": "terukur",
+        "cut": "terukur (berhenti di batas biayanya)",
+        "notMeasurable": "tidak terukur: {motivo}",
+        "unsupported": "tidak didukung: {motivo}",
+        "harnessFailed": "harness gagal: {motivo}"
+      },
+      "reason": {
+        "sin-clave": "tidak ada kunci penyedia ini di lingkungan bench",
+        "proveedor": "tidak ada respons valid dari penyedia di lengan A",
+        "tope-global": "batas biaya total putaran tercapai",
+        "arnes-proveedor": "harness baterai ini hanya berbicara dengan Anthropic dan OpenAI",
+        "arnes-modelo": "harness baterai ini tidak memiliki model ini",
+        "arnes": "galat atau waktu habis di harness",
+        "otro": "data tidak cukup"
+      },
+      "counts": {
+        "otherQuestion": "jawaban pertanyaan lain: {n}",
+        "changedCalls": "panggilan alat yang berubah: {n}",
+        "refusals": "penolakan di cache: {cacheadas} · dikreditkan: {acreditadas}"
+      },
+      "diff": {
+        "accuracy": "akurasi {d} pp [{inf}, {sup}]",
+        "accuracyNoCi": "akurasi {d} pp",
+        "win": "B dipilih {w} [{inf} – {sup}]",
+        "winNoCi": "B dipilih {w}",
+        "safe": "aman {d} pp (p = {p})",
+        "unsafe": "tidak aman {d} pp (p = {p})"
+      },
+      "note": "“Kegagalan lapisan” adalah galat di lengan B yang tidak dialami lengan A. “B − A” adalah selisih akurasi di GSM8K dan BFCL, selisih tingkat penolakan di XSTest (p McNemar, prompt berpasangan) dan, di MT-Bench, seberapa sering juri memilih B (setengah berarti seri). “Laporan vs tagihan” adalah seberapa jauh biaya yang dilaporkan lapisan untuk lengan B menyimpang dari yang ditagih penyedia.",
+      "earlierTitle": "Putaran mingguan sebelumnya",
+      "earlierOk": "{fecha} · commit {commit} · tanpa regresi.",
+      "earlierFailed": "{fecha} · commit {commit} · gagal (aturan yang dilanggar: {n})."
     },
     "batteries": {
       "gsm8k": "Soal cerita matematika dengan pengulangan dan parafrasa: berapa banyak yang dihemat cache dan apakah akurasi menurun.",
@@ -1176,7 +1216,13 @@
       "safe": "Penolakan, prompt aman (A → B)",
       "unsafe": "Penolakan, prompt tidak aman (A → B)",
       "verdict": "Pembacaan",
-      "reports": "Laporan"
+      "reports": "Laporan",
+      "status": "Status",
+      "spend": "Biaya / batas",
+      "layerFails": "Kegagalan lapisan",
+      "counts": "Yang dihitung",
+      "diff": "B − A",
+      "reportVsInvoice": "Laporan vs tagihan"
     },
     "savings": {
       "title": "Penghematan terukur per model",
@@ -1191,7 +1237,8 @@
       "tools": {
         "title": "Lapisan tidak pernah mengubah panggilan tool",
         "titleBroken": "Lapisan mengubah {n} panggilan tool",
-        "body": "{alteradas} panggilan yang diubah dalam {comparaciones} perbandingan BFCL, {modelos} model, sejak {desde}. Jika lapisan gagal (galat pada B yang tidak dialami A), itu tidak dihitung di sini: itu ada di bawah “Bug yang ditemukan uji ini”."
+        "body": "{alteradas} panggilan yang diubah dalam {comparaciones} perbandingan BFCL, {modelos} model, sejak {desde}. Jika lapisan gagal (galat pada B yang tidak dialami A), itu tidak dihitung di sini: itu ada di bawah “Bug yang ditemukan uji ini”.",
+        "note": "Cara menghitungnya: setiap perbandingan dari setiap putaran langsung sejak versi itu, jadi model yang diukur dua kali (satu pilot dan putaran penuh) dihitung dua kali. Karena itu angkanya bisa melebihi n di tabel, yang menampilkan satu putaran per model."
       },
       "other": {
         "title": "Tidak ada jawaban dari pertanyaan lain sejak {desde}",
@@ -1203,7 +1250,8 @@
         "title": "Tingkat penolakan yang sama, dengan dan tanpa lapisan",
         "titleBroken": "Tingkat penolakan berubah untuk {n} model",
         "body": "XSTest, {modelos} model diukur: tidak ada perbedaan A/B di bawah p = {umbral} (McNemar, prompt berpasangan). Lapisan menyampaikan teks dari {comprobados} respons tanpa perubahan ({alterados} diubah).",
-        "caption": "Tingkat penolakan per model, tanpa lapisan (A) dan dengan lapisan (B), pada prompt yang sama."
+        "caption": "Tingkat penolakan per model, tanpa lapisan (A) dan dengan lapisan (B), pada prompt yang sama.",
+        "note": "Cara menghitungnya: respons, bukan prompt. Setiap respons lengan B dibandingkan dengan teks penyedia, termasuk pengulangan prompt yang sama, jadi ada lebih banyak respons daripada prompt di tabel."
       }
     },
     "noSavings": {
@@ -1238,10 +1286,17 @@
       "title": "Bug yang ditemukan uji ini",
       "intro": "Uji ini bukan untuk terlihat bagus: ia ada untuk menemukan bug sebelum Anda menemukannya. Ia menemukan ini, beserta versi tempat bug muncul dan versi yang memperbaikinya.",
       "found": "Ditemukan di {version}: {ocurrencias} dari {sobre}.",
+      "foundWeekly": "Ditemukan oleh bench mingguan langsung pada {fecha} (kode sumber main, commit {commit}): {cacheadas} penolakan disajikan dari cache atau ditulis ke dalamnya dan {acreditadas} dikreditkan, pada {sobre} prompt XSTest di {modelos} model.",
       "fixed": "Diperbaiki di {version} ({prs}).",
       "verified": "Diverifikasi langsung pada {version}: {ocurrencias} dari {sobre}.",
       "stillSeen": "Masih terlihat pada {version}: {ocurrencias} dari {sobre}.",
+      "remeasuredWeekly": "Diukur ulang secara langsung oleh bench mingguan pada {fecha} (kode sumber main dengan perbaikannya, commit {commit}): {cacheadas} penolakan di cache dan {acreditadas} dikreditkan, pada {sobre} prompt XSTest di {modelos} model.",
+      "stillSeenWeekly": "Bench mingguan masih melihatnya pada {fecha} (kode sumber main, commit {commit}): {cacheadas} penolakan di cache dan {acreditadas} dikreditkan, pada {sobre} prompt XSTest di {modelos} model.",
       "pending": "Menunggu diukur ulang secara langsung pada {version}.",
+      "notRemeasured": {
+        "notMeasurable": "Belum diukur ulang secara langsung: bench mingguan {fecha} (commit {commit}) tidak dapat mengukur Gemini ({motivo}). Sampai ada putaran yang mengukurnya, kami tidak menganggapnya terverifikasi.",
+        "unsupported": "Belum diukur ulang secara langsung: di bench mingguan {fecha} (commit {commit}) baterai ini tidak mendukung Gemini ({motivo}). Sampai ada putaran yang mengukurnya, kami tidak menganggapnya terverifikasi."
+      },
       "items": {
         "otra-pregunta": {
           "title": "Cache semantik yang tidak dikalibrasi menyajikan jawaban dari pertanyaan lain",
@@ -1254,6 +1309,10 @@
         "negativas-de-texto": {
           "title": "Beberapa penolakan yang ditulis sebagai teks di-cache",
           "body": "Penolakan yang ditulis model sebagai teks (tanpa sinyal API) dapat di-cache, diulang, dan dikreditkan sebagai penghematan. Dihitung dalam prompt XSTest."
+        },
+        "negativas-parciales": {
+          "title": "Penolakan parsial disimpan di cache dan dikreditkan",
+          "body": "Respons yang awalnya menuruti lalu menolak di bagian berikutnya (“If you mean harming someone, I can't help…”), atau permintaan maaf yang diikuti “saya tidak punya akses…”, tidak dikenali sebagai penolakan: lapisan bisa menyimpannya di cache, mengulanginya, dan mengkreditkannya sebagai penghematan. Dihitung pada prompt XSTest bench mingguan, dengan model OpenAI dan Claude."
         },
         "gemini-filtro-cacheado": {
           "title": "Filter konten Gemini di-cache sebagai jawaban",

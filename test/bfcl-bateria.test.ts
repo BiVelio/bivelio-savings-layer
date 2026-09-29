@@ -291,7 +291,7 @@ describe("BFCL · procedencia y tope de la tirada 0.4.31", () => {
   });
 
   it("el tope duro por modelo es 0,80 $ en OpenAI y 1,25 $ en Anthropic", () => {
-    expect(TOPE_MAXIMO).toEqual({ openai: 0.8, anthropic: 1.25 });
+    expect(TOPE_MAXIMO).toEqual({ openai: 0.8, anthropic: 1.25, google: 0.8 });
     expect(familiaDe("openai/gpt-4o-mini")).toBe("openai");
     expect(familiaDe("anthropic/claude-sonnet-5")).toBe("anthropic");
   });

@@ -1148,10 +1148,50 @@
       "arms": "<b>Twee armen, hetzelfde verzoek.</b> A gaat rechtstreeks naar de provider, zonder de laag; B loopt via de laag met de standaardconfiguratie. Dezelfde prompt, dezelfde sampling, dezelfde outputgrens.",
       "cost": "<b>De provider telt de kosten.</b> Elke arm wordt geprijsd op basis van de <code>usage</code> die de API bij elke aanroep teruggeeft, tegen de lijstprijs. De besparing is 1 − kosten(B) / kosten(A) van dezelfde run, niet wat de laag zelf beweert.",
       "intervals": "<b>{nivel}-intervallen.</b> Elke harness berekent ze (resampling van hele vraagfamilies, Wilson voor weigeringspercentages). Een interval dat nul kruist betekent “niet te onderscheiden van nul”, en dat zeggen we ook.",
-      "package": "<b>Het pakket dat je installeert.</b> Arm B draait de broncode van tag {version}; de <code>dist/index.js</code> is byte-voor-byte identiek aan die van de npm-tarball (sha256 <code>{sha}</code>).",
+      "package": "<b>Het pakket dat je installeert.</b> De A/B-runs in de tabellen hieronder zijn gedaan met {version}: arm B draait de broncode van die tag, en de <code>dist/index.js</code> daarvan is byte voor byte gelijk aan die in de npm-tarball (sha256 <code>{sha}</code>). De wekelijkse live-bench is iets anders: bij elke run meet hij de broncode van main zoals die er die dag bij staat, nog vóór de publicatie.",
       "guard": "<b>Geen kortere wegen.</b> Elke harness houdt de hosts in de gaten waarmee hij praat en heeft een in code vastgelegd uitgavenplafond per model. Een model dat niet gemeten kon worden, wordt gerapporteerd als “niet gemeten”, met de reden.",
       "batteriesTitle": "Vier batterijen, openbare datasets, vastgepind",
       "commitOnly": "vastgepind op commit"
+    },
+    "weekly": {
+      "title": "Wekelijkse live-bench",
+      "intro": "Elke week, en telkens als we hem met de hand starten, haalt één run alle batterijen door alle modellen: arm A gaat rechtstreeks naar de provider, arm B door de laag, gebouwd uit de broncode van main op dat moment. Het is geen gepubliceerde versie: het is wat op het punt staat gepubliceerd te worden. De run faalt als er een regel breekt, en een cel die niet gemeten kon worden zegt waarom.",
+      "meta": "Run van {fecha} · broncode van main op commit {commit} (pakketversie {version}) · {gasto} uitgegeven van een plafond van {tope} · {medidas} van {celdas} cellen gemeten.",
+      "verdictOk": "Oordeel: geen regressies.",
+      "verdictFailed": "Oordeel: de run is gefaald (gebroken regels: {n}).",
+      "status": {
+        "measured": "gemeten",
+        "cut": "gemeten (gestopt op zijn uitgaveplafond)",
+        "notMeasurable": "niet meetbaar: {motivo}",
+        "unsupported": "niet ondersteund: {motivo}",
+        "harnessFailed": "het harnas faalde: {motivo}"
+      },
+      "reason": {
+        "sin-clave": "geen sleutel voor deze provider in de omgeving van de bench",
+        "proveedor": "geen geldig antwoord van de provider in arm A",
+        "tope-global": "het totale uitgaveplafond van de run was bereikt",
+        "arnes-proveedor": "het harnas van deze batterij praat alleen met Anthropic en OpenAI",
+        "arnes-modelo": "het harnas van deze batterij kent dit model niet",
+        "arnes": "fout of time-out in het harnas",
+        "otro": "te weinig gegevens"
+      },
+      "counts": {
+        "otherQuestion": "antwoord van een andere vraag: {n}",
+        "changedCalls": "gewijzigde tool-aanroepen: {n}",
+        "refusals": "weigeringen in de cache: {cacheadas} · gecrediteerd: {acreditadas}"
+      },
+      "diff": {
+        "accuracy": "nauwkeurigheid {d} pp [{inf}, {sup}]",
+        "accuracyNoCi": "nauwkeurigheid {d} pp",
+        "win": "B verkozen {w} [{inf} – {sup}]",
+        "winNoCi": "B verkozen {w}",
+        "safe": "veilig {d} pp (p = {p})",
+        "unsafe": "onveilig {d} pp (p = {p})"
+      },
+      "note": "„Fouten van de laag” zijn fouten in arm B die arm A niet had. „B − A” is het verschil in nauwkeurigheid bij GSM8K en BFCL, het verschil in weigeringspercentage bij XSTest (p volgens McNemar, gepaarde prompts) en bij MT-Bench hoe vaak de jury B verkiest (de helft is gelijkspel). „Rapport vs factuur” is hoe ver de kosten die de laag voor arm B rapporteert afwijken van wat de provider factureert.",
+      "earlierTitle": "Eerdere wekelijkse runs",
+      "earlierOk": "{fecha} · commit {commit} · geen regressies.",
+      "earlierFailed": "{fecha} · commit {commit} · gefaald (gebroken regels: {n})."
     },
     "batteries": {
       "gsm8k": "Rekenvraagstukken met herhalingen en parafrases: hoeveel de cache bespaart en of de nauwkeurigheid daalt.",
@@ -1176,7 +1216,13 @@
       "safe": "Weigeringen, veilige prompts (A → B)",
       "unsafe": "Weigeringen, onveilige prompts (A → B)",
       "verdict": "Interpretatie",
-      "reports": "Rapporten"
+      "reports": "Rapporten",
+      "status": "Status",
+      "spend": "Uitgave / plafond",
+      "layerFails": "Fouten van de laag",
+      "counts": "Wat hij telt",
+      "diff": "B − A",
+      "reportVsInvoice": "Rapport vs factuur"
     },
     "savings": {
       "title": "Gemeten besparing per model",
@@ -1191,7 +1237,8 @@
       "tools": {
         "title": "De laag heeft nooit een tool call veranderd",
         "titleBroken": "De laag veranderde {n} tool calls",
-        "body": "{alteradas} gewijzigde calls in {comparaciones} BFCL-vergelijkingen, {modelos} modellen, sinds {desde}. Als de laag faalt (een fout in B die A niet had), telt dat hier niet mee: dat staat onder “Bugs die de benchmark vond”."
+        "body": "{alteradas} gewijzigde calls in {comparaciones} BFCL-vergelijkingen, {modelos} modellen, sinds {desde}. Als de laag faalt (een fout in B die A niet had), telt dat hier niet mee: dat staat onder “Bugs die de benchmark vond”.",
+        "note": "Zo wordt geteld: elke vergelijking uit elke live-run sinds die versie, dus een model dat twee keer is gemeten (een pilot en de volledige run) telt beide keren. Daarom kan het getal hoger zijn dan de n in de tabellen, die één run per model tonen."
       },
       "other": {
         "title": "Geen antwoord van een andere vraag sinds {desde}",
@@ -1203,7 +1250,8 @@
         "title": "Hetzelfde weigeringspercentage, met en zonder de laag",
         "titleBroken": "Het weigeringspercentage veranderde bij {n} modellen",
         "body": "XSTest, {modelos} modellen gemeten: geen A/B-verschil onder p = {umbral} (McNemar, gepaarde prompts). De laag leverde de tekst van {comprobados} antwoorden ongewijzigd ({alterados} gewijzigd).",
-        "caption": "Weigeringspercentage per model, zonder de laag (A) en met de laag (B), op dezelfde prompts."
+        "caption": "Weigeringspercentage per model, zonder de laag (A) en met de laag (B), op dezelfde prompts.",
+        "note": "Zo wordt geteld: antwoorden, geen prompts. Elk antwoord uit arm B wordt vergeleken met de tekst van de provider, herhalingen van dezelfde prompt inbegrepen, dus er zijn meer antwoorden dan prompts in de tabel."
       }
     },
     "noSavings": {
@@ -1238,10 +1286,17 @@
       "title": "Bugs die de benchmark vond",
       "intro": "De benchmark is er niet om er goed uit te zien: hij is er om de bugs te vinden voordat jij ze vindt. Dit vond hij, met de versie waarin ze verschenen en de versie die ze oplost.",
       "found": "Gevonden in {version}: {ocurrencias} van {sobre}.",
+      "foundWeekly": "Gevonden door de wekelijkse live-bench op {fecha} (broncode van main, commit {commit}): {cacheadas} weigeringen uit de cache geserveerd of erin geschreven en {acreditadas} gecrediteerd, op {sobre} XSTest-prompts en {modelos} modellen.",
       "fixed": "Opgelost in {version} ({prs}).",
       "verified": "Live geverifieerd op {version}: {ocurrencias} van {sobre}.",
       "stillSeen": "Nog steeds gezien op {version}: {ocurrencias} van {sobre}.",
+      "remeasuredWeekly": "Live opnieuw gemeten door de wekelijkse bench op {fecha} (broncode van main met de fix, commit {commit}): {cacheadas} weigeringen in de cache en {acreditadas} gecrediteerd, op {sobre} XSTest-prompts en {modelos} modellen.",
+      "stillSeenWeekly": "De wekelijkse bench ziet het op {fecha} nog steeds (broncode van main, commit {commit}): {cacheadas} weigeringen in de cache en {acreditadas} gecrediteerd, op {sobre} XSTest-prompts en {modelos} modellen.",
       "pending": "Wacht op een nieuwe live meting op {version}.",
+      "notRemeasured": {
+        "notMeasurable": "Nog niet live opnieuw gemeten: de wekelijkse bench van {fecha} (commit {commit}) kon Gemini niet meten ({motivo}). Zolang geen run het meet, tellen we het niet als geverifieerd.",
+        "unsupported": "Nog niet live opnieuw gemeten: in de wekelijkse bench van {fecha} (commit {commit}) ondersteunt deze batterij Gemini niet ({motivo}). Zolang geen run het meet, tellen we het niet als geverifieerd."
+      },
       "items": {
         "otra-pregunta": {
           "title": "De ongekalibreerde semantische cache leverde het antwoord van een andere vraag",
@@ -1254,6 +1309,10 @@
         "negativas-de-texto": {
           "title": "Sommige weigeringen die als tekst geschreven waren, werden gecachet",
           "body": "Een weigering die het model als tekst schrijft (zonder het signaal van de API) kon worden gecachet, herhaald en als besparing worden toegeschreven. Geteld in XSTest-prompts."
+        },
+        "negativas-parciales": {
+          "title": "Gedeeltelijke weigeringen werden gecachet en gecrediteerd",
+          "body": "Een antwoord dat eerst meewerkt en verderop weigert („If you mean harming someone, I can't help…”), of een excuus gevolgd door „ik heb geen toegang…”, werd niet als weigering herkend: de laag kon het cachen, herhalen en als besparing crediteren. Geteld in de XSTest-prompts van de wekelijkse bench, met modellen van OpenAI en Claude."
         },
         "gemini-filtro-cacheado": {
           "title": "Een contentfilter van Gemini werd als antwoord gecachet",
