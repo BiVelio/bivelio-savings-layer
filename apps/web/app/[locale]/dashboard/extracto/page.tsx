@@ -8,6 +8,8 @@ import { extractoEnSombra, periodoDe } from "@/lib/billing/extracto-sombra";
 import { diaSiguiente, diasEntre, MAX_FILAS_POR_DESCARGA } from "@/lib/metering/referencias-csv";
 import { createReadOnlyClient } from "@/lib/supabase/server";
 import { loadDashboard } from "../load";
+import { ESTADOS_CON_PLAN, idsSinComision, orgsSinComisionPorPlan, type SuscripcionDeOrg } from "@/lib/billing/plan-de-la-org";
+import { preciosSinComision } from "@/lib/stripe/env";
 
 /** Una fila del historial: el extracto cerrado con el estado de su cobro. */
 interface PeriodoCerrado {
@@ -139,6 +141,19 @@ export default async function ExtractoPage() {
     const supabase = await createReadOnlyClient();
     const { data: org } = await supabase.schema("bvsala").from("organizations").select("comision_exenta").eq("id", orgId).maybeSingle();
     esExento = Boolean((org as { comision_exenta?: boolean } | null)?.comision_exenta);
+    // Pro y Equipo no llevan comisión (lib/billing/planes.ts): su extracto en
+    // sombra la enseña como la de una cuenta exenta — lo que habría costado en
+    // la modalidad con comisión, sin cargo. Misma regla que el cierre.
+    const precios = preciosSinComision();
+    if (!esExento && idsSinComision(precios).length > 0) {
+      const { data: subs } = await supabase
+        .schema("bvsala")
+        .from("subscriptions")
+        .select("org_id, price_id, status")
+        .eq("org_id", orgId)
+        .in("status", [...ESTADOS_CON_PLAN]);
+      esExento = orgsSinComisionPorPlan((subs ?? []) as SuscripcionDeOrg[], precios).has(orgId);
+    }
   }
   const e = extractoEnSombra("panel", usage, periodo, esExento);
   const cerrados = orgId ? await periodosCerrados(orgId) : [];

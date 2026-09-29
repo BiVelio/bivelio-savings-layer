@@ -8,7 +8,6 @@ import { CursorGrid } from "@/app/components/CursorGrid";
 import { RevealObserver } from "@/app/components/RevealObserver";
 import { KineticTitle } from "@/app/components/KineticTitle";
 import { ReciboMedido } from "@/app/components/ReciboMedido";
-import { CalculadoraComision } from "@/app/components/CalculadoraComision";
 import { SnippetPorSistema } from "@/app/components/SnippetPorSistema";
 import { SkillPorSuperficie } from "@/app/components/SkillPorSuperficie";
 import { ANATOMIA_MEDIDA } from "@/lib/skill/anatomia";
@@ -17,7 +16,6 @@ import { NvidiaEcosystemBand } from "@/app/components/NvidiaInception";
 import { VideoExplicativo } from "@/app/components/VideoExplicativo";
 import { DIAS_ACTIVOS_PARA_CONTAR_ASIENTO } from "@/lib/billing/asientos";
 import { FormatVerifier } from "@/app/components/FormatVerifier";
-import { GARANTIA_NETA_RATIO, TRAMOS } from "@/lib/billing/tarifa";
 import { type AbArtifact } from "@/app/[locale]/dashboard/data";
 import { ReferenceModeBadge } from "@/app/[locale]/dashboard/components/ReferenceModeBadge";
 import { NetSavingsCIBand } from "@/app/[locale]/dashboard/components/NetSavingsCIBand";
@@ -25,8 +23,8 @@ import { ReferenceLedgerCards } from "@/app/[locale]/dashboard/components/Refere
 import Footer from "@/app/components/Footer";
 import { Link } from "@/i18n/navigation";
 import { absolute, languageAlternates } from "@/i18n/site";
-import { preciosDelPlan } from "@/lib/stripe/pricing";
-import { formatearPrecio } from "@/lib/format/precio";
+import { tarifasDeLosPlanes } from "@/lib/stripe/pricing";
+import { terminosDeLosPlanes } from "@/lib/legal/precios-publicados";
 import {
   escenariosConPiezaDelBanco,
   librosConPiezaDelBanco,
@@ -183,14 +181,11 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
   // formatea AQUÍ (servidor) para el idioma de la página. Antes estaba escrito a
   // mano en los 12 ficheros de traducción y no se hablaba con Stripe: por eso la
   // landing estática llegó a anunciar dólares mientras se cobraban euros.
-  const precios = await preciosDelPlan();
-  const precioMensual = formatearPrecio(locale, precios.monthly);
-  const precioAnual = formatearPrecio(locale, precios.yearly);
-  const moneda = precios.monthly.currency.toUpperCase();
+  // Desde el 2026-09-29 son las cifras de Pro y Equipo (la modalidad con
+  // comisión ya no se vende a clientes nuevos).
+  const planes = terminosDeLosPlanes(locale, await tarifasDeLosPlanes());
+  const moneda = planes.moneda;
 
-  // Los números de la fórmula pública, formateados AQUÍ: los mensajes no
-  // llevan ni un dígito de tarifa (tarifa-en-parametros.test.ts).
-  const pctLocal = (n: number) => (n * 100).toLocaleString(locale, { maximumFractionDigits: 0 }) + "%";
   // La traducción llana enseña el decimal: es la misma cota que publica el
   // héroe (23,1%), y redondearla aquí haría que las dos cifras no cuadrasen.
   const pctLocal1 = (n: number) => (n * 100).toLocaleString(locale, { maximumFractionDigits: 1 }) + "%";
@@ -204,11 +199,6 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
     .filter((n): n is number => typeof n === "number" && Number.isFinite(n));
   const rangoMin = pctLocal1(Math.min(...puntosEscenario));
   const rangoMax = pctLocal1(Math.max(...puntosEscenario));
-  const moneyLocal = (n: number) =>
-    n.toLocaleString(locale, { style: "currency", currency: moneda, maximumFractionDigits: 0 });
-  const tramosLocal = TRAMOS.map((tr) =>
-    Number.isFinite(tr.hastaEur) ? `${pctLocal(tr.tipo)} ≤ ${moneyLocal(tr.hastaEur)}` : `${pctLocal(tr.tipo)} +`,
-  ).join(" · ");
 
   return (
     <div className="lp">
@@ -852,69 +842,84 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
           />
         </section>
 
-        {/* PRICING */}
+        {/* PRICING — el modelo del 2026-09-29: Medir (gratis, sin tarjeta) → Pro
+            (por asiento) → Equipo (asientos incluidos) → Enterprise. Ninguno
+            lleva comisión sobre el ahorro; la modalidad con comisión está
+            CERRADA a clientes nuevos y aquí solo se nombra para quien la
+            conserva (una línea, con enlace a sus condiciones en /pricing). Las
+            cifras de Pro y Equipo salen de sus Prices de Stripe
+            (`tarifasDeLosPlanes`, con PRECIOS_DE_LOS_PLANES de respaldo). */}
         <section id="pricing">
           <div className="sec-head rv">
             <span className="eyebrow">{t("pricing.eyebrow")}</span>
             <h2>{t("pricing.title")}</h2>
             <p>{t("pricing.body", { currency: moneda })}</p>
           </div>
-          <div className="split">
-            <div className="price-card rv">
-              <div className="amt">
-                {t("pricing.amount", { amount: precioMensual })}
-                <small> {t("pricing.per")}</small>
-              </div>
-              <p style={{ margin: 0, opacity: 0.85 }}>
-                {t.rich("pricing.proNote", { b: (c) => <b>{c}</b>, yearly: precioAnual })}
-              </p>
-              <p className="ck-note">
-                {t("pricing.taxNote")}
-              </p>
-              <p style={{ margin: "6px 0 0", opacity: 0.65, fontSize: 13 }}>
-                {/* Se cobran los asientos de la suscripción (la `quantity` de Stripe); los
-                    días activos solo cuentan cuántos hubo en uso, y el panel lo compara
-                    (/api/billing/reconcile no cobra). La cifra llega de la constante
-                    espejo del SQL, no escrita a mano: portada-como-cobra.test.ts. */}
-                {t.rich("pricing.seatNote", { b: (c) => <b>{c}</b>, dias: DIAS_ACTIVOS_PARA_CONTAR_ASIENTO })}
-              </p>
-              <ul>
-                {features.map((f) => (
-                  <li key={f}>{f}</li>
-                ))}
-              </ul>
-              <Link className="btn" href="/signup" style={{ alignSelf: "flex-start", marginTop: 6 }}>
-                {t("pricing.cta")}
+          <div className="plan-grid rv">
+            <div className="plan-card">
+              <h3>{t("pricing.plans.medir.name")}</h3>
+              <div className="amt">{t("pricing.plans.medir.price")}</div>
+              <p>{t("pricing.plans.medir.body")}</p>
+              <Link className="btn ghost" href="/signup">
+                {t("pricing.plans.medir.cta")}
               </Link>
             </div>
-            {/* La tarjeta estática de confianza dejó paso a la calculadora de
-                comisión (2026-08-23): que el visitante JUEGUE y vea nuestro
-                extra y su neto, con los precios del SDK y la tarifa real. */}
-            <CalculadoraComision asiento={{ cents: precios.monthly.amount, currency: precios.monthly.currency }} />
-          </div>
-
-          {/* LA FÓRMULA, PÚBLICA — el borrador del plan maestro, publicado.
-              Regla de anclaje llevada al límite: en los mensajes NO HAY NI UN
-              DÍGITO (lo vigila tarifa-en-parametros.test.ts); cada número llega
-              como parámetro desde lib/billing/tarifa y desde el Price de
-              Stripe. Cambiar la tarifa real cambia esta sección sola. */}
-          <div className="formula-publica rv">
-            <h3>{t("formula.title")}</h3>
-            <ul>
-              <li>{t.rich("formula.mes1", { b: (c) => <b>{c}</b> })}</li>
-              <li>{t.rich("formula.medido", { b: (c) => <b>{c}</b> })}</li>
-              <li>
-                {/* Sin mínimo desde el 2026-09-01: la promesa pasa de «bajo el
-                    umbral no cobramos» a «te quedas siempre con ≥{garantia} de
-                    lo ahorrado» — derivada del tramo más caro, no escrita. */}
-                {t.rich("formula.garantia", {
+            <div className="plan-card price-card">
+              <h3>{t("pricing.plans.pro.name")}</h3>
+              <div className="amt">
+                {t("pricing.amount", { amount: planes.pro.mensual })}
+                <small> {t("pricing.per")}</small>
+              </div>
+              <p>{t.rich("pricing.plans.pro.note", { b: (c) => <b>{c}</b>, yearly: planes.pro.anual })}</p>
+              <Link className="btn" href="/signup">
+                {t("pricing.plans.pro.cta")}
+              </Link>
+            </div>
+            <div className="plan-card">
+              <h3>{t("pricing.plans.team.name")}</h3>
+              <div className="amt">
+                {t("pricing.amount", { amount: planes.equipo.mensual })}
+                <small> {t("pricing.plans.team.per")}</small>
+              </div>
+              <p>
+                {t.rich("pricing.plans.team.note", {
                   b: (c) => <b>{c}</b>,
-                  garantia: pctLocal(GARANTIA_NETA_RATIO),
+                  included: planes.equipo.incluidos,
+                  extra: planes.equipo.extraMensual,
+                  yearly: planes.equipo.anual,
                 })}
-              </li>
-              <li>{t.rich("formula.tramos", { b: (c) => <b>{c}</b>, tramos: tramosLocal })}</li>
-              <li>{t.rich("formula.permanencia", { b: (c) => <b>{c}</b>, cero: moneyLocal(0) })}</li>
+              </p>
+              <Link className="btn ghost" href="/signup">
+                {t("pricing.plans.team.cta")}
+              </Link>
+            </div>
+            <div className="plan-card">
+              <h3>{t("pricing.plans.enterprise.name")}</h3>
+              <div className="amt">{t("pricing.plans.enterprise.price")}</div>
+              <p>
+                {t.rich("pricing.plans.enterprise.body", {
+                  contact: (c) => <a href="mailto:support@bivelio.com">{c}</a>,
+                })}
+              </p>
+            </div>
+          </div>
+          <div className="plan-foot rv">
+            <ul>
+              {features.map((f) => (
+                <li key={f}>{f}</li>
+              ))}
             </ul>
+            <p>
+              {/* Se cobran los asientos de la suscripción (la `quantity` de Stripe); los
+                  días activos solo cuentan cuántos hubo en uso, y el panel lo compara
+                  (/api/billing/reconcile no cobra). La cifra llega de la constante
+                  espejo del SQL, no escrita a mano: portada-como-cobra.test.ts. */}
+              {t.rich("pricing.seatNote", { b: (c) => <b>{c}</b>, dias: DIAS_ACTIVOS_PARA_CONTAR_ASIENTO })}
+            </p>
+            <p className="ck-note">{t("pricing.taxNote")}</p>
+            <p className="ck-note">
+              {t.rich("pricing.legacy", { terms: (c) => <Link href="/pricing#commission">{c}</Link> })}
+            </p>
           </div>
         </section>
 

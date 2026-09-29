@@ -15,11 +15,22 @@ const ERRORES_DEL_CHECKOUT: Record<string, string> = {
   ya_suscrito: "accountPlanStrip.errYaSuscrito",
   pago_en_curso: "accountPlanStrip.errPagoEnCurso",
   suscripcion_en_stripe: "accountPlanStrip.errSuscripcionEnStripe",
+  plan_cerrado: "accountPlanStrip.errPlanCerrado",
 };
 
+/** Lo que el panel VENDE (2026-09-29): Pro y Equipo. La modalidad con comisión está cerrada a clientes nuevos. */
+type PlanEnVenta = "pro" | "equipo";
+
+/** Las cifras de los dos planes, ya formateadas en el servidor. */
+export interface PreciosDelPanel {
+  pro: { monthly: string; yearly: string };
+  equipo: { monthly: string; yearly: string; incluidos: number; extraMonthly: string };
+}
+
 /**
- * Billing CTAs on the Account card. Signed-out-of-plan users get monthly/yearly
- * Checkout buttons; active subscribers get a Manage-plan button that opens the
+ * Billing CTAs on the Account card. Users without a plan pick Pro or Team and
+ * get monthly/yearly Checkout buttons for it; active subscribers (including
+ * those who keep the commission plan) get a Manage-plan button that opens the
  * Stripe Billing Portal. Each posts to the server route and redirects to the
  * hosted Stripe URL it returns.
  */
@@ -28,13 +39,11 @@ export function BillingButtons({
   // Ya formateados en el servidor. Este componente NO llama al formateador: la ICU
   // de Node y la del navegador pueden diferir en detalles invisibles, y esa
   // diferencia de texto es la que rompe la hidratación (error #418).
-  monthly,
-  yearly,
+  precios,
   codigo = null,
 }: {
   isActive: boolean;
-  monthly: string;
-  yearly: string;
+  precios: PreciosDelPanel;
   /** Código de promoción pre-aplicado al pagar (enlace de los probadores). */
   codigo?: string | null;
 }) {
@@ -54,7 +63,11 @@ export function BillingButtons({
    * botón parpadea deshabilitado. Se normaliza al enviar.
    */
   const [seats, setSeats] = useState("1");
-  const asientos = normalizarAsientos(seats);
+  const [plan, setPlan] = useState<PlanEnVenta>("pro");
+  // Equipo no baja de los asientos incluidos (el checkout tampoco lo deja): se
+  // enseña el número que de verdad se va a comprar.
+  const minimo = plan === "equipo" ? precios.equipo.incluidos : 1;
+  const asientos = Math.max(minimo, normalizarAsientos(seats));
 
   async function go(endpoint: string, body: Record<string, unknown>, key: string) {
     setLoading(key);
@@ -92,13 +105,35 @@ export function BillingButtons({
         </button>
       ) : (
         <>
+          <span className="seatpick" role="radiogroup" aria-label={t("accountPlanStrip.planPickLabel")}>
+            {(["pro", "equipo"] as const).map((p) => (
+              <label key={p} style={{ marginRight: 12 }}>
+                <input
+                  type="radio"
+                  name="bv-plan"
+                  value={p}
+                  checked={plan === p}
+                  onChange={() => {
+                    setPlan(p);
+                    if (p === "equipo") setSeats(String(Math.max(precios.equipo.incluidos, normalizarAsientos(seats))));
+                  }}
+                />{" "}
+                {p === "pro" ? t("accountPlanStrip.planPro") : t("accountPlanStrip.planTeam")}
+              </label>
+            ))}
+          </span>
+          {plan === "equipo" ? (
+            <p className="ck-note" style={{ margin: "0 0 8px", width: "100%" }}>
+              {t("accountPlanStrip.teamHint", { included: precios.equipo.incluidos, extra: precios.equipo.extraMonthly })}
+            </p>
+          ) : null}
           <span className="seatpick">
             <label htmlFor="bv-seats">{t("accountPlanStrip.seatsLabel")}</label>
             <input
               id="bv-seats"
               className="kt-input"
               type="number"
-              min={1}
+              min={minimo}
               max={MAX_ASIENTOS}
               step={1}
               inputMode="numeric"
@@ -123,17 +158,25 @@ export function BillingButtons({
             type="button"
             className="btn btn-primary"
             disabled={loading !== null}
-            onClick={() => go("/api/stripe/checkout", { period: "monthly", seats: asientos }, "m")}
+            onClick={() => go("/api/stripe/checkout", { plan, period: "monthly", seats: asientos }, "m")}
           >
-            {loading === "m" ? "…" : t("accountPlanStrip.checkoutMonthly", { monthly })}
+            {loading === "m"
+              ? "…"
+              : plan === "equipo"
+                ? t("accountPlanStrip.checkoutTeamMonthly", { monthly: precios.equipo.monthly, included: precios.equipo.incluidos })
+                : t("accountPlanStrip.checkoutMonthly", { monthly: precios.pro.monthly })}
           </button>
           <button
             type="button"
             className="btn btn-ghost"
             disabled={loading !== null}
-            onClick={() => go("/api/stripe/checkout", { period: "yearly", seats: asientos }, "y")}
+            onClick={() => go("/api/stripe/checkout", { plan, period: "yearly", seats: asientos }, "y")}
           >
-            {loading === "y" ? "…" : t("accountPlanStrip.checkoutYearly", { yearly })}
+            {loading === "y"
+              ? "…"
+              : plan === "equipo"
+                ? t("accountPlanStrip.checkoutTeamYearly", { yearly: precios.equipo.yearly, included: precios.equipo.incluidos })
+                : t("accountPlanStrip.checkoutYearly", { yearly: precios.pro.yearly })}
           </button>
         </>
       )}

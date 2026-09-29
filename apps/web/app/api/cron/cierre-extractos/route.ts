@@ -4,7 +4,9 @@ import { NextResponse } from "next/server";
 import { cerrarPeriodo, periodoAnterior, resumenDelCierre, type UsoDeOrg } from "@/lib/billing/cierre";
 import type { FilaDiaria } from "@/lib/billing/extracto";
 import { obtenerFxCierre, type Fx } from "@/lib/billing/fx";
+import { idsSinComision, orgsSinComisionPorPlan, ESTADOS_CON_PLAN, type SuscripcionDeOrg } from "@/lib/billing/plan-de-la-org";
 import { alertar } from "@/lib/observabilidad/alerta";
+import { preciosSinComision } from "@/lib/stripe/env";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { esColumnaInexistente, type ErrorDePostgrest } from "@/lib/supabase/esquema-pendiente";
 import { leerTodo } from "@/lib/supabase/leer-todo";
@@ -185,6 +187,23 @@ export async function GET(req: Request): Promise<NextResponse> {
       supabase.schema("bvsala").from("organizations").select("id").eq("comision_exenta", true).order("id", { ascending: true }),
     );
     for (const o of marcadas) exentas.add(String(o.id));
+    // LOS PLANES SIN COMISIÓN (Pro y Equipo, lib/billing/planes.ts): cargo 0,
+    // como una exención. Sin sus Prices configurados no se consulta nada y el
+    // cierre es exactamente el de antes.
+    const precios = preciosSinComision();
+    const ids = idsSinComision(precios);
+    if (ids.length > 0) {
+      const subs = await leerTodo<SuscripcionDeOrg>(() =>
+        supabase
+          .schema("bvsala")
+          .from("subscriptions")
+          .select("org_id, price_id, status")
+          .in("status", [...ESTADOS_CON_PLAN])
+          .in("price_id", ids)
+          .order("org_id", { ascending: true }),
+      );
+      for (const id of orgsSinComisionPorPlan(subs, precios)) exentas.add(id);
+    }
   } catch (error) {
     console.error("[cierre-extractos] la exención de comisión no se pudo leer:", error);
     await alertar({

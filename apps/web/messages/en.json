@@ -414,7 +414,7 @@
       "personalNote": "Personal — no organization linked yet. One BiVelio account, shared across the suite.",
       "plan": "plan",
       "seatsCount": "{count, plural, one {# seat} other {# seats}}.",
-      "planBody": "BV-SALA is fail-closed — it only runs with an active PRO license. {monthly} per seat per month or {yearly} per seat per year. A seat is one active machine or service identity, not a person.",
+      "planBody": "BV-SALA is fail-closed — it only runs with an active license. Pro: {monthly} per seat per month or {yearly} per seat per year. Team: {teamMonthly} per month with {included} seats included. No commission on your savings. A seat is one active machine or service identity, not a person.",
       "managePlan": "Manage plan →",
       "subscribe": "Subscribe →",
       "checkoutMonthly": "Subscribe — {monthly}/seat/mo →",
@@ -430,7 +430,14 @@
       "errPagoEnCurso": "Your payment is still being processed: a bank debit can take a few days to clear. You'll get access as soon as it settles. Don't start a second subscription.",
       "errSuscripcionEnStripe": "Stripe already has a subscription for this account, but it isn't activated here yet. Don't buy again: write to support@bivelio.com and we'll activate it by hand.",
       "codigoAplicado": "The code {codigo} will be applied at checkout.",
-      "errCodigoInvalido": "That code does not exist or is no longer active. You can continue without it or write to support@bivelio.com."
+      "errCodigoInvalido": "That code does not exist or is no longer active. You can continue without it or write to support@bivelio.com.",
+      "planPickLabel": "Plan",
+      "planPro": "Pro",
+      "planTeam": "Team",
+      "teamHint": "Team includes {included} seats; each extra seat is {extra} per month. You can't buy fewer than {included}.",
+      "checkoutTeamMonthly": "Subscribe to Team — {monthly}/mo, {included} seats →",
+      "checkoutTeamYearly": "Subscribe to Team — {yearly}/yr, {included} seats →",
+      "errPlanCerrado": "That plan is no longer offered to new customers. Choose Pro or Team."
     },
     "referenceLedgerCards": {
       "proven": "proven",
@@ -725,7 +732,7 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Verify Your LLM Savings",
-    "metaDescription": "An SDK that has your app pay the LLM provider only for what it needs, and a gateway that meters your coding agent. Counted with your provider's own meter: a seat fee, plus commission only on measured savings.",
+    "metaDescription": "An SDK that has your app pay the LLM provider only for what it needs, and a gateway that meters your coding agent. Counted with your provider's own meter: measure free, then pay per seat — no commission on your savings.",
     "hero": {
       "eyebrow": "For teams that pay for LLM APIs by the token",
       "title": "Your LLM bill, under control.",
@@ -794,8 +801,8 @@
           "body": "We don't ask for faith. Every saving is measured with the provider's official meter — the same one they bill you with — and lands on your receipt. Anything that can't be checked against the bill is never announced."
         },
         {
-          "title": "A seat fee, and a share of what's measured",
-          "body": "You pay a fixed fee per seat every month, whether or not you save. On top of it, our commission comes only out of savings measured with your provider's meter — and most of every saving always stays with you. A month with no measured savings? You pay the seats and zero commission."
+          "title": "Measure free, then pay per seat",
+          "body": "Start with the free Measure license: the layer runs in shadow mode and shows what it would have saved on your own traffic. To turn the levers on, you pay a fixed fee per seat, or a Team plan, whether or not you save — and no commission on your savings."
         }
       ],
       "nota": "The animations illustrate the idea. The real numbers — measured against live providers — are right below."
@@ -887,12 +894,36 @@
       "initNote": "<b>Or let one command tailor it to your stack.</b> <code>init</code> reads your <code>package.json</code> (Next.js, Express, the Vercel AI SDK, Mastra, LangChain.js, the Anthropic or the OpenAI SDK) and prints the install line, the exact code for your adapter and a check that spends no tokens: once your license is in place, the layer answers it on your machine, without calling the model. It writes nothing unless you ask it to."
     },
     "pricing": {
-      "eyebrow": "One plan, priced per seat",
-      "title": "A seat fee, always. Commission only on measured savings.",
-      "body": "No free tier, no trial: before paying you can check the public measurements and run the verifier on your own data, right on this page. The seat fee is billed every month, in {currency}, whether or not you save. The commission is on top, and only on savings measured with your provider's meter — including repeated requests served without calling your provider, each valued with the counter of the identical request that already ran. Estimates never enter it.",
+      "eyebrow": "Plans",
+      "title": "Measure for free. Pay per seat when you want the savings.",
+      "body": "Start with Measure: free and without a card. The layer runs in shadow mode on your own traffic and your dashboard shows what it would have saved, valued with your provider's counter. Pro and Team are billed per seat, in {currency}, whether or not you save, and carry no commission on your savings.",
       "amount": "{amount}",
       "per": "/ seat / month",
-      "proNote": "<b>PRO</b> — billed per seat. Or <b>{yearly} / seat / year</b> (save ~19%). Enterprise, with packaged features, comes later.",
+      "plans": {
+        "medir": {
+          "name": "Measure",
+          "price": "Free",
+          "body": "No card. The layer in shadow mode for one organization: every request reaches your provider unchanged, and you see what it would have saved.",
+          "cta": "Start free →"
+        },
+        "pro": {
+          "name": "Pro",
+          "note": "Or <b>{yearly} / seat / year</b>. Every optimization, the per-request receipt and the dashboard. No commission.",
+          "cta": "Choose Pro →"
+        },
+        "team": {
+          "name": "Team",
+          "per": "/ month",
+          "note": "<b>{included} seats included</b>; each extra seat {extra} / month. Or <b>{yearly} / year</b>. No commission.",
+          "cta": "Choose Team →"
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "price": "Custom",
+          "body": "More seats than online checkout allows, your own contract or negotiated invoicing: <contact>write to us</contact>."
+        }
+      },
+      "legacy": "Already on the earlier plan with a commission on measured savings? You keep it unchanged; its terms are on the <terms>pricing terms</terms> page.",
       "seatNote": "A seat is one <b>machine or service identity</b>, not a person. You pay for the seats your subscription covers; your dashboard shows how many were in use this month (active on at least {dias} days; CI and ephemeral runners don't count).",
       "features": [
         "Every BV‑SALA optimization, uncapped",
@@ -924,7 +955,7 @@
     },
     "footer": {
       "ctaTitle": "Measure it on your own traffic",
-      "ctaSub": "Once installed, every call returns its SavingsReport, measured and estimated kept apart. The seat fee is monthly and fixed; the commission comes only from what is measured. The license is what lets you run BV‑SALA — the SDK in your app, the gateway in your terminal.",
+      "ctaSub": "Once installed, every call returns its SavingsReport, measured and estimated kept apart. Start free with Measure; Pro and Team are a fixed fee per seat, with no commission on your savings. The license is what lets you run BV‑SALA — the SDK in your app, the gateway in your terminal.",
       "ctaStart": "Get started",
       "tagline": "The operating system for your business. This is <b>BV-SALA</b>, BiVelio's provider-neutral LLM cost optimizer — every published figure measured against the provider's own counter; estimates are shown apart and never billed.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1338,7 +1369,7 @@
     "s3Sub": "The product has two different numbers, and they shouldn't be mixed.",
     "mBeforeK": "Before installing",
     "mBeforeV": "Estimate",
-    "mBeforeBody": "The calculator in the pricing section projects your savings from your own numbers: requests, tokens and model. It's an honest projection — that's why it carries the “estimate” tag.",
+    "mBeforeBody": "The free Measure license runs the layer in shadow mode on your own traffic and shows what it would have saved, request by request. It changes nothing and applies nothing — that's why it carries the “estimate” tag.",
     "mAfterK": "After installing",
     "mAfterV": "Real measurement",
     "mAfterBody": "Every call returns a SavingsReport: the calls you never paid for and the net saving per request. Auditable, request by request, on your own infrastructure.",
@@ -1353,14 +1384,36 @@
   },
   "pricingPage": {
     "metaTitle": "Pricing terms · BV-SALA",
-    "metaDescription": "The seat fee and the commission on measured savings, published from the same constants that bill you.",
+    "metaDescription": "Measure free, Pro per seat, Team and Enterprise — none of them carries a commission on your savings. Figures published from the same constants that bill.",
     "eyebrow": "Published pricing",
     "title": "Pricing terms",
     "governs": "This page describes how the service works today; the <license>LICENSE</license> and the <terms>BiVelio Terms</terms> govern.",
-    "lede": "Every figure on this page is read from the code that bills you, so it changes when the price changes.",
+    "lede": "You pay per seat or for a Team plan, with no commission on your savings. Every figure on this page is read from the same code that bills you, so it changes when the price changes.",
+    "plans": {
+      "title": "Plans",
+      "intro": "Four plans, from smallest to largest. Pro and Team are paid per seat and carry no commission.",
+      "medir": {
+        "name": "Measure",
+        "body": "<b>Free, no card.</b> The layer runs in shadow mode for one organization, within a cap on seats and daily requests: every request reaches your provider exactly as you built it, nothing is served from cache and no lever is applied. Your dashboard shows what it would have saved — an estimate that never carries a commission. The levers need Pro or Team."
+      },
+      "pro": {
+        "name": "Pro",
+        "amount": "<b>{monthly}</b> per seat per month, or <b>{yearly}</b> per seat per year, in {currency}.",
+        "body": "Every optimization in the layer, the per-request receipt and the dashboard. <b>No commission</b> on savings: you pay for the seats, whether you save or not."
+      },
+      "team": {
+        "name": "Team",
+        "amount": "<b>{monthly}</b> per month with <b>{included} seats included</b> (about {perSeat} per seat), or <b>{yearly}</b> per year, in {currency}.",
+        "extra": "Each seat above those included: {monthly} per month, or {yearly} per year.",
+        "body": "The same as Pro, for a fleet: the fixed fee covers the included seats even if you use fewer. <b>No commission</b> on savings."
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "body": "For more seats than online checkout allows, your own contract or negotiated invoicing terms: <contact>write to us</contact>."
+      }
+    },
     "seat": {
-      "title": "The seat fee",
-      "amount": "<b>{monthly}</b> per seat per month, or <b>{yearly}</b> per seat per year, in {currency}.",
+      "title": "How a seat is counted and billed",
       "cycle": "The seat fee is billed through Stripe for each monthly or yearly cycle of your subscription, counted from the day it starts.",
       "paidAlways": "The seat fee is paid <b>whether or not the Software produces any saving</b>.",
       "vat": "Amounts exclude VAT. Checkout asks for your billing address and, optionally, your VAT number; both are printed on your invoice.",
@@ -1370,7 +1423,9 @@
       "identifier": "How a seat identifier is formed, and everything else the Software sends to BiVelio, is on the <privacy>privacy page</privacy>."
     },
     "commission": {
-      "title": "The commission on measured savings",
+      "title": "Earlier plan with a commission (closed to new customers)",
+      "optional": "This plan is <b>no longer offered to new customers</b>. If your subscription is already on it, you keep it unchanged, and the terms below still govern it: a lower seat fee plus a commission only on savings you can reconcile with your provider's invoice. Pro and Team never carry it; their statement shows the commission that would have applied only as a reference.",
+      "seat": "Seat fee under this arrangement: <b>{monthly}</b> per seat per month, or <b>{yearly}</b> per seat per year, in {currency}.",
       "only": "A commission is charged <b>only on measured savings</b>: savings labelled {labels} in your usage records. Savings labelled {never} never carry commission.",
       "measured": "A measured saving is established from your LLM provider's own usage counter for that request.",
       "reference": "A reference saving, for a repeated request the Software served without calling your provider, is established from your provider's counter for the identical earlier request that did run, under the rule shown on your statement ({regla}).",
@@ -1387,8 +1442,7 @@
       "ceiling": "No tier's rate exceeds {max}, so before the commission is rounded to the cent <b>you keep at least {garantia}</b> of the period's measured savings. The seat fee is separate.",
       "fx": "Measured savings are counted in US dollars and converted at the European Central Bank reference rate fetched when the period is closed; your statement shows the rate used.",
       "rounding": "The commission is rounded to the nearest cent. A commission below {minimo} is not invoiced and is not carried over to another period.",
-      "zero": "A period with no measured savings carries <b>no commission</b>.",
-      "calculator": "To see what this means for your own traffic, try the <calc>calculator</calc> on the home page."
+      "zero": "A period with no measured savings carries <b>no commission</b>."
     },
     "calibration": {
       "title": "Calibration period",

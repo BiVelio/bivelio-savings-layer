@@ -267,11 +267,14 @@ describe("la rebaja de TTL, fuera de la tarjeta: tampoco «mientras la sesión s
 describe("comisión por referencia: si se cobra, se dice", () => {
   const cobra = /export const COMISIONAR_REFERENCIA: boolean = true;/.test(TARIFA_WEB);
 
-  it("en/es: el precio y la nota del SDK nombran las peticiones repetidas mientras COMISIONAR_REFERENCIA esté encendido", () => {
+  // Desde el 2026-09-29 la portada ya no vende la modalidad con comisión
+  // (cerrada a clientes nuevos): `landing.pricing.body` no la describe, y la
+  // regla vive en la nota del SDK y en /pricing, que la conserva para quien la tiene.
+  it("en/es: la nota del SDK nombra las peticiones repetidas mientras COMISIONAR_REFERENCIA esté encendido", () => {
     if (!cobra) return;
     const en = cargar("en");
     const es = cargar("es");
-    for (const k of ["landing.pricing.body", "landing.offers.sdk.figureNote"]) {
+    for (const k of ["landing.offers.sdk.figureNote"]) {
       expect(en[k], k).toMatch(/repeated requests/);
       expect(en[k], k).toMatch(/identical request that already ran/);
       expect(es[k], k).toMatch(/peticiones repetidas/);
@@ -293,10 +296,10 @@ describe("comisión por referencia: si se cobra, se dice", () => {
     vi: "giống hệt",
   };
   for (const [loc, frase] of Object.entries(IDENTICA) as [Exclude<Loc, "en" | "es">, string][]) {
-    it(`${loc}: el precio y la nota del SDK también dicen con qué contador se valora una repetición`, () => {
+    it(`${loc}: la nota del SDK también dice con qué contador se valora una repetición`, () => {
       if (!cobra) return;
       const d = cargar(loc);
-      for (const k of ["landing.pricing.body", "landing.offers.sdk.figureNote"]) expect(d[k], `${loc} ${k}`).toContain(frase);
+      for (const k of ["landing.offers.sdk.figureNote"]) expect(d[k], `${loc} ${k}`).toContain(frase);
     });
   }
 });
@@ -320,6 +323,14 @@ describe("comisión sin trampa: la cuota por asiento se cobra siempre", () => {
   it("de: sin ahorro no hay PROVISIÓN (la «Gebühr» es la cuota, que sí se cobra)", () => {
     expect(cargar("de")["dashboard.extracto.sinAhorro"]).not.toContain("Gebühr");
     expect(cargar("de")["dashboard.extracto.sinAhorro"]).toContain("Provision");
+  });
+
+  it("⛔ en/es: la portada no vende la comisión (cerrada a clientes nuevos, 2026-09-29): Pro y Equipo, sin comisión", () => {
+    expect(en["landing.pricing.body"]).toMatch(/no commission/);
+    expect(es["landing.pricing.body"]).toMatch(/no llevan comisión/);
+    expect(en["landing.pricing.proNote"]).toBeUndefined();
+    expect(en["landing.pricing.body"]).not.toMatch(/No free tier/i);
+    expect(es["landing.pricing.body"]).not.toMatch(/Sin plan gratuito/i);
   });
 
   it("en/es: el precio dice que la cuota se cobra ahorres o no, y el paso 4 nombra el asiento", () => {

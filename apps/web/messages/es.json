@@ -414,7 +414,7 @@
       "personalNote": "Personal: aún no hay ninguna organización vinculada. Una sola cuenta de BiVelio, compartida en toda la suite.",
       "plan": "plan",
       "seatsCount": "{count, plural, one {# asiento} other {# asientos}}.",
-      "planBody": "BV-SALA es fail-closed: solo funciona con una licencia PRO activa. {monthly} por asiento al mes o {yearly} por asiento al año. Un asiento es una máquina o identidad de servicio activa, no una persona.",
+      "planBody": "BV-SALA es fail-closed: solo funciona con una licencia activa. Pro: {monthly} por asiento al mes o {yearly} por asiento al año. Equipo: {teamMonthly} al mes con {included} asientos incluidos. Sin comisión sobre tu ahorro. Un asiento es una máquina o identidad de servicio activa, no una persona.",
       "managePlan": "Gestionar plan →",
       "subscribe": "Suscribirse →",
       "checkoutMonthly": "Suscríbete — {monthly}/asiento/mes →",
@@ -430,7 +430,14 @@
       "errPagoEnCurso": "Tu pago todavía se está procesando: un adeudo bancario puede tardar unos días en liquidar. Tendrás acceso en cuanto liquide. No inicies una segunda suscripción.",
       "errSuscripcionEnStripe": "Stripe ya tiene una suscripción para esta cuenta, pero aún no está activada aquí. No vuelvas a comprar: escríbenos a support@bivelio.com y la activamos a mano.",
       "codigoAplicado": "Al pagar se aplicará el código {codigo}.",
-      "errCodigoInvalido": "Ese código no existe o ya no está activo. Puedes seguir sin él o escribirnos a support@bivelio.com."
+      "errCodigoInvalido": "Ese código no existe o ya no está activo. Puedes seguir sin él o escribirnos a support@bivelio.com.",
+      "planPickLabel": "Plan",
+      "planPro": "Pro",
+      "planTeam": "Equipo",
+      "teamHint": "Equipo incluye {included} asientos; cada asiento más cuesta {extra} al mes. No se pueden comprar menos de {included}.",
+      "checkoutTeamMonthly": "Suscríbete a Equipo — {monthly}/mes, {included} asientos →",
+      "checkoutTeamYearly": "Suscríbete a Equipo — {yearly}/año, {included} asientos →",
+      "errPlanCerrado": "Ese plan ya no se ofrece a clientes nuevos. Elige Pro o Equipo."
     },
     "referenceLedgerCards": {
       "proven": "comprobado",
@@ -725,7 +732,7 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Verifica tu ahorro en LLM",
-    "metaDescription": "Un SDK para que tu app pague al proveedor de LLM solo lo que necesita, y un gateway que mide tu agente de código. Todo con el contador de tu proveedor: cuota por asiento y comisión solo sobre el ahorro medido.",
+    "metaDescription": "Un SDK para que tu app pague al proveedor de LLM solo lo que necesita, y un gateway que mide tu agente de código. Todo con el contador de tu proveedor: mide gratis y después paga por asiento, sin comisión sobre tu ahorro.",
     "hero": {
       "eyebrow": "Para equipos que pagan la API de LLM por tokens",
       "title": "Tu factura de LLM, bajo control.",
@@ -794,8 +801,8 @@
           "body": "No te pedimos fe. Cada ahorro se mide con el contador oficial del proveedor — el mismo con el que te factura — y aparece en tu recibo. Lo que no se puede contrastar con la factura, no se anuncia."
         },
         {
-          "title": "Una cuota por asiento y una parte de lo medido",
-          "body": "Pagas una cuota fija por asiento cada mes, ahorres o no. Además, nuestra comisión sale solo del ahorro medido con el contador de tu proveedor, y la mayor parte de cada ahorro se queda siempre contigo. ¿Un mes sin ahorro medido? Pagas los asientos y cero comisión."
+          "title": "Mide gratis y después paga por asiento",
+          "body": "Empieza con la licencia Medir, gratis: la capa funciona en modo sombra y te enseña lo que habría ahorrado con tu propio tráfico. Para activar las palancas pagas una cuota fija por asiento, o un plan de Equipo, ahorres o no, y sin comisión sobre tu ahorro."
         }
       ],
       "nota": "Las animaciones ilustran la idea. Las cifras de verdad — medidas contra proveedores reales — están justo debajo."
@@ -887,12 +894,36 @@
       "initNote": "<b>O deja que un comando lo ajuste a tu pila.</b> <code>init</code> lee tu <code>package.json</code> (Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, el SDK de Anthropic o el de OpenAI) e imprime la línea de instalación, el código exacto de tu adaptador y una comprobación que no gasta tokens: con tu licencia ya puesta, la contesta la capa en tu máquina, sin llamar al modelo. No escribe nada si no se lo pides."
     },
     "pricing": {
-      "eyebrow": "Un solo plan, con precio por asiento",
-      "title": "Cuota por asiento, siempre. Comisión solo sobre el ahorro medido.",
-      "body": "Sin plan gratuito y sin prueba: antes de pagar puedes comprobar las mediciones públicas y pasar el verificador por tus propios datos, aquí mismo. La cuota por asiento se cobra cada mes, en {currency}, ahorres o no. La comisión va aparte, y solo sobre el ahorro medido con el contador de tu proveedor, incluidas las peticiones repetidas que se sirven sin llamarlo, cada una valorada con el contador de la petición idéntica que ya se ejecutó. Lo estimado nunca entra.",
+      "eyebrow": "Planes",
+      "title": "Mide gratis. Paga por asiento cuando quieras el ahorro.",
+      "body": "Empieza con Medir: gratis y sin tarjeta. La capa funciona en modo sombra con tu propio tráfico y tu panel enseña lo que habría ahorrado, valorado con el contador de tu proveedor. Pro y Equipo se cobran por asiento, en {currency}, ahorres o no, y no llevan comisión sobre tu ahorro.",
       "amount": "{amount}",
       "per": "/ asiento / mes",
-      "proNote": "<b>PRO</b> — facturado por asiento. O <b>{yearly} / asiento / año</b> (ahorra ~19%). Enterprise, con funciones empaquetadas, llegará más adelante.",
+      "plans": {
+        "medir": {
+          "name": "Medir",
+          "price": "Gratis",
+          "body": "Sin tarjeta. La capa en modo sombra para una organización: cada petición llega a tu proveedor sin cambios, y ves lo que habría ahorrado.",
+          "cta": "Empieza gratis →"
+        },
+        "pro": {
+          "name": "Pro",
+          "note": "O <b>{yearly} / asiento / año</b>. Todas las optimizaciones, el recibo por petición y el panel. Sin comisión.",
+          "cta": "Elegir Pro →"
+        },
+        "team": {
+          "name": "Equipo",
+          "per": "/ mes",
+          "note": "<b>{included} asientos incluidos</b>; cada asiento más, {extra} / mes. O <b>{yearly} / año</b>. Sin comisión.",
+          "cta": "Elegir Equipo →"
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "price": "A medida",
+          "body": "Más asientos de los que admite el pago en línea, un contrato propio o condiciones de factura pactadas: <contact>escríbenos</contact>."
+        }
+      },
+      "legacy": "¿Ya tienes la modalidad anterior, con comisión sobre el ahorro medido? La conservas sin cambios; sus condiciones están en los <terms>términos de precio</terms>.",
       "seatNote": "Un asiento es una <b>máquina o identidad de servicio</b>, no una persona. Pagas los asientos que cubre tu suscripción; tu panel muestra cuántos estuvieron en uso este mes (activos al menos {dias} días; CI y ejecutores efímeros no cuentan).",
       "features": [
         "Cada optimización de BV‑SALA, sin límite",
@@ -924,7 +955,7 @@
     },
     "footer": {
       "ctaTitle": "Mídelo con tu propio tráfico",
-      "ctaSub": "Instalado, cada llamada devuelve su SavingsReport, con lo medido y lo estimado por separado. La cuota por asiento es mensual y fija; la comisión sale solo de lo medido. La licencia es lo que te deja ejecutar BV‑SALA: el SDK en tu app, el gateway en tu terminal.",
+      "ctaSub": "Instalado, cada llamada devuelve su SavingsReport, con lo medido y lo estimado por separado. Empieza gratis con Medir; Pro y Equipo son una cuota fija por asiento, sin comisión sobre tu ahorro. La licencia es lo que te deja ejecutar BV‑SALA: el SDK en tu app, el gateway en tu terminal.",
       "ctaStart": "Empezar",
       "tagline": "El sistema operativo para tu negocio. Esto es <b>BV‑SALA</b>, el optimizador de coste de LLM neutral respecto al proveedor de BiVelio — cada cifra publicada, medida contra el contador del proveedor; lo estimado se enseña aparte y nunca se factura.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1338,7 +1369,7 @@
     "s3Sub": "El producto tiene dos cifras distintas y conviene no mezclarlas.",
     "mBeforeK": "Antes de instalar",
     "mBeforeV": "Estimación",
-    "mBeforeBody": "La calculadora del pricing proyecta tu ahorro con tus propios números: peticiones, tokens y modelo. Es una proyección honesta — por eso lleva la etiqueta «estimación».",
+    "mBeforeBody": "La licencia Medir, gratis, ejecuta la capa en modo sombra con tu propio tráfico y te enseña lo que habría ahorrado, petición a petición. No cambia nada ni aplica nada: por eso lleva la etiqueta «estimación».",
     "mAfterK": "Después de instalar",
     "mAfterV": "Medición real",
     "mAfterBody": "Cada llamada devuelve un SavingsReport: las llamadas que nunca pagaste y el ahorro neto por petición. Auditable, petición a petición, en tu propia infraestructura.",
@@ -1353,14 +1384,36 @@
   },
   "pricingPage": {
     "metaTitle": "Términos de precio · BV-SALA",
-    "metaDescription": "La cuota por asiento y la comisión sobre el ahorro medido, publicadas desde las mismas constantes que cobran.",
+    "metaDescription": "Medir gratis, Pro por asiento, Equipo y Enterprise: ninguno lleva comisión sobre tu ahorro. Cifras publicadas desde las mismas constantes que cobran.",
     "eyebrow": "Precios publicados",
     "title": "Términos de precio",
     "governs": "Esta página describe cómo funciona el servicio hoy; rigen la <license>LICENSE</license> y los <terms>Términos de BiVelio</terms>.",
-    "lede": "Cada cifra que ves aquí se lee del mismo código que te cobra, así que cambia cuando cambia el precio.",
+    "lede": "Pagas por asiento o por un plan de equipo, sin comisión sobre tu ahorro. Cada cifra que ves aquí se lee del mismo código que te cobra, así que cambia cuando cambia el precio.",
+    "plans": {
+      "title": "Planes",
+      "intro": "Cuatro planes, de menos a más. Pro y Equipo se pagan por asiento y no llevan comisión.",
+      "medir": {
+        "name": "Medir",
+        "body": "<b>Gratis y sin tarjeta.</b> La capa funciona en modo sombra para una organización, con un tope de asientos y de peticiones diarias: cada petición llega a tu proveedor tal como la construiste, nada se sirve de caché y no se aplica ninguna palanca. Tu panel enseña lo que habría ahorrado: una estimación que nunca lleva comisión. Las palancas necesitan Pro o Equipo."
+      },
+      "pro": {
+        "name": "Pro",
+        "amount": "<b>{monthly}</b> por asiento y mes, o <b>{yearly}</b> por asiento y año, en {currency}.",
+        "body": "Todas las optimizaciones de la capa, el recibo por petición y el panel. <b>Sin comisión</b> sobre el ahorro: pagas los asientos, ahorres o no."
+      },
+      "team": {
+        "name": "Equipo",
+        "amount": "<b>{monthly}</b> al mes con <b>{included} asientos incluidos</b> (unos {perSeat} por asiento), o <b>{yearly}</b> al año, en {currency}.",
+        "extra": "Cada asiento por encima de los incluidos: {monthly} al mes, o {yearly} al año.",
+        "body": "Lo mismo que Pro, para una flota: la cuota fija cubre los asientos incluidos aunque uses menos. <b>Sin comisión</b> sobre el ahorro."
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "body": "Para más asientos de los que admite el pago en línea, un contrato propio o condiciones de factura pactadas: <contact>escríbenos</contact>."
+      }
+    },
     "seat": {
-      "title": "La cuota por asiento",
-      "amount": "<b>{monthly}</b> por asiento y mes, o <b>{yearly}</b> por asiento y año, en {currency}.",
+      "title": "Cómo se cuenta y se cobra un asiento",
       "cycle": "La cuota por asiento se cobra a través de Stripe por cada ciclo mensual o anual de tu suscripción, contado desde el día en que empieza.",
       "paidAlways": "La cuota por asiento se paga <b>haya ahorro o no</b>.",
       "vat": "Los importes no incluyen IVA. El pago pide tu dirección de facturación y, si quieres, tu NIF-IVA; los dos aparecen en tu factura.",
@@ -1370,7 +1423,9 @@
       "identifier": "Cómo se forma el identificador de asiento, y todo lo demás que el Software envía a BiVelio, está en la <privacy>página de privacidad</privacy>."
     },
     "commission": {
-      "title": "La comisión sobre el ahorro medido",
+      "title": "Modalidad anterior con comisión (cerrada a clientes nuevos)",
+      "optional": "Esta modalidad <b>ya no se ofrece a clientes nuevos</b>. Si tu suscripción ya la tiene, la conservas sin cambios y la rigen las condiciones de abajo: una cuota por asiento más baja y una comisión solo sobre el ahorro que puede cuadrar con la factura de tu proveedor. Pro y Equipo no la llevan nunca; su extracto enseña la que se habría aplicado solo como referencia.",
+      "seat": "Cuota por asiento en esta modalidad: <b>{monthly}</b> por asiento y mes, o <b>{yearly}</b> por asiento y año, en {currency}.",
       "only": "Se cobra comisión <b>solo sobre el ahorro medido</b>: el ahorro etiquetado {labels} en tus registros de uso. El ahorro etiquetado {never} nunca lleva comisión.",
       "measured": "Un ahorro medido sale del propio contador de uso de tu proveedor de LLM para esa petición.",
       "reference": "Un ahorro por referencia, en una petición repetida que el Software sirvió sin llamar a tu proveedor, sale del contador de tu proveedor para la petición idéntica anterior que sí se ejecutó, con la regla que figura en tu extracto ({regla}).",
@@ -1387,8 +1442,7 @@
       "ceiling": "Ningún tramo supera el {max}, así que, antes de redondear la comisión al céntimo, <b>te quedas al menos con el {garantia}</b> del ahorro medido del período. La cuota por asiento va aparte.",
       "fx": "El ahorro medido se cuenta en dólares estadounidenses y se convierte al tipo de referencia del Banco Central Europeo obtenido al cerrar el período; tu extracto muestra el tipo aplicado.",
       "rounding": "La comisión se redondea al céntimo más próximo. Una comisión inferior a {minimo} no se factura ni se traslada a otro período.",
-      "zero": "Un período sin ahorro medido <b>no lleva comisión</b>.",
-      "calculator": "Para ver qué significa esto con tu propio tráfico, prueba la <calc>calculadora</calc> de la portada."
+      "zero": "Un período sin ahorro medido <b>no lleva comisión</b>."
     },
     "calibration": {
       "title": "Período de calibración",

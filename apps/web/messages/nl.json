@@ -414,7 +414,7 @@
       "personalNote": "Persoonlijk — nog geen organisatie gekoppeld. Eén BiVelio-account, gedeeld over de hele suite.",
       "plan": "abonnement",
       "seatsCount": "{count, plural, one {# seat} other {# seats}}.",
-      "planBody": "BV-SALA is fail-closed — het draait alleen met een actieve PRO-licentie. {monthly} per seat per maand of {yearly} per seat per jaar. Een seat is één actieve machine- of service-identiteit, geen persoon.",
+      "planBody": "BV-SALA is fail-closed — het draait alleen met een actieve licentie. Pro: {monthly} per seat per maand of {yearly} per seat per jaar. Team: {teamMonthly} per maand met {included} seats inbegrepen. Geen commissie op je besparing. Een seat is een actieve machine of service-identiteit, geen persoon.",
       "managePlan": "Abonnement beheren →",
       "subscribe": "Abonneren →",
       "checkoutMonthly": "Abonneren — {monthly}/seat/mnd →",
@@ -430,7 +430,14 @@
       "errPagoEnCurso": "Je betaling wordt nog verwerkt: een bankincasso kan een paar dagen duren. Je krijgt toegang zodra hij is verwerkt. Start geen tweede abonnement.",
       "errSuscripcionEnStripe": "Stripe heeft al een abonnement voor dit account, maar het is hier nog niet geactiveerd. Koop niet opnieuw: mail naar support@bivelio.com en we activeren het handmatig.",
       "codigoAplicado": "Bij het afrekenen wordt de code {codigo} toegepast.",
-      "errCodigoInvalido": "Die code bestaat niet of is niet meer actief. Je kunt doorgaan zonder code of mailen naar support@bivelio.com."
+      "errCodigoInvalido": "Die code bestaat niet of is niet meer actief. Je kunt doorgaan zonder code of mailen naar support@bivelio.com.",
+      "planPickLabel": "Abonnement",
+      "planPro": "Pro",
+      "planTeam": "Team",
+      "teamHint": "Team bevat {included} seats; elke extra seat kost {extra} per maand. Minder dan {included} kun je niet kopen.",
+      "checkoutTeamMonthly": "Neem Team — {monthly}/maand, {included} seats →",
+      "checkoutTeamYearly": "Neem Team — {yearly}/jaar, {included} seats →",
+      "errPlanCerrado": "Dit abonnement wordt niet meer aangeboden aan nieuwe klanten. Kies Pro of Team."
     },
     "referenceLedgerCards": {
       "proven": "bewezen",
@@ -725,7 +732,7 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Verifieer je LLM-besparingen",
-    "metaDescription": "Een SDK waarmee je app de LLM-aanbieder alleen betaalt wat ze nodig heeft, en een gateway die je coding-agent meet. Geteld met de eigen teller van je aanbieder: een vergoeding per seat, plus commissie alleen over gemeten besparing.",
+    "metaDescription": "Een SDK waarmee je app de LLM-provider alleen betaalt wat hij nodig heeft, en een gateway die je codeeragent meet. Geteld met de teller van je provider: meet gratis en betaal daarna per seat — zonder commissie op je besparing.",
     "hero": {
       "eyebrow": "Voor teams die LLM-API's per token betalen",
       "title": "Je LLM-factuur, onder controle.",
@@ -794,8 +801,8 @@
           "body": "We vragen geen blind vertrouwen. Elke besparing wordt gemeten met de officiële teller van de aanbieder — dezelfde waarmee hij je factureert — en komt op je bon. Wat niet naast de factuur te leggen valt, wordt nooit aangekondigd."
         },
         {
-          "title": "Een vergoeding per seat en een deel van wat gemeten is",
-          "body": "Je betaalt elke maand een vaste vergoeding per seat, of je nu bespaart of niet. Daarbovenop komt onze commissie alleen uit besparing die met de teller van je aanbieder is gemeten — en het grootste deel van elke besparing blijft altijd bij jou. Een maand zonder gemeten besparing? Je betaalt de seats en nul commissie."
+          "title": "Meet gratis, betaal daarna per seat",
+          "body": "Begin met de gratis Meten-licentie: de laag draait in schaduwmodus en laat zien wat hij met je eigen verkeer bespaard zou hebben. Om de hendels aan te zetten betaal je een vaste vergoeding per seat, of een Team-abonnement, of je nu bespaart of niet — en geen commissie op je besparing."
         }
       ],
       "nota": "De animaties illustreren het idee. De echte cijfers — gemeten tegen echte aanbieders — staan er direct onder."
@@ -887,12 +894,36 @@
       "initNote": "<b>Of laat één commando het op je stack afstemmen.</b> <code>init</code> leest je <code>package.json</code> (Next.js, Express, de Vercel AI SDK, Mastra, LangChain.js, de Anthropic- of de OpenAI-SDK) en drukt de installatieregel af, de exacte code voor je adapter en een controle die geen tokens kost: zodra je licentie erin staat, beantwoordt de laag die op je eigen machine, zonder het model aan te roepen. Het schrijft niets, tenzij je erom vraagt."
     },
     "pricing": {
-      "eyebrow": "Eén abonnement, geprijsd per seat",
-      "title": "Een vergoeding per seat, altijd. Commissie alleen over gemeten besparing.",
-      "body": "Geen gratis plan en geen proefperiode: vóór het betalen kun je de publieke metingen controleren en de verificatie op je eigen gegevens loslaten, hier op deze pagina. De vergoeding per seat wordt elke maand gefactureerd, in {currency}, of je nu bespaart of niet. De commissie komt erbovenop, en alleen over besparing die met de teller van je aanbieder is gemeten — ook bij herhaalde verzoeken die worden bediend zonder je aanbieder aan te roepen, elk gewaardeerd met de teller van het identieke verzoek dat al is uitgevoerd. Geschat telt nooit mee.",
+      "eyebrow": "Abonnementen",
+      "title": "Meet gratis. Betaal per seat wanneer je de besparing wilt.",
+      "body": "Begin met Meten: gratis en zonder kaart. De laag draait in schaduwmodus op je eigen verkeer en je dashboard laat zien wat hij bespaard zou hebben, gewaardeerd met de teller van je provider. Pro en Team worden per seat gefactureerd, in {currency}, of je nu bespaart of niet, en dragen geen commissie op je besparing.",
       "amount": "{amount}",
       "per": "/ seat / maand",
-      "proNote": "<b>PRO</b> — gefactureerd per seat. Of <b>{yearly} / seat / jaar</b> (bespaar ~19%). Enterprise, met gebundelde functies, komt later.",
+      "plans": {
+        "medir": {
+          "name": "Meten",
+          "price": "Gratis",
+          "body": "Zonder kaart. De laag in schaduwmodus voor één organisatie: elk verzoek bereikt je provider ongewijzigd, en je ziet wat hij bespaard zou hebben.",
+          "cta": "Gratis beginnen →"
+        },
+        "pro": {
+          "name": "Pro",
+          "note": "Of <b>{yearly} / seat / jaar</b>. Alle optimalisaties, de bon per verzoek en het dashboard. Geen commissie.",
+          "cta": "Kies Pro →"
+        },
+        "team": {
+          "name": "Team",
+          "per": "/ maand",
+          "note": "<b>{included} seats inbegrepen</b>; elke extra seat {extra} / maand. Of <b>{yearly} / jaar</b>. Geen commissie.",
+          "cta": "Kies Team →"
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "price": "Op maat",
+          "body": "Meer seats dan online afrekenen toestaat, een eigen contract of afgesproken factuurvoorwaarden: <contact>schrijf ons</contact>."
+        }
+      },
+      "legacy": "Heb je al het eerdere model, met commissie op gemeten besparing? Je behoudt het ongewijzigd; de voorwaarden staan in de <terms>prijsvoorwaarden</terms>.",
       "seatNote": "Een seat is één <b>machine- of service-identiteit</b>, geen persoon. Je betaalt voor de seats die je abonnement dekt; je dashboard toont hoeveel er deze maand in gebruik waren (actief op minstens {dias} dagen; CI en kortstondige runners tellen niet mee).",
       "features": [
         "Elke BV‑SALA-optimalisatie, ongelimiteerd",
@@ -924,7 +955,7 @@
     },
     "footer": {
       "ctaTitle": "Meet het op je eigen verkeer",
-      "ctaSub": "Eenmaal geïnstalleerd geeft elke aanroep zijn SavingsReport terug, gemeten en geschat apart. De vergoeding per seat is maandelijks en vast; de commissie komt alleen uit wat gemeten is. De licentie is wat je BV‑SALA laat draaien — de SDK in je app, de gateway in je terminal.",
+      "ctaSub": "Eenmaal geïnstalleerd geeft elke aanroep zijn SavingsReport terug, gemeten en geschat gescheiden. Begin gratis met Meten; Pro en Team zijn een vaste vergoeding per seat, zonder commissie op je besparing. De licentie is wat je BV‑SALA laat draaien — de SDK in je app, de gateway in je terminal.",
       "ctaStart": "Aan de slag",
       "tagline": "Het besturingssysteem voor je bedrijf. Dit is <b>BV‑SALA</b>, BiVelio's aanbieder-neutrale LLM-kostenoptimalisator — elk gepubliceerd cijfer gemeten tegen de teller van de aanbieder; schattingen worden apart getoond en nooit gefactureerd.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1338,7 +1369,7 @@
     "s3Sub": "Het product heeft twee verschillende cijfers, en die kun je beter niet mengen.",
     "mBeforeK": "Vóór installatie",
     "mBeforeV": "Schatting",
-    "mBeforeBody": "De calculator bij de prijzen rekent je besparing door met je eigen cijfers: verzoeken, tokens en model. Een eerlijke projectie — daarom draagt ze het label “schatting”.",
+    "mBeforeBody": "De gratis Meten-licentie draait de laag in schaduwmodus op je eigen verkeer en laat zien wat hij bespaard zou hebben, verzoek voor verzoek. Hij verandert niets en past niets toe — daarom draagt hij het label ‘schatting’.",
     "mAfterK": "Na installatie",
     "mAfterV": "Echte meting",
     "mAfterBody": "Elke aanroep levert een SavingsReport: de aanroepen die je nooit betaalde en de nettobesparing per verzoek. Controleerbaar, verzoek voor verzoek, op je eigen infrastructuur.",
@@ -1353,14 +1384,36 @@
   },
   "pricingPage": {
     "metaTitle": "Prijsvoorwaarden · BV-SALA",
-    "metaDescription": "De vergoeding per seat en de commissie over gemeten besparing, gepubliceerd vanuit dezelfde constanten die factureren.",
+    "metaDescription": "Meten gratis, Pro per seat, Team en Enterprise — geen van alle draagt commissie op je besparing. Cijfers gepubliceerd uit dezelfde constanten die factureren.",
     "eyebrow": "Gepubliceerde prijzen",
     "title": "Prijsvoorwaarden",
     "governs": "Deze pagina beschrijft hoe de dienst vandaag werkt; de <license>LICENSE</license> en de <terms>BiVelio-voorwaarden</terms> zijn leidend.",
-    "lede": "Elk getal hier wordt gelezen uit dezelfde code die jou factureert, dus het verandert wanneer de prijs verandert.",
+    "lede": "Je betaalt per seat of voor een Team-abonnement, zonder commissie op je besparing. Elk cijfer op deze pagina wordt gelezen uit dezelfde code die je factureert, dus het verandert als de prijs verandert.",
+    "plans": {
+      "title": "Plannen",
+      "intro": "Vier plannen, van klein naar groot. Pro en Team betaal je per seat en hebben geen commissie.",
+      "medir": {
+        "name": "Meten",
+        "body": "<b>Gratis, zonder kaart.</b> De laag draait in schaduwmodus voor één organisatie, met een limiet op seats en dagelijkse verzoeken: elk verzoek bereikt je provider precies zoals je het bouwde, niets komt uit de cache en er wordt geen hendel toegepast. Je dashboard laat zien wat hij bespaard zou hebben — een schatting die nooit commissie draagt. De hendels vragen Pro of Team."
+      },
+      "pro": {
+        "name": "Pro",
+        "amount": "<b>{monthly}</b> per seat per maand, of <b>{yearly}</b> per seat per jaar, in {currency}.",
+        "body": "Alle optimalisaties van de laag, de bon per verzoek en het dashboard. <b>Geen commissie</b> op besparing: je betaalt de seats, of je nu bespaart of niet."
+      },
+      "team": {
+        "name": "Team",
+        "amount": "<b>{monthly}</b> per maand met <b>{included} seats inbegrepen</b> (ongeveer {perSeat} per seat), of <b>{yearly}</b> per jaar, in {currency}.",
+        "extra": "Elke seat boven de inbegrepen seats: {monthly} per maand, of {yearly} per jaar.",
+        "body": "Hetzelfde als Pro, voor een vloot: het vaste bedrag dekt de inbegrepen seats, ook als je er minder gebruikt. <b>Geen commissie</b> op besparing."
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "body": "Voor meer seats dan de online betaling toestaat, een eigen contract of afgesproken factuurvoorwaarden: <contact>schrijf ons</contact>."
+      }
+    },
     "seat": {
-      "title": "De vergoeding per seat",
-      "amount": "<b>{monthly}</b> per seat per maand, of <b>{yearly}</b> per seat per jaar, in {currency}.",
+      "title": "Hoe een seat wordt geteld en gefactureerd",
       "cycle": "De vergoeding per seat wordt via Stripe gefactureerd voor elke maandelijkse of jaarlijkse cyclus van je abonnement, gerekend vanaf de dag waarop het begint.",
       "paidAlways": "De vergoeding per seat wordt betaald <b>of de Software nu besparing oplevert of niet</b>.",
       "vat": "De bedragen zijn exclusief btw. Bij het afrekenen wordt om je factuuradres en, optioneel, je btw-nummer gevraagd; beide staan op je factuur.",
@@ -1370,7 +1423,9 @@
       "identifier": "Hoe een seat-ID wordt gevormd, en alles wat de Software verder naar BiVelio stuurt, staat op de <privacy>privacypagina</privacy>."
     },
     "commission": {
-      "title": "De commissie over gemeten besparing",
+      "title": "Eerder model met commissie (gesloten voor nieuwe klanten)",
+      "optional": "Dit model wordt <b>niet meer aangeboden aan nieuwe klanten</b>. Staat je abonnement er al op, dan behoud je het ongewijzigd en gelden de voorwaarden hieronder: een lagere vergoeding per seat plus een commissie alleen op besparing die je met de factuur van je provider kunt afstemmen. Pro en Team dragen hem nooit; hun overzicht toont de commissie die zou zijn toegepast alleen als referentie.",
+      "seat": "Bedrag per seat in deze variant: <b>{monthly}</b> per seat per maand, of <b>{yearly}</b> per seat per jaar, in {currency}.",
       "only": "Er wordt <b>alleen commissie berekend over gemeten besparing</b>: besparing die in je gebruiksrecords als {labels} is gelabeld. Besparing gelabeld als {never} draagt nooit commissie.",
       "measured": "Een gemeten besparing volgt uit de eigen gebruiksteller van je LLM-provider voor dat verzoek.",
       "reference": "Een besparing via referentie, voor een herhaald verzoek dat de Software beantwoordde zonder je provider aan te roepen, volgt uit de teller van je provider voor het identieke eerdere verzoek dat wel is uitgevoerd, volgens de regel die op je afschrift staat ({regla}).",
@@ -1387,8 +1442,7 @@
       "ceiling": "Geen enkele schijf gaat boven {max}, dus vóór het afronden van de commissie op de cent <b>houd je minstens {garantia}</b> van de gemeten besparing van de periode over. De vergoeding per seat komt daar los bij.",
       "fx": "Gemeten besparing wordt geteld in Amerikaanse dollars en omgerekend tegen de referentiekoers van de Europese Centrale Bank die bij het afsluiten van de periode wordt opgehaald; je afschrift toont de gebruikte koers.",
       "rounding": "De commissie wordt afgerond op de dichtstbijzijnde cent. Een commissie onder {minimo} wordt niet gefactureerd en niet naar een andere periode overgedragen.",
-      "zero": "Een periode zonder gemeten besparing draagt <b>geen commissie</b>.",
-      "calculator": "Wil je zien wat dit betekent voor je eigen verkeer, probeer dan de <calc>calculator</calc> op de homepage."
+      "zero": "Een periode zonder gemeten besparing draagt <b>geen commissie</b>."
     },
     "calibration": {
       "title": "Kalibratieperiode",

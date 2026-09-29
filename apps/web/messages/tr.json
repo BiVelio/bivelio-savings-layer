@@ -414,7 +414,7 @@
       "personalNote": "Kişisel — henüz bağlı bir kuruluş yok. Tek bir BiVelio hesabı, tüm paket boyunca paylaşılır.",
       "plan": "plan",
       "seatsCount": "{count, plural, other {# koltuk}}.",
-      "planBody": "BV-SALA fail-closed'dur — yalnızca etkin bir PRO lisansıyla çalışır. Koltuk başına aylık {monthly} veya koltuk başına yıllık {yearly}. Bir koltuk, bir kişi değil, etkin bir makine ya da servis kimliğidir.",
+      "planBody": "BV-SALA fail-closed’dur — yalnızca etkin bir lisansla çalışır. Pro: koltuk başına aylık {monthly} veya yıllık {yearly}. Ekip: {included} koltuk dahil aylık {teamMonthly}. Tasarrufunuz üzerinden komisyon yok. Koltuk, bir kişi değil, etkin bir makine veya hizmet kimliğidir.",
       "managePlan": "Planı yönet →",
       "subscribe": "Abone ol →",
       "checkoutMonthly": "Abone ol — {monthly}/koltuk/ay →",
@@ -430,7 +430,14 @@
       "errPagoEnCurso": "Ödemeniz hâlâ işleniyor: banka borçlandırması birkaç gün sürebilir. Tamamlanır tamamlanmaz erişim alacaksınız. İkinci bir abonelik başlatmayın.",
       "errSuscripcionEnStripe": "Stripe'ta bu hesap için zaten bir abonelik var, ancak burada henüz etkinleştirilmedi. Tekrar satın almayın: support@bivelio.com adresine yazın, elle etkinleştirelim.",
       "codigoAplicado": "Ödemede {codigo} kodu uygulanacak.",
-      "errCodigoInvalido": "Bu kod mevcut değil veya artık etkin değil. Kodsuz devam edebilir veya support@bivelio.com adresine yazabilirsiniz."
+      "errCodigoInvalido": "Bu kod mevcut değil veya artık etkin değil. Kodsuz devam edebilir veya support@bivelio.com adresine yazabilirsiniz.",
+      "planPickLabel": "Plan",
+      "planPro": "Pro",
+      "planTeam": "Ekip",
+      "teamHint": "Ekip {included} koltuk içerir; her ek koltuk aylık {extra}. {included} koltuktan azı satın alınamaz.",
+      "checkoutTeamMonthly": "Ekip’e abone olun — {monthly}/ay, {included} koltuk →",
+      "checkoutTeamYearly": "Ekip’e abone olun — {yearly}/yıl, {included} koltuk →",
+      "errPlanCerrado": "Bu plan artık yeni müşterilere sunulmuyor. Pro veya Ekip’i seçin."
     },
     "referenceLedgerCards": {
       "proven": "kanıtlandı",
@@ -725,7 +732,7 @@
   },
   "landing": {
     "metaTitle": "BiVelio — LLM Tasarrufunuzu Doğrulayın",
-    "metaDescription": "Uygulamanızın LLM sağlayıcısına yalnızca ihtiyaç duyduğu kadarını ödemesini sağlayan bir SDK ve kod ajanınızı ölçen bir gateway. Sağlayıcınızın kendi sayacıyla sayılır: koltuk başına bir ücret, artı yalnızca ölçülen tasarruf üzerinden komisyon.",
+    "metaDescription": "Uygulamanızın LLM sağlayıcısına yalnızca ihtiyaç duyduğu kadar ödemesini sağlayan bir SDK ve kodlama ajanınızı ölçen bir gateway. Her şey sağlayıcınızın sayacıyla: ücretsiz ölçün, sonra koltuk başına ödeyin — tasarrufunuz üzerinden komisyon yok.",
     "hero": {
       "eyebrow": "LLM API'lerine token başına ödeyen ekipler için",
       "title": "LLM faturanız, kontrol altında.",
@@ -794,8 +801,8 @@
           "body": "İnanç istemiyoruz. Her tasarruf, sağlayıcının resmî sayacıyla ölçülür — size fatura kestiği sayaçla — ve makbuzunuza işlenir. Faturayla karşılaştırılamayan hiçbir şey duyurulmaz."
         },
         {
-          "title": "Koltuk başına bir ücret ve ölçülenden bir pay",
-          "body": "Tasarruf etseniz de etmeseniz de her ay koltuk başına sabit bir ücret ödersiniz. Bunun üzerine komisyonumuz yalnızca sağlayıcınızın sayacıyla ölçülen tasarruftan çıkar — ve her tasarrufun büyük kısmı her zaman sizde kalır. Ölçülen tasarrufun olmadığı bir ay mı? Koltukları ödersiniz, komisyon sıfır."
+          "title": "Ücretsiz ölçün, sonra koltuk başına ödeyin",
+          "body": "Ücretsiz Ölçüm lisansıyla başlayın: katman gölge modunda çalışır ve kendi trafiğinizde ne kadar tasarruf edeceğini gösterir. Kolları açmak için, tasarruf etseniz de etmeseniz de koltuk başına sabit bir ücret ya da bir Ekip planı ödersiniz — tasarrufunuz üzerinden komisyon olmadan."
         }
       ],
       "nota": "Animasyonlar fikri anlatır. Gerçek rakamlar — gerçek sağlayıcılara karşı ölçülmüş — hemen aşağıda."
@@ -887,12 +894,36 @@
       "initNote": "<b>Ya da tek bir komut bunu yığınınıza göre uyarlasın.</b> <code>init</code>, <code>package.json</code> dosyanızı okur (Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, Anthropic veya OpenAI SDK'sı) ve kurulum satırını, adaptörünüz için tam kodu ve token harcamayan bir kontrolü yazdırır: lisansınız yerindeyken bu kontrolü modeli çağırmadan, kendi makinenizde katman yanıtlar. Siz istemedikçe hiçbir şey yazmaz."
     },
     "pricing": {
-      "eyebrow": "Tek plan, koltuk başına fiyatlandırma",
-      "title": "Koltuk başına ücret, her zaman. Komisyon yalnızca ölçülen tasarruf üzerinden.",
-      "body": "Ücretsiz plan ve deneme yok: ödemeden önce herkese açık ölçümleri kontrol edebilir ve doğrulayıcıyı kendi verileriniz üzerinde çalıştırabilirsiniz, tam bu sayfada. Koltuk ücreti, tasarruf etseniz de etmeseniz de her ay {currency} cinsinden faturalanır. Komisyon bunun üzerine eklenir ve yalnızca sağlayıcınızın sayacıyla ölçülen tasarruf üzerindendir — sağlayıcı çağrılmadan sunulan tekrarlanan istekler de buna dahildir ve her biri, daha önce çalışmış özdeş isteğin sayacıyla fiyatlandırılır. Tahminler asla girmez.",
+      "eyebrow": "Planlar",
+      "title": "Ücretsiz ölçün. Tasarruf istediğinizde koltuk başına ödeyin.",
+      "body": "Ölçüm ile başlayın: ücretsiz ve kart gerekmez. Katman kendi trafiğinizde gölge modunda çalışır ve paneliniz, sağlayıcınızın sayacıyla değerlenmiş olarak ne kadar tasarruf edeceğini gösterir. Pro ve Ekip, tasarruf etseniz de etmeseniz de koltuk başına {currency} cinsinden faturalandırılır ve tasarrufunuz üzerinden komisyon içermez.",
       "amount": "{amount}",
       "per": "/ koltuk / ay",
-      "proNote": "<b>PRO</b> — koltuk başına faturalandırılır. Ya da <b>{yearly} / koltuk / yıl</b> (~%19 tasarruf). Paketlenmiş özelliklere sahip Enterprise daha sonra gelecek.",
+      "plans": {
+        "medir": {
+          "name": "Ölçüm",
+          "price": "Ücretsiz",
+          "body": "Kart gerekmez. Bir kuruluş için gölge modunda katman: her istek sağlayıcınıza değişmeden ulaşır ve ne kadar tasarruf edeceğini görürsünüz.",
+          "cta": "Ücretsiz başlayın →"
+        },
+        "pro": {
+          "name": "Pro",
+          "note": "Ya da <b>{yearly} / koltuk / yıl</b>. Tüm optimizasyonlar, istek başına makbuz ve panel. Komisyon yok.",
+          "cta": "Pro’yu seçin →"
+        },
+        "team": {
+          "name": "Ekip",
+          "per": "/ ay",
+          "note": "<b>{included} koltuk dahil</b>; her ek koltuk {extra} / ay. Ya da <b>{yearly} / yıl</b>. Komisyon yok.",
+          "cta": "Ekip’i seçin →"
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "price": "Özel",
+          "body": "Çevrimiçi ödemenin izin verdiğinden fazla koltuk, kendi sözleşmeniz veya anlaşmalı fatura koşulları: <contact>bize yazın</contact>."
+        }
+      },
+      "legacy": "Ölçülen tasarruf üzerinden komisyonlu önceki modeliniz mi var? Onu değişmeden korursunuz; koşulları <terms>fiyat koşulları</terms> sayfasında.",
       "seatNote": "Bir koltuk, bir kişi değil, bir <b>makine ya da servis kimliğidir</b>. Aboneliğinin kapsadığı koltuklar için ödersin; panelin bu ay kaçının kullanımda olduğunu gösterir (en az {dias} gün etkin; CI ve geçici çalıştırıcılar sayılmaz).",
       "features": [
         "Her BV‑SALA optimizasyonu, sınırsız",
@@ -924,7 +955,7 @@
     },
     "footer": {
       "ctaTitle": "Kendi trafiğinde ölç",
-      "ctaSub": "Kurulduktan sonra her çağrı, ölçülen ve tahmini ayrı tutulmuş kendi SavingsReport'unu döndürür. Koltuk ücreti aylık ve sabittir; komisyon yalnızca ölçülenden çıkar. Lisans, BV‑SALA'yı çalıştırmanızı sağlayan şeydir — SDK uygulamanızda, gateway terminalinizde.",
+      "ctaSub": "Kurulduktan sonra her çağrı, ölçülen ve tahmin edilen ayrı olarak SavingsReport’unu döndürür. Ölçüm ile ücretsiz başlayın; Pro ve Ekip koltuk başına sabit bir ücrettir, tasarrufunuz üzerinden komisyon yoktur. Lisans, BV‑SALA’yı çalıştırmanızı sağlayan şeydir — uygulamanızda SDK, terminalinizde gateway.",
       "ctaStart": "Başla",
       "tagline": "İşletmeniz için işletim sistemi. Bu, BiVelio'nun sağlayıcıdan bağımsız LLM maliyet optimizasyonu <b>BV‑SALA</b> — yayımlanan her rakam sağlayıcının kendi sayacına göre ölçülür; tahminler ayrı gösterilir ve asla faturalanmaz.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1338,7 +1369,7 @@
     "s3Sub": "Ürünün iki farklı rakamı var ve bunları karıştırmamak gerekir.",
     "mBeforeK": "Kurulumdan önce",
     "mBeforeV": "Tahmin",
-    "mBeforeBody": "Fiyatlandırma bölümündeki hesaplayıcı, tasarrufunu kendi rakamlarınla öngörür: istek sayısı, token ve model. Dürüst bir projeksiyondur — bu yüzden «tahmin» etiketi taşır.",
+    "mBeforeBody": "Ücretsiz Ölçüm lisansı katmanı kendi trafiğinizde gölge modunda çalıştırır ve istek istek ne kadar tasarruf edeceğini gösterir. Hiçbir şeyi değiştirmez ve hiçbir şey uygulamaz — bu yüzden “tahmin” etiketini taşır.",
     "mAfterK": "Kurulumdan sonra",
     "mAfterV": "Gerçek ölçüm",
     "mAfterBody": "Her çağrı bir SavingsReport döndürür: hiç ödemediğin çağrılar ve istek başına net tasarruf. Denetlenebilir, istek istek, kendi altyapında.",
@@ -1353,14 +1384,36 @@
   },
   "pricingPage": {
     "metaTitle": "Fiyat koşulları · BV-SALA",
-    "metaDescription": "Koltuk başına ücret ve ölçülmüş tasarruf üzerinden komisyon, faturayı kesen sabitlerin kendisinden yayımlanır.",
+    "metaDescription": "Ölçüm ücretsiz, Pro koltuk başına, Ekip ve Enterprise — hiçbiri tasarrufunuz üzerinden komisyon içermez. Rakamlar, faturalandıran aynı sabitlerden yayımlanır.",
     "eyebrow": "Yayımlanan fiyatlar",
     "title": "Fiyat koşulları",
     "governs": "Bu sayfa hizmetin bugün nasıl işlediğini anlatır; bağlayıcı metinler <license>LICENSE</license> ve <terms>BiVelio Koşulları</terms> olarak kalır.",
-    "lede": "Buradaki her rakam, sana fatura kesen kodun kendisinden okunur; yani fiyat değişince sayfa da değişir.",
+    "lede": "Koltuk başına ya da bir Ekip planı için ödersiniz, tasarrufunuz üzerinden komisyon olmadan. Bu sayfadaki her rakam sizi faturalandıran aynı koddan okunur; fiyat değişince o da değişir.",
+    "plans": {
+      "title": "Planlar",
+      "intro": "Küçükten büyüğe dört plan. Pro ve Ekip koltuk başına ödenir ve komisyon içermez.",
+      "medir": {
+        "name": "Ölçüm",
+        "body": "<b>Ücretsiz, kart gerekmez.</b> Katman bir kuruluş için, koltuk ve günlük istek sınırı içinde gölge modunda çalışır: her istek sağlayıcınıza tam kurduğunuz gibi ulaşır, önbellekten hiçbir şey sunulmaz ve hiçbir kol uygulanmaz. Paneliniz ne kadar tasarruf edeceğini gösterir — asla komisyon içermeyen bir tahmin. Kollar için Pro veya Ekip gerekir."
+      },
+      "pro": {
+        "name": "Pro",
+        "amount": "Koltuk başına aylık <b>{monthly}</b> veya koltuk başına yıllık <b>{yearly}</b>, {currency} cinsinden.",
+        "body": "Katmanın tüm optimizasyonları, istek başına makbuz ve panel. Tasarruf üzerinden <b>komisyon yok</b>: tasarruf etsen de etmesen de koltukları ödersin."
+      },
+      "team": {
+        "name": "Ekip",
+        "amount": "<b>{included} koltuk dahil</b> aylık <b>{monthly}</b> (koltuk başına yaklaşık {perSeat}) veya yıllık <b>{yearly}</b>, {currency} cinsinden.",
+        "extra": "Dahil olanların üzerindeki her koltuk: aylık {monthly} veya yıllık {yearly}.",
+        "body": "Pro ile aynı, bir filo için: sabit ücret, daha azını kullansan bile dahil koltukları kapsar. Tasarruf üzerinden <b>komisyon yok</b>."
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "body": "Çevrimiçi ödemenin izin verdiğinden fazla koltuk, sana özel bir sözleşme veya üzerinde anlaşılmış fatura koşulları için: <contact>bize yaz</contact>."
+      }
+    },
     "seat": {
-      "title": "Koltuk başına ücret",
-      "amount": "Koltuk başına aylık <b>{monthly}</b> ya da koltuk başına yıllık <b>{yearly}</b>, {currency} cinsinden.",
+      "title": "Bir koltuk nasıl sayılır ve faturalanır",
       "cycle": "Koltuk başına ücret, aboneliğinin başladığı günden itibaren sayılan her aylık ya da yıllık döngü için Stripe üzerinden faturalanır.",
       "paidAlways": "Koltuk başına ücret, <b>Yazılım tasarruf sağlasa da sağlamasa da</b> ödenir.",
       "vat": "Tutarlara KDV dahil değildir. Ödeme sırasında fatura adresin ve isteğe bağlı olarak KDV numaran istenir; ikisi de faturanda yer alır.",
@@ -1370,7 +1423,9 @@
       "identifier": "Koltuk kimliğinin nasıl oluşturulduğu ve Yazılımın BiVelio'ya gönderdiği diğer her şey <privacy>gizlilik sayfasında</privacy> yer alır."
     },
     "commission": {
-      "title": "Ölçülmüş tasarruf üzerinden komisyon",
+      "title": "Komisyonlu önceki model (yeni müşterilere kapalı)",
+      "optional": "Bu model <b>artık yeni müşterilere sunulmuyor</b>. Aboneliğiniz zaten bu modeldeyse onu değişmeden korursunuz ve aşağıdaki koşullar geçerlidir: daha düşük bir koltuk ücreti ile yalnızca sağlayıcınızın faturasıyla karşılaştırabileceğiniz tasarruf üzerinden komisyon. Pro ve Ekip bunu asla içermez; ekstreleri uygulanacak komisyonu yalnızca referans olarak gösterir.",
+      "seat": "Bu seçenekte koltuk ücreti: koltuk başına aylık <b>{monthly}</b> veya koltuk başına yıllık <b>{yearly}</b>, {currency} cinsinden.",
       "only": "Komisyon <b>yalnızca ölçülmüş tasarruf üzerinden</b> alınır: kullanım kayıtlarında {labels} olarak etiketlenen tasarruf. {never} olarak etiketlenen tasarruf asla komisyona tabi değildir.",
       "measured": "Ölçülmüş tasarruf, LLM sağlayıcının o istek için tuttuğu kendi kullanım sayacından belirlenir.",
       "reference": "Referansla tasarruf, Yazılımın sağlayıcını çağırmadan yanıtladığı tekrarlanan bir istek için, gerçekten çalışmış olan önceki özdeş isteğin sağlayıcı sayacından, ekstrende yazan kurala ({regla}) göre belirlenir.",
@@ -1387,8 +1442,7 @@
       "ceiling": "Hiçbir dilimin oranı {max} değerini aşmaz; bu yüzden komisyon kuruşa yuvarlanmadan önce dönemin ölçülmüş tasarrufunun <b>en az {garantia} kadarı sende kalır</b>. Koltuk başına ücret ayrıdır.",
       "fx": "Ölçülmüş tasarruf ABD doları cinsinden sayılır ve dönem kapanırken alınan Avrupa Merkez Bankası referans kuruyla çevrilir; ekstren kullanılan kuru gösterir.",
       "rounding": "Komisyon en yakın kuruşa yuvarlanır. {minimo} altındaki bir komisyon faturalanmaz ve başka bir döneme aktarılmaz.",
-      "zero": "Ölçülmüş tasarrufu olmayan bir dönemde <b>komisyon yoktur</b>.",
-      "calculator": "Bunun kendi trafiğin için ne anlama geldiğini görmek için ana sayfadaki <calc>hesaplayıcıyı</calc> dene."
+      "zero": "Ölçülmüş tasarrufu olmayan bir dönemde <b>komisyon yoktur</b>."
     },
     "calibration": {
       "title": "Kalibrasyon dönemi",

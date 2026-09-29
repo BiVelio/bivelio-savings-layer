@@ -414,7 +414,7 @@
       "personalNote": "Osobiste — brak powiązanej organizacji. Jedno konto BiVelio, współdzielone w całym pakiecie.",
       "plan": "plan",
       "seatsCount": "{count, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}.",
-      "planBody": "BV-SALA działa w trybie fail-closed — uruchamia się tylko z aktywną licencją PRO. {monthly} za stanowisko miesięcznie lub {yearly} za stanowisko rocznie. Stanowisko to jedna aktywna maszyna lub tożsamość usługi, nie osoba.",
+      "planBody": "BV-SALA jest fail-closed — działa tylko z aktywną licencją. Pro: {monthly} za stanowisko miesięcznie lub {yearly} za stanowisko rocznie. Zespół: {teamMonthly} miesięcznie z {included} stanowiskami w cenie. Bez prowizji od oszczędności. Stanowisko to aktywna maszyna lub tożsamość usługi, nie osoba.",
       "managePlan": "Zarządzaj planem →",
       "subscribe": "Subskrybuj →",
       "checkoutMonthly": "Subskrybuj — {monthly}/stanowisko/mies. →",
@@ -430,7 +430,14 @@
       "errPagoEnCurso": "Twoja płatność jest wciąż przetwarzana: polecenie zapłaty może potrzebować kilku dni. Dostęp otrzymasz, gdy tylko zostanie rozliczona. Nie rozpoczynaj drugiej subskrypcji.",
       "errSuscripcionEnStripe": "Stripe ma już subskrypcję dla tego konta, ale nie jest tu jeszcze aktywowana. Nie kupuj ponownie: napisz na support@bivelio.com, a aktywujemy ją ręcznie.",
       "codigoAplicado": "Przy płatności zostanie zastosowany kod {codigo}.",
-      "errCodigoInvalido": "Ten kod nie istnieje lub nie jest już aktywny. Możesz kontynuować bez niego lub napisać na support@bivelio.com."
+      "errCodigoInvalido": "Ten kod nie istnieje lub nie jest już aktywny. Możesz kontynuować bez niego lub napisać na support@bivelio.com.",
+      "planPickLabel": "Plan",
+      "planPro": "Pro",
+      "planTeam": "Zespół",
+      "teamHint": "Zespół obejmuje {included} stanowisk; każde dodatkowe kosztuje {extra} miesięcznie. Nie można kupić mniej niż {included}.",
+      "checkoutTeamMonthly": "Subskrybuj Zespół — {monthly}/mies., {included} stanowisk →",
+      "checkoutTeamYearly": "Subskrybuj Zespół — {yearly}/rok, {included} stanowisk →",
+      "errPlanCerrado": "Ten plan nie jest już oferowany nowym klientom. Wybierz Pro lub Zespół."
     },
     "referenceLedgerCards": {
       "proven": "udowodnione",
@@ -725,7 +732,7 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Zweryfikuj swoje oszczędności na LLM",
-    "metaDescription": "SDK, dzięki któremu Twoja aplikacja płaci dostawcy LLM tylko za to, czego potrzebuje, i gateway, który mierzy Twojego agenta programistycznego. Liczone własnym licznikiem Twojego dostawcy: opłata za stanowisko plus prowizja tylko od zmierzonych oszczędności.",
+    "metaDescription": "SDK, dzięki któremu Twoja aplikacja płaci dostawcy LLM tylko za to, czego potrzebuje, i gateway, który mierzy Twojego agenta kodu. Wszystko licznikiem Twojego dostawcy: mierz za darmo, potem płać za stanowisko — bez prowizji od oszczędności.",
     "hero": {
       "eyebrow": "Dla zespołów, które płacą za API LLM od tokena",
       "title": "Twoja faktura za LLM, pod kontrolą.",
@@ -794,8 +801,8 @@
           "body": "Nie prosimy o wiarę. Każdą oszczędność mierzy oficjalny licznik dostawcy — ten sam, którym wystawia Ci faktury — i trafia ona na Twój rachunek. Czego nie da się porównać z fakturą, tego nigdy nie ogłaszamy."
         },
         {
-          "title": "Opłata za stanowisko i część tego, co zmierzone",
-          "body": "Płacisz co miesiąc stałą opłatę za stanowisko, niezależnie od tego, czy oszczędzasz. Do tego nasza prowizja pochodzi wyłącznie z oszczędności zmierzonych licznikiem Twojego dostawcy — a większość każdej oszczędności zawsze zostaje u Ciebie. Miesiąc bez zmierzonych oszczędności? Płacisz za stanowiska i zero prowizji."
+          "title": "Mierz za darmo, potem płać za stanowisko",
+          "body": "Zacznij od bezpłatnej licencji Pomiar: warstwa działa w trybie cienia i pokazuje, ile zaoszczędziłaby na Twoim własnym ruchu. Aby włączyć dźwignie, płacisz stałą opłatę za stanowisko albo plan Zespół, niezależnie od tego, czy oszczędzasz — i bez prowizji od oszczędności."
         }
       ],
       "nota": "Animacje ilustrują pomysł. Prawdziwe liczby — zmierzone u prawdziwych dostawców — są tuż poniżej."
@@ -887,12 +894,36 @@
       "initNote": "<b>Albo pozwól, by jedno polecenie dopasowało to do Twojego stosu.</b> <code>init</code> czyta Twój <code>package.json</code> (Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, SDK Anthropic lub OpenAI) i wypisuje linię instalacji, dokładny kod dla Twojego adaptera oraz test, który nie zużywa tokenów: gdy masz już licencję, odpowiada na niego warstwa na Twojej maszynie, bez wywoływania modelu. Niczego nie zapisuje, dopóki go o to nie poprosisz."
     },
     "pricing": {
-      "eyebrow": "Jeden plan, cena za stanowisko",
-      "title": "Opłata za stanowisko, zawsze. Prowizja tylko od zmierzonych oszczędności.",
-      "body": "Bez darmowego planu i bez okresu próbnego: przed zapłatą możesz sprawdzić publiczne pomiary i przepuścić własne dane przez weryfikator, tu, na tej stronie. Opłata za stanowisko jest pobierana co miesiąc, w {currency}, niezależnie od tego, czy oszczędzasz. Prowizja jest doliczana osobno i tylko od oszczędności zmierzonych licznikiem Twojego dostawcy — także przy powtórzonych zapytaniach obsłużonych bez wywołania dostawcy, z których każde jest wyceniane licznikiem identycznego zapytania, które już zostało wykonane. Szacunki nigdy do niej nie wchodzą.",
+      "eyebrow": "Plany",
+      "title": "Mierz za darmo. Płać za stanowisko, gdy chcesz oszczędności.",
+      "body": "Zacznij od Pomiaru: za darmo i bez karty. Warstwa działa w trybie cienia na Twoim własnym ruchu, a panel pokazuje, ile by zaoszczędziła, wyceniając to licznikiem Twojego dostawcy. Pro i Zespół są rozliczane za stanowisko, w {currency}, niezależnie od tego, czy oszczędzasz, i nie mają prowizji od oszczędności.",
       "amount": "{amount}",
       "per": "/ stanowisko / mies.",
-      "proNote": "<b>PRO</b> — rozliczane za stanowisko. Lub <b>{yearly} / stanowisko / rok</b> (oszczędzasz ~19%). Enterprise, z pakietowymi funkcjami, pojawi się później.",
+      "plans": {
+        "medir": {
+          "name": "Pomiar",
+          "price": "Za darmo",
+          "body": "Bez karty. Warstwa w trybie cienia dla jednej organizacji: każde zapytanie trafia do dostawcy bez zmian, a Ty widzisz, ile by zaoszczędziła.",
+          "cta": "Zacznij za darmo →"
+        },
+        "pro": {
+          "name": "Pro",
+          "note": "Albo <b>{yearly} / stanowisko / rok</b>. Wszystkie optymalizacje, paragon dla każdego zapytania i panel. Bez prowizji.",
+          "cta": "Wybierz Pro →"
+        },
+        "team": {
+          "name": "Zespół",
+          "per": "/ mies.",
+          "note": "<b>{included} stanowisk w cenie</b>; każde dodatkowe {extra} / mies. Albo <b>{yearly} / rok</b>. Bez prowizji.",
+          "cta": "Wybierz Zespół →"
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "price": "Indywidualnie",
+          "body": "Więcej stanowisk, niż pozwala płatność online, własna umowa lub uzgodnione warunki faktur: <contact>napisz do nas</contact>."
+        }
+      },
+      "legacy": "Masz już wcześniejszy model z prowizją od zmierzonych oszczędności? Zachowujesz go bez zmian; jego warunki są w <terms>warunkach cenowych</terms>.",
       "seatNote": "Stanowisko to jedna <b>maszyna lub tożsamość usługi</b>, nie osoba. Płacisz za stanowiska objęte subskrypcją; Twój panel pokazuje, ile z nich było używanych w tym miesiącu (aktywnych przez co najmniej {dias} dni; CI i efemeryczne runnery się nie liczą).",
       "features": [
         "Każda optymalizacja BV‑SALA, bez limitu",
@@ -924,7 +955,7 @@
     },
     "footer": {
       "ctaTitle": "Zmierz to na własnym ruchu",
-      "ctaSub": "Po instalacji każde wywołanie zwraca swój SavingsReport, z tym, co zmierzone, i tym, co szacowane, osobno. Opłata za stanowisko jest miesięczna i stała; prowizja pochodzi tylko z tego, co zmierzone. Licencja pozwala uruchamiać BV‑SALA — SDK w Twojej aplikacji, gateway w Twoim terminalu.",
+      "ctaSub": "Po instalacji każde wywołanie zwraca swój SavingsReport, z tym, co zmierzone, i tym, co oszacowane, osobno. Zacznij za darmo od Pomiaru; Pro i Zespół to stała opłata za stanowisko, bez prowizji od oszczędności. Licencja pozwala uruchomić BV‑SALA — SDK w aplikacji, gateway w terminalu.",
       "ctaStart": "Zacznij",
       "tagline": "System operacyjny dla Twojej firmy. To <b>BV‑SALA</b>, neutralny wobec dostawcy optymalizator kosztów LLM od BiVelio — każda opublikowana liczba zmierzona względem licznika dostawcy; szacunki pokazujemy osobno i nigdy nie fakturujemy.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1338,7 +1369,7 @@
     "s3Sub": "Produkt ma dwie różne liczby i lepiej ich nie mieszać.",
     "mBeforeK": "Przed instalacją",
     "mBeforeV": "Szacunek",
-    "mBeforeBody": "Kalkulator w cenniku prognozuje Twoje oszczędności na podstawie Twoich własnych liczb: żądań, tokenów i modelu. To uczciwa projekcja — dlatego nosi etykietę „szacunek”.",
+    "mBeforeBody": "Bezpłatna licencja Pomiar uruchamia warstwę w trybie cienia na Twoim własnym ruchu i pokazuje, ile by zaoszczędziła, zapytanie po zapytaniu. Niczego nie zmienia i niczego nie stosuje — dlatego ma etykietę „szacunek”.",
     "mAfterK": "Po instalacji",
     "mAfterV": "Prawdziwy pomiar",
     "mAfterBody": "Każde wywołanie zwraca SavingsReport: wywołania, za które nigdy nie zapłaciłeś, i oszczędność netto na żądanie. Audytowalne, żądanie po żądaniu, na Twojej własnej infrastrukturze.",
@@ -1353,14 +1384,36 @@
   },
   "pricingPage": {
     "metaTitle": "Warunki cenowe · BV-SALA",
-    "metaDescription": "Opłata za stanowisko i prowizja od zmierzonych oszczędności, publikowane z tych samych stałych, które naliczają opłaty.",
+    "metaDescription": "Pomiar za darmo, Pro za stanowisko, Zespół i Enterprise — żaden nie ma prowizji od Twoich oszczędności. Kwoty publikowane z tych samych stałych, które rozliczają.",
     "eyebrow": "Opublikowany cennik",
     "title": "Warunki cenowe",
     "governs": "Ta strona opisuje, jak usługa działa dziś; wiążące są <license>LICENSE</license> i <terms>Warunki BiVelio</terms>.",
-    "lede": "Każda liczba na tej stronie jest odczytywana z tego samego kodu, który wystawia Ci rachunek, więc zmienia się razem z ceną.",
+    "lede": "Płacisz za stanowisko albo za plan Zespół, bez prowizji od oszczędności. Każda kwota na tej stronie jest odczytywana z tego samego kodu, który Cię rozlicza, więc zmienia się, gdy zmienia się cena.",
+    "plans": {
+      "title": "Plany",
+      "intro": "Cztery plany, od najmniejszego do największego. Pro i Zespół są płatne za stanowisko i nie mają prowizji.",
+      "medir": {
+        "name": "Pomiar",
+        "body": "<b>Za darmo, bez karty.</b> Warstwa działa w trybie cienia dla jednej organizacji, z limitem stanowisk i dziennych zapytań: każde zapytanie trafia do dostawcy dokładnie tak, jak je zbudowałeś, nic nie jest serwowane z pamięci podręcznej i żadna dźwignia nie jest stosowana. Panel pokazuje, ile by zaoszczędziła — szacunek, od którego nigdy nie ma prowizji. Dźwignie wymagają Pro lub Zespołu."
+      },
+      "pro": {
+        "name": "Pro",
+        "amount": "<b>{monthly}</b> za stanowisko miesięcznie lub <b>{yearly}</b> za stanowisko rocznie, w {currency}.",
+        "body": "Wszystkie optymalizacje warstwy, potwierdzenie dla każdego żądania i panel. <b>Bez prowizji</b> od oszczędności: płacisz za stanowiska niezależnie od tego, czy oszczędzasz."
+      },
+      "team": {
+        "name": "Zespół",
+        "amount": "<b>{monthly}</b> miesięcznie z <b>{included} stanowiskami w cenie</b> (około {perSeat} za stanowisko) lub <b>{yearly}</b> rocznie, w {currency}.",
+        "extra": "Każde stanowisko ponad te w cenie: {monthly} miesięcznie lub {yearly} rocznie.",
+        "body": "To samo co Pro, dla floty: stała opłata obejmuje stanowiska w cenie, nawet jeśli używasz mniej. <b>Bez prowizji</b> od oszczędności."
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "body": "Dla większej liczby stanowisk, niż pozwala płatność online, własnej umowy lub wynegocjowanych warunków fakturowania: <contact>napisz do nas</contact>."
+      }
+    },
     "seat": {
-      "title": "Opłata za stanowisko",
-      "amount": "<b>{monthly}</b> za stanowisko miesięcznie albo <b>{yearly}</b> za stanowisko rocznie, w {currency}.",
+      "title": "Jak liczy się i rozlicza stanowisko",
       "cycle": "Opłata za stanowisko jest pobierana przez Stripe za każdy miesięczny lub roczny cykl Twojej subskrypcji, liczony od dnia jej rozpoczęcia.",
       "paidAlways": "Opłatę za stanowisko płaci się <b>niezależnie od tego, czy Oprogramowanie przynosi oszczędności</b>.",
       "vat": "Kwoty nie zawierają VAT. Przy płatności podajesz adres rozliczeniowy i opcjonalnie numer VAT; oba widnieją na fakturze.",
@@ -1370,7 +1423,9 @@
       "identifier": "Jak powstaje identyfikator stanowiska i wszystko inne, co Oprogramowanie wysyła do BiVelio, opisuje <privacy>strona o prywatności</privacy>."
     },
     "commission": {
-      "title": "Prowizja od zmierzonych oszczędności",
+      "title": "Wcześniejszy model z prowizją (zamknięty dla nowych klientów)",
+      "optional": "Ten model <b>nie jest już oferowany nowym klientom</b>. Jeśli Twoja subskrypcja już go ma, zachowujesz go bez zmian i obowiązują go poniższe warunki: niższa opłata za stanowisko plus prowizja tylko od oszczędności, które możesz uzgodnić z fakturą dostawcy. Pro i Zespół nigdy jej nie mają; ich zestawienie pokazuje prowizję, która by obowiązywała, wyłącznie jako odniesienie.",
+      "seat": "Opłata za stanowisko w tym wariancie: <b>{monthly}</b> za stanowisko miesięcznie lub <b>{yearly}</b> za stanowisko rocznie, w {currency}.",
       "only": "Prowizja jest naliczana <b>tylko od zmierzonych oszczędności</b>: oszczędności oznaczonych w Twoich rekordach użycia jako {labels}. Oszczędności oznaczone jako {never} nigdy nie podlegają prowizji.",
       "measured": "Zmierzona oszczędność wynika z własnego licznika użycia Twojego dostawcy LLM dla tego żądania.",
       "reference": "Oszczędność przez odniesienie, dla powtórzonego żądania, które Oprogramowanie obsłużyło bez wywołania dostawcy, wynika z licznika dostawcy dla identycznego wcześniejszego żądania, które faktycznie zostało wykonane, według reguły podanej na Twoim wyciągu ({regla}).",
@@ -1387,8 +1442,7 @@
       "ceiling": "Żaden próg nie przekracza {max}, więc przed zaokrągleniem prowizji do centa <b>zatrzymujesz co najmniej {garantia}</b> zmierzonych oszczędności okresu. Opłata za stanowisko jest osobno.",
       "fx": "Zmierzone oszczędności są liczone w dolarach amerykańskich i przeliczane po kursie referencyjnym Europejskiego Banku Centralnego pobranym przy zamknięciu okresu; Twój wyciąg pokazuje zastosowany kurs.",
       "rounding": "Prowizja jest zaokrąglana do najbliższego centa. Prowizja niższa niż {minimo} nie jest fakturowana ani przenoszona na inny okres.",
-      "zero": "Okres bez zmierzonych oszczędności <b>nie podlega prowizji</b>.",
-      "calculator": "Aby zobaczyć, co to oznacza dla Twojego ruchu, wypróbuj <calc>kalkulator</calc> na stronie głównej."
+      "zero": "Okres bez zmierzonych oszczędności <b>nie podlega prowizji</b>."
     },
     "calibration": {
       "title": "Okres kalibracji",

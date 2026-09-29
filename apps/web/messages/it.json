@@ -414,7 +414,7 @@
       "personalNote": "Personale — nessuna organizzazione ancora collegata. Un unico account BiVelio, condiviso in tutta la suite.",
       "plan": "piano",
       "seatsCount": "{count, plural, one {# postazione} other {# postazioni}}.",
-      "planBody": "BV-SALA è fail-closed — funziona solo con una licenza PRO attiva. {monthly} per postazione al mese o {yearly} per postazione all'anno. Una postazione è una macchina o identità di servizio attiva, non una persona.",
+      "planBody": "BV-SALA è fail-closed — funziona solo con una licenza attiva. Pro: {monthly} per postazione al mese o {yearly} per postazione all’anno. Team: {teamMonthly} al mese con {included} postazioni incluse. Nessuna commissione sul tuo risparmio. Una postazione è una macchina o identità di servizio attiva, non una persona.",
       "managePlan": "Gestisci piano →",
       "subscribe": "Abbonati →",
       "checkoutMonthly": "Abbonati — {monthly}/postazione/mese →",
@@ -430,7 +430,14 @@
       "errPagoEnCurso": "Il tuo pagamento è ancora in elaborazione: un addebito bancario può richiedere qualche giorno. Avrai accesso appena verrà regolato. Non avviare un secondo abbonamento.",
       "errSuscripcionEnStripe": "Stripe ha già un abbonamento per questo account, ma qui non è ancora attivato. Non ricomprare: scrivi a support@bivelio.com e lo attiviamo a mano.",
       "codigoAplicado": "Al pagamento verrà applicato il codice {codigo}.",
-      "errCodigoInvalido": "Quel codice non esiste o non è più attivo. Puoi continuare senza oppure scrivere a support@bivelio.com."
+      "errCodigoInvalido": "Quel codice non esiste o non è più attivo. Puoi continuare senza oppure scrivere a support@bivelio.com.",
+      "planPickLabel": "Piano",
+      "planPro": "Pro",
+      "planTeam": "Team",
+      "teamHint": "Team include {included} postazioni; ogni postazione in più costa {extra} al mese. Non se ne possono comprare meno di {included}.",
+      "checkoutTeamMonthly": "Abbonati a Team — {monthly}/mese, {included} postazioni →",
+      "checkoutTeamYearly": "Abbonati a Team — {yearly}/anno, {included} postazioni →",
+      "errPlanCerrado": "Questo piano non è più offerto ai nuovi clienti. Scegli Pro o Team."
     },
     "referenceLedgerCards": {
       "proven": "comprovato",
@@ -725,7 +732,7 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Verifica i tuoi risparmi sugli LLM",
-    "metaDescription": "Un SDK perché la tua app paghi al fornitore di LLM solo ciò che le serve, e un gateway che misura il tuo agente di codice. Tutto con il contatore del tuo fornitore: un canone per postazione, più una commissione solo sul risparmio misurato.",
+    "metaDescription": "Un SDK perché la tua app paghi al fornitore di LLM solo ciò che le serve, e un gateway che misura il tuo agente di codice. Tutto con il contatore del tuo fornitore: misura gratis, poi paga per postazione — senza commissione sul tuo risparmio.",
     "hero": {
       "eyebrow": "Per i team che pagano le API LLM a token",
       "title": "La tua fattura LLM, sotto controllo.",
@@ -794,8 +801,8 @@
           "body": "Non ti chiediamo fede. Ogni risparmio si misura con il contatore ufficiale del fornitore — lo stesso con cui ti fattura — e compare sulla tua ricevuta. Ciò che non si può confrontare con la fattura non viene mai annunciato."
         },
         {
-          "title": "Un canone per postazione e una parte di ciò che si misura",
-          "body": "Paghi ogni mese un canone fisso per postazione, che tu risparmi o no. In più, la nostra commissione esce solo dal risparmio misurato con il contatore del tuo fornitore, e la maggior parte di ogni risparmio resta sempre a te. Un mese senza risparmio misurato? Paghi le postazioni e zero commissione."
+          "title": "Misura gratis, poi paga per postazione",
+          "body": "Inizia con la licenza Misura, gratuita: il livello funziona in modalità ombra e ti mostra quanto avrebbe risparmiato con il tuo traffico. Per attivare le leve paghi un canone fisso per postazione, o un piano Team, che tu risparmi o no — e nessuna commissione sul tuo risparmio."
         }
       ],
       "nota": "Le animazioni illustrano l'idea. Le cifre vere — misurate contro fornitori reali — sono subito sotto."
@@ -887,12 +894,36 @@
       "initNote": "<b>Oppure lascia che un comando lo adatti al tuo stack.</b> <code>init</code> legge il tuo <code>package.json</code> (Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, l'SDK di Anthropic o quello di OpenAI) e stampa la riga di installazione, il codice esatto del tuo adattatore e una verifica che non consuma token: con la tua licenza già attiva, a risponderle è il layer, sulla tua macchina, senza chiamare il modello. Non scrive nulla se non glielo chiedi."
     },
     "pricing": {
-      "eyebrow": "Un unico piano, con prezzo per postazione",
-      "title": "Un canone per postazione, sempre. Commissione solo sul risparmio misurato.",
-      "body": "Nessun piano gratuito e nessuna prova: prima di pagare puoi verificare le misurazioni pubbliche e passare i tuoi dati nel verificatore, proprio su questa pagina. Il canone per postazione si addebita ogni mese, in {currency}, che tu risparmi o no. La commissione si aggiunge, e solo sul risparmio misurato con il contatore del tuo fornitore — comprese le richieste ripetute servite senza chiamarlo, ciascuna valutata con il contatore della richiesta identica già eseguita. Lo stimato non entra mai.",
+      "eyebrow": "Piani",
+      "title": "Misura gratis. Paga per postazione quando vuoi il risparmio.",
+      "body": "Inizia con Misura: gratis e senza carta. Il livello funziona in modalità ombra con il tuo traffico e la tua dashboard mostra quanto avrebbe risparmiato, valutato con il contatore del tuo fornitore. Pro e Team si pagano per postazione, in {currency}, che tu risparmi o no, e non hanno commissione sul tuo risparmio.",
       "amount": "{amount}",
       "per": "/ postazione / mese",
-      "proNote": "<b>PRO</b> — fatturato per postazione. Oppure <b>{yearly} / postazione / anno</b> (risparmi ~19%). Enterprise, con funzionalità in pacchetto, arriverà più avanti.",
+      "plans": {
+        "medir": {
+          "name": "Misura",
+          "price": "Gratis",
+          "body": "Senza carta. Il livello in modalità ombra per un’organizzazione: ogni richiesta arriva al tuo fornitore senza modifiche, e vedi quanto avrebbe risparmiato.",
+          "cta": "Inizia gratis →"
+        },
+        "pro": {
+          "name": "Pro",
+          "note": "Oppure <b>{yearly} / postazione / anno</b>. Tutte le ottimizzazioni, la ricevuta per richiesta e la dashboard. Nessuna commissione.",
+          "cta": "Scegli Pro →"
+        },
+        "team": {
+          "name": "Team",
+          "per": "/ mese",
+          "note": "<b>{included} postazioni incluse</b>; ogni postazione in più {extra} / mese. Oppure <b>{yearly} / anno</b>. Nessuna commissione.",
+          "cta": "Scegli Team →"
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "price": "Su misura",
+          "body": "Più postazioni di quante ne consenta il pagamento online, un contratto tuo o condizioni di fatturazione concordate: <contact>scrivici</contact>."
+        }
+      },
+      "legacy": "Hai già la formula precedente, con commissione sul risparmio misurato? La mantieni senza modifiche; le sue condizioni sono nei <terms>termini di prezzo</terms>.",
       "seatNote": "Una postazione è una <b>macchina o identità di servizio</b>, non una persona. Paghi le postazioni coperte dal tuo abbonamento; la tua dashboard mostra quante sono state in uso questo mese (attive in almeno {dias} giorni; CI e runner effimeri non contano).",
       "features": [
         "Ogni ottimizzazione BV‑SALA, senza limiti",
@@ -924,7 +955,7 @@
     },
     "footer": {
       "ctaTitle": "Misuralo sul tuo traffico",
-      "ctaSub": "Una volta installato, ogni chiamata restituisce il suo SavingsReport, con misurato e stimato separati. Il canone per postazione è mensile e fisso; la commissione esce solo da ciò che si misura. La licenza è ciò che ti permette di eseguire BV‑SALA — l'SDK nella tua app, il gateway nel tuo terminale.",
+      "ctaSub": "Una volta installato, ogni chiamata restituisce il suo SavingsReport, con misurato e stimato separati. Inizia gratis con Misura; Pro e Team sono un canone fisso per postazione, senza commissione sul tuo risparmio. La licenza è ciò che ti permette di eseguire BV‑SALA — l’SDK nella tua app, il gateway nel tuo terminale.",
       "ctaStart": "Inizia",
       "tagline": "Il sistema operativo per la tua azienda. Questo è <b>BV‑SALA</b>, l'ottimizzatore di costo LLM di BiVelio, neutrale rispetto al fornitore — ogni cifra pubblicata è misurata contro il contatore del fornitore; le stime si mostrano a parte e non si fatturano mai.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1338,7 +1369,7 @@
     "s3Sub": "Il prodotto ha due numeri diversi ed è meglio non mescolarli.",
     "mBeforeK": "Prima di installare",
     "mBeforeV": "Stima",
-    "mBeforeBody": "Il calcolatore nella sezione prezzi proietta il tuo risparmio con i tuoi numeri: richieste, token e modello. È una proiezione onesta — per questo porta l'etichetta «stima».",
+    "mBeforeBody": "La licenza Misura, gratuita, esegue il livello in modalità ombra con il tuo traffico e mostra quanto avrebbe risparmiato, richiesta per richiesta. Non cambia nulla e non applica nulla — per questo porta l’etichetta «stima».",
     "mAfterK": "Dopo l'installazione",
     "mAfterV": "Misurazione reale",
     "mAfterBody": "Ogni chiamata restituisce un SavingsReport: le chiamate che non hai mai pagato e il risparmio netto per richiesta. Verificabile, richiesta per richiesta, sulla tua infrastruttura.",
@@ -1353,14 +1384,36 @@
   },
   "pricingPage": {
     "metaTitle": "Condizioni di prezzo · BV-SALA",
-    "metaDescription": "La quota per postazione e la commissione sul risparmio misurato, pubblicate dalle stesse costanti che fatturano.",
+    "metaDescription": "Misura gratis, Pro per postazione, Team ed Enterprise — nessuno ha una commissione sul tuo risparmio. Cifre pubblicate dalle stesse costanti che fatturano.",
     "eyebrow": "Prezzi pubblicati",
     "title": "Condizioni di prezzo",
     "governs": "Questa pagina descrive come funziona il servizio oggi; prevalgono la <license>LICENSE</license> e i <terms>Termini di BiVelio</terms>.",
-    "lede": "Ogni cifra che vedi qui viene letta dallo stesso codice che ti fattura, quindi cambia quando cambia il prezzo.",
+    "lede": "Paghi per postazione o per un piano Team, senza commissione sul tuo risparmio. Ogni cifra di questa pagina si legge dallo stesso codice che ti fattura, quindi cambia quando cambia il prezzo.",
+    "plans": {
+      "title": "Piani",
+      "intro": "Quattro piani, dal più piccolo al più grande. Pro e Team si pagano per postazione e non prevedono commissioni.",
+      "medir": {
+        "name": "Misura",
+        "body": "<b>Gratis, senza carta.</b> Il livello funziona in modalità ombra per un’organizzazione, con un tetto di postazioni e di richieste giornaliere: ogni richiesta arriva al tuo fornitore esattamente come l’hai costruita, nulla viene servito dalla cache e nessuna leva viene applicata. La tua dashboard mostra quanto avrebbe risparmiato — una stima che non ha mai commissione. Le leve richiedono Pro o Team."
+      },
+      "pro": {
+        "name": "Pro",
+        "amount": "<b>{monthly}</b> per postazione al mese, oppure <b>{yearly}</b> per postazione all’anno, in {currency}.",
+        "body": "Tutte le ottimizzazioni del livello, la ricevuta per richiesta e la dashboard. <b>Nessuna commissione</b> sul risparmio: paghi le postazioni, che tu risparmi o no."
+      },
+      "team": {
+        "name": "Team",
+        "amount": "<b>{monthly}</b> al mese con <b>{included} postazioni incluse</b> (circa {perSeat} per postazione), oppure <b>{yearly}</b> all’anno, in {currency}.",
+        "extra": "Ogni postazione oltre quelle incluse: {monthly} al mese, oppure {yearly} all’anno.",
+        "body": "Lo stesso di Pro, per una flotta: il canone fisso copre le postazioni incluse anche se ne usi meno. <b>Nessuna commissione</b> sul risparmio."
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "body": "Per più postazioni di quante ne accetti il pagamento online, un contratto dedicato o condizioni di fatturazione concordate: <contact>scrivici</contact>."
+      }
+    },
     "seat": {
-      "title": "La quota per postazione",
-      "amount": "<b>{monthly}</b> per postazione al mese, oppure <b>{yearly}</b> per postazione all'anno, in {currency}.",
+      "title": "Come si conta e si fattura una postazione",
       "cycle": "La quota per postazione viene addebitata tramite Stripe per ogni ciclo mensile o annuale del tuo abbonamento, contato dal giorno in cui inizia.",
       "paidAlways": "La quota per postazione si paga <b>che il Software produca un risparmio o no</b>.",
       "vat": "Gli importi sono IVA esclusa. Il pagamento chiede il tuo indirizzo di fatturazione e, facoltativamente, la tua partita IVA; entrambi compaiono in fattura.",
@@ -1370,7 +1423,9 @@
       "identifier": "Come si forma l'identificativo di postazione, e tutto il resto che il Software invia a BiVelio, è nella <privacy>pagina sulla privacy</privacy>."
     },
     "commission": {
-      "title": "La commissione sul risparmio misurato",
+      "title": "Formula precedente con commissione (chiusa ai nuovi clienti)",
+      "optional": "Questa formula <b>non è più offerta ai nuovi clienti</b>. Se il tuo abbonamento ce l’ha già, la mantieni senza modifiche e la regolano le condizioni qui sotto: un canone per postazione più basso e una commissione solo sul risparmio che puoi riconciliare con la fattura del tuo fornitore. Pro e Team non la hanno mai; il loro estratto mostra la commissione che si sarebbe applicata solo come riferimento.",
+      "seat": "Canone per postazione in questa modalità: <b>{monthly}</b> per postazione al mese, oppure <b>{yearly}</b> per postazione all’anno, in {currency}.",
       "only": "La commissione si applica <b>solo al risparmio misurato</b>: il risparmio etichettato {labels} nei tuoi record di utilizzo. Il risparmio etichettato {never} non porta mai commissione.",
       "measured": "Un risparmio misurato si ricava dal contatore di utilizzo del tuo stesso provider di LLM per quella richiesta.",
       "reference": "Un risparmio per riferimento, per una richiesta ripetuta che il Software ha servito senza chiamare il tuo provider, si ricava dal contatore del tuo provider per la richiesta identica precedente che è stata effettivamente eseguita, secondo la regola indicata nel tuo estratto ({regla}).",
@@ -1387,8 +1442,7 @@
       "ceiling": "Nessuno scaglione supera il {max}, quindi, prima di arrotondare la commissione al centesimo, <b>ti resta almeno il {garantia}</b> del risparmio misurato del periodo. La quota per postazione è a parte.",
       "fx": "Il risparmio misurato si conta in dollari statunitensi e si converte al tasso di riferimento della Banca centrale europea rilevato alla chiusura del periodo; il tuo estratto mostra il tasso applicato.",
       "rounding": "La commissione viene arrotondata al centesimo più vicino. Una commissione inferiore a {minimo} non viene fatturata né riportata a un altro periodo.",
-      "zero": "Un periodo senza risparmio misurato <b>non porta commissione</b>.",
-      "calculator": "Per vedere cosa significa per il tuo traffico, prova il <calc>calcolatore</calc> nella home page."
+      "zero": "Un periodo senza risparmio misurato <b>non porta commissione</b>."
     },
     "calibration": {
       "title": "Periodo di calibrazione",
