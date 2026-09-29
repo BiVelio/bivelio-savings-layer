@@ -51,7 +51,7 @@ export interface SavingsLayerConfig {
    * asks for it nor turns it off gets a one-time console warning (silenced by
    * `silenceWarnings`, or by setting `semanticCacheDefault`, `false` included).
    *
-   * Renamed `semanticCacheStore` in 0.5, so that the store and the per-request
+   * Called `semanticCache` until 0.4.33, so that the store and the per-request
    * switch (`savings.semanticCache`) no longer share a name. See the 0.5
    * migration guide.
    */
