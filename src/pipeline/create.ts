@@ -145,6 +145,20 @@ export function createSavingsLayer(
   const avisar = (clave: string, mensaje: string): void => {
     if (config.silenceWarnings !== true) avisarUnaVez(clave, mensaje);
   };
+  // `semanticCache` EN EL CONSTRUCTOR SE LLAMA `semanticCacheStore` DESDE 0.4.33
+  // (decisión del dueño, 2026-09-29): el mismo nombre decía «almacén» aquí y
+  // «úsala» en `savings.semanticCache`, y pasar el almacén no la encendía. El
+  // viejo sigue funcionando hasta la 0.5, avisando una vez y silenciable.
+  if (config.semanticCache !== undefined) {
+    avisar(
+      "semanticCache-renombrado",
+      "[bvsala] `createSavingsLayer({ semanticCache })` is deprecated: pass the store as `semanticCacheStore` " +
+        "(same value; `savings.semanticCache` on a request does not change). The old name is removed in 0.5." +
+        (config.semanticCacheStore !== undefined && config.semanticCacheStore !== config.semanticCache
+          ? " Both were given and they differ: `semanticCacheStore` is the one in use."
+          : ""),
+    );
+  }
   // En el paquete PUBLICADO se descarta cualquier `licenseGate` inyectado por el
   // llamante. Era la vía MÁS FÁCIL de saltarse el pago —más aún que la clave
   // falsa que ya cerramos, porque no exige ni firmar un token—: bastaba

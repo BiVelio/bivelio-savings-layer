@@ -11,9 +11,11 @@ import {
   type AtestadoDelCable,
 } from "../providers/atestado-del-cable.js";
 import {
+  admiteBusquedaNativa,
   candidatasPorRiesgo,
   decidirBusquedaNativa,
   normalizarBusqueda,
+  UMBRAL_DOCUMENTADO,
   type DecisionDeBusquedaNativa,
   type OpcionesDeBusqueda,
 } from "../router/busqueda-nativa.js";
@@ -1918,7 +1920,7 @@ export class SavingsPipeline {
         "[bv-sala] `savings.semanticCache` was requested but this layer has no semantic cache, so " +
           "every rephrased question will come out `cache: \"miss\"` and be paid to the provider again. " +
           "It is not on by default because it needs an embedder, which is your own cost and provider: " +
-          "plug it in with `createSavingsLayer({ semanticCache: new InMemorySemanticCache({ embed }) })`. " +
+          "plug it in with `createSavingsLayer({ semanticCacheStore: new InMemorySemanticCache({ embed }) })`. " +
           "The exact cache and the rest of the layer keep working.",
       );
     }
@@ -1938,11 +1940,11 @@ export class SavingsPipeline {
     ) {
       this.avisar(
         "cache-semantica-sin-pedir",
-        "[bv-sala] This layer was given a `semanticCache`, but this request does not ask for it, so " +
+        "[bv-sala] This layer was given a `semanticCacheStore`, but this request does not ask for it, so " +
           "the semantic cache was neither consulted nor written: every reworded question is paid to the " +
           "provider and a calibrating cache collects no labels. Passing the cache to `createSavingsLayer` " +
           "does not switch it on. Ask for it per request with `savings: { semanticCache: true }`, or on " +
-          "every request with `createSavingsLayer({ semanticCache, semanticCacheDefault: true })` — " +
+          "every request with `createSavingsLayer({ semanticCacheStore, semanticCacheDefault: true })` — " +
           "preferably with a cache built with `calibration`. If you switch it on per request on purpose, " +
           "set `semanticCacheDefault: false` to say so and this warning goes away.",
       );
@@ -2385,6 +2387,7 @@ export class SavingsPipeline {
         );
     if (!nativa) {
       this.avisarDeHerramientasPodadas(request, toggles, toolSelection, route.executionClass, routerApagado, cascada, costModel);
+      this.avisarDeCatalogoGrande(request, toggles, toolSelection, cascada, costModel);
     }
     ledger.actualTools = toolSelection.tools.length;
     if (toolSelection.droppedIds.length) {
@@ -4767,6 +4770,50 @@ export class SavingsPipeline {
         `${seleccion.droppedIds.length} in that request (they are listed in the report's \`tool-selector\` trace). ` +
         "A catalogue with no `intents` and no `risk`, or `savings: { router: false }`, is sent whole." +
         sugerencia,
+    );
+  }
+
+  // UN CATÁLOGO GRANDE QUE VIAJA ENTERO, DONDE EL PROVEEDOR PODRÍA BUSCAR EN ÉL.
+  //
+  // Desde la 0.4.33 el selector no recorta por relevancia salvo que el cliente
+  // fije `maxTools` (decisión del dueño, 2026-09-29): el catálogo tipado viaja
+  // entero, como ya viajaba el sin tipar. Eso nunca empeora la respuesta, pero
+  // puede costar prefijo. Donde este adaptador y este modelo admiten la búsqueda
+  // nativa, y el llamante no ha dicho nada de `toolSearch`, se le avisa UNA vez
+  // por proceso (silenciable) de que existe — y solo si `"auto"` de verdad se
+  // aplicaría a esta petición: la misma verja de dinero, no una corazonada.
+  // Nada se enciende solo: cambiar el cuerpo de la petición es decisión suya.
+  private catalogoGrandeAvisado = false;
+  private avisarDeCatalogoGrande(
+    request: SavingsRequest,
+    toggles: NonNullable<SavingsRequest["savings"]>,
+    seleccion: ToolSelection,
+    cascada: DecisionDeCascada,
+    costModel: CostModel,
+  ): void {
+    if (this.catalogoGrandeAvisado || this.config.silenceWarnings) return;
+    if (toggles.toolSearch !== undefined) return;
+    if (seleccion.tools.length < UMBRAL_DOCUMENTADO.herramientas) return;
+    const capacidad = busquedaNativaDelProveedor(this.config.provider);
+    if (capacidad === undefined || !admiteBusquedaNativa(cascada.modeloServido)) return;
+    const decision = decidirBusquedaNativa({
+      opciones: { modo: "auto", siempreCargadas: [], variante: "bm25" },
+      capacidad,
+      modelo: cascada.modeloServido,
+      herramientas: seleccion.tools.map((t) => ({ id: t.id, tokens: this.tokensFor(textoDeHerramienta(t), request) })),
+      hayContrato: request.response?.schema != null,
+      cascadaActiva: cascada.modo !== "off",
+      precio: costModel,
+      lecturaDeCache: this.lecturaDeCacheDe(cascada.modeloServido, costModel),
+    });
+    if (!decision.aplicar) return;
+    this.catalogoGrandeAvisado = true;
+    this.avisar(
+      "catalogo-grande-con-busqueda-nativa",
+      `[bv-sala] This request sent all ${seleccion.tools.length} of its tools in the prompt: since 0.4.33 ` +
+        "tools are pruned by relevance only if you set `new ToolSelector({ maxTools })`. This provider and model " +
+        "support native tool search, and it would pay off here: `savings: { toolSearch: \"auto\" }` sends every " +
+        "tool deferred, lets the model search, and keeps the prompt cache.",
     );
   }
 

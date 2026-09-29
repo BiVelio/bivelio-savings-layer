@@ -45,7 +45,7 @@ if (!existsSync(BIN)) {
 /** Arranca `bvsala gateway` y devuelve {puerto, parar}. */
 function arrancarBinario(entorno) {
   return new Promise((resolve, reject) => {
-    const hijo = spawn(process.execPath, [BIN, "gateway", "--puerto", "0"], {
+    const hijo = spawn(process.execPath, [BIN, "gateway", "--port", "0"], {
       env: { ...process.env, ...entorno },
       stdio: ["ignore", "pipe", "pipe"],
     });

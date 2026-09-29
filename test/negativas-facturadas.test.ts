@@ -1209,6 +1209,13 @@ describe("E7-ter · el SDK: una negativa no cobrada se mide a 0 $ y no acredita 
     const l = preparar();
     l.unbilledCall({ inputTokens: ENTRADA, outputTokens: 0 });
     l.servedUnbilledRefusal = true;
-    expect(l.estimateCost(precio)).toEqual({ baselineEstimate: 0, actual: 0, netSavings: 0, basis: "measured" });
+    expect(l.estimateCost(precio)).toEqual({
+      baselineEstimate: 0,
+      actual: 0,
+      netSavings: 0,
+      netSavingsRatio: 0,
+      netSavingsUsd: 0,
+      basis: "measured",
+    });
   });
 });

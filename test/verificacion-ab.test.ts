@@ -21,6 +21,7 @@ import type {
 } from "../src/providers/types.js";
 import type { SavingsReport, SavingsRequest, SavingsResult, ToolDescriptor } from "../src/contracts/types.js";
 import type { VerificationCheck } from "../src/contracts/verification.js";
+import { ToolSelector } from "../src/router/tool-selector.js";
 
 /**
  * «TU PROPIO BANCO»: la verificación A/B opcional del SDK.
@@ -163,8 +164,10 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
+// Con `maxTools`: el estrato `tokens_removed` de estas pruebas sale de la poda del
+// selector, que desde 0.4.33 es opt-in.
 const capa = (provider: Provider, extra: Partial<SavingsLayerConfig> = {}) =>
-  createSavingsLayer({ provider, generateId: ids(), ...extra });
+  createSavingsLayer({ provider, generateId: ids(), toolSelector: new ToolSelector({ maxTools: 8 }), ...extra });
 
 describe("1 · sin `verification` no hay nada", () => {
   it("cero llamadas extra, sin bloque en el informe y sin aviso", async () => {

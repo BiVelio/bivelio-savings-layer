@@ -315,6 +315,8 @@ describe("el registro en sombra de Medir no repite el ahorro nativo", () => {
     expect(sombra.requestId).toBe("req-1:shadow");
     expect(sombra.cost).toMatchObject({ baselineEstimate: 1, basis: "shadow" });
     expect(sombra.cost.actual).toBeCloseTo(0.6, 12);
+    expect(sombra.cost.netSavingsUsd).toBeCloseTo(0.4, 12);
+    expect(sombra.cost.netSavingsRatio).toBeCloseTo(0.4, 12);
     expect("nativeSavings" in sombra).toBe(false);
     expect("measure" in sombra).toBe(false);
   });

@@ -145,7 +145,7 @@ describe("pedir caché semántica sin caché semántica AVISA", () => {
     const aviso = sobreCacheSemantica();
     expect(aviso).toHaveLength(1);
     expect(aviso[0]).toContain('cache: "miss"');
-    expect(aviso[0]).toContain("createSavingsLayer({ semanticCache:");
+    expect(aviso[0]).toContain("createSavingsLayer({ semanticCacheStore:");
   });
 
   it('`semanticCache: "safe-only"` avisa igual', async () => {

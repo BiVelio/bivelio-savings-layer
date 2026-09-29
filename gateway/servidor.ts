@@ -193,7 +193,7 @@ export interface OpcionesGateway {
    * el mismo usage a dos precios de catálogo — y entra en `measured_*`.
    *
    * APAGADA por defecto: cambia el `model` que el cliente ve en la respuesta,
-   * así que la enciende el cliente con `BVSALA_GATEWAY_MODELO_HERMANO=1`. El
+   * así que la enciende el cliente con `BVSALA_GATEWAY_SIBLING_MODEL=1`. El
    * feature `sibling_model_routing` de la licencia sigue siendo necesario y
    * fail-closed por el mismo canal que las otras dos; `BVSALA_GATEWAY_ELISION=0`
    * la apaga junto a ellas. NO la arma el anillo 2: no hay A/B que hacer.

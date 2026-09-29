@@ -51,8 +51,16 @@ export interface SavingsLayerConfig {
    * asks for it nor turns it off gets a one-time console warning (silenced by
    * `silenceWarnings`, or by setting `semanticCacheDefault`, `false` included).
    *
-   * Renamed `semanticCacheStore` in 0.5, so that the store and the per-request
+   * Called `semanticCache` until 0.4.33, so that the store and the per-request
    * switch (`savings.semanticCache`) no longer share a name. See the 0.5
+   * migration guide.
+   */
+  semanticCacheStore?: InMemorySemanticCache;
+  /**
+   * @deprecated Renamed {@link semanticCacheStore} in 0.4.33, so that the store
+   * and the per-request switch (`savings.semanticCache`) no longer share a name.
+   * It still works, with a one-time warning (silenced by `silenceWarnings`);
+   * when both are given, `semanticCacheStore` wins. Removed in 0.5: see the 0.5
    * migration guide.
    */
   semanticCache?: InMemorySemanticCache;
@@ -61,7 +69,7 @@ export interface SavingsLayerConfig {
    * request's own value always wins, `false` included. Unset, the semantic cache
    * is used only by requests that ask for it.
    *
-   * OPT-IN, and deliberately a separate field from {@link semanticCache}: the
+   * OPT-IN, and deliberately a separate field from {@link semanticCacheStore}: the
    * cache is the backend, this is the decision to serve answers to reworded
    * questions, which can serve a wrong answer. Prefer it with a cache built with
    * `calibration`, which serves nothing until your own traffic certifies a

@@ -10,7 +10,13 @@ import { describirEstadoDeEsfuerzo } from "./esfuerzo.js";
 import { describirEstadoDeHermano } from "./hermano.js";
 import { arrancarGateway, type GatewayArrancado } from "./servidor.js";
 import { resumenDeDegradaciones } from "./degradacion.js";
-import { decidirArranque, isChildInfoRequest, mensajeDeFalloDeArranque } from "./argumentos.js";
+import {
+  decidirArranque,
+  isChildInfoRequest,
+  mensajeDeFalloDeArranque,
+  traducirEntorno,
+  traducirFlags,
+} from "./argumentos.js";
 import { LICENSE_SERVER_URL, resolveStartupLicense } from "./license.js";
 import {
   envoltorioDe,
@@ -52,7 +58,7 @@ import { EMBEDDED_PUBLIC_KEY } from "../src/license/index.js";
 /**
  * El CLI de la pasarela:
  *
- *   `bvsala gateway [--puerto N] [--upstream U]` — el medidor local para
+ *   `bvsala gateway [--port N] [--upstream U]` — el medidor local para
  *   herramientas que respetan un base URL (Claude Code, el anillo de terminales
  *   compatibles y los SDK oficiales de OpenAI y Anthropic en cualquier lenguaje).
  *   `--upstream` elige el proveedor (gateway/upstream.ts): uno por gateway.
@@ -62,7 +68,7 @@ import { EMBEDDED_PUBLIC_KEY } from "../src/license/index.js";
  *   apuntándole y lo apaga al salir, con un resumen de lo medido y lo que no
  *   (tabla en gateway/envoltorios.ts; resumen en gateway/recuento.ts).
  *
- *   `bvsala doctor [--puerto N]` — detecta terminales instalados e imprime el
+ *   `bvsala doctor [--port N]` — detecta terminales instalados e imprime el
  *   bloque de configuración exacto de cada uno (gateway/doctor.ts).
  *
  *   `bvsala init` (y `npx @bivelio/savings-layer init`, porque el paquete tiene un
@@ -137,7 +143,8 @@ Commands:
                          (\`bvsala gateway --help\` starts nothing; \`bvsala claude --help\` or
                          \`--version\` go straight to the terminal, with no gateway).
 
-  Flags also accept their original Spanish spellings (--puerto, --proyecto, --forzar).
+  The Spanish spellings --puerto, --proyecto and --forzar still work until 0.5, with a
+  deprecation notice (BVSALA_SILENCE_DEPRECATIONS=1 silences it).
 Environment:
   BIVELIO_SERVICE_KEY    Service key (bvk_…): REQUIRED. Identifies your organization, collects its
                          license (renewed by itself) and enables metering and seat identity.
@@ -169,7 +176,7 @@ Environment:
                          When in doubt, the request travels untouched. (Up to 0.4.13 the flag
                          was inverted: "=1 arms". In an A/B always pass it explicitly, =1 or
                          =0, so you do not depend on the installed version.)
-  BVSALA_GATEWAY_MODELO_HERMANO
+  BVSALA_GATEWAY_SIBLING_MODEL
                          =1 serves claude-fable-5 with claude-fable-5-1 (sibling model routing):
                          same input, output and cache-write rates; cache READS drop from
                          0.001 to 0.00025 per 1K tokens (catalog). The saving is the difference
@@ -180,8 +187,7 @@ Environment:
                          turning it on mid-thread pays ONE cold write of the prefix (each
                          model has its own cache): start it together with the terminal.
                          Off = unset the variable or =0.
-  BVSALA_GATEWAY_ESFUERZO
-                         =low|medium sets a per-turn effort ceiling (experimental):
+  BVSALA_GATEWAY_EFFORT  =low|medium sets a per-turn effort ceiling (experimental):
                          appends a message with output_config.effort to each /v1/messages
                          without touching the root (does not reset the prefix cache). Only if
                          the license carries per_turn_effort (fail-closed), only with
@@ -190,6 +196,12 @@ Environment:
                          claude-opus-5-5): it never raises effort. Any other request travels
                          untouched. It is the only lever that can affect response quality: OFF
                          by default and not yet measured against the quality gate.
+  BVSALA_SILENCE_DEPRECATIONS
+                         =1 silences the notice printed when a deprecated Spanish name is used:
+                         BVSALA_GATEWAY_MODELO_HERMANO (now BVSALA_GATEWAY_SIBLING_MODEL),
+                         BVSALA_GATEWAY_ESFUERZO (now BVSALA_GATEWAY_EFFORT), --puerto, --proyecto,
+                         --forzar. The old names keep working until 0.5; the English one wins
+                         when both are set.
   BVSALA_CODEX_AUTH      api-key | chatgpt — forces the Codex auth mode.
   BVSALA_GATEWAY_LOG     =1 shows the per-request log inside the wrappers too (silenced by
                          default so it does not overwrite the TUI; use the dashboard instead).
@@ -215,8 +227,17 @@ if (decision.tipo === "version") {
   console.log(BV_SALA_VERSION);
   process.exit(0);
 }
-const { comando, resto } = decision;
+const { comando } = decision;
 const esEnvoltorio = esTerminalConEnvoltorio(comando);
+// Los nombres españoles (--puerto, BVSALA_GATEWAY_ESFUERZO…) son alias de los
+// ingleses desde 0.4.33: se traducen AQUÍ, antes de leerse, con un aviso por
+// nombre (silenciable). Lo que va detrás de un terminal envuelto es suyo.
+const flags = esEnvoltorio ? { resto: decision.resto, avisos: [] } : traducirFlags(decision.resto, process.env);
+const resto = flags.resto;
+const entorno = traducirEntorno(process.env);
+for (const aviso of [...flags.avisos, ...entorno.avisos]) console.error(aviso);
+const effortEnv = entorno.env.BVSALA_GATEWAY_EFFORT;
+const siblingModelEnv = entorno.env.BVSALA_GATEWAY_SIBLING_MODEL;
 
 if (comando === "init") {
   // Antes del puerto, del upstream y de la verja de licencia: init es onboarding,
@@ -293,8 +314,8 @@ if (comando === "skill") {
     origenes: [join(aqui, "..", ".."), join(aqui, "..")],
     home: homedir(),
     cwd: process.cwd(),
-    proyecto: resto.includes("--project") || resto.includes("--proyecto"),
-    forzar: resto.includes("--force") || resto.includes("--forzar"),
+    proyecto: resto.includes("--project"),
+    forzar: resto.includes("--force"),
     fs: {
       existe: existsSync,
       leer: (ruta: string) => readFileSync(ruta, "utf8"),
@@ -309,9 +330,9 @@ if (comando === "skill") {
   process.exit(r.ok ? 0 : 1);
 }
 
-// Envoltorios: puerto efímero; `gateway`: 8402 o --puerto (0 = efímero, lo usa
+// Envoltorios: puerto efímero; `gateway`: 8402 o --port (0 = efímero, lo usa
 // el arnés F2); `doctor`: 1–65535 (imprime URLs — un puerto 0 no señala nada).
-const idx = resto.indexOf("--port") >= 0 ? resto.indexOf("--port") : resto.indexOf("--puerto");
+const idx = resto.indexOf("--port");
 const puerto = esEnvoltorio ? 0 : idx >= 0 ? Number(resto[idx + 1]) : 8402;
 if (!Number.isInteger(puerto) || (comando === "doctor" ? puerto < 1 : puerto < 0) || puerto > 65535) {
   console.error(`[bvsala ${comando}] invalid port: ${resto[idx + 1]}`);
@@ -493,14 +514,14 @@ try {
     // feature `sibling_model_routing` de la licencia sigue verjando (fail-closed)
     // y `BVSALA_GATEWAY_ELISION=0` la apaga con las demás. NO la arma el anillo 2:
     // el ahorro se mide sin contrafactual, no hay A/B que hacer.
-    ...(process.env.BVSALA_GATEWAY_MODELO_HERMANO === "1" ? { modeloHermano: true } : {}),
+    ...(siblingModelEnv === "1" ? { modeloHermano: true } : {}),
     // Palanca D · el techo de esfuerzo por turno. Es del OPERADOR: la palanca no
     // adivina qué turno merece pensar menos. Solo cambia la VÍA por la que se
     // aplica —un mensaje añadido, que NO reinicia la caché de prefijo, en vez del
     // campo de la raíz, que sí— y verja por modelo, porque fuera de fable-5-1,
     // mythos-5-1, opus-5-5 y opus-5 es un 400. Y solo REBAJA: un nivel igual o
     // superior al defecto del modelo deja la petición intacta.
-    ...(process.env.BVSALA_GATEWAY_ESFUERZO ? { esfuerzo: process.env.BVSALA_GATEWAY_ESFUERZO } : {}),
+    ...(effortEnv ? { esfuerzo: effortEnv } : {}),
     // Solo para desarrollo y pruebas: redirigir la INGESTA de metering (y solo
     // ella: la licencia y el canal van siempre a savings.bivelio.com). En
     // producción no se toca.
@@ -510,7 +531,7 @@ try {
   // El escenario más probable para un probador es lanzarlo dos veces (el 8402
   // por defecto). Hasta 0.4.20 esto era un rechazo sin manejar: la traza cruda
   // de Node («node:net … listen EADDRINUSE …») y exit 1 sin una palabra del
-  // producto. Una sola línea, sin traza, con la salida (--puerto M o apagar el
+  // producto. Una sola línea, sin traza, con la salida (--port M o apagar el
   // otro proceso), y exit 1.
   console.error(`[bvsala ${comando}] ${mensajeDeFalloDeArranque(err, comando, puerto)}`);
   process.exit(1);
@@ -545,11 +566,11 @@ if (process.env.BVSALA_GATEWAY_USAGE_INJECT === "1") {
   (estado.aviso ? console.error : console.log)(`[bvsala gateway] ${estado.linea}`);
   // Palanca C dicha en voz alta, por la misma razón: una bandera puesta en un
   // terminal sin clave (o con el canal cerrado) es control en silencio.
-  const estadoHermano = describirEstadoDeHermano(process.env.BVSALA_GATEWAY_MODELO_HERMANO, true, elisionPedida !== "0");
+  const estadoHermano = describirEstadoDeHermano(siblingModelEnv, true, elisionPedida !== "0");
   (estadoHermano.aviso ? console.error : console.log)(`[bvsala gateway] ${estadoHermano.linea}`);
   // Palanca D dicha en voz alta por la misma razón que las otras: una palanca
   // que se cree encendida y no lo está es la trampa muda que ya costó un A/B.
-  const estadoEsfuerzo = describirEstadoDeEsfuerzo(process.env.BVSALA_GATEWAY_ESFUERZO, true, elisionPedida !== "0");
+  const estadoEsfuerzo = describirEstadoDeEsfuerzo(effortEnv, true, elisionPedida !== "0");
   (estadoEsfuerzo.aviso ? console.error : console.log)(`[bvsala gateway] ${estadoEsfuerzo.linea}`);
   if (planAnillo2.linea) {
     (planAnillo2.aviso ? console.error : console.log)(`[bvsala gateway] ${planAnillo2.linea}`);

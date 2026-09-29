@@ -68,8 +68,8 @@ describe("ToolSelector", () => {
     expect(selection.tools.some((t) => t.risk === "destructive")).toBe(false);
   });
 
-  it("selects only intent-matching tools", () => {
-    const selection = new ToolSelector().select("what is the weather forecast", tools, "SINGLE_RETRIEVAL");
+  it("selects only intent-matching tools (when maxTools opts in to pruning)", () => {
+    const selection = new ToolSelector({ maxTools: 8 }).select("what is the weather forecast", tools, "SINGLE_RETRIEVAL");
     expect(selection.tools.map((t) => t.id)).toEqual(["get_weather"]);
     expect(selection.droppedIds).toContain("search_docs");
   });

@@ -33,7 +33,9 @@ export interface ResolvedDeps {
 export function resolveDependencies(config: SavingsLayerConfig): ResolvedDeps {
   return {
     exactCache: config.exactCache ?? new InMemoryExactCache(),
-    semanticCache: config.semanticCache,
+    // `semanticCacheStore` es el nombre desde 0.4.33; `semanticCache` sigue
+    // valiendo (con aviso en create.ts) y pierde si vienen los dos.
+    semanticCache: config.semanticCacheStore ?? config.semanticCache,
     singleflight: config.singleflight ?? new Singleflight(),
     resolvers: config.resolvers ?? createDefaultResolvers(),
     router: config.router ?? new ExecutionRouter(),

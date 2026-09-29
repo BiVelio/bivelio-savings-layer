@@ -5,6 +5,7 @@ import { SavingsPipeline } from "../src/pipeline/pipeline.js";
 import { AnthropicProvider } from "../src/providers/anthropic.js";
 import { OpenAICompatibleProvider } from "../src/providers/openai-compatible.js";
 import { TokenizerRegistry } from "../src/tokenizer/registry.js";
+import { ToolSelector } from "../src/router/tool-selector.js";
 import { reiniciarAvisos } from "../src/util/warn-once.js";
 import type { Provider } from "../src/providers/types.js";
 import type { SavingsRequest, SavingsResult, ToolDescriptor } from "../src/contracts/types.js";
@@ -86,8 +87,8 @@ function proveedorDe(p: "openai" | "anthropic", fetchImpl: typeof fetch): Provid
     : new AnthropicProvider({ fetchImpl });
 }
 
-function capa(provider: Provider): SavingsPipeline {
-  return new SavingsPipeline({ provider, tokenizer: new TokenizerRegistry(), devUnlicensed: true } as never);
+function capa(provider: Provider, extra: Record<string, unknown> = {}): SavingsPipeline {
+  return new SavingsPipeline({ provider, tokenizer: new TokenizerRegistry(), devUnlicensed: true, ...extra } as never);
 }
 
 /** Nombres de las herramientas del llamante que viajan en el cuerpo (sin la de búsqueda). */
@@ -163,7 +164,6 @@ describe("catálogo de 20 herramientas sin `intents` ni `risk`", () => {
   }
 
   it("el selector, directamente: 55 sin tipar salen 55 y `droppedIds` vacío", async () => {
-    const { ToolSelector } = await import("../src/router/tool-selector.js");
     const sel = new ToolSelector({ maxTools: 8 });
     for (const clase of ["NO_RETRIEVAL", "SINGLE_RETRIEVAL", "TOOL_ACTION"] as const) {
       const r = sel.select("lee el fichero", catalogoSinTipar(55), clase, "clave");
@@ -202,9 +202,10 @@ describe("controles: lo que tenía señal sigue igual", () => {
   ];
 
   for (const proveedor of ["openai", "anthropic"] as const) {
-    it(`${proveedor}: un catálogo con intents se sigue seleccionando por relevancia, se acredita y AVISA una vez`, async () => {
+    it(`${proveedor}: con \`maxTools\`, un catálogo con intents se sigue seleccionando por relevancia, se acredita y AVISA una vez`, async () => {
       const { cuerpos, fetchImpl } = cable(proveedor);
-      const p = capa(proveedorDe(proveedor, fetchImpl));
+      // Desde 0.4.33 la poda por relevancia es opt-in: sin `maxTools` viaja entero.
+      const p = capa(proveedorDe(proveedor, fetchImpl), { toolSelector: new ToolSelector({ maxTools: 8 }) });
       const r = await p.generate(peticion(MODELO[proveedor], tipadas, "¿Dónde está mi envío?"));
       await p.generate(peticion(MODELO[proveedor], tipadas, "¿Y la factura?"));
 
@@ -229,6 +230,7 @@ describe("controles: lo que tenía señal sigue igual", () => {
       tokenizer: new TokenizerRegistry(),
       devUnlicensed: true,
       silenceWarnings: true,
+      toolSelector: new ToolSelector({ maxTools: 8 }),
     } as never);
     const r = await p.generate(peticion(MODELO.openai, tipadas, "¿Dónde está mi envío?"));
     expect(avisosDePoda()).toHaveLength(0);

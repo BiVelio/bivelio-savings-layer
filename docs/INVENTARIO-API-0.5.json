@@ -948,6 +948,21 @@
       "pr": "#417",
       "veredicto": "estable",
       "porque": "Presente solo con licencia Medir."
+    },
+    "M SavingsReport.cost.netSavingsRatio": {
+      "pr": "#419",
+      "veredicto": "estable",
+      "porque": "Nombre nuevo de `netSavings` (la razón); llega como alias en la 0.4.33."
+    },
+    "M SavingsReport.cost.netSavingsUsd": {
+      "pr": "#419",
+      "veredicto": "estable",
+      "porque": "El ahorro en USD (= baselineEstimate − actual), junto a la razón."
+    },
+    "M SavingsLayerConfig.semanticCacheStore": {
+      "pr": "#419",
+      "veredicto": "estable",
+      "porque": "Nombre nuevo del almacén de la caché semántica (#380); `semanticCache` queda como alias hasta la 0.5."
     }
   }
 }

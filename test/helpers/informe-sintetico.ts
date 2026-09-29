@@ -46,7 +46,19 @@ export function informeSintetico(p: ParcheDeInforme = {}): SavingsReport {
     serialization: { chosen: "json-compact", candidateTokens: {}, instructionOverheadTokens: 0 },
     constraints: { backend: "none", schemaVersion: "none", structurallyValid: true },
     quality: {},
-    cost: { baselineEstimate: 0.001, actual: 0.001, netSavings: 0, basis: "measured", ...cost },
+    cost: {
+      baselineEstimate: 0.001,
+      actual: 0.001,
+      netSavings: 0,
+      basis: "measured",
+      ...cost,
+      // Las dos cifras nuevas (0.4.33) se derivan de lo que el test fije, salvo
+      // que las fije él: así un informe sintético cuadra como uno real.
+      netSavingsRatio: cost?.netSavingsRatio ?? cost?.netSavings ?? 0,
+      netSavingsUsd:
+        cost?.netSavingsUsd ??
+        Math.round(((cost?.baselineEstimate ?? 0.001) - (cost?.actual ?? 0.001)) * 1e10) / 1e10,
+    },
     latencyMs: { total: 5, preprocessing: 1, provider: 4 },
     traces: [],
     ...resto,

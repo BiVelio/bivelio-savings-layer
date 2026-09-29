@@ -258,7 +258,8 @@ describe("⛔ lo que lee el texto normalizado no se queda mudo", () => {
     // intent se pliega a vacío no debe casar vía `includes("")` y colarse en cada
     // petición, sino quedar podada.
     const vacio: ToolDescriptor = { id: "comodin", intents: ["¿?"], risk: "read" };
-    const seleccion = new ToolSelector().select(
+    // Con `maxTools`: sin él (0.4.33) no hay poda por relevancia que probar.
+    const seleccion = new ToolSelector({ maxTools: 8 }).select(
       normalizeText("¿cuál es el total?"),
       [vacio],
       "TOOL_ACTION",
