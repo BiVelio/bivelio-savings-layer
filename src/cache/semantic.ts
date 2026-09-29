@@ -91,6 +91,8 @@ export interface SemanticRecord {
   temperature: number | null;
   /** Sampling seed of the request, or null when it set none. */
   seed: number | null;
+  /** `reasoning_effort` of the request; absent when it declared none. */
+  reasoningEffort?: string;
   storedAtMs: number;
   /**
    * With calibration on: the highest score at which this stored answer was
@@ -575,6 +577,7 @@ export class InMemorySemanticCache {
       if (record.toolTurnsHash !== c.toolTurnsHash) continue;
       if (record.temperature !== c.temperature) continue;
       if (record.seed !== c.seed) continue;
+      if (record.reasoningEffort !== c.reasoningEffort) continue;
       if (
         this.ttlMs != null &&
         this.now() - record.storedAtMs > this.ttlMs
@@ -840,6 +843,7 @@ export class InMemorySemanticCache {
       ...(c.toolTurnsHash !== undefined ? { toolTurnsHash: c.toolTurnsHash } : {}),
       temperature: c.temperature,
       seed: c.seed,
+      ...(c.reasoningEffort !== undefined ? { reasoningEffort: c.reasoningEffort } : {}),
       storedAtMs: this.now(),
     });
   }

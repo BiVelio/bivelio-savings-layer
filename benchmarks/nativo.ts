@@ -105,8 +105,9 @@ export const FUENTES = {
 
 /**
  * Modelos con `output_config.effort`, copiados del `supportedModels` de la
- * página oficial del parámetro (FUENTES.esfuerzoAnthropic, 2026-09-27). Haiku
- * 4.5 y Sonnet 4.5 NO están: su B2 queda en B1 y lo declara.
+ * página oficial del parámetro (FUENTES.esfuerzoAnthropic, 2026-09-27; Sonnet
+ * 5.5 añadido al releerla el 2026-09-29). Haiku 4.5 y Sonnet 4.5 NO están: su
+ * B2 queda en B1 y lo declara.
  */
 export const EFFORT_ANTHROPIC: readonly string[] = [
   "claude-fable-5-1",
@@ -120,6 +121,7 @@ export const EFFORT_ANTHROPIC: readonly string[] = [
   "claude-opus-4-7",
   "claude-opus-4-6",
   "claude-opus-4-5-20251101",
+  "claude-sonnet-5-5",
   "claude-sonnet-5",
   "claude-sonnet-4-6",
 ];
@@ -128,8 +130,8 @@ const NIVELES_ANTHROPIC = new Set(["low", "medium", "high", "xhigh", "max"]);
 
 /**
  * Modelos con la búsqueda de herramientas del servidor, de la tabla «Model
- * compatibility» (FUENTES.busquedaAnthropic, 2026-09-27). Claude Sonnet 5 no
- * figura en ella.
+ * compatibility» (FUENTES.busquedaAnthropic, 2026-09-27; Sonnet 5.5 añadido al
+ * releerla el 2026-09-29). Claude Sonnet 5 no figura en ella.
  */
 export const BUSQUEDA_ANTHROPIC: readonly string[] = [
   "claude-fable-5-1",
@@ -138,6 +140,7 @@ export const BUSQUEDA_ANTHROPIC: readonly string[] = [
   "claude-mythos-5",
   "claude-opus-5-5",
   "claude-opus-5",
+  "claude-sonnet-5-5",
   "claude-opus-4-8",
   "claude-opus-4-7",
   "claude-opus-4-6",

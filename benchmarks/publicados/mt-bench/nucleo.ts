@@ -331,10 +331,15 @@ export interface ModeloDeLaBateria {
  * FastChat genera con `max_tokens=1024`. gpt-5.4-mini razona y el razonamiento
  * cuenta dentro de `max_completion_tokens`: con 1024 muchas respuestas saldrían
  * vacías, así que lleva 4096 en ambos brazos. El techo se declara en el informe.
+ *
+ * claude-sonnet-5: omitir `thinking` = pensamiento ADAPTATIVO (va dentro de
+ * `max_tokens`), y el API rechaza `temperature` (400). Así que, como
+ * gpt-5.4-mini, lleva 4096 y no se manda temperatura en ningún brazo.
+ * claude-haiku-4-5 no piensa si no se le pide: 1024 y la temperatura de FastChat.
  */
 export const MODELOS_POR_DEFECTO: ModeloDeLaBateria[] = [
   { id: "claude-haiku-4-5", familia: "anthropic", maxSalida: 1024, temperatura: true },
-  { id: "claude-sonnet-5", familia: "anthropic", maxSalida: 1024, temperatura: true },
+  { id: "claude-sonnet-5", familia: "anthropic", maxSalida: 4096, temperatura: false },
   { id: "gpt-4o-mini", familia: "openai", maxSalida: 1024, temperatura: true },
   { id: "gpt-5.4-mini", familia: "openai", maxSalida: 4096, temperatura: false },
 ];
@@ -743,9 +748,20 @@ export function atribucionDelAhorro(e: {
   lecturasDeCacheA: number;
   lecturasDeCacheB: number;
   ahorroDeclaradoUsd: number;
+  /**
+   * Tokens que B ESCRIBIÓ en la caché del proveedor. Una marca `cache_control`
+   * (diff `clave:cache_control`) solo mueve dinero si el proveedor escribió
+   * (prima) o leyó (descuento); por debajo del mínimo de tramo del modelo el
+   * proveedor la ignora y la petición se factura igual que sin ella. Si no se
+   * pasa, la marca cuenta como cambio con efecto (lo conservador).
+   */
+  tokensEscritosEnCacheB?: number;
 }): Atribucion {
   if (e.clase === "sin datos" || e.clase === "muestra insuficiente") return { atribuible: null, motivo: "sin muestra suficiente" };
-  const conEfecto = Object.keys(e.diferenciasDelCable).filter((k) => !CAMPOS_SIN_EFECTO_DIRECTO_EN_COSTE.includes(k));
+  const marcaInerte = e.tokensEscritosEnCacheB === 0 && e.lecturasDeCacheB === 0;
+  const conEfecto = Object.keys(e.diferenciasDelCable).filter(
+    (k) => !CAMPOS_SIN_EFECTO_DIRECTO_EN_COSTE.includes(k) && !(marcaInerte && k.endsWith(":cache_control")),
+  );
   const cacheExtra = e.lecturasDeCacheB > e.lecturasDeCacheA;
   if (conEfecto.length === 0 && !cacheExtra && Math.abs(e.ahorroDeclaradoUsd) < 1e-9) {
     const soloEstos = Object.keys(e.diferenciasDelCable);
@@ -753,6 +769,9 @@ export function atribucionDelAhorro(e: {
       atribuible: false,
       motivo:
         `el cable de B solo difiere de A en ${soloEstos.length ? soloEstos.map((k) => `\`${k}\``).join(", ") : "nada"}, ` +
+        (marcaInerte && soloEstos.some((k) => k.endsWith(":cache_control"))
+          ? "las marcas `cache_control` de B no escribieron ni leyeron un token (tramo por debajo del mínimo del modelo: el proveedor las ignora), "
+          : "") +
         `B no leyó de caché más que A (${e.lecturasDeCacheB} frente a ${e.lecturasDeCacheA} llamadas) y la capa declara 0 $ de ahorro: ` +
         "la diferencia de coste es muestreo de la salida, no la capa",
     };
@@ -760,7 +779,7 @@ export function atribucionDelAhorro(e: {
   const razones = [
     ...(conEfecto.length ? [`el cable difiere en ${conEfecto.map((k) => `\`${k}\``).join(", ")}`] : []),
     ...(cacheExtra ? [`B leyó de caché en ${e.lecturasDeCacheB} llamadas frente a ${e.lecturasDeCacheA} de A`] : []),
-    ...(Math.abs(e.ahorroDeclaradoUsd) >= 1e-9 ? ["la capa declara ahorro"] : []),
+    ...(Math.abs(e.ahorroDeclaradoUsd) >= 1e-9 ? [`la capa declara ${e.ahorroDeclaradoUsd > 0 ? "ahorro" : "sobrecoste"} (${e.ahorroDeclaradoUsd.toFixed(6)} $)`] : []),
   ];
   return { atribuible: true, motivo: `posible efecto de la capa: ${razones.join("; ")}` };
 }

@@ -40,9 +40,13 @@
  *   pnpm bench:mt-bench --mock --fuente        # sin red de proveedor: la capa REAL del fuente verificado
  *   pnpm bench:mt-bench --fuente               # LIVE con el fuente de la etiqueta
  *   … --modelos=gpt-4o-mini --max-preguntas=8 --sin-juez
+ *   … --modelos=claude-haiku-4-5,claude-sonnet-5 --sufijo=claude   # informe aparte: mt-bench-0431-claude.*
  *   pnpm bench:mt-bench --fuente --gama-alta   # LIVE, modelos de gama alta (Opus/Sonnet 5.5, gpt-5.5,
  *                                              # gpt-5.6-sol, Gemini 3.x): 1,25 $ por modelo, 0,50 $ de
- *                                              # juez, libro e informe propios (…-gama-alta.*)
+ *                                              # juez, libro e informe propios (sufijo por defecto
+ *                                              # «gama-alta» → mt-bench-0431-gama-alta.*)
+ *   --sufijo=<s> manda sobre el sufijo por defecto de la tirada (vacío en la de siempre, «gama-alta»
+ *   con --gama-alta): informe `mt-bench-0431-<s>.*` y libro de gasto `gasto-live-0.4.31-<s>.json`.
  *   pnpm bench:mt-bench --desde-crudo          # recarga la tirada LIVE, completa el juicio con lo
  *                                              # que quede del tope del juez; NO llama a los proveedores
  *
@@ -156,23 +160,27 @@ const FECHA = "2026-09-28";
  * tiradas. Sin él, correr un modelo dos veces (o de uno en uno) daría a cada
  * tirada el tope entero: el tope es de la batería, no de la invocación.
  */
-let LIBRO_DE_GASTO = join(DIR_TRABAJO, `gasto-live-${PAQUETE.version}.json`);
+const libroDeGasto = (sufijo: string): string =>
+  join(DIR_TRABAJO, `gasto-live-${PAQUETE.version}${sufijo ? `-${sufijo}` : ""}.json`);
 
 /**
  * Qué tirada se corre. La de siempre (4 modelos, 0,80 $ OpenAI / 1,25 $
  * Anthropic) o `--gama-alta` (2026-09-29): los modelos de mayor gama, 1,25 $
  * por modelo sea cual sea su familia y 0,50 $ de juez EN TOTAL para ESTA
- * tirada. Cada una con su propio libro de gasto y su propio informe: la gama
- * alta no hereda ni pisa el juez ni los ficheros de la tirada anterior.
+ * tirada. La tirada fija modelos, topes y concurrencia, y trae su SUFIJO POR
+ * DEFECTO (el del informe y el del libro de gasto): así la gama alta no hereda
+ * ni pisa el juez ni los ficheros de la tirada anterior. `--sufijo` manda
+ * sobre él si se da.
  */
 interface Tirada {
   gamaAlta: boolean;
   modelos: ModeloDeLaBateria[];
+  /** Sufijo por defecto, sin guion (`""` → `mt-bench-0431.*`, `"gama-alta"` → `mt-bench-0431-gama-alta.*`). */
   sufijo: string;
   topeDe(m: ModeloDeLaBateria): number;
 }
 const TIRADA_BASE: Tirada = { gamaAlta: false, modelos: MODELOS_POR_DEFECTO, sufijo: "", topeDe: topePorModelo };
-const TIRADA_GAMA_ALTA: Tirada = { gamaAlta: true, modelos: MODELOS_GAMA_ALTA, sufijo: "-gama-alta", topeDe: () => TOPE_GAMA_ALTA_POR_MODELO_USD };
+const TIRADA_GAMA_ALTA: Tirada = { gamaAlta: true, modelos: MODELOS_GAMA_ALTA, sufijo: "gama-alta", topeDe: () => TOPE_GAMA_ALTA_POR_MODELO_USD };
 let TIRADA: Tirada = TIRADA_BASE;
 /**
  * El árbol de la etiqueta, extraído con `git archive`. Empieza por punto a
@@ -187,14 +195,15 @@ interface LibroDeGasto {
   juez: Record<string, number>;
 }
 
-function leerLibro(): LibroDeGasto {
-  if (!existsSync(LIBRO_DE_GASTO)) return { generacion: {}, juez: {} };
-  return JSON.parse(readFileSync(LIBRO_DE_GASTO, "utf8")) as LibroDeGasto;
+function leerLibro(sufijo: string): LibroDeGasto {
+  const f = libroDeGasto(sufijo);
+  if (!existsSync(f)) return { generacion: {}, juez: {} };
+  return JSON.parse(readFileSync(f, "utf8")) as LibroDeGasto;
 }
 
-function guardarLibro(l: LibroDeGasto): void {
+function guardarLibro(l: LibroDeGasto, sufijo: string): void {
   mkdirSync(DIR_TRABAJO, { recursive: true });
-  writeFileSync(LIBRO_DE_GASTO, JSON.stringify(l, null, 2) + "\n");
+  writeFileSync(libroDeGasto(sufijo), JSON.stringify(l, null, 2) + "\n");
 }
 const DIR_PUBLICADO = join(RAIZ, "docs", "benchmarks", FECHA);
 
@@ -217,6 +226,12 @@ interface Opciones {
   maxPreguntas: number;
   juez: boolean;
   concurrenciaPreguntas: number;
+  /**
+   * Sufijo del informe y del libro de gasto (`--sufijo=claude` →
+   * `mt-bench-0431-claude.{json,md}`): otra tirada de la MISMA batería no pisa
+   * los ficheros publicados de la anterior, y su tope es el suyo.
+   */
+  sufijo: string;
 }
 
 function leerOpciones(argv: string[]): Opciones {
@@ -244,8 +259,10 @@ function leerOpciones(argv: string[]): Opciones {
     juez: !argv.includes("--sin-juez"),
     // Gama alta: 1 pregunta a la vez × 2 brazos = ≤ 2 peticiones simultáneas por
     // proveedor (hay otros bancos con las mismas claves: el límite pactado es 3).
-    // La tirada anterior: 2 × 2 = 4.
+    // La tirada de siempre: 2 × 2 = 4.
     concurrenciaPreguntas: tirada.gamaAlta ? 1 : 2,
+    // `--sufijo` manda; si no se da, el de la tirada («gama-alta» con --gama-alta).
+    sufijo: (valor("sufijo") ?? tirada.sufijo).replace(/[^a-z0-9-]/gi, ""),
   };
 }
 
@@ -1141,13 +1158,34 @@ interface ResumenDeModelo {
     wilcoxonP: number | null;
   };
   tokens: { A: UsoMedido; B: UsoMedido };
-  cacheDePrefijo: { llamadasConLecturaA: number; llamadasConLecturaB: number; llamadasConEscrituraA: number; llamadasConEscrituraB: number; llamadas: number };
+  cacheDePrefijo: {
+    llamadasConLecturaA: number;
+    llamadasConLecturaB: number;
+    llamadasConEscrituraA: number;
+    llamadasConEscrituraB: number;
+    llamadas: number;
+    /** Llamadas cuyo cuerpo llevaba alguna marca `cache_control` (lo que se pidió, no lo que se escribió). */
+    llamadasConMarcaA: number;
+    llamadasConMarcaB: number;
+    /**
+     * Lo que costó la PRIMA de escritura (la parte por encima del precio normal
+     * de entrada) en cada brazo. Sin lecturas que la amorticen, es el
+     * sobrecoste directo de haber marcado.
+     */
+    primaDeEscrituraUsdA: number;
+    primaDeEscrituraUsdB: number;
+    /** Lo que se ahorraron las lecturas frente a pagar esos tokens a precio normal. */
+    ahorroPorLecturasUsdA: number;
+    ahorroPorLecturasUsdB: number;
+  };
   latencia: { A: { p50: number | null; p95: number | null }; B: { p50: number | null; p95: number | null }; deltaMedioMs: CI | null; llamadasSinReintento: number };
   truncadas: { A: number; B: number };
   cable: { turnos: number; identicos: number; diferencias: Record<string, number>; modelosServidosB: string[]; modelosServidosA: string[] };
   capa: {
     basis: Record<string, number>;
+    /** Σ (baselineEstimate − actual) de los informes de la capa, en dólares. */
     ahorroDeclaradoUsd: number;
+    turnosConAhorroDeclaradoDistintoDe0: number;
     ahorroDeclaradoPorBasis: Record<string, number>;
     costeDeclaradoUsd: number;
     costeMedidoB: number;
@@ -1232,9 +1270,9 @@ function resumir(
   }
   const informes = completas.flatMap((r) => r.B.map((t) => t.informe).filter((x): x is NonNullable<typeof x> => !!x));
   const ahorroPorBasis: Record<string, number> = {};
-  // El ahorro que la capa DECLARA, en dólares: `baselineEstimate − actual`. No
-  // `netSavings`, que es una proporción por petición (0..1): sumarla como $
-  // (lo que hacía este arnés hasta la gama alta) solo daba bien con 0.
+  // El ahorro que la capa DECLARA, en dólares: `baselineEstimate − actual`,
+  // turno a turno. OJO: `cost.netSavings` de la capa es una RAZÓN por petición
+  // (1 − actual/baseline, 0..1), no dólares: sumarla como $ solo daba bien con 0.
   const ahorroUsd = (i: (typeof informes)[number]) => i.cost.baselineEstimate - i.cost.actual;
   for (const i of informes) ahorroPorBasis[i.cost.basis] = (ahorroPorBasis[i.cost.basis] ?? 0) + ahorroUsd(i);
   // ¿Cuadran los tokens que la capa dice haber mandado con los que el proveedor facturó?
@@ -1321,6 +1359,7 @@ function resumir(
         lecturasDeCacheA: lecturasA,
         lecturasDeCacheB: lecturasB,
         ahorroDeclaradoUsd: informes.reduce((s, i) => s + ahorroUsd(i), 0),
+        tokensEscritosEnCacheB: uso("B").cacheEscrita,
       }),
       controlAA: { preguntas: aaA.length, ahorro: aaCI, clase: claseDelAhorro(aaCI, aaA.length) },
       deltaMedioPorPreguntaUsd: completas.length ? bootstrapMeanCI(deltas, { seed: SEMILLA_DE_MUESTRA }) : null,
@@ -1333,6 +1372,12 @@ function resumir(
       llamadasConLecturaB: llamadas.filter((l) => l.brazo === "B" && (l.uso?.cacheLeida ?? 0) > 0).length,
       llamadasConEscrituraA: llamadas.filter((l) => l.brazo === "A" && (l.uso?.cacheEscrita ?? 0) > 0).length,
       llamadasConEscrituraB: llamadas.filter((l) => l.brazo === "B" && (l.uso?.cacheEscrita ?? 0) > 0).length,
+      llamadasConMarcaA: llamadas.filter((l) => l.brazo === "A" && JSON.stringify(l.cuerpo).includes('"cache_control"')).length,
+      llamadasConMarcaB: llamadas.filter((l) => l.brazo === "B" && JSON.stringify(l.cuerpo).includes('"cache_control"')).length,
+      primaDeEscrituraUsdA: precio ? (uso("A").cacheEscrita / 1000) * precio.inputPer1k * (primaDeEscritura(m.familia) - 1) : 0,
+      primaDeEscrituraUsdB: precio ? (uso("B").cacheEscrita / 1000) * precio.inputPer1k * (primaDeEscritura(m.familia) - 1) : 0,
+      ahorroPorLecturasUsdA: precio ? (uso("A").cacheLeida / 1000) * (precio.inputPer1k - (precio.cachedInputPer1k ?? precio.inputPer1k)) : 0,
+      ahorroPorLecturasUsdB: precio ? (uso("B").cacheLeida / 1000) * (precio.inputPer1k - (precio.cachedInputPer1k ?? precio.inputPer1k)) : 0,
     },
     latencia: {
       A: { p50: percentil(latA, 0.5), p95: percentil(latA, 0.95) },
@@ -1354,6 +1399,7 @@ function resumir(
     capa: {
       basis: contar(informes.map((i) => i.cost.basis)),
       ahorroDeclaradoUsd: informes.reduce((s, i) => s + ahorroUsd(i), 0),
+      turnosConAhorroDeclaradoDistintoDe0: informes.filter((i) => Math.abs(i.cost.netSavings) >= 1e-9).length,
       ahorroDeclaradoPorBasis: ahorroPorBasis,
       costeDeclaradoUsd: informes.reduce((s, i) => s + i.cost.actual, 0),
       costeMedidoB: cB.reduce((s, x) => s + x, 0),
@@ -1443,7 +1489,7 @@ function markdown(inf: InformeCompleto): string {
     L.push(`| \`${f.modelo}\` | — | — | — | — | — | — | — | — | — | — | — | — | ${g > 0 ? `${usd(g)} + $0.0000 (brazos pagados de preguntas que no se completaron)` : "0 $"} — ${f.error} |`);
   }
   L.push("");
-  L.push("✂ = subconjunto por presupuesto. La tasa de victoria de B cuenta el empate como ½: 50 % = sin diferencia. «Clase del ahorro»: *ahorro* solo si el IC95 entero está por encima de 0, *sobrecoste* si está entero por debajo; si contiene el 0, *indistinguible de 0*. «¿Atribuible?»: *no* cuando el cable de B solo difiere del de A en campos sin efecto directo en coste (\`prompt_cache_key\`), B no leyó de caché más que A y la capa declara 0 $: la diferencia es muestreo de la salida. El control A/A mide ese ruido donde la capa no tocó nada.");
+  L.push("✂ = subconjunto por presupuesto. La tasa de victoria de B cuenta el empate como ½: 50 % = sin diferencia. «Clase del ahorro»: *ahorro* solo si el IC95 entero está por encima de 0, *sobrecoste* si está entero por debajo; si contiene el 0, *indistinguible de 0*. «¿Atribuible?»: *no* cuando el cable de B solo difiere del de A en campos sin efecto directo en coste (\`prompt_cache_key\`, o marcas \`cache_control\` que el proveedor ignoró porque no escribieron ni leyeron un token), B no leyó de caché más que A y la capa declara 0 $: la diferencia es muestreo de la salida. El control A/A mide ese ruido donde la capa no tocó nada.");
   L.push("");
   L.push("## Qué es medido y qué es modelado");
   L.push("");
@@ -1459,10 +1505,16 @@ function markdown(inf: InformeCompleto): string {
     L.push(`- Tope de salida por llamada: ${r.maxSalida} (igual en A y B; en B, el \`maxOutputTokens\` nativo de la capa). Temperatura: ${r.temperatura}. Precio: ${r.precio ? `${r.precio.inputPer1k}/${r.precio.outputPer1k} $ por 1k (cacheada ${r.precio.cachedInputPer1k ?? "—"})` : "SIN FILA EN EL CATÁLOGO"}.`);
     L.push(`- Coste A ${usd(r.coste.A)} · B ${usd(r.coste.B)} · ahorro agrupado ${ci(r.coste.ahorroPooled)} · estratificado ${ci(r.coste.ahorroEstratificadoPorCategoria)} (**${r.coste.clase}**) · Δ medio por pregunta ${r.coste.deltaMedioPorPreguntaUsd ? `${(r.coste.deltaMedioPorPreguntaUsd.point * 1e6).toFixed(1)} µ$ [${(r.coste.deltaMedioPorPreguntaUsd.lower * 1e6).toFixed(1)}, ${(r.coste.deltaMedioPorPreguntaUsd.upper * 1e6).toFixed(1)}]` : "—"} · Wilcoxon p ${r.coste.wilcoxonP?.toFixed(3) ?? "—"}.`);
     L.push(`- Tokens A: entrada ${r.tokens.A.entrada}, caché leída ${r.tokens.A.cacheLeida}, escrita ${r.tokens.A.cacheEscrita}, salida ${r.tokens.A.salida} (razonamiento ${r.tokens.A.razonamiento}). B: ${r.tokens.B.entrada} / ${r.tokens.B.cacheLeida} / ${r.tokens.B.cacheEscrita} / ${r.tokens.B.salida} (${r.tokens.B.razonamiento}).`);
+    {
+      const c = r.cacheDePrefijo;
+      L.push(
+        `- Caché de prefijo: cuerpos con \`cache_control\` A ${c.llamadasConMarcaA ?? 0} / B ${c.llamadasConMarcaB ?? 0} de ${c.llamadas / 2} llamadas por brazo; llamadas que ESCRIBIERON A ${c.llamadasConEscrituraA} / B ${c.llamadasConEscrituraB} (tokens ${r.tokens.A.cacheEscrita} / ${r.tokens.B.cacheEscrita}); que LEYERON A ${c.llamadasConLecturaA} / B ${c.llamadasConLecturaB} (tokens ${r.tokens.A.cacheLeida} / ${r.tokens.B.cacheLeida}). Prima de escritura pagada A ${usd(c.primaDeEscrituraUsdA ?? 0)} / B ${usd(c.primaDeEscrituraUsdB ?? 0)}; ahorro por lecturas A ${usd(c.ahorroPorLecturasUsdA ?? 0)} / B ${usd(c.ahorroPorLecturasUsdB ?? 0)}; neto de la caché en B ${usd((c.ahorroPorLecturasUsdB ?? 0) - (c.primaDeEscrituraUsdB ?? 0))} (${r.coste.B > 0 ? (((c.ahorroPorLecturasUsdB ?? 0) - (c.primaDeEscrituraUsdB ?? 0)) / r.coste.B * 100).toFixed(2) : "—"} % del coste de B).`,
+      );
+    }
     L.push(`- Atribución: ${r.coste.atribucion.motivo}. Control A/A (turno 1, cuerpo idéntico en ${r.coste.controlAA.preguntas} preguntas): «ahorro» ${ci(r.coste.controlAA.ahorro)} → ${r.coste.controlAA.clase}.`);
     L.push(`- Truncadas por el tope: A ${r.truncadas.A}, B ${r.truncadas.B}. Respuestas byte-idénticas A=B: ${r.respuestasIdenticasPorTurno} turnos.`);
     L.push(`- Cable: ${r.cable.identicos}/${r.cable.turnos} turnos con cuerpo idéntico (normalizado; en el turno 2, con la respuesta de B al turno 1 puesta en la historia de A) en A y B; campos que difieren: ${Object.entries(r.cable.diferencias).map(([k, v]) => `\`${k}\` ×${v}`).join(", ") || "ninguno"}. Modelo servido A: ${r.cable.modelosServidosA.join(", ")}; B: ${r.cable.modelosServidosB.join(", ")}.`);
-    L.push(`- Lo que dice la capa: basis ${JSON.stringify(r.capa.basis)}, ahorro declarado ${usd(r.capa.ahorroDeclaradoUsd)} (${JSON.stringify(Object.fromEntries(Object.entries(r.capa.ahorroDeclaradoPorBasis).map(([k, v]) => [k, Number(v.toFixed(6))])))}), coste declarado ${usd(r.capa.costeDeclaradoUsd)} frente a ${usd(r.capa.costeMedidoB)} medido; turnos cuyo conteo de tokens no cuadra con el proveedor: ${r.capa.tokensQueNoCuadran}; llamadas extra al proveedor: ${r.capa.llamadasExtraAlProveedor}; caché ${JSON.stringify(r.capa.cacheResult)}; ruta ${JSON.stringify(r.capa.executionClass)}.`);
+    L.push(`- Lo que dice la capa: basis ${JSON.stringify(r.capa.basis)}, ahorro declarado (Σ baseline − actual) ${usd(r.capa.ahorroDeclaradoUsd)} en ${r.capa.turnosConAhorroDeclaradoDistintoDe0 ?? "?"} turnos distintos de 0 (${JSON.stringify(Object.fromEntries(Object.entries(r.capa.ahorroDeclaradoPorBasis).map(([k, v]) => [k, Number(v.toFixed(6))])))}), coste declarado ${usd(r.capa.costeDeclaradoUsd)} frente a ${usd(r.capa.costeMedidoB)} medido; turnos cuyo conteo de tokens no cuadra con el proveedor: ${r.capa.tokensQueNoCuadran}; llamadas extra al proveedor: ${r.capa.llamadasExtraAlProveedor}; caché ${JSON.stringify(r.capa.cacheResult)}; ruta ${JSON.stringify(r.capa.executionClass)}.`);
     L.push(`- Calidad: ${r.calidad.juzgada ? `${r.calidad.turnosJuzgados} turnos de ${r.calidad.preguntasJuzgadas} preguntas (${r.calidad.llamadasAlJuez} llamadas al juez${r.calidad.cortePorPresupuesto ? ", cortado por el tope del juez" : ""}); B gana ${r.calidad.victoriasB}, A gana ${r.calidad.victoriasA}, empate ${r.calidad.empates} (de ellos ${r.calidad.inconsistentes} por partidas discrepantes y ${r.calidad.identicas} por respuestas idénticas); errores de lectura ${r.calidad.errores}; turnos sin juzgar por el tope ${r.calidad.turnosSinPresupuesto}; tasa de victoria B ${ci(r.calidad.tasaDeVictoriaB)}. Por categoría: ${Object.entries(r.calidad.porCategoria).map(([k, v]) => `${k} ${v.B}/${v.A}/${v.empate}`).join(", ") || "—"}.` : "no juzgada (--sin-juez)."}`);
     L.push(`- Gasto real: A ${usd(r.gasto.generacionA)} + B ${usd(r.gasto.generacionB)} = ${usd(r.gasto.total)} de ${usd(r.gasto.tope)}; juez ${usd(r.gasto.juez)} de ${usd(r.gasto.topeJuez)}. Reservas superadas: ${r.gasto.excesosDeReserva}.`);
     if (r.errores.length) L.push(`- Errores: ${r.errores.map((e) => `\`${e.replace(/`/g, "'").replace(/\s+/g, " ").slice(0, 200)}\``).join("; ")}`);
@@ -1576,7 +1628,6 @@ function cargarTiradaAnterior(nombre: string, libro: LibroDeGasto): { informe: I
 async function main(): Promise<void> {
   const op = leerOpciones(process.argv.slice(2));
   TIRADA = op.tirada;
-  if (TIRADA.gamaAlta) LIBRO_DE_GASTO = join(DIR_TRABAJO, `gasto-live-${PAQUETE.version}${TIRADA.sufijo}.json`);
   const cred = credenciales();
 
   // La guarda de hosts, ANTES de cualquier red: el `fetch` global (lo que la capa
@@ -1592,9 +1643,9 @@ async function main(): Promise<void> {
   );
   const base: typeof fetch = op.mock ? conGuardaDeHosts(fetchFalso(op.mockAnthropic401)) : globalThis.fetch;
   const ds = await cargarDataset(!op.mock);
-  const nombre = `mt-bench-${PAQUETE.version.replace(/\./g, "")}${TIRADA.sufijo}${op.mock ? "-mock" : ""}`;
+  const nombre = `mt-bench-${PAQUETE.version.replace(/\./g, "")}${op.sufijo ? `-${op.sufijo}` : ""}${op.mock ? "-mock" : ""}`;
   if (op.desdeCrudo && op.mock) throw new Error("--desde-crudo es para una tirada LIVE");
-  const libroInicial: LibroDeGasto = op.mock ? { generacion: {}, juez: {} } : leerLibro();
+  const libroInicial: LibroDeGasto = op.mock ? { generacion: {}, juez: {} } : leerLibro(op.sufijo);
   const anterior = op.desdeCrudo ? cargarTiradaAnterior(nombre, libroInicial) : null;
   const desdeCrudo = anterior?.porModelo ?? null;
 
@@ -1711,7 +1762,7 @@ async function main(): Promise<void> {
     const anotar = (tipo: keyof LibroDeGasto) => (usd: number) => {
       if (op.mock) return;
       libro[tipo][m.id] = (libro[tipo][m.id] ?? 0) + usd;
-      guardarLibro(libro);
+      guardarLibro(libro, op.sufijo);
     };
     const previo = desdeCrudo?.get(m.id) ?? null;
     const tope = new Tope(`generación ${m.id}`, previo ? TIRADA.topeDe(m) : Math.max(0, TIRADA.topeDe(m) - previoGen), anotar("generacion"));
@@ -1842,17 +1893,27 @@ async function main(): Promise<void> {
     modelos: resumenes,
     modelosFallidos: fallidos,
     limitaciones: [
-      "MT-Bench es conversación de 2 turnos, prompts cortos (cientos de tokens) y sin herramientas ni contrato de salida: casi ninguna palanca de la capa tiene forma sobre la que actuar, y la caché de prefijo del proveedor no llega al mínimo de tramo (1024 tokens en OpenAI) en la mayoría de turnos. Este banco mide sobre todo que la capa NO empeore (coste, latencia, calidad) en tráfico de chat, no cuánto ahorra en tráfico agéntico.",
+      "MT-Bench es conversación de 2 turnos, prompts cortos (cientos de tokens) y sin herramientas ni contrato de salida: casi ninguna palanca de la capa tiene forma sobre la que actuar, y la caché de prefijo del proveedor no llega al mínimo de tramo (1024 tokens en OpenAI y en claude-sonnet-5, 4096 en claude-haiku-4-5) en la mayoría de turnos. Este banco mide sobre todo que la capa NO empeore (coste, latencia, calidad) en tráfico de chat, no cuánto ahorra en tráfico agéntico.",
       "Una capa NUEVA por pregunta (caché y memoria frías): no hay repeticiones entre preguntas, así que la caché exacta/semántica de la capa no tiene ocasión de acertar. Es a propósito: el tráfico repetido va en otra batería.",
       `Subconjunto estratificado con semilla cuando las 80 preguntas no caben en el tope por modelo (${TIRADA.gamaAlta ? `${fmtUsd(TOPE_GAMA_ALTA_POR_MODELO_USD)} cada uno` : `${fmtUsd(TOPE_POR_FAMILIA_USD.openai)} OpenAI / ${fmtUsd(TOPE_POR_FAMILIA_USD.anthropic)} Anthropic`}); la calidad, además, solo se juzga en las preguntas que caben en ${fmtUsd(TOPE_DEL_JUEZ_USD)} de juez EN TOTAL (repartidos entre los modelos medidos), así que su intervalo es ancho.`,
       "El juez es gpt-4o por Vercel AI Gateway: sesgos conocidos de juez LLM (verbosidad, autopreferencia de familia OpenAI). Las posiciones intercambiadas controlan el sesgo de posición, no los demás.",
       TIRADA.gamaAlta
         ? "Temperatura: la de FastChat por categoría solo en Gemini (0,7 en writing/roleplay). Opus 5.5 y Sonnet 5.5 rechazan `temperature` con 400 («`temperature` is deprecated for this model», humo LIVE) y gpt-5.x no la admite: en esos cuatro no se manda en ningún brazo y muestrean a la temperatura por defecto del proveedor. Parte de las diferencias de calidad entre A y B es muestreo, no la capa."
-        : "Temperatura de FastChat por categoría (0,7 en writing/roleplay): parte de las diferencias de calidad entre A y B en esas categorías es muestreo, no la capa. Los dos brazos muestrean igual; gpt-5.4-mini no acepta temperature y no se manda en ningún brazo.",
+        : "Temperatura de FastChat por categoría (0,7 en writing/roleplay): parte de las diferencias de calidad entre A y B en esas categorías es muestreo, no la capa. Los dos brazos muestrean igual; gpt-5.4-mini y claude-sonnet-5 no aceptan temperature y no se manda en ningún brazo.",
       "El dinero es modelado: tokens medidos × precio de lista del catálogo del paquete. Descuentos negociados, batch o niveles no entran.",
       TIRADA.gamaAlta
         ? "Tope de salida NATIVO de la 0.4.31 en el brazo B (`maxOutputTokens` → `max_completion_tokens` en OpenAI, `max_tokens` en Anthropic y en el endpoint de Gemini) y el mismo campo y valor en el brazo A. Anthropic lleva 1024 (el de FastChat; Opus/Sonnet 5.5 son verbosos y parte de sus respuestas se truncan, por igual en A y B); gpt-5.x y Gemini 3.x llevan 4096 porque su razonamiento cuenta dentro. Esfuerzo de razonamiento: el POR DEFECTO de cada proveedor en los dos brazos (la 0.4.31 no tiene campo para fijarlo, y el brazo A tampoco lo manda)."
-        : "Tope de salida NATIVO de la 0.4.31 en el brazo B (`maxOutputTokens` → `max_completion_tokens` en OpenAI, `max_tokens` en Anthropic) y el mismo campo y valor en el brazo A. gpt-5.4-mini lleva 4096 (su razonamiento cuenta dentro); FastChat usa 1024.",
+        : "Tope de salida NATIVO de la 0.4.31 en el brazo B (`maxOutputTokens` → `max_completion_tokens` en OpenAI, `max_tokens` en Anthropic) y el mismo campo y valor en el brazo A. gpt-5.4-mini y claude-sonnet-5 llevan 4096 (su razonamiento —en Sonnet 5, el pensamiento adaptativo que corre por defecto sin `thinking`— cuenta dentro); FastChat usa 1024.",
+      ...(modelos.some((m) => m.familia === "anthropic")
+        ? [
+            "Anthropic: una capa nueva por pregunta y solo 2 turnos. La capa marca `cache_control` en el turno 2 (fin del prefijo estable = la respuesta del turno 1), pero no hay turno 3 que lea esa escritura: en este banco la marca solo puede costar (prima 1,25× sobre el tramo escrito) y nunca amortizarse. En una conversación larga, esa misma marca es la que haría que el turno siguiente leyera a 0,1×; este banco no mide ese caso.",
+          ]
+        : []),
+      ...(modelos.some((m) => m.id === "claude-sonnet-5")
+        ? [
+            "claude-sonnet-5 piensa (adaptativo) por defecto y el pensamiento se omite en la respuesta (`display: omitted`) pero se factura dentro de `output_tokens`; el juez solo ve el texto. Los dos brazos lo hacen igual (ninguno manda `thinking`).",
+          ]
+        : []),
       ...(op.fuente
         ? [
             `Brazo B = ${FUENTE.brazoB}. No es el paquete instalado de npm con licencia (no hay licencia de pruebas); se comprobó que el build del fuente da el mismo dist/index.js (sha256) que el tarball de npm, pero la ruta de licencia es la de desarrollo (sin verificación de licencia ni metering): la parte de licencia/medición del paquete no se ejerce aquí.`,

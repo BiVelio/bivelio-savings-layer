@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   CATEGORIAS,
   DATASET,
+  MODELOS_POR_DEFECTO,
   PresupuestoAgotado,
   Tope,
   combinarPartidas,
@@ -203,6 +204,13 @@ describe("MT-Bench 0.4.31: tope nativo, presupuesto, hosts y fuente", () => {
     expect(TOPE_DEL_JUEZ_USD).toBe(0.5);
   });
 
+  it("claude-sonnet-5 no recibe temperature (el API la rechaza) y lleva 4096 porque piensa por defecto", () => {
+    const s = MODELOS_POR_DEFECTO.find((m) => m.id === "claude-sonnet-5")!;
+    expect(s).toMatchObject({ familia: "anthropic", temperatura: false, maxSalida: 4096 });
+    const h = MODELOS_POR_DEFECTO.find((m) => m.id === "claude-haiku-4-5")!;
+    expect(h).toMatchObject({ familia: "anthropic", temperatura: true, maxSalida: 1024 });
+  });
+
   it("el juez reparte lo que QUEDA entre los modelos pendientes y nunca pasa del total", () => {
     expect(parteDelJuez(0.5, 0, 2)).toBeCloseTo(0.25);
     // El primero gastó 0,20: al segundo le toca el resto entero.
@@ -247,6 +255,14 @@ describe("MT-Bench 0.4.31: tope nativo, presupuesto, hosts y fuente", () => {
     expect(atribucionDelAhorro({ ...base, diferenciasDelCable: { messages: 3 } }).atribuible).toBe(true);
     expect(atribucionDelAhorro({ ...base, ahorroDeclaradoUsd: 0.01 }).atribuible).toBe(true);
     expect(atribucionDelAhorro({ ...base, clase: "muestra insuficiente" }).atribuible).toBeNull();
+  });
+
+  it("una marca cache_control que no escribió ni leyó un token no es efecto de la capa; si escribió, sí", () => {
+    const base = { clase: "sobrecoste" as const, diferenciasDelCable: { "messages:cache_control": 80 }, lecturasDeCacheA: 0, lecturasDeCacheB: 0, ahorroDeclaradoUsd: 0 };
+    expect(atribucionDelAhorro({ ...base, tokensEscritosEnCacheB: 0 }).atribuible).toBe(false);
+    expect(atribucionDelAhorro({ ...base, tokensEscritosEnCacheB: 1200 }).atribuible).toBe(true);
+    // Sin el dato, lo conservador: cuenta como cambio con efecto.
+    expect(atribucionDelAhorro(base).atribuible).toBe(true);
   });
 });
 

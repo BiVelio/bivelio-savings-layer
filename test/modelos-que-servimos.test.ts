@@ -47,6 +47,7 @@ const MODELOS_QUE_SERVIMOS: Readonly<Record<string, string>> = {
   // y los insignia que un cliente manda hoy por el SDK o el gateway.
   "claude-opus-5-5": "insignia de Anthropic a 2026-09-27",
   "claude-sonnet-5": "banco 2026",
+  "claude-sonnet-5-5": "Sonnet vigente de Anthropic desde el 2026-09-28; benchmarks/nativo.ts (tablas de effort y de búsqueda)",
   "claude-haiku-4-5": "banco 2026; gateway/init-fragmentos.ts (bvsala init, pilas de Anthropic)",
   "gpt-6-astra": "insignia de OpenAI a 2026-09-27",
   "gpt-6-sol": "familia gpt-6",
@@ -56,6 +57,8 @@ const MODELOS_QUE_SERVIMOS: Readonly<Record<string, string>> = {
   "gpt-5.6-luna": "familia gpt-5.6",
   "gemini-3.8-flash": "banco 2026 (Gemini 3.x Flash)",
   "gpt-5.4-mini": "benchmarks/publicados/bfcl (batería pública BFCL, 2026-09-28)",
+  "gpt-5.5": "benchmarks/publicados/* (baterías públicas de gama alta, 2026-09-29)",
+  "gemini-3.1-pro-preview": "benchmarks/publicados/* (baterías públicas de gama alta, 2026-09-29; el único Pro 3.x con fila)",
 };
 
 /** Lo que el barrido encuentra y NO es un id de modelo, con el porqué. */
@@ -73,6 +76,7 @@ const NO_SON_MODELOS: Readonly<Record<string, string>> = {
 const MENCIONADOS_NO_SERVIDOS: Readonly<Record<string, string>> = {
   "gpt-5": "prefijo de familia (startsWith) en el banco y el README",
   "gpt-6": "prefijo de familia (startsWith) en el banco",
+  "gpt-5.6": "nombre de familia en el arnés de MT-Bench (gama alta): desde gpt-5.6 OpenAI desglosa `cache_write_tokens`; el modelo servido es gpt-5.6-sol",
   "gpt-4": "nombre de fichero del dataset MT-Bench de FastChat (reference_answer/gpt-4.jsonl), no un modelo que se llame",
   "gemini-2": "prefijo de familia en benchmarks/nativo.ts",
   "claude-mythos-5": "tabla de compatibilidad de Anthropic en benchmarks/nativo.ts",

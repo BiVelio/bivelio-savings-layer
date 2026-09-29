@@ -23,6 +23,12 @@ export interface ProviderRequest {
   maxOutputTokens?: number;
   temperature?: number;
   seed?: number;
+  /**
+   * `SavingsRequest.reasoningEffort`, as the caller declared it. The
+   * OpenAI-compatible adapter sends it as `reasoning_effort`; absent means
+   * nothing is sent.
+   */
+  reasoningEffort?: string;
   /** Backend id selected by the constraints layer, for observability. */
   constraintBackend?: string;
   /**
@@ -34,6 +40,9 @@ export interface ProviderRequest {
    * boundary; adapters that cache automatically (OpenAI) may ignore it. The
    * count is a claim about byte-for-byte stability, so a caller that rewrites an
    * earlier turn must lower it.
+   *
+   * `0` claims only what renders BEFORE the messages: the tool catalogue. The
+   * Anthropic adapter then marks the end of the `tools` block (its last tool).
    */
   stablePrefixMessages?: number;
   /**
@@ -198,6 +207,15 @@ export interface ProviderResponse {
    * podía distinguirlo y hacía exactamente eso.
    */
   finishReason?: "stop" | "length" | "content_filter" | "tool_calls" | (string & {});
+  /**
+   * The provider's own reason behind `finishReason`, when it gave one: Gemini's
+   * OpenAI-compatible endpoint stops a filtered answer with
+   * `finish_reason: "content_filter: OTHER"` (or `PROHIBITED_CONTENT`,
+   * `SAFETY`…), which the built-in adapter reports as `finishReason:
+   * "content_filter"` and `finishReasonDetail: "OTHER"`. Informational: the
+   * layer decides on `finishReason` alone.
+   */
+  finishReasonDetail?: string;
   /**
    * The refusal message the model returned INSTEAD of an answer, exactly as the
    * provider wrote it: OpenAI's `message.refusal` (Chat Completions with
