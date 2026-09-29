@@ -9,6 +9,8 @@ import { PRIMA_ESCRITURA_CACHE, PRIMA_ESCRITURA_CACHE_1H, primaDeEscritura } fro
 import { extraDeCompactacion } from "../src/providers/iteraciones-de-compactacion.js";
 import { negativaNoCobrada } from "../src/providers/anthropic-uso.js";
 import { negativaEnTexto } from "../src/providers/negativa-en-texto.js";
+import { esParadaDeFiltro } from "../src/providers/parada-de-filtro.js";
+import { salidaOculta } from "../src/providers/salida-oculta.js";
 import { temaSensibleEnTextos, type TemaSensible } from "../src/policy/tema-sensible.js";
 import { SseParser, type SseMessage } from "../src/providers/sse.js";
 import type { HuellaDeLaPrimaria } from "./coalescencia.js";
@@ -429,6 +431,7 @@ function mapearUsoResponses(u: UsoResponses): UsoSse {
 interface UsoChat {
   prompt_tokens?: number;
   completion_tokens?: number;
+  total_tokens?: number;
   prompt_tokens_details?: { cached_tokens?: number; cache_write_tokens?: number };
 }
 
@@ -437,12 +440,19 @@ interface UsoChat {
  * API (es la misma casa y la misma fórmula oficial: entrada ordinaria =
  * prompt − cached − writes). Null si falta cualquiera de los dos contadores:
  * un conteo a medias no es el contador del proveedor, y nada se completa con 0.
+ *
+ * La SALIDA es la facturada: `completion_tokens` más lo que `total_tokens` trae
+ * de más (`salidaOculta`, src/providers/salida-oculta.ts). El endpoint
+ * compatible de Gemini deja su pensamiento fuera de `completion_tokens` y lo
+ * factura como salida; en OpenAI (y en cualquier servidor que ya cuente el
+ * razonamiento dentro) `total_tokens = prompt + completion` y no se suma nada,
+ * así que no hay doble conteo. Es la misma regla que el adaptador del SDK.
  */
 export function mapearUsoChat(u: UsoChat | null | undefined): UsoSse | null {
   if (!u || typeof u.prompt_tokens !== "number" || typeof u.completion_tokens !== "number") return null;
   return mapearUsoResponses({
     input_tokens: u.prompt_tokens,
-    output_tokens: u.completion_tokens,
+    output_tokens: u.completion_tokens + salidaOculta(u),
     input_tokens_details: {
       ...(u.prompt_tokens_details?.cached_tokens !== undefined ? { cached_tokens: u.prompt_tokens_details.cached_tokens } : {}),
       ...(u.prompt_tokens_details?.cache_write_tokens !== undefined
@@ -489,7 +499,8 @@ export class ObservadorChatCompletions {
   }
 
   /**
-   * E7 · ¿algún chunk cerró su elección con `finish_reason: "content_filter"`, o
+   * E7 · ¿algún chunk cerró su elección con `finish_reason: "content_filter"` (con o
+   * sin motivo: `"content_filter: OTHER"` de Gemini), o
    * trajo un `delta.refusal` no vacío (la negativa de salidas estructuradas)?
    */
   negativa(): boolean {
@@ -749,7 +760,9 @@ export function respuestaJsonFallida(path: string, cuerpo: Buffer | string): boo
 
 /**
  * ¿Alguna elección de Chat Completions es una negativa? `finish_reason:
- * "content_filter"`, o la negativa de salidas estructuradas: un `refusal` no
+ * "content_filter"` —también con motivo, `"content_filter: OTHER"`, que es como
+ * cierra Gemini por su endpoint compatible (`esParadaDeFiltro`,
+ * src/providers/parada-de-filtro.ts)—, o la negativa de salidas estructuradas: un `refusal` no
  * vacío en `message` (JSON) o en `delta` (stream), que llega con
  * `finish_reason: "stop"` y sin `content`. El `refusal: null` de toda respuesta
  * normal no cuenta, y un `content` vacío sin `refusal` tampoco.
@@ -764,7 +777,7 @@ function eleccionNegada(choices: unknown): boolean {
     choices.some((c) => {
       if (c === null || typeof c !== "object") return false;
       const e = c as { finish_reason?: unknown; message?: unknown; delta?: unknown };
-      return e.finish_reason === "content_filter" || conNegativa(e.message) || conNegativa(e.delta);
+      return esParadaDeFiltro(e.finish_reason) || conNegativa(e.message) || conNegativa(e.delta);
     })
   );
 }
