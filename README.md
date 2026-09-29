@@ -211,7 +211,8 @@ import { createSavingsLayer, OpenAICompatibleProvider } from "@bivelio/savings-l
 // Your provider. LLM traffic goes straight to it — the SDK never proxies it.
 // Any OpenAI-compatible endpoint works: OpenAI, Azure, vLLM, SGLang, a gateway.
 // Model ids are qualified (`openai/gpt-4o-mini`); the prefix is stripped on the
-// wire for OpenAI and Azure and kept for gateways — see `stripProviderPrefix`.
+// wire for OpenAI, Azure and Google's Gemini API and kept for gateways — see
+// `stripProviderPrefix`.
 const provider = new OpenAICompatibleProvider({
   baseUrl: "https://api.openai.com/v1",
   apiKey: process.env.OPENAI_API_KEY,
@@ -871,6 +872,25 @@ request is repeated once with the other one (nothing was generated, so nothing i
 billed twice) and the model is remembered. To choose the field yourself:
 `new OpenAICompatibleProvider({ baseUrl, maxTokensParam: "max_completion_tokens" })`.
 
+**OpenAI-compatible endpoints that are not OpenAI** (Gemini's
+`generativelanguage.googleapis.com/v1beta/openai`, LiteLLM, vLLM, Ollama, a router).
+`prompt_cache_key`, OpenAI's prefix-cache routing hint, goes only to OpenAI's own API:
+Gemini answers 400 to a field it does not know, and up to 0.4.31 every request with a
+cached prefix failed there. A proxy in front of OpenAI that forwards it can opt in with
+`sendPromptCacheKey: true`. Any optional field an endpoint still rejects by name
+(`prompt_cache_key`, `service_tier`, `seed`, `reasoning_effort`) is dropped, the request
+repeated once and the model remembered; `reasoning_effort` is never dropped on OpenAI's
+own API, where its 400 is the answer. Gemini leaves its thinking tokens out of
+`completion_tokens` and bills them as output, so the layer counts output as
+`total_tokens − prompt_tokens` whenever the total is larger (and reports the difference
+as reasoning); on OpenAI's API `completion_tokens` already include reasoning and nothing
+is added. Gemini stops a filtered answer with `finish_reason: "content_filter: OTHER"`
+(or another reason): it is `finishReason: "content_filter"` (the adapter keeps the
+reason in `finishReasonDetail` and the report's cache trace names it), and like every
+provider refusal it is measured, never
+cached and never credited. Google does not document that such refusals are free, so
+they are costed from their `usage` like any call.
+
 The cap is yours, not a saving: it is never credited as output avoided. An answer
 it cut (`finishReason: "length"`) is not cached, and
 `report.qualityLedger.truncation` says the limit was yours.
@@ -929,6 +949,18 @@ console.log(res.text);
   the SDK warns once.
 - **Errors.** When a tool fails, put the error in `content` and set `isError: true`.
   Anthropic receives it as `is_error`; providers without such a flag get the text.
+- **Gemini 3's thought signature.** Through its OpenAI-compatible endpoint Gemini
+  returns each call with `extra_content.google.thought_signature` and rejects the next
+  turn with a 400 if the call comes back without it. It arrives in `call.extraContent`;
+  pushing `res.toolCalls` back as they came (as above) sends it back untouched. It is
+  opaque and not part of any cache key.
+- **gpt-5.6-sol, gpt-5.6-terra and gpt-5.6-luna with tools need `reasoningEffort: "none"`.**
+  On Chat Completions OpenAI rejects function tools for these models unless
+  `reasoning_effort` is `"none"` («Function tools with reasoning_effort are not supported for gpt-5.6-sol in
+  /v1/chat/completions»). Declare it on the request:
+  `layer.generate({ model: "openai/gpt-5.6-sol", messages, tools, reasoningEffort: "none" })`.
+  The layer never picks an effort itself: without the field nothing is sent. It is part
+  of the cache key, like `temperature` and `seed`.
 
 A tool‑call turn is never served from cache and never counted as an avoided call:
 an action that has not run yet cannot be a saving. The answer that follows a tool loop

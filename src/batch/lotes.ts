@@ -286,6 +286,7 @@ function aPeticionDeProveedor(r: SavingsRequest, marcarPrefijo: boolean): Provid
     ...(topeDeSalida(r) != null ? { maxOutputTokens: topeDeSalida(r)! } : {}),
     ...(r.temperature != null ? { temperature: r.temperature } : {}),
     ...(r.seed != null ? { seed: r.seed } : {}),
+    ...(r.reasoningEffort != null ? { reasoningEffort: r.reasoningEffort } : {}),
     ...(marcarPrefijo && cabecera > 0 ? { stablePrefixMessages: cabecera } : {}),
   };
 }

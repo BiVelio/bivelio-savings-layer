@@ -18,6 +18,7 @@ import {
 } from "../router/busqueda-nativa.js";
 import type { ToolSelection } from "../router/tool-selector.js";
 import { salidaNoRepetible } from "../pricing/razonamiento.js";
+import { esParadaDeFiltro } from "../providers/parada-de-filtro.js";
 
 import type {
   SavingsRequest,
@@ -3030,6 +3031,7 @@ export class SavingsPipeline {
         : {}),
       ...(request.temperature != null ? { temperature: request.temperature } : {}),
       ...(request.seed != null ? { seed: request.seed } : {}),
+      ...(request.reasoningEffort != null ? { reasoningEffort: request.reasoningEffort } : {}),
       // LO DECLARA EL CLIENTE Y VIAJA TAL CUAL. Que una peticion sea diferible es
       // una propiedad del negocio, no del texto, asi que no hay heuristica que
       // pueda deducirlo: el mismo prompt es diferible en un backfill nocturno y no
@@ -4188,7 +4190,11 @@ export class SavingsPipeline {
                   ? "skipped: the provider answer carries content this layer cannot replay"
                   : negativa
                     ? "skipped: the provider refused (stop_reason \"refusal\" / finish_reason \"content_filter\" / " +
-                      "a refusal message); " +
+                      "a refusal message" +
+                      (response.finishReasonDetail !== undefined
+                        ? `; provider reason: ${response.finishReasonDetail}`
+                        : "") +
+                      "); " +
                       "a refusal is not an answer, and replaying it would credit an avoided call the provider " +
                       "may not have billed"
                     : reglaDeNegativaEnTexto !== null
@@ -4699,6 +4705,7 @@ export class SavingsPipeline {
         maxOutputTokens: SALIDA_DEL_SONDEO_TOKENS,
         ...(request.temperature != null ? { temperature: request.temperature } : {}),
         ...(request.seed != null ? { seed: request.seed } : {}),
+        ...(request.reasoningEffort != null ? { reasoningEffort: request.reasoningEffort } : {}),
       }, testigo);
     } catch (err) {
       // Ni un token que apuntar: la llamada no llegó a devolver uso. Lo que sí
@@ -5308,6 +5315,7 @@ export class SavingsPipeline {
         : {}),
       ...(request.temperature != null ? { temperature: request.temperature } : {}),
       ...(request.seed != null ? { seed: request.seed } : {}),
+      ...(request.reasoningEffort != null ? { reasoningEffort: request.reasoningEffort } : {}),
     });
     const providerMs = this.now() - providerStart;
 
@@ -6181,7 +6189,12 @@ function contractKey(request: SavingsRequest): string {
  * E7 · ¿ES UNA NEGATIVA DEL PROVEEDOR? Las tres formas que conoce la capa:
  *   · `finishReason: "content_filter"`: el `finish_reason` de Chat Completions,
  *     y el `stop_reason: "refusal"` de la API de Mensajes ya traducido
- *     (`traducirParada`, src/providers/anthropic-uso.ts);
+ *     (`traducirParada`, src/providers/anthropic-uso.ts). También con motivo,
+ *     `"content_filter: OTHER"`: así cierra Gemini por su endpoint compatible
+ *     con OpenAI. El adaptador de la capa ya lo normaliza, pero un proveedor
+ *     propio o un marco (LangChain pasa el `finish_reason` tal cual) no, y
+ *     hasta la 0.4.31 esa negativa se guardaba y se repetía como `reference`
+ *     (banco XSTest de gama alta, PR #396). Ver `esParadaDeFiltro`;
  *   · `refusal` no vacío: la negativa de salidas estructuradas de OpenAI
  *     (`message.refusal`), que llega con `finish_reason: "stop"` y sin
  *     `content` (https://developers.openai.com/api/docs/guides/structured-outputs,
@@ -6195,7 +6208,7 @@ function contractKey(request: SavingsRequest): string {
  */
 function esNegativaDelProveedor(response: ProviderResponse): boolean {
   return (
-    response.finishReason === "content_filter" ||
+    esParadaDeFiltro(response.finishReason) ||
     (typeof response.refusal === "string" && response.refusal !== "")
   );
 }
