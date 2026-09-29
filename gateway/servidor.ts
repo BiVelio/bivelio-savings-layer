@@ -56,7 +56,15 @@ import { ajustarDiales, conBetaDeElision } from "./palanca.js";
 import { avisoDeBusquedaDeHerramientas, verHerramientas } from "./busqueda-de-herramientas.js";
 import { aplicarEsfuerzo, conBetaDeEsfuerzo, esNivel } from "./esfuerzo.js";
 import { reescribirModelo, type CambioDeModelo } from "./hermano.js";
-import { decidirRebaja, fraccionNueva, huellaDe, MemoriaDePrefijos, parsearMensajes, rebajarTtlDeCache } from "./tarifa.js";
+import {
+  ahorroDeRebajaEnSombra,
+  decidirRebaja,
+  fraccionNueva,
+  huellaDe,
+  MemoriaDePrefijos,
+  parsearMensajes,
+  rebajarTtlDeCache,
+} from "./tarifa.js";
 import { Coalescedor, claveDePeticion, materialDeCabeceras, MAX_CAPTURA_BYTES, type HuellaDeLaPrimaria } from "./coalescencia.js";
 import { esUpstreamOficial } from "./upstream.js";
 import { RecuentoDeMedicion, type EstadoDeMedicion } from "./recuento.js";
@@ -608,6 +616,11 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
      * primaria (es la misma respuesta).
      */
     sinCobro?: boolean,
+    /**
+     * Licencia Medir · lo que la rebaja de TTL HABRÍA hecho con este cuerpo
+     * (marcas contadas, nada reescrito). Solo alimenta el registro `shadow`.
+     */
+    rebajaSombra?: RebajaAplicada | null,
   ): void => {
     if (!emisor || !uso) {
       buzon.noMedido(
@@ -714,20 +727,37 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       // S4 § 5). La cadena de simulación sí AVANZA (observar) — si no, el turno
       // siguiente compararía contra un previo viejo y su cifra saldría inflada.
       const borradoNuestro = elision?.atribuible === true && elision.tokensLimpiadosToolUses > 0;
-      // LICENCIA MEDIR: lo que el modelo hermano habría ahorrado sobre ESTE usage
-      // (la misma resta de dos precios de catálogo que la palanca C acredita), como
-      // registro `shadow`. Nada se reescribió: es el hipotético. Solo contra el API
-      // oficial y con tráfico facturado por token, que es donde la palanca cobraría.
+      // LICENCIA MEDIR: lo que las palancas de precio habrían ahorrado sobre ESTE
+      // usage, como UN registro `shadow` (la idempotencia es por requestId). Nada se
+      // reescribió: es el hipotético. Solo contra el API oficial y con tráfico
+      // facturado por token, que es donde la palanca cobraría. Dos piezas, con la
+      // MISMA aritmética que acreditan las palancas de pago:
+      //  · el modelo hermano (palanca C): el mismo usage a otro precio de catálogo;
+      //  · la rebaja de TTL: los tokens que el proveedor facturó como escritura de
+      //    1h, a la prima de 5 min (`ahorroDeRebaja`), al precio del modelo que
+      //    habría servido. Solo si la capa HABRÍA rebajado (`rebajaSombra`).
       const enMedicionAhora = live.license.payload.plan === "measure";
       if (enMedicionAhora && !coalescida && path === "/v1/messages" && !suscripcion && upstreamOficial && sinCobro !== true) {
         try {
           const hipotesis = reescribirModelo(cuerpo, codificacion);
           const alternativo = hipotesis ? costeMedido(hipotesis.cambio.servido, usoFinal, inicioMs) : null;
-          if (hipotesis && alternativo && alternativo.costeUsd < medido.costeUsd) {
-            em.record(informeSombra(`${requestId}:shadow`, model, medido.costeUsd, alternativo.costeUsd, atribucion));
+          const conHermano = hipotesis && alternativo && alternativo.costeUsd < medido.costeUsd ? alternativo : null;
+          const base = conHermano ?? medido;
+          const ahorroTtl = rebajaSombra
+            ? ahorroDeRebajaEnSombra(rebajaSombra, base.tokens.cacheEscrita1h, base.precio.inputPer1k)
+            : 0;
+          const politica = base.costeUsd - ahorroTtl;
+          if (politica < medido.costeUsd) {
+            em.record(informeSombra(`${requestId}:shadow`, model, medido.costeUsd, politica, atribucion));
             log(
-              `[gateway] measure (shadow) · ${model} · with the sibling model ${hipotesis.cambio.servido} this call would have ` +
-                `cost $${alternativo.costeUsd.toFixed(6)} instead of $${medido.costeUsd.toFixed(6)} (not applied)`,
+              `[gateway] measure (shadow) · ${model} · ` +
+                [
+                  conHermano && hipotesis ? `sibling model ${hipotesis.cambio.servido}` : null,
+                  ahorroTtl > 0 ? `cache TTL 1h→5m on ${base.tokens.cacheEscrita1h} written tok` : null,
+                ]
+                  .filter(Boolean)
+                  .join(" + ") +
+                ` · this call would have cost $${politica.toFixed(6)} instead of $${medido.costeUsd.toFixed(6)} (not applied)`,
             );
           }
         } catch {
@@ -1286,6 +1316,42 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
         }
       }
 
+      // ── LA REBAJA DE TTL EN SOMBRA (licencia Medir) ─────────────────────
+      // La MISMA decisión que la palanca de arriba (memoria de prefijos por
+      // hilo, fracción nueva, marcas de 1h que se rebajarían), sobre el cuerpo
+      // del cliente y SIN reescribir nada: `cuerpoSaliente` no se toca y
+      // `ttlReescrito` sigue en false. Solo anota QUÉ habría hecho la capa; el
+      // dinero lo pone medir() con el usage medido (`rebajaSombra`), como
+      // registro `shadow` — nunca aplicado, nunca cobrable. Sin mirar el canal
+      // de features: la Medir no trae ninguna, y la pregunta es qué haría la
+      // capa de pago, que lleva la rebaja encendida por defecto en Anthropic.
+      let rebajaSombra: RebajaAplicada | null = null;
+      if (enMedicion && opts.elision !== false && req.method === "POST" && url.pathname === "/v1/messages") {
+        try {
+          const json = parsearMensajes(cuerpo, codificacion);
+          if (json !== null) {
+            const huella = huellaDe(json);
+            const clave = `${atribucion?.sessionId ?? "sin-sesion"}:${huella.system}`;
+            const ahoraMs = Date.now();
+            const anterior = memoria.ultima(clave, ahoraMs);
+            memoria.anotar(clave, huella, ahoraMs);
+            if (decidirRebaja({ fraccionNueva: fraccionNueva(anterior, huella) })) {
+              // `json` es una copia parseada del Buffer: marcarla no toca lo que viaja.
+              const hipotesis = rebajarTtlDeCache(json);
+              if (hipotesis !== null) {
+                rebajaSombra = {
+                  rebajadas: hipotesis.rebajadas,
+                  yaEran5m: hipotesis.yaEran5m,
+                  herramientaDeServidor: hipotesis.herramientaDeServidor,
+                };
+              }
+            }
+          }
+        } catch {
+          /* la sombra jamás rompe el gateway */
+        }
+      }
+
       // ── EL USAGE DE CHAT COMPLETIONS EN STREAM (opt-in) ────────────────
       // Un stream de Chat Completions solo trae usage si la petición lo pide
       // (`stream_options.include_usage`). Con BVSALA_GATEWAY_USAGE_INJECT=1 el
@@ -1555,7 +1621,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
           const sinCobro = url.pathname === "/v1/messages" && observador instanceof ObservadorSse && observador.negativaNoCobrada();
           medir(
             requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, elision, rebaja, inicioMs, hermano, suscripcion,
-            undefined, undefined, sinCobro,
+            undefined, undefined, sinCobro, rebajaSombra,
           );
           vigilarCache(url.pathname, cuerpo, codificacion, uso, ttlReescrito, sesionId);
         }
@@ -1579,7 +1645,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
           const elision = url.pathname === "/v1/messages" ? elisionDeJson(respuesta) : null;
           medir(
             requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, atribuir(elision, uso), rebaja, inicioMs, hermano, suscripcion,
-            undefined, undefined, negativaNoCobradaEnJson(url.pathname, respuesta),
+            undefined, undefined, negativaNoCobradaEnJson(url.pathname, respuesta), rebajaSombra,
           );
           vigilarCache(url.pathname, cuerpo, codificacion, uso, ttlReescrito, sesionId);
         }
