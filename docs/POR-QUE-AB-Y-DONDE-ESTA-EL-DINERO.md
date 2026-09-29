@@ -174,7 +174,7 @@ v1, y la regla con la que un SDK valoró una repetición no viaja en el registro
 de uso: el cierre sella `reference-v2` para el extracto entero. Para que ese
 sello sea cierto se publique lo que se publique, el ingest degrada a
 `estimated` toda referencia de un proceso que no declara versión o que declara
-una anterior a `VERSION_MINIMA_REFERENCIA` (0.4.31, `src/version.ts` y su
+una anterior a `VERSION_MINIMA_REFERENCIA` (0.4.32, `src/version.ts` y su
 espejo en `apps/web/lib/metering/version.ts`). Sigue en los totales; no entra
 en `reference_*` ni en la base. La mínima fue 0.4.24 hasta el 2026-09-28: de la
 0.4.24 a la 0.4.28 el SDK podía guardar una negativa del proveedor en caché y
@@ -184,7 +184,15 @@ degradar también las referencias honestas de esas versiones. Ese mismo día
 subió a 0.4.31 con el mismo criterio: hasta la 0.4.30 el SDK guardaba y
 repetía como referencia la negativa que el modelo escribe como TEXTO normal,
 sin ninguna señal del API; #384 la cierra en la 0.4.31, y las referencias
-honestas de 0.4.29 y 0.4.30 también entran como `estimated`. Lo mismo para toda referencia que declare
+honestas de 0.4.29 y 0.4.30 también entran como `estimated`. El 2026-09-29
+subió a 0.4.32, otra vez con el mismo criterio: los bancos en vivo contra la
+0.4.31 encontraron negativas que todavía se repetían como referencia. El
+`finish_reason: "content_filter: OTHER"` de Gemini no se reconocía (#402), el
+detector de #384 no veía «I'm sorry, but … is illegal», «I can't determine /
+access / argue…» ni la redirección a ayuda profesional (#393, #401), y las
+respuestas a temas sensibles se cacheaban y se acreditaban (#393). La 0.4.32
+lo cierra, y las referencias honestas de 0.4.31 también entran como
+`estimated`. Lo mismo para toda referencia que declare
 `gateway/`, a cualquier versión: la regla v2 vive en el pipeline del SDK y el
 gateway no pasa por él, así que su gemela coalescida (Parte G) entra como
 `estimated` hasta que el PR que le lleve la regla v2 abra su verja.
