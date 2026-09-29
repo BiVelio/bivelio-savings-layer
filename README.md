@@ -286,16 +286,36 @@ Most refusals carry no signal from the API: the model writes "I can't help with 
 as ordinary text and ends with `end_turn` or `stop`. The layer also looks for these,
 with a conservative text heuristic. It checks only the opening of the answer, or the
 whole answer when it is short, and it needs a real refusal clause, such as "I'm sorry,
-but I can't help with that", "I cannot assist" or "As an AI, I cannot provide". A
-single word is not enough. It covers English, Spanish, Catalan, French, German,
-Italian and Portuguese. A match is measured and served as usual. It is not written to
-the exact or semantic cache, and it is not replayed by reference. A concurrent
-identical request served from it is `estimated`. The trace says why
-(`skipReason: "text_refusal"`). A refusal already stored by an earlier version is not
-served either. In the gateway, the coalesced twin of such a response is `estimated`
-(`primary-text-refusal`). A false positive costs one cache hit. A normal answer that
-starts with "Sorry for the delay, here is…", or has "I can't" later on, is cached as
-before.
+but I can't help with that", "I cannot assist", "I can't determine…" or "As an AI, I
+cannot provide". After an apology, any verb counts ("I'm sorry, but I can't
+determine…"), and so does a stated reason with no "I can't" ("I'm sorry, but
+accessing … is illegal", "… would be a violation of…"). A single word is not enough.
+An answer that opens with empathy and, in its first two sentences, sends the user to
+a mental health professional, a crisis line, emergency services or someone they
+trust, instead of answering, counts too (rule `redirection`). It covers English,
+Spanish, Catalan, French, German, Italian and Portuguese. A match is measured and
+served as usual. It is not written to the exact or semantic cache, and it is not
+replayed by reference. A concurrent identical request served from it is `estimated`.
+The trace says why (`skipReason: "text_refusal"`, with the `rule`). A refusal
+already stored by an earlier version is not served either. In the gateway, the
+coalesced twin of such a response is `estimated` (`primary-text-refusal`). A false
+positive costs one cache hit. A normal answer that starts with "Sorry for the delay,
+here is…", praises with "I can't recommend this enough", has "I can't" later on, or
+offers empathy with practical help and no referral ("I'm sorry to hear about your
+flight; here are three options…") is cached as before.
+
+**Sensitive topics.** A request whose user turns touch self-harm or suicide, a mental
+health crisis or a medical emergency ("How do I commit suicide?", "I'm having a panic
+attack", "my friend is not breathing") is never read from or written to the exact or
+semantic cache, even when the answer is useful, and leaves no reference record. It is
+measured and served as usual; a concurrent identical request served from it is
+`estimated`. The `policy` and `cache-write` traces say why
+(`skipReason: "sensitive_topic"`, with the `category`). The check is lexical and
+conservative: phrases, not single words ("kill a Python process", "Suicide Squad" and
+"cut my hair" do not count). It covers the same twelve languages as the freshness
+and personalization checks, with shorter lists outside English, Spanish, Catalan,
+French, German, Italian and Portuguese. In the gateway, the coalesced twin of such a
+request is `estimated` (`sensitive-topic`). A false positive costs one cache hit.
 
 **Streaming.** `generateStream()` takes the same request and hands you the answer as
 the provider writes it, then the same `SavingsReport`:

@@ -1902,6 +1902,10 @@ export class SavingsPipeline {
     trace.record("policy", policy.reasons.join("; ") || "no restrictions", {
       allowExactCache: policy.allowExactCache,
       allowSemanticCache: policy.allowSemanticCache,
+      // Tema sensible en la petición (2026-09-29): ni caché ni referencia.
+      ...(policy.sensitiveTopic !== null
+        ? { skipReason: "sensitive_topic", sensitiveTopic: policy.sensitiveTopic }
+        : {}),
     });
 
     // Baseline: the naive prompt cost if none of the layer ran.
@@ -4064,7 +4068,17 @@ export class SavingsPipeline {
     // y un falso negativo deja el comportamiento de antes. Sin registro por
     // referencia (E7 de referencia.ts), tampoco un seguidor de singleflight la
     // valora por referencia: sale `estimated`, fuera de la comisión.
+    //
+    // 2026-09-29: la regla `redirection` de la misma heurística ve la remisión a
+    // ayuda profesional sin respuesta («I'm really sorry to hear that you're
+    // feeling this way. It's really important to talk to … a mental health
+    // professional»), y la POLÍTICA ve el tema sensible en la PETICIÓN
+    // (`policy.sensitiveTopic`, src/policy/tema-sensible.ts): autolesión, crisis
+    // de salud mental o emergencia médica. Con cualquiera de las dos, lo mismo:
+    // se mide y se sirve, no se guarda en ninguna caché y no deja registro por
+    // referencia (el seguidor de singleflight sale `estimated`).
     const reglaDeNegativaEnTexto = negativa || pidioHerramientas ? null : negativaEnTexto(textoServido);
+    const temaSensible = policy.sensitiveTopic;
     const cacheable =
       structurallyValid !== false &&
       !pidioHerramientas &&
@@ -4072,7 +4086,8 @@ export class SavingsPipeline {
       !cortadaPorElTope &&
       !noReproducible &&
       !negativa &&
-      reglaDeNegativaEnTexto === null;
+      reglaDeNegativaEnTexto === null &&
+      temaSensible === null;
 
     // --- Etapa 12-bis: el registro de MEDIDO POR REFERENCIA. ---
     //
@@ -4177,16 +4192,23 @@ export class SavingsPipeline {
                       "a refusal is not an answer, and replaying it would credit an avoided call the provider " +
                       "may not have billed"
                     : reglaDeNegativaEnTexto !== null
-                      ? "skipped: the answer reads as a refusal written as text (text_refusal); it was measured " +
-                        "and served as usual, but a refusal is not an answer to replay or to credit as an avoided call"
-                      : "skipped: answered with a reduced tool view (tool discovery), so it must not be replayed",
+                      ? reglaDeNegativaEnTexto === "redirection"
+                        ? "skipped: the answer redirects to professional or crisis help instead of answering " +
+                          "(text_refusal, redirection); it was measured and served as usual, but it is not an " +
+                          "answer to replay or to credit as an avoided call"
+                        : "skipped: the answer reads as a refusal written as text (text_refusal); it was measured " +
+                          "and served as usual, but a refusal is not an answer to replay or to credit as an avoided call"
+                      : temaSensible !== null
+                        ? `skipped: the request touches a sensitive topic (sensitive_topic, ${temaSensible}); it was ` +
+                          "measured and served as usual, but it is not replayed from a cache or credited as an avoided call"
+                        : "skipped: answered with a reduced tool view (tool discovery), so it must not be replayed",
           // El motivo va en `detail` solo si es el que da la línea de arriba.
-          reglaDeNegativaEnTexto !== null &&
-            !pidioHerramientas &&
-            structurallyValid !== false &&
-            !cortadaPorElTope &&
-            !noReproducible
-            ? { skipReason: "text_refusal", rule: reglaDeNegativaEnTexto }
+          !pidioHerramientas && structurallyValid !== false && !cortadaPorElTope && !noReproducible && !negativa
+            ? reglaDeNegativaEnTexto !== null
+              ? { skipReason: "text_refusal", rule: reglaDeNegativaEnTexto }
+              : temaSensible !== null
+                ? { skipReason: "sensitive_topic", category: temaSensible }
+                : undefined
             : undefined,
         );
       }
