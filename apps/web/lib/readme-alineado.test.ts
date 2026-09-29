@@ -39,7 +39,12 @@ describe("el README que viaja a npm dice lo mismo que el código", () => {
   it("el primer mes sin comisión y «solo lo medido» están en el README, como en la web", () => {
     expect(readme).toMatch(/first month carries no commission/i);
     expect(readme).toMatch(/never from estimates/i);
-    expect(readme).toMatch(/No free tier and no trial/);
+    expect(readme).toMatch(/No trial\./);
+    // La única licencia gratuita es Medir, y el README dice qué es y qué NO hace.
+    expect(readme).toMatch(/free\s+\*\*Measure\*\* license/);
+    expect(readme).toMatch(/\*\*shadow mode\*\*/);
+    expect(readme).toMatch(/nothing is served from any cache/);
+    expect(readme).toMatch(/never part of any commission/);
   });
 
   it("⛔ ni el README ni las guías de terminales dicen que el gateway «no optimiza»: la palanca de tarifa va por defecto con PRO", () => {
