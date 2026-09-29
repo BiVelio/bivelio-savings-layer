@@ -10,6 +10,8 @@ import {
 } from "./atestado-del-cable.js";
 import { endpointLimpio, registrarLotes, rutaRelativa } from "./lotes-del-proveedor.js";
 import { apiOficialDe, origenDeLaUrl } from "./origen-oficial.js";
+import { normalizarParada } from "./parada-de-filtro.js";
+import { salidaOculta } from "./salida-oculta.js";
 import { sseMessages } from "./sse.js";
 import type {
   Provider,
@@ -36,6 +38,21 @@ import type {
  * `constraints.backend: "none"` rather than claiming a guarantee the provider
  * never gave.
  *
+ * OpenAI-only request fields are sent only to OpenAI's own API
+ * (`prompt_cache_key`, see {@link OpenAICompatibleOptions.sendPromptCacheKey}).
+ * An optional field an endpoint still rejects by name with a 400/422
+ * (`prompt_cache_key`, `service_tier`, `seed`) is dropped and the request
+ * repeated once, and the model is remembered, as with `response_format`.
+ *
+ * Output is counted as the provider bills it: where `total_tokens` exceeds
+ * `prompt_tokens + completion_tokens` (Gemini's OpenAI-compatible endpoint
+ * leaves its thinking tokens out of `completion_tokens`), the difference is
+ * added to the output and reported as reasoning. Against OpenAI's own API,
+ * whose `completion_tokens` already include reasoning, nothing is added. A
+ * content-filter stop with a reason (Gemini's `"content_filter: OTHER"`) is
+ * reported as `finishReason: "content_filter"`, the reason in
+ * `finishReasonDetail`.
+ *
  * Network calls use global `fetch` (Node >= 18) so there is no SDK dependency.
  */
 export interface OpenAICompatibleOptions {
@@ -45,8 +62,11 @@ export interface OpenAICompatibleOptions {
    * Strip the `provider/` prefix from model ids before sending (`openai/gpt-4o-mini`
    * → `gpt-4o-mini`).
    *
-   * Default (undefined): strip when `baseUrl` is OpenAI's own API or an Azure
-   * OpenAI endpoint, keep otherwise. OpenAI rejects a prefixed id with a 404
+   * Default (undefined): strip when `baseUrl` is OpenAI's own API, an Azure
+   * OpenAI endpoint or Google's own Gemini API
+   * (https://generativelanguage.googleapis.com, whose OpenAI-compatible
+   * endpoint answers 404 «models/google/gemini-… is not found» to a prefixed
+   * id), keep otherwise. OpenAI rejects a prefixed id with a 404
    * ("model does not exist"), so the qualified ids the layer uses everywhere
    * else — pricing, cache keys, the report — would break the very first call
    * that reaches the provider. A gateway or a self-hosted server with a
@@ -86,6 +106,20 @@ export interface OpenAICompatibleOptions {
    * explicit value always wins and is never switched.
    */
   maxTokensParam?: "max_tokens" | "max_completion_tokens";
+  /**
+   * Whether to send `prompt_cache_key`, the routing hint OpenAI uses to land
+   * requests that share a prefix on the same cache instance.
+   *
+   * Default (undefined): only when `baseUrl` is OpenAI's own API
+   * (https://api.openai.com). The field is OpenAI's, and strict endpoints
+   * reject what they do not know: Gemini's OpenAI-compatible endpoint answers
+   * 400 «Unknown name "prompt_cache_key"», so from 0.4.1 to 0.4.31 every
+   * request with a cached prefix failed there. Set `true` for a proxy or router
+   * in front of OpenAI that forwards it (if the endpoint rejects it anyway,
+   * the request is repeated once without it and the model is remembered), or
+   * `false` to never send it.
+   */
+  sendPromptCacheKey?: boolean;
 }
 
 /** El campo de Chat Completions que lleva el tope de salida. */
@@ -118,6 +152,44 @@ function campoDeTopeRechazado(detalle: string, enviado: CampoDeTope): boolean {
       detalle,
     )
   );
+}
+
+/**
+ * Los campos OPCIONALES del cuerpo que un endpoint compatible puede no conocer.
+ * Ninguno cambia lo que se pregunta: `prompt_cache_key` es una pista de
+ * enrutado, `service_tier` pide una cola (y lo que se acredita es siempre el
+ * tier SERVIDO), `seed` pide reproducibilidad a quien la ofrezca y
+ * `reasoning_effort` cuánto piensa un modelo que razona. Un servidor que no
+ * conoce este último tampoco sabría qué hacer con él; en el API de OpenAI, en
+ * cambio, NUNCA se quita (ver `corregirCampoOpcional`).
+ */
+type CampoOpcional = "prompt_cache_key" | "service_tier" | "seed" | "reasoning_effort";
+const CAMPOS_OPCIONALES: readonly CampoOpcional[] = ["prompt_cache_key", "service_tier", "seed", "reasoning_effort"];
+
+/**
+ * ¿Este 400/422 dice que el endpoint NO CONOCE uno de los campos opcionales que
+ * se mandaron? Devuelve cuál, o `null`.
+ *
+ * Medido en vivo contra Gemini (endpoint compatible, 2026-09-29): «Invalid JSON
+ * payload received. Unknown name "prompt_cache_key": Cannot find field.». Los
+ * demás dialectos, los mismos que reconoce `campoDeTopeRechazado`: «Unrecognized
+ * request argument», «unknown parameter», «Extra inputs are not permitted»
+ * (pydantic), «… is not supported». Se exige que el mensaje NOMBRE el campo y
+ * que ese campo haya viajado: un valor fuera de rango («seed must be an
+ * integer») no es un rechazo del campo y no se toca.
+ */
+function campoOpcionalRechazado(detalle: string, enviados: ReadonlySet<CampoOpcional>): CampoOpcional | null {
+  if (
+    !/unknown name|cannot find field|unknown (parameter|field|argument)|unrecognized|extra (inputs|fields) (are )?not permitted|not permitted|not supported|unsupported/i.test(
+      detalle,
+    )
+  ) {
+    return null;
+  }
+  for (const campo of CAMPOS_OPCIONALES) {
+    if (enviados.has(campo) && new RegExp(`\\b${campo}\\b`).test(detalle)) return campo;
+  }
+  return null;
 }
 
 /**
@@ -208,8 +280,8 @@ const HOSTS_QUE_QUIEREN_EL_ID_DESNUDO = /(^|\.)api\.openai\.com$|\.openai\.azure
 
 /**
  * Decides the id that travels on the wire. Explicit option wins; otherwise the
- * endpoint decides: OpenAI/Azure get the bare id, everything else keeps what
- * the caller wrote. Exported for the pipeline-level test that pins the README
+ * endpoint decides: OpenAI/Azure and Google's own Gemini API get the bare id,
+ * everything else keeps what the caller wrote. Exported for the pipeline-level test that pins the README
  * snippet; not part of the public API.
  */
 export function quitarPrefijoDeProveedor(
@@ -287,6 +359,14 @@ function planDeCacheExplicita(
 }
 
 function hostQuiereIdDesnudo(baseUrl: string): boolean {
+  // El API oficial de Gemini, por el MISMO origen atestiguado que el tier y la
+  // referencia (`apiOficialDe`: https, host exacto, puerto por defecto). Su
+  // endpoint compatible busca `models/<id>` y con el prefijo contesta 404
+  // «models/google/gemini-3.8-flash is not found» (banco MT-Bench de gama alta
+  // contra la 0.4.31, PR #400). Un proxy o un router delante de Gemini
+  // (Vercel AI Gateway, OpenRouter, LiteLLM) no es este origen y conserva el
+  // prefijo, porque enruta con él.
+  if (apiOficialDe(baseUrl) === "google") return true;
   try {
     return HOSTS_QUE_QUIEREN_EL_ID_DESNUDO.test(new URL(baseUrl).hostname);
   } catch {
@@ -308,6 +388,10 @@ export class OpenAICompatibleProvider implements Provider {
   // propiedad del modelo (gpt-4o-mini admite los dos, gpt-5.x solo el nuevo),
   // no del endpoint, así que va por modelo como `sinResponseFormat`.
   private readonly campoDeTopeAprendido = new Map<string, CampoDeTope>();
+  // Los campos opcionales que ESTE modelo de este endpoint ya rechazó por nombre
+  // (`campoOpcionalRechazado`). Por modelo, como `sinResponseFormat`: detrás de
+  // un router, un modelo puede aceptar `seed` y otro no.
+  private readonly camposRechazados = new Map<string, Set<CampoOpcional>>();
   // El API oficial con el que habla, por el host de `baseUrl`. Se declara al
   // pipeline (que decide el modo explícito ANTES de llamar) y se atestigua en
   // cada respuesta.
@@ -393,10 +477,17 @@ export class OpenAICompatibleProvider implements Provider {
     // generar. Como las dos causas pueden darse en la misma petición (gpt-4 con
     // contrato detrás de un servidor que solo conoce uno de los campos), se
     // admiten hasta dos correcciones, cada una una sola vez.
-    for (let correcciones = 0; correcciones < 2 && !response.ok; correcciones++) {
+    //
+    // Y para un CAMPO OPCIONAL que el endpoint no conoce (`corregirCampoOpcional`:
+    // `prompt_cache_key`, `service_tier`, `seed`), que también se rechaza antes
+    // de generar. Cada corrección se hace una sola vez por modelo (los memos lo
+    // garantizan), así que el tope de vueltas es el número de causas posibles.
+    for (let correcciones = 0; correcciones < 2 + CAMPOS_OPCIONALES.length && !response.ok; correcciones++) {
       if (response.status !== 400 && response.status !== 422) break;
       const detalle = await safeText(response);
-      if (response.status === 400 && nativo && esResponseFormatNoSoportado(detalle)) {
+      if (this.corregirCampoOpcional(model, req, response.status, detalle, nativo)) {
+        // Solo se quitó el campo: lo demás de la petición no cambia.
+      } else if (response.status === 400 && nativo && esResponseFormatNoSoportado(detalle)) {
         this.sinResponseFormat.add(model);
         avisarDelProveedor(
           this,
@@ -461,10 +552,13 @@ export class OpenAICompatibleProvider implements Provider {
     // Y el mismo vale para el campo del tope (`corregirCampoDeTope`), que se
     // mira PRIMERO: un 422 de pydantic por `max_completion_tokens` no es un
     // rechazo de `stream_options`, y quitárselas dejaría el stream sin usage.
-    for (let correcciones = 0; correcciones < 2 && !response.ok; correcciones++) {
+    for (let correcciones = 0; correcciones < 2 + CAMPOS_OPCIONALES.length && !response.ok; correcciones++) {
       if (response.status !== 400 && response.status !== 422) break;
       const detalle = await safeText(response);
-      if (this.corregirCampoDeTope(model, req, response.status, detalle)) {
+      if (
+        this.corregirCampoOpcional(model, req, response.status, detalle, false, pidiendoUso) ||
+        this.corregirCampoDeTope(model, req, response.status, detalle)
+      ) {
         response = await enviarStream(pidiendoUso);
         continue;
       }
@@ -519,7 +613,10 @@ export class OpenAICompatibleProvider implements Provider {
     // El `id` y el `name` que cuentan son el PRIMERO no vacío: hay servidores que
     // los repiten en cada fragmento, y concatenarlos daría `get_weatherget_weather`.
     // Los argumentos sí se concatenan: son el JSON partido.
-    const herramientas = new Map<number, { id?: string; name?: string; args: string }>();
+    const herramientas = new Map<
+      number,
+      { id?: string; name?: string; args: string; extra?: Record<string, unknown> }
+    >();
     let finishReason: string | undefined;
     let uso: UsoDeChat | undefined;
     let servedServiceTier: string | undefined;
@@ -560,6 +657,9 @@ export class OpenAICompatibleProvider implements Provider {
         const nombre = tc.function?.name;
         if (!acc.name && typeof nombre === "string" && nombre !== "") acc.name = nombre;
         if (typeof tc.function?.arguments === "string") acc.args += tc.function.arguments;
+        // La firma de Gemini: la primera que llegue, entera (no se trocea).
+        const extra = extraContentDe(tc.extra_content);
+        if (acc.extra === undefined && extra !== undefined) acc.extra = extra;
         herramientas.set(idx, acc);
       }
       if (c?.finish_reason != null) finishReason = c.finish_reason;
@@ -575,17 +675,20 @@ export class OpenAICompatibleProvider implements Provider {
     if (finishReason === undefined) {
       throw new Error("provider stream ended before completion (no finish_reason)");
     }
+    // `content_filter: OTHER` (Gemini) → `content_filter`, el motivo aparte.
+    const paradaDelStream = normalizarParada(finishReason);
 
     const inputAbsent = typeof uso?.prompt_tokens !== "number";
     const outputAbsent = typeof uso?.completion_tokens !== "number";
     if (this.opts.requireUsage && (inputAbsent || outputAbsent)) {
       throw new Error(mensajeDeUsoIncompleto(uso?.prompt_tokens, uso?.completion_tokens));
     }
-    const razonamiento = razonamientoDeclarado(uso, huboTextoDeRazonamiento);
+    const facturada = salidaFacturada(uso, this.origen, huboTextoDeRazonamiento);
+    const razonamiento = facturada.razonamiento;
     const escritosEnStream = escrituraDeCache(uso);
     const usage: ProviderUsage = {
       inputTokens: uso?.prompt_tokens ?? 0,
-      outputTokens: uso?.completion_tokens ?? 0,
+      outputTokens: facturada.salida,
       ...(uso?.prompt_tokens_details?.cached_tokens != null
         ? { cachedInputTokens: uso.prompt_tokens_details.cached_tokens }
         : {}),
@@ -597,7 +700,12 @@ export class OpenAICompatibleProvider implements Provider {
 
     const toolCalls = [...herramientas.entries()]
       .sort((a, b) => a[0] - b[0])
-      .map(([, h]) => ({ ...(h.id ? { id: h.id } : {}), name: h.name ?? "", arguments: h.args }))
+      .map(([, h]) => ({
+        ...(h.id ? { id: h.id } : {}),
+        name: h.name ?? "",
+        arguments: h.args,
+        ...(h.extra !== undefined ? { extraContent: h.extra } : {}),
+      }))
       .filter((tc) => tc.name !== "");
 
     // El tier del cuerpo manda; la cabecera de Google, solo en su host y solo
@@ -616,7 +724,8 @@ export class OpenAICompatibleProvider implements Provider {
         {
           text,
           ...(toolCalls.length > 0 ? { toolCalls } : {}),
-          finishReason,
+          finishReason: paradaDelStream.parada ?? finishReason,
+          ...(paradaDelStream.detalle !== undefined ? { finishReasonDetail: paradaDelStream.detalle } : {}),
           ...(negativa !== "" ? { refusal: negativa } : {}),
           ...(servedServiceTier ? { servedServiceTier } : {}),
           usage,
@@ -678,6 +787,58 @@ export class OpenAICompatibleProvider implements Provider {
         "`maxTokensParam` on OpenAICompatibleProvider.",
     );
     return true;
+  }
+
+  // ¿Se puede corregir este rechazo quitando un campo opcional? Solo si el
+  // rechazo nombra un campo que viajó en ESTE cuerpo (el mismo `construirCuerpo`
+  // que lo mandó dice cuáles), y cada campo una sola vez por modelo: quitado, ya
+  // no viaja y no puede volver a nombrarse.
+  private corregirCampoOpcional(
+    model: string,
+    req: ProviderRequest,
+    status: number,
+    detalle: string,
+    nativo: boolean,
+    includeUsage?: boolean,
+  ): boolean {
+    const cuerpo = this.construirCuerpo(
+      model,
+      req,
+      nativo,
+      includeUsage === undefined ? undefined : { includeUsage },
+    );
+    const enviados = new Set(CAMPOS_OPCIONALES.filter((c) => c in cuerpo));
+    const campo = campoOpcionalRechazado(detalle, enviados);
+    if (campo === null) return false;
+    // `reasoning_effort` en el API de OpenAI es una decisión del llamante sobre
+    // un modelo que lo conoce: su 400 («Function tools with reasoning_effort are
+    // not supported for gpt-5.6-sol … set reasoning_effort to 'none'», o un
+    // valor que ese modelo no admite) es la respuesta, y quitarlo en silencio
+    // cambiaría cuánto piensa el modelo sin que nadie lo pidiera.
+    if (campo === "reasoning_effort" && this.origen === "openai") return false;
+    const rechazados = this.camposRechazados.get(model) ?? new Set<CampoOpcional>();
+    rechazados.add(campo);
+    this.camposRechazados.set(model, rechazados);
+    avisarDelProveedor(
+      this,
+      `campo-opcional:${this.opts.baseUrl}:${model}:${campo}`,
+      `[bvsala] This endpoint rejects \`${campo}\` for model "${model}" with a ${status}, so it is no longer ` +
+        "sent (the rejected request was not billed; the model is noted and the following requests go " +
+        "without it)." +
+        (campo === "service_tier"
+          ? " The request is served on the endpoint's default tier, and no tier discount is credited."
+          : campo === "prompt_cache_key"
+            ? " The prefix cache keeps working without the routing hint; only its hit rate may drop."
+            : campo === "reasoning_effort"
+              ? " The model reasons at the endpoint's default effort."
+              : ""),
+    );
+    return true;
+  }
+
+  // ¿Viaja este campo opcional para este modelo? No, si ya lo rechazó.
+  private campoAdmitido(model: string, campo: CampoOpcional): boolean {
+    return this.camposRechazados.get(model)?.has(campo) !== true;
   }
 
   // Arma el cuerpo y lo envía. `nativo` elige la vía `response_format`; `stream`
@@ -746,6 +907,12 @@ export class OpenAICompatibleProvider implements Provider {
             id: tc.id ?? `call_${i}`,
             type: "function",
             function: { name: tc.name, arguments: tc.arguments },
+            // LA FIRMA DE PENSAMIENTO DE GEMINI 3 VUELVE TAL CUAL. Ver
+            // `extraContentDe`. Al API de OpenAI no: él nunca la da, y un
+            // historial que la traiga de otro proveedor no le sirve de nada.
+            ...(tc.extraContent !== undefined && this.origen !== "openai"
+              ? { extra_content: tc.extraContent }
+              : {}),
           })),
         };
       }
@@ -773,7 +940,21 @@ export class OpenAICompatibleProvider implements Provider {
     // EL TOPE, CON EL NOMBRE QUE ENTIENDE ESTE ENDPOINT. Ver `campoDeTope`.
     if (req.maxOutputTokens != null) body[this.campoDeTope(model)] = req.maxOutputTokens;
     if (req.temperature != null) body["temperature"] = req.temperature;
-    if (req.seed != null) body["seed"] = req.seed;
+    if (req.seed != null && this.campoAdmitido(model, "seed")) body["seed"] = req.seed;
+    // EL ESFUERZO DE RAZONAMIENTO, solo si el llamante lo declaró y tal cual lo
+    // escribió: la capa no elige un esfuerzo por nadie. gpt-5.6-* con
+    // herramientas NO FUNCIONA sin él en Chat Completions: OpenAI contesta 400
+    // «Function tools with reasoning_effort are not supported for gpt-5.6-sol in
+    // /v1/chat/completions. To use function tools, use /v1/responses or set
+    // reasoning_effort to 'none'» (banco BFCL de gama alta contra la 0.4.31, PR
+    // #398, 840 de 840 llamadas; lo mismo en terra y luna), y hasta aquí la capa
+    // no tenía forma de mandarlo. Gemini lo admite por su endpoint compatible
+    // («reasoning_effort (OpenAI)» ↔ `thinking_level`/`thinking_budget`,
+    // https://ai.google.dev/gemini-api/docs/openai, «Last updated 2026-09-02
+    // UTC», consultada el 2026-09-29).
+    if (req.reasoningEffort != null && this.campoAdmitido(model, "reasoning_effort")) {
+      body["reasoning_effort"] = req.reasoningEffort;
+    }
     // OpenAI cachea el prefijo SOLA —no hay puntos de ruptura que marcar— pero
     // enruta por instancia, y una petición que aterriza en otra instancia no
     // encuentra el prefijo aunque sea idéntico. `prompt_cache_key` agrupa las
@@ -784,7 +965,22 @@ export class OpenAICompatibleProvider implements Provider {
     // ahí un identificador de cliente no daría privacidad y sí la ilusión de
     // tenerla — el mismo fallo que la caché exacta cerró keyeando por tenant de
     // verdad.
-    if (req.promptCacheKey != null) body["prompt_cache_key"] = req.promptCacheKey;
+    //
+    // SOLO AL API DE OPENAI (salvo `sendPromptCacheKey`). El campo es de OpenAI y
+    // un endpoint estricto rechaza lo que no conoce: el compatible de Gemini
+    // contesta 400 «Invalid JSON payload received. Unknown name
+    // "prompt_cache_key": Cannot find field.» (banco GSM8K de gama alta, PR #397:
+    // el 100 % de las peticiones con prefijo marcado fallaban a través de la
+    // capa, desde la 0.4.1 hasta la 0.4.31). Gemini cachea el prefijo solo, sin
+    // pista, y LiteLLM, vLLM u Ollama no tienen instancias que enrutar: fuera
+    // del API de OpenAI la pista no compraba nada y podía costar la petición.
+    if (
+      req.promptCacheKey != null &&
+      (this.opts.sendPromptCacheKey ?? this.origen === "openai") &&
+      this.campoAdmitido(model, "prompt_cache_key")
+    ) {
+      body["prompt_cache_key"] = req.promptCacheKey;
+    }
     // EL TIER DIFERIBLE. `flex` cobra los tokens a tarifa de la Batch API —la
     // mitad— a cambio de una latencia mayor y variable, y compone con la caché de
     // prefijo en vez de pisarla (la propia guía de OpenAI dice que los descuentos
@@ -796,7 +992,16 @@ export class OpenAICompatibleProvider implements Provider {
     // el valor por defecto de OpenAI es `auto`, o sea «lo que diga la
     // configuración del proyecto», y fijar `default` desde aquí le anularía al
     // cliente una elección que hizo en su panel.
-    if (req.deferrable === true) body["service_tier"] = TIER_DIFERIBLE_OPENAI;
+    //
+    // Gemini lo admite por su endpoint compatible («The Gemini API matches
+    // OpenAI's service_tier parameter in name and logic»,
+    // https://ai.google.dev/gemini-api/docs/openai, «Last updated 2026-09-02
+    // UTC»); un servidor que no, lo rechaza por nombre y se quita
+    // (`corregirCampoOpcional`): la petición sale en la cola estándar y, como
+    // lo que se acredita es el tier SERVIDO, no se acredita descuento.
+    if (req.deferrable === true && this.campoAdmitido(model, "service_tier")) {
+      body["service_tier"] = TIER_DIFERIBLE_OPENAI;
+    }
     // `stablePrefixMessages` se ignora salvo en modo explícito: sin él la caché
     // de OpenAI es automática y no hay nada que marcar. Con él, `mode:
     // "explicit"` apaga el punto implícito (el que cae al final de la pregunta y
@@ -886,7 +1091,7 @@ export class OpenAICompatibleProvider implements Provider {
       | {
           content?: string | null;
           refusal?: unknown;
-          tool_calls?: { id?: string; function?: { name?: string; arguments?: string } }[];
+          tool_calls?: { id?: string; function?: { name?: string; arguments?: string }; extra_content?: unknown }[];
           reasoning_content?: unknown;
           reasoning?: unknown;
         }
@@ -911,15 +1116,26 @@ export class OpenAICompatibleProvider implements Provider {
     // la cacheaba, y la siguiente repetición acreditaba 100 % de ahorro sobre una
     // acción que nunca se ejecutó. Ahora se propagan.
     const toolCalls = (mensaje?.tool_calls ?? [])
-      .map((tc) => ({
-        ...(tc.id ? { id: tc.id } : {}),
-        name: tc.function?.name ?? "",
-        arguments: tc.function?.arguments ?? "",
-      }))
+      .map((tc) => {
+        const extra = extraContentDe(tc.extra_content);
+        return {
+          ...(tc.id ? { id: tc.id } : {}),
+          name: tc.function?.name ?? "",
+          arguments: tc.function?.arguments ?? "",
+          ...(extra !== undefined ? { extraContent: extra } : {}),
+        };
+      })
       .filter((tc) => tc.name !== "");
     const usage = json.usage ?? {};
     const inputTokens = usage.prompt_tokens ?? 0;
-    const outputTokens = usage.completion_tokens ?? 0;
+    // LA SALIDA QUE SE FACTURA, no solo la que `completion_tokens` cuenta: ver
+    // `salidaFacturada` (el pensamiento de Gemini solo está en `total_tokens`).
+    const facturada = salidaFacturada(
+      usage,
+      this.origen,
+      esTextoNoVacio(mensaje?.reasoning_content) || esTextoNoVacio(mensaje?.reasoning),
+    );
+    const outputTokens = facturada.salida;
 
     // Una llamada que devolvió contenido pero no su contabilidad de tokens no se
     // puede tarifar con honestidad: 0 tokens medidos frente a un baseline
@@ -938,7 +1154,9 @@ export class OpenAICompatibleProvider implements Provider {
       throw new Error(mensajeDeUsoIncompleto(usage.prompt_tokens, usage.completion_tokens));
     }
 
-    const finishReason = json.choices?.[0]?.finish_reason;
+    // `content_filter: OTHER` (Gemini) → `content_filter`, el motivo aparte:
+    // ver parada-de-filtro.ts.
+    const { parada: finishReason, detalle: detalleDeParada } = normalizarParada(json.choices?.[0]?.finish_reason);
 
     // EL TIER QUE SE SIRVIÓ, NO EL QUE SE PIDIÓ. OpenAI lo dice sin rodeos: «the
     // response body will include the `service_tier` value based on the processing
@@ -965,19 +1183,20 @@ export class OpenAICompatibleProvider implements Provider {
     const escritos = escrituraDeCache(usage);
     const plan = planDeCacheExplicita(model, req, this.origen);
 
-    const razonamiento = razonamientoDeclarado(
-      usage,
-      esTextoNoVacio(mensaje?.reasoning_content) || esTextoNoVacio(mensaje?.reasoning),
-    );
+    const razonamiento = facturada.razonamiento;
 
     return atestiguar(
       {
         text,
         ...(toolCalls.length > 0 ? { toolCalls } : {}),
         ...(finishReason ? { finishReason } : {}),
+        ...(detalleDeParada !== undefined ? { finishReasonDetail: detalleDeParada } : {}),
         ...(negativa !== undefined ? { refusal: negativa } : {}),
         ...(servedServiceTier ? { servedServiceTier } : {}),
-        ...(req.deferrable === true ? { requestedServiceTier: TIER_DIFERIBLE_OPENAI } : {}),
+        // Solo si el tier VIAJÓ: un endpoint que rechazó `service_tier` no lo recibió.
+        ...(req.deferrable === true && this.campoAdmitido(model, "service_tier")
+          ? { requestedServiceTier: TIER_DIFERIBLE_OPENAI }
+          : {}),
         usage: {
           inputTokens,
           outputTokens,
@@ -1028,6 +1247,8 @@ export class OpenAICompatibleProvider implements Provider {
 interface UsoDeChat {
   prompt_tokens?: number;
   completion_tokens?: number;
+  /** Gemini (endpoint compatible): el único contador que incluye el pensamiento. */
+  total_tokens?: number;
   prompt_tokens_details?: { cached_tokens?: number; cache_write_tokens?: number };
   completion_tokens_details?: { reasoning_tokens?: number } | null;
 }
@@ -1050,11 +1271,65 @@ function razonamientoDeclarado(
   return n;
 }
 
+// LA SALIDA FACTURADA Y SU RAZONAMIENTO OCULTO. `completion_tokens` más lo que
+// `total_tokens` trae de más (`salidaOculta`, con las fuentes oficiales de
+// Google en salida-oculta.ts), y ese hueco se declara como razonamiento: es el
+// pensamiento de Gemini, que su endpoint compatible factura como salida y solo
+// cuenta en `total_tokens`.
+//
+// CONTRA EL API DE OPENAI NO SE SUMA NADA: allí `completion_tokens` ya incluye
+// `reasoning_tokens` y `total_tokens = prompt + completion`. Si algún día no
+// cuadrara, el hueco no sería razonamiento que falte sino otra cosa, y contarlo
+// como salida lo cobraría dos veces.
+//
+// Con hueco, el razonamiento declarado es el mayor de los dos: el hueco o el
+// `reasoning_tokens` del proveedor, si lo diera (un servidor que lo desglosa
+// pero lo deja fuera de `completion_tokens` los da iguales). Sin hueco, la
+// regla de siempre (`razonamientoDeclarado`).
+function salidaFacturada(
+  uso: UsoDeChat | null | undefined,
+  origen: "openai" | "google" | null,
+  huboTextoDeRazonamiento: boolean,
+): { salida: number; razonamiento: number | undefined } {
+  const completion = uso?.completion_tokens ?? 0;
+  const declarado = razonamientoDeclarado(uso, huboTextoDeRazonamiento);
+  const oculta = origen === "openai" ? 0 : salidaOculta(uso);
+  if (oculta === 0) return { salida: completion, razonamiento: declarado };
+  return { salida: completion + oculta, razonamiento: Math.max(oculta, declarado ?? 0) };
+}
+
 // Los tokens ESCRITOS en la caché de prefijo, o `undefined` si el contador no lo
 // dice. Solo un entero no negativo cuenta: cualquier otra cosa es no saberlo.
 function escrituraDeCache(uso: UsoDeChat | null | undefined): number | undefined {
   const n = uso?.prompt_tokens_details?.cache_write_tokens;
   return typeof n === "number" && Number.isInteger(n) && n >= 0 ? n : undefined;
+}
+
+// EL `extra_content` DE UNA LLAMADA A HERRAMIENTA, OPACO. Gemini 3 por su
+// endpoint compatible con OpenAI devuelve cada llamada con
+// `extra_content.google.thought_signature`, y el turno siguiente que devuelve
+// esa llamada SIN ella recibe 400 «Function call is missing a thought_signature
+// in functionCall parts» (banco BFCL de gama alta contra la 0.4.31, PR #398:
+// 50 de 50 continuaciones multiturno). La guía de Google lo dice en general
+// —«Thought signatures … are required to maintain reasoning continuity across
+// multi-turn interactions» (https://ai.google.dev/gemini-api/docs/thinking,
+// «Last updated 2026-09-25 UTC»), y «The SDKs automatically handle thought
+// signatures for you» (https://ai.google.dev/gemini-api/docs/function-calling,
+// «Last updated 2026-09-23 UTC»)—, pero la de compatibilidad con OpenAI
+// (https://ai.google.dev/gemini-api/docs/openai, «Last updated 2026-09-02 UTC»)
+// no documenta el campo; la forma es la medida en el cable. Todas consultadas
+// el 2026-09-29.
+//
+// Se guarda y se devuelve SIN MIRAR DENTRO: solo un objeto no nulo cuenta, y
+// cualquier otra cosa es no tenerlo. No entra en la clave exacta, ni en la de
+// singleflight, ni en la huella del prefijo (esas listan sus campos uno a uno):
+// es un token del proveedor distinto en cada generación, como el `id` de la
+// llamada, que por eso también entra canonizado a su ordinal. Sí entra en
+// `huellaDePeticion` (la regla de la referencia, pipeline/referencia.ts), que
+// serializa los mensajes enteros: esa huella promete «los mismos bytes», y la
+// firma son bytes que viajan.
+function extraContentDe(v: unknown): Record<string, unknown> | undefined {
+  return v !== null && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, unknown>) : undefined;
 }
 
 function esTextoNoVacio(v: unknown): boolean {
@@ -1081,6 +1356,7 @@ interface TrozoDeChat {
         index?: number;
         id?: string;
         function?: { name?: string; arguments?: string };
+        extra_content?: unknown;
       }[];
     };
     finish_reason?: string | null;
