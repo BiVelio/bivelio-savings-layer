@@ -78,6 +78,7 @@ describe("admiteBusquedaNativa", () => {
   it("reconoce los modelos de la tabla, con prefijo de proveedor y con o sin fecha de instantánea", () => {
     for (const m of [
       "anthropic/claude-opus-5-5",
+      "claude-sonnet-5-5",
       "claude-sonnet-4-6",
       "claude-haiku-4-5",
       "claude-haiku-4-5-20251001",

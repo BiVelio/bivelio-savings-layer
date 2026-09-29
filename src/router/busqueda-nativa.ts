@@ -44,9 +44,10 @@ import type { CostModel } from "../tokenizer/accounting.js";
 
 /**
  * Modelos con la búsqueda de herramientas del servidor, copiados de la tabla
- * «Model compatibility» de la página oficial (leída el 2026-09-27). Claude
- * Sonnet 5 NO figura en ella y por eso no está: si el proveedor lo admite, la
- * tabla lo dirá y se añade; mandarlo antes sería apostar a un 400.
+ * «Model compatibility» de la página oficial (leída el 2026-09-27; releída el
+ * 2026-09-29, cuando entró Claude Sonnet 5.5 en el mismo orden que la tabla).
+ * Claude Sonnet 5 NO figura en ella y por eso no está: si el proveedor lo
+ * admite, la tabla lo dirá y se añade; mandarlo antes sería apostar a un 400.
  *
  * Es la MISMA lista que `BUSQUEDA_ANTHROPIC` del banco (benchmarks/nativo.ts,
  * el brazo B2): `test/busqueda-nativa.test.ts` exige que no deriven.
@@ -58,6 +59,7 @@ export const MODELOS_CON_BUSQUEDA_NATIVA: readonly string[] = [
   "claude-mythos-5",
   "claude-opus-5-5",
   "claude-opus-5",
+  "claude-sonnet-5-5",
   "claude-opus-4-8",
   "claude-opus-4-7",
   "claude-opus-4-6",
