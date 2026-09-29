@@ -743,8 +743,8 @@
         "eyebrow": "Meten-licentie · schaduwmodus",
         "title": "Wat je zou hebben bespaard",
         "amount": "{amount} die je niet zou hebben uitgegeven",
-        "context": "Van {spend} gemeten uitgaven over {requests} verzoeken. Een schatting uit het schaduwspoor (herhaalde en gelijktijdig dubbele aanroepen, gewaardeerd met de teller van je eigen provider): er is niets toegepast en niets wordt gefactureerd.",
-        "empty": "Nog geen besparingsschatting: die verschijnt zodra je laag een herhaald verzoek ziet. De Meten-licentie verandert nooit wat je verstuurt.",
+        "context": "Van {spend} gemeten uitgaven over {requests} verzoeken. Een schatting uit het schaduwspoor, gewaardeerd met de teller van je eigen provider: in de SDK herhaalde en gelijktijdig dubbele aanroepen; in de gateway ook het zustermodel en de verlaging van de cache-TTL. Er is niets toegepast en niets wordt gefactureerd.",
+        "empty": "Nog geen besparingsschatting: die verschijnt zodra je laag een herhaald verzoek ziet of, in de gateway, een verzoek waarop het zustermodel of de verlaging van de cache-TTL zou hebben bespaard. De Meten-licentie verandert nooit wat je verstuurt.",
         "limits": "Gratis voor 1 organisatie, tot {seats} plaatsen en {requests} verzoeken per dag.",
         "cta": "Zet de hefbomen aan: bekijk de plannen"
       }

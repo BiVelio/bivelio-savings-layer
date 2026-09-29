@@ -743,8 +743,8 @@
         "eyebrow": "Lisensi Measure · mode bayangan",
         "title": "Yang akan Anda hemat",
         "amount": "{amount} yang tidak akan Anda belanjakan",
-        "context": "Dari {spend} pengeluaran terukur dalam {requests} permintaan. Perkiraan dari jalur bayangan (panggilan berulang dan duplikat yang berjalan bersamaan, dinilai dengan penghitung penyedia Anda sendiri): tidak ada yang diterapkan dan tidak ada yang ditagih.",
-        "empty": "Belum ada perkiraan penghematan: muncul begitu lapisan Anda melihat permintaan berulang. Lisensi Measure tidak pernah mengubah apa yang Anda kirim.",
+        "context": "Dari {spend} pengeluaran terukur dalam {requests} permintaan. Perkiraan dari jalur bayangan, dinilai dengan penghitung penyedia Anda sendiri: di SDK, panggilan berulang dan duplikat yang berjalan bersamaan; di gateway, juga model saudara dan penurunan TTL cache. Tidak ada yang diterapkan dan tidak ada yang ditagih.",
+        "empty": "Belum ada perkiraan penghematan: muncul begitu lapisan Anda melihat permintaan berulang atau, di gateway, permintaan yang akan lebih hemat dengan model saudara atau penurunan TTL cache. Lisensi Measure tidak pernah mengubah apa yang Anda kirim.",
         "limits": "Gratis untuk 1 organisasi, hingga {seats} kursi dan {requests} permintaan per hari.",
         "cta": "Nyalakan tuas: lihat paket"
       }

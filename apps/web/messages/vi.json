@@ -743,8 +743,8 @@
         "eyebrow": "Giấy phép Đo lường · chế độ bóng",
         "title": "Số tiền lẽ ra bạn đã tiết kiệm",
         "amount": "{amount} lẽ ra bạn đã không phải chi",
-        "context": "Trên {spend} chi tiêu đo được qua {requests} yêu cầu. Một ước tính từ làn bóng (các lệnh gọi lặp lại và trùng lặp đồng thời, được định giá bằng bộ đếm của chính nhà cung cấp của bạn): không có gì được áp dụng và không có gì bị tính phí.",
-        "empty": "Chưa có ước tính tiết kiệm: nó xuất hiện ngay khi lớp của bạn thấy một yêu cầu lặp lại. Giấy phép Đo lường không bao giờ thay đổi những gì bạn gửi.",
+        "context": "Trên {spend} chi tiêu đo được qua {requests} yêu cầu. Một ước tính từ làn bóng, được định giá bằng bộ đếm của chính nhà cung cấp của bạn: trong SDK là các lệnh gọi lặp lại và trùng lặp đồng thời; trong gateway còn có mô hình anh em và việc giảm TTL của bộ nhớ đệm. Không có gì được áp dụng và không có gì bị tính phí.",
+        "empty": "Chưa có ước tính tiết kiệm: nó xuất hiện ngay khi lớp của bạn thấy một yêu cầu lặp lại hoặc, trong gateway, một yêu cầu mà mô hình anh em hoặc việc giảm TTL của bộ nhớ đệm lẽ ra đã giúp tiết kiệm. Giấy phép Đo lường không bao giờ thay đổi những gì bạn gửi.",
         "limits": "Miễn phí cho 1 tổ chức, tối đa {seats} chỗ và {requests} yêu cầu mỗi ngày.",
         "cta": "Bật các đòn bẩy: xem các gói"
       }

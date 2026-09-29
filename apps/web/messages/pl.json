@@ -743,8 +743,8 @@
         "eyebrow": "Licencja Pomiar · tryb cienia",
         "title": "Ile byś zaoszczędził",
         "amount": "{amount}, których byś nie wydał",
-        "context": "Z {spend} zmierzonych wydatków w {requests} żądaniach. Szacunek z toru cienia (powtórzone i równoległe zduplikowane wywołania, wycenione licznikiem Twojego własnego dostawcy): nic nie zostało zastosowane i nic nie jest fakturowane.",
-        "empty": "Brak jeszcze szacunku oszczędności: pojawi się, gdy tylko warstwa zobaczy powtórzone żądanie. Licencja Pomiar nigdy nie zmienia tego, co wysyłasz.",
+        "context": "Z {spend} zmierzonych wydatków w {requests} żądaniach. Szacunek z toru cienia, wyceniony licznikiem Twojego własnego dostawcy: w SDK powtórzone i równoległe zduplikowane wywołania; w bramie także model siostrzany i obniżenie TTL pamięci podręcznej. Nic nie zostało zastosowane i nic nie jest fakturowane.",
+        "empty": "Brak jeszcze szacunku oszczędności: pojawi się, gdy tylko warstwa zobaczy powtórzone żądanie lub, w bramie, żądanie, na którym model siostrzany albo obniżenie TTL pamięci podręcznej przyniosłyby oszczędność. Licencja Pomiar nigdy nie zmienia tego, co wysyłasz.",
         "limits": "Za darmo dla 1 organizacji, do {seats} stanowisk i {requests} żądań dziennie.",
         "cta": "Włącz dźwignie: zobacz plany"
       }

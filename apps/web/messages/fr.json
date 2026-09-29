@@ -743,8 +743,8 @@
         "eyebrow": "Licence Mesurer · mode ombre",
         "title": "Ce que vous auriez économisé",
         "amount": "{amount} que vous n'auriez pas dépensés",
-        "context": "Sur {spend} de dépense mesurée en {requests} requêtes. Une estimation de la voie ombre (appels répétés et doublons simultanés, valorisés avec le compteur de votre propre fournisseur) : rien n'a été appliqué et rien n'est facturé.",
-        "empty": "Pas encore d'estimation d'économie : elle apparaît dès que votre couche voit une requête répétée. La licence Mesurer ne modifie jamais ce que vous envoyez.",
+        "context": "Sur {spend} de dépense mesurée en {requests} requêtes. Une estimation de la voie ombre, valorisée avec le compteur de votre propre fournisseur : dans le SDK, les appels répétés et les doublons simultanés ; dans le gateway, en plus, le modèle frère et la baisse du TTL du cache. Rien n'a été appliqué et rien n'est facturé.",
+        "empty": "Pas encore d'estimation d'économie : elle apparaît dès que votre couche voit une requête répétée ou, dans le gateway, une requête où le modèle frère ou la baisse du TTL du cache aurait fait économiser. La licence Mesurer ne modifie jamais ce que vous envoyez.",
         "limits": "Gratuit pour 1 organisation, jusqu'à {seats} postes et {requests} requêtes par jour.",
         "cta": "Activer les leviers : voir les offres"
       }

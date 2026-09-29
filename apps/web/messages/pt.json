@@ -743,8 +743,8 @@
         "eyebrow": "Licença Medir · modo sombra",
         "title": "O que teria poupado",
         "amount": "{amount} que não teria gastado",
-        "context": "De {spend} de gasto medido em {requests} pedidos. Uma estimativa da via sombra (chamadas repetidas e duplicadas em simultâneo, valorizadas com o contador do seu próprio fornecedor): nada foi aplicado e nada é faturado.",
-        "empty": "Ainda não há estimativa de poupança: aparece assim que a sua camada vir um pedido repetido. A licença Medir nunca altera o que envia.",
+        "context": "De {spend} de gasto medido em {requests} pedidos. Uma estimativa da via sombra, valorizada com o contador do seu próprio fornecedor: no SDK, as chamadas repetidas e as duplicadas em simultâneo; no gateway, também o modelo irmão e a redução do TTL da cache. Nada foi aplicado e nada é faturado.",
+        "empty": "Ainda não há estimativa de poupança: aparece assim que a sua camada vir um pedido repetido ou, no gateway, um em que o modelo irmão ou a redução do TTL da cache teriam poupado. A licença Medir nunca altera o que envia.",
         "limits": "Grátis para 1 organização, até {seats} assentos e {requests} pedidos por dia.",
         "cta": "Ative as alavancas: ver planos"
       }

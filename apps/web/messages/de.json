@@ -743,8 +743,8 @@
         "eyebrow": "Measure-Lizenz · Schattenmodus",
         "title": "Was Sie gespart hätten",
         "amount": "{amount}, die Sie nicht ausgegeben hätten",
-        "context": "Von {spend} gemessenen Ausgaben in {requests} Anfragen. Eine Schätzung aus der Schattenspur (wiederholte und parallel doppelte Aufrufe, bewertet mit dem Zähler Ihres eigenen Anbieters): Nichts wurde angewendet, nichts wird berechnet.",
-        "empty": "Noch keine Spar-Schätzung: Sie erscheint, sobald Ihre Schicht eine wiederholte Anfrage sieht. Die Measure-Lizenz ändert nie, was Sie senden.",
+        "context": "Von {spend} gemessenen Ausgaben in {requests} Anfragen. Eine Schätzung aus der Schattenspur, bewertet mit dem Zähler Ihres eigenen Anbieters: im SDK wiederholte und parallel doppelte Aufrufe; im Gateway zusätzlich das Geschwistermodell und die Senkung der Cache-TTL. Nichts wurde angewendet, nichts wird berechnet.",
+        "empty": "Noch keine Spar-Schätzung: Sie erscheint, sobald Ihre Schicht eine wiederholte Anfrage sieht oder, im Gateway, eine, bei der das Geschwistermodell oder die Senkung der Cache-TTL gespart hätte. Die Measure-Lizenz ändert nie, was Sie senden.",
         "limits": "Kostenlos für 1 Organisation, bis zu {seats} Plätze und {requests} Anfragen pro Tag.",
         "cta": "Hebel einschalten: Pläne ansehen"
       }

@@ -743,8 +743,8 @@
         "eyebrow": "Llicència Mesurar · mode ombra",
         "title": "El que hauries estalviat",
         "amount": "{amount} que no hauries gastat",
-        "context": "De {spend} de despesa mesurada en {requests} peticions. Una estimació del carril ombra (crides repetides i duplicades en vol, valorades amb el comptador del teu propi proveïdor): no s'ha aplicat res i no es factura res.",
-        "empty": "Encara no hi ha estimació d'estalvi: apareix quan la teva capa vegi una petició repetida. La llicència Mesurar mai no canvia el que envies.",
+        "context": "De {spend} de despesa mesurada en {requests} peticions. Una estimació del carril ombra, valorada amb el comptador del teu propi proveïdor: a l'SDK, les crides repetides i les duplicades en vol; al gateway, a més, el model germà i la rebaixa del TTL de la memòria cau. No s'ha aplicat res i no es factura res.",
+        "empty": "Encara no hi ha estimació d'estalvi: apareix quan la teva capa vegi una petició repetida o, al gateway, una en què haurien estalviat el model germà o la rebaixa del TTL de la memòria cau. La llicència Mesurar mai no canvia el que envies.",
         "limits": "Gratis per a 1 organització, fins a {seats} seients i {requests} peticions al dia.",
         "cta": "Activa les palanques: veure plans"
       }

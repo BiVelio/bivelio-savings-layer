@@ -743,8 +743,8 @@
         "eyebrow": "Licenza Misura · modalità ombra",
         "title": "Quanto avresti risparmiato",
         "amount": "{amount} che non avresti speso",
-        "context": "Su {spend} di spesa misurata in {requests} richieste. Una stima della corsia ombra (chiamate ripetute e duplicati simultanei, valutati con il contatore del tuo stesso fornitore): non è stato applicato nulla e non viene fatturato nulla.",
-        "empty": "Ancora nessuna stima di risparmio: compare appena il tuo livello vede una richiesta ripetuta. La licenza Misura non cambia mai ciò che invii.",
+        "context": "Su {spend} di spesa misurata in {requests} richieste. Una stima della corsia ombra, valutata con il contatore del tuo stesso fornitore: nell'SDK, le chiamate ripetute e i duplicati simultanei; nel gateway, anche il modello fratello e la riduzione del TTL della cache. Non è stato applicato nulla e non viene fatturato nulla.",
+        "empty": "Ancora nessuna stima di risparmio: compare appena il tuo livello vede una richiesta ripetuta o, nel gateway, una in cui il modello fratello o la riduzione del TTL della cache avrebbero fatto risparmiare. La licenza Misura non cambia mai ciò che invii.",
         "limits": "Gratis per 1 organizzazione, fino a {seats} postazioni e {requests} richieste al giorno.",
         "cta": "Attiva le leve: vedi i piani"
       }

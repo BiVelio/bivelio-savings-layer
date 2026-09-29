@@ -743,8 +743,8 @@
         "eyebrow": "Licencia Medir · modo sombra",
         "title": "Lo que habrías ahorrado",
         "amount": "{amount} que no habrías gastado",
-        "context": "De {spend} de gasto medido en {requests} peticiones. Una estimación del carril sombra (llamadas repetidas y duplicadas en vuelo, valoradas con el contador de tu propio proveedor): no se aplicó nada y no se factura nada.",
-        "empty": "Aún no hay estimación de ahorro: aparece en cuanto tu capa vea una petición repetida. La licencia Medir nunca cambia lo que envías.",
+        "context": "De {spend} de gasto medido en {requests} peticiones. Una estimación del carril sombra, valorada con el contador de tu propio proveedor: en el SDK, las llamadas repetidas y las duplicadas en vuelo; en el gateway, además, el modelo hermano y la rebaja del TTL de la caché. No se aplicó nada y no se factura nada.",
+        "empty": "Aún no hay estimación de ahorro: aparece en cuanto tu capa vea una petición repetida o, en el gateway, una en la que habrían ahorrado el modelo hermano o la rebaja del TTL de la caché. La licencia Medir nunca cambia lo que envías.",
         "limits": "Gratis para 1 organización, hasta {seats} asientos y {requests} peticiones al día.",
         "cta": "Activa las palancas: ver planes"
       }

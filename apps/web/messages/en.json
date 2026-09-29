@@ -743,8 +743,8 @@
         "eyebrow": "Measure license · shadow mode",
         "title": "What you would have saved",
         "amount": "{amount} you would not have spent",
-        "context": "Out of {spend} measured spend over {requests} requests. An estimate from the shadow lane (repeated and duplicate in-flight calls, valued with your provider's own counter): nothing was applied and nothing is billed.",
-        "empty": "No would-have-saved estimate yet: it appears as soon as your layer sees a repeated request. The Measure license never changes what you send.",
+        "context": "Out of {spend} measured spend over {requests} requests. An estimate from the shadow lane, valued with your provider's own counter: in the SDK, repeated and duplicate in-flight calls; in the gateway, also the sibling model and the cache TTL reduction. Nothing was applied and nothing is billed.",
+        "empty": "No would-have-saved estimate yet: it appears as soon as your layer sees a repeated request or, in the gateway, one where the sibling model or the cache TTL reduction would have saved. The Measure license never changes what you send.",
         "limits": "Free for 1 organization, up to {seats} seats and {requests} requests a day.",
         "cta": "Turn the levers on: see plans"
       }

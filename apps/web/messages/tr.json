@@ -743,8 +743,8 @@
         "eyebrow": "Ölçüm lisansı · gölge modu",
         "title": "Ne kadar tasarruf ederdiniz",
         "amount": "Harcamayacağınız tutar: {amount}",
-        "context": "{requests} istekte ölçülen {spend} harcamanın içinden. Gölge şeridinden bir tahmin (tekrarlanan ve eşzamanlı yinelenen çağrılar, kendi sağlayıcınızın sayacıyla değerlendirilmiştir): hiçbir şey uygulanmadı ve hiçbir şey faturalanmaz.",
-        "empty": "Henüz tasarruf tahmini yok: katmanınız tekrarlanan bir istek gördüğü anda görünür. Ölçüm lisansı gönderdiğiniz hiçbir şeyi değiştirmez.",
+        "context": "{requests} istekte ölçülen {spend} harcamanın içinden. Kendi sağlayıcınızın sayacıyla değerlendirilen, gölge şeridinden bir tahmin: SDK'da tekrarlanan ve eşzamanlı yinelenen çağrılar; gateway'de ayrıca kardeş model ve önbellek TTL'sinin düşürülmesi. Hiçbir şey uygulanmadı ve hiçbir şey faturalanmaz.",
+        "empty": "Henüz tasarruf tahmini yok: katmanınız tekrarlanan bir istek gördüğü anda ya da gateway'de kardeş modelin veya önbellek TTL'sinin düşürülmesinin tasarruf sağlayacağı bir istek gördüğü anda görünür. Ölçüm lisansı gönderdiğiniz hiçbir şeyi değiştirmez.",
         "limits": "1 kuruluş için ücretsiz, en fazla {seats} koltuk ve günde {requests} istek.",
         "cta": "Kolları açın: planlara bakın"
       }
