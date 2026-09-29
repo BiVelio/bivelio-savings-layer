@@ -1,5 +1,7 @@
 import { readFileSync } from "node:fs";
+import Anthropic from "@anthropic-ai/sdk";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { anthropicSavings } from "@bivelio/savings-layer/anthropic-sdk";
 
 import { createSavingsLayer } from "../src/pipeline/create.js";
 import { AnthropicProvider } from "../src/providers/anthropic.js";
@@ -368,6 +370,60 @@ describe("3 · la capa no edita nada anterior a un bloque de pensamiento", () =>
       savings: { toolOutputCompaction: true, exactCache: false },
     } as SavingsRequest);
     expect(JSON.stringify(a.cuerpos[0])).not.toContain('"thinking"');
+  });
+});
+
+describe("3 · el adaptador del SDK oficial no toca el cuerpo, y avisa de lo que el API va a rechazar", () => {
+  const CUERPO = {
+    model: "claude-sonnet-5-5",
+    max_tokens: 256,
+    temperature: 0,
+    tool_choice: { type: "any" as const },
+    tools: [{ name: "get_weather", description: "Weather", input_schema: { type: "object" as const, properties: { city: { type: "string" } } } }],
+    messages: [
+      { role: "user" as const, content: "Weather in Paris?" },
+      {
+        role: "assistant" as const,
+        content: [
+          { type: "thinking" as const, thinking: "", signature: "c2lnbmF0dXJh" },
+          { type: "tool_use" as const, id: "toolu_1", name: "get_weather", input: { city: "Paris" } },
+        ],
+      },
+      {
+        role: "user" as const,
+        content: [{ type: "tool_result" as const, tool_use_id: "toolu_1", content: JSON.stringify({ sky: "sunny" }, null, 2) }],
+      },
+    ],
+  };
+
+  // Los avisos de los adaptadores son de proceso (comun/aviso.ts) y no se
+  // reinician entre tests: el de los avisos usa su propio id de modelo.
+  async function enviado(conCapa: boolean, model = CUERPO.model): Promise<string> {
+    const cuerpos: string[] = [];
+    const fetchImpl = (async (_u: unknown, init?: RequestInit) => {
+      cuerpos.push(String(init?.body ?? ""));
+      return new Response(
+        JSON.stringify({ id: "msg_x", type: "message", role: "assistant", model: "claude-sonnet-5-5", content: [{ type: "text", text: "ok" }], stop_reason: "end_turn", stop_sequence: null, usage: { input_tokens: 5, output_tokens: 1 } }),
+        { status: 200, headers: { "content-type": "application/json" } },
+      );
+    }) as unknown as typeof fetch;
+    const s = conCapa ? anthropicSavings({}) : undefined;
+    const c = new Anthropic({ apiKey: "test-not-a-key", fetch: fetchImpl, maxRetries: 0, ...(s ? { middleware: [s.middleware] } : {}) });
+    // Las palancas que reescriben, pedidas por llamada: el adaptador las apaga.
+    await c.messages.create({ ...CUERPO, model }, { bivelio: { savings: { toolOutputCompaction: true, elision: true, exactCache: false } } } as never);
+    s?.close();
+    return cuerpos[0]!;
+  }
+
+  it("el historial con su bloque de pensamiento llega byte a byte, con las palancas que reescriben pedidas", async () => {
+    expect(await enviado(true)).toBe(await enviado(false));
+  });
+
+  it("⛔ avisa UNA vez de `tool_choice` forzado y de `temperature` en Sonnet 5.5 (el 400 del API llegaría sin decir qué cambiar)", async () => {
+    await enviado(true, "claude-sonnet-5-5-20260928");
+    await enviado(true, "claude-sonnet-5-5-20260928");
+    expect(avisos(/rejects a forced `tool_choice`/)).toHaveLength(1);
+    expect(avisos(/rejects a non-default `temperature`/)).toHaveLength(1);
   });
 });
 
