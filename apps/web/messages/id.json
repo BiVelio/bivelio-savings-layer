@@ -1191,14 +1191,36 @@
   },
   "pricingPage": {
     "metaTitle": "Ketentuan harga · BV-SALA",
-    "metaDescription": "Biaya per kursi dan komisi atas penghematan terukur, diterbitkan dari konstanta yang sama yang menagih kamu.",
+    "metaDescription": "Medir gratis, Pro per kursi, Tim, dan Enterprise; komisi atas penghematan terverifikasi bersifat opsional. Angka diterbitkan dari konstanta yang sama yang menagih.",
     "eyebrow": "Harga yang diterbitkan",
     "title": "Ketentuan harga",
     "governs": "Halaman ini menjelaskan cara layanan bekerja saat ini; yang mengikat adalah <license>LICENSE</license> dan <terms>Ketentuan BiVelio</terms>.",
-    "lede": "Setiap angka di sini dibaca dari kode yang sama yang menagih kamu, jadi angkanya berubah saat harganya berubah.",
+    "lede": "Anda membayar per kursi atau untuk paket tim; komisi atas penghematan adalah opsi tambahan, bukan modelnya. Setiap angka di halaman ini dibaca dari kode yang sama yang menagih Anda, jadi angkanya berubah saat harga berubah.",
+    "plans": {
+      "title": "Paket",
+      "intro": "Empat paket, dari yang terkecil hingga terbesar. Pro dan Tim dibayar per kursi dan tidak dikenai komisi.",
+      "medir": {
+        "name": "Medir",
+        "body": "<b>Gratis.</b> Untuk melihat berapa yang akan dihemat lapisan ini pada lalu lintas Anda sendiri sebelum membayar apa pun. Ketentuannya akan diterbitkan di sini saat lisensinya tersedia."
+      },
+      "pro": {
+        "name": "Pro",
+        "amount": "<b>{monthly}</b> per kursi per bulan, atau <b>{yearly}</b> per kursi per tahun, dalam {currency}.",
+        "body": "Semua optimasi lapisan, tanda terima per permintaan, dan dasbor. <b>Tanpa komisi</b> atas penghematan: Anda membayar kursi, baik Anda berhemat maupun tidak."
+      },
+      "team": {
+        "name": "Tim",
+        "amount": "<b>{monthly}</b> per bulan dengan <b>{included} kursi termasuk</b> (sekitar {perSeat} per kursi), atau <b>{yearly}</b> per tahun, dalam {currency}.",
+        "extra": "Setiap kursi di atas yang termasuk: {monthly} per bulan, atau {yearly} per tahun.",
+        "body": "Sama seperti Pro, untuk satu armada: biaya tetap mencakup kursi yang termasuk meskipun Anda memakai lebih sedikit. <b>Tanpa komisi</b> atas penghematan."
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "body": "Untuk kursi lebih banyak daripada yang diizinkan pembayaran daring, kontrak tersendiri, atau ketentuan faktur yang dinegosiasikan: <contact>hubungi kami</contact>."
+      }
+    },
     "seat": {
-      "title": "Biaya per kursi",
-      "amount": "<b>{monthly}</b> per kursi per bulan, atau <b>{yearly}</b> per kursi per tahun, dalam {currency}.",
+      "title": "Cara kursi dihitung dan ditagih",
       "cycle": "Biaya per kursi ditagih melalui Stripe untuk setiap siklus bulanan atau tahunan langgananmu, dihitung sejak hari langganan itu dimulai.",
       "paidAlways": "Biaya per kursi dibayar <b>baik Perangkat Lunak menghasilkan penghematan maupun tidak</b>.",
       "vat": "Jumlah belum termasuk PPN. Saat pembayaran, kamu diminta alamat penagihan dan, secara opsional, nomor PPN; keduanya tercetak di faktur.",
@@ -1208,7 +1230,9 @@
       "identifier": "Cara ID kursi dibentuk, dan semua hal lain yang dikirim Perangkat Lunak ke BiVelio, ada di <privacy>halaman privasi</privacy>."
     },
     "commission": {
-      "title": "Komisi atas penghematan terukur",
+      "title": "Opsional: komisi hanya atas penghematan terverifikasi",
+      "optional": "Ini adalah opsi <b>opsional</b>, bukan model utama: Pro dan Tim tidak memilikinya, dan laporan mereka menampilkan komisi yang seharusnya berlaku hanya sebagai referensi. Yang memilihnya membayar biaya per kursi yang lebih rendah ditambah komisi hanya atas penghematan yang dapat dicocokkan dengan faktur penyedianya.",
+      "seat": "Biaya per kursi dalam opsi ini: <b>{monthly}</b> per kursi per bulan, atau <b>{yearly}</b> per kursi per tahun, dalam {currency}.",
       "only": "Komisi dikenakan <b>hanya atas penghematan terukur</b>: penghematan yang berlabel {labels} di catatan penggunaanmu. Penghematan berlabel {never} tidak pernah dikenai komisi.",
       "measured": "Penghematan terukur ditetapkan dari penghitung penggunaan milik penyedia LLM-mu sendiri untuk permintaan itu.",
       "reference": "Penghematan berdasarkan referensi, untuk permintaan berulang yang dilayani Perangkat Lunak tanpa memanggil penyediamu, ditetapkan dari penghitung penyediamu untuk permintaan identik sebelumnya yang memang dijalankan, menurut aturan yang tercantum di rekeningmu ({regla}).",

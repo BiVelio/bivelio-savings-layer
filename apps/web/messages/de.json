@@ -1191,14 +1191,36 @@
   },
   "pricingPage": {
     "metaTitle": "Preisbedingungen · BV-SALA",
-    "metaDescription": "Die Gebühr pro Seat und die Provision auf gemessene Ersparnis, veröffentlicht aus denselben Konstanten, die abrechnen.",
+    "metaDescription": "Medir kostenlos, Pro pro Seat, Team und Enterprise; die Provision auf verifizierte Ersparnis ist optional. Zahlen aus denselben Konstanten veröffentlicht, die abrechnen.",
     "eyebrow": "Veröffentlichte Preise",
     "title": "Preisbedingungen",
     "governs": "Diese Seite beschreibt, wie der Dienst heute funktioniert; maßgeblich sind die <license>LICENSE</license> und die <terms>BiVelio-Bedingungen</terms>.",
-    "lede": "Jede Zahl hier wird aus demselben Code gelesen, der dir die Rechnung stellt – sie ändert sich also, wenn sich der Preis ändert.",
+    "lede": "Du zahlst pro Seat oder für einen Team-Plan; die Provision auf Ersparnis ist eine optionale Variante, nicht das Modell. Jede Zahl hier wird aus demselben Code gelesen, der dir die Rechnung stellt – sie ändert sich also, wenn sich der Preis ändert.",
+    "plans": {
+      "title": "Pläne",
+      "intro": "Vier Pläne, vom kleinsten zum größten. Pro und Team werden pro Seat bezahlt und tragen keine Provision.",
+      "medir": {
+        "name": "Medir",
+        "body": "<b>Kostenlos.</b> Um zu sehen, was die Schicht mit deinem eigenen Traffic sparen würde, bevor du etwas bezahlst. Die Bedingungen werden hier veröffentlicht, sobald die Lizenz verfügbar ist."
+      },
+      "pro": {
+        "name": "Pro",
+        "amount": "<b>{monthly}</b> pro Seat und Monat oder <b>{yearly}</b> pro Seat und Jahr, in {currency}.",
+        "body": "Alle Optimierungen der Schicht, der Beleg pro Anfrage und das Dashboard. <b>Keine Provision</b> auf Ersparnis: Du zahlst die Seats, ob du sparst oder nicht."
+      },
+      "team": {
+        "name": "Team",
+        "amount": "<b>{monthly}</b> pro Monat mit <b>{included} inklusiven Seats</b> (etwa {perSeat} pro Seat) oder <b>{yearly}</b> pro Jahr, in {currency}.",
+        "extra": "Jeder Seat über die inklusiven hinaus: {monthly} pro Monat oder {yearly} pro Jahr.",
+        "body": "Dasselbe wie Pro, für eine Flotte: Die Grundgebühr deckt die inklusiven Seats, auch wenn du weniger nutzt. <b>Keine Provision</b> auf Ersparnis."
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "body": "Für mehr Seats, als der Online-Checkout zulässt, einen eigenen Vertrag oder verhandelte Rechnungsbedingungen: <contact>schreib uns</contact>."
+      }
+    },
     "seat": {
-      "title": "Die Gebühr pro Seat",
-      "amount": "<b>{monthly}</b> pro Seat und Monat oder <b>{yearly}</b> pro Seat und Jahr, in {currency}.",
+      "title": "Wie ein Seat gezählt und abgerechnet wird",
       "cycle": "Die Gebühr pro Seat wird über Stripe für jeden monatlichen oder jährlichen Zyklus deines Abos abgerechnet, gezählt ab dem Tag, an dem es beginnt.",
       "paidAlways": "Die Gebühr pro Seat wird bezahlt, <b>ob die Software eine Ersparnis erzielt oder nicht</b>.",
       "vat": "Die Beträge verstehen sich ohne MwSt. Beim Bezahlen werden deine Rechnungsadresse und, optional, deine USt-IdNr. abgefragt; beide stehen auf deiner Rechnung.",
@@ -1208,7 +1230,9 @@
       "identifier": "Wie eine Seat-Kennung gebildet wird und alles andere, was die Software an BiVelio sendet, steht auf der <privacy>Datenschutzseite</privacy>."
     },
     "commission": {
-      "title": "Die Provision auf gemessene Ersparnis",
+      "title": "Optional: Provision nur auf verifizierte Ersparnis",
+      "optional": "Das ist eine <b>optionale</b> Variante, nicht das Hauptmodell: Pro und Team tragen sie nicht, und ihre Abrechnung zeigt die Provision, die angefallen wäre, nur zur Information. Wer sie wählt, zahlt eine niedrigere Seat-Gebühr und zusätzlich eine Provision nur auf Ersparnis, die sich mit der Rechnung des eigenen Anbieters abgleichen lässt.",
+      "seat": "Seat-Gebühr in dieser Variante: <b>{monthly}</b> pro Seat und Monat oder <b>{yearly}</b> pro Seat und Jahr, in {currency}.",
       "only": "Eine Provision wird <b>nur auf gemessene Ersparnis</b> berechnet: Ersparnis, die in deinen Nutzungsdatensätzen als {labels} gekennzeichnet ist. Als {never} gekennzeichnete Ersparnis trägt nie eine Provision.",
       "measured": "Eine gemessene Ersparnis ergibt sich aus dem eigenen Nutzungszähler deines LLM-Anbieters für diese Anfrage.",
       "reference": "Eine Ersparnis per Referenz – bei einer wiederholten Anfrage, die die Software ohne Aufruf deines Anbieters bedient hat – ergibt sich aus dem Zähler deines Anbieters für die identische frühere Anfrage, die tatsächlich lief, nach der Regel, die auf deiner Abrechnung steht ({regla}).",

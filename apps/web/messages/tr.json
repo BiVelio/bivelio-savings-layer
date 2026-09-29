@@ -1191,14 +1191,36 @@
   },
   "pricingPage": {
     "metaTitle": "Fiyat koşulları · BV-SALA",
-    "metaDescription": "Koltuk başına ücret ve ölçülmüş tasarruf üzerinden komisyon, faturayı kesen sabitlerin kendisinden yayımlanır.",
+    "metaDescription": "Ücretsiz Medir, koltuk başına Pro, Ekip ve Enterprise; doğrulanmış tasarruf üzerinden komisyon isteğe bağlıdır. Rakamlar, faturalayan aynı sabitlerden yayımlanır.",
     "eyebrow": "Yayımlanan fiyatlar",
     "title": "Fiyat koşulları",
     "governs": "Bu sayfa hizmetin bugün nasıl işlediğini anlatır; bağlayıcı metinler <license>LICENSE</license> ve <terms>BiVelio Koşulları</terms> olarak kalır.",
-    "lede": "Buradaki her rakam, sana fatura kesen kodun kendisinden okunur; yani fiyat değişince sayfa da değişir.",
+    "lede": "Koltuk başına veya bir ekip planı için ödersin; tasarruf üzerinden komisyon isteğe bağlı bir seçenektir, model değildir. Bu sayfadaki her rakam seni faturalayan aynı koddan okunur; yani fiyat değişince o da değişir.",
+    "plans": {
+      "title": "Planlar",
+      "intro": "Küçükten büyüğe dört plan. Pro ve Ekip koltuk başına ödenir ve komisyon içermez.",
+      "medir": {
+        "name": "Medir",
+        "body": "<b>Ücretsiz.</b> Hiçbir şey ödemeden önce katmanın kendi trafiğinde ne kadar tasarruf edeceğini görmek için. Koşulları, lisans kullanıma sunulduğunda burada yayımlanacak."
+      },
+      "pro": {
+        "name": "Pro",
+        "amount": "Koltuk başına aylık <b>{monthly}</b> veya koltuk başına yıllık <b>{yearly}</b>, {currency} cinsinden.",
+        "body": "Katmanın tüm optimizasyonları, istek başına makbuz ve panel. Tasarruf üzerinden <b>komisyon yok</b>: tasarruf etsen de etmesen de koltukları ödersin."
+      },
+      "team": {
+        "name": "Ekip",
+        "amount": "<b>{included} koltuk dahil</b> aylık <b>{monthly}</b> (koltuk başına yaklaşık {perSeat}) veya yıllık <b>{yearly}</b>, {currency} cinsinden.",
+        "extra": "Dahil olanların üzerindeki her koltuk: aylık {monthly} veya yıllık {yearly}.",
+        "body": "Pro ile aynı, bir filo için: sabit ücret, daha azını kullansan bile dahil koltukları kapsar. Tasarruf üzerinden <b>komisyon yok</b>."
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "body": "Çevrimiçi ödemenin izin verdiğinden fazla koltuk, sana özel bir sözleşme veya üzerinde anlaşılmış fatura koşulları için: <contact>bize yaz</contact>."
+      }
+    },
     "seat": {
-      "title": "Koltuk başına ücret",
-      "amount": "Koltuk başına aylık <b>{monthly}</b> ya da koltuk başına yıllık <b>{yearly}</b>, {currency} cinsinden.",
+      "title": "Bir koltuk nasıl sayılır ve faturalanır",
       "cycle": "Koltuk başına ücret, aboneliğinin başladığı günden itibaren sayılan her aylık ya da yıllık döngü için Stripe üzerinden faturalanır.",
       "paidAlways": "Koltuk başına ücret, <b>Yazılım tasarruf sağlasa da sağlamasa da</b> ödenir.",
       "vat": "Tutarlara KDV dahil değildir. Ödeme sırasında fatura adresin ve isteğe bağlı olarak KDV numaran istenir; ikisi de faturanda yer alır.",
@@ -1208,7 +1230,9 @@
       "identifier": "Koltuk kimliğinin nasıl oluşturulduğu ve Yazılımın BiVelio'ya gönderdiği diğer her şey <privacy>gizlilik sayfasında</privacy> yer alır."
     },
     "commission": {
-      "title": "Ölçülmüş tasarruf üzerinden komisyon",
+      "title": "İsteğe bağlı: yalnızca doğrulanmış tasarruf üzerinden komisyon",
+      "optional": "Bu, ana model değil <b>isteğe bağlı</b> bir seçenektir: Pro ve Ekip bunu içermez ve ekstreleri, uygulanacak olan komisyonu yalnızca bilgi amaçlı gösterir. Bunu seçen, daha düşük bir koltuk ücreti öder ve buna ek olarak yalnızca sağlayıcısının faturasıyla mutabakat yapabileceği tasarruf üzerinden komisyon öder.",
+      "seat": "Bu seçenekte koltuk ücreti: koltuk başına aylık <b>{monthly}</b> veya koltuk başına yıllık <b>{yearly}</b>, {currency} cinsinden.",
       "only": "Komisyon <b>yalnızca ölçülmüş tasarruf üzerinden</b> alınır: kullanım kayıtlarında {labels} olarak etiketlenen tasarruf. {never} olarak etiketlenen tasarruf asla komisyona tabi değildir.",
       "measured": "Ölçülmüş tasarruf, LLM sağlayıcının o istek için tuttuğu kendi kullanım sayacından belirlenir.",
       "reference": "Referansla tasarruf, Yazılımın sağlayıcını çağırmadan yanıtladığı tekrarlanan bir istek için, gerçekten çalışmış olan önceki özdeş isteğin sağlayıcı sayacından, ekstrende yazan kurala ({regla}) göre belirlenir.",

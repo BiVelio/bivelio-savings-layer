@@ -1191,14 +1191,36 @@
   },
   "pricingPage": {
     "metaTitle": "Termes de preu · BV-SALA",
-    "metaDescription": "La quota per seient i la comissió sobre l'estalvi mesurat, publicades des de les mateixes constants que cobren.",
+    "metaDescription": "Medir gratis, Pro per seient, Equip i Enterprise; la comissió sobre l’estalvi verificat és opcional. Xifres publicades des de les mateixes constants que cobren.",
     "eyebrow": "Preus publicats",
     "title": "Termes de preu",
     "governs": "Aquesta pàgina descriu com funciona el servei avui; regeixen la <license>LICENSE</license> i els <terms>Termes de BiVelio</terms>.",
-    "lede": "Cada xifra que hi veus es llegeix del mateix codi que et cobra, així que canvia quan canvia el preu.",
+    "lede": "Pagues per seient o per un pla d’equip; la comissió sobre l’estalvi és una modalitat opcional, no el model. Cada xifra que veus aquí es llegeix del mateix codi que et cobra, així que canvia quan canvia el preu.",
+    "plans": {
+      "title": "Plans",
+      "intro": "Quatre plans, de menys a més. Pro i Equip es paguen per seient i no porten comissió.",
+      "medir": {
+        "name": "Medir",
+        "body": "<b>Gratis.</b> Per veure què estalviaria la capa amb el teu propi trànsit abans de pagar res. Les seves condicions es publicaran aquí quan la llicència estigui disponible."
+      },
+      "pro": {
+        "name": "Pro",
+        "amount": "<b>{monthly}</b> per seient i mes, o <b>{yearly}</b> per seient i any, en {currency}.",
+        "body": "Totes les optimitzacions de la capa, el rebut per petició i el tauler. <b>Sense comissió</b> sobre l’estalvi: pagues els seients, estalviïs o no."
+      },
+      "team": {
+        "name": "Equip",
+        "amount": "<b>{monthly}</b> al mes amb <b>{included} seients inclosos</b> (uns {perSeat} per seient), o <b>{yearly}</b> l’any, en {currency}.",
+        "extra": "Cada seient per sobre dels inclosos: {monthly} al mes, o {yearly} l’any.",
+        "body": "El mateix que Pro, per a una flota: la quota fixa cobreix els seients inclosos encara que en facis servir menys. <b>Sense comissió</b> sobre l’estalvi."
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "body": "Per a més seients dels que admet el pagament en línia, un contracte propi o condicions de factura pactades: <contact>escriu-nos</contact>."
+      }
+    },
     "seat": {
-      "title": "La quota per seient",
-      "amount": "<b>{monthly}</b> per seient i mes, o <b>{yearly}</b> per seient i any, en {currency}.",
+      "title": "Com es compta i es cobra un seient",
       "cycle": "La quota per seient es cobra a través d'Stripe per cada cicle mensual o anual de la teva subscripció, comptat des del dia que comença.",
       "paidAlways": "La quota per seient es paga <b>tant si hi ha estalvi com si no</b>.",
       "vat": "Els imports no inclouen l'IVA. El pagament demana la teva adreça de facturació i, si vols, el teu NIF-IVA; tots dos surten a la factura.",
@@ -1208,7 +1230,9 @@
       "identifier": "Com es forma l'identificador de seient, i tota la resta que el Software envia a BiVelio, és a la <privacy>pàgina de privadesa</privacy>."
     },
     "commission": {
-      "title": "La comissió sobre l'estalvi mesurat",
+      "title": "Opcional: comissió només sobre l’estalvi verificat",
+      "optional": "És una modalitat <b>opcional</b>, no el model principal: Pro i Equip no la porten, i el seu extracte mostra la que s’hauria aplicat només com a referència. Qui la tria paga una quota per seient més baixa i, a més, una comissió només sobre l’estalvi que pot quadrar amb la factura del seu proveïdor.",
+      "seat": "Quota per seient en aquesta modalitat: <b>{monthly}</b> per seient i mes, o <b>{yearly}</b> per seient i any, en {currency}.",
       "only": "Es cobra comissió <b>només sobre l'estalvi mesurat</b>: l'estalvi etiquetat {labels} als teus registres d'ús. L'estalvi etiquetat {never} mai no porta comissió.",
       "measured": "Un estalvi mesurat surt del comptador d'ús del teu mateix proveïdor de LLM per a aquella petició.",
       "reference": "Un estalvi per referència, en una petició repetida que el Software va servir sense cridar el teu proveïdor, surt del comptador del teu proveïdor per a la petició idèntica anterior que sí que es va executar, amb la regla que figura al teu extracte ({regla}).",

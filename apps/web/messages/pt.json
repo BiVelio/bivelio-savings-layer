@@ -1191,14 +1191,36 @@
   },
   "pricingPage": {
     "metaTitle": "Condições de preço · BV-SALA",
-    "metaDescription": "A taxa por lugar e a comissão sobre a economia medida, publicadas a partir das mesmas constantes que cobram.",
+    "metaDescription": "Medir grátis, Pro por assento, Equipa e Enterprise; a comissão sobre a poupança verificada é opcional. Valores publicados a partir das mesmas constantes que cobram.",
     "eyebrow": "Preços publicados",
     "title": "Condições de preço",
     "governs": "Esta página descreve como o serviço funciona hoje; prevalecem a <license>LICENSE</license> e os <terms>Termos da BiVelio</terms>.",
-    "lede": "Cada número que vê aqui é lido do mesmo código que lhe cobra, por isso muda quando o preço muda.",
+    "lede": "Pagas por assento ou por um plano de equipa; a comissão sobre a poupança é uma modalidade opcional, não o modelo. Cada valor desta página é lido do mesmo código que te cobra, por isso muda quando o preço muda.",
+    "plans": {
+      "title": "Planos",
+      "intro": "Quatro planos, do menor para o maior. Pro e Equipa pagam-se por assento e não têm comissão.",
+      "medir": {
+        "name": "Medir",
+        "body": "<b>Grátis.</b> Para veres o que a camada pouparia com o teu próprio tráfego antes de pagares alguma coisa. As condições serão publicadas aqui quando a licença estiver disponível."
+      },
+      "pro": {
+        "name": "Pro",
+        "amount": "<b>{monthly}</b> por assento e mês, ou <b>{yearly}</b> por assento e ano, em {currency}.",
+        "body": "Todas as otimizações da camada, o recibo por pedido e o painel. <b>Sem comissão</b> sobre a poupança: pagas os assentos, poupes ou não."
+      },
+      "team": {
+        "name": "Equipa",
+        "amount": "<b>{monthly}</b> por mês com <b>{included} assentos incluídos</b> (cerca de {perSeat} por assento), ou <b>{yearly}</b> por ano, em {currency}.",
+        "extra": "Cada assento acima dos incluídos: {monthly} por mês, ou {yearly} por ano.",
+        "body": "O mesmo que Pro, para uma frota: a mensalidade fixa cobre os assentos incluídos mesmo que uses menos. <b>Sem comissão</b> sobre a poupança."
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "body": "Para mais assentos do que o pagamento online permite, um contrato próprio ou condições de faturação negociadas: <contact>escreve-nos</contact>."
+      }
+    },
     "seat": {
-      "title": "A taxa por lugar",
-      "amount": "<b>{monthly}</b> por lugar e por mês, ou <b>{yearly}</b> por lugar e por ano, em {currency}.",
+      "title": "Como se conta e se cobra um assento",
       "cycle": "A taxa por lugar é cobrada através da Stripe em cada ciclo mensal ou anual da sua subscrição, contado a partir do dia em que começa.",
       "paidAlways": "A taxa por lugar paga-se <b>quer o Software produza economia, quer não</b>.",
       "vat": "Os valores não incluem IVA. O pagamento pede o seu endereço de faturação e, opcionalmente, o seu número de IVA; ambos aparecem na fatura.",
@@ -1208,7 +1230,9 @@
       "identifier": "Como se forma o identificador de lugar, e tudo o resto que o Software envia à BiVelio, está na <privacy>página de privacidade</privacy>."
     },
     "commission": {
-      "title": "A comissão sobre a economia medida",
+      "title": "Opcional: comissão só sobre a poupança verificada",
+      "optional": "É uma modalidade <b>opcional</b>, não o modelo principal: Pro e Equipa não a têm, e o seu extrato mostra a que se teria aplicado apenas como referência. Quem a escolhe paga uma quota por assento mais baixa e, além disso, uma comissão só sobre a poupança que pode conciliar com a fatura do seu fornecedor.",
+      "seat": "Quota por assento nesta modalidade: <b>{monthly}</b> por assento e mês, ou <b>{yearly}</b> por assento e ano, em {currency}.",
       "only": "Só se cobra comissão <b>sobre a economia medida</b>: a economia etiquetada {labels} nos seus registos de uso. A economia etiquetada {never} nunca tem comissão.",
       "measured": "Uma economia medida resulta do próprio contador de uso do seu provedor de LLM para esse pedido.",
       "reference": "Uma economia por referência, num pedido repetido que o Software serviu sem chamar o seu provedor, resulta do contador do seu provedor para o pedido idêntico anterior que foi de facto executado, segundo a regra indicada no seu extrato ({regla}).",

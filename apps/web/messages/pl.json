@@ -1191,14 +1191,36 @@
   },
   "pricingPage": {
     "metaTitle": "Warunki cenowe · BV-SALA",
-    "metaDescription": "Opłata za stanowisko i prowizja od zmierzonych oszczędności, publikowane z tych samych stałych, które naliczają opłaty.",
+    "metaDescription": "Medir za darmo, Pro za stanowisko, Zespół i Enterprise; prowizja od zweryfikowanych oszczędności jest opcjonalna. Kwoty publikowane z tych samych stałych, które naliczają opłaty.",
     "eyebrow": "Opublikowany cennik",
     "title": "Warunki cenowe",
     "governs": "Ta strona opisuje, jak usługa działa dziś; wiążące są <license>LICENSE</license> i <terms>Warunki BiVelio</terms>.",
-    "lede": "Każda liczba na tej stronie jest odczytywana z tego samego kodu, który wystawia Ci rachunek, więc zmienia się razem z ceną.",
+    "lede": "Płacisz za stanowisko albo za plan zespołowy; prowizja od oszczędności to opcjonalny wariant, a nie model. Każda kwota na tej stronie jest odczytywana z tego samego kodu, który wystawia ci rachunek, więc zmienia się, gdy zmienia się cena.",
+    "plans": {
+      "title": "Plany",
+      "intro": "Cztery plany, od najmniejszego do największego. Pro i Zespół są płatne za stanowisko i nie mają prowizji.",
+      "medir": {
+        "name": "Medir",
+        "body": "<b>Za darmo.</b> Aby zobaczyć, ile warstwa zaoszczędziłaby na twoim własnym ruchu, zanim cokolwiek zapłacisz. Warunki zostaną opublikowane tutaj, gdy licencja będzie dostępna."
+      },
+      "pro": {
+        "name": "Pro",
+        "amount": "<b>{monthly}</b> za stanowisko miesięcznie lub <b>{yearly}</b> za stanowisko rocznie, w {currency}.",
+        "body": "Wszystkie optymalizacje warstwy, potwierdzenie dla każdego żądania i panel. <b>Bez prowizji</b> od oszczędności: płacisz za stanowiska niezależnie od tego, czy oszczędzasz."
+      },
+      "team": {
+        "name": "Zespół",
+        "amount": "<b>{monthly}</b> miesięcznie z <b>{included} stanowiskami w cenie</b> (około {perSeat} za stanowisko) lub <b>{yearly}</b> rocznie, w {currency}.",
+        "extra": "Każde stanowisko ponad te w cenie: {monthly} miesięcznie lub {yearly} rocznie.",
+        "body": "To samo co Pro, dla floty: stała opłata obejmuje stanowiska w cenie, nawet jeśli używasz mniej. <b>Bez prowizji</b> od oszczędności."
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "body": "Dla większej liczby stanowisk, niż pozwala płatność online, własnej umowy lub wynegocjowanych warunków fakturowania: <contact>napisz do nas</contact>."
+      }
+    },
     "seat": {
-      "title": "Opłata za stanowisko",
-      "amount": "<b>{monthly}</b> za stanowisko miesięcznie albo <b>{yearly}</b> za stanowisko rocznie, w {currency}.",
+      "title": "Jak liczy się i rozlicza stanowisko",
       "cycle": "Opłata za stanowisko jest pobierana przez Stripe za każdy miesięczny lub roczny cykl Twojej subskrypcji, liczony od dnia jej rozpoczęcia.",
       "paidAlways": "Opłatę za stanowisko płaci się <b>niezależnie od tego, czy Oprogramowanie przynosi oszczędności</b>.",
       "vat": "Kwoty nie zawierają VAT. Przy płatności podajesz adres rozliczeniowy i opcjonalnie numer VAT; oba widnieją na fakturze.",
@@ -1208,7 +1230,9 @@
       "identifier": "Jak powstaje identyfikator stanowiska i wszystko inne, co Oprogramowanie wysyła do BiVelio, opisuje <privacy>strona o prywatności</privacy>."
     },
     "commission": {
-      "title": "Prowizja od zmierzonych oszczędności",
+      "title": "Opcjonalnie: prowizja tylko od zweryfikowanych oszczędności",
+      "optional": "To <b>opcjonalny</b> wariant, a nie główny model: Pro i Zespół go nie mają, a ich wyciąg pokazuje prowizję, która by obowiązywała, wyłącznie informacyjnie. Kto go wybierze, płaci niższą opłatę za stanowisko oraz prowizję tylko od oszczędności, które może uzgodnić z fakturą swojego dostawcy.",
+      "seat": "Opłata za stanowisko w tym wariancie: <b>{monthly}</b> za stanowisko miesięcznie lub <b>{yearly}</b> za stanowisko rocznie, w {currency}.",
       "only": "Prowizja jest naliczana <b>tylko od zmierzonych oszczędności</b>: oszczędności oznaczonych w Twoich rekordach użycia jako {labels}. Oszczędności oznaczone jako {never} nigdy nie podlegają prowizji.",
       "measured": "Zmierzona oszczędność wynika z własnego licznika użycia Twojego dostawcy LLM dla tego żądania.",
       "reference": "Oszczędność przez odniesienie, dla powtórzonego żądania, które Oprogramowanie obsłużyło bez wywołania dostawcy, wynika z licznika dostawcy dla identycznego wcześniejszego żądania, które faktycznie zostało wykonane, według reguły podanej na Twoim wyciągu ({regla}).",

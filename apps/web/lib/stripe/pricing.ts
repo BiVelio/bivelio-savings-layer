@@ -1,7 +1,17 @@
 import { unstable_cache } from "next/cache";
 
+import {
+  ASIENTOS_INCLUIDOS_EQUIPO,
+  PRECIOS_PROPUESTOS,
+  tarifaDeEquipoDesdeTramos,
+  tarifaPorAsiento,
+  type TarifaDePlan,
+  type TarifasDelPlan,
+  type TramoDeStripe,
+} from "@/lib/billing/planes";
+
 import { getStripe } from "./client";
-import { billingConfigured, priceIdFor, type BillingPeriod } from "./env";
+import { billingConfigured, priceIdFor, priceIdForPlan, type BillingPeriod } from "./env";
 
 /**
  * El precio del plan, leído del objeto Price de Stripe.
@@ -22,11 +32,13 @@ export type Importe = {
 export type PreciosDelPlan = { monthly: Importe; yearly: Importe };
 
 /**
- * Respaldo. Coincide con lo que crean los scripts de aprovisionamiento
- * (`scripts/provision-stripe.mjs:45-55`): 4,00 € y 39,00 €.
+ * Respaldo de la modalidad CON COMISIÓN (el Price de siempre). Coincide con lo
+ * que crean los scripts de aprovisionamiento (`scripts/provision-stripe.mjs:45-55`):
+ * 4,00 € y 39,00 €.
  *
- * **Este es el ÚNICO literal de precio que debe quedar en todo el repositorio.** Si
- * hace falta cambiar el precio, se cambia en Stripe y aquí; nunca en un texto.
+ * **Junto con PRECIOS_PROPUESTOS (lib/billing/planes.ts, Pro y Equipo), son los
+ * ÚNICOS literales de precio que deben quedar en el repositorio.** Si hace falta
+ * cambiar un precio, se cambia en Stripe y aquí; nunca en un texto.
  */
 export const PRECIO_RESPALDO: PreciosDelPlan = {
   monthly: { amount: 400, currency: "eur" },
@@ -89,5 +101,76 @@ export async function preciosDelPlan(): Promise<PreciosDelPlan> {
     return await leerCacheado();
   } catch (err) {
     return respaldo(err);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOS PLANES SIN COMISIÓN (Pro y Equipo, lib/billing/planes.ts)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type TarifasDeLosPlanes = { pro: TarifasDelPlan; equipo: TarifasDelPlan };
+
+/** Respaldo: la PROPUESTA de planes.ts, hasta que el dueño cree los Prices. */
+export const TARIFAS_RESPALDO: TarifasDeLosPlanes = {
+  pro: PRECIOS_PROPUESTOS.pro,
+  equipo: PRECIOS_PROPUESTOS.equipo,
+};
+
+async function tarifaDe(plan: "pro" | "equipo", period: BillingPeriod): Promise<TarifaDePlan> {
+  const id = priceIdForPlan(plan, period);
+  if (plan === "pro") return tarifaPorAsiento(await importeDeId(id));
+  const price = await getStripe().prices.retrieve(id, { expand: ["tiers"] });
+  const tarifa = tarifaDeEquipoDesdeTramos(price.tiers as TramoDeStripe[] | undefined, price.currency);
+  if (!tarifa) throw new Error(`El Price de Equipo ${period} no es «graduated» con dos tramos (incluidos + extra).`);
+  if (tarifa.asientosIncluidos !== ASIENTOS_INCLUIDOS_EQUIPO) {
+    // El checkout fija el mínimo con la constante; si el Price dice otra cosa,
+    // la web y el cobro no cuadran. Se lanza: se pinta el respaldo y se avisa.
+    throw new Error(
+      `El Price de Equipo ${period} incluye ${tarifa.asientosIncluidos} asientos y ASIENTOS_INCLUIDOS_EQUIPO dice ${ASIENTOS_INCLUIDOS_EQUIPO}.`,
+    );
+  }
+  return tarifa;
+}
+
+async function importeDeId(id: string): Promise<Importe> {
+  const price = await getStripe().prices.retrieve(id);
+  if (typeof price.unit_amount !== "number" || !price.currency) {
+    throw new Error(`El Price ${id} no tiene unit_amount/currency utilizables.`);
+  }
+  return { amount: price.unit_amount, currency: price.currency };
+}
+
+const leerPlanesCacheado = unstable_cache(
+  async (): Promise<TarifasDeLosPlanes> => ({
+    pro: { monthly: await tarifaDe("pro", "monthly"), yearly: await tarifaDe("pro", "yearly") },
+    equipo: { monthly: await tarifaDe("equipo", "monthly"), yearly: await tarifaDe("equipo", "yearly") },
+  }),
+  ["bvsala-precios-de-los-planes"],
+  { revalidate: 3600, tags: ["precios"] },
+);
+
+let avisadoPlanes = false;
+
+/**
+ * Las tarifas de Pro y Equipo para pintar. Falla ABIERTO como `preciosDelPlan`:
+ * sin los cuatro Prices configurados, o si Stripe no contesta, se pinta la
+ * propuesta de planes.ts — y se avisa una vez por proceso.
+ */
+export async function tarifasDeLosPlanes(): Promise<TarifasDeLosPlanes> {
+  const configurados = (["pro", "equipo"] as const).every(
+    (p) => priceIdForPlan(p, "monthly") && priceIdForPlan(p, "yearly"),
+  );
+  try {
+    if (!billingConfigured || !configurados) throw new Error("los Prices de Pro/Equipo no están configurados en este entorno");
+    return await leerPlanesCacheado();
+  } catch (err) {
+    if (!avisadoPlanes) {
+      avisadoPlanes = true;
+      console.warn(
+        "[bvsala] /pricing pinta las tarifas PROPUESTAS de lib/billing/planes.ts para Pro y Equipo. Motivo:",
+        err instanceof Error ? err.message : err,
+      );
+    }
+    return TARIFAS_RESPALDO;
   }
 }

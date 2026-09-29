@@ -88,6 +88,8 @@ vi.mock("@/lib/supabase/server", () => ({
 vi.mock("@/lib/stripe/env", () => ({
   billingFullyConfigured: true,
   priceIdFor: () => "price_mensual",
+  priceIdForPlan: (plan: string) => (plan === "pro" ? "price_pro" : plan === "equipo" ? "price_equipo" : "price_mensual"),
+  preciosSinComision: () => ({ pro: [], equipo: [] }),
 }));
 vi.mock("@/lib/stripe/client", () => ({
   getStripe: () => ({
@@ -440,5 +442,41 @@ describe("POST /api/stripe/checkout — si Stripe no abre la sesión, alguien se
     const res = await POST(peticion());
     expect(res.status).toBe(502);
     expect(alertas.some((a) => a.nivel === "critico" && /Checkout/.test(a.asunto))).toBe(true);
+  });
+});
+
+describe("POST /api/stripe/checkout — el plan (2026-09-29, lib/billing/planes.ts)", () => {
+  it("sin `plan` se vende la modalidad de siempre: el precio que pintan los botones del panel", async () => {
+    const { POST } = await import("./stripe/checkout/route");
+    await POST(peticion({ seats: 3 }));
+    const item = (sesion!.line_items as { price: string; quantity: number }[])[0]!;
+    expect(item.price).toBe("price_mensual");
+    expect(item.quantity).toBe(3);
+  });
+
+  it("Pro usa su Price y deja el plan en la metadata", async () => {
+    const { POST } = await import("./stripe/checkout/route");
+    await POST(peticion({ seats: 2, plan: "pro" }));
+    const item = (sesion!.line_items as { price: string; quantity: number }[])[0]!;
+    expect(item.price).toBe("price_pro");
+    expect(item.quantity).toBe(2);
+    expect((sesion!.metadata as Record<string, string>).plan).toBe("pro");
+    expect((sesion!.subscription_data as { metadata: Record<string, string> }).metadata.plan).toBe("pro");
+  });
+
+  it("⛔ Equipo nunca baja de los asientos incluidos, ni en la sesión ni en el selector de Stripe", async () => {
+    const { ASIENTOS_INCLUIDOS_EQUIPO } = await import("@/lib/billing/planes");
+    const { POST } = await import("./stripe/checkout/route");
+    await POST(peticion({ seats: 1, plan: "equipo" }));
+    const item = (sesion!.line_items as { price: string; quantity: number; adjustable_quantity: { minimum: number } }[])[0]!;
+    expect(item.price).toBe("price_equipo");
+    expect(item.quantity).toBe(ASIENTOS_INCLUIDOS_EQUIPO);
+    expect(item.adjustable_quantity.minimum).toBe(ASIENTOS_INCLUIDOS_EQUIPO);
+  });
+
+  it("un plan desconocido no inventa un precio: cae en la modalidad de siempre", async () => {
+    const { POST } = await import("./stripe/checkout/route");
+    await POST(peticion({ seats: 1, plan: "gratis-para-siempre" }));
+    expect((sesion!.line_items as { price: string }[])[0]!.price).toBe("price_mensual");
   });
 });

@@ -1191,14 +1191,36 @@
   },
   "pricingPage": {
     "metaTitle": "Prijsvoorwaarden · BV-SALA",
-    "metaDescription": "De vergoeding per seat en de commissie over gemeten besparing, gepubliceerd vanuit dezelfde constanten die factureren.",
+    "metaDescription": "Medir gratis, Pro per seat, Team en Enterprise; de commissie op geverifieerde besparing is optioneel. Bedragen gepubliceerd vanuit dezelfde constanten die factureren.",
     "eyebrow": "Gepubliceerde prijzen",
     "title": "Prijsvoorwaarden",
     "governs": "Deze pagina beschrijft hoe de dienst vandaag werkt; de <license>LICENSE</license> en de <terms>BiVelio-voorwaarden</terms> zijn leidend.",
-    "lede": "Elk getal hier wordt gelezen uit dezelfde code die jou factureert, dus het verandert wanneer de prijs verandert.",
+    "lede": "Je betaalt per seat of voor een teamplan; de commissie op besparing is een optionele variant, niet het model. Elk bedrag op deze pagina wordt gelezen uit dezelfde code die je factureert, dus het verandert wanneer de prijs verandert.",
+    "plans": {
+      "title": "Plannen",
+      "intro": "Vier plannen, van klein naar groot. Pro en Team betaal je per seat en hebben geen commissie.",
+      "medir": {
+        "name": "Medir",
+        "body": "<b>Gratis.</b> Om te zien wat de laag op je eigen verkeer zou besparen voordat je iets betaalt. De voorwaarden worden hier gepubliceerd zodra de licentie beschikbaar is."
+      },
+      "pro": {
+        "name": "Pro",
+        "amount": "<b>{monthly}</b> per seat per maand, of <b>{yearly}</b> per seat per jaar, in {currency}.",
+        "body": "Alle optimalisaties van de laag, de bon per verzoek en het dashboard. <b>Geen commissie</b> op besparing: je betaalt de seats, of je nu bespaart of niet."
+      },
+      "team": {
+        "name": "Team",
+        "amount": "<b>{monthly}</b> per maand met <b>{included} seats inbegrepen</b> (ongeveer {perSeat} per seat), of <b>{yearly}</b> per jaar, in {currency}.",
+        "extra": "Elke seat boven de inbegrepen seats: {monthly} per maand, of {yearly} per jaar.",
+        "body": "Hetzelfde als Pro, voor een vloot: het vaste bedrag dekt de inbegrepen seats, ook als je er minder gebruikt. <b>Geen commissie</b> op besparing."
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "body": "Voor meer seats dan de online betaling toestaat, een eigen contract of afgesproken factuurvoorwaarden: <contact>schrijf ons</contact>."
+      }
+    },
     "seat": {
-      "title": "De vergoeding per seat",
-      "amount": "<b>{monthly}</b> per seat per maand, of <b>{yearly}</b> per seat per jaar, in {currency}.",
+      "title": "Hoe een seat wordt geteld en gefactureerd",
       "cycle": "De vergoeding per seat wordt via Stripe gefactureerd voor elke maandelijkse of jaarlijkse cyclus van je abonnement, gerekend vanaf de dag waarop het begint.",
       "paidAlways": "De vergoeding per seat wordt betaald <b>of de Software nu besparing oplevert of niet</b>.",
       "vat": "De bedragen zijn exclusief btw. Bij het afrekenen wordt om je factuuradres en, optioneel, je btw-nummer gevraagd; beide staan op je factuur.",
@@ -1208,7 +1230,9 @@
       "identifier": "Hoe een seat-ID wordt gevormd, en alles wat de Software verder naar BiVelio stuurt, staat op de <privacy>privacypagina</privacy>."
     },
     "commission": {
-      "title": "De commissie over gemeten besparing",
+      "title": "Optioneel: commissie alleen op geverifieerde besparing",
+      "optional": "Dit is een <b>optionele</b> variant, niet het hoofdmodel: Pro en Team hebben haar niet, en hun overzicht toont de commissie die van toepassing zou zijn geweest alleen ter referentie. Wie ervoor kiest, betaalt een lager bedrag per seat en daarnaast een commissie alleen op besparing die hij kan afstemmen met de factuur van zijn provider.",
+      "seat": "Bedrag per seat in deze variant: <b>{monthly}</b> per seat per maand, of <b>{yearly}</b> per seat per jaar, in {currency}.",
       "only": "Er wordt <b>alleen commissie berekend over gemeten besparing</b>: besparing die in je gebruiksrecords als {labels} is gelabeld. Besparing gelabeld als {never} draagt nooit commissie.",
       "measured": "Een gemeten besparing volgt uit de eigen gebruiksteller van je LLM-provider voor dat verzoek.",
       "reference": "Een besparing via referentie, voor een herhaald verzoek dat de Software beantwoordde zonder je provider aan te roepen, volgt uit de teller van je provider voor het identieke eerdere verzoek dat wel is uitgevoerd, volgens de regel die op je afschrift staat ({regla}).",

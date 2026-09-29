@@ -1191,14 +1191,36 @@
   },
   "pricingPage": {
     "metaTitle": "Điều khoản giá · BV-SALA",
-    "metaDescription": "Phí theo ghế và hoa hồng trên khoản tiết kiệm đã đo, được công bố từ chính các hằng số dùng để tính phí.",
+    "metaDescription": "Medir miễn phí, Pro theo chỗ, Nhóm và Enterprise; hoa hồng trên khoản tiết kiệm đã xác minh là tùy chọn. Các con số được công bố từ chính các hằng số dùng để tính phí.",
     "eyebrow": "Bảng giá công bố",
     "title": "Điều khoản giá",
     "governs": "Trang này mô tả cách dịch vụ hoạt động hiện nay; văn bản có hiệu lực là <license>LICENSE</license> và <terms>Điều khoản của BiVelio</terms>.",
-    "lede": "Mọi con số ở đây đều được đọc từ chính đoạn mã tính phí bạn, nên chúng thay đổi khi giá thay đổi.",
+    "lede": "Bạn trả theo chỗ hoặc cho một gói nhóm; hoa hồng trên khoản tiết kiệm là một phương án tùy chọn, không phải mô hình chính. Mọi con số trên trang này được đọc từ chính đoạn mã tính phí cho bạn, nên chúng thay đổi khi giá thay đổi.",
+    "plans": {
+      "title": "Các gói",
+      "intro": "Bốn gói, từ nhỏ đến lớn. Pro và Nhóm trả theo chỗ và không có hoa hồng.",
+      "medir": {
+        "name": "Medir",
+        "body": "<b>Miễn phí.</b> Để xem lớp này sẽ tiết kiệm được bao nhiêu trên lưu lượng của chính bạn trước khi trả bất cứ khoản nào. Điều kiện sẽ được công bố tại đây khi giấy phép sẵn sàng."
+      },
+      "pro": {
+        "name": "Pro",
+        "amount": "<b>{monthly}</b> mỗi chỗ mỗi tháng, hoặc <b>{yearly}</b> mỗi chỗ mỗi năm, bằng {currency}.",
+        "body": "Mọi tối ưu của lớp, biên nhận cho từng yêu cầu và bảng điều khiển. <b>Không hoa hồng</b> trên khoản tiết kiệm: bạn trả cho các chỗ, dù có tiết kiệm hay không."
+      },
+      "team": {
+        "name": "Nhóm",
+        "amount": "<b>{monthly}</b> mỗi tháng với <b>{included} chỗ đã bao gồm</b> (khoảng {perSeat} mỗi chỗ), hoặc <b>{yearly}</b> mỗi năm, bằng {currency}.",
+        "extra": "Mỗi chỗ vượt quá số đã bao gồm: {monthly} mỗi tháng, hoặc {yearly} mỗi năm.",
+        "body": "Giống Pro, cho cả một đội máy: phí cố định bao gồm các chỗ đã tính sẵn dù bạn dùng ít hơn. <b>Không hoa hồng</b> trên khoản tiết kiệm."
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "body": "Cho số chỗ nhiều hơn mức thanh toán trực tuyến cho phép, hợp đồng riêng hoặc điều kiện hóa đơn thỏa thuận: <contact>hãy viết cho chúng tôi</contact>."
+      }
+    },
     "seat": {
-      "title": "Phí theo ghế",
-      "amount": "<b>{monthly}</b> mỗi ghế mỗi tháng, hoặc <b>{yearly}</b> mỗi ghế mỗi năm, bằng {currency}.",
+      "title": "Cách đếm và tính phí một chỗ",
       "cycle": "Phí theo ghế được tính qua Stripe cho mỗi chu kỳ tháng hoặc năm của gói đăng ký, tính từ ngày gói đăng ký của bạn bắt đầu.",
       "paidAlways": "Phí theo ghế được thanh toán <b>dù Phần mềm có tạo ra khoản tiết kiệm nào hay không</b>.",
       "vat": "Số tiền chưa bao gồm VAT. Khi thanh toán, bạn được yêu cầu nhập địa chỉ thanh toán và, tùy chọn, mã số VAT; cả hai đều được in trên hóa đơn.",
@@ -1208,7 +1230,9 @@
       "identifier": "Cách tạo mã ghế, và mọi thứ khác mà Phần mềm gửi tới BiVelio, có trên <privacy>trang quyền riêng tư</privacy>."
     },
     "commission": {
-      "title": "Hoa hồng trên khoản tiết kiệm đã đo",
+      "title": "Tùy chọn: hoa hồng chỉ trên khoản tiết kiệm đã xác minh",
+      "optional": "Đây là một phương án <b>tùy chọn</b>, không phải mô hình chính: Pro và Nhóm không có nó, và bảng kê của họ chỉ hiển thị khoản hoa hồng lẽ ra được áp dụng để tham khảo. Ai chọn phương án này sẽ trả phí mỗi chỗ thấp hơn, cộng thêm hoa hồng chỉ trên khoản tiết kiệm có thể đối chiếu với hóa đơn của nhà cung cấp.",
+      "seat": "Phí mỗi chỗ trong phương án này: <b>{monthly}</b> mỗi chỗ mỗi tháng, hoặc <b>{yearly}</b> mỗi chỗ mỗi năm, bằng {currency}.",
       "only": "Hoa hồng <b>chỉ được tính trên khoản tiết kiệm đã đo</b>: khoản tiết kiệm được gắn nhãn {labels} trong bản ghi sử dụng của bạn. Khoản tiết kiệm gắn nhãn {never} không bao giờ bị tính hoa hồng.",
       "measured": "Khoản tiết kiệm đã đo được xác lập từ chính bộ đếm sử dụng của nhà cung cấp LLM của bạn cho yêu cầu đó.",
       "reference": "Khoản tiết kiệm theo tham chiếu, cho một yêu cầu lặp lại mà Phần mềm phục vụ mà không gọi nhà cung cấp, được xác lập từ bộ đếm của nhà cung cấp cho yêu cầu giống hệt trước đó đã thực sự chạy, theo quy tắc ghi trên sao kê của bạn ({regla}).",

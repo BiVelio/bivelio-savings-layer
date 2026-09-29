@@ -1191,14 +1191,36 @@
   },
   "pricingPage": {
     "metaTitle": "Condizioni di prezzo · BV-SALA",
-    "metaDescription": "La quota per postazione e la commissione sul risparmio misurato, pubblicate dalle stesse costanti che fatturano.",
+    "metaDescription": "Medir gratis, Pro per postazione, Team ed Enterprise; la commissione sul risparmio verificato è facoltativa. Cifre pubblicate dalle stesse costanti che fatturano.",
     "eyebrow": "Prezzi pubblicati",
     "title": "Condizioni di prezzo",
     "governs": "Questa pagina descrive come funziona il servizio oggi; prevalgono la <license>LICENSE</license> e i <terms>Termini di BiVelio</terms>.",
-    "lede": "Ogni cifra che vedi qui viene letta dallo stesso codice che ti fattura, quindi cambia quando cambia il prezzo.",
+    "lede": "Paghi per postazione o per un piano team; la commissione sul risparmio è una modalità facoltativa, non il modello. Ogni cifra di questa pagina viene letta dallo stesso codice che ti fattura, quindi cambia quando cambia il prezzo.",
+    "plans": {
+      "title": "Piani",
+      "intro": "Quattro piani, dal più piccolo al più grande. Pro e Team si pagano per postazione e non prevedono commissioni.",
+      "medir": {
+        "name": "Medir",
+        "body": "<b>Gratis.</b> Per vedere quanto risparmierebbe il livello sul tuo traffico prima di pagare qualsiasi cosa. Le condizioni saranno pubblicate qui quando la licenza sarà disponibile."
+      },
+      "pro": {
+        "name": "Pro",
+        "amount": "<b>{monthly}</b> per postazione al mese, oppure <b>{yearly}</b> per postazione all’anno, in {currency}.",
+        "body": "Tutte le ottimizzazioni del livello, la ricevuta per richiesta e la dashboard. <b>Nessuna commissione</b> sul risparmio: paghi le postazioni, che tu risparmi o no."
+      },
+      "team": {
+        "name": "Team",
+        "amount": "<b>{monthly}</b> al mese con <b>{included} postazioni incluse</b> (circa {perSeat} per postazione), oppure <b>{yearly}</b> all’anno, in {currency}.",
+        "extra": "Ogni postazione oltre quelle incluse: {monthly} al mese, oppure {yearly} all’anno.",
+        "body": "Lo stesso di Pro, per una flotta: il canone fisso copre le postazioni incluse anche se ne usi meno. <b>Nessuna commissione</b> sul risparmio."
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "body": "Per più postazioni di quante ne accetti il pagamento online, un contratto dedicato o condizioni di fatturazione concordate: <contact>scrivici</contact>."
+      }
+    },
     "seat": {
-      "title": "La quota per postazione",
-      "amount": "<b>{monthly}</b> per postazione al mese, oppure <b>{yearly}</b> per postazione all'anno, in {currency}.",
+      "title": "Come si conta e si fattura una postazione",
       "cycle": "La quota per postazione viene addebitata tramite Stripe per ogni ciclo mensile o annuale del tuo abbonamento, contato dal giorno in cui inizia.",
       "paidAlways": "La quota per postazione si paga <b>che il Software produca un risparmio o no</b>.",
       "vat": "Gli importi sono IVA esclusa. Il pagamento chiede il tuo indirizzo di fatturazione e, facoltativamente, la tua partita IVA; entrambi compaiono in fattura.",
@@ -1208,7 +1230,9 @@
       "identifier": "Come si forma l'identificativo di postazione, e tutto il resto che il Software invia a BiVelio, è nella <privacy>pagina sulla privacy</privacy>."
     },
     "commission": {
-      "title": "La commissione sul risparmio misurato",
+      "title": "Facoltativa: una commissione solo sul risparmio verificato",
+      "optional": "È una modalità <b>facoltativa</b>, non il modello principale: Pro e Team non la prevedono, e il loro estratto mostra quella che si sarebbe applicata solo come riferimento. Chi la sceglie paga un canone per postazione più basso e, in più, una commissione solo sul risparmio che può riconciliare con la fattura del proprio fornitore.",
+      "seat": "Canone per postazione in questa modalità: <b>{monthly}</b> per postazione al mese, oppure <b>{yearly}</b> per postazione all’anno, in {currency}.",
       "only": "La commissione si applica <b>solo al risparmio misurato</b>: il risparmio etichettato {labels} nei tuoi record di utilizzo. Il risparmio etichettato {never} non porta mai commissione.",
       "measured": "Un risparmio misurato si ricava dal contatore di utilizzo del tuo stesso provider di LLM per quella richiesta.",
       "reference": "Un risparmio per riferimento, per una richiesta ripetuta che il Software ha servito senza chiamare il tuo provider, si ricava dal contatore del tuo provider per la richiesta identica precedente che è stata effettivamente eseguita, secondo la regola indicata nel tuo estratto ({regla}).",

@@ -1191,14 +1191,36 @@
   },
   "pricingPage": {
     "metaTitle": "Pricing terms · BV-SALA",
-    "metaDescription": "The seat fee and the commission on measured savings, published from the same constants that bill you.",
+    "metaDescription": "Measure for free, Pro per seat, Team and Enterprise; the commission on verified savings is optional. Figures published from the same constants that bill you.",
     "eyebrow": "Published pricing",
     "title": "Pricing terms",
     "governs": "This page describes how the service works today; the <license>LICENSE</license> and the <terms>BiVelio Terms</terms> govern.",
-    "lede": "Every figure on this page is read from the code that bills you, so it changes when the price changes.",
+    "lede": "You pay per seat or for a team plan; the commission on savings is an optional arrangement, not the model. Every figure on this page is read from the code that bills you, so it changes when the price changes.",
+    "plans": {
+      "title": "Plans",
+      "intro": "Four plans, from smallest to largest. Pro and Team are paid per seat and carry no commission.",
+      "medir": {
+        "name": "Medir",
+        "body": "<b>Free.</b> To see what the layer would save on your own traffic before you pay anything. Its terms will be published here once the licence is available."
+      },
+      "pro": {
+        "name": "Pro",
+        "amount": "<b>{monthly}</b> per seat per month, or <b>{yearly}</b> per seat per year, in {currency}.",
+        "body": "Every optimization in the layer, the per-request receipt and the dashboard. <b>No commission</b> on savings: you pay for the seats, whether you save or not."
+      },
+      "team": {
+        "name": "Team",
+        "amount": "<b>{monthly}</b> per month with <b>{included} seats included</b> (about {perSeat} per seat), or <b>{yearly}</b> per year, in {currency}.",
+        "extra": "Each seat above those included: {monthly} per month, or {yearly} per year.",
+        "body": "The same as Pro, for a fleet: the fixed fee covers the included seats even if you use fewer. <b>No commission</b> on savings."
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "body": "For more seats than online checkout allows, your own contract or negotiated invoicing terms: <contact>write to us</contact>."
+      }
+    },
     "seat": {
-      "title": "The seat fee",
-      "amount": "<b>{monthly}</b> per seat per month, or <b>{yearly}</b> per seat per year, in {currency}.",
+      "title": "How a seat is counted and billed",
       "cycle": "The seat fee is billed through Stripe for each monthly or yearly cycle of your subscription, counted from the day it starts.",
       "paidAlways": "The seat fee is paid <b>whether or not the Software produces any saving</b>.",
       "vat": "Amounts exclude VAT. Checkout asks for your billing address and, optionally, your VAT number; both are printed on your invoice.",
@@ -1208,7 +1230,9 @@
       "identifier": "How a seat identifier is formed, and everything else the Software sends to BiVelio, is on the <privacy>privacy page</privacy>."
     },
     "commission": {
-      "title": "The commission on measured savings",
+      "title": "Optional: a commission only on verified savings",
+      "optional": "This is an <b>optional</b> arrangement, not the main model: Pro and Team do not carry it, and their statement shows the commission that would have applied for reference only. If you choose it, you pay a lower seat fee plus a commission only on savings you can reconcile with your provider’s invoice.",
+      "seat": "Seat fee under this arrangement: <b>{monthly}</b> per seat per month, or <b>{yearly}</b> per seat per year, in {currency}.",
       "only": "A commission is charged <b>only on measured savings</b>: savings labelled {labels} in your usage records. Savings labelled {never} never carry commission.",
       "measured": "A measured saving is established from your LLM provider's own usage counter for that request.",
       "reference": "A reference saving, for a repeated request the Software served without calling your provider, is established from your provider's counter for the identical earlier request that did run, under the rule shown on your statement ({regla}).",

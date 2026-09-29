@@ -6,8 +6,8 @@ import Footer from "@/app/components/Footer";
 import { etiquetasQueRigen } from "@/app/components/LegalGoverns";
 import { Link } from "@/i18n/navigation";
 import { absolute, languageAlternates } from "@/i18n/site";
-import { terminosDePrecio } from "@/lib/legal/precios-publicados";
-import { preciosDelPlan } from "@/lib/stripe/pricing";
+import { terminosDeLosPlanes, terminosDePrecio } from "@/lib/legal/precios-publicados";
+import { preciosDelPlan, tarifasDeLosPlanes } from "@/lib/stripe/pricing";
 
 /**
  * LA «PUBLISHED PRICING» QUE CITA LA LICENSE §6 — pública, indexable y sin una
@@ -48,6 +48,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
   setRequestLocale(locale);
   const t = await getTranslations("pricingPage");
   const p = terminosDePrecio(locale, await preciosDelPlan());
+  const planes = terminosDeLosPlanes(locale, await tarifasDeLosPlanes());
   const b = (c: ReactNode) => <b>{c}</b>;
 
   return (
@@ -60,11 +61,47 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
           <p className="lede">{t("lede")}</p>
         </section>
 
+        <section className="terms-sec" aria-labelledby="plans">
+          <h2 id="plans">{t("plans.title")}</h2>
+          <p>{t("plans.intro")}</p>
+
+          {/* HUECO «Medir»: la licencia gratuita la construye su propio PR (flujo de
+              alta y licencias). Aquí solo se reserva su sitio, el primero, y
+              sus textos (`pricingPage.plans.medir.*`) son suyos. */}
+          <h3 id="medir">{t("plans.medir.name")}</h3>
+          <p>{t.rich("plans.medir.body", { b })}</p>
+
+          <h3 id="pro">{t("plans.pro.name")}</h3>
+          <p className="terms-amount">
+            {t.rich("plans.pro.amount", { b, monthly: planes.pro.mensual, yearly: planes.pro.anual, currency: planes.moneda })}
+          </p>
+          <p>{t.rich("plans.pro.body", { b })}</p>
+
+          <h3 id="team">{t("plans.team.name")}</h3>
+          <p className="terms-amount">
+            {t.rich("plans.team.amount", {
+              b,
+              monthly: planes.equipo.mensual,
+              yearly: planes.equipo.anual,
+              included: planes.equipo.incluidos,
+              perSeat: planes.equipo.porAsiento,
+              currency: planes.moneda,
+            })}
+          </p>
+          <p>{t("plans.team.extra", { monthly: planes.equipo.extraMensual, yearly: planes.equipo.extraAnual })}</p>
+          <p>{t.rich("plans.team.body", { b })}</p>
+
+          <h3 id="enterprise">{t("plans.enterprise.name")}</h3>
+          <p>
+            {t.rich("plans.enterprise.body", {
+              b,
+              contact: (c) => <a href="mailto:support@bivelio.com">{c}</a>,
+            })}
+          </p>
+        </section>
+
         <section className="terms-sec" aria-labelledby="seat">
           <h2 id="seat">{t("seat.title")}</h2>
-          <p className="terms-amount">
-            {t.rich("seat.amount", { b, monthly: p.mensual, yearly: p.anual, currency: p.monedaCuota })}
-          </p>
           {/* El ciclo del asiento es el de la suscripción de Stripe (el checkout no
               fija `billing_cycle_anchor`): empieza el día que empieza ella, y es
               mensual o anual. El mes natural (UTC) es solo el de la comisión. */}
@@ -83,6 +120,10 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
 
         <section className="terms-sec" aria-labelledby="commission">
           <h2 id="commission">{t("commission.title")}</h2>
+          <p>{t.rich("commission.optional", { b })}</p>
+          <p className="terms-amount">
+            {t.rich("commission.seat", { b, monthly: p.mensual, yearly: p.anual, currency: p.monedaCuota })}
+          </p>
           <p>{t.rich("commission.only", { b, labels: p.comisionables, never: p.sinComision })}</p>
           <ul className="terms-list">
             <li>{t("commission.measured")}</li>

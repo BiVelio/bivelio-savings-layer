@@ -1191,14 +1191,36 @@
   },
   "pricingPage": {
     "metaTitle": "Términos de precio · BV-SALA",
-    "metaDescription": "La cuota por asiento y la comisión sobre el ahorro medido, publicadas desde las mismas constantes que cobran.",
+    "metaDescription": "Medir gratis, Pro por asiento, Equipo y Enterprise; la comisión sobre el ahorro verificado es opcional. Cifras publicadas desde las mismas constantes que cobran.",
     "eyebrow": "Precios publicados",
     "title": "Términos de precio",
     "governs": "Esta página describe cómo funciona el servicio hoy; rigen la <license>LICENSE</license> y los <terms>Términos de BiVelio</terms>.",
-    "lede": "Cada cifra que ves aquí se lee del mismo código que te cobra, así que cambia cuando cambia el precio.",
+    "lede": "Pagas por asiento o por un plan de equipo; la comisión sobre el ahorro es una modalidad opcional, no el modelo. Cada cifra que ves aquí se lee del mismo código que te cobra, así que cambia cuando cambia el precio.",
+    "plans": {
+      "title": "Planes",
+      "intro": "Cuatro planes, de menos a más. Pro y Equipo se pagan por asiento y no llevan comisión.",
+      "medir": {
+        "name": "Medir",
+        "body": "<b>Gratis.</b> Para ver lo que la capa ahorraría con tu propio tráfico antes de pagar nada. Sus condiciones se publicarán aquí cuando la licencia esté disponible."
+      },
+      "pro": {
+        "name": "Pro",
+        "amount": "<b>{monthly}</b> por asiento y mes, o <b>{yearly}</b> por asiento y año, en {currency}.",
+        "body": "Todas las optimizaciones de la capa, el recibo por petición y el panel. <b>Sin comisión</b> sobre el ahorro: pagas los asientos, ahorres o no."
+      },
+      "team": {
+        "name": "Equipo",
+        "amount": "<b>{monthly}</b> al mes con <b>{included} asientos incluidos</b> (unos {perSeat} por asiento), o <b>{yearly}</b> al año, en {currency}.",
+        "extra": "Cada asiento por encima de los incluidos: {monthly} al mes, o {yearly} al año.",
+        "body": "Lo mismo que Pro, para una flota: la cuota fija cubre los asientos incluidos aunque uses menos. <b>Sin comisión</b> sobre el ahorro."
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "body": "Para más asientos de los que admite el pago en línea, un contrato propio o condiciones de factura pactadas: <contact>escríbenos</contact>."
+      }
+    },
     "seat": {
-      "title": "La cuota por asiento",
-      "amount": "<b>{monthly}</b> por asiento y mes, o <b>{yearly}</b> por asiento y año, en {currency}.",
+      "title": "Cómo se cuenta y se cobra un asiento",
       "cycle": "La cuota por asiento se cobra a través de Stripe por cada ciclo mensual o anual de tu suscripción, contado desde el día en que empieza.",
       "paidAlways": "La cuota por asiento se paga <b>haya ahorro o no</b>.",
       "vat": "Los importes no incluyen IVA. El pago pide tu dirección de facturación y, si quieres, tu NIF-IVA; los dos aparecen en tu factura.",
@@ -1208,7 +1230,9 @@
       "identifier": "Cómo se forma el identificador de asiento, y todo lo demás que el Software envía a BiVelio, está en la <privacy>página de privacidad</privacy>."
     },
     "commission": {
-      "title": "La comisión sobre el ahorro medido",
+      "title": "Opcional: comisión solo sobre el ahorro verificado",
+      "optional": "Es una modalidad <b>opcional</b>, no el modelo principal: Pro y Equipo no la llevan, y su extracto enseña la que se habría aplicado solo como referencia. Quien la elige paga una cuota por asiento más baja y, además, una comisión solo sobre el ahorro que puede cuadrar con la factura de su proveedor.",
+      "seat": "Cuota por asiento en esta modalidad: <b>{monthly}</b> por asiento y mes, o <b>{yearly}</b> por asiento y año, en {currency}.",
       "only": "Se cobra comisión <b>solo sobre el ahorro medido</b>: el ahorro etiquetado {labels} en tus registros de uso. El ahorro etiquetado {never} nunca lleva comisión.",
       "measured": "Un ahorro medido sale del propio contador de uso de tu proveedor de LLM para esa petición.",
       "reference": "Un ahorro por referencia, en una petición repetida que el Software sirvió sin llamar a tu proveedor, sale del contador de tu proveedor para la petición idéntica anterior que sí se ejecutó, con la regla que figura en tu extracto ({regla}).",
