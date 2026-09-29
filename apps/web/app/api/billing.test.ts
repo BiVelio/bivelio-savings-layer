@@ -129,6 +129,11 @@ vi.mock("@/lib/supabase/admin", () => ({
 vi.mock("@/lib/stripe/env", () => ({
   billingFullyConfigured: true,
   priceIdFor: () => "price_test_123",
+  // Los planes sin comisión (lib/billing/planes.ts). «comision» es el Price de
+  // siempre; Pro y Equipo, los suyos. Sin Prices sin comisión, el cierre y la
+  // facturación no consultan planes: son los de antes.
+  priceIdForPlan: (plan: string) => (plan === "pro" ? "price_test_pro" : plan === "equipo" ? "price_test_team" : "price_test_123"),
+  preciosSinComision: () => ({ pro: [], equipo: [] }),
   STRIPE_SECRET_KEY: "sk_test_x",
   STRIPE_WEBHOOK_SECRET: "whsec_x",
   // El catálogo lo usa la VERJA DE PRODUCTO del webhook: los dos productos de

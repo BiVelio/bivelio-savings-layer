@@ -3,7 +3,14 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe/client";
-import { billingFullyConfigured, priceIdFor, type BillingPeriod } from "@/lib/stripe/env";
+import { billingFullyConfigured, priceIdForPlan, type BillingPeriod } from "@/lib/stripe/env";
+import {
+  ASIENTOS_INCLUIDOS_EQUIPO,
+  PLANES_DE_PAGO,
+  PLANES_EN_VENTA,
+  PLAN_POR_DEFECTO,
+  type PlanDePago,
+} from "@/lib/billing/planes";
 import type Stripe from "stripe";
 import { MAX_ASIENTOS, normalizarAsientos } from "@/lib/billing/asientos";
 import { resolverOrgDelUsuario } from "@/lib/org/resolver";
@@ -11,7 +18,8 @@ import { puede, NO_AUTORIZADO } from "@/lib/org/permisos";
 import { alertar } from "@/lib/observabilidad/alerta";
 
 /**
- * Start a Stripe Checkout for the per-seat PRO plan (monthly or yearly). Auth'd
+ * Start a Stripe Checkout for a plan on sale — Pro (per seat) or Team — monthly
+ * or yearly. The commission plan is closed to new customers (2026-09-29). Auth'd
  * by the cookie session. La organización se RESUELVE (creándola si hace falta) y
  * su id viaja en la metadata de la sesión y de la suscripción junto al `user_id`
  * de quien compra — dos datos distintos que hasta ahora eran el mismo. Returns the
@@ -44,6 +52,14 @@ export async function POST(req: Request): Promise<NextResponse> {
 
   // Optional body: period (monthly|yearly), seats, locale. Empty body is fine.
   let period: BillingPeriod = "monthly";
+  // EL PLAN (2026-09-29, lib/billing/planes.ts). Por defecto Pro, que es lo que
+  // venden el panel y /pricing. La modalidad con comisión está CERRADA a
+  // clientes nuevos: pedirla es un 400, no un checkout (quien ya la tiene no
+  // pasa por aquí — la guardia de abajo lo manda a «Gestionar plan»). Un plan
+  // que no existe también es un 400: nunca se cobra un importe que el
+  // comprador no eligió.
+  let plan: PlanDePago = PLAN_POR_DEFECTO;
+  let planPedido: string | null = null;
   let seats = 1;
   let locale = "es";
   // Código de promoción PRE-APLICADO (enlace de los probadores, 2026-09-12).
@@ -52,11 +68,12 @@ export async function POST(req: Request): Promise<NextResponse> {
   // `allow_promotion_codes` y `discounts` son excluyentes en Checkout.
   let codigo: string | null = null;
   try {
-    const body = (await req.json()) as { period?: string; seats?: number; locale?: string; codigo?: string };
+    const body = (await req.json()) as { period?: string; plan?: string; seats?: number; locale?: string; codigo?: string };
     // Mismo alfabeto que account/page.tsx: un código con guion bajo pasaba la
     // página de cuenta y aquí se descartaba en silencio (sin 400).
     if (typeof body.codigo === "string" && /^[A-Za-z0-9_-]{2,40}$/.test(body.codigo)) codigo = body.codigo.toUpperCase();
     if (body.period === "yearly") period = "yearly";
+    if (typeof body.plan === "string") planPedido = body.plan;
     // MISMA función que el campo del panel, no una copia del criterio. Y el tope
     // se aplica AQUÍ además de allí porque el cliente no es fuente de verdad:
     // este cuerpo lo puede mandar cualquiera con una sesión y un `curl`, y sin
@@ -68,10 +85,27 @@ export async function POST(req: Request): Promise<NextResponse> {
     /* no body — use defaults */
   }
 
-  const price = priceIdFor(period);
-  if (!price) {
-    return NextResponse.json({ error: `No Stripe price configured for ${period}.` }, { status: 501 });
+  if (planPedido !== null) {
+    if (!(PLANES_EN_VENTA as readonly string[]).includes(planPedido)) {
+      const cerrado = (PLANES_DE_PAGO as readonly string[]).includes(planPedido);
+      return NextResponse.json(
+        cerrado
+          ? { code: "plan_cerrado", error: "This plan is no longer offered to new customers. Choose Pro or Team." }
+          : { code: "plan_desconocido", error: "Unknown plan. Choose Pro or Team." },
+        { status: 400 },
+      );
+    }
+    plan = planPedido as PlanDePago;
   }
+
+  const price = priceIdForPlan(plan, period);
+  if (!price) {
+    return NextResponse.json({ error: `No Stripe price configured for ${plan} ${period}.` }, { status: 501 });
+  }
+  // Equipo: la cuota fija cubre ASIENTOS_INCLUIDOS_EQUIPO; comprar menos no la
+  // abarata, así que la cantidad nunca baja de ahí (ni aquí ni en Stripe).
+  const minimoDeAsientos = plan === "equipo" ? ASIENTOS_INCLUIDOS_EQUIPO : 1;
+  seats = Math.max(seats, minimoDeAsientos);
 
   // GUARDIA ANTI-DOBLE-COBRO. No existía: nada impedía que quien ya paga abriera
   // una segunda suscripción real, y el panel EMPUJABA a hacerlo — sin la fila de
@@ -198,7 +232,10 @@ export async function POST(req: Request): Promise<NextResponse> {
     // Solo cuentan las suscripciones de ESTE producto: la cuenta de Stripe puede
     // compartirse con otros productos de la casa, y una suscripción viva de otro
     // no es motivo para negarle a nadie la compra de este.
-    const nuestrosPrecios = new Set([priceIdFor("monthly"), priceIdFor("yearly")].filter(Boolean));
+    // Todos los planes: una suscripción Pro viva bloquea comprar Equipo, y al revés.
+    const nuestrosPrecios = new Set(
+      PLANES_DE_PAGO.flatMap((p) => [priceIdForPlan(p, "monthly"), priceIdForPlan(p, "yearly")]).filter(Boolean),
+    );
     const esNuestra = (sub: Stripe.Subscription): boolean =>
       Boolean(sub.metadata?.org_id) || sub.items.data.some((it) => nuestrosPrecios.has(it.price.id));
     for (const id of clientes) {
@@ -306,7 +343,7 @@ export async function POST(req: Request): Promise<NextResponse> {
       // con 150 maquinas veia el selector del panel aceptar 150 y la pantalla de
       // Stripe recortarlo a 99 sin decir nada. Los dos topes son ahora el mismo.
       line_items: [
-        { price, quantity: seats, adjustable_quantity: { enabled: true, minimum: 1, maximum: MAX_ASIENTOS } },
+        { price, quantity: seats, adjustable_quantity: { enabled: true, minimum: minimoDeAsientos, maximum: MAX_ASIENTOS } },
       ],
       ...(customer ? { customer } : { customer_email: user.email ?? undefined }),
       // LA FACTURA TIENE QUE SERVIRLE A SU CONTABLE, o no es una venta B2B: es un
@@ -338,8 +375,8 @@ export async function POST(req: Request): Promise<NextResponse> {
       // `user_id` es el que el webhook prefiere (`webhook:281`) y `client_reference_id`
       // su respaldo, que cubre las sesiones creadas con el código viejo y todavía en
       // vuelo — un adeudo SEPA tarda días en liquidar.
-      metadata: { org_id: orgId, user_id: user.id, email: user.email ?? "" },
-      subscription_data: { metadata: { org_id: orgId, user_id: user.id } },
+      metadata: { org_id: orgId, user_id: user.id, email: user.email ?? "", plan },
+      subscription_data: { metadata: { org_id: orgId, user_id: user.id, plan } },
       ...(promotionCodeId ? { discounts: [{ promotion_code: promotionCodeId }] } : { allow_promotion_codes: true }),
       // SIN TARJETA CUANDO NO HACE FALTA. Con un código del 100 % (los
       // probadores, 2026-09-12) el total es 0 y Stripe, por defecto, sigue

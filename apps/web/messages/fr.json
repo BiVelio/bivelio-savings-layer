@@ -414,7 +414,7 @@
       "personalNote": "Personnel — aucune organisation liée pour l'instant. Un seul compte BiVelio, partagé dans toute la suite.",
       "plan": "forfait",
       "seatsCount": "{count, plural, one {# siège} other {# sièges}}.",
-      "planBody": "BV-SALA est fail-closed — il ne fonctionne qu'avec une licence PRO active. {monthly} par siège et par mois ou {yearly} par siège et par an. Un siège est une machine ou une identité de service active, pas une personne.",
+      "planBody": "BV-SALA est fail-closed — il ne fonctionne qu’avec une licence active. Pro : {monthly} par siège et par mois ou {yearly} par siège et par an. Équipe : {teamMonthly} par mois avec {included} sièges inclus. Sans commission sur vos économies. Un siège est une machine ou une identité de service active, pas une personne.",
       "managePlan": "Gérer le forfait →",
       "subscribe": "S'abonner →",
       "checkoutMonthly": "S'abonner — {monthly}/siège/mois →",
@@ -430,7 +430,14 @@
       "errPagoEnCurso": "Votre paiement est encore en cours : un prélèvement bancaire peut mettre quelques jours à être confirmé. Vous aurez accès dès qu'il sera réglé. Ne démarrez pas un second abonnement.",
       "errSuscripcionEnStripe": "Stripe a déjà un abonnement pour ce compte, mais il n'est pas encore activé ici. Ne rachetez pas : écrivez à support@bivelio.com et nous l'activerons à la main.",
       "codigoAplicado": "Le code {codigo} sera appliqué au paiement.",
-      "errCodigoInvalido": "Ce code n'existe pas ou n'est plus actif. Vous pouvez continuer sans lui ou écrire à support@bivelio.com."
+      "errCodigoInvalido": "Ce code n'existe pas ou n'est plus actif. Vous pouvez continuer sans lui ou écrire à support@bivelio.com.",
+      "planPickLabel": "Plan",
+      "planPro": "Pro",
+      "planTeam": "Équipe",
+      "teamHint": "Équipe inclut {included} sièges ; chaque siège supplémentaire coûte {extra} par mois. On ne peut pas en acheter moins de {included}.",
+      "checkoutTeamMonthly": "S’abonner à Équipe — {monthly}/mois, {included} sièges →",
+      "checkoutTeamYearly": "S’abonner à Équipe — {yearly}/an, {included} sièges →",
+      "errPlanCerrado": "Ce plan n’est plus proposé aux nouveaux clients. Choisissez Pro ou Équipe."
     },
     "referenceLedgerCards": {
       "proven": "prouvé",
@@ -765,7 +772,7 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Vérifiez vos économies LLM",
-    "metaDescription": "Un SDK pour que votre app ne paie au fournisseur de LLM que ce dont elle a besoin, et un gateway qui mesure votre agent de code. Compté avec le compteur de votre fournisseur : un forfait par siège, plus une commission uniquement sur l'économie mesurée.",
+    "metaDescription": "Un SDK pour que votre app ne paie au fournisseur de LLM que ce dont elle a besoin, et un gateway qui mesure votre agent de code. Le tout avec le compteur de votre fournisseur : mesurez gratuitement, puis payez par siège — sans commission sur vos économies.",
     "hero": {
       "eyebrow": "Pour les équipes qui paient l'API LLM au token",
       "title": "Votre facture LLM, sous contrôle.",
@@ -834,8 +841,8 @@
           "body": "Nous ne demandons pas la foi. Chaque économie est mesurée avec le compteur officiel du fournisseur — le même qui vous facture — et figure sur votre reçu. Ce qui ne peut pas être confronté à la facture n'est jamais annoncé."
         },
         {
-          "title": "Un forfait par siège, et une part de ce qui est mesuré",
-          "body": "Vous payez chaque mois un forfait fixe par siège, que vous économisiez ou non. En plus, notre commission ne sort que de l'économie mesurée avec le compteur de votre fournisseur — et l'essentiel de chaque économie reste toujours chez vous. Un mois sans économie mesurée ? Vous payez les sièges et zéro commission."
+          "title": "Mesurez gratuitement, puis payez par siège",
+          "body": "Commencez avec la licence Mesurer, gratuite : la couche tourne en mode ombre et vous montre ce qu’elle aurait économisé sur votre propre trafic. Pour activer les leviers, vous payez un forfait fixe par siège, ou un plan Équipe, que vous économisiez ou non — et aucune commission sur vos économies."
         }
       ],
       "nota": "Les animations illustrent l'idée. Les vrais chiffres — mesurés contre de vrais fournisseurs — sont juste en dessous."
@@ -927,12 +934,36 @@
       "initNote": "<b>Ou laissez une commande l'adapter à votre stack.</b> <code>init</code> lit votre <code>package.json</code> (Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, le SDK d'Anthropic ou celui d'OpenAI) et affiche la ligne d'installation, le code exact de votre adaptateur et une vérification qui ne consomme aucun token : une fois votre licence en place, la couche y répond sur votre machine, sans appeler le modèle. Elle n'écrit rien sans que vous le demandiez."
     },
     "pricing": {
-      "eyebrow": "Un seul forfait, facturé par siège",
-      "title": "Un forfait par siège, toujours. Une commission uniquement sur l'économie mesurée.",
-      "body": "Pas d'offre gratuite ni d'essai : avant de payer, vous pouvez vérifier les mesures publiques et passer vos propres données au vérificateur, ici même. Le forfait par siège est facturé chaque mois, en {currency}, que vous économisiez ou non. La commission s'y ajoute, et uniquement sur l'économie mesurée avec le compteur de votre fournisseur — y compris les requêtes répétées servies sans l'appeler, chacune valorisée avec le compteur de la requête identique déjà exécutée. L'estimé n'y entre jamais.",
+      "eyebrow": "Plans",
+      "title": "Mesurez gratuitement. Payez par siège quand vous voulez les économies.",
+      "body": "Commencez avec Mesurer : gratuit et sans carte. La couche tourne en mode ombre sur votre propre trafic et votre tableau de bord montre ce qu’elle aurait économisé, valorisé avec le compteur de votre fournisseur. Pro et Équipe sont facturés par siège, en {currency}, que vous économisiez ou non, et sans commission sur vos économies.",
       "amount": "{amount}",
       "per": "/ siège / mois",
-      "proNote": "<b>PRO</b> — facturé par siège. Ou <b>{yearly} / siège / an</b> (économisez ~19%). Enterprise, avec des fonctionnalités groupées, arrivera plus tard.",
+      "plans": {
+        "medir": {
+          "name": "Mesurer",
+          "price": "Gratuit",
+          "body": "Sans carte. La couche en mode ombre pour une organisation : chaque requête atteint votre fournisseur sans modification, et vous voyez ce qu’elle aurait économisé.",
+          "cta": "Commencer gratuitement →"
+        },
+        "pro": {
+          "name": "Pro",
+          "note": "Ou <b>{yearly} / siège / an</b>. Toutes les optimisations, le reçu par requête et le tableau de bord. Sans commission.",
+          "cta": "Choisir Pro →"
+        },
+        "team": {
+          "name": "Équipe",
+          "per": "/ mois",
+          "note": "<b>{included} sièges inclus</b> ; chaque siège supplémentaire {extra} / mois. Ou <b>{yearly} / an</b>. Sans commission.",
+          "cta": "Choisir Équipe →"
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "price": "Sur mesure",
+          "body": "Plus de sièges que le paiement en ligne n’en permet, votre propre contrat ou des conditions de facturation négociées : <contact>écrivez-nous</contact>."
+        }
+      },
+      "legacy": "Vous avez déjà l’ancienne formule, avec commission sur les économies mesurées ? Vous la conservez sans changement ; ses conditions figurent dans les <terms>conditions tarifaires</terms>.",
       "seatNote": "Un siège est une <b>machine ou identité de service</b>, pas une personne. Vous payez les sièges couverts par votre abonnement ; votre tableau de bord indique combien ont été utilisés ce mois-ci (actifs au moins {dias} jours ; les exécuteurs CI et éphémères ne comptent pas).",
       "features": [
         "Chaque optimisation BV‑SALA, sans plafond",
@@ -964,7 +995,7 @@
     },
     "footer": {
       "ctaTitle": "Mesurez-le sur votre propre trafic",
-      "ctaSub": "Une fois installé, chaque appel renvoie son SavingsReport, mesuré et estimé séparés. Le forfait par siège est mensuel et fixe ; la commission ne sort que du mesuré. La licence est ce qui vous permet d'exécuter BV‑SALA — le SDK dans votre app, le gateway dans votre terminal.",
+      "ctaSub": "Une fois installé, chaque appel renvoie son SavingsReport, mesuré et estimé séparés. Commencez gratuitement avec Mesurer ; Pro et Équipe sont un forfait fixe par siège, sans commission sur vos économies. La licence est ce qui vous permet d’exécuter BV‑SALA — le SDK dans votre app, le gateway dans votre terminal.",
       "ctaStart": "Commencer",
       "tagline": "Le système d'exploitation de votre entreprise. Voici <b>BV‑SALA</b>, l'optimiseur de coût LLM neutre vis-à-vis du fournisseur de BiVelio — chaque chiffre publié est mesuré contre le compteur du fournisseur ; les estimations sont montrées à part et jamais facturées.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1216,7 +1247,7 @@
     "s3Sub": "Le produit a deux chiffres différents, et mieux vaut ne pas les mélanger.",
     "mBeforeK": "Avant d'installer",
     "mBeforeV": "Estimation",
-    "mBeforeBody": "Le simulateur de la section Tarifs projette vos économies à partir de vos propres chiffres : requêtes, tokens et modèle. C'est une projection honnête — c'est pourquoi elle porte l'étiquette « estimation ».",
+    "mBeforeBody": "La licence Mesurer, gratuite, exécute la couche en mode ombre sur votre propre trafic et montre ce qu’elle aurait économisé, requête par requête. Elle ne modifie rien et n’applique rien — c’est pourquoi elle porte l’étiquette « estimation ».",
     "mAfterK": "Après l'installation",
     "mAfterV": "Mesure réelle",
     "mAfterBody": "Chaque appel renvoie un SavingsReport : les appels que vous n'avez jamais payés et l'économie nette par requête. Auditable, requête par requête, sur votre propre infrastructure.",
@@ -1231,14 +1262,36 @@
   },
   "pricingPage": {
     "metaTitle": "Conditions tarifaires · BV-SALA",
-    "metaDescription": "La redevance par siège et la commission sur l'économie mesurée, publiées à partir des mêmes constantes qui facturent.",
+    "metaDescription": "Mesurer gratuit, Pro par siège, Équipe et Enterprise — aucun ne porte de commission sur vos économies. Chiffres publiés à partir des mêmes constantes qui facturent.",
     "eyebrow": "Tarifs publiés",
     "title": "Conditions tarifaires",
     "governs": "Cette page décrit le fonctionnement actuel du service ; la <license>LICENSE</license> et les <terms>Conditions de BiVelio</terms> prévalent.",
-    "lede": "Chaque chiffre affiché ici est lu dans le code même qui vous facture : il change quand le prix change.",
+    "lede": "Vous payez par siège ou pour un plan Équipe, sans commission sur vos économies. Chaque chiffre de cette page est lu dans le même code qui vous facture : il change quand le prix change.",
+    "plans": {
+      "title": "Plans",
+      "intro": "Quatre plans, du plus petit au plus grand. Pro et Équipe se paient par siège et ne comportent aucune commission.",
+      "medir": {
+        "name": "Mesurer",
+        "body": "<b>Gratuit, sans carte.</b> La couche tourne en mode ombre pour une organisation, avec un plafond de sièges et de requêtes par jour : chaque requête atteint votre fournisseur telle que vous l’avez construite, rien n’est servi depuis le cache et aucun levier n’est appliqué. Votre tableau de bord montre ce qu’elle aurait économisé — une estimation qui ne porte jamais de commission. Les leviers nécessitent Pro ou Équipe."
+      },
+      "pro": {
+        "name": "Pro",
+        "amount": "<b>{monthly}</b> par siège et par mois, ou <b>{yearly}</b> par siège et par an, en {currency}.",
+        "body": "Toutes les optimisations de la couche, le reçu par requête et le tableau de bord. <b>Aucune commission</b> sur les économies : vous payez les sièges, que vous économisiez ou non."
+      },
+      "team": {
+        "name": "Équipe",
+        "amount": "<b>{monthly}</b> par mois avec <b>{included} sièges inclus</b> (environ {perSeat} par siège), ou <b>{yearly}</b> par an, en {currency}.",
+        "extra": "Chaque siège au-delà des sièges inclus : {monthly} par mois, ou {yearly} par an.",
+        "body": "La même chose que Pro, pour une flotte : le forfait couvre les sièges inclus même si vous en utilisez moins. <b>Aucune commission</b> sur les économies."
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "body": "Pour plus de sièges que le paiement en ligne n’en accepte, un contrat dédié ou des conditions de facturation négociées : <contact>écrivez-nous</contact>."
+      }
+    },
     "seat": {
-      "title": "La redevance par siège",
-      "amount": "<b>{monthly}</b> par siège et par mois, ou <b>{yearly}</b> par siège et par an, en {currency}.",
+      "title": "Comment un siège est compté et facturé",
       "cycle": "La redevance par siège est facturée via Stripe pour chaque cycle mensuel ou annuel de votre abonnement, compté à partir du jour où il commence.",
       "paidAlways": "La redevance par siège est due <b>que le Logiciel produise une économie ou non</b>.",
       "vat": "Les montants s'entendent hors TVA. Le paiement demande votre adresse de facturation et, en option, votre numéro de TVA ; les deux figurent sur votre facture.",
@@ -1248,7 +1301,9 @@
       "identifier": "La façon dont un identifiant de siège est formé, et tout ce que le Logiciel envoie d'autre à BiVelio, se trouve sur la <privacy>page de confidentialité</privacy>."
     },
     "commission": {
-      "title": "La commission sur l'économie mesurée",
+      "title": "Ancienne formule avec commission (fermée aux nouveaux clients)",
+      "optional": "Cette formule <b>n’est plus proposée aux nouveaux clients</b>. Si votre abonnement l’a déjà, vous la conservez sans changement et les conditions ci-dessous la régissent : un forfait par siège plus bas et une commission uniquement sur les économies que vous pouvez rapprocher de la facture de votre fournisseur. Pro et Équipe ne la portent jamais ; leur relevé montre la commission qui se serait appliquée, à titre de référence seulement.",
+      "seat": "Tarif par siège dans cette formule : <b>{monthly}</b> par siège et par mois, ou <b>{yearly}</b> par siège et par an, en {currency}.",
       "only": "Une commission n'est prélevée <b>que sur l'économie mesurée</b> : l'économie étiquetée {labels} dans vos enregistrements d'usage. L'économie étiquetée {never} ne porte jamais de commission.",
       "measured": "Une économie mesurée est établie à partir du propre compteur d'usage de votre fournisseur de LLM pour cette requête.",
       "reference": "Une économie par référence, pour une requête répétée que le Logiciel a servie sans appeler votre fournisseur, est établie à partir du compteur de votre fournisseur pour la requête identique antérieure qui a bien été exécutée, selon la règle indiquée sur votre relevé ({regla}).",
@@ -1265,8 +1320,7 @@
       "ceiling": "Aucune tranche ne dépasse {max} : avant l'arrondi de la commission au centime, <b>vous conservez au moins {garantia}</b> de l'économie mesurée de la période. La redevance par siège s'y ajoute.",
       "fx": "L'économie mesurée est comptée en dollars américains et convertie au taux de référence de la Banque centrale européenne obtenu à la clôture de la période ; votre relevé indique le taux appliqué.",
       "rounding": "La commission est arrondie au centime le plus proche. Une commission inférieure à {minimo} n'est pas facturée et n'est pas reportée sur une autre période.",
-      "zero": "Une période sans économie mesurée ne porte <b>aucune commission</b>.",
-      "calculator": "Pour voir ce que cela donne sur votre propre trafic, essayez le <calc>calculateur</calc> de la page d'accueil."
+      "zero": "Une période sans économie mesurée ne porte <b>aucune commission</b>."
     },
     "calibration": {
       "title": "Période de calibrage",

@@ -414,7 +414,7 @@
       "personalNote": "Personal: encara no hi ha cap organització vinculada. Un sol compte de BiVelio, compartit a tota la suite.",
       "plan": "pla",
       "seatsCount": "{count, plural, one {# seient} other {# seients}}.",
-      "planBody": "BV-SALA és fail-closed: només funciona amb una llicència PRO activa. {monthly} per seient al mes o {yearly} per seient a l'any. Un seient és una màquina o identitat de servei activa, no una persona.",
+      "planBody": "BV-SALA és fail-closed: només funciona amb una llicència activa. Pro: {monthly} per seient al mes o {yearly} per seient a l’any. Equip: {teamMonthly} al mes amb {included} seients inclosos. Sense comissió sobre el teu estalvi. Un seient és una màquina o identitat de servei activa, no una persona.",
       "managePlan": "Gestiona el pla →",
       "subscribe": "Subscriu-te →",
       "checkoutMonthly": "Subscriu-t'hi — {monthly}/seient/mes →",
@@ -430,7 +430,14 @@
       "errPagoEnCurso": "El teu pagament encara s'està processant: un càrrec bancari pot trigar uns dies a liquidar-se. Tindràs accés tan bon punt es liquidi. No iniciïs una segona subscripció.",
       "errSuscripcionEnStripe": "Stripe ja té una subscripció per a aquest compte, però encara no està activada aquí. No tornis a comprar: escriu-nos a support@bivelio.com i l'activem a mà.",
       "codigoAplicado": "En pagar s'aplicarà el codi {codigo}.",
-      "errCodigoInvalido": "Aquest codi no existeix o ja no està actiu. Pots continuar sense ell o escriure'ns a support@bivelio.com."
+      "errCodigoInvalido": "Aquest codi no existeix o ja no està actiu. Pots continuar sense ell o escriure'ns a support@bivelio.com.",
+      "planPickLabel": "Pla",
+      "planPro": "Pro",
+      "planTeam": "Equip",
+      "teamHint": "Equip inclou {included} seients; cada seient més costa {extra} al mes. No se’n poden comprar menys de {included}.",
+      "checkoutTeamMonthly": "Subscriu-te a Equip — {monthly}/mes, {included} seients →",
+      "checkoutTeamYearly": "Subscriu-te a Equip — {yearly}/any, {included} seients →",
+      "errPlanCerrado": "Aquest pla ja no s’ofereix a clients nous. Tria Pro o Equip."
     },
     "referenceLedgerCards": {
       "proven": "comprovat",
@@ -765,7 +772,7 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Verifica el teu estalvi en LLM",
-    "metaDescription": "Un SDK perquè la teva app pagui al proveïdor de LLM només el que necessita, i un gateway que mesura el teu agent de codi. Tot amb el comptador del teu proveïdor: quota per seient i comissió només sobre l'estalvi mesurat.",
+    "metaDescription": "Un SDK perquè la teva app pagui al proveïdor de LLM només el que necessita, i un gateway que mesura el teu agent de codi. Tot amb el comptador del teu proveïdor: mesura gratis i després paga per seient, sense comissió sobre el teu estalvi.",
     "hero": {
       "eyebrow": "Per a equips que paguen l'API de LLM per tokens",
       "title": "La teva factura de LLM, sota control.",
@@ -834,8 +841,8 @@
           "body": "No et demanem fe. Cada estalvi es mesura amb el comptador oficial del proveïdor — el mateix amb què et factura — i apareix al teu rebut. El que no es pot contrastar amb la factura, no s'anuncia."
         },
         {
-          "title": "Una quota per seient i una part del que es mesura",
-          "body": "Pagues una quota fixa per seient cada mes, estalviïs o no. A més, la nostra comissió surt només de l'estalvi mesurat amb el comptador del teu proveïdor, i la major part de cada estalvi es queda sempre amb tu. Un mes sense estalvi mesurat? Pagues els seients i zero comissió."
+          "title": "Mesura gratis i després paga per seient",
+          "body": "Comença amb la llicència Mesurar, gratuïta: la capa funciona en mode ombra i et mostra el que hauria estalviat amb el teu propi trànsit. Per activar les palanques pagues una quota fixa per seient, o un pla d’Equip, tant si estalvies com si no, i sense comissió sobre el teu estalvi."
         }
       ],
       "nota": "Les animacions il·lustren la idea. Les xifres de debò — mesurades contra proveïdors reals — són just a sota."
@@ -927,12 +934,36 @@
       "initNote": "<b>O deixa que una ordre ho adapti a la teva pila.</b> <code>init</code> llegeix el teu <code>package.json</code> (Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, l'SDK d'Anthropic o el d'OpenAI) i imprimeix la línia d'instal·lació, el codi exacte del teu adaptador i una comprovació que no gasta tokens: amb la teva llicència ja posada, la respon la capa a la teva màquina, sense cridar el model. No escriu res si no li ho demanes."
     },
     "pricing": {
-      "eyebrow": "Un sol pla, amb preu per seient",
-      "title": "Quota per seient, sempre. Comissió només sobre l'estalvi mesurat.",
-      "body": "Sense pla gratuït i sense prova: abans de pagar pots comprovar els mesuraments públics i passar el verificador per les teves pròpies dades, aquí mateix. La quota per seient es cobra cada mes, en {currency}, estalviïs o no. La comissió va a part, i només sobre l'estalvi mesurat amb el comptador del teu proveïdor, incloses les peticions repetides que se serveixen sense cridar-lo, cadascuna valorada amb el comptador de la petició idèntica que ja es va executar. L'estimat no hi entra mai.",
+      "eyebrow": "Plans",
+      "title": "Mesura gratis. Paga per seient quan vulguis l’estalvi.",
+      "body": "Comença amb Mesurar: gratis i sense targeta. La capa funciona en mode ombra amb el teu propi trànsit i el teu panell mostra el que hauria estalviat, valorat amb el comptador del teu proveïdor. Pro i Equip es cobren per seient, en {currency}, tant si estalvies com si no, i no porten comissió sobre el teu estalvi.",
       "amount": "{amount}",
       "per": "/ seient / mes",
-      "proNote": "<b>PRO</b> — facturat per seient. O <b>{yearly} / seient / any</b> (estalvia ~19%). Enterprise, amb funcions empaquetades, arribarà més endavant.",
+      "plans": {
+        "medir": {
+          "name": "Mesurar",
+          "price": "Gratis",
+          "body": "Sense targeta. La capa en mode ombra per a una organització: cada petició arriba al teu proveïdor sense canvis, i veus el que hauria estalviat.",
+          "cta": "Comença gratis →"
+        },
+        "pro": {
+          "name": "Pro",
+          "note": "O <b>{yearly} / seient / any</b>. Totes les optimitzacions, el rebut per petició i el panell. Sense comissió.",
+          "cta": "Tria Pro →"
+        },
+        "team": {
+          "name": "Equip",
+          "per": "/ mes",
+          "note": "<b>{included} seients inclosos</b>; cada seient més, {extra} / mes. O <b>{yearly} / any</b>. Sense comissió.",
+          "cta": "Tria Equip →"
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "price": "A mida",
+          "body": "Més seients dels que admet el pagament en línia, un contracte propi o condicions de factura pactades: <contact>escriu-nos</contact>."
+        }
+      },
+      "legacy": "Ja tens la modalitat anterior, amb comissió sobre l’estalvi mesurat? La conserves sense canvis; les seves condicions són als <terms>termes de preu</terms>.",
       "seatNote": "Un seient és una <b>màquina o identitat de servei</b>, no una persona. Pagues els seients que cobreix la teva subscripció; el teu tauler mostra quants n'hi ha hagut en ús aquest mes (actius com a mínim {dias} dies; la CI i els executors efímers no compten).",
       "features": [
         "Cada optimització de BV‑SALA, sense límit",
@@ -964,7 +995,7 @@
     },
     "footer": {
       "ctaTitle": "Mesura-ho amb el teu propi trànsit",
-      "ctaSub": "Instal·lat, cada crida retorna el seu SavingsReport, amb el mesurat i l'estimat per separat. La quota per seient és mensual i fixa; la comissió surt només del que es mesura. La llicència és el que et deixa executar BV‑SALA: l'SDK a la teva app, el gateway al teu terminal.",
+      "ctaSub": "Un cop instal·lat, cada crida retorna el seu SavingsReport, amb el mesurat i l’estimat per separat. Comença gratis amb Mesurar; Pro i Equip són una quota fixa per seient, sense comissió sobre el teu estalvi. La llicència és el que et deixa executar BV‑SALA: l’SDK a la teva app, el gateway al teu terminal.",
       "ctaStart": "Comença",
       "tagline": "El sistema operatiu per al teu negoci. Això és <b>BV‑SALA</b>, l'optimitzador de cost de LLM neutral respecte al proveïdor de BiVelio — cada xifra publicada, mesurada contra el comptador del proveïdor; l'estimat es mostra a part i mai no es factura.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1216,7 +1247,7 @@
     "s3Sub": "El producte té dues xifres diferents i convé no barrejar-les.",
     "mBeforeK": "Abans d'instal·lar",
     "mBeforeV": "Estimació",
-    "mBeforeBody": "La calculadora de la secció de preus projecta el teu estalvi amb els teus propis números: sol·licituds, tokens i model. És una projecció honesta — per això porta l'etiqueta «estimació».",
+    "mBeforeBody": "La llicència Mesurar, gratuïta, executa la capa en mode ombra amb el teu propi trànsit i et mostra el que hauria estalviat, petició a petició. No canvia res ni aplica res: per això porta l’etiqueta «estimació».",
     "mAfterK": "Després d'instal·lar",
     "mAfterV": "Mesurament real",
     "mAfterBody": "Cada crida retorna un SavingsReport: les crides que mai no vas pagar i l'estalvi net per petició. Auditable, petició a petició, a la teva pròpia infraestructura.",
@@ -1231,14 +1262,36 @@
   },
   "pricingPage": {
     "metaTitle": "Termes de preu · BV-SALA",
-    "metaDescription": "La quota per seient i la comissió sobre l'estalvi mesurat, publicades des de les mateixes constants que cobren.",
+    "metaDescription": "Mesurar gratis, Pro per seient, Equip i Enterprise: cap no porta comissió sobre el teu estalvi. Xifres publicades des de les mateixes constants que cobren.",
     "eyebrow": "Preus publicats",
     "title": "Termes de preu",
     "governs": "Aquesta pàgina descriu com funciona el servei avui; regeixen la <license>LICENSE</license> i els <terms>Termes de BiVelio</terms>.",
-    "lede": "Cada xifra que hi veus es llegeix del mateix codi que et cobra, així que canvia quan canvia el preu.",
+    "lede": "Pagues per seient o per un pla d’equip, sense comissió sobre el teu estalvi. Cada xifra que veus aquí es llegeix del mateix codi que et cobra, així que canvia quan canvia el preu.",
+    "plans": {
+      "title": "Plans",
+      "intro": "Quatre plans, de menys a més. Pro i Equip es paguen per seient i no porten comissió.",
+      "medir": {
+        "name": "Mesurar",
+        "body": "<b>Gratis i sense targeta.</b> La capa funciona en mode ombra per a una organització, amb un límit de seients i de peticions diàries: cada petició arriba al teu proveïdor tal com la vas construir, no se serveix res de la memòria cau i no s’aplica cap palanca. El teu panell mostra el que hauria estalviat: una estimació que mai no porta comissió. Les palanques necessiten Pro o Equip."
+      },
+      "pro": {
+        "name": "Pro",
+        "amount": "<b>{monthly}</b> per seient i mes, o <b>{yearly}</b> per seient i any, en {currency}.",
+        "body": "Totes les optimitzacions de la capa, el rebut per petició i el tauler. <b>Sense comissió</b> sobre l’estalvi: pagues els seients, estalviïs o no."
+      },
+      "team": {
+        "name": "Equip",
+        "amount": "<b>{monthly}</b> al mes amb <b>{included} seients inclosos</b> (uns {perSeat} per seient), o <b>{yearly}</b> l’any, en {currency}.",
+        "extra": "Cada seient per sobre dels inclosos: {monthly} al mes, o {yearly} l’any.",
+        "body": "El mateix que Pro, per a una flota: la quota fixa cobreix els seients inclosos encara que en facis servir menys. <b>Sense comissió</b> sobre l’estalvi."
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "body": "Per a més seients dels que admet el pagament en línia, un contracte propi o condicions de factura pactades: <contact>escriu-nos</contact>."
+      }
+    },
     "seat": {
-      "title": "La quota per seient",
-      "amount": "<b>{monthly}</b> per seient i mes, o <b>{yearly}</b> per seient i any, en {currency}.",
+      "title": "Com es compta i es cobra un seient",
       "cycle": "La quota per seient es cobra a través d'Stripe per cada cicle mensual o anual de la teva subscripció, comptat des del dia que comença.",
       "paidAlways": "La quota per seient es paga <b>tant si hi ha estalvi com si no</b>.",
       "vat": "Els imports no inclouen l'IVA. El pagament demana la teva adreça de facturació i, si vols, el teu NIF-IVA; tots dos surten a la factura.",
@@ -1248,7 +1301,9 @@
       "identifier": "Com es forma l'identificador de seient, i tota la resta que el Software envia a BiVelio, és a la <privacy>pàgina de privadesa</privacy>."
     },
     "commission": {
-      "title": "La comissió sobre l'estalvi mesurat",
+      "title": "Modalitat anterior amb comissió (tancada a clients nous)",
+      "optional": "Aquesta modalitat <b>ja no s’ofereix a clients nous</b>. Si la teva subscripció ja la té, la conserves sense canvis i la regeixen les condicions de sota: una quota per seient més baixa i una comissió només sobre l’estalvi que pot quadrar amb la factura del teu proveïdor. Pro i Equip no la porten mai; el seu extracte mostra la que s’hauria aplicat només com a referència.",
+      "seat": "Quota per seient en aquesta modalitat: <b>{monthly}</b> per seient i mes, o <b>{yearly}</b> per seient i any, en {currency}.",
       "only": "Es cobra comissió <b>només sobre l'estalvi mesurat</b>: l'estalvi etiquetat {labels} als teus registres d'ús. L'estalvi etiquetat {never} mai no porta comissió.",
       "measured": "Un estalvi mesurat surt del comptador d'ús del teu mateix proveïdor de LLM per a aquella petició.",
       "reference": "Un estalvi per referència, en una petició repetida que el Software va servir sense cridar el teu proveïdor, surt del comptador del teu proveïdor per a la petició idèntica anterior que sí que es va executar, amb la regla que figura al teu extracte ({regla}).",
@@ -1265,8 +1320,7 @@
       "ceiling": "Cap tram no supera el {max}, així que, abans d'arrodonir la comissió al cèntim, <b>et quedes com a mínim el {garantia}</b> de l'estalvi mesurat del període. La quota per seient va a part.",
       "fx": "L'estalvi mesurat es compta en dòlars dels Estats Units i es converteix al tipus de referència del Banc Central Europeu obtingut en tancar el període; el teu extracte mostra el tipus aplicat.",
       "rounding": "La comissió s'arrodoneix al cèntim més pròxim. Una comissió inferior a {minimo} no es factura ni es trasllada a un altre període.",
-      "zero": "Un període sense estalvi mesurat <b>no porta comissió</b>.",
-      "calculator": "Per veure què vol dir això amb el teu propi trànsit, prova la <calc>calculadora</calc> de la portada."
+      "zero": "Un període sense estalvi mesurat <b>no porta comissió</b>."
     },
     "calibration": {
       "title": "Període de calibratge",

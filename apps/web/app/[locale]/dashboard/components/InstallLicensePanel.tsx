@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 import { getLocale, getTranslations } from "next-intl/server";
 
-import { preciosDelPlan } from "@/lib/stripe/pricing";
+import { tarifasDeLosPlanes } from "@/lib/stripe/pricing";
 import { formatearPrecio } from "@/lib/format/precio";
 
 import { SnippetPorSistema } from "@/app/components/SnippetPorSistema";
@@ -135,9 +135,10 @@ export async function InstallLicensePanel({ ctx }: { ctx: OrgContext }) {
   // El precio, del Price de Stripe y formateado aquí (servidor) para bajarlo ya
   // hecho al botón, que es de cliente.
   const locale = await getLocale();
-  const precios = await preciosDelPlan();
-  const precioMensual = formatearPrecio(locale, precios.monthly);
-  const precioAnual = formatearPrecio(locale, precios.yearly);
+  // Pro (2026-09-29): la modalidad con comisión ya no se vende a clientes nuevos.
+  const pro = (await tarifasDeLosPlanes()).pro;
+  const precioMensual = formatearPrecio(locale, { amount: pro.monthly.asientoCentimos, currency: pro.monthly.currency });
+  const precioAnual = formatearPrecio(locale, { amount: pro.yearly.asientoCentimos, currency: pro.yearly.currency });
   return (
     <section className="ck-sec">
       <div className="ck-head">

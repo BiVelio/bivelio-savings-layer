@@ -110,8 +110,10 @@ not install or use the Software.
 6. FEES. Your subscription is subject to BiVelio's pricing as published at
    https://savings.bivelio.com/pricing (the "Published Pricing") for each billing
    period:
-   (a) a subscription fee per seat, payable whether or not the Software produces any
-   saving; and (b) a commission, at tiered marginal rates, charged only on measured
+   (a) a subscription fee, per seat or for a plan that includes a number of seats,
+   payable whether or not the Software produces any saving; and (b) only if your
+   subscription is on a plan that the Published Pricing lists as carrying a
+   commission, a commission, at tiered marginal rates, charged only on measured
    savings, meaning savings whose basis is labelled "measured" or "reference" in
    your usage records (Section 5(b)(iv)). A "measured" saving is established from
    your LLM provider's own usage counter for that request; a "reference" saving, for
