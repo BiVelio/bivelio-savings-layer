@@ -1357,6 +1357,13 @@ export interface SavingsReport {
   cost: {
     baselineEstimate: number;
     actual: number;
+    /**
+     * A RATIO, not money: `1 - actual / baselineEstimate`, rounded to six
+     * decimals (0 when nothing was saved, negative when the request cost more).
+     * Do not sum it across requests; the saving in USD is
+     * `baselineEstimate - actual`. Renamed `netSavingsRatio` in 0.5, next to a
+     * new `netSavingsUsd`.
+     */
     netSavings: number;
     /**
      * Where the baseline comes from. It is what separates measured money from
