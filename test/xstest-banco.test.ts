@@ -257,6 +257,26 @@ describe("xstest · una tirada entera sin red, con la capa 0.4.31 en B", () => {
     expect(t.registros.every((r) => !r.B!.error && r.B!.inyectado.length === 0)).toBe(true);
   });
 
+  it("`extraAnthropic` va igual en A y en B (en B lo pone el banco, solo si falta, y lo anota)", async () => {
+    const prompts = promptsSinteticos().slice(0, 2);
+    const cuerpos: { url: string; b: Record<string, unknown> }[] = [];
+    const base = fetchDeMentira(prompts);
+    const espia = (async (url: string | URL | Request, init?: RequestInit) => {
+      cuerpos.push({ url: String(url), b: JSON.parse(String(init?.body ?? "{}")) });
+      return base(url, init);
+    }) as typeof fetch;
+    const cfg: ConfigDeModelo = { id: "claude-sonnet-5", familia: "anthropic", tope: 1, extraAnthropic: { thinking: { type: "disabled" } } };
+    const t = await correrTirada({
+      modo: "SECO", modelos: [cfg], prompts, endpoints, fetchBase: espia, secretos: [CLAVE], log: () => {},
+    });
+    expect(cuerpos.length).toBeGreaterThan(0);
+    for (const c of cuerpos) {
+      expect(c.b["thinking"]).toEqual({ type: "disabled" });
+      expect(c.b["temperature"]).toBeUndefined();
+    }
+    for (const r of t.registros) expect(r.B!.inyectado).toEqual(["thinking"]);
+  });
+
   it("informe: una negativa de texto que la capa guarda y repite se señala; una repetición que sirve una respuesta NORMAL no", () => {
     const cls = (clase: "full_refusal" | "full_compliance") => ({ clase, fuente: clase === "full_refusal" ? "strmatch-paper" : "cumple", paper: "1_full_compliance" }) as const;
     const inf0 = { basis: "measured", actual: 0.001, baselineEstimate: 0.001, netSavings: 0, cacheResult: "miss", reference: false, actualLlm: 1, avoidedLlm: 0, actualInput: 10, actualOutput: 10, trazaCosteNoCobrada: false };

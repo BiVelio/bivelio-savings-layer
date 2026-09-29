@@ -25,6 +25,7 @@ export interface Tirada {
       cortadoPorPresupuesto: boolean;
       temperatura: number | null;
       extraOpenAI: Record<string, unknown> | null;
+      extraAnthropic?: Record<string, unknown> | null;
       soloInseguros: number | null;
       noMedible?: string;
       /** `VERSION_DEL_CLASIFICADOR` con el que se clasificaron sus respuestas (ausente = v1). */
@@ -477,7 +478,7 @@ export function renderizarMarkdown(t: Tirada, inf: Informe): string {
   l.push("## Configuración por modelo", "");
   for (const [m, c] of Object.entries(t.porModelo)) {
     l.push(
-      `- ${m}: temperatura ${c.temperatura ?? "por defecto"}${c.extraOpenAI ? `, ${JSON.stringify(c.extraOpenAI)}` : ""}${c.soloInseguros ? `, solo ${c.soloInseguros} inseguros` : ""}; tope ${c.tope} $; clasificador ${c.clasificador ?? "v1"}.`,
+      `- ${m}: temperatura ${c.temperatura ?? "por defecto"}${c.extraOpenAI ? `, ${JSON.stringify(c.extraOpenAI)}` : ""}${c.extraAnthropic ? `, ${JSON.stringify(c.extraAnthropic)}` : ""}${c.soloInseguros ? `, solo ${c.soloInseguros} inseguros` : ""}; tope ${c.tope} $; clasificador ${c.clasificador ?? "v1"}.`,
     );
   }
   l.push("");
