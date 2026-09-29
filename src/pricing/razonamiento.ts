@@ -147,7 +147,7 @@ export const IGNORA_TEMPERATURA: ReadonlySet<string> = new Set(["claude-opus-4-7
  * salida (`unclassified-model`). El patrón queda para que la traza diga el
  * motivo verdadero cuando el nombre lo delata.
  */
-const NOMBRE_DE_RAZONAMIENTO: readonly RegExp[] = [
+export const NOMBRE_DE_RAZONAMIENTO: readonly RegExp[] = [
   /^o\d/, //                      o1, o3, o3-mini, o4-mini…
   /^gpt-5/, //                    toda la familia, también los ids fuera del catálogo
   /^gpt-([6-9]|\d{2})/, //        gpt-6 en adelante: razonan por defecto
