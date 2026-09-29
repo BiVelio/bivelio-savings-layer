@@ -561,6 +561,18 @@
       "detalle": "{requests} angerechnete Anfragen",
       "nota": "Die Zählung stammt vom Anbieter (applied_edits). Sie ist keine gemessene Ersparnis und fließt nie in deine Provision ein; der Geldwert folgt, sobald das Netto pro Modell gemessen ist — Löschen schreibt den Prefix-Cache neu, und bei manchen Modellen ist das Netto negativ."
     },
+    "ahorroNativo": {
+      "title": "Aktivierte native Ersparnis",
+      "detalle": "{requests} Anfragen mit Anbieter-Cache · Lesen {lectura} − Schreibaufschlag {prima}",
+      "nota": "Das ist der Rabatt aus dem Prefix-Cache Ihres Anbieters (Anthropic mit cache_control, OpenAI automatisch, Gemini implizit), abzüglich des Schreibaufschlags, den er berechnet – ermittelt aus seinem eigenen Zähler zum Listenpreis. Sie sehen ihn auf der Rechnung Ihres Anbieters, nicht auf unserer: Er steht getrennt von der gutgeschriebenen Ersparnis und fließt nie in Ihre Provision ein.",
+      "vacio": "In diesem Zeitraum hat noch keine Anfrage den Prefix-Cache Ihres Anbieters gelesen oder beschrieben.",
+      "proveedor": {
+        "anthropic": "Anthropic",
+        "openai": "OpenAI",
+        "google": "Gemini",
+        "other": "Andere"
+      }
+    },
     "ritmo": {
       "title": "Tempo und Prognose",
       "badgeEstimacion": "Schätzung",
@@ -716,7 +728,8 @@
         "libros": "Die vier Bücher",
         "trafico": "Verkehr",
         "sesiones": "Sitzungen",
-        "maquinas": "Maschinen"
+        "maquinas": "Maschinen",
+        "nativo": "Aktivierte native Ersparnis"
       }
     },
     "team": {
@@ -1273,7 +1286,7 @@
         },
         "cost": {
           "title": "Kosten",
-          "body": "Kostenzahlen, die die Software aus ihrem Preiskatalog oder aus einem von dir bereitgestellten Kostenmodell berechnet: Ausgangskosten, tatsächliche Kosten, die Netto-Ersparnisquote, die Grundlage der Zahlen (measured, reference, estimated, shadow oder unmeasured) und der Wert – zum Cache-Lesepreis des Anbieters – der Eingabetokens, die dein Anbieter als aus dem Kontext entfernt gemeldet hat."
+          "body": "Kostenzahlen, die die Software aus ihrem Preiskatalog oder aus einem von dir bereitgestellten Kostenmodell berechnet: Ausgangskosten, tatsächliche Kosten, die Netto-Ersparnisquote, die Grundlage der Zahlen (measured, reference, estimated, shadow oder unmeasured) und der Wert – zum Cache-Lesepreis des Anbieters – der Eingabetokens, die dein Anbieter als aus dem Kontext entfernt gemeldet hat. Getrennt ausgewiesen und nie zur Berechnung der Gebühren verwendet: der Rabatt, den der Prompt-Cache Ihres Anbieters der Anfrage gewährt hat, und der dafür berechnete Cache-Schreibaufschlag."
         }
       }
     },

@@ -80,10 +80,13 @@ describe("getUsageRollups — el peldaño de 0029", () => {
     try {
       const r = await getUsageRollups(cliente, ORG);
       expect(r.failed).toBe(false);
-      expect(selects).toHaveLength(2);
-      expect(selects[1]).not.toContain("reference_");
+      // Sin 0029 tampoco hay 0032: primero cae el peldaño del ahorro nativo y
+      // luego el de la referencia.
+      expect(selects).toHaveLength(3);
+      expect(selects[1]).not.toContain("native_");
+      expect(selects[2]).not.toContain("reference_");
       // Los demás carriles siguen: el peldaño solo quita el de 0029.
-      expect(selects[1]).toContain("eliminated_floor_cost");
+      expect(selects[2]).toContain("eliminated_floor_cost");
       expect(r.rows).toHaveLength(1);
       expect(r.rows[0]).toMatchObject({ measuredRequests: 10, measuredBaselineCost: 2000 });
       for (const campo of ["referenceRequests", "referenceBaselineCost", "referenceActualCost"]) {

@@ -561,6 +561,18 @@
       "detalle": "{requests} uznanych żądań",
       "nota": "Licznik pochodzi od dostawcy (applied_edits). To nie jest zmierzona oszczędność i nigdy nie wchodzi do twojej prowizji; pieniądze pojawią się, gdy zmierzymy netto na model — czyszczenie przepisuje pamięć podręczną prefiksu, a w niektórych modelach netto jest ujemne."
     },
+    "ahorroNativo": {
+      "title": "Aktywowana oszczędność natywna",
+      "detalle": "{requests} żądań z pamięcią podręczną dostawcy · odczyt {lectura} − dopłata za zapis {prima}",
+      "nota": "To rabat z pamięci podręcznej prefiksu Twojego dostawcy (Anthropic z cache_control, OpenAI automatycznie, Gemini niejawnie), pomniejszony o dopłatę za zapis, którą nalicza, obliczony z jego własnego licznika po cenie katalogowej. Widzisz go na fakturze dostawcy, nie na naszej: jest oddzielony od zaliczonej oszczędności i nigdy nie wchodzi do Twojej prowizji.",
+      "vacio": "W tym okresie żadne żądanie nie odczytało ani nie zapisało jeszcze pamięci podręcznej prefiksu Twojego dostawcy.",
+      "proveedor": {
+        "anthropic": "Anthropic",
+        "openai": "OpenAI",
+        "google": "Gemini",
+        "other": "Inni"
+      }
+    },
     "ritmo": {
       "title": "Tempo i prognoza",
       "badgeEstimacion": "Szacunek",
@@ -716,7 +728,8 @@
         "libros": "Cztery księgi",
         "trafico": "Ruch",
         "sesiones": "Sesje",
-        "maquinas": "Maszyny"
+        "maquinas": "Maszyny",
+        "nativo": "Aktywowana oszczędność natywna"
       }
     },
     "team": {
@@ -1273,7 +1286,7 @@
         },
         "cost": {
           "title": "Koszt",
-          "body": "Wartości kosztów obliczane przez Oprogramowanie z jego katalogu cen lub z dostarczonego przez Ciebie modelu kosztów: koszt bazowy, koszt rzeczywisty, wskaźnik oszczędności netto, podstawa wartości (measured, reference, estimated, shadow lub unmeasured) oraz wartość, po cenie odczytu z pamięci podręcznej dostawcy, tokenów wejściowych, które dostawca zgłosił jako usunięte z kontekstu."
+          "body": "Wartości kosztów obliczane przez Oprogramowanie z jego katalogu cen lub z dostarczonego przez Ciebie modelu kosztów: koszt bazowy, koszt rzeczywisty, wskaźnik oszczędności netto, podstawa wartości (measured, reference, estimated, shadow lub unmeasured) oraz wartość, po cenie odczytu z pamięci podręcznej dostawcy, tokenów wejściowych, które dostawca zgłosił jako usunięte z kontekstu. Pokazywane osobno i nigdy nieużywane do obliczania opłat: rabat, jaki pamięć podręczna promptów Twojego dostawcy dała żądaniu, oraz naliczona przez niego dopłata za zapis do pamięci podręcznej."
         }
       }
     },

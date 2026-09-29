@@ -561,6 +561,18 @@
       "detalle": "{requests} alacaklandırılan istek",
       "nota": "Sayım sağlayıcıya aittir (applied_edits). Ölçülmüş bir tasarruf değildir ve komisyonuna asla dâhil edilmez; para, model başına net ölçüldüğünde gelecek — temizleme önek önbelleğini yeniden yazar ve bazı modellerde net negatiftir."
     },
+    "ahorroNativo": {
+      "title": "Etkinleştirilen yerel tasarruf",
+      "detalle": "Sağlayıcı önbellekli {requests} istek · okuma {lectura} − yazma primi {prima}",
+      "nota": "Bu, sağlayıcınızın kendi önek önbelleği indirimidir (cache_control ile Anthropic, otomatik OpenAI, örtük Gemini); faturaladığı önbellek yazma primi düşülmüş olarak, kendi sayacıyla liste fiyatından hesaplanır. Bunu bizim değil, sağlayıcınızın faturasında görürsünüz: kredilendirilen tasarruftan ayrı tutulur ve komisyonunuza hiçbir zaman girmez.",
+      "vacio": "Bu dönemde henüz sağlayıcınızın önek önbelleğini okuyan veya yazan bir istek yok.",
+      "proveedor": {
+        "anthropic": "Anthropic",
+        "openai": "OpenAI",
+        "google": "Gemini",
+        "other": "Diğer"
+      }
+    },
     "ritmo": {
       "title": "Tempo ve projeksiyon",
       "badgeEstimacion": "Tahmin",
@@ -716,7 +728,8 @@
         "libros": "Dört defter",
         "trafico": "Trafik",
         "sesiones": "Oturumlar",
-        "maquinas": "Makineler"
+        "maquinas": "Makineler",
+        "nativo": "Etkinleştirilen yerel tasarruf"
       }
     },
     "team": {
@@ -1273,7 +1286,7 @@
         },
         "cost": {
           "title": "Maliyet",
-          "body": "Yazılımın kendi fiyat kataloğundan ya da senin sağladığın bir maliyet modelinden hesapladığı maliyet rakamları: temel maliyet, gerçek maliyet, net tasarruf oranı, rakamların dayanağı (measured, reference, estimated, shadow ya da unmeasured) ve sağlayıcının bağlamdan temizlendiğini bildirdiği girdi tokenlarının, sağlayıcının önbellek okuma fiyatıyla değeri."
+          "body": "Yazılımın kendi fiyat kataloğundan ya da senin sağladığın bir maliyet modelinden hesapladığı maliyet rakamları: temel maliyet, gerçek maliyet, net tasarruf oranı, rakamların dayanağı (measured, reference, estimated, shadow ya da unmeasured) ve sağlayıcının bağlamdan temizlendiğini bildirdiği girdi tokenlarının, sağlayıcının önbellek okuma fiyatıyla değeri. Ayrı gösterilir ve ücretlerin hesaplanmasında asla kullanılmaz: sağlayıcınızın kendi istem önbelleğinin isteğe sağladığı indirim ve faturaladığı önbellek yazma primi."
         }
       }
     },

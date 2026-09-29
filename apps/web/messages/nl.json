@@ -561,6 +561,18 @@
       "detalle": "{requests} gecrediteerde verzoeken",
       "nota": "De telling is van de provider (applied_edits). Het is geen gemeten besparing en telt nooit mee in je commissie; het geld volgt zodra het netto per model is gemeten — wissen herschrijft de prefix-cache, en bij sommige modellen is het netto negatief."
     },
+    "ahorroNativo": {
+      "title": "Geactiveerde native besparing",
+      "detalle": "{requests} verzoeken met providercache · lezen {lectura} − schrijftoeslag {prima}",
+      "nota": "Dit is de korting uit de prefixcache van je provider (Anthropic met cache_control, OpenAI automatisch, Gemini impliciet), na aftrek van de schrijftoeslag die hij rekent, berekend met zijn eigen teller tegen catalogusprijs. Je ziet hem op de factuur van je provider, niet op de onze: hij staat los van de gecrediteerde besparing en telt nooit mee voor je commissie.",
+      "vacio": "In deze periode heeft nog geen verzoek de prefixcache van je provider gelezen of beschreven.",
+      "proveedor": {
+        "anthropic": "Anthropic",
+        "openai": "OpenAI",
+        "google": "Gemini",
+        "other": "Overig"
+      }
+    },
     "ritmo": {
       "title": "Tempo en prognose",
       "badgeEstimacion": "Schatting",
@@ -716,7 +728,8 @@
         "libros": "De vier grootboeken",
         "trafico": "Verkeer",
         "sesiones": "Sessies",
-        "maquinas": "Machines"
+        "maquinas": "Machines",
+        "nativo": "Geactiveerde native besparing"
       }
     },
     "team": {
@@ -1273,7 +1286,7 @@
         },
         "cost": {
           "title": "Kosten",
-          "body": "Kostencijfers die de Software berekent uit haar prijscatalogus of uit een kostenmodel dat jij aanlevert: basiskosten, werkelijke kosten, de netto-besparingsratio, de grondslag van de cijfers (measured, reference, estimated, shadow of unmeasured) en de waarde, tegen de cache-leesprijs van de provider, van invoertokens die je provider als uit de context verwijderd meldde."
+          "body": "Kostencijfers die de Software berekent uit haar prijscatalogus of uit een kostenmodel dat jij aanlevert: basiskosten, werkelijke kosten, de netto-besparingsratio, de grondslag van de cijfers (measured, reference, estimated, shadow of unmeasured) en de waarde, tegen de cache-leesprijs van de provider, van invoertokens die je provider als uit de context verwijderd meldde. Apart getoond en nooit gebruikt om de vergoedingen te berekenen: de korting die de promptcache van je provider het verzoek gaf en de cache-schrijftoeslag die hij factureerde."
         }
       }
     },

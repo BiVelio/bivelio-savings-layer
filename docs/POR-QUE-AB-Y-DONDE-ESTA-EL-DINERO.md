@@ -402,6 +402,66 @@ SDK conserva los mensajes enteros; el banco queda pendiente.
 
 ---
 
+## Parte 5 — El ahorro nativo: el dinero de la caché del proveedor, aparte (añadido 2026-09-29)
+
+**El descuadre.** Desde #260 la capa no acredita el descuento de la caché de
+prefijo: `estimateCost` tarifa los tokens leídos a la tarifa cacheada en los
+DOS lados, porque ese descuento es del proveedor (las cuatro razones están en
+`src/tokenizer/accounting.ts`). Es lo correcto para la comisión, pero dejaba al
+cliente viendo menos de lo que ahorraba. GSM8K con Sonnet 5: 75 % de ahorro
+medido en la factura, del que ~0,13 $ de 0,24 $ venía del prefijo, mientras el
+informe propio declaraba −0,0009 $. La factura y el informe no cuadraban.
+
+**La decisión del dueño:** «mostrar el ahorro de la caché de prefijo del
+proveedor aparte, sin comisión». Así que existe un carril propio,
+`report.nativeSavings`, con el contador del proveedor a precio de lista:
+
+    lectura = leídos / 1000 × (entrada − lectura cacheada)
+    prima   = escritos(5m) / 1000 × entrada × (prima − 1)
+            + escritos(1h) / 1000 × entrada × (prima1h − 1)
+    neto    = lectura − prima            (puede ser negativo)
+
+| Proveedor | Mecanismo | Prima de escritura |
+|---|---|---|
+| Anthropic | `explicit` — `cache_control` (la capa lo pone con `cacheBreakpoints`; `layerMarked` lo dice) | 1,25× (5 min), 2× (1 h) |
+| OpenAI | `automatic` — caché de prefijo sin marca; la capa solo enruta con `prompt_cache_key` | 1,25× de gpt-5.6 en adelante; 1× antes |
+| Gemini | `implicit` — caché implícita (API nativa o endpoint compatible) | 1× |
+
+**Por qué NO entra en la comisión, y no hay interruptor para que entre.** El
+descuento lo factura el proveedor y buena parte existiría sin la capa (OpenAI y
+Gemini cachean solos; un cliente puede poner su propio `cache_control`). No hay
+baseline medido de la variante sin caché en una llamada que corrió. Por eso:
+
+- no toca `cost.baselineEstimate`, `cost.actual`, `cost.netSavings` ni `cost.basis`
+  (`test/ahorro-nativo.test.ts`: el ahorro acreditado es el mismo con 8.000
+  tokens de caché que con 0, y el registro del cable es idéntico con y sin el
+  bloque salvo sus dos campos);
+- viaja en dos campos propios y no negativos, `nativeCacheReadSavings` y
+  `nativeCacheWritePremium`, que la verja del ingest recorta (techo de entrada
+  por token) sin tocar ningún otro campo (`apps/web/lib/metering/usage-nativo.test.ts`);
+- se acumula en columnas propias, `usage_daily.native_*` y
+  `usage_daily_by_model.native_*` (migración 0032); `baseline_cost`,
+  `actual_cost` y `measured_*` quedan literales (`test/migracion-0032.test.ts`);
+- el extracto no lee esas columnas: con un carril nativo enorme, base, ahorro,
+  comisión y cargo son idénticos al céntimo
+  (`apps/web/lib/billing/extracto-carril-nativo.test.ts`).
+
+**Dónde se ve.** En cada informe (`report.nativeSavings`) y en el panel, en la
+tarjeta «Ahorro nativo activado»: el neto del período, sus dos piezas (lectura y
+prima) y el reparto por proveedor, al lado del titular y nunca dentro de él. El
+gateway publica el mismo bloque, salvo donde no hay factura por tokens a precio
+de lista que lo respalde: tráfico de suscripción, upstream no oficial, gemela
+coalescida y negativa no cobrada.
+
+**Cuadra con la factura.** Con el `usage` real simulado de los tres proveedores,
+`netUsd` es exactamente «factura sin caché − factura con caché», calculada en el
+test a mano con la tarifa pública de cada uno. Un matiz honesto: en el SDK, si el
+cliente puso su propio `cache_control`, la prima de esa escritura no está en
+`cost.actual` (la capa solo carga la que provoca); `nativeSavings` sí la resta,
+porque la cobra el proveedor.
+
+---
+
 ## Resumen en tres frases
 
 1. El 0 € no era un fallo del panel: era la doctrina de honestidad del repo

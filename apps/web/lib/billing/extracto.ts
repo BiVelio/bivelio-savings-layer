@@ -53,6 +53,12 @@ export interface FilaDiaria {
   reference_requests?: number;
   reference_baseline_cost?: number;
   reference_actual_cost?: number;
+  /** El AHORRO NATIVO de la caché del proveedor (0032). NUNCA comisionable y sin
+   *  interruptor: este extracto no lo lee. Está en el tipo solo para que el test
+   *  que lo garantiza (extracto-carril-nativo.test.ts) pueda pasar filas con él. */
+  native_cache_read_savings?: number;
+  native_cache_write_premium?: number;
+  native_requests?: number;
 }
 
 export interface OpcionesExtracto {

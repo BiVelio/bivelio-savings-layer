@@ -165,6 +165,10 @@ export interface UsageRecord {
   netSavings: number;
   /** Optional (0025): provider-cleared input tokens valued at the cache READ floor price. Capped server-side; never part of measured. */
   eliminatedInputFloorCost?: number;
+  /** Optional (0032): the provider's own prompt-cache read discount on this request, USD. Never commissioned. */
+  nativeCacheReadSavings?: number;
+  /** Optional (0032): the cache-write premium the provider billed on this request, USD. Never commissioned. */
+  nativeCacheWritePremium?: number;
   /** Optional (0029), only with basis "reference": the requestId of the identical request that ran. */
   referenceRequestId?: string;
   /** Optional (0029), only with basis "reference": epoch ms when that request's provider counter was read. */
@@ -330,6 +334,21 @@ const TECHO_PRECIO_LECTURA_PER_1K = 0.002;
  * (a test pins both equal).
  */
 const TECHO_PRECIO_SALIDA_PER_1K = 0.08;
+/**
+ * Input ceiling of the NATIVE-savings lane (0032), USD per 1k tokens: >= the
+ * largest `inputPer1k` in the catalog. It clips the two native figures (cache
+ * read discount <= cached tokens x ceiling; write premium <= input tokens x
+ * ceiling), never rejects. Mirror of apps/web/lib/metering/techo-precio-lectura.ts
+ * (a test pins both equal).
+ */
+const TECHO_PRECIO_ENTRADA_PER_1K = 0.04;
+/**
+ * Optional fields of the NATIVE-savings lane (0032): the provider's own prompt
+ * cache discount on the request (read) and the cache-write premium it billed,
+ * both USD and >= 0. Their own columns; never measured_*, never the commission
+ * base. Mirror of apps/web/lib/metering/usage.ts.
+ */
+const USAGE_OPTIONAL_NATIVE_FIELDS = ["nativeCacheReadSavings", "nativeCacheWritePremium"] as const;
 
 /**
  * Optional fields of the reference lane (0029). Clip, never reject: a malformed
@@ -360,6 +379,7 @@ const USAGE_ALLOWED_FIELDS: ReadonlySet<string> = new Set<string>([
   ...USAGE_NUMBER_FIELDS,
   ...USAGE_OPTIONAL_MONEY_FIELDS,
   ...USAGE_OPTIONAL_REFERENCE_FIELDS,
+  ...USAGE_OPTIONAL_NATIVE_FIELDS,
 ]);
 
 export class UsageValidationError extends Error {
@@ -468,6 +488,18 @@ export function parseUsageRecord(input: unknown, authorizedOrgId: string): Usage
     const tokens = rec["eliminatedInputTokens"] as number;
     const techo = tokens > 0 ? (tokens / 1_000) * TECHO_PRECIO_LECTURA_PER_1K : 0;
     rec["eliminatedInputFloorCost"] = Math.min(v, techo);
+  }
+  // 0032 · native savings: type and sign rejected, domain clipped (no count -> 0).
+  for (const [field, tokens] of [
+    ["nativeCacheReadSavings", rec["providerCachedInputTokens"] as number],
+    ["nativeCacheWritePremium", rec["actualInputTokens"] as number],
+  ] as const) {
+    if (input[field] === undefined) continue;
+    const v = input[field];
+    if (typeof v !== "number" || !Number.isFinite(v) || v < 0) {
+      throw new UsageValidationError(`field "${field}" must be a finite number >= 0`);
+    }
+    rec[field] = tokens > 0 ? Math.min(v, (tokens / 1_000) * TECHO_PRECIO_ENTRADA_PER_1K) : 0;
   }
   if (input["seatId"] !== undefined) {
     const s = input["seatId"];

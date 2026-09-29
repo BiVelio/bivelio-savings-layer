@@ -561,6 +561,18 @@
       "detalle": "{requests} yêu cầu được ghi nhận",
       "nota": "Số đếm là của nhà cung cấp (applied_edits). Đây không phải khoản tiết kiệm đã đo và không bao giờ tính vào hoa hồng của bạn; tiền sẽ đến khi phần ròng theo từng mô hình được đo — việc xóa ghi lại bộ nhớ đệm tiền tố, và ở một số mô hình phần ròng là âm."
     },
+    "ahorroNativo": {
+      "title": "Khoản tiết kiệm gốc đã kích hoạt",
+      "detalle": "{requests} yêu cầu có bộ nhớ đệm của nhà cung cấp · đọc {lectura} − phụ phí ghi {prima}",
+      "nota": "Đây là khoản giảm giá từ bộ nhớ đệm tiền tố của chính nhà cung cấp của bạn (Anthropic với cache_control, OpenAI tự động, Gemini ngầm định), sau khi trừ phụ phí ghi bộ nhớ đệm mà họ tính, được tính từ bộ đếm của chính họ theo giá niêm yết. Bạn thấy nó trên hóa đơn của nhà cung cấp, không phải của chúng tôi: nó được tách riêng khỏi khoản tiết kiệm được ghi nhận và không bao giờ tính vào hoa hồng của bạn.",
+      "vacio": "Trong kỳ này chưa có yêu cầu nào đọc hoặc ghi bộ nhớ đệm tiền tố của nhà cung cấp.",
+      "proveedor": {
+        "anthropic": "Anthropic",
+        "openai": "OpenAI",
+        "google": "Gemini",
+        "other": "Khác"
+      }
+    },
     "ritmo": {
       "title": "Nhịp độ và dự phóng",
       "badgeEstimacion": "Ước tính",
@@ -716,7 +728,8 @@
         "libros": "Bốn sổ cái",
         "trafico": "Lưu lượng",
         "sesiones": "Phiên",
-        "maquinas": "Máy"
+        "maquinas": "Máy",
+        "nativo": "Khoản tiết kiệm gốc đã kích hoạt"
       }
     },
     "team": {
@@ -1273,7 +1286,7 @@
         },
         "cost": {
           "title": "Chi phí",
-          "body": "Các con số chi phí do Phần mềm tính từ danh mục giá của nó, hoặc từ mô hình chi phí do bạn cung cấp: chi phí cơ sở, chi phí thực tế, tỷ lệ tiết kiệm ròng, cơ sở của các con số (measured, reference, estimated, shadow hoặc unmeasured), và giá trị, theo giá đọc bộ nhớ đệm của nhà cung cấp, của các token đầu vào mà nhà cung cấp báo đã xóa khỏi ngữ cảnh."
+          "body": "Các con số chi phí do Phần mềm tính từ danh mục giá của nó, hoặc từ mô hình chi phí do bạn cung cấp: chi phí cơ sở, chi phí thực tế, tỷ lệ tiết kiệm ròng, cơ sở của các con số (measured, reference, estimated, shadow hoặc unmeasured), và giá trị, theo giá đọc bộ nhớ đệm của nhà cung cấp, của các token đầu vào mà nhà cung cấp báo đã xóa khỏi ngữ cảnh. Được hiển thị riêng và không bao giờ dùng để tính phí: khoản giảm giá mà bộ nhớ đệm prompt của chính nhà cung cấp đã mang lại cho yêu cầu và phụ phí ghi bộ nhớ đệm mà họ đã tính."
         }
       }
     },

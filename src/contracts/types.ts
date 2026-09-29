@@ -1107,6 +1107,65 @@ export interface QualityLedger {
   cascade?: QualityCascadeCheck;
 }
 
+/**
+ * The provider's native prompt-cache saving on the call that produced the
+ * answer: what the provider's own cache took off the invoice, net of the
+ * cache-write premium the provider billed on that same call.
+ *
+ * `netUsd = readDiscountUsd − writePremiumUsd`, where
+ * `readDiscountUsd = cacheReadTokens / 1000 × (inputPer1k − cachedInputPer1k)` and
+ * `writePremiumUsd` is the write tokens at `inputPer1k × (multiplier − 1)`
+ * (Anthropic 1.25× for 5 minutes and 2× for one hour; OpenAI 1.25× from
+ * gpt-5.6 on, 1× before; Gemini 1×). Every input is in this block, so it can be
+ * recomputed without trusting the layer. `netUsd` can be negative: a cold
+ * write pays the premium before any read.
+ *
+ * It is SEPARATE on purpose. The layer can place the breakpoint (Anthropic
+ * `cache_control`), route (OpenAI `prompt_cache_key`) or keep the prefix
+ * stable, but the discount is billed by the provider and much of it would be
+ * there without the layer, so it is never credited as the layer's saving:
+ * it is not in `cost.netSavings`, not in `cost.baselineEstimate`, and not in
+ * any commission base.
+ */
+export interface NativeSavingsReport {
+  /** Who billed the cache, inferred from the model id. */
+  provider: "anthropic" | "openai" | "google" | "unknown";
+  /**
+   * How that provider caches: `explicit` (Anthropic, `cache_control`
+   * breakpoints), `automatic` (OpenAI, prefix cache with no marking) or
+   * `implicit` (Gemini implicit caching).
+   */
+  mechanism: "explicit" | "automatic" | "implicit" | "unknown";
+  /** True when the layer placed the cache breakpoint on the call that ran. Absent where the layer does not know. */
+  layerMarked?: boolean;
+  /** Input tokens the provider served from its cache on this call (its own counter). */
+  cacheReadTokens: number;
+  /** Input tokens the provider billed as cache writes on this call (its own counter, every TTL). */
+  cacheWriteTokens: number;
+  /** The part of `cacheWriteTokens` written with a one-hour TTL. */
+  cacheWrite1hTokens: number;
+  /** Input rate applied, per 1K tokens. */
+  inputPer1k: number;
+  /** Cache-read rate applied, per 1K tokens. */
+  cachedInputPer1k: number;
+  /** Write multiplier applied to five-minute (or untyped) writes. */
+  writeMultiplier: number;
+  /** Write multiplier applied to one-hour writes. */
+  write1hMultiplier: number;
+  /** What the cache reads saved against the input rate, USD. */
+  readDiscountUsd: number;
+  /** The premium the provider billed for the cache writes, USD. */
+  writePremiumUsd: number;
+  /** `readDiscountUsd − writePremiumUsd`, USD. Can be negative. */
+  netUsd: number;
+  /**
+   * `measured`: the provider's own counter at list price. `unmeasured`: the
+   * counter was incomplete or there is no cache-read price for the model, and
+   * every USD figure is 0.
+   */
+  basis: "measured" | "unmeasured";
+}
+
 export interface SavingsReport {
   requestId: string;
   /**
@@ -1239,6 +1298,18 @@ export interface SavingsReport {
    * `cacheBreakpoints: "auto"` switched this request to explicit mode.
    */
   cacheWrites?: CacheWriteReport;
+
+  /**
+   * The provider's OWN prompt-cache discount on this call, shown apart. Present
+   * only when a call ran and the provider reported cache reads or writes.
+   *
+   * It is not the layer's saving and it is never part of `cost.netSavings`,
+   * `cost.baselineEstimate`, `basis: "reference"` or the commission base: the
+   * discount is the provider's, and `cost` prices cached tokens at the cached
+   * rate on both sides for exactly that reason. It exists so the report adds up
+   * to your invoice. See {@link NativeSavingsReport}.
+   */
+  nativeSavings?: NativeSavingsReport;
 
   /** How a streamed request was delivered. Present only on results of `generateStream`. */
   streaming?: StreamingReport;
