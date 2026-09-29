@@ -1,5 +1,5 @@
 import { randomId } from "../util/id.js";
-import { avisarUnaVez } from "../util/warn-once.js";
+import { avisarUnaVez, yaSeAviso } from "../util/warn-once.js";
 import { isBuiltInDemoProvider } from "../providers/demo-brand.js";
 import {
   atestadoDelCable,
@@ -16,6 +16,8 @@ import {
   decidirBusquedaNativa,
   normalizarBusqueda,
   UMBRAL_DOCUMENTADO,
+  type DecisionDeBusquedaNativa,
+  type OpcionesDeBusqueda,
 } from "../router/busqueda-nativa.js";
 import type { ToolSelection } from "../router/tool-selector.js";
 import { salidaNoRepetible } from "../pricing/razonamiento.js";
@@ -2354,7 +2356,7 @@ export class SavingsPipeline {
           canonical.toolsetHash,
         );
     if (!nativa) {
-      this.avisarDeHerramientasPodadas(request, toolSelection, cascada.modeloServido);
+      this.avisarDeHerramientasPodadas(request, toggles, toolSelection, route.executionClass, routerApagado, cascada, costModel);
       this.avisarDeCatalogoGrande(request, toggles, toolSelection, cascada, costModel);
     }
     ledger.actualTools = toolSelection.tools.length;
@@ -4510,6 +4512,10 @@ export class SavingsPipeline {
     // recibía cadena vacía como si fuera la respuesta buena.
     if (pidioHerramientas) result.toolCalls = response.toolCalls!;
     if (response.finishReason !== undefined) result.finishReason = response.finishReason;
+    // Y el motivo del proveedor (la categoría de una negativa de Anthropic, el
+    // `content_filter: OTHER` de Gemini): sin él, el llamante veía
+    // `content_filter` a secas y un `refusal` vacío, sin saber por qué.
+    if (response.finishReasonDetail !== undefined) result.finishReasonDetail = response.finishReasonDetail;
     // La negativa también llega al llamante: sin ella, una negativa de salidas
     // estructuradas era un `text` vacío que incumplía el contrato sin decir por qué.
     if (response.refusal !== undefined) result.refusal = response.refusal;
@@ -4558,19 +4564,14 @@ export class SavingsPipeline {
     const tools = request.tools ?? [];
     if (opciones.modo === "off" || tools.length === 0) return null;
 
-    const candidatas = candidatasPorRiesgo(tools, execution === "TOOL_ACTION", routerApagado);
-    const decision = decidirBusquedaNativa({
+    const { candidatas, decision } = this.decidirBusquedaParaEstaPeticion(
+      request,
       opciones,
-      capacidad: busquedaNativaDelProveedor(this.config.provider),
-      modelo: cascada.modeloServido,
-      // Con LA regla del baseline (`textoDeHerramienta`), como el libro 2 y el
-      // sondeo: si esto contara distinto, la verja decidiría sobre otra cuenta.
-      herramientas: candidatas.map((t) => ({ id: t.id, tokens: this.tokensFor(textoDeHerramienta(t), request) })),
-      hayContrato: request.response?.schema != null,
-      cascadaActiva: cascada.modo !== "off",
-      precio: costModel,
-      lecturaDeCache: this.lecturaDeCacheDe(cascada.modeloServido, costModel),
-    });
+      execution,
+      routerApagado,
+      cascada,
+      costModel,
+    );
     trace.record("tool-search", decision.aplicar ? "native" : "selector", {
       mode: opciones.modo,
       variant: decision.variante,
@@ -4596,6 +4597,34 @@ export class SavingsPipeline {
       prefijo: candidatas.filter((t) => fijas.has(t.id)),
       plan: { variant: decision.variante, alwaysLoaded: decision.siempreCargadas },
     };
+  }
+
+  // LA decisión de la búsqueda nativa para ESTA petición con unas opciones
+  // dadas. La usan la ruta nativa y el aviso del selector: el aviso solo puede
+  // recomendar `"auto"` si la verja de `"auto"` lo elegiría de verdad aquí, así
+  // que las dos preguntan a la misma función con la misma entrada.
+  private decidirBusquedaParaEstaPeticion(
+    request: SavingsRequest,
+    opciones: OpcionesDeBusqueda,
+    execution: ExecutionClass,
+    routerApagado: boolean,
+    cascada: DecisionDeCascada,
+    costModel: CostModel,
+  ): { candidatas: ToolDescriptor[]; decision: DecisionDeBusquedaNativa } {
+    const candidatas = candidatasPorRiesgo(request.tools ?? [], execution === "TOOL_ACTION", routerApagado);
+    const decision = decidirBusquedaNativa({
+      opciones,
+      capacidad: busquedaNativaDelProveedor(this.config.provider),
+      modelo: cascada.modeloServido,
+      // Con LA regla del baseline (`textoDeHerramienta`), como el libro 2 y el
+      // sondeo: si esto contara distinto, la verja decidiría sobre otra cuenta.
+      herramientas: candidatas.map((t) => ({ id: t.id, tokens: this.tokensFor(textoDeHerramienta(t), request) })),
+      hayContrato: request.response?.schema != null,
+      cascadaActiva: cascada.modo !== "off",
+      precio: costModel,
+      lecturaDeCache: this.lecturaDeCacheDe(cascada.modeloServido, costModel),
+    });
+    return { candidatas, decision };
   }
 
   // Precio de un token leído de caché como fracción del normal, para la verja
@@ -4641,22 +4670,65 @@ export class SavingsPipeline {
   // llamar, y hasta ahora eso solo quedaba en `report.traces`: el aviso que había
   // saltaba únicamente donde existe la búsqueda nativa, o sea NUNCA en OpenAI, que
   // es justo donde BFCL lo destapó. Ahora avisa en cualquier proveedor, una vez
-  // por proceso y silenciable (`silenceWarnings`), y si este adaptador y este
-  // modelo admiten la búsqueda nativa dice que existe.
-  private avisarDeHerramientasPodadas(request: SavingsRequest, seleccion: ToolSelection, modelo: string): void {
+  // por proceso y silenciable (`silenceWarnings`).
+  //
+  // Y SOLO RECOMIENDA LO QUE SERVIRÍA AQUÍ. Antes, en cuanto adaptador y modelo
+  // admitían la búsqueda nativa, recomendaba `toolSearch: "auto"`; las sondas en
+  // vivo (PR #415) lo pillaron con 120 herramientas en claude-haiku-4-5, donde la
+  // verja de `"auto"` se queda con el selector (~0,0024 $ de prefijo por petición
+  // contra ~0,0036 $ de peor caso por búsqueda): el aviso recomendaba una palanca
+  // que, encendida, no habría hecho nada. Ahora pregunta a LA MISMA verja
+  // (`decidirBusquedaParaEstaPeticion`) con las opciones del llamante en modo
+  // `"auto"`: si la elegiría, la recomienda; si la descarta solo por dinero o por
+  // el host, dice que `"always"` existe y cuánto cuesta en el peor caso; si no,
+  // no recomienda nada.
+  private avisarDeHerramientasPodadas(
+    request: SavingsRequest,
+    toggles: NonNullable<SavingsRequest["savings"]>,
+    seleccion: ToolSelection,
+    execution: ExecutionClass,
+    routerApagado: boolean,
+    cascada: DecisionDeCascada,
+    costModel: CostModel,
+  ): void {
     const tools = request.tools ?? [];
-    if (seleccion.droppedIds.length === 0) return;
-    const nativa = busquedaNativaDelProveedor(this.config.provider) !== undefined && admiteBusquedaNativa(modelo);
+    const clave = "herramientas-podadas-por-el-selector";
+    // La verja cuenta los tokens de todo el catálogo: no se paga en cada
+    // petición para un aviso que ya salió o que está silenciado.
+    if (seleccion.droppedIds.length === 0 || this.config.silenceWarnings || yaSeAviso(clave)) return;
+    const opciones = normalizarBusqueda(toggles.toolSearch);
+    const decidir = (modo: "auto" | "always") =>
+      this.decidirBusquedaParaEstaPeticion(request, { ...opciones, modo }, execution, routerApagado, cascada, costModel)
+        .decision;
+    const auto = decidir("auto");
+    let sugerencia = "";
+    if (auto.aplicar) {
+      sugerencia =
+        " This provider and model also support native tool search, and it would pay here: " +
+        "`savings: { toolSearch: \"auto\" }` sends every tool deferred and lets the model search, without breaking " +
+        "the prompt cache.";
+    } else if (decidir("always").aplicar) {
+      if (auto.ahorroDelPrefijo != null && auto.costeDeUnaBusqueda != null) {
+        sugerencia =
+          " Native tool search is available here, but `toolSearch: \"auto\"` would keep the selector for this " +
+          `request: deferring the catalogue saves about $${auto.ahorroDelPrefijo.toFixed(6)} per request with a warm ` +
+          `cache, less than one worst-case search ($${auto.costeDeUnaBusqueda.toFixed(6)}). ` +
+          "`toolSearch: \"always\"` makes every tool reachable anyway, at up to " +
+          `$${(auto.costeDeUnaBusqueda - auto.ahorroDelPrefijo).toFixed(6)} more per request that searches.`;
+      } else if (busquedaNativaDelProveedor(this.config.provider) === "compatible") {
+        sugerencia =
+          " This adapter is not talking to the provider's own API host, so `toolSearch: \"auto\"` would keep the " +
+          "selector; if your proxy forwards the tool search blocks, `toolSearch: \"always\"` sends every tool " +
+          "deferred and lets the model search.";
+      }
+    }
     this.avisar(
-      "herramientas-podadas-por-el-selector",
+      clave,
       `[bv-sala] The tool selector sent ${seleccion.tools.length} of ${tools.length} tools, chosen by the ` +
         "`intents`/`risk` your tools declare: the model cannot call the other " +
         `${seleccion.droppedIds.length} in that request (they are listed in the report's \`tool-selector\` trace). ` +
         "A catalogue with no `intents` and no `risk`, or `savings: { router: false }`, is sent whole." +
-        (nativa
-          ? " This provider and model also support native tool search: `savings: { toolSearch: \"auto\" }` sends " +
-            "every tool deferred and lets the model search, without breaking the prompt cache."
-          : ""),
+        sugerencia,
     );
   }
 
@@ -5554,6 +5626,7 @@ export class SavingsPipeline {
       text: response.text,
       ...(pidioHerramientas ? { toolCalls: response.toolCalls! } : {}),
       ...(response.finishReason !== undefined ? { finishReason: response.finishReason } : {}),
+      ...(response.finishReasonDetail !== undefined ? { finishReasonDetail: response.finishReasonDetail } : {}),
       ...(response.refusal !== undefined ? { refusal: response.refusal } : {}),
       report,
     };

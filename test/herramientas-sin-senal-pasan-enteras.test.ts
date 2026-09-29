@@ -216,8 +216,10 @@ describe("controles: lo que tenía señal sigue igual", () => {
       const avisos = avisosDePoda();
       expect(avisos).toHaveLength(1);
       expect(avisos[0]).toContain("sent 1 of 3 tools");
-      // Donde existe la búsqueda nativa, se dice.
-      expect(avisos[0]!.includes("toolSearch")).toBe(proveedor === "anthropic");
+      // Tres herramientas pequeñas: por debajo del umbral documentado, la verja
+      // de `toolSearch: "auto"` no la elegiría, así que no se recomienda (en
+      // Anthropic existe, pero no serviría aquí; ver detalles-de-las-sondas).
+      expect(avisos[0]!.includes("toolSearch")).toBe(false);
     });
   }
 

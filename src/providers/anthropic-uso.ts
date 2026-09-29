@@ -248,3 +248,16 @@ export function negativaNoCobrada(h: HechosDeLaNegativa): boolean {
   if (Array.isArray(h.iterations) && h.iterations.length > 1) return false;
   return true;
 }
+
+/**
+ * El motivo que Anthropic da a una negativa (`stop_details.category`, p. ej.
+ * `"cyber"` o `"bio"`), para `finishReasonDetail`. Solo con `stop_reason:
+ * "refusal"` y una categoría de texto no vacía; si no, nada. Informativo: no
+ * cambia el cobro (eso lo decide `negativaNoCobrada`).
+ */
+export function motivoDeLaNegativa(stopReason: unknown, stopDetails: unknown): string | undefined {
+  if (stopReason !== "refusal") return undefined;
+  if (stopDetails === null || typeof stopDetails !== "object" || Array.isArray(stopDetails)) return undefined;
+  const categoria = (stopDetails as { category?: unknown }).category;
+  return typeof categoria === "string" && categoria !== "" ? categoria : undefined;
+}

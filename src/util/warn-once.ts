@@ -14,6 +14,11 @@ export function avisarUnaVez(clave: string, mensaje: string): void {
   console.warn(mensaje);
 }
 
+/** ¿Ya salió el aviso de esta causa? Para no calcular un mensaje que no se va a imprimir. */
+export function yaSeAviso(clave: string): boolean {
+  return vistos.has(clave);
+}
+
 /** Solo para tests: permite comprobar que un aviso se emite. */
 export function reiniciarAvisos(): void {
   vistos.clear();
