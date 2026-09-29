@@ -1,0 +1,8 @@
+# Herramientas SOLO para construir y comprobar el paquete que se publica en PyPI
+# (.github/workflows/publish-pypi.yml). El paquete no tiene dependencias en ejecución.
+# Se compila con hashes: uv pip compile --universal --generate-hashes -p 3.10 requirements-publicar.in -o requirements-publicar.txt
+# hatchling va fijado aquí porque se construye con `python -m build --no-isolation`:
+# así el backend también llega por hash, no lo baja `build` a su aire.
+build==1.3.0
+twine==6.2.0
+hatchling==1.27.0

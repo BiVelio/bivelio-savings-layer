@@ -27,6 +27,8 @@ other two (v0.2.0) failed earlier, in Tests and Typecheck (`gh run list --workfl
 publish.yml`, checked 2026-09-27).
 
 To release: bump `version` in `package.json`, merge, and cut a GitHub Release `vX.Y.Z`.
+(Releases tagged `py-v*` belong to the Python client and are published to PyPI by
+`publish-pypi.yml`; `publish.yml` skips them. See `docs/PUBLICAR-PYPI.md`.)
 The workflow runs three jobs, each with the minimum permission:
 
 1. **`verificar`** (`contents: read`): install, build, typecheck, tests, tag == version,

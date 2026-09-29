@@ -57,6 +57,23 @@ export class Presupuesto {
     this.reservado = Math.max(0, this.reservado - monto);
   }
 
+  /**
+   * Como `reservar`, pero distingue «no cabe AHORA» de «no cabe nunca»: si lo que
+   * sobra está retenido por unidades en curso, hay que esperar a que terminen
+   * («esperar»); solo si ni con todo liberado cabe, el modelo se da por agotado.
+   * Así la concurrencia no deja sin gastar el presupuesto que reservan las demás.
+   */
+  intentarReservar(monto: number): "si" | "esperar" | "no" {
+    if (this.agotado) return "no";
+    if (this.gastado + this.reservado + monto <= this.tope) {
+      this.reservado += monto;
+      return "si";
+    }
+    if (this.reservado > 0 && this.gastado + monto <= this.tope) return "esperar";
+    this.agotado = true;
+    return "no";
+  }
+
   /** La guarda por llamada: ninguna llamada sale si su peor caso cruza el tope. */
   comprobarLlamada(peorCaso: number): void {
     if (this.gastado + peorCaso > this.tope) {
@@ -105,13 +122,23 @@ export function usoDeRespuesta(familia: Familia, cuerpo: unknown): UsoCrudo | nu
   if (typeof u["prompt_tokens"] !== "number" || typeof u["completion_tokens"] !== "number") return null;
   const det = obj(u["prompt_tokens_details"]);
   const detSal = obj(u["completion_tokens_details"]);
+  // El endpoint compatible con OpenAI de Gemini (generativelanguage.googleapis.com/v1beta/openai)
+  // deja FUERA de `completion_tokens` los tokens de pensamiento, pero los cuenta en
+  // `total_tokens` (medido el 2026-09-29 con gemini-3.8-flash: prompt 46 + completion 16,
+  // total 105), y Google los factura como salida («Output price (including thinking
+  // tokens)», https://ai.google.dev/gemini-api/docs/pricing). El hueco total − prompt −
+  // completion se cobra, pues, como salida. En OpenAI total = prompt + completion y no cambia nada.
+  const prompt = num(u["prompt_tokens"]);
+  const completion = num(u["completion_tokens"]);
+  const hueco = Math.max(0, num(u["total_tokens"]) - prompt - completion);
+  const razonamiento = typeof detSal?.["reasoning_tokens"] === "number" ? (detSal["reasoning_tokens"] as number) : hueco > 0 ? hueco : undefined;
   return {
-    entrada: num(u["prompt_tokens"]),
+    entrada: prompt,
     lecturaCache: num(det?.["cached_tokens"]),
     escrituraCache: num(det?.["cache_write_tokens"]),
     escritura1h: 0,
-    salida: num(u["completion_tokens"]),
-    ...(typeof detSal?.["reasoning_tokens"] === "number" ? { razonamiento: detSal["reasoning_tokens"] as number } : {}),
+    salida: completion + hueco,
+    ...(razonamiento !== undefined ? { razonamiento } : {}),
   };
 }
 
@@ -193,6 +220,7 @@ export interface OpcionesDelCable {
 export function sinSecretos(texto: string): string {
   return texto
     .replace(/\b(?:sk|pk|rk)[-_][A-Za-z0-9*_-]{4,}/g, "[redacted]")
+    .replace(/\bAIza[0-9A-Za-z_-]{20,}/g, "[redacted]")
     .replace(/\bBearer\s+[A-Za-z0-9._*-]+/gi, "Bearer [redacted]")
     .replace(/(x-api-key|authorization)["']?\s*[:=]\s*["']?[^"',\s}]+/gi, "$1: [redacted]");
 }

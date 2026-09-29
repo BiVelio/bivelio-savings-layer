@@ -33,7 +33,12 @@ a PRO license.
 
 ## Install
 
-Until the first release on PyPI, install from the repository:
+```bash
+pip install bivelio-savings-layer
+```
+
+The package is `bivelio-savings-layer` on PyPI and `bvsala` in your code
+(`import bvsala`). From a checkout of the repository, to try unreleased changes:
 
 ```bash
 pip install ./packages/python
