@@ -1,7 +1,13 @@
 import { generateKeyPairSync } from "node:crypto";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { resolveLicense } from "../../../../../../src/license/verify.js";
+// El verificador del SDK, cargado en ejecución: `next build` comprueba los tipos de
+// todo apps/web y en Vercel no está @noble/curves (dependencia de la raíz), así que
+// un import estático de ../src rompería el despliegue.
+const VERIFICADOR_DEL_SDK = "../../../../../../src/license/verify.js";
+type ResolverLicencia = (token: string, clave: string) => { status: string; payload?: unknown };
+const cargarResolveLicense = async (): Promise<ResolverLicencia> =>
+  ((await import(/* @vite-ignore */ VERIFICADOR_DEL_SDK)) as { resolveLicense: ResolverLicencia }).resolveLicense;
 
 /**
  * POST /api/license/measure — el alta SIN TARJETA de la licencia Medir.
@@ -104,6 +110,7 @@ describe("alta Medir sin tarjeta", () => {
     // La fila persistida y el token dicen lo mismo.
     expect(tablas.licenses).toHaveLength(1);
     expect(tablas.licenses[0]).toMatchObject({ org_id: ORG_NUEVA, plan: "measure", seats: 5, features: [], revoked: false });
+    const resolveLicense = await cargarResolveLicense();
     const r = resolveLicense(j.token, par.publicKey);
     expect(r.status).toBe("active");
     expect(r.payload).toMatchObject({ plan: "measure", features: [], seats: 5, org_id: ORG_NUEVA });
