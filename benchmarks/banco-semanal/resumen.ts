@@ -46,6 +46,8 @@ function estado(r: ResultadoDeCelda): string {
       return r.medicion.estado === "medido" ? (r.medicion.cortadaPorTope ? "medida (cortada por tope)" : "medida") : "no medible";
     case "sin-soporte":
       return "sin soporte";
+    case "sin-clave":
+      return "no medible (sin clave)";
     case "arnes-falla":
       return "**arnés falló**";
     case "omitida-por-tope-global":

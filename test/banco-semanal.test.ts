@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 import { extraerBfcl, extraerGsm8k, extraerMtBench, extraerXstest, type Medicion } from "../benchmarks/banco-semanal/extraer.js";
-import { filtrarCeldas, redactar, valoresSecretos } from "../benchmarks/banco-semanal/orquestador.js";
+import { claveQueFalta, filtrarCeldas, redactar, valoresSecretos } from "../benchmarks/banco-semanal/orquestador.js";
 import {
   argumentosDe,
   BATERIAS,
@@ -285,6 +285,55 @@ describe("banco semanal · los umbrales", () => {
 
     // Una batería entera sin soporte no es «sin medir»: no se intentó.
     expect(evaluar([medida("gsm8k"), { bateria: "bfcl", modelo: "g", estado: "sin-soporte", motivo: "m" }], null).ok).toBe(true);
+  });
+
+  it("sin la clave de su proveedor, la celda es «no medible» (aviso), no un arnés caído — la tirada del 2026-09-29", () => {
+    // Lo que pasó: XSTest con Gemini y sin GEMINI_API_KEY salió con 1 sin artefacto
+    // y tumbó el banco como `arnes-falla`, aunque la capa no falló en ninguna celda.
+    const sinClave = (bateria: ResultadoDeCelda["bateria"], modelo: string): ResultadoDeCelda => ({
+      bateria,
+      modelo,
+      estado: "sin-clave",
+      motivo: "sin BVSALA_DEMO_GOOGLE_API_KEY en el entorno",
+    });
+    const medidaXs: ResultadoDeCelda = {
+      bateria: "xstest",
+      modelo: "openai/gpt-4o-mini",
+      estado: "medida",
+      topeUsd: 0.75,
+      medicion: medicionLimpia({ bateria: "xstest" }),
+    };
+    const v = evaluar([medidaXs, sinClave("xstest", "google/gemini-3.8-flash"), sinClave("xstest", "google/gemini-3.1-pro-preview")], null);
+    expect(v.ok).toBe(true);
+    expect(v.avisos.join("\n")).toMatch(/xstest · google\/gemini-3\.8-flash: no medible — sin BVSALA_DEMO_GOOGLE_API_KEY/);
+    // Cuenta como intentada: una batería que se queda entera sin claves sigue fallando.
+    expect(evaluar([sinClave("bfcl", "google/gemini-3.8-flash")], null).infracciones.map((i) => i.regla)).toEqual(["bateria-sin-medir"]);
+  });
+
+  it("claveQueFalta decide con el mismo enrutado que los arneses, y solo en vivo", () => {
+    const gemini = MODELOS_DEL_BANCO.find((m) => m.familia === "google")!;
+    const gpt = MODELOS_DEL_BANCO.find((m) => m.familia === "openai")!;
+    const claude = MODELOS_DEL_BANCO.find((m) => m.familia === "anthropic")!;
+    // El entorno del workflow, con el secreto de Google sin dar de alta (llega vacío).
+    const workflow = {
+      BVSALA_DEMO_ANTHROPIC_BASE_URL: "https://api.anthropic.com/v1",
+      BVSALA_DEMO_OPENAI_BASE_URL: "https://api.openai.com/v1",
+      BVSALA_DEMO_BASE_URL: "https://api.openai.com/v1",
+      BVSALA_DEMO_GOOGLE_BASE_URL: "https://generativelanguage.googleapis.com/v1beta/openai",
+      BVSALA_DEMO_ANTHROPIC_API_KEY: "x".repeat(20),
+      BVSALA_DEMO_OPENAI_API_KEY: "y".repeat(20),
+      BVSALA_DEMO_API_KEY: "y".repeat(20),
+      BVSALA_DEMO_GOOGLE_API_KEY: "",
+    };
+    expect(claveQueFalta(gemini, "vivo", workflow)).toBe("BVSALA_DEMO_GOOGLE_API_KEY");
+    expect(claveQueFalta(gpt, "vivo", workflow)).toBeNull();
+    expect(claveQueFalta(claude, "vivo", workflow)).toBeNull();
+    // En seco no hay claves y no hacen falta.
+    expect(claveQueFalta(gemini, "seco", {})).toBeNull();
+    // Sin endpoint directo de su familia, el modelo sale por la pasarela: manda SU clave.
+    const pasarela = { BVSALA_DEMO_BASE_URL: "https://ai-gateway.example/v1" };
+    expect(claveQueFalta(gemini, "vivo", pasarela)).toBe("BVSALA_DEMO_API_KEY");
+    expect(claveQueFalta(gemini, "vivo", { ...pasarela, BVSALA_DEMO_API_KEY: "z".repeat(20) })).toBeNull();
   });
 });
 
