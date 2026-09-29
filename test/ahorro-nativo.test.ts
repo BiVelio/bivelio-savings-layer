@@ -300,3 +300,22 @@ describe("una llamada, un bloque", () => {
     expect(segunda.report.nativeSavings).toBeUndefined();
   });
 });
+
+describe("el registro en sombra de Medir no repite el ahorro nativo", () => {
+  it("la sombra lleva su hipotético, pero no las cifras nativas del registro medido (se contarían dos veces)", async () => {
+    const { informeSombraDeMedir } = await import("../src/metering/emitter.js");
+    const medido = {
+      requestId: "req-1",
+      cache: { result: "miss" },
+      cost: { baselineEstimate: 1, actual: 1, netSavings: 0, basis: "measured" },
+      measure: { mode: "shadow", wouldHaveSaved: { usd: 0.4, basis: "shadow", avoidedCall: null } },
+      nativeSavings: { provider: "anthropic", mechanism: "cache_control", basis: "measured", readDiscountUsd: 0.2, writePremiumUsd: 0.05, netUsd: 0.15 },
+    } as unknown as SavingsReport;
+    const sombra = informeSombraDeMedir(medido)!;
+    expect(sombra.requestId).toBe("req-1:shadow");
+    expect(sombra.cost).toMatchObject({ baselineEstimate: 1, basis: "shadow" });
+    expect(sombra.cost.actual).toBeCloseTo(0.6, 12);
+    expect("nativeSavings" in sombra).toBe(false);
+    expect("measure" in sombra).toBe(false);
+  });
+});
