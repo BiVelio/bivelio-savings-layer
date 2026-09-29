@@ -6,7 +6,6 @@ import {
   liveGateFromKey,
   normalizeLicenseKey,
   verifyCompactSignature,
-  vigenciaEfectiva,
   type LicenseKeyset,
   type LicenseStatus,
   type LicenseTokenPayload,
@@ -14,6 +13,7 @@ import {
   type RevocationPollerOptions,
   type RevocationSnapshot,
 } from "../src/license/index.js";
+import { vigenciaEfectiva } from "../src/license/vigencia.js";
 
 /**
  * LA LICENCIA DE LA PASARELA (LICENSE §2: «The Software requires a valid, active
