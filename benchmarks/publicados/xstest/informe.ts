@@ -2,6 +2,7 @@
  * XSTEST · EL INFORME: de los registros (sin texto) a la tabla por modelo y a
  * los hallazgos. Puro: la verja lo ejercita con registros de mentira.
  */
+import { CATALOGO } from "../../../src/pricing/catalogo.js";
 import { esNegativa, mcnemarExacto, wilson, type Clase } from "./nucleo.js";
 import type { RegistroB, RegistroDeItem } from "./banco.js";
 
@@ -25,13 +26,20 @@ export interface Tirada {
       cortadoPorPresupuesto: boolean;
       temperatura: number | null;
       extraOpenAI: Record<string, unknown> | null;
+      extraAnthropic?: Record<string, unknown> | null;
       soloInseguros: number | null;
       noMedible?: string;
       /** `VERSION_DEL_CLASIFICADOR` con el que se clasificaron sus respuestas (ausente = v1). */
       clasificador?: string;
+      /** Tope de salida de este modelo en A y B (ausente = `topeDeSalida` de la tirada). */
+      topeDeSalida?: number;
+      /** Modelo sin fila en el catálogo: el precio oficial citado (URL + fecha) con que el banco lo presupuesta. */
+      precioCitado?: string;
     }
   >;
   registros: RegistroDeItem[];
+  /** Si los registros se reinterpretaron después de la tirada (sin red): qué y por qué. */
+  reinterpretado?: string;
   /** Si el documento junta modelos de más de una tirada: qué viene de cuál. */
   fusion?: string;
   /** Solo en VIVO: los hosts a los que habló el proceso (y los que se rechazaron). */
@@ -89,6 +97,10 @@ export interface ResumenDeModelo {
   };
   /** Campo y valor del tope de salida que la capa puso en los cuerpos de B (conteo). */
   topesEnB: Record<string, number>;
+  /** `stop_reason` / `finish_reason` crudo de A y de la principal de B (conteo), y cuerpos con `prompt_feedback`. */
+  paradas: { A: Record<string, number>; B: Record<string, number>; promptFeedback: number };
+  /** Tokens de pensamiento ocultos (Gemini: `total − prompt − completion`) en A y en todas las B. */
+  pensamientoOculto: { A: number; B: number };
 }
 
 export interface Hallazgo {
@@ -256,6 +268,13 @@ export function construirInforme(t: Tirada): Informe {
     let aF = 0, aU = 0, bF = 0, bU = 0, bI = 0, bAh = 0, disc = 0;
     const nc = { n: 0, informeACero: 0, sinAhorro: 0, conTrazaDeNoCobrada: 0 };
     let comprobados = 0, alterados = 0;
+    const familia = t.porModelo[modelo]?.familia;
+    const discrepancias: Hallazgo[] = [];
+    const razones: number[] = [];
+    const noReconocidas: string[] = [];
+    let porPensamiento = 0;
+    // Precio de salida por 1k (catálogo del SDK), para separar el pensamiento oculto de Gemini.
+    const precioDeSalida = (CATALOGO as Record<string, { outputPer1k: number } | undefined>)[modelo]?.outputPer1k;
     const cero = () => ({ n: 0, aLaCache: 0, conReferencia: 0 });
     const neg = { delApi: cero(), deTextoCompletas: cero(), deTextoParciales: cero() };
     const topes: Record<string, number> = {};
@@ -289,12 +308,20 @@ export function construirInforme(t: Tirada): Informe {
             });
           }
         }
+        if (x.proveedor?.negativaDelApi && !x.negativaSegunLaCapa && x.llamadasAlProveedor === 1 && !x.error) {
+          noReconocidas.push(`${r.id}${x.fase === "principal" ? "" : `/${x.fase}`} (${x.proveedor.stopReason})`);
+        }
         if (x.informe && x.llamadasAlProveedor === 1 && x.costeFacturadoUsd !== null && !x.error) {
           const esperado = x.costeFacturadoUsd;
           const tol = Math.max(1e-7, 0.02 * esperado);
           if (Math.abs(x.informe.actual - esperado) > tol) {
             disc++;
-            hallazgos.push({
+            if (esperado > 0) razones.push(x.informe.actual / esperado);
+            if (x.proveedor?.reasoningTokens && familia === "google") {
+              const sinPensar = esperado - (x.proveedor.reasoningTokens / 1000) * (precioDeSalida ?? 0);
+              if (precioDeSalida !== undefined && Math.abs(x.informe.actual - sinPensar) <= Math.max(1e-7, 0.02 * sinPensar)) porPensamiento++;
+            }
+            discrepancias.push({
               gravedad: x.proveedor?.negativaDelApi ? "alta" : "media",
               tipo: "coste-del-informe-distinto-del-usage",
               modelo,
@@ -335,8 +362,47 @@ export function construirInforme(t: Tirada): Informe {
       if (r.B?.error) hallazgos.push({ gravedad: r.A?.error ? "info" : "media", tipo: "error-B", modelo, id: r.id, detalle: r.B.error });
     }
 
+    if (discrepancias.length > 10) {
+      razones.sort((a, b) => a - b);
+      const pc = t.porModelo[modelo]?.precioCitado;
+      hallazgos.push({
+        gravedad: discrepancias.some((h) => h.gravedad === "alta") ? "alta" : "media",
+        tipo: "coste-del-informe-distinto-del-usage",
+        modelo,
+        id: null,
+        detalle:
+          `${discrepancias.length} llamadas de B con \`report.cost.actual\` ≠ usage×tarifa (informe/usage: mín ${razones[0]?.toFixed(3)}, mediana ${razones[razones.length >> 1]?.toFixed(3)}, máx ${razones.at(-1)?.toFixed(3)}; ` +
+          `${discrepancias.filter((h) => h.gravedad === "alta").length} en negativas del API; ids ${[...new Set(discrepancias.map((h) => h.id))].slice(0, 12).join(", ")}…)` +
+          (pc ? ". Modelo SIN fila en el catálogo: la capa lo valora con el respaldo ilustrativo; el banco, con el precio oficial citado" : "") +
+          (familia === "google" ? `. ${porPensamiento}/${discrepancias.length} cuadran exactamente si se quitan los tokens de pensamiento: la capa no los lee (solo están en \`total_tokens\`) y Google los factura como salida` : ""),
+      });
+    } else hallazgos.push(...discrepancias);
+    if (noReconocidas.length) {
+      hallazgos.push({
+        gravedad: "alta",
+        tipo: "negativa-del-api-no-reconocida-por-la-capa",
+        modelo,
+        id: null,
+        detalle: `${noReconocidas.length} llamadas con parada de filtro que la capa no marcó como negativa (\`esNegativaDelProveedor\` compara \`=== "content_filter"\`): ${noReconocidas.join(", ")}`,
+      });
+    }
+
+    const paradas = { A: {} as Record<string, number>, B: {} as Record<string, number>, promptFeedback: 0 };
+    const pensamientoOculto = { A: 0, B: 0 };
+    for (const r of rs) {
+      if (r.A?.proveedor) contar(paradas.A, String(r.A.proveedor.stopReason ?? r.A.proveedor.error ?? "null"));
+      if (r.B?.proveedor) contar(paradas.B, String(r.B.proveedor.stopReason ?? r.B.proveedor.error ?? "null"));
+      for (const x of [r.A?.proveedor, ...todasLasB(r).map((b) => b.proveedor)]) if (x?.promptFeedback) paradas.promptFeedback++;
+      if (t.porModelo[modelo]?.familia === "google") {
+        pensamientoOculto.A += r.A?.proveedor?.reasoningTokens ?? 0;
+        for (const b of todasLasB(r)) pensamientoOculto.B += b.proveedor?.reasoningTokens ?? 0;
+      }
+    }
+
     resumen.push({
       modelo,
+      paradas,
+      pensamientoOculto,
       medidos: rs.length,
       porLabel,
       fuentes,
@@ -374,6 +440,7 @@ export function renderizarMarkdown(t: Tirada, inf: Informe): string {
   );
   l.push(`**Cómo se ejecuta el paquete.** ${t.paquete["comoSeEjecuta"]}`, "");
   if (t.fusion) l.push(`**Tiradas.** ${t.fusion}`, "");
+  if (t.reinterpretado) l.push(`**Reinterpretado.** ${t.reinterpretado}`, "");
   if (t.red) {
     l.push(
       `**Red.** Hosts contactados por el proceso: ${Object.entries(t.red.hostsVistos).map(([h, n]) => `${h} (${n})`).join(", ") || "ninguno"}; ` +
@@ -386,7 +453,7 @@ export function renderizarMarkdown(t: Tirada, inf: Informe): string {
     "A = petición directa al proveedor. B = la misma petición por `createSavingsLayer` con la configuración por defecto (caché exacta en memoria). " +
       "Clasificación: prefijos de `classify_completions_strmatch.py` de la paper, ampliados con fórmulas de negativa de modelos actuales, " +
       "más «parcial» si una respuesta que empieza cumpliendo dice «I can't/won't help…» (heurística); `stop_reason: \"refusal\"` (Anthropic) y " +
-      "`message.refusal` / `content_filter` (OpenAI) cuentan como negativa completa. No se guarda ningún texto de respuesta.",
+      "`message.refusal` / `content_filter` (OpenAI) y `content_filter: <motivo>` (Gemini por su endpoint compatible) cuentan como negativa completa. No se guarda ningún texto de respuesta.",
     "",
   );
 
@@ -449,6 +516,17 @@ export function renderizarMarkdown(t: Tirada, inf: Informe): string {
     "",
   );
 
+  l.push("## Paradas del proveedor (A / principal de B)", "");
+  l.push("| modelo | A | B | cuerpos con `prompt_feedback` | pensamiento oculto A / B (tokens) |");
+  l.push("|---|---|---|---|---|");
+  for (const r of inf.resumen) {
+    const f = (m: Record<string, number>) => Object.entries(m).map(([k, v]) => `\`${k}\` ×${v}`).join(", ") || "—";
+    const p = r.paradas ?? { A: {}, B: {}, promptFeedback: 0 };
+    const po = r.pensamientoOculto ?? { A: 0, B: 0 };
+    l.push(`| ${r.modelo} | ${f(p.A)} | ${f(p.B)} | ${p.promptFeedback} | ${po.A} / ${po.B} |`);
+  }
+  l.push("");
+
   l.push("## Gasto real", "");
   l.push("| modelo | tope | A (usage×tarifa) | B + repeticiones (usage×tarifa) | total | A facturable (regla de negativas) |");
   l.push("|---|---|---|---|---|---|");
@@ -477,7 +555,8 @@ export function renderizarMarkdown(t: Tirada, inf: Informe): string {
   l.push("## Configuración por modelo", "");
   for (const [m, c] of Object.entries(t.porModelo)) {
     l.push(
-      `- ${m}: temperatura ${c.temperatura ?? "por defecto"}${c.extraOpenAI ? `, ${JSON.stringify(c.extraOpenAI)}` : ""}${c.soloInseguros ? `, solo ${c.soloInseguros} inseguros` : ""}; tope ${c.tope} $; clasificador ${c.clasificador ?? "v1"}.`,
+      `- ${m}: temperatura ${c.temperatura ?? "por defecto"}${c.extraOpenAI ? `, ${JSON.stringify(c.extraOpenAI)}` : ""}${c.extraAnthropic ? `, ${JSON.stringify(c.extraAnthropic)}` : ""}${c.soloInseguros ? `, solo ${c.soloInseguros} inseguros` : ""}; tope ${c.tope} $; tope de salida ${c.topeDeSalida ?? t.topeDeSalida}; clasificador ${c.clasificador ?? "v1"}.` +
+        (c.precioCitado ? ` Sin fila en el catálogo: precio oficial ${c.precioCitado}.` : ""),
     );
   }
   l.push("");

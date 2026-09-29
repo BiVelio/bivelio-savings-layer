@@ -14,9 +14,9 @@ import { describe, expect, it } from "vitest";
  * imposible por construcción, y esta verja lo mantiene así.
  *
  * Se permiten, además, módulos internos PUROS de los proveedores (el parser de
- * SSE, la aritmética del contador de Anthropic y la lista de orígenes oficiales),
- * que no deciden nada sobre licencia ni medición: van copiados dentro del
- * adaptador que los usa.
+ * SSE, la aritmética del contador de Anthropic, la lista de orígenes oficiales y
+ * la tabla de parámetros que cada modelo de Claude rechaza), que no deciden nada
+ * sobre licencia ni medición: van copiados dentro del adaptador que los usa.
  */
 
 const RAIZ = fileURLToPath(new URL("../..", import.meta.url));
@@ -48,6 +48,9 @@ const PERMITIDOS_RELATIVOS = new Set([
   // el puente le dice al núcleo a quién habla la llamada del marco (E0-bis de la
   // referencia). Puro y sin imports: la MISMA lista que usan los proveedores.
   "src/providers/origen-oficial.ts",
+  // Sin imports: dos tablas y dos expresiones regulares. El adaptador del SDK
+  // solo la usa para AVISAR de un cuerpo que el API va a rechazar.
+  "src/providers/anthropic-compat.ts",
 ]);
 
 describe("los adaptadores solo usan la superficie pública", () => {

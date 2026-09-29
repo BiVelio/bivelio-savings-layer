@@ -243,7 +243,13 @@ export function escribirInforme(a: Artefacto): string {
       ? " api.anthropic.com was contacted only by the free key check (`GET /v1/models`), which returned 401: no Anthropic model was billed."
       : ""
   }`);
-  l.push(`- **Sample:** ${a.config.n} per AST category requested (a model whose budget runs out stops at the tail of the round-robin order, so its sample stays stratified; its real \`n\` is in the tables) (simple, multiple, parallel, parallel_multiple), stratified, seed ${a.config.semilla}, round-robin order; ${a.config.repes} deliberate AST repeats; ${a.config.multi} multi_turn_base entries for the cache-isolation probe. Budget per model (A+B, hard cap in code): ${a.modelos.map((t) => `${t.modelo} ${usd(t.tope + (a.config.gastoPrevioDescontado?.[t.modelo] ?? 0))}`).join(", ") || "—"}; enforced before every call.`);
+  l.push(`- **Sample:** ${a.config.n} per AST category requested (a model whose budget runs out stops at the tail of the round-robin order, so its sample stays stratified; its real \`n\` is in the tables) (simple, multiple, parallel, parallel_multiple), stratified, seed ${a.config.semilla}, round-robin order; ${a.config.repes} deliberate AST repeats; ${a.config.multi} multi_turn_base entries for the cache-isolation probe.${
+    a.partes && a.partes.length > 1
+      ? ` Merged runs, each with its own sample (same seed: every part draws from the same seeded order): ${a.partes
+          .map((p) => `${p.modelos.join(", ")}: ${p.config.n}/category AST, ${p.config.repes} repeats, ${p.config.multi} multi-turn${p.config.multiDesde ? ` from position ${p.config.multiDesde} of the seeded order` : ""}`)
+          .join("; ")}.`
+      : ""
+  } Budget per model (A+B, hard cap in code): ${a.modelos.map((t) => `${t.modelo} ${usd(t.tope + (a.config.gastoPrevioDescontado?.[t.modelo] ?? 0))}`).join(", ") || "—"}; enforced before every call.`);
   l.push("");
   if (sinMedir.length || a.noMedibles?.length) {
     l.push("## Not measured");

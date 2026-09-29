@@ -11,6 +11,7 @@
  *   --salida=<dir>  --nombre=<base de <nombre>.json/.md, por defecto bfcl-0431>
  *   --comparar=<artefacto de una tirada anterior (la 0.4.30) para la sección de comparación>
  *   --concurrencia=<por proveedor, ≤4>
+ *   --multi-desde=<k: salta las k primeras multi-turn del orden con semilla, ya medidas en otra tirada>
  *
  * TOPE DURO POR FAMILIA (en código, `TOPE_MAXIMO`): 0,80 $ por modelo OpenAI y
  * 1,25 $ por modelo Anthropic, A+B, entre TODAS las tiradas de la batería; los
@@ -269,7 +270,7 @@ export interface Artefacto {
   modo: "LIVE" | "MOCK";
   dataset: { repo: string; commit: string; licencia: string; categorias: string[]; tamanoPorCategoria: Record<string, number> };
   paquete: ProcedenciaDelBrazoB;
-  config: { n: number; multi: number; repes: number; tope: number; semilla: number; concurrencia: number; gastoPrevioDescontado: Record<string, number> };
+  config: { n: number; multi: number; multiDesde?: number; repes: number; tope: number; semilla: number; concurrencia: number; gastoPrevioDescontado: Record<string, number> };
   modelos: TiradaDeModelo[];
   resumen?: ResumenDeModelo[];
   /** Modelos que no se midieron sin gastar nada (p. ej. la prueba gratuita de la clave dio 401). */
@@ -918,7 +919,9 @@ async function principal(): Promise<void> {
   for (const c of CATEGORIAS_AST) porCategoria.set(c, await cargarCategoria(c, { descargar: !mock }));
   const ast = muestraEstratificada(porCategoria, n, semilla);
   const repesE = ast.filter((e) => e.categoria === "simple").slice(0, repes);
-  const multiE = barajar(await cargarMultiTurno({ descargar: !mock }), semilla ^ hash32("multi_turn_base")).slice(0, multi);
+  // --multi-desde=k salta las k primeras del orden con semilla (ya medidas en otra tirada de la batería).
+  const multiDesde = Math.max(0, Number(arg("multi-desde") ?? 0));
+  const multiE = barajar(await cargarMultiTurno({ descargar: !mock }), semilla ^ hash32("multi_turn_base")).slice(multiDesde, multiDesde + multi);
 
   const respuestas = new Map<string, RespuestaSimulada>();
   if (mock) for (const e of ast) respuestas.set(claveSimulada(e.pregunta.map((q) => q.content).join(""), e.funciones.map((f) => herramientaDe(f).nombre)), respuestaDeReferencia(e.respuesta as never));
@@ -999,7 +1002,7 @@ async function principal(): Promise<void> {
       tamanoPorCategoria: Object.fromEntries([...porCategoria.entries()].map(([k, v]) => [k, v.length])),
     },
     paquete,
-    config: { n, multi, repes, tope, semilla, concurrencia, gastoPrevioDescontado: Object.fromEntries(previo) },
+    config: { n, multi, ...(multiDesde ? { multiDesde } : {}), repes, tope, semilla, concurrencia, gastoPrevioDescontado: Object.fromEntries(previo) },
     modelos: tiradas,
     ...(noMedibles.length ? { noMedibles } : {}),
   };

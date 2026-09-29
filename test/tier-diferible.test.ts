@@ -96,7 +96,8 @@ describe("adaptador OpenAI: el tier diferible en el cable", () => {
 
   it("compone con la caché de prefijo: las DOS palancas viajan juntas", async () => {
     const { enviados, fetchImpl } = espia(respuestaOpenAI());
-    await new OpenAICompatibleProvider({ baseUrl: "https://x/v1", fetchImpl }).generate({
+    // En el API de OpenAI: `prompt_cache_key` solo viaja allí (fix/openai-compatibles-gemini).
+    await new OpenAICompatibleProvider({ baseUrl: "https://api.openai.com/v1", fetchImpl }).generate({
       ...PETICION_OPENAI,
       deferrable: true,
       promptCacheKey: "huella-del-prefijo",

@@ -1,6 +1,6 @@
 {
   "name": "@bivelio/savings-layer",
-  "version": "0.4.31",
+  "version": "0.4.32",
   "description": "The savings layer for your LLM bill: a library inside your code that lets through only what has to be paid for and returns a SavingsReport per call, measured with your provider's own meter and kept apart from estimates. Commercial license, paid per seat, commission only on measured savings. Your prompts never leave your infrastructure.",
   "keywords": [
     "llm",

@@ -44,6 +44,8 @@ export interface CanonicalRequest {
   contractId: string | null;
   temperature: number | null;
   seed: number | null;
+  /** `reasoning_effort` declared by the caller; absent when it declared none. */
+  reasoningEffort?: string;
   tenantId: string;
   authorizationScope: string;
   /**
@@ -374,6 +376,7 @@ export function canonicalize(request: SavingsRequest): CanonicalRequest {
     contractId: request.response?.contractId ?? null,
     temperature: request.temperature ?? null,
     seed: request.seed ?? null,
+    ...(request.reasoningEffort != null ? { reasoningEffort: request.reasoningEffort } : {}),
     tenantId: ctx.tenantId ?? "anonymous",
     authorizationScope: ctx.authorizationScope ?? "default",
     principal: ctx.sessionId ?? null,

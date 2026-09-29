@@ -696,6 +696,23 @@ export interface SavingsRequest {
   temperature?: number;
   seed?: number;
   /**
+   * How hard a reasoning model should think, sent as OpenAI's `reasoning_effort`
+   * by the OpenAI-compatible adapter (`"none"`, `"minimal"`, `"low"`,
+   * `"medium"`, `"high"`, `"xhigh"`; the value travels as written). Nothing is
+   * sent when absent: the layer never picks an effort for you.
+   *
+   * Required for the gpt-5.6 family with tools on Chat Completions: OpenAI
+   * rejects function tools there unless it is `"none"` («Function tools with
+   * reasoning_effort are not supported for gpt-5.6-sol in
+   * /v1/chat/completions … set reasoning_effort to 'none'»). Gemini's
+   * OpenAI-compatible endpoint maps it to its thinking level. A compatible
+   * endpoint that rejects the field by name gets the request once more without
+   * it (OpenAI's own API never: there its 400 is the answer). It is part of the
+   * cache identity, like `temperature` and `seed`. The Anthropic adapter
+   * ignores it.
+   */
+  reasoningEffort?: ReasoningEffort;
+  /**
    * Hard ceiling on generated tokens for this request, with or without an
    * output contract. It travels to every adapter: Anthropic `max_tokens`,
    * Chat Completions `max_completion_tokens` on OpenAI's own API and
@@ -715,11 +732,23 @@ export interface SavingsRequest {
 }
 
 /** A tool invocation the model requested (the provider-neutral shape). */
+/** OpenAI's `reasoning_effort` values; any other string travels as written. */
+export type ReasoningEffort = "none" | "minimal" | "low" | "medium" | "high" | "xhigh" | (string & {});
+
 export interface ToolCallRequest {
   id?: string;
   name: string;
   /** Argumentos tal cual los serializó el modelo (JSON en crudo). */
   arguments: string;
+  /**
+   * Provider data attached to this call that must travel back, untouched, when
+   * the conversation returns it: Gemini 3's
+   * `extra_content.google.thought_signature` through its OpenAI-compatible
+   * endpoint, without which the next turn is rejected with a 400 («Function
+   * call is missing a thought_signature»). Opaque: pass it back as received in
+   * the assistant message's `toolCalls`. It is not part of any cache key.
+   */
+  extraContent?: Record<string, unknown>;
 }
 
 /** Result returned to the caller. */

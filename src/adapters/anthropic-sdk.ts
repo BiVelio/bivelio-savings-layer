@@ -19,6 +19,11 @@ import {
   usoDeMensajes,
   type UsoAnthropic,
 } from "../providers/anthropic-uso.js";
+import {
+  TEMPERATURA_POR_DEFECTO,
+  rechazaMuestreo,
+  rechazaToolChoiceForzado,
+} from "../providers/anthropic-compat.js";
 import { origenDeLaUrl } from "../providers/origen-oficial.js";
 import { SseParser, type SseMessage } from "../providers/sse.js";
 import { crearCapaDelAdaptador, promesaDeApertura, type CapaDelAdaptador, type LlamadaEnStream } from "./comun/capa.js";
@@ -186,6 +191,47 @@ function pideFormaEstricta(cuerpo: Registro): boolean {
   if (esRegistro(eleccion) && (eleccion.type === "any" || eleccion.type === "tool")) return true;
   if (esRegistro(cuerpo.output_config) && cuerpo.output_config.format !== undefined) return true;
   return cuerpo.output_format !== undefined;
+}
+
+// UN CUERPO QUE EL API VA A RECHAZAR, DICHO ANTES. Este adaptador reenvía la
+// petición INTACTA (R1 del puente: ni un byte cambia), así que NO degrada lo que
+// `AnthropicProvider` sí degrada —`tool_choice` forzado y `temperature` en los
+// modelos que los rechazan (providers/anthropic-compat.ts)—: el 400 del API le
+// llega al llamante tal cual, con su error tipado del SDK. Lo que sí hace es
+// avisar UNA vez por causa y modelo (silenciable con `silenceWarnings`), porque
+// el mensaje del API no dice qué cambiar y un cliente que actualiza de Sonnet 5 a
+// Sonnet 5.5 lo va a ver en cada llamada. Tampoco reescribe el historial: las
+// palancas que reescriben van apagadas en los adaptadores, así que el check de
+// «preserved thinking» (editar algo anterior a un bloque de pensamiento → 400
+// desde el 2026-08-31) no lo puede disparar la capa.
+function avisosDelCuerpo(cuerpo: Registro): { clave: string; mensaje: string }[] {
+  const modelo = typeof cuerpo.model === "string" ? cuerpo.model : "";
+  if (modelo === "") return [];
+  const avisos: { clave: string; mensaje: string }[] = [];
+  const eleccion = cuerpo.tool_choice;
+  if (esRegistro(eleccion) && (eleccion.type === "any" || eleccion.type === "tool") && rechazaToolChoiceForzado(modelo)) {
+    avisos.push({
+      clave: `tool-choice-forzado:${modelo}`,
+      mensaje:
+        `[bvsala] Model "${modelo}" rejects a forced \`tool_choice\` (\`any\` or \`tool\`) with a 400, with or ` +
+        "without thinking. This adapter forwards your request unchanged, so the API will reject it: use " +
+        "`tool_choice: {type: \"auto\"}` with `strict: true` tools, or `output_config.format` for a fixed JSON shape. " +
+        "See https://platform.claude.com/docs/en/agents-and-tools/tool-use/define-tools#forcing-tool-use",
+    });
+  }
+  const muestreo = (["temperature", "top_p", "top_k"] as const).filter(
+    (k) => typeof cuerpo[k] === "number" && !(k === "temperature" && cuerpo[k] === TEMPERATURA_POR_DEFECTO),
+  );
+  if (muestreo.length > 0 && rechazaMuestreo(modelo)) {
+    avisos.push({
+      clave: `muestreo:${modelo}`,
+      mensaje:
+        `[bvsala] Model "${modelo}" rejects a non-default ${muestreo.map((k) => `\`${k}\``).join(", ")} with a 400. ` +
+        "This adapter forwards your request unchanged, so the API will reject it: drop the parameter for this " +
+        "model. See https://platform.claude.com/docs/en/models/sonnet-5-5/overview",
+    });
+  }
+  return avisos;
 }
 
 // ─── Lo que devolvió el modelo ──────────────────────────────────────────────
@@ -463,6 +509,8 @@ export function anthropicSavings(options: AnthropicSavingsOptions): AnthropicSav
     } catch {
       throw new Error(ERROR_CUERPO);
     }
+
+    for (const a of avisosDelCuerpo(cuerpo)) capa.avisar(a.clave, a.mensaje);
 
     const opcionesDePeticion = ctx.options as Registro | undefined;
     const porLlamada = opcionesDeLlamada(opcionesDePeticion?.bivelio);
