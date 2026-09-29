@@ -1295,6 +1295,7 @@ export interface SavingsReport {
     /**
      * A RATIO, not money: `1 - actual / baselineEstimate`, rounded to six
      * decimals (0 when nothing was saved, negative when the request cost more).
+     * Do not sum it across requests: it is a ratio, not dollars.
      *
      * @deprecated Since 0.4.33, read {@link netSavingsRatio} (the same value) or
      * {@link netSavingsUsd} (the saving in USD). Removed in 0.5: see the 0.5
