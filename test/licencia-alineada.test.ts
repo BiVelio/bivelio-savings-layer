@@ -259,9 +259,12 @@ describe("la LICENSE nombra la comisión sin copiar cifras", () => {
   const s6 = plano(seccion(6));
   const s5 = plano(seccion(5));
 
-  it("la §6 es la de tarifas y dice cuota por asiento y comisión solo sobre lo medido", () => {
+  it("la §6 es la de tarifas y dice cuota por asiento o de plan, y comisión solo con el plan que la lleva y solo sobre lo medido", () => {
     expect(s6).toMatch(/^6\. FEES\./);
-    expect(s6).toMatch(/per seat, payable whether or not the Software produces any saving/);
+    expect(s6).toMatch(/per seat or for a plan that includes a number of seats, payable whether or not the Software produces any saving/);
+    // La comisión va SOLO con el plan que la lleva (decisión del dueño, 2026-09-29):
+    // Pro y Equipo no la llevan, y la modalidad con comisión la conserva quien ya la tiene.
+    expect(s6).toMatch(/only if your subscription is on a plan that the Published Pricing lists as carrying a commission, a commission/);
     expect(s6).toMatch(/charged only on measured savings/);
     expect(s6).toMatch(/A period with no measured savings carries no commission/);
   });
@@ -364,7 +367,7 @@ describe("la LICENSE nombra la comisión sin copiar cifras", () => {
 describe("el README que viaja a npm promete lo que se cobra", () => {
   it("⛔ no dice «we only earn when you save»: la cuota por asiento se paga siempre", () => {
     expect(readme).not.toMatch(/only earn when you save/i);
-    expect(readme).toMatch(/seat fee is paid whether or not you save/);
+    expect(readme).toMatch(/fee, paid whether or not you save/);
   });
 
   it("⛔ no dice que los prompts «no salen de tu infraestructura»: salen hacia tu proveedor, no hacia BiVelio", () => {

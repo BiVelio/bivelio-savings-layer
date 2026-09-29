@@ -18,8 +18,9 @@ import type { PreciosDelPlan, TarifasDeLosPlanes } from "@/lib/stripe/pricing";
  * La página `/[locale]/pricing` no escribe ni una cifra: todo lo que enseña
  * sale de aquí, y aquí todo sale de las constantes que COBRAN —
  *   · la cuota de Pro y de Equipo: sus Prices de Stripe (`tarifasDeLosPlanes`,
- *     con la propuesta de `lib/billing/planes.ts` como respaldo);
- *   · la cuota por asiento de la modalidad con comisión: el Price de siempre
+ *     con `PRECIOS_DE_LOS_PLANES` de `lib/billing/planes.ts` como respaldo);
+ *   · la cuota por asiento de la modalidad con comisión (cerrada a clientes
+ *     nuevos; la conserva quien la tiene): el Price de siempre
  *     (`preciosDelPlan`, con su respaldo en `lib/stripe/pricing.ts`);
  *   · los tramos, la moneda de la comisión, la regla por referencia y los dos
  *     interruptores: `lib/billing/tarifa.ts`;
@@ -140,7 +141,7 @@ export interface TerminosDeLosPlanes {
   moneda: string;
 }
 
-/** Las cifras de Pro y Equipo, formateadas: salen de sus Prices (o de la propuesta, si faltan). */
+/** Las cifras de Pro y Equipo, formateadas: salen de sus Prices (o del respaldo de planes.ts, si faltan). */
 export function terminosDeLosPlanes(locale: string, t: TarifasDeLosPlanes): TerminosDeLosPlanes {
   const entero = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 });
   const f = (amount: number, currency: string) => formatearPrecio(locale, { amount, currency });

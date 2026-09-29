@@ -1,18 +1,20 @@
 /**
  * LOS PLANES DE PAGO — el ingreso sale de ASIENTOS y de un PLAN DE EQUIPO; la
- * comisión sobre el ahorro queda como modalidad OPCIONAL.
+ * comisión sobre el ahorro queda CERRADA a clientes nuevos.
  *
- * Decisión del dueño (2026-09-29), tras docs/COMPETENCIA-2026-09-26.md §1 («el
- * negocio no cierra») y §6.3: la base comisionable real es casi nula (~12 € al
- * mes por cada 10.000 $ de gasto en una mezcla típica), así que la comisión no
- * puede ser el modelo principal. Queda para quien la elija, y para quien ya la
- * tiene: nada de lo que cobra hoy cambia (ver `planDelPrecio`).
+ * Decisiones del dueño (2026-09-29), tras docs/COMPETENCIA-2026-09-26.md §1
+ * («el negocio no cierra») y §6.3: la base comisionable real es casi nula
+ * (~12 € al mes por cada 10.000 $ de gasto en una mezcla típica), así que la
+ * comisión no puede ser el modelo. Se venden Pro y Equipo (`PLANES_EN_VENTA`);
+ * la modalidad con comisión la conserva SIN CAMBIOS quien ya la tiene (su
+ * suscripción, su cierre, su extracto y su comisión: ver `planDelPrecio`), y
+ * el checkout ya no la ofrece.
  *
- * ⚠️ LAS CIFRAS DE ESTE FICHERO SON UNA PROPUESTA pendiente de confirmar por el
- * dueño (`PRECIOS_PROPUESTOS`). Cobra SIEMPRE el Price de Stripe: estas
- * constantes son el respaldo que pinta /pricing si Stripe no contesta, igual
- * que `PRECIO_RESPALDO` en lib/stripe/pricing.ts, y la referencia contra la que
- * el lector de Stripe comprueba que el Price creado es el que se decidió.
+ * Las cifras (`PRECIOS_DE_LOS_PLANES`) las CONFIRMÓ el dueño el 2026-09-29.
+ * Cobra SIEMPRE el Price de Stripe: estas constantes son el respaldo que pinta
+ * /pricing si Stripe no contesta, igual que `PRECIO_RESPALDO` en
+ * lib/stripe/pricing.ts, y la referencia contra la que el lector de Stripe
+ * comprueba que el Price creado es el que se decidió.
  *
  * Los planes:
  *   · «medir»    — la licencia gratuita (otro PR); aquí solo tiene su hueco.
@@ -24,9 +26,10 @@
  *                  precio del asiento extra. Así la cantidad de la suscripción
  *                  SIGUE siendo el número de asientos, que es lo que el webhook
  *                  firma en la licencia (subFacts → quantity).
- *   · «comision» — la modalidad que existe hoy: cuota por asiento más la
- *                  comisión por tramos de tarifa.ts sobre el ahorro medido. Es
- *                  el Price de STRIPE_PRICE_ID_MONTHLY/YEARLY de siempre.
+ *   · «comision» — la modalidad anterior: cuota por asiento más la comisión
+ *                  por tramos de tarifa.ts sobre el ahorro medido. Es el Price
+ *                  de STRIPE_PRICE_ID_MONTHLY/YEARLY de siempre. CERRADA a
+ *                  clientes nuevos: quien la tiene la conserva tal cual.
  *   · Enterprise — contrato; sin Price, se contacta.
  */
 
@@ -35,8 +38,22 @@ import { calcularComision, redondearCentimos, type ComisionCalculada } from "./t
 export type PlanDePago = "pro" | "equipo" | "comision";
 export type PeriodoDePago = "monthly" | "yearly";
 
-/** Planes que se venden por el checkout, en el orden en que los enseña /pricing. */
+/**
+ * TODOS los planes de pago que existen (también el cerrado): la guardia
+ * anti-doble-compra y la atribución tienen que reconocer cualquier suscripción
+ * viva, incluida la de quien conserva la modalidad con comisión.
+ */
 export const PLANES_DE_PAGO: readonly PlanDePago[] = ["pro", "equipo", "comision"];
+
+/**
+ * Los planes que se VENDEN a un cliente nuevo, en el orden en que los enseñan
+ * /pricing y el panel. «comision» no está: cerrada a clientes nuevos
+ * (decisión del dueño, 2026-09-29).
+ */
+export const PLANES_EN_VENTA: readonly PlanDePago[] = ["pro", "equipo"];
+
+/** El plan que compra un checkout que no dice cuál. */
+export const PLAN_POR_DEFECTO: PlanDePago = "pro";
 
 /**
  * ¿Lleva este plan la comisión sobre el ahorro medido? SOLO la modalidad
@@ -70,8 +87,8 @@ export interface TarifaDePlan {
 export type TarifasDelPlan = Record<PeriodoDePago, TarifaDePlan>;
 
 /**
- * PROPUESTA — pendiente de confirmar por el dueño. Todo en céntimos de euro,
- * sin IVA. El razonamiento va en la descripción del PR (#plan-asientos-equipo):
+ * CONFIRMADO por el dueño (2026-09-29). Todo en céntimos de euro, sin IVA. El
+ * razonamiento va en la descripción del PR #411:
  *
  *   · Pro 15 €/asiento/mes: en la franja baja del mercado por asiento (Dash0
  *     10 $, Opik Pro 19 $, context-mode 20 $, Tokenade 24,90 $, TrueFoundry
@@ -85,7 +102,7 @@ export type TarifasDelPlan = Record<PeriodoDePago, TarifaDePlan>;
  *     asiento extra: el paquete abarata el asiento al que compra flota sin
  *     bajar de lo que vale un asiento suelto de la competencia.
  */
-export const PRECIOS_PROPUESTOS = {
+export const PRECIOS_DE_LOS_PLANES = {
   pro: {
     monthly: { fijaCentimos: 0, asientosIncluidos: 0, asientoCentimos: 1_500, currency: "eur" },
     yearly: { fijaCentimos: 0, asientosIncluidos: 0, asientoCentimos: 15_000, currency: "eur" },
@@ -101,7 +118,7 @@ export const PRECIOS_PROPUESTOS = {
  * la cantidad (menos asientos no abaratan una cuota fija) y el lector de Stripe
  * avisa si el `up_to` del primer tramo del Price no coincide.
  */
-export const ASIENTOS_INCLUIDOS_EQUIPO = PRECIOS_PROPUESTOS.equipo.monthly.asientosIncluidos;
+export const ASIENTOS_INCLUIDOS_EQUIPO = PRECIOS_DE_LOS_PLANES.equipo.monthly.asientosIncluidos;
 
 /** La tarifa de un plan por asiento puro, a partir del importe unitario de su Price. */
 export function tarifaPorAsiento(importe: ImporteEnCentimos): TarifaDePlan {

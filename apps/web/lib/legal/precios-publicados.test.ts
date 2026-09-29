@@ -201,8 +201,8 @@ describe("⛔ las páginas no afirman qué dice la LICENSE que enlazan", () => {
   });
 });
 
-describe("⛔ el modelo es asientos + equipo; la comisión es opcional (2026-09-29)", () => {
-  it("Pro y Equipo salen de sus Prices (o de la propuesta de planes.ts), formateados", async () => {
+describe("⛔ el modelo es asientos + equipo; la comisión, cerrada a clientes nuevos (2026-09-29)", () => {
+  it("Pro y Equipo salen de sus Prices (o de PRECIOS_DE_LOS_PLANES, de respaldo), formateados", async () => {
     const { TARIFAS_RESPALDO } = await import("@/lib/stripe/pricing");
     const { terminosDeLosPlanes } = await import("./precios-publicados");
     const locale = "en";
@@ -227,7 +227,20 @@ describe("⛔ el modelo es asientos + equipo; la comisión es opcional (2026-09-
     expect([...pos].sort((a, b) => a - b)).toEqual(pos);
   });
 
-  it("la sección de la comisión se presenta como OPCIONAL en los doce idiomas (lleva `commission.optional`)", () => {
+  it("⛔ la portada vende Medir → Pro → Equipo → Enterprise con las cifras de los planes, sin la calculadora de comisión", () => {
+    const portada = leerApp("app/[locale]/page.tsx");
+    expect(portada).toContain("terminosDeLosPlanes(locale, await tarifasDeLosPlanes())");
+    expect(portada).not.toContain("<CalculadoraComision");
+    expect(portada).not.toContain('t.rich("formula.');
+    const pos = ["pricing.plans.medir.name", "pricing.plans.pro.name", "pricing.plans.team.name", "pricing.plans.enterprise.name"].map((k) =>
+      portada.indexOf(k),
+    );
+    for (const p of pos) expect(p).toBeGreaterThan(-1);
+    expect([...pos].sort((a, b) => a - b)).toEqual(pos);
+  });
+
+  it("⛔ la sección de la comisión se presenta como CERRADA a clientes nuevos en los doce idiomas, y no manda a la calculadora", () => {
+    expect(leerApp("app/[locale]/pricing/page.tsx")).not.toContain("commission.calculator");
     const pagina = leerApp("app/[locale]/pricing/page.tsx");
     expect(pagina).toContain('t.rich("commission.optional"');
     for (const loc of ["es", "en", "ca", "de", "fr", "it", "nl", "pl", "pt", "tr", "id", "vi"]) {

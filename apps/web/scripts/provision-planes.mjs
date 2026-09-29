@@ -1,6 +1,6 @@
 // Aprovisionamiento ÚNICO de los planes SIN comisión: Pro y Equipo
-// (apps/web/lib/billing/planes.ts). LO EJECUTA EL DUEÑO, a mano, cuando haya
-// confirmado los precios — nunca un agente ni un despliegue.
+// (apps/web/lib/billing/planes.ts), con los precios que confirmó el dueño el
+// 2026-09-29. LO EJECUTA EL DUEÑO, a mano — nunca un agente ni un despliegue.
 //
 // Crea CUATRO Prices en el MISMO producto que el Price de siempre (así la
 // atribución por producto —STRIPE_PRODUCT_IDS— y los cupones acotados a ese
@@ -17,8 +17,8 @@
 //   STRIPE_SECRET_KEY=sk_live_… STRIPE_PRICE_ID_MONTHLY=price_… node scripts/provision-planes.mjs
 //   # DRY=1 enseña lo que crearía sin crear nada.
 //
-// ⚠️ LAS CIFRAS de abajo son las de PRECIOS_PROPUESTOS en lib/billing/planes.ts;
-// lib/billing/provision-planes.test.ts las ata. Si el dueño cambia la propuesta,
+// ⚠️ LAS CIFRAS de abajo son las de PRECIOS_DE_LOS_PLANES en lib/billing/planes.ts;
+// lib/billing/provision-planes.test.ts las ata. Si el dueño cambia un precio,
 // cambia las dos cosas en el mismo PR ANTES de ejecutar esto.
 
 import Stripe from "stripe";

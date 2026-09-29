@@ -4,7 +4,13 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe/client";
 import { billingFullyConfigured, priceIdForPlan, type BillingPeriod } from "@/lib/stripe/env";
-import { ASIENTOS_INCLUIDOS_EQUIPO, PLANES_DE_PAGO, type PlanDePago } from "@/lib/billing/planes";
+import {
+  ASIENTOS_INCLUIDOS_EQUIPO,
+  PLANES_DE_PAGO,
+  PLANES_EN_VENTA,
+  PLAN_POR_DEFECTO,
+  type PlanDePago,
+} from "@/lib/billing/planes";
 import type Stripe from "stripe";
 import { MAX_ASIENTOS, normalizarAsientos } from "@/lib/billing/asientos";
 import { resolverOrgDelUsuario } from "@/lib/org/resolver";
@@ -12,7 +18,8 @@ import { puede, NO_AUTORIZADO } from "@/lib/org/permisos";
 import { alertar } from "@/lib/observabilidad/alerta";
 
 /**
- * Start a Stripe Checkout for the per-seat PRO plan (monthly or yearly). Auth'd
+ * Start a Stripe Checkout for a plan on sale — Pro (per seat) or Team — monthly
+ * or yearly. The commission plan is closed to new customers (2026-09-29). Auth'd
  * by the cookie session. La organización se RESUELVE (creándola si hace falta) y
  * su id viaja en la metadata de la sesión y de la suscripción junto al `user_id`
  * de quien compra — dos datos distintos que hasta ahora eran el mismo. Returns the
@@ -45,10 +52,14 @@ export async function POST(req: Request): Promise<NextResponse> {
 
   // Optional body: period (monthly|yearly), seats, locale. Empty body is fine.
   let period: BillingPeriod = "monthly";
-  // EL PLAN (2026-09-29, lib/billing/planes.ts). Por defecto «comision», el de
-  // siempre: es el precio que pintan los botones del panel, y una petición sin
-  // `plan` no puede acabar cobrando otro importe del que el comprador vio.
-  let plan: PlanDePago = "comision";
+  // EL PLAN (2026-09-29, lib/billing/planes.ts). Por defecto Pro, que es lo que
+  // venden el panel y /pricing. La modalidad con comisión está CERRADA a
+  // clientes nuevos: pedirla es un 400, no un checkout (quien ya la tiene no
+  // pasa por aquí — la guardia de abajo lo manda a «Gestionar plan»). Un plan
+  // que no existe también es un 400: nunca se cobra un importe que el
+  // comprador no eligió.
+  let plan: PlanDePago = PLAN_POR_DEFECTO;
+  let planPedido: string | null = null;
   let seats = 1;
   let locale = "es";
   // Código de promoción PRE-APLICADO (enlace de los probadores, 2026-09-12).
@@ -62,7 +73,7 @@ export async function POST(req: Request): Promise<NextResponse> {
     // página de cuenta y aquí se descartaba en silencio (sin 400).
     if (typeof body.codigo === "string" && /^[A-Za-z0-9_-]{2,40}$/.test(body.codigo)) codigo = body.codigo.toUpperCase();
     if (body.period === "yearly") period = "yearly";
-    if (typeof body.plan === "string" && (PLANES_DE_PAGO as readonly string[]).includes(body.plan)) plan = body.plan as PlanDePago;
+    if (typeof body.plan === "string") planPedido = body.plan;
     // MISMA función que el campo del panel, no una copia del criterio. Y el tope
     // se aplica AQUÍ además de allí porque el cliente no es fuente de verdad:
     // este cuerpo lo puede mandar cualquiera con una sesión y un `curl`, y sin
@@ -72,6 +83,19 @@ export async function POST(req: Request): Promise<NextResponse> {
     if (typeof body.locale === "string" && body.locale.length <= 5) locale = body.locale;
   } catch {
     /* no body — use defaults */
+  }
+
+  if (planPedido !== null) {
+    if (!(PLANES_EN_VENTA as readonly string[]).includes(planPedido)) {
+      const cerrado = (PLANES_DE_PAGO as readonly string[]).includes(planPedido);
+      return NextResponse.json(
+        cerrado
+          ? { code: "plan_cerrado", error: "This plan is no longer offered to new customers. Choose Pro or Team." }
+          : { code: "plan_desconocido", error: "Unknown plan. Choose Pro or Team." },
+        { status: 400 },
+      );
+    }
+    plan = planPedido as PlanDePago;
   }
 
   const price = priceIdForPlan(plan, period);

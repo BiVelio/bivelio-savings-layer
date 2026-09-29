@@ -414,7 +414,7 @@
       "personalNote": "Persönlich — noch keine Organisation verknüpft. Ein BiVelio-Konto, das in der gesamten Suite geteilt wird.",
       "plan": "Plan",
       "seatsCount": "{count, plural, one {# Seat} other {# Seats}}.",
-      "planBody": "BV-SALA ist fail-closed — es läuft nur mit einer aktiven PRO-Lizenz. {monthly} pro Seat und Monat oder {yearly} pro Seat und Jahr. Ein Seat ist eine aktive Maschine oder Dienstidentität, keine Person.",
+      "planBody": "BV-SALA ist fail-closed — es läuft nur mit einer aktiven Lizenz. Pro: {monthly} pro Seat und Monat oder {yearly} pro Seat und Jahr. Team: {teamMonthly} pro Monat mit {included} Seats inklusive. Keine Provision auf deine Ersparnis. Ein Seat ist eine aktive Maschine oder Service-Identität, keine Person.",
       "managePlan": "Plan verwalten →",
       "subscribe": "Abonnieren →",
       "checkoutMonthly": "Abonnieren — {monthly}/Seat/Mon. →",
@@ -430,7 +430,14 @@
       "errPagoEnCurso": "Deine Zahlung wird noch verarbeitet: eine Lastschrift kann ein paar Tage brauchen. Du bekommst Zugang, sobald sie durch ist. Starte kein zweites Abonnement.",
       "errSuscripcionEnStripe": "Stripe hat schon ein Abonnement für dieses Konto, aber es ist hier noch nicht aktiv. Kauf nicht noch mal: schreib an support@bivelio.com und wir schalten es von Hand frei.",
       "codigoAplicado": "Beim Bezahlen wird der Code {codigo} angewendet.",
-      "errCodigoInvalido": "Dieser Code existiert nicht oder ist nicht mehr aktiv. Du kannst ohne ihn weitermachen oder an support@bivelio.com schreiben."
+      "errCodigoInvalido": "Dieser Code existiert nicht oder ist nicht mehr aktiv. Du kannst ohne ihn weitermachen oder an support@bivelio.com schreiben.",
+      "planPickLabel": "Plan",
+      "planPro": "Pro",
+      "planTeam": "Team",
+      "teamHint": "Team enthält {included} Seats; jeder weitere Seat kostet {extra} pro Monat. Weniger als {included} kann man nicht kaufen.",
+      "checkoutTeamMonthly": "Team abonnieren — {monthly}/Monat, {included} Seats →",
+      "checkoutTeamYearly": "Team abonnieren — {yearly}/Jahr, {included} Seats →",
+      "errPlanCerrado": "Dieser Plan wird Neukunden nicht mehr angeboten. Wähle Pro oder Team."
     },
     "referenceLedgerCards": {
       "proven": "bewiesen",
@@ -725,7 +732,7 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Verifiziere deine LLM-Einsparungen",
-    "metaDescription": "Ein SDK, mit dem deine App dem LLM-Anbieter nur zahlt, was sie braucht, und ein Gateway, das deinen Coding-Agenten misst. Gezählt mit dem eigenen Zähler deines Anbieters: eine Gebühr pro Seat plus Provision nur auf gemessene Ersparnis.",
+    "metaDescription": "Ein SDK, mit dem deine App dem LLM-Anbieter nur zahlt, was sie braucht, und ein Gateway, das deinen Coding-Agent misst. Gezählt mit dem Zähler deines Anbieters: kostenlos messen, dann pro Seat zahlen — ohne Provision auf deine Ersparnis.",
     "hero": {
       "eyebrow": "Für Teams, die LLM-APIs pro Token bezahlen",
       "title": "Ihre LLM-Rechnung, unter Kontrolle.",
@@ -794,8 +801,8 @@
           "body": "Wir bitten nicht um Vertrauen. Jede Ersparnis wird mit dem offiziellen Zähler des Anbieters gemessen — demselben, mit dem er dir Rechnungen stellt — und landet auf deinem Beleg. Was sich nicht mit der Rechnung abgleichen lässt, wird nie verkündet."
         },
         {
-          "title": "Eine Gebühr pro Seat und ein Anteil am Gemessenen",
-          "body": "Du zahlst jeden Monat eine feste Gebühr pro Seat, ob du sparst oder nicht. Dazu kommt unsere Provision, und die stammt nur aus Ersparnis, die mit dem Zähler deines Anbieters gemessen wurde — der Großteil jeder Ersparnis bleibt immer bei dir. Ein Monat ohne gemessene Ersparnis? Du zahlst die Seats und null Provision."
+          "title": "Kostenlos messen, dann pro Seat zahlen",
+          "body": "Starte mit der kostenlosen Measure-Lizenz: Die Schicht läuft im Schattenmodus und zeigt, was sie mit deinem eigenen Traffic gespart hätte. Um die Hebel einzuschalten, zahlst du eine feste Gebühr pro Seat oder einen Team-Plan, ob du sparst oder nicht — und keine Provision auf deine Ersparnis."
         }
       ],
       "nota": "Die Animationen veranschaulichen die Idee. Die echten Zahlen — gemessen gegen echte Anbieter — stehen direkt darunter."
@@ -887,12 +894,36 @@
       "initNote": "<b>Oder lass einen Befehl es auf deinen Stack zuschneiden.</b> <code>init</code> liest deine <code>package.json</code> (Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, das Anthropic- oder das OpenAI-SDK) und gibt die Installationszeile aus, den genauen Code für deinen Adapter und eine Prüfung, die keine Tokens kostet: Sobald deine Lizenz eingerichtet ist, beantwortet die Schicht sie auf deinem Rechner, ohne das Modell aufzurufen. Er schreibt nichts, solange du es nicht verlangst."
     },
     "pricing": {
-      "eyebrow": "Ein Plan, Preis pro Seat",
-      "title": "Eine Gebühr pro Seat, immer. Provision nur auf gemessene Ersparnis.",
-      "body": "Kein Gratisplan, kein Test: Vor dem Zahlen kannst du die öffentlichen Messungen prüfen und den Verifizierer mit deinen eigenen Daten laufen lassen, direkt auf dieser Seite. Die Gebühr pro Seat wird jeden Monat berechnet, in {currency}, ob du sparst oder nicht. Die Provision kommt obendrauf, und nur auf Ersparnis, die mit dem Zähler deines Anbieters gemessen wurde — auch bei wiederholten Anfragen, die ohne Aufruf deines Anbieters bedient werden; jede wird mit dem Zähler der identischen Anfrage bewertet, die bereits gelaufen ist. Geschätztes geht nie ein.",
+      "eyebrow": "Pläne",
+      "title": "Kostenlos messen. Pro Seat zahlen, wenn du die Ersparnis willst.",
+      "body": "Starte mit Measure: kostenlos und ohne Karte. Die Schicht läuft im Schattenmodus mit deinem eigenen Traffic, und dein Dashboard zeigt, was sie gespart hätte, bewertet mit dem Zähler deines Anbieters. Pro und Team werden pro Seat in {currency} abgerechnet, ob du sparst oder nicht, und tragen keine Provision auf deine Ersparnis.",
       "amount": "{amount}",
       "per": "/ Seat / Monat",
-      "proNote": "<b>PRO</b> — pro Seat abgerechnet. Oder <b>{yearly} / Seat / Jahr</b> (spare ~19%). Enterprise, mit gebündelten Funktionen, kommt später.",
+      "plans": {
+        "medir": {
+          "name": "Measure",
+          "price": "Kostenlos",
+          "body": "Ohne Karte. Die Schicht im Schattenmodus für eine Organisation: Jede Anfrage erreicht deinen Anbieter unverändert, und du siehst, was sie gespart hätte.",
+          "cta": "Kostenlos starten →"
+        },
+        "pro": {
+          "name": "Pro",
+          "note": "Oder <b>{yearly} / Seat / Jahr</b>. Alle Optimierungen, der Beleg pro Anfrage und das Dashboard. Keine Provision.",
+          "cta": "Pro wählen →"
+        },
+        "team": {
+          "name": "Team",
+          "per": "/ Monat",
+          "note": "<b>{included} Seats inklusive</b>; jeder weitere Seat {extra} / Monat. Oder <b>{yearly} / Jahr</b>. Keine Provision.",
+          "cta": "Team wählen →"
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "price": "Individuell",
+          "body": "Mehr Seats, als der Online-Checkout zulässt, ein eigener Vertrag oder vereinbarte Rechnungsbedingungen: <contact>schreib uns</contact>."
+        }
+      },
+      "legacy": "Du hast schon das frühere Modell mit Provision auf gemessene Ersparnis? Du behältst es unverändert; seine Bedingungen stehen in den <terms>Preisbedingungen</terms>.",
       "seatNote": "Ein Seat ist eine <b>Maschine oder Dienstidentität</b>, keine Person. Du zahlst für die Seats, die dein Abo abdeckt; dein Dashboard zeigt, wie viele diesen Monat genutzt wurden (an mindestens {dias} Tagen aktiv; CI und kurzlebige Runner zählen nicht).",
       "features": [
         "Jede BV‑SALA-Optimierung, ohne Limit",
@@ -924,7 +955,7 @@
     },
     "footer": {
       "ctaTitle": "Messen Sie es an Ihrem eigenen Traffic",
-      "ctaSub": "Einmal installiert, liefert jeder Aufruf seinen SavingsReport, gemessen und geschätzt getrennt. Die Gebühr pro Seat ist monatlich und fest; die Provision kommt nur aus dem Gemessenen. Die Lizenz ist das, was BV‑SALA laufen lässt — das SDK in deiner App, das Gateway in deinem Terminal.",
+      "ctaSub": "Einmal installiert, liefert jeder Aufruf seinen SavingsReport, Gemessenes und Geschätztes getrennt. Starte kostenlos mit Measure; Pro und Team sind eine feste Gebühr pro Seat, ohne Provision auf deine Ersparnis. Die Lizenz ist das, was dich BV‑SALA ausführen lässt — das SDK in deiner App, das Gateway in deinem Terminal.",
       "ctaStart": "Loslegen",
       "tagline": "Das Betriebssystem für Ihr Unternehmen. Das ist <b>BV‑SALA</b>, BiVelios anbieterneutraler LLM-Kostenoptimierer — jede veröffentlichte Zahl gegen den Zähler des Anbieters gemessen; Schätzungen werden getrennt gezeigt und nie berechnet.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1176,7 +1207,7 @@
     "s3Sub": "Das Produkt hat zwei verschiedene Zahlen, die man nicht vermischen sollte.",
     "mBeforeK": "Vor der Installation",
     "mBeforeV": "Schätzung",
-    "mBeforeBody": "Der Rechner im Preisbereich der Startseite rechnet deine Ersparnis mit deinen eigenen Zahlen hoch: Anfragen, Tokens und Modell. Eine ehrliche Hochrechnung — deshalb trägt sie das Etikett „Schätzung“.",
+    "mBeforeBody": "Die kostenlose Measure-Lizenz führt die Schicht im Schattenmodus mit deinem eigenen Traffic aus und zeigt, was sie gespart hätte, Anfrage für Anfrage. Sie ändert nichts und wendet nichts an — deshalb trägt sie das Etikett „Schätzung“.",
     "mAfterK": "Nach der Installation",
     "mAfterV": "Echte Messung",
     "mAfterBody": "Jeder Aufruf liefert einen SavingsReport: die Aufrufe, die du nie bezahlt hast, und die Nettoersparnis pro Anfrage. Prüfbar, Anfrage für Anfrage, auf deiner eigenen Infrastruktur.",
@@ -1191,17 +1222,17 @@
   },
   "pricingPage": {
     "metaTitle": "Preisbedingungen · BV-SALA",
-    "metaDescription": "Medir kostenlos, Pro pro Seat, Team und Enterprise; die Provision auf verifizierte Ersparnis ist optional. Zahlen aus denselben Konstanten veröffentlicht, die abrechnen.",
+    "metaDescription": "Measure kostenlos, Pro pro Seat, Team und Enterprise — keiner davon trägt eine Provision auf deine Ersparnis. Zahlen aus denselben Konstanten veröffentlicht, die abrechnen.",
     "eyebrow": "Veröffentlichte Preise",
     "title": "Preisbedingungen",
     "governs": "Diese Seite beschreibt, wie der Dienst heute funktioniert; maßgeblich sind die <license>LICENSE</license> und die <terms>BiVelio-Bedingungen</terms>.",
-    "lede": "Du zahlst pro Seat oder für einen Team-Plan; die Provision auf Ersparnis ist eine optionale Variante, nicht das Modell. Jede Zahl hier wird aus demselben Code gelesen, der dir die Rechnung stellt – sie ändert sich also, wenn sich der Preis ändert.",
+    "lede": "Du zahlst pro Seat oder für einen Team-Plan, ohne Provision auf deine Ersparnis. Jede Zahl auf dieser Seite wird aus demselben Code gelesen, der dir berechnet, und ändert sich also, wenn sich der Preis ändert.",
     "plans": {
       "title": "Pläne",
       "intro": "Vier Pläne, vom kleinsten zum größten. Pro und Team werden pro Seat bezahlt und tragen keine Provision.",
       "medir": {
-        "name": "Medir",
-        "body": "<b>Kostenlos.</b> Um zu sehen, was die Schicht mit deinem eigenen Traffic sparen würde, bevor du etwas bezahlst. Die Bedingungen werden hier veröffentlicht, sobald die Lizenz verfügbar ist."
+        "name": "Measure",
+        "body": "<b>Kostenlos, ohne Karte.</b> Die Schicht läuft im Schattenmodus für eine Organisation, mit einer Obergrenze für Seats und tägliche Anfragen: Jede Anfrage erreicht deinen Anbieter genau so, wie du sie gebaut hast, nichts wird aus dem Cache bedient und kein Hebel angewendet. Dein Dashboard zeigt, was sie gespart hätte — eine Schätzung, die nie eine Provision trägt. Die Hebel brauchen Pro oder Team."
       },
       "pro": {
         "name": "Pro",
@@ -1230,8 +1261,8 @@
       "identifier": "Wie eine Seat-Kennung gebildet wird und alles andere, was die Software an BiVelio sendet, steht auf der <privacy>Datenschutzseite</privacy>."
     },
     "commission": {
-      "title": "Optional: Provision nur auf verifizierte Ersparnis",
-      "optional": "Das ist eine <b>optionale</b> Variante, nicht das Hauptmodell: Pro und Team tragen sie nicht, und ihre Abrechnung zeigt die Provision, die angefallen wäre, nur zur Information. Wer sie wählt, zahlt eine niedrigere Seat-Gebühr und zusätzlich eine Provision nur auf Ersparnis, die sich mit der Rechnung des eigenen Anbieters abgleichen lässt.",
+      "title": "Früheres Modell mit Provision (für Neukunden geschlossen)",
+      "optional": "Dieses Modell wird <b>Neukunden nicht mehr angeboten</b>. Ist deine Subscription schon darauf, behältst du es unverändert, und es gelten die Bedingungen unten: eine niedrigere Gebühr pro Seat plus eine Provision nur auf Ersparnis, die du mit der Rechnung deines Anbieters abgleichen kannst. Pro und Team tragen sie nie; ihre Abrechnung zeigt die Provision, die angefallen wäre, nur als Referenz.",
       "seat": "Seat-Gebühr in dieser Variante: <b>{monthly}</b> pro Seat und Monat oder <b>{yearly}</b> pro Seat und Jahr, in {currency}.",
       "only": "Eine Provision wird <b>nur auf gemessene Ersparnis</b> berechnet: Ersparnis, die in deinen Nutzungsdatensätzen als {labels} gekennzeichnet ist. Als {never} gekennzeichnete Ersparnis trägt nie eine Provision.",
       "measured": "Eine gemessene Ersparnis ergibt sich aus dem eigenen Nutzungszähler deines LLM-Anbieters für diese Anfrage.",
@@ -1249,8 +1280,7 @@
       "ceiling": "Kein Stufensatz liegt über {max}; vor dem Runden der Provision auf den Cent <b>behältst du also mindestens {garantia}</b> der gemessenen Ersparnis des Zeitraums. Die Gebühr pro Seat kommt separat hinzu.",
       "fx": "Die gemessene Ersparnis wird in US-Dollar gezählt und zum Referenzkurs der Europäischen Zentralbank umgerechnet, der beim Abschluss des Zeitraums abgerufen wird; deine Abrechnung zeigt den verwendeten Kurs.",
       "rounding": "Die Provision wird auf den nächsten Cent gerundet. Eine Provision unter {minimo} wird nicht in Rechnung gestellt und nicht in einen anderen Zeitraum übertragen.",
-      "zero": "Ein Zeitraum ohne gemessene Ersparnis trägt <b>keine Provision</b>.",
-      "calculator": "Was das für deinen eigenen Traffic bedeutet, zeigt dir der <calc>Rechner</calc> auf der Startseite."
+      "zero": "Ein Zeitraum ohne gemessene Ersparnis trägt <b>keine Provision</b>."
     },
     "calibration": {
       "title": "Kalibrierungszeitraum",

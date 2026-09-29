@@ -2,7 +2,10 @@ import { describe, expect, it } from "vitest";
 
 import {
   ASIENTOS_INCLUIDOS_EQUIPO,
-  PRECIOS_PROPUESTOS,
+  PLANES_DE_PAGO,
+  PLANES_EN_VENTA,
+  PLAN_POR_DEFECTO,
+  PRECIOS_DE_LOS_PLANES,
   calcularCobroDelPeriodo,
   calcularCuota,
   llevaComision,
@@ -16,16 +19,16 @@ import { calcularComision } from "./tarifa";
 /**
  * LO QUE SE COBRA: asientos × precio, el plan de equipo y la comisión opcional.
  *
- * Las cifras de los casos se derivan de PRECIOS_PROPUESTOS, no se copian: si el
- * dueño cambia la propuesta, los tests siguen probando la REGLA.
+ * Las cifras de los casos se derivan de PRECIOS_DE_LOS_PLANES, no se copian: si el
+ * dueño cambia los precios, los tests siguen probando la REGLA.
  */
 
-const pro = PRECIOS_PROPUESTOS.pro.monthly;
-const equipo = PRECIOS_PROPUESTOS.equipo.monthly;
+const pro = PRECIOS_DE_LOS_PLANES.pro.monthly;
+const equipo = PRECIOS_DE_LOS_PLANES.equipo.monthly;
 
-describe("la propuesta es coherente consigo misma", () => {
+describe("los precios son coherentes consigo mismos", () => {
   it("el anual de cada plan sale más barato que doce meses, y nunca gratis", () => {
-    for (const plan of [PRECIOS_PROPUESTOS.pro, PRECIOS_PROPUESTOS.equipo]) {
+    for (const plan of [PRECIOS_DE_LOS_PLANES.pro, PRECIOS_DE_LOS_PLANES.equipo]) {
       expect(plan.yearly.asientoCentimos).toBeLessThan(plan.monthly.asientoCentimos * 12);
       expect(plan.yearly.asientoCentimos).toBeGreaterThan(0);
       expect(plan.yearly.fijaCentimos).toBeLessThanOrEqual(plan.monthly.fijaCentimos * 12);
@@ -44,7 +47,7 @@ describe("la propuesta es coherente consigo misma", () => {
   });
 
   it("todo en la misma moneda que la comisión y que el Price de siempre", () => {
-    for (const plan of [PRECIOS_PROPUESTOS.pro, PRECIOS_PROPUESTOS.equipo]) {
+    for (const plan of [PRECIOS_DE_LOS_PLANES.pro, PRECIOS_DE_LOS_PLANES.equipo]) {
       expect(plan.monthly.currency).toBe("eur");
       expect(plan.yearly.currency).toBe("eur");
     }
@@ -181,5 +184,45 @@ describe("⛔ de qué plan es una suscripción: por PRICE, y lo desconocido sigu
       precios,
     );
     expect([...fuera].sort()).toEqual(["a", "b"]);
+  });
+});
+
+describe("⛔ la modalidad con comisión: CERRADA a clientes nuevos, intacta para quien la tiene (2026-09-29)", () => {
+  const precios = { pro: ["price_pro_m", "price_pro_y"], equipo: ["price_team_m", "price_team_y"] };
+
+  it("no se vende: ni en los planes en venta ni por defecto; sí se sigue reconociendo", () => {
+    expect(PLANES_EN_VENTA).toEqual(["pro", "equipo"]);
+    expect(PLANES_EN_VENTA).not.toContain("comision");
+    expect(PLAN_POR_DEFECTO).toBe("pro");
+    // La guardia anti-doble-compra y la atribución siguen viendo sus suscripciones.
+    expect(PLANES_DE_PAGO).toContain("comision");
+  });
+
+  it("su suscripción viva sigue siendo «comision» con TODOS los Prices nuevos configurados", () => {
+    expect(planDelPrecio("price_legacy_4eur", precios)).toBe("comision");
+    expect(llevaComision(planDelPrecio("price_legacy_4eur", precios))).toBe(true);
+  });
+
+  it("el cierre y la facturación la siguen cobrando: no entra en las orgs sin comisión", () => {
+    const fuera = orgsSinComisionPorPlan(
+      [
+        { org_id: "legado", price_id: "price_legacy_4eur", status: "active" },
+        { org_id: "nuevo", price_id: "price_pro_m", status: "active" },
+      ],
+      precios,
+    );
+    expect(fuera.has("legado")).toBe(false);
+    expect(fuera.has("nuevo")).toBe(true);
+  });
+
+  it("su comisión y su extracto salen de tarifa.ts exactamente como antes", () => {
+    const tarifa = tarifaPorAsiento({ amount: 400, currency: "eur" });
+    const ahorro = { baseMedidaEur: 5_000, ahorroMedidoEur: 1_800 };
+    const cobro = calcularCobroDelPeriodo({ plan: planDelPrecio("price_legacy_4eur", precios), tarifa, asientos: 3, ahorro });
+    const esperada = calcularComision(ahorro.baseMedidaEur, ahorro.ahorroMedidoEur);
+    expect(cobro.plan).toBe("comision");
+    expect(cobro.comision).toEqual(esperada);
+    expect(cobro.comisionEur).toBeCloseTo(esperada.comisionEur, 2);
+    expect(cobro.cuota.totalCentimos).toBe(3 * 400);
   });
 });

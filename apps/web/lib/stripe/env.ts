@@ -10,9 +10,11 @@ export const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET ?? "";
 export const STRIPE_PRICE_ID_MONTHLY = process.env.STRIPE_PRICE_ID_MONTHLY ?? "";
 export const STRIPE_PRICE_ID_YEARLY = process.env.STRIPE_PRICE_ID_YEARLY ?? "";
 // LOS PLANES SIN COMISIÓN (2026-09-29, lib/billing/planes.ts). Los dos de arriba
-// siguen siendo la modalidad «comision» de siempre; estos cuatro son Prices
-// NUEVOS que crea el dueño en Stripe. Vacíos = el plan no se vende todavía (el
-// checkout responde 501 para ese plan) y /pricing pinta la cifra propuesta.
+// siguen siendo la modalidad «comision» de siempre (cerrada a clientes nuevos:
+// ya no se vende, pero sus suscripciones vivas se reconocen y cobran igual);
+// estos cuatro son los Prices de Pro y Equipo que crea el dueño en Stripe.
+// Vacíos = el plan no se vende todavía (el checkout responde 501 para ese plan)
+// y /pricing pinta la cifra de respaldo de planes.ts.
 export const STRIPE_PRICE_ID_PRO_MONTHLY = process.env.STRIPE_PRICE_ID_PRO_MONTHLY ?? "";
 export const STRIPE_PRICE_ID_PRO_YEARLY = process.env.STRIPE_PRICE_ID_PRO_YEARLY ?? "";
 export const STRIPE_PRICE_ID_TEAM_MONTHLY = process.env.STRIPE_PRICE_ID_TEAM_MONTHLY ?? "";

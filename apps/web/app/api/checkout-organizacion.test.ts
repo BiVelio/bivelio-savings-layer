@@ -446,12 +446,21 @@ describe("POST /api/stripe/checkout — si Stripe no abre la sesión, alguien se
 });
 
 describe("POST /api/stripe/checkout — el plan (2026-09-29, lib/billing/planes.ts)", () => {
-  it("sin `plan` se vende la modalidad de siempre: el precio que pintan los botones del panel", async () => {
+  it("sin `plan` se vende Pro: la modalidad con comisión está cerrada a clientes nuevos", async () => {
     const { POST } = await import("./stripe/checkout/route");
     await POST(peticion({ seats: 3 }));
     const item = (sesion!.line_items as { price: string; quantity: number }[])[0]!;
-    expect(item.price).toBe("price_mensual");
+    expect(item.price).toBe("price_pro");
     expect(item.quantity).toBe(3);
+    expect((sesion!.metadata as Record<string, string>).plan).toBe("pro");
+  });
+
+  it("⛔ la modalidad con comisión ya no se vende: pedirla es un 400 `plan_cerrado` y no abre sesión", async () => {
+    const { POST } = await import("./stripe/checkout/route");
+    const res = await POST(peticion({ seats: 1, plan: "comision" }));
+    expect(res.status).toBe(400);
+    expect(((await res.json()) as { code?: string }).code).toBe("plan_cerrado");
+    expect(sesion).toBeNull();
   });
 
   it("Pro usa su Price y deja el plan en la metadata", async () => {
@@ -474,9 +483,11 @@ describe("POST /api/stripe/checkout — el plan (2026-09-29, lib/billing/planes.
     expect(item.adjustable_quantity.minimum).toBe(ASIENTOS_INCLUIDOS_EQUIPO);
   });
 
-  it("un plan desconocido no inventa un precio: cae en la modalidad de siempre", async () => {
+  it("un plan desconocido no inventa un precio: 400 `plan_desconocido`, sin sesión", async () => {
     const { POST } = await import("./stripe/checkout/route");
-    await POST(peticion({ seats: 1, plan: "gratis-para-siempre" }));
-    expect((sesion!.line_items as { price: string }[])[0]!.price).toBe("price_mensual");
+    const res = await POST(peticion({ seats: 1, plan: "gratis-para-siempre" }));
+    expect(res.status).toBe(400);
+    expect(((await res.json()) as { code?: string }).code).toBe("plan_desconocido");
+    expect(sesion).toBeNull();
   });
 });

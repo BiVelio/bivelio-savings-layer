@@ -2,7 +2,7 @@ import { unstable_cache } from "next/cache";
 
 import {
   ASIENTOS_INCLUIDOS_EQUIPO,
-  PRECIOS_PROPUESTOS,
+  PRECIOS_DE_LOS_PLANES,
   tarifaDeEquipoDesdeTramos,
   tarifaPorAsiento,
   type TarifaDePlan,
@@ -36,7 +36,7 @@ export type PreciosDelPlan = { monthly: Importe; yearly: Importe };
  * que crean los scripts de aprovisionamiento (`scripts/provision-stripe.mjs:45-55`):
  * 4,00 € y 39,00 €.
  *
- * **Junto con PRECIOS_PROPUESTOS (lib/billing/planes.ts, Pro y Equipo), son los
+ * **Junto con PRECIOS_DE_LOS_PLANES (lib/billing/planes.ts, Pro y Equipo), son los
  * ÚNICOS literales de precio que deben quedar en el repositorio.** Si hace falta
  * cambiar un precio, se cambia en Stripe y aquí; nunca en un texto.
  */
@@ -110,10 +110,10 @@ export async function preciosDelPlan(): Promise<PreciosDelPlan> {
 
 export type TarifasDeLosPlanes = { pro: TarifasDelPlan; equipo: TarifasDelPlan };
 
-/** Respaldo: la PROPUESTA de planes.ts, hasta que el dueño cree los Prices. */
+/** Respaldo: los precios confirmados de planes.ts, por si Stripe no contesta o faltan los Prices. */
 export const TARIFAS_RESPALDO: TarifasDeLosPlanes = {
-  pro: PRECIOS_PROPUESTOS.pro,
-  equipo: PRECIOS_PROPUESTOS.equipo,
+  pro: PRECIOS_DE_LOS_PLANES.pro,
+  equipo: PRECIOS_DE_LOS_PLANES.equipo,
 };
 
 async function tarifaDe(plan: "pro" | "equipo", period: BillingPeriod): Promise<TarifaDePlan> {
@@ -154,7 +154,7 @@ let avisadoPlanes = false;
 /**
  * Las tarifas de Pro y Equipo para pintar. Falla ABIERTO como `preciosDelPlan`:
  * sin los cuatro Prices configurados, o si Stripe no contesta, se pinta la
- * propuesta de planes.ts — y se avisa una vez por proceso.
+ * respaldo de planes.ts — y se avisa una vez por proceso.
  */
 export async function tarifasDeLosPlanes(): Promise<TarifasDeLosPlanes> {
   const configurados = (["pro", "equipo"] as const).every(
@@ -167,7 +167,7 @@ export async function tarifasDeLosPlanes(): Promise<TarifasDeLosPlanes> {
     if (!avisadoPlanes) {
       avisadoPlanes = true;
       console.warn(
-        "[bvsala] /pricing pinta las tarifas PROPUESTAS de lib/billing/planes.ts para Pro y Equipo. Motivo:",
+        "[bvsala] /pricing pinta las tarifas de RESPALDO de lib/billing/planes.ts para Pro y Equipo. Motivo:",
         err instanceof Error ? err.message : err,
       );
     }

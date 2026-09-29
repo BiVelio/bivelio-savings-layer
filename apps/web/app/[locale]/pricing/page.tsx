@@ -65,9 +65,8 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
           <h2 id="plans">{t("plans.title")}</h2>
           <p>{t("plans.intro")}</p>
 
-          {/* HUECO «Medir»: la licencia gratuita la construye su propio PR (flujo de
-              alta y licencias). Aquí solo se reserva su sitio, el primero, y
-              sus textos (`pricingPage.plans.medir.*`) son suyos. */}
+          {/* «Medir»: la licencia gratuita (docs/LICENCIA-MEDIR.md, su propio PR).
+              Sin cifras en el texto: sus topes viven en lib/license/medir.ts. */}
           <h3 id="medir">{t("plans.medir.name")}</h3>
           <p>{t.rich("plans.medir.body", { b })}</p>
 
@@ -118,6 +117,11 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
           </p>
         </section>
 
+        {/* LA MODALIDAD CON COMISIÓN, CERRADA A CLIENTES NUEVOS (2026-09-29). Sus
+            condiciones siguen publicadas porque rigen las suscripciones que la
+            conservan (LICENSE §6: «only if your subscription is on a plan that
+            the Published Pricing lists as carrying a commission»), pero no se
+            vende: ni checkout, ni calculadora, ni CTA. */}
         <section className="terms-sec" aria-labelledby="commission">
           <h2 id="commission">{t("commission.title")}</h2>
           <p>{t.rich("commission.optional", { b })}</p>
@@ -161,11 +165,6 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
           <p>{t("commission.fx")}</p>
           <p>{t("commission.rounding", { minimo: p.minimoFacturable })}</p>
           <p>{t.rich("commission.zero", { b })}</p>
-          <p>
-            {t.rich("commission.calculator", {
-              calc: (c) => <Link href="/#pricing">{c}</Link>,
-            })}
-          </p>
         </section>
 
         <section className="terms-sec" aria-labelledby="calibration">
