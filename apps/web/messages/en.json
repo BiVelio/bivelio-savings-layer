@@ -721,6 +721,32 @@
     },
     "team": {
       "metaTitle": "Team · BiVelio Savings Layer"
+    },
+    "measurePlan": {
+      "title": "Or start free: the Measure license, no card",
+      "body": "Runs the layer in shadow mode for 1 organization and up to {seats} seats: every request goes to your provider unchanged and nothing is served from cache. Your dashboard shows what the levers would have saved; upgrade to turn them on.",
+      "claim": "Get my free Measure license",
+      "claiming": "Issuing…",
+      "keyLabel": "Your Measure license key (shadow mode: no levers applied)",
+      "keyHint": "Use it as BIVELIO_LICENSE_KEY, exactly like a paid key. When you upgrade, the layer picks up the paid license by itself and the levers turn on.",
+      "errEmailNotVerified": "Confirm your email address first, then try again.",
+      "errOneOrgPerAccount": "This account already holds a Measure license for another organization: the free license covers one organization per account.",
+      "errAlreadyLicensed": "Your organization already has a paid license: use the key above.",
+      "errBlocked": "The Measure license is not available for this organization. Write to support@bivelio.com.",
+      "errRole": "Your role doesn't allow downloading the license. Ask an owner or admin.",
+      "errSignIn": "Sign in first.",
+      "errGeneric": "Could not issue the Measure license. Try again in a moment.",
+      "planLabel": "Measure (free)",
+      "pricingNote": "Measure: free, no card. The layer in shadow mode for 1 organization and up to {seats} seats, so you see what it would save before you pay.",
+      "card": {
+        "eyebrow": "Measure license · shadow mode",
+        "title": "What you would have saved",
+        "amount": "{amount} you would not have spent",
+        "context": "Out of {spend} measured spend over {requests} requests. An estimate from the shadow lane (repeated and duplicate in-flight calls, valued with your provider's own counter): nothing was applied and nothing is billed.",
+        "empty": "No would-have-saved estimate yet: it appears as soon as your layer sees a repeated request. The Measure license never changes what you send.",
+        "limits": "Free for 1 organization, up to {seats} seats and {requests} requests a day.",
+        "cta": "Turn the levers on: see plans"
+      }
     }
   },
   "landing": {

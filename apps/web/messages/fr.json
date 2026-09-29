@@ -721,6 +721,32 @@
     },
     "team": {
       "metaTitle": "Équipe · BiVelio Savings Layer"
+    },
+    "measurePlan": {
+      "title": "Ou commencez gratuitement : la licence Mesurer, sans carte",
+      "body": "Fait tourner la couche en mode ombre pour 1 organisation et jusqu'à {seats} postes : chaque requête part vers votre fournisseur sans modification et rien n'est servi depuis le cache. Votre tableau de bord montre ce que les leviers auraient économisé ; passez à une offre payante pour les activer.",
+      "claim": "Obtenir ma licence Mesurer gratuite",
+      "claiming": "Émission…",
+      "keyLabel": "Votre clé de licence Mesurer (mode ombre : aucun levier appliqué)",
+      "keyHint": "Utilisez-la comme BIVELIO_LICENSE_KEY, exactement comme une clé payante. Quand vous passez à une offre payante, la couche récupère seule la licence payante et les leviers s'activent.",
+      "errEmailNotVerified": "Confirmez d'abord votre adresse e-mail, puis réessayez.",
+      "errOneOrgPerAccount": "Ce compte détient déjà une licence Mesurer pour une autre organisation : la licence gratuite couvre une organisation par compte.",
+      "errAlreadyLicensed": "Votre organisation a déjà une licence payante : utilisez la clé ci-dessus.",
+      "errBlocked": "La licence Mesurer n'est pas disponible pour cette organisation. Écrivez à support@bivelio.com.",
+      "errRole": "Votre rôle ne permet pas de télécharger la licence. Demandez à un owner ou à un admin.",
+      "errSignIn": "Connectez-vous d'abord.",
+      "errGeneric": "Impossible d'émettre la licence Mesurer. Réessayez dans un instant.",
+      "planLabel": "Mesurer (gratuit)",
+      "pricingNote": "Mesurer : gratuit, sans carte. La couche en mode ombre pour 1 organisation et jusqu'à {seats} postes, pour voir ce qu'elle économiserait avant de payer.",
+      "card": {
+        "eyebrow": "Licence Mesurer · mode ombre",
+        "title": "Ce que vous auriez économisé",
+        "amount": "{amount} que vous n'auriez pas dépensés",
+        "context": "Sur {spend} de dépense mesurée en {requests} requêtes. Une estimation de la voie ombre (appels répétés et doublons simultanés, valorisés avec le compteur de votre propre fournisseur) : rien n'a été appliqué et rien n'est facturé.",
+        "empty": "Pas encore d'estimation d'économie : elle apparaît dès que votre couche voit une requête répétée. La licence Mesurer ne modifie jamais ce que vous envoyez.",
+        "limits": "Gratuit pour 1 organisation, jusqu'à {seats} postes et {requests} requêtes par jour.",
+        "cta": "Activer les leviers : voir les offres"
+      }
     }
   },
   "landing": {

@@ -48,7 +48,11 @@ export async function AccountPlanStrip({
     pagados: ctx.seats,
     rotacionEsteMes: asientos.rotacionEsteMes,
   });
-  const planLabel = isActive ? plan.charAt(0).toUpperCase() + plan.slice(1) : t("accountPlanStrip.noActivePlan");
+  const planLabel = isActive
+    ? plan.charAt(0).toUpperCase() + plan.slice(1)
+    : ctx.medir === "solo-medir"
+      ? t("measurePlan.planLabel")
+      : t("accountPlanStrip.noActivePlan");
   return (
     <div className="cards plan" style={{ marginTop: "6px" }}>
       <div className="card">

@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { elegirLicencia } from "./derive";
+import { estadoMedir, type EstadoMedir } from "./medir";
 import { agregarAsientos, type FilaAsiento } from "@/lib/version/asientos";
 import { DIA_MS, type AsientoVisto } from "@/lib/version/aviso-version";
 import { esColumnaInexistente, esTablaInexistente } from "@/lib/supabase/esquema-pendiente";
@@ -114,6 +115,12 @@ export interface OrgContext {
     graceDays: number;
   } | null;
   serviceAccount: { keyPrefix: string; lastUsedAt: string | null } | null;
+  /**
+   * Qué licencia manda, visto por la licencia gratuita Medir (ver `medir.ts`):
+   * `solo-medir` enseña «esto habrías ahorrado»; `sin-licencia` ofrece el alta
+   * sin tarjeta. Opcional: los contextos construidos a mano (tests) no la llevan.
+   */
+  medir?: EstadoMedir;
 }
 
 /**
@@ -156,7 +163,7 @@ export async function getOrgContext(
     current_period_end?: string | null;
     past_due_since?: string | null;
   } | null;
-  type Licencia = { expires_at?: string; grace_days?: number; revoked?: boolean };
+  type Licencia = { expires_at?: string; grace_days?: number; revoked?: boolean; plan?: string | null };
   type ClaveDeServicio = { key_prefix?: string; last_used_at?: string | null } | null;
 
   const [membresia, suscripcion, licencias, claveDeServicio] = await Promise.all([
@@ -210,7 +217,7 @@ export async function getOrgContext(
         const { data } = await supabase
           .schema("bvsala")
           .from("licenses")
-          .select("expires_at, grace_days, revoked")
+          .select("expires_at, grace_days, revoked, plan")
           .eq("org_id", orgId)
           .order("expires_at", { ascending: false })
           .limit(5);
@@ -255,6 +262,7 @@ export async function getOrgContext(
   }
 
   const elegida = elegirLicencia(licencias, Date.now());
+  ctx.medir = estadoMedir(licencias, ctx.subscription?.status ?? null, Date.now());
   if (elegida?.row.expires_at) {
     ctx.license = {
       status: elegida.status,

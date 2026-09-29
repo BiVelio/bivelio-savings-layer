@@ -721,6 +721,32 @@
     },
     "team": {
       "metaTitle": "Tim · BiVelio Savings Layer"
+    },
+    "measurePlan": {
+      "title": "Atau mulai gratis: lisensi Measure, tanpa kartu",
+      "body": "Menjalankan lapisan dalam mode bayangan untuk 1 organisasi dan hingga {seats} kursi: setiap permintaan dikirim ke penyedia Anda tanpa perubahan dan tidak ada yang disajikan dari cache. Dasbor Anda menampilkan apa yang akan dihemat oleh tuas; tingkatkan ke paket berbayar untuk menyalakannya.",
+      "claim": "Dapatkan lisensi Measure gratis saya",
+      "claiming": "Menerbitkan…",
+      "keyLabel": "Kunci lisensi Measure Anda (mode bayangan: tidak ada tuas yang diterapkan)",
+      "keyHint": "Gunakan sebagai BIVELIO_LICENSE_KEY, sama seperti kunci berbayar. Saat Anda meningkatkan paket, lapisan mengambil lisensi berbayar dengan sendirinya dan tuas menyala.",
+      "errEmailNotVerified": "Konfirmasi alamat email Anda terlebih dahulu, lalu coba lagi.",
+      "errOneOrgPerAccount": "Akun ini sudah memiliki lisensi Measure untuk organisasi lain: lisensi gratis mencakup satu organisasi per akun.",
+      "errAlreadyLicensed": "Organisasi Anda sudah memiliki lisensi berbayar: gunakan kunci di atas.",
+      "errBlocked": "Lisensi Measure tidak tersedia untuk organisasi ini. Tulis ke support@bivelio.com.",
+      "errRole": "Peran Anda tidak mengizinkan mengunduh lisensi. Minta kepada owner atau admin.",
+      "errSignIn": "Masuk terlebih dahulu.",
+      "errGeneric": "Lisensi Measure tidak dapat diterbitkan. Coba lagi sebentar lagi.",
+      "planLabel": "Measure (gratis)",
+      "pricingNote": "Measure: gratis, tanpa kartu. Lapisan dalam mode bayangan untuk 1 organisasi dan hingga {seats} kursi, agar Anda melihat berapa yang akan dihemat sebelum membayar.",
+      "card": {
+        "eyebrow": "Lisensi Measure · mode bayangan",
+        "title": "Yang akan Anda hemat",
+        "amount": "{amount} yang tidak akan Anda belanjakan",
+        "context": "Dari {spend} pengeluaran terukur dalam {requests} permintaan. Perkiraan dari jalur bayangan (panggilan berulang dan duplikat yang berjalan bersamaan, dinilai dengan penghitung penyedia Anda sendiri): tidak ada yang diterapkan dan tidak ada yang ditagih.",
+        "empty": "Belum ada perkiraan penghematan: muncul begitu lapisan Anda melihat permintaan berulang. Lisensi Measure tidak pernah mengubah apa yang Anda kirim.",
+        "limits": "Gratis untuk 1 organisasi, hingga {seats} kursi dan {requests} permintaan per hari.",
+        "cta": "Nyalakan tuas: lihat paket"
+      }
     }
   },
   "landing": {

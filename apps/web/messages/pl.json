@@ -721,6 +721,32 @@
     },
     "team": {
       "metaTitle": "Zespół · BiVelio Savings Layer"
+    },
+    "measurePlan": {
+      "title": "Albo zacznij za darmo: licencja Pomiar, bez karty",
+      "body": "Uruchamia warstwę w trybie cienia dla 1 organizacji i do {seats} stanowisk: każde żądanie trafia do Twojego dostawcy bez zmian i nic nie jest serwowane z pamięci podręcznej. Panel pokazuje, ile zaoszczędziłyby dźwignie; przejdź na płatny plan, aby je włączyć.",
+      "claim": "Pobierz moją darmową licencję Pomiar",
+      "claiming": "Wystawianie…",
+      "keyLabel": "Twój klucz licencji Pomiar (tryb cienia: żadna dźwignia nie jest stosowana)",
+      "keyHint": "Użyj go jako BIVELIO_LICENSE_KEY, dokładnie tak jak klucza płatnego. Po przejściu na płatny plan warstwa sama pobierze płatną licencję, a dźwignie się włączą.",
+      "errEmailNotVerified": "Najpierw potwierdź swój adres e-mail, a potem spróbuj ponownie.",
+      "errOneOrgPerAccount": "To konto ma już licencję Pomiar dla innej organizacji: darmowa licencja obejmuje jedną organizację na konto.",
+      "errAlreadyLicensed": "Twoja organizacja ma już płatną licencję: użyj klucza powyżej.",
+      "errBlocked": "Licencja Pomiar nie jest dostępna dla tej organizacji. Napisz na support@bivelio.com.",
+      "errRole": "Twoja rola nie pozwala pobrać licencji. Poproś ownera lub admina.",
+      "errSignIn": "Najpierw się zaloguj.",
+      "errGeneric": "Nie udało się wystawić licencji Pomiar. Spróbuj ponownie za chwilę.",
+      "planLabel": "Pomiar (bezpłatny)",
+      "pricingNote": "Pomiar: za darmo, bez karty. Warstwa w trybie cienia dla 1 organizacji i do {seats} stanowisk, abyś zobaczył, ile by zaoszczędziła, zanim zapłacisz.",
+      "card": {
+        "eyebrow": "Licencja Pomiar · tryb cienia",
+        "title": "Ile byś zaoszczędził",
+        "amount": "{amount}, których byś nie wydał",
+        "context": "Z {spend} zmierzonych wydatków w {requests} żądaniach. Szacunek z toru cienia (powtórzone i równoległe zduplikowane wywołania, wycenione licznikiem Twojego własnego dostawcy): nic nie zostało zastosowane i nic nie jest fakturowane.",
+        "empty": "Brak jeszcze szacunku oszczędności: pojawi się, gdy tylko warstwa zobaczy powtórzone żądanie. Licencja Pomiar nigdy nie zmienia tego, co wysyłasz.",
+        "limits": "Za darmo dla 1 organizacji, do {seats} stanowisk i {requests} żądań dziennie.",
+        "cta": "Włącz dźwignie: zobacz plany"
+      }
     }
   },
   "landing": {

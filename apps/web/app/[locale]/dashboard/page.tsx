@@ -21,6 +21,7 @@ import { MaquinasCard } from "./components/MaquinasCard";
 import { PanelEditable } from "./components/PanelEditable";
 import { SesionesCard } from "./components/SesionesCard";
 import { VerdictHero } from "./components/VerdictHero";
+import { MedirSavingsCard } from "./components/MedirSavingsCard";
 
 export const dynamic = "force-dynamic";
 
@@ -71,6 +72,8 @@ export default async function OverviewPage({
       {/* Y si alguna máquina corre un SDK por debajo de la mínima de la
           referencia: sus repeticiones entran como estimated, no en la base. */}
       <SdkReferenciaBanner asientos={asientos} />
+      {/* Licencia gratuita Medir: «esto habrías ahorrado» y el paso a pago. */}
+      {ctx.medir === "solo-medir" ? <MedirSavingsCard usage={usage} /> : null}
 
       <InstrumentationSpine steps={steps} />
 

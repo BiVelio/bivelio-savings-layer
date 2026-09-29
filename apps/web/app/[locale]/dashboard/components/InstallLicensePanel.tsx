@@ -11,6 +11,8 @@ import type { OrgContext } from "../data";
 import { CopyButton } from "./CopyButton";
 import { ServiceAccountKeySection } from "./ServiceAccountKeySection";
 import { TrialKeyButton } from "./TrialKeyButton";
+import { MeasureClaimButton } from "./MeasureClaimButton";
+import { LIMITES_MEDIR } from "@/lib/license/medir";
 
 /**
  * EL FRAGMENTO TIENE QUE COMPILAR PEGADO TAL CUAL, y no compilaba: `yourProvider`,
@@ -153,6 +155,17 @@ export async function InstallLicensePanel({ ctx }: { ctx: OrgContext }) {
         })}
       </p>
       <TrialKeyButton monthly={precioMensual} yearly={precioAnual} />
+
+      {/* La alternativa gratuita y sin tarjeta: la licencia Medir (modo sombra).
+          No se le ofrece a quien ya paga. */}
+      {ctx.medir !== "de-pago" ? (
+        <div style={{ marginTop: 12 }}>
+          <p className="ck-note" style={{ margin: "0 0 6px" }}>
+            <b>{t("measurePlan.title")}</b>
+          </p>
+          <MeasureClaimButton seats={LIMITES_MEDIR.asientos} />
+        </div>
+      ) : null}
 
       {/* 2 · service-account key (the machine credential for metering) */}
       <p className="ck-note">

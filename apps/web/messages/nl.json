@@ -721,6 +721,32 @@
     },
     "team": {
       "metaTitle": "Team · BiVelio Savings Layer"
+    },
+    "measurePlan": {
+      "title": "Of begin gratis: de Meten-licentie, zonder kaart",
+      "body": "Draait de laag in schaduwmodus voor 1 organisatie en tot {seats} plaatsen: elk verzoek gaat ongewijzigd naar je provider en niets wordt uit de cache geserveerd. Je dashboard toont wat de hefbomen zouden hebben bespaard; upgrade om ze aan te zetten.",
+      "claim": "Mijn gratis Meten-licentie ophalen",
+      "claiming": "Bezig met uitgeven…",
+      "keyLabel": "Je Meten-licentiesleutel (schaduwmodus: geen hefbomen toegepast)",
+      "keyHint": "Gebruik hem als BIVELIO_LICENSE_KEY, precies zoals een betaalde sleutel. Na een upgrade haalt de laag de betaalde licentie zelf op en gaan de hefbomen aan.",
+      "errEmailNotVerified": "Bevestig eerst je e-mailadres en probeer het dan opnieuw.",
+      "errOneOrgPerAccount": "Dit account heeft al een Meten-licentie voor een andere organisatie: de gratis licentie geldt voor één organisatie per account.",
+      "errAlreadyLicensed": "Je organisatie heeft al een betaalde licentie: gebruik de sleutel hierboven.",
+      "errBlocked": "De Meten-licentie is niet beschikbaar voor deze organisatie. Schrijf naar support@bivelio.com.",
+      "errRole": "Je rol staat het downloaden van de licentie niet toe. Vraag het een owner of admin.",
+      "errSignIn": "Log eerst in.",
+      "errGeneric": "De Meten-licentie kon niet worden uitgegeven. Probeer het zo meteen opnieuw.",
+      "planLabel": "Meten (gratis)",
+      "pricingNote": "Meten: gratis, zonder kaart. De laag in schaduwmodus voor 1 organisatie en tot {seats} plaatsen, zodat je ziet wat hij zou besparen voordat je betaalt.",
+      "card": {
+        "eyebrow": "Meten-licentie · schaduwmodus",
+        "title": "Wat je zou hebben bespaard",
+        "amount": "{amount} die je niet zou hebben uitgegeven",
+        "context": "Van {spend} gemeten uitgaven over {requests} verzoeken. Een schatting uit het schaduwspoor (herhaalde en gelijktijdig dubbele aanroepen, gewaardeerd met de teller van je eigen provider): er is niets toegepast en niets wordt gefactureerd.",
+        "empty": "Nog geen besparingsschatting: die verschijnt zodra je laag een herhaald verzoek ziet. De Meten-licentie verandert nooit wat je verstuurt.",
+        "limits": "Gratis voor 1 organisatie, tot {seats} plaatsen en {requests} verzoeken per dag.",
+        "cta": "Zet de hefbomen aan: bekijk de plannen"
+      }
     }
   },
   "landing": {
