@@ -23,8 +23,9 @@ export type Plan = "free" | "measure" | "pro" | "team" | "enterprise";
 export const MEASURE_PLAN = "measure" as const satisfies Plan;
 
 /**
- * Los límites anti-abuso de la licencia Medir. Espejo de
- * `apps/web/lib/license/medir.ts` (un test fija que los dos coinciden).
+ * Los límites anti-abuso de la licencia Medir, ACEPTADOS por el dueño el
+ * 2026-09-29. Espejo de `apps/web/lib/license/medir.ts` (un test fija que los
+ * dos coinciden).
  *
  *  · `seats`: asientos (máquinas o identidades de servicio) que la ingesta
  *    acepta por mes natural. 5 = un equipo piloto real (un responsable y unos

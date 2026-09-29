@@ -10,18 +10,23 @@ not install or use the Software.
 
 1. LICENSE GRANT. Subject to your continuous compliance with this Agreement and to
    an active BiVelio subscription (paid, or granted by BiVelio at no charge, for
-   example through a promotional code or a pilot) with a valid license key
-   ("License Key"), BiVelio grants you a limited, non-exclusive, non-transferable,
-   non-sublicensable, revocable license to install and use the Software, as
-   published, solely for your own internal business purposes, and only for the
-   number of seats covered by your subscription. The Software is licensed, not sold.
+   example through a promotional code, a pilot, or the free Measure license) with a
+   valid license key ("License Key"), BiVelio grants you a limited, non-exclusive,
+   non-transferable, non-sublicensable, revocable license to install and use the
+   Software, as published, solely for your own internal business purposes, and only
+   for the number of seats covered by your subscription. The Software is licensed,
+   not sold. Under a Measure license the Software runs in shadow mode only: it
+   forwards your requests to your provider unchanged, applies no optimization, and
+   reports estimated savings that are never billed.
 
 2. LICENSE KEY; FAIL-CLOSED OPERATION. The Software requires a valid, active License
    Key and does not operate without one. Expiry, non-payment, revocation, suspension,
    or termination of your subscription immediately ends the license granted in
-   Section 1, and the Software will cease to function. You will not circumvent,
-   disable, remove, or tamper with the Software's licensing, metering, or revocation
-   mechanisms, nor use the Software after your license has ended.
+   Section 1, and the Software will cease to function; when a paid subscription
+   ends, BiVelio may instead grant you a Measure license, under which the Software
+   continues in shadow mode only. You will not circumvent, disable, remove, or tamper
+   with the Software's licensing, metering, or revocation mechanisms, nor use the
+   Software after your license has ended.
 
 3. RESTRICTIONS. Except as expressly permitted above, you will not: (a) distribute,
    publish, resell, rent, lease, lend, offer as a hosted or managed service, or
