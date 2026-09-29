@@ -277,9 +277,14 @@ describe("el punto de ruptura con los resultados agrupados", () => {
     await bucle(capa(new AnthropicProvider({ fetchImpl: api.fetchImpl })), "json", PREGUNTAS);
     // A partir de la segunda pregunta, el prefijo estable acaba en la respuesta
     // «En Madrid hace 21 °C.» (el último mensaje antes de la última pregunta).
+    // La PRIMERA petición de esa pregunta no lo marca todavía: es el primer
+    // seguimiento y nada dice aún que el historial se vaya a reenviar. Los pasos
+    // del bucle que la siguen sí: ellos son esa evidencia (reenvían el historial
+    // idéntico), y ahí empieza a pagar la marca.
     const conHistorial = api.cuerpos.slice(2).map(marcas);
     expect(conHistorial.length).toBe(3);
-    for (const m of conHistorial) expect(m).toContainEqual([3, 0, "text"]);
+    expect(conHistorial[0]).not.toContainEqual([3, 0, "text"]);
+    for (const m of conHistorial.slice(1)) expect(m).toContainEqual([3, 0, "text"]);
     const respuesta = (api.cuerpos[2]!["messages"] as Mensaje[])[3]!.content[0]!;
     expect(respuesta["text"]).toBe("En Madrid hace 21 °C.");
   });

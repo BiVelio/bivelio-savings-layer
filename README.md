@@ -210,8 +210,10 @@ import { createSavingsLayer, OpenAICompatibleProvider } from "@bivelio/savings-l
 
 // Your provider. LLM traffic goes straight to it — the SDK never proxies it.
 // Any OpenAI-compatible endpoint works: OpenAI, Azure, vLLM, SGLang, a gateway.
+// For Gemini, use the native `GoogleProvider` instead (see "Gemini: the native adapter").
 // Model ids are qualified (`openai/gpt-4o-mini`); the prefix is stripped on the
-// wire for OpenAI and Azure and kept for gateways — see `stripProviderPrefix`.
+// wire for OpenAI, Azure and Google's Gemini API and kept for gateways — see
+// `stripProviderPrefix`.
 const provider = new OpenAICompatibleProvider({
   baseUrl: "https://api.openai.com/v1",
   apiKey: process.env.OPENAI_API_KEY,
@@ -259,8 +261,8 @@ never do.
 A repeat is valued by reference only when the call that ran reached the provider's
 own API (`https://api.openai.com`, `https://api.anthropic.com` or
 `https://generativelanguage.googleapis.com`), because the list price it is valued at
-is the invoice only there. When `OpenAICompatibleProvider` or `AnthropicProvider`
-points anywhere else — a proxy such as LiteLLM, a gateway, Azure, Bedrock, Vertex —
+is the invoice only there. When `OpenAICompatibleProvider`, `AnthropicProvider` or
+`GoogleProvider` points anywhere else — a proxy such as LiteLLM, a gateway, Azure, Bedrock, Vertex —
 or when the Anthropic SDK or LangChain adapter reads that its client does, that call
 leaves no reference: its repeats stay `estimated`, and the `reference` trace of the
 call that ran says `unofficial-origin`. When the layer cannot tell where the call
@@ -289,7 +291,12 @@ whole answer when it is short, and it needs a real refusal clause, such as "I'm 
 but I can't help with that", "I cannot assist", "I can't determine…" or "As an AI, I
 cannot provide". After an apology, any verb counts ("I'm sorry, but I can't
 determine…"), and so does a stated reason with no "I can't" ("I'm sorry, but
-accessing … is illegal", "… would be a violation of…"). A single word is not enough.
+accessing … is illegal", "… would be a violation of…"). When the answer opens with
+the refusal itself ("I can't", "I won't", "I'm not going to", "I'm unable to", and
+"No puedo", "Je ne peux pas", "Ich kann … nicht"…), any verb counts too ("I can't
+argue that…"), except for a tested list of idioms that are not refusals ("I can't
+wait", "I won't lie", "I can't find any issues", "I can't be sure, but…").
+A single word is not enough.
 An answer that opens with empathy and, in its first two sentences, sends the user to
 a mental health professional, a crisis line, emergency services or someone they
 trust, instead of answering, counts too (rule `redirection`). It covers English,
@@ -473,6 +480,45 @@ It runs once per HTTP attempt, inside the SDK's retries: an attempt the provider
 rejects reaches the SDK unchanged and is not recorded. Only message creation goes
 through the layer; `countTokens`, batches, models and files pass untouched.
 
+The middleware forwards your request body unchanged, history included, so it never
+edits a turn before a thinking block. It also does not remove parameters the model
+rejects. On Claude Sonnet 5.5, Opus 5.5, Fable 5.1 and Mythos 5.1 a forced
+`tool_choice` (`any` or `tool`) returns a 400. On those models, and on Opus 4.7/4.8,
+Opus 5, Sonnet 5 and Fable 5, so does a non-default `temperature`, `top_p` or `top_k`.
+The middleware warns once per model and cause (`silenceWarnings` turns it off) and
+the API's 400 reaches you unchanged.
+
+<details>
+<summary><b>Claude Sonnet 5.5, Opus 5.5, Fable 5.1: what <code>AnthropicProvider</code> sends instead</b></summary>
+
+These models reject some request parameters with a 400 ([forcing tool
+use](https://platform.claude.com/docs/en/agents-and-tools/tool-use/define-tools#forcing-tool-use),
+[Sonnet 5.5](https://platform.claude.com/docs/en/models/sonnet-5-5/overview)).
+`AnthropicProvider` sends a request they accept instead of failing:
+
+- **Output contract.** A forced `tool_choice` returns a 400 on these models, with or
+  without thinking. When your schema meets `strict` mode, the contract travels as
+  structured output (`output_config.format`). Without your tools, the provider still
+  enforces the contract. With your tools, they stay callable with `tool_choice: auto`
+  and the final text answer comes back in the contract's shape. When your schema does
+  not meet `strict`, the contract travels as a tool the model is not forced to call,
+  with one sentence in the system prompt that tells it to answer through that tool.
+  Models that support forced tool use (Opus 5, Sonnet 5 and the 4.x models) get the
+  same request as before.
+- **`temperature`.** A non-default value is dropped, with one warning per model,
+  because it can only return a 400. The answer is then sampled, not deterministic.
+  `temperature: 1`, the API default, is sent as is.
+- **A model the table does not list** (a new model or a gateway alias): when the API
+  rejects either parameter, the provider repeats the request once without it and
+  remembers the model for later requests. A 400 is not billed, so the retry is not
+  counted in `retries`.
+- **Thinking blocks.** `ChatMessage` does not carry thinking blocks, so this adapter
+  never sends one. The preserved-thinking check, which returns a 400 when a turn
+  before a thinking block has been edited, has nothing to check on its requests, even
+  when the levers that rewrite history are on.
+
+</details>
+
 ## What you get on every request
 
 A `SavingsReport` with the numbers behind every claim, kept in **four separate
@@ -571,7 +617,7 @@ changes the answer, and what they are worth is reported next to the four ledgers
 never folded into `cost.*`, never part of any commission.
 
 **`savings.deferrable`** asks for the provider's Flex tier: OpenAI, and Gemini through
-its OpenAI‑compatible endpoint. Anthropic has no cheaper synchronous tier: its
+`GoogleProvider` (`serviceTier: "flex"`) or its OpenAI‑compatible endpoint. Anthropic has no cheaper synchronous tier: its
 discount lives only in Message Batches, which `layer.batches` (below) sends to.
 Bedrock and DeepSeek off‑peak pricing are not supported.
 
@@ -701,7 +747,16 @@ const agentLayer = createSavingsLayer({
 
 By default the layer writes the provider's prompt cache at two fixed places: the end
 of the system header and the end of the history before your last user message, and
-stops marking a prefix whose measured hit rate does not pay the write premium.
+stops marking a prefix whose measured hit rate does not pay the write premium. On
+Anthropic, where a write costs 1.25x, the history and a tool catalogue sent without a
+system header are marked only when the request itself shows they will be sent again:
+a tool-loop step after your last user message, or a conversation already past its
+second turn. The first follow-up of a conversation (`[question, answer, question]`)
+marks only the system header, so two-turn chats pay no premium that nothing reads.
+In an agent loop with no system header, the end of the tool list is marked once the
+catalogue reaches the model's minimum cacheable size (512 tokens on Claude Sonnet 5.5
+and Opus 5.5, 1,024 on Sonnet 5, 4,096 on Haiku 4.5). That discount is the provider's
+cache on your bytes: it is never credited as the layer's saving.
 
 `cacheBreakpoints: "auto"` places them from what your traffic actually does. The layer
 compares each request's prefix with the ones it sent before, per model, tool set and
@@ -844,6 +899,60 @@ console.log(data.answer); // 8
 </details>
 
 <details>
+<summary><b>Gemini: the native adapter</b></summary>
+
+For Gemini, use `GoogleProvider`: it speaks Gemini's own API (`generateContent` and
+`streamGenerateContent`), where what the layer measures is documented. Keep
+`OpenAICompatibleProvider` for every other provider.
+
+```ts
+import { GoogleProvider } from "@bivelio/savings-layer";
+
+const gemini = createSavingsLayer({
+  provider: new GoogleProvider({ apiKey: process.env.GEMINI_API_KEY, requireUsage: true }),
+  licenseKey: process.env.BIVELIO_LICENSE_KEY,
+});
+
+const { text: answer, report: geminiReport } = await gemini.generate({
+  model: "google/gemini-3.8-flash", // the `google/` prefix never travels
+  messages: [
+    { role: "system", content: "Answer in one sentence." },
+    { role: "user", content: "Why is the sky blue?" },
+  ],
+  maxOutputTokens: 400,
+  reasoningEffort: "low", // → thinkingLevel "LOW" (Gemini 3) or a thinking budget (2.5)
+});
+console.log(answer, geminiReport.cost.actual);
+```
+
+What the native API gives the layer that the OpenAI-compatible endpoint hides:
+
+- **Thinking is billed output.** Output is `candidatesTokenCount + thoughtsTokenCount`
+  (Google bills thinking as output) and the thinking is reported as reasoning. Thought
+  summaries (`thinkingConfig: { includeThoughts: true }` on the adapter) are never part
+  of `text`.
+- **Refusals with their reason.** A blocked prompt (`promptFeedback.blockReason`) or a
+  filtered answer (`finishReason` `SAFETY`, `PROHIBITED_CONTENT`, `BLOCKLIST`, …) is
+  `finishReason: "content_filter"` with the native reason in `finishReasonDetail`:
+  measured from its usage, never cached, never credited.
+- **Tools.** Calls come back with their `id` and `thoughtSignature`; send the assistant
+  turn back with its `toolCalls` as they came (as in the tool loop above) and the
+  signature travels back untouched. The results of one turn go back together.
+- **Implicit caching.** Gemini 2.5 and later cache repeated prefixes on their own; the
+  cached part of the prompt (`cachedContentTokenCount`) is reported as provider-cached
+  tokens. Explicit context caching (`cachedContents`) is not used: it bills storage by
+  the hour, which a per-request report cannot price.
+- **Output contract.** Your schema travels as written in `responseJsonSchema`. Google
+  does not document that every JSON Schema feature is enforced, so a repeat of a request
+  with a schema is not valued by reference.
+- **Thinking level.** `reasoningEffort` follows Google's published mapping. A model that
+  rejects a level (`gemini-3.8-flash` answers 400 to `MINIMAL`) is asked again once at
+  `LOW`, and remembered; the rejected request was not billed. Thinking cannot be turned
+  off on Gemini 3 or 2.5 Pro, so `"none"` there is the lowest level, with a warning.
+
+</details>
+
+<details>
 <summary><b>Output cap — with or without a contract</b></summary>
 
 `maxOutputTokens` on the request caps the answer of any request, free text
@@ -865,6 +974,25 @@ understand. If an endpoint answers 400 naming the field it got as unsupported, t
 request is repeated once with the other one (nothing was generated, so nothing is
 billed twice) and the model is remembered. To choose the field yourself:
 `new OpenAICompatibleProvider({ baseUrl, maxTokensParam: "max_completion_tokens" })`.
+
+**OpenAI-compatible endpoints that are not OpenAI** (Gemini's
+`generativelanguage.googleapis.com/v1beta/openai`, LiteLLM, vLLM, Ollama, a router).
+`prompt_cache_key`, OpenAI's prefix-cache routing hint, goes only to OpenAI's own API:
+Gemini answers 400 to a field it does not know, and up to 0.4.31 every request with a
+cached prefix failed there. A proxy in front of OpenAI that forwards it can opt in with
+`sendPromptCacheKey: true`. Any optional field an endpoint still rejects by name
+(`prompt_cache_key`, `service_tier`, `seed`, `reasoning_effort`) is dropped, the request
+repeated once and the model remembered; `reasoning_effort` is never dropped on OpenAI's
+own API, where its 400 is the answer. Gemini leaves its thinking tokens out of
+`completion_tokens` and bills them as output, so the layer counts output as
+`total_tokens − prompt_tokens` whenever the total is larger (and reports the difference
+as reasoning); on OpenAI's API `completion_tokens` already include reasoning and nothing
+is added. Gemini stops a filtered answer with `finish_reason: "content_filter: OTHER"`
+(or another reason): it is `finishReason: "content_filter"` (the adapter keeps the
+reason in `finishReasonDetail` and the report's cache trace names it), and like every
+provider refusal it is measured, never
+cached and never credited. Google does not document that such refusals are free, so
+they are costed from their `usage` like any call.
 
 The cap is yours, not a saving: it is never credited as output avoided. An answer
 it cut (`finishReason: "length"`) is not cached, and
@@ -924,6 +1052,21 @@ console.log(res.text);
   the SDK warns once.
 - **Errors.** When a tool fails, put the error in `content` and set `isError: true`.
   Anthropic receives it as `is_error`; providers without such a flag get the text.
+- **Gemini 3's thought signature.** With `GoogleProvider` it travels in each call's
+  `thoughtSignature` and comes back in `call.extraContent` in the same shape as below,
+  so a conversation can move between the two Gemini adapters. Through its
+  OpenAI-compatible endpoint Gemini
+  returns each call with `extra_content.google.thought_signature` and rejects the next
+  turn with a 400 if the call comes back without it. It arrives in `call.extraContent`;
+  pushing `res.toolCalls` back as they came (as above) sends it back untouched. It is
+  opaque and not part of any cache key.
+- **gpt-5.6-sol, gpt-5.6-terra and gpt-5.6-luna with tools need `reasoningEffort: "none"`.**
+  On Chat Completions OpenAI rejects function tools for these models unless
+  `reasoning_effort` is `"none"` («Function tools with reasoning_effort are not supported for gpt-5.6-sol in
+  /v1/chat/completions»). Declare it on the request:
+  `layer.generate({ model: "openai/gpt-5.6-sol", messages, tools, reasoningEffort: "none" })`.
+  The layer never picks an effort itself: without the field nothing is sent. It is part
+  of the cache key, like `temperature` and `seed`.
 
 A tool‑call turn is never served from cache and never counted as an avoided call:
 an action that has not run yet cannot be a saving. The answer that follows a tool loop

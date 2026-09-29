@@ -1,0 +1,220 @@
+name: publish-pypi
+
+# Publica el cliente de Python (packages/python, `bivelio-savings-layer` en
+# PyPI, `import bvsala`) al publicar una GitHub Release cuya etiqueta empieza
+# por `py-v` (p. ej. `py-v0.1.0`). Las Release `v*` son del paquete de npm y
+# las publica publish.yml, que salta las `py-v*`: las dos cadenas no se pisan.
+#
+# AUTENTICACIÓN: PyPI TRUSTED PUBLISHING (OIDC), sin token guardado. GitHub
+# emite un token OIDC de vida corta para ESTE workflow y PyPI lo canjea por un
+# permiso de subida de pocos minutos. PyPI lo ata a cuatro valores exactos:
+# owner `BiVelio`, repositorio `bivelio-savings-layer`, workflow
+# `publish-pypi.yml` y environment `pypi`. El paso del dueño en pypi.org (el
+# «pending publisher», que crea el proyecto en la primera subida) está en
+# docs/PUBLICAR-PYPI.md: sin él, la subida falla con `invalid-publisher`.
+#
+# ATESTACIONES (PEP 740): SOLO si el repositorio es público. La acción las
+# genera por defecto y las firma con Sigstore, cuyo registro de transparencia
+# es público y lleva la identidad del workflow (repositorio, ruta, ref). Con el
+# repositorio privado eso publicaría su nombre y su estructura; es la misma
+# decisión que `--provenance` en publish.yml. El día que el repo sea público,
+# entran solas.
+#
+# VERSIÓN: propia del cliente de Python, no la del paquete de npm. Vive en
+# packages/python/src/bvsala/__init__.py (`__version__`) y pyproject la lee de
+# ahí. La etiqueta tiene que ser `py-v<esa versión>`: si no, no se publica.
+#
+# TRES TRABAJOS, cada uno con el mínimo permiso:
+#   pruebas   (contents: read)   pytest en la versión más vieja y en la más
+#                                nueva que declara pyproject, con las mismas
+#                                dependencias fijadas por hash que ci.yml.
+#   construir (contents: read)   etiqueta == versión, sdist + wheel UNA vez con
+#                                herramientas fijadas por hash, `twine check
+#                                --strict`, qué lleva cada archivo, prueba de
+#                                instalación del wheel y el sha256 de lo que se
+#                                sube. Es el único que instala código de
+#                                terceros, y por eso no puede pedir OIDC.
+#   publicar  (id-token: write)  sube EXACTAMENTE lo construido. No hace
+#                                checkout ni instala nada: solo dos acciones
+#                                (download-artifact y la de PyPA).
+on:
+  release:
+    types: [published]
+
+# Nada por defecto: cada trabajo declara lo suyo.
+permissions: {}
+
+jobs:
+  pruebas:
+    if: ${{ startsWith(github.event.release.tag_name, 'py-v') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.14"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Dependencias de prueba (fijadas por hash)
+        run: 'python -m pip install --require-hashes --only-binary :all: -r packages/python/requirements-ci.txt'
+      - name: pytest (sin red)
+        run: python -m pytest packages/python -q
+
+  construir:
+    needs: pruebas
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    # El sha256 de cada archivo viaja como SALIDA del trabajo, no dentro del
+    # artefacto: así el que publica tiene contra qué comparar lo que le llega.
+    outputs:
+      sha256: ${{ steps.hash.outputs.sha256 }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      # build, twine y el backend (hatchling) llegan por hash. Por eso se
+      # construye con `--no-isolation`: con aislamiento, `build` bajaría
+      # hatchling del índice sin fijar.
+      - name: Herramientas de construcción (fijadas por hash)
+        run: 'python -m pip install --require-hashes --only-binary :all: -r packages/python/requirements-publicar.txt'
+
+      - name: La etiqueta coincide con la versión del paquete
+        run: |
+          ETIQUETA="${GITHUB_REF_NAME#py-v}"
+          VERSION="$(sed -n 's/^__version__ = "\(.*\)"$/\1/p' packages/python/src/bvsala/__init__.py)"
+          if [ -z "$VERSION" ]; then
+            echo "::error::No encuentro __version__ en packages/python/src/bvsala/__init__.py."
+            exit 1
+          fi
+          if [ "$GITHUB_REF_NAME" != "py-v$ETIQUETA" ] || [ "$ETIQUETA" != "$VERSION" ]; then
+            echo "::error::La Release es '$GITHUB_REF_NAME' pero el paquete de Python dice '$VERSION' (se espera 'py-v$VERSION')."
+            exit 1
+          fi
+          echo "etiqueta y paquete coinciden en $VERSION"
+
+      # La descripción de PyPI es el README tal como está en la etiqueta, y PyPI
+      # no la cambia sin otra versión: no puede subir diciendo «aún no está en
+      # PyPI» ni sin el comando de instalación.
+      - name: El README anuncia la instalación desde PyPI
+        run: |
+          if ! grep -q "pip install bivelio-savings-layer" packages/python/README.md; then
+            echo "::error::packages/python/README.md no dice 'pip install bivelio-savings-layer': sería la página de PyPI."
+            exit 1
+          fi
+          if grep -qi "until the first release on pypi" packages/python/README.md; then
+            echo "::error::packages/python/README.md dice que aún no está en PyPI: sería la página de PyPI."
+            exit 1
+          fi
+          echo "README listo para PyPI"
+
+      - name: Construir sdist y wheel
+        run: |
+          python -m build --no-isolation packages/python --outdir paquete-py
+          ls -l paquete-py
+
+      - name: twine check --strict
+        run: python -m twine check --strict paquete-py/*
+
+      # Lo que de verdad se sube, comprobado sobre los archivos y no sobre el
+      # árbol de trabajo: exactamente un sdist y un wheel con la versión de la
+      # etiqueta, la LICENSE dentro, la licencia declarada y ninguna clave
+      # privada (misma búsqueda que publish.yml: PEM y base64 del PEM).
+      - name: Los archivos llevan lo que deben
+        run: |
+          V="${GITHUB_REF_NAME#py-v}"
+          WHL="paquete-py/bivelio_savings_layer-$V-py3-none-any.whl"
+          SDIST="paquete-py/bivelio_savings_layer-$V.tar.gz"
+          if [ "$(ls paquete-py | wc -l)" -ne 2 ] || [ ! -f "$WHL" ] || [ ! -f "$SDIST" ]; then
+            echo "::error::Se esperaban exactamente $WHL y $SDIST."
+            exit 1
+          fi
+          DIR="$(mktemp -d)"
+          python -m zipfile -e "$WHL" "$DIR/whl"
+          mkdir "$DIR/sdist" && tar xzf "$SDIST" -C "$DIR/sdist"
+          if ! cmp -s LICENSE "$DIR/whl/bivelio_savings_layer-$V.dist-info/licenses/LICENSE"; then
+            echo "::error::El wheel no lleva la LICENSE del repositorio."
+            exit 1
+          fi
+          if ! grep -qx "License-Expression: LicenseRef-BiVelio-Commercial" "$DIR/whl/bivelio_savings_layer-$V.dist-info/METADATA"; then
+            echo "::error::El wheel no declara la licencia comercial."
+            exit 1
+          fi
+          if grep -q "^Requires-Dist:" "$DIR/whl/bivelio_savings_layer-$V.dist-info/METADATA"; then
+            echo "::error::El wheel declara dependencias: el cliente es solo biblioteca estándar."
+            exit 1
+          fi
+          if grep -rqaE "PRIVATE KEY|UFJJVkFURSBLRV|BSSVZBVEUgS0VZ|QUklWQVRFIEtFW" "$DIR"; then
+            echo "::error::Un archivo del paquete lleva una clave privada."
+            exit 1
+          fi
+          rm -rf "$DIR"
+          echo "archivos verificados"
+
+      # El wheel se instala solo, sin índice y sin dependencias, en un entorno
+      # limpio: si le faltara un módulo o la versión no fuera la de la etiqueta,
+      # se ve aquí y no en el primer `pip install` de un cliente.
+      - name: El wheel se instala e importa
+        run: |
+          V="${GITHUB_REF_NAME#py-v}"
+          python -m venv /tmp/prueba-wheel
+          /tmp/prueba-wheel/bin/python -m pip install --no-index --no-deps "paquete-py/bivelio_savings_layer-$V-py3-none-any.whl"
+          cd /tmp
+          /tmp/prueba-wheel/bin/python -c "import bvsala, sys; v = bvsala.__version__; print('bvsala', v); sys.exit(0 if v == sys.argv[1] else 1)" "$V"
+          /tmp/prueba-wheel/bin/python -m bvsala --help > /dev/null
+
+      - name: Hash de los archivos verificados
+        id: hash
+        run: |
+          H="$(cd paquete-py && sha256sum * | sort -k2 | sha256sum | cut -d' ' -f1)"
+          echo "sha256=$H" >> "$GITHUB_OUTPUT"
+          (cd paquete-py && sha256sum *)
+          echo "conjunto verificado: sha256 $H"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: paquete-py
+          path: paquete-py/
+          if-no-files-found: error
+
+  publicar:
+    needs: construir
+    runs-on: ubuntu-latest
+    # El entorno se crea solo en la primera ejecución. En pypi.org el trusted
+    # publisher se ata a este nombre: ver docs/PUBLICAR-PYPI.md.
+    environment:
+      name: pypi
+      url: https://pypi.org/project/bivelio-savings-layer/
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: paquete-py
+          path: paquete-py
+
+      - name: Los archivos son los verificados
+        env:
+          SHA256_VERIFICADO: ${{ needs.construir.outputs.sha256 }}
+        run: |
+          if ! printf '%s' "$SHA256_VERIFICADO" | grep -Eqx '[0-9a-f]{64}'; then
+            echo "::error::construir no dejó el sha256 en su salida."
+            exit 1
+          fi
+          H="$(cd paquete-py && sha256sum * | sort -k2 | sha256sum | cut -d' ' -f1)"
+          if [ "$H" != "$SHA256_VERIFICADO" ]; then
+            echo "::error::Los archivos no son los que se verificaron."
+            exit 1
+          fi
+          echo "archivos verificados: sha256 ${H:0:16}…"
+
+      - name: Publicar en PyPI (trusted publishing)
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: paquete-py/
+          attestations: ${{ github.event.repository.private == false }}

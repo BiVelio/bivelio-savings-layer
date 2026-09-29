@@ -22,6 +22,13 @@ export interface LlamadaHerramienta {
   id?: string;
   name: string;
   arguments: string;
+  /**
+   * El `extra_content` opaco que el proveedor adjunta a la llamada (Gemini 3 por su
+   * endpoint compatible con OpenAI: `{ google: { thought_signature } }`). Gemini 3
+   * EXIGE devolverlo en el turno siguiente (sin él: HTTP 400 «Function call is
+   * missing a thought_signature»), así que un integrador que lo recibe lo reenvía.
+   */
+  extra?: EsquemaJson;
 }
 
 export type Turno =
@@ -83,7 +90,7 @@ function mensajesOpenAI(turnos: Turno[]): EsquemaJson[] {
       return {
         role: "assistant",
         content: t.content || null,
-        tool_calls: t.llamadas.map((l) => ({ id: l.id, type: "function", function: { name: l.name, arguments: l.arguments } })),
+        tool_calls: t.llamadas.map((l) => ({ id: l.id, type: "function", function: { name: l.name, arguments: l.arguments }, ...(l.extra ? { extra_content: l.extra } : {}) })),
       };
     }
     // OpenAI no tiene bandera de error: el texto viaja igual (como hace la capa).
@@ -131,7 +138,13 @@ export function leerRespuesta(familia: Familia, r: EsquemaJson | null): { texto:
     texto: typeof msg["content"] === "string" ? (msg["content"] as string) : "",
     llamadas: tcs.map((tc) => {
       const f = (tc["function"] ?? {}) as EsquemaJson;
-      return { id: String(tc["id"]), name: String(f["name"]), arguments: String(f["arguments"] ?? "") };
+      const extra = tc["extra_content"];
+      return {
+        id: String(tc["id"]),
+        name: String(f["name"]),
+        arguments: String(f["arguments"] ?? ""),
+        ...(extra && typeof extra === "object" && !Array.isArray(extra) ? { extra: extra as EsquemaJson } : {}),
+      };
     }),
     ...(typeof eleccion?.["finish_reason"] === "string" ? { parada: eleccion["finish_reason"] as string } : {}),
   };
@@ -169,7 +182,11 @@ export function herramientasDeLaCapa(hs: HerramientaNeutral[]): ToolDescriptor[]
 export function mensajesDeLaCapa(turnos: Turno[]): ChatMessage[] {
   return turnos.map((t): ChatMessage => {
     if (t.role === "user") return { role: "user", content: t.content };
-    if (t.role === "assistant") return { role: "assistant", content: t.content, toolCalls: t.llamadas };
+    // Se le pasa a la capa TODO lo que el cliente tiene de cada llamada, `extra_content` incluido
+    // (como campo de más): si no llega al cable, es la capa quien lo pierde, no el banco.
+    if (t.role === "assistant") {
+      return { role: "assistant", content: t.content, toolCalls: t.llamadas.map((l) => ({ ...l, ...(l.extra ? { extra_content: l.extra } : {}) })) } as ChatMessage;
+    }
     return { role: "tool", toolCallId: t.id, name: t.name, content: t.content, ...(t.isError ? { isError: true } : {}) };
   });
 }
@@ -202,9 +219,16 @@ function sinCacheControl(v: unknown): unknown {
   return v;
 }
 
+/** Claves en orden: el orden de las claves de un objeto JSON no cambia la petición. */
+function clavesOrdenadas(v: unknown): unknown {
+  if (Array.isArray(v)) return v.map(clavesOrdenadas);
+  if (v && typeof v === "object") return Object.fromEntries(Object.keys(v as EsquemaJson).sort().map((k) => [k, clavesOrdenadas((v as EsquemaJson)[k])]));
+  return v;
+}
+
 /** Un mensaje con `content` de texto plano o de un único bloque de texto se compara igual. */
 function normalizarMensaje(m: unknown): unknown {
-  const x = sinCacheControl(m) as EsquemaJson;
+  const x = clavesOrdenadas(sinCacheControl(m)) as EsquemaJson;
   const c = x["content"];
   if (Array.isArray(c) && c.length === 1 && (c[0] as EsquemaJson)["type"] === "text") {
     return { ...x, content: (c[0] as EsquemaJson)["text"] };
