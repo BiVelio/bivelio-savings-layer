@@ -30,7 +30,7 @@ collision with `public`, sharing only `auth.users`. Consequences:
 | `subscriptions` | Stripe per-seat subscriptions |
 | `seat_activity` | Raw per-`(org, seat, day)` grain the SDK reports (counts + `is_ci` only). The billing basis: `billable_seats()` counts distinct non-CI seats active ≥3 days/month. Stores no content |
 | `usage_daily` | Daily usage rollups (fed atomically by `ingest_usage_batch`) — what the dashboard charts and billing reads |
-| `medir_altas` | Who claimed the free **Measure** license for which org (0032): PK `user_id` (one org per verified account), unique `org_id`, the email **domain** only, and the operator's `bloqueada` flag. Service role only |
+| `medir_altas` | Who claimed the free **Measure** license for which org (0033): PK `user_id` (one org per verified account), unique `org_id`, the email **domain** only, and the operator's `bloqueada` flag. Service role only |
 
 ## Data-minimization
 

@@ -1,4 +1,4 @@
--- 0032 — la licencia «Medir» (plan `measure`): gratuita, permanente, sin tarjeta.
+-- 0033 — la licencia «Medir» (plan `measure`): gratuita, permanente, sin tarjeta.
 --
 -- QUÉ ES: el SDK y la pasarela en SOMBRA —calculan lo que habrían ahorrado— y
 -- SIN palancas: la petición del cliente sale intacta al proveedor y nada se
@@ -17,13 +17,21 @@
 --      siempre: lib/license/issue.ts#revokeLicense).
 --
 -- LO QUE NO NECESITA MIGRACIÓN: el uso de una org Medir entra por la RPC de
--- siempre. La ingesta (app/api/metering/usage) lo NEUTRALIZA antes (baseline ==
+-- siempre (la de 0032, que esta migración NO redefine ni toca). La ingesta (app/api/metering/usage) lo NEUTRALIZA antes (baseline ==
 -- actual, sin referencia), así que no puede crear base de comisión; y lo que
 -- habría ahorrado viaja con basis 'shadow', que 0021 acumula solo en shadow_*.
 --
--- ORDEN DE DESPLIEGUE: esta migración ANTES del código web (la ruta
--- /api/license/measure escribe `medir_altas` y licencias con plan 'measure', que
--- sin el CHECK nuevo fallan con 23514 — fail-closed: no se emite nada).
+-- NUMERACIÓN Y GUARD: 0033 va DESPUÉS de 0032 (el ahorro nativo, PR #412) y lo
+-- exige aplicado, igual que 0032 exige 0031: se aplica en orden ascendente
+-- estricto (regla 2 del runbook) y un prod a medias ABORTA aquí antes de tocar
+-- nada. No depende de nada de 0032 para funcionar —no toca `ingest_usage_batch`
+-- ni `usage_daily`, así que no puede regresar la RPC de 0032 (regla 1 intacta)—;
+-- el guard fija el ORDEN, no una dependencia técnica.
+--
+-- ORDEN DE DESPLIEGUE: 0029 → 0030 → 0031 → 0032 → 0033, y esta migración ANTES
+-- del código web (la ruta /api/license/measure escribe `medir_altas` y licencias
+-- con plan 'measure', que sin el CHECK nuevo fallan con 23514 — fail-closed: no
+-- se emite nada). Después la web; el paquete npm, el último.
 -- Idempotente: correrla dos veces no cambia nada la segunda.
 
 -- Diagnóstico: to_regclass('bvsala.medir_altas') is not null
@@ -32,7 +40,16 @@
 do $$
 begin
   if to_regclass('bvsala.organizations') is null or to_regclass('bvsala.licenses') is null then
-    raise exception '0032: base ausente (organizations / licenses)';
+    raise exception '0033: base ausente (organizations / licenses)';
+  end if;
+  -- 0032 (el ahorro nativo): su columna Y su versión de la RPC. Abortar es el
+  -- resultado BUENO: aplicar 0032 (y antes 0031) y volver a lanzar 0033.
+  if not exists (select 1 from information_schema.columns where table_schema='bvsala' and table_name='usage_daily' and column_name='native_cache_read_savings')
+     or not exists (select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+                     where n.nspname='bvsala' and p.proname='ingest_usage_batch'
+                       and p.prosrc like '%nativeCacheReadSavings%' and p.prosrc like '%seat_activity.reference_baseline_cost%')
+  then
+    raise exception '0033: base 0032 ausente — aplicar 0032 antes, en orden ascendente';
   end if;
 end $$;
 
@@ -43,7 +60,9 @@ alter table bvsala.licenses
   check (plan in ('free', 'measure', 'pro', 'team', 'enterprise'));
 
 -- 2 · una Medir viva por organización. El código (lib/license/medir.ts) trata el
--- 23505 de una doble pulsación devolviendo la que ganó.
+-- 23505 de una doble pulsación devolviendo la que ganó. La vuelta a Medir al
+-- cancelar (webhook) o al degradar por impago (cron) emite solo si no hay una
+-- viva, y la cancelación CONSERVA la viva: el índice no choca con ninguna de las dos.
 create unique index if not exists licenses_una_medir_viva_por_org
   on bvsala.licenses (org_id)
   where plan = 'measure' and revoked = false;
