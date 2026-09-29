@@ -56,3 +56,55 @@ describe("LicensingService", () => {
     expect(b.validate(token).status).toBe("invalid");
   });
 });
+
+describe("LicensingService · la licencia Medir (measure)", () => {
+  it("issueMeasure firma una licencia sin features, con el tope de asientos y el plazo largo", async () => {
+    const { MEASURE_LIMITS } = await import("@bivelio/protocol");
+    const svc = createLicensingService({ nowSeconds: () => BASE });
+    const { token, payload } = svc.issueMeasure("org_m");
+    expect(payload.plan).toBe("measure");
+    expect(payload.features).toEqual([]);
+    expect(payload.seats).toBe(MEASURE_LIMITS.seats);
+    // Firmada «caducada» para los verificadores que no conocen el plan…
+    expect(payload.expires_at).toBe(BASE);
+    expect(payload.grace_days).toBe(0);
+    // …con la vigencia real en sus campos propios.
+    expect(payload.measure_expires_at).toBe(BASE + MEASURE_LIMITS.termDays * DAY);
+    expect(payload.measure_grace_days).toBe(MEASURE_LIMITS.graceDays);
+    const resolved = svc.validate(token);
+    expect(resolved.status).toBe("active");
+    expect(resolved.entitlements.plan).toBe("measure");
+    expect(resolved.entitlements.features).toEqual([]);
+  });
+
+  it("issue() normaliza un plan measure que llegue con features o asientos de más", () => {
+    const svc = createLicensingService({ nowSeconds: () => BASE });
+    const { payload } = svc.issue({
+      orgId: "org_m",
+      plan: "measure",
+      seats: 500,
+      features: ["semantic_cache", "context_elision"],
+      termDays: 1,
+    });
+    expect(payload.features).toEqual([]);
+    expect(payload.seats).toBe(5);
+    expect(payload.measure_expires_at! - payload.issued_at).toBeGreaterThan(365 * DAY);
+  });
+
+  it("sigue activa pasado un año (la vigencia real manda), y caduca al final de la suya", () => {
+    let now = BASE;
+    const svc = createLicensingService({ nowSeconds: () => now });
+    const { token } = svc.issueMeasure("org_m");
+    now = BASE + 400 * DAY;
+    expect(svc.validate(token).status).toBe("active");
+    now = BASE + (3650 + 31) * DAY;
+    expect(svc.validate(token).status).toBe("expired");
+  });
+
+  it("una licencia measure es revocable como cualquier otra", () => {
+    const svc = createLicensingService({ nowSeconds: () => BASE });
+    const { token, payload } = svc.issueMeasure("org_m");
+    svc.revoke(payload.jti);
+    expect(svc.validate(token).status).toBe("revoked");
+  });
+});

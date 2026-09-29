@@ -55,6 +55,12 @@ export interface DependenciasDeLotes {
   provider: unknown;
   costModels?: Record<string, CostModel>;
   exigirLicencia: () => void;
+  /**
+   * Submitting a batch IS a lever (the batch tier bills half): on the free
+   * Measure license, which only measures in shadow mode, it is refused. Reading
+   * or cancelling a batch already sent is not. Optional so no caller breaks.
+   */
+  exigirPalancas?: () => void;
   now: () => number;
 }
 
@@ -132,6 +138,7 @@ async function enviarLote(
   options: BatchSubmitOptions,
 ): Promise<BatchJob> {
   dep.exigirLicencia();
+  dep.exigirPalancas?.();
   const cap = capacidadDe(dep);
   validarPeticiones(requests);
   const tope = topeDePeticiones(options.maxRequestsPerBatch, cap.protocolo);
@@ -372,6 +379,7 @@ interface EstadoDeTrozo {
 
 async function estadoDelLote(dep: DependenciasDeLotes, job: BatchJob, signal?: AbortSignal): Promise<BatchJobStatus> {
   dep.exigirLicencia();
+  dep.exigirPalancas?.();
   const cap = capacidadDe(dep);
   validarJob(job, cap);
   const trozos = await estadosDeTrozos(cap, job, signal);
@@ -472,6 +480,7 @@ function resumirEstado(job: BatchJob, trozos: EstadoDeTrozo[]): BatchJobStatus {
 
 async function cancelarLote(dep: DependenciasDeLotes, job: BatchJob, signal?: AbortSignal): Promise<BatchJobStatus> {
   dep.exigirLicencia();
+  dep.exigirPalancas?.();
   const cap = capacidadDe(dep);
   validarJob(job, cap);
   const antes = await estadosDeTrozos(cap, job, signal);
@@ -497,6 +506,7 @@ async function resultadosDelLote<T>(
   signal?: AbortSignal,
 ): Promise<BatchResults<T>> {
   dep.exigirLicencia();
+  dep.exigirPalancas?.();
   const cap = capacidadDe(dep);
   validarJob(job, cap);
   const trozos = await estadosDeTrozos(cap, job, signal);

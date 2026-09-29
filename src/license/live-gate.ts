@@ -23,6 +23,8 @@ export interface ResolvedGate extends LicenseGate {
    * branching does not change — but the advice given to the customer differs.
    */
   reason(): string | undefined;
+  /** The signed plan while the license grants (`"measure"` = shadow mode). */
+  plan?(): string | undefined;
   /** Unix seconds after which the online status should be re-checked (poller anchor). */
   refreshAfter?(): number | undefined;
 }
@@ -68,7 +70,9 @@ export function liveGateFromKey(
       ? verifyLicenseToken(key, publicKey)
       : { signatureValid: false as const, reason: shape };
   const payload: LicenseTokenPayload | undefined = v.signatureValid ? v.payload : undefined;
-  const features = new Set<string>(payload?.features ?? []);
+  // Una licencia Medir («measure») no concede NINGÚN feature, lleve lo que lleve
+  // el token: el pipeline la corre en sombra y ninguna palanca se aplica.
+  const features = new Set<string>(payload?.plan === "measure" ? [] : (payload?.features ?? []));
 
   const status = (): LicenseStatus => {
     // Vacía tras normalizar = no hay clave. Es el mismo caso —y el mismo
@@ -128,6 +132,7 @@ export function liveGateFromKey(
     isActive: () => granted(),
     status,
     reason: () => (payload ? undefined : v.reason),
+    plan: () => (payload && granted() ? payload.plan : undefined),
     refreshAfter: () => {
       if (!payload) return undefined;
       // Anchor cadence to the token's own refresh horizon (mirrors

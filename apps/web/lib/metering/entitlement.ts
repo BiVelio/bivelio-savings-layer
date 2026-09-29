@@ -17,6 +17,23 @@ export interface LicenseRow {
   revoked: boolean;
   expires_at: string; // ISO
   grace_days: number;
+  /**
+   * El plan firmado. Solo importa para distinguir la licencia gratuita «Medir»
+   * (`measure`), que NO es una licencia pagada: ni cuenta para el barrido de
+   * impago ni para el invariante «paga y no tiene licencia». Opcional porque las
+   * consultas que no lo piden tratan la fila como pagada (lo que eran antes).
+   */
+  plan?: string | null;
+}
+
+/** ¿Es la licencia gratuita «Medir»? */
+const esMedir = (l: LicenseRow): boolean => l.plan === "measure";
+
+function viva(l: LicenseRow, nowMs: number): boolean {
+  if (l.revoked) return false;
+  const expira = Date.parse(l.expires_at);
+  if (Number.isNaN(expira)) return false;
+  return nowMs <= expira + (l.grace_days ?? 0) * DAY_MS;
 }
 
 export interface SubscriptionRow {
@@ -36,13 +53,14 @@ const DAY_MS = 86_400_000;
  * alguien con el SDK corriendo.
  */
 export function hasValidLicense(licenses: LicenseRow[], nowMs: number): boolean {
-  return licenses.some((l) => {
-    if (l.revoked) return false;
-    const expira = Date.parse(l.expires_at);
-    if (Number.isNaN(expira)) return false;
-    const finGracia = expira + (l.grace_days ?? 0) * DAY_MS;
-    return nowMs <= finGracia;
-  });
+  // Una licencia Medir NO es una licencia pagada: no salva de la degradación por
+  // impago ni tapa el invariante «paga y no tiene licencia».
+  return licenses.some((l) => !esMedir(l) && viva(l, nowMs));
+}
+
+/** ¿Tiene la org una licencia Medir viva? */
+export function hasValidMeasureLicense(licenses: LicenseRow[], nowMs: number): boolean {
+  return licenses.some((l) => esMedir(l) && viva(l, nowMs));
 }
 
 /** ¿ESTA suscripción concreta cubre a la org ahora mismo? */
@@ -87,6 +105,12 @@ export function hasActiveSubscription(
 export type EntitlementReason =
   | "valid-license"
   | "active-subscription"
+  /**
+   * Solo la licencia gratuita «Medir»: NO bloquea (su uso se ingiere para el
+   * panel), pero la ingesta lo neutraliza para que jamás genere comisión ni una
+   * referencia cobrable (`neutralizarParaMedir`), y le aplica los topes.
+   */
+  | "measure-license"
   | "no-license"
   | "license-revoked"
   | "license-expired";
@@ -116,6 +140,8 @@ export function decideEntitlement(
 ): EntitlementDecision {
   if (hasValidLicense(licenses, nowMs)) return { blocked: false, reason: "valid-license" };
   if (hasActiveSubscription(subscriptions, nowMs)) return { blocked: false, reason: "active-subscription" };
+  // Después de las dos de pago: una org que paga y conserva su Medir es de pago.
+  if (hasValidMeasureLicense(licenses, nowMs)) return { blocked: false, reason: "measure-license" };
 
   // Sin licencia válida ni suscripción que cubra: se bloquea siempre. El motivo
   // distingue a quien nunca tuvo licencia de quien la tuvo y la perdió.

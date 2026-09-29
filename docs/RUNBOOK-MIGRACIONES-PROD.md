@@ -1,4 +1,4 @@
-# Runbook — migraciones 0007–0017 en producción (+ anexos 0024/0025 … 0031)
+# Runbook — migraciones 0007–0017 en producción (+ anexos 0024/0025 … 0032)
 
 **Escrito el 2026-08-26.** Estado de partida conocido: 0001–0006 aplicadas
 (bitácoras de julio), 0012 **confirmada** aplicada (verificación del 2026-08-11
@@ -56,10 +56,12 @@ select m.mig, m.aplicada from (values
   ('0015 tokens gastados',    exists (select 1 from pg_constraint where conrelid='bvsala.usage_daily'::regclass and conname='usage_daily_token_totals_no_negatives')),
   ('0016 extractos',          to_regclass('bvsala.extractos') is not null),
   ('0017 cargos',             to_regclass('bvsala.cargos') is not null),
+  ('0033 licencia Medir',     to_regclass('bvsala.medir_altas') is not null and to_regclass('bvsala.licenses_una_medir_viva_por_org') is not null),
   ('0029 medido por referencia', to_regclass('bvsala.reference_hits') is not null),
   ('0030 tu propio banco', to_regclass('bvsala.verification_samples') is not null and to_regclass('bvsala.verification_daily') is not null and to_regprocedure('bvsala.ingest_verification_batch(uuid, text, jsonb, jsonb)') is not null and to_regprocedure('bvsala.verification_summary(uuid, date, date)') is not null),
   ('0031 referencia por asiento', exists (select 1 from information_schema.columns where table_schema='bvsala' and table_name='seat_activity' and column_name='reference_baseline_cost')),
-  ('RPC en version final (0031)', exists (select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='bvsala' and p.proname='ingest_usage_batch' and p.prosrc like '%reference_hits%' and p.prosrc like '%seat_activity.reference_baseline_cost%'))
+  ('0032 ahorro nativo', exists (select 1 from information_schema.columns where table_schema='bvsala' and table_name='usage_daily' and column_name='native_cache_read_savings')),
+  ('RPC en version final (0032)', exists (select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='bvsala' and p.proname='ingest_usage_batch' and p.prosrc like '%reference_hits%' and p.prosrc like '%seat_activity.reference_baseline_cost%' and p.prosrc like '%nativeCacheReadSavings%'))
 ) as m(mig, aplicada) order by 1;
 SQL
 
@@ -88,7 +90,8 @@ migración crea:
 | 0029 | tabla `reference_hits` | El carril medido por referencia (anexo 0029). Lleva versión de la RPC — regla 1 |
 | 0030 | tablas `verification_samples` y `verification_daily` + funciones `ingest_verification_batch` y `verification_summary` | «Tu propio banco» (anexo 0030). Aditiva; **no** lleva versión de la función de uso: el orden respecto a 0029 y a 0031 da igual |
 | 0031 | columna `seat_activity.reference_baseline_cost` | Lo medido por referencia, también por asiento (anexo 0031, al final). Lleva versión de la RPC — regla 1 |
-| RPC final | el fuente de `ingest_usage_batch` menciona `reference_hits` **y** `seat_activity.reference_baseline_cost` | La versión **final** de la RPC es la de 0031 (antes lo fue la de 0015, luego 0024, 0025 y 0029). Si 0031 sale `true` pero esto sale `false`, alguien regresó la RPC: re-aplicar **solo** el bloque de función de 0031 |
+| 0032 | columna `usage_daily.native_cache_read_savings` + check `usage_daily_native_no_negatives` | El ahorro nativo de la caché del proveedor, aparte y sin comisión (anexo 0032, al final). Lleva versión de la RPC — regla 1 |
+| RPC final | el fuente de `ingest_usage_batch` menciona `reference_hits`, `seat_activity.reference_baseline_cost` **y** `nativeCacheReadSavings` | La versión **final** de la RPC es la de 0032 (antes lo fue la de 0015, luego 0024, 0025, 0029 y 0031). Si 0032 sale `true` pero esto sale `false`, alguien regresó la RPC: re-aplicar **solo** el bloque de función de 0032 |
 
 ## Paso 2 — Aplicar lo que falte, en orden
 
@@ -448,6 +451,57 @@ jq -Rs '{query:.}' < /tmp/diagnostico-0018-0020.sql | curl -sf \
 - `false` en 0018 o 0020 → el bucle del paso 2 con `PENDIENTES="0018"` o
   `"0020"`. Las tres son idempotentes (`if not exists`).
 
+## Anexo — 0033 (septiembre de 2026): la licencia Medir
+
+> Va aquí y no al final para no pisar el anexo de 0032 (#412); en el orden de
+> aplicación es la **última**: 0029 → 0030 → 0031 → 0032 → **0033**.
+
+La licencia gratuita «Medir» (plan `measure`, `docs/LICENCIA-MEDIR.md`). 0033:
+
+- admite `measure` en el CHECK de `licenses.plan`;
+- el índice único parcial `licenses_una_medir_viva_por_org` (una Medir viva por
+  organización);
+- la tabla `medir_altas` (PK `user_id`, `org_id` único, dominio del correo,
+  `bloqueada`), solo para el service role.
+
+**No toca `ingest_usage_batch` ni `usage_daily`**: no lleva versión de la RPC, así
+que no puede regresar la de 0032 (regla 1 intacta) y el orden respecto a ella no
+cambia el resultado. Aun así **exige 0032 aplicada** —su columna
+`usage_daily.native_cache_read_savings` y su versión de la RPC— y ABORTA sin ella,
+como 0032 exige 0031: el guard fija el orden ascendente estricto (regla 2).
+`test/migracion-0033.test.ts` lo comprueba.
+
+- **Orden de producción completo:** 0029 → 0030 → 0031 → 0032 → **0033** →
+  `vercel --prod` (alta Medir, ingesta con topes, vuelta a Medir al cancelar) →
+  SOLO ENTONCES el npm (SDK y pasarela en sombra). 0033 **antes** de la web: sin
+  el CHECK nuevo, el alta falla con 23514 (fail‑closed, no emite nada) y la vuelta
+  a Medir al cancelar solo alerta (la cancelación se aplica igual).
+- **Guard:** aborta si faltan `organizations`/`licenses` o la base 0032 —
+  aplicar 0032 (y antes 0031) y volver a lanzar 0033. Abortar es el resultado bueno.
+- **Idempotente** y aditiva (ningún DROP de datos, ninguna fila existente cambia).
+- **Regla 6:** anota la hora antes (PITR).
+
+### Diagnóstico (solo lectura)
+
+Antes: la fila «0032 ahorro nativo» del paso 1 en `true`. Tras aplicar, las dos
+en `true`:
+
+```sql
+select to_regclass('bvsala.medir_altas') is not null as tabla_0033,
+       to_regclass('bvsala.licenses_una_medir_viva_por_org') is not null as indice_0033;
+```
+
+### Aplicar
+
+El bucle del paso 2 con `PENDIENTES="0033"`, tras anotar la hora, desde
+`db/migrations/0033_licencia_medir.sql`.
+
+### Verificar tras el deploy de la web
+
+- Panel → Instalación → «Get my free Measure license» con una cuenta verificada:
+  devuelve el token; una segunda pulsación devuelve el mismo.
+- Con un correo desechable (p. ej. `@mailinator.com`): 403 `disposable_email`.
+
 ## Anexo — 0029 (septiembre de 2026): medido por referencia
 
 0029 abre el carril `basis = 'reference'`: una llamada EVITADA (acierto exacto
@@ -709,3 +763,63 @@ Relanzar el diagnóstico hasta tener las dos `true`.
 - En una org con una repetición por referencia en los últimos 7 días: la
   columna «Measured savings (7 d)» de esa máquina la incluye, sale la nota de
   referencia bajo la tarjeta y esa máquina no dispara el aviso ámbar.
+
+## Anexo — 0032 (septiembre de 2026): el ahorro nativo de la caché del proveedor, aparte y sin comisión
+
+Decisión del dueño: «mostrar el ahorro de la caché de prefijo del proveedor
+aparte, sin comisión». El SDK y el gateway publican `report.nativeSavings` y el
+emisor manda dos campos opcionales y no negativos, `nativeCacheReadSavings` y
+`nativeCacheWritePremium` (USD). 0032 añade:
+
+- `usage_daily`: `native_cache_read_savings`, `native_cache_write_premium`
+  (`numeric(20,10)`) y `native_requests` (`bigint`), con default 0 y un único
+  CHECK de no negatividad (`usage_daily_native_no_negatives`), que no puede
+  saltar con un lote que pasó la verja del ingest;
+- `usage_daily_by_model`: las dos columnas de dólar, sin CHECK (el panel las
+  agrupa por proveedor);
+- **otra versión de `ingest_usage_batch`**: el cuerpo de 0031 ENTERO cambiando
+  solo el bloque de `usage_daily` y el de `usage_daily_by_model`.
+  `test/migracion-0032.test.ts` deshace los añadidos y compara con 0031 línea a
+  línea, y afirma que ninguna expresión nativa entra en `baseline_cost`,
+  `actual_cost` ni `measured_*`.
+
+**No cambia lo que se cobra, y no hay interruptor para que cambie:** el extracto
+no lee estas columnas (`apps/web/lib/billing/extracto-carril-nativo.test.ts`).
+
+- **Orden:** 0032 → `vercel --prod` (lista blanca + panel) → SOLO ENTONCES el npm
+  cuyo emisor manda los dos campos. Web antes que npm es obligatorio: un ingest
+  sin la lista blanca contesta 400 y el emisor descarta el lote entero sin
+  reintento. Migración antes que web no rompe nada: la RPC de 0031 ignora las
+  claves (solo se pierde el dólar nativo hasta aplicarla) y el panel lee
+  `usage_daily` en escalera (sin 0032 la tarjeta «Ahorro nativo activado» dice
+  que no hay datos y el resto sigue).
+- **Guard:** ABORTA si falta la base 0031 — aplicar 0031 (anexo anterior) y
+  volver a lanzar 0032.
+- **Numeración:** si otra migración toma 0032 antes de fusionar, renumerar y
+  rebasar el cuerpo de la RPC sobre la de esa.
+- **Regla 1, literal:** re-ejecutar 0031 o una anterior DESPUÉS regresa la RPC
+  en silencio: deja de acumularse el ahorro nativo. La fila «RPC en version final
+  (0032)» del paso 1 lo detecta; re-aplicar solo el bloque de función de 0032.
+- **Regla 6:** anota la hora antes (PITR). Aditiva, pero la RPC se sustituye entera.
+
+### Diagnóstico (solo lectura)
+
+```sql
+select exists(select 1 from information_schema.columns where table_schema='bvsala' and table_name='usage_daily' and column_name='native_cache_read_savings') as columna_0032,
+       exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='bvsala' and p.proname='ingest_usage_batch'
+              and p.prosrc like '%nativeCacheReadSavings%' and p.prosrc like '%seat_activity.reference_baseline_cost%'
+              and p.prosrc like '%reference_hits%' and p.prosrc like '%eliminatedInputFloorCost%' and p.prosrc like '%clientVersion%') as rpc_0032;
+```
+
+### Aplicar
+
+El bucle del paso 2 con `PENDIENTES="0032"`, tras anotar la hora, desde
+`db/migrations/0032_ahorro_nativo_del_proveedor.sql`.
+
+### Comprobar
+
+- El panel carga igual en una org sin caché de proveedor (la tarjeta dice que no
+  hay datos todavía).
+- Con tráfico que lea caché: la tarjeta «Ahorro nativo activado» enseña el neto
+  (lectura − prima) y el reparto por proveedor, y el titular y el extracto no
+  cambian.

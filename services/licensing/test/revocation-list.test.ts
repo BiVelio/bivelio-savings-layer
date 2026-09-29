@@ -96,3 +96,33 @@ describe("GET /licenses/revocations (HTTP, public)", () => {
     expect(await res304.text()).toBe("");
   });
 });
+
+describe("POST /licenses/issue-measure (HTTP)", () => {
+  let server: Server;
+  let base: string;
+  beforeAll(async () => {
+    const svc = createLicensingService({ nowSeconds: () => BASE });
+    server = createServer(createRequestHandler(svc, { adminToken: "adm" }));
+    await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
+    base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+  });
+  afterAll(() => new Promise<void>((r) => server.close(() => r())));
+
+  it("exige el token de operador", async () => {
+    const res = await fetch(`${base}/licenses/issue-measure`, { method: "POST", body: JSON.stringify({ orgId: "o" }) });
+    expect(res.status).toBe(401);
+  });
+
+  it("emite una licencia measure sin features", async () => {
+    const res = await fetch(`${base}/licenses/issue-measure`, {
+      method: "POST",
+      headers: { authorization: "Bearer adm" },
+      body: JSON.stringify({ orgId: "o" }),
+    });
+    expect(res.status).toBe(201);
+    const j = (await res.json()) as { payload: { plan: string; features: string[]; seats: number } };
+    expect(j.payload.plan).toBe("measure");
+    expect(j.payload.features).toEqual([]);
+    expect(j.payload.seats).toBe(5);
+  });
+});

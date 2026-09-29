@@ -46,6 +46,14 @@ export function preciosPropios(): string[] {
   return [
     ...lista(STRIPE_PRICE_ID_MONTHLY),
     ...lista(STRIPE_PRICE_ID_YEARLY),
+    // Los planes sin comisión (lib/billing/planes.ts): tan nuestros como el de
+    // siempre. Sin ellos, el primer evento de una suscripción Pro o Equipo se
+    // descartaría como «ajeno» y el cliente pagaría sin licencia. Se leen del
+    // entorno aquí (los nombres son los de env.ts) igual que el escape de abajo.
+    ...lista(process.env.STRIPE_PRICE_ID_PRO_MONTHLY),
+    ...lista(process.env.STRIPE_PRICE_ID_PRO_YEARLY),
+    ...lista(process.env.STRIPE_PRICE_ID_TEAM_MONTHLY),
+    ...lista(process.env.STRIPE_PRICE_ID_TEAM_YEARLY),
     // Escape para precios que no pasan por el catálogo normal (cortesía, socio,
     // un nivel nuevo — el esquema ya admite `team` y `enterprise` desde 0001).
     // Sin esto, una suscripción NUESTRA sobre un precio que el despliegue no

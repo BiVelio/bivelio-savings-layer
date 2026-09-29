@@ -20,9 +20,16 @@ lives only here; the SDK embeds the public key to verify **offline**.
 GET  /health
 GET  /public-key                     → { publicKey }              (embed in the SDK)
 POST /licenses/issue                 { orgId, plan, seats, features, termDays?, graceDays? } → { token, payload }
+POST /licenses/issue-measure         { orgId } → { token, payload }   (free «Measure» license: shadow mode, no features)
 POST /licenses/validate              { token } → { status, entitlements }
 POST /licenses/revoke                { jti }   → { revoked: true }
 ```
+
+A `measure` license (the free «Measure» plan, see `docs/LICENCIA-MEDIR.md`) is
+normalized on issue whatever the caller sends: no features, seats capped at
+`MEASURE_LIMITS.seats`, and its real term in `measure_expires_at` — the classic
+`expires_at` is set to `issued_at`, so a verifier that predates shadow mode sees it
+expired and fails closed instead of running un-gated levers for free.
 
 `ADMIN_TOKEN` (bearer) protects issue/revoke when set. `LICENSE_PRIVATE_KEY` /
 `LICENSE_PUBLIC_KEY` (PEM) provide a stable keypair; otherwise an ephemeral one

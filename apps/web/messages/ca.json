@@ -414,7 +414,7 @@
       "personalNote": "Personal: encara no hi ha cap organització vinculada. Un sol compte de BiVelio, compartit a tota la suite.",
       "plan": "pla",
       "seatsCount": "{count, plural, one {# seient} other {# seients}}.",
-      "planBody": "BV-SALA és fail-closed: només funciona amb una llicència PRO activa. {monthly} per seient al mes o {yearly} per seient a l'any. Un seient és una màquina o identitat de servei activa, no una persona.",
+      "planBody": "BV-SALA és fail-closed: només funciona amb una llicència activa. Pro: {monthly} per seient al mes o {yearly} per seient a l’any. Equip: {teamMonthly} al mes amb {included} seients inclosos. Sense comissió sobre el teu estalvi. Un seient és una màquina o identitat de servei activa, no una persona.",
       "managePlan": "Gestiona el pla →",
       "subscribe": "Subscriu-te →",
       "checkoutMonthly": "Subscriu-t'hi — {monthly}/seient/mes →",
@@ -430,7 +430,14 @@
       "errPagoEnCurso": "El teu pagament encara s'està processant: un càrrec bancari pot trigar uns dies a liquidar-se. Tindràs accés tan bon punt es liquidi. No iniciïs una segona subscripció.",
       "errSuscripcionEnStripe": "Stripe ja té una subscripció per a aquest compte, però encara no està activada aquí. No tornis a comprar: escriu-nos a support@bivelio.com i l'activem a mà.",
       "codigoAplicado": "En pagar s'aplicarà el codi {codigo}.",
-      "errCodigoInvalido": "Aquest codi no existeix o ja no està actiu. Pots continuar sense ell o escriure'ns a support@bivelio.com."
+      "errCodigoInvalido": "Aquest codi no existeix o ja no està actiu. Pots continuar sense ell o escriure'ns a support@bivelio.com.",
+      "planPickLabel": "Pla",
+      "planPro": "Pro",
+      "planTeam": "Equip",
+      "teamHint": "Equip inclou {included} seients; cada seient més costa {extra} al mes. No se’n poden comprar menys de {included}.",
+      "checkoutTeamMonthly": "Subscriu-te a Equip — {monthly}/mes, {included} seients →",
+      "checkoutTeamYearly": "Subscriu-te a Equip — {yearly}/any, {included} seients →",
+      "errPlanCerrado": "Aquest pla ja no s’ofereix a clients nous. Tria Pro o Equip."
     },
     "referenceLedgerCards": {
       "proven": "comprovat",
@@ -560,6 +567,18 @@
       "title": "Esborrat del proveïdor causat pels nostres dials",
       "detalle": "{requests} peticions acreditades",
       "nota": "El recompte és del proveïdor (applied_edits). No és un estalvi mesurat i mai no entra a la teva comissió; el diner arribarà quan el net per model estigui mesurat — esborrar reescriu la memòria cau de prefix, i en alguns models el net surt negatiu."
+    },
+    "ahorroNativo": {
+      "title": "Estalvi natiu activat",
+      "detalle": "{requests} peticions amb memòria cau del proveïdor · lectura {lectura} − prima d'escriptura {prima}",
+      "nota": "És el descompte de la memòria cau de prefix del teu proveïdor (Anthropic amb cache_control, OpenAI automàtica, Gemini implícita), net de la prima d'escriptura que cobra, calculat amb el seu propi comptador a preu de llista. El veus a la factura del teu proveïdor, no a la nostra: va a part de l'estalvi acreditat i mai no entra a la teva comissió.",
+      "vacio": "Encara no hi ha peticions que hagin llegit o escrit la memòria cau de prefix del teu proveïdor en aquest període.",
+      "proveedor": {
+        "anthropic": "Anthropic",
+        "openai": "OpenAI",
+        "google": "Gemini",
+        "other": "Altres"
+      }
     },
     "ritmo": {
       "title": "Ritme i projecció",
@@ -716,16 +735,44 @@
         "libros": "Els quatre llibres",
         "trafico": "Trànsit",
         "sesiones": "Sessions",
-        "maquinas": "Màquines"
+        "maquinas": "Màquines",
+        "nativo": "Estalvi natiu activat"
       }
     },
     "team": {
       "metaTitle": "Equip · BiVelio Savings Layer"
+    },
+    "measurePlan": {
+      "title": "O comença gratis: la llicència Mesurar, sense targeta",
+      "body": "Executa la capa en mode ombra per a 1 organització i fins a {seats} seients: cada petició arriba al teu proveïdor sense canvis i res no se serveix de la memòria cau. El teu tauler mostra el que haurien estalviat les palanques; passa a pagament per activar-les.",
+      "claim": "Obtenir la meva llicència Mesurar gratis",
+      "claiming": "Emetent…",
+      "keyLabel": "La teva clau de llicència Mesurar (mode ombra: no s'aplica cap palanca)",
+      "keyHint": "Fes-la servir com a BIVELIO_LICENSE_KEY, igual que una clau de pagament. Quan passis a pagament, la capa recull sola la llicència de pagament i les palanques s'activen.",
+      "errEmailNotVerified": "Confirma primer la teva adreça de correu i torna-ho a provar.",
+      "errDisposableEmail": "No acceptem adreces de correu d'un sol ús per a la llicència Mesurar. Registra't amb un correu permanent (el de la feina, per exemple) i torna-ho a provar.",
+      "errOneOrgPerAccount": "Aquest compte ja té una llicència Mesurar per a una altra organització: la llicència gratuïta cobreix una organització per compte.",
+      "errAlreadyLicensed": "La teva organització ja té una llicència de pagament: fes servir la clau de dalt.",
+      "errBlocked": "La llicència Mesurar no està disponible per a aquesta organització. Escriu a support@bivelio.com.",
+      "errRole": "El teu rol no permet descarregar la llicència. Demana-ho a un owner o admin.",
+      "errSignIn": "Inicia sessió primer.",
+      "errGeneric": "No s'ha pogut emetre la llicència Mesurar. Torna-ho a provar d'aquí a un moment.",
+      "planLabel": "Mesurar (gratis)",
+      "pricingNote": "Mesurar: gratis, sense targeta. La capa en mode ombra per a 1 organització i fins a {seats} seients, per veure el que estalviaria abans de pagar.",
+      "card": {
+        "eyebrow": "Llicència Mesurar · mode ombra",
+        "title": "El que hauries estalviat",
+        "amount": "{amount} que no hauries gastat",
+        "context": "De {spend} de despesa mesurada en {requests} peticions. Una estimació del carril ombra, valorada amb el comptador del teu propi proveïdor: a l'SDK, les crides repetides i les duplicades en vol; al gateway, a més, el model germà i la rebaixa del TTL de la memòria cau. No s'ha aplicat res i no es factura res.",
+        "empty": "Encara no hi ha estimació d'estalvi: apareix quan la teva capa vegi una petició repetida o, al gateway, una en què haurien estalviat el model germà o la rebaixa del TTL de la memòria cau. La llicència Mesurar mai no canvia el que envies.",
+        "limits": "Gratis per a 1 organització, fins a {seats} seients i {requests} peticions al dia.",
+        "cta": "Activa les palanques: veure plans"
+      }
     }
   },
   "landing": {
     "metaTitle": "BiVelio — Verifica el teu estalvi en LLM",
-    "metaDescription": "Un SDK perquè la teva app pagui al proveïdor de LLM només el que necessita, i un gateway que mesura el teu agent de codi. Tot amb el comptador del teu proveïdor: quota per seient i comissió només sobre l'estalvi mesurat.",
+    "metaDescription": "Un SDK perquè la teva app pagui al proveïdor de LLM només el que necessita, i un gateway que mesura el teu agent de codi. Tot amb el comptador del teu proveïdor: mesura gratis i després paga per seient, sense comissió sobre el teu estalvi.",
     "hero": {
       "eyebrow": "Per a equips que paguen l'API de LLM per tokens",
       "title": "La teva factura de LLM, sota control.",
@@ -794,8 +841,8 @@
           "body": "No et demanem fe. Cada estalvi es mesura amb el comptador oficial del proveïdor — el mateix amb què et factura — i apareix al teu rebut. El que no es pot contrastar amb la factura, no s'anuncia."
         },
         {
-          "title": "Una quota per seient i una part del que es mesura",
-          "body": "Pagues una quota fixa per seient cada mes, estalviïs o no. A més, la nostra comissió surt només de l'estalvi mesurat amb el comptador del teu proveïdor, i la major part de cada estalvi es queda sempre amb tu. Un mes sense estalvi mesurat? Pagues els seients i zero comissió."
+          "title": "Mesura gratis i després paga per seient",
+          "body": "Comença amb la llicència Mesurar, gratuïta: la capa funciona en mode ombra i et mostra el que hauria estalviat amb el teu propi trànsit. Per activar les palanques pagues una quota fixa per seient, o un pla d’Equip, tant si estalvies com si no, i sense comissió sobre el teu estalvi."
         }
       ],
       "nota": "Les animacions il·lustren la idea. Les xifres de debò — mesurades contra proveïdors reals — són just a sota."
@@ -887,12 +934,36 @@
       "initNote": "<b>O deixa que una ordre ho adapti a la teva pila.</b> <code>init</code> llegeix el teu <code>package.json</code> (Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, l'SDK d'Anthropic o el d'OpenAI) i imprimeix la línia d'instal·lació, el codi exacte del teu adaptador i una comprovació que no gasta tokens: amb la teva llicència ja posada, la respon la capa a la teva màquina, sense cridar el model. No escriu res si no li ho demanes."
     },
     "pricing": {
-      "eyebrow": "Un sol pla, amb preu per seient",
-      "title": "Quota per seient, sempre. Comissió només sobre l'estalvi mesurat.",
-      "body": "Sense pla gratuït i sense prova: abans de pagar pots comprovar els mesuraments públics i passar el verificador per les teves pròpies dades, aquí mateix. La quota per seient es cobra cada mes, en {currency}, estalviïs o no. La comissió va a part, i només sobre l'estalvi mesurat amb el comptador del teu proveïdor, incloses les peticions repetides que se serveixen sense cridar-lo, cadascuna valorada amb el comptador de la petició idèntica que ja es va executar. L'estimat no hi entra mai.",
+      "eyebrow": "Plans",
+      "title": "Mesura gratis. Paga per seient quan vulguis l’estalvi.",
+      "body": "Comença amb Mesurar: gratis i sense targeta. La capa funciona en mode ombra amb el teu propi trànsit i el teu panell mostra el que hauria estalviat, valorat amb el comptador del teu proveïdor. Pro i Equip es cobren per seient, en {currency}, tant si estalvies com si no, i no porten comissió sobre el teu estalvi.",
       "amount": "{amount}",
       "per": "/ seient / mes",
-      "proNote": "<b>PRO</b> — facturat per seient. O <b>{yearly} / seient / any</b> (estalvia ~19%). Enterprise, amb funcions empaquetades, arribarà més endavant.",
+      "plans": {
+        "medir": {
+          "name": "Mesurar",
+          "price": "Gratis",
+          "body": "Sense targeta. La capa en mode ombra per a una organització: cada petició arriba al teu proveïdor sense canvis, i veus el que hauria estalviat.",
+          "cta": "Comença gratis →"
+        },
+        "pro": {
+          "name": "Pro",
+          "note": "O <b>{yearly} / seient / any</b>. Totes les optimitzacions, el rebut per petició i el panell. Sense comissió.",
+          "cta": "Tria Pro →"
+        },
+        "team": {
+          "name": "Equip",
+          "per": "/ mes",
+          "note": "<b>{included} seients inclosos</b>; cada seient més, {extra} / mes. O <b>{yearly} / any</b>. Sense comissió.",
+          "cta": "Tria Equip →"
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "price": "A mida",
+          "body": "Més seients dels que admet el pagament en línia, un contracte propi o condicions de factura pactades: <contact>escriu-nos</contact>."
+        }
+      },
+      "legacy": "Ja tens la modalitat anterior, amb comissió sobre l’estalvi mesurat? La conserves sense canvis; les seves condicions són als <terms>termes de preu</terms>.",
       "seatNote": "Un seient és una <b>màquina o identitat de servei</b>, no una persona. Pagues els seients que cobreix la teva subscripció; el teu tauler mostra quants n'hi ha hagut en ús aquest mes (actius com a mínim {dias} dies; la CI i els executors efímers no compten).",
       "features": [
         "Cada optimització de BV‑SALA, sense límit",
@@ -924,7 +995,7 @@
     },
     "footer": {
       "ctaTitle": "Mesura-ho amb el teu propi trànsit",
-      "ctaSub": "Instal·lat, cada crida retorna el seu SavingsReport, amb el mesurat i l'estimat per separat. La quota per seient és mensual i fixa; la comissió surt només del que es mesura. La llicència és el que et deixa executar BV‑SALA: l'SDK a la teva app, el gateway al teu terminal.",
+      "ctaSub": "Un cop instal·lat, cada crida retorna el seu SavingsReport, amb el mesurat i l’estimat per separat. Comença gratis amb Mesurar; Pro i Equip són una quota fixa per seient, sense comissió sobre el teu estalvi. La llicència és el que et deixa executar BV‑SALA: l’SDK a la teva app, el gateway al teu terminal.",
       "ctaStart": "Comença",
       "tagline": "El sistema operatiu per al teu negoci. Això és <b>BV‑SALA</b>, l'optimitzador de cost de LLM neutral respecte al proveïdor de BiVelio — cada xifra publicada, mesurada contra el comptador del proveïdor; l'estimat es mostra a part i mai no es factura.",
       "badge": "BV‑SALA · Savings Layer",
@@ -932,6 +1003,7 @@
       "colBivelio": "BiVelio",
       "colLegal": "Legal",
       "measured": "Resultats mesurats",
+      "benchmarks": "Banc públic",
       "pricing": "Preus",
       "home": "Inici",
       "docs": "Documentació",
@@ -1136,6 +1208,167 @@
     "cerrarYContinuar": "Tancar la sessió i usar un altre compte",
     "cerrando": "Tancant la sessió…"
   },
+  "benchmarksPage": {
+    "metaTitle": "Banc públic A/B: mesura'ns | BiVelio Savings Layer",
+    "metaDescription": "Quatre bateries públiques (GSM8K, BFCL, XSTest i MT-Bench), dos braços mesurats amb el comptador d'ús del mateix proveïdor, cada xifra amb la seva n, el seu interval i la seva data. El que estalvia, el que no, i els errors que el banc ha trobat.",
+    "eyebrow": "Banc públic · reproduïble",
+    "title": "El nostre banc A/B, obert. Mesura'ns.",
+    "lede": "Publiquem cada execució: quatre bateries amb conjunts de dades públics, {modelos} models, i els dos braços mesurats amb el comptador d'ús del mateix proveïdor. Cada xifra porta la seva n, el seu interval i la seva data. El que no estalvia també hi és.",
+    "stats": {
+      "batteries": "bateries",
+      "models": "models provats",
+      "measured": "models amb alguna mesura",
+      "reports": "informes en directe",
+      "last": "última execució"
+    },
+    "method": {
+      "title": "Què es mesura i com",
+      "arms": "<b>Dos braços, la mateixa petició.</b> A va directament al proveïdor, sense la capa; B passa per la capa amb la seva configuració per defecte. Mateix prompt, mateix mostreig i mateix límit de sortida.",
+      "cost": "<b>El cost el compta el proveïdor.</b> Cada braç es valora amb l'<code>usage</code> que retorna l'API a cada crida, al preu de llista. L'estalvi és 1 − cost(B) / cost(A) de la mateixa execució, no el que la capa diu de si mateixa.",
+      "intervals": "<b>Intervals al {nivel}.</b> Els calcula cada arnès (remostreig per famílies de preguntes, Wilson en les taxes de negativa). Un interval que travessa el zero és un «indistingible de zero», i així ho diem.",
+      "package": "<b>El paquet, el que s'instal·la.</b> El braç B executa la font de l'etiqueta {version}; el seu <code>dist/index.js</code> és idèntic byte a byte al del tarball d'npm (sha256 <code>{sha}</code>).",
+      "guard": "<b>Sense dreceres.</b> Cada arnès vigila els hosts amb què parla i porta un límit de despesa per model escrit al codi. Un model que no s'ha pogut mesurar surt com a «no mesurat», amb el motiu.",
+      "batteriesTitle": "Quatre bateries, conjunts de dades públics, fixats",
+      "commitOnly": "fixat per commit"
+    },
+    "batteries": {
+      "gsm8k": "Problemes matemàtics amb repeticions i paràfrasis: quant estalvia la memòria cau i si es perd exactitud.",
+      "bfcl": "Crides a eines: la capa no ha de canviar-ne cap, i el catàleg sencer ha d'arribar.",
+      "xstest": "Negatives: la capa no ha de canviar quan el model es nega, ni servir una negativa de la memòria cau.",
+      "mt-bench": "Xat de dos torns sense repeticions: la capa no ha d'empitjorar el cost, la latència ni la qualitat."
+    },
+    "th": {
+      "battery": "Bateria",
+      "what": "Què comprova",
+      "dataset": "Conjunt de dades",
+      "pinned": "Fitxers fixats",
+      "license": "Llicència",
+      "model": "Model",
+      "n": "n",
+      "savings": "Estalvi mesurat [IC]",
+      "fromExact": "De la memòria cau exacta",
+      "fromCalls": "A les crides (prefix)",
+      "accuracy": "Exactitud A → B",
+      "run": "Versió · data",
+      "prompts": "Prompts",
+      "safe": "Negatives, prompts segurs (A → B)",
+      "unsafe": "Negatives, prompts insegurs (A → B)",
+      "verdict": "Lectura",
+      "reports": "Informes"
+    },
+    "savings": {
+      "title": "Estalvi mesurat per model",
+      "intro": "GSM8K, amb un flux de peticions en què un {rep} són repeticions exactes i un {par} paràfrasis. És la bateria amb trànsit repetit: el teu estalvi depèn de quant es repeteixi el teu. Sense repeticions, mira «El que no estalvia».",
+      "nCell": "{n} peticions · {unicos} úniques",
+      "delta": "Δ {d} pp [{inf}, {sup}]",
+      "originNote": "Origen de l'estalvi, posició a posició: «de la memòria cau exacta» és el que A va pagar en les peticions que la capa va servir sense trucar al proveïdor; «a les crides» és la diferència en les que sí que hi van arribar, sobretot memòria cau de prefix del proveïdor (més una mica de variació de la sortida). Les dues sumen l'estalvi total.",
+      "accuracyNote": "L'exactitud es mesura sobre les preguntes amb resposta publicada; les variants amb una xifra canviada només serveixen per comprovar que la capa no lliura la resposta d'una altra pregunta."
+    },
+    "guarantees": {
+      "title": "Garanties, comptades",
+      "tools": {
+        "title": "La capa mai no ha canviat una crida a eines",
+        "titleBroken": "La capa ha canviat {n} crides a eines",
+        "body": "{alteradas} crides alterades en {comparaciones} comparacions de BFCL, {modelos} models, des de {desde}. Si la capa falla (un error a B que A no tenia), no compta aquí: és a «Errors que el banc ha trobat»."
+      },
+      "other": {
+        "title": "Cap resposta d'una altra pregunta des de {desde}",
+        "titleBroken": "{n} respostes d'una altra pregunta des de {desde}",
+        "body": "{deOtra} de {variantes} variants (la mateixa pregunta amb un altre número, i per tant una altra resposta) servides amb la resposta d'una altra pregunta, en {modelos} models en directe i en totes les configuracions de memòria cau mesurades.",
+        "replay": "Rèplica fora de línia de tot el split de test de GSM8K: {erroneas} en {peticiones} peticions, en cadascuna de les {configs} configuracions de memòria cau."
+      },
+      "refusals": {
+        "title": "La mateixa taxa de negatives, amb i sense la capa",
+        "titleBroken": "La taxa de negatives ha canviat en {n} models",
+        "body": "XSTest, {modelos} models mesurats: cap diferència A/B per sota de p = {umbral} (McNemar, prompts aparellats). La capa ha lliurat sense alterar el text de {comprobados} respostes ({alterados} alterades).",
+        "caption": "Taxa de negativa per model, sense la capa (A) i amb ella (B), sobre els mateixos prompts."
+      }
+    },
+    "noSavings": {
+      "title": "El que no estalvia",
+      "lead": "<b>Sense repeticions, l'estalvi és ≈ {cero}.</b> El publiquem igualment, perquè és el que veuràs si el teu trànsit no es repeteix.",
+      "why": "MT-Bench és xat de dos torns amb una capa nova per pregunta: no hi ha res que la memòria cau pugui reutilitzar, i el prompt gairebé mai arriba al mínim que el proveïdor exigeix per fer memòria cau d'un prefix. A BFCL cada crida a eines és diferent. El que mesuren aquestes dues bateries és que la capa no empitjori res; la diferència de cost que queda és soroll de la sortida del model, no la capa.",
+      "nQuestions": "{n} preguntes",
+      "nItems": "{n} ítems",
+      "verdict": {
+        "ahorro": "estalvi",
+        "cero": "indistingible de zero",
+        "sobrecoste": "sobrecost"
+      },
+      "notAttributable": "no atribuïble a la capa"
+    },
+    "status": {
+      "title": "Estat per model i bateria",
+      "intro": "Cada cel·la mostra l'execució de la versió més alta de la capa. Si un model no s'ha pogut mesurar, es diu per què, en lloc de deixar el buit.",
+      "measured": "mesurat · n = {n}",
+      "notMeasured": "no mesurat: {motivo}",
+      "layerFailed": "la capa ha fallat: {motivo}",
+      "reason": {
+        "credencial": "credencial rebutjada",
+        "presupuesto": "límit de despesa exhaurit",
+        "cuota": "quota del proveïdor exhaurida",
+        "capa": "les peticions no han passat per la capa",
+        "proveedor": "el proveïdor ha rebutjat la petició en els dos braços",
+        "otro": "dades insuficients"
+      }
+    },
+    "bugs": {
+      "title": "Errors que el banc ha trobat",
+      "intro": "El banc no hi és per quedar bé: hi és per trobar els errors abans que tu. Ha trobat aquests, amb la versió en què van aparèixer i la que els arregla.",
+      "found": "Trobat a la {version}: {ocurrencias} de {sobre}.",
+      "fixed": "Arreglat a la {version} ({prs}).",
+      "verified": "Verificat en directe a la {version}: {ocurrencias} de {sobre}.",
+      "stillSeen": "Encara vist a la {version}: {ocurrencias} de {sobre}.",
+      "pending": "Pendent de tornar a mesurar en directe a la {version}.",
+      "items": {
+        "otra-pregunta": {
+          "title": "La memòria cau semàntica sense calibrar servia la resposta d'una altra pregunta",
+          "body": "Amb la memòria cau semàntica sense calibrar, una variant amb un altre número («three baskets» enfront de «two baskets») podia rebre la resposta de la pregunta original. Comptat sobre les variants de GSM8K."
+        },
+        "herramientas-multiturno": {
+          "title": "La capa retallava el catàleg d'eines sense cap senyal per fer-ho",
+          "body": "En converses de diversos torns, el braç B enviava menys eines que l'A tot i que res no indicava quines sobraven. Comptat sobre les converses multi-torn de BFCL."
+        },
+        "negativas-de-texto": {
+          "title": "Algunes negatives escrites com a text es desaven a la memòria cau",
+          "body": "Una negativa que el model escriu com a text (sense el senyal de l'API) podia desar-se a la memòria cau, repetir-se i acreditar-se com a estalvi. Comptat en prompts de XSTest."
+        },
+        "gemini-filtro-cacheado": {
+          "title": "Un filtre de contingut de Gemini es desava a la memòria cau com a resposta",
+          "body": "Gemini assenyala el seu filtre amb un motiu d'aturada propi que la capa no reconeixia com a negativa, així que podia desar-lo a la memòria cau i repetir-lo. Comptat en prompts de XSTest."
+        },
+        "gemini-prompt-cache-key": {
+          "title": "Gemini no passava per la capa",
+          "body": "La capa enviava un camp propi de l'API d'OpenAI a qualsevol endpoint compatible, i Gemini el rebutja: totes les peticions del braç B fallaven. Comptat en peticions de GSM8K."
+        },
+        "gemini-thought-signature": {
+          "title": "Amb Gemini 3, el segon torn amb eines fallava",
+          "body": "La capa no retornava la signatura de pensament que Gemini 3 exigeix a cada crida a eines, així que el torn següent es rebutjava. Comptat en continuacions multi-torn de BFCL."
+        }
+      }
+    },
+    "repro": {
+      "title": "Com reproduir-ho",
+      "intro": "El codi del banc encara no és públic; el mètode sí, i cap en cinc passos. Amb les teves pròpies claus de proveïdor el pots repetir i comparar xifra a xifra amb els nostres informes.",
+      "steps": {
+        "dataset": "<b>El dataset.</b> Descarrega cada dataset públic al commit de la taula de dalt i comprova el sha256 de cada fitxer abans de fer-lo servir. Si no quadra, no és el mateix dataset.",
+        "package": "<b>La capa.</b> Instal·la <code>@bivelio/savings-layer</code> des de npm a la versió que diu l'informe i comprova el sha256 de <code>dist/index.js</code>: cada informe porta el seu.",
+        "arms": "<b>Dos braços per prompt.</b> A va directe al proveïdor; B envia el mateix prompt, al mateix model i amb el mateix límit de sortida, a través de la capa amb la configuració per defecte. Una part dels prompts es repeteix o es parafraseja, com en el trànsit real, i l'ordre A/B se sorteja.",
+        "cost": "<b>El cost el diu el proveïdor.</b> Suma el que factura cada braç segons l'<code>usage</code> que retorna el proveïdor, a la seva tarifa publicada. L'estalvi és <code>1 − cost B / cost A</code>, amb el seu interval.",
+        "compare": "<b>La qualitat, a la mateixa tirada.</b> Puntua igual les respostes dels dos braços (resposta exacta a GSM8K, crida a eina a BFCL, negativa o no a XSTest, jutge a MT-Bench) i compara-les amb l'informe JSON de la mateixa bateria i versió."
+      },
+      "reportsTitle": "Els informes",
+      "reportsIntro": "Cada tirada deixa un informe JSON amb el seu disseny, les seves limitacions i cada crida mesurada: usage, cost per braç i classificació de la resposta. Se serveixen des d'aquest web.",
+      "served": "Els informes se serveixen tal com els va escriure el banc, amb una excepció: es treuen les dades de l'entorn de qui va mesurar (rutes de disc, correus). De XSTest no es publica el text de cap resposta, només la seva classificació."
+    },
+    "invite": {
+      "title": "Mesura'ns tu mateix",
+      "body": "Una mesura independent val més que la nostra. El codi del banc encara no és públic: si vols repetir la mesura, o mesurar la capa amb el teu propi arnès o amb el teu trànsit, escriu-nos i et donarem el que necessitis per fer-ho.",
+      "contact": "Escriu-nos a",
+      "cta": "Enviar un correu",
+      "subject": "Mesura independent del banc públic"
+    }
+  },
   "howItWorks": {
     "metaTitle": "On s'instal·la l'estalvi? · BiVelio Savings Layer",
     "metaDescription": "BV‑SALA és una capa que s'instal·la al codi de la teva aplicació, on es crida l'API. Què pot estalviar, on no aplica i com es mesura de veritat.",
@@ -1176,7 +1409,7 @@
     "s3Sub": "El producte té dues xifres diferents i convé no barrejar-les.",
     "mBeforeK": "Abans d'instal·lar",
     "mBeforeV": "Estimació",
-    "mBeforeBody": "La calculadora de la secció de preus projecta el teu estalvi amb els teus propis números: sol·licituds, tokens i model. És una projecció honesta — per això porta l'etiqueta «estimació».",
+    "mBeforeBody": "La llicència Mesurar, gratuïta, executa la capa en mode ombra amb el teu propi trànsit i et mostra el que hauria estalviat, petició a petició. No canvia res ni aplica res: per això porta l’etiqueta «estimació».",
     "mAfterK": "Després d'instal·lar",
     "mAfterV": "Mesurament real",
     "mAfterBody": "Cada crida retorna un SavingsReport: les crides que mai no vas pagar i l'estalvi net per petició. Auditable, petició a petició, a la teva pròpia infraestructura.",
@@ -1191,14 +1424,36 @@
   },
   "pricingPage": {
     "metaTitle": "Termes de preu · BV-SALA",
-    "metaDescription": "La quota per seient i la comissió sobre l'estalvi mesurat, publicades des de les mateixes constants que cobren.",
+    "metaDescription": "Mesurar gratis, Pro per seient, Equip i Enterprise: cap no porta comissió sobre el teu estalvi. Xifres publicades des de les mateixes constants que cobren.",
     "eyebrow": "Preus publicats",
     "title": "Termes de preu",
     "governs": "Aquesta pàgina descriu com funciona el servei avui; regeixen la <license>LICENSE</license> i els <terms>Termes de BiVelio</terms>.",
-    "lede": "Cada xifra que hi veus es llegeix del mateix codi que et cobra, així que canvia quan canvia el preu.",
+    "lede": "Pagues per seient o per un pla d’equip, sense comissió sobre el teu estalvi. Cada xifra que veus aquí es llegeix del mateix codi que et cobra, així que canvia quan canvia el preu.",
+    "plans": {
+      "title": "Plans",
+      "intro": "Quatre plans, de menys a més. Pro i Equip es paguen per seient i no porten comissió.",
+      "medir": {
+        "name": "Mesurar",
+        "body": "<b>Gratis i sense targeta.</b> La capa funciona en mode ombra per a una organització, amb un límit de seients i de peticions diàries: cada petició arriba al teu proveïdor tal com la vas construir, no se serveix res de la memòria cau i no s’aplica cap palanca. El teu panell mostra el que hauria estalviat: una estimació que mai no porta comissió. Les palanques necessiten Pro o Equip."
+      },
+      "pro": {
+        "name": "Pro",
+        "amount": "<b>{monthly}</b> per seient i mes, o <b>{yearly}</b> per seient i any, en {currency}.",
+        "body": "Totes les optimitzacions de la capa, el rebut per petició i el tauler. <b>Sense comissió</b> sobre l’estalvi: pagues els seients, estalviïs o no."
+      },
+      "team": {
+        "name": "Equip",
+        "amount": "<b>{monthly}</b> al mes amb <b>{included} seients inclosos</b> (uns {perSeat} per seient), o <b>{yearly}</b> l’any, en {currency}.",
+        "extra": "Cada seient per sobre dels inclosos: {monthly} al mes, o {yearly} l’any.",
+        "body": "El mateix que Pro, per a una flota: la quota fixa cobreix els seients inclosos encara que en facis servir menys. <b>Sense comissió</b> sobre l’estalvi."
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "body": "Per a més seients dels que admet el pagament en línia, un contracte propi o condicions de factura pactades: <contact>escriu-nos</contact>."
+      }
+    },
     "seat": {
-      "title": "La quota per seient",
-      "amount": "<b>{monthly}</b> per seient i mes, o <b>{yearly}</b> per seient i any, en {currency}.",
+      "title": "Com es compta i es cobra un seient",
       "cycle": "La quota per seient es cobra a través d'Stripe per cada cicle mensual o anual de la teva subscripció, comptat des del dia que comença.",
       "paidAlways": "La quota per seient es paga <b>tant si hi ha estalvi com si no</b>.",
       "vat": "Els imports no inclouen l'IVA. El pagament demana la teva adreça de facturació i, si vols, el teu NIF-IVA; tots dos surten a la factura.",
@@ -1208,7 +1463,9 @@
       "identifier": "Com es forma l'identificador de seient, i tota la resta que el Software envia a BiVelio, és a la <privacy>pàgina de privadesa</privacy>."
     },
     "commission": {
-      "title": "La comissió sobre l'estalvi mesurat",
+      "title": "Modalitat anterior amb comissió (tancada a clients nous)",
+      "optional": "Aquesta modalitat <b>ja no s’ofereix a clients nous</b>. Si la teva subscripció ja la té, la conserves sense canvis i la regeixen les condicions de sota: una quota per seient més baixa i una comissió només sobre l’estalvi que pot quadrar amb la factura del teu proveïdor. Pro i Equip no la porten mai; el seu extracte mostra la que s’hauria aplicat només com a referència.",
+      "seat": "Quota per seient en aquesta modalitat: <b>{monthly}</b> per seient i mes, o <b>{yearly}</b> per seient i any, en {currency}.",
       "only": "Es cobra comissió <b>només sobre l'estalvi mesurat</b>: l'estalvi etiquetat {labels} als teus registres d'ús. L'estalvi etiquetat {never} mai no porta comissió.",
       "measured": "Un estalvi mesurat surt del comptador d'ús del teu mateix proveïdor de LLM per a aquella petició.",
       "reference": "Un estalvi per referència, en una petició repetida que el Software va servir sense cridar el teu proveïdor, surt del comptador del teu proveïdor per a la petició idèntica anterior que sí que es va executar, amb la regla que figura al teu extracte ({regla}).",
@@ -1225,8 +1482,7 @@
       "ceiling": "Cap tram no supera el {max}, així que, abans d'arrodonir la comissió al cèntim, <b>et quedes com a mínim el {garantia}</b> de l'estalvi mesurat del període. La quota per seient va a part.",
       "fx": "L'estalvi mesurat es compta en dòlars dels Estats Units i es converteix al tipus de referència del Banc Central Europeu obtingut en tancar el període; el teu extracte mostra el tipus aplicat.",
       "rounding": "La comissió s'arrodoneix al cèntim més pròxim. Una comissió inferior a {minimo} no es factura ni es trasllada a un altre període.",
-      "zero": "Un període sense estalvi mesurat <b>no porta comissió</b>.",
-      "calculator": "Per veure què vol dir això amb el teu propi trànsit, prova la <calc>calculadora</calc> de la portada."
+      "zero": "Un període sense estalvi mesurat <b>no porta comissió</b>."
     },
     "calibration": {
       "title": "Període de calibratge",
@@ -1273,7 +1529,7 @@
         },
         "cost": {
           "title": "Cost",
-          "body": "Xifres de cost que calcula el Software amb el seu catàleg de preus o amb un model de costos que aportis tu: cost de referència, cost real, la proporció d'estalvi net, la base de les xifres (measured, reference, estimated, shadow o unmeasured) i el valor, al preu de lectura de memòria cau del proveïdor, dels tokens d'entrada que el teu proveïdor va declarar esborrats del context."
+          "body": "Xifres de cost que calcula el Software amb el seu catàleg de preus o amb un model de costos que aportis tu: cost de referència, cost real, la proporció d'estalvi net, la base de les xifres (measured, reference, estimated, shadow o unmeasured) i el valor, al preu de lectura de memòria cau del proveïdor, dels tokens d'entrada que el teu proveïdor va declarar esborrats del context. A part, i sense fer-se servir mai per calcular les tarifes: el descompte que la memòria cau de prefix del teu proveïdor va donar a la petició i la prima d'escriptura de memòria cau que va facturar."
         }
       }
     },

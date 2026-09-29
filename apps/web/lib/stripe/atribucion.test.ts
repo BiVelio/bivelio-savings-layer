@@ -35,6 +35,20 @@ describe("atribución por precio", () => {
     expect(atribuirPorPrecio("price_anual")).toBe("nuestro");
   });
 
+  it("los Prices de Pro y Equipo (planes sin comisión) también son NUESTROS", async () => {
+    // Sin esto, el primer evento de una suscripción Pro o Equipo se descartaría
+    // como «ajeno» con 200, y el cliente pagaría sin recibir licencia.
+    process.env.STRIPE_PRICE_ID_PRO_MONTHLY = "price_pro_m";
+    process.env.STRIPE_PRICE_ID_PRO_YEARLY = "price_pro_y";
+    process.env.STRIPE_PRICE_ID_TEAM_MONTHLY = "price_team_m";
+    process.env.STRIPE_PRICE_ID_TEAM_YEARLY = "price_team_y";
+    const { atribuirPorPrecio } = await conPrecios("price_mensual", "price_anual");
+    for (const p of ["price_pro_m", "price_pro_y", "price_team_m", "price_team_y", "price_mensual"]) {
+      expect(atribuirPorPrecio(p)).toBe("nuestro");
+    }
+    expect(atribuirPorPrecio("price_de_privacy_gateway")).toBe("ajeno");
+  });
+
   it("un precio de otro producto es AJENO — y ese es el incidente", async () => {
     // La suscripción real de BV-PRGA que llevaba 20 minutos rebotando en nuestro
     // webhook y devolviendo 503.

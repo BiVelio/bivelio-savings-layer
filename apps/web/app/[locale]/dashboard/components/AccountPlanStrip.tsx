@@ -2,8 +2,8 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import type { OrgContext } from "../data";
 import { BillingButtons } from "./BillingButtons";
-import { preciosDelPlan } from "@/lib/stripe/pricing";
-import { formatearPrecio } from "@/lib/format/precio";
+import { tarifasDeLosPlanes } from "@/lib/stripe/pricing";
+import { terminosDeLosPlanes } from "@/lib/legal/precios-publicados";
 import { avisoDeAsientos } from "@/lib/billing/asientos";
 
 /** Real account/plan — reads organizations.plan (best-effort), never hardcoded.
@@ -36,9 +36,11 @@ export async function AccountPlanStrip({
   // cliente. Formatear en los dos lados reabriría el error de hidratación #418: la
   // ICU de Node y la del navegador no siempre coinciden en detalles invisibles.
   const locale = await getLocale();
-  const precios = await preciosDelPlan();
-  const precioMensual = formatearPrecio(locale, precios.monthly);
-  const precioAnual = formatearPrecio(locale, precios.yearly);
+  // Lo que se VENDE es Pro y Equipo (2026-09-29); la modalidad con comisión está
+  // cerrada a clientes nuevos. Las cifras, de sus Prices (o del respaldo).
+  const tarifas = await tarifasDeLosPlanes();
+  const planes = terminosDeLosPlanes(locale, tarifas);
+  const incluidos = tarifas.equipo.monthly.asientosIncluidos;
   const plan = ctx.org?.plan;
   const isActive = plan === "pro" || plan === "enterprise";
   const seatsUsados = asientos.usados;
@@ -48,7 +50,11 @@ export async function AccountPlanStrip({
     pagados: ctx.seats,
     rotacionEsteMes: asientos.rotacionEsteMes,
   });
-  const planLabel = isActive ? plan.charAt(0).toUpperCase() + plan.slice(1) : t("accountPlanStrip.noActivePlan");
+  const planLabel = isActive
+    ? plan.charAt(0).toUpperCase() + plan.slice(1)
+    : ctx.medir === "solo-medir"
+      ? t("measurePlan.planLabel")
+      : t("accountPlanStrip.noActivePlan");
   return (
     <div className="cards plan" style={{ marginTop: "6px" }}>
       <div className="card">
@@ -73,7 +79,12 @@ export async function AccountPlanStrip({
         <h3>{planLabel}</h3>
         <p>
           {isActive && ctx.seats != null ? <>{t("accountPlanStrip.seatsCount", { count: ctx.seats })} </> : null}
-          {t("accountPlanStrip.planBody", { monthly: precioMensual, yearly: precioAnual })}
+          {t("accountPlanStrip.planBody", {
+            monthly: planes.pro.mensual,
+            yearly: planes.pro.anual,
+            teamMonthly: planes.equipo.mensual,
+            included: incluidos,
+          })}
         </p>
         {/* EL IMPUESTO VA APARTE, Y HAY QUE DECIRLO. Los precios son `exclusive`:
             el cliente paga 4 € + IVA. Anunciar "4 €" a secas sin esta línea es
@@ -104,7 +115,19 @@ export async function AccountPlanStrip({
           </p>
         ) : null}
         {ocultarCompra ? null : (
-          <BillingButtons codigo={codigo} isActive={isActive} monthly={precioMensual} yearly={precioAnual} />
+          <BillingButtons
+            codigo={codigo}
+            isActive={isActive}
+            precios={{
+              pro: { monthly: planes.pro.mensual, yearly: planes.pro.anual },
+              equipo: {
+                monthly: planes.equipo.mensual,
+                yearly: planes.equipo.anual,
+                incluidos,
+                extraMonthly: planes.equipo.extraMensual,
+              },
+            }}
+          />
         )}
       </div>
     </div>

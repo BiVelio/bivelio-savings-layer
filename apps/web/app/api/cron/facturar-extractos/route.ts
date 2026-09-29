@@ -16,7 +16,8 @@ import {
 } from "@/lib/billing/facturacion";
 import { alertar } from "@/lib/observabilidad/alerta";
 import { getStripe } from "@/lib/stripe/client";
-import { billingConfigured } from "@/lib/stripe/env";
+import { billingConfigured, preciosSinComision } from "@/lib/stripe/env";
+import { idsSinComision, orgsSinComisionPorPlan, ESTADOS_CON_PLAN, type SuscripcionDeOrg } from "@/lib/billing/plan-de-la-org";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { leerTodo } from "@/lib/supabase/leer-todo";
 
@@ -196,7 +197,22 @@ export async function GET(req: Request): Promise<NextResponse> {
       // SEGUNDA VERJA de la exención (la primera es el cargo 0 del cierre): una
       // cortesía marcada entre el cierre de las 05:00 y esta pasada de las 07:00
       // no se factura. Como la calibración, dos verjas.
-      if ((org as { comision_exenta?: boolean } | null)?.comision_exenta) {
+      // Y la de los planes SIN comisión (Pro y Equipo): un cliente que pasó a
+      // uno de ellos entre el cierre y esta pasada tampoco recibe factura.
+      let sinComisionPorPlan = false;
+      const precios = preciosSinComision();
+      if (idsSinComision(precios).length > 0) {
+        const { data: subs, error: errSubs } = await supabase
+          .schema("bvsala")
+          .from("subscriptions")
+          .select("org_id, price_id, status")
+          .eq("org_id", e.org_id)
+          .in("status", [...ESTADOS_CON_PLAN]);
+        // Falla CERRADA, como el resto de la verja: sin poder leer el plan no se factura.
+        if (errSubs) throw new Error(`plan de ${e.org_id} ilegible: ${errSubs.message}`);
+        sinComisionPorPlan = orgsSinComisionPorPlan((subs ?? []) as SuscripcionDeOrg[], precios).has(e.org_id);
+      }
+      if ((org as { comision_exenta?: boolean } | null)?.comision_exenta || sinComisionPorPlan) {
         if (seco) ensayo.push(ensayoDeCargo(e, "exenta", undefined));
         else console.warn(`[facturar-extractos] ${e.org_id} ${e.periodo}: organización exenta de comisión, no se factura`);
         continue;

@@ -414,7 +414,7 @@
       "personalNote": "Personale — nessuna organizzazione ancora collegata. Un unico account BiVelio, condiviso in tutta la suite.",
       "plan": "piano",
       "seatsCount": "{count, plural, one {# postazione} other {# postazioni}}.",
-      "planBody": "BV-SALA è fail-closed — funziona solo con una licenza PRO attiva. {monthly} per postazione al mese o {yearly} per postazione all'anno. Una postazione è una macchina o identità di servizio attiva, non una persona.",
+      "planBody": "BV-SALA è fail-closed — funziona solo con una licenza attiva. Pro: {monthly} per postazione al mese o {yearly} per postazione all’anno. Team: {teamMonthly} al mese con {included} postazioni incluse. Nessuna commissione sul tuo risparmio. Una postazione è una macchina o identità di servizio attiva, non una persona.",
       "managePlan": "Gestisci piano →",
       "subscribe": "Abbonati →",
       "checkoutMonthly": "Abbonati — {monthly}/postazione/mese →",
@@ -430,7 +430,14 @@
       "errPagoEnCurso": "Il tuo pagamento è ancora in elaborazione: un addebito bancario può richiedere qualche giorno. Avrai accesso appena verrà regolato. Non avviare un secondo abbonamento.",
       "errSuscripcionEnStripe": "Stripe ha già un abbonamento per questo account, ma qui non è ancora attivato. Non ricomprare: scrivi a support@bivelio.com e lo attiviamo a mano.",
       "codigoAplicado": "Al pagamento verrà applicato il codice {codigo}.",
-      "errCodigoInvalido": "Quel codice non esiste o non è più attivo. Puoi continuare senza oppure scrivere a support@bivelio.com."
+      "errCodigoInvalido": "Quel codice non esiste o non è più attivo. Puoi continuare senza oppure scrivere a support@bivelio.com.",
+      "planPickLabel": "Piano",
+      "planPro": "Pro",
+      "planTeam": "Team",
+      "teamHint": "Team include {included} postazioni; ogni postazione in più costa {extra} al mese. Non se ne possono comprare meno di {included}.",
+      "checkoutTeamMonthly": "Abbonati a Team — {monthly}/mese, {included} postazioni →",
+      "checkoutTeamYearly": "Abbonati a Team — {yearly}/anno, {included} postazioni →",
+      "errPlanCerrado": "Questo piano non è più offerto ai nuovi clienti. Scegli Pro o Team."
     },
     "referenceLedgerCards": {
       "proven": "comprovato",
@@ -560,6 +567,18 @@
       "title": "Cancellazione del provider causata dai nostri parametri",
       "detalle": "{requests} richieste accreditate",
       "nota": "Il conteggio è del provider (applied_edits). Non è un risparmio misurato e non entra mai nella tua commissione; il denaro arriverà quando il netto per modello sarà misurato — cancellare riscrive la cache di prefisso, e su alcuni modelli il netto è negativo."
+    },
+    "ahorroNativo": {
+      "title": "Risparmio nativo attivato",
+      "detalle": "{requests} richieste con cache del fornitore · letture {lectura} − sovrapprezzo di scrittura {prima}",
+      "nota": "È lo sconto della cache di prefisso del tuo fornitore (Anthropic con cache_control, OpenAI automatica, Gemini implicita), al netto del sovrapprezzo di scrittura che applica, calcolato con il suo stesso contatore a prezzo di listino. Lo vedi nella fattura del tuo fornitore, non nella nostra: resta separato dal risparmio accreditato e non entra mai nella tua commissione.",
+      "vacio": "In questo periodo nessuna richiesta ha ancora letto o scritto la cache di prefisso del tuo fornitore.",
+      "proveedor": {
+        "anthropic": "Anthropic",
+        "openai": "OpenAI",
+        "google": "Gemini",
+        "other": "Altri"
+      }
     },
     "ritmo": {
       "title": "Ritmo e proiezione",
@@ -716,16 +735,44 @@
         "libros": "I quattro registri",
         "trafico": "Traffico",
         "sesiones": "Sessioni",
-        "maquinas": "Macchine"
+        "maquinas": "Macchine",
+        "nativo": "Risparmio nativo attivato"
       }
     },
     "team": {
       "metaTitle": "Team · BiVelio Savings Layer"
+    },
+    "measurePlan": {
+      "title": "Oppure inizia gratis: la licenza Misura, senza carta",
+      "body": "Esegue il livello in modalità ombra per 1 organizzazione e fino a {seats} postazioni: ogni richiesta arriva al tuo fornitore senza modifiche e nulla viene servito dalla cache. La dashboard mostra quanto avrebbero risparmiato le leve; passa a un piano a pagamento per attivarle.",
+      "claim": "Ottieni la mia licenza Misura gratuita",
+      "claiming": "Emissione…",
+      "keyLabel": "La tua chiave di licenza Misura (modalità ombra: nessuna leva applicata)",
+      "keyHint": "Usala come BIVELIO_LICENSE_KEY, esattamente come una chiave a pagamento. Quando passi al piano a pagamento, il livello recupera da solo la licenza a pagamento e le leve si attivano.",
+      "errEmailNotVerified": "Conferma prima il tuo indirizzo email, poi riprova.",
+      "errDisposableEmail": "Gli indirizzi email usa e getta non possono ottenere la licenza Misura. Registrati con un indirizzo permanente (quello di lavoro, per esempio) e riprova.",
+      "errOneOrgPerAccount": "Questo account ha già una licenza Misura per un'altra organizzazione: la licenza gratuita copre un'organizzazione per account.",
+      "errAlreadyLicensed": "La tua organizzazione ha già una licenza a pagamento: usa la chiave qui sopra.",
+      "errBlocked": "La licenza Misura non è disponibile per questa organizzazione. Scrivi a support@bivelio.com.",
+      "errRole": "Il tuo ruolo non consente di scaricare la licenza. Chiedi a un owner o admin.",
+      "errSignIn": "Accedi prima.",
+      "errGeneric": "Impossibile emettere la licenza Misura. Riprova tra un momento.",
+      "planLabel": "Misura (gratis)",
+      "pricingNote": "Misura: gratis, senza carta. Il livello in modalità ombra per 1 organizzazione e fino a {seats} postazioni, per vedere quanto risparmierebbe prima di pagare.",
+      "card": {
+        "eyebrow": "Licenza Misura · modalità ombra",
+        "title": "Quanto avresti risparmiato",
+        "amount": "{amount} che non avresti speso",
+        "context": "Su {spend} di spesa misurata in {requests} richieste. Una stima della corsia ombra, valutata con il contatore del tuo stesso fornitore: nell'SDK, le chiamate ripetute e i duplicati simultanei; nel gateway, anche il modello fratello e la riduzione del TTL della cache. Non è stato applicato nulla e non viene fatturato nulla.",
+        "empty": "Ancora nessuna stima di risparmio: compare appena il tuo livello vede una richiesta ripetuta o, nel gateway, una in cui il modello fratello o la riduzione del TTL della cache avrebbero fatto risparmiare. La licenza Misura non cambia mai ciò che invii.",
+        "limits": "Gratis per 1 organizzazione, fino a {seats} postazioni e {requests} richieste al giorno.",
+        "cta": "Attiva le leve: vedi i piani"
+      }
     }
   },
   "landing": {
     "metaTitle": "BiVelio — Verifica i tuoi risparmi sugli LLM",
-    "metaDescription": "Un SDK perché la tua app paghi al fornitore di LLM solo ciò che le serve, e un gateway che misura il tuo agente di codice. Tutto con il contatore del tuo fornitore: un canone per postazione, più una commissione solo sul risparmio misurato.",
+    "metaDescription": "Un SDK perché la tua app paghi al fornitore di LLM solo ciò che le serve, e un gateway che misura il tuo agente di codice. Tutto con il contatore del tuo fornitore: misura gratis, poi paga per postazione — senza commissione sul tuo risparmio.",
     "hero": {
       "eyebrow": "Per i team che pagano le API LLM a token",
       "title": "La tua fattura LLM, sotto controllo.",
@@ -794,8 +841,8 @@
           "body": "Non ti chiediamo fede. Ogni risparmio si misura con il contatore ufficiale del fornitore — lo stesso con cui ti fattura — e compare sulla tua ricevuta. Ciò che non si può confrontare con la fattura non viene mai annunciato."
         },
         {
-          "title": "Un canone per postazione e una parte di ciò che si misura",
-          "body": "Paghi ogni mese un canone fisso per postazione, che tu risparmi o no. In più, la nostra commissione esce solo dal risparmio misurato con il contatore del tuo fornitore, e la maggior parte di ogni risparmio resta sempre a te. Un mese senza risparmio misurato? Paghi le postazioni e zero commissione."
+          "title": "Misura gratis, poi paga per postazione",
+          "body": "Inizia con la licenza Misura, gratuita: il livello funziona in modalità ombra e ti mostra quanto avrebbe risparmiato con il tuo traffico. Per attivare le leve paghi un canone fisso per postazione, o un piano Team, che tu risparmi o no — e nessuna commissione sul tuo risparmio."
         }
       ],
       "nota": "Le animazioni illustrano l'idea. Le cifre vere — misurate contro fornitori reali — sono subito sotto."
@@ -887,12 +934,36 @@
       "initNote": "<b>Oppure lascia che un comando lo adatti al tuo stack.</b> <code>init</code> legge il tuo <code>package.json</code> (Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, l'SDK di Anthropic o quello di OpenAI) e stampa la riga di installazione, il codice esatto del tuo adattatore e una verifica che non consuma token: con la tua licenza già attiva, a risponderle è il layer, sulla tua macchina, senza chiamare il modello. Non scrive nulla se non glielo chiedi."
     },
     "pricing": {
-      "eyebrow": "Un unico piano, con prezzo per postazione",
-      "title": "Un canone per postazione, sempre. Commissione solo sul risparmio misurato.",
-      "body": "Nessun piano gratuito e nessuna prova: prima di pagare puoi verificare le misurazioni pubbliche e passare i tuoi dati nel verificatore, proprio su questa pagina. Il canone per postazione si addebita ogni mese, in {currency}, che tu risparmi o no. La commissione si aggiunge, e solo sul risparmio misurato con il contatore del tuo fornitore — comprese le richieste ripetute servite senza chiamarlo, ciascuna valutata con il contatore della richiesta identica già eseguita. Lo stimato non entra mai.",
+      "eyebrow": "Piani",
+      "title": "Misura gratis. Paga per postazione quando vuoi il risparmio.",
+      "body": "Inizia con Misura: gratis e senza carta. Il livello funziona in modalità ombra con il tuo traffico e la tua dashboard mostra quanto avrebbe risparmiato, valutato con il contatore del tuo fornitore. Pro e Team si pagano per postazione, in {currency}, che tu risparmi o no, e non hanno commissione sul tuo risparmio.",
       "amount": "{amount}",
       "per": "/ postazione / mese",
-      "proNote": "<b>PRO</b> — fatturato per postazione. Oppure <b>{yearly} / postazione / anno</b> (risparmi ~19%). Enterprise, con funzionalità in pacchetto, arriverà più avanti.",
+      "plans": {
+        "medir": {
+          "name": "Misura",
+          "price": "Gratis",
+          "body": "Senza carta. Il livello in modalità ombra per un’organizzazione: ogni richiesta arriva al tuo fornitore senza modifiche, e vedi quanto avrebbe risparmiato.",
+          "cta": "Inizia gratis →"
+        },
+        "pro": {
+          "name": "Pro",
+          "note": "Oppure <b>{yearly} / postazione / anno</b>. Tutte le ottimizzazioni, la ricevuta per richiesta e la dashboard. Nessuna commissione.",
+          "cta": "Scegli Pro →"
+        },
+        "team": {
+          "name": "Team",
+          "per": "/ mese",
+          "note": "<b>{included} postazioni incluse</b>; ogni postazione in più {extra} / mese. Oppure <b>{yearly} / anno</b>. Nessuna commissione.",
+          "cta": "Scegli Team →"
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "price": "Su misura",
+          "body": "Più postazioni di quante ne consenta il pagamento online, un contratto tuo o condizioni di fatturazione concordate: <contact>scrivici</contact>."
+        }
+      },
+      "legacy": "Hai già la formula precedente, con commissione sul risparmio misurato? La mantieni senza modifiche; le sue condizioni sono nei <terms>termini di prezzo</terms>.",
       "seatNote": "Una postazione è una <b>macchina o identità di servizio</b>, non una persona. Paghi le postazioni coperte dal tuo abbonamento; la tua dashboard mostra quante sono state in uso questo mese (attive in almeno {dias} giorni; CI e runner effimeri non contano).",
       "features": [
         "Ogni ottimizzazione BV‑SALA, senza limiti",
@@ -924,7 +995,7 @@
     },
     "footer": {
       "ctaTitle": "Misuralo sul tuo traffico",
-      "ctaSub": "Una volta installato, ogni chiamata restituisce il suo SavingsReport, con misurato e stimato separati. Il canone per postazione è mensile e fisso; la commissione esce solo da ciò che si misura. La licenza è ciò che ti permette di eseguire BV‑SALA — l'SDK nella tua app, il gateway nel tuo terminale.",
+      "ctaSub": "Una volta installato, ogni chiamata restituisce il suo SavingsReport, con misurato e stimato separati. Inizia gratis con Misura; Pro e Team sono un canone fisso per postazione, senza commissione sul tuo risparmio. La licenza è ciò che ti permette di eseguire BV‑SALA — l’SDK nella tua app, il gateway nel tuo terminale.",
       "ctaStart": "Inizia",
       "tagline": "Il sistema operativo per la tua azienda. Questo è <b>BV‑SALA</b>, l'ottimizzatore di costo LLM di BiVelio, neutrale rispetto al fornitore — ogni cifra pubblicata è misurata contro il contatore del fornitore; le stime si mostrano a parte e non si fatturano mai.",
       "badge": "BV‑SALA · Savings Layer",
@@ -932,6 +1003,7 @@
       "colBivelio": "BiVelio",
       "colLegal": "Note legali",
       "measured": "Risultati misurati",
+      "benchmarks": "Banco di prova pubblico",
       "pricing": "Prezzi",
       "home": "Home",
       "docs": "Documentazione",
@@ -1136,6 +1208,167 @@
     "cerrarYContinuar": "Esci e usa un altro account",
     "cerrando": "Disconnessione…"
   },
+  "benchmarksPage": {
+    "metaTitle": "Banco di prova pubblico A/B: misuraci | BiVelio Savings Layer",
+    "metaDescription": "Quattro batterie pubbliche (GSM8K, BFCL, XSTest e MT-Bench), due bracci misurati con il contatore di utilizzo del fornitore stesso, ogni cifra con il suo n, il suo intervallo e la sua data. Cosa fa risparmiare, cosa no, e i bug che il banco di prova ha trovato.",
+    "eyebrow": "Banco di prova pubblico · riproducibile",
+    "title": "Il nostro banco di prova A/B, alla luce del sole. Misuraci.",
+    "lede": "Pubblichiamo ogni esecuzione: quattro batterie su dataset pubblici, {modelos} modelli, ed entrambi i bracci misurati con il contatore di utilizzo del fornitore stesso. Ogni cifra porta il suo n, il suo intervallo e la sua data. Anche ciò che non fa risparmiare è qui.",
+    "stats": {
+      "batteries": "batterie",
+      "models": "modelli testati",
+      "measured": "modelli con almeno una misurazione",
+      "reports": "report in tempo reale",
+      "last": "ultima esecuzione"
+    },
+    "method": {
+      "title": "Cosa si misura, e come",
+      "arms": "<b>Due bracci, la stessa richiesta.</b> A va direttamente al fornitore, senza il livello; B passa attraverso il livello con la sua configurazione predefinita. Stesso prompt, stesso campionamento, stesso limite di output.",
+      "cost": "<b>Il costo lo conta il fornitore.</b> Ogni braccio viene valutato in base all'<code>usage</code> restituito dall'API a ogni chiamata, al prezzo di listino. Il risparmio è 1 − costo(B) / costo(A) della stessa esecuzione, non ciò che il livello dice di sé stesso.",
+      "intervals": "<b>Intervalli al {nivel}.</b> Li calcola ciascun harness (ricampionamento per famiglie di domande, Wilson per i tassi di rifiuto). Un intervallo che attraversa lo zero significa «indistinguibile da zero», e lo diciamo.",
+      "package": "<b>Il pacchetto che si installa.</b> Il braccio B esegue il sorgente del tag {version}; il suo <code>dist/index.js</code> è identico byte per byte a quello del tarball npm (sha256 <code>{sha}</code>).",
+      "guard": "<b>Nessuna scorciatoia.</b> Ogni harness sorveglia gli host con cui comunica e applica un limite di spesa per modello scritto nel codice. Un modello che non è stato possibile misurare risulta «non misurato», con il motivo.",
+      "batteriesTitle": "Quattro batterie, dataset pubblici, fissati",
+      "commitOnly": "fissato per commit"
+    },
+    "batteries": {
+      "gsm8k": "Problemi matematici a parole con ripetizioni e parafrasi: quanto fa risparmiare la cache e se l'accuratezza cala.",
+      "bfcl": "Chiamate a strumenti: il livello non deve cambiarne nemmeno una, e il catalogo intero deve arrivare.",
+      "xstest": "Rifiuti: il livello non deve cambiare quando il modello rifiuta, né servire un rifiuto dalla cache.",
+      "mt-bench": "Chat a due turni senza ripetizioni: il livello non deve peggiorare costo, latenza o qualità."
+    },
+    "th": {
+      "battery": "Batteria",
+      "what": "Cosa verifica",
+      "dataset": "Dataset",
+      "pinned": "File fissati",
+      "license": "Licenza",
+      "model": "Modello",
+      "n": "n",
+      "savings": "Risparmio misurato [IC]",
+      "fromExact": "Dalla cache esatta",
+      "fromCalls": "Nelle chiamate (prefisso)",
+      "accuracy": "Accuratezza A → B",
+      "run": "Versione · data",
+      "prompts": "Prompt",
+      "safe": "Rifiuti, prompt sicuri (A → B)",
+      "unsafe": "Rifiuti, prompt non sicuri (A → B)",
+      "verdict": "Lettura",
+      "reports": "Report"
+    },
+    "savings": {
+      "title": "Risparmio misurato per modello",
+      "intro": "GSM8K, con un flusso di richieste in cui {rep} sono ripetizioni esatte e {par} parafrasi. È la batteria con traffico ripetuto: il tuo risparmio dipende da quanto si ripete il tuo traffico. Senza ripetizioni, vedi «Cosa non fa risparmiare».",
+      "nCell": "{n} richieste · {unicos} uniche",
+      "delta": "Δ {d} pp [{inf}, {sup}]",
+      "originNote": "Da dove viene il risparmio, posizione per posizione: «dalla cache esatta» è ciò che A ha pagato sulle richieste che il livello ha servito senza chiamare il fornitore; «nelle chiamate» è la differenza su quelle che invece lo hanno raggiunto, soprattutto la cache di prefisso del fornitore (più un po' di variazione nell'output). Le due voci sommate danno il risparmio totale.",
+      "accuracyNote": "L'accuratezza è misurata sulle domande con risposta pubblicata; le varianti con un numero cambiato servono solo a verificare che il livello non restituisca mai la risposta di un'altra domanda."
+    },
+    "guarantees": {
+      "title": "Garanzie, contate",
+      "tools": {
+        "title": "Il livello non ha mai cambiato una chiamata a strumenti",
+        "titleBroken": "Il livello ha cambiato {n} chiamate a strumenti",
+        "body": "{alteradas} chiamate alterate su {comparaciones} confronti BFCL, {modelos} modelli, da {desde}. Se il livello fallisce (un errore in B che A non aveva), non viene contato qui: è sotto «Bug trovati dal banco di prova»."
+      },
+      "other": {
+        "title": "Nessuna risposta di un'altra domanda da {desde}",
+        "titleBroken": "{n} risposte di un'altra domanda da {desde}",
+        "body": "{deOtra} varianti su {variantes} (la stessa domanda con un altro numero, e quindi un'altra risposta) servite con la risposta di un'altra domanda, su {modelos} modelli live e tutte le configurazioni di cache misurate.",
+        "replay": "Replay offline dell'intero split di test di GSM8K: {erroneas} su {peticiones} richieste, in ciascuna delle {configs} configurazioni di cache."
+      },
+      "refusals": {
+        "title": "Lo stesso tasso di rifiuto, con e senza il livello",
+        "titleBroken": "Il tasso di rifiuto è cambiato per {n} modelli",
+        "body": "XSTest, {modelos} modelli misurati: nessuna differenza A/B sotto p = {umbral} (McNemar, prompt appaiati). Il livello ha consegnato senza alterazioni il testo di {comprobados} risposte ({alterados} alterate).",
+        "caption": "Tasso di rifiuto per modello, senza il livello (A) e con esso (B), sugli stessi prompt."
+      }
+    },
+    "noSavings": {
+      "title": "Cosa non fa risparmiare",
+      "lead": "<b>Senza ripetizioni, il risparmio è ≈ {cero}.</b> Lo pubblichiamo comunque, perché è ciò che vedrai se il tuo traffico non si ripete.",
+      "why": "MT-Bench è una chat a due turni con un livello nuovo per ogni domanda: non c'è nulla che la cache possa riutilizzare, e il prompt quasi mai raggiunge il minimo richiesto dal fornitore per mettere in cache un prefisso. In BFCL ogni chiamata a strumenti è diversa. Ciò che queste due batterie misurano è che il livello non peggiori nulla; la differenza di costo residua è rumore nell'output del modello, non il livello.",
+      "nQuestions": "{n} domande",
+      "nItems": "{n} elementi",
+      "verdict": {
+        "ahorro": "risparmio",
+        "cero": "indistinguibile da zero",
+        "sobrecoste": "costo aggiuntivo"
+      },
+      "notAttributable": "non attribuibile al livello"
+    },
+    "status": {
+      "title": "Stato per modello e batteria",
+      "intro": "Ogni cella mostra l'esecuzione sulla versione più alta del livello. Se un modello non è stato possibile misurarlo, diciamo il perché invece di lasciare un vuoto.",
+      "measured": "misurato · n = {n}",
+      "notMeasured": "non misurato: {motivo}",
+      "layerFailed": "il livello ha fallito: {motivo}",
+      "reason": {
+        "credencial": "credenziale rifiutata",
+        "presupuesto": "limite di spesa esaurito",
+        "cuota": "quota del fornitore esaurita",
+        "capa": "le richieste non sono passate dal livello",
+        "proveedor": "il fornitore ha rifiutato la richiesta in entrambi i bracci",
+        "otro": "dati insufficienti"
+      }
+    },
+    "bugs": {
+      "title": "Bug trovati dal banco di prova",
+      "intro": "Il banco di prova non c'è per fare bella figura: c'è per trovare i bug prima di te. Ha trovato questi, con la versione in cui sono comparsi e quella che li corregge.",
+      "found": "Trovato nella {version}: {ocurrencias} su {sobre}.",
+      "fixed": "Corretto nella {version} ({prs}).",
+      "verified": "Verificato dal vivo sulla {version}: {ocurrencias} su {sobre}.",
+      "stillSeen": "Ancora visto sulla {version}: {ocurrencias} su {sobre}.",
+      "pending": "In attesa di essere rimisurato dal vivo sulla {version}.",
+      "items": {
+        "otra-pregunta": {
+          "title": "La cache semantica non calibrata serviva la risposta di un'altra domanda",
+          "body": "Con la cache semantica non calibrata, una variante con un altro numero («three baskets» contro «two baskets») poteva ricevere la risposta della domanda originale. Contato sulle varianti di GSM8K."
+        },
+        "herramientas-multiturno": {
+          "title": "Il livello tagliava il catalogo di strumenti senza alcun segnale per farlo",
+          "body": "Nelle conversazioni multi-turno, il braccio B inviava meno strumenti del braccio A anche se nulla indicava quali fossero superflui. Contato sulle conversazioni multi-turno di BFCL."
+        },
+        "negativas-de-texto": {
+          "title": "Alcuni rifiuti scritti come testo venivano messi in cache",
+          "body": "Un rifiuto che il modello scrive come testo (senza il segnale dell'API) poteva essere messo in cache, ripetuto e accreditato come risparmio. Contato nei prompt di XSTest."
+        },
+        "gemini-filtro-cacheado": {
+          "title": "Un filtro di contenuto di Gemini veniva messo in cache come risposta",
+          "body": "Gemini segnala il suo filtro con un proprio motivo di arresto, che il livello non riconosceva come rifiuto, così poteva metterlo in cache e ripeterlo. Contato nei prompt di XSTest."
+        },
+        "gemini-prompt-cache-key": {
+          "title": "Gemini non passava dal livello",
+          "body": "Il livello inviava un campo specifico dell'API di OpenAI a qualsiasi endpoint compatibile, e Gemini lo rifiuta: tutte le richieste del braccio B fallivano. Contato nelle richieste di GSM8K."
+        },
+        "gemini-thought-signature": {
+          "title": "Con Gemini 3, il secondo turno con strumenti falliva",
+          "body": "Il livello non restituiva la firma di pensiero che Gemini 3 richiede a ogni chiamata a strumenti, così il turno successivo veniva rifiutato. Contato nelle continuazioni multi-turno di BFCL."
+        }
+      }
+    },
+    "repro": {
+      "title": "Come riprodurlo",
+      "intro": "Il codice del banco di prova non è ancora pubblico; il metodo sì, e sta in cinque passi. Con le tue chiavi del fornitore puoi ripeterlo e confrontarlo cifra per cifra con i nostri report.",
+      "steps": {
+        "dataset": "<b>Il dataset.</b> Scarica ogni dataset pubblico al commit della tabella qui sopra e controlla lo sha256 di ogni file prima di usarlo. Se non corrisponde, non è lo stesso dataset.",
+        "package": "<b>Il livello.</b> Installa <code>@bivelio/savings-layer</code> da npm nella versione indicata dal report e controlla lo sha256 di <code>dist/index.js</code>: ogni report riporta il suo.",
+        "arms": "<b>Due bracci per prompt.</b> A va diretto al fornitore; B invia lo stesso prompt, allo stesso modello e con lo stesso limite di output, attraverso il livello con la configurazione predefinita. Una parte dei prompt viene ripetuta o parafrasata, come nel traffico reale, e l'ordine A/B è sorteggiato.",
+        "cost": "<b>Il costo lo dice il fornitore.</b> Somma quanto viene fatturato a ogni braccio secondo lo <code>usage</code> restituito dal fornitore, alla sua tariffa pubblicata. Il risparmio è <code>1 − costo B / costo A</code>, con il suo intervallo.",
+        "compare": "<b>La qualità, nella stessa esecuzione.</b> Valuta allo stesso modo le risposte dei due bracci (risposta esatta in GSM8K, chiamata di strumento in BFCL, rifiuto o no in XSTest, un giudice in MT-Bench) e confrontale con il report JSON della stessa batteria e versione."
+      },
+      "reportsTitle": "I report",
+      "reportsIntro": "Ogni esecuzione lascia un report JSON con il suo disegno, i suoi limiti e ogni chiamata misurata: usage, costo per braccio e classificazione della risposta. Sono serviti da questo sito.",
+      "served": "I report sono serviti così come il banco li ha scritti, con un'eccezione: si tolgono i dati sull'ambiente di chi ha misurato (percorsi su disco, indirizzi email). Di XSTest non si pubblica il testo di nessuna risposta, solo la sua classificazione."
+    },
+    "invite": {
+      "title": "Misuraci tu stesso",
+      "body": "Una misurazione indipendente vale più della nostra. Il codice del banco non è ancora pubblico: se vuoi ripetere la misurazione, o misurare il livello con il tuo harness o con il tuo traffico, scrivici e ti daremo ciò che ti serve per farlo.",
+      "contact": "Scrivici a",
+      "cta": "Invia un'email",
+      "subject": "Misurazione indipendente del banco di prova pubblico"
+    }
+  },
   "howItWorks": {
     "metaTitle": "Dove si installa il risparmio? · BiVelio Savings Layer",
     "metaDescription": "BV‑SALA è uno strato che si installa nel codice della tua applicazione, dove viene chiamata l'API. Cosa può risparmiare, dove non si applica e come si misura davvero.",
@@ -1176,7 +1409,7 @@
     "s3Sub": "Il prodotto ha due numeri diversi ed è meglio non mescolarli.",
     "mBeforeK": "Prima di installare",
     "mBeforeV": "Stima",
-    "mBeforeBody": "Il calcolatore nella sezione prezzi proietta il tuo risparmio con i tuoi numeri: richieste, token e modello. È una proiezione onesta — per questo porta l'etichetta «stima».",
+    "mBeforeBody": "La licenza Misura, gratuita, esegue il livello in modalità ombra con il tuo traffico e mostra quanto avrebbe risparmiato, richiesta per richiesta. Non cambia nulla e non applica nulla — per questo porta l’etichetta «stima».",
     "mAfterK": "Dopo l'installazione",
     "mAfterV": "Misurazione reale",
     "mAfterBody": "Ogni chiamata restituisce un SavingsReport: le chiamate che non hai mai pagato e il risparmio netto per richiesta. Verificabile, richiesta per richiesta, sulla tua infrastruttura.",
@@ -1191,14 +1424,36 @@
   },
   "pricingPage": {
     "metaTitle": "Condizioni di prezzo · BV-SALA",
-    "metaDescription": "La quota per postazione e la commissione sul risparmio misurato, pubblicate dalle stesse costanti che fatturano.",
+    "metaDescription": "Misura gratis, Pro per postazione, Team ed Enterprise — nessuno ha una commissione sul tuo risparmio. Cifre pubblicate dalle stesse costanti che fatturano.",
     "eyebrow": "Prezzi pubblicati",
     "title": "Condizioni di prezzo",
     "governs": "Questa pagina descrive come funziona il servizio oggi; prevalgono la <license>LICENSE</license> e i <terms>Termini di BiVelio</terms>.",
-    "lede": "Ogni cifra che vedi qui viene letta dallo stesso codice che ti fattura, quindi cambia quando cambia il prezzo.",
+    "lede": "Paghi per postazione o per un piano Team, senza commissione sul tuo risparmio. Ogni cifra di questa pagina si legge dallo stesso codice che ti fattura, quindi cambia quando cambia il prezzo.",
+    "plans": {
+      "title": "Piani",
+      "intro": "Quattro piani, dal più piccolo al più grande. Pro e Team si pagano per postazione e non prevedono commissioni.",
+      "medir": {
+        "name": "Misura",
+        "body": "<b>Gratis, senza carta.</b> Il livello funziona in modalità ombra per un’organizzazione, con un tetto di postazioni e di richieste giornaliere: ogni richiesta arriva al tuo fornitore esattamente come l’hai costruita, nulla viene servito dalla cache e nessuna leva viene applicata. La tua dashboard mostra quanto avrebbe risparmiato — una stima che non ha mai commissione. Le leve richiedono Pro o Team."
+      },
+      "pro": {
+        "name": "Pro",
+        "amount": "<b>{monthly}</b> per postazione al mese, oppure <b>{yearly}</b> per postazione all’anno, in {currency}.",
+        "body": "Tutte le ottimizzazioni del livello, la ricevuta per richiesta e la dashboard. <b>Nessuna commissione</b> sul risparmio: paghi le postazioni, che tu risparmi o no."
+      },
+      "team": {
+        "name": "Team",
+        "amount": "<b>{monthly}</b> al mese con <b>{included} postazioni incluse</b> (circa {perSeat} per postazione), oppure <b>{yearly}</b> all’anno, in {currency}.",
+        "extra": "Ogni postazione oltre quelle incluse: {monthly} al mese, oppure {yearly} all’anno.",
+        "body": "Lo stesso di Pro, per una flotta: il canone fisso copre le postazioni incluse anche se ne usi meno. <b>Nessuna commissione</b> sul risparmio."
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "body": "Per più postazioni di quante ne accetti il pagamento online, un contratto dedicato o condizioni di fatturazione concordate: <contact>scrivici</contact>."
+      }
+    },
     "seat": {
-      "title": "La quota per postazione",
-      "amount": "<b>{monthly}</b> per postazione al mese, oppure <b>{yearly}</b> per postazione all'anno, in {currency}.",
+      "title": "Come si conta e si fattura una postazione",
       "cycle": "La quota per postazione viene addebitata tramite Stripe per ogni ciclo mensile o annuale del tuo abbonamento, contato dal giorno in cui inizia.",
       "paidAlways": "La quota per postazione si paga <b>che il Software produca un risparmio o no</b>.",
       "vat": "Gli importi sono IVA esclusa. Il pagamento chiede il tuo indirizzo di fatturazione e, facoltativamente, la tua partita IVA; entrambi compaiono in fattura.",
@@ -1208,7 +1463,9 @@
       "identifier": "Come si forma l'identificativo di postazione, e tutto il resto che il Software invia a BiVelio, è nella <privacy>pagina sulla privacy</privacy>."
     },
     "commission": {
-      "title": "La commissione sul risparmio misurato",
+      "title": "Formula precedente con commissione (chiusa ai nuovi clienti)",
+      "optional": "Questa formula <b>non è più offerta ai nuovi clienti</b>. Se il tuo abbonamento ce l’ha già, la mantieni senza modifiche e la regolano le condizioni qui sotto: un canone per postazione più basso e una commissione solo sul risparmio che puoi riconciliare con la fattura del tuo fornitore. Pro e Team non la hanno mai; il loro estratto mostra la commissione che si sarebbe applicata solo come riferimento.",
+      "seat": "Canone per postazione in questa modalità: <b>{monthly}</b> per postazione al mese, oppure <b>{yearly}</b> per postazione all’anno, in {currency}.",
       "only": "La commissione si applica <b>solo al risparmio misurato</b>: il risparmio etichettato {labels} nei tuoi record di utilizzo. Il risparmio etichettato {never} non porta mai commissione.",
       "measured": "Un risparmio misurato si ricava dal contatore di utilizzo del tuo stesso provider di LLM per quella richiesta.",
       "reference": "Un risparmio per riferimento, per una richiesta ripetuta che il Software ha servito senza chiamare il tuo provider, si ricava dal contatore del tuo provider per la richiesta identica precedente che è stata effettivamente eseguita, secondo la regola indicata nel tuo estratto ({regla}).",
@@ -1225,8 +1482,7 @@
       "ceiling": "Nessuno scaglione supera il {max}, quindi, prima di arrotondare la commissione al centesimo, <b>ti resta almeno il {garantia}</b> del risparmio misurato del periodo. La quota per postazione è a parte.",
       "fx": "Il risparmio misurato si conta in dollari statunitensi e si converte al tasso di riferimento della Banca centrale europea rilevato alla chiusura del periodo; il tuo estratto mostra il tasso applicato.",
       "rounding": "La commissione viene arrotondata al centesimo più vicino. Una commissione inferiore a {minimo} non viene fatturata né riportata a un altro periodo.",
-      "zero": "Un periodo senza risparmio misurato <b>non porta commissione</b>.",
-      "calculator": "Per vedere cosa significa per il tuo traffico, prova il <calc>calcolatore</calc> nella home page."
+      "zero": "Un periodo senza risparmio misurato <b>non porta commissione</b>."
     },
     "calibration": {
       "title": "Periodo di calibrazione",
@@ -1273,7 +1529,7 @@
         },
         "cost": {
           "title": "Costo",
-          "body": "Cifre di costo calcolate dal Software con il suo catalogo prezzi o con un modello di costo che fornisci tu: costo di riferimento, costo effettivo, il rapporto di risparmio netto, la base delle cifre (measured, reference, estimated, shadow o unmeasured) e il valore, al prezzo di lettura della cache del provider, dei token di input che il tuo provider ha dichiarato rimossi dal contesto."
+          "body": "Cifre di costo calcolate dal Software con il suo catalogo prezzi o con un modello di costo che fornisci tu: costo di riferimento, costo effettivo, il rapporto di risparmio netto, la base delle cifre (measured, reference, estimated, shadow o unmeasured) e il valore, al prezzo di lettura della cache del provider, dei token di input che il tuo provider ha dichiarato rimossi dal contesto. Mostrati a parte e mai usati per calcolare le tariffe: lo sconto che la cache dei prompt del tuo fornitore ha dato alla richiesta e il sovrapprezzo di scrittura in cache che ha fatturato."
         }
       }
     },

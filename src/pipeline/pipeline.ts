@@ -1,5 +1,5 @@
 import { randomId } from "../util/id.js";
-import { avisarUnaVez } from "../util/warn-once.js";
+import { avisarUnaVez, yaSeAviso } from "../util/warn-once.js";
 import { isBuiltInDemoProvider } from "../providers/demo-brand.js";
 import {
   atestadoDelCable,
@@ -11,10 +11,11 @@ import {
   type AtestadoDelCable,
 } from "../providers/atestado-del-cable.js";
 import {
-  admiteBusquedaNativa,
   candidatasPorRiesgo,
   decidirBusquedaNativa,
   normalizarBusqueda,
+  type DecisionDeBusquedaNativa,
+  type OpcionesDeBusqueda,
 } from "../router/busqueda-nativa.js";
 import type { ToolSelection } from "../router/tool-selector.js";
 import { salidaNoRepetible } from "../pricing/razonamiento.js";
@@ -40,6 +41,7 @@ import { canonicalize, sha256, stableStringify } from "../canonicalization/canon
 import { buildExactKey, buildInflightKey } from "../canonicalization/keys.js";
 import type { CacheTier } from "../economics/cache-tier.js";
 import { VerjaDeCacheDePrefijo } from "../economics/prefix-cache-gate.js";
+import { ahorroNativo } from "../economics/ahorro-nativo.js";
 import {
   EspejoDeCache,
   TTL_DEL_ALMACEN_MS,
@@ -129,6 +131,7 @@ import {
 import { CanalDeStream, type MotivoEntero, type SumideroDeStream } from "./stream.js";
 import { libroDeCalidad, libroDelSeguidor, type HechosDeCalidad } from "./libro-de-calidad.js";
 import { StreamAbortedError } from "./errors.js";
+import { AVISO_MEDIR, MemoriaDeSombra, PALANCAS_NO_SIMULADAS, URL_DE_PAGO, redondearUsd } from "./medir.js";
 import { negativaEnTexto } from "../providers/negativa-en-texto.js";
 import { normalizarAjustes } from "../verification/ajustes.js";
 import { ComprobadorAB, type SumideroDeVerificacion } from "../verification/comprobador.js";
@@ -372,6 +375,7 @@ function mensajeSinLicencia(): string {
     return (
       "BiVelio license required: none was configured. Pass { licenseKey } — the signed token " +
       "from your subscription, verified offline. This published package has no unlicensed mode. " +
+      "To try it without paying, the free Measure license (no card) runs the layer in shadow mode. " +
       "Copy your key and a ready-to-paste snippet at " +
       "https://savings.bivelio.com/dashboard/install (license status: none)"
     );
@@ -498,6 +502,13 @@ export class SavingsPipeline {
    */
   private readonly referenciasDeLider = new WeakMap<object, RegistroDeReferencia>();
 
+  /**
+   * La memoria del modo sombra (licencia Medir): claves de las peticiones
+   * cacheables que ya corrieron y de las que están en vuelo. Solo hashes e
+   * instantes, nunca una respuesta: en sombra no hay nada que servir.
+   */
+  private readonly memoriaDeSombra = new MemoriaDeSombra();
+
   // Los resultados de un líder cuya respuesta NO se puede repetir
   // (`ProviderResponse.replayable === false`): ficheros, fuentes, herramientas
   // que ejecutó el proveedor o razonamiento que el proveedor espera de vuelta.
@@ -551,6 +562,9 @@ export class SavingsPipeline {
   // El resultado servido, con su bloque `verification` y —si le toca— la copia
   // sin capa lanzada DESPUÉS de servir. Sin comprobador, el mismo objeto.
   private conVerificacion<T>(request: SavingsRequest, r: SavingsResult<T>, via: ViaDeServicio): SavingsResult<T> {
+    // En sombra (licencia Medir) lo servido YA es la petición sin capa: una copia
+    // de verificación sería pagar dos veces la misma llamada para comparar nada.
+    if (r.report.measure) return r;
     return this.comprobador ? this.comprobador.decidir(request, r, via) : r;
   }
 
@@ -1712,6 +1726,19 @@ export class SavingsPipeline {
     this.assertLicensed();
   }
 
+  // Lo mismo para una superficie que ES una palanca por sí misma (enviar un
+  // lote): con la licencia Medir no se aplica ninguna, y se dice cómo pasar a pago.
+  exigirPalancas(): void {
+    if (this.enSombra()) {
+      throw new LicenseError(
+        "[bvsala] Batches are a savings lever, and the Measure license runs the layer in shadow mode: " +
+          `no lever is applied. Upgrade to a paid plan at ${URL_DE_PAGO} to submit batches. ` +
+          "(license status: measure)",
+        "measure",
+      );
+    }
+  }
+
   /**
    * Fail-closed entry gate. Throws {@link LicenseError} unless the caller is in
    * dev-open mode or holds an active/grace license. Un gate sin `isActive()`
@@ -1938,6 +1965,10 @@ export class SavingsPipeline {
     // reexporta la clase) no debe poder correr el optimizador sin licencia. Es
     // idempotente con la llamada de generate().
     this.assertLicensed();
+    // LA LICENCIA MEDIR: antes de cualquier etapa. Nada de lo que viene después
+    // (resolvers, cachés, singleflight, cascada, compresión, marcas de caché…)
+    // llega a mirar la petición: sale intacta por la llamada directa.
+    if (this.enSombra()) return this.generarEnSombra<T>(request, testigo, sumidero);
     const trace = new TraceCollector(this.now);
     const ledger = new SavingsLedger();
     const canonical = canonicalize(request);
@@ -2352,7 +2383,9 @@ export class SavingsPipeline {
           // entrada; congelando, la misma poda ahorra el 14,3 %).
           canonical.toolsetHash,
         );
-    if (!nativa) this.avisarDeHerramientasPodadas(request, toolSelection, cascada.modeloServido);
+    if (!nativa) {
+      this.avisarDeHerramientasPodadas(request, toggles, toolSelection, route.executionClass, routerApagado, cascada, costModel);
+    }
     ledger.actualTools = toolSelection.tools.length;
     if (toolSelection.droppedIds.length) {
       // LIBRO 2. Hasta ahora `SavingsLedger.eliminate()` no tenía NI UN llamante
@@ -3450,6 +3483,17 @@ export class SavingsPipeline {
     if (response.usage.cachedInputTokens) {
       ledger.providerCached(response.usage.cachedInputTokens);
     }
+    // El carril del AHORRO NATIVO (report.nativeSavings): las escrituras de la
+    // llamada servida y si la capa la marcó. Solo lo lee el bloque aparte; no
+    // entra en estimateCost. Una negativa que no se cobra no escribió nada que
+    // pagar.
+    if (response.unbilledRefusal !== true) {
+      ledger.nativeCacheWrite(
+        response.usage.cacheWriteInputTokens ?? 0,
+        response.usage.cacheWrite1hInputTokens ?? 0,
+      );
+    }
+    ledger.nativeCacheMarkedByLayer = !escalo && marcado.marcar;
 
     // LA PRIMA DE ESCRITURA QUE EL PROVEEDOR COBRA POR SU CUENTA. OpenAI, de
     // GPT-5.6 en adelante (toda la familia gpt-6), factura cada escritura de su
@@ -4506,6 +4550,10 @@ export class SavingsPipeline {
     // recibía cadena vacía como si fuera la respuesta buena.
     if (pidioHerramientas) result.toolCalls = response.toolCalls!;
     if (response.finishReason !== undefined) result.finishReason = response.finishReason;
+    // Y el motivo del proveedor (la categoría de una negativa de Anthropic, el
+    // `content_filter: OTHER` de Gemini): sin él, el llamante veía
+    // `content_filter` a secas y un `refusal` vacío, sin saber por qué.
+    if (response.finishReasonDetail !== undefined) result.finishReasonDetail = response.finishReasonDetail;
     // La negativa también llega al llamante: sin ella, una negativa de salidas
     // estructuradas era un `text` vacío que incumplía el contrato sin decir por qué.
     if (response.refusal !== undefined) result.refusal = response.refusal;
@@ -4554,19 +4602,14 @@ export class SavingsPipeline {
     const tools = request.tools ?? [];
     if (opciones.modo === "off" || tools.length === 0) return null;
 
-    const candidatas = candidatasPorRiesgo(tools, execution === "TOOL_ACTION", routerApagado);
-    const decision = decidirBusquedaNativa({
+    const { candidatas, decision } = this.decidirBusquedaParaEstaPeticion(
+      request,
       opciones,
-      capacidad: busquedaNativaDelProveedor(this.config.provider),
-      modelo: cascada.modeloServido,
-      // Con LA regla del baseline (`textoDeHerramienta`), como el libro 2 y el
-      // sondeo: si esto contara distinto, la verja decidiría sobre otra cuenta.
-      herramientas: candidatas.map((t) => ({ id: t.id, tokens: this.tokensFor(textoDeHerramienta(t), request) })),
-      hayContrato: request.response?.schema != null,
-      cascadaActiva: cascada.modo !== "off",
-      precio: costModel,
-      lecturaDeCache: this.lecturaDeCacheDe(cascada.modeloServido, costModel),
-    });
+      execution,
+      routerApagado,
+      cascada,
+      costModel,
+    );
     trace.record("tool-search", decision.aplicar ? "native" : "selector", {
       mode: opciones.modo,
       variant: decision.variante,
@@ -4592,6 +4635,34 @@ export class SavingsPipeline {
       prefijo: candidatas.filter((t) => fijas.has(t.id)),
       plan: { variant: decision.variante, alwaysLoaded: decision.siempreCargadas },
     };
+  }
+
+  // LA decisión de la búsqueda nativa para ESTA petición con unas opciones
+  // dadas. La usan la ruta nativa y el aviso del selector: el aviso solo puede
+  // recomendar `"auto"` si la verja de `"auto"` lo elegiría de verdad aquí, así
+  // que las dos preguntan a la misma función con la misma entrada.
+  private decidirBusquedaParaEstaPeticion(
+    request: SavingsRequest,
+    opciones: OpcionesDeBusqueda,
+    execution: ExecutionClass,
+    routerApagado: boolean,
+    cascada: DecisionDeCascada,
+    costModel: CostModel,
+  ): { candidatas: ToolDescriptor[]; decision: DecisionDeBusquedaNativa } {
+    const candidatas = candidatasPorRiesgo(request.tools ?? [], execution === "TOOL_ACTION", routerApagado);
+    const decision = decidirBusquedaNativa({
+      opciones,
+      capacidad: busquedaNativaDelProveedor(this.config.provider),
+      modelo: cascada.modeloServido,
+      // Con LA regla del baseline (`textoDeHerramienta`), como el libro 2 y el
+      // sondeo: si esto contara distinto, la verja decidiría sobre otra cuenta.
+      herramientas: candidatas.map((t) => ({ id: t.id, tokens: this.tokensFor(textoDeHerramienta(t), request) })),
+      hayContrato: request.response?.schema != null,
+      cascadaActiva: cascada.modo !== "off",
+      precio: costModel,
+      lecturaDeCache: this.lecturaDeCacheDe(cascada.modeloServido, costModel),
+    });
+    return { candidatas, decision };
   }
 
   // Precio de un token leído de caché como fracción del normal, para la verja
@@ -4637,22 +4708,65 @@ export class SavingsPipeline {
   // llamar, y hasta ahora eso solo quedaba en `report.traces`: el aviso que había
   // saltaba únicamente donde existe la búsqueda nativa, o sea NUNCA en OpenAI, que
   // es justo donde BFCL lo destapó. Ahora avisa en cualquier proveedor, una vez
-  // por proceso y silenciable (`silenceWarnings`), y si este adaptador y este
-  // modelo admiten la búsqueda nativa dice que existe.
-  private avisarDeHerramientasPodadas(request: SavingsRequest, seleccion: ToolSelection, modelo: string): void {
+  // por proceso y silenciable (`silenceWarnings`).
+  //
+  // Y SOLO RECOMIENDA LO QUE SERVIRÍA AQUÍ. Antes, en cuanto adaptador y modelo
+  // admitían la búsqueda nativa, recomendaba `toolSearch: "auto"`; las sondas en
+  // vivo (PR #415) lo pillaron con 120 herramientas en claude-haiku-4-5, donde la
+  // verja de `"auto"` se queda con el selector (~0,0024 $ de prefijo por petición
+  // contra ~0,0036 $ de peor caso por búsqueda): el aviso recomendaba una palanca
+  // que, encendida, no habría hecho nada. Ahora pregunta a LA MISMA verja
+  // (`decidirBusquedaParaEstaPeticion`) con las opciones del llamante en modo
+  // `"auto"`: si la elegiría, la recomienda; si la descarta solo por dinero o por
+  // el host, dice que `"always"` existe y cuánto cuesta en el peor caso; si no,
+  // no recomienda nada.
+  private avisarDeHerramientasPodadas(
+    request: SavingsRequest,
+    toggles: NonNullable<SavingsRequest["savings"]>,
+    seleccion: ToolSelection,
+    execution: ExecutionClass,
+    routerApagado: boolean,
+    cascada: DecisionDeCascada,
+    costModel: CostModel,
+  ): void {
     const tools = request.tools ?? [];
-    if (seleccion.droppedIds.length === 0) return;
-    const nativa = busquedaNativaDelProveedor(this.config.provider) !== undefined && admiteBusquedaNativa(modelo);
+    const clave = "herramientas-podadas-por-el-selector";
+    // La verja cuenta los tokens de todo el catálogo: no se paga en cada
+    // petición para un aviso que ya salió o que está silenciado.
+    if (seleccion.droppedIds.length === 0 || this.config.silenceWarnings || yaSeAviso(clave)) return;
+    const opciones = normalizarBusqueda(toggles.toolSearch);
+    const decidir = (modo: "auto" | "always") =>
+      this.decidirBusquedaParaEstaPeticion(request, { ...opciones, modo }, execution, routerApagado, cascada, costModel)
+        .decision;
+    const auto = decidir("auto");
+    let sugerencia = "";
+    if (auto.aplicar) {
+      sugerencia =
+        " This provider and model also support native tool search, and it would pay here: " +
+        "`savings: { toolSearch: \"auto\" }` sends every tool deferred and lets the model search, without breaking " +
+        "the prompt cache.";
+    } else if (decidir("always").aplicar) {
+      if (auto.ahorroDelPrefijo != null && auto.costeDeUnaBusqueda != null) {
+        sugerencia =
+          " Native tool search is available here, but `toolSearch: \"auto\"` would keep the selector for this " +
+          `request: deferring the catalogue saves about $${auto.ahorroDelPrefijo.toFixed(6)} per request with a warm ` +
+          `cache, less than one worst-case search ($${auto.costeDeUnaBusqueda.toFixed(6)}). ` +
+          "`toolSearch: \"always\"` makes every tool reachable anyway, at up to " +
+          `$${(auto.costeDeUnaBusqueda - auto.ahorroDelPrefijo).toFixed(6)} more per request that searches.`;
+      } else if (busquedaNativaDelProveedor(this.config.provider) === "compatible") {
+        sugerencia =
+          " This adapter is not talking to the provider's own API host, so `toolSearch: \"auto\"` would keep the " +
+          "selector; if your proxy forwards the tool search blocks, `toolSearch: \"always\"` sends every tool " +
+          "deferred and lets the model search.";
+      }
+    }
     this.avisar(
-      "herramientas-podadas-por-el-selector",
+      clave,
       `[bv-sala] The tool selector sent ${seleccion.tools.length} of ${tools.length} tools, chosen by the ` +
         "`intents`/`risk` your tools declare: the model cannot call the other " +
         `${seleccion.droppedIds.length} in that request (they are listed in the report's \`tool-selector\` trace). ` +
         "A catalogue with no `intents` and no `risk`, or `savings: { router: false }`, is sent whole." +
-        (nativa
-          ? " This provider and model also support native tool search: `savings: { toolSearch: \"auto\" }` sends " +
-            "every tool deferred and lets the model search, without breaking the prompt cache."
-          : ""),
+        sugerencia,
     );
   }
 
@@ -5258,6 +5372,21 @@ export class SavingsPipeline {
     hechos?: HechosDeCalidad,
   ): SavingsReport {
     const cost = ledger.estimateCost(costModel);
+    // El AHORRO NATIVO, aparte de `cost` y calculado DESPUÉS: no puede mover ni
+    // el baseline, ni `actual`, ni `netSavings`, ni `basis`. Solo con una llamada
+    // que corrió y sirvió algo que se cobró.
+    const nativo =
+      ledger.avoidedLlm === 0 && ledger.actualLlm > 0 && !ledger.servedUnbilledRefusal
+        ? ahorroNativo(cascada?.servedModel ?? request.model, costModel, {
+            leidos: Math.max(0, ledger.providerCachedInput - ledger.unbilledCachedInput),
+            escritos: ledger.nativeCacheWriteInput,
+            escritos1h: ledger.nativeCacheWrite1hInput,
+            ...(ledger.nativeCacheMarkedByLayer !== null
+              ? { marcadoPorLaCapa: ledger.nativeCacheMarkedByLayer }
+              : {}),
+            contadorCompleto: ledger.callsWithoutUsage === 0,
+          })
+        : undefined;
     const total = trace.elapsed();
     // UNA RESPUESTA SERVIDA POR UN MODELO MÁS BARATO DEL QUE SE PIDIÓ. Es lo que
     // convierte el informe en algo que se puede leer sin engañarse: `model` pasa
@@ -5342,6 +5471,7 @@ export class SavingsPipeline {
       ...(cascada ? { modelCascade: cascada } : {}),
       ...(diferido ? { deferred: diferido } : {}),
       ...(escrituras ? { cacheWrites: escrituras } : {}),
+      ...(nativo ? { nativeSavings: nativo } : {}),
       quality: {
         ...(cacheResult !== "miss" ? { freshnessPassed: !evaluatePolicy(canonical).requiresFreshData } : {}),
         // Declarado desde el principio y sin productor: la similitud del acierto
@@ -5370,6 +5500,31 @@ export class SavingsPipeline {
     trace.record("fail-open", "internal optimizer error — bypassed to a direct provider call", {
       error: cause instanceof Error ? cause.message : String(cause),
     });
+    return (await this.llamadaDirecta<T>(request, trace, { origen: "fail_open" })).result;
+  }
+
+  /**
+   * LA LLAMADA DIRECTA: la petición del llamante al proveedor, SIN NINGUNA
+   * palanca, con baseline == actual (no reclama ahorro). La comparten dos
+   * caminos que por razones distintas no pueden optimizar nada:
+   *
+   *  · `fail_open`: el optimizador falló y es el último recurso. Llama al
+   *    proveedor directamente, fuera del testigo (así fue siempre).
+   *  · `measure`: la licencia Medir. Pasa por el testigo como cualquier gasto
+   *    (el fail-open de generate() sabe así que ya se pagó) y, en un stream en
+   *    vivo, reenvía el texto según llega.
+   *
+   * Devuelve también la respuesta cruda: el modo sombra necesita saber si la
+   * caché exacta la habría guardado.
+   */
+  private async llamadaDirecta<T>(
+    request: SavingsRequest,
+    trace: TraceCollector,
+    via:
+      | { origen: "fail_open" }
+      | { origen: "measure"; testigo: TestigoDeFacturacion; sumidero: SumideroDeStream | null },
+  ): Promise<{ result: SavingsResult<T>; response: ProviderResponse }> {
+    const medir = via.origen === "measure";
     const ledger = new SavingsLedger();
     const costModel = this.costModelFor(request.model);
     let canonical: ReturnType<typeof canonicalize>;
@@ -5398,7 +5553,7 @@ export class SavingsPipeline {
       });
     }
     const providerStart = this.now();
-    const response = await this.config.provider.generate({
+    const peticionDirecta: ProviderRequest = {
       model: request.model,
       messages,
       ...(request.tools?.length ? { tools: request.tools } : {}),
@@ -5409,7 +5564,13 @@ export class SavingsPipeline {
       ...(request.temperature != null ? { temperature: request.temperature } : {}),
       ...(request.seed != null ? { seed: request.seed } : {}),
       ...(request.reasoningEffort != null ? { reasoningEffort: request.reasoningEffort } : {}),
-    });
+    };
+    const response =
+      via.origen === "measure"
+        ? via.sumidero
+          ? await this.llamarProveedorEnStream(peticionDirecta, via.testigo, via.sumidero)
+          : await this.llamarProveedor(peticionDirecta, via.testigo)
+        : await this.config.provider.generate(peticionDirecta);
     const providerMs = this.now() - providerStart;
 
     ledger.baselineLlm = 1;
@@ -5424,6 +5585,11 @@ export class SavingsPipeline {
     if (response.unbilledRefusal === true) {
       ledger.unbilledCall(response.usage);
       ledger.servedUnbilledRefusal = true;
+    } else {
+      // El ahorro nativo también existe en el fail-open: la caché es del
+      // proveedor y el cliente la ve en su factura igual. La capa no marcó nada.
+      ledger.nativeCacheWrite(response.usage.cacheWriteInputTokens ?? 0, response.usage.cacheWrite1hInputTokens ?? 0);
+      ledger.nativeCacheMarkedByLayer = false;
     }
     // La prima de escritura que el proveedor cobra por su cuenta (OpenAI
     // GPT-5.6+): a los dos lados, como en el camino optimizado.
@@ -5437,7 +5603,7 @@ export class SavingsPipeline {
     let data: unknown = response.text;
     let structurallyValid: boolean | null = true;
     const hechos: HechosDeCalidad = {
-      origen: "fail_open",
+      ...(medir ? {} : { origen: "fail_open" as const }),
       final: {
         ...(response.finishReason !== undefined ? { finishReason: response.finishReason } : {}),
         ...(topeDeSalida(request) != null
@@ -5478,13 +5644,17 @@ export class SavingsPipeline {
         ? {
             credited: false,
             creditedLedger: "none",
-            latency:
-              "unchanged: the fail-open path asks for no processing tier, so this request was " +
-              "scheduled exactly as an ordinary one.",
-            reason:
-              "the optimizer failed and this request went out on the direct fail-open path, which " +
-              "asks for no cheaper tier: that tier can be refused for lack of capacity, and " +
-              "trading availability for a discount on a last-resort call is the wrong trade",
+            latency: medir
+              ? "unchanged: on the Measure license (shadow mode) no processing tier is requested, so " +
+                "this request was scheduled exactly as an ordinary one."
+              : "unchanged: the fail-open path asks for no processing tier, so this request was " +
+                "scheduled exactly as an ordinary one.",
+            reason: medir
+              ? "the Measure license runs the layer in shadow mode: the request goes to the provider " +
+                "unchanged, so no cheaper tier is asked for; upgrade to a paid plan to turn the lever on"
+              : "the optimizer failed and this request went out on the direct fail-open path, which " +
+                "asks for no cheaper tier: that tier can be refused for lack of capacity, and " +
+                "trading availability for a discount on a last-resort call is the wrong trade",
           }
         : undefined,
       undefined,
@@ -5493,22 +5663,139 @@ export class SavingsPipeline {
         ? {
             mode: "provider-default",
             breakpoints: 0,
-            reason:
-              "the optimizer failed and this request went out unchanged on the direct fail-open path, " +
-              "so the provider chose where to write its prompt cache, as it does by default",
+            reason: medir
+              ? "the Measure license runs the layer in shadow mode: the request went out unchanged, so " +
+                "the provider chose where to write its prompt cache, as it does by default"
+              : "the optimizer failed and this request went out unchanged on the direct fail-open path, " +
+                "so the provider chose where to write its prompt cache, as it does by default",
           }
         : undefined,
       hechos,
     );
     return {
-      requestId: report.requestId,
-      data: data as T,
-      text: response.text,
-      ...(pidioHerramientas ? { toolCalls: response.toolCalls! } : {}),
-      ...(response.finishReason !== undefined ? { finishReason: response.finishReason } : {}),
-      ...(response.refusal !== undefined ? { refusal: response.refusal } : {}),
-      report,
+      result: {
+        requestId: report.requestId,
+        data: data as T,
+        text: response.text,
+        ...(pidioHerramientas ? { toolCalls: response.toolCalls! } : {}),
+        ...(response.finishReason !== undefined ? { finishReason: response.finishReason } : {}),
+        ...(response.finishReasonDetail !== undefined ? { finishReasonDetail: response.finishReasonDetail } : {}),
+        ...(response.refusal !== undefined ? { refusal: response.refusal } : {}),
+        report,
+      },
+      response,
     };
+  }
+
+  /**
+   * ¿Corre esta capa con la licencia Medir? Se pregunta EN CADA PETICIÓN, no al
+   * construir: el gate es conmutable y, al recoger la licencia de pago que la
+   * sustituye, la siguiente petición ya sale optimizada sin reiniciar.
+   */
+  private enSombra(): boolean {
+    try {
+      return this.config.licenseGate?.plan?.() === "measure";
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * EL MODO SOMBRA (licencia Medir). La petición va al proveedor por la llamada
+   * directa —intacta, sin una sola palanca— y al lado se calcula qué habrían
+   * evitado la caché exacta y la coalescencia en vuelo, valorado con el contador
+   * de ESTA llamada. Ver `pipeline/medir.ts`.
+   */
+  private async generarEnSombra<T>(
+    request: SavingsRequest,
+    testigo: TestigoDeFacturacion,
+    sumidero: SumideroDeStream | null,
+  ): Promise<SavingsResult<T>> {
+    this.avisar("licencia-medir", AVISO_MEDIR);
+    const trace = new TraceCollector(this.now);
+    trace.record(
+      "measure",
+      "shadow mode (Measure license): the request goes to the provider unchanged and nothing is served from cache",
+    );
+    const toggles = request.savings ?? {};
+    // Las claves se calculan con las MISMAS funciones que el camino optimizado:
+    // «idéntica» significa lo mismo en sombra que con la palanca puesta. Si algo
+    // de esto falla, no hay hipótesis que publicar, pero la petición sigue.
+    let politica: ReturnType<typeof evaluatePolicy> | null = null;
+    let claveExacta: string | null = null;
+    let claveEnVuelo: string | null = null;
+    try {
+      const canonical = canonicalize(request);
+      politica = evaluatePolicy(canonical);
+      if (politica.allowExactCache && toggles.exactCache !== false) claveExacta = buildExactKey(canonical);
+      if (politica.allowSingleflight && toggles.singleflight !== false) {
+        claveEnVuelo = buildInflightKey(canonical, {
+          deferrable: toggles.deferrable === true,
+          toolDiscovery: toggles.toolDiscovery === true,
+          ...(topeDeSalida(request) != null ? { maxOutputTokens: topeDeSalida(request)! } : {}),
+        });
+      }
+    } catch {
+      trace.record("measure", "no shadow estimate: the request could not be keyed");
+    }
+    const inicio = this.now();
+    const repetida = claveExacta !== null && this.memoriaDeSombra.vista(claveExacta, inicio);
+    const duplicada = !repetida && claveEnVuelo !== null && this.memoriaDeSombra.hayEnVuelo(claveEnVuelo);
+    // Una petición en stream nunca lidera (como en el camino optimizado): solo
+    // puede sumarse a una en vuelo, nunca registrarse como líder.
+    const lidera = claveEnVuelo !== null && !sumidero;
+    if (lidera) this.memoriaDeSombra.entrar(claveEnVuelo!);
+    let directa: { result: SavingsResult<T>; response: ProviderResponse };
+    try {
+      directa = await this.llamadaDirecta<T>(request, trace, { origen: "measure", testigo, sumidero });
+    } finally {
+      if (lidera) this.memoriaDeSombra.salir(claveEnVuelo!);
+    }
+    const { result, response } = directa;
+
+    // ¿La habría guardado la caché exacta? Las mismas exclusiones que la etapa 12:
+    // herramientas, truncada por el tope, no repetible, negativa del proveedor o
+    // escrita como texto, tema sensible, o que incumpla su contrato.
+    const pidioHerramientas = (response.toolCalls?.length ?? 0) > 0;
+    const negativa = esNegativaDelProveedor(response);
+    const cacheable =
+      claveExacta !== null &&
+      politica !== null &&
+      result.report.constraints.structurallyValid !== false &&
+      !pidioHerramientas &&
+      response.finishReason !== "length" &&
+      response.replayable !== false &&
+      !negativa &&
+      response.unbilledRefusal !== true &&
+      negativaEnTexto(response.text) === null &&
+      politica.sensitiveTopic === null;
+    if (cacheable) {
+      const ttlBase = this.config.exactCacheTtlMs ?? 24 * 60 * 60 * 1000;
+      const ttl = politica!.maxCacheAgeMs == null ? ttlBase : Math.min(ttlBase, politica!.maxCacheAgeMs);
+      this.memoriaDeSombra.anotar(claveExacta!, this.now() + ttl);
+    }
+
+    const evitada: "exact-repeat" | "in-flight-duplicate" | null = repetida
+      ? "exact-repeat"
+      : duplicada
+        ? "in-flight-duplicate"
+        : null;
+    // Solo se valora lo MEDIDO: sin contador del proveedor no hay cifra que
+    // publicar, ni siquiera hipotética. Una negativa que no se cobra, tampoco.
+    const valorable = result.report.cost.basis === "measured" && response.unbilledRefusal !== true;
+    const usd = evitada && valorable ? redondearUsd(Math.max(0, result.report.cost.actual)) : 0;
+    trace.record("measure", evitada ? `would have avoided this call (${evitada})` : "no simulated lever applies", {
+      wouldHaveSavedUsd: usd,
+    });
+    result.report.measure = {
+      mode: "shadow",
+      applied: false,
+      wouldHaveSaved: { usd, basis: "shadow", avoidedCall: evitada },
+      notSimulated: [...PALANCAS_NO_SIMULADAS],
+      upgradeUrl: URL_DE_PAGO,
+    };
+    result.report.traces = trace.all();
+    return result;
   }
 
   private asCoalescedFollower<T>(
@@ -5554,6 +5841,8 @@ export class SavingsPipeline {
       deferred: _delLider,
       streaming: _streamingDelLider,
       cacheWrites: _escriturasDelLider,
+      // El ahorro nativo es de la llamada DEL LÍDER: heredado, se contaría N+1 veces.
+      nativeSavings: _nativoDelLider,
       ...informeDelLider
     } = leader.report;
 
