@@ -69,13 +69,18 @@ describe("la frontera del prefijo estable", () => {
           { role: "system", content: POLITICA },
           { role: "user", content: "turno viejo" },
           { role: "assistant", content: "respuesta vieja" },
+          // Un segundo intercambio: la conversación ya siguió una vez, que es la
+          // evidencia de reenvío que exige marcar el historial con prima de
+          // escritura (ver el bloque «el primer seguimiento» más abajo).
+          { role: "user", content: "otro turno viejo" },
+          { role: "assistant", content: "otra respuesta vieja" },
           { role: "user", content: "pregunta de hoy" },
         ],
       }),
     );
     // Los bytes de ayer siguen siendo los bytes de hoy, así que el prefijo puede
     // crecer con la conversación. Ahí es donde vive el dinero de un agente.
-    expect(p.vistas[0]!.stablePrefixMessages).toBe(3);
+    expect(p.vistas[0]!.stablePrefixMessages).toBe(5);
   });
 
   it("los bloques que inyecta la capa quedan FUERA del prefijo", async () => {
@@ -198,6 +203,10 @@ describe("la compresión y el prefijo, que se pisan", () => {
     { role: "system" as const, content: POLITICA },
     { role: "user" as const, content: "un turno viejo bastante largo del historial" },
     { role: "assistant" as const, content: "una respuesta vieja bastante larga del historial" },
+    // Tercer turno: con uno solo detrás, el historial no se marca (no hay
+    // evidencia de reenvío) y este bloque no probaría nada sobre el recorte.
+    { role: "user" as const, content: "otro turno viejo bastante largo del historial" },
+    { role: "assistant" as const, content: "otra respuesta vieja bastante larga del historial" },
     { role: "user" as const, content: "la pregunta de hoy" },
   ];
 
@@ -251,7 +260,7 @@ describe("la compresión y el prefijo, que se pisan", () => {
     await capa(p).generate(peticion({ messages: CONVERSACION }));
     // El contraste es el que hace portante al test de arriba: la diferencia la
     // provoca la compresión, no la forma de la conversación.
-    expect(p.vistas[0]!.stablePrefixMessages).toBe(3);
+    expect(p.vistas[0]!.stablePrefixMessages).toBe(5);
   });
 
   it("si la verja económica RECHAZA la compresión, el prefijo NO se recorta", async () => {
@@ -270,7 +279,7 @@ describe("la compresión y el prefijo, que se pisan", () => {
     // prefijo sigue intacto y recortarlo sería regalar el descuento por una
     // reescritura que nadie llegó a ver. La pérdida sería muda: ningún test
     // falla, sólo bajan los aciertos.
-    expect(req.stablePrefixMessages).toBe(3);
+    expect(req.stablePrefixMessages).toBe(5);
     // Y se comprueba que el prompt NO se comprimió, para que el test no pase por
     // el motivo equivocado.
     expect(req.messages.some((m) => m.role === "user" && m.content.length <= 10)).toBe(false);

@@ -40,6 +40,9 @@ export interface ProviderRequest {
    * boundary; adapters that cache automatically (OpenAI) may ignore it. The
    * count is a claim about byte-for-byte stability, so a caller that rewrites an
    * earlier turn must lower it.
+   *
+   * `0` claims only what renders BEFORE the messages: the tool catalogue. The
+   * Anthropic adapter then marks the end of the `tools` block (its last tool).
    */
   stablePrefixMessages?: number;
   /**

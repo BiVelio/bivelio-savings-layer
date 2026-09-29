@@ -11,6 +11,13 @@ import { HERRAMIENTA_DE_BUSQUEDA } from "../router/busqueda-nativa.js";
 import { instruccionDeJsonPorPrompt } from "./json-por-prompt.js";
 import { endpointLimpio, registrarLotes, rutaRelativa } from "./lotes-del-proveedor.js";
 import { isStrictCompatible } from "./openai-compatible.js";
+import {
+  TEMPERATURA_POR_DEFECTO,
+  esMuestreoNoSoportado,
+  esToolChoiceForzadoNoSoportado,
+  rechazaMuestreo,
+  rechazaToolChoiceForzado,
+} from "./anthropic-compat.js";
 import { sseMessages } from "./sse.js";
 import { MemoriaDeBusquedas, paresDeBusqueda, type BloqueCrudo } from "./busquedas-entre-turnos.js";
 import {
@@ -229,6 +236,11 @@ export class AnthropicProvider implements Provider {
   // Los pares de búsqueda de cada respuesta con `toolSearch`, por los ids de sus
   // llamadas, para devolverlos en el turno siguiente. En proceso y acotada.
   private readonly busquedas = new MemoriaDeBusquedas();
+  // Modelos de este endpoint que ya devolvieron 400 a `tool_choice` forzado o a
+  // `temperature` sin estar en la tabla (anthropic-compat.ts). Por modelo, como
+  // `sinResponseFormat` del adaptador OpenAI: el viaje de más se paga UNA vez.
+  private readonly sinToolChoiceForzado = new Set<string>();
+  private readonly sinMuestreo = new Set<string>();
 
   constructor(opts: AnthropicOptions = {}) {
     this.opts = opts;
@@ -284,13 +296,8 @@ export class AnthropicProvider implements Provider {
   }
 
   async generate(req: ProviderRequest, options?: ProviderStreamOptions): Promise<ProviderResponse> {
-    const cuerpo = this.construirCuerpo(req);
     // Sin `options`, ninguna señal: la petición HTTP es la de siempre.
-    const response = await this.enviar(cuerpo.body, options?.signal);
-
-    if (!response.ok) {
-      throw new Error(`provider ${response.status}: ${await safeText(response)}`);
-    }
+    const { cuerpo, response } = await this.enviarConCorrecciones(req, false, options?.signal);
     return this.leer(
       response,
       req,
@@ -325,13 +332,7 @@ export class AnthropicProvider implements Provider {
       return;
     }
 
-    const construido = this.construirCuerpo(req);
-    const body = construido.body;
-    body["stream"] = true;
-    const response = await this.enviar(body, options.signal);
-    if (!response.ok) {
-      throw new Error(`provider ${response.status}: ${await safeText(response)}`);
-    }
+    const { cuerpo: construido, response } = await this.enviarConCorrecciones(req, true, options.signal);
     // Un endpoint compatible que ignora `stream: true` y contesta el mensaje
     // entero en JSON: ya está facturado, así que se lee como en generate() en
     // vez de lanzar «ended before completion» sobre una respuesta completa.
@@ -530,6 +531,57 @@ export class AnthropicProvider implements Provider {
     };
   }
 
+  // DEGRADAR, NO REVENTAR (el mismo contrato que `response_format` en el
+  // adaptador OpenAI). Dos rechazos que llegan ANTES de generar un token —un 400
+  // no se factura— y cuya causa es el MODELO, no la petición:
+  //
+  //  · `tool_choice` forzado en un modelo que no lo admite (Sonnet 5.5, Opus 5.5,
+  //    Fable 5.1, Mythos 5.1: anthropic-compat.ts). El cuerpo se rehace sin
+  //    forzar (ver construirCuerpo) y se repite.
+  //  · `temperature` no por defecto en un modelo que la rechaza. Se repite sin ella.
+  //
+  // Los modelos de la tabla ya salen degradados y no llegan a ver el 400; esto
+  // cubre los que la tabla no conoce (un modelo nuevo, una instantánea, un
+  // alias de pasarela). Cada causa se corrige una vez y el modelo queda anotado
+  // en la instancia, así que las siguientes peticiones salen ya bien. No cuenta
+  // como `retries`: el intento rechazado no consumió tokens.
+  private async enviarConCorrecciones(
+    req: ProviderRequest,
+    stream: boolean,
+    signal: AbortSignal | undefined,
+  ): Promise<{ cuerpo: ReturnType<AnthropicProvider["construirCuerpo"]>; response: Response }> {
+    const modelo = this.modeloEnElCable(req.model);
+    let cuerpo = this.construirCuerpo(req);
+    if (stream) cuerpo.body["stream"] = true;
+    let response = await this.enviar(cuerpo.body, signal);
+    for (let correcciones = 0; correcciones < 2 && !response.ok; correcciones++) {
+      if (response.status !== 400) break;
+      const detalle = await safeText(response);
+      const eleccion = cuerpo.body["tool_choice"] as { type?: unknown } | undefined;
+      const forzado = eleccion?.type === "any" || eleccion?.type === "tool";
+      if (forzado && !this.sinToolChoiceForzado.has(modelo) && esToolChoiceForzadoNoSoportado(detalle)) {
+        this.sinToolChoiceForzado.add(modelo);
+      } else if (
+        cuerpo.body["temperature"] !== undefined &&
+        !this.sinMuestreo.has(modelo) &&
+        esMuestreoNoSoportado(detalle)
+      ) {
+        this.sinMuestreo.add(modelo);
+      } else {
+        throw new Error(`provider ${response.status}: ${detalle}`);
+      }
+      // El cuerpo se rehace entero: el aviso de la degradación lo da
+      // construirCuerpo, una vez por modelo, igual que con la tabla.
+      cuerpo = this.construirCuerpo(req);
+      if (stream) cuerpo.body["stream"] = true;
+      response = await this.enviar(cuerpo.body, signal);
+    }
+    if (!response.ok) {
+      throw new Error(`provider ${response.status}: ${await safeText(response)}`);
+    }
+    return { cuerpo, response };
+  }
+
   // El POST a `/messages`, compartido por generate() y generateStream().
   private async enviar(body: Record<string, unknown>, signal?: AbortSignal): Promise<Response> {
     const base = (this.opts.baseUrl ?? "https://api.anthropic.com/v1").replace(/\/$/, "");
@@ -593,6 +645,17 @@ export class AnthropicProvider implements Provider {
       ...(t.description ? { description: t.description } : {}),
       input_schema: t.parameters ?? { type: "object", properties: {} },
     }));
+    // La última herramienta DEL LLAMANTE, antes de que se añada la del contrato:
+    // es donde acaba el bloque `tools` estable cuando el prefijo que se marca es
+    // solo ese (ver marcarCache). Con la búsqueda nativa no hay: las diferidas no
+    // admiten `cache_control`, y la de búsqueda se antepone.
+    const ultimaDelLlamante = req.toolSearch ? -1 : tools.length - 1;
+
+    // Lo que el MODELO rechaza con un 400 (anthropic-compat.ts): por la tabla de
+    // la documentación o porque ya lo rechazó en esta instancia.
+    const modelo = this.modeloEnElCable(req.model);
+    const sinForzar = rechazaToolChoiceForzado(modelo) || this.sinToolChoiceForzado.has(modelo);
+    const sinTemperatura = rechazaMuestreo(modelo) || this.sinMuestreo.has(modelo);
 
     // --- Búsqueda de herramientas nativa ---------------------------------------
     // La decide el pipeline (`router/busqueda-nativa.ts`); aquí solo se escribe.
@@ -743,9 +806,32 @@ export class AnthropicProvider implements Provider {
     // prompt: `actualInput` sube y el baseline no, o sea que el ahorro publicado
     // sale MENOR del real. Es el mismo sesgo, y en la misma dirección segura, que
     // ya documenta `instruccionDeJsonPorPrompt`.
+    //
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Y EN LOS MODELOS QUE NO ADMITEN `tool_choice` FORZADO, NI UNO NI OTRO.
+    // ═══════════════════════════════════════════════════════════════════════════
+    //
+    // Sonnet 5.5, Opus 5.5, Fable 5.1 y Mythos 5.1 devuelven 400 a `any` y a
+    // `tool` con pensamiento o sin él (anthropic-compat.ts, con la cita). Mandar
+    // cualquiera de los dos convertía TODA petición con contrato en una avería.
+    // La documentación da dos salidas, y aquí se usan las dos:
+    //
+    //  · Con un esquema que cumple `strict`: SALIDAS ESTRUCTURADAS
+    //    (`output_config.format`). Sin herramientas del llamante es la garantía
+    //    nativa de siempre por otra vía (`structuredNatively` sigue true). Con
+    //    ellas, sustituye a `any` MEJOR que `any`: el modelo sigue pudiendo
+    //    llamar a las suyas, y cuando contesta en texto ese texto sale ya con la
+    //    forma — la prosa que obligaba a reparar deja de ser alcanzable. Medido en
+    //    vivo contra `claude-sonnet-5-5` (2026-09-29): formato + herramientas con
+    //    `auto` devolvió primero `tool_use` y, tras el resultado, el JSON.
+    //  · Con un esquema que NO cumple `strict`: la herramienta de contrato sin
+    //    forzar y una frase en `system` que dice cuándo usarla («say in the
+    //    prompt when the tool applies», la recomendación de la guía de Sonnet
+    //    5.5). La garantía es la del validador de la capa, como antes.
     let contratoNativo = false;
     let esquemaPorPrompt = false;
     let forzarCualquiera = false;
+    let formatoDeSalida: Record<string, unknown> | undefined;
     if (req.schema) {
       const traeHerramientas = tools.length > 0;
       // Un llamante que ya tenga una herramienta con ese nombre haría que la
@@ -765,6 +851,21 @@ export class AnthropicProvider implements Provider {
             "provider error). The schema is sent as prompt text instead, which is measurably more " +
             "expensive on this API. Rename that tool to get the cheaper path.",
         );
+      } else if (sinForzar && strict) {
+        formatoDeSalida = { type: "json_schema", schema: req.schema };
+        contratoNativo = !traeHerramientas;
+        this.avisar(
+          `anthropic-sin-tool-choice-forzado:${modelo}`,
+          `[bvsala] Model "${modelo}" does not accept a forced \`tool_choice\` (\`any\` or \`tool\` is a 400 on ` +
+            "this model, with or without thinking). The output contract travels as structured output " +
+            "(`output_config.format`) instead, which the provider still enforces" +
+            (traeHerramientas
+              ? "; your tools stay callable with `tool_choice: auto`, and the final text answer comes back in the " +
+                "contract's shape. The guarantee on this request is still the layer's " +
+                '(`constraints.backend: "none"`), because the model may call one of your tools first.'
+              : '. The guarantee stays native (`constraints.backend: "provider-native"`).') +
+            " See https://platform.claude.com/docs/en/agents-and-tools/tool-use/define-tools#forcing-tool-use",
+        );
       } else {
         if (!strict && !traeHerramientas) {
           this.avisar(
@@ -775,7 +876,9 @@ export class AnthropicProvider implements Provider {
               "guided and the layer still validates, but the guarantee comes from the layer, not the provider.",
           );
         }
-        contratoNativo = strict && !traeHerramientas;
+        // `sinForzar` aquí implica un esquema sin `strict` (el estricto va por
+        // formato, arriba): sin `strict` nunca se forzó la herramienta sola.
+        contratoNativo = strict && !traeHerramientas && !sinForzar;
         tools.push({
           name: HERRAMIENTA_DE_CONTRATO,
           // La descripción es lo único que decide si el modelo escoge este camino
@@ -789,7 +892,27 @@ export class AnthropicProvider implements Provider {
           input_schema: req.schema,
           ...(contratoNativo ? { strict: true } : {}),
         });
-        if (traeHerramientas) {
+        if (traeHerramientas && sinForzar) {
+          // Sin `any` posible, lo único que queda es decirlo en el prompt. Va
+          // DETRÁS del prefijo de `system` que se marca (marcarCache mira
+          // `prefijoEnSystem`), así que no toca la caché de la cabecera.
+          system.push({
+            type: "text",
+            text:
+              `When you have the final answer, deliver it by calling the \`${HERRAMIENTA_DE_CONTRATO}\` tool ` +
+              "instead of writing it as text. Call the other tools first if you need data.",
+          });
+          this.avisar(
+            `anthropic-sin-tool-choice-forzado:${modelo}`,
+            `[bvsala] Model "${modelo}" does not accept a forced \`tool_choice\` (\`any\` or \`tool\` is a 400 ` +
+              "on this model, with or without thinking), and this contract does not meet `strict` mode, so it " +
+              "cannot travel as structured output either. The contract travels as one extra tool with " +
+              "`tool_choice: auto` and one sentence in `system` telling the model to answer through it. If the " +
+              "model answers in prose anyway, the layer repairs it with a second call. Make the schema " +
+              "strict-compatible (every key in `required`, `additionalProperties: false`) to get the " +
+              "provider-enforced path. See https://platform.claude.com/docs/en/agents-and-tools/tool-use/define-tools#forcing-tool-use",
+          );
+        } else if (traeHerramientas) {
           forzarCualquiera = this.opts.forceAnswerThroughTool !== false;
           this.avisar(
             "anthropic-contrato-con-herramientas",
@@ -820,9 +943,32 @@ export class AnthropicProvider implements Provider {
       messages,
     };
     if (system.length > 0) body["system"] = system;
-    if (req.temperature != null) body["temperature"] = req.temperature;
+    // `temperature` EN UN MODELO QUE LA RECHAZA: se QUITA y se avisa. Mandarla es
+    // un 400 seguro (anthropic-compat.ts), o sea que no hay versión de esta
+    // petición en la que el valor pedido se respete: la elección es entre fallar
+    // y contestar muestreado. Es el mismo criterio que `seed` (más abajo): un
+    // parámetro que el llamante puso pensando en otro modelo no convierte una
+    // petición portable en una avería. La salida de estos modelos ya no se
+    // acredita por referencia (pricing/razonamiento.ts), así que quitarla no
+    // cambia ninguna cuenta. `1` es el valor por defecto de la API y se admite
+    // (medido): viaja tal cual.
+    if (req.temperature != null) {
+      if (sinTemperatura && req.temperature !== TEMPERATURA_POR_DEFECTO) {
+        this.avisar(
+          `anthropic-sin-temperature:${modelo}`,
+          `[bvsala] Model "${modelo}" rejects a non-default \`temperature\` with a 400 (its sampling is fixed; ` +
+            "the same holds for `top_p` and `top_k`). The request is sent WITHOUT `temperature` rather than " +
+            `failing, so its output is sampled, not deterministic: temperature ${req.temperature} was not applied. ` +
+            "Drop `temperature` for this model to silence this warning (or create the layer with " +
+            "`silenceWarnings`). See https://platform.claude.com/docs/en/models/sonnet-5-5/overview",
+        );
+      } else {
+        body["temperature"] = req.temperature;
+      }
+    }
     if (tools.length > 0) body["tools"] = tools;
-    if (contratoNativo) {
+    if (formatoDeSalida) body["output_config"] = { format: formatoDeSalida };
+    if (contratoNativo && !formatoDeSalida) {
       body["tool_choice"] = { type: "tool", name: HERRAMIENTA_DE_CONTRATO };
     } else if (forzarCualquiera) {
       // No se toca `disable_parallel_tool_use`. Con `any` el modelo puede emitir
@@ -865,7 +1011,14 @@ export class AnthropicProvider implements Provider {
       );
     }
 
-    const puntosGastados = this.marcarCache(req, system, messages, finDelPrefijo, prefijoEnSystem);
+    const puntosGastados = this.marcarCache(
+      req,
+      system,
+      messages,
+      finDelPrefijo,
+      prefijoEnSystem,
+      ultimaDelLlamante >= 0 ? tools[ultimaDelLlamante] : undefined,
+    );
 
     // CACHÉ AUTOMÁTICA (opt-in): el `cache_control` a NIVEL DE PETICIÓN hace
     // que el proveedor coloque UN punto de ruptura más en el último bloque
@@ -1009,6 +1162,7 @@ export class AnthropicProvider implements Provider {
     messages: MensajeAnthropic[],
     finDelPrefijo: FinDelPrefijo | undefined,
     prefijoEnSystem: number,
+    herramientaFinal?: Record<string, unknown>,
   ): number {
     if (req.promptCacheKey != null) {
       // La API de Anthropic no tiene un campo equivalente: el emparejamiento es
@@ -1045,6 +1199,28 @@ export class AnthropicProvider implements Provider {
     const ultimoSystem = prefijoEnSystem > 0 ? system[prefijoEnSystem - 1] : undefined;
     if (ultimoSystem) {
       ultimoSystem.cache_control = marca();
+      presupuesto -= 1;
+    }
+
+    // EL PREFIJO QUE ES SOLO EL CATÁLOGO DE HERRAMIENTAS (`stablePrefixMessages:
+    // 0`, que el pipeline declara solo cuando el bloque `tools` supera el mínimo
+    // cacheable del modelo). Es la forma de un bucle de agente sin `system`: el
+    // banco BFCL (docs/benchmarks/2026-09-28/bfcl-0431-claude.md) reenviaba
+    // 6-8k tokens de catálogo en cada paso, doce pasos por entrada, sin una sola
+    // lectura de caché, porque sin `system` no había dónde poner el punto. El
+    // punto va en la ÚLTIMA herramienta del llamante —«mark the last tool to
+    // cache the whole list», referencia de prompt caching—, nunca en la del
+    // contrato (su esquema es de la petición) ni en una diferida (400). Con el
+    // colocador (`cachePlacement`) no: él decide sus puntos.
+    if (
+      req.stablePrefixMessages === 0 &&
+      req.cachePlacement == null &&
+      !ultimoSystem &&
+      herramientaFinal &&
+      herramientaFinal["defer_loading"] !== true &&
+      presupuesto > 0
+    ) {
+      herramientaFinal["cache_control"] = marca();
       presupuesto -= 1;
     }
 

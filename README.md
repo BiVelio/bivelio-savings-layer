@@ -479,6 +479,45 @@ It runs once per HTTP attempt, inside the SDK's retries: an attempt the provider
 rejects reaches the SDK unchanged and is not recorded. Only message creation goes
 through the layer; `countTokens`, batches, models and files pass untouched.
 
+The middleware forwards your request body unchanged, history included, so it never
+edits a turn before a thinking block. It also does not remove parameters the model
+rejects. On Claude Sonnet 5.5, Opus 5.5, Fable 5.1 and Mythos 5.1 a forced
+`tool_choice` (`any` or `tool`) returns a 400. On those models, and on Opus 4.7/4.8,
+Opus 5, Sonnet 5 and Fable 5, so does a non-default `temperature`, `top_p` or `top_k`.
+The middleware warns once per model and cause (`silenceWarnings` turns it off) and
+the API's 400 reaches you unchanged.
+
+<details>
+<summary><b>Claude Sonnet 5.5, Opus 5.5, Fable 5.1: what <code>AnthropicProvider</code> sends instead</b></summary>
+
+These models reject some request parameters with a 400 ([forcing tool
+use](https://platform.claude.com/docs/en/agents-and-tools/tool-use/define-tools#forcing-tool-use),
+[Sonnet 5.5](https://platform.claude.com/docs/en/models/sonnet-5-5/overview)).
+`AnthropicProvider` sends a request they accept instead of failing:
+
+- **Output contract.** A forced `tool_choice` returns a 400 on these models, with or
+  without thinking. When your schema meets `strict` mode, the contract travels as
+  structured output (`output_config.format`). Without your tools, the provider still
+  enforces the contract. With your tools, they stay callable with `tool_choice: auto`
+  and the final text answer comes back in the contract's shape. When your schema does
+  not meet `strict`, the contract travels as a tool the model is not forced to call,
+  with one sentence in the system prompt that tells it to answer through that tool.
+  Models that support forced tool use (Opus 5, Sonnet 5 and the 4.x models) get the
+  same request as before.
+- **`temperature`.** A non-default value is dropped, with one warning per model,
+  because it can only return a 400. The answer is then sampled, not deterministic.
+  `temperature: 1`, the API default, is sent as is.
+- **A model the table does not list** (a new model or a gateway alias): when the API
+  rejects either parameter, the provider repeats the request once without it and
+  remembers the model for later requests. A 400 is not billed, so the retry is not
+  counted in `retries`.
+- **Thinking blocks.** `ChatMessage` does not carry thinking blocks, so this adapter
+  never sends one. The preserved-thinking check, which returns a 400 when a turn
+  before a thinking block has been edited, has nothing to check on its requests, even
+  when the levers that rewrite history are on.
+
+</details>
+
 ## What you get on every request
 
 A `SavingsReport` with the numbers behind every claim, kept in **four separate
@@ -707,7 +746,16 @@ const agentLayer = createSavingsLayer({
 
 By default the layer writes the provider's prompt cache at two fixed places: the end
 of the system header and the end of the history before your last user message, and
-stops marking a prefix whose measured hit rate does not pay the write premium.
+stops marking a prefix whose measured hit rate does not pay the write premium. On
+Anthropic, where a write costs 1.25x, the history and a tool catalogue sent without a
+system header are marked only when the request itself shows they will be sent again:
+a tool-loop step after your last user message, or a conversation already past its
+second turn. The first follow-up of a conversation (`[question, answer, question]`)
+marks only the system header, so two-turn chats pay no premium that nothing reads.
+In an agent loop with no system header, the end of the tool list is marked once the
+catalogue reaches the model's minimum cacheable size (512 tokens on Claude Sonnet 5.5
+and Opus 5.5, 1,024 on Sonnet 5, 4,096 on Haiku 4.5). That discount is the provider's
+cache on your bytes: it is never credited as the layer's saving.
 
 `cacheBreakpoints: "auto"` places them from what your traffic actually does. The layer
 compares each request's prefix with the ones it sent before, per model, tool set and
