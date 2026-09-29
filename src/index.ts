@@ -19,7 +19,36 @@
 
 // El catálogo de precios de lista, exportado para que un cliente pueda
 // inspeccionarlo, extenderlo o comprobar qué modelos cubre.
-export { CATALOGO, precioDeLista, PRECIOS_AL_DIA } from "./pricing/catalogo.js";
+//
+// Camino a la 0.5 (docs/MIGRAR-A-0.5.md): los nombres ingleses son los que se
+// congelan; los españoles quedan como alias @deprecated hasta la 0.5. Se
+// declaran AQUÍ y no en pricing/catalogo.ts para que el `@deprecated` viaje en
+// el `.d.ts` sin tocar el fichero del catálogo (que cambia con cada precio).
+import {
+  CATALOGO as catalogoDePrecios,
+  precioDeLista as precioDeListaDelCatalogo,
+  PRECIOS_AL_DIA as preciosAlDia,
+} from "./pricing/catalogo.js";
+
+/**
+ * The list-price catalogue: model id (without vendor prefix) → USD per 1K
+ * tokens. `costModels` on the layer config always wins over it.
+ */
+export const PRICE_CATALOG: typeof catalogoDePrecios = catalogoDePrecios;
+/**
+ * The list price for a model on the day of the request, or `undefined` when the
+ * catalogue has no price for it in force that day.
+ */
+export const listPrice: typeof precioDeListaDelCatalogo = precioDeListaDelCatalogo;
+/** When the catalogue prices were last checked against the providers' public rates (YYYY-MM-DD). */
+export const PRICES_AS_OF: typeof preciosAlDia = preciosAlDia;
+
+/** @deprecated Spanish name, removed in 0.5. Use {@link PRICE_CATALOG}. */
+export const CATALOGO: typeof catalogoDePrecios = catalogoDePrecios;
+/** @deprecated Spanish name, removed in 0.5. Use {@link listPrice}. */
+export const precioDeLista: typeof precioDeListaDelCatalogo = precioDeListaDelCatalogo;
+/** @deprecated Spanish name, removed in 0.5. Use {@link PRICES_AS_OF}. */
+export const PRECIOS_AL_DIA: typeof preciosAlDia = preciosAlDia;
 
 // La versión vive en src/version.ts junto a las constantes INTERNAS del canal
 // de versión (cabecera y mínima de la palanca), que NO se reexportan: nada

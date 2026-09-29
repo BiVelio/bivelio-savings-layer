@@ -62,6 +62,9 @@ function tokenizar(texto: string): string[] {
  * Term weight is sublinear (`1 + log tf`) so a word repeated forty times does not
  * dominate the direction of the vector, and the result is L2-normalised so cosine
  * similarity is a plain dot product.
+ *
+ * @deprecated Internal detail of {@link localEmbedding}; leaves the public API in 0.5.
+ * Use {@link localEmbedding}, which returns the same vector.
  */
 export function vectorLocal(texto: string): number[] {
   const v = new Array<number>(DIMENSIONES).fill(0);
@@ -106,6 +109,11 @@ export function vectorLocal(texto: string): number[] {
  * Synchronous by design — it returns the array, not a promise — so a cache lookup
  * adds no await and no latency to the request path.
  */
+export function localEmbedding(text: string): number[] {
+  return vectorLocal(text);
+}
+
+/** @deprecated Spanish name, removed in 0.5. Use {@link localEmbedding}. */
 export function embebedorLocal(texto: string): number[] {
   return vectorLocal(texto);
 }
@@ -119,4 +127,7 @@ export function embebedorLocal(texto: string): number[] {
  * guessed — see `test/embebedor-local.test.ts`, which fails if the two
  * populations stop being separable.
  */
-export const UMBRAL_LOCAL = 0.72;
+export const LOCAL_EMBEDDING_THRESHOLD = 0.72;
+
+/** @deprecated Spanish name, removed in 0.5. Use {@link LOCAL_EMBEDDING_THRESHOLD}. */
+export const UMBRAL_LOCAL = LOCAL_EMBEDDING_THRESHOLD;

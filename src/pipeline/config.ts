@@ -50,6 +50,10 @@ export interface SavingsLayerConfig {
    * it on every request. A layer that has a cache and a request that neither
    * asks for it nor turns it off gets a one-time console warning (silenced by
    * `silenceWarnings`, or by setting `semanticCacheDefault`, `false` included).
+   *
+   * Renamed `semanticCacheStore` in 0.5, so that the store and the per-request
+   * switch (`savings.semanticCache`) no longer share a name. See the 0.5
+   * migration guide.
    */
   semanticCache?: InMemorySemanticCache;
   /**
@@ -186,6 +190,9 @@ export interface SavingsLayerConfig {
    * to support signing-key rotation — legacy no-kid tokens use `defaultKid`, and
    * an unknown kid fails closed. For self-hosting/self-testing; defaults to the
    * build-embedded BiVelio key.
+   *
+   * @deprecated Has no effect in the published package, which always verifies
+   * against the embedded BiVelio key. Removed from the public type in 0.5.
    */
   licensePublicKey?: string | LicenseKeyset;
 
@@ -195,6 +202,9 @@ export interface SavingsLayerConfig {
    * only accepted license — passing a gate there logs a warning and changes
    * nothing. It exists for builds from source (this repo's own tests and
    * benchmarks), where it takes precedence over {@link licenseKey}.
+   *
+   * @deprecated Ignored in the published package. Removed from the public type
+   * in 0.5; license the layer with {@link licenseKey} or `serviceAccountKey`.
    */
   licenseGate?: LicenseGate;
 
@@ -324,6 +334,9 @@ export interface SavingsLayerConfig {
    * distributed build hard-codes the licensing check on, so setting
    * `devUnlicensed` (or `BVSALA_DEV_OPEN`) there has NO effect — the layer still
    * requires a valid `licenseKey`. It is not a way to run the product for free.
+   *
+   * @deprecated No effect in the published package. Removed from the public type
+   * in 0.5.
    */
   devUnlicensed?: boolean;
 
