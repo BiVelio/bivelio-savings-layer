@@ -41,6 +41,14 @@ name: publish
 #   sbom      (contents: write)  adjunta el SBOM a la Release en cuanto la
 #                                versión está en npm, aunque falle después la
 #                                comprobación del registro.
+#   banco-semanal (actions: read) la PUERTA DEL BANCO: `publicar` no corre si el
+#                                último banco semanal en vivo (banco-semanal.yml,
+#                                en main) falló o tiene más de 8 días. No instala
+#                                nada: Node 24 ejecuta puerta.ts tal cual.
+#                                `verificar` NO depende de ella: el tarball
+#                                verificado se construye igual, y la publicación
+#                                a mano de docs/PUBLISHING.md sigue siendo posible.
+#                                Emergencia: docs/BANCO-SEMANAL.md.
 on:
   release:
     types: [published]
@@ -193,8 +201,37 @@ jobs:
           path: paquete/
           if-no-files-found: error
 
+  # LA PUERTA DEL BANCO SEMANAL. Decisión del dueño (2026-09-29): no se publica
+  # si el banco en vivo de la semana encontró una regresión o no se ha corrido.
+  # Lee los runs de banco-semanal.yml con el token del workflow (actions: read)
+  # y decide con benchmarks/banco-semanal/puerta.ts, sin instalar dependencias.
+  # Si la lista no se puede leer (p. ej. el workflow aún no existe en main), la
+  # puerta NO pasa. Para saltarla en una emergencia, la variable de repositorio
+  # BANCO_SEMANAL_EMERGENCIA con el motivo (la pone y la quita el dueño).
+  banco-semanal:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: benchmarks/banco-semanal/puerta.ts
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: El último banco semanal en vivo está en verde y tiene 8 días o menos
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BANCO_SEMANAL_EMERGENCIA: ${{ vars.BANCO_SEMANAL_EMERGENCIA }}
+        run: |
+          gh run list --repo "$GITHUB_REPOSITORY" --workflow banco-semanal.yml --branch main --limit 30 \
+            --json databaseId,status,conclusion,createdAt,displayTitle,event,url,headSha > runs.json || echo "null" > runs.json
+          node benchmarks/banco-semanal/puerta.ts runs.json
+
   publicar:
-    needs: verificar
+    needs: [verificar, banco-semanal]
     runs-on: ubuntu-latest
     # El entorno se crea solo en la primera ejecución (sin reglas). En npmjs.com
     # el trusted publisher se ata a este nombre: ver docs/PUBLISHING.md. Sin
