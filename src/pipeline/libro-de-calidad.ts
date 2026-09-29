@@ -45,7 +45,7 @@ export interface HechosDeCalidad {
   /** Qué pasó cuando la PRIMERA validación del proveedor falló. */
   reparacion?: QualityRepairCheck;
   /** La respuesta final del proveedor: por qué paró y qué tope puso el llamante. */
-  final?: { finishReason?: string; topeDelLlamante?: number };
+  final?: { finishReason?: string; finishReasonDetail?: string; topeDelLlamante?: number };
   /** El acierto semántico tal cual lo devolvió la caché. */
   semantico?: SemanticHit;
 }
@@ -135,6 +135,9 @@ export function libroDeCalidad(a: {
     libro.truncation = {
       truncated: f?.finishReason === "length",
       ...(f?.finishReason !== undefined ? { finishReason: f.finishReason } : {}),
+      // El mismo par que `SavingsResult`: en la 0.5 `finishReason` pasa al
+      // conjunto cerrado y el literal del proveedor queda en el detalle.
+      ...(f?.finishReasonDetail !== undefined ? { finishReasonDetail: f.finishReasonDetail } : {}),
       capSetByCaller: tope != null,
       ...(tope != null ? { outputLimit: tope } : {}),
     };

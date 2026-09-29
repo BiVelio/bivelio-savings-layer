@@ -26,8 +26,9 @@ import { describe, it, expect } from "vitest";
  *     va en la 0.5 y en la guía, no en una 0.4.x.
  *   · un cambio de tipo a valor (o al revés) → falla.
  *
- * `pendientes` son los nombres que traen PR abiertos (#410, #412, #416, #417):
- * pueden estar o no. Al fusionarse, se mueven a `exports`/`miembros`.
+ * `pendientes` son los nombres que traen PR abiertos: pueden estar o no. Al
+ * fusionarse, se mueven a `exports`/`miembros` (los de #410, #412, #416, #417 y
+ * #419 se movieron en la 0.4.34; hoy está vacío).
  */
 
 type Veredicto = "estable" | "renombrar" | "quitar" | "cambiar-default";
@@ -167,5 +168,76 @@ describe("la API pública, congelada hasta la 0.5", () => {
     const pkg = JSON.parse(readFileSync(raiz("package.json"), "utf8")) as { version: string };
     expect(pkg.version.startsWith("0.4.")).toBe(true);
     expect(inv.version.startsWith("0.4.")).toBe(true);
+  });
+});
+
+/**
+ * LA 0.4.34 AVISA DE TODO LO QUE LA 0.5 QUITA (criterio 6 de docs/CAMINO-A-0.5.md).
+ *
+ * Que la guía lo diga no basta: nadie la lee antes de actualizar. Lo que sí se
+ * ve es el tachado del IDE y el aviso de `tsc`/eslint, y eso sale del
+ * `@deprecated` del `.d.ts` publicado. Cada export «quitar» o «renombrar» del
+ * inventario, y cada campo con esos veredictos, tiene que llevarlo en la
+ * declaración que el `.d.ts` exporta (no en la del código fuente: tsup puede
+ * renombrarla `X$1` y exportar un alias).
+ */
+describe("todo lo que la 0.5 quita o renombra llega marcado @deprecated al .d.ts", () => {
+  const deprecada = (n: ts.Node) =>
+    ts.getJSDocTags(n).some((t) => t.tagName.text === "deprecated");
+
+  /** Declaraciones de primer nivel por nombre local, y el alias con que cada entrada las exporta. */
+  function leer(fichero: string) {
+    const sf = ts.createSourceFile(fichero, readFileSync(raiz(fichero), "utf8"), ts.ScriptTarget.Latest, true);
+    const decl = new Map<string, ts.Node[]>();
+    const exportado = new Map<string, string>();
+    const poner = (nombre: string, n: ts.Node) => decl.set(nombre, [...(decl.get(nombre) ?? []), n]);
+    for (const st of sf.statements) {
+      if (ts.isVariableStatement(st)) {
+        for (const d of st.declarationList.declarations) if (ts.isIdentifier(d.name)) poner(d.name.text, st);
+      } else if (
+        (ts.isFunctionDeclaration(st) || ts.isClassDeclaration(st) || ts.isInterfaceDeclaration(st) ||
+          ts.isTypeAliasDeclaration(st) || ts.isEnumDeclaration(st)) && st.name
+      ) {
+        poner(st.name.text, st);
+      } else if (ts.isExportDeclaration(st) && st.exportClause && ts.isNamedExports(st.exportClause)) {
+        for (const el of st.exportClause.elements) exportado.set(el.name.text, (el.propertyName ?? el.name).text);
+      }
+    }
+    return { sf, decl, exportado };
+  }
+
+  it("cada export «quitar» o «renombrar»", () => {
+    const sinMarca: string[] = [];
+    for (const [entrada, nombres] of Object.entries(inv.exports)) {
+      const { decl, exportado } = leer(ENTRADAS[entrada]!);
+      for (const [n, x] of Object.entries(nombres)) {
+        if (x.veredicto !== "quitar" && x.veredicto !== "renombrar") continue;
+        const nodos = decl.get(exportado.get(n) ?? n) ?? [];
+        // Todas: una sobrecarga o la mitad «tipo» de una clase sin marca
+        // bastan para que el IDE no tache el uso.
+        if (nodos.length === 0 || !nodos.every(deprecada)) sinMarca.push(`${entrada} ${n}`);
+      }
+    }
+    expect(sinMarca, "añade `@deprecated <motivo>. <alternativa>` a su declaración pública").toEqual([]);
+  });
+
+  it("cada campo «quitar» o «renombrar»", () => {
+    const { sf, decl } = leer(ENTRADAS["."]!);
+    const sinMarca: string[] = [];
+    for (const [ruta, x] of Object.entries(inv.miembros)) {
+      if (x === "estable" || (x.veredicto !== "quitar" && x.veredicto !== "renombrar")) continue;
+      const [interfaz, ...campos] = ruta.split(".");
+      let miembros: readonly ts.TypeElement[] = (decl.get(interfaz!) ?? [])
+        .filter(ts.isInterfaceDeclaration)
+        .flatMap((i) => [...i.members]);
+      let hallado: ts.TypeElement | undefined;
+      for (const c of campos) {
+        hallado = miembros.find((m) => m.name?.getText(sf) === c);
+        const tipo: ts.TypeNode | undefined = (hallado as { type?: ts.TypeNode } | undefined)?.type;
+        miembros = tipo && ts.isTypeLiteralNode(tipo) ? [...tipo.members] : [];
+      }
+      if (!hallado || !deprecada(hallado)) sinMarca.push(ruta);
+    }
+    expect(sinMarca, "añade `@deprecated` al campo en su interfaz").toEqual([]);
   });
 });

@@ -1013,8 +1013,21 @@ export interface QualityRepairCheck {
 export interface QualityTruncationCheck {
   /** True when the provider reported `finishReason: "length"`. A truncated answer is never cached. */
   truncated: boolean;
-  /** The stop reason exactly as the provider named it; absent when it reported none. */
+  /**
+   * Why the provider stopped, as `SavingsResult.finishReason` reports it;
+   * absent when it reported none.
+   *
+   * In 0.5 this becomes the same CLOSED set as `SavingsResult.finishReason` —
+   * `"stop"`, `"length"`, `"tool_calls"`, `"content_filter"` or `"other"` — and
+   * the provider's own value moves to {@link finishReasonDetail}. Compare
+   * against those five values only; see the 0.5 migration guide.
+   */
   finishReason?: string;
+  /**
+   * The provider's own reason behind `finishReason`, when it gave one: the same
+   * value as `SavingsResult.finishReasonDetail` for the answer that was served.
+   */
+  finishReasonDetail?: string;
   /**
    * Whether you set the limit (`maxOutputTokens` on the request or on
    * `response`). When false, any

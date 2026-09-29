@@ -4534,6 +4534,9 @@ export class SavingsPipeline {
         // produjo lo servido.
         final: {
           ...(response.finishReason !== undefined ? { finishReason: response.finishReason } : {}),
+          ...(response.finishReasonDetail !== undefined
+            ? { finishReasonDetail: response.finishReasonDetail }
+            : {}),
           ...(topeDeSalida(request) != null
             ? { topeDelLlamante: topeDeSalida(request)! }
             : {}),
@@ -5653,6 +5656,9 @@ export class SavingsPipeline {
       ...(medir ? {} : { origen: "fail_open" as const }),
       final: {
         ...(response.finishReason !== undefined ? { finishReason: response.finishReason } : {}),
+        ...(response.finishReasonDetail !== undefined
+          ? { finishReasonDetail: response.finishReasonDetail }
+          : {}),
         ...(topeDeSalida(request) != null
           ? { topeDelLlamante: topeDeSalida(request)! }
           : {}),
