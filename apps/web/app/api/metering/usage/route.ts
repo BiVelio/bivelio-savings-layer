@@ -211,8 +211,10 @@ export async function POST(req: Request): Promise<NextResponse> {
   // extracto entero, y la regla con la que el SDK valoró cada repetición no viaja
   // en el registro. La etiqueta v0.4.23 se cortó con la regla v1; si se publica,
   // sus referencias no pueden entrar bajo el sello «reference-v2». Y de la 0.4.24
-  // a la 0.4.30 el SDK podía repetir una negativa como referencia (la que el
-  // modelo escribe como texto, hasta la 0.4.30: #384). Un proceso que no
+  // a la 0.4.31 el SDK podía repetir una negativa como referencia (la que el
+  // modelo escribe como texto, hasta la 0.4.30: #384; el `content_filter: OTHER`
+  // de Gemini, las que #384 no veía y los temas sensibles, hasta la 0.4.31:
+  // #393, #401, #402). Un proceso que no
   // declara versión, que declara una anterior a VERSION_MINIMA_REFERENCIA, o
   // que es el gateway (no pasa por el pipeline que aplica la regla v2), entra
   // como "estimated": sigue en los totales, fuera de reference_* y de la base.

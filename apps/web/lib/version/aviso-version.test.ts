@@ -183,15 +183,15 @@ describe("decidirAvisoVersion · el ahorro medido por referencia también es din
 
 /**
  * El aviso de la referencia: un SDK por debajo de VERSION_MINIMA_REFERENCIA
- * (0.4.31) ve sus repeticiones entrar como estimated. Decide la VERSIÓN, con la
+ * (0.4.32) ve sus repeticiones entrar como estimated. Decide la VERSIÓN, con la
  * misma verja que el ingest; el gateway y «sin versión» no avisan.
  */
 describe("decidirAvisoReferencia — un SDK por debajo de la mínima de la referencia", () => {
   const sdk = (v: string | null, p: Partial<AsientoVisto> = {}) =>
     asiento({ surface: v ? "sdk" : null, versionMin: v, versionMax: v, ...p });
 
-  it("usa la mínima del espejo del ingest (0.4.31), sin copia propia", () => {
-    expect(VERSION_MINIMA_REFERENCIA).toBe("0.4.31");
+  it("usa la mínima del espejo del ingest (0.4.32), sin copia propia", () => {
+    expect(VERSION_MINIMA_REFERENCIA).toBe("0.4.32");
     expect(decidirAvisoReferencia([sdk("sdk/0.4.28")], AHORA)?.minima).toBe(VERSION_MINIMA_REFERENCIA);
   });
 
@@ -200,28 +200,32 @@ describe("decidirAvisoReferencia — un SDK por debajo de la mínima de la refer
       tipo: "sdkSinReferencia",
       desactualizadas: 2,
       versionMasAntigua: "sdk/0.4.26",
-      minima: "0.4.31",
+      minima: "0.4.32",
     });
   });
 
   it("sdk/0.4.29 y sdk/0.4.30 → aviso: repetían la negativa escrita como texto (#384, en la 0.4.31)", () => {
     for (const v of ["sdk/0.4.29", "sdk/0.4.30"]) {
-      expect(decidirAvisoReferencia([sdk(v)], AHORA), v).toMatchObject({ desactualizadas: 1, minima: "0.4.31" });
+      expect(decidirAvisoReferencia([sdk(v)], AHORA), v).toMatchObject({ desactualizadas: 1, minima: "0.4.32" });
     }
   });
 
-  it("sdk/0.4.31 y posteriores → sin aviso (0.10.0 por orden numérico)", () => {
-    for (const v of ["sdk/0.4.31", "sdk/0.4.32", "sdk/0.10.0", "sdk/1.0.0"]) {
+  it("sdk/0.4.31 → aviso: repetía el content_filter de Gemini, las negativas que #384 no veía y los temas sensibles (en la 0.4.32)", () => {
+    expect(decidirAvisoReferencia([sdk("sdk/0.4.31")], AHORA)).toMatchObject({ desactualizadas: 1, minima: "0.4.32" });
+  });
+
+  it("sdk/0.4.32 y posteriores → sin aviso (0.10.0 por orden numérico)", () => {
+    for (const v of ["sdk/0.4.32", "sdk/0.4.33", "sdk/0.10.0", "sdk/1.0.0"]) {
       expect(decidirAvisoReferencia([sdk(v)], AHORA), v).toBeNull();
     }
   });
 
-  it("una preliminar de la mínima (sdk/0.4.31-rc.1) avisa: el ingest también la degrada", () => {
-    expect(decidirAvisoReferencia([sdk("sdk/0.4.31-rc.1")], AHORA)?.desactualizadas).toBe(1);
+  it("una preliminar de la mínima (sdk/0.4.32-rc.1) avisa: el ingest también la degrada", () => {
+    expect(decidirAvisoReferencia([sdk("sdk/0.4.32-rc.1")], AHORA)?.desactualizadas).toBe(1);
   });
 
   it("gateway → sin aviso, a cualquier versión (no emite referencias comisionables)", () => {
-    for (const v of ["gateway/0.4.16", "gateway/0.4.28", "gateway/0.4.31"]) {
+    for (const v of ["gateway/0.4.16", "gateway/0.4.28", "gateway/0.4.32"]) {
       expect(decidirAvisoReferencia([asiento({ surface: "gateway", versionMin: v, versionMax: v })], AHORA), v).toBeNull();
     }
   });
@@ -252,7 +256,7 @@ describe("decidirAvisoReferencia — un SDK por debajo de la mínima de la refer
   it("con los dos avisos a la vez, ninguno pisa al otro", () => {
     const gatewayViejoSinEuro = asiento({ seatId: "gw", versionMin: "gateway/0.4.15", versionMax: "gateway/0.4.15" });
     const sdkViejo = sdk("sdk/0.4.28", { seatId: "sdk" });
-    const sdkAlDia = sdk("sdk/0.4.31", { seatId: "sdk-nuevo" });
+    const sdkAlDia = sdk("sdk/0.4.32", { seatId: "sdk-nuevo" });
     const todos = [gatewayViejoSinEuro, sdkViejo, sdkAlDia];
 
     const tarifa = decidirAvisoVersion(todos, AHORA, MINIMA);

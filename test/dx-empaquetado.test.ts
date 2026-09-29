@@ -60,10 +60,11 @@ describe("el paquete publicado", () => {
     const src = readFileSync(DIST, "utf8");
     // Si el minificado se cayera, volverían los comentarios del código fuente.
     expect(src).not.toContain("LA VERJA Y LA TRAZA LEEN DE LA MISMA VARIABLE");
-    // 425 000 desde la licencia Medir (2026-09-29): el modo sombra añadió ~4 KB
-    // minificados y el techo anterior (400 000) quedaba a 1,5 KB del tamaño real.
-    // El fuente pesa ~1,8 MB (medido ese día): sin minificar, la verja sigue mordiendo.
-    expect(src.length).toBeLessThan(425_000);
+    // 450 KB: el techo vigila que el minificado siga ahí, no el tamaño del
+    // producto. Sin minificar (y sin comentarios) el bundle mide ~750 KB; con él,
+    // ~409 KB desde el adaptador nativo de Gemini (+11 KB), que dejó el
+    // techo anterior (400 KB) sin margen. La licencia Medir (+4 KB) cabe.
+    expect(src.length).toBeLessThan(450_000);
   });
 });
 
