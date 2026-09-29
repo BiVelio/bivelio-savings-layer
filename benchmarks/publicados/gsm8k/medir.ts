@@ -245,3 +245,71 @@ export function resumir(ensayos: readonly Ensayo[]): Resumen {
 function aPorPos(A: readonly Ensayo[], pos: number): Ensayo | undefined {
   return A.find((e) => e.pos === pos);
 }
+
+/** Precio de lista que necesita el desglose (el del catálogo del SDK, vía `precioYPrima`). */
+export interface PrecioDelDesglose {
+  inputPer1k: number;
+  cachedInputPer1k: number;
+  /** Multiplicador de la escritura de caché sobre la entrada (1,25 en Anthropic a 5 min). */
+  prima: number;
+}
+
+export interface DesgloseDeBrazo {
+  brazo: Brazo;
+  /** coste(A) − coste(brazo) en las posiciones que completaron los dos. MEDIDO. */
+  ahorroTotalUsd: number;
+  /** Lo que A pagó en las posiciones que el brazo sirvió SIN llamar (caché exacta, semántica…). MEDIDO. */
+  ahorroPorNoLlamarUsd: number;
+  /** El resto: posiciones en que el brazo sí llamó (caché de prefijo del proveedor + ruido de la salida). MEDIDO. */
+  ahorroEnLlamadasUsd: number;
+  /**
+   * La parte de la caché de prefijo, a precio de lista y SOLO desde tokens:
+   * lecturas × (entrada − lectura) − escrituras × entrada × (prima − 1). Sin
+   * ruido de salida; es la cifra que responde «cuánto vale la caché de prefijo».
+   */
+  prefijoNetoUsd: number;
+  llamadas: number;
+  llamadasConLectura: number;
+  llamadasConEscritura: number;
+  tokensLeidos: number;
+  tokensEscritos: number;
+  /** Entrada media por llamada, para ver si el prefijo supera el mínimo cacheable del modelo. */
+  entradaMediaPorLlamada: number;
+}
+
+/**
+ * DE DÓNDE SALE EL AHORRO de cada brazo frente a A: lo que no llamó (caché de la
+ * capa) y lo que ahorró en las llamadas que sí hizo (caché de prefijo). Puro.
+ */
+export function desgloseDelAhorro(ensayos: readonly Ensayo[], precio: PrecioDelDesglose): DesgloseDeBrazo[] {
+  const A = new Map(ensayos.filter((e) => e.brazo === "A").map((e) => [e.pos, e]));
+  const brazos = [...new Set(ensayos.map((e) => e.brazo))].sort() as Brazo[];
+  return brazos.map((b) => {
+    const es = ensayos.filter((e) => e.brazo === b);
+    const pareados = es.filter((e) => A.has(e.pos));
+    let total = 0;
+    let noLlamar = 0;
+    for (const e of pareados) {
+      const a = A.get(e.pos)!;
+      total += a.coste - e.coste;
+      if (e.llamadas === 0) noLlamar += a.coste - e.coste;
+    }
+    const leidos = es.reduce((s, e) => s + e.cacheada, 0);
+    const escritos = es.reduce((s, e) => s + e.escrita, 0);
+    const llamadas = es.reduce((s, e) => s + e.llamadas, 0);
+    return {
+      brazo: b,
+      ahorroTotalUsd: b === "A" ? 0 : total,
+      ahorroPorNoLlamarUsd: b === "A" ? 0 : noLlamar,
+      ahorroEnLlamadasUsd: b === "A" ? 0 : total - noLlamar,
+      prefijoNetoUsd:
+        (leidos / 1000) * (precio.inputPer1k - precio.cachedInputPer1k) - (escritos / 1000) * precio.inputPer1k * (precio.prima - 1),
+      llamadas,
+      llamadasConLectura: es.filter((e) => e.cacheada > 0).length,
+      llamadasConEscritura: es.filter((e) => e.escrita > 0).length,
+      tokensLeidos: leidos,
+      tokensEscritos: escritos,
+      entradaMediaPorLlamada: llamadas ? es.reduce((s, e) => s + e.entrada, 0) / llamadas : 0,
+    };
+  });
+}

@@ -122,6 +122,27 @@ function origen(m: MedicionDeModelo): string {
   ].join("\n");
 }
 
+/** De dónde sale el ahorro: lo que el brazo no llamó frente a la caché de prefijo del proveedor en lo que sí llamó. */
+function desglose(m: MedicionDeModelo): string {
+  const d = m.desglose;
+  const r = m.resumen;
+  if (!d?.length || !r) return "";
+  return [
+    "**De dónde sale el ahorro** (medido; «prefijo neto» = lecturas × (entrada − lectura) − escrituras × entrada × (prima − 1), a precio de lista, sin ruido de salida):",
+    "",
+    "| Brazo | Llamadas | Entrada media / llamada | Llamadas con lectura / con escritura de caché | Tokens leídos / escritos | Ahorro total vs A | … por no llamar (caché de la capa) | … en las llamadas hechas | Prefijo neto (tokens) | Latencia p50 proveedor / caché |",
+    "|---|---|---|---|---|---|---|---|---|---|",
+    ...d.map((x) => {
+      const l = r.brazos[x.brazo]?.latenciaMs;
+      return (
+        `| ${x.brazo} | ${x.llamadas} | ${Math.round(x.entradaMediaPorLlamada)} | ${x.llamadasConLectura} / ${x.llamadasConEscritura} | ${x.tokensLeidos} / ${x.tokensEscritos} | ` +
+        `${x.brazo === "A" ? "—" : usd(x.ahorroTotalUsd)} | ${x.brazo === "A" ? "—" : usd(x.ahorroPorNoLlamarUsd)} | ${x.brazo === "A" ? "—" : usd(x.ahorroEnLlamadasUsd)} | ` +
+        `${usd(x.prefijoNetoUsd)} | ${ms(l?.p50Proveedor)} / ${ms(l?.p50Cache)} |`
+      );
+    }),
+  ].join("\n");
+}
+
 const frac = (a: number, n: number): string => (n ? `${((a / n) * 100).toFixed(1)} % (${a}/${n})` : "—");
 
 function seccionComparacion(c: Comparacion0430): string[] {
@@ -294,6 +315,8 @@ function seccionModelos(modelos: readonly MedicionDeModelo[], h: string, sufijo 
       const org = origen(m);
       if (org) out.push("", org);
       out.push("");
+      const des = desglose(m);
+      if (des) out.push(des, "");
       out.push("**Ahorro que la capa se atribuye en su propio informe** (declarado, no medido por el banco; por base):");
       out.push("");
       out.push(declarado(m) || "—");

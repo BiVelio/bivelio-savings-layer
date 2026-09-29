@@ -11,6 +11,7 @@
  *                          MISMO flujo, petición a petición) y compara con él; la caja sigue mandando
  *   --brazos A,B,S,E       por defecto los cuatro (ver DESCRIPCION_DE_BRAZOS en medir.ts)
  *   --docs                 escribe docs/benchmarks/2026-09-28/gsm8k-0431.{json,md} (el nombre sale de la versión)
+ *   --sufijo S             con --docs, escribe gsm8k-0431-S.{json,md} (p. ej. `claude`) y no pisa la tirada sin sufijo
  *
  * Las claves se leen SOLO del entorno (`tsx --env-file=…`) y solo se pasan al
  * adaptador: nada de aquí imprime cabeceras, URLs completas ni configuración de
@@ -63,7 +64,7 @@ import {
   leerSplit,
   type FilaGsm8k,
 } from "./fuente.js";
-import { DESCRIPCION_DE_BRAZOS, resumir, type Brazo, type Ensayo, type Resumen } from "./medir.js";
+import { DESCRIPCION_DE_BRAZOS, desgloseDelAhorro, resumir, type Brazo, type DesgloseDeBrazo, type Ensayo, type Resumen } from "./medir.js";
 import { CONFIGS_SIN_RED, JUEZ_ID, juezNumerico, preguntasSinRed, repetirSinRed, type ResultadoSinRed } from "./sin-red.js";
 
 export const MODELOS_DE_LA_BATERIA = [
@@ -353,6 +354,8 @@ export interface MedicionDeModelo {
   estimacion?: { porPeticionUsd: number; peorLlamadaUsd: number; previstoUsd: number; nUnicosPrevisto?: number };
   gasto: { topeUsd: number; totalUsd: number; porBrazo: Partial<Record<Brazo | "sonda", number>> };
   resumen?: Resumen;
+  /** De dónde sale el ahorro de cada brazo: lo que no llamó frente a la caché de prefijo del proveedor. */
+  desglose?: DesgloseDeBrazo[];
   calibracionS?: unknown;
   registrosSemanticos?: Partial<Record<Brazo, number>>;
   evidencias?: Evidencia[];
@@ -674,6 +677,11 @@ export async function medirModelo(o: OpcionesDeModelo): Promise<MedicionDeModelo
     ...(abortado || motivoCaida ? { motivo: [abortado, motivoCaida].filter(Boolean).join("; ") } : {}),
     peticionesCompletadas: completadas,
     resumen,
+    desglose: desgloseDelAhorro(ensayos, {
+      inputPer1k: precio.inputPer1k,
+      cachedInputPer1k: precio.cachedInputPer1k ?? precio.inputPer1k,
+      prima: precioYPrima(model).prima,
+    }),
     ...(caches.S ? { calibracionS: caches.S.calibrationStatus() } : {}),
     registrosSemanticos: Object.fromEntries(Object.entries(caches).map(([b, s]) => [b, s!.size])),
     evidencias,
@@ -934,7 +942,7 @@ async function principal(): Promise<void> {
     if (seco) throw new Error("--docs refuses a dry run: SECO figures are not measurements");
     const dir = fileURLToPath(new URL(`../../../docs/benchmarks/${FECHA}/`, import.meta.url));
     mkdirSync(dir, { recursive: true });
-    const base = arg("nombre-docs") ?? nombreDelDocumento(art.procedencia.version);
+    const base = arg("nombre-docs") ?? nombreDelDocumento(art.procedencia.version, arg("sufijo"));
     for (const ext of ["json", "md"]) {
       if (existsSync(join(dir, `${base}.${ext}`))) throw new Error(`--docs refuses to overwrite ${base}.${ext}; pass another --nombre-docs`);
     }
@@ -944,9 +952,12 @@ async function principal(): Promise<void> {
   }
 }
 
-/** `gsm8k-0431` para la 0.4.31: el de la 0.4.30 (`gsm8k`) no se pisa. */
-export function nombreDelDocumento(version: string): string {
-  return `gsm8k-${version.replaceAll(".", "")}`;
+/** `gsm8k-0431` para la 0.4.31 (el de la 0.4.30, `gsm8k`, no se pisa); con sufijo, `gsm8k-0431-claude`. */
+export function nombreDelDocumento(version: string, sufijo?: string): string {
+  const base = `gsm8k-${version.replaceAll(".", "")}`;
+  if (sufijo === undefined) return base;
+  if (!/^[a-z0-9-]+$/.test(sufijo)) throw new Error(`--sufijo must match [a-z0-9-]+: ${sufijo}`);
+  return `${base}-${sufijo}`;
 }
 
 /**
@@ -1013,8 +1024,12 @@ export function limitaciones(art: Artefacto): string[] {
       `Arms B, S and E ran the ${art.procedencia.version} SOURCE of the tag with devUnlicensed: true (--desde-fuente), not the npm tarball: the npm build has no unlicensed mode. The dist built from this source is byte-identical to the tarball's dist/index.js (sha256 in \`procedencia\`).`,
     );
   }
+  const medidos = art.modelos.filter((m) => m.resumen);
+  const soloAnthropic = medidos.length > 0 && medidos.every((m) => m.modelo.startsWith("anthropic/"));
   l.push(
-    `Every arm sends the same output cap, maxOutputTokens ${TOPE_DE_SALIDA} (0.4.31, #381: free-text requests can carry it; on api.openai.com it travels as max_completion_tokens). The 0.4.30 run had no cap; its longest answers were 957 (gpt-4o-mini) and 391 (gpt-5.4-mini) tokens, so this cap would not have cut any of them.`,
+    soloAnthropic
+      ? `Every arm sends the same output cap, maxOutputTokens ${TOPE_DE_SALIDA} (0.4.31, #381); on api.anthropic.com it travels as max_tokens, which the Messages API requires anyway (the adapter's default without a cap is 4096).`
+      : `Every arm sends the same output cap, maxOutputTokens ${TOPE_DE_SALIDA} (0.4.31, #381: free-text requests can carry it; on api.openai.com it travels as max_completion_tokens). The 0.4.30 run had no cap; its longest answers were 957 (gpt-4o-mini) and 391 (gpt-5.4-mini) tokens, so this cap would not have cut any of them.`,
     "Semantic cache in S and E is switched on with semanticCacheDefault: true on the layer (0.4.31, #380), not with savings.semanticCache on each request as in the 0.4.30 run. The no-network replay runs both mechanisms side by side (semantica-envio vs semantica-defecto-capa) to show they decide the same.",
   );
   if (art.comparacion) {
@@ -1033,6 +1048,13 @@ export function limitaciones(art: Artefacto): string[] {
         );
       }
     }
+  }
+  if (medidos.some((m) => m.modelo.startsWith("anthropic/"))) {
+    l.push(
+      "Anthropic caches a prefix only behind an explicit cache_control breakpoint. Arm A is the naive client and sends none, so every prefix-cache read in B/S/E is a breakpoint the layer placed; a client that marks its own system prompt would get that part without the layer. The breakdown table separates it from what the layer saved by not calling at all.",
+      "Anthropic also caches nothing below the model's minimum cacheable prefix (4096 tokens for claude-haiku-4-5 on the official prompt-caching page; the SDK keeps the conservative 1024 for models without a published figure). The mean input per call in the breakdown table says on which side of that line this few-shot system prompt falls.",
+      "Up to four arms run concurrently per request against one Anthropic key that sibling benchmark runs were also using; 429/529 are retried with backoff, and a retried call's wait is part of its latency.",
+    );
   }
   for (const m of art.modelos.filter((x) => x.estado === "no-medible")) {
     l.push(`${m.modelo} not measured: ${m.motivo}`);
