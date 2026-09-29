@@ -76,11 +76,18 @@ describe("panel de instalación: lo que dicen los textos, en los 12 idiomas", ()
   const readmePython = readFileSync(join(RAIZ, "packages/python/README.md"), "utf8");
   const gatewayPython = readFileSync(join(RAIZ, "packages/python/src/bvsala/_gateway.py"), "utf8");
 
-  it("la instalación de Python que se cita es la que documenta packages/python, y no hay un pip install de PyPI", () => {
+  it("la instalación de Python que se cita es una de las que documenta packages/python", () => {
+    // El README ya da `pip install bivelio-savings-layer`: es la descripción que
+    // PyPI congela al subir, así que tiene que llevarla desde la primera
+    // versión (docs/PUBLICAR-PYPI.md). La web, en cambio, solo la anuncia
+    // cuando PyPI la sirve; hasta entonces cita la instalación desde el
+    // repositorio, que el README sigue documentando.
     expect(readmePython).toContain("pip install ./packages/python");
-    // El día que se publique en PyPI, el README cambiará y esta verja pedirá
-    // actualizar la nota en vez de dejarla diciendo «aún no está en PyPI».
-    expect(readmePython).toMatch(/Until the first release on PyPI/);
+    const pyproject = readFileSync(join(RAIZ, "packages/python/pyproject.toml"), "utf8");
+    const nombre = /^name = "([^"]+)"$/m.exec(pyproject)?.[1];
+    expect(nombre).toBe("bivelio-savings-layer");
+    expect(readmePython).toContain(`pip install ${nombre}`);
+    expect(readmePython).not.toMatch(/Until the first release on PyPI/);
   });
 
   it("el mínimo de gateway que cita la nota de Python es el que exige el cliente", () => {
