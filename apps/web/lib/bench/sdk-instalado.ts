@@ -15,16 +15,14 @@ import type { AbArtifact } from "@/app/[locale]/dashboard/data";
  *
  * La regla, en un solo sitio: mientras el artefacto no declare
  * `sdk.asShipped: true`,
- *   · ninguna superficie presenta su suelo como lo que el cliente obtiene: se
- *     presenta el MENOR entre ese suelo y la cifra del titular (que ya cabe en
- *     el suelo reconstruido sin el compresor);
- *   · el punto estimado y el intervalo de esa tirada no se enseñan como
- *     promesa;
+ *   · ninguna superficie presenta su suelo, su punto ni su intervalo como lo
+ *     que el cliente obtiene. Hasta el 2026-09-29 se enseñaba en su lugar el
+ *     titular de la portada (un «≥ 10 %», `PROMESA_DEL_TITULAR`); desde ese día
+ *     ni la portada ni el panel lo publican: lo medido es el banco en vivo
+ *     (lib/portada/banco-en-vivo.ts) y, en el panel, el dinero del cliente;
+ *   · la tirada se enseña solo como explicación del mecanismo, etiquetada como
+ *     sintética (ReferenceModeBadge), y NetSavingsCIBand no pinta cifra;
  *   · los libros y escenarios cuyo ahorro salió de esa pieza no se anuncian.
- *
- * El suelo RECONSTRUIDO (benchmarks/titular-como-se-instala.ts) no se enseña
- * nunca: es una reconstrucción, no una medición. Lo que se enseña es el
- * titular, que es una promesa y cabe dentro de ambos suelos.
  *
  * Con un artefacto `asShipped: true` todo esto se apaga solo: mandan sus
  * cifras medidas.
@@ -65,33 +63,4 @@ export function librosConPiezaDelBanco(ab: Omit<ArtefactoLeido, "aggregate">): S
   for (const s of ab.scenarios ?? []) if (esc.has(s.name)) out.add(s.ledger);
   for (const l of ab.ledgers ?? []) if ((l.scenarios ?? []).some((n) => esc.has(n))) out.add(l.ledger);
   return out;
-}
-
-/** «≥ 10,0 %», «≥ %10,0», «≥ 10.0%» → 10. */
-export function numeroDeCifra(cifra: string): number {
-  const m = /(\d+)(?:[.,](\d+))?/.exec(cifra);
-  if (!m) throw new Error(`sin número en ${JSON.stringify(cifra)}`);
-  return Number(`${m[1]}.${m[2] ?? "0"}`);
-}
-
-/**
- * La cota que el PANEL (/dashboard/proof y sus componentes) usa para no
- * presentar el suelo de un artefacto que no midió lo instalado.
- *
- * Hasta el 2026-09-29 se leía de `landing.hero.proofs.0.cifra`, el «al menos un
- * 10 %» de la portada. La portada ya no lo publica (lib/portada/banco-en-vivo.ts
- * y portada-dice-lo-medido.test.ts): publica la cifra condicionada del banco en
- * vivo. El panel sigue enseñando el artefacto sintético del 12-09 con esta
- * cota; qué hacer con esa vista es decisión del dueño (anotado en el PR).
- */
-export const PROMESA_DEL_TITULAR: number = 0.1;
-
-/**
- * El suelo que una superficie puede presentar como lo que el cliente obtiene.
- * Midió lo instalado → su suelo frente a B0, como siempre. No → el menor entre
- * ese suelo y el titular.
- */
-export function sueloPublicable(ab: Pick<AbArtifact, "sdk" | "aggregate">): number {
-  const b0 = ab.aggregate.savings.lower;
-  return midioElSdkInstalado(ab) ? b0 : Math.min(b0, PROMESA_DEL_TITULAR);
 }

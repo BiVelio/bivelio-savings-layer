@@ -2,8 +2,7 @@ import { getTranslations } from "next-intl/server";
 
 import { PageHead } from "@/app/components/app/PageHead";
 import { authConfigured } from "@/lib/supabase/env";
-import abData from "@/public/data/ab-live.json";
-import { activationSteps, getAsientos, getSesiones, type AbArtifact } from "./data";
+import { activationSteps, getAsientos, getSesiones } from "./data";
 import { cortarPorPeriodo } from "./explorer-datos";
 import { loadDashboard } from "./load";
 import { RANGO_POR_DEFECTO, rangoDesdeParametro } from "./rango";
@@ -31,8 +30,6 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const t = await getTranslations({ locale, namespace: "dashboard" });
   return { title: t("overview.metaTitle") };
 }
-
-const ab = abData as unknown as AbArtifact;
 
 export default async function OverviewPage({
   searchParams,
@@ -111,7 +108,7 @@ export default async function OverviewPage({
               // gastado" es la pregunta que se hace primero, y los cuatro libros de
               // abajo la responden por partes que NO se pueden sumar entre sí.
               { id: "tokens", titulo: t("panel.cards.tokens"), contenido: <TokenTotalsTiles usage={usage} /> },
-              { id: "libros", titulo: t("panel.cards.libros"), contenido: <LiveLedgerTiles usage={usage} ab={ab} /> },
+              { id: "libros", titulo: t("panel.cards.libros"), contenido: <LiveLedgerTiles usage={usage} /> },
               // El explorador configurable (por día · periodo · modelo · libro) a
               // lo ancho: necesita sitio para los controles y las barras.
               {

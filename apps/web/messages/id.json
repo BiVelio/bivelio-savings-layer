@@ -129,7 +129,9 @@
       "metaTitle": "Bukti · BiVelio Savings Layer",
       "eyebrow": "Verifikasi, jangan percaya begitu saja · bench referensi",
       "title": "Bukti bahwa pengoptimal berfungsi",
-      "intro": "Diukur di kedua sisi — mesin kredibilitas di balik angka Anda sendiri."
+      "intro": "Tiga hal, dipisahkan: apa yang diukur langsung oleh bangku uji publik, dengan intervalnya; apa yang Anda hemat, diukur pada lalu lintas Anda sendiri; dan satu run sintetis yang menunjukkan cara kerja setiap tuas.",
+      "tuDinero": "Yang dihitung di panel Anda adalah uang Anda sendiri: setiap penghematan di <overview>Ikhtisar</overview> Anda diukur dengan penghitung penyedia Anda, pada lalu lintas Anda, permintaan demi permintaan. Angka di atas milik bangku uji, bukan perkiraan angka Anda.",
+      "sinteticaTitulo": "Run sintetis · cara kerja setiap tuas"
     },
     "verify": {
       "metaTitle": "Verifikasi · BiVelio Savings Layer",
@@ -245,7 +247,7 @@
       "elisionNota": "Jika Anda memakai gateway, sebagian angka ini adalah penghapusan yang diterapkan penyedia Anda dari konfigurasi Anda sendiri: bagian itu bukan jasa kami dan tidak pernah masuk komisi Anda.",
       "whatCompressedTokens": "token input yang dikodekan ulang lebih ringkas",
       "whatProviderCachedTokens": "token masukan yang ditagih dengan harga diskon cache prefiks. Klien Anda yang memintanya, bukan kami: tuas kami hanya mengatur durasinya",
-      "ghostAwaiting": "{ref} · menunggu laporan pertama",
+      "ghostAwaiting": "menunggu laporan pertama",
       "footnote": "Empat ledger, <b>tidak pernah dijumlahkan</b> — kami tidak bisa menghitung satu dolar dua kali. Hanya jumlah dan biaya, bukan prompt Anda. Laporan itulah meterannya."
     },
     "savingsTrendChart": {
@@ -464,7 +466,6 @@
     },
     "netSavingsCIBand": {
       "caption": "penghematan bersih, <b>batas bawah CI 95%</b>. Estimasi titik {point}, atas {upper} — kami menonjolkan angka terendah{mockNote}.",
-      "captionSdkPendiente": "yang dipertahankan SDK sebagaimana dipasang dari npm. Eksekusi yang dipublikasikan memakai kompresor khusus bangku uji yang tidak disertakan dalam paket, jadi interval dan estimasi titiknya tidak ditampilkan sebagai janji sampai eksekusi dengan SDK terpasang menggantikannya.",
       "mockNote": " (beban kerja referensi, penyedia tiruan)"
     },
     "cacheBreakEven": {
@@ -478,7 +479,7 @@
     },
     "referenceModeBadge": {
       "liveDesc": "— diukur terhadap penyedia nyata, dengan gerbang kualitas.",
-      "sdkPendiente": "Eksekusi ini memakai kompresor khusus bangku uji yang tidak disertakan dalam paket npm: angka-angkanya menunjukkan mekanismenya, bukan penghematan SDK terpasang.",
+      "sdkPendiente": "Run sintetis: skenario yang ditulis untuk bangku uji, ditambah kompresor khusus bangku uji yang tidak disertakan paket npm. Angkanya menunjukkan cara kerja setiap tuas — bukan janji tentang berapa yang akan Anda hemat.",
       "mock": "<b>DIPERKIRAKAN · penyedia tiruan</b> — ini membuktikan mekanismenya berfungsi, bukan tagihan Anda. Menjalankan LIVE yang telah di-commit menggantikan setiap angka di sini."
     },
     "connectionStatePill": {
@@ -997,41 +998,6 @@
       "errorCorreo": "Email itu sepertinya tidak valid.",
       "errorEnvio": "Kami tidak dapat mengirimnya.",
       "alterna": "Kirim email"
-    },
-    "calculadora": {
-      "title": "Dan berapa kamu akan membayar kami?",
-      "sub": "Mainkan angkamu: pilih penyedia dan model, lalu lihat penghematanmu, tambahan kami, dan yang tersisa untukmu — dengan harga katalog asli dan tarif asli.",
-      "proveedor": "Penyedia",
-      "modelo": "Model",
-      "reqs": "Permintaan / bulan",
-      "inTok": "Rata-rata token masuk",
-      "outTok": "Rata-rata token keluar",
-      "fx": "Kurs ({par})",
-      "factura": "Perkiraan tagihanmu tanpa optimasi: {usd} per bulan ({eur}).",
-      "colAhorro": "Jika kamu hemat",
-      "colTuAhorro": "Penghematanmu",
-      "colExtra": "Tambahan kami",
-      "colTeQuedas": "Milikmu",
-      "extraCero": "tidak ada",
-      "notaGarantia": "Komisi hanya atas penghematan terukur — dan Anda selalu menyimpan {garantia} atau lebih. Kursi ditagih terpisah, setiap bulan.",
-      "notaTramos": "Berjenjang, tiap jenjang dengan tarifnya sendiri: {tramos}. Makin besar hematmu, makin kecil persentase kami.",
-      "notaPrimerMesLead": "Bulan kalender pertamamu dengan penggunaan: hanya seat.",
-      "notaPrimerMes": "Itu periode kalibrasimu, berapa pun sisa bulan itu: kami mengukur semuanya dan kamu akan melihat rekening persis dari biaya yang seharusnya — tanpa ditagih.",
-      "version": "Harga katalog SDK, versi {fecha}. Perkiraan: rekeningmu akan memakai pemakaian terukurmu.",
-      "cargando": "Memuat katalog harga…",
-      "badge": "Perkiraan",
-      "asientos": "Seat ({precio} per seat)",
-      "resumenTotal": "Kebenaran seutuhnya, pada skenario {pct}: total kami {total} (seat: {asientosCoste} + komisi di atas) dan kamu menyimpan {neto} — {pctNeto} dari tagihanmu.",
-      "precios": "Harga persis {modelo}: masukan {inM} · keluaran {outM} · masukan ter-cache {cacheM}, per juta token.",
-      "fuente": "Sumber: <a>halaman harga resmi {proveedor}</a>, diverifikasi di katalog kami pada {fecha} (dan diawasi otomatis setiap minggu)."
-    },
-    "formula": {
-      "title": "Bagaimana yang kamu bayar ke kami dihitung",
-      "mes1": "<b>Bulan kalender pertamamu dengan penggunaan (UTC): hanya biaya seat.</b> Kami mengukur semuanya dan tidak memungut komisi, berapa pun sisa bulan itu — saat penutupan kamu akan melihat rekening persis dari biaya yang seharusnya.",
-      "medido": "Setelah itu, komisi hanya atas <b>penghematan terukur</b>: yang bisa kamu cocokkan dengan faktur penyedia. Estimasi tidak pernah ditagih.",
-      "garantia": "Dan <b>Anda selalu menyimpan {garantia} atau lebih</b> dari setiap euro yang dihemat: komisi hanya ada jika penghematan terukur Anda ada.",
-      "tramos": "<b>Berjenjang, tiap jenjang dengan tarifnya</b> — {tramos}. Makin besar hematmu, makin kecil persentase kami.",
-      "permanencia": "Sebulan tanpa penghematan? Komisi: {cero}. <b>Tanpa kontrak</b> — dan faktur variabel pertamamu hanya berisi angka yang sudah kamu lihat di rekeningmu."
     },
     "trabajos": {
       "pajaTitle": "Jika kiriman membawa isian…",

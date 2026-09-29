@@ -129,7 +129,9 @@
       "metaTitle": "Nachweis · BiVelio Savings Layer",
       "eyebrow": "Verifizieren statt vertrauen · Referenz-Benchmark",
       "title": "Der Beweis, dass der Optimierer funktioniert",
-      "intro": "Auf beiden Zweigen gemessen — die Glaubwürdigkeits-Engine hinter deinen eigenen Zahlen."
+      "intro": "Drei Dinge, getrennt: was der öffentliche Benchmark live gemessen hat, mit seinem Intervall; was du sparst, gemessen auf deinem eigenen Traffic; und ein synthetischer Lauf, der zeigt, wie jeder Hebel funktioniert.",
+      "tuDinero": "Was in deinem Dashboard zählt, ist dein eigenes Geld: Jede Einsparung in deiner <overview>Übersicht</overview> ist mit dem Zähler deines Anbieters gemessen, auf deinem Traffic, Anfrage für Anfrage. Die Zahlen oben sind die des Benchmarks, keine Prognose deiner.",
+      "sinteticaTitulo": "Synthetischer Lauf · wie jeder Hebel funktioniert"
     },
     "verify": {
       "metaTitle": "Verifizieren · BiVelio Savings Layer",
@@ -245,7 +247,7 @@
       "elisionNota": "Wenn du das Gateway nutzt, ist ein Teil dieser Zahl Eingabe, die dein Anbieter wegen deiner eigenen Konfiguration verwirft: dieser Teil ist nicht unser Verdienst und geht nie in deine Provision ein.",
       "whatCompressedTokens": "Eingabe-Tokens, die kompakter neu kodiert wurden",
       "whatProviderCachedTokens": "Eingabe-Tokens zum vergünstigten Präfix-Cache-Preis. Ihr Client fordert das an, nicht wir: Unser Hebel stellt nur die Dauer ein",
-      "ghostAwaiting": "{ref} · wartet auf ersten Bericht",
+      "ghostAwaiting": "wartet auf ersten Bericht",
       "footnote": "Vier Ledger, <b>niemals summiert</b> — wir können keinen Dollar doppelt zählen. Nur Zählwerte und Kosten, niemals deine Prompts. Der Bericht ist der Zähler."
     },
     "savingsTrendChart": {
@@ -464,7 +466,6 @@
     },
     "netSavingsCIBand": {
       "caption": "Netto-Einsparung, <b>untere 95%-Konfidenzgrenze</b>. Punktschätzung {point}, obere {upper} — wir stellen den unteren Wert in den Vordergrund{mockNote}.",
-      "captionSdkPendiente": "was das SDK trägt, wie es aus npm installiert wird. Der veröffentlichte Lauf enthielt einen Kompressor, den es nur im Prüfstand gibt und den das Paket nicht mitliefert, deshalb werden sein Intervall und sein Punktschätzer nicht als Versprechen gezeigt, bis ein Lauf mit dem installierten SDK sie ersetzt.",
       "mockNote": " (Referenz-Workload, Mock-Provider)"
     },
     "cacheBreakEven": {
@@ -478,7 +479,7 @@
     },
     "referenceModeBadge": {
       "liveDesc": "— gegen einen echten Provider gemessen, mit Quality-Gate.",
-      "sdkPendiente": "Dieser Lauf enthielt einen Kompressor, den es nur im Prüfstand gibt und den das npm-Paket nicht mitliefert: Seine Zahlen zeigen den Mechanismus, nicht was das installierte SDK spart.",
+      "sdkPendiente": "Synthetischer Lauf: für den Benchmark geschriebene Szenarien plus ein Benchmark-Kompressor, den das npm-Paket nicht enthält. Seine Zahlen zeigen, wie jeder Hebel funktioniert — sie sind kein Versprechen dessen, was du sparen wirst.",
       "mock": "<b>GESCHÄTZT · Mock-Provider</b> — das beweist, dass der Mechanismus funktioniert, nicht deine Rechnung. Ein verbindlicher LIVE-Lauf ersetzt jede Zahl hier."
     },
     "connectionStatePill": {
@@ -997,41 +998,6 @@
       "errorCorreo": "Diese E-Mail sieht nicht gültig aus.",
       "errorEnvio": "Wir konnten es nicht senden.",
       "alterna": "Schreib uns"
-    },
-    "calculadora": {
-      "title": "Und wie viel würdest du uns zahlen?",
-      "sub": "Spiel mit deinen Zahlen: wähle Anbieter und Modell und sieh deine Ersparnis, unser Extra und was dir bleibt — mit den echten Katalogpreisen und dem echten Tarif.",
-      "proveedor": "Anbieter",
-      "modelo": "Modell",
-      "reqs": "Anfragen / Monat",
-      "inTok": "Ø Eingabe-Tokens",
-      "outTok": "Ø Ausgabe-Tokens",
-      "fx": "Wechselkurs ({par})",
-      "factura": "Deine geschätzte Rechnung ohne Optimierung: {usd} pro Monat ({eur}).",
-      "colAhorro": "Wenn du sparst",
-      "colTuAhorro": "Deine Ersparnis",
-      "colExtra": "Unser Extra",
-      "colTeQuedas": "Dir bleibt",
-      "extraCero": "nichts",
-      "notaGarantia": "Provision nur auf gemessene Ersparnis — und dir bleiben immer {garantia} oder mehr davon. Seats werden separat berechnet, jeden Monat.",
-      "notaTramos": "Gestuft, jede Stufe zu ihrem Satz: {tramos}. Je mehr du sparst, desto niedriger unser Prozentsatz.",
-      "notaPrimerMesLead": "Dein erster Kalendermonat mit Nutzung: nur der Sitz.",
-      "notaPrimerMes": "Es ist dein Kalibrierungszeitraum, egal wie wenig von diesem Monat übrig ist: Wir messen alles, und du siehst die exakte Abrechnung dessen, was es gekostet hätte — ohne dass es berechnet wird.",
-      "version": "SDK-Katalogpreise, Version {fecha}. Eine Schätzung: deine Abrechnung nutzt deine gemessene Nutzung.",
-      "cargando": "Preiskatalog wird geladen…",
-      "badge": "Schätzung",
-      "asientos": "Sitze ({precio} pro Sitz)",
-      "resumenTotal": "Die ganze Wahrheit, im {pct}-Szenario: unser Gesamtbetrag wäre {total} (Sitze: {asientosCoste} + die Provision oben) und dir blieben {neto} — {pctNeto} deiner Rechnung.",
-      "precios": "Exakter Preis von {modelo}: Eingabe {inM} · Ausgabe {outM} · gecachte Eingabe {cacheM}, pro Million Tokens.",
-      "fuente": "Quelle: <a>die offizielle Preisseite von {proveedor}</a>, in unserem Katalog verifiziert am {fecha} (und wöchentlich automatisch überwacht)."
-    },
-    "formula": {
-      "title": "Wie sich das berechnet, was du uns zahlst",
-      "mes1": "<b>Dein erster Kalendermonat mit Nutzung (UTC): nur die Gebühr pro Sitz.</b> Wir messen alles und berechnen keine Provision, egal wie wenig von diesem Monat übrig ist — zum Abschluss siehst du die exakte Abrechnung dessen, was es gekostet hätte.",
-      "medido": "Danach Provision nur auf die <b>gemessene Ersparnis</b>: die, die du mit der Rechnung deines Anbieters abgleichen kannst. Geschätztes wird nie berechnet.",
-      "garantia": "Und <b>dir bleiben immer {garantia} oder mehr</b> jedes gesparten Euros: die Provision existiert nur, wenn deine gemessene Ersparnis existiert.",
-      "tramos": "<b>Gestuft, jede Stufe zu ihrem Satz</b> — {tramos}. Je mehr du sparst, desto niedriger unser Prozentsatz.",
-      "permanencia": "Ein Monat ohne Ersparnis? Provision: {cero}. <b>Keine Bindung</b> — und deine erste variable Rechnung enthält nur Zahlen, die du schon auf deiner Abrechnung gesehen hast."
     },
     "trabajos": {
       "pajaTitle": "Trägt die Sendung Füllung…",

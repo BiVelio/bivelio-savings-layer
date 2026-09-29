@@ -53,6 +53,9 @@ const codigo = (rel: string) =>
 /** Las superficies públicas: la portada, «cómo funciona», /pricing y el alta. */
 const PUBLICAS = ["landing.", "howItWorks.", "pricingPage.", "auth."];
 const publicas = (d: Plano) => Object.entries(d).filter(([k]) => PUBLICAS.some((p) => k.startsWith(p)));
+/** Y el panel (2026-09-29): la web ENTERA dice solo lo medido, dentro y fuera. */
+const PANEL = ["dashboard.", "app."];
+const conPanel = (d: Plano) => Object.entries(d).filter(([k]) => [...PUBLICAS, ...PANEL].some((p) => k.startsWith(p)));
 
 /**
  * «Al menos un 10 %» en cada idioma, tal como lo decía la portada, y la fórmula
@@ -123,8 +126,8 @@ const SIN_COMISION = [
 
 describe("⛔ nunca más «al menos un 10 %» ni «entra en la comisión»", () => {
   for (const loc of LOCALES) {
-    it(`${loc}: ninguna superficie pública promete «al menos {piso}» / «≥ 10 %»`, () => {
-      const malos = publicas(cargar(loc))
+    it(`${loc}: ni la web pública ni el panel prometen «al menos {piso}» / «≥ 10 %»`, () => {
+      const malos = conPanel(cargar(loc))
         .filter(([, v]) => AL_MENOS[loc].test(v) || DIEZ.test(v))
         .map(([k, v]) => `${k}: ${v}`);
       expect(malos).toEqual([]);
@@ -184,12 +187,82 @@ describe("el código de la portada y de «cómo funciona» no lee la tirada sint
   }
 
   it("la portada construye lo medido desde BANCO_EN_VIVO y enseña siempre la fila sin repeticiones", () => {
-    const src = codigo("app/[locale]/page.tsx");
-    expect(src).toMatch(/from "@\/lib\/portada\/banco-en-vivo"/);
-    expect(src).toContain('t("enVivo.sinRepeticiones")');
-    expect(src).toContain('t("enVivo.conRepeticiones"');
-    expect(src).toContain('t("enVivo.anthropic"');
+    const filas = codigo("app/components/MedidoEnVivo.tsx");
+    expect(filas).toMatch(/from "@\/lib\/portada\/banco-en-vivo"/);
+    expect(filas).toContain('t("enVivo.sinRepeticiones")');
+    expect(filas).toContain('t("enVivo.conRepeticiones"');
+    expect(filas).toContain('t("enVivo.anthropic"');
+    expect(codigo("app/[locale]/page.tsx")).toContain("filasDelBancoEnVivo(t, locale)");
   });
+});
+
+describe("el panel: la cifra del banco en vivo y el dinero del cliente, nunca el «≥ 10 %» de la tirada sintética", () => {
+  function fuentes(dir: string, acc: string[] = []): string[] {
+    for (const e of readdirSync(join(WEB, dir), { withFileTypes: true })) {
+      if (e.name === "node_modules" || e.name === ".next") continue;
+      const rel = `${dir}/${e.name}`;
+      if (e.isDirectory()) fuentes(rel, acc);
+      else if (/\.tsx?$/.test(e.name) && !e.name.includes(".test.")) acc.push(rel);
+    }
+    return acc;
+  }
+  const TODAS = [...fuentes("app"), ...fuentes("lib")];
+
+  it("⛔ PROMESA_DEL_TITULAR y sueloPublicable no existen en ningún fuente de la web", () => {
+    expect(TODAS.length).toBeGreaterThan(100);
+    expect(TODAS.filter((rel) => /PROMESA_DEL_TITULAR|sueloPublicable/.test(codigo(rel)))).toEqual([]);
+  });
+
+  it("⛔ ningún componente escribe un «≥ 10 %» a mano", () => {
+    expect(TODAS.filter((rel) => DIEZ.test(codigo(rel)))).toEqual([]);
+  });
+
+  it("/dashboard/proof abre con el banco en vivo y el dinero del cliente, y etiqueta la tirada sintética", () => {
+    const src = codigo("app/[locale]/dashboard/proof/page.tsx");
+    const pos = ["filasDelBancoEnVivo(tl, locale)", 't.rich("proof.tuDinero"', 't("proof.sinteticaTitulo")', "<ReferenceModeBadge", "<NetSavingsCIBand"].map((x) =>
+      src.indexOf(x),
+    );
+    for (const p of pos) expect(p).toBeGreaterThan(-1);
+    expect([...pos].sort((a, b) => a - b)).toEqual(pos);
+  });
+
+  it("la banda del intervalo no pinta nada de una tirada que no midió lo instalado", () => {
+    const src = codigo("app/[locale]/dashboard/components/NetSavingsCIBand.tsx");
+    expect(src).toContain("if (!midioElSdkInstalado(ab)) return null;");
+  });
+
+  it("las baldosas vacías del panel no enseñan una «ref» de la tirada sintética", () => {
+    const src = codigo("app/[locale]/dashboard/components/LiveLedgerTiles.tsx");
+    expect(src).not.toMatch(/AbArtifact|ab-live|fantasmaDeReferencia|ref \$\{/);
+    expect(src).toContain('t("liveLedgerTiles.ghostAwaiting")');
+  });
+
+  for (const loc of LOCALES) {
+    it(`${loc}: la insignia llama «sintética» a la tirada y dice que no es una promesa; la baldosa no lleva {ref}`, () => {
+      const d = cargar(loc);
+      expect(d["dashboard.referenceModeBadge.sdkPendiente"], loc).toBeTruthy();
+      expect(d["dashboard.proof.sinteticaTitulo"], loc).toBeTruthy();
+      expect(d["dashboard.proof.tuDinero"], loc).toMatch(/<overview>.+<\/overview>/);
+      expect(d["dashboard.liveLedgerTiles.ghostAwaiting"], loc).not.toContain("{ref}");
+      expect(d["dashboard.netSavingsCIBand.captionSdkPendiente"], loc).toBeUndefined();
+    });
+  }
+  it("en/es: «synthetic» / «sintética» y «not a promise» / «no son una promesa»", () => {
+    expect(cargar("en")["dashboard.referenceModeBadge.sdkPendiente"]).toMatch(/^Synthetic run/);
+    expect(cargar("en")["dashboard.referenceModeBadge.sdkPendiente"]).toMatch(/not a promise/);
+    expect(cargar("es")["dashboard.referenceModeBadge.sdkPendiente"]).toMatch(/^Tirada sintética/);
+    expect(cargar("es")["dashboard.referenceModeBadge.sdkPendiente"]).toMatch(/no son una promesa/);
+  });
+});
+
+describe("la calculadora de comisión, retirada: ni componente ni claves", () => {
+  for (const loc of LOCALES) {
+    it(`${loc}: sin landing.calculadora ni landing.formula`, () => {
+      const d = crudo(loc) as { landing: Record<string, unknown> };
+      expect(d.landing.calculadora).toBeUndefined();
+      expect(d.landing.formula).toBeUndefined();
+    });
+  }
 });
 
 describe("Gemini: compatible ≠ medido", () => {

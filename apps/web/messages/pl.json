@@ -129,7 +129,9 @@
       "metaTitle": "Dowód · BiVelio Savings Layer",
       "eyebrow": "Weryfikuj, nie ufaj · benchmark referencyjny",
       "title": "Dowód, że optymalizator działa",
-      "intro": "Mierzone na obu ramionach — silnik wiarygodności stojący za Twoimi własnymi liczbami."
+      "intro": "Trzy rzeczy, osobno: to, co publiczny benchmark zmierzył na żywo, z przedziałem; to, ile oszczędzasz Ty, zmierzone na Twoim własnym ruchu; i syntetyczny przebieg, który pokazuje, jak działa każda dźwignia.",
+      "tuDinero": "W Twoim panelu liczą się Twoje własne pieniądze: każda oszczędność w sekcji <overview>Przegląd</overview> jest zmierzona licznikiem Twojego dostawcy, na Twoim ruchu, zapytanie po zapytaniu. Liczby powyżej pochodzą z benchmarku, nie są prognozą Twoich.",
+      "sinteticaTitulo": "Syntetyczny przebieg · jak działa każda dźwignia"
     },
     "verify": {
       "metaTitle": "Zweryfikuj · BiVelio Savings Layer",
@@ -245,7 +247,7 @@
       "elisionNota": "Jeśli używasz bramy, część tej liczby to dane wejściowe, które Twój dostawca pomija z powodu Twojej własnej konfiguracji: ta część nie jest naszą zasługą i nigdy nie wchodzi do Twojej prowizji.",
       "whatCompressedTokens": "tokeny wejściowe przekodowane na mniejsze",
       "whatProviderCachedTokens": "tokeny wejściowe rozliczone po obniżonej cenie pamięci podręcznej prefiksu. Prosi o to Twój klient, nie my: nasza dźwignia reguluje tylko czas jej życia",
-      "ghostAwaiting": "{ref} · oczekiwanie na pierwszy raport",
+      "ghostAwaiting": "oczekiwanie na pierwszy raport",
       "footnote": "Cztery księgi, <b>nigdy nie sumowane</b> — nie możemy policzyć dolara dwa razy. Tylko liczby i koszt, nigdy Twoje prompty. Raport jest licznikiem."
     },
     "savingsTrendChart": {
@@ -464,7 +466,6 @@
     },
     "netSavingsCIBand": {
       "caption": "oszczędności netto, <b>dolna granica 95% przedziału ufności</b>. Estymacja punktowa {point}, górna {upper} — nagłówkiem czynimy dolny próg{mockNote}.",
-      "captionSdkPendiente": "to, co utrzymuje SDK w postaci instalowanej z npm. Opublikowany przebieg zawierał kompresor dostępny tylko na stanowisku testowym, którego pakiet nie zawiera, dlatego jego przedział i estymacja punktowa nie są pokazywane jako obietnica, dopóki nie zastąpi ich przebieg z zainstalowanym SDK.",
       "mockNote": " (obciążenie referencyjne, dostawca mock)"
     },
     "cacheBreakEven": {
@@ -478,7 +479,7 @@
     },
     "referenceModeBadge": {
       "liveDesc": "— mierzone względem prawdziwego dostawcy, z bramką jakości.",
-      "sdkPendiente": "Ten przebieg zawierał kompresor dostępny tylko na stanowisku testowym, którego pakiet npm nie zawiera: jego liczby pokazują mechanizm, a nie to, ile oszczędza zainstalowane SDK.",
+      "sdkPendiente": "Syntetyczny przebieg: scenariusze napisane dla benchmarku oraz kompresor tylko z benchmarku, którego pakiet npm nie zawiera. Jego liczby pokazują, jak działa każda dźwignia — nie są obietnicą tego, ile zaoszczędzisz.",
       "mock": "<b>SZACUNEK · dostawca mock</b> — to dowodzi, że mechanizm działa, a nie ile wyniesie Twój rachunek. Zatwierdzone uruchomienie LIVE zastępuje każdą liczbę tutaj."
     },
     "connectionStatePill": {
@@ -997,41 +998,6 @@
       "errorCorreo": "Ten e-mail nie wygląda na poprawny.",
       "errorEnvio": "Nie udało się wysłać.",
       "alterna": "Napisz do nas"
-    },
-    "calculadora": {
-      "title": "A ile Ty byś nam płacił?",
-      "sub": "Pobaw się swoimi liczbami: wybierz dostawcę i model, i zobacz swoje oszczędności, naszą dopłatę i to, co Ci zostaje — z prawdziwymi cenami katalogu i prawdziwą taryfą.",
-      "proveedor": "Dostawca",
-      "modelo": "Model",
-      "reqs": "Żądania / mies.",
-      "inTok": "Śr. tokeny wejścia",
-      "outTok": "Śr. tokeny wyjścia",
-      "fx": "Kurs wymiany ({par})",
-      "factura": "Twój szacowany rachunek bez optymalizacji: {usd} miesięcznie ({eur}).",
-      "colAhorro": "Jeśli oszczędzasz",
-      "colTuAhorro": "Twoje oszczędności",
-      "colExtra": "Nasza dopłata",
-      "colTeQuedas": "Zostaje Ci",
-      "extraCero": "nic",
-      "notaGarantia": "Prowizja tylko od zmierzonych oszczędności — i zawsze zatrzymujesz {garantia} lub więcej. Stanowiska są rozliczane osobno, co miesiąc.",
-      "notaTramos": "Progowo, każdy próg według własnej stawki: {tramos}. Im więcej oszczędzasz, tym niższy nasz procent.",
-      "notaPrimerMesLead": "Twój pierwszy miesiąc kalendarzowy z użyciem: tylko miejsce.",
-      "notaPrimerMes": "To Twój okres kalibracji, niezależnie od tego, ile z tego miesiąca zostało: mierzymy wszystko, a Ty zobaczysz dokładny wyciąg tego, ile by to kosztowało — bez pobierania opłaty.",
-      "version": "Ceny katalogu SDK, wersja {fecha}. Szacunek: Twój wyciąg użyje Twojego zmierzonego użycia.",
-      "cargando": "Ładowanie katalogu cen…",
-      "badge": "Szacunek",
-      "asientos": "Miejsca (po {precio})",
-      "resumenTotal": "Cała prawda, w scenariuszu {pct}: nasza suma wyniosłaby {total} (miejsca: {asientosCoste} + prowizja powyżej), a Tobie zostałoby {neto} — {pctNeto} Twojego rachunku.",
-      "precios": "Dokładna cena {modelo}: wejście {inM} · wyjście {outM} · wejście z pamięci podręcznej {cacheM}, za milion tokenów.",
-      "fuente": "Źródło: <a>oficjalna strona cen {proveedor}</a>, zweryfikowana w naszym katalogu {fecha} (i co tydzień automatycznie monitorowana)."
-    },
-    "formula": {
-      "title": "Jak liczy się to, co nam płacisz",
-      "mes1": "<b>Twój pierwszy miesiąc kalendarzowy z użyciem (UTC): tylko opłata za miejsce.</b> Mierzymy wszystko i nie pobieramy prowizji, niezależnie od tego, ile z tego miesiąca zostało — na zamknięciu zobaczysz dokładny wyciąg tego, ile by to kosztowało.",
-      "medido": "Potem prowizja tylko od <b>zmierzonych oszczędności</b>: takich, które możesz uzgodnić z fakturą dostawcy. Szacowane nigdy nie są rozliczane.",
-      "garantia": "I <b>zawsze zatrzymujesz {garantia} lub więcej</b> z każdego zaoszczędzonego euro: prowizja istnieje tylko wtedy, gdy istnieją Twoje zmierzone oszczędności.",
-      "tramos": "<b>Progowo, każdy próg według własnej stawki</b> — {tramos}. Im więcej oszczędzasz, tym niższy nasz procent.",
-      "permanencia": "Miesiąc bez oszczędności? Prowizja: {cero}. <b>Bez zobowiązań</b> — a Twoja pierwsza zmienna faktura zawiera tylko liczby, które już widziałeś na wyciągu."
     },
     "trabajos": {
       "pajaTitle": "Jeśli przesyłka niesie wypełniacz…",

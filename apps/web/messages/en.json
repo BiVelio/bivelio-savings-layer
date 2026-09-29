@@ -129,7 +129,9 @@
       "metaTitle": "Proof · BiVelio Savings Layer",
       "eyebrow": "Verify, don't trust · reference bench",
       "title": "Proof the optimizer works",
-      "intro": "Measured on both arms — the credibility engine behind your own numbers."
+      "intro": "Three things, kept apart: what the public bench measured live, with its interval; what you save, measured on your own traffic; and a synthetic run that shows how each lever works.",
+      "tuDinero": "What counts on your panel is your own money: every saving on your <overview>Overview</overview> is measured with your provider's counter, on your traffic, request by request. The figures above are the bench's, not a forecast of yours.",
+      "sinteticaTitulo": "Synthetic run · how each lever works"
     },
     "verify": {
       "metaTitle": "Verify · BiVelio Savings Layer",
@@ -245,7 +247,7 @@
       "elisionNota": "If you use the gateway, part of this figure is input your provider drops because of your own configuration: that part isn't ours to claim and never enters your commission.",
       "whatCompressedTokens": "input tokens re-encoded smaller",
       "whatProviderCachedTokens": "input tokens billed at the discounted prefix-cache price. Your client asks for it, not us: our lever only tunes how long it lasts",
-      "ghostAwaiting": "{ref} · awaiting first report",
+      "ghostAwaiting": "awaiting first report",
       "footnote": "Four ledgers, <b>never summed</b> — we can't double-count a dollar. Counts and cost only, never your prompts. The report is the meter."
     },
     "savingsTrendChart": {
@@ -464,7 +466,6 @@
     },
     "netSavingsCIBand": {
       "caption": "net savings, <b>95% CI lower bound</b>. Point estimate {point}, upper {upper} — we headline the floor{mockNote}.",
-      "captionSdkPendiente": "what the SDK holds as installed from npm. The published run carried a bench-only compressor the package does not ship, so its interval and point estimate are not shown as a promise until a run of the installed SDK replaces them.",
       "mockNote": " (reference workload, mock provider)"
     },
     "cacheBreakEven": {
@@ -478,7 +479,7 @@
     },
     "referenceModeBadge": {
       "liveDesc": "— measured against a real provider, quality-gated.",
-      "sdkPendiente": "This run carried a bench-only compressor that the npm package does not ship: its figures show the mechanism, not what the installed SDK saves.",
+      "sdkPendiente": "Synthetic run: scenarios written for the bench, plus a bench-only compressor the npm package does not ship. Its figures show how each lever works — they are not a promise of what you will save.",
       "mock": "<b>ESTIMATED · mock provider</b> — this proves the mechanism works, not your bill. A committed LIVE run replaces every number here."
     },
     "connectionStatePill": {
@@ -997,41 +998,6 @@
       "errorCorreo": "That email doesn't look valid.",
       "errorEnvio": "We couldn't send it.",
       "alterna": "Email us"
-    },
-    "calculadora": {
-      "title": "And how much would you pay us?",
-      "sub": "Play with your numbers: pick provider and model, and see your savings, our extra and what you keep — with the real catalog prices and the real rate.",
-      "proveedor": "Provider",
-      "modelo": "Model",
-      "reqs": "Requests / month",
-      "inTok": "Avg. input tokens",
-      "outTok": "Avg. output tokens",
-      "fx": "Exchange rate ({par})",
-      "factura": "Your estimated unoptimized bill: {usd} per month ({eur}).",
-      "colAhorro": "If you save",
-      "colTuAhorro": "Your savings",
-      "colExtra": "Our extra",
-      "colTeQuedas": "You keep",
-      "extraCero": "nothing",
-      "notaGarantia": "Commission only on measured savings — and you always keep {garantia} or more of them. Seats are billed apart, every month.",
-      "notaTramos": "Tiered, each bracket at its own rate: {tramos}. The more you save, the lower our percentage.",
-      "notaPrimerMesLead": "Your first calendar month with usage: seat only.",
-      "notaPrimerMes": "It is your calibration period, however little of that month remains: we measure everything, and you'll see the exact statement of what it would have cost — without being charged.",
-      "version": "SDK catalog prices, version {fecha}. An estimate: your statement will use your measured usage.",
-      "cargando": "Loading the price catalog…",
-      "badge": "Estimate",
-      "asientos": "Seats ({precio} each)",
-      "resumenTotal": "The full truth, at the {pct} scenario: our total would be {total} (seats: {asientosCoste} + the commission above) and you would keep {neto} — {pctNeto} of your bill.",
-      "precios": "Exact price of {modelo}: input {inM} · output {outM} · cached input {cacheM}, per million tokens.",
-      "fuente": "Source: <a>{proveedor}'s official pricing page</a>, verified in our catalog on {fecha} (and watched automatically every week)."
-    },
-    "formula": {
-      "title": "How what you pay us is calculated",
-      "mes1": "<b>Your first calendar month with usage (UTC): the seat fee only.</b> We measure everything and charge no commission, however little of that month remains — at close you'll see the exact statement of what it would have cost.",
-      "medido": "After that, commission only on <b>measured savings</b>: the kind you can reconcile against your provider's invoice. Estimated savings are never billed.",
-      "garantia": "And <b>you always keep {garantia} or more</b> of every euro saved: the commission only exists when your measured savings exist.",
-      "tramos": "<b>Tiered, each bracket at its own rate</b> — {tramos}. The more you save, the lower our percentage.",
-      "permanencia": "A month with no savings? Commission: {cero}. <b>No lock-in</b> — and your first variable invoice only contains numbers you already saw on your statement."
     },
     "trabajos": {
       "pajaTitle": "If the shipment carries padding…",

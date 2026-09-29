@@ -129,7 +129,9 @@
       "metaTitle": "Prova · BiVelio Savings Layer",
       "eyebrow": "Verifica, não confies · bancada de referência",
       "title": "A prova de que o otimizador funciona",
-      "intro": "Medido em ambos os ramos — o motor de credibilidade por trás dos teus próprios números."
+      "intro": "Três coisas, em separado: o que o banco público mediu ao vivo, com o seu intervalo; o que tu poupas, medido no teu próprio tráfego; e uma execução sintética que mostra como funciona cada alavanca.",
+      "tuDinero": "O que conta no teu painel é o teu próprio dinheiro: cada poupança da tua <overview>Visão geral</overview> é medida com o contador do teu fornecedor, no teu tráfego, pedido a pedido. Os valores acima são do banco, não uma previsão dos teus.",
+      "sinteticaTitulo": "Execução sintética · como funciona cada alavanca"
     },
     "verify": {
       "metaTitle": "Verificar · BiVelio Savings Layer",
@@ -245,7 +247,7 @@
       "elisionNota": "Se usas o gateway, parte deste valor é o apagamento que o teu fornecedor aplica pela tua própria configuração: essa parte não é mérito nosso e nunca entra na tua comissão.",
       "whatCompressedTokens": "tokens de entrada recodificados de forma mais compacta",
       "whatProviderCachedTokens": "tokens de entrada faturados ao preço reduzido da cache de prefixo. É o teu cliente que o pede, não nós: a nossa alavanca só ajusta a duração",
-      "ghostAwaiting": "{ref} · à espera do primeiro relatório",
+      "ghostAwaiting": "à espera do primeiro relatório",
       "footnote": "Quatro livros-razão, <b>nunca somados</b> — não podemos contar um dólar duas vezes. Apenas contagens e custo, nunca os teus prompts. O relatório é o medidor."
     },
     "savingsTrendChart": {
@@ -464,7 +466,6 @@
     },
     "netSavingsCIBand": {
       "caption": "poupança líquida, <b>limite inferior do IC de 95%</b>. Estimativa pontual {point}, superior {upper} — destacamos o mínimo{mockNote}.",
-      "captionSdkPendiente": "o que o SDK sustenta tal como se instala a partir do npm. A execução publicada incluía um compressor exclusivo da bancada de testes que o pacote não traz, por isso o seu intervalo e a sua estimativa pontual não são mostrados como promessa até que uma execução do SDK instalado os substitua.",
       "mockNote": " (carga de trabalho de referência, fornecedor simulado)"
     },
     "cacheBreakEven": {
@@ -478,7 +479,7 @@
     },
     "referenceModeBadge": {
       "liveDesc": "— medido contra um fornecedor real, com controlo de qualidade.",
-      "sdkPendiente": "Esta execução incluía um compressor exclusivo da bancada de testes que o pacote npm não traz: os seus números mostram o mecanismo, não o que o SDK instalado poupa.",
+      "sdkPendiente": "Execução sintética: cenários escritos para o banco, mais um compressor só do banco que o pacote npm não traz. Os seus valores mostram como funciona cada alavanca — não são uma promessa do que vais poupar.",
       "mock": "<b>ESTIMADO · fornecedor simulado</b> — isto prova que o mecanismo funciona, não a tua fatura. Uma execução LIVE confirmada substitui cada número aqui."
     },
     "connectionStatePill": {
@@ -997,41 +998,6 @@
       "errorCorreo": "Esse email não parece válido.",
       "errorEnvio": "Não conseguimos enviar.",
       "alterna": "Escreve-nos"
-    },
-    "calculadora": {
-      "title": "E quanto você nos pagaria?",
-      "sub": "Brinque com seus números: escolha provedor e modelo, e veja sua economia, nosso extra e o que fica com você — com os preços reais do catálogo e a tarifa real.",
-      "proveedor": "Provedor",
-      "modelo": "Modelo",
-      "reqs": "Requisições / mês",
-      "inTok": "Tokens de entrada méd.",
-      "outTok": "Tokens de saída méd.",
-      "fx": "Câmbio ({par})",
-      "factura": "Sua fatura estimada sem otimizar: {usd} por mês ({eur}).",
-      "colAhorro": "Se você economiza",
-      "colTuAhorro": "Sua economia",
-      "colExtra": "Nosso extra",
-      "colTeQuedas": "Fica com você",
-      "extraCero": "nada",
-      "notaGarantia": "Comissão só sobre a poupança medida — e ficas sempre com {garantia} ou mais. Os lugares cobram-se à parte, todos os meses.",
-      "notaTramos": "Por faixas, cada uma à sua taxa: {tramos}. Quanto mais você economiza, menor o nosso percentual.",
-      "notaPrimerMesLead": "Seu primeiro mês civil com uso: só o assento.",
-      "notaPrimerMes": "É o seu período de calibração, por pouco que reste desse mês: medimos tudo e você verá o extrato exato do que teria custado — sem cobrança.",
-      "version": "Preços do catálogo do SDK, versão {fecha}. Uma estimativa: seu extrato usará o seu uso medido.",
-      "cargando": "Carregando o catálogo de preços…",
-      "badge": "Estimativa",
-      "asientos": "Assentos ({precio} cada)",
-      "resumenTotal": "A verdade completa, no cenário de {pct}: nosso total seria {total} (assentos: {asientosCoste} + a comissão acima) e ficariam com você {neto} — {pctNeto} da sua fatura.",
-      "precios": "Preço exato de {modelo}: entrada {inM} · saída {outM} · entrada em cache {cacheM}, por milhão de tokens.",
-      "fuente": "Fonte: <a>a página oficial de preços da {proveedor}</a>, verificada no nosso catálogo em {fecha} (e vigiada automaticamente toda semana)."
-    },
-    "formula": {
-      "title": "Como se calcula o que você nos paga",
-      "mes1": "<b>Seu primeiro mês civil com uso (UTC): só a taxa do assento.</b> Medimos tudo e não cobramos comissão, por pouco que reste desse mês — no fechamento você verá o extrato exato do que teria custado.",
-      "medido": "Depois, comissão só sobre a <b>economia medida</b>: a que você pode conciliar com a fatura do seu provedor. O estimado nunca é faturado.",
-      "garantia": "E <b>ficas sempre com {garantia} ou mais</b> de cada euro poupado: a comissão só existe quando existe a tua poupança medida.",
-      "tramos": "<b>Por faixas, cada uma à sua taxa</b> — {tramos}. Quanto mais você economiza, menor o nosso percentual.",
-      "permanencia": "Um mês sem poupança? Comissão: {cero}. <b>Sem fidelização</b> — e sua primeira fatura variável só contém números que você já viu no seu extrato."
     },
     "trabajos": {
       "pajaTitle": "Se o envio leva palha…",

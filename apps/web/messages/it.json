@@ -129,7 +129,9 @@
       "metaTitle": "Prova · BiVelio Savings Layer",
       "eyebrow": "Verifica, non fidarti · banco di riferimento",
       "title": "La prova che l'ottimizzatore funziona",
-      "intro": "Misurato su entrambi i rami: il motore di credibilità dietro le tue cifre."
+      "intro": "Tre cose, separate: ciò che il banco pubblico ha misurato dal vivo, con il suo intervallo; ciò che risparmi tu, misurato sul tuo traffico; e un'esecuzione sintetica che mostra come funziona ogni leva.",
+      "tuDinero": "Ciò che conta nel tuo pannello sono i tuoi soldi: ogni risparmio della tua <overview>Panoramica</overview> è misurato con il contatore del tuo fornitore, sul tuo traffico, richiesta per richiesta. Le cifre qui sopra sono del banco, non una previsione delle tue.",
+      "sinteticaTitulo": "Esecuzione sintetica · come funziona ogni leva"
     },
     "verify": {
       "metaTitle": "Verifica · BiVelio Savings Layer",
@@ -245,7 +247,7 @@
       "elisionNota": "Se usi il gateway, parte di questa cifra è la cancellazione che il tuo fornitore applica dalla tua stessa configurazione: quella parte non è merito nostro e non entra mai nella tua commissione.",
       "whatCompressedTokens": "token di input ricodificati in modo più compatto",
       "whatProviderCachedTokens": "token di input fatturati al prezzo scontato della cache di prefisso. Lo chiede il tuo client, non noi: la nostra leva ne regola solo la durata",
-      "ghostAwaiting": "{ref} · in attesa del primo report",
+      "ghostAwaiting": "in attesa del primo report",
       "footnote": "Quattro registri, <b>mai sommati</b>: non possiamo contare due volte un dollaro. Solo conteggi e costi, mai i tuoi prompt. Il report è il contatore."
     },
     "savingsTrendChart": {
@@ -464,7 +466,6 @@
     },
     "netSavingsCIBand": {
       "caption": "risparmio netto, <b>limite inferiore dell'IC al 95%</b>. Stima puntuale {point}, superiore {upper} — evidenziamo il minimo{mockNote}.",
-      "captionSdkPendiente": "ciò che regge l'SDK così come si installa da npm. L'esecuzione pubblicata includeva un compressore esclusivo del banco di prova che il pacchetto non include, quindi il suo intervallo e la sua stima puntuale non vengono mostrati come promessa finché un'esecuzione dell'SDK installato non li sostituirà.",
       "mockNote": " (carico di lavoro di riferimento, provider simulato)"
     },
     "cacheBreakEven": {
@@ -478,7 +479,7 @@
     },
     "referenceModeBadge": {
       "liveDesc": "— misurato contro un provider reale, con controllo qualità.",
-      "sdkPendiente": "Questa esecuzione includeva un compressore esclusivo del banco di prova che il pacchetto npm non include: le sue cifre mostrano il meccanismo, non quanto risparmia l'SDK installato.",
+      "sdkPendiente": "Esecuzione sintetica: scenari scritti per il banco, più un compressore solo del banco che il pacchetto npm non include. Le sue cifre mostrano come funziona ogni leva — non sono una promessa di quanto risparmierai.",
       "mock": "<b>STIMATO · provider simulato</b> — questo dimostra che il meccanismo funziona, non la tua fattura. Un'esecuzione LIVE confermata sostituisce ogni numero qui."
     },
     "connectionStatePill": {
@@ -997,41 +998,6 @@
       "errorCorreo": "Questa email non sembra valida.",
       "errorEnvio": "Non siamo riusciti a inviarlo.",
       "alterna": "Scrivici"
-    },
-    "calculadora": {
-      "title": "E quanto ci pagheresti tu?",
-      "sub": "Gioca con i tuoi numeri: scegli provider e modello, e guarda il tuo risparmio, il nostro extra e quello che ti resta — con i prezzi reali del catalogo e la tariffa reale.",
-      "proveedor": "Provider",
-      "modelo": "Modello",
-      "reqs": "Richieste / mese",
-      "inTok": "Token di input medi",
-      "outTok": "Token di output medi",
-      "fx": "Tasso di cambio ({par})",
-      "factura": "La tua fattura stimata senza ottimizzare: {usd} al mese ({eur}).",
-      "colAhorro": "Se risparmi",
-      "colTuAhorro": "Il tuo risparmio",
-      "colExtra": "Il nostro extra",
-      "colTeQuedas": "Ti resta",
-      "extraCero": "niente",
-      "notaGarantia": "Commissione solo sul risparmio misurato — e te ne tieni sempre il {garantia} o più. Le postazioni si addebitano a parte, ogni mese.",
-      "notaTramos": "A scaglioni, ciascuno alla sua aliquota: {tramos}. Più risparmi, più basso è il nostro percentuale.",
-      "notaPrimerMesLead": "Il tuo primo mese solare con utilizzo: solo il posto.",
-      "notaPrimerMes": "È il tuo periodo di calibrazione, per quanto poco ne resti: misuriamo tutto e vedrai l'estratto esatto di quanto sarebbe costato — senza addebitarlo.",
-      "version": "Prezzi del catalogo dell'SDK, versione {fecha}. Una stima: il tuo estratto userà il tuo uso misurato.",
-      "cargando": "Caricamento del catalogo prezzi…",
-      "badge": "Stima",
-      "asientos": "Posti ({precio} ciascuno)",
-      "resumenTotal": "La verità completa, nello scenario del {pct}: il nostro totale sarebbe {total} (posti: {asientosCoste} + la commissione qui sopra) e ti resterebbero {neto} — il {pctNeto} della tua fattura.",
-      "precios": "Prezzo esatto di {modelo}: input {inM} · output {outM} · input in cache {cacheM}, per milione di token.",
-      "fuente": "Fonte: <a>la pagina ufficiale dei prezzi di {proveedor}</a>, verificata nel nostro catalogo il {fecha} (e sorvegliata automaticamente ogni settimana)."
-    },
-    "formula": {
-      "title": "Come si calcola quello che ci paghi",
-      "mes1": "<b>Il tuo primo mese solare con utilizzo (UTC): solo la quota per posto.</b> Misuriamo tutto e non addebitiamo commissioni, per quanto poco ne resti — alla chiusura vedrai l'estratto esatto di quanto sarebbe costato.",
-      "medido": "Dopo, commissione solo sul <b>risparmio misurato</b>: quello che puoi riscontrare con la fattura del tuo provider. Lo stimato non si fattura mai.",
-      "garantia": "E <b>ti tieni sempre il {garantia} o più</b> di ogni euro risparmiato: la commissione esiste solo quando esiste il tuo risparmio misurato.",
-      "tramos": "<b>A scaglioni, ciascuno alla sua aliquota</b> — {tramos}. Più risparmi, più basso è il nostro percentuale.",
-      "permanencia": "Un mese senza risparmio? Commissione: {cero}. <b>Senza vincoli</b> — e la tua prima fattura variabile contiene solo numeri che hai già visto nel tuo estratto."
     },
     "trabajos": {
       "pajaTitle": "Se la spedizione porta paglia…",

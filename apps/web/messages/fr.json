@@ -129,7 +129,9 @@
       "metaTitle": "Preuve · BiVelio Savings Layer",
       "eyebrow": "Vérifiez, ne faites pas confiance · banc de référence",
       "title": "La preuve que l'optimiseur fonctionne",
-      "intro": "Mesuré sur les deux bras — le moteur de crédibilité derrière vos propres chiffres."
+      "intro": "Trois choses, séparées : ce que le banc public a mesuré en direct, avec son intervalle ; ce que vous économisez, mesuré sur votre propre trafic ; et une exécution synthétique qui montre comment fonctionne chaque levier.",
+      "tuDinero": "Ce qui compte dans votre tableau de bord, c'est votre propre argent : chaque économie de votre <overview>Aperçu</overview> est mesurée avec le compteur de votre fournisseur, sur votre trafic, requête par requête. Les chiffres ci-dessus sont ceux du banc, pas une prévision des vôtres.",
+      "sinteticaTitulo": "Exécution synthétique · comment fonctionne chaque levier"
     },
     "verify": {
       "metaTitle": "Vérifier · BiVelio Savings Layer",
@@ -245,7 +247,7 @@
       "elisionNota": "Si vous utilisez la passerelle, une partie de ce chiffre est l'effacement que votre fournisseur applique d'après votre propre configuration : cette part n'est pas notre mérite et n'entre jamais dans votre commission.",
       "whatCompressedTokens": "tokens d'entrée réencodés plus compacts",
       "whatProviderCachedTokens": "tokens d'entrée facturés au prix réduit du cache de préfixe. C'est votre client qui le demande, pas nous : notre levier n'en règle que la durée",
-      "ghostAwaiting": "{ref} · en attente du premier rapport",
+      "ghostAwaiting": "en attente du premier rapport",
       "footnote": "Quatre registres, <b>jamais additionnés</b> — impossible de compter un dollar deux fois. Uniquement des décomptes et des coûts, jamais vos prompts. Le rapport est le compteur."
     },
     "savingsTrendChart": {
@@ -464,7 +466,6 @@
     },
     "netSavingsCIBand": {
       "caption": "économies nettes, <b>borne inférieure de l'IC à 95%</b>. Estimation ponctuelle {point}, supérieure {upper} — nous mettons en avant le plancher{mockNote}.",
-      "captionSdkPendiente": "ce que tient le SDK tel qu'il s'installe depuis npm. La série publiée comportait un compresseur propre au banc d'essai que le paquet ne fournit pas ; son intervalle et son estimation ponctuelle ne sont donc pas présentés comme une promesse tant qu'une série avec le SDK installé ne les remplace pas.",
       "mockNote": " (charge de travail de référence, fournisseur simulé)"
     },
     "cacheBreakEven": {
@@ -478,7 +479,7 @@
     },
     "referenceModeBadge": {
       "liveDesc": "— mesuré face à un vrai fournisseur, avec contrôle qualité.",
-      "sdkPendiente": "Cette série comportait un compresseur propre au banc d'essai que le paquet npm ne fournit pas : ses chiffres montrent le mécanisme, pas ce que le SDK installé fait économiser.",
+      "sdkPendiente": "Exécution synthétique : des scénarios écrits pour le banc, plus un compresseur propre au banc que le paquet npm n'embarque pas. Ses chiffres montrent comment fonctionne chaque levier — ce n'est pas une promesse de ce que vous économiserez.",
       "mock": "<b>ESTIMÉ · fournisseur simulé</b> — cela prouve que le mécanisme fonctionne, pas votre facture. Une exécution LIVE confirmée remplace chaque chiffre ici."
     },
     "connectionStatePill": {
@@ -997,41 +998,6 @@
       "errorCorreo": "Cet e-mail ne semble pas valide.",
       "errorEnvio": "Nous n'avons pas pu l'envoyer.",
       "alterna": "Écrivez-nous"
-    },
-    "calculadora": {
-      "title": "Et combien nous paieriez-vous ?",
-      "sub": "Jouez avec vos chiffres : choisissez fournisseur et modèle, et voyez votre économie, notre extra et ce qui vous reste — avec les vrais prix du catalogue et le vrai tarif.",
-      "proveedor": "Fournisseur",
-      "modelo": "Modèle",
-      "reqs": "Requêtes / mois",
-      "inTok": "Tokens d'entrée moy.",
-      "outTok": "Tokens de sortie moy.",
-      "fx": "Taux de change ({par})",
-      "factura": "Votre facture estimée sans optimisation : {usd} par mois ({eur}).",
-      "colAhorro": "Si vous économisez",
-      "colTuAhorro": "Votre économie",
-      "colExtra": "Notre extra",
-      "colTeQuedas": "Il vous reste",
-      "extraCero": "rien",
-      "notaGarantia": "Commission uniquement sur l'économie mesurée — et vous en gardez toujours {garantia} ou plus. Les sièges sont facturés à part, chaque mois.",
-      "notaTramos": "Par tranches, chacune à son taux : {tramos}. Plus vous économisez, plus notre pourcentage baisse.",
-      "notaPrimerMesLead": "Votre premier mois civil avec usage : le siège seulement.",
-      "notaPrimerMes": "C'est votre période de calibrage, aussi peu qu'il reste de ce mois : nous mesurons tout, et vous verrez le relevé exact de ce que cela aurait coûté — sans être facturé.",
-      "version": "Prix du catalogue du SDK, version {fecha}. Une estimation : votre relevé utilisera votre usage mesuré.",
-      "cargando": "Chargement du catalogue de prix…",
-      "badge": "Estimation",
-      "asientos": "Sièges ({precio} chacun)",
-      "resumenTotal": "La vérité complète, au scénario de {pct} : notre total serait {total} (sièges : {asientosCoste} + la commission ci-dessus) et il vous resterait {neto} — {pctNeto} de votre facture.",
-      "precios": "Prix exact de {modelo} : entrée {inM} · sortie {outM} · entrée en cache {cacheM}, par million de tokens.",
-      "fuente": "Source : <a>la page officielle des prix de {proveedor}</a>, vérifiée dans notre catalogue le {fecha} (et surveillée automatiquement chaque semaine)."
-    },
-    "formula": {
-      "title": "Comment se calcule ce que vous nous payez",
-      "mes1": "<b>Votre premier mois civil avec usage (UTC) : la redevance par siège seulement.</b> Nous mesurons tout et ne facturons aucune commission, aussi peu qu'il reste de ce mois — à la clôture vous verrez le relevé exact de ce que cela aurait coûté.",
-      "medido": "Ensuite, commission uniquement sur l'<b>économie mesurée</b> : celle que vous pouvez rapprocher de la facture de votre fournisseur. L'estimé n'est jamais facturé.",
-      "garantia": "Et <b>vous gardez toujours {garantia} ou plus</b> de chaque euro économisé : la commission n'existe que si votre économie mesurée existe.",
-      "tramos": "<b>Par tranches, chacune à son taux</b> — {tramos}. Plus vous économisez, plus notre pourcentage baisse.",
-      "permanencia": "Un mois sans économie ? Commission : {cero}. <b>Sans engagement</b> — et votre première facture variable ne contient que des chiffres déjà vus sur votre relevé."
     },
     "trabajos": {
       "pajaTitle": "Si l'envoi porte du rembourrage…",

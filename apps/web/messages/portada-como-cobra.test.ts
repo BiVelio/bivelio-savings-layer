@@ -18,6 +18,8 @@ import { describe, expect, it } from "vitest";
  *   · `landing.formula.mes1` y la nota de la calculadora prometían «your first
  *     month» sin comisión. cierre.ts calibra el primer MES NATURAL (UTC) CON
  *     USO, aunque quede un día de él: quien empieza el 30 tiene dos días.
+ *     (Esas dos claves se borraron el 2026-09-29 con la calculadora, que ya no
+ *     se renderizaba; la regla sigue atada en /pricing.)
  *
  * Aquí se ata el texto de los doce idiomas a esas dos reglas del código.
  */
@@ -86,11 +88,9 @@ describe("⛔ la calibración de la portada es la de cierre.ts: el primer mes na
   });
 
   for (const loc of LOCALES) {
-    it(`${loc}: la portada, la calculadora y /pricing dicen «${MES_NATURAL[loc]}»`, () => {
+    it(`${loc}: /pricing dice «${MES_NATURAL[loc]}»`, () => {
       const c = cargar(loc);
       for (const ruta of [
-        "landing.formula.mes1",
-        "landing.calculadora.notaPrimerMesLead",
         "pricingPage.calibration.body",
         "pricingPage.statement.body",
       ]) {

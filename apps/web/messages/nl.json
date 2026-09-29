@@ -129,7 +129,9 @@
       "metaTitle": "Bewijs · BiVelio Savings Layer",
       "eyebrow": "Verifieer, vertrouw niet · referentiebenchmark",
       "title": "Bewijs dat de optimizer werkt",
-      "intro": "Gemeten op beide takken — de geloofwaardigheidsmotor achter je eigen cijfers."
+      "intro": "Drie dingen, gescheiden: wat de publieke benchmark live heeft gemeten, met zijn interval; wat jij bespaart, gemeten op je eigen verkeer; en een synthetische run die laat zien hoe elke hendel werkt.",
+      "tuDinero": "Wat in je dashboard telt, is je eigen geld: elke besparing in je <overview>Overzicht</overview> is gemeten met de teller van je aanbieder, op je verkeer, verzoek voor verzoek. De cijfers hierboven zijn die van de benchmark, geen voorspelling van de jouwe.",
+      "sinteticaTitulo": "Synthetische run · hoe elke hendel werkt"
     },
     "verify": {
       "metaTitle": "Verifiëren · BiVelio Savings Layer",
@@ -245,7 +247,7 @@
       "elisionNota": "Als je de gateway gebruikt, is een deel van dit cijfer invoer die je aanbieder laat vallen door je eigen configuratie: dat deel is niet onze verdienste en telt nooit mee voor je commissie.",
       "whatCompressedTokens": "invoertokens die compacter zijn gehercodeerd",
       "whatProviderCachedTokens": "invoertokens gefactureerd tegen de kortingsprijs van de prefix-cache. Je client vraagt erom, wij niet: onze hefboom stelt alleen de duur in",
-      "ghostAwaiting": "{ref} · wacht op eerste rapport",
+      "ghostAwaiting": "wacht op eerste rapport",
       "footnote": "Vier grootboeken, <b>nooit opgeteld</b> — we kunnen een dollar niet dubbel tellen. Alleen aantallen en kosten, nooit je prompts. Het rapport is de meter."
     },
     "savingsTrendChart": {
@@ -464,7 +466,6 @@
     },
     "netSavingsCIBand": {
       "caption": "netto besparingen, <b>ondergrens van het 95%-BI</b>. Puntschatting {point}, bovengrens {upper} — we zetten de ondergrens voorop{mockNote}.",
-      "captionSdkPendiente": "wat de SDK waarmaakt zoals die vanuit npm wordt geïnstalleerd. De gepubliceerde run bevatte een compressor die alleen in de testbank zit en die het pakket niet meelevert, dus het interval en de puntschatting ervan worden niet als belofte getoond tot een run met de geïnstalleerde SDK ze vervangt.",
       "mockNote": " (referentiewerklast, mock-provider)"
     },
     "cacheBreakEven": {
@@ -478,7 +479,7 @@
     },
     "referenceModeBadge": {
       "liveDesc": "— gemeten tegen een echte provider, met kwaliteitscontrole.",
-      "sdkPendiente": "Deze run bevatte een compressor die alleen in de testbank zit en die het npm-pakket niet meelevert: de cijfers tonen het mechanisme, niet wat de geïnstalleerde SDK bespaart.",
+      "sdkPendiente": "Synthetische run: scenario's geschreven voor de benchmark, plus een benchmark-compressor die het npm-pakket niet bevat. De cijfers laten zien hoe elke hendel werkt — ze zijn geen belofte van wat je zult besparen.",
       "mock": "<b>GESCHAT · mock-provider</b> — dit bewijst dat het mechanisme werkt, niet je factuur. Een vastgelegde LIVE-run vervangt elk getal hier."
     },
     "connectionStatePill": {
@@ -997,41 +998,6 @@
       "errorCorreo": "Dat e-mailadres lijkt niet geldig.",
       "errorEnvio": "We konden het niet versturen.",
       "alterna": "Mail ons"
-    },
-    "calculadora": {
-      "title": "En hoeveel zou jij ons betalen?",
-      "sub": "Speel met je cijfers: kies provider en model, en zie je besparing, ons extra en wat je overhoudt — met de echte catalogusprijzen en het echte tarief.",
-      "proveedor": "Provider",
-      "modelo": "Model",
-      "reqs": "Verzoeken / maand",
-      "inTok": "Gem. invoertokens",
-      "outTok": "Gem. uitvoertokens",
-      "fx": "Wisselkoers ({par})",
-      "factura": "Je geschatte rekening zonder optimalisatie: {usd} per maand ({eur}).",
-      "colAhorro": "Als je bespaart",
-      "colTuAhorro": "Jouw besparing",
-      "colExtra": "Ons extra",
-      "colTeQuedas": "Jij houdt",
-      "extraCero": "niets",
-      "notaGarantia": "Commissie alleen over gemeten besparing — en je houdt er altijd {garantia} of meer van. Seats worden apart gefactureerd, elke maand.",
-      "notaTramos": "In schijven, elk tegen zijn eigen tarief: {tramos}. Hoe meer je bespaart, hoe lager ons percentage.",
-      "notaPrimerMesLead": "Je eerste kalendermaand met gebruik: alleen de seat.",
-      "notaPrimerMes": "Het is je kalibratieperiode, hoe weinig er ook van die maand over is: we meten alles en je ziet het exacte afschrift van wat het gekost zou hebben — zonder dat het wordt afgeschreven.",
-      "version": "SDK-catalogusprijzen, versie {fecha}. Een schatting: je afschrift gebruikt je gemeten gebruik.",
-      "cargando": "Prijscatalogus laden…",
-      "badge": "Schatting",
-      "asientos": "Seats ({precio} per stuk)",
-      "resumenTotal": "De volledige waarheid, bij het {pct}-scenario: ons totaal zou {total} zijn (seats: {asientosCoste} + de commissie hierboven) en jij houdt {neto} over — {pctNeto} van je rekening.",
-      "precios": "Exacte prijs van {modelo}: invoer {inM} · uitvoer {outM} · gecachte invoer {cacheM}, per miljoen tokens.",
-      "fuente": "Bron: <a>de officiële prijzenpagina van {proveedor}</a>, geverifieerd in onze catalogus op {fecha} (en wekelijks automatisch bewaakt)."
-    },
-    "formula": {
-      "title": "Hoe wat je ons betaalt wordt berekend",
-      "mes1": "<b>Je eerste kalendermaand met gebruik (UTC): alleen de vergoeding per seat.</b> We meten alles en rekenen geen commissie, hoe weinig er ook van die maand over is — bij afsluiting zie je het exacte afschrift van wat het gekost zou hebben.",
-      "medido": "Daarna commissie alleen over de <b>gemeten besparing</b>: die je kunt afstemmen met de factuur van je provider. Geschat wordt nooit gefactureerd.",
-      "garantia": "En <b>je houdt altijd {garantia} of meer</b> van elke bespaarde euro: de commissie bestaat alleen als jouw gemeten besparing bestaat.",
-      "tramos": "<b>In schijven, elk tegen zijn eigen tarief</b> — {tramos}. Hoe meer je bespaart, hoe lager ons percentage.",
-      "permanencia": "Een maand zonder besparing? Commissie: {cero}. <b>Geen verplichtingen</b> — en je eerste variabele factuur bevat alleen cijfers die je al op je afschrift zag."
     },
     "trabajos": {
       "pajaTitle": "Draagt de zending opvulling…",

@@ -9,6 +9,7 @@ import { KineticTitle } from "@/app/components/KineticTitle";
 import { SnippetPorSistema } from "@/app/components/SnippetPorSistema";
 import { SkillPorSuperficie } from "@/app/components/SkillPorSuperficie";
 import { LogoProveedor } from "@/app/components/LogoProveedor";
+import { FilasMedidas, TarjetaMedidoEnVivo, filasDelBancoEnVivo, type FilaMedida } from "@/app/components/MedidoEnVivo";
 import { NvidiaEcosystemBand } from "@/app/components/NvidiaInception";
 import { VideoExplicativo } from "@/app/components/VideoExplicativo";
 import { DIAS_ACTIVOS_PARA_CONTAR_ASIENTO } from "@/lib/billing/asientos";
@@ -49,32 +50,6 @@ const LLMS = [
 // CONDICIONADA del banco en vivo (GSM8K, con repeticiones), el ≈ 0 % sin
 // repeticiones y, aparte, la caché de prefijo del proveedor. Los números salen
 // de lib/portada/banco-en-vivo.ts, con verja contra sus informes.
-
-/** Una fila de la tarjeta de lo medido: marca y modelo (o nada), cifra y qué significa. */
-type FilaMedida = { marca?: string; modelo?: string; cifra: string; que: string };
-
-/** Las filas de lo medido, en el idioma de la página: una sola fuente para el héroe, el SDK y #measured. */
-function FilasMedidas({ filas }: { filas: FilaMedida[] }) {
-  return (
-    <div className="hero-prueba-filas">
-      {filas.map((p) => (
-        <div className="hp" key={p.que}>
-          {p.marca ? (
-            <div className="hp-marca">
-              <LogoProveedor marca={p.marca} />
-              <b>{p.marca}</b>
-              {p.modelo ? <code>{p.modelo}</code> : null}
-            </div>
-          ) : null}
-          <div className="hp-dato">
-            <span className="hp-n">{p.cifra}</span>
-            <span className="hp-q">{p.que}</span>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
 
 // The "integrate" snippet: the same 3-step story as /how-it-works (package →
 // license → wrap the call), with its step headers localized via the shared
@@ -166,43 +141,16 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
   const planes = terminosDeLosPlanes(locale, await tarifasDeLosPlanes());
   const moneda = planes.moneda;
 
-  // Porcentajes con el idioma de la página («31,5 %», «%31,5»): una décima para
-  // las cifras con intervalo, ninguna para las redondas (30 %, 0 %, 41 %).
+  // Las cifras de lo medido, en el idioma de la página (app/components/MedidoEnVivo.tsx).
   const pct1 = new Intl.NumberFormat(locale, { style: "percent", minimumFractionDigits: 1, maximumFractionDigits: 1 });
   const pct0 = new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 0 });
   const V = BANCO_EN_VIVO;
   const cero = pct0.format(0);
   const rep = pct0.format(V.repeticiones);
-  const modeloCorto = (m: string) => m.split("/").pop() ?? m;
-
   // Las tres filas de lo medido: con repeticiones (OpenAI), sin repeticiones
   // (≈ 0) y el mismo flujo en Claude, con la parte de la caché del proveedor
   // dicha aparte. Cada cifra con su intervalo; ninguna con un «al menos».
-  const filasMedidas: FilaMedida[] = [
-    {
-      marca: "OpenAI",
-      modelo: modeloCorto(V.openai.modelo),
-      cifra: pct1.format(V.openai.ahorro.point),
-      que: t("enVivo.conRepeticiones", {
-        bajo: pct1.format(V.openai.ahorro.lower),
-        alto: pct1.format(V.openai.ahorro.upper),
-        rep,
-        bateria: V.bateria,
-        version: V.versionSdk,
-      }),
-    },
-    { cifra: `≈ ${cero}`, que: t("enVivo.sinRepeticiones") },
-    {
-      marca: "Anthropic",
-      modelo: modeloCorto(V.anthropic.modelo),
-      cifra: pct1.format(V.anthropic.ahorro.point),
-      que: t("enVivo.anthropic", {
-        bajo: pct1.format(V.anthropic.ahorro.lower),
-        alto: pct1.format(V.anthropic.ahorro.upper),
-        prefijo: pct0.format(V.anthropic.prefijoDelProveedor),
-      }),
-    },
-  ];
+  const filasMedidas: FilaMedida[] = filasDelBancoEnVivo(t, locale);
   const pieMedido = t.rich("enVivo.pie", { bench: (c) => <Link href="/benchmarks">{c}</Link> });
 
   // Los límites de Medir salen de la constante que aplica la ingesta.
@@ -274,11 +222,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             {/* Donde estaba el recibo de la tirada sintética (ReciboMedido, con
                 el «al menos un 10 %»): lo medido en vivo, condicionado a cuánto
                 repite el tráfico, con su intervalo y su informe enlazado. */}
-            <div className="hero-prueba">
-              <span className="hero-prueba-t">{t("enVivo.titulo", { fecha: V.fecha })}</span>
-              <FilasMedidas filas={filasMedidas} />
-              <p className="cascade-nota">{pieMedido}</p>
-            </div>
+            <TarjetaMedidoEnVivo titulo={t("enVivo.titulo", { fecha: V.fecha })} filas={filasMedidas} pie={pieMedido} />
 
             <ReservarLlamada
               t={{

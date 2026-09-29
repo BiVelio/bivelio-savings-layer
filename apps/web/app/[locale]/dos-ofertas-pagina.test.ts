@@ -59,7 +59,7 @@ describe("portada: dos ofertas, cada una con su bloque", () => {
   });
 
   it("la tarjeta del SDK enseña las filas de lo medido: con repeticiones y sin ellas", () => {
-    expect(CODIGO).toMatch(/const filasMedidas: FilaMedida\[\] = \[/);
+    expect(CODIGO).toContain("const filasMedidas: FilaMedida[] = filasDelBancoEnVivo(t, locale);");
     expect(CODIGO).toContain("BANCO_EN_VIVO");
     const ofertas = seccion("offers");
     const sdk = ofertas.slice(ofertas.indexOf('t("offers.sdk.name")'), ofertas.indexOf('t("offers.gateway.name")'));

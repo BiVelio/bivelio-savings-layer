@@ -129,7 +129,9 @@
       "metaTitle": "Prova · BiVelio Savings Layer",
       "eyebrow": "Verifica, no confiïs · banc de referència",
       "title": "La prova que l'optimitzador funciona",
-      "intro": "Mesurat en totes dues branques: el motor de credibilitat rere les teves pròpies xifres."
+      "intro": "Tres coses, per separat: el que va mesurar el banc públic en viu, amb el seu interval; el que estalvies tu, mesurat sobre el teu propi trànsit; i una tirada sintètica que mostra com funciona cada palanca.",
+      "tuDinero": "El que compta al teu panell són els teus propis diners: cada estalvi del teu <overview>Resum</overview> està mesurat amb el comptador del teu proveïdor, sobre el teu trànsit, petició a petició. Les xifres de dalt són del banc, no una previsió de les teves.",
+      "sinteticaTitulo": "Tirada sintètica · com funciona cada palanca"
     },
     "verify": {
       "metaTitle": "Verifica · BiVelio Savings Layer",
@@ -245,7 +247,7 @@
       "elisionNota": "Si fas servir el gateway, part d'aquesta xifra és l'esborrat que aplica el teu proveïdor per la teva pròpia configuració: aquesta part no és mèrit nostre i mai no entra a la teva comissió.",
       "whatCompressedTokens": "tokens d'entrada recodificats de manera més compacta",
       "whatProviderCachedTokens": "tokens d'entrada facturats al preu rebaixat de la memòria cau de prefix. Ho demana el teu client, no nosaltres: la nostra palanca només n'ajusta la durada",
-      "ghostAwaiting": "{ref} · esperant el primer informe",
+      "ghostAwaiting": "esperant el primer informe",
       "footnote": "Quatre llibres comptables, <b>mai sumats</b>: no podem comptar un dòlar dues vegades. Només recomptes i cost, mai els teus prompts. L'informe és el mesurador."
     },
     "savingsTrendChart": {
@@ -464,7 +466,6 @@
     },
     "netSavingsCIBand": {
       "caption": "estalvi net, <b>límit inferior de l'IC del 95%</b>. Estimació puntual {point}, superior {upper} — destaquem el mínim{mockNote}.",
-      "captionSdkPendiente": "el que sosté l'SDK tal com s'instal·la des de npm. La tirada publicada duia un compressor exclusiu del banc que el paquet no inclou, així que el seu interval i el seu punt no es mostren com a promesa fins que una tirada de l'SDK instal·lat els substitueixi.",
       "mockNote": " (càrrega de treball de referència, proveïdor simulat)"
     },
     "cacheBreakEven": {
@@ -478,7 +479,7 @@
     },
     "referenceModeBadge": {
       "liveDesc": "— mesurat contra un proveïdor real, amb control de qualitat.",
-      "sdkPendiente": "Aquesta tirada duia un compressor exclusiu del banc que el paquet de npm no inclou: les seves xifres mostren el mecanisme, no el que estalvia l'SDK instal·lat.",
+      "sdkPendiente": "Tirada sintètica: escenaris escrits per al banc, més un compressor només del banc que el paquet d'npm no porta. Les seves xifres mostren com funciona cada palanca; no són una promesa del que estalviaràs.",
       "mock": "<b>ESTIMAT · proveïdor simulat</b> — això demostra que el mecanisme funciona, no la teva factura. Una execució LIVE confirmada substitueix cada xifra d'aquí."
     },
     "connectionStatePill": {
@@ -997,41 +998,6 @@
       "errorCorreo": "Aquest correu no sembla vàlid.",
       "errorEnvio": "No hem pogut enviar-ho.",
       "alterna": "Escriu-nos"
-    },
-    "calculadora": {
-      "title": "I quant ens pagaries tu?",
-      "sub": "Juga amb els teus números: tria proveïdor i model, i mira el teu estalvi, el nostre extra i el que et queda — amb els preus reals del catàleg i la tarifa real.",
-      "proveedor": "Proveïdor",
-      "modelo": "Model",
-      "reqs": "Sol·licituds / mes",
-      "inTok": "Tokens d'entrada mitj.",
-      "outTok": "Tokens de sortida mitj.",
-      "fx": "Tipus de canvi ({par})",
-      "factura": "La teva factura estimada sense optimitzar: {usd} al mes ({eur}).",
-      "colAhorro": "Si estalvies",
-      "colTuAhorro": "El teu estalvi",
-      "colExtra": "El nostre extra",
-      "colTeQuedas": "Et queda",
-      "extraCero": "res",
-      "notaGarantia": "Comissió només sobre l'estalvi mesurat — i sempre et quedes amb el {garantia} o més. Els seients es cobren a part, cada mes.",
-      "notaTramos": "Per trams, i cada tram al seu tipus: {tramos}. Com més estalvies, menor és el nostre percentatge.",
-      "notaPrimerMesLead": "El teu primer mes natural amb ús: només el seient.",
-      "notaPrimerMes": "És el teu període de calibratge, encara que en quedi poc: ho mesurem tot i veuràs l'extracte exacte del que hauria costat — sense cobrar-lo.",
-      "version": "Preus del catàleg de l'SDK, versió {fecha}. Estimació: el teu extracte usarà el teu ús mesurat.",
-      "cargando": "Carregant el catàleg de preus…",
-      "badge": "Estimació",
-      "asientos": "Seients ({precio} cadascun)",
-      "resumenTotal": "La veritat completa, amb l'escenari del {pct}: el nostre total seria {total} (seients: {asientosCoste} + la comissió de dalt) i et quedaries {neto} — el {pctNeto} de la teva factura.",
-      "precios": "Preu exacte de {modelo}: entrada {inM} · sortida {outM} · entrada en memòria cau {cacheM}, per milió de tokens.",
-      "fuente": "Font: <a>la pàgina oficial de preus de {proveedor}</a>, verificada al nostre catàleg el {fecha} (i vigilada cada setmana automàticament)."
-    },
-    "formula": {
-      "title": "Com es calcula el que ens pagues",
-      "mes1": "<b>El teu primer mes natural amb ús (UTC): només la quota per seient.</b> Ho mesurem tot i no cobrem comissió, encara que en quedi poc — al tancament veuràs l'extracte exacte del que hauria costat.",
-      "medido": "Després, comissió només sobre l'<b>estalvi mesurat</b>: el que pots contrastar amb la factura del teu proveïdor. L'estimat mai no es factura.",
-      "garantia": "I <b>sempre et quedes amb el {garantia} o més</b> de cada euro estalviat: la comissió només existeix quan existeix el teu estalvi mesurat.",
-      "tramos": "<b>Per trams, i cada tram al seu tipus</b> — {tramos}. Com més estalvies, menor és el nostre percentatge.",
-      "permanencia": "Un mes sense estalvi? Comissió: {cero}. <b>Sense permanència</b> — i la teva primera factura variable només conté números que ja vas veure al teu extracte."
     },
     "trabajos": {
       "pajaTitle": "Si l'enviament porta palla…",

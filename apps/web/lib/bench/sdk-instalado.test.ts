@@ -9,12 +9,9 @@ import { PALANCAS_QUE_NPM_NO_TRAE as PALANCAS_DEL_BANCO } from "../../../../benc
 
 import {
   PALANCAS_QUE_NPM_NO_TRAE,
-  PROMESA_DEL_TITULAR,
   escenariosConPiezaDelBanco,
   librosConPiezaDelBanco,
   midioElSdkInstalado,
-  numeroDeCifra,
-  sueloPublicable,
 } from "./sdk-instalado";
 
 /**
@@ -27,8 +24,10 @@ import {
  * a «esa caja verde es un paquete de npm», la frase llana del paso 2 y la
  * banda del intervalo. Ninguna verja miraba esas superficies: solo
  * `hero.proofs`. Aquí se miran tres cosas:
- *   1. la regla (`sueloPublicable` y compañía) sobre el artefacto publicado y
- *      sobre uno que sí midió lo instalado;
+ *   1. la regla (`midioElSdkInstalado` y compañía) sobre el artefacto
+ *      publicado y sobre uno que sí midió lo instalado. Desde el 2026-09-29 ni
+ *      la portada ni el panel presentan un «≥ 10 %» en lugar de su suelo: sin
+ *      `asShipped` la banda del panel no pinta cifra (NetSavingsCIBand);
  *   2. (hasta el 2026-09-29) el recibo del héroe renderizado. La portada ya no
  *      enseña este artefacto — ni recibo, ni «al menos un 10 %», ni libros —:
  *      lo vigila apps/web/lib/portada/portada-dice-lo-medido.test.ts;
@@ -49,15 +48,15 @@ describe("la regla: sin `sdk.asShipped: true`, la web no presenta el suelo de la
     expect([...PALANCAS_QUE_NPM_NO_TRAE]).toEqual([...PALANCAS_DEL_BANCO]);
   });
 
-  it("la cota del panel ya no se lee de la portada: la portada no publica el «al menos»", () => {
+  it("ninguna web publica ya el titular de esta tirada: ni `hero.proofs` ni la leyenda de la banda", () => {
     for (const f of readdirSync(MENSAJES).filter((f) => f.endsWith(".json"))) {
-      const d = JSON.parse(readFileSync(join(MENSAJES, f), "utf8")) as { landing: { hero: Record<string, unknown> } };
+      const d = JSON.parse(readFileSync(join(MENSAJES, f), "utf8")) as {
+        landing: { hero: Record<string, unknown> };
+        dashboard: { netSavingsCIBand: Record<string, unknown> };
+      };
       expect(d.landing.hero.proofs, f).toBeUndefined();
+      expect(d.dashboard.netSavingsCIBand.captionSdkPendiente, f).toBeUndefined();
     }
-    expect(PROMESA_DEL_TITULAR).toBeGreaterThan(0);
-    expect(numeroDeCifra("≥ %10,0")).toBe(10);
-    expect(numeroDeCifra("≥ 10.0%")).toBe(10);
-    expect(numeroDeCifra("≥ 10 %")).toBe(10);
   });
 
   it("sin sello, la tirada no midió lo instalado — nunca se supone", () => {
@@ -68,10 +67,12 @@ describe("la regla: sin `sdk.asShipped: true`, la web no presenta el suelo de la
   });
 
   if (!midioElSdkInstalado(artefacto)) {
-    it("⛔ el artefacto publicado no midió lo instalado: lo publicable es el titular, nunca su suelo", () => {
-      expect(sueloPublicable(artefacto)).toBeLessThanOrEqual(PROMESA_DEL_TITULAR);
-      expect(sueloPublicable(artefacto)).toBeLessThanOrEqual(artefacto.aggregate.savings.lower);
-      expect(sueloPublicable(artefacto)).toBeLessThan(artefacto.aggregate.savings.lower);
+    it("⛔ el artefacto publicado no midió lo instalado: la banda del panel no pinta ninguna cifra suya", () => {
+      const src = readFileSync(join(WEB, "app/[locale]/dashboard/components/NetSavingsCIBand.tsx"), "utf8");
+      // Lo primero que hace el componente es salir sin pintar nada.
+      const cuerpo = src.slice(src.indexOf("export async function NetSavingsCIBand"));
+      expect(cuerpo.split("\n")[1]).toContain("if (!midioElSdkInstalado(ab)) return null;");
+      expect(src).not.toMatch(/sueloPublicable|PROMESA_DEL_TITULAR|captionSdkPendiente/);
     });
 
     it("⛔ y el escenario y el libro que salen del compresor del banco quedan marcados", () => {
@@ -82,7 +83,7 @@ describe("la regla: sin `sdk.asShipped: true`, la web no presenta el suelo de la
   }
 
   it("con `asShipped: true` la regla se apaga: mandan las cifras medidas", () => {
-    expect(sueloPublicable(instalado)).toBe(instalado.aggregate.savings.lower);
+    expect(midioElSdkInstalado(instalado)).toBe(true);
     expect(escenariosConPiezaDelBanco(instalado).size).toBe(0);
     expect(librosConPiezaDelBanco(instalado).size).toBe(0);
   });
@@ -130,7 +131,10 @@ describe("el código: toda cifra del artefacto pasa por lib/bench/sdk-instalado.
     .filter(({ src }) => LEE_CIFRA.test(src) && ES_DEL_ARTEFACTO.test(src));
 
   it("hay lectores que revisar (si no, esta verja no protege nada)", () => {
-    expect(lectores.length).toBeGreaterThanOrEqual(4);
+    // Desde el 2026-09-29 la portada, «cómo funciona» y las baldosas del panel ya
+    // no leen el artefacto: quedan la banda, las tarjetas por libro y la tabla
+    // de escenarios de /dashboard/proof.
+    expect(lectores.length).toBeGreaterThanOrEqual(3);
   });
 
   it.each(lectores.map((l) => [l.rel, l] as const))("⛔ %s pasa por la regla", (rel, { src }) => {
