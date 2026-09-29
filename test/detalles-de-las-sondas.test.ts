@@ -5,6 +5,7 @@ import { AnthropicProvider } from "../src/providers/anthropic.js";
 import { OpenAICompatibleProvider } from "../src/providers/openai-compatible.js";
 import { motivoDeLaNegativa } from "../src/providers/anthropic-uso.js";
 import { TokenizerRegistry } from "../src/tokenizer/registry.js";
+import { ToolSelector } from "../src/router/tool-selector.js";
 import { reiniciarAvisos } from "../src/util/warn-once.js";
 import type { Provider } from "../src/providers/types.js";
 import type { SavingsRequest, SavingsResult, ToolDescriptor } from "../src/contracts/types.js";
@@ -37,7 +38,8 @@ function fetchQueResponde(json: unknown, cuerpos: Cuerpo[] = []): typeof fetch {
 }
 
 function capa(provider: Provider): SavingsPipeline {
-  return new SavingsPipeline({ provider, tokenizer: new TokenizerRegistry(), devUnlicensed: true } as never);
+  // La poda por relevancia es opt-in desde 0.4.33; el aviso de la poda es lo que se prueba aquí.
+  return new SavingsPipeline({ provider, tokenizer: new TokenizerRegistry(), toolSelector: new ToolSelector({ maxTools: 8 }), devUnlicensed: true } as never);
 }
 
 // ── A · El aviso del selector ────────────────────────────────────────────────

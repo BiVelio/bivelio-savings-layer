@@ -447,6 +447,7 @@ export function informeSombraDeMedir(r: SavingsReport): SavingsReport | null {
   if (!/^[A-Za-z0-9._:/-]{1,128}$/.test(requestId)) return null;
   const pagado = Math.max(0, r.cost.actual);
   const hipotetico = Math.max(0, pagado - ahorro);
+  const razon = pagado > 0 ? Math.min(1, (pagado - hipotetico) / pagado) : 0;
   const { measure: _m, nativeSavings: _n, ...resto } = r;
   return {
     ...resto,
@@ -455,7 +456,9 @@ export function informeSombraDeMedir(r: SavingsReport): SavingsReport | null {
     cost: {
       baselineEstimate: pagado,
       actual: hipotetico,
-      netSavings: pagado > 0 ? Math.min(1, (pagado - hipotetico) / pagado) : 0,
+      netSavings: razon,
+      netSavingsRatio: razon,
+      netSavingsUsd: pagado - hipotetico,
       basis: "shadow",
     },
   };
