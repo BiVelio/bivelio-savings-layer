@@ -22,8 +22,49 @@ import type { CostModel } from "../tokenizer/accounting.js";
  * catalogue stays out of the way.
  */
 
-/** When these prices were last checked against the providers' public rates. */
-export const PRECIOS_AL_DIA = "2026-09-27";
+// LA VERSIÓN DEL CATÁLOGO DE PRECIOS — cambia cada vez que cambia su contenido.
+//
+// Decisión del dueño (2026-09-29): la versión es el DÍA del último cambio de lo
+// que describe (las filas de CATALOGO, sus tramos y vetos, las primas de
+// escritura, las tarifas de tier y la clasificación de razonamiento), no el día
+// en que alguien releyó una página. Los extractos (`version_precios`), el recibo
+// del gateway y la calculadora de la web citan esta fecha: si dos cálculos
+// distintos llevan la misma etiqueta, la etiqueta no demuestra nada.
+//
+// Cuándo se consultó cada fuente sigue en su sitio: el comentario de cada fila
+// y el `consultado` de cada tarifa de tier. La fecha de aquí puede ser más
+// reciente que muchas de esas lecturas.
+//
+// La verja: test/version-del-catalogo.test.ts calcula una huella sha256 de todo
+// ese contenido y la compara con HUELLAS_DEL_CATALOGO. Si el contenido cambia
+// sin subir esta fecha, el test falla y dice qué hacer. La regla entera:
+// docs/VERSION-DEL-CATALOGO.md.
+//
+// Historia:
+//   · 2026-09-27 — el catálogo de 2026 con fechas de vigencia (#333), la última
+//     vez que se movió esta fecha antes de la regla.
+//   · 2026-09-28 — se quita claude-3-haiku (#373). La fecha NO se movió: el
+//     contenido de «2026-09-27» dejó de ser uno solo.
+//   · 2026-09-29 — fila propia de claude-sonnet-5-5 (#399), y la versión se
+//     sube por contenido desde hoy. Primera versión con huella.
+
+/**
+ * Version of this price catalogue: the UTC day its content last changed (rows,
+ * announced price steps, cache-write premiums, tier rates). Two computations
+ * citing the same version were priced with the same content.
+ */
+export const PRECIOS_AL_DIA = "2026-09-29";
+
+/**
+ * Huella sha256 del contenido de cada versión desde que existe la regla, en
+ * orden. Solo se AÑADE: la huella de una versión ya publicada no se reescribe
+ * nunca, porque hay extractos que citan esa versión con ese contenido. La de
+ * {@link PRECIOS_AL_DIA} es la última. Qué entra en la huella, y por qué: el
+ * test `test/version-del-catalogo.test.ts` y docs/VERSION-DEL-CATALOGO.md.
+ */
+export const HUELLAS_DEL_CATALOGO: Readonly<Record<string, string>> = {
+  "2026-09-29": "bfbf91f324c7a3c7319db6c816cb7cce545f4a285e1ff0ad4ac9f1b706634a2e",
+};
 
 /**
  * Key = the model id as the provider publishes it, without a vendor prefix.
@@ -502,7 +543,7 @@ export function clavesPorLongitud(catalogo: Readonly<Record<string, unknown>>): 
  * clave vetada es la más larga que casa. Interno: la tabla pública sigue siendo
  * `CATALOGO`.
  */
-const SIN_FILA_PROPIA: readonly string[] = [
+export const SIN_FILA_PROPIA: readonly string[] = [
   // OpenAI, sin precio publicado: la página oficial no los lista (comprobado el
   // 2026-09-25 y de nuevo el 2026-09-27; la tabla comunitaria de LiteLLM
   // puede listarlos, pero no es la factura de nadie). Sin veto, `o3-deep-research`
