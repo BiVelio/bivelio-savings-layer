@@ -1,12 +1,11 @@
 import { getTranslations } from "next-intl/server";
 
-import type { AbArtifact, UsageRollup } from "../data";
+import type { UsageRollup } from "../data";
 import { intfmt, LEDGER_COLOR } from "../format";
-import { librosConPiezaDelBanco } from "@/lib/bench/sdk-instalado";
 
-// The LIVE ledger names (NOT the reference's output_restriction). A faint
-// reference "ghost" keeps the never-summed model legible before any customer
-// data exists.
+// The LIVE ledger names (NOT the reference's output_restriction). Before any
+// customer data exists each tile says it is awaiting its first report — no
+// reference figure from another run.
 const LIVE = [
   { key: "avoided_calls", whatKey: "whatAvoidedCalls" },
   { key: "eliminated_tokens", whatKey: "whatEliminatedTokens" },
@@ -14,30 +13,13 @@ const LIVE = [
   { key: "provider_cached_tokens", whatKey: "whatProviderCachedTokens" },
 ] as const;
 
-/**
- * El "fantasma" de referencia sale del artefacto A/B que la propia app publica,
- * NO de constantes a mano.
- *
- * Estaban escritas a pelo: «ref 35% / ref 61% / ref 57%» cuando el artefacto que
- * este mismo componente RECIBE por props —y no usaba— mide 47,0% / 8,9% / 34,3%.
- * El de eliminated_tokens sobreestimaba x6,8, y se enseña durante toda la ventana
- * de onboarding, que es justo cuando el cliente decide si paga. Eso no es un fallo
- * de render: es material de venta falso.
- *
- * `provider_cached_tokens` no tiene contrapartida en la referencia (allí el cuarto
- * libro es `output_restriction`), así que se queda sin fantasma en vez de
- * inventarle uno.
+/*
+ * Hasta el 2026-09-29 la baldosa vacía enseñaba un «fantasma» de referencia
+ * («ref 47 %») sacado de la tirada sintética del 12-09, durante toda la ventana
+ * de onboarding: justo cuando el cliente decide si paga. Era la cifra de otra
+ * tirada (con un compresor que npm no trae), no la suya. Ahora la baldosa vacía
+ * dice solo que espera su primer informe: en su panel, su dinero.
  */
-function fantasmaDeReferencia(ab: AbArtifact, key: string): string {
-  if (key === "provider_cached_tokens") return "—";
-  // Un libro de referencia que mezcla una pieza que npm no trae (el compresor
-  // del banco) no es una referencia de lo que el cliente va a ver.
-  if (librosConPiezaDelBanco(ab).has(key)) return "—";
-  const l = (ab?.ledgers ?? []).find((x) => x.ledger === key);
-  const punto = l?.savings?.point;
-  if (typeof punto !== "number" || !Number.isFinite(punto)) return "—";
-  return `ref ${Math.round(punto * 100)}%`;
-}
 
 function liveValue(usage: UsageRollup[], key: string): number | null {
   if (usage.length === 0) return null;
@@ -51,7 +33,7 @@ function liveValue(usage: UsageRollup[], key: string): number | null {
   }
 }
 
-export async function LiveLedgerTiles({ usage, ab }: { usage: UsageRollup[]; ab: AbArtifact }) {
+export async function LiveLedgerTiles({ usage }: { usage: UsageRollup[] }) {
   const t = await getTranslations("dashboard");
   return (
     <>
@@ -69,7 +51,7 @@ export async function LiveLedgerTiles({ usage, ab }: { usage: UsageRollup[]; ab:
                   <div className="v empty ck-num">—</div>
                   <div className="sub">{t(`liveLedgerTiles.${l.whatKey}`)}</div>
                   <div className="ghost">
-                    {t("liveLedgerTiles.ghostAwaiting", { ref: fantasmaDeReferencia(ab, l.key) })}
+                    {t("liveLedgerTiles.ghostAwaiting")}
                   </div>
                 </>
               ) : (

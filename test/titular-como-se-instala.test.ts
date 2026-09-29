@@ -20,6 +20,9 @@ import {
  * Esta verja reconstruye el suelo sin esa pieza (ver
  * benchmarks/titular-como-se-instala.ts) y exige que la promesa quepa también
  * ahí. Con un artefacto `sdk.asShipped: true` la reconstrucción se apaga sola.
+ *
+ * Desde el 2026-09-29 la portada no publica ese titular (ni `cifra-del-heroe.test.ts`
+ * existe ya): el estimador sigue aquí porque el panel todavía enseña la tirada.
  */
 
 const RAIZ = new URL("../", import.meta.url);
@@ -28,13 +31,6 @@ const MENSAJES = new URL("apps/web/messages/", RAIZ);
 
 const artefacto = JSON.parse(readFileSync(new URL("ab-live.json", DATOS), "utf8")) as ArtefactoParaSuelo;
 const ensayos = leerEnsayos(readFileSync(new URL("ab-live-trials.csv", DATOS), "utf8"));
-
-/** «≥ 10,0 %», «≥ %10,0», «≥ 10.0%» → 10. */
-function numeroDe(cifra: string): number {
-  const m = /(\d+)[.,](\d+)/.exec(cifra);
-  if (!m) throw new Error(`sin número en ${JSON.stringify(cifra)}`);
-  return Number(`${m[1]}.${m[2]}`);
-}
 
 describe("el suelo que sostiene el paquete de npm", () => {
   it("recalculado desde el CSV sin tocar nada, da los suelos publicados al decimal: CSV, artefacto y estimador cuadran", () => {
@@ -69,24 +65,17 @@ describe("el suelo que sostiene el paquete de npm", () => {
     expect(r.medidoTalCual).toBe((artefacto.sdk as { asShipped?: unknown } | undefined)?.asShipped === true);
   });
 
-  const r = sueloComoSeInstala(artefacto, ensayos);
-  // Truncado a una décima, nunca redondeado hacia arriba.
-  const suelo = Math.floor(r.menor * 1000) / 10;
-  const cifras: number[] = [];
+  // Hasta el 2026-09-29 aquí se exigía que la cifra del héroe (el «al menos un
+  // 10 %») cupiera en este suelo reconstruido. La portada ya no publica cifras
+  // de este artefacto —publica las del banco en vivo, con verja contra sus
+  // informes (apps/web/lib/portada/)—, así que lo que queda por vigilar es que
+  // no vuelva: ningún idioma trae ya `landing.hero.proofs`.
   for (const f of readdirSync(MENSAJES).filter((f) => f.endsWith(".json"))) {
-    it(`⛔ ${f}: la cifra del héroe cabe en lo que entrega npm (${suelo} %${r.medidoTalCual ? ", medido" : ", reconstruido"})`, () => {
-      const d = JSON.parse(readFileSync(new URL(f, MENSAJES), "utf8")) as {
-        landing: { hero: { proofs: { cifra: string }[] } };
-      };
-      const prometido = numeroDe(d.landing.hero.proofs[0]!.cifra);
-      cifras.push(prometido);
-      expect(prometido).toBeLessThanOrEqual(suelo);
+    it(`⛔ ${f}: la portada no publica el titular de esta tirada`, () => {
+      const d = JSON.parse(readFileSync(new URL(f, MENSAJES), "utf8")) as { landing: { hero: Record<string, unknown> } };
+      expect(d.landing.hero.proofs).toBeUndefined();
     });
   }
-  it("y los 12 idiomas dicen lo mismo", () => {
-    expect(cifras).toHaveLength(12);
-    expect(new Set(cifras).size).toBe(1);
-  });
 });
 
 describe("la reconstrucción, sobre datos de juguete", () => {

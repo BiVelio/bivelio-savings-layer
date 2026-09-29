@@ -23,6 +23,7 @@ export async function ReferenceModeBadge({ ab }: { ab: AbArtifact }) {
         {live ? (
           <>
             <b>LIVE</b> {t("referenceModeBadge.liveDesc")}
+            {/* Sintética y sin promesa: lo dice encima de todo el banco. */}
             {pendiente ? <> {t("referenceModeBadge.sdkPendiente")}</> : null}
           </>
         ) : (

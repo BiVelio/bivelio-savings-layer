@@ -96,8 +96,16 @@ if [[ -s /tmp/lv-cifras.json ]]; then
   read -r SUELO PROM SELL CSV UNA IDI PARES MODO CAL <<<"$(node -p "const d=require('/tmp/lv-cifras.json');[d.suelo,d.prometido,d.sellado,d.csv,d.unaSola,d.idiomas,d.pares,d.modo,d.calidad].join(' ')")"
   if [[ "$MODO" == "LIVE" ]]; then ok "el artefacto es una medición real contra proveedor ($PARES parejas, calidad $CAL)"; else mal "el artefacto publicado NO es LIVE (es $MODO)"; fi
   if [[ "$SELL" == "true" ]]; then ok "el artefacto lleva sello de procedencia (fecha, commit y nº de parejas)"; else mal "el artefacto no lleva sello: no se sabe de qué tirada salió"; fi
-  if awk "BEGIN{exit !($PROM <= $SUELO)}"; then ok "lo prometido ($PROM %) cabe dentro de lo medido ($SUELO %, el menor de los suelos frente a B0, B1 y B2)"; else mal "la web promete $PROM % y el banco solo sostiene $SUELO % (menor suelo B0/B1/B2)"; fi
-  if [[ "$UNA" == "true" ]]; then ok "los $IDI idiomas prometen la misma cifra"; else mal "los idiomas no dicen lo mismo"; fi
+  # Desde el 2026-09-29 la portada NO publica cifras de este artefacto (era
+  # sintético y con el compresor del banco): publica las del banco en vivo
+  # (lib/portada/banco-en-vivo.ts), con verja contra sus informes, y prohíbe
+  # volver al «al menos un 10 %» en los 12 idiomas.
+  if pnpm -s exec vitest run apps/web/lib/portada >/tmp/lv-portada.log 2>&1; then
+    ok "la portada publica solo cifras del banco en vivo, con su informe, en los $IDI idiomas"
+  else
+    mal "la portada publica una cifra que no cuadra con su informe, o vuelve a prometer lo que no se midió"
+    nota "mira /tmp/lv-portada.log"
+  fi
   # Lo prometido tiene que caber también en lo que ENTREGA el paquete de npm. Si
   # el artefacto se midió con una pieza que npm no trae (el compresor del banco),
   # se reconstruye el suelo sin ella — sin red, con los ensayos publicados.
@@ -111,11 +119,6 @@ if [[ -s /tmp/lv-cifras.json ]]; then
         avis "$MOTIVO: re-medir con \`pnpm ab\` (asShipped es el modo por defecto) para sellarlo"
       else
         avis "el artefacto se midió con el compresor del banco, que npm no trae: re-medir con \`pnpm ab\` (asShipped es el modo por defecto)"
-      fi
-      if awk "BEGIN{exit !($PROM <= $MENOR)}"; then
-        ok "lo prometido ($PROM %) cabe también en lo que entrega npm ($MENOR %$([[ "$SINREC" == "true" ]] || echo ', reconstruido sin el compresor del banco'))"
-      else
-        mal "la web promete $PROM % y sin el compresor del banco el suelo es $MENOR %"
       fi
       # Y NINGUNA OTRA SUPERFICIE lo contradice: mientras el artefacto no mida lo
       # instalado, el recibo del héroe, la frase del paso 2, la banda, las

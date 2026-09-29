@@ -2,39 +2,31 @@ import { Fragment } from "react";
 
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
-import abData from "@/public/data/ab-live.json";
 import { ReservarLlamada } from "./components/ReservarLlamada";
 import { CursorGrid } from "@/app/components/CursorGrid";
 import { RevealObserver } from "@/app/components/RevealObserver";
 import { KineticTitle } from "@/app/components/KineticTitle";
-import { ReciboMedido } from "@/app/components/ReciboMedido";
 import { SnippetPorSistema } from "@/app/components/SnippetPorSistema";
 import { SkillPorSuperficie } from "@/app/components/SkillPorSuperficie";
-import { ANATOMIA_MEDIDA } from "@/lib/skill/anatomia";
 import { LogoProveedor } from "@/app/components/LogoProveedor";
+import { FilasMedidas, TarjetaMedidoEnVivo, filasDelBancoEnVivo, type FilaMedida } from "@/app/components/MedidoEnVivo";
 import { NvidiaEcosystemBand } from "@/app/components/NvidiaInception";
 import { VideoExplicativo } from "@/app/components/VideoExplicativo";
 import { DIAS_ACTIVOS_PARA_CONTAR_ASIENTO } from "@/lib/billing/asientos";
 import { FormatVerifier } from "@/app/components/FormatVerifier";
-import { type AbArtifact } from "@/app/[locale]/dashboard/data";
-import { ReferenceModeBadge } from "@/app/[locale]/dashboard/components/ReferenceModeBadge";
-import { NetSavingsCIBand } from "@/app/[locale]/dashboard/components/NetSavingsCIBand";
-import { ReferenceLedgerCards } from "@/app/[locale]/dashboard/components/ReferenceLedgerCards";
 import Footer from "@/app/components/Footer";
 import { Link } from "@/i18n/navigation";
 import { absolute, languageAlternates } from "@/i18n/site";
 import { tarifasDeLosPlanes } from "@/lib/stripe/pricing";
 import { terminosDeLosPlanes } from "@/lib/legal/precios-publicados";
-import {
-  escenariosConPiezaDelBanco,
-  librosConPiezaDelBanco,
-  midioElSdkInstalado,
-  sueloPublicable,
-} from "@/lib/bench/sdk-instalado";
+import { LIMITES_MEDIR, VERSION_MINIMA_MEDIR } from "@/lib/license/medir-publico";
+import { BANCO_EN_VIVO, VERSION_GEMINI_NATIVO } from "@/lib/portada/banco-en-vivo";
 
 // Proveedores que exponen un endpoint OpenAI-compatible (o, en el caso de
-// Anthropic, tienen adaptador nativo). Es una lista de COMPATIBILIDAD, no de
-// mediciones: la única cifra publicada vive en `hero.proofs`.
+// Anthropic y de Gemini desde la 0.4.33, tienen adaptador nativo). Es una lista
+// de COMPATIBILIDAD, no de mediciones: compatible ≠ medido, y la nota de debajo
+// (`hero.compatibleNota`) lo dice. Lo medido es solo lo que tiene cifra en
+// /benchmarks, y la portada lo lee de lib/portada/banco-en-vivo.ts.
 const LLMS = [
   { marca: "openai", label: "OpenAI" },
   { marca: "anthropic", label: "Anthropic" },
@@ -51,20 +43,13 @@ const LLMS = [
   { marca: "vllm", label: "vLLM" },
 ] as const;
 
-// El artefacto A/B medido alimenta la sección de lo medido (el banco de
-// referencia), el recibo del héroe y los libros contables.
-const ab = abData as unknown as AbArtifact;
-
-// ¿La tirada publicada midió el SDK tal como se instala desde npm? La del
-// 2026-09-12 no (llevaba el compresor del banco). Mientras no, ninguna cifra de
-// esta página presenta su suelo como lo que el cliente obtiene, y los libros y
-// escenarios que mezclan esa pieza no se anuncian (lib/bench/sdk-instalado.ts).
-const SDK_INSTALADO = midioElSdkInstalado(ab);
-const LIBROS_CON_PIEZA_DEL_BANCO = librosConPiezaDelBanco(ab);
-const ESCENARIOS_CON_PIEZA_DEL_BANCO = escenariosConPiezaDelBanco(ab);
-
-/** Una fila de `hero.proofs`: la ÚNICA cifra prometida de la web (cifra-del-heroe.test.ts). */
-type FilaPrueba = { marca: string; modelo: string; cifra: string; que: string };
+// LO QUE LA PORTADA PUBLICA COMO MEDIDO (2026-09-29). Hasta hoy la portada leía
+// `public/data/ab-live.json` —una tirada sintética del 2026-09-12 con un
+// compresor que npm no trae— y de ahí salían el «al menos un 10 %», el recibo
+// del héroe y los libros «avoided_calls ≥ 22 %». Ya no lo lee: publica la cifra
+// CONDICIONADA del banco en vivo (GSM8K, con repeticiones), el ≈ 0 % sin
+// repeticiones y, aparte, la caché de prefijo del proveedor. Los números salen
+// de lib/portada/banco-en-vivo.ts, con verja contra sus informes.
 
 // The "integrate" snippet: the same 3-step story as /how-it-works (package →
 // license → wrap the call), with its step headers localized via the shared
@@ -144,37 +129,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
   const th = await getTranslations("howItWorks");
   const CODE = lineasDelSnippet(th);
 
-  const cascadeSteps = t.raw("cascade.steps") as {
-    n: string;
-    title: string;
-    sub: string;
-    ledger: string;
-    grey: boolean;
-  }[];
   const ledgers = t.raw("ledgers") as { idx: string; name: string; desc: string }[];
-  // La cifra del SDK en su tarjeta es ESTA fila, leída del mensaje y nunca
-  // copiada: así la verja «prometido ≤ medido» (cifra-del-heroe.test.ts) sigue
-  // siendo la única fuente, y el valor lo gestiona quien gestiona el titular.
-  const proofs = t.raw("hero.proofs") as FilaPrueba[];
-  const proofSdk = proofs[0];
-
-  // Las cuatro tarjetas llevaban un guion ESCRITO A MANO y el texto «ejecuta el
-  // optimizador para medir», encima de un artefacto que YA traía las cuatro
-  // cifras medidas con su intervalo. Cuatro cajas vacías sobre datos reales: la
-  // misma clase de fallo que un libro contable sin productor.
-  //
-  // Se casa por NOMBRE del libro, no por posición: el artefacto viejo traía
-  // `output_restriction` donde el nuevo trae `provider_cached`, y casar por
-  // índice habría puesto la cifra de una palanca bajo el título de otra.
-  const CLAVE_DE_TARJETA: Record<string, string> = {
-    avoided_calls: "avoided_calls",
-    eliminated_tokens: "eliminated_tokens",
-    compressed_tokens: "compressed_tokens",
-    provider_cached_tokens: "provider_cached",
-  };
-  const medidoPorLibro = new Map(
-    (ab.ledgers ?? []).map((l) => [l.ledger, l]),
-  );
   const features = t.raw("pricing.features") as string[];
 
   // El precio sale del Price de Stripe, que es lo que de verdad se cobra, y se
@@ -186,19 +141,24 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
   const planes = terminosDeLosPlanes(locale, await tarifasDeLosPlanes());
   const moneda = planes.moneda;
 
-  // La traducción llana enseña el decimal: es la misma cota que publica el
-  // héroe (23,1%), y redondearla aquí haría que las dos cifras no cuadrasen.
-  const pctLocal1 = (n: number) => (n * 100).toLocaleString(locale, { maximumFractionDigits: 1 }) + "%";
+  // Las cifras de lo medido, en el idioma de la página (app/components/MedidoEnVivo.tsx).
+  const pct1 = new Intl.NumberFormat(locale, { style: "percent", minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const pct0 = new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 0 });
+  const V = BANCO_EN_VIVO;
+  const cero = pct0.format(0);
+  const rep = pct0.format(V.repeticiones);
+  // Las tres filas de lo medido: con repeticiones (OpenAI), sin repeticiones
+  // (≈ 0) y el mismo flujo en Claude, con la parte de la caché del proveedor
+  // dicha aparte. Cada cifra con su intervalo; ninguna con un «al menos».
+  const filasMedidas: FilaMedida[] = filasDelBancoEnVivo(t, locale);
+  const pieMedido = t.rich("enVivo.pie", { bench: (c) => <Link href="/benchmarks">{c}</Link> });
 
-  // El rango real de la tirada, escenario a escenario — sustituye a la tabla
-  // en la landing sin inventar nada: mínimo y máximo medidos del artefacto.
-  // Sin los escenarios cuyo ahorro salió de una pieza que npm no trae.
-  const puntosEscenario = ab.scenarios
-    .filter((s) => !ESCENARIOS_CON_PIEZA_DEL_BANCO.has(s.name))
-    .map((s) => s.measured?.savings?.point)
-    .filter((n): n is number => typeof n === "number" && Number.isFinite(n));
-  const rangoMin = pctLocal1(Math.min(...puntosEscenario));
-  const rangoMax = pctLocal1(Math.max(...puntosEscenario));
+  // Los límites de Medir salen de la constante que aplica la ingesta.
+  const medir = {
+    seats: LIMITES_MEDIR.asientos,
+    requests: LIMITES_MEDIR.peticionesDiarias.toLocaleString(locale),
+    version: VERSION_MINIMA_MEDIR,
+  };
 
   return (
     <div className="lp">
@@ -254,28 +214,15 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
                   )}
                 </div>
               </div>
-              <p className="compat-nota">{t("hero.compatibleNota", { modelo: abData.model.split("/").pop() ?? "" })}</p>
+              <p className="compat-nota">{t("hero.compatibleNota", { gemini: VERSION_GEMINI_NATIVO })}</p>
             </div>
           </div>
 
           <div className="hero-col">
-          <ReciboMedido
-            ab={ab}
-            locale={locale}
-            labels={{
-              title: t("recibo.title"),
-              modelo: t("recibo.modelo"),
-              parejas: t("recibo.parejas"),
-              calidad: t("recibo.calidad"),
-              suelo: t("recibo.suelo"),
-              punto: t("recibo.punto"),
-              libros: t("recibo.libros"),
-              pie: t("recibo.pie"),
-              fecha: t("recibo.fecha"),
-              sdkPendiente: t("recibo.sdkPendiente"),
-            }}
-            filas={cascadeSteps.map((st) => ({ ledger: st.ledger, title: st.title }))}
-          />
+            {/* Donde estaba el recibo de la tirada sintética (ReciboMedido, con
+                el «al menos un 10 %»): lo medido en vivo, condicionado a cuánto
+                repite el tráfico, con su intervalo y su informe enlazado. */}
+            <TarjetaMedidoEnVivo titulo={t("enVivo.titulo", { fecha: V.fecha })} filas={filasMedidas} pie={pieMedido} />
 
             <ReservarLlamada
               t={{
@@ -295,17 +242,17 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
 
         {/* DOS OFERTAS (decisión delegada, bitácora del 10-09): la portada
             mezclaba dos productos. Al cliente con una app y su API key el SDK
-            le recorta la factura y hay un suelo publicado; al de un agente de
+            le recorta la factura cuando su tráfico repite, con cifra publicada; al de un agente de
             código, el gateway le MIDE con el contador del proveedor y lo suma
             en el panel por día y modelo (no hay recibo por petición del
             gateway: `renderizarRecibo` no tiene llamador, y el recibo del
             producto es el SavingsReport del SDK). Cada uno lleva su público, su
             instalación y su propia promesa.
-            · La cifra del SDK es la fila de `hero.proofs` (la de la sección de
-              lo medido y la del recibo): una sola fuente, con su verja.
-            · El gateway va SIN número a propósito: no hay ningún artefacto
-              medido y publicado de su ahorro (public/data solo trae el A/B del
-              SDK), y aquí se publica el suelo o nada. Su promesa es medir y
+            · La cifra del SDK son las filas de lo medido (con y sin
+              repeticiones), las mismas del héroe y de #measured: una sola
+              fuente, lib/portada/banco-en-vivo.ts, con su verja.
+            · El gateway va SIN número a propósito: no hay ninguna medición
+              publicada de su ahorro, y aquí se publica lo medido o nada. Su promesa es medir y
               enseñarlo en el panel, y con PRO pasar a 5m las escrituras de
               caché SOLO en los turnos con buena parte del prompt nueva
               (gateway/tarifa.ts, `decidirRebaja`): nunca «mientras la sesión
@@ -323,24 +270,11 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
               <p>{t("offers.sdk.what")}</p>
               <div className="offer-fig">
                 <span className="offer-fig-t">{t("offers.sdk.figureLabel")}</span>
-                {proofSdk ? (
-                  <div className="hp">
-                    <div className="hp-marca">
-                      <LogoProveedor marca={proofSdk.marca} />
-                      <b>{proofSdk.marca}</b>
-                      <code>{proofSdk.modelo}</code>
-                    </div>
-                    <div className="hp-dato">
-                      <span className="hp-n">{proofSdk.cifra}</span>
-                      <span className="hp-q">{proofSdk.que}</span>
-                    </div>
-                  </div>
-                ) : null}
+                {/* Las dos primeras filas de lo medido: con repeticiones y sin
+                    ellas. Nunca la primera sola: sin la segunda se leería como
+                    lo que ahorra cualquier tráfico. */}
+                <FilasMedidas filas={filasMedidas.slice(0, 2)} />
                 <p className="offer-fig-note">{t("offers.sdk.figureNote")}</p>
-                {/* La fila de arriba es la del héroe: mientras la tirada publicada
-                    no mida el SDK tal como se instala, es provisional y se dice
-                    aquí igual que en el héroe (integración de #321 y #325). */}
-                {SDK_INSTALADO ? null : <p className="offer-fig-note">{t("hero.proofSdkPendiente")}</p>}
               </div>
               <div className="offer-install">
                 <span className="offer-fig-t">{t("offers.install")}</span>
@@ -459,47 +393,21 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
                 code: (c) => <code>{c}</code>,
               })}
             </p>
-            {/* EL FICHERO DE ENSAYOS CRUDOS, ENLAZADO DE VERDAD.
-                `ab:publish` lleva copiando `ab-live-trials.csv` a `public/data`
-                desde que existe, y NADIE lo enlazaba: el titular decía «puedes
-                repetir la medición» y no había por dónde empezar. Repetir el
-                banco sigue sin poder hacerlo un cliente (el repo es privado y
-                los bancos no viajan en el paquete de npm), pero comprobar la
-                aritmética de cada pareja sí — y eso es lo que ahora promete la
-                frase de arriba. */}
+            {/* Los informes completos viven en /benchmarks (servidos desde la
+                web: el repositorio es privado). Antes se enlazaba aquí el CSV de
+                la tirada sintética del 12-09, que ya no se publica como medida. */}
             <p className="sec-head-link">
-              <a href="/data/ab-live-trials.csv" download>
-                {t("step2.trialsLink")}
-              </a>
+              <Link href="/benchmarks">{t("step2.benchLink")}</Link>
             </p>
           </div>
 
-          {/* La prueba, con su modelo. Estaba en el héroe; el dueño pidió un
-              héroe limpio y aquí es donde se explica lo medido. Sigue siendo la
-              ÚNICA cifra prometida de la web y sigue pasando por la verja
-              «prometido ≤ medido» (cifra-del-heroe.test.ts). */}
+          {/* La prueba, con su modelo y su tráfico: las mismas filas que el
+              héroe, desde lib/portada/banco-en-vivo.ts (con verja contra los
+              informes), y la nota de qué palanca ahorró y cuál no. */}
           <div className="hero-prueba medido-prueba rv">
             <span className="hero-prueba-t">{t("hero.proofTitle")}</span>
-            <div className="hero-prueba-filas">
-              {proofs.map((p) => (
-                <div className="hp" key={p.marca}>
-                  <div className="hp-marca">
-                    <LogoProveedor marca={p.marca} />
-                    <b>{p.marca}</b>
-                    <code>{p.modelo}</code>
-                  </div>
-                  <div className="hp-dato">
-                    <span className="hp-n">{p.cifra}</span>
-                    <span className="hp-q">{p.que}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <FilasMedidas filas={filasMedidas} />
             <p className="cascade-nota">{t("cascade.footnote")}</p>
-            {/* La cifra de arriba, mientras la tirada publicada no mida el SDK
-                tal como se instala, no sale de medir el paquete de npm: sale de
-                la tirada con el compresor del banco, recalculada sin él. Se dice. */}
-            {SDK_INSTALADO ? null : <p className="cascade-nota">{t("hero.proofSdkPendiente")}</p>}
           </div>
           {/* La traducción sin jerga (petición del dueño, 2026-09-04): el vídeo
               del experimento justo + las dos cifras del artefacto dichas en
@@ -519,23 +427,20 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             <div className="medido-llano-texto">
               <h3>{t("step2.plainTitle")}</h3>
               <p className="grande">
-                {SDK_INSTALADO
-                  ? t("step2.plain", {
-                      piso: pctLocal1(ab.aggregate.savings.lower),
-                      punto: pctLocal1(ab.aggregate.savings.point),
-                    })
-                  : t("step2.plainSdkPendiente", { piso: pctLocal1(sueloPublicable(ab)) })}
+                {t("step2.plain", {
+                  rep,
+                  punto: pct1.format(V.openai.ahorro.point),
+                  bajo: pct1.format(V.openai.ahorro.lower),
+                  alto: pct1.format(V.openai.ahorro.upper),
+                  cero,
+                })}
               </p>
               <p className="nota">{t("step2.plainNote")}</p>
             </div>
           </div>
-          <div className="bench rv">
-            <ReferenceModeBadge ab={ab} />
-            <NetSavingsCIBand ab={ab} />
-            <div style={{ marginTop: "16px" }}>
-              <ReferenceLedgerCards ab={ab} />
-            </div>
-          </div>
+          {/* Aquí iba el bloque del panel (insignia de referencia, banda del
+              intervalo y tarjetas por libro) leyendo la tirada sintética del
+              12-09. Fuera de la portada: la portada no enseña esa tirada. */}
           {/* La tabla de escenarios, los chips y la nota de caché eran
               «demasiado concreto y científico» para la landing (dueño,
               04-09): viven en el panel. La cinta única tampoco se entendía
@@ -568,58 +473,31 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
                 </div>
               </div>
             </div>
-            <p className="explica-nota">{t("trabajos.caption", { min: rangoMin, max: rangoMax })}</p>
+            <p className="explica-nota">{t("trabajos.caption", { cero })}</p>
           </div>
         </section>
 
-        {/* LEDGERS — four separate ledgers, never summed */}
+        {/* LEDGERS — cuatro libros que nunca se suman. Hasta el 2026-09-29 cada
+            tarjeta enseñaba el suelo de su libro en la tirada sintética del
+            12-09 («avoided_calls ≥ 22 %», «eliminated_tokens ≥ 43,2 %»): cifras
+            de un banco con un compresor que npm no trae. Ahora las tarjetas
+            DESCRIBEN los libros, sin cifra, y la nota dice de qué libro salió el
+            ahorro medido en el banco público (y que el tercero fue cero). */}
         <section>
           <div className="sec-head rv">
-            <div className="prov">
-              <span className="prov-marca">{t("ledgersHead.providerTag")}</span>
-              <code className="prov-modelo">{t("ledgersHead.providerModel")}</code>
-            </div>
             <span className="eyebrow">{t("ledgersHead.eyebrow")}</span>
             <h2>{t("ledgersHead.title")}</h2>
             <p>{t("ledgersHead.body")}</p>
-            <p className="ledgers-modelo">{t("ledgersHead.providerNote")}</p>
+            <p className="ledgers-modelo">{t("ledgersHead.providerNote", { fecha: V.fecha })}</p>
           </div>
           <div className="ledgers">
-            {ledgers
-              .filter((l) => {
-                // Una tarjeta sin cifra define una palanca y remata con un guion:
-                // promete y no cumple, en la seccion cuya tesis es justamente que
-                // aqui no se infla nada. Si esta tirada no midio ese libro, el
-                // libro no sale. Que salgan tres tarjetas en vez de cuatro es la
-                // verdad de esa tirada.
-                const m = medidoPorLibro.get(CLAVE_DE_TARJETA[l.name] ?? "");
-                // Y un libro que mezcla una pieza que npm no trae tampoco: su
-                // cifra no es la de quien instala el paquete.
-                return !!m && m.proven && !LIBROS_CON_PIEZA_DEL_BANCO.has(m.ledger);
-              })
-              .map((l) => {
-              const m = medidoPorLibro.get(CLAVE_DE_TARJETA[l.name] ?? "");
-              // Se publica el LÍMITE INFERIOR del intervalo, nunca el punto: es
-              // la regla del banco y no cambia por estar en una landing. Y un
-              // libro que no despejó el cero NO se anuncia como ahorro.
-              const cifra = `${(m!.savings.lower * 100).toFixed(1)}%`;
-              const pie = t("ledgersHead.measuredFloor");
-              return (
-                <div className="ledger rv" key={l.idx}>
-                  <div className="idx">{l.idx}</div>
-                  <h4>{l.name}</h4>
-                  <p>{l.desc}</p>
-                  <div className="mval">{cifra}</div>
-                  {/* El intervalo entero, dibujado: suelo→techo en menta y el
-                      punto en tinta, sobre la misma escala en las cuatro. */}
-                  <div className="ledger-ci" aria-hidden="true">
-                    <i className="f" style={{ left: `${(m!.savings.lower / 0.75) * 100}%`, width: `${((m!.savings.upper - m!.savings.lower) / 0.75) * 100}%` }} />
-                    <i className="p" style={{ left: `${(m!.savings.point / 0.75) * 100}%` }} />
-                  </div>
-                  <div className="munit">{pie}</div>
-                </div>
-              );
-            })}
+            {ledgers.map((l) => (
+              <div className="ledger rv" key={l.idx}>
+                <div className="idx">{l.idx}</div>
+                <h4>{l.name}</h4>
+                <p>{l.desc}</p>
+              </div>
+            ))}
           </div>
         </section>
 
@@ -756,8 +634,11 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
         </div>
 
         {/* SKILL SAVINGS-MODE — el segmento SUSCRIPCIÓN (sin factura, con topes).
-            Gratis a propósito: el embudo. Las tres cifras salen de
-            lib/skill/anatomia (medidas, con verja) y el efecto del propio skill
+            Gratis a propósito: el embudo. Las tres partidas (lecturas de caché,
+            escrituras de una hora, salida) salían con cifra de
+            lib/skill/anatomia (68,2 / 19,6 / 11,6 % sobre 959 peticiones), pero
+            ese corpus no tiene informe publicado en docs/: desde el 2026-09-29
+            se enseña solo el ORDEN, sin porcentajes. El efecto del propio skill
             NO lleva cifra hasta que el A/B lo mida — la doctrina de la casa. */}
         <section>
           <div className="sec-head rv">
@@ -777,17 +658,10 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
                 <div className="idx">{String(i + 1).padStart(2, "0")}</div>
                 <h4>{t(`skill.${nombre}`)}</h4>
                 <p>{t(`skill.${desc}`)}</p>
-                <div className="mval">{(ANATOMIA_MEDIDA[campo] * 100).toLocaleString(locale, { maximumFractionDigits: 1 })}%</div>
-                <div className="munit">{t("skill.medidaPie")}</div>
               </div>
             ))}
           </div>
-          <p className="ledgers-modelo">
-            {t("skill.anatomiaNota", {
-              peticiones: ANATOMIA_MEDIDA.peticiones.toLocaleString(locale),
-              fecha: ANATOMIA_MEDIDA.fecha,
-            })}
-          </p>
+          <p className="ledgers-modelo">{t("skill.anatomiaNota")}</p>
           <SkillPorSuperficie
             pestanas={[
               {
@@ -859,7 +733,9 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             <div className="plan-card">
               <h3>{t("pricing.plans.medir.name")}</h3>
               <div className="amt">{t("pricing.plans.medir.price")}</div>
-              <p>{t("pricing.plans.medir.body")}</p>
+              {/* Límites y versión mínima desde LIMITES_MEDIR / VERSION_MINIMA_MEDIR:
+                  la 0.4.32 no reconoce la licencia Medir (la ve caducada). */}
+              <p>{t("pricing.plans.medir.body", medir)}</p>
               <Link className="btn ghost" href="/signup">
                 {t("pricing.plans.medir.cta")}
               </Link>
