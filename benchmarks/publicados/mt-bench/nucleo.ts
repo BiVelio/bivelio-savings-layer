@@ -226,16 +226,52 @@ export function usoDeOpenAI(cuerpo: unknown): UsoMedido {
   const det = (u.prompt_tokens_details ?? {}) as Record<string, unknown>;
   const detSalida = (u.completion_tokens_details ?? {}) as Record<string, unknown>;
   const cacheada = num(det.cached_tokens);
+  // Desde gpt-5.6 OpenAI desglosa la ESCRITURA de caché (`cache_write_tokens`,
+  // dentro de `prompt_tokens`) y la cobra a 1,25×. El arnés la ignoraba hasta la
+  // gama alta: la 0.4.31 sí la lee, y su coste declarado salió por encima del medido.
+  const escrita = num(det.cache_write_tokens);
   return {
-    entrada: num(u.prompt_tokens) - cacheada,
+    entrada: num(u.prompt_tokens) - cacheada - escrita,
     cacheLeida: cacheada,
-    cacheEscrita: 0,
+    cacheEscrita: escrita,
     salida: num(u.completion_tokens),
     razonamiento: num(detSalida.reasoning_tokens),
   };
 }
 
-/** Prima de escritura de caché: 1,25× en Anthropic (5 min); OpenAI no la cobra en estos modelos. */
+/**
+ * Chat Completions del endpoint compatible de Gemini (`…/v1beta/openai`):
+ * `completion_tokens` NO incluye el razonamiento («thoughts»), que Google
+ * factura a precio de salida; solo aparece en `total_tokens`. Medido en vivo
+ * el 2026-09-29: gemini-3.8-flash, 13 de entrada + 3 de salida y
+ * `total_tokens` 193. La salida facturada es, pues, `total − prompt`, y el
+ * razonamiento, `total − prompt − completion`. Sin `total_tokens` no se sabe
+ * lo que se piensa: error, nunca un 0.
+ */
+export function usoDeGoogle(cuerpo: unknown): UsoMedido {
+  const u = (cuerpo as { usage?: Record<string, unknown> } | null)?.usage;
+  if (!u || typeof u.prompt_tokens !== "number" || typeof u.completion_tokens !== "number" || typeof u.total_tokens !== "number") {
+    throw new SinUsage("respuesta de Gemini sin usage completo (prompt/completion/total): no se inventa un 0");
+  }
+  const det = (u.prompt_tokens_details ?? {}) as Record<string, unknown>;
+  const cacheada = num(det.cached_tokens);
+  const prompt = num(u.prompt_tokens);
+  const salida = Math.max(num(u.completion_tokens), num(u.total_tokens) - prompt);
+  return {
+    entrada: prompt - cacheada,
+    cacheLeida: cacheada,
+    cacheEscrita: 0,
+    salida,
+    razonamiento: salida - num(u.completion_tokens),
+  };
+}
+
+/** El lector de usage de cada familia (el MISMO para los dos brazos). */
+export function usoDeFamilia(familia: Familia, cuerpo: unknown): UsoMedido {
+  return familia === "anthropic" ? usoDeAnthropic(cuerpo) : familia === "google" ? usoDeGoogle(cuerpo) : usoDeOpenAI(cuerpo);
+}
+
+/** Prima de escritura de caché: 1,25× en Anthropic (5 min); OpenAI no la cobra en estos modelos; Gemini tampoco (caché implícita). */
 export function primaDeEscritura(familia: Familia): number {
   return familia === "anthropic" ? 1.25 : 1;
 }
@@ -264,7 +300,7 @@ export function sumarUsos(us: UsoMedido[]): UsoMedido {
 
 // ── Los modelos ─────────────────────────────────────────────────────────────
 
-export type Familia = "anthropic" | "openai";
+export type Familia = "anthropic" | "openai" | "google";
 
 export interface ModeloDeLaBateria {
   /** El id que se pide (y que manda el brazo A al API). */
@@ -282,6 +318,13 @@ export interface ModeloDeLaBateria {
   maxSalida: number;
   /** false → no se manda `temperature` en ningún brazo (modelos de razonamiento que la rechazan). */
   temperatura: boolean;
+  /**
+   * Solo para un modelo SIN fila en el catálogo del paquete: su precio de lista
+   * OFICIAL, citado (URL + fecha de consulta). No toca el catálogo: la capa lo
+   * recibe como `defaultCostModel` y el banco lo usa para medir. Sin fila y sin
+   * esto, el modelo es «no medible».
+   */
+  precioOficial?: { precio: Precio; fuente: string; consultado: string; cita: string };
 }
 
 /**
@@ -296,6 +339,48 @@ export const MODELOS_POR_DEFECTO: ModeloDeLaBateria[] = [
   { id: "gpt-5.4-mini", familia: "openai", maxSalida: 4096, temperatura: false },
 ];
 
+/**
+ * La tirada «gama alta» (2026-09-29): los modelos de mayor gama de cada
+ * proveedor que el dueño pidió («lanza MT-Bench gama alta»), con el mismo
+ * arnés. Elegidos contra los listados en vivo del 2026-09-29 (GET /v1/models
+ * de Anthropic y OpenAI, GET /v1beta/models de Google) y el catálogo:
+ *   · gpt-5.6: `gpt-5.6-sol`, la de mayor gama sin «pro» con fila ($4/$20;
+ *     -terra $2/$12, -luna $0.20/$1.20).
+ *   · Gemini: `gemini-3.8-flash` (la Flash vigente más nueva con fila) y
+ *     `gemini-3.1-pro-preview` (la única Pro 3.x servida, con fila).
+ *   · `claude-sonnet-5-5` no tiene fila: se mide con su precio OFICIAL citado.
+ * Topes de salida: 1024 (FastChat) en Anthropic, que no piensa si no se le
+ * pide; 4096 en gpt-5.x y Gemini 3.x, cuyo razonamiento cuenta dentro del tope.
+ * Temperatura: Opus 5.5 y Sonnet 5.5 rechazan `temperature` con 400
+ * («`temperature` is deprecated for this model», humo LIVE del 2026-09-29):
+ * no se manda en ningún brazo, como en gpt-5.x. Gemini sí la acepta y lleva la
+ * de FastChat por categoría en los dos.
+ * Esfuerzo de razonamiento: el POR DEFECTO del proveedor en los dos brazos (la
+ * 0.4.31 no tiene campo para fijarlo, así que el brazo A tampoco lo manda).
+ */
+export const MODELOS_GAMA_ALTA: ModeloDeLaBateria[] = [
+  { id: "claude-opus-5-5", familia: "anthropic", maxSalida: 1024, temperatura: false },
+  {
+    id: "claude-sonnet-5-5",
+    familia: "anthropic",
+    maxSalida: 1024,
+    temperatura: false,
+    precioOficial: {
+      precio: { inputPer1k: 0.002, outputPer1k: 0.01, cachedInputPer1k: 0.0002 },
+      fuente: "https://platform.claude.com/docs/en/about-claude/pricing",
+      consultado: "2026-09-29",
+      cita: "Claude Sonnet 5.5 | $2 / MTok | $2.50 / MTok | $4 / MTok | $0.20 / MTok | $10 / MTok",
+    },
+  },
+  { id: "gpt-5.5", familia: "openai", maxSalida: 4096, temperatura: false },
+  { id: "gpt-5.6-sol", familia: "openai", maxSalida: 4096, temperatura: false },
+  { id: "gemini-3.8-flash", familia: "google", maxSalida: 4096, temperatura: true },
+  { id: "gemini-3.1-pro-preview", familia: "google", maxSalida: 4096, temperatura: true },
+];
+
+/** Tope duro de la tirada gama alta: 1,25 $ por modelo (A+B), cualquiera que sea su familia. */
+export const TOPE_GAMA_ALTA_POR_MODELO_USD = 1.25;
+
 /** Id con prefijo de proveedor, como lo espera la capa (precio, claves de caché, informe). */
 export function idCualificado(m: ModeloDeLaBateria): string {
   return `${m.familia}/${m.id}`;
@@ -307,7 +392,7 @@ export function idCualificado(m: ModeloDeLaBateria): string {
  * Topes duros de esta tirada (0.4.31): 0,80 $ por modelo de OpenAI y 1,25 $ por
  * modelo de Anthropic (A+B juntos), y 0,50 $ de juez EN TOTAL para la batería.
  */
-export const TOPE_POR_FAMILIA_USD: Readonly<Record<Familia, number>> = { openai: 0.8, anthropic: 1.25 };
+export const TOPE_POR_FAMILIA_USD: Readonly<Record<Familia, number>> = { openai: 0.8, anthropic: 1.25, google: 0.8 };
 export const TOPE_DEL_JUEZ_USD = 0.5;
 
 export function topePorModelo(m: Pick<ModeloDeLaBateria, "familia">): number {
@@ -688,7 +773,14 @@ export function atribucionDelAhorro(e: {
  * ni telemetría: el brazo B corre desde el fuente con la licencia de
  * desarrollo abierta y su tráfico no debe tocar el plano de control.
  */
-export const HOSTS_PERMITIDOS = ["api.anthropic.com", "api.openai.com", "ai-gateway.vercel.sh", "raw.githubusercontent.com"] as const;
+export const HOSTS_PERMITIDOS = [
+  "api.anthropic.com",
+  "api.openai.com",
+  // Gemini, por su endpoint compatible con OpenAI (`/v1beta/openai`): el arnés no tiene familia nativa de Google.
+  "generativelanguage.googleapis.com",
+  "ai-gateway.vercel.sh",
+  "raw.githubusercontent.com",
+] as const;
 
 export function hostDe(url: string): string {
   try {

@@ -26,8 +26,9 @@
  * El transporte ya no inyecta nada, y NO envía una petición sin tope.
  *
  * Guarda de hosts: en toda la tirada `fetch` (el global y el de los brazos)
- * solo puede salir a api.anthropic.com, api.openai.com, ai-gateway.vercel.sh
- * (juez) y raw.githubusercontent.com (dataset). Nada de medición ni licencias.
+ * solo puede salir a api.anthropic.com, api.openai.com,
+ * generativelanguage.googleapis.com (Gemini, por su endpoint compatible con
+ * OpenAI), ai-gateway.vercel.sh (juez) y raw.githubusercontent.com (dataset). Nada de medición ni licencias.
  * Se registran los hosts vistos (solo el host).
  *
  * Calidad: juez de pares de MT-Bench (gpt-4o), las dos posiciones, con la
@@ -39,6 +40,9 @@
  *   pnpm bench:mt-bench --mock --fuente        # sin red de proveedor: la capa REAL del fuente verificado
  *   pnpm bench:mt-bench --fuente               # LIVE con el fuente de la etiqueta
  *   … --modelos=gpt-4o-mini --max-preguntas=8 --sin-juez
+ *   pnpm bench:mt-bench --fuente --gama-alta   # LIVE, modelos de gama alta (Opus/Sonnet 5.5, gpt-5.5,
+ *                                              # gpt-5.6-sol, Gemini 3.x): 1,25 $ por modelo, 0,50 $ de
+ *                                              # juez, libro e informe propios (…-gama-alta.*)
  *   pnpm bench:mt-bench --desde-crudo          # recarga la tirada LIVE, completa el juicio con lo
  *                                              # que quede del tope del juez; NO llama a los proveedores
  *
@@ -62,6 +66,8 @@ import {
   CATEGORIAS_CON_REFERENCIA,
   DATASET,
   MODELOS_POR_DEFECTO,
+  MODELOS_GAMA_ALTA,
+  TOPE_GAMA_ALTA_POR_MODELO_USD,
   PresupuestoAgotado,
   SEMILLA_DE_MUESTRA,
   TEMPERATURA_FASTCHAT,
@@ -97,8 +103,7 @@ import {
   topeDelCuerpo,
   topePorModelo,
   urlDeFichero,
-  usoDeAnthropic,
-  usoDeOpenAI,
+  usoDeFamilia,
   type Categoria,
   type Atribucion,
   type ClaseDelAhorro,
@@ -113,6 +118,9 @@ import {
   type Referencia,
   type UsoMedido,
 } from "./nucleo.js";
+// La prima de escritura POR MODELO de la propia capa (sin cambios desde la
+// etiqueta v0.4.31): 1,25× en Anthropic y en los GPT de la 5.6 en adelante, 1 en el resto.
+import { primaDeEscritura as primaDelModelo } from "../../../src/pricing/primas.js";
 
 // ── Fijaciones del paquete ──────────────────────────────────────────────────
 
@@ -148,7 +156,24 @@ const FECHA = "2026-09-28";
  * tiradas. Sin él, correr un modelo dos veces (o de uno en uno) daría a cada
  * tirada el tope entero: el tope es de la batería, no de la invocación.
  */
-const LIBRO_DE_GASTO = join(DIR_TRABAJO, `gasto-live-${PAQUETE.version}.json`);
+let LIBRO_DE_GASTO = join(DIR_TRABAJO, `gasto-live-${PAQUETE.version}.json`);
+
+/**
+ * Qué tirada se corre. La de siempre (4 modelos, 0,80 $ OpenAI / 1,25 $
+ * Anthropic) o `--gama-alta` (2026-09-29): los modelos de mayor gama, 1,25 $
+ * por modelo sea cual sea su familia y 0,50 $ de juez EN TOTAL para ESTA
+ * tirada. Cada una con su propio libro de gasto y su propio informe: la gama
+ * alta no hereda ni pisa el juez ni los ficheros de la tirada anterior.
+ */
+interface Tirada {
+  gamaAlta: boolean;
+  modelos: ModeloDeLaBateria[];
+  sufijo: string;
+  topeDe(m: ModeloDeLaBateria): number;
+}
+const TIRADA_BASE: Tirada = { gamaAlta: false, modelos: MODELOS_POR_DEFECTO, sufijo: "", topeDe: topePorModelo };
+const TIRADA_GAMA_ALTA: Tirada = { gamaAlta: true, modelos: MODELOS_GAMA_ALTA, sufijo: "-gama-alta", topeDe: () => TOPE_GAMA_ALTA_POR_MODELO_USD };
+let TIRADA: Tirada = TIRADA_BASE;
 /**
  * El árbol de la etiqueta, extraído con `git archive`. Empieza por punto a
  * propósito: los globs de tsconfig (`benchmarks/**`) no entran en carpetas con
@@ -188,6 +213,7 @@ interface Opciones {
    */
   desdeCrudo: boolean;
   modelos: ModeloDeLaBateria[];
+  tirada: Tirada;
   maxPreguntas: number;
   juez: boolean;
   concurrenciaPreguntas: number;
@@ -197,13 +223,15 @@ function leerOpciones(argv: string[]): Opciones {
   const valor = (n: string): string | undefined =>
     argv.find((a) => a.startsWith(`--${n}=`))?.slice(n.length + 3);
   const ids = valor("modelos")?.split(",").map((s) => s.trim()).filter(Boolean);
+  const tirada = argv.includes("--gama-alta") ? TIRADA_GAMA_ALTA : TIRADA_BASE;
+  const lista = tirada.modelos;
   const modelos = ids
     ? ids.map((id) => {
-        const m = MODELOS_POR_DEFECTO.find((x) => x.id === id);
-        if (!m) throw new Error(`modelo no previsto en la batería: ${id} (${MODELOS_POR_DEFECTO.map((x) => x.id).join(", ")})`);
+        const m = lista.find((x) => x.id === id);
+        if (!m) throw new Error(`modelo no previsto en la batería: ${id} (${lista.map((x) => x.id).join(", ")})`);
         return m;
       })
-    : MODELOS_POR_DEFECTO;
+    : lista;
   const max = Number(valor("max-preguntas") ?? 80);
   return {
     mock: argv.includes("--mock"),
@@ -211,10 +239,13 @@ function leerOpciones(argv: string[]): Opciones {
     mockAnthropic401: argv.includes("--mock-anthropic-401"),
     desdeCrudo: argv.includes("--desde-crudo"),
     modelos,
+    tirada,
     maxPreguntas: Number.isFinite(max) && max > 0 ? Math.min(80, Math.floor(max)) : 80,
     juez: !argv.includes("--sin-juez"),
-    // 2 preguntas a la vez × 2 brazos = ≤ 4 peticiones simultáneas por proveedor.
-    concurrenciaPreguntas: 2,
+    // Gama alta: 1 pregunta a la vez × 2 brazos = ≤ 2 peticiones simultáneas por
+    // proveedor (hay otros bancos con las mismas claves: el límite pactado es 3).
+    // La tirada anterior: 2 × 2 = 4.
+    concurrenciaPreguntas: tirada.gamaAlta ? 1 : 2,
   };
 }
 
@@ -304,6 +335,7 @@ interface InformeDeLaCapa {
   tokens: { baselineInput: number; actualInput: number; baselineOutput: number; actualOutput: number; providerCachedInput?: number; eliminatedInput: number; compressedInput: number };
   cache: { result: string };
   routing: { executionClass: string; reason?: string };
+  /** `netSavings` es una PROPORCIÓN (0..1, `tokenizer/accounting.ts`), no dólares: el ahorro en $ es `baselineEstimate − actual`. */
   cost: { baselineEstimate: number; actual: number; netSavings: number; basis: string };
   qualityStatus?: string;
   latencyMs: { total: number; preprocessing: number; provider: number };
@@ -540,6 +572,8 @@ interface LlamadaMedida {
 
 interface ContextoDeTransporte {
   familia: Familia;
+  /** Prima de escritura de caché de ESTE modelo (ver `primaDeTransporte`). */
+  prima?: number;
   precio: Precio;
   tope: Tope;
   maxSalida: number;
@@ -548,6 +582,33 @@ interface ContextoDeTransporte {
   registro: LlamadaMedida[];
   base: typeof fetch;
 }
+
+/**
+ * La prima de escritura de caché del modelo: en la gama alta, la de la propia
+ * capa por modelo (gpt-5.6-sol reporta `cache_write_tokens` y OpenAI los cobra
+ * a 1,25×); Gemini, 1. En la tirada anterior, la de la familia, como se publicó.
+ */
+function primaDeTransporte(m: ModeloDeLaBateria): number {
+  if (!TIRADA.gamaAlta) return primaDeEscritura(m.familia);
+  return m.familia === "google" ? 1 : primaDelModelo(m.id);
+}
+
+/**
+ * El motivo de un modelo que no completó ninguna pregunta, en UNA línea: el
+ * `message` del proveedor si lo hay (los errores de Google son JSON de varias
+ * líneas) y qué brazo/turno falló.
+ */
+function motivoDeFallo(resultados: ResultadoDePregunta[]): string {
+  const l0 = resultados[0]?.llamadas.find((x) => x.error && x.status >= 400);
+  const e = l0?.error ?? resultados[0]?.error ?? "?";
+  const msg = /"message":\s*"((?:[^"\\]|\\.)*)"/.exec(e)?.[1]?.replace(/\\"/g, '"').replace(/\\n/g, " ");
+  const l = resultados[0]?.llamadas.find((x) => x.error && x.status >= 400);
+  const donde = l ? `brazo ${l.brazo}, turno ${l.turno}, HTTP ${l.status}` : "";
+  return `no medible: ${[donde, msg ?? e.replace(/\s+/g, " ").slice(0, 200)].filter(Boolean).join(" — ")}`;
+}
+
+/** Preguntas seguidas con error (no de presupuesto) tras las que se deja de correr un modelo. */
+const FALLOS_SEGUIDOS_PARA_PARAR = 2;
 
 const REINTENTABLE = new Set([408, 409, 425, 429, 500, 502, 503, 504, 529]);
 const esperar = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -573,7 +634,7 @@ function fetchMedido(ctx: ContextoDeTransporte): typeof fetch {
       throw new Error(`transporte: ${err}`);
     }
     const reserva = ctx.tope.reservar(
-      peorCosteDeLlamada(ctx.precio, primaDeEscritura(ctx.familia), JSON.stringify(cuerpo["messages"] ?? cuerpo).length + JSON.stringify(cuerpo["system"] ?? "").length, maxSalida, 256),
+      peorCosteDeLlamada(ctx.precio, ctx.prima ?? primaDeEscritura(ctx.familia), JSON.stringify(cuerpo["messages"] ?? cuerpo).length + JSON.stringify(cuerpo["system"] ?? "").length, maxSalida, 256),
     );
     const t0 = performance.now();
     let reintentos = 0;
@@ -618,8 +679,8 @@ function fetchMedido(ctx: ContextoDeTransporte): typeof fetch {
     let uso: UsoMedido | null = null;
     let coste = 0;
     try {
-      uso = ctx.familia === "anthropic" ? usoDeAnthropic(json) : usoDeOpenAI(json);
-      coste = costeDeUso(ctx.precio, primaDeEscritura(ctx.familia), uso);
+      uso = usoDeFamilia(ctx.familia, json);
+      coste = costeDeUso(ctx.precio, ctx.prima ?? primaDeEscritura(ctx.familia), uso);
     } catch (e) {
       // Sin usage no hay medida: se cobra la reserva entera (peor caso) para que el tope siga siendo un tope.
       coste = reserva;
@@ -655,9 +716,20 @@ function baseV1(v: string | undefined, porDefecto: string): string {
   return b;
 }
 
+/** La base del endpoint compatible de Gemini: se respeta su ruta (`/v1beta/openai`), no se le pone `/v1`. */
+function baseGoogle(v: string | undefined): string {
+  let b = (v ?? "https://generativelanguage.googleapis.com/v1beta/openai").trim();
+  if (!/^https?:\/\//i.test(b)) b = `https://${b}`;
+  b = b.replace(/\/+$/, "");
+  if (!/\/openai$/.test(b)) b = `${b.replace(/\/v1beta$/, "")}/v1beta/openai`;
+  return b;
+}
+
 interface Credenciales {
   anthropic: { base: string; clave: string | undefined };
   openai: { base: string; clave: string | undefined };
+  /** Gemini por su endpoint compatible con OpenAI (`https://generativelanguage.googleapis.com/v1beta/openai`). */
+  google: { base: string; clave: string | undefined };
   juez: { base: string; clave: string | undefined; modelo: string };
   licencia: string | undefined;
 }
@@ -667,6 +739,7 @@ function credenciales(): Credenciales {
   return {
     anthropic: { base: baseV1(e.BVSALA_DEMO_ANTHROPIC_BASE_URL, "api.anthropic.com"), clave: e.BVSALA_DEMO_ANTHROPIC_API_KEY },
     openai: { base: baseV1(e.BVSALA_DEMO_BASE_URL, "api.openai.com"), clave: e.BVSALA_DEMO_API_KEY },
+    google: { base: baseGoogle(e.BVSALA_SONDA_BASE_URL), clave: e.BVSALA_SONDA_API_KEY },
     juez: { base: baseV1(e.BVSALA_JUDGE_BASE_URL, "ai-gateway.vercel.sh"), clave: e.BVSALA_JUDGE_API_KEY, modelo: e.BVSALA_JUDGE_MODEL ?? "openai/gpt-4o" },
     licencia: e.BIVELIO_LICENSE_KEY,
   };
@@ -703,11 +776,15 @@ async function llamarDirecto(
     const texto = (j.content ?? []).filter((b) => b.type === "text").map((b) => b.text ?? "").join("");
     return { texto, fin: j.stop_reason ?? null, latenciaMs: performance.now() - t0 };
   }
-  const body: Record<string, unknown> = { model: m.id, messages: mensajes, max_completion_tokens: m.maxSalida };
+  // Mismo campo de tope que manda la 0.4.31 a cada host: `max_completion_tokens`
+  // al API oficial de OpenAI y `max_tokens` a cualquier otro (el de Gemini incluido).
+  const google = m.familia === "google";
+  const body: Record<string, unknown> = { model: m.id, messages: mensajes, [google ? "max_tokens" : "max_completion_tokens"]: m.maxSalida };
   if (temperatura !== undefined) body["temperature"] = temperatura;
-  const res = await f(`${cred.openai.base}/chat/completions`, {
+  const c = google ? cred.google : cred.openai;
+  const res = await f(`${c.base}/chat/completions`, {
     method: "POST",
-    headers: { "content-type": "application/json", authorization: `Bearer ${cred.openai.clave ?? ""}` },
+    headers: { "content-type": "application/json", authorization: `Bearer ${c.clave ?? ""}` },
     body: JSON.stringify(body),
   });
   if (!res.ok) throw new Error(`brazo A ${m.id}: HTTP ${res.status}`);
@@ -734,8 +811,15 @@ function fabricaReal(mod: ModuloDelPaquete, cred: Credenciales, origen: { tipo: 
       const provider =
         m.familia === "anthropic"
           ? new mod.AnthropicProvider({ apiKey: cred.anthropic.clave, baseUrl: cred.anthropic.base, fetchImpl: f })
-          : new mod.OpenAICompatibleProvider({ apiKey: cred.openai.clave, baseUrl: cred.openai.base, fetchImpl: f });
-      const precio = mod.CATALOGO[m.id];
+          : m.familia === "google"
+            ? // `stripProviderPrefix: true`: sin ella la 0.4.31 manda `google/gemini-…` TAL CUAL
+              // al host oficial de Gemini, que responde 404 (humo LIVE del 2026-09-29; solo
+              // quita el prefijo a api.openai.com y Azure). Es la opción pública que el
+              // cliente tendría que poner; se declara en el informe.
+              new mod.OpenAICompatibleProvider({ apiKey: cred.google.clave, baseUrl: cred.google.base, fetchImpl: f, stripProviderPrefix: true })
+            : new mod.OpenAICompatibleProvider({ apiKey: cred.openai.clave, baseUrl: cred.openai.base, fetchImpl: f });
+      // Sin fila en el catálogo, el precio OFICIAL citado del modelo (nunca se toca el catálogo).
+      const precio = mod.CATALOGO[m.id] ?? m.precioOficial?.precio;
       return mod.createSavingsLayer({
         provider,
         ...(origen.tipo === "fuente" ? { devUnlicensed: true } : { licenseKey: cred.licencia }),
@@ -803,7 +887,7 @@ function fetchFalso(anthropic401 = false): typeof fetch {
       );
     }
     return new Response(
-      JSON.stringify({ model: body.model, choices: [{ message: { role: "assistant", content: texto }, finish_reason: "stop" }], usage: { prompt_tokens: Math.ceil(chars / 4), completion_tokens: salida, prompt_tokens_details: { cached_tokens: 0 } } }),
+      JSON.stringify({ model: body.model, choices: [{ message: { role: "assistant", content: texto }, finish_reason: "stop" }], usage: { prompt_tokens: Math.ceil(chars / 4), completion_tokens: salida, total_tokens: Math.ceil(chars / 4) + salida + (url.includes("generativelanguage") ? 30 : 0), prompt_tokens_details: { cached_tokens: 0 } } }),
       { status: 200, headers: { "content-type": "application/json" } },
     );
   }) as typeof fetch;
@@ -839,7 +923,7 @@ async function correrPregunta(
 ): Promise<ResultadoDePregunta> {
   const temperatura = m.temperatura ? TEMPERATURA_FASTCHAT[p.categoria] : undefined;
   const registro: LlamadaMedida[] = [];
-  const ctxA: ContextoDeTransporte = { familia: m.familia, precio, tope, maxSalida: m.maxSalida, brazo: "A", turno: 1, registro, base };
+  const ctxA: ContextoDeTransporte = { familia: m.familia, prima: primaDeTransporte(m), precio, tope, maxSalida: m.maxSalida, brazo: "A", turno: 1, registro, base };
   const ctxB: ContextoDeTransporte = { ...ctxA, brazo: "B" };
   const fA = fetchMedido(ctxA);
   const fB = fetchMedido(ctxB);
@@ -948,8 +1032,12 @@ async function juzgarPregunta(
       // FastChat: temperature 0, max_tokens 2048.
       body: JSON.stringify({ model: cred.juez.modelo, temperature: 0, max_tokens: 2048, messages: [{ role: "system", content: sys }, { role: "user", content: user }] }),
     });
-  const turnos = await Promise.all(
-    ([1, 2] as const).map(async (turno): Promise<JuicioDeTurno> => {
+  // Gama alta: los dos turnos, uno detrás de otro (≤ 2 partidas a la vez contra la pasarela).
+  const mapa = <T, R>(xs: readonly T[], f: (x: T) => Promise<R>): Promise<R[]> =>
+    TIRADA.gamaAlta ? xs.reduce<Promise<R[]>>(async (acc, x) => [...(await acc), await f(x)], Promise.resolve([])) : Promise.all(xs.map(f));
+  const turnos = await mapa(
+    [1, 2] as const,
+    async (turno: 1 | 2): Promise<JuicioDeTurno> => {
       const identicas = turno === 1 ? convA.respuestas[0] === convB.respuestas[0] : convA.respuestas.every((t, i) => t === convB.respuestas[i]);
       const p1 = promptDelJuez(ds.prompts, turno, convA, convB, ref);
       if (identicas) {
@@ -962,7 +1050,7 @@ async function juzgarPregunta(
       const g2: Ganador = r2 === "sin presupuesto" ? "error" : r2;
       const c = combinarPartidas(g1, g2);
       return { turno, prompt: p1.nombre, partida1: g1, partida2: g2, ganador: c.ganador, inconsistente: c.inconsistente, identicas: false, partidas: [r1, r2].filter((r) => r !== "sin presupuesto").length, ...(sinPresupuesto ? { sinPresupuesto: true } : {}) };
-    }),
+    },
   );
   return turnos;
 }
@@ -1144,7 +1232,11 @@ function resumir(
   }
   const informes = completas.flatMap((r) => r.B.map((t) => t.informe).filter((x): x is NonNullable<typeof x> => !!x));
   const ahorroPorBasis: Record<string, number> = {};
-  for (const i of informes) ahorroPorBasis[i.cost.basis] = (ahorroPorBasis[i.cost.basis] ?? 0) + i.cost.netSavings;
+  // El ahorro que la capa DECLARA, en dólares: `baselineEstimate − actual`. No
+  // `netSavings`, que es una proporción por petición (0..1): sumarla como $
+  // (lo que hacía este arnés hasta la gama alta) solo daba bien con 0.
+  const ahorroUsd = (i: (typeof informes)[number]) => i.cost.baselineEstimate - i.cost.actual;
+  for (const i of informes) ahorroPorBasis[i.cost.basis] = (ahorroPorBasis[i.cost.basis] ?? 0) + ahorroUsd(i);
   // ¿Cuadran los tokens que la capa dice haber mandado con los que el proveedor facturó?
   let noCuadran = 0;
   for (const r of completas) {
@@ -1197,7 +1289,7 @@ function resumir(
     idCualificado: idCualificado(m),
     familia: m.familia,
     maxSalida: m.maxSalida,
-    temperatura: m.temperatura ? "FastChat por categoría (igual en A y B)" : "no se envía (modelo de razonamiento), en ningún brazo",
+    temperatura: m.temperatura ? "FastChat por categoría (igual en A y B)" : (TIRADA.gamaAlta ? "no se envía (el modelo la rechaza con 400 o es de razonamiento), en ningún brazo" : "no se envía (modelo de razonamiento), en ningún brazo"),
     precio,
     precioConocido: precio !== null,
     preguntas: {
@@ -1228,7 +1320,7 @@ function resumir(
         diferenciasDelCable: contar(difs),
         lecturasDeCacheA: lecturasA,
         lecturasDeCacheB: lecturasB,
-        ahorroDeclaradoUsd: informes.reduce((s, i) => s + i.cost.netSavings, 0),
+        ahorroDeclaradoUsd: informes.reduce((s, i) => s + ahorroUsd(i), 0),
       }),
       controlAA: { preguntas: aaA.length, ahorro: aaCI, clase: claseDelAhorro(aaCI, aaA.length) },
       deltaMedioPorPreguntaUsd: completas.length ? bootstrapMeanCI(deltas, { seed: SEMILLA_DE_MUESTRA }) : null,
@@ -1261,7 +1353,7 @@ function resumir(
     },
     capa: {
       basis: contar(informes.map((i) => i.cost.basis)),
-      ahorroDeclaradoUsd: informes.reduce((s, i) => s + i.cost.netSavings, 0),
+      ahorroDeclaradoUsd: informes.reduce((s, i) => s + ahorroUsd(i), 0),
       ahorroDeclaradoPorBasis: ahorroPorBasis,
       costeDeclaradoUsd: informes.reduce((s, i) => s + i.cost.actual, 0),
       costeMedidoB: cB.reduce((s, x) => s + x, 0),
@@ -1297,7 +1389,7 @@ function resumir(
 function markdown(inf: InformeCompleto): string {
   const L: string[] = [];
   const usd = (x: number) => fmtUsd(x);
-  L.push(`# MT-Bench A/B — capa ${PAQUETE.nombre} ${inf.paquete.version} (${FECHA})`);
+  L.push(`# MT-Bench A/B${inf.topes.porModeloUsd !== undefined ? " — gama alta" : ""} — capa ${PAQUETE.nombre} ${inf.paquete.version} (${inf.fecha})`);
   L.push("");
   if (inf.modo !== "LIVE") {
     L.push(`> **${inf.modo}: NINGUNA cifra de este fichero es una medida.** El brazo B es ${inf.brazoB}. Solo valida el arnés.`);
@@ -1317,10 +1409,15 @@ function markdown(inf: InformeCompleto): string {
   L.push(`- **Dataset:** ${inf.dataset.origen} — \`${DATASET.repo}@${DATASET.commit}\` (${DATASET.license}); sha256 verificados: question.jsonl \`${DATASET.ficheros.preguntas.sha256.slice(0, 16)}…\`, reference_answer/gpt-4.jsonl \`${DATASET.ficheros.referencias.sha256.slice(0, 16)}…\`, judge_prompts.jsonl \`${DATASET.ficheros.promptsDelJuez.sha256.slice(0, 16)}…\`. No se versiona: se descarga y se comprueba en cada tirada.`);
   L.push(`- **Subconjunto:** orden estratificado por categoría con semilla ${SEMILLA_DE_MUESTRA}; cualquier prefijo queda equilibrado (±1 por categoría). Se corta cuando el peor coste de la siguiente pregunta ya no cabe en el tope.`);
   L.push(`- **Juez:** \`${inf.juez.modelo}\` por pasarela, prompts de pares de FastChat (\`pair-v2\`, \`pair-v2-multi-turn\`, y \`pair-math-v1*\` con referencia en math/reasoning/coding), posiciones intercambiadas; si las dos partidas discrepan, empate. Turnos con respuestas byte-idénticas en A y B = empate sin juez (declarado aparte).`);
-  L.push(`- **Topes duros (en código):** ${usd(inf.topes.porFamiliaUsd.openai)} por modelo de OpenAI y ${usd(inf.topes.porFamiliaUsd.anthropic)} por modelo de Anthropic (A+B), ${usd(inf.topes.juezTotalUsd)} de juez en total. Cada llamada reserva su peor caso antes de salir.`);
+  L.push(
+    `- **Topes duros (en código):** ${inf.topes.porModeloUsd !== undefined ? `${usd(inf.topes.porModeloUsd)} por modelo, sea cual sea su familia` : `${usd(inf.topes.porFamiliaUsd.openai)} por modelo de OpenAI y ${usd(inf.topes.porFamiliaUsd.anthropic)} por modelo de Anthropic`} (A+B), ${usd(inf.topes.juezTotalUsd)} de juez en total${inf.topes.porModeloUsd !== undefined ? " para esta tirada (libro de gasto propio)" : ""}. Cada llamada reserva su peor caso antes de salir.`,
+  );
+  for (const p of inf.preciosOficiales ?? []) {
+    L.push(`- **Precio oficial citado (sin fila en el catálogo; el catálogo NO se ha tocado):** \`${p.modelo}\` ${p.precio.inputPer1k}/${p.precio.outputPer1k} $ por 1k (cacheada ${p.precio.cachedInputPer1k ?? "—"}) — ${p.fuente}, consultada el ${p.consultado}: «${p.cita}».`);
+  }
   L.push(`- **Gasto real total:** generación ${usd(inf.gastoTotal.generacion)} + juez ${usd(inf.gastoTotal.juez)} = **${usd(inf.gastoTotal.generacion + inf.gastoTotal.juez)}**.`);
   const libroTotal = (x: Record<string, number>) => Object.values(x).reduce((s, v) => s + v, 0);
-  L.push(`- **Gasto acumulado de la batería** (libro de gasto LIVE de la 0.4.31: todas las tiradas, incluida la de humo de 1 pregunta y la recarga que completa el juicio): generación ${Object.entries(inf.gastoAcumuladoEntreTiradas.generacion).map(([k, v]) => `${k} ${usd(v)}`).join(", ")} = ${usd(libroTotal(inf.gastoAcumuladoEntreTiradas.generacion))}; juez ${usd(libroTotal(inf.gastoAcumuladoEntreTiradas.juez))} de ${usd(inf.topes.juezTotalUsd)}.`);
+  L.push(`- **Gasto acumulado de la batería** (libro de gasto LIVE de ${inf.topes.porModeloUsd !== undefined ? "esta tirada gama alta" : "la 0.4.31"}: todas las invocaciones LIVE, incluidas las de humo de 1 pregunta y las recargas que completan el juicio): generación ${Object.entries(inf.gastoAcumuladoEntreTiradas.generacion).map(([k, v]) => `${k} ${usd(v)}`).join(", ")} = ${usd(libroTotal(inf.gastoAcumuladoEntreTiradas.generacion))}; juez ${usd(libroTotal(inf.gastoAcumuladoEntreTiradas.juez))} de ${usd(inf.topes.juezTotalUsd)}.`);
   L.push(`- **Hosts vistos** (guarda de \`fetch\`; solo se permiten ${inf.hosts.permitidos.map((h) => `\`${h}\``).join(", ")}): ${Object.entries(inf.hosts.vistos).map(([h, n]) => `\`${h}\` ×${n}`).join(", ") || "ninguno"}. Bloqueados: ${Object.entries(inf.hosts.bloqueados).map(([h, n]) => `\`${h}\` ×${n}`).join(", ") || "**ninguno**"}.`);
   if (inf.modelosFallidos.length) L.push(`- **No medidos:** ${inf.modelosFallidos.map((f) => `\`${f.modelo}\` — ${f.error}`).join("; ")}.`);
   L.push("");
@@ -1328,13 +1425,23 @@ function markdown(inf: InformeCompleto): string {
   L.push("");
   L.push("| modelo | preguntas | coste A | coste B | ahorro B vs A (IC95 estratificado) | clase del ahorro | ¿atribuible a la capa? | control A/A: turno 1 con cuerpo idéntico (IC95) | caché de prefijo leída A/B (llamadas) | p50 A / B (ms) | p95 A / B (ms) | B gana / A gana / empate (turnos) | tasa de victoria B (IC95) | gasto real (gen + juez) |");
   L.push("| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+  const gamaAlta = inf.topes.porModeloUsd !== undefined;
+  // Gama alta: el gasto de la fila es el del LIBRO (todas las invocaciones, humo incluido), no solo el de la última.
+  const genReal = (modelo: string, deLaFila: number) => (gamaAlta ? (inf.gastoAcumuladoEntreTiradas.generacion[modelo] ?? deLaFila) : deLaFila);
+  const juezReal = (modelo: string, deLaFila: number) => (gamaAlta ? (inf.gastoAcumuladoEntreTiradas.juez[modelo] ?? deLaFila) : deLaFila);
+  const fallido = new Set(inf.modelosFallidos.map((f) => f.modelo));
   for (const r of inf.modelos) {
+    // Un modelo sin ninguna pregunta completa va solo en su fila de «no medible».
+    if (gamaAlta && r.preguntas.completas === 0 && fallido.has(r.modelo)) continue;
     const lat = (x: number | null) => (x === null ? "—" : Math.round(x).toString());
     L.push(
-      `| \`${r.modelo}\` | ${r.preguntas.completas}/${r.preguntas.planificadas}${r.preguntas.cortePorPresupuesto ? " ✂" : ""} | ${usd(r.coste.A)} | ${usd(r.coste.B)} | ${ci(r.coste.ahorroEstratificadoPorCategoria)} | ${r.coste.clase} | ${r.coste.atribucion.atribuible === null ? "—" : r.coste.atribucion.atribuible ? "posible" : "**no**"} | ${ci(r.coste.controlAA.ahorro)} (n=${r.coste.controlAA.preguntas}, ${r.coste.controlAA.clase}) | ${r.cacheDePrefijo.llamadasConLecturaA}/${r.cacheDePrefijo.llamadasConLecturaB} de ${r.cacheDePrefijo.llamadas / 2} | ${lat(r.latencia.A.p50)} / ${lat(r.latencia.B.p50)} | ${lat(r.latencia.A.p95)} / ${lat(r.latencia.B.p95)} | ${r.calidad.victoriasB} / ${r.calidad.victoriasA} / ${r.calidad.empates} | ${ci(r.calidad.tasaDeVictoriaB)} | ${usd(r.gasto.total)} + ${usd(r.gasto.juez)} |`,
+      `| \`${r.modelo}\` | ${r.preguntas.completas}/${r.preguntas.planificadas}${r.preguntas.cortePorPresupuesto ? " ✂" : ""} | ${usd(r.coste.A)} | ${usd(r.coste.B)} | ${ci(r.coste.ahorroEstratificadoPorCategoria)} | ${r.coste.clase} | ${r.coste.atribucion.atribuible === null ? "—" : r.coste.atribucion.atribuible ? "posible" : "**no**"} | ${ci(r.coste.controlAA.ahorro)} (n=${r.coste.controlAA.preguntas}, ${r.coste.controlAA.clase}) | ${r.cacheDePrefijo.llamadasConLecturaA}/${r.cacheDePrefijo.llamadasConLecturaB} de ${r.cacheDePrefijo.llamadas / 2} | ${lat(r.latencia.A.p50)} / ${lat(r.latencia.B.p50)} | ${lat(r.latencia.A.p95)} / ${lat(r.latencia.B.p95)} | ${r.calidad.victoriasB} / ${r.calidad.victoriasA} / ${r.calidad.empates} | ${ci(r.calidad.tasaDeVictoriaB)} | ${usd(genReal(r.modelo, r.gasto.total))} + ${usd(juezReal(r.modelo, r.gasto.juez))} |`,
     );
   }
-  for (const f of inf.modelosFallidos) L.push(`| \`${f.modelo}\` | — | — | — | — | — | — | — | — | — | — | — | — | 0 $ — ${f.error} |`);
+  for (const f of inf.modelosFallidos) {
+    const g = inf.gastoAcumuladoEntreTiradas.generacion[f.modelo] ?? 0;
+    L.push(`| \`${f.modelo}\` | — | — | — | — | — | — | — | — | — | — | — | — | ${g > 0 ? `${usd(g)} + $0.0000 (brazos pagados de preguntas que no se completaron)` : "0 $"} — ${f.error} |`);
+  }
   L.push("");
   L.push("✂ = subconjunto por presupuesto. La tasa de victoria de B cuenta el empate como ½: 50 % = sin diferencia. «Clase del ahorro»: *ahorro* solo si el IC95 entero está por encima de 0, *sobrecoste* si está entero por debajo; si contiene el 0, *indistinguible de 0*. «¿Atribuible?»: *no* cuando el cable de B solo difiere del de A en campos sin efecto directo en coste (\`prompt_cache_key\`), B no leyó de caché más que A y la capa declara 0 $: la diferencia es muestreo de la salida. El control A/A mide ese ruido donde la capa no tocó nada.");
   L.push("");
@@ -1358,7 +1465,7 @@ function markdown(inf: InformeCompleto): string {
     L.push(`- Lo que dice la capa: basis ${JSON.stringify(r.capa.basis)}, ahorro declarado ${usd(r.capa.ahorroDeclaradoUsd)} (${JSON.stringify(Object.fromEntries(Object.entries(r.capa.ahorroDeclaradoPorBasis).map(([k, v]) => [k, Number(v.toFixed(6))])))}), coste declarado ${usd(r.capa.costeDeclaradoUsd)} frente a ${usd(r.capa.costeMedidoB)} medido; turnos cuyo conteo de tokens no cuadra con el proveedor: ${r.capa.tokensQueNoCuadran}; llamadas extra al proveedor: ${r.capa.llamadasExtraAlProveedor}; caché ${JSON.stringify(r.capa.cacheResult)}; ruta ${JSON.stringify(r.capa.executionClass)}.`);
     L.push(`- Calidad: ${r.calidad.juzgada ? `${r.calidad.turnosJuzgados} turnos de ${r.calidad.preguntasJuzgadas} preguntas (${r.calidad.llamadasAlJuez} llamadas al juez${r.calidad.cortePorPresupuesto ? ", cortado por el tope del juez" : ""}); B gana ${r.calidad.victoriasB}, A gana ${r.calidad.victoriasA}, empate ${r.calidad.empates} (de ellos ${r.calidad.inconsistentes} por partidas discrepantes y ${r.calidad.identicas} por respuestas idénticas); errores de lectura ${r.calidad.errores}; turnos sin juzgar por el tope ${r.calidad.turnosSinPresupuesto}; tasa de victoria B ${ci(r.calidad.tasaDeVictoriaB)}. Por categoría: ${Object.entries(r.calidad.porCategoria).map(([k, v]) => `${k} ${v.B}/${v.A}/${v.empate}`).join(", ") || "—"}.` : "no juzgada (--sin-juez)."}`);
     L.push(`- Gasto real: A ${usd(r.gasto.generacionA)} + B ${usd(r.gasto.generacionB)} = ${usd(r.gasto.total)} de ${usd(r.gasto.tope)}; juez ${usd(r.gasto.juez)} de ${usd(r.gasto.topeJuez)}. Reservas superadas: ${r.gasto.excesosDeReserva}.`);
-    if (r.errores.length) L.push(`- Errores: ${r.errores.map((e) => `\`${e.replace(/`/g, "'").slice(0, 200)}\``).join("; ")}`);
+    if (r.errores.length) L.push(`- Errores: ${r.errores.map((e) => `\`${e.replace(/`/g, "'").replace(/\s+/g, " ").slice(0, 200)}\``).join("; ")}`);
     L.push("");
   }
   L.push("## Limitaciones");
@@ -1378,7 +1485,9 @@ interface InformeCompleto {
   verificacionDelFuente: VerificacionDelFuente | null;
   dataset: { origen: string; repo: string; commit: string; license: string; ficheros: typeof DATASET.ficheros };
   juez: { modelo: string; topeUsd: number };
-  topes: { porFamiliaUsd: Record<Familia, number>; juezTotalUsd: number };
+  topes: { porFamiliaUsd: Record<Familia, number>; porModeloUsd?: number; juezTotalUsd: number };
+  /** Modelos sin fila en el catálogo medidos con su precio OFICIAL citado (el catálogo no se toca). */
+  preciosOficiales?: { modelo: string; precio: Precio; fuente: string; consultado: string; cita: string }[];
   semilla: number;
   gastoTotal: { generacion: number; juez: number };
   gastoAcumuladoEntreTiradas: LibroDeGasto;
@@ -1439,7 +1548,7 @@ function cargarTiradaAnterior(nombre: string, libro: LibroDeGasto): { informe: I
   for (const r of informe.modelos) {
     const c = crudo.find((x) => x.modelo === r.modelo);
     if (!c) throw new Error(`--desde-crudo: ${r.modelo} está en el informe pero no en las respuestas crudas`);
-    const m = MODELOS_POR_DEFECTO.find((x) => x.id === r.modelo)!;
+    const m = TIRADA.modelos.find((x) => x.id === r.modelo)!;
     porModelo.set(r.modelo, {
       resultados: c.preguntas.map((q) => ({
         id: q.id,
@@ -1466,6 +1575,8 @@ function cargarTiradaAnterior(nombre: string, libro: LibroDeGasto): { informe: I
 
 async function main(): Promise<void> {
   const op = leerOpciones(process.argv.slice(2));
+  TIRADA = op.tirada;
+  if (TIRADA.gamaAlta) LIBRO_DE_GASTO = join(DIR_TRABAJO, `gasto-live-${PAQUETE.version}${TIRADA.sufijo}.json`);
   const cred = credenciales();
 
   // La guarda de hosts, ANTES de cualquier red: el `fetch` global (lo que la capa
@@ -1481,7 +1592,7 @@ async function main(): Promise<void> {
   );
   const base: typeof fetch = op.mock ? conGuardaDeHosts(fetchFalso(op.mockAnthropic401)) : globalThis.fetch;
   const ds = await cargarDataset(!op.mock);
-  const nombre = `mt-bench-${PAQUETE.version.replace(/\./g, "")}${op.mock ? "-mock" : ""}`;
+  const nombre = `mt-bench-${PAQUETE.version.replace(/\./g, "")}${TIRADA.sufijo}${op.mock ? "-mock" : ""}`;
   if (op.desdeCrudo && op.mock) throw new Error("--desde-crudo es para una tirada LIVE");
   const libroInicial: LibroDeGasto = op.mock ? { generacion: {}, juez: {} } : leerLibro();
   const anterior = op.desdeCrudo ? cargarTiradaAnterior(nombre, libroInicial) : null;
@@ -1502,6 +1613,7 @@ async function main(): Promise<void> {
         !op.fuente && !cred.licencia && "BIVELIO_LICENSE_KEY (el paquete publicado es fail-closed: sin licencia el brazo B no existe; o --fuente)",
         op.modelos.some((m) => m.familia === "anthropic") && !cred.anthropic.clave && "BVSALA_DEMO_ANTHROPIC_API_KEY",
         op.modelos.some((m) => m.familia === "openai") && !cred.openai.clave && "BVSALA_DEMO_API_KEY",
+        op.modelos.some((m) => m.familia === "google") && !cred.google.clave && "BVSALA_SONDA_API_KEY",
         op.juez && !cred.juez.clave && "BVSALA_JUDGE_API_KEY",
       ].filter(Boolean);
   if (faltan.length) {
@@ -1560,8 +1672,9 @@ async function main(): Promise<void> {
   const fallidos: { modelo: string; error: string }[] = [];
 
   // Anthropic: comprobación GRATUITA de la clave antes de gastar. 401 → no medibles.
-  let modelos = anterior ? MODELOS_POR_DEFECTO.filter((m) => desdeCrudo!.has(m.id)) : op.modelos;
-  if (anterior) fallidos.push(...anterior.informe.modelosFallidos);
+  let modelos = anterior ? TIRADA.modelos.filter((m) => desdeCrudo!.has(m.id)) : op.modelos;
+  // Los que se recargan se vuelven a evaluar (y a redactar) abajo; el resto, tal cual.
+  if (anterior) fallidos.push(...anterior.informe.modelosFallidos.filter((f) => !desdeCrudo!.has(f.modelo)));
   else if (modelos.some((m) => m.familia === "anthropic")) {
     const c = await comprobarAnthropic(cred, base);
     if (!c.ok) {
@@ -1578,7 +1691,7 @@ async function main(): Promise<void> {
   const juezPrevio = Object.values(libro.juez).reduce((s, x) => s + x, 0);
   console.log(`MT-Bench ${op.mock ? "MOCK" : "LIVE"} · ${ds.origen} · ${orden.length} preguntas en orden estratificado · modelos: ${modelos.map((m) => m.id).join(", ") || "ninguno"}`);
   console.log(
-    `Topes duros: ${fmtUsd(TOPE_POR_FAMILIA_USD.openai)} por modelo de OpenAI, ${fmtUsd(TOPE_POR_FAMILIA_USD.anthropic)} por modelo de Anthropic (A+B) · juez ${fmtUsd(TOPE_DEL_JUEZ_USD)} en total` +
+    `Topes duros: ${TIRADA.gamaAlta ? `${fmtUsd(TOPE_GAMA_ALTA_POR_MODELO_USD)} por modelo (A+B)` : `${fmtUsd(TOPE_POR_FAMILIA_USD.openai)} por modelo de OpenAI, ${fmtUsd(TOPE_POR_FAMILIA_USD.anthropic)} por modelo de Anthropic (A+B)`} · juez ${fmtUsd(TOPE_DEL_JUEZ_USD)} en total` +
       (juezPrevio > 0 ? ` (ya gastados ${fmtUsd(juezPrevio)} en tiradas anteriores)` : ""),
   );
 
@@ -1587,12 +1700,12 @@ async function main(): Promise<void> {
   let gastoJuez = 0;
 
   for (const [indice, m] of modelos.entries()) {
-    const precio = catalogo[m.id] ?? null;
+    const precio = catalogo[m.id] ?? m.precioOficial?.precio ?? null;
     if (!precio) {
-      fallidos.push({ modelo: m.id, error: "sin fila en el catálogo de precios del paquete: el tope no se puede calcular, no se corre" });
+      fallidos.push({ modelo: m.id, error: "no medible: sin fila en el catálogo de precios del paquete ni precio oficial citado; el tope no se puede calcular, no se corre" });
       continue;
     }
-    const prima = primaDeEscritura(m.familia);
+    const prima = primaDeTransporte(m);
     const previoGen = libro.generacion[m.id] ?? 0;
     if (previoGen > 0) console.log(`  ${m.id}: tiradas LIVE anteriores ya gastaron ${fmtUsd(previoGen)}; queda lo que falta hasta el tope`);
     const anotar = (tipo: keyof LibroDeGasto) => (usd: number) => {
@@ -1601,7 +1714,7 @@ async function main(): Promise<void> {
       guardarLibro(libro);
     };
     const previo = desdeCrudo?.get(m.id) ?? null;
-    const tope = new Tope(`generación ${m.id}`, previo ? topePorModelo(m) : Math.max(0, topePorModelo(m) - previoGen), anotar("generacion"));
+    const tope = new Tope(`generación ${m.id}`, previo ? TIRADA.topeDe(m) : Math.max(0, TIRADA.topeDe(m) - previoGen), anotar("generacion"));
     let corte: string | undefined;
     const t0 = Date.now();
     let resultados: ResultadoDePregunta[];
@@ -1612,15 +1725,27 @@ async function main(): Promise<void> {
       tope.excesos = previo.excesos;
       corte = previo.corte;
     } else {
+      // Cortacircuitos: un brazo que falla SIEMPRE (p. ej. un 400 del proveedor a
+      // lo que manda la capa) no debe llevarse el tope entero en brazos A pagados.
+      let fallosSeguidos = 0;
+      let ultimoFallo = "";
       resultados = await enPool(orden, op.concurrenciaPreguntas, async (p) => {
         const peor = peorCosteDePregunta(precio, prima, p, m.maxSalida);
         if (!tope.cabe(peor)) {
           corte ??= `el peor coste de la pregunta siguiente (${fmtUsd(peor)}) no cabía: gastado ${fmtUsd(tope.gastado)} de ${fmtUsd(tope.limiteUsd)}`;
           return "parar" as const;
         }
+        if (fallosSeguidos >= FALLOS_SEGUIDOS_PARA_PARAR) {
+          corte ??= `${fallosSeguidos} preguntas seguidas fallaron (último error: ${ultimoFallo.slice(0, 160)}): se para el modelo para no seguir pagando el brazo A de preguntas que el B no completa`;
+          return "parar" as const;
+        }
         try {
           const r = await correrPregunta(p, m, cred, fabrica, tope, precio, base);
           process.stdout.write(r.error ? "x" : ".");
+          if (r.error) {
+            fallosSeguidos++;
+            ultimoFallo = r.error;
+          } else fallosSeguidos = 0;
           return r;
         } catch (e) {
           if (e instanceof PresupuestoAgotado) {
@@ -1633,7 +1758,7 @@ async function main(): Promise<void> {
       process.stdout.write("\n");
     }
     if (resultados.length > 0 && resultados.every((r) => r.error)) {
-      fallidos.push({ modelo: m.id, error: resultados[0]!.error ?? "?" });
+      if (!fallidos.some((f) => f.modelo === m.id)) fallidos.push({ modelo: m.id, error: motivoDeFallo(resultados) });
     }
     const ordenIds = new Map(orden.map((p, i) => [p.id, i]));
     resultados.sort((a, b) => ordenIds.get(a.id)! - ordenIds.get(b.id)!);
@@ -1689,7 +1814,8 @@ async function main(): Promise<void> {
 
   const informe: InformeCompleto = {
     bateria: "mt-bench",
-    fecha: FECHA,
+    // La gama alta se corrió el 2026-09-29; se publica junto a la tirada del 28 (misma carpeta).
+    fecha: TIRADA.gamaAlta ? "2026-09-29" : FECHA,
     modo: op.mock ? "MOCK" : "LIVE",
     commitDelRepo: commit,
     paquete: { nombre: PAQUETE.nombre, version, integrity, origen: origenDelPaquete },
@@ -1697,7 +1823,16 @@ async function main(): Promise<void> {
     verificacionDelFuente: verificacion,
     dataset: { origen: ds.origen, repo: DATASET.repo, commit: DATASET.commit, license: DATASET.license, ficheros: DATASET.ficheros },
     juez: { modelo: cred.juez.modelo, topeUsd: TOPE_DEL_JUEZ_USD },
-    topes: { porFamiliaUsd: { ...TOPE_POR_FAMILIA_USD }, juezTotalUsd: TOPE_DEL_JUEZ_USD },
+    topes: {
+      porFamiliaUsd: TIRADA.gamaAlta
+        ? { openai: TOPE_GAMA_ALTA_POR_MODELO_USD, anthropic: TOPE_GAMA_ALTA_POR_MODELO_USD, google: TOPE_GAMA_ALTA_POR_MODELO_USD }
+        : { ...TOPE_POR_FAMILIA_USD },
+      ...(TIRADA.gamaAlta ? { porModeloUsd: TOPE_GAMA_ALTA_POR_MODELO_USD } : {}),
+      juezTotalUsd: TOPE_DEL_JUEZ_USD,
+    },
+    preciosOficiales: modelos
+      .filter((m) => !catalogo[m.id] && m.precioOficial)
+      .map((m) => ({ modelo: m.id, ...m.precioOficial! })),
     semilla: SEMILLA_DE_MUESTRA,
     gastoTotal: anterior
       ? { generacion: anterior.informe.gastoTotal.generacion + gastoGen, juez: anterior.informe.gastoTotal.juez + gastoJuez }
@@ -1709,17 +1844,31 @@ async function main(): Promise<void> {
     limitaciones: [
       "MT-Bench es conversación de 2 turnos, prompts cortos (cientos de tokens) y sin herramientas ni contrato de salida: casi ninguna palanca de la capa tiene forma sobre la que actuar, y la caché de prefijo del proveedor no llega al mínimo de tramo (1024 tokens en OpenAI) en la mayoría de turnos. Este banco mide sobre todo que la capa NO empeore (coste, latencia, calidad) en tráfico de chat, no cuánto ahorra en tráfico agéntico.",
       "Una capa NUEVA por pregunta (caché y memoria frías): no hay repeticiones entre preguntas, así que la caché exacta/semántica de la capa no tiene ocasión de acertar. Es a propósito: el tráfico repetido va en otra batería.",
-      `Subconjunto estratificado con semilla cuando las 80 preguntas no caben en el tope por modelo (${fmtUsd(TOPE_POR_FAMILIA_USD.openai)} OpenAI / ${fmtUsd(TOPE_POR_FAMILIA_USD.anthropic)} Anthropic); la calidad, además, solo se juzga en las preguntas que caben en ${fmtUsd(TOPE_DEL_JUEZ_USD)} de juez EN TOTAL (repartidos entre los modelos medidos), así que su intervalo es ancho.`,
+      `Subconjunto estratificado con semilla cuando las 80 preguntas no caben en el tope por modelo (${TIRADA.gamaAlta ? `${fmtUsd(TOPE_GAMA_ALTA_POR_MODELO_USD)} cada uno` : `${fmtUsd(TOPE_POR_FAMILIA_USD.openai)} OpenAI / ${fmtUsd(TOPE_POR_FAMILIA_USD.anthropic)} Anthropic`}); la calidad, además, solo se juzga en las preguntas que caben en ${fmtUsd(TOPE_DEL_JUEZ_USD)} de juez EN TOTAL (repartidos entre los modelos medidos), así que su intervalo es ancho.`,
       "El juez es gpt-4o por Vercel AI Gateway: sesgos conocidos de juez LLM (verbosidad, autopreferencia de familia OpenAI). Las posiciones intercambiadas controlan el sesgo de posición, no los demás.",
-      "Temperatura de FastChat por categoría (0,7 en writing/roleplay): parte de las diferencias de calidad entre A y B en esas categorías es muestreo, no la capa. Los dos brazos muestrean igual; gpt-5.4-mini no acepta temperature y no se manda en ningún brazo.",
+      TIRADA.gamaAlta
+        ? "Temperatura: la de FastChat por categoría solo en Gemini (0,7 en writing/roleplay). Opus 5.5 y Sonnet 5.5 rechazan `temperature` con 400 («`temperature` is deprecated for this model», humo LIVE) y gpt-5.x no la admite: en esos cuatro no se manda en ningún brazo y muestrean a la temperatura por defecto del proveedor. Parte de las diferencias de calidad entre A y B es muestreo, no la capa."
+        : "Temperatura de FastChat por categoría (0,7 en writing/roleplay): parte de las diferencias de calidad entre A y B en esas categorías es muestreo, no la capa. Los dos brazos muestrean igual; gpt-5.4-mini no acepta temperature y no se manda en ningún brazo.",
       "El dinero es modelado: tokens medidos × precio de lista del catálogo del paquete. Descuentos negociados, batch o niveles no entran.",
-      "Tope de salida NATIVO de la 0.4.31 en el brazo B (`maxOutputTokens` → `max_completion_tokens` en OpenAI, `max_tokens` en Anthropic) y el mismo campo y valor en el brazo A. gpt-5.4-mini lleva 4096 (su razonamiento cuenta dentro); FastChat usa 1024.",
+      TIRADA.gamaAlta
+        ? "Tope de salida NATIVO de la 0.4.31 en el brazo B (`maxOutputTokens` → `max_completion_tokens` en OpenAI, `max_tokens` en Anthropic y en el endpoint de Gemini) y el mismo campo y valor en el brazo A. Anthropic lleva 1024 (el de FastChat; Opus/Sonnet 5.5 son verbosos y parte de sus respuestas se truncan, por igual en A y B); gpt-5.x y Gemini 3.x llevan 4096 porque su razonamiento cuenta dentro. Esfuerzo de razonamiento: el POR DEFECTO de cada proveedor en los dos brazos (la 0.4.31 no tiene campo para fijarlo, y el brazo A tampoco lo manda)."
+        : "Tope de salida NATIVO de la 0.4.31 en el brazo B (`maxOutputTokens` → `max_completion_tokens` en OpenAI, `max_tokens` en Anthropic) y el mismo campo y valor en el brazo A. gpt-5.4-mini lleva 4096 (su razonamiento cuenta dentro); FastChat usa 1024.",
       ...(op.fuente
         ? [
             `Brazo B = ${FUENTE.brazoB}. No es el paquete instalado de npm con licencia (no hay licencia de pruebas); se comprobó que el build del fuente da el mismo dist/index.js (sha256) que el tarball de npm, pero la ruta de licencia es la de desarrollo (sin verificación de licencia ni metering): la parte de licencia/medición del paquete no se ejerce aquí.`,
           ]
         : []),
-      "La latencia es de pared desde este portátil, con A y B lanzados a la vez para cada turno; incluye la red doméstica y la carga del proveedor en ese momento. Los reintentos por 429 se excluyen de p50/p95 por llamada. Otros tres bancos compartían las claves a la vez.",
+      `La latencia es de pared desde este portátil, con A y B lanzados a la vez para cada turno; incluye la red doméstica y la carga del proveedor en ese momento. Los reintentos por 429 se excluyen de p50/p95 por llamada. ${TIRADA.gamaAlta ? "Otros ocho bancos compartían las claves a la vez (esta tirada: 1 pregunta a la vez, ≤ 2 peticiones simultáneas por proveedor)." : "Otros tres bancos compartían las claves a la vez."}`,
+      ...(TIRADA.gamaAlta
+        ? [
+            "Gemini va por el endpoint COMPATIBLE con OpenAI (`https://generativelanguage.googleapis.com/v1beta/openai`): el arnés no tiene familia nativa de Google. Ese endpoint NO cuenta el razonamiento en `completion_tokens` (solo en `total_tokens`), y Google lo factura como salida: el banco mide la salida como `total_tokens − prompt_tokens` en los dos brazos (`usoDeGoogle`).",
+            "Gemini y la 0.4.31: (1) la capa manda el id `google/gemini-…` TAL CUAL al host oficial de Gemini, que responde 404 (solo quita el prefijo a api.openai.com y Azure); el brazo B lleva `stripProviderPrefix: true`, la opción pública, y se declara aquí. (2) En el turno 2 la capa añade `prompt_cache_key` y Gemini lo rechaza con 400 («Unknown name \"prompt_cache_key\": Cannot find field»): el brazo B no completa ninguna conversación de 2 turnos. El cortacircuitos para el modelo tras 2 preguntas seguidas fallidas.",
+            "gemini-3.1-pro-preview no se pudo medir en la tirada completa: la clave de Google agotó su cuota diaria de ese modelo (429, `generate_requests_per_model_per_day`, límite 250; otros bancos comparten la clave). En la tirada de humo sí respondió, y su brazo B dio el mismo 404 por el id `google/…` que Flash; con el prefijo quitado le esperaría el mismo 400 por `prompt_cache_key` (es el mismo camino de la capa), pero eso NO se llegó a medir en Pro.",
+            "Los modelos de gama alta cuestan mucho por pregunta (gpt-5.5 ≈ 0,16 $ en el humo) y el tope es de 1,25 $ por modelo reservando el PEOR caso de la pregunta siguiente: varios quedan por debajo de las 10 preguntas pareadas que exige la clase del ahorro («muestra insuficiente»). Es el precio de un tope duro, no un fallo.",
+            "Dos correcciones del arnés en esta tirada, las dos por discrepancias que enseñó la propia capa: (1) `cost.netSavings` de la 0.4.31 es una PROPORCIÓN por petición, no dólares; el arnés la sumaba como $ (inocuo mientras valía 0, como en la tirada del 2026-09-28). Ahora el ahorro declarado es `baselineEstimate − actual`. (2) gpt-5.6 desglosa `cache_write_tokens` y OpenAI la cobra a 1,25×; el lector del arnés no la leía cuando se generó esta tirada, así que el coste de gpt-5.6-sol está INFRAMEDIDO: en B exactamente $0.0027 (la diferencia entre el coste que declara la capa y el medido, en 2 turnos con prefijo ≥ 1024 tokens), en A como mucho $0.0041 (3 turnos con prompt ≥ 1024: 1319 + 1656 + 1088 tokens × 0,25 × $4/M). Menos del 2 % de cada brazo; no mueve la clase del ahorro. El lector ya lo lee para las tiradas siguientes.",
+            "El libro de gasto de esta tirada incluye las tiradas de humo de 1 pregunta (la que descubrió el 400 de temperature en Anthropic y el 404 y el 400 de Gemini): el gasto por modelo del libro es el real; el de cada fila, el de la invocación que la produjo.",
+          ]
+        : []),
     ],
   };
 
