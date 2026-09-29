@@ -730,6 +730,7 @@
       "keyLabel": "A sua chave de licença Medir (modo sombra: nenhuma alavanca aplicada)",
       "keyHint": "Use-a como BIVELIO_LICENSE_KEY, tal como uma chave paga. Quando passar a um plano pago, a camada recolhe sozinha a licença paga e as alavancas ativam-se.",
       "errEmailNotVerified": "Confirme primeiro o seu endereço de email e tente novamente.",
+      "errDisposableEmail": "Endereços de e-mail descartáveis não podem obter a licença Medir. Registe-se com um endereço permanente (o do trabalho, por exemplo) e tente novamente.",
       "errOneOrgPerAccount": "Esta conta já tem uma licença Medir para outra organização: a licença gratuita cobre uma organização por conta.",
       "errAlreadyLicensed": "A sua organização já tem uma licença paga: use a chave acima.",
       "errBlocked": "A licença Medir não está disponível para esta organização. Escreva para support@bivelio.com.",

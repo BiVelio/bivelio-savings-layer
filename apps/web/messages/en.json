@@ -730,6 +730,7 @@
       "keyLabel": "Your Measure license key (shadow mode: no levers applied)",
       "keyHint": "Use it as BIVELIO_LICENSE_KEY, exactly like a paid key. When you upgrade, the layer picks up the paid license by itself and the levers turn on.",
       "errEmailNotVerified": "Confirm your email address first, then try again.",
+      "errDisposableEmail": "Disposable email addresses can't claim the Measure license. Sign up with a permanent address (your work email, for example) and try again.",
       "errOneOrgPerAccount": "This account already holds a Measure license for another organization: the free license covers one organization per account.",
       "errAlreadyLicensed": "Your organization already has a paid license: use the key above.",
       "errBlocked": "The Measure license is not available for this organization. Write to support@bivelio.com.",

@@ -730,6 +730,7 @@
       "keyLabel": "Ihr Measure-Lizenzschlüssel (Schattenmodus: keine Hebel aktiv)",
       "keyHint": "Verwenden Sie ihn als BIVELIO_LICENSE_KEY, genau wie einen bezahlten Schlüssel. Nach dem Upgrade übernimmt die Schicht die bezahlte Lizenz von selbst, und die Hebel werden aktiv.",
       "errEmailNotVerified": "Bestätigen Sie zuerst Ihre E-Mail-Adresse und versuchen Sie es dann erneut.",
+      "errDisposableEmail": "Wegwerf-E-Mail-Adressen können die Measure-Lizenz nicht erhalten. Registriere dich mit einer dauerhaften Adresse (zum Beispiel deiner geschäftlichen) und versuche es erneut.",
       "errOneOrgPerAccount": "Dieses Konto hat bereits eine Measure-Lizenz für eine andere Organisation: Die kostenlose Lizenz gilt für eine Organisation pro Konto.",
       "errAlreadyLicensed": "Ihre Organisation hat bereits eine bezahlte Lizenz: Verwenden Sie den Schlüssel oben.",
       "errBlocked": "Die Measure-Lizenz ist für diese Organisation nicht verfügbar. Schreiben Sie an support@bivelio.com.",

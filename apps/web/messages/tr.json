@@ -730,6 +730,7 @@
       "keyLabel": "Ölçüm lisans anahtarınız (gölge modu: hiçbir kol uygulanmaz)",
       "keyHint": "Ücretli bir anahtar gibi BIVELIO_LICENSE_KEY olarak kullanın. Ücretli plana geçtiğinizde katman ücretli lisansı kendisi alır ve kollar devreye girer.",
       "errEmailNotVerified": "Önce e-posta adresinizi doğrulayın, ardından tekrar deneyin.",
+      "errDisposableEmail": "Tek kullanımlık e-posta adresleri Ölçüm lisansını alamaz. Kalıcı bir adresle (örneğin iş adresinle) kaydol ve tekrar dene.",
       "errOneOrgPerAccount": "Bu hesabın başka bir kuruluş için zaten bir Ölçüm lisansı var: ücretsiz lisans hesap başına bir kuruluşu kapsar.",
       "errAlreadyLicensed": "Kuruluşunuzun zaten ücretli bir lisansı var: yukarıdaki anahtarı kullanın.",
       "errBlocked": "Ölçüm lisansı bu kuruluş için kullanılamıyor. support@bivelio.com adresine yazın.",

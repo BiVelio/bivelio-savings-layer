@@ -5,7 +5,14 @@ import { createAdminClient, type AdminClient } from "@/lib/supabase/admin";
 import { resolverOrgDelUsuario } from "@/lib/org/resolver";
 import { puede, NO_AUTORIZADO } from "@/lib/org/permisos";
 import { hasActiveSubscription, hasValidLicense, type LicenseRow, type SubscriptionRow } from "@/lib/metering/entitlement";
-import { dominioDelCorreo, emitirLicenciaMedir, LIMITES_MEDIR, medirViva, PLAN_MEDIR } from "@/lib/license/medir";
+import {
+  dominioDelCorreo,
+  emitirLicenciaMedir,
+  esCorreoDesechable,
+  LIMITES_MEDIR,
+  medirViva,
+  PLAN_MEDIR,
+} from "@/lib/license/medir";
 import { alertar } from "@/lib/observabilidad/alerta";
 
 /**
@@ -16,13 +23,15 @@ import { alertar } from "@/lib/observabilidad/alerta";
  *
  * Los candados anti-abuso, en este orden:
  *  1. SESIÓN y CORREO VERIFICADO (`email_confirmed_at`): una cuenta sin
- *     verificar no reclama nada (402 no, 403: no es cuestión de pagar).
+ *     verificar no reclama nada (402 no, 403: no es cuestión de pagar). Y un
+ *     correo DESECHABLE tampoco (403 `disposable_email`): la lista pública
+ *     incrustada en lib/license/dominios-desechables.ts, dominio y padres.
  *  2. EL ROL: reclamar entrega la credencial, así que exige lo mismo que
  *     descargarla (`descargar_licencia`).
  *  3. UNA ORGANIZACIÓN POR CUENTA: `bvsala.medir_altas` tiene al usuario como
  *     clave primaria. La cuenta que ya reclamó Medir para OTRA organización
  *     recibe 409 `one_org_per_account`.
- *  4. UNA MEDIR POR ORGANIZACIÓN: el índice único de 0032 sobre `licenses`
+ *  4. UNA MEDIR POR ORGANIZACIÓN: el índice único de 0033 sobre `licenses`
  *     (plan measure, no revocada). Reclamar dos veces devuelve la misma.
  *  5. LA ORGANIZACIÓN QUE YA PAGA no recibe una Medir: su licencia está en
  *     /api/license/current (409 `already_licensed`).
@@ -77,6 +86,9 @@ export async function POST(): Promise<NextResponse> {
   if (!(user as { email_confirmed_at?: string | null }).email_confirmed_at) {
     return json({ code: "email_not_verified" }, 403);
   }
+  // 1b · CORREO DESECHABLE: la cuenta verificada con un buzón de usar y tirar es
+  // la granja de cuentas más barata. Antes de tocar la base: no deja rastro.
+  if (esCorreoDesechable(user.email)) return json({ code: "disposable_email" }, 403);
 
   let admin: AdminClient;
   try {

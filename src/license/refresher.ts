@@ -91,6 +91,8 @@ export class LicenseRefresher {
   private currentOrg: string | undefined;
   /** El plan del token vigente: con `measure` se busca el paso a pago en cada vuelta. */
   private currentPlan: string | undefined;
+  /** El jti del token vigente: si el ledger lo revoca, se busca sustituto desde ya. */
+  private currentJti: string | undefined;
 
   constructor(opts: LicenseRefresherOptions) {
     this.opts = opts;
@@ -104,6 +106,7 @@ export class LicenseRefresher {
     this.currentExpiresAt = v.signatureValid && v.payload ? v.payload.expires_at : 0;
     this.currentOrg = v.signatureValid ? v.payload?.org_id : undefined;
     this.currentPlan = v.signatureValid ? v.payload?.plan : undefined;
+    this.currentJti = v.signatureValid ? v.payload?.jti : undefined;
   }
 
   start(): void {
@@ -177,7 +180,20 @@ export class LicenseRefresher {
     // llega nunca, y lo que hay que recoger no es una renovación sino el PASO A
     // PAGO. Con Medir se mira en cada vuelta (1 h por defecto): al pagar, la capa
     // adopta la licencia de pago y enciende las palancas sola.
-    if (this.currentPlan !== "measure" && this.currentExpiresAt - this.nowSeconds() > this.refreshLeadSeconds) return false;
+    //
+    // NI CON EL VIGENTE REVOCADO: al cancelar, el servidor revoca la licencia de
+    // pago y devuelve la org a Medir (decisión del dueño, 2026-09-29). Esperar a
+    // «cerca de caducar» dejaría la capa parada hasta el fin del período pagado;
+    // mirando ya, recoge la Medir y sigue midiendo en sombra.
+    const vigenteRevocado =
+      this.currentJti !== undefined && this.opts.revocados?.snapshot().has(this.currentJti) === true;
+    if (
+      this.currentPlan !== "measure" &&
+      !vigenteRevocado &&
+      this.currentExpiresAt - this.nowSeconds() > this.refreshLeadSeconds
+    ) {
+      return false;
+    }
     this.enVuelo = true;
     // TIMEOUT DURO. Sin esto, un CP que acepta la conexión y gotea bytes deja la
     // promesa sin resolver para siempre: `enVuelo` se queda en true, TODAS las
@@ -219,7 +235,10 @@ export class LicenseRefresher {
       // Una licencia de pago que sustituye a una Medir es una MEJORA aunque caduque
       // antes (mensual contra diez años): se adopta igual.
       const pasoAPago = this.currentPlan === "measure" && v.payload.plan !== "measure";
-      if (!pasoAPago && v.payload.expires_at <= this.currentExpiresAt) return false; // rancio o el mismo
+      // Con el vigente revocado vale cualquier otro válido de la org (la Medir de la
+      // vuelta caduca después, pero no hay por qué exigirlo): el revocado no sirve.
+      const sustituyeARevocado = vigenteRevocado && v.payload.jti !== this.currentJti;
+      if (!pasoAPago && !sustituyeARevocado && v.payload.expires_at <= this.currentExpiresAt) return false; // rancio o el mismo
       if (this.currentOrg && v.payload.org_id !== this.currentOrg) return false; // otra org
       // REVOCADO. Firma válida, más nuevo y de la misma org NO basta: un token
       // revocado (chargeback, fuga) cumple las tres cosas, y adoptarlo apagaría
@@ -234,6 +253,7 @@ export class LicenseRefresher {
       this.currentExpiresAt = v.payload.expires_at;
       this.currentOrg = v.payload.org_id;
       this.currentPlan = v.payload.plan;
+      this.currentJti = v.payload.jti;
       this.opts.onNewToken(token);
       return true;
     } catch {

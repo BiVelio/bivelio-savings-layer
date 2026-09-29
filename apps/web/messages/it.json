@@ -730,6 +730,7 @@
       "keyLabel": "La tua chiave di licenza Misura (modalità ombra: nessuna leva applicata)",
       "keyHint": "Usala come BIVELIO_LICENSE_KEY, esattamente come una chiave a pagamento. Quando passi al piano a pagamento, il livello recupera da solo la licenza a pagamento e le leve si attivano.",
       "errEmailNotVerified": "Conferma prima il tuo indirizzo email, poi riprova.",
+      "errDisposableEmail": "Gli indirizzi email usa e getta non possono ottenere la licenza Misura. Registrati con un indirizzo permanente (quello di lavoro, per esempio) e riprova.",
       "errOneOrgPerAccount": "Questo account ha già una licenza Misura per un'altra organizzazione: la licenza gratuita copre un'organizzazione per account.",
       "errAlreadyLicensed": "La tua organizzazione ha già una licenza a pagamento: usa la chiave qui sopra.",
       "errBlocked": "La licenza Misura non è disponibile per questa organizzazione. Scrivi a support@bivelio.com.",

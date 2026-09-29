@@ -313,3 +313,53 @@ describe("licencia Medir → pago: el refresher recoge el paso a pago", () => {
     expect((f as unknown as { mock: { calls: unknown[] } }).mock.calls).toHaveLength(0);
   });
 });
+
+describe("cancelación → vuelta a Medir: el refresher recoge la Medir en cuanto el vigente está revocado", () => {
+  const MEDIR = token({
+    plan: "measure",
+    seats: 5,
+    features: [],
+    jti: "m2",
+    org_id: "org-1",
+    issued_at: ISSUED + DAY,
+    expires_at: ISSUED + DAY,
+    grace_days: 0,
+    measure_expires_at: ISSUED + 3650 * DAY,
+    measure_grace_days: 30,
+  });
+
+  function conLedger(revocados: string[], f: typeof fetch, adoptados: string[]) {
+    return new LicenseRefresher({
+      url: "https://cp.test/api/license/current",
+      serviceAccountKey: "bvk_test",
+      publicKey: kp.publicKey,
+      initialToken: VIEJO, // de pago, jti "v", caduca el día 30
+      onNewToken: (t) => adoptados.push(t),
+      fetchImpl: f,
+      revocados: { snapshot: () => new Set(revocados) },
+      now: () => (ISSUED + 2 * DAY) * 1000, // lejos de «cerca de caducar»
+    });
+  }
+
+  it("de pago REVOCADO a mitad de período: mira ya y adopta la Medir", async () => {
+    const adoptados: string[] = [];
+    const r = conLedger(["v"], respuestaConToken(MEDIR), adoptados);
+    expect(await r.checkNow()).toBe(true);
+    expect(adoptados).toEqual([MEDIR]);
+  });
+
+  it("de pago NO revocado y lejos de caducar: no mira (nada cambia para quien paga)", async () => {
+    const adoptados: string[] = [];
+    const f = respuestaConToken(MEDIR);
+    const r = conLedger([], f, adoptados);
+    expect(await r.checkNow()).toBe(false);
+    expect((f as unknown as { mock: { calls: unknown[] } }).mock.calls).toHaveLength(0);
+  });
+
+  it("el CP que sigue sirviendo el MISMO revocado no se adopta", async () => {
+    const adoptados: string[] = [];
+    const r = conLedger(["v"], respuestaConToken(VIEJO), adoptados);
+    expect(await r.checkNow()).toBe(false);
+    expect(adoptados).toEqual([]);
+  });
+});

@@ -28,6 +28,7 @@ export function MeasureClaimButton({ seats }: { seats: number }) {
       if (!res.ok || !json.token) {
         const porCodigo: Record<string, string> = {
           email_not_verified: t("errEmailNotVerified"),
+          disposable_email: t("errDisposableEmail"),
           one_org_per_account: t("errOneOrgPerAccount"),
           already_licensed: t("errAlreadyLicensed"),
           measure_blocked: t("errBlocked"),

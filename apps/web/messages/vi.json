@@ -730,6 +730,7 @@
       "keyLabel": "Khóa giấy phép Đo lường của bạn (chế độ bóng: không áp dụng đòn bẩy nào)",
       "keyHint": "Dùng làm BIVELIO_LICENSE_KEY, giống hệt một khóa trả phí. Khi bạn nâng cấp, lớp tự nhận giấy phép trả phí và các đòn bẩy được bật.",
       "errEmailNotVerified": "Hãy xác nhận địa chỉ email trước, rồi thử lại.",
+      "errDisposableEmail": "Địa chỉ email dùng một lần không thể nhận giấy phép Đo lường. Hãy đăng ký bằng một địa chỉ cố định (ví dụ email công việc) rồi thử lại.",
       "errOneOrgPerAccount": "Tài khoản này đã có giấy phép Đo lường cho một tổ chức khác: giấy phép miễn phí áp dụng cho một tổ chức mỗi tài khoản.",
       "errAlreadyLicensed": "Tổ chức của bạn đã có giấy phép trả phí: hãy dùng khóa ở trên.",
       "errBlocked": "Giấy phép Đo lường không khả dụng cho tổ chức này. Hãy viết cho support@bivelio.com.",

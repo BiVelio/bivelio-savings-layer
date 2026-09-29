@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import type { AdminClient } from "@/lib/supabase/admin";
 import type { UsageRecord } from "@/lib/metering/usage";
 import { degradarReferencias } from "@/lib/metering/usage";
+import { DOMINIOS_DESECHABLES } from "./dominios-desechables";
 import { loadPrivateKey, signCompact } from "./sign";
 
 /**
@@ -27,8 +28,9 @@ import { loadPrivateKey, signCompact } from "./sign";
 export const PLAN_MEDIR = "measure" as const;
 
 /**
- * Los límites anti-abuso. ESPEJO de `MEASURE_LIMITS` en packages/protocol (un
- * test fija que coinciden). El porqué de cada número está allí.
+ * Los límites anti-abuso, ACEPTADOS por el dueño el 2026-09-29. ESPEJO de
+ * `MEASURE_LIMITS` en packages/protocol (un test fija que coinciden). El porqué
+ * de cada número está allí.
  */
 export const LIMITES_MEDIR = {
   asientos: 5,
@@ -185,6 +187,31 @@ export function dominioDelCorreo(email: string | null | undefined): string | nul
   return m ? m[1]! : null;
 }
 
+// ── Los correos desechables ──────────────────────────────────────────────────
+
+let desechables: ReadonlySet<string> | null = null;
+
+/**
+ * ¿Es un correo DESECHABLE? (decisión del dueño, 2026-09-29: el alta Medir los
+ * rechaza con 403 `disposable_email`). Contra la lista pública incrustada en
+ * `dominios-desechables.ts` (fuente, commit y fecha en su cabecera; jamás se
+ * descarga en runtime). Mira el dominio Y sus padres: `x.mailinator.com` es
+ * `mailinator.com` (muchos servicios reparten subdominios), pero nunca baja a
+ * un sufijo público de una sola etiqueta.
+ *
+ * El conjunto se construye en la primera llamada (≈9 000 dominios) y se reutiliza.
+ */
+export function esCorreoDesechable(email: string | null | undefined): boolean {
+  const dominio = dominioDelCorreo(email)?.replace(/\.+$/, "");
+  if (!dominio) return false;
+  desechables ??= new Set(DOMINIOS_DESECHABLES.split("\n").filter((l) => l.length > 0));
+  const etiquetas = dominio.split(".");
+  for (let i = 0; i <= etiquetas.length - 2; i++) {
+    if (desechables.has(etiquetas.slice(i).join("."))) return true;
+  }
+  return false;
+}
+
 // ── La emisión ───────────────────────────────────────────────────────────────
 
 export interface LicenciaMedirEmitida {
@@ -199,7 +226,7 @@ export interface LicenciaMedirEmitida {
  * puede persistir, lanza y no se devuelve ningún token (un token sin fila no se
  * podría revocar por organización).
  *
- * El candado de unicidad de 0032 (una Medir viva por organización) convierte una
+ * El candado de unicidad de 0033 (una Medir viva por organización) convierte una
  * doble pulsación en un conflicto 23505: se devuelve la que ganó.
  */
 export async function emitirLicenciaMedir(
@@ -268,4 +295,51 @@ export async function medirViva(admin: AdminClient, orgId: string): Promise<Lice
   const fila = data as { id?: string; token?: string; expires_at?: string } | null;
   if (!fila?.id || !fila.token) return null;
   return { jti: fila.id, token: fila.token, expiresAt: Math.floor(Date.parse(fila.expires_at ?? "") / 1000) };
+}
+
+// ── La vuelta a Medir al dejar de pagar ──────────────────────────────────────
+
+export type VueltaAMedir =
+  | { resultado: "emitida"; jti: string }
+  | { resultado: "ya-viva"; jti: string }
+  | { resultado: "bloqueada" };
+
+/**
+ * AL CANCELAR O DEJAR DE PAGAR, LA ORGANIZACIÓN VUELVE A MEDIR (decisión del
+ * dueño, 2026-09-29): sigue viendo lo que habría ahorrado en vez de quedarse sin
+ * capa. Se llama DESPUÉS de cortar lo pagado —la revocación de la cancelación
+ * (webhook `customer.subscription.deleted`) o la degradación del barrido de
+ * impago (`/api/cron/dunning`)—, nunca antes: una Medir recién emitida es la
+ * licencia MÁS NUEVA de la org, y `/api/license/current` entrega la más nueva.
+ *
+ * Emite una Medir salvo que:
+ *  · la org ya tenga una VIVA (la conserva la cancelación: `conservarMedir`);
+ *  · el operador la haya BLOQUEADO (`medir_altas.bloqueada`): el corte por abuso
+ *    no se deshace porque la org pague y cancele.
+ *
+ * No escribe `medir_altas`: la vuelta no la reclama ninguna cuenta (la dispara
+ * Stripe o el cron), y el candado de una organización por cuenta es del ALTA. Los
+ * topes de asientos y de volumen sí le aplican: van por la licencia, en la ingesta.
+ *
+ * Lanza si no puede leer o emitir. Los llamadores NO dejan que eso deshaga el
+ * corte de lo pagado: alertan, y la org siempre puede reclamarla desde el panel.
+ */
+export async function volverAMedir(
+  admin: AdminClient,
+  orgId: string,
+  nowMs: number = Date.now(),
+): Promise<VueltaAMedir> {
+  const { data: bloqueo, error } = await admin
+    .from("medir_altas")
+    .select("org_id, bloqueada")
+    .eq("org_id", orgId)
+    .maybeSingle();
+  if (error) throw error;
+  if ((bloqueo as { bloqueada?: boolean | null } | null)?.bloqueada === true) return { resultado: "bloqueada" };
+
+  const viva = await medirViva(admin, orgId);
+  if (viva && viva.expiresAt * 1000 > nowMs) return { resultado: "ya-viva", jti: viva.jti };
+
+  const emitida = await emitirLicenciaMedir(admin, orgId, nowMs);
+  return { resultado: "emitida", jti: emitida.jti };
 }

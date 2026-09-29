@@ -730,6 +730,7 @@
       "keyLabel": "La teva clau de llicència Mesurar (mode ombra: no s'aplica cap palanca)",
       "keyHint": "Fes-la servir com a BIVELIO_LICENSE_KEY, igual que una clau de pagament. Quan passis a pagament, la capa recull sola la llicència de pagament i les palanques s'activen.",
       "errEmailNotVerified": "Confirma primer la teva adreça de correu i torna-ho a provar.",
+      "errDisposableEmail": "No acceptem adreces de correu d'un sol ús per a la llicència Mesurar. Registra't amb un correu permanent (el de la feina, per exemple) i torna-ho a provar.",
       "errOneOrgPerAccount": "Aquest compte ja té una llicència Mesurar per a una altra organització: la llicència gratuïta cobreix una organització per compte.",
       "errAlreadyLicensed": "La teva organització ja té una llicència de pagament: fes servir la clau de dalt.",
       "errBlocked": "La llicència Mesurar no està disponible per a aquesta organització. Escriu a support@bivelio.com.",

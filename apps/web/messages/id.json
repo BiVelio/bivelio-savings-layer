@@ -730,6 +730,7 @@
       "keyLabel": "Kunci lisensi Measure Anda (mode bayangan: tidak ada tuas yang diterapkan)",
       "keyHint": "Gunakan sebagai BIVELIO_LICENSE_KEY, sama seperti kunci berbayar. Saat Anda meningkatkan paket, lapisan mengambil lisensi berbayar dengan sendirinya dan tuas menyala.",
       "errEmailNotVerified": "Konfirmasi alamat email Anda terlebih dahulu, lalu coba lagi.",
+      "errDisposableEmail": "Alamat email sekali pakai tidak dapat mengklaim lisensi Measure. Daftar dengan alamat email tetap (misalnya email kantor) lalu coba lagi.",
       "errOneOrgPerAccount": "Akun ini sudah memiliki lisensi Measure untuk organisasi lain: lisensi gratis mencakup satu organisasi per akun.",
       "errAlreadyLicensed": "Organisasi Anda sudah memiliki lisensi berbayar: gunakan kunci di atas.",
       "errBlocked": "Lisensi Measure tidak tersedia untuk organisasi ini. Tulis ke support@bivelio.com.",

@@ -730,6 +730,7 @@
       "keyLabel": "Votre clé de licence Mesurer (mode ombre : aucun levier appliqué)",
       "keyHint": "Utilisez-la comme BIVELIO_LICENSE_KEY, exactement comme une clé payante. Quand vous passez à une offre payante, la couche récupère seule la licence payante et les leviers s'activent.",
       "errEmailNotVerified": "Confirmez d'abord votre adresse e-mail, puis réessayez.",
+      "errDisposableEmail": "Les adresses e-mail jetables ne peuvent pas obtenir la licence Mesurer. Inscris-toi avec une adresse permanente (celle du travail, par exemple) et réessaie.",
       "errOneOrgPerAccount": "Ce compte détient déjà une licence Mesurer pour une autre organisation : la licence gratuite couvre une organisation par compte.",
       "errAlreadyLicensed": "Votre organisation a déjà une licence payante : utilisez la clé ci-dessus.",
       "errBlocked": "La licence Mesurer n'est pas disponible pour cette organisation. Écrivez à support@bivelio.com.",

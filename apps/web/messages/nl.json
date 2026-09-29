@@ -730,6 +730,7 @@
       "keyLabel": "Je Meten-licentiesleutel (schaduwmodus: geen hefbomen toegepast)",
       "keyHint": "Gebruik hem als BIVELIO_LICENSE_KEY, precies zoals een betaalde sleutel. Na een upgrade haalt de laag de betaalde licentie zelf op en gaan de hefbomen aan.",
       "errEmailNotVerified": "Bevestig eerst je e-mailadres en probeer het dan opnieuw.",
+      "errDisposableEmail": "Wegwerp-e-mailadressen kunnen de Meten-licentie niet aanvragen. Registreer je met een vast adres (bijvoorbeeld je werkadres) en probeer het opnieuw.",
       "errOneOrgPerAccount": "Dit account heeft al een Meten-licentie voor een andere organisatie: de gratis licentie geldt voor één organisatie per account.",
       "errAlreadyLicensed": "Je organisatie heeft al een betaalde licentie: gebruik de sleutel hierboven.",
       "errBlocked": "De Meten-licentie is niet beschikbaar voor deze organisatie. Schrijf naar support@bivelio.com.",

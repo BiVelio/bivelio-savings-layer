@@ -70,6 +70,18 @@ describe("alta Medir sin tarjeta", () => {
     expect((await POST()).status).toBe(401);
   });
 
+  it("correo DESECHABLE → 403 disposable_email, y no se crea nada (tampoco con un subdominio)", async () => {
+    for (const email of ["ana@mailinator.com", "Ana@X.Guerrillamail.com"]) {
+      usuario!.email = email;
+      const res = await POST();
+      expect(res.status).toBe(403);
+      expect(await res.json()).toEqual({ code: "disposable_email" });
+    }
+    expect(tablas.licenses).toHaveLength(0);
+    expect(tablas.organizations).toHaveLength(0);
+    expect(tablas.medir_altas).toHaveLength(0);
+  });
+
   it("correo SIN verificar → 403 email_not_verified, y no se crea nada", async () => {
     usuario!.email_confirmed_at = null;
     const res = await POST();

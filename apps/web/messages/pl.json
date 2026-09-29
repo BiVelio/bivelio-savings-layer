@@ -730,6 +730,7 @@
       "keyLabel": "Twój klucz licencji Pomiar (tryb cienia: żadna dźwignia nie jest stosowana)",
       "keyHint": "Użyj go jako BIVELIO_LICENSE_KEY, dokładnie tak jak klucza płatnego. Po przejściu na płatny plan warstwa sama pobierze płatną licencję, a dźwignie się włączą.",
       "errEmailNotVerified": "Najpierw potwierdź swój adres e-mail, a potem spróbuj ponownie.",
+      "errDisposableEmail": "Jednorazowe adresy e-mail nie mogą otrzymać licencji Pomiar. Zarejestruj się stałym adresem (na przykład służbowym) i spróbuj ponownie.",
       "errOneOrgPerAccount": "To konto ma już licencję Pomiar dla innej organizacji: darmowa licencja obejmuje jedną organizację na konto.",
       "errAlreadyLicensed": "Twoja organizacja ma już płatną licencję: użyj klucza powyżej.",
       "errBlocked": "Licencja Pomiar nie jest dostępna dla tej organizacji. Napisz na support@bivelio.com.",
