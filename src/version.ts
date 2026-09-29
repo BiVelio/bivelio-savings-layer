@@ -42,7 +42,7 @@ export const VERSION_MINIMA_PALANCA_TARIFA = "0.4.16";
 /**
  * Política A MANO: la primera versión que emite registros `basis: "reference"`
  * con la regla v2 (`reference-v2`) y que ya no repite una negativa del proveedor
- * como `reference`. Tres subidas:
+ * como `reference`. Cuatro subidas:
  *
  *   · 0.4.24 (#323): la etiqueta v0.4.23 se cortó con la regla v1 (abajo).
  *   · 0.4.29 (decisión del dueño, BITACORA-2026-09-26 §8): de la 0.4.24 a la
@@ -64,6 +64,20 @@ export const VERSION_MINIMA_PALANCA_TARIFA = "0.4.16";
  *     acredita; sale en la 0.4.31. Mismo criterio que la subida anterior: la
  *     primera versión que cierra el agujero, y el coste aceptado —las
  *     referencias honestas de 0.4.29 y 0.4.30 también entran como `estimated`.
+ *   · 0.4.32 (decisión del dueño, 2026-09-29): los bancos en vivo contra la
+ *     0.4.31 encontraron negativas que la 0.4.31 todavía guardaba y repetía
+ *     como `reference`. Gemini termina con `finish_reason: "content_filter:
+ *     OTHER"` / `"PROHIBITED_CONTENT"`, y la capa comparaba con
+ *     `=== "content_filter"` (#402). La heurística de #384 no veía «I'm sorry,
+ *     but … is illegal» (disculpa con motivo), «I can't determine / access…»
+ *     con un verbo fuera de su lista, ni la redirección a ayuda profesional
+ *     ante una autolesión (#393); ni «I can't argue…», que abre la respuesta
+ *     con un verbo que ninguna lista tendrá a tiempo (#401: si la respuesta
+ *     ABRE con la negación, vale cualquier verbo). Y #393 deja de cachear y
+ *     de acreditar las respuestas a temas sensibles (`policy.sensitiveTopic`).
+ *     Todo sale en la 0.4.32. Mismo criterio: la primera versión que cierra el
+ *     agujero, y el coste aceptado —las referencias honestas de 0.4.31 también
+ *     entran como `estimated`.
  *
  * La etiqueta v0.4.23 se cortó con la regla v1
  * (formato de registro `v: 1`, sin guarda de razonamiento y sin el esquema
@@ -86,4 +100,4 @@ export const VERSION_MINIMA_PALANCA_TARIFA = "0.4.16";
  * caso en que el SDK emitía una referencia que no debía? → esta MINIMA sube a
  * la versión que lo publica, o se deja escrito por qué no».
  */
-export const VERSION_MINIMA_REFERENCIA = "0.4.31";
+export const VERSION_MINIMA_REFERENCIA = "0.4.32";
