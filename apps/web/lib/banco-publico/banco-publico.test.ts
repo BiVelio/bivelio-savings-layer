@@ -84,6 +84,8 @@ describe("banco público: la extracción, contra los informes publicados", () =>
     const fuera = enCarpeta.filter((r) => !BANCO.fuentes.some((f) => f.ruta === r));
     for (const r of fuera) {
       const j = crudo(r);
+      // Las sondas en vivo (#415) no son una batería A/B: no tienen fila en la tabla.
+      if (Array.isArray(j.sondas)) continue;
       expect(j.estado ?? j.modo, r).toMatch(/bloqueado|MOCK|SIM/i);
     }
   });
