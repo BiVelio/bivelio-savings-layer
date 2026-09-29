@@ -74,8 +74,11 @@ not install or use the Software.
      (iv) cost figures computed by the Software from its price catalogue (or from
          a cost model you supply): baseline cost, actual cost, the net-saving
          ratio, the basis of the figures (measured, reference, estimated, shadow,
-         or unmeasured), and the value, at the provider's cache-read price, of
-         input tokens your provider reported as cleared from context.
+         or unmeasured), the value, at the provider's cache-read price, of
+         input tokens your provider reported as cleared from context, and the
+         discount your provider's own prompt cache gave the request and the
+         cache-write premium it billed, which are shown apart and never used to
+         calculate the fees in Section 6.
    Each batch of records also carries the Software's surface and version (for
    example, "gateway/0.4.23"). BiVelio's ingest rejects any record that carries a
    field not listed above. Separately, the Software fetches from BiVelio its current

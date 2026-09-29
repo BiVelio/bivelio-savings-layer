@@ -568,6 +568,18 @@
       "detalle": "{requests} peticiones acreditadas",
       "nota": "El conteo es del proveedor (applied_edits). No es un ahorro medido y nunca entra en tu comisión; el dinero llegará cuando el neto por modelo esté medido — borrar reescribe la caché de prefijo, y en algunos modelos el neto sale negativo."
     },
+    "ahorroNativo": {
+      "title": "Ahorro nativo activado",
+      "detalle": "{requests} peticiones con caché del proveedor · lectura {lectura} − prima de escritura {prima}",
+      "nota": "Es el descuento de la caché de prefijo de tu proveedor (Anthropic con cache_control, OpenAI automática, Gemini implícita), neto de la prima de escritura que cobra, calculado con su propio contador a precio de lista. Lo ves en la factura de tu proveedor, no en la nuestra: va aparte del ahorro acreditado y nunca entra en tu comisión.",
+      "vacio": "Todavía no hay peticiones que hayan leído o escrito la caché de prefijo de tu proveedor en este periodo.",
+      "proveedor": {
+        "anthropic": "Anthropic",
+        "openai": "OpenAI",
+        "google": "Gemini",
+        "other": "Otros"
+      }
+    },
     "ritmo": {
       "title": "Ritmo y proyección",
       "badgeEstimacion": "Estimación",
@@ -723,7 +735,8 @@
         "libros": "Los cuatro libros",
         "trafico": "Tráfico",
         "sesiones": "Sesiones",
-        "maquinas": "Máquinas"
+        "maquinas": "Máquinas",
+        "nativo": "Ahorro nativo activado"
       }
     },
     "team": {
@@ -1489,7 +1502,7 @@
         },
         "cost": {
           "title": "Coste",
-          "body": "Cifras de coste que calcula el Software con su catálogo de precios o con un modelo de costes que aportes tú: coste de referencia, coste real, la proporción de ahorro neto, la base de las cifras (measured, reference, estimated, shadow o unmeasured) y el valor, al precio de lectura de caché del proveedor, de los tokens de entrada que tu proveedor declaró borrados del contexto."
+          "body": "Cifras de coste que calcula el Software con su catálogo de precios o con un modelo de costes que aportes tú: coste de referencia, coste real, la proporción de ahorro neto, la base de las cifras (measured, reference, estimated, shadow o unmeasured) y el valor, al precio de lectura de caché del proveedor, de los tokens de entrada que tu proveedor declaró borrados del contexto. Aparte, y sin usarse nunca para calcular las tarifas: el descuento que la caché de prefijo de tu proveedor dio a la petición y la prima de escritura de caché que facturó."
         }
       }
     },

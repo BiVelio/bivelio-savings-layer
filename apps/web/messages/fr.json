@@ -568,6 +568,18 @@
       "detalle": "{requests} requêtes créditées",
       "nota": "Le décompte est celui du fournisseur (applied_edits). Ce n'est pas une économie mesurée et cela n'entre jamais dans ta commission ; l'argent suivra quand le net par modèle sera mesuré — effacer réécrit le cache de préfixe, et sur certains modèles le net est négatif."
     },
+    "ahorroNativo": {
+      "title": "Économies natives activées",
+      "detalle": "{requests} requêtes avec cache du fournisseur · lectures {lectura} − surcoût d'écriture {prima}",
+      "nota": "C'est la remise du cache de préfixe de votre fournisseur (Anthropic avec cache_control, OpenAI automatique, Gemini implicite), nette du surcoût d'écriture qu'il facture, calculée à partir de son propre compteur au prix catalogue. Vous la voyez sur la facture de votre fournisseur, pas sur la nôtre : elle reste à part des économies créditées et n'entre jamais dans votre commission.",
+      "vacio": "Aucune requête n'a encore lu ou écrit le cache de préfixe de votre fournisseur sur cette période.",
+      "proveedor": {
+        "anthropic": "Anthropic",
+        "openai": "OpenAI",
+        "google": "Gemini",
+        "other": "Autres"
+      }
+    },
     "ritmo": {
       "title": "Rythme et projection",
       "badgeEstimacion": "Estimation",
@@ -723,7 +735,8 @@
         "libros": "Les quatre registres",
         "trafico": "Trafic",
         "sesiones": "Sessions",
-        "maquinas": "Machines"
+        "maquinas": "Machines",
+        "nativo": "Économies natives activées"
       }
     },
     "team": {
@@ -1489,7 +1502,7 @@
         },
         "cost": {
           "title": "Coût",
-          "body": "Chiffres de coût calculés par le Logiciel à partir de son catalogue de prix, ou d'un modèle de coûts que vous fournissez : coût de référence, coût réel, le ratio d'économie nette, la base des chiffres (measured, reference, estimated, shadow ou unmeasured) et la valeur, au prix de lecture de cache du fournisseur, des tokens d'entrée que votre fournisseur a déclarés retirés du contexte."
+          "body": "Chiffres de coût calculés par le Logiciel à partir de son catalogue de prix, ou d'un modèle de coûts que vous fournissez : coût de référence, coût réel, le ratio d'économie nette, la base des chiffres (measured, reference, estimated, shadow ou unmeasured) et la valeur, au prix de lecture de cache du fournisseur, des tokens d'entrée que votre fournisseur a déclarés retirés du contexte. Présentés à part et jamais utilisés pour calculer les frais : la remise que le cache de prompts de votre fournisseur a accordée à la requête et le surcoût d'écriture en cache qu'il a facturé."
         }
       }
     },

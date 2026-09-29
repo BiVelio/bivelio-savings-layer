@@ -152,6 +152,82 @@ export interface FilaUso {
   referenceRequests?: number;
   referenceBaselineCost?: number;
   referenceActualCost?: number;
+  /**
+   * El AHORRO NATIVO de la caché del proveedor (0032). Del proveedor: jamás
+   * entra en el Verdict, ni en los tokens, ni en la comisión.
+   */
+  nativeCacheReadSavings?: number;
+  nativeCacheWritePremium?: number;
+  nativeRequests?: number;
+}
+
+/**
+ * EL AHORRO NATIVO ACTIVADO (0032): lo que la caché de prefijo DEL PROVEEDOR le
+ * quitó a la factura del período, neto de la prima de escritura que el
+ * proveedor cobró. Decisión del dueño: «mostrar el ahorro de la caché de
+ * prefijo del proveedor aparte, sin comisión».
+ *
+ *   "none" — sin columnas (proyecto por detrás de 0032) o sin peticiones con
+ *            caché: no se pinta. Un cero aquí se leería como «tu caché no hizo
+ *            nada», y eso no lo sabemos.
+ *   "ok"   — `net` = lectura − prima (USD, puede ser NEGATIVO: escrituras en
+ *            frío que no se leyeron), con sus dos piezas para que cuadre a la
+ *            vista, y `byProvider` si hay desglose por modelo.
+ *
+ * Es contexto al lado del titular, NUNCA parte de él: `deriveVerdict` no lee
+ * estos campos, y lib/billing/extracto.ts tampoco.
+ */
+export type AhorroNativo =
+  | { kind: "none" }
+  | {
+      kind: "ok";
+      requests: number;
+      readUsd: number;
+      premiumUsd: number;
+      net: number;
+      byProvider: { provider: ProveedorDeCache; net: number }[];
+    };
+
+export type ProveedorDeCache = "anthropic" | "openai" | "google" | "other";
+
+/**
+ * La familia de un modelo por su nombre. Espejo de `familiaDeTarifa`
+ * (src/pricing/tarifas-de-tier.ts): la web no importa de src/.
+ */
+export function proveedorDeModelo(model: string): ProveedorDeCache {
+  const m = model.toLowerCase();
+  const barra = m.indexOf("/");
+  const vendor = barra > 0 ? m.slice(0, barra) : "";
+  const desnudo = m.slice(m.lastIndexOf("/") + 1);
+  if (vendor === "openai" || vendor === "azure-openai") return "openai";
+  if (vendor === "google" || vendor === "google-vertex") return "google";
+  if (vendor === "anthropic") return "anthropic";
+  if (/^(gpt-|o[1-9](-|$))/.test(desnudo)) return "openai";
+  if (desnudo.startsWith("gemini")) return "google";
+  if (desnudo.startsWith("claude-")) return "anthropic";
+  return "other";
+}
+
+export function deriveAhorroNativo(
+  usage: FilaUso[],
+  porModelo: { model: string; nativeCacheReadSavings?: number; nativeCacheWritePremium?: number }[] = [],
+): AhorroNativo {
+  const suma = (f: (r: FilaUso) => number) => usage.reduce((n, r) => n + f(r), 0);
+  const requests = suma((r) => r.nativeRequests ?? 0);
+  if (!(requests > 0)) return { kind: "none" };
+  const readUsd = suma((r) => r.nativeCacheReadSavings ?? 0);
+  const premiumUsd = suma((r) => r.nativeCacheWritePremium ?? 0);
+  const netos = new Map<ProveedorDeCache, number>();
+  for (const f of porModelo) {
+    if (f.nativeCacheReadSavings == null) continue;
+    const p = proveedorDeModelo(f.model);
+    netos.set(p, (netos.get(p) ?? 0) + f.nativeCacheReadSavings - (f.nativeCacheWritePremium ?? 0));
+  }
+  const byProvider = [...netos]
+    .filter(([, net]) => net !== 0)
+    .map(([provider, net]) => ({ provider, net }))
+    .sort((a, b) => b.net - a.net);
+  return { kind: "ok", requests, readUsd, premiumUsd, net: readUsd - premiumUsd, byProvider };
 }
 
 /**

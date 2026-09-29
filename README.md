@@ -532,6 +532,32 @@ ledgers** that are never summed into one flattering figure:
 | `compressed_tokens` | information kept, but encoded with fewer tokens |
 | `provider_cached_tokens` | tokens still in the prompt, billed/processed more cheaply |
 
+**Your provider's own cache discount, shown apart and never billed.** With prompt
+caching, most of what you save often comes from your provider's prefix cache
+(Anthropic `cache_control`, OpenAI's automatic cache, Gemini's implicit cache), not
+from the layer. `cost` prices cached tokens at the cached rate on both sides, so that
+discount is never credited as the layer's saving. `report.nativeSavings` shows it on
+its own, from your provider's counter at list price, so the report adds up to your
+invoice:
+
+```ts
+report.nativeSavings;
+// {
+//   provider: "anthropic", mechanism: "explicit", layerMarked: true,
+//   cacheReadTokens: 40000, cacheWriteTokens: 3000, cacheWrite1hTokens: 0,
+//   inputPer1k: 0.003, cachedInputPer1k: 0.0003, writeMultiplier: 1.25, write1hMultiplier: 2,
+//   readDiscountUsd: 0.108,   // reads × (input − cached-input rate)
+//   writePremiumUsd: 0.00225, // writes × input × (multiplier − 1)
+//   netUsd: 0.10575,          // can be negative: a cold write pays before any read
+//   basis: "measured",
+// }
+```
+
+It is present only when a call ran and the provider reported cache reads or writes;
+a cache hit or a coalesced request never carries it. It is not in `cost.netSavings`,
+not in `cost.baselineEstimate`, and never in the commission base. Your dashboard shows
+it as its own card, **Native savings unlocked**, next to the credited savings.
+
 **Quality, kept apart from money.** `report.qualityLedger` records how the answer you
 received earned its place: whether it came from your provider, a replay, or the answer
 to a reworded question (with its similarity score); whether it was checked against your

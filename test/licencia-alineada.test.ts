@@ -57,6 +57,7 @@ function camposDeLaIngesta(): string[] {
     "USAGE_NUMBER_FIELDS",
     "USAGE_OPTIONAL_MONEY_FIELDS",
     "USAGE_OPTIONAL_REFERENCE_FIELDS",
+    "USAGE_OPTIONAL_NATIVE_FIELDS",
   ]) {
     const m = new RegExp(`const ${nombre} = \\[([\\s\\S]*?)\\] as const`).exec(ingesta);
     if (!m?.[1]) throw new Error(`no se encontró ${nombre} en la ingesta`);
@@ -97,6 +98,8 @@ const FRASE_DE_LA_LICENCIA: Record<string, string> = {
   netSavings: "baseline cost, actual cost, the net-saving ratio",
   basis: "the basis of the figures (measured, reference, estimated, shadow, or unmeasured)",
   eliminatedInputFloorCost: "input tokens your provider reported as cleared from context",
+  nativeCacheReadSavings: "the discount your provider's own prompt cache gave the request",
+  nativeCacheWritePremium: "the cache-write premium it billed, which are shown apart and never used",
   referenceRequestId: "the identifier and timestamp of the earlier request",
   referenceAt: "the identifier and timestamp of the earlier request",
   sessionId: "the session and sub-agent identifiers",

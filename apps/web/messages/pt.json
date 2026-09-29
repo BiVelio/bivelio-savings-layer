@@ -568,6 +568,18 @@
       "detalle": "{requests} pedidos creditados",
       "nota": "A contagem é do fornecedor (applied_edits). Não é uma poupança medida e nunca entra na tua comissão; o dinheiro chegará quando o líquido por modelo estiver medido — apagar reescreve a cache de prefixo, e em alguns modelos o líquido sai negativo."
     },
+    "ahorroNativo": {
+      "title": "Poupança nativa ativada",
+      "detalle": "{requests} pedidos com cache do fornecedor · leituras {lectura} − prémio de escrita {prima}",
+      "nota": "É o desconto da cache de prefixo do teu fornecedor (Anthropic com cache_control, OpenAI automática, Gemini implícita), líquido do prémio de escrita que cobra, calculado com o seu próprio contador ao preço de tabela. Vês isto na fatura do teu fornecedor, não na nossa: fica à parte da poupança creditada e nunca entra na tua comissão.",
+      "vacio": "Ainda não há pedidos que tenham lido ou escrito a cache de prefixo do teu fornecedor neste período.",
+      "proveedor": {
+        "anthropic": "Anthropic",
+        "openai": "OpenAI",
+        "google": "Gemini",
+        "other": "Outros"
+      }
+    },
     "ritmo": {
       "title": "Ritmo e projeção",
       "badgeEstimacion": "Estimativa",
@@ -723,7 +735,8 @@
         "libros": "Os quatro livros",
         "trafico": "Tráfego",
         "sesiones": "Sessões",
-        "maquinas": "Máquinas"
+        "maquinas": "Máquinas",
+        "nativo": "Poupança nativa ativada"
       }
     },
     "team": {
@@ -1489,7 +1502,7 @@
         },
         "cost": {
           "title": "Custo",
-          "body": "Valores de custo calculados pelo Software a partir do seu catálogo de preços ou de um modelo de custos que forneça: custo de referência, custo real, o rácio de economia líquida, a base dos valores (measured, reference, estimated, shadow ou unmeasured) e o valor, ao preço de leitura de cache do provedor, dos tokens de entrada que o seu provedor declarou removidos do contexto."
+          "body": "Valores de custo calculados pelo Software a partir do seu catálogo de preços ou de um modelo de custos que forneça: custo de referência, custo real, o rácio de economia líquida, a base dos valores (measured, reference, estimated, shadow ou unmeasured) e o valor, ao preço de leitura de cache do provedor, dos tokens de entrada que o seu provedor declarou removidos do contexto. À parte, e nunca usados para calcular as tarifas: o desconto que a cache de prompts do teu fornecedor deu ao pedido e o prémio de escrita em cache que faturou."
         }
       }
     },

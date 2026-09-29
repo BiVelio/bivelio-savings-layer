@@ -41,6 +41,7 @@ import { canonicalize, sha256, stableStringify } from "../canonicalization/canon
 import { buildExactKey, buildInflightKey } from "../canonicalization/keys.js";
 import type { CacheTier } from "../economics/cache-tier.js";
 import { VerjaDeCacheDePrefijo } from "../economics/prefix-cache-gate.js";
+import { ahorroNativo } from "../economics/ahorro-nativo.js";
 import {
   EspejoDeCache,
   TTL_DEL_ALMACEN_MS,
@@ -3453,6 +3454,17 @@ export class SavingsPipeline {
     if (response.usage.cachedInputTokens) {
       ledger.providerCached(response.usage.cachedInputTokens);
     }
+    // El carril del AHORRO NATIVO (report.nativeSavings): las escrituras de la
+    // llamada servida y si la capa la marcó. Solo lo lee el bloque aparte; no
+    // entra en estimateCost. Una negativa que no se cobra no escribió nada que
+    // pagar.
+    if (response.unbilledRefusal !== true) {
+      ledger.nativeCacheWrite(
+        response.usage.cacheWriteInputTokens ?? 0,
+        response.usage.cacheWrite1hInputTokens ?? 0,
+      );
+    }
+    ledger.nativeCacheMarkedByLayer = !escalo && marcado.marcar;
 
     // LA PRIMA DE ESCRITURA QUE EL PROVEEDOR COBRA POR SU CUENTA. OpenAI, de
     // GPT-5.6 en adelante (toda la familia gpt-6), factura cada escritura de su
@@ -5331,6 +5343,21 @@ export class SavingsPipeline {
     hechos?: HechosDeCalidad,
   ): SavingsReport {
     const cost = ledger.estimateCost(costModel);
+    // El AHORRO NATIVO, aparte de `cost` y calculado DESPUÉS: no puede mover ni
+    // el baseline, ni `actual`, ni `netSavings`, ni `basis`. Solo con una llamada
+    // que corrió y sirvió algo que se cobró.
+    const nativo =
+      ledger.avoidedLlm === 0 && ledger.actualLlm > 0 && !ledger.servedUnbilledRefusal
+        ? ahorroNativo(cascada?.servedModel ?? request.model, costModel, {
+            leidos: Math.max(0, ledger.providerCachedInput - ledger.unbilledCachedInput),
+            escritos: ledger.nativeCacheWriteInput,
+            escritos1h: ledger.nativeCacheWrite1hInput,
+            ...(ledger.nativeCacheMarkedByLayer !== null
+              ? { marcadoPorLaCapa: ledger.nativeCacheMarkedByLayer }
+              : {}),
+            contadorCompleto: ledger.callsWithoutUsage === 0,
+          })
+        : undefined;
     const total = trace.elapsed();
     // UNA RESPUESTA SERVIDA POR UN MODELO MÁS BARATO DEL QUE SE PIDIÓ. Es lo que
     // convierte el informe en algo que se puede leer sin engañarse: `model` pasa
@@ -5415,6 +5442,7 @@ export class SavingsPipeline {
       ...(cascada ? { modelCascade: cascada } : {}),
       ...(diferido ? { deferred: diferido } : {}),
       ...(escrituras ? { cacheWrites: escrituras } : {}),
+      ...(nativo ? { nativeSavings: nativo } : {}),
       quality: {
         ...(cacheResult !== "miss" ? { freshnessPassed: !evaluatePolicy(canonical).requiresFreshData } : {}),
         // Declarado desde el principio y sin productor: la similitud del acierto
@@ -5497,6 +5525,11 @@ export class SavingsPipeline {
     if (response.unbilledRefusal === true) {
       ledger.unbilledCall(response.usage);
       ledger.servedUnbilledRefusal = true;
+    } else {
+      // El ahorro nativo también existe en el fail-open: la caché es del
+      // proveedor y el cliente la ve en su factura igual. La capa no marcó nada.
+      ledger.nativeCacheWrite(response.usage.cacheWriteInputTokens ?? 0, response.usage.cacheWrite1hInputTokens ?? 0);
+      ledger.nativeCacheMarkedByLayer = false;
     }
     // La prima de escritura que el proveedor cobra por su cuenta (OpenAI
     // GPT-5.6+): a los dos lados, como en el camino optimizado.
@@ -5628,6 +5661,8 @@ export class SavingsPipeline {
       deferred: _delLider,
       streaming: _streamingDelLider,
       cacheWrites: _escriturasDelLider,
+      // El ahorro nativo es de la llamada DEL LÍDER: heredado, se contaría N+1 veces.
+      nativeSavings: _nativoDelLider,
       ...informeDelLider
     } = leader.report;
 
