@@ -3,6 +3,7 @@
  * Puro: del resultado ya evaluado al texto.
  */
 import { BATERIAS, PRESUPUESTO_SEMANAL_USD, type Modo, type Reparto } from "./plan.js";
+import { lineaDelCuadre, type Cuadre } from "./factura.js";
 import type { ResultadoDeCelda, Veredicto } from "./umbrales.js";
 
 export interface DatosDelResumen {
@@ -15,6 +16,8 @@ export interface DatosDelResumen {
   reparto: Reparto;
   resultados: readonly ResultadoDeCelda[];
   veredicto: Veredicto;
+  /** El cuadre contra la factura real (factura.ts); vacío en SECO. */
+  factura?: readonly Cuadre[];
 }
 
 const usd = (x: number) => `${x.toFixed(2)} $`;
@@ -83,6 +86,15 @@ export function resumenMarkdown(d: DatosDelResumen): string {
       L.push(`| ${b} | ${r.modelo} | ${estado(r)} | ${gasto} | ${n} | ${escapar(metricas(r))} |`);
     }
   }
+  L.push("");
+  L.push("## Factura real (criterio 4: ±2 %, ahorro nativo aparte)");
+  L.push("");
+  if (!d.factura?.length) {
+    L.push(d.modo === "vivo" ? "- No se consultó." : "- En SECO no hay gasto: la factura real no se consulta.");
+  } else {
+    for (const c of d.factura) L.push(`- ${escapar(lineaDelCuadre(c))}`);
+  }
+  L.push("- Google (Gemini): sin API de costes integrada (su factura sale de la exportación de facturación de Cloud); no se comprueba.");
   L.push("");
   if (d.veredicto.avisos.length) {
     L.push("## Avisos (no hacen fallar)");

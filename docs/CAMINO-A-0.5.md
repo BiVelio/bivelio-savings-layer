@@ -136,6 +136,12 @@ error de precio en el catálogo no lo detectaría. Para cumplir el criterio:
 4. Hasta que esto exista, el criterio 4 se da por cumplido **solo contra el
    precio de lista**, y así lo dice la guía de lanzamiento.
 
+**Hecho en código:** `benchmarks/banco-semanal/factura.ts` hace los puntos 2 y 3
+para Anthropic y OpenAI, con la regla `factura-no-cuadra`. Falta que el dueño
+aísle el gasto y dé de alta las claves de administrador y los ids
+(`docs/BANCO-SEMANAL.md`, «La factura real»). Mientras no estén, el banco avisa
+y no falla, y rige el punto 4. Google sigue sin comprobar.
+
 ## 5 · Banco semanal en CI como puerta
 
 **Hoy.** **#413** está abierto: cron los lunes, 50 $ con tope global, cuatro

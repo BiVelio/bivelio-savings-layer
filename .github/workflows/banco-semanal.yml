@@ -28,6 +28,15 @@ name: banco-semanal
 # SECRETOS: se referencian por NOMBRE; los da de alta el dueño con `gh secret set`
 # (lista y coste en docs/BANCO-SEMANAL.md). Solo los recibe el paso que corre el
 # banco, y solo en modo vivo.
+#
+# LA FACTURA REAL (criterio 4 de docs/CAMINO-A-0.5.md): con las claves de
+# administrador de solo lectura de uso y coste (ANTHROPIC_ADMIN_API_KEY,
+# OPENAI_ADMIN_API_KEY) y los ids del workspace/proyecto dedicados al banco
+# (variables, no secretos), el banco cuadra lo que midió contra lo que el
+# proveedor factura, ±2 % (benchmarks/banco-semanal/factura.ts). Sin esas claves
+# es un aviso y no falla. Lo que el retraso del API deje pendiente lo decide la
+# tirada siguiente: por eso este trabajo baja el artefacto de la anterior
+# (`actions: read`).
 run-name: "banco semanal (${{ inputs.modo || 'vivo' }})"
 
 on:
@@ -59,6 +68,8 @@ jobs:
     timeout-minutes: 350
     permissions:
       contents: read
+      # Solo para bajar el artefacto de la tirada en vivo anterior (su factura pendiente).
+      actions: read
     env:
       MODO: ${{ inputs.modo || 'vivo' }}
     steps:
@@ -81,6 +92,21 @@ jobs:
       # src/ importa @bivelio/license-client y @bivelio/protocol por su dist/.
       - run: pnpm run build:packages
 
+      # La factura de la tirada anterior que el retraso del API dejó pendiente se
+      # decide ahora (factura.ts). Sin tirada anterior o sin artefacto, no pasa nada.
+      - name: Tirada anterior (su factura pendiente)
+        if: ${{ inputs.modo != 'seco' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          id=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow banco-semanal.yml --branch main --status completed --limit 30 \
+                 --json databaseId,displayTitle --jq '[.[] | select(.displayTitle | contains("(vivo)"))][0].databaseId // empty' || true)
+          if [ -n "$id" ]; then
+            gh run download "$id" --repo "$GITHUB_REPOSITORY" -n banco-semanal -D banco-semanal-previa || echo "La tirada $id no dejó artefacto: no hay pendientes que decidir."
+          else
+            echo "No hay tirada en vivo anterior."
+          fi
+
       - name: Banco
         env:
           # Hosts oficiales de cada proveedor (no son secretos).
@@ -94,7 +120,15 @@ jobs:
           BVSALA_DEMO_API_KEY: ${{ inputs.modo != 'seco' && secrets.OPENAI_API_KEY || '' }}
           BVSALA_DEMO_GOOGLE_API_KEY: ${{ inputs.modo != 'seco' && secrets.GEMINI_API_KEY || '' }}
           BVSALA_JUDGE_API_KEY: ${{ inputs.modo != 'seco' && secrets.AI_GATEWAY_API_KEY || '' }}
-        run: pnpm exec tsx benchmarks/banco-semanal/orquestador.ts "--$MODO" --salida banco-semanal-salida
+          # La factura real: claves de administrador de SOLO LECTURA de uso y coste.
+          ANTHROPIC_ADMIN_API_KEY: ${{ inputs.modo != 'seco' && secrets.ANTHROPIC_ADMIN_API_KEY || '' }}
+          OPENAI_ADMIN_API_KEY: ${{ inputs.modo != 'seco' && secrets.OPENAI_ADMIN_API_KEY || '' }}
+          # Dónde vive el gasto del banco, aislado (no son secretos: son ids).
+          BANCO_ANTHROPIC_WORKSPACE_ID: ${{ vars.BANCO_ANTHROPIC_WORKSPACE_ID }}
+          BANCO_ANTHROPIC_API_KEY_ID: ${{ vars.BANCO_ANTHROPIC_API_KEY_ID }}
+          BANCO_OPENAI_PROJECT_ID: ${{ vars.BANCO_OPENAI_PROJECT_ID }}
+          BANCO_OPENAI_API_KEY_ID: ${{ vars.BANCO_OPENAI_API_KEY_ID }}
+        run: pnpm exec tsx benchmarks/banco-semanal/orquestador.ts "--$MODO" --salida banco-semanal-salida --previa banco-semanal-previa
 
       - name: Resumen en el job summary
         if: always()
