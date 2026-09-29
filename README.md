@@ -990,7 +990,8 @@ own API, where its 400 is the answer. Gemini leaves its thinking tokens out of
 as reasoning); on OpenAI's API `completion_tokens` already include reasoning and nothing
 is added. Gemini stops a filtered answer with `finish_reason: "content_filter: OTHER"`
 (or another reason): it is `finishReason: "content_filter"` (the adapter keeps the
-reason in `finishReasonDetail` and the report's cache trace names it), and like every
+reason, which reaches you as `result.finishReasonDetail` and is named in the report's
+cache trace; an Anthropic refusal brings its `stop_details.category` there too), and like every
 provider refusal it is measured, never
 cached and never credited. Google does not document that such refusals are free, so
 they are costed from their `usage` like any call.

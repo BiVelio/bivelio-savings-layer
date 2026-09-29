@@ -963,6 +963,7 @@
       "colBivelio": "BiVelio",
       "colLegal": "Informacje prawne",
       "measured": "Zmierzone wyniki",
+      "benchmarks": "Publiczny benchmark",
       "pricing": "Cennik",
       "home": "Strona główna",
       "docs": "Dokumentacja",
@@ -1166,6 +1167,167 @@
     "sesionActual": "Obecnie są Państwo zalogowani jako <b>{email}</b>.",
     "cerrarYContinuar": "Wyloguj się i użyj innego konta",
     "cerrando": "Wylogowywanie…"
+  },
+  "benchmarksPage": {
+    "metaTitle": "Publiczny test A/B: zmierz nas | BiVelio Savings Layer",
+    "metaDescription": "Cztery publiczne baterie testów (GSM8K, BFCL, XSTest i MT-Bench), dwa ramiona mierzone własnym licznikiem zużycia dostawcy, każda liczba z jej n, przedziałem i datą. To, co oszczędza, to, co nie, i błędy znalezione przez test.",
+    "eyebrow": "Test publiczny · odtwarzalny",
+    "title": "Nasz test A/B, w pełni jawny. Zmierz nas.",
+    "lede": "Publikujemy każdy przebieg: cztery baterie na publicznych zbiorach danych, {modelos} modeli, a oba ramiona mierzone własnym licznikiem zużycia dostawcy. Każda liczba niesie swoje n, swój przedział i swoją datę. To, co nie oszczędza, też jest tutaj.",
+    "stats": {
+      "batteries": "baterie",
+      "models": "przetestowane modele",
+      "measured": "modele z pomiarem",
+      "reports": "raporty na żywo",
+      "last": "ostatni przebieg"
+    },
+    "method": {
+      "title": "Co jest mierzone i jak",
+      "arms": "<b>Dwa ramiona, to samo żądanie.</b> A trafia bezpośrednio do dostawcy, bez warstwy; B przechodzi przez warstwę z jej domyślną konfiguracją. Ten sam prompt, to samo próbkowanie, ten sam limit odpowiedzi.",
+      "cost": "<b>Koszt liczy dostawca.</b> Każde ramię jest wyceniane na podstawie <code>usage</code> zwracanego przez API przy każdym wywołaniu, w cenie cennikowej. Oszczędność to 1 − koszt(B) / koszt(A) tego samego przebiegu, a nie to, co warstwa mówi sama o sobie.",
+      "intervals": "<b>Przedziały na poziomie {nivel}.</b> Oblicza je każdy harness (resampling całych rodzin pytań, Wilson dla odsetka odmów). Przedział przecinający zero oznacza „nieodróżnialne od zera” i tak to opisujemy.",
+      "package": "<b>Pakiet, który instalujesz.</b> Ramię B uruchamia źródło znacznika {version}; jego <code>dist/index.js</code> jest identyczny bit po bicie z tym z paczki npm (sha256 <code>{sha}</code>).",
+      "guard": "<b>Bez skrótów.</b> Każdy harness obserwuje hosty, z którymi się komunikuje, i ma w kodzie zapisany limit wydatków na model. Model, którego nie udało się zmierzyć, jest raportowany jako „niezmierzony”, wraz z powodem.",
+      "batteriesTitle": "Cztery baterie testów, publiczne zbiory danych, przypięte",
+      "commitOnly": "przypięte do commita"
+    },
+    "batteries": {
+      "gsm8k": "Zadania tekstowe z matematyki z powtórzeniami i parafrazami: ile oszczędza pamięć podręczna i czy spada dokładność.",
+      "bfcl": "Wywołania narzędzi: warstwa nie może zmienić żadnego z nich, a cały katalog musi dotrzeć.",
+      "xstest": "Odmowy: warstwa nie może zmienić momentu, w którym model odmawia, ani podać odmowy z pamięci podręcznej.",
+      "mt-bench": "Czat dwuturowy bez powtórzeń: warstwa nie może pogorszyć kosztu, opóźnienia ani jakości."
+    },
+    "th": {
+      "battery": "Bateria",
+      "what": "Co sprawdza",
+      "dataset": "Zbiór danych",
+      "pinned": "Przypięte pliki",
+      "license": "Licencja",
+      "model": "Model",
+      "n": "n",
+      "savings": "Zmierzona oszczędność [PU]",
+      "fromExact": "Z dokładnej pamięci podręcznej",
+      "fromCalls": "W wywołaniach (prefiks)",
+      "accuracy": "Dokładność A → B",
+      "run": "Wersja · data",
+      "prompts": "Prompty",
+      "safe": "Odmowy, prompty bezpieczne (A → B)",
+      "unsafe": "Odmowy, prompty niebezpieczne (A → B)",
+      "verdict": "Interpretacja",
+      "reports": "Raporty"
+    },
+    "savings": {
+      "title": "Zmierzona oszczędność na model",
+      "intro": "GSM8K, przy strumieniu żądań, w którym {rep} to dokładne powtórzenia, a {par} to parafrazy. To bateria z powtarzającym się ruchem: twoja oszczędność zależy od tego, jak bardzo powtarza się twój ruch. Bez powtórzeń zobacz „To, co nie oszczędza”.",
+      "nCell": "{n} żądań · {unicos} unikalnych",
+      "delta": "Δ {d} pp [{inf}, {sup}]",
+      "originNote": "Skąd bierze się oszczędność, pozycja po pozycji: „z dokładnej pamięci podręcznej” to to, co zapłaciło A za żądania, które warstwa obsłużyła bez wywoływania dostawcy; „w wywołaniach” to różnica w tych, które faktycznie do niego dotarły, głównie dzięki pamięci podręcznej prefiksów dostawcy (plus trochę zmienności wyniku). Obie sumują się na całkowitą oszczędność.",
+      "accuracyNote": "Dokładność jest mierzona na pytaniach z opublikowaną odpowiedzią; warianty ze zmienioną liczbą służą wyłącznie do sprawdzenia, czy warstwa nigdy nie zwraca odpowiedzi z innego pytania."
+    },
+    "guarantees": {
+      "title": "Gwarancje, policzone",
+      "tools": {
+        "title": "Warstwa nigdy nie zmieniła wywołania narzędzia",
+        "titleBroken": "Warstwa zmieniła {n} wywołań narzędzi",
+        "body": "{alteradas} zmienionych wywołań w {comparaciones} porównaniach BFCL, {modelos} modeli, od {desde}. Jeśli warstwa zawodzi (błąd w B, którego nie było w A), nie liczy się to tutaj: znajduje się w „Błędach znalezionych przez test”."
+      },
+      "other": {
+        "title": "Żadnej odpowiedzi z innego pytania od {desde}",
+        "titleBroken": "{n} odpowiedzi z innego pytania od {desde}",
+        "body": "{deOtra} z {variantes} wariantów (to samo pytanie z inną liczbą, a więc inną odpowiedzią) podanych z odpowiedzią z innego pytania, na {modelos} modelach na żywo i we wszystkich zmierzonych konfiguracjach pamięci podręcznej.",
+        "replay": "Odtworzenie offline całego zbioru testowego GSM8K: {erroneas} w {peticiones} żądaniach, w każdej z {configs} konfiguracji pamięci podręcznej."
+      },
+      "refusals": {
+        "title": "Ten sam odsetek odmów, z warstwą i bez niej",
+        "titleBroken": "Odsetek odmów zmienił się dla {n} modeli",
+        "body": "XSTest, zmierzono {modelos} modeli: brak różnicy A/B poniżej p = {umbral} (McNemar, sparowane prompty). Warstwa dostarczyła tekst {comprobados} odpowiedzi bez zmian ({alterados} zmienionych).",
+        "caption": "Odsetek odmów na model, bez warstwy (A) i z warstwą (B), na tych samych promptach."
+      }
+    },
+    "noSavings": {
+      "title": "To, co nie oszczędza",
+      "lead": "<b>Bez powtórzeń oszczędność wynosi ≈ {cero}.</b> Publikujemy to mimo wszystko, ponieważ tak wygląda sytuacja, gdy twój ruch się nie powtarza.",
+      "why": "MT-Bench to czat dwuturowy ze świeżą warstwą przy każdym pytaniu: nie ma nic, co pamięć podręczna mogłaby ponownie wykorzystać, a prompt niemal nigdy nie osiąga minimum wymaganego przez dostawcę do zapisania prefiksu w pamięci podręcznej. W BFCL każde wywołanie narzędzia jest inne. To, co mierzą te dwie baterie, to fakt, że warstwa niczego nie pogarsza; pozostała różnica kosztów to szum w wyniku modelu, a nie warstwa.",
+      "nQuestions": "{n} pytań",
+      "nItems": "{n} pozycji",
+      "verdict": {
+        "ahorro": "oszczędność",
+        "cero": "nieodróżnialne od zera",
+        "sobrecoste": "dodatkowy koszt"
+      },
+      "notAttributable": "nie do przypisania warstwie"
+    },
+    "status": {
+      "title": "Status według modelu i baterii",
+      "intro": "Każda komórka pokazuje przebieg na najwyższej wersji warstwy. Jeśli modelu nie udało się zmierzyć, podajemy powód zamiast zostawiać puste miejsce.",
+      "measured": "zmierzono · n = {n}",
+      "notMeasured": "niezmierzone: {motivo}",
+      "layerFailed": "warstwa zawiodła: {motivo}",
+      "reason": {
+        "credencial": "dane uwierzytelniające odrzucone",
+        "presupuesto": "limit wydatków wyczerpany",
+        "cuota": "limit dostawcy wyczerpany",
+        "capa": "żądania nie przeszły przez warstwę",
+        "proveedor": "dostawca odrzucił żądanie w obu ramionach",
+        "otro": "za mało danych"
+      }
+    },
+    "bugs": {
+      "title": "Błędy znalezione przez test",
+      "intro": "Test nie służy do tego, żeby dobrze wyglądać: służy do znajdowania błędów, zanim znajdziesz je ty. Znalazł te, z wersją, w której się pojawiły, i tą, która je naprawia.",
+      "found": "Znaleziono w {version}: {ocurrencias} z {sobre}.",
+      "fixed": "Naprawiono w {version} ({prs}).",
+      "verified": "Zweryfikowano na żywo w {version}: {ocurrencias} z {sobre}.",
+      "stillSeen": "Nadal widoczne w {version}: {ocurrencias} z {sobre}.",
+      "pending": "Oczekuje na ponowny pomiar na żywo w {version}.",
+      "items": {
+        "otra-pregunta": {
+          "title": "Niekalibrowana pamięć podręczna semantyczna podawała odpowiedź innego pytania",
+          "body": "Przy niekalibrowanej pamięci podręcznej semantycznej wariant z inną liczbą („three baskets” zamiast „two baskets”) mógł otrzymać odpowiedź z oryginalnego pytania. Policzone na wariantach GSM8K."
+        },
+        "herramientas-multiturno": {
+          "title": "Warstwa ograniczała katalog narzędzi bez żadnego sygnału, by to robić",
+          "body": "W rozmowach wieloturowych ramię B wysyłało mniej narzędzi niż ramię A, mimo że nic nie wskazywało, które są zbędne. Policzone na rozmowach wieloturowych BFCL."
+        },
+        "negativas-de-texto": {
+          "title": "Niektóre odmowy zapisane jako tekst były zapisywane w pamięci podręcznej",
+          "body": "Odmowa, którą model zapisuje jako tekst (bez sygnału z API), mogła zostać zapisana w pamięci podręcznej, powtórzona i zaliczona jako oszczędność. Policzone w promptach XSTest."
+        },
+        "gemini-filtro-cacheado": {
+          "title": "Filtr treści Gemini był zapisywany w pamięci podręcznej jako odpowiedź",
+          "body": "Gemini oznacza swój filtr własnym powodem zatrzymania, którego warstwa nie rozpoznawała jako odmowy, przez co mogła go zapisać w pamięci podręcznej i powtórzyć. Policzone w promptach XSTest."
+        },
+        "gemini-prompt-cache-key": {
+          "title": "Gemini nie przechodził przez warstwę",
+          "body": "Warstwa wysyłała pole właściwe dla API OpenAI do każdego zgodnego punktu końcowego, a Gemini je odrzuca: każde żądanie w ramieniu B kończyło się niepowodzeniem. Policzone w żądaniach GSM8K."
+        },
+        "gemini-thought-signature": {
+          "title": "Przy Gemini 3 druga tura z narzędziami kończyła się niepowodzeniem",
+          "body": "Warstwa nie zwracała sygnatury myśli, której Gemini 3 wymaga przy każdym wywołaniu narzędzia, przez co kolejna tura była odrzucana. Policzone w kontynuacjach wieloturowych BFCL."
+        }
+      }
+    },
+    "repro": {
+      "title": "Jak to odtworzyć",
+      "intro": "Kod testu nie jest jeszcze publiczny; metoda jest, i mieści się w pięciu krokach. Z własnymi kluczami dostawcy możesz go powtórzyć i porównać liczba po liczbie z naszymi raportami.",
+      "steps": {
+        "dataset": "<b>Zbiór danych.</b> Pobierz każdy publiczny zbiór danych z commita z tabeli powyżej i przed użyciem sprawdź sha256 każdego pliku. Jeśli się nie zgadza, to nie jest ten sam zbiór.",
+        "package": "<b>Warstwa.</b> Zainstaluj <code>@bivelio/savings-layer</code> z npm w wersji podanej w raporcie i sprawdź sha256 pliku <code>dist/index.js</code>: każdy raport go zawiera.",
+        "arms": "<b>Dwa ramiona na prompt.</b> A idzie prosto do dostawcy; B wysyła ten sam prompt, do tego samego modelu i z tym samym limitem wyjścia, przez warstwę w domyślnej konfiguracji. Część promptów się powtarza lub parafrazuje, jak w prawdziwym ruchu, a kolejność A/B jest losowana.",
+        "cost": "<b>Koszt podaje dostawca.</b> Zsumuj, ile kosztuje każde ramię według <code>usage</code> zwracanego przez dostawcę, po jego opublikowanej cenie. Oszczędność to <code>1 − koszt B / koszt A</code>, wraz z przedziałem.",
+        "compare": "<b>Jakość, w tym samym przebiegu.</b> Oceń tak samo odpowiedzi obu ramion (dokładna odpowiedź w GSM8K, wywołanie narzędzia w BFCL, odmowa lub nie w XSTest, sędzia w MT-Bench) i porównaj je z raportem JSON tej samej baterii i wersji."
+      },
+      "reportsTitle": "Raporty",
+      "reportsIntro": "Każdy przebieg zostawia raport JSON z projektem, ograniczeniami i każdym zmierzonym wywołaniem: usage, koszt na ramię i klasyfikacja odpowiedzi. Są udostępniane z tej strony.",
+      "served": "Raporty są udostępniane tak, jak zapisał je test, z jednym wyjątkiem: usuwa się dane o środowisku osoby mierzącej (ścieżki na dysku, adresy e-mail). Z XSTest nie publikuje się tekstu żadnej odpowiedzi, tylko jej klasyfikację."
+    },
+    "invite": {
+      "title": "Zmierz nas sam",
+      "body": "Niezależny pomiar jest wart więcej niż nasz. Kod testu nie jest jeszcze publiczny: jeśli chcesz powtórzyć pomiar albo zmierzyć warstwę własnym narzędziem lub własnym ruchem, napisz do nas, a damy ci wszystko, czego potrzebujesz.",
+      "contact": "Napisz do nas na",
+      "cta": "Wyślij e-mail",
+      "subject": "Niezależny pomiar testu publicznego"
+    }
   },
   "howItWorks": {
     "metaTitle": "Gdzie instaluje się oszczędność? · BiVelio Savings Layer",

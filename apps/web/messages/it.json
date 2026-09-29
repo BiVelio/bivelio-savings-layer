@@ -963,6 +963,7 @@
       "colBivelio": "BiVelio",
       "colLegal": "Note legali",
       "measured": "Risultati misurati",
+      "benchmarks": "Banco di prova pubblico",
       "pricing": "Prezzi",
       "home": "Home",
       "docs": "Documentazione",
@@ -1166,6 +1167,167 @@
     "sesionActual": "Al momento ha effettuato l'accesso come <b>{email}</b>.",
     "cerrarYContinuar": "Esci e usa un altro account",
     "cerrando": "Disconnessione…"
+  },
+  "benchmarksPage": {
+    "metaTitle": "Banco di prova pubblico A/B: misuraci | BiVelio Savings Layer",
+    "metaDescription": "Quattro batterie pubbliche (GSM8K, BFCL, XSTest e MT-Bench), due bracci misurati con il contatore di utilizzo del fornitore stesso, ogni cifra con il suo n, il suo intervallo e la sua data. Cosa fa risparmiare, cosa no, e i bug che il banco di prova ha trovato.",
+    "eyebrow": "Banco di prova pubblico · riproducibile",
+    "title": "Il nostro banco di prova A/B, alla luce del sole. Misuraci.",
+    "lede": "Pubblichiamo ogni esecuzione: quattro batterie su dataset pubblici, {modelos} modelli, ed entrambi i bracci misurati con il contatore di utilizzo del fornitore stesso. Ogni cifra porta il suo n, il suo intervallo e la sua data. Anche ciò che non fa risparmiare è qui.",
+    "stats": {
+      "batteries": "batterie",
+      "models": "modelli testati",
+      "measured": "modelli con almeno una misurazione",
+      "reports": "report in tempo reale",
+      "last": "ultima esecuzione"
+    },
+    "method": {
+      "title": "Cosa si misura, e come",
+      "arms": "<b>Due bracci, la stessa richiesta.</b> A va direttamente al fornitore, senza il livello; B passa attraverso il livello con la sua configurazione predefinita. Stesso prompt, stesso campionamento, stesso limite di output.",
+      "cost": "<b>Il costo lo conta il fornitore.</b> Ogni braccio viene valutato in base all'<code>usage</code> restituito dall'API a ogni chiamata, al prezzo di listino. Il risparmio è 1 − costo(B) / costo(A) della stessa esecuzione, non ciò che il livello dice di sé stesso.",
+      "intervals": "<b>Intervalli al {nivel}.</b> Li calcola ciascun harness (ricampionamento per famiglie di domande, Wilson per i tassi di rifiuto). Un intervallo che attraversa lo zero significa «indistinguibile da zero», e lo diciamo.",
+      "package": "<b>Il pacchetto che si installa.</b> Il braccio B esegue il sorgente del tag {version}; il suo <code>dist/index.js</code> è identico byte per byte a quello del tarball npm (sha256 <code>{sha}</code>).",
+      "guard": "<b>Nessuna scorciatoia.</b> Ogni harness sorveglia gli host con cui comunica e applica un limite di spesa per modello scritto nel codice. Un modello che non è stato possibile misurare risulta «non misurato», con il motivo.",
+      "batteriesTitle": "Quattro batterie, dataset pubblici, fissati",
+      "commitOnly": "fissato per commit"
+    },
+    "batteries": {
+      "gsm8k": "Problemi matematici a parole con ripetizioni e parafrasi: quanto fa risparmiare la cache e se l'accuratezza cala.",
+      "bfcl": "Chiamate a strumenti: il livello non deve cambiarne nemmeno una, e il catalogo intero deve arrivare.",
+      "xstest": "Rifiuti: il livello non deve cambiare quando il modello rifiuta, né servire un rifiuto dalla cache.",
+      "mt-bench": "Chat a due turni senza ripetizioni: il livello non deve peggiorare costo, latenza o qualità."
+    },
+    "th": {
+      "battery": "Batteria",
+      "what": "Cosa verifica",
+      "dataset": "Dataset",
+      "pinned": "File fissati",
+      "license": "Licenza",
+      "model": "Modello",
+      "n": "n",
+      "savings": "Risparmio misurato [IC]",
+      "fromExact": "Dalla cache esatta",
+      "fromCalls": "Nelle chiamate (prefisso)",
+      "accuracy": "Accuratezza A → B",
+      "run": "Versione · data",
+      "prompts": "Prompt",
+      "safe": "Rifiuti, prompt sicuri (A → B)",
+      "unsafe": "Rifiuti, prompt non sicuri (A → B)",
+      "verdict": "Lettura",
+      "reports": "Report"
+    },
+    "savings": {
+      "title": "Risparmio misurato per modello",
+      "intro": "GSM8K, con un flusso di richieste in cui {rep} sono ripetizioni esatte e {par} parafrasi. È la batteria con traffico ripetuto: il tuo risparmio dipende da quanto si ripete il tuo traffico. Senza ripetizioni, vedi «Cosa non fa risparmiare».",
+      "nCell": "{n} richieste · {unicos} uniche",
+      "delta": "Δ {d} pp [{inf}, {sup}]",
+      "originNote": "Da dove viene il risparmio, posizione per posizione: «dalla cache esatta» è ciò che A ha pagato sulle richieste che il livello ha servito senza chiamare il fornitore; «nelle chiamate» è la differenza su quelle che invece lo hanno raggiunto, soprattutto la cache di prefisso del fornitore (più un po' di variazione nell'output). Le due voci sommate danno il risparmio totale.",
+      "accuracyNote": "L'accuratezza è misurata sulle domande con risposta pubblicata; le varianti con un numero cambiato servono solo a verificare che il livello non restituisca mai la risposta di un'altra domanda."
+    },
+    "guarantees": {
+      "title": "Garanzie, contate",
+      "tools": {
+        "title": "Il livello non ha mai cambiato una chiamata a strumenti",
+        "titleBroken": "Il livello ha cambiato {n} chiamate a strumenti",
+        "body": "{alteradas} chiamate alterate su {comparaciones} confronti BFCL, {modelos} modelli, da {desde}. Se il livello fallisce (un errore in B che A non aveva), non viene contato qui: è sotto «Bug trovati dal banco di prova»."
+      },
+      "other": {
+        "title": "Nessuna risposta di un'altra domanda da {desde}",
+        "titleBroken": "{n} risposte di un'altra domanda da {desde}",
+        "body": "{deOtra} varianti su {variantes} (la stessa domanda con un altro numero, e quindi un'altra risposta) servite con la risposta di un'altra domanda, su {modelos} modelli live e tutte le configurazioni di cache misurate.",
+        "replay": "Replay offline dell'intero split di test di GSM8K: {erroneas} su {peticiones} richieste, in ciascuna delle {configs} configurazioni di cache."
+      },
+      "refusals": {
+        "title": "Lo stesso tasso di rifiuto, con e senza il livello",
+        "titleBroken": "Il tasso di rifiuto è cambiato per {n} modelli",
+        "body": "XSTest, {modelos} modelli misurati: nessuna differenza A/B sotto p = {umbral} (McNemar, prompt appaiati). Il livello ha consegnato senza alterazioni il testo di {comprobados} risposte ({alterados} alterate).",
+        "caption": "Tasso di rifiuto per modello, senza il livello (A) e con esso (B), sugli stessi prompt."
+      }
+    },
+    "noSavings": {
+      "title": "Cosa non fa risparmiare",
+      "lead": "<b>Senza ripetizioni, il risparmio è ≈ {cero}.</b> Lo pubblichiamo comunque, perché è ciò che vedrai se il tuo traffico non si ripete.",
+      "why": "MT-Bench è una chat a due turni con un livello nuovo per ogni domanda: non c'è nulla che la cache possa riutilizzare, e il prompt quasi mai raggiunge il minimo richiesto dal fornitore per mettere in cache un prefisso. In BFCL ogni chiamata a strumenti è diversa. Ciò che queste due batterie misurano è che il livello non peggiori nulla; la differenza di costo residua è rumore nell'output del modello, non il livello.",
+      "nQuestions": "{n} domande",
+      "nItems": "{n} elementi",
+      "verdict": {
+        "ahorro": "risparmio",
+        "cero": "indistinguibile da zero",
+        "sobrecoste": "costo aggiuntivo"
+      },
+      "notAttributable": "non attribuibile al livello"
+    },
+    "status": {
+      "title": "Stato per modello e batteria",
+      "intro": "Ogni cella mostra l'esecuzione sulla versione più alta del livello. Se un modello non è stato possibile misurarlo, diciamo il perché invece di lasciare un vuoto.",
+      "measured": "misurato · n = {n}",
+      "notMeasured": "non misurato: {motivo}",
+      "layerFailed": "il livello ha fallito: {motivo}",
+      "reason": {
+        "credencial": "credenziale rifiutata",
+        "presupuesto": "limite di spesa esaurito",
+        "cuota": "quota del fornitore esaurita",
+        "capa": "le richieste non sono passate dal livello",
+        "proveedor": "il fornitore ha rifiutato la richiesta in entrambi i bracci",
+        "otro": "dati insufficienti"
+      }
+    },
+    "bugs": {
+      "title": "Bug trovati dal banco di prova",
+      "intro": "Il banco di prova non c'è per fare bella figura: c'è per trovare i bug prima di te. Ha trovato questi, con la versione in cui sono comparsi e quella che li corregge.",
+      "found": "Trovato nella {version}: {ocurrencias} su {sobre}.",
+      "fixed": "Corretto nella {version} ({prs}).",
+      "verified": "Verificato dal vivo sulla {version}: {ocurrencias} su {sobre}.",
+      "stillSeen": "Ancora visto sulla {version}: {ocurrencias} su {sobre}.",
+      "pending": "In attesa di essere rimisurato dal vivo sulla {version}.",
+      "items": {
+        "otra-pregunta": {
+          "title": "La cache semantica non calibrata serviva la risposta di un'altra domanda",
+          "body": "Con la cache semantica non calibrata, una variante con un altro numero («three baskets» contro «two baskets») poteva ricevere la risposta della domanda originale. Contato sulle varianti di GSM8K."
+        },
+        "herramientas-multiturno": {
+          "title": "Il livello tagliava il catalogo di strumenti senza alcun segnale per farlo",
+          "body": "Nelle conversazioni multi-turno, il braccio B inviava meno strumenti del braccio A anche se nulla indicava quali fossero superflui. Contato sulle conversazioni multi-turno di BFCL."
+        },
+        "negativas-de-texto": {
+          "title": "Alcuni rifiuti scritti come testo venivano messi in cache",
+          "body": "Un rifiuto che il modello scrive come testo (senza il segnale dell'API) poteva essere messo in cache, ripetuto e accreditato come risparmio. Contato nei prompt di XSTest."
+        },
+        "gemini-filtro-cacheado": {
+          "title": "Un filtro di contenuto di Gemini veniva messo in cache come risposta",
+          "body": "Gemini segnala il suo filtro con un proprio motivo di arresto, che il livello non riconosceva come rifiuto, così poteva metterlo in cache e ripeterlo. Contato nei prompt di XSTest."
+        },
+        "gemini-prompt-cache-key": {
+          "title": "Gemini non passava dal livello",
+          "body": "Il livello inviava un campo specifico dell'API di OpenAI a qualsiasi endpoint compatibile, e Gemini lo rifiuta: tutte le richieste del braccio B fallivano. Contato nelle richieste di GSM8K."
+        },
+        "gemini-thought-signature": {
+          "title": "Con Gemini 3, il secondo turno con strumenti falliva",
+          "body": "Il livello non restituiva la firma di pensiero che Gemini 3 richiede a ogni chiamata a strumenti, così il turno successivo veniva rifiutato. Contato nelle continuazioni multi-turno di BFCL."
+        }
+      }
+    },
+    "repro": {
+      "title": "Come riprodurlo",
+      "intro": "Il codice del banco di prova non è ancora pubblico; il metodo sì, e sta in cinque passi. Con le tue chiavi del fornitore puoi ripeterlo e confrontarlo cifra per cifra con i nostri report.",
+      "steps": {
+        "dataset": "<b>Il dataset.</b> Scarica ogni dataset pubblico al commit della tabella qui sopra e controlla lo sha256 di ogni file prima di usarlo. Se non corrisponde, non è lo stesso dataset.",
+        "package": "<b>Il livello.</b> Installa <code>@bivelio/savings-layer</code> da npm nella versione indicata dal report e controlla lo sha256 di <code>dist/index.js</code>: ogni report riporta il suo.",
+        "arms": "<b>Due bracci per prompt.</b> A va diretto al fornitore; B invia lo stesso prompt, allo stesso modello e con lo stesso limite di output, attraverso il livello con la configurazione predefinita. Una parte dei prompt viene ripetuta o parafrasata, come nel traffico reale, e l'ordine A/B è sorteggiato.",
+        "cost": "<b>Il costo lo dice il fornitore.</b> Somma quanto viene fatturato a ogni braccio secondo lo <code>usage</code> restituito dal fornitore, alla sua tariffa pubblicata. Il risparmio è <code>1 − costo B / costo A</code>, con il suo intervallo.",
+        "compare": "<b>La qualità, nella stessa esecuzione.</b> Valuta allo stesso modo le risposte dei due bracci (risposta esatta in GSM8K, chiamata di strumento in BFCL, rifiuto o no in XSTest, un giudice in MT-Bench) e confrontale con il report JSON della stessa batteria e versione."
+      },
+      "reportsTitle": "I report",
+      "reportsIntro": "Ogni esecuzione lascia un report JSON con il suo disegno, i suoi limiti e ogni chiamata misurata: usage, costo per braccio e classificazione della risposta. Sono serviti da questo sito.",
+      "served": "I report sono serviti così come il banco li ha scritti, con un'eccezione: si tolgono i dati sull'ambiente di chi ha misurato (percorsi su disco, indirizzi email). Di XSTest non si pubblica il testo di nessuna risposta, solo la sua classificazione."
+    },
+    "invite": {
+      "title": "Misuraci tu stesso",
+      "body": "Una misurazione indipendente vale più della nostra. Il codice del banco non è ancora pubblico: se vuoi ripetere la misurazione, o misurare il livello con il tuo harness o con il tuo traffico, scrivici e ti daremo ciò che ti serve per farlo.",
+      "contact": "Scrivici a",
+      "cta": "Invia un'email",
+      "subject": "Misurazione indipendente del banco di prova pubblico"
+    }
   },
   "howItWorks": {
     "metaTitle": "Dove si installa il risparmio? · BiVelio Savings Layer",

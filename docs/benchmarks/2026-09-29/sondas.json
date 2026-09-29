@@ -1,0 +1,4737 @@
+{
+  "fecha": "2026-09-29T08:52:42.400Z",
+  "modo": "vivo",
+  "commit": "71c450949be3f80fd7daee94f272a7e3e41c7e5c",
+  "paquete": {
+    "version": "0.4.32",
+    "como": "fuente de origin/main (0.4.32, con #401 #402 #403) vía tsx, BVSALA_DEV_OPEN=1"
+  },
+  "topeUsd": 0.5,
+  "gastoTotalUsd": 0.629928,
+  "gastoPorSonda": {
+    "bucle": 0.562947,
+    "busqueda": 0.039812,
+    "diagnostico": 0.019562,
+    "gemini": 0.005355,
+    "gpt": 0.002252
+  },
+  "hostsVistos": {
+    "api.anthropic.com": 61,
+    "generativelanguage.googleapis.com": 22,
+    "api.openai.com": 3
+  },
+  "hostsBloqueados": {},
+  "sondas": [
+    {
+      "sonda": "bucle",
+      "arreglos": [
+        "#359",
+        "#403"
+      ],
+      "veredicto": "confirma",
+      "resumen": "bucle nativo limpio en 3/3 modelos; catálogo leído de caché en 3/3.",
+      "hallazgos": [],
+      "datos": {
+        "catalogo": {
+          "herramientas": 45,
+          "tokensAprox": 8973
+        },
+        "porModelo": {
+          "claude-sonnet-5": {
+            "sinCapa": {
+              "llamadas": 5,
+              "errores": 0,
+              "entrada": 73347,
+              "lecturaCache": 0,
+              "escrituraCache": 0,
+              "salida": 494,
+              "costeUsd": 0.151634,
+              "pasos": [
+                {
+                  "paso": 1,
+                  "llamadas": [
+                    "consultar_pedidos"
+                  ],
+                  "parada": "tool_use"
+                },
+                {
+                  "paso": 2,
+                  "llamadas": [
+                    "consultar_envios"
+                  ],
+                  "parada": "tool_use"
+                },
+                {
+                  "paso": 3,
+                  "llamadas": [
+                    "consultar_envios"
+                  ],
+                  "parada": "tool_use"
+                },
+                {
+                  "paso": 4,
+                  "llamadas": [
+                    "consultar_facturas"
+                  ],
+                  "parada": "tool_use"
+                },
+                {
+                  "paso": 5,
+                  "llamadas": [],
+                  "parada": "end_turn"
+                }
+              ],
+              "error": null
+            },
+            "conCapa": {
+              "llamadas": 5,
+              "errores": 0,
+              "entrada": 16509,
+              "lecturaCache": 42249,
+              "escrituraCache": 14083,
+              "salida": 389,
+              "costeUsd": 0.080565,
+              "pasos": [
+                {
+                  "paso": 1,
+                  "llamadas": [
+                    "consultar_pedidos"
+                  ],
+                  "finishReason": "tool_calls",
+                  "costeInforme": 0.030126,
+                  "cacheProveedor": 0,
+                  "trazaPrefixCache": [],
+                  "trazaHistoria": [],
+                  "herramientasSeleccionadas": null
+                },
+                {
+                  "paso": 2,
+                  "llamadas": [
+                    "consultar_envios"
+                  ],
+                  "finishReason": "tool_calls",
+                  "costeInforme": 0.036478,
+                  "cacheProveedor": 0,
+                  "trazaPrefixCache": [
+                    "marked(tools): exploring the prefix cache (0/8); hit rate is only observable on requests that were marked",
+                    "measured: "
+                  ],
+                  "trazaHistoria": [],
+                  "herramientasSeleccionadas": null
+                },
+                {
+                  "paso": 3,
+                  "llamadas": [
+                    "consultar_envios"
+                  ],
+                  "finishReason": "tool_calls",
+                  "costeInforme": 0.004285,
+                  "cacheProveedor": 14083,
+                  "trazaPrefixCache": [
+                    "marked(tools): exploring the prefix cache (1/8); hit rate is only observable on requests that were marked",
+                    "measured: "
+                  ],
+                  "trazaHistoria": [],
+                  "herramientasSeleccionadas": null
+                },
+                {
+                  "paso": 4,
+                  "llamadas": [
+                    "consultar_facturas"
+                  ],
+                  "finishReason": "tool_calls",
+                  "costeInforme": 0.004529,
+                  "cacheProveedor": 14083,
+                  "trazaPrefixCache": [
+                    "marked(tools): exploring the prefix cache (2/8); hit rate is only observable on requests that were marked",
+                    "measured: "
+                  ],
+                  "trazaHistoria": [],
+                  "herramientasSeleccionadas": null
+                },
+                {
+                  "paso": 5,
+                  "llamadas": [],
+                  "finishReason": "stop",
+                  "costeInforme": 0.005149,
+                  "cacheProveedor": 14083,
+                  "trazaPrefixCache": [
+                    "marked(tools): exploring the prefix cache (3/8); hit rate is only observable on requests that were marked",
+                    "measured: "
+                  ],
+                  "trazaHistoria": [],
+                  "herramientasSeleccionadas": null
+                }
+              ],
+              "error": null,
+              "final": "stop",
+              "costeSegunElInforme": 0.080565,
+              "informeEntreUsage": 1,
+              "cuerposConToolUse": 4,
+              "cuerposConIsError": 3,
+              "cuerposConMarcaEnElCatalogo": 4,
+              "dondeMarcasPorPaso": [
+                [],
+                [
+                  "tools[44]"
+                ],
+                [
+                  "tools[44]"
+                ],
+                [
+                  "tools[44]"
+                ],
+                [
+                  "tools[44]"
+                ]
+              ],
+              "lecturasDeCachePorPaso": [
+                0,
+                0,
+                14083,
+                14083,
+                14083
+              ],
+              "escriturasDeCachePorPaso": [
+                0,
+                14083,
+                0,
+                0,
+                0
+              ],
+              "errores400": []
+            },
+            "ahorroFrenteASinCapaUsd": 0.071069,
+            "ahorroFrenteASinCapaPct": 46.9,
+            "bucleNativo": true,
+            "catalogoEnCache": true
+          },
+          "claude-sonnet-5-5": {
+            "sinCapa": {
+              "llamadas": 5,
+              "errores": 0,
+              "entrada": 72539,
+              "lecturaCache": 0,
+              "escrituraCache": 0,
+              "salida": 357,
+              "costeUsd": 0.148648,
+              "pasos": [
+                {
+                  "paso": 1,
+                  "llamadas": [
+                    "consultar_pedidos"
+                  ],
+                  "parada": "tool_use"
+                },
+                {
+                  "paso": 2,
+                  "llamadas": [
+                    "consultar_envios"
+                  ],
+                  "parada": "tool_use"
+                },
+                {
+                  "paso": 3,
+                  "llamadas": [
+                    "consultar_envios"
+                  ],
+                  "parada": "tool_use"
+                },
+                {
+                  "paso": 4,
+                  "llamadas": [
+                    "consultar_facturas"
+                  ],
+                  "parada": "tool_use"
+                },
+                {
+                  "paso": 5,
+                  "llamadas": [],
+                  "parada": "end_turn"
+                }
+              ],
+              "error": null
+            },
+            "conCapa": {
+              "llamadas": 5,
+              "errores": 0,
+              "entrada": 16231,
+              "lecturaCache": 42237,
+              "escrituraCache": 14079,
+              "salida": 362,
+              "costeUsd": 0.079727,
+              "pasos": [
+                {
+                  "paso": 1,
+                  "llamadas": [
+                    "consultar_pedidos"
+                  ],
+                  "finishReason": "tool_calls",
+                  "costeInforme": 0.029084,
+                  "cacheProveedor": 0,
+                  "trazaPrefixCache": [],
+                  "trazaHistoria": [],
+                  "herramientasSeleccionadas": null
+                },
+                {
+                  "paso": 2,
+                  "llamadas": [
+                    "consultar_envios"
+                  ],
+                  "finishReason": "tool_calls",
+                  "costeInforme": 0.036344,
+                  "cacheProveedor": 0,
+                  "trazaPrefixCache": [
+                    "marked(tools): exploring the prefix cache (0/8); hit rate is only observable on requests that were marked",
+                    "measured: "
+                  ],
+                  "trazaHistoria": [],
+                  "herramientasSeleccionadas": null
+                },
+                {
+                  "paso": 3,
+                  "llamadas": [
+                    "consultar_envios"
+                  ],
+                  "finishReason": "tool_calls",
+                  "costeInforme": 0.00434,
+                  "cacheProveedor": 14079,
+                  "trazaPrefixCache": [
+                    "marked(tools): exploring the prefix cache (1/8); hit rate is only observable on requests that were marked",
+                    "measured: "
+                  ],
+                  "trazaHistoria": [],
+                  "herramientasSeleccionadas": null
+                },
+                {
+                  "paso": 4,
+                  "llamadas": [
+                    "consultar_facturas"
+                  ],
+                  "finishReason": "tool_calls",
+                  "costeInforme": 0.00444,
+                  "cacheProveedor": 14079,
+                  "trazaPrefixCache": [
+                    "marked(tools): exploring the prefix cache (2/8); hit rate is only observable on requests that were marked",
+                    "measured: "
+                  ],
+                  "trazaHistoria": [],
+                  "herramientasSeleccionadas": null
+                },
+                {
+                  "paso": 5,
+                  "llamadas": [],
+                  "finishReason": "stop",
+                  "costeInforme": 0.00552,
+                  "cacheProveedor": 14079,
+                  "trazaPrefixCache": [
+                    "marked(tools): exploring the prefix cache (3/8); hit rate is only observable on requests that were marked",
+                    "measured: "
+                  ],
+                  "trazaHistoria": [],
+                  "herramientasSeleccionadas": null
+                }
+              ],
+              "error": null,
+              "final": "stop",
+              "costeSegunElInforme": 0.079727,
+              "informeEntreUsage": 1,
+              "cuerposConToolUse": 4,
+              "cuerposConIsError": 3,
+              "cuerposConMarcaEnElCatalogo": 4,
+              "dondeMarcasPorPaso": [
+                [],
+                [
+                  "tools[44]"
+                ],
+                [
+                  "tools[44]"
+                ],
+                [
+                  "tools[44]"
+                ],
+                [
+                  "tools[44]"
+                ]
+              ],
+              "lecturasDeCachePorPaso": [
+                0,
+                0,
+                14079,
+                14079,
+                14079
+              ],
+              "escriturasDeCachePorPaso": [
+                0,
+                14079,
+                0,
+                0,
+                0
+              ],
+              "errores400": []
+            },
+            "ahorroFrenteASinCapaUsd": 0.068921,
+            "ahorroFrenteASinCapaPct": 46.4,
+            "bucleNativo": true,
+            "catalogoEnCache": true
+          },
+          "claude-haiku-4-5": {
+            "sinCapa": {
+              "llamadas": 5,
+              "errores": 0,
+              "entrada": 63339,
+              "lecturaCache": 0,
+              "escrituraCache": 0,
+              "salida": 498,
+              "costeUsd": 0.065829,
+              "pasos": [
+                {
+                  "paso": 1,
+                  "llamadas": [
+                    "consultar_pedidos"
+                  ],
+                  "parada": "tool_use"
+                },
+                {
+                  "paso": 2,
+                  "llamadas": [
+                    "consultar_envios"
+                  ],
+                  "parada": "tool_use"
+                },
+                {
+                  "paso": 3,
+                  "llamadas": [
+                    "consultar_envios"
+                  ],
+                  "parada": "tool_use"
+                },
+                {
+                  "paso": 4,
+                  "llamadas": [
+                    "consultar_facturas"
+                  ],
+                  "parada": "tool_use"
+                },
+                {
+                  "paso": 5,
+                  "llamadas": [],
+                  "parada": "end_turn"
+                }
+              ],
+              "error": null
+            },
+            "conCapa": {
+              "llamadas": 5,
+              "errores": 0,
+              "entrada": 15630,
+              "lecturaCache": 35823,
+              "escrituraCache": 11941,
+              "salida": 481,
+              "costeUsd": 0.036544,
+              "pasos": [
+                {
+                  "paso": 1,
+                  "llamadas": [
+                    "consultar_pedidos"
+                  ],
+                  "finishReason": "tool_calls",
+                  "costeInforme": 0.012878,
+                  "cacheProveedor": 0,
+                  "trazaPrefixCache": [],
+                  "trazaHistoria": [],
+                  "herramientasSeleccionadas": null
+                },
+                {
+                  "paso": 2,
+                  "llamadas": [
+                    "consultar_envios"
+                  ],
+                  "finishReason": "tool_calls",
+                  "costeInforme": 0.016106,
+                  "cacheProveedor": 0,
+                  "trazaPrefixCache": [
+                    "marked(tools): exploring the prefix cache (0/8); hit rate is only observable on requests that were marked",
+                    "measured: "
+                  ],
+                  "trazaHistoria": [],
+                  "herramientasSeleccionadas": null
+                },
+                {
+                  "paso": 3,
+                  "llamadas": [
+                    "consultar_envios"
+                  ],
+                  "finishReason": "tool_calls",
+                  "costeInforme": 0.002292,
+                  "cacheProveedor": 11941,
+                  "trazaPrefixCache": [
+                    "marked(tools): exploring the prefix cache (1/8); hit rate is only observable on requests that were marked",
+                    "measured: "
+                  ],
+                  "trazaHistoria": [],
+                  "herramientasSeleccionadas": null
+                },
+                {
+                  "paso": 4,
+                  "llamadas": [
+                    "consultar_facturas"
+                  ],
+                  "finishReason": "tool_calls",
+                  "costeInforme": 0.002609,
+                  "cacheProveedor": 11941,
+                  "trazaPrefixCache": [
+                    "marked(tools): exploring the prefix cache (2/8); hit rate is only observable on requests that were marked",
+                    "measured: "
+                  ],
+                  "trazaHistoria": [],
+                  "herramientasSeleccionadas": null
+                },
+                {
+                  "paso": 5,
+                  "llamadas": [],
+                  "finishReason": "stop",
+                  "costeInforme": 0.002658,
+                  "cacheProveedor": 11941,
+                  "trazaPrefixCache": [
+                    "marked(tools): exploring the prefix cache (3/8); hit rate is only observable on requests that were marked",
+                    "measured: "
+                  ],
+                  "trazaHistoria": [],
+                  "herramientasSeleccionadas": null
+                }
+              ],
+              "error": null,
+              "final": "stop",
+              "costeSegunElInforme": 0.036544,
+              "informeEntreUsage": 1,
+              "cuerposConToolUse": 4,
+              "cuerposConIsError": 3,
+              "cuerposConMarcaEnElCatalogo": 4,
+              "dondeMarcasPorPaso": [
+                [],
+                [
+                  "tools[44]"
+                ],
+                [
+                  "tools[44]"
+                ],
+                [
+                  "tools[44]"
+                ],
+                [
+                  "tools[44]"
+                ]
+              ],
+              "lecturasDeCachePorPaso": [
+                0,
+                0,
+                11941,
+                11941,
+                11941
+              ],
+              "escriturasDeCachePorPaso": [
+                0,
+                11941,
+                0,
+                0,
+                0
+              ],
+              "errores400": []
+            },
+            "ahorroFrenteASinCapaUsd": 0.029285,
+            "ahorroFrenteASinCapaPct": 44.5,
+            "bucleNativo": true,
+            "catalogoEnCache": true
+          }
+        }
+      },
+      "gastoUsd": 0.562947,
+      "llamadas": 30
+    },
+    {
+      "sonda": "busqueda",
+      "arreglos": [
+        "#354"
+      ],
+      "veredicto": "confirma",
+      "resumen": "búsquedas por turno con capa 1/0/1 vs sin capa 1/0/1; pares reenviados en el turno 2: 2.",
+      "hallazgos": [
+        "`toolSearch: \"auto\"` eligió el selector con 120 herramientas; la sonda forzó `\"always\"` (el motivo está en los datos)."
+      ],
+      "datos": {
+        "modelo": "claude-haiku-4-5",
+        "herramientas": 120,
+        "modo": "always",
+        "conCapa": {
+          "turnos": [
+            {
+              "nota": "auto → selector",
+              "motivo": "deferring 24234 tokens of definitions saves 0.002423 per request even with a warm prompt cache, less than one worst-case search costs (0.003577: the 5 largest definitions uncached plus the longest query); the selector keeps this request"
+            },
+            {
+              "turno": 1,
+              "pasos": [
+                {
+                  "paso": 1,
+                  "decision": "native",
+                  "searches": 1,
+                  "loaded": [
+                    "consultar_pedidos",
+                    "validar_pedidos",
+                    "listar_pedidos",
+                    "resumir_pedidos",
+                    "historial_pedidos"
+                  ],
+                  "resentResults": 0,
+                  "resentTools": [],
+                  "llamadas": [
+                    "consultar_pedidos"
+                  ]
+                },
+                {
+                  "paso": 2,
+                  "decision": "native",
+                  "searches": 0,
+                  "loaded": [],
+                  "resentResults": 1,
+                  "resentTools": [
+                    "consultar_pedidos",
+                    "validar_pedidos",
+                    "listar_pedidos",
+                    "resumir_pedidos",
+                    "historial_pedidos"
+                  ],
+                  "llamadas": []
+                }
+              ],
+              "busquedasDelProveedor": 1,
+              "paresReenviadosEnElCable": 1,
+              "uso": {
+                "llamadas": 2,
+                "errores": 0,
+                "entrada": 3871,
+                "lecturaCache": 0,
+                "escrituraCache": 0,
+                "salida": 275,
+                "costeUsd": 0.005246
+              }
+            },
+            {
+              "turno": 2,
+              "pasos": [
+                {
+                  "paso": 1,
+                  "decision": "native",
+                  "searches": 0,
+                  "loaded": [],
+                  "resentResults": 1,
+                  "resentTools": [
+                    "consultar_pedidos",
+                    "validar_pedidos",
+                    "listar_pedidos",
+                    "resumir_pedidos",
+                    "historial_pedidos"
+                  ],
+                  "llamadas": [
+                    "consultar_pedidos"
+                  ]
+                },
+                {
+                  "paso": 2,
+                  "decision": "native",
+                  "searches": 0,
+                  "loaded": [],
+                  "resentResults": 1,
+                  "resentTools": [
+                    "consultar_pedidos",
+                    "validar_pedidos",
+                    "listar_pedidos",
+                    "resumir_pedidos",
+                    "historial_pedidos"
+                  ],
+                  "llamadas": []
+                }
+              ],
+              "busquedasDelProveedor": 0,
+              "paresReenviadosEnElCable": 2,
+              "uso": {
+                "llamadas": 2,
+                "errores": 0,
+                "entrada": 3647,
+                "lecturaCache": 0,
+                "escrituraCache": 0,
+                "salida": 151,
+                "costeUsd": 0.004402
+              }
+            },
+            {
+              "turno": 3,
+              "pasos": [
+                {
+                  "paso": 1,
+                  "decision": "native",
+                  "searches": 1,
+                  "loaded": [
+                    "listar_facturas",
+                    "listar_clientes",
+                    "consultar_clientes",
+                    "historial_clientes",
+                    "resumir_clientes"
+                  ],
+                  "resentResults": 1,
+                  "resentTools": [
+                    "consultar_pedidos",
+                    "validar_pedidos",
+                    "listar_pedidos",
+                    "resumir_pedidos",
+                    "historial_pedidos"
+                  ],
+                  "llamadas": [
+                    "listar_facturas"
+                  ]
+                },
+                {
+                  "paso": 2,
+                  "decision": "native",
+                  "searches": 0,
+                  "loaded": [],
+                  "resentResults": 2,
+                  "resentTools": [
+                    "consultar_pedidos",
+                    "validar_pedidos",
+                    "listar_pedidos",
+                    "resumir_pedidos",
+                    "historial_pedidos",
+                    "listar_facturas",
+                    "listar_clientes",
+                    "consultar_clientes",
+                    "historial_clientes",
+                    "resumir_clientes"
+                  ],
+                  "llamadas": []
+                }
+              ],
+              "busquedasDelProveedor": 1,
+              "paresReenviadosEnElCable": 3,
+              "uso": {
+                "llamadas": 2,
+                "errores": 0,
+                "entrada": 7603,
+                "lecturaCache": 0,
+                "escrituraCache": 0,
+                "salida": 271,
+                "costeUsd": 0.008958
+              }
+            }
+          ],
+          "total": {
+            "llamadas": 6,
+            "errores": 0,
+            "entrada": 15121,
+            "lecturaCache": 0,
+            "escrituraCache": 0,
+            "salida": 697,
+            "costeUsd": 0.018606
+          },
+          "error": null
+        },
+        "llamadaDeAutoConSelector": {
+          "llamadas": 1,
+          "errores": 0,
+          "entrada": 1709,
+          "lecturaCache": 0,
+          "escrituraCache": 0,
+          "salida": 57,
+          "costeUsd": 0.001994
+        },
+        "sinCapa": {
+          "turnos": [
+            {
+              "turno": 1,
+              "busquedasDelProveedor": 1,
+              "uso": {
+                "llamadas": 2,
+                "errores": 0,
+                "entrada": 3918,
+                "lecturaCache": 0,
+                "escrituraCache": 0,
+                "salida": 306,
+                "costeUsd": 0.005448
+              }
+            },
+            {
+              "turno": 2,
+              "busquedasDelProveedor": 0,
+              "uso": {
+                "llamadas": 2,
+                "errores": 0,
+                "entrada": 3709,
+                "lecturaCache": 0,
+                "escrituraCache": 0,
+                "salida": 181,
+                "costeUsd": 0.004614
+              }
+            },
+            {
+              "turno": 3,
+              "busquedasDelProveedor": 1,
+              "uso": {
+                "llamadas": 2,
+                "errores": 0,
+                "entrada": 7785,
+                "lecturaCache": 0,
+                "escrituraCache": 0,
+                "salida": 273,
+                "costeUsd": 0.00915
+              }
+            }
+          ],
+          "total": {
+            "llamadas": 6,
+            "errores": 0,
+            "entrada": 15412,
+            "lecturaCache": 0,
+            "escrituraCache": 0,
+            "salida": 760,
+            "costeUsd": 0.019212
+          },
+          "error": null
+        }
+      },
+      "gastoUsd": 0.039812,
+      "llamadas": 13
+    },
+    {
+      "sonda": "diagnostico",
+      "arreglos": [
+        "#358"
+      ],
+      "veredicto": "confirma",
+      "resumen": "motivo de Anthropic en la petición tocada: system_changed; en la traza de la capa: system_changed.",
+      "hallazgos": [],
+      "datos": {
+        "modelo": "claude-sonnet-5-5",
+        "systemTokensAprox": 972,
+        "peticiones": [
+          {
+            "peticion": 1,
+            "tocada": false,
+            "trasCaducidad": false,
+            "diagnosticsEnElCuerpo": {
+              "previous_message_id": null
+            },
+            "diagnosticsEnLaRespuesta": null,
+            "idDelProveedor": "msg_011CfXSEmiaXoCvkc9Wsooof",
+            "lecturaCache": 0,
+            "escrituraCache": 1680,
+            "marcas": [
+              "system[0]"
+            ],
+            "trazaColocacion": [
+              {
+                "outcome": "S",
+                "detail": {
+                  "reason": "tail: not conclusive yet (0/0 in 5 min, 0/0 in 1 h), not marked",
+                  "boundary": "system",
+                  "tail": false,
+                  "ttl": "5m",
+                  "breakEvenReuseRate": 0.2173913043478261,
+                  "historyReusedWithin5m": 0,
+                  "continuedWithin5m": 0,
+                  "samples": 0,
+                  "providerConfirmedReads": "0/0"
+                }
+              }
+            ]
+          },
+          {
+            "peticion": 2,
+            "tocada": false,
+            "trasCaducidad": false,
+            "diagnosticsEnElCuerpo": {
+              "previous_message_id": "msg_011CfXSEmiaXoCvkc9Wsooof"
+            },
+            "diagnosticsEnLaRespuesta": null,
+            "idDelProveedor": "msg_011CfXSEwGJj5nRivY6DC5RD",
+            "lecturaCache": 1680,
+            "escrituraCache": 0,
+            "marcas": [
+              "system[0]"
+            ],
+            "trazaColocacion": [
+              {
+                "outcome": "S",
+                "detail": {
+                  "reason": "tail: not conclusive yet (0/0 in 5 min, 0/0 in 1 h), not marked",
+                  "boundary": "system",
+                  "tail": false,
+                  "ttl": "5m",
+                  "breakEvenReuseRate": 0.2173913043478261,
+                  "historyReusedWithin5m": 0,
+                  "continuedWithin5m": 0,
+                  "samples": 0,
+                  "providerConfirmedReads": "0/0"
+                }
+              },
+              {
+                "outcome": "verified",
+                "detail": {
+                  "predictedRead": 1680,
+                  "providerCacheRead": 1680,
+                  "confirmed": true
+                }
+              }
+            ]
+          },
+          {
+            "peticion": 3,
+            "tocada": true,
+            "trasCaducidad": false,
+            "diagnosticsEnElCuerpo": {
+              "previous_message_id": "msg_011CfXSEwGJj5nRivY6DC5RD"
+            },
+            "diagnosticsEnLaRespuesta": {
+              "cache_miss_reason": {
+                "type": "system_changed",
+                "cache_missed_input_tokens": 1362
+              }
+            },
+            "idDelProveedor": "msg_011CfXSFABggSN3YQChvaLSL",
+            "lecturaCache": 0,
+            "escrituraCache": 1680,
+            "marcas": [
+              "system[0]"
+            ],
+            "trazaColocacion": [
+              {
+                "outcome": "S",
+                "detail": {
+                  "reason": "tail: not conclusive yet (0/0 in 5 min, 0/0 in 1 h), not marked",
+                  "boundary": "system",
+                  "tail": false,
+                  "ttl": "5m",
+                  "breakEvenReuseRate": 0.2173913043478261,
+                  "historyReusedWithin5m": 0,
+                  "continuedWithin5m": 0,
+                  "samples": 0,
+                  "providerConfirmedReads": "1/1"
+                }
+              },
+              {
+                "outcome": "verified",
+                "detail": {
+                  "predictedRead": 1680,
+                  "providerCacheRead": 0,
+                  "confirmed": false,
+                  "cacheMissReason": "system_changed",
+                  "cacheMissedInputTokensEstimate": 1362
+                }
+              }
+            ]
+          },
+          {
+            "peticion": 4,
+            "tocada": false,
+            "trasCaducidad": false,
+            "diagnosticsEnElCuerpo": {
+              "previous_message_id": "msg_011CfXSFABggSN3YQChvaLSL"
+            },
+            "diagnosticsEnLaRespuesta": {
+              "cache_miss_reason": {
+                "type": "system_changed",
+                "cache_missed_input_tokens": 1362
+              }
+            },
+            "idDelProveedor": "msg_011CfXSFJm8H5y4DLx4iymZM",
+            "lecturaCache": 1680,
+            "escrituraCache": 0,
+            "marcas": [
+              "system[0]"
+            ],
+            "trazaColocacion": [
+              {
+                "outcome": "S",
+                "detail": {
+                  "reason": "tail: not conclusive yet (0/0 in 5 min, 0/0 in 1 h), not marked",
+                  "boundary": "system",
+                  "tail": false,
+                  "ttl": "5m",
+                  "breakEvenReuseRate": 0.2173913043478261,
+                  "historyReusedWithin5m": 0,
+                  "continuedWithin5m": 0,
+                  "samples": 0,
+                  "providerConfirmedReads": "1/2"
+                }
+              },
+              {
+                "outcome": "verified",
+                "detail": {
+                  "predictedRead": 1680,
+                  "providerCacheRead": 1680,
+                  "confirmed": true
+                }
+              }
+            ]
+          },
+          {
+            "peticion": 5,
+            "tocada": false,
+            "trasCaducidad": true,
+            "diagnosticsEnElCuerpo": {
+              "previous_message_id": "msg_011CfXSFJm8H5y4DLx4iymZM"
+            },
+            "diagnosticsEnLaRespuesta": null,
+            "idDelProveedor": "msg_011CfXSi2EhxZGzu2mG2rwsi",
+            "lecturaCache": 0,
+            "escrituraCache": 1680,
+            "marcas": [
+              "system[0]"
+            ],
+            "trazaColocacion": [
+              {
+                "outcome": "S",
+                "detail": {
+                  "reason": "tail: not conclusive yet (0/4 in 5 min, 0/0 in 1 h), not marked",
+                  "boundary": "system",
+                  "tail": false,
+                  "ttl": "5m",
+                  "breakEvenReuseRate": 0.2173913043478261,
+                  "historyReusedWithin5m": 0,
+                  "continuedWithin5m": 0,
+                  "samples": 4,
+                  "providerConfirmedReads": "2/3"
+                }
+              }
+            ]
+          }
+        ],
+        "error": null
+      },
+      "gastoUsd": 0.019562,
+      "llamadas": 5
+    },
+    {
+      "sonda": "gemini",
+      "arreglos": [
+        "#402"
+      ],
+      "veredicto": "confirma",
+      "resumen": "dos turnos con herramientas sin error (firmas devueltas: 4); coste informe/usage 1; negativa provocada y bien tratada.",
+      "hallazgos": [],
+      "datos": {
+        "modelo": "gemini-3.8-flash",
+        "herramientas": {
+          "pasos": [
+            {
+              "pregunta": 1,
+              "paso": 1,
+              "llamadas": [
+                "tiempo_actual"
+              ],
+              "firmaEnLaRespuesta": 1,
+              "extraContentReenviadoEnElCable": 0,
+              "toolCallsReenviadasEnElCable": 0,
+              "promptCacheKeyEnElCable": false,
+              "status": [
+                200
+              ],
+              "tokensDePensamiento": 57,
+              "salidaSinPensamiento": 16,
+              "costeInforme": 0.000329,
+              "costeUsage": 0.000328
+            },
+            {
+              "pregunta": 1,
+              "paso": 2,
+              "llamadas": [],
+              "firmaEnLaRespuesta": 0,
+              "extraContentReenviadoEnElCable": 1,
+              "toolCallsReenviadasEnElCable": 1,
+              "promptCacheKeyEnElCable": false,
+              "status": [
+                200
+              ],
+              "tokensDePensamiento": 29,
+              "salidaSinPensamiento": 21,
+              "costeInforme": 0.000325,
+              "costeUsage": 0.000325
+            },
+            {
+              "pregunta": 2,
+              "paso": 1,
+              "llamadas": [
+                "tiempo_actual"
+              ],
+              "firmaEnLaRespuesta": 1,
+              "extraContentReenviadoEnElCable": 1,
+              "toolCallsReenviadasEnElCable": 1,
+              "promptCacheKeyEnElCable": false,
+              "status": [
+                200
+              ],
+              "tokensDePensamiento": 37,
+              "salidaSinPensamiento": 17,
+              "costeInforme": 0.000361,
+              "costeUsage": 0.000361
+            },
+            {
+              "pregunta": 2,
+              "paso": 2,
+              "llamadas": [],
+              "firmaEnLaRespuesta": 0,
+              "extraContentReenviadoEnElCable": 2,
+              "toolCallsReenviadasEnElCable": 2,
+              "promptCacheKeyEnElCable": false,
+              "status": [
+                200
+              ],
+              "tokensDePensamiento": 0,
+              "salidaSinPensamiento": 21,
+              "costeInforme": 0.000306,
+              "costeUsage": 0.000306
+            }
+          ],
+          "errores400": [],
+          "error": null
+        },
+        "coste": {
+          "informe": 0.00132,
+          "usage": 0.00132
+        },
+        "negativa": {
+          "intentos": [
+            {
+              "xstestId": 83,
+              "finishReason": "length",
+              "refusal": false,
+              "largoDelTexto": 132,
+              "cacheDeLaRepeticion": "miss",
+              "repeticionVolvioAlProveedor": true,
+              "referenciaEnLaRepeticion": false,
+              "ahorroNetoDeLaRepeticion": 0,
+              "costeUsage": 0.000947
+            },
+            {
+              "xstestId": 129,
+              "finishReason": "length",
+              "refusal": false,
+              "largoDelTexto": 32,
+              "cacheDeLaRepeticion": "miss",
+              "repeticionVolvioAlProveedor": true,
+              "referenciaEnLaRepeticion": false,
+              "ahorroNetoDeLaRepeticion": 0,
+              "costeUsage": 0.001188
+            },
+            {
+              "xstestId": 26,
+              "finishReason": "stop",
+              "refusal": false,
+              "largoDelTexto": 129,
+              "cacheDeLaRepeticion": "miss",
+              "repeticionVolvioAlProveedor": true,
+              "referenciaEnLaRepeticion": false,
+              "ahorroNetoDeLaRepeticion": 0,
+              "costeUsage": 0.001081
+            },
+            {
+              "xstestId": 35,
+              "finishReason": "content_filter",
+              "refusal": false,
+              "largoDelTexto": 0,
+              "cacheDeLaRepeticion": "miss",
+              "repeticionVolvioAlProveedor": true,
+              "referenciaEnLaRepeticion": false,
+              "ahorroNetoDeLaRepeticion": 0,
+              "costeUsage": 0.00082
+            }
+          ],
+          "provocada": true,
+          "bienTratada": true
+        }
+      },
+      "gastoUsd": 0.005355,
+      "llamadas": 12
+    },
+    {
+      "sonda": "gpt",
+      "arreglos": [
+        "#402"
+      ],
+      "veredicto": "confirma",
+      "resumen": "bucle de 2 pasos con reasoning_effort \"none\" sin error; control sin él: HTTP 400.",
+      "hallazgos": [],
+      "datos": {
+        "modelo": "gpt-5.6-sol",
+        "control": {
+          "error": "provider 400: {\n  \"error\": {\n    \"message\": \"Function tools with reasoning_effort are not supported for gpt-5.6-sol in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\",\n    \"type\": \"invalid_request_error\",\n    \"param\": \"reasoning_effort\",\n    \"code\":",
+          "status": [
+            400
+          ]
+        },
+        "bucle": {
+          "pasos": [
+            {
+              "paso": 1,
+              "llamadas": [
+                "tiempo_actual"
+              ],
+              "finishReason": "tool_calls",
+              "costeInforme": 0.001032
+            },
+            {
+              "paso": 2,
+              "llamadas": [],
+              "finishReason": "stop",
+              "costeInforme": 0.00122
+            }
+          ],
+          "uso": {
+            "llamadas": 2,
+            "errores": 0,
+            "entrada": 353,
+            "lecturaCache": 0,
+            "escrituraCache": 0,
+            "salida": 42,
+            "costeUsd": 0.002252
+          },
+          "costeInforme": 0.002252,
+          "error": null,
+          "errores400": []
+        }
+      },
+      "gastoUsd": 0.002252,
+      "llamadas": 3
+    }
+  ],
+  "avisosDeLaCapa": [
+    "[bv-sala] The tool selector sent 8 of 120 tools, chosen by the `intents`/`risk` your tools declare: the model cannot call the other 112 in that request (they are listed in the report's `tool-selector` trace). A catalogue with no `intents` and no `risk`, or `savings: { router: false }`, is sent whole. This provider and model also support native tool search: `savings: { toolSearch: \"auto\" }` sends e"
+  ],
+  "llamadas": [
+    {
+      "n": 1,
+      "sonda": "bucle",
+      "brazo": "A:claude-sonnet-5",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-sonnet-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 1,
+        "herramientas": 45,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 0,
+        "toolResult": 0,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 600
+      },
+      "respuesta": {
+        "bloques": {
+          "thinking": 1,
+          "text": 1,
+          "tool_use": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [
+          "consultar_pedidos"
+        ],
+        "largoDelTexto": 54,
+        "extraContent": 0,
+        "id": "msg_011CfXS6aJWpuG5PQLq4SMyX",
+        "parada": "tool_use",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 14343,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 126,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.029946
+    },
+    {
+      "n": 2,
+      "sonda": "bucle",
+      "brazo": "A:claude-sonnet-5",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-sonnet-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 3,
+        "herramientas": 45,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 1,
+        "toolResult": 1,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 600
+      },
+      "respuesta": {
+        "bloques": {
+          "text": 1,
+          "tool_use": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [
+          "consultar_envios"
+        ],
+        "largoDelTexto": 76,
+        "extraContent": 0,
+        "id": "msg_011CfXS6pnehWW9kQJHkX99A",
+        "parada": "tool_use",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 14535,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 87,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.02994
+    },
+    {
+      "n": 3,
+      "sonda": "bucle",
+      "brazo": "A:claude-sonnet-5",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-sonnet-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 5,
+        "herramientas": 45,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 2,
+        "toolResult": 2,
+        "isError": 1,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 600
+      },
+      "respuesta": {
+        "bloques": {
+          "text": 1,
+          "tool_use": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [
+          "consultar_envios"
+        ],
+        "largoDelTexto": 83,
+        "extraContent": 0,
+        "id": "msg_011CfXS7DpVhm4twALMEh9Hr",
+        "parada": "tool_use",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 14670,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 87,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.03021
+    },
+    {
+      "n": 4,
+      "sonda": "bucle",
+      "brazo": "A:claude-sonnet-5",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-sonnet-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 7,
+        "herramientas": 45,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 3,
+        "toolResult": 3,
+        "isError": 1,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 600
+      },
+      "respuesta": {
+        "bloques": {
+          "text": 1,
+          "tool_use": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [
+          "consultar_facturas"
+        ],
+        "largoDelTexto": 87,
+        "extraContent": 0,
+        "id": "msg_011CfXS7b5vbmmNK2oApmeyR",
+        "parada": "tool_use",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 14823,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 90,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.030546000000000004
+    },
+    {
+      "n": 5,
+      "sonda": "bucle",
+      "brazo": "A:claude-sonnet-5",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-sonnet-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 9,
+        "herramientas": 45,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 4,
+        "toolResult": 4,
+        "isError": 1,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 600
+      },
+      "respuesta": {
+        "bloques": {
+          "text": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [],
+        "largoDelTexto": 216,
+        "extraContent": 0,
+        "id": "msg_011CfXS7ziUVc9FDxh484sWi",
+        "parada": "end_turn",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 14976,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 104,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.030992000000000002
+    },
+    {
+      "n": 6,
+      "sonda": "bucle",
+      "brazo": "B:claude-sonnet-5",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-sonnet-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 1,
+        "herramientas": 45,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 0,
+        "toolResult": 0,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 600
+      },
+      "respuesta": {
+        "bloques": {
+          "thinking": 1,
+          "tool_use": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [
+          "consultar_pedidos"
+        ],
+        "largoDelTexto": 0,
+        "extraContent": 0,
+        "id": "msg_011CfXS8QVDs7nrkeucyPFMo",
+        "parada": "tool_use",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 14343,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 144,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.030126
+    },
+    {
+      "n": 7,
+      "sonda": "bucle",
+      "brazo": "B:claude-sonnet-5",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-sonnet-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 3,
+        "herramientas": 45,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 1,
+        "dondeMarcas": [
+          "tools[44]"
+        ],
+        "toolUse": 1,
+        "toolResult": 1,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 600
+      },
+      "respuesta": {
+        "bloques": {
+          "tool_use": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [
+          "consultar_envios"
+        ],
+        "largoDelTexto": 0,
+        "extraContent": 0,
+        "id": "msg_011CfXS8sBakBUPXy6WWVH63",
+        "parada": "tool_use",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 380,
+        "lecturaCache": 0,
+        "escrituraCache5m": 14083,
+        "escrituraCache1h": 0,
+        "salida": 51,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.036477499999999996
+    },
+    {
+      "n": 8,
+      "sonda": "bucle",
+      "brazo": "B:claude-sonnet-5",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-sonnet-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 5,
+        "herramientas": 45,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 1,
+        "dondeMarcas": [
+          "tools[44]"
+        ],
+        "toolUse": 2,
+        "toolResult": 2,
+        "isError": 1,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 600
+      },
+      "respuesta": {
+        "bloques": {
+          "tool_use": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [
+          "consultar_envios"
+        ],
+        "largoDelTexto": 0,
+        "extraContent": 0,
+        "id": "msg_011CfXS9E3C1TrkouKGjdsBB",
+        "parada": "tool_use",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 479,
+        "lecturaCache": 14083,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 51,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.0042846
+    },
+    {
+      "n": 9,
+      "sonda": "bucle",
+      "brazo": "B:claude-sonnet-5",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-sonnet-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 7,
+        "herramientas": 45,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 1,
+        "dondeMarcas": [
+          "tools[44]"
+        ],
+        "toolUse": 3,
+        "toolResult": 3,
+        "isError": 1,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 600
+      },
+      "respuesta": {
+        "bloques": {
+          "tool_use": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [
+          "consultar_facturas"
+        ],
+        "largoDelTexto": 0,
+        "extraContent": 0,
+        "id": "msg_011CfXS9e83hsgTVGy8en7SR",
+        "parada": "tool_use",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 596,
+        "lecturaCache": 14083,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 52,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.0045286
+    },
+    {
+      "n": 10,
+      "sonda": "bucle",
+      "brazo": "B:claude-sonnet-5",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-sonnet-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 9,
+        "herramientas": 45,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 1,
+        "dondeMarcas": [
+          "tools[44]"
+        ],
+        "toolUse": 4,
+        "toolResult": 4,
+        "isError": 1,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 600
+      },
+      "respuesta": {
+        "bloques": {
+          "text": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [],
+        "largoDelTexto": 200,
+        "extraContent": 0,
+        "id": "msg_011CfXS9zz9vMEuubRnLoxVj",
+        "parada": "end_turn",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 711,
+        "lecturaCache": 14083,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 91,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.005148600000000001
+    },
+    {
+      "n": 11,
+      "sonda": "bucle",
+      "brazo": "A:claude-sonnet-5-5",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-sonnet-5-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 1,
+        "herramientas": 45,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 0,
+        "toolResult": 0,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 600
+      },
+      "respuesta": {
+        "bloques": {
+          "tool_use": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [
+          "consultar_pedidos"
+        ],
+        "largoDelTexto": 0,
+        "extraContent": 0,
+        "id": "msg_011CfXSADdurdosGyvDkzftQ",
+        "parada": "tool_use",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 14277,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 53,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.029084
+    },
+    {
+      "n": 12,
+      "sonda": "bucle",
+      "brazo": "A:claude-sonnet-5-5",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-sonnet-5-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 3,
+        "herramientas": 45,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 1,
+        "toolResult": 1,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 600
+      },
+      "respuesta": {
+        "bloques": {
+          "tool_use": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [
+          "consultar_envios"
+        ],
+        "largoDelTexto": 0,
+        "extraContent": 0,
+        "id": "msg_011CfXSAKrTpM5muwnF4cZ6q",
+        "parada": "tool_use",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 14397,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 51,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.029304
+    },
+    {
+      "n": 13,
+      "sonda": "bucle",
+      "brazo": "A:claude-sonnet-5-5",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-sonnet-5-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 5,
+        "herramientas": 45,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 2,
+        "toolResult": 2,
+        "isError": 1,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 600
+      },
+      "respuesta": {
+        "bloques": {
+          "text": 1,
+          "tool_use": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [
+          "consultar_envios"
+        ],
+        "largoDelTexto": 32,
+        "extraContent": 0,
+        "id": "msg_011CfXSASECm4pJS5piKLk5J",
+        "parada": "tool_use",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 14496,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 65,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.029642
+    },
+    {
+      "n": 14,
+      "sonda": "bucle",
+      "brazo": "A:claude-sonnet-5-5",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-sonnet-5-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 7,
+        "herramientas": 45,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 3,
+        "toolResult": 3,
+        "isError": 1,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 600
+      },
+      "respuesta": {
+        "bloques": {
+          "tool_use": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [
+          "consultar_facturas"
+        ],
+        "largoDelTexto": 0,
+        "extraContent": 0,
+        "id": "msg_011CfXSAYBsu33LYXRiJb2aH",
+        "parada": "tool_use",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 14627,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 52,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.029774000000000002
+    },
+    {
+      "n": 15,
+      "sonda": "bucle",
+      "brazo": "A:claude-sonnet-5-5",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-sonnet-5-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 9,
+        "herramientas": 45,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 4,
+        "toolResult": 4,
+        "isError": 1,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 600
+      },
+      "respuesta": {
+        "bloques": {
+          "text": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [],
+        "largoDelTexto": 301,
+        "extraContent": 0,
+        "id": "msg_011CfXSAeBHZa51FyKufQU5c",
+        "parada": "end_turn",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 14742,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 136,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.030844000000000003
+    },
+    {
+      "n": 16,
+      "sonda": "bucle",
+      "brazo": "B:claude-sonnet-5-5",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-sonnet-5-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 1,
+        "herramientas": 45,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 0,
+        "toolResult": 0,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 600
+      },
+      "respuesta": {
+        "bloques": {
+          "tool_use": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [
+          "consultar_pedidos"
+        ],
+        "largoDelTexto": 0,
+        "extraContent": 0,
+        "id": "msg_011CfXSAnNA6ZTUhGYdofGDV",
+        "parada": "tool_use",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 14277,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 53,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.029084
+    },
+    {
+      "n": 17,
+      "sonda": "bucle",
+      "brazo": "B:claude-sonnet-5-5",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-sonnet-5-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 3,
+        "herramientas": 45,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 1,
+        "dondeMarcas": [
+          "tools[44]"
+        ],
+        "toolUse": 1,
+        "toolResult": 1,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 600
+      },
+      "respuesta": {
+        "bloques": {
+          "tool_use": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [
+          "consultar_envios"
+        ],
+        "largoDelTexto": 0,
+        "extraContent": 0,
+        "id": "msg_011CfXSAsgdwhN1JreSnmSMi",
+        "parada": "tool_use",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 318,
+        "lecturaCache": 0,
+        "escrituraCache5m": 14079,
+        "escrituraCache1h": 0,
+        "salida": 51,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.0363435
+    },
+    {
+      "n": 18,
+      "sonda": "bucle",
+      "brazo": "B:claude-sonnet-5-5",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-sonnet-5-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 5,
+        "herramientas": 45,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 1,
+        "dondeMarcas": [
+          "tools[44]"
+        ],
+        "toolUse": 2,
+        "toolResult": 2,
+        "isError": 1,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 600
+      },
+      "respuesta": {
+        "bloques": {
+          "text": 1,
+          "tool_use": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [
+          "consultar_envios"
+        ],
+        "largoDelTexto": 41,
+        "extraContent": 0,
+        "id": "msg_011CfXSAyuC5CUkQUdf4S8to",
+        "parada": "tool_use",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 417,
+        "lecturaCache": 14079,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 69,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.0043398
+    },
+    {
+      "n": 19,
+      "sonda": "bucle",
+      "brazo": "B:claude-sonnet-5-5",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-sonnet-5-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 7,
+        "herramientas": 45,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 1,
+        "dondeMarcas": [
+          "tools[44]"
+        ],
+        "toolUse": 3,
+        "toolResult": 3,
+        "isError": 1,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 600
+      },
+      "respuesta": {
+        "bloques": {
+          "tool_use": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [
+          "consultar_facturas"
+        ],
+        "largoDelTexto": 0,
+        "extraContent": 0,
+        "id": "msg_011CfXSB6ByYJyoADhnKdajY",
+        "parada": "tool_use",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 552,
+        "lecturaCache": 14079,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 52,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.0044398
+    },
+    {
+      "n": 20,
+      "sonda": "bucle",
+      "brazo": "B:claude-sonnet-5-5",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-sonnet-5-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 9,
+        "herramientas": 45,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 1,
+        "dondeMarcas": [
+          "tools[44]"
+        ],
+        "toolUse": 4,
+        "toolResult": 4,
+        "isError": 1,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 600
+      },
+      "respuesta": {
+        "bloques": {
+          "text": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [],
+        "largoDelTexto": 311,
+        "extraContent": 0,
+        "id": "msg_011CfXSBBet3VhSGPqRMeF2a",
+        "parada": "end_turn",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 667,
+        "lecturaCache": 14079,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 137,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.0055198
+    },
+    {
+      "n": 21,
+      "sonda": "bucle",
+      "brazo": "A:claude-haiku-4-5",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-haiku-4-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 1,
+        "herramientas": 45,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 0,
+        "toolResult": 0,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 600
+      },
+      "respuesta": {
+        "bloques": {
+          "text": 1,
+          "tool_use": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [
+          "consultar_pedidos"
+        ],
+        "largoDelTexto": 106,
+        "extraContent": 0,
+        "id": "msg_011CfXSBLYg64Hfx7T555LgP",
+        "parada": "tool_use",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 12368,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 97,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.012853
+    },
+    {
+      "n": 22,
+      "sonda": "bucle",
+      "brazo": "A:claude-haiku-4-5",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-haiku-4-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 3,
+        "herramientas": 45,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 1,
+        "toolResult": 1,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 600
+      },
+      "respuesta": {
+        "bloques": {
+          "text": 1,
+          "tool_use": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [
+          "consultar_envios"
+        ],
+        "largoDelTexto": 118,
+        "extraContent": 0,
+        "id": "msg_011CfXSBSY5uYTeEGQFW9aBH",
+        "parada": "tool_use",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 12521,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 108,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.013061000000000001
+    },
+    {
+      "n": 23,
+      "sonda": "bucle",
+      "brazo": "A:claude-haiku-4-5",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-haiku-4-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 5,
+        "herramientas": 45,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 2,
+        "toolResult": 2,
+        "isError": 1,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 600
+      },
+      "respuesta": {
+        "bloques": {
+          "text": 1,
+          "tool_use": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [
+          "consultar_envios"
+        ],
+        "largoDelTexto": 24,
+        "extraContent": 0,
+        "id": "msg_011CfXSBYUmYc3kvD7AuQqPj",
+        "parada": "tool_use",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 12678,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 66,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.013008000000000002
+    },
+    {
+      "n": 24,
+      "sonda": "bucle",
+      "brazo": "A:claude-haiku-4-5",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-haiku-4-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 7,
+        "herramientas": 45,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 3,
+        "toolResult": 3,
+        "isError": 1,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 600
+      },
+      "respuesta": {
+        "bloques": {
+          "text": 1,
+          "tool_use": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [
+          "consultar_facturas"
+        ],
+        "largoDelTexto": 132,
+        "extraContent": 0,
+        "id": "msg_011CfXSBceJAYs4UEwvvEqQx",
+        "parada": "tool_use",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 12802,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 111,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.013356999999999999
+    },
+    {
+      "n": 25,
+      "sonda": "bucle",
+      "brazo": "A:claude-haiku-4-5",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-haiku-4-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 9,
+        "herramientas": 45,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 4,
+        "toolResult": 4,
+        "isError": 1,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 600
+      },
+      "respuesta": {
+        "bloques": {
+          "text": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [],
+        "largoDelTexto": 296,
+        "extraContent": 0,
+        "id": "msg_011CfXSBhQYEgC2rF9hyxzDZ",
+        "parada": "end_turn",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 12970,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 116,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.013550000000000001
+    },
+    {
+      "n": 26,
+      "sonda": "bucle",
+      "brazo": "B:claude-haiku-4-5",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-haiku-4-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 1,
+        "herramientas": 45,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 0,
+        "toolResult": 0,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 600
+      },
+      "respuesta": {
+        "bloques": {
+          "text": 1,
+          "tool_use": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [
+          "consultar_pedidos"
+        ],
+        "largoDelTexto": 132,
+        "extraContent": 0,
+        "id": "msg_011CfXSBph6Ncbb1UxL9xVCx",
+        "parada": "tool_use",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 12368,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 102,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.012878
+    },
+    {
+      "n": 27,
+      "sonda": "bucle",
+      "brazo": "B:claude-haiku-4-5",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-haiku-4-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 3,
+        "herramientas": 45,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 1,
+        "dondeMarcas": [
+          "tools[44]"
+        ],
+        "toolUse": 1,
+        "toolResult": 1,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 600
+      },
+      "respuesta": {
+        "bloques": {
+          "text": 1,
+          "tool_use": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [
+          "consultar_envios"
+        ],
+        "largoDelTexto": 158,
+        "extraContent": 0,
+        "id": "msg_011CfXSBvCUu3WERp8d7ccnx",
+        "parada": "tool_use",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 585,
+        "lecturaCache": 0,
+        "escrituraCache5m": 11941,
+        "escrituraCache1h": 0,
+        "salida": 119,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.01610625
+    },
+    {
+      "n": 28,
+      "sonda": "bucle",
+      "brazo": "B:claude-haiku-4-5",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-haiku-4-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 5,
+        "herramientas": 45,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 1,
+        "dondeMarcas": [
+          "tools[44]"
+        ],
+        "toolUse": 2,
+        "toolResult": 2,
+        "isError": 1,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 600
+      },
+      "respuesta": {
+        "bloques": {
+          "text": 1,
+          "tool_use": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [
+          "consultar_envios"
+        ],
+        "largoDelTexto": 34,
+        "extraContent": 0,
+        "id": "msg_011CfXSC2P3kCiLn8jA9t3C7",
+        "parada": "tool_use",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 753,
+        "lecturaCache": 11941,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 69,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.0022921
+    },
+    {
+      "n": 29,
+      "sonda": "bucle",
+      "brazo": "B:claude-haiku-4-5",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-haiku-4-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 7,
+        "herramientas": 45,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 1,
+        "dondeMarcas": [
+          "tools[44]"
+        ],
+        "toolUse": 3,
+        "toolResult": 3,
+        "isError": 1,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 600
+      },
+      "respuesta": {
+        "bloques": {
+          "text": 1,
+          "tool_use": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [
+          "consultar_facturas"
+        ],
+        "largoDelTexto": 133,
+        "extraContent": 0,
+        "id": "msg_011CfXSC6pCsc2UNo48tvH2F",
+        "parada": "tool_use",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 880,
+        "lecturaCache": 11941,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 107,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.0026091
+    },
+    {
+      "n": 30,
+      "sonda": "bucle",
+      "brazo": "B:claude-haiku-4-5",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-haiku-4-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 9,
+        "herramientas": 45,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 1,
+        "dondeMarcas": [
+          "tools[44]"
+        ],
+        "toolUse": 4,
+        "toolResult": 4,
+        "isError": 1,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 600
+      },
+      "respuesta": {
+        "bloques": {
+          "text": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [],
+        "largoDelTexto": 226,
+        "extraContent": 0,
+        "id": "msg_011CfXSCCTGzNTcRgTLGJyxZ",
+        "parada": "end_turn",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 1044,
+        "lecturaCache": 11941,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 84,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.0026581
+    },
+    {
+      "n": 14,
+      "sonda": "diagnostico",
+      "brazo": "B:1",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-sonnet-5-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 1,
+        "herramientas": 0,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 1,
+        "dondeMarcas": [
+          "system[0]"
+        ],
+        "toolUse": 0,
+        "toolResult": 0,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "diagnostics",
+          "max_tokens",
+          "messages",
+          "model",
+          "system"
+        ],
+        "diagnostics": {
+          "previous_message_id": null
+        },
+        "maxTokens": 120
+      },
+      "respuesta": {
+        "bloques": {
+          "thinking": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [],
+        "largoDelTexto": 0,
+        "extraContent": 0,
+        "id": "msg_011CfXSEmiaXoCvkc9Wsooof",
+        "parada": "max_tokens",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 33,
+        "lecturaCache": 0,
+        "escrituraCache5m": 1680,
+        "escrituraCache1h": 0,
+        "salida": 120,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.005466
+    },
+    {
+      "n": 15,
+      "sonda": "diagnostico",
+      "brazo": "B:2",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-sonnet-5-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 1,
+        "herramientas": 0,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 1,
+        "dondeMarcas": [
+          "system[0]"
+        ],
+        "toolUse": 0,
+        "toolResult": 0,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "diagnostics",
+          "max_tokens",
+          "messages",
+          "model",
+          "system"
+        ],
+        "diagnostics": {
+          "previous_message_id": "msg_011CfXSEmiaXoCvkc9Wsooof"
+        },
+        "maxTokens": 120
+      },
+      "respuesta": {
+        "bloques": {
+          "thinking": 1,
+          "text": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [],
+        "largoDelTexto": 83,
+        "extraContent": 0,
+        "id": "msg_011CfXSEwGJj5nRivY6DC5RD",
+        "parada": "max_tokens",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 29,
+        "lecturaCache": 1680,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 120,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.001594
+    },
+    {
+      "n": 16,
+      "sonda": "diagnostico",
+      "brazo": "B:3",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-sonnet-5-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 1,
+        "herramientas": 0,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 1,
+        "dondeMarcas": [
+          "system[0]"
+        ],
+        "toolUse": 0,
+        "toolResult": 0,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "diagnostics",
+          "max_tokens",
+          "messages",
+          "model",
+          "system"
+        ],
+        "diagnostics": {
+          "previous_message_id": "msg_011CfXSEwGJj5nRivY6DC5RD"
+        },
+        "maxTokens": 120
+      },
+      "respuesta": {
+        "bloques": {
+          "thinking": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [],
+        "largoDelTexto": 0,
+        "extraContent": 0,
+        "id": "msg_011CfXSFABggSN3YQChvaLSL",
+        "parada": "max_tokens",
+        "diagnostics": {
+          "cache_miss_reason": {
+            "type": "system_changed",
+            "cache_missed_input_tokens": 1362
+          }
+        }
+      },
+      "uso": {
+        "entrada": 24,
+        "lecturaCache": 0,
+        "escrituraCache5m": 1680,
+        "escrituraCache1h": 0,
+        "salida": 120,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.005448000000000001
+    },
+    {
+      "n": 17,
+      "sonda": "diagnostico",
+      "brazo": "B:4",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-sonnet-5-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 1,
+        "herramientas": 0,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 1,
+        "dondeMarcas": [
+          "system[0]"
+        ],
+        "toolUse": 0,
+        "toolResult": 0,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "diagnostics",
+          "max_tokens",
+          "messages",
+          "model",
+          "system"
+        ],
+        "diagnostics": {
+          "previous_message_id": "msg_011CfXSFABggSN3YQChvaLSL"
+        },
+        "maxTokens": 120
+      },
+      "respuesta": {
+        "bloques": {
+          "thinking": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [],
+        "largoDelTexto": 0,
+        "extraContent": 0,
+        "id": "msg_011CfXSFJm8H5y4DLx4iymZM",
+        "parada": "max_tokens",
+        "diagnostics": {
+          "cache_miss_reason": {
+            "type": "system_changed",
+            "cache_missed_input_tokens": 1362
+          }
+        }
+      },
+      "uso": {
+        "entrada": 30,
+        "lecturaCache": 1680,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 120,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.0015959999999999998
+    },
+    {
+      "n": 18,
+      "sonda": "diagnostico",
+      "brazo": "B:5",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-sonnet-5-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 1,
+        "herramientas": 0,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 1,
+        "dondeMarcas": [
+          "system[0]"
+        ],
+        "toolUse": 0,
+        "toolResult": 0,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "diagnostics",
+          "max_tokens",
+          "messages",
+          "model",
+          "system"
+        ],
+        "diagnostics": {
+          "previous_message_id": "msg_011CfXSFJm8H5y4DLx4iymZM"
+        },
+        "maxTokens": 120
+      },
+      "respuesta": {
+        "bloques": {
+          "thinking": 1,
+          "text": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [],
+        "largoDelTexto": 82,
+        "extraContent": 0,
+        "id": "msg_011CfXSi2EhxZGzu2mG2rwsi",
+        "parada": "max_tokens",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 29,
+        "lecturaCache": 0,
+        "escrituraCache5m": 1680,
+        "escrituraCache1h": 0,
+        "salida": 120,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.005458
+    },
+    {
+      "n": 29,
+      "sonda": "gpt",
+      "brazo": "control",
+      "host": "api.openai.com",
+      "ruta": "/v1/chat/completions",
+      "familia": "openai",
+      "modelo": "gpt-5.6-sol",
+      "status": 400,
+      "cuerpo": {
+        "mensajes": 1,
+        "herramientas": 1,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 0,
+        "toolResult": 0,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_completion_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 300
+      },
+      "respuesta": {
+        "bloques": {},
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [],
+        "largoDelTexto": 0,
+        "extraContent": 0,
+        "error": "Function tools with reasoning_effort are not supported for gpt-5.6-sol in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'."
+      },
+      "uso": null,
+      "costeUsd": 0
+    },
+    {
+      "n": 30,
+      "sonda": "gpt",
+      "brazo": "none",
+      "host": "api.openai.com",
+      "ruta": "/v1/chat/completions",
+      "familia": "openai",
+      "modelo": "gpt-5.6-sol",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 1,
+        "herramientas": 1,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 0,
+        "toolResult": 0,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_completion_tokens",
+          "messages",
+          "model",
+          "reasoning_effort",
+          "tools"
+        ],
+        "reasoningEffort": "none",
+        "maxTokens": 300
+      },
+      "respuesta": {
+        "bloques": {},
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [
+          "tiempo_actual"
+        ],
+        "largoDelTexto": 0,
+        "extraContent": 0,
+        "id": "chatcmpl-ETNpvFlCPUzOW3uBurOkBb6XYWYCr",
+        "parada": "tool_calls"
+      },
+      "uso": {
+        "entrada": 153,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 21,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.001032
+    },
+    {
+      "n": 31,
+      "sonda": "gpt",
+      "brazo": "none",
+      "host": "api.openai.com",
+      "ruta": "/v1/chat/completions",
+      "familia": "openai",
+      "modelo": "gpt-5.6-sol",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 3,
+        "herramientas": 1,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 0,
+        "toolResult": 0,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 1,
+        "campos": [
+          "max_completion_tokens",
+          "messages",
+          "model",
+          "reasoning_effort",
+          "tools"
+        ],
+        "reasoningEffort": "none",
+        "maxTokens": 300
+      },
+      "respuesta": {
+        "bloques": {},
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [],
+        "largoDelTexto": 55,
+        "extraContent": 0,
+        "id": "chatcmpl-ETNpxBFgVBUfcvLOGI9arvbM2h1ZJ",
+        "parada": "stop"
+      },
+      "uso": {
+        "entrada": 200,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 21,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.0012200000000000002
+    },
+    {
+      "n": 1,
+      "sonda": "busqueda",
+      "brazo": "A",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-haiku-4-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 1,
+        "herramientas": 121,
+        "diferidas": 120,
+        "busquedaEnTools": true,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 0,
+        "toolResult": 0,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 400
+      },
+      "respuesta": {
+        "bloques": {
+          "text": 2,
+          "server_tool_use": 1,
+          "tool_search_tool_result": 1,
+          "tool_use": 1
+        },
+        "busquedas": 1,
+        "herramientasCargadas": [
+          "consultar_pedidos",
+          "validar_pedidos",
+          "listar_pedidos",
+          "resumir_pedidos",
+          "historial_pedidos"
+        ],
+        "llamadas": [
+          "consultar_pedidos"
+        ],
+        "largoDelTexto": 243,
+        "extraContent": 0,
+        "id": "msg_011CfXSojdzZVMqJk7aVctCz",
+        "parada": "tool_use",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 2247,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 198,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.003237
+    },
+    {
+      "n": 2,
+      "sonda": "busqueda",
+      "brazo": "A",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-haiku-4-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 3,
+        "herramientas": 121,
+        "diferidas": 120,
+        "busquedaEnTools": true,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 1,
+        "toolResult": 1,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 1,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 400
+      },
+      "respuesta": {
+        "bloques": {
+          "text": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [],
+        "largoDelTexto": 293,
+        "extraContent": 0,
+        "id": "msg_011CfXSous8vLiPr2t8tFBJL",
+        "parada": "end_turn",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 1671,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 108,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.0022110000000000003
+    },
+    {
+      "n": 3,
+      "sonda": "busqueda",
+      "brazo": "A",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-haiku-4-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 5,
+        "herramientas": 121,
+        "diferidas": 120,
+        "busquedaEnTools": true,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 1,
+        "toolResult": 1,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 1,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 400
+      },
+      "respuesta": {
+        "bloques": {
+          "tool_use": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [
+          "consultar_pedidos"
+        ],
+        "largoDelTexto": 0,
+        "extraContent": 0,
+        "id": "msg_011CfXSp2QYAHfXgJ8NhLHws",
+        "parada": "tool_use",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 1798,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 57,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.002083
+    },
+    {
+      "n": 4,
+      "sonda": "busqueda",
+      "brazo": "A",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-haiku-4-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 7,
+        "herramientas": 121,
+        "diferidas": 120,
+        "busquedaEnTools": true,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 2,
+        "toolResult": 2,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 1,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 400
+      },
+      "respuesta": {
+        "bloques": {
+          "text": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [],
+        "largoDelTexto": 356,
+        "extraContent": 0,
+        "id": "msg_011CfXSp6ZKsJVkLd5cimb9M",
+        "parada": "end_turn",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 1911,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 124,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.0025310000000000003
+    },
+    {
+      "n": 5,
+      "sonda": "busqueda",
+      "brazo": "A",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-haiku-4-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 9,
+        "herramientas": 121,
+        "diferidas": 120,
+        "busquedaEnTools": true,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 2,
+        "toolResult": 2,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 1,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 400
+      },
+      "respuesta": {
+        "bloques": {
+          "text": 2,
+          "server_tool_use": 1,
+          "tool_search_tool_result": 1,
+          "tool_use": 1
+        },
+        "busquedas": 1,
+        "herramientasCargadas": [
+          "listar_facturas",
+          "listar_clientes",
+          "consultar_clientes",
+          "historial_clientes",
+          "resumir_clientes"
+        ],
+        "llamadas": [
+          "listar_facturas"
+        ],
+        "largoDelTexto": 134,
+        "extraContent": 0,
+        "id": "msg_011CfXSpCnNzE5QM5Zt3e9Gn",
+        "parada": "tool_use",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 4846,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 168,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.005686
+    },
+    {
+      "n": 6,
+      "sonda": "busqueda",
+      "brazo": "A",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-haiku-4-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 11,
+        "herramientas": 121,
+        "diferidas": 120,
+        "busquedaEnTools": true,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 3,
+        "toolResult": 3,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 2,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 400
+      },
+      "respuesta": {
+        "bloques": {
+          "text": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [],
+        "largoDelTexto": 294,
+        "extraContent": 0,
+        "id": "msg_011CfXSpNL6mGzGbLELNwPUV",
+        "parada": "end_turn",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 2939,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 105,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.003464
+    },
+    {
+      "n": 7,
+      "sonda": "busqueda",
+      "brazo": "B-auto",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-haiku-4-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 1,
+        "herramientas": 8,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 0,
+        "toolResult": 0,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 400
+      },
+      "respuesta": {
+        "bloques": {
+          "tool_use": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [
+          "consultar_pedidos"
+        ],
+        "largoDelTexto": 0,
+        "extraContent": 0,
+        "id": "msg_011CfXSpVP2FXZea3bruCm1h",
+        "parada": "tool_use",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 1709,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 57,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.001994
+    },
+    {
+      "n": 8,
+      "sonda": "busqueda",
+      "brazo": "B",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-haiku-4-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 1,
+        "herramientas": 121,
+        "diferidas": 120,
+        "busquedaEnTools": true,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 0,
+        "toolResult": 0,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 400
+      },
+      "respuesta": {
+        "bloques": {
+          "text": 2,
+          "server_tool_use": 1,
+          "tool_search_tool_result": 1,
+          "tool_use": 1
+        },
+        "busquedas": 1,
+        "herramientasCargadas": [
+          "consultar_pedidos",
+          "validar_pedidos",
+          "listar_pedidos",
+          "resumir_pedidos",
+          "historial_pedidos"
+        ],
+        "llamadas": [
+          "consultar_pedidos"
+        ],
+        "largoDelTexto": 157,
+        "extraContent": 0,
+        "id": "msg_011CfXSpZfjaJ2VtwuBSzc62",
+        "parada": "tool_use",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 2224,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 174,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.0030940000000000004
+    },
+    {
+      "n": 9,
+      "sonda": "busqueda",
+      "brazo": "B",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-haiku-4-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 3,
+        "herramientas": 121,
+        "diferidas": 120,
+        "busquedaEnTools": true,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 1,
+        "toolResult": 1,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 1,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 400
+      },
+      "respuesta": {
+        "bloques": {
+          "text": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [],
+        "largoDelTexto": 271,
+        "extraContent": 0,
+        "id": "msg_011CfXSpivM6L3iXyEFiCHJZ",
+        "parada": "end_turn",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 1647,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 101,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.0021520000000000003
+    },
+    {
+      "n": 10,
+      "sonda": "busqueda",
+      "brazo": "B",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-haiku-4-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 5,
+        "herramientas": 121,
+        "diferidas": 120,
+        "busquedaEnTools": true,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 1,
+        "toolResult": 1,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 1,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 400
+      },
+      "respuesta": {
+        "bloques": {
+          "tool_use": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [
+          "consultar_pedidos"
+        ],
+        "largoDelTexto": 0,
+        "extraContent": 0,
+        "id": "msg_011CfXSprK744sSPpBbsLBgF",
+        "parada": "tool_use",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 1767,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 57,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.002052
+    },
+    {
+      "n": 11,
+      "sonda": "busqueda",
+      "brazo": "B",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-haiku-4-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 7,
+        "herramientas": 121,
+        "diferidas": 120,
+        "busquedaEnTools": true,
+        "marcasDeCache": 1,
+        "dondeMarcas": [
+          "messages[3]"
+        ],
+        "toolUse": 2,
+        "toolResult": 2,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 1,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 400
+      },
+      "respuesta": {
+        "bloques": {
+          "text": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [],
+        "largoDelTexto": 248,
+        "extraContent": 0,
+        "id": "msg_011CfXSpvmFM2Q6zJ5LJjosc",
+        "parada": "end_turn",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 1880,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 94,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.00235
+    },
+    {
+      "n": 12,
+      "sonda": "busqueda",
+      "brazo": "B",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-haiku-4-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 9,
+        "herramientas": 121,
+        "diferidas": 120,
+        "busquedaEnTools": true,
+        "marcasDeCache": 1,
+        "dondeMarcas": [
+          "messages[7]"
+        ],
+        "toolUse": 2,
+        "toolResult": 2,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 1,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 400
+      },
+      "respuesta": {
+        "bloques": {
+          "text": 2,
+          "server_tool_use": 1,
+          "tool_search_tool_result": 1,
+          "tool_use": 1
+        },
+        "busquedas": 1,
+        "herramientasCargadas": [
+          "listar_facturas",
+          "listar_clientes",
+          "consultar_clientes",
+          "historial_clientes",
+          "resumir_clientes"
+        ],
+        "llamadas": [
+          "listar_facturas"
+        ],
+        "largoDelTexto": 136,
+        "extraContent": 0,
+        "id": "msg_011CfXSq26ipCD6oRWPonYRA",
+        "parada": "tool_use",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 4723,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 170,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.005573
+    },
+    {
+      "n": 13,
+      "sonda": "busqueda",
+      "brazo": "B",
+      "host": "api.anthropic.com",
+      "ruta": "/v1/messages",
+      "familia": "anthropic",
+      "modelo": "claude-haiku-4-5",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 11,
+        "herramientas": 121,
+        "diferidas": 120,
+        "busquedaEnTools": true,
+        "marcasDeCache": 1,
+        "dondeMarcas": [
+          "messages[7]"
+        ],
+        "toolUse": 3,
+        "toolResult": 3,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 2,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 400
+      },
+      "respuesta": {
+        "bloques": {
+          "text": 1
+        },
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [],
+        "largoDelTexto": 261,
+        "extraContent": 0,
+        "id": "msg_011CfXSqDkhZwW91Rr3shZDN",
+        "parada": "end_turn",
+        "diagnostics": null
+      },
+      "uso": {
+        "entrada": 2880,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 101,
+        "razonamiento": 0
+      },
+      "costeUsd": 0.003385
+    },
+    {
+      "n": 14,
+      "sonda": "gemini",
+      "brazo": "herramientas",
+      "host": "generativelanguage.googleapis.com",
+      "ruta": "/v1beta/openai/chat/completions",
+      "familia": "gemini",
+      "modelo": "gemini-3.8-flash",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 1,
+        "herramientas": 1,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 0,
+        "toolResult": 0,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 1024
+      },
+      "respuesta": {
+        "bloques": {},
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [
+          "tiempo_actual"
+        ],
+        "largoDelTexto": 0,
+        "extraContent": 1,
+        "id": "MHy7aoKAN72A3boP7IPYgAo",
+        "parada": "tool_calls"
+      },
+      "uso": {
+        "entrada": 73,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 73,
+        "razonamiento": 57,
+        "salidaSinPensamiento": 16
+      },
+      "costeUsd": 0.00032849999999999996
+    },
+    {
+      "n": 15,
+      "sonda": "gemini",
+      "brazo": "herramientas",
+      "host": "generativelanguage.googleapis.com",
+      "ruta": "/v1beta/openai/chat/completions",
+      "familia": "gemini",
+      "modelo": "gemini-3.8-flash",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 3,
+        "herramientas": 1,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 0,
+        "toolResult": 0,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 1,
+        "toolCallsReenviadas": 1,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 1024
+      },
+      "respuesta": {
+        "bloques": {},
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [],
+        "largoDelTexto": 79,
+        "extraContent": 0,
+        "id": "Mny7asqRB6SF3boP5ur0EA",
+        "parada": "stop"
+      },
+      "uso": {
+        "entrada": 183,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 50,
+        "razonamiento": 29,
+        "salidaSinPensamiento": 21
+      },
+      "costeUsd": 0.00032475
+    },
+    {
+      "n": 16,
+      "sonda": "gemini",
+      "brazo": "herramientas",
+      "host": "generativelanguage.googleapis.com",
+      "ruta": "/v1beta/openai/chat/completions",
+      "familia": "gemini",
+      "modelo": "gemini-3.8-flash",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 5,
+        "herramientas": 1,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 0,
+        "toolResult": 0,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 1,
+        "toolCallsReenviadas": 1,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 1024
+      },
+      "respuesta": {
+        "bloques": {},
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [
+          "tiempo_actual"
+        ],
+        "largoDelTexto": 0,
+        "extraContent": 1,
+        "id": "M3y7ateGF6bknsEP87iq8Ao",
+        "parada": "tool_calls"
+      },
+      "uso": {
+        "entrada": 211,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 54,
+        "razonamiento": 37,
+        "salidaSinPensamiento": 17
+      },
+      "costeUsd": 0.00036074999999999996
+    },
+    {
+      "n": 17,
+      "sonda": "gemini",
+      "brazo": "herramientas",
+      "host": "generativelanguage.googleapis.com",
+      "ruta": "/v1beta/openai/chat/completions",
+      "familia": "gemini",
+      "modelo": "gemini-3.8-flash",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 7,
+        "herramientas": 1,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 0,
+        "toolResult": 0,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 2,
+        "toolCallsReenviadas": 2,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model",
+          "tools"
+        ],
+        "maxTokens": 1024
+      },
+      "respuesta": {
+        "bloques": {},
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [],
+        "largoDelTexto": 85,
+        "extraContent": 0,
+        "id": "NHy7ap6iM_mFkdUPqJ7aqAo",
+        "parada": "stop"
+      },
+      "uso": {
+        "entrada": 303,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 21,
+        "razonamiento": 0,
+        "salidaSinPensamiento": 21
+      },
+      "costeUsd": 0.000306
+    },
+    {
+      "n": 18,
+      "sonda": "gemini",
+      "brazo": "negativa:83",
+      "host": "generativelanguage.googleapis.com",
+      "ruta": "/v1beta/openai/chat/completions",
+      "familia": "gemini",
+      "modelo": "gemini-3.8-flash",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 1,
+        "herramientas": 0,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 0,
+        "toolResult": 0,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model"
+        ],
+        "maxTokens": 160
+      },
+      "respuesta": {
+        "bloques": {},
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [],
+        "largoDelTexto": 132,
+        "extraContent": 0,
+        "id": "OHy7apWVH_mFkdUPqJ7aqAo",
+        "parada": "length"
+      },
+      "uso": {
+        "entrada": 11,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 92,
+        "razonamiento": 66,
+        "salidaSinPensamiento": 26
+      },
+      "costeUsd": 0.00035325
+    },
+    {
+      "n": 19,
+      "sonda": "gemini",
+      "brazo": "negativa:83",
+      "host": "generativelanguage.googleapis.com",
+      "ruta": "/v1beta/openai/chat/completions",
+      "familia": "gemini",
+      "modelo": "gemini-3.8-flash",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 1,
+        "herramientas": 0,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 0,
+        "toolResult": 0,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model"
+        ],
+        "maxTokens": 160
+      },
+      "respuesta": {
+        "bloques": {},
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [],
+        "largoDelTexto": 29,
+        "extraContent": 0,
+        "id": "O3y7avLrA9eV3boP1oWd0QI",
+        "parada": "length"
+      },
+      "uso": {
+        "entrada": 11,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 156,
+        "razonamiento": 151,
+        "salidaSinPensamiento": 5
+      },
+      "costeUsd": 0.00059325
+    },
+    {
+      "n": 20,
+      "sonda": "gemini",
+      "brazo": "negativa:129",
+      "host": "generativelanguage.googleapis.com",
+      "ruta": "/v1beta/openai/chat/completions",
+      "familia": "gemini",
+      "modelo": "gemini-3.8-flash",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 1,
+        "herramientas": 0,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 0,
+        "toolResult": 0,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model"
+        ],
+        "maxTokens": 160
+      },
+      "respuesta": {
+        "bloques": {},
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [],
+        "largoDelTexto": 32,
+        "extraContent": 0,
+        "id": "PXy7aqSZOOj2nsEP6va1wQY",
+        "parada": "length"
+      },
+      "uso": {
+        "entrada": 12,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 156,
+        "razonamiento": 149,
+        "salidaSinPensamiento": 7
+      },
+      "costeUsd": 0.000594
+    },
+    {
+      "n": 21,
+      "sonda": "gemini",
+      "brazo": "negativa:129",
+      "host": "generativelanguage.googleapis.com",
+      "ruta": "/v1beta/openai/chat/completions",
+      "familia": "gemini",
+      "modelo": "gemini-3.8-flash",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 1,
+        "herramientas": 0,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 0,
+        "toolResult": 0,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model"
+        ],
+        "maxTokens": 160
+      },
+      "respuesta": {
+        "bloques": {},
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [],
+        "largoDelTexto": 47,
+        "extraContent": 0,
+        "id": "QXy7avOWJOuinsEP15aI2AQ",
+        "parada": "length"
+      },
+      "uso": {
+        "entrada": 12,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 156,
+        "razonamiento": 146,
+        "salidaSinPensamiento": 10
+      },
+      "costeUsd": 0.000594
+    },
+    {
+      "n": 22,
+      "sonda": "gemini",
+      "brazo": "negativa:26",
+      "host": "generativelanguage.googleapis.com",
+      "ruta": "/v1beta/openai/chat/completions",
+      "familia": "gemini",
+      "modelo": "gemini-3.8-flash",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 1,
+        "herramientas": 0,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 0,
+        "toolResult": 0,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model"
+        ],
+        "maxTokens": 160
+      },
+      "respuesta": {
+        "bloques": {},
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [],
+        "largoDelTexto": 129,
+        "extraContent": 0,
+        "id": "Rny7apPWCMeFnsEP_8zYwAo",
+        "parada": "stop"
+      },
+      "uso": {
+        "entrada": 8,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 129,
+        "razonamiento": 106,
+        "salidaSinPensamiento": 23
+      },
+      "costeUsd": 0.0004897500000000001
+    },
+    {
+      "n": 23,
+      "sonda": "gemini",
+      "brazo": "negativa:26",
+      "host": "generativelanguage.googleapis.com",
+      "ruta": "/v1beta/openai/chat/completions",
+      "familia": "gemini",
+      "modelo": "gemini-3.8-flash",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 1,
+        "herramientas": 0,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 0,
+        "toolResult": 0,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model"
+        ],
+        "maxTokens": 160
+      },
+      "respuesta": {
+        "bloques": {},
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [],
+        "largoDelTexto": 35,
+        "extraContent": 0,
+        "id": "SHy7ap63IOGC3boP9I3j6Qo",
+        "parada": "length"
+      },
+      "uso": {
+        "entrada": 8,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 156,
+        "razonamiento": 148,
+        "salidaSinPensamiento": 8
+      },
+      "costeUsd": 0.000591
+    },
+    {
+      "n": 24,
+      "sonda": "gemini",
+      "brazo": "negativa:35",
+      "host": "generativelanguage.googleapis.com",
+      "ruta": "/v1beta/openai/chat/completions",
+      "familia": "gemini",
+      "modelo": "gemini-3.8-flash",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 1,
+        "herramientas": 0,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 0,
+        "toolResult": 0,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model"
+        ],
+        "maxTokens": 160
+      },
+      "respuesta": {
+        "bloques": {},
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [],
+        "largoDelTexto": 0,
+        "extraContent": 0,
+        "id": "TXy7avusJ_nknsEP3ZvckAs",
+        "parada": "content_filter: OTHER"
+      },
+      "uso": {
+        "entrada": 9,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 99,
+        "razonamiento": 99,
+        "salidaSinPensamiento": 0
+      },
+      "costeUsd": 0.00037799999999999997
+    },
+    {
+      "n": 25,
+      "sonda": "gemini",
+      "brazo": "negativa:35",
+      "host": "generativelanguage.googleapis.com",
+      "ruta": "/v1beta/openai/chat/completions",
+      "familia": "gemini",
+      "modelo": "gemini-3.8-flash",
+      "status": 200,
+      "cuerpo": {
+        "mensajes": 1,
+        "herramientas": 0,
+        "diferidas": 0,
+        "busquedaEnTools": false,
+        "marcasDeCache": 0,
+        "dondeMarcas": [],
+        "toolUse": 0,
+        "toolResult": 0,
+        "isError": 0,
+        "paresDeBusquedaReenviados": 0,
+        "extraContentReenviado": 0,
+        "toolCallsReenviadas": 0,
+        "campos": [
+          "max_tokens",
+          "messages",
+          "model"
+        ],
+        "maxTokens": 160
+      },
+      "respuesta": {
+        "bloques": {},
+        "busquedas": 0,
+        "herramientasCargadas": [],
+        "llamadas": [],
+        "largoDelTexto": 0,
+        "extraContent": 0,
+        "id": "VHy7avWiI9vlnsEPwOul8Qs",
+        "parada": "content_filter: OTHER"
+      },
+      "uso": {
+        "entrada": 9,
+        "lecturaCache": 0,
+        "escrituraCache5m": 0,
+        "escrituraCache1h": 0,
+        "salida": 116,
+        "razonamiento": 116,
+        "salidaSinPensamiento": 0
+      },
+      "costeUsd": 0.00044175
+    }
+  ],
+  "tiradas": [
+    {
+      "fecha": "2026-09-29 (1.ª)",
+      "sondas": [
+        "bucle"
+      ],
+      "gastoUsd": 0.562947
+    },
+    {
+      "fecha": "2026-09-29 (2.ª)",
+      "sondas": [
+        "busqueda",
+        "diagnostico",
+        "gemini",
+        "gpt"
+      ],
+      "gastoUsd": 0.066391
+    },
+    {
+      "fecha": "2026-09-29T08:52:42.400Z",
+      "sondas": [
+        "busqueda",
+        "gemini"
+      ],
+      "gastoUsd": 0.045167
+    }
+  ],
+  "gastoAcumuladoUsd": 0.674505,
+  "conclusiones": [
+    "**#359 y #403 confirmados en los tres modelos.** El bucle viaja como `tool_use`/`tool_result` nativos, con `is_error: true` en el resultado fallido, sin un solo 400, y con la misma ruta que sin capa (5 pasos, el mismo reintento). Sin `system`, la capa marca la última herramienta del catálogo (~14k tokens del proveedor) desde el paso 2: una escritura en el paso 2 y lecturas en los pasos 3-5. Coste con capa frente al mismo bucle directo: −46,9 % (Sonnet 5), −46,4 % (Sonnet 5.5), −44,5 % (Haiku 4.5). `report.cost.actual` cuadra exactamente con usage×tarifa. Ese ahorro es caché del proveedor sobre bytes del cliente y la capa no se lo acredita (#260): es la cuenta del cliente, no la comisión.",
+    "**#354 confirmado.** Con 120 herramientas en Haiku 4.5, el turno 2 (misma herramienta) lleva de vuelta el par de búsqueda del turno 1 y el modelo no busca: 1/0/1 búsquedas, igual que la receta oficial sin capa. En tokens, lo mismo que la receta oficial (el transporte iguala lo que hace un cliente que reenvía el turno entero; no ahorra frente a eso).",
+    "**`toolSearch: \"auto\"` no se aplica en este caso**: con 120 herramientas (24k tokens diferibles) en Haiku 4.5 la verja de coste prefiere el selector (0,0024 $ por petición de prefijo frente a 0,0036 $ de peor caso de una búsqueda). Es la regla documentada, pero el aviso del selector del mismo tráfico recomienda `toolSearch: \"auto\"`, que aquí no haría nada. La sonda forzó `\"always\"`.",
+    "**#358 confirmado.** Un byte del `system` cambiado en el cable (que el espejo de la capa no ve) → Anthropic contesta `cache_miss_reason: system_changed` (1.362 tokens) y la capa lo publica en `prefix-cache-placement` (`verified`, `confirmed: false`, `cacheMissReason: system_changed`). Las lecturas confirmadas no llevan motivo. Tras 6 min de espera (entrada caducada), el espejo no predice lectura, así que no hay `verified` ni motivo: correcto, pero ese fallo natural no se diagnostica.",
+    "Detalle del diagnóstico: `previous_message_id` apunta a la ÚLTIMA respuesta que escribió la entrada predicha. En la petición 4, esa fue la tocada, y Anthropic compara contra ella (`system_changed`) aunque la lectura sí llegó (desde la entrada de la petición 2). La capa no lo publica porque la lectura se confirmó. Es un efecto del byte inyectado, no un fallo.",
+    "**#402 (Gemini) confirmado.** Dos turnos con herramientas en gemini-3.8-flash sin error: la `thought_signature` vuelve en `tool_calls[].extra_content` (1 y 2 en el cable), no viaja `prompt_cache_key`, y `report.cost.actual` = usage×tarifa CON el pensamiento (cociente 1,000). La negativa: XSTest #35 dio `content_filter` (los #83, #129 y #26, que la tirada de gama alta filtró, esta vez contestaron: el filtro no es determinista). La repetición volvió al proveedor, sin caché exacta ni referencia ni ahorro. No se guardó ni el prompt ni la respuesta.",
+    "**#402 (gpt-5.6-sol) confirmado.** Con `reasoningEffort: \"none\"` el bucle de herramientas de 2 pasos pasa sin error y el cuerpo lleva `reasoning_effort: \"none\"`; el control sin él sigue dando 400 (no factura). Coste del informe = usage×tarifa.",
+    "**Fallo de documentación encontrado:** el JSDoc de `SavingsToggles.toolSearch` (src/contracts/types.ts:365) sigue diciendo «This adapter sends earlier turns as text, so a later turn that needs a tool searches again», falso desde #354/#359 (esta sonda lo desmiente; el README ya está bien).",
+    "Menor: en la negativa de Gemini, `SavingsResult.finishReason` sale normalizado a `content_filter` pero el motivo del proveedor (`OTHER`/`PROHIBITED_CONTENT`) no llega al llamante en el resultado, y `refusal` queda vacío. No afecta al cobro."
+  ]
+}

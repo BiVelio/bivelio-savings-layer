@@ -963,6 +963,7 @@
       "colBivelio": "BiVelio",
       "colLegal": "Pháp lý",
       "measured": "Kết quả đo được",
+      "benchmarks": "Bộ đo công khai",
       "pricing": "Giá",
       "home": "Trang chủ",
       "docs": "Tài liệu",
@@ -1166,6 +1167,167 @@
     "sesionActual": "Hiện quý vị đang đăng nhập với <b>{email}</b>.",
     "cerrarYContinuar": "Đăng xuất và dùng tài khoản khác",
     "cerrando": "Đang đăng xuất…"
+  },
+  "benchmarksPage": {
+    "metaTitle": "Bài kiểm tra A/B công khai: hãy đo chúng tôi | BiVelio Savings Layer",
+    "metaDescription": "Bốn bộ kiểm tra công khai (GSM8K, BFCL, XSTest và MT-Bench), hai nhánh được đo bằng bộ đếm sử dụng của chính nhà cung cấp, mỗi con số kèm n, khoảng tin cậy và ngày của nó. Những gì tiết kiệm được, những gì không, và các lỗi mà bài kiểm tra đã tìm ra.",
+    "eyebrow": "Bài kiểm tra công khai · có thể tái lập",
+    "title": "Bài kiểm tra A/B của chúng tôi, công khai. Hãy đo chúng tôi.",
+    "lede": "Chúng tôi công bố mọi lần chạy: bốn bộ kiểm tra trên các tập dữ liệu công khai, {modelos} mô hình, và cả hai nhánh đều được đo bằng bộ đếm sử dụng của chính nhà cung cấp. Mỗi con số đều mang theo n, khoảng tin cậy và ngày của nó. Những gì không tiết kiệm được cũng có ở đây.",
+    "stats": {
+      "batteries": "bộ kiểm tra",
+      "models": "mô hình đã thử",
+      "measured": "mô hình có phép đo",
+      "reports": "báo cáo trực tiếp",
+      "last": "lần chạy gần nhất"
+    },
+    "method": {
+      "title": "Đo cái gì, và đo như thế nào",
+      "arms": "<b>Hai nhánh, cùng một yêu cầu.</b> A đi thẳng đến nhà cung cấp, không qua lớp; B đi qua lớp với cấu hình mặc định của nó. Cùng prompt, cùng cách lấy mẫu, cùng giới hạn đầu ra.",
+      "cost": "<b>Nhà cung cấp tính chi phí.</b> Mỗi nhánh được định giá dựa trên <code>usage</code> mà API trả về ở mỗi lần gọi, theo giá niêm yết. Mức tiết kiệm là 1 − chi phí(B) / chi phí(A) của cùng một lần chạy, không phải những gì lớp tự nói về mình.",
+      "intervals": "<b>Khoảng tin cậy {nivel}.</b> Mỗi bộ khai thác tự tính (lấy mẫu lại toàn bộ họ câu hỏi, Wilson cho tỷ lệ từ chối). Một khoảng tin cậy cắt qua số không có nghĩa là “không thể phân biệt với không”, và chúng tôi nói vậy.",
+      "package": "<b>Gói bạn cài đặt.</b> Nhánh B chạy mã nguồn của tag {version}; <code>dist/index.js</code> của nó giống hệt từng byte với tarball npm (sha256 <code>{sha}</code>).",
+      "guard": "<b>Không đường tắt.</b> Mỗi bộ khai thác theo dõi các máy chủ mà nó liên lạc và mang một giới hạn chi tiêu theo từng mô hình được viết sẵn trong mã. Một mô hình không thể đo được sẽ được báo cáo là “không đo được”, kèm lý do.",
+      "batteriesTitle": "Bốn bộ kiểm tra, tập dữ liệu công khai, được ghim cố định",
+      "commitOnly": "ghim theo commit"
+    },
+    "batteries": {
+      "gsm8k": "Bài toán đố bằng lời với các lần lặp lại và diễn đạt lại: cache tiết kiệm được bao nhiêu và độ chính xác có giảm hay không.",
+      "bfcl": "Lệnh gọi công cụ: lớp không được thay đổi bất kỳ lệnh nào, và toàn bộ danh mục phải đến đầy đủ.",
+      "xstest": "Từ chối: lớp không được thay đổi thời điểm mô hình từ chối, cũng không được phục vụ một lời từ chối từ cache.",
+      "mt-bench": "Trò chuyện hai lượt không lặp lại: lớp không được làm xấu đi chi phí, độ trễ hay chất lượng."
+    },
+    "th": {
+      "battery": "Bộ kiểm tra",
+      "what": "Kiểm tra điều gì",
+      "dataset": "Tập dữ liệu",
+      "pinned": "Tệp được ghim",
+      "license": "Giấy phép",
+      "model": "Mô hình",
+      "n": "n",
+      "savings": "Mức tiết kiệm đo được [KTC]",
+      "fromExact": "Từ cache chính xác",
+      "fromCalls": "Trong các lệnh gọi (tiền tố)",
+      "accuracy": "Độ chính xác A → B",
+      "run": "Phiên bản · ngày",
+      "prompts": "Prompt",
+      "safe": "Từ chối, prompt an toàn (A → B)",
+      "unsafe": "Từ chối, prompt không an toàn (A → B)",
+      "verdict": "Diễn giải",
+      "reports": "Báo cáo"
+    },
+    "savings": {
+      "title": "Mức tiết kiệm đo được theo mô hình",
+      "intro": "GSM8K, với một luồng yêu cầu trong đó {rep} là lặp lại chính xác và {par} là diễn đạt lại. Đây là bộ kiểm tra có lưu lượng lặp lại: mức tiết kiệm của bạn phụ thuộc vào việc lưu lượng của bạn lặp lại nhiều hay ít. Không có lặp lại, xem mục “Những gì không tiết kiệm được”.",
+      "nCell": "{n} yêu cầu · {unicos} duy nhất",
+      "delta": "Δ {d} pp [{inf}, {sup}]",
+      "originNote": "Mức tiết kiệm đến từ đâu, theo từng vị trí: “từ cache chính xác” là những gì A đã trả cho các yêu cầu mà lớp phục vụ mà không cần gọi nhà cung cấp; “trong các lệnh gọi” là chênh lệch ở những yêu cầu thực sự đến được nhà cung cấp, chủ yếu từ cache tiền tố của nhà cung cấp (cộng thêm một chút biến động ở đầu ra). Hai phần này cộng lại thành tổng mức tiết kiệm.",
+      "accuracyNote": "Độ chính xác được đo trên các câu hỏi có đáp án đã công bố; các biến thể có một con số bị thay đổi chỉ dùng để kiểm tra rằng lớp không bao giờ trả về đáp án của một câu hỏi khác."
+    },
+    "guarantees": {
+      "title": "Các cam kết, được đếm",
+      "tools": {
+        "title": "Lớp chưa bao giờ thay đổi một lệnh gọi công cụ",
+        "titleBroken": "Lớp đã thay đổi {n} lệnh gọi công cụ",
+        "body": "{alteradas} lệnh gọi bị thay đổi trong {comparaciones} lần so sánh BFCL, {modelos} mô hình, kể từ {desde}. Nếu lớp gặp lỗi (một lỗi ở B mà A không có), điều đó không được tính ở đây: nó thuộc mục “Lỗi mà bài kiểm tra đã tìm ra”."
+      },
+      "other": {
+        "title": "Không có câu trả lời từ một câu hỏi khác kể từ {desde}",
+        "titleBroken": "{n} câu trả lời từ một câu hỏi khác kể từ {desde}",
+        "body": "{deOtra} trong số {variantes} biến thể (cùng một câu hỏi với một con số khác, do đó có đáp án khác) được phục vụ bằng đáp án của một câu hỏi khác, trên {modelos} mô hình trực tiếp và mọi cấu hình cache đã đo.",
+        "replay": "Phát lại ngoại tuyến toàn bộ tập kiểm tra GSM8K: {erroneas} trong {peticiones} yêu cầu, ở mỗi cấu hình trong số {configs} cấu hình cache."
+      },
+      "refusals": {
+        "title": "Cùng một tỷ lệ từ chối, có và không có lớp",
+        "titleBroken": "Tỷ lệ từ chối đã thay đổi ở {n} mô hình",
+        "body": "XSTest, {modelos} mô hình được đo: không có khác biệt A/B dưới mức p = {umbral} (McNemar, prompt theo cặp). Lớp đã chuyển giao nguyên văn {comprobados} phản hồi mà không thay đổi ({alterados} bị thay đổi).",
+        "caption": "Tỷ lệ từ chối theo mô hình, không có lớp (A) và có lớp (B), trên cùng các prompt."
+      }
+    },
+    "noSavings": {
+      "title": "Những gì không tiết kiệm được",
+      "lead": "<b>Không có lặp lại, mức tiết kiệm là ≈ {cero}.</b> Chúng tôi vẫn công bố điều này, vì đó là những gì bạn sẽ thấy nếu lưu lượng của bạn không lặp lại.",
+      "why": "MT-Bench là trò chuyện hai lượt với một lớp mới cho mỗi câu hỏi: không có gì để cache tái sử dụng, và prompt hầu như không bao giờ đạt đến mức tối thiểu mà nhà cung cấp yêu cầu để cache một tiền tố. Trong BFCL, mỗi lệnh gọi công cụ đều khác nhau. Điều mà hai bộ kiểm tra này đo là lớp không làm điều gì tệ hơn; chênh lệch chi phí còn lại là nhiễu từ đầu ra của mô hình, không phải từ lớp.",
+      "nQuestions": "{n} câu hỏi",
+      "nItems": "{n} mục",
+      "verdict": {
+        "ahorro": "tiết kiệm",
+        "cero": "không thể phân biệt với không",
+        "sobrecoste": "chi phí phát sinh thêm"
+      },
+      "notAttributable": "không thể quy cho lớp"
+    },
+    "status": {
+      "title": "Trạng thái theo mô hình và bộ kiểm tra",
+      "intro": "Mỗi ô hiển thị lần chạy trên phiên bản cao nhất của lớp. Nếu một mô hình không thể đo được, chúng tôi nêu lý do thay vì để trống.",
+      "measured": "đã đo · n = {n}",
+      "notMeasured": "không đo được: {motivo}",
+      "layerFailed": "lớp gặp lỗi: {motivo}",
+      "reason": {
+        "credencial": "thông tin xác thực bị từ chối",
+        "presupuesto": "đã hết giới hạn chi tiêu",
+        "cuota": "đã hết hạn ngạch của nhà cung cấp",
+        "capa": "yêu cầu không đi qua lớp",
+        "proveedor": "nhà cung cấp từ chối yêu cầu ở cả hai nhánh",
+        "otro": "không đủ dữ liệu"
+      }
+    },
+    "bugs": {
+      "title": "Lỗi mà bài kiểm tra đã tìm ra",
+      "intro": "Bài kiểm tra không tồn tại để trông đẹp: nó tồn tại để tìm ra lỗi trước khi bạn tìm thấy. Nó đã tìm thấy những lỗi này, kèm phiên bản nơi chúng xuất hiện và phiên bản khắc phục chúng.",
+      "found": "Tìm thấy ở {version}: {ocurrencias} trên {sobre}.",
+      "fixed": "Đã khắc phục ở {version} ({prs}).",
+      "verified": "Đã xác minh trực tiếp trên {version}: {ocurrencias} trên {sobre}.",
+      "stillSeen": "Vẫn còn thấy ở {version}: {ocurrencias} trên {sobre}.",
+      "pending": "Đang chờ đo lại trực tiếp trên {version}.",
+      "items": {
+        "otra-pregunta": {
+          "title": "Cache ngữ nghĩa chưa hiệu chỉnh đã phục vụ đáp án của một câu hỏi khác",
+          "body": "Khi cache ngữ nghĩa chưa được hiệu chỉnh, một biến thể với một con số khác (“three baskets” so với “two baskets”) có thể nhận được đáp án của câu hỏi gốc. Được đếm trên các biến thể GSM8K."
+        },
+        "herramientas-multiturno": {
+          "title": "Lớp đã cắt bớt danh mục công cụ mà không có tín hiệu nào để làm vậy",
+          "body": "Trong các cuộc trò chuyện nhiều lượt, nhánh B gửi ít công cụ hơn nhánh A mặc dù không có gì cho biết công cụ nào không cần thiết. Được đếm trên các cuộc trò chuyện nhiều lượt của BFCL."
+        },
+        "negativas-de-texto": {
+          "title": "Một số lời từ chối được viết dưới dạng văn bản đã bị cache",
+          "body": "Một lời từ chối mà mô hình viết dưới dạng văn bản (không có tín hiệu của API) có thể bị cache, lặp lại và được tính là tiết kiệm. Được đếm trong các prompt XSTest."
+        },
+        "gemini-filtro-cacheado": {
+          "title": "Một bộ lọc nội dung của Gemini đã bị cache như một câu trả lời",
+          "body": "Gemini đánh dấu bộ lọc của mình bằng một lý do dừng riêng, mà lớp không nhận ra đó là một lời từ chối, nên nó có thể bị cache và lặp lại. Được đếm trong các prompt XSTest."
+        },
+        "gemini-prompt-cache-key": {
+          "title": "Gemini không đi qua lớp",
+          "body": "Lớp đã gửi một trường riêng của API OpenAI đến mọi điểm cuối tương thích, và Gemini từ chối trường đó: mọi yêu cầu ở nhánh B đều thất bại. Được đếm trong các yêu cầu GSM8K."
+        },
+        "gemini-thought-signature": {
+          "title": "Với Gemini 3, lượt thứ hai có công cụ đã thất bại",
+          "body": "Lớp không trả về chữ ký suy nghĩ (thought signature) mà Gemini 3 yêu cầu ở mỗi lệnh gọi công cụ, nên lượt tiếp theo bị từ chối. Được đếm trong các lượt tiếp nối nhiều lượt của BFCL."
+        }
+      }
+    },
+    "repro": {
+      "title": "Cách tái lập",
+      "intro": "Mã nguồn của bài kiểm tra chưa được công khai; phương pháp thì có, và gói gọn trong năm bước. Với khóa nhà cung cấp của riêng bạn, bạn có thể chạy lại và so sánh từng con số với báo cáo của chúng tôi.",
+      "steps": {
+        "dataset": "<b>Bộ dữ liệu.</b> Tải từng bộ dữ liệu công khai tại commit trong bảng ở trên và kiểm tra sha256 của từng tệp trước khi dùng. Nếu không khớp, đó không phải cùng một bộ dữ liệu.",
+        "package": "<b>Lớp.</b> Cài <code>@bivelio/savings-layer</code> từ npm ở phiên bản mà báo cáo ghi và kiểm tra sha256 của <code>dist/index.js</code>: mỗi báo cáo đều ghi giá trị của nó.",
+        "arms": "<b>Hai nhánh cho mỗi prompt.</b> A đi thẳng tới nhà cung cấp; B gửi cùng prompt, tới cùng mô hình và với cùng giới hạn đầu ra, qua lớp với cấu hình mặc định. Một phần prompt được lặp lại hoặc diễn đạt lại, như trong lưu lượng thực, và thứ tự A/B được bốc thăm.",
+        "cost": "<b>Chi phí do nhà cung cấp nói.</b> Cộng số tiền mỗi nhánh bị tính theo <code>usage</code> mà nhà cung cấp trả về, với giá đã công bố. Mức tiết kiệm là <code>1 − chi phí B / chi phí A</code>, kèm khoảng tin cậy.",
+        "compare": "<b>Chất lượng, trong cùng lần chạy.</b> Chấm điểm câu trả lời của hai nhánh theo cùng một cách (đáp án chính xác với GSM8K, lời gọi công cụ với BFCL, từ chối hay không với XSTest, một giám khảo với MT-Bench) và so sánh với báo cáo JSON của cùng bộ kiểm tra và phiên bản."
+      },
+      "reportsTitle": "Các báo cáo",
+      "reportsIntro": "Mỗi lần chạy để lại một báo cáo JSON gồm thiết kế, giới hạn và từng lời gọi được đo: usage, chi phí mỗi nhánh và phân loại câu trả lời. Chúng được phục vụ từ chính trang web này.",
+      "served": "Các báo cáo được phục vụ đúng như bài kiểm tra đã ghi, với một ngoại lệ: dữ liệu về môi trường của người đo (đường dẫn ổ đĩa, địa chỉ email) được loại bỏ. Với XSTest, không công bố văn bản của bất kỳ câu trả lời nào, chỉ có phân loại của nó."
+    },
+    "invite": {
+      "title": "Tự bạn hãy đo chúng tôi",
+      "body": "Một phép đo độc lập có giá trị hơn phép đo của chúng tôi. Mã nguồn của bài kiểm tra chưa được công khai: nếu bạn muốn đo lại, hoặc đo lớp bằng công cụ của riêng bạn hay bằng lưu lượng của bạn, hãy viết cho chúng tôi và chúng tôi sẽ cung cấp những gì bạn cần.",
+      "contact": "Viết cho chúng tôi tại",
+      "cta": "Gửi email",
+      "subject": "Phép đo độc lập của bài kiểm tra công khai"
+    }
   },
   "howItWorks": {
     "metaTitle": "Khoản tiết kiệm được cài ở đâu? · BiVelio Savings Layer",
