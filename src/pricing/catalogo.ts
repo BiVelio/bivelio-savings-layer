@@ -186,7 +186,21 @@ export const CATALOGO: Readonly<Record<string, CostModel>> = {
   "claude-sonnet-4-5": { inputPer1k: 0.003,  outputPer1k: 0.015, cachedInputPer1k: 0.0003  },
   "claude-sonnet-4-6": { inputPer1k: 0.003,  outputPer1k: 0.015, cachedInputPer1k: 0.0003  },
   "claude-sonnet-5":   { inputPer1k: 0.002,  outputPer1k: 0.01,  cachedInputPer1k: 0.0002  },
-  "claude-fable-5":    { inputPer1k: 0.01,   outputPer1k: 0.05,  cachedInputPer1k: 0.001   },
+  // Sonnet 5.5 (lanzado el 2026-09-28, id `claude-sonnet-5-5`, sin fecha: su
+  // alias es el mismo id) comparte lista con Sonnet 5 y lee la caché al 10% de
+  // la casa. Verificado el 2026-09-29 contra la página OFICIAL de precios de
+  // Anthropic (https://platform.claude.com/docs/en/about-claude/pricing:
+  // «Claude Sonnet 5.5 | $2 / MTok | $2.50 / MTok | $4 / MTok | $0.20 / MTok |
+  // $10 / MTok», sin nota al pie ni tramo de contexto largo; las escrituras de
+  // 5 min y 1 h son 1,25× y 2×, las de `primas.ts`) y contra la del modelo
+  // (https://platform.claude.com/docs/en/models/sonnet-5-5/overview y
+  // …/whats-new-sonnet-5-5: «the same prices as Claude Sonnet 5, including
+  // prompt caching and batch processing rates»). Sin esta fila su tráfico caía
+  // al respaldo ilustrativo (la herencia por versión menor corta
+  // `claude-sonnet-5-5` → `claude-sonnet-5` a propósito) y su repetición nunca
+  // podía ser `reference`.
+  "claude-sonnet-5-5": { inputPer1k: 0.002,  outputPer1k: 0.01,  cachedInputPer1k: 0.0002  },
+  "claude-fable-5":    { inputPer1k: 0.01,  outputPer1k: 0.05,  cachedInputPer1k: 0.001   },
   // La generación 5.1 de Fable/Mythos factura la LECTURA de caché a 0.025x de
   // la entrada, no al 10% de la casa ($0.25/MTok con entrada a $10) — verificado
   // 2026-09-06 contra la página oficial de prompt caching de Anthropic. Sin

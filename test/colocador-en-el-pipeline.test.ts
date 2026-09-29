@@ -118,16 +118,28 @@ describe("bucle de agente: la cola es donde vive el dinero", () => {
 });
 
 describe("RAG de un solo uso: no pagar prima sobre lo que nadie relee", () => {
-  it("auto baja el punto a la cabecera cuando es concluyente que el historial no se reenvía, y nunca escribe más que la fija", async () => {
-    const fija = await correr("fixed", RAG);
+  it("auto baja el punto a la cabecera cuando es concluyente que el historial no se reenvía", async () => {
     const auto = await correr("auto", RAG);
-    const escrito = (s: CacheAnthropicSimulada) => s.total().write5m + s.total().write1h;
-    expect(escrito(auto.sim)).toBeLessThan(0.7 * escrito(fija.sim));
-    expect(auto.factura).toBeLessThan(fija.factura);
     // Las últimas peticiones llevan UN solo punto: el de la cabecera.
     expect(auto.sim.facturas.at(-1)!.puntos).toHaveLength(1);
     const razones = auto.trazas("prefix-cache-placement").map((t) => String(t.detail?.["reason"] ?? ""));
     expect(razones.some((r) => /moved back to the system header/.test(r))).toBe(true);
+  });
+
+  it("la fija no escribe el documento: `[sistema, doc, acuse, pregunta]` es un primer seguimiento sin evidencia de reenvío", async () => {
+    // Antes la fija marcaba el historial (el documento de ~6.000 tokens) en las
+    // 80 peticiones y pagaba la prima entera sin una lectura; el colocador lo
+    // corregía midiendo. Desde que la fija exige evidencia de reenvío en la
+    // propia petición (`hayEvidenciaDeReenvio`), solo escribe la cabecera, y
+    // aquí sale MÁS barata que `auto`, que paga su exploración. Queda anotado
+    // para el colocador: su arranque en frío escribe más que la fija.
+    const fija = await correr("fixed", RAG);
+    const auto = await correr("auto", RAG);
+    const escrito = (s: CacheAnthropicSimulada) => s.total().write5m + s.total().write1h;
+    expect(escrito(fija.sim)).toBeLessThan(0.05 * escrito(auto.sim));
+    expect(fija.factura).toBeLessThan(auto.factura);
+    expect(fija.trazas("prefix-cache-history").every((t) => t.outcome === "deferred")).toBe(true);
+    expect(fija.trazas("prefix-cache-history")).toHaveLength(80);
   });
 
   it("⛔ el punto en la cola SIEMPRE (lo que hacen los gateways con `caching: auto`) no ahorra nada aquí", async () => {
@@ -153,10 +165,13 @@ describe("chat a ritmo humano (8 min entre turnos): la hora", () => {
     // se marca siempre, pierda o no. Con el colocador la llave es la clase.
     const fija = await correr("fixed", CHAT_LENTO);
     const razones = fija.trazas("prefix-cache").map((t) => String(t.detail?.["reason"] ?? ""));
-    // 10 conversaciones × 6 turnos: los 50 turnos con historial estrenan huella.
-    expect(razones.filter((r) => /exploring the prefix cache \(0\/8\)/.test(r)).length).toBeGreaterThanOrEqual(50);
-    // Solo la cabecera sola (el primer turno de cada conversación) llega a medirse.
-    expect(razones.filter((r) => /measured hit rate/.test(r)).length).toBeLessThanOrEqual(10);
+    // 10 conversaciones × 6 turnos: 50 turnos con historial. El segundo de cada
+    // conversación ya no marca el historial (primer seguimiento, sin evidencia
+    // de reenvío); los 40 restantes siguen estrenando huella.
+    expect(razones.filter((r) => /exploring the prefix cache \(0\/8\)/.test(r)).length).toBeGreaterThanOrEqual(40);
+    // Solo la cabecera sola (el primer y el segundo turno de cada conversación)
+    // llega a medirse.
+    expect(razones.filter((r) => /measured hit rate/.test(r)).length).toBeLessThanOrEqual(20);
   });
 
   it("⛔ con 5 min, la fija escribe cada turno y no lee nunca: el hueco que la hora cierra", async () => {

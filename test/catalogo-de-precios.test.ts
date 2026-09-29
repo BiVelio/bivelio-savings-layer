@@ -155,6 +155,18 @@ describe("la forma del catálogo", () => {
     expect(CATALOGO["gemini-3-flash-preview"]).toEqual({ inputPer1k: 0.0005, outputPer1k: 0.003, cachedInputPer1k: 0.00005 });
   });
 
+  it("Sonnet 5.5 (2026-09-29), con las cifras de la página OFICIAL: $2 / $0.20 / $10, la lista de Sonnet 5", () => {
+    // platform.claude.com/docs/en/about-claude/pricing: «Claude Sonnet 5.5 |
+    // $2 / MTok | $2.50 / MTok | $4 / MTok | $0.20 / MTok | $10 / MTok».
+    expect(CATALOGO["claude-sonnet-5-5"]).toEqual({ inputPer1k: 0.002, outputPer1k: 0.01, cachedInputPer1k: 0.0002 });
+    expect(CATALOGO["claude-sonnet-5-5"]!.cachedInputPer1k! / CATALOGO["claude-sonnet-5-5"]!.inputPer1k).toBeCloseTo(0.1, 12);
+    // Su propia clave, no la de Sonnet 5 por herencia (hoy cuestan lo mismo;
+    // el día que no, la herencia mentiría en silencio).
+    expect(claveDeCatalogo("claude-sonnet-5-5")).toBe("claude-sonnet-5-5");
+    expect(claveDeCatalogo("anthropic/claude-sonnet-5-5")).toBe("claude-sonnet-5-5");
+    expect(claveDeCatalogo("claude-sonnet-5")).toBe("claude-sonnet-5");
+  });
+
   it("⛔ la versión menor no hereda: Opus 5.5 no es Opus 5, ni gpt-6-luna es gpt-5.6-luna", () => {
     expect(precioDeLista("claude-opus-5-5")).not.toEqual(CATALOGO["claude-opus-5"]);
     expect(claveDeCatalogo("claude-opus-5-5-20260901")).toBe("claude-opus-5-5");

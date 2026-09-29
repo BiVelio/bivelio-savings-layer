@@ -122,19 +122,31 @@ export interface ConfigDeModelo {
   extraOpenAI?: Record<string, unknown>;
   /** Tope de salida de ESTE modelo en A y B (por defecto `TOPE_DE_SALIDA`). Gemini Pro solo piensa: el tope incluye el pensamiento. */
   topeDeSalida?: number;
+  /**
+   * Campos extra del cuerpo de Mensajes en los dos brazos (p. ej. `thinking`,
+   * `output_config`). La 0.4.31 no los expresa, así que en B el banco los pone SOLO
+   * si el cuerpo no los trae, y lo anota (`inyectado`), igual que `reasoning_effort`.
+   */
+  extraAnthropic?: Record<string, unknown>;
   /** Solo prompts inseguros, y cuántos (Opus 5.5: ver `stop_reason: "refusal"` real). */
   soloInseguros?: number;
 }
 
 export const MODELOS: ConfigDeModelo[] = [
-  { id: "claude-haiku-4-5", familia: "anthropic", tope: 1.2, temperatura: 0 },
-  { id: "claude-sonnet-5", familia: "anthropic", tope: 1.2, temperatura: 0 },
+  // Topes de la tirada del 2026-09-29: 1,20 $ (Haiku, Sonnet) y 0,90 $ (Opus) MENOS lo
+  // gastado antes en el humo (--n=3) y en un arranque abortado (cota prudente).
+  { id: "claude-haiku-4-5", familia: "anthropic", tope: 1.19, temperatura: 0 },
+  // Sonnet 5 y Opus 5.5 rechazan `temperature` (400) y piensan por defecto (adaptive):
+  // sin tocarlo, el razonamiento se comería el tope de 160 tokens de salida. Sonnet 5
+  // admite apagarlo; Opus 5.5 no (400 a cualquier esfuerzo), así que se baja el esfuerzo.
+  { id: "claude-sonnet-5", familia: "anthropic", tope: 1.17, extraAnthropic: { thinking: { type: "disabled" } } },
   // 0,80 $ por modelo de OpenAI (A + B + repeticiones): tope duro del coordinador
   // para la tirada de la 0.4.31, con otras tres baterías gastando las mismas claves.
   { id: "gpt-4o-mini", familia: "openai", tope: 0.8, temperatura: 0 },
   // gpt-5.x razona: sin esfuerzo mínimo, el tope de salida se lo comería el razonamiento.
   { id: "gpt-5.4-mini", familia: "openai", tope: 0.8, extraOpenAI: { reasoning_effort: "none" } },
-  { id: "claude-opus-5-5", familia: "anthropic", tope: 0.9, temperatura: 0, soloInseguros: 20 },
+  // Opus 5.5: solo inseguros, los que quepan en 0,90 $ (el presupuesto corta el prefijo estratificado).
+  { id: "claude-opus-5-5", familia: "anthropic", tope: 0.84, extraAnthropic: { output_config: { effort: "low" } }, soloInseguros: 200 },
   // ── Gama alta (2026-09-29): 1,25 $ por modelo (A + B + repeticiones), tope duro del coordinador.
   // Sonnet 5.5 rechaza `temperature` («deprecated for this model», 400): sin ella en A y B.
   { id: "claude-sonnet-5-5", familia: "anthropic", tope: 1.25 },
@@ -252,8 +264,9 @@ export function crearRed(base: typeof fetch, modelos: ConfigDeModelo[], dormirIm
       const campo = (["max_tokens", "max_completion_tokens"] as const).find((k) => b[k] !== undefined);
       if (!campo) throw new Error(`banco: el cuerpo del brazo ${ctx.brazo} salió sin tope de salida — no se envía`);
       ctx.topes.push(`${campo}=${String(b[campo])}`);
-      if (ctx.brazo === "B" && ctx.familia !== "anthropic") {
-        for (const [k, v] of Object.entries(cfg.extraOpenAI ?? {})) {
+      if (ctx.brazo === "B") {
+        const extra = ctx.familia === "anthropic" ? cfg.extraAnthropic : cfg.extraOpenAI;
+        for (const [k, v] of Object.entries(extra ?? {})) {
           if (b[k] === undefined) {
             b[k] = v;
             ctx.inyectado.add(k);
@@ -426,6 +439,7 @@ async function brazoA(
           max_tokens: topeDe(cfg),
           messages: [{ role: "user", content: prompt }],
           ...(cfg.temperatura !== undefined ? { temperature: cfg.temperatura } : {}),
+          ...(cfg.extraAnthropic ?? {}),
         }),
       });
     } else {
@@ -607,7 +621,7 @@ export async function correrTirada(o: OpcionesDeTirada): Promise<Tirada> {
       if (motivo) {
         porModelo[cfg.id] = {
           familia: cfg.familia, tope, gastadoUsd: 0, planificados: 0, medidos: 0, cortadoPorPresupuesto: false,
-          temperatura: cfg.temperatura ?? null, extraOpenAI: cfg.extraOpenAI ?? null, soloInseguros: cfg.soloInseguros ?? null,
+          temperatura: cfg.temperatura ?? null, extraOpenAI: cfg.extraOpenAI ?? null, extraAnthropic: cfg.extraAnthropic ?? null, soloInseguros: cfg.soloInseguros ?? null,
           noMedible: motivo,
           clasificador: VERSION_DEL_CLASIFICADOR,
         };
@@ -677,7 +691,7 @@ export async function correrTirada(o: OpcionesDeTirada): Promise<Tirada> {
         medidos: hechos,
         cortadoPorPresupuesto,
         temperatura: cfg.temperatura ?? null,
-        extraOpenAI: cfg.extraOpenAI ?? null,
+        extraOpenAI: cfg.extraOpenAI ?? null, extraAnthropic: cfg.extraAnthropic ?? null,
         soloInseguros: cfg.soloInseguros ?? null,
         clasificador: VERSION_DEL_CLASIFICADOR,
         topeDeSalida: topeDe(cfg),

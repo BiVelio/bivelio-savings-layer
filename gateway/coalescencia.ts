@@ -72,7 +72,8 @@ export interface HuellaDeLaPrimaria {
   fallida: boolean;
   /**
    * E7 · la primaria fue una NEGATIVA del proveedor (`stop_reason: "refusal"`
-   * en Mensajes; `finish_reason: "content_filter"` o `message.refusal` en Chat
+   * en Mensajes; `finish_reason: "content_filter"` (o `"content_filter: <motivo>"`,
+   * Gemini) o `message.refusal` en Chat
    * Completions; una parte `refusal` en la Responses API). Su contador se mide,
    * pero no vale para una repetición: en las categorías que Anthropic no cobra,
    * la llamada evitada habría costado 0 $. Ausente = no.
