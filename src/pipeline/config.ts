@@ -59,7 +59,8 @@ export interface SavingsLayerConfig {
   /**
    * @deprecated Renamed {@link semanticCacheStore} in 0.4.33, so that the store
    * and the per-request switch (`savings.semanticCache`) no longer share a name.
-   * It still works, with a one-time warning (silenced by `silenceWarnings`);
+   * It still works, with a one-time warning (silenced by `silenceWarnings` or
+   * `BVSALA_SILENCE_DEPRECATIONS=1`);
    * when both are given, `semanticCacheStore` wins. Removed in 0.5: see the 0.5
    * migration guide.
    */
@@ -200,7 +201,9 @@ export interface SavingsLayerConfig {
    * build-embedded BiVelio key.
    *
    * @deprecated Has no effect in the published package, which always verifies
-   * against the embedded BiVelio key. Removed from the public type in 0.5.
+   * against the embedded BiVelio key; passing it there logs a one-time warning
+   * (silenced by `silenceWarnings` or `BVSALA_SILENCE_DEPRECATIONS=1`). Removed
+   * from the public type in 0.5: delete it from your config.
    */
   licensePublicKey?: string | LicenseKeyset;
 
@@ -344,7 +347,7 @@ export interface SavingsLayerConfig {
    * requires a valid `licenseKey`. It is not a way to run the product for free.
    *
    * @deprecated No effect in the published package. Removed from the public type
-   * in 0.5.
+   * in 0.5: delete it from your config.
    */
   devUnlicensed?: boolean;
 

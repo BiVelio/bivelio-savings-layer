@@ -49,6 +49,8 @@ export interface Medicion {
   estado: "medido" | "no-medible";
   motivo?: string;
   gastoUsd: number;
+  /** La parte de `gastoUsd` que es del juez de MT-Bench (va por la pasarela: otra factura). Solo MT-Bench. */
+  gastoJuezUsd?: number;
   /** Ítems con los dos brazos válidos (pares, preguntas o prompts). */
   n: number;
   /** El arnés paró antes de terminar la submuestra por su tope: la medición vale, pero es menor. */
@@ -298,7 +300,8 @@ export function extraerMtBench(art: unknown, modelo: ModeloDelBanco, crudo?: { m
     if (!fallido) throw new Error(`MT-Bench: el artefacto no trae ${modelo.corto}`);
     return { ...base, estado: "no-medible", motivo: fallido.error, gastoUsd: 0, n: 0, cortadaPorTope: false, fallosDeLaCapa: 0 };
   }
-  const gastoUsd = campo<number>(r, "gasto.total") + campo<number>(r, "gasto.juez");
+  const gastoJuezUsd = campo<number>(r, "gasto.juez");
+  const gastoUsd = campo<number>(r, "gasto.total") + gastoJuezUsd;
   const preguntas = crudo?.find((x) => x.modelo === modelo.corto)?.preguntas;
   let fallos: string[];
   if (preguntas) {
@@ -310,7 +313,7 @@ export function extraerMtBench(art: unknown, modelo: ModeloDelBanco, crudo?: { m
       .map((e) => `${e} (del informe: lista recortada)`);
   }
   if (campo<number>(r, "preguntas.completas") === 0 && fallos.length === 0) {
-    return { ...base, estado: "no-medible", motivo: NINGUNO, gastoUsd, n: 0, cortadaPorTope: campo<boolean>(r, "preguntas.cortePorPresupuesto"), fallosDeLaCapa: 0 };
+    return { ...base, estado: "no-medible", motivo: NINGUNO, gastoUsd, gastoJuezUsd, n: 0, cortadaPorTope: campo<boolean>(r, "preguntas.cortePorPresupuesto"), fallosDeLaCapa: 0 };
   }
   const juzgada = campo<boolean>(r, "calidad.juzgada");
   const tasa = juzgada ? campo<IntervaloDeConfianza | null>(r, "calidad.tasaDeVictoriaB") : null;
@@ -318,6 +321,7 @@ export function extraerMtBench(art: unknown, modelo: ModeloDelBanco, crudo?: { m
     ...base,
     estado: "medido",
     gastoUsd,
+    gastoJuezUsd,
     n: campo<number>(r, "preguntas.completas"),
     cortadaPorTope: campo<boolean>(r, "preguntas.cortePorPresupuesto"),
     fallosDeLaCapa: fallos.length,
