@@ -24,6 +24,9 @@ function tablaDeModelo(m: MedicionDeModelo): string {
     const x = r.brazos[b]!;
     const c = cmp.get(b);
     const f = x.fuentes;
+    if (b !== "A" && x.peticiones > 0 && x.errores === x.peticiones) {
+      return `| ${b} | — (falló en todas) | — | ${usd(x.costeUsd)} | — (no hubo llamadas: no es un ahorro) | — | — | — | **${x.errores}** |`;
+    }
     return (
       `| ${b} | ${ic(x.exactitud.ic95)} (${x.exactitud.aciertos}/${x.exactitud.n}) | ${b === "A" ? "—" : pp(c?.diferenciaExactitud)} | ` +
       `${usd(x.costeUsd)} | ${b === "A" ? "—" : ic(c?.ahorroMedido)} | ${f["exact_cache"] ?? 0} / ${f["semantic_cache"] ?? 0} / ${(f["coalesced"] ?? 0) + (f["deterministic"] ?? 0)} | ` +
@@ -50,6 +53,94 @@ function declarado(m: MedicionDeModelo): string {
     lineas.push(`- **${b}**: ${partes.join(" · ")}`);
   }
   return lineas.join("\n");
+}
+
+function brazoCaido(m: MedicionDeModelo, b: Brazo): boolean {
+  const x = m.resumen?.brazos[b];
+  return !!x && b !== "A" && x.peticiones > 0 && x.errores === x.peticiones;
+}
+
+/** Una fila por modelo y brazo con capa: lo que hay que leer primero. */
+function resumenGeneral(grupos: { etiqueta: string; modelos: readonly MedicionDeModelo[] }[]): string[] {
+  const out = [
+    "## Resumen por modelo y brazo",
+    "",
+    "Ahorro MEDIDO vs A (usage del proveedor, precio de lista) y su origen: «caché de la capa» son las posiciones que la capa sirvió sin llamar; «prefijo/llamadas» es la diferencia en las posiciones en que los dos llamaron (caché de prefijo del proveedor más ruido de longitud de salida).",
+    "",
+    "| Modelo | Brazo | Exactitud A → brazo | Ahorro medido [IC95] | De caché de la capa | De prefijo/llamadas | Tokens leídos de caché del proveedor A → brazo | Respuestas de OTRA pregunta | Latencia p50 A → brazo |",
+    "|---|---|---|---|---|---|---|---|---|",
+  ];
+  for (const g of grupos) {
+    for (const m of g.modelos) {
+      const r = m.resumen;
+      if (!r) {
+        out.push(`| ${m.modelo}${g.etiqueta} | — | ${m.estado}: ${m.motivo ?? ""} | | | | | | |`);
+        continue;
+      }
+      const a = r.brazos.A;
+      for (const b of (["B", "S", "E"] as const).filter((x) => r.brazos[x])) {
+        const x = r.brazos[b]!;
+        const accA = a ? `${a.exactitud.aciertos}/${a.exactitud.n}` : "—";
+        if (brazoCaido(m, b)) {
+          out.push(`| ${m.modelo}${g.etiqueta} | ${b} | ${accA} → **falló en todas (${x.errores})** | — | — | — | — | — | — |`);
+          continue;
+        }
+        const c = r.comparaciones.find((y) => y.brazo === b);
+        const o = m.origenDelAhorro?.[b];
+        const v = r.variantesPorBrazo[b];
+        out.push(
+          `| ${m.modelo}${g.etiqueta} | ${b} | ${accA} → ${x.exactitud.aciertos}/${x.exactitud.n} | ${ic(c?.ahorroMedido)} | ` +
+            `${o ? `${usd(o.cacheCapa.usd)} (${o.cacheCapa.posiciones} pos.)` : "—"} | ${o ? usd(o.llamadas.usd) : "—"} | ` +
+            `${o ? `${o.tokensLeidosDeCacheA} → ${o.tokensLeidosDeCacheBrazo}` : "—"} | **${v?.deOtra ?? "—"}** | ${ms(a?.latenciaMs.p50)} → ${ms(x.latenciaMs.p50)} |`,
+        );
+      }
+    }
+  }
+  return out;
+}
+
+function origen(m: MedicionDeModelo): string {
+  const o = m.origenDelAhorro;
+  if (!o || !Object.keys(o).length) return "";
+  const vivos = (Object.keys(o).sort() as Brazo[]).filter((b) => !brazoCaido(m, b));
+  if (!vivos.length) return "";
+  const filas = vivos.map((b) => {
+    const x = o[b]!;
+    const d = x.costeA - x.costeBrazo;
+    return (
+      `| ${b} | ${usd(x.costeA)} → ${usd(x.costeBrazo)} | ${usd(d)} | ${x.cacheCapa.posiciones} pos., ${usd(x.cacheCapa.usd)} | ` +
+      `${x.llamadas.posiciones} pos., ${usd(x.llamadas.usd)} | ${usd(x.descuentoPrefijoA)} → ${usd(x.descuentoPrefijoBrazo)} | ` +
+      `${x.tokensLeidosDeCacheA} → ${x.tokensLeidosDeCacheBrazo} | ${x.tokensEscritosA} → ${x.tokensEscritosBrazo} |`
+    );
+  });
+  return [
+    "**Origen del ahorro medido** (coste(A) − coste(brazo) = caché de la capa + llamadas al proveedor; el descuento de prefijo es lo que el proveedor rebajó por leer de su caché, neto de la prima de escritura, en A y en el brazo):",
+    "",
+    "| Brazo | Coste A → brazo | Ahorro | Servidas por la capa sin llamar | Con llamada (prefijo + ruido de salida) | Descuento de prefijo A → brazo | Tokens leídos de caché A → brazo | Tokens escritos A → brazo |",
+    "|---|---|---|---|---|---|---|---|",
+    ...filas,
+  ].join("\n");
+}
+
+/** De dónde sale el ahorro: lo que el brazo no llamó frente a la caché de prefijo del proveedor en lo que sí llamó. */
+function desglose(m: MedicionDeModelo): string {
+  const d = m.desglose;
+  const r = m.resumen;
+  if (!d?.length || !r) return "";
+  return [
+    "**De dónde sale el ahorro** (medido; «prefijo neto» = lecturas × (entrada − lectura) − escrituras × entrada × (prima − 1), a precio de lista, sin ruido de salida):",
+    "",
+    "| Brazo | Llamadas | Entrada media / llamada | Llamadas con lectura / con escritura de caché | Tokens leídos / escritos | Ahorro total vs A | … por no llamar (caché de la capa) | … en las llamadas hechas | Prefijo neto (tokens) | Latencia p50 proveedor / caché |",
+    "|---|---|---|---|---|---|---|---|---|---|",
+    ...d.map((x) => {
+      const l = r.brazos[x.brazo]?.latenciaMs;
+      return (
+        `| ${x.brazo} | ${x.llamadas} | ${Math.round(x.entradaMediaPorLlamada)} | ${x.llamadasConLectura} / ${x.llamadasConEscritura} | ${x.tokensLeidos} / ${x.tokensEscritos} | ` +
+        `${x.brazo === "A" ? "—" : usd(x.ahorroTotalUsd)} | ${x.brazo === "A" ? "—" : usd(x.ahorroPorNoLlamarUsd)} | ${x.brazo === "A" ? "—" : usd(x.ahorroEnLlamadasUsd)} | ` +
+        `${usd(x.prefijoNetoUsd)} | ${ms(l?.p50Proveedor)} / ${ms(l?.p50Cache)} |`
+      );
+    }),
+  ].join("\n");
 }
 
 const frac = (a: number, n: number): string => (n ? `${((a / n) * 100).toFixed(1)} % (${a}/${n})` : "—");
@@ -98,7 +189,9 @@ function seccionComparacion(c: Comparacion0430): string[] {
 
 export function escribirDocumento(art: Artefacto): string {
   const out: string[] = [];
-  out.push(`# GSM8K ${art.procedencia.version} — caché exacta, caché semántica y compresión sin perder exactitud (${art.fecha})`);
+  out.push(
+    `# GSM8K ${art.procedencia.version}${art.nombreDocs?.endsWith("gama-alta") ? " gama alta" : ""} — caché exacta, caché semántica y compresión sin perder exactitud (${art.fecha})`,
+  );
   out.push("");
   out.push(
     `Batería pública sobre GSM8K (${art.dataset.nombre}, ${art.dataset.licencia}), commit \`${art.dataset.commit}\` de ` +
@@ -113,7 +206,7 @@ export function escribirDocumento(art: Artefacto): string {
   const topes = art.presupuesto.topesPorModelo
     ? Object.entries(art.presupuesto.topesPorModelo).map(([m, t]) => `${m} ${usd(t)}`).join(", ")
     : `${usd(art.presupuesto.topePorModeloUsd)} por modelo`;
-  out.push(`Modo: **${art.modo}**, run \`${art.runId}\`. Gasto real total: **${usd(art.presupuesto.gastoTotalUsd)}** (topes duros en código: ${topes}).`);
+  out.push(`Modo: **${art.modo}**, run \`${art.runId}\`${art.ejecutadaEl ? `, ejecutada el ${art.ejecutadaEl}` : ""}. Gasto real total: **${usd(art.presupuesto.gastoTotalUsd)}** (topes duros en código: ${topes}).`);
   if (art.topeDeSalida !== undefined || art.interruptorSemantico) {
     out.push("");
     out.push(
@@ -128,6 +221,13 @@ export function escribirDocumento(art: Artefacto): string {
     );
   }
   if (art.comparacion) out.push("", ...seccionComparacion(art.comparacion));
+  out.push("");
+  out.push(
+    ...resumenGeneral([
+      { etiqueta: "", modelos: art.modelos },
+      ...(art.suplemento ? [{ etiqueta: art.suplemento.parcheGemini ? " (parche del banco)" : " (suplemento)", modelos: art.suplemento.modelos }] : []),
+    ]),
+  );
   out.push("");
   out.push("## Diseño");
   out.push("");
@@ -148,15 +248,46 @@ export function escribirDocumento(art: Artefacto): string {
     "Todo lo de esta sección sale del `usage` del proveedor en cada llamada, al precio de lista del catálogo del SDK. " +
       "Los intervalos remuestrean familias enteras (un problema con sus repeticiones y paráfrasis).",
   );
-  for (const m of art.modelos) {
+  out.push(...seccionModelos(art.modelos, "###"));
+  if (art.suplemento) {
+    const sup = art.suplemento;
     out.push("");
-    out.push(`### ${m.modelo}`);
+    out.push(`## Suplemento: ${sup.parcheGemini ? "Gemini con el parche declarado del banco (NO es el producto)" : "segunda tirada"} — run \`${sup.runId}\``);
+    out.push("");
+    if (sup.parcheGemini) out.push(`> ${sup.parcheGemini.descripcion} Campos quitados en esta tirada: ${sup.parcheGemini.camposQuitados}.`, "");
+    out.push(
+      `Misma semilla y mismo diseño; A se vuelve a medir en esta tirada para que el emparejamiento sea dentro de la misma. Gasto real: **${usd(sup.presupuesto.gastoTotalUsd)}**. ` +
+        (sup.red ? `Hosts vistos: ${Object.entries(sup.red.hostsVistos).map(([h, n]) => `${h} (${n})`).join(", ") || "ninguno"}; bloqueados: ${Object.entries(sup.red.bloqueados).map(([h, n]) => `${h} (${n})`).join(", ") || "ninguno"}.` : ""),
+    );
+    out.push(...seccionModelos(sup.modelos, "###", sup.parcheGemini ? " (parche del banco)" : " (suplemento)"));
+    if (sup.limitaciones.length) {
+      out.push("", "Limitaciones del suplemento:", "");
+      for (const l of sup.limitaciones) out.push(`- ${l}`);
+    }
+  }
+  return cierre(art, out);
+}
+
+function seccionModelos(modelos: readonly MedicionDeModelo[], h: string, sufijo = ""): string[] {
+  const out: string[] = [];
+  for (const m of modelos) {
+    out.push("");
+    out.push(`${h} ${m.modelo}${sufijo}`);
     out.push("");
     out.push(
       `Estado: **${m.estado}**${m.motivo ? ` — ${m.motivo}` : ""}. Host: ${m.host ?? "—"}. Muestreo: \`${JSON.stringify(m.muestreo)}\`. ` +
         `Tope de salida: ${m.topeDeSalida ?? "ninguno"}. Gasto real: **${usd(m.gasto.totalUsd)}** ` +
         `(${Object.entries(m.gasto.porBrazo).map(([k, v]) => `${k} ${usd(v)}`).join(", ")}).`,
     );
+    if (m.precioFueraDeCatalogo) {
+      out.push("");
+      out.push(`Precio (sin fila en el catálogo, solo en el banco): ${m.precioFueraDeCatalogo}.`);
+    }
+    if (m.sondaDetalle?.length) {
+      out.push("");
+      out.push(`Sonda (brazo A, 3 llamadas): salida ${m.sondaDetalle.map((x) => `${x.salida} (${x.finish ?? "—"})`).join(", ")} tokens.` +
+        (m.pensamientoOcultoPorBrazo ? ` Pensamiento de Gemini facturado y ausente de completion_tokens: ${Object.entries(m.pensamientoOcultoPorBrazo).map(([k, v]) => `${k} ${v}`).join(", ")} tokens.` : ""));
+    }
     if (m.flujo) {
       out.push("");
       out.push(
@@ -181,6 +312,11 @@ export function escribirDocumento(art: Artefacto): string {
         );
       }
       out.push("");
+      const org = origen(m);
+      if (org) out.push("", org);
+      out.push("");
+      const des = desglose(m);
+      if (des) out.push(des, "");
       out.push("**Ahorro que la capa se atribuye en su propio informe** (declarado, no medido por el banco; por base):");
       out.push("");
       out.push(declarado(m) || "—");
@@ -193,6 +329,10 @@ export function escribirDocumento(art: Artefacto): string {
       }
     }
   }
+  return out;
+}
+
+function cierre(art: Artefacto, out: string[]): string {
   if (art.sinRed) {
     out.push("");
     out.push("## Sin red: las decisiones de la capa sobre el split de test entero (modelado en lo económico)");

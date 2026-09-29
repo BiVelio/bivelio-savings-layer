@@ -39,6 +39,15 @@ function conHerramientas(c: CanonicalRequest): { toolTurns?: string } {
   return c.toolTurnsHash !== undefined ? { toolTurns: c.toolTurnsHash } : {};
 }
 
+// EL ESFUERZO DE RAZONAMIENTO (`reasoning_effort`), con la misma regla que los
+// campos de herramienta: entra SOLO si la petición lo declara, así que la clave
+// de toda petición sin él es byte a byte la de antes y la generación no sube.
+// Cambia la respuesta (cuánto piensa el modelo), así que dos peticiones con
+// distinto esfuerzo no comparten entrada ni se coalescen.
+function conEsfuerzo(c: CanonicalRequest): { effort?: string } {
+  return c.reasoningEffort !== undefined ? { effort: c.reasoningEffort } : {};
+}
+
 /**
  * Exact-cache key.
  *
@@ -80,6 +89,7 @@ export function buildExactKey(
     locale: c.locale,
     temperature: c.temperature,
     seed: c.seed,
+    ...conEsfuerzo(c),
     knowledgeEpoch: c.knowledgeEpoch,
     freshness: c.freshnessBucket,
     safety: c.safetyPolicyVersion,
@@ -172,6 +182,7 @@ export function buildInflightKey(
     data: c.structuredDataHash,
     temperature: c.temperature,
     seed: c.seed,
+    ...conEsfuerzo(c),
     deferrable: opciones.deferrable === true,
     toolDiscovery: opciones.toolDiscovery === true,
     maxOut: opciones.maxOutputTokens ?? null,
