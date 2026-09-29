@@ -27,6 +27,11 @@ import {
   parteDelJuez,
   topeDelCuerpo,
   topePorModelo,
+  usoDeGoogle,
+  usoDeFamilia,
+  primaDeEscritura,
+  MODELOS_GAMA_ALTA,
+  TOPE_GAMA_ALTA_POR_MODELO_USD,
   type Pregunta,
   type PromptDelJuez,
 } from "../benchmarks/publicados/mt-bench/nucleo.js";
@@ -258,5 +263,52 @@ describe("MT-Bench 0.4.31: tope nativo, presupuesto, hosts y fuente", () => {
     expect(atribucionDelAhorro({ ...base, tokensEscritosEnCacheB: 1200 }).atribuible).toBe(true);
     // Sin el dato, lo conservador: cuenta como cambio con efecto.
     expect(atribucionDelAhorro(base).atribuible).toBe(true);
+  });
+});
+
+describe("MT-Bench gama alta (2026-09-29): Gemini, precios citados y topes", () => {
+  it("Gemini (endpoint compatible): el razonamiento está solo en total_tokens y se factura como salida", () => {
+    // Forma medida en vivo: 13 de entrada, 3 de salida visible, total 193.
+    const u = usoDeGoogle({ usage: { prompt_tokens: 13, completion_tokens: 3, total_tokens: 193 } });
+    expect(u).toEqual({ entrada: 13, cacheLeida: 0, cacheEscrita: 0, salida: 180, razonamiento: 177 });
+    const c = usoDeGoogle({ usage: { prompt_tokens: 1000, completion_tokens: 10, total_tokens: 1010, prompt_tokens_details: { cached_tokens: 600 } } });
+    expect(c.entrada).toBe(400);
+    expect(c.cacheLeida).toBe(600);
+    expect(c.salida).toBe(10);
+    // Sin total_tokens no se sabe cuánto pensó: error, nunca un 0.
+    expect(() => usoDeGoogle({ usage: { prompt_tokens: 13, completion_tokens: 3 } })).toThrow(SinUsage);
+    expect(usoDeFamilia("google", { usage: { prompt_tokens: 1, completion_tokens: 1, total_tokens: 5 } }).salida).toBe(4);
+    expect(usoDeFamilia("openai", { usage: { prompt_tokens: 1, completion_tokens: 1 } }).salida).toBe(1);
+    expect(primaDeEscritura("google")).toBe(1);
+  });
+
+  it("topes: 1,25 $ por modelo en cualquier familia y 0,50 $ de juez", () => {
+    expect(TOPE_GAMA_ALTA_POR_MODELO_USD).toBe(1.25);
+    expect(TOPE_DEL_JUEZ_USD).toBe(0.5);
+  });
+
+  it("la lista no repite los ya medidos y el único sin fila lleva precio oficial citado", () => {
+    const ids = MODELOS_GAMA_ALTA.map((m) => m.id);
+    for (const ya of ["claude-haiku-4-5", "claude-sonnet-5", "gpt-4o-mini", "gpt-5.4-mini"]) expect(ids).not.toContain(ya);
+    const sonnet = MODELOS_GAMA_ALTA.find((m) => m.id === "claude-sonnet-5-5")!;
+    expect(sonnet.precioOficial?.fuente).toMatch(/^https:\/\/platform\.claude\.com\//);
+    expect(sonnet.precioOficial?.consultado).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(sonnet.precioOficial?.precio).toEqual({ inputPer1k: 0.002, outputPer1k: 0.01, cachedInputPer1k: 0.0002 });
+    // Los modelos de razonamiento o que rechazan temperature no la llevan en ningún brazo.
+    for (const m of MODELOS_GAMA_ALTA.filter((x) => x.familia !== "google")) expect(m.temperatura).toBe(false);
+  });
+
+  it("OpenAI (gpt-5.6+): la escritura de caché va aparte, dentro de prompt_tokens, y con prima", () => {
+    const u = usoDeOpenAI({ usage: { prompt_tokens: 1692, completion_tokens: 100, prompt_tokens_details: { cached_tokens: 0, cache_write_tokens: 1692 } } });
+    expect(u).toMatchObject({ entrada: 0, cacheLeida: 0, cacheEscrita: 1692, salida: 100 });
+    const precio = { inputPer1k: 0.004, outputPer1k: 0.02, cachedInputPer1k: 0.0004 };
+    expect(costeDeUso(precio, 1.25, u)).toBeCloseTo(1.692 * 0.004 * 1.25 + 0.1 * 0.02, 10);
+  });
+
+  it("la guarda de hosts deja salir al host oficial de Gemini y a nada que se le parezca", () => {
+    expect(hostPermitido("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions")).toBe(true);
+    expect(hostPermitido("http://generativelanguage.googleapis.com/v1beta/openai")).toBe(false);
+    expect(hostPermitido("https://generativelanguage.googleapis.com.evil.example/v1beta")).toBe(false);
+    expect(hostPermitido("https://aiplatform.googleapis.com/v1")).toBe(false);
   });
 });
