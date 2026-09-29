@@ -10,6 +10,7 @@ import {
   type Registro,
   type RegistroGsm8k,
 } from "@/lib/banco-publico/extraer";
+import { rutaServida } from "@/lib/banco-publico/publicar";
 
 /**
  * EL BANCO PÚBLICO — la página /benchmarks, sin datos propios.
@@ -29,20 +30,13 @@ export interface Traductor {
   rich: (clave: string, valores?: Record<string, string | number | Rico>) => ReactNode;
 }
 
-/** Repositorio de los arneses y de los informes. */
-export const REPO = "https://github.com/BiVelio/bivelio-savings-layer";
 /** Contacto para una medición independiente. */
 export const CONTACTO = "support@bivelio.com";
 /** Umbral con el que la página llama «significativa» una diferencia de negativas A/B. */
 export const UMBRAL_P = 0.05;
 
-/** El comando y el arnés de cada batería (un test comprueba que existen en el repo). */
-export const REPRODUCIR: Record<Bateria, { comando: string; arnes: string }> = {
-  gsm8k: { comando: "pnpm bench:gsm8k", arnes: "benchmarks/publicados/gsm8k/arnes.ts" },
-  bfcl: { comando: "pnpm bench:bfcl", arnes: "benchmarks/publicados/bfcl/arnes.ts" },
-  xstest: { comando: "pnpm bench:xstest", arnes: "benchmarks/publicados/xstest/banco.ts" },
-  "mt-bench": { comando: "pnpm bench:mt-bench", arnes: "benchmarks/publicados/mt-bench/mt-bench.ts" },
-};
+/** Pasos del método en «cómo reproducirlo» (el texto, en `repro.steps.<n>`). */
+export const PASOS_REPRO = ["dataset", "package", "arms", "cost", "compare"] as const;
 
 const CLASE_ESTADO: Record<Registro["estado"], string> = {
   medido: "banco-estado banco-medido",
@@ -76,12 +70,15 @@ function formatos(locale: string) {
 
 type F = ReturnType<typeof formatos>;
 
-const enlace = (ruta: string) => `${REPO}/blob/main/${ruta}`;
-const corto = (h: string) => h.slice(0, 12);
+/**
+ * Enlace a un informe: la copia servida por esta web (/benchmarks/data/…), no
+ * el repositorio, que es privado (decisión del dueño, 2026-09-29).
+ */
+const enlace = (ruta: string) => rutaServida(ruta);
 
 function Tirada({ r, f }: { r: Pick<Registro, "version" | "fecha" | "ruta">; f: F }) {
   return (
-    <a className="banco-tirada" href={enlace(r.ruta)} target="_blank" rel="noopener noreferrer" data-ruta={r.ruta}>
+    <a className="banco-tirada" href={enlace(r.ruta)} target="_blank" rel="noopener" data-ruta={enlace(r.ruta)}>
       {r.version} · {f.fecha(r.fecha)}
     </a>
   );
@@ -160,16 +157,19 @@ function Metodo({ banco, t, f, ricos }: { banco: Banco; t: Traductor; f: F; rico
                   <b>{NOMBRE_BATERIA[d.bateria]}</b>
                 </td>
                 <td className="banco-texto">{t(`batteries.${d.bateria}`)}</td>
-                <td>
-                  <a href={`${d.repo}/tree/${d.commit}`} target="_blank" rel="noopener noreferrer">
-                    {d.repo.replace("https://github.com/", "")}@{d.commit.slice(0, 7)}
-                  </a>
+                <td className="banco-hash">
+                  <code>{d.repo}</code>
+                  <span>
+                    commit <code data-commit={d.commit}>{d.commit}</code>
+                  </span>
                 </td>
                 <td className="banco-hash">
                   {d.ficheros.length
                     ? d.ficheros.map((x) => (
-                        <span key={x.nombre} title={x.sha256}>
-                          {x.nombre} <code>sha256 {corto(x.sha256)}…</code>
+                        <span key={x.nombre}>
+                          {x.nombre}
+                          <br />
+                          sha256 <code data-sha256={x.sha256}>{x.sha256}</code>
                         </span>
                       ))
                     : t("method.commitOnly")}
@@ -477,7 +477,7 @@ function Fallos({ banco, t, f }: { banco: Banco; t: Traductor; f: F }) {
               <li>
                 {t("bugs.found", { version: x.encontradoEn, ocurrencias: f.ent(x.antes.ocurrencias), sobre: f.ent(x.antes.sobre) })}{" "}
                 {x.antes.rutas.map((r) => (
-                  <a key={r} className="banco-tirada" href={enlace(r)} target="_blank" rel="noopener noreferrer" data-ruta={r}>
+                  <a key={r} className="banco-tirada" href={enlace(r)} target="_blank" rel="noopener" data-ruta={enlace(r)}>
                     {r.split("/").pop()}
                   </a>
                 ))}
@@ -506,13 +506,18 @@ function Reproducir({ banco, t, ricos }: { banco: Banco; t: Traductor; ricos: Re
     <section className="terms-sec" aria-labelledby="repro-h" id="reproduce">
       <h2 id="repro-h">{t("repro.title")}</h2>
       <p>{t.rich("repro.intro", ricos)}</p>
+      <ol className="terms-list banco-pasos">
+        {PASOS_REPRO.map((p) => (
+          <li key={p}>{t.rich(`repro.steps.${p}`, ricos)}</li>
+        ))}
+      </ol>
+      <h3>{t("repro.reportsTitle")}</h3>
+      <p>{t("repro.reportsIntro")}</p>
       <div className="tbl-scroll">
         <table className="tbl banco-tbl">
           <thead>
             <tr>
               <th scope="col">{t("th.battery")}</th>
-              <th scope="col">{t("th.command")}</th>
-              <th scope="col">{t("th.harness")}</th>
               <th scope="col">{t("th.reports")}</th>
             </tr>
           </thead>
@@ -520,20 +525,12 @@ function Reproducir({ banco, t, ricos }: { banco: Banco; t: Traductor; ricos: Re
             {baterias.map((b) => (
               <tr key={b} data-bateria={b}>
                 <td>{NOMBRE_BATERIA[b]}</td>
-                <td>
-                  <code>{REPRODUCIR[b].comando}</code>
-                </td>
-                <td>
-                  <a href={enlace(REPRODUCIR[b].arnes)} target="_blank" rel="noopener noreferrer">
-                    <code>{REPRODUCIR[b].arnes}</code>
-                  </a>
-                </td>
                 <td className="banco-informes">
                   {banco.fuentes
                     .filter((x) => x.bateria === b)
                     .map((x) => (
-                      <a key={x.ruta} href={enlace(x.ruta)} target="_blank" rel="noopener noreferrer" data-ruta={x.ruta}>
-                        {x.ruta.split("/").pop()}
+                      <a key={x.ruta} href={enlace(x.ruta)} target="_blank" rel="noopener" data-ruta={enlace(x.ruta)}>
+                        {x.ruta.split("/").slice(-2).join("/")}
                       </a>
                     ))}
                 </td>
@@ -542,7 +539,7 @@ function Reproducir({ banco, t, ricos }: { banco: Banco; t: Traductor; ricos: Re
           </tbody>
         </table>
       </div>
-      <p className="banco-nota">{t("repro.readme")}</p>
+      <p className="banco-nota">{t("repro.served")}</p>
     </section>
   );
 }
@@ -569,8 +566,11 @@ export function BancoPublico({ banco, t, locale }: { banco: Banco; t: Traductor;
         <h2 id="invite-h">{t("invite.title")}</h2>
         <p>{t("invite.body")}</p>
         <p>
+          {t("invite.contact")} <span className="banco-email">{CONTACTO}</span>
+        </p>
+        <p>
           <a className="btn btn-primary" href={`mailto:${CONTACTO}?subject=${encodeURIComponent(t("invite.subject"))}`}>
-            {t("invite.cta", { email: CONTACTO })}
+            {t("invite.cta")}
           </a>
         </p>
       </section>

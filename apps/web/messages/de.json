@@ -1183,8 +1183,6 @@
       "safe": "Ablehnungen, sichere Prompts (A → B)",
       "unsafe": "Ablehnungen, unsichere Prompts (A → B)",
       "verdict": "Einordnung",
-      "command": "Befehl",
-      "harness": "Testharness",
       "reports": "Berichte"
     },
     "savings": {
@@ -1280,13 +1278,23 @@
     },
     "repro": {
       "title": "Wie man es reproduziert",
-      "intro": "Jede Testreihe ist ein Befehl vom Wurzelverzeichnis des Repositorys aus. Sie brauchen Ihre eigenen Anbieterschlüssel in <code>.env.bench</code>; jeder Testharness trägt sein Ausgabenlimit, legt den Datensatz per Commit und sha256 fest und schreibt denselben JSON-Bericht, den diese Seite liest.",
-      "readme": "Jeder JSON-Bericht kommt mit seiner lesbaren Version (.md) direkt daneben: Design, Einschränkungen und die tatsächlichen Ausgaben des Laufs."
+      "intro": "Der Code des Benchmarks ist noch nicht öffentlich; die Methode schon, und sie passt in fünf Schritte. Mit Ihren eigenen Anbieter-Schlüsseln können Sie ihn wiederholen und Zahl für Zahl mit unseren Berichten vergleichen.",
+      "steps": {
+        "dataset": "<b>Der Datensatz.</b> Laden Sie jeden öffentlichen Datensatz beim Commit aus der Tabelle oben herunter und prüfen Sie vor der Nutzung den sha256 jeder Datei. Stimmt er nicht, ist es nicht derselbe Datensatz.",
+        "package": "<b>Die Schicht.</b> Installieren Sie <code>@bivelio/savings-layer</code> von npm in der Version, die der Bericht nennt, und prüfen Sie den sha256 von <code>dist/index.js</code>: Jeder Bericht enthält seinen.",
+        "arms": "<b>Zwei Arme pro Prompt.</b> A geht direkt zum Anbieter; B schickt denselben Prompt an dasselbe Modell mit demselben Ausgabelimit durch die Schicht in ihrer Standardkonfiguration. Ein Teil der Prompts wird wiederholt oder umformuliert, wie im echten Verkehr, und die Reihenfolge A/B wird ausgelost.",
+        "cost": "<b>Die Kosten nennt der Anbieter.</b> Summieren Sie, was jeder Arm laut dem vom Anbieter gelieferten <code>usage</code> zum veröffentlichten Preis kostet. Die Ersparnis ist <code>1 − Kosten B / Kosten A</code>, mit ihrem Intervall.",
+        "compare": "<b>Die Qualität, im selben Lauf.</b> Bewerten Sie die Antworten beider Arme gleich (exakte Antwort bei GSM8K, Tool-Aufruf bei BFCL, Ablehnung oder nicht bei XSTest, ein Richter bei MT-Bench) und vergleichen Sie sie mit dem JSON-Bericht derselben Batterie und Version."
+      },
+      "reportsTitle": "Die Berichte",
+      "reportsIntro": "Jeder Lauf hinterlässt einen JSON-Bericht mit seinem Design, seinen Grenzen und jedem gemessenen Aufruf: usage, Kosten pro Arm und Einstufung der Antwort. Sie werden von dieser Website ausgeliefert.",
+      "served": "Die Berichte werden so ausgeliefert, wie der Benchmark sie geschrieben hat, mit einer Ausnahme: Angaben zur Umgebung der messenden Person (Dateipfade, E-Mail-Adressen) werden entfernt. Von XSTest wird kein Antworttext veröffentlicht, nur seine Einstufung."
     },
     "invite": {
       "title": "Messen Sie uns selbst",
-      "body": "Eine unabhängige Messung ist mehr wert als unsere eigene. Wenn Sie den Benchmark erneut laufen lassen oder die Schicht mit Ihrem eigenen Testharness oder Ihrem eigenen Traffic messen möchten, schreiben Sie uns, und wir geben Ihnen, was Sie dafür brauchen.",
-      "cta": "Schreiben Sie an {email}",
+      "body": "Eine unabhängige Messung ist mehr wert als unsere. Der Code des Benchmarks ist noch nicht öffentlich: Wenn Sie die Messung wiederholen oder die Schicht mit Ihrem eigenen Harness oder Ihrem eigenen Verkehr messen möchten, schreiben Sie uns, und wir geben Ihnen, was Sie dafür brauchen.",
+      "contact": "Schreiben Sie uns an",
+      "cta": "E-Mail schreiben",
       "subject": "Unabhängige Messung des öffentlichen Benchmarks"
     }
   },

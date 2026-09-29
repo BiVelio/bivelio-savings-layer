@@ -2425,7 +2425,10 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .banco-tbl caption { caption-side: top; text-align: left; padding: 0 0 8px; color: var(--ink-soft); font-size: .9rem; }
 .banco-tbl .banco-texto { text-align: left; min-width: 220px; color: var(--ink-soft); }
 .banco-tbl .banco-hash { text-align: left; }
-.banco-tbl .banco-hash span { display: block; white-space: nowrap; }
+.banco-tbl .banco-hash { min-width: 220px; max-width: 360px; }
+.banco-tbl .banco-hash > code, .banco-tbl .banco-hash span { display: block; }
+.banco-tbl .banco-hash span { margin-top: 4px; color: var(--ink-soft); font-size: .88rem; }
+.banco-tbl .banco-hash span code { color: var(--ink); user-select: all; }
 .banco-tbl .banco-cifra { font-weight: 600; color: var(--ink); white-space: nowrap; }
 .banco-tbl .banco-nomedido { text-align: left; color: var(--warn); }
 .banco-delta { display: block; white-space: nowrap; }
@@ -2447,6 +2450,8 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .banco-fallos .banco-tirada { margin-left: 6px; }
 .banco-version { font-family: var(--mono); font-size: 12px; font-weight: 500; color: var(--ink-soft); white-space: nowrap; }
 .banco-invita .btn { display: inline-flex; }
+.banco-email { font-family: var(--mono); font-weight: 600; color: var(--ink); user-select: all; -webkit-user-select: all; overflow-wrap: anywhere; }
+.banco-pasos { max-width: 76ch; }
 @media (max-width: 640px) {
   .banco-stats dd { font-size: 1.1rem; }
   .banco-tbl .banco-texto { min-width: 160px; }

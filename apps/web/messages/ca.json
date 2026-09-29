@@ -1183,8 +1183,6 @@
       "safe": "Negatives, prompts segurs (A → B)",
       "unsafe": "Negatives, prompts insegurs (A → B)",
       "verdict": "Lectura",
-      "command": "Ordre",
-      "harness": "Arnès",
       "reports": "Informes"
     },
     "savings": {
@@ -1280,13 +1278,23 @@
     },
     "repro": {
       "title": "Com reproduir-ho",
-      "intro": "Cada bateria és una ordre des de l'arrel del repositori. Necessites les teves pròpies claus de proveïdor a <code>.env.bench</code>; cada arnès porta el seu límit de despesa, fixa el conjunt de dades per commit i sha256, i escriu el mateix informe JSON que llegeix aquesta pàgina.",
-      "readme": "Cada informe JSON ve amb la seva versió llegible (.md) al costat: disseny, limitacions i despesa real de l'execució."
+      "intro": "El codi del banc encara no és públic; el mètode sí, i cap en cinc passos. Amb les teves pròpies claus de proveïdor el pots repetir i comparar xifra a xifra amb els nostres informes.",
+      "steps": {
+        "dataset": "<b>El dataset.</b> Descarrega cada dataset públic al commit de la taula de dalt i comprova el sha256 de cada fitxer abans de fer-lo servir. Si no quadra, no és el mateix dataset.",
+        "package": "<b>La capa.</b> Instal·la <code>@bivelio/savings-layer</code> des de npm a la versió que diu l'informe i comprova el sha256 de <code>dist/index.js</code>: cada informe porta el seu.",
+        "arms": "<b>Dos braços per prompt.</b> A va directe al proveïdor; B envia el mateix prompt, al mateix model i amb el mateix límit de sortida, a través de la capa amb la configuració per defecte. Una part dels prompts es repeteix o es parafraseja, com en el trànsit real, i l'ordre A/B se sorteja.",
+        "cost": "<b>El cost el diu el proveïdor.</b> Suma el que factura cada braç segons l'<code>usage</code> que retorna el proveïdor, a la seva tarifa publicada. L'estalvi és <code>1 − cost B / cost A</code>, amb el seu interval.",
+        "compare": "<b>La qualitat, a la mateixa tirada.</b> Puntua igual les respostes dels dos braços (resposta exacta a GSM8K, crida a eina a BFCL, negativa o no a XSTest, jutge a MT-Bench) i compara-les amb l'informe JSON de la mateixa bateria i versió."
+      },
+      "reportsTitle": "Els informes",
+      "reportsIntro": "Cada tirada deixa un informe JSON amb el seu disseny, les seves limitacions i cada crida mesurada: usage, cost per braç i classificació de la resposta. Se serveixen des d'aquest web.",
+      "served": "Els informes se serveixen tal com els va escriure el banc, amb una excepció: es treuen les dades de l'entorn de qui va mesurar (rutes de disc, correus). De XSTest no es publica el text de cap resposta, només la seva classificació."
     },
     "invite": {
       "title": "Mesura'ns tu mateix",
-      "body": "Una mesura independent val més que la nostra. Si vols tornar a executar el banc, o mesurar la capa amb el teu propi arnès o amb el teu trànsit, escriu-nos i et donarem el que necessitis per fer-ho.",
-      "cta": "Escriu a {email}",
+      "body": "Una mesura independent val més que la nostra. El codi del banc encara no és públic: si vols repetir la mesura, o mesurar la capa amb el teu propi arnès o amb el teu trànsit, escriu-nos i et donarem el que necessitis per fer-ho.",
+      "contact": "Escriu-nos a",
+      "cta": "Enviar un correu",
       "subject": "Mesura independent del banc públic"
     }
   },

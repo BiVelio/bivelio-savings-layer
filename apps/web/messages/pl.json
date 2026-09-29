@@ -1183,8 +1183,6 @@
       "safe": "Odmowy, prompty bezpieczne (A → B)",
       "unsafe": "Odmowy, prompty niebezpieczne (A → B)",
       "verdict": "Interpretacja",
-      "command": "Polecenie",
-      "harness": "Harness",
       "reports": "Raporty"
     },
     "savings": {
@@ -1280,13 +1278,23 @@
     },
     "repro": {
       "title": "Jak to odtworzyć",
-      "intro": "Każda bateria to jedno polecenie z katalogu głównego repozytorium. Potrzebujesz własnych kluczy dostawcy w <code>.env.bench</code>; każdy harness ma swój limit wydatków, przypina zbiór danych do commita i sha256 oraz zapisuje ten sam raport JSON, który czyta ta strona.",
-      "readme": "Każdy raport JSON ma obok siebie czytelną wersję (.md): projekt, ograniczenia i rzeczywisty koszt przebiegu."
+      "intro": "Kod testu nie jest jeszcze publiczny; metoda jest, i mieści się w pięciu krokach. Z własnymi kluczami dostawcy możesz go powtórzyć i porównać liczba po liczbie z naszymi raportami.",
+      "steps": {
+        "dataset": "<b>Zbiór danych.</b> Pobierz każdy publiczny zbiór danych z commita z tabeli powyżej i przed użyciem sprawdź sha256 każdego pliku. Jeśli się nie zgadza, to nie jest ten sam zbiór.",
+        "package": "<b>Warstwa.</b> Zainstaluj <code>@bivelio/savings-layer</code> z npm w wersji podanej w raporcie i sprawdź sha256 pliku <code>dist/index.js</code>: każdy raport go zawiera.",
+        "arms": "<b>Dwa ramiona na prompt.</b> A idzie prosto do dostawcy; B wysyła ten sam prompt, do tego samego modelu i z tym samym limitem wyjścia, przez warstwę w domyślnej konfiguracji. Część promptów się powtarza lub parafrazuje, jak w prawdziwym ruchu, a kolejność A/B jest losowana.",
+        "cost": "<b>Koszt podaje dostawca.</b> Zsumuj, ile kosztuje każde ramię według <code>usage</code> zwracanego przez dostawcę, po jego opublikowanej cenie. Oszczędność to <code>1 − koszt B / koszt A</code>, wraz z przedziałem.",
+        "compare": "<b>Jakość, w tym samym przebiegu.</b> Oceń tak samo odpowiedzi obu ramion (dokładna odpowiedź w GSM8K, wywołanie narzędzia w BFCL, odmowa lub nie w XSTest, sędzia w MT-Bench) i porównaj je z raportem JSON tej samej baterii i wersji."
+      },
+      "reportsTitle": "Raporty",
+      "reportsIntro": "Każdy przebieg zostawia raport JSON z projektem, ograniczeniami i każdym zmierzonym wywołaniem: usage, koszt na ramię i klasyfikacja odpowiedzi. Są udostępniane z tej strony.",
+      "served": "Raporty są udostępniane tak, jak zapisał je test, z jednym wyjątkiem: usuwa się dane o środowisku osoby mierzącej (ścieżki na dysku, adresy e-mail). Z XSTest nie publikuje się tekstu żadnej odpowiedzi, tylko jej klasyfikację."
     },
     "invite": {
       "title": "Zmierz nas sam",
-      "body": "Niezależny pomiar jest wart więcej niż nasz. Jeśli chcesz ponownie uruchomić test albo zmierzyć warstwę własnym harnessem lub własnym ruchem, napisz do nas, a przekażemy ci to, czego potrzebujesz, aby to zrobić.",
-      "cta": "Napisz do {email}",
+      "body": "Niezależny pomiar jest wart więcej niż nasz. Kod testu nie jest jeszcze publiczny: jeśli chcesz powtórzyć pomiar albo zmierzyć warstwę własnym narzędziem lub własnym ruchem, napisz do nas, a damy ci wszystko, czego potrzebujesz.",
+      "contact": "Napisz do nas na",
+      "cta": "Wyślij e-mail",
       "subject": "Niezależny pomiar testu publicznego"
     }
   },

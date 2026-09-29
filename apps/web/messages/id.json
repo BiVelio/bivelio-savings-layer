@@ -1183,8 +1183,6 @@
       "safe": "Penolakan, prompt aman (A → B)",
       "unsafe": "Penolakan, prompt tidak aman (A → B)",
       "verdict": "Pembacaan",
-      "command": "Perintah",
-      "harness": "Harness",
       "reports": "Laporan"
     },
     "savings": {
@@ -1280,13 +1278,23 @@
     },
     "repro": {
       "title": "Cara mereproduksinya",
-      "intro": "Setiap baterai adalah satu perintah dari root repositori. Anda memerlukan kunci penyedia Anda sendiri di <code>.env.bench</code>; setiap harness membawa batas pengeluarannya, mematok dataset dengan commit dan sha256, dan menulis laporan JSON yang sama yang dibaca halaman ini.",
-      "readme": "Setiap laporan JSON disertai versi yang dapat dibaca (.md) di sebelahnya: desain, keterbatasan, dan pengeluaran nyata dari jalan uji."
+      "intro": "Kode uji ini belum publik; metodenya publik, dan cukup dalam lima langkah. Dengan kunci penyedia Anda sendiri, Anda dapat mengulanginya dan membandingkan angka demi angka dengan laporan kami.",
+      "steps": {
+        "dataset": "<b>Dataset.</b> Unduh setiap dataset publik pada commit di tabel di atas dan periksa sha256 setiap berkas sebelum digunakan. Jika tidak cocok, itu bukan dataset yang sama.",
+        "package": "<b>Lapisan.</b> Pasang <code>@bivelio/savings-layer</code> dari npm pada versi yang disebut laporan dan periksa sha256 dari <code>dist/index.js</code>: setiap laporan mencantumkannya.",
+        "arms": "<b>Dua lengan per prompt.</b> A langsung ke penyedia; B mengirim prompt yang sama, ke model yang sama dan dengan batas keluaran yang sama, melalui lapisan dengan konfigurasi bawaannya. Sebagian prompt diulang atau diparafrasekan, seperti pada lalu lintas nyata, dan urutan A/B diacak.",
+        "cost": "<b>Biaya ditentukan penyedia.</b> Jumlahkan tagihan setiap lengan menurut <code>usage</code> yang dikembalikan penyedia, dengan tarif resminya. Penghematan adalah <code>1 − biaya B / biaya A</code>, beserta intervalnya.",
+        "compare": "<b>Kualitas, dalam proses yang sama.</b> Nilai jawaban kedua lengan dengan cara yang sama (jawaban tepat di GSM8K, pemanggilan alat di BFCL, penolakan atau tidak di XSTest, juri di MT-Bench) dan bandingkan dengan laporan JSON dari baterai dan versi yang sama."
+      },
+      "reportsTitle": "Laporan",
+      "reportsIntro": "Setiap proses meninggalkan laporan JSON berisi desain, keterbatasan, dan setiap panggilan yang diukur: usage, biaya per lengan, dan klasifikasi jawaban. Laporan disajikan dari situs ini.",
+      "served": "Laporan disajikan persis seperti yang ditulis oleh uji, dengan satu pengecualian: data tentang lingkungan orang yang mengukur (jalur disk, alamat email) dihapus. Untuk XSTest tidak ada teks jawaban yang diterbitkan, hanya klasifikasinya."
     },
     "invite": {
       "title": "Ukur kami sendiri",
-      "body": "Pengukuran independen lebih berharga daripada milik kami. Jika Anda ingin menjalankan ulang uji ini, atau mengukur lapisan dengan harness Anda sendiri atau trafik Anda sendiri, tulis kepada kami dan kami akan memberi Anda apa yang Anda butuhkan untuk melakukannya.",
-      "cta": "Tulis ke {email}",
+      "body": "Pengukuran independen lebih berharga daripada milik kami. Kode uji ini belum publik: jika Anda ingin mengulang pengukuran, atau mengukur lapisan dengan harness Anda sendiri atau lalu lintas Anda, tulis kepada kami dan kami akan memberikan apa yang Anda perlukan.",
+      "contact": "Tulis kepada kami di",
+      "cta": "Kirim email",
       "subject": "Pengukuran independen dari uji publik"
     }
   },

@@ -42,7 +42,7 @@ export default async function BenchmarksPage({ params }: { params: Promise<{ loc
   return (
     <div className="lp terms-page">
       <BancoPublico banco={cargarBanco()} t={t as unknown as Traductor} locale={locale} />
-      <Footer />
+      <Footer sinGitHub />
     </div>
   );
 }

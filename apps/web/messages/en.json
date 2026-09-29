@@ -1183,8 +1183,6 @@
       "safe": "Refusals, safe prompts (A → B)",
       "unsafe": "Refusals, unsafe prompts (A → B)",
       "verdict": "Reading",
-      "command": "Command",
-      "harness": "Harness",
       "reports": "Reports"
     },
     "savings": {
@@ -1280,13 +1278,23 @@
     },
     "repro": {
       "title": "How to reproduce it",
-      "intro": "Each battery is one command from the repository root. You need your own provider keys in <code>.env.bench</code>; each harness carries its spend cap, pins the dataset by commit and sha256, and writes the same JSON report this page reads.",
-      "readme": "Each JSON report comes with its readable version (.md) next to it: design, limitations and the run's real spend."
+      "intro": "The bench's code is not public yet; the method is, and it fits in five steps. With your own provider keys you can rerun it and compare figure by figure with our reports.",
+      "steps": {
+        "dataset": "<b>The dataset.</b> Download each public dataset at the commit in the table above and check every file's sha256 before using it. If it does not match, it is not the same dataset.",
+        "package": "<b>The layer.</b> Install <code>@bivelio/savings-layer</code> from npm at the version the report names and check the sha256 of <code>dist/index.js</code>: every report carries its own.",
+        "arms": "<b>Two arms per prompt.</b> A goes straight to the provider; B sends the same prompt, to the same model and with the same output cap, through the layer with its default configuration. Part of the prompts are repeated or paraphrased, as in real traffic, and the A/B order is randomised.",
+        "cost": "<b>The provider states the cost.</b> Add up what each arm is billed according to the <code>usage</code> the provider returns, at its published price. Savings are <code>1 − cost B / cost A</code>, with their interval.",
+        "compare": "<b>Quality, in the same run.</b> Score both arms' answers the same way (exact answer in GSM8K, tool call in BFCL, refusal or not in XSTest, a judge in MT-Bench) and compare them with the JSON report for the same battery and version."
+      },
+      "reportsTitle": "The reports",
+      "reportsIntro": "Every run leaves a JSON report with its design, its limitations and every measured call: usage, cost per arm and how the answer was classified. They are served from this website.",
+      "served": "The reports are served as the bench wrote them, with one exception: data about the environment of whoever ran it (disk paths, email addresses) is removed. For XSTest no answer text is published, only its classification."
     },
     "invite": {
       "title": "Measure us yourself",
-      "body": "An independent measurement is worth more than ours. If you want to rerun the bench, or measure the layer with your own harness or your own traffic, write to us and we will give you what you need to do it.",
-      "cta": "Write to {email}",
+      "body": "An independent measurement is worth more than ours. The bench's code is not public yet: if you want to rerun the measurement, or measure the layer with your own harness or your own traffic, write to us and we will give you what you need to do it.",
+      "contact": "Write to us at",
+      "cta": "Send an email",
       "subject": "Independent measurement of the public bench"
     }
   },

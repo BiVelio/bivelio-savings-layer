@@ -1183,8 +1183,6 @@
       "safe": "Từ chối, prompt an toàn (A → B)",
       "unsafe": "Từ chối, prompt không an toàn (A → B)",
       "verdict": "Diễn giải",
-      "command": "Lệnh",
-      "harness": "Bộ khai thác",
       "reports": "Báo cáo"
     },
     "savings": {
@@ -1280,13 +1278,23 @@
     },
     "repro": {
       "title": "Cách tái lập",
-      "intro": "Mỗi bộ kiểm tra là một lệnh duy nhất chạy từ thư mục gốc của kho mã nguồn. Bạn cần khóa nhà cung cấp của riêng mình trong <code>.env.bench</code>; mỗi bộ khai thác mang theo giới hạn chi tiêu của nó, ghim tập dữ liệu theo commit và sha256, và ghi ra cùng một báo cáo JSON mà trang này đọc.",
-      "readme": "Mỗi báo cáo JSON đi kèm phiên bản dễ đọc (.md) bên cạnh nó: thiết kế, giới hạn và chi tiêu thực tế của lần chạy."
+      "intro": "Mã nguồn của bài kiểm tra chưa được công khai; phương pháp thì có, và gói gọn trong năm bước. Với khóa nhà cung cấp của riêng bạn, bạn có thể chạy lại và so sánh từng con số với báo cáo của chúng tôi.",
+      "steps": {
+        "dataset": "<b>Bộ dữ liệu.</b> Tải từng bộ dữ liệu công khai tại commit trong bảng ở trên và kiểm tra sha256 của từng tệp trước khi dùng. Nếu không khớp, đó không phải cùng một bộ dữ liệu.",
+        "package": "<b>Lớp.</b> Cài <code>@bivelio/savings-layer</code> từ npm ở phiên bản mà báo cáo ghi và kiểm tra sha256 của <code>dist/index.js</code>: mỗi báo cáo đều ghi giá trị của nó.",
+        "arms": "<b>Hai nhánh cho mỗi prompt.</b> A đi thẳng tới nhà cung cấp; B gửi cùng prompt, tới cùng mô hình và với cùng giới hạn đầu ra, qua lớp với cấu hình mặc định. Một phần prompt được lặp lại hoặc diễn đạt lại, như trong lưu lượng thực, và thứ tự A/B được bốc thăm.",
+        "cost": "<b>Chi phí do nhà cung cấp nói.</b> Cộng số tiền mỗi nhánh bị tính theo <code>usage</code> mà nhà cung cấp trả về, với giá đã công bố. Mức tiết kiệm là <code>1 − chi phí B / chi phí A</code>, kèm khoảng tin cậy.",
+        "compare": "<b>Chất lượng, trong cùng lần chạy.</b> Chấm điểm câu trả lời của hai nhánh theo cùng một cách (đáp án chính xác với GSM8K, lời gọi công cụ với BFCL, từ chối hay không với XSTest, một giám khảo với MT-Bench) và so sánh với báo cáo JSON của cùng bộ kiểm tra và phiên bản."
+      },
+      "reportsTitle": "Các báo cáo",
+      "reportsIntro": "Mỗi lần chạy để lại một báo cáo JSON gồm thiết kế, giới hạn và từng lời gọi được đo: usage, chi phí mỗi nhánh và phân loại câu trả lời. Chúng được phục vụ từ chính trang web này.",
+      "served": "Các báo cáo được phục vụ đúng như bài kiểm tra đã ghi, với một ngoại lệ: dữ liệu về môi trường của người đo (đường dẫn ổ đĩa, địa chỉ email) được loại bỏ. Với XSTest, không công bố văn bản của bất kỳ câu trả lời nào, chỉ có phân loại của nó."
     },
     "invite": {
       "title": "Tự bạn hãy đo chúng tôi",
-      "body": "Một phép đo độc lập có giá trị hơn phép đo của chúng tôi. Nếu bạn muốn chạy lại bài kiểm tra, hoặc đo lớp bằng bộ khai thác của riêng bạn hay lưu lượng của riêng bạn, hãy viết thư cho chúng tôi và chúng tôi sẽ cung cấp cho bạn những gì bạn cần để làm điều đó.",
-      "cta": "Viết thư đến {email}",
+      "body": "Một phép đo độc lập có giá trị hơn phép đo của chúng tôi. Mã nguồn của bài kiểm tra chưa được công khai: nếu bạn muốn đo lại, hoặc đo lớp bằng công cụ của riêng bạn hay bằng lưu lượng của bạn, hãy viết cho chúng tôi và chúng tôi sẽ cung cấp những gì bạn cần.",
+      "contact": "Viết cho chúng tôi tại",
+      "cta": "Gửi email",
       "subject": "Phép đo độc lập của bài kiểm tra công khai"
     }
   },

@@ -131,6 +131,7 @@ export type Registro = RegistroGsm8k | RegistroBfcl | RegistroXstest | RegistroM
 export interface Dataset {
   bateria: Bateria;
   nombre: string;
+  /** `propietario/nombre` del repositorio público del dataset, sin host (no se enlaza). */
   repo: string;
   commit: string;
   licencia: string;
@@ -444,6 +445,11 @@ function registrosMtBench(f: InformeFuente, version: string, fecha: string): Reg
   return out;
 }
 
+/** `https://github.com/openai/grade-school-math` → `openai/grade-school-math` (la página no enlaza a GitHub). */
+function sinHost(repo: unknown): string {
+  return String(repo ?? "").replace(/^https?:\/\/(?:www\.)?github\.com\//i, "").replace(/\/+$/, "");
+}
+
 function datasetDe(json: J, bateria: Bateria): Dataset | null {
   const d = json.dataset;
   if (!d) return null;
@@ -451,23 +457,23 @@ function datasetDe(json: J, bateria: Bateria): Dataset | null {
     return {
       bateria,
       nombre: d.nombre,
-      repo: d.repo,
+      repo: sinHost(d.repo),
       commit: d.commit,
       licencia: d.licencia,
       ficheros: (d.ficheros ?? []).map((x: J) => ({ nombre: x.id, sha256: x.sha256 })),
     };
   }
   if (bateria === "bfcl") {
-    return { bateria, nombre: "Berkeley Function Calling Leaderboard", repo: `https://github.com/${d.repo}`, commit: d.commit, licencia: d.licencia, ficheros: [] };
+    return { bateria, nombre: "Berkeley Function Calling Leaderboard", repo: sinHost(d.repo), commit: d.commit, licencia: d.licencia, ficheros: [] };
   }
   if (bateria === "xstest") {
-    return { bateria, nombre: "XSTest", repo: `https://github.com/${d.fuente}`, commit: d.commit, licencia: d.licencia, ficheros: [{ nombre: "xstest_prompts.csv", sha256: d.sha256 }] };
+    return { bateria, nombre: "XSTest", repo: sinHost(d.fuente), commit: d.commit, licencia: d.licencia, ficheros: [{ nombre: "xstest_prompts.csv", sha256: d.sha256 }] };
   }
   if (d.repo && d.commit) {
     return {
       bateria,
       nombre: "MT-Bench",
-      repo: `https://github.com/${d.repo}`,
+      repo: sinHost(d.repo),
       commit: d.commit,
       licencia: d.license ?? d.licencia,
       ficheros: Object.entries<J>(d.ficheros ?? {}).map(([, x]) => ({ nombre: String(x.path).split("/").pop()!, sha256: x.sha256 })),

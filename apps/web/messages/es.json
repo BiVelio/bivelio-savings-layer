@@ -1183,8 +1183,6 @@
       "safe": "Negativas, prompts seguros (A → B)",
       "unsafe": "Negativas, prompts inseguros (A → B)",
       "verdict": "Lectura",
-      "command": "Comando",
-      "harness": "Arnés",
       "reports": "Informes"
     },
     "savings": {
@@ -1280,13 +1278,23 @@
     },
     "repro": {
       "title": "Cómo reproducirlo",
-      "intro": "Cada batería es un comando desde la raíz del repositorio. Necesitas tus propias claves de proveedor en <code>.env.bench</code>; cada arnés lleva su tope de gasto, fija el dataset por commit y sha256, y escribe el mismo informe JSON que lee esta página.",
-      "readme": "Cada informe JSON viene con su versión legible (.md) al lado: diseño, limitaciones y gasto real de la tirada."
+      "intro": "El código del banco todavía no es público; el método sí, y cabe en cinco pasos. Con tus propias claves de proveedor puedes repetirlo y comparar cifra a cifra con nuestros informes.",
+      "steps": {
+        "dataset": "<b>El dataset.</b> Descarga cada dataset público en el commit de la tabla de arriba y comprueba el sha256 de cada fichero antes de usarlo. Si no cuadra, no es el mismo dataset.",
+        "package": "<b>La capa.</b> Instala <code>@bivelio/savings-layer</code> desde npm en la versión que dice el informe y comprueba el sha256 de <code>dist/index.js</code>: cada informe lleva el suyo.",
+        "arms": "<b>Dos brazos por prompt.</b> A va directo al proveedor; B manda el mismo prompt, al mismo modelo y con el mismo tope de salida, a través de la capa con su configuración por defecto. Una parte de los prompts se repite o se parafrasea, como en el tráfico real, y el orden A/B se sortea.",
+        "cost": "<b>El coste lo dice el proveedor.</b> Suma lo que factura cada brazo según el <code>usage</code> que devuelve el proveedor, a su tarifa publicada. El ahorro es <code>1 − coste B / coste A</code>, con su intervalo.",
+        "compare": "<b>La calidad, en la misma tirada.</b> Puntúa igual las respuestas de los dos brazos (respuesta exacta en GSM8K, llamada a herramienta en BFCL, negativa o no en XSTest, juez en MT-Bench) y compáralas con el informe JSON de la misma batería y versión."
+      },
+      "reportsTitle": "Los informes",
+      "reportsIntro": "Cada tirada deja un informe JSON con su diseño, sus limitaciones y cada llamada medida: usage, coste por brazo y clasificación de la respuesta. Se sirven desde esta web.",
+      "served": "Los informes se sirven tal como los escribió el banco, con una excepción: se quitan los datos del entorno de quien midió (rutas de disco, correos). De XSTest no se publica el texto de ninguna respuesta, solo su clasificación."
     },
     "invite": {
       "title": "Mídenos tú",
-      "body": "Una medición independiente vale más que la nuestra. Si quieres repetir el banco, medir la capa con tu propio arnés o con tu tráfico, escríbenos y te damos lo que necesites para hacerlo.",
-      "cta": "Escribir a {email}",
+      "body": "Una medición independiente vale más que la nuestra. El código del banco no es público todavía: si quieres repetir la medición, o medir la capa con tu propio arnés o con tu tráfico, escríbenos y te damos lo que necesites para hacerlo.",
+      "contact": "Escríbenos a",
+      "cta": "Escribir un correo",
       "subject": "Medición independiente del banco público"
     }
   },

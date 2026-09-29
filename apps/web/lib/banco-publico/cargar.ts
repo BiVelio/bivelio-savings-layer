@@ -2,6 +2,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 
 import { resumirBanco, type Banco, type InformeFuente } from "./extraer";
+import { FECHA_VALIDA, FICHERO_VALIDO, limpiarInforme, partesDeRuta } from "./publicar";
 
 /**
  * Lee `docs/benchmarks/<fecha>/*.json` del repositorio y lo resume.
@@ -48,4 +49,23 @@ let cache: Banco | null = null;
 export function cargarBanco(): Banco {
   cache ??= resumirBanco(leerInformes());
   return cache;
+}
+
+/**
+ * Los informes que la web sirve en /benchmarks/data/<fecha>/<fichero>.json:
+ * todos los de la carpeta, uno por fichero (app/benchmarks/data/…/route.ts los
+ * prerenderiza al construir; en ejecución no se lee el disco).
+ */
+export function informesServidos(carpeta: string = carpetaDelBanco()): { fecha: string; fichero: string }[] {
+  return leerInformes(carpeta)
+    .map((f) => partesDeRuta(f.ruta))
+    .filter((x): x is { fecha: string; fichero: string } => x !== null);
+}
+
+/** El cuerpo servido de un informe: la copia limpia (lib/banco-publico/publicar.ts), o null si no existe. */
+export function cuerpoServido(fecha: string, fichero: string, carpeta: string = carpetaDelBanco()): string | null {
+  if (!FECHA_VALIDA.test(fecha) || !FICHERO_VALIDO.test(fichero)) return null;
+  const p = join(carpeta, fecha, fichero);
+  if (!existsSync(p)) return null;
+  return JSON.stringify(limpiarInforme(JSON.parse(readFileSync(p, "utf8"))).json);
 }

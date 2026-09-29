@@ -1183,8 +1183,6 @@
       "safe": "Reddler, güvenli promptlar (A → B)",
       "unsafe": "Reddler, güvensiz promptlar (A → B)",
       "verdict": "Yorum",
-      "command": "Komut",
-      "harness": "Test düzeneği",
       "reports": "Raporlar"
     },
     "savings": {
@@ -1280,13 +1278,23 @@
     },
     "repro": {
       "title": "Nasıl yeniden üretilir",
-      "intro": "Her batarya, depo kök dizininden tek bir komuttur. <code>.env.bench</code> içinde kendi sağlayıcı anahtarlarınıza ihtiyacınız var; her test düzeneği kendi harcama sınırını taşır, veri kümesini commit ve sha256 ile sabitler ve bu sayfanın okuduğu aynı JSON raporunu yazar.",
-      "readme": "Her JSON raporunun yanında okunabilir sürümü (.md) gelir: tasarım, sınırlamalar ve koşunun gerçek harcaması."
+      "intro": "Testin kodu henüz herkese açık değil; yöntem açık ve beş adıma sığıyor. Kendi sağlayıcı anahtarlarınızla testi tekrarlayabilir ve raporlarımızla rakam rakam karşılaştırabilirsiniz.",
+      "steps": {
+        "dataset": "<b>Veri kümesi.</b> Her herkese açık veri kümesini yukarıdaki tablodaki commit'te indirin ve kullanmadan önce her dosyanın sha256 değerini kontrol edin. Tutmuyorsa aynı veri kümesi değildir.",
+        "package": "<b>Katman.</b> <code>@bivelio/savings-layer</code> paketini npm'den raporun belirttiği sürümde kurun ve <code>dist/index.js</code> dosyasının sha256 değerini kontrol edin: her rapor kendi değerini içerir.",
+        "arms": "<b>Prompt başına iki kol.</b> A doğrudan sağlayıcıya gider; B aynı prompt'u, aynı modele ve aynı çıktı sınırıyla, varsayılan yapılandırmasıyla katman üzerinden gönderir. Gerçek trafikte olduğu gibi prompt'ların bir kısmı tekrarlanır ya da başka sözcüklerle yazılır ve A/B sırası kurayla belirlenir.",
+        "cost": "<b>Maliyeti sağlayıcı söyler.</b> Sağlayıcının döndürdüğü <code>usage</code> değerine göre her kolun faturasını yayımlanan fiyattan toplayın. Tasarruf, aralığıyla birlikte <code>1 − maliyet B / maliyet A</code> olur.",
+        "compare": "<b>Kalite, aynı çalıştırmada.</b> İki kolun yanıtlarını aynı şekilde puanlayın (GSM8K'da kesin yanıt, BFCL'de araç çağrısı, XSTest'te ret olup olmadığı, MT-Bench'te bir hakem) ve aynı batarya ile sürümün JSON raporuyla karşılaştırın."
+      },
+      "reportsTitle": "Raporlar",
+      "reportsIntro": "Her çalıştırma tasarımını, sınırlarını ve ölçülen her çağrıyı içeren bir JSON raporu bırakır: usage, kol başına maliyet ve yanıtın sınıflandırması. Raporlar bu web sitesinden sunulur.",
+      "served": "Raporlar testin yazdığı gibi sunulur, tek bir istisnayla: ölçümü yapan kişinin ortamına ait veriler (disk yolları, e-posta adresleri) çıkarılır. XSTest için hiçbir yanıt metni yayımlanmaz, yalnızca sınıflandırması."
     },
     "invite": {
       "title": "Bizi kendiniz ölçün",
-      "body": "Bağımsız bir ölçüm, bizimkinden daha değerlidir. Testi yeniden çalıştırmak veya katmanı kendi test düzeneğinizle ya da kendi trafiğinizle ölçmek isterseniz bize yazın, bunu yapmak için ihtiyacınız olanı size verelim.",
-      "cta": "{email} adresine yazın",
+      "body": "Bağımsız bir ölçüm bizimkinden daha değerlidir. Testin kodu henüz herkese açık değil: ölçümü tekrarlamak ya da katmanı kendi test düzeneğiniz veya kendi trafiğinizle ölçmek isterseniz bize yazın, bunun için gereken her şeyi verelim.",
+      "contact": "Bize şu adresten yazın:",
+      "cta": "E-posta gönder",
       "subject": "Herkese açık testin bağımsız ölçümü"
     }
   },

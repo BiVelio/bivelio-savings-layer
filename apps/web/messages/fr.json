@@ -1183,8 +1183,6 @@
       "safe": "Refus, prompts sûrs (A → B)",
       "unsafe": "Refus, prompts dangereux (A → B)",
       "verdict": "Lecture",
-      "command": "Commande",
-      "harness": "Harnais",
       "reports": "Rapports"
     },
     "savings": {
@@ -1280,13 +1278,23 @@
     },
     "repro": {
       "title": "Comment le reproduire",
-      "intro": "Chaque batterie est une commande depuis la racine du dépôt. Vous avez besoin de vos propres clés de fournisseur dans <code>.env.bench</code> ; chaque harnais porte son plafond de dépense, fige le jeu de données par commit et sha256, et écrit le même rapport JSON que lit cette page.",
-      "readme": "Chaque rapport JSON vient avec sa version lisible (.md) juste à côté : conception, limites et dépense réelle de l'exécution."
+      "intro": "Le code du banc n'est pas encore public ; la méthode l'est, et elle tient en cinq étapes. Avec vos propres clés de fournisseur, vous pouvez la refaire et comparer chiffre par chiffre avec nos rapports.",
+      "steps": {
+        "dataset": "<b>Le jeu de données.</b> Téléchargez chaque jeu de données public au commit du tableau ci-dessus et vérifiez le sha256 de chaque fichier avant de l'utiliser. S'il ne correspond pas, ce n'est pas le même jeu de données.",
+        "package": "<b>La couche.</b> Installez <code>@bivelio/savings-layer</code> depuis npm dans la version indiquée par le rapport et vérifiez le sha256 de <code>dist/index.js</code> : chaque rapport porte le sien.",
+        "arms": "<b>Deux bras par prompt.</b> A va directement au fournisseur ; B envoie le même prompt, au même modèle et avec le même plafond de sortie, à travers la couche dans sa configuration par défaut. Une partie des prompts est répétée ou paraphrasée, comme dans le trafic réel, et l'ordre A/B est tiré au sort.",
+        "cost": "<b>Le coût, c'est le fournisseur qui le dit.</b> Additionnez ce que chaque bras est facturé d'après le <code>usage</code> renvoyé par le fournisseur, à son tarif publié. L'économie est <code>1 − coût B / coût A</code>, avec son intervalle.",
+        "compare": "<b>La qualité, dans la même exécution.</b> Notez de la même façon les réponses des deux bras (réponse exacte pour GSM8K, appel d'outil pour BFCL, refus ou non pour XSTest, un juge pour MT-Bench) et comparez-les au rapport JSON de la même batterie et de la même version."
+      },
+      "reportsTitle": "Les rapports",
+      "reportsIntro": "Chaque exécution laisse un rapport JSON avec sa conception, ses limites et chaque appel mesuré : usage, coût par bras et classification de la réponse. Ils sont servis depuis ce site.",
+      "served": "Les rapports sont servis tels que le banc les a écrits, à une exception près : les données sur l'environnement de la personne qui a mesuré (chemins de disque, adresses e-mail) sont retirées. Pour XSTest, aucun texte de réponse n'est publié, seulement sa classification."
     },
     "invite": {
       "title": "Mesurez-nous vous-même",
-      "body": "Une mesure indépendante vaut plus que la nôtre. Si vous voulez relancer le banc, ou mesurer la couche avec votre propre harnais ou votre propre trafic, écrivez-nous et nous vous donnerons ce qu'il faut pour le faire.",
-      "cta": "Écrire à {email}",
+      "body": "Une mesure indépendante vaut plus que la nôtre. Le code du banc n'est pas encore public : si vous voulez refaire la mesure, ou mesurer la couche avec votre propre harnais ou votre propre trafic, écrivez-nous et nous vous donnerons ce qu'il faut pour le faire.",
+      "contact": "Écrivez-nous à",
+      "cta": "Envoyer un e-mail",
       "subject": "Mesure indépendante du banc public"
     }
   },

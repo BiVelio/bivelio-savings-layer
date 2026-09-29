@@ -1183,8 +1183,6 @@
       "safe": "Rifiuti, prompt sicuri (A → B)",
       "unsafe": "Rifiuti, prompt non sicuri (A → B)",
       "verdict": "Lettura",
-      "command": "Comando",
-      "harness": "Harness",
       "reports": "Report"
     },
     "savings": {
@@ -1280,13 +1278,23 @@
     },
     "repro": {
       "title": "Come riprodurlo",
-      "intro": "Ogni batteria è un comando dalla radice del repository. Servono le tue chiavi del fornitore in <code>.env.bench</code>; ogni harness applica il suo limite di spesa, fissa il dataset per commit e sha256, e scrive lo stesso report JSON che legge questa pagina.",
-      "readme": "Ogni report JSON viene accompagnato dalla sua versione leggibile (.md): progettazione, limiti e spesa reale dell'esecuzione."
+      "intro": "Il codice del banco di prova non è ancora pubblico; il metodo sì, e sta in cinque passi. Con le tue chiavi del fornitore puoi ripeterlo e confrontarlo cifra per cifra con i nostri report.",
+      "steps": {
+        "dataset": "<b>Il dataset.</b> Scarica ogni dataset pubblico al commit della tabella qui sopra e controlla lo sha256 di ogni file prima di usarlo. Se non corrisponde, non è lo stesso dataset.",
+        "package": "<b>Il livello.</b> Installa <code>@bivelio/savings-layer</code> da npm nella versione indicata dal report e controlla lo sha256 di <code>dist/index.js</code>: ogni report riporta il suo.",
+        "arms": "<b>Due bracci per prompt.</b> A va diretto al fornitore; B invia lo stesso prompt, allo stesso modello e con lo stesso limite di output, attraverso il livello con la configurazione predefinita. Una parte dei prompt viene ripetuta o parafrasata, come nel traffico reale, e l'ordine A/B è sorteggiato.",
+        "cost": "<b>Il costo lo dice il fornitore.</b> Somma quanto viene fatturato a ogni braccio secondo lo <code>usage</code> restituito dal fornitore, alla sua tariffa pubblicata. Il risparmio è <code>1 − costo B / costo A</code>, con il suo intervallo.",
+        "compare": "<b>La qualità, nella stessa esecuzione.</b> Valuta allo stesso modo le risposte dei due bracci (risposta esatta in GSM8K, chiamata di strumento in BFCL, rifiuto o no in XSTest, un giudice in MT-Bench) e confrontale con il report JSON della stessa batteria e versione."
+      },
+      "reportsTitle": "I report",
+      "reportsIntro": "Ogni esecuzione lascia un report JSON con il suo disegno, i suoi limiti e ogni chiamata misurata: usage, costo per braccio e classificazione della risposta. Sono serviti da questo sito.",
+      "served": "I report sono serviti così come il banco li ha scritti, con un'eccezione: si tolgono i dati sull'ambiente di chi ha misurato (percorsi su disco, indirizzi email). Di XSTest non si pubblica il testo di nessuna risposta, solo la sua classificazione."
     },
     "invite": {
       "title": "Misuraci tu stesso",
-      "body": "Una misurazione indipendente vale più della nostra. Se vuoi rieseguire il banco di prova, o misurare il livello con il tuo harness o il tuo traffico, scrivici e ti daremo ciò che ti serve per farlo.",
-      "cta": "Scrivi a {email}",
+      "body": "Una misurazione indipendente vale più della nostra. Il codice del banco non è ancora pubblico: se vuoi ripetere la misurazione, o misurare il livello con il tuo harness o con il tuo traffico, scrivici e ti daremo ciò che ti serve per farlo.",
+      "contact": "Scrivici a",
+      "cta": "Invia un'email",
       "subject": "Misurazione indipendente del banco di prova pubblico"
     }
   },

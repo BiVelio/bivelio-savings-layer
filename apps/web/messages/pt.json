@@ -1183,8 +1183,6 @@
       "safe": "Recusas, prompts seguros (A → B)",
       "unsafe": "Recusas, prompts inseguros (A → B)",
       "verdict": "Leitura",
-      "command": "Comando",
-      "harness": "Harness",
       "reports": "Relatórios"
     },
     "savings": {
@@ -1280,13 +1278,23 @@
     },
     "repro": {
       "title": "Como reproduzir",
-      "intro": "Cada bateria é um comando a partir da raiz do repositório. Você precisa das suas próprias chaves de fornecedor em <code>.env.bench</code>; cada harness traz o seu limite de gasto, fixa o conjunto de dados por commit e sha256, e escreve o mesmo relatório JSON que esta página lê.",
-      "readme": "Cada relatório JSON vem com a sua versão legível (.md) ao lado: design, limitações e o gasto real da execução."
+      "intro": "O código do banco ainda não é público; o método é, e cabe em cinco passos. Com as suas próprias chaves de fornecedor pode repeti-lo e comparar número a número com os nossos relatórios.",
+      "steps": {
+        "dataset": "<b>O dataset.</b> Descarregue cada dataset público no commit da tabela acima e verifique o sha256 de cada ficheiro antes de o usar. Se não bater certo, não é o mesmo dataset.",
+        "package": "<b>A camada.</b> Instale <code>@bivelio/savings-layer</code> a partir do npm na versão indicada pelo relatório e verifique o sha256 de <code>dist/index.js</code>: cada relatório traz o seu.",
+        "arms": "<b>Dois braços por prompt.</b> A vai direto ao fornecedor; B envia o mesmo prompt, ao mesmo modelo e com o mesmo limite de saída, através da camada com a configuração padrão. Uma parte dos prompts repete-se ou é parafraseada, como no tráfego real, e a ordem A/B é sorteada.",
+        "cost": "<b>O custo é o fornecedor que o diz.</b> Some o que cada braço é faturado segundo o <code>usage</code> devolvido pelo fornecedor, à sua tarifa publicada. A poupança é <code>1 − custo B / custo A</code>, com o seu intervalo.",
+        "compare": "<b>A qualidade, na mesma execução.</b> Pontue da mesma forma as respostas dos dois braços (resposta exata no GSM8K, chamada de ferramenta no BFCL, recusa ou não no XSTest, um juiz no MT-Bench) e compare-as com o relatório JSON da mesma bateria e versão."
+      },
+      "reportsTitle": "Os relatórios",
+      "reportsIntro": "Cada execução deixa um relatório JSON com o seu desenho, as suas limitações e cada chamada medida: usage, custo por braço e classificação da resposta. São servidos a partir deste site.",
+      "served": "Os relatórios são servidos tal como o banco os escreveu, com uma exceção: retiram-se os dados do ambiente de quem mediu (caminhos de disco, endereços de e-mail). Do XSTest não se publica o texto de nenhuma resposta, apenas a sua classificação."
     },
     "invite": {
       "title": "Meça-nos você mesmo",
-      "body": "Uma medição independente vale mais do que a nossa. Se quiser reexecutar o banco, ou medir a camada com o seu próprio harness ou o seu próprio tráfego, escreva-nos e daremos o que você precisar para fazer isso.",
-      "cta": "Escrever para {email}",
+      "body": "Uma medição independente vale mais do que a nossa. O código do banco ainda não é público: se quiser repetir a medição, ou medir a camada com o seu próprio harness ou o seu tráfego, escreva-nos e damos-lhe o que precisar para o fazer.",
+      "contact": "Escreva-nos para",
+      "cta": "Enviar um e-mail",
       "subject": "Medição independente do banco público"
     }
   },
