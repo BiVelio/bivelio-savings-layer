@@ -45,8 +45,12 @@ import {
   validarPlan,
   type Bateria,
   type Celda,
+  type Familia,
   type Modo,
+  type ModeloDelBanco,
 } from "./plan.js";
+import { configDesdeEntorno } from "../modelos.js";
+import { endpointDeModelo } from "../transporte.js";
 import { resumenMarkdown } from "./resumen.js";
 import { soporte } from "./soporte.js";
 import { evaluar, type Regla, type ResultadoDeCelda } from "./umbrales.js";
@@ -57,6 +61,31 @@ const TSX = join(RAIZ, "node_modules", ".bin", "tsx");
 
 /** Reglas que en SECO sí hacen fallar: las de fontanería. Las de calidad, en SECO, no miden nada. */
 export const REGLAS_DE_FONTANERIA: ReadonlySet<Regla> = new Set(["arnes-falla", "tope-excedido", "tope-global", "bateria-sin-medir"]);
+
+/** La variable con la clave de cada proveedor cuando tiene endpoint directo (docs/BANCO-SEMANAL.md). */
+const CLAVE_DE_LA_FAMILIA: Readonly<Record<Familia, string>> = {
+  anthropic: "BVSALA_DEMO_ANTHROPIC_API_KEY",
+  openai: "BVSALA_DEMO_OPENAI_API_KEY",
+  google: "BVSALA_DEMO_GOOGLE_API_KEY",
+};
+
+/**
+ * En vivo, el nombre de la variable cuya clave le falta al endpoint que usaría
+ * el arnés para este modelo, o null. Decide con el mismo `endpointDeModelo` que
+ * los arneses (directo de su familia, o la pasarela), así que no puede
+ * discrepar de ellos. Solo mira si la clave está: su valor no sale de aquí.
+ */
+export function claveQueFalta(modelo: ModeloDelBanco, modo: Modo, env: NodeJS.ProcessEnv): string | null {
+  if (modo !== "vivo") return null;
+  const cfg = configDesdeEntorno(env);
+  const e = endpointDeModelo(modelo.id, cfg);
+  if (!e || e.transporte === "mock" || e.apiKey) return null;
+  return directoDeLaFamilia(modelo.familia, cfg) ? CLAVE_DE_LA_FAMILIA[modelo.familia] : "BVSALA_DEMO_API_KEY";
+}
+
+function directoDeLaFamilia(familia: Familia, cfg: ReturnType<typeof configDesdeEntorno>): boolean {
+  return !!(familia === "anthropic" ? cfg.anthropicBaseUrl : familia === "openai" ? cfg.openaiBaseUrl : cfg.googleBaseUrl);
+}
 
 /** Los valores de las variables del entorno con nombre de secreto, para taparlos en los registros. Nunca se imprimen. */
 export function valoresSecretos(env: NodeJS.ProcessEnv): string[] {
@@ -147,6 +176,13 @@ async function correrCelda(c: Celda, modo: Modo, raiz: string, runId: string, ca
   const que = `${c.bateria}/${c.modelo.id}`;
   const s = soporte(c.bateria, c.modelo);
   if (!s.ok) return { bateria: c.bateria, modelo: c.modelo.id, estado: "sin-soporte", motivo: s.motivo };
+  // Sin la clave de su proveedor no se lanza el arnés ni se reserva caja: algunos
+  // arneses (XSTest) salen con error sin artefacto, y eso no es un fallo de la capa.
+  const falta = claveQueFalta(c.modelo, modo, process.env);
+  if (falta) {
+    console.log(`[banco] ■ ${que}: no medible — sin ${falta} en el entorno`);
+    return { bateria: c.bateria, modelo: c.modelo.id, estado: "sin-clave", motivo: `sin ${falta} en el entorno` };
+  }
   const reserva = modo === "vivo" ? c.reservaUsd : 0;
   try {
     caja.reservar(reserva, que);
