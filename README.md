@@ -19,21 +19,19 @@
 Every request your app sends to an AI is paid for by the text going in and out.
 **Savings** sits on that path and lets through only what's needed — skipping calls
 that don't have to happen, and trimming what does — so you pay for less. It is not a
-promise you take on faith: **every saving we charge on is measured with your provider's
+promise you take on faith: **every saving we report is measured with your provider's
 own usage counter, the one your bill is built from** (for a repeat served without
 calling the provider, the counter of the identical call that ran), and every saving —
 measured or estimated, and labelled as such — is handed back to you request by request.
 
-**A small per‑seat fee, and a commission only on savings measured against your
-provider's counter.** The seat fee is paid whether or not you save. Your
-first month carries no commission at all — it is the first calendar month (UTC) in
-which your organization reports usage, so starting late in a month makes it a short one —
-and at its close you see the statement of what the commission would have been. After
-that, the commission is charged on the **measured** saving only — never from estimates:
-a tiered rate from 10 % down to 4 % of what you saved, so **you keep
-at least 90 % of every euro saved** (before the invoice is rounded to the cent; the
-seat fee is separate). A month with no measured saving is zero commission. And your
-prompts and completions **never reach BiVelio**: what BiVelio receives is per‑request
+**Measure for free, then pay per seat — with no commission on your savings.** The
+free **Measure** license (no card) runs the layer in shadow mode on your own traffic and
+shows what it would have saved, valued with your provider's counter. To turn the levers
+on, **Pro** is **€15 / seat / month** or **€150 / seat / year**, and **Team** is **€129 / month
+with 10 seats included** (€12 per extra seat; €1,290 / year, €120 per extra seat), EUR,
+VAT not included — a fixed fee, paid whether or not you save, and no commission on what
+you save. Enterprise (more seats, your own contract or invoicing terms) is by contract.
+And your prompts and completions **never reach BiVelio**: what BiVelio receives is per‑request
 usage — token counts, cost, the model id and opaque ids — never your content
 ([LICENSE](./LICENSE) §5 lists every field; [savings.bivelio.com/privacy](https://savings.bivelio.com/privacy)
 explains each one and how long it is kept).
@@ -46,14 +44,16 @@ picks the cheapest execution that still meets your quality bar and hands you an
 auditable `SavingsReport` — the same numbers your dashboard reads. Traffic still
 goes straight from your app to your provider; the SDK is never a middleman server.
 
-> **Commercial software — © 2026 BiVelio Inc.** Free to install, **paid to run**:
-> BV‑SALA is fail‑closed and executes only with an active BiVelio license key.
+> **Commercial software — © 2026 BiVelio Inc.** Free to install, **paid to save**:
+> BV‑SALA is fail‑closed and executes only with an active BiVelio license key. The
+> free **Measure** license (no card) runs it in shadow mode: nothing you send is
+> changed, nothing is served from cache, and you see what it would have saved.
 > The license signature is verified **offline**; with `licenseServerUrl` set, the SDK
 > also calls `savings.bivelio.com` for the revocation list, license renewal and usage
 > metering. **Your prompts, completions and provider keys never reach BiVelio** — what
 > travels is per‑request usage: token counts, cost, the model id, a request id and
 > opaque seat and session ids (the exact list is in [LICENSE](./LICENSE) §5). Use is
-> governed by the LICENSE, which also sets out the seat fee and the commission, and the
+> governed by the LICENSE, which also sets out the fees, and the
 > BiVelio Terms. Not a wrapper around any third‑party library.
 
 ## Where it installs
@@ -159,8 +159,8 @@ provider, and a request without it is not changed at all:
 What you can check before paying is what we have measured: the published benchmark,
 trial by trial, with the raw CSV linked, at
 **[savings.bivelio.com/en/how-it-works](https://savings.bivelio.com/en/how-it-works)**,
-and the commission calculator on the front page, which runs on the same price
-catalogue that bills you. The verifier that replays the optimizer on your own data
+and the free **Measure** license, which runs the layer in shadow mode on your own
+traffic and shows what it would have saved, valued with your provider's counter. The verifier that replays the optimizer on your own data
 lives in your dashboard once you sign in.
 
 ## Set it up in one command
@@ -195,7 +195,8 @@ saving where the layer removed something is reported as `estimated`, and estimat
 savings are never billed — the SDK warns once when the tokenizer is missing.
 
 **2 · The license** — from your [dashboard](https://savings.bivelio.com/dashboard/install)
-(**€4 / seat / month** or **€39 / seat / year**, EUR)
+(free **Measure** license, no card; **Pro** €15 / seat / month or €150 / seat / year;
+**Team** €129 / month with 10 seats included — EUR)
 
 ```bash
 export BIVELIO_LICENSE_KEY=…   # your license key
@@ -1015,7 +1016,8 @@ own API, where its 400 is the answer. Gemini leaves its thinking tokens out of
 as reasoning); on OpenAI's API `completion_tokens` already include reasoning and nothing
 is added. Gemini stops a filtered answer with `finish_reason: "content_filter: OTHER"`
 (or another reason): it is `finishReason: "content_filter"` (the adapter keeps the
-reason in `finishReasonDetail` and the report's cache trace names it), and like every
+reason, which reaches you as `result.finishReasonDetail` and is named in the report's
+cache trace; an Anthropic refusal brings its `stop_details.category` there too), and like every
 provider refusal it is measured, never
 cached and never credited. Google does not document that such refusals are free, so
 they are costed from their `usage` like any call.
@@ -1337,12 +1339,30 @@ BVSALA_SEAT_ID=worker-03   # stable per replica; [A-Za-z0-9._:/-], max 128 chars
 
 ## Licensing & privacy
 
-BV‑SALA is commercial software: a per‑seat subscription (**€4 / seat / month** or
-**€39 / seat / year**, EUR; VAT not included), paid whether or not you save, plus a
-tiered commission on measured savings only, as described at the top of this page, in
-[LICENSE](./LICENSE) §6 and in the Published Pricing it refers to,
-**[savings.bivelio.com/pricing](https://savings.bivelio.com/pricing)**. No free tier and no trial: what you can check before
-paying is the published measurement. The license is a signed token your SDK and the
+BV‑SALA is commercial software. The plans are **Measure** (free), **Pro** (per seat),
+**Team** (a number of seats included, plus each extra seat) and **Enterprise** (by
+contract); Pro and Team are paid whether or not you save and carry **no commission** on
+your savings. The prices are at the top of this page, in [LICENSE](./LICENSE) §6 and in
+the Published Pricing it refers to,
+**[savings.bivelio.com/pricing](https://savings.bivelio.com/pricing)**. No trial. There is one free license,
+**Measure** — no card, one organization per verified account, up to 5 seats and 20,000
+requests a day: the layer runs in **shadow mode**. Every request goes to your provider
+exactly as you built it, nothing is served from any cache, no lever is applied, and
+`report.measure.wouldHaveSaved` (with `basis: "shadow"`) says what the exact cache and
+in‑flight coalescing would have saved on that request, valued with your provider's own
+counter — a lower bound, never part of any commission. The levers need a paid plan: once
+you upgrade, a layer with `serviceAccountKey` and `licenseServerUrl` picks up the paid
+license by itself and turns them on without a restart.
+
+The earlier plan — a lower per‑seat fee plus a tiered commission on measured savings
+only — is **closed to new customers**; a subscription already on it keeps it unchanged.
+On that plan your first month carries no commission (the first calendar month, UTC, in
+which your organization reports usage); after that the commission is charged on the
+measured saving only — never from estimates — at a tiered rate from 10 % down to 4 %, so
+you keep at least 90 % of every euro saved (before rounding to the cent; the seat fee is
+separate).
+
+The license is a signed token your SDK and the
 gateway verify **offline**; the managed control plane and the revocation kill‑switch
 are served from BiVelio. Your LLM traffic goes **straight to your provider** —
 BiVelio receives per‑request usage (counts, cost, the model id and opaque ids), never

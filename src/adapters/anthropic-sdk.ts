@@ -13,6 +13,7 @@ import type {
 import {
   esBloqueDeRazonamiento,
   fusionarUso,
+  motivoDeLaNegativa,
   negativaNoCobrada,
   tierServidoDe,
   traducirParada,
@@ -380,6 +381,9 @@ class RespuestaDeMensajes {
       text: this.texto,
       ...(toolCalls.length > 0 ? { toolCalls } : {}),
       ...(this.parada ? { finishReason: traducirParada(this.parada) } : {}),
+      ...(motivoDeLaNegativa(this.parada, this.detallesDeParada) !== undefined
+        ? { finishReasonDetail: motivoDeLaNegativa(this.parada, this.detallesDeParada)! }
+        : {}),
       ...(this.vioDelta &&
       negativaNoCobrada({
         stopReason: this.parada,

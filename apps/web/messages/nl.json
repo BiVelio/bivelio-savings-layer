@@ -414,7 +414,7 @@
       "personalNote": "Persoonlijk — nog geen organisatie gekoppeld. Eén BiVelio-account, gedeeld over de hele suite.",
       "plan": "abonnement",
       "seatsCount": "{count, plural, one {# seat} other {# seats}}.",
-      "planBody": "BV-SALA is fail-closed — het draait alleen met een actieve PRO-licentie. {monthly} per seat per maand of {yearly} per seat per jaar. Een seat is één actieve machine- of service-identiteit, geen persoon.",
+      "planBody": "BV-SALA is fail-closed — het draait alleen met een actieve licentie. Pro: {monthly} per seat per maand of {yearly} per seat per jaar. Team: {teamMonthly} per maand met {included} seats inbegrepen. Geen commissie op je besparing. Een seat is een actieve machine of service-identiteit, geen persoon.",
       "managePlan": "Abonnement beheren →",
       "subscribe": "Abonneren →",
       "checkoutMonthly": "Abonneren — {monthly}/seat/mnd →",
@@ -430,7 +430,14 @@
       "errPagoEnCurso": "Je betaling wordt nog verwerkt: een bankincasso kan een paar dagen duren. Je krijgt toegang zodra hij is verwerkt. Start geen tweede abonnement.",
       "errSuscripcionEnStripe": "Stripe heeft al een abonnement voor dit account, maar het is hier nog niet geactiveerd. Koop niet opnieuw: mail naar support@bivelio.com en we activeren het handmatig.",
       "codigoAplicado": "Bij het afrekenen wordt de code {codigo} toegepast.",
-      "errCodigoInvalido": "Die code bestaat niet of is niet meer actief. Je kunt doorgaan zonder code of mailen naar support@bivelio.com."
+      "errCodigoInvalido": "Die code bestaat niet of is niet meer actief. Je kunt doorgaan zonder code of mailen naar support@bivelio.com.",
+      "planPickLabel": "Abonnement",
+      "planPro": "Pro",
+      "planTeam": "Team",
+      "teamHint": "Team bevat {included} seats; elke extra seat kost {extra} per maand. Minder dan {included} kun je niet kopen.",
+      "checkoutTeamMonthly": "Neem Team — {monthly}/maand, {included} seats →",
+      "checkoutTeamYearly": "Neem Team — {yearly}/jaar, {included} seats →",
+      "errPlanCerrado": "Dit abonnement wordt niet meer aangeboden aan nieuwe klanten. Kies Pro of Team."
     },
     "referenceLedgerCards": {
       "proven": "bewezen",
@@ -738,7 +745,7 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Verifieer je LLM-besparingen",
-    "metaDescription": "Een SDK waarmee je app de LLM-aanbieder alleen betaalt wat ze nodig heeft, en een gateway die je coding-agent meet. Geteld met de eigen teller van je aanbieder: een vergoeding per seat, plus commissie alleen over gemeten besparing.",
+    "metaDescription": "Een SDK waarmee je app de LLM-provider alleen betaalt wat hij nodig heeft, en een gateway die je codeeragent meet. Geteld met de teller van je provider: meet gratis en betaal daarna per seat — zonder commissie op je besparing.",
     "hero": {
       "eyebrow": "Voor teams die LLM-API's per token betalen",
       "title": "Je LLM-factuur, onder controle.",
@@ -807,8 +814,8 @@
           "body": "We vragen geen blind vertrouwen. Elke besparing wordt gemeten met de officiële teller van de aanbieder — dezelfde waarmee hij je factureert — en komt op je bon. Wat niet naast de factuur te leggen valt, wordt nooit aangekondigd."
         },
         {
-          "title": "Een vergoeding per seat en een deel van wat gemeten is",
-          "body": "Je betaalt elke maand een vaste vergoeding per seat, of je nu bespaart of niet. Daarbovenop komt onze commissie alleen uit besparing die met de teller van je aanbieder is gemeten — en het grootste deel van elke besparing blijft altijd bij jou. Een maand zonder gemeten besparing? Je betaalt de seats en nul commissie."
+          "title": "Meet gratis, betaal daarna per seat",
+          "body": "Begin met de gratis Meten-licentie: de laag draait in schaduwmodus en laat zien wat hij met je eigen verkeer bespaard zou hebben. Om de hendels aan te zetten betaal je een vaste vergoeding per seat, of een Team-abonnement, of je nu bespaart of niet — en geen commissie op je besparing."
         }
       ],
       "nota": "De animaties illustreren het idee. De echte cijfers — gemeten tegen echte aanbieders — staan er direct onder."
@@ -900,12 +907,36 @@
       "initNote": "<b>Of laat één commando het op je stack afstemmen.</b> <code>init</code> leest je <code>package.json</code> (Next.js, Express, de Vercel AI SDK, Mastra, LangChain.js, de Anthropic- of de OpenAI-SDK) en drukt de installatieregel af, de exacte code voor je adapter en een controle die geen tokens kost: zodra je licentie erin staat, beantwoordt de laag die op je eigen machine, zonder het model aan te roepen. Het schrijft niets, tenzij je erom vraagt."
     },
     "pricing": {
-      "eyebrow": "Eén abonnement, geprijsd per seat",
-      "title": "Een vergoeding per seat, altijd. Commissie alleen over gemeten besparing.",
-      "body": "Geen gratis plan en geen proefperiode: vóór het betalen kun je de publieke metingen controleren en de verificatie op je eigen gegevens loslaten, hier op deze pagina. De vergoeding per seat wordt elke maand gefactureerd, in {currency}, of je nu bespaart of niet. De commissie komt erbovenop, en alleen over besparing die met de teller van je aanbieder is gemeten — ook bij herhaalde verzoeken die worden bediend zonder je aanbieder aan te roepen, elk gewaardeerd met de teller van het identieke verzoek dat al is uitgevoerd. Geschat telt nooit mee.",
+      "eyebrow": "Abonnementen",
+      "title": "Meet gratis. Betaal per seat wanneer je de besparing wilt.",
+      "body": "Begin met Meten: gratis en zonder kaart. De laag draait in schaduwmodus op je eigen verkeer en je dashboard laat zien wat hij bespaard zou hebben, gewaardeerd met de teller van je provider. Pro en Team worden per seat gefactureerd, in {currency}, of je nu bespaart of niet, en dragen geen commissie op je besparing.",
       "amount": "{amount}",
       "per": "/ seat / maand",
-      "proNote": "<b>PRO</b> — gefactureerd per seat. Of <b>{yearly} / seat / jaar</b> (bespaar ~19%). Enterprise, met gebundelde functies, komt later.",
+      "plans": {
+        "medir": {
+          "name": "Meten",
+          "price": "Gratis",
+          "body": "Zonder kaart. De laag in schaduwmodus voor één organisatie: elk verzoek bereikt je provider ongewijzigd, en je ziet wat hij bespaard zou hebben.",
+          "cta": "Gratis beginnen →"
+        },
+        "pro": {
+          "name": "Pro",
+          "note": "Of <b>{yearly} / seat / jaar</b>. Alle optimalisaties, de bon per verzoek en het dashboard. Geen commissie.",
+          "cta": "Kies Pro →"
+        },
+        "team": {
+          "name": "Team",
+          "per": "/ maand",
+          "note": "<b>{included} seats inbegrepen</b>; elke extra seat {extra} / maand. Of <b>{yearly} / jaar</b>. Geen commissie.",
+          "cta": "Kies Team →"
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "price": "Op maat",
+          "body": "Meer seats dan online afrekenen toestaat, een eigen contract of afgesproken factuurvoorwaarden: <contact>schrijf ons</contact>."
+        }
+      },
+      "legacy": "Heb je al het eerdere model, met commissie op gemeten besparing? Je behoudt het ongewijzigd; de voorwaarden staan in de <terms>prijsvoorwaarden</terms>.",
       "seatNote": "Een seat is één <b>machine- of service-identiteit</b>, geen persoon. Je betaalt voor de seats die je abonnement dekt; je dashboard toont hoeveel er deze maand in gebruik waren (actief op minstens {dias} dagen; CI en kortstondige runners tellen niet mee).",
       "features": [
         "Elke BV‑SALA-optimalisatie, ongelimiteerd",
@@ -937,7 +968,7 @@
     },
     "footer": {
       "ctaTitle": "Meet het op je eigen verkeer",
-      "ctaSub": "Eenmaal geïnstalleerd geeft elke aanroep zijn SavingsReport terug, gemeten en geschat apart. De vergoeding per seat is maandelijks en vast; de commissie komt alleen uit wat gemeten is. De licentie is wat je BV‑SALA laat draaien — de SDK in je app, de gateway in je terminal.",
+      "ctaSub": "Eenmaal geïnstalleerd geeft elke aanroep zijn SavingsReport terug, gemeten en geschat gescheiden. Begin gratis met Meten; Pro en Team zijn een vaste vergoeding per seat, zonder commissie op je besparing. De licentie is wat je BV‑SALA laat draaien — de SDK in je app, de gateway in je terminal.",
       "ctaStart": "Aan de slag",
       "tagline": "Het besturingssysteem voor je bedrijf. Dit is <b>BV‑SALA</b>, BiVelio's aanbieder-neutrale LLM-kostenoptimalisator — elk gepubliceerd cijfer gemeten tegen de teller van de aanbieder; schattingen worden apart getoond en nooit gefactureerd.",
       "badge": "BV‑SALA · Savings Layer",
@@ -945,6 +976,7 @@
       "colBivelio": "BiVelio",
       "colLegal": "Juridisch",
       "measured": "Gemeten resultaten",
+      "benchmarks": "Openbare benchmark",
       "pricing": "Prijzen",
       "home": "Home",
       "docs": "Documentatie",
@@ -1149,6 +1181,167 @@
     "cerrarYContinuar": "Afmelden en ander account gebruiken",
     "cerrando": "Afmelden…"
   },
+  "benchmarksPage": {
+    "metaTitle": "Openbare A/B-benchmark: meet ons | BiVelio Savings Layer",
+    "metaDescription": "Vier openbare batterijen (GSM8K, BFCL, XSTest en MT-Bench), twee armen gemeten met de eigen gebruiksteller van de provider, elk cijfer met zijn n, zijn interval en zijn datum. Wat het bespaart, wat niet, en de bugs die de benchmark vond.",
+    "eyebrow": "Openbare benchmark · reproduceerbaar",
+    "title": "Onze A/B-benchmark, in het open. Meet ons.",
+    "lede": "We publiceren elke run: vier batterijen op openbare datasets, {modelos} modellen, en beide armen gemeten met de eigen gebruiksteller van de provider. Elk cijfer draagt zijn n, zijn interval en zijn datum. Wat niet bespaart staat hier ook.",
+    "stats": {
+      "batteries": "batterijen",
+      "models": "geteste modellen",
+      "measured": "modellen met een meting",
+      "reports": "live rapporten",
+      "last": "laatste run"
+    },
+    "method": {
+      "title": "Wat wordt gemeten, en hoe",
+      "arms": "<b>Twee armen, hetzelfde verzoek.</b> A gaat rechtstreeks naar de provider, zonder de laag; B loopt via de laag met de standaardconfiguratie. Dezelfde prompt, dezelfde sampling, dezelfde outputgrens.",
+      "cost": "<b>De provider telt de kosten.</b> Elke arm wordt geprijsd op basis van de <code>usage</code> die de API bij elke aanroep teruggeeft, tegen de lijstprijs. De besparing is 1 − kosten(B) / kosten(A) van dezelfde run, niet wat de laag zelf beweert.",
+      "intervals": "<b>{nivel}-intervallen.</b> Elke harness berekent ze (resampling van hele vraagfamilies, Wilson voor weigeringspercentages). Een interval dat nul kruist betekent “niet te onderscheiden van nul”, en dat zeggen we ook.",
+      "package": "<b>Het pakket dat je installeert.</b> Arm B draait de broncode van tag {version}; de <code>dist/index.js</code> is byte-voor-byte identiek aan die van de npm-tarball (sha256 <code>{sha}</code>).",
+      "guard": "<b>Geen kortere wegen.</b> Elke harness houdt de hosts in de gaten waarmee hij praat en heeft een in code vastgelegd uitgavenplafond per model. Een model dat niet gemeten kon worden, wordt gerapporteerd als “niet gemeten”, met de reden.",
+      "batteriesTitle": "Vier batterijen, openbare datasets, vastgepind",
+      "commitOnly": "vastgepind op commit"
+    },
+    "batteries": {
+      "gsm8k": "Rekenvraagstukken met herhalingen en parafrases: hoeveel de cache bespaart en of de nauwkeurigheid daalt.",
+      "bfcl": "Tool calls: de laag mag er geen enkele veranderen, en de volledige catalogus moet aankomen.",
+      "xstest": "Weigeringen: de laag mag niet veranderen wanneer het model weigert, en mag geen weigering uit de cache serveren.",
+      "mt-bench": "Chat van twee beurten zonder herhalingen: de laag mag kosten, latentie noch kwaliteit verslechteren."
+    },
+    "th": {
+      "battery": "Batterij",
+      "what": "Wat het controleert",
+      "dataset": "Dataset",
+      "pinned": "Vastgepinde bestanden",
+      "license": "Licentie",
+      "model": "Model",
+      "n": "n",
+      "savings": "Gemeten besparing [BI]",
+      "fromExact": "Uit de exacte cache",
+      "fromCalls": "In de aanroepen (prefix)",
+      "accuracy": "Nauwkeurigheid A → B",
+      "run": "Versie · datum",
+      "prompts": "Prompts",
+      "safe": "Weigeringen, veilige prompts (A → B)",
+      "unsafe": "Weigeringen, onveilige prompts (A → B)",
+      "verdict": "Interpretatie",
+      "reports": "Rapporten"
+    },
+    "savings": {
+      "title": "Gemeten besparing per model",
+      "intro": "GSM8K, met een stroom verzoeken waarin {rep} exacte herhalingen zijn en {par} parafrases. Dit is de batterij met herhaald verkeer: jouw besparing hangt af van hoeveel het jouwe herhaalt. Zonder herhalingen, zie “Wat niet bespaart”.",
+      "nCell": "{n} verzoeken · {unicos} uniek",
+      "delta": "Δ {d} pp [{inf}, {sup}]",
+      "originNote": "Waar de besparing vandaan komt, positie voor positie: “uit de exacte cache” is wat A betaalde voor de verzoeken die de laag serveerde zonder de provider aan te roepen; “in de aanroepen” is het verschil bij de verzoeken die de provider wel bereikten, vooral de prefixcache van de provider (plus wat variatie in de output). Samen vormen ze de totale besparing.",
+      "accuracyNote": "Nauwkeurigheid wordt gemeten op de vragen met een gepubliceerd antwoord; de varianten met een gewijzigd getal dienen alleen om te controleren dat de laag nooit het antwoord van een andere vraag teruggeeft."
+    },
+    "guarantees": {
+      "title": "Garanties, geteld",
+      "tools": {
+        "title": "De laag heeft nooit een tool call veranderd",
+        "titleBroken": "De laag veranderde {n} tool calls",
+        "body": "{alteradas} gewijzigde calls in {comparaciones} BFCL-vergelijkingen, {modelos} modellen, sinds {desde}. Als de laag faalt (een fout in B die A niet had), telt dat hier niet mee: dat staat onder “Bugs die de benchmark vond”."
+      },
+      "other": {
+        "title": "Geen antwoord van een andere vraag sinds {desde}",
+        "titleBroken": "{n} antwoorden van een andere vraag sinds {desde}",
+        "body": "{deOtra} van {variantes} varianten (dezelfde vraag met een ander getal, en dus een ander antwoord) geserveerd met het antwoord van een andere vraag, over {modelos} live modellen en elke gemeten cacheconfiguratie.",
+        "replay": "Offline replay van de volledige GSM8K-testsplit: {erroneas} in {peticiones} verzoeken, in elk van de {configs} cacheconfiguraties."
+      },
+      "refusals": {
+        "title": "Hetzelfde weigeringspercentage, met en zonder de laag",
+        "titleBroken": "Het weigeringspercentage veranderde bij {n} modellen",
+        "body": "XSTest, {modelos} modellen gemeten: geen A/B-verschil onder p = {umbral} (McNemar, gepaarde prompts). De laag leverde de tekst van {comprobados} antwoorden ongewijzigd ({alterados} gewijzigd).",
+        "caption": "Weigeringspercentage per model, zonder de laag (A) en met de laag (B), op dezelfde prompts."
+      }
+    },
+    "noSavings": {
+      "title": "Wat niet bespaart",
+      "lead": "<b>Zonder herhalingen is de besparing ≈ {cero}.</b> We publiceren het toch, omdat het is wat je zult zien als jouw verkeer zich niet herhaalt.",
+      "why": "MT-Bench is chat van twee beurten met een verse laag per vraag: er is niets dat de cache kan hergebruiken, en de prompt bereikt bijna nooit het minimum dat de provider vereist om een prefix te cachen. Bij BFCL is elke tool call anders. Wat deze twee batterijen meten, is dat de laag niets erger maakt; het resterende kostenverschil is ruis in de output van het model, niet de laag.",
+      "nQuestions": "{n} vragen",
+      "nItems": "{n} items",
+      "verdict": {
+        "ahorro": "besparing",
+        "cero": "niet te onderscheiden van nul",
+        "sobrecoste": "meerkosten"
+      },
+      "notAttributable": "niet toe te schrijven aan de laag"
+    },
+    "status": {
+      "title": "Status per model en batterij",
+      "intro": "Elke cel toont de run op de hoogste versie van de laag. Als een model niet gemeten kon worden, zeggen we waarom in plaats van een leeg vakje achter te laten.",
+      "measured": "gemeten · n = {n}",
+      "notMeasured": "niet gemeten: {motivo}",
+      "layerFailed": "de laag faalde: {motivo}",
+      "reason": {
+        "credencial": "credential geweigerd",
+        "presupuesto": "uitgavenplafond bereikt",
+        "cuota": "quotum van de provider uitgeput",
+        "capa": "verzoeken liepen niet via de laag",
+        "proveedor": "de provider weigerde het verzoek in beide armen",
+        "otro": "onvoldoende gegevens"
+      }
+    },
+    "bugs": {
+      "title": "Bugs die de benchmark vond",
+      "intro": "De benchmark is er niet om er goed uit te zien: hij is er om de bugs te vinden voordat jij ze vindt. Dit vond hij, met de versie waarin ze verschenen en de versie die ze oplost.",
+      "found": "Gevonden in {version}: {ocurrencias} van {sobre}.",
+      "fixed": "Opgelost in {version} ({prs}).",
+      "verified": "Live geverifieerd op {version}: {ocurrencias} van {sobre}.",
+      "stillSeen": "Nog steeds gezien op {version}: {ocurrencias} van {sobre}.",
+      "pending": "Wacht op een nieuwe live meting op {version}.",
+      "items": {
+        "otra-pregunta": {
+          "title": "De ongekalibreerde semantische cache leverde het antwoord van een andere vraag",
+          "body": "Met de ongekalibreerde semantische cache kon een variant met een ander getal (“three baskets” tegenover “two baskets”) het antwoord van de oorspronkelijke vraag krijgen. Geteld over de GSM8K-varianten."
+        },
+        "herramientas-multiturno": {
+          "title": "De laag beperkte de toolcatalogus zonder enig signaal om dat te doen",
+          "body": "In gesprekken met meerdere beurten stuurde arm B minder tools dan arm A, terwijl niets aangaf welke overbodig waren. Geteld over de BFCL-gesprekken met meerdere beurten."
+        },
+        "negativas-de-texto": {
+          "title": "Sommige weigeringen die als tekst geschreven waren, werden gecachet",
+          "body": "Een weigering die het model als tekst schrijft (zonder het signaal van de API) kon worden gecachet, herhaald en als besparing worden toegeschreven. Geteld in XSTest-prompts."
+        },
+        "gemini-filtro-cacheado": {
+          "title": "Een contentfilter van Gemini werd als antwoord gecachet",
+          "body": "Gemini markeert zijn filter met een eigen stopreden, die de laag niet als weigering herkende, waardoor deze kon worden gecachet en herhaald. Geteld in XSTest-prompts."
+        },
+        "gemini-prompt-cache-key": {
+          "title": "Gemini liep niet via de laag",
+          "body": "De laag stuurde een veld dat specifiek is voor de OpenAI-API naar elk compatibel endpoint, en Gemini weigert dat: elk verzoek in arm B mislukte. Geteld in GSM8K-verzoeken."
+        },
+        "gemini-thought-signature": {
+          "title": "Bij Gemini 3 mislukte de tweede beurt met tools",
+          "body": "De laag gaf de thought signature die Gemini 3 bij elke tool call vereist niet terug, waardoor de volgende beurt werd geweigerd. Geteld in BFCL-vervolgen met meerdere beurten."
+        }
+      }
+    },
+    "repro": {
+      "title": "Hoe je het reproduceert",
+      "intro": "De code van de benchmark is nog niet openbaar; de methode wel, en die past in vijf stappen. Met je eigen providersleutels kun je hem herhalen en cijfer voor cijfer vergelijken met onze rapporten.",
+      "steps": {
+        "dataset": "<b>De dataset.</b> Download elke openbare dataset op de commit uit de tabel hierboven en controleer de sha256 van elk bestand voordat je het gebruikt. Klopt die niet, dan is het niet dezelfde dataset.",
+        "package": "<b>De laag.</b> Installeer <code>@bivelio/savings-layer</code> vanaf npm in de versie die het rapport noemt en controleer de sha256 van <code>dist/index.js</code>: elk rapport vermeldt de zijne.",
+        "arms": "<b>Twee armen per prompt.</b> A gaat rechtstreeks naar de provider; B stuurt dezelfde prompt, naar hetzelfde model en met dezelfde uitvoerlimiet, via de laag met de standaardconfiguratie. Een deel van de prompts wordt herhaald of geparafraseerd, zoals in echt verkeer, en de volgorde A/B wordt geloot.",
+        "cost": "<b>De kosten zegt de provider.</b> Tel op wat elke arm gefactureerd krijgt volgens het <code>usage</code> dat de provider teruggeeft, tegen het gepubliceerde tarief. De besparing is <code>1 − kosten B / kosten A</code>, met haar interval.",
+        "compare": "<b>De kwaliteit, in dezelfde run.</b> Beoordeel de antwoorden van beide armen op dezelfde manier (exact antwoord bij GSM8K, toolaanroep bij BFCL, weigering of niet bij XSTest, een beoordelaar bij MT-Bench) en vergelijk ze met het JSON-rapport van dezelfde batterij en versie."
+      },
+      "reportsTitle": "De rapporten",
+      "reportsIntro": "Elke run laat een JSON-rapport achter met het ontwerp, de beperkingen en elke gemeten aanroep: usage, kosten per arm en classificatie van het antwoord. Ze worden vanaf deze website geserveerd.",
+      "served": "De rapporten worden geserveerd zoals de benchmark ze schreef, met één uitzondering: gegevens over de omgeving van wie mat (schijfpaden, e-mailadressen) worden verwijderd. Van XSTest wordt geen enkele antwoordtekst gepubliceerd, alleen de classificatie."
+    },
+    "invite": {
+      "title": "Meet ons zelf",
+      "body": "Een onafhankelijke meting is meer waard dan de onze. De code van de benchmark is nog niet openbaar: wil je de meting herhalen, of de laag meten met je eigen harnas of je eigen verkeer, schrijf ons en we geven je wat je daarvoor nodig hebt.",
+      "contact": "Schrijf ons op",
+      "cta": "E-mail sturen",
+      "subject": "Onafhankelijke meting van de openbare benchmark"
+    }
+  },
   "howItWorks": {
     "metaTitle": "Waar wordt de besparing geïnstalleerd? · BiVelio Savings Layer",
     "metaDescription": "BV‑SALA is een laag die je installeert in de code van je applicatie, waar de API wordt aangeroepen. Wat het kan besparen, waar het niet geldt en hoe er echt gemeten wordt.",
@@ -1189,7 +1382,7 @@
     "s3Sub": "Het product heeft twee verschillende cijfers, en die kun je beter niet mengen.",
     "mBeforeK": "Vóór installatie",
     "mBeforeV": "Schatting",
-    "mBeforeBody": "De calculator bij de prijzen rekent je besparing door met je eigen cijfers: verzoeken, tokens en model. Een eerlijke projectie — daarom draagt ze het label “schatting”.",
+    "mBeforeBody": "De gratis Meten-licentie draait de laag in schaduwmodus op je eigen verkeer en laat zien wat hij bespaard zou hebben, verzoek voor verzoek. Hij verandert niets en past niets toe — daarom draagt hij het label ‘schatting’.",
     "mAfterK": "Na installatie",
     "mAfterV": "Echte meting",
     "mAfterBody": "Elke aanroep levert een SavingsReport: de aanroepen die je nooit betaalde en de nettobesparing per verzoek. Controleerbaar, verzoek voor verzoek, op je eigen infrastructuur.",
@@ -1204,14 +1397,36 @@
   },
   "pricingPage": {
     "metaTitle": "Prijsvoorwaarden · BV-SALA",
-    "metaDescription": "De vergoeding per seat en de commissie over gemeten besparing, gepubliceerd vanuit dezelfde constanten die factureren.",
+    "metaDescription": "Meten gratis, Pro per seat, Team en Enterprise — geen van alle draagt commissie op je besparing. Cijfers gepubliceerd uit dezelfde constanten die factureren.",
     "eyebrow": "Gepubliceerde prijzen",
     "title": "Prijsvoorwaarden",
     "governs": "Deze pagina beschrijft hoe de dienst vandaag werkt; de <license>LICENSE</license> en de <terms>BiVelio-voorwaarden</terms> zijn leidend.",
-    "lede": "Elk getal hier wordt gelezen uit dezelfde code die jou factureert, dus het verandert wanneer de prijs verandert.",
+    "lede": "Je betaalt per seat of voor een Team-abonnement, zonder commissie op je besparing. Elk cijfer op deze pagina wordt gelezen uit dezelfde code die je factureert, dus het verandert als de prijs verandert.",
+    "plans": {
+      "title": "Plannen",
+      "intro": "Vier plannen, van klein naar groot. Pro en Team betaal je per seat en hebben geen commissie.",
+      "medir": {
+        "name": "Meten",
+        "body": "<b>Gratis, zonder kaart.</b> De laag draait in schaduwmodus voor één organisatie, met een limiet op seats en dagelijkse verzoeken: elk verzoek bereikt je provider precies zoals je het bouwde, niets komt uit de cache en er wordt geen hendel toegepast. Je dashboard laat zien wat hij bespaard zou hebben — een schatting die nooit commissie draagt. De hendels vragen Pro of Team."
+      },
+      "pro": {
+        "name": "Pro",
+        "amount": "<b>{monthly}</b> per seat per maand, of <b>{yearly}</b> per seat per jaar, in {currency}.",
+        "body": "Alle optimalisaties van de laag, de bon per verzoek en het dashboard. <b>Geen commissie</b> op besparing: je betaalt de seats, of je nu bespaart of niet."
+      },
+      "team": {
+        "name": "Team",
+        "amount": "<b>{monthly}</b> per maand met <b>{included} seats inbegrepen</b> (ongeveer {perSeat} per seat), of <b>{yearly}</b> per jaar, in {currency}.",
+        "extra": "Elke seat boven de inbegrepen seats: {monthly} per maand, of {yearly} per jaar.",
+        "body": "Hetzelfde als Pro, voor een vloot: het vaste bedrag dekt de inbegrepen seats, ook als je er minder gebruikt. <b>Geen commissie</b> op besparing."
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "body": "Voor meer seats dan de online betaling toestaat, een eigen contract of afgesproken factuurvoorwaarden: <contact>schrijf ons</contact>."
+      }
+    },
     "seat": {
-      "title": "De vergoeding per seat",
-      "amount": "<b>{monthly}</b> per seat per maand, of <b>{yearly}</b> per seat per jaar, in {currency}.",
+      "title": "Hoe een seat wordt geteld en gefactureerd",
       "cycle": "De vergoeding per seat wordt via Stripe gefactureerd voor elke maandelijkse of jaarlijkse cyclus van je abonnement, gerekend vanaf de dag waarop het begint.",
       "paidAlways": "De vergoeding per seat wordt betaald <b>of de Software nu besparing oplevert of niet</b>.",
       "vat": "De bedragen zijn exclusief btw. Bij het afrekenen wordt om je factuuradres en, optioneel, je btw-nummer gevraagd; beide staan op je factuur.",
@@ -1221,7 +1436,9 @@
       "identifier": "Hoe een seat-ID wordt gevormd, en alles wat de Software verder naar BiVelio stuurt, staat op de <privacy>privacypagina</privacy>."
     },
     "commission": {
-      "title": "De commissie over gemeten besparing",
+      "title": "Eerder model met commissie (gesloten voor nieuwe klanten)",
+      "optional": "Dit model wordt <b>niet meer aangeboden aan nieuwe klanten</b>. Staat je abonnement er al op, dan behoud je het ongewijzigd en gelden de voorwaarden hieronder: een lagere vergoeding per seat plus een commissie alleen op besparing die je met de factuur van je provider kunt afstemmen. Pro en Team dragen hem nooit; hun overzicht toont de commissie die zou zijn toegepast alleen als referentie.",
+      "seat": "Bedrag per seat in deze variant: <b>{monthly}</b> per seat per maand, of <b>{yearly}</b> per seat per jaar, in {currency}.",
       "only": "Er wordt <b>alleen commissie berekend over gemeten besparing</b>: besparing die in je gebruiksrecords als {labels} is gelabeld. Besparing gelabeld als {never} draagt nooit commissie.",
       "measured": "Een gemeten besparing volgt uit de eigen gebruiksteller van je LLM-provider voor dat verzoek.",
       "reference": "Een besparing via referentie, voor een herhaald verzoek dat de Software beantwoordde zonder je provider aan te roepen, volgt uit de teller van je provider voor het identieke eerdere verzoek dat wel is uitgevoerd, volgens de regel die op je afschrift staat ({regla}).",
@@ -1238,8 +1455,7 @@
       "ceiling": "Geen enkele schijf gaat boven {max}, dus vóór het afronden van de commissie op de cent <b>houd je minstens {garantia}</b> van de gemeten besparing van de periode over. De vergoeding per seat komt daar los bij.",
       "fx": "Gemeten besparing wordt geteld in Amerikaanse dollars en omgerekend tegen de referentiekoers van de Europese Centrale Bank die bij het afsluiten van de periode wordt opgehaald; je afschrift toont de gebruikte koers.",
       "rounding": "De commissie wordt afgerond op de dichtstbijzijnde cent. Een commissie onder {minimo} wordt niet gefactureerd en niet naar een andere periode overgedragen.",
-      "zero": "Een periode zonder gemeten besparing draagt <b>geen commissie</b>.",
-      "calculator": "Wil je zien wat dit betekent voor je eigen verkeer, probeer dan de <calc>calculator</calc> op de homepage."
+      "zero": "Een periode zonder gemeten besparing draagt <b>geen commissie</b>."
     },
     "calibration": {
       "title": "Kalibratieperiode",

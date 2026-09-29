@@ -11,17 +11,20 @@ import { describe, it, expect } from "vitest";
  * su vez espeja el Price de Stripe.
  *
  * Si algún día cambia el precio: se cambia en Stripe, se actualiza el respaldo de
- * `apps/web/lib/stripe/pricing.ts`, y este test obliga a actualizar también el README.
+ * `apps/web/lib/billing/planes.ts`, y este test obliga a actualizar también el README.
+ *
+ * Desde el 2026-09-29 el precio que se anuncia es el de Pro (`PRECIOS_DE_LOS_PLANES`):
+ * la modalidad con comisión (`PRECIO_RESPALDO`, 4 €/39 €) está cerrada a clientes nuevos.
  */
 
-const RESPALDO = new URL("../apps/web/lib/stripe/pricing.ts", import.meta.url);
+const RESPALDO = new URL("../apps/web/lib/billing/planes.ts", import.meta.url);
 const README = new URL("../README.md", import.meta.url);
 
 /** Lee los importes del respaldo sin importar el módulo (arrastra `next/cache`). */
 function respaldoDelCodigo(): { mensual: number; anual: number; moneda: string } {
   const src = readFileSync(RESPALDO, "utf8");
-  const bloque = src.slice(src.indexOf("PRECIO_RESPALDO"));
-  const importes = [...bloque.matchAll(/amount:\s*(\d+)/g)].map((m) => Number(m[1]));
+  const bloque = src.slice(src.indexOf("export const PRECIOS_DE_LOS_PLANES"));
+  const importes = [...bloque.matchAll(/asientoCentimos:\s*([\d_]+)/g)].map((m) => Number(m[1]!.replace(/_/g, "")));
   const moneda = /currency:\s*"([a-z]+)"/.exec(bloque)?.[1] ?? "";
   return { mensual: importes[0]!, anual: importes[1]!, moneda };
 }

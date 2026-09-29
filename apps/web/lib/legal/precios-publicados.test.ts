@@ -200,3 +200,52 @@ describe("⛔ las páginas no afirman qué dice la LICENSE que enlazan", () => {
     }
   });
 });
+
+describe("⛔ el modelo es asientos + equipo; la comisión, cerrada a clientes nuevos (2026-09-29)", () => {
+  it("Pro y Equipo salen de sus Prices (o de PRECIOS_DE_LOS_PLANES, de respaldo), formateados", async () => {
+    const { TARIFAS_RESPALDO } = await import("@/lib/stripe/pricing");
+    const { terminosDeLosPlanes } = await import("./precios-publicados");
+    const locale = "en";
+    const t = terminosDeLosPlanes(locale, TARIFAS_RESPALDO);
+    const f = (amount: number) => formatearPrecio(locale, { amount, currency: "eur" });
+    expect(t.pro.mensual).toBe(f(TARIFAS_RESPALDO.pro.monthly.asientoCentimos));
+    expect(t.pro.anual).toBe(f(TARIFAS_RESPALDO.pro.yearly.asientoCentimos));
+    expect(t.equipo.mensual).toBe(f(TARIFAS_RESPALDO.equipo.monthly.fijaCentimos));
+    expect(t.equipo.anual).toBe(f(TARIFAS_RESPALDO.equipo.yearly.fijaCentimos));
+    expect(t.equipo.incluidos).toBe(String(TARIFAS_RESPALDO.equipo.monthly.asientosIncluidos));
+    expect(t.equipo.extraMensual).toBe(f(TARIFAS_RESPALDO.equipo.monthly.asientoCentimos));
+    expect(t.moneda).toBe("EUR");
+  });
+
+  it("la página lee las tarifas de los planes, y los enseña ANTES que la comisión, en el orden Medir → Pro → Equipo → Enterprise", () => {
+    const pagina = leerApp("app/[locale]/pricing/page.tsx");
+    expect(pagina).toContain("terminosDeLosPlanes(locale, await tarifasDeLosPlanes())");
+    const pos = ["plans.medir.name", "plans.pro.name", "plans.team.name", "plans.enterprise.name", 'id="commission"'].map((k) =>
+      pagina.indexOf(k),
+    );
+    for (const p of pos) expect(p).toBeGreaterThan(-1);
+    expect([...pos].sort((a, b) => a - b)).toEqual(pos);
+  });
+
+  it("⛔ la portada vende Medir → Pro → Equipo → Enterprise con las cifras de los planes, sin la calculadora de comisión", () => {
+    const portada = leerApp("app/[locale]/page.tsx");
+    expect(portada).toContain("terminosDeLosPlanes(locale, await tarifasDeLosPlanes())");
+    expect(portada).not.toContain("<CalculadoraComision");
+    expect(portada).not.toContain('t.rich("formula.');
+    const pos = ["pricing.plans.medir.name", "pricing.plans.pro.name", "pricing.plans.team.name", "pricing.plans.enterprise.name"].map((k) =>
+      portada.indexOf(k),
+    );
+    for (const p of pos) expect(p).toBeGreaterThan(-1);
+    expect([...pos].sort((a, b) => a - b)).toEqual(pos);
+  });
+
+  it("⛔ la sección de la comisión se presenta como CERRADA a clientes nuevos en los doce idiomas, y no manda a la calculadora", () => {
+    expect(leerApp("app/[locale]/pricing/page.tsx")).not.toContain("commission.calculator");
+    const pagina = leerApp("app/[locale]/pricing/page.tsx");
+    expect(pagina).toContain('t.rich("commission.optional"');
+    for (const loc of ["es", "en", "ca", "de", "fr", "it", "nl", "pl", "pt", "tr", "id", "vi"]) {
+      const cat = JSON.parse(leerApp(`messages/${loc}.json`)) as { pricingPage: { commission: { optional: string } } };
+      expect(cat.pricingPage.commission.optional, loc).toMatch(/<b>.+<\/b>/);
+    }
+  });
+});

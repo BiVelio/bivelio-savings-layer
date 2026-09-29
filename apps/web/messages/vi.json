@@ -414,7 +414,7 @@
       "personalNote": "Cá nhân — chưa có tổ chức nào được liên kết. Một tài khoản BiVelio, dùng chung cho cả bộ sản phẩm.",
       "plan": "gói",
       "seatsCount": "{count, plural, other {# ghế}}.",
-      "planBody": "BV-SALA là fail-closed — nó chỉ chạy với một giấy phép PRO đang hoạt động. {monthly} mỗi ghế mỗi tháng hoặc {yearly} mỗi ghế mỗi năm. Một ghế là một máy hoặc danh tính dịch vụ đang hoạt động, không phải một người.",
+      "planBody": "BV-SALA là fail-closed — chỉ chạy với giấy phép đang hoạt động. Pro: {monthly} mỗi ghế mỗi tháng hoặc {yearly} mỗi ghế mỗi năm. Nhóm: {teamMonthly} mỗi tháng, bao gồm {included} ghế. Không có hoa hồng trên khoản tiết kiệm. Một ghế là một máy hoặc danh tính dịch vụ đang hoạt động, không phải một người.",
       "managePlan": "Quản lý gói →",
       "subscribe": "Đăng ký →",
       "checkoutMonthly": "Đăng ký — {monthly}/ghế/tháng →",
@@ -430,7 +430,14 @@
       "errPagoEnCurso": "Thanh toán của bạn vẫn đang được xử lý: ghi nợ ngân hàng có thể mất vài ngày. Bạn sẽ có quyền truy cập ngay khi hoàn tất. Đừng bắt đầu gói đăng ký thứ hai.",
       "errSuscripcionEnStripe": "Stripe đã có gói đăng ký cho tài khoản này nhưng chưa được kích hoạt ở đây. Đừng mua lại: hãy viết cho support@bivelio.com và chúng tôi sẽ kích hoạt thủ công.",
       "codigoAplicado": "Mã {codigo} sẽ được áp dụng khi thanh toán.",
-      "errCodigoInvalido": "Mã này không tồn tại hoặc không còn hiệu lực. Bạn có thể tiếp tục mà không cần mã hoặc viết cho support@bivelio.com."
+      "errCodigoInvalido": "Mã này không tồn tại hoặc không còn hiệu lực. Bạn có thể tiếp tục mà không cần mã hoặc viết cho support@bivelio.com.",
+      "planPickLabel": "Gói",
+      "planPro": "Pro",
+      "planTeam": "Nhóm",
+      "teamHint": "Nhóm bao gồm {included} ghế; mỗi ghế thêm {extra} mỗi tháng. Không thể mua ít hơn {included}.",
+      "checkoutTeamMonthly": "Đăng ký Nhóm — {monthly}/tháng, {included} ghế →",
+      "checkoutTeamYearly": "Đăng ký Nhóm — {yearly}/năm, {included} ghế →",
+      "errPlanCerrado": "Gói đó không còn được cung cấp cho khách hàng mới. Chọn Pro hoặc Nhóm."
     },
     "referenceLedgerCards": {
       "proven": "đã chứng minh",
@@ -738,7 +745,7 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Xác minh mức tiết kiệm LLM của bạn",
-    "metaDescription": "Một SDK giúp ứng dụng của bạn chỉ trả cho nhà cung cấp LLM những gì nó cần, và một gateway đo lường agent lập trình của bạn. Đếm bằng chính bộ đếm của nhà cung cấp: phí theo ghế, cộng hoa hồng chỉ trên khoản tiết kiệm đo được.",
+    "metaDescription": "Một SDK để ứng dụng của bạn chỉ trả cho nhà cung cấp LLM những gì nó cần, và một gateway đo agent lập trình của bạn. Tất cả bằng bộ đếm của nhà cung cấp: đo miễn phí, sau đó trả theo ghế — không có hoa hồng trên khoản tiết kiệm của bạn.",
     "hero": {
       "eyebrow": "Dành cho các đội trả phí API LLM theo token",
       "title": "Hóa đơn LLM của bạn, trong tầm kiểm soát.",
@@ -807,8 +814,8 @@
           "body": "Chúng tôi không xin niềm tin. Mỗi khoản tiết kiệm được đo bằng bộ đếm chính thức của nhà cung cấp — chính bộ đếm dùng để tính tiền bạn — và hiện trên biên lai của bạn. Điều gì không đối chiếu được với hóa đơn thì không bao giờ được công bố."
         },
         {
-          "title": "Phí theo ghế, và một phần của những gì đo được",
-          "body": "Bạn trả một khoản phí cố định cho mỗi ghế hằng tháng, dù bạn có tiết kiệm hay không. Ngoài ra, hoa hồng của chúng tôi chỉ lấy từ khoản tiết kiệm đo bằng bộ đếm của nhà cung cấp — và phần lớn mỗi khoản tiết kiệm luôn ở lại với bạn. Một tháng không có tiết kiệm đo được? Bạn trả tiền ghế và hoa hồng bằng không."
+          "title": "Đo miễn phí, sau đó trả theo ghế",
+          "body": "Bắt đầu với giấy phép Đo lường miễn phí: lớp chạy ở chế độ bóng và cho thấy nó sẽ tiết kiệm bao nhiêu trên lưu lượng của chính bạn. Để bật các đòn bẩy, bạn trả một khoản phí cố định theo ghế, hoặc gói Nhóm, dù bạn có tiết kiệm hay không — và không có hoa hồng trên khoản tiết kiệm."
         }
       ],
       "nota": "Các đoạn hoạt hình minh họa ý tưởng. Những con số thật — đo với nhà cung cấp thật — nằm ngay bên dưới."
@@ -900,12 +907,36 @@
       "initNote": "<b>Hoặc để một lệnh tự điều chỉnh cho stack của bạn.</b> <code>init</code> đọc <code>package.json</code> của bạn (Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, SDK của Anthropic hoặc của OpenAI) và in ra dòng cài đặt, mã chính xác cho adapter của bạn và một bước kiểm tra không tốn token: khi giấy phép của bạn đã sẵn sàng, lớp tự trả lời ngay trên máy của bạn mà không gọi mô hình. Lệnh này không ghi gì nếu bạn không yêu cầu."
     },
     "pricing": {
-      "eyebrow": "Một gói, tính giá theo ghế",
-      "title": "Phí theo ghế, luôn luôn. Hoa hồng chỉ trên khoản tiết kiệm đo được.",
-      "body": "Không gói miễn phí, không dùng thử: trước khi trả tiền, bạn có thể kiểm tra các phép đo công khai và chạy trình xác minh trên dữ liệu của chính mình, ngay trên trang này. Phí theo ghế được tính hằng tháng, bằng {currency}, dù bạn có tiết kiệm hay không. Hoa hồng được cộng thêm, và chỉ trên khoản tiết kiệm đo bằng bộ đếm của nhà cung cấp — kể cả các lượt gọi lặp lại được phục vụ mà không gọi nhà cung cấp, mỗi lượt được định giá bằng bộ đếm của lượt gọi giống hệt đã được thực hiện. Phần ước tính không bao giờ được tính vào.",
+      "eyebrow": "Các gói",
+      "title": "Đo miễn phí. Trả theo ghế khi bạn muốn khoản tiết kiệm.",
+      "body": "Bắt đầu với Đo lường: miễn phí và không cần thẻ. Lớp chạy ở chế độ bóng trên lưu lượng của chính bạn và bảng điều khiển cho thấy nó sẽ tiết kiệm bao nhiêu, được định giá bằng bộ đếm của nhà cung cấp. Pro và Nhóm được tính theo ghế, bằng {currency}, dù bạn có tiết kiệm hay không, và không có hoa hồng trên khoản tiết kiệm.",
       "amount": "{amount}",
       "per": "/ ghế / tháng",
-      "proNote": "<b>PRO</b> — tính phí theo ghế. Hoặc <b>{yearly} / ghế / năm</b> (tiết kiệm ~19%). Enterprise, với các tính năng đóng gói, sẽ đến sau.",
+      "plans": {
+        "medir": {
+          "name": "Đo lường",
+          "price": "Miễn phí",
+          "body": "Không cần thẻ. Lớp ở chế độ bóng cho một tổ chức: mọi yêu cầu đến nhà cung cấp của bạn không thay đổi, và bạn thấy nó sẽ tiết kiệm bao nhiêu.",
+          "cta": "Bắt đầu miễn phí →"
+        },
+        "pro": {
+          "name": "Pro",
+          "note": "Hoặc <b>{yearly} / ghế / năm</b>. Mọi tối ưu hóa, biên lai cho từng yêu cầu và bảng điều khiển. Không hoa hồng.",
+          "cta": "Chọn Pro →"
+        },
+        "team": {
+          "name": "Nhóm",
+          "per": "/ tháng",
+          "note": "<b>Bao gồm {included} ghế</b>; mỗi ghế thêm {extra} / tháng. Hoặc <b>{yearly} / năm</b>. Không hoa hồng.",
+          "cta": "Chọn Nhóm →"
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "price": "Tùy chỉnh",
+          "body": "Nhiều ghế hơn mức thanh toán trực tuyến cho phép, hợp đồng riêng hoặc điều kiện hóa đơn thỏa thuận: <contact>viết cho chúng tôi</contact>."
+        }
+      },
+      "legacy": "Bạn đã dùng mô hình trước đây, có hoa hồng trên khoản tiết kiệm đo được? Bạn giữ nguyên nó; điều khoản nằm trong <terms>điều khoản giá</terms>.",
       "seatNote": "Một ghế là một <b>máy hoặc danh tính dịch vụ</b>, không phải một người. Bạn trả tiền cho số ghế mà gói đăng ký bao gồm; bảng điều khiển cho biết có bao nhiêu ghế được dùng trong tháng này (hoạt động ít nhất {dias} ngày; CI và các trình chạy tạm thời không được tính).",
       "features": [
         "Mọi tối ưu hóa của BV‑SALA, không giới hạn",
@@ -937,7 +968,7 @@
     },
     "footer": {
       "ctaTitle": "Đo trên chính lưu lượng của bạn",
-      "ctaSub": "Sau khi cài, mỗi lời gọi trả về SavingsReport của nó, với phần đo được và phần ước tính tách riêng. Phí theo ghế là cố định hằng tháng; hoa hồng chỉ lấy từ phần đo được. Giấy phép là thứ cho phép bạn chạy BV‑SALA — SDK trong ứng dụng, gateway trong terminal của bạn.",
+      "ctaSub": "Sau khi cài đặt, mỗi lệnh gọi trả về SavingsReport của nó, phần đo được và phần ước tính tách riêng. Bắt đầu miễn phí với Đo lường; Pro và Nhóm là phí cố định theo ghế, không có hoa hồng trên khoản tiết kiệm. Giấy phép là thứ cho phép bạn chạy BV‑SALA — SDK trong ứng dụng, gateway trong terminal.",
       "ctaStart": "Bắt đầu",
       "tagline": "Hệ điều hành cho doanh nghiệp của bạn. Đây là <b>BV‑SALA</b>, bộ tối ưu chi phí LLM trung lập với nhà cung cấp của BiVelio — mọi con số công bố đều được đo theo bộ đếm của chính nhà cung cấp; ước tính được hiển thị riêng và không bao giờ tính phí.",
       "badge": "BV‑SALA · Savings Layer",
@@ -945,6 +976,7 @@
       "colBivelio": "BiVelio",
       "colLegal": "Pháp lý",
       "measured": "Kết quả đo được",
+      "benchmarks": "Bộ đo công khai",
       "pricing": "Giá",
       "home": "Trang chủ",
       "docs": "Tài liệu",
@@ -1149,6 +1181,167 @@
     "cerrarYContinuar": "Đăng xuất và dùng tài khoản khác",
     "cerrando": "Đang đăng xuất…"
   },
+  "benchmarksPage": {
+    "metaTitle": "Bài kiểm tra A/B công khai: hãy đo chúng tôi | BiVelio Savings Layer",
+    "metaDescription": "Bốn bộ kiểm tra công khai (GSM8K, BFCL, XSTest và MT-Bench), hai nhánh được đo bằng bộ đếm sử dụng của chính nhà cung cấp, mỗi con số kèm n, khoảng tin cậy và ngày của nó. Những gì tiết kiệm được, những gì không, và các lỗi mà bài kiểm tra đã tìm ra.",
+    "eyebrow": "Bài kiểm tra công khai · có thể tái lập",
+    "title": "Bài kiểm tra A/B của chúng tôi, công khai. Hãy đo chúng tôi.",
+    "lede": "Chúng tôi công bố mọi lần chạy: bốn bộ kiểm tra trên các tập dữ liệu công khai, {modelos} mô hình, và cả hai nhánh đều được đo bằng bộ đếm sử dụng của chính nhà cung cấp. Mỗi con số đều mang theo n, khoảng tin cậy và ngày của nó. Những gì không tiết kiệm được cũng có ở đây.",
+    "stats": {
+      "batteries": "bộ kiểm tra",
+      "models": "mô hình đã thử",
+      "measured": "mô hình có phép đo",
+      "reports": "báo cáo trực tiếp",
+      "last": "lần chạy gần nhất"
+    },
+    "method": {
+      "title": "Đo cái gì, và đo như thế nào",
+      "arms": "<b>Hai nhánh, cùng một yêu cầu.</b> A đi thẳng đến nhà cung cấp, không qua lớp; B đi qua lớp với cấu hình mặc định của nó. Cùng prompt, cùng cách lấy mẫu, cùng giới hạn đầu ra.",
+      "cost": "<b>Nhà cung cấp tính chi phí.</b> Mỗi nhánh được định giá dựa trên <code>usage</code> mà API trả về ở mỗi lần gọi, theo giá niêm yết. Mức tiết kiệm là 1 − chi phí(B) / chi phí(A) của cùng một lần chạy, không phải những gì lớp tự nói về mình.",
+      "intervals": "<b>Khoảng tin cậy {nivel}.</b> Mỗi bộ khai thác tự tính (lấy mẫu lại toàn bộ họ câu hỏi, Wilson cho tỷ lệ từ chối). Một khoảng tin cậy cắt qua số không có nghĩa là “không thể phân biệt với không”, và chúng tôi nói vậy.",
+      "package": "<b>Gói bạn cài đặt.</b> Nhánh B chạy mã nguồn của tag {version}; <code>dist/index.js</code> của nó giống hệt từng byte với tarball npm (sha256 <code>{sha}</code>).",
+      "guard": "<b>Không đường tắt.</b> Mỗi bộ khai thác theo dõi các máy chủ mà nó liên lạc và mang một giới hạn chi tiêu theo từng mô hình được viết sẵn trong mã. Một mô hình không thể đo được sẽ được báo cáo là “không đo được”, kèm lý do.",
+      "batteriesTitle": "Bốn bộ kiểm tra, tập dữ liệu công khai, được ghim cố định",
+      "commitOnly": "ghim theo commit"
+    },
+    "batteries": {
+      "gsm8k": "Bài toán đố bằng lời với các lần lặp lại và diễn đạt lại: cache tiết kiệm được bao nhiêu và độ chính xác có giảm hay không.",
+      "bfcl": "Lệnh gọi công cụ: lớp không được thay đổi bất kỳ lệnh nào, và toàn bộ danh mục phải đến đầy đủ.",
+      "xstest": "Từ chối: lớp không được thay đổi thời điểm mô hình từ chối, cũng không được phục vụ một lời từ chối từ cache.",
+      "mt-bench": "Trò chuyện hai lượt không lặp lại: lớp không được làm xấu đi chi phí, độ trễ hay chất lượng."
+    },
+    "th": {
+      "battery": "Bộ kiểm tra",
+      "what": "Kiểm tra điều gì",
+      "dataset": "Tập dữ liệu",
+      "pinned": "Tệp được ghim",
+      "license": "Giấy phép",
+      "model": "Mô hình",
+      "n": "n",
+      "savings": "Mức tiết kiệm đo được [KTC]",
+      "fromExact": "Từ cache chính xác",
+      "fromCalls": "Trong các lệnh gọi (tiền tố)",
+      "accuracy": "Độ chính xác A → B",
+      "run": "Phiên bản · ngày",
+      "prompts": "Prompt",
+      "safe": "Từ chối, prompt an toàn (A → B)",
+      "unsafe": "Từ chối, prompt không an toàn (A → B)",
+      "verdict": "Diễn giải",
+      "reports": "Báo cáo"
+    },
+    "savings": {
+      "title": "Mức tiết kiệm đo được theo mô hình",
+      "intro": "GSM8K, với một luồng yêu cầu trong đó {rep} là lặp lại chính xác và {par} là diễn đạt lại. Đây là bộ kiểm tra có lưu lượng lặp lại: mức tiết kiệm của bạn phụ thuộc vào việc lưu lượng của bạn lặp lại nhiều hay ít. Không có lặp lại, xem mục “Những gì không tiết kiệm được”.",
+      "nCell": "{n} yêu cầu · {unicos} duy nhất",
+      "delta": "Δ {d} pp [{inf}, {sup}]",
+      "originNote": "Mức tiết kiệm đến từ đâu, theo từng vị trí: “từ cache chính xác” là những gì A đã trả cho các yêu cầu mà lớp phục vụ mà không cần gọi nhà cung cấp; “trong các lệnh gọi” là chênh lệch ở những yêu cầu thực sự đến được nhà cung cấp, chủ yếu từ cache tiền tố của nhà cung cấp (cộng thêm một chút biến động ở đầu ra). Hai phần này cộng lại thành tổng mức tiết kiệm.",
+      "accuracyNote": "Độ chính xác được đo trên các câu hỏi có đáp án đã công bố; các biến thể có một con số bị thay đổi chỉ dùng để kiểm tra rằng lớp không bao giờ trả về đáp án của một câu hỏi khác."
+    },
+    "guarantees": {
+      "title": "Các cam kết, được đếm",
+      "tools": {
+        "title": "Lớp chưa bao giờ thay đổi một lệnh gọi công cụ",
+        "titleBroken": "Lớp đã thay đổi {n} lệnh gọi công cụ",
+        "body": "{alteradas} lệnh gọi bị thay đổi trong {comparaciones} lần so sánh BFCL, {modelos} mô hình, kể từ {desde}. Nếu lớp gặp lỗi (một lỗi ở B mà A không có), điều đó không được tính ở đây: nó thuộc mục “Lỗi mà bài kiểm tra đã tìm ra”."
+      },
+      "other": {
+        "title": "Không có câu trả lời từ một câu hỏi khác kể từ {desde}",
+        "titleBroken": "{n} câu trả lời từ một câu hỏi khác kể từ {desde}",
+        "body": "{deOtra} trong số {variantes} biến thể (cùng một câu hỏi với một con số khác, do đó có đáp án khác) được phục vụ bằng đáp án của một câu hỏi khác, trên {modelos} mô hình trực tiếp và mọi cấu hình cache đã đo.",
+        "replay": "Phát lại ngoại tuyến toàn bộ tập kiểm tra GSM8K: {erroneas} trong {peticiones} yêu cầu, ở mỗi cấu hình trong số {configs} cấu hình cache."
+      },
+      "refusals": {
+        "title": "Cùng một tỷ lệ từ chối, có và không có lớp",
+        "titleBroken": "Tỷ lệ từ chối đã thay đổi ở {n} mô hình",
+        "body": "XSTest, {modelos} mô hình được đo: không có khác biệt A/B dưới mức p = {umbral} (McNemar, prompt theo cặp). Lớp đã chuyển giao nguyên văn {comprobados} phản hồi mà không thay đổi ({alterados} bị thay đổi).",
+        "caption": "Tỷ lệ từ chối theo mô hình, không có lớp (A) và có lớp (B), trên cùng các prompt."
+      }
+    },
+    "noSavings": {
+      "title": "Những gì không tiết kiệm được",
+      "lead": "<b>Không có lặp lại, mức tiết kiệm là ≈ {cero}.</b> Chúng tôi vẫn công bố điều này, vì đó là những gì bạn sẽ thấy nếu lưu lượng của bạn không lặp lại.",
+      "why": "MT-Bench là trò chuyện hai lượt với một lớp mới cho mỗi câu hỏi: không có gì để cache tái sử dụng, và prompt hầu như không bao giờ đạt đến mức tối thiểu mà nhà cung cấp yêu cầu để cache một tiền tố. Trong BFCL, mỗi lệnh gọi công cụ đều khác nhau. Điều mà hai bộ kiểm tra này đo là lớp không làm điều gì tệ hơn; chênh lệch chi phí còn lại là nhiễu từ đầu ra của mô hình, không phải từ lớp.",
+      "nQuestions": "{n} câu hỏi",
+      "nItems": "{n} mục",
+      "verdict": {
+        "ahorro": "tiết kiệm",
+        "cero": "không thể phân biệt với không",
+        "sobrecoste": "chi phí phát sinh thêm"
+      },
+      "notAttributable": "không thể quy cho lớp"
+    },
+    "status": {
+      "title": "Trạng thái theo mô hình và bộ kiểm tra",
+      "intro": "Mỗi ô hiển thị lần chạy trên phiên bản cao nhất của lớp. Nếu một mô hình không thể đo được, chúng tôi nêu lý do thay vì để trống.",
+      "measured": "đã đo · n = {n}",
+      "notMeasured": "không đo được: {motivo}",
+      "layerFailed": "lớp gặp lỗi: {motivo}",
+      "reason": {
+        "credencial": "thông tin xác thực bị từ chối",
+        "presupuesto": "đã hết giới hạn chi tiêu",
+        "cuota": "đã hết hạn ngạch của nhà cung cấp",
+        "capa": "yêu cầu không đi qua lớp",
+        "proveedor": "nhà cung cấp từ chối yêu cầu ở cả hai nhánh",
+        "otro": "không đủ dữ liệu"
+      }
+    },
+    "bugs": {
+      "title": "Lỗi mà bài kiểm tra đã tìm ra",
+      "intro": "Bài kiểm tra không tồn tại để trông đẹp: nó tồn tại để tìm ra lỗi trước khi bạn tìm thấy. Nó đã tìm thấy những lỗi này, kèm phiên bản nơi chúng xuất hiện và phiên bản khắc phục chúng.",
+      "found": "Tìm thấy ở {version}: {ocurrencias} trên {sobre}.",
+      "fixed": "Đã khắc phục ở {version} ({prs}).",
+      "verified": "Đã xác minh trực tiếp trên {version}: {ocurrencias} trên {sobre}.",
+      "stillSeen": "Vẫn còn thấy ở {version}: {ocurrencias} trên {sobre}.",
+      "pending": "Đang chờ đo lại trực tiếp trên {version}.",
+      "items": {
+        "otra-pregunta": {
+          "title": "Cache ngữ nghĩa chưa hiệu chỉnh đã phục vụ đáp án của một câu hỏi khác",
+          "body": "Khi cache ngữ nghĩa chưa được hiệu chỉnh, một biến thể với một con số khác (“three baskets” so với “two baskets”) có thể nhận được đáp án của câu hỏi gốc. Được đếm trên các biến thể GSM8K."
+        },
+        "herramientas-multiturno": {
+          "title": "Lớp đã cắt bớt danh mục công cụ mà không có tín hiệu nào để làm vậy",
+          "body": "Trong các cuộc trò chuyện nhiều lượt, nhánh B gửi ít công cụ hơn nhánh A mặc dù không có gì cho biết công cụ nào không cần thiết. Được đếm trên các cuộc trò chuyện nhiều lượt của BFCL."
+        },
+        "negativas-de-texto": {
+          "title": "Một số lời từ chối được viết dưới dạng văn bản đã bị cache",
+          "body": "Một lời từ chối mà mô hình viết dưới dạng văn bản (không có tín hiệu của API) có thể bị cache, lặp lại và được tính là tiết kiệm. Được đếm trong các prompt XSTest."
+        },
+        "gemini-filtro-cacheado": {
+          "title": "Một bộ lọc nội dung của Gemini đã bị cache như một câu trả lời",
+          "body": "Gemini đánh dấu bộ lọc của mình bằng một lý do dừng riêng, mà lớp không nhận ra đó là một lời từ chối, nên nó có thể bị cache và lặp lại. Được đếm trong các prompt XSTest."
+        },
+        "gemini-prompt-cache-key": {
+          "title": "Gemini không đi qua lớp",
+          "body": "Lớp đã gửi một trường riêng của API OpenAI đến mọi điểm cuối tương thích, và Gemini từ chối trường đó: mọi yêu cầu ở nhánh B đều thất bại. Được đếm trong các yêu cầu GSM8K."
+        },
+        "gemini-thought-signature": {
+          "title": "Với Gemini 3, lượt thứ hai có công cụ đã thất bại",
+          "body": "Lớp không trả về chữ ký suy nghĩ (thought signature) mà Gemini 3 yêu cầu ở mỗi lệnh gọi công cụ, nên lượt tiếp theo bị từ chối. Được đếm trong các lượt tiếp nối nhiều lượt của BFCL."
+        }
+      }
+    },
+    "repro": {
+      "title": "Cách tái lập",
+      "intro": "Mã nguồn của bài kiểm tra chưa được công khai; phương pháp thì có, và gói gọn trong năm bước. Với khóa nhà cung cấp của riêng bạn, bạn có thể chạy lại và so sánh từng con số với báo cáo của chúng tôi.",
+      "steps": {
+        "dataset": "<b>Bộ dữ liệu.</b> Tải từng bộ dữ liệu công khai tại commit trong bảng ở trên và kiểm tra sha256 của từng tệp trước khi dùng. Nếu không khớp, đó không phải cùng một bộ dữ liệu.",
+        "package": "<b>Lớp.</b> Cài <code>@bivelio/savings-layer</code> từ npm ở phiên bản mà báo cáo ghi và kiểm tra sha256 của <code>dist/index.js</code>: mỗi báo cáo đều ghi giá trị của nó.",
+        "arms": "<b>Hai nhánh cho mỗi prompt.</b> A đi thẳng tới nhà cung cấp; B gửi cùng prompt, tới cùng mô hình và với cùng giới hạn đầu ra, qua lớp với cấu hình mặc định. Một phần prompt được lặp lại hoặc diễn đạt lại, như trong lưu lượng thực, và thứ tự A/B được bốc thăm.",
+        "cost": "<b>Chi phí do nhà cung cấp nói.</b> Cộng số tiền mỗi nhánh bị tính theo <code>usage</code> mà nhà cung cấp trả về, với giá đã công bố. Mức tiết kiệm là <code>1 − chi phí B / chi phí A</code>, kèm khoảng tin cậy.",
+        "compare": "<b>Chất lượng, trong cùng lần chạy.</b> Chấm điểm câu trả lời của hai nhánh theo cùng một cách (đáp án chính xác với GSM8K, lời gọi công cụ với BFCL, từ chối hay không với XSTest, một giám khảo với MT-Bench) và so sánh với báo cáo JSON của cùng bộ kiểm tra và phiên bản."
+      },
+      "reportsTitle": "Các báo cáo",
+      "reportsIntro": "Mỗi lần chạy để lại một báo cáo JSON gồm thiết kế, giới hạn và từng lời gọi được đo: usage, chi phí mỗi nhánh và phân loại câu trả lời. Chúng được phục vụ từ chính trang web này.",
+      "served": "Các báo cáo được phục vụ đúng như bài kiểm tra đã ghi, với một ngoại lệ: dữ liệu về môi trường của người đo (đường dẫn ổ đĩa, địa chỉ email) được loại bỏ. Với XSTest, không công bố văn bản của bất kỳ câu trả lời nào, chỉ có phân loại của nó."
+    },
+    "invite": {
+      "title": "Tự bạn hãy đo chúng tôi",
+      "body": "Một phép đo độc lập có giá trị hơn phép đo của chúng tôi. Mã nguồn của bài kiểm tra chưa được công khai: nếu bạn muốn đo lại, hoặc đo lớp bằng công cụ của riêng bạn hay bằng lưu lượng của bạn, hãy viết cho chúng tôi và chúng tôi sẽ cung cấp những gì bạn cần.",
+      "contact": "Viết cho chúng tôi tại",
+      "cta": "Gửi email",
+      "subject": "Phép đo độc lập của bài kiểm tra công khai"
+    }
+  },
   "howItWorks": {
     "metaTitle": "Khoản tiết kiệm được cài ở đâu? · BiVelio Savings Layer",
     "metaDescription": "BV‑SALA là một lớp được cài vào mã của ứng dụng của bạn, nơi API được gọi. Nó tiết kiệm được gì, ở đâu không áp dụng và cách đo lường thực sự.",
@@ -1189,7 +1382,7 @@
     "s3Sub": "Sản phẩm có hai con số khác nhau và không nên trộn lẫn chúng.",
     "mBeforeK": "Trước khi cài",
     "mBeforeV": "Ước tính",
-    "mBeforeBody": "Công cụ tính ở phần bảng giá dự phóng khoản tiết kiệm với chính những con số của bạn: số yêu cầu, số token và mô hình. Đó là một phép chiếu trung thực — vì thế nó mang nhãn «ước tính».",
+    "mBeforeBody": "Giấy phép Đo lường miễn phí chạy lớp ở chế độ bóng trên lưu lượng của chính bạn và cho thấy nó sẽ tiết kiệm bao nhiêu, từng yêu cầu một. Nó không thay đổi gì và không áp dụng gì — vì vậy nó mang nhãn “ước tính”.",
     "mAfterK": "Sau khi cài",
     "mAfterV": "Đo lường thực",
     "mAfterBody": "Mỗi lệnh gọi trả về một SavingsReport: những lệnh gọi bạn không bao giờ phải trả và khoản tiết kiệm ròng trên mỗi yêu cầu. Kiểm toán được, từng yêu cầu một, trên hạ tầng của chính bạn.",
@@ -1204,14 +1397,36 @@
   },
   "pricingPage": {
     "metaTitle": "Điều khoản giá · BV-SALA",
-    "metaDescription": "Phí theo ghế và hoa hồng trên khoản tiết kiệm đã đo, được công bố từ chính các hằng số dùng để tính phí.",
+    "metaDescription": "Đo lường miễn phí, Pro theo ghế, Nhóm và Enterprise — không gói nào có hoa hồng trên khoản tiết kiệm của bạn. Số liệu công bố từ chính các hằng số dùng để tính phí.",
     "eyebrow": "Bảng giá công bố",
     "title": "Điều khoản giá",
     "governs": "Trang này mô tả cách dịch vụ hoạt động hiện nay; văn bản có hiệu lực là <license>LICENSE</license> và <terms>Điều khoản của BiVelio</terms>.",
-    "lede": "Mọi con số ở đây đều được đọc từ chính đoạn mã tính phí bạn, nên chúng thay đổi khi giá thay đổi.",
+    "lede": "Bạn trả theo ghế hoặc cho một gói Nhóm, không có hoa hồng trên khoản tiết kiệm. Mọi con số trên trang này được đọc từ chính mã tính phí bạn, nên nó thay đổi khi giá thay đổi.",
+    "plans": {
+      "title": "Các gói",
+      "intro": "Bốn gói, từ nhỏ đến lớn. Pro và Nhóm trả theo chỗ và không có hoa hồng.",
+      "medir": {
+        "name": "Đo lường",
+        "body": "<b>Miễn phí, không cần thẻ.</b> Lớp chạy ở chế độ bóng cho một tổ chức, với giới hạn ghế và số yêu cầu mỗi ngày: mọi yêu cầu đến nhà cung cấp đúng như bạn đã tạo, không có gì được phục vụ từ bộ nhớ đệm và không đòn bẩy nào được áp dụng. Bảng điều khiển cho thấy nó sẽ tiết kiệm bao nhiêu — một ước tính không bao giờ có hoa hồng. Các đòn bẩy cần Pro hoặc Nhóm."
+      },
+      "pro": {
+        "name": "Pro",
+        "amount": "<b>{monthly}</b> mỗi chỗ mỗi tháng, hoặc <b>{yearly}</b> mỗi chỗ mỗi năm, bằng {currency}.",
+        "body": "Mọi tối ưu của lớp, biên nhận cho từng yêu cầu và bảng điều khiển. <b>Không hoa hồng</b> trên khoản tiết kiệm: bạn trả cho các chỗ, dù có tiết kiệm hay không."
+      },
+      "team": {
+        "name": "Nhóm",
+        "amount": "<b>{monthly}</b> mỗi tháng với <b>{included} chỗ đã bao gồm</b> (khoảng {perSeat} mỗi chỗ), hoặc <b>{yearly}</b> mỗi năm, bằng {currency}.",
+        "extra": "Mỗi chỗ vượt quá số đã bao gồm: {monthly} mỗi tháng, hoặc {yearly} mỗi năm.",
+        "body": "Giống Pro, cho cả một đội máy: phí cố định bao gồm các chỗ đã tính sẵn dù bạn dùng ít hơn. <b>Không hoa hồng</b> trên khoản tiết kiệm."
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "body": "Cho số chỗ nhiều hơn mức thanh toán trực tuyến cho phép, hợp đồng riêng hoặc điều kiện hóa đơn thỏa thuận: <contact>hãy viết cho chúng tôi</contact>."
+      }
+    },
     "seat": {
-      "title": "Phí theo ghế",
-      "amount": "<b>{monthly}</b> mỗi ghế mỗi tháng, hoặc <b>{yearly}</b> mỗi ghế mỗi năm, bằng {currency}.",
+      "title": "Cách đếm và tính phí một chỗ",
       "cycle": "Phí theo ghế được tính qua Stripe cho mỗi chu kỳ tháng hoặc năm của gói đăng ký, tính từ ngày gói đăng ký của bạn bắt đầu.",
       "paidAlways": "Phí theo ghế được thanh toán <b>dù Phần mềm có tạo ra khoản tiết kiệm nào hay không</b>.",
       "vat": "Số tiền chưa bao gồm VAT. Khi thanh toán, bạn được yêu cầu nhập địa chỉ thanh toán và, tùy chọn, mã số VAT; cả hai đều được in trên hóa đơn.",
@@ -1221,7 +1436,9 @@
       "identifier": "Cách tạo mã ghế, và mọi thứ khác mà Phần mềm gửi tới BiVelio, có trên <privacy>trang quyền riêng tư</privacy>."
     },
     "commission": {
-      "title": "Hoa hồng trên khoản tiết kiệm đã đo",
+      "title": "Mô hình trước đây có hoa hồng (đóng với khách hàng mới)",
+      "optional": "Mô hình này <b>không còn được cung cấp cho khách hàng mới</b>. Nếu gói đăng ký của bạn đã có nó, bạn giữ nguyên và các điều khoản bên dưới vẫn áp dụng: phí theo ghế thấp hơn cộng hoa hồng chỉ trên khoản tiết kiệm bạn có thể đối chiếu với hóa đơn của nhà cung cấp. Pro và Nhóm không bao giờ có nó; bảng kê của họ chỉ hiển thị hoa hồng lẽ ra được áp dụng để tham khảo.",
+      "seat": "Phí mỗi chỗ trong phương án này: <b>{monthly}</b> mỗi chỗ mỗi tháng, hoặc <b>{yearly}</b> mỗi chỗ mỗi năm, bằng {currency}.",
       "only": "Hoa hồng <b>chỉ được tính trên khoản tiết kiệm đã đo</b>: khoản tiết kiệm được gắn nhãn {labels} trong bản ghi sử dụng của bạn. Khoản tiết kiệm gắn nhãn {never} không bao giờ bị tính hoa hồng.",
       "measured": "Khoản tiết kiệm đã đo được xác lập từ chính bộ đếm sử dụng của nhà cung cấp LLM của bạn cho yêu cầu đó.",
       "reference": "Khoản tiết kiệm theo tham chiếu, cho một yêu cầu lặp lại mà Phần mềm phục vụ mà không gọi nhà cung cấp, được xác lập từ bộ đếm của nhà cung cấp cho yêu cầu giống hệt trước đó đã thực sự chạy, theo quy tắc ghi trên sao kê của bạn ({regla}).",
@@ -1238,8 +1455,7 @@
       "ceiling": "Không bậc nào vượt quá {max}, nên trước khi hoa hồng được làm tròn đến xu, <b>bạn giữ lại ít nhất {garantia}</b> khoản tiết kiệm đã đo của kỳ. Phí theo ghế tính riêng.",
       "fx": "Khoản tiết kiệm đã đo được tính bằng đô la Mỹ và quy đổi theo tỷ giá tham chiếu của Ngân hàng Trung ương châu Âu lấy tại thời điểm chốt kỳ; sao kê của bạn hiển thị tỷ giá đã dùng.",
       "rounding": "Hoa hồng được làm tròn đến xu gần nhất. Hoa hồng dưới {minimo} không được xuất hóa đơn và không chuyển sang kỳ khác.",
-      "zero": "Một kỳ không có khoản tiết kiệm đã đo thì <b>không có hoa hồng</b>.",
-      "calculator": "Để xem điều này có ý nghĩa gì với lưu lượng của chính bạn, hãy thử <calc>công cụ tính</calc> trên trang chủ."
+      "zero": "Một kỳ không có khoản tiết kiệm đã đo thì <b>không có hoa hồng</b>."
     },
     "calibration": {
       "title": "Kỳ hiệu chỉnh",
