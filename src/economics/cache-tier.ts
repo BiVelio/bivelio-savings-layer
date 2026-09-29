@@ -83,6 +83,10 @@ const MINIMOS_ANTHROPIC: [prefijo: string, minimo: number][] = [
   // no por herencia de `claude-opus-5-`: el mismo corte que el catálogo.
   ["claude-opus-5-5", 512],
   ["claude-opus-5", 512],
+  // Sonnet 5.5: 512 (misma página, releída el 2026-09-29: «512 tokens for […]
+  // Claude Sonnet 5.5»). Sonnet 5 sigue en 1024, el valor por defecto de abajo:
+  // la versión menor no hereda en ninguna de las dos direcciones.
+  ["claude-sonnet-5-5", 512],
   ["claude-opus-4-7", 2048],
   ["claude-opus-4-6", 4096],
   ["claude-opus-4-5", 4096],

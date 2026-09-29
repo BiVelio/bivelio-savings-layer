@@ -31,7 +31,7 @@ import { CATALOGO, claveDeCatalogo } from "./catalogo.js";
 // clasificado por nadie: su salida NO se acredita (`unclassified-model`).
 //
 // Claude, según la referencia de la API de Anthropic (septiembre de 2026):
-//   · Opus 5 y 5.5, Sonnet 5, Fable 5 y 5.1, Mythos 5 y 5.1 RAZONAN sin que
+//   · Opus 5 y 5.5, Sonnet 5 y 5.5, Fable 5 y 5.1, Mythos 5 y 5.1 RAZONAN sin que
 //     nadie lo pida: con `thinking` omitido corren el
 //     razonamiento adaptativo, o lo llevan siempre puesto, y además rechazan
 //     `temperature` con un 400. En `true`.
@@ -102,6 +102,10 @@ export const RAZONA_POR_FILA: Readonly<Record<string, boolean>> = {
   "claude-sonnet-4-5": false,
   "claude-sonnet-4-6": false,
   "claude-sonnet-5": true,
+  // Sonnet 5.5: «Adaptive thinking is on by default» y «Setting `temperature`,
+  // `top_p`, or `top_k` to a non-default value returns a 400 error»
+  // (https://platform.claude.com/docs/en/models/sonnet-5-5/overview, 2026-09-29).
+  "claude-sonnet-5-5": true,
   "claude-fable-5": true,
   "claude-fable-5-1": true,
   "claude-mythos-5-1": true,

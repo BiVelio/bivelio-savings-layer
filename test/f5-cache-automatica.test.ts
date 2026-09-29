@@ -29,6 +29,12 @@ describe("mínimos cacheables por modelo de Anthropic (página oficial, 2026-09-
     expect(tramoAnthropicDelModelo("claude-3-5-haiku").minimumCacheTokens).toBe(2048);
   });
 
+  it("Sonnet 5.5 cachea desde 512 (página oficial, 2026-09-29) y Sonnet 5 sigue en 1024", () => {
+    expect(tramoAnthropicDelModelo("claude-sonnet-5-5").minimumCacheTokens).toBe(512);
+    expect(tramoDeCache("anthropic/claude-sonnet-5-5").minimumCacheTokens).toBe(512);
+    expect(tramoAnthropicDelModelo("claude-sonnet-5").minimumCacheTokens).toBe(1024);
+  });
+
   it("sin cifra publicada se conserva el 1024 conservador", () => {
     for (const m of ["claude-sonnet-5", "claude-sonnet-4-5", "claude-opus-4-8", "claude-desconocido"]) {
       expect(tramoAnthropicDelModelo(m).minimumCacheTokens, m).toBe(1024);
