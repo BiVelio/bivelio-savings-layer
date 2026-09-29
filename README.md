@@ -210,6 +210,7 @@ import { createSavingsLayer, OpenAICompatibleProvider } from "@bivelio/savings-l
 
 // Your provider. LLM traffic goes straight to it — the SDK never proxies it.
 // Any OpenAI-compatible endpoint works: OpenAI, Azure, vLLM, SGLang, a gateway.
+// For Gemini, use the native `GoogleProvider` instead (see "Gemini: the native adapter").
 // Model ids are qualified (`openai/gpt-4o-mini`); the prefix is stripped on the
 // wire for OpenAI, Azure and Google's Gemini API and kept for gateways — see
 // `stripProviderPrefix`.
@@ -260,8 +261,8 @@ never do.
 A repeat is valued by reference only when the call that ran reached the provider's
 own API (`https://api.openai.com`, `https://api.anthropic.com` or
 `https://generativelanguage.googleapis.com`), because the list price it is valued at
-is the invoice only there. When `OpenAICompatibleProvider` or `AnthropicProvider`
-points anywhere else — a proxy such as LiteLLM, a gateway, Azure, Bedrock, Vertex —
+is the invoice only there. When `OpenAICompatibleProvider`, `AnthropicProvider` or
+`GoogleProvider` points anywhere else — a proxy such as LiteLLM, a gateway, Azure, Bedrock, Vertex —
 or when the Anthropic SDK or LangChain adapter reads that its client does, that call
 leaves no reference: its repeats stay `estimated`, and the `reference` trace of the
 call that ran says `unofficial-origin`. When the layer cannot tell where the call
@@ -642,7 +643,7 @@ changes the answer, and what they are worth is reported next to the four ledgers
 never folded into `cost.*`, never part of any commission.
 
 **`savings.deferrable`** asks for the provider's Flex tier: OpenAI, and Gemini through
-its OpenAI‑compatible endpoint. Anthropic has no cheaper synchronous tier: its
+`GoogleProvider` (`serviceTier: "flex"`) or its OpenAI‑compatible endpoint. Anthropic has no cheaper synchronous tier: its
 discount lives only in Message Batches, which `layer.batches` (below) sends to.
 Bedrock and DeepSeek off‑peak pricing are not supported.
 
@@ -924,6 +925,60 @@ console.log(data.answer); // 8
 </details>
 
 <details>
+<summary><b>Gemini: the native adapter</b></summary>
+
+For Gemini, use `GoogleProvider`: it speaks Gemini's own API (`generateContent` and
+`streamGenerateContent`), where what the layer measures is documented. Keep
+`OpenAICompatibleProvider` for every other provider.
+
+```ts
+import { GoogleProvider } from "@bivelio/savings-layer";
+
+const gemini = createSavingsLayer({
+  provider: new GoogleProvider({ apiKey: process.env.GEMINI_API_KEY, requireUsage: true }),
+  licenseKey: process.env.BIVELIO_LICENSE_KEY,
+});
+
+const { text: answer, report: geminiReport } = await gemini.generate({
+  model: "google/gemini-3.8-flash", // the `google/` prefix never travels
+  messages: [
+    { role: "system", content: "Answer in one sentence." },
+    { role: "user", content: "Why is the sky blue?" },
+  ],
+  maxOutputTokens: 400,
+  reasoningEffort: "low", // → thinkingLevel "LOW" (Gemini 3) or a thinking budget (2.5)
+});
+console.log(answer, geminiReport.cost.actual);
+```
+
+What the native API gives the layer that the OpenAI-compatible endpoint hides:
+
+- **Thinking is billed output.** Output is `candidatesTokenCount + thoughtsTokenCount`
+  (Google bills thinking as output) and the thinking is reported as reasoning. Thought
+  summaries (`thinkingConfig: { includeThoughts: true }` on the adapter) are never part
+  of `text`.
+- **Refusals with their reason.** A blocked prompt (`promptFeedback.blockReason`) or a
+  filtered answer (`finishReason` `SAFETY`, `PROHIBITED_CONTENT`, `BLOCKLIST`, …) is
+  `finishReason: "content_filter"` with the native reason in `finishReasonDetail`:
+  measured from its usage, never cached, never credited.
+- **Tools.** Calls come back with their `id` and `thoughtSignature`; send the assistant
+  turn back with its `toolCalls` as they came (as in the tool loop above) and the
+  signature travels back untouched. The results of one turn go back together.
+- **Implicit caching.** Gemini 2.5 and later cache repeated prefixes on their own; the
+  cached part of the prompt (`cachedContentTokenCount`) is reported as provider-cached
+  tokens. Explicit context caching (`cachedContents`) is not used: it bills storage by
+  the hour, which a per-request report cannot price.
+- **Output contract.** Your schema travels as written in `responseJsonSchema`. Google
+  does not document that every JSON Schema feature is enforced, so a repeat of a request
+  with a schema is not valued by reference.
+- **Thinking level.** `reasoningEffort` follows Google's published mapping. A model that
+  rejects a level (`gemini-3.8-flash` answers 400 to `MINIMAL`) is asked again once at
+  `LOW`, and remembered; the rejected request was not billed. Thinking cannot be turned
+  off on Gemini 3 or 2.5 Pro, so `"none"` there is the lowest level, with a warning.
+
+</details>
+
+<details>
 <summary><b>Output cap — with or without a contract</b></summary>
 
 `maxOutputTokens` on the request caps the answer of any request, free text
@@ -1023,7 +1078,10 @@ console.log(res.text);
   the SDK warns once.
 - **Errors.** When a tool fails, put the error in `content` and set `isError: true`.
   Anthropic receives it as `is_error`; providers without such a flag get the text.
-- **Gemini 3's thought signature.** Through its OpenAI-compatible endpoint Gemini
+- **Gemini 3's thought signature.** With `GoogleProvider` it travels in each call's
+  `thoughtSignature` and comes back in `call.extraContent` in the same shape as below,
+  so a conversation can move between the two Gemini adapters. Through its
+  OpenAI-compatible endpoint Gemini
   returns each call with `extra_content.google.thought_signature` and rejects the next
   turn with a 400 if the call comes back without it. It arrives in `call.extraContent`;
   pushing `res.toolCalls` back as they came (as above) sends it back untouched. It is

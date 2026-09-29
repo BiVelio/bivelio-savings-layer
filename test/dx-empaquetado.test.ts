@@ -60,10 +60,11 @@ describe("el paquete publicado", () => {
     const src = readFileSync(DIST, "utf8");
     // Si el minificado se cayera, volverían los comentarios del código fuente.
     expect(src).not.toContain("LA VERJA Y LA TRAZA LEEN DE LA MISMA VARIABLE");
-    // El techo mide «sigue minificado», no el tamaño del producto: sin minificar
-    // el bundle ronda los 800.000 caracteres. Subido de 400.000 a 420.000 con el
-    // carril del ahorro nativo (0032), que lo dejó un centenar de caracteres por encima.
-    expect(src.length).toBeLessThan(420_000);
+    // 450 KB: el techo vigila que el minificado siga ahí, no el tamaño del
+    // producto. Sin minificar (y sin comentarios) el bundle mide ~750 KB; con él,
+    // ~409 KB desde el adaptador nativo de Gemini (+11 KB), que dejó el
+    // techo anterior (400 KB) sin margen. El carril del ahorro nativo (0032) cabe.
+    expect(src.length).toBeLessThan(450_000);
   });
 });
 
