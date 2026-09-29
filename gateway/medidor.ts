@@ -9,6 +9,7 @@ import { PRIMA_ESCRITURA_CACHE, PRIMA_ESCRITURA_CACHE_1H, primaDeEscritura } fro
 import { extraDeCompactacion } from "../src/providers/iteraciones-de-compactacion.js";
 import { negativaNoCobrada } from "../src/providers/anthropic-uso.js";
 import { negativaEnTexto } from "../src/providers/negativa-en-texto.js";
+import { temaSensibleEnTextos, type TemaSensible } from "../src/policy/tema-sensible.js";
 import { SseParser, type SseMessage } from "../src/providers/sse.js";
 import type { HuellaDeLaPrimaria } from "./coalescencia.js";
 import type { CambioDeModelo } from "./hermano.js";
@@ -1094,6 +1095,43 @@ export function informeMedido(
 }
 
 /**
+ * Los textos de USUARIO del cuerpo de una petición, en los tres dialectos:
+ * `messages[].content` de Mensajes y Chat Completions (cadena o partes `text`)
+ * y el `input` de la Responses API (cadena, o elementos con `role: "user"` y
+ * partes `input_text`). Lo que no se entiende no aporta nada.
+ */
+export function textosDeUsuario(cuerpo: unknown): string[] {
+  if (cuerpo === null || typeof cuerpo !== "object" || Array.isArray(cuerpo)) return [];
+  const d = cuerpo as Record<string, unknown>;
+  const deContenido = (c: unknown): string[] =>
+    typeof c === "string"
+      ? [c]
+      : Array.isArray(c)
+        ? c
+            .filter((p): p is Record<string, unknown> => p !== null && typeof p === "object")
+            .filter((p) => p["type"] === "text" || p["type"] === "input_text")
+            .map((p) => p["text"])
+            .filter((t): t is string => typeof t === "string")
+        : [];
+  const deTurnos = (xs: unknown): string[] =>
+    Array.isArray(xs)
+      ? xs
+          .filter((m): m is Record<string, unknown> => m !== null && typeof m === "object")
+          .filter((m) => m["role"] === "user")
+          .flatMap((m) => deContenido(m["content"]))
+      : [];
+  return [...deTurnos(d["messages"]), ...(typeof d["input"] === "string" ? [d["input"]] : deTurnos(d["input"]))];
+}
+
+/**
+ * 2026-09-29 · el tema sensible del texto de usuario de una petición (ver
+ * `textosDeUsuario`), o null: la misma heurística que la política del SDK.
+ */
+export function temaSensibleDelCuerpo(cuerpo: unknown): TemaSensible | null {
+  return temaSensibleEnTextos(textosDeUsuario(cuerpo));
+}
+
+/**
  * Por qué una gemela coalescida NO se valora por referencia y sigue
  * `estimated`. ASCII inglés: va a la línea de log, que lee quien usa el gateway.
  *
@@ -1119,6 +1157,13 @@ export function informeMedido(
  *                         como texto normal (`end_turn`/`stop`, sin señal del
  *                         API; heurística `negativaEnTexto`). Se mide, pero una
  *                         negativa no es una respuesta que repetir ni cobrar.
+ * - `sensitive-topic`   — el texto de USUARIO de la petición toca un tema
+ *                         sensible (autolesión/suicidio, crisis de salud mental,
+ *                         emergencia médica; `temaSensible`,
+ *                         src/policy/tema-sensible.ts). Se mide, pero la
+ *                         respuesta a un tema así no se repite ni se cobra como
+ *                         ahorro (decisión del dueño, 2026-09-29), igual que en
+ *                         el SDK.
  * - `client-disconnected` — el cliente de la gemela se fue antes de recibir la
  *                         réplica entera: sin la capa se habría cortado igual,
  *                         y una llamada que nadie recibió no es una llamada
@@ -1137,6 +1182,7 @@ export type MotivoSinReferenciaGateway =
   | "primary-failed"
   | "primary-refused"
   | "primary-text-refusal"
+  | "sensitive-topic"
   | "client-disconnected"
   | "service-tier"
   | "no-cached-price"
@@ -1237,6 +1283,7 @@ export function valorarGemelaPorReferencia(
   if (primaria.fallida) return { ok: false, reason: "primary-failed" };
   if (primaria.negativa === true) return { ok: false, reason: "primary-refused" };
   if (primaria.negativaEnTexto === true) return { ok: false, reason: "primary-text-refusal" };
+  if (temaSensibleDelCuerpo(cuerpo) !== null) return { ok: false, reason: "sensitive-topic" };
   if (!gemela.entregada) return { ok: false, reason: "client-disconnected" };
 
   const json = cuerpo !== null && typeof cuerpo === "object" && !Array.isArray(cuerpo) ? (cuerpo as Record<string, unknown>) : {};

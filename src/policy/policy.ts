@@ -1,4 +1,5 @@
 import type { CanonicalRequest } from "../canonicalization/canonicalize.js";
+import { temaSensibleEnTextos } from "./tema-sensible.js";
 
 /**
  * Policy engine: risk and freshness.
@@ -51,6 +52,13 @@ export interface Policy {
    * así que sin esto "hour" y "day" no significaban nada operativamente.
    */
   maxCacheAgeMs: number | null;
+  /**
+   * The user turns touch a sensitive topic (self-harm or suicide, a mental
+   * health crisis, a medical emergency), or null. With a topic, neither the
+   * exact nor the semantic cache is used and no reference record is left: the
+   * answer is measured and served, never replayed or credited as a saving.
+   */
+  sensitiveTopic: "self-harm" | "mental-health-crisis" | "medical-emergency" | null;
   reasons: string[];
 }
 
@@ -152,6 +160,13 @@ export function evaluatePolicy(c: CanonicalRequest): Policy {
   // pasa contexto.
   const isPersonalized = PERSONAL_MARKERS.test(text);
   const stochastic = (c.temperature ?? 0) > 0.3 && c.seed == null;
+  // TEMA SENSIBLE (2026-09-29, decisión del dueño): una petición sobre
+  // autolesión, una crisis de salud mental o una emergencia médica no se
+  // cachea, aunque la respuesta sea útil. Solo los turnos de USUARIO: que el
+  // asistente haya remitido a una línea de crisis no hace sensible la petición.
+  const sensitiveTopic = temaSensibleEnTextos(
+    c.messages.filter((m) => m.role === "user").map((m) => (typeof m.content === "string" ? m.content : "")),
+  );
 
   // ─── Tráfico agéntico: fuera de la caché semántica salvo que se pida ───
   //
@@ -196,6 +211,12 @@ export function evaluatePolicy(c: CanonicalRequest): Policy {
   if (requiresFreshData) reasons.push("freshness-sensitive request");
   if (isPersonalized) reasons.push("personalized/account-scoped request");
   if (stochastic) reasons.push("stochastic sampling (temp>0.3, no seed)");
+  if (sensitiveTopic !== null) {
+    reasons.push(
+      `sensitive topic (${sensitiveTopic}) → exact and semantic cache off, no reference record ` +
+        "(measured and served, never replayed or credited)",
+    );
+  }
 
   // Exact cache is safe when the key isolates tenant/scope AND the answer can't
   // go stale under us. Also disabled for deliberately stochastic outputs, where an
@@ -246,7 +267,8 @@ export function evaluatePolicy(c: CanonicalRequest): Policy {
     !freshWithoutBucket &&
     !liveNoCache &&
     !personalizedWithoutPrincipal &&
-    !hasWriteTools;
+    !hasWriteTools &&
+    sensitiveTopic === null;
   if (hasWriteTools) reasons.push("write/destructive tools → exact cache off (side effects must execute)");
   if (liveNoCache) reasons.push("freshnessBucket=live → exact cache off (answer must be current)");
   if (freshWithoutBucket) reasons.push("freshness-sensitive without a freshness bucket → exact cache off");
@@ -263,6 +285,7 @@ export function evaluatePolicy(c: CanonicalRequest): Policy {
     !isPersonalized &&
     !stochastic &&
     c.freshnessBucket !== "day" &&
+    sensitiveTopic === null &&
     (!isAgentic || incluyeAgentico);
   if (isAgentic && !incluyeAgentico) {
     reasons.push(
@@ -308,6 +331,7 @@ export function evaluatePolicy(c: CanonicalRequest): Policy {
     isAgentic,
     maxCacheAgeMs:
       c.freshnessBucket === "hour" ? 3_600_000 : c.freshnessBucket === "day" ? 86_400_000 : null,
+    sensitiveTopic,
     reasons,
   };
 }
