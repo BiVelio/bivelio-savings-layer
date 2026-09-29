@@ -212,8 +212,10 @@ export interface ProviderResponse {
    * OpenAI-compatible endpoint stops a filtered answer with
    * `finish_reason: "content_filter: OTHER"` (or `PROHIBITED_CONTENT`,
    * `SAFETY`…), which the built-in adapter reports as `finishReason:
-   * "content_filter"` and `finishReasonDetail: "OTHER"`. Informational: the
-   * layer decides on `finishReason` alone.
+   * "content_filter"` and `finishReasonDetail: "OTHER"`. Anthropic's refusal
+   * (`stop_reason: "refusal"`) carries its `stop_details.category` here.
+   * Informational: the layer decides on `finishReason` alone, and passes this
+   * on to the caller as `SavingsResult.finishReasonDetail`.
    */
   finishReasonDetail?: string;
   /**
