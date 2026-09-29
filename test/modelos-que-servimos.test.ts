@@ -76,6 +76,7 @@ const NO_SON_MODELOS: Readonly<Record<string, string>> = {
 const MENCIONADOS_NO_SERVIDOS: Readonly<Record<string, string>> = {
   "gpt-5": "prefijo de familia (startsWith) en el banco y el README",
   "gpt-6": "prefijo de familia (startsWith) en el banco",
+  "gpt-5.6": "prefijo de familia (startsWith) en el simulador de benchmarks/sondas/seco.ts",
   "gpt-4": "nombre de fichero del dataset MT-Bench de FastChat (reference_answer/gpt-4.jsonl), no un modelo que se llame",
   "gemini-2": "prefijo de familia en benchmarks/nativo.ts",
   "claude-mythos-5": "tabla de compatibilidad de Anthropic en benchmarks/nativo.ts",
