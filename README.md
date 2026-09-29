@@ -119,6 +119,12 @@ bvsala gateway --upstream openai --port 8403   # one gateway per upstream
 bvsala gateway                                 # Anthropic, the default, on 8402
 ```
 
+Flags and environment variables are in English (`--port`, `--project`, `--force`,
+`BVSALA_GATEWAY_EFFORT`, `BVSALA_GATEWAY_SIBLING_MODEL`). The Spanish spellings from
+earlier versions (`--puerto`, `--proyecto`, `--forzar`, `BVSALA_GATEWAY_ESFUERZO`,
+`BVSALA_GATEWAY_MODELO_HERMANO`) keep working until 0.5 and print a deprecation
+notice; `BVSALA_SILENCE_DEPRECATIONS=1` silences it. `bvsala --help` lists them all.
+
 ```python
 from openai import OpenAI
 client = OpenAI(base_url="http://127.0.0.1:8403/v1")   # WITH /v1
@@ -233,8 +239,8 @@ const { text, report } = await layer.generate({
 
 console.log(text);                    // "8"  (computed locally — no LLM call)
 console.log(report.calls.avoidedLlm); // → 1: a whole call you never paid for
-console.log(report.cost.netSavings);  // → 0..1 ratio of the baseline you did not pay (1 here)
-console.log(report.cost.baselineEstimate - report.cost.actual); // → the same saving in USD
+console.log(report.cost.netSavingsRatio); // → 0..1 ratio of the baseline you did not pay (1 here)
+console.log(report.cost.netSavingsUsd);   // → the same saving in USD (baselineEstimate − actual)
 console.log(report.cost.basis);       // → "estimated": nothing ran, so there is no provider counter
 ```
 
@@ -278,7 +284,7 @@ tokens) with `stop_details.category` set to `cyber`, `general_harms` or `null`. 
 documents these as
 [not billed](https://platform.claude.com/docs/en/build-with-claude/refusals-and-fallback#how-refusals-are-billed).
 Its tokens still appear in `report.tokens`. `cost.actual`, `cost.baselineEstimate` and
-`cost.netSavings` are all 0, so the request credits no saving: not measured, not
+`cost.netSavingsRatio` are all 0, so the request credits no saving: not measured, not
 estimated and not by reference. A concurrent identical request served from it credits
 nothing either. The same rule applies in the gateway. Any other refusal is priced from
 its `usage` as usual. That covers `bio`, `frontier_llm` and `reasoning_extraction`, a
@@ -802,7 +808,7 @@ Calibrated reuse and `cacheBreakpoints: "auto"` learn from your traffic, and by 
 what they learn lives in the process. On serverless platforms (Vercel Functions, AWS
 Lambda) an instance may serve one request or live a few minutes, so neither would ever
 get past its starting point. Give each one somewhere to keep it. Giving the layer a
-`semanticCache` only says where reworded questions are kept; `semanticCacheDefault: true`
+`semanticCacheStore` only says where reworded questions are kept; `semanticCacheDefault: true`
 is what switches reuse on for every request (a request's own `savings.semanticCache`
 still wins), and without it, or `savings.semanticCache` on each request, the cache
 stays empty and learns nothing:
@@ -824,7 +830,7 @@ async function serverlessLayer(kv: SharedKeyValue) {
   const layer = createSavingsLayer({
     provider,
     licenseKey: process.env.BIVELIO_LICENSE_KEY,
-    semanticCache,
+    semanticCacheStore: semanticCache,
     // Passing the cache does not switch it on; this asks for it on every request.
     semanticCacheDefault: true,
     cacheBreakpoints: "auto",
@@ -1078,10 +1084,11 @@ difference.
 **Which tools reach the model.** The layer never cuts a catalogue it cannot rank. If
 your tools declare no `intents` and no `risk` (the usual shape of MCP and OpenAI tool
 lists), or you pass `savings: { router: false }`, every tool goes to the provider
-exactly as you sent it, and the layer credits nothing for the tool block. Only when
-your tools declare `intents`/`risk` does the selector keep the relevant ones, up to
-`new ToolSelector({ maxTools })` (8 by default), and hold back write tools from a
-request that is not an action. Whatever it leaves out, the model cannot call in that
+exactly as you sent it, and the layer credits nothing for the tool block. When your
+tools declare `intents`/`risk`, the selector holds back write tools from a request
+that is not an action and, since 0.4.33, sends every other tool: it prunes by
+relevance only if you ask for it with `new ToolSelector({ maxTools })` (up to 0.4.32
+that was the default, with 8). Whatever it leaves out, the model cannot call in that
 request: the report's `tool-selector` trace lists it, the tokens count as eliminated
 input, and the SDK warns once per process (`silenceWarnings` turns the warning off).
 
@@ -1161,7 +1168,7 @@ console.log(tracedReport.cost.basis); // the span carries the same figures
 - **Money is kept apart by basis.** The money saved is
   `com.bivelio.cost.saved.measured`, `.reference` or `.estimated` — one key per span,
   the one of its basis — so a sum over one key never mixes measured and estimated
-  money; `unmeasured` spans carry counts and no money. `report.cost.netSavings` is a
+  money; `unmeasured` spans carry counts and no money. `report.cost.netSavingsRatio` is a
   ratio and goes out as `com.bivelio.cost.net_savings_ratio`; the money is
   `baselineEstimate − actual`, and that is what `saved.*` holds.
 - **None of this talks to BiVelio.** Spans go to your exporter; files stay where you
@@ -1196,7 +1203,7 @@ console.log(tracedReport.cost.basis); // the span carries the same figures
 | `gen_ai.usage.input_tokens`, `.output_tokens`, `.cache_read.input_tokens` | your provider's counter; absent when it reported no usage |
 | `com.bivelio.cost.basis`, `.currency`, `.baseline`, `.actual` | where the money comes from, its currency (USD by default), and both sides |
 | `com.bivelio.cost.saved.measured` \| `.reference` \| `.estimated` | the money saved, in the key of its basis only |
-| `com.bivelio.cost.net_savings_ratio` | `cost.netSavings`, a 0..1 ratio — not money |
+| `com.bivelio.cost.net_savings_ratio` | `cost.netSavingsRatio`, a 0..1 ratio — not money |
 | `com.bivelio.calls.*`, `com.bivelio.tokens.*` | the four ledgers: avoided calls, eliminated, compressed and provider‑cached tokens |
 | `com.bivelio.request_id`, `.model.id`, `.cache.result`, `.quality.status` | ids and outcomes |
 

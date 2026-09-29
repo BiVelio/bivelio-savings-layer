@@ -4,6 +4,7 @@ import { SavingsPipeline } from "../src/pipeline/pipeline.js";
 import { AnthropicProvider } from "../src/providers/anthropic.js";
 import { OpenAICompatibleProvider } from "../src/providers/openai-compatible.js";
 import { TokenizerRegistry } from "../src/tokenizer/registry.js";
+import { ToolSelector } from "../src/router/tool-selector.js";
 import { reiniciarAvisos } from "../src/util/warn-once.js";
 import type { Provider, ProviderRequest, ProviderStreamEvent } from "../src/providers/types.js";
 import type { SavingsRequest, SavingsReport, ToolDescriptor } from "../src/contracts/types.js";
@@ -412,7 +413,8 @@ describe("el pipeline con `savings.toolSearch`", () => {
       intents: [i === 17 ? "pedidos abiertos" : `consultar cosa ${i}`],
       risk: "read" as const,
     }));
-    const p = capa(new AnthropicProvider({ fetchImpl: fetchEspia([]) }));
+    // Con `maxTools`: desde 0.4.33 el selector solo poda si se le pide.
+    const p = capa(new AnthropicProvider({ fetchImpl: fetchEspia([]) }), { toolSelector: new ToolSelector({ maxTools: 8 }) });
     await p.generate(peticion("¿Qué pedidos abiertos hay?", tipadas));
     await p.generate(peticion("Otra vez: ¿qué pedidos abiertos hay?", tipadas));
     const avisos = aviso.mock.calls.map((c) => String(c[0])).filter((m) => m.includes("tool selector"));
@@ -426,7 +428,7 @@ describe("el pipeline con `savings.toolSearch`", () => {
       { id: "pedidos", intents: ["pedidos abiertos"], risk: "read" },
       { id: "stock", intents: ["stock"], risk: "read" },
     ];
-    const p = capa(new AnthropicProvider({ fetchImpl: fetchEspia([]) }));
+    const p = capa(new AnthropicProvider({ fetchImpl: fetchEspia([]) }), { toolSelector: new ToolSelector({ maxTools: 8 }) });
     await p.generate(peticion("¿Qué pedidos abiertos hay?", tipadas, {}, { model: "anthropic/claude-sonnet-5" }));
     const avisos = aviso.mock.calls.map((c) => String(c[0])).filter((m) => m.includes("tool selector"));
     expect(avisos).toHaveLength(1);

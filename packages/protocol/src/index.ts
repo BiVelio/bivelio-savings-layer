@@ -38,7 +38,7 @@ export type Feature =
    * primas de escritura); solo la LECTURA de caché es más barata (0,00025
    * frente a 0,001 por 1K, catálogo). El ahorro es el mismo usage a dos
    * precios de catálogo — `measured`, sin A/B. Opt-in del cliente en el
-   * gateway (BVSALA_GATEWAY_MODELO_HERMANO=1) además de este feature.
+   * gateway (BVSALA_GATEWAY_SIBLING_MODEL=1) además de este feature.
    */
   | "sibling_model_routing"
   | "per_turn_effort";

@@ -774,6 +774,12 @@ export interface SavingsResult<T = unknown> {
    * Por qué paró de generar el modelo (`"stop"`, `"length"`, `"tool_calls"`, …).
    * Presente cuando la respuesta viene del proveedor; ausente en los atajos
    * (caché/resolver), que solo sirven respuestas finales completas.
+   *
+   * In 0.5 this becomes a CLOSED set — `"stop"`, `"length"`, `"tool_calls"`,
+   * `"content_filter"` or `"other"` — and the provider's own value (for example
+   * `"stop_sequence"`, `"pause_turn"` or `"content_filter: OTHER"`) moves to
+   * `finishReasonDetail`. Compare against those five values only; see the 0.5
+   * migration guide.
    */
   finishReason?: string;
   /**
@@ -1266,7 +1272,28 @@ export interface SavingsReport {
   cost: {
     baselineEstimate: number;
     actual: number;
+    /**
+     * A RATIO, not money: `1 - actual / baselineEstimate`, rounded to six
+     * decimals (0 when nothing was saved, negative when the request cost more).
+     *
+     * @deprecated Since 0.4.33, read {@link netSavingsRatio} (the same value) or
+     * {@link netSavingsUsd} (the saving in USD). Removed in 0.5: see the 0.5
+     * migration guide.
+     */
     netSavings: number;
+    /**
+     * The saving as a RATIO of the baseline: `1 - actual / baselineEstimate`,
+     * rounded to six decimals (0 when nothing was saved or there is no baseline,
+     * negative when the request cost more). Do not sum it across requests: sum
+     * {@link netSavingsUsd}.
+     */
+    netSavingsRatio: number;
+    /**
+     * The saving in USD: `baselineEstimate - actual` (negative when the request
+     * cost more). Sum it only within one `basis`: measured and estimated money
+     * are never added together.
+     */
+    netSavingsUsd: number;
     /**
      * Where the baseline comes from. It is what separates measured money from
      * estimated money.

@@ -29,17 +29,22 @@ export interface ToolSelection {
 
 export interface ToolSelectorOptions {
   /**
-   * Max tools the selector keeps when it has a SIGNAL to select on: a catalogue
-   * whose tools declare `intents` and/or `risk`, with the router on. Default 8.
+   * Cap on the tools the selector keeps by relevance. Unset (the default since
+   * 0.4.33), there is NO cap and NO relevance pruning: every tool the request
+   * may use reaches the provider, and the layer credits nothing for the tool
+   * block. Set it to opt in to pruning a TYPED catalogue (tools that declare
+   * `intents` and/or `risk`, with the router on) down to the `maxTools` most
+   * relevant ones — up to 0.4.32 that was the default, with 8.
    *
-   * It never truncates a catalogue it cannot rank. A catalogue that declares no
-   * `intents` and no `risk` (the usual case: MCP and OpenAI tool lists) and every
-   * request with `savings: { router: false }` go to the provider WHOLE, exactly as
-   * the caller sent them, and the layer credits nothing for the tool block:
-   * cutting by position left the model unable to call the rest (on BFCL
-   * multi-turn, gpt-4o-mini hit the reference call 8/10 times directly and 1/10
-   * through the layer). When the selector does prune a typed catalogue, the
-   * report's `tool-selector` trace lists what was left out and the SDK warns
+   * What is never affected by this option: write and destructive tools are
+   * still withheld from a request the router does not classify as an action
+   * (that gate is about safety, not size), and a catalogue that declares no
+   * `intents` and no `risk` (the usual case: MCP and OpenAI tool lists), or any
+   * request with `savings: { router: false }`, goes to the provider WHOLE,
+   * exactly as the caller sent it. Cutting blind left the model unable to call
+   * the rest (on BFCL multi-turn, gpt-4o-mini hit the reference call 8/10 times
+   * directly and 1/10 through the layer). Whenever the selector does leave a
+   * tool out, the report's `tool-selector` trace lists it and the SDK warns
    * (once per process, silenced by `silenceWarnings`).
    */
   maxTools?: number;
@@ -88,13 +93,14 @@ export class InMemoryToolSetFreezer implements ToolSetFreezer {
 // `.d.ts` publicado.
 
 export class ToolSelector {
-  private readonly maxTools: number;
+  // `undefined` = sin tope ni poda por relevancia (el default desde 0.4.33).
+  private readonly maxTools: number | undefined;
   private readonly scoreIntentMatch: (text: string, tool: ToolDescriptor) => number;
   private readonly learningTurns: number;
   private readonly freezer: ToolSetFreezer;
 
   constructor(opts: ToolSelectorOptions = {}) {
-    this.maxTools = opts.maxTools ?? 8;
+    this.maxTools = opts.maxTools;
     this.scoreIntentMatch = opts.scoreIntentMatch ?? defaultScore;
     this.learningTurns = opts.learningTurns ?? 16;
     this.freezer = opts.freezer ?? new InMemoryToolSetFreezer();
@@ -194,6 +200,34 @@ export class ToolSelector {
     const reads = eligible.filter((t) => !esEscritura(t));
     const writes = eligible.filter((t) => esEscritura(t));
 
+    // SIN `maxTools` NO HAY PODA POR RELEVANCIA (decisión del dueño, 2026-09-29,
+    // para la 0.4.33). Recortar un catálogo tipado a 8 por puntuación léxica no
+    // lo había avalado ningún banco, y la regla de la 0.5 es que la capa nunca
+    // empeora la respuesta de la llamada directa: mandar todo lo que la petición
+    // puede usar no la empeora. Solo queda la verja de riesgo (las de escritura
+    // fuera de una acción), que es de seguridad y no de tamaño. Tampoco se
+    // congela nada: el conjunto emitido depende solo de la ruta (acción o no),
+    // no del texto, y congelar la unión de rutas distintas colaría una de
+    // escritura en una petición que no es acción. Lo único que sale en
+    // `droppedIds` —y lo único que se acredita en el libro 2— es lo que retira
+    // la verja; con un catálogo de solo lectura, nada.
+    if (this.maxTools === undefined) {
+      const idsElegibles = new Set(eligible.map((t) => t.id));
+      const retiradas = tools.filter((t) => !idsElegibles.has(t.id)).map((t) => t.id);
+      return {
+        // En el orden del llamante: es su conjunto, como en `passthrough`.
+        tools: eligible,
+        droppedIds: retiradas,
+        reason:
+          `no maxTools: every tool this request may use passed (${eligible.length}/${tools.length}; ` +
+          `writes ${allowWrites ? "allowed" : "blocked"}); set ToolSelectorOptions.maxTools to prune by relevance`,
+        // Sin nada retirado, el conjunto es el del llamante. Con la verja
+        // retirando algo depende de la ruta, y el prefijo no se puede llamar estable.
+        setIsStable: retiradas.length === 0,
+      };
+    }
+    const maxTools = this.maxTools;
+
     // Y CUANDO NO CABEN TODAS, SE ELIGE POR PUNTUACIÓN, NUNCA POR ORDEN DE
     // DECLARACIÓN. Sin este `sort` el corte se lleva por delante justo la write
     // que sí casaba: con `maxTools: 2` y tres writes de las que solo
@@ -216,8 +250,8 @@ export class ToolSelector {
     // Las writes primero (son la acción) y el techo restante para las reads: bajo
     // presión de presupuesto se sacrifica una lectura, nunca la capacidad de actuar.
     const scored = [
-      ...writesPorRelevancia.slice(0, this.maxTools),
-      ...readsRelevantes.slice(0, Math.max(0, this.maxTools - writes.length)),
+      ...writesPorRelevancia.slice(0, maxTools),
+      ...readsRelevantes.slice(0, Math.max(0, maxTools - writes.length)),
     ].map((tool) => ({ tool }));
 
     // EL ORDEN QUE SE EMITE NO ES EL ORDEN EN QUE SE ELIGE.
@@ -277,7 +311,7 @@ export class ToolSelector {
         };
       }
       // Aún aprendiendo: la unión de lo elegido hasta ahora, acotada.
-      const union = [...new Set([...(memoria?.ids ?? []), ...selected.map((t) => t.id)])].sort().slice(0, this.maxTools);
+      const union = [...new Set([...(memoria?.ids ?? []), ...selected.map((t) => t.id)])].sort().slice(0, maxTools);
       this.freezer.record(freezeKey, union, turnos);
     }
 

@@ -181,7 +181,7 @@ export function describirEstadoDeHermano(
     .map(([a, b]) => `${a}→${b}`)
     .join(", ");
   if (bandera !== "1") {
-    return { linea: "sibling model routing: OFF (BVSALA_GATEWAY_MODELO_HERMANO=1 turns it on)", aviso: false };
+    return { linea: "sibling model routing: OFF (BVSALA_GATEWAY_SIBLING_MODEL=1 turns it on)", aviso: false };
   }
   if (!hayClave) {
     return {

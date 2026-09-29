@@ -5,6 +5,7 @@ import { evaluatePolicy } from "../src/policy/policy.js";
 import { canonicalize } from "../src/canonicalization/canonicalize.js";
 import type { Provider, ProviderRequest, ProviderResponse } from "../src/providers/types.js";
 import type { SavingsRequest, ToolDescriptor } from "../src/contracts/types.js";
+import { ToolSelector } from "../src/router/tool-selector.js";
 
 /**
  * El arreglo del adaptador (content:null + tool_calls) moría una capa más
@@ -202,12 +203,13 @@ describe("router:false no tira las herramientas del llamante", () => {
     expect(res.report.calls.actualTools).toBe(1);
   });
 
-  it("con el router ENCENDIDO el selector sigue filtrando por intent (no se rompió)", async () => {
+  it("con el router ENCENDIDO y `maxTools`, el selector sigue filtrando por intent (no se rompió)", async () => {
     const proveedor = new ProveedorConHerramientas(() => ({
       text: "ok",
       usage: { inputTokens: 40, outputTokens: 4 },
     }));
-    const capa = createSavingsLayer({ provider: proveedor, costModels: PRECIOS });
+    // La poda por relevancia es opt-in desde 0.4.33.
+    const capa = createSavingsLayer({ provider: proveedor, costModels: PRECIOS, toolSelector: new ToolSelector({ maxTools: 8 }) });
     const irrelevante: ToolDescriptor = { id: "book_room", intents: ["book a room"], risk: "read" };
     await capa.generate({
       model: "openai/gpt-4o-mini",

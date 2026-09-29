@@ -470,6 +470,8 @@ export class SavingsLedger {
     baselineEstimate: number;
     actual: number;
     netSavings: number;
+    netSavingsRatio: number;
+    netSavingsUsd: number;
     basis: CostBasis;
   } {
     // Honesty rule (do not credit phantom output savings): a call that actually
@@ -652,10 +654,20 @@ export class SavingsLedger {
     const netSavings =
       baselineEstimate === 0 ? 0 : 1 - actual / baselineEstimate;
 
+    // `netSavings` es una RAZÓN y los arneses la sumaban como dólares: desde
+    // 0.4.33 van las dos cifras con nombre propio (decisión del dueño,
+    // 2026-09-29). `netSavingsRatio` es el MISMO valor que `netSavings`, y
+    // `netSavingsUsd` la resta de los dos importes YA redondeados, para que
+    // cuadre exactamente con `baselineEstimate − actual` del propio informe.
+    const baselinePublicado = roundUsd(baselineEstimate);
+    const actualPublicado = roundUsd(actual);
+    const razon = roundRatio(netSavings);
     return {
-      baselineEstimate: roundUsd(baselineEstimate),
-      actual: roundUsd(actual),
-      netSavings: roundRatio(netSavings),
+      baselineEstimate: baselinePublicado,
+      actual: actualPublicado,
+      netSavings: razon,
+      netSavingsRatio: razon,
+      netSavingsUsd: roundUsd(baselinePublicado - actualPublicado),
       basis,
     };
   }

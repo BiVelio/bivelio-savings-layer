@@ -16,6 +16,7 @@ import { atestiguar, type AtestadoDelCable } from "../src/providers/atestado-del
 import type { SavingsLayerConfig } from "../src/pipeline/config.js";
 import type { Provider, ProviderRequest, ProviderResponse } from "../src/providers/types.js";
 import type { JsonSchema, SavingsReport, SavingsRequest, SavingsResult, ToolDescriptor } from "../src/contracts/types.js";
+import { ToolSelector } from "../src/router/tool-selector.js";
 
 /**
  * MEDIDO POR REFERENCIA (basis "reference"), de punta a punta.
@@ -481,7 +482,10 @@ const CODEBOOK: JsonSchema = {
 
 describe("6 · E2/E3: una poblada que la capa tocó no deja contador", () => {
   it("(a) el selector descarta herramientas del catálogo", async () => {
-    const { layer } = montar(new ProveedorFijo(900, 20, { texto: "Tres vehiculos bastan." }));
+    // Con `maxTools`: desde 0.4.33 el selector solo poda por relevancia si se le pide.
+    const { layer } = montar(new ProveedorFijo(900, 20, { texto: "Tres vehiculos bastan." }), {
+      toolSelector: new ToolSelector({ maxTools: 8 }),
+    });
     const req = peticion({
       messages: [{ role: "user", content: "planifica la ruta de reparto de la flota del norte" }],
       tools: HERRAMIENTAS,
