@@ -4,6 +4,8 @@ import {
   BATERIAS,
   type Banco,
   type Bateria,
+  type CeldaSemanal,
+  type EvidenciaSemanal,
   type Fallo,
   type Intervalo,
   type ParNegativas,
@@ -51,6 +53,8 @@ function formatos(locale: string) {
   const pctRedondo = new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 0 });
   const pp = new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1, signDisplay: "exceptZero" });
   const usd = new Intl.NumberFormat(locale, { style: "currency", currency: "USD", minimumFractionDigits: 4, maximumFractionDigits: 4 });
+  const usd2 = new Intl.NumberFormat(locale, { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const pct2 = new Intl.NumberFormat(locale, { style: "percent", minimumFractionDigits: 2, maximumFractionDigits: 2, signDisplay: "exceptZero" });
   const ent = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 });
   const p = new Intl.NumberFormat(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const fecha = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "UTC" });
@@ -61,6 +65,10 @@ function formatos(locale: string) {
     /** Diferencia en puntos porcentuales, con signo. */
     pp: (x: number) => pp.format(x * 100),
     usd: (x: number) => usd.format(x),
+    /** Gasto de una tirada: céntimos. */
+    usd2: (x: number) => usd2.format(x),
+    /** Desvío relativo pequeño (informe frente a factura), con signo. */
+    pct2: (x: number) => pct2.format(Math.abs(x) < 5e-5 ? 0 : x),
     ent: (x: number) => ent.format(x),
     p: (x: number) => p.format(x),
     fecha: (iso: string) => (iso ? fecha.format(new Date(`${iso.slice(0, 10)}T00:00:00Z`)) : "—"),
@@ -282,6 +290,7 @@ function Garantias({ banco, t, f }: { banco: Banco; t: Traductor; f: F }) {
               desde: g.herramientas.desde,
             })}
           </p>
+          <p className="banco-nota">{t("guarantees.tools.note")}</p>
         </div>
         <div className="terms-group" data-garantia="otra-pregunta" data-ok={otraOk}>
           <h3>
@@ -320,6 +329,7 @@ function Garantias({ banco, t, f }: { banco: Banco; t: Traductor; f: F }) {
               alterados: f.ent(g.negativas.textoAlterado),
             })}
           </p>
+          <p className="banco-nota">{t("guarantees.refusals.note")}</p>
         </div>
       </div>
       {neg.length > 0 && (
@@ -460,6 +470,160 @@ function EstadoPorModelo({ banco, t, f }: { banco: Banco; t: Traductor; f: F }) 
   );
 }
 
+function InformeEnlace({ ruta }: { ruta: string }) {
+  return (
+    <a className="banco-tirada" href={enlace(ruta)} target="_blank" rel="noopener" data-ruta={enlace(ruta)}>
+      {ruta.split("/").pop()}
+    </a>
+  );
+}
+
+function evidencia(e: EvidenciaSemanal, f: F): Record<string, string> {
+  return {
+    fecha: f.fecha(e.fecha),
+    commit: e.commit,
+    cacheadas: f.ent(e.cacheadas),
+    acreditadas: f.ent(e.acreditadas),
+    sobre: f.ent(e.sobre),
+    modelos: f.ent(e.modelos),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// el banco semanal en vivo
+
+function estadoCelda(c: CeldaSemanal, t: Traductor): string {
+  if (c.estado === "medida") return t(c.cortadaPorTope ? "weekly.status.cut" : "weekly.status.measured");
+  const motivo = t(`weekly.reason.${c.motivo ?? "otro"}`);
+  if (c.estado === "sin-soporte") return t("weekly.status.unsupported", { motivo });
+  if (c.estado === "arnes-falla") return t("weekly.status.harnessFailed", { motivo });
+  return t("weekly.status.notMeasurable", { motivo });
+}
+
+const CLASE_SEMANAL: Record<CeldaSemanal["estado"], string> = {
+  medida: "banco-estado banco-medido",
+  "no-medible": "banco-estado banco-no-medible",
+  "sin-soporte": "banco-estado banco-no-medible",
+  "arnes-falla": "banco-estado banco-capa-falla",
+};
+
+function Recuentos({ c, t, f }: { c: CeldaSemanal; t: Traductor; f: F }) {
+  const partes: string[] = [];
+  if (c.respuestasDeOtraPregunta !== undefined) partes.push(t("weekly.counts.otherQuestion", { n: f.ent(c.respuestasDeOtraPregunta) }));
+  if (c.llamadasCambiadas !== undefined) partes.push(t("weekly.counts.changedCalls", { n: f.ent(c.llamadasCambiadas) }));
+  if (c.negativasCacheadas !== undefined || c.negativasAcreditadas !== undefined) {
+    partes.push(t("weekly.counts.refusals", { cacheadas: f.ent(c.negativasCacheadas ?? 0), acreditadas: f.ent(c.negativasAcreditadas ?? 0) }));
+  }
+  return <>{partes.length ? partes.join(" · ") : "—"}</>;
+}
+
+function Diferencia({ c, t, f }: { c: CeldaSemanal; t: Traductor; f: F }) {
+  const d = c.diferencia;
+  if (!d) return <>—</>;
+  if (d.tipo === "exactitud") {
+    return <>{d.ic95 ? t("weekly.diff.accuracy", { d: f.pp(d.valor), inf: f.pp(d.ic95.inf), sup: f.pp(d.ic95.sup) }) : t("weekly.diff.accuracyNoCi", { d: f.pp(d.valor) })}</>;
+  }
+  if (d.tipo === "victoria") {
+    return <>{d.ic95 ? t("weekly.diff.win", { w: f.pct(d.valor), inf: f.pct(d.ic95.inf), sup: f.pct(d.ic95.sup) }) : t("weekly.diff.winNoCi", { w: f.pct(d.valor) })}</>;
+  }
+  const lado = (clave: string, x?: { valor: number; p?: number }) =>
+    x ? t(clave, { d: f.pp(x.valor), p: x.p !== undefined ? f.p(x.p) : "—" }) : null;
+  return (
+    <>
+      {[lado("weekly.diff.safe", d.seguros), lado("weekly.diff.unsafe", d.inseguros)].filter(Boolean).map((s, i) => (
+        <span key={i} className="banco-delta">
+          {s}
+        </span>
+      ))}
+    </>
+  );
+}
+
+function Semanal({ banco, t, f }: { banco: Banco; t: Traductor; f: F }) {
+  const s = banco.semanales[0]!;
+  const medidas = s.celdas.filter((c) => c.estado === "medida").length;
+  const anteriores = banco.semanales.slice(1);
+  return (
+    <section className="terms-sec" aria-labelledby="weekly-h" id="weekly" data-run={s.runId}>
+      <h2 id="weekly-h">{t("weekly.title")}</h2>
+      <p>{t("weekly.intro")}</p>
+      <p className="terms-governs">
+        {t("weekly.meta", {
+          fecha: f.fecha(s.fecha),
+          commit: s.commit,
+          version: s.version,
+          gasto: f.usd2(s.gastoUsd),
+          tope: s.topeUsd !== undefined ? f.usd2(s.topeUsd) : "—",
+          medidas: f.ent(medidas),
+          celdas: f.ent(s.celdas.length),
+        })}{" "}
+        <InformeEnlace ruta={s.ruta} />
+      </p>
+      <p data-ok={s.ok} className="banco-veredicto">
+        {s.ok ? t("weekly.verdictOk") : t("weekly.verdictFailed", { n: f.ent(s.infracciones) })}
+      </p>
+      <div className="tbl-scroll">
+        <table className="tbl banco-tbl banco-semanal">
+          <thead>
+            <tr>
+              <th scope="col">{t("th.battery")}</th>
+              <th scope="col">{t("th.model")}</th>
+              <th scope="col">{t("th.status")}</th>
+              <th scope="col">{t("th.n")}</th>
+              <th scope="col">{t("th.spend")}</th>
+              <th scope="col">{t("th.layerFails")}</th>
+              <th scope="col">{t("th.counts")}</th>
+              <th scope="col">{t("th.diff")}</th>
+              <th scope="col">{t("th.reportVsInvoice")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {s.celdas.map((c) => (
+              <tr key={`${c.bateria}-${c.modelo}`} data-modelo={c.modelo} data-bateria={c.bateria} data-estado={c.estado}>
+                <td>{NOMBRE_BATERIA[c.bateria] ?? c.bateria}</td>
+                <td>
+                  <code>{c.modelo}</code>
+                </td>
+                <td className={CLASE_SEMANAL[c.estado]}>{estadoCelda(c, t)}</td>
+                {c.estado === "medida" ? (
+                  <>
+                    <td>{f.ent(c.n)}</td>
+                    <td>{c.gastoUsd !== undefined ? `${f.usd2(c.gastoUsd)}${c.topeUsd !== undefined ? ` / ${f.usd2(c.topeUsd)}` : ""}` : "—"}</td>
+                    <td>{c.fallosDeLaCapa !== undefined ? f.ent(c.fallosDeLaCapa) : "—"}</td>
+                    <td>
+                      <Recuentos c={c} t={t} f={f} />
+                    </td>
+                    <td>
+                      <Diferencia c={c} t={t} f={f} />
+                    </td>
+                    <td>{c.informeVsFactura !== undefined ? f.pct2(c.informeVsFactura) : "—"}</td>
+                  </>
+                ) : (
+                  <td colSpan={6}>—</td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="banco-nota">{t("weekly.note")}</p>
+      {anteriores.length > 0 && (
+        <>
+          <h3>{t("weekly.earlierTitle")}</h3>
+          <ul className="terms-list">
+            {anteriores.map((x) => (
+              <li key={x.ruta} data-run={x.runId}>
+                {t(x.ok ? "weekly.earlierOk" : "weekly.earlierFailed", { fecha: f.fecha(x.fecha), commit: x.commit, n: f.ent(x.infracciones) })}{" "}
+                <InformeEnlace ruta={x.ruta} />
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+    </section>
+  );
+}
+
 function Fallos({ banco, t, f }: { banco: Banco; t: Traductor; f: F }) {
   const prs = (x: Fallo) => x.prs.map((n) => `#${n}`).join(", ");
   return (
@@ -474,24 +638,54 @@ function Fallos({ banco, t, f }: { banco: Banco; t: Traductor; f: F }) {
             </h3>
             <p>{t(`bugs.items.${x.id}.body`)}</p>
             <ul className="terms-list">
-              <li>
-                {t("bugs.found", { version: x.encontradoEn, ocurrencias: f.ent(x.antes.ocurrencias), sobre: f.ent(x.antes.sobre) })}{" "}
-                {x.antes.rutas.map((r) => (
-                  <a key={r} className="banco-tirada" href={enlace(r)} target="_blank" rel="noopener" data-ruta={enlace(r)}>
-                    {r.split("/").pop()}
-                  </a>
-                ))}
-              </li>
+              {x.antes.ocurrencias > 0 && (
+                <li>
+                  {t("bugs.found", { version: x.encontradoEn, ocurrencias: f.ent(x.antes.ocurrencias), sobre: f.ent(x.antes.sobre) })}{" "}
+                  {x.antes.rutas.map((r) => (
+                    <InformeEnlace key={r} ruta={r} />
+                  ))}
+                </li>
+              )}
+              {x.antesSemanal && (
+                <li>
+                  {t("bugs.foundWeekly", evidencia(x.antesSemanal, f))} <InformeEnlace ruta={x.antesSemanal.ruta} />
+                </li>
+              )}
               <li>{t("bugs.fixed", { version: x.arregladoEn, prs: prs(x) })}</li>
-              <li>
-                {x.despues
-                  ? t(x.despues.ocurrencias === 0 ? "bugs.verified" : "bugs.stillSeen", {
-                      version: x.despues.version,
-                      ocurrencias: f.ent(x.despues.ocurrencias),
-                      sobre: f.ent(x.despues.sobre),
-                    })
-                  : t("bugs.pending", { version: x.arregladoEn })}
-              </li>
+              {x.despues && (
+                <li>
+                  {t(x.despues.ocurrencias === 0 ? "bugs.verified" : "bugs.stillSeen", {
+                    version: x.despues.version,
+                    ocurrencias: f.ent(x.despues.ocurrencias),
+                    sobre: f.ent(x.despues.sobre),
+                  })}
+                </li>
+              )}
+              {x.despuesSemanal && (
+                <li data-semanal={x.despuesSemanal.cacheadas + x.despuesSemanal.acreditadas === 0 ? "re-medido" : "aun-visto"}>
+                  {t(
+                    x.despuesSemanal.cacheadas + x.despuesSemanal.acreditadas === 0 ? "bugs.remeasuredWeekly" : "bugs.stillSeenWeekly",
+                    evidencia(x.despuesSemanal, f),
+                  )}{" "}
+                  <InformeEnlace ruta={x.despuesSemanal.ruta} />
+                </li>
+              )}
+              {!x.despues && !x.despuesSemanal && (
+                <li data-semanal={x.sinMedirSemanal ? "sin-medir" : undefined}>
+                  {x.sinMedirSemanal ? (
+                    <>
+                      {t(`bugs.notRemeasured.${x.sinMedirSemanal.estado === "sin-soporte" ? "unsupported" : "notMeasurable"}`, {
+                        fecha: f.fecha(x.sinMedirSemanal.fecha),
+                        commit: x.sinMedirSemanal.commit,
+                        motivo: t(`weekly.reason.${x.sinMedirSemanal.motivo ?? "otro"}`),
+                      })}{" "}
+                      <InformeEnlace ruta={x.sinMedirSemanal.ruta} />
+                    </>
+                  ) : (
+                    t("bugs.pending", { version: x.arregladoEn })
+                  )}
+                </li>
+              )}
             </ul>
           </li>
         ))}
@@ -556,6 +750,7 @@ export function BancoPublico({ banco, t, locale }: { banco: Banco; t: Traductor;
         <Estadisticas banco={banco} t={t} f={f} />
       </section>
       <Metodo banco={banco} t={t} f={f} ricos={ricos} />
+      {banco.semanales.length > 0 && <Semanal banco={banco} t={t} f={f} />}
       <Ahorro banco={banco} t={t} f={f} />
       <Garantias banco={banco} t={t} f={f} />
       <NoAhorra banco={banco} t={t} f={f} ricos={ricos} />

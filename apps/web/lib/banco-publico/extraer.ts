@@ -21,6 +21,11 @@
  *     informes; la versión que los arregla es un dato del historial (PR), y la
  *     página solo dice «verificado» si una tirada de esa versión o posterior lo
  *     midió y dio cero.
+ *   · El BANCO SEMANAL (benchmarks/banco-semanal, `banco-semanal*.json`) es otro
+ *     formato: una tirada de TODAS las baterías contra cada modelo, desde el
+ *     fuente de `main` en ese momento (no una versión publicada). No entra en
+ *     las tablas A/B por versión: tiene su propia sección, y sirve de evidencia
+ *     a los fallos que declaran cómo leerlo (`semanal` en su definición).
  */
 
 // Los informes son JSON de arneses distintos, sin un esquema común: se leen
@@ -139,6 +144,20 @@ export interface Dataset {
   ficheros: { nombre: string; sha256: string }[];
 }
 
+/** Lo que UNA tirada del banco semanal contó de las negativas de XSTest (celdas medidas). */
+export interface EvidenciaSemanal {
+  ruta: string;
+  fecha: string;
+  commit: string;
+  /** Negativas servidas desde la caché de la capa o escritas en ella. */
+  cacheadas: number;
+  /** Negativas con ahorro acreditado o registro de referencia. */
+  acreditadas: number;
+  /** Prompts medidos, sumados en las celdas de XSTest. */
+  sobre: number;
+  modelos: number;
+}
+
 export interface Fallo {
   id: IdFallo;
   bateria: Bateria;
@@ -149,6 +168,15 @@ export interface Fallo {
   antes: { ocurrencias: number; sobre: number; rutas: string[] };
   /** Lo mismo en las tiradas de la versión del arreglo o posteriores; null si ninguna lo midió aún. */
   despues: { ocurrencias: number; sobre: number; version: string; rutas: string[] } | null;
+  /** La última tirada semanal ANTERIOR al arreglo que lo vio (solo los fallos que encontró el banco semanal). */
+  antesSemanal?: EvidenciaSemanal;
+  /** La última tirada semanal que ya medía `main` con el arreglo dentro. */
+  despuesSemanal?: EvidenciaSemanal;
+  /**
+   * Sin re-medir: la última tirada semanal no pudo medir a los modelos del
+   * fallo (p. ej. Gemini sin clave). Solo si nada lo ha medido tras el arreglo.
+   */
+  sinMedirSemanal?: { ruta: string; fecha: string; commit: string; estado: EstadoSemanal; motivo?: MotivoSemanal };
 }
 
 export interface Garantias {
@@ -167,8 +195,152 @@ export interface Garantias {
   };
 }
 
+// ---------------------------------------------------------------------------
+// el banco semanal
+
+/** Estado de una celda del banco semanal, en las categorías que la página traduce. */
+export type EstadoSemanal = "medida" | "no-medible" | "sin-soporte" | "arnes-falla";
+/** Por qué una celda no se midió. */
+export type MotivoSemanal = "sin-clave" | "proveedor" | "tope-global" | "arnes-proveedor" | "arnes-modelo" | "arnes" | "otro";
+
+/** La diferencia B − A de una celda, según la batería. */
+export type DiferenciaSemanal =
+  | { tipo: "exactitud"; valor: number; ic95?: Intervalo }
+  | { tipo: "negativas"; seguros?: { valor: number; p?: number }; inseguros?: { valor: number; p?: number } }
+  | { tipo: "victoria"; valor: number; ic95?: Intervalo };
+
+export interface CeldaSemanal {
+  bateria: Bateria;
+  modelo: string;
+  estado: EstadoSemanal;
+  motivo?: MotivoSemanal;
+  /** Medida pero cortada por su tope de gasto (intervalo más ancho). */
+  cortadaPorTope: boolean;
+  n: number;
+  gastoUsd?: number;
+  topeUsd?: number;
+  /** Errores en B que A no tuvo. */
+  fallosDeLaCapa?: number;
+  respuestasDeOtraPregunta?: number;
+  llamadasCambiadas?: number;
+  negativasCacheadas?: number;
+  negativasAcreditadas?: number;
+  diferencia?: DiferenciaSemanal;
+  /** (informe − factura) / factura del brazo B: cuánto se aparta el coste que informa la capa del que cobra el proveedor. */
+  informeVsFactura?: number;
+}
+
+export interface TiradaSemanal {
+  ruta: string;
+  runId: string;
+  /** Fecha (AAAA-MM-DD) e instantes de la tirada. */
+  fecha: string;
+  inicio: string;
+  fin: string;
+  /** Commit de `main` cuyo fuente se midió, y la versión que declaraba su package.json. */
+  commit: string;
+  version: string;
+  gastoUsd: number;
+  topeUsd?: number;
+  ok: boolean;
+  infracciones: number;
+  celdas: CeldaSemanal[];
+}
+
+/** ¿Es un resultado del banco semanal (benchmarks/banco-semanal/orquestador.ts)? */
+export function esBancoSemanal(json: J): boolean {
+  return !!json && Array.isArray(json.resultados) && Array.isArray(json.plan) && typeof json.runId === "string" && !!json.veredicto;
+}
+
+function motivoSemanal(estado: string, texto: string | undefined): MotivoSemanal {
+  const t = (texto ?? "").toLowerCase();
+  if (estado === "sin-clave") return "sin-clave";
+  if (estado === "omitida-por-tope-global") return "tope-global";
+  if (estado === "sin-soporte") return /solo habla con|only talks to/.test(t) ? "arnes-proveedor" : /modelos_por_defecto|no tiene/.test(t) ? "arnes-modelo" : "otro";
+  if (estado === "arnes-falla") return "arnes";
+  if (/proveedor|provider|brazo a/.test(t)) return "proveedor";
+  if (/tope|presupuesto|budget/.test(t)) return "tope-global";
+  return "otro";
+}
+
+function celdaSemanal(x: J): CeldaSemanal {
+  const base = { bateria: String(x.bateria) as Bateria, modelo: String(x.modelo), cortadaPorTope: false, n: 0 };
+  if (x.estado === "sin-soporte") return { ...base, estado: "sin-soporte", motivo: motivoSemanal(x.estado, x.motivo) };
+  if (x.estado !== "medida") {
+    return { ...base, estado: x.estado === "arnes-falla" ? "arnes-falla" : "no-medible", motivo: motivoSemanal(x.estado, x.motivo), topeUsd: x.topeUsd };
+  }
+  const m = x.medicion ?? {};
+  const comun = { ...base, gastoUsd: m.gastoUsd, topeUsd: x.topeUsd, fallosDeLaCapa: m.fallosDeLaCapa };
+  if (m.estado !== "medido") return { ...comun, estado: "no-medible", motivo: motivoSemanal("medida", m.motivo), cortadaPorTope: !!m.cortadaPorTope };
+  const deB = (m.exactitud ?? []).filter((e: J) => e.brazo === "B" && typeof e.valor === "number");
+  let diferencia: DiferenciaSemanal | undefined;
+  if (x.bateria === "xstest") {
+    const de = (re: RegExp) => {
+      const e = deB.find((y: J) => re.test(String(y.metrica)));
+      return e ? { valor: e.valor, p: e.p } : undefined;
+    };
+    const seguros = de(/prompts seguros|safe prompts/);
+    const inseguros = de(/prompts inseguros|unsafe prompts/);
+    if (seguros || inseguros) diferencia = { tipo: "negativas", seguros, inseguros };
+  } else if (deB[0]) {
+    diferencia = { tipo: x.bateria === "mt-bench" ? "victoria" : "exactitud", valor: deB[0].valor, ic95: iv(deB[0].ic95) };
+  }
+  const f = (m.informeVsFactura ?? []).find((y: J) => y.brazo === "B");
+  return {
+    ...comun,
+    estado: "medida",
+    cortadaPorTope: !!m.cortadaPorTope,
+    n: m.n ?? 0,
+    respuestasDeOtraPregunta: m.respuestasDeOtraPregunta,
+    llamadasCambiadas: m.llamadasCambiadas,
+    negativasCacheadas: m.negativasCacheadas,
+    negativasAcreditadas: m.negativasAcreditadas,
+    diferencia,
+    informeVsFactura: f && f.facturaUsd > 0 ? (f.informeUsd - f.facturaUsd) / f.facturaUsd : undefined,
+  };
+}
+
+/** Una tirada del banco semanal; null si no es en vivo (el modo seco no mide nada). */
+export function tiradaSemanal(f: InformeFuente): TiradaSemanal | null {
+  const j = f.json;
+  if (!esBancoSemanal(j) || !esVivo(j)) return null;
+  const r = j.reparto ?? {};
+  return {
+    ruta: f.ruta,
+    runId: String(j.runId),
+    fecha: String(j.inicio ?? "").slice(0, 10),
+    inicio: String(j.inicio ?? ""),
+    fin: String(j.fin ?? ""),
+    commit: String(j.commit ?? ""),
+    version: String(j.version ?? ""),
+    gastoUsd: j.gastoUsd ?? 0,
+    // El tope global es lo asignado a las celdas más el margen (plan.ts).
+    topeUsd: typeof r.asignadoUsd === "number" && typeof r.margenUsd === "number" ? r.asignadoUsd + r.margenUsd : undefined,
+    ok: j.veredicto?.ok === true,
+    infracciones: (j.veredicto?.infracciones ?? []).length,
+    celdas: (j.resultados as J[]).map(celdaSemanal),
+  };
+}
+
+/** Las negativas de XSTest que contó una tirada semanal, en sus celdas medidas. */
+function negativasSemanales(t: TiradaSemanal): EvidenciaSemanal | null {
+  const cs = t.celdas.filter((c) => c.bateria === "xstest" && c.estado === "medida");
+  if (!cs.length) return null;
+  return {
+    ruta: t.ruta,
+    fecha: t.fecha,
+    commit: t.commit,
+    cacheadas: cs.reduce((s, c) => s + (c.negativasCacheadas ?? 0), 0),
+    acreditadas: cs.reduce((s, c) => s + (c.negativasAcreditadas ?? 0), 0),
+    sobre: cs.reduce((s, c) => s + c.n, 0),
+    modelos: new Set(cs.map((c) => c.modelo)).size,
+  };
+}
+
 export interface Banco {
   fuentes: { ruta: string; bateria: Bateria; version: string; fecha: string }[];
+  /** Las tiradas en vivo del banco semanal, de la más reciente a la más antigua. */
+  semanales: TiradaSemanal[];
   datasets: Dataset[];
   registros: Registro[];
   modelos: string[];
@@ -485,7 +657,14 @@ function datasetDe(json: J, bateria: Bateria): Dataset | null {
 // ---------------------------------------------------------------------------
 // fallos: lo que el banco encontró y en qué versión se arregló
 
-export type IdFallo = "otra-pregunta" | "herramientas-multiturno" | "negativas-de-texto" | "gemini-prompt-cache-key" | "gemini-filtro-cacheado" | "gemini-thought-signature";
+export type IdFallo =
+  | "otra-pregunta"
+  | "herramientas-multiturno"
+  | "negativas-de-texto"
+  | "negativas-parciales"
+  | "gemini-prompt-cache-key"
+  | "gemini-filtro-cacheado"
+  | "gemini-thought-signature";
 
 interface DefinicionFallo {
   id: IdFallo;
@@ -495,7 +674,25 @@ interface DefinicionFallo {
   prs: readonly number[];
   /** Ocurrencias y unidades comprobadas en UN informe; null si el informe no lo mide. */
   contar: (json: J) => { ocurrencias: number; sobre: number } | null;
+  /**
+   * Cómo lo lee el banco semanal (negativas de XSTest). El semanal mide el
+   * fuente de `main`, no una versión publicada: una tirada lleva el arreglo si
+   * EMPEZÓ después de que el PR entrara en `main` (`enMainDesde`, su mergedAt).
+   * Con `encontrado`, las tiradas anteriores cuentan como la evidencia del fallo.
+   */
+  semanal?: { enMainDesde: string; encontrado: boolean };
+  /** Modelos a los que se refiere (los de Gemini): si el semanal no pudo medirlos, se dice. */
+  familia?: "google";
 }
+
+/**
+ * #422 entró en `main` el 2026-09-29 a las 18:12:31 UTC (mergedAt del PR). El
+ * contador del semanal no separa una negativa entera de una parcial: antes de
+ * #422, lo que contó (tiradas 5e34ea y anteriores) eran negativas PARCIALES y
+ * la carencia tras una disculpa (así las clasificó #422, caso a caso), y se
+ * cuentan en ese fallo. Desde #422 una tirada a cero verifica las dos.
+ */
+const NEGATIVAS_PARCIALES_EN_MAIN = "2026-09-29T18:12:31Z";
 
 const TIPOS_NEGATIVA_DE_TEXTO = new Set(["negativa-de-texto-servida-o-acreditada", "negativa-guardada-en-cache"]);
 const TIPOS_FILTRO_DEL_API = new Set(["negativa-del-api-servida-sin-llamar", "negativa-del-api-no-reconocida-por-la-capa", "negativa-del-api-con-ahorro"]);
@@ -558,9 +755,23 @@ export const DEFINICIONES_DE_FALLOS: readonly DefinicionFallo[] = [
     arregladoEn: "0.4.32",
     prs: [393, 401],
     contar: (json) => (json.informe ? promptsConHallazgo(json, TIPOS_NEGATIVA_DE_TEXTO) : null),
+    semanal: { enMainDesde: NEGATIVAS_PARCIALES_EN_MAIN, encontrado: false },
+  },
+  {
+    // Lo encontró el banco semanal (tiradas del 2026-09-29 sobre main con la
+    // 0.4.32): la negativa que empieza cumpliendo y se niega después, y «lo
+    // siento, pero no tengo acceso…». Los informes A/B no lo cuentan aparte.
+    id: "negativas-parciales",
+    bateria: "xstest",
+    encontradoEn: "0.4.32",
+    arregladoEn: "0.4.33",
+    prs: [422],
+    contar: () => null,
+    semanal: { enMainDesde: NEGATIVAS_PARCIALES_EN_MAIN, encontrado: true },
   },
   {
     id: "gemini-filtro-cacheado",
+    familia: "google",
     bateria: "xstest",
     encontradoEn: "0.4.31",
     arregladoEn: "0.4.32",
@@ -572,6 +783,7 @@ export const DEFINICIONES_DE_FALLOS: readonly DefinicionFallo[] = [
   },
   {
     id: "gemini-prompt-cache-key",
+    familia: "google",
     bateria: "gsm8k",
     encontradoEn: "0.4.31",
     arregladoEn: "0.4.32",
@@ -594,6 +806,7 @@ export const DEFINICIONES_DE_FALLOS: readonly DefinicionFallo[] = [
   },
   {
     id: "gemini-thought-signature",
+    familia: "google",
     bateria: "bfcl",
     encontradoEn: "0.4.31",
     arregladoEn: "0.4.32",
@@ -649,8 +862,15 @@ export function resumirBanco(informes: readonly InformeFuente[]): Banco {
   let sinRed: Garantias["otraPregunta"]["sinRed"] = null;
   let sinRedDe: { version: string; fecha: string } | null = null;
 
+  const semanales: TiradaSemanal[] = [];
+
   const ordenados = [...informes].sort((a, b) => a.ruta.localeCompare(b.ruta));
   for (const f of ordenados) {
+    if (esBancoSemanal(f.json)) {
+      const t = tiradaSemanal(f);
+      if (t) semanales.push(t);
+      continue;
+    }
     const bateria = bateriaDe(f.json);
     if (!bateria || !esVivo(f.json)) continue;
     const version = versionDe(f.json, bateria);
@@ -748,17 +968,44 @@ export function resumirBanco(informes: readonly InformeFuente[]): Banco {
     },
   };
 
+  semanales.sort((a, b) => b.inicio.localeCompare(a.inicio) || b.ruta.localeCompare(a.ruta));
+  const ultimaSemanal = semanales[0];
+
   const fallos: Fallo[] = [];
   for (const def of DEFINICIONES_DE_FALLOS) {
-    const acc = porFallo.get(def.id);
-    // Sin evidencia en las tiradas anteriores al arreglo, el fallo no se enseña:
-    // la página no cuenta nada que los informes publicados no muestren.
-    if (!acc || acc.antes.ocurrencias === 0) continue;
-    fallos.push({ id: def.id, bateria: def.bateria, encontradoEn: def.encontradoEn, arregladoEn: def.arregladoEn, prs: def.prs, antes: acc.antes, despues: acc.despues });
+    const acc = porFallo.get(def.id) ?? { antes: { ocurrencias: 0, sobre: 0, rutas: [] }, despues: null };
+    const fallo: Fallo = { id: def.id, bateria: def.bateria, encontradoEn: def.encontradoEn, arregladoEn: def.arregladoEn, prs: def.prs, antes: acc.antes, despues: acc.despues };
+    if (def.semanal) {
+      const { enMainDesde, encontrado } = def.semanal;
+      const conArreglo = (t: TiradaSemanal) => Date.parse(t.inicio) >= Date.parse(enMainDesde);
+      // `semanales` va de la más reciente a la más antigua.
+      const antes = encontrado
+        ? semanales
+            .filter((t) => !conArreglo(t))
+            .map(negativasSemanales)
+            .find((e): e is EvidenciaSemanal => !!e && e.cacheadas + e.acreditadas > 0)
+        : undefined;
+      const despues = semanales.filter(conArreglo).map(negativasSemanales).find((e): e is EvidenciaSemanal => !!e);
+      if (antes) fallo.antesSemanal = antes;
+      if (despues) fallo.despuesSemanal = despues;
+    }
+    if (def.familia && !fallo.despues && !fallo.despuesSemanal && ultimaSemanal) {
+      const suyas = ultimaSemanal.celdas.filter((c) => c.bateria === def.bateria && c.modelo.startsWith(`${def.familia}/`));
+      const sinMedir = suyas.find((c) => c.estado !== "medida");
+      if (sinMedir && !suyas.some((c) => c.estado === "medida")) {
+        fallo.sinMedirSemanal = { ruta: ultimaSemanal.ruta, fecha: ultimaSemanal.fecha, commit: ultimaSemanal.commit, estado: sinMedir.estado, motivo: sinMedir.motivo };
+      }
+    }
+    // Sin evidencia antes del arreglo (en un informe A/B o en una tirada
+    // semanal), el fallo no se enseña: la página no cuenta nada que los
+    // informes publicados no muestren.
+    if (acc.antes.ocurrencias === 0 && !fallo.antesSemanal) continue;
+    fallos.push(fallo);
   }
 
   return {
     fuentes,
+    semanales,
     datasets: BATERIAS.map((b) => datasets.get(b)).filter((d): d is Dataset => !!d),
     registros,
     modelos,
@@ -766,6 +1013,6 @@ export function resumirBanco(informes: readonly InformeFuente[]): Banco {
     fallos,
     flujoGsm8k,
     distPorVersion,
-    ultimaFecha: fuentes.reduce((m, f) => (f.fecha > m ? f.fecha : m), ""),
+    ultimaFecha: [...fuentes, ...semanales].reduce((m, f) => (f.fecha > m ? f.fecha : m), ""),
   };
 }

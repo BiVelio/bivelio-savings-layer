@@ -1226,10 +1226,50 @@
       "arms": "<b>Dos brazos, la misma petición.</b> A va directa al proveedor, sin la capa; B pasa por la capa con su configuración por defecto. Mismo prompt, mismo muestreo y mismo tope de salida.",
       "cost": "<b>El coste lo cuenta el proveedor.</b> Cada brazo se valora con el <code>usage</code> que devuelve el API en cada llamada, al precio de lista. El ahorro es 1 − coste(B) / coste(A) de la misma tirada, no lo que la capa dice de sí misma.",
       "intervals": "<b>Intervalos al {nivel}.</b> Los calcula cada arnés (remuestreo por familias de preguntas, Wilson en las tasas de negativa). Un intervalo que cruza el cero es un «no se distingue de cero», y así lo decimos.",
-      "package": "<b>El paquete, el que se instala.</b> El brazo B corre el fuente de la etiqueta {version}; su <code>dist/index.js</code> es idéntico byte a byte al del tarball de npm (sha256 <code>{sha}</code>).",
+      "package": "<b>El paquete que instalas.</b> Las tiradas A/B de las tablas de abajo se hicieron con la {version}: el brazo B corre el fuente de esa etiqueta, y su <code>dist/index.js</code> es idéntico byte a byte al del tarball de npm (sha256 <code>{sha}</code>). El banco semanal en vivo es otra cosa: en cada tirada mide el fuente de main tal como está ese día, antes de publicarse.",
       "guard": "<b>Sin atajos.</b> Cada arnés vigila los hosts a los que habla y lleva un tope de gasto por modelo escrito en código. Un modelo que no se pudo medir sale como «no medido», con su motivo.",
       "batteriesTitle": "Cuatro baterías, datasets públicos fijados",
       "commitOnly": "fijado por commit"
+    },
+    "weekly": {
+      "title": "Banco semanal en vivo",
+      "intro": "Cada semana, y cada vez que lo lanzamos a mano, una tirada pasa todas las baterías por todos los modelos: el brazo A va directo al proveedor y el B pasa por la capa construida desde el fuente de main en ese momento. No es una versión publicada: es lo que está a punto de publicarse. La tirada falla si se rompe cualquier regla, y una celda que no se pudo medir dice por qué.",
+      "meta": "Tirada del {fecha} · fuente de main en el commit {commit} (versión del paquete {version}) · gasto {gasto} de un tope de {tope} · {medidas} de {celdas} celdas medidas.",
+      "verdictOk": "Veredicto: sin regresiones.",
+      "verdictFailed": "Veredicto: la tirada falló (reglas rotas: {n}).",
+      "status": {
+        "measured": "medida",
+        "cut": "medida (parada en su tope de gasto)",
+        "notMeasurable": "no medible: {motivo}",
+        "unsupported": "sin soporte: {motivo}",
+        "harnessFailed": "falló el arnés: {motivo}"
+      },
+      "reason": {
+        "sin-clave": "sin clave de este proveedor en el entorno del banco",
+        "proveedor": "ninguna respuesta válida del proveedor en el brazo A",
+        "tope-global": "se alcanzó el tope de gasto global de la tirada",
+        "arnes-proveedor": "el arnés de esta batería solo habla con Anthropic y OpenAI",
+        "arnes-modelo": "el arnés de esta batería no tiene este modelo",
+        "arnes": "error o plazo agotado en el arnés",
+        "otro": "datos insuficientes"
+      },
+      "counts": {
+        "otherQuestion": "respuesta de otra pregunta: {n}",
+        "changedCalls": "llamadas a herramientas cambiadas: {n}",
+        "refusals": "negativas cacheadas: {cacheadas} · acreditadas: {acreditadas}"
+      },
+      "diff": {
+        "accuracy": "exactitud {d} pp [{inf}, {sup}]",
+        "accuracyNoCi": "exactitud {d} pp",
+        "win": "B preferida {w} [{inf} – {sup}]",
+        "winNoCi": "B preferida {w}",
+        "safe": "seguros {d} pp (p = {p})",
+        "unsafe": "inseguros {d} pp (p = {p})"
+      },
+      "note": "«Fallos de la capa» son errores en el brazo B que el A no tuvo. «B − A» es la diferencia de exactitud en GSM8K y BFCL, la de la tasa de negativas en XSTest (p de McNemar, prompts emparejados) y, en MT-Bench, cuántas veces el juez prefiere B (la mitad es empate). «Informe frente a factura» es cuánto se aparta el coste que informa la capa para el brazo B de lo que factura el proveedor.",
+      "earlierTitle": "Tiradas semanales anteriores",
+      "earlierOk": "{fecha} · commit {commit} · sin regresiones.",
+      "earlierFailed": "{fecha} · commit {commit} · falló (reglas rotas: {n})."
     },
     "batteries": {
       "gsm8k": "Problemas de matemáticas con repeticiones y paráfrasis: cuánto ahorra la caché y si se pierde exactitud.",
@@ -1254,7 +1294,13 @@
       "safe": "Negativas, prompts seguros (A → B)",
       "unsafe": "Negativas, prompts inseguros (A → B)",
       "verdict": "Lectura",
-      "reports": "Informes"
+      "reports": "Informes",
+      "status": "Estado",
+      "spend": "Gasto / tope",
+      "layerFails": "Fallos de la capa",
+      "counts": "Qué cuenta",
+      "diff": "B − A",
+      "reportVsInvoice": "Informe frente a factura"
     },
     "savings": {
       "title": "Ahorro medido por modelo",
@@ -1269,7 +1315,8 @@
       "tools": {
         "title": "La capa nunca cambió una llamada a herramientas",
         "titleBroken": "La capa cambió {n} llamadas a herramientas",
-        "body": "{alteradas} llamadas alteradas en {comparaciones} comparaciones de BFCL, {modelos} modelos, desde la {desde}. Si la capa falla (un error en B que A no tuvo), no cuenta aquí: está en «Fallos que el banco encontró»."
+        "body": "{alteradas} llamadas alteradas en {comparaciones} comparaciones de BFCL, {modelos} modelos, desde la {desde}. Si la capa falla (un error en B que A no tuvo), no cuenta aquí: está en «Fallos que el banco encontró».",
+        "note": "Cómo se cuenta: cada comparación de cada tirada en vivo desde esa versión, así que un modelo medido dos veces (un piloto y la tirada completa) suma las dos. Por eso la cifra puede superar la n de las tablas, que enseñan una tirada por modelo."
       },
       "other": {
         "title": "Ninguna respuesta de otra pregunta desde la {desde}",
@@ -1281,7 +1328,8 @@
         "title": "La misma tasa de negativas, con y sin la capa",
         "titleBroken": "La tasa de negativas cambió en {n} modelos",
         "body": "XSTest, {modelos} modelos medidos: ninguna diferencia A/B por debajo de p = {umbral} (McNemar, prompts pareados). La capa entregó sin alterar el texto de {comprobados} respuestas ({alterados} alteradas).",
-        "caption": "Tasa de negativa por modelo, sin la capa (A) y con ella (B), sobre los mismos prompts."
+        "caption": "Tasa de negativa por modelo, sin la capa (A) y con ella (B), sobre los mismos prompts.",
+        "note": "Cómo se cuenta: respuestas, no prompts. Cada respuesta del brazo B se compara con el texto del proveedor, repeticiones del mismo prompt incluidas, así que hay más respuestas que prompts en la tabla."
       }
     },
     "noSavings": {
@@ -1316,10 +1364,17 @@
       "title": "Fallos que el banco encontró",
       "intro": "El banco no está para salir bien en la foto: está para encontrar los fallos antes que tú. Estos los encontró él, con la versión en la que aparecieron y la que los arregla.",
       "found": "Encontrado en la {version}: {ocurrencias} de {sobre}.",
+      "foundWeekly": "Lo encontró el banco semanal en vivo el {fecha} (fuente de main, commit {commit}): {cacheadas} negativas servidas desde la caché o escritas en ella y {acreditadas} acreditadas, sobre {sobre} prompts de XSTest en {modelos} modelos.",
       "fixed": "Arreglado en la {version} ({prs}).",
       "verified": "Verificado en vivo con la {version}: {ocurrencias} de {sobre}.",
       "stillSeen": "Todavía visto con la {version}: {ocurrencias} de {sobre}.",
+      "remeasuredWeekly": "Re-medido en vivo por el banco semanal el {fecha} (fuente de main con el arreglo, commit {commit}): {cacheadas} negativas cacheadas y {acreditadas} acreditadas, sobre {sobre} prompts de XSTest en {modelos} modelos.",
+      "stillSeenWeekly": "El banco semanal aún lo ve el {fecha} (fuente de main, commit {commit}): {cacheadas} negativas cacheadas y {acreditadas} acreditadas, sobre {sobre} prompts de XSTest en {modelos} modelos.",
       "pending": "Pendiente de volver a medir en vivo con la {version}.",
+      "notRemeasured": {
+        "notMeasurable": "Todavía sin re-medir en vivo: el banco semanal del {fecha} (commit {commit}) no pudo medir Gemini ({motivo}). Mientras ninguna tirada lo mida, no lo damos por verificado.",
+        "unsupported": "Todavía sin re-medir en vivo: en el banco semanal del {fecha} (commit {commit}) esta batería no tiene soporte para Gemini ({motivo}). Mientras ninguna tirada lo mida, no lo damos por verificado."
+      },
       "items": {
         "otra-pregunta": {
           "title": "La caché semántica sin calibrar servía la respuesta de otra pregunta",
@@ -1332,6 +1387,10 @@
         "negativas-de-texto": {
           "title": "Algunas negativas escritas como texto se guardaban en caché",
           "body": "Una negativa que el modelo escribe como texto (sin la señal del API) podía guardarse en caché, repetirse y acreditarse como ahorro. Contado en prompts de XSTest."
+        },
+        "negativas-parciales": {
+          "title": "Se cacheaban y acreditaban negativas parciales",
+          "body": "Una respuesta que empieza cumpliendo y se niega más adelante («If you mean harming someone, I can't help…»), o una disculpa seguida de «no tengo acceso…», no se reconocía como negativa: la capa podía cachearla, repetirla y acreditarla como ahorro. Contado en los prompts de XSTest del banco semanal, con modelos de OpenAI y Claude."
         },
         "gemini-filtro-cacheado": {
           "title": "Un filtro de contenido de Gemini se cacheaba como respuesta",

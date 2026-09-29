@@ -11,7 +11,7 @@ import { BancoPublico, CONTACTO, UMBRAL_P, type Traductor } from "@/app/componen
 import { locales } from "@/i18n/config";
 
 import { carpetaDelBanco, cuerpoServido, informesServidos, leerInformes } from "./cargar";
-import { compararVersion, resumirBanco, type Banco, type InformeFuente, type RegistroGsm8k } from "./extraer";
+import { compararVersion, esBancoSemanal, resumirBanco, type Banco, type InformeFuente, type RegistroGsm8k } from "./extraer";
 import { PREFIJO_DATOS, contarSensibles, limpiarInforme, rutaServida } from "./publicar";
 
 /**
@@ -86,6 +86,12 @@ describe("banco público: la extracción, contra los informes publicados", () =>
       const j = crudo(r);
       // Las sondas en vivo (#415) no son una batería A/B: no tienen fila en la tabla.
       if (Array.isArray(j.sondas)) continue;
+      // El banco semanal tampoco: entra en su propia sección (si es en vivo).
+      if (esBancoSemanal(j)) {
+        if (String(j.modo).toLowerCase() === "vivo") expect(BANCO.semanales.some((s) => s.ruta === r), r).toBe(true);
+        else expect(j.modo, r).toMatch(/seco/i);
+        continue;
+      }
       expect(j.estado ?? j.modo, r).toMatch(/bloqueado|MOCK|SIM/i);
     }
   });
@@ -247,7 +253,10 @@ describe("banco público: la página pinta lo que dicen los informes", () => {
     const otra = pagina(banco, "es");
     expect(otra).toContain("google/gemini-prueba");
     expect(otra).toContain(esc(traductor("es")("bugs.items.gemini-prompt-cache-key.title")));
-    expect(otra).toContain(esc(traductor("es")("bugs.pending", { version: "0.4.32" })));
+    // Ningún informe lo midió tras el arreglo, y el banco semanal más reciente
+    // no pudo medir Gemini: la página lo dice así, sin darlo por verificado.
+    expect(fallo.sinMedirSemanal).toMatchObject({ estado: "no-medible", motivo: "sin-clave" });
+    expect(otra).toContain(esc(traductor("es")("weekly.reason.sin-clave")));
   });
 
   it("las garantías salen con sus cuentas; si una se rompe, el título dice el número y no la frase", () => {
@@ -303,6 +312,99 @@ describe("banco público: la página pinta lo que dicen los informes", () => {
   it("la invitación: el contacto como texto seleccionable, además del mailto", () => {
     expect(html).toContain(`<span class="banco-email">${CONTACTO}</span>`);
     expect(html).toContain(`mailto:${CONTACTO}`);
+  });
+});
+
+// ---------------------------------------------------------------------------
+
+describe("banco público: el banco semanal en vivo (su propia sección)", () => {
+  const semanales = INFORMES.filter((f) => esBancoSemanal(f.json));
+  const html = pagina(BANCO, "es");
+
+  it("reconoce cada resultado del banco semanal de la carpeta, y la sección enseña el más reciente", () => {
+    expect(semanales.length).toBeGreaterThan(0);
+    expect(BANCO.semanales.map((s) => s.ruta).sort()).toEqual(semanales.filter((f) => f.json.modo === "vivo").map((f) => f.ruta).sort());
+    const ultima = BANCO.semanales[0]!;
+    for (const s of BANCO.semanales) expect(s.inicio <= ultima.inicio).toBe(true);
+    expect(html).toContain('id="weekly"');
+    expect(html).toContain(`data-run="${ultima.runId}"`);
+    expect(html).toContain(ultima.commit);
+    // Ninguna celda semanal se cuela en las tablas A/B por versión.
+    expect(BANCO.fuentes.some((f) => semanales.some((x) => x.ruta === f.ruta))).toBe(false);
+  });
+
+  it("cada celda sale con su estado y sus recuentos, tal como los trae el JSON crudo", () => {
+    for (const s of BANCO.semanales) {
+      const j = crudo(s.ruta);
+      expect(s.commit).toBe(j.commit);
+      expect(s.version).toBe(j.version);
+      expect(s.gastoUsd).toBe(j.gastoUsd);
+      expect(s.ok).toBe(j.veredicto.ok);
+      expect(s.infracciones).toBe(j.veredicto.infracciones.length);
+      expect(s.celdas.length).toBe(j.resultados.length);
+      for (const [i, c] of s.celdas.entries()) {
+        const x = j.resultados[i];
+        expect(c.modelo).toBe(x.modelo);
+        const medida = x.estado === "medida" && x.medicion.estado === "medido";
+        expect(c.estado === "medida", `${c.bateria} ${c.modelo}`).toBe(medida);
+        if (x.estado === "sin-soporte") expect(c.estado).toBe("sin-soporte");
+        if (x.estado === "sin-clave") expect(c).toMatchObject({ estado: "no-medible", motivo: "sin-clave" });
+        if (!medida) continue;
+        expect(c.n).toBe(x.medicion.n);
+        expect(c.fallosDeLaCapa).toBe(x.medicion.fallosDeLaCapa);
+        expect(c.negativasCacheadas).toBe(x.medicion.negativasCacheadas);
+        expect(c.negativasAcreditadas).toBe(x.medicion.negativasAcreditadas);
+        expect(c.llamadasCambiadas).toBe(x.medicion.llamadasCambiadas);
+        expect(c.respuestasDeOtraPregunta).toBe(x.medicion.respuestasDeOtraPregunta);
+        expect(c.cortadaPorTope).toBe(x.medicion.cortadaPorTope);
+      }
+    }
+    const ultima = BANCO.semanales[0]!;
+    for (const c of ultima.celdas) expect(html).toContain(`data-modelo="${c.modelo}" data-bateria="${c.bateria}" data-estado="${c.estado}"`);
+  });
+
+  it("las negativas de XSTest quedan re-medidas por la tirada con el arreglo; Gemini se dice sin re-medir", () => {
+    const t = traductor("es");
+    const texto = BANCO.fallos.find((f) => f.id === "negativas-de-texto")!;
+    const parciales = BANCO.fallos.find((f) => f.id === "negativas-parciales")!;
+    expect(texto.despuesSemanal).toMatchObject({ cacheadas: 0, acreditadas: 0 });
+    expect(texto.despuesSemanal!.modelos).toBeGreaterThan(0);
+    // Las parciales las encontró el semanal ANTES de #422 y las re-mide a cero después.
+    expect(parciales.antesSemanal!.cacheadas + parciales.antesSemanal!.acreditadas).toBeGreaterThan(0);
+    expect(parciales.despuesSemanal).toMatchObject({ cacheadas: 0, acreditadas: 0 });
+    expect(parciales.antesSemanal!.ruta).not.toBe(parciales.despuesSemanal!.ruta);
+    expect(parciales).toMatchObject({ encontradoEn: "0.4.32", arregladoEn: "0.4.33", prs: [422] });
+    for (const id of ["gemini-prompt-cache-key", "gemini-filtro-cacheado", "gemini-thought-signature"] as const) {
+      const f = BANCO.fallos.find((x) => x.id === id);
+      if (!f) continue;
+      expect(f.despues, id).toBeNull();
+      expect(f.despuesSemanal, id).toBeUndefined();
+      expect(f.sinMedirSemanal, id).toBeDefined();
+    }
+    // La frase vieja («pendiente de re-medir en la 0.4.32») ya no sale para ninguno de estos.
+    expect(html).not.toContain(esc(t("bugs.pending", { version: "0.4.32" })));
+    expect(html).toContain('data-fallo="negativas-parciales"');
+    expect(html).toContain('data-semanal="re-medido"');
+    expect(html).toContain('data-semanal="sin-medir"');
+  });
+
+  it("una tirada semanal nueva entra sola; si vuelve a ver negativas, la página lo dice", () => {
+    const base = semanales.find((f) => f.ruta.endsWith("/banco-semanal.json"))!;
+    const json = structuredClone(base.json);
+    json.runId = "prueba";
+    json.inicio = "2099-01-01T00:00:00.000Z";
+    json.fin = "2099-01-01T01:00:00.000Z";
+    const xs = json.resultados.find((x: J) => x.bateria === "xstest" && x.estado === "medida" && x.medicion.estado === "medido");
+    xs.medicion.negativasCacheadas = 2;
+    const banco = resumirBanco([...INFORMES, { ruta: "docs/benchmarks/2099-01-01/banco-semanal.json", json }]);
+    expect(banco.semanales[0]!.runId).toBe("prueba");
+    expect(banco.fallos.find((f) => f.id === "negativas-parciales")!.despuesSemanal!.cacheadas).toBe(2);
+    const otra = pagina(banco, "es");
+    expect(otra).toContain('data-run="prueba"');
+    expect(otra).toContain('data-semanal="aun-visto"');
+    // El modo seco no mide nada: no entra.
+    const seco = { ...structuredClone(base.json), modo: "seco", runId: "seco" };
+    expect(resumirBanco([...INFORMES, { ruta: "docs/benchmarks/2099-01-02/banco-semanal.json", json: seco }]).semanales.some((s) => s.runId === "seco")).toBe(false);
   });
 });
 
