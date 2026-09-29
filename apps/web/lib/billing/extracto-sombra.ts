@@ -16,8 +16,12 @@ import { construirExtracto, type Extracto, type FilaDiaria } from "./extracto";
  * duplicada AQUÍ y un test la ancla al fichero fuente del catálogo — si el
  * catálogo se actualiza sin tocar esto, el build se pone rojo (mismo patrón
  * que precio-publicado.test.ts).
+ *
+ * La versión cambia cada vez que cambia el CONTENIDO del catálogo (regla del
+ * 2026-09-29, docs/VERSION-DEL-CATALOGO.md): dos extractos con la misma
+ * `version_precios` se valoraron con los mismos precios.
  */
-export const VERSION_PRECIOS_CATALOGO = "2026-09-27";
+export const VERSION_PRECIOS_CATALOGO = "2026-09-29";
 
 /**
  * FX de la SOMBRA: una referencia fija y declarada, no un tipo de mercado.
