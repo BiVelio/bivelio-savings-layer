@@ -362,8 +362,12 @@ export interface SavingsToggles {
    * When your catalogue declares `risk`, write and destructive tools are still withheld
    * from requests the router does not classify as actions, as with the selector. Each
    * search is a short extra step inside the same call, and the definitions it loads are
-   * billed as normal input. This adapter sends earlier turns as text, so a later turn
-   * that needs a tool searches again.
+   * billed as normal input. Across turns, append the assistant turn with its
+   * `toolCalls` (ids as returned) before the tool results: the adapter then sends that
+   * turn's search results back with it, so the model calls the tools it already found
+   * without searching again. It remembers them in memory, per adapter instance and
+   * bounded; a turn it no longer remembers (another process, say) goes out without them
+   * and the model searches again.
    */
   toolSearch?: ToolSearchMode | ToolSearchOptions;
   /**
@@ -776,6 +780,22 @@ export interface SavingsResult<T = unknown> {
    * (caché/resolver), que solo sirven respuestas finales completas.
    */
   finishReason?: string;
+  /**
+   * The provider's own reason behind `finishReason`, when it gave one. Present
+   * only on answers the provider returned, and only with a non-empty reason:
+   *
+   * - Gemini (OpenAI-compatible endpoint): a filtered answer stops with
+   *   `finish_reason: "content_filter: OTHER"` (or `PROHIBITED_CONTENT`,
+   *   `SAFETY`…); it arrives as `finishReason: "content_filter"` and
+   *   `finishReasonDetail: "OTHER"`.
+   * - Anthropic: a refusal (`stop_reason: "refusal"`) arrives as `finishReason:
+   *   "content_filter"` and `finishReasonDetail` set to `stop_details.category`
+   *   (for example `"cyber"` or `"bio"`).
+   *
+   * OpenAI's Structured Outputs refusal message travels in `refusal` instead.
+   * Informational: it changes neither what is billed nor what is credited.
+   */
+  finishReasonDetail?: string;
   /**
    * The refusal message the model returned instead of an answer (OpenAI
    * Structured Outputs: `message.refusal`, with `finish_reason: "stop"` and no
