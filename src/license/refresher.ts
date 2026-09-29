@@ -89,6 +89,10 @@ export class LicenseRefresher {
    *  (entonces se intenta recoger uno bueno desde ya). */
   private currentExpiresAt: number;
   private currentOrg: string | undefined;
+  /** El plan del token vigente: con `measure` se busca el paso a pago en cada vuelta. */
+  private currentPlan: string | undefined;
+  /** El jti del token vigente: si el ledger lo revoca, se busca sustituto desde ya. */
+  private currentJti: string | undefined;
 
   constructor(opts: LicenseRefresherOptions) {
     this.opts = opts;
@@ -101,6 +105,8 @@ export class LicenseRefresher {
     const v = verifyLicenseToken(normalizeLicenseKey(opts.initialToken), opts.publicKey);
     this.currentExpiresAt = v.signatureValid && v.payload ? v.payload.expires_at : 0;
     this.currentOrg = v.signatureValid ? v.payload?.org_id : undefined;
+    this.currentPlan = v.signatureValid ? v.payload?.plan : undefined;
+    this.currentJti = v.signatureValid ? v.payload?.jti : undefined;
   }
 
   start(): void {
@@ -169,7 +175,25 @@ export class LicenseRefresher {
     // Lejos de la caducidad no hay nada que buscar: el token renovado ni existe
     // hasta que Stripe cobra el ciclo siguiente. Se empieza a mirar con
     // `refreshLead` de antelación y se insiste (cada vuelta) durante la gracia.
-    if (this.currentExpiresAt - this.nowSeconds() > this.refreshLeadSeconds) return false;
+    //
+    // SALVO CON LA LICENCIA MEDIR: vive diez años, así que «cerca de caducar» no
+    // llega nunca, y lo que hay que recoger no es una renovación sino el PASO A
+    // PAGO. Con Medir se mira en cada vuelta (1 h por defecto): al pagar, la capa
+    // adopta la licencia de pago y enciende las palancas sola.
+    //
+    // NI CON EL VIGENTE REVOCADO: al cancelar, el servidor revoca la licencia de
+    // pago y devuelve la org a Medir (decisión del dueño, 2026-09-29). Esperar a
+    // «cerca de caducar» dejaría la capa parada hasta el fin del período pagado;
+    // mirando ya, recoge la Medir y sigue midiendo en sombra.
+    const vigenteRevocado =
+      this.currentJti !== undefined && this.opts.revocados?.snapshot().has(this.currentJti) === true;
+    if (
+      this.currentPlan !== "measure" &&
+      !vigenteRevocado &&
+      this.currentExpiresAt - this.nowSeconds() > this.refreshLeadSeconds
+    ) {
+      return false;
+    }
     this.enVuelo = true;
     // TIMEOUT DURO. Sin esto, un CP que acepta la conexión y gotea bytes deja la
     // promesa sin resolver para siempre: `enVuelo` se queda en true, TODAS las
@@ -208,7 +232,13 @@ export class LicenseRefresher {
       const token = normalizeLicenseKey(body.token);
       const v = verifyLicenseToken(token, this.opts.publicKey);
       if (!v.signatureValid || !v.payload) return false;
-      if (v.payload.expires_at <= this.currentExpiresAt) return false; // rancio o el mismo
+      // Una licencia de pago que sustituye a una Medir es una MEJORA aunque caduque
+      // antes (mensual contra diez años): se adopta igual.
+      const pasoAPago = this.currentPlan === "measure" && v.payload.plan !== "measure";
+      // Con el vigente revocado vale cualquier otro válido de la org (la Medir de la
+      // vuelta caduca después, pero no hay por qué exigirlo): el revocado no sirve.
+      const sustituyeARevocado = vigenteRevocado && v.payload.jti !== this.currentJti;
+      if (!pasoAPago && !sustituyeARevocado && v.payload.expires_at <= this.currentExpiresAt) return false; // rancio o el mismo
       if (this.currentOrg && v.payload.org_id !== this.currentOrg) return false; // otra org
       // REVOCADO. Firma válida, más nuevo y de la misma org NO basta: un token
       // revocado (chargeback, fuga) cumple las tres cosas, y adoptarlo apagaría
@@ -222,6 +252,8 @@ export class LicenseRefresher {
       if (this.parado) return false;
       this.currentExpiresAt = v.payload.expires_at;
       this.currentOrg = v.payload.org_id;
+      this.currentPlan = v.payload.plan;
+      this.currentJti = v.payload.jti;
       this.opts.onNewToken(token);
       return true;
     } catch {

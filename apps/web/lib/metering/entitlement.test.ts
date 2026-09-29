@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { decideEntitlement, type LicenseRow, type SubscriptionRow } from "./entitlement";
+import { decideEntitlement, hasValidLicense, hasValidMeasureLicense, type LicenseRow, type SubscriptionRow } from "./entitlement";
 
 /**
  * El candado de servidor que faltaba: el ingest no comprobaba entitlement, así
@@ -148,5 +148,35 @@ describe("entitlement del ingest", () => {
         expect(d.blocked ? DE_BLOQUEO : DE_CONCESION, JSON.stringify({ l, s })).toContain(d.reason);
       }
     }
+  });
+});
+
+describe("la licencia gratuita Medir (plan measure)", () => {
+  const medir = (over: Partial<LicenseRow> = {}) => lic({ plan: "measure", grace_days: 30, ...over });
+
+  it("solo Medir viva: NO se bloquea, con su propio motivo (la ingesta la neutraliza)", () => {
+    expect(decideEntitlement([medir()], [], AHORA)).toEqual({ blocked: false, reason: "measure-license" });
+  });
+
+  it("Medir + licencia de pago: manda la de pago (valid-license)", () => {
+    expect(decideEntitlement([medir(), lic({ plan: "pro" })], [], AHORA).reason).toBe("valid-license");
+  });
+
+  it("Medir + suscripción activa sin fila aún: manda la suscripción", () => {
+    expect(decideEntitlement([medir()], [sub()], AHORA).reason).toBe("active-subscription");
+  });
+
+  it("Medir revocada (abuso) y nada más: se bloquea como cualquier revocada", () => {
+    expect(decideEntitlement([medir({ revoked: true })], [], AHORA)).toEqual({ blocked: true, reason: "license-revoked" });
+  });
+
+  it("hasValidLicense NO cuenta una Medir: el barrido de impago y el invariante la tratan como «sin licencia pagada»", () => {
+    expect(hasValidLicense([medir()], AHORA)).toBe(false);
+    expect(hasValidMeasureLicense([medir()], AHORA)).toBe(true);
+    expect(hasValidLicense([medir(), lic()], AHORA)).toBe(true);
+  });
+
+  it("una fila sin plan (consultas antiguas) sigue contando como pagada", () => {
+    expect(hasValidLicense([lic()], AHORA)).toBe(true);
   });
 });

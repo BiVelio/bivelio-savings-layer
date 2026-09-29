@@ -7,7 +7,7 @@ import {
   type KeyObject,
 } from "node:crypto";
 import type { LicensePayload, RevocationListPayload } from "@bivelio/protocol";
-import { REVOCATION_HEADER } from "@bivelio/protocol";
+import { REVOCATION_HEADER, effectiveTerm } from "@bivelio/protocol";
 
 /**
  * Compact signed license token: `base64url(header).base64url(payload).base64url(sig)`.
@@ -80,7 +80,8 @@ export function verifyLicenseToken(
 
   try {
     const payload = JSON.parse(fromB64url(body).toString("utf8")) as LicensePayload;
-    return { signatureValid: true, payload };
+    // Licencia Medir: su vigencia real va en campos propios (effectiveTerm).
+    return { signatureValid: true, payload: effectiveTerm(payload) };
   } catch {
     return { signatureValid: false, reason: "payload is not valid JSON" };
   }

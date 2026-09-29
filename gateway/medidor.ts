@@ -7,6 +7,7 @@ import { REFERENCE_OUTPUT_SHARE, type CostModel, type ReferenceCredit } from "..
 import type { SavingsReport } from "../src/contracts/types.js";
 import { PRIMA_ESCRITURA_CACHE, PRIMA_ESCRITURA_CACHE_1H, primaDeEscritura } from "../src/pricing/primas.js";
 import { extraDeCompactacion } from "../src/providers/iteraciones-de-compactacion.js";
+import { ahorroNativo } from "../src/economics/ahorro-nativo.js";
 import { negativaNoCobrada } from "../src/providers/anthropic-uso.js";
 import { negativaEnTexto } from "../src/providers/negativa-en-texto.js";
 import { esParadaDeFiltro } from "../src/providers/parada-de-filtro.js";
@@ -1545,6 +1546,20 @@ function construirInforme(
   // B2 · el suelo de la elisión del proveedor (ver sueloDeElision). Una gemela
   // coalescida no viajó: no elidió nada y no tiene suelo.
   const sueloElision = coalescida || upstreamNoOficial || sinCobro ? 0 : sueloDeElision(medido.precio, elision);
+  // EL AHORRO NATIVO (report.nativeSavings): lo que la caché de prefijo DEL
+  // PROVEEDOR le quitó a esta factura, neto de la prima de escritura. Carril
+  // propio: no toca baseline, actual, netSavings ni basis, y jamás entra en la
+  // comisión. Solo donde hay una factura por tokens a precio de lista que lo
+  // respalde: ni gemela (no viajó), ni suscripción, ni upstream no oficial, ni
+  // negativa no cobrada.
+  const nativo = acreditaPalancas
+    ? ahorroNativo(model, medido.precio, {
+        leidos: medido.tokens.cacheLeida,
+        escritos: medido.tokens.cacheEscrita,
+        escritos1h: medido.tokens.cacheEscrita1h,
+        contadorCompleto: true,
+      })
+    : undefined;
   const informe = {
     requestId,
     model,
@@ -1564,6 +1579,7 @@ function construirInforme(
       providerCachedInput: coalescida ? 0 : medido.tokens.cacheLeida,
     },
     cache: { result: coalescida ? ("singleflight" as const) : ("miss" as const) },
+    ...(nativo ? { nativeSavings: nativo } : {}),
     cost: coalescida
       ? {
           baselineEstimate: medido.costeUsd,

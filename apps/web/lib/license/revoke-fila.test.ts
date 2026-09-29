@@ -73,3 +73,40 @@ describe("revokeLicense — la columna revoked no se traga si falla", () => {
     await expect(revokeLicense(admin, "jti-4", "fraude")).rejects.toBeTruthy();
   });
 });
+
+describe("revokeAllLicenses — la cancelación conserva la Medir", () => {
+  function adminConFilas(filas: { id: string; plan: string }[]) {
+    const ledger: string[] = [];
+    const admin = {
+      from: (tabla: string) => {
+        if (tabla === "revocations") {
+          return { upsert: async (f: { jti: string }) => { ledger.push(f.jti); return { error: null }; } };
+        }
+        return {
+          select: () => ({ eq: () => ({ eq: async () => ({ data: filas, error: null }) }) }),
+          update: () => ({ eq: async () => ({ error: null }) }),
+        };
+      },
+    } as unknown as AdminClient;
+    return { admin, ledger };
+  }
+  const filas = [
+    { id: "pago-1", plan: "pro" },
+    { id: "pago-0", plan: "pro" },
+    { id: "medir", plan: "measure" },
+  ];
+
+  it("por defecto revoca TODO (fraude, orden del operador), también la Medir", async () => {
+    const { revokeAllLicenses } = await import("./issue");
+    const d = adminConFilas(filas);
+    expect(await revokeAllLicenses(d.admin, "org", "fraude")).toEqual(["pago-1", "pago-0", "medir"]);
+    expect(d.ledger).toEqual(["pago-1", "pago-0", "medir"]);
+  });
+
+  it("con `conservarMedir` revoca solo lo PAGADO: la Medir sigue viva para la vuelta", async () => {
+    const { revokeAllLicenses } = await import("./issue");
+    const d = adminConFilas(filas);
+    expect(await revokeAllLicenses(d.admin, "org", "subscription canceled", { conservarMedir: true })).toEqual(["pago-1", "pago-0"]);
+    expect(d.ledger).not.toContain("medir");
+  });
+});

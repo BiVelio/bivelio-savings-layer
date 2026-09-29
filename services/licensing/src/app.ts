@@ -74,6 +74,18 @@ export function createRequestHandler(
         return send(res, 201, { token, payload });
       }
 
+      // «Medir»: la licencia gratuita, sin tarjeta, que solo mide en sombra. Misma
+      // autorización de operador que la emisión normal: el alta de autoservicio
+      // vive en el panel (apps/web/app/api/license/measure), que es quien sabe
+      // si la cuenta está verificada y si ya reclamó su organización.
+      if (route === "POST /licenses/issue-measure") {
+        if (!authorized(req)) return send(res, 401, { error: "unauthorized" });
+        const body = (await readJson(req)) as { orgId?: string };
+        if (!body.orgId) return send(res, 400, { error: "orgId is required" });
+        const { token, payload } = service.issueMeasure(body.orgId);
+        return send(res, 201, { token, payload });
+      }
+
       if (route === "POST /licenses/validate") {
         const body = (await readJson(req)) as { token?: string };
         if (!body.token) return send(res, 400, { error: "token is required" });

@@ -9,6 +9,15 @@ import {
 } from "@/lib/metering/usage";
 import { admiteReferencia, CABECERA_VERSION, sellarVersion, versionDeclarada } from "@/lib/metering/version";
 import { decideEntitlement } from "@/lib/metering/entitlement";
+import {
+  aplicarTopeDeAsientos,
+  diaUtc,
+  huecoDeVolumen,
+  inicioDeMes,
+  LIMITES_MEDIR,
+  neutralizarParaMedir,
+  URL_DE_PAGO_MEDIR,
+} from "@/lib/license/medir";
 import { alertar } from "@/lib/observabilidad/alerta";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -63,13 +72,17 @@ export async function POST(req: Request): Promise<NextResponse> {
   // fila NO vigente más reciente hacía sombra a la vigente más antigua y el
   // ingest devolvía 402 a un cliente que paga. Ver `hasActiveSubscription`.
   const [{ data: licenses, error: licErr }, { data: subs, error: subErr }] = await Promise.all([
-    supabase.from("licenses").select("revoked, expires_at, grace_days").eq("org_id", orgId),
+    supabase.from("licenses").select("revoked, expires_at, grace_days, plan").eq("org_id", orgId),
     supabase.from("subscriptions").select("status, current_period_end").eq("org_id", orgId),
   ]);
+  // ¿Solo licencia Medir (gratuita, en sombra)? Entonces su uso entra para el
+  // panel, con topes y NEUTRALIZADO: jamás comisión ni referencia cobrable.
+  let soloMedir = false;
   if (licErr || subErr) {
     console.error("[metering/usage] entitlement lookup failed (fail-open):", licErr ?? subErr);
   } else {
     const decision = decideEntitlement(licenses ?? [], subs ?? [], Date.now());
+    soloMedir = decision.reason === "measure-license";
     if (decision.blocked) {
       return NextResponse.json(
         {
@@ -91,6 +104,75 @@ export async function POST(req: Request): Promise<NextResponse> {
     return NextResponse.json({ error: "invalid JSON body" }, { status: 400 });
   }
   if (records.length === 0) return NextResponse.json({ ingested: 0 }, { status: 202 });
+
+  // ── LICENCIA MEDIR · topes y neutralización (antes de TODO lo demás) ────────
+  let rechazadosPorAsiento = 0;
+  if (soloMedir) {
+    const ahora = Date.now();
+    // Tope de ASIENTOS por mes natural. Fail-open ante error de lectura: el tope
+    // es anti-abuso, no un candado de cobro (Medir no cobra nada).
+    const { data: asientos, error: asErr } = await supabase
+      .from("seat_activity")
+      .select("seat_id")
+      .eq("org_id", orgId)
+      .gte("day", inicioDeMes(ahora));
+    if (asErr) {
+      console.error("[metering/usage] measure: seat lookup failed (fail-open):", asErr);
+    } else {
+      const delMes = new Set(((asientos ?? []) as { seat_id?: string }[]).map((a) => String(a.seat_id ?? "")));
+      const tope = aplicarTopeDeAsientos(records, delMes);
+      rechazadosPorAsiento = tope.rechazados.length;
+      if (tope.admitidos.length === 0) {
+        return NextResponse.json(
+          {
+            error: "measure plan seat limit",
+            reason: "measure-seat-limit",
+            detail:
+              `The free Measure plan measures up to ${LIMITES_MEDIR.asientos} seats per month and this one is over the limit. ` +
+              `Your layer keeps working unchanged; to measure every seat and turn the levers on, upgrade at ${URL_DE_PAGO_MEDIR}`,
+          },
+          { status: 402 },
+        );
+      }
+      records = tope.admitidos;
+    }
+    // Tope de VOLUMEN diario (peticiones medidas, UTC). Los registros sombra
+    // acompañan a una petición ya contada y no cuentan.
+    const { data: hoy, error: hoyErr } = await supabase
+      .from("usage_daily")
+      .select("requests")
+      .eq("org_id", orgId)
+      .eq("day", diaUtc(ahora))
+      .maybeSingle();
+    if (hoyErr) {
+      console.error("[metering/usage] measure: volume lookup failed (fail-open):", hoyErr);
+    } else {
+      const hueco = huecoDeVolumen(Number((hoy as { requests?: number } | null)?.requests ?? 0));
+      if (hueco === 0) {
+        return NextResponse.json(
+          {
+            error: "measure plan daily limit",
+            reason: "measure-volume-limit",
+            detail:
+              `The free Measure plan measures up to ${LIMITES_MEDIR.peticionesDiarias} requests per day and today is full. ` +
+              `Your layer keeps working unchanged; to measure all your traffic, upgrade at ${URL_DE_PAGO_MEDIR}`,
+          },
+          { status: 429 },
+        );
+      }
+      const medidos = records.filter((r) => r["basis"] !== "shadow");
+      if (medidos.length > hueco) {
+        const fuera = new Set(medidos.slice(hueco).map((r) => r.requestId));
+        records = records.filter((r) => !fuera.has(r.requestId) && !fuera.has(r.requestId.replace(/:shadow$/, "")));
+      }
+    }
+    const n = neutralizarParaMedir(records);
+    if (n.neutralizados > 0 || n.referencias > 0) {
+      // Con el SDK honrado nunca pasa: en sombra no hay palanca que ahorre. Si
+      // pasa, alguien corre palancas con una licencia gratuita.
+      console.warn("[metering/usage] measure: ahorro neutralizado en una org Medir", { org: orgId, ...n });
+    }
+  }
 
   // 0029 · EL INTERRUPTOR DE SERVIDOR del carril medido por referencia. Con
   // BVSALA_INGEST_REFERENCE_AS_ESTIMATED=1 (variable de Vercel + redespliegue del
@@ -176,5 +258,8 @@ export async function POST(req: Request): Promise<NextResponse> {
     if (stampErr) console.error("[metering/usage] last_used_at stamp failed:", stampErr);
   });
 
-  return NextResponse.json({ ingested: data ?? records.length }, { status: 202 });
+  return NextResponse.json(
+    { ingested: data ?? records.length, ...(rechazadosPorAsiento > 0 ? { rejectedOverSeatLimit: rechazadosPorAsiento } : {}) },
+    { status: 202 },
+  );
 }

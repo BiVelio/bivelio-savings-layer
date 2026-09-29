@@ -414,7 +414,7 @@
       "personalNote": "Pribadi — belum ada organisasi yang tertaut. Satu akun BiVelio, dibagikan di seluruh suite.",
       "plan": "paket",
       "seatsCount": "{count, plural, other {# kursi}}.",
-      "planBody": "BV-SALA bersifat fail-closed — hanya berjalan dengan lisensi PRO aktif. {monthly} per kursi per bulan atau {yearly} per kursi per tahun. Satu kursi adalah satu mesin atau identitas layanan aktif, bukan orang.",
+      "planBody": "BV-SALA bersifat fail-closed — hanya berjalan dengan lisensi aktif. Pro: {monthly} per kursi per bulan atau {yearly} per kursi per tahun. Tim: {teamMonthly} per bulan dengan {included} kursi termasuk. Tanpa komisi atas penghematan Anda. Satu kursi adalah satu mesin atau identitas layanan aktif, bukan orang.",
       "managePlan": "Kelola paket →",
       "subscribe": "Berlangganan →",
       "checkoutMonthly": "Berlangganan — {monthly}/kursi/bln →",
@@ -430,7 +430,14 @@
       "errPagoEnCurso": "Pembayaran Anda masih diproses: debit bank bisa memakan beberapa hari. Anda akan mendapat akses begitu selesai. Jangan memulai langganan kedua.",
       "errSuscripcionEnStripe": "Stripe sudah memiliki langganan untuk akun ini, tetapi belum diaktifkan di sini. Jangan membeli lagi: tulis ke support@bivelio.com dan kami aktifkan secara manual.",
       "codigoAplicado": "Kode {codigo} akan diterapkan saat membayar.",
-      "errCodigoInvalido": "Kode itu tidak ada atau sudah tidak aktif. Anda bisa melanjutkan tanpanya atau menulis ke support@bivelio.com."
+      "errCodigoInvalido": "Kode itu tidak ada atau sudah tidak aktif. Anda bisa melanjutkan tanpanya atau menulis ke support@bivelio.com.",
+      "planPickLabel": "Paket",
+      "planPro": "Pro",
+      "planTeam": "Tim",
+      "teamHint": "Tim mencakup {included} kursi; setiap kursi tambahan {extra} per bulan. Tidak bisa membeli kurang dari {included}.",
+      "checkoutTeamMonthly": "Berlangganan Tim — {monthly}/bulan, {included} kursi →",
+      "checkoutTeamYearly": "Berlangganan Tim — {yearly}/tahun, {included} kursi →",
+      "errPlanCerrado": "Paket itu tidak lagi ditawarkan kepada pelanggan baru. Pilih Pro atau Tim."
     },
     "referenceLedgerCards": {
       "proven": "terbukti",
@@ -560,6 +567,18 @@
       "title": "Penghapusan oleh penyedia akibat pengaturan kami",
       "detalle": "{requests} permintaan dikreditkan",
       "nota": "Hitungan ini milik penyedia (applied_edits). Bukan penghematan terukur dan tidak pernah masuk ke komisimu; uangnya menyusul setelah neto per model terukur — penghapusan menulis ulang cache prefiks, dan pada beberapa model netonya negatif."
+    },
+    "ahorroNativo": {
+      "title": "Penghematan native yang diaktifkan",
+      "detalle": "{requests} permintaan dengan cache penyedia · baca {lectura} − premi tulis {prima}",
+      "nota": "Ini adalah diskon cache prefiks milik penyedia Anda (Anthropic dengan cache_control, OpenAI otomatis, Gemini implisit), dikurangi premi tulis cache yang ditagihkannya, dihitung dari penghitungnya sendiri dengan harga daftar. Anda melihatnya di tagihan penyedia Anda, bukan tagihan kami: dipisahkan dari penghematan yang dikreditkan dan tidak pernah masuk ke komisi Anda.",
+      "vacio": "Belum ada permintaan yang membaca atau menulis cache prefiks penyedia Anda pada periode ini.",
+      "proveedor": {
+        "anthropic": "Anthropic",
+        "openai": "OpenAI",
+        "google": "Gemini",
+        "other": "Lainnya"
+      }
     },
     "ritmo": {
       "title": "Laju dan proyeksi",
@@ -716,16 +735,44 @@
         "libros": "Empat buku besar",
         "trafico": "Lalu lintas",
         "sesiones": "Sesi",
-        "maquinas": "Mesin"
+        "maquinas": "Mesin",
+        "nativo": "Penghematan native yang diaktifkan"
       }
     },
     "team": {
       "metaTitle": "Tim · BiVelio Savings Layer"
+    },
+    "measurePlan": {
+      "title": "Atau mulai gratis: lisensi Measure, tanpa kartu",
+      "body": "Menjalankan lapisan dalam mode bayangan untuk 1 organisasi dan hingga {seats} kursi: setiap permintaan dikirim ke penyedia Anda tanpa perubahan dan tidak ada yang disajikan dari cache. Dasbor Anda menampilkan apa yang akan dihemat oleh tuas; tingkatkan ke paket berbayar untuk menyalakannya.",
+      "claim": "Dapatkan lisensi Measure gratis saya",
+      "claiming": "Menerbitkan…",
+      "keyLabel": "Kunci lisensi Measure Anda (mode bayangan: tidak ada tuas yang diterapkan)",
+      "keyHint": "Gunakan sebagai BIVELIO_LICENSE_KEY, sama seperti kunci berbayar. Saat Anda meningkatkan paket, lapisan mengambil lisensi berbayar dengan sendirinya dan tuas menyala.",
+      "errEmailNotVerified": "Konfirmasi alamat email Anda terlebih dahulu, lalu coba lagi.",
+      "errDisposableEmail": "Alamat email sekali pakai tidak dapat mengklaim lisensi Measure. Daftar dengan alamat email tetap (misalnya email kantor) lalu coba lagi.",
+      "errOneOrgPerAccount": "Akun ini sudah memiliki lisensi Measure untuk organisasi lain: lisensi gratis mencakup satu organisasi per akun.",
+      "errAlreadyLicensed": "Organisasi Anda sudah memiliki lisensi berbayar: gunakan kunci di atas.",
+      "errBlocked": "Lisensi Measure tidak tersedia untuk organisasi ini. Tulis ke support@bivelio.com.",
+      "errRole": "Peran Anda tidak mengizinkan mengunduh lisensi. Minta kepada owner atau admin.",
+      "errSignIn": "Masuk terlebih dahulu.",
+      "errGeneric": "Lisensi Measure tidak dapat diterbitkan. Coba lagi sebentar lagi.",
+      "planLabel": "Measure (gratis)",
+      "pricingNote": "Measure: gratis, tanpa kartu. Lapisan dalam mode bayangan untuk 1 organisasi dan hingga {seats} kursi, agar Anda melihat berapa yang akan dihemat sebelum membayar.",
+      "card": {
+        "eyebrow": "Lisensi Measure · mode bayangan",
+        "title": "Yang akan Anda hemat",
+        "amount": "{amount} yang tidak akan Anda belanjakan",
+        "context": "Dari {spend} pengeluaran terukur dalam {requests} permintaan. Perkiraan dari jalur bayangan, dinilai dengan penghitung penyedia Anda sendiri: di SDK, panggilan berulang dan duplikat yang berjalan bersamaan; di gateway, juga model saudara dan penurunan TTL cache. Tidak ada yang diterapkan dan tidak ada yang ditagih.",
+        "empty": "Belum ada perkiraan penghematan: muncul begitu lapisan Anda melihat permintaan berulang atau, di gateway, permintaan yang akan lebih hemat dengan model saudara atau penurunan TTL cache. Lisensi Measure tidak pernah mengubah apa yang Anda kirim.",
+        "limits": "Gratis untuk 1 organisasi, hingga {seats} kursi dan {requests} permintaan per hari.",
+        "cta": "Nyalakan tuas: lihat paket"
+      }
     }
   },
   "landing": {
     "metaTitle": "BiVelio — Verifikasi Penghematan LLM Anda",
-    "metaDescription": "SDK yang membuat aplikasi Anda hanya membayar penyedia LLM sesuai kebutuhannya, dan gateway yang mengukur agen pemrograman Anda. Dihitung dengan penghitung penyedia Anda sendiri: biaya per kursi, ditambah komisi hanya atas penghematan terukur.",
+    "metaDescription": "SDK agar aplikasi Anda membayar penyedia LLM hanya untuk yang dibutuhkan, dan gateway yang mengukur agen kode Anda. Semua dengan penghitung penyedia Anda: ukur gratis, lalu bayar per kursi — tanpa komisi atas penghematan Anda.",
     "hero": {
       "eyebrow": "Untuk tim yang membayar API LLM per token",
       "title": "Tagihan LLM Anda, terkendali.",
@@ -794,8 +841,8 @@
           "body": "Kami tidak meminta kepercayaan buta. Setiap penghematan diukur dengan meteran resmi penyedia — meteran yang sama untuk menagih Anda — dan muncul di struk Anda. Yang tidak bisa dicocokkan dengan tagihan tidak pernah diumumkan."
         },
         {
-          "title": "Biaya per kursi, dan bagian dari yang terukur",
-          "body": "Anda membayar biaya tetap per kursi setiap bulan, baik Anda berhemat maupun tidak. Di atas itu, komisi kami hanya diambil dari penghematan yang diukur dengan penghitung penyedia Anda — dan sebagian besar dari setiap penghematan selalu tetap milik Anda. Sebulan tanpa penghematan terukur? Anda membayar kursinya dan komisi nol."
+          "title": "Ukur gratis, lalu bayar per kursi",
+          "body": "Mulailah dengan lisensi Measure yang gratis: lapisan berjalan dalam mode bayangan dan menunjukkan berapa yang akan dihemat pada lalu lintas Anda sendiri. Untuk menyalakan tuasnya, Anda membayar biaya tetap per kursi, atau paket Tim, baik Anda hemat atau tidak — dan tanpa komisi atas penghematan Anda."
         }
       ],
       "nota": "Animasi ini menggambarkan idenya. Angka sesungguhnya — diukur terhadap penyedia sungguhan — ada tepat di bawah."
@@ -887,12 +934,36 @@
       "initNote": "<b>Atau biarkan satu perintah menyesuaikannya dengan stack Anda.</b> <code>init</code> membaca <code>package.json</code> Anda (Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, SDK Anthropic, atau SDK OpenAI) lalu mencetak baris instalasi, kode persis untuk adaptor Anda, dan sebuah pemeriksaan yang tidak memakai token: setelah lisensi Anda terpasang, lapisan menjawabnya di mesin Anda tanpa memanggil model. Perintah ini tidak menulis apa pun kecuali Anda memintanya."
     },
     "pricing": {
-      "eyebrow": "Satu paket, dihargai per kursi",
-      "title": "Biaya per kursi, selalu. Komisi hanya atas penghematan terukur.",
-      "body": "Tanpa paket gratis dan tanpa uji coba: sebelum membayar, Anda bisa memeriksa pengukuran publik dan menjalankan verifikator pada data Anda sendiri, langsung di halaman ini. Biaya per kursi ditagih setiap bulan, dalam {currency}, baik Anda berhemat maupun tidak. Komisi ditambahkan terpisah, dan hanya atas penghematan yang diukur dengan penghitung penyedia Anda — termasuk permintaan berulang yang dilayani tanpa memanggil penyedia, masing-masing dinilai dengan penghitung permintaan identik yang sudah dijalankan. Estimasi tidak pernah masuk.",
+      "eyebrow": "Paket",
+      "title": "Ukur gratis. Bayar per kursi saat Anda menginginkan penghematannya.",
+      "body": "Mulailah dengan Measure: gratis dan tanpa kartu. Lapisan berjalan dalam mode bayangan pada lalu lintas Anda sendiri dan dasbor Anda menunjukkan berapa yang akan dihemat, dinilai dengan penghitung penyedia Anda. Pro dan Tim ditagih per kursi, dalam {currency}, baik Anda hemat atau tidak, dan tanpa komisi atas penghematan Anda.",
       "amount": "{amount}",
       "per": "/ kursi / bulan",
-      "proNote": "<b>PRO</b> — ditagih per kursi. Atau <b>{yearly} / kursi / tahun</b> (hemat ~19%). Enterprise, dengan fitur terpaket, hadir kemudian.",
+      "plans": {
+        "medir": {
+          "name": "Measure",
+          "price": "Gratis",
+          "body": "Tanpa kartu. Lapisan dalam mode bayangan untuk satu organisasi: setiap permintaan sampai ke penyedia Anda tanpa perubahan, dan Anda melihat berapa yang akan dihemat.",
+          "cta": "Mulai gratis →"
+        },
+        "pro": {
+          "name": "Pro",
+          "note": "Atau <b>{yearly} / kursi / tahun</b>. Semua optimasi, struk per permintaan, dan dasbor. Tanpa komisi.",
+          "cta": "Pilih Pro →"
+        },
+        "team": {
+          "name": "Tim",
+          "per": "/ bulan",
+          "note": "<b>{included} kursi termasuk</b>; setiap kursi tambahan {extra} / bulan. Atau <b>{yearly} / tahun</b>. Tanpa komisi.",
+          "cta": "Pilih Tim →"
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "price": "Khusus",
+          "body": "Lebih banyak kursi daripada yang diizinkan pembayaran online, kontrak sendiri, atau ketentuan faktur yang disepakati: <contact>hubungi kami</contact>."
+        }
+      },
+      "legacy": "Sudah memakai model sebelumnya, dengan komisi atas penghematan terukur? Anda mempertahankannya tanpa perubahan; ketentuannya ada di <terms>ketentuan harga</terms>.",
       "seatNote": "Satu kursi adalah satu <b>mesin atau identitas layanan</b>, bukan orang. Kamu membayar kursi yang dicakup langgananmu; dasbormu menampilkan berapa yang terpakai bulan ini (aktif setidaknya {dias} hari; CI dan runner sementara tidak dihitung).",
       "features": [
         "Setiap optimasi BV‑SALA, tanpa batas",
@@ -924,7 +995,7 @@
     },
     "footer": {
       "ctaTitle": "Ukur dengan trafik Anda sendiri",
-      "ctaSub": "Setelah terpasang, setiap panggilan mengembalikan SavingsReport-nya, dengan yang terukur dan estimasi dipisah. Biaya per kursi bersifat bulanan dan tetap; komisi hanya diambil dari yang terukur. Lisensi adalah yang memungkinkan Anda menjalankan BV‑SALA — SDK di aplikasi Anda, gateway di terminal Anda.",
+      "ctaSub": "Setelah terpasang, setiap panggilan mengembalikan SavingsReport-nya, yang terukur dan yang diperkirakan dipisahkan. Mulai gratis dengan Measure; Pro dan Tim adalah biaya tetap per kursi, tanpa komisi atas penghematan Anda. Lisensi adalah yang memungkinkan Anda menjalankan BV‑SALA — SDK di aplikasi Anda, gateway di terminal Anda.",
       "ctaStart": "Mulai",
       "tagline": "Sistem operasi untuk bisnis Anda. Inilah <b>BV‑SALA</b>, pengoptimal biaya LLM BiVelio yang netral terhadap penyedia — setiap angka yang dipublikasikan diukur terhadap penghitung penyedia; estimasi ditampilkan terpisah dan tidak pernah ditagih.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1176,7 +1247,7 @@
     "s3Sub": "Produk ini punya dua angka berbeda dan sebaiknya tidak dicampur.",
     "mBeforeK": "Sebelum memasang",
     "mBeforeV": "Estimasi",
-    "mBeforeBody": "Kalkulator di bagian harga memproyeksikan penghematanmu dengan angkamu sendiri: permintaan, token, dan model. Proyeksi yang jujur — karena itu ia memakai label «estimasi».",
+    "mBeforeBody": "Lisensi Measure yang gratis menjalankan lapisan dalam mode bayangan pada lalu lintas Anda sendiri dan menunjukkan berapa yang akan dihemat, permintaan demi permintaan. Tidak mengubah apa pun dan tidak menerapkan apa pun — itulah sebabnya ia berlabel “perkiraan”.",
     "mAfterK": "Setelah memasang",
     "mAfterV": "Pengukuran nyata",
     "mAfterBody": "Setiap panggilan mengembalikan SavingsReport: panggilan yang tidak pernah kamu bayar dan penghematan bersih per permintaan. Dapat diaudit, permintaan demi permintaan, di infrastrukturmu sendiri.",
@@ -1191,14 +1262,36 @@
   },
   "pricingPage": {
     "metaTitle": "Ketentuan harga · BV-SALA",
-    "metaDescription": "Biaya per kursi dan komisi atas penghematan terukur, diterbitkan dari konstanta yang sama yang menagih kamu.",
+    "metaDescription": "Measure gratis, Pro per kursi, Tim dan Enterprise — tidak ada yang membawa komisi atas penghematan Anda. Angka diterbitkan dari konstanta yang sama yang menagih.",
     "eyebrow": "Harga yang diterbitkan",
     "title": "Ketentuan harga",
     "governs": "Halaman ini menjelaskan cara layanan bekerja saat ini; yang mengikat adalah <license>LICENSE</license> dan <terms>Ketentuan BiVelio</terms>.",
-    "lede": "Setiap angka di sini dibaca dari kode yang sama yang menagih kamu, jadi angkanya berubah saat harganya berubah.",
+    "lede": "Anda membayar per kursi atau untuk paket Tim, tanpa komisi atas penghematan Anda. Setiap angka di halaman ini dibaca dari kode yang sama yang menagih Anda, jadi berubah ketika harganya berubah.",
+    "plans": {
+      "title": "Paket",
+      "intro": "Empat paket, dari yang terkecil hingga terbesar. Pro dan Tim dibayar per kursi dan tidak dikenai komisi.",
+      "medir": {
+        "name": "Measure",
+        "body": "<b>Gratis, tanpa kartu.</b> Lapisan berjalan dalam mode bayangan untuk satu organisasi, dengan batas kursi dan permintaan harian: setiap permintaan sampai ke penyedia Anda persis seperti yang Anda buat, tidak ada yang dilayani dari cache dan tidak ada tuas yang diterapkan. Dasbor Anda menunjukkan berapa yang akan dihemat — perkiraan yang tidak pernah membawa komisi. Tuas memerlukan Pro atau Tim."
+      },
+      "pro": {
+        "name": "Pro",
+        "amount": "<b>{monthly}</b> per kursi per bulan, atau <b>{yearly}</b> per kursi per tahun, dalam {currency}.",
+        "body": "Semua optimasi lapisan, tanda terima per permintaan, dan dasbor. <b>Tanpa komisi</b> atas penghematan: Anda membayar kursi, baik Anda berhemat maupun tidak."
+      },
+      "team": {
+        "name": "Tim",
+        "amount": "<b>{monthly}</b> per bulan dengan <b>{included} kursi termasuk</b> (sekitar {perSeat} per kursi), atau <b>{yearly}</b> per tahun, dalam {currency}.",
+        "extra": "Setiap kursi di atas yang termasuk: {monthly} per bulan, atau {yearly} per tahun.",
+        "body": "Sama seperti Pro, untuk satu armada: biaya tetap mencakup kursi yang termasuk meskipun Anda memakai lebih sedikit. <b>Tanpa komisi</b> atas penghematan."
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "body": "Untuk kursi lebih banyak daripada yang diizinkan pembayaran daring, kontrak tersendiri, atau ketentuan faktur yang dinegosiasikan: <contact>hubungi kami</contact>."
+      }
+    },
     "seat": {
-      "title": "Biaya per kursi",
-      "amount": "<b>{monthly}</b> per kursi per bulan, atau <b>{yearly}</b> per kursi per tahun, dalam {currency}.",
+      "title": "Cara kursi dihitung dan ditagih",
       "cycle": "Biaya per kursi ditagih melalui Stripe untuk setiap siklus bulanan atau tahunan langgananmu, dihitung sejak hari langganan itu dimulai.",
       "paidAlways": "Biaya per kursi dibayar <b>baik Perangkat Lunak menghasilkan penghematan maupun tidak</b>.",
       "vat": "Jumlah belum termasuk PPN. Saat pembayaran, kamu diminta alamat penagihan dan, secara opsional, nomor PPN; keduanya tercetak di faktur.",
@@ -1208,7 +1301,9 @@
       "identifier": "Cara ID kursi dibentuk, dan semua hal lain yang dikirim Perangkat Lunak ke BiVelio, ada di <privacy>halaman privasi</privacy>."
     },
     "commission": {
-      "title": "Komisi atas penghematan terukur",
+      "title": "Model sebelumnya dengan komisi (ditutup untuk pelanggan baru)",
+      "optional": "Model ini <b>tidak lagi ditawarkan kepada pelanggan baru</b>. Jika langganan Anda sudah memakainya, Anda mempertahankannya tanpa perubahan dan ketentuan di bawah tetap berlaku: biaya per kursi yang lebih rendah ditambah komisi hanya atas penghematan yang dapat Anda cocokkan dengan faktur penyedia Anda. Pro dan Tim tidak pernah membawanya; laporan mereka menunjukkan komisi yang akan berlaku hanya sebagai referensi.",
+      "seat": "Biaya per kursi dalam opsi ini: <b>{monthly}</b> per kursi per bulan, atau <b>{yearly}</b> per kursi per tahun, dalam {currency}.",
       "only": "Komisi dikenakan <b>hanya atas penghematan terukur</b>: penghematan yang berlabel {labels} di catatan penggunaanmu. Penghematan berlabel {never} tidak pernah dikenai komisi.",
       "measured": "Penghematan terukur ditetapkan dari penghitung penggunaan milik penyedia LLM-mu sendiri untuk permintaan itu.",
       "reference": "Penghematan berdasarkan referensi, untuk permintaan berulang yang dilayani Perangkat Lunak tanpa memanggil penyediamu, ditetapkan dari penghitung penyediamu untuk permintaan identik sebelumnya yang memang dijalankan, menurut aturan yang tercantum di rekeningmu ({regla}).",
@@ -1225,8 +1320,7 @@
       "ceiling": "Tidak ada tarif tingkatan yang melebihi {max}, jadi sebelum komisi dibulatkan ke sen, <b>kamu menyimpan setidaknya {garantia}</b> dari penghematan terukur periode itu. Biaya per kursi terpisah.",
       "fx": "Penghematan terukur dihitung dalam dolar AS dan dikonversi dengan kurs referensi Bank Sentral Eropa yang diambil saat periode ditutup; rekeningmu menampilkan kurs yang digunakan.",
       "rounding": "Komisi dibulatkan ke sen terdekat. Komisi di bawah {minimo} tidak ditagih dan tidak dipindahkan ke periode lain.",
-      "zero": "Periode tanpa penghematan terukur <b>tidak dikenai komisi</b>.",
-      "calculator": "Untuk melihat artinya bagi lalu lintasmu sendiri, coba <calc>kalkulator</calc> di halaman beranda."
+      "zero": "Periode tanpa penghematan terukur <b>tidak dikenai komisi</b>."
     },
     "calibration": {
       "title": "Periode kalibrasi",
@@ -1273,7 +1367,7 @@
         },
         "cost": {
           "title": "Biaya",
-          "body": "Angka biaya yang dihitung Perangkat Lunak dari katalog harganya, atau dari model biaya yang kamu berikan: biaya dasar, biaya aktual, rasio penghematan bersih, dasar angka-angka itu (measured, reference, estimated, shadow, atau unmeasured), dan nilai, dengan harga baca cache penyedia, dari token input yang dilaporkan penyediamu sebagai dihapus dari konteks."
+          "body": "Angka biaya yang dihitung Perangkat Lunak dari katalog harganya, atau dari model biaya yang kamu berikan: biaya dasar, biaya aktual, rasio penghematan bersih, dasar angka-angka itu (measured, reference, estimated, shadow, atau unmeasured), dan nilai, dengan harga baca cache penyedia, dari token input yang dilaporkan penyediamu sebagai dihapus dari konteks. Ditampilkan terpisah dan tidak pernah dipakai untuk menghitung biaya: diskon yang diberikan cache prompt milik penyedia Anda pada permintaan tersebut dan premi tulis cache yang ditagihkannya."
         }
       }
     },

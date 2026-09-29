@@ -82,7 +82,7 @@ vi.mock("@/lib/supabase/server", () => ({
     auth: { getUser: async () => ({ data: { user: { id: USUARIO, email: "yo@example.com" } } }) },
   }),
 }));
-vi.mock("@/lib/stripe/env", () => ({ billingFullyConfigured: true, priceIdFor: () => "price_x" }));
+vi.mock("@/lib/stripe/env", () => ({ billingFullyConfigured: true, priceIdFor: () => "price_x", priceIdForPlan: () => "price_x", preciosSinComision: () => ({ pro: [], equipo: [] }) }));
 
 const crearCheckout = vi.fn(async () => ({ url: "https://checkout.stripe.com/x" }));
 const crearPortal = vi.fn(async () => ({ url: "https://billing.stripe.com/x" }));

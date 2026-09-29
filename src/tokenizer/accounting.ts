@@ -185,6 +185,17 @@ export class SavingsLedger {
   /** Provider-initiated cache-write premium, priced in USD. Adds to baseline and `actual` alike. */
   providerCacheWritePremiumUsd = 0;
 
+  // EL CARRIL DEL AHORRO NATIVO (`report.nativeSavings`): el contador de caché de
+  // la llamada SERVIDA, tal cual lo dio el proveedor. No entra en `estimateCost`
+  // —ni en el baseline, ni en `actual`, ni en `netSavings`—: solo lo lee quien
+  // arma el bloque aparte. Una negativa no cobrada no apunta nada aquí.
+  /** Cache-write tokens of the served call, every TTL. Read only for `report.nativeSavings`. */
+  nativeCacheWriteInput = 0;
+  /** The one-hour part of `nativeCacheWriteInput`. */
+  nativeCacheWrite1hInput = 0;
+  /** Whether the layer placed the cache breakpoint on the served call; `null` when unknown. */
+  nativeCacheMarkedByLayer: boolean | null = null;
+
   // --- Regla de una sola regla (single ruler) -------------------------------
   // `baselineInput` se contaba con el estimador LOCAL y `actualInput` con el
   // contador del PROVEEDOR, y estimateCost dividía uno entre otro. Son dos reglas
@@ -388,6 +399,13 @@ export class SavingsLedger {
   /** Ledger 4: tokens still present but billed/processed as provider-cached. */
   providerCached(tokens: number): void {
     this.providerCachedInput += Math.max(0, tokens);
+  }
+
+  /** Record the served call's cache writes for `report.nativeSavings`. Never priced into `estimateCost`. */
+  nativeCacheWrite(tokens: number, tokens1h: number): void {
+    const t = Math.max(0, tokens);
+    this.nativeCacheWriteInput += t;
+    this.nativeCacheWrite1hInput += Math.min(t, Math.max(0, tokens1h));
   }
 
   /** Record the premium for `tokens` of cache write the provider bills at `multiplier`x on its own. */

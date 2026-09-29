@@ -1133,6 +1133,65 @@ export interface QualityLedger {
   cascade?: QualityCascadeCheck;
 }
 
+/**
+ * The provider's native prompt-cache saving on the call that produced the
+ * answer: what the provider's own cache took off the invoice, net of the
+ * cache-write premium the provider billed on that same call.
+ *
+ * `netUsd = readDiscountUsd − writePremiumUsd`, where
+ * `readDiscountUsd = cacheReadTokens / 1000 × (inputPer1k − cachedInputPer1k)` and
+ * `writePremiumUsd` is the write tokens at `inputPer1k × (multiplier − 1)`
+ * (Anthropic 1.25× for 5 minutes and 2× for one hour; OpenAI 1.25× from
+ * gpt-5.6 on, 1× before; Gemini 1×). Every input is in this block, so it can be
+ * recomputed without trusting the layer. `netUsd` can be negative: a cold
+ * write pays the premium before any read.
+ *
+ * It is SEPARATE on purpose. The layer can place the breakpoint (Anthropic
+ * `cache_control`), route (OpenAI `prompt_cache_key`) or keep the prefix
+ * stable, but the discount is billed by the provider and much of it would be
+ * there without the layer, so it is never credited as the layer's saving:
+ * it is not in `cost.netSavings`, not in `cost.baselineEstimate`, and not in
+ * any commission base.
+ */
+export interface NativeSavingsReport {
+  /** Who billed the cache, inferred from the model id. */
+  provider: "anthropic" | "openai" | "google" | "unknown";
+  /**
+   * How that provider caches: `explicit` (Anthropic, `cache_control`
+   * breakpoints), `automatic` (OpenAI, prefix cache with no marking) or
+   * `implicit` (Gemini implicit caching).
+   */
+  mechanism: "explicit" | "automatic" | "implicit" | "unknown";
+  /** True when the layer placed the cache breakpoint on the call that ran. Absent where the layer does not know. */
+  layerMarked?: boolean;
+  /** Input tokens the provider served from its cache on this call (its own counter). */
+  cacheReadTokens: number;
+  /** Input tokens the provider billed as cache writes on this call (its own counter, every TTL). */
+  cacheWriteTokens: number;
+  /** The part of `cacheWriteTokens` written with a one-hour TTL. */
+  cacheWrite1hTokens: number;
+  /** Input rate applied, per 1K tokens. */
+  inputPer1k: number;
+  /** Cache-read rate applied, per 1K tokens. */
+  cachedInputPer1k: number;
+  /** Write multiplier applied to five-minute (or untyped) writes. */
+  writeMultiplier: number;
+  /** Write multiplier applied to one-hour writes. */
+  write1hMultiplier: number;
+  /** What the cache reads saved against the input rate, USD. */
+  readDiscountUsd: number;
+  /** The premium the provider billed for the cache writes, USD. */
+  writePremiumUsd: number;
+  /** `readDiscountUsd − writePremiumUsd`, USD. Can be negative. */
+  netUsd: number;
+  /**
+   * `measured`: the provider's own counter at list price. `unmeasured`: the
+   * counter was incomplete or there is no cache-read price for the model, and
+   * every USD figure is 0.
+   */
+  basis: "measured" | "unmeasured";
+}
+
 export interface SavingsReport {
   requestId: string;
   /**
@@ -1266,6 +1325,18 @@ export interface SavingsReport {
    */
   cacheWrites?: CacheWriteReport;
 
+  /**
+   * The provider's OWN prompt-cache discount on this call, shown apart. Present
+   * only when a call ran and the provider reported cache reads or writes.
+   *
+   * It is not the layer's saving and it is never part of `cost.netSavings`,
+   * `cost.baselineEstimate`, `basis: "reference"` or the commission base: the
+   * discount is the provider's, and `cost` prices cached tokens at the cached
+   * rate on both sides for exactly that reason. It exists so the report adds up
+   * to your invoice. See {@link NativeSavingsReport}.
+   */
+  nativeSavings?: NativeSavingsReport;
+
   /** How a streamed request was delivered. Present only on results of `generateStream`. */
   streaming?: StreamingReport;
 
@@ -1374,6 +1445,13 @@ export interface SavingsReport {
     provider: number;
   };
 
+  /**
+   * Present only when the layer runs on the free «Measure» license (shadow
+   * mode): what the levers would have saved on this request. Nothing was
+   * applied — `cost` is this call's measured spend with no saving claimed.
+   */
+  measure?: MeasureReport;
+
   /** Ordered pipeline decision breadcrumbs, for debugging and audit. */
   traces: TraceEvent[];
 }
@@ -1425,6 +1503,51 @@ export interface LicenseGate {
    * caller; without it, the generic message for that status.
    */
   reason?(): string | undefined;
+  /**
+   * The plan of the license in force, when there is one. `"measure"` (the free
+   * «Measure» license) puts the layer in SHADOW MODE: the request goes to the
+   * provider exactly as you built it, nothing is served from any cache, and
+   * `report.measure` says what the levers would have saved. Optional because a
+   * gate is implemented by the caller; without it, the layer is not in shadow.
+   */
+  plan?(): string | undefined;
+}
+
+/**
+ * What a layer running on the free «Measure» license would have saved on this
+ * request. Present ONLY in shadow mode. Nothing here was applied: the request
+ * went to your provider untouched and nothing was served from a cache.
+ *
+ * Every figure is HYPOTHETICAL (`basis: "shadow"`): it is never part of
+ * `cost.baselineEstimate`, `cost.actual` or `cost.netSavings`, never in any
+ * commission base, and never added to measured money.
+ */
+export interface MeasureReport {
+  mode: "shadow";
+  /** Always false: in shadow mode no lever changes the request or avoids a call. */
+  applied: false;
+  wouldHaveSaved: {
+    /** USD this request would not have cost with the simulated levers on. */
+    usd: number;
+    basis: "shadow";
+    /**
+     * Which lever would have avoided the call entirely, valued with THIS call's
+     * provider counter (`cost.actual`):
+     *   · `exact-repeat`       — a byte-identical, cacheable request already ran
+     *                            in this process within the exact-cache TTL;
+     *   · `in-flight-duplicate`— an identical request was in flight at the same
+     *                            time and would have been coalesced.
+     * `null` when no simulated lever would have avoided it.
+     */
+    avoidedCall: "exact-repeat" | "in-flight-duplicate" | null;
+  };
+  /**
+   * Levers this shadow does NOT simulate, so `wouldHaveSaved` is a LOWER bound:
+   * they need a model call, an embedding, or a paid entitlement to estimate.
+   */
+  notSimulated: string[];
+  /** Where to turn the levers on. */
+  upgradeUrl: string;
 }
 
 export interface TraceEvent {

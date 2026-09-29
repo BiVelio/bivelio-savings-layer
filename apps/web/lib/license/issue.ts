@@ -257,9 +257,19 @@ export async function revokeAllLicenses(
   admin: AdminClient,
   orgId: string,
   reason: string,
+  opts: {
+    /**
+     * Deja viva la licencia gratuita «Medir» (plan `measure`). La cancelación la
+     * usa: lo que se corta es lo PAGADO, y la org vuelve a Medir (decisión del
+     * dueño, 2026-09-29; lib/license/medir.ts#volverAMedir). Sin esto se revoca
+     * todo, que es lo que quiere una revocación por fraude.
+     */
+    conservarMedir?: boolean;
+  } = {},
 ): Promise<string[]> {
-  const { data } = await admin.from("licenses").select("id").eq("org_id", orgId).eq("revoked", false);
-  const ids = ((data as { id?: string }[] | null) ?? [])
+  const { data } = await admin.from("licenses").select("id, plan").eq("org_id", orgId).eq("revoked", false);
+  const ids = ((data as { id?: string; plan?: string | null }[] | null) ?? [])
+    .filter((r) => !(opts.conservarMedir === true && r.plan === "measure"))
     .map((r) => r.id)
     .filter((x): x is string => Boolean(x));
   for (const jti of ids) await revokeLicense(admin, jti, reason);
