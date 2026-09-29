@@ -29,7 +29,7 @@ import {
   variantePalabra,
 } from "../benchmarks/publicados/gsm8k/flujo.js";
 import type { FilaGsm8k } from "../benchmarks/publicados/gsm8k/fuente.js";
-import { resumir, type Ensayo } from "../benchmarks/publicados/gsm8k/medir.js";
+import { desgloseDelAhorro, resumir, type Ensayo } from "../benchmarks/publicados/gsm8k/medir.js";
 import { preguntasSinRed, repetirSinRed } from "../benchmarks/publicados/gsm8k/sin-red.js";
 
 const NOMBRES = ["Ana", "Luis", "Marta", "Pere", "Joan", "Eva", "Iker", "Nora", "Olga", "Raul"];
@@ -134,6 +134,27 @@ describe("GSM8K: las cuentas", () => {
     expect(c.costeBrazo).toBe(1);
   });
 
+  it("el desglose separa lo que la capa no llamó de lo que ahorró la caché de prefijo", () => {
+    const ensayos: Ensayo[] = [
+      base({ pos: 0, brazo: "A", coste: 1, entrada: 2000 }),
+      base({ pos: 0, brazo: "B", coste: 1.1, entrada: 2000, escrita: 1900 }),
+      base({ pos: 1, brazo: "A", coste: 1, entrada: 2000 }),
+      base({ pos: 1, brazo: "B", coste: 0.4, entrada: 2000, cacheada: 1900 }),
+      base({ pos: 2, brazo: "A", coste: 1, entrada: 2000 }),
+      base({ pos: 2, brazo: "B", coste: 0, llamadas: 0, entrada: 0, fuente: "exact_cache" }),
+    ];
+    const d = desgloseDelAhorro(ensayos, { inputPer1k: 0.001, cachedInputPer1k: 0.0001, prima: 1.25 });
+    const b = d.find((x) => x.brazo === "B")!;
+    expect(b.ahorroTotalUsd).toBeCloseTo(1.5);
+    expect(b.ahorroPorNoLlamarUsd).toBeCloseTo(1);
+    expect(b.ahorroEnLlamadasUsd).toBeCloseTo(0.5);
+    expect(b).toMatchObject({ llamadas: 2, llamadasConLectura: 1, llamadasConEscritura: 1, tokensLeidos: 1900, tokensEscritos: 1900 });
+    // 1900 × 0,0009/1000 − 1900 × 0,001 × 0,25/1000
+    expect(b.prefijoNetoUsd).toBeCloseTo(0.001235, 6);
+    expect(b.entradaMediaPorLlamada).toBe(2000);
+    expect(d.find((x) => x.brazo === "A")!.ahorroTotalUsd).toBe(0);
+  });
+
   it("la caja corta ANTES de la llamada que la pasaría", async () => {
     const caja = { tope: 0.001, gasto: 0.0009, peorLlamada: 0.0005 };
     const c = { coste: 0, llamadas: 0, entrada: 0, cacheada: 0, escrita: 0, salida: 0 };
@@ -160,6 +181,9 @@ describe("GSM8K: la capa y el arnés, sin red", () => {
     expect(PAQUETE_NPM.commit).toBe("00c99c803c0ab6f3c11b7ab87f3c75a38d609b1c");
     // El de la 0.4.30 (gsm8k.{json,md}) no se pisa.
     expect(nombreDelDocumento("0.4.31")).toBe("gsm8k-0431");
+    // La tirada de Claude va aparte y no pisa la de OpenAI.
+    expect(nombreDelDocumento("0.4.31", "claude")).toBe("gsm8k-0431-claude");
+    expect(() => nombreDelDocumento("0.4.31", "../x")).toThrow();
   });
 
   it("todos los brazos llevan el MISMO tope nativo (0.4.31, #381) y la petición no pide la semántica", () => {
