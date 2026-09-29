@@ -5,8 +5,16 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  caidaDeCapa,
   claveAnthropicValida,
+  quitarPromptCacheKey,
   conContador,
+  googleDesdeSonda,
+  HOSTS_PERMITIDOS,
+  MODELOS_GAMA_ALTA,
+  origenDelAhorro,
+  pensamientoOculto,
+  precioDelBanco,
   medirModelo,
   nombreDelDocumento,
   peticionDe,
@@ -284,5 +292,91 @@ describe("GSM8K: la capa y el arnés, sin red", () => {
     const r = await repetirSinRed(ps, "defecto", "SYS", capa);
     expect(r.peticiones).toBe(ps.length);
     expect(r.erroneas).toBe(0);
+  });
+});
+
+describe("GSM8K gama alta (2026-09-29): topes, precios, Gemini y origen del ahorro, sin red", () => {
+  it("la gama alta lleva 1,25 $ por modelo, OpenAI incluido; el resto no cambia", () => {
+    for (const m of MODELOS_GAMA_ALTA) expect(topeDuroPara(m)).toBe(1.25);
+    expect(topeDuroPara("openai/gpt-4o-mini")).toBe(0.8);
+    expect(topeDuroPara("openai/gpt-5.4-mini")).toBe(0.8);
+  });
+
+  it("Gemini solo por su origen oficial, y el host está en la guarda", () => {
+    expect(HOSTS_PERMITIDOS).toContain("generativelanguage.googleapis.com");
+    const ok = googleDesdeSonda({}, { BVSALA_SONDA_BASE_URL: "https://generativelanguage.googleapis.com/v1beta/openai", BVSALA_SONDA_API_KEY: "k" });
+    expect(ok.googleBaseUrl).toBe("https://generativelanguage.googleapis.com/v1beta/openai");
+    expect(googleDesdeSonda({}, { BVSALA_SONDA_BASE_URL: "https://pasarela.example.com/v1", BVSALA_SONDA_API_KEY: "k" })).toEqual({});
+    expect(googleDesdeSonda({ googleBaseUrl: "https://x.example/v1" }, { BVSALA_SONDA_BASE_URL: "https://generativelanguage.googleapis.com/v1beta/openai" })).toEqual({});
+  });
+
+  it("con fila, manda el catálogo (claude-sonnet-5-5 la tiene desde #399, con el mismo precio que se citó); sin fila y sin cita, desconocido", () => {
+    const s55 = precioDelBanco("anthropic/claude-sonnet-5-5");
+    expect(s55.conocido).toBe(true);
+    expect(s55.precio).toMatchObject({ inputPer1k: 0.002, outputPer1k: 0.01, cachedInputPer1k: 0.0002 });
+    expect(s55.fueraDeCatalogo).toBeUndefined();
+    const o55 = precioDelBanco("anthropic/claude-opus-5-5");
+    expect(o55.fueraDeCatalogo).toBeUndefined();
+    expect(o55.precio.inputPer1k).toBe(0.004);
+    expect(precioDelBanco("anthropic/claude-inventado-9").conocido).toBe(false);
+  });
+
+  it("el pensamiento de Gemini que completion_tokens no cuenta se factura como salida", async () => {
+    const resp = (total: number) => ({
+      text: "#### 72",
+      usage: { inputTokens: 44, outputTokens: 56, cachedInputTokens: 0 },
+      raw: { usage: { prompt_tokens: 44, completion_tokens: 56, total_tokens: total } },
+    });
+    expect(pensamientoOculto("google/gemini-3.8-flash", resp(215))).toBe(115);
+    expect(pensamientoOculto("openai/gpt-5.5", resp(215))).toBe(0);
+    expect(pensamientoOculto("google/gemini-3.8-flash", { text: "", usage: { inputTokens: 1, outputTokens: 1 } })).toBe(0);
+    const caja = { tope: 1, gasto: 0, peorLlamada: 0 };
+    const c = { coste: 0, llamadas: 0, entrada: 0, cacheada: 0, escrita: 0, salida: 0, pensamiento: 0 };
+    const p = conContador({ id: "g", generate: async () => resp(215) }, "google/gemini-3.8-flash", caja, c);
+    await p.generate({ model: "google/gemini-3.8-flash", messages: [] });
+    expect(c.pensamiento).toBe(115);
+    expect(c.salida).toBe(56);
+    // 44 de entrada a 0,75 $/M y 171 de salida a 3,75 $/M.
+    expect(c.coste).toBeCloseTo((44 * 0.75 + 171 * 3.75) / 1e6, 12);
+  });
+
+  it("el origen del ahorro parte coste(A) − coste(brazo) en caché de la capa + llamadas, sin resto", () => {
+    const e = (p: Partial<Ensayo>): Ensayo => ({
+      pos: 0, familia: 0, clase: "original", oro: 5, huella: "h", brazo: "A", numero: 5, correcto: true,
+      coste: 0.01, llamadas: 1, entrada: 2000, cacheada: 0, escrita: 0, salida: 90, latenciaMs: 1, fuente: "provider", ...p,
+    });
+    const ensayos = [
+      e({ pos: 0 }), e({ pos: 0, brazo: "B", coste: 0.012, escrita: 2000 }),
+      e({ pos: 1 }), e({ pos: 1, brazo: "B", coste: 0.004, cacheada: 2000 }),
+      e({ pos: 2 }), e({ pos: 2, brazo: "B", coste: 0, llamadas: 0, entrada: 0, salida: 0, fuente: "exact_cache" }),
+    ];
+    const o = origenDelAhorro(ensayos, "anthropic/claude-opus-5-5").B!;
+    expect(o.cacheCapa).toEqual({ posiciones: 1, usd: 0.01 });
+    expect(o.llamadas.posiciones).toBe(2);
+    expect(o.cacheCapa.usd + o.llamadas.usd).toBeCloseTo(o.costeA - o.costeBrazo, 12);
+    // Opus 5.5: lectura a 0,20 $/M (entrada 4 $/M) y escritura a 1,25×.
+    expect(o.descuentoPrefijoBrazo).toBeCloseTo((2000 * (4 - 0.2) - 2000 * 4 * 0.25) / 1e6, 12);
+    expect(o.descuentoPrefijoA).toBe(0);
+    expect(o.tokensLeidosDeCacheBrazo).toBe(2000);
+  });
+
+  it("el parche declarado de Gemini quita SOLO prompt_cache_key y deja el resto intacto", () => {
+    const q = quitarPromptCacheKey(JSON.stringify({ model: "gemini-3.8-flash", prompt_cache_key: "abc", max_tokens: 1024 }));
+    expect(q.quitado).toBe(true);
+    expect(JSON.parse(q.body as string)).toEqual({ model: "gemini-3.8-flash", max_tokens: 1024 });
+    expect(quitarPromptCacheKey(JSON.stringify({ model: "x" })).quitado).toBe(false);
+    expect(quitarPromptCacheKey("no json").quitado).toBe(false);
+    expect(quitarPromptCacheKey(undefined).quitado).toBe(false);
+  });
+
+  it("un brazo con capa que falla en TODAS sus peticiones no es un ahorro del 100 %: es una caída", () => {
+    const e = (p: Partial<Ensayo>): Ensayo => ({
+      pos: 0, familia: 0, clase: "original", oro: 5, huella: "h", brazo: "A", numero: 5, correcto: true,
+      coste: 0.01, llamadas: 1, entrada: 10, cacheada: 0, escrita: 0, salida: 5, latenciaMs: 1, fuente: "provider", ...p,
+    });
+    const caida = [e({}), e({ brazo: "B", coste: 0, llamadas: 0, numero: null, correcto: false, error: "provider 400: Unknown name \"prompt_cache_key\"" })];
+    expect(caidaDeCapa(resumir(caida), caida)).toMatch(/arm B failed.*prompt_cache_key/);
+    const sana = [e({}), e({ brazo: "B" })];
+    expect(caidaDeCapa(resumir(sana), sana)).toBeUndefined();
   });
 });
