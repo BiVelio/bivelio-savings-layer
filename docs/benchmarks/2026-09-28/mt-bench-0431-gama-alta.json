@@ -1,0 +1,1295 @@
+{
+  "bateria": "mt-bench",
+  "fecha": "2026-09-29",
+  "modo": "LIVE",
+  "commitDelRepo": "1eb205c8b46ba4b435a56aa88c1f0576a5978423",
+  "paquete": {
+    "nombre": "@bivelio/savings-layer",
+    "version": "0.4.31",
+    "integrity": "sha512-ePCN+dZr+VuMUSGm2TelDkt7TR6jSi/SCTomomDK/bfF92FHr1eFUdgTWQODCdQf8C8c+/h6AA/up46DXO2mLQ== (tarball de npm; dist/index.js sha256 b52f99cacf9804ecd3153e56f26ec3adcdc2510d52a8446a369ecf914e0b5731 = build del fuente)",
+    "origen": "fuente de v0.4.31 (00c99c803c0ab6f3c11b7ab87f3c75a38d609b1c), verificado idéntico al tarball de npm"
+  },
+  "brazoB": "v0.4.31 (source of the tag, BVSALA_DEV_OPEN=1; npm = same commit, verified identical)",
+  "verificacionDelFuente": {
+    "etiqueta": "v0.4.31",
+    "commit": "00c99c803c0ab6f3c11b7ab87f3c75a38d609b1c",
+    "fetchDeEtiquetas": "ok",
+    "diffDelRepo": [
+      "M src/version.ts"
+    ],
+    "arbolCargado": "benchmarks/out/mt-bench/.fuente-v0.4.31 (git archive v0.4.31)",
+    "ficherosVerificados": 173,
+    "diffDelArbolCargado": [],
+    "npm": {
+      "tarball": "@bivelio/savings-layer@0.4.31 (npm pack)",
+      "integrity": "sha512-ePCN+dZr+VuMUSGm2TelDkt7TR6jSi/SCTomomDK/bfF92FHr1eFUdgTWQODCdQf8C8c+/h6AA/up46DXO2mLQ==",
+      "sha256DistIndex": "b52f99cacf9804ecd3153e56f26ec3adcdc2510d52a8446a369ecf914e0b5731"
+    },
+    "build": {
+      "sha256DistIndex": "b52f99cacf9804ecd3153e56f26ec3adcdc2510d52a8446a369ecf914e0b5731"
+    },
+    "distIdentico": true,
+    "versionCargada": "0.4.31"
+  },
+  "dataset": {
+    "origen": "fastchat-fijado",
+    "repo": "lm-sys/FastChat",
+    "commit": "587d5cfa1609a43d192cedb8441cac3c17db105d",
+    "license": "Apache-2.0",
+    "ficheros": {
+      "preguntas": {
+        "path": "fastchat/llm_judge/data/mt_bench/question.jsonl",
+        "sha256": "119565adbab82227089cefdb44c8d7e2cf04dc0a0ec233634c82e7d4e2a944f7"
+      },
+      "referencias": {
+        "path": "fastchat/llm_judge/data/mt_bench/reference_answer/gpt-4.jsonl",
+        "sha256": "f957a5bc977badb66885ec970e6cd08527845780313f0995764260e5777b9b3f"
+      },
+      "promptsDelJuez": {
+        "path": "fastchat/llm_judge/data/judge_prompts.jsonl",
+        "sha256": "fd283293406d024f44c174b094ef48031d0687a4682fd3a56b29b138f80281b6"
+      }
+    }
+  },
+  "juez": {
+    "modelo": "openai/gpt-4o",
+    "topeUsd": 0.5
+  },
+  "topes": {
+    "porFamiliaUsd": {
+      "openai": 1.25,
+      "anthropic": 1.25,
+      "google": 1.25
+    },
+    "porModeloUsd": 1.25,
+    "juezTotalUsd": 0.5
+  },
+  "preciosOficiales": [
+    {
+      "modelo": "claude-sonnet-5-5",
+      "precio": {
+        "inputPer1k": 0.002,
+        "outputPer1k": 0.01,
+        "cachedInputPer1k": 0.0002
+      },
+      "fuente": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "consultado": "2026-09-29",
+      "cita": "Claude Sonnet 5.5 | $2 / MTok | $2.50 / MTok | $4 / MTok | $0.20 / MTok | $10 / MTok"
+    }
+  ],
+  "semilla": 20260928,
+  "gastoTotal": {
+    "generacion": 3.7094025000000013,
+    "juez": 0.4518125
+  },
+  "gastoAcumuladoEntreTiradas": {
+    "generacion": {
+      "gpt-5.5": 0.7339000000000001,
+      "gpt-5.6-sol": 0.8534839999999998,
+      "gemini-3.8-flash": 0.09359024999999999,
+      "gemini-3.1-pro-preview": 0.028606,
+      "claude-sonnet-5-5": 1.188502500000001,
+      "claude-opus-5-5": 1.2048410000000005
+    },
+    "juez": {
+      "claude-opus-5-5": 0.09097500000000003,
+      "claude-sonnet-5-5": 0.09584249999999998,
+      "gpt-5.5": 0.1256475,
+      "gpt-5.6-sol": 0.1393475
+    }
+  },
+  "hosts": {
+    "permitidos": [
+      "api.anthropic.com",
+      "api.openai.com",
+      "generativelanguage.googleapis.com",
+      "ai-gateway.vercel.sh",
+      "raw.githubusercontent.com"
+    ],
+    "vistos": {
+      "api.anthropic.com": 221,
+      "generativelanguage.googleapis.com": 36,
+      "ai-gateway.vercel.sh": 76,
+      "api.openai.com": 84
+    },
+    "bloqueados": {}
+  },
+  "modelos": [
+    {
+      "modelo": "claude-opus-5-5",
+      "idCualificado": "anthropic/claude-opus-5-5",
+      "familia": "anthropic",
+      "maxSalida": 1024,
+      "temperatura": "no se envía (el modelo la rechaza con 400 o es de razonamiento), en ningún brazo",
+      "precio": {
+        "inputPer1k": 0.004,
+        "outputPer1k": 0.02,
+        "cachedInputPer1k": 0.0002
+      },
+      "precioConocido": true,
+      "preguntas": {
+        "planificadas": 80,
+        "completas": 18,
+        "conError": 0,
+        "porCategoria": {
+          "writing": 3,
+          "roleplay": 3,
+          "reasoning": 2,
+          "math": 2,
+          "coding": 2,
+          "extraction": 2,
+          "stem": 2,
+          "humanities": 2
+        },
+        "cortePorPresupuesto": true,
+        "motivoDelCorte": "el peor coste de la pregunta siguiente ($0.1259) no cabía: gastado $1.2048 de $1.2500"
+      },
+      "gasto": {
+        "generacionA": 0.605876,
+        "generacionB": 0.5989650000000001,
+        "total": 1.2048410000000005,
+        "tope": 1.25,
+        "excesosDeReserva": 0,
+        "juez": 0.09097500000000003,
+        "topeJuez": 0.09900625000000003
+      },
+      "coste": {
+        "A": 0.605876,
+        "B": 0.5989650000000002,
+        "ahorroPooled": {
+          "point": 0.011406624457809489,
+          "lower": -0.01951724554880463,
+          "upper": 0.04882551350189113
+        },
+        "ahorroEstratificadoPorCategoria": {
+          "point": 0.015650240782734914,
+          "lower": -0.009864419833744753,
+          "upper": 0.039483252875988195
+        },
+        "clase": "indistinguible de 0",
+        "atribucion": {
+          "atribuible": true,
+          "motivo": "posible efecto de la capa: el cable difiere en `messages:cache_control`; la capa declara ahorro"
+        },
+        "controlAA": {
+          "preguntas": 18,
+          "ahorro": {
+            "point": 0.01081214443283407,
+            "lower": -0.029021947011542037,
+            "upper": 0.05955365145921632
+          },
+          "clase": "indistinguible de 0"
+        },
+        "deltaMedioPorPreguntaUsd": {
+          "point": 0.0003839444444444441,
+          "lower": -0.0006692222222222214,
+          "upper": 0.0016014444444444435
+        },
+        "wilcoxonP": 0.41381129649688586
+      },
+      "tokens": {
+        "A": {
+          "entrada": 13344,
+          "cacheLeida": 0,
+          "cacheEscrita": 0,
+          "salida": 27625,
+          "razonamiento": 0
+        },
+        "B": {
+          "entrada": 4855,
+          "cacheLeida": 0,
+          "cacheEscrita": 7669,
+          "salida": 27060,
+          "razonamiento": 0
+        }
+      },
+      "cacheDePrefijo": {
+        "llamadas": 72,
+        "llamadasConLecturaA": 0,
+        "llamadasConLecturaB": 0,
+        "llamadasConEscrituraA": 0,
+        "llamadasConEscrituraB": 9
+      },
+      "latencia": {
+        "A": {
+          "p50": 10353,
+          "p95": 17689
+        },
+        "B": {
+          "p50": 10393,
+          "p95": 17629
+        },
+        "deltaMedioMs": {
+          "point": 50.916666666666664,
+          "lower": -279.52777777777777,
+          "upper": 383.1111111111111
+        },
+        "llamadasSinReintento": 72
+      },
+      "truncadas": {
+        "A": 21,
+        "B": 21
+      },
+      "cable": {
+        "turnos": 36,
+        "identicos": 18,
+        "diferencias": {
+          "messages:cache_control": 18
+        },
+        "modelosServidosA": [
+          "claude-opus-5-5"
+        ],
+        "modelosServidosB": [
+          "claude-opus-5-5"
+        ]
+      },
+      "capa": {
+        "basis": {
+          "measured": 36
+        },
+        "ahorroDeclaradoUsd": -0.007668999999999992,
+        "ahorroDeclaradoPorBasis": {
+          "measured": -0.007668999999999992
+        },
+        "costeDeclaradoUsd": 0.598965,
+        "costeMedidoB": 0.5989650000000002,
+        "tokensQueNoCuadran": 0,
+        "cacheResult": {
+          "miss": 36
+        },
+        "executionClass": {
+          "NO_RETRIEVAL": 14,
+          "SINGLE_RETRIEVAL": 19,
+          "MULTI_HOP_RETRIEVAL": 3
+        },
+        "llamadasExtraAlProveedor": 0,
+        "etapas": {
+          "canonicalize:done": 36,
+          "policy:no restrictions": 11,
+          "exact-cache:miss": 16,
+          "router:NO_RETRIEVAL": 14,
+          "elision:skipped": 16,
+          "constraints:none": 36,
+          "reference:not-written": 21,
+          "cache-write:skipped: answer cut off by the output cap (finish_reason \"length\"); replaying half an answer would bill it as a 100% avoided call": 21,
+          "policy:personalized/account-scoped request; personalized request with no principal (context.sessionId) → exact cache off; agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\")": 3,
+          "router:SINGLE_RETRIEVAL": 19,
+          "prefix-cache:marked": 18,
+          "prefix-cache:measured": 18,
+          "policy:personalized/account-scoped request; personalized request with no principal (context.sessionId) → exact cache off": 5,
+          "policy:freshness-sensitive request; personalized/account-scoped request; freshness-sensitive without a freshness bucket → exact cache off; personalized request with no principal (context.sessionId) → exact cache off; agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\")": 4,
+          "policy:freshness-sensitive request; freshness-sensitive without a freshness bucket → exact cache off": 2,
+          "reference:written": 15,
+          "policy:freshness-sensitive request; freshness-sensitive without a freshness bucket → exact cache off; agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\")": 6,
+          "policy:agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\")": 5,
+          "router:MULTI_HOP_RETRIEVAL": 3
+        }
+      },
+      "calidad": {
+        "juzgada": true,
+        "turnosJuzgados": 8,
+        "victoriasB": 1,
+        "victoriasA": 3,
+        "empates": 4,
+        "inconsistentes": 0,
+        "identicas": 0,
+        "errores": 0,
+        "turnosSinPresupuesto": 0,
+        "tasaDeVictoriaB": {
+          "point": 0.375,
+          "lower": 0.25,
+          "upper": 0.5
+        },
+        "porCategoria": {
+          "writing": {
+            "n": 2,
+            "B": 0,
+            "A": 1,
+            "empate": 1
+          },
+          "roleplay": {
+            "n": 2,
+            "B": 1,
+            "A": 1,
+            "empate": 0
+          },
+          "reasoning": {
+            "n": 2,
+            "B": 0,
+            "A": 1,
+            "empate": 1
+          },
+          "math": {
+            "n": 2,
+            "B": 0,
+            "A": 0,
+            "empate": 2
+          }
+        },
+        "llamadasAlJuez": 18,
+        "preguntasJuzgadas": 4,
+        "cortePorPresupuesto": true
+      },
+      "respuestasIdenticasPorTurno": 4,
+      "errores": []
+    },
+    {
+      "modelo": "claude-sonnet-5-5",
+      "idCualificado": "anthropic/claude-sonnet-5-5",
+      "familia": "anthropic",
+      "maxSalida": 1024,
+      "temperatura": "no se envía (el modelo la rechaza con 400 o es de razonamiento), en ningún brazo",
+      "precio": {
+        "inputPer1k": 0.002,
+        "outputPer1k": 0.01,
+        "cachedInputPer1k": 0.0002
+      },
+      "precioConocido": true,
+      "preguntas": {
+        "planificadas": 80,
+        "completas": 37,
+        "conError": 0,
+        "porCategoria": {
+          "writing": 5,
+          "roleplay": 5,
+          "reasoning": 5,
+          "math": 5,
+          "coding": 5,
+          "extraction": 4,
+          "stem": 4,
+          "humanities": 4
+        },
+        "cortePorPresupuesto": true,
+        "motivoDelCorte": "el peor coste de la pregunta siguiente ($0.0672) no cabía: gastado $1.1438 de $1.2053"
+      },
+      "gasto": {
+        "generacionA": 0.569638,
+        "generacionB": 0.5741255,
+        "total": 1.1437635000000006,
+        "tope": 1.25,
+        "excesosDeReserva": 0,
+        "juez": 0.09584249999999998,
+        "topeJuez": 0.10547999999999998
+      },
+      "coste": {
+        "A": 0.5696380000000002,
+        "B": 0.5741255,
+        "ahorroPooled": {
+          "point": -0.00787781011800437,
+          "lower": -0.025360383918443308,
+          "upper": 0.008824782742336557
+        },
+        "ahorroEstratificadoPorCategoria": {
+          "point": -0.007730434452395629,
+          "lower": -0.021990740740740478,
+          "upper": 0.008154468092779976
+        },
+        "clase": "indistinguible de 0",
+        "atribucion": {
+          "atribuible": true,
+          "motivo": "posible efecto de la capa: el cable difiere en `messages:cache_control`, `messages`; la capa declara ahorro"
+        },
+        "controlAA": {
+          "preguntas": 37,
+          "ahorro": {
+            "point": 0.011592120623362345,
+            "lower": -0.019973820720415203,
+            "upper": 0.041167080217244356
+          },
+          "clase": "indistinguible de 0"
+        },
+        "deltaMedioPorPreguntaUsd": {
+          "point": -0.00012128378378378348,
+          "lower": -0.00037339189189189166,
+          "upper": 0.00013905405405405472
+        },
+        "wilcoxonP": 0.9262310564181618
+      },
+      "tokens": {
+        "A": {
+          "entrada": 26759,
+          "cacheLeida": 0,
+          "cacheEscrita": 0,
+          "salida": 51612,
+          "razonamiento": 0
+        },
+        "B": {
+          "entrada": 9464,
+          "cacheLeida": 0,
+          "cacheEscrita": 16327,
+          "salida": 51438,
+          "razonamiento": 0
+        }
+      },
+      "cacheDePrefijo": {
+        "llamadas": 148,
+        "llamadasConLecturaA": 0,
+        "llamadasConLecturaB": 0,
+        "llamadasConEscrituraA": 0,
+        "llamadasConEscrituraB": 20
+      },
+      "latencia": {
+        "A": {
+          "p50": 7485,
+          "p95": 10734
+        },
+        "B": {
+          "p50": 7518,
+          "p95": 11062
+        },
+        "deltaMedioMs": {
+          "point": -65.37837837837837,
+          "lower": -217.06756756756758,
+          "upper": 97.24324324324324
+        },
+        "llamadasSinReintento": 148
+      },
+      "truncadas": {
+        "A": 35,
+        "B": 34
+      },
+      "cable": {
+        "turnos": 74,
+        "identicos": 37,
+        "diferencias": {
+          "messages:cache_control": 36,
+          "messages": 1
+        },
+        "modelosServidosA": [
+          "claude-sonnet-5-5"
+        ],
+        "modelosServidosB": [
+          "claude-sonnet-5-5"
+        ]
+      },
+      "capa": {
+        "basis": {
+          "measured": 74
+        },
+        "ahorroDeclaradoUsd": -0.0081635,
+        "ahorroDeclaradoPorBasis": {
+          "measured": -0.0081635
+        },
+        "costeDeclaradoUsd": 0.5741255,
+        "costeMedidoB": 0.5741255,
+        "tokensQueNoCuadran": 0,
+        "cacheResult": {
+          "miss": 74
+        },
+        "executionClass": {
+          "NO_RETRIEVAL": 27,
+          "SINGLE_RETRIEVAL": 36,
+          "MULTI_HOP_RETRIEVAL": 11
+        },
+        "llamadasExtraAlProveedor": 0,
+        "etapas": {
+          "canonicalize:done": 74,
+          "policy:no restrictions": 28,
+          "exact-cache:miss": 44,
+          "router:NO_RETRIEVAL": 27,
+          "elision:skipped": 44,
+          "constraints:none": 74,
+          "reference:not-written": 34,
+          "cache-write:skipped: answer cut off by the output cap (finish_reason \"length\"); replaying half an answer would bill it as a 100% avoided call": 34,
+          "policy:personalized/account-scoped request; personalized request with no principal (context.sessionId) → exact cache off; agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\")": 6,
+          "router:SINGLE_RETRIEVAL": 36,
+          "prefix-cache:marked": 37,
+          "prefix-cache:measured": 37,
+          "policy:personalized/account-scoped request; personalized request with no principal (context.sessionId) → exact cache off": 7,
+          "policy:freshness-sensitive request; personalized/account-scoped request; freshness-sensitive without a freshness bucket → exact cache off; personalized request with no principal (context.sessionId) → exact cache off; agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\")": 8,
+          "policy:freshness-sensitive request; freshness-sensitive without a freshness bucket → exact cache off": 2,
+          "reference:written": 40,
+          "policy:freshness-sensitive request; freshness-sensitive without a freshness bucket → exact cache off; agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\")": 7,
+          "policy:agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\")": 16,
+          "router:MULTI_HOP_RETRIEVAL": 11
+        }
+      },
+      "calidad": {
+        "juzgada": true,
+        "turnosJuzgados": 9,
+        "victoriasB": 2,
+        "victoriasA": 0,
+        "empates": 7,
+        "inconsistentes": 0,
+        "identicas": 0,
+        "errores": 0,
+        "turnosSinPresupuesto": 1,
+        "tasaDeVictoriaB": {
+          "point": 0.6,
+          "lower": 0.5,
+          "upper": 0.7
+        },
+        "porCategoria": {
+          "writing": {
+            "n": 2,
+            "B": 1,
+            "A": 0,
+            "empate": 1
+          },
+          "roleplay": {
+            "n": 2,
+            "B": 1,
+            "A": 0,
+            "empate": 1
+          },
+          "reasoning": {
+            "n": 2,
+            "B": 0,
+            "A": 0,
+            "empate": 2
+          },
+          "math": {
+            "n": 2,
+            "B": 0,
+            "A": 0,
+            "empate": 2
+          },
+          "coding": {
+            "n": 1,
+            "B": 0,
+            "A": 0,
+            "empate": 1
+          }
+        },
+        "llamadasAlJuez": 19,
+        "preguntasJuzgadas": 5,
+        "cortePorPresupuesto": true
+      },
+      "respuestasIdenticasPorTurno": 9,
+      "errores": []
+    },
+    {
+      "modelo": "gpt-5.5",
+      "idCualificado": "openai/gpt-5.5",
+      "familia": "openai",
+      "maxSalida": 4096,
+      "temperatura": "no se envía (el modelo la rechaza con 400 o es de razonamiento), en ningún brazo",
+      "precio": {
+        "inputPer1k": 0.005,
+        "outputPer1k": 0.03,
+        "cachedInputPer1k": 0.0005
+      },
+      "precioConocido": true,
+      "preguntas": {
+        "planificadas": 80,
+        "completas": 8,
+        "conError": 0,
+        "porCategoria": {
+          "writing": 1,
+          "roleplay": 1,
+          "reasoning": 1,
+          "math": 1,
+          "coding": 1,
+          "extraction": 1,
+          "stem": 1,
+          "humanities": 1
+        },
+        "cortePorPresupuesto": true,
+        "motivoDelCorte": "el peor coste de la pregunta siguiente ($0.6269) no cabía: gastado $0.5771 de $1.0932"
+      },
+      "gasto": {
+        "generacionA": 0.291625,
+        "generacionB": 0.285455,
+        "total": 0.57708,
+        "tope": 1.25,
+        "excesosDeReserva": 0,
+        "juez": 0.1256475,
+        "topeJuez": 0.13769437499999998
+      },
+      "coste": {
+        "A": 0.29162499999999997,
+        "B": 0.28545499999999996,
+        "ahorroPooled": {
+          "point": 0.021157308186883883,
+          "lower": -0.04370821060778707,
+          "upper": 0.09746447572227046
+        },
+        "ahorroEstratificadoPorCategoria": {
+          "point": 0.021157308186883883,
+          "lower": 0.021157308186883883,
+          "upper": 0.021157308186883883
+        },
+        "clase": "muestra insuficiente",
+        "atribucion": {
+          "atribuible": null,
+          "motivo": "sin muestra suficiente"
+        },
+        "controlAA": {
+          "preguntas": 8,
+          "ahorro": {
+            "point": 0.10461769490677031,
+            "lower": -0.09850835919511436,
+            "upper": 0.19003115264797532
+          },
+          "clase": "muestra insuficiente"
+        },
+        "deltaMedioPorPreguntaUsd": {
+          "point": 0.0007712499999999996,
+          "lower": -0.0011362499999999984,
+          "upper": 0.003714999999999998
+        },
+        "wilcoxonP": 0.7356939948760092
+      },
+      "tokens": {
+        "A": {
+          "entrada": 4151,
+          "cacheLeida": 0,
+          "cacheEscrita": 0,
+          "salida": 9029,
+          "razonamiento": 1785
+        },
+        "B": {
+          "entrada": 3595,
+          "cacheLeida": 0,
+          "cacheEscrita": 0,
+          "salida": 8916,
+          "razonamiento": 1754
+        }
+      },
+      "cacheDePrefijo": {
+        "llamadas": 32,
+        "llamadasConLecturaA": 0,
+        "llamadasConLecturaB": 0,
+        "llamadasConEscrituraA": 0,
+        "llamadasConEscrituraB": 0
+      },
+      "latencia": {
+        "A": {
+          "p50": 6236,
+          "p95": 27935
+        },
+        "B": {
+          "p50": 6330,
+          "p95": 32819
+        },
+        "deltaMedioMs": {
+          "point": 283.3125,
+          "lower": -946.25,
+          "upper": 1513.9375
+        },
+        "llamadasSinReintento": 32
+      },
+      "truncadas": {
+        "A": 0,
+        "B": 0
+      },
+      "cable": {
+        "turnos": 16,
+        "identicos": 8,
+        "diferencias": {
+          "prompt_cache_key": 8
+        },
+        "modelosServidosA": [
+          "gpt-5.5-2026-04-23"
+        ],
+        "modelosServidosB": [
+          "gpt-5.5-2026-04-23"
+        ]
+      },
+      "capa": {
+        "basis": {
+          "measured": 16
+        },
+        "ahorroDeclaradoUsd": 0,
+        "ahorroDeclaradoPorBasis": {
+          "measured": 0
+        },
+        "costeDeclaradoUsd": 0.285455,
+        "costeMedidoB": 0.28545499999999996,
+        "tokensQueNoCuadran": 0,
+        "cacheResult": {
+          "miss": 16
+        },
+        "executionClass": {
+          "NO_RETRIEVAL": 8,
+          "MULTI_HOP_RETRIEVAL": 3,
+          "SINGLE_RETRIEVAL": 5
+        },
+        "llamadasExtraAlProveedor": 0,
+        "etapas": {
+          "canonicalize:done": 16,
+          "policy:no restrictions": 5,
+          "exact-cache:miss": 8,
+          "router:NO_RETRIEVAL": 8,
+          "elision:skipped": 8,
+          "constraints:none": 16,
+          "reference:written": 16,
+          "policy:personalized/account-scoped request; personalized request with no principal (context.sessionId) → exact cache off; agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\")": 2,
+          "router:MULTI_HOP_RETRIEVAL": 3,
+          "prefix-cache:marked": 8,
+          "prefix-cache:measured": 8,
+          "policy:personalized/account-scoped request; personalized request with no principal (context.sessionId) → exact cache off": 2,
+          "policy:freshness-sensitive request; personalized/account-scoped request; freshness-sensitive without a freshness bucket → exact cache off; personalized request with no principal (context.sessionId) → exact cache off; agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\")": 1,
+          "policy:freshness-sensitive request; freshness-sensitive without a freshness bucket → exact cache off": 1,
+          "router:SINGLE_RETRIEVAL": 5,
+          "policy:freshness-sensitive request; freshness-sensitive without a freshness bucket → exact cache off; agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\")": 2,
+          "policy:agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\")": 3
+        }
+      },
+      "calidad": {
+        "juzgada": true,
+        "turnosJuzgados": 8,
+        "victoriasB": 0,
+        "victoriasA": 1,
+        "empates": 7,
+        "inconsistentes": 3,
+        "identicas": 0,
+        "errores": 0,
+        "turnosSinPresupuesto": 0,
+        "tasaDeVictoriaB": {
+          "point": 0.4375,
+          "lower": 0.3125,
+          "upper": 0.5
+        },
+        "porCategoria": {
+          "writing": {
+            "n": 2,
+            "B": 0,
+            "A": 0,
+            "empate": 2
+          },
+          "roleplay": {
+            "n": 2,
+            "B": 0,
+            "A": 1,
+            "empate": 1
+          },
+          "reasoning": {
+            "n": 2,
+            "B": 0,
+            "A": 0,
+            "empate": 2
+          },
+          "math": {
+            "n": 2,
+            "B": 0,
+            "A": 0,
+            "empate": 2
+          }
+        },
+        "llamadasAlJuez": 18,
+        "preguntasJuzgadas": 4,
+        "cortePorPresupuesto": true
+      },
+      "respuestasIdenticasPorTurno": 1,
+      "errores": []
+    },
+    {
+      "modelo": "gpt-5.6-sol",
+      "idCualificado": "openai/gpt-5.6-sol",
+      "familia": "openai",
+      "maxSalida": 4096,
+      "temperatura": "no se envía (el modelo la rechaza con 400 o es de razonamiento), en ningún brazo",
+      "precio": {
+        "inputPer1k": 0.004,
+        "outputPer1k": 0.02,
+        "cachedInputPer1k": 0.0004
+      },
+      "precioConocido": true,
+      "preguntas": {
+        "planificadas": 80,
+        "completas": 13,
+        "conError": 0,
+        "porCategoria": {
+          "writing": 2,
+          "roleplay": 2,
+          "reasoning": 2,
+          "math": 2,
+          "coding": 2,
+          "extraction": 1,
+          "stem": 1,
+          "humanities": 1
+        },
+        "cortePorPresupuesto": true,
+        "motivoDelCorte": "el peor coste de la pregunta siguiente ($0.4480) no cabía: gastado $0.7391 de $1.1356"
+      },
+      "gasto": {
+        "generacionA": 0.36881600000000003,
+        "generacionB": 0.37031600000000003,
+        "total": 0.7391319999999999,
+        "tope": 1.25,
+        "excesosDeReserva": 0,
+        "juez": 0.1393475,
+        "topeJuez": 0.15541000000000002
+      },
+      "coste": {
+        "A": 0.36881600000000003,
+        "B": 0.370316,
+        "ahorroPooled": {
+          "point": -0.004067068673810015,
+          "lower": -0.21211851785992097,
+          "upper": 0.13475124563099572
+        },
+        "ahorroEstratificadoPorCategoria": {
+          "point": -0.0022771781208725805,
+          "lower": -0.1513635052182305,
+          "upper": 0.12035854678384517
+        },
+        "clase": "indistinguible de 0",
+        "atribucion": {
+          "atribuible": false,
+          "motivo": "el cable de B solo difiere de A en `prompt_cache_key`, B no leyó de caché más que A (0 frente a 0 llamadas) y la capa declara 0 $ de ahorro: la diferencia de coste es muestreo de la salida, no la capa"
+        },
+        "controlAA": {
+          "preguntas": 13,
+          "ahorro": {
+            "point": -0.0037993920972643203,
+            "lower": -0.3127145407112455,
+            "upper": 0.23326170549649394
+          },
+          "clase": "indistinguible de 0"
+        },
+        "deltaMedioPorPreguntaUsd": {
+          "point": -0.00011538461538461469,
+          "lower": -0.004842461538461536,
+          "upper": 0.004599076923076923
+        },
+        "wilcoxonP": 0.4444203141604819
+      },
+      "tokens": {
+        "A": {
+          "entrada": 7414,
+          "cacheLeida": 0,
+          "cacheEscrita": 0,
+          "salida": 16958,
+          "razonamiento": 4741
+        },
+        "B": {
+          "entrada": 7389,
+          "cacheLeida": 0,
+          "cacheEscrita": 0,
+          "salida": 17038,
+          "razonamiento": 4435
+        }
+      },
+      "cacheDePrefijo": {
+        "llamadas": 52,
+        "llamadasConLecturaA": 0,
+        "llamadasConLecturaB": 0,
+        "llamadasConEscrituraA": 0,
+        "llamadasConEscrituraB": 0
+      },
+      "latencia": {
+        "A": {
+          "p50": 7325,
+          "p95": 34004
+        },
+        "B": {
+          "p50": 5742,
+          "p95": 35065
+        },
+        "deltaMedioMs": {
+          "point": 76.1923076923077,
+          "lower": -1410.3846153846155,
+          "upper": 1441.4615384615386
+        },
+        "llamadasSinReintento": 52
+      },
+      "truncadas": {
+        "A": 0,
+        "B": 0
+      },
+      "cable": {
+        "turnos": 26,
+        "identicos": 13,
+        "diferencias": {
+          "prompt_cache_key": 13
+        },
+        "modelosServidosA": [
+          "gpt-5.6-sol"
+        ],
+        "modelosServidosB": [
+          "gpt-5.6-sol"
+        ]
+      },
+      "capa": {
+        "basis": {
+          "measured": 26
+        },
+        "ahorroDeclaradoUsd": 0,
+        "ahorroDeclaradoPorBasis": {
+          "measured": 0
+        },
+        "costeDeclaradoUsd": 0.37306400000000006,
+        "costeMedidoB": 0.370316,
+        "tokensQueNoCuadran": 0,
+        "cacheResult": {
+          "miss": 26
+        },
+        "executionClass": {
+          "NO_RETRIEVAL": 14,
+          "MULTI_HOP_RETRIEVAL": 2,
+          "SINGLE_RETRIEVAL": 10
+        },
+        "llamadasExtraAlProveedor": 0,
+        "etapas": {
+          "canonicalize:done": 26,
+          "policy:no restrictions": 8,
+          "exact-cache:miss": 11,
+          "router:NO_RETRIEVAL": 14,
+          "elision:skipped": 11,
+          "constraints:none": 26,
+          "reference:written": 26,
+          "policy:freshness-sensitive request; personalized/account-scoped request; freshness-sensitive without a freshness bucket → exact cache off; personalized request with no principal (context.sessionId) → exact cache off; agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\")": 4,
+          "router:MULTI_HOP_RETRIEVAL": 2,
+          "prefix-cache:marked": 13,
+          "prefix-cache:measured": 13,
+          "policy:personalized/account-scoped request; personalized request with no principal (context.sessionId) → exact cache off": 4,
+          "router:SINGLE_RETRIEVAL": 10,
+          "policy:freshness-sensitive request; freshness-sensitive without a freshness bucket → exact cache off": 1,
+          "policy:freshness-sensitive request; freshness-sensitive without a freshness bucket → exact cache off; agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\")": 4,
+          "policy:agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\")": 3,
+          "policy:personalized/account-scoped request; personalized request with no principal (context.sessionId) → exact cache off; agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\")": 2
+        }
+      },
+      "calidad": {
+        "juzgada": true,
+        "turnosJuzgados": 13,
+        "victoriasB": 1,
+        "victoriasA": 0,
+        "empates": 12,
+        "inconsistentes": 2,
+        "identicas": 3,
+        "errores": 0,
+        "turnosSinPresupuesto": 1,
+        "tasaDeVictoriaB": {
+          "point": 0.5357142857142857,
+          "lower": 0.5,
+          "upper": 0.6071428571428571
+        },
+        "porCategoria": {
+          "writing": {
+            "n": 2,
+            "B": 0,
+            "A": 0,
+            "empate": 2
+          },
+          "roleplay": {
+            "n": 2,
+            "B": 1,
+            "A": 0,
+            "empate": 1
+          },
+          "reasoning": {
+            "n": 2,
+            "B": 0,
+            "A": 0,
+            "empate": 2
+          },
+          "math": {
+            "n": 2,
+            "B": 0,
+            "A": 0,
+            "empate": 2
+          },
+          "coding": {
+            "n": 2,
+            "B": 0,
+            "A": 0,
+            "empate": 2
+          },
+          "extraction": {
+            "n": 2,
+            "B": 0,
+            "A": 0,
+            "empate": 2
+          },
+          "stem": {
+            "n": 1,
+            "B": 0,
+            "A": 0,
+            "empate": 1
+          }
+        },
+        "llamadasAlJuez": 21,
+        "preguntasJuzgadas": 7,
+        "cortePorPresupuesto": true
+      },
+      "respuestasIdenticasPorTurno": 3,
+      "errores": []
+    },
+    {
+      "modelo": "gemini-3.8-flash",
+      "idCualificado": "google/gemini-3.8-flash",
+      "familia": "google",
+      "maxSalida": 4096,
+      "temperatura": "FastChat por categoría (igual en A y B)",
+      "precio": {
+        "inputPer1k": 0.00075,
+        "outputPer1k": 0.00375,
+        "cachedInputPer1k": 0.000075
+      },
+      "precioConocido": true,
+      "preguntas": {
+        "planificadas": 80,
+        "completas": 0,
+        "conError": 2,
+        "porCategoria": {},
+        "cortePorPresupuesto": true,
+        "motivoDelCorte": "2 preguntas seguidas fallaron (último error: provider 400: [{\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"Invalid JSON payload received. Unknown name \\\"prompt_cache_key\\\": Cannot find field.\",\n    \"statu): se para el modelo para no seguir pagando el brazo A de preguntas que el B no completa"
+      },
+      "gasto": {
+        "generacionA": 0.028754250000000002,
+        "generacionB": 0.01583175,
+        "total": 0.044586,
+        "tope": 1.25,
+        "excesosDeReserva": 0,
+        "juez": 0,
+        "topeJuez": 0.024093749999999997
+      },
+      "coste": {
+        "A": 0,
+        "B": 0,
+        "ahorroPooled": null,
+        "ahorroEstratificadoPorCategoria": null,
+        "clase": "sin datos",
+        "atribucion": {
+          "atribuible": null,
+          "motivo": "sin muestra suficiente"
+        },
+        "controlAA": {
+          "preguntas": 0,
+          "ahorro": null,
+          "clase": "sin datos"
+        },
+        "deltaMedioPorPreguntaUsd": null,
+        "wilcoxonP": null
+      },
+      "tokens": {
+        "A": {
+          "entrada": 0,
+          "cacheLeida": 0,
+          "cacheEscrita": 0,
+          "salida": 0,
+          "razonamiento": 0
+        },
+        "B": {
+          "entrada": 0,
+          "cacheLeida": 0,
+          "cacheEscrita": 0,
+          "salida": 0,
+          "razonamiento": 0
+        }
+      },
+      "cacheDePrefijo": {
+        "llamadas": 0,
+        "llamadasConLecturaA": 0,
+        "llamadasConLecturaB": 0,
+        "llamadasConEscrituraA": 0,
+        "llamadasConEscrituraB": 0
+      },
+      "latencia": {
+        "A": {
+          "p50": null,
+          "p95": null
+        },
+        "B": {
+          "p50": null,
+          "p95": null
+        },
+        "deltaMedioMs": null,
+        "llamadasSinReintento": 0
+      },
+      "truncadas": {
+        "A": 0,
+        "B": 0
+      },
+      "cable": {
+        "turnos": 0,
+        "identicos": 0,
+        "diferencias": {},
+        "modelosServidosA": [],
+        "modelosServidosB": []
+      },
+      "capa": {
+        "basis": {},
+        "ahorroDeclaradoUsd": 0,
+        "ahorroDeclaradoPorBasis": {},
+        "costeDeclaradoUsd": 0,
+        "costeMedidoB": 0,
+        "tokensQueNoCuadran": 0,
+        "cacheResult": {},
+        "executionClass": {},
+        "llamadasExtraAlProveedor": 0,
+        "etapas": {}
+      },
+      "calidad": {
+        "juzgada": true,
+        "turnosJuzgados": 0,
+        "victoriasB": 0,
+        "victoriasA": 0,
+        "empates": 0,
+        "inconsistentes": 0,
+        "identicas": 0,
+        "errores": 0,
+        "turnosSinPresupuesto": 0,
+        "tasaDeVictoriaB": null,
+        "porCategoria": {},
+        "llamadasAlJuez": 0,
+        "preguntasJuzgadas": 0,
+        "cortePorPresupuesto": false
+      },
+      "respuestasIdenticasPorTurno": 0,
+      "errores": [
+        "provider 400: [{\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"Invalid JSON payload received. Unknown name \\\"prompt_cache_key\\\": Cannot find field.\",\n    \"status\": \"INVALID_ARGUMENT\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.BadRequest\",\n        \"fieldViolations\": [\n          {\n            \"description\": \"Invalid JSON payload received. Unknown name \\\"prompt_cache_key\\\": Cannot find field.\"\n          }\n        ]\n      }\n    ]\n  }\n}\n]",
+        "B t2 HTTP 400: [{\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"Invalid JSON payload received. Unknown name \\\"prompt_cache_key\\\": Cannot find field.\",\n    \"status\": \"INVALID_ARGUMENT\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.BadRequest\",\n        \"fieldViolations\": [\n          {\n            \"description\": \"Invalid JSON payload received. Unknown name \\\"prompt_cache_key\\\": Cannot find field.\"\n          }\n        ]\n      }\n    ]\n  }\n}\n]"
+      ]
+    },
+    {
+      "modelo": "gemini-3.1-pro-preview",
+      "idCualificado": "google/gemini-3.1-pro-preview",
+      "familia": "google",
+      "maxSalida": 4096,
+      "temperatura": "FastChat por categoría (igual en A y B)",
+      "precio": {
+        "inputPer1k": 0.002,
+        "outputPer1k": 0.012,
+        "cachedInputPer1k": 0.0002
+      },
+      "precioConocido": true,
+      "preguntas": {
+        "planificadas": 80,
+        "completas": 0,
+        "conError": 2,
+        "porCategoria": {},
+        "cortePorPresupuesto": true,
+        "motivoDelCorte": "2 preguntas seguidas fallaron (último error: provider 429: [{\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information): se para el modelo para no seguir pagando el brazo A de preguntas que el B no completa"
+      },
+      "gasto": {
+        "generacionA": 0,
+        "generacionB": 0,
+        "total": 0,
+        "tope": 1.25,
+        "excesosDeReserva": 0,
+        "juez": 0,
+        "topeJuez": 0.048187499999999994
+      },
+      "coste": {
+        "A": 0,
+        "B": 0,
+        "ahorroPooled": null,
+        "ahorroEstratificadoPorCategoria": null,
+        "clase": "sin datos",
+        "atribucion": {
+          "atribuible": null,
+          "motivo": "sin muestra suficiente"
+        },
+        "controlAA": {
+          "preguntas": 0,
+          "ahorro": null,
+          "clase": "sin datos"
+        },
+        "deltaMedioPorPreguntaUsd": null,
+        "wilcoxonP": null
+      },
+      "tokens": {
+        "A": {
+          "entrada": 0,
+          "cacheLeida": 0,
+          "cacheEscrita": 0,
+          "salida": 0,
+          "razonamiento": 0
+        },
+        "B": {
+          "entrada": 0,
+          "cacheLeida": 0,
+          "cacheEscrita": 0,
+          "salida": 0,
+          "razonamiento": 0
+        }
+      },
+      "cacheDePrefijo": {
+        "llamadas": 0,
+        "llamadasConLecturaA": 0,
+        "llamadasConLecturaB": 0,
+        "llamadasConEscrituraA": 0,
+        "llamadasConEscrituraB": 0
+      },
+      "latencia": {
+        "A": {
+          "p50": null,
+          "p95": null
+        },
+        "B": {
+          "p50": null,
+          "p95": null
+        },
+        "deltaMedioMs": null,
+        "llamadasSinReintento": 0
+      },
+      "truncadas": {
+        "A": 0,
+        "B": 0
+      },
+      "cable": {
+        "turnos": 0,
+        "identicos": 0,
+        "diferencias": {},
+        "modelosServidosA": [],
+        "modelosServidosB": []
+      },
+      "capa": {
+        "basis": {},
+        "ahorroDeclaradoUsd": 0,
+        "ahorroDeclaradoPorBasis": {},
+        "costeDeclaradoUsd": 0,
+        "costeMedidoB": 0,
+        "tokensQueNoCuadran": 0,
+        "cacheResult": {},
+        "executionClass": {},
+        "llamadasExtraAlProveedor": 0,
+        "etapas": {}
+      },
+      "calidad": {
+        "juzgada": true,
+        "turnosJuzgados": 0,
+        "victoriasB": 0,
+        "victoriasA": 0,
+        "empates": 0,
+        "inconsistentes": 0,
+        "identicas": 0,
+        "errores": 0,
+        "turnosSinPresupuesto": 0,
+        "tasaDeVictoriaB": null,
+        "porCategoria": {},
+        "llamadasAlJuez": 0,
+        "preguntasJuzgadas": 0,
+        "cortePorPresupuesto": false
+      },
+      "respuestasIdenticasPorTurno": 0,
+      "errores": [
+        "brazo A gemini-3.1-pro-preview: HTTP 429",
+        "provider 429: [{\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_requests_per_model_per_day, limit: 250, model: gemini-3.1-pro\\nPlease retry in 17h16m27.132927698s.\",\n    \"status\": \"RESOURCE_EXHAUSTED\",",
+        "A t1 HTTP 429: [{\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_requests_per_model_per_day, limit: 250, model: gemini-3.1-pro\\nPlease retry in 17h18m31.800615469s.\",\n    \"status\": \"RESOURCE_EXHAUSTED\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.Help\",\n        \"links\": [",
+        "B t1 HTTP 429: [{\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_requests_per_model_per_day, limit: 250, model: gemini-3.1-pro\\nPlease retry in 17h18m31.337888738s.\",\n    \"status\": \"RESOURCE_EXHAUSTED\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.Help\",\n        \"links\": [",
+        "B t1 HTTP 429: [{\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_requests_per_model_per_day, limit: 250, model: gemini-3.1-pro\\nPlease retry in 17h16m27.132927698s.\",\n    \"status\": \"RESOURCE_EXHAUSTED\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.Help\",\n        \"links\": ["
+      ]
+    }
+  ],
+  "modelosFallidos": [
+    {
+      "modelo": "gemini-3.8-flash",
+      "error": "no medible: brazo B, turno 2, HTTP 400 — Invalid JSON payload received. Unknown name \"prompt_cache_key\": Cannot find field."
+    },
+    {
+      "modelo": "gemini-3.1-pro-preview",
+      "error": "no medible: brazo A, turno 1, HTTP 429 — You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit.  * Quota exceeded for metric: generativelanguage.googleapis.com/generate_requests_per_model_per_day, limit: 250, model: gemini-3.1-pro Please retry in 17h18m31.800615469s."
+    }
+  ],
+  "limitaciones": [
+    "MT-Bench es conversación de 2 turnos, prompts cortos (cientos de tokens) y sin herramientas ni contrato de salida: casi ninguna palanca de la capa tiene forma sobre la que actuar, y la caché de prefijo del proveedor no llega al mínimo de tramo (1024 tokens en OpenAI) en la mayoría de turnos. Este banco mide sobre todo que la capa NO empeore (coste, latencia, calidad) en tráfico de chat, no cuánto ahorra en tráfico agéntico.",
+    "Una capa NUEVA por pregunta (caché y memoria frías): no hay repeticiones entre preguntas, así que la caché exacta/semántica de la capa no tiene ocasión de acertar. Es a propósito: el tráfico repetido va en otra batería.",
+    "Subconjunto estratificado con semilla cuando las 80 preguntas no caben en el tope por modelo ($1.2500 cada uno); la calidad, además, solo se juzga en las preguntas que caben en $0.5000 de juez EN TOTAL (repartidos entre los modelos medidos), así que su intervalo es ancho.",
+    "El juez es gpt-4o por Vercel AI Gateway: sesgos conocidos de juez LLM (verbosidad, autopreferencia de familia OpenAI). Las posiciones intercambiadas controlan el sesgo de posición, no los demás.",
+    "Temperatura: la de FastChat por categoría solo en Gemini (0,7 en writing/roleplay). Opus 5.5 y Sonnet 5.5 rechazan `temperature` con 400 («`temperature` is deprecated for this model», humo LIVE) y gpt-5.x no la admite: en esos cuatro no se manda en ningún brazo y muestrean a la temperatura por defecto del proveedor. Parte de las diferencias de calidad entre A y B es muestreo, no la capa.",
+    "El dinero es modelado: tokens medidos × precio de lista del catálogo del paquete. Descuentos negociados, batch o niveles no entran.",
+    "Tope de salida NATIVO de la 0.4.31 en el brazo B (`maxOutputTokens` → `max_completion_tokens` en OpenAI, `max_tokens` en Anthropic y en el endpoint de Gemini) y el mismo campo y valor en el brazo A. Anthropic lleva 1024 (el de FastChat; Opus/Sonnet 5.5 son verbosos y parte de sus respuestas se truncan, por igual en A y B); gpt-5.x y Gemini 3.x llevan 4096 porque su razonamiento cuenta dentro. Esfuerzo de razonamiento: el POR DEFECTO de cada proveedor en los dos brazos (la 0.4.31 no tiene campo para fijarlo, y el brazo A tampoco lo manda).",
+    "La latencia es de pared desde este portátil, con A y B lanzados a la vez para cada turno; incluye la red doméstica y la carga del proveedor en ese momento. Los reintentos por 429 se excluyen de p50/p95 por llamada. Otros ocho bancos compartían las claves a la vez (esta tirada: 1 pregunta a la vez, ≤ 2 peticiones simultáneas por proveedor).",
+    "Gemini va por el endpoint COMPATIBLE con OpenAI (`https://generativelanguage.googleapis.com/v1beta/openai`): el arnés no tiene familia nativa de Google. Ese endpoint NO cuenta el razonamiento en `completion_tokens` (solo en `total_tokens`), y Google lo factura como salida: el banco mide la salida como `total_tokens − prompt_tokens` en los dos brazos (`usoDeGoogle`).",
+    "Gemini y la 0.4.31: (1) la capa manda el id `google/gemini-…` TAL CUAL al host oficial de Gemini, que responde 404 (solo quita el prefijo a api.openai.com y Azure); el brazo B lleva `stripProviderPrefix: true`, la opción pública, y se declara aquí. (2) En el turno 2 la capa añade `prompt_cache_key` y Gemini lo rechaza con 400 («Unknown name \"prompt_cache_key\": Cannot find field»): el brazo B no completa ninguna conversación de 2 turnos. El cortacircuitos para el modelo tras 2 preguntas seguidas fallidas.",
+    "gemini-3.1-pro-preview no se pudo medir en la tirada completa: la clave de Google agotó su cuota diaria de ese modelo (429, `generate_requests_per_model_per_day`, límite 250; otros bancos comparten la clave). En la tirada de humo sí respondió, y su brazo B dio el mismo 404 por el id `google/…` que Flash; con el prefijo quitado le esperaría el mismo 400 por `prompt_cache_key` (es el mismo camino de la capa), pero eso NO se llegó a medir en Pro.",
+    "Los modelos de gama alta cuestan mucho por pregunta (gpt-5.5 ≈ 0,16 $ en el humo) y el tope es de 1,25 $ por modelo reservando el PEOR caso de la pregunta siguiente: varios quedan por debajo de las 10 preguntas pareadas que exige la clase del ahorro («muestra insuficiente»). Es el precio de un tope duro, no un fallo.",
+    "Dos correcciones del arnés en esta tirada, las dos por discrepancias que enseñó la propia capa: (1) `cost.netSavings` de la 0.4.31 es una PROPORCIÓN por petición, no dólares; el arnés la sumaba como $ (inocuo mientras valía 0, como en la tirada del 2026-09-28). Ahora el ahorro declarado es `baselineEstimate − actual`. (2) gpt-5.6 desglosa `cache_write_tokens` y OpenAI la cobra a 1,25×; el lector del arnés no la leía cuando se generó esta tirada, así que el coste de gpt-5.6-sol está INFRAMEDIDO: en B exactamente $0.0027 (la diferencia entre el coste que declara la capa y el medido, en 2 turnos con prefijo ≥ 1024 tokens), en A como mucho $0.0041 (3 turnos con prompt ≥ 1024: 1319 + 1656 + 1088 tokens × 0,25 × $4/M). Menos del 2 % de cada brazo; no mueve la clase del ahorro. El lector ya lo lee para las tiradas siguientes.",
+    "El libro de gasto de esta tirada incluye las tiradas de humo de 1 pregunta (la que descubrió el 400 de temperature en Anthropic y el 404 y el 400 de Gemini): el gasto por modelo del libro es el real; el de cada fila, el de la invocación que la produjo."
+  ]
+}
