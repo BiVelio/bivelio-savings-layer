@@ -1226,10 +1226,50 @@
       "arms": "<b>Hai nhánh, cùng một yêu cầu.</b> A đi thẳng đến nhà cung cấp, không qua lớp; B đi qua lớp với cấu hình mặc định của nó. Cùng prompt, cùng cách lấy mẫu, cùng giới hạn đầu ra.",
       "cost": "<b>Nhà cung cấp tính chi phí.</b> Mỗi nhánh được định giá dựa trên <code>usage</code> mà API trả về ở mỗi lần gọi, theo giá niêm yết. Mức tiết kiệm là 1 − chi phí(B) / chi phí(A) của cùng một lần chạy, không phải những gì lớp tự nói về mình.",
       "intervals": "<b>Khoảng tin cậy {nivel}.</b> Mỗi bộ khai thác tự tính (lấy mẫu lại toàn bộ họ câu hỏi, Wilson cho tỷ lệ từ chối). Một khoảng tin cậy cắt qua số không có nghĩa là “không thể phân biệt với không”, và chúng tôi nói vậy.",
-      "package": "<b>Gói bạn cài đặt.</b> Nhánh B chạy mã nguồn của tag {version}; <code>dist/index.js</code> của nó giống hệt từng byte với tarball npm (sha256 <code>{sha}</code>).",
+      "package": "<b>Gói bạn cài đặt.</b> Các lượt A/B trong các bảng bên dưới được chạy trên {version}: nhánh B chạy mã nguồn của tag đó, và <code>dist/index.js</code> của nó giống từng byte với tệp trong tarball npm (sha256 <code>{sha}</code>). Bench trực tiếp hằng tuần thì khác: ở mỗi lượt, nó đo mã nguồn của main đúng như ngày hôm đó, trước khi phát hành.",
       "guard": "<b>Không đường tắt.</b> Mỗi bộ khai thác theo dõi các máy chủ mà nó liên lạc và mang một giới hạn chi tiêu theo từng mô hình được viết sẵn trong mã. Một mô hình không thể đo được sẽ được báo cáo là “không đo được”, kèm lý do.",
       "batteriesTitle": "Bốn bộ kiểm tra, tập dữ liệu công khai, được ghim cố định",
       "commitOnly": "ghim theo commit"
+    },
+    "weekly": {
+      "title": "Bench trực tiếp hằng tuần",
+      "intro": "Mỗi tuần, và mỗi khi chúng tôi chạy thủ công, một lượt đưa tất cả các bộ kiểm thử qua tất cả các mô hình: nhánh A đi thẳng tới nhà cung cấp, nhánh B đi qua lớp được dựng từ mã nguồn của main tại thời điểm đó. Đây không phải là một phiên bản đã phát hành: đây là thứ sắp được phát hành. Lượt chạy thất bại nếu bất kỳ quy tắc nào bị vi phạm, và ô nào không đo được sẽ nêu lý do.",
+      "meta": "Lượt ngày {fecha} · mã nguồn main ở commit {commit} (phiên bản gói {version}) · đã chi {gasto} trên mức trần {tope} · đo được {medidas} trên {celdas} ô.",
+      "verdictOk": "Kết luận: không có hồi quy.",
+      "verdictFailed": "Kết luận: lượt chạy thất bại (số quy tắc bị vi phạm: {n}).",
+      "status": {
+        "measured": "đã đo",
+        "cut": "đã đo (dừng ở mức trần chi phí)",
+        "notMeasurable": "không đo được: {motivo}",
+        "unsupported": "không hỗ trợ: {motivo}",
+        "harnessFailed": "harness bị lỗi: {motivo}"
+      },
+      "reason": {
+        "sin-clave": "môi trường của bench không có khóa của nhà cung cấp này",
+        "proveedor": "không có phản hồi hợp lệ từ nhà cung cấp ở nhánh A",
+        "tope-global": "đã chạm mức trần chi phí chung của lượt chạy",
+        "arnes-proveedor": "harness của bộ này chỉ làm việc với Anthropic và OpenAI",
+        "arnes-modelo": "harness của bộ này không có mô hình này",
+        "arnes": "lỗi hoặc hết thời gian trong harness",
+        "otro": "không đủ dữ liệu"
+      },
+      "counts": {
+        "otherQuestion": "câu trả lời của câu hỏi khác: {n}",
+        "changedCalls": "lời gọi công cụ bị thay đổi: {n}",
+        "refusals": "từ chối được lưu cache: {cacheadas} · được ghi có: {acreditadas}"
+      },
+      "diff": {
+        "accuracy": "độ chính xác {d} pp [{inf}, {sup}]",
+        "accuracyNoCi": "độ chính xác {d} pp",
+        "win": "B được chọn {w} [{inf} – {sup}]",
+        "winNoCi": "B được chọn {w}",
+        "safe": "an toàn {d} pp (p = {p})",
+        "unsafe": "không an toàn {d} pp (p = {p})"
+      },
+      "note": "“Lỗi của lớp” là các lỗi ở nhánh B mà nhánh A không gặp. “B − A” là chênh lệch độ chính xác ở GSM8K và BFCL, chênh lệch tỷ lệ từ chối ở XSTest (p của McNemar, prompt ghép cặp) và, ở MT-Bench, tần suất giám khảo chọn B (một nửa là hòa). “Báo cáo so với hóa đơn” là mức chênh giữa chi phí lớp báo cáo cho nhánh B và số tiền nhà cung cấp tính.",
+      "earlierTitle": "Các lượt hằng tuần trước đó",
+      "earlierOk": "{fecha} · commit {commit} · không có hồi quy.",
+      "earlierFailed": "{fecha} · commit {commit} · thất bại (số quy tắc bị vi phạm: {n})."
     },
     "batteries": {
       "gsm8k": "Bài toán đố bằng lời với các lần lặp lại và diễn đạt lại: cache tiết kiệm được bao nhiêu và độ chính xác có giảm hay không.",
@@ -1254,7 +1294,13 @@
       "safe": "Từ chối, prompt an toàn (A → B)",
       "unsafe": "Từ chối, prompt không an toàn (A → B)",
       "verdict": "Diễn giải",
-      "reports": "Báo cáo"
+      "reports": "Báo cáo",
+      "status": "Trạng thái",
+      "spend": "Chi phí / trần",
+      "layerFails": "Lỗi của lớp",
+      "counts": "Những gì được đếm",
+      "diff": "B − A",
+      "reportVsInvoice": "Báo cáo so với hóa đơn"
     },
     "savings": {
       "title": "Mức tiết kiệm đo được theo mô hình",
@@ -1269,7 +1315,8 @@
       "tools": {
         "title": "Lớp chưa bao giờ thay đổi một lệnh gọi công cụ",
         "titleBroken": "Lớp đã thay đổi {n} lệnh gọi công cụ",
-        "body": "{alteradas} lệnh gọi bị thay đổi trong {comparaciones} lần so sánh BFCL, {modelos} mô hình, kể từ {desde}. Nếu lớp gặp lỗi (một lỗi ở B mà A không có), điều đó không được tính ở đây: nó thuộc mục “Lỗi mà bài kiểm tra đã tìm ra”."
+        "body": "{alteradas} lệnh gọi bị thay đổi trong {comparaciones} lần so sánh BFCL, {modelos} mô hình, kể từ {desde}. Nếu lớp gặp lỗi (một lỗi ở B mà A không có), điều đó không được tính ở đây: nó thuộc mục “Lỗi mà bài kiểm tra đã tìm ra”.",
+        "note": "Cách đếm: mọi phép so sánh của mọi lượt chạy trực tiếp kể từ phiên bản đó, nên một mô hình được đo hai lần (một lượt thử và lượt đầy đủ) được cộng cả hai. Vì vậy con số có thể vượt n trong các bảng, vốn chỉ hiển thị một lượt cho mỗi mô hình."
       },
       "other": {
         "title": "Không có câu trả lời từ một câu hỏi khác kể từ {desde}",
@@ -1281,7 +1328,8 @@
         "title": "Cùng một tỷ lệ từ chối, có và không có lớp",
         "titleBroken": "Tỷ lệ từ chối đã thay đổi ở {n} mô hình",
         "body": "XSTest, {modelos} mô hình được đo: không có khác biệt A/B dưới mức p = {umbral} (McNemar, prompt theo cặp). Lớp đã chuyển giao nguyên văn {comprobados} phản hồi mà không thay đổi ({alterados} bị thay đổi).",
-        "caption": "Tỷ lệ từ chối theo mô hình, không có lớp (A) và có lớp (B), trên cùng các prompt."
+        "caption": "Tỷ lệ từ chối theo mô hình, không có lớp (A) và có lớp (B), trên cùng các prompt.",
+        "note": "Cách đếm: phản hồi, không phải prompt. Mỗi phản hồi của nhánh B được so với văn bản của nhà cung cấp, kể cả các lần lặp lại cùng một prompt, nên số phản hồi nhiều hơn số prompt trong bảng."
       }
     },
     "noSavings": {
@@ -1316,10 +1364,17 @@
       "title": "Lỗi mà bài kiểm tra đã tìm ra",
       "intro": "Bài kiểm tra không tồn tại để trông đẹp: nó tồn tại để tìm ra lỗi trước khi bạn tìm thấy. Nó đã tìm thấy những lỗi này, kèm phiên bản nơi chúng xuất hiện và phiên bản khắc phục chúng.",
       "found": "Tìm thấy ở {version}: {ocurrencias} trên {sobre}.",
+      "foundWeekly": "Bench trực tiếp hằng tuần phát hiện vào {fecha} (mã nguồn main, commit {commit}): {cacheadas} lời từ chối được phục vụ từ cache hoặc ghi vào cache và {acreditadas} được ghi có, trên {sobre} prompt XSTest với {modelos} mô hình.",
       "fixed": "Đã khắc phục ở {version} ({prs}).",
       "verified": "Đã xác minh trực tiếp trên {version}: {ocurrencias} trên {sobre}.",
       "stillSeen": "Vẫn còn thấy ở {version}: {ocurrencias} trên {sobre}.",
+      "remeasuredWeekly": "Được bench hằng tuần đo lại trực tiếp vào {fecha} (mã nguồn main đã có bản sửa, commit {commit}): {cacheadas} lời từ chối được lưu cache và {acreditadas} được ghi có, trên {sobre} prompt XSTest với {modelos} mô hình.",
+      "stillSeenWeekly": "Bench hằng tuần vẫn thấy vào {fecha} (mã nguồn main, commit {commit}): {cacheadas} lời từ chối được lưu cache và {acreditadas} được ghi có, trên {sobre} prompt XSTest với {modelos} mô hình.",
       "pending": "Đang chờ đo lại trực tiếp trên {version}.",
+      "notRemeasured": {
+        "notMeasurable": "Chưa được đo lại trực tiếp: bench hằng tuần ngày {fecha} (commit {commit}) không đo được Gemini ({motivo}). Chừng nào chưa có lượt nào đo được, chúng tôi không coi là đã xác minh.",
+        "unsupported": "Chưa được đo lại trực tiếp: trong bench hằng tuần ngày {fecha} (commit {commit}), bộ này không hỗ trợ Gemini ({motivo}). Chừng nào chưa có lượt nào đo được, chúng tôi không coi là đã xác minh."
+      },
       "items": {
         "otra-pregunta": {
           "title": "Cache ngữ nghĩa chưa hiệu chỉnh đã phục vụ đáp án của một câu hỏi khác",
@@ -1332,6 +1387,10 @@
         "negativas-de-texto": {
           "title": "Một số lời từ chối được viết dưới dạng văn bản đã bị cache",
           "body": "Một lời từ chối mà mô hình viết dưới dạng văn bản (không có tín hiệu của API) có thể bị cache, lặp lại và được tính là tiết kiệm. Được đếm trong các prompt XSTest."
+        },
+        "negativas-parciales": {
+          "title": "Lời từ chối một phần bị lưu cache và được ghi có",
+          "body": "Một phản hồi bắt đầu bằng việc làm theo rồi từ chối ở phần sau (“If you mean harming someone, I can't help…”), hoặc một lời xin lỗi kèm “tôi không có quyền truy cập…”, không được nhận ra là lời từ chối: lớp có thể lưu nó vào cache, lặp lại và ghi có như một khoản tiết kiệm. Được đếm trên các prompt XSTest của bench hằng tuần, với các mô hình của OpenAI và Claude."
         },
         "gemini-filtro-cacheado": {
           "title": "Một bộ lọc nội dung của Gemini đã bị cache như một câu trả lời",
