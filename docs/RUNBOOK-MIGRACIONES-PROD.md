@@ -56,6 +56,7 @@ select m.mig, m.aplicada from (values
   ('0015 tokens gastados',    exists (select 1 from pg_constraint where conrelid='bvsala.usage_daily'::regclass and conname='usage_daily_token_totals_no_negatives')),
   ('0016 extractos',          to_regclass('bvsala.extractos') is not null),
   ('0017 cargos',             to_regclass('bvsala.cargos') is not null),
+  ('0033 licencia Medir',     to_regclass('bvsala.medir_altas') is not null and to_regclass('bvsala.licenses_una_medir_viva_por_org') is not null),
   ('0029 medido por referencia', to_regclass('bvsala.reference_hits') is not null),
   ('0030 tu propio banco', to_regclass('bvsala.verification_samples') is not null and to_regclass('bvsala.verification_daily') is not null and to_regprocedure('bvsala.ingest_verification_batch(uuid, text, jsonb, jsonb)') is not null and to_regprocedure('bvsala.verification_summary(uuid, date, date)') is not null),
   ('0031 referencia por asiento', exists (select 1 from information_schema.columns where table_schema='bvsala' and table_name='seat_activity' and column_name='reference_baseline_cost')),
@@ -449,6 +450,57 @@ jq -Rs '{query:.}' < /tmp/diagnostico-0018-0020.sql | curl -sf \
   más alta aplicada, nunca el de 0019 a secas.
 - `false` en 0018 o 0020 → el bucle del paso 2 con `PENDIENTES="0018"` o
   `"0020"`. Las tres son idempotentes (`if not exists`).
+
+## Anexo — 0033 (septiembre de 2026): la licencia Medir
+
+> Va aquí y no al final para no pisar el anexo de 0032 (#412); en el orden de
+> aplicación es la **última**: 0029 → 0030 → 0031 → 0032 → **0033**.
+
+La licencia gratuita «Medir» (plan `measure`, `docs/LICENCIA-MEDIR.md`). 0033:
+
+- admite `measure` en el CHECK de `licenses.plan`;
+- el índice único parcial `licenses_una_medir_viva_por_org` (una Medir viva por
+  organización);
+- la tabla `medir_altas` (PK `user_id`, `org_id` único, dominio del correo,
+  `bloqueada`), solo para el service role.
+
+**No toca `ingest_usage_batch` ni `usage_daily`**: no lleva versión de la RPC, así
+que no puede regresar la de 0032 (regla 1 intacta) y el orden respecto a ella no
+cambia el resultado. Aun así **exige 0032 aplicada** —su columna
+`usage_daily.native_cache_read_savings` y su versión de la RPC— y ABORTA sin ella,
+como 0032 exige 0031: el guard fija el orden ascendente estricto (regla 2).
+`test/migracion-0033.test.ts` lo comprueba.
+
+- **Orden de producción completo:** 0029 → 0030 → 0031 → 0032 → **0033** →
+  `vercel --prod` (alta Medir, ingesta con topes, vuelta a Medir al cancelar) →
+  SOLO ENTONCES el npm (SDK y pasarela en sombra). 0033 **antes** de la web: sin
+  el CHECK nuevo, el alta falla con 23514 (fail‑closed, no emite nada) y la vuelta
+  a Medir al cancelar solo alerta (la cancelación se aplica igual).
+- **Guard:** aborta si faltan `organizations`/`licenses` o la base 0032 —
+  aplicar 0032 (y antes 0031) y volver a lanzar 0033. Abortar es el resultado bueno.
+- **Idempotente** y aditiva (ningún DROP de datos, ninguna fila existente cambia).
+- **Regla 6:** anota la hora antes (PITR).
+
+### Diagnóstico (solo lectura)
+
+Antes: la fila «0032 ahorro nativo» del paso 1 en `true`. Tras aplicar, las dos
+en `true`:
+
+```sql
+select to_regclass('bvsala.medir_altas') is not null as tabla_0033,
+       to_regclass('bvsala.licenses_una_medir_viva_por_org') is not null as indice_0033;
+```
+
+### Aplicar
+
+El bucle del paso 2 con `PENDIENTES="0033"`, tras anotar la hora, desde
+`db/migrations/0033_licencia_medir.sql`.
+
+### Verificar tras el deploy de la web
+
+- Panel → Instalación → «Get my free Measure license» con una cuenta verificada:
+  devuelve el token; una segunda pulsación devuelve el mismo.
+- Con un correo desechable (p. ej. `@mailinator.com`): 403 `disposable_email`.
 
 ## Anexo — 0029 (septiembre de 2026): medido por referencia
 

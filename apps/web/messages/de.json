@@ -741,6 +741,33 @@
     },
     "team": {
       "metaTitle": "Team · BiVelio Savings Layer"
+    },
+    "measurePlan": {
+      "title": "Oder kostenlos starten: die Measure-Lizenz, ohne Karte",
+      "body": "Betreibt die Schicht im Schattenmodus für 1 Organisation und bis zu {seats} Plätze: Jede Anfrage geht unverändert an Ihren Anbieter, und nichts wird aus dem Cache bedient. Ihr Dashboard zeigt, was die Hebel gespart hätten; mit einem Upgrade schalten Sie sie ein.",
+      "claim": "Meine kostenlose Measure-Lizenz holen",
+      "claiming": "Wird ausgestellt…",
+      "keyLabel": "Ihr Measure-Lizenzschlüssel (Schattenmodus: keine Hebel aktiv)",
+      "keyHint": "Verwenden Sie ihn als BIVELIO_LICENSE_KEY, genau wie einen bezahlten Schlüssel. Nach dem Upgrade übernimmt die Schicht die bezahlte Lizenz von selbst, und die Hebel werden aktiv.",
+      "errEmailNotVerified": "Bestätigen Sie zuerst Ihre E-Mail-Adresse und versuchen Sie es dann erneut.",
+      "errDisposableEmail": "Wegwerf-E-Mail-Adressen können die Measure-Lizenz nicht erhalten. Registriere dich mit einer dauerhaften Adresse (zum Beispiel deiner geschäftlichen) und versuche es erneut.",
+      "errOneOrgPerAccount": "Dieses Konto hat bereits eine Measure-Lizenz für eine andere Organisation: Die kostenlose Lizenz gilt für eine Organisation pro Konto.",
+      "errAlreadyLicensed": "Ihre Organisation hat bereits eine bezahlte Lizenz: Verwenden Sie den Schlüssel oben.",
+      "errBlocked": "Die Measure-Lizenz ist für diese Organisation nicht verfügbar. Schreiben Sie an support@bivelio.com.",
+      "errRole": "Ihre Rolle erlaubt das Herunterladen der Lizenz nicht. Fragen Sie einen Owner oder Admin.",
+      "errSignIn": "Melden Sie sich zuerst an.",
+      "errGeneric": "Die Measure-Lizenz konnte nicht ausgestellt werden. Versuchen Sie es gleich noch einmal.",
+      "planLabel": "Measure (kostenlos)",
+      "pricingNote": "Measure: kostenlos, ohne Karte. Die Schicht im Schattenmodus für 1 Organisation und bis zu {seats} Plätze, damit Sie sehen, was sie sparen würde, bevor Sie zahlen.",
+      "card": {
+        "eyebrow": "Measure-Lizenz · Schattenmodus",
+        "title": "Was Sie gespart hätten",
+        "amount": "{amount}, die Sie nicht ausgegeben hätten",
+        "context": "Von {spend} gemessenen Ausgaben in {requests} Anfragen. Eine Schätzung aus der Schattenspur, bewertet mit dem Zähler Ihres eigenen Anbieters: im SDK wiederholte und parallel doppelte Aufrufe; im Gateway zusätzlich das Geschwistermodell und die Senkung der Cache-TTL. Nichts wurde angewendet, nichts wird berechnet.",
+        "empty": "Noch keine Spar-Schätzung: Sie erscheint, sobald Ihre Schicht eine wiederholte Anfrage sieht oder, im Gateway, eine, bei der das Geschwistermodell oder die Senkung der Cache-TTL gespart hätte. Die Measure-Lizenz ändert nie, was Sie senden.",
+        "limits": "Kostenlos für 1 Organisation, bis zu {seats} Plätze und {requests} Anfragen pro Tag.",
+        "cta": "Hebel einschalten: Pläne ansehen"
+      }
     }
   },
   "landing": {

@@ -17,6 +17,7 @@ import {
   currentLicenseJti,
   revokeAllLicenses,
 } from "@/lib/license/issue";
+import { volverAMedir, type VueltaAMedir } from "@/lib/license/medir";
 
 /**
  * Stripe webhook — the ONLY path that issues/re-issues/revokes paid licenses.
@@ -27,7 +28,8 @@ import {
  *     fleet keeps working; the old license is only marked superseded).
  *   - invoice.paid (renewal) → re-issue so expiry tracks the new period.
  *   - invoice.payment_failed → past_due, NO revoke (21-day dunning grace, lib/billing/gracia.ts).
- *   - subscription.deleted → plan=free + REVOKE the current license.
+ *   - subscription.deleted → plan=free + REVOKE every paid license, then back to
+ *     the free «Measure» license (lib/license/medir.ts#volverAMedir).
  */
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -506,10 +508,31 @@ async function handleSubDeleted(admin: Admin, sub: Stripe.Subscription, eventId:
     return;
   }
   await setOrgPlan(admin, f.orgId, "free");
-  // Revoke EVERY live token (re-issues leave superseded predecessors unrevoked),
-  // not just the newest — else a canceled org keeps PRO on an older license.
-  const revoked = await revokeAllLicenses(admin, f.orgId, "subscription canceled");
-  await audit(admin, f.orgId, eventId, "sub_deleted", { subId: sub.id, revokedJtis: revoked });
+  // Revoke EVERY live PAID token (re-issues leave superseded predecessors
+  // unrevoked), not just the newest — else a canceled org keeps PRO on an older
+  // license. A live free «Measure» license is kept: the org goes back to it.
+  const revoked = await revokeAllLicenses(admin, f.orgId, "subscription canceled", { conservarMedir: true });
+  // LA VUELTA A MEDIR (decisión del dueño, 2026-09-29): tras cortar lo pagado, la
+  // org sigue viendo lo que habría ahorrado. DESPUÉS de revocar (la Medir nueva
+  // es la más nueva, la que entrega /api/license/current). Un fallo aquí NO
+  // deshace la cancelación ni pide reintento a Stripe: se alerta y la org puede
+  // reclamarla desde el panel (/api/license/measure).
+  const medir = await volverAMedirSinRomper(admin, f.orgId, "cancelacion");
+  await audit(admin, f.orgId, eventId, "sub_deleted", { subId: sub.id, revokedJtis: revoked, medir });
+}
+
+/** `volverAMedir` sin que su fallo tumbe el corte de lo pagado: alerta y sigue. */
+async function volverAMedirSinRomper(admin: Admin, orgId: string, via: string): Promise<VueltaAMedir | { resultado: "fallo" }> {
+  try {
+    return await volverAMedir(admin, orgId);
+  } catch (err) {
+    await alertar({
+      nivel: "aviso",
+      asunto: "La org ha dejado de pagar y NO se le ha podido emitir la licencia Medir",
+      detalle: { orgId, via, motivo: err instanceof Error ? err.message : String(err) },
+    });
+    return { resultado: "fallo" };
+  }
 }
 
 /**

@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 
 import { costeMedido, informeMedido } from "../gateway/medidor.js";
 import {
+  ahorroDeRebajaEnSombra,
   ahorroDeRebaja,
   decidirRebaja,
   fraccionNueva,
@@ -182,6 +183,22 @@ describe("ahorroDeRebaja", () => {
   it("declara 0 sin escritura o sin precio", () => {
     expect(ahorroDeRebaja({ cacheEscrita5m: 0, inputPer1k: 0.005, yaEran5m: 0, herramientaDeServidor: false })).toBe(0);
     expect(ahorroDeRebaja({ cacheEscrita5m: 100_000, inputPer1k: 0, yaEran5m: 0, herramientaDeServidor: false })).toBe(0);
+  });
+});
+
+describe("ahorroDeRebajaEnSombra (licencia Medir)", () => {
+  const limpia = { rebajadas: 1, yaEran5m: 0, herramientaDeServidor: false };
+  it("los tokens escritos a 1h, a la diferencia de prima 2× − 1,25×: la misma cuenta que acredita la palanca", () => {
+    expect(ahorroDeRebajaEnSombra(limpia, 10_000, 0.003)).toBeCloseTo(10 * 0.003 * 0.75, 12);
+    expect(ahorroDeRebajaEnSombra(limpia, 10_000, 0.003)).toBe(
+      ahorroDeRebaja({ cacheEscrita5m: 10_000, inputPer1k: 0.003, yaEran5m: 0, herramientaDeServidor: false }),
+    );
+  });
+  it("0 si la capa no habría rebajado ninguna marca, o si la atribución no es limpia", () => {
+    expect(ahorroDeRebajaEnSombra({ ...limpia, rebajadas: 0 }, 10_000, 0.003)).toBe(0);
+    expect(ahorroDeRebajaEnSombra({ ...limpia, yaEran5m: 1 }, 10_000, 0.003)).toBe(0);
+    expect(ahorroDeRebajaEnSombra({ ...limpia, herramientaDeServidor: true }, 10_000, 0.003)).toBe(0);
+    expect(ahorroDeRebajaEnSombra(limpia, 0, 0.003)).toBe(0);
   });
 });
 

@@ -6,7 +6,7 @@ import {
   generateLicenseKeypair,
   type ResolvedLicense,
 } from "@bivelio/license-client";
-import type { Feature, LicensePayload, Plan } from "@bivelio/protocol";
+import { MEASURE_LIMITS, MEASURE_PLAN, type Feature, type LicensePayload, type Plan } from "@bivelio/protocol";
 
 /**
  * Licensing service (control-plane core).
@@ -104,23 +104,55 @@ export class LicensingService {
     this.revoked = options.revocationStore ?? new InMemoryRevocationStore();
   }
 
-  /** Mint and sign a license. */
+  /**
+   * Mint and sign a license.
+   *
+   * A `measure` («Medir») license is NORMALIZED here, whatever the caller asked:
+   * no features (it grants no lever), seats clamped to {@link MEASURE_LIMITS.seats},
+   * and the long «permanent» term. The SDK already ignores features on a measure
+   * license, but the issuer must not be able to mint a contradictory token either.
+   */
   issue(input: IssueInput): { token: string; payload: LicensePayload } {
     const now = this.nowSeconds();
-    const payload: LicensePayload = {
-      jti: randomUUID(),
-      org_id: input.orgId,
-      plan: input.plan,
-      seats: input.seats,
-      features: input.features,
-      issued_at: now,
-      expires_at: now + (input.termDays ?? 30) * 86400,
-      grace_days: input.graceDays ?? 14,
-      iss: "bivelio-licensing",
-    };
+    const medir = input.plan === MEASURE_PLAN;
+    const payload: LicensePayload = medir
+      ? {
+          jti: randomUUID(),
+          org_id: input.orgId,
+          plan: input.plan,
+          seats: Math.max(1, Math.min(input.seats || MEASURE_LIMITS.seats, MEASURE_LIMITS.seats)),
+          features: [],
+          issued_at: now,
+          // Caducada para quien no conoce el plan (un SDK anterior al modo sombra
+          // encendería las palancas no gateadas): la vigencia real va aparte.
+          expires_at: now,
+          grace_days: 0,
+          measure_expires_at: now + MEASURE_LIMITS.termDays * 86400,
+          measure_grace_days: MEASURE_LIMITS.graceDays,
+          iss: "bivelio-licensing",
+        }
+      : {
+          jti: randomUUID(),
+          org_id: input.orgId,
+          plan: input.plan,
+          seats: input.seats,
+          features: input.features,
+          issued_at: now,
+          expires_at: now + (input.termDays ?? 30) * 86400,
+          grace_days: input.graceDays ?? 14,
+          iss: "bivelio-licensing",
+        };
     const token = signLicense(payload, this.privateKey);
     this.issued.set(payload.jti, payload);
     return { token, payload };
+  }
+
+  /**
+   * Mint a free «Medir» license for an org: shadow mode only, no card. Same as
+   * `issue({ plan: "measure" })`; exists so the no-card path cannot pass features.
+   */
+  issueMeasure(orgId: string): { token: string; payload: LicensePayload } {
+    return this.issue({ orgId, plan: MEASURE_PLAN, seats: MEASURE_LIMITS.seats, features: [] });
   }
 
   /** Validate a token against the current revocation list. */

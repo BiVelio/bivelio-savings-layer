@@ -7,8 +7,51 @@
  * dependency-free package guarantees both sides agree on the shape.
  */
 
-/** Commercial plans. `free` is the self-hosted, locally-capped tier. */
-export type Plan = "free" | "pro" | "team" | "enterprise";
+/**
+ * Commercial plans. `free` is the self-hosted, locally-capped tier.
+ *
+ * `measure` («Medir») es la licencia GRATUITA y PERMANENTE, sin tarjeta: el SDK
+ * y la pasarela funcionan EN SOMBRA —calculan lo que habrían ahorrado— y NINGUNA
+ * palanca se aplica: la petición del cliente sale intacta al proveedor y nada se
+ * sirve de caché. Sigue siendo una licencia firmada y verificada offline, así que
+ * el fail-closed no cambia: sin clave, no hay capa. Se pasa a pago para activar
+ * palancas. Ver {@link MEASURE_PLAN} y {@link MEASURE_LIMITS}.
+ */
+export type Plan = "free" | "measure" | "pro" | "team" | "enterprise";
+
+/** El literal del plan Medir, para no teclearlo en cada comprobación. */
+export const MEASURE_PLAN = "measure" as const satisfies Plan;
+
+/**
+ * Los límites anti-abuso de la licencia Medir, ACEPTADOS por el dueño el
+ * 2026-09-29. Espejo de `apps/web/lib/license/medir.ts` (un test fija que los
+ * dos coinciden).
+ *
+ *  · `seats`: asientos (máquinas o identidades de servicio) que la ingesta
+ *    acepta por mes natural. 5 = un equipo piloto real (un responsable y unos
+ *    pocos desarrolladores o servicios), suficiente para una medición
+ *    representativa y por debajo de cualquier despliegue de producción de más
+ *    de un equipo. Pasado el tope, la capa sigue funcionando (en sombra no hay
+ *    nada que quitarle) y lo que deja de pasar es la MEDICIÓN de esos asientos.
+ *  · `orgsPerAccount`: organizaciones con licencia Medir por cuenta verificada.
+ *  · `dailyRequests`: peticiones ingeridas por organización y día (UTC). Acota
+ *    el coste de servir un panel gratis a quien lo use como observabilidad de
+ *    producción; ~600 000 al mes caben de sobra en un piloto.
+ *  · `termDays` / `graceDays`: el token es «permanente» en la práctica (diez
+ *    años); la revocación sigue funcionando por la lista firmada y la ingesta.
+ */
+export const MEASURE_LIMITS = {
+  seats: 5,
+  orgsPerAccount: 1,
+  dailyRequests: 20_000,
+  termDays: 3650,
+  graceDays: 30,
+} as const;
+
+/** ¿Es este el plan Medir? Acepta cualquier cadena: el plan llega de un token. */
+export function isMeasurePlan(plan: unknown): boolean {
+  return plan === MEASURE_PLAN;
+}
 
 /**
  * Gated capabilities. Local wins (exact cache, resolvers, format selector,
@@ -83,6 +126,24 @@ export interface LicensePayload {
   grace_days: number;
   /** Optional issuer identifier. */
   iss?: string;
+  /**
+   * Only on a `measure` license: its REAL expiry and grace. A measure token is
+   * signed with `expires_at = issued_at` and `grace_days = 0`, so a verifier that
+   * predates shadow mode (and would run the un-gated levers) sees it EXPIRED and
+   * fails closed. Verifiers that know the plan read these instead
+   * ({@link effectiveTerm}).
+   */
+  measure_expires_at?: number;
+  measure_grace_days?: number;
+}
+
+/** The term a verifier must apply: a measure license's real term, else the token's own. */
+export function effectiveTerm<P extends { plan?: string; expires_at: number; grace_days: number; measure_expires_at?: number; measure_grace_days?: number }>(
+  p: P,
+): P {
+  if (p.plan !== MEASURE_PLAN || typeof p.measure_expires_at !== "number" || !Number.isFinite(p.measure_expires_at)) return p;
+  const grace = typeof p.measure_grace_days === "number" && Number.isFinite(p.measure_grace_days) ? p.measure_grace_days : 0;
+  return { ...p, expires_at: p.measure_expires_at, grace_days: Math.max(0, grace) };
 }
 
 /** Current license status resolved by the license-client. */

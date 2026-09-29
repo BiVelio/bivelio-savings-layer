@@ -385,6 +385,32 @@ export function ahorroDeRebaja(entrada: {
 }
 
 /**
+ * LA REBAJA EN SOMBRA (licencia Medir): el dinero que la rebaja HABRÍA ahorrado
+ * en una petición que viajó intacta. La misma aritmética que `ahorroDeRebaja`,
+ * con el otro lado del usage: sin la palanca, el proveedor facturó como
+ * escritura de 1h (2×) los tokens que la rebaja habría mandado a 5 min (1,25×).
+ * Como todas las marcas de 1h se habrían rebajado, esos son TODOS los de 1h.
+ *
+ * Hipotético por construcción: solo alimenta un registro `shadow`, que ningún
+ * cierre lee. Mismas exclusiones que la palanca de pago (marcas de 5m del
+ * cliente, herramientas de servidor): ahí el usage no dice qué bloque escribió
+ * qué, y la sombra tampoco se lo inventa.
+ */
+export function ahorroDeRebajaEnSombra(
+  rebaja: { rebajadas: number; yaEran5m: number; herramientaDeServidor: boolean },
+  cacheEscrita1h: number,
+  inputPer1k: number,
+): number {
+  if (rebaja.rebajadas <= 0) return 0;
+  return ahorroDeRebaja({
+    cacheEscrita5m: cacheEscrita1h,
+    inputPer1k,
+    yaEran5m: rebaja.yaEran5m,
+    herramientaDeServidor: rebaja.herramientaDeServidor,
+  });
+}
+
+/**
  * La MEMORIA de prefijos: la huella del último turno de cada hilo. Acotada
  * por tamaño —un gateway de escritorio no puede crecer sin techo— y por edad:
  * pasada una hora la caché que describía caducó, y el turno siguiente es un

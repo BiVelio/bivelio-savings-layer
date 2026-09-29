@@ -741,6 +741,33 @@
     },
     "team": {
       "metaTitle": "Nhóm · BiVelio Savings Layer"
+    },
+    "measurePlan": {
+      "title": "Hoặc bắt đầu miễn phí: giấy phép Đo lường, không cần thẻ",
+      "body": "Chạy lớp ở chế độ bóng cho 1 tổ chức và tối đa {seats} chỗ: mọi yêu cầu được gửi đến nhà cung cấp của bạn nguyên vẹn và không có gì được phục vụ từ bộ nhớ đệm. Bảng điều khiển cho thấy các đòn bẩy lẽ ra đã tiết kiệm bao nhiêu; nâng cấp lên gói trả phí để bật chúng.",
+      "claim": "Nhận giấy phép Đo lường miễn phí",
+      "claiming": "Đang cấp…",
+      "keyLabel": "Khóa giấy phép Đo lường của bạn (chế độ bóng: không áp dụng đòn bẩy nào)",
+      "keyHint": "Dùng làm BIVELIO_LICENSE_KEY, giống hệt một khóa trả phí. Khi bạn nâng cấp, lớp tự nhận giấy phép trả phí và các đòn bẩy được bật.",
+      "errEmailNotVerified": "Hãy xác nhận địa chỉ email trước, rồi thử lại.",
+      "errDisposableEmail": "Địa chỉ email dùng một lần không thể nhận giấy phép Đo lường. Hãy đăng ký bằng một địa chỉ cố định (ví dụ email công việc) rồi thử lại.",
+      "errOneOrgPerAccount": "Tài khoản này đã có giấy phép Đo lường cho một tổ chức khác: giấy phép miễn phí áp dụng cho một tổ chức mỗi tài khoản.",
+      "errAlreadyLicensed": "Tổ chức của bạn đã có giấy phép trả phí: hãy dùng khóa ở trên.",
+      "errBlocked": "Giấy phép Đo lường không khả dụng cho tổ chức này. Hãy viết cho support@bivelio.com.",
+      "errRole": "Vai trò của bạn không cho phép tải giấy phép. Hãy nhờ owner hoặc admin.",
+      "errSignIn": "Hãy đăng nhập trước.",
+      "errGeneric": "Không thể cấp giấy phép Đo lường. Hãy thử lại sau giây lát.",
+      "planLabel": "Đo lường (miễn phí)",
+      "pricingNote": "Đo lường: miễn phí, không cần thẻ. Lớp ở chế độ bóng cho 1 tổ chức và tối đa {seats} chỗ, để bạn thấy nó sẽ tiết kiệm bao nhiêu trước khi trả tiền.",
+      "card": {
+        "eyebrow": "Giấy phép Đo lường · chế độ bóng",
+        "title": "Số tiền lẽ ra bạn đã tiết kiệm",
+        "amount": "{amount} lẽ ra bạn đã không phải chi",
+        "context": "Trên {spend} chi tiêu đo được qua {requests} yêu cầu. Một ước tính từ làn bóng, được định giá bằng bộ đếm của chính nhà cung cấp của bạn: trong SDK là các lệnh gọi lặp lại và trùng lặp đồng thời; trong gateway còn có mô hình anh em và việc giảm TTL của bộ nhớ đệm. Không có gì được áp dụng và không có gì bị tính phí.",
+        "empty": "Chưa có ước tính tiết kiệm: nó xuất hiện ngay khi lớp của bạn thấy một yêu cầu lặp lại hoặc, trong gateway, một yêu cầu mà mô hình anh em hoặc việc giảm TTL của bộ nhớ đệm lẽ ra đã giúp tiết kiệm. Giấy phép Đo lường không bao giờ thay đổi những gì bạn gửi.",
+        "limits": "Miễn phí cho 1 tổ chức, tối đa {seats} chỗ và {requests} yêu cầu mỗi ngày.",
+        "cta": "Bật các đòn bẩy: xem các gói"
+      }
     }
   },
   "landing": {

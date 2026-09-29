@@ -200,14 +200,15 @@ describe("resolveStartupLicense — el arranque, en orden estricto", () => {
     expect(!r.ok && r.message).toContain("BIVELIO_LICENSE_KEY");
   });
 
-  it("401 → service-key-not-recognised; 404 → no-license (no hay free tier)", async () => {
+  it("401 → service-key-not-recognised; 404 → no-license (solo la licencia Medir es gratis)", async () => {
     const r401 = await arrancar({ fetchImpl: responde(401) as unknown as typeof fetch });
     expect(r401).toMatchObject({ ok: false, code: "service-key-not-recognised" });
     expect(!r401.ok && r401.message).toContain("HTTP 401");
     expect(!r401.ok && r401.message).toContain("/dashboard/install");
     const r404 = await arrancar({ fetchImpl: responde(404) as unknown as typeof fetch });
     expect(r404).toMatchObject({ ok: false, code: "no-license" });
-    expect(!r404.ok && r404.message).toContain("no free tier");
+    expect(!r404.ok && r404.message).toContain("free Measure license");
+    expect(!r404.ok && r404.message).toContain("/dashboard/install");
     expect(!r404.ok && r404.message).toContain("https://savings.bivelio.com/dashboard/account");
   });
 
@@ -523,6 +524,32 @@ describe("LicenseRenewer — recoge la licencia renovada o reemitida con la bvk_
     expect(await r.check({ force: true })).toBe(true);
     expect(llamadas(f)).toHaveLength(1);
     expect(adoptadas[0]!.payload.jti).toBe("b");
+  });
+
+  it("licencia Medir (diez años): mira en cada vuelta y adopta la de PAGO aunque caduque antes; no otra Medir", async () => {
+    // Por la verificación de la pasarela, que aplica la vigencia efectiva.
+    const v = verifyGatewayLicense(
+      signLicense(
+        testPayload(
+          { jti: "m", plan: "measure", features: [], expires_at: aS, grace_days: 0, measure_expires_at: aS + 3650 * DIA, measure_grace_days: 30 },
+          AHORA,
+        ),
+      ),
+      TEST_KEYS.publicKey,
+    );
+    if (!v.ok) throw new Error("la licencia Medir de prueba no verifica");
+    const medir = v.license;
+    // La vigencia efectiva es la real: concede, y queda lejísimos.
+    expect(medir.payload.expires_at).toBe(aS + 3650 * DIA);
+    const pago = signLicense(testPayload({ jti: "p", expires_at: aS + 30 * DIA }, AHORA));
+    const f = conToken(pago);
+    const { r, adoptadas } = renovador({ actual: medir, fetchImpl: f });
+    expect(await r.check()).toBe(true);
+    expect(adoptadas[0]!.payload.plan).toBe("pro");
+    const otraMedir = signLicense(
+      testPayload({ jti: "m2", plan: "measure", features: [], expires_at: aS, grace_days: 0, measure_expires_at: aS + 3000 * DIA, measure_grace_days: 30 }, AHORA),
+    );
+    expect(await renovador({ actual: medir, fetchImpl: conToken(otraMedir) }).r.check()).toBe(false);
   });
 
   it("dentro de la antelación: adopta uno más nuevo de la misma org; no el mismo jti, ni uno revocado, ni uno caducado", async () => {

@@ -13,6 +13,7 @@ import {
   type RevocationPollerOptions,
   type RevocationSnapshot,
 } from "../src/license/index.js";
+import { vigenciaEfectiva } from "../src/license/vigencia.js";
 
 /**
  * LA LICENCIA DE LA PASARELA (LICENSE §2: «The Software requires a valid, active
@@ -142,7 +143,8 @@ export function verifyGatewayLicense(raw: string, publicKey: string | LicenseKey
     if (!isLicensePayload(payload)) {
       return { ok: false, shape: "token", reason: "license payload has the wrong field types" };
     }
-    return { ok: true, license: { token: key, payload } };
+    // Licencia Medir: la vigencia real va en sus campos propios (ver vigenciaEfectiva).
+    return { ok: true, license: { token: key, payload: vigenciaEfectiva(payload) } };
   } catch (err) {
     return { ok: false, shape: "token", reason: `verification error: ${ascii(String(err))}` };
   }
@@ -361,9 +363,9 @@ export function startupFailureMessage(code: StartupFailureCode, ctx: FailureCont
       );
     case "no-license":
       return (
-        "your organization has no active BiVelio license, and the gateway does not start without one: there is no " +
-        `free tier. Subscribe at ${ACCOUNT_URL} and relaunch; the license is collected automatically with your ` +
-        "service key."
+        "your organization has no active BiVelio license, and the gateway does not start without one. Get the free " +
+        `Measure license (no card; shadow mode: it measures and applies no lever) at ${INSTALL_URL}, or subscribe at ` +
+        `${ACCOUNT_URL}, and relaunch; the license is collected automatically with your service key.`
       );
     case "license-expired": {
       const e = ctx.expiresAt ?? 0;
@@ -779,7 +781,10 @@ export class LicenseRenewer {
     const faltan = actual.payload.expires_at - Math.floor(this.ahora() / 1000);
     // Lejos de la caducidad y concediendo no hay nada que buscar: el token
     // renovado ni existe hasta que se cobra el ciclo siguiente.
-    if (!opts.force && concedia && faltan > (this.o.leadSeconds ?? RENEWAL_LEAD_SECONDS)) return false;
+    // Con la licencia Medir (diez años) se mira en cada vuelta: lo que hay que
+    // recoger es el PASO A PAGO, no una renovación.
+    const medir = actual.payload.plan === "measure";
+    if (!opts.force && !medir && concedia && faltan > (this.o.leadSeconds ?? RENEWAL_LEAD_SECONDS)) return false;
 
     this.enVuelo = true;
     const ctrl = new AbortController();
@@ -807,7 +812,8 @@ export class LicenseRenewer {
           // Manda la org de la `bvk_`; si no, solo un token más nuevo, o
           // cualquiera válido cuando el actual ya no concede (revocado o caducado).
           const otraOrg = c.org_id !== actual.payload.org_id;
-          const masNuevo = c.expires_at > actual.payload.expires_at;
+          // Una de pago que sustituye a una Medir manda aunque caduque antes.
+          const masNuevo = c.expires_at > actual.payload.expires_at || (medir && c.plan !== "measure");
           if (!otraOrg && !masNuevo && concedeAhora) return false;
           this.o.onAdopt(r.license);
           return true;

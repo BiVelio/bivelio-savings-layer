@@ -103,3 +103,25 @@ describe("createLicenseGate", () => {
     expect(gate.isEntitled("dashboards")).toBe(false);
   });
 });
+
+describe("la licencia Medir (plan measure)", () => {
+  it("no concede ningún feature aunque el token los lleve, y el gate expone el plan", () => {
+    const token = signLicense(payload({ plan: "measure", features: ["semantic_cache"] }), privateKey);
+    const client = new LicenseClient({ publicKey, nowSeconds: () => BASE });
+    const r = client.load(token);
+    expect(r.status).toBe("active");
+    expect(r.entitlements.plan).toBe("measure");
+    expect(r.entitlements.features).toEqual([]);
+    const gate = createLicenseGate(client);
+    expect(gate.isActive()).toBe(true);
+    expect(gate.isEntitled("semantic_cache")).toBe(false);
+    expect(gate.plan()).toBe("measure");
+  });
+
+  it("el plan de un gate caducado no se expone (no hay plan que valga)", () => {
+    const token = signLicense(payload({ plan: "measure", expires_at: BASE - 60 * DAY, grace_days: 1 }), privateKey);
+    const client = new LicenseClient({ publicKey, nowSeconds: () => BASE });
+    client.load(token);
+    expect(createLicenseGate(client).plan()).toBeUndefined();
+  });
+});

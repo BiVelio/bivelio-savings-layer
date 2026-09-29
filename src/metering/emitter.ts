@@ -162,7 +162,15 @@ export class UsageEmitter {
 
   /** Record one request's usage. Never blocks; O(1). */
   record(report: SavingsReport): void {
-    this.buffer.push({ report, at: this.now() });
+    const at = this.now();
+    this.buffer.push({ report, at });
+    // LICENCIA MEDIR: lo que se HABRÍA ahorrado viaja como un registro aparte con
+    // `basis: "shadow"` —el carril hipotético que la ingesta acumula solo en
+    // shadow_* (0021), jamás en measured ni en la base de la comisión— y con el
+    // sufijo `:shadow` en el id para no chocar en la idempotencia con el
+    // registro medido de la MISMA petición. Solo cuando hay algo que decir.
+    const sombra = informeSombraDeMedir(report);
+    if (sombra) this.buffer.push({ report: sombra, at });
     if (this.buffer.length > this.maxBuffer) {
       this.buffer.splice(0, this.buffer.length - this.maxBuffer); // drop oldest
     }
@@ -422,6 +430,35 @@ export class UsageEmitter {
       ...(r.attribution?.agentId ? { agentId: r.attribution.agentId } : {}),
     };
   }
+}
+
+/**
+ * The hypothetical record of a request served on the free Measure license: what
+ * it cost as the baseline and what it would have cost with the simulated lever as
+ * the actual, with `basis: "shadow"`. `null` when there is no measure block, no
+ * saving, or the suffixed id would not match the pattern the ingest accepts.
+ */
+export function informeSombraDeMedir(r: SavingsReport): SavingsReport | null {
+  const m = r.measure;
+  if (!m) return null;
+  const ahorro = m.wouldHaveSaved.usd;
+  if (!(Number.isFinite(ahorro) && ahorro > 0)) return null;
+  const requestId = `${r.requestId}:shadow`;
+  if (!/^[A-Za-z0-9._:/-]{1,128}$/.test(requestId)) return null;
+  const pagado = Math.max(0, r.cost.actual);
+  const hipotetico = Math.max(0, pagado - ahorro);
+  const { measure: _m, nativeSavings: _n, ...resto } = r;
+  return {
+    ...resto,
+    requestId,
+    cache: { ...r.cache, result: "miss" },
+    cost: {
+      baselineEstimate: pagado,
+      actual: hipotetico,
+      netSavings: pagado > 0 ? Math.min(1, (pagado - hipotetico) / pagado) : 0,
+      basis: "shadow",
+    },
+  };
 }
 
 /** Las dos cifras del ahorro nativo que viajan, o nada. */

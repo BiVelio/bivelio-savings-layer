@@ -741,6 +741,33 @@
     },
     "team": {
       "metaTitle": "Team · BiVelio Savings Layer"
+    },
+    "measurePlan": {
+      "title": "Oppure inizia gratis: la licenza Misura, senza carta",
+      "body": "Esegue il livello in modalità ombra per 1 organizzazione e fino a {seats} postazioni: ogni richiesta arriva al tuo fornitore senza modifiche e nulla viene servito dalla cache. La dashboard mostra quanto avrebbero risparmiato le leve; passa a un piano a pagamento per attivarle.",
+      "claim": "Ottieni la mia licenza Misura gratuita",
+      "claiming": "Emissione…",
+      "keyLabel": "La tua chiave di licenza Misura (modalità ombra: nessuna leva applicata)",
+      "keyHint": "Usala come BIVELIO_LICENSE_KEY, esattamente come una chiave a pagamento. Quando passi al piano a pagamento, il livello recupera da solo la licenza a pagamento e le leve si attivano.",
+      "errEmailNotVerified": "Conferma prima il tuo indirizzo email, poi riprova.",
+      "errDisposableEmail": "Gli indirizzi email usa e getta non possono ottenere la licenza Misura. Registrati con un indirizzo permanente (quello di lavoro, per esempio) e riprova.",
+      "errOneOrgPerAccount": "Questo account ha già una licenza Misura per un'altra organizzazione: la licenza gratuita copre un'organizzazione per account.",
+      "errAlreadyLicensed": "La tua organizzazione ha già una licenza a pagamento: usa la chiave qui sopra.",
+      "errBlocked": "La licenza Misura non è disponibile per questa organizzazione. Scrivi a support@bivelio.com.",
+      "errRole": "Il tuo ruolo non consente di scaricare la licenza. Chiedi a un owner o admin.",
+      "errSignIn": "Accedi prima.",
+      "errGeneric": "Impossibile emettere la licenza Misura. Riprova tra un momento.",
+      "planLabel": "Misura (gratis)",
+      "pricingNote": "Misura: gratis, senza carta. Il livello in modalità ombra per 1 organizzazione e fino a {seats} postazioni, per vedere quanto risparmierebbe prima di pagare.",
+      "card": {
+        "eyebrow": "Licenza Misura · modalità ombra",
+        "title": "Quanto avresti risparmiato",
+        "amount": "{amount} che non avresti speso",
+        "context": "Su {spend} di spesa misurata in {requests} richieste. Una stima della corsia ombra, valutata con il contatore del tuo stesso fornitore: nell'SDK, le chiamate ripetute e i duplicati simultanei; nel gateway, anche il modello fratello e la riduzione del TTL della cache. Non è stato applicato nulla e non viene fatturato nulla.",
+        "empty": "Ancora nessuna stima di risparmio: compare appena il tuo livello vede una richiesta ripetuta o, nel gateway, una in cui il modello fratello o la riduzione del TTL della cache avrebbero fatto risparmiare. La licenza Misura non cambia mai ciò che invii.",
+        "limits": "Gratis per 1 organizzazione, fino a {seats} postazioni e {requests} richieste al giorno.",
+        "cta": "Attiva le leve: vedi i piani"
+      }
     }
   },
   "landing": {

@@ -1,5 +1,7 @@
 import { ed25519 } from "@noble/curves/ed25519.js";
 
+import { vigenciaEfectiva } from "./vigencia.js";
+
 /**
  * Offline license verification for the paid SDK.
  *
@@ -49,6 +51,9 @@ export interface LicenseTokenPayload {
   expires_at: number;
   grace_days: number;
   iss?: string;
+  /** Measure licenses only: the REAL term (see `vigenciaEfectiva` in ./vigencia.ts). */
+  measure_expires_at?: number;
+  measure_grace_days?: number;
 }
 
 export interface ResolvedLicense {
@@ -265,7 +270,7 @@ export function verifyLicenseToken(
   }
   try {
     const payload = JSON.parse(dec.decode(v.payloadBytes)) as LicenseTokenPayload;
-    return { signatureValid: true, payload };
+    return { signatureValid: true, payload: vigenciaEfectiva(payload) };
   } catch {
     return { signatureValid: false, reason: "payload is not valid JSON" };
   }

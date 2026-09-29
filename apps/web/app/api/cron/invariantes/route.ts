@@ -78,7 +78,7 @@ export async function GET(req: Request): Promise<NextResponse> {
     const trozo = orgsDeInteres.slice(i, i + 200);
     const { data, error } = await admin
       .from("licenses")
-      .select("org_id, revoked, expires_at, grace_days")
+      .select("org_id, revoked, expires_at, grace_days, plan")
       .in("org_id", trozo);
     if (error) {
       console.error("[cron/invariantes] lectura de licenses falló:", error);

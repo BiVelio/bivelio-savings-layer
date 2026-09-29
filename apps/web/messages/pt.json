@@ -741,6 +741,33 @@
     },
     "team": {
       "metaTitle": "Equipa · BiVelio Savings Layer"
+    },
+    "measurePlan": {
+      "title": "Ou comece grátis: a licença Medir, sem cartão",
+      "body": "Executa a camada em modo sombra para 1 organização e até {seats} assentos: cada pedido chega ao seu fornecedor sem alterações e nada é servido a partir da cache. O seu painel mostra o que as alavancas teriam poupado; passe a um plano pago para as ativar.",
+      "claim": "Obter a minha licença Medir grátis",
+      "claiming": "A emitir…",
+      "keyLabel": "A sua chave de licença Medir (modo sombra: nenhuma alavanca aplicada)",
+      "keyHint": "Use-a como BIVELIO_LICENSE_KEY, tal como uma chave paga. Quando passar a um plano pago, a camada recolhe sozinha a licença paga e as alavancas ativam-se.",
+      "errEmailNotVerified": "Confirme primeiro o seu endereço de email e tente novamente.",
+      "errDisposableEmail": "Endereços de e-mail descartáveis não podem obter a licença Medir. Registe-se com um endereço permanente (o do trabalho, por exemplo) e tente novamente.",
+      "errOneOrgPerAccount": "Esta conta já tem uma licença Medir para outra organização: a licença gratuita cobre uma organização por conta.",
+      "errAlreadyLicensed": "A sua organização já tem uma licença paga: use a chave acima.",
+      "errBlocked": "A licença Medir não está disponível para esta organização. Escreva para support@bivelio.com.",
+      "errRole": "A sua função não permite descarregar a licença. Peça a um owner ou admin.",
+      "errSignIn": "Inicie sessão primeiro.",
+      "errGeneric": "Não foi possível emitir a licença Medir. Tente novamente dentro de momentos.",
+      "planLabel": "Medir (grátis)",
+      "pricingNote": "Medir: grátis, sem cartão. A camada em modo sombra para 1 organização e até {seats} assentos, para ver o que pouparia antes de pagar.",
+      "card": {
+        "eyebrow": "Licença Medir · modo sombra",
+        "title": "O que teria poupado",
+        "amount": "{amount} que não teria gastado",
+        "context": "De {spend} de gasto medido em {requests} pedidos. Uma estimativa da via sombra, valorizada com o contador do seu próprio fornecedor: no SDK, as chamadas repetidas e as duplicadas em simultâneo; no gateway, também o modelo irmão e a redução do TTL da cache. Nada foi aplicado e nada é faturado.",
+        "empty": "Ainda não há estimativa de poupança: aparece assim que a sua camada vir um pedido repetido ou, no gateway, um em que o modelo irmão ou a redução do TTL da cache teriam poupado. A licença Medir nunca altera o que envia.",
+        "limits": "Grátis para 1 organização, até {seats} assentos e {requests} pedidos por dia.",
+        "cta": "Ative as alavancas: ver planos"
+      }
     }
   },
   "landing": {

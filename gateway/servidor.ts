@@ -56,7 +56,15 @@ import { ajustarDiales, conBetaDeElision } from "./palanca.js";
 import { avisoDeBusquedaDeHerramientas, verHerramientas } from "./busqueda-de-herramientas.js";
 import { aplicarEsfuerzo, conBetaDeEsfuerzo, esNivel } from "./esfuerzo.js";
 import { reescribirModelo, type CambioDeModelo } from "./hermano.js";
-import { decidirRebaja, fraccionNueva, huellaDe, MemoriaDePrefijos, parsearMensajes, rebajarTtlDeCache } from "./tarifa.js";
+import {
+  ahorroDeRebajaEnSombra,
+  decidirRebaja,
+  fraccionNueva,
+  huellaDe,
+  MemoriaDePrefijos,
+  parsearMensajes,
+  rebajarTtlDeCache,
+} from "./tarifa.js";
 import { Coalescedor, claveDePeticion, materialDeCabeceras, MAX_CAPTURA_BYTES, type HuellaDeLaPrimaria } from "./coalescencia.js";
 import { esUpstreamOficial } from "./upstream.js";
 import { RecuentoDeMedicion, type EstadoDeMedicion } from "./recuento.js";
@@ -73,6 +81,16 @@ import {
   rutaLocal,
 } from "./informes-locales.js";
 import { BV_SALA_VERSION } from "../src/version.js";
+
+/**
+ * El aviso de la licencia Medir en la pasarela (una vez por proceso). En inglés
+ * y ASCII, como todo lo que ve el cliente: qué hace y cómo se pasa a pago.
+ */
+export const AVISO_GATEWAY_MEDIR =
+  "[bvsala gateway] Measure license: SHADOW mode. Requests are forwarded to the provider byte for byte " +
+  "(no levers, no coalescing, no usage injection) and your usage is measured; what a lever would have " +
+  "saved shows on your dashboard as an estimate, never billed. To turn the levers on, upgrade at " +
+  "https://savings.bivelio.com/dashboard/account - the gateway picks up the new license by itself.";
 import {
   VigiaDeDegradacion,
   degradacionDeCache,
@@ -598,6 +616,11 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
      * primaria (es la misma respuesta).
      */
     sinCobro?: boolean,
+    /**
+     * Licencia Medir · lo que la rebaja de TTL HABRÍA hecho con este cuerpo
+     * (marcas contadas, nada reescrito). Solo alimenta el registro `shadow`.
+     */
+    rebajaSombra?: RebajaAplicada | null,
   ): void => {
     if (!emisor || !uso) {
       buzon.noMedido(
@@ -704,7 +727,44 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       // S4 § 5). La cadena de simulación sí AVANZA (observar) — si no, el turno
       // siguiente compararía contra un previo viejo y su cifra saldría inflada.
       const borradoNuestro = elision?.atribuible === true && elision.tokensLimpiadosToolUses > 0;
-      if (carrilSombra && !coalescida && path === "/v1/messages") {
+      // LICENCIA MEDIR: lo que las palancas de precio habrían ahorrado sobre ESTE
+      // usage, como UN registro `shadow` (la idempotencia es por requestId). Nada se
+      // reescribió: es el hipotético. Solo contra el API oficial y con tráfico
+      // facturado por token, que es donde la palanca cobraría. Dos piezas, con la
+      // MISMA aritmética que acreditan las palancas de pago:
+      //  · el modelo hermano (palanca C): el mismo usage a otro precio de catálogo;
+      //  · la rebaja de TTL: los tokens que el proveedor facturó como escritura de
+      //    1h, a la prima de 5 min (`ahorroDeRebaja`), al precio del modelo que
+      //    habría servido. Solo si la capa HABRÍA rebajado (`rebajaSombra`).
+      const enMedicionAhora = live.license.payload.plan === "measure";
+      if (enMedicionAhora && !coalescida && path === "/v1/messages" && !suscripcion && upstreamOficial && sinCobro !== true) {
+        try {
+          const hipotesis = reescribirModelo(cuerpo, codificacion);
+          const alternativo = hipotesis ? costeMedido(hipotesis.cambio.servido, usoFinal, inicioMs) : null;
+          const conHermano = hipotesis && alternativo && alternativo.costeUsd < medido.costeUsd ? alternativo : null;
+          const base = conHermano ?? medido;
+          const ahorroTtl = rebajaSombra
+            ? ahorroDeRebajaEnSombra(rebajaSombra, base.tokens.cacheEscrita1h, base.precio.inputPer1k)
+            : 0;
+          const politica = base.costeUsd - ahorroTtl;
+          if (politica < medido.costeUsd) {
+            em.record(informeSombra(`${requestId}:shadow`, model, medido.costeUsd, politica, atribucion));
+            log(
+              `[gateway] measure (shadow) · ${model} · ` +
+                [
+                  conHermano && hipotesis ? `sibling model ${hipotesis.cambio.servido}` : null,
+                  ahorroTtl > 0 ? `cache TTL 1h→5m on ${base.tokens.cacheEscrita1h} written tok` : null,
+                ]
+                  .filter(Boolean)
+                  .join(" + ") +
+                ` · this call would have cost $${politica.toFixed(6)} instead of $${medido.costeUsd.toFixed(6)} (not applied)`,
+            );
+          }
+        } catch {
+          /* la sombra jamás rompe el gateway ni el metering */
+        }
+      }
+      if (carrilSombra && !enMedicionAhora && !coalescida && path === "/v1/messages") {
         setImmediate(() => {
           try {
             const json = jsonDelCuerpo(cuerpo, codificacion);
@@ -819,6 +879,15 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       log(`[gateway] ${req.method} ${ruta} → 402 (license ${v.state})`);
       return;
     }
+
+    // ── LA LICENCIA MEDIR · modo sombra ─────────────────────────────────────
+    // Con el plan `measure` la pasarela es un PASO LIMPIO: ninguna palanca
+    // (diales, modelo hermano, esfuerzo, TTL), ni coalescencia, ni inyección de
+    // usage, ni carril de elisión — el cuerpo sale al upstream byte a byte como
+    // lo mandó el cliente. Se decide POR PETICIÓN porque la licencia se renueva
+    // en caliente: al recoger la de pago, la siguiente petición ya las arma.
+    const enMedicion = live.license.payload.plan === "measure";
+    if (enMedicion) avisarUnaVez("gateway-licencia-medir", AVISO_GATEWAY_MEDIR);
 
     // ── LAS RUTAS LOCALES (/_bvsala/v1/…) · informes-locales.ts ─────────────
     // Detrás de la verja de licencia, como todo, y jamás hacia el upstream.
@@ -939,7 +1008,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       url = new URL(req.url ?? "/", upstreamBase);
 
       // ── F2 · coalescencia (solo bajo bandera, solo POST con cuerpo) ──
-      const coalescible = coalescedor !== null && req.method === "POST" && cuerpo.length > 0;
+      const coalescible = coalescedor !== null && !enMedicion && req.method === "POST" && cuerpo.length > 0;
       // La clave lleva ahora las cabeceras de identidad (credencial, versión,
       // betas): sin ellas, una gemela con OTRA credencial recibía la respuesta
       // de la primaria.
@@ -1076,6 +1145,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       let cuerpoSaliente = cuerpo;
       if (
         palancasArmadas &&
+        !enMedicion &&
         // 2026-09-09 · cuarto interruptor, y el que manda: los diales quedan
         // APAGADOS salvo que alguien los arme a mano. Ver `dialesElision`.
         opts.dialesElision === true &&
@@ -1130,6 +1200,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
 
       const quiereHermano =
         palancasArmadas &&
+        !enMedicion &&
         opts.modeloHermano === true &&
         req.method === "POST" &&
         (url.pathname === "/v1/messages" || url.pathname === "/v1/messages/count_tokens");
@@ -1173,6 +1244,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       let esfuerzoPuesto = false;
       if (
         palancasArmadas &&
+        !enMedicion &&
         esNivel(opts.esfuerzo) &&
         req.method === "POST" &&
         url.pathname === "/v1/messages" &&
@@ -1203,6 +1275,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       let rebaja: RebajaAplicada | null = null;
       if (
         palancasArmadas &&
+        !enMedicion &&
         req.method === "POST" &&
         url.pathname === "/v1/messages" &&
         canal!.tiene("cache_ttl_tuning")
@@ -1243,6 +1316,42 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
         }
       }
 
+      // ── LA REBAJA DE TTL EN SOMBRA (licencia Medir) ─────────────────────
+      // La MISMA decisión que la palanca de arriba (memoria de prefijos por
+      // hilo, fracción nueva, marcas de 1h que se rebajarían), sobre el cuerpo
+      // del cliente y SIN reescribir nada: `cuerpoSaliente` no se toca y
+      // `ttlReescrito` sigue en false. Solo anota QUÉ habría hecho la capa; el
+      // dinero lo pone medir() con el usage medido (`rebajaSombra`), como
+      // registro `shadow` — nunca aplicado, nunca cobrable. Sin mirar el canal
+      // de features: la Medir no trae ninguna, y la pregunta es qué haría la
+      // capa de pago, que lleva la rebaja encendida por defecto en Anthropic.
+      let rebajaSombra: RebajaAplicada | null = null;
+      if (enMedicion && opts.elision !== false && req.method === "POST" && url.pathname === "/v1/messages") {
+        try {
+          const json = parsearMensajes(cuerpo, codificacion);
+          if (json !== null) {
+            const huella = huellaDe(json);
+            const clave = `${atribucion?.sessionId ?? "sin-sesion"}:${huella.system}`;
+            const ahoraMs = Date.now();
+            const anterior = memoria.ultima(clave, ahoraMs);
+            memoria.anotar(clave, huella, ahoraMs);
+            if (decidirRebaja({ fraccionNueva: fraccionNueva(anterior, huella) })) {
+              // `json` es una copia parseada del Buffer: marcarla no toca lo que viaja.
+              const hipotesis = rebajarTtlDeCache(json);
+              if (hipotesis !== null) {
+                rebajaSombra = {
+                  rebajadas: hipotesis.rebajadas,
+                  yaEran5m: hipotesis.yaEran5m,
+                  herramientaDeServidor: hipotesis.herramientaDeServidor,
+                };
+              }
+            }
+          }
+        } catch {
+          /* la sombra jamás rompe el gateway */
+        }
+      }
+
       // ── EL USAGE DE CHAT COMPLETIONS EN STREAM (opt-in) ────────────────
       // Un stream de Chat Completions solo trae usage si la petición lo pide
       // (`stream_options.include_usage`). Con BVSALA_GATEWAY_USAGE_INJECT=1 el
@@ -1257,7 +1366,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       // que ya está puesta. null: la inyección no estaba puesta.
       let inyeccion: Parameters<typeof porQueSinUsoEnStream>[3] = null;
       const esChat = req.method === "POST" && url.pathname.endsWith("/chat/completions");
-      if (esChat && emisor && opts.usageInject === true) {
+      if (esChat && emisor && opts.usageInject === true && !enMedicion) {
         if (endpointSinStreamOptions) {
           inyeccion = "rechazada-por-el-upstream";
         } else {
@@ -1512,7 +1621,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
           const sinCobro = url.pathname === "/v1/messages" && observador instanceof ObservadorSse && observador.negativaNoCobrada();
           medir(
             requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, elision, rebaja, inicioMs, hermano, suscripcion,
-            undefined, undefined, sinCobro,
+            undefined, undefined, sinCobro, rebajaSombra,
           );
           vigilarCache(url.pathname, cuerpo, codificacion, uso, ttlReescrito, sesionId);
         }
@@ -1536,7 +1645,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
           const elision = url.pathname === "/v1/messages" ? elisionDeJson(respuesta) : null;
           medir(
             requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, atribuir(elision, uso), rebaja, inicioMs, hermano, suscripcion,
-            undefined, undefined, negativaNoCobradaEnJson(url.pathname, respuesta),
+            undefined, undefined, negativaNoCobradaEnJson(url.pathname, respuesta), rebajaSombra,
           );
           vigilarCache(url.pathname, cuerpo, codificacion, uso, ttlReescrito, sesionId);
         }

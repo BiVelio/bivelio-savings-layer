@@ -741,6 +741,33 @@
     },
     "team": {
       "metaTitle": "Ekip · BiVelio Savings Layer"
+    },
+    "measurePlan": {
+      "title": "Ya da ücretsiz başlayın: kartsız Ölçüm lisansı",
+      "body": "Katmanı 1 kuruluş ve en fazla {seats} koltuk için gölge modunda çalıştırır: her istek sağlayıcınıza değiştirilmeden gider ve önbellekten hiçbir şey sunulmaz. Paneliniz, kolların ne kadar tasarruf edeceğini gösterir; açmak için ücretli plana geçin.",
+      "claim": "Ücretsiz Ölçüm lisansımı al",
+      "claiming": "Düzenleniyor…",
+      "keyLabel": "Ölçüm lisans anahtarınız (gölge modu: hiçbir kol uygulanmaz)",
+      "keyHint": "Ücretli bir anahtar gibi BIVELIO_LICENSE_KEY olarak kullanın. Ücretli plana geçtiğinizde katman ücretli lisansı kendisi alır ve kollar devreye girer.",
+      "errEmailNotVerified": "Önce e-posta adresinizi doğrulayın, ardından tekrar deneyin.",
+      "errDisposableEmail": "Tek kullanımlık e-posta adresleri Ölçüm lisansını alamaz. Kalıcı bir adresle (örneğin iş adresinle) kaydol ve tekrar dene.",
+      "errOneOrgPerAccount": "Bu hesabın başka bir kuruluş için zaten bir Ölçüm lisansı var: ücretsiz lisans hesap başına bir kuruluşu kapsar.",
+      "errAlreadyLicensed": "Kuruluşunuzun zaten ücretli bir lisansı var: yukarıdaki anahtarı kullanın.",
+      "errBlocked": "Ölçüm lisansı bu kuruluş için kullanılamıyor. support@bivelio.com adresine yazın.",
+      "errRole": "Rolünüz lisansı indirmeye izin vermiyor. Bir owner veya admin'e sorun.",
+      "errSignIn": "Önce oturum açın.",
+      "errGeneric": "Ölçüm lisansı düzenlenemedi. Birazdan tekrar deneyin.",
+      "planLabel": "Ölçüm (ücretsiz)",
+      "pricingNote": "Ölçüm: ücretsiz, kart gerekmez. Ödemeden önce ne kadar tasarruf edeceğini görmeniz için katman, 1 kuruluş ve en fazla {seats} koltuk için gölge modunda çalışır.",
+      "card": {
+        "eyebrow": "Ölçüm lisansı · gölge modu",
+        "title": "Ne kadar tasarruf ederdiniz",
+        "amount": "Harcamayacağınız tutar: {amount}",
+        "context": "{requests} istekte ölçülen {spend} harcamanın içinden. Kendi sağlayıcınızın sayacıyla değerlendirilen, gölge şeridinden bir tahmin: SDK'da tekrarlanan ve eşzamanlı yinelenen çağrılar; gateway'de ayrıca kardeş model ve önbellek TTL'sinin düşürülmesi. Hiçbir şey uygulanmadı ve hiçbir şey faturalanmaz.",
+        "empty": "Henüz tasarruf tahmini yok: katmanınız tekrarlanan bir istek gördüğü anda ya da gateway'de kardeş modelin veya önbellek TTL'sinin düşürülmesinin tasarruf sağlayacağı bir istek gördüğü anda görünür. Ölçüm lisansı gönderdiğiniz hiçbir şeyi değiştirmez.",
+        "limits": "1 kuruluş için ücretsiz, en fazla {seats} koltuk ve günde {requests} istek.",
+        "cta": "Kolları açın: planlara bakın"
+      }
     }
   },
   "landing": {

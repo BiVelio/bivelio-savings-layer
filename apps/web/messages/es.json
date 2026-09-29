@@ -741,6 +741,33 @@
     },
     "team": {
       "metaTitle": "Equipo · BiVelio Savings Layer"
+    },
+    "measurePlan": {
+      "title": "O empieza gratis: la licencia Medir, sin tarjeta",
+      "body": "Ejecuta la capa en modo sombra para 1 organización y hasta {seats} asientos: cada petición llega a tu proveedor sin cambios y nada se sirve de caché. Tu panel muestra lo que habrían ahorrado las palancas; pasa a pago para activarlas.",
+      "claim": "Obtener mi licencia Medir gratis",
+      "claiming": "Emitiendo…",
+      "keyLabel": "Tu clave de licencia Medir (modo sombra: no se aplica ninguna palanca)",
+      "keyHint": "Úsala como BIVELIO_LICENSE_KEY, igual que una clave de pago. Cuando pases a pago, la capa recoge sola la licencia de pago y las palancas se activan.",
+      "errEmailNotVerified": "Confirma primero tu dirección de correo y vuelve a intentarlo.",
+      "errDisposableEmail": "No aceptamos direcciones de correo desechables para la licencia Medir. Regístrate con un correo permanente (el de tu trabajo, por ejemplo) y vuelve a intentarlo.",
+      "errOneOrgPerAccount": "Esta cuenta ya tiene una licencia Medir para otra organización: la licencia gratuita cubre una organización por cuenta.",
+      "errAlreadyLicensed": "Tu organización ya tiene una licencia de pago: usa la clave de arriba.",
+      "errBlocked": "La licencia Medir no está disponible para esta organización. Escribe a support@bivelio.com.",
+      "errRole": "Tu rol no permite descargar la licencia. Pídeselo a un owner o admin.",
+      "errSignIn": "Inicia sesión primero.",
+      "errGeneric": "No se pudo emitir la licencia Medir. Inténtalo de nuevo en un momento.",
+      "planLabel": "Medir (gratis)",
+      "pricingNote": "Medir: gratis, sin tarjeta. La capa en modo sombra para 1 organización y hasta {seats} asientos, para ver lo que ahorraría antes de pagar.",
+      "card": {
+        "eyebrow": "Licencia Medir · modo sombra",
+        "title": "Lo que habrías ahorrado",
+        "amount": "{amount} que no habrías gastado",
+        "context": "De {spend} de gasto medido en {requests} peticiones. Una estimación del carril sombra, valorada con el contador de tu propio proveedor: en el SDK, las llamadas repetidas y las duplicadas en vuelo; en el gateway, además, el modelo hermano y la rebaja del TTL de la caché. No se aplicó nada y no se factura nada.",
+        "empty": "Aún no hay estimación de ahorro: aparece en cuanto tu capa vea una petición repetida o, en el gateway, una en la que habrían ahorrado el modelo hermano o la rebaja del TTL de la caché. La licencia Medir nunca cambia lo que envías.",
+        "limits": "Gratis para 1 organización, hasta {seats} asientos y {requests} peticiones al día.",
+        "cta": "Activa las palancas: ver planes"
+      }
     }
   },
   "landing": {

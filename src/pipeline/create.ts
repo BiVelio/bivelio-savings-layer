@@ -226,6 +226,9 @@ export function createSavingsLayer(
         isActive: () => gate.isActive(),
         status: () => gate.status(),
         reason: () => gate.reason(),
+        // Conmutable como el resto: al recoger la licencia de pago que sustituye
+        // a la Medir, el modo sombra se apaga solo en la siguiente petición.
+        plan: () => gate.plan?.(),
       };
       // `licenseServerUrl` is a BASE url (e.g. https://savings.bivelio.com); the SDK
       // owns the endpoint path so callers never hardcode it.
@@ -414,6 +417,7 @@ export function createSavingsLayer(
     provider: resolved.provider,
     ...(resolved.costModels ? { costModels: resolved.costModels } : {}),
     exigirLicencia: () => pipeline.exigirLicencia(),
+    exigirPalancas: () => pipeline.exigirPalancas(),
     now: resolved.now ?? Date.now,
   });
 
