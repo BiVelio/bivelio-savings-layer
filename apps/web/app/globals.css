@@ -2407,3 +2407,47 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
   .terms-governs { font-size: .88rem; }
   .terms-table th, .terms-table td { padding: 8px 6px; }
 }
+
+/* ── /benchmarks: el banco público A/B ─────────────────────────────────────
+   Reusa el esqueleto de las páginas de términos (.terms-*) y las tablas del
+   panel (.tbl). Las secciones con tabla se ensanchan; la prosa sigue a 76ch. */
+.lp.terms-page .banco-page .terms-sec { max-width: 1120px; }
+.banco-page .terms-sec > p, .banco-page .terms-sec > .terms-list, .banco-page .terms-sec > h3 { max-width: 76ch; }
+.banco-page .terms-sec code { font-family: var(--mono); font-size: .86em; overflow-wrap: anywhere; }
+.banco-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: 8px 0 0; max-width: 820px; }
+.banco-stats > div { border: 1px solid var(--line); border-radius: var(--radius-xl); background: var(--surface-2); padding: 12px 14px; min-width: 0; }
+.banco-stats dt { font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-soft); }
+.banco-stats dd { margin: 4px 0 0; font-family: var(--font-heading); font-size: 1.35rem; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+.banco-tbl { margin: 6px 0 14px; }
+.banco-tbl th { cursor: default; white-space: nowrap; }
+.banco-tbl th:hover { color: inherit; background: var(--surface-2); }
+.banco-tbl td { vertical-align: top; }
+.banco-tbl caption { caption-side: top; text-align: left; padding: 0 0 8px; color: var(--ink-soft); font-size: .9rem; }
+.banco-tbl .banco-texto { text-align: left; min-width: 220px; color: var(--ink-soft); }
+.banco-tbl .banco-hash { text-align: left; }
+.banco-tbl .banco-hash span { display: block; white-space: nowrap; }
+.banco-tbl .banco-cifra { font-weight: 600; color: var(--ink); white-space: nowrap; }
+.banco-tbl .banco-nomedido { text-align: left; color: var(--warn); }
+.banco-delta { display: block; white-space: nowrap; }
+.banco-sub { color: var(--ink-soft); font-size: .85em; font-weight: 400; }
+.banco-tirada { font-family: var(--mono); font-size: 12px; white-space: nowrap; color: var(--brand); }
+.banco-informes a { display: block; font-family: var(--mono); font-size: 12px; }
+.banco-informes { text-align: left !important; }
+.banco-matriz td { text-align: left; }
+.banco-matriz .banco-estado { font-size: .88rem; }
+.banco-matriz .banco-medido { color: var(--good-ink); }
+.banco-matriz .banco-no-medible { color: var(--ink-soft); }
+.banco-matriz .banco-capa-falla { color: var(--danger); }
+.banco-nota { font-size: .9rem; }
+.banco-garantias { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin-bottom: 14px; }
+.banco-garantias [data-ok="true"] h3 { color: var(--good-ink); }
+.banco-garantias [data-ok="false"] h3 { color: var(--danger); }
+.banco-fallos { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 14px; max-width: 86ch; }
+.banco-fallos h3 { margin: 0 0 6px; }
+.banco-fallos .banco-tirada { margin-left: 6px; }
+.banco-version { font-family: var(--mono); font-size: 12px; font-weight: 500; color: var(--ink-soft); white-space: nowrap; }
+.banco-invita .btn { display: inline-flex; }
+@media (max-width: 640px) {
+  .banco-stats dd { font-size: 1.1rem; }
+  .banco-tbl .banco-texto { min-width: 160px; }
+}

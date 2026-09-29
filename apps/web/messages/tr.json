@@ -932,6 +932,7 @@
       "colBivelio": "BiVelio",
       "colLegal": "Yasal",
       "measured": "Ölçülen sonuçlar",
+      "benchmarks": "Açık benchmark",
       "pricing": "Fiyatlandırma",
       "home": "Ana sayfa",
       "docs": "Dokümantasyon",
@@ -1135,6 +1136,159 @@
     "sesionActual": "Şu anda <b>{email}</b> olarak oturum açtınız.",
     "cerrarYContinuar": "Oturumu kapat ve başka hesap kullan",
     "cerrando": "Oturum kapatılıyor…"
+  },
+  "benchmarksPage": {
+    "metaTitle": "Herkese açık A/B testi: bizi ölçün | BiVelio Savings Layer",
+    "metaDescription": "Dört herkese açık test bataryası (GSM8K, BFCL, XSTest ve MT-Bench), sağlayıcının kendi kullanım sayacıyla ölçülen iki kol, her sayı kendi n değeri, aralığı ve tarihiyle. Neyin tasarruf sağladığı, neyin sağlamadığı ve testin bulduğu hatalar.",
+    "eyebrow": "Herkese açık test · yeniden üretilebilir",
+    "title": "A/B testimiz, açıkta. Bizi ölçün.",
+    "lede": "Her koşuyu yayınlıyoruz: herkese açık veri kümeleri üzerinde dört batarya, {modelos} model ve her iki kol da sağlayıcının kendi kullanım sayacıyla ölçülüyor. Her sayı kendi n değerini, aralığını ve tarihini taşır. Tasarruf sağlamayan da burada.",
+    "stats": {
+      "batteries": "batarya",
+      "models": "denenen model",
+      "measured": "ölçümü olan model",
+      "reports": "canlı rapor",
+      "last": "son koşu"
+    },
+    "method": {
+      "title": "Ne ölçülüyor ve nasıl",
+      "arms": "<b>İki kol, aynı istek.</b> A, katman olmadan doğrudan sağlayıcıya gider; B, varsayılan yapılandırmasıyla katmandan geçer. Aynı prompt, aynı örnekleme, aynı çıktı sınırı.",
+      "cost": "<b>Maliyeti sağlayıcı sayar.</b> Her kol, API'nin her çağrıda döndürdüğü <code>usage</code> değeriyle, liste fiyatı üzerinden fiyatlandırılır. Tasarruf, aynı koşunun 1 − maliyet(B) / maliyet(A) değeridir, katmanın kendisi hakkında söyledikleri değil.",
+      "intervals": "<b>{nivel} aralıkları.</b> Bunları her test düzeneği hesaplar (bütün soru ailelerinin yeniden örneklenmesi, ret oranları için Wilson). Sıfırı kesen bir aralık “sıfırdan ayırt edilemez” demektir ve bunu böyle söylüyoruz.",
+      "package": "<b>Kurduğunuz paket.</b> B kolu, {version} etiketinin kaynağını çalıştırır; <code>dist/index.js</code> dosyası npm paketininkiyle bayt bayt aynıdır (sha256 <code>{sha}</code>).",
+      "guard": "<b>Kestirme yok.</b> Her test düzeneği konuştuğu sunucuları izler ve kod içinde yazılı, model başına bir harcama sınırı taşır. Ölçülemeyen bir model, nedeniyle birlikte “ölçülmedi” olarak raporlanır.",
+      "batteriesTitle": "Dört batarya, herkese açık veri kümeleri, sabitlenmiş",
+      "commitOnly": "commit ile sabitlenmiş"
+    },
+    "batteries": {
+      "gsm8k": "Tekrarlar ve başka sözcüklerle ifade edilmiş halleriyle matematik problemleri: önbelleğin ne kadar tasarruf sağladığı ve doğruluğun düşüp düşmediği.",
+      "bfcl": "Araç çağrıları: katman bunlardan hiçbirini değiştirmemeli ve kataloğun tamamı ulaşmalıdır.",
+      "xstest": "Reddler: katman, modelin ne zaman reddettiğini değiştirmemeli, önbellekten bir ret sunmamalıdır.",
+      "mt-bench": "Tekrarsız iki turlu sohbet: katman maliyeti, gecikmeyi veya kaliteyi kötüleştirmemelidir."
+    },
+    "th": {
+      "battery": "Batarya",
+      "what": "Neyi kontrol ediyor",
+      "dataset": "Veri kümesi",
+      "pinned": "Sabitlenmiş dosyalar",
+      "license": "Lisans",
+      "model": "Model",
+      "n": "n",
+      "savings": "Ölçülen tasarruf [GA]",
+      "fromExact": "Tam önbellekten",
+      "fromCalls": "Çağrılarda (önek)",
+      "accuracy": "Doğruluk A → B",
+      "run": "Sürüm · tarih",
+      "prompts": "Promptlar",
+      "safe": "Reddler, güvenli promptlar (A → B)",
+      "unsafe": "Reddler, güvensiz promptlar (A → B)",
+      "verdict": "Yorum",
+      "command": "Komut",
+      "harness": "Test düzeneği",
+      "reports": "Raporlar"
+    },
+    "savings": {
+      "title": "Model başına ölçülen tasarruf",
+      "intro": "GSM8K, isteklerin {rep} kadarının tam tekrar, {par} kadarının başka sözcüklerle ifade edilmiş olduğu bir istek akışında. Bu, tekrarlayan trafiğe sahip batarya: sizin tasarrufunuz kendi trafiğinizin ne kadar tekrarlandığına bağlıdır. Tekrar yoksa “Tasarruf sağlamayan” bölümüne bakın.",
+      "nCell": "{n} istek · {unicos} benzersiz",
+      "delta": "Δ {d} pp [{inf}, {sup}]",
+      "originNote": "Tasarrufun nereden geldiği, pozisyon pozisyon: “tam önbellekten” olan, katmanın sağlayıcıyı çağırmadan sunduğu isteklerde A'nın ödediği tutardır; “çağrılarda” olan ise, sağlayıcıya gerçekten ulaşanlardaki farktır, çoğunlukla sağlayıcının önek önbelleğinden (artı bir miktar çıktı değişkenliği). İkisi toplamda toplam tasarrufu oluşturur.",
+      "accuracyNote": "Doğruluk, yayınlanmış bir cevabı olan sorular üzerinden ölçülür; sayısı değiştirilmiş varyantlar yalnızca katmanın başka bir sorunun cevabını asla geri vermediğini doğrulamaya yarar."
+    },
+    "guarantees": {
+      "title": "Garantiler, sayılmış",
+      "tools": {
+        "title": "Katman hiçbir zaman bir araç çağrısını değiştirmedi",
+        "titleBroken": "Katman {n} araç çağrısını değiştirdi",
+        "body": "{comparaciones} BFCL karşılaştırmasında, {modelos} modelde, {desde} tarihinden bu yana {alteradas} değiştirilmiş çağrı. Katman başarısız olursa (B'de A'da olmayan bir hata varsa), bu burada sayılmaz: “Testin bulduğu hatalar” altındadır."
+      },
+      "other": {
+        "title": "{desde} tarihinden bu yana başka bir sorudan cevap yok",
+        "titleBroken": "{desde} tarihinden bu yana başka bir sorudan {n} cevap",
+        "body": "{variantes} varyanttan {deOtra} tanesi (aynı soru, başka bir sayıyla, dolayısıyla başka bir cevapla) başka bir sorunun cevabıyla sunuldu; {modelos} canlı model ve ölçülen tüm önbellek yapılandırmaları genelinde.",
+        "replay": "GSM8K test bölünmesinin tamamının çevrimdışı tekrarı: {configs} önbellek yapılandırmasının her birinde, {peticiones} istekte {erroneas}."
+      },
+      "refusals": {
+        "title": "Katmanla ve katmansız aynı ret oranı",
+        "titleBroken": "Ret oranı {n} modelde değişti",
+        "body": "XSTest, {modelos} model ölçüldü: p = {umbral} altında A/B farkı yok (McNemar, eşleştirilmiş promptlar). Katman, {comprobados} yanıtın metnini değiştirmeden teslim etti ({alterados} değiştirilmiş).",
+        "caption": "Aynı promptlar üzerinde, katman olmadan (A) ve katmanla (B), model başına ret oranı."
+      }
+    },
+    "noSavings": {
+      "title": "Tasarruf sağlamayan",
+      "lead": "<b>Tekrar olmadan tasarruf ≈ {cero} olur.</b> Yine de yayınlıyoruz, çünkü trafiğiniz tekrarlanmıyorsa göreceğiniz şey budur.",
+      "why": "MT-Bench, her soru için yepyeni bir katmanla iki turlu bir sohbettir: önbelleğin yeniden kullanabileceği hiçbir şey yoktur ve prompt neredeyse hiçbir zaman sağlayıcının bir öneki önbelleğe almak için gerektirdiği minimuma ulaşmaz. BFCL'de her araç çağrısı farklıdır. Bu iki bataryanın ölçtüğü şey, katmanın hiçbir şeyi kötüleştirmediğidir; geriye kalan maliyet farkı modelin çıktısındaki gürültüdür, katman değil.",
+      "nQuestions": "{n} soru",
+      "nItems": "{n} öğe",
+      "verdict": {
+        "ahorro": "tasarruf",
+        "cero": "sıfırdan ayırt edilemez",
+        "sobrecoste": "ek maliyet"
+      },
+      "notAttributable": "katmana atfedilemez"
+    },
+    "status": {
+      "title": "Model ve bataryaya göre durum",
+      "intro": "Her hücre, katmanın en yüksek sürümündeki koşuyu gösterir. Bir model ölçülemediyse, boşluk bırakmak yerine nedenini söylüyoruz.",
+      "measured": "ölçüldü · n = {n}",
+      "notMeasured": "ölçülmedi: {motivo}",
+      "layerFailed": "katman başarısız oldu: {motivo}",
+      "reason": {
+        "credencial": "kimlik bilgisi reddedildi",
+        "presupuesto": "harcama sınırı tükendi",
+        "cuota": "sağlayıcı kotası tükendi",
+        "capa": "istekler katmandan geçmedi",
+        "proveedor": "sağlayıcı her iki kolda da isteği reddetti",
+        "otro": "yeterli veri yok"
+      }
+    },
+    "bugs": {
+      "title": "Testin bulduğu hatalar",
+      "intro": "Test iyi görünmek için değil, hataları siz bulmadan önce bulmak için var. Ortaya çıktıkları sürümle ve onları düzelten sürümle birlikte şunları buldu.",
+      "found": "{version} sürümünde bulundu: {sobre} üzerinden {ocurrencias}.",
+      "fixed": "{version} sürümünde düzeltildi ({prs}).",
+      "verified": "{version} sürümünde canlı olarak doğrulandı: {sobre} üzerinden {ocurrencias}.",
+      "stillSeen": "{version} sürümünde hâlâ görülüyor: {sobre} üzerinden {ocurrencias}.",
+      "pending": "{version} sürümünde canlı olarak yeniden ölçülmeyi bekliyor.",
+      "items": {
+        "otra-pregunta": {
+          "title": "Kalibre edilmemiş anlamsal önbellek, başka bir sorunun cevabını sundu",
+          "body": "Anlamsal önbellek kalibre edilmediğinde, başka bir sayıya sahip bir varyant (“three baskets”e karşı “two baskets”) orijinal sorunun cevabını alabiliyordu. GSM8K varyantları üzerinden sayıldı."
+        },
+        "herramientas-multiturno": {
+          "title": "Katman, bunu yapması için hiçbir sinyal olmadan araç kataloğunu kısalttı",
+          "body": "Çok turlu konuşmalarda, hiçbir şey hangi araçların gereksiz olduğunu göstermese de B kolu A kolundan daha az araç gönderdi. BFCL çok turlu konuşmaları üzerinden sayıldı."
+        },
+        "negativas-de-texto": {
+          "title": "Metin olarak yazılan bazı reddler önbelleğe alındı",
+          "body": "Modelin metin olarak yazdığı bir ret (API sinyali olmadan) önbelleğe alınabilir, tekrarlanabilir ve tasarruf olarak hesaba geçirilebilirdi. XSTest promptlarında sayıldı."
+        },
+        "gemini-filtro-cacheado": {
+          "title": "Bir Gemini içerik filtresi cevap olarak önbelleğe alındı",
+          "body": "Gemini, filtresini kendi durdurma nedeniyle işaretler; katman bunu bir ret olarak tanımadığından, önbelleğe alıp tekrarlayabiliyordu. XSTest promptlarında sayıldı."
+        },
+        "gemini-prompt-cache-key": {
+          "title": "Gemini katmandan geçmiyordu",
+          "body": "Katman, OpenAI API'sine özgü bir alanı uyumlu her uç noktaya gönderiyordu ve Gemini bunu reddediyor: B kolundaki her istek başarısız oluyordu. GSM8K isteklerinde sayıldı."
+        },
+        "gemini-thought-signature": {
+          "title": "Gemini 3 ile araçlı ikinci tur başarısız oluyordu",
+          "body": "Katman, Gemini 3'ün her araç çağrısında gerektirdiği düşünce imzasını geri döndürmüyordu, bu yüzden bir sonraki tur reddediliyordu. BFCL çok turlu devamları üzerinden sayıldı."
+        }
+      }
+    },
+    "repro": {
+      "title": "Nasıl yeniden üretilir",
+      "intro": "Her batarya, depo kök dizininden tek bir komuttur. <code>.env.bench</code> içinde kendi sağlayıcı anahtarlarınıza ihtiyacınız var; her test düzeneği kendi harcama sınırını taşır, veri kümesini commit ve sha256 ile sabitler ve bu sayfanın okuduğu aynı JSON raporunu yazar.",
+      "readme": "Her JSON raporunun yanında okunabilir sürümü (.md) gelir: tasarım, sınırlamalar ve koşunun gerçek harcaması."
+    },
+    "invite": {
+      "title": "Bizi kendiniz ölçün",
+      "body": "Bağımsız bir ölçüm, bizimkinden daha değerlidir. Testi yeniden çalıştırmak veya katmanı kendi test düzeneğinizle ya da kendi trafiğinizle ölçmek isterseniz bize yazın, bunu yapmak için ihtiyacınız olanı size verelim.",
+      "cta": "{email} adresine yazın",
+      "subject": "Herkese açık testin bağımsız ölçümü"
+    }
   },
   "howItWorks": {
     "metaTitle": "Tasarruf nereye kurulur? · BiVelio Savings Layer",

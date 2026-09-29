@@ -932,6 +932,7 @@
       "colBivelio": "BiVelio",
       "colLegal": "Legal",
       "measured": "Resultats mesurats",
+      "benchmarks": "Banc públic",
       "pricing": "Preus",
       "home": "Inici",
       "docs": "Documentació",
@@ -1135,6 +1136,159 @@
     "sesionActual": "Ara mateix heu iniciat la sessió com a <b>{email}</b>.",
     "cerrarYContinuar": "Tancar la sessió i usar un altre compte",
     "cerrando": "Tancant la sessió…"
+  },
+  "benchmarksPage": {
+    "metaTitle": "Banc públic A/B: mesura'ns | BiVelio Savings Layer",
+    "metaDescription": "Quatre bateries públiques (GSM8K, BFCL, XSTest i MT-Bench), dos braços mesurats amb el comptador d'ús del mateix proveïdor, cada xifra amb la seva n, el seu interval i la seva data. El que estalvia, el que no, i els errors que el banc ha trobat.",
+    "eyebrow": "Banc públic · reproduïble",
+    "title": "El nostre banc A/B, obert. Mesura'ns.",
+    "lede": "Publiquem cada execució: quatre bateries amb conjunts de dades públics, {modelos} models, i els dos braços mesurats amb el comptador d'ús del mateix proveïdor. Cada xifra porta la seva n, el seu interval i la seva data. El que no estalvia també hi és.",
+    "stats": {
+      "batteries": "bateries",
+      "models": "models provats",
+      "measured": "models amb alguna mesura",
+      "reports": "informes en directe",
+      "last": "última execució"
+    },
+    "method": {
+      "title": "Què es mesura i com",
+      "arms": "<b>Dos braços, la mateixa petició.</b> A va directament al proveïdor, sense la capa; B passa per la capa amb la seva configuració per defecte. Mateix prompt, mateix mostreig i mateix límit de sortida.",
+      "cost": "<b>El cost el compta el proveïdor.</b> Cada braç es valora amb l'<code>usage</code> que retorna l'API a cada crida, al preu de llista. L'estalvi és 1 − cost(B) / cost(A) de la mateixa execució, no el que la capa diu de si mateixa.",
+      "intervals": "<b>Intervals al {nivel}.</b> Els calcula cada arnès (remostreig per famílies de preguntes, Wilson en les taxes de negativa). Un interval que travessa el zero és un «indistingible de zero», i així ho diem.",
+      "package": "<b>El paquet, el que s'instal·la.</b> El braç B executa la font de l'etiqueta {version}; el seu <code>dist/index.js</code> és idèntic byte a byte al del tarball d'npm (sha256 <code>{sha}</code>).",
+      "guard": "<b>Sense dreceres.</b> Cada arnès vigila els hosts amb què parla i porta un límit de despesa per model escrit al codi. Un model que no s'ha pogut mesurar surt com a «no mesurat», amb el motiu.",
+      "batteriesTitle": "Quatre bateries, conjunts de dades públics, fixats",
+      "commitOnly": "fixat per commit"
+    },
+    "batteries": {
+      "gsm8k": "Problemes matemàtics amb repeticions i paràfrasis: quant estalvia la memòria cau i si es perd exactitud.",
+      "bfcl": "Crides a eines: la capa no ha de canviar-ne cap, i el catàleg sencer ha d'arribar.",
+      "xstest": "Negatives: la capa no ha de canviar quan el model es nega, ni servir una negativa de la memòria cau.",
+      "mt-bench": "Xat de dos torns sense repeticions: la capa no ha d'empitjorar el cost, la latència ni la qualitat."
+    },
+    "th": {
+      "battery": "Bateria",
+      "what": "Què comprova",
+      "dataset": "Conjunt de dades",
+      "pinned": "Fitxers fixats",
+      "license": "Llicència",
+      "model": "Model",
+      "n": "n",
+      "savings": "Estalvi mesurat [IC]",
+      "fromExact": "De la memòria cau exacta",
+      "fromCalls": "A les crides (prefix)",
+      "accuracy": "Exactitud A → B",
+      "run": "Versió · data",
+      "prompts": "Prompts",
+      "safe": "Negatives, prompts segurs (A → B)",
+      "unsafe": "Negatives, prompts insegurs (A → B)",
+      "verdict": "Lectura",
+      "command": "Ordre",
+      "harness": "Arnès",
+      "reports": "Informes"
+    },
+    "savings": {
+      "title": "Estalvi mesurat per model",
+      "intro": "GSM8K, amb un flux de peticions en què un {rep} són repeticions exactes i un {par} paràfrasis. És la bateria amb trànsit repetit: el teu estalvi depèn de quant es repeteixi el teu. Sense repeticions, mira «El que no estalvia».",
+      "nCell": "{n} peticions · {unicos} úniques",
+      "delta": "Δ {d} pp [{inf}, {sup}]",
+      "originNote": "Origen de l'estalvi, posició a posició: «de la memòria cau exacta» és el que A va pagar en les peticions que la capa va servir sense trucar al proveïdor; «a les crides» és la diferència en les que sí que hi van arribar, sobretot memòria cau de prefix del proveïdor (més una mica de variació de la sortida). Les dues sumen l'estalvi total.",
+      "accuracyNote": "L'exactitud es mesura sobre les preguntes amb resposta publicada; les variants amb una xifra canviada només serveixen per comprovar que la capa no lliura la resposta d'una altra pregunta."
+    },
+    "guarantees": {
+      "title": "Garanties, comptades",
+      "tools": {
+        "title": "La capa mai no ha canviat una crida a eines",
+        "titleBroken": "La capa ha canviat {n} crides a eines",
+        "body": "{alteradas} crides alterades en {comparaciones} comparacions de BFCL, {modelos} models, des de {desde}. Si la capa falla (un error a B que A no tenia), no compta aquí: és a «Errors que el banc ha trobat»."
+      },
+      "other": {
+        "title": "Cap resposta d'una altra pregunta des de {desde}",
+        "titleBroken": "{n} respostes d'una altra pregunta des de {desde}",
+        "body": "{deOtra} de {variantes} variants (la mateixa pregunta amb un altre número, i per tant una altra resposta) servides amb la resposta d'una altra pregunta, en {modelos} models en directe i en totes les configuracions de memòria cau mesurades.",
+        "replay": "Rèplica fora de línia de tot el split de test de GSM8K: {erroneas} en {peticiones} peticions, en cadascuna de les {configs} configuracions de memòria cau."
+      },
+      "refusals": {
+        "title": "La mateixa taxa de negatives, amb i sense la capa",
+        "titleBroken": "La taxa de negatives ha canviat en {n} models",
+        "body": "XSTest, {modelos} models mesurats: cap diferència A/B per sota de p = {umbral} (McNemar, prompts aparellats). La capa ha lliurat sense alterar el text de {comprobados} respostes ({alterados} alterades).",
+        "caption": "Taxa de negativa per model, sense la capa (A) i amb ella (B), sobre els mateixos prompts."
+      }
+    },
+    "noSavings": {
+      "title": "El que no estalvia",
+      "lead": "<b>Sense repeticions, l'estalvi és ≈ {cero}.</b> El publiquem igualment, perquè és el que veuràs si el teu trànsit no es repeteix.",
+      "why": "MT-Bench és xat de dos torns amb una capa nova per pregunta: no hi ha res que la memòria cau pugui reutilitzar, i el prompt gairebé mai arriba al mínim que el proveïdor exigeix per fer memòria cau d'un prefix. A BFCL cada crida a eines és diferent. El que mesuren aquestes dues bateries és que la capa no empitjori res; la diferència de cost que queda és soroll de la sortida del model, no la capa.",
+      "nQuestions": "{n} preguntes",
+      "nItems": "{n} ítems",
+      "verdict": {
+        "ahorro": "estalvi",
+        "cero": "indistingible de zero",
+        "sobrecoste": "sobrecost"
+      },
+      "notAttributable": "no atribuïble a la capa"
+    },
+    "status": {
+      "title": "Estat per model i bateria",
+      "intro": "Cada cel·la mostra l'execució de la versió més alta de la capa. Si un model no s'ha pogut mesurar, es diu per què, en lloc de deixar el buit.",
+      "measured": "mesurat · n = {n}",
+      "notMeasured": "no mesurat: {motivo}",
+      "layerFailed": "la capa ha fallat: {motivo}",
+      "reason": {
+        "credencial": "credencial rebutjada",
+        "presupuesto": "límit de despesa exhaurit",
+        "cuota": "quota del proveïdor exhaurida",
+        "capa": "les peticions no han passat per la capa",
+        "proveedor": "el proveïdor ha rebutjat la petició en els dos braços",
+        "otro": "dades insuficients"
+      }
+    },
+    "bugs": {
+      "title": "Errors que el banc ha trobat",
+      "intro": "El banc no hi és per quedar bé: hi és per trobar els errors abans que tu. Ha trobat aquests, amb la versió en què van aparèixer i la que els arregla.",
+      "found": "Trobat a la {version}: {ocurrencias} de {sobre}.",
+      "fixed": "Arreglat a la {version} ({prs}).",
+      "verified": "Verificat en directe a la {version}: {ocurrencias} de {sobre}.",
+      "stillSeen": "Encara vist a la {version}: {ocurrencias} de {sobre}.",
+      "pending": "Pendent de tornar a mesurar en directe a la {version}.",
+      "items": {
+        "otra-pregunta": {
+          "title": "La memòria cau semàntica sense calibrar servia la resposta d'una altra pregunta",
+          "body": "Amb la memòria cau semàntica sense calibrar, una variant amb un altre número («three baskets» enfront de «two baskets») podia rebre la resposta de la pregunta original. Comptat sobre les variants de GSM8K."
+        },
+        "herramientas-multiturno": {
+          "title": "La capa retallava el catàleg d'eines sense cap senyal per fer-ho",
+          "body": "En converses de diversos torns, el braç B enviava menys eines que l'A tot i que res no indicava quines sobraven. Comptat sobre les converses multi-torn de BFCL."
+        },
+        "negativas-de-texto": {
+          "title": "Algunes negatives escrites com a text es desaven a la memòria cau",
+          "body": "Una negativa que el model escriu com a text (sense el senyal de l'API) podia desar-se a la memòria cau, repetir-se i acreditar-se com a estalvi. Comptat en prompts de XSTest."
+        },
+        "gemini-filtro-cacheado": {
+          "title": "Un filtre de contingut de Gemini es desava a la memòria cau com a resposta",
+          "body": "Gemini assenyala el seu filtre amb un motiu d'aturada propi que la capa no reconeixia com a negativa, així que podia desar-lo a la memòria cau i repetir-lo. Comptat en prompts de XSTest."
+        },
+        "gemini-prompt-cache-key": {
+          "title": "Gemini no passava per la capa",
+          "body": "La capa enviava un camp propi de l'API d'OpenAI a qualsevol endpoint compatible, i Gemini el rebutja: totes les peticions del braç B fallaven. Comptat en peticions de GSM8K."
+        },
+        "gemini-thought-signature": {
+          "title": "Amb Gemini 3, el segon torn amb eines fallava",
+          "body": "La capa no retornava la signatura de pensament que Gemini 3 exigeix a cada crida a eines, així que el torn següent es rebutjava. Comptat en continuacions multi-torn de BFCL."
+        }
+      }
+    },
+    "repro": {
+      "title": "Com reproduir-ho",
+      "intro": "Cada bateria és una ordre des de l'arrel del repositori. Necessites les teves pròpies claus de proveïdor a <code>.env.bench</code>; cada arnès porta el seu límit de despesa, fixa el conjunt de dades per commit i sha256, i escriu el mateix informe JSON que llegeix aquesta pàgina.",
+      "readme": "Cada informe JSON ve amb la seva versió llegible (.md) al costat: disseny, limitacions i despesa real de l'execució."
+    },
+    "invite": {
+      "title": "Mesura'ns tu mateix",
+      "body": "Una mesura independent val més que la nostra. Si vols tornar a executar el banc, o mesurar la capa amb el teu propi arnès o amb el teu trànsit, escriu-nos i et donarem el que necessitis per fer-ho.",
+      "cta": "Escriu a {email}",
+      "subject": "Mesura independent del banc públic"
+    }
   },
   "howItWorks": {
     "metaTitle": "On s'instal·la l'estalvi? · BiVelio Savings Layer",

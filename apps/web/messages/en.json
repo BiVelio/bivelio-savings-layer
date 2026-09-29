@@ -932,6 +932,7 @@
       "colBivelio": "BiVelio",
       "colLegal": "Legal",
       "measured": "Measured results",
+      "benchmarks": "Public bench",
       "pricing": "Pricing",
       "home": "Home",
       "docs": "Documentation",
@@ -1135,6 +1136,159 @@
     "sesionActual": "You're currently signed in as <b>{email}</b>.",
     "cerrarYContinuar": "Sign out and use another account",
     "cerrando": "Signing out…"
+  },
+  "benchmarksPage": {
+    "metaTitle": "Public A/B bench: measure us | BiVelio Savings Layer",
+    "metaDescription": "Four public batteries (GSM8K, BFCL, XSTest and MT-Bench), two arms metered by the provider's own usage counter, every figure with its n, its interval and its date. What it saves, what it doesn't, and the bugs the bench found.",
+    "eyebrow": "Public bench · reproducible",
+    "title": "Our A/B bench, in the open. Measure us.",
+    "lede": "We publish every run: four batteries on public datasets, {modelos} models, and both arms metered by the provider's own usage counter. Every figure carries its n, its interval and its date. What doesn't save is here too.",
+    "stats": {
+      "batteries": "batteries",
+      "models": "models tried",
+      "measured": "models with a measurement",
+      "reports": "live reports",
+      "last": "latest run"
+    },
+    "method": {
+      "title": "What is measured, and how",
+      "arms": "<b>Two arms, the same request.</b> A goes straight to the provider, without the layer; B goes through the layer with its default configuration. Same prompt, same sampling, same output cap.",
+      "cost": "<b>The provider counts the cost.</b> Each arm is priced from the <code>usage</code> the API returns on every call, at list price. Savings are 1 − cost(B) / cost(A) of the same run, not what the layer says about itself.",
+      "intervals": "<b>{nivel} intervals.</b> Each harness computes them (resampling whole question families, Wilson for refusal rates). An interval that crosses zero means “indistinguishable from zero”, and we say so.",
+      "package": "<b>The package you install.</b> Arm B runs the source of tag {version}; its <code>dist/index.js</code> is byte-identical to the npm tarball's (sha256 <code>{sha}</code>).",
+      "guard": "<b>No shortcuts.</b> Each harness watches the hosts it talks to and carries a per-model spend cap written in code. A model that could not be measured is reported as “not measured”, with the reason.",
+      "batteriesTitle": "Four batteries, public datasets, pinned",
+      "commitOnly": "pinned by commit"
+    },
+    "batteries": {
+      "gsm8k": "Math word problems with repeats and paraphrases: how much the cache saves and whether accuracy drops.",
+      "bfcl": "Tool calls: the layer must not change a single one, and the whole catalog must arrive.",
+      "xstest": "Refusals: the layer must not change when the model refuses, nor serve a refusal from cache.",
+      "mt-bench": "Two-turn chat without repeats: the layer must not make cost, latency or quality worse."
+    },
+    "th": {
+      "battery": "Battery",
+      "what": "What it checks",
+      "dataset": "Dataset",
+      "pinned": "Pinned files",
+      "license": "License",
+      "model": "Model",
+      "n": "n",
+      "savings": "Measured savings [CI]",
+      "fromExact": "From the exact cache",
+      "fromCalls": "In the calls (prefix)",
+      "accuracy": "Accuracy A → B",
+      "run": "Version · date",
+      "prompts": "Prompts",
+      "safe": "Refusals, safe prompts (A → B)",
+      "unsafe": "Refusals, unsafe prompts (A → B)",
+      "verdict": "Reading",
+      "command": "Command",
+      "harness": "Harness",
+      "reports": "Reports"
+    },
+    "savings": {
+      "title": "Measured savings per model",
+      "intro": "GSM8K, on a request stream where {rep} are exact repeats and {par} paraphrases. It is the battery with repeated traffic: your savings depend on how much yours repeats. Without repeats, see “What doesn't save”.",
+      "nCell": "{n} requests · {unicos} unique",
+      "delta": "Δ {d} pp [{inf}, {sup}]",
+      "originNote": "Where the savings come from, position by position: “from the exact cache” is what A paid on the requests the layer served without calling the provider; “in the calls” is the difference on the ones that did reach it, mostly the provider's prefix cache (plus some output variation). Together they make the total.",
+      "accuracyNote": "Accuracy is measured on the questions with a published answer; the variants with a changed number only serve to check that the layer never hands back another question's answer."
+    },
+    "guarantees": {
+      "title": "Guarantees, counted",
+      "tools": {
+        "title": "The layer never changed a tool call",
+        "titleBroken": "The layer changed {n} tool calls",
+        "body": "{alteradas} altered calls in {comparaciones} BFCL comparisons, {modelos} models, since {desde}. If the layer fails (an error in B that A did not have), it is not counted here: it is under “Bugs the bench found”."
+      },
+      "other": {
+        "title": "No answer from another question since {desde}",
+        "titleBroken": "{n} answers from another question since {desde}",
+        "body": "{deOtra} of {variantes} variants (the same question with another number, hence another answer) served with another question's answer, across {modelos} live models and every cache configuration measured.",
+        "replay": "Offline replay of the whole GSM8K test split: {erroneas} in {peticiones} requests, in each of the {configs} cache configurations."
+      },
+      "refusals": {
+        "title": "The same refusal rate, with and without the layer",
+        "titleBroken": "The refusal rate changed for {n} models",
+        "body": "XSTest, {modelos} models measured: no A/B difference below p = {umbral} (McNemar, paired prompts). The layer delivered the text of {comprobados} responses unaltered ({alterados} altered).",
+        "caption": "Refusal rate per model, without the layer (A) and with it (B), on the same prompts."
+      }
+    },
+    "noSavings": {
+      "title": "What doesn't save",
+      "lead": "<b>Without repeats, savings are ≈ {cero}.</b> We publish it anyway, because it is what you will see if your traffic does not repeat.",
+      "why": "MT-Bench is two-turn chat with a fresh layer per question: there is nothing for the cache to reuse, and the prompt almost never reaches the minimum the provider requires to cache a prefix. In BFCL every tool call is different. What these two batteries measure is that the layer makes nothing worse; the cost difference left over is noise in the model's output, not the layer.",
+      "nQuestions": "{n} questions",
+      "nItems": "{n} items",
+      "verdict": {
+        "ahorro": "savings",
+        "cero": "indistinguishable from zero",
+        "sobrecoste": "extra cost"
+      },
+      "notAttributable": "not attributable to the layer"
+    },
+    "status": {
+      "title": "Status per model and battery",
+      "intro": "Each cell shows the run on the layer's highest version. If a model could not be measured, we say why instead of leaving a gap.",
+      "measured": "measured · n = {n}",
+      "notMeasured": "not measured: {motivo}",
+      "layerFailed": "the layer failed: {motivo}",
+      "reason": {
+        "credencial": "credential rejected",
+        "presupuesto": "spend cap exhausted",
+        "cuota": "provider quota exhausted",
+        "capa": "requests did not go through the layer",
+        "proveedor": "the provider rejected the request in both arms",
+        "otro": "not enough data"
+      }
+    },
+    "bugs": {
+      "title": "Bugs the bench found",
+      "intro": "The bench is not there to look good: it is there to find the bugs before you do. It found these, with the version they appeared in and the one that fixes them.",
+      "found": "Found in {version}: {ocurrencias} of {sobre}.",
+      "fixed": "Fixed in {version} ({prs}).",
+      "verified": "Verified live on {version}: {ocurrencias} of {sobre}.",
+      "stillSeen": "Still seen on {version}: {ocurrencias} of {sobre}.",
+      "pending": "Waiting to be re-measured live on {version}.",
+      "items": {
+        "otra-pregunta": {
+          "title": "The uncalibrated semantic cache served another question's answer",
+          "body": "With the semantic cache uncalibrated, a variant with another number (“three baskets” versus “two baskets”) could receive the original question's answer. Counted over the GSM8K variants."
+        },
+        "herramientas-multiturno": {
+          "title": "The layer trimmed the tool catalog with no signal to do so",
+          "body": "In multi-turn conversations, arm B sent fewer tools than arm A even though nothing indicated which ones were unneeded. Counted over the BFCL multi-turn conversations."
+        },
+        "negativas-de-texto": {
+          "title": "Some refusals written as text were cached",
+          "body": "A refusal the model writes as text (without the API's signal) could be cached, repeated and credited as savings. Counted in XSTest prompts."
+        },
+        "gemini-filtro-cacheado": {
+          "title": "A Gemini content filter was cached as an answer",
+          "body": "Gemini flags its filter with its own stop reason, which the layer did not recognize as a refusal, so it could cache and repeat it. Counted in XSTest prompts."
+        },
+        "gemini-prompt-cache-key": {
+          "title": "Gemini did not go through the layer",
+          "body": "The layer sent a field specific to the OpenAI API to every compatible endpoint, and Gemini rejects it: every request in arm B failed. Counted in GSM8K requests."
+        },
+        "gemini-thought-signature": {
+          "title": "With Gemini 3, the second turn with tools failed",
+          "body": "The layer did not return the thought signature Gemini 3 requires on each tool call, so the next turn was rejected. Counted in BFCL multi-turn continuations."
+        }
+      }
+    },
+    "repro": {
+      "title": "How to reproduce it",
+      "intro": "Each battery is one command from the repository root. You need your own provider keys in <code>.env.bench</code>; each harness carries its spend cap, pins the dataset by commit and sha256, and writes the same JSON report this page reads.",
+      "readme": "Each JSON report comes with its readable version (.md) next to it: design, limitations and the run's real spend."
+    },
+    "invite": {
+      "title": "Measure us yourself",
+      "body": "An independent measurement is worth more than ours. If you want to rerun the bench, or measure the layer with your own harness or your own traffic, write to us and we will give you what you need to do it.",
+      "cta": "Write to {email}",
+      "subject": "Independent measurement of the public bench"
+    }
   },
   "howItWorks": {
     "metaTitle": "Where does the saving install? · BiVelio Savings Layer",

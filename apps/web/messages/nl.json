@@ -932,6 +932,7 @@
       "colBivelio": "BiVelio",
       "colLegal": "Juridisch",
       "measured": "Gemeten resultaten",
+      "benchmarks": "Openbare benchmark",
       "pricing": "Prijzen",
       "home": "Home",
       "docs": "Documentatie",
@@ -1135,6 +1136,159 @@
     "sesionActual": "U bent momenteel aangemeld als <b>{email}</b>.",
     "cerrarYContinuar": "Afmelden en ander account gebruiken",
     "cerrando": "Afmelden…"
+  },
+  "benchmarksPage": {
+    "metaTitle": "Openbare A/B-benchmark: meet ons | BiVelio Savings Layer",
+    "metaDescription": "Vier openbare batterijen (GSM8K, BFCL, XSTest en MT-Bench), twee armen gemeten met de eigen gebruiksteller van de provider, elk cijfer met zijn n, zijn interval en zijn datum. Wat het bespaart, wat niet, en de bugs die de benchmark vond.",
+    "eyebrow": "Openbare benchmark · reproduceerbaar",
+    "title": "Onze A/B-benchmark, in het open. Meet ons.",
+    "lede": "We publiceren elke run: vier batterijen op openbare datasets, {modelos} modellen, en beide armen gemeten met de eigen gebruiksteller van de provider. Elk cijfer draagt zijn n, zijn interval en zijn datum. Wat niet bespaart staat hier ook.",
+    "stats": {
+      "batteries": "batterijen",
+      "models": "geteste modellen",
+      "measured": "modellen met een meting",
+      "reports": "live rapporten",
+      "last": "laatste run"
+    },
+    "method": {
+      "title": "Wat wordt gemeten, en hoe",
+      "arms": "<b>Twee armen, hetzelfde verzoek.</b> A gaat rechtstreeks naar de provider, zonder de laag; B loopt via de laag met de standaardconfiguratie. Dezelfde prompt, dezelfde sampling, dezelfde outputgrens.",
+      "cost": "<b>De provider telt de kosten.</b> Elke arm wordt geprijsd op basis van de <code>usage</code> die de API bij elke aanroep teruggeeft, tegen de lijstprijs. De besparing is 1 − kosten(B) / kosten(A) van dezelfde run, niet wat de laag zelf beweert.",
+      "intervals": "<b>{nivel}-intervallen.</b> Elke harness berekent ze (resampling van hele vraagfamilies, Wilson voor weigeringspercentages). Een interval dat nul kruist betekent “niet te onderscheiden van nul”, en dat zeggen we ook.",
+      "package": "<b>Het pakket dat je installeert.</b> Arm B draait de broncode van tag {version}; de <code>dist/index.js</code> is byte-voor-byte identiek aan die van de npm-tarball (sha256 <code>{sha}</code>).",
+      "guard": "<b>Geen kortere wegen.</b> Elke harness houdt de hosts in de gaten waarmee hij praat en heeft een in code vastgelegd uitgavenplafond per model. Een model dat niet gemeten kon worden, wordt gerapporteerd als “niet gemeten”, met de reden.",
+      "batteriesTitle": "Vier batterijen, openbare datasets, vastgepind",
+      "commitOnly": "vastgepind op commit"
+    },
+    "batteries": {
+      "gsm8k": "Rekenvraagstukken met herhalingen en parafrases: hoeveel de cache bespaart en of de nauwkeurigheid daalt.",
+      "bfcl": "Tool calls: de laag mag er geen enkele veranderen, en de volledige catalogus moet aankomen.",
+      "xstest": "Weigeringen: de laag mag niet veranderen wanneer het model weigert, en mag geen weigering uit de cache serveren.",
+      "mt-bench": "Chat van twee beurten zonder herhalingen: de laag mag kosten, latentie noch kwaliteit verslechteren."
+    },
+    "th": {
+      "battery": "Batterij",
+      "what": "Wat het controleert",
+      "dataset": "Dataset",
+      "pinned": "Vastgepinde bestanden",
+      "license": "Licentie",
+      "model": "Model",
+      "n": "n",
+      "savings": "Gemeten besparing [BI]",
+      "fromExact": "Uit de exacte cache",
+      "fromCalls": "In de aanroepen (prefix)",
+      "accuracy": "Nauwkeurigheid A → B",
+      "run": "Versie · datum",
+      "prompts": "Prompts",
+      "safe": "Weigeringen, veilige prompts (A → B)",
+      "unsafe": "Weigeringen, onveilige prompts (A → B)",
+      "verdict": "Interpretatie",
+      "command": "Commando",
+      "harness": "Harness",
+      "reports": "Rapporten"
+    },
+    "savings": {
+      "title": "Gemeten besparing per model",
+      "intro": "GSM8K, met een stroom verzoeken waarin {rep} exacte herhalingen zijn en {par} parafrases. Dit is de batterij met herhaald verkeer: jouw besparing hangt af van hoeveel het jouwe herhaalt. Zonder herhalingen, zie “Wat niet bespaart”.",
+      "nCell": "{n} verzoeken · {unicos} uniek",
+      "delta": "Δ {d} pp [{inf}, {sup}]",
+      "originNote": "Waar de besparing vandaan komt, positie voor positie: “uit de exacte cache” is wat A betaalde voor de verzoeken die de laag serveerde zonder de provider aan te roepen; “in de aanroepen” is het verschil bij de verzoeken die de provider wel bereikten, vooral de prefixcache van de provider (plus wat variatie in de output). Samen vormen ze de totale besparing.",
+      "accuracyNote": "Nauwkeurigheid wordt gemeten op de vragen met een gepubliceerd antwoord; de varianten met een gewijzigd getal dienen alleen om te controleren dat de laag nooit het antwoord van een andere vraag teruggeeft."
+    },
+    "guarantees": {
+      "title": "Garanties, geteld",
+      "tools": {
+        "title": "De laag heeft nooit een tool call veranderd",
+        "titleBroken": "De laag veranderde {n} tool calls",
+        "body": "{alteradas} gewijzigde calls in {comparaciones} BFCL-vergelijkingen, {modelos} modellen, sinds {desde}. Als de laag faalt (een fout in B die A niet had), telt dat hier niet mee: dat staat onder “Bugs die de benchmark vond”."
+      },
+      "other": {
+        "title": "Geen antwoord van een andere vraag sinds {desde}",
+        "titleBroken": "{n} antwoorden van een andere vraag sinds {desde}",
+        "body": "{deOtra} van {variantes} varianten (dezelfde vraag met een ander getal, en dus een ander antwoord) geserveerd met het antwoord van een andere vraag, over {modelos} live modellen en elke gemeten cacheconfiguratie.",
+        "replay": "Offline replay van de volledige GSM8K-testsplit: {erroneas} in {peticiones} verzoeken, in elk van de {configs} cacheconfiguraties."
+      },
+      "refusals": {
+        "title": "Hetzelfde weigeringspercentage, met en zonder de laag",
+        "titleBroken": "Het weigeringspercentage veranderde bij {n} modellen",
+        "body": "XSTest, {modelos} modellen gemeten: geen A/B-verschil onder p = {umbral} (McNemar, gepaarde prompts). De laag leverde de tekst van {comprobados} antwoorden ongewijzigd ({alterados} gewijzigd).",
+        "caption": "Weigeringspercentage per model, zonder de laag (A) en met de laag (B), op dezelfde prompts."
+      }
+    },
+    "noSavings": {
+      "title": "Wat niet bespaart",
+      "lead": "<b>Zonder herhalingen is de besparing ≈ {cero}.</b> We publiceren het toch, omdat het is wat je zult zien als jouw verkeer zich niet herhaalt.",
+      "why": "MT-Bench is chat van twee beurten met een verse laag per vraag: er is niets dat de cache kan hergebruiken, en de prompt bereikt bijna nooit het minimum dat de provider vereist om een prefix te cachen. Bij BFCL is elke tool call anders. Wat deze twee batterijen meten, is dat de laag niets erger maakt; het resterende kostenverschil is ruis in de output van het model, niet de laag.",
+      "nQuestions": "{n} vragen",
+      "nItems": "{n} items",
+      "verdict": {
+        "ahorro": "besparing",
+        "cero": "niet te onderscheiden van nul",
+        "sobrecoste": "meerkosten"
+      },
+      "notAttributable": "niet toe te schrijven aan de laag"
+    },
+    "status": {
+      "title": "Status per model en batterij",
+      "intro": "Elke cel toont de run op de hoogste versie van de laag. Als een model niet gemeten kon worden, zeggen we waarom in plaats van een leeg vakje achter te laten.",
+      "measured": "gemeten · n = {n}",
+      "notMeasured": "niet gemeten: {motivo}",
+      "layerFailed": "de laag faalde: {motivo}",
+      "reason": {
+        "credencial": "credential geweigerd",
+        "presupuesto": "uitgavenplafond bereikt",
+        "cuota": "quotum van de provider uitgeput",
+        "capa": "verzoeken liepen niet via de laag",
+        "proveedor": "de provider weigerde het verzoek in beide armen",
+        "otro": "onvoldoende gegevens"
+      }
+    },
+    "bugs": {
+      "title": "Bugs die de benchmark vond",
+      "intro": "De benchmark is er niet om er goed uit te zien: hij is er om de bugs te vinden voordat jij ze vindt. Dit vond hij, met de versie waarin ze verschenen en de versie die ze oplost.",
+      "found": "Gevonden in {version}: {ocurrencias} van {sobre}.",
+      "fixed": "Opgelost in {version} ({prs}).",
+      "verified": "Live geverifieerd op {version}: {ocurrencias} van {sobre}.",
+      "stillSeen": "Nog steeds gezien op {version}: {ocurrencias} van {sobre}.",
+      "pending": "Wacht op een nieuwe live meting op {version}.",
+      "items": {
+        "otra-pregunta": {
+          "title": "De ongekalibreerde semantische cache leverde het antwoord van een andere vraag",
+          "body": "Met de ongekalibreerde semantische cache kon een variant met een ander getal (“three baskets” tegenover “two baskets”) het antwoord van de oorspronkelijke vraag krijgen. Geteld over de GSM8K-varianten."
+        },
+        "herramientas-multiturno": {
+          "title": "De laag beperkte de toolcatalogus zonder enig signaal om dat te doen",
+          "body": "In gesprekken met meerdere beurten stuurde arm B minder tools dan arm A, terwijl niets aangaf welke overbodig waren. Geteld over de BFCL-gesprekken met meerdere beurten."
+        },
+        "negativas-de-texto": {
+          "title": "Sommige weigeringen die als tekst geschreven waren, werden gecachet",
+          "body": "Een weigering die het model als tekst schrijft (zonder het signaal van de API) kon worden gecachet, herhaald en als besparing worden toegeschreven. Geteld in XSTest-prompts."
+        },
+        "gemini-filtro-cacheado": {
+          "title": "Een contentfilter van Gemini werd als antwoord gecachet",
+          "body": "Gemini markeert zijn filter met een eigen stopreden, die de laag niet als weigering herkende, waardoor deze kon worden gecachet en herhaald. Geteld in XSTest-prompts."
+        },
+        "gemini-prompt-cache-key": {
+          "title": "Gemini liep niet via de laag",
+          "body": "De laag stuurde een veld dat specifiek is voor de OpenAI-API naar elk compatibel endpoint, en Gemini weigert dat: elk verzoek in arm B mislukte. Geteld in GSM8K-verzoeken."
+        },
+        "gemini-thought-signature": {
+          "title": "Bij Gemini 3 mislukte de tweede beurt met tools",
+          "body": "De laag gaf de thought signature die Gemini 3 bij elke tool call vereist niet terug, waardoor de volgende beurt werd geweigerd. Geteld in BFCL-vervolgen met meerdere beurten."
+        }
+      }
+    },
+    "repro": {
+      "title": "Hoe je het reproduceert",
+      "intro": "Elke batterij is één commando vanaf de root van de repository. Je hebt je eigen providersleutels nodig in <code>.env.bench</code>; elke harness heeft zijn eigen uitgavenplafond, pint de dataset vast op commit en sha256, en schrijft hetzelfde JSON-rapport dat deze pagina leest.",
+      "readme": "Elk JSON-rapport komt met zijn leesbare versie (.md) ernaast: ontwerp, beperkingen en de werkelijke uitgaven van de run."
+    },
+    "invite": {
+      "title": "Meet ons zelf",
+      "body": "Een onafhankelijke meting is meer waard dan de onze. Als je de benchmark opnieuw wilt draaien, of de laag wilt meten met je eigen harness of je eigen verkeer, schrijf ons dan en we geven je wat je nodig hebt om dat te doen.",
+      "cta": "Schrijf naar {email}",
+      "subject": "Onafhankelijke meting van de openbare benchmark"
+    }
   },
   "howItWorks": {
     "metaTitle": "Waar wordt de besparing geïnstalleerd? · BiVelio Savings Layer",

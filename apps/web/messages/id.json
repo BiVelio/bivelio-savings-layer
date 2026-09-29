@@ -932,6 +932,7 @@
       "colBivelio": "BiVelio",
       "colLegal": "Hukum",
       "measured": "Hasil terukur",
+      "benchmarks": "Benchmark publik",
       "pricing": "Harga",
       "home": "Beranda",
       "docs": "Dokumentasi",
@@ -1135,6 +1136,159 @@
     "sesionActual": "Saat ini Anda masuk sebagai <b>{email}</b>.",
     "cerrarYContinuar": "Keluar dan gunakan akun lain",
     "cerrando": "Keluar…"
+  },
+  "benchmarksPage": {
+    "metaTitle": "Uji A/B publik: ukur kami | BiVelio Savings Layer",
+    "metaDescription": "Empat baterai publik (GSM8K, BFCL, XSTest, dan MT-Bench), dua lengan yang diukur dengan penghitung penggunaan milik penyedia sendiri, setiap angka dengan n, interval, dan tanggalnya. Apa yang menghemat, apa yang tidak, dan bug yang ditemukan uji ini.",
+    "eyebrow": "Uji publik · dapat direproduksi",
+    "title": "Uji A/B kami, secara terbuka. Ukur kami.",
+    "lede": "Kami menerbitkan setiap jalannya uji: empat baterai pada dataset publik, {modelos} model, dan kedua lengan diukur dengan penghitung penggunaan milik penyedia sendiri. Setiap angka membawa n, interval, dan tanggalnya. Apa yang tidak menghemat juga ada di sini.",
+    "stats": {
+      "batteries": "baterai",
+      "models": "model diuji",
+      "measured": "model dengan pengukuran",
+      "reports": "laporan langsung",
+      "last": "jalan uji terakhir"
+    },
+    "method": {
+      "title": "Apa yang diukur, dan bagaimana",
+      "arms": "<b>Dua lengan, permintaan yang sama.</b> A langsung ke penyedia, tanpa lapisan; B melewati lapisan dengan konfigurasi bawaannya. Prompt yang sama, sampling yang sama, batas output yang sama.",
+      "cost": "<b>Penyedia yang menghitung biaya.</b> Setiap lengan dihargai berdasarkan <code>usage</code> yang dikembalikan API pada setiap panggilan, pada harga daftar. Penghematan adalah 1 − biaya(B) / biaya(A) dari jalan uji yang sama, bukan yang diklaim lapisan tentang dirinya sendiri.",
+      "intervals": "<b>Interval {nivel}.</b> Dihitung oleh setiap harness (resampling seluruh keluarga pertanyaan, Wilson untuk tingkat penolakan). Interval yang melintasi nol berarti “tidak dapat dibedakan dari nol”, dan begitulah kami menyebutnya.",
+      "package": "<b>Paket yang Anda instal.</b> Lengan B menjalankan sumber dari tag {version}; <code>dist/index.js</code>-nya identik byte demi byte dengan tarball npm-nya (sha256 <code>{sha}</code>).",
+      "guard": "<b>Tanpa jalan pintas.</b> Setiap harness mengawasi host yang dihubunginya dan membawa batas pengeluaran per model yang tertulis dalam kode. Model yang tidak dapat diukur dilaporkan sebagai “tidak diukur”, beserta alasannya.",
+      "batteriesTitle": "Empat baterai, dataset publik, dipatok",
+      "commitOnly": "dipatok pada commit"
+    },
+    "batteries": {
+      "gsm8k": "Soal cerita matematika dengan pengulangan dan parafrasa: berapa banyak yang dihemat cache dan apakah akurasi menurun.",
+      "bfcl": "Panggilan tool: lapisan tidak boleh mengubah satu pun, dan seluruh katalog harus sampai.",
+      "xstest": "Penolakan: lapisan tidak boleh mengubah kapan model menolak, atau menyajikan penolakan dari cache.",
+      "mt-bench": "Obrolan dua giliran tanpa pengulangan: lapisan tidak boleh memperburuk biaya, latensi, atau kualitas."
+    },
+    "th": {
+      "battery": "Baterai",
+      "what": "Apa yang diperiksa",
+      "dataset": "Dataset",
+      "pinned": "Berkas yang dipatok",
+      "license": "Lisensi",
+      "model": "Model",
+      "n": "n",
+      "savings": "Penghematan terukur [IK]",
+      "fromExact": "Dari cache eksak",
+      "fromCalls": "Dalam panggilan (prefiks)",
+      "accuracy": "Akurasi A → B",
+      "run": "Versi · tanggal",
+      "prompts": "Prompt",
+      "safe": "Penolakan, prompt aman (A → B)",
+      "unsafe": "Penolakan, prompt tidak aman (A → B)",
+      "verdict": "Pembacaan",
+      "command": "Perintah",
+      "harness": "Harness",
+      "reports": "Laporan"
+    },
+    "savings": {
+      "title": "Penghematan terukur per model",
+      "intro": "GSM8K, dengan aliran permintaan di mana {rep} adalah pengulangan eksak dan {par} adalah parafrasa. Ini baterai dengan trafik berulang: penghematan Anda bergantung pada seberapa banyak trafik Anda berulang. Tanpa pengulangan, lihat “Apa yang tidak menghemat”.",
+      "nCell": "{n} permintaan · {unicos} unik",
+      "delta": "Δ {d} pp [{inf}, {sup}]",
+      "originNote": "Dari mana penghematan berasal, posisi demi posisi: “dari cache eksak” adalah yang dibayar A untuk permintaan yang dilayani lapisan tanpa memanggil penyedia; “dalam panggilan” adalah selisih pada permintaan yang memang sampai ke penyedia, sebagian besar dari cache prefiks penyedia (ditambah sedikit variasi output). Keduanya berjumlah total penghematan.",
+      "accuracyNote": "Akurasi diukur pada pertanyaan dengan jawaban yang dipublikasikan; varian dengan angka yang diubah hanya berfungsi untuk memeriksa bahwa lapisan tidak pernah mengembalikan jawaban dari pertanyaan lain."
+    },
+    "guarantees": {
+      "title": "Jaminan, terhitung",
+      "tools": {
+        "title": "Lapisan tidak pernah mengubah panggilan tool",
+        "titleBroken": "Lapisan mengubah {n} panggilan tool",
+        "body": "{alteradas} panggilan yang diubah dalam {comparaciones} perbandingan BFCL, {modelos} model, sejak {desde}. Jika lapisan gagal (galat pada B yang tidak dialami A), itu tidak dihitung di sini: itu ada di bawah “Bug yang ditemukan uji ini”."
+      },
+      "other": {
+        "title": "Tidak ada jawaban dari pertanyaan lain sejak {desde}",
+        "titleBroken": "{n} jawaban dari pertanyaan lain sejak {desde}",
+        "body": "{deOtra} dari {variantes} varian (pertanyaan yang sama dengan angka lain, sehingga jawaban lain) disajikan dengan jawaban dari pertanyaan lain, di {modelos} model langsung dan setiap konfigurasi cache yang diukur.",
+        "replay": "Replay luring dari seluruh split uji GSM8K: {erroneas} dalam {peticiones} permintaan, di masing-masing dari {configs} konfigurasi cache."
+      },
+      "refusals": {
+        "title": "Tingkat penolakan yang sama, dengan dan tanpa lapisan",
+        "titleBroken": "Tingkat penolakan berubah untuk {n} model",
+        "body": "XSTest, {modelos} model diukur: tidak ada perbedaan A/B di bawah p = {umbral} (McNemar, prompt berpasangan). Lapisan menyampaikan teks dari {comprobados} respons tanpa perubahan ({alterados} diubah).",
+        "caption": "Tingkat penolakan per model, tanpa lapisan (A) dan dengan lapisan (B), pada prompt yang sama."
+      }
+    },
+    "noSavings": {
+      "title": "Apa yang tidak menghemat",
+      "lead": "<b>Tanpa pengulangan, penghematan ≈ {cero}.</b> Kami tetap mempublikasikannya, karena itulah yang akan Anda lihat jika trafik Anda tidak berulang.",
+      "why": "MT-Bench adalah obrolan dua giliran dengan lapisan baru untuk setiap pertanyaan: tidak ada yang bisa digunakan kembali oleh cache, dan prompt hampir tidak pernah mencapai minimum yang disyaratkan penyedia untuk meng-cache sebuah prefiks. Di BFCL setiap panggilan tool berbeda. Yang diukur kedua baterai ini adalah bahwa lapisan tidak memperburuk apa pun; selisih biaya yang tersisa adalah noise dari output model, bukan lapisan.",
+      "nQuestions": "{n} pertanyaan",
+      "nItems": "{n} item",
+      "verdict": {
+        "ahorro": "penghematan",
+        "cero": "tidak dapat dibedakan dari nol",
+        "sobrecoste": "biaya tambahan"
+      },
+      "notAttributable": "tidak dapat diatribusikan ke lapisan"
+    },
+    "status": {
+      "title": "Status per model dan baterai",
+      "intro": "Setiap sel menampilkan jalan uji pada versi lapisan tertinggi. Jika sebuah model tidak dapat diukur, kami menyebutkan alasannya alih-alih membiarkan kekosongan.",
+      "measured": "diukur · n = {n}",
+      "notMeasured": "tidak diukur: {motivo}",
+      "layerFailed": "lapisan gagal: {motivo}",
+      "reason": {
+        "credencial": "kredensial ditolak",
+        "presupuesto": "batas pengeluaran habis",
+        "cuota": "kuota penyedia habis",
+        "capa": "permintaan tidak melewati lapisan",
+        "proveedor": "penyedia menolak permintaan di kedua lengan",
+        "otro": "data tidak cukup"
+      }
+    },
+    "bugs": {
+      "title": "Bug yang ditemukan uji ini",
+      "intro": "Uji ini bukan untuk terlihat bagus: ia ada untuk menemukan bug sebelum Anda menemukannya. Ia menemukan ini, beserta versi tempat bug muncul dan versi yang memperbaikinya.",
+      "found": "Ditemukan di {version}: {ocurrencias} dari {sobre}.",
+      "fixed": "Diperbaiki di {version} ({prs}).",
+      "verified": "Diverifikasi langsung pada {version}: {ocurrencias} dari {sobre}.",
+      "stillSeen": "Masih terlihat pada {version}: {ocurrencias} dari {sobre}.",
+      "pending": "Menunggu diukur ulang secara langsung pada {version}.",
+      "items": {
+        "otra-pregunta": {
+          "title": "Cache semantik yang tidak dikalibrasi menyajikan jawaban dari pertanyaan lain",
+          "body": "Dengan cache semantik yang tidak dikalibrasi, varian dengan angka lain (“three baskets” versus “two baskets”) dapat menerima jawaban dari pertanyaan aslinya. Dihitung atas varian GSM8K."
+        },
+        "herramientas-multiturno": {
+          "title": "Lapisan memangkas katalog tool tanpa sinyal apa pun untuk melakukannya",
+          "body": "Dalam percakapan multi-giliran, lengan B mengirim lebih sedikit tool daripada lengan A meskipun tidak ada yang menunjukkan mana yang tidak diperlukan. Dihitung atas percakapan multi-giliran BFCL."
+        },
+        "negativas-de-texto": {
+          "title": "Beberapa penolakan yang ditulis sebagai teks di-cache",
+          "body": "Penolakan yang ditulis model sebagai teks (tanpa sinyal API) dapat di-cache, diulang, dan dikreditkan sebagai penghematan. Dihitung dalam prompt XSTest."
+        },
+        "gemini-filtro-cacheado": {
+          "title": "Filter konten Gemini di-cache sebagai jawaban",
+          "body": "Gemini menandai filternya dengan alasan berhenti miliknya sendiri, yang tidak dikenali lapisan sebagai penolakan, sehingga bisa di-cache dan diulang. Dihitung dalam prompt XSTest."
+        },
+        "gemini-prompt-cache-key": {
+          "title": "Gemini tidak melewati lapisan",
+          "body": "Lapisan mengirim bidang khusus API OpenAI ke setiap endpoint yang kompatibel, dan Gemini menolaknya: setiap permintaan di lengan B gagal. Dihitung dalam permintaan GSM8K."
+        },
+        "gemini-thought-signature": {
+          "title": "Dengan Gemini 3, giliran kedua dengan tool gagal",
+          "body": "Lapisan tidak mengembalikan thought signature yang disyaratkan Gemini 3 pada setiap panggilan tool, sehingga giliran berikutnya ditolak. Dihitung dalam kelanjutan multi-giliran BFCL."
+        }
+      }
+    },
+    "repro": {
+      "title": "Cara mereproduksinya",
+      "intro": "Setiap baterai adalah satu perintah dari root repositori. Anda memerlukan kunci penyedia Anda sendiri di <code>.env.bench</code>; setiap harness membawa batas pengeluarannya, mematok dataset dengan commit dan sha256, dan menulis laporan JSON yang sama yang dibaca halaman ini.",
+      "readme": "Setiap laporan JSON disertai versi yang dapat dibaca (.md) di sebelahnya: desain, keterbatasan, dan pengeluaran nyata dari jalan uji."
+    },
+    "invite": {
+      "title": "Ukur kami sendiri",
+      "body": "Pengukuran independen lebih berharga daripada milik kami. Jika Anda ingin menjalankan ulang uji ini, atau mengukur lapisan dengan harness Anda sendiri atau trafik Anda sendiri, tulis kepada kami dan kami akan memberi Anda apa yang Anda butuhkan untuk melakukannya.",
+      "cta": "Tulis ke {email}",
+      "subject": "Pengukuran independen dari uji publik"
+    }
   },
   "howItWorks": {
     "metaTitle": "Di mana penghematan dipasang? · BiVelio Savings Layer",

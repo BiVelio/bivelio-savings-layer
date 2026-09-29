@@ -110,6 +110,9 @@ export default async function Footer() {
     // cuando #verify no existía: dos enlaces de la misma columna al MISMO
     // sitio. Se quedó el de lo medido, que es lo que dice su etiqueta.
     [t("footer.measured"), "/#measured"],
+    // El banco público A/B (/benchmarks): cómo se mide, lo que ahorra y lo que
+    // no, y cómo repetirlo. Aquí y no en el menú, para no tocar /pricing.
+    [t("footer.benchmarks"), "/benchmarks"],
     [t("footer.pricing"), "/#pricing"],
   ];
   // «Documentación» apuntaba a docs.bivelio.com y «Estado» a status.bivelio.com,

@@ -932,6 +932,7 @@
       "colBivelio": "BiVelio",
       "colLegal": "Rechtliches",
       "measured": "Gemessene Ergebnisse",
+      "benchmarks": "Offener Benchmark",
       "pricing": "Preise",
       "home": "Startseite",
       "docs": "Dokumentation",
@@ -1135,6 +1136,159 @@
     "sesionActual": "Sie sind derzeit als <b>{email}</b> angemeldet.",
     "cerrarYContinuar": "Abmelden und anderes Konto verwenden",
     "cerrando": "Wird abgemeldet…"
+  },
+  "benchmarksPage": {
+    "metaTitle": "Öffentlicher A/B-Benchmark: Messen Sie uns | BiVelio Savings Layer",
+    "metaDescription": "Vier öffentliche Testreihen (GSM8K, BFCL, XSTest und MT-Bench), zwei Arme, gemessen mit dem eigenen Nutzungszähler des Anbieters, jede Zahl mit ihrem n, ihrem Intervall und ihrem Datum. Was es einspart, was nicht, und die Fehler, die der Benchmark gefunden hat.",
+    "eyebrow": "Öffentlicher Benchmark · reproduzierbar",
+    "title": "Unser A/B-Benchmark, offen einsehbar. Messen Sie uns.",
+    "lede": "Wir veröffentlichen jeden Lauf: vier Testreihen mit öffentlichen Datensätzen, {modelos} Modelle, und beide Arme gemessen mit dem eigenen Nutzungszähler des Anbieters. Jede Zahl trägt ihr n, ihr Intervall und ihr Datum. Was nicht einspart, steht auch hier.",
+    "stats": {
+      "batteries": "Testreihen",
+      "models": "getestete Modelle",
+      "measured": "Modelle mit einer Messung",
+      "reports": "Live-Berichte",
+      "last": "letzter Lauf"
+    },
+    "method": {
+      "title": "Was gemessen wird, und wie",
+      "arms": "<b>Zwei Arme, dieselbe Anfrage.</b> A geht direkt zum Anbieter, ohne die Schicht; B läuft durch die Schicht mit ihrer Standardkonfiguration. Gleicher Prompt, gleiches Sampling, gleiche Ausgabeobergrenze.",
+      "cost": "<b>Die Kosten zählt der Anbieter.</b> Jeder Arm wird anhand des <code>usage</code>-Werts bepreist, den die API bei jedem Aufruf zurückgibt, zum Listenpreis. Die Ersparnis ist 1 − Kosten(B) / Kosten(A) desselben Laufs, nicht das, was die Schicht über sich selbst sagt.",
+      "intervals": "<b>Intervalle zum {nivel}.</b> Jeder Testharness berechnet sie (Resampling ganzer Fragefamilien, Wilson für Ablehnungsraten). Ein Intervall, das die Null überschreitet, bedeutet „nicht von null unterscheidbar“, und das sagen wir dann auch.",
+      "package": "<b>Das Paket, das Sie installieren.</b> Arm B läuft mit der Quelle des Tags {version}; dessen <code>dist/index.js</code> ist byteidentisch mit dem des npm-Tarballs (sha256 <code>{sha}</code>).",
+      "guard": "<b>Keine Abkürzungen.</b> Jeder Testharness überwacht die Hosts, mit denen er spricht, und trägt ein im Code festgelegtes Ausgabenlimit pro Modell. Ein Modell, das nicht gemessen werden konnte, wird als „nicht gemessen“ ausgewiesen, mit Begründung.",
+      "batteriesTitle": "Vier Testreihen, öffentliche Datensätze, festgelegt",
+      "commitOnly": "per Commit festgelegt"
+    },
+    "batteries": {
+      "gsm8k": "Textaufgaben in Mathematik mit Wiederholungen und Umformulierungen: wie viel der Cache einspart und ob die Genauigkeit sinkt.",
+      "bfcl": "Tool-Aufrufe: die Schicht darf keinen einzigen ändern, und der gesamte Katalog muss ankommen.",
+      "xstest": "Ablehnungen: die Schicht darf nicht ändern, wann das Modell ablehnt, noch eine Ablehnung aus dem Cache ausliefern.",
+      "mt-bench": "Chat mit zwei Runden ohne Wiederholungen: die Schicht darf Kosten, Latenz oder Qualität nicht verschlechtern."
+    },
+    "th": {
+      "battery": "Testreihe",
+      "what": "Was geprüft wird",
+      "dataset": "Datensatz",
+      "pinned": "Festgelegte Dateien",
+      "license": "Lizenz",
+      "model": "Modell",
+      "n": "n",
+      "savings": "Gemessene Ersparnis [CI]",
+      "fromExact": "Aus dem exakten Cache",
+      "fromCalls": "In den Aufrufen (Präfix)",
+      "accuracy": "Genauigkeit A → B",
+      "run": "Version · Datum",
+      "prompts": "Prompts",
+      "safe": "Ablehnungen, sichere Prompts (A → B)",
+      "unsafe": "Ablehnungen, unsichere Prompts (A → B)",
+      "verdict": "Einordnung",
+      "command": "Befehl",
+      "harness": "Testharness",
+      "reports": "Berichte"
+    },
+    "savings": {
+      "title": "Gemessene Ersparnis pro Modell",
+      "intro": "GSM8K, mit einem Anfragestrom, in dem {rep} exakte Wiederholungen sind und {par} Umformulierungen. Das ist die Testreihe mit wiederholtem Traffic: Ihre Ersparnis hängt davon ab, wie stark sich Ihrer wiederholt. Ohne Wiederholungen siehe „Was nicht einspart“.",
+      "nCell": "{n} Anfragen · {unicos} eindeutig",
+      "delta": "Δ {d} pp [{inf}, {sup}]",
+      "originNote": "Woher die Ersparnis stammt, Position für Position: „aus dem exakten Cache“ ist das, was A für die Anfragen bezahlt hat, die die Schicht bedient hat, ohne den Anbieter aufzurufen; „in den Aufrufen“ ist die Differenz bei denen, die ihn tatsächlich erreicht haben, meist der Präfix-Cache des Anbieters (plus etwas Variation in der Ausgabe). Beide zusammen ergeben die Gesamtersparnis.",
+      "accuracyNote": "Die Genauigkeit wird anhand der Fragen mit veröffentlichter Antwort gemessen; die Varianten mit einer geänderten Zahl dienen nur dazu zu prüfen, dass die Schicht niemals die Antwort einer anderen Frage zurückgibt."
+    },
+    "guarantees": {
+      "title": "Garantien, gezählt",
+      "tools": {
+        "title": "Die Schicht hat noch nie einen Tool-Aufruf verändert",
+        "titleBroken": "Die Schicht hat {n} Tool-Aufrufe verändert",
+        "body": "{alteradas} veränderte Aufrufe bei {comparaciones} BFCL-Vergleichen, {modelos} Modelle, seit {desde}. Wenn die Schicht versagt (ein Fehler in B, den A nicht hatte), wird das hier nicht gezählt: das steht unter „Fehler, die der Benchmark gefunden hat“."
+      },
+      "other": {
+        "title": "Keine Antwort einer anderen Frage seit {desde}",
+        "titleBroken": "{n} Antworten einer anderen Frage seit {desde}",
+        "body": "{deOtra} von {variantes} Varianten (dieselbe Frage mit einer anderen Zahl, also einer anderen Antwort) mit der Antwort einer anderen Frage ausgeliefert, über {modelos} Live-Modelle und alle gemessenen Cache-Konfigurationen hinweg.",
+        "replay": "Offline-Replay des gesamten GSM8K-Testsplits: {erroneas} bei {peticiones} Anfragen, in jeder der {configs} Cache-Konfigurationen."
+      },
+      "refusals": {
+        "title": "Dieselbe Ablehnungsrate, mit und ohne die Schicht",
+        "titleBroken": "Die Ablehnungsrate hat sich bei {n} Modellen geändert",
+        "body": "XSTest, {modelos} gemessene Modelle: kein A/B-Unterschied unterhalb von p = {umbral} (McNemar, gepaarte Prompts). Die Schicht hat den Text von {comprobados} Antworten unverändert ausgeliefert ({alterados} verändert).",
+        "caption": "Ablehnungsrate pro Modell, ohne die Schicht (A) und mit ihr (B), bei denselben Prompts."
+      }
+    },
+    "noSavings": {
+      "title": "Was nicht einspart",
+      "lead": "<b>Ohne Wiederholungen liegt die Ersparnis bei ≈ {cero}.</b> Wir veröffentlichen es trotzdem, weil es das ist, was Sie sehen werden, wenn sich Ihr Traffic nicht wiederholt.",
+      "why": "MT-Bench ist ein Chat mit zwei Runden mit einer frischen Schicht pro Frage: Es gibt nichts, was der Cache wiederverwenden könnte, und der Prompt erreicht fast nie das Minimum, das der Anbieter verlangt, um einen Präfix zu cachen. Bei BFCL ist jeder Tool-Aufruf anders. Was diese beiden Testreihen messen, ist, dass die Schicht nichts verschlechtert; die verbleibende Kostendifferenz ist Rauschen in der Ausgabe des Modells, nicht die Schicht.",
+      "nQuestions": "{n} Fragen",
+      "nItems": "{n} Einträge",
+      "verdict": {
+        "ahorro": "Ersparnis",
+        "cero": "nicht von null unterscheidbar",
+        "sobrecoste": "Mehrkosten"
+      },
+      "notAttributable": "nicht der Schicht zuzuschreiben"
+    },
+    "status": {
+      "title": "Status nach Modell und Testreihe",
+      "intro": "Jede Zelle zeigt den Lauf mit der höchsten Version der Schicht. Wenn ein Modell nicht gemessen werden konnte, sagen wir, warum, statt eine Lücke zu lassen.",
+      "measured": "gemessen · n = {n}",
+      "notMeasured": "nicht gemessen: {motivo}",
+      "layerFailed": "die Schicht ist fehlgeschlagen: {motivo}",
+      "reason": {
+        "credencial": "Zugangsdaten abgelehnt",
+        "presupuesto": "Ausgabenlimit erschöpft",
+        "cuota": "Kontingent des Anbieters erschöpft",
+        "capa": "Anfragen liefen nicht über die Schicht",
+        "proveedor": "der Anbieter hat die Anfrage in beiden Armen abgelehnt",
+        "otro": "nicht genug Daten"
+      }
+    },
+    "bugs": {
+      "title": "Fehler, die der Benchmark gefunden hat",
+      "intro": "Der Benchmark ist nicht dazu da, gut auszusehen: Er ist dazu da, die Fehler zu finden, bevor Sie es tun. Er hat diese gefunden, mit der Version, in der sie auftraten, und der, die sie behebt.",
+      "found": "Gefunden in {version}: {ocurrencias} von {sobre}.",
+      "fixed": "Behoben in {version} ({prs}).",
+      "verified": "Live verifiziert mit {version}: {ocurrencias} von {sobre}.",
+      "stillSeen": "Noch beobachtet mit {version}: {ocurrencias} von {sobre}.",
+      "pending": "Wartet auf erneute Live-Messung mit {version}.",
+      "items": {
+        "otra-pregunta": {
+          "title": "Der unkalibrierte semantische Cache lieferte die Antwort einer anderen Frage",
+          "body": "Bei unkalibriertem semantischem Cache konnte eine Variante mit einer anderen Zahl („three baskets“ gegenüber „two baskets“) die Antwort der ursprünglichen Frage erhalten. Gezählt über die GSM8K-Varianten."
+        },
+        "herramientas-multiturno": {
+          "title": "Die Schicht kürzte den Tool-Katalog ohne jedes Signal dafür",
+          "body": "In mehrteiligen Unterhaltungen sendete Arm B weniger Tools als Arm A, obwohl nichts darauf hindeutete, welche unnötig waren. Gezählt über die mehrteiligen BFCL-Unterhaltungen."
+        },
+        "negativas-de-texto": {
+          "title": "Manche als Text geschriebenen Ablehnungen wurden gecacht",
+          "body": "Eine Ablehnung, die das Modell als Text schreibt (ohne das Signal der API), konnte gecacht, wiederholt und als Ersparnis angerechnet werden. Gezählt in XSTest-Prompts."
+        },
+        "gemini-filtro-cacheado": {
+          "title": "Ein Gemini-Inhaltsfilter wurde als Antwort gecacht",
+          "body": "Gemini kennzeichnet seinen Filter mit einem eigenen Stop-Grund, den die Schicht nicht als Ablehnung erkannte, sodass sie ihn cachen und wiederholen konnte. Gezählt in XSTest-Prompts."
+        },
+        "gemini-prompt-cache-key": {
+          "title": "Gemini lief nicht über die Schicht",
+          "body": "Die Schicht sendete ein für die OpenAI-API spezifisches Feld an jeden kompatiblen Endpunkt, und Gemini lehnt es ab: Jede Anfrage in Arm B schlug fehl. Gezählt in GSM8K-Anfragen."
+        },
+        "gemini-thought-signature": {
+          "title": "Bei Gemini 3 schlug die zweite Runde mit Tools fehl",
+          "body": "Die Schicht gab die Thought-Signatur nicht zurück, die Gemini 3 bei jedem Tool-Aufruf verlangt, sodass die nächste Runde abgelehnt wurde. Gezählt in mehrteiligen BFCL-Fortsetzungen."
+        }
+      }
+    },
+    "repro": {
+      "title": "Wie man es reproduziert",
+      "intro": "Jede Testreihe ist ein Befehl vom Wurzelverzeichnis des Repositorys aus. Sie brauchen Ihre eigenen Anbieterschlüssel in <code>.env.bench</code>; jeder Testharness trägt sein Ausgabenlimit, legt den Datensatz per Commit und sha256 fest und schreibt denselben JSON-Bericht, den diese Seite liest.",
+      "readme": "Jeder JSON-Bericht kommt mit seiner lesbaren Version (.md) direkt daneben: Design, Einschränkungen und die tatsächlichen Ausgaben des Laufs."
+    },
+    "invite": {
+      "title": "Messen Sie uns selbst",
+      "body": "Eine unabhängige Messung ist mehr wert als unsere eigene. Wenn Sie den Benchmark erneut laufen lassen oder die Schicht mit Ihrem eigenen Testharness oder Ihrem eigenen Traffic messen möchten, schreiben Sie uns, und wir geben Ihnen, was Sie dafür brauchen.",
+      "cta": "Schreiben Sie an {email}",
+      "subject": "Unabhängige Messung des öffentlichen Benchmarks"
+    }
   },
   "howItWorks": {
     "metaTitle": "Wo wird die Ersparnis installiert? · BiVelio Savings Layer",
