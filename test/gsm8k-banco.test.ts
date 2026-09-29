@@ -310,11 +310,11 @@ describe("GSM8K gama alta (2026-09-29): topes, precios, Gemini y origen del ahor
     expect(googleDesdeSonda({ googleBaseUrl: "https://x.example/v1" }, { BVSALA_SONDA_BASE_URL: "https://generativelanguage.googleapis.com/v1beta/openai" })).toEqual({});
   });
 
-  it("un modelo sin fila se mide solo con el precio oficial citado; con fila, manda el catálogo", () => {
+  it("con fila, manda el catálogo (claude-sonnet-5-5 la tiene desde #399, con el mismo precio que se citó); sin fila y sin cita, desconocido", () => {
     const s55 = precioDelBanco("anthropic/claude-sonnet-5-5");
     expect(s55.conocido).toBe(true);
-    expect(s55.precio).toEqual({ inputPer1k: 0.002, outputPer1k: 0.01, cachedInputPer1k: 0.0002 });
-    expect(s55.fueraDeCatalogo).toMatch(/^https:\/\/platform\.claude\.com\/docs\/en\/about-claude\/pricing \(consultado 2026-09-29\)/);
+    expect(s55.precio).toMatchObject({ inputPer1k: 0.002, outputPer1k: 0.01, cachedInputPer1k: 0.0002 });
+    expect(s55.fueraDeCatalogo).toBeUndefined();
     const o55 = precioDelBanco("anthropic/claude-opus-5-5");
     expect(o55.fueraDeCatalogo).toBeUndefined();
     expect(o55.precio.inputPer1k).toBe(0.004);
