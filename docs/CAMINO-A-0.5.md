@@ -1,7 +1,8 @@
 # Camino a la 0.5
 
-> Documento interno. Estado a **2026-09-29**, con la 0.4.32 publicada y main en
-> `04e0aa7` (#407 incluido). La guía para clientes es [`MIGRAR-A-0.5.md`](MIGRAR-A-0.5.md) (en
+> Documento interno. Estado a **2026-09-29 (noche)**, con la 0.4.33 publicada
+> (#420) y main en `2ed379ff`. Actualizado por el PR de la 0.4.34, la que avisa
+> de todo lo que la 0.5 rompe. La guía para clientes es [`MIGRAR-A-0.5.md`](MIGRAR-A-0.5.md) (en
 > inglés) y el inventario de la API, con el veredicto de cada nombre, es
 > [`INVENTARIO-API-0.5.json`](INVENTARIO-API-0.5.json).
 
@@ -16,12 +17,17 @@ La 0.5 sale cuando se cumplen los seis criterios acordados:
 
 | # | Criterio | Estado hoy | Veredicto |
 |---|---|---|---|
-| 1 | Funciona con Anthropic, OpenAI y Gemini (nativo) sin errores causados por la capa en el banco | Anthropic y OpenAI, sí (0.4.31). Gemini falló el 100 % en la 0.4.31; el arreglo (0.4.32) y el adaptador nativo (#410, abierto) no se han medido en el banco | 🔴 |
-| 2 | Nunca empeora la respuesta | Sin diferencia significativa en cuatro baterías (0.4.31, Anthropic y OpenAI). Sin medir: catálogo tipado recortado a 8 y Gemini | 🟡 |
-| 3 | Nunca cobra lo que no debe | Negativas no cobradas de Anthropic, verificadas. En la 0.4.31 se acreditaron negativas en texto y filtros de Gemini; la 0.4.32 lo corrige sin re-medir | 🟡 |
-| 4 | El informe cuadra con la factura ±2 %, con el ahorro nativo aparte | Cuadra con uso × precio de lista en OpenAI y Anthropic con fila. **Nunca se ha comparado con una factura real.** El ahorro nativo (#412) está abierto | 🔴 |
-| 5 | Banco semanal en CI como puerta de release | #413 abierto, sin fusionar ni ejecutar | 🔴 |
-| 6 | API pública congelada con guía | Este PR: inventario, test que congela la superficie, guía en borrador y deprecaciones triviales. Faltan decisiones y la implementación | 🟡 |
+| 1 | Funciona con Anthropic, OpenAI y Gemini (nativo) sin errores causados por la capa en el banco | Anthropic y OpenAI: `capa-falla 0` en todas las celdas medidas de las cuatro baterías del banco en vivo ([run 36611942632](https://github.com/BiVelio/bivelio-savings-layer/actions/runs/36611942632), main `1100960`, el código de la 0.4.33). El adaptador nativo de Gemini está fusionado (#410, en la 0.4.33), pero **Gemini no se ha medido**: sin `GEMINI_API_KEY` en el workflow sus celdas salen «no medible (sin clave)» (#421), y BFCL no lo soporta | 🟡 parcial: falta Gemini |
+| 2 | Nunca empeora la respuesta | En el run 36611942632, todos los B−A dentro del ruido (el peor, −3,1 pp [−9,4, 0,0] en BFCL gpt-5.5), 0 respuestas de otra pregunta y 0 llamadas cambiadas. El recorte a 8 del catálogo tipado ya no existe: sin `maxTools` no se poda (#419). Sin medir: Gemini | 🟡 parcial: falta Gemini |
+| 3 | Nunca cobra lo que no debe | XSTest en el run 36611942632: 0 negativas cacheadas y 0 acreditadas en los 8 modelos medidos. La negativa parcial y la carencia tras una disculpa ya no se cachean ni acreditan (#422), y la mínima del ingest sube a 0.4.33 (#423). Licencia Medir sin comisión (#417). Sin medir: Gemini y una negativa en vivo de OpenAI (`message.refusal`) | 🟡 parcial: falta Gemini |
+| 4 | El informe cuadra con la factura ±2 %, con el ahorro nativo aparte | `informe/factura` 0,00 % en todas las celdas del run 36611942632, y el ahorro nativo sale aparte (#412). Pero esa «factura» es uso × precio del catálogo: **nunca se ha comparado con una factura real** | 🟡 parcial: falta la factura real |
+| 5 | Banco semanal en CI como puerta de release | #413 fusionado (cron, 50 $, `publish.yml` bloqueado por `banco-semanal`) y #421 (sin clave = «no medible», no arnés caído). Primer run en vivo en verde: 36611942632, 13,74 $ | 🟢 (la condición de release sigue siendo una semana en verde con la candidata) |
+| 6 | API pública congelada con guía | Inventario, test y guía (#418); nombres nuevos y alias con aviso (#419, 0.4.33). La 0.4.34 (este PR) marca `@deprecated` en el `.d.ts` todo lo que se quita o renombra, avisa en consola de lo que los tipos no ven y pone el inventario al día | 🟡 listo para la 0.4.34; la congelación es la 0.5 |
+
+La tabla y [«Lo que falta, en orden»](#lo-que-falta-en-orden) son el estado
+vigente. Las secciones 1 a 5 conservan el detalle con el que se escribieron
+(#418, mañana del 29, contra la 0.4.31/0.4.32): lo que allí figura como
+«abierto» está fusionado.
 
 ## 1 · Tres proveedores sin errores de la capa
 
@@ -156,7 +162,29 @@ umbrales cubren los criterios 1 a 4 (`capa-falla`, `exactitud-peor`,
 
 ## 6 · API congelada con guía
 
-**Lo que hace este PR**
+**La 0.4.34 (PR «la 0.4.34 avisa de todo lo que la 0.5 quita»)**
+
+- `@deprecated` en los 63 exports «quitar» que no lo llevaban, reexportados con
+  nombre desde `src/deprecaciones-0.5.ts` (el `@deprecated` es del export, no de
+  la función interna). El test del inventario exige ahora `@deprecated` en el
+  `.d.ts` publicado para todo export y campo «quitar» o «renombrar».
+- Aviso único por proceso, silenciable con `silenceWarnings` o con
+  `BVSALA_SILENCE_DEPRECATIONS=1`, para `licensePublicKey` en el paquete
+  publicado (donde no hace nada); el de `licenseGate` dice ya que la opción sale
+  en la 0.5 y el alias `semanticCache` obedece la misma variable.
+- **`devUnlicensed` NO avisa en ejecución**: la verja de
+  `test/sala-limpia-del-tarball.test.ts` exige que ese nombre no esté en el
+  bundle publicado (prueba de que la puerta de desarrollo se plegó), y un aviso
+  lo metería. Queda con su `@deprecated`. **Decide el dueño** si se relaja la
+  verja (por ejemplo, a comprobar solo `BVSALA_DEV_OPEN` y la forma de
+  `devOpen()`) para poder avisar.
+- `QualityTruncationCheck.finishReason` entra en el inventario con el veredicto
+  de `SavingsResult.finishReason`, y `QualityTruncationCheck.finishReasonDetail`
+  llega para que la migración sea simétrica.
+- Inventario a la 0.4.33, sin `pendientes` (los de #410, #412, #416, #417 y
+  #419, movidos); guía sin «(proposed)» y con «Upgrade to 0.4.34 first».
+
+**Lo que hizo #418**
 
 - **Inventario** (`docs/INVENTARIO-API-0.5.json`):
   - Los 298 nombres de las cinco entradas del paquete (`.`, `./ai-sdk`,
@@ -195,15 +223,15 @@ umbrales cubren los criterios 1 a 4 (`capa-falla`, `exactitud-peor`,
 
 | Cambio | Tipo | Estado |
 |---|---|---|
-| `CATALOGO`/`precioDeLista`/`PRECIOS_AL_DIA`/`embebedorLocal`/`UMBRAL_LOCAL` → nombres ingleses | renombrar | alias ya en este PR |
-| `SavingsLayerConfig.semanticCache` → `semanticCacheStore` (#380) | renombrar | falta el alias y el aviso (toca `create.ts`, que #417 edita) |
-| `cost.netSavings` → `netSavingsRatio`, más `netSavingsUsd` nuevo | renombrar | faltan los campos aditivos (toca `accounting.ts`, que #412 edita) |
-| `finishReason` a unión cerrada, con el literal en `finishReasonDetail` (#416) | cambiar valor | depende de #416 |
-| `ToolSelectorOptions.maxTools`: sin tope por defecto (#382) | cambiar default | **decide el dueño**; falta el banco con catálogo tipado |
-| `licenseGate`, `devUnlicensed`, `licensePublicKey` fuera de `SavingsLayerConfig` | quitar | `@deprecated` ya en este PR |
-| 66 exports internos fuera de la raíz: pipeline, licencia/medición, constantes de la referencia | quitar | lista en la guía, §7 |
+| `CATALOGO`/`precioDeLista`/`PRECIOS_AL_DIA`/`embebedorLocal`/`UMBRAL_LOCAL` → nombres ingleses | renombrar | alias `@deprecated` desde #418 |
+| `SavingsLayerConfig.semanticCache` → `semanticCacheStore` (#380) | renombrar | alias con aviso desde la 0.4.33 (#419); el aviso obedece `BVSALA_SILENCE_DEPRECATIONS` desde la 0.4.34 |
+| `cost.netSavings` → `netSavingsRatio`, más `netSavingsUsd` nuevo | renombrar | los dos campos nuevos desde la 0.4.33 (#419) |
+| `finishReason` a unión cerrada, con el literal en `finishReasonDetail` (#416) — también `qualityLedger.truncation` | cambiar valor | `finishReasonDetail` desde la 0.4.33 (#416); en `truncation` desde la 0.4.34. La normalización, en la 0.5 |
+| `ToolSelectorOptions.maxTools`: sin tope por defecto (#382) | cambiar default | **decidido y hecho** en la 0.4.33 (#419) |
+| `licenseGate`, `devUnlicensed`, `licensePublicKey` fuera de `SavingsLayerConfig` | quitar | `@deprecated` desde #418; aviso en ejecución de `licenseGate` y (desde la 0.4.34) `licensePublicKey`; `devUnlicensed`, solo el tipo (decide el dueño) |
+| 68 exports fuera de la raíz: pipeline, licencia/medición, constantes de la referencia y alias españoles | quitar | todos `@deprecated` desde la 0.4.34; lista en la guía, §7 |
 | Alias ya deprecados: `MODELOS_POR_CODIFICACION`, `registrarTokenizadorExacto`, `estimatedTierSaving`, `silenciarAvisos` | quitar | ya `@deprecated` |
-| CLI: `--puerto`/`--proyecto`/`--forzar`, `BVSALA_GATEWAY_ESFUERZO` → `_EFFORT`, `BVSALA_GATEWAY_MODELO_HERMANO` → `_SIBLING_MODEL` | renombrar | **decide el dueño** |
+| CLI: `--puerto`/`--proyecto`/`--forzar`, `BVSALA_GATEWAY_ESFUERZO` → `_EFFORT`, `BVSALA_GATEWAY_MODELO_HERMANO` → `_SIBLING_MODEL` | renombrar | **decidido**: alias con aviso desde la 0.4.33 (#419) |
 
 Lo que **no** cambia, aunque se tocó hace poco: `maxOutputTokens` por petición
 (gana el menor de petición y contrato, #381), `reasoningEffort` (#402),
@@ -222,12 +250,12 @@ No es código TypeScript, así que el test no lo vigila. Su inventario:
 |---|---|
 | `gateway`, `claude`, `codex`, `goose`, `qwen`, `opencode`, `kilo`, `copilot`, `aider`, `doctor`, `skill`, `init`, `--version`/`-v`, `--help`/`-h` | estable |
 | `--port`, `--upstream`, `--project`, `--force`, `--codex`, `--write`, `--yes`, `--stack`, `--provider`, `--cwd`, `--json` | estable |
-| `--puerto`, `--proyecto`, `--forzar` | quitar (propuesta) |
+| `--puerto`, `--proyecto`, `--forzar` | quitar (alias con aviso desde la 0.4.33) |
 | `BIVELIO_SERVICE_KEY`, `BIVELIO_LICENSE_KEY`, `BVSALA_SEAT_ID`, `BVSALA_GATEWAY_UPSTREAM`, `BVSALA_GATEWAY_USAGE_INJECT`, `BVSALA_GATEWAY_ELISION`, `BVSALA_CODEX_AUTH`, `BVSALA_GATEWAY_LOG` | estable |
 | `BVSALA_GATEWAY_COALESCE`, `BVSALA_GATEWAY_SHADOW` | estable (la ayuda los marca como experimentales) |
-| `BVSALA_GATEWAY_ESFUERZO` → `BVSALA_GATEWAY_EFFORT`; `BVSALA_GATEWAY_MODELO_HERMANO` → `BVSALA_GATEWAY_SIBLING_MODEL` | renombrar (propuesta) |
+| `BVSALA_GATEWAY_ESFUERZO` → `BVSALA_GATEWAY_EFFORT`; `BVSALA_GATEWAY_MODELO_HERMANO` → `BVSALA_GATEWAY_SIBLING_MODEL` | renombrar (alias con aviso desde la 0.4.33) |
 
-### Hallazgos en los PR abiertos (para quien los fusione)
+### Hallazgos en los PR que entonces estaban abiertos (todos fusionados ya)
 
 - **#417 saca `vigenciaEfectiva` a la raíz del paquete.** Es un `export` en
   `src/license/verify.ts`, que el barril reexporta con `export *`: un nombre en
@@ -245,31 +273,26 @@ No es código TypeScript, así que el test no lo vigila. Su inventario:
 
 ## Lo que falta, en orden
 
-1. **Fusionar lo que está en vuelo**: #404, #416, #410 (quitando
-   `vigenciaEfectiva` en #417), #412 y #417. Resolver 0032 y el techo del
-   bundle. Al fusionar cada uno, mover sus `pendientes` del inventario a
-   `exports`/`miembros`.
-2. **Fusionar #413** y ejecutarlo contra la 0.4.32, primero en seco y luego en
-   vivo, con Gemini nativo (criterios 1, 2, 3 y 5).
-3. **Decisiones del dueño**: `maxTools` sin tope por defecto, los nombres del
-   CLI, el conjunto cerrado de `finishReason` y el nombre `semanticCacheStore`.
-4. **0.4.33 (deprecaciones con código, sin cambiar comportamiento)**, cuando lo
-   del punto 1 esté fusionado, para no pisar esos ficheros:
-   - Aceptar `semanticCacheStore` y avisar una vez, silenciable, al recibir
-     `semanticCache` en el constructor.
-   - Añadir `netSavingsRatio` y `netSavingsUsd` y marcar `netSavings`
-     `@deprecated`.
-   - Avisar una vez, silenciable, de `devUnlicensed` y `licensePublicKey` en el
-     paquete publicado.
-   - Aceptar `BVSALA_GATEWAY_EFFORT` y `BVSALA_GATEWAY_SIBLING_MODEL` y avisar
-     de los nombres españoles y de `--puerto`/`--proyecto`/`--forzar`.
-   - `@deprecated` en los 63 exports internos que este PR no marca. Muchos viven en ficheros que
-     editan #412 y #417: por eso no van en este PR.
-5. **Factura real** contra el informe: la API de costes de cada proveedor, con
+Hecho el 2026-09-29: #404, #410, #412, #413, #416, #417 y #419 fusionados y
+publicados en la 0.4.33 (#420); #421, #422 y #423 después; el primer banco en
+vivo en verde (run 36611942632). Las decisiones del dueño (`maxTools` sin tope,
+nombres del CLI, `semanticCacheStore`, `netSavingsUsd`) están tomadas y
+aplicadas.
+
+1. **Publicar la 0.4.34** (este PR + el PR de release): `@deprecated` en todo
+   lo que se quita y avisos en ejecución (criterio 6).
+2. **Gemini en el banco** (criterios 1, 2 y 3): dar de alta `GEMINI_API_KEY`
+   en el workflow (se comprueba con `gh secret list`, por nombre) y medir el
+   adaptador nativo, no solo el endpoint compatible. BFCL con Gemini sigue «sin
+   soporte».
+3. **Factura real** contra el informe: la API de costes de cada proveedor, con
    claves dedicadas al banco (criterio 4).
-6. **Una semana del banco en verde** con la candidata.
-7. **0.5.0**:
-   - Aplicar la guía: quitar, renombrar y normalizar `finishReason`.
+4. Observar en vivo una negativa del API de OpenAI (`message.refusal`).
+5. **Una semana del banco en verde** con la candidata.
+6. **0.5.0**:
+   - Aplicar la guía: quitar, renombrar y normalizar `finishReason` (en
+     `SavingsResult` y en `qualityLedger.truncation`).
+   - Borrar `src/deprecaciones-0.5.ts` y cerrar los `export *` de la raíz.
    - Regenerar el inventario con `version: "0.5.0"` y todo `estable`.
    - Endurecer el test: en la 0.5 ya no se aceptan `pendientes`.
    - Publicar la guía en la web.

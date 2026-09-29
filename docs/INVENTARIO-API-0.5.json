@@ -1,6 +1,6 @@
 {
-  "$comentario": "Inventario de la API pública de @bivelio/savings-layer (0.4.32) con el veredicto propuesto para la 0.5: estable | renombrar | quitar | cambiar-default. Lo vigila test/api-publica-congelada.test.ts: un export o un miembro nuevo que no figure aquí rompe el test. `exports`: nombres de cada entrada del paquete (tipo = solo tipo, valor = existe en tiempo de ejecución). `miembros`: campos de las interfaces que el cliente escribe o lee (un nivel de anidación). `pendientes`: lo que traen PR abiertos; puede faltar en dist hasta que se fusionen. Guía: docs/MIGRAR-A-0.5.md; estado: docs/CAMINO-A-0.5.md.",
-  "version": "0.4.32",
+  "$comentario": "Inventario de la API pública de @bivelio/savings-layer (0.4.33) con el veredicto propuesto para la 0.5: estable | renombrar | quitar | cambiar-default. Lo vigila test/api-publica-congelada.test.ts: un export o un miembro nuevo que no figure aquí rompe el test. `exports`: nombres de cada entrada del paquete (tipo = solo tipo, valor = existe en tiempo de ejecución). `miembros`: campos de las interfaces que el cliente escribe o lee (un nivel de anidación). `pendientes`: lo que traen PR abiertos; puede faltar en dist hasta que se fusionen (vacío cuando no hay ninguno). Desde la 0.4.34, todo export o campo «quitar»/«renombrar» lleva @deprecated en el .d.ts publicado (lo exige el mismo test). Guía: docs/MIGRAR-A-0.5.md; estado: docs/CAMINO-A-0.5.md.",
+  "version": "0.4.33",
   "exports": {
     ".": {
       "AnswerJudge": { "tipo": "tipo", "veredicto": "estable" },
@@ -85,6 +85,21 @@
       "FormatChoice": { "tipo": "tipo", "veredicto": "estable" },
       "FormatSelector": { "tipo": "valor", "veredicto": "estable" },
       "FormatSelectorOptions": { "tipo": "tipo", "veredicto": "estable" },
+      "GoogleOptions": {
+        "tipo": "tipo",
+        "veredicto": "estable",
+        "porque": "Opciones del adaptador nativo. (#410)"
+      },
+      "GoogleProvider": {
+        "tipo": "valor",
+        "veredicto": "estable",
+        "porque": "Adaptador nativo de Gemini: criterio 1 de la 0.5 (decisión del dueño «nativo antes de la 0.5»). (#410)"
+      },
+      "GoogleThinkingConfig": {
+        "tipo": "tipo",
+        "veredicto": "estable",
+        "porque": "Configuración de pensamiento de Gemini. (#410)"
+      },
       "HandoffFact": { "tipo": "tipo", "veredicto": "estable" },
       "HeuristicEstimator": { "tipo": "valor", "veredicto": "estable" },
       "InMemoryCacheBreakpointStore": { "tipo": "valor", "veredicto": "estable" },
@@ -119,6 +134,11 @@
         "porque": "Alias en español ya @deprecated («kept for one minor version»). Sale en la 0.5: usar MODELS_BY_ENCODING."
       },
       "MODELS_BY_ENCODING": { "tipo": "valor", "veredicto": "estable" },
+      "MeasureReport": {
+        "tipo": "tipo",
+        "veredicto": "estable",
+        "porque": "Informe de la licencia Medir (plan `measure`). (#417)"
+      },
       "MemoryDelta": { "tipo": "tipo", "veredicto": "estable" },
       "MessageRole": { "tipo": "tipo", "veredicto": "estable" },
       "MockProvider": { "tipo": "valor", "veredicto": "estable" },
@@ -126,6 +146,11 @@
       "ModelCascadeMode": { "tipo": "tipo", "veredicto": "estable" },
       "ModelCascadeReport": { "tipo": "tipo", "veredicto": "estable" },
       "ModelCascadeSettings": { "tipo": "tipo", "veredicto": "estable" },
+      "NativeSavingsReport": {
+        "tipo": "tipo",
+        "veredicto": "estable",
+        "porque": "El ahorro nativo de la caché del proveedor, aparte y sin comisión (criterio 4). (#412)"
+      },
       "OpenAICompatibleOptions": { "tipo": "tipo", "veredicto": "estable" },
       "OpenAICompatibleProvider": { "tipo": "valor", "veredicto": "estable" },
       "OutputContract": { "tipo": "tipo", "veredicto": "estable" },
@@ -640,6 +665,13 @@
     "DeferredExecutionReport.requestedTier": "estable",
     "DeferredExecutionReport.servedTier": "estable",
     "DeferredExecutionReport.tierSaving": "estable",
+    "GoogleOptions.apiKey": "estable",
+    "GoogleOptions.baseUrl": "estable",
+    "GoogleOptions.fetchImpl": "estable",
+    "GoogleOptions.headers": "estable",
+    "GoogleOptions.requireUsage": "estable",
+    "GoogleOptions.safetySettings": "estable",
+    "GoogleOptions.thinkingConfig": "estable",
     "OpenAICompatibleOptions.apiKey": "estable",
     "OpenAICompatibleOptions.baseUrl": "estable",
     "OpenAICompatibleOptions.fetchImpl": "estable",
@@ -652,6 +684,14 @@
     "OutputContract.maxOutputTokens": "estable",
     "OutputContract.schema": "estable",
     "OutputContract.version": "estable",
+    "QualityTruncationCheck.capSetByCaller": "estable",
+    "QualityTruncationCheck.finishReason": {
+      "veredicto": "cambiar-default",
+      "porque": "El mismo caso que `SavingsResult.finishReason` (es el mismo valor, copiado al libro de calidad): hoy lleva el motivo tal cual lo deja el adaptador. En la 0.5, unión cerrada (`stop` | `length` | `tool_calls` | `content_filter` | `other`) y el literal del proveedor en `QualityTruncationCheck.finishReasonDetail`, que llega en la 0.4.34 para que la migración sea simétrica."
+    },
+    "QualityTruncationCheck.finishReasonDetail": "estable",
+    "QualityTruncationCheck.outputLimit": "estable",
+    "QualityTruncationCheck.truncated": "estable",
     "RequestContext.authorizationScope": "estable",
     "RequestContext.freshnessBucket": "estable",
     "RequestContext.knowledgeEpoch": "estable",
@@ -726,9 +766,10 @@
     "SavingsLayerConfig.semanticCache": {
       "veredicto": "renombrar",
       "a": "semanticCacheStore",
-      "porque": "#380: el mismo nombre significa «almacén» en el constructor y «úsala» en la petición (`savings.semanticCache`); pasar el almacén no la enciende y la gente lo creía. En la 0.5 el almacén se llama `semanticCacheStore` y la decisión sigue en `semanticCacheDefault`/`savings.semanticCache`."
+      "porque": "#380: el mismo nombre significa «almacén» en el constructor y «úsala» en la petición (`savings.semanticCache`); pasar el almacén no la enciende y la gente lo creía. En la 0.5 el almacén se llama `semanticCacheStore` y la decisión sigue en `semanticCacheDefault`/`savings.semanticCache`. Desde la 0.4.33 `semanticCacheStore` existe y `semanticCache` es un alias que avisa una vez."
     },
     "SavingsLayerConfig.semanticCacheDefault": "estable",
+    "SavingsLayerConfig.semanticCacheStore": "estable",
     "SavingsLayerConfig.serviceAccountKey": "estable",
     "SavingsLayerConfig.silenceWarnings": "estable",
     "SavingsLayerConfig.singleflight": "estable",
@@ -773,15 +814,19 @@
     "SavingsReport.cost.netSavings": {
       "veredicto": "renombrar",
       "a": "netSavingsRatio",
-      "porque": "Es una RAZÓN (1 − actual/baseline, 6 decimales) y los arneses la sumaban como dólares. En la 0.5 se llama `netSavingsRatio` y se añade `netSavingsUsd` (= baselineEstimate − actual). Los exportadores ya la publican como `net_savings_ratio`."
+      "porque": "Es una RAZÓN (1 − actual/baseline, 6 decimales) y los arneses la sumaban como dólares. En la 0.5 se llama `netSavingsRatio` y `netSavingsUsd` (= baselineEstimate − actual). Los exportadores ya la publican como `net_savings_ratio`. Desde la 0.4.33 los dos nombres nuevos ya van en el informe, junto al viejo."
     },
+    "SavingsReport.cost.netSavingsRatio": "estable",
+    "SavingsReport.cost.netSavingsUsd": "estable",
     "SavingsReport.deferred": "estable",
     "SavingsReport.latencyMs": "estable",
     "SavingsReport.latencyMs.preprocessing": "estable",
     "SavingsReport.latencyMs.provider": "estable",
     "SavingsReport.latencyMs.total": "estable",
+    "SavingsReport.measure": "estable",
     "SavingsReport.model": "estable",
     "SavingsReport.modelCascade": "estable",
+    "SavingsReport.nativeSavings": "estable",
     "SavingsReport.quality": "estable",
     "SavingsReport.quality.freshnessPassed": "estable",
     "SavingsReport.quality.semanticScore": "estable",
@@ -828,6 +873,7 @@
       "veredicto": "cambiar-default",
       "porque": "Los adaptadores ya traducen lo común (end_turn → stop, max_tokens → length, tool_use → tool_calls), pero lo demás pasa tal cual («content_filter: OTHER» de Gemini compatible, stop_sequence, pause_turn…). En la 0.5, unión cerrada (`stop` | `length` | `tool_calls` | `content_filter` | `other`) y el literal del proveedor en `finishReasonDetail` (#416)."
     },
+    "SavingsResult.finishReasonDetail": "estable",
     "SavingsResult.refusal": "estable",
     "SavingsResult.rendered": "estable",
     "SavingsResult.report": "estable",
@@ -876,93 +922,9 @@
     "ToolSelectorOptions.learningTurns": "estable",
     "ToolSelectorOptions.maxTools": {
       "veredicto": "cambiar-default",
-      "porque": "PROPUESTA, decide el dueño. Desde #382 un catálogo SIN `intents`/`risk` viaja entero, pero uno tipado sigue recortado a 8 por relevancia. El criterio 2 («nunca empeora la respuesta») pide que el recorte por relevancia sea opt-in hasta que un banco con catálogo tipado (BFCL multi-turn con intents) lo avale: default sin tope en la 0.5, y las herramientas de escritura siguen retenidas fuera de peticiones de acción."
+      "porque": "Decidido por el dueño y YA aplicado en la 0.4.33 (#419): sin `maxTools` el selector no poda por relevancia (antes, un catálogo tipado se recortaba a 8). Solo manda MÁS herramientas, y lo no podado no se acredita; las de escritura siguen retenidas fuera de peticiones de acción. Quien quiera el recorte fija `maxTools`. Figura aquí porque es un cambio de comportamiento que la guía cuenta."
     },
     "ToolSelectorOptions.scoreIntentMatch": "estable"
   },
-  "pendientes": {
-    "E . GoogleProvider valor": {
-      "pr": "#410",
-      "veredicto": "estable",
-      "porque": "Adaptador nativo de Gemini: criterio 1 de la 0.5 (decisión del dueño «nativo antes de la 0.5»)."
-    },
-    "E . GoogleOptions tipo": {
-      "pr": "#410",
-      "veredicto": "estable",
-      "porque": "Opciones del adaptador nativo."
-    },
-    "E . GoogleThinkingConfig tipo": {
-      "pr": "#410",
-      "veredicto": "estable",
-      "porque": "Configuración de pensamiento de Gemini."
-    },
-    "M GoogleOptions.apiKey": {
-      "pr": "#410",
-      "veredicto": "estable"
-    },
-    "M GoogleOptions.baseUrl": {
-      "pr": "#410",
-      "veredicto": "estable"
-    },
-    "M GoogleOptions.fetchImpl": {
-      "pr": "#410",
-      "veredicto": "estable"
-    },
-    "M GoogleOptions.headers": {
-      "pr": "#410",
-      "veredicto": "estable"
-    },
-    "M GoogleOptions.requireUsage": {
-      "pr": "#410",
-      "veredicto": "estable"
-    },
-    "M GoogleOptions.safetySettings": {
-      "pr": "#410",
-      "veredicto": "estable"
-    },
-    "M GoogleOptions.thinkingConfig": {
-      "pr": "#410",
-      "veredicto": "estable"
-    },
-    "E . NativeSavingsReport tipo": {
-      "pr": "#412",
-      "veredicto": "estable",
-      "porque": "El ahorro nativo de la caché del proveedor, aparte y sin comisión (criterio 4)."
-    },
-    "M SavingsReport.nativeSavings": {
-      "pr": "#412",
-      "veredicto": "estable",
-      "porque": "Fuera de `cost`: no mueve baseline, actual ni netSavings."
-    },
-    "M SavingsResult.finishReasonDetail": {
-      "pr": "#416",
-      "veredicto": "estable",
-      "porque": "Motivo literal del proveedor; es el destino del literal cuando `finishReason` se normalice en la 0.5."
-    },
-    "E . MeasureReport tipo": {
-      "pr": "#417",
-      "veredicto": "estable",
-      "porque": "Informe de la licencia Medir (plan `measure`)."
-    },
-    "M SavingsReport.measure": {
-      "pr": "#417",
-      "veredicto": "estable",
-      "porque": "Presente solo con licencia Medir."
-    },
-    "M SavingsReport.cost.netSavingsRatio": {
-      "pr": "#419",
-      "veredicto": "estable",
-      "porque": "Nombre nuevo de `netSavings` (la razón); llega como alias en la 0.4.33."
-    },
-    "M SavingsReport.cost.netSavingsUsd": {
-      "pr": "#419",
-      "veredicto": "estable",
-      "porque": "El ahorro en USD (= baselineEstimate − actual), junto a la razón."
-    },
-    "M SavingsLayerConfig.semanticCacheStore": {
-      "pr": "#419",
-      "veredicto": "estable",
-      "porque": "Nombre nuevo del almacén de la caché semántica (#380); `semanticCache` queda como alias hasta la 0.5."
-    }
-  }
+  "pendientes": {}
 }

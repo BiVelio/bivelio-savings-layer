@@ -1,6 +1,6 @@
 import { defaultTokenizerRegistry } from "../tokenizer/registry.js";
 import { MODELS_BY_ENCODING, registerExactTokenizer } from "../tokenizer/exact.js";
-import { avisarUnaVez } from "../util/warn-once.js";
+import { avisarUnaVez, obsoletosSilenciados } from "../util/warn-once.js";
 import type {
   SavingsRequest,
   SavingsResult,
@@ -145,12 +145,19 @@ export function createSavingsLayer(
   const avisar = (clave: string, mensaje: string): void => {
     if (config.silenceWarnings !== true) avisarUnaVez(clave, mensaje);
   };
+  // LO QUE LA 0.5 QUITA O RENOMBRA avisa por aquí: pasa por el portero (una vez
+  // por proceso, callado con `silenceWarnings`) y además calla con
+  // BVSALA_SILENCE_DEPRECATIONS=1, como los flags españoles de la CLI, para
+  // quien ya lo tiene apuntado y no quiere perder los demás avisos.
+  const avisarObsoleto = (clave: string, mensaje: string): void => {
+    if (!obsoletosSilenciados()) avisar(clave, mensaje);
+  };
   // `semanticCache` EN EL CONSTRUCTOR SE LLAMA `semanticCacheStore` DESDE 0.4.33
   // (decisión del dueño, 2026-09-29): el mismo nombre decía «almacén» aquí y
   // «úsala» en `savings.semanticCache`, y pasar el almacén no la encendía. El
   // viejo sigue funcionando hasta la 0.5, avisando una vez y silenciable.
   if (config.semanticCache !== undefined) {
-    avisar(
+    avisarObsoleto(
       "semanticCache-renombrado",
       "[bvsala] `createSavingsLayer({ semanticCache })` is deprecated: pass the store as `semanticCacheStore` " +
         "(same value; `savings.semanticCache` on a request does not change). The old name is removed in 0.5." +
@@ -169,6 +176,22 @@ export function createSavingsLayer(
   // montan sus escenarios.
   const buildPublicado =
     typeof __BV_SALA_ALLOW_DEV_OPEN__ !== "undefined" && __BV_SALA_ALLOW_DEV_OPEN__ === false;
+  // `licensePublicKey` SALE DEL TIPO PÚBLICO EN LA 0.5. En el paquete publicado
+  // ya no hace nada (pierde siempre contra la clave embebida), así que quien la
+  // pasa cree que algo funciona y no: se le dice una vez. Desde el fuente
+  // (tests, banco) sí funciona y sigue en la 0.5 como vía interna: ahí, nada.
+  //
+  // `devUnlicensed` NO avisa aquí, y es a propósito: su nombre no puede viajar
+  // en el bundle publicado (test/sala-limpia-del-tarball.test.ts lo exige para
+  // probar que la puerta de desarrollo se plegó), y un aviso lo llevaría. Queda
+  // el `@deprecated` del tipo; relajar esa verja lo decide el dueño.
+  if (buildPublicado && config.licensePublicKey !== undefined) {
+    avisarObsoleto(
+      "licensePublicKey-obsoleto",
+      "[bvsala] `createSavingsLayer({ licensePublicKey })` is deprecated and ignored: the published package always " +
+        "verifies `licenseKey` against BiVelio's embedded public key. The option is removed in 0.5; delete it from your config.",
+    );
+  }
   if (buildPublicado && config.licenseGate) {
     // EN INGLÉS, como todo lo que ve el cliente. Salía en español a un paquete
     // publicado en npm y leído en cualquier parte del mundo: quien lo recibía no
@@ -177,8 +200,8 @@ export function createSavingsLayer(
     avisar(
       "licenseGate-ignorado",
       "[bvsala] Ignoring the injected `licenseGate`: in the published package a license is " +
-        "only accepted as a `licenseKey` verified against BiVelio's embedded public key. " +
-        "Get yours at https://savings.bivelio.com/dashboard/install",
+        "only accepted as a `licenseKey` verified against BiVelio's embedded public key, and the " +
+        "`licenseGate` option is removed in 0.5. Get yours at https://savings.bivelio.com/dashboard/install",
     );
     config = { ...config, licenseGate: undefined };
   }
