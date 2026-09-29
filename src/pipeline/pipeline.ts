@@ -948,7 +948,29 @@ export class SavingsPipeline {
       observacion = colocado.observacion;
     }
 
-    if (mensajesDePrefijo <= 0) return { ...nada, colocacion: observacion };
+    // LA COLOCACIÓN FIJA CON PRIMA DE ESCRITURA (Anthropic): el historial y el
+    // catálogo de herramientas solo se marcan con EVIDENCIA de que se van a
+    // reenviar (ver `hayEvidenciaDeReenvio`). El `system` sigue como siempre: su
+    // huella se repite entre conversaciones y la verja SÍ aprende de ella.
+    const conPrimaFija = tier.cacheWriteMultiplier > 1 && !explicita;
+    const reenvio = conPrimaFija ? hayEvidenciaDeReenvio(messages) : true;
+    const S = cabeceraDeSistema(messages);
+    if (conPrimaFija && mensajesDePrefijo > S && !reenvio) {
+      trace.record("prefix-cache-history", "deferred", {
+        reason:
+          "first follow-up of this conversation: nothing shows the history will be sent again, and " +
+          `writing it costs ${(tier.cacheWriteMultiplier - 1).toFixed(2)}x of its tokens that only a later ` +
+          "turn can recover. The history is marked from the next turn or tool-loop step on.",
+      });
+      mensajesDePrefijo = S;
+    }
+
+    if (mensajesDePrefijo <= 0) {
+      const soloHerramientas = conPrimaFija && reenvio
+        ? this.prefijoDeHerramientas(request, modeloServido, messages, toolSelection.tools, tier, trace)
+        : null;
+      return soloHerramientas ? { ...soloHerramientas, colocacion: observacion } : { ...nada, colocacion: observacion };
+    }
 
     const prefijo = messages.slice(0, mensajesDePrefijo);
     const stablePrefixTokens = this.tokensFor(
@@ -999,6 +1021,77 @@ export class SavingsPipeline {
           colocacion: observacion,
         }
       : { ...nada, colocacion: observacion };
+  }
+
+  /**
+   * EL PREFIJO QUE ES SOLO EL CATÁLOGO DE HERRAMIENTAS.
+   *
+   * Sin `system` y sin historial estable que marcar —la forma de un bucle de
+   * agente que manda solo `tools` y la conversación—, la colocación fija no
+   * tenía dónde poner el punto, y el catálogo entero se pagaba a precio lleno en
+   * cada paso: el banco BFCL midió 6-8k tokens de herramientas reenviados doce
+   * veces por entrada con 0 lecturas y 0 escrituras de caché
+   * (docs/benchmarks/2026-09-28/bfcl-0431-claude.md, hallazgo 5).
+   *
+   * Se declara `stablePrefixMessages: 0` —cero mensajes, o sea solo lo que se
+   * renderiza antes de ellos— cuando el bloque supera el mínimo cacheable DEL
+   * MODELO (`tramoAnthropicDelModelo`: 512 en Sonnet 5.5, 1024 en Sonnet 5,
+   * 4096 en Haiku 4.5). Por debajo el proveedor no cachea nada y la marca solo
+   * gastaría un punto. La cuenta es la local, que se queda POR DEBAJO de lo que
+   * factura el proveedor (no ve el prompt de uso de herramientas que él añade):
+   * el error es no marcar un catálogo que sí llegaba, nunca marcar uno que no.
+   *
+   * La verja decide como con cualquier prefijo, con su huella (modelo +
+   * herramientas): la de un catálogo SÍ se repite entre pasos y entre
+   * conversaciones, así que aprende. El ahorro NO se acredita a la capa: es
+   * caché del proveedor sobre bytes del cliente (#260), y el informe lo trata
+   * igual que el de `system`.
+   */
+  private prefijoDeHerramientas(
+    request: SavingsRequest,
+    modeloServido: string,
+    messages: ChatMessage[],
+    tools: SavingsRequest["tools"] & object,
+    tier: CacheTier,
+    trace: TraceCollector,
+  ): Omit<MarcadoDeCache, "colocacion"> | null {
+    const min = tier.minimumCacheTokens;
+    if (tools.length === 0 || min == null) return null;
+    const tokensDeHerramientas = this.tokensFor(this.assemblePromptText([], tools), request);
+    if (tokensDeHerramientas < min) {
+      trace.record("prefix-cache", "skipped", {
+        reason:
+          `the tool catalogue (${tokensDeHerramientas} tokens) is below this model's minimum cacheable ` +
+          `prefix (${min}): the provider would not cache it`,
+        stablePrefixTokens: tokensDeHerramientas,
+      });
+      return null;
+    }
+    const huella = sha256(
+      stableStringify({ model: modeloServido, tools: tools.map((t) => t.id), prefijo: [] }),
+    );
+    const decision = this.verjaDeCache.decidir(huella, {
+      totalTokens: this.tokensFor(this.assemblePromptText(messages, tools), request),
+      stablePrefixTokens: tokensDeHerramientas,
+      tier,
+    });
+    trace.record("prefix-cache", decision.marcar ? "marked" : "skipped", {
+      reason: decision.razon,
+      boundary: "tools",
+      stablePrefixTokens: tokensDeHerramientas,
+      breakEvenHitRate: decision.umbral,
+      observedHitRate: decision.observada,
+    });
+    if (!decision.marcar) return null;
+    return {
+      marcar: true,
+      huella,
+      claveDeVerja: huella,
+      mensajesDePrefijo: 0,
+      cacheWriteMultiplier: tier.cacheWriteMultiplier,
+      explicita: false,
+      explicitaPorColocador: false,
+    };
   }
 
   /**
@@ -6343,6 +6436,50 @@ function limiteDelPrefijoEstable(messages: ChatMessage[], soloSystem = false): n
   // tramo de `system` inicial en vez de todo: afirmar de más aquí es afirmar que
   // texto variable es estable, y eso se paga.
   return limiteDelPrefijoEstable(messages, true);
+}
+
+/**
+ * ¿Hay EVIDENCIA, en la propia petición, de que su historial se va a reenviar?
+ *
+ * La colocación fija marcaba el historial (hasta el último turno del usuario)
+ * en toda petición que lo tuviera. En el primer seguimiento de una
+ * conversación —turno 2: `[u1, a1, u2]`— eso escribe `u1 + a1` a 1,25× y solo
+ * lo recupera un turno 3 que lo lea a 0,1×. MT-Bench, que son exactamente dos
+ * turnos, lo midió como prima pagada sin una sola lectura
+ * (docs/benchmarks/2026-09-28/mt-bench-0431-claude.md). Y la verja no podía
+ * aprenderlo: la huella de un historial no se repite nunca, así que cada
+ * conversación exploraba de cero.
+ *
+ * El equilibrio es P(turno siguiente) = (w − 1) / (w − 1 + 1 − r): con
+ * w = 1,25 y r = 0,1, un 21,7 %. La capa no conoce esa probabilidad en el turno
+ * 2, y la única evidencia que tiene sin memoria es la propia petición:
+ *
+ *  · un segundo turno del usuario ANTES del último (la conversación ya siguió
+ *    una vez: `[u1, a1, u2, a2, u3]`), o
+ *  · mensajes DETRÁS del último turno del usuario (un paso de un bucle de
+ *    herramientas: el historial hasta ese turno se reenvía idéntico en cada
+ *    paso, que es el reenvío más seguro que hay).
+ *
+ * Sin ninguna de las dos, no se marca el historial (ni el catálogo de
+ * herramientas sin `system`). El coste de equivocarse por este lado en una
+ * conversación larga es UNA escritura de `u1 + a1` que el turno 3 no lee (la
+ * escribe él); por el otro, la prima en todas las de dos turnos. Con
+ * `cacheBreakpoints: "auto"` decide el colocador, que sí mide las
+ * continuaciones del tráfico, y esto no aplica.
+ */
+function hayEvidenciaDeReenvio(messages: ChatMessage[]): boolean {
+  let ultimo = -1;
+  for (let i = messages.length - 1; i >= 0; i--) {
+    if (messages[i]!.role === "user") {
+      ultimo = i;
+      break;
+    }
+  }
+  if (ultimo < 0) return false;
+  if (ultimo < messages.length - 1) return true;
+  let usuarios = 0;
+  for (let i = 0; i < ultimo; i++) if (messages[i]!.role === "user") usuarios += 1;
+  return usuarios >= 2;
 }
 
 /**

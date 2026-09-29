@@ -57,6 +57,15 @@ export class CacheAnthropicSimulada {
    * cambia bytes a partir de ahí (lo que el espejo de la capa no puede ver).
    */
   leerSoloHastaBloque: number | null = null;
+  /**
+   * Si es true, las herramientas admiten `cache_control` (la referencia lo
+   * documenta: «mark the last tool to cache the whole list») y los bloques que
+   * no son texto (`tool_use`, `tool_result`) se cuentan por su JSON, no como
+   * `undefined`. La marca nunca entra en el texto: el proveedor no la cuenta
+   * como parte del prefijo. Apagado por defecto para no mover las cifras de los
+   * escenarios que ya fijan otros tests.
+   */
+  bloquesCompletos = false;
 
   constructor(
     private readonly ahora: () => number,
@@ -105,8 +114,16 @@ export class CacheAnthropicSimulada {
     const t = this.ahora();
     type Bloque = { texto: string; marca?: { ttl?: string } };
     const bloques: Bloque[] = [];
+    const sinMarca = (b: Record<string, unknown>): Record<string, unknown> => {
+      const { cache_control: _marca, ...resto } = b;
+      return resto;
+    };
     for (const tool of (cuerpo["tools"] as Record<string, unknown>[] | undefined) ?? []) {
-      bloques.push({ texto: `tool:${JSON.stringify(tool)}` });
+      const marca = this.bloquesCompletos ? (tool["cache_control"] as { ttl?: string } | undefined) : undefined;
+      bloques.push({
+        texto: `tool:${JSON.stringify(this.bloquesCompletos ? sinMarca(tool) : tool)}`,
+        ...(marca ? { marca } : {}),
+      });
     }
     for (const b of (cuerpo["system"] as { text: string; cache_control?: { ttl?: string } }[] | undefined) ?? []) {
       bloques.push({ texto: `system:${b.text}`, ...(b.cache_control ? { marca: b.cache_control } : {}) });
@@ -118,7 +135,11 @@ export class CacheAnthropicSimulada {
         // `tool_choice` invalida los mensajes (no las herramientas ni el sistema).
         const prefijo = primero ? `choice:${eleccion}|` : "";
         primero = false;
-        bloques.push({ texto: `${prefijo}${m.role}:${b.text}`, ...(b.cache_control ? { marca: b.cache_control } : {}) });
+        const texto =
+          this.bloquesCompletos && typeof b.text !== "string"
+            ? JSON.stringify(sinMarca(b as unknown as Record<string, unknown>))
+            : b.text;
+        bloques.push({ texto: `${prefijo}${m.role}:${texto}`, ...(b.cache_control ? { marca: b.cache_control } : {}) });
       }
     }
     const automatica = cuerpo["cache_control"] as { ttl?: string } | undefined;
