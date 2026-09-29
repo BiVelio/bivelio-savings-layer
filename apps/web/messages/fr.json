@@ -932,6 +932,7 @@
       "colBivelio": "BiVelio",
       "colLegal": "Mentions légales",
       "measured": "Résultats mesurés",
+      "benchmarks": "Banc d’essai public",
       "pricing": "Tarifs",
       "home": "Accueil",
       "docs": "Documentation",
@@ -1135,6 +1136,167 @@
     "sesionActual": "Vous êtes actuellement connecté en tant que <b>{email}</b>.",
     "cerrarYContinuar": "Se déconnecter et utiliser un autre compte",
     "cerrando": "Déconnexion…"
+  },
+  "benchmarksPage": {
+    "metaTitle": "Banc public A/B : mesurez-nous | BiVelio Savings Layer",
+    "metaDescription": "Quatre batteries publiques (GSM8K, BFCL, XSTest et MT-Bench), deux bras mesurés avec le compteur d'usage du fournisseur lui-même, chaque chiffre avec son n, son intervalle et sa date. Ce qui fait économiser, ce qui n'en fait pas, et les bugs que le banc a trouvés.",
+    "eyebrow": "Banc public · reproductible",
+    "title": "Notre banc A/B, en public. Mesurez-nous.",
+    "lede": "Nous publions chaque exécution : quatre batteries sur des jeux de données publics, {modelos} modèles, et les deux bras mesurés avec le compteur d'usage du fournisseur lui-même. Chaque chiffre porte son n, son intervalle et sa date. Ce qui ne fait pas économiser est là aussi.",
+    "stats": {
+      "batteries": "batteries",
+      "models": "modèles testés",
+      "measured": "modèles avec une mesure",
+      "reports": "rapports en direct",
+      "last": "dernière exécution"
+    },
+    "method": {
+      "title": "Ce qui est mesuré, et comment",
+      "arms": "<b>Deux bras, la même requête.</b> A va directement au fournisseur, sans la couche ; B passe par la couche avec sa configuration par défaut. Même prompt, même échantillonnage, même plafond de sortie.",
+      "cost": "<b>Le coût est compté par le fournisseur.</b> Chaque bras est valorisé à partir de l'<code>usage</code> que l'API renvoie à chaque appel, au prix catalogue. L'économie est 1 − coût(B) / coût(A) de la même exécution, pas ce que la couche dit d'elle-même.",
+      "intervals": "<b>Intervalles au {nivel}.</b> Chaque harnais les calcule (rééchantillonnage par familles de questions, Wilson pour les taux de refus). Un intervalle qui traverse zéro veut dire « indiscernable de zéro », et nous le disons.",
+      "package": "<b>Le paquet que vous installez.</b> Le bras B exécute la source du tag {version} ; son <code>dist/index.js</code> est identique octet pour octet à celui du tarball npm (sha256 <code>{sha}</code>).",
+      "guard": "<b>Pas de raccourcis.</b> Chaque harnais surveille les hôtes auxquels il parle et porte un plafond de dépense par modèle écrit dans le code. Un modèle qui n'a pas pu être mesuré apparaît comme « non mesuré », avec le motif.",
+      "batteriesTitle": "Quatre batteries, jeux de données publics, figés",
+      "commitOnly": "figé par commit"
+    },
+    "batteries": {
+      "gsm8k": "Problèmes de mathématiques avec répétitions et paraphrases : combien le cache fait économiser et si l'exactitude baisse.",
+      "bfcl": "Appels d'outils : la couche ne doit en changer aucun, et le catalogue entier doit arriver.",
+      "xstest": "Refus : la couche ne doit pas changer quand le modèle refuse, ni servir un refus depuis le cache.",
+      "mt-bench": "Chat en deux tours sans répétitions : la couche ne doit pas dégrader le coût, la latence ni la qualité."
+    },
+    "th": {
+      "battery": "Batterie",
+      "what": "Ce qui est vérifié",
+      "dataset": "Jeu de données",
+      "pinned": "Fichiers figés",
+      "license": "Licence",
+      "model": "Modèle",
+      "n": "n",
+      "savings": "Économie mesurée [IC]",
+      "fromExact": "Depuis le cache exact",
+      "fromCalls": "Dans les appels (préfixe)",
+      "accuracy": "Exactitude A → B",
+      "run": "Version · date",
+      "prompts": "Prompts",
+      "safe": "Refus, prompts sûrs (A → B)",
+      "unsafe": "Refus, prompts dangereux (A → B)",
+      "verdict": "Lecture",
+      "reports": "Rapports"
+    },
+    "savings": {
+      "title": "Économie mesurée par modèle",
+      "intro": "GSM8K, avec un flux de requêtes où {rep} sont des répétitions exactes et {par} des paraphrases. C'est la batterie au trafic répété : votre économie dépend de la répétitivité du vôtre. Sans répétitions, voir « Ce qui ne fait pas économiser ».",
+      "nCell": "{n} requêtes · {unicos} uniques",
+      "delta": "Δ {d} pp [{inf}, {sup}]",
+      "originNote": "D'où vient l'économie, position par position : « depuis le cache exact » est ce que A a payé sur les requêtes que la couche a servies sans appeler le fournisseur ; « dans les appels » est la différence sur celles qui l'ont effectivement atteint, surtout le cache de préfixe du fournisseur (plus une part de variation de la sortie). Les deux s'additionnent pour donner l'économie totale.",
+      "accuracyNote": "L'exactitude est mesurée sur les questions avec une réponse publiée ; les variantes avec un nombre modifié servent uniquement à vérifier que la couche ne renvoie jamais la réponse d'une autre question."
+    },
+    "guarantees": {
+      "title": "Garanties, comptées",
+      "tools": {
+        "title": "La couche n'a jamais changé un appel d'outil",
+        "titleBroken": "La couche a changé {n} appels d'outils",
+        "body": "{alteradas} appels modifiés sur {comparaciones} comparaisons BFCL, {modelos} modèles, depuis {desde}. Si la couche échoue (une erreur en B que A n'avait pas), ce n'est pas compté ici : c'est sous « Bugs trouvés par le banc »."
+      },
+      "other": {
+        "title": "Aucune réponse d'une autre question depuis {desde}",
+        "titleBroken": "{n} réponses d'une autre question depuis {desde}",
+        "body": "{deOtra} variantes sur {variantes} (la même question avec un autre nombre, donc une autre réponse) servies avec la réponse d'une autre question, sur {modelos} modèles en direct et toutes les configurations de cache mesurées.",
+        "replay": "Rejeu hors ligne de tout le split de test GSM8K : {erroneas} sur {peticiones} requêtes, dans chacune des {configs} configurations de cache."
+      },
+      "refusals": {
+        "title": "Le même taux de refus, avec et sans la couche",
+        "titleBroken": "Le taux de refus a changé pour {n} modèles",
+        "body": "XSTest, {modelos} modèles mesurés : aucune différence A/B en dessous de p = {umbral} (McNemar, prompts appariés). La couche a livré sans altération le texte de {comprobados} réponses ({alterados} altérées).",
+        "caption": "Taux de refus par modèle, sans la couche (A) et avec elle (B), sur les mêmes prompts."
+      }
+    },
+    "noSavings": {
+      "title": "Ce qui ne fait pas économiser",
+      "lead": "<b>Sans répétitions, l'économie est ≈ {cero}.</b> Nous le publions quand même, parce que c'est ce que vous verrez si votre trafic ne se répète pas.",
+      "why": "MT-Bench est un chat en deux tours avec une couche neuve à chaque question : il n'y a rien que le cache puisse réutiliser, et le prompt n'atteint presque jamais le minimum requis par le fournisseur pour mettre un préfixe en cache. Dans BFCL, chaque appel d'outil est différent. Ce que ces deux batteries mesurent, c'est que la couche ne dégrade rien ; la différence de coût restante est du bruit dans la sortie du modèle, pas la couche.",
+      "nQuestions": "{n} questions",
+      "nItems": "{n} éléments",
+      "verdict": {
+        "ahorro": "économie",
+        "cero": "indiscernable de zéro",
+        "sobrecoste": "surcoût"
+      },
+      "notAttributable": "non attribuable à la couche"
+    },
+    "status": {
+      "title": "État par modèle et batterie",
+      "intro": "Chaque cellule montre l'exécution sur la version la plus haute de la couche. Si un modèle n'a pas pu être mesuré, nous disons pourquoi plutôt que de laisser un vide.",
+      "measured": "mesuré · n = {n}",
+      "notMeasured": "non mesuré : {motivo}",
+      "layerFailed": "la couche a échoué : {motivo}",
+      "reason": {
+        "credencial": "identifiant rejeté",
+        "presupuesto": "plafond de dépense épuisé",
+        "cuota": "quota du fournisseur épuisé",
+        "capa": "les requêtes ne sont pas passées par la couche",
+        "proveedor": "le fournisseur a rejeté la requête dans les deux bras",
+        "otro": "données insuffisantes"
+      }
+    },
+    "bugs": {
+      "title": "Bugs trouvés par le banc",
+      "intro": "Le banc n'est pas là pour bien paraître : il est là pour trouver les bugs avant vous. Il a trouvé ceux-ci, avec la version où ils sont apparus et celle qui les corrige.",
+      "found": "Trouvé dans la {version} : {ocurrencias} sur {sobre}.",
+      "fixed": "Corrigé dans la {version} ({prs}).",
+      "verified": "Vérifié en direct sur la {version} : {ocurrencias} sur {sobre}.",
+      "stillSeen": "Encore observé sur la {version} : {ocurrencias} sur {sobre}.",
+      "pending": "En attente d'être remesuré en direct sur la {version}.",
+      "items": {
+        "otra-pregunta": {
+          "title": "Le cache sémantique non calibré servait la réponse d'une autre question",
+          "body": "Avec le cache sémantique non calibré, une variante avec un autre nombre (« three baskets » contre « two baskets ») pouvait recevoir la réponse de la question originale. Compté sur les variantes de GSM8K."
+        },
+        "herramientas-multiturno": {
+          "title": "La couche réduisait le catalogue d'outils sans aucun signal pour le faire",
+          "body": "Dans les conversations à plusieurs tours, le bras B envoyait moins d'outils que le bras A alors que rien n'indiquait lesquels étaient inutiles. Compté sur les conversations multi-tours de BFCL."
+        },
+        "negativas-de-texto": {
+          "title": "Certains refus écrits en texte étaient mis en cache",
+          "body": "Un refus que le modèle écrit en texte (sans le signal de l'API) pouvait être mis en cache, répété et crédité comme une économie. Compté dans les prompts XSTest."
+        },
+        "gemini-filtro-cacheado": {
+          "title": "Un filtre de contenu de Gemini était mis en cache comme une réponse",
+          "body": "Gemini signale son filtre avec un motif d'arrêt qui lui est propre, que la couche ne reconnaissait pas comme un refus, si bien qu'elle pouvait le mettre en cache et le répéter. Compté dans les prompts XSTest."
+        },
+        "gemini-prompt-cache-key": {
+          "title": "Gemini ne passait pas par la couche",
+          "body": "La couche envoyait un champ propre à l'API OpenAI à tout endpoint compatible, et Gemini le rejette : toutes les requêtes du bras B échouaient. Compté dans les requêtes GSM8K."
+        },
+        "gemini-thought-signature": {
+          "title": "Avec Gemini 3, le deuxième tour avec outils échouait",
+          "body": "La couche ne renvoyait pas la signature de pensée que Gemini 3 exige à chaque appel d'outil, si bien que le tour suivant était rejeté. Compté dans les continuations multi-tours de BFCL."
+        }
+      }
+    },
+    "repro": {
+      "title": "Comment le reproduire",
+      "intro": "Le code du banc n'est pas encore public ; la méthode l'est, et elle tient en cinq étapes. Avec vos propres clés de fournisseur, vous pouvez la refaire et comparer chiffre par chiffre avec nos rapports.",
+      "steps": {
+        "dataset": "<b>Le jeu de données.</b> Téléchargez chaque jeu de données public au commit du tableau ci-dessus et vérifiez le sha256 de chaque fichier avant de l'utiliser. S'il ne correspond pas, ce n'est pas le même jeu de données.",
+        "package": "<b>La couche.</b> Installez <code>@bivelio/savings-layer</code> depuis npm dans la version indiquée par le rapport et vérifiez le sha256 de <code>dist/index.js</code> : chaque rapport porte le sien.",
+        "arms": "<b>Deux bras par prompt.</b> A va directement au fournisseur ; B envoie le même prompt, au même modèle et avec le même plafond de sortie, à travers la couche dans sa configuration par défaut. Une partie des prompts est répétée ou paraphrasée, comme dans le trafic réel, et l'ordre A/B est tiré au sort.",
+        "cost": "<b>Le coût, c'est le fournisseur qui le dit.</b> Additionnez ce que chaque bras est facturé d'après le <code>usage</code> renvoyé par le fournisseur, à son tarif publié. L'économie est <code>1 − coût B / coût A</code>, avec son intervalle.",
+        "compare": "<b>La qualité, dans la même exécution.</b> Notez de la même façon les réponses des deux bras (réponse exacte pour GSM8K, appel d'outil pour BFCL, refus ou non pour XSTest, un juge pour MT-Bench) et comparez-les au rapport JSON de la même batterie et de la même version."
+      },
+      "reportsTitle": "Les rapports",
+      "reportsIntro": "Chaque exécution laisse un rapport JSON avec sa conception, ses limites et chaque appel mesuré : usage, coût par bras et classification de la réponse. Ils sont servis depuis ce site.",
+      "served": "Les rapports sont servis tels que le banc les a écrits, à une exception près : les données sur l'environnement de la personne qui a mesuré (chemins de disque, adresses e-mail) sont retirées. Pour XSTest, aucun texte de réponse n'est publié, seulement sa classification."
+    },
+    "invite": {
+      "title": "Mesurez-nous vous-même",
+      "body": "Une mesure indépendante vaut plus que la nôtre. Le code du banc n'est pas encore public : si vous voulez refaire la mesure, ou mesurer la couche avec votre propre harnais ou votre propre trafic, écrivez-nous et nous vous donnerons ce qu'il faut pour le faire.",
+      "contact": "Écrivez-nous à",
+      "cta": "Envoyer un e-mail",
+      "subject": "Mesure indépendante du banc public"
+    }
   },
   "howItWorks": {
     "metaTitle": "Où s'installe l'économie ? · BiVelio Savings Layer",

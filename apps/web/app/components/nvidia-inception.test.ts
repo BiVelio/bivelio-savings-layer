@@ -455,7 +455,7 @@ describe("está en los dos sitios pedidos, y solo ahí — el héroe ya no", () 
     const creds = PIE.indexOf('className="ftr-creds"');
     const chip = PIE.indexOf('className="ftr-badge"');
     const finCreds = PIE.indexOf("</div>", chip);
-    const dock = PIE.indexOf("<SocialDock />");
+    const dock = PIE.indexOf("<SocialDock");
     const tarjeta = PIE.indexOf("<NvidiaFooterCard");
     const columnas = PIE.indexOf('className="ftr-cols"');
     expect(marca).toBeGreaterThan(-1);
