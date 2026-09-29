@@ -1,7 +1,8 @@
 /**
  * EL PROVEEDOR DE MENTIRA DEL `--mock`: valida el arnés entero sin red.
  * ---------------------------------------------------------------------------
- * Contesta en el dialecto de cada proveedor (Mensajes / Chat Completions) con
+ * Contesta en el dialecto de cada proveedor (Mensajes / Chat Completions / la
+ * API nativa de Gemini, `…/models/<m>:generateContent`) con
  * un `usage` sintético, así que los DOS brazos recorren su camino real: el A
  * su `fetch` directo, el B la capa entera con su adaptador. Si la pregunta está
  * en el mapa de respuestas, llama a las herramientas con el PRIMER valor
@@ -73,6 +74,10 @@ export function fetchSimulado(respuestas: Map<string, RespuestaSimulada>): typeo
   return async (input, init) => {
     const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
     const cuerpo = JSON.parse(String(init?.body ?? "{}")) as Obj;
+    if (/:generateContent$/.test(url)) {
+      n++;
+      return respuestaNativaDeGemini(respuestas, cuerpo, String(init?.body ?? ""), n);
+    }
     const mensajes = (cuerpo["messages"] as Obj[]) ?? [];
     const { texto, esResultado } = textoDelUltimoUsuario(mensajes);
     const herramientas = (cuerpo["tools"] as Obj[] | undefined) ?? [];
@@ -120,4 +125,37 @@ export function fetchSimulado(respuestas: Map<string, RespuestaSimulada>): typeo
       { status: 200, headers: { "content-type": "application/json" } },
     );
   };
+}
+
+/**
+ * Gemini nativo: lee `contents` / `tools[].functionDeclarations` y contesta con
+ * la forma real de `generateContent` (partes `functionCall` con su
+ * `thoughtSignature`, `finishReason` y `usageMetadata` con pensamiento aparte).
+ */
+function respuestaNativaDeGemini(respuestas: Map<string, RespuestaSimulada>, cuerpo: Obj, crudo: string, n: number): Response {
+  const contents = (cuerpo["contents"] as Obj[] | undefined) ?? [];
+  const ultimo = contents[contents.length - 1];
+  const partes = ((ultimo?.["parts"] as Obj[] | undefined) ?? []);
+  const esResultado = partes.some((p) => p["functionResponse"] !== undefined);
+  const texto = partes.map((p) => (typeof p["text"] === "string" ? (p["text"] as string) : "")).join("");
+  const declaraciones = (((cuerpo["tools"] as Obj[] | undefined) ?? [])[0]?.["functionDeclarations"] as Obj[] | undefined) ?? [];
+  const nombres = declaraciones.map((d) => String(d["name"]));
+  let llamadas: RespuestaSimulada = [];
+  if (!esResultado) {
+    llamadas = respuestas.get(claveSimulada(texto, nombres)) ?? (nombres[0] ? [{ nombre: nombres[0], args: {} }] : []);
+    llamadas = llamadas.filter((l) => nombres.includes(l.nombre));
+  }
+  const entrada = Math.ceil(crudo.length / 4);
+  const parts = llamadas.length
+    ? llamadas.map((l, i) => ({ functionCall: { name: l.nombre, args: l.args }, ...(i === 0 ? { thoughtSignature: `c2ltLWZpcm1h${n}` } : {}) }))
+    : [{ text: "Done." }];
+  return new Response(
+    JSON.stringify({
+      candidates: [{ content: { parts, role: "model" }, finishReason: "STOP", index: 0 }],
+      usageMetadata: { promptTokenCount: entrada, candidatesTokenCount: 20, thoughtsTokenCount: 7, totalTokenCount: entrada + 27, serviceTier: "standard" },
+      modelVersion: "simulado",
+      responseId: `sim_${n}`,
+    }),
+    { status: 200, headers: { "content-type": "application/json; charset=UTF-8" } },
+  );
 }

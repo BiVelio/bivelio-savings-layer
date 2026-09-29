@@ -255,6 +255,12 @@ const contadorNuevo = (): Contador => ({ coste: 0, llamadas: 0, entrada: 0, cach
  * `completion_tokens`, así que su `usage` infra-cuenta la salida facturada. El
  * banco mide con total − prompt; la respuesta que recibe la capa NO se toca.
  */
+/** ¿Viene esta respuesta de la API nativa de Gemini? (`raw` con `usageMetadata`, no `usage`). */
+export function esRespuestaNativaDeGemini(resp: ProviderResponse): boolean {
+  const raw = resp.raw as { usageMetadata?: unknown } | undefined;
+  return !!raw && typeof raw === "object" && raw.usageMetadata !== undefined;
+}
+
 export function pensamientoOculto(model: string, resp: ProviderResponse): number {
   if (!model.startsWith("google/")) return 0;
   const u = (resp.raw as { usage?: { prompt_tokens?: unknown; completion_tokens?: unknown; total_tokens?: unknown } } | undefined)?.usage;
@@ -282,7 +288,9 @@ export function conContador(p: Provider, model: string, caja: Caja, c: Contador)
       const { escrituras } = escriturasDeLlamada(resp);
       const oculto = pensamientoOculto(model, resp);
       const usd = costeDeLlamada(precio, prima, { ...resp.usage, outputTokens: resp.usage.outputTokens + oculto }, escrituras);
-      c.pensamiento = (c.pensamiento ?? 0) + oculto;
+      // Por la API NATIVA el pensamiento ya viene dentro de `outputTokens`
+      // (`thoughtsTokenCount`, GoogleProvider): no se suma otra vez, solo se anota.
+      c.pensamiento = (c.pensamiento ?? 0) + oculto + (oculto === 0 && esRespuestaNativaDeGemini(resp) ? (resp.usage.reasoningTokens ?? 0) : 0);
       caja.gasto += usd;
       c.coste += usd;
       c.llamadas += 1;
@@ -702,7 +710,9 @@ const bandera = (nombre: string): boolean => process.argv.includes(`--${nombre}`
  * Gemini por su origen OFICIAL (#363): si no hay BVSALA_DEMO_GOOGLE_BASE_URL y
  * BVSALA_SONDA_BASE_URL apunta a generativelanguage.googleapis.com, se usa ese
  * endpoint (compatible con OpenAI, `…/v1beta/openai`) con BVSALA_SONDA_API_KEY.
- * El arnés no tiene familia Google nativa: Gemini habla aquí el dialecto de OpenAI.
+ * Con una base `…/v1beta/openai` Gemini habla el dialecto de OpenAI; con
+ * `…/v1beta` (la del banco semanal, BVSALA_DEMO_GOOGLE_BASE_URL), su API NATIVA
+ * por `GoogleProvider` (benchmarks/transporte.ts, «google-nativo»).
  * Cualquier otro host en la sonda se ignora (no es un origen oficial).
  */
 export function googleDesdeSonda(cfg: ConfigDeTransporte, env: NodeJS.ProcessEnv): Partial<ConfigDeTransporte> {

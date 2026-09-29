@@ -30,6 +30,16 @@ Cada celda compara dos brazos con el mismo modelo y las mismas preguntas:
 - **Brazo B:** la capa, cargada desde el fuente de `main` con la licencia de
   desarrollo abierta (`BVSALA_DEV_OPEN=1`), igual que en `pnpm ab`.
 
+**Gemini va por su API nativa** (`generateContent`, `GoogleProvider`, la que
+recomienda la 0.5) en las cuatro baterías. El brazo B lleva `GoogleProvider`
+dentro de la capa. El brazo A llama a ese mismo adaptador **directamente, sin
+la capa**, como hace el brazo A de Anthropic con `AnthropicProvider`. Así los
+dos brazos mandan, por construcción, el cuerpo que arma el adaptador. El uso se
+lee del `usageMetadata` crudo con la aritmética del banco: el pensamiento
+(`thoughtsTokenCount`) se cobra como salida. La URL base decide el dialecto
+(`benchmarks/gemini-nativo.ts`): `…/v1beta` es la nativa, y `…/v1beta/openai`
+volvería al endpoint compatible de antes.
+
 Así se mide lo que va a salir en la próxima release, no una versión que ya está
 en npm. Por eso los arneses de BFCL, XSTest y MT-Bench aceptan ahora
 `--fuente-de-main`. Sin ese flag, siguen midiendo la etiqueta v0.4.31, como
@@ -58,7 +68,8 @@ El workflow los pasa a los arneses con estos nombres:
 | `AI_GATEWAY_API_KEY` | `BVSALA_JUDGE_API_KEY` |
 
 Las URL base son las oficiales de cada proveedor. Van en claro en el YAML, porque
-no son secretos.
+no son secretos. La de Google es la de la API nativa,
+`https://generativelanguage.googleapis.com/v1beta`.
 
 Para cuadrar contra la **factura real** hacen falta además dos claves de
 administrador y los ids de dónde vive el gasto del banco. Están explicados en
@@ -108,10 +119,10 @@ Hay tres topes. Los tres son **duros**, y los tres están en el código de
 | barata | gpt-4o-mini, gpt-5.4-mini, claude-haiku-4-5, gemini-3.8-flash | 0,75 $ | 3,00 $ por modelo |
 | media | claude-sonnet-5, claude-sonnet-5-5, gemini-3.1-pro-preview | 1,10 $ | 4,40 $ por modelo |
 | cara | gpt-5.5, gpt-5.6-sol, claude-opus-5-5 | 1,25 $ | 5,00 $ por modelo |
-| juez de MT-Bench | los diez | 0,15 $ | 1,50 $ en total |
+| juez de MT-Bench | los diez | 0,40 $ | 4,00 $ en total |
 
-La suma es: 12,00 $ (baratas) + 13,20 $ (medias) + 15,00 $ (caras) + 1,50 $
-(juez) = **41,70 $ asignados**. Los **8,30 $** que faltan hasta 50 **no se
+La suma es: 12,00 $ (baratas) + 13,20 $ (medias) + 15,00 $ (caras) + 4,00 $
+(juez) = **44,20 $ asignados**. Los **5,80 $** que faltan hasta 50 **no se
 asignan** a nada. Sirven para que el tope global solo salte si un arnés lleva
 mal la cuenta, nunca por el gasto previsto. `test/banco-semanal.test.ts` rompe
 si el reparto pasa de 50 $.
@@ -131,17 +142,32 @@ caso de una entrada multi-turn entera, y con gpt-5.5 u Opus esa reserva no cabe
 en el tope. Cuando pasa eso, el arnés deja de medir también el AST. Lo
 comprobamos en seco: salieron 0 entradas.
 
+**El juez de MT-Bench.** Tenía 0,15 $ por modelo, y con eso no juzgaba. Cada
+partida reserva su peor caso antes de salir: con gpt-4o, 2048 tokens de salida
+y las dos conversaciones de entrada, entre 0,02 y 0,10 $. Además, los dos turnos
+y las dos partidas salían a la vez, y la cuarta reserva ya no cabía. En el run
+36611942632 del 2026-09-29, las cuatro celdas medidas se cortaron en la
+**primera** pregunta: un turno juzgado y tres llamadas al juez. El resumen
+publicó «victoria de B 0.500 [0.500, 0.500]», que era el empate de ese único
+turno y no una medición. Se arregló en tres sitios:
+
+- En el banco semanal, el arnés juzga **en serie**: una sola reserva viva a la
+  vez.
+- El tope del juez sube a 0,40 $ por modelo. Una partida real cuesta unos
+  0,009 $, así que alcanza para unas 40 partidas, es decir, unas 10 preguntas o
+  20 turnos.
+- `extraer.ts` exige **8 turnos juzgados** (`MINIMO_DE_TURNOS_JUZGADOS`) antes
+  de dar la tasa de victoria. Con menos, la celda sale como «calidad sin medir»,
+  con un aviso.
+
 ### Coste esperado
 
-- **Hoy:** 25 de las 40 celdas tienen soporte (ver *Cobertura*). Con los
-  techos de cada arnés, el máximo posible es **22,80 $ por semana**. GSM8K ajusta
-  su muestra al tope, así que gasta casi todo lo suyo. Las demás baterías suelen
-  quedarse por debajo: en la tirada publicada de la 0.4.31, BFCL gastó entre
-  0,08 y 0,81 $ por modelo. Es una estimación, no una medida: una semana normal
-  debería costar **del orden de 12 a 20 $**.
-- **Con las cuatro baterías midiendo los diez modelos** (PR #396, #397, #398 y
-  #400), el
-  máximo sube a los **41,70 $** asignados.
+- **Hoy:** las 40 celdas tienen soporte (ver *Cobertura*). El máximo es lo
+  asignado, **44,20 $**. GSM8K ajusta su muestra al tope, así que gasta casi
+  todo lo suyo. Las demás baterías suelen quedarse muy por debajo: en el run en
+  vivo del 2026-09-29 (26 celdas, sin Gemini ni la gama alta de MT-Bench) se
+  gastaron 13,74 $. Es una estimación, no una medida: con las 40 celdas, una
+  semana normal debería costar **del orden de 22 a 30 $**.
 
 El gasto real de cada semana aparece en la cabecera del resumen.
 
@@ -171,6 +197,8 @@ en una sola celda**.
 - Un modelo **no medible**: por su clave, por su cuota, o porque su tope no
   alcanza para un solo ítem.
 - Una celda **cortada por su tope**: se midió menos, pero no peor.
+- Una celda de MT-Bench con la **calidad sin medir**: el juez juzgó menos de 8
+  turnos. No se da tasa de victoria, en vez de un 0,5 que parezca un empate.
 
 Dos cosas que conviene saber al leer estas reglas:
 
@@ -374,28 +402,50 @@ se sigue construyendo y subiendo como artefacto aunque la puerta esté cerrada.
   **se salta el banco**, así que es decisión del dueño y hay que anotarla igual
   que cualquier publicación a mano.
 
-## Cobertura: lo que hoy falta
+## Cobertura: lo que mide el banco
 
 `soporte.ts` le pregunta a cada arnés con sus **propias** listas: la verja de
-hosts de GSM8K, los hosts de BFCL, `MODELOS` de XSTest y `MODELOS_POR_DEFECTO`
-de MT-Bench. En `main`, hoy (2026-09-29), 15 celdas salen **sin soporte**:
+hosts de GSM8K, `HOSTS_OFICIALES` de BFCL, `MODELOS` de XSTest y
+`MODELOS_MEDIBLES` de MT-Bench (su lista de siempre más la de gama alta). Desde
+el 2026-09-29 **las 40 celdas tienen soporte**. `test/banco-semanal.test.ts`
+rompe si alguna deja de tenerlo.
 
-| Batería | Sin soporte |
-| --- | --- |
-| GSM8K | gemini-3.8-flash, gemini-3.1-pro-preview (la verja de hosts no deja pasar a Google) |
-| BFCL | los dos Gemini (solo habla con api.anthropic.com y api.openai.com) |
-| XSTest | gpt-5.5, gpt-5.6-sol, claude-sonnet-5-5, los dos Gemini |
-| MT-Bench | gpt-5.5, gpt-5.6-sol, claude-sonnet-5-5, claude-opus-5-5, los dos Gemini |
+| Batería | OpenAI | Anthropic | Gemini (API nativa) |
+| --- | --- | --- | --- |
+| GSM8K | los cuatro | los cuatro | los dos, por `transporte.ts` («google-nativo») |
+| BFCL | los cuatro; gpt-5.6-sol con `reasoning_effort: "none"` | los cuatro | los dos |
+| XSTest | los cuatro | los cuatro | los dos |
+| MT-Bench | los cuatro, gama alta incluida | los cuatro, gama alta incluida | los dos |
 
-Los PR «gama alta» (#396, #397, #398 y #400) añaden esos modelos a sus arneses.
-Cuando se fusionen, el banco empezará a medirlos solo, sin tocar nada aquí. Hasta
-entonces, cada semana aparecen como avisos en el resumen, para que nadie los tome
-por medidos.
+Lo que cambió ese día, a partir del run en vivo 36611942632:
 
-Hay otra limitación. BFCL tiene un techo de 0,80 $ para OpenAI y reserva el peor
-caso por entrada (4096 tokens de salida). Con esas dos cosas, **gpt-5.5 y
-gpt-5.6-sol** solo miden unas pocas entradas AST por semana. La celda sale como
-«cortada por tope», con un intervalo ancho.
+- **Gemini en BFCL y MT-Bench.** Salían «sin soporte». BFCL estaba copiado a
+  mano en `soporte.ts` («solo Anthropic y OpenAI») aunque el arnés ya hablaba con
+  Google. MT-Bench miraba solo su lista por defecto. Ahora los dos hablan con la
+  API nativa, como GSM8K y XSTest.
+- **La gama alta en MT-Bench** (gpt-5.5, gpt-5.6-sol, claude-sonnet-5-5 y
+  claude-opus-5-5). El orquestador lanza el arnés con `--modelos=<id>` y sin
+  `--gama-alta`, y el arnés solo buscaba el id en su lista por defecto. Ahora lo
+  busca en las dos. Un modelo de gama alta lleva su tope, su prima de escritura y
+  su tope de salida. No se le envía `temperature`, porque Opus y Sonnet 5.5 y los
+  gpt-5.x la rechazan con un 400.
+- **BFCL con gpt-5.6-sol.** Salía «no medible — ninguna respuesta válida del
+  proveedor en el brazo A». gpt-5.6-* rechaza herramientas en Chat Completions
+  con su esfuerzo por defecto: *«Function tools with reasoning_effort are not
+  supported for gpt-5.6-sol in /v1/chat/completions … set reasoning_effort to
+  'none'»*. Se reprodujo en vivo con una sola herramienta: sin el campo, 400; con
+  `"none"`, 200 con la llamada. Ahora los **dos** brazos lo mandan: A en el
+  cuerpo y B como `reasoningEffort` de la capa. Así siguen comparando la misma
+  petición, y el artefacto lo declara en `muestreo`.
+- **El juez de MT-Bench** (ver *El dinero*).
+
+Lo que sigue limitado:
+
+- Las caras miden pocas preguntas en MT-Bench (16 como mucho, y menos si el tope
+  corta antes) y pocas entradas en BFCL. Sus celdas salen «cortadas por tope»,
+  con el intervalo ancho.
+- La clave de Gemini (`GEMINI_API_KEY`) no estaba dada de alta el 2026-09-29.
+  Sin ella, las ocho celdas de Gemini salen «no medible (sin clave)».
 
 ## En local
 

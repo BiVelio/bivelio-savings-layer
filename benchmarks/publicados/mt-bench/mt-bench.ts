@@ -27,8 +27,10 @@
  *
  * Guarda de hosts: en toda la tirada `fetch` (el global y el de los brazos)
  * solo puede salir a api.anthropic.com, api.openai.com,
- * generativelanguage.googleapis.com (Gemini, por su endpoint compatible con
- * OpenAI), ai-gateway.vercel.sh (juez) y raw.githubusercontent.com (dataset). Nada de medición ni licencias.
+ * generativelanguage.googleapis.com (Gemini: por su API NATIVA, `generateContent`
+ * con `GoogleProvider` en los dos brazos —directo en A, dentro de la capa en B—,
+ * o por su endpoint compatible con OpenAI si la URL base acaba en `/openai`),
+ * ai-gateway.vercel.sh (juez) y raw.githubusercontent.com (dataset). Nada de medición ni licencias.
  * Se registran los hosts vistos (solo el host).
  *
  * Calidad: juez de pares de MT-Bench (gpt-4o), las dos posiciones, con la
@@ -72,6 +74,10 @@ import {
   MODELOS_POR_DEFECTO,
   MODELOS_GAMA_ALTA,
   TOPE_GAMA_ALTA_POR_MODELO_USD,
+  esDeGamaAlta,
+  modeloDeMtBench,
+  turnosValidos,
+  type JuicioDeTurno,
   PresupuestoAgotado,
   SEMILLA_DE_MUESTRA,
   TEMPERATURA_FASTCHAT,
@@ -125,6 +131,7 @@ import {
 // La prima de escritura POR MODELO de la propia capa (sin cambios desde la
 // etiqueta v0.4.31): 1,25× en Anthropic y en los GPT de la 5.6 en adelante, 1 en el resto.
 import { primaDeEscritura as primaDelModelo } from "../../../src/pricing/primas.js";
+import { baseNativaDeGemini, dialectoDeGoogle, googleDelEntorno, lecturaNativaDeGemini, type DialectoDeGoogle } from "../../gemini-nativo.js";
 
 // ── Fijaciones del paquete ──────────────────────────────────────────────────
 
@@ -172,16 +179,42 @@ const libroDeGasto = (sufijo: string): string =>
  * ni pisa el juez ni los ficheros de la tirada anterior. `--sufijo` manda
  * sobre él si se da.
  */
-interface Tirada {
+export interface Tirada {
   gamaAlta: boolean;
   modelos: ModeloDeLaBateria[];
   /** Sufijo por defecto, sin guion (`""` → `mt-bench-0431.*`, `"gama-alta"` → `mt-bench-0431-gama-alta.*`). */
   sufijo: string;
   topeDe(m: ModeloDeLaBateria): number;
 }
-const TIRADA_BASE: Tirada = { gamaAlta: false, modelos: MODELOS_POR_DEFECTO, sufijo: "", topeDe: topePorModelo };
+// Un modelo de gama alta corrido SIN `--gama-alta` (el banco semanal lo hace así)
+// lleva SU tope, no el de su familia.
+const TIRADA_BASE: Tirada = {
+  gamaAlta: false,
+  modelos: MODELOS_POR_DEFECTO,
+  sufijo: "",
+  topeDe: (m) => (esDeGamaAlta(m) ? TOPE_GAMA_ALTA_POR_MODELO_USD : topePorModelo(m)),
+};
 const TIRADA_GAMA_ALTA: Tirada = { gamaAlta: true, modelos: MODELOS_GAMA_ALTA, sufijo: "gama-alta", topeDe: () => TOPE_GAMA_ALTA_POR_MODELO_USD };
 let TIRADA: Tirada = TIRADA_BASE;
+/**
+ * El juez, una partida detrás de otra (`--fuente-de-main`, el banco semanal).
+ * Cada partida reserva su PEOR caso en el tope del juez; lanzadas a la vez (2
+ * turnos × 2 partidas) las cuatro reservas no cabían en el tope de una celda y
+ * el juez se cortaba en la primera pregunta (run 36611942632: 1 turno juzgado y
+ * «victoria de B 0,500 [0,500, 0,500]» en las cuatro celdas). En serie solo hay
+ * una reserva viva, y el tope se gasta en juicios, no en reservas apiladas.
+ */
+let JUEZ_EN_SERIE = false;
+/**
+ * El adaptador NATIVO de Gemini (`GoogleProvider`) del módulo cargado: el
+ * brazo B lo lleva dentro de la capa y el brazo A lo llama DIRECTO, como el
+ * brazo A de Anthropic habla con su API sin capa. `null` si el módulo no lo
+ * exporta (el paquete 0.4.31 de npm): entonces Gemini nativo es «no medible».
+ */
+type AdaptadorGoogle = new (o: Record<string, unknown>) => {
+  generate(req: Record<string, unknown>): Promise<{ text: string; finishReason?: string }>;
+};
+let ADAPTADOR_GOOGLE: AdaptadorGoogle | null = null;
 /**
  * El árbol de la etiqueta, extraído con `git archive`. Empieza por punto a
  * propósito: los globs de tsconfig (`benchmarks/**`) no entran en carpetas con
@@ -209,7 +242,7 @@ const DIR_PUBLICADO = join(RAIZ, "docs", "benchmarks", FECHA);
 
 // ── Argumentos ──────────────────────────────────────────────────────────────
 
-interface Opciones {
+export interface Opciones {
   mock: boolean;
   /** Brazo B = el fuente de la etiqueta verificado contra npm, con la licencia de desarrollo abierta. */
   fuente: boolean;
@@ -246,16 +279,18 @@ interface Opciones {
   salida?: string;
 }
 
-function leerOpciones(argv: string[]): Opciones {
+export function leerOpciones(argv: string[]): Opciones {
   const valor = (n: string): string | undefined =>
     argv.find((a) => a.startsWith(`--${n}=`))?.slice(n.length + 3);
   const ids = valor("modelos")?.split(",").map((s) => s.trim()).filter(Boolean);
   const tirada = argv.includes("--gama-alta") ? TIRADA_GAMA_ALTA : TIRADA_BASE;
   const lista = tirada.modelos;
+  // Sin `--gama-alta`, un id se busca también en la lista de gama alta (el banco
+  // semanal pide cada modelo por su id); con `--gama-alta`, solo en la suya.
   const modelos = ids
     ? ids.map((id) => {
-        const m = lista.find((x) => x.id === id);
-        if (!m) throw new Error(`modelo no previsto en la batería: ${id} (${lista.map((x) => x.id).join(", ")})`);
+        const m = lista.find((x) => x.id === id) ?? (tirada.gamaAlta ? undefined : modeloDeMtBench(id));
+        if (!m) throw new Error(`modelo no previsto en la batería: ${id} (${(tirada.gamaAlta ? lista : [...MODELOS_POR_DEFECTO, ...MODELOS_GAMA_ALTA]).map((x) => x.id).join(", ")})`);
         return m;
       })
     : lista;
@@ -324,7 +359,7 @@ async function ficheroDelDataset(nombre: NombreDeFichero, conRed: boolean): Prom
   return t;
 }
 
-interface Dataset {
+export interface Dataset {
   origen: "fastchat-fijado" | "sintetico-mock";
   preguntas: Pregunta[];
   referencias: Map<number, Referencia>;
@@ -399,6 +434,8 @@ interface ModuloDelPaquete {
   createSavingsLayer(cfg: Record<string, unknown>): CapaCargada;
   AnthropicProvider: new (o: Record<string, unknown>) => unknown;
   OpenAICompatibleProvider: new (o: Record<string, unknown>) => unknown;
+  /** El adaptador nativo de Gemini (#410). No existe en la 0.4.31. */
+  GoogleProvider?: AdaptadorGoogle;
 }
 
 function asegurarPaquete(): { dir: string; integrityInstalada: string } {
@@ -638,7 +675,8 @@ interface ContextoDeTransporte {
  * a 1,25×); Gemini, 1. En la tirada anterior, la de la familia, como se publicó.
  */
 function primaDeTransporte(m: ModeloDeLaBateria): number {
-  if (!TIRADA.gamaAlta) return primaDeEscritura(m.familia);
+  // Por MODELO, no por tirada: un modelo de gama alta lleva su prima también en el banco semanal.
+  if (!TIRADA.gamaAlta && !esDeGamaAlta(m)) return primaDeEscritura(m.familia);
   return m.familia === "google" ? 1 : primaDelModelo(m.id);
 }
 
@@ -738,7 +776,9 @@ function fetchMedido(ctx: ContextoDeTransporte): typeof fetch {
       return res;
     }
     ctx.tope.cerrar(reserva, coste);
-    const j = json as { model?: string; stop_reason?: string; choices?: { finish_reason?: string }[] };
+    const j = json as { model?: string; modelVersion?: string; stop_reason?: string; choices?: { finish_reason?: string }[] };
+    // La API nativa de Gemini: modelo servido en `modelVersion`, parada en `candidates[0].finishReason`.
+    const nativa = j && typeof j === "object" && "candidates" in j ? lecturaNativaDeGemini(j) : null;
     ctx.registro.push({
       brazo: ctx.brazo,
       turno: ctx.turno,
@@ -747,8 +787,8 @@ function fetchMedido(ctx: ContextoDeTransporte): typeof fetch {
       coste,
       latenciaMs,
       reintentos,
-      modeloServido: j.model ?? null,
-      finDeGeneracion: j.stop_reason ?? j.choices?.[0]?.finish_reason ?? null,
+      modeloServido: j.model ?? j.modelVersion ?? null,
+      finDeGeneracion: j.stop_reason ?? j.choices?.[0]?.finish_reason ?? nativa?.parada ?? nativa?.bloqueo ?? null,
       cuerpo,
     });
     return res;
@@ -774,11 +814,22 @@ function baseGoogle(v: string | undefined): string {
   return b;
 }
 
-interface Credenciales {
+/** BVSALA_DEMO_GOOGLE_* (el banco semanal), con BVSALA_SONDA_* de respaldo; sin URL, la nativa oficial. */
+function credencialesDeGoogle(e: NodeJS.ProcessEnv): Credenciales["google"] {
+  const g = googleDelEntorno(e);
+  const dialecto = dialectoDeGoogle(g.baseUrl);
+  return { base: dialecto === "nativo" ? baseNativaDeGemini(g.baseUrl) : baseGoogle(g.baseUrl), clave: g.apiKey, dialecto };
+}
+
+export interface Credenciales {
   anthropic: { base: string; clave: string | undefined };
   openai: { base: string; clave: string | undefined };
-  /** Gemini por su endpoint compatible con OpenAI (`https://generativelanguage.googleapis.com/v1beta/openai`). */
-  google: { base: string; clave: string | undefined };
+  /**
+   * Gemini. La URL decide el dialecto (benchmarks/gemini-nativo.ts): la API
+   * NATIVA (`…/v1beta`, por defecto) o el endpoint compatible con OpenAI
+   * (`…/v1beta/openai`) de las tiradas de la 0.4.31.
+   */
+  google: { base: string; clave: string | undefined; dialecto: DialectoDeGoogle };
   juez: { base: string; clave: string | undefined; modelo: string };
   licencia: string | undefined;
 }
@@ -788,7 +839,7 @@ function credenciales(): Credenciales {
   return {
     anthropic: { base: baseV1(e.BVSALA_DEMO_ANTHROPIC_BASE_URL, "api.anthropic.com"), clave: e.BVSALA_DEMO_ANTHROPIC_API_KEY },
     openai: { base: baseV1(e.BVSALA_DEMO_BASE_URL, "api.openai.com"), clave: e.BVSALA_DEMO_API_KEY },
-    google: { base: baseGoogle(e.BVSALA_SONDA_BASE_URL), clave: e.BVSALA_SONDA_API_KEY },
+    google: credencialesDeGoogle(e),
     juez: { base: baseV1(e.BVSALA_JUDGE_BASE_URL, "ai-gateway.vercel.sh"), clave: e.BVSALA_JUDGE_API_KEY, modelo: e.BVSALA_JUDGE_MODEL ?? "openai/gpt-4o" },
     licencia: e.BIVELIO_LICENSE_KEY,
   };
@@ -824,6 +875,20 @@ async function llamarDirecto(
     const j = (await res.json()) as { content?: { type: string; text?: string }[]; stop_reason?: string };
     const texto = (j.content ?? []).filter((b) => b.type === "text").map((b) => b.text ?? "").join("");
     return { texto, fin: j.stop_reason ?? null, latenciaMs: performance.now() - t0 };
+  }
+  if (m.familia === "google" && cred.google.dialecto === "nativo") {
+    // Gemini NATIVO: el adaptador del módulo cargado, DIRECTO, sin capa — el mismo
+    // cuerpo de `generateContent` que arma dentro de la capa en el brazo B.
+    if (!ADAPTADOR_GOOGLE) throw new Error(`brazo A ${m.id}: el módulo cargado no exporta GoogleProvider`);
+    const g = new ADAPTADOR_GOOGLE({ ...(cred.google.clave ? { apiKey: cred.google.clave } : {}), baseUrl: cred.google.base, fetchImpl: f });
+    try {
+      const r = await g.generate({ model: m.id, messages: mensajes, maxOutputTokens: m.maxSalida, ...(temperatura !== undefined ? { temperature: temperatura } : {}) });
+      return { texto: r.text ?? "", fin: r.finishReason ?? null, latenciaMs: performance.now() - t0 };
+    } catch (e) {
+      // El tope se respeta tal cual: el llamante lo distingue de un fallo del proveedor.
+      if (e instanceof PresupuestoAgotado) throw e;
+      throw new Error(`brazo A ${m.id}: ${tapar(String((e as Error)?.message ?? e)).slice(0, 300)}`);
+    }
   }
   // Mismo campo de tope que manda la 0.4.31 a cada host: `max_completion_tokens`
   // al API oficial de OpenAI y `max_tokens` a cualquier otro (el de Gemini incluido).
@@ -864,6 +929,9 @@ function fabricaReal(
       const provider =
         m.familia === "anthropic"
           ? new mod.AnthropicProvider({ apiKey: cred.anthropic.clave, baseUrl: cred.anthropic.base, fetchImpl: f })
+          : m.familia === "google" && cred.google.dialecto === "nativo"
+            ? // Gemini NATIVO (#410): `GoogleProvider` quita solo el prefijo `google/` del id.
+              new (mod.GoogleProvider ?? ADAPTADOR_GOOGLE!)({ ...(cred.google.clave ? { apiKey: cred.google.clave } : {}), baseUrl: cred.google.base, fetchImpl: f })
           : m.familia === "google"
             ? // `stripProviderPrefix: true`: sin ella la 0.4.31 manda `google/gemini-…` TAL CUAL
               // al host oficial de Gemini, que responde 404 (humo LIVE del 2026-09-29; solo
@@ -927,9 +995,26 @@ function fetchFalso(anthropic401 = false): typeof fetch {
         ? new Response(JSON.stringify({ type: "error", error: { type: "authentication_error", message: "invalid x-api-key" } }), { status: 401 })
         : new Response(JSON.stringify({ data: [] }), { status: 200, headers: { "content-type": "application/json" } });
     }
-    const body = JSON.parse(String(init?.body ?? "{}")) as { messages?: { content: unknown }[]; model?: string };
-    const chars = JSON.stringify(body.messages ?? []).length;
+    const body = JSON.parse(String(init?.body ?? "{}")) as { messages?: { content: unknown }[]; contents?: unknown[]; model?: string };
+    const chars = JSON.stringify(body.messages ?? body.contents ?? []).length;
     n++;
+    // Gemini NATIVO: la forma real de `generateContent` (sonda del 2026-09-29,
+    // ver test/proveedor-google.test.ts), con el pensamiento aparte.
+    const nativo = /\/models\/([^/:]+):generateContent/.exec(url);
+    if (nativo) {
+      const salidaN = 40 + (n % 17);
+      const prompt = Math.ceil(chars / 4);
+      const pensado = 20 + (n % 7);
+      return new Response(
+        JSON.stringify({
+          candidates: [{ content: { parts: [{ text: `Respuesta simulada ${n % 5} de ${decodeURIComponent(nativo[1]!)}.`, thoughtSignature: "EvMBCvABAWkU" }], role: "model" }, finishReason: "STOP", index: 0 }],
+          usageMetadata: { promptTokenCount: prompt, candidatesTokenCount: salidaN, totalTokenCount: prompt + salidaN + pensado, thoughtsTokenCount: pensado, serviceTier: "standard" },
+          modelVersion: decodeURIComponent(nativo[1]!),
+          responseId: `mock-${n}`,
+        }),
+        { status: 200, headers: { "content-type": "application/json; charset=UTF-8" } },
+      );
+    }
     const esJuez = url.includes("ai-gateway") || String(body.model).startsWith("openai/gpt-4o");
     const texto = esJuez ? `Explicación simulada. [[${["A", "B", "C"][n % 3]}]]` : `Respuesta simulada ${n % 5} de ${body.model}.`;
     const salida = 40 + (n % 17);
@@ -955,7 +1040,7 @@ interface TurnoDeBrazo {
   informe?: Pick<InformeDeLaCapa, "calls" | "tokens" | "cache" | "routing" | "cost" | "qualityStatus" | "latencyMs"> & { etapas: string[] };
 }
 
-interface ResultadoDePregunta {
+export interface ResultadoDePregunta {
   id: number;
   categoria: Categoria;
   temperatura: number | null;
@@ -1035,21 +1120,8 @@ async function correrPregunta(
 
 // ── El juez ─────────────────────────────────────────────────────────────────
 
-interface JuicioDeTurno {
-  turno: 1 | 2;
-  prompt: string;
-  partida1: Ganador | "idéntica";
-  partida2: Ganador | "idéntica";
-  ganador: "A" | "B" | "empate" | "error";
-  inconsistente: boolean;
-  identicas: boolean;
-  /** Una de sus partidas no cupo en el tope del juez: el turno queda sin juzgar (no es un error de lectura). */
-  sinPresupuesto?: boolean;
-  /** Partidas que salieron de verdad hacia el juez (0-2). */
-  partidas?: number;
-}
 
-async function juzgarPregunta(
+export async function juzgarPregunta(
   r: ResultadoDePregunta,
   p: Pregunta,
   ds: Dataset,
@@ -1057,6 +1129,7 @@ async function juzgarPregunta(
   tope: Tope,
   precioJuez: Precio,
   base: typeof fetch,
+  enSerie: boolean = JUEZ_EN_SERIE,
 ): Promise<JuicioDeTurno[]> {
   const convA: ConversacionDeDosTurnos = { preguntas: p.turnos, respuestas: [r.A[0]!.texto, r.A[1]!.texto] };
   const convB: ConversacionDeDosTurnos = { preguntas: p.turnos, respuestas: [r.B[0]!.texto, r.B[1]!.texto] };
@@ -1086,8 +1159,9 @@ async function juzgarPregunta(
       body: JSON.stringify({ model: cred.juez.modelo, temperature: 0, max_tokens: 2048, messages: [{ role: "system", content: sys }, { role: "user", content: user }] }),
     });
   // Gama alta: los dos turnos, uno detrás de otro (≤ 2 partidas a la vez contra la pasarela).
+  // Banco semanal (`enSerie`): también las dos partidas de cada turno, una reserva viva a la vez.
   const mapa = <T, R>(xs: readonly T[], f: (x: T) => Promise<R>): Promise<R[]> =>
-    TIRADA.gamaAlta ? xs.reduce<Promise<R[]>>(async (acc, x) => [...(await acc), await f(x)], Promise.resolve([])) : Promise.all(xs.map(f));
+    TIRADA.gamaAlta || enSerie ? xs.reduce<Promise<R[]>>(async (acc, x) => [...(await acc), await f(x)], Promise.resolve([])) : Promise.all(xs.map(f));
   const turnos = await mapa(
     [1, 2] as const,
     async (turno: 1 | 2): Promise<JuicioDeTurno> => {
@@ -1097,7 +1171,15 @@ async function juzgarPregunta(
         return { turno, prompt: p1.nombre, partida1: "idéntica", partida2: "idéntica", ganador: "empate", inconsistente: false, identicas: true, partidas: 0 };
       }
       const p2 = promptDelJuez(ds.prompts, turno, convB, convA, ref);
-      const [r1, r2] = await Promise.all([partida(p1.system, p1.user), partida(p2.system, p2.user)]);
+      let r1: Ganador | "sin presupuesto";
+      let r2: Ganador | "sin presupuesto";
+      if (enSerie) {
+        r1 = await partida(p1.system, p1.user);
+        // Si la primera no cupo, la segunda tampoco sirve: el turno queda sin juzgar y no se paga media.
+        r2 = r1 === "sin presupuesto" ? "sin presupuesto" : await partida(p2.system, p2.user);
+      } else {
+        [r1, r2] = await Promise.all([partida(p1.system, p1.user), partida(p2.system, p2.user)]);
+      }
       const sinPresupuesto = r1 === "sin presupuesto" || r2 === "sin presupuesto";
       const g1: Ganador = r1 === "sin presupuesto" ? "error" : r1;
       const g2: Ganador = r2 === "sin presupuesto" ? "error" : r2;
@@ -1114,7 +1196,7 @@ async function juzgarPregunta(
  * no deja salir una partida. El tope es POR LLAMADA (cada partida reserva su
  * peor caso); no hay una comprobación previa por pregunta que tire presupuesto.
  */
-async function juzgarHastaElTope(
+export async function juzgarHastaElTope(
   resultados: ResultadoDePregunta[],
   juicios: Map<number, JuicioDeTurno[]>,
   ds: Dataset,
@@ -1122,12 +1204,13 @@ async function juzgarHastaElTope(
   topeJuez: Tope,
   precioJuez: Precio,
   base: typeof fetch,
+  enSerie: boolean = JUEZ_EN_SERIE,
 ): Promise<{ llamadas: number; corte: boolean }> {
   let llamadas = 0;
   for (const r of resultados) {
     if (juicios.has(r.id) || r.error || r.A.length !== 2 || r.B.length !== 2) continue;
     const p = ds.preguntas.find((q) => q.id === r.id)!;
-    const j = await juzgarPregunta(r, p, ds, cred, topeJuez, precioJuez, base);
+    const j = await juzgarPregunta(r, p, ds, cred, topeJuez, precioJuez, base, enSerie);
     llamadas += j.reduce((s, x) => s + (x.partidas ?? 0), 0);
     if (j.some((x) => x.sinPresupuesto)) {
       // Se guardan los turnos que sí se juzgaron; el resto queda fuera.
@@ -1341,7 +1424,7 @@ function resumir(
 
   // Calidad.
   const js = completas.flatMap((r) => (juicios.get(r.id) ?? []).map((j) => ({ ...j, categoria: r.categoria, id: r.id })));
-  const validos = js.filter((j) => j.ganador !== "error");
+  const validos = turnosValidos(js);
   const porPregunta = new Map<number, number[]>();
   for (const j of validos) {
     const arr = porPregunta.get(j.id) ?? [];
@@ -1363,7 +1446,7 @@ function resumir(
     idCualificado: idCualificado(m),
     familia: m.familia,
     maxSalida: m.maxSalida,
-    temperatura: m.temperatura ? "FastChat por categoría (igual en A y B)" : (TIRADA.gamaAlta ? "no se envía (el modelo la rechaza con 400 o es de razonamiento), en ningún brazo" : "no se envía (modelo de razonamiento), en ningún brazo"),
+    temperatura: m.temperatura ? "FastChat por categoría (igual en A y B)" : (TIRADA.gamaAlta || esDeGamaAlta(m) ? "no se envía (el modelo la rechaza con 400 o es de razonamiento), en ningún brazo" : "no se envía (modelo de razonamiento), en ningún brazo"),
     precio,
     precioConocido: precio !== null,
     preguntas: {
@@ -1664,6 +1747,7 @@ function cargarTiradaAnterior(nombre: string, libro: LibroDeGasto): { informe: I
 async function main(): Promise<void> {
   const op = leerOpciones(process.argv.slice(2));
   TIRADA = op.tirada;
+  JUEZ_EN_SERIE = op.fuenteDeMain;
   const cred = credenciales();
 
   // La guarda de hosts, ANTES de cualquier red: el `fetch` global (lo que la capa
@@ -1700,7 +1784,7 @@ async function main(): Promise<void> {
         !op.fuente && !op.fuenteDeMain && !cred.licencia && "BIVELIO_LICENSE_KEY (el paquete publicado es fail-closed: sin licencia el brazo B no existe; o --fuente)",
         op.modelos.some((m) => m.familia === "anthropic") && !cred.anthropic.clave && "BVSALA_DEMO_ANTHROPIC_API_KEY",
         op.modelos.some((m) => m.familia === "openai") && !cred.openai.clave && "BVSALA_DEMO_API_KEY",
-        op.modelos.some((m) => m.familia === "google") && !cred.google.clave && "BVSALA_SONDA_API_KEY",
+        op.modelos.some((m) => m.familia === "google") && !cred.google.clave && "BVSALA_DEMO_GOOGLE_API_KEY",
         op.juez && !cred.juez.clave && "BVSALA_JUDGE_API_KEY",
       ].filter(Boolean);
   if (faltan.length) {
@@ -1733,6 +1817,7 @@ async function main(): Promise<void> {
       /* sin git */
     }
     const descripcion = `${mod.BV_SALA_VERSION} at ${commitDelArbol} (working-tree source, BVSALA_DEV_OPEN=1; weekly bench, not a release)${op.mock ? " — con un proveedor FALSO (--mock)" : ""}`;
+    ADAPTADOR_GOOGLE = mod.GoogleProvider ?? null;
     fabrica = fabricaReal(mod, cred, { tipo: "fuente", descripcion });
     catalogo = mod.CATALOGO;
     version = mod.BV_SALA_VERSION;
@@ -1740,6 +1825,7 @@ async function main(): Promise<void> {
   } else if (op.fuente) {
     const f = await cargarFuente();
     verificacion = f.verificacion;
+    ADAPTADOR_GOOGLE = f.mod.GoogleProvider ?? null;
     fabrica = fabricaReal(f.mod, cred, { tipo: "fuente" });
     catalogo = f.mod.CATALOGO;
     integrity = `${PAQUETE.integrity} (tarball de npm; dist/index.js sha256 ${f.verificacion.npm.sha256DistIndex} = build del fuente)`;
@@ -1750,6 +1836,8 @@ async function main(): Promise<void> {
         (f.verificacion.diffDelRepo.length ? ` (El árbol de trabajo del repo difiere de la etiqueta en: ${f.verificacion.diffDelRepo.join(", ")}; no se carga.)` : ""),
     );
   } else if (op.mock) {
+    // El STUB llama al adaptador directo en los dos brazos: el nativo de Gemini, del fuente de este árbol.
+    ADAPTADOR_GOOGLE = (await import("../../../src/providers/google.js")).GoogleProvider as unknown as AdaptadorGoogle;
     fabrica = fabricaStub(cred);
     // El catálogo del fuente de este commit; en LIVE se usa el del paquete de npm.
     catalogo = (await import("../../../src/pricing/catalogo.js")).CATALOGO as Readonly<Record<string, Precio>>;
@@ -1757,6 +1845,7 @@ async function main(): Promise<void> {
     origenDelPaquete = "no cargado (--mock)";
   } else {
     const p = await cargarPaquete();
+    ADAPTADOR_GOOGLE = p.mod.GoogleProvider ?? null;
     fabrica = fabricaReal(p.mod, cred, { tipo: "npm" });
     catalogo = p.mod.CATALOGO;
     integrity = p.integrity;
@@ -1799,10 +1888,15 @@ async function main(): Promise<void> {
   let gastoGen = 0;
   let gastoJuez = 0;
 
+  const previo0 = (id: string) => desdeCrudo?.has(id) ?? false;
   for (const [indice, m] of modelos.entries()) {
     const precio = catalogo[m.id] ?? m.precioOficial?.precio ?? null;
     if (!precio) {
       fallidos.push({ modelo: m.id, error: "no medible: sin fila en el catálogo de precios del paquete ni precio oficial citado; el tope no se puede calcular, no se corre" });
+      continue;
+    }
+    if (m.familia === "google" && cred.google.dialecto === "nativo" && !ADAPTADOR_GOOGLE && !previo0(m.id)) {
+      fallidos.push({ modelo: m.id, error: "no medible: el paquete cargado no exporta GoogleProvider (el adaptador nativo de Gemini, #410); con la 0.4.31 Gemini solo se mide por su endpoint compatible (BVSALA_DEMO_GOOGLE_BASE_URL=…/v1beta/openai)" });
       continue;
     }
     const prima = primaDeTransporte(m);

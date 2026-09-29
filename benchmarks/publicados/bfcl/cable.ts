@@ -21,8 +21,13 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 
 import type { CostModel } from "../../../src/index.js";
+import { usoNativoDeGemini } from "../../gemini-nativo.js";
 
-export type Familia = "anthropic" | "openai";
+/**
+ * El DIALECTO del cable: Mensajes de Anthropic, Chat Completions (OpenAI y el
+ * endpoint compatible de Gemini) o la API NATIVA de Gemini (`generateContent`).
+ */
+export type Familia = "anthropic" | "openai" | "google";
 export type Brazo = "A" | "B";
 
 export class PresupuestoAgotado extends Error {
@@ -105,6 +110,19 @@ const obj = (v: unknown): Obj | undefined => (v && typeof v === "object" && !Arr
 const num = (v: unknown): number => (typeof v === "number" && Number.isFinite(v) ? v : 0);
 
 export function usoDeRespuesta(familia: Familia, cuerpo: unknown): UsoCrudo | null {
+  if (familia === "google") {
+    // `usageMetadata`: el pensamiento (`thoughtsTokenCount`) es salida facturada.
+    const g = usoNativoDeGemini(cuerpo);
+    if (!g) return null;
+    return {
+      entrada: g.entrada,
+      lecturaCache: g.cacheLeida,
+      escrituraCache: 0,
+      escritura1h: 0,
+      salida: g.salida,
+      ...(g.pensamiento > 0 ? { razonamiento: g.pensamiento } : {}),
+    };
+  }
   const u = obj(obj(cuerpo)?.["usage"]);
   if (!u) return null;
   if (familia === "anthropic") {

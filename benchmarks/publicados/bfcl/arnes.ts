@@ -16,8 +16,11 @@
  * TOPE DURO POR FAMILIA (en código, `TOPE_MAXIMO`): 0,80 $ por modelo OpenAI y
  * 1,25 $ por modelo Anthropic, A+B, entre TODAS las tiradas de la batería; los
  * modelos de gama alta (`MODELOS_GAMA_ALTA`, Gemini incluido) tienen 1,25 $ cada
- * uno (`techoDe`). `--tope` solo puede bajarlo. Gemini se habla por el endpoint
- * compatible con OpenAI de Google (BVSALA_SONDA_BASE_URL, host oficial). Antes de gastar en Anthropic se prueba la clave con
+ * uno (`techoDe`). `--tope` solo puede bajarlo. Gemini se habla por su API NATIVA
+ * (`GoogleProvider`, BVSALA_DEMO_GOOGLE_BASE_URL/…_API_KEY, host oficial; ver
+ * benchmarks/gemini-nativo.ts): el brazo B lleva el adaptador dentro de la capa y
+ * el A lo llama directo, sin capa. Una base `…/v1beta/openai` sigue hablando el
+ * endpoint compatible de antes. Antes de gastar en Anthropic se prueba la clave con
  * `GET /v1/models` (gratis): un 401 deja el modelo «no medible: clave inválida».
  *
  * DOCTRINA (la de benchmarks/README.md, sección A/B):
@@ -38,19 +41,23 @@ import { appendFileSync, mkdirSync, readdirSync, readFileSync, writeFileSync } f
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import type { SavingsLayer, SavingsResult } from "../../../src/index.js";
+import type { Provider, SavingsLayer, SavingsResult } from "../../../src/index.js";
 import { precioYPrima } from "../../coste.js";
+import { baseNativaDeGemini, BASE_NATIVA_DE_GEMINI, dialectoDeGoogle, googleDelEntorno } from "../../gemini-nativo.js";
 import { muestreoPareadoPara } from "../../scenarios.js";
 import { mulberry32 } from "../../stats.js";
 import { comprobarEntrada, parsearJson, salidaDeLlamadas, type ValorJ } from "./ast.js";
 import {
   cuerpoBrazoA,
   diferenciasDelCable,
+  esfuerzoConHerramientas,
+  herramientasDelCuerpo,
   leerRespuesta,
   llamadasIguales,
   llamarBrazoA,
   llamarBrazoB,
   normalizarBase,
+  peticionSinCapa,
   type Endpoint,
   type LlamadaHerramienta,
   type Muestreo,
@@ -96,7 +103,7 @@ export const MODELOS_POR_DEFECTO = [
 ] as const;
 
 /** El techo autorizado por el dueño para ESTA batería, por modelo y A+B. `--tope` solo lo baja. */
-export const TOPE_MAXIMO: Record<Familia, number> = { openai: 0.8, anthropic: 1.25 };
+export const TOPE_MAXIMO: Record<Familia, number> = { openai: 0.8, anthropic: 1.25, google: 0.8 };
 
 /**
  * La batería de GAMA ALTA (2026-09-29): el dueño autorizó 1,25 $ por modelo, A+B,
@@ -315,10 +322,32 @@ export function muestraEstratificada(porCategoria: Map<CategoriaAst, EntradaAst[
   return out;
 }
 
-/** El DIALECTO del cable: Gemini se habla por su endpoint compatible con OpenAI. */
+/**
+ * El DIALECTO del cable que se deduce del id SOLO (sin entorno): Gemini cae en
+ * Chat Completions. El de una tirada real lo decide `dialectoDelModelo`, que
+ * mira además la URL de Google (la nativa por defecto).
+ */
 export function familiaDe(modelo: string): Familia {
   if (modelo.startsWith("anthropic/") || /^claude/.test(modelo)) return "anthropic";
   return "openai";
+}
+
+/**
+ * El dialecto REAL de un modelo en esta tirada: Gemini por su API nativa salvo
+ * que la base declarada sea el endpoint compatible (`…/v1beta/openai`). En
+ * `--mock`, la nativa: es la que se recomienda y la que el banco mide.
+ */
+export function dialectoDelModelo(modelo: string, env: NodeJS.ProcessEnv, mock: boolean): Familia {
+  if (proveedorDe(modelo) !== "google") return familiaDe(modelo);
+  if (mock) return "google";
+  return dialectoDeGoogle(googleDelEntorno(env).baseUrl) === "nativo" ? "google" : "openai";
+}
+
+/** La base de Google de esta tirada: la declarada (nativa normalizada, o la compatible tal cual) o la oficial nativa. */
+export function baseDeGoogle(env: NodeJS.ProcessEnv): string {
+  const declarada = googleDelEntorno(env).baseUrl;
+  if (!declarada) return BASE_NATIVA_DE_GEMINI;
+  return dialectoDeGoogle(declarada) === "nativo" ? baseNativaDeGemini(declarada) : normalizarBase(declarada);
 }
 
 function canonica(ls: LlamadaHerramienta[]): string {
@@ -377,6 +406,8 @@ interface Contexto {
   ep: Endpoint;
   cable: typeof fetch;
   capa: SavingsLayer;
+  /** Gemini nativo: el adaptador SIN capa del brazo A (mismo cable que el B). */
+  directo?: Provider;
   muestreo: Muestreo;
   presupuesto: Presupuesto;
   diario: string;
@@ -404,6 +435,7 @@ function volcar(ctx: Contexto, reg: LlamadaDelCable[]): void {
 }
 
 async function correrA(ctx: Contexto, unidad: string, turnos: Turno[], hs: HerramientaNeutral[], reg: LlamadaDelCable[]) {
+  if (ctx.familia === "google") return correrANativoGemini(ctx, unidad, turnos, hs, reg);
   const cuerpo = cuerpoBrazoA(ctx.familia, ctx.modelo, turnos, hs, ctx.muestreo);
   const r = await unidadEnCurso.run({ unidad, brazo: "A", registro: reg }, () => llamarBrazoA(ctx.ep, ctx.cable, cuerpo));
   const leida = leerRespuesta(ctx.familia, r.ok ? r.cuerpo : null);
@@ -412,6 +444,36 @@ async function correrA(ctx: Contexto, unidad: string, turnos: Turno[], hs: Herra
     ok: r.ok,
     ...(r.ok ? {} : { error: sinSecretos(`HTTP ${r.status}: ${JSON.stringify(r.cuerpo).slice(0, 300)}`) }),
     ...leida,
+  };
+}
+
+/**
+ * El brazo A de Gemini nativo: `GoogleProvider` directo, sin capa, por el MISMO
+ * cable que el B. Lo que se registra y se compara es lo que pasó por el cable
+ * (el cuerpo que armó el adaptador y la respuesta cruda), no lo que el
+ * adaptador devuelve: la medición es del banco.
+ */
+async function correrANativoGemini(ctx: Contexto, unidad: string, turnos: Turno[], hs: HerramientaNeutral[], reg: LlamadaDelCable[]) {
+  const antes = reg.length;
+  let fallo: string | undefined;
+  await unidadEnCurso.run({ unidad, brazo: "A", registro: reg }, async () => {
+    try {
+      await ctx.directo!.generate(peticionSinCapa(ctx.modelo, turnos, hs, ctx.muestreo));
+    } catch (e) {
+      if (e instanceof PresupuestoAgotado) throw e;
+      const err = e as Error;
+      if (err.cause instanceof PresupuestoAgotado) throw err.cause;
+      if (/presupuesto de .* agotado/.test(err.message)) throw new PresupuestoAgotado(ctx.modelo, ctx.presupuesto.gastado, ctx.presupuesto.tope);
+      fallo = sinSecretos(`${err.name}: ${err.message}`).slice(0, 400);
+    }
+  });
+  const llamada = reg.slice(antes).filter((c) => c.brazo === "A").at(-1);
+  const ok = !fallo && !!llamada && llamada.status >= 200 && llamada.status < 300;
+  return {
+    cuerpo: (llamada?.peticion ?? {}) as ReturnType<typeof cuerpoBrazoA>,
+    ok,
+    ...(ok ? {} : { error: fallo ?? sinSecretos(`HTTP ${llamada?.status ?? 0}: ${JSON.stringify(llamada?.respuesta ?? null).slice(0, 300)}`) }),
+    ...leerRespuesta("google", ok ? (llamada!.respuesta as Parameters<typeof leerRespuesta>[1]) : null),
   };
 }
 
@@ -554,7 +616,7 @@ async function unidadMultiTurno(ctx: Contexto, e: EntradaMultiTurno): Promise<Re
   });
   volcar(ctx, reg0);
   const primeraB = reg0.find((c) => c.brazo === "B");
-  const herramientasEn = (p: Record<string, unknown> | null | undefined) => ((p?.["tools"] as unknown[]) ?? []).length;
+  const herramientasEn = (p: Record<string, unknown> | null | undefined) => herramientasDelCuerpo(p as Parameters<typeof herramientasDelCuerpo>[0]).length;
   const registro: RegistroMultiTurno = {
     id: e.id,
     clases: e.clases,
@@ -665,20 +727,24 @@ async function correrModelo(
   entradas: { ast: EntradaAst[]; repes: EntradaAst[]; multi: EntradaMultiTurno[] },
   op: { mock: boolean; cargado: SdkCargado; tope: number; semaforos: Record<Proveedor, Semaforo>; respuestas: Map<string, RespuestaSimulada>; concurrencia: number; diario: string },
 ): Promise<TiradaDeModelo> {
-  const familia = familiaDe(modelo);
+  const env = process.env;
+  const familia = dialectoDelModelo(modelo, env, op.mock);
   const proveedor = proveedorDe(modelo);
   const catalogo = precioYPrima(modelo);
   const citado = PRECIOS_CITADOS[modelo.slice(modelo.lastIndexOf("/") + 1)];
   if (!catalogo.conocido && !citado) throw new Error(`${modelo}: sin fila propia en el catálogo ni precio oficial citado; no se mide`);
   const pp = catalogo.conocido ? catalogo : { precio: citado!.precio, prima: citado!.prima, conocido: true, fuente: citado!.fuente };
   const presupuesto = new Presupuesto(modelo, op.tope);
-  const env = process.env;
   const ep: Endpoint = op.mock
-    ? { familia, baseUrl: familia === "anthropic" ? "https://mock.invalid/v1" : `https://mock-${proveedor}.invalid/v1`, apiKey: "mock" }
+    ? {
+        familia,
+        baseUrl: familia === "anthropic" ? "https://mock.invalid/v1" : familia === "google" ? "https://mock-google.invalid/v1beta" : `https://mock-${proveedor}.invalid/v1`,
+        apiKey: "mock",
+      }
     : proveedor === "anthropic"
       ? { familia, baseUrl: normalizarBase(env["BVSALA_DEMO_ANTHROPIC_BASE_URL"] ?? ""), apiKey: env["BVSALA_DEMO_ANTHROPIC_API_KEY"] ?? "" }
       : proveedor === "google"
-        ? { familia, baseUrl: normalizarBase(env["BVSALA_SONDA_BASE_URL"] ?? ""), apiKey: env["BVSALA_SONDA_API_KEY"] ?? "" }
+        ? { familia, baseUrl: baseDeGoogle(env), apiKey: googleDelEntorno(env).apiKey ?? "" }
         : { familia, baseUrl: normalizarBase(env["BVSALA_DEMO_BASE_URL"] ?? ""), apiKey: env["BVSALA_DEMO_API_KEY"] ?? "" };
   if (!op.mock && !ep.apiKey) throw new Error(`${modelo}: falta la clave de ${proveedor} en el entorno (se comprueba por existencia)`);
   if (!op.mock && new URL(ep.baseUrl).host !== HOSTS_OFICIALES[proveedor]) throw new Error(`${modelo}: el endpoint no es el API oficial de ${proveedor}`);
@@ -691,10 +757,18 @@ async function correrModelo(
     ...(op.mock ? { base: fetchSimulado(op.respuestas), pausasMs: [1] } : {}),
   });
   const { sdk } = op.cargado;
+  // Gemini nativo: el MISMO adaptador en los dos brazos (B dentro de la capa, A
+  // directo), por el mismo cable. `requireUsage`: sin `usageMetadata` no hay coste.
+  const nativoGemini = () => {
+    if (typeof sdk.GoogleProvider !== "function") throw new Error(`${modelo}: el SDK cargado no trae GoogleProvider (la API nativa de Gemini llegó en #410); no se mide`);
+    return new sdk.GoogleProvider({ apiKey: ep.apiKey, baseUrl: ep.baseUrl, fetchImpl: cable, requireUsage: true });
+  };
   const provider =
     familia === "anthropic"
       ? new sdk.AnthropicProvider({ apiKey: ep.apiKey, baseUrl: ep.baseUrl, fetchImpl: cable, ...(op.mock ? { stripProviderPrefix: true } : {}) })
-      : new sdk.OpenAICompatibleProvider({
+      : familia === "google"
+        ? nativoGemini()
+        : new sdk.OpenAICompatibleProvider({
           apiKey: ep.apiKey,
           baseUrl: ep.baseUrl,
           fetchImpl: cable,
@@ -704,8 +778,22 @@ async function correrModelo(
   // Configuración por defecto: SOLO el proveedor. Sin licenseServerUrl, sin serviceAccountKey, sin
   // exportadores: nada de metering ni telemetría (y la verja de hosts lo comprueba).
   const capa = sdk.createSavingsLayer({ provider, devUnlicensed: true });
-  const muestreo = muestreoPareadoPara(modelo) as Muestreo;
-  const ctx: Contexto = { modelo, familia, ep, cable, capa, muestreo, presupuesto, diario: op.diario, precio: pp.precio };
+  // El muestreo del banco y, donde el proveedor no admite herramientas sin él, el
+  // esfuerzo que lo hace posible (gpt-5.6-*: "none"), igual en A y en B.
+  const esfuerzo = familia === "openai" ? esfuerzoConHerramientas(modelo) : undefined;
+  const muestreo = { ...(muestreoPareadoPara(modelo) as Muestreo), ...(esfuerzo ? { reasoningEffort: esfuerzo } : {}) };
+  const ctx: Contexto = {
+    modelo,
+    familia,
+    ep,
+    cable,
+    capa,
+    muestreo,
+    presupuesto,
+    diario: op.diario,
+    precio: pp.precio,
+    ...(familia === "google" ? { directo: nativoGemini() } : {}),
+  };
   const tirada: TiradaDeModelo = {
     modelo,
     familia,
@@ -929,10 +1017,12 @@ async function principal(): Promise<void> {
 
   // LA VERJA DE HOSTS, antes de crear ningún proveedor: solo los hosts de los proveedores.
   // Solo los hosts de los proveedores de los modelos pedidos; y solo si son los API oficiales.
-  const variableDeBase: Record<Proveedor, string> = { anthropic: "BVSALA_DEMO_ANTHROPIC_BASE_URL", openai: "BVSALA_DEMO_BASE_URL", google: "BVSALA_SONDA_BASE_URL" };
-  const hostsPermitidos = mock
-    ? []
-    : [...new Set(modelos.map((m) => new URL(normalizarBase(process.env[variableDeBase[proveedorDe(m)]] ?? "")).host))];
+  const baseDe: Record<Proveedor, () => string> = {
+    anthropic: () => normalizarBase(process.env["BVSALA_DEMO_ANTHROPIC_BASE_URL"] ?? ""),
+    openai: () => normalizarBase(process.env["BVSALA_DEMO_BASE_URL"] ?? ""),
+    google: () => baseDeGoogle(process.env),
+  };
+  const hostsPermitidos = mock ? [] : [...new Set(modelos.map((m) => new URL(baseDe[proveedorDe(m)]()).host))];
   for (const h of hostsPermitidos) {
     if (!Object.values(HOSTS_OFICIALES).includes(h)) throw new Error(`endpoint ${h} is not a provider's own API host: the run only talks to ${Object.values(HOSTS_OFICIALES).join(", ")}`);
   }

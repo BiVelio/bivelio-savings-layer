@@ -2,7 +2,8 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
-import { extraerBfcl, extraerGsm8k, extraerMtBench, extraerXstest, type Medicion } from "../benchmarks/banco-semanal/extraer.js";
+import { extraerBfcl, extraerGsm8k, extraerMtBench, extraerXstest, MINIMO_DE_TURNOS_JUZGADOS, type Medicion } from "../benchmarks/banco-semanal/extraer.js";
+import { resumenMarkdown } from "../benchmarks/banco-semanal/resumen.js";
 import { claveQueFalta, filtrarCeldas, redactar, valoresSecretos } from "../benchmarks/banco-semanal/orquestador.js";
 import {
   argumentosDe,
@@ -58,20 +59,20 @@ describe("banco semanal · el reparto de los 50 $", () => {
 
   it("lo asignado cabe en los 50 $ con margen, y ninguna celda pasa del techo de los arneses", () => {
     expect(validarPlan(plan)).toEqual([]);
-    expect(r.asignadoUsd).toBeCloseTo(41.7, 6);
-    expect(r.margenUsd).toBeCloseTo(8.3, 6);
+    expect(r.asignadoUsd).toBeCloseTo(44.2, 6);
+    expect(r.margenUsd).toBeCloseTo(5.8, 6);
     expect(r.asignadoUsd).toBeLessThanOrEqual(PRESUPUESTO_SEMANAL_USD);
     for (const c of plan) {
       expect(c.topeUsd).toBeGreaterThan(0);
       expect(c.topeUsd).toBeLessThanOrEqual(TECHO_DE_CELDA_USD);
       expect(c.reservaUsd).toBeCloseTo(c.topeUsd + c.topeJuezUsd, 9);
     }
-    // Por batería: 3 baratas × 0,75 + ... ; MT-Bench lleva además el juez (10 × 0,15).
+    // Por batería: 3 baratas × 0,75 + ... ; MT-Bench lleva además el juez (10 × 0,40).
     expect(r.porBateria.gsm8k).toBeCloseTo(4 * 0.75 + 3 * 1.1 + 3 * 1.25, 6);
-    expect(r.porBateria["mt-bench"]).toBeCloseTo(r.porBateria.gsm8k + 1.5, 6);
-    expect(r.juezUsd).toBeCloseTo(1.5, 6);
-    expect(r.porModelo["openai/gpt-4o-mini"]).toBeCloseTo(4 * 0.75 + 0.15, 6);
-    expect(r.porModelo["anthropic/claude-opus-5-5"]).toBeCloseTo(4 * 1.25 + 0.15, 6);
+    expect(r.porBateria["mt-bench"]).toBeCloseTo(r.porBateria.gsm8k + 4, 6);
+    expect(r.juezUsd).toBeCloseTo(4, 6);
+    expect(r.porModelo["openai/gpt-4o-mini"]).toBeCloseTo(4 * 0.75 + 0.4, 6);
+    expect(r.porModelo["anthropic/claude-opus-5-5"]).toBeCloseTo(4 * 1.25 + 0.4, 6);
   });
 
   it("un plan que se pasa de los 50 $ o de una celda no se acepta", () => {
@@ -113,7 +114,7 @@ describe("banco semanal · los argumentos de cada arnés", () => {
     const xs = argumentosDe(celda("xstest"), "vivo", "/d", "r");
     expect(xs).toEqual(expect.arrayContaining(["--fuente-de-main", "--vivo", "--modelos=gpt-4o-mini", "--tope=0.75", "--salida=/d"]));
     const mt = argumentosDe(celda("mt-bench"), "vivo", "/d", "r");
-    expect(mt).toEqual(expect.arrayContaining(["--fuente-de-main", "--tope=0.75", "--tope-juez=0.15", "--sufijo=bs-r-gpt-4o-mini", "--salida=/d"]));
+    expect(mt).toEqual(expect.arrayContaining(["--fuente-de-main", "--tope=0.75", "--tope-juez=0.40", "--sufijo=bs-r-gpt-4o-mini", "--salida=/d"]));
     expect(mt).not.toContain("--mock");
   });
 
@@ -174,7 +175,7 @@ describe("banco semanal · la caja global", () => {
     const caja = new CajaGlobal();
     for (const c of planificar()) caja.reservar(c.reservaUsd, c.bateria);
     expect(caja.motivoDelAborto).toBeNull();
-    expect(caja.reservado).toBeCloseTo(41.7, 6);
+    expect(caja.reservado).toBeCloseTo(44.2, 6);
   });
 });
 
@@ -196,6 +197,14 @@ describe("banco semanal · qué sabe medir cada arnés", () => {
   it("las listas de verdad salen de los arneses (y el día que aprendan un modelo, el banco lo mide)", () => {
     expect(soporte("xstest", modelo("openai/gpt-4o-mini")).ok).toBe(true);
     expect(soporte("mt-bench", modelo("anthropic/claude-sonnet-5")).ok).toBe(true);
+  });
+  it("hoy los cuatro arneses miden las cuarenta celdas: Gemini en BFCL y MT-Bench, y la gama alta en MT-Bench (run 36611942632)", () => {
+    const sin = planificar().filter((c) => !soporte(c.bateria, c.modelo).ok).map((c) => `${c.bateria}/${c.modelo.id}`);
+    expect(sin).toEqual([]);
+    for (const id of ["openai/gpt-5.5", "openai/gpt-5.6-sol", "anthropic/claude-sonnet-5-5", "anthropic/claude-opus-5-5", "google/gemini-3.8-flash", "google/gemini-3.1-pro-preview"]) {
+      expect(soporte("mt-bench", modelo(id))).toEqual({ ok: true });
+    }
+    expect(soporte("bfcl", modelo("google/gemini-3.1-pro-preview"))).toEqual({ ok: true });
   });
 });
 
@@ -319,7 +328,7 @@ describe("banco semanal · los umbrales", () => {
       BVSALA_DEMO_ANTHROPIC_BASE_URL: "https://api.anthropic.com/v1",
       BVSALA_DEMO_OPENAI_BASE_URL: "https://api.openai.com/v1",
       BVSALA_DEMO_BASE_URL: "https://api.openai.com/v1",
-      BVSALA_DEMO_GOOGLE_BASE_URL: "https://generativelanguage.googleapis.com/v1beta/openai",
+      BVSALA_DEMO_GOOGLE_BASE_URL: "https://generativelanguage.googleapis.com/v1beta",
       BVSALA_DEMO_ANTHROPIC_API_KEY: "x".repeat(20),
       BVSALA_DEMO_OPENAI_API_KEY: "y".repeat(20),
       BVSALA_DEMO_API_KEY: "y".repeat(20),
@@ -373,6 +382,42 @@ describe("banco semanal · la lectura de los artefactos (tiradas publicadas de v
     expect(m).toMatchObject({ estado: "medido", fallosDeLaCapa: 0, cortadaPorTope: true });
     expect(m.exactitud[0]!.ic95!.upper).toBeGreaterThan(0.5);
     expect(infraccionesDe(m, 1.25 + 0.5)).toEqual([]);
+  });
+
+  it("MT-Bench: un juez cortado tras UN turno no es un empate — sin tasa de victoria, y se avisa (run 36611942632)", () => {
+    // La forma exacta de las cuatro celdas medidas aquel día: 1 turno juzgado, 3
+    // llamadas al juez, corte por su tope y una tasa degenerada [0,5, 0,5].
+    const art = JSON.parse(JSON.stringify(artefacto("mt-bench-0431-claude.json"))) as { modelos: Record<string, unknown>[] };
+    const fila = art.modelos.find((x) => x["modelo"] === "claude-sonnet-5")!;
+    fila["calidad"] = {
+      ...(fila["calidad"] as Record<string, unknown>),
+      juzgada: true,
+      turnosJuzgados: 1,
+      victoriasB: 0,
+      victoriasA: 0,
+      empates: 1,
+      inconsistentes: 1,
+      turnosSinPresupuesto: 1,
+      tasaDeVictoriaB: { point: 0.5, lower: 0.5, upper: 0.5 },
+      llamadasAlJuez: 3,
+      preguntasJuzgadas: 1,
+      cortePorPresupuesto: true,
+    };
+    const m = extraerMtBench(art, modelo("anthropic/claude-sonnet-5"));
+    expect(m.estado).toBe("medido");
+    expect(m.exactitud).toEqual([]);
+    expect(m.calidadSinMedir).toMatch(/1 turno \(mínimo 8\), cortado por su tope/);
+    const celda: ResultadoDeCelda = { bateria: "mt-bench", modelo: "anthropic/claude-sonnet-5", estado: "medida", topeUsd: 1.5, medicion: m };
+    const v = evaluar([celda], null);
+    expect(v.avisos.some((a) => /calidad sin medir/.test(a))).toBe(true);
+    const md = resumenMarkdown({ modo: "vivo", commit: "c", version: "v", inicio: "i", fin: "f", gastoUsd: 1, reparto: reparto(), resultados: [celda], veredicto: v });
+    expect(md).toMatch(/calidad sin medir/);
+    expect(md).not.toMatch(/victoria de B 0\.500 \[0\.500, 0\.500\]/);
+    // Con los turnos suficientes, la tasa vuelve.
+    (fila["calidad"] as Record<string, unknown>)["turnosJuzgados"] = MINIMO_DE_TURNOS_JUZGADOS;
+    const bien = extraerMtBench(art, modelo("anthropic/claude-sonnet-5"));
+    expect(bien.calidadSinMedir).toBeUndefined();
+    expect(bien.exactitud).toHaveLength(1);
   });
 
   it("MT-Bench: con las respuestas crudas, un error solo de B es de la capa; uno de A, no", () => {
@@ -515,6 +560,12 @@ describe("banco semanal · banco-semanal.yml", () => {
     expect(banco).toMatch(/if: always\(\)\n\s+run: \|\n\s+if \[ -f banco-semanal-salida\/resumen\.md \]/);
     expect(banco).toMatch(/cat banco-semanal-salida\/resumen\.md >> "\$GITHUB_STEP_SUMMARY"/);
     expect(banco).toMatch(/- uses: actions\/upload-artifact@v4\n\s+if: always\(\)\n\s+with:\n\s+name: banco-semanal/);
+  });
+
+  it("Gemini por su API nativa: la base de Google es …/v1beta, no el endpoint compatible", () => {
+    expect(banco).toMatch(/^ +BVSALA_DEMO_GOOGLE_BASE_URL: https:\/\/generativelanguage\.googleapis\.com\/v1beta$/m);
+    expect(banco).not.toMatch(/v1beta\/openai/);
+    expect(banco).toMatch(/BVSALA_DEMO_GOOGLE_API_KEY: \$\{\{ inputs\.modo != 'seco' && secrets\.GEMINI_API_KEY \|\| '' \}\}/);
   });
 
   it("la factura real: ids como variables (no secretos), y la tirada anterior se baja solo en vivo con actions: read", () => {

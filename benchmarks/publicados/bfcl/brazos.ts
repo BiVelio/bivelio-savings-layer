@@ -4,6 +4,10 @@
  *   A · llamada DIRECTA al proveedor con herramientas nativas (tool_use de
  *       Mensajes de Anthropic / tools de Chat Completions), escrita a mano aquí:
  *       sin la capa y sin sus adaptadores. Es lo que manda un integrador.
+ *       Gemini por su API NATIVA es la excepción: el brazo A llama a
+ *       `GoogleProvider` DIRECTO, sin capa (`peticionSinCapa`), así que su
+ *       cuerpo es por construcción el que arma el adaptador — como el brazo A
+ *       de Anthropic en benchmarks/transporte.ts («anthropic-nativo»).
  *   B · la MISMA petición por `createSavingsLayer(...).generate()` de la 0.4.30
  *       (ver procedencia.ts), con el adaptador del propio paquete y el catálogo
  *       de herramientas tal como llega de un cliente: nombre, descripción y
@@ -15,6 +19,8 @@
  * temperatura 0 y semilla 7 donde el modelo lo admite, nada donde no).
  */
 import type { ChatMessage, SavingsLayer, SavingsResult, ToolDescriptor } from "../../../src/index.js";
+import type { ProviderRequest } from "../../../src/providers/types.js";
+import { lecturaNativaDeGemini } from "../../gemini-nativo.js";
 import type { Familia } from "./cable.js";
 import { herramientasAnthropic, herramientasOpenAI, type EsquemaJson, type HerramientaNeutral } from "./esquema.js";
 
@@ -39,6 +45,28 @@ export type Turno =
 export interface Muestreo {
   temperature?: number;
   seed?: number;
+  /**
+   * `reasoning_effort`, en los DOS brazos (A en el cuerpo, B como
+   * `reasoningEffort` de la capa). Solo donde el proveedor no admite
+   * herramientas sin él: ver `esfuerzoConHerramientas`.
+   */
+  reasoningEffort?: string;
+}
+
+/**
+ * EL ESFUERZO QUE EXIGEN LAS HERRAMIENTAS. gpt-5.6-* rechaza `tools` en Chat
+ * Completions con su esfuerzo por defecto: HTTP 400 «Function tools with
+ * reasoning_effort are not supported for gpt-5.6-sol in /v1/chat/completions.
+ * To use function tools, use /v1/responses or set reasoning_effort to 'none'»
+ * (banco semanal del 2026-09-29, run 36611942632: 0 respuestas válidas en A y
+ * en B; reproducido en vivo el mismo día con una sola herramienta, y con
+ * `reasoning_effort: "none"` → 200 con la llamada). gpt-6-luna lo dice en su
+ * página (benchmarks/nativo.ts, HERRAMIENTAS_SOLO_SIN_RAZONAMIENTO_EN_CHAT).
+ * Va IGUAL en los dos brazos: A y B siguen comparando la misma petición.
+ */
+export function esfuerzoConHerramientas(modelo: string): "none" | undefined {
+  const id = desnudo(modelo).toLowerCase();
+  return /^gpt-5\.6(-|$)/.test(id) || /^gpt-6-luna(-|$)/.test(id) ? "none" : undefined;
 }
 
 export interface Endpoint {
@@ -108,18 +136,57 @@ export function cuerpoBrazoA(familia: Familia, modelo: string, turnos: Turno[], 
       tools: herramientasAnthropic(hs),
     };
   }
+  if (familia === "google") {
+    // Gemini nativo: el cuerpo lo arma el adaptador (`peticionSinCapa` →
+    // GoogleProvider). Esto es solo para DIMENSIONAR la reserva del peor caso
+    // antes de enviar: la petición neutra, de tamaño equivalente.
+    return JSON.parse(JSON.stringify(peticionSinCapa(modelo, turnos, hs, m))) as EsquemaJson;
+  }
   return {
     model: desnudo(modelo),
     messages: mensajesOpenAI(turnos),
     ...(m.temperature != null ? { temperature: m.temperature } : {}),
     ...(m.seed != null ? { seed: m.seed } : {}),
+    ...(m.reasoningEffort != null ? { reasoning_effort: m.reasoningEffort } : {}),
     tools: herramientasOpenAI(hs),
+  };
+}
+
+/**
+ * EL BRAZO A DE GEMINI NATIVO: la petición neutra que un integrador le pasaría
+ * al adaptador SIN la capa — la misma conversación, el mismo catálogo y el mismo
+ * muestreo que el brazo B le pasa a `capa.generate()`. Sin marcas de caché ni
+ * nada que la capa añada.
+ */
+export function peticionSinCapa(modelo: string, turnos: Turno[], hs: HerramientaNeutral[], m: Muestreo): ProviderRequest {
+  return {
+    model: modelo,
+    messages: mensajesDeLaCapa(turnos),
+    tools: herramientasDeLaCapa(hs),
+    ...(m.temperature != null ? { temperature: m.temperature } : {}),
+    ...(m.seed != null ? { seed: m.seed } : {}),
+    ...(m.reasoningEffort != null ? { reasoningEffort: m.reasoningEffort } : {}),
   };
 }
 
 /** Las llamadas de herramienta y el texto de una respuesta cruda del proveedor. */
 export function leerRespuesta(familia: Familia, r: EsquemaJson | null): { texto: string; llamadas: LlamadaHerramienta[]; parada?: string } {
   if (!r) return { texto: "", llamadas: [] };
+  if (familia === "google") {
+    const l = lecturaNativaDeGemini(r);
+    return {
+      texto: l.texto,
+      // Igual que el adaptador: `arguments` = JSON.stringify(args), y la firma de
+      // pensamiento en la forma de `extraContent` (`{ google: { thought_signature } }`).
+      llamadas: l.llamadas.map((x) => ({
+        ...(x.id ? { id: x.id } : {}),
+        name: x.name,
+        arguments: x.arguments,
+        ...(x.firma ? { extra: { google: { thought_signature: x.firma } } } : {}),
+      })),
+      ...(l.parada ? { parada: l.parada } : {}),
+    };
+  }
   if (familia === "anthropic") {
     const bloques = (Array.isArray(r["content"]) ? r["content"] : []) as EsquemaJson[];
     return {
@@ -184,8 +251,14 @@ export function mensajesDeLaCapa(turnos: Turno[]): ChatMessage[] {
     if (t.role === "user") return { role: "user", content: t.content };
     // Se le pasa a la capa TODO lo que el cliente tiene de cada llamada, `extra_content` incluido
     // (como campo de más): si no llega al cable, es la capa quien lo pierde, no el banco.
+    // `extraContent` es el campo PÚBLICO de `ToolCallRequest` (el que los adaptadores
+    // leen para devolver la firma de Gemini 3); `extra_content` se deja como estaba.
     if (t.role === "assistant") {
-      return { role: "assistant", content: t.content, toolCalls: t.llamadas.map((l) => ({ ...l, ...(l.extra ? { extra_content: l.extra } : {}) })) } as ChatMessage;
+      return {
+        role: "assistant",
+        content: t.content,
+        toolCalls: t.llamadas.map((l) => ({ ...l, ...(l.extra ? { extraContent: l.extra, extra_content: l.extra } : {}) })),
+      } as ChatMessage;
     }
     return { role: "tool", toolCallId: t.id, name: t.name, content: t.content, ...(t.isError ? { isError: true } : {}) };
   });
@@ -204,6 +277,7 @@ export async function llamarBrazoB(
     tools: herramientasDeLaCapa(hs),
     ...(m.temperature != null ? { temperature: m.temperature } : {}),
     ...(m.seed != null ? { seed: m.seed } : {}),
+    ...(m.reasoningEffort != null ? { reasoningEffort: m.reasoningEffort } : {}),
   });
 }
 
@@ -242,6 +316,16 @@ const corto = (v: unknown): string => {
 };
 
 /**
+ * Las herramientas de un cuerpo, una por entrada: `tools` en Mensajes y Chat
+ * Completions; en la API nativa de Gemini, `tools[0].functionDeclarations`.
+ */
+export function herramientasDelCuerpo(c: EsquemaJson | null | undefined): EsquemaJson[] {
+  const t = (c?.["tools"] as EsquemaJson[] | undefined) ?? [];
+  const decl = t[0]?.["functionDeclarations"];
+  return Array.isArray(decl) ? (decl as EsquemaJson[]) : t;
+}
+
+/**
  * En qué se diferencia el cuerpo que mandó la capa del que manda el brazo A.
  * Se ignoran las marcas `cache_control` (se cuentan aparte) y el envoltorio de
  * un único bloque de texto. Todo lo demás es una diferencia a explicar.
@@ -253,8 +337,8 @@ export function diferenciasDelCable(a: EsquemaJson, b: EsquemaJson): { diferenci
     if (k === "messages" || k === "tools") continue;
     if (JSON.stringify(sinCacheControl(a[k])) !== JSON.stringify(sinCacheControl(b[k]))) dif.push(`${k}: A=${corto(a[k])} B=${corto(b[k])}`);
   }
-  const ta = (a["tools"] as EsquemaJson[] | undefined) ?? [];
-  const tb = (b["tools"] as EsquemaJson[] | undefined) ?? [];
+  const ta = herramientasDelCuerpo(a);
+  const tb = herramientasDelCuerpo(b);
   const nombre = (t: EsquemaJson) => String(t["name"] ?? (t["function"] as EsquemaJson | undefined)?.["name"]);
   const na = ta.map(nombre);
   const nb = tb.map(nombre);

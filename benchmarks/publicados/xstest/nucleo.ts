@@ -18,6 +18,8 @@
  */
 import { createHash } from "node:crypto";
 
+import { lecturaNativaDeGemini, PARADAS_DE_FILTRO_DE_GEMINI, usoNativoDeGemini } from "../../gemini-nativo.js";
+
 // ── El dataset, fijado ──────────────────────────────────────────────────────
 
 /** Commit de paul-rottger/exaggerated-safety (2025-02-24, «Update readme.md»). */
@@ -240,9 +242,13 @@ export const esNegativa = (c: Clase): boolean => c === "full_refusal" || c === "
 // ── Lo que dijo el proveedor (sin guardar el texto) ─────────────────────────
 
 /**
- * `google` = el API de Gemini por su endpoint COMPATIBLE con OpenAI
- * (`generativelanguage.googleapis.com/v1beta/openai`): mismo cable que Chat
- * Completions, con dos diferencias que el banco lee aparte (ver `ajustarGoogle`).
+ * `google` = el API de Gemini, por cualquiera de sus dos cables: el NATIVO
+ * (`…/v1beta`, `generateContent`; lo que recomienda la 0.5, ver
+ * `leerGeminiNativo`) o el COMPATIBLE con OpenAI (`…/v1beta/openai`): mismo
+ * cable que Chat Completions, con dos diferencias que el banco lee aparte (ver
+ * `ajustarGoogle`). La lectura distingue uno de otro por la FORMA del cuerpo
+ * (`candidates` / `usageMetadata` / `promptFeedback` frente a `choices` /
+ * `usage`), que es lo que de verdad llegó, no por la configuración.
  */
 export type Familia = "anthropic" | "openai" | "google";
 
@@ -299,6 +305,10 @@ export function leerJson(familia: Familia, status: number, cuerpo: unknown): Lec
     l.error = `HTTP ${status}: ${String(er["type"] ?? er["status"] ?? er["code"] ?? "error")}`;
     return l;
   }
+  if (familia === "google" && esCuerpoNativoDeGemini(b)) {
+    leerGeminiNativo(l, [b]);
+    return l;
+  }
   if (familia === "anthropic") {
     const u = obj(b["usage"]);
     l.inputTokens = num(u["input_tokens"]);
@@ -350,6 +360,54 @@ function ajustarGoogle(l: LecturaDelProveedor, u: Obj, b: Obj): void {
   if (b["prompt_feedback"] !== undefined || b["promptFeedback"] !== undefined) l.promptFeedback = true;
 }
 
+/** ¿Es un `GenerateContentResponse` de la API nativa de Gemini (o un trozo de su SSE)? */
+function esCuerpoNativoDeGemini(b: Obj): boolean {
+  return b["candidates"] !== undefined || b["usageMetadata"] !== undefined || b["promptFeedback"] !== undefined;
+}
+
+/**
+ * GEMINI POR SU API NATIVA (`generateContent` / `streamGenerateContent?alt=sse`).
+ * Recibe la respuesta entera o los trozos del SSE, que tienen la MISMA forma
+ * (un `GenerateContentResponse` cada uno; el uso llega en el último).
+ *   · El uso, con el lector del banco (benchmarks/gemini-nativo.ts): el
+ *     pensamiento (`thoughtsTokenCount`) es salida facturada y va en
+ *     `outputTokens` y aparte en `reasoningTokens`.
+ *   · La negativa del API: `promptFeedback.blockReason` (el prompt se bloqueó
+ *     sin generar nada) o un `finishReason` de filtro (SAFETY, OTHER,
+ *     PROHIBITED_CONTENT…). Se anota como `content_filter: <motivo nativo>`, la
+ *     misma forma que el endpoint compatible, para que `esParadaDeFiltro` y el
+ *     informe lean igual los dos cables. Cualquier otra parada, tal cual (STOP,
+ *     MAX_TOKENS).
+ */
+function leerGeminiNativo(l: LecturaDelProveedor, trozos: Obj[]): void {
+  let parada: string | null = null;
+  let bloqueo: string | null = null;
+  let ultimoUso: unknown;
+  for (const t of trozos) {
+    const r = lecturaNativaDeGemini(t);
+    l.texto += r.texto;
+    if (r.parada) parada = r.parada;
+    if (r.bloqueo) bloqueo = r.bloqueo;
+    if (t["promptFeedback"] !== undefined) l.promptFeedback = true;
+    if (t["usageMetadata"] !== undefined) ultimoUso = t;
+  }
+  const u = ultimoUso !== undefined ? usoNativoDeGemini(ultimoUso) : null;
+  if (u) {
+    l.inputTokens = u.entrada;
+    l.cacheReadTokens = u.cacheLeida;
+    l.outputTokens = u.salida;
+    l.reasoningTokens = u.pensamiento;
+  }
+  if (bloqueo && bloqueo !== "BLOCK_REASON_UNSPECIFIED") {
+    l.stopReason = `content_filter: ${bloqueo}`;
+  } else if (parada && PARADAS_DE_FILTRO_DE_GEMINI.includes(parada)) {
+    l.stopReason = `content_filter: ${parada}`;
+  } else {
+    l.stopReason = parada;
+  }
+  l.negativaDelApi = esParadaDeFiltro(l.stopReason);
+}
+
 /** Lee un SSE completo de Mensajes o de Chat Completions. */
 export function leerSse(familia: Familia, status: number, texto: string): LecturaDelProveedor {
   const l = vacia(status, true);
@@ -360,6 +418,8 @@ export function leerSse(familia: Familia, status: number, texto: string): Lectur
   let refusalOpenAI = "";
   let usoGoogle: Obj | undefined;
   let feedback = false;
+  // Los trozos de `streamGenerateContent?alt=sse` (Gemini nativo), si los hay.
+  const nativos: Obj[] = [];
   for (const linea of texto.split(/\r?\n/)) {
     if (!linea.startsWith("data:")) continue;
     const dato = linea.slice(5).trim();
@@ -368,6 +428,10 @@ export function leerSse(familia: Familia, status: number, texto: string): Lectur
     try {
       e = obj(JSON.parse(dato));
     } catch {
+      continue;
+    }
+    if (familia === "google" && esCuerpoNativoDeGemini(e)) {
+      nativos.push(e);
       continue;
     }
     if (familia === "anthropic") {
@@ -410,6 +474,10 @@ export function leerSse(familia: Familia, status: number, texto: string): Lectur
         l.reasoningTokens = num(obj(u["completion_tokens_details"])["reasoning_tokens"]);
       }
     }
+  }
+  if (nativos.length > 0) {
+    leerGeminiNativo(l, nativos);
+    return l;
   }
   l.negativaDelApi =
     familia === "anthropic" ? l.stopReason === "refusal" : refusalOpenAI !== "" || esParadaDeFiltro(l.stopReason);

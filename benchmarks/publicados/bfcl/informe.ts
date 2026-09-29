@@ -230,7 +230,9 @@ export function escribirInforme(a: Artefacto): string {
   l.push(
     `- **Arm A:** direct provider call with native tools (Anthropic Messages \`tool_use\` / OpenAI Chat Completions \`tools\`), hand-written, no layer.` +
       (hayGoogle
-        ? " Gemini is spoken through Google's OWN OpenAI-compatible endpoint (`generativelanguage.googleapis.com/v1beta/openai`, same origin and same bill as the native API): the harness has no native Gemini dialect, and neither does the layer's 0.4.31 (`OpenAICompatibleProvider`). Arm A echoes back each tool call's `extra_content` (Gemini 3's `thought_signature`) as an integrator must; arm B receives it too, as an extra field on each tool call."
+        ? a.modelos.some((t) => t.familia === "google")
+          ? " Gemini is spoken through its NATIVE API (`generativelanguage.googleapis.com/v1beta`, `models/{model}:generateContent`): arm B carries the layer's `GoogleProvider`, and arm A calls that same adapter directly, WITHOUT the layer, so both arms send the body the adapter builds; usage is read from the raw `usageMetadata` by the harness (thinking tokens billed as output). Each tool call's `thoughtSignature` is echoed back as an integrator must."
+          : " Gemini is spoken through Google's OWN OpenAI-compatible endpoint (`generativelanguage.googleapis.com/v1beta/openai`, same origin and same bill as the native API). Arm A echoes back each tool call's `extra_content` (Gemini 3's `thought_signature`) as an integrator must; arm B receives it too, as `extraContent` on each tool call."
         : ""),
   );
   const origen =
