@@ -49,6 +49,29 @@ export interface LicenseTokenPayload {
   expires_at: number;
   grace_days: number;
   iss?: string;
+  /** Measure licenses only: the REAL term (see {@link vigenciaEfectiva}). */
+  measure_expires_at?: number;
+  measure_grace_days?: number;
+}
+
+/**
+ * The term of a free «Measure» license, and why it lives in its own fields.
+ *
+ * A measure license is signed with `expires_at = issued_at` and `grace_days = 0`,
+ * and its real term in `measure_expires_at` / `measure_grace_days`. An SDK or
+ * gateway that predates shadow mode (and would turn on the levers that are not
+ * gated by a feature) sees it EXPIRED and fails closed; this verifier, which
+ * knows the plan, reads the real term. Applied at the single point every
+ * verified payload goes through.
+ */
+export function vigenciaEfectiva<P extends { plan?: string; expires_at: number; grace_days: number; measure_expires_at?: number; measure_grace_days?: number }>(
+  p: P,
+): P {
+  if (p.plan !== "measure" || typeof p.measure_expires_at !== "number" || !Number.isFinite(p.measure_expires_at)) {
+    return p;
+  }
+  const gracia = typeof p.measure_grace_days === "number" && Number.isFinite(p.measure_grace_days) ? p.measure_grace_days : 0;
+  return { ...p, expires_at: p.measure_expires_at, grace_days: Math.max(0, gracia) };
 }
 
 export interface ResolvedLicense {
@@ -265,7 +288,7 @@ export function verifyLicenseToken(
   }
   try {
     const payload = JSON.parse(dec.decode(v.payloadBytes)) as LicenseTokenPayload;
-    return { signatureValid: true, payload };
+    return { signatureValid: true, payload: vigenciaEfectiva(payload) };
   } catch {
     return { signatureValid: false, reason: "payload is not valid JSON" };
   }

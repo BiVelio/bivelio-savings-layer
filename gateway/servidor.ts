@@ -73,6 +73,16 @@ import {
   rutaLocal,
 } from "./informes-locales.js";
 import { BV_SALA_VERSION } from "../src/version.js";
+
+/**
+ * El aviso de la licencia Medir en la pasarela (una vez por proceso). En inglés
+ * y ASCII, como todo lo que ve el cliente: qué hace y cómo se pasa a pago.
+ */
+export const AVISO_GATEWAY_MEDIR =
+  "[bvsala gateway] Measure license: SHADOW mode. Requests are forwarded to the provider byte for byte " +
+  "(no levers, no coalescing, no usage injection) and your usage is measured; what a lever would have " +
+  "saved shows on your dashboard as an estimate, never billed. To turn the levers on, upgrade at " +
+  "https://savings.bivelio.com/dashboard/account - the gateway picks up the new license by itself.";
 import {
   VigiaDeDegradacion,
   degradacionDeCache,
@@ -704,7 +714,27 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       // S4 § 5). La cadena de simulación sí AVANZA (observar) — si no, el turno
       // siguiente compararía contra un previo viejo y su cifra saldría inflada.
       const borradoNuestro = elision?.atribuible === true && elision.tokensLimpiadosToolUses > 0;
-      if (carrilSombra && !coalescida && path === "/v1/messages") {
+      // LICENCIA MEDIR: lo que el modelo hermano habría ahorrado sobre ESTE usage
+      // (la misma resta de dos precios de catálogo que la palanca C acredita), como
+      // registro `shadow`. Nada se reescribió: es el hipotético. Solo contra el API
+      // oficial y con tráfico facturado por token, que es donde la palanca cobraría.
+      const enMedicionAhora = live.license.payload.plan === "measure";
+      if (enMedicionAhora && !coalescida && path === "/v1/messages" && !suscripcion && upstreamOficial && sinCobro !== true) {
+        try {
+          const hipotesis = reescribirModelo(cuerpo, codificacion);
+          const alternativo = hipotesis ? costeMedido(hipotesis.cambio.servido, usoFinal, inicioMs) : null;
+          if (hipotesis && alternativo && alternativo.costeUsd < medido.costeUsd) {
+            em.record(informeSombra(`${requestId}:shadow`, model, medido.costeUsd, alternativo.costeUsd, atribucion));
+            log(
+              `[gateway] measure (shadow) · ${model} · with the sibling model ${hipotesis.cambio.servido} this call would have ` +
+                `cost $${alternativo.costeUsd.toFixed(6)} instead of $${medido.costeUsd.toFixed(6)} (not applied)`,
+            );
+          }
+        } catch {
+          /* la sombra jamás rompe el gateway ni el metering */
+        }
+      }
+      if (carrilSombra && !enMedicionAhora && !coalescida && path === "/v1/messages") {
         setImmediate(() => {
           try {
             const json = jsonDelCuerpo(cuerpo, codificacion);
@@ -819,6 +849,15 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       log(`[gateway] ${req.method} ${ruta} → 402 (license ${v.state})`);
       return;
     }
+
+    // ── LA LICENCIA MEDIR · modo sombra ─────────────────────────────────────
+    // Con el plan `measure` la pasarela es un PASO LIMPIO: ninguna palanca
+    // (diales, modelo hermano, esfuerzo, TTL), ni coalescencia, ni inyección de
+    // usage, ni carril de elisión — el cuerpo sale al upstream byte a byte como
+    // lo mandó el cliente. Se decide POR PETICIÓN porque la licencia se renueva
+    // en caliente: al recoger la de pago, la siguiente petición ya las arma.
+    const enMedicion = live.license.payload.plan === "measure";
+    if (enMedicion) avisarUnaVez("gateway-licencia-medir", AVISO_GATEWAY_MEDIR);
 
     // ── LAS RUTAS LOCALES (/_bvsala/v1/…) · informes-locales.ts ─────────────
     // Detrás de la verja de licencia, como todo, y jamás hacia el upstream.
@@ -939,7 +978,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       url = new URL(req.url ?? "/", upstreamBase);
 
       // ── F2 · coalescencia (solo bajo bandera, solo POST con cuerpo) ──
-      const coalescible = coalescedor !== null && req.method === "POST" && cuerpo.length > 0;
+      const coalescible = coalescedor !== null && !enMedicion && req.method === "POST" && cuerpo.length > 0;
       // La clave lleva ahora las cabeceras de identidad (credencial, versión,
       // betas): sin ellas, una gemela con OTRA credencial recibía la respuesta
       // de la primaria.
@@ -1076,6 +1115,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       let cuerpoSaliente = cuerpo;
       if (
         palancasArmadas &&
+        !enMedicion &&
         // 2026-09-09 · cuarto interruptor, y el que manda: los diales quedan
         // APAGADOS salvo que alguien los arme a mano. Ver `dialesElision`.
         opts.dialesElision === true &&
@@ -1130,6 +1170,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
 
       const quiereHermano =
         palancasArmadas &&
+        !enMedicion &&
         opts.modeloHermano === true &&
         req.method === "POST" &&
         (url.pathname === "/v1/messages" || url.pathname === "/v1/messages/count_tokens");
@@ -1173,6 +1214,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       let esfuerzoPuesto = false;
       if (
         palancasArmadas &&
+        !enMedicion &&
         esNivel(opts.esfuerzo) &&
         req.method === "POST" &&
         url.pathname === "/v1/messages" &&
@@ -1203,6 +1245,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       let rebaja: RebajaAplicada | null = null;
       if (
         palancasArmadas &&
+        !enMedicion &&
         req.method === "POST" &&
         url.pathname === "/v1/messages" &&
         canal!.tiene("cache_ttl_tuning")
@@ -1257,7 +1300,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       // que ya está puesta. null: la inyección no estaba puesta.
       let inyeccion: Parameters<typeof porQueSinUsoEnStream>[3] = null;
       const esChat = req.method === "POST" && url.pathname.endsWith("/chat/completions");
-      if (esChat && emisor && opts.usageInject === true) {
+      if (esChat && emisor && opts.usageInject === true && !enMedicion) {
         if (endpointSinStreamOptions) {
           inyeccion = "rechazada-por-el-upstream";
         } else {

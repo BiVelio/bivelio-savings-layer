@@ -1326,6 +1326,13 @@ export interface SavingsReport {
     provider: number;
   };
 
+  /**
+   * Present only when the layer runs on the free «Measure» license (shadow
+   * mode): what the levers would have saved on this request. Nothing was
+   * applied — `cost` is this call's measured spend with no saving claimed.
+   */
+  measure?: MeasureReport;
+
   /** Ordered pipeline decision breadcrumbs, for debugging and audit. */
   traces: TraceEvent[];
 }
@@ -1377,6 +1384,51 @@ export interface LicenseGate {
    * caller; without it, the generic message for that status.
    */
   reason?(): string | undefined;
+  /**
+   * The plan of the license in force, when there is one. `"measure"` (the free
+   * «Measure» license) puts the layer in SHADOW MODE: the request goes to the
+   * provider exactly as you built it, nothing is served from any cache, and
+   * `report.measure` says what the levers would have saved. Optional because a
+   * gate is implemented by the caller; without it, the layer is not in shadow.
+   */
+  plan?(): string | undefined;
+}
+
+/**
+ * What a layer running on the free «Measure» license would have saved on this
+ * request. Present ONLY in shadow mode. Nothing here was applied: the request
+ * went to your provider untouched and nothing was served from a cache.
+ *
+ * Every figure is HYPOTHETICAL (`basis: "shadow"`): it is never part of
+ * `cost.baselineEstimate`, `cost.actual` or `cost.netSavings`, never in any
+ * commission base, and never added to measured money.
+ */
+export interface MeasureReport {
+  mode: "shadow";
+  /** Always false: in shadow mode no lever changes the request or avoids a call. */
+  applied: false;
+  wouldHaveSaved: {
+    /** USD this request would not have cost with the simulated levers on. */
+    usd: number;
+    basis: "shadow";
+    /**
+     * Which lever would have avoided the call entirely, valued with THIS call's
+     * provider counter (`cost.actual`):
+     *   · `exact-repeat`       — a byte-identical, cacheable request already ran
+     *                            in this process within the exact-cache TTL;
+     *   · `in-flight-duplicate`— an identical request was in flight at the same
+     *                            time and would have been coalesced.
+     * `null` when no simulated lever would have avoided it.
+     */
+    avoidedCall: "exact-repeat" | "in-flight-duplicate" | null;
+  };
+  /**
+   * Levers this shadow does NOT simulate, so `wouldHaveSaved` is a LOWER bound:
+   * they need a model call, an embedding, or a paid entitlement to estimate.
+   */
+  notSimulated: string[];
+  /** Where to turn the levers on. */
+  upgradeUrl: string;
 }
 
 export interface TraceEvent {

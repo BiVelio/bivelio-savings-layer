@@ -60,7 +60,10 @@ describe("el paquete publicado", () => {
     const src = readFileSync(DIST, "utf8");
     // Si el minificado se cayera, volverían los comentarios del código fuente.
     expect(src).not.toContain("LA VERJA Y LA TRAZA LEEN DE LA MISMA VARIABLE");
-    expect(src.length).toBeLessThan(400_000);
+    // 425 000 desde la licencia Medir (2026-09-29): el modo sombra añadió ~4 KB
+    // minificados y el techo anterior (400 000) quedaba a 1,5 KB del tamaño real.
+    // El fuente pesa ~1,8 MB (medido ese día): sin minificar, la verja sigue mordiendo.
+    expect(src.length).toBeLessThan(425_000);
   });
 });
 
