@@ -47,6 +47,7 @@ const MODELOS_QUE_SERVIMOS: Readonly<Record<string, string>> = {
   // y los insignia que un cliente manda hoy por el SDK o el gateway.
   "claude-opus-5-5": "insignia de Anthropic a 2026-09-27",
   "claude-sonnet-5": "banco 2026",
+  "claude-sonnet-5-5": "Sonnet vigente de Anthropic desde el 2026-09-28; benchmarks/nativo.ts (tablas de effort y de búsqueda)",
   "claude-haiku-4-5": "banco 2026; gateway/init-fragmentos.ts (bvsala init, pilas de Anthropic)",
   "gpt-6-astra": "insignia de OpenAI a 2026-09-27",
   "gpt-6-sol": "familia gpt-6",
