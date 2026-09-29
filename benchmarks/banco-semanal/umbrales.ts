@@ -71,6 +71,7 @@ export interface Infraccion {
 export type ResultadoDeCelda =
   | { bateria: Bateria; modelo: string; estado: "medida"; topeUsd: number; medicion: Medicion }
   | { bateria: Bateria; modelo: string; estado: "sin-soporte"; motivo: string }
+  | { bateria: Bateria; modelo: string; estado: "sin-clave"; motivo: string }
   | { bateria: Bateria; modelo: string; estado: "arnes-falla"; motivo: string; topeUsd: number }
   | { bateria: Bateria; modelo: string; estado: "omitida-por-tope-global"; motivo: string };
 
@@ -132,6 +133,12 @@ export function evaluar(resultados: readonly ResultadoDeCelda[], abortoGlobal: s
         break;
       case "sin-soporte":
         avisos.push(`${r.bateria} · ${r.modelo}: sin soporte en el arnés — ${r.motivo}`);
+        break;
+      // Sin la clave de su proveedor la celda no se lanza: «no medible», un aviso
+      // (docs/BANCO-SEMANAL.md). Cuenta como intentada, así que una batería que se
+      // queda entera sin claves sigue cayendo en `bateria-sin-medir`.
+      case "sin-clave":
+        avisos.push(`${r.bateria} · ${r.modelo}: no medible — ${r.motivo}`);
         break;
       case "arnes-falla":
         infracciones.push({ regla: "arnes-falla", bateria: r.bateria, modelo: r.modelo, detalle: r.motivo });
