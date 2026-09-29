@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
@@ -11,8 +11,9 @@ import { describe, expect, it } from "vitest";
  *   · El gateway va SIN cifra: no hay un ahorro medido y publicado que la
  *     respalde. Su tarjeta no lee `hero.proofs` ni el artefacto A/B, ni escribe
  *     un porcentaje.
- *   · La cifra del SDK es la fila de `hero.proofs` (la de la verja
- *     cifra-del-heroe), leída y no copiada.
+ *   · La cifra del SDK son las filas de lo medido (con repeticiones Y sin
+ *     ellas, nunca la primera sola), construidas de lib/portada/banco-en-vivo.ts
+ *     —con verja contra sus informes— y no del artefacto sintético.
  *   · El verificador vuelve a la portada, pero el PROYECTOR no: su retirada en
  *     9feb377 (#85) fue por los porcentajes que inventaba el visitante, y ese
  *     motivo sigue en pie. La página no importa ProjectorVerifier.
@@ -57,34 +58,19 @@ describe("portada: dos ofertas, cada una con su bloque", () => {
     for (const prohibido of ["proofs", "cifra", "ab.", "%"]) expect(bruto, prohibido).not.toContain(prohibido);
   });
 
-  it("la tarjeta del SDK enseña la fila de hero.proofs, leída del mensaje y no copiada", () => {
-    expect(CODIGO).toMatch(/const proofs = t\.raw\("hero\.proofs"\)/);
-    expect(CODIGO).toMatch(/const proofSdk = proofs\[0\]/);
+  it("la tarjeta del SDK enseña las filas de lo medido: con repeticiones y sin ellas", () => {
+    expect(CODIGO).toMatch(/const filasMedidas: FilaMedida\[\] = \[/);
+    expect(CODIGO).toContain("BANCO_EN_VIVO");
     const ofertas = seccion("offers");
     const sdk = ofertas.slice(ofertas.indexOf('t("offers.sdk.name")'), ofertas.indexOf('t("offers.gateway.name")'));
-    expect(sdk).toContain("{proofSdk.cifra}");
-    expect(sdk).toContain("{proofSdk.modelo}");
+    expect(sdk).toContain("<FilasMedidas filas={filasMedidas.slice(0, 2)} />");
     expect(sdk).toContain('href="#measured"');
     expect(sdk).toContain('href="#verify"');
   });
 
-  // Cable trampa con #321 (fix/titular-lo-que-lleva-npm), abierto a la vez que
-  // este PR: trae `lib/bench/sdk-instalado.ts` y baja `hero.proofs` a un titular
-  // PROVISIONAL (recalculado, no medido con el SDK de npm) que el héroe
-  // acompaña de `hero.proofSdkPendiente` mientras la tirada publicada no mida
-  // el SDK tal como se instala. Esta tarjeta enseña esa misma fila: el día que
-  // los dos PR convivan, tiene que llevar la misma nota bajo la misma regla, o
-  // la portada presentaría como medido lo que no lo es. Se pone rojo en quien
-  // rebase segundo, en cualquier orden.
-  it.skipIf(!existsSync(fileURLToPath(new URL("../../lib/bench/sdk-instalado.ts", import.meta.url))))(
-    "con la regla del SDK instalado en el árbol, la tarjeta del SDK lleva su nota provisional",
-    () => {
-      const ofertas = seccion("offers");
-      const sdk = ofertas.slice(ofertas.indexOf('t("offers.sdk.name")'), ofertas.indexOf('t("offers.gateway.name")'));
-      expect(sdk).toContain("SDK_INSTALADO");
-      expect(sdk).toMatch(/SdkPendiente/);
-    },
-  );
+  it("⛔ la portada no lee el artefacto sintético ni su nota provisional", () => {
+    expect(CODIGO).not.toMatch(/ab-live|abData|SDK_INSTALADO|SdkPendiente|hero\.proofs|ReciboMedido/);
+  });
 
   it("el verificador vive en #verify, y la página no importa el proyector", () => {
     expect(seccion("verify")).toContain("<FormatVerifier");

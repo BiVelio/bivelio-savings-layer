@@ -103,7 +103,8 @@
       "signupDisabled": "Kayıt şimdilik kapalı. support@bivelio.com adresine yazın.",
       "network": "Bağlantı yok. Ağınızı kontrol edip tekrar deneyin.",
       "missingFields": "E-postanızı ve şifrenizi girin."
-    }
+    },
+    "signupMedir": "Ya da Ölçüm ile ücretsiz başlayın: kart gerekmez, gölge modunda, en fazla {seats} koltuk ve günde {requests} istek. @bivelio/savings-layer {version} veya üstü gerekir."
   },
   "dashboard": {
     "overview": {
@@ -782,46 +783,13 @@
       "ctaPricing": "Fiyatları gör",
       "note": "Dakikalar içinde kurulur. Mesajlarınız asla bizim sunucularımızdan geçmez.",
       "proofTitle": "Gerçek sağlayıcıya karşı ölçüldü",
-      "proofs": [
-        {
-          "marca": "OpenAI",
-          "modelo": "gpt-4o-mini",
-          "cifra": "≥ %10,0",
-          "que": "daha az fatura, %95'te doğrulandı · optimize edilmemiş bir entegrasyona kıyasla, akış olmadan"
-        }
-      ],
-      "proofSdkPendiente": "Geçici: yayımlanan tur, npm paketinde bulunmayan ve yalnızca test düzeneğine ait bir sıkıştırıcı içeriyordu. Bu rakam, sıkıştırıcının etkisi çıkarıldığında o turun tabanının altında kalıyor; ölçülen denemelerden yeniden hesaplandı — henüz kurulu SDK'nın bir ölçümü değil. O tur bekleniyor.",
       "medidoEn": "Ölçüldüğü yer",
       "compatibleCon": "Uyumlu",
-      "compatibleNota": "OpenAI API'siyle uyumlu her uç nokta ve yerel Anthropic adaptörü. Yayımlanmış rakamla, bugün, yalnızca OpenAI {modelo}."
+      "compatibleNota": "Uyumlu, ölçülmüş demek değildir. SDK, OpenAI API'siyle uyumlu her uç noktayla, ayrıca yerel Anthropic bağdaştırıcısı ve yerel Gemini bağdaştırıcısıyla ({gemini} sürümünde yeni) çalışır. Ölçülmüş olanlar — herkese açık test tezgâhında bir tasarruf rakamıyla — bugün yalnızca OpenAI ve Anthropic modelleridir; Gemini'nin henüz ölçülmüş bir tasarrufu yok."
     },
     "cascade": {
       "title": "En ucuz yürütme kazanır",
-      "per": "gpt-4o-mini üzerinde ölçüldü · %95 taban",
-      "steps": [
-        {
-          "n": "01",
-          "title": "Çağrıyı tamamen önle",
-          "sub": "çözücüler · singleflight",
-          "ledger": "avoided_calls",
-          "grey": false
-        },
-        {
-          "n": "02",
-          "title": "Gönderilmesi gerekmeyeni çıkar",
-          "sub": "budanmış araçlar · getirme · gereksiz bağlam",
-          "ledger": "eliminated_tokens",
-          "grey": false
-        },
-        {
-          "n": "03",
-          "title": "Kalanı sıkıştır",
-          "sub": "daha hafif kodlama · yalnızca kârlıysa",
-          "ledger": "compressed_tokens",
-          "grey": false
-        }
-      ],
-      "footnote": "Her adım FARKLI bir deftere düşer, bu yüzden bu rakamlar birbirine eklenmez. Defteri sıfırı geçmeyen bir adım burada görünmez: çıktı kısıtlaması ölçüldü ve tasarruf ettirmiyor, bu yüzden duyurulmuyor. Bu çalıştırmadaki tüm rakamlar gpt-4o-mini'dendir: aynı kaldıraç başka bir modelde paraya mal olabilir ve bu da yayımlanır."
+      "footnote": "Her kol kendi defterine düşer ve defterler asla toplanmaz. Bu bataryada tasarruf, SDK'nın sağlayıcıyı çağırmadan sunduğu tekrarlanan isteklerden ve Claude'da sağlayıcının kendi önek önbelleğinden geldi. npm paketi bir sıkıştırıcı içermez, dolayısıyla sıkıştırma hiçbir şey kazandırmadı — ve tekrar içermeyen trafikte tasarruf sıfırdan ayırt edilemedi."
     },
     "explica": {
       "eyebrow": "Sade bir dille",
@@ -853,21 +821,15 @@
       "body": "Her senaryo gerçek sağlayıcıya karşı iki kez çalışır: olduğu gibi ve önünde Savings ile. İki sonuç da sağlayıcının kendi sayacıyla sayılır — faturanızı fiyatlandıran sayaçla. İşte hata payıyla birlikte çıkan sonuç:",
       "videoCaption": "Test adil bir deneydir: aynı görev iki kez — Savings olmadan ve Savings ile — ve ikisini de sağlayıcının aynı sayacı ölçer.",
       "plainTitle": "Jargonsuz çevirisi",
-      "plain": "Bu testte fatura neredeyse kesin olarak en az {piso} düştü. Büyük olasılıkla {punto} düştü.",
-      "plainSdkPendiente": "SDK'yı npm'den kurduğunuz haliyle fatura en az {piso} düşer. Yayımlanan test ayrıca paketin içermediği, yalnızca test düzeneğine ait bir sıkıştırıcı içeriyordu; kurulu SDK ile bir tur bu rakamın yerini alana kadar onun etkisini saymak yerine çıkarıyoruz.",
-      "plainNote": "Bir aralık olduğunda her zaman küçük sayıyı duyururuz — istatistiğin garanti ettiğini — asla gösterişli olanı değil.",
-      "trialsLink": "Ham denemeleri indir (CSV)"
+      "plain": "İsteklerin {rep} kadarının birebir tekrarlandığı bir akışta fatura {punto} düştü — %95 güvenle {bajo} ile {alto} arasında. Tekrarlanmayan trafikte ≈ {cero} düştü. Ne kadar tasarruf edeceğiniz, sizinkinin ne kadar tekrarlandığına bağlıdır.",
+      "plainNote": "Bir yüzde; aralığı, modeli ve trafiği olmadan hiçbir şey ifade etmez: üçünü de yayımlıyoruz — hiçbir şeyin tasarruf edilmediği bataryaları da.",
+      "benchLink": "Her batarya, tam raporuyla, herkese açık test tezgâhında →"
     },
     "ledgersHead": {
       "eyebrow": "Dürüst muhasebe",
       "title": "Her tasarruf türü ayrı sayılır — hiçbir rakam şişirilmesin diye.",
-      "body": "Savings birkaç şekilde tasarruf eder: çağrıları bütünüyle önler, gereksiz metni çıkarır, gönderileni daha sıkı paketler ve sağlayıcının indirimlerini açar. Her yol, kendi ölçülmüş rakamıyla kendi defterini tutar — ve bunları asla tek bir pazarlama rakamında toplamayız.",
-      "runToMeasure": "ölçmek için optimize ediciyi çalıştırın",
-      "measuredFloor": "ölçüldü · %95 tabanı",
-      "notProven": "ölçüldü · sıfırı geçmiyor",
-      "providerTag": "OpenAI",
-      "providerModel": "gpt-4o-mini",
-      "providerNote": "Her defter OpenAI API'sine karşı ayrı ayrı ölçülür ve ayrı ayrı yayımlanır; sıfırı aşamayanlar görünmez. Yanında modeli olmayan bir yüzde hiçbir şey ifade etmez: aynı kaldıraç bir modelde tasarruf ettirirken başka bir modelde maliyet çıkarabilir."
+      "body": "Her SavingsReport tasarrufu dört deftere ayırır — kaçınılan çağrılar, çıkarılan metin, sıkıştırılan metin ve kendi sağlayıcınızın önbellek indirimi — ve bunları asla tek bir pazarlama rakamında toplamaz.",
+      "providerNote": "Herkese açık test tezgâhında ({fecha}), kurulu SDK'nın tasarrufu birinci defterden — sağlayıcı çağrılmadan sunulan tekrarlanan isteklerden — ve Claude'da, kendi sağlayıcınızın indirimi olan dördüncüden geldi. npm paketi bir sıkıştırıcı içermez, dolayısıyla orada üçüncüsü sıfırdı. Yayımlanmış rakamı olmayan bir defter burada anlatılır, reklamı yapılmaz."
     },
     "ledgers": [
       {
@@ -900,9 +862,8 @@
       "mEscritura": "önbellek yazmaları (bir saat)",
       "mEscrituraDesc": "Her araç sonucu, yeniden okunmadan önce primli olarak önbelleğe yazılır.",
       "mSalida": "model çıktısı",
-      "mSalidaDesc": "Tokenların yüzde birinden azı; skill onu doğrudan hedefler.",
-      "medidaPie": "ölçülen harcamanın",
-      "anatomiaNota": "Sağlayıcının kendi sayaçlarına karşı, {peticiones} gerçek Claude Code isteği üzerinde ölçüldü ({fecha}). Skill'in kendi etkisi A/B ile ölçüldüğünde yayımlanacak — asla öncesinde değil.",
+      "mSalidaDesc": "Tokenların küçük bir kısmı, token başına en yüksek fiyatla; skill onu doğrudan hedefler.",
+      "anatomiaNota": "Bir Claude Code oturumunun harcaması nereye gider, bu sırayla: önbellek okumaları, bir saatlik önbellek yazmaları ve model çıktısı — kendi trafiğimizde, sağlayıcının sayaçlarına karşı sayacımızla ölçüldü. O rapor yayımlanmadı, bu yüzden rakamlarını göstermiyoruz. Skill'in kendi etkisi A/B ile ölçüldüğünde yayımlanacak — asla önce değil.",
       "ccNota": "Tek komut: ~/.claude/skills içine kurulur ve konuşma limitlerden veya token tasarrufundan bahsedince kendiliğinden devreye girer.",
       "cxNota": "Codex'te skill yok: aynı disiplin AGENTS.md dosyanda (~/.codex) işaretli blok olarak taşınır — her zaman etkin; kapatmak için bloğu sil. İşaretlerin dışındaki AGENTS.md'ine asla dokunulmaz. ChatGPT hesabıyla ve API anahtarıyla çalışır; bvsala codex altında (lisansla) etkisi ölçülür.",
       "aiDescargar": "savings-mode.zip'i indir",
@@ -943,7 +904,7 @@
         "medir": {
           "name": "Ölçüm",
           "price": "Ücretsiz",
-          "body": "Kart gerekmez. Bir kuruluş için gölge modunda katman: her istek sağlayıcınıza değişmeden ulaşır ve ne kadar tasarruf edeceğini görürsünüz.",
+          "body": "Kart gerekmez. Bir kuruluş için gölge modunda katman, en fazla {seats} koltuk ve günde {requests} istek: gönderdiğiniz hiçbir şey değişmez, önbellekten hiçbir şey sunulmaz, asla hiçbir komisyonun parçası olmaz — ve ne kadar tasarruf edeceğini görürsünüz. @bivelio/savings-layer {version} veya üstü gerekir.",
           "cta": "Ücretsiz başlayın →"
         },
         "pro": {
@@ -995,7 +956,7 @@
     },
     "footer": {
       "ctaTitle": "Kendi trafiğinde ölç",
-      "ctaSub": "Kurulduktan sonra her çağrı, ölçülen ve tahmin edilen ayrı olarak SavingsReport’unu döndürür. Ölçüm ile ücretsiz başlayın; Pro ve Ekip koltuk başına sabit bir ücrettir, tasarrufunuz üzerinden komisyon yoktur. Lisans, BV‑SALA’yı çalıştırmanızı sağlayan şeydir — uygulamanızda SDK, terminalinizde gateway.",
+      "ctaSub": "Kurulduktan sonra her çağrı, ölçülen ve tahmin edilen ayrı olarak SavingsReport’unu döndürür. Ölçüm ile ücretsiz başlayın (@bivelio/savings-layer {version} veya üstü); Pro ve Ekip koltuk başına sabit bir ücrettir, tasarrufunuz üzerinden komisyon yoktur. Lisans, BV‑SALA’yı çalıştırmanızı sağlayan şeydir — uygulamanızda SDK, terminalinizde gateway.",
       "ctaStart": "Başla",
       "tagline": "İşletmeniz için işletim sistemi. Bu, BiVelio'nun sağlayıcıdan bağımsız LLM maliyet optimizasyonu <b>BV‑SALA</b> — yayımlanan her rakam sağlayıcının kendi sayacına göre ölçülür; tahminler ayrı gösterilir ve asla faturalanmaz.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1077,19 +1038,7 @@
       "pajaBody": "…kapı ödemeden önce onu çıkarır: paket buluta çok daha küçük ulaşır ve aradaki fark kavanozunuza düşer.",
       "magroTitle": "Zaten yalınsa…",
       "magroBody": "…dokunulmadan geçer. Orada çıkarılacak bir şey yok — olmayan yerde tasarruf vadetmeyiz.",
-      "caption": "Her gönderi aynı dolguyu taşımaz: bu turda senaryo başına ölçülen kesinti {min} ile {max} arasındaydı. Tasarruf etmeyenler de yayımlanır."
-    },
-    "recibo": {
-      "title": "SDK · SavingsReport · yayımlanan çalıştırma",
-      "modelo": "model",
-      "parejas": "ölçülen çift",
-      "calidad": "kalite",
-      "punto": "nokta tahmini",
-      "suelo": "Başlık %95 aralığının tabanıdır, asla nokta değil.",
-      "sdkPendiente": "Bu tur, npm paketinde bulunmayan ve yalnızca test düzeneğine ait bir sıkıştırıcı içeriyordu; bu yüzden kendi tabanı gösterilmiyor. Yukarıdaki rakam, SDK'yı kurduğunuz haliyle başlığımızdır: o sıkıştırıcının etkisi çıkarıldığında da geçerliliğini koruyor. Kurulu SDK ile bir tur henüz yapılmadı.",
-      "libros": "defter başına",
-      "pie": "Her defter kendi aralığıyla yayımlanır; sıfırı aşmayanlar duyurulmaz.",
-      "fecha": "çalıştırma"
+      "caption": "Her istek tasarruf edilecek bir şey taşımaz: herkese açık test tezgâhında tekrar içermeyen trafik ≈ {cero} tasarruf etti. Bunu da yayımlıyoruz."
     },
     "devs": {
       "eyebrow": "Geliştiriciler için yapıldı",
@@ -1113,7 +1062,7 @@
         },
         {
           "title": "Streaming, aynı rapor",
-          "body": "generateStream() yanıtı sağlayıcı yazdıkça size iletir ve generate() ile aynı SavingsReport'la, aynı temel kurallarıyla kapanır: sağlayıcının son sayacı stream'in sonunda okunur; bu sayaç olmadan biten bir stream ölçülmemiş olarak raporlanır ve asla komisyonunuza girmez. Çıktı sözleşmesi varsa yanıt doğrulanmış olarak, tek parça halinde gelir.",
+          "body": "generateStream() yanıtı sağlayıcı yazdıkça size iletir ve generate() ile aynı SavingsReport'la, aynı temel kurallarıyla kapanır: sağlayıcının son sayacı stream'in sonunda okunur; bu sayaç olmadan biten bir stream ölçülmemiş olarak raporlanır ve asla ölçülmüş tasarruf sayılmaz. Çıktı sözleşmesi varsa yanıt doğrulanmış olarak, tek parça halinde gelir.",
           "mono": "layer.generateStream(request)"
         }
       ]
@@ -1130,7 +1079,7 @@
         "who": "Kendi anahtarınızla bir LLM API'sini çağıran ve her token için ödeme yapan, JavaScript veya TypeScript ile yazılmış Node.js uygulamaları için.",
         "what": "Çağrıyı kodunuzun içinde sarar, sağlayıcıya yalnızca ödenmesi gerekeni gönderir ve her yanıtla birlikte bir SavingsReport döndürür.",
         "figureLabel": "Yayımladığımız rakam",
-        "figureNote": "Bir taban, bir tahmin değil: ne kadar tasarruf edeceğiniz trafiğinize bağlıdır. Komisyona yalnızca sağlayıcınızın sayacıyla ölçülen tasarruf girer — sağlayıcı çağrılmadan sunulan tekrarlanan istekler de buna dahildir ve her biri, daha önce çalışmış özdeş isteğin sayacıyla fiyatlandırılır.",
+        "figureNote": "Bir tahmin değil: ne kadar tasarruf edeceğiniz, trafiğinizin ne kadar tekrarlandığına bağlıdır. Tasarruf raporunuzda yalnızca sağlayıcınızın sayacının doğruladığı sayılır — sağlayıcı çağrılmadan sunulan tekrarlanan istekler de buna dahildir ve her biri, daha önce çalışmış özdeş isteğin sayacıyla fiyatlandırılır.",
         "ctaMeasured": "Nasıl ölçtük",
         "ctaVerify": "Verilerinizde bir kaldıracı deneyin"
       },
@@ -1140,7 +1089,7 @@
         "who": "Claude Code, Codex CLI veya başka bir kod ajanını API anahtarıyla kullananlar için.",
         "what": "Tek bir komut, koda dokunmadan terminalinizin önüne yerel bir sayaç koyar. Gateway, sağlayıcınızın kullanımını bildirdiği her isteği sağlayıcının kendi sayacıyla sayar — fiyat kataloğumuzdaki modeller için — ve bunları panelinizde gün ve model bazında toplar.",
         "figureLabel": "Yayımlanmış tasarruf rakamı yok",
-        "figureNote": "Kod ajanları için ölçülmüş bir tasarruf yayımlamadık, bu yüzden hiçbirini duyurmuyoruz. PRO ile, Anthropic modellerinde, gateway önbellek yazmalarını bir saatlik TTL'den beş dakikalık TTL'ye yalnızca prompt'un büyük bir kısmının yeni olduğu turlarda taşır — bir oturumun ilk turu ya da bir sıkıştırma gibi — ve süren bir oturumun ardışık turlarına dokunmaz. Bu fiyatı değiştirir, modelin okuduğunu asla; komisyona da yalnızca sağlayıcınızın sayacının doğruladığı girer.",
+        "figureNote": "Kod ajanları için ölçülmüş bir tasarruf yayımlamadık, bu yüzden hiçbirini duyurmuyoruz. PRO ile, Anthropic modellerinde, gateway önbellek yazmalarını bir saatlik TTL'den beş dakikalık TTL'ye yalnızca prompt'un büyük bir kısmının yeni olduğu turlarda taşır — bir oturumun ilk turu ya da bir sıkıştırma gibi — ve süren bir oturumun ardışık turlarına dokunmaz. Bu fiyatı değiştirir, modelin okuduğunu asla; tasarruf raporunuzda da yalnızca sağlayıcınızın sayacının doğruladığı sayılır.",
         "cta": "Gateway'i kurun"
       },
       "skill": {
@@ -1173,6 +1122,13 @@
       "approxNote": "Kesin tokenizer yüklenmedi, bu yüzden buradaki her sayım yaklaşık olurdu — ve yaklaşık tasarruf göstermiyoruz. Yeniden denemek için sayfayı yenileyin.",
       "scope": "Ne olduğu ve ne olmadığı: tek bir kaldıraç — yapılandırılmış verilerin prompt'a nasıl yazıldığı — bu verilerin giriş token'ları üzerinde. Yalnızca SDK'ya structuredData olarak verdiğiniz verilere uygulanır, mesajlarınızın içine zaten yazılmış JSON'a değil. Bu sizin faturanız değil: kaçınılan çağrılar, sağlayıcınızın önbelleği ve çıkış burada yok; birçok istek de hiç yapılandırılmış veri taşımaz. SDK'nın tamamı için yayımladığımız rakam, ölçüm bölümündeki rakamdır; notuyla birlikte.",
       "ctaInstall": "SDK'yı kurun"
+    },
+    "enVivo": {
+      "titulo": "Herkese açık test tezgâhı · sağlayıcıya karşı canlı · {fecha}",
+      "conRepeticiones": "daha düşük fatura (%95 aralık: {bajo} ile {alto} arası), isteklerin {rep} kadarının birebir tekrar olduğu bir akışta — {bateria}, SDK {version}",
+      "sinRepeticiones": "tekrar içermeyen trafikte (MT-Bench, BFCL): sıfırdan ayırt edilemez",
+      "anthropic": "aynı akış (%95 aralık: {bajo} ile {alto} arası). Orijinal faturanın yaklaşık {prefijo} kadarı Anthropic'in kendi önek önbelleği indirimidir — sağlayıcının, bizim değil, ve ayrı gösterilir",
+      "pie": "Trafiğinizin ne kadar tekrarlandığına bağlıdır. Her batarya, tam raporuyla: <bench>herkese açık test tezgâhı</bench>."
     }
   },
   "invitacion": {
@@ -1420,7 +1376,9 @@
     "snipResult": "tasarruf, ölçülmüş",
     "ctaVerify": "Ölçülen tasarrufu gör",
     "ctaSignup": "Hesap oluştur",
-    "ctaInstall": "Kurulum rehberine git"
+    "ctaInstall": "Kurulum rehberine git",
+    "billWith": "Duruma göre",
+    "billDepends": "trafiğinizin ne kadar tekrarlandığına"
   },
   "pricingPage": {
     "metaTitle": "Fiyat koşulları · BV-SALA",
@@ -1434,7 +1392,7 @@
       "intro": "Küçükten büyüğe dört plan. Pro ve Ekip koltuk başına ödenir ve komisyon içermez.",
       "medir": {
         "name": "Ölçüm",
-        "body": "<b>Ücretsiz, kart gerekmez.</b> Katman bir kuruluş için, koltuk ve günlük istek sınırı içinde gölge modunda çalışır: her istek sağlayıcınıza tam kurduğunuz gibi ulaşır, önbellekten hiçbir şey sunulmaz ve hiçbir kol uygulanmaz. Paneliniz ne kadar tasarruf edeceğini gösterir — asla komisyon içermeyen bir tahmin. Kollar için Pro veya Ekip gerekir."
+        "body": "<b>Ücretsiz, kart gerekmez.</b> Katman bir kuruluş için, en fazla <b>{seats} koltuk</b> ve <b>günde {requests} istek</b> ile gölge modunda çalışır: her istek sağlayıcınıza tam kurduğunuz gibi ulaşır, önbellekten hiçbir şey sunulmaz ve hiçbir kol uygulanmaz. Paneliniz ne kadar tasarruf edeceğini gösterir — asla komisyon içermeyen bir tahmin. <b>@bivelio/savings-layer {version} veya üstü</b> gerekir: önceki sürümler Ölçüm lisansını tanımaz. Kollar için Pro veya Ekip gerekir."
       },
       "pro": {
         "name": "Pro",

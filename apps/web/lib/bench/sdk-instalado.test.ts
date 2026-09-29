@@ -4,11 +4,7 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
-import * as React from "react";
-import { renderToStaticMarkup } from "react-dom/server";
-
 import type { AbArtifact } from "@/app/[locale]/dashboard/data";
-import { ReciboMedido } from "@/app/components/ReciboMedido";
 import { PALANCAS_QUE_NPM_NO_TRAE as PALANCAS_DEL_BANCO } from "../../../../benchmarks/titular-como-se-instala";
 
 import {
@@ -33,15 +29,12 @@ import {
  * `hero.proofs`. Aquí se miran tres cosas:
  *   1. la regla (`sueloPublicable` y compañía) sobre el artefacto publicado y
  *      sobre uno que sí midió lo instalado;
- *   2. el recibo del héroe RENDERIZADO: la cifra grande no es la de la tirada;
+ *   2. (hasta el 2026-09-29) el recibo del héroe renderizado. La portada ya no
+ *      enseña este artefacto — ni recibo, ni «al menos un 10 %», ni libros —:
+ *      lo vigila apps/web/lib/portada/portada-dice-lo-medido.test.ts;
  *   3. el código: todo fichero de la web que lee una cifra del artefacto pasa
  *      por `lib/bench/sdk-instalado.ts`, o está en la lista con su motivo.
  */
-
-// Este fichero es .ts (el glob de vitest es `*.test.ts`), así que el recibo se
-// monta con `React.createElement` en vez de JSX; y el componente, compilado por
-// vitest, puede esperar un `React` global que Next sí inyecta.
-(globalThis as { React?: typeof React }).React = React;
 
 const AQUI = fileURLToPath(new URL(".", import.meta.url));
 const WEB = join(AQUI, "..", "..");
@@ -56,15 +49,12 @@ describe("la regla: sin `sdk.asShipped: true`, la web no presenta el suelo de la
     expect([...PALANCAS_QUE_NPM_NO_TRAE]).toEqual([...PALANCAS_DEL_BANCO]);
   });
 
-  it("la promesa del titular es la cifra de los 12 idiomas, leída de UN solo sitio", () => {
-    const ficheros = readdirSync(MENSAJES).filter((f) => f.endsWith(".json"));
-    expect(ficheros).toHaveLength(12);
-    for (const f of ficheros) {
-      const d = JSON.parse(readFileSync(join(MENSAJES, f), "utf8")) as {
-        landing: { hero: { proofs: { cifra: string }[] } };
-      };
-      expect(numeroDeCifra(d.landing.hero.proofs[0]!.cifra) / 100, f).toBeCloseTo(PROMESA_DEL_TITULAR, 12);
+  it("la cota del panel ya no se lee de la portada: la portada no publica el «al menos»", () => {
+    for (const f of readdirSync(MENSAJES).filter((f) => f.endsWith(".json"))) {
+      const d = JSON.parse(readFileSync(join(MENSAJES, f), "utf8")) as { landing: { hero: Record<string, unknown> } };
+      expect(d.landing.hero.proofs, f).toBeUndefined();
     }
+    expect(PROMESA_DEL_TITULAR).toBeGreaterThan(0);
     expect(numeroDeCifra("≥ %10,0")).toBe(10);
     expect(numeroDeCifra("≥ 10.0%")).toBe(10);
     expect(numeroDeCifra("≥ 10 %")).toBe(10);
@@ -106,45 +96,6 @@ describe("la regla: sin `sdk.asShipped: true`, la web no presenta el suelo de la
       ),
     };
     expect(escenariosConPiezaDelBanco(sinEjercitar).size).toBe(0);
-  });
-});
-
-describe("el recibo del héroe, renderizado", () => {
-  const en = JSON.parse(readFileSync(join(MENSAJES, "en.json"), "utf8")) as {
-    landing: { recibo: Record<string, string>; cascade: { steps: { ledger: string; title: string }[] } };
-  };
-  const labels = en.landing.recibo as unknown as Parameters<typeof ReciboMedido>[0]["labels"];
-  const filas = en.landing.cascade.steps.map((s) => ({ ledger: s.ledger, title: s.title }));
-  const pct = new Intl.NumberFormat("en", { style: "percent", maximumFractionDigits: 1 });
-  const grande = (html: string): string => /class="recibo-big">(.*?)<\/div>/.exec(html)?.[1] ?? "";
-
-  it("todas las etiquetas existen (si no, el test no protege nada)", () => {
-    expect(labels.sdkPendiente).toBeTruthy();
-    expect(labels.suelo).toBeTruthy();
-  });
-
-  if (!midioElSdkInstalado(artefacto)) {
-    it("⛔ con el artefacto publicado, la cifra grande es el titular y no el suelo de la tirada", () => {
-      const html = renderToStaticMarkup(React.createElement(ReciboMedido, { ab: artefacto, locale: "en", labels, filas }));
-      expect(grande(html)).toContain(pct.format(PROMESA_DEL_TITULAR));
-      expect(html).not.toContain(pct.format(artefacto.aggregate.savings.lower));
-      // Ni el punto de esa tirada, ni «el titular es el suelo del intervalo»:
-      // el número grande ya no es el suelo de ningún intervalo.
-      expect(html).not.toContain(pct.format(artefacto.aggregate.savings.point));
-      expect(html).not.toContain(labels.suelo);
-      expect(html).toContain(labels.sdkPendiente.replace(/'/g, "&#x27;"));
-      // Y el libro que mezcla el compresor del banco no sale.
-      expect(html).not.toContain("<code>compressed_tokens</code>");
-    });
-  }
-
-  it("con una tirada que midió lo instalado, el recibo enseña su suelo, su punto y todos sus libros probados", () => {
-    const html = renderToStaticMarkup(React.createElement(ReciboMedido, { ab: instalado, locale: "en", labels, filas }));
-    expect(grande(html)).toContain(pct.format(instalado.aggregate.savings.lower));
-    expect(html).toContain(pct.format(instalado.aggregate.savings.point));
-    expect(html).toContain(labels.suelo);
-    const probado = instalado.ledgers.find((l) => l.ledger === "compressed_tokens")?.proven;
-    if (probado) expect(html).toContain("<code>compressed_tokens</code>");
   });
 });
 
@@ -196,11 +147,12 @@ describe("el código: toda cifra del artefacto pasa por lib/bench/sdk-instalado.
     for (const u of usos) expect(u).toMatch(/piezaDelBanco=/);
   });
 
-  it("⛔ la factura de ejemplo y su tarjeta social no leen el suelo del artefacto a pelo", () => {
+  it("⛔ la factura de ejemplo y su tarjeta social no leen el artefacto: «depende», sin cifra", () => {
     for (const rel of ["app/components/HowItWorks.tsx", "app/[locale]/how-it-works/opengraph-image.tsx"]) {
       const src = readFileSync(join(WEB, rel), "utf8");
-      expect(src, rel).toMatch(/sueloPublicable\(/);
-      expect(src, rel).not.toMatch(/aggregate\??\.savings/);
+      expect(src, rel).not.toMatch(ES_DEL_ARTEFACTO);
+      expect(src, rel).not.toMatch(/sueloPublicable\(/);
+      expect(src, rel).toMatch(/t\("billWith"\)/);
     }
   });
 });

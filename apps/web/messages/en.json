@@ -103,7 +103,8 @@
       "signupDisabled": "Sign-up is closed for now. Write to support@bivelio.com.",
       "network": "No connection. Check your network and try again.",
       "missingFields": "Enter your email and password."
-    }
+    },
+    "signupMedir": "Or start free with Measure: no card, shadow mode, up to {seats} seats and {requests} requests a day. It needs @bivelio/savings-layer {version} or later."
   },
   "dashboard": {
     "overview": {
@@ -782,46 +783,13 @@
       "ctaPricing": "See pricing",
       "note": "Installs in minutes. Your messages never pass through our servers.",
       "proofTitle": "Measured against a real provider",
-      "proofs": [
-        {
-          "marca": "OpenAI",
-          "modelo": "gpt-4o-mini",
-          "cifra": "≥ 10.0%",
-          "que": "less bill, verified at 95% · against an unoptimized integration, no streaming"
-        }
-      ],
-      "proofSdkPendiente": "Provisional: the published run carried a bench-only compressor that the npm package does not ship. This figure fits under that run's floor once the compressor's effect is taken out, recalculated from the measured trials — it is not yet a measurement of the installed SDK. That run is pending.",
       "medidoEn": "Measured on",
       "compatibleCon": "Compatible with",
-      "compatibleNota": "Any endpoint compatible with the OpenAI API, plus the native Anthropic adapter. With a published figure, today, only OpenAI {modelo}."
+      "compatibleNota": "Compatible is not measured. The SDK works with any endpoint compatible with the OpenAI API, plus the native Anthropic adapter and the native Gemini adapter (new in {gemini}). Measured — with a savings figure on the public bench — today only OpenAI and Anthropic models; Gemini has no measured saving yet."
     },
     "cascade": {
       "title": "Cheapest execution wins",
-      "per": "measured on gpt-4o-mini · 95% floor",
-      "steps": [
-        {
-          "n": "01",
-          "title": "Avoid the call entirely",
-          "sub": "resolvers · singleflight",
-          "ledger": "avoided_calls",
-          "grey": false
-        },
-        {
-          "n": "02",
-          "title": "Remove what never needed sending",
-          "sub": "pruned tools · retrieval · redundant context",
-          "ledger": "eliminated_tokens",
-          "grey": false
-        },
-        {
-          "n": "03",
-          "title": "Compress what remains",
-          "sub": "leaner encoding · only when it pays off",
-          "ledger": "compressed_tokens",
-          "grey": false
-        }
-      ],
-      "footnote": "Each step falls into ONE different ledger, so these figures do not add up to each other. A step whose ledger does not clear zero does not appear here: output restriction was measured and does not save, so it is not advertised. Every figure in this run is from gpt-4o-mini: the same lever can cost money on another model, and that is published too."
+      "footnote": "Each lever falls into its own ledger, and the ledgers are never added up. In this battery the saving came from repeated requests the SDK served without calling the provider and, on Claude, from the provider's own prefix cache. The npm package ships no compressor, so nothing was saved by compression — and on traffic without repeats, the saving was indistinguishable from zero."
     },
     "explica": {
       "eyebrow": "In plain words",
@@ -853,21 +821,15 @@
       "body": "Every scenario runs twice against the real provider: as-is, and with Savings in front. Both results are counted with the provider's own meter — the same one that prices your bill. Here is what came out, error margin included:",
       "videoCaption": "The test is a fair experiment: the same task twice — without Savings and with Savings — with the provider's own meter counting both.",
       "plainTitle": "Translation, no jargon",
-      "plain": "In this test, the bill went down by at least {piso}, with near certainty. Most likely it went down by {punto}.",
-      "plainSdkPendiente": "With the SDK as you install it from npm, the bill goes down by at least {piso}. The published test also carried a bench-only compressor that the package does not ship; we take its effect out instead of counting it, until a run of the installed SDK replaces this figure.",
-      "plainNote": "When there's a range, we always announce the small number — the one statistics guarantees — never the flattering one.",
-      "trialsLink": "Download the raw trials (CSV)"
+      "plain": "On a stream where {rep} of requests repeat exactly, the bill went down by {punto} — between {bajo} and {alto} with 95% confidence. On traffic that doesn't repeat, it went down by ≈ {cero}. What you save depends on how much yours repeats.",
+      "plainNote": "A percentage means nothing without its interval, its model and its traffic: we publish all three — and the batteries where nothing was saved, too.",
+      "benchLink": "Every battery, with its full report, on the public bench →"
     },
     "ledgersHead": {
       "eyebrow": "Honest accounting",
       "title": "Every kind of saving, counted separately — so no number gets inflated.",
-      "body": "Savings saves in several ways: it avoids whole calls, removes text you didn't need, packs what's sent more tightly, and switches on the provider's discounts. Each way keeps its own ledger with its own measured figure — and we never add them up into one marketing number.",
-      "runToMeasure": "run the optimizer to measure",
-      "measuredFloor": "measured · 95% floor",
-      "notProven": "measured · does not clear zero",
-      "providerTag": "OpenAI",
-      "providerModel": "gpt-4o-mini",
-      "providerNote": "Each ledger is measured and published on its own against the OpenAI API; the ones that do not clear zero do not appear. A percentage without its model next to it means nothing: the same lever can save on one model and cost on another."
+      "body": "Every SavingsReport splits the saving into four ledgers — calls avoided, text removed, text compressed, and your provider's own cache discount — and never adds them up into one marketing number.",
+      "providerNote": "On the public bench ({fecha}), what the installed SDK saved came from the first ledger — repeated requests served without calling the provider — and, on Claude, from the fourth, which is your provider's own discount. The npm package ships no compressor, so the third was zero there. A ledger with no published figure is described here, not advertised."
     },
     "ledgers": [
       {
@@ -900,9 +862,8 @@
       "mEscritura": "cache writes (one hour)",
       "mEscrituraDesc": "Every tool result is cache-written at a premium before being re-read.",
       "mSalida": "model output",
-      "mSalidaDesc": "Under one percent of the tokens; the skill attacks it directly.",
-      "medidaPie": "of measured spend",
-      "anatomiaNota": "Measured with the meter over {peticiones} real Claude Code requests, against the provider's own counters ({fecha}). The skill's own effect will be published once A/B-measured — never before.",
+      "mSalidaDesc": "A small share of the tokens, at the highest price per token; the skill attacks it directly.",
+      "anatomiaNota": "Where a Claude Code session's spend goes, in this order: cache reads, one-hour cache writes and model output — measured with our meter on our own traffic, against the provider's counters. That report is not published, so we don't show its figures. The skill's own effect will be published once A/B-measured — never before.",
       "ccNota": "One command: installs into ~/.claude/skills and activates by itself when the conversation turns to limits or saving tokens.",
       "cxNota": "Codex has no skills: the same discipline ships as a marked block in your AGENTS.md (~/.codex) — always on; delete the block to turn it off. Your AGENTS.md outside the marks is never touched. Works with ChatGPT accounts and API keys, and under bvsala codex (with a license) its effect is measured.",
       "aiDescargar": "Download savings-mode.zip",
@@ -943,7 +904,7 @@
         "medir": {
           "name": "Measure",
           "price": "Free",
-          "body": "No card. The layer in shadow mode for one organization: every request reaches your provider unchanged, and you see what it would have saved.",
+          "body": "No card. The layer in shadow mode for one organization, up to {seats} seats and {requests} requests a day: nothing you send changes, nothing is served from cache, it is never part of any commission — and you see what it would have saved. Needs @bivelio/savings-layer {version} or later.",
           "cta": "Start free →"
         },
         "pro": {
@@ -995,7 +956,7 @@
     },
     "footer": {
       "ctaTitle": "Measure it on your own traffic",
-      "ctaSub": "Once installed, every call returns its SavingsReport, measured and estimated kept apart. Start free with Measure; Pro and Team are a fixed fee per seat, with no commission on your savings. The license is what lets you run BV‑SALA — the SDK in your app, the gateway in your terminal.",
+      "ctaSub": "Once installed, every call returns its SavingsReport, measured and estimated kept apart. Start free with Measure (@bivelio/savings-layer {version} or later); Pro and Team are a fixed fee per seat, with no commission on your savings. The license is what lets you run BV‑SALA — the SDK in your app, the gateway in your terminal.",
       "ctaStart": "Get started",
       "tagline": "The operating system for your business. This is <b>BV-SALA</b>, BiVelio's provider-neutral LLM cost optimizer — every published figure measured against the provider's own counter; estimates are shown apart and never billed.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1077,19 +1038,7 @@
       "pajaBody": "…the gate removes it before you pay: the parcel reaches the cloud much smaller and the difference drops into your jar.",
       "magroTitle": "If it's already lean…",
       "magroBody": "…it passes untouched. There's nothing to remove there — and we don't promise savings where there are none.",
-      "caption": "Not every shipment carries the same padding: in this run, the measured trim per scenario ranged from {min} to {max}. The ones that don't save get published too."
-    },
-    "recibo": {
-      "title": "SDK · SavingsReport · published run",
-      "modelo": "model",
-      "parejas": "measured pairs",
-      "calidad": "quality",
-      "punto": "point estimate",
-      "suelo": "The headline is the floor of the 95% interval, never the point.",
-      "sdkPendiente": "This run carried a bench-only compressor that the npm package does not ship, so its own floor is not shown. The figure above is our headline for the SDK as you install it: it still fits once that compressor's effect is taken out. A run of the installed SDK is pending.",
-      "libros": "per ledger",
-      "pie": "Each ledger is published with its own interval; those that do not clear zero are not advertised.",
-      "fecha": "run"
+      "caption": "Not every request carries something to save: on the public bench, traffic without repeats saved ≈ {cero}. We publish that too."
     },
     "devs": {
       "eyebrow": "Built for developers",
@@ -1113,7 +1062,7 @@
         },
         {
           "title": "Streaming, same report",
-          "body": "generateStream() hands you the answer as the provider writes it and closes with the same SavingsReport as generate(), under the same basis rules: the provider's final counter is read at the end of the stream, and a stream without it is reported as unmeasured and never enters your commission. With an output contract, the answer arrives validated, in one piece.",
+          "body": "generateStream() hands you the answer as the provider writes it and closes with the same SavingsReport as generate(), under the same basis rules: the provider's final counter is read at the end of the stream, and a stream without it is reported as unmeasured and never counts as measured savings. With an output contract, the answer arrives validated, in one piece.",
           "mono": "layer.generateStream(request)"
         }
       ]
@@ -1130,7 +1079,7 @@
         "who": "For Node.js apps, in JavaScript or TypeScript, that call an LLM API with your own key and pay for every token.",
         "what": "It wraps the call inside your code, sends the provider only what has to be paid for, and returns a SavingsReport with every response.",
         "figureLabel": "The figure we publish",
-        "figureNote": "A floor, not a forecast: what you save depends on your traffic. Only savings measured with your provider's counter enter the commission — including repeated requests served without calling your provider, each valued with the counter of the identical request that already ran.",
+        "figureNote": "Not a forecast: what you save depends on how much your traffic repeats. Only what your provider's counter confirms counts in your savings report — including repeated requests served without calling your provider, each valued with the counter of the identical request that already ran.",
         "ctaMeasured": "How we measured it",
         "ctaVerify": "Try one lever on your data"
       },
@@ -1140,7 +1089,7 @@
         "who": "For developers who run Claude Code, Codex CLI or another coding agent on an API key.",
         "what": "One command puts a local meter in front of your terminal, with no code to change. It counts each request your provider reports usage for, with the provider's own counter — for models in our price catalog — and adds it up in your dashboard, by day and by model.",
         "figureLabel": "No savings figure published",
-        "figureNote": "We have not published a measured saving for coding agents, so we don't advertise one. With PRO, on Anthropic models, it moves cache writes from the one-hour TTL to the five-minute one, only on turns where a large part of the prompt is new — such as a session's first turn or a compaction — and leaves the chained turns of a running session as they are. That changes the price, never what the model reads, and only what your provider's counter confirms enters the commission.",
+        "figureNote": "We have not published a measured saving for coding agents, so we don't advertise one. With PRO, on Anthropic models, it moves cache writes from the one-hour TTL to the five-minute one, only on turns where a large part of the prompt is new — such as a session's first turn or a compaction — and leaves the chained turns of a running session as they are. That changes the price, never what the model reads, and only what your provider's counter confirms counts in your savings report.",
         "cta": "Set up the gateway"
       },
       "skill": {
@@ -1173,6 +1122,13 @@
       "approxNote": "The exact tokenizer did not load, so any count here would be approximate — and we don't show approximate savings. Reload the page to try again.",
       "scope": "What this is, and what it isn't: one lever — how structured data is written into the prompt — on the input tokens of this data. It applies only to data you pass to the SDK as structuredData, not to JSON already written inside your messages. It is not your bill: calls avoided, your provider's cache and the output are not in it, and many requests carry no structured data at all. For the whole SDK, the figure we publish is the one in the measurement section, with its note.",
       "ctaInstall": "Install the SDK"
+    },
+    "enVivo": {
+      "titulo": "Public bench · live against the provider · {fecha}",
+      "conRepeticiones": "less bill (95% interval: {bajo} to {alto}) on a stream where {rep} of requests are exact repeats — {bateria}, SDK {version}",
+      "sinRepeticiones": "on traffic without repeats (MT-Bench, BFCL): indistinguishable from zero",
+      "anthropic": "same stream (95% interval: {bajo} to {alto}). About {prefijo} of the original bill is Anthropic's own prefix-cache discount — the provider's, not ours, and shown apart",
+      "pie": "It depends on how much your traffic repeats. Every battery, with its full report: <bench>public bench</bench>."
     }
   },
   "invitacion": {
@@ -1420,7 +1376,9 @@
     "snipResult": "the saving, measured",
     "ctaVerify": "See the measured savings",
     "ctaSignup": "Create account",
-    "ctaInstall": "Go to the install guide"
+    "ctaInstall": "Go to the install guide",
+    "billWith": "It depends",
+    "billDepends": "on how much your traffic repeats"
   },
   "pricingPage": {
     "metaTitle": "Pricing terms · BV-SALA",
@@ -1434,7 +1392,7 @@
       "intro": "Four plans, from smallest to largest. Pro and Team are paid per seat and carry no commission.",
       "medir": {
         "name": "Measure",
-        "body": "<b>Free, no card.</b> The layer runs in shadow mode for one organization, within a cap on seats and daily requests: every request reaches your provider exactly as you built it, nothing is served from cache and no lever is applied. Your dashboard shows what it would have saved — an estimate that never carries a commission. The levers need Pro or Team."
+        "body": "<b>Free, no card.</b> The layer runs in shadow mode for one organization, for up to <b>{seats} seats</b> and <b>{requests} requests a day</b>: every request reaches your provider exactly as you built it, nothing is served from cache and no lever is applied. Your dashboard shows what it would have saved — an estimate that never carries a commission. It needs <b>@bivelio/savings-layer {version} or later</b>: earlier versions do not recognise the Measure license. The levers need Pro or Team."
       },
       "pro": {
         "name": "Pro",

@@ -103,7 +103,8 @@
       "signupDisabled": "Đăng ký tạm thời đóng. Hãy viết cho support@bivelio.com.",
       "network": "Không có kết nối. Kiểm tra mạng và thử lại.",
       "missingFields": "Nhập email và mật khẩu của bạn."
-    }
+    },
+    "signupMedir": "Hoặc bắt đầu miễn phí với Đo lường: không cần thẻ, chế độ bóng, tối đa {seats} ghế và {requests} yêu cầu mỗi ngày. Cần @bivelio/savings-layer {version} trở lên."
   },
   "dashboard": {
     "overview": {
@@ -782,46 +783,13 @@
       "ctaPricing": "Xem bảng giá",
       "note": "Cài đặt trong vài phút. Tin nhắn của bạn không bao giờ đi qua máy chủ của chúng tôi.",
       "proofTitle": "Đo với nhà cung cấp thật",
-      "proofs": [
-        {
-          "marca": "OpenAI",
-          "modelo": "gpt-4o-mini",
-          "cifra": "≥ 10,0%",
-          "que": "hóa đơn giảm, xác minh ở mức 95% · so với tích hợp chưa tối ưu, không streaming"
-        }
-      ],
-      "proofSdkPendiente": "Tạm thời: lần chạy đã công bố có một bộ nén chỉ dùng trong băng thử mà gói npm không kèm theo. Con số này nằm dưới cận dưới của lần chạy đó khi loại bỏ tác động của bộ nén, được tính lại từ các lần thử đã đo — nó chưa phải là phép đo của SDK đã cài đặt. Lần chạy đó vẫn đang chờ.",
       "medidoEn": "Đo trên",
       "compatibleCon": "Tương thích với",
-      "compatibleNota": "Mọi endpoint tương thích với API của OpenAI, cùng bộ điều hợp gốc cho Anthropic. Có con số đã công bố, hiện nay, chỉ OpenAI {modelo}."
+      "compatibleNota": "Tương thích không có nghĩa là đã đo. SDK hoạt động với mọi endpoint tương thích với API của OpenAI, cùng bộ chuyển đổi gốc cho Anthropic và bộ chuyển đổi gốc cho Gemini (mới trong {gemini}). Đã đo — có con số tiết kiệm trên băng thử công khai — hiện chỉ có các mô hình của OpenAI và Anthropic; Gemini chưa có khoản tiết kiệm đã đo."
     },
     "cascade": {
       "title": "Phương án thực thi rẻ nhất thắng",
-      "per": "đo trên gpt-4o-mini · cận dưới 95%",
-      "steps": [
-        {
-          "n": "01",
-          "title": "Tránh hoàn toàn lệnh gọi",
-          "sub": "bộ giải · singleflight",
-          "ledger": "avoided_calls",
-          "grey": false
-        },
-        {
-          "n": "02",
-          "title": "Bỏ những gì không cần gửi",
-          "sub": "công cụ đã cắt tỉa · truy hồi · ngữ cảnh dư thừa",
-          "ledger": "eliminated_tokens",
-          "grey": false
-        },
-        {
-          "n": "03",
-          "title": "Nén phần còn lại",
-          "sub": "mã hóa nhẹ hơn · chỉ khi có lợi",
-          "ledger": "compressed_tokens",
-          "grey": false
-        }
-      ],
-      "footnote": "Mỗi bước rơi vào MỘT sổ khác nhau, nên các con số này không cộng dồn với nhau. Một bước mà sổ của nó không vượt qua số không sẽ không xuất hiện ở đây: việc hạn chế đầu ra đã được đo và không tiết kiệm, nên chúng tôi không quảng bá nó. Mọi con số trong đợt chạy này đều từ gpt-4o-mini: cùng một đòn bẩy có thể tốn tiền trên mô hình khác, và điều đó cũng được công bố."
+      "footnote": "Mỗi đòn bẩy rơi vào sổ riêng của nó, và các sổ không bao giờ được cộng lại. Trong bộ thử này, khoản tiết kiệm đến từ các yêu cầu lặp lại mà SDK phục vụ không cần gọi nhà cung cấp và, với Claude, từ bộ nhớ đệm tiền tố của chính nhà cung cấp. Gói npm không kèm bộ nén, nên nén không tiết kiệm được gì — và với lưu lượng không lặp lại, khoản tiết kiệm không phân biệt được với không."
     },
     "explica": {
       "eyebrow": "Nói một cách dễ hiểu",
@@ -853,21 +821,15 @@
       "body": "Mỗi kịch bản chạy hai lần với nhà cung cấp thật: nguyên trạng, và có Savings đứng trước. Cả hai kết quả được đếm bằng chính bộ đếm của nhà cung cấp — bộ đếm định giá hóa đơn của bạn. Đây là kết quả, kèm biên độ sai số:",
       "videoCaption": "Bài kiểm tra là một thí nghiệm công bằng: cùng một nhiệm vụ chạy hai lần — không có Savings và có Savings — và cùng một bộ đếm của nhà cung cấp đo cả hai.",
       "plainTitle": "Diễn giải, không thuật ngữ",
-      "plain": "Trong bài kiểm tra này, hóa đơn gần như chắc chắn giảm ít nhất {piso}. Nhiều khả năng nhất là giảm {punto}.",
-      "plainSdkPendiente": "Với SDK đúng như bạn cài đặt từ npm, hóa đơn giảm ít nhất {piso}. Bài kiểm tra đã công bố còn có một bộ nén chỉ dùng trong băng thử mà gói không kèm theo; chúng tôi loại bỏ tác động của nó thay vì tính vào, cho đến khi một lần chạy với SDK đã cài đặt thay thế con số này.",
-      "plainNote": "Khi có một khoảng dao động, chúng tôi luôn công bố con số nhỏ — con số được thống kê bảo đảm — không bao giờ là con số đẹp.",
-      "trialsLink": "Tải dữ liệu thử nghiệm thô (CSV)"
+      "plain": "Trên một luồng mà {rep} số yêu cầu lặp lại y hệt, hóa đơn giảm {punto} — trong khoảng {bajo} đến {alto} với độ tin cậy 95%. Với lưu lượng không lặp lại, hóa đơn giảm ≈ {cero}. Bạn tiết kiệm bao nhiêu tùy vào mức độ lặp lại của lưu lượng của bạn.",
+      "plainNote": "Một tỷ lệ phần trăm không có ý nghĩa gì nếu thiếu khoảng tin cậy, mô hình và lưu lượng của nó: chúng tôi công bố cả ba — và cả những bộ thử không tiết kiệm được gì.",
+      "benchLink": "Từng bộ thử, kèm báo cáo đầy đủ, trên băng thử công khai →"
     },
     "ledgersHead": {
       "eyebrow": "Hạch toán trung thực",
       "title": "Mỗi loại tiết kiệm được đếm riêng — để không con số nào bị thổi phồng.",
-      "body": "Savings tiết kiệm theo nhiều cách: tránh nguyên cả lượt gọi, bỏ văn bản thừa, đóng gói phần gửi đi gọn hơn và bật các khoản giảm giá của nhà cung cấp. Mỗi cách có sổ riêng với con số đo được riêng — và chúng tôi không bao giờ cộng chúng thành một con số tiếp thị.",
-      "runToMeasure": "chạy trình tối ưu để đo",
-      "measuredFloor": "đã đo · sàn 95%",
-      "notProven": "đã đo · không vượt qua số không",
-      "providerTag": "OpenAI",
-      "providerModel": "gpt-4o-mini",
-      "providerNote": "Mỗi sổ được đo và công bố riêng với API của OpenAI; những sổ không vượt qua mức không thì không xuất hiện. Một tỷ lệ phần trăm mà không có mô hình đi kèm thì chẳng có nghĩa gì: cùng một đòn bẩy có thể tiết kiệm trên mô hình này và tốn kém trên mô hình khác."
+      "body": "Mỗi SavingsReport chia khoản tiết kiệm vào bốn sổ — lệnh gọi tránh được, văn bản đã loại bỏ, văn bản đã nén và chiết khấu bộ nhớ đệm của chính nhà cung cấp — và không bao giờ cộng chúng thành một con số tiếp thị.",
+      "providerNote": "Trên băng thử công khai ({fecha}), khoản SDK đã cài tiết kiệm được đến từ sổ thứ nhất — các yêu cầu lặp lại được phục vụ mà không gọi nhà cung cấp — và, với Claude, từ sổ thứ tư, là chiết khấu của chính nhà cung cấp. Gói npm không kèm bộ nén, nên ở đó sổ thứ ba bằng không. Một sổ chưa có con số công bố thì được mô tả ở đây, không được quảng cáo."
     },
     "ledgers": [
       {
@@ -900,9 +862,8 @@
       "mEscritura": "ghi bộ đệm (một giờ)",
       "mEscrituraDesc": "Mỗi kết quả công cụ được ghi vào bộ đệm với phụ phí trước khi được đọc lại.",
       "mSalida": "đầu ra của mô hình",
-      "mSalidaDesc": "Dưới một phần trăm số token; skill tấn công trực tiếp vào đó.",
-      "medidaPie": "của chi tiêu đo được",
-      "anatomiaNota": "Đo bằng bộ đo trên {peticiones} yêu cầu Claude Code thực, so với bộ đếm của nhà cung cấp ({fecha}). Hiệu quả của chính skill sẽ được công bố khi đo xong bằng A/B — không bao giờ trước đó.",
+      "mSalidaDesc": "Một phần nhỏ số token, với giá mỗi token cao nhất; skill tấn công trực tiếp vào đó.",
+      "anatomiaNota": "Chi phí của một phiên Claude Code đi về đâu, theo thứ tự: đọc bộ nhớ đệm, ghi bộ nhớ đệm một giờ và đầu ra của mô hình — đo bằng đồng hồ của chúng tôi trên lưu lượng của chính chúng tôi, đối chiếu với bộ đếm của nhà cung cấp. Báo cáo đó chưa được công bố, nên chúng tôi không hiển thị các con số của nó. Hiệu quả của chính skill sẽ được công bố khi đã đo bằng A/B — không bao giờ trước đó.",
       "ccNota": "Một lệnh duy nhất: cài vào ~/.claude/skills và tự kích hoạt khi cuộc trò chuyện nói về giới hạn hoặc tiết kiệm token.",
       "cxNota": "Codex không có skill: cùng kỷ luật đó đi dưới dạng khối được đánh dấu trong AGENTS.md của bạn (~/.codex) — luôn bật; xóa khối để tắt. AGENTS.md của bạn ngoài các dấu không bao giờ bị đụng tới. Hoạt động với tài khoản ChatGPT và API key, và dưới bvsala codex (có giấy phép) hiệu quả của nó được đo.",
       "aiDescargar": "Tải savings-mode.zip",
@@ -943,7 +904,7 @@
         "medir": {
           "name": "Đo lường",
           "price": "Miễn phí",
-          "body": "Không cần thẻ. Lớp ở chế độ bóng cho một tổ chức: mọi yêu cầu đến nhà cung cấp của bạn không thay đổi, và bạn thấy nó sẽ tiết kiệm bao nhiêu.",
+          "body": "Không cần thẻ. Lớp ở chế độ bóng cho một tổ chức, tối đa {seats} ghế và {requests} yêu cầu mỗi ngày: không có gì bạn gửi bị thay đổi, không có gì được phục vụ từ bộ nhớ đệm, không bao giờ là một phần của bất kỳ khoản hoa hồng nào — và bạn thấy nó sẽ tiết kiệm bao nhiêu. Cần @bivelio/savings-layer {version} trở lên.",
           "cta": "Bắt đầu miễn phí →"
         },
         "pro": {
@@ -995,7 +956,7 @@
     },
     "footer": {
       "ctaTitle": "Đo trên chính lưu lượng của bạn",
-      "ctaSub": "Sau khi cài đặt, mỗi lệnh gọi trả về SavingsReport của nó, phần đo được và phần ước tính tách riêng. Bắt đầu miễn phí với Đo lường; Pro và Nhóm là phí cố định theo ghế, không có hoa hồng trên khoản tiết kiệm. Giấy phép là thứ cho phép bạn chạy BV‑SALA — SDK trong ứng dụng, gateway trong terminal.",
+      "ctaSub": "Sau khi cài đặt, mỗi lệnh gọi trả về SavingsReport của nó, phần đo được và phần ước tính tách riêng. Bắt đầu miễn phí với Đo lường (@bivelio/savings-layer {version} trở lên); Pro và Nhóm là phí cố định theo ghế, không có hoa hồng trên khoản tiết kiệm. Giấy phép là thứ cho phép bạn chạy BV‑SALA — SDK trong ứng dụng, gateway trong terminal.",
       "ctaStart": "Bắt đầu",
       "tagline": "Hệ điều hành cho doanh nghiệp của bạn. Đây là <b>BV‑SALA</b>, bộ tối ưu chi phí LLM trung lập với nhà cung cấp của BiVelio — mọi con số công bố đều được đo theo bộ đếm của chính nhà cung cấp; ước tính được hiển thị riêng và không bao giờ tính phí.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1077,19 +1038,7 @@
       "pajaBody": "…cổng sẽ bỏ nó trước khi bạn trả tiền: gói hàng đến đám mây nhỏ hơn nhiều và phần chênh lệch rơi vào lọ của bạn.",
       "magroTitle": "Nếu vốn đã gọn…",
       "magroBody": "…nó đi qua nguyên vẹn. Không có gì để bỏ — và chúng tôi không hứa khoản tiết kiệm không tồn tại.",
-      "caption": "Không phải gói gửi nào cũng độn nhiều như nhau: trong đợt chạy này, mức cắt đo được theo từng kịch bản dao động từ {min} đến {max}. Những kịch bản không tiết kiệm cũng được công bố."
-    },
-    "recibo": {
-      "title": "SDK · SavingsReport · đợt chạy đã công bố",
-      "modelo": "mô hình",
-      "parejas": "cặp đã đo",
-      "calidad": "chất lượng",
-      "punto": "ước lượng điểm",
-      "suelo": "Con số tiêu đề là cận dưới của khoảng 95%, không bao giờ là điểm.",
-      "sdkPendiente": "Lần chạy này có một bộ nén chỉ dùng trong băng thử mà gói npm không kèm theo, nên cận dưới của nó không được hiển thị. Con số phía trên là con số tiêu đề của chúng tôi cho SDK đúng như bạn cài đặt: nó vẫn đứng vững khi loại bỏ tác động của bộ nén đó. Một lần chạy với SDK đã cài đặt vẫn đang chờ.",
-      "libros": "theo từng sổ cái",
-      "pie": "Mỗi sổ cái được công bố với khoảng riêng; sổ nào không vượt qua số không thì không được quảng bá.",
-      "fecha": "đợt chạy"
+      "caption": "Không phải yêu cầu nào cũng có gì để tiết kiệm: trên băng thử công khai, lưu lượng không lặp lại tiết kiệm ≈ {cero}. Chúng tôi cũng công bố điều đó."
     },
     "devs": {
       "eyebrow": "Xây dựng cho lập trình viên",
@@ -1113,7 +1062,7 @@
         },
         {
           "title": "Streaming, cùng một báo cáo",
-          "body": "generateStream() trao cho bạn câu trả lời ngay khi nhà cung cấp viết ra và kết thúc bằng cùng SavingsReport như generate(), theo cùng quy tắc về cơ sở: bộ đếm cuối cùng của nhà cung cấp được đọc khi stream kết thúc, và một stream thiếu bộ đếm đó được báo cáo là không đo được và không bao giờ tính vào hoa hồng của bạn. Với hợp đồng đầu ra, câu trả lời đến đã được xác thực, trọn vẹn trong một lần.",
+          "body": "generateStream() trao cho bạn câu trả lời ngay khi nhà cung cấp viết ra và kết thúc bằng cùng SavingsReport như generate(), theo cùng quy tắc về cơ sở: bộ đếm cuối cùng của nhà cung cấp được đọc khi stream kết thúc, và một stream thiếu bộ đếm đó được báo cáo là không đo được và không bao giờ được tính là khoản tiết kiệm đã đo. Với hợp đồng đầu ra, câu trả lời đến đã được xác thực, trọn vẹn trong một lần.",
           "mono": "layer.generateStream(request)"
         }
       ]
@@ -1130,7 +1079,7 @@
         "who": "Cho ứng dụng Node.js, viết bằng JavaScript hoặc TypeScript, gọi một API LLM bằng khóa của chính bạn và trả tiền cho từng token.",
         "what": "SDK bọc lời gọi ngay trong mã của bạn, chỉ gửi cho nhà cung cấp những gì phải trả và trả về một SavingsReport kèm mỗi phản hồi.",
         "figureLabel": "Con số chúng tôi công bố",
-        "figureNote": "Một mức sàn, không phải dự báo: bạn tiết kiệm bao nhiêu tùy vào lưu lượng của bạn. Chỉ khoản tiết kiệm đo bằng bộ đếm của nhà cung cấp mới tính vào hoa hồng — kể cả các lượt gọi lặp lại được phục vụ mà không gọi nhà cung cấp, mỗi lượt được định giá bằng bộ đếm của lượt gọi giống hệt đã được thực hiện.",
+        "figureNote": "Không phải dự báo: bạn tiết kiệm bao nhiêu tùy vào mức độ lặp lại của lưu lượng. Chỉ phần được bộ đếm của nhà cung cấp xác nhận mới được tính trong báo cáo tiết kiệm của bạn — kể cả các lượt gọi lặp lại được phục vụ mà không gọi nhà cung cấp, mỗi lượt được định giá bằng bộ đếm của lượt gọi giống hệt đã được thực hiện.",
         "ctaMeasured": "Cách chúng tôi đo",
         "ctaVerify": "Thử một đòn bẩy trên dữ liệu của bạn"
       },
@@ -1140,7 +1089,7 @@
         "who": "Cho những ai dùng Claude Code, Codex CLI hoặc agent lập trình khác với khóa API.",
         "what": "Một lệnh đặt một bộ đo cục bộ trước terminal của bạn, không cần sửa mã. Gateway đếm từng lượt gọi mà nhà cung cấp có báo cáo mức sử dụng, bằng chính bộ đếm của nhà cung cấp — với các mô hình trong danh mục giá của chúng tôi — và cộng dồn chúng trong bảng điều khiển của bạn, theo ngày và theo mô hình.",
         "figureLabel": "Chưa công bố con số tiết kiệm",
-        "figureNote": "Chúng tôi chưa công bố khoản tiết kiệm đo được nào cho agent lập trình, nên chúng tôi không quảng cáo con số nào. Với PRO, trên các mô hình Anthropic, gateway chuyển các lần ghi bộ nhớ đệm từ TTL một giờ sang TTL năm phút, chỉ ở những lượt mà một phần lớn prompt là mới — như lượt đầu tiên của một phiên hoặc sau khi nén ngữ cảnh — và giữ nguyên các lượt nối tiếp của một phiên đang chạy. Điều đó thay đổi giá, không bao giờ thay đổi những gì mô hình đọc, và chỉ phần được bộ đếm của nhà cung cấp xác nhận mới tính vào hoa hồng.",
+        "figureNote": "Chúng tôi chưa công bố khoản tiết kiệm đo được nào cho agent lập trình, nên chúng tôi không quảng cáo con số nào. Với PRO, trên các mô hình Anthropic, gateway chuyển các lần ghi bộ nhớ đệm từ TTL một giờ sang TTL năm phút, chỉ ở những lượt mà một phần lớn prompt là mới — như lượt đầu tiên của một phiên hoặc sau khi nén ngữ cảnh — và giữ nguyên các lượt nối tiếp của một phiên đang chạy. Điều đó thay đổi giá, không bao giờ thay đổi những gì mô hình đọc, và chỉ phần được bộ đếm của nhà cung cấp xác nhận mới được tính trong báo cáo tiết kiệm của bạn.",
         "cta": "Cài đặt gateway"
       },
       "skill": {
@@ -1173,6 +1122,13 @@
       "approxNote": "Tokenizer chính xác chưa tải được, nên mọi con số đếm ở đây chỉ là xấp xỉ — và chúng tôi không hiển thị mức tiết kiệm xấp xỉ. Tải lại trang để thử lại.",
       "scope": "Đây là gì và không phải là gì: một đòn bẩy — cách dữ liệu có cấu trúc được viết vào prompt — trên token đầu vào của dữ liệu này. Nó chỉ áp dụng cho dữ liệu bạn truyền vào SDK dưới dạng structuredData, không áp dụng cho JSON đã viết sẵn trong tin nhắn của bạn. Đây không phải hóa đơn của bạn: các lời gọi được tránh, bộ nhớ đệm của nhà cung cấp và đầu ra không có ở đây, và nhiều lượt gọi hoàn toàn không mang dữ liệu có cấu trúc. Với toàn bộ SDK, con số chúng tôi công bố là con số trong phần đo lường, kèm ghi chú của nó.",
       "ctaInstall": "Cài đặt SDK"
+    },
+    "enVivo": {
+      "titulo": "Băng thử công khai · chạy thật với nhà cung cấp · {fecha}",
+      "conRepeticiones": "hóa đơn giảm (khoảng tin cậy 95%: từ {bajo} đến {alto}) trên một luồng mà {rep} số yêu cầu là lặp lại y hệt — {bateria}, SDK {version}",
+      "sinRepeticiones": "với lưu lượng không lặp lại (MT-Bench, BFCL): không phân biệt được với không",
+      "anthropic": "cùng luồng (khoảng tin cậy 95%: từ {bajo} đến {alto}). Khoảng {prefijo} hóa đơn ban đầu là chiết khấu bộ nhớ đệm tiền tố của chính Anthropic — của nhà cung cấp, không phải của chúng tôi, và được hiển thị riêng",
+      "pie": "Tùy vào mức độ lặp lại của lưu lượng. Từng bộ thử, kèm báo cáo đầy đủ: <bench>băng thử công khai</bench>."
     }
   },
   "invitacion": {
@@ -1420,7 +1376,9 @@
     "snipResult": "khoản tiết kiệm, đã đo",
     "ctaVerify": "Xem mức tiết kiệm đã đo",
     "ctaSignup": "Tạo tài khoản",
-    "ctaInstall": "Đến hướng dẫn cài đặt"
+    "ctaInstall": "Đến hướng dẫn cài đặt",
+    "billWith": "Tùy",
+    "billDepends": "vào mức độ lặp lại của lưu lượng"
   },
   "pricingPage": {
     "metaTitle": "Điều khoản giá · BV-SALA",
@@ -1434,7 +1392,7 @@
       "intro": "Bốn gói, từ nhỏ đến lớn. Pro và Nhóm trả theo chỗ và không có hoa hồng.",
       "medir": {
         "name": "Đo lường",
-        "body": "<b>Miễn phí, không cần thẻ.</b> Lớp chạy ở chế độ bóng cho một tổ chức, với giới hạn ghế và số yêu cầu mỗi ngày: mọi yêu cầu đến nhà cung cấp đúng như bạn đã tạo, không có gì được phục vụ từ bộ nhớ đệm và không đòn bẩy nào được áp dụng. Bảng điều khiển cho thấy nó sẽ tiết kiệm bao nhiêu — một ước tính không bao giờ có hoa hồng. Các đòn bẩy cần Pro hoặc Nhóm."
+        "body": "<b>Miễn phí, không cần thẻ.</b> Lớp chạy ở chế độ bóng cho một tổ chức, tối đa <b>{seats} ghế</b> và <b>{requests} yêu cầu mỗi ngày</b>: mọi yêu cầu đến nhà cung cấp đúng như bạn đã tạo, không có gì được phục vụ từ bộ nhớ đệm và không đòn bẩy nào được áp dụng. Bảng điều khiển cho thấy nó sẽ tiết kiệm bao nhiêu — một ước tính không bao giờ có hoa hồng. Cần <b>@bivelio/savings-layer {version} trở lên</b>: các phiên bản trước không nhận ra giấy phép Đo lường. Các đòn bẩy cần Pro hoặc Nhóm."
       },
       "pro": {
         "name": "Pro",

@@ -103,7 +103,8 @@
       "signupDisabled": "Rejestracja jest na razie zamknięta. Napisz na support@bivelio.com.",
       "network": "Brak połączenia. Sprawdź sieć i spróbuj ponownie.",
       "missingFields": "Wpisz e-mail i hasło."
-    }
+    },
+    "signupMedir": "Albo zacznij za darmo od Pomiaru: bez karty, w trybie cienia, do {seats} stanowisk i {requests} zapytań dziennie. Wymaga @bivelio/savings-layer {version} lub nowszego."
   },
   "dashboard": {
     "overview": {
@@ -782,46 +783,13 @@
       "ctaPricing": "Zobacz cennik",
       "note": "Instalacja w kilka minut. Twoje wiadomości nigdy nie przechodzą przez nasze serwery.",
       "proofTitle": "Zmierzone względem prawdziwego dostawcy",
-      "proofs": [
-        {
-          "marca": "OpenAI",
-          "modelo": "gpt-4o-mini",
-          "cifra": "≥ 10,0%",
-          "que": "mniej na fakturze, zweryfikowane na 95% · wobec niezoptymalizowanej integracji, bez streamingu"
-        }
-      ],
-      "proofSdkPendiente": "Tymczasowo: opublikowany przebieg zawierał kompresor dostępny tylko na stanowisku testowym, którego pakiet npm nie zawiera. Ta liczba mieści się pod dolną granicą tego przebiegu po odjęciu efektu kompresora, przeliczoną na podstawie zmierzonych prób — to jeszcze nie jest pomiar zainstalowanego SDK. Ten przebieg jeszcze się nie odbył.",
       "medidoEn": "Zmierzone na",
       "compatibleCon": "Zgodne z",
-      "compatibleNota": "Każdy endpoint zgodny z API OpenAI oraz natywny adapter Anthropic. Z opublikowaną liczbą, dziś, tylko OpenAI {modelo}."
+      "compatibleNota": "Zgodny nie znaczy zmierzony. SDK działa z każdym endpointem zgodnym z API OpenAI, a także z natywnym adapterem Anthropic i natywnym adapterem Gemini (nowość w {gemini}). Zmierzone — z liczbą oszczędności w publicznym benchmarku — są dziś tylko modele OpenAI i Anthropic; Gemini nie ma jeszcze zmierzonej oszczędności."
     },
     "cascade": {
       "title": "Wygrywa najtańsza realizacja",
-      "per": "zmierzone na gpt-4o-mini · dolna granica 95%",
-      "steps": [
-        {
-          "n": "01",
-          "title": "Unikaj wywołania w całości",
-          "sub": "resolvery · singleflight",
-          "ledger": "avoided_calls",
-          "grey": false
-        },
-        {
-          "n": "02",
-          "title": "Usuń to, czego nie trzeba było wysyłać",
-          "sub": "przycięte narzędzia · retrieval · zbędny kontekst",
-          "ledger": "eliminated_tokens",
-          "grey": false
-        },
-        {
-          "n": "03",
-          "title": "Skompresuj to, co zostało",
-          "sub": "lżejsze kodowanie · tylko gdy się opłaca",
-          "ledger": "compressed_tokens",
-          "grey": false
-        }
-      ],
-      "footnote": "Każdy krok trafia do INNEJ księgi, więc te liczby nie sumują się ze sobą. Krok, którego księga nie przekracza zera, nie pojawia się tutaj: ograniczenie wyjścia zostało zmierzone i nie oszczędza, więc go nie reklamujemy. Wszystkie liczby z tej serii pochodzą z gpt-4o-mini: ta sama dźwignia może kosztować na innym modelu, i to również publikujemy."
+      "footnote": "Każda dźwignia trafia do własnej księgi, a księgi nigdy się nie sumują. W tej baterii oszczędność pochodziła z powtórzonych zapytań, które SDK obsłużył bez wywołania dostawcy, a w Claude — z pamięci podręcznej prefiksu samego dostawcy. Pakiet npm nie zawiera kompresora, więc kompresja nic nie zaoszczędziła — a przy ruchu bez powtórzeń oszczędność była nieodróżnialna od zera."
     },
     "explica": {
       "eyebrow": "Prostymi słowami",
@@ -853,21 +821,15 @@
       "body": "Każdy scenariusz uruchamiamy dwa razy u prawdziwego dostawcy: bez zmian i z Savings z przodu. Oba wyniki liczy licznik samego dostawcy — ten sam, który wycenia Twoją fakturę. Oto co wyszło, z marginesem błędu:",
       "videoCaption": "Test to uczciwy eksperyment: to samo zadanie dwa razy — bez Savings i z Savings — a oba mierzy ten sam licznik dostawcy.",
       "plainTitle": "Tłumaczenie, bez żargonu",
-      "plain": "W tym teście rachunek spadł niemal na pewno o co najmniej {piso}. Najprawdopodobniej spadł o {punto}.",
-      "plainSdkPendiente": "Z SDK w postaci, w jakiej instalujesz go z npm, rachunek spada o co najmniej {piso}. Opublikowany test zawierał dodatkowo kompresor dostępny tylko na stanowisku testowym, którego pakiet nie zawiera; odejmujemy jego efekt zamiast go liczyć, dopóki przebieg z zainstalowanym SDK nie zastąpi tej liczby.",
-      "plainNote": "Gdy są widełki, zawsze ogłaszamy mniejszą liczbę — tę, którą gwarantuje statystyka — nigdy tę ładniejszą.",
-      "trialsLink": "Pobierz surowe próby (CSV)"
+      "plain": "Przy strumieniu, w którym {rep} zapytań powtarza się dokładnie, rachunek spadł o {punto} — między {bajo} a {alto} przy 95% ufności. Przy ruchu, który się nie powtarza, spadł o ≈ {cero}. Ile zaoszczędzisz, zależy od tego, jak często powtarza się Twój.",
+      "plainNote": "Procent nic nie znaczy bez swojego przedziału, modelu i ruchu: publikujemy wszystkie trzy — a także baterie, w których nic nie zaoszczędzono.",
+      "benchLink": "Każda bateria z pełnym raportem w publicznym benchmarku →"
     },
     "ledgersHead": {
       "eyebrow": "Uczciwe rozliczanie",
       "title": "Każdy rodzaj oszczędności liczony osobno — żeby żadna liczba nie była zawyżona.",
-      "body": "Savings oszczędza na kilka sposobów: unika całych wywołań, usuwa zbędny tekst, ciaśniej pakuje to, co wysyłane, i włącza rabaty dostawcy. Każdy sposób prowadzi własny rejestr z własną zmierzoną liczbą — i nigdy nie sumujemy ich w jedną marketingową liczbę.",
-      "runToMeasure": "uruchom optymalizator, aby zmierzyć",
-      "measuredFloor": "zmierzone · próg 95%",
-      "notProven": "zmierzone · nie przekracza zera",
-      "providerTag": "OpenAI",
-      "providerModel": "gpt-4o-mini",
-      "providerNote": "Każda księga jest mierzona i publikowana osobno względem API OpenAI; te, które nie przekraczają zera, nie pojawiają się. Procent bez modelu obok nic nie znaczy: ta sama dźwignia może oszczędzać na jednym modelu i kosztować na innym."
+      "body": "Każdy SavingsReport dzieli oszczędność na cztery księgi — uniknięte wywołania, usunięty tekst, skompresowany tekst i rabat z pamięci podręcznej Twojego własnego dostawcy — i nigdy nie sumuje ich w jedną liczbę marketingową.",
+      "providerNote": "W publicznym benchmarku ({fecha}) to, co zaoszczędził zainstalowany SDK, pochodziło z pierwszej księgi — powtórzonych zapytań obsłużonych bez wywołania dostawcy — a w Claude z czwartej, czyli rabatu Twojego własnego dostawcy. Pakiet npm nie zawiera kompresora, więc trzecia wynosiła tam zero. Księga bez opublikowanej liczby jest tu opisana, nie reklamowana."
     },
     "ledgers": [
       {
@@ -900,9 +862,8 @@
       "mEscritura": "zapisy cache (jedna godzina)",
       "mEscrituraDesc": "Każdy wynik narzędzia jest zapisywany do cache z narzutem, zanim zostanie ponownie odczytany.",
       "mSalida": "wyjście modelu",
-      "mSalidaDesc": "Poniżej jednego procenta tokenów; skill atakuje je bezpośrednio.",
-      "medidaPie": "zmierzonych wydatków",
-      "anatomiaNota": "Zmierzone miernikiem na {peticiones} prawdziwych żądaniach Claude Code, wobec liczników dostawcy ({fecha}). Efekt samego skilla zostanie opublikowany po zmierzeniu w A/B — nigdy wcześniej.",
+      "mSalidaDesc": "Niewielka część tokenów, po najwyższej cenie za token; skill atakuje je bezpośrednio.",
+      "anatomiaNota": "Na co idą wydatki sesji Claude Code, w tej kolejności: odczyty z pamięci podręcznej, godzinne zapisy do pamięci podręcznej i wyjście modelu — zmierzone naszym licznikiem na naszym własnym ruchu, względem liczników dostawcy. Ten raport nie jest opublikowany, więc nie pokazujemy jego liczb. Efekt samego skilla opublikujemy, gdy zostanie zmierzony w A/B — nigdy wcześniej.",
       "ccNota": "Jedno polecenie: instaluje się w ~/.claude/skills i aktywuje sam, gdy rozmowa schodzi na limity lub oszczędzanie tokenów.",
       "cxNota": "Codex nie ma skilli: ta sama dyscyplina podróżuje jako oznaczony blok w Twoim AGENTS.md (~/.codex) — zawsze aktywna; usuń blok, aby ją wyłączyć. Twój AGENTS.md poza znacznikami nigdy nie jest ruszany. Działa z kontem ChatGPT i kluczem API, a pod bvsala codex (z licencją) jej efekt jest mierzony.",
       "aiDescargar": "Pobierz savings-mode.zip",
@@ -943,7 +904,7 @@
         "medir": {
           "name": "Pomiar",
           "price": "Za darmo",
-          "body": "Bez karty. Warstwa w trybie cienia dla jednej organizacji: każde zapytanie trafia do dostawcy bez zmian, a Ty widzisz, ile by zaoszczędziła.",
+          "body": "Bez karty. Warstwa w trybie cienia dla jednej organizacji, do {seats} stanowisk i {requests} zapytań dziennie: nic z tego, co wysyłasz, się nie zmienia, nic nie jest serwowane z pamięci podręcznej, nigdy nie wchodzi do żadnej prowizji — a Ty widzisz, ile by zaoszczędziła. Wymaga @bivelio/savings-layer {version} lub nowszego.",
           "cta": "Zacznij za darmo →"
         },
         "pro": {
@@ -995,7 +956,7 @@
     },
     "footer": {
       "ctaTitle": "Zmierz to na własnym ruchu",
-      "ctaSub": "Po instalacji każde wywołanie zwraca swój SavingsReport, z tym, co zmierzone, i tym, co oszacowane, osobno. Zacznij za darmo od Pomiaru; Pro i Zespół to stała opłata za stanowisko, bez prowizji od oszczędności. Licencja pozwala uruchomić BV‑SALA — SDK w aplikacji, gateway w terminalu.",
+      "ctaSub": "Po instalacji każde wywołanie zwraca swój SavingsReport, z tym, co zmierzone, i tym, co oszacowane, osobno. Zacznij za darmo od Pomiaru (@bivelio/savings-layer {version} lub nowszy); Pro i Zespół to stała opłata za stanowisko, bez prowizji od oszczędności. Licencja pozwala uruchomić BV‑SALA — SDK w aplikacji, gateway w terminalu.",
       "ctaStart": "Zacznij",
       "tagline": "System operacyjny dla Twojej firmy. To <b>BV‑SALA</b>, neutralny wobec dostawcy optymalizator kosztów LLM od BiVelio — każda opublikowana liczba zmierzona względem licznika dostawcy; szacunki pokazujemy osobno i nigdy nie fakturujemy.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1077,19 +1038,7 @@
       "pajaBody": "…bramka usuwa go przed zapłatą: paczka dociera do chmury znacznie mniejsza, a różnica wpada do Twojego słoika.",
       "magroTitle": "Jeśli już jest szczupła…",
       "magroBody": "…przechodzi nietknięta. Nie ma tam czego usuwać — i nie obiecujemy oszczędności tam, gdzie ich nie ma.",
-      "caption": "Nie każda przesyłka niesie tyle samo wypełniacza: w tym przebiegu zmierzone cięcie na scenariusz wyniosło od {min} do {max}. Te, które nie oszczędzają, też publikujemy."
-    },
-    "recibo": {
-      "title": "SDK · SavingsReport · opublikowana seria",
-      "modelo": "model",
-      "parejas": "zmierzone pary",
-      "calidad": "jakość",
-      "punto": "oszacowanie punktowe",
-      "suelo": "Nagłówek to dolna granica przedziału 95%, nigdy punkt.",
-      "sdkPendiente": "Ten przebieg zawierał kompresor dostępny tylko na stanowisku testowym, którego pakiet npm nie zawiera, dlatego jego dolna granica nie jest pokazywana. Liczba powyżej to nasz nagłówek dla SDK w postaci, w jakiej go instalujesz: mieści się nadal po odjęciu efektu tego kompresora. Przebieg z zainstalowanym SDK jeszcze się nie odbył.",
-      "libros": "na księgę",
-      "pie": "Każda księga jest publikowana z własnym przedziałem; te, które nie przekraczają zera, nie są reklamowane.",
-      "fecha": "seria"
+      "caption": "Nie każde zapytanie ma coś do zaoszczędzenia: w publicznym benchmarku ruch bez powtórzeń zaoszczędził ≈ {cero}. To też publikujemy."
     },
     "devs": {
       "eyebrow": "Stworzone dla programistów",
@@ -1113,7 +1062,7 @@
         },
         {
           "title": "Streaming, ten sam raport",
-          "body": "generateStream() przekazuje Ci odpowiedź w miarę, jak dostawca ją pisze, i kończy się tym samym SavingsReport co generate(), według tych samych reguł podstawy: końcowy licznik dostawcy jest odczytywany na końcu streamu, a stream bez niego jest raportowany jako niezmierzony i nigdy nie wchodzi do Twojej prowizji. Z kontraktem wyjścia odpowiedź przychodzi zwalidowana, w jednym kawałku.",
+          "body": "generateStream() przekazuje Ci odpowiedź w miarę, jak dostawca ją pisze, i kończy się tym samym SavingsReport co generate(), według tych samych reguł podstawy: końcowy licznik dostawcy jest odczytywany na końcu streamu, a stream bez niego jest raportowany jako niezmierzony i nigdy nie liczy się jako zmierzona oszczędność. Z kontraktem wyjścia odpowiedź przychodzi zwalidowana, w jednym kawałku.",
           "mono": "layer.generateStream(request)"
         }
       ]
@@ -1130,7 +1079,7 @@
         "who": "Dla aplikacji Node.js, w JavaScript lub TypeScript, które wywołują API LLM własnym kluczem i płacą za każdy token.",
         "what": "Opakowuje wywołanie w Twoim kodzie, wysyła dostawcy tylko to, za co trzeba zapłacić, i zwraca SavingsReport z każdą odpowiedzią.",
         "figureLabel": "Liczba, którą publikujemy",
-        "figureNote": "Próg, nie prognoza: ile zaoszczędzisz, zależy od Twojego ruchu. Do prowizji wchodzą tylko oszczędności zmierzone licznikiem Twojego dostawcy — także przy powtórzonych zapytaniach obsłużonych bez wywołania dostawcy, z których każde jest wyceniane licznikiem identycznego zapytania, które już zostało wykonane.",
+        "figureNote": "To nie prognoza: ile zaoszczędzisz, zależy od tego, jak często Twój ruch się powtarza. W Twoim raporcie oszczędności liczy się tylko to, co potwierdzi licznik Twojego dostawcy — także przy powtórzonych zapytaniach obsłużonych bez wywołania dostawcy, z których każde jest wyceniane licznikiem identycznego zapytania, które już zostało wykonane.",
         "ctaMeasured": "Jak to zmierzyliśmy",
         "ctaVerify": "Wypróbuj jedną dźwignię na swoich danych"
       },
@@ -1140,7 +1089,7 @@
         "who": "Dla osób, które pracują z Claude Code, Codex CLI lub innym agentem programistycznym na kluczu API.",
         "what": "Jedno polecenie stawia lokalny licznik przed Twoim terminalem, bez zmian w kodzie. Gateway liczy każde zapytanie, dla którego Twój dostawca raportuje zużycie, jego własnym licznikiem — dla modeli z naszego cennika — i sumuje je w Twoim panelu, według dnia i modelu.",
         "figureLabel": "Brak opublikowanej liczby oszczędności",
-        "figureNote": "Nie opublikowaliśmy zmierzonej oszczędności dla agentów programistycznych, więc żadnej nie reklamujemy. Z PRO, na modelach Anthropic, gateway przestawia zapisy do pamięci podręcznej z godzinnego TTL na pięciominutowy tylko w turach, w których duża część promptu jest nowa — jak pierwsza tura sesji albo kompaktowanie — a kolejne tury trwającej sesji zostawia bez zmian. Zmienia to cenę, nigdy to, co czyta model, a do prowizji wchodzi tylko to, co potwierdzi licznik Twojego dostawcy.",
+        "figureNote": "Nie opublikowaliśmy zmierzonej oszczędności dla agentów programistycznych, więc żadnej nie reklamujemy. Z PRO, na modelach Anthropic, gateway przestawia zapisy do pamięci podręcznej z godzinnego TTL na pięciominutowy tylko w turach, w których duża część promptu jest nowa — jak pierwsza tura sesji albo kompaktowanie — a kolejne tury trwającej sesji zostawia bez zmian. Zmienia to cenę, nigdy to, co czyta model, a w Twoim raporcie oszczędności liczy się tylko to, co potwierdzi licznik Twojego dostawcy.",
         "cta": "Skonfiguruj gateway"
       },
       "skill": {
@@ -1173,6 +1122,13 @@
       "approxNote": "Dokładny tokenizer się nie załadował, więc każde liczenie tutaj byłoby przybliżone — a przybliżonych oszczędności nie pokazujemy. Odśwież stronę, aby spróbować ponownie.",
       "scope": "Czym to jest, a czym nie: jedna dźwignia — sposób zapisu danych strukturalnych w prompcie — na tokenach wejściowych tych danych. Działa tylko na danych przekazanych do SDK jako structuredData, nie na JSON-ie zapisanym już w Twoich wiadomościach. To nie jest Twoja faktura: nie ma tu unikniętych wywołań, pamięci podręcznej Twojego dostawcy ani wyjścia, a wiele zapytań w ogóle nie zawiera danych strukturalnych. Dla całego SDK liczba, którą publikujemy, to ta z sekcji pomiarów, wraz z jej przypisem.",
       "ctaInstall": "Zainstaluj SDK"
+    },
+    "enVivo": {
+      "titulo": "Publiczny benchmark · na żywo u dostawcy · {fecha}",
+      "conRepeticiones": "niższy rachunek (przedział 95%: od {bajo} do {alto}) przy strumieniu, w którym {rep} zapytań to dokładne powtórzenia — {bateria}, SDK {version}",
+      "sinRepeticiones": "przy ruchu bez powtórzeń (MT-Bench, BFCL): nieodróżnialne od zera",
+      "anthropic": "ten sam strumień (przedział 95%: od {bajo} do {alto}). Około {prefijo} pierwotnego rachunku to rabat z pamięci podręcznej prefiksu samego Anthropic — dostawcy, nie nasz, i pokazany osobno",
+      "pie": "To zależy od tego, jak często Twój ruch się powtarza. Każda bateria z pełnym raportem: <bench>publiczny benchmark</bench>."
     }
   },
   "invitacion": {
@@ -1420,7 +1376,9 @@
     "snipResult": "oszczędność, zmierzona",
     "ctaVerify": "Zobacz zmierzone oszczędności",
     "ctaSignup": "Utwórz konto",
-    "ctaInstall": "Przejdź do instrukcji instalacji"
+    "ctaInstall": "Przejdź do instrukcji instalacji",
+    "billWith": "To zależy",
+    "billDepends": "od tego, jak często Twój ruch się powtarza"
   },
   "pricingPage": {
     "metaTitle": "Warunki cenowe · BV-SALA",
@@ -1434,7 +1392,7 @@
       "intro": "Cztery plany, od najmniejszego do największego. Pro i Zespół są płatne za stanowisko i nie mają prowizji.",
       "medir": {
         "name": "Pomiar",
-        "body": "<b>Za darmo, bez karty.</b> Warstwa działa w trybie cienia dla jednej organizacji, z limitem stanowisk i dziennych zapytań: każde zapytanie trafia do dostawcy dokładnie tak, jak je zbudowałeś, nic nie jest serwowane z pamięci podręcznej i żadna dźwignia nie jest stosowana. Panel pokazuje, ile by zaoszczędziła — szacunek, od którego nigdy nie ma prowizji. Dźwignie wymagają Pro lub Zespołu."
+        "body": "<b>Za darmo, bez karty.</b> Warstwa działa w trybie cienia dla jednej organizacji, do <b>{seats} stanowisk</b> i <b>{requests} zapytań dziennie</b>: każde zapytanie trafia do dostawcy dokładnie tak, jak je zbudowałeś, nic nie jest serwowane z pamięci podręcznej i żadna dźwignia nie jest stosowana. Panel pokazuje, ile by zaoszczędziła — szacunek, od którego nigdy nie ma prowizji. Wymaga <b>@bivelio/savings-layer {version} lub nowszego</b>: wcześniejsze wersje nie rozpoznają licencji Pomiar. Dźwignie wymagają Pro lub Zespołu."
       },
       "pro": {
         "name": "Pro",

@@ -4,6 +4,7 @@ import type { AdminClient } from "@/lib/supabase/admin";
 import type { UsageRecord } from "@/lib/metering/usage";
 import { degradarReferencias } from "@/lib/metering/usage";
 import { DOMINIOS_DESECHABLES } from "./dominios-desechables";
+import { LIMITES_MEDIR } from "./medir-publico";
 import { loadPrivateKey, signCompact } from "./sign";
 
 /**
@@ -27,18 +28,10 @@ import { loadPrivateKey, signCompact } from "./sign";
 
 export const PLAN_MEDIR = "measure" as const;
 
-/**
- * Los límites anti-abuso, ACEPTADOS por el dueño el 2026-09-29. ESPEJO de
- * `MEASURE_LIMITS` en packages/protocol (un test fija que coinciden). El porqué
- * de cada número está allí.
- */
-export const LIMITES_MEDIR = {
-  asientos: 5,
-  orgsPorCuenta: 1,
-  peticionesDiarias: 20_000,
-  diasDeVigencia: 3650,
-  diasDeGracia: 30,
-} as const;
+// Los límites y la versión mínima viven en un módulo sin dependencias de
+// servidor (medir-publico.ts) para que las páginas públicas los importen sin
+// arrastrar la firma, Supabase ni la lista de dominios desechables.
+export { LIMITES_MEDIR, VERSION_MINIMA_MEDIR } from "./medir-publico";
 
 /** Dónde se pasa a pago: la cuenta de la organización, con su checkout. */
 export const URL_DE_PAGO_MEDIR = "https://savings.bivelio.com/dashboard/account";

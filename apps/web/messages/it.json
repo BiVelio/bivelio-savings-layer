@@ -103,7 +103,8 @@
       "signupDisabled": "La registrazione è chiusa per ora. Scrivi a support@bivelio.com.",
       "network": "Nessuna connessione. Controlla la rete e riprova.",
       "missingFields": "Inserisci email e password."
-    }
+    },
+    "signupMedir": "Oppure inizia gratis con Misura: senza carta, in modalità ombra, fino a {seats} postazioni e {requests} richieste al giorno. Richiede @bivelio/savings-layer {version} o successiva."
   },
   "dashboard": {
     "overview": {
@@ -782,46 +783,13 @@
       "ctaPricing": "Vedi i prezzi",
       "note": "Si installa in pochi minuti. I tuoi messaggi non passano mai dai nostri server.",
       "proofTitle": "Misurato contro un provider reale",
-      "proofs": [
-        {
-          "marca": "OpenAI",
-          "modelo": "gpt-4o-mini",
-          "cifra": "≥ 10,0%",
-          "que": "di fattura in meno, verificato al 95 % · rispetto a un'integrazione non ottimizzata, senza streaming"
-        }
-      ],
-      "proofSdkPendiente": "Provvisorio: l'esecuzione pubblicata includeva un compressore esclusivo del banco di prova che il pacchetto npm non include. Questa cifra sta sotto la soglia minima di quell'esecuzione togliendo l'effetto del compressore, ricalcolata dalle prove misurate: non è ancora una misurazione dell'SDK installato. Quell'esecuzione è in sospeso.",
       "medidoEn": "Misurato su",
       "compatibleCon": "Compatibile con",
-      "compatibleNota": "Qualsiasi endpoint compatibile con l'API OpenAI, più l'adattatore nativo Anthropic. Con cifra pubblicata, oggi, solo OpenAI {modelo}."
+      "compatibleNota": "Compatibile non vuol dire misurato. L'SDK funziona con qualsiasi endpoint compatibile con l'API di OpenAI, più l'adattatore nativo di Anthropic e l'adattatore nativo di Gemini (novità della {gemini}). Misurati — con una cifra di risparmio sul banco pubblico — oggi solo i modelli di OpenAI e di Anthropic; Gemini non ha ancora un risparmio misurato."
     },
     "cascade": {
       "title": "Vince l'esecuzione più economica",
-      "per": "misurato su gpt-4o-mini · soglia minima al 95 %",
-      "steps": [
-        {
-          "n": "01",
-          "title": "Evita del tutto la chiamata",
-          "sub": "resolver · singleflight",
-          "ledger": "avoided_calls",
-          "grey": false
-        },
-        {
-          "n": "02",
-          "title": "Togli ciò che non serviva inviare",
-          "sub": "strumenti potati · retrieval · contesto ridondante",
-          "ledger": "eliminated_tokens",
-          "grey": false
-        },
-        {
-          "n": "03",
-          "title": "Comprimi ciò che resta",
-          "sub": "codifica più leggera · solo se conviene",
-          "ledger": "compressed_tokens",
-          "grey": false
-        }
-      ],
-      "footnote": "Ogni passo cade in UN registro diverso, quindi queste cifre non si sommano tra loro. Un passo il cui registro non supera lo zero non compare qui: la restrizione dell'output è stata misurata e non fa risparmiare, quindi non viene annunciata. Tutte le cifre di questa tornata vengono da gpt-4o-mini: la stessa leva può costare denaro su un altro modello, e anche questo si pubblica."
+      "footnote": "Ogni leva finisce nel proprio registro, e i registri non si sommano mai. In questa batteria il risparmio è venuto dalle richieste ripetute che l'SDK ha servito senza chiamare il fornitore e, su Claude, dalla cache di prefisso del fornitore stesso. Il pacchetto npm non include alcun compressore, quindi la compressione non ha risparmiato nulla — e con traffico senza ripetizioni il risparmio è stato indistinguibile da zero."
     },
     "explica": {
       "eyebrow": "In parole semplici",
@@ -853,21 +821,15 @@
       "body": "Ogni scenario viene eseguito due volte contro il fornitore reale: così com'è, e con Savings davanti. Entrambi i risultati si contano con il contatore del fornitore stesso — lo stesso che dà il prezzo alla tua fattura. Ecco cosa è uscito, con il suo margine di errore:",
       "videoCaption": "Il test è un esperimento equo: lo stesso compito due volte — senza Savings e con Savings — con lo stesso contatore del fornitore che misura entrambi.",
       "plainTitle": "Traduzione, senza gergo",
-      "plain": "In questo test la fattura è scesa quasi con certezza di almeno {piso}. Molto probabilmente è scesa del {punto}.",
-      "plainSdkPendiente": "Con l'SDK così come lo installi da npm, la fattura scende di almeno {piso}. Il test pubblicato includeva anche un compressore esclusivo del banco di prova che il pacchetto non include; ne togliamo l'effetto invece di contarlo, finché un'esecuzione dell'SDK installato non sostituirà questa cifra.",
-      "plainNote": "Quando c'è una forchetta, annunciamo sempre il numero piccolo — quello che la statistica garantisce —, mai quello lusinghiero.",
-      "trialsLink": "Scarica le prove grezze (CSV)"
+      "plain": "Su un flusso in cui il {rep} delle richieste si ripetono identiche, la bolletta è scesa del {punto} — tra {bajo} e {alto} con il 95% di confidenza. Con traffico che non si ripete, è scesa di ≈ {cero}. Quanto risparmierai dipende da quanto si ripete il tuo.",
+      "plainNote": "Una percentuale non significa nulla senza il suo intervallo, il suo modello e il suo traffico: pubblichiamo tutti e tre — e anche le batterie in cui non si è risparmiato nulla.",
+      "benchLink": "Ogni batteria, con il suo report completo, sul banco pubblico →"
     },
     "ledgersHead": {
       "eyebrow": "Contabilità onesta",
       "title": "Ogni tipo di risparmio, contato a parte — perché nessuna cifra si gonfi.",
-      "body": "Savings risparmia in vari modi: evita chiamate intere, toglie testo superfluo, impacchetta meglio ciò che viene inviato e attiva gli sconti del fornitore. Ogni modo tiene il proprio registro con la propria cifra misurata — e non le sommiamo mai in un numerone di marketing.",
-      "runToMeasure": "esegui l'ottimizzatore per misurare",
-      "measuredFloor": "misurato · soglia del 95%",
-      "notProven": "misurato · non supera lo zero",
-      "providerTag": "OpenAI",
-      "providerModel": "gpt-4o-mini",
-      "providerNote": "Ogni registro viene misurato e pubblicato separatamente contro l'API di OpenAI; quelli che non superano lo zero non compaiono. Una percentuale senza il suo modello accanto non significa nulla: la stessa leva può far risparmiare su un modello e costare su un altro."
+      "body": "Ogni SavingsReport divide il risparmio in quattro registri — chiamate evitate, testo rimosso, testo compresso e lo sconto di cache del tuo stesso fornitore — e non li somma mai in una cifra di marketing.",
+      "providerNote": "Sul banco pubblico ({fecha}), ciò che ha risparmiato l'SDK installato è venuto dal primo registro — richieste ripetute servite senza chiamare il fornitore — e, su Claude, dal quarto, che è lo sconto del tuo stesso fornitore. Il pacchetto npm non include alcun compressore, quindi lì il terzo era a zero. Un registro senza cifra pubblicata è descritto qui, non pubblicizzato."
     },
     "ledgers": [
       {
@@ -900,9 +862,8 @@
       "mEscritura": "scrittura di cache (un'ora)",
       "mEscrituraDesc": "Ogni risultato di strumento viene scritto in cache con sovrapprezzo prima di essere riletto.",
       "mSalida": "output del modello",
-      "mSalidaDesc": "Meno dell'uno per cento dei token; la skill lo attacca direttamente.",
-      "medidaPie": "della spesa misurata",
-      "anatomiaNota": "Misurato con il misuratore su {peticiones} richieste reali di Claude Code, contro i contatori del provider ({fecha}). L'effetto della skill stessa sarà pubblicato quando sarà misurato in A/B — mai prima.",
+      "mSalidaDesc": "Una piccola parte dei token, al prezzo per token più alto; la skill lo attacca direttamente.",
+      "anatomiaNota": "Dove va la spesa di una sessione di Claude Code, in quest'ordine: letture dalla cache, scritture in cache di un'ora e output del modello — misurato con il nostro contatore sul nostro stesso traffico, rispetto ai contatori del fornitore. Quel report non è pubblicato, quindi non ne mostriamo le cifre. L'effetto della skill stessa sarà pubblicato una volta misurato in A/B — mai prima.",
       "ccNota": "Un solo comando: si installa in ~/.claude/skills e si attiva da sola quando la conversazione parla di limiti o di risparmiare token.",
       "cxNota": "Codex non ha skills: la stessa disciplina viaggia come blocco marcato del tuo AGENTS.md (~/.codex) — sempre attiva; elimina il blocco per spegnerla. Il tuo AGENTS.md fuori dai marcatori non si tocca mai. Funziona con account ChatGPT e con chiave API, e sotto bvsala codex (con licenza) il suo effetto si misura.",
       "aiDescargar": "Scarica savings-mode.zip",
@@ -943,7 +904,7 @@
         "medir": {
           "name": "Misura",
           "price": "Gratis",
-          "body": "Senza carta. Il livello in modalità ombra per un’organizzazione: ogni richiesta arriva al tuo fornitore senza modifiche, e vedi quanto avrebbe risparmiato.",
+          "body": "Senza carta. Il livello in modalità ombra per un’organizzazione, fino a {seats} postazioni e {requests} richieste al giorno: nulla di ciò che invii cambia, nulla viene servito dalla cache, non entra mai in alcuna commissione — e vedi quanto avrebbe risparmiato. Richiede @bivelio/savings-layer {version} o successiva.",
           "cta": "Inizia gratis →"
         },
         "pro": {
@@ -995,7 +956,7 @@
     },
     "footer": {
       "ctaTitle": "Misuralo sul tuo traffico",
-      "ctaSub": "Una volta installato, ogni chiamata restituisce il suo SavingsReport, con misurato e stimato separati. Inizia gratis con Misura; Pro e Team sono un canone fisso per postazione, senza commissione sul tuo risparmio. La licenza è ciò che ti permette di eseguire BV‑SALA — l’SDK nella tua app, il gateway nel tuo terminale.",
+      "ctaSub": "Una volta installato, ogni chiamata restituisce il suo SavingsReport, con misurato e stimato separati. Inizia gratis con Misura (@bivelio/savings-layer {version} o successiva); Pro e Team sono un canone fisso per postazione, senza commissione sul tuo risparmio. La licenza è ciò che ti permette di eseguire BV‑SALA — l’SDK nella tua app, il gateway nel tuo terminale.",
       "ctaStart": "Inizia",
       "tagline": "Il sistema operativo per la tua azienda. Questo è <b>BV‑SALA</b>, l'ottimizzatore di costo LLM di BiVelio, neutrale rispetto al fornitore — ogni cifra pubblicata è misurata contro il contatore del fornitore; le stime si mostrano a parte e non si fatturano mai.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1077,19 +1038,7 @@
       "pajaBody": "…il varco la toglie prima di pagare: il pacco arriva al cloud molto più piccolo e la differenza cade nel tuo barattolo.",
       "magroTitle": "Se è già magra…",
       "magroBody": "…passa intatta. Lì non c'è nulla da togliere — e non promettiamo risparmi dove non ce ne sono.",
-      "caption": "Non tutte le spedizioni portano la stessa paglia: in questa tornata, il taglio misurato per scenario è andato da {min} a {max}. Anche quelli che non risparmiano vengono pubblicati."
-    },
-    "recibo": {
-      "title": "SDK · SavingsReport · tornata pubblicata",
-      "modelo": "modello",
-      "parejas": "coppie misurate",
-      "calidad": "qualità",
-      "punto": "stima puntuale",
-      "suelo": "Il titolo è la soglia minima dell'intervallo al 95 %, mai il punto.",
-      "sdkPendiente": "Questa esecuzione includeva un compressore esclusivo del banco di prova che il pacchetto npm non include, quindi la sua soglia minima non viene mostrata. La cifra qui sopra è il nostro titolo per l'SDK così come lo installi: regge anche togliendo l'effetto di quel compressore. Manca ancora un'esecuzione dell'SDK installato.",
-      "libros": "per registro",
-      "pie": "Ogni registro si pubblica con il proprio intervallo; quelli che non superano lo zero non si annunciano.",
-      "fecha": "tornata"
+      "caption": "Non ogni richiesta ha qualcosa da risparmiare: sul banco pubblico, il traffico senza ripetizioni ha risparmiato ≈ {cero}. Pubblichiamo anche questo."
     },
     "devs": {
       "eyebrow": "Fatto per sviluppatori",
@@ -1113,7 +1062,7 @@
         },
         {
           "title": "Streaming, lo stesso report",
-          "body": "generateStream() ti consegna la risposta man mano che il fornitore la scrive e si chiude con lo stesso SavingsReport di generate(), con le stesse regole di base: il contatore finale del fornitore viene letto alla fine dello stream, e uno stream che ne è privo viene riportato come non misurato e non entra mai nella tua commissione. Con un contratto di output, la risposta arriva validata, in un solo pezzo.",
+          "body": "generateStream() ti consegna la risposta man mano che il fornitore la scrive e si chiude con lo stesso SavingsReport di generate(), con le stesse regole di base: il contatore finale del fornitore viene letto alla fine dello stream, e uno stream che ne è privo viene riportato come non misurato e non conta mai come risparmio misurato. Con un contratto di output, la risposta arriva validata, in un solo pezzo.",
           "mono": "layer.generateStream(request)"
         }
       ]
@@ -1130,7 +1079,7 @@
         "who": "Per app Node.js, in JavaScript o TypeScript, che chiamano un'API di LLM con la tua chiave e pagano ogni token.",
         "what": "Avvolge la chiamata nel tuo codice, invia al fornitore solo ciò che va pagato e restituisce un SavingsReport con ogni risposta.",
         "figureLabel": "La cifra che pubblichiamo",
-        "figureNote": "Una soglia, non una previsione: quanto risparmierai dipende dal tuo traffico. Nella commissione entra solo il risparmio misurato con il contatore del tuo fornitore — comprese le richieste ripetute servite senza chiamarlo, ciascuna valutata con il contatore della richiesta identica già eseguita.",
+        "figureNote": "Non è una previsione: quanto risparmierai dipende da quanto si ripete il tuo traffico. Nel tuo report di risparmio conta solo ciò che conferma il contatore del tuo fornitore — comprese le richieste ripetute servite senza chiamarlo, ciascuna valutata con il contatore della richiesta identica già eseguita.",
         "ctaMeasured": "Come l'abbiamo misurato",
         "ctaVerify": "Prova una leva sui tuoi dati"
       },
@@ -1140,7 +1089,7 @@
         "who": "Per chi usa Claude Code, Codex CLI o un altro agente di codice con chiave API.",
         "what": "Un comando mette un contatore locale davanti al tuo terminale, senza codice da toccare. Il gateway conta ogni richiesta di cui il tuo fornitore riporta l'utilizzo, con il contatore del fornitore stesso — per i modelli del nostro catalogo prezzi — e le somma nella tua dashboard, per giorno e per modello.",
         "figureLabel": "Nessuna cifra di risparmio pubblicata",
-        "figureNote": "Non abbiamo pubblicato un risparmio misurato per gli agenti di codice, quindi non ne annunciamo nessuno. Con PRO, sui modelli Anthropic, il gateway sposta le scritture della cache dal TTL di un'ora a quello di cinque minuti, solo nei turni in cui una parte consistente del prompt è nuova — come il primo turno di una sessione o una compattazione — e lascia come sono i turni concatenati di una sessione in corso. Questo cambia il prezzo, mai ciò che legge il modello, e solo ciò che conferma il contatore del tuo fornitore entra nella commissione.",
+        "figureNote": "Non abbiamo pubblicato un risparmio misurato per gli agenti di codice, quindi non ne annunciamo nessuno. Con PRO, sui modelli Anthropic, il gateway sposta le scritture della cache dal TTL di un'ora a quello di cinque minuti, solo nei turni in cui una parte consistente del prompt è nuova — come il primo turno di una sessione o una compattazione — e lascia come sono i turni concatenati di una sessione in corso. Questo cambia il prezzo, mai ciò che legge il modello, e solo ciò che conferma il contatore del tuo fornitore conta nel tuo report di risparmio.",
         "cta": "Installa il gateway"
       },
       "skill": {
@@ -1173,6 +1122,13 @@
       "approxNote": "Il tokenizzatore esatto non si è caricato, quindi qualsiasi conteggio qui sarebbe approssimativo — e non mostriamo risparmi approssimativi. Ricarica la pagina per riprovare.",
       "scope": "Cos'è e cosa non è: una leva — come si scrivono i dati strutturati nel prompt — sui token di input di questi dati. Vale solo per i dati che passi all'SDK come structuredData, non per il JSON già scritto nei tuoi messaggi. Non è la tua fattura: le chiamate evitate, la cache del tuo fornitore e l'output non ci sono, e molte richieste non contengono dati strutturati. Per l'SDK intero, la cifra che pubblichiamo è quella della sezione della misurazione, con la sua nota.",
       "ctaInstall": "Installa l'SDK"
+    },
+    "enVivo": {
+      "titulo": "Banco pubblico · dal vivo contro il fornitore · {fecha}",
+      "conRepeticiones": "di bolletta in meno (intervallo al 95%: da {bajo} a {alto}) su un flusso in cui il {rep} delle richieste sono ripetizioni esatte — {bateria}, SDK {version}",
+      "sinRepeticiones": "con traffico senza ripetizioni (MT-Bench, BFCL): indistinguibile da zero",
+      "anthropic": "stesso flusso (intervallo al 95%: da {bajo} a {alto}). Circa {prefijo} della bolletta originale è lo sconto della cache di prefisso di Anthropic stesso — del fornitore, non nostro, e mostrato a parte",
+      "pie": "Dipende da quanto si ripete il tuo traffico. Ogni batteria, con il suo report completo: <bench>banco pubblico</bench>."
     }
   },
   "invitacion": {
@@ -1420,7 +1376,9 @@
     "snipResult": "il risparmio, misurato",
     "ctaVerify": "Vedi il risparmio misurato",
     "ctaSignup": "Crea account",
-    "ctaInstall": "Vai alla guida di installazione"
+    "ctaInstall": "Vai alla guida di installazione",
+    "billWith": "Dipende",
+    "billDepends": "da quanto si ripete il tuo traffico"
   },
   "pricingPage": {
     "metaTitle": "Condizioni di prezzo · BV-SALA",
@@ -1434,7 +1392,7 @@
       "intro": "Quattro piani, dal più piccolo al più grande. Pro e Team si pagano per postazione e non prevedono commissioni.",
       "medir": {
         "name": "Misura",
-        "body": "<b>Gratis, senza carta.</b> Il livello funziona in modalità ombra per un’organizzazione, con un tetto di postazioni e di richieste giornaliere: ogni richiesta arriva al tuo fornitore esattamente come l’hai costruita, nulla viene servito dalla cache e nessuna leva viene applicata. La tua dashboard mostra quanto avrebbe risparmiato — una stima che non ha mai commissione. Le leve richiedono Pro o Team."
+        "body": "<b>Gratis, senza carta.</b> Il livello funziona in modalità ombra per un’organizzazione, fino a <b>{seats} postazioni</b> e <b>{requests} richieste al giorno</b>: ogni richiesta arriva al tuo fornitore esattamente come l’hai costruita, nulla viene servito dalla cache e nessuna leva viene applicata. La tua dashboard mostra quanto avrebbe risparmiato — una stima che non ha mai commissione. Richiede <b>@bivelio/savings-layer {version} o successiva</b>: le versioni precedenti non riconoscono la licenza Misura. Le leve richiedono Pro o Team."
       },
       "pro": {
         "name": "Pro",

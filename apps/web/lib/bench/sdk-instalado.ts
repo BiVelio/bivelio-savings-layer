@@ -1,5 +1,4 @@
 import type { AbArtifact } from "@/app/[locale]/dashboard/data";
-import en from "@/messages/en.json";
 
 /**
  * LO QUE LA WEB PUEDE PRESENTAR COMO «LO QUE OBTIENES», cuando el artefacto
@@ -76,11 +75,16 @@ export function numeroDeCifra(cifra: string): number {
 }
 
 /**
- * La cifra del titular (`landing.hero.proofs.0.cifra`) como fracción. Se lee
- * del catálogo inglés porque los 12 dicen la misma (cifra-del-heroe.test.ts):
- * una sola fuente, sin un segundo número escrito a mano en el código.
+ * La cota que el PANEL (/dashboard/proof y sus componentes) usa para no
+ * presentar el suelo de un artefacto que no midió lo instalado.
+ *
+ * Hasta el 2026-09-29 se leía de `landing.hero.proofs.0.cifra`, el «al menos un
+ * 10 %» de la portada. La portada ya no lo publica (lib/portada/banco-en-vivo.ts
+ * y portada-dice-lo-medido.test.ts): publica la cifra condicionada del banco en
+ * vivo. El panel sigue enseñando el artefacto sintético del 12-09 con esta
+ * cota; qué hacer con esa vista es decisión del dueño (anotado en el PR).
  */
-export const PROMESA_DEL_TITULAR: number = numeroDeCifra(en.landing.hero.proofs[0]!.cifra) / 100;
+export const PROMESA_DEL_TITULAR: number = 0.1;
 
 /**
  * El suelo que una superficie puede presentar como lo que el cliente obtiene.

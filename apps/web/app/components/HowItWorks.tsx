@@ -1,31 +1,18 @@
 import { getTranslations } from "next-intl/server";
 
-import abData from "@/public/data/ab-live.json";
-import type { AbArtifact } from "@/app/[locale]/dashboard/data";
-import { sueloPublicable } from "@/lib/bench/sdk-instalado";
-
 /**
- * LA FACTURA DE EJEMPLO SALE DE LA MEDICIÓN, NO DE LA IMAGINACIÓN.
+ * LA FACTURA DE EJEMPLO NO PROMETE UNA CIFRA.
  *
- * Aquí había un «$330 → $160» escrito a mano: un 51,5 % que no respaldaba
- * ningún banco, ningún artefacto ni ningún documento. Y no estaba solo en esta
- * página — la misma pareja de números viajaba en la tarjeta social de los 12
- * idiomas (que LinkedIn y X cachean durante días) y en el README que se publica
- * en npm. Una cifra inventada en el escaparate es exactamente lo que esta capa
- * dice combatir.
- *
- * Ahora es una regla de tres sobre el SUELO del intervalo del artefacto
- * publicado: cien euros de factura y lo que quedaría al suelo medido. Si el
- * banco se mueve, esto se mueve solo; si alguien publica un artefacto peor, la
- * ilustración se vuelve más modesta sin que nadie tenga que acordarse.
+ * Aquí hubo primero un «$330 → $160» escrito a mano (un 51,5 % sin ningún
+ * respaldo) y después una regla de tres sobre el suelo del artefacto sintético
+ * del 2026-09-12 («$100 → $90»: el «al menos un 10 %» que la portada ya no
+ * publica). Ninguna de las dos era lo que un cliente obtiene: el banco público
+ * mide que el ahorro depende de cuánto repite el tráfico (≈ 31 % con un 30 %
+ * de repeticiones exactas, ≈ 0 % sin ellas). El diagrama enseña ahora la factura de
+ * partida y, con la capa, «depende de cuánto repite tu tráfico»: nada que la
+ * medición no sostenga. Su tarjeta social dice lo mismo.
  */
-// Mientras la tirada publicada no mida el SDK tal como se instala (la del
-// 2026-09-12 llevaba el compresor del banco, que npm no trae), la regla de tres
-// va sobre lo que sostiene el paquete, no sobre ese suelo: esta ilustración está
-// junto a «esa caja verde es un paquete de npm» (lib/bench/sdk-instalado.ts).
-const SUELO_MEDIDO = sueloPublicable(abData as unknown as AbArtifact);
 const FACTURA_EJEMPLO = 100;
-const FACTURA_CON_CAPA = Math.round(FACTURA_EJEMPLO * (1 - SUELO_MEDIDO));
 
 import { Link } from "@/i18n/navigation";
 
@@ -104,8 +91,8 @@ export async function HowItWorks({ variant }: { variant: "landing" | "app" }) {
               </div>
             </div>
             <div className="hiw-bill">
-              <div className="amt less">${FACTURA_CON_CAPA}</div>
-              <div className="cap">{t("billReport")}</div>
+              <div className="amt less">{t("billWith")}</div>
+              <div className="cap">{t("billDepends")}</div>
             </div>
           </div>
           <p className="hiw-note">{t.rich("s1Note", { b })}</p>

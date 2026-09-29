@@ -4,8 +4,8 @@ import { describe, it, expect } from "vitest";
 /**
  * DOS OFERTAS Y UNA COMISIÓN SIN TRAMPA, EN LOS 12 IDIOMAS.
  *
- * 1. La portada separa el SDK (con su suelo publicado, que llega de
- *    `hero.proofs` y no de estos textos) y el gateway, que NO tiene cifra de
+ * 1. La portada separa el SDK (con su cifra medida, que llega de
+ *    lib/portada/banco-en-vivo.ts por parámetro y no de estos textos) y el gateway, que NO tiene cifra de
  *    ahorro publicada: ningún texto de su tarjeta ni de su sección puede llevar
  *    un porcentaje, y los espacios nuevos no llevan ni un dígito (todo número
  *    llega por parámetro).
@@ -375,7 +375,8 @@ describe("repeticiones por referencia: plural ICU sin dígitos", () => {
 /**
  * LA ETIQUETA DE LA CIFRA DEL SDK NO DICE «MEDIDO».
  *
- * La cifra de la tarjeta es la fila de `hero.proofs`, y quien la gestiona es la
+ * La cifra de la tarjeta la ponen las filas de lo medido (lib/portada/
+ * banco-en-vivo.ts); antes era la fila de `hero.proofs`, gestionada por la
  * unidad del titular. #321 la baja a un titular PROVISIONAL, recalculado desde
  * los ensayos y no medido con el SDK tal como se instala desde npm. Una
  * etiqueta que dijera «suelo medido contra un proveedor real» seguiría ahí

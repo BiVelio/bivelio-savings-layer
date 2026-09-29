@@ -7,6 +7,7 @@ import { etiquetasQueRigen } from "@/app/components/LegalGoverns";
 import { Link } from "@/i18n/navigation";
 import { absolute, languageAlternates } from "@/i18n/site";
 import { terminosDeLosPlanes, terminosDePrecio } from "@/lib/legal/precios-publicados";
+import { LIMITES_MEDIR, VERSION_MINIMA_MEDIR } from "@/lib/license/medir-publico";
 import { preciosDelPlan, tarifasDeLosPlanes } from "@/lib/stripe/pricing";
 
 /**
@@ -66,9 +67,18 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
           <p>{t("plans.intro")}</p>
 
           {/* «Medir»: la licencia gratuita (docs/LICENCIA-MEDIR.md, su propio PR).
-              Sin cifras en el texto: sus topes viven en lib/license/medir.ts. */}
+              Sin cifras en el texto: sus topes y su versión mínima llegan por
+              parámetro desde lib/license/medir.ts, las constantes que aplica la
+              ingesta. */}
           <h3 id="medir">{t("plans.medir.name")}</h3>
-          <p>{t.rich("plans.medir.body", { b })}</p>
+          <p>
+            {t.rich("plans.medir.body", {
+              b,
+              seats: LIMITES_MEDIR.asientos,
+              requests: LIMITES_MEDIR.peticionesDiarias.toLocaleString(locale),
+              version: VERSION_MINIMA_MEDIR,
+            })}
+          </p>
 
           <h3 id="pro">{t("plans.pro.name")}</h3>
           <p className="terms-amount">
