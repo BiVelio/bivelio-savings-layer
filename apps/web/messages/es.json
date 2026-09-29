@@ -932,6 +932,7 @@
       "colBivelio": "BiVelio",
       "colLegal": "Legal",
       "measured": "Resultados medidos",
+      "benchmarks": "Banco público",
       "pricing": "Precios",
       "home": "Inicio",
       "docs": "Documentación",
@@ -1135,6 +1136,167 @@
     "sesionActual": "Ahora mismo ha iniciado sesión como <b>{email}</b>.",
     "cerrarYContinuar": "Cerrar sesión y usar otra cuenta",
     "cerrando": "Cerrando sesión…"
+  },
+  "benchmarksPage": {
+    "metaTitle": "Banco público A/B: mídenos | BiVelio Savings Layer",
+    "metaDescription": "Cuatro baterías públicas (GSM8K, BFCL, XSTest y MT-Bench), dos brazos medidos con el contador de uso del propio proveedor, cada cifra con su n, su intervalo y su fecha. Lo que ahorra, lo que no, y los fallos que el banco encontró.",
+    "eyebrow": "Banco público · reproducible",
+    "title": "Nuestro banco A/B, abierto. Mídenos.",
+    "lede": "Publicamos cada tirada: cuatro baterías con datasets públicos, {modelos} modelos, y los dos brazos medidos con el contador de uso del propio proveedor. Cada cifra lleva su n, su intervalo y su fecha. Lo que no ahorra también está aquí.",
+    "stats": {
+      "batteries": "baterías",
+      "models": "modelos probados",
+      "measured": "modelos con alguna medición",
+      "reports": "informes en vivo",
+      "last": "última tirada"
+    },
+    "method": {
+      "title": "Qué se mide y cómo",
+      "arms": "<b>Dos brazos, la misma petición.</b> A va directa al proveedor, sin la capa; B pasa por la capa con su configuración por defecto. Mismo prompt, mismo muestreo y mismo tope de salida.",
+      "cost": "<b>El coste lo cuenta el proveedor.</b> Cada brazo se valora con el <code>usage</code> que devuelve el API en cada llamada, al precio de lista. El ahorro es 1 − coste(B) / coste(A) de la misma tirada, no lo que la capa dice de sí misma.",
+      "intervals": "<b>Intervalos al {nivel}.</b> Los calcula cada arnés (remuestreo por familias de preguntas, Wilson en las tasas de negativa). Un intervalo que cruza el cero es un «no se distingue de cero», y así lo decimos.",
+      "package": "<b>El paquete, el que se instala.</b> El brazo B corre el fuente de la etiqueta {version}; su <code>dist/index.js</code> es idéntico byte a byte al del tarball de npm (sha256 <code>{sha}</code>).",
+      "guard": "<b>Sin atajos.</b> Cada arnés vigila los hosts a los que habla y lleva un tope de gasto por modelo escrito en código. Un modelo que no se pudo medir sale como «no medido», con su motivo.",
+      "batteriesTitle": "Cuatro baterías, datasets públicos fijados",
+      "commitOnly": "fijado por commit"
+    },
+    "batteries": {
+      "gsm8k": "Problemas de matemáticas con repeticiones y paráfrasis: cuánto ahorra la caché y si se pierde exactitud.",
+      "bfcl": "Llamadas a herramientas: que la capa no cambie ninguna y que el catálogo llegue entero.",
+      "xstest": "Negativas: que la capa no cambie cuándo el modelo se niega ni sirva una negativa de caché.",
+      "mt-bench": "Chat de dos turnos sin repeticiones: que la capa no empeore coste, latencia ni calidad."
+    },
+    "th": {
+      "battery": "Batería",
+      "what": "Qué comprueba",
+      "dataset": "Dataset",
+      "pinned": "Ficheros fijados",
+      "license": "Licencia",
+      "model": "Modelo",
+      "n": "n",
+      "savings": "Ahorro medido [IC]",
+      "fromExact": "De la caché exacta",
+      "fromCalls": "En las llamadas (prefijo)",
+      "accuracy": "Exactitud A → B",
+      "run": "Versión · fecha",
+      "prompts": "Prompts",
+      "safe": "Negativas, prompts seguros (A → B)",
+      "unsafe": "Negativas, prompts inseguros (A → B)",
+      "verdict": "Lectura",
+      "reports": "Informes"
+    },
+    "savings": {
+      "title": "Ahorro medido por modelo",
+      "intro": "GSM8K, con un flujo de peticiones en el que un {rep} son repeticiones exactas y un {par} paráfrasis. Es la batería con tráfico repetido: tu ahorro depende de cuánto se repita el tuyo. Sin repeticiones, mira «Lo que no ahorra».",
+      "nCell": "{n} peticiones · {unicos} únicas",
+      "delta": "Δ {d} pp [{inf}, {sup}]",
+      "originNote": "Origen del ahorro, posición a posición: «de la caché exacta» es lo que A pagó en las peticiones que la capa sirvió sin llamar al proveedor; «en las llamadas» es la diferencia en las que sí llegaron, sobre todo caché de prefijo del proveedor (más algo de variación de la salida). Las dos suman el ahorro total.",
+      "accuracyNote": "La exactitud se mide sobre las preguntas con respuesta publicada; las variantes con una cifra cambiada solo sirven para comprobar que la capa no entrega la respuesta de otra pregunta."
+    },
+    "guarantees": {
+      "title": "Garantías, contadas",
+      "tools": {
+        "title": "La capa nunca cambió una llamada a herramientas",
+        "titleBroken": "La capa cambió {n} llamadas a herramientas",
+        "body": "{alteradas} llamadas alteradas en {comparaciones} comparaciones de BFCL, {modelos} modelos, desde la {desde}. Si la capa falla (un error en B que A no tuvo), no cuenta aquí: está en «Fallos que el banco encontró»."
+      },
+      "other": {
+        "title": "Ninguna respuesta de otra pregunta desde la {desde}",
+        "titleBroken": "{n} respuestas de otra pregunta desde la {desde}",
+        "body": "{deOtra} de {variantes} variantes (la misma pregunta con otro número, y por tanto otra respuesta) servidas con la respuesta de otra pregunta, en {modelos} modelos en vivo y en todas las configuraciones de caché medidas.",
+        "replay": "Réplica sin red del split de test entero de GSM8K: {erroneas} en {peticiones} peticiones, en cada una de las {configs} configuraciones de caché."
+      },
+      "refusals": {
+        "title": "La misma tasa de negativas, con y sin la capa",
+        "titleBroken": "La tasa de negativas cambió en {n} modelos",
+        "body": "XSTest, {modelos} modelos medidos: ninguna diferencia A/B por debajo de p = {umbral} (McNemar, prompts pareados). La capa entregó sin alterar el texto de {comprobados} respuestas ({alterados} alteradas).",
+        "caption": "Tasa de negativa por modelo, sin la capa (A) y con ella (B), sobre los mismos prompts."
+      }
+    },
+    "noSavings": {
+      "title": "Lo que no ahorra",
+      "lead": "<b>Sin repeticiones, el ahorro es ≈ {cero}.</b> Lo publicamos igual, porque es lo que vas a ver si tu tráfico no se repite.",
+      "why": "MT-Bench es chat de dos turnos con una capa nueva por pregunta: no hay nada que la caché pueda reutilizar y el prompt casi nunca llega al mínimo que el proveedor exige para cachear un prefijo. En BFCL cada llamada a herramientas es distinta. Lo que miden estas dos baterías es que la capa no empeore nada; la diferencia de coste que queda es ruido de la salida del modelo, no la capa.",
+      "nQuestions": "{n} preguntas",
+      "nItems": "{n} ítems",
+      "verdict": {
+        "ahorro": "ahorro",
+        "cero": "no se distingue de cero",
+        "sobrecoste": "sobrecoste"
+      },
+      "notAttributable": "no atribuible a la capa"
+    },
+    "status": {
+      "title": "Estado por modelo y batería",
+      "intro": "Cada celda enseña la tirada de la versión más alta de la capa. Si un modelo no se pudo medir, se dice por qué, en vez de dejar el hueco.",
+      "measured": "medido · n = {n}",
+      "notMeasured": "no medido: {motivo}",
+      "layerFailed": "la capa falló: {motivo}",
+      "reason": {
+        "credencial": "credencial rechazada",
+        "presupuesto": "tope de gasto agotado",
+        "cuota": "cuota del proveedor agotada",
+        "capa": "las peticiones no pasaron por la capa",
+        "proveedor": "el proveedor rechazó la petición en los dos brazos",
+        "otro": "sin datos suficientes"
+      }
+    },
+    "bugs": {
+      "title": "Fallos que el banco encontró",
+      "intro": "El banco no está para salir bien en la foto: está para encontrar los fallos antes que tú. Estos los encontró él, con la versión en la que aparecieron y la que los arregla.",
+      "found": "Encontrado en la {version}: {ocurrencias} de {sobre}.",
+      "fixed": "Arreglado en la {version} ({prs}).",
+      "verified": "Verificado en vivo con la {version}: {ocurrencias} de {sobre}.",
+      "stillSeen": "Todavía visto con la {version}: {ocurrencias} de {sobre}.",
+      "pending": "Pendiente de volver a medir en vivo con la {version}.",
+      "items": {
+        "otra-pregunta": {
+          "title": "La caché semántica sin calibrar servía la respuesta de otra pregunta",
+          "body": "Con la caché semántica sin calibrar, una variante con otro número («three baskets» frente a «two baskets») podía recibir la respuesta de la pregunta original. Contado sobre las variantes de GSM8K."
+        },
+        "herramientas-multiturno": {
+          "title": "La capa recortaba el catálogo de herramientas sin señal para hacerlo",
+          "body": "En conversaciones de varios turnos, el brazo B enviaba menos herramientas que el A aunque nada indicaba cuáles sobraban. Contado sobre las conversaciones multi-turno de BFCL."
+        },
+        "negativas-de-texto": {
+          "title": "Algunas negativas escritas como texto se guardaban en caché",
+          "body": "Una negativa que el modelo escribe como texto (sin la señal del API) podía guardarse en caché, repetirse y acreditarse como ahorro. Contado en prompts de XSTest."
+        },
+        "gemini-filtro-cacheado": {
+          "title": "Un filtro de contenido de Gemini se cacheaba como respuesta",
+          "body": "Gemini señala su filtro con un motivo de parada propio que la capa no reconocía como negativa, así que podía cachearlo y repetirlo. Contado en prompts de XSTest."
+        },
+        "gemini-prompt-cache-key": {
+          "title": "Gemini no pasaba por la capa",
+          "body": "La capa enviaba un campo propio del API de OpenAI a cualquier endpoint compatible, y Gemini lo rechaza: todas las peticiones del brazo B fallaban. Contado en peticiones de GSM8K."
+        },
+        "gemini-thought-signature": {
+          "title": "Con Gemini 3, el segundo turno con herramientas fallaba",
+          "body": "La capa no devolvía la firma de pensamiento que Gemini 3 exige en cada llamada a herramientas, así que el turno siguiente se rechazaba. Contado en continuaciones multi-turno de BFCL."
+        }
+      }
+    },
+    "repro": {
+      "title": "Cómo reproducirlo",
+      "intro": "El código del banco todavía no es público; el método sí, y cabe en cinco pasos. Con tus propias claves de proveedor puedes repetirlo y comparar cifra a cifra con nuestros informes.",
+      "steps": {
+        "dataset": "<b>El dataset.</b> Descarga cada dataset público en el commit de la tabla de arriba y comprueba el sha256 de cada fichero antes de usarlo. Si no cuadra, no es el mismo dataset.",
+        "package": "<b>La capa.</b> Instala <code>@bivelio/savings-layer</code> desde npm en la versión que dice el informe y comprueba el sha256 de <code>dist/index.js</code>: cada informe lleva el suyo.",
+        "arms": "<b>Dos brazos por prompt.</b> A va directo al proveedor; B manda el mismo prompt, al mismo modelo y con el mismo tope de salida, a través de la capa con su configuración por defecto. Una parte de los prompts se repite o se parafrasea, como en el tráfico real, y el orden A/B se sortea.",
+        "cost": "<b>El coste lo dice el proveedor.</b> Suma lo que factura cada brazo según el <code>usage</code> que devuelve el proveedor, a su tarifa publicada. El ahorro es <code>1 − coste B / coste A</code>, con su intervalo.",
+        "compare": "<b>La calidad, en la misma tirada.</b> Puntúa igual las respuestas de los dos brazos (respuesta exacta en GSM8K, llamada a herramienta en BFCL, negativa o no en XSTest, juez en MT-Bench) y compáralas con el informe JSON de la misma batería y versión."
+      },
+      "reportsTitle": "Los informes",
+      "reportsIntro": "Cada tirada deja un informe JSON con su diseño, sus limitaciones y cada llamada medida: usage, coste por brazo y clasificación de la respuesta. Se sirven desde esta web.",
+      "served": "Los informes se sirven tal como los escribió el banco, con una excepción: se quitan los datos del entorno de quien midió (rutas de disco, correos). De XSTest no se publica el texto de ninguna respuesta, solo su clasificación."
+    },
+    "invite": {
+      "title": "Mídenos tú",
+      "body": "Una medición independiente vale más que la nuestra. El código del banco no es público todavía: si quieres repetir la medición, o medir la capa con tu propio arnés o con tu tráfico, escríbenos y te damos lo que necesites para hacerlo.",
+      "contact": "Escríbenos a",
+      "cta": "Escribir un correo",
+      "subject": "Medición independiente del banco público"
+    }
   },
   "howItWorks": {
     "metaTitle": "¿Dónde se instala el ahorro? · BiVelio Savings Layer",
