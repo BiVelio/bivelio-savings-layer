@@ -1,0 +1,1599 @@
+{
+  "bateria": "BFCL",
+  "fecha": "2026-09-29T06:21:07.380Z",
+  "modo": "LIVE",
+  "dataset": {
+    "repo": "ShishirPatil/gorilla",
+    "commit": "f7cf7359b7ac615a0b294831c5ba2bc95ee4a000",
+    "licencia": "Apache-2.0",
+    "categorias": [
+      "simple",
+      "multiple",
+      "parallel",
+      "parallel_multiple",
+      "multi_turn_base"
+    ],
+    "tamanoPorCategoria": {
+      "simple": 400,
+      "multiple": 200,
+      "parallel": 200,
+      "parallel_multiple": 200
+    }
+  },
+  "paquete": {
+    "version": "0.4.31",
+    "etiqueta": "v0.4.31 (source of the tag, BVSALA_DEV_OPEN=1; npm = same commit, dist rebuilt from the tag byte-identical)",
+    "tag": "v0.4.31",
+    "commitDelTag": "00c99c803c0ab6f3c11b7ab87f3c75a38d609b1c",
+    "commitDelArbol": "1eb205c8b46ba4b435a56aa88c1f0576a5978423",
+    "fuenteIdenticoAlTag": true,
+    "origenDelFuente": "git-archive",
+    "diferenciasDelArbol": [
+      "src/version.ts"
+    ],
+    "integridadNpm": "sha512-ePCN+dZr+VuMUSGm2TelDkt7TR6jSi/SCTomomDK/bfF92FHr1eFUdgTWQODCdQf8C8c+/h6AA/up46DXO2mLQ==",
+    "sha256DistNpm": "b52f99cacf9804ecd3153e56f26ec3adcdc2510d52a8446a369ecf914e0b5731",
+    "hostsVistos": [
+      "api.anthropic.com"
+    ],
+    "hostsRechazados": []
+  },
+  "config": {
+    "n": 1,
+    "multi": 1,
+    "repes": 1,
+    "tope": 1.25,
+    "semilla": 20260928,
+    "concurrencia": 3,
+    "gastoPrevioDescontado": {}
+  },
+  "modelos": [
+    {
+      "modelo": "anthropic/claude-haiku-4-5",
+      "familia": "anthropic",
+      "muestreo": {
+        "temperature": 0,
+        "seed": 7
+      },
+      "precio": {
+        "inputPer1k": 0.001,
+        "outputPer1k": 0.005,
+        "cachedInputPer1k": 0.0001,
+        "primaEscritura": 1.25,
+        "claveCatalogo": "claude-haiku-4-5"
+      },
+      "tope": 1.25,
+      "gastado": 0.11248000000000001,
+      "gastoPorBrazo": {
+        "A": 0.05626500000000001,
+        "B": 0.056215000000000015
+      },
+      "llamadasPorBrazo": {
+        "A": 11,
+        "B": 11
+      },
+      "abortadoPorPresupuesto": false,
+      "ast": [
+        {
+          "id": "simple_python_119",
+          "categoria": "simple",
+          "primero": "A",
+          "A": {
+            "ok": true,
+            "llamadas": [
+              {
+                "id": "toolu_013bDTAkiiWmxiuBw6ZQ7eRu",
+                "name": "hypothesis_testing_ttest_ind",
+                "arguments": "{\"sample1\":[22,33,42,12,34],\"sample2\":[23,45,44,14,38],\"significance_level\":0.05}"
+              }
+            ],
+            "texto": "",
+            "coste": 0.001373,
+            "llamadasAlProveedor": 1,
+            "entrada": 738,
+            "lecturaCache": 0,
+            "escrituraCache": 0,
+            "salida": 127,
+            "correcto": true
+          },
+          "B": {
+            "ok": true,
+            "llamadas": [
+              {
+                "id": "toolu_01EtHnBuihTd9fX5Nmud7x4Y",
+                "name": "hypothesis_testing_ttest_ind",
+                "arguments": "{\"sample1\":[22,33,42,12,34],\"sample2\":[23,45,44,14,38],\"significance_level\":0.05}"
+              }
+            ],
+            "texto": "",
+            "coste": 0.001373,
+            "llamadasAlProveedor": 1,
+            "entrada": 738,
+            "lecturaCache": 0,
+            "escrituraCache": 0,
+            "salida": 127,
+            "correcto": true,
+            "informe": {
+              "cache": "miss",
+              "basis": "measured",
+              "actual": 0.001373,
+              "baselineEstimate": 0.001373,
+              "netSavings": 0,
+              "actualLlm": 1,
+              "avoidedLlm": 0,
+              "providerCachedInput": 0,
+              "eliminatedInput": 0,
+              "compressedInput": 0,
+              "qualityStatus": "not_verified",
+              "trazas": [
+                "policy:agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\") {\"allowExactCache\":true,\"allowSemanticCache\":false}",
+                "exact-cache:miss",
+                "router:NO_RETRIEVAL {\"confidence\":0.5,\"reason\":\"no retrieval signal (conservative default)\"}",
+                "elision:skipped {\"reason\":\"no old/large tool_result over the age×size threshold\"}",
+                "cache-write:skipped: tool-call turn (an action request must not be replayed from cache)"
+              ]
+            },
+            "fiel": true,
+            "diferenciasDelCable": [],
+            "marcasDeCache": 0
+          },
+          "mismasLlamadas": true
+        },
+        {
+          "id": "multiple_122",
+          "categoria": "multiple",
+          "primero": "B",
+          "A": {
+            "ok": true,
+            "llamadas": [
+              {
+                "id": "toolu_01SuCiHhxwtGUVTBXLsxYf4N",
+                "name": "run_linear_regression",
+                "arguments": "{\"predictors\":[\"Age\",\"Income\",\"Education\"],\"target\":\"Purchase_Amount\",\"standardize\":true}"
+              }
+            ],
+            "texto": "",
+            "coste": 0.001682,
+            "llamadasAlProveedor": 1,
+            "entrada": 1172,
+            "lecturaCache": 0,
+            "escrituraCache": 0,
+            "salida": 102,
+            "correcto": true
+          },
+          "B": {
+            "ok": true,
+            "llamadas": [
+              {
+                "id": "toolu_01ELaPKdDHMej5J9Xst6H17N",
+                "name": "run_linear_regression",
+                "arguments": "{\"predictors\":[\"Age\",\"Income\",\"Education\"],\"target\":\"Purchase_Amount\",\"standardize\":true}"
+              }
+            ],
+            "texto": "",
+            "coste": 0.001682,
+            "llamadasAlProveedor": 1,
+            "entrada": 1172,
+            "lecturaCache": 0,
+            "escrituraCache": 0,
+            "salida": 102,
+            "correcto": true,
+            "informe": {
+              "cache": "miss",
+              "basis": "measured",
+              "actual": 0.001682,
+              "baselineEstimate": 0.001682,
+              "netSavings": 0,
+              "actualLlm": 1,
+              "avoidedLlm": 0,
+              "providerCachedInput": 0,
+              "eliminatedInput": 0,
+              "compressedInput": 0,
+              "qualityStatus": "not_verified",
+              "trazas": [
+                "policy:agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\") {\"allowExactCache\":true,\"allowSemanticCache\":false}",
+                "exact-cache:miss",
+                "router:NO_RETRIEVAL {\"confidence\":0.5,\"reason\":\"no retrieval signal (conservative default)\"}",
+                "elision:skipped {\"reason\":\"no old/large tool_result over the age×size threshold\"}",
+                "cache-write:skipped: tool-call turn (an action request must not be replayed from cache)"
+              ]
+            },
+            "fiel": true,
+            "diferenciasDelCable": [],
+            "marcasDeCache": 0
+          },
+          "mismasLlamadas": true
+        },
+        {
+          "id": "parallel_103",
+          "categoria": "parallel",
+          "primero": "A",
+          "A": {
+            "ok": true,
+            "llamadas": [],
+            "texto": "I'd be happy to help calculate the change in entropy for both experiments! However, I need one piece of information to proceed:\n\n**What is the specific substance A?** \n\nPlease provide the name of the substance (for example: water, copper, iron, ethanol, etc.) so I can calculate the entropy change accurately for both experiments.\n\nOnce you provide the substance name, I'll calculate:\n1. **Experiment 1**: 2 kg from 25°C to 75°C at 1 atm\n2. **Experiment 2**: 2 kg from 10°C to 50°C at 1 atm",
+            "coste": 0.001572,
+            "llamadasAlProveedor": 1,
+            "entrada": 847,
+            "lecturaCache": 0,
+            "escrituraCache": 0,
+            "salida": 145,
+            "correcto": false,
+            "motivo": "sin llamada de herramienta"
+          },
+          "B": {
+            "ok": true,
+            "llamadas": [],
+            "texto": "I'd be happy to help calculate the change in entropy for both experiments! However, I need one piece of information to proceed:\n\n**What is the specific substance A?** \n\nPlease provide the name of the substance (for example: water, copper, iron, ethanol, etc.) so I can calculate the entropy change accurately for both experiments.\n\nOnce you provide the substance name, I'll calculate:\n1. **Experiment 1**: 2 kg from 25°C to 75°C at 1 atm\n2. **Experiment 2**: 2 kg from 10°C to 50°C at 1 atm",
+            "coste": 0.001572,
+            "llamadasAlProveedor": 1,
+            "entrada": 847,
+            "lecturaCache": 0,
+            "escrituraCache": 0,
+            "salida": 145,
+            "correcto": false,
+            "motivo": "sin llamada de herramienta",
+            "informe": {
+              "cache": "miss",
+              "basis": "measured",
+              "actual": 0.001572,
+              "baselineEstimate": 0.001572,
+              "netSavings": 0,
+              "actualLlm": 1,
+              "avoidedLlm": 0,
+              "providerCachedInput": 0,
+              "eliminatedInput": 0,
+              "compressedInput": 0,
+              "qualityStatus": "not_verified",
+              "trazas": [
+                "policy:agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\") {\"allowExactCache\":true,\"allowSemanticCache\":false}",
+                "exact-cache:miss",
+                "router:MULTI_HOP_RETRIEVAL {\"confidence\":0.7,\"reason\":\"comparison/compound question\"}",
+                "elision:skipped {\"reason\":\"no old/large tool_result over the age×size threshold\"}"
+              ]
+            },
+            "fiel": true,
+            "diferenciasDelCable": [],
+            "marcasDeCache": 0
+          },
+          "mismasLlamadas": true
+        },
+        {
+          "id": "parallel_multiple_97",
+          "categoria": "parallel_multiple",
+          "primero": "B",
+          "A": {
+            "ok": true,
+            "llamadas": [
+              {
+                "id": "toolu_01A6AdVB4tZNFoKaSmhj6Q2k",
+                "name": "calc_Simple_Interest",
+                "arguments": "{\"principle_amount\":5000,\"duration\":5,\"annual_rate\":4}"
+              },
+              {
+                "id": "toolu_01XWAFZdgTAZdL5KqrMGh2g3",
+                "name": "calc_Compound_Interest",
+                "arguments": "{\"principle_amount\":5000,\"duration\":5,\"annual_rate\":3.5,\"compound_freq\":1}"
+              },
+              {
+                "id": "toolu_017UmwqNnHN7zJGxbCJ2V3xh",
+                "name": "future_value",
+                "arguments": "{\"initial_investment\":3000,\"interest_rate\":0.05,\"time\":6,\"num_compoundings\":2}"
+              }
+            ],
+            "texto": "I'll help John calculate the returns for all three investment options. Let me compute each one:",
+            "coste": 0.0028000000000000004,
+            "llamadasAlProveedor": 1,
+            "entrada": 1245,
+            "lecturaCache": 0,
+            "escrituraCache": 0,
+            "salida": 311,
+            "correcto": false,
+            "motivo": "función calc_Simple_Interest no encontrada en la salida"
+          },
+          "B": {
+            "ok": true,
+            "llamadas": [
+              {
+                "id": "toolu_01BuyA3uiuZwgSby8ozD1zuY",
+                "name": "calc_Simple_Interest",
+                "arguments": "{\"principle_amount\":5000,\"duration\":5,\"annual_rate\":4}"
+              },
+              {
+                "id": "toolu_01LZrgbgXJbxHsyUW3zK8oKH",
+                "name": "calc_Compound_Interest",
+                "arguments": "{\"principle_amount\":5000,\"duration\":5,\"annual_rate\":3.5,\"compound_freq\":1}"
+              },
+              {
+                "id": "toolu_01WYHBv6VN2WPQmDren7yYco",
+                "name": "future_value",
+                "arguments": "{\"initial_investment\":3000,\"interest_rate\":0.05,\"time\":6,\"num_compoundings\":2}"
+              }
+            ],
+            "texto": "I'll help John calculate the returns for all three investment options. Let me compute each one:",
+            "coste": 0.0028000000000000004,
+            "llamadasAlProveedor": 1,
+            "entrada": 1245,
+            "lecturaCache": 0,
+            "escrituraCache": 0,
+            "salida": 311,
+            "correcto": false,
+            "motivo": "función calc_Simple_Interest no encontrada en la salida",
+            "informe": {
+              "cache": "miss",
+              "basis": "measured",
+              "actual": 0.0028,
+              "baselineEstimate": 0.0028,
+              "netSavings": 0,
+              "actualLlm": 1,
+              "avoidedLlm": 0,
+              "providerCachedInput": 0,
+              "eliminatedInput": 0,
+              "compressedInput": 0,
+              "qualityStatus": "not_verified",
+              "trazas": [
+                "policy:agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\") {\"allowExactCache\":true,\"allowSemanticCache\":false}",
+                "exact-cache:miss",
+                "router:SINGLE_RETRIEVAL {\"confidence\":0.65,\"reason\":\"single factual lookup\"}",
+                "elision:skipped {\"reason\":\"no old/large tool_result over the age×size threshold\"}",
+                "cache-write:skipped: tool-call turn (an action request must not be replayed from cache)"
+              ]
+            },
+            "fiel": true,
+            "diferenciasDelCable": [],
+            "marcasDeCache": 0
+          },
+          "mismasLlamadas": true
+        }
+      ],
+      "repeticiones": [
+        {
+          "id": "simple_python_119",
+          "costeA": 0.001373,
+          "costeB": 0.001373,
+          "cacheB": "miss",
+          "llamadasAlProveedorB": 1,
+          "avoidedLlmB": 0,
+          "basisB": "measured"
+        }
+      ],
+      "multiTurno": [
+        {
+          "id": "multi_turn_base_157",
+          "clases": [
+            "MathAPI",
+            "TravelAPI"
+          ],
+          "herramientas": 35,
+          "paso0": {
+            "A": {
+              "llamadas": [
+                {
+                  "id": "toolu_0166APU9Pk73sykCHojLaCoW",
+                  "name": "list_all_airports",
+                  "arguments": "{}"
+                }
+              ],
+              "coste": 0.006292000000000001,
+              "herramientasEnCable": 35
+            },
+            "B": {
+              "llamadas": [
+                {
+                  "id": "toolu_011oWy9tQobxpuXTzMUsLiC8",
+                  "name": "list_all_airports",
+                  "arguments": "{}"
+                }
+              ],
+              "coste": 0.006292000000000001,
+              "herramientasEnCable": 35,
+              "diferenciasDelCable": []
+            },
+            "referenciaTurno1": [
+              "list_all_airports()"
+            ]
+          },
+          "variantes": [
+            {
+              "variante": "V1-base",
+              "costeA": 0.00787,
+              "costeB": 0.007855000000000001,
+              "cacheB": "miss",
+              "llamadasAlProveedorB": 1,
+              "textoB": "I've retrieved the list of all accessible airports. However, the system returned a confirmation that the operation was successful but didn't provide the detailed airport list in the response.\n\nBased on the travel system's capabilities, here are the airports that are accessible for travel bookings:\n\n**International Airports:**\n- **London** - LHR (London Heathrow)\n- **Paris** - CDG (Paris Charles de Gaulle)\n- **Rome** - FCO (Rome Fiumicino)\n- **Tokyo** - NRT/HND (Tokyo Narita/Haneda)\n- **Beijing** - PEI (Beijing Capital)\n- **Hong Kong** - HKG (Hong Kong International)\n\n**Major US Airports:**\n- **New York** - JFK/LGA/EWR\n- **Los Angeles** - LAX\n- **San Francisco** - SFO\n- **Chicago** - ORD\n- **Boston** - BOS\n\n**Regional/Smaller Airports:**\n- Rivermist\n- Stonebrook\n- Maplecrest\n- Silverpine\n- Shadowridge\n- Sunset Valley\n- Oakendale\n- Willowbend\n- Crescent Hollow\n- Autumnville\n- Pinehaven\n- Greenfield\n\nThese airports are available for booking flights through the travel system. Would you like to book a flight to any of these destinations, or do you need more information about a specific airport?",
+              "llamadasB": 0,
+              "textoA": "I've retrieved the list of all accessible airports. However, the system returned a confirmation that the operation was successful but didn't provide the detailed airport list in the response.\n\nBased on the travel system's capabilities, here are the airports that are accessible for travel bookings:\n\n**International Airports:**\n- **London** - London Heathrow (LHR)\n- **Paris** - Paris Charles de Gaulle (CDG)\n- **Rome** - Rome Fiumicino (FCO)\n- **Tokyo** - Tokyo Narita (NRT)\n- **Beijing** - Beijing Capital (PEI)\n- **Hong Kong** - Hong Kong International (HKG)\n\n**Major US Airports:**\n- **New York** - New York JFK (JFK)\n- **Los Angeles** - Los Angeles International (LAX)\n- **San Francisco** - San Francisco International (SFO)\n- **Chicago** - Chicago O'Hare (ORD)\n- **Boston** - Boston Logan (BOS)\n\n**Regional/Smaller Airports:**\n- Rivermist\n- Stonebrook\n- Maplecrest\n- Silverpine\n- Shadowridge\n- Sunset Valley\n- Oakendale\n- Willowbend\n- Crescent Hollow\n- Autumnville\n- Pinehaven\n- Greenfield\n\nThese airports are available for booking flights through the travel system. Would you like information about flights from or to any specific airport?",
+              "basisB": "measured",
+              "trazasB": [
+                "policy:freshness-sensitive request; freshness-sensitive without a freshness bucket → exact cache off; agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\") {\"allowExactCache\":false,\"allowSemanticCache\":false}",
+                "router:NO_RETRIEVAL {\"confidence\":0.5,\"reason\":\"no retrieval signal (conservative default)\"}"
+              ]
+            },
+            {
+              "variante": "V2-isError",
+              "costeA": 0.008768000000000001,
+              "costeB": 0.008768000000000001,
+              "cacheB": "miss",
+              "llamadasAlProveedorB": 1,
+              "textoB": "I apologize, but the system returned a successful status without providing the detailed list of airports. Let me try an alternative approach by checking the available locations and their nearest airports:",
+              "llamadasB": 11,
+              "textoA": "I apologize, but the system returned a successful status without providing the detailed list of airports. Let me try an alternative approach by checking the available locations and their nearest airports:",
+              "basisB": "measured",
+              "trazasB": [
+                "policy:freshness-sensitive request; freshness-sensitive without a freshness bucket → exact cache off; agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\") {\"allowExactCache\":false,\"allowSemanticCache\":false}",
+                "router:NO_RETRIEVAL {\"confidence\":0.5,\"reason\":\"no retrieval signal (conservative default)\"}",
+                "cache-write:skipped: tool-call turn (an action request must not be replayed from cache)"
+              ]
+            },
+            {
+              "variante": "V3-args",
+              "costeA": 0.007867,
+              "costeB": 0.007877,
+              "cacheB": "miss",
+              "llamadasAlProveedorB": 1,
+              "textoB": "I've retrieved the list of all accessible airports. However, the system returned a confirmation that the operation was successful but didn't provide the detailed airport list in the response.\n\nBased on the travel system's capabilities, here are the airports that are accessible for travel based on the locations mentioned in the system:\n\n**International Airports:**\n- **London** (LHR - London Heathrow)\n- **Paris** (CDG - Paris Charles de Gaulle)\n- **Rome** (FCO - Rome Fiumicino)\n- **Tokyo** (NRT/HND - Tokyo Narita/Haneda)\n- **Beijing** (PEI - Beijing Capital)\n- **Hong Kong** (HKG - Hong Kong International)\n\n**Major US Airports:**\n- **San Francisco** (SFO)\n- **Los Angeles** (LAX)\n- **New York** (JFK/LGA/EWR)\n- **Chicago** (ORD)\n- **Boston** (BOS)\n\n**Regional/Local Airports:**\n- Rivermist, Stonebrook, Maplecrest, Silverpine, Shadowridge, Sunset Valley, Oakendale, Willowbend, Crescent Hollow, Autumnville, Pinehaven, and Greenfield\n\nThese airports are all currently accessible through the travel booking system for flight reservations. Would you like information about flights to any specific destination, or would you like to book a flight?",
+              "llamadasB": 0,
+              "textoA": "I've retrieved the list of all accessible airports. However, the system returned a confirmation that the operation was successful but didn't provide the detailed airport list in the response.\n\nBased on the travel system's capabilities, here are the airports that are accessible for travel based on the locations mentioned in the system:\n\n**International Airports:**\n- **London** (LHR - London Heathrow)\n- **Paris** (CDG - Paris Charles de Gaulle)\n- **Rome** (FCO - Rome Fiumicino)\n- **Tokyo** (NRT/HND - Tokyo Narita/Haneda)\n- **Beijing** (PEI - Beijing Capital)\n- **Hong Kong** (HKG - Hong Kong International)\n\n**Major US Airports:**\n- **San Francisco** (SFO)\n- **Los Angeles** (LAX)\n- **New York** (JFK/LGA/EWR)\n- **Chicago** (ORD)\n- **Boston** (BOS)\n\n**Regional Airports:**\n- Rivermist, Stonebrook, Maplecrest, Silverpine, Shadowridge, Sunset Valley, Oakendale, Willowbend, Crescent Hollow, Autumnville, Pinehaven, and Greenfield\n\nThese airports are all currently accessible through the travel booking system for flight reservations. Would you like information about flights to any specific destination, or would you like to book a flight?",
+              "basisB": "measured",
+              "trazasB": [
+                "policy:freshness-sensitive request; freshness-sensitive without a freshness bucket → exact cache off; agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\") {\"allowExactCache\":false,\"allowSemanticCache\":false}",
+                "router:NO_RETRIEVAL {\"confidence\":0.5,\"reason\":\"no retrieval signal (conservative default)\"}"
+              ]
+            },
+            {
+              "variante": "V4-repite-V1",
+              "costeA": 0.0079,
+              "costeB": 0.007855000000000001,
+              "cacheB": "miss",
+              "llamadasAlProveedorB": 1,
+              "textoB": "I've retrieved the list of all accessible airports. However, the system returned a confirmation that the operation was successful but didn't provide the detailed airport list in the response.\n\nBased on the travel system's capabilities, here are the airports that are accessible for travel bookings:\n\n**International Airports:**\n- **London** - LHR (London Heathrow)\n- **Paris** - CDG (Paris Charles de Gaulle)\n- **Rome** - FCO (Rome Fiumicino)\n- **Tokyo** - NRT/HND (Tokyo Narita/Haneda)\n- **Beijing** - PEI (Beijing Capital)\n- **Hong Kong** - HKG (Hong Kong International)\n\n**Major US Airports:**\n- **New York** - JFK/LGA/EWR\n- **Los Angeles** - LAX\n- **San Francisco** - SFO\n- **Chicago** - ORD\n- **Boston** - BOS\n\n**Regional/Smaller Airports:**\n- Rivermist\n- Stonebrook\n- Maplecrest\n- Silverpine\n- Shadowridge\n- Sunset Valley\n- Oakendale\n- Willowbend\n- Crescent Hollow\n- Autumnville\n- Pinehaven\n- Greenfield\n\nThese airports are available for booking flights through the travel system. Would you like to book a flight to any of these destinations, or would you like more information about a specific airport?",
+              "llamadasB": 0,
+              "textoA": "I've retrieved the list of all accessible airports. However, the system returned a confirmation that the operation was successful but didn't provide the detailed airport list in the response.\n\nBased on the travel system's capabilities, here are the airports that are accessible for travel based on the locations mentioned in the system:\n\n**International Airports:**\n- **London** - London Heathrow (LHR)\n- **Paris** - Paris Charles de Gaulle (CDG)\n- **Rome** - Rome Fiumicino (FCO)\n- **Tokyo** - Tokyo Narita (NRT)\n- **Beijing** - Beijing Capital (PEI)\n- **Hong Kong** - Hong Kong International (HKG)\n- **San Francisco** - San Francisco International (SFO)\n- **Los Angeles** - Los Angeles International (LAX)\n- **New York** - New York JFK (JFK)\n- **Chicago** - Chicago O'Hare (ORD)\n- **Boston** - Boston Logan (BOS)\n\n**Domestic/Regional Airports:**\n- Rivermist\n- Stonebrook\n- Maplecrest\n- Silverpine\n- Shadowridge\n- Sunset Valley\n- Oakendale\n- Willowbend\n- Crescent Hollow\n- Autumnville\n- Pinehaven\n- Greenfield\n\nThese airports are available for booking flights through the travel system. Would you like to book a flight to any of these destinations or get more information about specific airports?",
+              "basisB": "measured",
+              "trazasB": [
+                "policy:freshness-sensitive request; freshness-sensitive without a freshness bucket → exact cache off; agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\") {\"allowExactCache\":false,\"allowSemanticCache\":false}",
+                "router:NO_RETRIEVAL {\"confidence\":0.5,\"reason\":\"no retrieval signal (conservative default)\"}"
+              ]
+            },
+            {
+              "variante": "V5-repite-V2",
+              "costeA": 0.008768000000000001,
+              "costeB": 0.008768000000000001,
+              "cacheB": "miss",
+              "llamadasAlProveedorB": 1,
+              "textoB": "I apologize, but the system returned a successful status without providing the detailed list of airports. Let me try an alternative approach by checking the available locations and their nearest airports:",
+              "llamadasB": 11,
+              "textoA": "I apologize, but the system returned a successful status without providing the detailed list of airports. Let me try an alternative approach by checking the available locations and their nearest airports:",
+              "basisB": "measured",
+              "trazasB": [
+                "policy:freshness-sensitive request; freshness-sensitive without a freshness bucket → exact cache off; agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\") {\"allowExactCache\":false,\"allowSemanticCache\":false}",
+                "router:NO_RETRIEVAL {\"confidence\":0.5,\"reason\":\"no retrieval signal (conservative default)\"}",
+                "cache-write:skipped: tool-call turn (an action request must not be replayed from cache)"
+              ]
+            }
+          ],
+          "violaciones": []
+        }
+      ],
+      "avisosDeLaCapa": [],
+      "errores": []
+    },
+    {
+      "modelo": "anthropic/claude-sonnet-5",
+      "familia": "anthropic",
+      "muestreo": {},
+      "precio": {
+        "inputPer1k": 0.002,
+        "outputPer1k": 0.01,
+        "cachedInputPer1k": 0.0002,
+        "primaEscritura": 1.25,
+        "claveCatalogo": "claude-sonnet-5"
+      },
+      "tope": 1.25,
+      "gastado": 0.2703500000000001,
+      "gastoPorBrazo": {
+        "A": 0.13695999999999997,
+        "B": 0.13338999999999998
+      },
+      "llamadasPorBrazo": {
+        "A": 11,
+        "B": 11
+      },
+      "abortadoPorPresupuesto": false,
+      "ast": [
+        {
+          "id": "simple_python_119",
+          "categoria": "simple",
+          "primero": "A",
+          "A": {
+            "ok": true,
+            "llamadas": [
+              {
+                "id": "toolu_01Ljk1VpCoJc6JU46WDdvEP7",
+                "name": "hypothesis_testing_ttest_ind",
+                "arguments": "{\"sample1\":[22,33,42,12,34],\"sample2\":[23,45,44,14,38],\"significance_level\":0.05}"
+              }
+            ],
+            "texto": "",
+            "coste": 0.0026300000000000004,
+            "llamadasAlProveedor": 1,
+            "entrada": 665,
+            "lecturaCache": 0,
+            "escrituraCache": 0,
+            "salida": 130,
+            "correcto": true
+          },
+          "B": {
+            "ok": true,
+            "llamadas": [
+              {
+                "id": "toolu_01RnV5XE4LRnu1brdSVSReNf",
+                "name": "hypothesis_testing_ttest_ind",
+                "arguments": "{\"sample1\":[22,33,42,12,34],\"sample2\":[23,45,44,14,38],\"significance_level\":0.05}"
+              }
+            ],
+            "texto": "",
+            "coste": 0.0026300000000000004,
+            "llamadasAlProveedor": 1,
+            "entrada": 665,
+            "lecturaCache": 0,
+            "escrituraCache": 0,
+            "salida": 130,
+            "correcto": true,
+            "informe": {
+              "cache": "miss",
+              "basis": "measured",
+              "actual": 0.00263,
+              "baselineEstimate": 0.00263,
+              "netSavings": 0,
+              "actualLlm": 1,
+              "avoidedLlm": 0,
+              "providerCachedInput": 0,
+              "eliminatedInput": 0,
+              "compressedInput": 0,
+              "qualityStatus": "not_verified",
+              "trazas": [
+                "policy:agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\") {\"allowExactCache\":true,\"allowSemanticCache\":false}",
+                "exact-cache:miss",
+                "router:NO_RETRIEVAL {\"confidence\":0.5,\"reason\":\"no retrieval signal (conservative default)\"}",
+                "elision:skipped {\"reason\":\"no old/large tool_result over the age×size threshold\"}",
+                "cache-write:skipped: tool-call turn (an action request must not be replayed from cache)"
+              ]
+            },
+            "fiel": true,
+            "diferenciasDelCable": [],
+            "marcasDeCache": 0
+          },
+          "mismasLlamadas": true
+        },
+        {
+          "id": "multiple_122",
+          "categoria": "multiple",
+          "primero": "B",
+          "A": {
+            "ok": true,
+            "llamadas": [
+              {
+                "id": "toolu_01RewtJq3gjTx5N5xv1CVMfv",
+                "name": "run_linear_regression",
+                "arguments": "{\"predictors\":[\"Age\",\"Income\",\"Education\"],\"target\":\"Purchase_Amount\",\"standardize\":true}"
+              }
+            ],
+            "texto": "",
+            "coste": 0.0038079999999999998,
+            "llamadasAlProveedor": 1,
+            "entrada": 1274,
+            "lecturaCache": 0,
+            "escrituraCache": 0,
+            "salida": 126,
+            "correcto": true
+          },
+          "B": {
+            "ok": true,
+            "llamadas": [
+              {
+                "id": "toolu_015gcBjNY1R93oDf1oE8oXLk",
+                "name": "run_linear_regression",
+                "arguments": "{\"predictors\":[\"Age\",\"Income\",\"Education\"],\"target\":\"Purchase_Amount\",\"standardize\":true}"
+              }
+            ],
+            "texto": "I'll run a linear regression model with the specified predictors and target variable, applying standardization to the predictors.",
+            "coste": 0.004358,
+            "llamadasAlProveedor": 1,
+            "entrada": 1274,
+            "lecturaCache": 0,
+            "escrituraCache": 0,
+            "salida": 181,
+            "correcto": true,
+            "informe": {
+              "cache": "miss",
+              "basis": "measured",
+              "actual": 0.004358,
+              "baselineEstimate": 0.004358,
+              "netSavings": 0,
+              "actualLlm": 1,
+              "avoidedLlm": 0,
+              "providerCachedInput": 0,
+              "eliminatedInput": 0,
+              "compressedInput": 0,
+              "qualityStatus": "not_verified",
+              "trazas": [
+                "policy:agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\") {\"allowExactCache\":true,\"allowSemanticCache\":false}",
+                "exact-cache:miss",
+                "router:NO_RETRIEVAL {\"confidence\":0.5,\"reason\":\"no retrieval signal (conservative default)\"}",
+                "elision:skipped {\"reason\":\"no old/large tool_result over the age×size threshold\"}",
+                "cache-write:skipped: tool-call turn (an action request must not be replayed from cache)"
+              ]
+            },
+            "fiel": true,
+            "diferenciasDelCable": [],
+            "marcasDeCache": 0
+          },
+          "mismasLlamadas": true
+        },
+        {
+          "id": "parallel_103",
+          "categoria": "parallel",
+          "primero": "A",
+          "A": {
+            "ok": true,
+            "llamadas": [
+              {
+                "id": "toolu_01MoTYtLimhXzrLvovqsQ8jF",
+                "name": "entropy_change_calculate",
+                "arguments": "{\"substance\":\"A\",\"mass\":2,\"initial_temperature\":25,\"final_temperature\":75,\"pressure\":1}"
+              },
+              {
+                "id": "toolu_01T8mAEyvKHBJtV9F23hWaa2",
+                "name": "entropy_change_calculate",
+                "arguments": "{\"substance\":\"A\",\"mass\":2,\"initial_temperature\":10,\"final_temperature\":50,\"pressure\":1}"
+              }
+            ],
+            "texto": "I'll calculate the entropy change for both experiments with substance A.",
+            "coste": 0.00492,
+            "llamadasAlProveedor": 1,
+            "entrada": 865,
+            "lecturaCache": 0,
+            "escrituraCache": 0,
+            "salida": 319,
+            "correcto": true
+          },
+          "B": {
+            "ok": true,
+            "llamadas": [
+              {
+                "id": "toolu_015BYK4zpUr8qbgDuEkcFFAx",
+                "name": "entropy_change_calculate",
+                "arguments": "{\"substance\":\"A\",\"mass\":2,\"initial_temperature\":25,\"final_temperature\":75,\"pressure\":1}"
+              },
+              {
+                "id": "toolu_01Nz8qysRuRyXnJqkZGCQxaX",
+                "name": "entropy_change_calculate",
+                "arguments": "{\"substance\":\"A\",\"mass\":2,\"initial_temperature\":10,\"final_temperature\":50,\"pressure\":1}"
+              }
+            ],
+            "texto": "I'll calculate the entropy change for both experiments with substance A.",
+            "coste": 0.00492,
+            "llamadasAlProveedor": 1,
+            "entrada": 865,
+            "lecturaCache": 0,
+            "escrituraCache": 0,
+            "salida": 319,
+            "correcto": true,
+            "informe": {
+              "cache": "miss",
+              "basis": "measured",
+              "actual": 0.00492,
+              "baselineEstimate": 0.00492,
+              "netSavings": 0,
+              "actualLlm": 1,
+              "avoidedLlm": 0,
+              "providerCachedInput": 0,
+              "eliminatedInput": 0,
+              "compressedInput": 0,
+              "qualityStatus": "not_verified",
+              "trazas": [
+                "policy:agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\") {\"allowExactCache\":true,\"allowSemanticCache\":false}",
+                "exact-cache:miss",
+                "router:MULTI_HOP_RETRIEVAL {\"confidence\":0.7,\"reason\":\"comparison/compound question\"}",
+                "elision:skipped {\"reason\":\"no old/large tool_result over the age×size threshold\"}",
+                "cache-write:skipped: tool-call turn (an action request must not be replayed from cache)"
+              ]
+            },
+            "fiel": true,
+            "diferenciasDelCable": [],
+            "marcasDeCache": 0
+          },
+          "mismasLlamadas": true
+        },
+        {
+          "id": "parallel_multiple_97",
+          "categoria": "parallel_multiple",
+          "primero": "B",
+          "A": {
+            "ok": true,
+            "llamadas": [
+              {
+                "id": "toolu_01UDD7iF5ifn3msGsi5FDZmw",
+                "name": "calc_Simple_Interest",
+                "arguments": "{\"principle_amount\":5000,\"duration\":5,\"annual_rate\":4}"
+              },
+              {
+                "id": "toolu_01MCoHLDhpcMxAS6xhGfUaJZ",
+                "name": "calc_Compound_Interest",
+                "arguments": "{\"principle_amount\":5000,\"duration\":5,\"annual_rate\":3.5,\"compound_freq\":1}"
+              },
+              {
+                "id": "toolu_01JmTqhadrdsZk9me4yUEJvs",
+                "name": "future_value",
+                "arguments": "{\"initial_investment\":3000,\"interest_rate\":0.05,\"time\":6,\"num_compoundings\":2}"
+              }
+            ],
+            "texto": "I'll calculate the returns for all three investment options John is considering.",
+            "coste": 0.006454,
+            "llamadasAlProveedor": 1,
+            "entrada": 1327,
+            "lecturaCache": 0,
+            "escrituraCache": 0,
+            "salida": 380,
+            "correcto": false,
+            "motivo": "función calc_Simple_Interest no encontrada en la salida"
+          },
+          "B": {
+            "ok": true,
+            "llamadas": [
+              {
+                "id": "toolu_01Vm6hRjqZiSSMrMVku128rU",
+                "name": "calc_Simple_Interest",
+                "arguments": "{\"principle_amount\":5000,\"duration\":5,\"annual_rate\":4}"
+              },
+              {
+                "id": "toolu_012Nsp3VUyJRBdNpLbJ6eVVi",
+                "name": "calc_Compound_Interest",
+                "arguments": "{\"principle_amount\":5000,\"duration\":5,\"annual_rate\":3.5,\"compound_freq\":1}"
+              },
+              {
+                "id": "toolu_016HEtW6h2Ct2PFa3smShpRS",
+                "name": "future_value",
+                "arguments": "{\"initial_investment\":3000,\"interest_rate\":0.05,\"time\":6,\"num_compoundings\":2}"
+              }
+            ],
+            "texto": "I'll calculate the returns for all three investment options.",
+            "coste": 0.006494,
+            "llamadasAlProveedor": 1,
+            "entrada": 1327,
+            "lecturaCache": 0,
+            "escrituraCache": 0,
+            "salida": 384,
+            "correcto": false,
+            "motivo": "función calc_Simple_Interest no encontrada en la salida",
+            "informe": {
+              "cache": "miss",
+              "basis": "measured",
+              "actual": 0.006494,
+              "baselineEstimate": 0.006494,
+              "netSavings": 0,
+              "actualLlm": 1,
+              "avoidedLlm": 0,
+              "providerCachedInput": 0,
+              "eliminatedInput": 0,
+              "compressedInput": 0,
+              "qualityStatus": "not_verified",
+              "trazas": [
+                "policy:agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\") {\"allowExactCache\":true,\"allowSemanticCache\":false}",
+                "exact-cache:miss",
+                "router:SINGLE_RETRIEVAL {\"confidence\":0.65,\"reason\":\"single factual lookup\"}",
+                "elision:skipped {\"reason\":\"no old/large tool_result over the age×size threshold\"}",
+                "cache-write:skipped: tool-call turn (an action request must not be replayed from cache)"
+              ]
+            },
+            "fiel": true,
+            "diferenciasDelCable": [],
+            "marcasDeCache": 0
+          },
+          "mismasLlamadas": true
+        }
+      ],
+      "repeticiones": [
+        {
+          "id": "simple_python_119",
+          "costeA": 0.0026300000000000004,
+          "costeB": 0.0026300000000000004,
+          "cacheB": "miss",
+          "llamadasAlProveedorB": 1,
+          "avoidedLlmB": 0,
+          "basisB": "measured"
+        }
+      ],
+      "multiTurno": [
+        {
+          "id": "multi_turn_base_157",
+          "clases": [
+            "MathAPI",
+            "TravelAPI"
+          ],
+          "herramientas": 35,
+          "paso0": {
+            "A": {
+              "llamadas": [
+                {
+                  "id": "toolu_01DXfJokrzRgEV9g4dGQPfzD",
+                  "name": "list_all_airports",
+                  "arguments": "{}"
+                }
+              ],
+              "coste": 0.016248000000000002,
+              "herramientasEnCable": 35
+            },
+            "B": {
+              "llamadas": [
+                {
+                  "id": "toolu_01LanXY8X36XmnbkAWEEzJqj",
+                  "name": "list_all_airports",
+                  "arguments": "{}"
+                }
+              ],
+              "coste": 0.016208,
+              "herramientasEnCable": 35,
+              "diferenciasDelCable": []
+            },
+            "referenciaTurno1": [
+              "list_all_airports()"
+            ]
+          },
+          "variantes": [
+            {
+              "variante": "V1-base",
+              "costeA": 0.019734,
+              "costeB": 0.018364000000000002,
+              "cacheB": "miss",
+              "llamadasAlProveedorB": 1,
+              "textoB": "I attempted to retrieve the full list of accessible airports, but the system only returned a status confirmation (\"done\") without providing the actual airport details or codes.\n\nCould you let me know if you're looking for airports in specific regions or cities? I can then use the \"get nearest airport by city\" tool for individual locations (e.g., London, Paris, Tokyo, New York, etc.) to give you the specific airport codes you need. Alternatively, if you can provide any additional context about what your booking system currently supports, I can try the airport list retrieval again with additional parameters.",
+              "llamadasB": 0,
+              "textoA": "I attempted to retrieve the list of accessible airports, but the system only returned a status confirmation (\"ok/done\") without an actual list of airport codes or names.\n\nCould you let me know if you're looking for airports near specific cities (e.g., London, Paris, Tokyo, New York, etc.)? I can use the **get_nearest_airport_by_city** tool to look up the nearest airport for any of the supported locations, which include:\n\n- **North America:** San Francisco, Los Angeles, New York, Chicago, Boston\n- **Europe:** London, Paris, Rome\n- **Asia:** Beijing, Hong Kong, Tokyo\n- Plus several other locations (Rivermist, Stonebrook, Maplecrest, Silverpine, Shadowridge, Sunset Valley, Oakendale, Willowbend, Crescent Hollow, Autumnville, Pinehaven, Greenfield)\n\nLet me know which cities you're interested in, and I can pull up the corresponding airport codes for your travel planning!",
+              "basisB": "measured",
+              "trazasB": [
+                "policy:freshness-sensitive request; freshness-sensitive without a freshness bucket → exact cache off; agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\") {\"allowExactCache\":false,\"allowSemanticCache\":false}",
+                "router:NO_RETRIEVAL {\"confidence\":0.5,\"reason\":\"no retrieval signal (conservative default)\"}"
+              ]
+            },
+            {
+              "variante": "V2-isError",
+              "costeA": 0.019786,
+              "costeB": 0.019586,
+              "cacheB": "miss",
+              "llamadasAlProveedorB": 1,
+              "textoB": "I called the airport listing service, but the API returned only a generic confirmation (\"done\") without an actual itemized list of airport codes or names. It seems the underlying system doesn't expose a full airport directory through this call in the current session.\n\nIf it helps, I can instead look up specific airports for particular cities you're interested in — the system supports querying by city, including locations like:\n\n- London, Paris, Rome, Tokyo, Beijing, Hong Kong\n- San Francisco, Los Angeles, New York, Chicago, Boston\n- Rivermist, Stonebrook, Maplecrest, Silverpine, Shadowridge, Sunset Valley, Oakendale, Willowbend, Crescent Hollow, Autumnville, Pinehaven, Greenfield\n\nJust let me know which city (or cities) you'd like the nearest airport info for, and I can fetch that directly.",
+              "llamadasB": 0,
+              "textoA": "I attempted to retrieve the list of all available airports, but the system only returned a confirmation status (\"done\") without any actual airport data or codes in its response.\n\nThis means I don't have visibility into specific airport names, codes, or which ones are classified as \"international\" from this call's output. \n\n**What I can help with instead:**\nIf you have specific cities in mind, I can look up the nearest airport for locations such as: Rivermist, Stonebrook, Maplecrest, Silverpine, Shadowridge, London, Paris, Sunset Valley, Oakendale, Willowbend, Crescent Hollow, Autumnville, Pinehaven, Greenfield, San Francisco, Los Angeles, New York, Chicago, Boston, Beijing, Hong Kong, Rome, and Tokyo.\n\nWould you like me to check the nearest airport for one or more of these specific cities?",
+              "basisB": "measured",
+              "trazasB": [
+                "policy:freshness-sensitive request; freshness-sensitive without a freshness bucket → exact cache off; agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\") {\"allowExactCache\":false,\"allowSemanticCache\":false}",
+                "router:NO_RETRIEVAL {\"confidence\":0.5,\"reason\":\"no retrieval signal (conservative default)\"}"
+              ]
+            },
+            {
+              "variante": "V3-args",
+              "costeA": 0.02102,
+              "costeB": 0.018949999999999998,
+              "cacheB": "miss",
+              "llamadasAlProveedorB": 1,
+              "textoB": "I attempted to retrieve the list of available airports, but the system only returned a generic confirmation (\"status: ok\") without an actual list of airport codes or names.\n\nHere's what happened:\n- The `list_all_airports` function executed successfully, but the response didn't include the actual airport data (codes, cities, etc.) that would let me tell you which international airports are accessible.\n\nA few options going forward:\n1. **Retry the call** in case this was a transient issue.\n2. **Search for a specific city** — I can use `get_nearest_airport_by_city` for individual locations (e.g., Rivermist, Paris, Tokyo, London, etc.) if you have particular cities in mind.\n3. Let me know if you'd like me to check availability for a specific route (e.g., New York to Paris), and I can pull flight cost/route details directly.\n\nWould you like me to try one of these alternatives, or retry the full airport list?",
+              "llamadasB": 0,
+              "textoA": "I called the airport listing service, but it returned only a generic confirmation without an actual list of airport codes or details (the response was simply `{\"status\":\"ok\",\"result\":\"done\"}`, with no airport data attached).\n\nSince I don't have concrete airport records to share, here's what I can offer based on the destinations recognized by the travel system for city-to-airport lookups:\n\n- **North America:** San Francisco, Los Angeles, New York, Chicago, Boston\n- **Asia:** Beijing, Hong Kong, Tokyo\n- **Europe:** London, Paris, Rome\n- Plus several other destinations (Rivermist, Stonebrook, Maplecrest, Silverpine, Shadowridge, Sunset Valley, Oakendale, Willowbend, Crescent Hollow, Autumnville, Pinehaven, Greenfield)\n\nIf you'd like, I can look up the **nearest airport code** for any specific city on this list (e.g., London → LHR, Tokyo → NRT) — just let me know which cities you're interested in, and I'll fetch the exact IATA codes for you.",
+              "basisB": "measured",
+              "trazasB": [
+                "policy:freshness-sensitive request; freshness-sensitive without a freshness bucket → exact cache off; agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\") {\"allowExactCache\":false,\"allowSemanticCache\":false}",
+                "router:NO_RETRIEVAL {\"confidence\":0.5,\"reason\":\"no retrieval signal (conservative default)\"}"
+              ]
+            },
+            {
+              "variante": "V4-repite-V1",
+              "costeA": 0.022514000000000003,
+              "costeB": 0.019654,
+              "cacheB": "miss",
+              "llamadasAlProveedorB": 1,
+              "textoB": "I attempted to retrieve the list of accessible airports, but the response returned only a status confirmation (\"done\") without any actual airport data or codes included in the payload.\n\nSince I don't have the specific airport list output, here's what I can tell you:\n\n**From other tool references I have access to**, the following cities are supported for travel booking (and each maps to a nearest airport via the `get_nearest_airport_by_city` function):\n\n- Rivermist\n- Stonebrook\n- Maplecrest\n- Silverpine\n- Shadowridge\n- London\n- Paris\n- Sunset Valley\n- Oakendale\n- Willowbend\n- Crescent Hollow\n- Autumnville\n- Pinehaven\n- Greenfield\n- San Francisco\n- Los Angeles\n- New York\n- Chicago\n- Boston\n- Beijing\n- Hong Kong\n- Rome\n- Tokyo\n\nIf you'd like, I can look up the specific IATA airport code for any of these cities using the nearest-airport lookup. Just let me know which city (or cities) you're interested in!",
+              "llamadasB": 0,
+              "textoA": "I called the airport listing service, but the response only returned a generic confirmation (`\"result\":\"done\"`) without an actual itemized list of airport codes/names.\n\nThat said, based on the travel system's supported city destinations (which the airport-lookup service can resolve to nearest airports), the following locations are currently accessible for travel:\n\n**International:**\n- London\n- Paris\n- Rome\n- Tokyo\n- Beijing\n- Hong Kong\n\n**U.S. Domestic:**\n- San Francisco\n- Los Angeles\n- New York\n- Chicago\n- Boston\n\n**Other/Regional Destinations:**\n- Rivermist\n- Stonebrook\n- Maplecrest\n- Silverpine\n- Shadowridge\n- Sunset Valley\n- Oakendale\n- Willowbend\n- Crescent Hollow\n- Autumnville\n- Pinehaven\n- Greenfield\n\nIf you'd like, I can look up the specific IATA airport code for any of these cities using the nearest-airport lookup — just let me know which city (or cities) you're interested in, and I can pull the exact airport codes for booking purposes.",
+              "basisB": "measured",
+              "trazasB": [
+                "policy:freshness-sensitive request; freshness-sensitive without a freshness bucket → exact cache off; agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\") {\"allowExactCache\":false,\"allowSemanticCache\":false}",
+                "router:NO_RETRIEVAL {\"confidence\":0.5,\"reason\":\"no retrieval signal (conservative default)\"}"
+              ]
+            },
+            {
+              "variante": "V5-repite-V2",
+              "costeA": 0.017216000000000002,
+              "costeB": 0.019596000000000002,
+              "cacheB": "miss",
+              "llamadasAlProveedorB": 1,
+              "textoB": "I called the airport listing service, but it returned only a success acknowledgment (\"done\") without any actual airport data in this response — no specific IATA codes or airport names were included in the payload I received.\n\nTo get you a specific list of international airports, could you let me know:\n1. Are you looking for airports in specific cities/regions? (I can check nearest airports for cities like Rivermist, London, Paris, Tokyo, Beijing, Hong Kong, Rome, New York, etc.)\n2. Or would you like me to retry the full airport list call in case it returns data this time?\n\nI'm happy to retry the query or pull up airport info for particular destinations you're interested in.",
+              "llamadasB": 0,
+              "textoA": "I attempted to retrieve the list of all accessible international airports, but the system only returned a status confirmation (\"done\") without providing the actual airport data. There's no detailed list of airport codes or names in the response.\n\nCould you like me to try an alternative approach, such as checking the nearest airport for specific cities you're interested in? Just let me know which city or cities you'd like me to check.",
+              "basisB": "measured",
+              "trazasB": [
+                "policy:freshness-sensitive request; freshness-sensitive without a freshness bucket → exact cache off; agentic request (tools, tool calls/results or more than one user turn) → semantic cache off by default (opt in with savings.semanticCache: \"include-agentic\") {\"allowExactCache\":false,\"allowSemanticCache\":false}",
+                "router:NO_RETRIEVAL {\"confidence\":0.5,\"reason\":\"no retrieval signal (conservative default)\"}"
+              ]
+            }
+          ],
+          "violaciones": []
+        }
+      ],
+      "avisosDeLaCapa": [],
+      "errores": []
+    }
+  ],
+  "resumen": [
+    {
+      "modelo": "anthropic/claude-haiku-4-5",
+      "n": 4,
+      "exactitudA": {
+        "point": 0.5,
+        "lower": 0.15003898900822643,
+        "upper": 0.8499610109917736
+      },
+      "exactitudB": {
+        "point": 0.5,
+        "lower": 0.15003898900822643,
+        "upper": 0.8499610109917736
+      },
+      "porCategoria": {
+        "simple": {
+          "n": 1,
+          "aciertosA": 1,
+          "aciertosB": 1
+        },
+        "multiple": {
+          "n": 1,
+          "aciertosA": 1,
+          "aciertosB": 1
+        },
+        "parallel": {
+          "n": 1,
+          "aciertosA": 0,
+          "aciertosB": 0
+        },
+        "parallel_multiple": {
+          "n": 1,
+          "aciertosA": 0,
+          "aciertosB": 0
+        }
+      },
+      "pares": {
+        "ambos": 2,
+        "soloA": 0,
+        "soloB": 0,
+        "ninguno": 2
+      },
+      "diferenciaExactitud": {
+        "point": 0,
+        "lower": 0,
+        "upper": 0
+      },
+      "mismasLlamadas": 4,
+      "infieles": [],
+      "erroresB": [],
+      "erroresA": [],
+      "diferenciasDelCable": {},
+      "marcasDeCacheB": 0,
+      "coste": {
+        "A": 0.0074270000000000004,
+        "B": 0.0074270000000000004,
+        "ahorro": {
+          "point": 0,
+          "lower": 0,
+          "upper": 0
+        },
+        "ahorroAgrupado": {
+          "point": 0,
+          "lower": 0,
+          "upper": 0
+        },
+        "tokens": {
+          "A": {
+            "entrada": 4002,
+            "lecturaCache": 0,
+            "escrituraCache": 0,
+            "salida": 685
+          },
+          "B": {
+            "entrada": 4002,
+            "lecturaCache": 0,
+            "escrituraCache": 0,
+            "salida": 685
+          }
+        }
+      },
+      "modelado": {
+        "ahorroQueDiceLaCapa": 0,
+        "porBasis": {
+          "measured": 4
+        },
+        "cache": {
+          "miss": 4
+        }
+      },
+      "repeticiones": {
+        "n": 1,
+        "cacheB": {
+          "miss": 1
+        },
+        "costeA": 0.001373,
+        "costeB": 0.001373,
+        "llamadasB": 1
+      },
+      "multiTurno": {
+        "entradas": 1,
+        "violaciones": [],
+        "paso0EnReferencia": {
+          "A": 1,
+          "B": 1
+        },
+        "paso0SinLlamada": {
+          "A": 0,
+          "B": 0
+        },
+        "herramientasOmitidasPorB": 0,
+        "costeA": 0.04746500000000001,
+        "costeB": 0.04741500000000001
+      },
+      "gasto": {
+        "total": 0.11248000000000001,
+        "A": 0.05626500000000001,
+        "B": 0.056215000000000015,
+        "tope": 1.25,
+        "abortado": false,
+        "llamadas": {
+          "A": 11,
+          "B": 11
+        }
+      }
+    },
+    {
+      "modelo": "anthropic/claude-sonnet-5",
+      "n": 4,
+      "exactitudA": {
+        "point": 0.75,
+        "lower": 0.3006418423283629,
+        "upper": 0.9544127392428686
+      },
+      "exactitudB": {
+        "point": 0.75,
+        "lower": 0.3006418423283629,
+        "upper": 0.9544127392428686
+      },
+      "porCategoria": {
+        "simple": {
+          "n": 1,
+          "aciertosA": 1,
+          "aciertosB": 1
+        },
+        "multiple": {
+          "n": 1,
+          "aciertosA": 1,
+          "aciertosB": 1
+        },
+        "parallel": {
+          "n": 1,
+          "aciertosA": 1,
+          "aciertosB": 1
+        },
+        "parallel_multiple": {
+          "n": 1,
+          "aciertosA": 0,
+          "aciertosB": 0
+        }
+      },
+      "pares": {
+        "ambos": 3,
+        "soloA": 0,
+        "soloB": 0,
+        "ninguno": 1
+      },
+      "diferenciaExactitud": {
+        "point": 0,
+        "lower": 0,
+        "upper": 0
+      },
+      "mismasLlamadas": 4,
+      "infieles": [],
+      "erroresB": [],
+      "erroresA": [],
+      "diferenciasDelCable": {},
+      "marcasDeCacheB": 0,
+      "coste": {
+        "A": 0.017812,
+        "B": 0.018402,
+        "ahorro": {
+          "point": -0.033123736806647264,
+          "lower": -0.033123736806647264,
+          "upper": -0.033123736806647264
+        },
+        "ahorroAgrupado": {
+          "point": -0.033123736806647264,
+          "lower": -0.10095447870778274,
+          "upper": 0
+        },
+        "tokens": {
+          "A": {
+            "entrada": 4131,
+            "lecturaCache": 0,
+            "escrituraCache": 0,
+            "salida": 955
+          },
+          "B": {
+            "entrada": 4131,
+            "lecturaCache": 0,
+            "escrituraCache": 0,
+            "salida": 1014
+          }
+        }
+      },
+      "modelado": {
+        "ahorroQueDiceLaCapa": 0,
+        "porBasis": {
+          "measured": 4
+        },
+        "cache": {
+          "miss": 4
+        }
+      },
+      "repeticiones": {
+        "n": 1,
+        "cacheB": {
+          "miss": 1
+        },
+        "costeA": 0.0026300000000000004,
+        "costeB": 0.0026300000000000004,
+        "llamadasB": 1
+      },
+      "multiTurno": {
+        "entradas": 1,
+        "violaciones": [],
+        "paso0EnReferencia": {
+          "A": 1,
+          "B": 1
+        },
+        "paso0SinLlamada": {
+          "A": 0,
+          "B": 0
+        },
+        "herramientasOmitidasPorB": 0,
+        "costeA": 0.11651800000000001,
+        "costeB": 0.11235800000000001
+      },
+      "gasto": {
+        "total": 0.2703500000000001,
+        "A": 0.13695999999999997,
+        "B": 0.13338999999999998,
+        "tope": 1.25,
+        "abortado": false,
+        "llamadas": {
+          "A": 11,
+          "B": 11
+        }
+      }
+    }
+  ],
+  "comparacion": {
+    "fichero": "docs/benchmarks/2026-09-28/bfcl.json",
+    "version": "0.4.30",
+    "tag": "v0.4.30",
+    "commitDelTag": "946f5d5191fc84ab19e2bd466ce033c691b82d38",
+    "fecha": "2026-09-28T09:35:27.762Z",
+    "config": {
+      "n": 100,
+      "multi": 10,
+      "repes": 10,
+      "tope": 1.25,
+      "semilla": 20260928,
+      "concurrencia": 3,
+      "gastoPrevioDescontado": {
+        "anthropic/claude-haiku-4-5": 0,
+        "anthropic/claude-sonnet-5": 0,
+        "openai/gpt-4o-mini": 0.024030900000000004,
+        "openai/gpt-5.4-mini": 0.017630249999999997
+      }
+    },
+    "resumen": [
+      {
+        "modelo": "openai/gpt-4o-mini",
+        "n": 400,
+        "exactitudA": {
+          "point": 0.895,
+          "lower": 0.8611090148828039,
+          "upper": 0.9213762725811002
+        },
+        "exactitudB": {
+          "point": 0.9,
+          "lower": 0.8666894236425671,
+          "upper": 0.9257007408778422
+        },
+        "porCategoria": {
+          "simple": {
+            "n": 100,
+            "aciertosA": 93,
+            "aciertosB": 95
+          },
+          "multiple": {
+            "n": 100,
+            "aciertosA": 87,
+            "aciertosB": 87
+          },
+          "parallel": {
+            "n": 100,
+            "aciertosA": 93,
+            "aciertosB": 93
+          },
+          "parallel_multiple": {
+            "n": 100,
+            "aciertosA": 85,
+            "aciertosB": 85
+          }
+        },
+        "pares": {
+          "ambos": 358,
+          "soloA": 0,
+          "soloB": 2,
+          "ninguno": 40
+        },
+        "diferenciaExactitud": {
+          "point": 0.005,
+          "lower": 0,
+          "upper": 0.0125
+        },
+        "mismasLlamadas": 398,
+        "infieles": [],
+        "erroresB": [],
+        "erroresA": [],
+        "diferenciasDelCable": {},
+        "marcasDeCacheB": 0,
+        "coste": {
+          "A": 0.027878400000000008,
+          "B": 0.027856800000000008,
+          "ahorro": {
+            "point": 0.0007747933884296732,
+            "lower": 0,
+            "upper": 0.0019467667448977988
+          },
+          "ahorroAgrupado": {
+            "point": 0.0007747933884297842,
+            "lower": 0,
+            "upper": 0.0019709757919667004
+          },
+          "tokens": {
+            "A": {
+              "entrada": 89956,
+              "lecturaCache": 0,
+              "escrituraCache": 0,
+              "salida": 23975
+            },
+            "B": {
+              "entrada": 89956,
+              "lecturaCache": 0,
+              "escrituraCache": 0,
+              "salida": 23939
+            }
+          }
+        },
+        "modelado": {
+          "ahorroQueDiceLaCapa": 0,
+          "porBasis": {
+            "measured": 400
+          },
+          "cache": {
+            "miss": 400
+          }
+        },
+        "repeticiones": {
+          "n": 10,
+          "cacheB": {
+            "miss": 10
+          },
+          "costeA": 0.00036615,
+          "costeB": 0.00036615,
+          "llamadasB": 10
+        },
+        "multiTurno": {
+          "entradas": 10,
+          "violaciones": [],
+          "paso0EnReferencia": {
+            "A": 8,
+            "B": 1
+          },
+          "paso0SinLlamada": {
+            "A": 0,
+            "B": 5
+          },
+          "herramientasOmitidasPorB": 10,
+          "costeA": 0.01360635,
+          "costeB": 0.006648450000000002
+        },
+        "gasto": {
+          "total": 0.07672229999999995,
+          "A": 0.04185089999999997,
+          "B": 0.03487139999999998,
+          "tope": 1.2259691,
+          "abortado": false,
+          "llamadas": {
+            "A": 470,
+            "B": 464
+          }
+        }
+      },
+      {
+        "modelo": "openai/gpt-5.4-mini",
+        "n": 400,
+        "exactitudA": {
+          "point": 0.88,
+          "lower": 0.8444860470281873,
+          "upper": 0.9082846092662015
+        },
+        "exactitudB": {
+          "point": 0.885,
+          "lower": 0.8500084559530157,
+          "upper": 0.9126670773978782
+        },
+        "porCategoria": {
+          "simple": {
+            "n": 100,
+            "aciertosA": 86,
+            "aciertosB": 91
+          },
+          "multiple": {
+            "n": 100,
+            "aciertosA": 91,
+            "aciertosB": 90
+          },
+          "parallel": {
+            "n": 100,
+            "aciertosA": 92,
+            "aciertosB": 92
+          },
+          "parallel_multiple": {
+            "n": 100,
+            "aciertosA": 83,
+            "aciertosB": 81
+          }
+        },
+        "pares": {
+          "ambos": 343,
+          "soloA": 9,
+          "soloB": 11,
+          "ninguno": 37
+        },
+        "diferenciaExactitud": {
+          "point": 0.005,
+          "lower": -0.0175,
+          "upper": 0.0275
+        },
+        "mismasLlamadas": 356,
+        "infieles": [],
+        "erroresB": [],
+        "erroresA": [],
+        "diferenciasDelCable": {},
+        "marcasDeCacheB": 0,
+        "coste": {
+          "A": 0.2074440000000001,
+          "B": 0.20687700000000014,
+          "ahorro": {
+            "point": 0.0027332677734714927,
+            "lower": -0.005062204427208394,
+            "upper": 0.010859844129296192
+          },
+          "ahorroAgrupado": {
+            "point": 0.0027332677734711597,
+            "lower": -0.005216506213155503,
+            "upper": 0.010980563626619144
+          },
+          "tokens": {
+            "A": {
+              "entrada": 122356,
+              "lecturaCache": 0,
+              "escrituraCache": 0,
+              "salida": 25706
+            },
+            "B": {
+              "entrada": 122356,
+              "lecturaCache": 0,
+              "escrituraCache": 0,
+              "salida": 25580
+            }
+          }
+        },
+        "modelado": {
+          "ahorroQueDiceLaCapa": 0,
+          "porBasis": {
+            "measured": 400
+          },
+          "cache": {
+            "miss": 400
+          }
+        },
+        "repeticiones": {
+          "n": 10,
+          "cacheB": {
+            "miss": 10
+          },
+          "costeA": 0.00303075,
+          "costeB": 0.00303075,
+          "llamadasB": 10
+        },
+        "multiTurno": {
+          "entradas": 10,
+          "violaciones": [],
+          "paso0EnReferencia": {
+            "A": 6,
+            "B": 2
+          },
+          "paso0SinLlamada": {
+            "A": 0,
+            "B": 5
+          },
+          "herramientasOmitidasPorB": 10,
+          "costeA": 0.04531065000000002,
+          "costeB": 0.051303450000000014
+        },
+        "gasto": {
+          "total": 0.5169965999999987,
+          "A": 0.2557854,
+          "B": 0.26121120000000003,
+          "tope": 1.23236975,
+          "abortado": false,
+          "llamadas": {
+            "A": 470,
+            "B": 466
+          }
+        }
+      }
+    ],
+    "multiTurno": {
+      "openai/gpt-4o-mini": [
+        {
+          "id": "multi_turn_base_157",
+          "herramientasEnCable": {
+            "A": 35,
+            "B": 8
+          }
+        },
+        {
+          "id": "multi_turn_base_78",
+          "herramientasEnCable": {
+            "A": 36,
+            "B": 8
+          }
+        },
+        {
+          "id": "multi_turn_base_47",
+          "herramientasEnCable": {
+            "A": 35,
+            "B": 8
+          }
+        },
+        {
+          "id": "multi_turn_base_183",
+          "herramientasEnCable": {
+            "A": 32,
+            "B": 8
+          }
+        },
+        {
+          "id": "multi_turn_base_9",
+          "herramientasEnCable": {
+            "A": 17,
+            "B": 8
+          }
+        },
+        {
+          "id": "multi_turn_base_37",
+          "herramientasEnCable": {
+            "A": 18,
+            "B": 8
+          }
+        },
+        {
+          "id": "multi_turn_base_62",
+          "herramientasEnCable": {
+            "A": 32,
+            "B": 8
+          }
+        },
+        {
+          "id": "multi_turn_base_133",
+          "herramientasEnCable": {
+            "A": 29,
+            "B": 8
+          }
+        },
+        {
+          "id": "multi_turn_base_95",
+          "herramientasEnCable": {
+            "A": 32,
+            "B": 8
+          }
+        },
+        {
+          "id": "multi_turn_base_122",
+          "herramientasEnCable": {
+            "A": 20,
+            "B": 8
+          }
+        }
+      ],
+      "openai/gpt-5.4-mini": [
+        {
+          "id": "multi_turn_base_157",
+          "herramientasEnCable": {
+            "A": 35,
+            "B": 8
+          }
+        },
+        {
+          "id": "multi_turn_base_78",
+          "herramientasEnCable": {
+            "A": 36,
+            "B": 8
+          }
+        },
+        {
+          "id": "multi_turn_base_47",
+          "herramientasEnCable": {
+            "A": 35,
+            "B": 8
+          }
+        },
+        {
+          "id": "multi_turn_base_183",
+          "herramientasEnCable": {
+            "A": 32,
+            "B": 8
+          }
+        },
+        {
+          "id": "multi_turn_base_9",
+          "herramientasEnCable": {
+            "A": 17,
+            "B": 8
+          }
+        },
+        {
+          "id": "multi_turn_base_37",
+          "herramientasEnCable": {
+            "A": 18,
+            "B": 8
+          }
+        },
+        {
+          "id": "multi_turn_base_62",
+          "herramientasEnCable": {
+            "A": 32,
+            "B": 8
+          }
+        },
+        {
+          "id": "multi_turn_base_133",
+          "herramientasEnCable": {
+            "A": 29,
+            "B": 8
+          }
+        },
+        {
+          "id": "multi_turn_base_95",
+          "herramientasEnCable": {
+            "A": 32,
+            "B": 8
+          }
+        },
+        {
+          "id": "multi_turn_base_122",
+          "herramientasEnCable": {
+            "A": 20,
+            "B": 8
+          }
+        }
+      ]
+    }
+  }
+}
