@@ -24,10 +24,10 @@
  *                        McNemar p < 0,05 en la dirección mala (XSTest).
  *                        SOLO si la capa intervino en la celda: donde el
  *                        artefacto demuestra que no cambió nada que altere la
- *                        generación (hoy solo MT-Bench: extraer.ts,
- *                        sinIntervencionMtBench), pasa a aviso «atribuible al
- *                        muestreo». Las otras baterías no traen el cable ni el
- *                        resultado de caché por ítem: ahí actúa siempre.
+ *                        generación (MT-Bench y BFCL: extraer.ts,
+ *                        sinIntervencionMtBench / sinIntervencionBfcl), pasa a
+ *                        aviso «atribuible al muestreo». GSM8K y XSTest no
+ *                        traen el cable por ítem: ahí actúa siempre.
  *   informe-vs-factura   El coste que dice el informe de la capa, sumado por
  *                        brazo, fuera de ±2 % de lo que factura el proveedor
  *                        según su `usage` (con 0,0001 $ de holgura absoluta
