@@ -8,7 +8,7 @@ import { describe, expect, it } from "vitest";
 import { comprobarEntrada, NumJ, normalizarCadena, parsearJson, salidaDeLlamadas, type ValorJ } from "../benchmarks/publicados/bfcl/ast.js";
 import { conArgumentoCambiado, familiaDe, HOSTS_OFICIALES, MODELOS_GAMA_ALTA, muestraEstratificada, NOMBRE_POR_DEFECTO, PRECIOS_CITADOS, proveedorDe, techoDe, TOPE_GAMA_ALTA, TOPE_MAXIMO, violacionesDeCache, type VarianteMultiTurno } from "../benchmarks/publicados/bfcl/arnes.js";
 import { cuerpoBrazoA, diferenciasDelCable, leerRespuesta, normalizarBase } from "../benchmarks/publicados/bfcl/brazos.js";
-import { costeDeUso, crearCable, Presupuesto, PresupuestoAgotado, Semaforo, sinSecretos, unidadEnCurso, usoDeRespuesta, type LlamadaDelCable } from "../benchmarks/publicados/bfcl/cable.js";
+import { costeDeUso, crearCable, Presupuesto, PresupuestoAgotado, REINTENTOS_DE_TRANSPORTE, Semaforo, sinSecretos, unidadEnCurso, usoDeRespuesta, type LlamadaDelCable } from "../benchmarks/publicados/bfcl/cable.js";
 import type { EntradaAst, FuncionBfcl } from "../benchmarks/publicados/bfcl/datos.js";
 import { herramientaDe } from "../benchmarks/publicados/bfcl/esquema.js";
 import { COMMIT_DEL_TAG, INTEGRIDAD_NPM, instalarVerjaDeHosts, SHA256_DIST_NPM, TAG_RELEASE, VERSION_PAQUETE } from "../benchmarks/publicados/bfcl/procedencia.js";
@@ -181,6 +181,75 @@ describe("BFCL · presupuesto y cable", () => {
     expect(reg[0]!.intentos).toBe(2);
     expect(pres.porBrazo.A).toBeCloseTo(0.001, 12);
     expect(JSON.stringify(reg)).not.toMatch(/secret|Bearer/);
+  });
+
+  // Run 36771607171: dos llamadas de gemini-3.1-pro-preview se colgaron 180 s
+  // (parallel_multiple_133, parallel_196) y, sin reintento de transporte, salieron
+  // como «arm B failed» → `capa-falla`. El plazo es el mismo en los dos brazos
+  // (este cable), y un cuelgue se reintenta igual en los dos.
+  it("⛔ un cuelgue del proveedor (plazo agotado) se reintenta en A y en B por igual y su peor caso va al gasto", async () => {
+    for (const brazo of ["A", "B"] as const) {
+      let n = 0;
+      const pres = new Presupuesto("m", 1);
+      const cable = crearCable({
+        familia: "google",
+        presupuesto: pres,
+        precio,
+        prima: 1,
+        semaforo: new Semaforo(1),
+        pausasMs: [1],
+        dormir: async () => {},
+        plazoMs: 20,
+        base: async (_i, init) => {
+          n++;
+          if (n === 1) {
+            // Se cuelga hasta que el plazo del cable lo corta (como el fetch real).
+            return await new Promise<Response>((_r, rechazar) => {
+              init!.signal!.addEventListener("abort", () => rechazar(init!.signal!.reason));
+            });
+          }
+          return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: "ok" }] }, finishReason: "STOP" }], usageMetadata: { promptTokenCount: 1000, candidatesTokenCount: 0 } }), { status: 200 });
+        },
+      });
+      const reg: LlamadaDelCable[] = [];
+      const r = await unidadEnCurso.run({ unidad: "u", brazo, registro: reg }, () =>
+        cable("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent", { method: "POST", body: '{"contents":[]}' }),
+      );
+      expect(r.status).toBe(200);
+      expect(n).toBe(2);
+      expect(reg[0]!.intentos).toBe(2);
+      expect(pres.abortadas[brazo]).toBe(1);
+      // El brazo solo lleva lo que el proveedor dijo que cobró; el total, además, el peor caso de la perdida.
+      expect(pres.porBrazo[brazo]).toBeCloseTo(0.001, 12);
+      expect(pres.gastado).toBeGreaterThan(pres.porBrazo[brazo]);
+    }
+  });
+
+  it("un cuelgue que no se arregla sale como error tras REINTENTOS_DE_TRANSPORTE; una cancelación de quien llama no se reintenta", async () => {
+    let n = 0;
+    const colgado = crearCable({
+      familia: "google",
+      presupuesto: new Presupuesto("m", 1),
+      precio,
+      prima: 1,
+      semaforo: new Semaforo(1),
+      pausasMs: [1],
+      dormir: async () => {},
+      plazoMs: 5,
+      base: async (_i, init) => {
+        n++;
+        return await new Promise<Response>((_r, rechazar) => init!.signal!.addEventListener("abort", () => rechazar(init!.signal!.reason)));
+      },
+    });
+    await expect(colgado("https://x.invalid/v1beta/models/m:generateContent", { method: "POST", body: "{}" })).rejects.toThrow(/timeout/i);
+    expect(n).toBe(1 + REINTENTOS_DE_TRANSPORTE);
+
+    n = 0;
+    const ctrl = new AbortController();
+    const p = colgado("https://x.invalid/v1beta/models/m:generateContent", { method: "POST", body: "{}", signal: ctrl.signal });
+    ctrl.abort(new Error("cancelado por quien llama"));
+    await expect(p).rejects.toThrow(/cancelado por quien llama/);
+    expect(n).toBe(1);
   });
 
   it("redacta credenciales en textos de error", () => {

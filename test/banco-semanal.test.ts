@@ -9,13 +9,16 @@ import {
   argumentosDe,
   BATERIAS,
   CajaGlobal,
+  MARGEN_DE_CIERRE_MS,
   MODELOS_DEL_BANCO,
+  PLAZO_DE_CELDA_MS,
   PRESUPUESTO_SEMANAL_USD,
   planificar,
   reparto,
   TECHO_DE_CELDA_USD,
   TopeGlobalAgotado,
   validarPlan,
+  XSTEST_N_POR_MODELO,
   type Celda,
 } from "../benchmarks/banco-semanal/plan.js";
 import { evaluarPuerta, leerRuns, MAX_DIAS, ultimoBancoEnVivo, type RunDelBanco } from "../benchmarks/banco-semanal/puerta.js";
@@ -90,6 +93,21 @@ describe("banco semanal · el reparto de los 50 $", () => {
     expect(vivo("xstest", "openai/gpt-4o-mini").some((a) => a.startsWith("--n="))).toBe(false);
     expect(vivo("xstest", "anthropic/claude-opus-5-5")).toContain("--n=100");
     expect(vivo("bfcl", "openai/gpt-5.5")).toContain("--multi=0");
+  });
+
+  // Run 36771607171: XSTest · gemini-3.1-pro-preview («media», 200 ítems) agotó los
+  // 75 min de la celda. Su submuestra la fija el reloj, y todo XSTest para de
+  // empezar ítems con margen antes del plazo de la celda.
+  it("XSTest de gemini-3.1-pro-preview mira 40 ítems y todo XSTest lleva su plazo de cierre", () => {
+    const vivo = (id: string) => argumentosDe(plan.find((c) => c.bateria === "xstest" && c.modelo.id === id)!, "vivo", "/tmp/x", "abc123");
+    expect(vivo("google/gemini-3.1-pro-preview")).toContain("--n=40");
+    // Los demás «media» siguen con los 200 de su gama.
+    expect(vivo("anthropic/claude-sonnet-5")).toContain("--n=200");
+    const plazoMin = (PLAZO_DE_CELDA_MS - MARGEN_DE_CIERRE_MS) / 60_000;
+    expect(plazoMin).toBe(60);
+    for (const m of MODELOS_DEL_BANCO) expect(vivo(m.id)).toContain(`--plazo-min=${plazoMin}`);
+    expect(validarPlan(plan)).toEqual([]);
+    expect(Object.keys(XSTEST_N_POR_MODELO).every((id) => MODELOS_DEL_BANCO.some((m) => m.id === id))).toBe(true);
   });
 });
 

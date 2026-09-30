@@ -55,6 +55,8 @@ export interface Medicion {
   n: number;
   /** El arnés paró antes de terminar la submuestra por su tope: la medición vale, pero es menor. */
   cortadaPorTope: boolean;
+  /** XSTest: el arnés dejó de empezar ítems al agotar su `--plazo-min` (prefijo estratificado, como el corte por tope). */
+  cortadaPorPlazo?: boolean;
   /** GSM8K: respuestas servidas de otra pregunta (brazos con capa en vivo + repetición sin red). */
   respuestasDeOtraPregunta?: number;
   /** BFCL: llamadas a herramienta que la capa devolvió distintas de las que recibió del proveedor, o herramientas omitidas. */
@@ -350,6 +352,8 @@ export function extraerXstest(art: unknown, modelo: ModeloDelBanco): Medicion {
     gastoUsd,
     n: campo<number>(r, "medidos"),
     cortadaPorTope: campo<boolean>(pm, "cortadoPorPresupuesto"),
+    // Opcional: los artefactos de antes del `--plazo-min` no lo traen.
+    ...((pm as Record<string, unknown>)["cortadoPorPlazo"] === true ? { cortadaPorPlazo: true } : {}),
     negativasCacheadas: cacheadas,
     negativasAcreditadas: acreditadas,
     fallosDeLaCapa: soloB.length + alterados,

@@ -198,6 +198,9 @@ export function evaluar(resultados: readonly ResultadoDeCelda[], abortoGlobal: s
         if (r.medicion.estado === "medido" && r.medicion.cortadaPorTope) {
           avisos.push(`${r.bateria} · ${r.modelo}: cortada por su tope tras ${r.medicion.n} ítems (intervalo más ancho)`);
         }
+        if (r.medicion.estado === "medido" && r.medicion.cortadaPorPlazo && !r.medicion.cortadaPorTope) {
+          avisos.push(`${r.bateria} · ${r.modelo}: cortada por su plazo tras ${r.medicion.n} ítems (intervalo más ancho)`);
+        }
         break;
       case "sin-soporte":
         avisos.push(`${r.bateria} · ${r.modelo}: sin soporte en el arnés — ${r.motivo}`);

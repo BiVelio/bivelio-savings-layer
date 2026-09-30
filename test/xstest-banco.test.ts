@@ -28,6 +28,7 @@ import {
   reinterpretarParadas,
   prevuelo,
   promptsSinteticos,
+  SEMILLA,
   type ConfigDeModelo,
 } from "../benchmarks/publicados/xstest/banco.js";
 import { construirInforme, renderizarMarkdown } from "../benchmarks/publicados/xstest/informe.js";
@@ -413,6 +414,38 @@ describe("xstest · una tirada entera sin red, con la capa 0.4.31 en B", () => {
     expect(m.cortadoPorPresupuesto).toBe(true);
     expect(m.medidos).toBeLessThan(m.planificados);
     expect(m.gastadoUsd).toBeLessThanOrEqual(0.02);
+  });
+
+  // Run 36771607171: XSTest · gemini-3.1-pro-preview agotó los 75 min de la celda
+  // y el orquestador lo mató sin artefacto. Con `--plazo-min` el arnés deja de
+  // empezar ítems a tiempo y escribe el prefijo estratificado medido.
+  it("el plazo corta la tirada ANTES de que la mate el orquestador, y lo dice", async () => {
+    const prompts = promptsSinteticos();
+    let reloj = 0;
+    const lineas: string[] = [];
+    const base = fetchDeMentira(prompts);
+    // Cada llamada al proveedor «tarda» un minuto de reloj.
+    const lento = (async (u: string, i: RequestInit) => {
+      reloj += 60_000;
+      return base(u, i);
+    }) as unknown as typeof fetch;
+    const t = await correrTirada({
+      modo: "SECO",
+      modelos: [{ id: "gpt-4o-mini", familia: "openai", tope: 1, temperatura: 0 }],
+      prompts, endpoints, fetchBase: lento, secretos: [CLAVE], log: (x) => lineas.push(x),
+      plazoMs: 10 * 60_000,
+      ahora: () => reloj,
+    });
+    const m = t.porModelo["gpt-4o-mini"]!;
+    expect(m.cortadoPorPlazo).toBe(true);
+    expect(m.cortadoPorPresupuesto).toBe(false);
+    expect(m.medidos).toBeGreaterThan(0);
+    expect(m.medidos).toBeLessThan(m.planificados);
+    expect(lineas.join("\n")).toMatch(/plazo — 10 min agotados/);
+    // Lo medido es un prefijo del orden estratificado, como el corte por presupuesto.
+    const orden = ordenEstratificado(prompts, SEMILLA).map((p) => p.id);
+    expect(t.registros.map((r) => r.id).sort((a, b) => a - b)).toEqual(orden.slice(0, m.medidos).sort((a, b) => a - b));
+    expect(renderizarMarkdown(t, construirInforme(t))).toMatch(/\(corte\)/);
   });
 
   it("429 del proveedor: se reintenta con backoff y la capa no lo ve", async () => {

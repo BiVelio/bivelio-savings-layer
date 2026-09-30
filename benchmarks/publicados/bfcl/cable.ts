@@ -92,6 +92,20 @@ export class Presupuesto {
     this.porBrazo[brazo] += coste;
     this.llamadas[brazo] += 1;
   }
+
+  /** Llamadas que se cortaron por plazo o por la red antes de traer respuesta, por brazo. */
+  readonly abortadas: Record<Brazo, number> = { A: 0, B: 0 };
+
+  /**
+   * Una llamada que salió y no volvió (plazo agotado, red caída): el proveedor
+   * pudo facturarla sin que el banco vea su `usage`. Se carga su PEOR CASO al
+   * total (cuenta prudente del tope), no al brazo: el coste de A y de B sigue
+   * siendo solo lo que el proveedor dijo que cobró.
+   */
+  cargarAbortada(brazo: Brazo, peorCaso: number): void {
+    this.gastado += peorCaso;
+    this.abortadas[brazo] += 1;
+  }
 }
 
 /** Uso facturable leído de la respuesta cruda, en el vocabulario común. */
@@ -232,6 +246,8 @@ export interface OpcionesDelCable {
   base?: typeof fetch;
   pausasMs?: readonly number[];
   dormir?: (ms: number) => Promise<void>;
+  /** Plazo de una llamada (defecto {@link PLAZO_POR_LLAMADA_MS}); los tests lo acortan. */
+  plazoMs?: number;
 }
 
 /** Quita de un texto cualquier cosa con forma de credencial (por si un error del proveedor la repitiera). */
@@ -243,18 +259,38 @@ export function sinSecretos(texto: string): string {
     .replace(/(x-api-key|authorization)["']?\s*[:=]\s*["']?[^"',\s}]+/gi, "$1: [redacted]");
 }
 
+/**
+ * El plazo de UNA llamada al proveedor, igual en los dos brazos (los dos pasan
+ * por este cable). Una respuesta normal de gemini-3.1-pro-preview en BFCL tarda
+ * segundos (≤ 1.000 tokens de salida con el pensamiento); 180 s solo se agotan
+ * si el proveedor se cuelga.
+ */
+export const PLAZO_POR_LLAMADA_MS = 180_000;
+/**
+ * Reintentos de TRANSPORTE (plazo agotado o red caída), distintos de los de
+ * estado HTTP. Hasta el run 36771607171 no había ninguno: dos llamadas de
+ * gemini-3.1-pro-preview que se colgaron 180 s (parallel_multiple_133 y
+ * parallel_196, las dos en el brazo B por azar: el cuerpo era idéntico al de A y
+ * el plazo el mismo) salieron como «arm B failed» y el resumen las contó como
+ * `capa-falla`. Un cuelgue del proveedor no es un fallo de la capa: se reintenta
+ * igual en los dos brazos, y la llamada perdida se carga a su peor caso.
+ */
+export const REINTENTOS_DE_TRANSPORTE = 2;
+
 /** El `fetch` de un modelo y un brazo. El brazo se lee del contexto de la unidad. */
 export function crearCable(o: OpcionesDelCable): typeof fetch {
   // `globalThis.fetch` en el momento de la llamada: así pasa por la verja de hosts (procedencia.ts).
   const base = o.base ?? ((i: Parameters<typeof fetch>[0], n?: Parameters<typeof fetch>[1]) => globalThis.fetch(i, n));
   const pausas = o.pausasMs ?? [1000, 2000, 4000, 8000, 16000, 30000];
   const dormir = o.dormir ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
+  const plazoMs = o.plazoMs ?? PLAZO_POR_LLAMADA_MS;
   return async (input, init) => {
     const ctx = unidadEnCurso.getStore();
     const brazo: Brazo = ctx?.brazo ?? "B";
     const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
     const cuerpo = typeof init?.body === "string" ? init.body : "";
-    o.presupuesto.comprobarLlamada(peorCasoDeLlamada(cuerpo, o.precio));
+    const peorCaso = peorCasoDeLlamada(cuerpo, o.precio);
+    o.presupuesto.comprobarLlamada(peorCaso);
     let peticion: Obj | null = null;
     try {
       peticion = obj(JSON.parse(cuerpo)) ?? null;
@@ -262,12 +298,29 @@ export function crearCable(o: OpcionesDelCable): typeof fetch {
       peticion = null;
     }
     let intentos = 0;
+    let deTransporte = 0;
     let resp: Response | null = null;
     let texto = "";
     for (;;) {
       intentos++;
-      resp = await o.semaforo.con(() => base(input, { ...init, signal: AbortSignal.timeout(180_000) }));
-      texto = await resp.text();
+      // El plazo del banco, sin pisar la señal de quien llama (si la capa o el
+      // adaptador mandaran una, una cancelación suya NO se reintenta).
+      const plazo = AbortSignal.timeout(plazoMs);
+      const senal = init?.signal ? AbortSignal.any([init.signal, plazo]) : plazo;
+      try {
+        resp = await o.semaforo.con(() => base(input, { ...init, signal: senal }));
+        texto = await resp.text();
+      } catch (e) {
+        const porPlazo = plazo.aborted;
+        const porRed = !porPlazo && e instanceof TypeError && !(init?.signal?.aborted ?? false);
+        if (!(porPlazo || porRed)) throw e;
+        o.presupuesto.cargarAbortada(brazo, peorCaso);
+        if (deTransporte >= REINTENTOS_DE_TRANSPORTE) throw e;
+        deTransporte++;
+        o.presupuesto.comprobarLlamada(peorCaso);
+        await dormir(pausas[Math.min(deTransporte - 1, pausas.length - 1)]!);
+        continue;
+      }
       if (!REINTENTABLE.has(resp.status) || intentos > pausas.length) break;
       const ra = Number(resp.headers.get("retry-after"));
       const pausa = Math.min(60_000, Math.max(pausas[intentos - 1]!, Number.isFinite(ra) ? ra * 1000 : 0));

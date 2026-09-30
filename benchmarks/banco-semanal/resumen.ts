@@ -47,7 +47,13 @@ function metricas(r: ResultadoDeCelda): string {
 function estado(r: ResultadoDeCelda): string {
   switch (r.estado) {
     case "medida":
-      return r.medicion.estado === "medido" ? (r.medicion.cortadaPorTope ? "medida (cortada por tope)" : "medida") : "no medible";
+      return r.medicion.estado === "medido"
+        ? r.medicion.cortadaPorTope
+          ? "medida (cortada por tope)"
+          : r.medicion.cortadaPorPlazo
+            ? "medida (cortada por plazo)"
+            : "medida"
+        : "no medible";
     case "sin-soporte":
       return "sin soporte";
     case "sin-clave":

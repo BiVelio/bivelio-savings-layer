@@ -672,6 +672,16 @@ export interface OpcionesDeTirada {
   noMedibles?: Record<string, string>;
   /** `--tope=` (banco semanal): tope por modelo que solo puede BAJAR el de `MODELOS` y el duro. */
   topeMaximoUsd?: number;
+  /**
+   * `--plazo-min=` (banco semanal): pasado este tiempo desde el arranque no se
+   * EMPIEZA ningún ítem más; los que están en vuelo terminan y se escribe el
+   * prefijo estratificado medido, como un corte por presupuesto. Sin él, un
+   * modelo lento agotaba el plazo de la celda y el orquestador lo mataba sin
+   * artefacto (run 36771607171, gemini-3.1-pro-preview: «plazo de 75 min agotado»).
+   */
+  plazoMs?: number;
+  /** Reloj inyectable (tests). */
+  ahora?: () => number;
 }
 
 export async function correrTirada(o: OpcionesDeTirada): Promise<Tirada> {
@@ -681,6 +691,8 @@ export async function correrTirada(o: OpcionesDeTirada): Promise<Tirada> {
   const orden = ordenEstratificado(o.prompts, semilla);
   const registros: RegistroDeItem[] = [];
   const porModelo: Tirada["porModelo"] = {};
+  const ahora = o.ahora ?? Date.now;
+  const inicio = ahora();
 
   await Promise.all(
     o.modelos.map(async (cfg) => {
@@ -709,11 +721,17 @@ export async function correrTirada(o: OpcionesDeTirada): Promise<Tirada> {
       const alGastar = (usd: number) => presupuesto.gastar(usd);
       let controles = 0;
       let cortadoPorPresupuesto = false;
+      let cortadoPorPlazo = false;
       let siguiente = 0;
       const planificados = lista.length;
 
       const trabajador = async () => {
-        while (siguiente < lista.length && !cortadoPorPresupuesto) {
+        while (siguiente < lista.length && !cortadoPorPresupuesto && !cortadoPorPlazo) {
+          if (o.plazoMs !== undefined && ahora() - inicio >= o.plazoMs) {
+            cortadoPorPlazo = true;
+            log(`[xstest] ${cfg.id}: plazo — ${Math.round(o.plazoMs / 60_000)} min agotados; no se empieza el ítem ${lista[siguiente]!.id} (prefijo estratificado de ${siguiente} ítems)`);
+            break;
+          }
           const p = lista[siguiente++]!;
           const unaLlamada = peorCasoDeLlamada(p.prompt, topeDe(cfg), precio);
           // A + B + dos repeticiones (o un control): el peor caso ENTERO del ítem.
@@ -745,6 +763,11 @@ export async function correrTirada(o: OpcionesDeTirada): Promise<Tirada> {
               item.repeticiones.push(await brazoB(capa, cfg, p.prompt, "control-cache", "generate", alGastar, o.secretos, esfuerzo));
             }
             registros.push(item);
+            // Progreso: si la celda muere por plazo, el registro dice hasta dónde llegó y a qué ritmo.
+            const hechosYa = registros.filter((r) => r.modelo === cfg.id).length;
+            if (hechosYa % 25 === 0) {
+              log(`[xstest] ${cfg.id}: ${hechosYa}/${planificados} ítems en ${Math.round((ahora() - inicio) / 1000)} s · gastado ${presupuesto.gastado.toFixed(4)} $`);
+            }
           } finally {
             presupuesto.liberar(reserva);
           }
@@ -763,6 +786,7 @@ export async function correrTirada(o: OpcionesDeTirada): Promise<Tirada> {
         planificados,
         medidos: hechos,
         cortadoPorPresupuesto,
+        ...(cortadoPorPlazo ? { cortadoPorPlazo: true } : {}),
         temperatura: cfg.temperatura ?? null,
         extraOpenAI: cfg.extraOpenAI ?? null, extraAnthropic: cfg.extraAnthropic ?? null,
         soloInseguros: cfg.soloInseguros ?? null,
@@ -1152,6 +1176,9 @@ async function principal(): Promise<void> {
   // `--tope=USD` (banco semanal, benchmarks/banco-semanal): solo BAJA el tope de cada modelo.
   const topeMaximoUsd = argumento("tope") !== undefined ? Number(argumento("tope")) : undefined;
   if (topeMaximoUsd !== undefined && !(topeMaximoUsd > 0)) throw new Error(`--tope inválido: ${argumento("tope")}`);
+  // `--plazo-min=MIN` (banco semanal): pasado ese tiempo no se empieza ningún ítem más.
+  const plazoMin = argumento("plazo-min") !== undefined ? Number(argumento("plazo-min")) : undefined;
+  if (plazoMin !== undefined && !(plazoMin > 0)) throw new Error(`--plazo-min inválido: ${argumento("plazo-min")}`);
   // `--fuente-de-main` (banco semanal): el brazo B es el fuente de ESTE árbol, sea la versión que sea
   // (lo que main lleva hoy, no una release), con BVSALA_DEV_OPEN=1. El artefacto lo dice.
   const fuenteDeMain = process.argv.includes("--fuente-de-main");
@@ -1219,6 +1246,7 @@ async function principal(): Promise<void> {
     ...(vivo && licencia ? { licencia } : {}),
     ...(n !== undefined ? { n } : {}),
     ...(topeMaximoUsd !== undefined ? { topeMaximoUsd } : {}),
+    ...(plazoMin !== undefined ? { plazoMs: plazoMin * 60_000 } : {}),
   });
   if (hosts) {
     tirada.red = { hostsVistos: { ...hosts.vistos }, hostsRechazados: { ...hosts.rechazados } };

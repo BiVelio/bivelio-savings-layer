@@ -114,8 +114,32 @@ export const SUBMUESTRA: Readonly<
   cara: { gsm8kUnicos: 40, bfcl: { n: 8, multi: 0, repes: 2 }, xstestN: 100, mtBenchPreguntas: 16 },
 };
 
+/**
+ * XSTest por MODELO, donde la gama no basta: el tamaño lo fija el reloj, no el
+ * precio. gemini-3.1-pro-preview es «media» por precio, pero solo piensa (no se
+ * apaga: `reasoning_effort` "low" es lo mínimo) y lleva 1.024 tokens de salida
+ * en A y en B (xstest/banco.ts: con 160 el pensamiento se comía el tope). Con
+ * los 200 de su gama agotó los 75 min de la celda sin escribir nada (run
+ * 36771607171, «arnes-falla · plazo de 75 min agotado»). Además, su tope de
+ * 1,10 $ lo cortaría de todos modos entre el ítem ~30 y el ~55: hasta 0,013 $
+ * por llamada (1.024 tokens a 12 $/M) y ~2,9 llamadas por ítem (A, B y las dos
+ * repeticiones de cada negativa). Pedir 200 solo alargaba la celda sin medir
+ * más. 40 ítems son ~115 llamadas y, a lo sumo, 60 en serie por trabajador: caben en los
+ * 60 min de `--plazo-min` aunque cada llamada tarde un minuto.
+ */
+export const XSTEST_N_POR_MODELO: Readonly<Record<string, number>> = {
+  "google/gemini-3.1-pro-preview": 40,
+};
+
 /** Tiempo máximo de una celda: un arnés colgado no puede comerse el trabajo entero (6 h en GitHub). */
 export const PLAZO_DE_CELDA_MS = 75 * 60_000;
+/**
+ * Cuánto antes del plazo de la celda deja XSTest de EMPEZAR ítems (`--plazo-min`):
+ * los que estén en vuelo terminan (≤ 3 llamadas seguidas) y el arnés escribe el
+ * prefijo estratificado medido, en vez de morir sin artefacto a manos del
+ * orquestador. El resumen lo marca «medida (cortada por plazo)».
+ */
+export const MARGEN_DE_CIERRE_MS = 15 * 60_000;
 /** Cuántas celdas de una MISMA batería corren a la vez. GSM8K escribe siempre el mismo fichero: de una en una. */
 export const CONCURRENCIA_POR_BATERIA: Readonly<Record<Bateria, number>> = { gsm8k: 1, bfcl: 2, xstest: 2, "mt-bench": 2 };
 
@@ -178,6 +202,11 @@ export function validarPlan(celdas: readonly Celda[]): string[] {
   for (const c of celdas) {
     if (!(c.topeUsd > 0) || c.topeUsd > TECHO_DE_CELDA_USD) errores.push(`${c.bateria}/${c.modelo.id}: tope ${c.topeUsd} fuera de (0, ${TECHO_DE_CELDA_USD}]`);
   }
+  for (const [id, n] of Object.entries(XSTEST_N_POR_MODELO)) {
+    if (!Number.isInteger(n) || n <= 0) errores.push(`xstest/${id}: submuestra ${n} no es un entero positivo`);
+    if (!MODELOS_DEL_BANCO.some((m) => m.id === id)) errores.push(`xstest/${id}: submuestra para un modelo que no está en el banco`);
+  }
+  if (!(MARGEN_DE_CIERRE_MS > 0 && MARGEN_DE_CIERRE_MS < PLAZO_DE_CELDA_MS)) errores.push(`margen de cierre ${MARGEN_DE_CIERRE_MS} ms fuera de (0, plazo de celda)`);
   const total = reparto(celdas).asignadoUsd;
   if (total > PRESUPUESTO_SEMANAL_USD) errores.push(`el plan asigna ${total} $ y el presupuesto semanal es ${PRESUPUESTO_SEMANAL_USD} $`);
   return errores;
@@ -192,6 +221,7 @@ export function argumentosDe(c: Celda, modo: Modo, dir: string, runId: string): 
   const s = SUBMUESTRA[c.modelo.gama];
   const vivo = modo === "vivo";
   const usd = (x: number) => x.toFixed(2);
+  const nXstest = XSTEST_N_POR_MODELO[c.modelo.id] ?? s.xstestN;
   switch (c.bateria) {
     case "gsm8k":
       return [
@@ -226,8 +256,9 @@ export function argumentosDe(c: Celda, modo: Modo, dir: string, runId: string): 
         "--fuente-de-main",
         ...(vivo ? ["--vivo"] : []),
         `--modelos=${c.modelo.corto}`,
-        ...(vivo ? (s.xstestN !== null ? [`--n=${s.xstestN}`] : []) : ["--n=12"]),
+        ...(vivo ? (nXstest !== null ? [`--n=${nXstest}`] : []) : ["--n=12"]),
         `--tope=${usd(c.topeUsd)}`,
+        `--plazo-min=${Math.round((PLAZO_DE_CELDA_MS - MARGEN_DE_CIERRE_MS) / 60_000)}`,
         `--semilla=${SEMILLA}`,
         `--salida=${dir}`,
         "--nombre=xstest",

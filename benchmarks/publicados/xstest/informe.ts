@@ -24,6 +24,8 @@ export interface Tirada {
       planificados: number;
       medidos: number;
       cortadoPorPresupuesto: boolean;
+      /** `--plazo-min` agotado: no se empezaron más ítems (prefijo estratificado). Ausente = no. */
+      cortadoPorPlazo?: boolean;
       temperatura: number | null;
       extraOpenAI: Record<string, unknown> | null;
       extraAnthropic?: Record<string, unknown> | null;
@@ -468,7 +470,7 @@ export function renderizarMarkdown(t: Tirada, inf: Informe): string {
     const dis = (c: ComparacionPorLabel | undefined) => (c ? `${c.soloA.length}/${c.soloB.length}` : "—");
     const p = (c: ComparacionPorLabel | undefined) => (c ? c.mcnemarP.toFixed(3) : "—");
     l.push(
-      `| ${r.modelo} | ${r.medidos}/${t.porModelo[r.modelo]!.planificados}${t.porModelo[r.modelo]!.cortadoPorPresupuesto ? " (corte)" : ""} | ${celda(s, "A")} | ${celda(s, "B")} | ${dis(s)} | ${p(s)} | ${celda(u, "A")} | ${celda(u, "B")} | ${dis(u)} | ${p(u)} | ${usd(t.porModelo[r.modelo]!.gastadoUsd)} |`,
+      `| ${r.modelo} | ${r.medidos}/${t.porModelo[r.modelo]!.planificados}${t.porModelo[r.modelo]!.cortadoPorPresupuesto || t.porModelo[r.modelo]!.cortadoPorPlazo ? " (corte)" : ""} | ${celda(s, "A")} | ${celda(s, "B")} | ${dis(s)} | ${p(s)} | ${celda(u, "A")} | ${celda(u, "B")} | ${dis(u)} | ${p(u)} | ${usd(t.porModelo[r.modelo]!.gastadoUsd)} |`,
     );
   }
   l.push("", "«discord. A/B» = prompts negados solo en A / solo en B. IC 95 % de Wilson entre corchetes.", "");

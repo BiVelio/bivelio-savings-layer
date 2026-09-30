@@ -134,8 +134,31 @@ tope, así que su intervalo de confianza es más ancho:
 | Gama | GSM8K (problemas únicos) | BFCL (por categoría / multi-turn / repeticiones) | XSTest (prompts) | MT-Bench (preguntas) |
 | --- | --- | --- | --- | --- |
 | barata | 100 | 25 / 4 / 5 | los 450 | 40 |
-| media | 60 | 12 / 2 / 3 | 200 | 24 |
+| media | 60 | 12 / 2 / 3 | 200 (gemini-3.1-pro-preview: 40, ver abajo) | 24 |
 | cara | 40 | 8 / 0 / 2 | 100 (Opus: 20 inseguros, lo fija el arnés) | 16 |
+
+**XSTest de gemini-3.1-pro-preview: 40 prompts, no 200.** Aquí manda el reloj,
+no el precio. El modelo piensa siempre (el esfuerzo mínimo que admite es
+`low`) y lleva 1.024 tokens de salida en A y en B, porque con 160 el pensamiento
+se comía el tope. En el run 36771607171 (el primero con Gemini nativo) agotó los
+75 min de la celda sin escribir nada: `arnes-falla · plazo de 75 min agotado`.
+Además, su tope de 1,10 $ lo cortaría de todos modos entre el ítem 30 y el 55:
+hasta 0,013 $ por llamada, y unas 2,9 llamadas por ítem contando las dos
+repeticiones de cada negativa. Pedir 200 solo alargaba la celda sin medir más.
+Con 40 ítems salen unas 115 llamadas, a lo sumo 60 en serie por trabajador, y caben
+en los 60 min del plazo de cierre aunque cada una tarde un minuto. Lo fija `XSTEST_N_POR_MODELO` en
+`benchmarks/banco-semanal/plan.ts`, y `validarPlan` comprueba que cada entrada
+sea un modelo del banco con un entero positivo. No cambia ningún tope: el reparto
+sigue en 44,20 $.
+
+**Plazo de cierre de XSTest (`--plazo-min`).** Todas las celdas de XSTest salen
+con `--plazo-min=60`: el plazo de la celda (75 min) menos `MARGEN_DE_CIERRE_MS`
+(15 min). Pasado ese tiempo, el arnés no **empieza** ningún ítem más. Los que
+están en vuelo terminan, y se escribe el prefijo estratificado medido, igual que
+cuando corta el presupuesto. El resumen lo marca «medida (cortada por plazo)» y
+da un aviso. Antes, un modelo lento moría a manos del orquestador sin dejar
+artefacto. Además, el arnés escribe una línea de progreso cada 25 ítems, con el
+tiempo y el gasto.
 
 En BFCL, las caras van sin multi-turn. El arnés reserva por adelantado el peor
 caso de una entrada multi-turn entera, y con gpt-5.5 u Opus esa reserva no cabe
@@ -197,6 +220,8 @@ en una sola celda**.
 - Un modelo **no medible**: por su clave, por su cuota, o porque su tope no
   alcanza para un solo ítem.
 - Una celda **cortada por su tope**: se midió menos, pero no peor.
+- Una celda de XSTest **cortada por su plazo** (`--plazo-min`): igual que la
+  anterior, pero la cortó el reloj.
 - Una celda de MT-Bench con la **calidad sin medir**: el juez juzgó menos de 8
   turnos. No se da tasa de victoria, en vez de un 0,5 que parezca un empate.
 - Una celda de MT-Bench con la **calidad peor donde la capa no intervino**: sale
@@ -213,6 +238,30 @@ Dos cosas que conviene saber al leer estas reglas:
 - **`capa-falla` no existe como campo en ningún arnés.** Se calcula igual en las
   cuatro baterías: un error que solo aparece en el brazo con la capa. Un 429 que
   la capa agota y que A no vio también cuenta. Es conservador a propósito.
+- **Un cuelgue del proveedor no es `capa-falla`.** En BFCL, los dos brazos pasan
+  por el mismo cable (`benchmarks/publicados/bfcl/cable.ts`), con el mismo plazo
+  por llamada: `PLAZO_POR_LLAMADA_MS`, 180 s. La capa y `GoogleProvider` no
+  ponen ningún plazo propio. En el run 36771607171, dos llamadas de
+  gemini-3.1-pro-preview se colgaron esos 180 s: `parallel_multiple_133` y
+  `parallel_196`. Las dos cayeron en el brazo B por azar, porque el cuerpo era
+  idéntico al de A y una respuesta normal tarda segundos. Como el cable no
+  reintentaba errores de transporte, salieron como `capa-falla`. Ahora un plazo
+  agotado o una red caída se reintentan hasta `REINTENTOS_DE_TRANSPORTE` (2)
+  veces, igual en los dos brazos. El peor caso de cada llamada perdida se carga
+  al gasto de la celda, porque el proveedor pudo cobrarla. No se carga al brazo:
+  el coste de A y el de B siguen siendo solo lo que dijo el `usage`. El informe
+  de BFCL cuenta esas llamadas por brazo. Una cancelación que venga de quien
+  llama no se reintenta.
+- **El otro `capa-falla` de ese run sí era del producto.** XSTest ·
+  gemini-3.8-flash, prompt 5: `HTTP 400: INVALID_ARGUMENT`, solo en B. El brazo
+  A crea un `GoogleProvider` por llamada, y la capa comparte uno entre todas.
+  Gemini 3.8 Flash rechaza `thinkingLevel: MINIMAL` con un 400, y el adaptador
+  lo corrige a `LOW` una vez y lo recuerda. Pero los ítems 5 y 443 salieron a la
+  vez: el 443 aprendió el sustituto y, cuando llegó el 400 del 5, el adaptador
+  lo comparó con el cuerpo **rehecho** (ya con `LOW`). No casaba, y el 400 subió
+  al cliente. Cualquier integración con peticiones en paralelo lo sufría en su
+  primer minuto. Se arregló en `src/providers/google.ts`: el 400 se compara con
+  el cuerpo que viajó en esa petición.
 
 ### La calidad solo culpa a la capa si la capa cambió algo
 
