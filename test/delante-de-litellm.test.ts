@@ -246,7 +246,7 @@ describe("HUECOS · los que contradecían (b): dos cerrados por el dueño (2026-
       const repeticion = r.veredictos.find((v) => v.requestId === r.segunda.requestId)!;
       // Lo que falta es el registro, no la versión: el propio SDK ya lo emite
       // `estimated` (basisEmitido), antes de la verja de versión del ingest, que
-      // hasta el PR de release de la mínima (0.4.33) también degradaría lo que
+      // hasta el PR de release de la mínima (0.4.35) también degradaría lo que
       // declara `sdk/${BV_SALA_VERSION}`.
       expect(r.lotes.every((l) => l.version === `sdk/${BV_SALA_VERSION}`)).toBe(true);
       expect(r.primera.referenceNotWritten).toBe("unofficial-origin");
@@ -355,20 +355,21 @@ describe("HUECOS · los que contradecían (b): dos cerrados por el dueño (2026-
  * Gemini, las negativas que #384 no veía y los temas sensibles: #393, #401 y
  * #402, en la 0.4.32 (dueño, 2026-09-29). Y hasta la 0.4.32 las negativas
  * parciales y la carencia tras una disculpa: #422, en la 0.4.33 (dueño,
- * 2026-09-29).
+ * 2026-09-29). Y hasta la 0.4.34 la negativa escrita dentro de una salida
+ * estructurada: #431, en la 0.4.35 (dueño, 2026-09-30).
  */
-describe("VERSION_MINIMA_REFERENCIA — 0.4.33, la primera que no repite ninguna negativa", () => {
-  it("una referencia de 0.4.24-0.4.32 ya no es comisionable; de 0.4.33 en adelante sí", () => {
-    for (const no of ["sdk/0.4.24", "sdk/0.4.25", "sdk/0.4.26", "sdk/0.4.27", "sdk/0.4.28", "sdk/0.4.29", "sdk/0.4.30", "sdk/0.4.31", "sdk/0.4.32"]) {
+describe("VERSION_MINIMA_REFERENCIA — 0.4.35, la primera que no repite ninguna negativa", () => {
+  it("una referencia de 0.4.24-0.4.34 ya no es comisionable; de 0.4.35 en adelante sí", () => {
+    for (const no of ["sdk/0.4.24", "sdk/0.4.25", "sdk/0.4.26", "sdk/0.4.27", "sdk/0.4.28", "sdk/0.4.29", "sdk/0.4.30", "sdk/0.4.31", "sdk/0.4.32", "sdk/0.4.33", "sdk/0.4.34"]) {
       expect(versionAdmiteReferencia(no), no).toBe(false);
     }
-    for (const si of ["sdk/0.4.33", "sdk/0.4.34", "sdk/0.5.0"]) {
+    for (const si of ["sdk/0.4.35", "sdk/0.4.36", "sdk/0.5.0"]) {
       expect(versionAdmiteReferencia(si), si).toBe(true);
     }
   });
 
   it("controles: el gateway, una preliminar de la mínima y «sin versión» siguen fuera", () => {
-    for (const no of ["gateway/0.4.33", "sdk/0.4.33-rc.1", null]) {
+    for (const no of ["gateway/0.4.35", "sdk/0.4.35-rc.1", null]) {
       expect(versionAdmiteReferencia(no), String(no)).toBe(false);
     }
   });

@@ -102,11 +102,12 @@ export const COMISIONAR_REFERENCIA: boolean = true;
  * texto que ve el cliente es `dashboard.extracto.parametrosReferencia`.
  *
  * QUÉ HACE CIERTO ESTE SELLO: no el orden de publicación. La etiqueta v0.4.23
- * se cortó con la regla v1, de la 0.4.24 a la 0.4.32 el SDK podía repetir una
+ * se cortó con la regla v1, de la 0.4.24 a la 0.4.34 el SDK podía repetir una
  * negativa del proveedor como referencia (la que el modelo escribe como texto,
  * hasta la 0.4.30: #384; el `content_filter: OTHER` de Gemini, las que #384 no
  * veía y los temas sensibles, hasta la 0.4.31: #393, #401, #402; las negativas
- * parciales y la carencia tras una disculpa, hasta la 0.4.32: #422), y la regla
+ * parciales y la carencia tras una disculpa, hasta la 0.4.32: #422; la negativa
+ * escrita dentro de una salida estructurada, hasta la 0.4.34: #431), y la regla
  * no viaja en el registro de uso, así que el
  * ingest (app/api/metering/usage/route.ts) degrada a "estimated" toda
  * referencia de un proceso que no declara versión, que declara una anterior a
