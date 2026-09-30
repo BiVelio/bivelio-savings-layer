@@ -139,12 +139,26 @@ describe("admiteReferencia — la verja de la regla de la referencia", () => {
     expect(compararVersiones(VERSION_MINIMA_REFERENCIA, "0.4.32")).toBeGreaterThan(0);
   });
 
+  it("va por delante de la 0.4.34: hasta la 0.4.34 el SDK repetía la negativa escrita dentro de una salida estructurada", () => {
+    // `{"steps":["This request cannot be fulfilled as it involves illegal
+    // activities…"]}` (gpt-4o-mini con un contrato de salida estricto, sin
+    // `message.refusal`; #431): sale en la 0.4.35. Bajar de aquí la reabre
+    // (decisión del dueño, 2026-09-30).
+    expect(compararVersiones(VERSION_MINIMA_REFERENCIA, "0.4.34")).toBeGreaterThan(0);
+  });
+
   it("sdk/ desde la mínima: sí; anteriores, preliminares de la mínima o sin versión: no", () => {
-    for (const si of ["sdk/0.4.33", "sdk/0.4.34", "sdk/0.5.0", "sdk/1.0.0", "sdk/0.4.34-rc.1"]) {
+    for (const si of ["sdk/0.4.35", "sdk/0.4.36", "sdk/0.5.0", "sdk/1.0.0", "sdk/0.4.36-rc.1"]) {
       expect(admiteReferencia(si), si).toBe(true);
     }
-    for (const no of [null, "sdk/0.4.23", "sdk/0.4.22", "sdk/0.4.33-rc.1", "0.4.33"]) {
+    for (const no of [null, "sdk/0.4.23", "sdk/0.4.22", "sdk/0.4.35-rc.1", "0.4.35"]) {
       expect(admiteReferencia(no), String(no)).toBe(false);
+    }
+  });
+
+  it("0.4.33 y 0.4.34 ya no: repetían la negativa escrita dentro de una salida estructurada (#431, en la 0.4.35)", () => {
+    for (const no of ["sdk/0.4.33", "sdk/0.4.34", "sdk/0.4.34-hotfix"]) {
+      expect(admiteReferencia(no), no).toBe(false);
     }
   });
 
@@ -173,15 +187,15 @@ describe("admiteReferencia — la verja de la regla de la referencia", () => {
   });
 
   it("gateway/ nunca, sea cual sea la versión: la regla v2 vive en el pipeline del SDK y el gateway no pasa por él", () => {
-    for (const no of ["gateway/0.4.23", "gateway/0.4.24", "gateway/0.4.33", "gateway/0.4.33-dev", "gateway/0.5.0", "gateway/9.9.9"]) {
+    for (const no of ["gateway/0.4.23", "gateway/0.4.24", "gateway/0.4.35", "gateway/0.4.35-dev", "gateway/0.5.0", "gateway/9.9.9"]) {
       expect(admiteReferencia(no), no).toBe(false);
     }
   });
 
   it("encadenada con versionDeclarada: una cabecera rara es «sin versión» y tampoco admite", () => {
-    expect(admiteReferencia(versionDeclarada("sdk/0.4.33, sdk/0.4.33"))).toBe(false);
-    expect(admiteReferencia(versionDeclarada("cli/0.4.33"))).toBe(false);
-    expect(admiteReferencia(versionDeclarada(" sdk/0.4.33 "))).toBe(true);
-    expect(admiteReferencia(versionDeclarada(" sdk/0.4.32 "))).toBe(false);
+    expect(admiteReferencia(versionDeclarada("sdk/0.4.35, sdk/0.4.35"))).toBe(false);
+    expect(admiteReferencia(versionDeclarada("cli/0.4.35"))).toBe(false);
+    expect(admiteReferencia(versionDeclarada(" sdk/0.4.35 "))).toBe(true);
+    expect(admiteReferencia(versionDeclarada(" sdk/0.4.34 "))).toBe(false);
   });
 });

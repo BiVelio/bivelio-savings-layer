@@ -33,7 +33,7 @@ export const CABECERA_VERSION = "x-bvsala-version";
  * ya no repiten una negativa del proveedor como referencia. Se cambia aquí y en
  * el SDK a la vez; `version.test.ts` ata los dos.
  *
- * 0.4.33 (antes 0.4.32, 0.4.31, 0.4.29 y 0.4.24): de la 0.4.24 a la 0.4.28 el SDK
+ * 0.4.35 (antes 0.4.33, 0.4.32, 0.4.31, 0.4.29 y 0.4.24): de la 0.4.24 a la 0.4.28 el SDK
  * podía guardar una negativa en caché y repetirla como `reference`. #356
  * (0.4.27) cerró la de `content_filter`/`refusal`; #367 (0.4.29) la de salidas
  * estructuradas de OpenAI (`message.refusal`). Decisión del dueño
@@ -52,9 +52,16 @@ export const CABECERA_VERSION = "x-bvsala-version";
  * tras una disculpa («I'm sorry, but I don't have access to personal data…»),
  * que vio el primer banco semanal en vivo. #422 las cierra en la 0.4.33
  * (decisión del dueño, 2026-09-29: «arreglar primero siempre»; mismo criterio,
- * mismo coste para 0.4.32). El detalle, en src/version.ts.
+ * mismo coste para 0.4.32). Y hasta la 0.4.34 repetía la negativa escrita
+ * DENTRO de una salida estructurada: con un contrato de salida estricto,
+ * gpt-4o-mini no usa `message.refusal` y escribe la negativa en el JSON
+ * (`{"steps":["This request cannot be fulfilled as it involves illegal
+ * activities…"]}`), y el detector leía el JSON como prosa. La vio una sonda en
+ * vivo; #431 la cierra en la 0.4.35 (decisión del dueño, 2026-09-30:
+ * «arreglar primero siempre»; mismo criterio, mismo coste para 0.4.33 y
+ * 0.4.34). El detalle, en src/version.ts.
  */
-export const VERSION_MINIMA_REFERENCIA = "0.4.33";
+export const VERSION_MINIMA_REFERENCIA = "0.4.35";
 
 /**
  * ¿Puede entrar como `reference` un registro de un proceso que declara esta
@@ -75,12 +82,12 @@ export const VERSION_MINIMA_REFERENCIA = "0.4.33";
  * entero. La etiqueta v0.4.23 lleva la regla v1 (salida acreditada sin guarda
  * de razonamiento, esquema admitido sin modo estricto): si alguien la publica,
  * sus referencias no pueden sellarse como «reference-v2». Y de la 0.4.24 a la
- * 0.4.32 una referencia puede ser la repetición de una negativa, que no es una
+ * 0.4.34 una referencia puede ser la repetición de una negativa, que no es una
  * respuesta. Entran como `estimated`, que siguen contando en los totales pero
  * no en la base.
  *
  * El lado seguro en cada duda: sin versión declarada → no; una preliminar de la
- * propia mínima (`0.4.33-rc.1`, que en semver va ANTES de `0.4.33`) → no.
+ * propia mínima (`0.4.35-rc.1`, que en semver va ANTES de `0.4.35`) → no.
  */
 export function admiteReferencia(version: string | null): boolean {
   const v = parsearVersion(version);

@@ -115,7 +115,7 @@ function referencia(): Record<string, unknown> {
 const peticion = (cuerpo: unknown) =>
   new Request("https://savings.bivelio.com/api/metering/usage", {
     method: "POST",
-    headers: { "content-type": "application/json", authorization: "Bearer bvk_test", "x-bvsala-version": "sdk/0.4.33" },
+    headers: { "content-type": "application/json", authorization: "Bearer bvk_test", "x-bvsala-version": "sdk/0.4.35" },
     body: JSON.stringify(cuerpo),
   });
 
