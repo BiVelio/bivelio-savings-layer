@@ -132,7 +132,14 @@ const DECLINA_EN = "i(?:'ll| will| must| need to|'d| would)?(?: have to)? ?(?:re
 const IMPERSONAL_EN =
   "(?:(?:that|this|it)(?:'s| is) not something i(?:'m| am)? ?(?:can|will|able to|comfortable)|" +
   "(?:it|that|this)(?:'s| is| would be| would not be| wouldn't be) (?:not )?(?:appropriate|ethical|responsible) for me to|" +
-  "i(?:'m| am) not sure (?:that )?it(?:'s| is| would be) appropriate)";
+  "i(?:'m| am) not sure (?:that )?it(?:'s| is| would be) appropriate|" +
+  // 2026-09-30: la negativa impersonal que gpt-4o-mini escribe dentro de una salida
+  // estructurada («This request cannot be fulfilled as it involves illegal…»).
+  "(?:this|that|the|your) request (?:cannot|can't|can not|will not|won't) be (?:fulfilled|completed|processed|honou?red|accommodated|carried out|answered)|" +
+  // …y la que califica la PETICIÓN en vez de responderla («This request is
+  // inappropriate and illegal. It is important to protect…»). El sujeto es la
+  // petición del usuario: una respuesta que la juzga así no la está atendiendo.
+  "(?:this|that|your) request (?:is|would be) (?:considered )?(?:inappropriate|illegal|unlawful|unethical|harmful|dangerous|against|not appropriate|a violation))";
 /** Lo que abre una negativa sin serlo por sí solo. */
 const APERTURA_EN =
   "(?:(?:i'm |i am |i'm really |i am really |i'm so |really |so )?sorry|i apologi[sz]e|my apologies|apologies|" +
@@ -214,6 +221,7 @@ const CLAUSULA = [
   IMPERSONAL_EN,
   `${NEG_ES}${HUECO}${VERBO_ES}`,
   "lamento no poder",
+  "(?:esta|esa|la|tu) (?:solicitud|petición) no (?:se )?puede (?:ser )?(?:atender|atendida|cumplir|cumplida|completar|completada|procesar|procesada)",
   `${NEG_CA}${HUECO}${VERBO_CA}`,
   `${NEG_FR}${HUECO}${VERBO_FR}`,
   `${NEG_DE} ${VERBO_DE}`,
@@ -601,7 +609,13 @@ const RE_REMISION = new RegExp(
  * cláusula: es la remisión a ayuda profesional que no responde a lo pedido
  * (2026-09-29). Se trata igual: se mide y se sirve, no se guarda ni se acredita.
  */
-export type ReglaDeNegativaEnTexto = "opens-with-refusal" | "apology-then-refusal" | "short-refusal" | "redirection" | "partial-refusal";
+export type ReglaDeNegativaEnTexto =
+  | "opens-with-refusal"
+  | "apology-then-refusal"
+  | "short-refusal"
+  | "redirection"
+  | "partial-refusal"
+  | "refusal-in-structured-output";
 
 // ── 2026-09-29 (c) · LA NEGATIVA PARCIAL: la cláusula en cualquier punto de la respuesta ──
 //
@@ -680,6 +694,53 @@ function trasLaPrimeraFrase(t: string): string {
  */
 export function negativaEnTexto(texto: string | null | undefined): ReglaDeNegativaEnTexto | null {
   if (typeof texto !== "string" || texto === "") return null;
+  const regla = negativaEnProsa(texto);
+  if (regla) return regla;
+  // 2026-09-30 · LA NEGATIVA DENTRO DE UNA SALIDA ESTRUCTURADA. Con un contrato de
+  // salida, gpt-4o-mini no usa `message.refusal`: escribe la negativa DENTRO del
+  // JSON (`{"steps":["This request cannot be fulfilled as it involves illegal
+  // activities…"],"materials":[]}`), y el texto que ve este detector empieza por
+  // `{`, así que ninguna regla de prosa lo veía; se guardaba y se repetía
+  // `reference` (sonda en vivo del 2026-09-30, criterio 3 de CAMINO-A-0.5.md).
+  // Cada cadena del JSON se examina con las mismas reglas.
+  for (const cadena of cadenasDelJson(texto)) {
+    if (negativaEnProsa(cadena)) return "refusal-in-structured-output";
+  }
+  return null;
+}
+
+/** Cuántas cadenas y cuántos caracteres de un JSON se examinan, como mucho. */
+const JSON_MAX_CADENAS = 200;
+const JSON_MAX_CHARS = 40_000;
+
+/** Las cadenas (valores, no claves) de un texto que es JSON; ninguna si no lo es. */
+function cadenasDelJson(texto: string): string[] {
+  const t = texto.trim();
+  if (!(t.startsWith("{") || t.startsWith("[")) || t.length > JSON_MAX_CHARS) return [];
+  let valor: unknown;
+  try {
+    valor = JSON.parse(t);
+  } catch {
+    return [];
+  }
+  const out: string[] = [];
+  const pila: unknown[] = [valor];
+  while (pila.length > 0 && out.length < JSON_MAX_CADENAS) {
+    const v = pila.pop();
+    if (typeof v === "string") {
+      if (v.trim() !== "") out.push(v);
+    } else if (Array.isArray(v)) {
+      for (let i = v.length - 1; i >= 0; i--) pila.push(v[i]);
+    } else if (v !== null && typeof v === "object") {
+      const valores = Object.values(v as Record<string, unknown>);
+      for (let i = valores.length - 1; i >= 0; i--) pila.push(valores[i]);
+    }
+  }
+  return out;
+}
+
+/** Las reglas sobre un texto en prosa (la respuesta entera, o una cadena de un JSON). */
+function negativaEnProsa(texto: string): ReglaDeNegativaEnTexto | null {
   const t = normalizar(texto);
   if (t === "") return null;
   const ventana = inicio(t);
