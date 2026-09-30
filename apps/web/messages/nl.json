@@ -799,7 +799,7 @@
       "pasos": [
         {
           "title": "AI rekent per woord",
-          "body": "Elk verzoek aan een AI wordt betaald per tekst die erin en eruit gaat. Savings gaat midden op dat pad staan en laat alleen door wat nodig is: wat je niet hoefde te betalen valt in jouw pot."
+          "body": "Elk verzoek aan een AI wordt betaald per tekst die erin en eruit gaat. Savings gaat midden op dat pad staan: een verzoek dat het al heeft gezien en geverifieerd, wordt beantwoord zonder de provider opnieuw aan te roepen, en wat je niet hoefde te betalen valt in jouw pot."
         },
         {
           "title": "Je betaalt niet twee keer voor hetzelfde",
@@ -1000,10 +1000,6 @@
       "alterna": "Mail ons"
     },
     "trabajos": {
-      "pajaTitle": "Draagt de zending opvulling…",
-      "pajaBody": "…dan haalt de poort die eruit vóór je betaalt: het pakket bereikt de cloud veel kleiner en het verschil valt in jouw pot.",
-      "magroTitle": "Is hij al slank…",
-      "magroBody": "…dan passeert hij onaangeroerd. Daar valt niets te verwijderen — en we beloven geen besparing waar die er niet is.",
       "caption": "Niet elk verzoek bevat iets om te besparen: op de publieke benchmark bespaarde verkeer zonder herhalingen ≈ {cero}. Ook dat publiceren we."
     },
     "devs": {

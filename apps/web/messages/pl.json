@@ -799,7 +799,7 @@
       "pasos": [
         {
           "title": "AI liczy sobie za słowa",
-          "body": "Każde zapytanie do AI opłaca się za tekst, który wchodzi i wychodzi. Savings staje na środku tej drogi i przepuszcza tylko to, co potrzebne: to, za co nie trzeba było płacić, wpada do Twojego słoika."
+          "body": "Każde zapytanie do AI opłaca się za tekst, który wchodzi i wychodzi. Savings staje na środku tej drogi: zapytanie, które już widział i zweryfikował, dostaje odpowiedź bez ponownego wywoływania dostawcy, a to, za co nie trzeba było płacić, wpada do Twojego słoika."
         },
         {
           "title": "Nie płacisz dwa razy za to samo",
@@ -1000,10 +1000,6 @@
       "alterna": "Napisz do nas"
     },
     "trabajos": {
-      "pajaTitle": "Jeśli przesyłka niesie wypełniacz…",
-      "pajaBody": "…bramka usuwa go przed zapłatą: paczka dociera do chmury znacznie mniejsza, a różnica wpada do Twojego słoika.",
-      "magroTitle": "Jeśli już jest szczupła…",
-      "magroBody": "…przechodzi nietknięta. Nie ma tam czego usuwać — i nie obiecujemy oszczędności tam, gdzie ich nie ma.",
       "caption": "Nie każde zapytanie ma coś do zaoszczędzenia: w publicznym benchmarku ruch bez powtórzeń zaoszczędził ≈ {cero}. To też publikujemy."
     },
     "devs": {

@@ -799,7 +799,7 @@
       "pasos": [
         {
           "title": "KI wird pro Wort abgerechnet",
-          "body": "Jede Anfrage an eine KI wird nach dem Text bezahlt, der hinein- und hinausgeht. Savings stellt sich mitten auf diesen Weg und lässt nur durch, was nötig ist: Was du nicht bezahlen musstest, fällt in dein Glas."
+          "body": "Jede Anfrage an eine KI wird nach dem Text bezahlt, der hinein- und hinausgeht. Savings stellt sich mitten auf diesen Weg: Eine Anfrage, die es schon gesehen und geprüft hat, wird beantwortet, ohne den Anbieter erneut aufzurufen – und was du nicht bezahlen musstest, fällt in dein Glas."
         },
         {
           "title": "Du zahlst nicht zweimal für dasselbe",
@@ -1000,10 +1000,6 @@
       "alterna": "Schreib uns"
     },
     "trabajos": {
-      "pajaTitle": "Trägt die Sendung Füllung…",
-      "pajaBody": "…entfernt das Tor sie vor dem Bezahlen: Das Paket erreicht die Cloud viel kleiner, und die Differenz fällt in dein Glas.",
-      "magroTitle": "Ist sie schon schlank…",
-      "magroBody": "…passiert sie unberührt. Dort gibt es nichts zu entfernen — und wir versprechen keine Ersparnis, wo keine ist.",
       "caption": "Nicht jede Anfrage enthält etwas zum Sparen: Im öffentlichen Benchmark sparte Traffic ohne Wiederholungen ≈ {cero}. Auch das veröffentlichen wir."
     },
     "devs": {

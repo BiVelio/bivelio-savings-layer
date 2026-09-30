@@ -799,7 +799,7 @@
       "pasos": [
         {
           "title": "AI menagih per kata",
-          "body": "Setiap permintaan ke AI dibayar berdasarkan teks yang masuk dan keluar. Savings berdiri di tengah jalur itu dan hanya meloloskan yang diperlukan: yang tak perlu dibayar jatuh ke toples Anda."
+          "body": "Setiap permintaan ke AI dibayar berdasarkan teks yang masuk dan keluar. Savings berdiri di tengah jalur itu: permintaan yang sudah pernah dilihat dan diverifikasi dijawab tanpa memanggil penyedia lagi, dan yang tak perlu Anda bayar jatuh ke toples Anda."
         },
         {
           "title": "Anda tidak membayar dua kali untuk hal yang sama",
@@ -1000,10 +1000,6 @@
       "alterna": "Kirim email"
     },
     "trabajos": {
-      "pajaTitle": "Jika kiriman membawa isian…",
-      "pajaBody": "…gerbang membuangnya sebelum Anda membayar: paket tiba di cloud jauh lebih kecil dan selisihnya jatuh ke toples Anda.",
-      "magroTitle": "Jika sudah ramping…",
-      "magroBody": "…lewat tanpa disentuh. Tak ada yang perlu dibuang — dan kami tidak menjanjikan penghematan yang tidak ada.",
       "caption": "Tidak setiap permintaan membawa sesuatu untuk dihemat: di bangku uji publik, lalu lintas tanpa pengulangan menghemat ≈ {cero}. Itu juga kami terbitkan."
     },
     "devs": {

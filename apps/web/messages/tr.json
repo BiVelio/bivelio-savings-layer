@@ -799,7 +799,7 @@
       "pasos": [
         {
           "title": "Yapay zekâ kelime başına ücret alır",
-          "body": "Yapay zekâya yapılan her istek, giren ve çıkan metne göre ödenir. Savings bu yolun ortasında durur ve yalnızca gerekli olanı geçirir: ödemeniz gerekmeyen, sizin kavanozunuza düşer."
+          "body": "Yapay zekâya yapılan her istek, giren ve çıkan metne göre ödenir. Savings bu yolun ortasında durur: daha önce gördüğü ve doğruladığı bir istek, sağlayıcı yeniden çağrılmadan yanıtlanır; ödemeniz gerekmeyen de kavanozunuza düşer."
         },
         {
           "title": "Aynı şey için iki kez ödemezsiniz",
@@ -1000,10 +1000,6 @@
       "alterna": "Bize yaz"
     },
     "trabajos": {
-      "pajaTitle": "Gönderi dolgu taşıyorsa…",
-      "pajaBody": "…kapı ödemeden önce onu çıkarır: paket buluta çok daha küçük ulaşır ve aradaki fark kavanozunuza düşer.",
-      "magroTitle": "Zaten yalınsa…",
-      "magroBody": "…dokunulmadan geçer. Orada çıkarılacak bir şey yok — olmayan yerde tasarruf vadetmeyiz.",
       "caption": "Her istek tasarruf edilecek bir şey taşımaz: herkese açık test tezgâhında tekrar içermeyen trafik ≈ {cero} tasarruf etti. Bunu da yayımlıyoruz."
     },
     "devs": {

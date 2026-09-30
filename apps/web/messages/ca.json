@@ -799,7 +799,7 @@
       "pasos": [
         {
           "title": "La IA es cobra per paraules",
-          "body": "Cada petició a la IA es paga pel text que entra i surt. Savings es posa al mig del camí i deixa passar només el necessari: el que no calia pagar, cau al teu pot."
+          "body": "Cada petició a la IA es paga pel text que entra i surt. Savings es posa al mig d'aquest camí: una petició que ja ha vist i verificat es respon sense tornar a cridar el proveïdor, i el que no calia pagar cau al teu pot."
         },
         {
           "title": "No pagues dues vegades pel mateix",
@@ -1000,10 +1000,6 @@
       "alterna": "Escriu-nos"
     },
     "trabajos": {
-      "pajaTitle": "Si l'enviament porta palla…",
-      "pajaBody": "…la porta la treu abans de pagar: el paquet arriba al núvol molt més petit i la diferència cau al teu pot.",
-      "magroTitle": "Si ja va magre…",
-      "magroBody": "…passa intacte. Allà no hi ha res a treure — i no es promet estalvi on no n'hi ha.",
       "caption": "No totes les peticions porten alguna cosa a estalviar: al banc públic, el trànsit sense repeticions va estalviar ≈ {cero}. També ho publiquem."
     },
     "devs": {
