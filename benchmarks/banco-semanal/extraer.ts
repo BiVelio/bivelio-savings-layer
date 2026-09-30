@@ -78,7 +78,7 @@ export interface Medicion {
   calidadSinMedir?: string;
   /**
    * La celda donde la capa NO intervino: está SOLO cuando el artefacto lo
-   * demuestra (hoy solo MT-Bench; ver `sinIntervencionMtBench`). Lleva los
+   * demuestra (MT-Bench y BFCL; ver `sinIntervencionMtBench` y `sinIntervencionBfcl`). Lleva los
    * campos neutros en los que difirió el cable, con su cuenta. Con él, una
    * calidad peor de B no es de la capa: `exactitud-peor` pasa a aviso
    * (umbrales.ts). Sin él —intervino, o no se sabe— la regla actúa igual.
@@ -180,6 +180,68 @@ interface EntradaAstBfcl {
   B: { ok: boolean; coste: number; informe?: { actual: number } };
 }
 
+/** Lo que `sinIntervencionBfcl` lee de cada entrada AST (arnes.ts, `RegistroAst`). */
+interface EntradaAstBfclCable {
+  A: { ok: boolean; llamadasAlProveedor?: number; modelosServidos?: string[] };
+  B: {
+    ok: boolean;
+    llamadasAlProveedor?: number;
+    modelosServidos?: string[];
+    fiel?: boolean | null;
+    diferenciasDelCable?: string[];
+    marcasDeCache?: number;
+    informe?: { cache?: string; avoidedLlm?: number };
+  };
+}
+
+/**
+ * ¿La capa dejó INTACTA la generación de B en la exactitud AST de esta celda de
+ * BFCL? Hallazgo de los runs 36634001923, 36748284158 y 36771607171:
+ * gpt-5.4-mini dio B − A −0,030, −0,010 y −0,040 [−0,080, −0,010] con el cable
+ * de B idéntico al de A en las 300 entradas (diferenciasDelCable vacía, los
+ * mismos tokens de entrada, caché todo `miss`), y en vivo el cuerpo de B salió
+ * byte a byte igual que el de A: era el muestreo de un modelo de razonamiento
+ * al que ningún brazo puede fijar temperatura ni semilla, no la capa.
+ *
+ * Solo si el artefacto lo demuestra en TODAS las entradas que cuentan en la
+ * exactitud (las que el brazo A respondió):
+ *   · B respondió, con las llamadas tal cual las trajo el proveedor (`fiel`);
+ *   · ninguna llamada evitada: caché `miss`, `avoidedLlm` 0, y tantas llamadas
+ *     al proveedor en B como en A;
+ *   · el mismo modelo servido en A y B (y alguno);
+ *   · el cable de B igual al de A salvo campos de CAMPOS_NEUTROS_PARA_LA_GENERACION
+ *     (las marcas `cache_control` ya las quita la comparación del arnés; se
+ *     cuentan como `cuerpo:cache_control`).
+ * Si falta cualquier dato (un artefacto de antes de `modelosServidos`), `null`:
+ * se asume que intervino y la regla actúa. El multi-turn no entra: no puntúa
+ * exactitud, y sus diferencias van a su propia sección del informe.
+ */
+export function sinIntervencionBfcl(ast: EntradaAstBfclCable[]): { camposNeutros: Record<string, number> } | null {
+  const cuentan = ast.filter((e) => e.A.ok);
+  if (cuentan.length === 0) return null;
+  const campos: Record<string, number> = {};
+  const servidosA = new Set<string>();
+  const servidosB = new Set<string>();
+  for (const { A, B } of cuentan) {
+    if (!B.ok || B.fiel !== true) return null;
+    if (B.informe?.cache !== "miss" || B.informe.avoidedLlm !== 0) return null;
+    if (!A.llamadasAlProveedor || B.llamadasAlProveedor !== A.llamadasAlProveedor) return null;
+    if (!A.modelosServidos?.length || !B.modelosServidos?.length) return null;
+    for (const m of A.modelosServidos) servidosA.add(m);
+    for (const m of B.modelosServidos) servidosB.add(m);
+    if (!Array.isArray(B.diferenciasDelCable)) return null;
+    // «<clave>: A=… B=…» es una clave de primer nivel; `tools…` y `messages…` nunca son neutras.
+    for (const d of B.diferenciasDelCable) {
+      const clave = /^([a-z_]+): A=/.exec(d)?.[1];
+      if (!clave || !esNeutro(clave)) return null;
+      campos[clave] = (campos[clave] ?? 0) + 1;
+    }
+    if ((B.marcasDeCache ?? 0) > 0) campos["cuerpo:cache_control"] = (campos["cuerpo:cache_control"] ?? 0) + 1;
+  }
+  if ([...servidosA].sort().join() !== [...servidosB].sort().join()) return null;
+  return { camposNeutros: campos };
+}
+
 export function extraerBfcl(art: unknown, modelo: ModeloDelBanco): Medicion {
   const base = { bateria: "bfcl" as const, modelo: modelo.id, ejemplosDeFallos: [], exactitud: [], informeVsFactura: [] };
   const noMedible = ((art as J)["noMedibles"] as { modelo: string; motivo: string }[] | undefined)?.find((x) => x.modelo === modelo.id);
@@ -205,8 +267,10 @@ export function extraerBfcl(art: unknown, modelo: ModeloDelBanco): Medicion {
   const violaciones = multi.violaciones ?? [];
   const dif = campo<IntervaloDeConfianza | null>(r, "diferenciaExactitud");
   const conInforme = ast.filter((e) => e.B.ok && e.B.informe && typeof e.B.coste === "number");
+  const sinIntervencion = sinIntervencionBfcl(ast as unknown as EntradaAstBfclCable[]);
   return {
     ...base,
+    ...(sinIntervencion ? { sinIntervencion } : {}),
     estado: "medido",
     gastoUsd,
     n,

@@ -513,6 +513,73 @@ describe("banco semanal · la lectura de los artefactos (tiradas publicadas de v
     });
   });
 
+  describe("BFCL: la exactitud AST solo culpa a la capa si la capa cambió algo (runs 36634001923, 36748284158, 36771607171)", () => {
+    // La celda real de gpt-5.4-mini: B − A −0,040 [−0,080, −0,010] con el cable de
+    // B idéntico al de A en las 100 entradas, caché todo `miss`, 0 llamadas
+    // cambiadas. Aquel artefacto no traía el modelo servido; el arnés ya lo guarda
+    // (`modelosServidos`) y aquí se le añade como lo escribiría hoy. En vivo
+    // (2026-10-01, 7 preguntas discordantes × 20 repeticiones por brazo) el cuerpo
+    // de B salió byte a byte igual que el de A 140/140 y acertó 95/140 frente a
+    // 96/140: las mismas preguntas fallan en los dos brazos.
+    type Brazo = Record<string, unknown>;
+    type Art = { modelos: { ast: { id: string; A: Brazo; B: Brazo & { informe: Brazo } }[] }[] };
+    const SERVIDO = "gpt-5.4-mini";
+    const real = () => JSON.parse(leer("fixtures/banco-semanal-bfcl-gpt-5.4-mini-36771607171.json")) as Art;
+    const conServido = (art: Art) => {
+      for (const e of art.modelos[0]!.ast) {
+        e.A["modelosServidos"] = [SERVIDO];
+        e.B["modelosServidos"] = [SERVIDO];
+      }
+      return art;
+    };
+    const gpt = modelo("openai/gpt-5.4-mini");
+    const celda = (m: Medicion): ResultadoDeCelda => ({ bateria: "bfcl", modelo: gpt.id, estado: "medida", topeUsd: 0.75, medicion: m });
+
+    it("el artefacto tal cual (sin modelo servido): no se puede demostrar, y exactitud-peor sigue fallando", () => {
+      const m = extraerBfcl(real(), gpt);
+      expect(m.exactitud[0]).toMatchObject({ peorSignificativo: true, valor: -0.04 });
+      expect(m.sinIntervencion).toBeUndefined();
+      expect(infraccionesDe(m, 0.75).map((i) => i.regla)).toEqual(["exactitud-peor"]);
+    });
+
+    it("con el modelo servido igual en A y B: sin intervención, la calidad peor es un aviso de muestreo, no un fallo", () => {
+      const m = extraerBfcl(conServido(real()), gpt);
+      expect(m).toMatchObject({ estado: "medido", n: 100, llamadasCambiadas: 0, fallosDeLaCapa: 0 });
+      expect(m.sinIntervencion).toEqual({ camposNeutros: {} });
+      expect(infraccionesDe(m, 0.75)).toEqual([]);
+      const v = evaluar([celda(m)], null);
+      expect(v.ok).toBe(true);
+      expect(v.avisos.find((a) => /atribuible al muestreo/.test(a))).toMatch(/cable idéntico.*IC95 \[-0\.080, -0\.010\]/);
+    });
+
+    it("`prompt_cache_key` y las marcas `cache_control` son neutras: se cuentan y no cuentan como intervención", () => {
+      const art = conServido(real());
+      art.modelos[0]!.ast[0]!.B["diferenciasDelCable"] = ['prompt_cache_key: A=undefined B="bsl-1"'];
+      art.modelos[0]!.ast[1]!.B["marcasDeCache"] = 2;
+      expect(extraerBfcl(art, gpt).sinIntervencion).toEqual({ camposNeutros: { prompt_cache_key: 1, "cuerpo:cache_control": 1 } });
+    });
+
+    it.each([
+      ["una herramienta con otro esquema", (a: Art) => (a.modelos[0]!.ast[3]!.B["diferenciasDelCable"] = ["tools[f]: A={…} B={…}"])],
+      ["las herramientas en otro orden", (a: Art) => (a.modelos[0]!.ast[3]!.B["diferenciasDelCable"] = ["tools: order differs (A=f,g B=g,f)"])],
+      ["un mensaje distinto", (a: Art) => (a.modelos[0]!.ast[3]!.B["diferenciasDelCable"] = ["messages[0]: A={…} B={…}"])],
+      ["un `reasoning_effort` que A no manda", (a: Art) => (a.modelos[0]!.ast[3]!.B["diferenciasDelCable"] = ['reasoning_effort: A=undefined B="low"'])],
+      ["una `temperature` distinta", (a: Art) => (a.modelos[0]!.ast[3]!.B["diferenciasDelCable"] = ["temperature: A=undefined B=0"])],
+      ["una llamada servida de la caché", (a: Art) => (a.modelos[0]!.ast[3]!.B.informe["cache"] = "exact")],
+      ["una llamada evitada", (a: Art) => (a.modelos[0]!.ast[3]!.B.informe["avoidedLlm"] = 1)],
+      ["una llamada de más al proveedor", (a: Art) => (a.modelos[0]!.ast[3]!.B["llamadasAlProveedor"] = 2)],
+      ["llamadas devueltas distintas de las recibidas", (a: Art) => (a.modelos[0]!.ast[3]!.B["fiel"] = false)],
+      ["otro modelo servido en B", (a: Art) => (a.modelos[0]!.ast[3]!.B["modelosServidos"] = ["gpt-5.4"])],
+    ])("la misma celda con %s: la capa intervino (o no se sabe) y exactitud-peor sigue fallando", (_, cambio) => {
+      const art = conServido(real());
+      cambio(art);
+      const m = extraerBfcl(art, gpt);
+      expect(m.sinIntervencion).toBeUndefined();
+      expect(infraccionesDe(m, 0.75).map((i) => i.regla)).toContain("exactitud-peor");
+      expect(evaluar([celda(m)], null).ok).toBe(false);
+    });
+  });
+
   it("si un arnés cambia la forma de su artefacto, se dice; no sale un cero que parezca limpio", () => {
     expect(() => extraerGsm8k({ modelos: [{ modelo: "openai/gpt-4o-mini", estado: "medido", gasto: { totalUsd: 0 } }] }, modelo("openai/gpt-4o-mini"))).toThrow(
       /no tiene resumen\.brazos/,

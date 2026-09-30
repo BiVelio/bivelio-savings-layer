@@ -187,6 +187,13 @@ export interface ResultadoBrazo {
   lecturaCache: number;
   escrituraCache: number;
   salida: number;
+  /**
+   * Los modelos que el proveedor dice haber servido en las respuestas de este
+   * brazo (`model` en Chat Completions y Mensajes, `modelVersion` en Gemini
+   * nativo). Sin él no se puede demostrar que A y B hablaron con lo mismo
+   * (banco-semanal/extraer.ts, `sinIntervencionBfcl`).
+   */
+  modelosServidos?: string[];
 }
 
 export interface RegistroAst {
@@ -397,7 +404,14 @@ function sumaDelCable(reg: LlamadaDelCable[], brazo: "A" | "B") {
     lecturaCache: xs.reduce((s, c) => s + (c.uso?.lecturaCache ?? 0), 0),
     escrituraCache: xs.reduce((s, c) => s + (c.uso?.escrituraCache ?? 0), 0),
     salida: xs.reduce((s, c) => s + (c.uso?.salida ?? 0), 0),
+    modelosServidos: [...new Set(xs.map((c) => modeloServido(c.respuesta)).filter((m): m is string => !!m))],
   };
+}
+
+/** El modelo que el proveedor dice haber servido: `model` (OpenAI, Anthropic) o `modelVersion` (Gemini nativo). */
+function modeloServido(r: LlamadaDelCable["respuesta"]): string | undefined {
+  const m = r?.["model"] ?? r?.["modelVersion"];
+  return typeof m === "string" && m ? m : undefined;
 }
 
 // ── La tirada de un modelo ────────────────────────────────────────────────
