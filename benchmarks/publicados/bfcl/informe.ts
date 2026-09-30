@@ -432,6 +432,15 @@ export function escribirInforme(a: Artefacto): string {
   }
   l.push("");
   l.push("The budget is enforced across every live run of this battery: before starting, the cost of every earlier live call (the cable log) is subtracted from the per-model cap.");
+  // Llamadas que se colgaron (plazo) o perdieron la red: se reintentan en los dos brazos por igual y su peor caso va a «this run».
+  for (const t of a.modelos) {
+    if (t.llamadasAbortadas) {
+      l.push("");
+      l.push(
+        `${t.modelo}: ${t.llamadasAbortadas.A} call(s) in arm A and ${t.llamadasAbortadas.B} in arm B got no answer (the provider hung past the per-call timeout, or the network failed) and were retried by the harness in the same way in both arms; each one is charged at its worst case to "this run", so "this run" exceeds A + B.`,
+      );
+    }
+  }
   l.push("");
   l.push("## Limitations");
   l.push("");

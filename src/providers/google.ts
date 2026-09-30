@@ -183,32 +183,45 @@ export class GoogleProvider implements Provider {
   // (nada se factura dos veces): hoy, un nivel de pensamiento que el modelo no
   // admite. Cualquier otro rechazo sale como `provider <status>: <detalle>`, el
   // formato que el pipeline lee para el respaldo de capacidad de flex.
+  //
+  // EL 400 SE COMPARA CON LO QUE VIAJÓ EN ESA PETICIÓN, no con lo que se mandaría
+  // ahora. Con peticiones en paralelo sobre el mismo adaptador (lo normal detrás
+  // de la capa), otra puede aprender el sustituto mientras esta espera su 400:
+  // rehacer el cuerpo aquí daría LOW, no casaría con el MINIMAL rechazado y el
+  // 400 subía al cliente sin corregir. Lo midió el banco semanal (run
+  // 36771607171, XSTest · gemini-3.8-flash, ítems 5 y 443 en vuelo a la vez) y se
+  // reprodujo en vivo el 2026-10-01 con dos llamadas paralelas.
   private async enviarConCorrecciones(
     model: string,
     req: ProviderRequest,
     stream: boolean,
     signal: AbortSignal | undefined,
   ): Promise<Response> {
-    let response = await this.enviar(model, req, stream, signal);
+    let cuerpo = this.cuerpo(model, req);
+    let response = await this.enviar(model, cuerpo, stream, signal);
     for (let vueltas = 0; vueltas < 3 && !response.ok && response.status === 400; vueltas++) {
       const detalle = await textoSeguro(response);
       const nivel = nivelRechazado(detalle);
-      const enviado = this.cuerpo(model, req).generationConfig?.thinkingConfig?.thinkingLevel;
+      const enviado = cuerpo.generationConfig?.thinkingConfig?.thinkingLevel;
       if (nivel === null || enviado === undefined || nivel !== String(enviado).toUpperCase()) {
         throw new Error(`provider ${response.status}: ${detalle}`);
       }
-      const sustituto = nivel === "MINIMAL" ? "LOW" : null;
+      // Si otra petición ya lo aprendió, no se reescribe ni se vuelve a avisar.
       const memo = this.nivelAprendido.get(model) ?? new Map<string, string | null>();
-      memo.set(nivel, sustituto);
-      this.nivelAprendido.set(model, memo);
-      avisarDelProveedor(
-        this,
-        `google-nivel:${this.base}:${model}:${nivel}`,
-        `[bvsala] Model "${model}" rejects thinkingLevel ${nivel} with a 400, so ` +
-          (sustituto ? `${sustituto} is sent instead` : "no thinking level is sent (the model's default)") +
-          " (the rejected request was not billed; the model is noted and the following requests go straight there).",
-      );
-      response = await this.enviar(model, req, stream, signal);
+      if (!memo.has(nivel)) {
+        const sustituto = nivel === "MINIMAL" ? "LOW" : null;
+        memo.set(nivel, sustituto);
+        this.nivelAprendido.set(model, memo);
+        avisarDelProveedor(
+          this,
+          `google-nivel:${this.base}:${model}:${nivel}`,
+          `[bvsala] Model "${model}" rejects thinkingLevel ${nivel} with a 400, so ` +
+            (sustituto ? `${sustituto} is sent instead` : "no thinking level is sent (the model's default)") +
+            " (the rejected request was not billed; the model is noted and the following requests go straight there).",
+        );
+      }
+      cuerpo = this.cuerpo(model, req);
+      response = await this.enviar(model, cuerpo, stream, signal);
     }
     if (!response.ok) throw new Error(`provider ${response.status}: ${await textoSeguro(response)}`);
     return response;
@@ -216,7 +229,7 @@ export class GoogleProvider implements Provider {
 
   private async enviar(
     model: string,
-    req: ProviderRequest,
+    cuerpo: ReturnType<GoogleProvider["cuerpo"]>,
     stream: boolean,
     signal: AbortSignal | undefined,
   ): Promise<Response> {
@@ -228,13 +241,13 @@ export class GoogleProvider implements Provider {
         ...(this.opts.apiKey ? { "x-goog-api-key": this.opts.apiKey } : {}),
         ...this.opts.headers,
       },
-      body: JSON.stringify(this.cuerpo(model, req)),
+      body: JSON.stringify(cuerpo),
       ...(signal ? { signal } : {}),
     });
   }
 
-  // El cuerpo de `generateContent`. Puro dado el estado aprendido: lo usan el
-  // envío y la corrección, que tienen que ver el mismo.
+  // El cuerpo de `generateContent`. Puro dado el estado aprendido; se arma UNA
+  // vez por envío y la corrección mira ese mismo objeto.
   private cuerpo(
     model: string,
     req: ProviderRequest,

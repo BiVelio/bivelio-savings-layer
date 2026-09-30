@@ -264,6 +264,8 @@ export interface TiradaDeModelo {
   gastoPorBrazo: { A: number; B: number };
   llamadasPorBrazo: { A: number; B: number };
   abortadoPorPresupuesto: boolean;
+  /** Llamadas cortadas por plazo o red (sin respuesta), por brazo; su peor caso va a `gastado`. Ausente = 0. */
+  llamadasAbortadas?: { A: number; B: number };
   ast: RegistroAst[];
   repeticiones: RegistroRepeticion[];
   multiTurno: RegistroMultiTurno[];
@@ -890,6 +892,7 @@ async function correrModelo(
   tirada.gastoPorBrazo = { ...presupuesto.porBrazo };
   tirada.llamadasPorBrazo = { ...presupuesto.llamadas };
   tirada.abortadoPorPresupuesto = presupuesto.agotado;
+  if (presupuesto.abortadas.A + presupuesto.abortadas.B > 0) tirada.llamadasAbortadas = { ...presupuesto.abortadas };
   tirada.salidaMaximaPorLlamada = maximaSalida(op.diario, modelo);
   const orden = new Map(entradas.ast.map((e, i) => [e.id, i]));
   tirada.ast.sort((x, y) => (orden.get(x.id) ?? 0) - (orden.get(y.id) ?? 0));
@@ -1070,7 +1073,8 @@ async function principal(): Promise<void> {
         tiradas.push(t);
         console.log(
           `  ${m}: ${t.ast.length} AST, ${t.multiTurno.length} multi-turn, gasto ${t.gastado.toFixed(4)} $ (A ${t.gastoPorBrazo.A.toFixed(4)} · B ${t.gastoPorBrazo.B.toFixed(4)})` +
-            `${t.abortadoPorPresupuesto ? " · PARADO POR PRESUPUESTO" : ""}${t.errores.length ? ` · ${t.errores.length} errores` : ""}`,
+            `${t.abortadoPorPresupuesto ? " · PARADO POR PRESUPUESTO" : ""}${t.errores.length ? ` · ${t.errores.length} errores` : ""}` +
+            `${t.llamadasAbortadas ? ` · llamadas sin respuesta (plazo/red, reintentadas; su peor caso va al gasto) A ${t.llamadasAbortadas.A} · B ${t.llamadasAbortadas.B}` : ""}`,
         );
       }
     }),
