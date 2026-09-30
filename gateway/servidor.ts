@@ -229,6 +229,13 @@ export interface OpcionesGateway {
    * sin precio siguen como estaban.
    */
   avisosDeNoMedido?: boolean;
+  /**
+   * Cuánto espera `cerrar()` a las mediciones EN VUELO (una gemela que ya
+   * escribió su réplica y espera el `finish` de su cliente para medirse) antes
+   * de vaciar el emisor. Vencido, se avisa y se cierra igual: el apagado nunca
+   * se cuelga por esto. Por defecto, TOPE_MEDICIONES_AL_CERRAR_MS.
+   */
+  topeMedicionesAlCerrarMs?: number;
   /** Inyectables para tests. */
   fetchImpl?: typeof fetch;
   log?: (linea: string) => void;
@@ -285,6 +292,53 @@ const RUTA_DE_CONTEO = /\/(count_tokens|input_tokens)$/;
 
 /** Cabeceras de transporte que NO se reenvían (hallazgo F0 nº1). */
 const CABECERAS_TRANSPORTE = ["content-encoding", "content-length", "transfer-encoding"];
+
+/**
+ * Cabeceras hop-by-hop de la RESPUESTA (RFC 9110 §7.6.1): describen el salto
+ * proveedor→gateway, no el de gateway→cliente, y no se reenvían nunca. Antes
+ * solo se quitaban las de CABECERAS_TRANSPORTE, así que el `connection:
+ * keep-alive` del upstream llegaba al cliente —en la primaria y en la réplica
+ * de sus gemelas, que reutiliza las mismas cabeceras— aunque el cliente
+ * hubiera pedido `Connection: close`, y Node, al ver una `connection` puesta a
+ * mano, mantenía viva la conexión contra lo pedido. La conexión del cliente la
+ * gestiona Node con lo que pidió el cliente. Las que nombre la propia
+ * `connection` del upstream se descartan también (`sinCabecerasDeSalto`).
+ */
+const CABECERAS_DE_SALTO_EN_RESPUESTA = new Set([
+  "connection",
+  "keep-alive",
+  "proxy-connection",
+  "proxy-authenticate",
+  "proxy-authorization",
+  "te",
+  "trailer",
+  "transfer-encoding",
+  "upgrade",
+]);
+
+/** Las cabeceras de una respuesta del upstream sin las hop-by-hop (ni las que su `connection` nombra). */
+function sinCabecerasDeSalto(cabeceras: Record<string, string>): Record<string, string> {
+  const nombradas = new Set(
+    (cabeceras["connection"] ?? "")
+      .split(",")
+      .map((s) => s.trim().toLowerCase())
+      .filter((s) => s !== ""),
+  );
+  const limpias: Record<string, string> = {};
+  for (const [k, v] of Object.entries(cabeceras)) {
+    const n = k.toLowerCase();
+    if (CABECERAS_DE_SALTO_EN_RESPUESTA.has(n) || nombradas.has(n)) continue;
+    limpias[k] = v;
+  }
+  return limpias;
+}
+
+/**
+ * Tope por defecto de la espera de `cerrar()` a las mediciones en vuelo. Una
+ * gemela entregada mide en microsegundos tras su `finish`; 5 s cubre de sobra
+ * un sistema cargado sin que un cliente atascado retenga el apagado.
+ */
+const TOPE_MEDICIONES_AL_CERRAR_MS = 5_000;
 
 /**
  * Cabeceras del SALTO cliente→gateway que no viajan al proveedor: las
@@ -435,6 +489,23 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
   }
 
   const coalescedor = opts.coalescer ? new Coalescedor() : null;
+  /**
+   * Las mediciones EN VUELO: una gemela que ya hizo `res.end()` de su réplica
+   * y espera el `finish` de su cliente para medirse. `cerrar()` las espera
+   * antes de vaciar el emisor; antes no, y si el `finish` llegaba después del
+   * vaciado, ese registro se quedaba en el búfer de un emisor parado (se
+   * infra-medía: el informe dejaba de cuadrar con el uso).
+   */
+  const medicionesEnVuelo = new Set<Promise<void>>();
+  const abrirMedicion = (): (() => void) => {
+    let cerrarla!: () => void;
+    const p = new Promise<void>((resolve) => (cerrarla = resolve));
+    medicionesEnVuelo.add(p);
+    return () => {
+      medicionesEnVuelo.delete(p);
+      cerrarla();
+    };
+  };
   // El carril sombra solo existe con emisor: sin clave de servicio no hay
   // dónde reportar y simular sería gastar CPU del cliente para nada.
   const carrilSombra = opts.sombra && emisor ? new CarrilSombra() : null;
@@ -1021,92 +1092,99 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
         if (coalescedor.tieneEnVuelo(clave)) {
           const replica = await coalescedor.esperar(clave);
           if (replica) {
-            // La gemela recibe la réplica íntegra de la primaria — cero viaje.
-            // Parte G · si su cliente ya se fue mientras esperaba (el watchdog
-            // de un terminal, un Esc), la réplica no llega a nadie: se observa
-            // igual para decir lo mismo en el log, pero no se escribe.
-            const seFueAntes = ac.signal.aborted || res.destroyed;
-            if (!seFueAntes) res.writeHead(replica.status, conId(replica.headers));
-            estadoUpstream = replica.status;
-            const obs = observadorPara(url.pathname) ?? new ObservadorSse();
-            for (const ch of replica.chunks) {
-              if (!seFueAntes) res.write(ch);
-              obs.observar(ch);
-              vigiaId?.observar(ch);
-            }
-            // El id de la respuesta: del stream si lo es, si no del JSON (stream:false).
-            if (vigiaId) buzon.anotarRespuesta(requestId, vigiaId.valor() ?? idDeCuerpoJson(Buffer.concat(replica.chunks)));
-            if (!seFueAntes) res.end();
-            // ¿Llegó ENTERA? `finish` = el último byte se entregó al sistema;
-            // un `close` sin `finish` = el cliente cortó a mitad. Una llamada
-            // evitada que su cliente no recibió no se valora por referencia.
-            const entregada = seFueAntes ? false : await entregaCompleta(res);
-            // Una réplica JSON (stream:false) trae el usage en el cuerpo, no en
-            // eventos — mismo hueco que el camino primario (S0.2 del plan). La
-            // MISMA verja de DIALECTO que la primaria: cada ruta se lee con su
-            // forma de usage, y una ruta sin dialecto no se lee (sin ella, un
-            // `usage` de otra forma emitía un registro fantasma de 0 tokens). Y
-            // el usage FINAL, como la primaria: un stream cortado no es medida.
-            const usoReplica = obs.usageFinal() ?? usoDeJsonPorRuta(url.pathname, Buffer.concat(replica.chunks));
-            if (usoReplica === null) {
-              // La primaria ya dijo lo suyo (línea y aviso): la gemela deja su
-              // línea y nada más. count_tokens no factura: ni línea.
-              if (emisor && !RUTA_DE_CONTEO.test(url.pathname)) {
-                const esStreamReplica = String(replica.headers["content-type"] ?? "").includes("text/event-stream");
-                noMedido(
-                  requestId,
-                  req.method ?? "POST",
-                  url.pathname,
-                  replica.status,
-                  esStreamReplica,
-                  !tieneDialecto(url.pathname)
-                    ? "no usage dialect for this route"
-                    : esStreamReplica
-                      ? porQueSinUsoEnStream(obs, cuerpo, codificacion, null).motivo
-                      : "the response carried no usage",
-                  null,
-                );
+            // Desde aquí hasta medirse, esta gemela es una medición en vuelo que
+            // `cerrar()` espera (ver `medicionesEnVuelo`).
+            const medicionCerrada = abrirMedicion();
+            try {
+              // La gemela recibe la réplica íntegra de la primaria — cero viaje.
+              // Parte G · si su cliente ya se fue mientras esperaba (el watchdog
+              // de un terminal, un Esc), la réplica no llega a nadie: se observa
+              // igual para decir lo mismo en el log, pero no se escribe.
+              const seFueAntes = ac.signal.aborted || res.destroyed;
+              if (!seFueAntes) res.writeHead(replica.status, conId(replica.headers));
+              estadoUpstream = replica.status;
+              const obs = observadorPara(url.pathname) ?? new ObservadorSse();
+              for (const ch of replica.chunks) {
+                if (!seFueAntes) res.write(ch);
+                obs.observar(ch);
+                vigiaId?.observar(ch);
               }
+              // El id de la respuesta: del stream si lo es, si no del JSON (stream:false).
+              if (vigiaId) buzon.anotarRespuesta(requestId, vigiaId.valor() ?? idDeCuerpoJson(Buffer.concat(replica.chunks)));
+              if (!seFueAntes) res.end();
+              // ¿Llegó ENTERA? `finish` = el último byte se entregó al sistema;
+              // un `close` sin `finish` = el cliente cortó a mitad. Una llamada
+              // evitada que su cliente no recibió no se valora por referencia.
+              const entregada = seFueAntes ? false : await entregaCompleta(res);
+              // Una réplica JSON (stream:false) trae el usage en el cuerpo, no en
+              // eventos — mismo hueco que el camino primario (S0.2 del plan). La
+              // MISMA verja de DIALECTO que la primaria: cada ruta se lee con su
+              // forma de usage, y una ruta sin dialecto no se lee (sin ella, un
+              // `usage` de otra forma emitía un registro fantasma de 0 tokens). Y
+              // el usage FINAL, como la primaria: un stream cortado no es medida.
+              const usoReplica = obs.usageFinal() ?? usoDeJsonPorRuta(url.pathname, Buffer.concat(replica.chunks));
+              if (usoReplica === null) {
+                // La primaria ya dijo lo suyo (línea y aviso): la gemela deja su
+                // línea y nada más. count_tokens no factura: ni línea.
+                if (emisor && !RUTA_DE_CONTEO.test(url.pathname)) {
+                  const esStreamReplica = String(replica.headers["content-type"] ?? "").includes("text/event-stream");
+                  noMedido(
+                    requestId,
+                    req.method ?? "POST",
+                    url.pathname,
+                    replica.status,
+                    esStreamReplica,
+                    !tieneDialecto(url.pathname)
+                      ? "no usage dialect for this route"
+                      : esStreamReplica
+                        ? porQueSinUsoEnStream(obs, cuerpo, codificacion, null).motivo
+                        : "the response carried no usage",
+                    null,
+                  );
+                }
+                return;
+              }
+              // Sin `hermano` A PROPÓSITO (revisión del 10-09): una llamada
+              // EVITADA se valora al precio del modelo SOLICITADO, que es lo que
+              // el cliente habría pagado sin la capa; su coste real es 0. Tarifarla
+              // al servido restaría a la baseline el ahorro de C sobre una
+              // petición que C no tocó porque nunca viajó.
+              //
+              // Parte G · la suscripción de la GEMELA se mira con sus propias
+              // cabeceras (la clave ya iguala las de identidad, pero la regla no
+              // puede depender de eso), y la huella de la primaria viaja con la
+              // réplica: sin ella no hay referencia.
+              const betaGemela = req.headers["anthropic-beta"];
+              const suscripcionGemela = isSubscriptionTraffic(
+                url.pathname,
+                Array.isArray(betaGemela) ? betaGemela.join(", ") : betaGemela,
+                upstreamBase,
+              );
+              medir(
+                requestId,
+                cuerpo,
+                usoReplica,
+                true,
+                url.pathname,
+                codificacion,
+                atribucion,
+                null,
+                null,
+                inicioMs,
+                null,
+                suscripcionGemela,
+                replica.primaria ?? null,
+                { entregada, tierServido: tierServidoDeRespuesta(url.pathname, Buffer.concat(replica.chunks)) },
+                // La réplica ES la respuesta de la primaria: si esa negativa no se
+                // cobró, la llamada que la gemela evitó valía 0 $.
+                url.pathname === "/v1/messages" &&
+                  ((obs instanceof ObservadorSse && obs.negativaNoCobrada()) ||
+                    negativaNoCobradaEnJson(url.pathname, Buffer.concat(replica.chunks))),
+              );
               return;
+            } finally {
+              medicionCerrada();
             }
-            // Sin `hermano` A PROPÓSITO (revisión del 10-09): una llamada
-            // EVITADA se valora al precio del modelo SOLICITADO, que es lo que
-            // el cliente habría pagado sin la capa; su coste real es 0. Tarifarla
-            // al servido restaría a la baseline el ahorro de C sobre una
-            // petición que C no tocó porque nunca viajó.
-            //
-            // Parte G · la suscripción de la GEMELA se mira con sus propias
-            // cabeceras (la clave ya iguala las de identidad, pero la regla no
-            // puede depender de eso), y la huella de la primaria viaja con la
-            // réplica: sin ella no hay referencia.
-            const betaGemela = req.headers["anthropic-beta"];
-            const suscripcionGemela = isSubscriptionTraffic(
-              url.pathname,
-              Array.isArray(betaGemela) ? betaGemela.join(", ") : betaGemela,
-              upstreamBase,
-            );
-            medir(
-              requestId,
-              cuerpo,
-              usoReplica,
-              true,
-              url.pathname,
-              codificacion,
-              atribucion,
-              null,
-              null,
-              inicioMs,
-              null,
-              suscripcionGemela,
-              replica.primaria ?? null,
-              { entregada, tierServido: tierServidoDeRespuesta(url.pathname, Buffer.concat(replica.chunks)) },
-              // La réplica ES la respuesta de la primaria: si esa negativa no se
-              // cobró, la llamada que la gemela evitó valía 0 $.
-              url.pathname === "/v1/messages" &&
-                ((obs instanceof ObservadorSse && obs.negativaNoCobrada()) ||
-                  negativaNoCobradaEnJson(url.pathname, Buffer.concat(replica.chunks))),
-            );
-            return;
           }
           // Primaria fallida o desbordada: la gemela viaja por su cuenta.
         } else {
@@ -1489,7 +1567,10 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
         }
       }
 
-      const cabeceras = Object.fromEntries(upstream.headers.entries());
+      // Sin las hop-by-hop del salto proveedor→gateway (RFC 9110 §7.6.1): ni
+      // la primaria ni la réplica de sus gemelas (que reutiliza este objeto)
+      // las reenvían.
+      const cabeceras = sinCabecerasDeSalto(Object.fromEntries(upstream.headers.entries()));
       for (const c of CABECERAS_TRANSPORTE) delete cabeceras[c];
       // `cabeceras` queda INTACTO (la réplica de una gemela lo reutiliza): el id
       // de esta petición va solo en lo que se escribe a su cliente.
@@ -1835,6 +1916,27 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
     cerrar: async () => {
       renovador?.stop();
       poller?.stop();
+      // Las gemelas que ya sirvieron su réplica y esperan su `finish` se miden
+      // ANTES de vaciar el emisor: tras el vaciado su registro se perdía. Con
+      // tope: vencido, se avisa (con cuántas quedaron) y se cierra igual.
+      if (medicionesEnVuelo.size > 0) {
+        const pendientes = [...medicionesEnVuelo];
+        log(`[gateway] closing: waiting for ${pendientes.length} in-flight measurement(s) before draining usage`);
+        const tope = opts.topeMedicionesAlCerrarMs ?? TOPE_MEDICIONES_AL_CERRAR_MS;
+        let temporizador: ReturnType<typeof setTimeout> | undefined;
+        const vencido = new Promise<"vencido">((resolve) => {
+          temporizador = setTimeout(() => resolve("vencido"), tope);
+          temporizador.unref?.();
+        });
+        const r = await Promise.race([Promise.all(pendientes).then(() => "ok" as const), vencido]);
+        clearTimeout(temporizador);
+        if (r === "vencido") {
+          warn(
+            `[bvsala gateway] shutting down with ${medicionesEnVuelo.size} measurement(s) still in flight after ${tope} ms: ` +
+              "that usage will not reach your dashboard.",
+          );
+        }
+      }
       // Se DRENA el uso antes de cerrar y ANTES del process.exit() de bin.ts:
       // stop() disparaba el flush sin esperarlo y el último lote de cada sesión
       // de `bvsala claude` se perdía (caza del 27-08).
