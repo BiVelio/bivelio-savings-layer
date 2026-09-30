@@ -120,6 +120,9 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
           <h3>{t("seat.whatTitle")}</h3>
           <p>{t.rich("seat.what", { b, max: p.maxAsientos })}</p>
           <p>{t("seat.counted", { dias: p.diasActivos })}</p>
+          {/* EL EXCESO SE COBRA (decisión del dueño, 2026-09-30): lo hace el cron
+              cobrar-asientos sobre el mes cerrado, una vez, al precio del plan. */}
+          <p>{t("seat.overage")}</p>
           <p>
             {t.rich("seat.identifier", {
               privacy: (c) => <Link href="/privacy">{c}</Link>,

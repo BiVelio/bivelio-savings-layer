@@ -426,7 +426,8 @@
       "seatsLabel": "Postazioni",
       "seatsHint": "Una postazione è una macchina o identità di servizio attiva, non una persona. Conta i processi che eseguiranno l'SDK, non i dipendenti. Su Kubernetes, imposta BVSALA_SEAT_ID per ogni replica.",
       "seatsInUse": "{used, plural, one {# postazione} other {# postazioni}} in uso questo mese.",
-      "seatsOver": "⚠ {used, plural, one {# postazione} other {# postazioni}} in uso e {paid, plural, one {# pagata} other {# pagate}}. Aumenta la quantità da «Gestisci piano» così la fattura corrisponde a ciò che esegui.",
+      "seatsOver": "⚠ {used, plural, one {# postazione} other {# postazioni}} in uso e {paid, plural, one {# pagata} other {# pagate}}. Le postazioni in più si addebitano da sole alla chiusura del mese, nella tua prossima fattura e al prezzo del tuo piano. Puoi anche aumentare la quantità da «Gestisci piano».",
+      "seatsLastMonth": "{period}: {used, plural, one {# postazione usata} other {# postazioni usate}} e {paid, plural, one {# pagata} other {# pagate}}. {extra, plural, one {La postazione in più} other {Le # postazioni in più}} ({amount}) {extra, plural, one {va} other {vanno}} nella tua prossima fattura.",
       "seatsRotated": "{used, plural, one {# postazione conteggiata} other {# postazioni conteggiate}} questo mese. Hai revocato una chiave di servizio e, ruotandola, le tue macchine cambiano identità di postazione: per questo il mese le conta due volte. Si sistema da solo il mese prossimo, non devi cambiare piano.",
       "taxNote": "IVA esclusa. Se la Sua azienda ha una partita IVA intracomunitaria, si applica l'inversione contabile.",
       "errYaSuscrito": "Questo account ha già un abbonamento attivo. Usa «Gestisci piano» per cambiare posti o fatturazione.",
@@ -1439,6 +1440,7 @@
       "whatTitle": "Che cos'è una postazione",
       "what": "Una postazione è una <b>macchina o identità di servizio</b> che esegue il Software, non una persona. Scegli tu quante postazioni copre il tuo abbonamento (fino a {max} al pagamento) e la tua licenza ne copre altrettante.",
       "counted": "Ogni mese solare (UTC), BiVelio conta come in uso ogni identificativo di postazione distinto che è stato attivo in almeno {dias} giorni diversi di quel mese. Le identità contrassegnate come CI o runner effimeri non contano. La tua dashboard confronta questo conteggio con le postazioni coperte dal tuo abbonamento.",
+      "overage": "Se in un mese usi più postazioni di quelle coperte dal tuo abbonamento, la differenza si addebita da sola, una volta, alla chiusura del mese e nella tua prossima fattura: quanto costano quelle postazioni in più per un mese con il tuo piano (nell'annuale, un dodicesimo del prezzo annuale). Nei piani mensili il tuo abbonamento passa poi a coprire le postazioni che usi. Se il conteggio non è affidabile — per esempio perché quel mese hai ruotato una chiave di servizio — non si addebita: lo verifichiamo a mano.",
       "identifier": "Come si forma l'identificativo di postazione, e tutto il resto che il Software invia a BiVelio, è nella <privacy>pagina sulla privacy</privacy>."
     },
     "commission": {

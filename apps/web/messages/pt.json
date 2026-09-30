@@ -426,7 +426,8 @@
       "seatsLabel": "Lugares",
       "seatsHint": "Um lugar é uma máquina ou identidade de serviço ativa, não uma pessoa. Conta os processos que vão executar o SDK, não os teus colaboradores. No Kubernetes, define BVSALA_SEAT_ID em cada réplica.",
       "seatsInUse": "{used, plural, one {# lugar} other {# lugares}} em uso este mês.",
-      "seatsOver": "⚠ {used, plural, one {# lugar} other {# lugares}} em uso e {paid, plural, one {# pago} other {# pagos}}. Aumenta a quantidade em «Gerir plano» para a fatura corresponder ao que executas.",
+      "seatsOver": "⚠ {used, plural, one {# lugar} other {# lugares}} em uso e {paid, plural, one {# pago} other {# pagos}}. Os lugares a mais são cobrados automaticamente no fecho do mês, na tua próxima fatura e ao preço do teu plano. Também podes aumentar a quantidade em «Gerir plano».",
+      "seatsLastMonth": "{period}: {used, plural, one {# lugar usado} other {# lugares usados}} e {paid, plural, one {# pago} other {# pagos}}. {extra, plural, one {O lugar a mais} other {Os # lugares a mais}} ({amount}) {extra, plural, one {vai} other {vão}} na tua próxima fatura.",
       "seatsRotated": "{used, plural, one {# lugar contado} other {# lugares contados}} este mês. Revogaste uma chave de serviço e, ao rodá-la, as tuas máquinas estreiam identidade de lugar — por isso este mês conta-as duas vezes. Corrige-se sozinho no mês seguinte: não precisas de mudar de plano.",
       "taxNote": "IVA não incluído. Se a sua empresa tiver número de IVA intracomunitário, aplica-se a autoliquidação.",
       "errYaSuscrito": "Esta conta já tem uma subscrição ativa. Usa «Gerir plano» para alterar lugares ou faturação.",
@@ -1439,6 +1440,7 @@
       "whatTitle": "O que é um lugar",
       "what": "Um lugar é uma <b>máquina ou identidade de serviço</b> que executa o Software, não uma pessoa. Você escolhe quantos lugares a sua subscrição cobre (até {max} no pagamento), e a sua licença cobre esses.",
       "counted": "Em cada mês civil (UTC), a BiVelio conta como em uso cada identificador de lugar distinto que esteve ativo em pelo menos {dias} dias diferentes desse mês. As identidades marcadas como CI ou executores efémeros não contam. O seu painel compara essa contagem com os lugares que a sua subscrição cobre.",
+      "overage": "Se num mês usares mais lugares do que a tua subscrição cobre, a diferença é cobrada automaticamente, uma vez, no fecho do mês e na tua próxima fatura: o que esses lugares a mais custam durante um mês no teu plano (no anual, um doze avos do preço anual). Nos planos mensais, a tua subscrição passa depois a cobrir os lugares que usas. Se a contagem não for fiável — por exemplo, porque nesse mês rodaste uma chave de conta de serviço — não é cobrada: revemo-la à mão.",
       "identifier": "Como se forma o identificador de lugar, e tudo o resto que o Software envia à BiVelio, está na <privacy>página de privacidade</privacy>."
     },
     "commission": {

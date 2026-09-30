@@ -9,10 +9,9 @@ import { createAdminClient } from "@/lib/supabase/admin";
  *
  * Para cada org con suscripción activa: compara los asientos USADOS
  * (`bvsala.billable_seats`) contra los PAGADOS, y devuelve la decisión. NO cobra
- * por sí solo: el cargo real a Stripe (subir la `quantity` del subscription item)
- * necesita las claves del proveedor y va en el paso marcado más abajo, que hoy
- * queda como recomendación auditable. Así el true-up es un dato reconciliado y
- * defendible ANTES de tocar la factura de nadie.
+ * por sí solo: el cobro del exceso del mes cerrado lo hace el cron
+ * /api/cron/cobrar-asientos (ver el comentario del bucle). Esto es la consulta
+ * auditable, sin tocar la factura de nadie.
  *
  * Autenticado con el mismo token admin que /api/license/revoke, comparado en
  * tiempo constante. GET no; solo POST.
@@ -92,14 +91,13 @@ export async function POST(req: Request): Promise<NextResponse> {
     const decision = reconcileSeats({ usedSeats: Number(used ?? 0), paidSeats, requests });
     lines.push({ orgId, usedSeats: Number(used ?? 0), paidSeats, requests, decision });
 
-    // ── PASO DE COBRO A STRIPE (owner-provisioned) ──────────────────────────
-    // Aquí, cuando estén las claves de Stripe, va el true-up real:
-    //   if (decision.action === "true-up") {
-    //     await stripe.subscriptionItems.update(itemId, { quantity: usedSeats });
-    //   }
-    // Se deja fuera a propósito: el cargo necesita STRIPE_SECRET_KEY y el mapeo
-    // org→subscriptionItem, que son infraestructura del propietario. Hasta
-    // entonces la reconciliación PRODUCE el dato (auditable) sin tocar facturas.
+    // ── EL COBRO NO VIVE AQUÍ ───────────────────────────────────────────────
+    // Esta ruta es la consulta a mano del mes que se le pida (por defecto, el
+    // EN CURSO). El cobro del exceso lo hace el cron mensual
+    // /api/cron/cobrar-asientos sobre el mes CERRADO, con la misma decisión
+    // (lib/billing/cobro-asientos.ts, que usa reconcileSeats) y su candado de
+    // una sola vez (bvsala.ajustes_asientos, 0034). Cobrar desde aquí también
+    // abriría una segunda vía de cobro sin ese candado.
   }
 
   const resumen = {

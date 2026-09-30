@@ -426,7 +426,8 @@
       "seatsLabel": "Koltuk",
       "seatsHint": "Bir koltuk, etkin bir makine ya da servis kimliğidir; kişi değildir. Çalışan sayınızı değil, SDK'yı çalıştıracak süreçleri sayın. Kubernetes'te her replika için BVSALA_SEAT_ID tanımlayın.",
       "seatsInUse": "Bu ay {used, plural, other {# koltuk}} kullanımda.",
-      "seatsOver": "⚠ {used, plural, other {# koltuk}} kullanımda, {paid, plural, other {# koltuk}} ödenmiş. Faturanızın çalıştırdığınızla örtüşmesi için «Planı yönet»ten sayıyı artırın.",
+      "seatsOver": "⚠ {used, plural, other {# koltuk}} kullanımda, {paid, plural, other {# koltuk}} ödenmiş. Fazla koltuklar ay kapandığında otomatik olarak, planınızın fiyatıyla bir sonraki faturanıza eklenir. Sayıyı «Planı yönet»ten kendiniz de artırabilirsiniz.",
+      "seatsLastMonth": "{period}: {used, plural, other {# koltuk}} kullanıldı, {paid, plural, other {# koltuk}} ödendi. {extra, plural, other {# fazla koltuk}} ({amount}) bir sonraki faturanıza eklenir.",
       "seatsRotated": "Bu ay {used, plural, other {# koltuk}} sayıldı. Bir servis hesabı anahtarını iptal ettiniz; anahtar değişince makineleriniz yeni bir koltuk kimliği alır, bu yüzden bu ay iki kez sayılıyorlar. Gelecek ay kendiliğinden düzelir; planınızı değiştirmenize gerek yok.",
       "taxNote": "KDV hariçtir. Şirketinizin AB KDV numarası varsa tersine ödeme (reverse charge) uygulanır.",
       "errYaSuscrito": "Bu hesabın zaten etkin bir aboneliği var. Koltukları veya faturalandırmayı değiştirmek için «Planı yönet»i kullanın.",
@@ -1439,6 +1440,7 @@
       "whatTitle": "Koltuk nedir",
       "what": "Koltuk, Yazılımı çalıştıran bir <b>makine ya da servis kimliğidir</b>, bir kişi değil. Aboneliğinin kaç koltuğu kapsayacağını sen seçersin (ödemede en fazla {max}), lisansın da o kadarını kapsar.",
       "counted": "BiVelio her takvim ayında (UTC), o ayın en az {dias} farklı gününde etkin olan her ayrı koltuk kimliğini kullanımda sayar. CI ya da geçici çalıştırıcı olarak işaretlenen kimlikler sayılmaz. Panelin bu sayıyı aboneliğinin kapsadığı koltuklarla karşılaştırır.",
+      "overage": "Bir ayda aboneliğinizin kapsadığından fazla koltuk kullanırsanız, fark ay kapandığında bir kez ve otomatik olarak bir sonraki faturanıza eklenir: bu fazla koltukların planınızda bir aylık bedeli (yıllık planda yıllık fiyatın on ikide biri). Aylık planlarda aboneliğiniz ardından kullandığınız koltuk sayısına yükselir. Sayım güvenilir değilse — örneğin o ay bir hizmet hesabı anahtarını döndürdüğünüz için — ücret alınmaz: elle inceleriz.",
       "identifier": "Koltuk kimliğinin nasıl oluşturulduğu ve Yazılımın BiVelio'ya gönderdiği diğer her şey <privacy>gizlilik sayfasında</privacy> yer alır."
     },
     "commission": {

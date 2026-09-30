@@ -13,9 +13,10 @@
  * recuento de asientos deja de ser de fiar y se marca para revisión HUMANA — no
  * se cobra de más por una heurística, pero tampoco se deja pasar en silencio.
  *
- * Función pura para poder probarla sin Stripe ni base de datos. El cargo real a
- * Stripe (actualizar la `quantity` del subscription item) es el único paso que
- * necesita las claves del proveedor y va aparte, claramente marcado.
+ * Función pura para poder probarla sin Stripe ni base de datos. El cobro del
+ * exceso (invoice item al precio del plan y, hacia delante, la `quantity`) lo
+ * decide lib/billing/cobro-asientos.ts a partir de esto y lo ejecuta el cron
+ * /api/cron/cobrar-asientos, una vez por mes cerrado.
  */
 
 export interface ReconciliationInput {

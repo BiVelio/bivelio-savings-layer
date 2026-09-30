@@ -426,7 +426,8 @@
       "seatsLabel": "Asientos",
       "seatsHint": "Un asiento es una máquina o identidad de servicio activa, no una persona. Cuenta los procesos que van a ejecutar el SDK, no tus empleados. En Kubernetes, fija BVSALA_SEAT_ID en cada réplica.",
       "seatsInUse": "{used, plural, one {# asiento} other {# asientos}} en uso este mes.",
-      "seatsOver": "⚠ {used, plural, one {# asiento} other {# asientos}} en uso y {paid, plural, one {# pagado} other {# pagados}}. Sube la cantidad desde «Gestionar plan» para que tu factura cuadre con lo que ejecutas.",
+      "seatsOver": "⚠ {used, plural, one {# asiento} other {# asientos}} en uso y {paid, plural, one {# pagado} other {# pagados}}. Los asientos de más se cobran solos al cerrar el mes, en tu próxima factura y al precio de tu plan. También puedes subir la cantidad desde «Gestionar plan».",
+      "seatsLastMonth": "{period}: {used, plural, one {# asiento usado} other {# asientos usados}} y {paid, plural, one {# pagado} other {# pagados}}. Exceso: {extra, plural, one {# asiento} other {# asientos}} ({amount}), en tu próxima factura.",
       "seatsRotated": "{used, plural, one {# asiento contado} other {# asientos contados}} este mes. Has revocado una clave de servicio, y al rotarla tus máquinas estrenan identidad de asiento, así que este mes se cuentan dos veces. Se corrige solo el mes que viene: no tienes que cambiar de plan.",
       "taxNote": "IVA no incluido. Si su empresa tiene NIF-IVA intracomunitario, se aplica la inversión del sujeto pasivo.",
       "errYaSuscrito": "Esta cuenta ya tiene una suscripción activa. Usa «Gestionar plan» para cambiar asientos o facturación.",
@@ -1439,6 +1440,7 @@
       "whatTitle": "Qué es un asiento",
       "what": "Un asiento es una <b>máquina o identidad de servicio</b> que ejecuta el Software, no una persona. Tú eliges cuántos asientos cubre tu suscripción (hasta {max} en el pago) y tu licencia cubre esos.",
       "counted": "Cada mes natural (UTC), BiVelio cuenta como en uso cada identificador de asiento distinto que estuvo activo al menos {dias} días distintos de ese mes. Las identidades marcadas como CI o ejecutores efímeros no cuentan. Tu panel compara ese recuento con los asientos que cubre tu suscripción.",
+      "overage": "Si un mes usas más asientos de los que cubre tu suscripción, la diferencia se cobra sola, una vez, al cerrar el mes y en tu próxima factura: lo que cuestan esos asientos de más durante un mes con tu plan (en el anual, la doceava parte del precio anual). En los planes mensuales tu suscripción pasa después a cubrir los asientos que usas. Si el recuento no es fiable —por ejemplo, porque ese mes rotaste una clave de servicio— no se cobra: lo revisamos a mano.",
       "identifier": "Cómo se forma el identificador de asiento, y todo lo demás que el Software envía a BiVelio, está en la <privacy>página de privacidad</privacy>."
     },
     "commission": {

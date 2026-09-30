@@ -426,7 +426,8 @@
       "seatsLabel": "Seats",
       "seatsHint": "Een plaats is één actieve machine of service-identiteit, geen persoon. Tel de processen die de SDK draaien, niet je medewerkers. Op Kubernetes: stel BVSALA_SEAT_ID per replica in.",
       "seatsInUse": "{used, plural, one {# seat} other {# seats}} deze maand in gebruik.",
-      "seatsOver": "⚠ {used, plural, one {# seat} other {# seats}} in gebruik, {paid, plural, one {# betaald} other {# betaald}}. Verhoog het aantal via “Abonnement beheren” zodat je factuur klopt met wat je draait.",
+      "seatsOver": "⚠ {used, plural, one {# seat} other {# seats}} in gebruik, {paid, plural, one {# betaald} other {# betaald}}. Extra seats worden bij het afsluiten van de maand automatisch op je volgende factuur gezet, tegen de prijs van je abonnement. Je kunt het aantal ook verhogen via “Abonnement beheren”.",
+      "seatsLastMonth": "{period}: {used, plural, one {# seat gebruikt} other {# seats gebruikt}}, {paid, plural, one {# betaald} other {# betaald}}. {extra, plural, one {De extra seat} other {De # extra seats}} ({amount}) {extra, plural, one {staat} other {staan}} op je volgende factuur.",
       "seatsRotated": "{used, plural, one {# seat} other {# seats}} deze maand geteld. Je hebt een service-account-sleutel ingetrokken, en bij het roteren krijgen je machines een nieuwe seat-identiteit — daardoor telt deze maand ze dubbel. Volgende maand klopt het weer; je hoeft je abonnement niet te wijzigen.",
       "taxNote": "Exclusief btw. Heeft uw bedrijf een EU-btw-nummer, dan geldt de verleggingsregeling.",
       "errYaSuscrito": "Dit account heeft al een actief abonnement. Gebruik ‘Abonnement beheren’ om zetels of facturering te wijzigen.",
@@ -1439,6 +1440,7 @@
       "whatTitle": "Wat een seat is",
       "what": "Een seat is één <b>machine- of service-identiteit</b> waarop de Software draait, geen persoon. Je kiest zelf hoeveel seats je abonnement dekt (tot {max} bij het afrekenen), en je licentie dekt er evenveel.",
       "counted": "Elke kalendermaand (UTC) telt BiVelio elke afzonderlijke seat-ID als in gebruik die op minstens {dias} verschillende dagen van die maand actief was. Identiteiten die als CI of kortstondige runner zijn gemarkeerd, tellen niet mee. Je dashboard vergelijkt dat aantal met de seats die je abonnement dekt.",
+      "overage": "Gebruik je in een maand meer seats dan je abonnement dekt, dan wordt het verschil bij het afsluiten van de maand eenmalig en automatisch op je volgende factuur gezet: wat die extra seats een maand kosten in je abonnement (bij een jaarabonnement een twaalfde van de jaarprijs). Bij maandabonnementen dekt je abonnement daarna de seats die je gebruikt. Is de telling niet betrouwbaar — bijvoorbeeld omdat je die maand een service-account-sleutel hebt geroteerd — dan wordt er niets in rekening gebracht: we controleren het met de hand.",
       "identifier": "Hoe een seat-ID wordt gevormd, en alles wat de Software verder naar BiVelio stuurt, staat op de <privacy>privacypagina</privacy>."
     },
     "commission": {
