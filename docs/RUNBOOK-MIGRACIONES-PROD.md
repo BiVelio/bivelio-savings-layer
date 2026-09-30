@@ -1,4 +1,4 @@
-# Runbook — migraciones 0007–0017 en producción (+ anexos 0024/0025 … 0032)
+# Runbook — migraciones 0007–0017 en producción (+ anexos 0024/0025 … 0034)
 
 **Escrito el 2026-08-26.** Estado de partida conocido: 0001–0006 aplicadas
 (bitácoras de julio), 0012 **confirmada** aplicada (verificación del 2026-08-11
@@ -57,6 +57,7 @@ select m.mig, m.aplicada from (values
   ('0016 extractos',          to_regclass('bvsala.extractos') is not null),
   ('0017 cargos',             to_regclass('bvsala.cargos') is not null),
   ('0033 licencia Medir',     to_regclass('bvsala.medir_altas') is not null and to_regclass('bvsala.licenses_una_medir_viva_por_org') is not null),
+  ('0034 cobro de asientos',  to_regclass('bvsala.ajustes_asientos') is not null and to_regprocedure('bvsala.ajustes_asientos_inmutable()') is not null),
   ('0029 medido por referencia', to_regclass('bvsala.reference_hits') is not null),
   ('0030 tu propio banco', to_regclass('bvsala.verification_samples') is not null and to_regclass('bvsala.verification_daily') is not null and to_regprocedure('bvsala.ingest_verification_batch(uuid, text, jsonb, jsonb)') is not null and to_regprocedure('bvsala.verification_summary(uuid, date, date)') is not null),
   ('0031 referencia por asiento', exists (select 1 from information_schema.columns where table_schema='bvsala' and table_name='seat_activity' and column_name='reference_baseline_cost')),
@@ -91,6 +92,7 @@ migración crea:
 | 0030 | tablas `verification_samples` y `verification_daily` + funciones `ingest_verification_batch` y `verification_summary` | «Tu propio banco» (anexo 0030). Aditiva; **no** lleva versión de la función de uso: el orden respecto a 0029 y a 0031 da igual |
 | 0031 | columna `seat_activity.reference_baseline_cost` | Lo medido por referencia, también por asiento (anexo 0031, al final). Lleva versión de la RPC — regla 1 |
 | 0032 | columna `usage_daily.native_cache_read_savings` + check `usage_daily_native_no_negatives` | El ahorro nativo de la caché del proveedor, aparte y sin comisión (anexo 0032, al final). Lleva versión de la RPC — regla 1 |
+| 0034 | tabla `ajustes_asientos` + función `ajustes_asientos_inmutable()` | El cobro de los asientos usados de más (anexo 0034, al final). Aditiva; **no** lleva versión de la RPC. La necesita el cron del día 1 a las 07:30 |
 | RPC final | el fuente de `ingest_usage_batch` menciona `reference_hits`, `seat_activity.reference_baseline_cost` **y** `nativeCacheReadSavings` | La versión **final** de la RPC es la de 0032 (antes lo fue la de 0015, luego 0024, 0025, 0029 y 0031). Si 0032 sale `true` pero esto sale `false`, alguien regresó la RPC: re-aplicar **solo** el bloque de función de 0032 |
 
 ## Paso 2 — Aplicar lo que falte, en orden
@@ -825,3 +827,70 @@ El bucle del paso 2 con `PENDIENTES="0032"`, tras anotar la hora, desde
 - Con tráfico que lea caché: la tarjeta «Ahorro nativo activado» enseña el neto
   (lectura − prima) y el reparto por proveedor, y el titular y el extracto no
   cambian.
+
+## Anexo — 0034 (septiembre de 2026): el cobro de los asientos usados de más
+
+> En el orden de aplicación es la **última**: 0029 → 0030 → 0031 → 0032 → 0033 →
+> **0034**.
+
+Decisión del dueño del 2026-09-30 («(a)»): el día 1 a las 07:30 UTC el cron
+`/api/cron/cobrar-asientos` compara, para el mes **cerrado**, los asientos
+usados (`bvsala.billable_seats`) con los pagados (la `quantity`) y cobra el
+exceso al precio real del plan con un invoice item de Stripe
+(`apps/web/lib/billing/cobro-asientos.ts`). 0034 crea el candado de «una sola
+vez»:
+
+- la tabla `ajustes_asientos` — PK `(org_id, periodo)`; usados, pagados, exceso
+  (check `exceso = greatest(usados − pagados, 0)`), `importe_eur`, `estado`
+  (`seco`, `pendiente`, `cobrado`, `fallido`, `revision_humana`,
+  `omitido_bajo_minimo`, `omitido_sin_precio`, `omitido_no_activa`),
+  `stripe_invoice_item_id` (único; obligatorio en `cobrado`) y `motivo`;
+- el trigger `ajustes_asientos_inmutable`: un `cobrado` es terminal, las cifras
+  no cambian fuera de `seco` y a `seco` no se vuelve;
+- RLS activa sin políticas y solo `select, insert, update` para el service role
+  (nadie tiene DELETE; el borrado de una organización cascada igual).
+
+**No toca `ingest_usage_batch`, `usage_daily`, `subscriptions`, `cargos` ni
+`extractos`**: regla 1 intacta, y el cobro de la comisión no cambia. Aun así
+**exige 0033 aplicada** (`medir_altas` y su índice) y ABORTA sin ella: el guard
+fija el orden ascendente estricto (regla 2). `test/migracion-0034.test.ts` lo
+comprueba.
+
+- **Orden de producción:** 0033 → **0034** ANTES de desplegar la web
+  (`vercel --prod`). Sin la tabla, el cron responde 503 con alerta crítica y no
+  cobra nada (fail‑closed), y el panel no enseña el ajuste del mes pasado.
+- **Primer ciclo en seco:** `BVSALA_COBRO_ASIENTOS` sin definir (o `seco`) =
+  el cron calcula, apunta filas `seco` y devuelve el informe sin tocar Stripe.
+  Revisar el informe del 1 de octubre (respuesta del cron en Vercel, o
+  `select * from bvsala.ajustes_asientos where periodo = '2026-09'`) y solo
+  entonces poner `BVSALA_COBRO_ASIENTOS=vivo` y relanzar con
+  `?periodo=2026-09` (idempotente: las filas `seco` se sustituyen y se cobra una
+  vez).
+- **Guard:** aborta si faltan `organizations`/`subscriptions`/`billable_seats`
+  o la base 0033 — aplicar 0033 y volver a lanzar 0034. Abortar es el resultado bueno.
+- **Idempotente** y aditiva (ningún DROP de datos, ninguna fila existente cambia).
+- **Regla 6:** anota la hora antes (PITR).
+
+### Diagnóstico (solo lectura)
+
+Antes: la fila «0033 licencia Medir» del paso 1 en `true`. Tras aplicar, las dos
+en `true`:
+
+```sql
+select to_regclass('bvsala.ajustes_asientos') is not null as tabla_0034,
+       to_regprocedure('bvsala.ajustes_asientos_inmutable()') is not null as trigger_0034,
+       exists (select 1 from pg_trigger where tgname = 'ajustes_asientos_inmutable' and not tgisinternal) as trigger_puesto_0034;
+```
+
+### Aplicar
+
+El bucle del paso 2 con `PENDIENTES="0034"`, tras anotar la hora, desde
+`db/migrations/0034_cobro_asientos.sql`.
+
+### Verificar tras el deploy de la web
+
+- `curl` al cron con el Bearer de `CRON_SECRET` y `?seco=1&periodo=<mes cerrado>`:
+  200 con `modo: "seco"` y el informe por organización; ninguna llamada de
+  escritura a Stripe.
+- Revisión del estado del mes (solo lectura):
+  `select estado, count(*), sum(importe_eur) from bvsala.ajustes_asientos where periodo = '<YYYY-MM>' group by 1;`

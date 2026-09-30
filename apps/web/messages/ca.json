@@ -426,7 +426,8 @@
       "seatsLabel": "Seients",
       "seatsHint": "Un seient és una màquina o identitat de servei activa, no una persona. Compta els processos que executaran l'SDK, no els teus empleats. A Kubernetes, fixa BVSALA_SEAT_ID a cada rèplica.",
       "seatsInUse": "{used, plural, one {# seient} other {# seients}} en ús aquest mes.",
-      "seatsOver": "⚠ {used, plural, one {# seient} other {# seients}} en ús i {paid, plural, one {# pagat} other {# pagats}}. Puja la quantitat des de «Gestiona el pla» perquè la factura quadri amb el que executes.",
+      "seatsOver": "⚠ {used, plural, one {# seient} other {# seients}} en ús i {paid, plural, one {# pagat} other {# pagats}}. Els seients de més es cobren sols en tancar el mes, a la teva propera factura i al preu del teu pla. També pots pujar la quantitat des de «Gestiona el pla».",
+      "seatsLastMonth": "{period}: {used, plural, one {# seient usat} other {# seients usats}} i {paid, plural, one {# pagat} other {# pagats}}. Excés: {extra, plural, one {# seient} other {# seients}} ({amount}), a la teva propera factura.",
       "seatsRotated": "{used, plural, one {# seient comptat} other {# seients comptats}} aquest mes. Has revocat una clau de servei i, en rotar-la, les teves màquines estrenen identitat de seient, així que aquest mes es compten dues vegades. Es corregeix sol el mes vinent: no has de canviar de pla.",
       "taxNote": "IVA no inclòs. Si la vostra empresa té NIF-IVA intracomunitari, s'aplica la inversió del subjecte passiu.",
       "errYaSuscrito": "Aquest compte ja té una subscripció activa. Fes servir «Gestionar el pla» per canviar seients o facturació.",
@@ -1439,6 +1440,7 @@
       "whatTitle": "Què és un seient",
       "what": "Un seient és una <b>màquina o identitat de servei</b> que executa el Software, no una persona. Tu tries quants seients cobreix la teva subscripció (fins a {max} en el pagament) i la teva llicència en cobreix aquests.",
       "counted": "Cada mes natural (UTC), BiVelio compta com a en ús cada identificador de seient diferent que ha estat actiu com a mínim {dias} dies diferents d'aquell mes. Les identitats marcades com a CI o executors efímers no compten. El teu tauler compara aquest recompte amb els seients que cobreix la teva subscripció.",
+      "overage": "Si un mes fas servir més seients dels que cobreix la teva subscripció, la diferència es cobra sola, una vegada, en tancar el mes i a la teva propera factura: el que costen aquests seients de més durant un mes amb el teu pla (en l'anual, la dotzena part del preu anual). En els plans mensuals la teva subscripció passa després a cobrir els seients que fas servir. Si el recompte no és fiable —per exemple, perquè aquell mes vas rotar una clau de servei— no es cobra: el revisem a mà.",
       "identifier": "Com es forma l'identificador de seient, i tota la resta que el Software envia a BiVelio, és a la <privacy>pàgina de privadesa</privacy>."
     },
     "commission": {

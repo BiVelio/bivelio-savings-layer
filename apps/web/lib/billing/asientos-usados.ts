@@ -30,7 +30,27 @@ export interface MedidaDeAsientos {
    * le pediría al cliente que doblara su factura por haber rotado.
    */
   rotacionEsteMes: boolean;
+  /**
+   * El ajuste de asientos del MES CERRADO anterior (bvsala.ajustes_asientos,
+   * 0034), si se cobró o se va a cobrar: lo que el cliente verá como línea en
+   * su próxima factura. `null` si no hubo exceso, si el cobro está en seco o en
+   * revisión, o si no se pudo leer (p. ej. 0034 aún sin aplicar).
+   */
+  ajusteMesPasado?: AjusteDeAsientosVisible | null;
 }
+
+export interface AjusteDeAsientosVisible {
+  /** YYYY-MM */
+  periodo: string;
+  usados: number;
+  pagados: number;
+  exceso: number;
+  /** En céntimos de euro, como los da Stripe. */
+  importeCentimos: number;
+}
+
+/** Los estados de un ajuste que el cliente ve: cobrado o a punto de cobrarse. */
+const ESTADOS_VISIBLES = ["cobrado", "pendiente", "fallido"];
 
 export async function medirAsientos(orgId: string): Promise<MedidaDeAsientos> {
   const vacio: MedidaDeAsientos = { usados: null, rotacionEsteMes: false };
@@ -45,7 +65,9 @@ export async function medirAsientos(orgId: string): Promise<MedidaDeAsientos> {
     return vacio;
   }
 
-  const [medida, rotacion] = await Promise.all([
+  const periodoPasado = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth() - 1, 1)).toISOString().slice(0, 7);
+
+  const [medida, rotacion, ajuste] = await Promise.all([
     (async (): Promise<number | null> => {
       try {
         const { data, error } = await admin.rpc("billable_seats", { p_org: orgId, p_month: inicioDeMes });
@@ -76,7 +98,32 @@ export async function medirAsientos(orgId: string): Promise<MedidaDeAsientos> {
         return true;
       }
     })(),
+    (async (): Promise<AjusteDeAsientosVisible | null> => {
+      try {
+        const { data, error } = await admin
+          .schema("bvsala")
+          .from("ajustes_asientos")
+          .select("periodo, usados, pagados, exceso, importe_eur, estado")
+          .eq("org_id", orgId)
+          .eq("periodo", periodoPasado)
+          .in("estado", ESTADOS_VISIBLES)
+          .maybeSingle();
+        if (error || !data) return null;
+        const f = data as { periodo: string; usados: number; pagados: number; exceso: number; importe_eur: number | string };
+        return {
+          periodo: String(f.periodo),
+          usados: Number(f.usados),
+          pagados: Number(f.pagados),
+          exceso: Number(f.exceso),
+          importeCentimos: Math.round(Number(f.importe_eur) * 100),
+        };
+      } catch {
+        // Sin la tabla (0034 sin aplicar) o sin lectura: no se enseña nada, que
+        // es mejor que enseñar un cobro que no podemos respaldar.
+        return null;
+      }
+    })(),
   ]);
 
-  return { usados: medida, rotacionEsteMes: rotacion };
+  return { usados: medida, rotacionEsteMes: rotacion, ajusteMesPasado: ajuste };
 }

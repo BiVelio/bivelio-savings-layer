@@ -426,7 +426,8 @@
       "seatsLabel": "Ghế",
       "seatsHint": "Một chỗ là một máy hoặc danh tính dịch vụ đang hoạt động, không phải một người. Hãy đếm số tiến trình sẽ chạy SDK, không phải số nhân viên. Trên Kubernetes, đặt BVSALA_SEAT_ID cho mỗi bản sao.",
       "seatsInUse": "{used, plural, other {# ghế}} đang dùng trong tháng này.",
-      "seatsOver": "⚠ {used, plural, other {# ghế}} đang dùng, {paid, plural, other {# ghế}} đã trả. Hãy tăng số lượng ở «Quản lý gói» để hoá đơn khớp với những gì bạn đang chạy.",
+      "seatsOver": "⚠ {used, plural, other {# ghế}} đang dùng, {paid, plural, other {# ghế}} đã trả. Số ghế vượt được tự động tính khi khép tháng, vào hoá đơn kế tiếp, theo giá gói của bạn. Bạn cũng có thể tự tăng số lượng ở «Quản lý gói».",
+      "seatsLastMonth": "{period}: đã dùng {used, plural, other {# ghế}}, đã trả {paid, plural, other {# ghế}}. {extra, plural, other {# ghế vượt}} ({amount}) sẽ vào hoá đơn kế tiếp của bạn.",
       "seatsRotated": "Tháng này đếm được {used, plural, other {# ghế}}. Bạn đã thu hồi một khoá tài khoản dịch vụ, và khi khoá được thay thì các máy nhận danh tính ghế mới — nên tháng này chúng bị đếm hai lần. Tháng sau sẽ trở lại bình thường; bạn không cần đổi gói.",
       "taxNote": "Chưa bao gồm VAT. Nếu công ty của quý vị có mã số VAT của EU, cơ chế reverse charge sẽ được áp dụng.",
       "errYaSuscrito": "Tài khoản này đã có gói đăng ký đang hoạt động. Dùng «Quản lý gói» để đổi số ghế hoặc thanh toán.",
@@ -1439,6 +1440,7 @@
       "whatTitle": "Ghế là gì",
       "what": "Một ghế là một <b>máy hoặc danh tính dịch vụ</b> chạy Phần mềm, không phải một người. Bạn chọn số ghế mà gói đăng ký của mình bao gồm (tối đa {max} khi thanh toán), và giấy phép của bạn bao gồm đúng số đó.",
       "counted": "Mỗi tháng dương lịch (UTC), BiVelio tính là đang dùng mọi mã ghế riêng biệt đã hoạt động ít nhất {dias} ngày khác nhau trong tháng đó. Các danh tính được đánh dấu là CI hoặc trình chạy tạm thời không được tính. Bảng điều khiển của bạn so sánh con số đó với số ghế mà gói đăng ký bao gồm.",
+      "overage": "Nếu trong một tháng bạn dùng nhiều ghế hơn số gói đăng ký bao gồm, phần chênh lệch được tự động tính một lần khi khép tháng, vào hoá đơn kế tiếp: giá của số ghế vượt đó trong một tháng theo gói của bạn (với gói năm là một phần mười hai giá năm). Với gói tháng, gói đăng ký của bạn sau đó được nâng lên số ghế bạn dùng. Nếu số đếm không đáng tin — chẳng hạn vì tháng đó bạn đã xoay vòng một khoá tài khoản dịch vụ — thì không tính phí: chúng tôi kiểm tra thủ công.",
       "identifier": "Cách tạo mã ghế, và mọi thứ khác mà Phần mềm gửi tới BiVelio, có trên <privacy>trang quyền riêng tư</privacy>."
     },
     "commission": {

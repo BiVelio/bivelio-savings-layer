@@ -426,7 +426,8 @@
       "seatsLabel": "Seats",
       "seatsHint": "A seat is one active machine or service identity — not a person. Count the processes that will run the SDK, not your headcount. On Kubernetes, set BVSALA_SEAT_ID per replica.",
       "seatsInUse": "{used, plural, one {# seat} other {# seats}} in use this month.",
-      "seatsOver": "⚠ {used, plural, one {# seat} other {# seats}} in use, {paid, plural, one {# paid for} other {# paid for}}. Raise your seat count from “Manage plan” so your invoice matches what you run.",
+      "seatsOver": "⚠ {used, plural, one {# seat} other {# seats}} in use, {paid, plural, one {# paid for} other {# paid for}}. Extra seats are charged automatically when the month closes, on your next invoice, at your plan's price. You can also raise your seat count from “Manage plan”.",
+      "seatsLastMonth": "{period}: {used, plural, one {# seat used} other {# seats used}}, {paid, plural, one {# paid for} other {# paid for}}. Extra: {extra, plural, one {# seat} other {# seats}} ({amount}), on your next invoice.",
       "seatsRotated": "{used, plural, one {# seat} other {# seats}} counted this month. You revoked a service-account key, and machines get a new seat identity when the key rotates — so this month counts them twice. It settles next month; you don't need to change your plan.",
       "taxNote": "VAT not included. If your company has an EU VAT number, the reverse charge applies.",
       "errYaSuscrito": "This account already has an active subscription. Use “Manage plan” to change seats or billing.",
@@ -1439,6 +1440,7 @@
       "whatTitle": "What a seat is",
       "what": "A seat is one <b>machine or service identity</b> that runs the Software, not a person. You choose how many seats your subscription covers (up to {max} at checkout), and your license covers that many.",
       "counted": "Each calendar month (UTC), BiVelio counts as in use every distinct seat identifier that was active on at least {dias} different days of that month. Identities flagged as CI or ephemeral runners are not counted. Your dashboard compares that count with the seats your subscription covers.",
+      "overage": "If in a month you use more seats than your subscription covers, the difference is charged automatically, once, when the month closes, on your next invoice: what those extra seats cost for one month on your plan (on a yearly plan, one twelfth of the yearly price). On monthly plans your subscription then moves up to the seats you use. If the count isn't reliable — for example, because you rotated a service-account key that month — it is not charged: we review it by hand.",
       "identifier": "How a seat identifier is formed, and everything else the Software sends to BiVelio, is on the <privacy>privacy page</privacy>."
     },
     "commission": {

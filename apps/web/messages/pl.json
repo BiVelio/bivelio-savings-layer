@@ -426,7 +426,8 @@
       "seatsLabel": "Stanowiska",
       "seatsHint": "Stanowisko to jedna aktywna maszyna lub tożsamość usługi, nie osoba. Policz procesy, które będą uruchamiać SDK, a nie pracowników. W Kubernetes ustaw BVSALA_SEAT_ID dla każdej repliki.",
       "seatsInUse": "{used, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}} w użyciu w tym miesiącu.",
-      "seatsOver": "⚠ W użyciu {used, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}, opłacone {paid, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}. Zwiększ liczbę w „Zarządzaj planem”, aby faktura odpowiadała temu, co uruchamiasz.",
+      "seatsOver": "⚠ W użyciu {used, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}, opłacone {paid, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}. Dodatkowe stanowiska są naliczane automatycznie po zamknięciu miesiąca, na następnej fakturze, po cenie Twojego planu. Możesz też zwiększyć liczbę w „Zarządzaj planem”.",
+      "seatsLastMonth": "{period}: w użyciu {used, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}, opłacone {paid, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}. {extra, plural, one {Dodatkowe stanowisko} few {# dodatkowe stanowiska} many {# dodatkowych stanowisk} other {# dodatkowego stanowiska}} ({amount}) trafi na Twoją następną fakturę.",
       "seatsRotated": "W tym miesiącu policzono {used, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}. Unieważniłeś klucz konta serwisowego, a po jego wymianie maszyny dostają nową tożsamość stanowiska — dlatego w tym miesiącu liczone są podwójnie. W następnym miesiącu wróci do normy; nie musisz zmieniać planu.",
       "taxNote": "Bez VAT. Jeśli Państwa firma ma unijny numer VAT, stosuje się odwrotne obciążenie.",
       "errYaSuscrito": "To konto ma już aktywną subskrypcję. Użyj „Zarządzaj planem”, aby zmienić liczbę miejsc lub rozliczenia.",
@@ -1439,6 +1440,7 @@
       "whatTitle": "Czym jest stanowisko",
       "what": "Stanowisko to jedna <b>maszyna lub tożsamość usługi</b>, na której działa Oprogramowanie, a nie osoba. Sam wybierasz, ile stanowisk obejmuje Twoja subskrypcja (do {max} przy płatności), i tyle obejmuje Twoja licencja.",
       "counted": "W każdym miesiącu kalendarzowym (UTC) BiVelio liczy jako używany każdy odrębny identyfikator stanowiska, który był aktywny w co najmniej {dias} różnych dniach tego miesiąca. Tożsamości oznaczone jako CI lub efemeryczne runnery się nie liczą. Twój panel porównuje tę liczbę ze stanowiskami objętymi subskrypcją.",
+      "overage": "Jeśli w danym miesiącu używasz więcej stanowisk, niż obejmuje Twoja subskrypcja, różnica jest naliczana automatycznie, jednorazowo, po zamknięciu miesiąca, na następnej fakturze: tyle, ile te dodatkowe stanowiska kosztują przez miesiąc w Twoim planie (w planie rocznym jedna dwunasta ceny rocznej). W planach miesięcznych subskrypcja obejmuje potem tyle stanowisk, ile używasz. Jeśli liczba nie jest wiarygodna — na przykład dlatego, że w tym miesiącu zrotowano klucz konta usługi — nic nie jest naliczane: sprawdzamy to ręcznie.",
       "identifier": "Jak powstaje identyfikator stanowiska i wszystko inne, co Oprogramowanie wysyła do BiVelio, opisuje <privacy>strona o prywatności</privacy>."
     },
     "commission": {

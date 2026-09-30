@@ -5,6 +5,8 @@ import { BillingButtons } from "./BillingButtons";
 import { tarifasDeLosPlanes } from "@/lib/stripe/pricing";
 import { terminosDeLosPlanes } from "@/lib/legal/precios-publicados";
 import { avisoDeAsientos } from "@/lib/billing/asientos";
+import type { AjusteDeAsientosVisible } from "@/lib/billing/asientos-usados";
+import { formatearPrecio } from "@/lib/format/precio";
 
 /** Real account/plan — reads organizations.plan (best-effort), never hardcoded.
  *  Degrades honestly when the schema can't resolve org/seats. */
@@ -26,7 +28,7 @@ export async function AccountPlanStrip({
 }: {
   email: string;
   ctx: OrgContext;
-  asientos?: { usados: number | null; rotacionEsteMes: boolean };
+  asientos?: { usados: number | null; rotacionEsteMes: boolean; ajusteMesPasado?: AjusteDeAsientosVisible | null };
   ocultarCompra?: boolean;
   /** Código de promoción que se pre-aplica al pagar (enlace de los probadores). */
   codigo?: string | null;
@@ -112,6 +114,21 @@ export async function AccountPlanStrip({
         ) : aviso === "en-uso" && seatsUsados != null ? (
           <p className="ck-note" style={{ marginTop: 6 }}>
             {t("accountPlanStrip.seatsInUse", { used: seatsUsados })}
+          </p>
+        ) : null}
+        {/* EL MES CERRADO: lo que se usó frente a lo pagado y lo que eso
+            añade a la próxima factura (cron cobrar-asientos, 0034). Solo si se
+            cobró o está por cobrarse: un ensayo en seco o una revisión humana
+            no se le enseñan al cliente como un cargo. */}
+        {asientos.ajusteMesPasado ? (
+          <p className="ck-note" style={{ marginTop: 6 }}>
+            {t("accountPlanStrip.seatsLastMonth", {
+              period: asientos.ajusteMesPasado.periodo,
+              used: asientos.ajusteMesPasado.usados,
+              paid: asientos.ajusteMesPasado.pagados,
+              extra: asientos.ajusteMesPasado.exceso,
+              amount: formatearPrecio(locale, { amount: asientos.ajusteMesPasado.importeCentimos, currency: "eur" }),
+            })}
           </p>
         ) : null}
         {ocultarCompra ? null : (

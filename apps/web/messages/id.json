@@ -426,7 +426,8 @@
       "seatsLabel": "Kursi",
       "seatsHint": "Satu kursi adalah satu mesin atau identitas layanan aktif, bukan orang. Hitung proses yang akan menjalankan SDK, bukan jumlah karyawan. Di Kubernetes, setel BVSALA_SEAT_ID per replika.",
       "seatsInUse": "{used, plural, other {# kursi}} terpakai bulan ini.",
-      "seatsOver": "⚠ {used, plural, other {# kursi}} terpakai, {paid, plural, other {# kursi}} dibayar. Naikkan jumlahnya lewat «Kelola paket» agar tagihan sesuai dengan yang Anda jalankan.",
+      "seatsOver": "⚠ {used, plural, other {# kursi}} terpakai, {paid, plural, other {# kursi}} dibayar. Kursi berlebih ditagih otomatis saat bulan ditutup, di tagihan berikutnya, dengan harga paket Anda. Anda juga bisa menaikkan jumlahnya lewat «Kelola paket».",
+      "seatsLastMonth": "{period}: {used, plural, other {# kursi}} terpakai, {paid, plural, other {# kursi}} dibayar. {extra, plural, other {# kursi berlebih}} ({amount}) masuk ke tagihan berikutnya.",
       "seatsRotated": "{used, plural, other {# kursi}} terhitung bulan ini. Anda mencabut kunci akun layanan, dan saat kunci diganti mesin-mesin Anda mendapat identitas kursi baru — jadi bulan ini terhitung dua kali. Bulan depan normal kembali; Anda tidak perlu mengubah paket.",
       "taxNote": "Belum termasuk PPN. Jika perusahaan Anda memiliki nomor PPN Uni Eropa, berlaku mekanisme reverse charge.",
       "errYaSuscrito": "Akun ini sudah memiliki langganan aktif. Gunakan «Kelola paket» untuk mengubah kursi atau penagihan.",
@@ -1439,6 +1440,7 @@
       "whatTitle": "Apa itu kursi",
       "what": "Satu kursi adalah satu <b>mesin atau identitas layanan</b> yang menjalankan Perangkat Lunak, bukan orang. Kamu memilih berapa kursi yang dicakup langgananmu (hingga {max} saat pembayaran), dan lisensimu mencakup sebanyak itu.",
       "counted": "Setiap bulan kalender (UTC), BiVelio menghitung sebagai terpakai setiap ID kursi berbeda yang aktif setidaknya {dias} hari berbeda dalam bulan itu. Identitas yang ditandai sebagai CI atau runner sementara tidak dihitung. Dasbormu membandingkan hitungan itu dengan kursi yang dicakup langgananmu.",
+      "overage": "Jika dalam satu bulan Anda memakai lebih banyak kursi daripada yang dicakup langganan, selisihnya ditagih otomatis, satu kali, saat bulan ditutup, di tagihan berikutnya: harga kursi berlebih itu selama satu bulan sesuai paket Anda (pada paket tahunan, seperdua belas harga tahunan). Pada paket bulanan, langganan Anda kemudian naik ke jumlah kursi yang Anda pakai. Jika hitungannya tidak dapat diandalkan — misalnya karena bulan itu Anda merotasi kunci akun layanan — tidak ditagih: kami memeriksanya secara manual.",
       "identifier": "Cara ID kursi dibentuk, dan semua hal lain yang dikirim Perangkat Lunak ke BiVelio, ada di <privacy>halaman privasi</privacy>."
     },
     "commission": {

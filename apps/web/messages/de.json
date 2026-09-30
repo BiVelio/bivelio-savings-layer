@@ -426,7 +426,8 @@
       "seatsLabel": "Seats",
       "seatsHint": "Ein Platz ist eine aktive Maschine oder Service-Identität, keine Person. Zähle die Prozesse, die das SDK ausführen, nicht deine Mitarbeitenden. In Kubernetes: BVSALA_SEAT_ID pro Replica setzen.",
       "seatsInUse": "{used, plural, one {# Seat} other {# Seats}} diesen Monat in Benutzung.",
-      "seatsOver": "⚠ {used, plural, one {# Seat} other {# Seats}} in Benutzung, {paid, plural, one {# bezahlt} other {# bezahlt}}. Erhöhe die Anzahl unter „Plan verwalten“, damit deine Rechnung zu deinem Betrieb passt.",
+      "seatsOver": "⚠ {used, plural, one {# Seat} other {# Seats}} in Benutzung, {paid, plural, one {# bezahlt} other {# bezahlt}}. Zusätzliche Seats werden nach Monatsabschluss automatisch mit deiner nächsten Rechnung zum Preis deines Plans berechnet. Du kannst die Anzahl auch unter „Plan verwalten“ erhöhen.",
+      "seatsLastMonth": "{period}: {used, plural, one {# Seat genutzt} other {# Seats genutzt}}, {paid, plural, one {# bezahlt} other {# bezahlt}}. {extra, plural, one {Der zusätzliche Seat} other {Die # zusätzlichen Seats}} ({amount}) {extra, plural, one {steht} other {stehen}} auf deiner nächsten Rechnung.",
       "seatsRotated": "{used, plural, one {# Seat} other {# Seats}} in diesem Monat gezählt. Du hast einen Service-Account-Schlüssel widerrufen, und beim Rotieren bekommen deine Maschinen eine neue Seat-Identität — deshalb zählt dieser Monat sie doppelt. Nächsten Monat ist es wieder normal; du musst deinen Plan nicht ändern.",
       "taxNote": "Zzgl. MwSt. Bei Unternehmen mit EU-USt-IdNr. gilt das Reverse-Charge-Verfahren.",
       "errYaSuscrito": "Dieses Konto hat schon ein aktives Abonnement. Nutze „Plan verwalten“, um Plätze oder Abrechnung zu ändern.",
@@ -1439,6 +1440,7 @@
       "whatTitle": "Was ein Seat ist",
       "what": "Ein Seat ist eine <b>Maschine oder Dienstidentität</b>, auf der die Software läuft – keine Person. Du wählst, wie viele Seats dein Abo abdeckt (bis zu {max} beim Bezahlen), und deine Lizenz deckt genau so viele ab.",
       "counted": "In jedem Kalendermonat (UTC) zählt BiVelio jede eindeutige Seat-Kennung als genutzt, die an mindestens {dias} verschiedenen Tagen dieses Monats aktiv war. Als CI oder kurzlebige Runner markierte Identitäten zählen nicht. Dein Dashboard vergleicht diese Zahl mit den Seats, die dein Abo abdeckt.",
+      "overage": "Nutzt du in einem Monat mehr Seats, als dein Abo abdeckt, wird die Differenz nach Monatsabschluss einmalig und automatisch mit deiner nächsten Rechnung berechnet: der Preis dieser zusätzlichen Seats für einen Monat in deinem Plan (beim Jahresplan ein Zwölftel des Jahrespreises). Bei Monatsplänen deckt dein Abo danach die Seats ab, die du nutzt. Ist die Zählung nicht verlässlich – etwa weil du in dem Monat einen Service-Account-Schlüssel rotiert hast –, wird nichts berechnet: Wir prüfen sie von Hand.",
       "identifier": "Wie eine Seat-Kennung gebildet wird und alles andere, was die Software an BiVelio sendet, steht auf der <privacy>Datenschutzseite</privacy>."
     },
     "commission": {

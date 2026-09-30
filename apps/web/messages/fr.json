@@ -426,7 +426,8 @@
       "seatsLabel": "Sièges",
       "seatsHint": "Un poste est une machine ou une identité de service active, pas une personne. Comptez les processus qui exécuteront le SDK, pas vos effectifs. Sur Kubernetes, définissez BVSALA_SEAT_ID par réplique.",
       "seatsInUse": "{used, plural, one {# siège utilisé} other {# sièges utilisés}} ce mois-ci.",
-      "seatsOver": "⚠ {used, plural, one {# siège utilisé} other {# sièges utilisés}}, {paid, plural, one {# payé} other {# payés}}. Augmentez la quantité depuis « Gérer le forfait » pour que votre facture corresponde à votre usage.",
+      "seatsOver": "⚠ {used, plural, one {# siège utilisé} other {# sièges utilisés}}, {paid, plural, one {# payé} other {# payés}}. Les sièges en trop sont facturés automatiquement à la clôture du mois, sur votre prochaine facture, au prix de votre forfait. Vous pouvez aussi augmenter la quantité depuis « Gérer le forfait ».",
+      "seatsLastMonth": "{period} : {used, plural, one {# siège utilisé} other {# sièges utilisés}}, {paid, plural, one {# payé} other {# payés}}. {extra, plural, one {Le siège en trop} other {Les # sièges en trop}} ({amount}) {extra, plural, one {figure} other {figurent}} sur votre prochaine facture.",
       "seatsRotated": "{used, plural, one {# siège compté} other {# sièges comptés}} ce mois-ci. Vous avez révoqué une clé de compte de service : en la remplaçant, vos machines changent d'identité de siège, donc ce mois-ci elles sont comptées deux fois. Cela se règle tout seul le mois prochain — inutile de changer de forfait.",
       "taxNote": "TVA non comprise. Si votre entreprise a un numéro de TVA intracommunautaire, l'autoliquidation s'applique.",
       "errYaSuscrito": "Ce compte a déjà un abonnement actif. Utilisez « Gérer le plan » pour modifier les sièges ou la facturation.",
@@ -1439,6 +1440,7 @@
       "whatTitle": "Ce qu'est un siège",
       "what": "Un siège est une <b>machine ou identité de service</b> qui exécute le Logiciel, pas une personne. Vous choisissez le nombre de sièges couverts par votre abonnement (jusqu'à {max} au paiement), et votre licence couvre ce nombre.",
       "counted": "Chaque mois civil (UTC), BiVelio compte comme utilisé chaque identifiant de siège distinct actif au moins {dias} jours différents de ce mois. Les identités marquées comme CI ou exécuteurs éphémères ne comptent pas. Votre tableau de bord compare ce décompte aux sièges couverts par votre abonnement.",
+      "overage": "Si, un mois donné, vous utilisez plus de sièges que votre abonnement n'en couvre, la différence est facturée automatiquement, une seule fois, à la clôture du mois, sur votre prochaine facture : le prix de ces sièges en trop pendant un mois selon votre forfait (en annuel, un douzième du prix annuel). Avec un forfait mensuel, votre abonnement passe ensuite au nombre de sièges que vous utilisez. Si le décompte n'est pas fiable — par exemple parce que vous avez fait tourner une clé de compte de service ce mois-là —, rien n'est facturé : nous le vérifions à la main.",
       "identifier": "La façon dont un identifiant de siège est formé, et tout ce que le Logiciel envoie d'autre à BiVelio, se trouve sur la <privacy>page de confidentialité</privacy>."
     },
     "commission": {
