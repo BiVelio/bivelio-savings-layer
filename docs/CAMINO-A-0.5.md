@@ -1,7 +1,7 @@
 # Camino a la 0.5
 
 > Documento interno. Estado a **2026-09-30**, con la 0.4.34 publicada (#429) y
-> los cambios rompientes de la 0.5 implementados en el PR #PR_NUM (borrador hasta
+> los cambios rompientes de la 0.5 implementados en el PR #434 (borrador hasta
 > que se cumplan los criterios de salida). La guía para clientes es [`MIGRAR-A-0.5.md`](MIGRAR-A-0.5.md) (en
 > inglés) y el inventario de la API, con el veredicto de cada nombre, es
 > [`INVENTARIO-API-0.5.json`](INVENTARIO-API-0.5.json).
@@ -22,7 +22,7 @@ La 0.5 sale cuando se cumplen los seis criterios acordados:
 | 3 | Nunca cobra lo que no debe | XSTest en el run 36611942632: 0 negativas cacheadas y 0 acreditadas en los 8 modelos medidos. La negativa parcial y la carencia tras una disculpa ya no se cachean ni acreditan (#422), y la mínima del ingest sube a 0.4.33 (#423). Licencia Medir sin comisión (#417). Sin medir: Gemini y una negativa en vivo de OpenAI (`message.refusal`) | 🟡 parcial: falta Gemini |
 | 4 | El informe cuadra con la factura ±2 %, con el ahorro nativo aparte | `informe/factura` 0,00 % en todas las celdas del run 36611942632, y el ahorro nativo sale aparte (#412). Pero esa «factura» es uso × precio del catálogo: **nunca se ha comparado con una factura real** | 🟡 parcial: falta la factura real |
 | 5 | Banco semanal en CI como puerta de release | #413 fusionado (cron, 50 $, `publish.yml` bloqueado por `banco-semanal`) y #421 (sin clave = «no medible», no arnés caído). Primer run en vivo en verde: 36611942632, 13,74 $ | 🟢 (la condición de release sigue siendo una semana en verde con la candidata) |
-| 6 | API pública congelada con guía | Inventario, test y guía (#418); nombres nuevos y alias con aviso (#419, 0.4.33); `@deprecated` y avisos en la 0.4.34 (#424, #429). **Implementado en el PR #PR_NUM**: raíz cerrada nombre a nombre, 73 exports y 7 campos fuera, `finishReason` cerrado, CLI solo en inglés, inventario 0.5.0 todo `estable` y guía final | 🟡 implementado en el PR #PR_NUM, pendiente de release |
+| 6 | API pública congelada con guía | Inventario, test y guía (#418); nombres nuevos y alias con aviso (#419, 0.4.33); `@deprecated` y avisos en la 0.4.34 (#424, #429). **Implementado en el PR #434**: raíz cerrada nombre a nombre, 73 exports y 7 campos fuera, `finishReason` cerrado, CLI solo en inglés, inventario 0.5.0 todo `estable` y guía final | 🟡 implementado en el PR #434, pendiente de release |
 
 La tabla y [«Lo que falta, en orden»](#lo-que-falta-en-orden) son el estado
 vigente. Las secciones 1 a 5 conservan el detalle con el que se escribieron
@@ -168,7 +168,7 @@ umbrales cubren los criterios 1 a 4 (`capa-falla`, `exactitud-peor`,
 
 ## 6 · API congelada con guía
 
-**La 0.5 (PR #PR_NUM, en borrador hasta los criterios de salida)**
+**La 0.5 (PR #434, en borrador hasta los criterios de salida)**
 
 - **Raíz cerrada.** `src/index.ts` exporta una lista explícita, nombre a nombre,
   sin un solo `export *`; `src/deprecaciones-0.5.ts` borrado. Salen 73 exports
@@ -336,5 +336,5 @@ aplicadas.
 6. **0.5.0**:
    - ~~Aplicar la guía, borrar `src/deprecaciones-0.5.ts`, cerrar los
      `export *`, inventario 0.5.0 todo `estable` y test endurecido~~: hecho en
-     el PR #PR_NUM (borrador; se fusiona cuando se cumplan 1 a 5).
+     el PR #434 (borrador; se fusiona cuando se cumplan 1 a 5).
    - El PR de release: subir la versión a 0.5.0 y publicar la guía en la web.
