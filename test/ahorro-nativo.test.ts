@@ -180,7 +180,7 @@ describe("⛔ el ahorro nativo no mueve la comisión ni un céntimo", () => {
     const sin = await correr("claude-sonnet-5", precio, { inputTokens: 10_000, outputTokens: 100 });
     expect(con.nativeSavings!.netUsd).toBeGreaterThan(0.02);
     expect(con.cost.baselineEstimate - con.cost.actual).toBe(sin.cost.baselineEstimate - sin.cost.actual);
-    expect(con.cost.netSavings).toBe(sin.cost.netSavings);
+    expect(con.cost.netSavingsRatio).toBe(sin.cost.netSavingsRatio);
     expect(con.cost.basis).toBe(sin.cost.basis);
   });
 
@@ -255,7 +255,7 @@ describe("el gateway publica el mismo bloque, y solo donde hay factura por token
     // El carril propio no toca `cost`: sin palanca, baseline == actual y 0 de ahorro.
     expect(r.cost.baselineEstimate).toBe(medido.costeUsd);
     expect(r.cost.actual).toBe(medido.costeUsd);
-    expect(r.cost.netSavings).toBe(0);
+    expect(r.cost.netSavingsRatio).toBe(0);
   });
 
   it("suscripción, upstream no oficial y negativa no cobrada: sin bloque (no hay factura por tokens que lo respalde)", () => {
@@ -307,7 +307,7 @@ describe("el registro en sombra de Medir no repite el ahorro nativo", () => {
     const medido = {
       requestId: "req-1",
       cache: { result: "miss" },
-      cost: { baselineEstimate: 1, actual: 1, netSavings: 0, basis: "measured" },
+      cost: { baselineEstimate: 1, actual: 1, netSavingsRatio: 0, basis: "measured" },
       measure: { mode: "shadow", wouldHaveSaved: { usd: 0.4, basis: "shadow", avoidedCall: null } },
       nativeSavings: { provider: "anthropic", mechanism: "cache_control", basis: "measured", readDiscountUsd: 0.2, writePremiumUsd: 0.05, netUsd: 0.15 },
     } as unknown as SavingsReport;

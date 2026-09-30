@@ -405,7 +405,9 @@ export class UsageEmitter {
       // emisor en 0.4.17 — y aun así OPCIONAL y solo cuando hay dinero.
       baselineCost: r.cost.baselineEstimate,
       actualCost: r.cost.actual,
-      netSavings: r.cost.netSavings,
+      // El campo del CABLE sigue llamándose `netSavings` (protocolo, ingest y
+      // migraciones); en el informe es `netSavingsRatio` desde la 0.5.
+      netSavings: r.cost.netSavingsRatio,
       // Viaja para que el panel agregue el dinero MEDIDO aparte del estimado.
       ...(r.cost.basis ? { basis: r.cost.basis } : {}),
       // MEDIDO POR REFERENCIA: el puntero a la llamada que corrió, para la fila
@@ -456,7 +458,6 @@ export function informeSombraDeMedir(r: SavingsReport): SavingsReport | null {
     cost: {
       baselineEstimate: pagado,
       actual: hipotetico,
-      netSavings: razon,
       netSavingsRatio: razon,
       netSavingsUsd: pagado - hipotetico,
       basis: "shadow",

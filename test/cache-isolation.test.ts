@@ -104,7 +104,7 @@ describe("caché semántica: el embedding no decide solo", () => {
     const { InMemorySemanticCache } = await import("../src/cache/semantic.js");
     const semanticCache = new InMemorySemanticCache({ embed, similarityThreshold: 0.3, acceptThreshold: 0.3 });
     const provider = new ProveedorPersonalizado();
-    const layer = createSavingsLayer({ provider, semanticCache, devUnlicensed: true });
+    const layer = createSavingsLayer({ provider, semanticCacheStore: semanticCache, devUnlicensed: true });
 
     const base = {
       model: "openai/gpt-4o-mini",
@@ -126,7 +126,7 @@ describe("caché semántica: el embedding no decide solo", () => {
     const { InMemorySemanticCache } = await import("../src/cache/semantic.js");
     const semanticCache = new InMemorySemanticCache({ embed, similarityThreshold: 0.3, acceptThreshold: 0.3 });
     const provider = new ProveedorPersonalizado();
-    const layer = createSavingsLayer({ provider, semanticCache, devUnlicensed: true });
+    const layer = createSavingsLayer({ provider, semanticCacheStore: semanticCache, devUnlicensed: true });
 
     const base = {
       messages: [{ role: "user" as const, content: "explica el teorema de forma breve" }],

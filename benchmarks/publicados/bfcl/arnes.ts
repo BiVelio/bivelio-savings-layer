@@ -382,7 +382,7 @@ function resumenDelInforme(r: SavingsResult): ResumenDelInforme {
     basis: String(rep.cost.basis),
     actual: rep.cost.actual,
     baselineEstimate: rep.cost.baselineEstimate,
-    netSavings: rep.cost.netSavings,
+    netSavings: rep.cost.netSavingsRatio,
     actualLlm: rep.calls.actualLlm,
     avoidedLlm: rep.calls.avoidedLlm,
     providerCachedInput: rep.tokens.providerCachedInput ?? 0,

@@ -2,9 +2,12 @@ import { describe, it, expect } from "vitest";
 import {
   ExecutionRouter,
   ToolSelector,
-  canonicalize,
 } from "../src/index.js";
-import type { SavingsRequest, ToolDescriptor } from "../src/index.js";
+import { canonicalize } from "../src/canonicalization/index.js";
+import type {
+  SavingsRequest,
+  ToolDescriptor,
+} from "../src/index.js";
 
 function classify(text: string, tools?: ToolDescriptor[]) {
   const request: SavingsRequest = { model: "m", messages: [{ role: "user", content: text }], ...(tools ? { tools } : {}) };

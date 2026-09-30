@@ -37,7 +37,7 @@ const informe = (): SavingsReport =>
       compressedInput: 0, baselineOutput: 5, actualOutput: 5,
     },
     cache: { result: "miss" },
-    cost: { baselineEstimate: 0.001, actual: 0.001, netSavings: 0, basis: "measured" },
+    cost: { baselineEstimate: 0.001, actual: 0.001, netSavingsRatio: 0, basis: "measured" },
   }) as unknown as SavingsReport;
 
 let avisos: string[];

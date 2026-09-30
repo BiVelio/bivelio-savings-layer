@@ -16,7 +16,7 @@ function summarize(label: string, report: import("../../src/index.js").SavingsRe
     `\n[${label}] cache=${report.cache.result} llm=${report.calls.actualLlm} ` +
       `avoided=${report.calls.avoidedLlm} in=${report.tokens.actualInput} ` +
       `out=${report.tokens.actualOutput} eliminated=${report.tokens.eliminatedInput} ` +
-      `netSavings=${(report.cost.netSavings * 100).toFixed(0)}%`,
+      `netSavings=${(report.cost.netSavingsRatio * 100).toFixed(0)}%`,
   );
 }
 

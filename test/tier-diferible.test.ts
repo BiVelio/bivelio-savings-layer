@@ -364,7 +364,8 @@ describe("el informe del tier diferible", () => {
   it("`estimatedTierSaving` sigue ahí, y es EXACTAMENTE `tierSaving.amount`", async () => {
     const s = servidor(respuestaOpenAI({ service_tier: "flex" }));
     const { report } = await capa(adaptador(OFICIAL, s.fetchImpl)).generate(peticion(true));
-    expect(report.deferred!.estimatedTierSaving).toBe(report.deferred!.tierSaving!.amount);
+    // El alias `estimatedTierSaving` se fue en la 0.5: solo queda `tierSaving.amount`.
+    expect("estimatedTierSaving" in report.deferred!).toBe(false);
   });
 
   it("⛔ los tokens de la caché de prefijo se tarifan a SU tarifa, no a la entera", async () => {
@@ -549,7 +550,7 @@ describe("el informe del tier diferible", () => {
     expect(report.deferred!.servedTier).toBe("default");
     expect(report.deferred!.credited).toBe(false);
     expect(report.deferred!.discountRate).toBeUndefined();
-    expect(report.deferred!.estimatedTierSaving).toBeUndefined();
+    expect(report.deferred!.tierSaving?.amount).toBeUndefined();
     expect(report.deferred!.tierSaving).toBeUndefined();
     expect(report.deferred!.reason).toMatch(/standard rate/);
   });
@@ -624,7 +625,7 @@ describe("contabilidad: diferir no toca ninguno de los cuatro libros", () => {
       .generate(peticion(true));
 
     expect(con.report.cost.actual).toBe(sin.report.cost.actual);
-    expect(con.report.cost.netSavings).toBe(sin.report.cost.netSavings);
+    expect(con.report.cost.netSavingsRatio).toBe(sin.report.cost.netSavingsRatio);
     expect(con.report.cost.baselineEstimate).toBe(sin.report.cost.baselineEstimate);
     expect(con.report.cost.basis).toBe(sin.report.cost.basis);
     // Y el ahorro del tier sí está publicado, aparte y con su nombre.
@@ -705,7 +706,7 @@ describe("la clave de caché no se parte por el tier", () => {
     expect(seguidor.report.calls.actualLlm).toBe(0);
     // No llamó al proveedor: no se le sirvió ningún tier y no se le acredita nada.
     expect(seguidor.report.deferred!.credited).toBe(false);
-    expect(seguidor.report.deferred!.estimatedTierSaving).toBeUndefined();
+    expect(seguidor.report.deferred!.tierSaving?.amount).toBeUndefined();
     expect(seguidor.report.deferred!.servedTier).toBeUndefined();
     expect(seguidor.report.deferred!.reason).toMatch(/no provider call was made/);
   });

@@ -2,7 +2,7 @@ import { generateKeyPairSync } from "node:crypto";
 import { describe, it, expect } from "vitest";
 
 import { signRevocationList, revocationEtag } from "../apps/web/lib/license/sign.js";
-import { verifyRevocationList } from "../src/index.js";
+import { verifyRevocationList } from "../src/license/index.js";
 
 /**
  * The Vercel route (`apps/web/app/licenses/revocations/route.ts`) signs the list

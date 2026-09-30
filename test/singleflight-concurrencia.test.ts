@@ -382,7 +382,7 @@ describe("cuando el líder falla", () => {
     for (const r of res) {
       expect(r.report.traces.some((t) => t.stage === "fail-open")).toBe(true);
       // Un rescate no reclama ahorro: baseline == actual.
-      expect(r.report.cost.netSavings).toBe(0);
+      expect(r.report.cost.netSavingsRatio).toBe(0);
     }
   });
 
@@ -454,7 +454,7 @@ describe("el ahorro que se le reporta a un seguidor", () => {
       // Se evitó el 100% del coste de ESTA petición, sobre un baseline propio y
       // no nulo (un baseline 0 daría el mismo 1 sin significar nada).
       expect(s.report.cost.baselineEstimate).toBeGreaterThan(0);
-      expect(s.report.cost.netSavings).toBe(1);
+      expect(s.report.cost.netSavingsRatio).toBe(1);
     }
 
     // Lo que ve el panel al sumar los N informes de la ráfaga: UNA llamada y los

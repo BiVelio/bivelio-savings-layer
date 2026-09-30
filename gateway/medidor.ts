@@ -1402,8 +1402,10 @@ export function informeCoalescido(
     cost: {
       baselineEstimate: suelo,
       actual: 0,
-      // PROPORCIÓN en [-100,1]: la llamada entera se evitó.
-      netSavings: 1,
+      // PROPORCIÓN en [-100,1]: la llamada entera se evitó. Desde la 0.5 se llama
+      // `netSavingsRatio` (el `netSavings` de la 0.4 se fue) y va con su importe.
+      netSavingsRatio: 1,
+      netSavingsUsd: suelo,
       basis: "reference" as const,
     },
   };
@@ -1449,7 +1451,8 @@ export function informeSombra(
       // un valor > 1 tumba el LOTE entero en la verja del ingest). Una política
       // puede PERDER dinero — v2 lo demostró — así que el negativo es legítimo,
       // pero acotado.
-      netSavings: baselineUsd > 0 ? Math.max(-100, Math.min(1, (baselineUsd - politicaUsd) / baselineUsd)) : 0,
+      netSavingsRatio: baselineUsd > 0 ? Math.max(-100, Math.min(1, (baselineUsd - politicaUsd) / baselineUsd)) : 0,
+      netSavingsUsd: baselineUsd - politicaUsd,
       basis: "shadow" as const,
     },
   };
@@ -1584,13 +1587,14 @@ function construirInforme(
       ? {
           baselineEstimate: medido.costeUsd,
           actual: 0,
-          // netSavings es una PROPORCIÓN [-100,1], no dólares: una coalescencia
+          // netSavingsRatio es una PROPORCIÓN [-100,1], no dólares: una coalescencia
           // evita la llamada entera, así que es 1 (100 %). Antes iba `costeUsd`,
           // y si la primaria costó > $1 (opus caro) el ingest rechazaba el LOTE
           // completo por `> 1` — se perdían hasta 50 registros. Ver el contrato
           // en src/tokenizer/accounting.ts y la verja en lib/metering/usage.ts.
           // Sin cobro no hubo nada que evitar: 0, no el 100 %.
-          netSavings: sinCobro ? 0 : 1,
+          netSavingsRatio: sinCobro ? 0 : 1,
+          netSavingsUsd: medido.costeUsd,
           basis: "estimated" as const,
         }
       : {
@@ -1600,7 +1604,8 @@ function construirInforme(
           // de la coalescencia más arriba). Sin rebaja ni hermano vale 0 y la
           // doctrina de siempre se mantiene intacta: sin palanca no hay ahorro
           // que enseñar.
-          netSavings: baselineMedido > 0 ? Math.max(-100, Math.min(1, ahorroMedido / baselineMedido)) : 0,
+          netSavingsRatio: baselineMedido > 0 ? Math.max(-100, Math.min(1, ahorroMedido / baselineMedido)) : 0,
+          netSavingsUsd: baselineMedido - medido.costeUsd,
           basis: "measured" as const,
           // B2 · solo cuando hay dinero: el campo AUSENTE es «no hubo borrado
           // atribuible», y un 0 explícito no añadiría nada.

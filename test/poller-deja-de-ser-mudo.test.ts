@@ -175,7 +175,7 @@ describe("el call-home caído deja de ser mudo", () => {
   });
 
   it("quien tenga su propia observabilidad puede callarlos", async () => {
-    const p = poller(caido(), { silenciarAvisos: true });
+    const p = poller(caido(), { silenceWarnings: true });
     for (let i = 0; i < 20; i++) await p.pollOnce();
     expect(avisos).toEqual([]);
   });

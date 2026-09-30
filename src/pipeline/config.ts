@@ -51,20 +51,11 @@ export interface SavingsLayerConfig {
    * asks for it nor turns it off gets a one-time console warning (silenced by
    * `silenceWarnings`, or by setting `semanticCacheDefault`, `false` included).
    *
-   * Called `semanticCache` until 0.4.33, so that the store and the per-request
-   * switch (`savings.semanticCache`) no longer share a name. See the 0.5
-   * migration guide.
+   * Called `semanticCache` up to 0.4.x; renamed in 0.5 so that the store and
+   * the per-request switch (`savings.semanticCache`) no longer share a name.
+   * See the 0.5 migration guide.
    */
   semanticCacheStore?: InMemorySemanticCache;
-  /**
-   * @deprecated Renamed {@link semanticCacheStore} in 0.4.33, so that the store
-   * and the per-request switch (`savings.semanticCache`) no longer share a name.
-   * It still works, with a one-time warning (silenced by `silenceWarnings` or
-   * `BVSALA_SILENCE_DEPRECATIONS=1`);
-   * when both are given, `semanticCacheStore` wins. Removed in 0.5: see the 0.5
-   * migration guide.
-   */
-  semanticCache?: InMemorySemanticCache;
   /**
    * Default for `savings.semanticCache` on every request of this layer. A
    * request's own value always wins, `false` included. Unset, the semantic cache
@@ -182,8 +173,7 @@ export interface SavingsLayerConfig {
   /**
    * Signed BiVelio license token (from your paid subscription). This is the
    * primary way to license the SDK: `createSavingsLayer` verifies it offline
-   * against the embedded public key and builds a {@link licenseGate} from it.
-   * Without a valid, active license (and without {@link devUnlicensed}), the
+   * against the embedded public key. Without a valid, active license the
    * pipeline refuses to run — get a key at https://savings.bivelio.com.
    *
    * Surrounding whitespace (the trailing newline of a file or mounted secret),
@@ -194,34 +184,7 @@ export interface SavingsLayerConfig {
   licenseKey?: string;
 
   /**
-   * Override the public key used to verify {@link licenseKey}. An SPKI PEM string,
-   * or a kid-addressed {@link LicenseKeyset} (`{ keys: {kid: pem}, defaultKid }`)
-   * to support signing-key rotation — legacy no-kid tokens use `defaultKid`, and
-   * an unknown kid fails closed. For self-hosting/self-testing; defaults to the
-   * build-embedded BiVelio key.
-   *
-   * @deprecated Has no effect in the published package, which always verifies
-   * against the embedded BiVelio key; passing it there logs a one-time warning
-   * (silenced by `silenceWarnings` or `BVSALA_SILENCE_DEPRECATIONS=1`). Removed
-   * from the public type in 0.5: delete it from your config.
-   */
-  licensePublicKey?: string | LicenseKeyset;
-
-  /**
-   * Pre-built license gate. **Ignored in the published npm package**, where a
-   * {@link licenseKey} verified against the embedded BiVelio public key is the
-   * only accepted license — passing a gate there logs a warning and changes
-   * nothing. It exists for builds from source (this repo's own tests and
-   * benchmarks), where it takes precedence over {@link licenseKey}.
-   *
-   * @deprecated Ignored in the published package. Removed from the public type
-   * in 0.5; license the layer with {@link licenseKey} or `serviceAccountKey`.
-   */
-  licenseGate?: LicenseGate;
-
-  /**
-   * OPT-IN online revocation call-home. When set (alongside {@link licenseKey} and
-   * with no explicit {@link licenseGate}), the SDK polls this base's
+   * OPT-IN online revocation call-home. When set (alongside {@link licenseKey}), the SDK polls this base's
    * `GET /licenses/revocations` for a signed revocation list and enforces it via a
    * LIVE gate — a license cancelled mid-term stops working without a restart.
    *
@@ -335,21 +298,6 @@ export interface SavingsLayerConfig {
 
   /** Opt-in A/B verification on your own traffic. Off by default. See VerificationSettings. */
   verification?: VerificationSettings;
-
-  /**
-   * Development-only escape hatch to run ungated, honored ONLY when building from
-   * source (local dev, CI, benchmarks) — also via the `BVSALA_DEV_OPEN=1`
-   * environment variable.
-   *
-   * IMPORTANT: this flag is **disabled in the published npm package**. The
-   * distributed build hard-codes the licensing check on, so setting
-   * `devUnlicensed` (or `BVSALA_DEV_OPEN`) there has NO effect — the layer still
-   * requires a valid `licenseKey`. It is not a way to run the product for free.
-   *
-   * @deprecated No effect in the published package. Removed from the public type
-   * in 0.5: delete it from your config.
-   */
-  devUnlicensed?: boolean;
 
   /** Per-model cost models; falls back to `defaultCostModel`. */
   costModels?: Record<string, CostModel>;
@@ -520,3 +468,28 @@ export const DEFAULT_COST_MODEL: CostModel = {
   outputPer1k: 0.0015,
   cachedInputPer1k: 0.00005,
 };
+
+// LO QUE LA 0.5 SACÓ DEL TIPO PÚBLICO Y SIGUE VIVO DESDE EL FUENTE.
+//
+// `licenseGate`, `licensePublicKey` y `devUnlicensed` no hacen nada en el paquete
+// publicado (el gate inyectado se descarta, la clave embebida gana siempre y la
+// puerta de desarrollo se pliega en el build), así que la 0.5 los quita de
+// `SavingsLayerConfig` (docs/MIGRAR-A-0.5.md §6). Pero los builds DESDE EL
+// FUENTE —los tests, el banco y los ejemplos de licencia de este repo— montan
+// con ellos sus escenarios, y el pipeline los sigue leyendo aquí.
+//
+// Este tipo NO se exporta desde la raíz y ningún export público lo nombra, así
+// que no llega al `.d.ts` publicado: para el cliente, pasarlos es un error de
+// tipos. Los tests y el banco lo ven por la ampliación de
+// test/helpers/opciones-desde-el-fuente.d.ts. Comentarios en `//` a propósito.
+export interface ConfiguracionDesdeElFuente extends SavingsLayerConfig {
+  // Gate de licencia ya construido; desde el fuente gana a `licenseKey`. En el
+  // paquete publicado create.ts lo descarta con un aviso.
+  licenseGate?: LicenseGate;
+  // Clave pública (PEM o juego con `kid`) para verificar `licenseKey` cuando el
+  // build no lleva una embebida. En el publicado, la embebida gana siempre.
+  licensePublicKey?: string | LicenseKeyset;
+  // La puerta de desarrollo (como `BVSALA_DEV_OPEN=1`). El build publicado la
+  // pliega entera: ahí no existe.
+  devUnlicensed?: boolean;
+}

@@ -232,10 +232,10 @@ describe("el 0 € estructural del informe medido", () => {
   it("SIN palanca sigue escribiendo baseline == actual y netSavings 0", () => {
     const medido = costeMedido("claude-opus-5", usage);
     const inf = informeMedido("req-1", "claude-opus-5", medido!) as unknown as {
-      cost: { baselineEstimate: number; actual: number; netSavings: number; basis: string };
+      cost: { baselineEstimate: number; actual: number; netSavingsRatio: number; basis: string };
     };
     expect(inf.cost.basis).toBe("measured");
-    expect(inf.cost.netSavings).toBe(0);
+    expect(inf.cost.netSavingsRatio).toBe(0);
     expect(inf.cost.baselineEstimate).toBe(inf.cost.actual);
   });
 
@@ -246,23 +246,23 @@ describe("el 0 € estructural del informe medido", () => {
       yaEran5m: 0,
       herramientaDeServidor: false,
     }) as unknown as {
-      cost: { baselineEstimate: number; actual: number; netSavings: number; basis: string };
+      cost: { baselineEstimate: number; actual: number; netSavingsRatio: number; basis: string };
     };
     // 100.000 tokens escritos a 1,25× en vez de 2×: $0,375 de sobrecoste evitado.
     expect(inf.cost.basis).toBe("measured");
     expect(inf.cost.baselineEstimate - inf.cost.actual).toBeCloseTo(0.375, 9);
-    expect(inf.cost.netSavings).toBeGreaterThan(0);
-    expect(inf.cost.netSavings).toBeLessThanOrEqual(1);
-    expect(inf.cost.netSavings).toBeCloseTo(0.375 / inf.cost.baselineEstimate, 9);
+    expect(inf.cost.netSavingsRatio).toBeGreaterThan(0);
+    expect(inf.cost.netSavingsRatio).toBeLessThanOrEqual(1);
+    expect(inf.cost.netSavingsRatio).toBeCloseTo(0.375 / inf.cost.baselineEstimate, 9);
   });
 
   it("tráfico de SUSCRIPCIÓN con la rebaja aplicada: baseline == actual y netSavings 0 (sin factura por tokens no se acredita)", () => {
     const medido = costeMedido("claude-opus-5", usage);
     const inf = informeMedido("req-s", "claude-opus-5", medido!, undefined, null, { rebajadas: 1, yaEran5m: 0, herramientaDeServidor: false }, null, true) as unknown as {
-      cost: { baselineEstimate: number; actual: number; netSavings: number; basis: string };
+      cost: { baselineEstimate: number; actual: number; netSavingsRatio: number; basis: string };
     };
     expect(inf.cost.basis).toBe("measured");
-    expect(inf.cost.netSavings).toBe(0);
+    expect(inf.cost.netSavingsRatio).toBe(0);
     expect(inf.cost.baselineEstimate).toBe(inf.cost.actual);
   });
 
@@ -272,8 +272,8 @@ describe("el 0 € estructural del informe medido", () => {
       rebajadas: 1,
       yaEran5m: 2,
       herramientaDeServidor: false,
-    }) as unknown as { cost: { netSavings: number; baselineEstimate: number; actual: number } };
-    expect(inf.cost.netSavings).toBe(0);
+    }) as unknown as { cost: { netSavingsRatio: number; baselineEstimate: number; actual: number } };
+    expect(inf.cost.netSavingsRatio).toBe(0);
     expect(inf.cost.baselineEstimate).toBe(inf.cost.actual);
   });
 });

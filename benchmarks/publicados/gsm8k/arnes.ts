@@ -583,7 +583,7 @@ export async function medirModelo(o: OpcionesDeModelo): Promise<MedicionDeModelo
           provider: prov[b]!,
           ...o.capa.licencia,
           silenceWarnings: true,
-          ...(caches[b] ? { semanticCache: caches[b], semanticCacheDefault: true } : {}),
+          ...(caches[b] ? { semanticCacheStore: caches[b], semanticCacheDefault: true } : {}),
         }),
       ]),
   );
@@ -876,7 +876,7 @@ async function principal(): Promise<void> {
       gastoTotalUsd: 0,
     },
     topeDeSalida: TOPE_DE_SALIDA,
-    interruptorSemantico: "createSavingsLayer({ semanticCache, semanticCacheDefault: true }) — #380, new in 0.4.31; nothing on the request",
+    interruptorSemantico: "createSavingsLayer({ semanticCacheStore, semanticCacheDefault: true }) — #380, new in 0.4.31 (the store was `semanticCache` up to 0.4.x); nothing on the request",
     modelos: [],
     limitaciones: [],
     ...(bandera("brazos-en-serie") ? { brazosEnSerie: true } : {}),

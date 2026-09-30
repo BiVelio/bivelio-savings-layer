@@ -190,7 +190,7 @@ describe("de punta a punta: la capa con la caché semántica tal como se envía"
       provider: proveedor,
       costModels: PRECIOS,
       silenceWarnings: true,
-      semanticCache: new InMemorySemanticCache(),
+      semanticCacheStore: new InMemorySemanticCache(),
     });
     try {
       await capa.generate(pedir(par.original));

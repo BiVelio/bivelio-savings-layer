@@ -65,7 +65,7 @@ def informe_medido(request_id: str, response_id: Optional[str], *, basis: str = 
                 "baselineInput": 100, "actualInput": 100, "eliminatedInput": 0, "compressedInput": 0,
                 "baselineOutput": 20, "actualOutput": 20, "eliminatedOutput": 0, "providerCachedInput": 40,
             },
-            "cost": {"baselineEstimate": actual + net, "actual": actual, "netSavings": net, "basis": basis},
+            "cost": {"baselineEstimate": actual + net, "actual": actual, "netSavingsRatio": net, "basis": basis},
         },
     }
 

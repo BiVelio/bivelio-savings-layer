@@ -75,12 +75,6 @@ export interface RevocationPollerOptions {
    * quien no la tenga, que es casi todo el mundo, se entera igual.
    */
   silenceWarnings?: boolean;
-  /**
-   * @deprecated Spanish name that leaked into the public options. Use
-   * {@link RevocationPollerOptions.silenceWarnings}. Honoured for one minor
-   * version so nobody gets their warnings back by surprise.
-   */
-  silenciarAvisos?: boolean;
 }
 
 /**
@@ -259,9 +253,9 @@ export class RevocationPoller {
     }
   }
 
-  /** El interruptor, aceptando todavía el nombre viejo. */
+  /** El interruptor (el alias español `silenciarAvisos` se fue en la 0.5). */
   private callado(): boolean {
-    return Boolean(this.opts.silenceWarnings ?? this.opts.silenciarAvisos);
+    return Boolean(this.opts.silenceWarnings);
   }
 
   /** Un aviso por causa y por proceso, respetando el interruptor. */

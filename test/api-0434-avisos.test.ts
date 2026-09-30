@@ -3,24 +3,23 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { InMemorySemanticCache } from "../src/cache/semantic.js";
 import { createSavingsLayer } from "../src/pipeline/create.js";
 import { MockProvider } from "../src/providers/mock.js";
-import { SILENCIAR_OBSOLETOS, reiniciarAvisos } from "../src/util/warn-once.js";
-import { SILENCIAR_OBSOLETOS as SILENCIAR_OBSOLETOS_CLI } from "../gateway/argumentos.js";
+import { reiniciarAvisos } from "../src/util/warn-once.js";
 
 /**
- * LA 0.4.34 AVISA EN LA CONSOLA DE LO QUE LA 0.5 QUITA DE LA CONFIGURACIÓN.
+ * LO QUE LA 0.5 SACÓ DE LA CONFIGURACIÓN, VISTO DESDE JAVASCRIPT.
  *
- * El `@deprecated` del `.d.ts` solo lo ve quien compila con tipos; quien pasa
- * la configuración desde JavaScript se enteraría al actualizar.
- * `licensePublicKey` NO HACE NADA en el paquete publicado —y sale del tipo en la
- * 0.5—, así que en ese build avisa una vez por proceso. Silenciable con
- * `silenceWarnings` (todo) o con `BVSALA_SILENCE_DEPRECATIONS=1` (solo lo
- * obsoleto), igual que el alias `semanticCache` de la 0.4.33 y los flags
- * españoles de la CLI.
+ * La 0.4.34 avisaba en consola de `licensePublicKey`, `licenseGate` y del alias
+ * `semanticCache` antes de quitarlos. En la 0.5 ya no están en
+ * `SavingsLayerConfig` (para TypeScript son un error de tipos, y lo vigila
+ * test/api-publica-congelada.test.ts contra el `.d.ts`), pero quien configura
+ * desde JavaScript todavía puede pasarlos: en el paquete publicado se ignoran y
+ * se dice UNA vez, callado con `silenceWarnings`. `BVSALA_SILENCE_DEPRECATIONS`
+ * ya no existe: no queda nada obsoleto que avisar, solo lo retirado.
  *
  * `devUnlicensed` no avisa: su nombre no puede viajar en el bundle publicado
- * (la verja de test/sala-limpia-del-tarball.test.ts), y aquí se fija que no lo
- * haga. Desde el código fuente (tests, banco, ejemplos) `licensePublicKey` SÍ
- * funciona y sigue como vía interna: ahí no se avisa.
+ * (la verja de test/sala-limpia-del-tarball.test.ts). Desde el código fuente
+ * (tests, banco, ejemplos) las tres siguen funcionando como vía interna
+ * (ConfiguracionDesdeElFuente): ahí no se avisa.
  */
 
 let avisos: string[];
@@ -40,16 +39,16 @@ afterEach(() => {
 // En el paquete publicado tsup compila `__BV_SALA_ALLOW_DEV_OPEN__` a `false`;
 // desde el fuente es una global sin definir.
 const publicado = () => vi.stubGlobal("__BV_SALA_ALLOW_DEV_OPEN__", false);
-const CLAVE = /`createSavingsLayer\(\{ licensePublicKey \}\)` is deprecated/;
+const CLAVE = /`createSavingsLayer\(\{ licensePublicKey \}\)` was removed in 0\.5 and is ignored/;
 const crear = (extra: Record<string, unknown>) => createSavingsLayer({ provider: new MockProvider(), ...extra } as never);
 
-describe("`licensePublicKey` en el paquete publicado", () => {
-  it("avisa UNA vez por proceso, aunque se creen varias capas, y dice qué hacer y cuándo se rompe", () => {
+describe("`licensePublicKey` en el paquete publicado (0.5)", () => {
+  it("se ignora y avisa UNA vez por proceso, aunque se creen varias capas", () => {
     publicado();
     for (let i = 0; i < 3; i++) crear({ licensePublicKey: "pem" });
     const a = avisos.filter((x) => CLAVE.test(x));
     expect(a).toHaveLength(1);
-    expect(a[0]).toMatch(/removed in 0\.5/);
+    expect(a[0]).toMatch(/Delete it from your config/);
   });
 
   it("⛔ callado con `silenceWarnings`", () => {
@@ -58,17 +57,9 @@ describe("`licensePublicKey` en el paquete publicado", () => {
     expect(avisos).toEqual([]);
   });
 
-  it("⛔ callado con BVSALA_SILENCE_DEPRECATIONS=1 (la misma variable que la CLI)", () => {
-    expect(SILENCIAR_OBSOLETOS).toBe(SILENCIAR_OBSOLETOS_CLI);
+  it("BVSALA_SILENCE_DEPRECATIONS ya no calla nada: no queda nada obsoleto, solo lo retirado", () => {
     publicado();
-    vi.stubEnv(SILENCIAR_OBSOLETOS, "1");
-    crear({ licensePublicKey: "pem" });
-    expect(avisos.filter((a) => CLAVE.test(a))).toEqual([]);
-  });
-
-  it("BVSALA_SILENCE_DEPRECATIONS=0 no calla nada", () => {
-    publicado();
-    vi.stubEnv(SILENCIAR_OBSOLETOS, "0");
+    vi.stubEnv("BVSALA_SILENCE_DEPRECATIONS", "1");
     crear({ licensePublicKey: "pem" });
     expect(avisos.filter((a) => CLAVE.test(a))).toHaveLength(1);
   });
@@ -91,16 +82,19 @@ describe("`licensePublicKey` en el paquete publicado", () => {
   });
 });
 
-describe("los demás avisos de la 0.5 obedecen la misma variable", () => {
-  it("el alias `semanticCache` (0.4.33) calla con BVSALA_SILENCE_DEPRECATIONS=1", () => {
-    vi.stubEnv(SILENCIAR_OBSOLETOS, "1");
+describe("los otros dos nombres retirados de la configuración", () => {
+  it("el alias `semanticCache` se ignora y avisa una vez, callado con `silenceWarnings`", () => {
     crear({ devUnlicensed: true, semanticCache: new InMemorySemanticCache({ embed: () => [1, 0] }) });
-    expect(avisos.filter((a) => a.includes("semanticCache"))).toEqual([]);
+    expect(avisos.filter((a) => a.includes("`createSavingsLayer({ semanticCache })` was removed in 0.5"))).toHaveLength(1);
+    reiniciarAvisos();
+    avisos = [];
+    crear({ devUnlicensed: true, silenceWarnings: true, semanticCache: new InMemorySemanticCache({ embed: () => [1, 0] }) });
+    expect(avisos).toEqual([]);
   });
 
-  it("el `licenseGate` ignorado dice que la opción sale en la 0.5", () => {
+  it("el `licenseGate` ignorado dice que la opción se retiró en la 0.5", () => {
     publicado();
     crear({ licenseGate: { isActive: () => true, isEntitled: () => true } });
-    expect(avisos.find((a) => a.includes("Ignoring the injected `licenseGate`"))).toMatch(/removed in 0\.5/);
+    expect(avisos.find((a) => a.includes("Ignoring the injected `licenseGate`"))).toMatch(/was removed in 0\.5/);
   });
 });

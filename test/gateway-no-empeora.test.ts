@@ -726,12 +726,12 @@ describe("2 · con cada palanca armada, solo cambia lo que esa palanca declara",
     expect(rebajarTtlDeCache({ ...conBusquedaWeb(), tools: [{ type: "bash_20250124", name: "bash" }] })?.herramientaDeServidor).toBe(false);
 
     const medido = costeMedido("claude-fable-5-1", USO_TTL_A_5M)!;
-    type Coste = { cost: { baselineEstimate: number; actual: number; netSavings: number } };
+    type Coste = { cost: { baselineEstimate: number; actual: number; netSavingsRatio: number } };
     const con = informeMedido("r1", "claude-fable-5-1", medido, undefined, null, { rebajadas: 1, yaEran5m: 0, herramientaDeServidor: true }) as unknown as Coste;
-    expect(con.cost.netSavings).toBe(0);
+    expect(con.cost.netSavingsRatio).toBe(0);
     expect(con.cost.baselineEstimate).toBe(con.cost.actual);
     const sin = informeMedido("r2", "claude-fable-5-1", medido, undefined, null, { rebajadas: 1, yaEran5m: 0, herramientaDeServidor: false }) as unknown as Coste;
-    expect(sin.cost.netSavings).toBeGreaterThan(0);
+    expect(sin.cost.netSavingsRatio).toBeGreaterThan(0);
   });
 });
 

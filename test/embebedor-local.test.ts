@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { vectorLocal, embebedorLocal, UMBRAL_LOCAL } from "../src/cache/embedder-local.js";
+import { vectorLocal, localEmbedding, LOCAL_EMBEDDING_THRESHOLD } from "../src/cache/embedder-local.js";
 import { cosine, keyTokensMatch, InMemorySemanticCache } from "../src/cache/semantic.js";
 
 /**
@@ -42,7 +42,7 @@ describe("embebedor local — propiedades del vector", () => {
   });
 
   it("es síncrono y de ancho fijo: no añade await al camino de la petición", () => {
-    const r = embebedorLocal("hola");
+    const r = localEmbedding("hola");
     expect(Array.isArray(r)).toBe(true);
     expect(r).toHaveLength(256);
   });
@@ -68,21 +68,21 @@ describe("embebedor local — propiedades del vector", () => {
 describe("embebedor local — el umbral separa lo que SÍ puede separar", () => {
   it("una entidad cambiada cae por debajo del umbral", () => {
     expect(sim("cuántos administradores activos hay", "cuántos usuarios activos hay")).toBeLessThan(
-      UMBRAL_LOCAL,
+      LOCAL_EMBEDDING_THRESHOLD,
     );
   });
 
   it("una paráfrasis con relleno se queda por encima", () => {
     expect(
       sim("resume este informe trimestral", "por favor resume este informe trimestral"),
-    ).toBeGreaterThanOrEqual(UMBRAL_LOCAL);
+    ).toBeGreaterThanOrEqual(LOCAL_EMBEDDING_THRESHOLD);
   });
 
   it("EL EMBEDDING SOLO NO BASTA: dos números distintos quedan por ENCIMA del umbral", () => {
     // 0,778 medido. Este es el fallo que un embedding no puede ver, y la razón de
     // que la verja determinista no sea opcional.
     const s = sim("dame el estado del pedido 4471", "dame el estado del pedido 9912");
-    expect(s).toBeGreaterThan(UMBRAL_LOCAL);
+    expect(s).toBeGreaterThan(LOCAL_EMBEDDING_THRESHOLD);
     // Y por eso la verja lo corta.
     expect(guard("dame el estado del pedido 4471", "dame el estado del pedido 9912")).toBe(false);
   });
@@ -135,7 +135,7 @@ describe("la caché semántica ya se puede construir sin traer nada", () => {
     // Sin esto la caché se construiría, no fallaría nada, y no acertaría jamás:
     // un vector léxico no llega al 0,9 que le corresponde a un sentence-transformer.
     expect(() => new InMemorySemanticCache()).not.toThrow();
-    expect(UMBRAL_LOCAL).toBeLessThan(0.9);
+    expect(LOCAL_EMBEDDING_THRESHOLD).toBeLessThan(0.9);
   });
 
   it("quien trae el suyo no ve ningún cambio", () => {

@@ -195,7 +195,7 @@ describe("el cable y `cost.*` no cambian con las palancas de precio", () => {
     // Y el dinero publicado es el mismo: ni el tier ni el modo explícito entran en `cost.*`.
     expect(con.report.cost.baselineEstimate).toBe(sin.report.cost.baselineEstimate);
     expect(con.report.cost.actual).toBe(sin.report.cost.actual);
-    expect(con.report.cost.netSavings).toBe(sin.report.cost.netSavings);
+    expect(con.report.cost.netSavingsRatio).toBe(sin.report.cost.netSavingsRatio);
     expect(con.report.cost.basis).toBe(sin.report.cost.basis);
     expect(cableCon["actualCost"]).toBe(cableSin["actualCost"]);
     expect(cableCon["netSavings"]).toBe(cableSin["netSavings"]);

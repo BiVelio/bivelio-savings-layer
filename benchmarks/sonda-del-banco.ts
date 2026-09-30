@@ -27,7 +27,10 @@ import { configDesdeEntorno, modoDe, resolverModelos } from "./modelos.js";
 import { conSalDeFrio, politicaEstable, familiaDeModelo, muestreoPareadoPara } from "./scenarios.js";
 import { endpointDeModelo, fetchConPlazo, proveedorDelBanco, sinSecretos } from "./transporte.js";
 import { writeReport } from "./report.js";
-import { registrarTokenizadorExacto, TokenizerRegistry } from "../src/index.js";
+import {
+  registerExactTokenizer,
+  TokenizerRegistry,
+} from "../src/index.js";
 import type { ProviderRequest, ProviderResponse } from "../src/providers/types.js";
 
 const env = process.env;
@@ -39,7 +42,7 @@ const presupuesto = Number(env["BVSALA_AB_BUDGET_USD"] ?? NaN);
 const TOPE_SALIDA = 16;
 
 const registro = new TokenizerRegistry();
-await registrarTokenizadorExacto(registro);
+await registerExactTokenizer(registro);
 const tokens = (texto: string, modelo: string): number => registro.count(texto, { model: modelo });
 
 /** Lo que devuelve el proveedor, sin nada que no se pueda enseñar. */

@@ -73,13 +73,13 @@ import {
   BV_SALA_VERSION,
   createSavingsLayer,
   OpenAICompatibleProvider,
-  PRECIOS_AL_DIA,
+  PRICES_AS_OF,
   type CostModel,
   type Provider,
   type SavingsRequest,
   type SavingsResult,
   TokenizerRegistry,
-  registrarTokenizadorExacto,
+  registerExactTokenizer,
 } from "../src/index.js";
 import type { ProviderRequest, ProviderResponse } from "../src/providers/types.js";
 import {
@@ -472,7 +472,7 @@ const modelId = (r: SavingsRequest, forzado: string | null): string => forzado ?
 // formato distinto. Con él registrado, `basis` puede ser "measured"; sin él, el
 // propio layer degrada a "estimated" y la tirada lo dirá.
 const registroTokens = new TokenizerRegistry();
-const tokenizadorExacto = await registrarTokenizadorExacto(registroTokens);
+const tokenizadorExacto = await registerExactTokenizer(registroTokens);
 if (!tokenizadorExacto) {
   console.warn(
     "[ab] gpt-tokenizer no está instalado: se usará el estimador heurístico y la " +
@@ -2149,7 +2149,7 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
     pricing: {
       note: PRICING_NOTE,
       table: tablaDePrecios,
-      catalogueDated: PRECIOS_AL_DIA,
+      catalogueDated: PRICES_AS_OF,
       listPriceKnown: precioDeListaConocido,
       ...(ilustrativos.length
         ? {

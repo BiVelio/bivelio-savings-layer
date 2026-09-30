@@ -1,75 +1,71 @@
 # Migrating from 0.4 to 0.5
 
-> **Status: draft.** 0.5 is not released. This page is the single place where
-> every breaking change of 0.5 is listed; nothing breaks in a 0.4.x release.
-> The list is checked by a test against the package's published types, so a
-> change that is not on this page cannot ship in 0.5, and everything on it that
-> 0.5 removes or renames is marked `@deprecated` in the 0.4.34 types.
+> **Status: final for 0.5.0.** This page is the single place where every
+> breaking change of 0.5 is listed. A test checks it against the package's
+> published types: every name 0.5 removes or renames is on this page, and none
+> of them can come back into the package. Everything on it was announced with
+> `@deprecated` and run-time notices in 0.4.34.
 
-0.5 freezes the public API of `@bivelio/savings-layer`. After 0.5, anything
-listed as stable changes only in a major release. To get there, 0.5 renames a
-few things, removes exports that were never meant to be public, and changes two
-defaults.
+0.5 freezes the public API of `@bivelio/savings-layer`. From 0.5, everything
+the package exports is stable and changes only in a major release. To get
+there, 0.5 renames a few things, removes exports that were never meant to be
+public, normalises `finishReason`, and keeps one default that changed in 0.4.33.
 
 ## Summary
 
-| # | What changes | Kind | Deprecated in 0.4.x? |
+| # | What changes | Kind | Announced in |
 |---|---|---|---|
-| 1 | `CATALOGO`, `precioDeLista`, `PRECIOS_AL_DIA`, `embebedorLocal`, `UMBRAL_LOCAL` get English names | rename | yes, from 0.4.33 (the new names are already there) |
-| 2 | `createSavingsLayer({ semanticCache })` becomes `semanticCacheStore` | rename | yes, from 0.4.33 (`semanticCacheStore` exists; the old key warns once) |
-| 3 | `report.cost.netSavings` becomes `netSavingsRatio`, plus a new `netSavingsUsd` | rename | yes, from 0.4.33 (both new fields are already in the report) |
-| 4 | `result.finishReason` (and `qualityLedger.truncation.finishReason`) becomes a closed, normalised set; the provider's own value moves to `finishReasonDetail` | changed value | announced; `finishReasonDetail` exists from 0.4.33 (on `truncation` from 0.4.34) |
-| 5 | Tool selection on a typed catalogue no longer caps at 8 tools by default (`maxTools`) | changed default | already the behaviour since 0.4.33 |
-| 6 | `licenseGate`, `devUnlicensed` and `licensePublicKey` leave `SavingsLayerConfig` | removal | yes, from 0.4.33; from 0.4.34 `licensePublicKey` also warns once at run time (`licenseGate` already did) |
-| 7 | Internal helpers and licensing internals leave the package root | removal | yes, every one from 0.4.34 |
-| 8 | Already-deprecated aliases are removed | removal | yes |
-| 9 | CLI: Spanish flag spellings and two environment variables are renamed | rename | yes, from 0.4.33 (the old spellings warn once) |
+| 1 | `CATALOGO`, `precioDeLista`, `PRECIOS_AL_DIA`, `embebedorLocal`, `UMBRAL_LOCAL` are gone; use the English names | rename | 0.4.33 (the new names were already there) |
+| 2 | `createSavingsLayer({ semanticCache })` is gone; use `semanticCacheStore` | rename | 0.4.33 (the old key warned once) |
+| 3 | `report.cost.netSavings` is gone; use `netSavingsRatio` (same value) or `netSavingsUsd` | rename | 0.4.33 (both new fields were already in the report) |
+| 4 | `result.finishReason` (and `qualityLedger.truncation.finishReason`) is one of five values; the provider's own value is in `finishReasonDetail` | changed value | 0.4.33 (`finishReasonDetail`; on `truncation` from 0.4.34) |
+| 5 | Tool selection keeps the whole catalogue unless you set `maxTools` | changed default | already the behaviour since 0.4.33 |
+| 6 | `licenseGate`, `devUnlicensed` and `licensePublicKey` are no longer in `SavingsLayerConfig` | removal | 0.4.33; run-time notices in 0.4.34 |
+| 7 | 66 internal helpers and licensing internals are no longer exported from the package root | removal | every one `@deprecated` in 0.4.34 |
+| 8 | Already-deprecated aliases are gone | removal | 0.4.x |
+| 9 | CLI: the Spanish flag spellings and two environment variables are gone and now fail with an error | rename | 0.4.33 (the old spellings warned once) |
+
+In numbers: 73 exports leave the package root (68 removed, 5 renamed), and 7
+fields leave the public types (5 removed, 2 renamed).
 
 ## Upgrade to 0.4.34 first
 
-0.4.34 changes nothing you rely on. It is the release that **tells you**
-everything 0.5 breaks, before you get there:
+0.4.34 changes nothing you rely on, and it tells you everything 0.5 breaks
+before you get there:
 
 - **The compiler.** Every export and option that 0.5 removes or renames is
-  marked `@deprecated` in the published types, with the reason and what to use
-  instead (or "no replacement" for internals). Your editor strikes each use
-  through; `@typescript-eslint/no-deprecated` lists them in CI.
-- **The console.** What the types cannot catch warns once per process at run
-  time: `semanticCache`, `licensePublicKey` and `licenseGate` in
+  marked `@deprecated` in the 0.4.34 types, with what to use instead. Your
+  editor strikes each use through; `@typescript-eslint/no-deprecated`
+  (typescript-eslint 8+) lists them in CI.
+- **The console.** What the types cannot catch warns once per process:
+  `semanticCache`, `licensePublicKey` and `licenseGate` in
   `createSavingsLayer`, and the Spanish CLI flags and variables.
-  (`devUnlicensed` is flagged by the types only.) Silence the
-  deprecation notices with `BVSALA_SILENCE_DEPRECATIONS=1`, or every warning
-  with `silenceWarnings: true`.
 
-When your build shows no deprecation and your logs no notice, the only change
-left for 0.5 is the value of `finishReason` ([section 4](#4-finishreason-is-normalised-the-providers-value-moves-to-finishreasondetail)),
+When your build on 0.4.34 shows no deprecation and your logs show no notice,
+the only change left is the value of `finishReason`
+([section 4](#4-finishreason-is-normalised-the-providers-value-moves-to-finishreasondetail)),
 which no tool can flag for you.
 
 ## How to find what affects you
 
-1. **Upgrade to 0.4.34 (or later 0.4.x) first** and build. Everything that
-   0.5 removes or renames carries a `@deprecated` tag, so your editor strikes
-   it through.
-   To list them in CI, turn on the `@typescript-eslint/no-deprecated` rule
-   (typescript-eslint 8+) for files that import `@bivelio/savings-layer`.
-2. **Search your code** for the names in this page:
+1. **Build against 0.4.34** and fix every deprecation (see above).
+2. **Search your code** for the names on this page:
 
    ```sh
-   grep -rnE "CATALOGO|precioDeLista|PRECIOS_AL_DIA|embebedorLocal|UMBRAL_LOCAL|netSavings|finishReason|semanticCache:|licenseGate|devUnlicensed|licensePublicKey|maxTools" src/
+   grep -rnE "CATALOGO|precioDeLista|PRECIOS_AL_DIA|embebedorLocal|UMBRAL_LOCAL|netSavings\b|estimatedTierSaving|finishReason|semanticCache:|licenseGate|devUnlicensed|licensePublicKey|maxTools|silenciarAvisos|--puerto|--proyecto|--forzar|BVSALA_GATEWAY_ESFUERZO|BVSALA_GATEWAY_MODELO_HERMANO" src/
    ```
 
 3. **Anything else you import from the package root** is checked against the
-   table in [section 7](#7-internal-exports-leave-the-package-root). If you use
-   one of those names, tell us at support@bivelio.com before 0.5 ships: an
-   export with a real user can be kept.
+   list in [section 7](#7-internal-exports-leave-the-package-root). On 0.5, a
+   missing export is a TypeScript error (`has no exported member`).
 
 ---
 
 ## 1. English names for the price catalogue and the local embedder
 
 The Spanish names were exported by accident of history. The English names
-exist from 0.4.33 and are the same objects; the Spanish ones are removed in
-0.5.
+exist since 0.4.33 and are the same objects; 0.5 removes the Spanish ones, with
+no alias.
 
 | 0.4 | 0.5 |
 |---|---|
@@ -91,8 +87,11 @@ const price = listPrice("gpt-4o-mini");
 const cache = new InMemorySemanticCache({ embed: localEmbedding, similarityThreshold: LOCAL_EMBEDDING_THRESHOLD });
 ```
 
-**Detect:** your editor marks the old names as deprecated; the `grep` above
-finds them.
+The same goes for the exact-tokenizer helpers: see [section 8](#8-deprecated-aliases-are-removed).
+
+**Detect:** on 0.4.34 your editor marks the old names as deprecated; on 0.5
+TypeScript reports `has no exported member 'CATALOGO'` (and so on). The `grep`
+above finds them.
 
 ## 2. `semanticCache` in the constructor becomes `semanticCacheStore`
 
@@ -120,10 +119,11 @@ const layer = createSavingsLayer({
 
 `savings: { semanticCache: … }` on a request does **not** change.
 
-**Detect:** from 0.4.33 your editor strikes `semanticCache` through and the
-layer warns once when it receives it (when both are given,
-`semanticCacheStore` wins). In 0.5 TypeScript reports it as an unknown property
-of `SavingsLayerConfig`.
+**Detect:** in 0.5 TypeScript reports `semanticCache` as an unknown property
+of `SavingsLayerConfig`. From JavaScript, the layer **ignores** the old key (it
+is no longer a store) and warns once:
+`` `createSavingsLayer({ semanticCache })` was removed in 0.5 and is ignored ``
+(silenced by `silenceWarnings`). In 0.4.x the old key still worked.
 
 ## 3. `report.cost.netSavings` becomes `netSavingsRatio`, and `netSavingsUsd` is new
 
@@ -142,7 +142,7 @@ the amount in dollars.
 total += result.report.cost.netSavings;               // wrong: adds ratios
 const usd = result.report.cost.baselineEstimate - result.report.cost.actual;
 
-// After (0.4.33+ and 0.5)
+// After (0.4.33+ and 0.5): `cost.netSavings` no longer exists
 totalUsd += result.report.cost.netSavingsUsd;
 const pct = result.report.cost.netSavingsRatio * 100;
 ```
@@ -152,49 +152,72 @@ stay apart, as today. The span attributes written by the OpenTelemetry and
 Datadog exporters already call the ratio `net_savings_ratio`; their names do not
 change.
 
-**Detect:** from 0.4.33 `cost.netSavings` is marked deprecated and the two new
-fields are already there, so you can switch before 0.5; in 0.5 TypeScript flags
-every read of `cost.netSavings`. If you store
-reports as JSON, update the consumers of that column too.
+**Detect:** in 0.5 TypeScript flags every read of `cost.netSavings`; from
+JavaScript it reads `undefined`. If you store reports as JSON, update the
+consumers of that column too. The usage record the SDK sends to BiVelio for
+metering is a different object and keeps its own field names.
 
 ## 4. `finishReason` is normalised; the provider's value moves to `finishReasonDetail`
 
-The adapters already translate the common reasons (Anthropic's `end_turn`
-becomes `stop`, `max_tokens` becomes `length`, `tool_use` becomes
-`tool_calls`), but anything else passes through as the provider wrote it:
+Up to 0.4, the adapters translated the common reasons (Anthropic's `end_turn`
+became `stop`, `max_tokens` became `length`, `tool_use` became `tool_calls`),
+but anything else passed through as the provider wrote it:
 `content_filter: OTHER` from Gemini's OpenAI-compatible endpoint,
-`stop_sequence`, `pause_turn`, and so on. In 0.5 `result.finishReason` is one of
-a closed set, the same for every provider:
+`stop_sequence`, `pause_turn`, `MALFORMED_FUNCTION_CALL`, and so on. In 0.5
+`result.finishReason` is one of a closed set, the same for every provider and
+every mode (JSON and stream):
 
-`"stop" | "length" | "tool_calls" | "content_filter" | "other"`
+```ts
+finishReason?: "stop" | "length" | "tool_calls" | "content_filter" | "other";
+```
 
-The provider's own value (the Gemini block reason, Anthropic's refusal
-category, an unmapped stop reason) is in `result.finishReasonDetail`, present
-since 0.4.33.
+The provider's own value, when it adds something, is in
+`result.finishReasonDetail` (there since 0.4.33): the refusal category, the
+Gemini block reason, or the literal stop reason. The quality ledger carries the
+same pair: `report.qualityLedger.truncation.finishReason` is the same value as
+`result.finishReason`, and `truncation.finishReasonDetail` holds the provider's
+value.
 
-The quality ledger carries the same pair: `report.qualityLedger.truncation.finishReason`
-is the same value as `result.finishReason` and follows the same change in 0.5,
-and `report.qualityLedger.truncation.finishReasonDetail` (from 0.4.34) holds the
-provider's own value.
+| The provider says | `finishReason` (0.5) | `finishReasonDetail` |
+|---|---|---|
+| `stop`, `end_turn`, `STOP` | `stop` | — |
+| `stop_sequence`, `eos`, `eos_token` | `stop` | the literal |
+| `length`, `max_tokens`, `MAX_TOKENS` | `length` | — |
+| `model_context_window_exceeded` | `length` | the literal |
+| `tool_calls`, `tool_use` (and Gemini `STOP` with tool calls) | `tool_calls` | — |
+| `function_call` (legacy OpenAI) | `tool_calls` | the literal |
+| `content_filter` | `content_filter` | — |
+| `content_filter: OTHER` (and any `content_filter: X`) | `content_filter` | `OTHER` (the `X`) |
+| Anthropic `refusal` | `content_filter` | the refusal category, or `refusal` |
+| Gemini `SAFETY`, `PROHIBITED_CONTENT`, `RECITATION`, … and `promptFeedback.blockReason` | `content_filter` | the Gemini value |
+| anything else (`pause_turn`, `MALFORMED_FUNCTION_CALL`, an unknown value) | `other` | the literal |
 
 ```ts
 // Before (0.4)
 if (result.finishReason?.startsWith("content_filter")) { … }
+if (result.finishReason === "stop_sequence") { … }
 
 // After (0.5)
 if (result.finishReason === "content_filter") {
   log(result.finishReasonDetail); // e.g. "OTHER", "SAFETY", "cyber"
 }
+if (result.finishReason === "stop" && result.finishReasonDetail === "stop_sequence") { … }
 ```
 
-**Detect:** search for `finishReason` comparisons against provider-specific
-strings (`content_filter: …`, `stop_sequence`, `pause_turn`) or with
-`startsWith`, in `result` and in `qualityLedger.truncation`. The type stays
-`string` until 0.5, so the compiler cannot flag them.
+A `finishReason` of `"length"` still means the answer was cut and is never
+cached. The framework adapters (`/anthropic-sdk` and the rest) keep handing
+your framework the provider's own stop reason; only the layer's result and
+report are normalised.
+
+**Detect:** search for `finishReason` compared against provider-specific
+strings (`content_filter: …`, `stop_sequence`, `end_turn`, `pause_turn`, Gemini
+upper-case values) or with `startsWith`, in `result` and in
+`qualityLedger.truncation`. In 0.5 the type is the union above, so TypeScript
+flags a comparison with any other literal.
 
 ## 5. Tool selection keeps the whole catalogue by default
 
-**This is already the behaviour since 0.4.33**, and 0.5 keeps it. Without
+**This is already the behaviour since 0.4.33**, and 0.5 freezes it. Without
 `maxTools`, the tool selector no longer prunes by relevance: every read tool
 travels, and write or destructive tools are still withheld from requests that
 are not actions. Up to 0.4.32 a *typed* catalogue (tools that declare
@@ -216,14 +239,13 @@ never set `maxTools`, and you have already seen it on 0.4.33.
 
 ## 6. Licensing options that do nothing in the published package are removed
 
-`licenseGate`, `devUnlicensed` and `licensePublicKey` only work when the SDK is
-built from source. In the package you install from npm they are ignored
-(`licenseGate` already prints a warning saying so). 0.5 removes them from
-`SavingsLayerConfig`.
+`licenseGate`, `devUnlicensed` and `licensePublicKey` only ever worked when the
+SDK was built from source. In the package you install from npm they were
+ignored. 0.5 removes them from `SavingsLayerConfig`.
 
 ```ts
 // Before (0.4): accepted, but ignored by the published package
-createSavingsLayer({ provider, licenseGate: myGate, devUnlicensed: true });
+createSavingsLayer({ provider, licenseGate: myGate, devUnlicensed: true, licensePublicKey: pem });
 
 // After (0.5)
 createSavingsLayer({
@@ -233,19 +255,19 @@ createSavingsLayer({
 });
 ```
 
-**Detect:** deprecated from 0.4.33 (strike-through in your editor). From
-0.4.34 the published package also warns once at run time when it receives
-`licensePublicKey` (it already did for `licenseGate`), silenced by
-`BVSALA_SILENCE_DEPRECATIONS=1` or `silenceWarnings`. `devUnlicensed` is
-flagged by the types only: search for it (the `grep` above does). A type error
-in 0.5.
+**Detect:** in 0.5 each of the three is a type error (unknown property of
+`SavingsLayerConfig`). From JavaScript, the published package still ignores
+them: `licenseGate` and `licensePublicKey` print a one-time notice that says
+the option was removed in 0.5 (silenced by `silenceWarnings`), and
+`devUnlicensed` is ignored silently. The `grep` above finds all three.
 
 ## 7. Internal exports leave the package root
 
 These names are building blocks of the pipeline or of license verification.
 They have no role in the configuration and none of our documentation uses them.
 Exporting them froze their signatures for no one. In 0.5 they are no longer
-exported. If you rely on one, write to support@bivelio.com.
+exported, and the package root is a closed list: nothing reaches it by
+accident any more. If you relied on one, write to support@bivelio.com.
 
 **Pipeline internals:** `buildExactKey`, `buildInflightKey`, `canonicalize`,
 `CanonicalRequest`, `cosine`, `words`, `normalizeText`, `numericTokens`,
@@ -276,10 +298,30 @@ through `licenseKey` and `serviceAccountKey`): `gateFromKey`,
 
 `LicenseError`, `LicenseGate` (the type) and `LicenseKeyset` stay.
 
-**Detect:** from 0.4.34 every name above is marked `@deprecated` in the
-published types, with its replacement where there is one (for example
-`crypto.randomUUID()` for `randomId`, `report.traces` for `TraceCollector`) and
-"no replacement" otherwise. In 0.5 TypeScript reports a missing export.
+Where there is a replacement:
+
+| Removed | Use instead |
+|---|---|
+| `randomId()` | `crypto.randomUUID()` |
+| `sha256(text)` | `createHash("sha256").update(text).digest("hex")` from `node:crypto` |
+| `TraceCollector` | `report.traces` on every result |
+| `SavingsLedger` | the four ledgers in the `SavingsReport` of each call |
+| `evalArithmetic` | `arithmeticResolver` / `createDefaultResolvers()` |
+| `quitarPrefijoDeProveedor` | the adapter option `stripProviderPrefix` |
+| `vectorLocal` | `localEmbedding` |
+| `DEFAULT_MAX_STALENESS_SECONDS` | `licenseRevocation.maxStalenessSeconds` (default 72 h) |
+| the licensing internals | `licenseKey` and `serviceAccountKey` |
+
+```ts
+// Before (0.4)
+import { randomId, sha256 } from "@bivelio/savings-layer";
+
+// After (0.5)
+import { createHash, randomUUID } from "node:crypto";
+```
+
+**Detect:** on 0.4.34 every name above is marked `@deprecated`; on 0.5
+TypeScript reports `has no exported member`.
 
 ## 8. Deprecated aliases are removed
 
@@ -287,20 +329,54 @@ published types, with its replacement where there is one (for example
 |---|---|
 | `MODELOS_POR_CODIFICACION` | `MODELS_BY_ENCODING` |
 | `registrarTokenizadorExacto` | `registerExactTokenizer` |
-| `report.deferred.estimatedTierSaving` | `report.deferred.tierSaving.amount` |
-| `RevocationPollerOptions.silenciarAvisos` | (the whole type leaves the root; see section 7) |
+| `report.deferred.estimatedTierSaving` | `report.deferred.tierSaving.amount` (same value) |
+| `RevocationPollerOptions.silenciarAvisos` | `silenceWarnings` (the whole type leaves the root; see section 7) |
+
+```ts
+// Before (0.4)
+await registrarTokenizadorExacto(registry);
+const saving = report.deferred?.estimatedTierSaving;
+
+// After (0.5)
+await registerExactTokenizer(registry);
+const saving = report.deferred?.tierSaving?.amount;
+```
 
 ## 9. CLI (`bvsala`)
 
 | 0.4 | 0.5 |
 |---|---|
-| `--puerto`, `--proyecto`, `--forzar` | `--port`, `--project`, `--force` (the English spellings already work) |
+| `--puerto`, `--proyecto`, `--forzar` | `--port`, `--project`, `--force` |
 | `BVSALA_GATEWAY_ESFUERZO` | `BVSALA_GATEWAY_EFFORT` |
 | `BVSALA_GATEWAY_MODELO_HERMANO` | `BVSALA_GATEWAY_SIBLING_MODEL` |
 
-The English spellings work since 0.4.33, and the Spanish ones print a
-one-time deprecation notice on stderr (`BVSALA_SILENCE_DEPRECATIONS=1`
-silences it); 0.5 removes the Spanish ones.
+The English spellings work since 0.4.33. In 0.5 the Spanish ones are not
+aliases any more: using one is an error that names the new spelling, and
+`bvsala` exits with status 1 before doing anything else.
+
+```sh
+# Before (0.4)
+bvsala gateway --puerto 8787
+BVSALA_GATEWAY_ESFUERZO=low bvsala claude
+
+# After (0.5)
+bvsala gateway --port 8787
+BVSALA_GATEWAY_EFFORT=low bvsala claude
+```
+
+```text
+$ bvsala gateway --puerto 8787
+[bvsala] --puerto was removed in 0.5: use --port.
+$ BVSALA_GATEWAY_ESFUERZO=low bvsala gateway
+[bvsala] BVSALA_GATEWAY_ESFUERZO was removed in 0.5 and is no longer read: rename it to BVSALA_GATEWAY_EFFORT (same values), or unset it.
+```
+
+The environment variables are checked only by the commands that read them
+(`gateway` and the terminal wrappers such as `claude` or `codex`); `doctor`,
+`init` and `skill` still run with an old variable set in your shell.
+Arguments after a wrapped terminal (`bvsala claude …`) belong to that terminal
+and are passed through untouched. `BVSALA_SILENCE_DEPRECATIONS` is no longer
+read: there is nothing deprecated left to silence.
 
 Commands (`gateway`, `claude`, `codex`, `goose`, `qwen`, `opencode`, `kilo`,
 `copilot`, `aider`, `doctor`, `skill`, `init`) and the other environment

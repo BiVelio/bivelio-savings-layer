@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { sha256 } from "../src/canonicalization/canonicalize.js";
-import { randomId } from "../src/index.js";
+import { randomId } from "../src/util/index.js";
 
 describe("sha256 (browser-safe, pure JS)", () => {
   it("matches known NIST/RFC vectors", () => {

@@ -13,10 +13,9 @@ import type {
 import {
   esBloqueDeRazonamiento,
   fusionarUso,
-  motivoDeLaNegativa,
+  paradaDeMensajes,
   negativaNoCobrada,
   tierServidoDe,
-  traducirParada,
   usoDeMensajes,
   type UsoAnthropic,
 } from "../providers/anthropic-uso.js";
@@ -380,10 +379,7 @@ class RespuestaDeMensajes {
     return {
       text: this.texto,
       ...(toolCalls.length > 0 ? { toolCalls } : {}),
-      ...(this.parada ? { finishReason: traducirParada(this.parada) } : {}),
-      ...(motivoDeLaNegativa(this.parada, this.detallesDeParada) !== undefined
-        ? { finishReasonDetail: motivoDeLaNegativa(this.parada, this.detallesDeParada)! }
-        : {}),
+      ...paradaDeMensajes(this.parada, this.detallesDeParada),
       ...(this.vioDelta &&
       negativaNoCobrada({
         stopReason: this.parada,

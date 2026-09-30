@@ -487,7 +487,6 @@ export class SavingsLedger {
   estimateCost(model: CostModel): {
     baselineEstimate: number;
     actual: number;
-    netSavings: number;
     netSavingsRatio: number;
     netSavingsUsd: number;
     basis: CostBasis;
@@ -672,10 +671,9 @@ export class SavingsLedger {
     const netSavings =
       baselineEstimate === 0 ? 0 : 1 - actual / baselineEstimate;
 
-    // `netSavings` es una RAZÓN y los arneses la sumaban como dólares: desde
-    // 0.4.33 van las dos cifras con nombre propio (decisión del dueño,
-    // 2026-09-29). `netSavingsRatio` es el MISMO valor que `netSavings`, y
-    // `netSavingsUsd` la resta de los dos importes YA redondeados, para que
+    // La razón se llamaba `netSavings` y los arneses la sumaban como dólares:
+    // desde 0.4.33 van las dos cifras con nombre propio (decisión del dueño,
+    // 2026-09-29) y la 0.5 retira el nombre viejo. `netSavingsUsd` es la resta de los dos importes YA redondeados, para que
     // cuadre exactamente con `baselineEstimate − actual` del propio informe.
     const baselinePublicado = roundUsd(baselineEstimate);
     const actualPublicado = roundUsd(actual);
@@ -683,7 +681,6 @@ export class SavingsLedger {
     return {
       baselineEstimate: baselinePublicado,
       actual: actualPublicado,
-      netSavings: razon,
       netSavingsRatio: razon,
       netSavingsUsd: roundUsd(baselinePublicado - actualPublicado),
       basis,

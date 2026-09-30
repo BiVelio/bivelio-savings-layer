@@ -34,7 +34,7 @@ describe("SavingsLedger.callsWithoutUsage", () => {
     l.callsWithoutUsage = 1;
     const c = l.estimateCost({ inputPer1k: 0.001, outputPer1k: 0.002 });
     expect(c.basis).toBe("unmeasured");
-    expect(c.netSavings).toBeLessThanOrEqual(0);
+    expect(c.netSavingsRatio).toBeLessThanOrEqual(0);
     expect(l.baselineInput).toBe(0);
   });
 
@@ -48,7 +48,7 @@ describe("SavingsLedger.callsWithoutUsage", () => {
     l.callsWithoutUsage = 2;
     const c = l.estimateCost({ inputPer1k: 0.001, outputPer1k: 0.002 });
     expect(c.basis).toBe("unmeasured");
-    expect(c.netSavings).toBeLessThanOrEqual(0);
+    expect(c.netSavingsRatio).toBeLessThanOrEqual(0);
   });
 
   it("no toca las llamadas evitadas (su baseline es el estimado de siempre)", () => {
@@ -86,7 +86,7 @@ describe("a través de la capa", () => {
     expect(provider.llamadas).toBe(2);
     expect(r.report.calls.actualLlm).toBe(2);
     expect(r.report.cost.basis).toBe("unmeasured");
-    expect(r.report.cost.netSavings).toBeLessThanOrEqual(0);
+    expect(r.report.cost.netSavingsRatio).toBeLessThanOrEqual(0);
   });
 
   it("OpenAICompatibleProvider.generate() con usage parcial → unmeasured (antes salía measured)", async () => {
@@ -105,7 +105,7 @@ describe("a través de la capa", () => {
       messages: [{ role: "user", content: "hola" }],
     });
     expect(r.report.cost.basis).toBe("unmeasured");
-    expect(r.report.cost.netSavings).toBeLessThanOrEqual(0);
+    expect(r.report.cost.netSavingsRatio).toBeLessThanOrEqual(0);
   });
 
   it("regresión: un proveedor sin campo `complete` sigue saliendo measured cuando no se quita nada", async () => {
@@ -116,7 +116,7 @@ describe("a través de la capa", () => {
       messages: [{ role: "user", content: "en qué año se firmó el tratado de Utrecht" }],
     });
     expect(r.report.cost.basis).toBe("measured");
-    expect(r.report.cost.netSavings).toBe(0);
+    expect(r.report.cost.netSavingsRatio).toBe(0);
   });
 
   it("el camino de fail-open tampoco llama medido a un contador que falta", async () => {

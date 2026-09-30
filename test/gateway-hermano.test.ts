@@ -147,7 +147,7 @@ describe("contabilidad — baseline al solicitado, actual al servido, basis meas
   const N = 200_000;
   const lecturaSolicitado = precioDeLista(SOLICITADO)!.cachedInputPer1k!;
   const lecturaServido = precioDeLista(SERVIDO)!.cachedInputPer1k!;
-  type Coste = { cost: { baselineEstimate: number; actual: number; netSavings: number; basis: string } };
+  type Coste = { cost: { baselineEstimate: number; actual: number; netSavingsRatio: number; basis: string } };
 
   it("con solo lectura de caché: ahorro = N/1000 × (lectura solicitado − lectura servido), del catálogo", () => {
     const medido = costeMedido(SERVIDO, { cache_read_input_tokens: N })!;
@@ -158,9 +158,9 @@ describe("contabilidad — baseline al solicitado, actual al servido, basis meas
     expect(inf.cost.basis).toBe("measured");
     expect(inf.cost.actual).toBeCloseTo(medido.costeUsd, 12);
     expect(inf.cost.baselineEstimate - inf.cost.actual).toBeCloseTo(esperado, 12);
-    expect(inf.cost.netSavings).toBeCloseTo(esperado / inf.cost.baselineEstimate, 12);
-    expect(inf.cost.netSavings).toBeGreaterThan(-100);
-    expect(inf.cost.netSavings).toBeLessThanOrEqual(1);
+    expect(inf.cost.netSavingsRatio).toBeCloseTo(esperado / inf.cost.baselineEstimate, 12);
+    expect(inf.cost.netSavingsRatio).toBeGreaterThan(-100);
+    expect(inf.cost.netSavingsRatio).toBeLessThanOrEqual(1);
     // Con la aritmética del catálogo de hoy es exactamente 0,00075/1K: lo
     // comprobamos por la vía del catálogo, no tecleando la cifra.
     expect(inf.cost.baselineEstimate).toBeCloseTo(costeDeTokens(precioDeLista(SOLICITADO)!, medido.tokens, SOLICITADO), 12);
@@ -179,7 +179,7 @@ describe("contabilidad — baseline al solicitado, actual al servido, basis meas
       servido: SERVIDO,
     }) as unknown as Coste;
     expect(inf.cost.baselineEstimate).toBe(inf.cost.actual);
-    expect(inf.cost.netSavings).toBe(0);
+    expect(inf.cost.netSavingsRatio).toBe(0);
   });
 
   it("tráfico de SUSCRIPCIÓN con C aplicada: baseline == actual (sin factura por tokens no se acredita)", () => {
@@ -188,7 +188,7 @@ describe("contabilidad — baseline al solicitado, actual al servido, basis meas
     expect(ahorroDeHermano(cambio, medido)).toBeGreaterThan(0); // habría ahorro que acreditar…
     const inf = informeMedido("r", SERVIDO, medido, undefined, null, null, cambio, true) as unknown as Coste;
     expect(inf.cost.baselineEstimate).toBe(inf.cost.actual); // …y no se acredita
-    expect(inf.cost.netSavings).toBe(0);
+    expect(inf.cost.netSavingsRatio).toBe(0);
     expect(inf.cost.basis).toBe("measured");
   });
 
@@ -197,7 +197,7 @@ describe("contabilidad — baseline al solicitado, actual al servido, basis meas
     const inf = informeMedido("req-c3", SOLICITADO, medido) as unknown as Coste;
     expect(inf.cost.basis).toBe("measured");
     expect(inf.cost.baselineEstimate).toBe(inf.cost.actual);
-    expect(inf.cost.netSavings).toBe(0);
+    expect(inf.cost.netSavingsRatio).toBe(0);
   });
 
   it("composición A+C: baseline = actual + sobrecoste evitado + ahorro del hermano", () => {

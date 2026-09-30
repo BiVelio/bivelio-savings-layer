@@ -2,7 +2,9 @@ import { describe, it, expect } from "vitest";
 
 import { createSavingsLayer } from "../src/pipeline/create.js";
 import { TokenizerRegistry } from "../src/tokenizer/registry.js";
-import { registrarTokenizadorExacto } from "../src/index.js";
+import {
+  registerExactTokenizer,
+} from "../src/index.js";
 import { tokensDeLaMayorRespuesta } from "../src/constraints/techo-de-salida.js";
 import { scenarios } from "../benchmarks/scenarios.js";
 import {
@@ -47,7 +49,7 @@ import type { Provider, ProviderRequest, ProviderResponse } from "../src/provide
  */
 
 const registro = new TokenizerRegistry();
-const tokenizadorListo = registrarTokenizadorExacto(registro);
+const tokenizadorListo = registerExactTokenizer(registro);
 
 const CONTRATO_DEL_HILO = scenarios.find(
   (s) => s.request.response?.contractId === "demo-resumen-hilo:v1",

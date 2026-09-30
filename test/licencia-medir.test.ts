@@ -100,7 +100,7 @@ describe("licencia Medir · ni un byte distinto, nada de caché", () => {
     for (const r of [r1, r2, r3]) {
       expect(r.report.cache.result).toBe("miss");
       expect(r.report.calls.avoidedLlm).toBe(0);
-      expect(r.report.cost.netSavings).toBe(0);
+      expect(r.report.cost.netSavingsRatio).toBe(0);
       expect(r.report.cost.baselineEstimate).toBe(r.report.cost.actual);
       expect(r.report.measure?.applied).toBe(false);
       expect(r.text).toBe("No, es rutinaria.");
@@ -204,7 +204,7 @@ describe("licencia Medir · informa lo que habría ahorrado", () => {
     expect(r2.report.cost.actual).toBeGreaterThan(0);
     expect(r2.report.measure?.wouldHaveSaved.usd).toBeCloseTo(r2.report.cost.actual, 10);
     // El hipotético no se cuela en el coste medido.
-    expect(r2.report.cost.netSavings).toBe(0);
+    expect(r2.report.cost.netSavingsRatio).toBe(0);
     expect(r2.report.measure?.notSimulated).toContain("semantic_cache");
     expect(r2.report.measure?.upgradeUrl).toBe("https://savings.bivelio.com/dashboard/account");
     capa.close();

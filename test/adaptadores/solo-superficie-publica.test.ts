@@ -51,6 +51,13 @@ const PERMITIDOS_RELATIVOS = new Set([
   // Sin imports: dos tablas y dos expresiones regulares. El adaptador del SDK
   // solo la usa para AVISAR de un cuerpo que el API va a rechazar.
   "src/providers/anthropic-compat.ts",
+  // El SHA-256 puro (sin imports) con que el adaptador resume la petición. Hasta
+  // la 0.4.34 llegaba por la raíz (`sha256`); la 0.5 lo saca de la API pública.
+  "src/util/hash.ts",
+  // El motivo de parada cerrado de la 0.5 (`stop | length | tool_calls |
+  // content_filter | other`): puro y sin imports, el MISMO para proveedores,
+  // pipeline y adaptador, para que el informe no dependa de quién lo escribió.
+  "src/providers/motivo-de-parada.ts",
 ]);
 
 describe("los adaptadores solo usan la superficie pública", () => {

@@ -17,7 +17,7 @@ import { costeMedido, informeMedido } from "../gateway/medidor.js";
  */
 
 type Informe = {
-  cost: { baselineEstimate: number; actual: number; netSavings: number; basis: string; eliminatedInputFloorCost?: number };
+  cost: { baselineEstimate: number; actual: number; netSavingsRatio: number; basis: string; eliminatedInputFloorCost?: number };
 };
 
 const rebaja = { rebajadas: 2, yaEran5m: 0, herramientaDeServidor: false };
@@ -32,7 +32,7 @@ describe("upstream no oficial: se mide el coste y no se acredita dinero", () => 
     expect(proxy.cost.basis).toBe("measured");
     expect(proxy.cost.actual).toBe(oficial.cost.actual);
     expect(proxy.cost.baselineEstimate).toBe(proxy.cost.actual);
-    expect(proxy.cost.netSavings).toBe(0);
+    expect(proxy.cost.netSavingsRatio).toBe(0);
   });
 
   it("modelo hermano: control oficial acredita la diferencia de lectura; no oficial, nada", () => {
@@ -41,9 +41,9 @@ describe("upstream no oficial: se mide el coste y no se acredita dinero", () => 
     const oficial = informeMedido("h-of", "claude-fable-5-1", medido, undefined, null, null, cambio) as unknown as Informe;
     const proxy = informeMedido("h-px", "claude-fable-5-1", medido, undefined, null, null, cambio, false, true) as unknown as Informe;
 
-    expect(oficial.cost.netSavings).toBeGreaterThan(0);
+    expect(oficial.cost.netSavingsRatio).toBeGreaterThan(0);
     expect(proxy.cost.baselineEstimate).toBe(proxy.cost.actual);
-    expect(proxy.cost.netSavings).toBe(0);
+    expect(proxy.cost.netSavingsRatio).toBe(0);
   });
 
   it("suelo de la elisión: control oficial lleva eliminatedInputFloorCost; no oficial, el conteo sí y el dinero no", () => {

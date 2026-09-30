@@ -19,10 +19,8 @@ import {
   createSavingsLayer,
   createMockProvider,
   LicenseError,
-  RevocationSnapshot,
-  RevocationPoller,
-  liveGateFromKey,
 } from "../../src/index.js";
+import { RevocationSnapshot, RevocationPoller, liveGateFromKey } from "../../src/license/index.js";
 
 const b64url = (b: Buffer | string) => Buffer.from(b).toString("base64url");
 function signCompact(header: object, payload: object, privateKeyPem: string): string {

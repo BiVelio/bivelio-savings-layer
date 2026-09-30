@@ -424,7 +424,7 @@ function esperarMedida(r: SavingsResult, entrada: number, coste: number): void {
   expect(r.report.tokens.actualOutput).toBe(0);
   expect(r.report.cost.actual).toBeCloseTo(coste, 9);
   expect(r.report.cost.baselineEstimate).toBeCloseTo(r.report.cost.actual, 12);
-  expect(r.report.cost.netSavings).toBe(0);
+  expect(r.report.cost.netSavingsRatio).toBe(0);
 }
 
 const trazaDe = (r: SavingsResult, etapa: string) => r.report.traces.filter((t) => t.stage === etapa);
@@ -487,7 +487,7 @@ describe("E7 · el SDK con el proveedor de Anthropic", () => {
     expect(r.report.constraints.structurallyValid).toBe(false);
     expect(r.report.cost.basis).toBe("measured");
     expect(r.report.cost.actual).toBeGreaterThan(0);
-    expect(r.report.cost.netSavings).toBe(0);
+    expect(r.report.cost.netSavingsRatio).toBe(0);
   });
 
   it("singleflight: el seguidor de una negativa en vuelo se sirve, pero no se valora por referencia", async () => {
@@ -560,7 +560,7 @@ describe("E7 · el SDK con el proveedor de Chat Completions (donde aplica)", () 
     expect(r.report.tokens.actualOutput).toBe(11);
     expect(r.report.cost.actual).toBeCloseTo(COSTE_NEGATIVA_OPENAI, 12);
     // Ni un céntimo de ahorro sobre una llamada que se pagó.
-    expect(r.report.cost.netSavings).toBe(0);
+    expect(r.report.cost.netSavingsRatio).toBe(0);
     expect(trazaDe(r, "cache-write").map((t) => t.outcome).join(" | ")).toContain("skipped");
   });
 });
@@ -660,7 +660,7 @@ describe("E7-bis · el SDK con la negativa de salidas estructuradas de OpenAI (m
     expect(r.report.cost.basis).toBe("measured");
     expect(r.report.tokens.actualInput).toBe(81);
     expect(r.report.tokens.actualOutput).toBe(11);
-    expect(r.report.cost.netSavings).toBe(0);
+    expect(r.report.cost.netSavingsRatio).toBe(0);
     const otra = await layer.generateStream(PETICION_OPENAI).result;
     // Antes: la segunda salía de la caché exacta, valorada por referencia.
     expect(s.enviados).toHaveLength(2);
@@ -900,7 +900,7 @@ describe("E7 · el adaptador del SDK oficial de Anthropic (@anthropic-ai/sdk)", 
     expect(informe.cost.basis).toBe("measured");
     expect(informe.tokens.actualInput).toBe(ENTRADA);
     expect(informe.cost.actual).toBeCloseTo(COSTE, 9);
-    expect(informe.cost.netSavings).toBe(0);
+    expect(informe.cost.netSavingsRatio).toBe(0);
     await vaciar();
     expect(registros).toHaveLength(1);
     expect(registros[0]!["basis"]).toBe("measured");
@@ -924,7 +924,7 @@ describe("E7 · el adaptador del SDK oficial de Anthropic (@anthropic-ai/sdk)", 
     expect(informe.tokens.actualInput).toBe(ENTRADA);
     expect(informe.tokens.actualOutput).toBe(0);
     expect(informe.cost.actual).toBeCloseTo(COSTE, 9);
-    expect(informe.cost.netSavings).toBe(0);
+    expect(informe.cost.netSavingsRatio).toBe(0);
     await c.messages.stream(PEDIDO).finalMessage();
     expect(n.llamadas).toHaveLength(3);
     s.close();
@@ -1090,15 +1090,15 @@ describe("E7-ter · el gateway: una negativa no cobrada se mide a 0 $ y no acred
     const medido = costeMedido(MODELO, uso, Date.parse("2026-09-28T12:00:00Z"))!;
     const rebaja = { rebajadas: 1, yaEran5m: 0, herramientaDeServidor: false };
     const elision = { borrados: 1, tokensLimpiados: 5000, tokensLimpiadosToolUses: 5000, atribuible: true };
-    type Coste = { cost: { baselineEstimate: number; actual: number; netSavings: number; basis: string; eliminatedInputFloorCost?: number } };
+    type Coste = { cost: { baselineEstimate: number; actual: number; netSavingsRatio: number; basis: string; eliminatedInputFloorCost?: number } };
     // Control: la MISMA respuesta cobrada acredita la rebaja y el suelo de la elisión.
     const cobrada = informeMedido("req-cobrada", MODELO, medido, undefined, elision, rebaja) as unknown as Coste;
     expect(cobrada.cost.baselineEstimate).toBeGreaterThan(cobrada.cost.actual);
-    expect(cobrada.cost.netSavings).toBeGreaterThan(0);
+    expect(cobrada.cost.netSavingsRatio).toBeGreaterThan(0);
     expect(cobrada.cost.eliminatedInputFloorCost).toBeGreaterThan(0);
     // Sin cobro: 0 $ y nada que acreditar.
     const gratis = informeMedido("req-gratis", MODELO, medido, undefined, elision, rebaja, null, false, false, true) as unknown as Coste;
-    expect(gratis.cost).toEqual({ baselineEstimate: 0, actual: 0, netSavings: 0, basis: "measured" });
+    expect(gratis.cost).toEqual({ baselineEstimate: 0, actual: 0, netSavingsRatio: 0, netSavingsUsd: 0, basis: "measured" });
   });
 });
 
@@ -1114,7 +1114,7 @@ describe("E7-ter · el SDK: una negativa no cobrada se mide a 0 $ y no acredita 
     expect(r.report.tokens.actualInput).toBe(ENTRADA);
     expect(r.report.cost.actual).toBe(0);
     expect(r.report.cost.baselineEstimate).toBe(0);
-    expect(r.report.cost.netSavings).toBe(0);
+    expect(r.report.cost.netSavingsRatio).toBe(0);
     expect(r.report.traces.some((t) => t.stage === "cost" && t.outcome.startsWith("unbilled refusal"))).toBe(true);
   }
 
@@ -1158,7 +1158,7 @@ describe("E7-ter · el SDK: una negativa no cobrada se mide a 0 $ y no acredita 
     // Antes: baseline estimado > 0 y netSavings 1 (una llamada «evitada» de 0 $).
     expect(evitada.report.cost.baselineEstimate).toBe(0);
     expect(evitada.report.cost.actual).toBe(0);
-    expect(evitada.report.cost.netSavings).toBe(0);
+    expect(evitada.report.cost.netSavingsRatio).toBe(0);
   });
 
   it("⛔ el adaptador del SDK oficial (messages.create y messages.stream): coste 0 y netSavings 0", async () => {
@@ -1182,7 +1182,7 @@ describe("E7-ter · el SDK: una negativa no cobrada se mide a 0 $ y no acredita 
         expect(informe.tokens.actualInput).toBe(ENTRADA);
         expect(informe.cost.actual).toBe(0);
         expect(informe.cost.baselineEstimate).toBe(0);
-        expect(informe.cost.netSavings).toBe(0);
+        expect(informe.cost.netSavingsRatio).toBe(0);
       }
       await vaciar();
       expect(registros.length).toBeGreaterThanOrEqual(1);
@@ -1212,7 +1212,6 @@ describe("E7-ter · el SDK: una negativa no cobrada se mide a 0 $ y no acredita 
     expect(l.estimateCost(precio)).toEqual({
       baselineEstimate: 0,
       actual: 0,
-      netSavings: 0,
       netSavingsRatio: 0,
       netSavingsUsd: 0,
       basis: "measured",

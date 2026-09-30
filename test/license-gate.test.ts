@@ -52,7 +52,7 @@ function layer(opts: {
   const semanticCache = new InMemorySemanticCache({ embed, similarityThreshold: 0.3, acceptThreshold: 0.3 });
   return createSavingsLayer({
     provider: createMockProvider({ answer: "answer" }),
-    semanticCache,
+    semanticCacheStore: semanticCache,
     licensePublicKey: publicKey,
     ...(opts.gate ? { licenseGate: opts.gate } : {}),
     ...(opts.licenseKey ? { licenseKey: opts.licenseKey } : {}),

@@ -73,7 +73,7 @@ describe("con CERO optimización el ahorro es CERO, no el sesgo del estimador", 
     expect(res.report.tokens.eliminatedInput).toBe(0);
     expect(res.report.tokens.compressedInput).toBe(0);
     expect(res.report.tokens.baselineInput).toBe(res.report.tokens.actualInput);
-    expect(res.report.cost.netSavings).toBe(0);
+    expect(res.report.cost.netSavingsRatio).toBe(0);
   });
 
   it("y el informe dice que ese baseline está MEDIDO, no estimado", async () => {
@@ -99,11 +99,11 @@ describe("una optimización REAL sí se acredita", () => {
       // Si la capa quitó algo, el baseline tiene que ser MAYOR que el actual…
       expect(res.report.tokens.baselineInput).toBeGreaterThan(res.report.tokens.actualInput);
       // …y el ahorro, positivo pero no disparatado.
-      expect(res.report.cost.netSavings).toBeGreaterThan(0);
-      expect(res.report.cost.netSavings).toBeLessThan(1);
+      expect(res.report.cost.netSavingsRatio).toBeGreaterThan(0);
+      expect(res.report.cost.netSavingsRatio).toBeLessThan(1);
     } else {
       // Y si no quitó nada, cero. Nunca "algo por si acaso".
-      expect(res.report.cost.netSavings).toBe(0);
+      expect(res.report.cost.netSavingsRatio).toBe(0);
     }
   });
 });
@@ -141,6 +141,6 @@ describe("el descuento de caché del proveedor no se acredita a la capa", () => 
     // …pero el descuento es del proveedor, no nuestro: sin la capa se habría
     // aplicado igual. Tarifándolo solo en el lado "actual", esta petición
     // reportaba ahorro sin que la capa hubiera hecho absolutamente nada.
-    expect(res.report.cost.netSavings).toBe(0);
+    expect(res.report.cost.netSavingsRatio).toBe(0);
   });
 });

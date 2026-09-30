@@ -1,4 +1,6 @@
-import { sha256 } from "@bivelio/savings-layer";
+// El SHA-256 puro del SDK (sin imports, igual en Node y en el navegador): desde
+// la 0.5 ya no sale por la raíz del paquete, así que viaja copiado en el adaptador.
+import { sha256 } from "../../util/hash.js";
 import type {
   ChatMessage,
   JsonSchema,

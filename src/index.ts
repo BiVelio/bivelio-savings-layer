@@ -18,12 +18,10 @@
  */
 
 // El catálogo de precios de lista, exportado para que un cliente pueda
-// inspeccionarlo, extenderlo o comprobar qué modelos cubre.
-//
-// Camino a la 0.5 (docs/MIGRAR-A-0.5.md): los nombres ingleses son los que se
-// congelan; los españoles quedan como alias @deprecated hasta la 0.5. Se
-// declaran AQUÍ y no en pricing/catalogo.ts para que el `@deprecated` viaje en
-// el `.d.ts` sin tocar el fichero del catálogo (que cambia con cada precio).
+// inspeccionarlo, extenderlo o comprobar qué modelos cubre. Desde la 0.5 solo
+// con los nombres ingleses (los españoles, alias @deprecated en la 0.4.33 y la
+// 0.4.34, ya no existen). Se declaran AQUÍ y no en pricing/catalogo.ts para que
+// el JSDoc viaje en el `.d.ts` sin tocar el fichero del catálogo.
 import {
   CATALOGO as catalogoDePrecios,
   precioDeLista as precioDeListaDelCatalogo,
@@ -43,31 +41,216 @@ export const listPrice: typeof precioDeListaDelCatalogo = precioDeListaDelCatalo
 /** When the catalogue prices were last checked against the providers' public rates (YYYY-MM-DD). */
 export const PRICES_AS_OF: typeof preciosAlDia = preciosAlDia;
 
-/** @deprecated Spanish name, removed in 0.5. Use {@link PRICE_CATALOG}. */
-export const CATALOGO: typeof catalogoDePrecios = catalogoDePrecios;
-/** @deprecated Spanish name, removed in 0.5. Use {@link listPrice}. */
-export const precioDeLista: typeof precioDeListaDelCatalogo = precioDeListaDelCatalogo;
-/** @deprecated Spanish name, removed in 0.5. Use {@link PRICES_AS_OF}. */
-export const PRECIOS_AL_DIA: typeof preciosAlDia = preciosAlDia;
-
 // La versión vive en src/version.ts junto a las constantes INTERNAS del canal
 // de versión (cabecera y mínima de la palanca), que NO se reexportan: nada
 // nuevo sale a la superficie pública por aquí.
 export { BV_SALA_VERSION } from "./version.js";
 
-export * from "./util/index.js";
-export * from "./contracts/index.js";
-export * from "./tokenizer/index.js";
-export * from "./canonicalization/index.js";
-export * from "./policy/index.js";
-export * from "./cache/index.js";
-export * from "./resolvers/index.js";
-export * from "./router/index.js";
-export * from "./retrieval/index.js";
-export * from "./memory/index.js";
-export * from "./serialization/index.js";
-export * from "./constraints/index.js";
-export * from "./compression/index.js";
+// LA 0.5 CONGELA LA API (docs/CAMINO-A-0.5.md, criterio 6): la raíz exporta una
+// lista CERRADA, nombre a nombre, y ni un `export *`. Hasta la 0.4.34 los
+// barriles se reexportaban enteros y por ahí se colaron 68 piezas internas
+// (pipeline, licencia, medición) que nadie había decidido publicar. Ahora un
+// `export` nuevo en un módulo interno no sale a la cara del producto hasta que
+// alguien lo añade aquí Y a docs/INVENTARIO-API-0.5.json, y
+// test/api-publica-congelada.test.ts falla si las dos listas no casan.
+
+export {
+  createHandoff,
+  QUALITY_STATUSES,
+} from "./contracts/index.js";
+export type {
+  AnswerSource,
+  BatchCounts,
+  BatchItemResult,
+  BatchJob,
+  BatchJobStatus,
+  BatchRequest,
+  BatchResults,
+  BatchSubmitOptions,
+  BatchSummary,
+  BivelioHandoff,
+  CacheOutcome,
+  CacheWriteReport,
+  ChatMessage,
+  DeferredExecutionReport,
+  ExecutionClass,
+  HandoffFact,
+  JsonSchema,
+  LicenseGate,
+  MeasureReport,
+  MessageRole,
+  ModelCascadeMode,
+  ModelCascadeReport,
+  NativeSavingsReport,
+  OutputContract,
+  PriceLeverSaving,
+  QualityCacheMatch,
+  QualityCascadeCheck,
+  QualityLedger,
+  QualityRepairCheck,
+  QualitySchemaCheck,
+  QualityStatus,
+  QualityTruncationCheck,
+  ReasoningEffort,
+  RequestContext,
+  RetrievalOptions,
+  SavingsAdapterLevers,
+  SavingsAdapterOptions,
+  SavingsBatches,
+  SavingsCallOptions,
+  SavingsReport,
+  SavingsRequest,
+  SavingsResult,
+  SavingsStream,
+  SavingsStreamEvent,
+  SavingsStreamOptions,
+  SavingsToggles,
+  SemanticCalibrationBound,
+  SerializationFormat,
+  StreamingReport,
+  ToolCallRequest,
+  ToolDescriptor,
+  ToolRisk,
+  ToolSearchMode,
+  ToolSearchOptions,
+  TraceEvent,
+  VerificationCheck,
+  VerificationExclusion,
+  VerificationOutcome,
+  VerificationReport,
+  VerificationSettings,
+  VerificationSide,
+  VerificationStratum,
+} from "./contracts/index.js";
+export {
+  defaultTokenizerRegistry,
+  ExactTokenizer,
+  HeuristicEstimator,
+  heuristicEstimator,
+  MODELS_BY_ENCODING,
+  registerExactTokenizer,
+  TokenizerRegistry,
+} from "./tokenizer/index.js";
+export type {
+  CostBasis,
+  CostModel,
+  ReferenceCredit,
+  ReferenceRejection,
+  TokenEstimator,
+} from "./tokenizer/index.js";
+export type {
+  Policy,
+} from "./policy/index.js";
+export {
+  calibrateSemanticFloor,
+  CalibrationStateError,
+  InMemoryCacheBreakpointStore,
+  InMemoryExactCache,
+  InMemorySemanticCache,
+  LOCAL_EMBEDDING_THRESHOLD,
+  localEmbedding,
+  Singleflight,
+} from "./cache/index.js";
+export type {
+  AnswerJudge,
+  CacheBreakpointStore,
+  CachedAnswer,
+  CalibrationObservation,
+  EmbeddingFn,
+  ExactCache,
+  SemanticCacheOptions,
+  SemanticCalibrationOptions,
+  SemanticCalibrationSegmentState,
+  SemanticCalibrationState,
+  SemanticCalibrationStatus,
+  SemanticHit,
+  SemanticLookup,
+  SemanticProbe,
+  SemanticRecord,
+  SemanticVerifier,
+} from "./cache/index.js";
+export {
+  arithmeticResolver,
+  createDefaultResolvers,
+  ResolverRegistry,
+} from "./resolvers/index.js";
+export type {
+  DeterministicResolver,
+  ResolverResult,
+} from "./resolvers/index.js";
+export {
+  ExecutionRouter,
+  InMemoryToolSetFreezer,
+  ToolSelector,
+} from "./router/index.js";
+export type {
+  LocalClassifier,
+  RouteDecision,
+  ToolSelection,
+  ToolSelectorOptions,
+  ToolSetFreezer,
+} from "./router/index.js";
+export type {
+  EvidenceDoc,
+  Reranker,
+  RetrievalOutcome,
+  RetrievalPlan,
+  Retriever,
+} from "./retrieval/index.js";
+export {
+  emptyState,
+  mergeDelta,
+  renderState,
+} from "./memory/index.js";
+export type {
+  ConversationState,
+  MemoryDelta,
+} from "./memory/index.js";
+export {
+  COMPACT_ROWS_INSTRUCTION,
+  compactRowsSerializer,
+  createCompactRowsSerializer,
+  csvSerializer,
+  decodeCompactRows,
+  encodeCompactRows,
+  FormatSelector,
+  jsonCompactSerializer,
+} from "./serialization/index.js";
+export type {
+  CompactRowsDecodeOptions,
+  CompactRowsOptions,
+  FormatChoice,
+  FormatSelectorOptions,
+  Serializer,
+} from "./serialization/index.js";
+export {
+  providerNativeBackend,
+  SchemaRegistry,
+  validateAgainstSchema,
+} from "./constraints/index.js";
+export type {
+  ConstraintBackend,
+  ConstraintBackendId,
+  ConstraintPlan,
+  ValidationError,
+  ValidationResult,
+} from "./constraints/index.js";
+export {
+  COMPACTION_TRANSFORMS,
+  compactToolOutput,
+  DEFAULT_MIN_SAVED_CHARS,
+  noopCompressor,
+} from "./compression/index.js";
+export type {
+  CompactionTransform,
+  CompressionPolicyInput,
+  CompressionRequest,
+  CompressionResult,
+  Compressor,
+  ProtectedSpan,
+  ToolOutputCompaction,
+  ToolOutputCompactionSettings,
+} from "./compression/index.js";
 // De la verja económica de la compresión se exportan los DOS TIPOS y nada más.
 //
 // Los tipos, porque la decisión depende de datos que solo tiene el cliente —el
@@ -82,85 +265,77 @@ export * from "./compression/index.js";
 // su único llamante legítimo es el pipeline. Un cliente que las invocara a mano
 // estaría reimplementando la capa que compró.
 export type { CacheTier, CompressionEconomics } from "./economics/index.js";
-export * from "./providers/index.js";
-export * from "./telemetry/index.js";
-export * from "./license/index.js";
-export * from "./metering/index.js";
-export * from "./pipeline/index.js";
+export {
+  AnthropicProvider,
+  createMockProvider,
+  GoogleProvider,
+  MockProvider,
+  OpenAICompatibleProvider,
+} from "./providers/index.js";
+export type {
+  AnthropicOptions,
+  CachePlacement,
+  GoogleOptions,
+  GoogleThinkingConfig,
+  MockProviderOptions,
+  OpenAICompatibleOptions,
+  Provider,
+  ProviderRequest,
+  ProviderResponse,
+  ProviderStreamEvent,
+  ProviderStreamOptions,
+  ProviderToolSearch,
+  ProviderToolSearchUsage,
+  ProviderUsage,
+} from "./providers/index.js";
+export {
+  LicenseError,
+} from "./license/index.js";
+export type {
+  LicenseKeyset,
+} from "./license/index.js";
+export {
+  BatchSubmitError,
+  createSavingsLayer,
+  DEFAULT_COST_MODEL,
+  StreamAbortedError,
+} from "./pipeline/index.js";
+export type {
+  ModelCascadeSettings,
+  PriceLeverSettings,
+  SavingsLayer,
+  SavingsLayerConfig,
+} from "./pipeline/index.js";
 // Los exportadores: los libros hacia OpenTelemetry, Langfuse, Datadog y FOCUS,
 // desde el proceso del cliente y sin enviar nada a BiVelio. NO importan
 // `@opentelemetry/api`: sus tipos son estructurales (como `gpt-tokenizer` en
 // tokenizer/exact.ts), porque un `import type` del peer opcional acabaría en el
-// `.d.ts` y rompería el typecheck de quien no lo tenga instalado, y porque
-// `bv-sala.js` (la web) se construye con este mismo fichero. El peer opcional
-// de package.json solo documenta el rango probado.
-export * from "./exporters/index.js";
-
-// Lo que la 0.5 quita de la raíz, reexportado con nombre y `@deprecated` para
-// que el `.d.ts` de la 0.4.34 lo tache (ver src/deprecaciones-0.5.ts). El export
-// con nombre gana al del `export *` de arriba: mismo valor, ahora marcado.
+// `.d.ts` y rompería el typecheck de quien no lo tenga instalado.
 export {
-  adaptiveK,
-  buildExactKey,
-  buildInflightKey,
-  canonicalize,
-  computeNextDelay,
-  cosine,
-  dedupe,
-  DEFAULT_MAX_STALENESS_SECONDS,
-  deriveSeatId,
-  deriveStatus,
-  detectCi,
-  EMBEDDED_PUBLIC_KEY,
-  evalArithmetic,
-  evaluatePolicy,
-  executeRetrievalPlan,
-  gateFromKey,
-  isKeyset,
-  isStrictCompatible,
-  keyTokensMatch,
-  licenseKeyShape,
-  liveGateFromKey,
-  modelFamilyOf,
-  multisetEqual,
-  negationCount,
-  normalizeLicenseKey,
-  normalizeText,
-  numericTokens,
-  projectContext,
-  randomId,
-  REFERENCE_MAX_AGE_MS,
-  REFERENCE_MESSAGE_ALLOWANCE,
-  REFERENCE_OUTPUT_SHARE,
-  resolveConstraintBackend,
-  resolveDependencies,
-  resolveLicense,
-  RevocationPoller,
-  RevocationSnapshot,
-  sameAnswer,
-  SavingsLedger,
-  sha256,
-  shouldCompress,
-  stableStringify,
-  TraceCollector,
-  uniformColumns,
-  UsageEmitter,
-  verifyCompactSignature,
-  verifyLicenseToken,
-  verifyRevocationList,
-  withProtectedSpans,
-  words,
-  type CanonicalRequest,
-  type CompactVerification,
-  type LicenseKeyShape,
-  type LicenseStatus,
-  type LicenseTokenPayload,
-  type ResolvedDeps,
-  type ResolvedGate,
-  type ResolvedLicense,
-  type RevocationListBody,
-  type RevocationListVerification,
-  type RevocationPollerOptions,
-  type RevocationPollEvent,
-  type UsageEmitterOptions,
-} from "./deprecaciones-0.5.js";
+  instrumentSavingsLayer,
+  recordSavingsOnSpan,
+  savingsSpanAttributes,
+  toCsv,
+  toFocusRows,
+  toLangfuseGeneration,
+  toSavingsSeries,
+} from "./exporters/index.js";
+export type {
+  CsvValue,
+  FocusExportOptions,
+  FocusRow,
+  LangfuseGenerationUpdate,
+  SavingsAttributeOptions,
+  SavingsRecord,
+  SavingsReportForExport,
+  SavingsSeriesOptions,
+  SavingsSeriesRow,
+  SavingsSpanAttributes,
+  SavingsSpanOptions,
+  SavingsTracingOptions,
+  SpanAttributeValue,
+  SpanLike,
+  SpanStartOptionsLike,
+  TracerLike,
+  TracerProviderLike,
+} from "./exporters/index.js";

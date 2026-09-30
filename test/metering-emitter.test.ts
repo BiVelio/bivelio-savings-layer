@@ -19,7 +19,7 @@ function mkReport(requestId = "req-abc"): SavingsReport {
       actualOutput: 20,
     },
     cache: { result: "miss" },
-    cost: { baselineEstimate: 0.001, actual: 0.0004, netSavings: 0.0006 },
+    cost: { baselineEstimate: 0.001, actual: 0.0004, netSavingsRatio: 0.0006 },
   } as unknown as SavingsReport;
 }
 

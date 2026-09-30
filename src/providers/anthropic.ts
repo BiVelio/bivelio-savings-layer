@@ -23,10 +23,9 @@ import { MemoriaDeBusquedas, paresDeBusqueda, type BloqueCrudo } from "./busqued
 import {
   esBloqueDeRazonamiento,
   fusionarUso,
-  motivoDeLaNegativa,
+  paradaDeMensajes,
   negativaNoCobrada,
   tierServidoDe,
-  traducirParada,
   usoDeMensajes,
   type UsoAnthropic,
 } from "./anthropic-uso.js";
@@ -505,10 +504,7 @@ export class AnthropicProvider implements Provider {
         {
           text,
           ...(toolCalls.length > 0 ? { toolCalls } : {}),
-          ...(stopReason ? { finishReason: traducirParada(stopReason) } : {}),
-          ...(motivoDeLaNegativa(stopReason, stopDetails) !== undefined
-            ? { finishReasonDetail: motivoDeLaNegativa(stopReason, stopDetails)! }
-            : {}),
+          ...paradaDeMensajes(stopReason, stopDetails),
           ...(vioDelta &&
           negativaNoCobrada({
             stopReason,
@@ -1382,10 +1378,7 @@ export class AnthropicProvider implements Provider {
       {
         text: textoFinal,
         ...(toolCalls.length > 0 ? { toolCalls } : {}),
-        ...(json.stop_reason ? { finishReason: traducirParada(json.stop_reason) } : {}),
-        ...(motivoDeLaNegativa(json.stop_reason, json.stop_details) !== undefined
-          ? { finishReasonDetail: motivoDeLaNegativa(json.stop_reason, json.stop_details)! }
-          : {}),
+        ...paradaDeMensajes(json.stop_reason, json.stop_details),
         // Una negativa que Anthropic documenta como NO cobrada (anthropic-uso.ts).
         ...(negativaNoCobrada({
           stopReason: json.stop_reason,

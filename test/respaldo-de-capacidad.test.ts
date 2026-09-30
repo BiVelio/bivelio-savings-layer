@@ -70,7 +70,7 @@ describe("priceLevers.onCapacityError", () => {
     expect(d.servedTier).toBe("default");
     expect(d.credited).toBe(false);
     expect(d.tierSaving).toBeUndefined();
-    expect(d.estimatedTierSaving).toBeUndefined();
+    expect(d.tierSaving?.amount).toBeUndefined();
     expect(d.reason).toMatch(/no capacity/);
     // El intento rechazado no es una llamada facturada.
     expect(r.report.calls.actualLlm).toBe(1);

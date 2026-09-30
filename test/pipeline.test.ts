@@ -155,7 +155,7 @@ describe("SavingsPipeline end-to-end", () => {
     const semanticCache = new InMemorySemanticCache({ embed, similarityThreshold: 0.5, acceptThreshold: 0.5 });
     const layer = createSavingsLayer({
       provider: createMockProvider({ answer: "tenant-1-answer" }),
-      semanticCache,
+      semanticCacheStore: semanticCache,
       generateId: deterministicId,
     });
     const base: SavingsRequest = {

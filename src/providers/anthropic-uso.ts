@@ -1,3 +1,4 @@
+import { cerrarParada, type MotivoDeParada } from "./motivo-de-parada.js";
 import type { ProviderUsage } from "./types.js";
 import { extraDeCompactacion } from "./iteraciones-de-compactacion.js";
 
@@ -159,24 +160,18 @@ export function esBloqueDeRazonamiento(tipo: string | undefined): boolean {
   return tipo === "thinking" || tipo === "redacted_thinking";
 }
 
-/** `stop_reason` de Anthropic -> el vocabulario neutro de `finishReason`. */
-export function traducirParada(parada: string): string {
-  switch (parada) {
-    case "end_turn":
-      return "stop";
-    // `max_tokens` significa lo mismo que el `length` de OpenAI: la respuesta se
-    // CORTÓ, no terminó. El pipeline distingue una respuesta mala de una cortada
-    // por este campo —reintentar con el mismo tope vuelve a cortarla—, así que
-    // el nombre tiene que ser el mismo en los dos adaptadores.
-    case "max_tokens":
-      return "length";
-    case "tool_use":
-      return "tool_calls";
-    case "refusal":
-      return "content_filter";
-    default:
-      return parada;
-  }
+/**
+ * `stop_reason` de Anthropic → `finishReason` cerrado y `finishReasonDetail`
+ * (motivo-de-parada.ts). `end_turn` → `stop`, `max_tokens` → `length` (la
+ * respuesta se CORTÓ, y el pipeline lo distingue por este campo), `tool_use` →
+ * `tool_calls`, `refusal` → `content_filter` con la categoría como detalle;
+ * `stop_sequence`, `pause_turn` y lo que venga, con su literal como detalle.
+ */
+export function paradaDeMensajes(
+  stopReason: string | null | undefined,
+  stopDetails: unknown,
+): { finishReason?: MotivoDeParada; finishReasonDetail?: string } {
+  return cerrarParada(stopReason, motivoDeLaNegativa(stopReason, stopDetails));
 }
 
 // ── LAS NEGATIVAS QUE ANTHROPIC NO COBRA ──────────────────────────────────

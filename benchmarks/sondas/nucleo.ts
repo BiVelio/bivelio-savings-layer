@@ -14,7 +14,9 @@
  *  · La limpieza de secretos: todo lo que va a disco pasa por `limpiarSecretos`
  *    y el JSON se comprueba contra las claves antes de escribirse.
  */
-import { CATALOGO } from "../../src/index.js";
+import {
+  PRICE_CATALOG,
+} from "../../src/index.js";
 
 // ── Hosts ───────────────────────────────────────────────────────────────────
 
@@ -98,7 +100,7 @@ export interface Precio {
 
 export function precioDe(modelo: string): Precio {
   const m = modelo.includes("/") ? modelo.slice(modelo.lastIndexOf("/") + 1) : modelo;
-  const p = (CATALOGO as Record<string, Precio | undefined>)[m];
+  const p = (PRICE_CATALOG as Record<string, Precio | undefined>)[m];
   if (!p) throw new Error(`sin fila de catálogo para ${m}: no se puede presupuestar`);
   return p;
 }

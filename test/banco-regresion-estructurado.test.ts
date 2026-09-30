@@ -8,7 +8,12 @@ import {
   llevaPistaDeLimites,
   MUESTREO_PAREADO,
 } from "../benchmarks/scenarios.js";
-import { createSavingsLayer, TokenizerRegistry, registrarTokenizadorExacto, type Provider } from "../src/index.js";
+import {
+  createSavingsLayer,
+  TokenizerRegistry,
+  registerExactTokenizer,
+  type Provider,
+} from "../src/index.js";
 import type { ProviderRequest } from "../src/providers/types.js";
 
 /**
@@ -65,7 +70,7 @@ function proveedorFalso(respuestas: string[], capturadas: ProviderRequest[]): Pr
 }
 
 const registro = new TokenizerRegistry();
-await registrarTokenizadorExacto(registro);
+await registerExactTokenizer(registro);
 
 const capa = (provider: Provider, memoria: Set<string>) =>
   createSavingsLayer({ provider, defaultCostModel: PRECIO, tokenizer: registro, constraintMemory: memoria });

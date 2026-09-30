@@ -2,8 +2,8 @@ import { describe, it, expect } from "vitest";
 import {
   HeuristicEstimator,
   TokenizerRegistry,
-  SavingsLedger,
 } from "../src/index.js";
+import { SavingsLedger } from "../src/tokenizer/index.js";
 
 describe("HeuristicEstimator", () => {
   const est = new HeuristicEstimator();
@@ -88,7 +88,7 @@ describe("SavingsLedger — four separate accounts", () => {
     // baseline output must equal actual output (50), not the 200 ceiling:
     // baseline = 100@1 + 50@10 = 0.6 ; actual = 100@1 + 50@10 = 0.6 → 0% output saving.
     expect(cost.baselineEstimate).toBeCloseTo(0.6, 6);
-    expect(cost.netSavings).toBeCloseTo(0, 6);
+    expect(cost.netSavingsRatio).toBeCloseTo(0, 6);
   });
 
   it("still credits the whole generation as saved on an AVOIDED call", () => {
@@ -99,7 +99,7 @@ describe("SavingsLedger — four separate accounts", () => {
     // baseline = 500@1 + 200@10 = 2.5 ; actual = 0 → 100% saved.
     expect(cost.baselineEstimate).toBeCloseTo(2.5, 6);
     expect(cost.actual).toBeCloseTo(0, 6);
-    expect(cost.netSavings).toBeCloseTo(1, 6);
+    expect(cost.netSavingsRatio).toBeCloseTo(1, 6);
   });
 
   it("prices provider-cached input at the discounted rate", () => {

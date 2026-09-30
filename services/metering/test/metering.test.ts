@@ -17,7 +17,7 @@ function reportLike(overrides: Partial<SavingsReportLike> = {}): SavingsReportLi
       providerCachedInput: 50,
     },
     cache: { result: "miss" },
-    cost: { baselineEstimate: 1.0, actual: 0.4, netSavings: 0.6 },
+    cost: { baselineEstimate: 1.0, actual: 0.4, netSavingsRatio: 0.6 },
     ...overrides,
   };
 }

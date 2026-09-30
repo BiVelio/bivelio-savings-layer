@@ -722,7 +722,7 @@ async function sondaGemini(ctx: Contexto): Promise<Omit<ResultadoDeSonda, "gasto
         cacheDeLaRepeticion: r2.report.cache.result,
         repeticionVolvioAlProveedor: volvioAlProveedor,
         referenciaEnLaRepeticion: !!r2.report.cache.reference,
-        ahorroNetoDeLaRepeticion: r2.report.cost.netSavings,
+        ahorroNetoDeLaRepeticion: r2.report.cost.netSavingsRatio,
         costeUsage: red4(de(ctx, "gemini", `negativa:${c.id}`).reduce((s, l) => s + l.costeUsd, 0)),
       };
       (negativa["intentos"] = (negativa["intentos"] as unknown[] | undefined) ?? []);

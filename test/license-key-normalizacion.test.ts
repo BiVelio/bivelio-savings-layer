@@ -5,12 +5,8 @@ import {
   createSavingsLayer,
   createMockProvider,
   LicenseError,
-  gateFromKey,
-  resolveLicense,
-  verifyCompactSignature,
-  normalizeLicenseKey,
-  licenseKeyShape,
 } from "../src/index.js";
+import { gateFromKey, resolveLicense, verifyCompactSignature, normalizeLicenseKey, licenseKeyShape } from "../src/license/index.js";
 import { LicenseRefresher } from "../src/license/refresher.js";
 import { mensajeDeLicencia } from "../src/pipeline/pipeline.js";
 

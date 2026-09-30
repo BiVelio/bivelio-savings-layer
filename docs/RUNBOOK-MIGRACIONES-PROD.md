@@ -286,7 +286,7 @@ select exists(select 1 from information_schema.columns
 Relleno calcado de **0023** y **0026**, misma razón y misma forma. El literal es
 `per_turn_effort` y ya viaja en `PRO_FEATURES`; las licencias pro YA EMITIDAS
 necesitan este `update` o quien paga y la enciende
-(`BVSALA_GATEWAY_ESFUERZO=low`) verá el cuerpo pasar intacto sin ningún error.
+(`BVSALA_GATEWAY_EFFORT=low`) verá el cuerpo pasar intacto sin ningún error.
 
 **Qué hace la palanca.** Añade al FINAL de `messages` un mensaje `role: "system"`
 con `output_config.effort`, más la beta `mid-conversation-output-config-2026-07-01`.
@@ -316,7 +316,7 @@ paso 2 (`PENDIENTES="0027"`). Relanzarla no cambia nada la segunda vez.
 
 ### Verificar tras aplicar
 
-Un gateway con `BVSALA_GATEWAY_ESFUERZO=low` de una org pro dice al arrancar
+Un gateway con `BVSALA_GATEWAY_EFFORT=low` de una org pro dice al arrancar
 `esfuerzo por turno (D): ARMADO a "low"`. La primera petición a `claude-fable-5-1`,
 `claude-mythos-5-1` o `claude-opus-5` llega al proveedor con un mensaje
 `{"role":"system","content":[],"output_config":{"effort":"low"}}` al final y la
@@ -339,7 +339,7 @@ lectura de caché a 0,00025/1K en vez de 0,001/1K, catálogo) se cierra con el
 feature per-org `sibling_model_routing`. El literal ya viaja en PRO_FEATURES
 (`apps/web/lib/license/issue.ts`) para lo que se emita a partir de ahora; las
 licencias pro YA EMITIDAS necesitan este `update` o el cliente que paga y la
-enciende (`BVSALA_GATEWAY_MODELO_HERMANO=1`) verá el cuerpo pasar intacto sin
+enciende (`BVSALA_GATEWAY_SIBLING_MODEL=1`) verá el cuerpo pasar intacto sin
 ningún error (el canal es fail-closed a apagado).
 
 - **No deja objeto**: se comprueba por DATOS, idempotente.
@@ -373,7 +373,7 @@ cambia desde ahí: cuesta una escritura fría y el modelo replanifica sin ese
 razonamiento. Nada se rompe, pero es la razón de que la palanca se mueva entre
 sesiones.
 
-Un gateway con `BVSALA_GATEWAY_MODELO_HERMANO=1` de una org pro dice al
+Un gateway con `BVSALA_GATEWAY_SIBLING_MODEL=1` de una org pro dice al
 arrancar `modelo hermano (C): ARMADO` (sin la fila, la primera petición a
 fable-5 avisa una vez de que la licencia no trae `sibling_model_routing` y
 pasa intacta) y la primera petición con `model: claude-fable-5` llega al

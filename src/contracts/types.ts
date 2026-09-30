@@ -238,7 +238,7 @@ export interface SavingsToggles {
    * `false` switches it off for this request even when the layer enables it.
    *
    * What it removes is a COUNT in `report.tokens.compressedInput`; it is never
-   * priced into `cost.netSavings` or your commission — your provider's invoice
+   * priced into `cost.netSavingsRatio` or your commission — your provider's invoice
    * shows the effect.
    */
   toolOutputCompaction?: boolean;
@@ -313,7 +313,7 @@ export interface SavingsToggles {
    * THE MARGIN IS NOT A GUARANTEE THAT EVERY REQUEST GETS CHEAPER. When the
    * model names no tool in the first call, the request still goes out with every
    * schema and the first call is pure added cost: that request costs MORE, and
-   * the report says so (`cost.netSavings` goes negative). The margin required is
+   * the report says so (`cost.netSavingsRatio` goes negative). The margin required is
    * exactly the cost of that outcome, so the pattern breaks even while it
    * happens on at most one request in two. If your traffic asks for a tool less
    * often than that — a chat assistant with a big catalogue answers most turns
@@ -463,8 +463,6 @@ export interface DeferredExecutionReport {
    * all. Present only when {@link credited}.
    */
   discountRate?: number;
-  /** @deprecated Use `tierSaving.amount`; same value. Kept for compatibility. */
-  estimatedTierSaving?: number;
   /**
    * What the served tier was worth on the one call whose tier was read: that call's
    * provider-reported usage at the standard rate card minus the same usage at the rate
@@ -489,7 +487,7 @@ export interface DeferredExecutionReport {
    * nothing (3) and is not provider caching (4). It changes the PRICE of the
    * tokens, exactly as the model cascade does, and there is no ledger for that.
    *
-   * `cost.netSavings` therefore does not move: it is a ratio of baseline to
+   * `cost.netSavingsRatio` therefore does not move: it is a ratio of baseline to
    * actual priced from a SINGLE rate card, and a discount that scales both sides
    * cannot change it. Folding this in would require a baseline priced from the
    * other card — a request nobody ran.
@@ -633,7 +631,7 @@ export interface ModelCascadeReport {
    *
    * A COUNTERFACTUAL: the strong model was not run, so this is priced from the
    * measured token counts at both list prices. It is deliberately NOT part of
-   * `cost.netSavings` — that number stays a comparison at a single price, and
+   * `cost.netSavingsRatio` — that number stays a comparison at a single price, and
    * this one would inflate it with a call nobody made. Negative on an escalated
    * request, which is exactly what an escalation costs you.
    */
@@ -775,29 +773,36 @@ export interface SavingsResult<T = unknown> {
    */
   toolCalls?: ToolCallRequest[];
   /**
-   * Por qué paró de generar el modelo (`"stop"`, `"length"`, `"tool_calls"`, …).
-   * Presente cuando la respuesta viene del proveedor; ausente en los atajos
-   * (caché/resolver), que solo sirven respuestas finales completas.
+   * Why the model stopped generating, the same five values for every provider:
    *
-   * In 0.5 this becomes a CLOSED set — `"stop"`, `"length"`, `"tool_calls"`,
-   * `"content_filter"` or `"other"` — and the provider's own value (for example
-   * `"stop_sequence"`, `"pause_turn"` or `"content_filter: OTHER"`) moves to
-   * `finishReasonDetail`. Compare against those five values only; see the 0.5
-   * migration guide.
+   * - `"stop"`: a complete answer (Anthropic `end_turn` / `stop_sequence`,
+   *   Gemini `STOP`).
+   * - `"length"`: cut off by the output limit (Anthropic `max_tokens`, Gemini
+   *   `MAX_TOKENS`). A truncated answer is never cached.
+   * - `"tool_calls"`: the model asked to call tools (`toolCalls`).
+   * - `"content_filter"`: the provider refused or filtered the answer.
+   * - `"other"`: anything else (for example Anthropic `pause_turn`, Gemini
+   *   `MALFORMED_FUNCTION_CALL`); the provider's value is in
+   *   {@link finishReasonDetail}.
+   *
+   * Present when the answer came from the provider; absent on shortcuts (cache,
+   * local resolver), which only serve complete final answers.
    */
-  finishReason?: string;
+  finishReason?: "stop" | "length" | "tool_calls" | "content_filter" | "other";
   /**
-   * The provider's own reason behind `finishReason`, when it gave one. Present
-   * only on answers the provider returned, and only with a non-empty reason:
+   * The provider's own reason behind `finishReason`, when it adds something.
+   * Present only on answers the provider returned:
    *
-   * - Gemini (OpenAI-compatible endpoint): a filtered answer stops with
-   *   `finish_reason: "content_filter: OTHER"` (or `PROHIBITED_CONTENT`,
-   *   `SAFETY`…); it arrives as `finishReason: "content_filter"` and
-   *   `finishReasonDetail: "OTHER"`.
-   * - Anthropic: a refusal (`stop_reason: "refusal"`) arrives as `finishReason:
-   *   "content_filter"` and `finishReasonDetail` set to `stop_details.category`
-   *   (for example `"cyber"` or `"bio"`).
+   * - A refusal or filter: the finer reason. Gemini's `SAFETY`, `OTHER`,
+   *   `PROHIBITED_CONTENT`… (native or `finish_reason: "content_filter: OTHER"`
+   *   on the OpenAI-compatible endpoint), its `promptFeedback.blockReason`, or
+   *   Anthropic's `stop_details.category` (for example `"cyber"` or `"bio"`).
+   * - A stop reason that is not the provider's plain spelling of one of the
+   *   five values: the provider's literal (`"stop_sequence"`, `"pause_turn"`,
+   *   `"MALFORMED_FUNCTION_CALL"`…).
    *
+   * Absent for the plain spellings (`stop`, `end_turn`, `STOP`, `length`,
+   * `max_tokens`, `MAX_TOKENS`, `tool_calls`, `tool_use`, `content_filter`).
    * OpenAI's Structured Outputs refusal message travels in `refusal` instead.
    * Informational: it changes neither what is billed nor what is credited.
    */
@@ -1014,15 +1019,11 @@ export interface QualityTruncationCheck {
   /** True when the provider reported `finishReason: "length"`. A truncated answer is never cached. */
   truncated: boolean;
   /**
-   * Why the provider stopped, as `SavingsResult.finishReason` reports it;
-   * absent when it reported none.
-   *
-   * In 0.5 this becomes the same CLOSED set as `SavingsResult.finishReason` —
-   * `"stop"`, `"length"`, `"tool_calls"`, `"content_filter"` or `"other"` — and
-   * the provider's own value moves to {@link finishReasonDetail}. Compare
-   * against those five values only; see the 0.5 migration guide.
+   * Why the provider stopped, as `SavingsResult.finishReason` reports it (the
+   * same five values); absent when it reported none. The provider's own value
+   * is in {@link finishReasonDetail}.
    */
-  finishReason?: string;
+  finishReason?: "stop" | "length" | "tool_calls" | "content_filter" | "other";
   /**
    * The provider's own reason behind `finishReason`, when it gave one: the same
    * value as `SavingsResult.finishReasonDetail` for the answer that was served.
@@ -1163,7 +1164,7 @@ export interface QualityLedger {
  * `cache_control`), route (OpenAI `prompt_cache_key`) or keep the prefix
  * stable, but the discount is billed by the provider and much of it would be
  * there without the layer, so it is never credited as the layer's saving:
- * it is not in `cost.netSavings`, not in `cost.baselineEstimate`, and not in
+ * it is not in `cost.netSavingsRatio`, not in `cost.baselineEstimate`, and not in
  * any commission base.
  */
 export interface NativeSavingsReport {
@@ -1342,7 +1343,7 @@ export interface SavingsReport {
    * The provider's OWN prompt-cache discount on this call, shown apart. Present
    * only when a call ran and the provider reported cache reads or writes.
    *
-   * It is not the layer's saving and it is never part of `cost.netSavings`,
+   * It is not the layer's saving and it is never part of `cost.netSavingsRatio`,
    * `cost.baselineEstimate`, `basis: "reference"` or the commission base: the
    * discount is the provider's, and `cost` prices cached tokens at the cached
    * rate on both sides for exactly that reason. It exists so the report adds up
@@ -1376,16 +1377,6 @@ export interface SavingsReport {
   cost: {
     baselineEstimate: number;
     actual: number;
-    /**
-     * A RATIO, not money: `1 - actual / baselineEstimate`, rounded to six
-     * decimals (0 when nothing was saved, negative when the request cost more).
-     * Do not sum it across requests: it is a ratio, not dollars.
-     *
-     * @deprecated Since 0.4.33, read {@link netSavingsRatio} (the same value) or
-     * {@link netSavingsUsd} (the saving in USD). Removed in 0.5: see the 0.5
-     * migration guide.
-     */
-    netSavings: number;
     /**
      * The saving as a RATIO of the baseline: `1 - actual / baselineEstimate`,
      * rounded to six decimals (0 when nothing was saved or there is no baseline,
@@ -1532,7 +1523,7 @@ export interface LicenseGate {
  * went to your provider untouched and nothing was served from a cache.
  *
  * Every figure is HYPOTHETICAL (`basis: "shadow"`): it is never part of
- * `cost.baselineEstimate`, `cost.actual` or `cost.netSavings`, never in any
+ * `cost.baselineEstimate`, `cost.actual` or `cost.netSavingsRatio`, never in any
  * commission base, and never added to measured money.
  */
 export interface MeasureReport {

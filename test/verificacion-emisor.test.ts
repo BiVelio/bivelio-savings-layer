@@ -296,7 +296,7 @@ describe("independencia de la medición de uso", () => {
       calls: { avoidedLlm: 0, actualLlm: 1 },
       tokens: { baselineInput: 10, actualInput: 10, eliminatedInput: 0, compressedInput: 0, baselineOutput: 5, actualOutput: 5 },
       cache: { result: "miss" },
-      cost: { baselineEstimate: 0.01, actual: 0.01, netSavings: 0, basis: "measured" },
+      cost: { baselineEstimate: 0.01, actual: 0.01, netSavingsRatio: 0, basis: "measured" },
     } as unknown as SavingsReport;
     for (let i = 0; i < 5; i++) {
       verif.encolar(check());

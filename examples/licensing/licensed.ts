@@ -16,8 +16,8 @@ import {
   createSavingsLayer,
   createMockProvider,
   LicenseError,
-  resolveLicense,
 } from "../../src/index.js";
+import { resolveLicense } from "../../src/license/index.js";
 
 const licenseKey = process.env.BIVELIO_LICENSE_KEY;
 if (!licenseKey) {

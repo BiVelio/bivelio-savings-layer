@@ -147,7 +147,7 @@ describe("semanticCacheDefault: la capa la pide, la petición gana", () => {
     const capa = createSavingsLayer({
       provider: new ProveedorFijo(),
       costModels: PRECIOS,
-      semanticCache: cache,
+      semanticCacheStore: cache,
       semanticCacheDefault: true,
     });
     await capa.generate(peticion(PREGUNTA, { exactCache: false }));
@@ -161,7 +161,7 @@ describe("semanticCacheDefault: la capa la pide, la petición gana", () => {
     const capa = createSavingsLayer({
       provider: new ProveedorFijo(),
       costModels: PRECIOS,
-      semanticCache: cache,
+      semanticCacheStore: cache,
       semanticCacheDefault: true,
     });
     await capa.generate(peticion(PREGUNTA, { exactCache: false, semanticCache: false }));
@@ -181,7 +181,7 @@ describe("semanticCacheDefault: la capa la pide, la petición gana", () => {
         provider: new ProveedorFijo(),
         costModels: PRECIOS,
         silenceWarnings: true,
-        semanticCache: nuevaCache(),
+        semanticCacheStore: nuevaCache(),
         semanticCacheDefault: defecto,
       });
       const extra = { savings: { exactCache: false } };
@@ -193,7 +193,7 @@ describe("semanticCacheDefault: la capa la pide, la petición gana", () => {
 
   it("sin semanticCacheDefault nada cambia: sin pedirla, la caché no se toca", async () => {
     const cache = nuevaCache();
-    const capa = createSavingsLayer({ provider: new ProveedorFijo(), costModels: PRECIOS, silenceWarnings: true, semanticCache: cache });
+    const capa = createSavingsLayer({ provider: new ProveedorFijo(), costModels: PRECIOS, silenceWarnings: true, semanticCacheStore: cache });
     await capa.generate(peticion(PREGUNTA, { exactCache: false }));
     const r = await capa.generate(peticion(REFORMULADA, { exactCache: false }));
     expect(cache.size).toBe(0);
@@ -205,7 +205,7 @@ describe("semanticCacheDefault: la capa la pide, la petición gana", () => {
 
 describe("una caché semántica que ninguna petición pide se avisa", () => {
   it("una vez, por muchas peticiones, y dice cómo encenderla", async () => {
-    const capa = createSavingsLayer({ provider: new ProveedorFijo(), costModels: PRECIOS, semanticCache: nuevaCache() });
+    const capa = createSavingsLayer({ provider: new ProveedorFijo(), costModels: PRECIOS, semanticCacheStore: nuevaCache() });
     for (const q of ["a b c", "d e f", "g h i"]) await capa.generate(peticion(q));
     expect(sinPedir()).toHaveLength(1);
     expect(sinPedir()[0]).toContain("semanticCacheDefault: true");
@@ -216,7 +216,7 @@ describe("una caché semántica que ninguna petición pide se avisa", () => {
     const capa = createSavingsLayer({
       provider: new ProveedorFijo(),
       costModels: PRECIOS,
-      semanticCache: nuevaCache(),
+      semanticCacheStore: nuevaCache(),
       silenceWarnings: true,
     });
     await capa.generate(peticion("a b c"));
@@ -224,14 +224,14 @@ describe("una caché semántica que ninguna petición pide se avisa", () => {
   });
 
   it("no avisa cuando es una decisión: `false` en la petición, o semanticCacheDefault (también false)", async () => {
-    const conFalse = createSavingsLayer({ provider: new ProveedorFijo(), costModels: PRECIOS, semanticCache: nuevaCache() });
+    const conFalse = createSavingsLayer({ provider: new ProveedorFijo(), costModels: PRECIOS, semanticCacheStore: nuevaCache() });
     await conFalse.generate(peticion("a b c", { semanticCache: false }));
     await conFalse.generate(peticion("a b c", { semanticCache: true }));
     for (const defecto of [false, true] as const) {
       const capa = createSavingsLayer({
         provider: new ProveedorFijo(),
         costModels: PRECIOS,
-        semanticCache: nuevaCache(),
+        semanticCacheStore: nuevaCache(),
         semanticCacheDefault: defecto,
       });
       await capa.generate(peticion("d e f"));

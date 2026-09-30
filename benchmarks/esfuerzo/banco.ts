@@ -178,7 +178,7 @@ export function describirDecision(d: Decision, log: (l: string) => void): void {
   }
   log(
     d.global.nivel
-      ? `  GATEWAY (one level for every class): BVSALA_GATEWAY_ESFUERZO=${d.global.nivel} (output floor ${d.global.sueloSalidaPct?.toFixed(1)} %)`
+      ? `  GATEWAY (one level for every class): BVSALA_GATEWAY_EFFORT=${d.global.nivel} (output floor ${d.global.sueloSalidaPct?.toFixed(1)} %)`
       : `  GATEWAY (one level for every class): OFF`,
   );
 }

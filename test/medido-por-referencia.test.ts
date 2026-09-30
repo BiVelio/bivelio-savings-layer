@@ -192,7 +192,7 @@ describe("1-4 · la valoración: entrada a tarifa cacheada, salida solo determin
     expect(r.tokens.actualOutput).toBe(0);
     expect(r.tokens.providerCachedInput).toBeUndefined();
     expect(r.cost.actual).toBe(0);
-    expect(r.cost.netSavings).toBe(1);
+    expect(r.cost.netSavingsRatio).toBe(1);
     expect(r.cost.baselineEstimate).toBeCloseTo(2.904e-4, 10);
     expect(r.cache.reference).toEqual({
       requestId: primera.report.requestId,
@@ -873,7 +873,7 @@ describe("16-17 · el seguidor de singleflight", () => {
         expect(s.report.tokens.baselineInput).toBe(40);
         expect(s.report.tokens.baselineOutput).toBe(salidaEsperada);
         expect(s.report.cost.actual).toBe(0);
-        expect(s.report.cost.netSavings).toBe(1);
+        expect(s.report.cost.netSavingsRatio).toBe(1);
         expect(s.report.cache.reference?.requestId).toBe(lider.report.requestId);
       }
       expect(res.reduce((t, r) => t + r.report.calls.actualLlm, 0)).toBe(1);
@@ -900,7 +900,7 @@ describe("18-19 · lo que queda fuera, a propósito", () => {
     const embed = async (t: string): Promise<number[]> =>
       [0, 1, 2, 3].map((i) => [...t].filter((c) => c.charCodeAt(0) % 4 === i).length);
     const semanticCache = new InMemorySemanticCache({ embed, similarityThreshold: 0.3, acceptThreshold: 0.3 });
-    const { layer } = montar(new ProveedorFijo(1736, 282), { semanticCache });
+    const { layer } = montar(new ProveedorFijo(1736, 282), { semanticCacheStore: semanticCache });
     const base = {
       savings: { semanticCache: true as const, exactCache: false },
       context: { tenantId: "acme", knowledgeEpoch: "e1" },

@@ -43,7 +43,7 @@ import { fileURLToPath } from "node:url";
 import {
   AnthropicProvider,
   BV_SALA_VERSION,
-  CATALOGO,
+  PRICE_CATALOG,
   createSavingsLayer,
   GoogleProvider,
   OpenAICompatibleProvider,
@@ -166,7 +166,7 @@ export const MODELOS: ConfigDeModelo[] = [
 ];
 
 /**
- * Precio OFICIAL citado para un modelo SIN fila en `CATALOGO` (el catálogo no se
+ * Precio OFICIAL citado para un modelo SIN fila en `PRICE_CATALOG` (el catálogo no se
  * toca desde un banco). Solo sirve para el presupuesto y la cuenta del banco; la
  * capa sigue valorando con su catálogo (sin fila → respaldo ilustrativo).
  */
@@ -189,7 +189,7 @@ const CONTROLES_POR_MODELO = 5;
 const topeDe = (cfg: ConfigDeModelo): number => cfg.topeDeSalida ?? TOPE_DE_SALIDA;
 
 export function precioDe(modelo: string): Precio {
-  const p = (CATALOGO as Record<string, Precio | undefined>)[modelo] ?? PRECIOS_CITADOS[modelo]?.precio;
+  const p = (PRICE_CATALOG as Record<string, Precio | undefined>)[modelo] ?? PRECIOS_CITADOS[modelo]?.precio;
   if (!p) throw new Error(`sin fila de catálogo para ${modelo}: no se puede presupuestar`);
   return p;
 }
@@ -637,7 +637,7 @@ async function brazoB(
       basis: rep.cost.basis,
       actual: rep.cost.actual,
       baselineEstimate: rep.cost.baselineEstimate,
-      netSavings: rep.cost.netSavings,
+      netSavings: rep.cost.netSavingsRatio,
       cacheResult: rep.cache.result,
       reference: !!rep.cache.reference,
       ...(refRej ? { referenceRejected: refRej } : {}),

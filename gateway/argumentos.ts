@@ -75,81 +75,59 @@ export function mensajeDeFalloDeArranque(err: unknown, comando: string, puertoPe
   return `could not start the gateway for \`bvsala ${comando}\`: ${detalle}`;
 }
 
-// ── LOS NOMBRES EN INGLÉS (decisión del dueño, 2026-09-29, para la 0.4.33) ──
+// ── LOS NOMBRES EN INGLÉS (decisión del dueño, 2026-09-29) ──
 //
-// Flags y variables del CLI se escriben en inglés. Los nombres españoles siguen
-// funcionando hasta la 0.5 como ALIAS: se traducen aquí, antes de que nadie los
-// lea, y cada uno avisa UNA vez por ejecución (una línea a stderr), silenciable
-// con BVSALA_SILENCE_DEPRECATIONS=1. Solo en los subcomandos propios: lo que va
-// detrás de un terminal envuelto (`bvsala claude …`) es del terminal y no se toca.
+// Flags y variables del CLI se escriben en inglés. Los nombres españoles fueron
+// alias con aviso en la 0.4.33 y la 0.4.34; en la 0.5 dejan de funcionar. No se
+// ignoran en silencio: un flag que desaparece sin decir nada cambia de sentido
+// (`--puerto 9000` acabaría en el 8402 por defecto) y una variable ignorada
+// apaga una palanca que el cliente cree encendida. Así que el nombre viejo es
+// un ERROR que dice el nuevo, y el CLI sale con 1 antes de arrancar nada. Solo
+// en los subcomandos propios: lo que va detrás de un terminal envuelto
+// (`bvsala claude …`) es del terminal y no se toca.
 
-/** Flag español → su nombre en inglés. */
-export const FLAGS_EN_ESPANOL: Readonly<Record<string, string>> = {
+/** Flag español retirado en la 0.5 → su nombre en inglés. */
+export const RETIRED_FLAGS: Readonly<Record<string, string>> = {
   "--puerto": "--port",
   "--proyecto": "--project",
   "--forzar": "--force",
 };
 
-/** Variable española → su nombre en inglés. */
-export const VARIABLES_EN_ESPANOL: Readonly<Record<string, string>> = {
+/** Variable española retirada en la 0.5 → su nombre en inglés. */
+export const RETIRED_ENV_VARS: Readonly<Record<string, string>> = {
   BVSALA_GATEWAY_ESFUERZO: "BVSALA_GATEWAY_EFFORT",
   BVSALA_GATEWAY_MODELO_HERMANO: "BVSALA_GATEWAY_SIBLING_MODEL",
 };
 
-/** La variable que calla los avisos de nombre obsoleto. */
-export const SILENCIAR_OBSOLETOS = "BVSALA_SILENCE_DEPRECATIONS";
-
-function silenciado(env: Readonly<Record<string, string | undefined>>): boolean {
-  const v = env[SILENCIAR_OBSOLETOS]?.trim();
-  return v !== undefined && v !== "" && v !== "0";
-}
-
 /**
- * Traduce los flags españoles de un subcomando propio a su nombre inglés.
- * Devuelve los argumentos ya traducidos y un aviso por flag distinto usado
- * (vacío si `BVSALA_SILENCE_DEPRECATIONS` está puesta).
+ * Los errores por nombre retirado, uno por nombre distinto (vacío si no hay
+ * ninguno). Los flags solo cuentan en los subcomandos propios (`flags`
+ * vacío para un envoltorio); las variables, solo donde se leen: en lo que
+ * arranca el gateway (`gateway` y los envoltorios).
  */
-export function traducirFlags(
-  resto: readonly string[],
-  env: Readonly<Record<string, string | undefined>> = {},
-): { resto: string[]; avisos: string[] } {
-  const usados = new Set<string>();
-  const traducido = resto.map((a) => {
-    const ingles = FLAGS_EN_ESPANOL[a];
-    if (ingles === undefined) return a;
-    usados.add(a);
-    return ingles;
-  });
-  const avisos = silenciado(env)
-    ? []
-    : [...usados].map(
-        (a) =>
-          `[bvsala] ${a} is deprecated: use ${FLAGS_EN_ESPANOL[a]} (it still works until 0.5; ` +
-          `${SILENCIAR_OBSOLETOS}=1 silences this).`,
-      );
-  return { resto: traducido, avisos };
-}
-
-/**
- * El entorno con los nombres ingleses resueltos: si solo está el español, su
- * valor pasa al inglés; si están los dos, gana el inglés. Devuelve una COPIA
- * (nunca toca `process.env`) y un aviso por variable española presente.
- */
-export function traducirEntorno(
+export function retiredNameErrors(
+  flags: readonly string[],
   env: Readonly<Record<string, string | undefined>>,
-): { env: Record<string, string | undefined>; avisos: string[] } {
-  const out: Record<string, string | undefined> = { ...env };
-  const avisos: string[] = [];
-  for (const [espanol, ingles] of Object.entries(VARIABLES_EN_ESPANOL)) {
-    const viejo = env[espanol];
-    if (viejo === undefined) continue;
-    const nuevo = env[ingles];
-    if (nuevo === undefined) out[ingles] = viejo;
-    avisos.push(
-      `[bvsala] ${espanol} is deprecated: use ${ingles} (it still works until 0.5; ` +
-        `${SILENCIAR_OBSOLETOS}=1 silences this).` +
-        (nuevo !== undefined ? ` Both are set: ${ingles} is the one in use.` : ""),
-    );
+  { checkEnv }: { checkEnv: boolean },
+): string[] {
+  const errores: string[] = [];
+  const vistos = new Set<string>();
+  for (const a of flags) {
+    // `--puerto=9000` también: el nombre es lo que va antes del `=`.
+    const nombre = a.split("=")[0]!;
+    const ingles = RETIRED_FLAGS[nombre];
+    if (ingles === undefined || vistos.has(nombre)) continue;
+    vistos.add(nombre);
+    errores.push(`[bvsala] ${nombre} was removed in 0.5: use ${ingles}.`);
   }
-  return { env: out, avisos: silenciado(env) ? [] : avisos };
+  if (checkEnv) {
+    for (const [espanol, ingles] of Object.entries(RETIRED_ENV_VARS)) {
+      if (env[espanol] === undefined) continue;
+      errores.push(
+        `[bvsala] ${espanol} was removed in 0.5 and is no longer read: rename it to ${ingles} ` +
+          `(same values), or unset it.`,
+      );
+    }
+  }
+  return errores;
 }

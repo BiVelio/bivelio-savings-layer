@@ -1,3 +1,4 @@
+import type { MotivoDeParada } from "./motivo-de-parada.js";
 import type { ChatMessage, ToolCallRequest } from "../contracts/types.js";
 import type { ProviderUsage } from "./types.js";
 
@@ -121,7 +122,7 @@ export function traducirParadaDeGemini(
   nativa: string | undefined,
   bloqueo: string | undefined,
   hayLlamadas: boolean,
-): { parada?: string; detalle?: string; reproducible: boolean } {
+): { parada?: MotivoDeParada; detalle?: string; reproducible: boolean } {
   if (bloqueo !== undefined && bloqueo !== "" && bloqueo !== "BLOCK_REASON_UNSPECIFIED") {
     return { parada: "content_filter", detalle: bloqueo, reproducible: true };
   }
@@ -131,7 +132,10 @@ export function traducirParadaDeGemini(
   if (nativa === "STOP") return { parada: hayLlamadas ? "tool_calls" : "stop", reproducible: true };
   if (nativa === "MAX_TOKENS") return { parada: "length", reproducible: true };
   if (PARADAS_DE_FILTRO.has(nativa)) return { parada: "content_filter", detalle: nativa, reproducible: true };
-  return { parada: nativa, reproducible: !PARADAS_DE_FALLO.has(nativa) };
+  // Lo demás (un fallo de la generación o una parada que aún no conocemos) sale
+  // `other` con el nombre nativo como detalle: desde la 0.5 `finishReason` es
+  // un conjunto cerrado (motivo-de-parada.ts).
+  return { parada: "other", detalle: nativa, reproducible: !PARADAS_DE_FALLO.has(nativa) };
 }
 
 // ── El esfuerzo de razonamiento, en el idioma de cada familia ────────────────

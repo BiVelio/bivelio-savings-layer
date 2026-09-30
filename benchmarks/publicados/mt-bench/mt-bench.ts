@@ -413,8 +413,12 @@ interface InformeDeLaCapa {
   tokens: { baselineInput: number; actualInput: number; baselineOutput: number; actualOutput: number; providerCachedInput?: number; eliminatedInput: number; compressedInput: number };
   cache: { result: string };
   routing: { executionClass: string; reason?: string };
-  /** `netSavings` es una PROPORCIÓN (0..1, `tokenizer/accounting.ts`), no dólares: el ahorro en $ es `baselineEstimate − actual`. */
-  cost: { baselineEstimate: number; actual: number; netSavings: number; basis: string };
+  /**
+   * La razón (0..1, `tokenizer/accounting.ts`), no dólares: el ahorro en $ es `baselineEstimate − actual`.
+   * Se llama `netSavingsRatio` desde la 0.4.33 y `netSavings` solo hasta la 0.4.x (la 0.5 lo quita); el
+   * arnés mide paquetes de las dos épocas, así que acepta ambos.
+   */
+  cost: { baselineEstimate: number; actual: number; netSavingsRatio?: number; netSavings?: number; basis: string };
   qualityStatus?: string;
   latencyMs: { total: number; preprocessing: number; provider: number };
   traces: { stage: string; outcome: string }[];
@@ -430,12 +434,21 @@ interface CapaCargada {
 }
 interface ModuloDelPaquete {
   BV_SALA_VERSION: string;
-  CATALOGO: Readonly<Record<string, Precio>>;
+  /** El catálogo de precios: `PRICE_CATALOG` desde la 0.4.33; `CATALOGO` solo hasta la 0.4.x (la 0.5 lo quita). */
+  PRICE_CATALOG?: Readonly<Record<string, Precio>>;
+  CATALOGO?: Readonly<Record<string, Precio>>;
   createSavingsLayer(cfg: Record<string, unknown>): CapaCargada;
   AnthropicProvider: new (o: Record<string, unknown>) => unknown;
   OpenAICompatibleProvider: new (o: Record<string, unknown>) => unknown;
   /** El adaptador nativo de Gemini (#410). No existe en la 0.4.31. */
   GoogleProvider?: AdaptadorGoogle;
+}
+
+/** El catálogo del paquete cargado, con el nombre de su época (ver `ModuloDelPaquete`). */
+function catalogoDe(mod: ModuloDelPaquete): Readonly<Record<string, Precio>> {
+  const c = mod.PRICE_CATALOG ?? mod.CATALOGO;
+  if (!c) throw new Error("MT-Bench: el paquete cargado no exporta su catálogo de precios (PRICE_CATALOG)");
+  return c;
 }
 
 function asegurarPaquete(): { dir: string; integrityInstalada: string } {
@@ -940,7 +953,7 @@ function fabricaReal(
               new mod.OpenAICompatibleProvider({ apiKey: cred.google.clave, baseUrl: cred.google.base, fetchImpl: f, stripProviderPrefix: true })
             : new mod.OpenAICompatibleProvider({ apiKey: cred.openai.clave, baseUrl: cred.openai.base, fetchImpl: f });
       // Sin fila en el catálogo, el precio OFICIAL citado del modelo (nunca se toca el catálogo).
-      const precio = mod.CATALOGO[m.id] ?? m.precioOficial?.precio;
+      const precio = catalogoDe(mod)[m.id] ?? m.precioOficial?.precio;
       return mod.createSavingsLayer({
         provider,
         ...(origen.tipo === "fuente" ? { devUnlicensed: true } : { licenseKey: cred.licencia }),
@@ -971,7 +984,7 @@ function fabricaStub(cred: Credenciales): FabricaDeCapa {
               tokens: { baselineInput: 0, actualInput: 0, baselineOutput: 0, actualOutput: 0, eliminatedInput: 0, compressedInput: 0 },
               cache: { result: "miss" },
               routing: { executionClass: "stub" },
-              cost: { baselineEstimate: 0, actual: 0, netSavings: 0, basis: "estimated" },
+              cost: { baselineEstimate: 0, actual: 0, netSavingsRatio: 0, basis: "estimated" },
               latencyMs: { total: r.latenciaMs, preprocessing: 0, provider: r.latenciaMs },
               traces: [],
             },
@@ -1518,7 +1531,7 @@ function resumir(
     capa: {
       basis: contar(informes.map((i) => i.cost.basis)),
       ahorroDeclaradoUsd: informes.reduce((s, i) => s + ahorroUsd(i), 0),
-      turnosConAhorroDeclaradoDistintoDe0: informes.filter((i) => Math.abs(i.cost.netSavings) >= 1e-9).length,
+      turnosConAhorroDeclaradoDistintoDe0: informes.filter((i) => Math.abs(i.cost.netSavingsRatio ?? i.cost.netSavings ?? 0) >= 1e-9).length,
       ahorroDeclaradoPorBasis: ahorroPorBasis,
       costeDeclaradoUsd: informes.reduce((s, i) => s + i.cost.actual, 0),
       costeMedidoB: cB.reduce((s, x) => s + x, 0),
@@ -1819,7 +1832,7 @@ async function main(): Promise<void> {
     const descripcion = `${mod.BV_SALA_VERSION} at ${commitDelArbol} (working-tree source, BVSALA_DEV_OPEN=1; weekly bench, not a release)${op.mock ? " — con un proveedor FALSO (--mock)" : ""}`;
     ADAPTADOR_GOOGLE = mod.GoogleProvider ?? null;
     fabrica = fabricaReal(mod, cred, { tipo: "fuente", descripcion });
-    catalogo = mod.CATALOGO;
+    catalogo = catalogoDe(mod);
     version = mod.BV_SALA_VERSION;
     origenDelPaquete = `fuente del árbol de trabajo (${commitDelArbol}), BVSALA_DEV_OPEN=1`;
   } else if (op.fuente) {
@@ -1827,7 +1840,7 @@ async function main(): Promise<void> {
     verificacion = f.verificacion;
     ADAPTADOR_GOOGLE = f.mod.GoogleProvider ?? null;
     fabrica = fabricaReal(f.mod, cred, { tipo: "fuente" });
-    catalogo = f.mod.CATALOGO;
+    catalogo = catalogoDe(f.mod);
     integrity = `${PAQUETE.integrity} (tarball de npm; dist/index.js sha256 ${f.verificacion.npm.sha256DistIndex} = build del fuente)`;
     version = f.mod.BV_SALA_VERSION;
     origenDelPaquete = `fuente de ${FUENTE.etiqueta} (${FUENTE.commit}), verificado idéntico al tarball de npm`;
@@ -1847,7 +1860,7 @@ async function main(): Promise<void> {
     const p = await cargarPaquete();
     ADAPTADOR_GOOGLE = p.mod.GoogleProvider ?? null;
     fabrica = fabricaReal(p.mod, cred, { tipo: "npm" });
-    catalogo = p.mod.CATALOGO;
+    catalogo = catalogoDe(p.mod);
     integrity = p.integrity;
     version = p.mod.BV_SALA_VERSION;
   }

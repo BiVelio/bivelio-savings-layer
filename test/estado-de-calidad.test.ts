@@ -118,7 +118,7 @@ describe("task_equivalent — no es idéntico, pero pasó una verja determinista
       similarityThreshold: 0.3,
       acceptThreshold: 0.3,
     });
-    const capaUnica = capa(proveedor, { semanticCache });
+    const capaUnica = capa(proveedor, { semanticCacheStore: semanticCache });
     const base = {
       model: "openai/gpt-4o-mini",
       savings: { semanticCache: true as const, exactCache: false },
@@ -400,7 +400,7 @@ describe("el vocabulario declarado es exactamente el que se produce", () => {
       similarityThreshold: 0.3,
       acceptThreshold: 0.3,
     });
-    const capaSemantica = capa(new ProveedorFijo("berlin"), { semanticCache });
+    const capaSemantica = capa(new ProveedorFijo("berlin"), { semanticCacheStore: semanticCache });
     const base = {
       model: "openai/gpt-4o-mini",
       savings: { semanticCache: true as const, exactCache: false },

@@ -49,12 +49,11 @@ export function informeSintetico(p: ParcheDeInforme = {}): SavingsReport {
     cost: {
       baselineEstimate: 0.001,
       actual: 0.001,
-      netSavings: 0,
+      netSavingsRatio: 0,
       basis: "measured",
       ...cost,
-      // Las dos cifras nuevas (0.4.33) se derivan de lo que el test fije, salvo
-      // que las fije él: así un informe sintético cuadra como uno real.
-      netSavingsRatio: cost?.netSavingsRatio ?? cost?.netSavings ?? 0,
+      // El importe se deriva de lo que el test fije, salvo que lo fije él: así
+      // un informe sintético cuadra como uno real.
       netSavingsUsd:
         cost?.netSavingsUsd ??
         Math.round(((cost?.baselineEstimate ?? 0.001) - (cost?.actual ?? 0.001)) * 1e10) / 1e10,
