@@ -76,17 +76,13 @@ describe("panel de instalación: lo que dicen los textos, en los 12 idiomas", ()
   const readmePython = readFileSync(join(RAIZ, "packages/python/README.md"), "utf8");
   const gatewayPython = readFileSync(join(RAIZ, "packages/python/src/bvsala/_gateway.py"), "utf8");
 
-  it("la instalación de Python que se cita es una de las que documenta packages/python", () => {
-    // El README ya da `pip install bivelio-savings-layer`: es la descripción que
-    // PyPI congela al subir, así que tiene que llevarla desde la primera
-    // versión (docs/PUBLICAR-PYPI.md). La web, en cambio, solo la anuncia
-    // cuando PyPI la sirve; hasta entonces cita la instalación desde el
-    // repositorio, que el README sigue documentando.
-    expect(readmePython).toContain("pip install ./packages/python");
+  it("la instalación de Python que se cita es la de PyPI que documenta packages/python", () => {
+    // Esta nota se fusionó con el paquete ya servido por PyPI
+    // (docs/PUBLICAR-PYPI.md): el nombre es el de pyproject y el README lo da.
     const pyproject = readFileSync(join(RAIZ, "packages/python/pyproject.toml"), "utf8");
-    const nombre = /^name = "([^"]+)"$/m.exec(pyproject)?.[1];
-    expect(nombre).toBe("bivelio-savings-layer");
-    expect(readmePython).toContain(`pip install ${nombre}`);
+    expect(/^name = "([^"]+)"$/m.exec(pyproject)?.[1]).toBe("bivelio-savings-layer");
+    expect(readmePython).toContain("pip install bivelio-savings-layer");
+    expect(readmePython).toContain("import bvsala");
     expect(readmePython).not.toMatch(/Until the first release on PyPI/);
   });
 
@@ -121,12 +117,13 @@ describe("panel de instalación: lo que dicen los textos, en los 12 idiomas", ()
         }
       });
 
-      it("pythonNote: el comando exacto del README, la versión mínima y el contacto", () => {
-        expect(p.pythonNote).toContain("<code>pip install ./packages/python</code>");
+      it("pythonNote: el comando exacto del README, el import y la versión mínima", () => {
+        expect(p.pythonNote).toContain("<code>pip install bivelio-savings-layer</code>");
+        expect(p.pythonNote).toContain("<code>import bvsala</code>");
         expect(p.pythonNote).toContain("0.4.26");
         expect(p.pythonNote).toContain("PyPI");
-        expect(p.pythonNote).toContain("support@bivelio.com");
-        expect(p.pythonNote).not.toMatch(/pip install bivelio|pip install bvsala/);
+        // Ni la instalación desde un repositorio privado ni un nombre que no es el publicado.
+        expect(p.pythonNote).not.toMatch(/packages\/python|pip install bvsala/);
       });
 
       it("portada: `init` en la sección de instalación y los agentes medibles en la nota del gateway", () => {
