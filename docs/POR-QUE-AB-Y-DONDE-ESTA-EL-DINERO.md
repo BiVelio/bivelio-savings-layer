@@ -174,7 +174,7 @@ v1, y la regla con la que un SDK valoró una repetición no viaja en el registro
 de uso: el cierre sella `reference-v2` para el extracto entero. Para que ese
 sello sea cierto se publique lo que se publique, el ingest degrada a
 `estimated` toda referencia de un proceso que no declara versión o que declara
-una anterior a `VERSION_MINIMA_REFERENCIA` (0.4.33, `src/version.ts` y su
+una anterior a `VERSION_MINIMA_REFERENCIA` (0.4.35, `src/version.ts` y su
 espejo en `apps/web/lib/metering/version.ts`). Sigue en los totales; no entra
 en `reference_*` ni en la base. La mínima fue 0.4.24 hasta el 2026-09-28: de la
 0.4.24 a la 0.4.28 el SDK podía guardar una negativa del proveedor en caché y
@@ -200,6 +200,16 @@ una disculpa («I'm sorry, but I don't have access to personal data…»). Las v
 el primer banco semanal en vivo (XSTest ids 31, 149, 180, 404, 450); #422 las
 cierra con la regla `partial-refusal` y la carencia como motivo, y sale en la
 0.4.33. Las referencias honestas de 0.4.32 también entran como `estimated`.
+El 2026-09-30 subió a 0.4.35, con el mismo criterio: hasta la 0.4.34 el SDK
+guardaba y repetía como referencia la negativa escrita DENTRO de una salida
+estructurada. Con un contrato de salida estricto, gpt-4o-mini no usa
+`message.refusal` y escribe la negativa en el JSON (`{"steps":["This request
+cannot be fulfilled as it involves illegal activities…"]}`), y el detector leía
+el JSON como prosa. La vio una sonda en vivo que buscaba el `message.refusal`
+del criterio 3 de CAMINO-A-0.5.md; #431 la cierra con la regla
+`refusal-in-structured-output` y la negativa impersonal («this request cannot
+be fulfilled / is illegal…»), y sale en la 0.4.35. Las referencias honestas de
+0.4.33 y 0.4.34 también entran como `estimated`.
 Lo mismo para toda referencia que declare
 `gateway/`, a cualquier versión: la regla v2 vive en el pipeline del SDK y el
 gateway no pasa por él, así que su gemela coalescida (Parte G) entra como

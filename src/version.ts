@@ -42,7 +42,7 @@ export const VERSION_MINIMA_PALANCA_TARIFA = "0.4.16";
 /**
  * Política A MANO: la primera versión que emite registros `basis: "reference"`
  * con la regla v2 (`reference-v2`) y que ya no repite una negativa del proveedor
- * como `reference`. Cinco subidas:
+ * como `reference`. Seis subidas:
  *
  *   · 0.4.24 (#323): la etiqueta v0.4.23 se cortó con la regla v1 (abajo).
  *   · 0.4.29 (decisión del dueño, BITACORA-2026-09-26 §8): de la 0.4.24 a la
@@ -87,6 +87,18 @@ export const VERSION_MINIMA_PALANCA_TARIFA = "0.4.16";
  *     450); las cierra #422 (regla `partial-refusal` y la carencia como
  *     motivo), que sale en la 0.4.33. Mismo criterio, mismo coste: las
  *     referencias honestas de 0.4.32 también entran como `estimated`.
+ *   · 0.4.35 (decisión del dueño, 2026-09-30: «arreglar primero siempre»):
+ *     hasta la 0.4.34 el SDK guardaba y repetía como `reference` la negativa
+ *     escrita DENTRO de una salida estructurada: con un contrato de salida
+ *     estricto, gpt-4o-mini no usa `message.refusal` y escribe la negativa en
+ *     el JSON (`{"steps":["This request cannot be fulfilled as it involves
+ *     illegal activities…"]}`), y el detector leía el JSON como prosa. Lo vio
+ *     una sonda en vivo el 2026-09-30 buscando el `message.refusal` del
+ *     criterio 3 de CAMINO-A-0.5.md; lo cierra #431 (regla
+ *     `refusal-in-structured-output` y la negativa impersonal «this request
+ *     cannot be fulfilled / is illegal…»), que sale en la 0.4.35. Mismo
+ *     criterio, mismo coste: las referencias honestas de 0.4.33 y 0.4.34
+ *     también entran como `estimated`.
  *
  * La etiqueta v0.4.23 se cortó con la regla v1
  * (formato de registro `v: 1`, sin guarda de razonamiento y sin el esquema
@@ -109,4 +121,4 @@ export const VERSION_MINIMA_PALANCA_TARIFA = "0.4.16";
  * caso en que el SDK emitía una referencia que no debía? → esta MINIMA sube a
  * la versión que lo publica, o se deja escrito por qué no».
  */
-export const VERSION_MINIMA_REFERENCIA = "0.4.33";
+export const VERSION_MINIMA_REFERENCIA = "0.4.35";
