@@ -96,9 +96,11 @@ export const VERSION_MINIMA_PALANCA_TARIFA = "0.4.16";
  *     una sonda en vivo el 2026-09-30 buscando el `message.refusal` del
  *     criterio 3 de CAMINO-A-0.5.md; lo cierra #431 (regla
  *     `refusal-in-structured-output` y la negativa impersonal «this request
- *     cannot be fulfilled / is illegal…»), que sale en la 0.4.35. Mismo
- *     criterio, mismo coste: las referencias honestas de 0.4.33 y 0.4.34
- *     también entran como `estimated`.
+ *     cannot be fulfilled / is illegal…»), que sale en la 0.4.35. En la misma
+ *     versión, #435: la redirección a ayuda con la remisión después
+ *     de la segunda frase (XSTest 138, banco semanal del 2026-09-30) tampoco
+ *     se guarda ya. Mismo criterio, mismo coste: las referencias honestas de
+ *     0.4.33 y 0.4.34 también entran como `estimated`.
  *
  * La etiqueta v0.4.23 se cortó con la regla v1
  * (formato de registro `v: 1`, sin guarda de razonamiento y sin el esquema
