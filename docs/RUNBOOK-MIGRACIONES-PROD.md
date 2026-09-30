@@ -1,4 +1,4 @@
-# Runbook — migraciones 0007–0017 en producción (+ anexos 0024/0025 … 0034)
+# Runbook — migraciones 0007–0017 en producción (+ anexos 0024/0025 … 0035)
 
 **Escrito el 2026-08-26.** Estado de partida conocido: 0001–0006 aplicadas
 (bitácoras de julio), 0012 **confirmada** aplicada (verificación del 2026-08-11
@@ -58,6 +58,7 @@ select m.mig, m.aplicada from (values
   ('0017 cargos',             to_regclass('bvsala.cargos') is not null),
   ('0033 licencia Medir',     to_regclass('bvsala.medir_altas') is not null and to_regclass('bvsala.licenses_una_medir_viva_por_org') is not null),
   ('0034 cobro de asientos',  to_regclass('bvsala.ajustes_asientos') is not null and to_regprocedure('bvsala.ajustes_asientos_inmutable()') is not null),
+  ('0035 ajustes sin borrado', not has_table_privilege('service_role','bvsala.ajustes_asientos','delete')),
   ('0029 medido por referencia', to_regclass('bvsala.reference_hits') is not null),
   ('0030 tu propio banco', to_regclass('bvsala.verification_samples') is not null and to_regclass('bvsala.verification_daily') is not null and to_regprocedure('bvsala.ingest_verification_batch(uuid, text, jsonb, jsonb)') is not null and to_regprocedure('bvsala.verification_summary(uuid, date, date)') is not null),
   ('0031 referencia por asiento', exists (select 1 from information_schema.columns where table_schema='bvsala' and table_name='seat_activity' and column_name='reference_baseline_cost')),
@@ -93,6 +94,7 @@ migración crea:
 | 0031 | columna `seat_activity.reference_baseline_cost` | Lo medido por referencia, también por asiento (anexo 0031, al final). Lleva versión de la RPC — regla 1 |
 | 0032 | columna `usage_daily.native_cache_read_savings` + check `usage_daily_native_no_negatives` | El ahorro nativo de la caché del proveedor, aparte y sin comisión (anexo 0032, al final). Lleva versión de la RPC — regla 1 |
 | 0034 | tabla `ajustes_asientos` + función `ajustes_asientos_inmutable()` | El cobro de los asientos usados de más (anexo 0034, al final). Aditiva; **no** lleva versión de la RPC. La necesita el cron del día 1 a las 07:30 |
+| 0035 | `service_role` **sin** DELETE ni TRUNCATE sobre `ajustes_asientos` | Los privilegios por defecto de Supabase daban DELETE en la tabla nueva; 0035 lo quita (el registro de lo cobrado es inmutable). Va justo después de 0034 |
 | RPC final | el fuente de `ingest_usage_batch` menciona `reference_hits`, `seat_activity.reference_baseline_cost` **y** `nativeCacheReadSavings` | La versión **final** de la RPC es la de 0032 (antes lo fue la de 0015, luego 0024, 0025, 0029 y 0031). Si 0032 sale `true` pero esto sale `false`, alguien regresó la RPC: re-aplicar **solo** el bloque de función de 0032 |
 
 ## Paso 2 — Aplicar lo que falte, en orden
