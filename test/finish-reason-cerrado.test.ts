@@ -271,8 +271,11 @@ describe("GoogleProvider", () => {
 
 // ── El SDK oficial de Anthropic (el adaptador `/anthropic-sdk`) ───────────────
 //
-// Lo que el cliente del SDK recibe es el Message crudo de Anthropic (con su
-// `stop_reason`); lo que la capa normaliza es su libro: `qualityLedger.truncation`.
+// EL CONTRATO (decidido en el PR #434): el adaptador habla el protocolo del SDK
+// oficial hacia el framework, así que el framework recibe el `stop_reason` DE
+// ANTHROPIC, tal cual, en JSON y en stream (y `refusal` con su
+// `stop_details`); lo que la capa normaliza es SU informe:
+// `qualityLedger.truncation.finishReason` cerrado y el literal en el detalle.
 
 describe("anthropicSavings (SDK oficial)", () => {
   const PEDIDO = {
@@ -299,6 +302,7 @@ describe("anthropicSavings (SDK oficial)", () => {
     const fm = await cliente(cable(() => ({ sse: sseAnthropic(parada, detalles) })), s)
       .messages.stream(PEDIDO)
       .finalMessage();
+    expect(fm.stop_reason).toBe(parada);
     esperar(s.reportFor(fm)?.qualityLedger?.truncation ?? {}, motivo, detalle);
     s.close();
   });
@@ -309,6 +313,8 @@ describe("anthropicSavings (SDK oficial)", () => {
       cable(() => ({ json: mensajeAnthropic("refusal", { type: "refusal", category: "bio" }) })),
       s,
     ).messages.create(PEDIDO);
+    expect(m.stop_reason).toBe("refusal");
+    expect((m as unknown as { stop_details?: unknown }).stop_details).toEqual({ type: "refusal", category: "bio" });
     esperar(s.reportFor(m)?.qualityLedger?.truncation ?? {}, "content_filter", "bio");
     s.close();
   });

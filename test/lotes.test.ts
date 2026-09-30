@@ -606,6 +606,70 @@ describe("OpenAI · results", () => {
   });
 });
 
+// ── El motivo de parada de cada resultado, cerrado como en `SavingsResult` ──
+//
+// Desde la 0.5 `BatchItemResult.finishReason` es uno de los cinco valores y el
+// literal del proveedor va en `finishReasonDetail`, con la misma regla que
+// `generate()` (src/providers/motivo-de-parada.ts). Por proveedor con Batch API.
+
+describe("Anthropic · results · finishReason cerrado", () => {
+  const CASOS: Array<[string, unknown, string, string | undefined]> = [
+    ["end_turn", undefined, "stop", undefined],
+    ["stop_sequence", undefined, "stop", "stop_sequence"],
+    ["max_tokens", undefined, "length", undefined],
+    ["model_context_window_exceeded", undefined, "length", "model_context_window_exceeded"],
+    ["tool_use", undefined, "tool_calls", undefined],
+    ["refusal", { type: "refusal", category: "cyber" }, "content_filter", "cyber"],
+    ["pause_turn", undefined, "other", "pause_turn"],
+  ];
+
+  it.each(CASOS)("stop_reason %s → %s", async (parada, detalles, motivo, detalle) => {
+    const contenido =
+      parada === "tool_use"
+        ? [{ type: "tool_use", id: "toolu_1", name: "label", input: { label: "billing" } }]
+        : parada === "refusal"
+          ? []
+          : [{ type: "text", text: "billing" }];
+    const msg = {
+      ...mensaje(USO_BATCH, contenido),
+      stop_reason: parada,
+      ...(detalles !== undefined ? { stop_details: detalles } : {}),
+    };
+    const { layer } = anthropic({ lineas: [{ custom_id: "row-0", result: { type: "succeeded", message: msg } }] });
+    const job = await layer.batches.submit(lote(1));
+    const item = (await layer.batches.results(job)).items.find((i) => i.customId === "row-0")!;
+    expect(item.outcome).toBe("succeeded");
+    expect(item.finishReason).toBe(motivo);
+    expect(item.finishReasonDetail).toBe(detalle);
+  });
+});
+
+describe("OpenAI · results · finishReason cerrado", () => {
+  const CASOS: Array<[string, string, string | undefined]> = [
+    ["stop", "stop", undefined],
+    ["length", "length", undefined],
+    ["tool_calls", "tool_calls", undefined],
+    ["function_call", "tool_calls", "function_call"],
+    ["content_filter", "content_filter", undefined],
+    ["content_filter: OTHER", "content_filter", "OTHER"],
+    ["eos", "stop", "eos"],
+    ["algo_nuevo", "other", "algo_nuevo"],
+  ];
+
+  it.each(CASOS)("finish_reason %s → %s", async (parada, motivo, detalle) => {
+    const cuerpo = chat({ prompt_tokens: 1000, completion_tokens: 200 });
+    cuerpo.choices[0]!.finish_reason = parada;
+    const { layer } = openai({
+      salida: [{ id: "batch_req_1", custom_id: "a", response: { status_code: 200, request_id: "req_1", body: cuerpo }, error: null }],
+    });
+    const job = await layer.batches.submit([{ customId: "a", request: pOpenAI("a") }]);
+    const item = (await layer.batches.results(job)).items.find((i) => i.customId === "a")!;
+    expect(item.outcome).toBe("succeeded");
+    expect(item.finishReason).toBe(motivo);
+    expect(item.finishReasonDetail).toBe(detalle);
+  });
+});
+
 // ── La licencia, el proveedor y el cable ─────────────────────────────────────
 
 describe("layer.batches · puertas", () => {

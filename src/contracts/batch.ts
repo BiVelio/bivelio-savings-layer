@@ -109,7 +109,22 @@ export interface BatchItemResult<T = unknown> {
   /** Whether the answer met the output contract, when the request had one and no tool was called. */
   contract?: "met" | "missed";
   toolCalls?: ToolCallRequest[];
-  finishReason?: string;
+  /**
+   * Why the provider stopped, as `SavingsResult.finishReason` reports it:
+   * one of the same five values for every provider (`"stop"`, `"length"`,
+   * `"tool_calls"`, `"content_filter"`, `"other"`). A `"length"` answer was cut
+   * off by the output limit. The provider's own value, when it adds something,
+   * is in {@link finishReasonDetail}.
+   */
+  finishReason?: "stop" | "length" | "tool_calls" | "content_filter" | "other";
+  /**
+   * The provider's own reason behind `finishReason`, with the same rule as
+   * `SavingsResult.finishReasonDetail`: the refusal category or the
+   * provider's literal (`"stop_sequence"`, `"model_context_window_exceeded"`,
+   * `"pause_turn"`…), absent for the plain spellings (`end_turn`, `stop`,
+   * `max_tokens`, `tool_use`…).
+   */
+  finishReasonDetail?: string;
   /** The provider's own counter for this request. */
   usage?: ProviderUsage;
   /** The processing tier this result was billed at, as read from the provider. */

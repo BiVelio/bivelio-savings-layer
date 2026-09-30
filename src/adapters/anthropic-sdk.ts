@@ -42,6 +42,14 @@ import { nuevaLlamada, type LlamadaDelMarco } from "./comun/puente.js";
 // MISMA respuesta que recibió, para que aplique sus reintentos y sus errores
 // tipados como si el adaptador no estuviera.
 //
+// EL `stop_reason` NO SE TOCA (0.5, PR #434): hacia el framework el adaptador
+// habla el protocolo del SDK de Anthropic, y ahí `stop_reason` es contrato de
+// Anthropic (el SDK y el código del cliente comparan contra `end_turn`,
+// `max_tokens`, `pause_turn`…). Cerrarlo rompería ese contrato sin ganar nada.
+// Lo cerrado (`stop | length | tool_calls | content_filter | other`) vive en el
+// informe de la capa: `qualityLedger.truncation`. Lo fija
+// test/finish-reason-cerrado.test.ts.
+//
 // Solo intercepta la creación de mensajes. `count_tokens`, `batches`, `models`
 // y `files` pasan sin tocar: no hay una generación que medir ni que ahorrarse.
 //
@@ -486,6 +494,19 @@ class RespuestaNoOk extends Error {
 /**
  * The savings layer as an Anthropic SDK middleware:
  * `new Anthropic({ middleware: [savings.middleware] })`, last in the list.
+ *
+ * **Stop reasons.** The middleware speaks the official SDK's protocol to your
+ * code, so the `Message` you get keeps Anthropic's own `stop_reason`
+ * (`end_turn`, `max_tokens`, `stop_sequence`, `tool_use`, `pause_turn`,
+ * `refusal`, `model_context_window_exceeded`…) and `stop_details`, exactly as
+ * Anthropic sent them, in JSON and in stream. That is the SDK's contract and the
+ * layer does not rewrite it. An answer the layer served without calling
+ * Anthropic (from its cache or a local resolver) comes back as `end_turn`, or
+ * `tool_use` when it carries tool calls. What the layer normalises is its own report:
+ * {@link AnthropicSavings.reportFor} gives `qualityLedger.truncation.finishReason`
+ * in the closed set of 0.5 (`stop`, `length`, `tool_calls`, `content_filter`,
+ * `other`) and Anthropic's value, when it adds something, in
+ * `truncation.finishReasonDetail`.
  */
 export function anthropicSavings(options: AnthropicSavingsOptions): AnthropicSavings {
   const capa = crearCapaDelAdaptador("anthropic-sdk", options);

@@ -17,6 +17,7 @@ import { BatchSubmitError } from "../pipeline/errors.js";
 import { tryParse } from "../pipeline/pipeline.js";
 import type { OrigenDeTarifa } from "../pricing/tarifas-de-tier.js";
 import { lotesDelProveedor, type CapacidadDeLotes } from "../providers/lotes-del-proveedor.js";
+import { cerrarParada } from "../providers/motivo-de-parada.js";
 import type { ProviderRequest, ProviderResponse } from "../providers/types.js";
 import type { CostModel } from "../tokenizer/accounting.js";
 
@@ -727,7 +728,10 @@ function resultadoDe<T>(
     text: resp.text,
     ...contrato,
     ...(resp.toolCalls && resp.toolCalls.length > 0 ? { toolCalls: resp.toolCalls } : {}),
-    ...(resp.finishReason ? { finishReason: resp.finishReason } : {}),
+    // El motivo de parada, CERRADO como en `SavingsResult` (0.5): el lector del
+    // adaptador ya lo cierra, y `cerrarParada` es idempotente sobre lo cerrado;
+    // pasar por ella deja una sola regla y el detalle del proveedor a su lado.
+    ...cerrarParada(resp.finishReason, resp.finishReasonDetail),
     usage: resp.usage,
     ...(servido ? { servedTier: servido } : {}),
   };

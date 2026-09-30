@@ -18,7 +18,7 @@ public, normalises `finishReason`, and keeps one default that changed in 0.4.33.
 | 1 | `CATALOGO`, `precioDeLista`, `PRECIOS_AL_DIA`, `embebedorLocal`, `UMBRAL_LOCAL` are gone; use the English names | rename | 0.4.33 (the new names were already there) |
 | 2 | `createSavingsLayer({ semanticCache })` is gone; use `semanticCacheStore` | rename | 0.4.33 (the old key warned once) |
 | 3 | `report.cost.netSavings` is gone; use `netSavingsRatio` (same value) or `netSavingsUsd` | rename | 0.4.33 (both new fields were already in the report) |
-| 4 | `result.finishReason` (and `qualityLedger.truncation.finishReason`) is one of five values; the provider's own value is in `finishReasonDetail` | changed value | 0.4.33 (`finishReasonDetail`; on `truncation` from 0.4.34) |
+| 4 | `result.finishReason` (and `qualityLedger.truncation.finishReason`, and each batch item's `finishReason`) is one of five values; the provider's own value is in `finishReasonDetail` | changed value | 0.4.33 (`finishReasonDetail`; on `truncation` from 0.4.34; on batch items new in 0.5) |
 | 5 | Tool selection keeps the whole catalogue unless you set `maxTools` | changed default | already the behaviour since 0.4.33 |
 | 6 | `licenseGate`, `devUnlicensed` and `licensePublicKey` are no longer in `SavingsLayerConfig` | removal | 0.4.33; run-time notices in 0.4.34 |
 | 7 | 66 internal helpers and licensing internals are no longer exported from the package root | removal | every one `@deprecated` in 0.4.34 |
@@ -176,7 +176,12 @@ The provider's own value, when it adds something, is in
 Gemini block reason, or the literal stop reason. The quality ledger carries the
 same pair: `report.qualityLedger.truncation.finishReason` is the same value as
 `result.finishReason`, and `truncation.finishReasonDetail` holds the provider's
-value.
+value. So do batch results: each `BatchItemResult` from
+`layer.batches.results()` has `finishReason` in the same closed set (it was an
+open `string` in 0.4) and the provider's value in the new
+`finishReasonDetail`, read with the same rule on Anthropic's Message Batches and
+on OpenAI's Batch API. The verification pair (`VerificationCheck.naive.finishReason`,
+the `naive_finish_reason` column of the export) uses the same five values too.
 
 | The provider says | `finishReason` (0.5) | `finishReasonDetail` |
 |---|---|---|
@@ -207,12 +212,12 @@ if (result.finishReason === "stop" && result.finishReasonDetail === "stop_sequen
 A `finishReason` of `"length"` still means the answer was cut and is never
 cached. The framework adapters (`/anthropic-sdk` and the rest) keep handing
 your framework the provider's own stop reason; only the layer's result and
-report are normalised.
+report are normalised (see [What does not change](#what-does-not-change)).
 
 **Detect:** search for `finishReason` compared against provider-specific
 strings (`content_filter: …`, `stop_sequence`, `end_turn`, `pause_turn`, Gemini
-upper-case values) or with `startsWith`, in `result` and in
-`qualityLedger.truncation`. In 0.5 the type is the union above, so TypeScript
+upper-case values) or with `startsWith`, in `result`, in
+`qualityLedger.truncation` and in the items of `layer.batches.results()`. In 0.5 the type is the union above, so TypeScript
 flags a comparison with any other literal.
 
 ## 5. Tool selection keeps the whole catalogue by default
@@ -409,3 +414,11 @@ their behaviour changed recently and people ask:
   apart from `cost` and never enters the commission.
 - The four framework adapters (`/ai-sdk`, `/mastra`, `/langchain`,
   `/anthropic-sdk`) keep their exports.
+- **`/anthropic-sdk` hands your code Anthropic's own `stop_reason`.** The
+  middleware speaks the official SDK's protocol, so the `Message` (JSON or
+  stream) keeps `stop_reason` and `stop_details` exactly as Anthropic sent them:
+  `end_turn`, `max_tokens`, `stop_sequence`, `pause_turn`, `refusal`… That is
+  the SDK's contract, and code written against it keeps working. What is
+  normalised is the layer's report: `savings.reportFor(message)` gives
+  `qualityLedger.truncation.finishReason` in the closed set of section 4 and
+  Anthropic's value in `truncation.finishReasonDetail`.
