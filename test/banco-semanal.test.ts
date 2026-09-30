@@ -438,6 +438,63 @@ describe("banco semanal · la lectura de los artefactos (tiradas publicadas de v
     expect(m.ejemplosDeFallos[0]).toMatch(/pregunta 82/);
   });
 
+  describe("MT-Bench: la calidad solo culpa a la capa si la capa cambió algo (run 36748284158)", () => {
+    // La celda real: victoria de B 0,385 [0,308, 0,442] con el cable de B igual
+    // al de A salvo `prompt_cache_key` (40 turnos), caché todo `miss`, 0 $
+    // declarados y el mismo modelo servido. La tirada anterior dio 0,500.
+    type Fila = Record<string, Record<string, unknown>>;
+    const real = () => JSON.parse(leer("fixtures/banco-semanal-mt-bench-gpt-4o-mini-36748284158.json")) as { modelos: Fila[] };
+    const gpt = modelo("openai/gpt-4o-mini");
+    const celda = (m: Medicion): ResultadoDeCelda => ({ bateria: "mt-bench", modelo: gpt.id, estado: "medida", topeUsd: 1.15, medicion: m });
+
+    it("la celda real de gpt-4o-mini: sin intervención, la calidad peor es un aviso de muestreo, no un fallo", () => {
+      const m = extraerMtBench(real(), gpt);
+      expect(m.exactitud[0]).toMatchObject({ peorSignificativo: true });
+      expect(m.exactitud[0]!.ic95!.upper).toBeCloseTo(0.442, 3);
+      expect(m.sinIntervencion).toEqual({ camposNeutros: { prompt_cache_key: 40 } });
+      expect(infraccionesDe(m, 1.15)).toEqual([]);
+      const v = evaluar([celda(m)], null);
+      expect(v.ok).toBe(true);
+      const aviso = v.avisos.find((a) => /atribuible al muestreo/.test(a));
+      expect(aviso).toMatch(/calidad B−A atribuible al muestreo: la capa no cambió nada que altere la generación \(solo `prompt_cache_key` ×40/);
+      expect(aviso).toMatch(/IC95 \[0\.308, 0\.442\]/);
+    });
+
+    it.each([
+      ["una diferencia de `messages`", (f: Fila) => (f["cable"]!["diferencias"] = { prompt_cache_key: 40, messages: 1 })],
+      ["una diferencia de `max_tokens`", (f: Fila) => (f["cable"]!["diferencias"] = { prompt_cache_key: 39, max_tokens: 1 })],
+      ["una llamada evitada por la caché", (f: Fila) => (f["capa"]!["cacheResult"] = { miss: 79, hit: 1 })],
+      ["un turno de B que no llegó al cable", (f: Fila) => (f["cable"]!["turnos"] = 79)],
+      ["una llamada extra al proveedor", (f: Fila) => (f["capa"]!["llamadasExtraAlProveedor"] = 1)],
+      ["otro modelo servido en B", (f: Fila) => (f["cable"]!["modelosServidosB"] = ["gpt-4o-mini-2024-07-18", "gpt-4o-2024-08-06"])],
+      ["un artefacto sin el cable", (f: Fila) => delete (f as Record<string, unknown>)["cable"]],
+    ])("la misma celda con %s: la capa intervino (o no se sabe) y exactitud-peor sigue fallando", (_, cambio) => {
+      const art = real();
+      cambio(art.modelos[0]!);
+      const m = extraerMtBench(art, gpt);
+      expect(m.sinIntervencion).toBeUndefined();
+      expect(infraccionesDe(m, 1.15).map((i) => i.regla)).toEqual(["exactitud-peor"]);
+      const v = evaluar([celda(m)], null);
+      expect(v.ok).toBe(false);
+      expect(v.avisos.some((a) => /atribuible al muestreo/.test(a))).toBe(false);
+    });
+
+    it("marcas `cache_control` que solo cambian eso también son neutras; una calidad sin empeorar no avisa de nada", () => {
+      const art = real();
+      art.modelos[0]!["cable"]!["diferencias"] = { "messages:cache_control": 40 };
+      const m = extraerMtBench(art, gpt);
+      expect(m.sinIntervencion).toEqual({ camposNeutros: { "messages:cache_control": 40 } });
+      expect(infraccionesDe(m, 1.15)).toEqual([]);
+      art.modelos[0]!["calidad"]!["tasaDeVictoriaB"] = { point: 0.5, lower: 0.423, upper: 0.577 };
+      expect(evaluar([celda(extraerMtBench(art, gpt))], null).avisos.some((a) => /muestreo/.test(a))).toBe(false);
+    });
+
+    it("las celdas de la 0.4.31: Claude con solo marcas es «sin intervención»; sonnet-5-5 con un `messages` distinto, no", () => {
+      expect(extraerMtBench(artefacto("mt-bench-0431-claude.json"), modelo("anthropic/claude-haiku-4-5")).sinIntervencion).toBeDefined();
+      expect(extraerMtBench(artefacto("mt-bench-0431-gama-alta.json"), modelo("anthropic/claude-sonnet-5-5")).sinIntervencion).toBeUndefined();
+    });
+  });
+
   it("si un arnés cambia la forma de su artefacto, se dice; no sale un cero que parezca limpio", () => {
     expect(() => extraerGsm8k({ modelos: [{ modelo: "openai/gpt-4o-mini", estado: "medido", gasto: { totalUsd: 0 } }] }, modelo("openai/gpt-4o-mini"))).toThrow(
       /no tiene resumen\.brazos/,

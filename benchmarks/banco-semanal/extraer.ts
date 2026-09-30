@@ -74,6 +74,14 @@ export interface Medicion {
    * avisos: una calidad sin medir no puede pasar por un empate.
    */
   calidadSinMedir?: string;
+  /**
+   * La celda donde la capa NO intervino: está SOLO cuando el artefacto lo
+   * demuestra (hoy solo MT-Bench; ver `sinIntervencionMtBench`). Lleva los
+   * campos neutros en los que difirió el cable, con su cuenta. Con él, una
+   * calidad peor de B no es de la capa: `exactitud-peor` pasa a aviso
+   * (umbrales.ts). Sin él —intervino, o no se sabe— la regla actúa igual.
+   */
+  sinIntervencion?: { camposNeutros: Record<string, number> };
 }
 
 /**
@@ -299,6 +307,65 @@ export function extraerXstest(art: unknown, modelo: ModeloDelBanco): Medicion {
 
 // ── MT-Bench ────────────────────────────────────────────────────────────────
 
+/**
+ * CAMPOS NEUTROS PARA LA GENERACIÓN: en los que el cable de B puede diferir del
+ * de A sin que la respuesta del modelo pueda cambiar por ellos. Lista explícita
+ * y corta a propósito; cualquier otra diferencia cuenta como intervención.
+ *
+ *   prompt_cache_key   OpenAI, Chat Completions: «Used by OpenAI to cache
+ *                      responses for similar requests to optimize your cache
+ *                      hit rates». Enruta la petición hacia una máquina con el
+ *                      prefijo en caché; no es un parámetro de muestreo ni entra
+ *                      en el contexto del modelo. La capa lo añade en el turno 2
+ *                      (src/providers/openai-compatible.ts).
+ *   <clave>:cache_control
+ *                      Anthropic, Prompt caching: el prefijo cacheado da la misma
+ *                      salida que sin caché («Prompt caching has no effect on
+ *                      output token generation»). El arnés lo emite como
+ *                      `messages:cache_control` cuando lo ÚNICO que cambia en esa
+ *                      clave son las marcas (diferenciasDeCuerpo, mt-bench/nucleo.ts).
+ *
+ * No están `metadata`, `user`, `store` ni `safety_identifier` (también neutros
+ * según la doc de OpenAI) porque la capa no los manda: si un día aparecen en
+ * `cable.diferencias`, la celda contará como intervenida hasta que alguien los
+ * añada aquí con su justificación. Tampoco `seed`, `service_tier` ni
+ * `reasoning_effort`, que la capa sí puede mandar: los dos primeros cambian el
+ * muestreo o el despliegue que responde, y el tercero la generación.
+ */
+export const CAMPOS_NEUTROS_PARA_LA_GENERACION: readonly string[] = ["prompt_cache_key"];
+
+const esNeutro = (campo: string) => CAMPOS_NEUTROS_PARA_LA_GENERACION.includes(campo) || /^[a-z_]+:cache_control$/.test(campo);
+
+/**
+ * ¿La capa dejó INTACTA la generación de B en esta celda de MT-Bench? Solo si
+ * el artefacto lo demuestra, las tres cosas a la vez:
+ *   · ninguna llamada evitada: `capa.cacheResult` todo `miss`, sin llamadas
+ *     extra al proveedor, y el cable comparó los dos turnos de cada pregunta
+ *     completa (un turno de B servido sin llamar no aparecería en el cable);
+ *   · el mismo modelo servido en A y B (y alguno);
+ *   · el cable de B igual al de A salvo campos de CAMPOS_NEUTROS_PARA_LA_GENERACION.
+ * Si falta cualquier dato, `null`: se asume que intervino y la regla actúa.
+ */
+export function sinIntervencionMtBench(fila: unknown): { camposNeutros: Record<string, number> } | null {
+  const r = fila as J;
+  const cable = r["cable"] as
+    | { turnos?: number; diferencias?: Record<string, number>; modelosServidosA?: string[]; modelosServidosB?: string[] }
+    | undefined;
+  const capa = r["capa"] as { cacheResult?: Record<string, number>; llamadasExtraAlProveedor?: number } | undefined;
+  const completas = (r["preguntas"] as { completas?: number } | undefined)?.completas;
+  if (!cable || !capa || typeof completas !== "number" || completas === 0) return null;
+  const cache = capa.cacheResult;
+  if (!cache || Object.keys(cache).length === 0 || Object.entries(cache).some(([k, v]) => k !== "miss" && v > 0)) return null;
+  if (capa.llamadasExtraAlProveedor !== 0) return null;
+  if (cable.turnos !== completas * 2) return null;
+  const a = [...new Set(cable.modelosServidosA ?? [])].sort();
+  const b = [...new Set(cable.modelosServidosB ?? [])].sort();
+  if (a.length === 0 || JSON.stringify(a) !== JSON.stringify(b)) return null;
+  const difs = cable.diferencias;
+  if (!difs || Object.keys(difs).some((k) => !esNeutro(k))) return null;
+  return { camposNeutros: { ...difs } };
+}
+
 export interface PreguntaCrudaMtBench {
   id: number;
   error?: string;
@@ -342,9 +409,11 @@ export function extraerMtBench(art: unknown, modelo: ModeloDelBanco, crudo?: { m
       ? `el juez solo juzgó ${turnos} turno${turnos === 1 ? "" : "s"} (mínimo ${MINIMO_DE_TURNOS_JUZGADOS})` +
         `${campo<boolean>(r, "calidad.cortePorPresupuesto") ? ", cortado por su tope" : ""}: sin tasa de victoria`
       : undefined;
+  const sinIntervencion = sinIntervencionMtBench(r);
   return {
     ...base,
     ...(calidadSinMedir ? { calidadSinMedir } : {}),
+    ...(sinIntervencion ? { sinIntervencion } : {}),
     estado: "medido",
     gastoUsd,
     gastoJuezUsd,

@@ -183,7 +183,7 @@ en una sola celda**.
 | `negativa-cacheada` | XSTest: una negativa servida desde la caché, o escrita en ella |
 | `negativa-acreditada` | XSTest: una negativa con ahorro acreditado, o con registro de referencia |
 | `capa-falla` | Cualquier batería: un error en el brazo con la capa cuando el brazo sin ella, en la misma pregunta, no lo tuvo. En XSTest cuenta también un texto entregado distinto del recibido, y en BFCL una violación del aislamiento de caché |
-| `exactitud-peor` | B − A significativamente negativa. Según la batería: el IC 95 % entero por debajo de 0 (GSM8K, BFCL); la tasa de victoria de B ante el juez con el IC entero por debajo de 0,5 (MT-Bench); o McNemar p < 0,05 en la dirección mala (XSTest: más negativas en prompts seguros, o menos en inseguros) |
+| `exactitud-peor` | B − A significativamente negativa. Según la batería: el IC 95 % entero por debajo de 0 (GSM8K, BFCL); la tasa de victoria de B ante el juez con el IC entero por debajo de 0,5 (MT-Bench); o McNemar p < 0,05 en la dirección mala (XSTest: más negativas en prompts seguros, o menos en inseguros). **Solo si la capa intervino en esa celda** (ver abajo) |
 | `informe-vs-factura` | El coste que dice el informe de la capa, sumado por brazo, se sale de ±2 % de lo que factura el proveedor según su `usage`. Hay una holgura absoluta de 0,0001 $ |
 | `factura-no-cuadra` | Lo que el proveedor **factura** según su API de costes, en el workspace o proyecto del banco y en los días de la tirada, se sale de ±2 % de lo que el banco midió. Solo actúa con clave de administrador. Ver [La factura real](#la-factura-real) |
 | `arnes-falla` | Un arnés murió, pasó de su plazo (75 min) o no dejó un artefacto legible |
@@ -199,6 +199,9 @@ en una sola celda**.
 - Una celda **cortada por su tope**: se midió menos, pero no peor.
 - Una celda de MT-Bench con la **calidad sin medir**: el juez juzgó menos de 8
   turnos. No se da tasa de victoria, en vez de un 0,5 que parezca un empate.
+- Una celda de MT-Bench con la **calidad peor donde la capa no intervino**: sale
+  como «calidad B−A atribuible al muestreo: la capa no cambió nada que altere la
+  generación (solo `<campos>`)». Ver [la regla de la calidad](#la-calidad-solo-culpa-a-la-capa-si-la-capa-cambió-algo).
 
 Dos cosas que conviene saber al leer estas reglas:
 
@@ -210,6 +213,44 @@ Dos cosas que conviene saber al leer estas reglas:
 - **`capa-falla` no existe como campo en ningún arnés.** Se calcula igual en las
   cuatro baterías: un error que solo aparece en el brazo con la capa. Un 429 que
   la capa agota y que A no vio también cuenta. Es conservador a propósito.
+
+### La calidad solo culpa a la capa si la capa cambió algo
+
+`exactitud-peor` compara B con A. Si la capa no tocó nada que altere la
+generación, B y A son dos muestras de la misma petición, y una diferencia de
+calidad es muestreo, por significativa que salga. Pasó en el run 36748284158:
+MT-Bench con gpt-4o-mini dio victoria de B 0,385 [0,308, 0,442] con 25 turnos
+juzgados (el juez se cortó por su tope). A ganó 6 turnos y B ninguno; 4 de
+esos 6 eran de writing y roleplay, las categorías con temperatura 0,7 en
+FastChat. En esa celda la capa no había
+hecho nada: el cable de B era idéntico al de A salvo `prompt_cache_key`, la
+caché dio `miss` en los 80 turnos y el modelo servido fue el mismo. La tirada
+anterior, con la misma celda, dio 0,500 [0,423, 0,577].
+
+La regla: en una celda donde el artefacto **demuestra** que la capa no
+intervino, `exactitud-peor` no falla y queda como aviso. «No intervino» exige
+las tres cosas a la vez (`sinIntervencionMtBench` en `extraer.ts`):
+
+- ninguna llamada evitada: `capa.cacheResult` todo `miss`, 0 llamadas extra al
+  proveedor, y el cable comparó los dos turnos de cada pregunta completa;
+- el mismo modelo servido en A y en B;
+- el cuerpo de B igual al de A salvo campos **neutros para la generación**
+  (`CAMPOS_NEUTROS_PARA_LA_GENERACION`), una lista explícita y corta:
+  - `prompt_cache_key`: una pista de enrutado de la caché de prefijo de
+    OpenAI. No es un parámetro de muestreo ni entra en el contexto.
+  - marcas `cache_control` cuando son lo único que cambia en su clave
+    (`messages:cache_control`). En Anthropic la caché de prefijo no cambia
+    la salida.
+
+Cualquier otra diferencia de cuerpo cuenta como intervención: `messages`,
+`max_tokens`, `seed`, `service_tier`, `reasoning_effort`, o un campo nuevo que
+nadie ha justificado. También cuentan una llamada evitada, una llamada extra,
+otro modelo servido o un artefacto sin esos datos. En todos esos casos la regla
+falla igual que antes.
+
+Hoy la regla solo se aplica a MT-Bench. Es la única batería cuyo artefacto trae
+el cable comparado entre A y B y el resultado de caché de cada turno. En GSM8K,
+BFCL y XSTest, `exactitud-peor` falla siempre.
 
 ## La factura real
 
