@@ -799,7 +799,7 @@
       "pasos": [
         {
           "title": "A IA cobra por palavras",
-          "body": "Cada pedido a uma IA paga-se pelo texto que entra e sai. O Savings põe-se no meio do caminho e deixa passar só o necessário: o que não era preciso pagar cai no seu pote."
+          "body": "Cada pedido a uma IA paga-se pelo texto que entra e sai. O Savings põe-se no meio desse caminho: um pedido que já viu e verificou é respondido sem voltar a chamar o fornecedor, e o que não era preciso pagar cai no seu pote."
         },
         {
           "title": "Não paga duas vezes pelo mesmo",
@@ -1000,10 +1000,6 @@
       "alterna": "Escreve-nos"
     },
     "trabajos": {
-      "pajaTitle": "Se o envio leva palha…",
-      "pajaBody": "…o portão tira-a antes de pagar: o pacote chega à nuvem muito mais pequeno e a diferença cai no seu pote.",
-      "magroTitle": "Se já vai magro…",
-      "magroBody": "…passa intacto. Ali não há nada a tirar — e não prometemos poupança onde não existe.",
       "caption": "Nem todos os pedidos trazem algo para poupar: no banco público, o tráfego sem repetições poupou ≈ {cero}. Também o publicamos."
     },
     "devs": {

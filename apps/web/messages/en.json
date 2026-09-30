@@ -799,7 +799,7 @@
       "pasos": [
         {
           "title": "AI charges you per word",
-          "body": "Every request to an AI is paid for by the text going in and out. Savings stands in the middle of that path and lets through only what's needed: whatever you didn't have to pay for drops into your jar."
+          "body": "Every request to an AI is paid for by the text going in and out. Savings stands in the middle of that path: a request it has already seen and verified is answered without calling the provider again, and whatever you didn't have to pay for drops into your jar."
         },
         {
           "title": "You don't pay twice for the same thing",
@@ -1000,10 +1000,6 @@
       "alterna": "Email us"
     },
     "trabajos": {
-      "pajaTitle": "If the shipment carries padding…",
-      "pajaBody": "…the gate removes it before you pay: the parcel reaches the cloud much smaller and the difference drops into your jar.",
-      "magroTitle": "If it's already lean…",
-      "magroBody": "…it passes untouched. There's nothing to remove there — and we don't promise savings where there are none.",
       "caption": "Not every request carries something to save: on the public bench, traffic without repeats saved ≈ {cero}. We publish that too."
     },
     "devs": {

@@ -799,7 +799,7 @@
       "pasos": [
         {
           "title": "L'IA se facture au mot",
-          "body": "Chaque requête à une IA se paie au texte qui entre et qui sort. Savings se met au milieu du chemin et ne laisse passer que le nécessaire : ce qu'il ne fallait pas payer tombe dans votre bocal."
+          "body": "Chaque requête à une IA se paie au texte qui entre et qui sort. Savings se place au milieu de ce chemin : une requête qu'il a déjà vue et vérifiée reçoit sa réponse sans rappeler le fournisseur, et ce que vous n'avez pas eu à payer tombe dans votre bocal."
         },
         {
           "title": "Vous ne payez pas deux fois la même chose",
@@ -1000,10 +1000,6 @@
       "alterna": "Écrivez-nous"
     },
     "trabajos": {
-      "pajaTitle": "Si l'envoi porte du rembourrage…",
-      "pajaBody": "…le portique le retire avant de payer : le colis arrive au nuage bien plus petit et la différence tombe dans votre bocal.",
-      "magroTitle": "S'il est déjà maigre…",
-      "magroBody": "…il passe intact. Il n'y a rien à retirer — et nous ne promettons pas d'économies là où il n'y en a pas.",
       "caption": "Toutes les requêtes n'ont pas quelque chose à économiser : sur le banc public, le trafic sans répétitions a économisé ≈ {cero}. Nous le publions aussi."
     },
     "devs": {

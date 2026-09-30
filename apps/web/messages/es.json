@@ -799,7 +799,7 @@
       "pasos": [
         {
           "title": "La IA se cobra por palabras",
-          "body": "Cada petición a la IA se paga por el texto que entra y sale. Savings se pone en medio del camino y deja pasar solo lo necesario: lo que no hacía falta pagar, cae en tu tarro."
+          "body": "Cada petición a la IA se paga por el texto que entra y sale. Savings se pone en medio de ese camino: una petición que ya ha visto y verificado se responde sin volver a llamar al proveedor, y lo que no hacía falta pagar cae en tu tarro."
         },
         {
           "title": "No pagas dos veces por lo mismo",
@@ -1000,10 +1000,6 @@
       "alterna": "Escríbenos"
     },
     "trabajos": {
-      "pajaTitle": "Si el envío va con paja…",
-      "pajaBody": "…la verja la quita antes de pagar: el paquete llega a la nube mucho más pequeño y la diferencia cae en tu tarro.",
-      "magroTitle": "Si ya va magro…",
-      "magroBody": "…pasa intacto. Ahí no hay nada que quitar — y no se promete ahorro donde no lo hay.",
       "caption": "No todas las peticiones traen algo que ahorrar: en el banco público, el tráfico sin repeticiones ahorró ≈ {cero}. También lo publicamos."
     },
     "devs": {

@@ -255,6 +255,93 @@ describe("el panel: la cifra del banco en vivo y el dinero del cliente, nunca el
   });
 });
 
+/**
+ * LA PORTADA NO PROMETE RECORTAR EL TEXTO (2026-09-30). Los vídeos «paja/magro»
+ * decían que la verja quita el relleno y que «el paquete llega a la nube mucho
+ * más pequeño», y el primer vídeo explicativo que Savings «deja pasar solo lo
+ * necesario». No está medido: en el banco A/B en vivo y en el semanal el ahorro
+ * del SDK instalado sale de las peticiones repetidas servidas sin llamar al
+ * proveedor; el compresor de la tirada sintética es solo del banco y el paquete
+ * no lo trae.
+ */
+/** «Deja pasar solo lo necesario», tal como lo decía explica.pasos[0].body en cada idioma. */
+const SOLO_LO_NECESARIO: Record<Loc, RegExp> = {
+  en: /lets? through only what'?s needed|only what'?s needed/i,
+  es: /deja pasar solo lo necesario/i,
+  ca: /deixa passar només el necessari/i,
+  de: /lässt nur durch, was nötig ist/i,
+  fr: /ne laisse passer que le nécessaire/i,
+  id: /hanya meloloskan yang diperlukan/i,
+  it: /lascia passare solo il necessario/i,
+  nl: /laat alleen door wat nodig is/i,
+  pl: /przepuszcza tylko to, co potrzebne/i,
+  pt: /deixa passar só o necessário/i,
+  tr: /yalnızca gerekli olanı geçirir/i,
+  vi: /chỉ cho qua những gì cần thiết/i,
+};
+/** «El paquete llega mucho más pequeño» / «quita el relleno», como lo decían los vídeos «paja/magro». */
+const RECORTA: Record<Loc, RegExp> = {
+  en: /much smaller|carries padding|removes it before you pay/i,
+  es: /mucho más pequeño|va con paja|la quita antes de pagar/i,
+  ca: /molt més petit|porta palla|la treu abans de pagar/i,
+  de: /viel kleiner|trägt die Sendung Füllung|entfernt das Tor/i,
+  fr: /bien plus petit|porte du rembourrage|le portique le retire/i,
+  id: /jauh lebih kecil|membawa isian|gerbang membuangnya/i,
+  it: /molto più piccolo|porta paglia|il varco la toglie/i,
+  nl: /veel kleiner|draagt de zending opvulling|haalt de poort die eruit/i,
+  pl: /znacznie mniejsza|niesie wypełniacz|bramka usuwa go/i,
+  pt: /muito mais pequeno|leva palha|o portão tira-a/i,
+  tr: /çok daha küçük|dolgu taşıyorsa|kapı ödemeden önce onu çıkarır/i,
+  vi: /nhỏ hơn nhiều|có phần độn|cổng sẽ bỏ nó/i,
+};
+
+describe("⛔ la portada no promete recortar el texto de entrada", () => {
+  for (const loc of LOCALES) {
+    it(`${loc}: fuera las claves de los vídeos «paja/magro»; la frase del tráfico sin repeticiones se queda`, () => {
+      const d = crudo(loc) as { landing: { trabajos: Record<string, unknown> } };
+      for (const k of ["pajaTitle", "pajaBody", "magroTitle", "magroBody"]) expect(d.landing.trabajos[k], `${loc} ${k}`).toBeUndefined();
+      expect(d.landing.trabajos.caption, loc).toContain("{cero}");
+    });
+
+    it(`${loc}: ni la portada ni «cómo funciona» dicen que el paquete llega más pequeño`, () => {
+      const malos = Object.entries(cargar(loc))
+        .filter(([k]) => k.startsWith("landing.") || k.startsWith("howItWorks."))
+        .filter(([, v]) => RECORTA[loc].test(v))
+        .map(([k, v]) => `${k}: ${v}`);
+      expect(malos).toEqual([]);
+    });
+
+    it(`${loc}: el primer vídeo explicativo dice lo medido, no «deja pasar solo lo necesario»`, () => {
+      const body = cargar(loc)["landing.explica.pasos.0.body"];
+      expect(body, loc).toBeTruthy();
+      expect(body, loc).not.toMatch(SOLO_LO_NECESARIO[loc]);
+      expect(Object.values(cargar(loc)).filter((v) => SOLO_LO_NECESARIO[loc].test(v)), loc).toEqual([]);
+    });
+  }
+
+  it("en/es: el primer vídeo habla de la petición ya vista que se responde sin llamar al proveedor", () => {
+    expect(cargar("en")["landing.explica.pasos.0.body"]).toMatch(/already seen and verified is answered without calling the provider/);
+    expect(cargar("es")["landing.explica.pasos.0.body"]).toMatch(/ya ha visto y verificado se responde sin volver a llamar al proveedor/);
+  });
+
+  it("⛔ la portada no referencia los vídeos «paja/magro» ni sus claves, y los ficheros ya no existen", () => {
+    const src = codigo("app/[locale]/page.tsx");
+    expect(src).not.toMatch(/trabajos-paja|trabajos-magro|pajaTitle|pajaBody|magroTitle|magroBody/);
+    expect(src).toContain('t("trabajos.caption", { cero })');
+    const videos = readdirSync(join(WEB, "public", "videos"));
+    expect(videos.filter((f) => /^trabajos-(paja|magro)\./.test(f))).toEqual([]);
+  });
+
+  it("las verjas de arriba cazan las frases viejas (si no, no protegen nada)", () => {
+    expect(SOLO_LO_NECESARIO.en.test("Savings stands in the middle of that path and lets through only what's needed")).toBe(true);
+    expect(SOLO_LO_NECESARIO.es.test("Savings se pone en medio del camino y deja pasar solo lo necesario")).toBe(true);
+    expect(SOLO_LO_NECESARIO.vi.test("Savings đứng giữa con đường đó và chỉ cho qua những gì cần thiết")).toBe(true);
+    expect(RECORTA.en.test("the parcel reaches the cloud much smaller")).toBe(true);
+    expect(RECORTA.es.test("el paquete llega a la nube mucho más pequeño")).toBe(true);
+    expect(RECORTA.tr.test("paket buluta çok daha küçük ulaşır")).toBe(true);
+  });
+});
+
 describe("la calculadora de comisión, retirada: ni componente ni claves", () => {
   for (const loc of LOCALES) {
     it(`${loc}: sin landing.calculadora ni landing.formula`, () => {

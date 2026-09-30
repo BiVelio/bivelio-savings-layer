@@ -799,7 +799,7 @@
       "pasos": [
         {
           "title": "L'IA si paga a parole",
-          "body": "Ogni richiesta a un'IA si paga in base al testo che entra ed esce. Savings si mette in mezzo al percorso e lascia passare solo il necessario: ciò che non serviva pagare cade nel tuo barattolo."
+          "body": "Ogni richiesta a un'IA si paga in base al testo che entra ed esce. Savings si mette in mezzo a quel percorso: una richiesta che ha già visto e verificato riceve risposta senza richiamare il fornitore, e ciò che non hai dovuto pagare cade nel tuo barattolo."
         },
         {
           "title": "Non paghi due volte la stessa cosa",
@@ -1000,10 +1000,6 @@
       "alterna": "Scrivici"
     },
     "trabajos": {
-      "pajaTitle": "Se la spedizione porta paglia…",
-      "pajaBody": "…il varco la toglie prima di pagare: il pacco arriva al cloud molto più piccolo e la differenza cade nel tuo barattolo.",
-      "magroTitle": "Se è già magra…",
-      "magroBody": "…passa intatta. Lì non c'è nulla da togliere — e non promettiamo risparmi dove non ce ne sono.",
       "caption": "Non ogni richiesta ha qualcosa da risparmiare: sul banco pubblico, il traffico senza ripetizioni ha risparmiato ≈ {cero}. Pubblichiamo anche questo."
     },
     "devs": {

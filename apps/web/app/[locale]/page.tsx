@@ -443,36 +443,16 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
               12-09. Fuera de la portada: la portada no enseña esa tirada. */}
           {/* La tabla de escenarios, los chips y la nota de caché eran
               «demasiado concreto y científico» para la landing (dueño,
-              04-09): viven en el panel. La cinta única tampoco se entendía
-              (dueño, misma tarde), así que la idea va PARTIDA EN DOS
-              animaciones de una sola caja — con paja se recorta mucho,
-              magra pasa intacta — y UNA línea con el rango real de la
-              tirada, con las cifras llegando del artefacto. */}
+              04-09): viven en el panel. Aquí iban también dos vídeos
+              («trabajos»: con paja se recorta mucho, magra pasa intacta) que
+              prometían que la capa RECORTA el texto de entrada. No está
+              medido: en el banco A/B en vivo y en el semanal el ahorro del SDK
+              instalado sale de las peticiones repetidas servidas sin llamar al
+              proveedor (y la caché de prefijo es del proveedor, aparte); el
+              compresor de la tirada sintética es solo del banco y el paquete
+              no lo trae. Fuera (2026-09-30). Queda la frase honesta: el
+              tráfico sin repeticiones ahorró ≈ 0, y lo publicamos. */}
           <div className="trabajos">
-            <div className="explica-grid">
-              <div className="explica-card rv">
-                <VideoExplicativo
-                  src="/videos/trabajos-paja.mp4"
-                  poster="/videos/trabajos-paja.jpg"
-                  etiqueta={t("trabajos.pajaTitle")}
-                />
-                <div className="explica-texto">
-                  <h4>{t("trabajos.pajaTitle")}</h4>
-                  <p>{t("trabajos.pajaBody")}</p>
-                </div>
-              </div>
-              <div className="explica-card rv">
-                <VideoExplicativo
-                  src="/videos/trabajos-magro.mp4"
-                  poster="/videos/trabajos-magro.jpg"
-                  etiqueta={t("trabajos.magroTitle")}
-                />
-                <div className="explica-texto">
-                  <h4>{t("trabajos.magroTitle")}</h4>
-                  <p>{t("trabajos.magroBody")}</p>
-                </div>
-              </div>
-            </div>
             <p className="explica-nota">{t("trabajos.caption", { cero })}</p>
           </div>
         </section>

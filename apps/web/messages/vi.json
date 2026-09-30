@@ -799,7 +799,7 @@
       "pasos": [
         {
           "title": "AI tính tiền theo từng chữ",
-          "body": "Mỗi yêu cầu gửi đến AI được trả tiền theo phần văn bản đi vào và đi ra. Savings đứng giữa con đường đó và chỉ cho qua những gì cần thiết: phần không cần trả rơi vào chiếc lọ của bạn."
+          "body": "Mỗi yêu cầu gửi đến AI được trả tiền theo phần văn bản đi vào và đi ra. Savings đứng giữa con đường đó: một yêu cầu nó đã thấy và đã xác minh sẽ được trả lời mà không cần gọi lại nhà cung cấp, và phần bạn không phải trả rơi vào chiếc lọ của bạn."
         },
         {
           "title": "Bạn không trả hai lần cho cùng một thứ",
@@ -1000,10 +1000,6 @@
       "alterna": "Gửi email cho chúng tôi"
     },
     "trabajos": {
-      "pajaTitle": "Nếu gói gửi có phần độn…",
-      "pajaBody": "…cổng sẽ bỏ nó trước khi bạn trả tiền: gói hàng đến đám mây nhỏ hơn nhiều và phần chênh lệch rơi vào lọ của bạn.",
-      "magroTitle": "Nếu vốn đã gọn…",
-      "magroBody": "…nó đi qua nguyên vẹn. Không có gì để bỏ — và chúng tôi không hứa khoản tiết kiệm không tồn tại.",
       "caption": "Không phải yêu cầu nào cũng có gì để tiết kiệm: trên băng thử công khai, lưu lượng không lặp lại tiết kiệm ≈ {cero}. Chúng tôi cũng công bố điều đó."
     },
     "devs": {
