@@ -1,5 +1,5 @@
 import { createServer, type Server } from "node:http";
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, it, expect, afterEach, vi } from "vitest";
 
 import { parseUsageRecords } from "../apps/web/lib/metering/usage.js";
 import { Coalescedor, claveDePeticion, MAX_CAPTURA_BYTES } from "../gateway/coalescencia.js";
@@ -94,19 +94,27 @@ afterEach(async () => {
   }
   recursos = [];
   ingeridos.length = 0;
+  vi.restoreAllMocks();
 });
 
-function upstreamLento(contador: { hits: number; cuerpos?: string[] }, retrasoMs: number): Promise<number> {
+/**
+ * Un upstream que retiene su respuesta: `retrasoMs` fijos (solo donde el orden
+ * no importa), o hasta que se cumpla `soltarCuando` — una CONDICIÓN, no un
+ * reloj: con un plazo fijo, un proceso sin CPU un par de cientos de ms (la suite
+ * entera en paralelo) dejaba terminar a la primaria antes de que la gemela
+ * llegara, y la «gemela» viajaba sola.
+ */
+function upstreamLento(contador: { hits: number; cuerpos?: string[] }, retrasoMs: number | (() => boolean)): Promise<number> {
   return new Promise((resolve) => {
     const s = createServer(async (req, res) => {
       const trozos: Buffer[] = [];
       for await (const c of req) trozos.push(c as Buffer);
       contador.cuerpos?.push(Buffer.concat(trozos).toString("utf8"));
       contador.hits += 1;
-      setTimeout(() => {
-        res.writeHead(200, { "content-type": "text/event-stream" });
-        res.end(SSE);
-      }, retrasoMs);
+      if (typeof retrasoMs === "number") await new Promise((r) => setTimeout(r, retrasoMs));
+      else await esperar(retrasoMs);
+      res.writeHead(200, { "content-type": "text/event-stream" });
+      res.end(SSE);
     });
     recursos.push(s);
     s.listen(0, "127.0.0.1", () => resolve((s.address() as { port: number }).port));
@@ -163,6 +171,17 @@ function haciaElMock(puerto: number): typeof fetch {
 }
 const OFICIAL = "https://api.anthropic.com";
 
+/**
+ * Cuántas gemelas esperan ya en el coalescedor del gateway (espía sobre
+ * `Coalescedor.prototype.esperar`, que sigue haciendo lo suyo). Es la condición
+ * que ordena los casos de coalescencia: la primaria no se suelta hasta que la
+ * gemela ya la espera.
+ */
+function gemelasEnEspera(): () => number {
+  const espia = vi.spyOn(Coalescedor.prototype, "esperar");
+  return () => espia.mock.calls.length;
+}
+
 async function esperar(cond: () => boolean, ms = 4000): Promise<void> {
   const t0 = Date.now();
   while (!cond()) {
@@ -177,7 +196,8 @@ describe("gateway con coalescencia (bandera encendida)", () => {
   it("dos idénticas concurrentes → UN viaje al proveedor, dos respuestas íntegras, un ahorro reportado", async () => {
     const contador = { hits: 0 };
     const lotes: unknown[][] = [];
-    const upstream = await upstreamLento(contador, 150);
+    const gemelas = gemelasEnEspera();
+    const upstream = await upstreamLento(contador, () => gemelas() === 1);
     const ingesta = await ingestaFalsa(lotes);
     const gw = await arrancarGateway({
       license: testLicense(),
@@ -197,9 +217,11 @@ describe("gateway con coalescencia (bandera encendida)", () => {
         status: r.status,
         texto: await r.text(),
       }));
-    // La segunda sale cuando la primera ya está en vuelo (el upstream tarda 150ms).
+    // La segunda sale cuando la primera ya está en vuelo (el upstream la ha
+    // visto, así que ya está registrada), y el upstream no contesta hasta que
+    // la segunda ya espera como gemela.
     const p1 = pedir();
-    await new Promise((r) => setTimeout(r, 40));
+    await esperar(() => contador.hits === 1);
     const p2 = pedir();
     const [r1, r2] = await Promise.all([p1, p2]);
 
@@ -247,14 +269,15 @@ describe("gateway con coalescencia (bandera encendida)", () => {
       id: "msg_1",
       usage: { input_tokens: 100, output_tokens: 42 },
     });
+    const gemelas = gemelasEnEspera();
     const upstream = await new Promise<number>((resolve) => {
       const s = createServer(async (req, res) => {
         for await (const _ of req) void _;
         contador.hits += 1;
-        setTimeout(() => {
-          res.writeHead(200, { "content-type": "application/json" });
-          res.end(respuestaJson);
-        }, 150);
+        // La primaria no termina hasta que su gemela ya la espera.
+        await esperar(() => gemelas() === 1);
+        res.writeHead(200, { "content-type": "application/json" });
+        res.end(respuestaJson);
       });
       recursos.push(s);
       s.listen(0, "127.0.0.1", () => resolve((s.address() as { port: number }).port));
@@ -277,7 +300,7 @@ describe("gateway con coalescencia (bandera encendida)", () => {
     const pedir = () =>
       fetch(`http://127.0.0.1:${gw.puerto}/v1/messages`, { method: "POST", body: cuerpo }).then((r) => r.text());
     const p1 = pedir();
-    await new Promise((r) => setTimeout(r, 40));
+    await esperar(() => contador.hits === 1);
     const p2 = pedir();
     const [r1, r2] = await Promise.all([p1, p2]);
 
@@ -307,7 +330,8 @@ describe("gateway con coalescencia (bandera encendida)", () => {
     const contador = { hits: 0, cuerpos: [] as string[] };
     const lotes: unknown[][] = [];
     const lineas: string[] = [];
-    const upstream = await upstreamLento(contador, 150);
+    const gemelas = gemelasEnEspera();
+    const upstream = await upstreamLento(contador, () => gemelas() === 1);
     const ingesta = await ingestaFalsa(lotes, palancas.features ?? []);
     const gw = await arrancarGateway({
       license: testLicense(),
@@ -330,7 +354,7 @@ describe("gateway con coalescencia (bandera encendida)", () => {
     const pedir = () =>
       fetch(`http://127.0.0.1:${gw.puerto}/v1/messages`, { method: "POST", body: cuerpo, headers }).then((r) => r.text());
     const p1 = pedir();
-    await new Promise((r) => setTimeout(r, 40));
+    await esperar(() => contador.hits === 1);
     const p2 = pedir();
     await Promise.all([p1, p2]);
     expect(contador.hits).toBe(1);
