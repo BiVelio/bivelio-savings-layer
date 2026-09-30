@@ -21,9 +21,10 @@ import { describe, it, expect } from "vitest";
  * - Sus palancas propias solo actúan con licencia PRO (features de la licencia,
  *   fail-closed), igual que dice `landing.gateway.note`.
  *
- * Y la tarjeta del stream: un stream sin contador final no entra en la
- * comisión, pero el proveedor sí lo factura. «never billed» se leía como lo
- * segundo; la copia dice «never enters your commission», la fórmula del sitio.
+ * Y la tarjeta del stream: un stream sin contador final no cuenta como ahorro
+ * medido, pero el proveedor sí lo factura. «never billed» se leía como lo
+ * segundo. Hasta el 2026-09-29 decía «never enters your commission»; Pro y
+ * Equipo no llevan comisión, así que dice «never counts as measured savings».
  *
  * Como la traducción es libre, la verja busca en cada idioma la expresión que
  * ese idioma usa para cada salvedad. Si alguien reescribe una de estas cadenas
@@ -38,78 +39,78 @@ const DIR = new URL(".", import.meta.url).pathname;
  * mera mención: la copia vieja ya decía «priced at the model's list price» y
  * aun así prometía registrar cada petición.
  */
-const SALVEDADES: Record<string, { condicion: RegExp; medida: RegExp; log: RegExp; comision: RegExp }> = {
+const SALVEDADES: Record<string, { condicion: RegExp; medida: RegExp; log: RegExp; noMedido: RegExp }> = {
   en: {
     condicion: /for a model with a list price/,
     medida: /measured for models with a list price/,
     log: /\blog\b/,
-    comision: /never enters your commission/,
+    noMedido: /never counts as measured savings/,
   },
   es: {
     condicion: /de un modelo con precio de lista/,
     medida: /se mide para los modelos con precio de lista/,
     log: /\blog\b/,
-    comision: /jamás entra en tu comisión/,
+    noMedido: /jamás cuenta como ahorro medido/,
   },
   ca: {
     condicion: /d'un model amb preu de llista/,
     medida: /es mesura per als models amb preu de llista/,
     log: /\blog\b/,
-    comision: /mai no entra a la teva comissió/,
+    noMedido: /mai no compta com a estalvi mesurat/,
   },
   de: {
     condicion: /für ein Modell mit Listenpreis/,
     medida: /für Modelle mit Listenpreis gemessen/,
     log: /\bLog\b/,
-    comision: /geht nie in Ihre Provision ein/,
+    noMedido: /zählt nie als gemessene Ersparnis/,
   },
   fr: {
     condicion: /pour un modèle qui a un prix catalogue/,
     medida: /mesuré pour les modèles qui ont un prix catalogue/,
     log: /journal/,
-    comision: /n'entre jamais dans votre commission/,
+    noMedido: /ne compte jamais comme économie mesurée/,
   },
   id: {
     condicion: /untuk model yang memiliki harga daftar/,
     medida: /diukur untuk model yang memiliki harga daftar/,
     log: /\blog\b/,
-    comision: /tidak pernah masuk komisi Anda/,
+    noMedido: /tidak pernah dihitung sebagai penghematan terukur/,
   },
   it: {
     condicion: /per un modello con prezzo di listino/,
     medida: /misurato per i modelli con prezzo di listino/,
     log: /\blog\b/,
-    comision: /non entra mai nella tua commissione/,
+    noMedido: /non conta mai come risparmio misurato/,
   },
   nl: {
     condicion: /voor een model met een lijstprijs/,
     medida: /gemeten voor modellen met een lijstprijs/,
     log: /\blog\b/,
-    comision: /telt nooit mee voor je commissie/,
+    noMedido: /telt nooit als gemeten besparing/,
   },
   pl: {
     condicion: /dla modelu z ceną katalogową/,
     medida: /mierzony dla modeli z ceną katalogową/,
     log: /\blogu\b/,
-    comision: /nigdy nie wchodzi do Twojej prowizji/,
+    noMedido: /nigdy nie liczy się jako zmierzona oszczędność/,
   },
   pt: {
     condicion: /de um modelo com preço de tabela/,
     medida: /medido para os modelos com preço de tabela/,
     log: /\blog\b/,
-    comision: /nunca entra na tua comissão/,
+    noMedido: /nunca conta como poupança medida/,
   },
   tr: {
     condicion: /liste fiyatı olan bir modele/,
     medida: /liste fiyatı olan modeller için ölçülür/,
     log: /günlüğü/,
-    comision: /asla komisyonunuza girmez/,
+    noMedido: /asla ölçülmüş tasarruf sayılmaz/,
   },
   vi: {
     condicion: /với mô hình có giá niêm yết/,
     medida: /được đo với các mô hình có giá niêm yết/,
     log: /\blog\b/,
-    comision: /không bao giờ tính vào hoa hồng của bạn/,
+    noMedido: /không bao giờ được tính là khoản tiết kiệm đã đo/,
   },
 };
 
@@ -165,14 +166,14 @@ describe("la copia del gateway lleva sus salvedades en los 12 idiomas", () => {
         for (const nombre of ["Node.js", "OpenAI", "Anthropic"]) expect(pie).toContain(nombre);
       });
 
-      it("tarjeta 4: el stream sin contador no entra en la comisión; nombres de código intactos", () => {
+      it("tarjeta 4: el stream sin contador no cuenta como ahorro medido; nombres de código intactos", () => {
         const tarjeta = m.landing.devs.cards[3];
         expect(tarjeta).toBeDefined();
         expect(tarjeta!.mono).toBe("layer.generateStream(request)");
         for (const nombre of ["generateStream()", "SavingsReport", "generate()"]) {
           expect(tarjeta!.body).toContain(nombre);
         }
-        expect(tarjeta!.body).toMatch(s.comision);
+        expect(tarjeta!.body).toMatch(s.noMedido);
       });
     });
   }

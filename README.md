@@ -19,21 +19,19 @@
 Every request your app sends to an AI is paid for by the text going in and out.
 **Savings** sits on that path and lets through only what's needed — skipping calls
 that don't have to happen, and trimming what does — so you pay for less. It is not a
-promise you take on faith: **every saving we charge on is measured with your provider's
+promise you take on faith: **every saving we report is measured with your provider's
 own usage counter, the one your bill is built from** (for a repeat served without
 calling the provider, the counter of the identical call that ran), and every saving —
 measured or estimated, and labelled as such — is handed back to you request by request.
 
-**A small per‑seat fee, and a commission only on savings measured against your
-provider's counter.** The seat fee is paid whether or not you save. Your
-first month carries no commission at all — it is the first calendar month (UTC) in
-which your organization reports usage, so starting late in a month makes it a short one —
-and at its close you see the statement of what the commission would have been. After
-that, the commission is charged on the **measured** saving only — never from estimates:
-a tiered rate from 10 % down to 4 % of what you saved, so **you keep
-at least 90 % of every euro saved** (before the invoice is rounded to the cent; the
-seat fee is separate). A month with no measured saving is zero commission. And your
-prompts and completions **never reach BiVelio**: what BiVelio receives is per‑request
+**Measure for free, then pay per seat — with no commission on your savings.** The
+free **Measure** license (no card) runs the layer in shadow mode on your own traffic and
+shows what it would have saved, valued with your provider's counter. To turn the levers
+on, **Pro** is **€15 / seat / month** or **€150 / seat / year**, and **Team** is **€129 / month
+with 10 seats included** (€12 per extra seat; €1,290 / year, €120 per extra seat), EUR,
+VAT not included — a fixed fee, paid whether or not you save, and no commission on what
+you save. Enterprise (more seats, your own contract or invoicing terms) is by contract.
+And your prompts and completions **never reach BiVelio**: what BiVelio receives is per‑request
 usage — token counts, cost, the model id and opaque ids — never your content
 ([LICENSE](./LICENSE) §5 lists every field; [savings.bivelio.com/privacy](https://savings.bivelio.com/privacy)
 explains each one and how long it is kept).
@@ -46,14 +44,16 @@ picks the cheapest execution that still meets your quality bar and hands you an
 auditable `SavingsReport` — the same numbers your dashboard reads. Traffic still
 goes straight from your app to your provider; the SDK is never a middleman server.
 
-> **Commercial software — © 2026 BiVelio Inc.** Free to install, **paid to run**:
-> BV‑SALA is fail‑closed and executes only with an active BiVelio license key.
+> **Commercial software — © 2026 BiVelio Inc.** Free to install, **paid to save**:
+> BV‑SALA is fail‑closed and executes only with an active BiVelio license key. The
+> free **Measure** license (no card) runs it in shadow mode: nothing you send is
+> changed, nothing is served from cache, and you see what it would have saved.
 > The license signature is verified **offline**; with `licenseServerUrl` set, the SDK
 > also calls `savings.bivelio.com` for the revocation list, license renewal and usage
 > metering. **Your prompts, completions and provider keys never reach BiVelio** — what
 > travels is per‑request usage: token counts, cost, the model id, a request id and
 > opaque seat and session ids (the exact list is in [LICENSE](./LICENSE) §5). Use is
-> governed by the LICENSE, which also sets out the seat fee and the commission, and the
+> governed by the LICENSE, which also sets out the fees, and the
 > BiVelio Terms. Not a wrapper around any third‑party library.
 
 ## Where it installs
@@ -119,6 +119,12 @@ bvsala gateway --upstream openai --port 8403   # one gateway per upstream
 bvsala gateway                                 # Anthropic, the default, on 8402
 ```
 
+Flags and environment variables are in English (`--port`, `--project`, `--force`,
+`BVSALA_GATEWAY_EFFORT`, `BVSALA_GATEWAY_SIBLING_MODEL`). The Spanish spellings from
+earlier versions (`--puerto`, `--proyecto`, `--forzar`, `BVSALA_GATEWAY_ESFUERZO`,
+`BVSALA_GATEWAY_MODELO_HERMANO`) keep working until 0.5 and print a deprecation
+notice; `BVSALA_SILENCE_DEPRECATIONS=1` silences it. `bvsala --help` lists them all.
+
 ```python
 from openai import OpenAI
 client = OpenAI(base_url="http://127.0.0.1:8403/v1")   # WITH /v1
@@ -159,8 +165,8 @@ provider, and a request without it is not changed at all:
 What you can check before paying is what we have measured: the published benchmark,
 trial by trial, with the raw CSV linked, at
 **[savings.bivelio.com/en/how-it-works](https://savings.bivelio.com/en/how-it-works)**,
-and the commission calculator on the front page, which runs on the same price
-catalogue that bills you. The verifier that replays the optimizer on your own data
+and the free **Measure** license, which runs the layer in shadow mode on your own
+traffic and shows what it would have saved, valued with your provider's counter. The verifier that replays the optimizer on your own data
 lives in your dashboard once you sign in.
 
 ## Set it up in one command
@@ -195,7 +201,8 @@ saving where the layer removed something is reported as `estimated`, and estimat
 savings are never billed — the SDK warns once when the tokenizer is missing.
 
 **2 · The license** — from your [dashboard](https://savings.bivelio.com/dashboard/install)
-(**€4 / seat / month** or **€39 / seat / year**, EUR)
+(free **Measure** license, no card; **Pro** €15 / seat / month or €150 / seat / year;
+**Team** €129 / month with 10 seats included — EUR)
 
 ```bash
 export BIVELIO_LICENSE_KEY=…   # your license key
@@ -210,6 +217,7 @@ import { createSavingsLayer, OpenAICompatibleProvider } from "@bivelio/savings-l
 
 // Your provider. LLM traffic goes straight to it — the SDK never proxies it.
 // Any OpenAI-compatible endpoint works: OpenAI, Azure, vLLM, SGLang, a gateway.
+// For Gemini, use the native `GoogleProvider` instead (see "Gemini: the native adapter").
 // Model ids are qualified (`openai/gpt-4o-mini`); the prefix is stripped on the
 // wire for OpenAI, Azure and Google's Gemini API and kept for gateways — see
 // `stripProviderPrefix`.
@@ -232,8 +240,8 @@ const { text, report } = await layer.generate({
 
 console.log(text);                    // "8"  (computed locally — no LLM call)
 console.log(report.calls.avoidedLlm); // → 1: a whole call you never paid for
-console.log(report.cost.netSavings);  // → 0..1 ratio of the baseline you did not pay (1 here)
-console.log(report.cost.baselineEstimate - report.cost.actual); // → the same saving in USD
+console.log(report.cost.netSavingsRatio); // → 0..1 ratio of the baseline you did not pay (1 here)
+console.log(report.cost.netSavingsUsd);   // → the same saving in USD (baselineEstimate − actual)
 console.log(report.cost.basis);       // → "estimated": nothing ran, so there is no provider counter
 ```
 
@@ -260,8 +268,8 @@ never do.
 A repeat is valued by reference only when the call that ran reached the provider's
 own API (`https://api.openai.com`, `https://api.anthropic.com` or
 `https://generativelanguage.googleapis.com`), because the list price it is valued at
-is the invoice only there. When `OpenAICompatibleProvider` or `AnthropicProvider`
-points anywhere else — a proxy such as LiteLLM, a gateway, Azure, Bedrock, Vertex —
+is the invoice only there. When `OpenAICompatibleProvider`, `AnthropicProvider` or
+`GoogleProvider` points anywhere else — a proxy such as LiteLLM, a gateway, Azure, Bedrock, Vertex —
 or when the Anthropic SDK or LangChain adapter reads that its client does, that call
 leaves no reference: its repeats stay `estimated`, and the `reference` trace of the
 call that ran says `unofficial-origin`. When the layer cannot tell where the call
@@ -277,7 +285,7 @@ tokens) with `stop_details.category` set to `cyber`, `general_harms` or `null`. 
 documents these as
 [not billed](https://platform.claude.com/docs/en/build-with-claude/refusals-and-fallback#how-refusals-are-billed).
 Its tokens still appear in `report.tokens`. `cost.actual`, `cost.baselineEstimate` and
-`cost.netSavings` are all 0, so the request credits no saving: not measured, not
+`cost.netSavingsRatio` are all 0, so the request credits no saving: not measured, not
 estimated and not by reference. A concurrent identical request served from it credits
 nothing either. The same rule applies in the gateway. Any other refusal is priced from
 its `usage` as usual. That covers `bio`, `frontier_llm` and `reasoning_extraction`, a
@@ -530,6 +538,32 @@ ledgers** that are never summed into one flattering figure:
 | `compressed_tokens` | information kept, but encoded with fewer tokens |
 | `provider_cached_tokens` | tokens still in the prompt, billed/processed more cheaply |
 
+**Your provider's own cache discount, shown apart and never billed.** With prompt
+caching, most of what you save often comes from your provider's prefix cache
+(Anthropic `cache_control`, OpenAI's automatic cache, Gemini's implicit cache), not
+from the layer. `cost` prices cached tokens at the cached rate on both sides, so that
+discount is never credited as the layer's saving. `report.nativeSavings` shows it on
+its own, from your provider's counter at list price, so the report adds up to your
+invoice:
+
+```ts
+report.nativeSavings;
+// {
+//   provider: "anthropic", mechanism: "explicit", layerMarked: true,
+//   cacheReadTokens: 40000, cacheWriteTokens: 3000, cacheWrite1hTokens: 0,
+//   inputPer1k: 0.003, cachedInputPer1k: 0.0003, writeMultiplier: 1.25, write1hMultiplier: 2,
+//   readDiscountUsd: 0.108,   // reads × (input − cached-input rate)
+//   writePremiumUsd: 0.00225, // writes × input × (multiplier − 1)
+//   netUsd: 0.10575,          // can be negative: a cold write pays before any read
+//   basis: "measured",
+// }
+```
+
+It is present only when a call ran and the provider reported cache reads or writes;
+a cache hit or a coalesced request never carries it. It is not in `cost.netSavings`,
+not in `cost.baselineEstimate`, and never in the commission base. Your dashboard shows
+it as its own card, **Native savings unlocked**, next to the credited savings.
+
 **Quality, kept apart from money.** `report.qualityLedger` records how the answer you
 received earned its place: whether it came from your provider, a replay, or the answer
 to a reworded question (with its similarity score); whether it was checked against your
@@ -616,7 +650,7 @@ changes the answer, and what they are worth is reported next to the four ledgers
 never folded into `cost.*`, never part of any commission.
 
 **`savings.deferrable`** asks for the provider's Flex tier: OpenAI, and Gemini through
-its OpenAI‑compatible endpoint. Anthropic has no cheaper synchronous tier: its
+`GoogleProvider` (`serviceTier: "flex"`) or its OpenAI‑compatible endpoint. Anthropic has no cheaper synchronous tier: its
 discount lives only in Message Batches, which `layer.batches` (below) sends to.
 Bedrock and DeepSeek off‑peak pricing are not supported.
 
@@ -801,7 +835,7 @@ Calibrated reuse and `cacheBreakpoints: "auto"` learn from your traffic, and by 
 what they learn lives in the process. On serverless platforms (Vercel Functions, AWS
 Lambda) an instance may serve one request or live a few minutes, so neither would ever
 get past its starting point. Give each one somewhere to keep it. Giving the layer a
-`semanticCache` only says where reworded questions are kept; `semanticCacheDefault: true`
+`semanticCacheStore` only says where reworded questions are kept; `semanticCacheDefault: true`
 is what switches reuse on for every request (a request's own `savings.semanticCache`
 still wins), and without it, or `savings.semanticCache` on each request, the cache
 stays empty and learns nothing:
@@ -823,7 +857,7 @@ async function serverlessLayer(kv: SharedKeyValue) {
   const layer = createSavingsLayer({
     provider,
     licenseKey: process.env.BIVELIO_LICENSE_KEY,
-    semanticCache,
+    semanticCacheStore: semanticCache,
     // Passing the cache does not switch it on; this asks for it on every request.
     semanticCacheDefault: true,
     cacheBreakpoints: "auto",
@@ -898,6 +932,60 @@ console.log(data.answer); // 8
 </details>
 
 <details>
+<summary><b>Gemini: the native adapter</b></summary>
+
+For Gemini, use `GoogleProvider`: it speaks Gemini's own API (`generateContent` and
+`streamGenerateContent`), where what the layer measures is documented. Keep
+`OpenAICompatibleProvider` for every other provider.
+
+```ts
+import { GoogleProvider } from "@bivelio/savings-layer";
+
+const gemini = createSavingsLayer({
+  provider: new GoogleProvider({ apiKey: process.env.GEMINI_API_KEY, requireUsage: true }),
+  licenseKey: process.env.BIVELIO_LICENSE_KEY,
+});
+
+const { text: answer, report: geminiReport } = await gemini.generate({
+  model: "google/gemini-3.8-flash", // the `google/` prefix never travels
+  messages: [
+    { role: "system", content: "Answer in one sentence." },
+    { role: "user", content: "Why is the sky blue?" },
+  ],
+  maxOutputTokens: 400,
+  reasoningEffort: "low", // → thinkingLevel "LOW" (Gemini 3) or a thinking budget (2.5)
+});
+console.log(answer, geminiReport.cost.actual);
+```
+
+What the native API gives the layer that the OpenAI-compatible endpoint hides:
+
+- **Thinking is billed output.** Output is `candidatesTokenCount + thoughtsTokenCount`
+  (Google bills thinking as output) and the thinking is reported as reasoning. Thought
+  summaries (`thinkingConfig: { includeThoughts: true }` on the adapter) are never part
+  of `text`.
+- **Refusals with their reason.** A blocked prompt (`promptFeedback.blockReason`) or a
+  filtered answer (`finishReason` `SAFETY`, `PROHIBITED_CONTENT`, `BLOCKLIST`, …) is
+  `finishReason: "content_filter"` with the native reason in `finishReasonDetail`:
+  measured from its usage, never cached, never credited.
+- **Tools.** Calls come back with their `id` and `thoughtSignature`; send the assistant
+  turn back with its `toolCalls` as they came (as in the tool loop above) and the
+  signature travels back untouched. The results of one turn go back together.
+- **Implicit caching.** Gemini 2.5 and later cache repeated prefixes on their own; the
+  cached part of the prompt (`cachedContentTokenCount`) is reported as provider-cached
+  tokens. Explicit context caching (`cachedContents`) is not used: it bills storage by
+  the hour, which a per-request report cannot price.
+- **Output contract.** Your schema travels as written in `responseJsonSchema`. Google
+  does not document that every JSON Schema feature is enforced, so a repeat of a request
+  with a schema is not valued by reference.
+- **Thinking level.** `reasoningEffort` follows Google's published mapping. A model that
+  rejects a level (`gemini-3.8-flash` answers 400 to `MINIMAL`) is asked again once at
+  `LOW`, and remembered; the rejected request was not billed. Thinking cannot be turned
+  off on Gemini 3 or 2.5 Pro, so `"none"` there is the lowest level, with a warning.
+
+</details>
+
+<details>
 <summary><b>Output cap — with or without a contract</b></summary>
 
 `maxOutputTokens` on the request caps the answer of any request, free text
@@ -934,7 +1022,8 @@ own API, where its 400 is the answer. Gemini leaves its thinking tokens out of
 as reasoning); on OpenAI's API `completion_tokens` already include reasoning and nothing
 is added. Gemini stops a filtered answer with `finish_reason: "content_filter: OTHER"`
 (or another reason): it is `finishReason: "content_filter"` (the adapter keeps the
-reason in `finishReasonDetail` and the report's cache trace names it), and like every
+reason, which reaches you as `result.finishReasonDetail` and is named in the report's
+cache trace; an Anthropic refusal brings its `stop_details.category` there too), and like every
 provider refusal it is measured, never
 cached and never credited. Google does not document that such refusals are free, so
 they are costed from their `usage` like any call.
@@ -997,7 +1086,10 @@ console.log(res.text);
   the SDK warns once.
 - **Errors.** When a tool fails, put the error in `content` and set `isError: true`.
   Anthropic receives it as `is_error`; providers without such a flag get the text.
-- **Gemini 3's thought signature.** Through its OpenAI-compatible endpoint Gemini
+- **Gemini 3's thought signature.** With `GoogleProvider` it travels in each call's
+  `thoughtSignature` and comes back in `call.extraContent` in the same shape as below,
+  so a conversation can move between the two Gemini adapters. Through its
+  OpenAI-compatible endpoint Gemini
   returns each call with `extra_content.google.thought_signature` and rejects the next
   turn with a 400 if the call comes back without it. It arrives in `call.extraContent`;
   pushing `res.toolCalls` back as they came (as above) sends it back untouched. It is
@@ -1020,10 +1112,11 @@ difference.
 **Which tools reach the model.** The layer never cuts a catalogue it cannot rank. If
 your tools declare no `intents` and no `risk` (the usual shape of MCP and OpenAI tool
 lists), or you pass `savings: { router: false }`, every tool goes to the provider
-exactly as you sent it, and the layer credits nothing for the tool block. Only when
-your tools declare `intents`/`risk` does the selector keep the relevant ones, up to
-`new ToolSelector({ maxTools })` (8 by default), and hold back write tools from a
-request that is not an action. Whatever it leaves out, the model cannot call in that
+exactly as you sent it, and the layer credits nothing for the tool block. When your
+tools declare `intents`/`risk`, the selector holds back write tools from a request
+that is not an action and, since 0.4.33, sends every other tool: it prunes by
+relevance only if you ask for it with `new ToolSelector({ maxTools })` (up to 0.4.32
+that was the default, with 8). Whatever it leaves out, the model cannot call in that
 request: the report's `tool-selector` trace lists it, the tokens count as eliminated
 input, and the SDK warns once per process (`silenceWarnings` turns the warning off).
 
@@ -1103,7 +1196,7 @@ console.log(tracedReport.cost.basis); // the span carries the same figures
 - **Money is kept apart by basis.** The money saved is
   `com.bivelio.cost.saved.measured`, `.reference` or `.estimated` — one key per span,
   the one of its basis — so a sum over one key never mixes measured and estimated
-  money; `unmeasured` spans carry counts and no money. `report.cost.netSavings` is a
+  money; `unmeasured` spans carry counts and no money. `report.cost.netSavingsRatio` is a
   ratio and goes out as `com.bivelio.cost.net_savings_ratio`; the money is
   `baselineEstimate − actual`, and that is what `saved.*` holds.
 - **None of this talks to BiVelio.** Spans go to your exporter; files stay where you
@@ -1138,7 +1231,7 @@ console.log(tracedReport.cost.basis); // the span carries the same figures
 | `gen_ai.usage.input_tokens`, `.output_tokens`, `.cache_read.input_tokens` | your provider's counter; absent when it reported no usage |
 | `com.bivelio.cost.basis`, `.currency`, `.baseline`, `.actual` | where the money comes from, its currency (USD by default), and both sides |
 | `com.bivelio.cost.saved.measured` \| `.reference` \| `.estimated` | the money saved, in the key of its basis only |
-| `com.bivelio.cost.net_savings_ratio` | `cost.netSavings`, a 0..1 ratio — not money |
+| `com.bivelio.cost.net_savings_ratio` | `cost.netSavingsRatio`, a 0..1 ratio — not money |
 | `com.bivelio.calls.*`, `com.bivelio.tokens.*` | the four ledgers: avoided calls, eliminated, compressed and provider‑cached tokens |
 | `com.bivelio.request_id`, `.model.id`, `.cache.result`, `.quality.status` | ids and outcomes |
 
@@ -1253,12 +1346,30 @@ BVSALA_SEAT_ID=worker-03   # stable per replica; [A-Za-z0-9._:/-], max 128 chars
 
 ## Licensing & privacy
 
-BV‑SALA is commercial software: a per‑seat subscription (**€4 / seat / month** or
-**€39 / seat / year**, EUR; VAT not included), paid whether or not you save, plus a
-tiered commission on measured savings only, as described at the top of this page, in
-[LICENSE](./LICENSE) §6 and in the Published Pricing it refers to,
-**[savings.bivelio.com/pricing](https://savings.bivelio.com/pricing)**. No free tier and no trial: what you can check before
-paying is the published measurement. The license is a signed token your SDK and the
+BV‑SALA is commercial software. The plans are **Measure** (free), **Pro** (per seat),
+**Team** (a number of seats included, plus each extra seat) and **Enterprise** (by
+contract); Pro and Team are paid whether or not you save and carry **no commission** on
+your savings. The prices are at the top of this page, in [LICENSE](./LICENSE) §6 and in
+the Published Pricing it refers to,
+**[savings.bivelio.com/pricing](https://savings.bivelio.com/pricing)**. No trial. There is one free license,
+**Measure** — no card, one organization per verified account, up to 5 seats and 20,000
+requests a day: the layer runs in **shadow mode**. Every request goes to your provider
+exactly as you built it, nothing is served from any cache, no lever is applied, and
+`report.measure.wouldHaveSaved` (with `basis: "shadow"`) says what the exact cache and
+in‑flight coalescing would have saved on that request, valued with your provider's own
+counter — a lower bound, never part of any commission. The levers need a paid plan: once
+you upgrade, a layer with `serviceAccountKey` and `licenseServerUrl` picks up the paid
+license by itself and turns them on without a restart.
+
+The earlier plan — a lower per‑seat fee plus a tiered commission on measured savings
+only — is **closed to new customers**; a subscription already on it keeps it unchanged.
+On that plan your first month carries no commission (the first calendar month, UTC, in
+which your organization reports usage); after that the commission is charged on the
+measured saving only — never from estimates — at a tiered rate from 10 % down to 4 %, so
+you keep at least 90 % of every euro saved (before rounding to the cent; the seat fee is
+separate).
+
+The license is a signed token your SDK and the
 gateway verify **offline**; the managed control plane and the revocation kill‑switch
 are served from BiVelio. Your LLM traffic goes **straight to your provider** —
 BiVelio receives per‑request usage (counts, cost, the model id and opaque ids), never

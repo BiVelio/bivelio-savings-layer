@@ -374,3 +374,47 @@ describe("el plazo duro: una petición colgada se corta y se reintenta, no se es
     await expect(conPlazo("https://x.invalido/", { signal: mia })).rejects.toThrow("cancelada por el llamante");
   });
 });
+
+/**
+ * GEMINI POR SU API NATIVA (banco semanal, camino a la 0.5): con una base
+ * `…/v1beta` el modelo de Google sale por `GoogleProvider` —`generateContent`,
+ * la clave en `x-goog-api-key`, sin el prefijo `google/` en la ruta— y el
+ * `usageMetadata` se exige. Con `…/v1beta/openai`, el endpoint compatible de
+ * antes, sin cambios.
+ */
+describe("transporte del banco · Gemini nativo", () => {
+  const NATIVA = "https://generativelanguage.googleapis.com/v1beta";
+  const RESPUESTA = {
+    candidates: [{ content: { parts: [{ text: "391", thoughtSignature: "Ev8BCvwBAWkUfROE" }], role: "model" }, finishReason: "STOP", index: 0 }],
+    usageMetadata: { promptTokenCount: 16, candidatesTokenCount: 3, totalTokenCount: 92, thoughtsTokenCount: 73, serviceTier: "standard" },
+    modelVersion: "gemini-3.8-flash",
+  };
+
+  it("la URL decide el dialecto: …/v1beta es google-nativo y …/v1beta/openai el compatible", () => {
+    expect(transporteDeModelo("google/gemini-3.8-flash", { googleBaseUrl: NATIVA, googleApiKey: "k" })).toBe("google-nativo");
+    expect(transporteDeModelo("google/gemini-3.8-flash", { googleBaseUrl: `${NATIVA}/openai`, googleApiKey: "k" })).toBe("openai-compatible");
+  });
+
+  it("habla generateContent con la clave en su cabecera, sin el prefijo google/, y cobra el pensamiento como salida", async () => {
+    const llamadas: { url: string; headers: Record<string, string>; body: Record<string, unknown> }[] = [];
+    const fetchImpl = (async (url: string, init?: RequestInit) => {
+      llamadas.push({ url, headers: init?.headers as Record<string, string>, body: JSON.parse(String(init?.body)) as Record<string, unknown> });
+      return new Response(JSON.stringify(RESPUESTA), { status: 200, headers: { "content-type": "application/json" } });
+    }) as unknown as typeof fetch;
+    const p = proveedorDelBanco("google/gemini-3.8-flash", { googleBaseUrl: NATIVA, googleApiKey: "no-es-una-clave", fetchImpl });
+    const r = await p.generate({ model: "google/gemini-3.8-flash", messages: [{ role: "system", content: "Sé breve." }, { role: "user", content: "17*23?" }], maxOutputTokens: 256, temperature: 0 });
+    expect(llamadas[0]!.url).toBe(`${NATIVA}/models/gemini-3.8-flash:generateContent`);
+    expect(llamadas[0]!.headers["x-goog-api-key"]).toBe("no-es-una-clave");
+    expect(llamadas[0]!.body["systemInstruction"]).toEqual({ parts: [{ text: "Sé breve." }] });
+    expect(llamadas[0]!.body["generationConfig"]).toMatchObject({ maxOutputTokens: 256, temperature: 0 });
+    expect(r.text).toBe("391");
+    expect(r.usage).toMatchObject({ inputTokens: 16, outputTokens: 76, reasoningTokens: 73 });
+  });
+
+  it("sin usageMetadata no hay medida: requireUsage", async () => {
+    const fetchImpl = (async () =>
+      new Response(JSON.stringify({ candidates: RESPUESTA.candidates }), { status: 200, headers: { "content-type": "application/json" } })) as unknown as typeof fetch;
+    const p = proveedorDelBanco("google/gemini-3.8-flash", { googleBaseUrl: NATIVA, googleApiKey: "k", fetchImpl });
+    await expect(p.generate({ model: "google/gemini-3.8-flash", messages: [{ role: "user", content: "x" }] })).rejects.toThrow();
+  });
+});

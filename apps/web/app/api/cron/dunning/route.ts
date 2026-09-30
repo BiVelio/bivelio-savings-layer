@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { decidirDunning } from "@/lib/billing/dunning";
 import { diasDeGracia } from "@/lib/billing/gracia";
 import { hasValidLicense, type LicenseRow } from "@/lib/metering/entitlement";
+import { volverAMedir, type VueltaAMedir } from "@/lib/license/medir";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { alertar } from "@/lib/observabilidad/alerta";
 
@@ -97,7 +98,8 @@ export async function GET(req: Request): Promise<NextResponse> {
     try {
       const { data: lics, error: licErr } = await admin
         .from("licenses")
-        .select("revoked, expires_at, grace_days")
+        // `plan` para que una licencia Medir (gratuita) no cuente como pagada.
+        .select("revoked, expires_at, grace_days, plan")
         .eq("org_id", fila.org_id ?? "");
       if (licErr) throw licErr;
       licenciaViva = hasValidLicense((lics ?? []) as LicenseRow[], ahora);
@@ -154,10 +156,28 @@ export async function GET(req: Request): Promise<NextResponse> {
         if (planErr) throw planErr;
       }
       degradados.push(fila.id);
+      // LA VUELTA A MEDIR (decisión del dueño, 2026-09-29): la org que deja de
+      // pagar sigue viendo lo que habría ahorrado. Aquí ya no le queda licencia de
+      // pago viva (`decidirDunning` no degrada con una), así que la Medir no pisa
+      // nada que funcione. Su fallo no deshace la degradación: se alerta.
+      let medir: VueltaAMedir | { resultado: "fallo" } | null = null;
+      if (fila.org_id) {
+        try {
+          medir = await volverAMedir(admin, fila.org_id, ahora);
+        } catch (err) {
+          medir = { resultado: "fallo" };
+          await alertar({
+            nivel: "aviso",
+            asunto: "La org ha dejado de pagar y NO se le ha podido emitir la licencia Medir",
+            detalle: { orgId: fila.org_id, via: "impago", motivo: err instanceof Error ? err.message : String(err) },
+          });
+        }
+      }
       await auditar(admin, fila.org_id, "dunning_degradado", {
         subId: fila.stripe_subscription_id,
         pastDueSince: fila.past_due_since,
         graciaDias: gracia,
+        medir,
       });
     } catch (err) {
       // Una org que falla no puede tumbar el barrido entero: el resto sigue.

@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
-import { midioElSdkInstalado, sueloPublicable } from "@/lib/bench/sdk-instalado";
+import { midioElSdkInstalado } from "@/lib/bench/sdk-instalado";
 
 import type { AbArtifact } from "../data";
 import { pct } from "../format";
@@ -10,23 +10,16 @@ import { pct } from "../format";
  *
  * Recibe el ARTEFACTO, no un intervalo suelto: así nadie puede pasarle el suelo
  * de una tirada que no midió el SDK tal como se instala. Sin
- * `sdk.asShipped: true` la banda enseña lo que el paquete sostiene
- * (`sueloPublicable`) y no dibuja el intervalo ni el punto de esa tirada: eran
- * de una capa con el compresor del banco, que npm no trae.
+ * `sdk.asShipped: true` NO PINTA NADA (2026-09-29): hasta hoy enseñaba ahí un
+ * «≥ 10 %» (el titular que la portada ya no publica). Una tirada sintética, con
+ * un compresor que npm no trae, explica el mecanismo; no promete una cifra. La
+ * cifra que el panel enseña como medida es la del banco en vivo
+ * (MedidoEnVivo) y, sobre todo, la del propio cliente.
  */
 export async function NetSavingsCIBand({ ab }: { ab: AbArtifact }) {
+  if (!midioElSdkInstalado(ab)) return null;
   const t = await getTranslations("dashboard");
   const savings = ab.aggregate.savings;
-  if (!midioElSdkInstalado(ab)) {
-    return (
-      <div className="verdict band">
-        <div>
-          <div className="big pos ck-num">≥ {pct(sueloPublicable(ab))}</div>
-          <div className="cap">{t("netSavingsCIBand.captionSdkPendiente")}</div>
-        </div>
-      </div>
-    );
-  }
   const dmin = Math.min(-0.05, savings.lower - 0.05);
   const dmax = Math.max(0.6, savings.upper + 0.05);
   const xp = (v: number) => Math.max(0, Math.min(100, ((v - dmin) / (dmax - dmin)) * 100));

@@ -195,7 +195,7 @@ export function describirEstadoDeEsfuerzo(
 ): { linea: string; aviso: boolean } {
   if (nivel === undefined || nivel === "") {
     return {
-      linea: `per-turn effort: OFF (BVSALA_GATEWAY_ESFUERZO=${NIVELES_QUE_REBAJAN.join("|")} turns it on)`,
+      linea: `per-turn effort: OFF (BVSALA_GATEWAY_EFFORT=${NIVELES_QUE_REBAJAN.join("|")} turns it on)`,
       aviso: false,
     };
   }

@@ -103,7 +103,8 @@
       "signupDisabled": "Die Registrierung ist gerade geschlossen. Schreib an support@bivelio.com.",
       "network": "Keine Verbindung. Prüf dein Netzwerk und versuch es noch mal.",
       "missingFields": "Gib deine E-Mail und dein Passwort ein."
-    }
+    },
+    "signupMedir": "Oder starte kostenlos mit Measure: ohne Karte, im Schattenmodus, bis zu {seats} Seats und {requests} Anfragen pro Tag. Erfordert @bivelio/savings-layer {version} oder neuer."
   },
   "dashboard": {
     "overview": {
@@ -128,7 +129,9 @@
       "metaTitle": "Nachweis · BiVelio Savings Layer",
       "eyebrow": "Verifizieren statt vertrauen · Referenz-Benchmark",
       "title": "Der Beweis, dass der Optimierer funktioniert",
-      "intro": "Auf beiden Zweigen gemessen — die Glaubwürdigkeits-Engine hinter deinen eigenen Zahlen."
+      "intro": "Drei Dinge, getrennt: was der öffentliche Benchmark live gemessen hat, mit seinem Intervall; was du sparst, gemessen auf deinem eigenen Traffic; und ein synthetischer Lauf, der zeigt, wie jeder Hebel funktioniert.",
+      "tuDinero": "Was in deinem Dashboard zählt, ist dein eigenes Geld: Jede Einsparung in deiner <overview>Übersicht</overview> ist mit dem Zähler deines Anbieters gemessen, auf deinem Traffic, Anfrage für Anfrage. Die Zahlen oben sind die des Benchmarks, keine Prognose deiner.",
+      "sinteticaTitulo": "Synthetischer Lauf · wie jeder Hebel funktioniert"
     },
     "verify": {
       "metaTitle": "Verifizieren · BiVelio Savings Layer",
@@ -244,7 +247,7 @@
       "elisionNota": "Wenn du das Gateway nutzt, ist ein Teil dieser Zahl Eingabe, die dein Anbieter wegen deiner eigenen Konfiguration verwirft: dieser Teil ist nicht unser Verdienst und geht nie in deine Provision ein.",
       "whatCompressedTokens": "Eingabe-Tokens, die kompakter neu kodiert wurden",
       "whatProviderCachedTokens": "Eingabe-Tokens zum vergünstigten Präfix-Cache-Preis. Ihr Client fordert das an, nicht wir: Unser Hebel stellt nur die Dauer ein",
-      "ghostAwaiting": "{ref} · wartet auf ersten Bericht",
+      "ghostAwaiting": "wartet auf ersten Bericht",
       "footnote": "Vier Ledger, <b>niemals summiert</b> — wir können keinen Dollar doppelt zählen. Nur Zählwerte und Kosten, niemals deine Prompts. Der Bericht ist der Zähler."
     },
     "savingsTrendChart": {
@@ -414,7 +417,7 @@
       "personalNote": "Persönlich — noch keine Organisation verknüpft. Ein BiVelio-Konto, das in der gesamten Suite geteilt wird.",
       "plan": "Plan",
       "seatsCount": "{count, plural, one {# Seat} other {# Seats}}.",
-      "planBody": "BV-SALA ist fail-closed — es läuft nur mit einer aktiven PRO-Lizenz. {monthly} pro Seat und Monat oder {yearly} pro Seat und Jahr. Ein Seat ist eine aktive Maschine oder Dienstidentität, keine Person.",
+      "planBody": "BV-SALA ist fail-closed — es läuft nur mit einer aktiven Lizenz. Pro: {monthly} pro Seat und Monat oder {yearly} pro Seat und Jahr. Team: {teamMonthly} pro Monat mit {included} Seats inklusive. Keine Provision auf deine Ersparnis. Ein Seat ist eine aktive Maschine oder Service-Identität, keine Person.",
       "managePlan": "Plan verwalten →",
       "subscribe": "Abonnieren →",
       "checkoutMonthly": "Abonnieren — {monthly}/Seat/Mon. →",
@@ -430,7 +433,14 @@
       "errPagoEnCurso": "Deine Zahlung wird noch verarbeitet: eine Lastschrift kann ein paar Tage brauchen. Du bekommst Zugang, sobald sie durch ist. Starte kein zweites Abonnement.",
       "errSuscripcionEnStripe": "Stripe hat schon ein Abonnement für dieses Konto, aber es ist hier noch nicht aktiv. Kauf nicht noch mal: schreib an support@bivelio.com und wir schalten es von Hand frei.",
       "codigoAplicado": "Beim Bezahlen wird der Code {codigo} angewendet.",
-      "errCodigoInvalido": "Dieser Code existiert nicht oder ist nicht mehr aktiv. Du kannst ohne ihn weitermachen oder an support@bivelio.com schreiben."
+      "errCodigoInvalido": "Dieser Code existiert nicht oder ist nicht mehr aktiv. Du kannst ohne ihn weitermachen oder an support@bivelio.com schreiben.",
+      "planPickLabel": "Plan",
+      "planPro": "Pro",
+      "planTeam": "Team",
+      "teamHint": "Team enthält {included} Seats; jeder weitere Seat kostet {extra} pro Monat. Weniger als {included} kann man nicht kaufen.",
+      "checkoutTeamMonthly": "Team abonnieren — {monthly}/Monat, {included} Seats →",
+      "checkoutTeamYearly": "Team abonnieren — {yearly}/Jahr, {included} Seats →",
+      "errPlanCerrado": "Dieser Plan wird Neukunden nicht mehr angeboten. Wähle Pro oder Team."
     },
     "referenceLedgerCards": {
       "proven": "bewiesen",
@@ -456,7 +466,6 @@
     },
     "netSavingsCIBand": {
       "caption": "Netto-Einsparung, <b>untere 95%-Konfidenzgrenze</b>. Punktschätzung {point}, obere {upper} — wir stellen den unteren Wert in den Vordergrund{mockNote}.",
-      "captionSdkPendiente": "was das SDK trägt, wie es aus npm installiert wird. Der veröffentlichte Lauf enthielt einen Kompressor, den es nur im Prüfstand gibt und den das Paket nicht mitliefert, deshalb werden sein Intervall und sein Punktschätzer nicht als Versprechen gezeigt, bis ein Lauf mit dem installierten SDK sie ersetzt.",
       "mockNote": " (Referenz-Workload, Mock-Provider)"
     },
     "cacheBreakEven": {
@@ -470,7 +479,7 @@
     },
     "referenceModeBadge": {
       "liveDesc": "— gegen einen echten Provider gemessen, mit Quality-Gate.",
-      "sdkPendiente": "Dieser Lauf enthielt einen Kompressor, den es nur im Prüfstand gibt und den das npm-Paket nicht mitliefert: Seine Zahlen zeigen den Mechanismus, nicht was das installierte SDK spart.",
+      "sdkPendiente": "Synthetischer Lauf: für den Benchmark geschriebene Szenarien plus ein Benchmark-Kompressor, den das npm-Paket nicht enthält. Seine Zahlen zeigen, wie jeder Hebel funktioniert — sie sind kein Versprechen dessen, was du sparen wirst.",
       "mock": "<b>GESCHÄTZT · Mock-Provider</b> — das beweist, dass der Mechanismus funktioniert, nicht deine Rechnung. Ein verbindlicher LIVE-Lauf ersetzt jede Zahl hier."
     },
     "connectionStatePill": {
@@ -560,6 +569,18 @@
       "title": "Löschung durch den Anbieter, ausgelöst durch unsere Regler",
       "detalle": "{requests} angerechnete Anfragen",
       "nota": "Die Zählung stammt vom Anbieter (applied_edits). Sie ist keine gemessene Ersparnis und fließt nie in deine Provision ein; der Geldwert folgt, sobald das Netto pro Modell gemessen ist — Löschen schreibt den Prefix-Cache neu, und bei manchen Modellen ist das Netto negativ."
+    },
+    "ahorroNativo": {
+      "title": "Aktivierte native Ersparnis",
+      "detalle": "{requests} Anfragen mit Anbieter-Cache · Lesen {lectura} − Schreibaufschlag {prima}",
+      "nota": "Das ist der Rabatt aus dem Prefix-Cache Ihres Anbieters (Anthropic mit cache_control, OpenAI automatisch, Gemini implizit), abzüglich des Schreibaufschlags, den er berechnet – ermittelt aus seinem eigenen Zähler zum Listenpreis. Sie sehen ihn auf der Rechnung Ihres Anbieters, nicht auf unserer: Er steht getrennt von der gutgeschriebenen Ersparnis und fließt nie in Ihre Provision ein.",
+      "vacio": "In diesem Zeitraum hat noch keine Anfrage den Prefix-Cache Ihres Anbieters gelesen oder beschrieben.",
+      "proveedor": {
+        "anthropic": "Anthropic",
+        "openai": "OpenAI",
+        "google": "Gemini",
+        "other": "Andere"
+      }
     },
     "ritmo": {
       "title": "Tempo und Prognose",
@@ -716,16 +737,44 @@
         "libros": "Die vier Bücher",
         "trafico": "Verkehr",
         "sesiones": "Sitzungen",
-        "maquinas": "Maschinen"
+        "maquinas": "Maschinen",
+        "nativo": "Aktivierte native Ersparnis"
       }
     },
     "team": {
       "metaTitle": "Team · BiVelio Savings Layer"
+    },
+    "measurePlan": {
+      "title": "Oder kostenlos starten: die Measure-Lizenz, ohne Karte",
+      "body": "Betreibt die Schicht im Schattenmodus für 1 Organisation und bis zu {seats} Plätze: Jede Anfrage geht unverändert an Ihren Anbieter, und nichts wird aus dem Cache bedient. Ihr Dashboard zeigt, was die Hebel gespart hätten; mit einem Upgrade schalten Sie sie ein.",
+      "claim": "Meine kostenlose Measure-Lizenz holen",
+      "claiming": "Wird ausgestellt…",
+      "keyLabel": "Ihr Measure-Lizenzschlüssel (Schattenmodus: keine Hebel aktiv)",
+      "keyHint": "Verwenden Sie ihn als BIVELIO_LICENSE_KEY, genau wie einen bezahlten Schlüssel. Nach dem Upgrade übernimmt die Schicht die bezahlte Lizenz von selbst, und die Hebel werden aktiv.",
+      "errEmailNotVerified": "Bestätigen Sie zuerst Ihre E-Mail-Adresse und versuchen Sie es dann erneut.",
+      "errDisposableEmail": "Wegwerf-E-Mail-Adressen können die Measure-Lizenz nicht erhalten. Registriere dich mit einer dauerhaften Adresse (zum Beispiel deiner geschäftlichen) und versuche es erneut.",
+      "errOneOrgPerAccount": "Dieses Konto hat bereits eine Measure-Lizenz für eine andere Organisation: Die kostenlose Lizenz gilt für eine Organisation pro Konto.",
+      "errAlreadyLicensed": "Ihre Organisation hat bereits eine bezahlte Lizenz: Verwenden Sie den Schlüssel oben.",
+      "errBlocked": "Die Measure-Lizenz ist für diese Organisation nicht verfügbar. Schreiben Sie an support@bivelio.com.",
+      "errRole": "Ihre Rolle erlaubt das Herunterladen der Lizenz nicht. Fragen Sie einen Owner oder Admin.",
+      "errSignIn": "Melden Sie sich zuerst an.",
+      "errGeneric": "Die Measure-Lizenz konnte nicht ausgestellt werden. Versuchen Sie es gleich noch einmal.",
+      "planLabel": "Measure (kostenlos)",
+      "pricingNote": "Measure: kostenlos, ohne Karte. Die Schicht im Schattenmodus für 1 Organisation und bis zu {seats} Plätze, damit Sie sehen, was sie sparen würde, bevor Sie zahlen.",
+      "card": {
+        "eyebrow": "Measure-Lizenz · Schattenmodus",
+        "title": "Was Sie gespart hätten",
+        "amount": "{amount}, die Sie nicht ausgegeben hätten",
+        "context": "Von {spend} gemessenen Ausgaben in {requests} Anfragen. Eine Schätzung aus der Schattenspur, bewertet mit dem Zähler Ihres eigenen Anbieters: im SDK wiederholte und parallel doppelte Aufrufe; im Gateway zusätzlich das Geschwistermodell und die Senkung der Cache-TTL. Nichts wurde angewendet, nichts wird berechnet.",
+        "empty": "Noch keine Spar-Schätzung: Sie erscheint, sobald Ihre Schicht eine wiederholte Anfrage sieht oder, im Gateway, eine, bei der das Geschwistermodell oder die Senkung der Cache-TTL gespart hätte. Die Measure-Lizenz ändert nie, was Sie senden.",
+        "limits": "Kostenlos für 1 Organisation, bis zu {seats} Plätze und {requests} Anfragen pro Tag.",
+        "cta": "Hebel einschalten: Pläne ansehen"
+      }
     }
   },
   "landing": {
     "metaTitle": "BiVelio — Verifiziere deine LLM-Einsparungen",
-    "metaDescription": "Ein SDK, mit dem deine App dem LLM-Anbieter nur zahlt, was sie braucht, und ein Gateway, das deinen Coding-Agenten misst. Gezählt mit dem eigenen Zähler deines Anbieters: eine Gebühr pro Seat plus Provision nur auf gemessene Ersparnis.",
+    "metaDescription": "Ein SDK, mit dem deine App dem LLM-Anbieter nur zahlt, was sie braucht, und ein Gateway, das deinen Coding-Agent misst. Gezählt mit dem Zähler deines Anbieters: kostenlos messen, dann pro Seat zahlen — ohne Provision auf deine Ersparnis.",
     "hero": {
       "eyebrow": "Für Teams, die LLM-APIs pro Token bezahlen",
       "title": "Ihre LLM-Rechnung, unter Kontrolle.",
@@ -735,46 +784,13 @@
       "ctaPricing": "Preise ansehen",
       "note": "In Minuten installiert. Deine Nachrichten laufen nie über unsere Server.",
       "proofTitle": "Gegen echten Provider gemessen",
-      "proofs": [
-        {
-          "marca": "OpenAI",
-          "modelo": "gpt-4o-mini",
-          "cifra": "≥ 10,0 %",
-          "que": "weniger Rechnung, geprüft bei 95 % · gegenüber einer nicht optimierten Integration, ohne Streaming"
-        }
-      ],
-      "proofSdkPendiente": "Vorläufig: Der veröffentlichte Lauf enthielt einen Kompressor, den es nur im Prüfstand gibt und den das npm-Paket nicht mitliefert. Diese Zahl passt unter die Untergrenze dieses Laufs, wenn die Wirkung des Kompressors herausgerechnet wird, neu berechnet aus den gemessenen Versuchen — sie ist noch keine Messung des installierten SDK. Dieser Lauf steht noch aus.",
       "medidoEn": "Gemessen auf",
       "compatibleCon": "Kompatibel mit",
-      "compatibleNota": "Jeder mit der OpenAI-API kompatible Endpunkt sowie der native Anthropic-Adapter. Mit veröffentlichter Zahl, heute, nur OpenAI {modelo}."
+      "compatibleNota": "Kompatibel heißt nicht gemessen. Das SDK funktioniert mit jedem Endpunkt, der mit der OpenAI-API kompatibel ist, dazu mit dem nativen Anthropic-Adapter und dem nativen Gemini-Adapter (neu in {gemini}). Gemessen — mit einer Einsparungszahl im öffentlichen Benchmark — sind heute nur Modelle von OpenAI und Anthropic; für Gemini gibt es noch keine gemessene Einsparung."
     },
     "cascade": {
       "title": "Die günstigste Ausführung gewinnt",
-      "per": "gemessen auf gpt-4o-mini · 95-%-Untergrenze",
-      "steps": [
-        {
-          "n": "01",
-          "title": "Den Aufruf ganz vermeiden",
-          "sub": "Resolver · Singleflight",
-          "ledger": "avoided_calls",
-          "grey": false
-        },
-        {
-          "n": "02",
-          "title": "Entfernen, was nie gesendet werden musste",
-          "sub": "beschnittene Tools · Retrieval · redundanter Kontext",
-          "ledger": "eliminated_tokens",
-          "grey": false
-        },
-        {
-          "n": "03",
-          "title": "Komprimieren, was übrig bleibt",
-          "sub": "schlankere Kodierung · nur wenn es sich lohnt",
-          "ledger": "compressed_tokens",
-          "grey": false
-        }
-      ],
-      "footnote": "Jeder Schritt fällt in EIN anderes Ledger, deshalb addieren sich diese Zahlen nicht. Ein Schritt, dessen Ledger die Null nicht übersteigt, erscheint hier nicht: die Ausgabebeschränkung wurde gemessen und spart nicht, also wird sie nicht beworben. Alle Zahlen dieses Laufs stammen von gpt-4o-mini: derselbe Hebel kann bei einem anderen Modell Geld kosten, und auch das wird veröffentlicht."
+      "footnote": "Jeder Hebel landet in seinem eigenen Konto, und die Konten werden nie addiert. In dieser Batterie kam die Einsparung aus wiederholten Anfragen, die das SDK ohne Aufruf des Anbieters bediente, und bei Claude aus dem Präfix-Cache des Anbieters selbst. Das npm-Paket enthält keinen Kompressor, also sparte die Kompression nichts — und bei Traffic ohne Wiederholungen war die Einsparung nicht von null zu unterscheiden."
     },
     "explica": {
       "eyebrow": "In normalen Worten",
@@ -794,8 +810,8 @@
           "body": "Wir bitten nicht um Vertrauen. Jede Ersparnis wird mit dem offiziellen Zähler des Anbieters gemessen — demselben, mit dem er dir Rechnungen stellt — und landet auf deinem Beleg. Was sich nicht mit der Rechnung abgleichen lässt, wird nie verkündet."
         },
         {
-          "title": "Eine Gebühr pro Seat und ein Anteil am Gemessenen",
-          "body": "Du zahlst jeden Monat eine feste Gebühr pro Seat, ob du sparst oder nicht. Dazu kommt unsere Provision, und die stammt nur aus Ersparnis, die mit dem Zähler deines Anbieters gemessen wurde — der Großteil jeder Ersparnis bleibt immer bei dir. Ein Monat ohne gemessene Ersparnis? Du zahlst die Seats und null Provision."
+          "title": "Kostenlos messen, dann pro Seat zahlen",
+          "body": "Starte mit der kostenlosen Measure-Lizenz: Die Schicht läuft im Schattenmodus und zeigt, was sie mit deinem eigenen Traffic gespart hätte. Um die Hebel einzuschalten, zahlst du eine feste Gebühr pro Seat oder einen Team-Plan, ob du sparst oder nicht — und keine Provision auf deine Ersparnis."
         }
       ],
       "nota": "Die Animationen veranschaulichen die Idee. Die echten Zahlen — gemessen gegen echte Anbieter — stehen direkt darunter."
@@ -806,21 +822,15 @@
       "body": "Jedes Szenario läuft zweimal gegen den echten Anbieter: unverändert und mit Savings davor. Beide Ergebnisse werden mit dem Zähler des Anbieters selbst gezählt — demselben, der deine Rechnung bepreist. Das kam heraus, samt Fehlermarge:",
       "videoCaption": "Der Test ist ein faires Experiment: dieselbe Aufgabe zweimal — ohne Savings und mit Savings — und derselbe Zähler des Anbieters zählt beide.",
       "plainTitle": "Übersetzung, ohne Fachjargon",
-      "plain": "In diesem Test sank die Rechnung mit an Sicherheit grenzender Wahrscheinlichkeit um mindestens {piso}. Am wahrscheinlichsten sank sie um {punto}.",
-      "plainSdkPendiente": "Mit dem SDK, wie du es aus npm installierst, sinkt die Rechnung um mindestens {piso}. Der veröffentlichte Test enthielt zusätzlich einen Kompressor, den es nur im Prüfstand gibt und den das Paket nicht mitliefert; wir rechnen seine Wirkung heraus, statt sie mitzuzählen, bis ein Lauf mit dem installierten SDK diese Zahl ersetzt.",
-      "plainNote": "Gibt es eine Spanne, verkünden wir immer die kleine Zahl — die, die die Statistik garantiert —, nie die schöne.",
-      "trialsLink": "Rohdaten der Versuche herunterladen (CSV)"
+      "plain": "Bei einem Strom, in dem sich {rep} der Anfragen exakt wiederholen, sank die Rechnung um {punto} — zwischen {bajo} und {alto} mit 95 % Konfidenz. Bei Traffic ohne Wiederholungen sank sie um ≈ {cero}. Was du sparst, hängt davon ab, wie oft sich deiner wiederholt.",
+      "plainNote": "Ein Prozentsatz bedeutet nichts ohne sein Intervall, sein Modell und seinen Traffic: Wir veröffentlichen alle drei — und auch die Batterien, in denen nichts gespart wurde.",
+      "benchLink": "Jede Batterie mit ihrem vollständigen Bericht im öffentlichen Benchmark →"
     },
     "ledgersHead": {
       "eyebrow": "Ehrliche Abrechnung",
       "title": "Jede Art von Ersparnis, getrennt gezählt — damit keine Zahl aufgebläht wird.",
-      "body": "Savings spart auf mehrere Arten: Es vermeidet ganze Aufrufe, entfernt überflüssigen Text, verpackt das Gesendete kompakter und schaltet die Rabatte des Anbieters ein. Jede Art führt ihr eigenes Konto mit ihrer eigenen gemessenen Zahl — und wir addieren sie nie zu einer Marketingzahl.",
-      "runToMeasure": "führe den Optimierer aus, um zu messen",
-      "measuredFloor": "gemessen · 95-%-Untergrenze",
-      "notProven": "gemessen · übersteigt die Null nicht",
-      "providerTag": "OpenAI",
-      "providerModel": "gpt-4o-mini",
-      "providerNote": "Jedes Ledger wird einzeln gegen die OpenAI-API gemessen und veröffentlicht; die, die nicht über null hinauskommen, erscheinen nicht. Ein Prozentsatz ohne sein Modell daneben bedeutet nichts: derselbe Hebel kann bei einem Modell sparen und bei einem anderen kosten."
+      "body": "Jeder SavingsReport teilt die Einsparung in vier Konten auf — vermiedene Aufrufe, entfernter Text, komprimierter Text und der Cache-Rabatt deines eigenen Anbieters — und addiert sie nie zu einer Marketingzahl.",
+      "providerNote": "Im öffentlichen Benchmark ({fecha}) kam die Einsparung des installierten SDK aus dem ersten Konto — wiederholte Anfragen, bedient ohne Aufruf des Anbieters — und bei Claude aus dem vierten, dem Rabatt deines eigenen Anbieters. Das npm-Paket enthält keinen Kompressor, also war das dritte dort null. Ein Konto ohne veröffentlichte Zahl wird hier beschrieben, nicht beworben."
     },
     "ledgers": [
       {
@@ -853,9 +863,8 @@
       "mEscritura": "Cache-Schreiben (eine Stunde)",
       "mEscrituraDesc": "Jedes Tool-Ergebnis wird mit Aufschlag in den Cache geschrieben, bevor es neu gelesen wird.",
       "mSalida": "Modellausgabe",
-      "mSalidaDesc": "Unter einem Prozent der Tokens; der Skill greift sie direkt an.",
-      "medidaPie": "der gemessenen Ausgaben",
-      "anatomiaNota": "Gemessen mit dem Meter über {peticiones} echte Claude-Code-Anfragen, gegen die Zähler des Providers ({fecha}). Die Wirkung des Skills selbst wird veröffentlicht, sobald sie im A/B gemessen ist — nie vorher.",
+      "mSalidaDesc": "Ein kleiner Teil der Tokens, zum höchsten Preis pro Token; der Skill greift sie direkt an.",
+      "anatomiaNota": "Wohin die Ausgaben einer Claude-Code-Sitzung gehen, in dieser Reihenfolge: Cache-Lesevorgänge, einstündige Cache-Schreibvorgänge und Modellausgabe — gemessen mit unserem Zähler auf unserem eigenen Traffic, gegen die Zähler des Anbieters. Dieser Bericht ist nicht veröffentlicht, deshalb zeigen wir seine Zahlen nicht. Die Wirkung des Skills selbst wird veröffentlicht, sobald sie per A/B gemessen ist — nie vorher.",
       "ccNota": "Ein Befehl: installiert nach ~/.claude/skills und aktiviert sich von selbst, wenn es um Limits oder Token-Sparen geht.",
       "cxNota": "Codex hat keine Skills: dieselbe Disziplin reist als markierter Block in deiner AGENTS.md (~/.codex) — immer aktiv; lösche den Block zum Abschalten. Deine AGENTS.md außerhalb der Marken wird nie angerührt. Funktioniert mit ChatGPT-Konto und API-Key, und unter bvsala codex (mit Lizenz) wird die Wirkung gemessen.",
       "aiDescargar": "savings-mode.zip herunterladen",
@@ -887,12 +896,36 @@
       "initNote": "<b>Oder lass einen Befehl es auf deinen Stack zuschneiden.</b> <code>init</code> liest deine <code>package.json</code> (Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, das Anthropic- oder das OpenAI-SDK) und gibt die Installationszeile aus, den genauen Code für deinen Adapter und eine Prüfung, die keine Tokens kostet: Sobald deine Lizenz eingerichtet ist, beantwortet die Schicht sie auf deinem Rechner, ohne das Modell aufzurufen. Er schreibt nichts, solange du es nicht verlangst."
     },
     "pricing": {
-      "eyebrow": "Ein Plan, Preis pro Seat",
-      "title": "Eine Gebühr pro Seat, immer. Provision nur auf gemessene Ersparnis.",
-      "body": "Kein Gratisplan, kein Test: Vor dem Zahlen kannst du die öffentlichen Messungen prüfen und den Verifizierer mit deinen eigenen Daten laufen lassen, direkt auf dieser Seite. Die Gebühr pro Seat wird jeden Monat berechnet, in {currency}, ob du sparst oder nicht. Die Provision kommt obendrauf, und nur auf Ersparnis, die mit dem Zähler deines Anbieters gemessen wurde — auch bei wiederholten Anfragen, die ohne Aufruf deines Anbieters bedient werden; jede wird mit dem Zähler der identischen Anfrage bewertet, die bereits gelaufen ist. Geschätztes geht nie ein.",
+      "eyebrow": "Pläne",
+      "title": "Kostenlos messen. Pro Seat zahlen, wenn du die Ersparnis willst.",
+      "body": "Starte mit Measure: kostenlos und ohne Karte. Die Schicht läuft im Schattenmodus mit deinem eigenen Traffic, und dein Dashboard zeigt, was sie gespart hätte, bewertet mit dem Zähler deines Anbieters. Pro und Team werden pro Seat in {currency} abgerechnet, ob du sparst oder nicht, und tragen keine Provision auf deine Ersparnis.",
       "amount": "{amount}",
       "per": "/ Seat / Monat",
-      "proNote": "<b>PRO</b> — pro Seat abgerechnet. Oder <b>{yearly} / Seat / Jahr</b> (spare ~19%). Enterprise, mit gebündelten Funktionen, kommt später.",
+      "plans": {
+        "medir": {
+          "name": "Measure",
+          "price": "Kostenlos",
+          "body": "Ohne Karte. Die Schicht im Schattenmodus für eine Organisation, bis zu {seats} Seats und {requests} Anfragen pro Tag: Nichts von dem, was du sendest, ändert sich, nichts wird aus dem Cache bedient, sie ist nie Teil einer Provision — und du siehst, was sie gespart hätte. Erfordert @bivelio/savings-layer {version} oder neuer.",
+          "cta": "Kostenlos starten →"
+        },
+        "pro": {
+          "name": "Pro",
+          "note": "Oder <b>{yearly} / Seat / Jahr</b>. Alle Optimierungen, der Beleg pro Anfrage und das Dashboard. Keine Provision.",
+          "cta": "Pro wählen →"
+        },
+        "team": {
+          "name": "Team",
+          "per": "/ Monat",
+          "note": "<b>{included} Seats inklusive</b>; jeder weitere Seat {extra} / Monat. Oder <b>{yearly} / Jahr</b>. Keine Provision.",
+          "cta": "Team wählen →"
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "price": "Individuell",
+          "body": "Mehr Seats, als der Online-Checkout zulässt, ein eigener Vertrag oder vereinbarte Rechnungsbedingungen: <contact>schreib uns</contact>."
+        }
+      },
+      "legacy": "Du hast schon das frühere Modell mit Provision auf gemessene Ersparnis? Du behältst es unverändert; seine Bedingungen stehen in den <terms>Preisbedingungen</terms>.",
       "seatNote": "Ein Seat ist eine <b>Maschine oder Dienstidentität</b>, keine Person. Du zahlst für die Seats, die dein Abo abdeckt; dein Dashboard zeigt, wie viele diesen Monat genutzt wurden (an mindestens {dias} Tagen aktiv; CI und kurzlebige Runner zählen nicht).",
       "features": [
         "Jede BV‑SALA-Optimierung, ohne Limit",
@@ -924,7 +957,7 @@
     },
     "footer": {
       "ctaTitle": "Messen Sie es an Ihrem eigenen Traffic",
-      "ctaSub": "Einmal installiert, liefert jeder Aufruf seinen SavingsReport, gemessen und geschätzt getrennt. Die Gebühr pro Seat ist monatlich und fest; die Provision kommt nur aus dem Gemessenen. Die Lizenz ist das, was BV‑SALA laufen lässt — das SDK in deiner App, das Gateway in deinem Terminal.",
+      "ctaSub": "Einmal installiert, liefert jeder Aufruf seinen SavingsReport, Gemessenes und Geschätztes getrennt. Starte kostenlos mit Measure (@bivelio/savings-layer {version} oder neuer); Pro und Team sind eine feste Gebühr pro Seat, ohne Provision auf deine Ersparnis. Die Lizenz ist das, was dich BV‑SALA ausführen lässt — das SDK in deiner App, das Gateway in deinem Terminal.",
       "ctaStart": "Loslegen",
       "tagline": "Das Betriebssystem für Ihr Unternehmen. Das ist <b>BV‑SALA</b>, BiVelios anbieterneutraler LLM-Kostenoptimierer — jede veröffentlichte Zahl gegen den Zähler des Anbieters gemessen; Schätzungen werden getrennt gezeigt und nie berechnet.",
       "badge": "BV‑SALA · Savings Layer",
@@ -932,6 +965,7 @@
       "colBivelio": "BiVelio",
       "colLegal": "Rechtliches",
       "measured": "Gemessene Ergebnisse",
+      "benchmarks": "Offener Benchmark",
       "pricing": "Preise",
       "home": "Startseite",
       "docs": "Dokumentation",
@@ -965,59 +999,12 @@
       "errorEnvio": "Wir konnten es nicht senden.",
       "alterna": "Schreib uns"
     },
-    "calculadora": {
-      "title": "Und wie viel würdest du uns zahlen?",
-      "sub": "Spiel mit deinen Zahlen: wähle Anbieter und Modell und sieh deine Ersparnis, unser Extra und was dir bleibt — mit den echten Katalogpreisen und dem echten Tarif.",
-      "proveedor": "Anbieter",
-      "modelo": "Modell",
-      "reqs": "Anfragen / Monat",
-      "inTok": "Ø Eingabe-Tokens",
-      "outTok": "Ø Ausgabe-Tokens",
-      "fx": "Wechselkurs ({par})",
-      "factura": "Deine geschätzte Rechnung ohne Optimierung: {usd} pro Monat ({eur}).",
-      "colAhorro": "Wenn du sparst",
-      "colTuAhorro": "Deine Ersparnis",
-      "colExtra": "Unser Extra",
-      "colTeQuedas": "Dir bleibt",
-      "extraCero": "nichts",
-      "notaGarantia": "Provision nur auf gemessene Ersparnis — und dir bleiben immer {garantia} oder mehr davon. Seats werden separat berechnet, jeden Monat.",
-      "notaTramos": "Gestuft, jede Stufe zu ihrem Satz: {tramos}. Je mehr du sparst, desto niedriger unser Prozentsatz.",
-      "notaPrimerMesLead": "Dein erster Kalendermonat mit Nutzung: nur der Sitz.",
-      "notaPrimerMes": "Es ist dein Kalibrierungszeitraum, egal wie wenig von diesem Monat übrig ist: Wir messen alles, und du siehst die exakte Abrechnung dessen, was es gekostet hätte — ohne dass es berechnet wird.",
-      "version": "SDK-Katalogpreise, Version {fecha}. Eine Schätzung: deine Abrechnung nutzt deine gemessene Nutzung.",
-      "cargando": "Preiskatalog wird geladen…",
-      "badge": "Schätzung",
-      "asientos": "Sitze ({precio} pro Sitz)",
-      "resumenTotal": "Die ganze Wahrheit, im {pct}-Szenario: unser Gesamtbetrag wäre {total} (Sitze: {asientosCoste} + die Provision oben) und dir blieben {neto} — {pctNeto} deiner Rechnung.",
-      "precios": "Exakter Preis von {modelo}: Eingabe {inM} · Ausgabe {outM} · gecachte Eingabe {cacheM}, pro Million Tokens.",
-      "fuente": "Quelle: <a>die offizielle Preisseite von {proveedor}</a>, in unserem Katalog verifiziert am {fecha} (und wöchentlich automatisch überwacht)."
-    },
-    "formula": {
-      "title": "Wie sich das berechnet, was du uns zahlst",
-      "mes1": "<b>Dein erster Kalendermonat mit Nutzung (UTC): nur die Gebühr pro Sitz.</b> Wir messen alles und berechnen keine Provision, egal wie wenig von diesem Monat übrig ist — zum Abschluss siehst du die exakte Abrechnung dessen, was es gekostet hätte.",
-      "medido": "Danach Provision nur auf die <b>gemessene Ersparnis</b>: die, die du mit der Rechnung deines Anbieters abgleichen kannst. Geschätztes wird nie berechnet.",
-      "garantia": "Und <b>dir bleiben immer {garantia} oder mehr</b> jedes gesparten Euros: die Provision existiert nur, wenn deine gemessene Ersparnis existiert.",
-      "tramos": "<b>Gestuft, jede Stufe zu ihrem Satz</b> — {tramos}. Je mehr du sparst, desto niedriger unser Prozentsatz.",
-      "permanencia": "Ein Monat ohne Ersparnis? Provision: {cero}. <b>Keine Bindung</b> — und deine erste variable Rechnung enthält nur Zahlen, die du schon auf deiner Abrechnung gesehen hast."
-    },
     "trabajos": {
       "pajaTitle": "Trägt die Sendung Füllung…",
       "pajaBody": "…entfernt das Tor sie vor dem Bezahlen: Das Paket erreicht die Cloud viel kleiner, und die Differenz fällt in dein Glas.",
       "magroTitle": "Ist sie schon schlank…",
       "magroBody": "…passiert sie unberührt. Dort gibt es nichts zu entfernen — und wir versprechen keine Ersparnis, wo keine ist.",
-      "caption": "Nicht jede Sendung trägt dieselbe Füllung: In diesem Lauf reichte der gemessene Zuschnitt je Szenario von {min} bis {max}. Auch die, die nichts sparen, werden veröffentlicht."
-    },
-    "recibo": {
-      "title": "SDK · SavingsReport · veröffentlichter Lauf",
-      "modelo": "Modell",
-      "parejas": "gemessene Paare",
-      "calidad": "Qualität",
-      "punto": "Punktschätzung",
-      "suelo": "Die Schlagzahl ist die Untergrenze des 95-%-Intervalls, nie der Punkt.",
-      "sdkPendiente": "Dieser Lauf enthielt einen Kompressor, den es nur im Prüfstand gibt und den das npm-Paket nicht mitliefert, deshalb wird seine Untergrenze nicht gezeigt. Die Zahl oben ist unsere Schlagzahl für das SDK, wie du es installierst: Sie passt auch dann noch, wenn die Wirkung dieses Kompressors herausgerechnet wird. Ein Lauf mit dem installierten SDK steht noch aus.",
-      "libros": "pro Buch",
-      "pie": "Jedes Buch wird mit eigenem Intervall veröffentlicht; was die Null nicht klar übersteigt, wird nicht beworben.",
-      "fecha": "Lauf"
+      "caption": "Nicht jede Anfrage enthält etwas zum Sparen: Im öffentlichen Benchmark sparte Traffic ohne Wiederholungen ≈ {cero}. Auch das veröffentlichen wir."
     },
     "devs": {
       "eyebrow": "Für Entwickler gebaut",
@@ -1041,7 +1028,7 @@
         },
         {
           "title": "Streaming, derselbe Bericht",
-          "body": "generateStream() liefert Ihnen die Antwort, während der Anbieter sie schreibt, und schließt mit demselben SavingsReport wie generate(), nach denselben Regeln für die Basis: Der finale Zähler des Anbieters wird am Ende des Streams gelesen, und ein Stream ohne ihn wird als nicht gemessen ausgewiesen und geht nie in Ihre Provision ein. Mit einem Ausgabevertrag kommt die Antwort validiert und in einem Stück an.",
+          "body": "generateStream() liefert Ihnen die Antwort, während der Anbieter sie schreibt, und schließt mit demselben SavingsReport wie generate(), nach denselben Regeln für die Basis: Der finale Zähler des Anbieters wird am Ende des Streams gelesen, und ein Stream ohne ihn wird als nicht gemessen ausgewiesen und zählt nie als gemessene Ersparnis. Mit einem Ausgabevertrag kommt die Antwort validiert und in einem Stück an.",
           "mono": "layer.generateStream(request)"
         }
       ]
@@ -1058,7 +1045,7 @@
         "who": "Für Node.js-Apps in JavaScript oder TypeScript, die eine LLM-API mit deinem eigenen Schlüssel aufrufen und jedes Token bezahlen.",
         "what": "Es umschließt den Aufruf in deinem Code, schickt dem Anbieter nur, was bezahlt werden muss, und liefert zu jeder Antwort einen SavingsReport.",
         "figureLabel": "Die Zahl, die wir veröffentlichen",
-        "figureNote": "Eine Untergrenze, keine Prognose: Was du sparst, hängt von deinem Traffic ab. In die Provision geht nur Ersparnis ein, die mit dem Zähler deines Anbieters gemessen wurde — auch bei wiederholten Anfragen, die ohne Aufruf deines Anbieters bedient werden; jede wird mit dem Zähler der identischen Anfrage bewertet, die bereits gelaufen ist.",
+        "figureNote": "Keine Prognose: Was du sparst, hängt davon ab, wie oft sich dein Traffic wiederholt. In deinem Einsparungsbericht zählt nur, was der Zähler deines Anbieters bestätigt — auch bei wiederholten Anfragen, die ohne Aufruf deines Anbieters bedient werden; jede wird mit dem Zähler der identischen Anfrage bewertet, die bereits gelaufen ist.",
         "ctaMeasured": "Wie wir es gemessen haben",
         "ctaVerify": "Probier einen Hebel mit deinen Daten"
       },
@@ -1068,7 +1055,7 @@
         "who": "Für alle, die Claude Code, Codex CLI oder einen anderen Coding-Agenten mit API-Schlüssel nutzen.",
         "what": "Ein Befehl setzt einen lokalen Zähler vor dein Terminal, ohne Code anzufassen. Das Gateway zählt jede Anfrage, für die dein Anbieter die Nutzung meldet, mit dessen eigenem Zähler — für die Modelle in unserem Preiskatalog — und summiert sie in deinem Dashboard nach Tag und Modell.",
         "figureLabel": "Keine Ersparniszahl veröffentlicht",
-        "figureNote": "Für Coding-Agenten haben wir keine gemessene Ersparnis veröffentlicht, also werben wir mit keiner. Mit PRO stellt das Gateway bei Anthropic-Modellen Cache-Schreibvorgänge von der einstündigen auf die fünfminütige TTL um — nur bei Zügen, in denen ein großer Teil des Prompts neu ist, etwa beim ersten Zug einer Sitzung oder nach einer Kompaktierung — und lässt die verketteten Züge einer laufenden Sitzung unverändert. Das ändert den Preis, nie das, was das Modell liest, und nur was der Zähler deines Anbieters bestätigt, geht in die Provision ein.",
+        "figureNote": "Für Coding-Agenten haben wir keine gemessene Ersparnis veröffentlicht, also werben wir mit keiner. Mit PRO stellt das Gateway bei Anthropic-Modellen Cache-Schreibvorgänge von der einstündigen auf die fünfminütige TTL um — nur bei Zügen, in denen ein großer Teil des Prompts neu ist, etwa beim ersten Zug einer Sitzung oder nach einer Kompaktierung — und lässt die verketteten Züge einer laufenden Sitzung unverändert. Das ändert den Preis, nie das, was das Modell liest, und nur was der Zähler deines Anbieters bestätigt, zählt in deinem Einsparungsbericht.",
         "cta": "Gateway einrichten"
       },
       "skill": {
@@ -1101,6 +1088,13 @@
       "approxNote": "Der exakte Tokenizer wurde nicht geladen, also wäre jede Zählung hier nur näherungsweise — und näherungsweise Ersparnisse zeigen wir nicht. Lade die Seite neu, um es erneut zu versuchen.",
       "scope": "Was das ist und was nicht: ein Hebel — wie strukturierte Daten in den Prompt geschrieben werden — auf die Eingabe-Tokens dieser Daten. Er gilt nur für Daten, die du dem SDK als structuredData übergibst, nicht für JSON, das schon in deinen Nachrichten steht. Es ist nicht deine Rechnung: Vermiedene Aufrufe, der Cache deines Anbieters und die Ausgabe sind nicht enthalten, und viele Anfragen enthalten gar keine strukturierten Daten. Für das ganze SDK ist die Zahl, die wir veröffentlichen, die im Abschnitt zur Messung, mit ihrer Anmerkung.",
       "ctaInstall": "SDK installieren"
+    },
+    "enVivo": {
+      "titulo": "Öffentlicher Benchmark · live gegen den Anbieter · {fecha}",
+      "conRepeticiones": "weniger Rechnung (95-%-Intervall: {bajo} bis {alto}) bei einem Strom, in dem {rep} der Anfragen exakte Wiederholungen sind — {bateria}, SDK {version}",
+      "sinRepeticiones": "bei Traffic ohne Wiederholungen (MT-Bench, BFCL): nicht von null zu unterscheiden",
+      "anthropic": "derselbe Strom (95-%-Intervall: {bajo} bis {alto}). Etwa {prefijo} der ursprünglichen Rechnung ist der Präfix-Cache-Rabatt von Anthropic selbst — der des Anbieters, nicht unserer, und getrennt ausgewiesen",
+      "pie": "Es hängt davon ab, wie oft sich dein Traffic wiederholt. Jede Batterie mit ihrem vollständigen Bericht: <bench>öffentlicher Benchmark</bench>."
     }
   },
   "invitacion": {
@@ -1135,6 +1129,226 @@
     "sesionActual": "Sie sind derzeit als <b>{email}</b> angemeldet.",
     "cerrarYContinuar": "Abmelden und anderes Konto verwenden",
     "cerrando": "Wird abgemeldet…"
+  },
+  "benchmarksPage": {
+    "metaTitle": "Öffentlicher A/B-Benchmark: Messen Sie uns | BiVelio Savings Layer",
+    "metaDescription": "Vier öffentliche Testreihen (GSM8K, BFCL, XSTest und MT-Bench), zwei Arme, gemessen mit dem eigenen Nutzungszähler des Anbieters, jede Zahl mit ihrem n, ihrem Intervall und ihrem Datum. Was es einspart, was nicht, und die Fehler, die der Benchmark gefunden hat.",
+    "eyebrow": "Öffentlicher Benchmark · reproduzierbar",
+    "title": "Unser A/B-Benchmark, offen einsehbar. Messen Sie uns.",
+    "lede": "Wir veröffentlichen jeden Lauf: vier Testreihen mit öffentlichen Datensätzen, {modelos} Modelle, und beide Arme gemessen mit dem eigenen Nutzungszähler des Anbieters. Jede Zahl trägt ihr n, ihr Intervall und ihr Datum. Was nicht einspart, steht auch hier.",
+    "stats": {
+      "batteries": "Testreihen",
+      "models": "getestete Modelle",
+      "measured": "Modelle mit einer Messung",
+      "reports": "Live-Berichte",
+      "last": "letzter Lauf"
+    },
+    "method": {
+      "title": "Was gemessen wird, und wie",
+      "arms": "<b>Zwei Arme, dieselbe Anfrage.</b> A geht direkt zum Anbieter, ohne die Schicht; B läuft durch die Schicht mit ihrer Standardkonfiguration. Gleicher Prompt, gleiches Sampling, gleiche Ausgabeobergrenze.",
+      "cost": "<b>Die Kosten zählt der Anbieter.</b> Jeder Arm wird anhand des <code>usage</code>-Werts bepreist, den die API bei jedem Aufruf zurückgibt, zum Listenpreis. Die Ersparnis ist 1 − Kosten(B) / Kosten(A) desselben Laufs, nicht das, was die Schicht über sich selbst sagt.",
+      "intervals": "<b>Intervalle zum {nivel}.</b> Jeder Testharness berechnet sie (Resampling ganzer Fragefamilien, Wilson für Ablehnungsraten). Ein Intervall, das die Null überschreitet, bedeutet „nicht von null unterscheidbar“, und das sagen wir dann auch.",
+      "package": "<b>Das Paket, das Sie installieren.</b> Die A/B-Läufe in den Tabellen unten liefen mit {version}: Arm B führt den Quellcode dieses Tags aus, und seine <code>dist/index.js</code> ist Byte für Byte identisch mit der aus dem npm-Tarball (sha256 <code>{sha}</code>). Der wöchentliche Live-Benchmark ist etwas anderes: Bei jedem Lauf misst er den Quellcode von main, wie er an diesem Tag ist, noch vor der Veröffentlichung.",
+      "guard": "<b>Keine Abkürzungen.</b> Jeder Testharness überwacht die Hosts, mit denen er spricht, und trägt ein im Code festgelegtes Ausgabenlimit pro Modell. Ein Modell, das nicht gemessen werden konnte, wird als „nicht gemessen“ ausgewiesen, mit Begründung.",
+      "batteriesTitle": "Vier Testreihen, öffentliche Datensätze, festgelegt",
+      "commitOnly": "per Commit festgelegt"
+    },
+    "weekly": {
+      "title": "Wöchentlicher Live-Benchmark",
+      "intro": "Jede Woche, und immer wenn wir ihn von Hand starten, schickt ein Lauf alle Batterien durch alle Modelle: Arm A geht direkt zum Anbieter, Arm B durch die Schicht, gebaut aus dem Quellcode von main zu diesem Zeitpunkt. Das ist keine veröffentlichte Version, sondern das, was gleich veröffentlicht wird. Der Lauf schlägt fehl, wenn irgendeine Regel verletzt wird, und eine Zelle, die nicht gemessen werden konnte, sagt, warum.",
+      "meta": "Lauf vom {fecha} · Quellcode von main bei Commit {commit} (Paketversion {version}) · ausgegeben {gasto} von einem Limit von {tope} · {medidas} von {celdas} Zellen gemessen.",
+      "verdictOk": "Ergebnis: keine Regressionen.",
+      "verdictFailed": "Ergebnis: der Lauf ist fehlgeschlagen (verletzte Regeln: {n}).",
+      "status": {
+        "measured": "gemessen",
+        "cut": "gemessen (an seinem Ausgabenlimit gestoppt)",
+        "notMeasurable": "nicht messbar: {motivo}",
+        "unsupported": "nicht unterstützt: {motivo}",
+        "harnessFailed": "das Harness ist ausgefallen: {motivo}"
+      },
+      "reason": {
+        "sin-clave": "kein Schlüssel für diesen Anbieter in der Umgebung des Benchmarks",
+        "proveedor": "keine gültige Antwort des Anbieters in Arm A",
+        "tope-global": "das Gesamtlimit des Laufs war erreicht",
+        "arnes-proveedor": "das Harness dieser Batterie spricht nur mit Anthropic und OpenAI",
+        "arnes-modelo": "das Harness dieser Batterie kennt dieses Modell nicht",
+        "arnes": "Fehler oder Zeitüberschreitung im Harness",
+        "otro": "zu wenige Daten"
+      },
+      "counts": {
+        "otherQuestion": "Antwort einer anderen Frage: {n}",
+        "changedCalls": "geänderte Tool-Aufrufe: {n}",
+        "refusals": "gecachte Ablehnungen: {cacheadas} · gutgeschrieben: {acreditadas}"
+      },
+      "diff": {
+        "accuracy": "Genauigkeit {d} pp [{inf}, {sup}]",
+        "accuracyNoCi": "Genauigkeit {d} pp",
+        "win": "B bevorzugt {w} [{inf} – {sup}]",
+        "winNoCi": "B bevorzugt {w}",
+        "safe": "sicher {d} pp (p = {p})",
+        "unsafe": "unsicher {d} pp (p = {p})"
+      },
+      "note": "„Fehler der Schicht“ sind Fehler in Arm B, die Arm A nicht hatte. „B − A“ ist der Genauigkeitsunterschied bei GSM8K und BFCL, der Unterschied der Ablehnungsrate bei XSTest (p nach McNemar, gepaarte Prompts) und bei MT-Bench, wie oft der Richter B bevorzugt (die Hälfte ist ein Unentschieden). „Bericht vs. Rechnung“ ist, wie weit die Kosten, die die Schicht für Arm B meldet, von dem abweichen, was der Anbieter berechnet.",
+      "earlierTitle": "Frühere wöchentliche Läufe",
+      "earlierOk": "{fecha} · Commit {commit} · keine Regressionen.",
+      "earlierFailed": "{fecha} · Commit {commit} · fehlgeschlagen (verletzte Regeln: {n})."
+    },
+    "batteries": {
+      "gsm8k": "Textaufgaben in Mathematik mit Wiederholungen und Umformulierungen: wie viel der Cache einspart und ob die Genauigkeit sinkt.",
+      "bfcl": "Tool-Aufrufe: die Schicht darf keinen einzigen ändern, und der gesamte Katalog muss ankommen.",
+      "xstest": "Ablehnungen: die Schicht darf nicht ändern, wann das Modell ablehnt, noch eine Ablehnung aus dem Cache ausliefern.",
+      "mt-bench": "Chat mit zwei Runden ohne Wiederholungen: die Schicht darf Kosten, Latenz oder Qualität nicht verschlechtern."
+    },
+    "th": {
+      "battery": "Testreihe",
+      "what": "Was geprüft wird",
+      "dataset": "Datensatz",
+      "pinned": "Festgelegte Dateien",
+      "license": "Lizenz",
+      "model": "Modell",
+      "n": "n",
+      "savings": "Gemessene Ersparnis [CI]",
+      "fromExact": "Aus dem exakten Cache",
+      "fromCalls": "In den Aufrufen (Präfix)",
+      "accuracy": "Genauigkeit A → B",
+      "run": "Version · Datum",
+      "prompts": "Prompts",
+      "safe": "Ablehnungen, sichere Prompts (A → B)",
+      "unsafe": "Ablehnungen, unsichere Prompts (A → B)",
+      "verdict": "Einordnung",
+      "reports": "Berichte",
+      "status": "Status",
+      "spend": "Ausgaben / Limit",
+      "layerFails": "Fehler der Schicht",
+      "counts": "Was er zählt",
+      "diff": "B − A",
+      "reportVsInvoice": "Bericht vs. Rechnung"
+    },
+    "savings": {
+      "title": "Gemessene Ersparnis pro Modell",
+      "intro": "GSM8K, mit einem Anfragestrom, in dem {rep} exakte Wiederholungen sind und {par} Umformulierungen. Das ist die Testreihe mit wiederholtem Traffic: Ihre Ersparnis hängt davon ab, wie stark sich Ihrer wiederholt. Ohne Wiederholungen siehe „Was nicht einspart“.",
+      "nCell": "{n} Anfragen · {unicos} eindeutig",
+      "delta": "Δ {d} pp [{inf}, {sup}]",
+      "originNote": "Woher die Ersparnis stammt, Position für Position: „aus dem exakten Cache“ ist das, was A für die Anfragen bezahlt hat, die die Schicht bedient hat, ohne den Anbieter aufzurufen; „in den Aufrufen“ ist die Differenz bei denen, die ihn tatsächlich erreicht haben, meist der Präfix-Cache des Anbieters (plus etwas Variation in der Ausgabe). Beide zusammen ergeben die Gesamtersparnis.",
+      "accuracyNote": "Die Genauigkeit wird anhand der Fragen mit veröffentlichter Antwort gemessen; die Varianten mit einer geänderten Zahl dienen nur dazu zu prüfen, dass die Schicht niemals die Antwort einer anderen Frage zurückgibt."
+    },
+    "guarantees": {
+      "title": "Garantien, gezählt",
+      "tools": {
+        "title": "Die Schicht hat noch nie einen Tool-Aufruf verändert",
+        "titleBroken": "Die Schicht hat {n} Tool-Aufrufe verändert",
+        "body": "{alteradas} veränderte Aufrufe bei {comparaciones} BFCL-Vergleichen, {modelos} Modelle, seit {desde}. Wenn die Schicht versagt (ein Fehler in B, den A nicht hatte), wird das hier nicht gezählt: das steht unter „Fehler, die der Benchmark gefunden hat“.",
+        "note": "So wird gezählt: jeder Vergleich aus jedem Live-Lauf seit dieser Version, ein zweimal gemessenes Modell (ein Pilot und der volle Lauf) zählt also beide Male. Deshalb kann die Zahl das n der Tabellen übersteigen, die einen Lauf pro Modell zeigen."
+      },
+      "other": {
+        "title": "Keine Antwort einer anderen Frage seit {desde}",
+        "titleBroken": "{n} Antworten einer anderen Frage seit {desde}",
+        "body": "{deOtra} von {variantes} Varianten (dieselbe Frage mit einer anderen Zahl, also einer anderen Antwort) mit der Antwort einer anderen Frage ausgeliefert, über {modelos} Live-Modelle und alle gemessenen Cache-Konfigurationen hinweg.",
+        "replay": "Offline-Replay des gesamten GSM8K-Testsplits: {erroneas} bei {peticiones} Anfragen, in jeder der {configs} Cache-Konfigurationen."
+      },
+      "refusals": {
+        "title": "Dieselbe Ablehnungsrate, mit und ohne die Schicht",
+        "titleBroken": "Die Ablehnungsrate hat sich bei {n} Modellen geändert",
+        "body": "XSTest, {modelos} gemessene Modelle: kein A/B-Unterschied unterhalb von p = {umbral} (McNemar, gepaarte Prompts). Die Schicht hat den Text von {comprobados} Antworten unverändert ausgeliefert ({alterados} verändert).",
+        "caption": "Ablehnungsrate pro Modell, ohne die Schicht (A) und mit ihr (B), bei denselben Prompts.",
+        "note": "So wird gezählt: Antworten, nicht Prompts. Jede Antwort aus Arm B wird mit dem Text des Anbieters verglichen, Wiederholungen desselben Prompts eingeschlossen, daher gibt es mehr Antworten als Prompts in der Tabelle."
+      }
+    },
+    "noSavings": {
+      "title": "Was nicht einspart",
+      "lead": "<b>Ohne Wiederholungen liegt die Ersparnis bei ≈ {cero}.</b> Wir veröffentlichen es trotzdem, weil es das ist, was Sie sehen werden, wenn sich Ihr Traffic nicht wiederholt.",
+      "why": "MT-Bench ist ein Chat mit zwei Runden mit einer frischen Schicht pro Frage: Es gibt nichts, was der Cache wiederverwenden könnte, und der Prompt erreicht fast nie das Minimum, das der Anbieter verlangt, um einen Präfix zu cachen. Bei BFCL ist jeder Tool-Aufruf anders. Was diese beiden Testreihen messen, ist, dass die Schicht nichts verschlechtert; die verbleibende Kostendifferenz ist Rauschen in der Ausgabe des Modells, nicht die Schicht.",
+      "nQuestions": "{n} Fragen",
+      "nItems": "{n} Einträge",
+      "verdict": {
+        "ahorro": "Ersparnis",
+        "cero": "nicht von null unterscheidbar",
+        "sobrecoste": "Mehrkosten"
+      },
+      "notAttributable": "nicht der Schicht zuzuschreiben"
+    },
+    "status": {
+      "title": "Status nach Modell und Testreihe",
+      "intro": "Jede Zelle zeigt den Lauf mit der höchsten Version der Schicht. Wenn ein Modell nicht gemessen werden konnte, sagen wir, warum, statt eine Lücke zu lassen.",
+      "measured": "gemessen · n = {n}",
+      "notMeasured": "nicht gemessen: {motivo}",
+      "layerFailed": "die Schicht ist fehlgeschlagen: {motivo}",
+      "reason": {
+        "credencial": "Zugangsdaten abgelehnt",
+        "presupuesto": "Ausgabenlimit erschöpft",
+        "cuota": "Kontingent des Anbieters erschöpft",
+        "capa": "Anfragen liefen nicht über die Schicht",
+        "proveedor": "der Anbieter hat die Anfrage in beiden Armen abgelehnt",
+        "otro": "nicht genug Daten"
+      }
+    },
+    "bugs": {
+      "title": "Fehler, die der Benchmark gefunden hat",
+      "intro": "Der Benchmark ist nicht dazu da, gut auszusehen: Er ist dazu da, die Fehler zu finden, bevor Sie es tun. Er hat diese gefunden, mit der Version, in der sie auftraten, und der, die sie behebt.",
+      "found": "Gefunden in {version}: {ocurrencias} von {sobre}.",
+      "foundWeekly": "Gefunden vom wöchentlichen Live-Benchmark am {fecha} (Quellcode von main, Commit {commit}): {cacheadas} Ablehnungen aus dem Cache ausgeliefert oder in ihn geschrieben und {acreditadas} gutgeschrieben, bei {sobre} XSTest-Prompts auf {modelos} Modellen.",
+      "fixed": "Behoben in {version} ({prs}).",
+      "verified": "Live verifiziert mit {version}: {ocurrencias} von {sobre}.",
+      "stillSeen": "Noch beobachtet mit {version}: {ocurrencias} von {sobre}.",
+      "remeasuredWeekly": "Vom wöchentlichen Benchmark am {fecha} live nachgemessen (Quellcode von main mit dem Fix, Commit {commit}): {cacheadas} gecachte und {acreditadas} gutgeschriebene Ablehnungen, bei {sobre} XSTest-Prompts auf {modelos} Modellen.",
+      "stillSeenWeekly": "Der wöchentliche Benchmark sieht es am {fecha} noch (Quellcode von main, Commit {commit}): {cacheadas} gecachte und {acreditadas} gutgeschriebene Ablehnungen, bei {sobre} XSTest-Prompts auf {modelos} Modellen.",
+      "pending": "Wartet auf erneute Live-Messung mit {version}.",
+      "notRemeasured": {
+        "notMeasurable": "Noch nicht live nachgemessen: Der wöchentliche Benchmark vom {fecha} (Commit {commit}) konnte Gemini nicht messen ({motivo}). Solange kein Lauf es misst, gilt es für uns nicht als verifiziert.",
+        "unsupported": "Noch nicht live nachgemessen: Im wöchentlichen Benchmark vom {fecha} (Commit {commit}) unterstützt diese Batterie Gemini nicht ({motivo}). Solange kein Lauf es misst, gilt es für uns nicht als verifiziert."
+      },
+      "items": {
+        "otra-pregunta": {
+          "title": "Der unkalibrierte semantische Cache lieferte die Antwort einer anderen Frage",
+          "body": "Bei unkalibriertem semantischem Cache konnte eine Variante mit einer anderen Zahl („three baskets“ gegenüber „two baskets“) die Antwort der ursprünglichen Frage erhalten. Gezählt über die GSM8K-Varianten."
+        },
+        "herramientas-multiturno": {
+          "title": "Die Schicht kürzte den Tool-Katalog ohne jedes Signal dafür",
+          "body": "In mehrteiligen Unterhaltungen sendete Arm B weniger Tools als Arm A, obwohl nichts darauf hindeutete, welche unnötig waren. Gezählt über die mehrteiligen BFCL-Unterhaltungen."
+        },
+        "negativas-de-texto": {
+          "title": "Manche als Text geschriebenen Ablehnungen wurden gecacht",
+          "body": "Eine Ablehnung, die das Modell als Text schreibt (ohne das Signal der API), konnte gecacht, wiederholt und als Ersparnis angerechnet werden. Gezählt in XSTest-Prompts."
+        },
+        "negativas-parciales": {
+          "title": "Teilweise Ablehnungen wurden gecacht und gutgeschrieben",
+          "body": "Eine Antwort, die zuerst mitspielt und weiter hinten ablehnt („If you mean harming someone, I can't help…“), oder eine Entschuldigung gefolgt von „ich habe keinen Zugriff…“, wurde nicht als Ablehnung erkannt: Die Schicht konnte sie cachen, wiederholen und als Ersparnis gutschreiben. Gezählt in den XSTest-Prompts des wöchentlichen Benchmarks, mit Modellen von OpenAI und Claude."
+        },
+        "gemini-filtro-cacheado": {
+          "title": "Ein Gemini-Inhaltsfilter wurde als Antwort gecacht",
+          "body": "Gemini kennzeichnet seinen Filter mit einem eigenen Stop-Grund, den die Schicht nicht als Ablehnung erkannte, sodass sie ihn cachen und wiederholen konnte. Gezählt in XSTest-Prompts."
+        },
+        "gemini-prompt-cache-key": {
+          "title": "Gemini lief nicht über die Schicht",
+          "body": "Die Schicht sendete ein für die OpenAI-API spezifisches Feld an jeden kompatiblen Endpunkt, und Gemini lehnt es ab: Jede Anfrage in Arm B schlug fehl. Gezählt in GSM8K-Anfragen."
+        },
+        "gemini-thought-signature": {
+          "title": "Bei Gemini 3 schlug die zweite Runde mit Tools fehl",
+          "body": "Die Schicht gab die Thought-Signatur nicht zurück, die Gemini 3 bei jedem Tool-Aufruf verlangt, sodass die nächste Runde abgelehnt wurde. Gezählt in mehrteiligen BFCL-Fortsetzungen."
+        }
+      }
+    },
+    "repro": {
+      "title": "Wie man es reproduziert",
+      "intro": "Der Code des Benchmarks ist noch nicht öffentlich; die Methode schon, und sie passt in fünf Schritte. Mit Ihren eigenen Anbieter-Schlüsseln können Sie ihn wiederholen und Zahl für Zahl mit unseren Berichten vergleichen.",
+      "steps": {
+        "dataset": "<b>Der Datensatz.</b> Laden Sie jeden öffentlichen Datensatz beim Commit aus der Tabelle oben herunter und prüfen Sie vor der Nutzung den sha256 jeder Datei. Stimmt er nicht, ist es nicht derselbe Datensatz.",
+        "package": "<b>Die Schicht.</b> Installieren Sie <code>@bivelio/savings-layer</code> von npm in der Version, die der Bericht nennt, und prüfen Sie den sha256 von <code>dist/index.js</code>: Jeder Bericht enthält seinen.",
+        "arms": "<b>Zwei Arme pro Prompt.</b> A geht direkt zum Anbieter; B schickt denselben Prompt an dasselbe Modell mit demselben Ausgabelimit durch die Schicht in ihrer Standardkonfiguration. Ein Teil der Prompts wird wiederholt oder umformuliert, wie im echten Verkehr, und die Reihenfolge A/B wird ausgelost.",
+        "cost": "<b>Die Kosten nennt der Anbieter.</b> Summieren Sie, was jeder Arm laut dem vom Anbieter gelieferten <code>usage</code> zum veröffentlichten Preis kostet. Die Ersparnis ist <code>1 − Kosten B / Kosten A</code>, mit ihrem Intervall.",
+        "compare": "<b>Die Qualität, im selben Lauf.</b> Bewerten Sie die Antworten beider Arme gleich (exakte Antwort bei GSM8K, Tool-Aufruf bei BFCL, Ablehnung oder nicht bei XSTest, ein Richter bei MT-Bench) und vergleichen Sie sie mit dem JSON-Bericht derselben Batterie und Version."
+      },
+      "reportsTitle": "Die Berichte",
+      "reportsIntro": "Jeder Lauf hinterlässt einen JSON-Bericht mit seinem Design, seinen Grenzen und jedem gemessenen Aufruf: usage, Kosten pro Arm und Einstufung der Antwort. Sie werden von dieser Website ausgeliefert.",
+      "served": "Die Berichte werden so ausgeliefert, wie der Benchmark sie geschrieben hat, mit einer Ausnahme: Angaben zur Umgebung der messenden Person (Dateipfade, E-Mail-Adressen) werden entfernt. Von XSTest wird kein Antworttext veröffentlicht, nur seine Einstufung."
+    },
+    "invite": {
+      "title": "Messen Sie uns selbst",
+      "body": "Eine unabhängige Messung ist mehr wert als unsere. Der Code des Benchmarks ist noch nicht öffentlich: Wenn Sie die Messung wiederholen oder die Schicht mit Ihrem eigenen Harness oder Ihrem eigenen Verkehr messen möchten, schreiben Sie uns, und wir geben Ihnen, was Sie dafür brauchen.",
+      "contact": "Schreiben Sie uns an",
+      "cta": "E-Mail schreiben",
+      "subject": "Unabhängige Messung des öffentlichen Benchmarks"
+    }
   },
   "howItWorks": {
     "metaTitle": "Wo wird die Ersparnis installiert? · BiVelio Savings Layer",
@@ -1176,7 +1390,7 @@
     "s3Sub": "Das Produkt hat zwei verschiedene Zahlen, die man nicht vermischen sollte.",
     "mBeforeK": "Vor der Installation",
     "mBeforeV": "Schätzung",
-    "mBeforeBody": "Der Rechner im Preisbereich der Startseite rechnet deine Ersparnis mit deinen eigenen Zahlen hoch: Anfragen, Tokens und Modell. Eine ehrliche Hochrechnung — deshalb trägt sie das Etikett „Schätzung“.",
+    "mBeforeBody": "Die kostenlose Measure-Lizenz führt die Schicht im Schattenmodus mit deinem eigenen Traffic aus und zeigt, was sie gespart hätte, Anfrage für Anfrage. Sie ändert nichts und wendet nichts an — deshalb trägt sie das Etikett „Schätzung“.",
     "mAfterK": "Nach der Installation",
     "mAfterV": "Echte Messung",
     "mAfterBody": "Jeder Aufruf liefert einen SavingsReport: die Aufrufe, die du nie bezahlt hast, und die Nettoersparnis pro Anfrage. Prüfbar, Anfrage für Anfrage, auf deiner eigenen Infrastruktur.",
@@ -1187,18 +1401,42 @@
     "snipResult": "die Ersparnis, gemessen",
     "ctaVerify": "Gemessene Ersparnis ansehen",
     "ctaSignup": "Konto erstellen",
-    "ctaInstall": "Zur Installationsanleitung"
+    "ctaInstall": "Zur Installationsanleitung",
+    "billWith": "Es kommt darauf an",
+    "billDepends": "wie oft sich dein Traffic wiederholt"
   },
   "pricingPage": {
     "metaTitle": "Preisbedingungen · BV-SALA",
-    "metaDescription": "Die Gebühr pro Seat und die Provision auf gemessene Ersparnis, veröffentlicht aus denselben Konstanten, die abrechnen.",
+    "metaDescription": "Measure kostenlos, Pro pro Seat, Team und Enterprise — keiner davon trägt eine Provision auf deine Ersparnis. Zahlen aus denselben Konstanten veröffentlicht, die abrechnen.",
     "eyebrow": "Veröffentlichte Preise",
     "title": "Preisbedingungen",
     "governs": "Diese Seite beschreibt, wie der Dienst heute funktioniert; maßgeblich sind die <license>LICENSE</license> und die <terms>BiVelio-Bedingungen</terms>.",
-    "lede": "Jede Zahl hier wird aus demselben Code gelesen, der dir die Rechnung stellt – sie ändert sich also, wenn sich der Preis ändert.",
+    "lede": "Du zahlst pro Seat oder für einen Team-Plan, ohne Provision auf deine Ersparnis. Jede Zahl auf dieser Seite wird aus demselben Code gelesen, der dir berechnet, und ändert sich also, wenn sich der Preis ändert.",
+    "plans": {
+      "title": "Pläne",
+      "intro": "Vier Pläne, vom kleinsten zum größten. Pro und Team werden pro Seat bezahlt und tragen keine Provision.",
+      "medir": {
+        "name": "Measure",
+        "body": "<b>Kostenlos, ohne Karte.</b> Die Schicht läuft im Schattenmodus für eine Organisation, für bis zu <b>{seats} Seats</b> und <b>{requests} Anfragen pro Tag</b>: Jede Anfrage erreicht deinen Anbieter genau so, wie du sie gebaut hast, nichts wird aus dem Cache bedient und kein Hebel angewendet. Dein Dashboard zeigt, was sie gespart hätte — eine Schätzung, die nie eine Provision trägt. Erfordert <b>@bivelio/savings-layer {version} oder neuer</b>: Frühere Versionen erkennen die Measure-Lizenz nicht. Die Hebel brauchen Pro oder Team."
+      },
+      "pro": {
+        "name": "Pro",
+        "amount": "<b>{monthly}</b> pro Seat und Monat oder <b>{yearly}</b> pro Seat und Jahr, in {currency}.",
+        "body": "Alle Optimierungen der Schicht, der Beleg pro Anfrage und das Dashboard. <b>Keine Provision</b> auf Ersparnis: Du zahlst die Seats, ob du sparst oder nicht."
+      },
+      "team": {
+        "name": "Team",
+        "amount": "<b>{monthly}</b> pro Monat mit <b>{included} inklusiven Seats</b> (etwa {perSeat} pro Seat) oder <b>{yearly}</b> pro Jahr, in {currency}.",
+        "extra": "Jeder Seat über die inklusiven hinaus: {monthly} pro Monat oder {yearly} pro Jahr.",
+        "body": "Dasselbe wie Pro, für eine Flotte: Die Grundgebühr deckt die inklusiven Seats, auch wenn du weniger nutzt. <b>Keine Provision</b> auf Ersparnis."
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "body": "Für mehr Seats, als der Online-Checkout zulässt, einen eigenen Vertrag oder verhandelte Rechnungsbedingungen: <contact>schreib uns</contact>."
+      }
+    },
     "seat": {
-      "title": "Die Gebühr pro Seat",
-      "amount": "<b>{monthly}</b> pro Seat und Monat oder <b>{yearly}</b> pro Seat und Jahr, in {currency}.",
+      "title": "Wie ein Seat gezählt und abgerechnet wird",
       "cycle": "Die Gebühr pro Seat wird über Stripe für jeden monatlichen oder jährlichen Zyklus deines Abos abgerechnet, gezählt ab dem Tag, an dem es beginnt.",
       "paidAlways": "Die Gebühr pro Seat wird bezahlt, <b>ob die Software eine Ersparnis erzielt oder nicht</b>.",
       "vat": "Die Beträge verstehen sich ohne MwSt. Beim Bezahlen werden deine Rechnungsadresse und, optional, deine USt-IdNr. abgefragt; beide stehen auf deiner Rechnung.",
@@ -1208,7 +1446,9 @@
       "identifier": "Wie eine Seat-Kennung gebildet wird und alles andere, was die Software an BiVelio sendet, steht auf der <privacy>Datenschutzseite</privacy>."
     },
     "commission": {
-      "title": "Die Provision auf gemessene Ersparnis",
+      "title": "Früheres Modell mit Provision (für Neukunden geschlossen)",
+      "optional": "Dieses Modell wird <b>Neukunden nicht mehr angeboten</b>. Ist deine Subscription schon darauf, behältst du es unverändert, und es gelten die Bedingungen unten: eine niedrigere Gebühr pro Seat plus eine Provision nur auf Ersparnis, die du mit der Rechnung deines Anbieters abgleichen kannst. Pro und Team tragen sie nie; ihre Abrechnung zeigt die Provision, die angefallen wäre, nur als Referenz.",
+      "seat": "Seat-Gebühr in dieser Variante: <b>{monthly}</b> pro Seat und Monat oder <b>{yearly}</b> pro Seat und Jahr, in {currency}.",
       "only": "Eine Provision wird <b>nur auf gemessene Ersparnis</b> berechnet: Ersparnis, die in deinen Nutzungsdatensätzen als {labels} gekennzeichnet ist. Als {never} gekennzeichnete Ersparnis trägt nie eine Provision.",
       "measured": "Eine gemessene Ersparnis ergibt sich aus dem eigenen Nutzungszähler deines LLM-Anbieters für diese Anfrage.",
       "reference": "Eine Ersparnis per Referenz – bei einer wiederholten Anfrage, die die Software ohne Aufruf deines Anbieters bedient hat – ergibt sich aus dem Zähler deines Anbieters für die identische frühere Anfrage, die tatsächlich lief, nach der Regel, die auf deiner Abrechnung steht ({regla}).",
@@ -1225,8 +1465,7 @@
       "ceiling": "Kein Stufensatz liegt über {max}; vor dem Runden der Provision auf den Cent <b>behältst du also mindestens {garantia}</b> der gemessenen Ersparnis des Zeitraums. Die Gebühr pro Seat kommt separat hinzu.",
       "fx": "Die gemessene Ersparnis wird in US-Dollar gezählt und zum Referenzkurs der Europäischen Zentralbank umgerechnet, der beim Abschluss des Zeitraums abgerufen wird; deine Abrechnung zeigt den verwendeten Kurs.",
       "rounding": "Die Provision wird auf den nächsten Cent gerundet. Eine Provision unter {minimo} wird nicht in Rechnung gestellt und nicht in einen anderen Zeitraum übertragen.",
-      "zero": "Ein Zeitraum ohne gemessene Ersparnis trägt <b>keine Provision</b>.",
-      "calculator": "Was das für deinen eigenen Traffic bedeutet, zeigt dir der <calc>Rechner</calc> auf der Startseite."
+      "zero": "Ein Zeitraum ohne gemessene Ersparnis trägt <b>keine Provision</b>."
     },
     "calibration": {
       "title": "Kalibrierungszeitraum",
@@ -1273,7 +1512,7 @@
         },
         "cost": {
           "title": "Kosten",
-          "body": "Kostenzahlen, die die Software aus ihrem Preiskatalog oder aus einem von dir bereitgestellten Kostenmodell berechnet: Ausgangskosten, tatsächliche Kosten, die Netto-Ersparnisquote, die Grundlage der Zahlen (measured, reference, estimated, shadow oder unmeasured) und der Wert – zum Cache-Lesepreis des Anbieters – der Eingabetokens, die dein Anbieter als aus dem Kontext entfernt gemeldet hat."
+          "body": "Kostenzahlen, die die Software aus ihrem Preiskatalog oder aus einem von dir bereitgestellten Kostenmodell berechnet: Ausgangskosten, tatsächliche Kosten, die Netto-Ersparnisquote, die Grundlage der Zahlen (measured, reference, estimated, shadow oder unmeasured) und der Wert – zum Cache-Lesepreis des Anbieters – der Eingabetokens, die dein Anbieter als aus dem Kontext entfernt gemeldet hat. Getrennt ausgewiesen und nie zur Berechnung der Gebühren verwendet: der Rabatt, den der Prompt-Cache Ihres Anbieters der Anfrage gewährt hat, und der dafür berechnete Cache-Schreibaufschlag."
         }
       }
     },

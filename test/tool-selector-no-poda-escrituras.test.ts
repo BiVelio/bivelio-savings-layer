@@ -38,8 +38,8 @@ describe("ToolSelector — writes en TOOL_ACTION", () => {
     expect(r.tools.map((t) => t.id)).toEqual(["send_invoice"]);
   });
 
-  it("las de LECTURA sí se podan por relevancia (solo las writes son incondicionales)", () => {
-    const sel = new ToolSelector();
+  it("con `maxTools`, las de LECTURA sí se podan por relevancia (solo las writes son incondicionales)", () => {
+    const sel = new ToolSelector({ maxTools: 8 });
     const tools = [
       write("send_invoice", ["facturación saliente"]),
       read("weather_lookup", ["el tiempo meteorológico"]),

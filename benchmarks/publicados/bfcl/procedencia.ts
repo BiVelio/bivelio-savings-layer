@@ -118,6 +118,35 @@ export async function cargarSdk(): Promise<SdkCargado> {
 }
 
 /**
+ * `--fuente-de-main` (banco semanal, benchmarks/banco-semanal): el brazo B es el
+ * fuente de ESTE árbol, sea la versión que sea — lo que main lleva hoy, no una
+ * release —, con la puerta de desarrollo abierta, como `pnpm ab`. No se compara
+ * con ningún tag ni con npm, y la procedencia lo dice en vez de afirmarlo.
+ */
+export async function cargarSdkDelArbol(): Promise<SdkCargado> {
+  process.env["BVSALA_DEV_OPEN"] = "1";
+  const sdk = (await import(pathToFileURL(join(RAIZ, "src", "index.ts")).href)) as typeof Sdk;
+  const commit = git(["rev-parse", "HEAD"]);
+  return {
+    sdk,
+    procedencia: {
+      version: sdk.BV_SALA_VERSION,
+      etiqueta: `${sdk.BV_SALA_VERSION} at ${commit.slice(0, 7)} (working-tree source, BVSALA_DEV_OPEN=1; weekly bench, not a release)`,
+      tag: "(none: working tree)",
+      commitDelTag: "(none: working tree)",
+      commitDelArbol: commit,
+      fuenteIdenticoAlTag: false,
+      origenDelFuente: "arbol",
+      diferenciasDelArbol: [],
+      integridadNpm: "(n/a: working tree)",
+      sha256DistNpm: "(n/a: working tree)",
+      hostsVistos: [],
+      hostsRechazados: [],
+    },
+  };
+}
+
+/**
  * Instala la verja de hosts sobre `globalThis.fetch` y devuelve el registro.
  * Se instala ANTES de crear ningún proveedor ni capa, así que todo `fetch` de
  * la tirada —el del brazo A, el adaptador del B y cualquier cosa que la capa

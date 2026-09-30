@@ -103,7 +103,9 @@ const NORMALES = [
   "Sure! Here are the steps: 1. Install. 2. Run. 3. Verify. " +
     "Then configure the environment, the cache and the logs; the details depend on your platform, and the " +
     "defaults are fine for most teams, so start there and adjust only what you measure. One caveat for the " +
-    "end: I can't provide support for Windows builds, which is fine for this guide.",
+    // 2026-09-29 (c): en tercera persona. En primera («I can't provide support for
+    // Windows builds») es una negativa PARCIAL: test/negativas-parciales.test.ts.
+    "end: the installer can't provide support for Windows builds, which is fine for this guide.",
   "",
 ];
 

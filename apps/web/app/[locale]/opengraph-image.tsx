@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { locales } from "@/i18n/config";
 import { formatearPrecio } from "@/lib/format/precio";
-import { preciosDelPlan } from "@/lib/stripe/pricing";
+import { tarifasDeLosPlanes } from "@/lib/stripe/pricing";
 
 /**
  * Tarjeta social de la landing, una por idioma. Antes no existía ninguna: cada
@@ -46,8 +46,9 @@ export default async function Image({ params }: { params: Promise<{ locale: stri
   // El precio sale del Price de Stripe, igual que en la landing (page.tsx:130),
   // que es lo que de verdad se cobra. Sin esto la tarjeta y la página podrían
   // desincronizarse, que es justo lo que este fichero dice evitar.
-  const precios = await preciosDelPlan();
-  const precioMensual = formatearPrecio(locale, precios.monthly);
+  // El precio de Pro (2026-09-29): la modalidad con comisión ya no se vende.
+  const pro = (await tarifasDeLosPlanes()).pro.monthly;
+  const precioMensual = formatearPrecio(locale, { amount: pro.asientoCentimos, currency: pro.currency });
 
   return new ImageResponse(
     (

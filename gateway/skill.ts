@@ -25,7 +25,7 @@ export interface OpcionesInstalarSkill {
   origenes: string[];
   /** HOME del usuario (para ~/.claude/skills). */
   home: string;
-  /** Directorio de trabajo (para .claude/skills del proyecto con --proyecto). */
+  /** Directorio de trabajo (para .claude/skills del proyecto con --project). */
   cwd: string;
   /** true = instalar en el proyecto (.claude/skills) en vez de en el HOME. */
   proyecto: boolean;

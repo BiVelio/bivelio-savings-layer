@@ -103,7 +103,8 @@
       "signupDisabled": "O registo está fechado por agora. Escreve para support@bivelio.com.",
       "network": "Sem ligação. Verifica a tua rede e tenta de novo.",
       "missingFields": "Escreve o teu email e a palavra-passe."
-    }
+    },
+    "signupMedir": "Ou comece grátis com Medir: sem cartão, em modo sombra, até {seats} lugares e {requests} pedidos por dia. Requer @bivelio/savings-layer {version} ou posterior."
   },
   "dashboard": {
     "overview": {
@@ -128,7 +129,9 @@
       "metaTitle": "Prova · BiVelio Savings Layer",
       "eyebrow": "Verifica, não confies · bancada de referência",
       "title": "A prova de que o otimizador funciona",
-      "intro": "Medido em ambos os ramos — o motor de credibilidade por trás dos teus próprios números."
+      "intro": "Três coisas, em separado: o que o banco público mediu ao vivo, com o seu intervalo; o que tu poupas, medido no teu próprio tráfego; e uma execução sintética que mostra como funciona cada alavanca.",
+      "tuDinero": "O que conta no teu painel é o teu próprio dinheiro: cada poupança da tua <overview>Visão geral</overview> é medida com o contador do teu fornecedor, no teu tráfego, pedido a pedido. Os valores acima são do banco, não uma previsão dos teus.",
+      "sinteticaTitulo": "Execução sintética · como funciona cada alavanca"
     },
     "verify": {
       "metaTitle": "Verificar · BiVelio Savings Layer",
@@ -244,7 +247,7 @@
       "elisionNota": "Se usas o gateway, parte deste valor é o apagamento que o teu fornecedor aplica pela tua própria configuração: essa parte não é mérito nosso e nunca entra na tua comissão.",
       "whatCompressedTokens": "tokens de entrada recodificados de forma mais compacta",
       "whatProviderCachedTokens": "tokens de entrada faturados ao preço reduzido da cache de prefixo. É o teu cliente que o pede, não nós: a nossa alavanca só ajusta a duração",
-      "ghostAwaiting": "{ref} · à espera do primeiro relatório",
+      "ghostAwaiting": "à espera do primeiro relatório",
       "footnote": "Quatro livros-razão, <b>nunca somados</b> — não podemos contar um dólar duas vezes. Apenas contagens e custo, nunca os teus prompts. O relatório é o medidor."
     },
     "savingsTrendChart": {
@@ -414,7 +417,7 @@
       "personalNote": "Pessoal — ainda não há nenhuma organização associada. Uma só conta BiVelio, partilhada em toda a suite.",
       "plan": "plano",
       "seatsCount": "{count, plural, one {# lugar} other {# lugares}}.",
-      "planBody": "O BV-SALA é fail-closed — só funciona com uma licença PRO ativa. {monthly} por lugar por mês ou {yearly} por lugar por ano. Um lugar é uma máquina ou identidade de serviço ativa, não uma pessoa.",
+      "planBody": "O BV-SALA é fail-closed — só funciona com uma licença ativa. Pro: {monthly} por lugar por mês ou {yearly} por lugar por ano. Equipa: {teamMonthly} por mês com {included} lugares incluídos. Sem comissão sobre a sua poupança. Um lugar é uma máquina ou identidade de serviço ativa, não uma pessoa.",
       "managePlan": "Gerir plano →",
       "subscribe": "Subscrever →",
       "checkoutMonthly": "Subscrever — {monthly}/lugar/mês →",
@@ -430,7 +433,14 @@
       "errPagoEnCurso": "O teu pagamento ainda está a ser processado: um débito bancário pode demorar alguns dias a liquidar. Terás acesso assim que liquidar. Não inicies uma segunda subscrição.",
       "errSuscripcionEnStripe": "O Stripe já tem uma subscrição para esta conta, mas ainda não está ativada aqui. Não voltes a comprar: escreve para support@bivelio.com e ativamo-la à mão.",
       "codigoAplicado": "Ao pagar será aplicado o código {codigo}.",
-      "errCodigoInvalido": "Esse código não existe ou já não está ativo. Podes continuar sem ele ou escrever para support@bivelio.com."
+      "errCodigoInvalido": "Esse código não existe ou já não está ativo. Podes continuar sem ele ou escrever para support@bivelio.com.",
+      "planPickLabel": "Plano",
+      "planPro": "Pro",
+      "planTeam": "Equipa",
+      "teamHint": "Equipa inclui {included} lugares; cada lugar a mais custa {extra} por mês. Não é possível comprar menos de {included}.",
+      "checkoutTeamMonthly": "Subscrever Equipa — {monthly}/mês, {included} lugares →",
+      "checkoutTeamYearly": "Subscrever Equipa — {yearly}/ano, {included} lugares →",
+      "errPlanCerrado": "Esse plano já não é oferecido a novos clientes. Escolha Pro ou Equipa."
     },
     "referenceLedgerCards": {
       "proven": "comprovado",
@@ -456,7 +466,6 @@
     },
     "netSavingsCIBand": {
       "caption": "poupança líquida, <b>limite inferior do IC de 95%</b>. Estimativa pontual {point}, superior {upper} — destacamos o mínimo{mockNote}.",
-      "captionSdkPendiente": "o que o SDK sustenta tal como se instala a partir do npm. A execução publicada incluía um compressor exclusivo da bancada de testes que o pacote não traz, por isso o seu intervalo e a sua estimativa pontual não são mostrados como promessa até que uma execução do SDK instalado os substitua.",
       "mockNote": " (carga de trabalho de referência, fornecedor simulado)"
     },
     "cacheBreakEven": {
@@ -470,7 +479,7 @@
     },
     "referenceModeBadge": {
       "liveDesc": "— medido contra um fornecedor real, com controlo de qualidade.",
-      "sdkPendiente": "Esta execução incluía um compressor exclusivo da bancada de testes que o pacote npm não traz: os seus números mostram o mecanismo, não o que o SDK instalado poupa.",
+      "sdkPendiente": "Execução sintética: cenários escritos para o banco, mais um compressor só do banco que o pacote npm não traz. Os seus valores mostram como funciona cada alavanca — não são uma promessa do que vais poupar.",
       "mock": "<b>ESTIMADO · fornecedor simulado</b> — isto prova que o mecanismo funciona, não a tua fatura. Uma execução LIVE confirmada substitui cada número aqui."
     },
     "connectionStatePill": {
@@ -560,6 +569,18 @@
       "title": "Apagamento do fornecedor causado pelos nossos ajustes",
       "detalle": "{requests} pedidos creditados",
       "nota": "A contagem é do fornecedor (applied_edits). Não é uma poupança medida e nunca entra na tua comissão; o dinheiro chegará quando o líquido por modelo estiver medido — apagar reescreve a cache de prefixo, e em alguns modelos o líquido sai negativo."
+    },
+    "ahorroNativo": {
+      "title": "Poupança nativa ativada",
+      "detalle": "{requests} pedidos com cache do fornecedor · leituras {lectura} − prémio de escrita {prima}",
+      "nota": "É o desconto da cache de prefixo do teu fornecedor (Anthropic com cache_control, OpenAI automática, Gemini implícita), líquido do prémio de escrita que cobra, calculado com o seu próprio contador ao preço de tabela. Vês isto na fatura do teu fornecedor, não na nossa: fica à parte da poupança creditada e nunca entra na tua comissão.",
+      "vacio": "Ainda não há pedidos que tenham lido ou escrito a cache de prefixo do teu fornecedor neste período.",
+      "proveedor": {
+        "anthropic": "Anthropic",
+        "openai": "OpenAI",
+        "google": "Gemini",
+        "other": "Outros"
+      }
     },
     "ritmo": {
       "title": "Ritmo e projeção",
@@ -716,16 +737,44 @@
         "libros": "Os quatro livros",
         "trafico": "Tráfego",
         "sesiones": "Sessões",
-        "maquinas": "Máquinas"
+        "maquinas": "Máquinas",
+        "nativo": "Poupança nativa ativada"
       }
     },
     "team": {
       "metaTitle": "Equipa · BiVelio Savings Layer"
+    },
+    "measurePlan": {
+      "title": "Ou comece grátis: a licença Medir, sem cartão",
+      "body": "Executa a camada em modo sombra para 1 organização e até {seats} assentos: cada pedido chega ao seu fornecedor sem alterações e nada é servido a partir da cache. O seu painel mostra o que as alavancas teriam poupado; passe a um plano pago para as ativar.",
+      "claim": "Obter a minha licença Medir grátis",
+      "claiming": "A emitir…",
+      "keyLabel": "A sua chave de licença Medir (modo sombra: nenhuma alavanca aplicada)",
+      "keyHint": "Use-a como BIVELIO_LICENSE_KEY, tal como uma chave paga. Quando passar a um plano pago, a camada recolhe sozinha a licença paga e as alavancas ativam-se.",
+      "errEmailNotVerified": "Confirme primeiro o seu endereço de email e tente novamente.",
+      "errDisposableEmail": "Endereços de e-mail descartáveis não podem obter a licença Medir. Registe-se com um endereço permanente (o do trabalho, por exemplo) e tente novamente.",
+      "errOneOrgPerAccount": "Esta conta já tem uma licença Medir para outra organização: a licença gratuita cobre uma organização por conta.",
+      "errAlreadyLicensed": "A sua organização já tem uma licença paga: use a chave acima.",
+      "errBlocked": "A licença Medir não está disponível para esta organização. Escreva para support@bivelio.com.",
+      "errRole": "A sua função não permite descarregar a licença. Peça a um owner ou admin.",
+      "errSignIn": "Inicie sessão primeiro.",
+      "errGeneric": "Não foi possível emitir a licença Medir. Tente novamente dentro de momentos.",
+      "planLabel": "Medir (grátis)",
+      "pricingNote": "Medir: grátis, sem cartão. A camada em modo sombra para 1 organização e até {seats} assentos, para ver o que pouparia antes de pagar.",
+      "card": {
+        "eyebrow": "Licença Medir · modo sombra",
+        "title": "O que teria poupado",
+        "amount": "{amount} que não teria gastado",
+        "context": "De {spend} de gasto medido em {requests} pedidos. Uma estimativa da via sombra, valorizada com o contador do seu próprio fornecedor: no SDK, as chamadas repetidas e as duplicadas em simultâneo; no gateway, também o modelo irmão e a redução do TTL da cache. Nada foi aplicado e nada é faturado.",
+        "empty": "Ainda não há estimativa de poupança: aparece assim que a sua camada vir um pedido repetido ou, no gateway, um em que o modelo irmão ou a redução do TTL da cache teriam poupado. A licença Medir nunca altera o que envia.",
+        "limits": "Grátis para 1 organização, até {seats} assentos e {requests} pedidos por dia.",
+        "cta": "Ative as alavancas: ver planos"
+      }
     }
   },
   "landing": {
     "metaTitle": "BiVelio — Verifica a tua poupança em LLM",
-    "metaDescription": "Um SDK para que a tua app pague ao fornecedor de LLM só o que precisa, e um gateway que mede o teu agente de código. Tudo com o contador do teu fornecedor: uma taxa por lugar e comissão só sobre a poupança medida.",
+    "metaDescription": "Um SDK para que a sua app pague ao fornecedor de LLM só o que precisa, e um gateway que mede o seu agente de código. Tudo com o contador do seu fornecedor: meça grátis e depois pague por lugar — sem comissão sobre a sua poupança.",
     "hero": {
       "eyebrow": "Para equipas que pagam a API de LLM por tokens",
       "title": "A tua fatura de LLM, sob controlo.",
@@ -735,46 +784,13 @@
       "ctaPricing": "Ver preços",
       "note": "Instala-se em minutos. As suas mensagens nunca passam pelos nossos servidores.",
       "proofTitle": "Medido contra fornecedor real",
-      "proofs": [
-        {
-          "marca": "OpenAI",
-          "modelo": "gpt-4o-mini",
-          "cifra": "≥ 10,0%",
-          "que": "menos fatura, verificado a 95 % · face a uma integração sem otimizar, sem streaming"
-        }
-      ],
-      "proofSdkPendiente": "Provisório: a execução publicada incluía um compressor exclusivo da bancada de testes que o pacote npm não traz. Este número cabe sob o piso dessa execução quando se retira o efeito do compressor, recalculado a partir dos ensaios medidos — ainda não é uma medição do SDK instalado. Essa execução está pendente.",
       "medidoEn": "Medido em",
       "compatibleCon": "Compatível com",
-      "compatibleNota": "Qualquer endpoint compatível com a API da OpenAI, e o adaptador nativo da Anthropic. Com valor publicado, hoje, só OpenAI {modelo}."
+      "compatibleNota": "Compatível não é medido. O SDK funciona com qualquer endpoint compatível com a API da OpenAI, mais o adaptador nativo da Anthropic e o adaptador nativo do Gemini (novo na {gemini}). Medidos — com um valor de poupança no banco público — hoje só modelos da OpenAI e da Anthropic; o Gemini ainda não tem poupança medida."
     },
     "cascade": {
       "title": "Ganha a execução mais barata",
-      "per": "medido em gpt-4o-mini · piso de 95 %",
-      "steps": [
-        {
-          "n": "01",
-          "title": "Evita a chamada por completo",
-          "sub": "resolvedores · singleflight",
-          "ledger": "avoided_calls",
-          "grey": false
-        },
-        {
-          "n": "02",
-          "title": "Retira o que não era preciso enviar",
-          "sub": "ferramentas podadas · recuperação · contexto redundante",
-          "ledger": "eliminated_tokens",
-          "grey": false
-        },
-        {
-          "n": "03",
-          "title": "Comprime o que resta",
-          "sub": "codificação mais leve · só se compensar",
-          "ledger": "compressed_tokens",
-          "grey": false
-        }
-      ],
-      "footnote": "Cada passo cai num livro contabilístico DIFERENTE, por isso estes números não se somam entre si. Um passo cujo livro não ultrapassa o zero não aparece aqui: a restrição de saída foi medida e não poupa, por isso não é anunciada. Todos os valores desta tiragem são de gpt-4o-mini: a mesma alavanca pode custar dinheiro noutro modelo, e isso também se publica."
+      "footnote": "Cada alavanca cai no seu próprio livro, e os livros nunca se somam. Nesta bateria a poupança veio de pedidos repetidos que o SDK serviu sem chamar o fornecedor e, no Claude, da própria cache de prefixo do fornecedor. O pacote npm não traz compressor, por isso a compressão não poupou nada — e com tráfego sem repetições a poupança foi indistinguível de zero."
     },
     "explica": {
       "eyebrow": "Em palavras simples",
@@ -794,8 +810,8 @@
           "body": "Não pedimos fé. Cada poupança é medida com o contador oficial do fornecedor — o mesmo com que ele o fatura — e aparece no seu recibo. O que não se pode conferir com a fatura nunca é anunciado."
         },
         {
-          "title": "Uma taxa por lugar e uma parte do que se mede",
-          "body": "Pagas uma taxa fixa por lugar todos os meses, quer poupes quer não. Além disso, a nossa comissão sai só da poupança medida com o contador do teu fornecedor, e a maior parte de cada poupança fica sempre contigo. Um mês sem poupança medida? Pagas os lugares e zero de comissão."
+          "title": "Meça grátis e depois pague por lugar",
+          "body": "Comece com a licença Medir, gratuita: a camada funciona em modo sombra e mostra o que teria poupado com o seu próprio tráfego. Para ativar as alavancas, paga uma taxa fixa por lugar, ou um plano Equipa, poupe ou não — e sem comissão sobre a sua poupança."
         }
       ],
       "nota": "As animações ilustram a ideia. Os números a sério — medidos contra fornecedores reais — estão logo abaixo."
@@ -806,21 +822,15 @@
       "body": "Cada cenário corre duas vezes contra o fornecedor real: tal como está, e com o Savings à frente. Os dois resultados são contados com o contador do próprio fornecedor — o mesmo que dá preço à sua fatura. Foi isto que saiu, com a sua margem de erro:",
       "videoCaption": "O teste é uma experiência justa: a mesma tarefa duas vezes — sem Savings e com Savings — com o mesmo contador do fornecedor a medir as duas.",
       "plainTitle": "Tradução, sem jargão",
-      "plain": "Neste teste, a fatura baixou quase de certeza pelo menos {piso}. O mais provável é que tenha baixado {punto}.",
-      "plainSdkPendiente": "Com o SDK tal como o instalas a partir do npm, a fatura baixa pelo menos {piso}. O teste publicado incluía ainda um compressor exclusivo da bancada de testes que o pacote não traz; retiramos o seu efeito em vez de o contar, até que uma execução do SDK instalado substitua este número.",
-      "plainNote": "Quando há um intervalo, anunciamos sempre o número pequeno — o que a estatística garante —, nunca o bonito.",
-      "trialsLink": "Descarregar os ensaios em bruto (CSV)"
+      "plain": "Num fluxo onde {rep} dos pedidos se repetem exatamente, a fatura desceu {punto} — entre {bajo} e {alto} com 95% de confiança. Com tráfego que não se repete, desceu ≈ {cero}. O que poupares depende de quanto o teu se repete.",
+      "plainNote": "Uma percentagem não significa nada sem o seu intervalo, o seu modelo e o seu tráfego: publicamos os três — e também as baterias onde nada se poupou.",
+      "benchLink": "Cada bateria, com o seu relatório completo, no banco público →"
     },
     "ledgersHead": {
       "eyebrow": "Contabilidade honesta",
       "title": "Cada tipo de poupança, contado à parte — para nenhuma cifra inchar.",
-      "body": "O Savings poupa de várias maneiras: evita chamadas inteiras, tira texto a mais, empacota melhor o que é enviado e ativa os descontos do fornecedor. Cada maneira tem o seu próprio registo com a sua própria cifra medida — e nunca as somamos num numerão de marketing.",
-      "runToMeasure": "executa o otimizador para medir",
-      "measuredFloor": "medido · piso de 95%",
-      "notProven": "medido · não ultrapassa o zero",
-      "providerTag": "OpenAI",
-      "providerModel": "gpt-4o-mini",
-      "providerNote": "Cada livro é medido e publicado em separado contra a API da OpenAI; os que não superam o zero não aparecem. Uma percentagem sem o seu modelo ao lado não significa nada: a mesma alavanca pode poupar num modelo e custar noutro."
+      "body": "Cada SavingsReport separa a poupança em quatro livros — chamadas evitadas, texto removido, texto comprimido e o desconto de cache do teu próprio fornecedor — e nunca os soma num número de marketing.",
+      "providerNote": "No banco público ({fecha}), o que o SDK instalado poupou veio do primeiro livro — pedidos repetidos servidos sem chamar o fornecedor — e, no Claude, do quarto, que é o desconto do teu próprio fornecedor. O pacote npm não traz compressor, por isso ali o terceiro foi zero. Um livro sem valor publicado é descrito aqui, não anunciado."
     },
     "ledgers": [
       {
@@ -853,9 +863,8 @@
       "mEscritura": "escrita de cache (uma hora)",
       "mEscrituraDesc": "Cada resultado de ferramenta é escrito em cache com sobretaxa antes de ser relido.",
       "mSalida": "saída do modelo",
-      "mSalidaDesc": "Menos de um por cento dos tokens; a skill ataca-a diretamente.",
-      "medidaPie": "do gasto medido",
-      "anatomiaNota": "Medido com o medidor sobre {peticiones} pedidos reais do Claude Code, contra os contadores do fornecedor ({fecha}). O efeito da própria skill será publicado quando estiver medido em A/B — nunca antes.",
+      "mSalidaDesc": "Uma pequena parte dos tokens, ao preço mais alto por token; a skill ataca-a diretamente.",
+      "anatomiaNota": "Para onde vai o gasto de uma sessão do Claude Code, por esta ordem: leituras de cache, escritas de cache de uma hora e saída do modelo — medido com o nosso medidor no nosso próprio tráfego, contra os contadores do fornecedor. Esse relatório não está publicado, por isso não mostramos os seus valores. O efeito da própria skill será publicado quando estiver medido em A/B — nunca antes.",
       "ccNota": "Um único comando: instala-se em ~/.claude/skills e ativa-se sozinho quando a conversa fala de limites ou de poupar tokens.",
       "cxNota": "O Codex não tem skills: a mesma disciplina viaja como bloco marcado no teu AGENTS.md (~/.codex) — sempre ativa; apaga o bloco para a desligar. O teu AGENTS.md fora das marcas nunca é tocado. Funciona com conta ChatGPT e com chave API, e sob bvsala codex (com licença) o seu efeito mede-se.",
       "aiDescargar": "Descarregar savings-mode.zip",
@@ -887,12 +896,36 @@
       "initNote": "<b>Ou deixa que um comando o ajuste à tua stack.</b> O <code>init</code> lê o teu <code>package.json</code> (Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, o SDK da Anthropic ou o da OpenAI) e imprime a linha de instalação, o código exato do teu adaptador e uma verificação que não gasta tokens: com a tua licença já configurada, é a camada que lhe responde, na tua máquina, sem chamar o modelo. Não escreve nada se não lho pedires."
     },
     "pricing": {
-      "eyebrow": "Um só plano, com preço por lugar",
-      "title": "Taxa por lugar, sempre. Comissão só sobre a poupança medida.",
-      "body": "Sem plano gratuito e sem período de teste: antes de pagar podes verificar as medições públicas e passar o verificador pelos teus próprios dados, aqui mesmo. A taxa por lugar é cobrada todos os meses, em {currency}, quer poupes quer não. A comissão vem à parte, e só sobre a poupança medida com o contador do teu fornecedor — incluindo os pedidos repetidos servidos sem o chamar, cada um valorizado com o contador do pedido idêntico que já foi executado. O estimado nunca entra.",
+      "eyebrow": "Planos",
+      "title": "Meça grátis. Pague por lugar quando quiser a poupança.",
+      "body": "Comece com Medir: grátis e sem cartão. A camada funciona em modo sombra com o seu próprio tráfego e o seu painel mostra o que teria poupado, valorizado com o contador do seu fornecedor. Pro e Equipa são cobrados por lugar, em {currency}, poupe ou não, e não têm comissão sobre a sua poupança.",
       "amount": "{amount}",
       "per": "/ lugar / mês",
-      "proNote": "<b>PRO</b> — faturado por lugar. Ou <b>{yearly} / lugar / ano</b> (poupa ~19%). O Enterprise, com funcionalidades empacotadas, chega mais tarde.",
+      "plans": {
+        "medir": {
+          "name": "Medir",
+          "price": "Grátis",
+          "body": "Sem cartão. A camada em modo sombra para uma organização, até {seats} lugares e {requests} pedidos por dia: nada do que envia muda, nada é servido da cache, nunca faz parte de nenhuma comissão — e vê o que teria poupado. Requer @bivelio/savings-layer {version} ou posterior.",
+          "cta": "Começar grátis →"
+        },
+        "pro": {
+          "name": "Pro",
+          "note": "Ou <b>{yearly} / lugar / ano</b>. Todas as otimizações, o recibo por pedido e o painel. Sem comissão.",
+          "cta": "Escolher Pro →"
+        },
+        "team": {
+          "name": "Equipa",
+          "per": "/ mês",
+          "note": "<b>{included} lugares incluídos</b>; cada lugar a mais {extra} / mês. Ou <b>{yearly} / ano</b>. Sem comissão.",
+          "cta": "Escolher Equipa →"
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "price": "À medida",
+          "body": "Mais lugares do que o pagamento online permite, um contrato próprio ou condições de faturação acordadas: <contact>escreva-nos</contact>."
+        }
+      },
+      "legacy": "Já tem a modalidade anterior, com comissão sobre a poupança medida? Mantém-na sem alterações; as condições estão nos <terms>termos de preço</terms>.",
       "seatNote": "Um lugar é uma <b>máquina ou identidade de serviço</b>, não uma pessoa. Paga os lugares que a sua subscrição cobre; o seu painel mostra quantos estiveram em uso este mês (ativos em pelo menos {dias} dias; CI e executores efémeros não contam).",
       "features": [
         "Todas as otimizações do BV‑SALA, sem limite",
@@ -924,7 +957,7 @@
     },
     "footer": {
       "ctaTitle": "Meça-o com o seu próprio tráfego",
-      "ctaSub": "Instalado, cada chamada devolve o seu SavingsReport, com o medido e o estimado em separado. A taxa por lugar é mensal e fixa; a comissão sai só do que se mede. A licença é o que te deixa executar o BV‑SALA — o SDK na tua app, o gateway no teu terminal.",
+      "ctaSub": "Depois de instalado, cada chamada devolve o seu SavingsReport, com o medido e o estimado em separado. Comece grátis com Medir (@bivelio/savings-layer {version} ou posterior); Pro e Equipa são uma taxa fixa por lugar, sem comissão sobre a sua poupança. A licença é o que lhe permite executar o BV‑SALA — o SDK na sua app, o gateway no seu terminal.",
       "ctaStart": "Começar",
       "tagline": "O sistema operativo para o teu negócio. Isto é o <b>BV‑SALA</b>, o otimizador de custo de LLM da BiVelio, neutro quanto ao fornecedor — cada valor publicado é medido contra o contador do fornecedor; o estimado mostra-se à parte e nunca se fatura.",
       "badge": "BV‑SALA · Savings Layer",
@@ -932,6 +965,7 @@
       "colBivelio": "BiVelio",
       "colLegal": "Legal",
       "measured": "Resultados medidos",
+      "benchmarks": "Banco de testes público",
       "pricing": "Preços",
       "home": "Início",
       "docs": "Documentação",
@@ -965,59 +999,12 @@
       "errorEnvio": "Não conseguimos enviar.",
       "alterna": "Escreve-nos"
     },
-    "calculadora": {
-      "title": "E quanto você nos pagaria?",
-      "sub": "Brinque com seus números: escolha provedor e modelo, e veja sua economia, nosso extra e o que fica com você — com os preços reais do catálogo e a tarifa real.",
-      "proveedor": "Provedor",
-      "modelo": "Modelo",
-      "reqs": "Requisições / mês",
-      "inTok": "Tokens de entrada méd.",
-      "outTok": "Tokens de saída méd.",
-      "fx": "Câmbio ({par})",
-      "factura": "Sua fatura estimada sem otimizar: {usd} por mês ({eur}).",
-      "colAhorro": "Se você economiza",
-      "colTuAhorro": "Sua economia",
-      "colExtra": "Nosso extra",
-      "colTeQuedas": "Fica com você",
-      "extraCero": "nada",
-      "notaGarantia": "Comissão só sobre a poupança medida — e ficas sempre com {garantia} ou mais. Os lugares cobram-se à parte, todos os meses.",
-      "notaTramos": "Por faixas, cada uma à sua taxa: {tramos}. Quanto mais você economiza, menor o nosso percentual.",
-      "notaPrimerMesLead": "Seu primeiro mês civil com uso: só o assento.",
-      "notaPrimerMes": "É o seu período de calibração, por pouco que reste desse mês: medimos tudo e você verá o extrato exato do que teria custado — sem cobrança.",
-      "version": "Preços do catálogo do SDK, versão {fecha}. Uma estimativa: seu extrato usará o seu uso medido.",
-      "cargando": "Carregando o catálogo de preços…",
-      "badge": "Estimativa",
-      "asientos": "Assentos ({precio} cada)",
-      "resumenTotal": "A verdade completa, no cenário de {pct}: nosso total seria {total} (assentos: {asientosCoste} + a comissão acima) e ficariam com você {neto} — {pctNeto} da sua fatura.",
-      "precios": "Preço exato de {modelo}: entrada {inM} · saída {outM} · entrada em cache {cacheM}, por milhão de tokens.",
-      "fuente": "Fonte: <a>a página oficial de preços da {proveedor}</a>, verificada no nosso catálogo em {fecha} (e vigiada automaticamente toda semana)."
-    },
-    "formula": {
-      "title": "Como se calcula o que você nos paga",
-      "mes1": "<b>Seu primeiro mês civil com uso (UTC): só a taxa do assento.</b> Medimos tudo e não cobramos comissão, por pouco que reste desse mês — no fechamento você verá o extrato exato do que teria custado.",
-      "medido": "Depois, comissão só sobre a <b>economia medida</b>: a que você pode conciliar com a fatura do seu provedor. O estimado nunca é faturado.",
-      "garantia": "E <b>ficas sempre com {garantia} ou mais</b> de cada euro poupado: a comissão só existe quando existe a tua poupança medida.",
-      "tramos": "<b>Por faixas, cada uma à sua taxa</b> — {tramos}. Quanto mais você economiza, menor o nosso percentual.",
-      "permanencia": "Um mês sem poupança? Comissão: {cero}. <b>Sem fidelização</b> — e sua primeira fatura variável só contém números que você já viu no seu extrato."
-    },
     "trabajos": {
       "pajaTitle": "Se o envio leva palha…",
       "pajaBody": "…o portão tira-a antes de pagar: o pacote chega à nuvem muito mais pequeno e a diferença cai no seu pote.",
       "magroTitle": "Se já vai magro…",
       "magroBody": "…passa intacto. Ali não há nada a tirar — e não prometemos poupança onde não existe.",
-      "caption": "Nem todos os envios levam a mesma palha: nesta ronda, o corte medido por cenário foi de {min} a {max}. Os que não poupam também são publicados."
-    },
-    "recibo": {
-      "title": "SDK · SavingsReport · tiragem publicada",
-      "modelo": "modelo",
-      "parejas": "pares medidos",
-      "calidad": "qualidade",
-      "punto": "estimativa pontual",
-      "suelo": "O título é o piso do intervalo de 95 %, nunca o ponto.",
-      "sdkPendiente": "Esta execução incluía um compressor exclusivo da bancada de testes que o pacote npm não traz, por isso o seu piso não é mostrado. O número acima é o nosso título para o SDK tal como o instalas: continua a caber quando se retira o efeito desse compressor. Falta uma execução do SDK instalado.",
-      "libros": "por livro",
-      "pie": "Cada livro publica-se com o seu próprio intervalo; os que não passam de zero não se anunciam.",
-      "fecha": "tiragem"
+      "caption": "Nem todos os pedidos trazem algo para poupar: no banco público, o tráfego sem repetições poupou ≈ {cero}. Também o publicamos."
     },
     "devs": {
       "eyebrow": "Feito para programadores",
@@ -1041,7 +1028,7 @@
         },
         {
           "title": "Streaming, o mesmo relatório",
-          "body": "generateStream() entrega-te a resposta à medida que o fornecedor a escreve e fecha com o mesmo SavingsReport que generate(), com as mesmas regras de base: o contador final do fornecedor é lido no fim do stream, e um stream sem ele é reportado como não medido e nunca entra na tua comissão. Com contrato de saída, a resposta chega validada e numa só peça.",
+          "body": "generateStream() entrega-te a resposta à medida que o fornecedor a escreve e fecha com o mesmo SavingsReport que generate(), com as mesmas regras de base: o contador final do fornecedor é lido no fim do stream, e um stream sem ele é reportado como não medido e nunca conta como poupança medida. Com contrato de saída, a resposta chega validada e numa só peça.",
           "mono": "layer.generateStream(request)"
         }
       ]
@@ -1058,7 +1045,7 @@
         "who": "Para apps Node.js, em JavaScript ou TypeScript, que chamam uma API de LLM com a tua própria chave e pagam cada token.",
         "what": "Envolve a chamada dentro do teu código, envia ao fornecedor só o que é preciso pagar e devolve um SavingsReport com cada resposta.",
         "figureLabel": "O número que publicamos",
-        "figureNote": "Um piso, não uma previsão: o que poupares depende do teu tráfego. Na comissão só entra a poupança medida com o contador do teu fornecedor — incluindo os pedidos repetidos servidos sem o chamar, cada um valorizado com o contador do pedido idêntico que já foi executado.",
+        "figureNote": "Não é uma previsão: o que poupares depende de quanto o teu tráfego se repete. No teu relatório de poupança só conta o que o contador do teu fornecedor confirma — incluindo os pedidos repetidos servidos sem o chamar, cada um valorizado com o contador do pedido idêntico que já foi executado.",
         "ctaMeasured": "Como o medimos",
         "ctaVerify": "Experimenta uma alavanca com os teus dados"
       },
@@ -1068,7 +1055,7 @@
         "who": "Para quem trabalha com Claude Code, Codex CLI ou outro agente de código com chave de API.",
         "what": "Um comando põe um medidor local à frente do teu terminal, sem tocar em código. O gateway conta cada pedido cujo uso o teu fornecedor reporta, com o contador do próprio fornecedor — nos modelos do nosso catálogo de preços — e soma-os no teu painel, por dia e por modelo.",
         "figureLabel": "Sem número de poupança publicado",
-        "figureNote": "Não publicámos uma poupança medida para agentes de código, por isso não anunciamos nenhuma. Com PRO, em modelos da Anthropic, o gateway passa as escritas da cache do TTL de uma hora para o de cinco minutos só nos turnos em que uma boa parte do prompt é nova — como o primeiro turno de uma sessão ou uma compactação — e deixa como estão os turnos encadeados de uma sessão em curso. Isso muda o preço, nunca o que o modelo lê, e só o que o contador do teu fornecedor confirma entra na comissão.",
+        "figureNote": "Não publicámos uma poupança medida para agentes de código, por isso não anunciamos nenhuma. Com PRO, em modelos da Anthropic, o gateway passa as escritas da cache do TTL de uma hora para o de cinco minutos só nos turnos em que uma boa parte do prompt é nova — como o primeiro turno de uma sessão ou uma compactação — e deixa como estão os turnos encadeados de uma sessão em curso. Isso muda o preço, nunca o que o modelo lê, e só o que o contador do teu fornecedor confirma conta no teu relatório de poupança.",
         "cta": "Instalar o gateway"
       },
       "skill": {
@@ -1101,6 +1088,13 @@
       "approxNote": "O tokenizador exato não carregou, por isso qualquer contagem aqui seria aproximada — e não mostramos poupanças aproximadas. Recarrega a página para tentar de novo.",
       "scope": "O que é e o que não é: uma alavanca — como os dados estruturados se escrevem no prompt — sobre os tokens de entrada destes dados. Só se aplica aos dados que passas ao SDK como structuredData, não ao JSON que já vai escrito dentro das tuas mensagens. Não é a tua fatura: nem as chamadas evitadas, nem a cache do teu fornecedor, nem a saída estão aqui, e muitos pedidos não levam dados estruturados. Para o SDK inteiro, o número que publicamos é o da secção da medição, com a sua nota.",
       "ctaInstall": "Instalar o SDK"
+    },
+    "enVivo": {
+      "titulo": "Banco público · ao vivo contra o fornecedor · {fecha}",
+      "conRepeticiones": "menos fatura (intervalo de 95%: de {bajo} a {alto}) num fluxo onde {rep} dos pedidos são repetições exatas — {bateria}, SDK {version}",
+      "sinRepeticiones": "com tráfego sem repetições (MT-Bench, BFCL): indistinguível de zero",
+      "anthropic": "mesmo fluxo (intervalo de 95%: de {bajo} a {alto}). Cerca de {prefijo} da fatura original é o desconto da cache de prefixo da própria Anthropic — do fornecedor, não nosso, e mostrado à parte",
+      "pie": "Depende de quanto o teu tráfego se repete. Cada bateria, com o seu relatório completo: <bench>banco público</bench>."
     }
   },
   "invitacion": {
@@ -1135,6 +1129,226 @@
     "sesionActual": "Neste momento tem sessão iniciada como <b>{email}</b>.",
     "cerrarYContinuar": "Terminar sessão e usar outra conta",
     "cerrando": "A terminar sessão…"
+  },
+  "benchmarksPage": {
+    "metaTitle": "Banco público A/B: meça-nos | BiVelio Savings Layer",
+    "metaDescription": "Quatro baterias públicas (GSM8K, BFCL, XSTest e MT-Bench), dois braços medidos com o contador de uso do próprio fornecedor, cada valor com o seu n, o seu intervalo e a sua data. O que economiza, o que não, e os bugs que o banco encontrou.",
+    "eyebrow": "Banco público · reproduzível",
+    "title": "O nosso banco A/B, em aberto. Meça-nos.",
+    "lede": "Publicamos cada execução: quatro baterias com conjuntos de dados públicos, {modelos} modelos, e os dois braços medidos com o contador de uso do próprio fornecedor. Cada valor traz o seu n, o seu intervalo e a sua data. O que não economiza também está aqui.",
+    "stats": {
+      "batteries": "baterias",
+      "models": "modelos testados",
+      "measured": "modelos com alguma medição",
+      "reports": "relatórios em tempo real",
+      "last": "última execução"
+    },
+    "method": {
+      "title": "O que é medido, e como",
+      "arms": "<b>Dois braços, o mesmo pedido.</b> A vai direto ao fornecedor, sem a camada; B passa pela camada com a sua configuração predefinida. Mesmo prompt, mesma amostragem, mesmo limite de saída.",
+      "cost": "<b>O custo é contado pelo fornecedor.</b> Cada braço é avaliado a partir do <code>usage</code> que a API devolve em cada chamada, ao preço de tabela. A economia é 1 − custo(B) / custo(A) da mesma execução, não o que a camada diz de si mesma.",
+      "intervals": "<b>Intervalos ao {nivel}.</b> Cada harness calcula-os (reamostragem por famílias de perguntas, Wilson para as taxas de recusa). Um intervalo que atravessa o zero significa «indistinguível de zero», e é isso que dizemos.",
+      "package": "<b>O pacote que você instala.</b> As rodadas A/B das tabelas abaixo foram feitas com a {version}: o braço B executa o código-fonte dessa tag, e o seu <code>dist/index.js</code> é idêntico byte a byte ao do tarball do npm (sha256 <code>{sha}</code>). O banco semanal ao vivo é outra coisa: em cada rodada mede o código-fonte do main tal como está nesse dia, antes de ser publicado.",
+      "guard": "<b>Sem atalhos.</b> Cada harness vigia os hosts com que fala e traz um limite de gasto por modelo escrito no código. Um modelo que não pôde ser medido aparece como «não medido», com o motivo.",
+      "batteriesTitle": "Quatro baterias, conjuntos de dados públicos, fixados",
+      "commitOnly": "fixado por commit"
+    },
+    "weekly": {
+      "title": "Banco semanal ao vivo",
+      "intro": "Toda semana, e sempre que o disparamos à mão, uma rodada passa todas as baterias por todos os modelos: o braço A vai direto ao provedor e o B passa pela camada construída a partir do código-fonte do main nesse momento. Não é uma versão publicada: é o que está prestes a ser publicado. A rodada falha se qualquer regra for quebrada, e uma célula que não pôde ser medida diz por quê.",
+      "meta": "Rodada de {fecha} · código-fonte do main no commit {commit} (versão do pacote {version}) · gasto de {gasto} num teto de {tope} · {medidas} de {celdas} células medidas.",
+      "verdictOk": "Veredito: sem regressões.",
+      "verdictFailed": "Veredito: a rodada falhou (regras quebradas: {n}).",
+      "status": {
+        "measured": "medida",
+        "cut": "medida (parada no seu teto de gasto)",
+        "notMeasurable": "não mensurável: {motivo}",
+        "unsupported": "sem suporte: {motivo}",
+        "harnessFailed": "o harness falhou: {motivo}"
+      },
+      "reason": {
+        "sin-clave": "sem chave deste provedor no ambiente do banco",
+        "proveedor": "nenhuma resposta válida do provedor no braço A",
+        "tope-global": "o teto de gasto global da rodada foi atingido",
+        "arnes-proveedor": "o harness desta bateria só fala com a Anthropic e a OpenAI",
+        "arnes-modelo": "o harness desta bateria não tem este modelo",
+        "arnes": "erro ou tempo esgotado no harness",
+        "otro": "dados insuficientes"
+      },
+      "counts": {
+        "otherQuestion": "resposta de outra pergunta: {n}",
+        "changedCalls": "chamadas a ferramentas alteradas: {n}",
+        "refusals": "recusas em cache: {cacheadas} · creditadas: {acreditadas}"
+      },
+      "diff": {
+        "accuracy": "exatidão {d} pp [{inf}, {sup}]",
+        "accuracyNoCi": "exatidão {d} pp",
+        "win": "B preferida {w} [{inf} – {sup}]",
+        "winNoCi": "B preferida {w}",
+        "safe": "seguros {d} pp (p = {p})",
+        "unsafe": "inseguros {d} pp (p = {p})"
+      },
+      "note": "“Falhas da camada” são erros no braço B que o braço A não teve. “B − A” é a diferença de exatidão no GSM8K e no BFCL, a da taxa de recusas no XSTest (p de McNemar, prompts emparelhados) e, no MT-Bench, com que frequência o juiz prefere B (metade é empate). “Relatório vs fatura” é quanto o custo que a camada informa para o braço B se afasta do que o provedor fatura.",
+      "earlierTitle": "Rodadas semanais anteriores",
+      "earlierOk": "{fecha} · commit {commit} · sem regressões.",
+      "earlierFailed": "{fecha} · commit {commit} · falhou (regras quebradas: {n})."
+    },
+    "batteries": {
+      "gsm8k": "Problemas matemáticos em texto com repetições e paráfrases: quanto a cache economiza e se a precisão cai.",
+      "bfcl": "Chamadas a ferramentas: a camada não pode mudar nenhuma, e o catálogo inteiro tem de chegar.",
+      "xstest": "Recusas: a camada não pode mudar quando o modelo recusa, nem servir uma recusa da cache.",
+      "mt-bench": "Chat de dois turnos sem repetições: a camada não pode piorar o custo, a latência nem a qualidade."
+    },
+    "th": {
+      "battery": "Bateria",
+      "what": "O que verifica",
+      "dataset": "Conjunto de dados",
+      "pinned": "Arquivos fixados",
+      "license": "Licença",
+      "model": "Modelo",
+      "n": "n",
+      "savings": "Economia medida [IC]",
+      "fromExact": "Do cache exato",
+      "fromCalls": "Nas chamadas (prefixo)",
+      "accuracy": "Precisão A → B",
+      "run": "Versão · data",
+      "prompts": "Prompts",
+      "safe": "Recusas, prompts seguros (A → B)",
+      "unsafe": "Recusas, prompts inseguros (A → B)",
+      "verdict": "Leitura",
+      "reports": "Relatórios",
+      "status": "Estado",
+      "spend": "Gasto / teto",
+      "layerFails": "Falhas da camada",
+      "counts": "O que conta",
+      "diff": "B − A",
+      "reportVsInvoice": "Relatório vs fatura"
+    },
+    "savings": {
+      "title": "Economia medida por modelo",
+      "intro": "GSM8K, com um fluxo de requisições em que {rep} são repetições exatas e {par} paráfrases. É a bateria com tráfego repetido: a sua economia depende de quanto o seu tráfego se repete. Sem repetições, veja «O que não economiza».",
+      "nCell": "{n} requisições · {unicos} únicas",
+      "delta": "Δ {d} pp [{inf}, {sup}]",
+      "originNote": "De onde vem a economia, posição por posição: «do cache exato» é o que A pagou nas requisições que a camada serviu sem chamar o fornecedor; «nas chamadas» é a diferença nas que realmente o alcançaram, sobretudo o cache de prefixo do fornecedor (mais alguma variação na saída). As duas somadas dão a economia total.",
+      "accuracyNote": "A precisão é medida sobre as perguntas com resposta publicada; as variantes com um número alterado servem apenas para verificar que a camada nunca entrega a resposta de outra pergunta."
+    },
+    "guarantees": {
+      "title": "Garantias, contadas",
+      "tools": {
+        "title": "A camada nunca alterou uma chamada a ferramentas",
+        "titleBroken": "A camada alterou {n} chamadas a ferramentas",
+        "body": "{alteradas} chamadas alteradas em {comparaciones} comparações do BFCL, {modelos} modelos, desde {desde}. Se a camada falhar (um erro em B que A não tinha), isso não é contado aqui: está em «Bugs que o banco encontrou».",
+        "note": "Como se conta: cada comparação de cada rodada ao vivo desde essa versão, então um modelo medido duas vezes (um piloto e a rodada completa) soma as duas. Por isso o número pode passar do n das tabelas, que mostram uma rodada por modelo."
+      },
+      "other": {
+        "title": "Nenhuma resposta de outra pergunta desde {desde}",
+        "titleBroken": "{n} respostas de outra pergunta desde {desde}",
+        "body": "{deOtra} de {variantes} variantes (a mesma pergunta com outro número, logo outra resposta) servidas com a resposta de outra pergunta, em {modelos} modelos ao vivo e em todas as configurações de cache medidas.",
+        "replay": "Repetição offline de todo o split de teste do GSM8K: {erroneas} em {peticiones} requisições, em cada uma das {configs} configurações de cache."
+      },
+      "refusals": {
+        "title": "A mesma taxa de recusa, com e sem a camada",
+        "titleBroken": "A taxa de recusa mudou em {n} modelos",
+        "body": "XSTest, {modelos} modelos medidos: nenhuma diferença A/B abaixo de p = {umbral} (McNemar, prompts pareados). A camada entregou sem alteração o texto de {comprobados} respostas ({alterados} alteradas).",
+        "caption": "Taxa de recusa por modelo, sem a camada (A) e com ela (B), sobre os mesmos prompts.",
+        "note": "Como se conta: respostas, não prompts. Cada resposta do braço B é comparada com o texto do provedor, repetições do mesmo prompt incluídas, então há mais respostas do que prompts na tabela."
+      }
+    },
+    "noSavings": {
+      "title": "O que não economiza",
+      "lead": "<b>Sem repetições, a economia é ≈ {cero}.</b> Publicamos mesmo assim, porque é o que você vai ver se o seu tráfego não se repetir.",
+      "why": "O MT-Bench é um chat de dois turnos com uma camada nova a cada pergunta: não há nada que o cache possa reutilizar, e o prompt quase nunca atinge o mínimo que o fornecedor exige para fazer cache de um prefixo. No BFCL, cada chamada a ferramentas é diferente. O que estas duas baterias medem é que a camada não piora nada; a diferença de custo que sobra é ruído na saída do modelo, não a camada.",
+      "nQuestions": "{n} perguntas",
+      "nItems": "{n} itens",
+      "verdict": {
+        "ahorro": "economia",
+        "cero": "indistinguível de zero",
+        "sobrecoste": "custo extra"
+      },
+      "notAttributable": "não atribuível à camada"
+    },
+    "status": {
+      "title": "Estado por modelo e bateria",
+      "intro": "Cada célula mostra a execução na versão mais alta da camada. Se um modelo não pôde ser medido, dizemos por quê, em vez de deixar o espaço em branco.",
+      "measured": "medido · n = {n}",
+      "notMeasured": "não medido: {motivo}",
+      "layerFailed": "a camada falhou: {motivo}",
+      "reason": {
+        "credencial": "credencial rejeitada",
+        "presupuesto": "limite de gasto esgotado",
+        "cuota": "cota do fornecedor esgotada",
+        "capa": "as requisições não passaram pela camada",
+        "proveedor": "o fornecedor rejeitou a requisição em ambos os braços",
+        "otro": "dados insuficientes"
+      }
+    },
+    "bugs": {
+      "title": "Bugs que o banco encontrou",
+      "intro": "O banco não está aqui para ficar bem na fotografia: está aqui para encontrar os bugs antes de você. Encontrou estes, com a versão em que apareceram e a que os corrige.",
+      "found": "Encontrado na {version}: {ocurrencias} de {sobre}.",
+      "foundWeekly": "Encontrado pelo banco semanal ao vivo em {fecha} (código-fonte do main, commit {commit}): {cacheadas} recusas servidas do cache ou escritas nele e {acreditadas} creditadas, em {sobre} prompts do XSTest e {modelos} modelos.",
+      "fixed": "Corrigido na {version} ({prs}).",
+      "verified": "Verificado ao vivo na {version}: {ocurrencias} de {sobre}.",
+      "stillSeen": "Ainda visto na {version}: {ocurrencias} de {sobre}.",
+      "remeasuredWeekly": "Medido de novo ao vivo pelo banco semanal em {fecha} (código-fonte do main com a correção, commit {commit}): {cacheadas} recusas em cache e {acreditadas} creditadas, em {sobre} prompts do XSTest e {modelos} modelos.",
+      "stillSeenWeekly": "O banco semanal ainda o vê em {fecha} (código-fonte do main, commit {commit}): {cacheadas} recusas em cache e {acreditadas} creditadas, em {sobre} prompts do XSTest e {modelos} modelos.",
+      "pending": "Aguardando nova medição ao vivo na {version}.",
+      "notRemeasured": {
+        "notMeasurable": "Ainda não medido de novo ao vivo: o banco semanal de {fecha} (commit {commit}) não conseguiu medir o Gemini ({motivo}). Até uma rodada medi-lo, não o damos como verificado.",
+        "unsupported": "Ainda não medido de novo ao vivo: no banco semanal de {fecha} (commit {commit}) esta bateria não tem suporte para o Gemini ({motivo}). Até uma rodada medi-lo, não o damos como verificado."
+      },
+      "items": {
+        "otra-pregunta": {
+          "title": "O cache semântico sem calibração servia a resposta de outra pergunta",
+          "body": "Com o cache semântico sem calibração, uma variante com outro número («three baskets» versus «two baskets») podia receber a resposta da pergunta original. Contado sobre as variantes do GSM8K."
+        },
+        "herramientas-multiturno": {
+          "title": "A camada cortava o catálogo de ferramentas sem nenhum sinal para isso",
+          "body": "Em conversas de vários turnos, o braço B enviava menos ferramentas do que o A, mesmo sem nada indicar quais eram desnecessárias. Contado sobre as conversas multi-turno do BFCL."
+        },
+        "negativas-de-texto": {
+          "title": "Algumas recusas escritas como texto eram guardadas em cache",
+          "body": "Uma recusa que o modelo escreve como texto (sem o sinal da API) podia ser guardada em cache, repetida e creditada como economia. Contado em prompts do XSTest."
+        },
+        "negativas-parciales": {
+          "title": "Recusas parciais eram guardadas em cache e creditadas",
+          "body": "Uma resposta que começa cumprindo e se recusa mais adiante (“If you mean harming someone, I can't help…”), ou um pedido de desculpas seguido de “não tenho acesso…”, não era reconhecida como recusa: a camada podia guardá-la em cache, repeti-la e creditá-la como economia. Contado nos prompts do XSTest do banco semanal, com modelos da OpenAI e do Claude."
+        },
+        "gemini-filtro-cacheado": {
+          "title": "Um filtro de conteúdo do Gemini era guardado em cache como resposta",
+          "body": "O Gemini sinaliza o seu filtro com um motivo de parada próprio, que a camada não reconhecia como recusa, e por isso podia guardá-lo em cache e repeti-lo. Contado em prompts do XSTest."
+        },
+        "gemini-prompt-cache-key": {
+          "title": "O Gemini não passava pela camada",
+          "body": "A camada enviava um campo próprio da API da OpenAI para qualquer endpoint compatível, e o Gemini o rejeita: todas as requisições do braço B falhavam. Contado em requisições do GSM8K."
+        },
+        "gemini-thought-signature": {
+          "title": "Com o Gemini 3, o segundo turno com ferramentas falhava",
+          "body": "A camada não devolvia a assinatura de pensamento que o Gemini 3 exige em cada chamada a ferramentas, e por isso o turno seguinte era rejeitado. Contado em continuações multi-turno do BFCL."
+        }
+      }
+    },
+    "repro": {
+      "title": "Como reproduzir",
+      "intro": "O código do banco ainda não é público; o método é, e cabe em cinco passos. Com as suas próprias chaves de fornecedor pode repeti-lo e comparar número a número com os nossos relatórios.",
+      "steps": {
+        "dataset": "<b>O dataset.</b> Descarregue cada dataset público no commit da tabela acima e verifique o sha256 de cada ficheiro antes de o usar. Se não bater certo, não é o mesmo dataset.",
+        "package": "<b>A camada.</b> Instale <code>@bivelio/savings-layer</code> a partir do npm na versão indicada pelo relatório e verifique o sha256 de <code>dist/index.js</code>: cada relatório traz o seu.",
+        "arms": "<b>Dois braços por prompt.</b> A vai direto ao fornecedor; B envia o mesmo prompt, ao mesmo modelo e com o mesmo limite de saída, através da camada com a configuração padrão. Uma parte dos prompts repete-se ou é parafraseada, como no tráfego real, e a ordem A/B é sorteada.",
+        "cost": "<b>O custo é o fornecedor que o diz.</b> Some o que cada braço é faturado segundo o <code>usage</code> devolvido pelo fornecedor, à sua tarifa publicada. A poupança é <code>1 − custo B / custo A</code>, com o seu intervalo.",
+        "compare": "<b>A qualidade, na mesma execução.</b> Pontue da mesma forma as respostas dos dois braços (resposta exata no GSM8K, chamada de ferramenta no BFCL, recusa ou não no XSTest, um juiz no MT-Bench) e compare-as com o relatório JSON da mesma bateria e versão."
+      },
+      "reportsTitle": "Os relatórios",
+      "reportsIntro": "Cada execução deixa um relatório JSON com o seu desenho, as suas limitações e cada chamada medida: usage, custo por braço e classificação da resposta. São servidos a partir deste site.",
+      "served": "Os relatórios são servidos tal como o banco os escreveu, com uma exceção: retiram-se os dados do ambiente de quem mediu (caminhos de disco, endereços de e-mail). Do XSTest não se publica o texto de nenhuma resposta, apenas a sua classificação."
+    },
+    "invite": {
+      "title": "Meça-nos você mesmo",
+      "body": "Uma medição independente vale mais do que a nossa. O código do banco ainda não é público: se quiser repetir a medição, ou medir a camada com o seu próprio harness ou o seu tráfego, escreva-nos e damos-lhe o que precisar para o fazer.",
+      "contact": "Escreva-nos para",
+      "cta": "Enviar um e-mail",
+      "subject": "Medição independente do banco público"
+    }
   },
   "howItWorks": {
     "metaTitle": "Onde se instala a economia? · BiVelio Savings Layer",
@@ -1176,7 +1390,7 @@
     "s3Sub": "O produto tem dois números diferentes e é melhor não misturá-los.",
     "mBeforeK": "Antes de instalar",
     "mBeforeV": "Estimativa",
-    "mBeforeBody": "A calculadora da secção de preços projeta a tua poupança com os teus próprios números: pedidos, tokens e modelo. É uma projeção honesta — por isso carrega a etiqueta «estimativa».",
+    "mBeforeBody": "A licença Medir, gratuita, executa a camada em modo sombra com o seu próprio tráfego e mostra o que teria poupado, pedido a pedido. Não altera nada nem aplica nada — por isso tem a etiqueta «estimativa».",
     "mAfterK": "Depois de instalar",
     "mAfterV": "Medição real",
     "mAfterBody": "Cada chamada devolve um SavingsReport: as chamadas que você nunca pagou e a economia líquida por requisição. Auditável, requisição a requisição, na sua própria infraestrutura.",
@@ -1187,18 +1401,42 @@
     "snipResult": "a economia, medida",
     "ctaVerify": "Ver a poupança medida",
     "ctaSignup": "Criar conta",
-    "ctaInstall": "Ir para o guia de instalação"
+    "ctaInstall": "Ir para o guia de instalação",
+    "billWith": "Depende",
+    "billDepends": "de quanto o teu tráfego se repete"
   },
   "pricingPage": {
     "metaTitle": "Condições de preço · BV-SALA",
-    "metaDescription": "A taxa por lugar e a comissão sobre a economia medida, publicadas a partir das mesmas constantes que cobram.",
+    "metaDescription": "Medir grátis, Pro por lugar, Equipa e Enterprise — nenhum tem comissão sobre a sua poupança. Valores publicados a partir das mesmas constantes que cobram.",
     "eyebrow": "Preços publicados",
     "title": "Condições de preço",
     "governs": "Esta página descreve como o serviço funciona hoje; prevalecem a <license>LICENSE</license> e os <terms>Termos da BiVelio</terms>.",
-    "lede": "Cada número que vê aqui é lido do mesmo código que lhe cobra, por isso muda quando o preço muda.",
+    "lede": "Paga por lugar ou por um plano Equipa, sem comissão sobre a sua poupança. Cada valor desta página é lido do mesmo código que lhe cobra, por isso muda quando o preço muda.",
+    "plans": {
+      "title": "Planos",
+      "intro": "Quatro planos, do menor para o maior. Pro e Equipa pagam-se por assento e não têm comissão.",
+      "medir": {
+        "name": "Medir",
+        "body": "<b>Grátis, sem cartão.</b> A camada funciona em modo sombra para uma organização, até <b>{seats} lugares</b> e <b>{requests} pedidos por dia</b>: cada pedido chega ao seu fornecedor tal como o construiu, nada é servido da cache e nenhuma alavanca é aplicada. O seu painel mostra o que teria poupado — uma estimativa que nunca tem comissão. Requer <b>@bivelio/savings-layer {version} ou posterior</b>: as versões anteriores não reconhecem a licença Medir. As alavancas precisam de Pro ou Equipa."
+      },
+      "pro": {
+        "name": "Pro",
+        "amount": "<b>{monthly}</b> por assento e mês, ou <b>{yearly}</b> por assento e ano, em {currency}.",
+        "body": "Todas as otimizações da camada, o recibo por pedido e o painel. <b>Sem comissão</b> sobre a poupança: pagas os assentos, poupes ou não."
+      },
+      "team": {
+        "name": "Equipa",
+        "amount": "<b>{monthly}</b> por mês com <b>{included} assentos incluídos</b> (cerca de {perSeat} por assento), ou <b>{yearly}</b> por ano, em {currency}.",
+        "extra": "Cada assento acima dos incluídos: {monthly} por mês, ou {yearly} por ano.",
+        "body": "O mesmo que Pro, para uma frota: a mensalidade fixa cobre os assentos incluídos mesmo que uses menos. <b>Sem comissão</b> sobre a poupança."
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "body": "Para mais assentos do que o pagamento online permite, um contrato próprio ou condições de faturação negociadas: <contact>escreve-nos</contact>."
+      }
+    },
     "seat": {
-      "title": "A taxa por lugar",
-      "amount": "<b>{monthly}</b> por lugar e por mês, ou <b>{yearly}</b> por lugar e por ano, em {currency}.",
+      "title": "Como se conta e se cobra um assento",
       "cycle": "A taxa por lugar é cobrada através da Stripe em cada ciclo mensal ou anual da sua subscrição, contado a partir do dia em que começa.",
       "paidAlways": "A taxa por lugar paga-se <b>quer o Software produza economia, quer não</b>.",
       "vat": "Os valores não incluem IVA. O pagamento pede o seu endereço de faturação e, opcionalmente, o seu número de IVA; ambos aparecem na fatura.",
@@ -1208,7 +1446,9 @@
       "identifier": "Como se forma o identificador de lugar, e tudo o resto que o Software envia à BiVelio, está na <privacy>página de privacidade</privacy>."
     },
     "commission": {
-      "title": "A comissão sobre a economia medida",
+      "title": "Modalidade anterior com comissão (fechada a novos clientes)",
+      "optional": "Esta modalidade <b>já não é oferecida a novos clientes</b>. Se a sua subscrição já a tem, mantém-na sem alterações e regem-na as condições abaixo: uma taxa por lugar mais baixa e uma comissão só sobre a poupança que pode conferir com a fatura do seu fornecedor. Pro e Equipa nunca a têm; o seu extrato mostra a comissão que se teria aplicado apenas como referência.",
+      "seat": "Quota por assento nesta modalidade: <b>{monthly}</b> por assento e mês, ou <b>{yearly}</b> por assento e ano, em {currency}.",
       "only": "Só se cobra comissão <b>sobre a economia medida</b>: a economia etiquetada {labels} nos seus registos de uso. A economia etiquetada {never} nunca tem comissão.",
       "measured": "Uma economia medida resulta do próprio contador de uso do seu provedor de LLM para esse pedido.",
       "reference": "Uma economia por referência, num pedido repetido que o Software serviu sem chamar o seu provedor, resulta do contador do seu provedor para o pedido idêntico anterior que foi de facto executado, segundo a regra indicada no seu extrato ({regla}).",
@@ -1225,8 +1465,7 @@
       "ceiling": "Nenhum escalão ultrapassa {max}, por isso, antes de arredondar a comissão ao cêntimo, <b>fica sempre com pelo menos {garantia}</b> da economia medida do período. A taxa por lugar é à parte.",
       "fx": "A economia medida é contada em dólares americanos e convertida à taxa de referência do Banco Central Europeu obtida no fecho do período; o seu extrato mostra a taxa aplicada.",
       "rounding": "A comissão é arredondada ao cêntimo mais próximo. Uma comissão inferior a {minimo} não é faturada nem transita para outro período.",
-      "zero": "Um período sem economia medida <b>não tem comissão</b>.",
-      "calculator": "Para ver o que isto significa para o seu tráfego, experimente a <calc>calculadora</calc> da página inicial."
+      "zero": "Um período sem economia medida <b>não tem comissão</b>."
     },
     "calibration": {
       "title": "Período de calibração",
@@ -1273,7 +1512,7 @@
         },
         "cost": {
           "title": "Custo",
-          "body": "Valores de custo calculados pelo Software a partir do seu catálogo de preços ou de um modelo de custos que forneça: custo de referência, custo real, o rácio de economia líquida, a base dos valores (measured, reference, estimated, shadow ou unmeasured) e o valor, ao preço de leitura de cache do provedor, dos tokens de entrada que o seu provedor declarou removidos do contexto."
+          "body": "Valores de custo calculados pelo Software a partir do seu catálogo de preços ou de um modelo de custos que forneça: custo de referência, custo real, o rácio de economia líquida, a base dos valores (measured, reference, estimated, shadow ou unmeasured) e o valor, ao preço de leitura de cache do provedor, dos tokens de entrada que o seu provedor declarou removidos do contexto. À parte, e nunca usados para calcular as tarifas: o desconto que a cache de prompts do teu fornecedor deu ao pedido e o prémio de escrita em cache que faturou."
         }
       }
     },

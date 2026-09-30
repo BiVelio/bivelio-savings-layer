@@ -4,8 +4,8 @@ import { describe, it, expect } from "vitest";
 /**
  * DOS OFERTAS Y UNA COMISIÓN SIN TRAMPA, EN LOS 12 IDIOMAS.
  *
- * 1. La portada separa el SDK (con su suelo publicado, que llega de
- *    `hero.proofs` y no de estos textos) y el gateway, que NO tiene cifra de
+ * 1. La portada separa el SDK (con su cifra medida, que llega de
+ *    lib/portada/banco-en-vivo.ts por parámetro y no de estos textos) y el gateway, que NO tiene cifra de
  *    ahorro publicada: ningún texto de su tarjeta ni de su sección puede llevar
  *    un porcentaje, y los espacios nuevos no llevan ni un dígito (todo número
  *    llega por parámetro).
@@ -42,70 +42,60 @@ const VIEJOS: Record<Exclude<Loc, "en" | "es">, Record<string, string>> = {
   ca: {
     "landing.explica.pasos.3.title": "Només hi guanyem si tu estalvies",
     "landing.pricing.title": "Una quota petita per seient. I comissió només sobre el que estalvies.",
-    "landing.calculadora.notaGarantia": "Només cobrem sobre estalvi mesurat — i sempre et quedes amb el {garantia} o més.",
     "dashboard.extracto.intro":
       "El document exacte que produirà la futura factura variable: només estalvi mesurat, amb la tarifa per trams — sense mínim, només es cobra si estalvies. Durant la calibració, el càrrec és sempre {cero}.",
   },
   de: {
     "landing.explica.pasos.3.title": "Wir verdienen nur, wenn du sparst",
     "landing.pricing.title": "Eine kleine Gebühr pro Sitz. Und Provision nur auf das, was du sparst.",
-    "landing.calculadora.notaGarantia": "Wir berechnen nur auf gemessene Ersparnis — und dir bleiben immer {garantia} oder mehr.",
     "dashboard.extracto.intro":
       "Das exakte Dokument, das die künftige variable Rechnung erzeugen wird: nur gemessene Ersparnis, mit Stufentarif — ohne Minimum, berechnet wird nur, wenn du sparst. Während der Kalibrierung ist der Betrag immer {cero}.",
   },
   fr: {
     "landing.explica.pasos.3.title": "Nous ne gagnons que si vous économisez",
     "landing.pricing.title": "Un petit forfait par siège. Et une commission uniquement sur ce que vous économisez.",
-    "landing.calculadora.notaGarantia": "Nous ne facturons que l'économie mesurée — et vous en gardez toujours {garantia} ou plus.",
     "dashboard.extracto.intro":
       "Le document exact que produira la future facture variable : uniquement l'économie mesurée, avec le tarif par tranches — sans minimum, vous ne payez que si vous économisez. Pendant le calibrage, le montant est toujours {cero}.",
   },
   id: {
     "landing.explica.pasos.3.title": "Kami hanya untung jika Anda hemat",
     "landing.pricing.title": "Biaya kecil per kursi. Dan komisi hanya atas yang Anda hemat.",
-    "landing.calculadora.notaGarantia": "Kami hanya menagih atas penghematan terukur — dan Anda selalu menyimpan {garantia} atau lebih.",
     "dashboard.extracto.intro":
       "Dokumen persis yang akan dihasilkan faktur variabel nanti: hanya penghematan terukur, dengan tarif berjenjang — tanpa minimum, hanya ditagih jika Anda berhemat. Selama kalibrasi, tagihan selalu {cero}.",
   },
   it: {
     "landing.explica.pasos.3.title": "Guadagniamo solo se tu risparmi",
     "landing.pricing.title": "Un piccolo canone per postazione. E commissione solo su ciò che risparmi.",
-    "landing.calculadora.notaGarantia": "Addebitiamo solo sul risparmio misurato — e te ne tieni sempre il {garantia} o più.",
     "dashboard.extracto.intro":
       "Il documento esatto che produrrà la futura fattura variabile: solo risparmio misurato, con la tariffa a scaglioni — senza minimo, si paga solo se risparmi. Durante la calibrazione, l'addebito è sempre {cero}.",
   },
   nl: {
     "landing.explica.pasos.3.title": "Wij verdienen alleen als jij bespaart",
     "landing.pricing.title": "Een kleine vergoeding per seat. En commissie alleen over wat je bespaart.",
-    "landing.calculadora.notaGarantia": "We rekenen alleen over gemeten besparing — en je houdt er altijd {garantia} of meer van.",
     "dashboard.extracto.intro":
       "Het exacte document dat de toekomstige variabele factuur zal produceren: alleen gemeten besparing, met het schijventarief — zonder minimum, je betaalt alleen als je bespaart. Tijdens de kalibratie is het bedrag altijd {cero}.",
   },
   pl: {
     "landing.explica.pasos.3.title": "Zarabiamy tylko wtedy, gdy Ty oszczędzasz",
     "landing.pricing.title": "Mała opłata za stanowisko. I prowizja tylko od tego, co zaoszczędzisz.",
-    "landing.calculadora.notaGarantia": "Pobieramy prowizję tylko od zmierzonych oszczędności — i zawsze zatrzymujesz {garantia} lub więcej.",
     "dashboard.extracto.intro":
       "Dokładnie ten dokument, który wygeneruje przyszła faktura zmienna: tylko zmierzone oszczędności, ze stawką progową — bez minimum, płacisz tylko wtedy, gdy oszczędzasz. Podczas kalibracji opłata wynosi zawsze {cero}.",
   },
   pt: {
     "landing.explica.pasos.3.title": "Só ganhamos se você poupar",
     "landing.pricing.title": "Uma taxa pequena por lugar. E comissão só sobre o que poupa.",
-    "landing.calculadora.notaGarantia": "Só cobramos sobre poupança medida — e ficas sempre com {garantia} ou mais.",
     "dashboard.extracto.intro":
       "O documento exato que a futura fatura variável produzirá: só economia medida, com a tarifa por faixas — sem mínimo, só se cobra se poupares. Durante a calibração, a cobrança é sempre {cero}.",
   },
   tr: {
     "landing.explica.pasos.3.title": "Yalnızca siz tasarruf ederseniz kazanırız",
     "landing.pricing.title": "Koltuk başına küçük bir ücret. Ve yalnızca tasarruf ettiğiniz üzerinden komisyon.",
-    "landing.calculadora.notaGarantia": "Yalnızca ölçülen tasarruf üzerinden ücret alırız — ve her zaman {garantia} veya fazlası sende kalır.",
     "dashboard.extracto.intro":
       "Gelecekteki değişken faturanın üreteceği belgenin ta kendisi: yalnızca ölçülmüş tasarruf, kademeli tarifeyle — asgari yok, yalnızca tasarruf edersen ücret alınır. Kalibrasyon sırasında tutar her zaman {cero} olur.",
   },
   vi: {
     "landing.explica.pasos.3.title": "Chúng tôi chỉ có lời khi bạn tiết kiệm",
     "landing.pricing.title": "Một khoản phí nhỏ cho mỗi chỗ ngồi. Và hoa hồng chỉ trên phần bạn tiết kiệm.",
-    "landing.calculadora.notaGarantia": "Chúng tôi chỉ tính phí trên khoản tiết kiệm đo được — và bạn luôn giữ lại {garantia} trở lên.",
     "dashboard.extracto.intro":
       "Chính xác tài liệu mà hóa đơn biến đổi trong tương lai sẽ tạo ra: chỉ khoản tiết kiệm đã đo, với biểu phí bậc thang — không có mức tối thiểu, chỉ tính phí khi bạn tiết kiệm. Trong thời gian hiệu chuẩn, khoản thu luôn là {cero}.",
   },
@@ -267,11 +257,14 @@ describe("la rebaja de TTL, fuera de la tarjeta: tampoco «mientras la sesión s
 describe("comisión por referencia: si se cobra, se dice", () => {
   const cobra = /export const COMISIONAR_REFERENCIA: boolean = true;/.test(TARIFA_WEB);
 
-  it("en/es: el precio y la nota del SDK nombran las peticiones repetidas mientras COMISIONAR_REFERENCIA esté encendido", () => {
+  // Desde el 2026-09-29 la portada ya no vende la modalidad con comisión
+  // (cerrada a clientes nuevos): `landing.pricing.body` no la describe, y la
+  // regla vive en la nota del SDK y en /pricing, que la conserva para quien la tiene.
+  it("en/es: la nota del SDK nombra las peticiones repetidas mientras COMISIONAR_REFERENCIA esté encendido", () => {
     if (!cobra) return;
     const en = cargar("en");
     const es = cargar("es");
-    for (const k of ["landing.pricing.body", "landing.offers.sdk.figureNote"]) {
+    for (const k of ["landing.offers.sdk.figureNote"]) {
       expect(en[k], k).toMatch(/repeated requests/);
       expect(en[k], k).toMatch(/identical request that already ran/);
       expect(es[k], k).toMatch(/peticiones repetidas/);
@@ -293,10 +286,10 @@ describe("comisión por referencia: si se cobra, se dice", () => {
     vi: "giống hệt",
   };
   for (const [loc, frase] of Object.entries(IDENTICA) as [Exclude<Loc, "en" | "es">, string][]) {
-    it(`${loc}: el precio y la nota del SDK también dicen con qué contador se valora una repetición`, () => {
+    it(`${loc}: la nota del SDK también dice con qué contador se valora una repetición`, () => {
       if (!cobra) return;
       const d = cargar(loc);
-      for (const k of ["landing.pricing.body", "landing.offers.sdk.figureNote"]) expect(d[k], `${loc} ${k}`).toContain(frase);
+      for (const k of ["landing.offers.sdk.figureNote"]) expect(d[k], `${loc} ${k}`).toContain(frase);
     });
   }
 });
@@ -320,6 +313,14 @@ describe("comisión sin trampa: la cuota por asiento se cobra siempre", () => {
   it("de: sin ahorro no hay PROVISIÓN (la «Gebühr» es la cuota, que sí se cobra)", () => {
     expect(cargar("de")["dashboard.extracto.sinAhorro"]).not.toContain("Gebühr");
     expect(cargar("de")["dashboard.extracto.sinAhorro"]).toContain("Provision");
+  });
+
+  it("⛔ en/es: la portada no vende la comisión (cerrada a clientes nuevos, 2026-09-29): Pro y Equipo, sin comisión", () => {
+    expect(en["landing.pricing.body"]).toMatch(/no commission/);
+    expect(es["landing.pricing.body"]).toMatch(/no llevan comisión/);
+    expect(en["landing.pricing.proNote"]).toBeUndefined();
+    expect(en["landing.pricing.body"]).not.toMatch(/No free tier/i);
+    expect(es["landing.pricing.body"]).not.toMatch(/Sin plan gratuito/i);
   });
 
   it("en/es: el precio dice que la cuota se cobra ahorres o no, y el paso 4 nombra el asiento", () => {
@@ -364,7 +365,8 @@ describe("repeticiones por referencia: plural ICU sin dígitos", () => {
 /**
  * LA ETIQUETA DE LA CIFRA DEL SDK NO DICE «MEDIDO».
  *
- * La cifra de la tarjeta es la fila de `hero.proofs`, y quien la gestiona es la
+ * La cifra de la tarjeta la ponen las filas de lo medido (lib/portada/
+ * banco-en-vivo.ts); antes era la fila de `hero.proofs`, gestionada por la
  * unidad del titular. #321 la baja a un titular PROVISIONAL, recalculado desde
  * los ensayos y no medido con el SDK tal como se instala desde npm. Una
  * etiqueta que dijera «suelo medido contra un proveedor real» seguiría ahí

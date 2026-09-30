@@ -19,7 +19,36 @@
 
 // El catálogo de precios de lista, exportado para que un cliente pueda
 // inspeccionarlo, extenderlo o comprobar qué modelos cubre.
-export { CATALOGO, precioDeLista, PRECIOS_AL_DIA } from "./pricing/catalogo.js";
+//
+// Camino a la 0.5 (docs/MIGRAR-A-0.5.md): los nombres ingleses son los que se
+// congelan; los españoles quedan como alias @deprecated hasta la 0.5. Se
+// declaran AQUÍ y no en pricing/catalogo.ts para que el `@deprecated` viaje en
+// el `.d.ts` sin tocar el fichero del catálogo (que cambia con cada precio).
+import {
+  CATALOGO as catalogoDePrecios,
+  precioDeLista as precioDeListaDelCatalogo,
+  PRECIOS_AL_DIA as preciosAlDia,
+} from "./pricing/catalogo.js";
+
+/**
+ * The list-price catalogue: model id (without vendor prefix) → USD per 1K
+ * tokens. `costModels` on the layer config always wins over it.
+ */
+export const PRICE_CATALOG: typeof catalogoDePrecios = catalogoDePrecios;
+/**
+ * The list price for a model on the day of the request, or `undefined` when the
+ * catalogue has no price for it in force that day.
+ */
+export const listPrice: typeof precioDeListaDelCatalogo = precioDeListaDelCatalogo;
+/** When the catalogue prices were last checked against the providers' public rates (YYYY-MM-DD). */
+export const PRICES_AS_OF: typeof preciosAlDia = preciosAlDia;
+
+/** @deprecated Spanish name, removed in 0.5. Use {@link PRICE_CATALOG}. */
+export const CATALOGO: typeof catalogoDePrecios = catalogoDePrecios;
+/** @deprecated Spanish name, removed in 0.5. Use {@link listPrice}. */
+export const precioDeLista: typeof precioDeListaDelCatalogo = precioDeListaDelCatalogo;
+/** @deprecated Spanish name, removed in 0.5. Use {@link PRICES_AS_OF}. */
+export const PRECIOS_AL_DIA: typeof preciosAlDia = preciosAlDia;
 
 // La versión vive en src/version.ts junto a las constantes INTERNAS del canal
 // de versión (cabecera y mínima de la palanca), que NO se reexportan: nada
@@ -66,3 +95,72 @@ export * from "./pipeline/index.js";
 // `bv-sala.js` (la web) se construye con este mismo fichero. El peer opcional
 // de package.json solo documenta el rango probado.
 export * from "./exporters/index.js";
+
+// Lo que la 0.5 quita de la raíz, reexportado con nombre y `@deprecated` para
+// que el `.d.ts` de la 0.4.34 lo tache (ver src/deprecaciones-0.5.ts). El export
+// con nombre gana al del `export *` de arriba: mismo valor, ahora marcado.
+export {
+  adaptiveK,
+  buildExactKey,
+  buildInflightKey,
+  canonicalize,
+  computeNextDelay,
+  cosine,
+  dedupe,
+  DEFAULT_MAX_STALENESS_SECONDS,
+  deriveSeatId,
+  deriveStatus,
+  detectCi,
+  EMBEDDED_PUBLIC_KEY,
+  evalArithmetic,
+  evaluatePolicy,
+  executeRetrievalPlan,
+  gateFromKey,
+  isKeyset,
+  isStrictCompatible,
+  keyTokensMatch,
+  licenseKeyShape,
+  liveGateFromKey,
+  modelFamilyOf,
+  multisetEqual,
+  negationCount,
+  normalizeLicenseKey,
+  normalizeText,
+  numericTokens,
+  projectContext,
+  randomId,
+  REFERENCE_MAX_AGE_MS,
+  REFERENCE_MESSAGE_ALLOWANCE,
+  REFERENCE_OUTPUT_SHARE,
+  resolveConstraintBackend,
+  resolveDependencies,
+  resolveLicense,
+  RevocationPoller,
+  RevocationSnapshot,
+  sameAnswer,
+  SavingsLedger,
+  sha256,
+  shouldCompress,
+  stableStringify,
+  TraceCollector,
+  uniformColumns,
+  UsageEmitter,
+  verifyCompactSignature,
+  verifyLicenseToken,
+  verifyRevocationList,
+  withProtectedSpans,
+  words,
+  type CanonicalRequest,
+  type CompactVerification,
+  type LicenseKeyShape,
+  type LicenseStatus,
+  type LicenseTokenPayload,
+  type ResolvedDeps,
+  type ResolvedGate,
+  type ResolvedLicense,
+  type RevocationListBody,
+  type RevocationListVerification,
+  type RevocationPollerOptions,
+  type RevocationPollEvent,
+  type UsageEmitterOptions,
+} from "./deprecaciones-0.5.js";

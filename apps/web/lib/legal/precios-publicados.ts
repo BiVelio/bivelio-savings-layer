@@ -10,15 +10,18 @@ import {
 } from "@/lib/billing/tarifa";
 import { formatearPrecio } from "@/lib/format/precio";
 import { ETIQUETAS_DE_BASIS } from "@/lib/metering/usage";
-import type { PreciosDelPlan } from "@/lib/stripe/pricing";
+import type { PreciosDelPlan, TarifasDeLosPlanes } from "@/lib/stripe/pricing";
 
 /**
  * LA «PUBLISHED PRICING» QUE CITA LA LICENSE §6, en puro.
  *
  * La página `/[locale]/pricing` no escribe ni una cifra: todo lo que enseña
  * sale de aquí, y aquí todo sale de las constantes que COBRAN —
- *   · la cuota por asiento: el Price de Stripe (`preciosDelPlan`, con su
- *     respaldo en `lib/stripe/pricing.ts`);
+ *   · la cuota de Pro y de Equipo: sus Prices de Stripe (`tarifasDeLosPlanes`,
+ *     con `PRECIOS_DE_LOS_PLANES` de `lib/billing/planes.ts` como respaldo);
+ *   · la cuota por asiento de la modalidad con comisión (cerrada a clientes
+ *     nuevos; la conserva quien la tiene): el Price de siempre
+ *     (`preciosDelPlan`, con su respaldo en `lib/stripe/pricing.ts`);
  *   · los tramos, la moneda de la comisión, la regla por referencia y los dos
  *     interruptores: `lib/billing/tarifa.ts`;
  *   · el mínimo facturable: `lib/billing/facturacion.ts`;
@@ -119,5 +122,44 @@ export function terminosDePrecio(locale: string, precios: PreciosDelPlan): Termi
     tipoMaximo: pct.format(Math.max(...TRAMOS.map((t) => t.tipo))),
     garantia: pct.format(GARANTIA_NETA_RATIO),
     minimoFacturable: centimos.format(MINIMO_FACTURABLE_EUR),
+  };
+}
+
+export interface TerminosDeLosPlanes {
+  pro: { mensual: string; anual: string };
+  equipo: {
+    mensual: string;
+    anual: string;
+    /** Asientos que cubre la cuota fija. */
+    incluidos: string;
+    /** Lo que sale cada asiento incluido, al mes (cuota fija / incluidos). */
+    porAsiento: string;
+    extraMensual: string;
+    extraAnual: string;
+  };
+  /** El código ISO de las cuotas («EUR»). */
+  moneda: string;
+}
+
+/** Las cifras de Pro y Equipo, formateadas: salen de sus Prices (o del respaldo de planes.ts, si faltan). */
+export function terminosDeLosPlanes(locale: string, t: TarifasDeLosPlanes): TerminosDeLosPlanes {
+  const entero = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 });
+  const f = (amount: number, currency: string) => formatearPrecio(locale, { amount, currency });
+  const em = t.equipo.monthly;
+  const ey = t.equipo.yearly;
+  return {
+    pro: {
+      mensual: f(t.pro.monthly.asientoCentimos, t.pro.monthly.currency),
+      anual: f(t.pro.yearly.asientoCentimos, t.pro.yearly.currency),
+    },
+    equipo: {
+      mensual: f(em.fijaCentimos, em.currency),
+      anual: f(ey.fijaCentimos, ey.currency),
+      incluidos: entero.format(em.asientosIncluidos),
+      porAsiento: f(em.asientosIncluidos > 0 ? Math.round(em.fijaCentimos / em.asientosIncluidos) : em.asientoCentimos, em.currency),
+      extraMensual: f(em.asientoCentimos, em.currency),
+      extraAnual: f(ey.asientoCentimos, ey.currency),
+    },
+    moneda: t.pro.monthly.currency.toUpperCase(),
   };
 }

@@ -185,6 +185,17 @@ export class SavingsLedger {
   /** Provider-initiated cache-write premium, priced in USD. Adds to baseline and `actual` alike. */
   providerCacheWritePremiumUsd = 0;
 
+  // EL CARRIL DEL AHORRO NATIVO (`report.nativeSavings`): el contador de caché de
+  // la llamada SERVIDA, tal cual lo dio el proveedor. No entra en `estimateCost`
+  // —ni en el baseline, ni en `actual`, ni en `netSavings`—: solo lo lee quien
+  // arma el bloque aparte. Una negativa no cobrada no apunta nada aquí.
+  /** Cache-write tokens of the served call, every TTL. Read only for `report.nativeSavings`. */
+  nativeCacheWriteInput = 0;
+  /** The one-hour part of `nativeCacheWriteInput`. */
+  nativeCacheWrite1hInput = 0;
+  /** Whether the layer placed the cache breakpoint on the served call; `null` when unknown. */
+  nativeCacheMarkedByLayer: boolean | null = null;
+
   // --- Regla de una sola regla (single ruler) -------------------------------
   // `baselineInput` se contaba con el estimador LOCAL y `actualInput` con el
   // contador del PROVEEDOR, y estimateCost dividía uno entre otro. Son dos reglas
@@ -390,6 +401,13 @@ export class SavingsLedger {
     this.providerCachedInput += Math.max(0, tokens);
   }
 
+  /** Record the served call's cache writes for `report.nativeSavings`. Never priced into `estimateCost`. */
+  nativeCacheWrite(tokens: number, tokens1h: number): void {
+    const t = Math.max(0, tokens);
+    this.nativeCacheWriteInput += t;
+    this.nativeCacheWrite1hInput += Math.min(t, Math.max(0, tokens1h));
+  }
+
   /** Record the premium for `tokens` of cache write the provider bills at `multiplier`x on its own. */
   providerCacheWritePremium(tokens: number, multiplier: number, price: CostModel): void {
     const t = Math.max(0, tokens);
@@ -470,6 +488,8 @@ export class SavingsLedger {
     baselineEstimate: number;
     actual: number;
     netSavings: number;
+    netSavingsRatio: number;
+    netSavingsUsd: number;
     basis: CostBasis;
   } {
     // Honesty rule (do not credit phantom output savings): a call that actually
@@ -652,10 +672,20 @@ export class SavingsLedger {
     const netSavings =
       baselineEstimate === 0 ? 0 : 1 - actual / baselineEstimate;
 
+    // `netSavings` es una RAZÓN y los arneses la sumaban como dólares: desde
+    // 0.4.33 van las dos cifras con nombre propio (decisión del dueño,
+    // 2026-09-29). `netSavingsRatio` es el MISMO valor que `netSavings`, y
+    // `netSavingsUsd` la resta de los dos importes YA redondeados, para que
+    // cuadre exactamente con `baselineEstimate − actual` del propio informe.
+    const baselinePublicado = roundUsd(baselineEstimate);
+    const actualPublicado = roundUsd(actual);
+    const razon = roundRatio(netSavings);
     return {
-      baselineEstimate: roundUsd(baselineEstimate),
-      actual: roundUsd(actual),
-      netSavings: roundRatio(netSavings),
+      baselineEstimate: baselinePublicado,
+      actual: actualPublicado,
+      netSavings: razon,
+      netSavingsRatio: razon,
+      netSavingsUsd: roundUsd(baselinePublicado - actualPublicado),
       basis,
     };
   }

@@ -46,6 +46,8 @@ interface FilaConFeatures {
   expires_at: string;
   grace_days: number;
   features: string[] | null;
+  /** `measure` = la licencia gratuita Medir: viva, sin features (no arma ninguna palanca). */
+  plan?: string | null;
 }
 
 /** ¿Esta fila concreta sigue viva (no revocada, dentro de validez + gracia)? Mismo criterio que hasValidLicense. */
@@ -82,7 +84,7 @@ export async function GET(req: Request): Promise<NextResponse> {
   const orgId = sa.org_id as string;
 
   const [{ data: licenses, error: licErr }, { data: subs, error: subErr }] = await Promise.all([
-    supabase.from("licenses").select("revoked, expires_at, grace_days, features").eq("org_id", orgId),
+    supabase.from("licenses").select("revoked, expires_at, grace_days, features, plan").eq("org_id", orgId),
     supabase.from("subscriptions").select("status, current_period_end").eq("org_id", orgId),
   ]);
   if (licErr || subErr) {

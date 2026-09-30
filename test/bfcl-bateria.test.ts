@@ -6,7 +6,7 @@
 import { describe, expect, it } from "vitest";
 
 import { comprobarEntrada, NumJ, normalizarCadena, parsearJson, salidaDeLlamadas, type ValorJ } from "../benchmarks/publicados/bfcl/ast.js";
-import { conArgumentoCambiado, familiaDe, muestraEstratificada, NOMBRE_POR_DEFECTO, TOPE_MAXIMO, violacionesDeCache, type VarianteMultiTurno } from "../benchmarks/publicados/bfcl/arnes.js";
+import { conArgumentoCambiado, familiaDe, HOSTS_OFICIALES, MODELOS_GAMA_ALTA, muestraEstratificada, NOMBRE_POR_DEFECTO, PRECIOS_CITADOS, proveedorDe, techoDe, TOPE_GAMA_ALTA, TOPE_MAXIMO, violacionesDeCache, type VarianteMultiTurno } from "../benchmarks/publicados/bfcl/arnes.js";
 import { cuerpoBrazoA, diferenciasDelCable, leerRespuesta, normalizarBase } from "../benchmarks/publicados/bfcl/brazos.js";
 import { costeDeUso, crearCable, Presupuesto, PresupuestoAgotado, Semaforo, sinSecretos, unidadEnCurso, usoDeRespuesta, type LlamadaDelCable } from "../benchmarks/publicados/bfcl/cable.js";
 import type { EntradaAst, FuncionBfcl } from "../benchmarks/publicados/bfcl/datos.js";
@@ -291,8 +291,60 @@ describe("BFCL · procedencia y tope de la tirada 0.4.31", () => {
   });
 
   it("el tope duro por modelo es 0,80 $ en OpenAI y 1,25 $ en Anthropic", () => {
-    expect(TOPE_MAXIMO).toEqual({ openai: 0.8, anthropic: 1.25 });
+    expect(TOPE_MAXIMO).toEqual({ openai: 0.8, anthropic: 1.25, google: 0.8 });
     expect(familiaDe("openai/gpt-4o-mini")).toBe("openai");
     expect(familiaDe("anthropic/claude-sonnet-5")).toBe("anthropic");
+  });
+});
+
+describe("BFCL · batería de gama alta (2026-09-29)", () => {
+  it("1,25 $ por modelo de gama alta, sea cual sea su familia; el resto conserva su techo", () => {
+    expect(TOPE_GAMA_ALTA).toBe(1.25);
+    for (const m of MODELOS_GAMA_ALTA) expect(techoDe(m)).toBe(1.25);
+    expect(techoDe("openai/gpt-4o-mini")).toBe(0.8);
+    expect(techoDe("anthropic/claude-haiku-4-5")).toBe(1.25);
+  });
+
+  it("Gemini: proveedor google, dialecto OpenAI, y solo su host oficial", () => {
+    expect(proveedorDe("google/gemini-3.8-flash")).toBe("google");
+    expect(familiaDe("google/gemini-3.8-flash")).toBe("openai");
+    expect(proveedorDe("openai/gpt-5.5")).toBe("openai");
+    expect(HOSTS_OFICIALES.google).toBe("generativelanguage.googleapis.com");
+  });
+
+  it("el precio citado de claude-sonnet-5-5 es el de la página oficial, con URL y fecha", () => {
+    const c = PRECIOS_CITADOS["claude-sonnet-5-5"]!;
+    expect(c.precio).toEqual({ inputPer1k: 0.002, outputPer1k: 0.01, cachedInputPer1k: 0.0002 });
+    expect(c.prima).toBe(1.25);
+    expect(c.fuente).toMatch(/platform\.claude\.com.*2026-09-29/);
+  });
+
+  it("el pensamiento que Gemini deja fuera de completion_tokens se cobra como salida", () => {
+    const u = usoDeRespuesta("openai", { usage: { prompt_tokens: 46, completion_tokens: 16, total_tokens: 105 } })!;
+    expect(u.salida).toBe(59);
+    expect(u.razonamiento).toBe(43);
+    const o = usoDeRespuesta("openai", { usage: { prompt_tokens: 46, completion_tokens: 16, total_tokens: 62 } })!;
+    expect(o.salida).toBe(16);
+  });
+
+  it("el extra_content de una llamada (thought_signature) se lee y el brazo A lo reenvía", () => {
+    const cruda = { choices: [{ message: { tool_calls: [{ id: "c1", type: "function", function: { name: "f", arguments: "{}" }, extra_content: { google: { thought_signature: "sig" } } }] } }] };
+    const l = leerRespuesta("openai", cruda).llamadas;
+    expect(l[0]!.extra).toEqual({ google: { thought_signature: "sig" } });
+    const cuerpo = cuerpoBrazoA("openai", "google/gemini-3.8-flash", [{ role: "user", content: "x" }, { role: "assistant", content: "", llamadas: l }], [], {});
+    const msgs = cuerpo["messages"] as Record<string, unknown>[];
+    expect((msgs[1]!["tool_calls"] as Record<string, unknown>[])[0]!["extra_content"]).toEqual({ google: { thought_signature: "sig" } });
+  });
+
+  it("intentarReservar espera mientras otras unidades retienen presupuesto y solo para cuando no cabe nunca", () => {
+    const p = new Presupuesto("m", 1);
+    expect(p.intentarReservar(0.6)).toBe("si");
+    expect(p.intentarReservar(0.6)).toBe("esperar");
+    p.liberar(0.6);
+    expect(p.intentarReservar(0.6)).toBe("si");
+    p.liberar(0.6);
+    p.cargar("A", 0.5);
+    expect(p.intentarReservar(0.6)).toBe("no");
+    expect(p.agotado).toBe(true);
   });
 });

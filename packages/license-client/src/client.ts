@@ -4,6 +4,7 @@ import type {
   LicensePayload,
   LicenseStatus,
 } from "@bivelio/protocol";
+import { isMeasurePlan } from "@bivelio/protocol";
 import { verifyLicenseToken } from "./token.js";
 
 /**
@@ -109,7 +110,9 @@ export class LicenseClient {
       orgId: p.org_id,
       plan: granted ? p.plan : "free",
       seats: granted ? p.seats : 0,
-      features: granted ? p.features : [],
+      // Una licencia Medir no concede NINGÚN feature, lleve lo que lleve el
+      // token: su razón de ser es medir en sombra sin aplicar palancas.
+      features: granted && !isMeasurePlan(p.plan) ? p.features : [],
       status,
       refreshAfter: Math.min(p.expires_at, now + 86400),
     };
@@ -142,6 +145,7 @@ export function createLicenseGate(client: LicenseClient): {
   isActive(): boolean;
   status(): LicenseStatus;
   entitlements(): Entitlements;
+  plan(): string | undefined;
 } {
   return {
     isEntitled: (feature: string) => client.isEntitled(feature as Feature),
@@ -150,5 +154,10 @@ export function createLicenseGate(client: LicenseClient): {
     isActive: () => client.status() === "active" || client.status() === "grace",
     status: () => client.status(),
     entitlements: () => client.entitlements(),
+    // El SDK fuerza el modo sombra cuando el plan es «measure» (Medir).
+    plan: () => {
+      const e = client.entitlements();
+      return e.status === "active" || e.status === "grace" ? e.plan : undefined;
+    },
   };
 }

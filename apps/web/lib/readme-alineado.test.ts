@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 import { GARANTIA_NETA_RATIO, TRAMOS } from "./billing/tarifa";
-import { PRECIO_RESPALDO } from "./stripe/pricing";
+import { PRECIOS_DE_LOS_PLANES } from "./billing/planes";
 
 /**
  * EL README ES LA PÁGINA DE NPM. Es lo primero que lee un cliente, y viaja
@@ -28,18 +28,31 @@ describe("el README que viaja a npm dice lo mismo que el código", () => {
     expect(readme).toContain(`from ${max} % down to ${min} %`);
   });
 
-  it("los precios del README son el respaldo de pricing.ts, en las dos menciones", () => {
-    const mes = PRECIO_RESPALDO.monthly.amount / 100;
-    const anio = PRECIO_RESPALDO.yearly.amount / 100;
-    expect(PRECIO_RESPALDO.monthly.currency).toBe("eur");
-    expect(readme.match(new RegExp(`€${mes} / seat / month`, "g"))).toHaveLength(2);
-    expect(readme.match(new RegExp(`€${anio} / seat /\\s+year`, "g"))).toHaveLength(2);
+  it("los precios del README son los de planes.ts (Pro y Equipo), en las dos menciones", () => {
+    const eur = (c: number) => (c / 100).toLocaleString("en-US");
+    const pro = PRECIOS_DE_LOS_PLANES.pro;
+    const eq = PRECIOS_DE_LOS_PLANES.equipo;
+    expect(pro.monthly.currency).toBe("eur");
+    expect(readme.match(new RegExp(`€${eur(pro.monthly.asientoCentimos)} / seat / month`, "g"))).toHaveLength(2);
+    expect(readme.match(new RegExp(`€${eur(pro.yearly.asientoCentimos)} / seat /\\s+year`, "g"))).toHaveLength(2);
+    expect(readme.match(new RegExp(`€${eur(eq.monthly.fijaCentimos)} / month\\s+with ${eq.monthly.asientosIncluidos} seats included`, "g"))).toHaveLength(2);
+    expect(readme).toContain(`€${eur(eq.monthly.asientoCentimos)} per extra seat`);
+    expect(readme).toContain(`€${eur(eq.yearly.fijaCentimos)} / year, €${eur(eq.yearly.asientoCentimos)} per extra seat`);
+    // La modalidad con comisión (4 €/39 €) está cerrada a clientes nuevos: el README no la anuncia con precio.
+    expect(readme).not.toMatch(/€4 \/ seat|€39 \/ seat/);
+    expect(readme).toMatch(/closed to new customers/);
   });
 
   it("el primer mes sin comisión y «solo lo medido» están en el README, como en la web", () => {
     expect(readme).toMatch(/first month carries no commission/i);
     expect(readme).toMatch(/never from estimates/i);
-    expect(readme).toMatch(/No free tier and no trial/);
+    expect(readme).toMatch(/No trial\./);
+    // La única licencia gratuita es Medir, y el README dice qué es y qué NO hace.
+    expect(readme).toMatch(/free\s+\*\*Measure\*\* license/);
+    expect(readme).toMatch(/\*\*shadow mode\*\*/);
+    expect(readme).toMatch(/nothing is served from any cache/);
+    expect(readme).toMatch(/never part of any commission/);
+    expect(readme).not.toMatch(/No free tier/);
   });
 
   it("⛔ ni el README ni las guías de terminales dicen que el gateway «no optimiza»: la palanca de tarifa va por defecto con PRO", () => {

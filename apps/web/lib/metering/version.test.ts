@@ -123,12 +123,40 @@ describe("admiteReferencia — la verja de la regla de la referencia", () => {
     expect(compararVersiones(VERSION_MINIMA_REFERENCIA, "0.4.30")).toBeGreaterThan(0);
   });
 
+  it("va por delante de la 0.4.31: la 0.4.31 repetía negativas que ni el API ni #384 señalaban", () => {
+    // El `content_filter: OTHER` de Gemini (#402), «I'm sorry, but … is
+    // illegal», «I can't determine / argue…», la redirección a ayuda profesional
+    // (#393, #401) y los temas sensibles (#393): salen en la 0.4.32. Bajar de
+    // aquí los reabre (decisión del dueño, 2026-09-29).
+    expect(compararVersiones(VERSION_MINIMA_REFERENCIA, "0.4.31")).toBeGreaterThan(0);
+  });
+
+  it("va por delante de la 0.4.32: la 0.4.32 repetía las negativas parciales y la carencia tras una disculpa", () => {
+    // «If you mean harming someone, I can't help locate targets» (empieza
+    // cumpliendo y se niega después) y «I'm sorry, but I don't have access to
+    // personal data…» (#422): salen en la 0.4.33. Bajar de aquí las reabre
+    // (decisión del dueño, 2026-09-29).
+    expect(compararVersiones(VERSION_MINIMA_REFERENCIA, "0.4.32")).toBeGreaterThan(0);
+  });
+
   it("sdk/ desde la mínima: sí; anteriores, preliminares de la mínima o sin versión: no", () => {
-    for (const si of ["sdk/0.4.31", "sdk/0.4.32", "sdk/0.5.0", "sdk/1.0.0", "sdk/0.4.32-rc.1"]) {
+    for (const si of ["sdk/0.4.33", "sdk/0.4.34", "sdk/0.5.0", "sdk/1.0.0", "sdk/0.4.34-rc.1"]) {
       expect(admiteReferencia(si), si).toBe(true);
     }
-    for (const no of [null, "sdk/0.4.23", "sdk/0.4.22", "sdk/0.4.31-rc.1", "0.4.31"]) {
+    for (const no of [null, "sdk/0.4.23", "sdk/0.4.22", "sdk/0.4.33-rc.1", "0.4.33"]) {
       expect(admiteReferencia(no), String(no)).toBe(false);
+    }
+  });
+
+  it("0.4.32 ya no: repetía las negativas parciales y la carencia tras una disculpa (#422, en la 0.4.33)", () => {
+    for (const no of ["sdk/0.4.32", "sdk/0.4.32-hotfix"]) {
+      expect(admiteReferencia(no), no).toBe(false);
+    }
+  });
+
+  it("0.4.31 ya no: repetía el `content_filter: OTHER` de Gemini, las negativas que #384 no veía y los temas sensibles (#393, #401, #402, en la 0.4.32)", () => {
+    for (const no of ["sdk/0.4.31", "sdk/0.4.31-hotfix"]) {
+      expect(admiteReferencia(no), no).toBe(false);
     }
   });
 
@@ -145,15 +173,15 @@ describe("admiteReferencia — la verja de la regla de la referencia", () => {
   });
 
   it("gateway/ nunca, sea cual sea la versión: la regla v2 vive en el pipeline del SDK y el gateway no pasa por él", () => {
-    for (const no of ["gateway/0.4.23", "gateway/0.4.24", "gateway/0.4.31", "gateway/0.4.31-dev", "gateway/0.5.0", "gateway/9.9.9"]) {
+    for (const no of ["gateway/0.4.23", "gateway/0.4.24", "gateway/0.4.33", "gateway/0.4.33-dev", "gateway/0.5.0", "gateway/9.9.9"]) {
       expect(admiteReferencia(no), no).toBe(false);
     }
   });
 
   it("encadenada con versionDeclarada: una cabecera rara es «sin versión» y tampoco admite", () => {
-    expect(admiteReferencia(versionDeclarada("sdk/0.4.31, sdk/0.4.31"))).toBe(false);
-    expect(admiteReferencia(versionDeclarada("cli/0.4.31"))).toBe(false);
-    expect(admiteReferencia(versionDeclarada(" sdk/0.4.31 "))).toBe(true);
-    expect(admiteReferencia(versionDeclarada(" sdk/0.4.30 "))).toBe(false);
+    expect(admiteReferencia(versionDeclarada("sdk/0.4.33, sdk/0.4.33"))).toBe(false);
+    expect(admiteReferencia(versionDeclarada("cli/0.4.33"))).toBe(false);
+    expect(admiteReferencia(versionDeclarada(" sdk/0.4.33 "))).toBe(true);
+    expect(admiteReferencia(versionDeclarada(" sdk/0.4.32 "))).toBe(false);
   });
 });

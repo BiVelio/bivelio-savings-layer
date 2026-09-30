@@ -103,7 +103,8 @@
       "signupDisabled": "Sign-up is closed for now. Write to support@bivelio.com.",
       "network": "No connection. Check your network and try again.",
       "missingFields": "Enter your email and password."
-    }
+    },
+    "signupMedir": "Or start free with Measure: no card, shadow mode, up to {seats} seats and {requests} requests a day. It needs @bivelio/savings-layer {version} or later."
   },
   "dashboard": {
     "overview": {
@@ -128,7 +129,9 @@
       "metaTitle": "Proof · BiVelio Savings Layer",
       "eyebrow": "Verify, don't trust · reference bench",
       "title": "Proof the optimizer works",
-      "intro": "Measured on both arms — the credibility engine behind your own numbers."
+      "intro": "Three things, kept apart: what the public bench measured live, with its interval; what you save, measured on your own traffic; and a synthetic run that shows how each lever works.",
+      "tuDinero": "What counts on your panel is your own money: every saving on your <overview>Overview</overview> is measured with your provider's counter, on your traffic, request by request. The figures above are the bench's, not a forecast of yours.",
+      "sinteticaTitulo": "Synthetic run · how each lever works"
     },
     "verify": {
       "metaTitle": "Verify · BiVelio Savings Layer",
@@ -244,7 +247,7 @@
       "elisionNota": "If you use the gateway, part of this figure is input your provider drops because of your own configuration: that part isn't ours to claim and never enters your commission.",
       "whatCompressedTokens": "input tokens re-encoded smaller",
       "whatProviderCachedTokens": "input tokens billed at the discounted prefix-cache price. Your client asks for it, not us: our lever only tunes how long it lasts",
-      "ghostAwaiting": "{ref} · awaiting first report",
+      "ghostAwaiting": "awaiting first report",
       "footnote": "Four ledgers, <b>never summed</b> — we can't double-count a dollar. Counts and cost only, never your prompts. The report is the meter."
     },
     "savingsTrendChart": {
@@ -414,7 +417,7 @@
       "personalNote": "Personal — no organization linked yet. One BiVelio account, shared across the suite.",
       "plan": "plan",
       "seatsCount": "{count, plural, one {# seat} other {# seats}}.",
-      "planBody": "BV-SALA is fail-closed — it only runs with an active PRO license. {monthly} per seat per month or {yearly} per seat per year. A seat is one active machine or service identity, not a person.",
+      "planBody": "BV-SALA is fail-closed — it only runs with an active license. Pro: {monthly} per seat per month or {yearly} per seat per year. Team: {teamMonthly} per month with {included} seats included. No commission on your savings. A seat is one active machine or service identity, not a person.",
       "managePlan": "Manage plan →",
       "subscribe": "Subscribe →",
       "checkoutMonthly": "Subscribe — {monthly}/seat/mo →",
@@ -430,7 +433,14 @@
       "errPagoEnCurso": "Your payment is still being processed: a bank debit can take a few days to clear. You'll get access as soon as it settles. Don't start a second subscription.",
       "errSuscripcionEnStripe": "Stripe already has a subscription for this account, but it isn't activated here yet. Don't buy again: write to support@bivelio.com and we'll activate it by hand.",
       "codigoAplicado": "The code {codigo} will be applied at checkout.",
-      "errCodigoInvalido": "That code does not exist or is no longer active. You can continue without it or write to support@bivelio.com."
+      "errCodigoInvalido": "That code does not exist or is no longer active. You can continue without it or write to support@bivelio.com.",
+      "planPickLabel": "Plan",
+      "planPro": "Pro",
+      "planTeam": "Team",
+      "teamHint": "Team includes {included} seats; each extra seat is {extra} per month. You can't buy fewer than {included}.",
+      "checkoutTeamMonthly": "Subscribe to Team — {monthly}/mo, {included} seats →",
+      "checkoutTeamYearly": "Subscribe to Team — {yearly}/yr, {included} seats →",
+      "errPlanCerrado": "That plan is no longer offered to new customers. Choose Pro or Team."
     },
     "referenceLedgerCards": {
       "proven": "proven",
@@ -456,7 +466,6 @@
     },
     "netSavingsCIBand": {
       "caption": "net savings, <b>95% CI lower bound</b>. Point estimate {point}, upper {upper} — we headline the floor{mockNote}.",
-      "captionSdkPendiente": "what the SDK holds as installed from npm. The published run carried a bench-only compressor the package does not ship, so its interval and point estimate are not shown as a promise until a run of the installed SDK replaces them.",
       "mockNote": " (reference workload, mock provider)"
     },
     "cacheBreakEven": {
@@ -470,7 +479,7 @@
     },
     "referenceModeBadge": {
       "liveDesc": "— measured against a real provider, quality-gated.",
-      "sdkPendiente": "This run carried a bench-only compressor that the npm package does not ship: its figures show the mechanism, not what the installed SDK saves.",
+      "sdkPendiente": "Synthetic run: scenarios written for the bench, plus a bench-only compressor the npm package does not ship. Its figures show how each lever works — they are not a promise of what you will save.",
       "mock": "<b>ESTIMATED · mock provider</b> — this proves the mechanism works, not your bill. A committed LIVE run replaces every number here."
     },
     "connectionStatePill": {
@@ -560,6 +569,18 @@
       "title": "Provider clearing caused by our dials",
       "detalle": "{requests} credited requests",
       "nota": "The count is the provider's (applied_edits). It is not a measured saving and never enters your commission; money will follow once the net per model is measured — clearing rewrites the prefix cache, and on some models the net is negative."
+    },
+    "ahorroNativo": {
+      "title": "Native savings unlocked",
+      "detalle": "{requests} requests with provider cache · reads {lectura} − write premium {prima}",
+      "nota": "This is your provider's own prefix-cache discount (Anthropic with cache_control, OpenAI automatic, Gemini implicit), net of the cache-write premium it bills, computed from its own counter at list price. You see it on your provider's invoice, not ours: it is kept apart from the credited savings and never enters your commission.",
+      "vacio": "No requests read or wrote your provider's prefix cache in this period yet.",
+      "proveedor": {
+        "anthropic": "Anthropic",
+        "openai": "OpenAI",
+        "google": "Gemini",
+        "other": "Other"
+      }
     },
     "ritmo": {
       "title": "Pace and projection",
@@ -716,16 +737,44 @@
         "libros": "The four ledgers",
         "trafico": "Traffic",
         "sesiones": "Sessions",
-        "maquinas": "Machines"
+        "maquinas": "Machines",
+        "nativo": "Native savings unlocked"
       }
     },
     "team": {
       "metaTitle": "Team · BiVelio Savings Layer"
+    },
+    "measurePlan": {
+      "title": "Or start free: the Measure license, no card",
+      "body": "Runs the layer in shadow mode for 1 organization and up to {seats} seats: every request goes to your provider unchanged and nothing is served from cache. Your dashboard shows what the levers would have saved; upgrade to turn them on.",
+      "claim": "Get my free Measure license",
+      "claiming": "Issuing…",
+      "keyLabel": "Your Measure license key (shadow mode: no levers applied)",
+      "keyHint": "Use it as BIVELIO_LICENSE_KEY, exactly like a paid key. When you upgrade, the layer picks up the paid license by itself and the levers turn on.",
+      "errEmailNotVerified": "Confirm your email address first, then try again.",
+      "errDisposableEmail": "Disposable email addresses can't claim the Measure license. Sign up with a permanent address (your work email, for example) and try again.",
+      "errOneOrgPerAccount": "This account already holds a Measure license for another organization: the free license covers one organization per account.",
+      "errAlreadyLicensed": "Your organization already has a paid license: use the key above.",
+      "errBlocked": "The Measure license is not available for this organization. Write to support@bivelio.com.",
+      "errRole": "Your role doesn't allow downloading the license. Ask an owner or admin.",
+      "errSignIn": "Sign in first.",
+      "errGeneric": "Could not issue the Measure license. Try again in a moment.",
+      "planLabel": "Measure (free)",
+      "pricingNote": "Measure: free, no card. The layer in shadow mode for 1 organization and up to {seats} seats, so you see what it would save before you pay.",
+      "card": {
+        "eyebrow": "Measure license · shadow mode",
+        "title": "What you would have saved",
+        "amount": "{amount} you would not have spent",
+        "context": "Out of {spend} measured spend over {requests} requests. An estimate from the shadow lane, valued with your provider's own counter: in the SDK, repeated and duplicate in-flight calls; in the gateway, also the sibling model and the cache TTL reduction. Nothing was applied and nothing is billed.",
+        "empty": "No would-have-saved estimate yet: it appears as soon as your layer sees a repeated request or, in the gateway, one where the sibling model or the cache TTL reduction would have saved. The Measure license never changes what you send.",
+        "limits": "Free for 1 organization, up to {seats} seats and {requests} requests a day.",
+        "cta": "Turn the levers on: see plans"
+      }
     }
   },
   "landing": {
     "metaTitle": "BiVelio — Verify Your LLM Savings",
-    "metaDescription": "An SDK that has your app pay the LLM provider only for what it needs, and a gateway that meters your coding agent. Counted with your provider's own meter: a seat fee, plus commission only on measured savings.",
+    "metaDescription": "An SDK that has your app pay the LLM provider only for what it needs, and a gateway that meters your coding agent. Counted with your provider's own meter: measure free, then pay per seat — no commission on your savings.",
     "hero": {
       "eyebrow": "For teams that pay for LLM APIs by the token",
       "title": "Your LLM bill, under control.",
@@ -735,46 +784,13 @@
       "ctaPricing": "See pricing",
       "note": "Installs in minutes. Your messages never pass through our servers.",
       "proofTitle": "Measured against a real provider",
-      "proofs": [
-        {
-          "marca": "OpenAI",
-          "modelo": "gpt-4o-mini",
-          "cifra": "≥ 10.0%",
-          "que": "less bill, verified at 95% · against an unoptimized integration, no streaming"
-        }
-      ],
-      "proofSdkPendiente": "Provisional: the published run carried a bench-only compressor that the npm package does not ship. This figure fits under that run's floor once the compressor's effect is taken out, recalculated from the measured trials — it is not yet a measurement of the installed SDK. That run is pending.",
       "medidoEn": "Measured on",
       "compatibleCon": "Compatible with",
-      "compatibleNota": "Any endpoint compatible with the OpenAI API, plus the native Anthropic adapter. With a published figure, today, only OpenAI {modelo}."
+      "compatibleNota": "Compatible is not measured. The SDK works with any endpoint compatible with the OpenAI API, plus the native Anthropic adapter and the native Gemini adapter (new in {gemini}). Measured — with a savings figure on the public bench — today only OpenAI and Anthropic models; Gemini has no measured saving yet."
     },
     "cascade": {
       "title": "Cheapest execution wins",
-      "per": "measured on gpt-4o-mini · 95% floor",
-      "steps": [
-        {
-          "n": "01",
-          "title": "Avoid the call entirely",
-          "sub": "resolvers · singleflight",
-          "ledger": "avoided_calls",
-          "grey": false
-        },
-        {
-          "n": "02",
-          "title": "Remove what never needed sending",
-          "sub": "pruned tools · retrieval · redundant context",
-          "ledger": "eliminated_tokens",
-          "grey": false
-        },
-        {
-          "n": "03",
-          "title": "Compress what remains",
-          "sub": "leaner encoding · only when it pays off",
-          "ledger": "compressed_tokens",
-          "grey": false
-        }
-      ],
-      "footnote": "Each step falls into ONE different ledger, so these figures do not add up to each other. A step whose ledger does not clear zero does not appear here: output restriction was measured and does not save, so it is not advertised. Every figure in this run is from gpt-4o-mini: the same lever can cost money on another model, and that is published too."
+      "footnote": "Each lever falls into its own ledger, and the ledgers are never added up. In this battery the saving came from repeated requests the SDK served without calling the provider and, on Claude, from the provider's own prefix cache. The npm package ships no compressor, so nothing was saved by compression — and on traffic without repeats, the saving was indistinguishable from zero."
     },
     "explica": {
       "eyebrow": "In plain words",
@@ -794,8 +810,8 @@
           "body": "We don't ask for faith. Every saving is measured with the provider's official meter — the same one they bill you with — and lands on your receipt. Anything that can't be checked against the bill is never announced."
         },
         {
-          "title": "A seat fee, and a share of what's measured",
-          "body": "You pay a fixed fee per seat every month, whether or not you save. On top of it, our commission comes only out of savings measured with your provider's meter — and most of every saving always stays with you. A month with no measured savings? You pay the seats and zero commission."
+          "title": "Measure free, then pay per seat",
+          "body": "Start with the free Measure license: the layer runs in shadow mode and shows what it would have saved on your own traffic. To turn the levers on, you pay a fixed fee per seat, or a Team plan, whether or not you save — and no commission on your savings."
         }
       ],
       "nota": "The animations illustrate the idea. The real numbers — measured against live providers — are right below."
@@ -806,21 +822,15 @@
       "body": "Every scenario runs twice against the real provider: as-is, and with Savings in front. Both results are counted with the provider's own meter — the same one that prices your bill. Here is what came out, error margin included:",
       "videoCaption": "The test is a fair experiment: the same task twice — without Savings and with Savings — with the provider's own meter counting both.",
       "plainTitle": "Translation, no jargon",
-      "plain": "In this test, the bill went down by at least {piso}, with near certainty. Most likely it went down by {punto}.",
-      "plainSdkPendiente": "With the SDK as you install it from npm, the bill goes down by at least {piso}. The published test also carried a bench-only compressor that the package does not ship; we take its effect out instead of counting it, until a run of the installed SDK replaces this figure.",
-      "plainNote": "When there's a range, we always announce the small number — the one statistics guarantees — never the flattering one.",
-      "trialsLink": "Download the raw trials (CSV)"
+      "plain": "On a stream where {rep} of requests repeat exactly, the bill went down by {punto} — between {bajo} and {alto} with 95% confidence. On traffic that doesn't repeat, it went down by ≈ {cero}. What you save depends on how much yours repeats.",
+      "plainNote": "A percentage means nothing without its interval, its model and its traffic: we publish all three — and the batteries where nothing was saved, too.",
+      "benchLink": "Every battery, with its full report, on the public bench →"
     },
     "ledgersHead": {
       "eyebrow": "Honest accounting",
       "title": "Every kind of saving, counted separately — so no number gets inflated.",
-      "body": "Savings saves in several ways: it avoids whole calls, removes text you didn't need, packs what's sent more tightly, and switches on the provider's discounts. Each way keeps its own ledger with its own measured figure — and we never add them up into one marketing number.",
-      "runToMeasure": "run the optimizer to measure",
-      "measuredFloor": "measured · 95% floor",
-      "notProven": "measured · does not clear zero",
-      "providerTag": "OpenAI",
-      "providerModel": "gpt-4o-mini",
-      "providerNote": "Each ledger is measured and published on its own against the OpenAI API; the ones that do not clear zero do not appear. A percentage without its model next to it means nothing: the same lever can save on one model and cost on another."
+      "body": "Every SavingsReport splits the saving into four ledgers — calls avoided, text removed, text compressed, and your provider's own cache discount — and never adds them up into one marketing number.",
+      "providerNote": "On the public bench ({fecha}), what the installed SDK saved came from the first ledger — repeated requests served without calling the provider — and, on Claude, from the fourth, which is your provider's own discount. The npm package ships no compressor, so the third was zero there. A ledger with no published figure is described here, not advertised."
     },
     "ledgers": [
       {
@@ -853,9 +863,8 @@
       "mEscritura": "cache writes (one hour)",
       "mEscrituraDesc": "Every tool result is cache-written at a premium before being re-read.",
       "mSalida": "model output",
-      "mSalidaDesc": "Under one percent of the tokens; the skill attacks it directly.",
-      "medidaPie": "of measured spend",
-      "anatomiaNota": "Measured with the meter over {peticiones} real Claude Code requests, against the provider's own counters ({fecha}). The skill's own effect will be published once A/B-measured — never before.",
+      "mSalidaDesc": "A small share of the tokens, at the highest price per token; the skill attacks it directly.",
+      "anatomiaNota": "Where a Claude Code session's spend goes, in this order: cache reads, one-hour cache writes and model output — measured with our meter on our own traffic, against the provider's counters. That report is not published, so we don't show its figures. The skill's own effect will be published once A/B-measured — never before.",
       "ccNota": "One command: installs into ~/.claude/skills and activates by itself when the conversation turns to limits or saving tokens.",
       "cxNota": "Codex has no skills: the same discipline ships as a marked block in your AGENTS.md (~/.codex) — always on; delete the block to turn it off. Your AGENTS.md outside the marks is never touched. Works with ChatGPT accounts and API keys, and under bvsala codex (with a license) its effect is measured.",
       "aiDescargar": "Download savings-mode.zip",
@@ -887,12 +896,36 @@
       "initNote": "<b>Or let one command tailor it to your stack.</b> <code>init</code> reads your <code>package.json</code> (Next.js, Express, the Vercel AI SDK, Mastra, LangChain.js, the Anthropic or the OpenAI SDK) and prints the install line, the exact code for your adapter and a check that spends no tokens: once your license is in place, the layer answers it on your machine, without calling the model. It writes nothing unless you ask it to."
     },
     "pricing": {
-      "eyebrow": "One plan, priced per seat",
-      "title": "A seat fee, always. Commission only on measured savings.",
-      "body": "No free tier, no trial: before paying you can check the public measurements and run the verifier on your own data, right on this page. The seat fee is billed every month, in {currency}, whether or not you save. The commission is on top, and only on savings measured with your provider's meter — including repeated requests served without calling your provider, each valued with the counter of the identical request that already ran. Estimates never enter it.",
+      "eyebrow": "Plans",
+      "title": "Measure for free. Pay per seat when you want the savings.",
+      "body": "Start with Measure: free and without a card. The layer runs in shadow mode on your own traffic and your dashboard shows what it would have saved, valued with your provider's counter. Pro and Team are billed per seat, in {currency}, whether or not you save, and carry no commission on your savings.",
       "amount": "{amount}",
       "per": "/ seat / month",
-      "proNote": "<b>PRO</b> — billed per seat. Or <b>{yearly} / seat / year</b> (save ~19%). Enterprise, with packaged features, comes later.",
+      "plans": {
+        "medir": {
+          "name": "Measure",
+          "price": "Free",
+          "body": "No card. The layer in shadow mode for one organization, up to {seats} seats and {requests} requests a day: nothing you send changes, nothing is served from cache, it is never part of any commission — and you see what it would have saved. Needs @bivelio/savings-layer {version} or later.",
+          "cta": "Start free →"
+        },
+        "pro": {
+          "name": "Pro",
+          "note": "Or <b>{yearly} / seat / year</b>. Every optimization, the per-request receipt and the dashboard. No commission.",
+          "cta": "Choose Pro →"
+        },
+        "team": {
+          "name": "Team",
+          "per": "/ month",
+          "note": "<b>{included} seats included</b>; each extra seat {extra} / month. Or <b>{yearly} / year</b>. No commission.",
+          "cta": "Choose Team →"
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "price": "Custom",
+          "body": "More seats than online checkout allows, your own contract or negotiated invoicing: <contact>write to us</contact>."
+        }
+      },
+      "legacy": "Already on the earlier plan with a commission on measured savings? You keep it unchanged; its terms are on the <terms>pricing terms</terms> page.",
       "seatNote": "A seat is one <b>machine or service identity</b>, not a person. You pay for the seats your subscription covers; your dashboard shows how many were in use this month (active on at least {dias} days; CI and ephemeral runners don't count).",
       "features": [
         "Every BV‑SALA optimization, uncapped",
@@ -924,7 +957,7 @@
     },
     "footer": {
       "ctaTitle": "Measure it on your own traffic",
-      "ctaSub": "Once installed, every call returns its SavingsReport, measured and estimated kept apart. The seat fee is monthly and fixed; the commission comes only from what is measured. The license is what lets you run BV‑SALA — the SDK in your app, the gateway in your terminal.",
+      "ctaSub": "Once installed, every call returns its SavingsReport, measured and estimated kept apart. Start free with Measure (@bivelio/savings-layer {version} or later); Pro and Team are a fixed fee per seat, with no commission on your savings. The license is what lets you run BV‑SALA — the SDK in your app, the gateway in your terminal.",
       "ctaStart": "Get started",
       "tagline": "The operating system for your business. This is <b>BV-SALA</b>, BiVelio's provider-neutral LLM cost optimizer — every published figure measured against the provider's own counter; estimates are shown apart and never billed.",
       "badge": "BV‑SALA · Savings Layer",
@@ -932,6 +965,7 @@
       "colBivelio": "BiVelio",
       "colLegal": "Legal",
       "measured": "Measured results",
+      "benchmarks": "Public bench",
       "pricing": "Pricing",
       "home": "Home",
       "docs": "Documentation",
@@ -965,59 +999,12 @@
       "errorEnvio": "We couldn't send it.",
       "alterna": "Email us"
     },
-    "calculadora": {
-      "title": "And how much would you pay us?",
-      "sub": "Play with your numbers: pick provider and model, and see your savings, our extra and what you keep — with the real catalog prices and the real rate.",
-      "proveedor": "Provider",
-      "modelo": "Model",
-      "reqs": "Requests / month",
-      "inTok": "Avg. input tokens",
-      "outTok": "Avg. output tokens",
-      "fx": "Exchange rate ({par})",
-      "factura": "Your estimated unoptimized bill: {usd} per month ({eur}).",
-      "colAhorro": "If you save",
-      "colTuAhorro": "Your savings",
-      "colExtra": "Our extra",
-      "colTeQuedas": "You keep",
-      "extraCero": "nothing",
-      "notaGarantia": "Commission only on measured savings — and you always keep {garantia} or more of them. Seats are billed apart, every month.",
-      "notaTramos": "Tiered, each bracket at its own rate: {tramos}. The more you save, the lower our percentage.",
-      "notaPrimerMesLead": "Your first calendar month with usage: seat only.",
-      "notaPrimerMes": "It is your calibration period, however little of that month remains: we measure everything, and you'll see the exact statement of what it would have cost — without being charged.",
-      "version": "SDK catalog prices, version {fecha}. An estimate: your statement will use your measured usage.",
-      "cargando": "Loading the price catalog…",
-      "badge": "Estimate",
-      "asientos": "Seats ({precio} each)",
-      "resumenTotal": "The full truth, at the {pct} scenario: our total would be {total} (seats: {asientosCoste} + the commission above) and you would keep {neto} — {pctNeto} of your bill.",
-      "precios": "Exact price of {modelo}: input {inM} · output {outM} · cached input {cacheM}, per million tokens.",
-      "fuente": "Source: <a>{proveedor}'s official pricing page</a>, verified in our catalog on {fecha} (and watched automatically every week)."
-    },
-    "formula": {
-      "title": "How what you pay us is calculated",
-      "mes1": "<b>Your first calendar month with usage (UTC): the seat fee only.</b> We measure everything and charge no commission, however little of that month remains — at close you'll see the exact statement of what it would have cost.",
-      "medido": "After that, commission only on <b>measured savings</b>: the kind you can reconcile against your provider's invoice. Estimated savings are never billed.",
-      "garantia": "And <b>you always keep {garantia} or more</b> of every euro saved: the commission only exists when your measured savings exist.",
-      "tramos": "<b>Tiered, each bracket at its own rate</b> — {tramos}. The more you save, the lower our percentage.",
-      "permanencia": "A month with no savings? Commission: {cero}. <b>No lock-in</b> — and your first variable invoice only contains numbers you already saw on your statement."
-    },
     "trabajos": {
       "pajaTitle": "If the shipment carries padding…",
       "pajaBody": "…the gate removes it before you pay: the parcel reaches the cloud much smaller and the difference drops into your jar.",
       "magroTitle": "If it's already lean…",
       "magroBody": "…it passes untouched. There's nothing to remove there — and we don't promise savings where there are none.",
-      "caption": "Not every shipment carries the same padding: in this run, the measured trim per scenario ranged from {min} to {max}. The ones that don't save get published too."
-    },
-    "recibo": {
-      "title": "SDK · SavingsReport · published run",
-      "modelo": "model",
-      "parejas": "measured pairs",
-      "calidad": "quality",
-      "punto": "point estimate",
-      "suelo": "The headline is the floor of the 95% interval, never the point.",
-      "sdkPendiente": "This run carried a bench-only compressor that the npm package does not ship, so its own floor is not shown. The figure above is our headline for the SDK as you install it: it still fits once that compressor's effect is taken out. A run of the installed SDK is pending.",
-      "libros": "per ledger",
-      "pie": "Each ledger is published with its own interval; those that do not clear zero are not advertised.",
-      "fecha": "run"
+      "caption": "Not every request carries something to save: on the public bench, traffic without repeats saved ≈ {cero}. We publish that too."
     },
     "devs": {
       "eyebrow": "Built for developers",
@@ -1041,7 +1028,7 @@
         },
         {
           "title": "Streaming, same report",
-          "body": "generateStream() hands you the answer as the provider writes it and closes with the same SavingsReport as generate(), under the same basis rules: the provider's final counter is read at the end of the stream, and a stream without it is reported as unmeasured and never enters your commission. With an output contract, the answer arrives validated, in one piece.",
+          "body": "generateStream() hands you the answer as the provider writes it and closes with the same SavingsReport as generate(), under the same basis rules: the provider's final counter is read at the end of the stream, and a stream without it is reported as unmeasured and never counts as measured savings. With an output contract, the answer arrives validated, in one piece.",
           "mono": "layer.generateStream(request)"
         }
       ]
@@ -1058,7 +1045,7 @@
         "who": "For Node.js apps, in JavaScript or TypeScript, that call an LLM API with your own key and pay for every token.",
         "what": "It wraps the call inside your code, sends the provider only what has to be paid for, and returns a SavingsReport with every response.",
         "figureLabel": "The figure we publish",
-        "figureNote": "A floor, not a forecast: what you save depends on your traffic. Only savings measured with your provider's counter enter the commission — including repeated requests served without calling your provider, each valued with the counter of the identical request that already ran.",
+        "figureNote": "Not a forecast: what you save depends on how much your traffic repeats. Only what your provider's counter confirms counts in your savings report — including repeated requests served without calling your provider, each valued with the counter of the identical request that already ran.",
         "ctaMeasured": "How we measured it",
         "ctaVerify": "Try one lever on your data"
       },
@@ -1068,7 +1055,7 @@
         "who": "For developers who run Claude Code, Codex CLI or another coding agent on an API key.",
         "what": "One command puts a local meter in front of your terminal, with no code to change. It counts each request your provider reports usage for, with the provider's own counter — for models in our price catalog — and adds it up in your dashboard, by day and by model.",
         "figureLabel": "No savings figure published",
-        "figureNote": "We have not published a measured saving for coding agents, so we don't advertise one. With PRO, on Anthropic models, it moves cache writes from the one-hour TTL to the five-minute one, only on turns where a large part of the prompt is new — such as a session's first turn or a compaction — and leaves the chained turns of a running session as they are. That changes the price, never what the model reads, and only what your provider's counter confirms enters the commission.",
+        "figureNote": "We have not published a measured saving for coding agents, so we don't advertise one. With PRO, on Anthropic models, it moves cache writes from the one-hour TTL to the five-minute one, only on turns where a large part of the prompt is new — such as a session's first turn or a compaction — and leaves the chained turns of a running session as they are. That changes the price, never what the model reads, and only what your provider's counter confirms counts in your savings report.",
         "cta": "Set up the gateway"
       },
       "skill": {
@@ -1101,6 +1088,13 @@
       "approxNote": "The exact tokenizer did not load, so any count here would be approximate — and we don't show approximate savings. Reload the page to try again.",
       "scope": "What this is, and what it isn't: one lever — how structured data is written into the prompt — on the input tokens of this data. It applies only to data you pass to the SDK as structuredData, not to JSON already written inside your messages. It is not your bill: calls avoided, your provider's cache and the output are not in it, and many requests carry no structured data at all. For the whole SDK, the figure we publish is the one in the measurement section, with its note.",
       "ctaInstall": "Install the SDK"
+    },
+    "enVivo": {
+      "titulo": "Public bench · live against the provider · {fecha}",
+      "conRepeticiones": "less bill (95% interval: {bajo} to {alto}) on a stream where {rep} of requests are exact repeats — {bateria}, SDK {version}",
+      "sinRepeticiones": "on traffic without repeats (MT-Bench, BFCL): indistinguishable from zero",
+      "anthropic": "same stream (95% interval: {bajo} to {alto}). About {prefijo} of the original bill is Anthropic's own prefix-cache discount — the provider's, not ours, and shown apart",
+      "pie": "It depends on how much your traffic repeats. Every battery, with its full report: <bench>public bench</bench>."
     }
   },
   "invitacion": {
@@ -1135,6 +1129,226 @@
     "sesionActual": "You're currently signed in as <b>{email}</b>.",
     "cerrarYContinuar": "Sign out and use another account",
     "cerrando": "Signing out…"
+  },
+  "benchmarksPage": {
+    "metaTitle": "Public A/B bench: measure us | BiVelio Savings Layer",
+    "metaDescription": "Four public batteries (GSM8K, BFCL, XSTest and MT-Bench), two arms metered by the provider's own usage counter, every figure with its n, its interval and its date. What it saves, what it doesn't, and the bugs the bench found.",
+    "eyebrow": "Public bench · reproducible",
+    "title": "Our A/B bench, in the open. Measure us.",
+    "lede": "We publish every run: four batteries on public datasets, {modelos} models, and both arms metered by the provider's own usage counter. Every figure carries its n, its interval and its date. What doesn't save is here too.",
+    "stats": {
+      "batteries": "batteries",
+      "models": "models tried",
+      "measured": "models with a measurement",
+      "reports": "live reports",
+      "last": "latest run"
+    },
+    "method": {
+      "title": "What is measured, and how",
+      "arms": "<b>Two arms, the same request.</b> A goes straight to the provider, without the layer; B goes through the layer with its default configuration. Same prompt, same sampling, same output cap.",
+      "cost": "<b>The provider counts the cost.</b> Each arm is priced from the <code>usage</code> the API returns on every call, at list price. Savings are 1 − cost(B) / cost(A) of the same run, not what the layer says about itself.",
+      "intervals": "<b>{nivel} intervals.</b> Each harness computes them (resampling whole question families, Wilson for refusal rates). An interval that crosses zero means “indistinguishable from zero”, and we say so.",
+      "package": "<b>The package you install.</b> The A/B runs in the tables below were made on {version}: arm B runs the source of that tag, and its <code>dist/index.js</code> is byte-identical to the npm tarball's (sha256 <code>{sha}</code>). The weekly live bench is different: on every run it measures the source of main as it stands that day, before it is released.",
+      "guard": "<b>No shortcuts.</b> Each harness watches the hosts it talks to and carries a per-model spend cap written in code. A model that could not be measured is reported as “not measured”, with the reason.",
+      "batteriesTitle": "Four batteries, public datasets, pinned",
+      "commitOnly": "pinned by commit"
+    },
+    "weekly": {
+      "title": "Weekly live bench",
+      "intro": "Every week, and whenever we launch it by hand, one run takes every battery against every model: arm A straight to the provider, arm B through the layer built from the source of main at that moment. It is not a released version: it is what is about to be released. The run fails if any rule breaks, and a cell that could not be measured says why.",
+      "meta": "Run of {fecha} · source of main at commit {commit} (package version {version}) · spent {gasto} of a {tope} cap · {medidas} of {celdas} cells measured.",
+      "verdictOk": "Verdict: no regressions.",
+      "verdictFailed": "Verdict: the run failed (rules broken: {n}).",
+      "status": {
+        "measured": "measured",
+        "cut": "measured (stopped at its spend cap)",
+        "notMeasurable": "not measurable: {motivo}",
+        "unsupported": "no support: {motivo}",
+        "harnessFailed": "the harness failed: {motivo}"
+      },
+      "reason": {
+        "sin-clave": "no key for this provider in the bench's environment",
+        "proveedor": "no valid response from the provider in arm A",
+        "tope-global": "the run's overall spend cap was reached",
+        "arnes-proveedor": "this battery's harness only talks to Anthropic and OpenAI",
+        "arnes-modelo": "this battery's harness has no entry for this model",
+        "arnes": "error or timeout in the harness",
+        "otro": "not enough data"
+      },
+      "counts": {
+        "otherQuestion": "another question's answer: {n}",
+        "changedCalls": "tool calls changed: {n}",
+        "refusals": "refusals cached: {cacheadas} · credited: {acreditadas}"
+      },
+      "diff": {
+        "accuracy": "accuracy {d} pp [{inf}, {sup}]",
+        "accuracyNoCi": "accuracy {d} pp",
+        "win": "B preferred {w} [{inf} – {sup}]",
+        "winNoCi": "B preferred {w}",
+        "safe": "safe {d} pp (p = {p})",
+        "unsafe": "unsafe {d} pp (p = {p})"
+      },
+      "note": "“Layer failures” are errors in arm B that arm A did not have. “B − A” is the accuracy difference in GSM8K and BFCL, the refusal-rate difference in XSTest (McNemar's p, paired prompts) and, in MT-Bench, how often the judge prefers B (one half is a tie). “Report vs invoice” is how far the cost the layer reports for arm B strays from what the provider bills.",
+      "earlierTitle": "Earlier weekly runs",
+      "earlierOk": "{fecha} · commit {commit} · no regressions.",
+      "earlierFailed": "{fecha} · commit {commit} · failed (rules broken: {n})."
+    },
+    "batteries": {
+      "gsm8k": "Math word problems with repeats and paraphrases: how much the cache saves and whether accuracy drops.",
+      "bfcl": "Tool calls: the layer must not change a single one, and the whole catalog must arrive.",
+      "xstest": "Refusals: the layer must not change when the model refuses, nor serve a refusal from cache.",
+      "mt-bench": "Two-turn chat without repeats: the layer must not make cost, latency or quality worse."
+    },
+    "th": {
+      "battery": "Battery",
+      "what": "What it checks",
+      "dataset": "Dataset",
+      "pinned": "Pinned files",
+      "license": "License",
+      "model": "Model",
+      "n": "n",
+      "savings": "Measured savings [CI]",
+      "fromExact": "From the exact cache",
+      "fromCalls": "In the calls (prefix)",
+      "accuracy": "Accuracy A → B",
+      "run": "Version · date",
+      "prompts": "Prompts",
+      "safe": "Refusals, safe prompts (A → B)",
+      "unsafe": "Refusals, unsafe prompts (A → B)",
+      "verdict": "Reading",
+      "reports": "Reports",
+      "status": "Status",
+      "spend": "Spend / cap",
+      "layerFails": "Layer failures",
+      "counts": "What it counts",
+      "diff": "B − A",
+      "reportVsInvoice": "Report vs invoice"
+    },
+    "savings": {
+      "title": "Measured savings per model",
+      "intro": "GSM8K, on a request stream where {rep} are exact repeats and {par} paraphrases. It is the battery with repeated traffic: your savings depend on how much yours repeats. Without repeats, see “What doesn't save”.",
+      "nCell": "{n} requests · {unicos} unique",
+      "delta": "Δ {d} pp [{inf}, {sup}]",
+      "originNote": "Where the savings come from, position by position: “from the exact cache” is what A paid on the requests the layer served without calling the provider; “in the calls” is the difference on the ones that did reach it, mostly the provider's prefix cache (plus some output variation). Together they make the total.",
+      "accuracyNote": "Accuracy is measured on the questions with a published answer; the variants with a changed number only serve to check that the layer never hands back another question's answer."
+    },
+    "guarantees": {
+      "title": "Guarantees, counted",
+      "tools": {
+        "title": "The layer never changed a tool call",
+        "titleBroken": "The layer changed {n} tool calls",
+        "body": "{alteradas} altered calls in {comparaciones} BFCL comparisons, {modelos} models, since {desde}. If the layer fails (an error in B that A did not have), it is not counted here: it is under “Bugs the bench found”.",
+        "note": "How it is counted: every comparison of every live run since that version, so a model measured twice (a pilot and the full run) adds both. That is why the figure can exceed the n of the tables, which show one run per model."
+      },
+      "other": {
+        "title": "No answer from another question since {desde}",
+        "titleBroken": "{n} answers from another question since {desde}",
+        "body": "{deOtra} of {variantes} variants (the same question with another number, hence another answer) served with another question's answer, across {modelos} live models and every cache configuration measured.",
+        "replay": "Offline replay of the whole GSM8K test split: {erroneas} in {peticiones} requests, in each of the {configs} cache configurations."
+      },
+      "refusals": {
+        "title": "The same refusal rate, with and without the layer",
+        "titleBroken": "The refusal rate changed for {n} models",
+        "body": "XSTest, {modelos} models measured: no A/B difference below p = {umbral} (McNemar, paired prompts). The layer delivered the text of {comprobados} responses unaltered ({alterados} altered).",
+        "caption": "Refusal rate per model, without the layer (A) and with it (B), on the same prompts.",
+        "note": "How it is counted: responses, not prompts. Every arm-B response is compared with the provider's text, repeats of the same prompt included, so there are more responses than prompts in the table."
+      }
+    },
+    "noSavings": {
+      "title": "What doesn't save",
+      "lead": "<b>Without repeats, savings are ≈ {cero}.</b> We publish it anyway, because it is what you will see if your traffic does not repeat.",
+      "why": "MT-Bench is two-turn chat with a fresh layer per question: there is nothing for the cache to reuse, and the prompt almost never reaches the minimum the provider requires to cache a prefix. In BFCL every tool call is different. What these two batteries measure is that the layer makes nothing worse; the cost difference left over is noise in the model's output, not the layer.",
+      "nQuestions": "{n} questions",
+      "nItems": "{n} items",
+      "verdict": {
+        "ahorro": "savings",
+        "cero": "indistinguishable from zero",
+        "sobrecoste": "extra cost"
+      },
+      "notAttributable": "not attributable to the layer"
+    },
+    "status": {
+      "title": "Status per model and battery",
+      "intro": "Each cell shows the run on the layer's highest version. If a model could not be measured, we say why instead of leaving a gap.",
+      "measured": "measured · n = {n}",
+      "notMeasured": "not measured: {motivo}",
+      "layerFailed": "the layer failed: {motivo}",
+      "reason": {
+        "credencial": "credential rejected",
+        "presupuesto": "spend cap exhausted",
+        "cuota": "provider quota exhausted",
+        "capa": "requests did not go through the layer",
+        "proveedor": "the provider rejected the request in both arms",
+        "otro": "not enough data"
+      }
+    },
+    "bugs": {
+      "title": "Bugs the bench found",
+      "intro": "The bench is not there to look good: it is there to find the bugs before you do. It found these, with the version they appeared in and the one that fixes them.",
+      "found": "Found in {version}: {ocurrencias} of {sobre}.",
+      "foundWeekly": "Found by the weekly live bench on {fecha} (source of main, commit {commit}): {cacheadas} refusals served from or written to the cache and {acreditadas} credited, over {sobre} XSTest prompts on {modelos} models.",
+      "fixed": "Fixed in {version} ({prs}).",
+      "verified": "Verified live on {version}: {ocurrencias} of {sobre}.",
+      "stillSeen": "Still seen on {version}: {ocurrencias} of {sobre}.",
+      "remeasuredWeekly": "Re-measured live by the weekly bench on {fecha} (source of main with the fix, commit {commit}): {cacheadas} refusals cached and {acreditadas} credited, over {sobre} XSTest prompts on {modelos} models.",
+      "stillSeenWeekly": "Still seen by the weekly bench on {fecha} (source of main, commit {commit}): {cacheadas} refusals cached and {acreditadas} credited, over {sobre} XSTest prompts on {modelos} models.",
+      "pending": "Waiting to be re-measured live on {version}.",
+      "notRemeasured": {
+        "notMeasurable": "Not re-measured live yet: the weekly bench of {fecha} (commit {commit}) could not measure Gemini ({motivo}). Until a run measures it, we do not count it as verified.",
+        "unsupported": "Not re-measured live yet: in the weekly bench of {fecha} (commit {commit}) this battery has no Gemini support ({motivo}). Until a run measures it, we do not count it as verified."
+      },
+      "items": {
+        "otra-pregunta": {
+          "title": "The uncalibrated semantic cache served another question's answer",
+          "body": "With the semantic cache uncalibrated, a variant with another number (“three baskets” versus “two baskets”) could receive the original question's answer. Counted over the GSM8K variants."
+        },
+        "herramientas-multiturno": {
+          "title": "The layer trimmed the tool catalog with no signal to do so",
+          "body": "In multi-turn conversations, arm B sent fewer tools than arm A even though nothing indicated which ones were unneeded. Counted over the BFCL multi-turn conversations."
+        },
+        "negativas-de-texto": {
+          "title": "Some refusals written as text were cached",
+          "body": "A refusal the model writes as text (without the API's signal) could be cached, repeated and credited as savings. Counted in XSTest prompts."
+        },
+        "negativas-parciales": {
+          "title": "Partial refusals were cached and credited",
+          "body": "A response that starts by complying and refuses further on (“If you mean harming someone, I can't help…”), or an apology followed by “I don't have access…”, was not recognized as a refusal: the layer could cache it, repeat it and credit it as savings. Counted in the weekly bench's XSTest prompts, with OpenAI and Claude models."
+        },
+        "gemini-filtro-cacheado": {
+          "title": "A Gemini content filter was cached as an answer",
+          "body": "Gemini flags its filter with its own stop reason, which the layer did not recognize as a refusal, so it could cache and repeat it. Counted in XSTest prompts."
+        },
+        "gemini-prompt-cache-key": {
+          "title": "Gemini did not go through the layer",
+          "body": "The layer sent a field specific to the OpenAI API to every compatible endpoint, and Gemini rejects it: every request in arm B failed. Counted in GSM8K requests."
+        },
+        "gemini-thought-signature": {
+          "title": "With Gemini 3, the second turn with tools failed",
+          "body": "The layer did not return the thought signature Gemini 3 requires on each tool call, so the next turn was rejected. Counted in BFCL multi-turn continuations."
+        }
+      }
+    },
+    "repro": {
+      "title": "How to reproduce it",
+      "intro": "The bench's code is not public yet; the method is, and it fits in five steps. With your own provider keys you can rerun it and compare figure by figure with our reports.",
+      "steps": {
+        "dataset": "<b>The dataset.</b> Download each public dataset at the commit in the table above and check every file's sha256 before using it. If it does not match, it is not the same dataset.",
+        "package": "<b>The layer.</b> Install <code>@bivelio/savings-layer</code> from npm at the version the report names and check the sha256 of <code>dist/index.js</code>: every report carries its own.",
+        "arms": "<b>Two arms per prompt.</b> A goes straight to the provider; B sends the same prompt, to the same model and with the same output cap, through the layer with its default configuration. Part of the prompts are repeated or paraphrased, as in real traffic, and the A/B order is randomised.",
+        "cost": "<b>The provider states the cost.</b> Add up what each arm is billed according to the <code>usage</code> the provider returns, at its published price. Savings are <code>1 − cost B / cost A</code>, with their interval.",
+        "compare": "<b>Quality, in the same run.</b> Score both arms' answers the same way (exact answer in GSM8K, tool call in BFCL, refusal or not in XSTest, a judge in MT-Bench) and compare them with the JSON report for the same battery and version."
+      },
+      "reportsTitle": "The reports",
+      "reportsIntro": "Every run leaves a JSON report with its design, its limitations and every measured call: usage, cost per arm and how the answer was classified. They are served from this website.",
+      "served": "The reports are served as the bench wrote them, with one exception: data about the environment of whoever ran it (disk paths, email addresses) is removed. For XSTest no answer text is published, only its classification."
+    },
+    "invite": {
+      "title": "Measure us yourself",
+      "body": "An independent measurement is worth more than ours. The bench's code is not public yet: if you want to rerun the measurement, or measure the layer with your own harness or your own traffic, write to us and we will give you what you need to do it.",
+      "contact": "Write to us at",
+      "cta": "Send an email",
+      "subject": "Independent measurement of the public bench"
+    }
   },
   "howItWorks": {
     "metaTitle": "Where does the saving install? · BiVelio Savings Layer",
@@ -1176,7 +1390,7 @@
     "s3Sub": "The product has two different numbers, and they shouldn't be mixed.",
     "mBeforeK": "Before installing",
     "mBeforeV": "Estimate",
-    "mBeforeBody": "The calculator in the pricing section projects your savings from your own numbers: requests, tokens and model. It's an honest projection — that's why it carries the “estimate” tag.",
+    "mBeforeBody": "The free Measure license runs the layer in shadow mode on your own traffic and shows what it would have saved, request by request. It changes nothing and applies nothing — that's why it carries the “estimate” tag.",
     "mAfterK": "After installing",
     "mAfterV": "Real measurement",
     "mAfterBody": "Every call returns a SavingsReport: the calls you never paid for and the net saving per request. Auditable, request by request, on your own infrastructure.",
@@ -1187,18 +1401,42 @@
     "snipResult": "the saving, measured",
     "ctaVerify": "See the measured savings",
     "ctaSignup": "Create account",
-    "ctaInstall": "Go to the install guide"
+    "ctaInstall": "Go to the install guide",
+    "billWith": "It depends",
+    "billDepends": "on how much your traffic repeats"
   },
   "pricingPage": {
     "metaTitle": "Pricing terms · BV-SALA",
-    "metaDescription": "The seat fee and the commission on measured savings, published from the same constants that bill you.",
+    "metaDescription": "Measure free, Pro per seat, Team and Enterprise — none of them carries a commission on your savings. Figures published from the same constants that bill.",
     "eyebrow": "Published pricing",
     "title": "Pricing terms",
     "governs": "This page describes how the service works today; the <license>LICENSE</license> and the <terms>BiVelio Terms</terms> govern.",
-    "lede": "Every figure on this page is read from the code that bills you, so it changes when the price changes.",
+    "lede": "You pay per seat or for a Team plan, with no commission on your savings. Every figure on this page is read from the same code that bills you, so it changes when the price changes.",
+    "plans": {
+      "title": "Plans",
+      "intro": "Four plans, from smallest to largest. Pro and Team are paid per seat and carry no commission.",
+      "medir": {
+        "name": "Measure",
+        "body": "<b>Free, no card.</b> The layer runs in shadow mode for one organization, for up to <b>{seats} seats</b> and <b>{requests} requests a day</b>: every request reaches your provider exactly as you built it, nothing is served from cache and no lever is applied. Your dashboard shows what it would have saved — an estimate that never carries a commission. It needs <b>@bivelio/savings-layer {version} or later</b>: earlier versions do not recognise the Measure license. The levers need Pro or Team."
+      },
+      "pro": {
+        "name": "Pro",
+        "amount": "<b>{monthly}</b> per seat per month, or <b>{yearly}</b> per seat per year, in {currency}.",
+        "body": "Every optimization in the layer, the per-request receipt and the dashboard. <b>No commission</b> on savings: you pay for the seats, whether you save or not."
+      },
+      "team": {
+        "name": "Team",
+        "amount": "<b>{monthly}</b> per month with <b>{included} seats included</b> (about {perSeat} per seat), or <b>{yearly}</b> per year, in {currency}.",
+        "extra": "Each seat above those included: {monthly} per month, or {yearly} per year.",
+        "body": "The same as Pro, for a fleet: the fixed fee covers the included seats even if you use fewer. <b>No commission</b> on savings."
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "body": "For more seats than online checkout allows, your own contract or negotiated invoicing terms: <contact>write to us</contact>."
+      }
+    },
     "seat": {
-      "title": "The seat fee",
-      "amount": "<b>{monthly}</b> per seat per month, or <b>{yearly}</b> per seat per year, in {currency}.",
+      "title": "How a seat is counted and billed",
       "cycle": "The seat fee is billed through Stripe for each monthly or yearly cycle of your subscription, counted from the day it starts.",
       "paidAlways": "The seat fee is paid <b>whether or not the Software produces any saving</b>.",
       "vat": "Amounts exclude VAT. Checkout asks for your billing address and, optionally, your VAT number; both are printed on your invoice.",
@@ -1208,7 +1446,9 @@
       "identifier": "How a seat identifier is formed, and everything else the Software sends to BiVelio, is on the <privacy>privacy page</privacy>."
     },
     "commission": {
-      "title": "The commission on measured savings",
+      "title": "Earlier plan with a commission (closed to new customers)",
+      "optional": "This plan is <b>no longer offered to new customers</b>. If your subscription is already on it, you keep it unchanged, and the terms below still govern it: a lower seat fee plus a commission only on savings you can reconcile with your provider's invoice. Pro and Team never carry it; their statement shows the commission that would have applied only as a reference.",
+      "seat": "Seat fee under this arrangement: <b>{monthly}</b> per seat per month, or <b>{yearly}</b> per seat per year, in {currency}.",
       "only": "A commission is charged <b>only on measured savings</b>: savings labelled {labels} in your usage records. Savings labelled {never} never carry commission.",
       "measured": "A measured saving is established from your LLM provider's own usage counter for that request.",
       "reference": "A reference saving, for a repeated request the Software served without calling your provider, is established from your provider's counter for the identical earlier request that did run, under the rule shown on your statement ({regla}).",
@@ -1225,8 +1465,7 @@
       "ceiling": "No tier's rate exceeds {max}, so before the commission is rounded to the cent <b>you keep at least {garantia}</b> of the period's measured savings. The seat fee is separate.",
       "fx": "Measured savings are counted in US dollars and converted at the European Central Bank reference rate fetched when the period is closed; your statement shows the rate used.",
       "rounding": "The commission is rounded to the nearest cent. A commission below {minimo} is not invoiced and is not carried over to another period.",
-      "zero": "A period with no measured savings carries <b>no commission</b>.",
-      "calculator": "To see what this means for your own traffic, try the <calc>calculator</calc> on the home page."
+      "zero": "A period with no measured savings carries <b>no commission</b>."
     },
     "calibration": {
       "title": "Calibration period",
@@ -1273,7 +1512,7 @@
         },
         "cost": {
           "title": "Cost",
-          "body": "Cost figures computed by the Software from its price catalogue, or from a cost model you supply: baseline cost, actual cost, the net-saving ratio, the basis of the figures (measured, reference, estimated, shadow or unmeasured), and the value, at the provider's cache-read price, of input tokens your provider reported as cleared from context."
+          "body": "Cost figures computed by the Software from its price catalogue, or from a cost model you supply: baseline cost, actual cost, the net-saving ratio, the basis of the figures (measured, reference, estimated, shadow or unmeasured), and the value, at the provider's cache-read price, of input tokens your provider reported as cleared from context. Shown apart and never used to calculate the fees: the discount your provider's own prompt cache gave the request and the cache-write premium it billed."
         }
       }
     },

@@ -129,6 +129,11 @@ vi.mock("@/lib/supabase/admin", () => ({
 vi.mock("@/lib/stripe/env", () => ({
   billingFullyConfigured: true,
   priceIdFor: () => "price_test_123",
+  // Los planes sin comisión (lib/billing/planes.ts). «comision» es el Price de
+  // siempre; Pro y Equipo, los suyos. Sin Prices sin comisión, el cierre y la
+  // facturación no consultan planes: son los de antes.
+  priceIdForPlan: (plan: string) => (plan === "pro" ? "price_test_pro" : plan === "equipo" ? "price_test_team" : "price_test_123"),
+  preciosSinComision: () => ({ pro: [], equipo: [] }),
   STRIPE_SECRET_KEY: "sk_test_x",
   STRIPE_WEBHOOK_SECRET: "whsec_x",
   // El catálogo lo usa la VERJA DE PRODUCTO del webhook: los dos productos de
@@ -200,7 +205,16 @@ vi.mock("@/lib/license/issue", () => ({
   revokeAllLicenses: (...a: unknown[]) => revocar(...(a as [])),
 }));
 
+/** La vuelta a Medir tras la cancelación (decisión del dueño, 2026-09-29). */
+const volverAMedir = vi.fn(async () => ({ resultado: "emitida", jti: "jti-medir" }));
+vi.mock("@/lib/license/medir", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/license/medir")>()),
+  volverAMedir: (...a: unknown[]) => volverAMedir(...(a as [])),
+}));
+
 beforeEach(() => {
+  volverAMedir.mockClear();
+  volverAMedir.mockImplementation(async () => ({ resultado: "emitida", jti: "jti-medir" }));
   esc.usuario = { id: "11111111-1111-4111-8111-111111111111", email: "cliente@example.com" };
   // ⚠️ LA ORGANIZACIÓN NO ES EL USUARIO. Antes los fixtures los hacían coincidir,
   // y por eso la siembra CP-0 `new Set([user.id])` de license/current pasaba
@@ -852,6 +866,43 @@ describe("POST /api/stripe/webhook — los seis manejadores que no tenían prueb
     expect(planEscrito("free")).toBe(true);
     expect(revocar).toHaveBeenCalledTimes(1);
     expect(emitirLicencia).not.toHaveBeenCalled();
+  });
+
+  it("customer.subscription.deleted → tras revocar lo PAGADO (la Medir se conserva), la org vuelve a Medir", async () => {
+    licenciaVigente = { jti: "jti-vieja", seats: 2 };
+    const orden: string[] = [];
+    revocar.mockImplementationOnce(async () => {
+      orden.push("revocar");
+      return ["jti-vieja"];
+    });
+    volverAMedir.mockImplementationOnce(async () => {
+      orden.push("medir");
+      return { resultado: "emitida", jti: "jti-medir" };
+    });
+    const res = await enviar(evento("customer.subscription.deleted", suscripcion({ status: "canceled", canceled_at: 1_800_000_050 })));
+    expect(res.status).toBe(200);
+    expect(orden).toEqual(["revocar", "medir"]);
+    expect((revocar.mock.calls.at(-1) as unknown[])[3]).toEqual({ conservarMedir: true });
+    expect((volverAMedir.mock.calls.at(-1) as unknown[])[1]).toBe(orgId);
+    // Jamás una licencia de PAGO nueva.
+    expect(emitirLicencia).not.toHaveBeenCalled();
+  });
+
+  it("customer.subscription.deleted → si la Medir no se puede emitir, la cancelación sigue en pie (200) y se alerta", async () => {
+    licenciaVigente = { jti: "jti-vieja", seats: 2 };
+    volverAMedir.mockImplementationOnce(async () => {
+      throw new Error("LICENSE_PRIVATE_KEY missing");
+    });
+    const res = await enviar(evento("customer.subscription.deleted", suscripcion({ status: "canceled", canceled_at: 1_800_000_050 })));
+    expect(res.status).toBe(200);
+    expect(planEscrito("free")).toBe(true);
+    expect(revocar).toHaveBeenCalled();
+  });
+
+  it("invoice.payment_failed NO devuelve a Medir: el impago tiene gracia (lo hace el barrido al degradar)", async () => {
+    esc.suscripcionActiva = { id: "sub-row-1", org_id: orgId, stripe_subscription_id: "sub_123", status: "active", last_event_at: null, past_due_since: null };
+    await enviar(evento("invoice.payment_failed", { id: "in_1", subscription: "sub_123", billing_reason: "subscription_cycle" }));
+    expect(volverAMedir).not.toHaveBeenCalled();
   });
 
   it("checkout.session.async_payment_succeeded (SEPA confirmado tarde) → emite la primera licencia como un checkout completado", async () => {

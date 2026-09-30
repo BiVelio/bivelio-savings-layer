@@ -1,6 +1,7 @@
-import { describe, it, expect } from "vitest";
+import { beforeEach, describe, it, expect } from "vitest";
 
 import { createSavingsLayer } from "../src/pipeline/create.js";
+import { ToolSelector } from "../src/router/tool-selector.js";
 import type { Provider, ProviderRequest, ProviderResponse } from "../src/providers/types.js";
 import type { SavingsRequest } from "../src/contracts/types.js";
 
@@ -74,9 +75,29 @@ const peticion = (tools?: SavingsRequest["tools"]): SavingsRequest => ({
   ...(tools ? { tools } : {}),
 });
 
+// Una instancia por prueba: el selector congela conjuntos por catálogo.
+const PODA_ = () => new ToolSelector({ maxTools: 8 });
+let PODA = PODA_();
+beforeEach(() => {
+  PODA = PODA_();
+});
+
 describe("libro 2 — tokens eliminados", () => {
+  it("SIN `maxTools` (0.4.33) no hay poda: todas viajan y el libro 2 no acredita nada", async () => {
+    const espia = new Mudo();
+    const capa = createSavingsLayer({ provider: espia });
+
+    const res = await capa.generate(peticion(HERRAMIENTAS));
+
+    expect((espia.enviados[0]!.tools ?? []).length).toBe(HERRAMIENTAS.length);
+    expect(res.report.calls.actualTools).toBe(res.report.calls.baselineTools);
+    expect(res.report.tokens.eliminatedInput).toBe(0);
+    expect(res.report.traces.some((t) => t.stage === "tool-selector")).toBe(false);
+  });
+
   it("podar herramientas ALIMENTA el libro, ya no sale 0", async () => {
-    const capa = createSavingsLayer({ provider: new Mudo() });
+    // La poda por relevancia es opt-in desde 0.4.33 (`maxTools`).
+    const capa = createSavingsLayer({ provider: new Mudo(), toolSelector: PODA });
 
     const res = await capa.generate(peticion(HERRAMIENTAS));
 
@@ -87,7 +108,7 @@ describe("libro 2 — tokens eliminados", () => {
 
   it("cuenta EXACTAMENTE los tokens de las herramientas descartadas, con su envoltorio", async () => {
     const espia = new Mudo();
-    const capa = createSavingsLayer({ provider: espia });
+    const capa = createSavingsLayer({ provider: espia, toolSelector: PODA });
 
     const res = await capa.generate(peticion(HERRAMIENTAS));
 
@@ -144,7 +165,7 @@ describe("libro 2 — tokens eliminados", () => {
   });
 
   it("el libro llega al informe que se publica, no se queda dentro", async () => {
-    const capa = createSavingsLayer({ provider: new Mudo() });
+    const capa = createSavingsLayer({ provider: new Mudo(), toolSelector: PODA });
 
     const res = await capa.generate(peticion(HERRAMIENTAS));
 

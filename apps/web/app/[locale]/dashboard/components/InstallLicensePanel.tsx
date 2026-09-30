@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 import { getLocale, getTranslations } from "next-intl/server";
 
-import { preciosDelPlan } from "@/lib/stripe/pricing";
+import { tarifasDeLosPlanes } from "@/lib/stripe/pricing";
 import { formatearPrecio } from "@/lib/format/precio";
 
 import { SnippetPorSistema } from "@/app/components/SnippetPorSistema";
@@ -11,6 +11,8 @@ import type { OrgContext } from "../data";
 import { CopyButton } from "./CopyButton";
 import { ServiceAccountKeySection } from "./ServiceAccountKeySection";
 import { TrialKeyButton } from "./TrialKeyButton";
+import { MeasureClaimButton } from "./MeasureClaimButton";
+import { LIMITES_MEDIR } from "@/lib/license/medir";
 
 /**
  * EL FRAGMENTO TIENE QUE COMPILAR PEGADO TAL CUAL, y no compilaba: `yourProvider`,
@@ -133,9 +135,10 @@ export async function InstallLicensePanel({ ctx }: { ctx: OrgContext }) {
   // El precio, del Price de Stripe y formateado aquí (servidor) para bajarlo ya
   // hecho al botón, que es de cliente.
   const locale = await getLocale();
-  const precios = await preciosDelPlan();
-  const precioMensual = formatearPrecio(locale, precios.monthly);
-  const precioAnual = formatearPrecio(locale, precios.yearly);
+  // Pro (2026-09-29): la modalidad con comisión ya no se vende a clientes nuevos.
+  const pro = (await tarifasDeLosPlanes()).pro;
+  const precioMensual = formatearPrecio(locale, { amount: pro.monthly.asientoCentimos, currency: pro.monthly.currency });
+  const precioAnual = formatearPrecio(locale, { amount: pro.yearly.asientoCentimos, currency: pro.yearly.currency });
   return (
     <section className="ck-sec">
       <div className="ck-head">
@@ -153,6 +156,17 @@ export async function InstallLicensePanel({ ctx }: { ctx: OrgContext }) {
         })}
       </p>
       <TrialKeyButton monthly={precioMensual} yearly={precioAnual} />
+
+      {/* La alternativa gratuita y sin tarjeta: la licencia Medir (modo sombra).
+          No se le ofrece a quien ya paga. */}
+      {ctx.medir !== "de-pago" ? (
+        <div style={{ marginTop: 12 }}>
+          <p className="ck-note" style={{ margin: "0 0 6px" }}>
+            <b>{t("measurePlan.title")}</b>
+          </p>
+          <MeasureClaimButton seats={LIMITES_MEDIR.asientos} />
+        </div>
+      ) : null}
 
       {/* 2 · service-account key (the machine credential for metering) */}
       <p className="ck-note">

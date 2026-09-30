@@ -2,8 +2,7 @@ import { getTranslations } from "next-intl/server";
 
 import { PageHead } from "@/app/components/app/PageHead";
 import { authConfigured } from "@/lib/supabase/env";
-import abData from "@/public/data/ab-live.json";
-import { activationSteps, getAsientos, getSesiones, type AbArtifact } from "./data";
+import { activationSteps, getAsientos, getSesiones } from "./data";
 import { cortarPorPeriodo } from "./explorer-datos";
 import { loadDashboard } from "./load";
 import { RANGO_POR_DEFECTO, rangoDesdeParametro } from "./rango";
@@ -12,6 +11,7 @@ import { BillingStateBanner } from "./components/BillingStateBanner";
 import { GatewayVersionBanner } from "./components/GatewayVersionBanner";
 import { SdkReferenciaBanner } from "./components/SdkReferenciaBanner";
 import { InstrumentationSpine } from "./components/InstrumentationSpine";
+import { AhorroNativoCard } from "./components/AhorroNativoCard";
 import { LiveLedgerTiles } from "./components/LiveLedgerTiles";
 import { RitmoCard } from "./components/RitmoCard";
 import { TokenTotalsTiles } from "./components/TokenTotalsTiles";
@@ -21,6 +21,7 @@ import { MaquinasCard } from "./components/MaquinasCard";
 import { PanelEditable } from "./components/PanelEditable";
 import { SesionesCard } from "./components/SesionesCard";
 import { VerdictHero } from "./components/VerdictHero";
+import { MedirSavingsCard } from "./components/MedirSavingsCard";
 
 export const dynamic = "force-dynamic";
 
@@ -29,8 +30,6 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const t = await getTranslations({ locale, namespace: "dashboard" });
   return { title: t("overview.metaTitle") };
 }
-
-const ab = abData as unknown as AbArtifact;
 
 export default async function OverviewPage({
   searchParams,
@@ -49,6 +48,7 @@ export default async function OverviewPage({
   // completo: uno es un cálculo de calendario y el otro una historia de alta.
   const rango = rangoDesdeParametro((await searchParams).range);
   const usage = rango === RANGO_POR_DEFECTO ? usageCompleto : cortarPorPeriodo(usageCompleto, rango);
+  const porModelo = rango === RANGO_POR_DEFECTO ? porModeloCompleto : cortarPorPeriodo(porModeloCompleto, rango);
   const steps = await activationSteps(true, ctx, usageCompleto);
   // Coste por sesión (0019) y máquinas (0024): lecturas aparte y tolerantes —
   // sin tabla o sin columnas (migración por detrás del deploy) o sin filas, la
@@ -71,6 +71,8 @@ export default async function OverviewPage({
       {/* Y si alguna máquina corre un SDK por debajo de la mínima de la
           referencia: sus repeticiones entran como estimated, no en la base. */}
       <SdkReferenciaBanner asientos={asientos} />
+      {/* Licencia gratuita Medir: «esto habrías ahorrado» y el paso a pago. */}
+      {ctx.medir === "solo-medir" ? <MedirSavingsCard usage={usage} /> : null}
 
       <InstrumentationSpine steps={steps} />
 
@@ -92,11 +94,21 @@ export default async function OverviewPage({
               // Justo detrás del titular: a qué velocidad va y dónde acaba el mes.
               // Mira el mes completo, no el rango: es un cálculo de calendario.
               { id: "ritmo", titulo: t("panel.cards.ritmo"), contenido: <RitmoCard usage={usageCompleto} /> },
+              // EL AHORRO NATIVO de la caché del proveedor, APARTE del titular
+              // (0032, decisión del dueño): lo que la caché de prefijo del
+              // proveedor le quitó a su factura. Sin comisión: el titular no lo
+              // suma y el extracto no lo lee. Está para que el panel cuadre con
+              // la factura del proveedor.
+              {
+                id: "nativo",
+                titulo: t("panel.cards.nativo"),
+                contenido: <AhorroNativoCard usage={usage} porModelo={porModelo} />,
+              },
               // Los TOTALES antes que la atribución por libro: "cuántos tokens he
               // gastado" es la pregunta que se hace primero, y los cuatro libros de
               // abajo la responden por partes que NO se pueden sumar entre sí.
               { id: "tokens", titulo: t("panel.cards.tokens"), contenido: <TokenTotalsTiles usage={usage} /> },
-              { id: "libros", titulo: t("panel.cards.libros"), contenido: <LiveLedgerTiles usage={usage} ab={ab} /> },
+              { id: "libros", titulo: t("panel.cards.libros"), contenido: <LiveLedgerTiles usage={usage} /> },
               // El explorador configurable (por día · periodo · modelo · libro) a
               // lo ancho: necesita sitio para los controles y las barras.
               {

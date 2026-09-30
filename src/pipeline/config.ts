@@ -50,6 +50,19 @@ export interface SavingsLayerConfig {
    * it on every request. A layer that has a cache and a request that neither
    * asks for it nor turns it off gets a one-time console warning (silenced by
    * `silenceWarnings`, or by setting `semanticCacheDefault`, `false` included).
+   *
+   * Called `semanticCache` until 0.4.33, so that the store and the per-request
+   * switch (`savings.semanticCache`) no longer share a name. See the 0.5
+   * migration guide.
+   */
+  semanticCacheStore?: InMemorySemanticCache;
+  /**
+   * @deprecated Renamed {@link semanticCacheStore} in 0.4.33, so that the store
+   * and the per-request switch (`savings.semanticCache`) no longer share a name.
+   * It still works, with a one-time warning (silenced by `silenceWarnings` or
+   * `BVSALA_SILENCE_DEPRECATIONS=1`);
+   * when both are given, `semanticCacheStore` wins. Removed in 0.5: see the 0.5
+   * migration guide.
    */
   semanticCache?: InMemorySemanticCache;
   /**
@@ -57,7 +70,7 @@ export interface SavingsLayerConfig {
    * request's own value always wins, `false` included. Unset, the semantic cache
    * is used only by requests that ask for it.
    *
-   * OPT-IN, and deliberately a separate field from {@link semanticCache}: the
+   * OPT-IN, and deliberately a separate field from {@link semanticCacheStore}: the
    * cache is the backend, this is the decision to serve answers to reworded
    * questions, which can serve a wrong answer. Prefer it with a cache built with
    * `calibration`, which serves nothing until your own traffic certifies a
@@ -186,6 +199,11 @@ export interface SavingsLayerConfig {
    * to support signing-key rotation — legacy no-kid tokens use `defaultKid`, and
    * an unknown kid fails closed. For self-hosting/self-testing; defaults to the
    * build-embedded BiVelio key.
+   *
+   * @deprecated Has no effect in the published package, which always verifies
+   * against the embedded BiVelio key; passing it there logs a one-time warning
+   * (silenced by `silenceWarnings` or `BVSALA_SILENCE_DEPRECATIONS=1`). Removed
+   * from the public type in 0.5: delete it from your config.
    */
   licensePublicKey?: string | LicenseKeyset;
 
@@ -195,6 +213,9 @@ export interface SavingsLayerConfig {
    * only accepted license — passing a gate there logs a warning and changes
    * nothing. It exists for builds from source (this repo's own tests and
    * benchmarks), where it takes precedence over {@link licenseKey}.
+   *
+   * @deprecated Ignored in the published package. Removed from the public type
+   * in 0.5; license the layer with {@link licenseKey} or `serviceAccountKey`.
    */
   licenseGate?: LicenseGate;
 
@@ -324,6 +345,9 @@ export interface SavingsLayerConfig {
    * distributed build hard-codes the licensing check on, so setting
    * `devUnlicensed` (or `BVSALA_DEV_OPEN`) there has NO effect — the layer still
    * requires a valid `licenseKey`. It is not a way to run the product for free.
+   *
+   * @deprecated No effect in the published package. Removed from the public type
+   * in 0.5: delete it from your config.
    */
   devUnlicensed?: boolean;
 

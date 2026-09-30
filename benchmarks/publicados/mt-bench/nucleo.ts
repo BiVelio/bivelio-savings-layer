@@ -10,6 +10,7 @@
  *
  * La red, la capa y los informes están en `mt-bench.ts`.
  */
+import { usoNativoDeGemini } from "../../gemini-nativo.js";
 import { mulberry32 } from "../../stats.js";
 
 // ── El dataset, fijado ──────────────────────────────────────────────────────
@@ -226,16 +227,68 @@ export function usoDeOpenAI(cuerpo: unknown): UsoMedido {
   const det = (u.prompt_tokens_details ?? {}) as Record<string, unknown>;
   const detSalida = (u.completion_tokens_details ?? {}) as Record<string, unknown>;
   const cacheada = num(det.cached_tokens);
+  // Desde gpt-5.6 OpenAI desglosa la ESCRITURA de caché (`cache_write_tokens`,
+  // dentro de `prompt_tokens`) y la cobra a 1,25×. El arnés la ignoraba hasta la
+  // gama alta: la 0.4.31 sí la lee, y su coste declarado salió por encima del medido.
+  const escrita = num(det.cache_write_tokens);
   return {
-    entrada: num(u.prompt_tokens) - cacheada,
+    entrada: num(u.prompt_tokens) - cacheada - escrita,
     cacheLeida: cacheada,
-    cacheEscrita: 0,
+    cacheEscrita: escrita,
     salida: num(u.completion_tokens),
     razonamiento: num(detSalida.reasoning_tokens),
   };
 }
 
-/** Prima de escritura de caché: 1,25× en Anthropic (5 min); OpenAI no la cobra en estos modelos. */
+/**
+ * Chat Completions del endpoint compatible de Gemini (`…/v1beta/openai`):
+ * `completion_tokens` NO incluye el razonamiento («thoughts»), que Google
+ * factura a precio de salida; solo aparece en `total_tokens`. Medido en vivo
+ * el 2026-09-29: gemini-3.8-flash, 13 de entrada + 3 de salida y
+ * `total_tokens` 193. La salida facturada es, pues, `total − prompt`, y el
+ * razonamiento, `total − prompt − completion`. Sin `total_tokens` no se sabe
+ * lo que se piensa: error, nunca un 0.
+ */
+export function usoDeGoogle(cuerpo: unknown): UsoMedido {
+  // La API NATIVA (`generateContent`) trae `usageMetadata`, no `usage`: el
+  // pensamiento viene aparte (`thoughtsTokenCount`) y se factura como salida.
+  if (cuerpo && typeof cuerpo === "object" && "usageMetadata" in cuerpo) return usoDeGeminiNativo(cuerpo);
+  const u = (cuerpo as { usage?: Record<string, unknown> } | null)?.usage;
+  if (!u || typeof u.prompt_tokens !== "number" || typeof u.completion_tokens !== "number" || typeof u.total_tokens !== "number") {
+    throw new SinUsage("respuesta de Gemini sin usage completo (prompt/completion/total): no se inventa un 0");
+  }
+  const det = (u.prompt_tokens_details ?? {}) as Record<string, unknown>;
+  const cacheada = num(det.cached_tokens);
+  const prompt = num(u.prompt_tokens);
+  const salida = Math.max(num(u.completion_tokens), num(u.total_tokens) - prompt);
+  return {
+    entrada: prompt - cacheada,
+    cacheLeida: cacheada,
+    cacheEscrita: 0,
+    salida,
+    razonamiento: salida - num(u.completion_tokens),
+  };
+}
+
+/**
+ * `generateContent` (la API nativa de Gemini, la que usa `GoogleProvider`):
+ * `promptTokenCount` incluye lo leído de la caché implícita
+ * (`cachedContentTokenCount`), y la salida facturada es visible + pensamiento
+ * («Output price (including thinking tokens)»). El lector es el del banco
+ * (benchmarks/gemini-nativo.ts), no el del adaptador. Sin contadores: error.
+ */
+export function usoDeGeminiNativo(cuerpo: unknown): UsoMedido {
+  const u = usoNativoDeGemini(cuerpo);
+  if (!u) throw new SinUsage("respuesta nativa de Gemini sin usageMetadata completo: no se inventa un 0");
+  return { entrada: u.entrada - u.cacheLeida, cacheLeida: u.cacheLeida, cacheEscrita: 0, salida: u.salida, razonamiento: u.pensamiento };
+}
+
+/** El lector de usage de cada familia (el MISMO para los dos brazos). */
+export function usoDeFamilia(familia: Familia, cuerpo: unknown): UsoMedido {
+  return familia === "anthropic" ? usoDeAnthropic(cuerpo) : familia === "google" ? usoDeGoogle(cuerpo) : usoDeOpenAI(cuerpo);
+}
+
+/** Prima de escritura de caché: 1,25× en Anthropic (5 min); OpenAI no la cobra en estos modelos; Gemini tampoco (caché implícita). */
 export function primaDeEscritura(familia: Familia): number {
   return familia === "anthropic" ? 1.25 : 1;
 }
@@ -264,7 +317,7 @@ export function sumarUsos(us: UsoMedido[]): UsoMedido {
 
 // ── Los modelos ─────────────────────────────────────────────────────────────
 
-export type Familia = "anthropic" | "openai";
+export type Familia = "anthropic" | "openai" | "google";
 
 export interface ModeloDeLaBateria {
   /** El id que se pide (y que manda el brazo A al API). */
@@ -282,6 +335,13 @@ export interface ModeloDeLaBateria {
   maxSalida: number;
   /** false → no se manda `temperature` en ningún brazo (modelos de razonamiento que la rechazan). */
   temperatura: boolean;
+  /**
+   * Solo para un modelo SIN fila en el catálogo del paquete: su precio de lista
+   * OFICIAL, citado (URL + fecha de consulta). No toca el catálogo: la capa lo
+   * recibe como `defaultCostModel` y el banco lo usa para medir. Sin fila y sin
+   * esto, el modelo es «no medible».
+   */
+  precioOficial?: { precio: Precio; fuente: string; consultado: string; cita: string };
 }
 
 /**
@@ -301,6 +361,65 @@ export const MODELOS_POR_DEFECTO: ModeloDeLaBateria[] = [
   { id: "gpt-5.4-mini", familia: "openai", maxSalida: 4096, temperatura: false },
 ];
 
+/**
+ * La tirada «gama alta» (2026-09-29): los modelos de mayor gama de cada
+ * proveedor que el dueño pidió («lanza MT-Bench gama alta»), con el mismo
+ * arnés. Elegidos contra los listados en vivo del 2026-09-29 (GET /v1/models
+ * de Anthropic y OpenAI, GET /v1beta/models de Google) y el catálogo:
+ *   · gpt-5.6: `gpt-5.6-sol`, la de mayor gama sin «pro» con fila ($4/$20;
+ *     -terra $2/$12, -luna $0.20/$1.20).
+ *   · Gemini: `gemini-3.8-flash` (la Flash vigente más nueva con fila) y
+ *     `gemini-3.1-pro-preview` (la única Pro 3.x servida, con fila).
+ *   · `claude-sonnet-5-5` no tiene fila: se mide con su precio OFICIAL citado.
+ * Topes de salida: 1024 (FastChat) en Anthropic, que no piensa si no se le
+ * pide; 4096 en gpt-5.x y Gemini 3.x, cuyo razonamiento cuenta dentro del tope.
+ * Temperatura: Opus 5.5 y Sonnet 5.5 rechazan `temperature` con 400
+ * («`temperature` is deprecated for this model», humo LIVE del 2026-09-29):
+ * no se manda en ningún brazo, como en gpt-5.x. Gemini sí la acepta y lleva la
+ * de FastChat por categoría en los dos.
+ * Esfuerzo de razonamiento: el POR DEFECTO del proveedor en los dos brazos (la
+ * 0.4.31 no tiene campo para fijarlo, así que el brazo A tampoco lo manda).
+ */
+export const MODELOS_GAMA_ALTA: ModeloDeLaBateria[] = [
+  { id: "claude-opus-5-5", familia: "anthropic", maxSalida: 1024, temperatura: false },
+  {
+    id: "claude-sonnet-5-5",
+    familia: "anthropic",
+    maxSalida: 1024,
+    temperatura: false,
+    precioOficial: {
+      precio: { inputPer1k: 0.002, outputPer1k: 0.01, cachedInputPer1k: 0.0002 },
+      fuente: "https://platform.claude.com/docs/en/about-claude/pricing",
+      consultado: "2026-09-29",
+      cita: "Claude Sonnet 5.5 | $2 / MTok | $2.50 / MTok | $4 / MTok | $0.20 / MTok | $10 / MTok",
+    },
+  },
+  { id: "gpt-5.5", familia: "openai", maxSalida: 4096, temperatura: false },
+  { id: "gpt-5.6-sol", familia: "openai", maxSalida: 4096, temperatura: false },
+  { id: "gemini-3.8-flash", familia: "google", maxSalida: 4096, temperatura: true },
+  { id: "gemini-3.1-pro-preview", familia: "google", maxSalida: 4096, temperatura: true },
+];
+
+/** Tope duro de la tirada gama alta: 1,25 $ por modelo (A+B), cualquiera que sea su familia. */
+export const TOPE_GAMA_ALTA_POR_MODELO_USD = 1.25;
+
+/**
+ * TODOS los modelos que la batería sabe medir: los de siempre y los de gama
+ * alta. El banco semanal lanza `--modelos=<id>` sin `--gama-alta`, así que un
+ * id se resuelve en la unión (benchmarks/banco-semanal/soporte.ts pregunta aquí).
+ */
+export const MODELOS_MEDIBLES: readonly ModeloDeLaBateria[] = [...MODELOS_POR_DEFECTO, ...MODELOS_GAMA_ALTA];
+
+/** El modelo de la batería con ese id (primero en la lista de siempre, luego en la de gama alta), o undefined. */
+export function modeloDeMtBench(id: string): ModeloDeLaBateria | undefined {
+  return MODELOS_POR_DEFECTO.find((m) => m.id === id) ?? MODELOS_GAMA_ALTA.find((m) => m.id === id);
+}
+
+/** ¿Es de la lista de gama alta? Entonces lleva SU tope y SU prima por modelo, se corra o no con `--gama-alta`. */
+export function esDeGamaAlta(m: Pick<ModeloDeLaBateria, "id">): boolean {
+  return MODELOS_GAMA_ALTA.some((x) => x.id === m.id);
+}
+
 /** Id con prefijo de proveedor, como lo espera la capa (precio, claves de caché, informe). */
 export function idCualificado(m: ModeloDeLaBateria): string {
   return `${m.familia}/${m.id}`;
@@ -312,7 +431,7 @@ export function idCualificado(m: ModeloDeLaBateria): string {
  * Topes duros de esta tirada (0.4.31): 0,80 $ por modelo de OpenAI y 1,25 $ por
  * modelo de Anthropic (A+B juntos), y 0,50 $ de juez EN TOTAL para la batería.
  */
-export const TOPE_POR_FAMILIA_USD: Readonly<Record<Familia, number>> = { openai: 0.8, anthropic: 1.25 };
+export const TOPE_POR_FAMILIA_USD: Readonly<Record<Familia, number>> = { openai: 0.8, anthropic: 1.25, google: 0.8 };
 export const TOPE_DEL_JUEZ_USD = 0.5;
 
 export function topePorModelo(m: Pick<ModeloDeLaBateria, "familia">): number {
@@ -337,8 +456,10 @@ export function parteDelJuez(totalUsd: number, gastadoUsd: number, modelosPendie
  * envía: el tope lo pone quien llama (la capa o el brazo A), nunca el banco.
  */
 export function topeDelCuerpo(cuerpo: Record<string, unknown>): number | null {
-  for (const k of ["max_tokens", "max_completion_tokens"]) {
-    const v = cuerpo[k];
+  // La API nativa de Gemini lo lleva dentro de `generationConfig`.
+  const gc = cuerpo["generationConfig"];
+  const nativo = gc && typeof gc === "object" ? (gc as Record<string, unknown>)["maxOutputTokens"] : undefined;
+  for (const v of [cuerpo["max_tokens"], cuerpo["max_completion_tokens"], nativo]) {
     if (typeof v === "number" && Number.isInteger(v) && v > 0) return v;
   }
   return null;
@@ -467,6 +588,32 @@ export function combinarPartidas(
   return { ganador: "empate", inconsistente: true };
 }
 
+/** El juicio de un turno, tal como lo guarda el arnés. */
+export interface JuicioDeTurno {
+  turno: 1 | 2;
+  prompt: string;
+  partida1: Ganador | "idéntica";
+  partida2: Ganador | "idéntica";
+  ganador: "A" | "B" | "empate" | "error";
+  inconsistente: boolean;
+  identicas: boolean;
+  /** Una de sus partidas no cupo en el tope del juez: el turno queda sin juzgar (no es un error de lectura). */
+  sinPresupuesto?: boolean;
+  /** Partidas que salieron de verdad hacia el juez (0-2). */
+  partidas?: number;
+}
+
+/**
+ * Los turnos que CUENTAN para la tasa de victoria: los que tienen ganador. Un
+ * turno sin presupuesto (una partida no cupo en el tope del juez) o con una
+ * partida ilegible NO es un empate: no se juzgó, y meterlo como ½ empujaría la
+ * tasa hacia 0,5 — que es exactamente el 0,500 [0,500, 0,500] que dio el banco
+ * semanal del 2026-09-29 con el juez cortado en la primera pregunta.
+ */
+export function turnosValidos<T extends Pick<JuicioDeTurno, "ganador">>(js: readonly T[]): (T & { ganador: "A" | "B" | "empate" })[] {
+  return js.filter((j): j is T & { ganador: "A" | "B" | "empate" } => j.ganador !== "error");
+}
+
 /** Puntuación del brazo B (la capa) frente al A en un turno: 1 gana, 0,5 empate, 0 pierde. */
 export function puntuacionDeB(g: "A" | "B" | "empate"): number {
   return g === "B" ? 1 : g === "A" ? 0 : 0.5;
@@ -577,6 +724,17 @@ export function normalizarCuerpo(cuerpo: unknown): unknown {
  */
 export function conRespuestasDe(cuerpo: unknown, respuestas: readonly string[]): unknown {
   if (!cuerpo || typeof cuerpo !== "object") return cuerpo;
+  const nat = cuerpo as { contents?: unknown };
+  if (Array.isArray(nat.contents)) {
+    // La API nativa de Gemini: los turnos del asistente son `role: "model"` con partes de texto.
+    let j = 0;
+    const contents = nat.contents.map((c) => {
+      const t = c as { role?: unknown };
+      if (t && t.role === "model" && j < respuestas.length) return { ...(c as object), parts: [{ text: respuestas[j++] }] };
+      return c;
+    });
+    return { ...(cuerpo as object), contents };
+  }
   const c = cuerpo as { messages?: unknown };
   if (!Array.isArray(c.messages)) return cuerpo;
   let k = 0;
@@ -707,7 +865,14 @@ export function atribucionDelAhorro(e: {
  * ni telemetría: el brazo B corre desde el fuente con la licencia de
  * desarrollo abierta y su tráfico no debe tocar el plano de control.
  */
-export const HOSTS_PERMITIDOS = ["api.anthropic.com", "api.openai.com", "ai-gateway.vercel.sh", "raw.githubusercontent.com"] as const;
+export const HOSTS_PERMITIDOS = [
+  "api.anthropic.com",
+  "api.openai.com",
+  // Gemini: su API nativa (`/v1beta/models/…:generateContent`) o su endpoint compatible (`/v1beta/openai`).
+  "generativelanguage.googleapis.com",
+  "ai-gateway.vercel.sh",
+  "raw.githubusercontent.com",
+] as const;
 
 export function hostDe(url: string): string {
   try {

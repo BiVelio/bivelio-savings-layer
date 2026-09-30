@@ -8,7 +8,8 @@ import { describe, it, expect } from "vitest";
  * El plan maestro exige «ningún número público sin test que lo ancle». La
  * forma más fuerte de ese ancla no es comparar números: es que NO HAYA
  * números que comparar. En los namespaces que publican la tarifa
- * (`landing.calculadora` y `landing.formula`), cada cifra —umbral, rampa,
+ * (hasta el 2026-09-29, `landing.calculadora` y `landing.formula`; se borraron
+ * con la calculadora de comisión, que ya no se renderizaba), cada cifra —umbral, rampa,
  * tramos, precio del asiento, cero— llega como parámetro ICU desde
  * `lib/billing/tarifa` o desde el Price de Stripe, formateada en código.
  *
@@ -45,8 +46,6 @@ const LOCALES = ["es", "en", "ca", "de", "fr", "it", "nl", "pl", "pt", "tr", "id
  * DIAS_ACTIVOS_PARA_CONTAR_ASIENTO (portada-como-cobra.test.ts).
  */
 const NAMESPACES = [
-  "landing.calculadora",
-  "landing.formula",
   "landing.pricing.seatNote",
   "dashboard.extracto",
   "dashboard.yourBench",

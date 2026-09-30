@@ -3,6 +3,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 
 import { corporateUrl, LEGAL_DOCS } from "@/lib/corporate";
+import { VERSION_MINIMA_MEDIR } from "@/lib/license/medir-publico";
 
 import { NvidiaFooterCard } from "./NvidiaInception";
 
@@ -18,10 +19,11 @@ const SOCIALS = [
 ];
 
 /** Dock de cristal con las redes de la compañía — la píldora del footer corporativo. */
-function SocialDock() {
+function SocialDock({ sinGitHub = false }: { sinGitHub?: boolean }) {
+  const redes = sinGitHub ? SOCIALS.filter((s) => !s.href.startsWith("https://github.com/")) : SOCIALS;
   return (
     <div className="ftr-social">
-      {SOCIALS.map(({ href, label, Icon }) => (
+      {redes.map(({ href, label, Icon }) => (
         <a key={href} href={href} target="_blank" rel="noopener noreferrer me" aria-label={label}>
           <Icon />
         </a>
@@ -96,7 +98,12 @@ function GlassWordmark() {
   );
 }
 
-export default async function Footer() {
+/**
+ * `sinGitHub`: /benchmarks se publica sin enlaces a GitHub mientras el
+ * repositorio sea privado (decisión del dueño, 2026-09-29): allí un icono de
+ * GitHub se leería como «el código está aquí». El resto de páginas no cambia.
+ */
+export default async function Footer({ sinGitHub = false }: { sinGitHub?: boolean } = {}) {
   const t = await getTranslations("landing");
   const locale = await getLocale();
 
@@ -110,6 +117,9 @@ export default async function Footer() {
     // cuando #verify no existía: dos enlaces de la misma columna al MISMO
     // sitio. Se quedó el de lo medido, que es lo que dice su etiqueta.
     [t("footer.measured"), "/#measured"],
+    // El banco público A/B (/benchmarks): cómo se mide, lo que ahorra y lo que
+    // no, y cómo repetirlo. Aquí y no en el menú, para no tocar /pricing.
+    [t("footer.benchmarks"), "/benchmarks"],
     [t("footer.pricing"), "/#pricing"],
   ];
   // «Documentación» apuntaba a docs.bivelio.com y «Estado» a status.bivelio.com,
@@ -143,7 +153,7 @@ export default async function Footer() {
         <div className="ftr-cta-inner">
           <div>
             <p className="ftr-cta-title">{t("footer.ctaTitle")}</p>
-            <p className="ftr-cta-sub">{t("footer.ctaSub")}</p>
+            <p className="ftr-cta-sub">{t("footer.ctaSub", { version: VERSION_MINIMA_MEDIR })}</p>
           </div>
           <div className="ftr-cta-actions">
             <Link className="btn btn-primary" href="/signup">
@@ -173,7 +183,7 @@ export default async function Footer() {
                     <span className="bar" /> {t("footer.badge")}
                   </span>
                 </div>
-                <SocialDock />
+                <SocialDock sinGitHub={sinGitHub} />
                 {/* Membresía del NVIDIA Inception Program, cerrando la columna
                     de marca como en bivelio.com: es una credencial de la
                     COMPAÑÍA, así que vive donde vive la identidad — logo,

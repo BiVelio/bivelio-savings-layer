@@ -54,7 +54,18 @@ export const GRUPOS_DEL_REGISTRO_DE_USO: readonly GrupoDeCampos[] = [
       "cacheResult",
     ],
   },
-  { clave: "cost", campos: ["baselineCost", "actualCost", "netSavings", "basis", "eliminatedInputFloorCost"] },
+  {
+    clave: "cost",
+    campos: [
+      "baselineCost",
+      "actualCost",
+      "netSavings",
+      "basis",
+      "eliminatedInputFloorCost",
+      "nativeCacheReadSavings",
+      "nativeCacheWritePremium",
+    ],
+  },
 ];
 
 /** La verificación A/B opcional del SDK (#324): `POST /api/metering/verification`, su canal propio. */

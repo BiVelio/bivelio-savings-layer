@@ -40,12 +40,16 @@ vi.mock("next-intl/server", () => ({
     }),
 }));
 
-vi.mock("@/lib/stripe/pricing", () => ({
-  preciosDelPlan: async () => ({
-    monthly: { amount: 400, currency: "eur" },
-    yearly: { amount: 3900, currency: "eur" },
-  }),
-}));
+vi.mock("@/lib/stripe/pricing", async () => {
+  const { PRECIOS_DE_LOS_PLANES } = await import("@/lib/billing/planes");
+  return {
+    preciosDelPlan: async () => ({
+      monthly: { amount: 400, currency: "eur" },
+      yearly: { amount: 3900, currency: "eur" },
+    }),
+    tarifasDeLosPlanes: async () => PRECIOS_DE_LOS_PLANES,
+  };
+});
 
 const { InstallLicensePanel } = await import("./components/InstallLicensePanel");
 

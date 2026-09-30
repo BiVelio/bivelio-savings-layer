@@ -283,6 +283,9 @@ const HOSTS_QUE_QUIEREN_EL_ID_DESNUDO = /(^|\.)api\.openai\.com$|\.openai\.azure
  * endpoint decides: OpenAI/Azure and Google's own Gemini API get the bare id,
  * everything else keeps what the caller wrote. Exported for the pipeline-level test that pins the README
  * snippet; not part of the public API.
+ *
+ * @deprecated Not part of the public API; leaves it in 0.5. Use the adapter option
+ * `stripProviderPrefix`.
  */
 export function quitarPrefijoDeProveedor(
   model: string,

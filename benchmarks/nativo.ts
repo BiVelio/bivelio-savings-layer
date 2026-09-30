@@ -270,6 +270,31 @@ export function planNativo(e: EntradaDelPlan): PlanNativo {
 
   const degradado = familia === "anthropic" && transporte === "openai-compatible";
 
+  if (transporte === "google-nativo") {
+    // Gemini por su API nativa (`GoogleProvider`). El reescritor del cable de B2
+    // habla Chat Completions y Mensajes de Anthropic; aquí no reescribe nada, así
+    // que B2 sale igual que B1 y se declara, en vez de meter campos de otro
+    // dialecto en un cuerpo de `generateContent`.
+    d({
+      funcion: "reasoningEffort",
+      aplicada: false,
+      motivo:
+        "Gemini's native API takes thinking as generationConfig.thinkingConfig, which the bench's B2 body rewriter " +
+        "does not write; B2 stays at B1 on this transport",
+      fuente: FUENTES.geminiOpenAI,
+    });
+    d({
+      funcion: "implicitCache",
+      aplicada: false,
+      valor: "on by default in every arm",
+      motivo:
+        "implicit caching is on by default for Gemini 2.5 and newer in every arm, B0 included; explicit caching " +
+        "(cachedContents) is not used by any arm",
+      fuente: FUENTES.cacheGemini,
+    });
+    return { modelo: e.modelo, transporte, simulado, degradadoPorTransporte: false, decisiones, cable };
+  }
+
   if (transporte === "anthropic-nativo") {
     // ── Esfuerzo (output_config.effort) ──
     if (!enLista(e.modelo, EFFORT_ANTHROPIC)) {

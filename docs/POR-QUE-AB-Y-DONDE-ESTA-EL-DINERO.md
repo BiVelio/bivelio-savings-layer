@@ -174,7 +174,7 @@ v1, y la regla con la que un SDK valoró una repetición no viaja en el registro
 de uso: el cierre sella `reference-v2` para el extracto entero. Para que ese
 sello sea cierto se publique lo que se publique, el ingest degrada a
 `estimated` toda referencia de un proceso que no declara versión o que declara
-una anterior a `VERSION_MINIMA_REFERENCIA` (0.4.31, `src/version.ts` y su
+una anterior a `VERSION_MINIMA_REFERENCIA` (0.4.33, `src/version.ts` y su
 espejo en `apps/web/lib/metering/version.ts`). Sigue en los totales; no entra
 en `reference_*` ni en la base. La mínima fue 0.4.24 hasta el 2026-09-28: de la
 0.4.24 a la 0.4.28 el SDK podía guardar una negativa del proveedor en caché y
@@ -184,7 +184,23 @@ degradar también las referencias honestas de esas versiones. Ese mismo día
 subió a 0.4.31 con el mismo criterio: hasta la 0.4.30 el SDK guardaba y
 repetía como referencia la negativa que el modelo escribe como TEXTO normal,
 sin ninguna señal del API; #384 la cierra en la 0.4.31, y las referencias
-honestas de 0.4.29 y 0.4.30 también entran como `estimated`. Lo mismo para toda referencia que declare
+honestas de 0.4.29 y 0.4.30 también entran como `estimated`. El 2026-09-29
+subió a 0.4.32, otra vez con el mismo criterio: los bancos en vivo contra la
+0.4.31 encontraron negativas que todavía se repetían como referencia. El
+`finish_reason: "content_filter: OTHER"` de Gemini no se reconocía (#402), el
+detector de #384 no veía «I'm sorry, but … is illegal», «I can't determine /
+access / argue…» ni la redirección a ayuda profesional (#393, #401), y las
+respuestas a temas sensibles se cacheaban y se acreditaban (#393). La 0.4.32
+lo cierra, y las referencias honestas de 0.4.31 también entran como
+`estimated`. Ese mismo día subió a 0.4.33, con el mismo criterio («arreglar
+primero siempre»): hasta la 0.4.32 el SDK guardaba y repetía como referencia
+las negativas PARCIALES (la respuesta empieza cumpliendo y se niega después:
+«If you mean harming someone, I can't help locate targets») y la carencia tras
+una disculpa («I'm sorry, but I don't have access to personal data…»). Las vio
+el primer banco semanal en vivo (XSTest ids 31, 149, 180, 404, 450); #422 las
+cierra con la regla `partial-refusal` y la carencia como motivo, y sale en la
+0.4.33. Las referencias honestas de 0.4.32 también entran como `estimated`.
+Lo mismo para toda referencia que declare
 `gateway/`, a cualquier versión: la regla v2 vive en el pipeline del SDK y el
 gateway no pasa por él, así que su gemela coalescida (Parte G) entra como
 `estimated` hasta que el PR que le lleve la regla v2 abra su verja.
@@ -399,6 +415,66 @@ sí explícito del dueño.
 copia los mensajes como `{role, content}` y pierde `toolCallId` y `toolCalls`:
 un escenario con ciclo de herramientas daría 400 en el brazo naive. La copia del
 SDK conserva los mensajes enteros; el banco queda pendiente.
+
+---
+
+## Parte 5 — El ahorro nativo: el dinero de la caché del proveedor, aparte (añadido 2026-09-29)
+
+**El descuadre.** Desde #260 la capa no acredita el descuento de la caché de
+prefijo: `estimateCost` tarifa los tokens leídos a la tarifa cacheada en los
+DOS lados, porque ese descuento es del proveedor (las cuatro razones están en
+`src/tokenizer/accounting.ts`). Es lo correcto para la comisión, pero dejaba al
+cliente viendo menos de lo que ahorraba. GSM8K con Sonnet 5: 75 % de ahorro
+medido en la factura, del que ~0,13 $ de 0,24 $ venía del prefijo, mientras el
+informe propio declaraba −0,0009 $. La factura y el informe no cuadraban.
+
+**La decisión del dueño:** «mostrar el ahorro de la caché de prefijo del
+proveedor aparte, sin comisión». Así que existe un carril propio,
+`report.nativeSavings`, con el contador del proveedor a precio de lista:
+
+    lectura = leídos / 1000 × (entrada − lectura cacheada)
+    prima   = escritos(5m) / 1000 × entrada × (prima − 1)
+            + escritos(1h) / 1000 × entrada × (prima1h − 1)
+    neto    = lectura − prima            (puede ser negativo)
+
+| Proveedor | Mecanismo | Prima de escritura |
+|---|---|---|
+| Anthropic | `explicit` — `cache_control` (la capa lo pone con `cacheBreakpoints`; `layerMarked` lo dice) | 1,25× (5 min), 2× (1 h) |
+| OpenAI | `automatic` — caché de prefijo sin marca; la capa solo enruta con `prompt_cache_key` | 1,25× de gpt-5.6 en adelante; 1× antes |
+| Gemini | `implicit` — caché implícita (API nativa o endpoint compatible) | 1× |
+
+**Por qué NO entra en la comisión, y no hay interruptor para que entre.** El
+descuento lo factura el proveedor y buena parte existiría sin la capa (OpenAI y
+Gemini cachean solos; un cliente puede poner su propio `cache_control`). No hay
+baseline medido de la variante sin caché en una llamada que corrió. Por eso:
+
+- no toca `cost.baselineEstimate`, `cost.actual`, `cost.netSavings` ni `cost.basis`
+  (`test/ahorro-nativo.test.ts`: el ahorro acreditado es el mismo con 8.000
+  tokens de caché que con 0, y el registro del cable es idéntico con y sin el
+  bloque salvo sus dos campos);
+- viaja en dos campos propios y no negativos, `nativeCacheReadSavings` y
+  `nativeCacheWritePremium`, que la verja del ingest recorta (techo de entrada
+  por token) sin tocar ningún otro campo (`apps/web/lib/metering/usage-nativo.test.ts`);
+- se acumula en columnas propias, `usage_daily.native_*` y
+  `usage_daily_by_model.native_*` (migración 0032); `baseline_cost`,
+  `actual_cost` y `measured_*` quedan literales (`test/migracion-0032.test.ts`);
+- el extracto no lee esas columnas: con un carril nativo enorme, base, ahorro,
+  comisión y cargo son idénticos al céntimo
+  (`apps/web/lib/billing/extracto-carril-nativo.test.ts`).
+
+**Dónde se ve.** En cada informe (`report.nativeSavings`) y en el panel, en la
+tarjeta «Ahorro nativo activado»: el neto del período, sus dos piezas (lectura y
+prima) y el reparto por proveedor, al lado del titular y nunca dentro de él. El
+gateway publica el mismo bloque, salvo donde no hay factura por tokens a precio
+de lista que lo respalde: tráfico de suscripción, upstream no oficial, gemela
+coalescida y negativa no cobrada.
+
+**Cuadra con la factura.** Con el `usage` real simulado de los tres proveedores,
+`netUsd` es exactamente «factura sin caché − factura con caché», calculada en el
+test a mano con la tarifa pública de cada uno. Un matiz honesto: en el SDK, si el
+cliente puso su propio `cache_control`, la prima de esa escritura no está en
+`cost.actual` (la capa solo carga la que provoca); `nativeSavings` sí la resta,
+porque la cobra el proveedor.
 
 ---
 

@@ -12,6 +12,7 @@ import {
 } from "../src/router/schema-on-demand.js";
 import type { Provider, ProviderRequest, ProviderResponse } from "../src/providers/types.js";
 import type { JsonSchema, ToolDescriptor } from "../src/contracts/types.js";
+import { ToolSelector } from "../src/router/tool-selector.js";
 
 /**
  * SCHEMA-ON-DEMAND: el esquema completo solo viaja cuando se sabe cuál hace falta.
@@ -747,9 +748,10 @@ describe("descubrimiento + libro 2 (#65): lo escondido por el sondeo NO se acred
     ]);
     const sinSondeo = new ProveedorGuionizado([respuestaFinal("hecho")]);
 
-    const a = await createSavingsLayer({ provider: conSondeo, costModels: PRECIOS })
+    // Con `maxTools`: el libro 2 del selector solo existe si se le pide podar (0.4.33).
+    const a = await createSavingsLayer({ provider: conSondeo, costModels: PRECIOS, toolSelector: new ToolSelector({ maxTools: 8 }) })
       .generate(peticionReal(true));
-    const b = await createSavingsLayer({ provider: sinSondeo, costModels: PRECIOS })
+    const b = await createSavingsLayer({ provider: sinSondeo, costModels: PRECIOS, toolSelector: new ToolSelector({ maxTools: 8 }) })
       .generate(peticionReal(false));
 
     // El patrón se aplicó de verdad: si no, este test no prueba nada.

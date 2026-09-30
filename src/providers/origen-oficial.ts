@@ -14,8 +14,9 @@
 //   · https://api.openai.com                     → OpenAI;
 //   · https://generativelanguage.googleapis.com  → Google, el API de Gemini, que
 //     es el que publica la página de precios que copia el catálogo
-//     (ai.google.dev/gemini-api/docs/pricing). Su endpoint compatible con
-//     OpenAI (`/v1beta/openai/`) es el mismo origen y la misma factura.
+//     (ai.google.dev/gemini-api/docs/pricing). Lo hablan dos adaptadores: el
+//     nativo (`GoogleProvider`, `generateContent`) y el compatible con OpenAI
+//     (`/v1beta/openai/`); mismo origen y misma factura.
 //
 // Nada más. Un proveedor que el catálogo no tarifa (DeepSeek, Mistral, Groq…)
 // no tiene precio de lista que defender aunque se le hable en su propio host, y
