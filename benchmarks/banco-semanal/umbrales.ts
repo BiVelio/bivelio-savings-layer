@@ -22,6 +22,12 @@
  *                        por debajo de 0 (GSM8K, BFCL), la tasa de victoria de
  *                        B con el IC entero por debajo de 0,5 (MT-Bench), o
  *                        McNemar p < 0,05 en la dirección mala (XSTest).
+ *                        SOLO si la capa intervino en la celda: donde el
+ *                        artefacto demuestra que no cambió nada que altere la
+ *                        generación (hoy solo MT-Bench: extraer.ts,
+ *                        sinIntervencionMtBench), pasa a aviso «atribuible al
+ *                        muestreo». Las otras baterías no traen el cable ni el
+ *                        resultado de caché por ítem: ahí actúa siempre.
  *   informe-vs-factura   El coste que dice el informe de la capa, sumado por
  *                        brazo, fuera de ±2 % de lo que factura el proveedor
  *                        según su `usage` (con 0,0001 $ de holgura absoluta
@@ -49,7 +55,8 @@
  * no sabe medir (sin-soporte), uno «no medible» por su clave o su cuota, una
  * celda cortada por su propio tope (se mide menos, no peor), y una celda de
  * MT-Bench cuyo juez juzgó menos de MINIMO_DE_TURNOS_JUZGADOS turnos (extraer.ts):
- * sin tasa de victoria, y dicho, en vez de un 0,5 que parezca un empate.
+ * sin tasa de victoria, y dicho, en vez de un 0,5 que parezca un empate. Ni una
+ * calidad peor en una celda donde la capa no intervino (avisoDeMuestreo).
  */
 import type { Bateria } from "./plan.js";
 import type { Medicion } from "./extraer.js";
@@ -95,6 +102,36 @@ export function fueraDeTolerancia(informeUsd: number, facturaUsd: number): boole
 
 const pct = (x: number) => `${(x * 100).toFixed(2)} %`;
 
+/** Las líneas de cada `exactitud` significativamente peor de una medición. */
+function calidadPeor(m: Medicion): string[] {
+  return m.exactitud
+    .filter((e) => e.peorSignificativo)
+    .map((e) => {
+      const ic = e.ic95 ? ` IC95 [${e.ic95.lower.toFixed(3)}, ${e.ic95.upper.toFixed(3)}]` : "";
+      const p = e.p !== undefined ? ` p=${e.p.toPrecision(3)}` : "";
+      return `${e.metrica}, brazo ${e.brazo}: ${e.valor === null ? "—" : e.valor.toFixed(3)}${ic}${p}`;
+    });
+}
+
+/**
+ * La calidad peor de una celda donde la capa NO intervino (`sinIntervencion`,
+ * extraer.ts): no hace fallar, se avisa. Hallazgo del run 36748284158: MT-Bench
+ * con gpt-4o-mini dio victoria de B 0,385 [0,308, 0,442] con el cable de B
+ * idéntico al de A salvo `prompt_cache_key`, caché todo `miss` y el mismo
+ * modelo servido; la tirada anterior, 0,500 [0,423, 0,577]. Era el muestreo con
+ * temperatura sobre 25 turnos juzgados, no la capa.
+ */
+export function avisoDeMuestreo(m: Medicion): string | null {
+  if (m.estado !== "medido" || !m.sinIntervencion) return null;
+  const peor = calidadPeor(m);
+  if (!peor.length) return null;
+  const campos = Object.entries(m.sinIntervencion.camposNeutros).map(([k, n]) => `\`${k}\` ×${n}`);
+  return (
+    `${m.bateria} · ${m.modelo}: calidad B−A atribuible al muestreo: la capa no cambió nada que altere la generación ` +
+    `(solo ${campos.length ? campos.join(", ") : "ningún campo: cable idéntico"}; caché todo miss, 0 llamadas evitadas, mismo modelo servido) — ${peor.join(" · ")}`
+  );
+}
+
 /** Las infracciones de UNA medición (una celda que corrió y dejó artefacto). */
 export function infraccionesDe(m: Medicion, topeUsd: number): Infraccion[] {
   const out: Infraccion[] = [];
@@ -106,12 +143,8 @@ export function infraccionesDe(m: Medicion, topeUsd: number): Infraccion[] {
   if ((m.negativasCacheadas ?? 0) > 0) add("negativa-cacheada", `${m.negativasCacheadas} negativas servidas desde la caché o escritas en ella`);
   if ((m.negativasAcreditadas ?? 0) > 0) add("negativa-acreditada", `${m.negativasAcreditadas} negativas con ahorro acreditado o registro de referencia`);
   if (m.fallosDeLaCapa > 0) add("capa-falla", `${m.fallosDeLaCapa} errores solo con la capa${m.ejemplosDeFallos.length ? `: ${m.ejemplosDeFallos.join(" · ")}` : ""}`);
-  for (const e of m.exactitud) {
-    if (!e.peorSignificativo) continue;
-    const ic = e.ic95 ? ` IC95 [${e.ic95.lower.toFixed(3)}, ${e.ic95.upper.toFixed(3)}]` : "";
-    const p = e.p !== undefined ? ` p=${e.p.toPrecision(3)}` : "";
-    add("exactitud-peor", `${e.metrica}, brazo ${e.brazo}: ${e.valor === null ? "—" : e.valor.toFixed(3)}${ic}${p}`);
-  }
+  // Una calidad peor solo es de la capa si la capa intervino (avisoDeMuestreo).
+  if (!m.sinIntervencion) for (const e of calidadPeor(m)) add("exactitud-peor", e);
   for (const f of m.informeVsFactura) {
     if (fueraDeTolerancia(f.informeUsd, f.facturaUsd)) {
       const rel = f.facturaUsd !== 0 ? ` (${pct((f.informeUsd - f.facturaUsd) / f.facturaUsd)})` : "";
@@ -155,6 +188,10 @@ export function evaluar(resultados: readonly ResultadoDeCelda[], abortoGlobal: s
         infracciones.push(...infraccionesDe(r.medicion, r.topeUsd));
         if (r.medicion.estado === "medido") medidasPorBateria.set(r.bateria, (medidasPorBateria.get(r.bateria) ?? 0) + 1);
         else avisos.push(`${r.bateria} · ${r.modelo}: no medible — ${r.medicion.motivo ?? "sin motivo"}`);
+        {
+          const muestreo = avisoDeMuestreo(r.medicion);
+          if (muestreo) avisos.push(muestreo);
+        }
         if (r.medicion.estado === "medido" && r.medicion.calidadSinMedir) {
           avisos.push(`${r.bateria} · ${r.modelo}: calidad sin medir — ${r.medicion.calidadSinMedir}`);
         }

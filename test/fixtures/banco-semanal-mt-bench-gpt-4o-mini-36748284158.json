@@ -1,0 +1,132 @@
+{
+  "_origen": "Recorte del artefacto del banco semanal en vivo, run 36748284158 (gh run download 36748284158 -n banco-semanal → mt-bench/gpt-4o-mini/mt-bench-0431-bs-ab2045-gpt-4o-mini.json): solo lo que lee extraer.ts, tal cual.",
+  "modelosFallidos": [],
+  "modelos": [
+    {
+      "modelo": "gpt-4o-mini",
+      "idCualificado": "openai/gpt-4o-mini",
+      "temperatura": "FastChat por categoría (igual en A y B)",
+      "preguntas": {
+        "planificadas": 40,
+        "completas": 40,
+        "conError": 0,
+        "porCategoria": {
+          "writing": 5,
+          "roleplay": 5,
+          "reasoning": 5,
+          "math": 5,
+          "coding": 5,
+          "extraction": 5,
+          "stem": 5,
+          "humanities": 5
+        },
+        "cortePorPresupuesto": false
+      },
+      "gasto": {
+        "generacionA": 0.02464455,
+        "generacionB": 0.024826649999999992,
+        "total": 0.04947119999999997,
+        "tope": 0.75,
+        "excesosDeReserva": 0,
+        "juez": 0.3667824999999999,
+        "topeJuez": 0.4
+      },
+      "errores": [],
+      "cable": {
+        "turnos": 80,
+        "identicos": 40,
+        "diferencias": {
+          "prompt_cache_key": 40
+        },
+        "modelosServidosA": [
+          "gpt-4o-mini-2024-07-18"
+        ],
+        "modelosServidosB": [
+          "gpt-4o-mini-2024-07-18"
+        ]
+      },
+      "capa": {
+        "basis": {
+          "measured": 80
+        },
+        "ahorroDeclaradoUsd": 0,
+        "turnosConAhorroDeclaradoDistintoDe0": 0,
+        "costeDeclaradoUsd": 0.024826649999999995,
+        "costeMedidoB": 0.02482665,
+        "cacheResult": {
+          "miss": 80
+        },
+        "llamadasExtraAlProveedor": 0
+      },
+      "calidad": {
+        "juzgada": true,
+        "turnosJuzgados": 25,
+        "victoriasB": 0,
+        "victoriasA": 6,
+        "empates": 19,
+        "inconsistentes": 8,
+        "identicas": 2,
+        "errores": 0,
+        "turnosSinPresupuesto": 1,
+        "tasaDeVictoriaB": {
+          "point": 0.38461538461538464,
+          "lower": 0.3076923076923077,
+          "upper": 0.4423076923076923
+        },
+        "porCategoria": {
+          "writing": {
+            "n": 4,
+            "B": 0,
+            "A": 2,
+            "empate": 2
+          },
+          "roleplay": {
+            "n": 4,
+            "B": 0,
+            "A": 2,
+            "empate": 2
+          },
+          "reasoning": {
+            "n": 4,
+            "B": 0,
+            "A": 0,
+            "empate": 4
+          },
+          "math": {
+            "n": 4,
+            "B": 0,
+            "A": 0,
+            "empate": 4
+          },
+          "coding": {
+            "n": 3,
+            "B": 0,
+            "A": 0,
+            "empate": 3
+          },
+          "extraction": {
+            "n": 2,
+            "B": 0,
+            "A": 0,
+            "empate": 2
+          },
+          "stem": {
+            "n": 2,
+            "B": 0,
+            "A": 1,
+            "empate": 1
+          },
+          "humanities": {
+            "n": 2,
+            "B": 0,
+            "A": 1,
+            "empate": 1
+          }
+        },
+        "llamadasAlJuez": 47,
+        "preguntasJuzgadas": 13,
+        "cortePorPresupuesto": true
+      }
+    }
+  ]
+}
