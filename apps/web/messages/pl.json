@@ -787,7 +787,7 @@
       "proofTitle": "Zmierzone względem prawdziwego dostawcy",
       "medidoEn": "Zmierzone na",
       "compatibleCon": "Zgodne z",
-      "compatibleNota": "Zgodny nie znaczy zmierzony. SDK działa z każdym endpointem zgodnym z API OpenAI, a także z natywnym adapterem Anthropic i natywnym adapterem Gemini (nowość w {gemini}). Zmierzone — z liczbą oszczędności w publicznym benchmarku — są dziś tylko modele OpenAI i Anthropic; Gemini nie ma jeszcze zmierzonej oszczędności."
+      "compatibleNota": "Zgodny nie znaczy zmierzony. SDK działa z każdym endpointem zgodnym z API OpenAI, a także z natywnym adapterem Anthropic i natywnym adapterem Gemini (nowość w {gemini}). Z liczbą oszczędności w publicznym benchmarku są dziś tylko modele OpenAI i Anthropic; Gemini nie ma liczby oszczędności. Co zmierzono dla Gemini: {flash}, przez jego natywne API, w cotygodniowym benchmarku na żywo z {fecha} — wszystkie cztery baterie, bez błędów warstwy i bez żadnej odmowy w cache ani zaliczonej jako oszczędność. Ten benchmark sprawdza, że warstwa niczego nie psuje i nie pobiera za dużo; nie mierzy oszczędności. {pro} nie jest jeszcze zmierzony: uniemożliwił to limit dostawcy."
     },
     "cascade": {
       "title": "Wygrywa najtańsza realizacja",
@@ -1165,6 +1165,7 @@
       },
       "reason": {
         "sin-clave": "brak klucza tego dostawcy w środowisku benchmarku",
+        "cuota": "wyczerpany limit lub przepustowość dostawcy, nie warstwa",
         "proveedor": "brak prawidłowej odpowiedzi dostawcy w ramieniu A",
         "tope-global": "osiągnięto globalny limit wydatków przebiegu",
         "arnes-proveedor": "harness tej baterii rozmawia tylko z Anthropic i OpenAI",
@@ -1289,11 +1290,20 @@
       "stillSeen": "Nadal widoczne w {version}: {ocurrencias} z {sobre}.",
       "remeasuredWeekly": "Ponownie zmierzony na żywo przez cotygodniowy benchmark {fecha} (kod źródłowy main z poprawką, commit {commit}): odmowy w cache: {cacheadas}, zaliczone: {acreditadas}, na {sobre} promptach XSTest i {modelos} modelach.",
       "stillSeenWeekly": "Cotygodniowy benchmark nadal go widzi {fecha} (kod źródłowy main, commit {commit}): odmowy w cache: {cacheadas}, zaliczone: {acreditadas}, na {sobre} promptach XSTest i {modelos} modelach.",
+      "foundWeeklyModels": "Znalezione przez cotygodniowy benchmark na żywo {fecha} (kod źródłowy main, commit {commit}) z {medidos}: {cuenta}.",
+      "remeasuredWeeklyModels": "Ponownie zmierzone na żywo przez cotygodniowy benchmark {fecha} (kod źródłowy main z poprawką, commit {commit}) z {medidos}: {cuenta}.",
+      "stillSeenWeeklyModels": "Cotygodniowy benchmark nadal go widzi {fecha} (kod źródłowy main, commit {commit}) z {medidos}: {cuenta}.",
+      "counter": {
+        "refusals": "odmowy w cache lub zaliczone: {ocurrencias}, na {sobre} promptach XSTest",
+        "layerFails": "błędy tylko z warstwą: {ocurrencias}, na {sobre} pozycjach {bateria}"
+      },
+      "notMeasuredInRun": "Ten przebieg nie mógł zmierzyć {modelos} ({motivo}); tam pozostaje niezweryfikowane.",
       "pending": "Oczekuje na ponowny pomiar na żywo w {version}.",
       "notRemeasured": {
         "notMeasurable": "Jeszcze nie zmierzony ponownie na żywo: cotygodniowy benchmark z {fecha} (commit {commit}) nie mógł zmierzyć Gemini ({motivo}). Dopóki żaden przebieg tego nie zmierzy, nie uznajemy tego za zweryfikowane.",
         "unsupported": "Jeszcze nie zmierzony ponownie na żywo: w cotygodniowym benchmarku z {fecha} (commit {commit}) ta bateria nie obsługuje Gemini ({motivo}). Dopóki żaden przebieg tego nie zmierzy, nie uznajemy tego za zweryfikowane."
       },
+      "notCountedWeekly": "Jeszcze nie zmierzone ponownie w opublikowanym raporcie: cotygodniowy benchmark z {fecha} (kod źródłowy main z poprawką, commit {commit}) zmierzył {medidos} w tej baterii, ale jego podsumowanie liczy tylko wpisy jednoturowe, a nie kontynuacje wieloturowe, w których to zawodziło. Dopóki żaden raport ich nie policzy, nie uznajemy tego za zweryfikowane.",
       "items": {
         "otra-pregunta": {
           "title": "Niekalibrowana pamięć podręczna semantyczna podawała odpowiedź innego pytania",
@@ -1322,6 +1332,10 @@
         "gemini-thought-signature": {
           "title": "Przy Gemini 3 druga tura z narzędziami kończyła się niepowodzeniem",
           "body": "Warstwa nie zwracała sygnatury myśli, której Gemini 3 wymaga przy każdym wywołaniu narzędzia, przez co kolejna tura była odrzucana. Policzone w kontynuacjach wieloturowych BFCL."
+        },
+        "gemini-nivel-de-pensamiento": {
+          "title": "Przy równoległych żądaniach korekta poziomu myślenia Gemini docierała do klienta jako błąd",
+          "body": "Gemini Flash odrzuca poziom myślenia MINIMAL; natywny adapter ponawia raz z LOW i zapamiętuje zamiennik. Przy dwóch równoczesnych żądaniach przez tę samą warstwę jedno porównywało odrzucenie z treścią, którą drugie już poprawiło, nie rozpoznawało go i przekazywało błąd klientowi. Liczone jako błędy tylko z warstwą, w promptach XSTest cotygodniowego benchmarku z Gemini."
         }
       }
     },

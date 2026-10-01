@@ -8,7 +8,7 @@ import { describe, expect, it } from "vitest";
 import { LIMITES_MEDIR, VERSION_MINIMA_MEDIR } from "@/lib/license/medir-publico";
 import { MEASURE_LIMITS } from "../../../../packages/protocol/src/index";
 
-import { VERSION_GEMINI_NATIVO } from "./banco-en-vivo";
+import { GEMINI_EN_EL_SEMANAL, VERSION_GEMINI_NATIVO } from "./banco-en-vivo";
 
 /**
  * LA PORTADA DICE SOLO LO MEDIDO (2026-09-29), EN LOS 12 IDIOMAS.
@@ -352,25 +352,110 @@ describe("la calculadora de comisión, retirada: ni componente ni claves", () =>
   }
 });
 
-describe("Gemini: compatible ≠ medido", () => {
+/**
+ * GEMINI: COMPATIBLE ≠ MEDIDO, Y LO MEDIDO CON SU INFORME (2026-10-01).
+ *
+ * El primer banco semanal en vivo con Gemini por su API nativa midió Gemini
+ * 3.8 Flash en las cuatro baterías sin ningún fallo de la capa ni negativas
+ * cacheadas o acreditadas; Gemini 3.1 Pro quedó «no medible» por la cuota del
+ * proveedor. La nota lo dice así — sin cifra de ahorro, porque ese banco no la
+ * mide — y esta verja exige que el informe lo sostenga: no se puede llamar
+ * «medido» a un modelo sin sus celdas medidas, ni callar que el otro no lo está.
+ */
+const RAIZ_REPO = join(WEB, "..", "..");
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type J = any;
+const BATERIAS_SEMANAL = ["gsm8k", "bfcl", "xstest", "mt-bench"];
+
+describe("Gemini: compatible ≠ medido; lo medido, con su informe", () => {
+  const G = GEMINI_EN_EL_SEMANAL;
+  const inf: J = JSON.parse(readFileSync(join(RAIZ_REPO, G.informe), "utf8"));
+  const celdas = (modelo: string): J[] => (inf.resultados as J[]).filter((c) => c.modelo === modelo);
+  const medida = (c: J) => c.estado === "medida" && c.medicion?.estado === "medido";
+
+  it("el informe es una tirada EN VIVO del banco semanal, de ese día, y la más reciente publicada", () => {
+    expect(inf.modo).toBe("vivo");
+    expect(String(inf.inicio).slice(0, 10)).toBe(G.fecha);
+    const dir = join(RAIZ_REPO, "docs", "benchmarks");
+    const inicios = readdirSync(dir, { withFileTypes: true })
+      .filter((d) => d.isDirectory())
+      .flatMap((d) => readdirSync(join(dir, d.name)).filter((f) => /^banco-semanal.*\.json$/.test(f)).map((f) => join(dir, d.name, f)))
+      .map((f) => JSON.parse(readFileSync(f, "utf8")) as J)
+      .filter((j) => j.modo === "vivo")
+      .map((j) => String(j.inicio));
+    expect(inicios.every((x) => x <= inf.inicio)).toBe(true);
+  });
+
+  it(`${G.medido.nombre}: las cuatro baterías medidas, sin fallos de la capa ni negativas cacheadas o acreditadas`, () => {
+    expect(G.medido.modelo).toBe(`google/${G.medido.nombre.toLowerCase().replace(/ /g, "-")}`);
+    const cs = celdas(G.medido.modelo);
+    expect(cs.map((c) => c.bateria).sort()).toEqual([...BATERIAS_SEMANAL].sort());
+    for (const c of cs) {
+      expect(medida(c), c.bateria).toBe(true);
+      expect(c.medicion.n, c.bateria).toBeGreaterThan(0);
+      expect(c.medicion.fallosDeLaCapa, c.bateria).toBe(0);
+    }
+    const xs = cs.find((c) => c.bateria === "xstest");
+    expect(xs.medicion.negativasCacheadas).toBe(0);
+    expect(xs.medicion.negativasAcreditadas).toBe(0);
+  });
+
+  it(`${G.sinMedir.nombre}: ninguna celda medida, y el motivo es la cuota del proveedor`, () => {
+    expect(G.sinMedir.modelo.startsWith(`google/${G.sinMedir.nombre.toLowerCase().replace(/ /g, "-")}`)).toBe(true);
+    const cs = celdas(G.sinMedir.modelo);
+    expect(cs.length).toBe(BATERIAS_SEMANAL.length);
+    for (const c of cs) expect(medida(c), c.bateria).toBe(false);
+    const avisos = (inf.veredicto?.avisos ?? []).map(String).filter((a: string) => a.includes(G.sinMedir.modelo));
+    expect(avisos.length).toBeGreaterThan(0);
+    for (const a of avisos) expect(a).toMatch(/429|cuota|quota/i);
+  });
+
+  it("⛔ «medido» solo de un modelo con TODAS sus celdas medidas; el no medido, sin ninguna", () => {
+    const google = [...new Set((inf.resultados as J[]).map((c) => String(c.modelo)).filter((m) => m.startsWith("google/")))];
+    const enteros = google.filter((m) => celdas(m).length === BATERIAS_SEMANAL.length && celdas(m).every(medida));
+    const ninguno = google.filter((m) => !celdas(m).some(medida));
+    expect(enteros).toContain(G.medido.modelo);
+    expect(ninguno).toContain(G.sinMedir.modelo);
+    // Y la verja caza el caso contrario: con UNA celda sin medir, deja de estar entero.
+    const roto = structuredClone(inf);
+    roto.resultados.find((c: J) => c.modelo === G.medido.modelo && c.bateria === "mt-bench").estado = "no-medible";
+    const cs = (roto.resultados as J[]).filter((c) => c.modelo === G.medido.modelo);
+    expect(cs.every(medida)).toBe(false);
+  });
+
   for (const loc of LOCALES) {
-    it(`${loc}: la nota de compatibilidad nombra el adaptador nativo de Gemini con su versión`, () => {
+    it(`${loc}: la nota nombra el adaptador nativo, lo medido y lo no medido por parámetro, sin cifras`, () => {
       const nota = cargar(loc)["landing.hero.compatibleNota"]!;
       expect(nota).toContain("Gemini");
-      expect(nota).toContain("{gemini}");
+      for (const p of ["{gemini}", "{flash}", "{pro}", "{fecha}"]) expect(nota, `${loc} ${p}`).toContain(p);
       expect(nota).toContain("OpenAI");
       expect(nota).toContain("Anthropic");
+      // Ni un número escrito a mano (ni de ahorro, ni de modelo): todo llega por parámetro.
+      expect(nota, loc).not.toMatch(/[0-9%]/);
+      expect(nota.indexOf("{flash}"), loc).toBeLessThan(nota.indexOf("{pro}"));
     });
   }
-  it("en/es: lo dice con todas las letras", () => {
-    expect(cargar("en")["landing.hero.compatibleNota"]).toMatch(/Compatible is not measured/);
-    expect(cargar("en")["landing.hero.compatibleNota"]).toMatch(/Gemini has no measured saving yet/);
-    expect(cargar("es")["landing.hero.compatibleNota"]).toMatch(/Compatible no es medido/);
-    expect(cargar("es")["landing.hero.compatibleNota"]).toMatch(/Gemini aún no tiene ahorro medido/);
+
+  it("en/es: lo dice con todas las letras — medido, sin cifra de ahorro, y el otro aún sin medir", () => {
+    const en = cargar("en")["landing.hero.compatibleNota"]!;
+    expect(en).toMatch(/Compatible is not measured/);
+    expect(en).toMatch(/Gemini has no savings figure/);
+    expect(en).toMatch(/What is measured for Gemini: \{flash\}, through its native API, in the weekly live bench of \{fecha\} — all four batteries, with no layer failures and no refusal cached or credited as savings/);
+    expect(en).toMatch(/it does not measure a saving/);
+    expect(en).toMatch(/\{pro\} is not measured yet: the provider's quota stopped it/);
+    const es = cargar("es")["landing.hero.compatibleNota"]!;
+    expect(es).toMatch(/Compatible no es medido/);
+    expect(es).toMatch(/Gemini no tiene cifra de ahorro/);
+    expect(es).toMatch(/Lo medido de Gemini: \{flash\}, por su API nativa, en el banco semanal en vivo del \{fecha\} — las cuatro baterías, sin ningún fallo de la capa y sin ninguna negativa cacheada ni acreditada como ahorro/);
+    expect(es).toMatch(/no mide un ahorro/);
+    expect(es).toMatch(/\{pro\} aún no está medido: lo impidió la cuota del proveedor/);
   });
-  it("la versión del adaptador nativo es la 0.4.33 y la portada la pasa por parámetro", () => {
+
+  it("la versión del adaptador nativo es la 0.4.33, y la portada pasa por parámetro esa versión y lo medido", () => {
     expect(VERSION_GEMINI_NATIVO).toBe("0.4.33");
-    expect(codigo("app/[locale]/page.tsx")).toContain('t("hero.compatibleNota", { gemini: VERSION_GEMINI_NATIVO })');
+    const src = codigo("app/[locale]/page.tsx");
+    expect(src).toContain('t("hero.compatibleNota", notaCompatible)');
+    for (const x of ["gemini: VERSION_GEMINI_NATIVO", "flash: G.medido.nombre", "pro: G.sinMedir.nombre", "G.fecha"]) expect(src).toContain(x);
   });
 });
 
@@ -416,7 +501,7 @@ describe("los textos nuevos se formatean en los 12 idiomas (ICU sin errores)", (
     "landing.step2.plain": { rep: "30 %", punto: "31,5 %", bajo: "25,7 %", alto: "36,7 %", cero: "0 %" },
     "landing.trabajos.caption": { cero: "0 %" },
     "landing.ledgersHead.providerNote": { fecha: "2026-09-28" },
-    "landing.hero.compatibleNota": { gemini: "0.4.33" },
+    "landing.hero.compatibleNota": { gemini: "0.4.33", flash: "Gemini 3.8 Flash", pro: "Gemini 3.1 Pro", fecha: "1 October 2026" },
     "landing.pricing.plans.medir.body": { seats: 5, requests: "20.000", version: "0.4.33" },
     "landing.footer.ctaSub": { version: "0.4.33" },
     "howItWorks.billWith": {},

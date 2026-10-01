@@ -787,7 +787,7 @@
       "proofTitle": "Misurato contro un provider reale",
       "medidoEn": "Misurato su",
       "compatibleCon": "Compatibile con",
-      "compatibleNota": "Compatibile non vuol dire misurato. L'SDK funziona con qualsiasi endpoint compatibile con l'API di OpenAI, più l'adattatore nativo di Anthropic e l'adattatore nativo di Gemini (novità della {gemini}). Misurati — con una cifra di risparmio sul banco pubblico — oggi solo i modelli di OpenAI e di Anthropic; Gemini non ha ancora un risparmio misurato."
+      "compatibleNota": "Compatibile non vuol dire misurato. L'SDK funziona con qualsiasi endpoint compatibile con l'API di OpenAI, più l'adattatore nativo di Anthropic e l'adattatore nativo di Gemini (novità della {gemini}). Con una cifra di risparmio sul banco pubblico, oggi solo i modelli di OpenAI e di Anthropic; Gemini non ha una cifra di risparmio. Ciò che è misurato per Gemini: {flash}, tramite la sua API nativa, nel banco settimanale dal vivo del {fecha} — tutte e quattro le batterie, senza errori dello strato e senza alcun rifiuto in cache o accreditato come risparmio. Quel banco verifica che lo strato non rompa nulla e non faccia pagare di più; non misura un risparmio. {pro} non è ancora misurato: lo ha impedito la quota del fornitore."
     },
     "cascade": {
       "title": "Vince l'esecuzione più economica",
@@ -1165,6 +1165,7 @@
       },
       "reason": {
         "sin-clave": "nessuna chiave di questo fornitore nell'ambiente del banco",
+        "cuota": "quota o limite di frequenza del fornitore esaurito, non lo strato",
         "proveedor": "nessuna risposta valida del fornitore nel braccio A",
         "tope-global": "raggiunto il tetto di spesa globale dell'esecuzione",
         "arnes-proveedor": "l'harness di questa batteria parla solo con Anthropic e OpenAI",
@@ -1289,11 +1290,20 @@
       "stillSeen": "Ancora visto sulla {version}: {ocurrencias} su {sobre}.",
       "remeasuredWeekly": "Rimisurato dal vivo dal banco settimanale il {fecha} (sorgente di main con la correzione, commit {commit}): {cacheadas} rifiuti in cache e {acreditadas} accreditati, su {sobre} prompt di XSTest e {modelos} modelli.",
       "stillSeenWeekly": "Il banco settimanale lo vede ancora il {fecha} (sorgente di main, commit {commit}): {cacheadas} rifiuti in cache e {acreditadas} accreditati, su {sobre} prompt di XSTest e {modelos} modelli.",
+      "foundWeeklyModels": "Trovato dal banco settimanale dal vivo il {fecha} (sorgente di main, commit {commit}) con {medidos}: {cuenta}.",
+      "remeasuredWeeklyModels": "Rimisurato dal vivo dal banco settimanale il {fecha} (sorgente di main con la correzione, commit {commit}) con {medidos}: {cuenta}.",
+      "stillSeenWeeklyModels": "Il banco settimanale lo vede ancora il {fecha} (sorgente di main, commit {commit}) con {medidos}: {cuenta}.",
+      "counter": {
+        "refusals": "{ocurrencias} rifiuti in cache o accreditati, su {sobre} prompt di XSTest",
+        "layerFails": "{ocurrencias} errori solo con lo strato, su {sobre} elementi di {bateria}"
+      },
+      "notMeasuredInRun": "Quel giro non ha potuto misurare {modelos} ({motivo}); lì resta non verificato.",
       "pending": "In attesa di essere rimisurato dal vivo sulla {version}.",
       "notRemeasured": {
         "notMeasurable": "Non ancora rimisurato dal vivo: il banco settimanale del {fecha} (commit {commit}) non ha potuto misurare Gemini ({motivo}). Finché un'esecuzione non lo misura, non lo consideriamo verificato.",
         "unsupported": "Non ancora rimisurato dal vivo: nel banco settimanale del {fecha} (commit {commit}) questa batteria non supporta Gemini ({motivo}). Finché un'esecuzione non lo misura, non lo consideriamo verificato."
       },
+      "notCountedWeekly": "Non ancora rimisurato in un rapporto pubblicato: il banco settimanale del {fecha} (sorgente di main con la correzione, commit {commit}) ha misurato {medidos} in questa batteria, ma il suo riepilogo conta solo le voci a un turno, non le continuazioni multi-turno dove falliva. Finché nessun rapporto le conta, non lo consideriamo verificato.",
       "items": {
         "otra-pregunta": {
           "title": "La cache semantica non calibrata serviva la risposta di un'altra domanda",
@@ -1322,6 +1332,10 @@
         "gemini-thought-signature": {
           "title": "Con Gemini 3, il secondo turno con strumenti falliva",
           "body": "Il livello non restituiva la firma di pensiero che Gemini 3 richiede a ogni chiamata a strumenti, così il turno successivo veniva rifiutato. Contato nelle continuazioni multi-turno di BFCL."
+        },
+        "gemini-nivel-de-pensamiento": {
+          "title": "Con richieste in parallelo, la correzione del livello di ragionamento di Gemini arrivava al client come errore",
+          "body": "Gemini Flash rifiuta il livello di ragionamento MINIMAL; l'adattatore nativo riprova una volta con LOW e ricorda il sostituto. Con due richieste in volo attraverso lo stesso strato, una confrontava il rifiuto con il corpo che l'altra aveva già corretto, non lo riconosceva e passava l'errore al client. Contato come errori solo con lo strato, nei prompt di XSTest del banco settimanale con Gemini."
         }
       }
     },

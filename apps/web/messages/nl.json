@@ -787,7 +787,7 @@
       "proofTitle": "Gemeten tegen een echte provider",
       "medidoEn": "Gemeten op",
       "compatibleCon": "Compatibel met",
-      "compatibleNota": "Compatibel is niet gemeten. De SDK werkt met elk endpoint dat compatibel is met de OpenAI-API, plus de native Anthropic-adapter en de native Gemini-adapter (nieuw in {gemini}). Gemeten — met een besparingscijfer op de publieke benchmark — zijn vandaag alleen modellen van OpenAI en Anthropic; Gemini heeft nog geen gemeten besparing."
+      "compatibleNota": "Compatibel is niet gemeten. De SDK werkt met elk endpoint dat compatibel is met de OpenAI-API, plus de native Anthropic-adapter en de native Gemini-adapter (nieuw in {gemini}). Met een besparingscijfer op de publieke benchmark zijn vandaag alleen modellen van OpenAI en Anthropic gemeten; Gemini heeft geen besparingscijfer. Wat voor Gemini gemeten is: {flash}, via zijn native API, in de wekelijkse live bench van {fecha} — alle vier batterijen, zonder fouten van de laag en zonder weigering in de cache of als besparing gecrediteerd. Die bench controleert dat de laag niets breekt en niet te veel rekent; hij meet geen besparing. {pro} is nog niet gemeten: het quotum van de provider hield het tegen."
     },
     "cascade": {
       "title": "De goedkoopste uitvoering wint",
@@ -1165,6 +1165,7 @@
       },
       "reason": {
         "sin-clave": "geen sleutel voor deze provider in de omgeving van de bench",
+        "cuota": "quotum of rate limit van de provider op, niet de laag",
         "proveedor": "geen geldig antwoord van de provider in arm A",
         "tope-global": "het totale uitgaveplafond van de run was bereikt",
         "arnes-proveedor": "het harnas van deze batterij praat alleen met Anthropic en OpenAI",
@@ -1289,11 +1290,20 @@
       "stillSeen": "Nog steeds gezien op {version}: {ocurrencias} van {sobre}.",
       "remeasuredWeekly": "Live opnieuw gemeten door de wekelijkse bench op {fecha} (broncode van main met de fix, commit {commit}): {cacheadas} weigeringen in de cache en {acreditadas} gecrediteerd, op {sobre} XSTest-prompts en {modelos} modellen.",
       "stillSeenWeekly": "De wekelijkse bench ziet het op {fecha} nog steeds (broncode van main, commit {commit}): {cacheadas} weigeringen in de cache en {acreditadas} gecrediteerd, op {sobre} XSTest-prompts en {modelos} modellen.",
+      "foundWeeklyModels": "Gevonden door de wekelijkse live bench op {fecha} (broncode van main, commit {commit}) met {medidos}: {cuenta}.",
+      "remeasuredWeeklyModels": "Live opnieuw gemeten door de wekelijkse bench op {fecha} (broncode van main met de fix, commit {commit}) met {medidos}: {cuenta}.",
+      "stillSeenWeeklyModels": "De wekelijkse bench ziet het op {fecha} nog steeds (broncode van main, commit {commit}) met {medidos}: {cuenta}.",
+      "counter": {
+        "refusals": "{ocurrencias} weigeringen in de cache of gecrediteerd, op {sobre} XSTest-prompts",
+        "layerFails": "{ocurrencias} fouten alleen met de laag, op {sobre} {bateria}-items"
+      },
+      "notMeasuredInRun": "Die run kon {modelos} niet meten ({motivo}); daar blijft het onbevestigd.",
       "pending": "Wacht op een nieuwe live meting op {version}.",
       "notRemeasured": {
         "notMeasurable": "Nog niet live opnieuw gemeten: de wekelijkse bench van {fecha} (commit {commit}) kon Gemini niet meten ({motivo}). Zolang geen run het meet, tellen we het niet als geverifieerd.",
         "unsupported": "Nog niet live opnieuw gemeten: in de wekelijkse bench van {fecha} (commit {commit}) ondersteunt deze batterij Gemini niet ({motivo}). Zolang geen run het meet, tellen we het niet als geverifieerd."
       },
+      "notCountedWeekly": "Nog niet opnieuw gemeten in een gepubliceerd rapport: de wekelijkse bench van {fecha} (broncode van main met de fix, commit {commit}) mat {medidos} in deze batterij, maar de samenvatting telt alleen items met één beurt, niet de vervolgbeurten waar dit misging. Zolang geen rapport ze telt, rekenen we het niet als geverifieerd.",
       "items": {
         "otra-pregunta": {
           "title": "De ongekalibreerde semantische cache leverde het antwoord van een andere vraag",
@@ -1322,6 +1332,10 @@
         "gemini-thought-signature": {
           "title": "Bij Gemini 3 mislukte de tweede beurt met tools",
           "body": "De laag gaf de thought signature die Gemini 3 bij elke tool call vereist niet terug, waardoor de volgende beurt werd geweigerd. Geteld in BFCL-vervolgen met meerdere beurten."
+        },
+        "gemini-nivel-de-pensamiento": {
+          "title": "Bij parallelle verzoeken kwam de correctie van het denkniveau van Gemini als fout bij de client aan",
+          "body": "Gemini Flash weigert het denkniveau MINIMAL; de native adapter probeert het één keer opnieuw met LOW en onthoudt de vervanger. Met twee verzoeken tegelijk via dezelfde laag vergeleek het ene de weigering met de body die het andere al had gecorrigeerd, herkende haar niet en gaf de fout door aan de client. Geteld als fouten alleen met de laag, in de XSTest-prompts van de wekelijkse bench met Gemini."
         }
       }
     },

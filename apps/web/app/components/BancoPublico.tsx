@@ -5,6 +5,7 @@ import {
   type Banco,
   type Bateria,
   type CeldaSemanal,
+  type EvidenciaFamilia,
   type EvidenciaSemanal,
   type Fallo,
   type Intervalo,
@@ -58,7 +59,10 @@ function formatos(locale: string) {
   const ent = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 });
   const p = new Intl.NumberFormat(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const fecha = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "UTC" });
+  const lista = new Intl.ListFormat(locale, { style: "long", type: "conjunction" });
   return {
+    /** Una lista de nombres («a, b y c»), en el idioma de la página. */
+    lista: (xs: readonly string[]) => lista.format(xs),
     pct: (x: number) => pct.format(x),
     /** Porcentajes de diseño (nivel de confianza, fracciones del flujo): sin decimales. */
     pctRedondo: (x: number) => pctRedondo.format(x),
@@ -489,6 +493,40 @@ function evidencia(e: EvidenciaSemanal, f: F): Record<string, string> {
   };
 }
 
+/** Lo que una tirada semanal contó de un fallo de Gemini, en los modelos que midió. */
+function cuentaFamilia(e: EvidenciaFamilia, t: Traductor, f: F): Record<string, string> {
+  return {
+    fecha: f.fecha(e.fecha),
+    commit: e.commit,
+    medidos: f.lista(e.medidos),
+    cuenta: t(e.tipo === "negativas" ? "bugs.counter.refusals" : "bugs.counter.layerFails", {
+      ocurrencias: f.ent(e.ocurrencias),
+      sobre: f.ent(e.sobre),
+      bateria: NOMBRE_BATERIA[e.bateria],
+    }),
+  };
+}
+
+/** Los modelos de la familia que esa tirada no pudo medir, agrupados por motivo. */
+function SinMedirFamilia({ sinMedir, t, f }: { sinMedir: EvidenciaFamilia["sinMedir"]; t: Traductor; f: F }) {
+  if (!sinMedir.length) return null;
+  const porMotivo = new Map<string, string[]>();
+  for (const x of sinMedir) {
+    const k = x.motivo ?? "otro";
+    porMotivo.set(k, [...(porMotivo.get(k) ?? []), x.modelo]);
+  }
+  return (
+    <>
+      {[...porMotivo].map(([motivo, modelos]) => (
+        <span key={motivo} data-sin-medir={motivo}>
+          {" "}
+          {t("bugs.notMeasuredInRun", { modelos: f.lista(modelos), motivo: t(`weekly.reason.${motivo}`) })}
+        </span>
+      ))}
+    </>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // el banco semanal en vivo
 
@@ -651,6 +689,11 @@ function Fallos({ banco, t, f }: { banco: Banco; t: Traductor; f: F }) {
                   {t("bugs.foundWeekly", evidencia(x.antesSemanal, f))} <InformeEnlace ruta={x.antesSemanal.ruta} />
                 </li>
               )}
+              {x.antesFamilia && (
+                <li>
+                  {t("bugs.foundWeeklyModels", cuentaFamilia(x.antesFamilia, t, f))} <InformeEnlace ruta={x.antesFamilia.ruta} />
+                </li>
+              )}
               <li>{t("bugs.fixed", { version: x.arregladoEn, prs: prs(x) })}</li>
               {x.despues && (
                 <li>
@@ -670,7 +713,23 @@ function Fallos({ banco, t, f }: { banco: Banco; t: Traductor; f: F }) {
                   <InformeEnlace ruta={x.despuesSemanal.ruta} />
                 </li>
               )}
-              {!x.despues && !x.despuesSemanal && (
+              {x.despuesFamilia && (
+                <li data-semanal={x.despuesFamilia.ocurrencias === 0 ? "re-medido" : "aun-visto"}>
+                  {t(x.despuesFamilia.ocurrencias === 0 ? "bugs.remeasuredWeeklyModels" : "bugs.stillSeenWeeklyModels", cuentaFamilia(x.despuesFamilia, t, f))}
+                  <SinMedirFamilia sinMedir={x.despuesFamilia.sinMedir} t={t} f={f} /> <InformeEnlace ruta={x.despuesFamilia.ruta} />
+                </li>
+              )}
+              {x.sinContarSemanal && (
+                <li data-semanal="sin-contar">
+                  {t("bugs.notCountedWeekly", {
+                    fecha: f.fecha(x.sinContarSemanal.fecha),
+                    commit: x.sinContarSemanal.commit,
+                    medidos: f.lista(x.sinContarSemanal.medidos),
+                  })}
+                  <SinMedirFamilia sinMedir={x.sinContarSemanal.sinMedir} t={t} f={f} /> <InformeEnlace ruta={x.sinContarSemanal.ruta} />
+                </li>
+              )}
+              {!x.despues && !x.despuesSemanal && !x.despuesFamilia && !x.sinContarSemanal && (
                 <li data-semanal={x.sinMedirSemanal ? "sin-medir" : undefined}>
                   {x.sinMedirSemanal ? (
                     <>
