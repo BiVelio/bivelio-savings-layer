@@ -33,6 +33,7 @@ function metricas(r: ResultadoDeCelda): string {
   if (m.negativasCacheadas !== undefined) partes.push(`negativas cacheadas ${m.negativasCacheadas}`);
   if (m.negativasAcreditadas !== undefined) partes.push(`acreditadas ${m.negativasAcreditadas}`);
   partes.push(`capa-falla ${m.fallosDeLaCapa}`);
+  if (m.excluidosPorCuota) partes.push(`excluidos por cuota ${m.excluidosPorCuota}`);
   const e = m.exactitud.find((x) => x.brazo === "B") ?? m.exactitud[0];
   if (e && e.valor !== null) {
     const nombre = r.bateria === "mt-bench" ? "victoria de B" : "B−A";

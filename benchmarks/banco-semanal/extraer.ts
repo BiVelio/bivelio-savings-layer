@@ -12,8 +12,15 @@
  * brazo SIN ella (A), en la misma pregunta, no lo tuvo. Un error del proveedor
  * que golpea a los dos brazos no es de la capa; uno que solo ve la capa, sí.
  *
+ * Salvo la CUOTA del proveedor (run 36786990486; ../publicados/cuota.ts): un
+ * 429 por cuota o límite de tasa, en cualquiera de los dos brazos, saca el ítem
+ * de la comparación en los dos y se cuenta aparte (`excluidosPorCuota`). Si la
+ * celda se queda así sin ítems comparables, o por debajo de
+ * MINIMO_COMPARABLE_TRAS_CUOTA, es «no medible — cuota del proveedor» (aviso).
+ *
  * Todo es puro: recibe el JSON ya leído.
  */
+import { esErrorDeCuota } from "../publicados/cuota.js";
 import type { Bateria, ModeloDelBanco } from "./plan.js";
 
 export interface IntervaloDeConfianza {
@@ -66,6 +73,12 @@ export interface Medicion {
   /** XSTest: negativas con ahorro acreditado o con registro de referencia. */
   negativasAcreditadas?: number;
   fallosDeLaCapa: number;
+  /**
+   * Ítems sacados de la comparación (en los dos brazos) porque el proveedor
+   * respondió 429 por cuota o límite de tasa en A o en B. No son de la capa:
+   * van a los avisos, nunca a `fallosDeLaCapa` (ver `cuotaAtribuible`).
+   */
+  excluidosPorCuota?: number;
   /** Hasta 5 ejemplos de fallos de la capa (ya pasados por el `sinSecretos` de cada arnés). */
   ejemplosDeFallos: string[];
   exactitud: Exactitud[];
@@ -115,12 +128,72 @@ const esPresupuesto = (e: string) => /presupuesto|budget/i.test(e);
 /** Un arnés que corrió y no llegó a medir un solo ítem (su tope no alcanzó ni para uno, o el proveedor no respondió). */
 export const NINGUNO = "0 ítems medidos: el tope de la celda no alcanzó para uno, o el proveedor no respondió";
 
+// ── La cuota del proveedor ──────────────────────────────────────────────────
+
+/** El comienzo del motivo de una celda que la cuota del proveedor dejó sin medir. */
+export const CUOTA_DEL_PROVEEDOR = "cuota del proveedor";
+
+/**
+ * EL MÍNIMO DE ÍTEMS COMPARABLES cuando la cuota se llevó alguno. Por debajo,
+ * la celda es «no medible — cuota del proveedor»: lo que queda es demasiado
+ * poco para decir que la capa no empeora. GSM8K, el mismo mínimo con el que su
+ * arnés ya se declara no medible («budget fits only n unique problems», < 10);
+ * BFCL y XSTest, el mismo; MT-Bench, las preguntas que dan los turnos mínimos
+ * del juez (MINIMO_DE_TURNOS_JUZGADOS / 2). Solo actúa si hubo exclusiones por
+ * cuota: una celda cortada por su tope con pocos ítems sigue midiéndose.
+ */
+export const MINIMO_COMPARABLE_TRAS_CUOTA: Record<Bateria, number> = {
+  gsm8k: 10,
+  bfcl: 10,
+  xstest: 10,
+  "mt-bench": MINIMO_DE_TURNOS_JUZGADOS / 2,
+};
+
+/**
+ * ¿Puede atribuirse a la cuota un 429 de esta celda? Solo si el brazo con la
+ * capa NO mandó más peticiones al proveedor que el brazo A. Un 429 que la capa
+ * provocara sola (más peticiones que A: reintentos propios, llamadas extra) no
+ * debería existir; si existe, es de la capa y cuenta como `capa-falla`: con
+ * B > A no se excluye nada y los errores se cuentan como siempre.
+ */
+export function cuotaAtribuible(peticionesA: number, peticionesB: number): boolean {
+  return peticionesB <= peticionesA;
+}
+
+const notaDeCuotaNoAtribuible = (a: number, b: number) =>
+  `429 de cuota con más peticiones al proveedor en B (${b}) que en A (${a}): no se excluye, cuenta como de la capa`;
+
+/**
+ * El cierre común: una celda con 0 ítems comparables NUNCA es «medida» (XSTest
+ * con Gemini 3.1 Pro en el run 36786990486 salía «medida», n=40, con los 40
+ * ítems en 429 en los dos brazos). Tampoco una que la cuota dejó por debajo del
+ * mínimo sin ningún fallo de la capa. Los fallos de la capa se conservan: una
+ * celda no medible con `fallosDeLaCapa` > 0 sigue haciendo fallar (umbrales.ts).
+ */
+function cerrar(m: Medicion, sinNada = NINGUNO): Medicion {
+  if (m.estado !== "medido") return m;
+  const ex = m.excluidosPorCuota ?? 0;
+  const min = MINIMO_COMPARABLE_TRAS_CUOTA[m.bateria];
+  const porCuota = ex > 0 && m.fallosDeLaCapa === 0 && m.n < min;
+  if (m.n > 0 && !porCuota) return m;
+  const motivo =
+    ex > 0
+      ? `${CUOTA_DEL_PROVEEDOR}: ${ex} ítem${ex === 1 ? "" : "s"} con 429 por cuota o límite de tasa (en A o en B), excluidos de los dos brazos; quedan ${m.n} comparables (mínimo ${min})`
+      : m.fallosDeLaCapa > 0
+        ? "0 ítems comparables: el brazo con la capa falló en todos los que A respondió"
+        : sinNada;
+  return { ...m, estado: "no-medible", motivo };
+}
+
 // ── GSM8K ───────────────────────────────────────────────────────────────────
 
 interface EnsayoGsm8k {
   pos: number;
   brazo: string;
   coste: number;
+  llamadas: number;
+  /** Peticiones al proveedor, respondidas o no; los artefactos de antes de la cuota no lo traen. */
+  peticiones?: number;
   realCapa?: number;
   error?: string;
 }
@@ -144,7 +217,13 @@ export function extraerGsm8k(art: unknown, modelo: ModeloDelBanco): Medicion {
   const ensayos = campo<EnsayoGsm8k[]>(m, "ensayos");
   const errorDeA = new Map<number, boolean>();
   for (const e of ensayos) if (e.brazo === "A") errorDeA.set(e.pos, !!e.error);
-  const fallos = ensayos.filter((e) => e.brazo !== "A" && e.error && !esPresupuesto(e.error) && errorDeA.get(e.pos) === false);
+  // Cuota: posiciones con un 429 en cualquier brazo, si ningún brazo con capa mandó más peticiones que A.
+  const peticiones = (b: string) => suma(ensayos.filter((e) => e.brazo === b).map((e) => e.peticiones ?? e.llamadas));
+  const conCuota = new Set(ensayos.filter((e) => esErrorDeCuota(e.error)).map((e) => e.pos));
+  const peorB = brazosCapa.map((b) => peticiones(b)).reduce((x, y) => Math.max(x, y), 0);
+  const atribuible = cuotaAtribuible(peticiones("A"), peorB);
+  const excluidas = atribuible ? conCuota : new Set<number>();
+  const fallos = ensayos.filter((e) => e.brazo !== "A" && e.error && !esPresupuesto(e.error) && errorDeA.get(e.pos) === false && !excluidas.has(e.pos));
 
   const comparaciones = campo<{ brazo: string; diferenciaExactitud: IntervaloDeConfianza | null }[]>(m, "resumen.comparaciones");
   const exactitud: Exactitud[] = comparaciones.map((c) => ({
@@ -160,24 +239,27 @@ export function extraerGsm8k(art: unknown, modelo: ModeloDelBanco): Medicion {
     return { brazo: b, informeUsd: suma(es.map((e) => e.realCapa!)), facturaUsd: suma(es.map((e) => e.coste)), llamadas: es.length };
   });
 
-  return {
+  const notas = !atribuible && conCuota.size > 0 ? [notaDeCuotaNoAtribuible(peticiones("A"), peorB)] : [];
+  return cerrar({
     ...base,
     estado: "medido",
-    n: ensayos.filter((e) => e.brazo === "A" && !e.error).length,
+    n: ensayos.filter((e) => e.brazo === "A" && !e.error && !excluidas.has(e.pos)).length,
     cortadaPorTope: estado === "abortado-presupuesto",
     respuestasDeOtraPregunta: deOtraEnVivo + deOtraSinRed,
     fallosDeLaCapa: fallos.length,
-    ejemplosDeFallos: ejemplos(fallos.map((e) => `${e.brazo} pos ${e.pos}: ${e.error}`)),
+    ...(excluidas.size ? { excluidosPorCuota: excluidas.size } : {}),
+    ejemplosDeFallos: ejemplos([...notas, ...fallos.map((e) => `${e.brazo} pos ${e.pos}: ${e.error}`)]),
     exactitud,
     informeVsFactura,
-  };
+  });
 }
 
 // ── BFCL ────────────────────────────────────────────────────────────────────
 
 interface EntradaAstBfcl {
   id: string;
-  B: { ok: boolean; coste: number; informe?: { actual: number } };
+  A: { ok: boolean; error?: string; llamadasAlProveedor?: number };
+  B: { ok: boolean; error?: string; coste: number; llamadasAlProveedor?: number; informe?: { actual: number } };
 }
 
 /** Lo que `sinIntervencionBfcl` lee de cada entrada AST (arnes.ts, `RegistroAst`). */
@@ -253,9 +335,19 @@ export function extraerBfcl(art: unknown, modelo: ModeloDelBanco): Medicion {
   const r = campo<J[]>(art, "resumen")[i]!;
   const gastoUsd = campo<number>(r, "gasto.total");
   const n = campo<number>(r, "n");
-  const ast = campo<(EntradaAstBfcl & { A: { ok: boolean } })[]>(t, "ast");
+  const ast = campo<EntradaAstBfcl[]>(t, "ast");
+  // Cuota: entradas con un 429 en A o en B, si B no mandó más peticiones al proveedor que A.
+  const peticionesA = suma(ast.map((e) => e.A.llamadasAlProveedor ?? 0));
+  const peticionesB = suma(ast.map((e) => e.B.llamadasAlProveedor ?? 0));
+  const conCuota = new Set(ast.filter((e) => esErrorDeCuota(e.A.error) || esErrorDeCuota(e.B.error)).map((e) => e.id));
+  const atribuible = cuotaAtribuible(peticionesA, peticionesB);
+  const excluidas = atribuible ? conCuota : new Set<string>();
   if (ast.length > 0 && ast.every((e) => !e.A.ok)) {
-    return { ...base, estado: "no-medible", motivo: "ninguna respuesta válida del proveedor en el brazo A", gastoUsd, n: 0, cortadaPorTope: false, fallosDeLaCapa: 0 };
+    const motivo =
+      excluidas.size > 0 && ast.every((e) => excluidas.has(e.id))
+        ? `${CUOTA_DEL_PROVEEDOR}: las ${ast.length} entradas con 429 por cuota o límite de tasa; ninguna respuesta válida del proveedor en el brazo A`
+        : "ninguna respuesta válida del proveedor en el brazo A";
+    return { ...base, estado: "no-medible", motivo, gastoUsd, n: 0, cortadaPorTope: false, fallosDeLaCapa: 0, ...(excluidas.size ? { excluidosPorCuota: excluidas.size } : {}) };
   }
   if (ast.length === 0) {
     return { ...base, estado: "no-medible", motivo: NINGUNO, gastoUsd, n: 0, cortadaPorTope: campo<boolean>(r, "gasto.abortado"), fallosDeLaCapa: 0 };
@@ -263,12 +355,13 @@ export function extraerBfcl(art: unknown, modelo: ModeloDelBanco): Medicion {
   const infieles = campo<string[]>(r, "infieles");
   const multi = (r["multiTurno"] as { herramientasOmitidasPorB?: number; violaciones?: string[] } | undefined) ?? {};
   const erroresA = new Set(campo<{ id: string }[]>(r, "erroresA").map((e) => e.id));
-  const soloB = campo<{ id: string; error: string }[]>(r, "erroresB").filter((e) => !erroresA.has(e.id) && !esPresupuesto(e.error));
+  const soloB = campo<{ id: string; error: string }[]>(r, "erroresB").filter((e) => !erroresA.has(e.id) && !esPresupuesto(e.error) && !excluidas.has(e.id));
+  const notas = !atribuible && conCuota.size > 0 ? [notaDeCuotaNoAtribuible(peticionesA, peticionesB)] : [];
   const violaciones = multi.violaciones ?? [];
   const dif = campo<IntervaloDeConfianza | null>(r, "diferenciaExactitud");
   const conInforme = ast.filter((e) => e.B.ok && e.B.informe && typeof e.B.coste === "number");
   const sinIntervencion = sinIntervencionBfcl(ast as unknown as EntradaAstBfclCable[]);
-  return {
+  return cerrar({
     ...base,
     ...(sinIntervencion ? { sinIntervencion } : {}),
     estado: "medido",
@@ -277,12 +370,13 @@ export function extraerBfcl(art: unknown, modelo: ModeloDelBanco): Medicion {
     cortadaPorTope: campo<boolean>(r, "gasto.abortado"),
     llamadasCambiadas: infieles.length + (multi.herramientasOmitidasPorB ?? 0),
     fallosDeLaCapa: soloB.length + violaciones.length,
-    ejemplosDeFallos: ejemplos([...soloB.map((e) => `${e.id}: ${e.error}`), ...violaciones.map((v) => `aislamiento de caché: ${v}`)]),
+    ...(excluidas.size ? { excluidosPorCuota: excluidas.size } : {}),
+    ejemplosDeFallos: ejemplos([...notas, ...soloB.map((e) => `${e.id}: ${e.error}`), ...violaciones.map((v) => `aislamiento de caché: ${v}`)]),
     exactitud: [{ brazo: "B", metrica: "exactitud AST (B − A)", valor: dif?.point ?? null, ic95: dif, peorSignificativo: !!dif && dif.upper < 0 }],
     informeVsFactura: [
       { brazo: "B", informeUsd: suma(conInforme.map((e) => e.B.informe!.actual)), facturaUsd: suma(conInforme.map((e) => e.B.coste)), llamadas: conInforme.length },
     ],
-  };
+  });
 }
 
 // ── XSTest ──────────────────────────────────────────────────────────────────
@@ -318,10 +412,20 @@ export function extraerXstest(art: unknown, modelo: ModeloDelBanco): Medicion {
     suma(enB.map((x) => x.conReferencia)) +
     (texto.ahorroAcreditadoUsd > 0 && texto.repsConReferencia === 0 ? 1 : 0);
 
-  const registros = campo<{ modelo: string; id: number; A?: { error?: string }; B?: { error?: string }; repeticiones?: { error?: string }[] }[]>(art, "registros").filter(
+  type BrazoXstest = { error?: string; llamadasAlProveedor?: number; proveedor?: { status?: number } | null };
+  const registros = campo<{ modelo: string; id: number; A?: BrazoXstest; B?: BrazoXstest; repeticiones?: { error?: string }[] }[]>(art, "registros").filter(
     (x) => x.modelo === modelo.corto,
   );
-  const soloB = registros.filter((x) => x.B?.error && !x.A?.error && !esPresupuesto(x.B.error));
+  // Cuota: prompts con un 429 en A o en B (fase principal; las repeticiones son
+  // solo de B y no entran). A hace una petición por prompt; B, las que cuente.
+  const cuotaEn = (b?: BrazoXstest) => !!b && esErrorDeCuota(b.error, b.proveedor?.status);
+  const peticionesA = registros.filter((x) => x.A).length;
+  const peticionesB = suma(registros.map((x) => x.B?.llamadasAlProveedor ?? 0));
+  const conCuota = new Set(registros.filter((x) => cuotaEn(x.A) || cuotaEn(x.B)).map((x) => x.id));
+  const atribuible = cuotaAtribuible(peticionesA, peticionesB);
+  const excluidos = atribuible ? conCuota : new Set<number>();
+  const soloB = registros.filter((x) => x.B?.error && !x.A?.error && !esPresupuesto(x.B.error) && !excluidos.has(x.id));
+  const notas = !atribuible && conCuota.size > 0 ? [notaDeCuotaNoAtribuible(peticionesA, peticionesB)] : [];
   const alterados = campo<number>(r, "textoFiel.alterados");
 
   const porLabel = campo<Partial<Record<"safe" | "unsafe", PorLabelXstest>>>(r, "porLabel");
@@ -346,18 +450,23 @@ export function extraerXstest(art: unknown, modelo: ModeloDelBanco): Medicion {
       peorSignificativo: inseguro.mcnemarP < 0.05 && inseguro.soloA.length > inseguro.soloB.length,
     });
   }
-  return {
+  // n: los pares con respuesta válida en los dos brazos (los de McNemar), no los
+  // prompts lanzados: 40 prompts con 429 en los dos brazos son 0 pares, no 40.
+  const pares = suma(Object.values(porLabel).map((x) => x?.pares ?? 0));
+  return cerrar({
     ...base,
     estado: "medido",
     gastoUsd,
-    n: campo<number>(r, "medidos"),
+    n: pares,
     cortadaPorTope: campo<boolean>(pm, "cortadoPorPresupuesto"),
     // Opcional: los artefactos de antes del `--plazo-min` no lo traen.
     ...((pm as Record<string, unknown>)["cortadoPorPlazo"] === true ? { cortadaPorPlazo: true } : {}),
     negativasCacheadas: cacheadas,
     negativasAcreditadas: acreditadas,
     fallosDeLaCapa: soloB.length + alterados,
+    ...(excluidos.size ? { excluidosPorCuota: excluidos.size } : {}),
     ejemplosDeFallos: ejemplos([
+      ...notas,
       ...soloB.map((x) => `prompt ${x.id}: ${x.B!.error}`),
       ...(alterados ? [`${alterados} respuestas cuyo texto entregado no es el que mandó el proveedor`] : []),
     ]),
@@ -370,7 +479,7 @@ export function extraerXstest(art: unknown, modelo: ModeloDelBanco): Medicion {
         llamadas: campo<number>(r, "medidos"),
       },
     ],
-  };
+  }, "0 pares con respuesta válida en los dos brazos");
 }
 
 // ── MT-Bench ────────────────────────────────────────────────────────────────
@@ -437,6 +546,30 @@ export function sinIntervencionMtBench(fila: unknown): { camposNeutros: Record<s
 export interface PreguntaCrudaMtBench {
   id: number;
   error?: string;
+  /** Cada petición que salió al proveedor en esta pregunta, con su brazo y su status (mt-bench.ts, `LlamadaMedida`). */
+  llamadas?: { brazo: string; turno: number; status: number; error?: string }[];
+}
+
+/**
+ * La cuota en MT-Bench, de las respuestas crudas. Una pregunta se excluye si
+ * su error, o el de cualquier petición de cualquiera de los dos brazos, es un
+ * 429 de cuota. Las peticiones de A se cuentan como los turnos lanzados: A y B
+ * salen a la vez (Promise.all) y A hace exactamente una petición por turno,
+ * pero si la de A seguía en vuelo (reintentando su propio 429) cuando la de B
+ * falló, no llega al registro (pregunta 101 del run 36786990486). Sin
+ * `llamadas` (respuestas crudas de antes) no hay con qué comparar: no se excluye.
+ */
+function cuotaMtBench(preguntas: PreguntaCrudaMtBench[]): { excluidas: Set<number>; nota: string | null } {
+  const conCuota = new Set(
+    preguntas.filter((p) => esErrorDeCuota(p.error) || (p.llamadas ?? []).some((l) => esErrorDeCuota(l.error, l.status))).map((p) => p.id),
+  );
+  if (conCuota.size === 0) return { excluidas: conCuota, nota: null };
+  if (preguntas.some((p) => p.error && !p.llamadas)) return { excluidas: new Set(), nota: null };
+  const llamadas = preguntas.flatMap((p) => (p.llamadas ?? []).map((l) => ({ ...l, id: p.id })));
+  const turnos = new Set(llamadas.map((l) => `${l.id}/${l.turno}`)).size;
+  const a = Math.max(turnos, llamadas.filter((l) => l.brazo === "A").length);
+  const b = llamadas.filter((l) => l.brazo === "B").length;
+  return cuotaAtribuible(a, b) ? { excluidas: conCuota, nota: null } : { excluidas: new Set(), nota: notaDeCuotaNoAtribuible(a, b) };
 }
 
 /**
@@ -456,16 +589,32 @@ export function extraerMtBench(art: unknown, modelo: ModeloDelBanco, crudo?: { m
   const gastoUsd = campo<number>(r, "gasto.total") + gastoJuezUsd;
   const preguntas = crudo?.find((x) => x.modelo === modelo.corto)?.preguntas;
   let fallos: string[];
+  let excluidas = new Set<number>();
+  let notaDeCuota: string | null = null;
   if (preguntas) {
+    const cuota = cuotaMtBench(preguntas);
+    excluidas = cuota.excluidas;
     // Promise.all de A y B: un error de A llega como «brazo A …»; cualquier otro salió de la capa.
-    fallos = preguntas.filter((p) => p.error && !/^brazo A\b/.test(p.error) && !esPresupuesto(p.error)).map((p) => `pregunta ${p.id}: ${p.error}`);
+    fallos = preguntas
+      .filter((p) => p.error && !/^brazo A\b/.test(p.error) && !esPresupuesto(p.error) && !excluidas.has(p.id))
+      .map((p) => `pregunta ${p.id}: ${p.error}`);
+    notaDeCuota = cuota.nota;
   } else {
     fallos = campo<string[]>(r, "errores")
       .filter((e) => /^B t\d/.test(e))
       .map((e) => `${e} (del informe: lista recortada)`);
   }
   if (campo<number>(r, "preguntas.completas") === 0 && fallos.length === 0) {
-    return { ...base, estado: "no-medible", motivo: NINGUNO, gastoUsd, gastoJuezUsd, n: 0, cortadaPorTope: campo<boolean>(r, "preguntas.cortePorPresupuesto"), fallosDeLaCapa: 0 };
+    return cerrar({
+      ...base,
+      estado: "medido",
+      gastoUsd,
+      gastoJuezUsd,
+      n: 0,
+      cortadaPorTope: campo<boolean>(r, "preguntas.cortePorPresupuesto"),
+      fallosDeLaCapa: 0,
+      ...(excluidas.size ? { excluidosPorCuota: excluidas.size } : {}),
+    });
   }
   const juzgada = campo<boolean>(r, "calidad.juzgada");
   const turnos = juzgada ? campo<number>(r, "calidad.turnosJuzgados") : 0;
@@ -478,7 +627,7 @@ export function extraerMtBench(art: unknown, modelo: ModeloDelBanco, crudo?: { m
         `${campo<boolean>(r, "calidad.cortePorPresupuesto") ? ", cortado por su tope" : ""}: sin tasa de victoria`
       : undefined;
   const sinIntervencion = sinIntervencionMtBench(r);
-  return {
+  return cerrar({
     ...base,
     ...(calidadSinMedir ? { calidadSinMedir } : {}),
     ...(sinIntervencion ? { sinIntervencion } : {}),
@@ -488,7 +637,8 @@ export function extraerMtBench(art: unknown, modelo: ModeloDelBanco, crudo?: { m
     n: campo<number>(r, "preguntas.completas"),
     cortadaPorTope: campo<boolean>(r, "preguntas.cortePorPresupuesto"),
     fallosDeLaCapa: fallos.length,
-    ejemplosDeFallos: ejemplos(fallos),
+    ...(excluidas.size ? { excluidosPorCuota: excluidas.size } : {}),
+    ejemplosDeFallos: ejemplos([...(notaDeCuota && fallos.length ? [notaDeCuota] : []), ...fallos]),
     exactitud: tasa
       ? [{ brazo: "B", metrica: "tasa de victoria de B ante el juez (0,5 = empate)", valor: tasa.point, ic95: tasa, peorSignificativo: tasa.upper < 0.5 }]
       : [],
@@ -500,7 +650,7 @@ export function extraerMtBench(art: unknown, modelo: ModeloDelBanco, crudo?: { m
         llamadas: campo<number>(r, "preguntas.completas") * 2,
       },
     ],
-  };
+  });
 }
 
 export function extraer(bateria: Bateria, art: unknown, modelo: ModeloDelBanco, crudoMtBench?: Parameters<typeof extraerMtBench>[2]): Medicion {

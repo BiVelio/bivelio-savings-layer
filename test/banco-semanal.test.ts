@@ -2,7 +2,18 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
-import { extraerBfcl, extraerGsm8k, extraerMtBench, extraerXstest, MINIMO_DE_TURNOS_JUZGADOS, type Medicion } from "../benchmarks/banco-semanal/extraer.js";
+import {
+  extraerBfcl,
+  extraerGsm8k,
+  extraerMtBench,
+  extraerXstest,
+  MINIMO_COMPARABLE_TRAS_CUOTA,
+  MINIMO_DE_TURNOS_JUZGADOS,
+  type Medicion,
+  type PreguntaCrudaMtBench,
+} from "../benchmarks/banco-semanal/extraer.js";
+import { esErrorDeCuota } from "../benchmarks/publicados/cuota.js";
+import { resumir as resumirGsm8k, type Ensayo } from "../benchmarks/publicados/gsm8k/medir.js";
 import { resumenMarkdown } from "../benchmarks/banco-semanal/resumen.js";
 import { claveQueFalta, filtrarCeldas, redactar, valoresSecretos } from "../benchmarks/banco-semanal/orquestador.js";
 import {
@@ -577,6 +588,127 @@ describe("banco semanal · la lectura de los artefactos (tiradas publicadas de v
       expect(m.sinIntervencion).toBeUndefined();
       expect(infraccionesDe(m, 0.75).map((i) => i.regla)).toContain("exactitud-peor");
       expect(evaluar([celda(m)], null).ok).toBe(false);
+    });
+  });
+
+  describe("la cuota agotada del proveedor no es un fallo de la capa (run 36786990486)", () => {
+    // Las celdas reales de gemini-3.1-pro-preview aquel día: la clave de Gemini
+    // agotó su cuota diaria (`generate_requests_per_model_per_day`, límite 250).
+    // MT-Bench: 3 preguntas, todas 429; dos cayeron por azar en el brazo B y el
+    // banco lo contó como capa-falla. XSTest: 40 prompts con 429 en los dos
+    // brazos, y la celda salía «medida», n=40, con 0 $ gastados.
+    type Crudo = { modelo: string; preguntas: PreguntaCrudaMtBench[] }[];
+    type Fx = { mtBench: unknown; mtBenchCrudo: Crudo; xstest: { registros: Record<string, Record<string, unknown>>[] } };
+    const real = () => JSON.parse(leer("fixtures/banco-semanal-gemini-31-pro-cuota-36786990486.json")) as Fx;
+    const pro = modelo("google/gemini-3.1-pro-preview");
+    const celda = (m: Medicion): ResultadoDeCelda => ({ bateria: m.bateria, modelo: pro.id, estado: "medida", topeUsd: 1.5, medicion: m });
+
+    it("reconoce la cuota por el 429 o por el cuerpo del proveedor, y nada más", () => {
+      const fx = real();
+      for (const p of fx.mtBenchCrudo[0]!.preguntas) expect(esErrorDeCuota(p.error)).toBe(true);
+      expect(esErrorDeCuota("HTTP 429: RESOURCE_EXHAUSTED")).toBe(true);
+      expect(esErrorDeCuota('Error: provider 429: {"error":{"code":429}}')).toBe(true);
+      expect(esErrorDeCuota("You exceeded your current quota, please check your plan")).toBe(true);
+      expect(esErrorDeCuota('{"type":"rate_limit_error","message":"..."}')).toBe(true);
+      expect(esErrorDeCuota("Rate limit reached for gpt-4o-mini")).toBe(true);
+      expect(esErrorDeCuota(undefined, 429)).toBe(true);
+      expect(esErrorDeCuota('provider 400: {"error":{"message":"Unknown name \\"prompt_cache_key\\""}}')).toBe(false);
+      expect(esErrorDeCuota("transporte: The operation was aborted due to timeout")).toBe(false);
+      expect(esErrorDeCuota("HTTP 503: UNAVAILABLE", 503)).toBe(false);
+      expect(esErrorDeCuota("pregunta 429: TypeError")).toBe(false);
+    });
+
+    it("MT-Bench · Pro: lo que era capa-falla es «no medible — cuota del proveedor», un aviso", () => {
+      const fx = real();
+      const m = extraerMtBench(fx.mtBench, pro, fx.mtBenchCrudo);
+      expect(m).toMatchObject({ estado: "no-medible", n: 0, fallosDeLaCapa: 0, excluidosPorCuota: 3 });
+      expect(m.motivo).toMatch(/^cuota del proveedor: 3 ítems con 429.*quedan 0 comparables \(mínimo 4\)/);
+      expect(infraccionesDe(m, 1.5)).toEqual([]);
+      // Sola, la batería se queda sin celdas medidas; en el run tenía otras nueve medidas.
+      const v = evaluar([celda(m)], null);
+      expect(v.infracciones.map((i) => i.regla)).toEqual(["bateria-sin-medir"]);
+      expect(v.avisos).toContainEqual(expect.stringMatching(/^mt-bench · google\/gemini-3\.1-pro-preview: no medible — cuota del proveedor/));
+    });
+
+    it("XSTest · Pro: 40 prompts con 429 en los dos brazos son 0 pares — «no medible», nunca «medida»", () => {
+      const m = extraerXstest(real().xstest, pro);
+      expect(m).toMatchObject({ estado: "no-medible", n: 0, fallosDeLaCapa: 0, excluidosPorCuota: 40 });
+      expect(m.motivo).toMatch(/^cuota del proveedor: 40 ítems/);
+      const v = evaluar([celda(m)], null);
+      expect(v.avisos).toContainEqual(expect.stringMatching(/^xstest · google\/gemini-3\.1-pro-preview: no medible — cuota del proveedor/));
+      const md = resumenMarkdown({ modo: "vivo", commit: "c", version: "v", inicio: "i", fin: "f", gastoUsd: 0, reparto: reparto(), resultados: [celda(m)], veredicto: v });
+      expect(md).toMatch(/\| xstest \| google\/gemini-3\.1-pro-preview \| no medible \|/);
+    });
+
+    it.each([
+      ["un 400 del proveedor", 400, 'provider 400: {"error":{"code":400,"message":"Unknown name \\"prompt_cache_key\\""}}'],
+      ["un timeout", 0, "transporte: The operation was aborted due to timeout"],
+    ])("MT-Bench: %s solo en B sigue siendo capa-falla, aunque no quede nada comparable", (_, status, error) => {
+      const fx = real();
+      const p101 = fx.mtBenchCrudo[0]!.preguntas.find((p) => p.id === 101)!;
+      p101.error = error;
+      p101.llamadas = [{ brazo: "B", turno: 1, status, error }];
+      const m = extraerMtBench(fx.mtBench, pro, fx.mtBenchCrudo);
+      expect(m).toMatchObject({ fallosDeLaCapa: 1, excluidosPorCuota: 2 });
+      expect(m.ejemplosDeFallos[0]).toMatch(/^pregunta 101: /);
+      expect(infraccionesDe(m, 1.5).map((i) => i.regla)).toEqual(["capa-falla"]);
+      expect(evaluar([celda(m)], null).ok).toBe(false);
+    });
+
+    it("XSTest: un 400 solo en B sigue siendo capa-falla; los 429 de los demás prompts, no", () => {
+      const fx = real();
+      const r = fx.xstest.registros[0]!;
+      r["A"] = { ...r["A"], error: undefined, proveedor: { status: 200 } };
+      r["B"] = { ...r["B"], error: "HTTP 400: INVALID_ARGUMENT", proveedor: { status: 400 } };
+      const m = extraerXstest(fx.xstest, pro);
+      expect(m).toMatchObject({ fallosDeLaCapa: 1, excluidosPorCuota: 39 });
+      expect(infraccionesDe(m, 1.5).map((i) => i.regla)).toEqual(["capa-falla"]);
+    });
+
+    it("si B mandó más peticiones al proveedor que A, el 429 es de la capa: no se excluye", () => {
+      const fx = real();
+      // La capa reintentando por su cuenta: dos peticiones de B de más en la pregunta 93.
+      const p93 = fx.mtBenchCrudo[0]!.preguntas.find((p) => p.id === 93)!;
+      p93.llamadas!.push({ brazo: "B", turno: 1, status: 429 }, { brazo: "B", turno: 1, status: 429 });
+      const m = extraerMtBench(fx.mtBench, pro, fx.mtBenchCrudo);
+      expect(m.excluidosPorCuota).toBeUndefined();
+      expect(m.fallosDeLaCapa).toBe(2);
+      expect(m.ejemplosDeFallos[0]).toMatch(/más peticiones al proveedor en B \(5\) que en A \(3\)/);
+      expect(infraccionesDe(m, 1.5).map((i) => i.regla)).toEqual(["capa-falla"]);
+
+      const xs = real();
+      for (const r of xs.xstest.registros) r["B"] = { ...r["B"], llamadasAlProveedor: 2 };
+      const x = extraerXstest(xs.xstest, pro);
+      expect(x.excluidosPorCuota).toBeUndefined();
+      // Los dos brazos fallaron en todos: sin capa-falla (A también), y sin pares: no medible.
+      expect(x).toMatchObject({ estado: "no-medible", fallosDeLaCapa: 0 });
+    });
+
+    it("una celda medida con algún ítem excluido por cuota lo dice en el resumen y en los avisos", () => {
+      const m: Medicion = {
+        bateria: "bfcl", modelo: pro.id, estado: "medido", gastoUsd: 0.2, n: 30, cortadaPorTope: false, llamadasCambiadas: 0,
+        fallosDeLaCapa: 0, excluidosPorCuota: 2, ejemplosDeFallos: [], exactitud: [], informeVsFactura: [],
+      };
+      const v = evaluar([celda(m)], null);
+      expect(v.ok).toBe(true);
+      expect(v.avisos).toContainEqual(expect.stringMatching(/^bfcl · google\/gemini-3\.1-pro-preview: excluidos por cuota: 2/));
+      const md = resumenMarkdown({ modo: "vivo", commit: "c", version: "v", inicio: "i", fin: "f", gastoUsd: 0.2, reparto: reparto(), resultados: [celda(m)], veredicto: v });
+      expect(md).toMatch(/excluidos por cuota 2/);
+      // Por debajo del mínimo de la batería, sin fallos de la capa: no medible.
+      expect(MINIMO_COMPARABLE_TRAS_CUOTA.bfcl).toBe(10);
+    });
+
+    it("GSM8K: una posición con 429 de cuota no entra en la comparación de exactitud de ningún brazo", () => {
+      const e = (pos: number, familia: number, brazo: "A" | "B", correcto: boolean, error?: string): Ensayo => ({
+        pos, familia, clase: "original", oro: 1, huella: `h${pos}`, brazo, numero: correcto ? 1 : null, correcto, coste: 0.001,
+        llamadas: error ? 0 : 1, peticiones: 1, entrada: 1, cacheada: 0, escrita: 0, salida: 1, latenciaMs: 1, fuente: "provider", ...(error ? { error } : {}),
+      });
+      const limpio = [e(0, 0, "A", true), e(0, 0, "B", true)];
+      const conCuota = [...limpio, e(1, 1, "A", true), e(1, 1, "B", false, "provider 429: RESOURCE_EXHAUSTED")];
+      const conOtro = [...limpio, e(1, 1, "A", true), e(1, 1, "B", false, "provider 400: bad request")];
+      const dif = (es: Ensayo[]) => resumirGsm8k(es).comparaciones[0]!.diferenciaExactitud?.point;
+      expect(dif(conCuota)).toBe(dif(limpio));
+      expect(dif(conOtro)).toBeLessThan(0);
     });
   });
 

@@ -205,7 +205,7 @@ en una sola celda**.
 | `llamada-cambiada` | BFCL: una llamada a herramienta que la capa devolvió distinta de la que recibió del proveedor, o una herramienta que quitó del cable |
 | `negativa-cacheada` | XSTest: una negativa servida desde la caché, o escrita en ella |
 | `negativa-acreditada` | XSTest: una negativa con ahorro acreditado, o con registro de referencia |
-| `capa-falla` | Cualquier batería: un error en el brazo con la capa cuando el brazo sin ella, en la misma pregunta, no lo tuvo. En XSTest cuenta también un texto entregado distinto del recibido, y en BFCL una violación del aislamiento de caché |
+| `capa-falla` | Cualquier batería: un error en el brazo con la capa cuando el brazo sin ella, en la misma pregunta, no lo tuvo. En XSTest cuenta también un texto entregado distinto del recibido, y en BFCL una violación del aislamiento de caché. **No cuenta un 429 del proveedor por cuota o límite de tasa** (ver [La cuota del proveedor](#la-cuota-del-proveedor-no-es-un-fallo-de-la-capa)). Una celda sin ítems comparables sale «no medible», pero si es porque la capa falló en todos, `capa-falla` sigue actuando |
 | `exactitud-peor` | B − A significativamente negativa. Según la batería: el IC 95 % entero por debajo de 0 (GSM8K, BFCL); la tasa de victoria de B ante el juez con el IC entero por debajo de 0,5 (MT-Bench); o McNemar p < 0,05 en la dirección mala (XSTest: más negativas en prompts seguros, o menos en inseguros). **Solo si la capa intervino en esa celda** (ver abajo) |
 | `informe-vs-factura` | El coste que dice el informe de la capa, sumado por brazo, se sale de ±2 % de lo que factura el proveedor según su `usage`. Hay una holgura absoluta de 0,0001 $ |
 | `factura-no-cuadra` | Lo que el proveedor **factura** según su API de costes, en el workspace o proyecto del banco y en los días de la tirada, se sale de ±2 % de lo que el banco midió. Solo actúa con clave de administrador. Ver [La factura real](#la-factura-real) |
@@ -218,7 +218,10 @@ en una sola celda**.
 
 - Una celda **sin soporte**: el arnés todavía no sabe medir ese modelo.
 - Un modelo **no medible**: por su clave, por su cuota, o porque su tope no
-  alcanza para un solo ítem.
+  alcanza para un solo ítem. Una celda con 0 respuestas válidas en los dos
+  brazos nunca sale «medida».
+- Una celda **no medible — cuota del proveedor**, o una medida con **«excluidos
+  por cuota: n»**: ver la sección siguiente.
 - Una celda **cortada por su tope**: se midió menos, pero no peor.
 - Una celda de XSTest **cortada por su plazo** (`--plazo-min`): igual que la
   anterior, pero la cortó el reloj.
@@ -236,8 +239,10 @@ Dos cosas que conviene saber al leer estas reglas:
   precio mal puesto no lo detectaría. La que cobra el proveedor de verdad la
   mira `factura-no-cuadra`.
 - **`capa-falla` no existe como campo en ningún arnés.** Se calcula igual en las
-  cuatro baterías: un error que solo aparece en el brazo con la capa. Un 429 que
-  la capa agota y que A no vio también cuenta. Es conservador a propósito.
+  cuatro baterías: un error que solo aparece en el brazo con la capa. Es
+  conservador a propósito, con una excepción: un 429 del proveedor por cuota o
+  límite de tasa no cuenta, salvo que B haya mandado más peticiones que A (ver
+  [La cuota del proveedor](#la-cuota-del-proveedor-no-es-un-fallo-de-la-capa)).
 - **Un cuelgue del proveedor no es `capa-falla`.** En BFCL, los dos brazos pasan
   por el mismo cable (`benchmarks/publicados/bfcl/cable.ts`), con el mismo plazo
   por llamada: `PLAZO_POR_LLAMADA_MS`, 180 s. La capa y `GoogleProvider` no
@@ -262,6 +267,55 @@ Dos cosas que conviene saber al leer estas reglas:
   al cliente. Cualquier integración con peticiones en paralelo lo sufría en su
   primer minuto. Se arregló en `src/providers/google.ts`: el 400 se compara con
   el cuerpo que viajó en esa petición.
+
+### La cuota del proveedor no es un fallo de la capa
+
+El run en vivo 36786990486 falló solo por `capa-falla` en MT-Bench con
+gemini-3.1-pro-preview: *«2 errores solo con la capa: pregunta 93: provider 429
+… You exceeded your current quota …»*. Era la cuota diaria de la clave de
+Gemini (`generate_requests_per_model_per_day`, límite 250, compartida con otros
+bancos). Los dos 429 cayeron por azar en el brazo B. En esa misma tirada, XSTest
+con el mismo modelo salía «medida», n = 40 y 0,00 $: los 40 prompts tenían un
+429 en los dos brazos.
+
+Desde entonces (`benchmarks/publicados/cuota.ts` y `extraer.ts`):
+
+- **Qué es cuota.** Un error del proveedor con HTTP 429, o con `RESOURCE_EXHAUSTED`,
+  «exceeded your current quota» o «rate limit» en el cuerpo. Un 400, un 5xx o un
+  timeout no lo son.
+- **Qué se hace con él.** Si sale en cualquiera de los dos brazos, el ítem se
+  excluye de la comparación en **los dos** y se cuenta aparte: «excluidos por
+  cuota: n», en las métricas de la celda y en los avisos. No cuenta como
+  `capa-falla`. GSM8K, además, lo saca de su B − A (antes contaba como un
+  fallo de B).
+- **Cuándo la celda deja de ser medible.** Si con esas exclusiones la celda se
+  queda sin ítems comparables, o por debajo del mínimo de su batería (10 en
+  GSM8K, BFCL y XSTest; 4 preguntas en MT-Bench, que dan los 8 turnos mínimos
+  del juez), sale **«no medible — cuota del proveedor»**. Es un aviso, como ya
+  pasaba en GSM8K cuando la cuota se agotaba en su sonda. El mínimo solo actúa
+  si hubo exclusiones. Una celda cortada por su tope con pocos ítems se sigue
+  midiendo.
+- **La excepción.** Un 429 que provocara la propia capa, por mandar más
+  peticiones que el brazo A, no debería existir. Si en una celda el brazo B hizo
+  **más peticiones al proveedor que A**, no se excluye nada: los 429 cuentan como
+  `capa-falla`, con una nota que da las dos cuentas. Las peticiones de B se
+  cuentan con los registros de cada arnés: las llamadas de B en las respuestas
+  crudas de MT-Bench, `llamadasAlProveedor` en BFCL y XSTest, y `peticiones` en
+  GSM8K (incluye las que acabaron en error). En MT-Bench las de A son los turnos
+  lanzados: A hace exactamente una petición por turno, pero si seguía
+  reintentando cuando B falló, no llega al registro.
+- **El caso de 0 respuestas válidas.** Una celda así **nunca** es «medida». En
+  XSTest, n son los pares con respuesta válida en los dos brazos (los de
+  McNemar), no los prompts lanzados. Si no queda ningún par y es porque la capa
+  falló en todos, la celda sale «no medible» y `capa-falla` sigue haciendo
+  fallar el banco.
+
+`test/banco-semanal.test.ts` lo comprueba con las celdas reales de aquel run
+(`test/fixtures/banco-semanal-gemini-31-pro-cuota-36786990486.json`). MT-Bench
+de Pro pasa de `capa-falla` a «no medible — cuota del proveedor», y XSTest de
+Pro de «medida» a «no medible». Un 400 o un timeout solo en B sigue siendo
+`capa-falla`. Releído con estas reglas, el artefacto entero de ese run no tiene
+ninguna infracción.
 
 ### La calidad solo culpa a la capa si la capa cambió algo
 

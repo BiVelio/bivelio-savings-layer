@@ -18,6 +18,13 @@
  *                        donde el brazo sin ella no lo tuvo (y en XSTest, un
  *                        texto entregado distinto del recibido; en BFCL, una
  *                        violación del aislamiento de caché). Tolerancia 0.
+ *                        NO cuenta un 429 del proveedor por cuota o límite de
+ *                        tasa, en cualquier brazo: el ítem sale de la
+ *                        comparación en los dos y se avisa («excluidos por
+ *                        cuota: n»), salvo que B mandara más peticiones al
+ *                        proveedor que A en la celda (extraer.ts, cuotaAtribuible).
+ *                        Actúa también en una celda no medible: que no queden
+ *                        ítems comparables no borra los errores de la capa.
  *   exactitud-peor       B − A significativamente negativa: el IC 95 % entero
  *                        por debajo de 0 (GSM8K, BFCL), la tasa de victoria de
  *                        B con el IC entero por debajo de 0,5 (MT-Bench), o
@@ -52,7 +59,10 @@
  *                        las claves rechazadas): no hay nada que certifique.
  *
  * No hacen fallar (van al resumen como avisos): un modelo que el arnés todavía
- * no sabe medir (sin-soporte), uno «no medible» por su clave o su cuota, una
+ * no sabe medir (sin-soporte), uno «no medible» por su clave o su cuota (también
+ * la celda que los 429 de cuota dejan sin ítems comparables, o por debajo de
+ * MINIMO_COMPARABLE_TRAS_CUOTA: «no medible — cuota del proveedor»), los ítems
+ * excluidos por cuota de una celda que sí se midió, una
  * celda cortada por su propio tope (se mide menos, no peor), y una celda de
  * MT-Bench cuyo juez juzgó menos de MINIMO_DE_TURNOS_JUZGADOS turnos (extraer.ts):
  * sin tasa de victoria, y dicho, en vez de un 0,5 que parezca un empate. Ni una
@@ -137,12 +147,13 @@ export function infraccionesDe(m: Medicion, topeUsd: number): Infraccion[] {
   const out: Infraccion[] = [];
   const add = (regla: Regla, detalle: string) => out.push({ regla, bateria: m.bateria, modelo: m.modelo, detalle });
   if (m.gastoUsd > topeUsd + EXCESO_DE_TOPE_USD) add("tope-excedido", `gastó ${m.gastoUsd.toFixed(4)} $ con un tope de ${topeUsd.toFixed(2)} $`);
+  // Antes de mirar si se midió: una celda sin ítems comparables porque la capa falló en todos sigue fallando.
+  if (m.fallosDeLaCapa > 0) add("capa-falla", `${m.fallosDeLaCapa} errores solo con la capa${m.ejemplosDeFallos.length ? `: ${m.ejemplosDeFallos.join(" · ")}` : ""}`);
   if (m.estado !== "medido") return out;
   if ((m.respuestasDeOtraPregunta ?? 0) > 0) add("otra-pregunta", `${m.respuestasDeOtraPregunta} respuestas servidas de otra pregunta`);
   if ((m.llamadasCambiadas ?? 0) > 0) add("llamada-cambiada", `${m.llamadasCambiadas} llamadas a herramienta cambiadas u omitidas por la capa`);
   if ((m.negativasCacheadas ?? 0) > 0) add("negativa-cacheada", `${m.negativasCacheadas} negativas servidas desde la caché o escritas en ella`);
   if ((m.negativasAcreditadas ?? 0) > 0) add("negativa-acreditada", `${m.negativasAcreditadas} negativas con ahorro acreditado o registro de referencia`);
-  if (m.fallosDeLaCapa > 0) add("capa-falla", `${m.fallosDeLaCapa} errores solo con la capa${m.ejemplosDeFallos.length ? `: ${m.ejemplosDeFallos.join(" · ")}` : ""}`);
   // Una calidad peor solo es de la capa si la capa intervino (avisoDeMuestreo).
   if (!m.sinIntervencion) for (const e of calidadPeor(m)) add("exactitud-peor", e);
   for (const f of m.informeVsFactura) {
@@ -191,6 +202,11 @@ export function evaluar(resultados: readonly ResultadoDeCelda[], abortoGlobal: s
         {
           const muestreo = avisoDeMuestreo(r.medicion);
           if (muestreo) avisos.push(muestreo);
+        }
+        if (r.medicion.estado === "medido" && r.medicion.excluidosPorCuota) {
+          avisos.push(
+            `${r.bateria} · ${r.modelo}: excluidos por cuota: ${r.medicion.excluidosPorCuota} (429 del proveedor por cuota o límite de tasa en A o en B; fuera de la comparación en los dos brazos, no cuentan como capa-falla)`,
+          );
         }
         if (r.medicion.estado === "medido" && r.medicion.calidadSinMedir) {
           avisos.push(`${r.bateria} · ${r.modelo}: calidad sin medir — ${r.medicion.calidadSinMedir}`);
