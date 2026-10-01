@@ -89,7 +89,8 @@
     "salida:anatomia": "tsx benchmarks/salida/anatomia.ts",
     "salida:por-clase": "tsx benchmarks/salida/por-clase.ts",
     "luz-verde": "bash scripts/luz-verde.sh",
-    "sonda:sdk": "BVSALA_DEV_OPEN=1 tsx --env-file-if-exists=.env.bench benchmarks/sdk/sonda.ts"
+    "sonda:sdk": "BVSALA_DEV_OPEN=1 tsx --env-file-if-exists=.env.bench benchmarks/sdk/sonda.ts",
+    "verja:medir-r": "tsx corpus/medir-r-local.ts"
   },
   "devDependencies": {
     "@noble/curves": "^2.2.0",
