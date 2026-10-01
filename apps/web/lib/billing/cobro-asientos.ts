@@ -144,6 +144,11 @@ export interface EntradaDeAjuste {
   rotacionEnElMes: boolean;
   /** ¿Tiene la org más de una suscripción viva? No se sabe cuál paga qué. */
   variasSuscripciones: boolean;
+  /**
+   * `organizations.comision_exenta` (0028): probadores con cupón del 100 % y
+   * cuentas de cortesía, SIN tarjeta. Un exceso suyo nunca se cobra solo.
+   */
+  comisionExenta: boolean;
   respaldoComision: Record<PeriodoDePago, ImporteEnCentimos>;
 }
 
@@ -160,6 +165,10 @@ export type DecisionDeAjuste =
     }
   /** Cobrar exactamente estos céntimos. */
   | { accion: "cobrar"; exceso: number; centimos: number; motivo: string };
+
+/** El motivo de la revisión de una org exenta (probador o cortesía, sin tarjeta). */
+export const MOTIVO_EXENTA =
+  "exempt org (organizations.comision_exenta): tester/courtesy account without a card on file; never auto-charged";
 
 export function decidirAjuste(e: EntradaDeAjuste): DecisionDeAjuste {
   const usados = Math.max(0, Math.floor(e.usados));
@@ -188,6 +197,12 @@ export function decidirAjuste(e: EntradaDeAjuste): DecisionDeAjuste {
   // suscripción antigua podría): los incluidos ya cubren esos asientos.
   if (e.plan && importe() === 0) {
     return { accion: "nada", exceso: 0, centimos: 0, motivo: "extra seats covered by the plan's included seats" };
+  }
+  // Una org EXENTA (0028) no tiene tarjeta: un invoice item de cobro automático
+  // acabaría en factura impagada y recordatorios de cobro — justo lo que 0028
+  // existe para evitar. Su exceso lo mira un humano; nunca se cobra solo.
+  if (e.comisionExenta) {
+    return { accion: "registrar", estado: "revision_humana", exceso, centimos: importe(), motivo: MOTIVO_EXENTA };
   }
   // Rotar una clave estrena el seat_id de TODAS las máquinas, que dentro del
   // mes cuentan dos veces. Cobrarle a alguien por protegerse es la peor factura.
@@ -316,4 +331,39 @@ export function comportamientoHaciaDelante(periodoPago: PeriodoDePago): {
 export function modoDeCobro(variable: string | undefined, secoPedido: boolean): "seco" | "vivo" {
   if (secoPedido) return "seco";
   return (variable ?? "").trim() === "vivo" ? "vivo" : "seco";
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EL RESUMEN DE CADA PASADA
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Lo auditable de una pasada, aunque nadie deba nada: el informe completo solo
+ * vive en la respuesta HTTP, así que cada ejecución deja además UNA línea en el
+ * log con recuentos (nunca correos ni nombres; ni siquiera ids de org).
+ */
+export interface ResumenDeCobro {
+  periodo: string;
+  modo: "seco" | "vivo";
+  /** Organizaciones evaluadas en la pasada. */
+  evaluadas: number;
+  /** A cobrar: `cobraria` en seco, cobros intentados en vivo. */
+  aCobrar: number;
+  /** Enviadas a revisión humana (incluidas las exentas con exceso). */
+  revision: number;
+  /** Evaluadas con `organizations.comision_exenta`. */
+  exentas: number;
+  /** Cobradas de verdad (siempre 0 en seco). */
+  cobrados: number;
+  fallos: number;
+  /** El total de lo que se cobra (o se cobraría), en céntimos. */
+  totalCentimos: number;
+}
+
+export function lineaDeResumen(r: ResumenDeCobro): string {
+  return (
+    `[cobrar-asientos] resumen periodo=${r.periodo} modo=${r.modo} evaluadas=${r.evaluadas} ` +
+    `a_cobrar=${r.aCobrar} revision=${r.revision} exentas=${r.exentas} cobrados=${r.cobrados} ` +
+    `fallos=${r.fallos} total_eur=${(r.totalCentimos / 100).toFixed(2)}`
+  );
 }

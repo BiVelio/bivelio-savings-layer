@@ -20,13 +20,16 @@ interface Db {
   ajustes_asientos: Fila[];
   usage_daily: Fila[];
   billing_audit: Fila[];
+  organizations: Fila[];
 }
-const db: Db = { subscriptions: [], ajustes_asientos: [], usage_daily: [], billing_audit: [] };
+const db: Db = { subscriptions: [], ajustes_asientos: [], usage_daily: [], billing_audit: [], organizations: [] };
 const control = {
   usados: 7,
   sinTabla: false,
   /** Falla la escritura de la fila al pasar a `cobrado` (el proceso «muere» tras cobrar). */
   pierdeCobrado: false,
+  /** Falla la lectura de organizations (la marca de exención). */
+  sinOrganizations: false,
 };
 const alertas: Array<{ nivel: string; asunto: string }> = [];
 
@@ -51,6 +54,9 @@ function consulta(tabla: keyof Db) {
   const ejecutar = async (desde = 0, hasta = Infinity): Promise<{ data: unknown; error: unknown }> => {
     if (tabla === "ajustes_asientos" && control.sinTabla) {
       return { data: null, error: { code: "PGRST205", message: "Could not find the table 'bvsala.ajustes_asientos'" } };
+    }
+    if (tabla === "organizations" && control.sinOrganizations) {
+      return { data: null, error: { code: "42703", message: "column organizations.comision_exenta does not exist" } };
     }
     const filas = db[tabla];
     const casan = () => filas.filter((f) => filtros.every((p) => p(f)));
@@ -214,7 +220,9 @@ beforeEach(() => {
   db.ajustes_asientos = [];
   db.usage_daily = [{ org_id: ORG, day: "2026-09-10", requests: 20_000 }];
   db.billing_audit = [];
+  db.organizations = [{ id: ORG, comision_exenta: false }];
   control.usados = 7;
+  control.sinOrganizations = false;
   control.sinTabla = false;
   control.pierdeCobrado = false;
   alertas.length = 0;
@@ -386,6 +394,121 @@ describe("cobrar-asientos — fallos", () => {
     expect((await GET(peticion())).status).toBe(501);
     vi.stubEnv("CRON_SECRET", "otro");
     expect((await GET(peticion())).status).toBe(401);
+  });
+});
+
+describe("cobrar-asientos — orgs EXENTAS (0028: probadores y cortesías, sin tarjeta)", () => {
+  beforeEach(() => {
+    db.organizations = [{ id: ORG, comision_exenta: true }];
+  });
+
+  it("vivo: una exenta con asientos de más NO se cobra — revisión humana, alerta y Stripe intacto", async () => {
+    const { cuerpo } = await correr();
+    expect(cuerpo).toMatchObject({ modo: "vivo", cobrados: 0, revision: 1, fallos: 0 });
+    expect(ajuste()).toMatchObject({ estado: "revision_humana", exceso: 3, importe_eur: 45 });
+    expect(String(ajuste()!.motivo)).toMatch(/comision_exenta/);
+    expect(stripe.llamadasCrear).toBe(0);
+    expect(stripe.facturas).toHaveLength(0);
+    expect(stripe.cantidades).toHaveLength(0);
+    expect(alertas.some((a) => a.nivel === "critico" && /REVISIÓN HUMANA/.test(a.asunto))).toBe(true);
+    // Y no se reintenta: la revisión es de un humano.
+    await correr();
+    expect(stripe.llamadasCrear).toBe(0);
+  });
+
+  it("seco: el ensayo dice revisión humana, no «cobraría»", async () => {
+    const { cuerpo } = await correr("&seco=1");
+    expect(cuerpo).toMatchObject({ modo: "seco", revision: 1 });
+    expect(cuerpo.informe).toEqual([expect.objectContaining({ org_id: ORG, resultado: "revision_humana" })]);
+    expect(ajuste()).toMatchObject({ estado: "seco" });
+    expect(String(ajuste()!.motivo)).toMatch(/would record revision_humana: .*comision_exenta/);
+    expect(stripe.llamadasCrear).toBe(0);
+  });
+
+  it("un ajuste `fallido` de una org que pasó a exenta NO se reintenta en Stripe", async () => {
+    db.organizations = [{ id: ORG, comision_exenta: false }];
+    stripe.falla = true;
+    await correr();
+    expect(ajuste()).toMatchObject({ estado: "fallido" });
+    const llamadas = stripe.llamadasCrear;
+
+    stripe.falla = false;
+    db.organizations = [{ id: ORG, comision_exenta: true }];
+    const { cuerpo } = await correr();
+    expect(stripe.llamadasCrear).toBe(llamadas);
+    expect(stripe.itemsCreados).toHaveLength(0);
+    expect(cuerpo).toMatchObject({ cobrados: 0, revision: 1 });
+    expect(ajuste()).toMatchObject({ estado: "fallido" });
+  });
+
+  it("dentro de lo pagado, una exenta no genera ni fila ni revisión", async () => {
+    control.usados = 3;
+    const { cuerpo } = await correr();
+    expect(cuerpo).toMatchObject({ revision: 0 });
+    expect(ajuste()).toBeUndefined();
+  });
+
+  it("sin poder leer la exención: 500 con alerta crítica y sin tocar Stripe (falla cerrado)", async () => {
+    control.sinOrganizations = true;
+    const { status } = await correr();
+    expect(status).toBe(500);
+    expect(alertas[0]).toMatchObject({ nivel: "critico" });
+    expect(alertas[0]!.asunto).toMatch(/exención/);
+    expect(stripe.llamadasCrear).toBe(0);
+    expect(ajuste()).toBeUndefined();
+  });
+});
+
+describe("cobrar-asientos — el resumen de cada pasada (auditable aunque nadie deba nada)", () => {
+  const lineas = (spy: { mock: { calls: unknown[][] } }) =>
+    spy.mock.calls.map((c) => String(c[0])).filter((l) => l.startsWith("[cobrar-asientos] resumen"));
+
+  it("seco y nadie por encima: UNA línea con período, modo y ceros", async () => {
+    control.usados = 3;
+    const spy = vi.spyOn(console, "info").mockImplementation(() => {});
+    try {
+      const { cuerpo } = await correr("&seco=1");
+      const l = lineas(spy);
+      expect(l).toHaveLength(1);
+      expect(l[0]).toBe(
+        "[cobrar-asientos] resumen periodo=2026-09 modo=seco evaluadas=1 a_cobrar=0 revision=0 exentas=0 cobrados=0 fallos=0 total_eur=0.00",
+      );
+      expect(cuerpo.resumen).toMatchObject({ periodo: "2026-09", modo: "seco", evaluadas: 1, aCobrar: 0, totalEur: 0 });
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it("cuenta lo que se cobraría, las exentas y la revisión — y no lleva ids, correos ni nombres", async () => {
+    const OTRA = "22222222-2222-4222-8222-222222222222";
+    db.subscriptions.push({ ...db.subscriptions[0]!, org_id: OTRA, stripe_subscription_id: "sub_test_2", stripe_item_id: "si_test_2", stripe_customer_id: "cus_test_2" });
+    db.usage_daily.push({ org_id: OTRA, day: "2026-09-10", requests: 20_000 });
+    db.organizations = [{ id: ORG, comision_exenta: false }, { id: OTRA, comision_exenta: true }];
+    const spy = vi.spyOn(console, "info").mockImplementation(() => {});
+    try {
+      await correr("&seco=1");
+      const [l] = lineas(spy);
+      expect(l).toBe(
+        "[cobrar-asientos] resumen periodo=2026-09 modo=seco evaluadas=2 a_cobrar=1 revision=1 exentas=1 cobrados=0 fallos=0 total_eur=45.00",
+      );
+      expect(l).not.toContain(ORG);
+      expect(l).not.toContain(OTRA);
+      expect(l).not.toMatch(/@/);
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it("vivo: cuenta el cobro hecho y su total", async () => {
+    const spy = vi.spyOn(console, "info").mockImplementation(() => {});
+    try {
+      await correr();
+      expect(lineas(spy)).toEqual([
+        "[cobrar-asientos] resumen periodo=2026-09 modo=vivo evaluadas=1 a_cobrar=1 revision=0 exentas=0 cobrados=1 fallos=0 total_eur=45.00",
+      ]);
+    } finally {
+      spy.mockRestore();
+    }
   });
 });
 
