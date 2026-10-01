@@ -787,7 +787,7 @@
       "proofTitle": "Đo với nhà cung cấp thật",
       "medidoEn": "Đo trên",
       "compatibleCon": "Tương thích với",
-      "compatibleNota": "Tương thích không có nghĩa là đã đo. SDK hoạt động với mọi endpoint tương thích với API của OpenAI, cùng bộ chuyển đổi gốc cho Anthropic và bộ chuyển đổi gốc cho Gemini (mới trong {gemini}). Đã đo — có con số tiết kiệm trên băng thử công khai — hiện chỉ có các mô hình của OpenAI và Anthropic; Gemini chưa có khoản tiết kiệm đã đo."
+      "compatibleNota": "Tương thích không có nghĩa là đã đo. SDK hoạt động với mọi endpoint tương thích với API của OpenAI, cùng bộ chuyển đổi gốc cho Anthropic và bộ chuyển đổi gốc cho Gemini (mới trong {gemini}). Có con số tiết kiệm trên băng thử công khai hiện chỉ có các mô hình của OpenAI và Anthropic; Gemini không có con số tiết kiệm. Điều đã đo với Gemini: {flash}, qua API gốc của nó, trong bench hằng tuần trực tiếp ngày {fecha} — cả bốn bộ thử, không có lỗi nào của lớp và không có lời từ chối nào được lưu cache hay ghi có thành tiết kiệm. Bench đó kiểm tra rằng lớp không làm hỏng gì và không tính phí quá mức; nó không đo khoản tiết kiệm. {pro} chưa được đo: hạn mức của nhà cung cấp đã chặn lại."
     },
     "cascade": {
       "title": "Phương án thực thi rẻ nhất thắng",
@@ -1165,6 +1165,7 @@
       },
       "reason": {
         "sin-clave": "môi trường của bench không có khóa của nhà cung cấp này",
+        "cuota": "hết hạn mức hoặc giới hạn tốc độ của nhà cung cấp, không phải lớp",
         "proveedor": "không có phản hồi hợp lệ từ nhà cung cấp ở nhánh A",
         "tope-global": "đã chạm mức trần chi phí chung của lượt chạy",
         "arnes-proveedor": "harness của bộ này chỉ làm việc với Anthropic và OpenAI",
@@ -1289,11 +1290,20 @@
       "stillSeen": "Vẫn còn thấy ở {version}: {ocurrencias} trên {sobre}.",
       "remeasuredWeekly": "Được bench hằng tuần đo lại trực tiếp vào {fecha} (mã nguồn main đã có bản sửa, commit {commit}): {cacheadas} lời từ chối được lưu cache và {acreditadas} được ghi có, trên {sobre} prompt XSTest với {modelos} mô hình.",
       "stillSeenWeekly": "Bench hằng tuần vẫn thấy vào {fecha} (mã nguồn main, commit {commit}): {cacheadas} lời từ chối được lưu cache và {acreditadas} được ghi có, trên {sobre} prompt XSTest với {modelos} mô hình.",
+      "foundWeeklyModels": "Được bench hằng tuần trực tiếp phát hiện vào {fecha} (mã nguồn main, commit {commit}) với {medidos}: {cuenta}.",
+      "remeasuredWeeklyModels": "Được bench hằng tuần đo lại trực tiếp vào {fecha} (mã nguồn main có bản sửa, commit {commit}) với {medidos}: {cuenta}.",
+      "stillSeenWeeklyModels": "Bench hằng tuần vẫn thấy vào {fecha} (mã nguồn main, commit {commit}) với {medidos}: {cuenta}.",
+      "counter": {
+        "refusals": "{ocurrencias} lời từ chối được lưu cache hoặc ghi có, trên {sobre} prompt XSTest",
+        "layerFails": "{ocurrencias} lỗi chỉ có khi qua lớp, trên {sobre} mục {bateria}"
+      },
+      "notMeasuredInRun": "Lần chạy đó không đo được {modelos} ({motivo}); ở đó vẫn chưa được xác minh.",
       "pending": "Đang chờ đo lại trực tiếp trên {version}.",
       "notRemeasured": {
         "notMeasurable": "Chưa được đo lại trực tiếp: bench hằng tuần ngày {fecha} (commit {commit}) không đo được Gemini ({motivo}). Chừng nào chưa có lượt nào đo được, chúng tôi không coi là đã xác minh.",
         "unsupported": "Chưa được đo lại trực tiếp: trong bench hằng tuần ngày {fecha} (commit {commit}), bộ này không hỗ trợ Gemini ({motivo}). Chừng nào chưa có lượt nào đo được, chúng tôi không coi là đã xác minh."
       },
+      "notCountedWeekly": "Chưa được đo lại trong một báo cáo đã công bố: bench hằng tuần ngày {fecha} (mã nguồn main có bản sửa, commit {commit}) đã đo {medidos} trong bộ thử này, nhưng bản tóm tắt chỉ đếm các mục một lượt, không đếm các lượt tiếp nối nhiều lượt nơi lỗi này xảy ra. Chừng nào chưa có báo cáo nào đếm chúng, chúng tôi chưa coi là đã xác minh.",
       "items": {
         "otra-pregunta": {
           "title": "Cache ngữ nghĩa chưa hiệu chỉnh đã phục vụ đáp án của một câu hỏi khác",
@@ -1322,6 +1332,10 @@
         "gemini-thought-signature": {
           "title": "Với Gemini 3, lượt thứ hai có công cụ đã thất bại",
           "body": "Lớp không trả về chữ ký suy nghĩ (thought signature) mà Gemini 3 yêu cầu ở mỗi lệnh gọi công cụ, nên lượt tiếp theo bị từ chối. Được đếm trong các lượt tiếp nối nhiều lượt của BFCL."
+        },
+        "gemini-nivel-de-pensamiento": {
+          "title": "Với các yêu cầu song song, việc chỉnh mức suy nghĩ của Gemini đến tay client dưới dạng lỗi",
+          "body": "Gemini Flash từ chối mức suy nghĩ MINIMAL; bộ chuyển đổi gốc thử lại một lần với LOW và ghi nhớ giá trị thay thế. Với hai yêu cầu cùng chạy qua một lớp, một yêu cầu so sánh lời từ chối với phần thân mà yêu cầu kia đã sửa, không nhận ra nó và chuyển lỗi cho client. Được đếm là lỗi chỉ có khi qua lớp, trong các prompt XSTest của bench hằng tuần với Gemini."
         }
       }
     },

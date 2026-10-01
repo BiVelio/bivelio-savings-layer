@@ -787,7 +787,7 @@
       "proofTitle": "Diukur terhadap penyedia nyata",
       "medidoEn": "Diukur pada",
       "compatibleCon": "Kompatibel dengan",
-      "compatibleNota": "Kompatibel tidak sama dengan terukur. SDK bekerja dengan endpoint apa pun yang kompatibel dengan API OpenAI, ditambah adaptor native Anthropic dan adaptor native Gemini (baru di {gemini}). Yang terukur — dengan angka penghematan di bangku uji publik — saat ini hanya model OpenAI dan Anthropic; Gemini belum memiliki penghematan terukur."
+      "compatibleNota": "Kompatibel tidak sama dengan terukur. SDK bekerja dengan endpoint apa pun yang kompatibel dengan API OpenAI, ditambah adaptor native Anthropic dan adaptor native Gemini (baru di {gemini}). Dengan angka penghematan di bangku uji publik, saat ini hanya model OpenAI dan Anthropic; Gemini tidak memiliki angka penghematan. Yang terukur untuk Gemini: {flash}, melalui API native-nya, di bench mingguan langsung {fecha} — keempat baterai, tanpa kegagalan lapisan dan tanpa penolakan yang di-cache atau dikreditkan sebagai penghematan. Bench itu memeriksa bahwa lapisan tidak merusak apa pun dan tidak menagih lebih; bench itu tidak mengukur penghematan. {pro} belum terukur: kuota penyedia menghentikannya."
     },
     "cascade": {
       "title": "Eksekusi termurah menang",
@@ -1165,6 +1165,7 @@
       },
       "reason": {
         "sin-clave": "tidak ada kunci penyedia ini di lingkungan bench",
+        "cuota": "kuota atau batas laju penyedia habis, bukan lapisan",
         "proveedor": "tidak ada respons valid dari penyedia di lengan A",
         "tope-global": "batas biaya total putaran tercapai",
         "arnes-proveedor": "harness baterai ini hanya berbicara dengan Anthropic dan OpenAI",
@@ -1289,11 +1290,20 @@
       "stillSeen": "Masih terlihat pada {version}: {ocurrencias} dari {sobre}.",
       "remeasuredWeekly": "Diukur ulang secara langsung oleh bench mingguan pada {fecha} (kode sumber main dengan perbaikannya, commit {commit}): {cacheadas} penolakan di cache dan {acreditadas} dikreditkan, pada {sobre} prompt XSTest di {modelos} model.",
       "stillSeenWeekly": "Bench mingguan masih melihatnya pada {fecha} (kode sumber main, commit {commit}): {cacheadas} penolakan di cache dan {acreditadas} dikreditkan, pada {sobre} prompt XSTest di {modelos} model.",
+      "foundWeeklyModels": "Ditemukan oleh bench mingguan langsung pada {fecha} (kode sumber main, commit {commit}) dengan {medidos}: {cuenta}.",
+      "remeasuredWeeklyModels": "Diukur ulang secara langsung oleh bench mingguan pada {fecha} (kode sumber main dengan perbaikan, commit {commit}) dengan {medidos}: {cuenta}.",
+      "stillSeenWeeklyModels": "Bench mingguan masih melihatnya pada {fecha} (kode sumber main, commit {commit}) dengan {medidos}: {cuenta}.",
+      "counter": {
+        "refusals": "{ocurrencias} penolakan di cache atau dikreditkan, pada {sobre} prompt XSTest",
+        "layerFails": "{ocurrencias} galat hanya dengan lapisan, pada {sobre} item {bateria}"
+      },
+      "notMeasuredInRun": "Putaran itu tidak dapat mengukur {modelos} ({motivo}); di sana masih belum terverifikasi.",
       "pending": "Menunggu diukur ulang secara langsung pada {version}.",
       "notRemeasured": {
         "notMeasurable": "Belum diukur ulang secara langsung: bench mingguan {fecha} (commit {commit}) tidak dapat mengukur Gemini ({motivo}). Sampai ada putaran yang mengukurnya, kami tidak menganggapnya terverifikasi.",
         "unsupported": "Belum diukur ulang secara langsung: di bench mingguan {fecha} (commit {commit}) baterai ini tidak mendukung Gemini ({motivo}). Sampai ada putaran yang mengukurnya, kami tidak menganggapnya terverifikasi."
       },
+      "notCountedWeekly": "Belum diukur ulang dalam laporan yang dipublikasikan: bench mingguan {fecha} (kode sumber main dengan perbaikan, commit {commit}) mengukur {medidos} di baterai ini, tetapi ringkasannya hanya menghitung entri satu giliran, bukan lanjutan multi-giliran tempat ini gagal. Selama belum ada laporan yang menghitungnya, kami tidak menganggapnya terverifikasi.",
       "items": {
         "otra-pregunta": {
           "title": "Cache semantik yang tidak dikalibrasi menyajikan jawaban dari pertanyaan lain",
@@ -1322,6 +1332,10 @@
         "gemini-thought-signature": {
           "title": "Dengan Gemini 3, giliran kedua dengan tool gagal",
           "body": "Lapisan tidak mengembalikan thought signature yang disyaratkan Gemini 3 pada setiap panggilan tool, sehingga giliran berikutnya ditolak. Dihitung dalam kelanjutan multi-giliran BFCL."
+        },
+        "gemini-nivel-de-pensamiento": {
+          "title": "Dengan permintaan paralel, koreksi tingkat berpikir Gemini sampai ke klien sebagai galat",
+          "body": "Gemini Flash menolak tingkat berpikir MINIMAL; adaptor native mencoba ulang sekali dengan LOW dan mengingat penggantinya. Dengan dua permintaan berjalan melalui lapisan yang sama, satu membandingkan penolakan dengan body yang sudah dikoreksi oleh yang lain, tidak mengenalinya, dan meneruskan galat ke klien. Dihitung sebagai galat hanya dengan lapisan, pada prompt XSTest bench mingguan dengan Gemini."
         }
       }
     },

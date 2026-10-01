@@ -787,7 +787,7 @@
       "proofTitle": "Mesurat contra proveïdor real",
       "medidoEn": "Mesurat a",
       "compatibleCon": "Compatible amb",
-      "compatibleNota": "Compatible no vol dir mesurat. L'SDK funciona amb qualsevol endpoint compatible amb l'API d'OpenAI, més l'adaptador natiu d'Anthropic i l'adaptador natiu de Gemini (nou a la {gemini}). Mesurat —amb xifra d'estalvi al banc públic—, avui només models d'OpenAI i d'Anthropic; Gemini encara no té estalvi mesurat."
+      "compatibleNota": "Compatible no vol dir mesurat. L'SDK funciona amb qualsevol endpoint compatible amb l'API d'OpenAI, més l'adaptador natiu d'Anthropic i l'adaptador natiu de Gemini (nou a la {gemini}). Amb xifra d'estalvi al banc públic, avui només models d'OpenAI i d'Anthropic; Gemini no té xifra d'estalvi. El que hi ha mesurat de Gemini: {flash}, per la seva API nativa, al banc setmanal en viu del {fecha} — les quatre bateries, sense cap error de la capa i sense cap negativa en memòria cau ni acreditada com a estalvi. Aquest banc comprova que la capa no trenca res ni cobra de més; no mesura un estalvi. {pro} encara no està mesurat: ho va impedir la quota del proveïdor."
     },
     "cascade": {
       "title": "Guanya l'execució més barata",
@@ -1165,6 +1165,7 @@
       },
       "reason": {
         "sin-clave": "sense clau d'aquest proveïdor a l'entorn del banc",
+        "cuota": "es va esgotar la quota o el límit de taxa del proveïdor, no la capa",
         "proveedor": "cap resposta vàlida del proveïdor al braç A",
         "tope-global": "s'ha arribat al límit de despesa global de la tirada",
         "arnes-proveedor": "l'arnès d'aquesta bateria només parla amb Anthropic i OpenAI",
@@ -1289,11 +1290,20 @@
       "stillSeen": "Encara vist a la {version}: {ocurrencias} de {sobre}.",
       "remeasuredWeekly": "Tornat a mesurar en viu pel banc setmanal el {fecha} (codi font de main amb l'arranjament, commit {commit}): {cacheadas} negatives en memòria cau i {acreditadas} acreditades, sobre {sobre} prompts de XSTest en {modelos} models.",
       "stillSeenWeekly": "El banc setmanal encara el veu el {fecha} (codi font de main, commit {commit}): {cacheadas} negatives en memòria cau i {acreditadas} acreditades, sobre {sobre} prompts de XSTest en {modelos} models.",
+      "foundWeeklyModels": "Trobat pel banc setmanal en viu el {fecha} (codi font de main, commit {commit}) amb {medidos}: {cuenta}.",
+      "remeasuredWeeklyModels": "Tornat a mesurar en viu pel banc setmanal el {fecha} (codi font de main amb l'arranjament, commit {commit}) amb {medidos}: {cuenta}.",
+      "stillSeenWeeklyModels": "El banc setmanal encara el veu el {fecha} (codi font de main, commit {commit}) amb {medidos}: {cuenta}.",
+      "counter": {
+        "refusals": "{ocurrencias} negatives en memòria cau o acreditades, sobre {sobre} prompts de XSTest",
+        "layerFails": "{ocurrencias} errors només amb la capa, sobre {sobre} ítems de {bateria}"
+      },
+      "notMeasuredInRun": "Aquella tirada no va poder mesurar {modelos} ({motivo}); allà continua sense verificar.",
       "pending": "Pendent de tornar a mesurar en directe a la {version}.",
       "notRemeasured": {
         "notMeasurable": "Encara no s'ha tornat a mesurar en viu: el banc setmanal del {fecha} (commit {commit}) no va poder mesurar Gemini ({motivo}). Fins que una tirada el mesuri, no el donem per verificat.",
         "unsupported": "Encara no s'ha tornat a mesurar en viu: al banc setmanal del {fecha} (commit {commit}) aquesta bateria no té suport per a Gemini ({motivo}). Fins que una tirada el mesuri, no el donem per verificat."
       },
+      "notCountedWeekly": "Encara no s'ha tornat a mesurar en un informe publicat: el banc setmanal del {fecha} (codi font de main amb l'arranjament, commit {commit}) va mesurar {medidos} en aquesta bateria, però el seu resum només compta les entrades d'un torn, no les continuacions multi-torn on fallava. Fins que un informe les compti, no el donem per verificat.",
       "items": {
         "otra-pregunta": {
           "title": "La memòria cau semàntica sense calibrar servia la resposta d'una altra pregunta",
@@ -1322,6 +1332,10 @@
         "gemini-thought-signature": {
           "title": "Amb Gemini 3, el segon torn amb eines fallava",
           "body": "La capa no retornava la signatura de pensament que Gemini 3 exigeix a cada crida a eines, així que el torn següent es rebutjava. Comptat en continuacions multi-torn de BFCL."
+        },
+        "gemini-nivel-de-pensamiento": {
+          "title": "Amb peticions en paral·lel, la correcció del nivell de pensament de Gemini arribava al client com a error",
+          "body": "Gemini Flash rebutja el nivell de pensament MINIMAL; l'adaptador natiu ho reintenta un cop amb LOW i recorda el substitut. Amb dues peticions en vol per la mateixa capa, una comparava el rebuig amb el cos que l'altra ja havia corregit, no el reconeixia i passava l'error al client. Comptat en errors només amb la capa, als prompts de XSTest del banc setmanal amb Gemini."
         }
       }
     },

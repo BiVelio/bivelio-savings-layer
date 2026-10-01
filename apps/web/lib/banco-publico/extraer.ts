@@ -177,6 +177,43 @@ export interface Fallo {
    * fallo (p. ej. Gemini sin clave). Solo si nada lo ha medido tras el arreglo.
    */
   sinMedirSemanal?: { ruta: string; fecha: string; commit: string; estado: EstadoSemanal; motivo?: MotivoSemanal };
+  /** La última tirada semanal ANTERIOR al arreglo que lo vio en los modelos de su familia. */
+  antesFamilia?: EvidenciaFamilia;
+  /** La última tirada semanal con el arreglo en `main` que midió a algún modelo de su familia y lo cuenta. */
+  despuesFamilia?: EvidenciaFamilia;
+  /**
+   * Medido pero sin contar: la última tirada semanal con el arreglo midió a
+   * modelos de la familia en esa batería, pero su resumen no cuenta este fallo
+   * (p. ej. BFCL resume solo las entradas AST, no las continuaciones
+   * multi-turno). No es «verificado».
+   */
+  sinContarSemanal?: { ruta: string; fecha: string; commit: string; medidos: string[]; sinMedir: SinMedirFamilia[] };
+}
+
+/** Un modelo de la familia que la tirada semanal no pudo medir en esa batería, y por qué. */
+export interface SinMedirFamilia {
+  modelo: string;
+  estado: EstadoSemanal;
+  motivo?: MotivoSemanal;
+}
+
+/**
+ * Lo que UNA tirada del banco semanal contó de un fallo en los modelos de una
+ * familia (Gemini), en las celdas medidas de su batería: qué modelos midió y
+ * con qué recuento, y cuáles no pudo medir.
+ */
+export interface EvidenciaFamilia {
+  ruta: string;
+  fecha: string;
+  commit: string;
+  /** Qué cuenta: negativas cacheadas o acreditadas (XSTest), o errores solo con la capa. */
+  tipo: "negativas" | "capa-falla";
+  bateria: Bateria;
+  ocurrencias: number;
+  /** Unidades medidas (la n de cada celda), sumadas. */
+  sobre: number;
+  medidos: string[];
+  sinMedir: SinMedirFamilia[];
 }
 
 export interface Garantias {
@@ -201,7 +238,7 @@ export interface Garantias {
 /** Estado de una celda del banco semanal, en las categorías que la página traduce. */
 export type EstadoSemanal = "medida" | "no-medible" | "sin-soporte" | "arnes-falla";
 /** Por qué una celda no se midió. */
-export type MotivoSemanal = "sin-clave" | "proveedor" | "tope-global" | "arnes-proveedor" | "arnes-modelo" | "arnes" | "otro";
+export type MotivoSemanal = "sin-clave" | "cuota" | "proveedor" | "tope-global" | "arnes-proveedor" | "arnes-modelo" | "arnes" | "otro";
 
 /** La diferencia B − A de una celda, según la batería. */
 export type DiferenciaSemanal =
@@ -258,6 +295,9 @@ function motivoSemanal(estado: string, texto: string | undefined): MotivoSemanal
   if (estado === "omitida-por-tope-global") return "tope-global";
   if (estado === "sin-soporte") return /solo habla con|only talks to/.test(t) ? "arnes-proveedor" : /modelos_por_defecto|no tiene/.test(t) ? "arnes-modelo" : "otro";
   if (estado === "arnes-falla") return "arnes";
+  // La cuota agotada del proveedor (429) va antes que «proveedor»: es un
+  // motivo propio, y la página lo dice así (banco semanal, #443).
+  if (/\b429\b|cuota|quota|rate.?limit/.test(t)) return "cuota";
   if (/proveedor|provider|brazo a/.test(t)) return "proveedor";
   if (/tope|presupuesto|budget/.test(t)) return "tope-global";
   return "otro";
@@ -664,7 +704,8 @@ export type IdFallo =
   | "negativas-parciales"
   | "gemini-prompt-cache-key"
   | "gemini-filtro-cacheado"
-  | "gemini-thought-signature";
+  | "gemini-thought-signature"
+  | "gemini-nivel-de-pensamiento";
 
 interface DefinicionFallo {
   id: IdFallo;
@@ -683,7 +724,27 @@ interface DefinicionFallo {
   semanal?: { enMainDesde: string; encontrado: boolean };
   /** Modelos a los que se refiere (los de Gemini): si el semanal no pudo medirlos, se dice. */
   familia?: "google";
+  /**
+   * Cómo cuenta este fallo UNA celda medida del banco semanal (de su batería y
+   * de un modelo de su familia); null si su resumen no lo cuenta. Con
+   * `semanalFamilia`, el semanal re-mide el fallo en los modelos que midió, y
+   * dice cuáles no pudo medir.
+   */
+  semanalFamilia?: { enMainDesde: string; encontrado: boolean; tipo: EvidenciaFamilia["tipo"] | null };
 }
+
+/** El recuento de una celda semanal medida, según qué cuente el fallo. */
+function cuentaDeCelda(c: CeldaSemanal, tipo: EvidenciaFamilia["tipo"]): number {
+  return tipo === "negativas" ? (c.negativasCacheadas ?? 0) + (c.negativasAcreditadas ?? 0) : (c.fallosDeLaCapa ?? 0);
+}
+
+/**
+ * #402 (los tres fallos de Gemini de la gama alta) entró en `main` el
+ * 2026-09-29 a las 07:47:52 UTC; #442 (la carrera del nivel de pensamiento),
+ * el 2026-09-30 a las 22:40:59 UTC (mergedAt de cada PR).
+ */
+const GEMINI_GAMA_ALTA_EN_MAIN = "2026-09-29T07:47:52Z";
+const GEMINI_NIVEL_DE_PENSAMIENTO_EN_MAIN = "2026-09-30T22:40:59Z";
 
 /**
  * #422 entró en `main` el 2026-09-29 a las 18:12:31 UTC (mergedAt del PR). El
@@ -708,7 +769,7 @@ function promptsConHallazgo(json: J, tipos: Set<string>, delModelo: (modelo: str
 
 /**
  * El historial (versión y PR del arreglo) es un dato curado: sale de los
- * commits de `main` (#382, #383, #393, #401, #402). La EVIDENCIA, en cambio, se
+ * commits de `main` (#382, #383, #393, #401, #402, #422, #442). La EVIDENCIA, en cambio, se
  * cuenta en los informes; si un informe no la mide, el fallo no aparece.
  */
 export const DEFINICIONES_DE_FALLOS: readonly DefinicionFallo[] = [
@@ -776,6 +837,9 @@ export const DEFINICIONES_DE_FALLOS: readonly DefinicionFallo[] = [
     encontradoEn: "0.4.31",
     arregladoEn: "0.4.32",
     prs: [402],
+    // El semanal cuenta las negativas del API (el filtro de Gemini) que la
+    // capa sirvió de su caché, escribió en ella o acreditó.
+    semanalFamilia: { enMainDesde: GEMINI_GAMA_ALTA_EN_MAIN, encontrado: false, tipo: "negativas" },
     contar: (json) => {
       if (!json.informe || !Object.keys(json.porModelo ?? {}).some((k) => k.startsWith("gemini-"))) return null;
       return promptsConHallazgo(json, TIPOS_FILTRO_DEL_API, (m) => m.startsWith("gemini-"));
@@ -788,6 +852,9 @@ export const DEFINICIONES_DE_FALLOS: readonly DefinicionFallo[] = [
     encontradoEn: "0.4.31",
     arregladoEn: "0.4.32",
     prs: [402],
+    // El 400 por `prompt_cache_key` era un error solo del brazo B: el semanal
+    // lo cuenta en «capa-falla».
+    semanalFamilia: { enMainDesde: GEMINI_GAMA_ALTA_EN_MAIN, encontrado: false, tipo: "capa-falla" },
     contar: (json) => {
       let ocurrencias = 0;
       let sobre = 0;
@@ -811,6 +878,9 @@ export const DEFINICIONES_DE_FALLOS: readonly DefinicionFallo[] = [
     encontradoEn: "0.4.31",
     arregladoEn: "0.4.32",
     prs: [402],
+    // El semanal resume BFCL con las entradas AST (de un turno); las
+    // continuaciones multi-turno, donde fallaba, no entran en su «capa-falla».
+    semanalFamilia: { enMainDesde: GEMINI_GAMA_ALTA_EN_MAIN, encontrado: false, tipo: null },
     contar: (json) => {
       let ocurrencias = 0;
       let sobre = 0;
@@ -827,6 +897,21 @@ export const DEFINICIONES_DE_FALLOS: readonly DefinicionFallo[] = [
       }
       return visto ? { ocurrencias, sobre } : null;
     },
+  },
+  {
+    // Lo encontró el primer banco semanal con Gemini nativo (tirada del
+    // 2026-09-30 sobre main, ca621e2): con dos peticiones en paralelo por la
+    // misma capa, la corrección del nivel de pensamiento MINIMAL → LOW que
+    // aprendía una se comparaba con el cuerpo rehecho de la otra, y el 400
+    // llegaba al cliente. Arreglado en #442 (en main antes de la 0.4.36).
+    id: "gemini-nivel-de-pensamiento",
+    familia: "google",
+    bateria: "xstest",
+    encontradoEn: "0.4.35",
+    arregladoEn: "0.4.36",
+    prs: [442],
+    contar: () => null,
+    semanalFamilia: { enMainDesde: GEMINI_NIVEL_DE_PENSAMIENTO_EN_MAIN, encontrado: true, tipo: "capa-falla" },
   },
 ];
 
@@ -989,7 +1074,44 @@ export function resumirBanco(informes: readonly InformeFuente[]): Banco {
       if (antes) fallo.antesSemanal = antes;
       if (despues) fallo.despuesSemanal = despues;
     }
-    if (def.familia && !fallo.despues && !fallo.despuesSemanal && ultimaSemanal) {
+    if (def.familia && def.semanalFamilia) {
+      const { enMainDesde, encontrado, tipo } = def.semanalFamilia;
+      const conArreglo = (t: TiradaSemanal) => Date.parse(t.inicio) >= Date.parse(enMainDesde);
+      const suyas = (t: TiradaSemanal) => t.celdas.filter((c) => c.bateria === def.bateria && c.modelo.startsWith(`${def.familia}/`));
+      const evidencia = (t: TiradaSemanal, tp: EvidenciaFamilia["tipo"]): EvidenciaFamilia | null => {
+        const cs = suyas(t);
+        const medidas = cs.filter((c) => c.estado === "medida");
+        if (!medidas.length) return null;
+        return {
+          ruta: t.ruta,
+          fecha: t.fecha,
+          commit: t.commit,
+          tipo: tp,
+          bateria: def.bateria,
+          ocurrencias: medidas.reduce((s, c) => s + cuentaDeCelda(c, tp), 0),
+          sobre: medidas.reduce((s, c) => s + c.n, 0),
+          medidos: medidas.map((c) => c.modelo),
+          sinMedir: cs.filter((c) => c.estado !== "medida").map((c) => ({ modelo: c.modelo, estado: c.estado, ...(c.motivo ? { motivo: c.motivo } : {}) })),
+        };
+      };
+      // `semanales` va de la más reciente a la más antigua.
+      if (tipo && encontrado) {
+        const antes = semanales
+          .filter((t) => !conArreglo(t))
+          .map((t) => evidencia(t, tipo))
+          .find((e): e is EvidenciaFamilia => !!e && e.ocurrencias > 0);
+        if (antes) fallo.antesFamilia = antes;
+      }
+      const ultimaConArreglo = semanales.find((t) => conArreglo(t) && suyas(t).some((c) => c.estado === "medida"));
+      if (ultimaConArreglo && !fallo.despues) {
+        if (tipo) fallo.despuesFamilia = evidencia(ultimaConArreglo, tipo)!;
+        else {
+          const e = evidencia(ultimaConArreglo, "capa-falla")!;
+          fallo.sinContarSemanal = { ruta: e.ruta, fecha: e.fecha, commit: e.commit, medidos: e.medidos, sinMedir: e.sinMedir };
+        }
+      }
+    }
+    if (def.familia && !fallo.despues && !fallo.despuesSemanal && !fallo.despuesFamilia && !fallo.sinContarSemanal && ultimaSemanal) {
       const suyas = ultimaSemanal.celdas.filter((c) => c.bateria === def.bateria && c.modelo.startsWith(`${def.familia}/`));
       const sinMedir = suyas.find((c) => c.estado !== "medida");
       if (sinMedir && !suyas.some((c) => c.estado === "medida")) {
@@ -999,7 +1121,7 @@ export function resumirBanco(informes: readonly InformeFuente[]): Banco {
     // Sin evidencia antes del arreglo (en un informe A/B o en una tirada
     // semanal), el fallo no se enseña: la página no cuenta nada que los
     // informes publicados no muestren.
-    if (acc.antes.ocurrencias === 0 && !fallo.antesSemanal) continue;
+    if (acc.antes.ocurrencias === 0 && !fallo.antesSemanal && !fallo.antesFamilia) continue;
     fallos.push(fallo);
   }
 

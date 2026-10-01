@@ -787,7 +787,7 @@
       "proofTitle": "Gegen echten Provider gemessen",
       "medidoEn": "Gemessen auf",
       "compatibleCon": "Kompatibel mit",
-      "compatibleNota": "Kompatibel heißt nicht gemessen. Das SDK funktioniert mit jedem Endpunkt, der mit der OpenAI-API kompatibel ist, dazu mit dem nativen Anthropic-Adapter und dem nativen Gemini-Adapter (neu in {gemini}). Gemessen — mit einer Einsparungszahl im öffentlichen Benchmark — sind heute nur Modelle von OpenAI und Anthropic; für Gemini gibt es noch keine gemessene Einsparung."
+      "compatibleNota": "Kompatibel heißt nicht gemessen. Das SDK funktioniert mit jedem Endpunkt, der mit der OpenAI-API kompatibel ist, dazu mit dem nativen Anthropic-Adapter und dem nativen Gemini-Adapter (neu in {gemini}). Mit einer Einsparungszahl im öffentlichen Benchmark sind heute nur Modelle von OpenAI und Anthropic gemessen; für Gemini gibt es keine Einsparungszahl. Was für Gemini gemessen ist: {flash}, über seine native API, im wöchentlichen Live-Benchmark vom {fecha} — alle vier Batterien, ohne Fehler der Schicht und ohne gecachte oder als Einsparung gutgeschriebene Ablehnung. Dieser Benchmark prüft, dass die Schicht nichts kaputt macht und nicht zu viel berechnet; eine Einsparung misst er nicht. {pro} ist noch nicht gemessen: Das Kontingent des Anbieters hat es verhindert."
     },
     "cascade": {
       "title": "Die günstigste Ausführung gewinnt",
@@ -1165,6 +1165,7 @@
       },
       "reason": {
         "sin-clave": "kein Schlüssel für diesen Anbieter in der Umgebung des Benchmarks",
+        "cuota": "Kontingent oder Ratenlimit des Anbieters erschöpft, nicht die Schicht",
         "proveedor": "keine gültige Antwort des Anbieters in Arm A",
         "tope-global": "das Gesamtlimit des Laufs war erreicht",
         "arnes-proveedor": "das Harness dieser Batterie spricht nur mit Anthropic und OpenAI",
@@ -1289,11 +1290,20 @@
       "stillSeen": "Noch beobachtet mit {version}: {ocurrencias} von {sobre}.",
       "remeasuredWeekly": "Vom wöchentlichen Benchmark am {fecha} live nachgemessen (Quellcode von main mit dem Fix, Commit {commit}): {cacheadas} gecachte und {acreditadas} gutgeschriebene Ablehnungen, bei {sobre} XSTest-Prompts auf {modelos} Modellen.",
       "stillSeenWeekly": "Der wöchentliche Benchmark sieht es am {fecha} noch (Quellcode von main, Commit {commit}): {cacheadas} gecachte und {acreditadas} gutgeschriebene Ablehnungen, bei {sobre} XSTest-Prompts auf {modelos} Modellen.",
+      "foundWeeklyModels": "Vom wöchentlichen Live-Benchmark am {fecha} gefunden (Quellcode von main, Commit {commit}) mit {medidos}: {cuenta}.",
+      "remeasuredWeeklyModels": "Vom wöchentlichen Benchmark am {fecha} live nachgemessen (Quellcode von main mit dem Fix, Commit {commit}) mit {medidos}: {cuenta}.",
+      "stillSeenWeeklyModels": "Der wöchentliche Benchmark sieht es am {fecha} noch (Quellcode von main, Commit {commit}) mit {medidos}: {cuenta}.",
+      "counter": {
+        "refusals": "{ocurrencias} gecachte oder gutgeschriebene Ablehnungen, bei {sobre} XSTest-Prompts",
+        "layerFails": "{ocurrencias} Fehler nur mit der Schicht, bei {sobre} {bateria}-Einträgen"
+      },
+      "notMeasuredInRun": "Dieser Lauf konnte {modelos} nicht messen ({motivo}); dort bleibt es unverifiziert.",
       "pending": "Wartet auf erneute Live-Messung mit {version}.",
       "notRemeasured": {
         "notMeasurable": "Noch nicht live nachgemessen: Der wöchentliche Benchmark vom {fecha} (Commit {commit}) konnte Gemini nicht messen ({motivo}). Solange kein Lauf es misst, gilt es für uns nicht als verifiziert.",
         "unsupported": "Noch nicht live nachgemessen: Im wöchentlichen Benchmark vom {fecha} (Commit {commit}) unterstützt diese Batterie Gemini nicht ({motivo}). Solange kein Lauf es misst, gilt es für uns nicht als verifiziert."
       },
+      "notCountedWeekly": "Noch nicht in einem veröffentlichten Bericht nachgemessen: Der wöchentliche Benchmark vom {fecha} (Quellcode von main mit dem Fix, Commit {commit}) hat {medidos} in dieser Batterie gemessen, aber seine Zusammenfassung zählt nur Einträge mit einer Runde, nicht die mehrteiligen Fortsetzungen, in denen der Fehler auftrat. Solange kein Bericht sie zählt, gilt es für uns nicht als verifiziert.",
       "items": {
         "otra-pregunta": {
           "title": "Der unkalibrierte semantische Cache lieferte die Antwort einer anderen Frage",
@@ -1322,6 +1332,10 @@
         "gemini-thought-signature": {
           "title": "Bei Gemini 3 schlug die zweite Runde mit Tools fehl",
           "body": "Die Schicht gab die Thought-Signatur nicht zurück, die Gemini 3 bei jedem Tool-Aufruf verlangt, sodass die nächste Runde abgelehnt wurde. Gezählt in mehrteiligen BFCL-Fortsetzungen."
+        },
+        "gemini-nivel-de-pensamiento": {
+          "title": "Bei parallelen Anfragen kam die Korrektur der Denkstufe von Gemini als Fehler beim Client an",
+          "body": "Gemini Flash lehnt die Denkstufe MINIMAL ab; der native Adapter versucht es einmal mit LOW erneut und merkt sich den Ersatz. Mit zwei gleichzeitig laufenden Anfragen über dieselbe Schicht verglich eine die Ablehnung mit dem Body, den die andere bereits korrigiert hatte, erkannte sie nicht und gab den Fehler an den Client weiter. Gezählt als Fehler nur mit der Schicht, in den XSTest-Prompts des wöchentlichen Benchmarks mit Gemini."
         }
       }
     },

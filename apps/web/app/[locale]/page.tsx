@@ -20,13 +20,14 @@ import { absolute, languageAlternates } from "@/i18n/site";
 import { tarifasDeLosPlanes } from "@/lib/stripe/pricing";
 import { terminosDeLosPlanes } from "@/lib/legal/precios-publicados";
 import { LIMITES_MEDIR, VERSION_MINIMA_MEDIR } from "@/lib/license/medir-publico";
-import { BANCO_EN_VIVO, VERSION_GEMINI_NATIVO } from "@/lib/portada/banco-en-vivo";
+import { BANCO_EN_VIVO, GEMINI_EN_EL_SEMANAL, VERSION_GEMINI_NATIVO } from "@/lib/portada/banco-en-vivo";
 
 // Proveedores que exponen un endpoint OpenAI-compatible (o, en el caso de
 // Anthropic y de Gemini desde la 0.4.33, tienen adaptador nativo). Es una lista
 // de COMPATIBILIDAD, no de mediciones: compatible ≠ medido, y la nota de debajo
 // (`hero.compatibleNota`) lo dice. Lo medido es solo lo que tiene cifra en
-// /benchmarks, y la portada lo lee de lib/portada/banco-en-vivo.ts.
+// /benchmarks (o, para Gemini, lo que midió el banco semanal en vivo, sin
+// cifra de ahorro), y la portada lo lee de lib/portada/banco-en-vivo.ts.
 const LLMS = [
   { marca: "openai", label: "OpenAI" },
   { marca: "anthropic", label: "Anthropic" },
@@ -152,6 +153,15 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
   // dicha aparte. Cada cifra con su intervalo; ninguna con un «al menos».
   const filasMedidas: FilaMedida[] = filasDelBancoEnVivo(t, locale);
   const pieMedido = t.rich("enVivo.pie", { bench: (c) => <Link href="/benchmarks">{c}</Link> });
+  // Lo medido de Gemini (banco semanal en vivo): qué modelo y qué día, nunca
+  // una cifra de ahorro. Nombres y fecha llegan por parámetro.
+  const G = GEMINI_EN_EL_SEMANAL;
+  const notaCompatible = {
+    gemini: VERSION_GEMINI_NATIVO,
+    flash: G.medido.nombre,
+    pro: G.sinMedir.nombre,
+    fecha: new Intl.DateTimeFormat(locale, { dateStyle: "long", timeZone: "UTC" }).format(new Date(`${G.fecha}T00:00:00Z`)),
+  };
 
   // Los límites de Medir salen de la constante que aplica la ingesta.
   const medir = {
@@ -214,7 +224,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
                   )}
                 </div>
               </div>
-              <p className="compat-nota">{t("hero.compatibleNota", { gemini: VERSION_GEMINI_NATIVO })}</p>
+              <p className="compat-nota">{t("hero.compatibleNota", notaCompatible)}</p>
             </div>
           </div>
 

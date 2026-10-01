@@ -253,10 +253,12 @@ describe("banco público: la página pinta lo que dicen los informes", () => {
     const otra = pagina(banco, "es");
     expect(otra).toContain("google/gemini-prueba");
     expect(otra).toContain(esc(traductor("es")("bugs.items.gemini-prompt-cache-key.title")));
-    // Ningún informe lo midió tras el arreglo, y el banco semanal más reciente
-    // no pudo medir Gemini: la página lo dice así, sin darlo por verificado.
-    expect(fallo.sinMedirSemanal).toMatchObject({ estado: "no-medible", motivo: "sin-clave" });
-    expect(otra).toContain(esc(traductor("es")("weekly.reason.sin-clave")));
+    // Ningún informe A/B lo midió tras el arreglo; el banco semanal más reciente
+    // lo re-mide en los modelos de Gemini que pudo medir, y dice cuáles no.
+    expect(fallo.sinMedirSemanal).toBeUndefined();
+    expect(fallo.despuesFamilia).toMatchObject({ tipo: "capa-falla", ocurrencias: 0, medidos: ["google/gemini-3.8-flash"] });
+    expect(fallo.despuesFamilia!.sinMedir).toEqual([{ modelo: "google/gemini-3.1-pro-preview", estado: "no-medible", motivo: "cuota" }]);
+    expect(otra).toContain(esc(traductor("es")("weekly.reason.cuota")));
   });
 
   it("las garantías salen con sus cuentas; si una se rompe, el título dice el número y no la frase", () => {
@@ -363,7 +365,7 @@ describe("banco público: el banco semanal en vivo (su propia sección)", () => 
     for (const c of ultima.celdas) expect(html).toContain(`data-modelo="${c.modelo}" data-bateria="${c.bateria}" data-estado="${c.estado}"`);
   });
 
-  it("las negativas de XSTest quedan re-medidas por la tirada con el arreglo; Gemini se dice sin re-medir", () => {
+  it("las negativas de XSTest quedan re-medidas por la tirada con el arreglo", () => {
     const t = traductor("es");
     const texto = BANCO.fallos.find((f) => f.id === "negativas-de-texto")!;
     const parciales = BANCO.fallos.find((f) => f.id === "negativas-parciales")!;
@@ -374,18 +376,71 @@ describe("banco público: el banco semanal en vivo (su propia sección)", () => 
     expect(parciales.despuesSemanal).toMatchObject({ cacheadas: 0, acreditadas: 0 });
     expect(parciales.antesSemanal!.ruta).not.toBe(parciales.despuesSemanal!.ruta);
     expect(parciales).toMatchObject({ encontradoEn: "0.4.32", arregladoEn: "0.4.33", prs: [422] });
-    for (const id of ["gemini-prompt-cache-key", "gemini-filtro-cacheado", "gemini-thought-signature"] as const) {
-      const f = BANCO.fallos.find((x) => x.id === id);
-      if (!f) continue;
-      expect(f.despues, id).toBeNull();
-      expect(f.despuesSemanal, id).toBeUndefined();
-      expect(f.sinMedirSemanal, id).toBeDefined();
-    }
     // La frase vieja («pendiente de re-medir en la 0.4.32») ya no sale para ninguno de estos.
     expect(html).not.toContain(esc(t("bugs.pending", { version: "0.4.32" })));
     expect(html).toContain('data-fallo="negativas-parciales"');
     expect(html).toContain('data-semanal="re-medido"');
-    expect(html).toContain('data-semanal="sin-medir"');
+  });
+
+  it("Gemini: el primer semanal con Gemini nativo re-mide en Flash lo que su resumen cuenta; Pro, sin medir por cuota", () => {
+    const t = traductor("es");
+    const ultima = BANCO.semanales[0]!;
+    expect(ultima.ruta).toBe("docs/benchmarks/2026-10-01/banco-semanal-5bec174.json");
+    const j = crudo(ultima.ruta);
+    const celda = (b: string, m: string) => j.resultados.find((x: J) => x.bateria === b && x.modelo === m);
+    const FLASH = "google/gemini-3.8-flash";
+    const PRO = "google/gemini-3.1-pro-preview";
+    const pro = [{ modelo: PRO, estado: "no-medible", motivo: "cuota" }];
+    // El filtro de contenido (XSTest): negativas cacheadas + acreditadas en Flash.
+    const filtro = BANCO.fallos.find((f) => f.id === "gemini-filtro-cacheado");
+    if (filtro) {
+      const xs = celda("xstest", FLASH).medicion;
+      expect(filtro.despuesFamilia).toMatchObject({ ruta: ultima.ruta, tipo: "negativas", medidos: [FLASH], sobre: xs.n, ocurrencias: xs.negativasCacheadas + xs.negativasAcreditadas });
+      expect(filtro.despuesFamilia!.ocurrencias).toBe(0);
+      expect(filtro.despuesFamilia!.sinMedir).toEqual(pro);
+      expect(filtro.sinMedirSemanal).toBeUndefined();
+    }
+    // El 400 por prompt_cache_key (GSM8K): errores solo con la capa en Flash.
+    const pck = BANCO.fallos.find((f) => f.id === "gemini-prompt-cache-key");
+    if (pck) {
+      const gs = celda("gsm8k", FLASH).medicion;
+      expect(pck.despuesFamilia).toMatchObject({ tipo: "capa-falla", medidos: [FLASH], sobre: gs.n, ocurrencias: gs.fallosDeLaCapa });
+      expect(pck.despuesFamilia!.ocurrencias).toBe(0);
+      expect(pck.despuesFamilia!.sinMedir).toEqual(pro);
+    }
+    // La firma de pensamiento (BFCL multi-turno): el resumen del semanal no
+    // cuenta las continuaciones, así que NO se da por re-medida.
+    const firma = BANCO.fallos.find((f) => f.id === "gemini-thought-signature");
+    if (firma) {
+      expect(firma.despuesFamilia).toBeUndefined();
+      expect(firma.sinContarSemanal).toMatchObject({ ruta: ultima.ruta, medidos: [FLASH], sinMedir: pro });
+      expect(html).toContain('data-semanal="sin-contar"');
+    }
+    for (const f of [filtro, pck, firma]) if (f) expect(f.despues, f.id).toBeNull();
+    expect([filtro, pck, firma].some(Boolean)).toBe(true);
+    expect(html).toContain('data-sin-medir="cuota"');
+    expect(html).toContain(esc(t("weekly.reason.cuota")));
+    // Las celdas de Pro salen «no medible» por la cuota en la tabla semanal.
+    for (const c of ultima.celdas.filter((x) => x.modelo === PRO)) expect(c).toMatchObject({ estado: "no-medible", motivo: "cuota" });
+  });
+
+  it("Gemini: la carrera del nivel de pensamiento (#442) — la encontró el semanal, y el siguiente la re-mide a cero", () => {
+    const f = BANCO.fallos.find((x) => x.id === "gemini-nivel-de-pensamiento")!;
+    expect(f).toMatchObject({ bateria: "xstest", encontradoEn: "0.4.35", arregladoEn: "0.4.36", prs: [442] });
+    // Antes: la tirada del 2026-09-30 (ca621e2), que empezó antes de que #442 entrara en main.
+    const antes = crudo(f.antesFamilia!.ruta);
+    expect(f.antesFamilia!.ruta).toBe("docs/benchmarks/2026-09-30/banco-semanal-ca621e2.json");
+    expect(Date.parse(antes.inicio)).toBeLessThan(Date.parse("2026-09-30T22:40:59Z"));
+    const xsAntes = antes.resultados.find((x: J) => x.bateria === "xstest" && x.modelo === "google/gemini-3.8-flash").medicion;
+    expect(f.antesFamilia).toMatchObject({ tipo: "capa-falla", ocurrencias: xsAntes.fallosDeLaCapa, sobre: xsAntes.n, medidos: ["google/gemini-3.8-flash"] });
+    expect(f.antesFamilia!.ocurrencias).toBeGreaterThan(0);
+    expect(xsAntes.ejemplosDeFallos.join(" ")).toMatch(/400/);
+    // Después: la tirada del 2026-10-01 (5bec174), con el arreglo en main.
+    const despues = crudo(f.despuesFamilia!.ruta);
+    expect(Date.parse(despues.inicio)).toBeGreaterThan(Date.parse("2026-09-30T22:40:59Z"));
+    expect(f.despuesFamilia).toMatchObject({ ruta: "docs/benchmarks/2026-10-01/banco-semanal-5bec174.json", ocurrencias: 0 });
+    expect(html).toContain('data-fallo="gemini-nivel-de-pensamiento"');
+    expect(html).toContain("0.4.35 → 0.4.36");
   });
 
   it("una tirada semanal nueva entra sola; si vuelve a ver negativas, la página lo dice", () => {

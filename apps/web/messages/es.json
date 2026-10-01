@@ -787,7 +787,7 @@
       "proofTitle": "Medido contra proveedor real",
       "medidoEn": "Medido en",
       "compatibleCon": "Compatible con",
-      "compatibleNota": "Compatible no es medido. El SDK funciona con cualquier endpoint compatible con la API de OpenAI, más el adaptador nativo de Anthropic y el adaptador nativo de Gemini (nuevo en la {gemini}). Medido —con cifra de ahorro en el banco público—, hoy solo modelos de OpenAI y de Anthropic; Gemini aún no tiene ahorro medido."
+      "compatibleNota": "Compatible no es medido. El SDK funciona con cualquier endpoint compatible con la API de OpenAI, más el adaptador nativo de Anthropic y el adaptador nativo de Gemini (nuevo en la {gemini}). Con cifra de ahorro en el banco público, hoy solo modelos de OpenAI y de Anthropic; Gemini no tiene cifra de ahorro. Lo medido de Gemini: {flash}, por su API nativa, en el banco semanal en vivo del {fecha} — las cuatro baterías, sin ningún fallo de la capa y sin ninguna negativa cacheada ni acreditada como ahorro. Ese banco comprueba que la capa no rompe nada ni cobra de más; no mide un ahorro. {pro} aún no está medido: lo impidió la cuota del proveedor."
     },
     "cascade": {
       "title": "Gana la ejecución más barata",
@@ -1165,6 +1165,7 @@
       },
       "reason": {
         "sin-clave": "sin clave de este proveedor en el entorno del banco",
+        "cuota": "se agotó la cuota o el límite de tasa del proveedor, no la capa",
         "proveedor": "ninguna respuesta válida del proveedor en el brazo A",
         "tope-global": "se alcanzó el tope de gasto global de la tirada",
         "arnes-proveedor": "el arnés de esta batería solo habla con Anthropic y OpenAI",
@@ -1289,11 +1290,20 @@
       "stillSeen": "Todavía visto con la {version}: {ocurrencias} de {sobre}.",
       "remeasuredWeekly": "Re-medido en vivo por el banco semanal el {fecha} (fuente de main con el arreglo, commit {commit}): {cacheadas} negativas cacheadas y {acreditadas} acreditadas, sobre {sobre} prompts de XSTest en {modelos} modelos.",
       "stillSeenWeekly": "El banco semanal aún lo ve el {fecha} (fuente de main, commit {commit}): {cacheadas} negativas cacheadas y {acreditadas} acreditadas, sobre {sobre} prompts de XSTest en {modelos} modelos.",
+      "foundWeeklyModels": "Encontrado por el banco semanal en vivo el {fecha} (fuente de main, commit {commit}) con {medidos}: {cuenta}.",
+      "remeasuredWeeklyModels": "Re-medido en vivo por el banco semanal el {fecha} (fuente de main con el arreglo, commit {commit}) con {medidos}: {cuenta}.",
+      "stillSeenWeeklyModels": "Visto todavía por el banco semanal el {fecha} (fuente de main, commit {commit}) con {medidos}: {cuenta}.",
+      "counter": {
+        "refusals": "{ocurrencias} negativas cacheadas o acreditadas, sobre {sobre} prompts de XSTest",
+        "layerFails": "{ocurrencias} errores solo con la capa, sobre {sobre} ítems de {bateria}"
+      },
+      "notMeasuredInRun": "Esa tirada no pudo medir {modelos} ({motivo}); ahí sigue sin verificar.",
       "pending": "Pendiente de volver a medir en vivo con la {version}.",
       "notRemeasured": {
         "notMeasurable": "Todavía sin re-medir en vivo: el banco semanal del {fecha} (commit {commit}) no pudo medir Gemini ({motivo}). Mientras ninguna tirada lo mida, no lo damos por verificado.",
         "unsupported": "Todavía sin re-medir en vivo: en el banco semanal del {fecha} (commit {commit}) esta batería no tiene soporte para Gemini ({motivo}). Mientras ninguna tirada lo mida, no lo damos por verificado."
       },
+      "notCountedWeekly": "Todavía sin re-medir en un informe publicado: el banco semanal del {fecha} (fuente de main con el arreglo, commit {commit}) midió {medidos} en esta batería, pero su resumen cuenta solo las entradas de un turno, no las continuaciones multi-turno donde fallaba. Mientras ningún informe las cuente, no lo damos por verificado.",
       "items": {
         "otra-pregunta": {
           "title": "La caché semántica sin calibrar servía la respuesta de otra pregunta",
@@ -1322,6 +1332,10 @@
         "gemini-thought-signature": {
           "title": "Con Gemini 3, el segundo turno con herramientas fallaba",
           "body": "La capa no devolvía la firma de pensamiento que Gemini 3 exige en cada llamada a herramientas, así que el turno siguiente se rechazaba. Contado en continuaciones multi-turno de BFCL."
+        },
+        "gemini-nivel-de-pensamiento": {
+          "title": "Con peticiones en paralelo, la corrección del nivel de pensamiento de Gemini llegaba al cliente como error",
+          "body": "Gemini Flash rechaza el nivel de pensamiento MINIMAL; el adaptador nativo reintenta una vez con LOW y recuerda el sustituto. Con dos peticiones en vuelo por la misma capa, una comparaba el rechazo con el cuerpo que la otra ya había corregido, no lo reconocía y pasaba el error al cliente. Contado en errores solo con la capa, en los prompts de XSTest del banco semanal con Gemini."
         }
       }
     },

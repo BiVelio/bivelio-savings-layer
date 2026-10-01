@@ -787,7 +787,7 @@
       "proofTitle": "Gerçek sağlayıcıya karşı ölçüldü",
       "medidoEn": "Ölçüldüğü yer",
       "compatibleCon": "Uyumlu",
-      "compatibleNota": "Uyumlu, ölçülmüş demek değildir. SDK, OpenAI API'siyle uyumlu her uç noktayla, ayrıca yerel Anthropic bağdaştırıcısı ve yerel Gemini bağdaştırıcısıyla ({gemini} sürümünde yeni) çalışır. Ölçülmüş olanlar — herkese açık test tezgâhında bir tasarruf rakamıyla — bugün yalnızca OpenAI ve Anthropic modelleridir; Gemini'nin henüz ölçülmüş bir tasarrufu yok."
+      "compatibleNota": "Uyumlu, ölçülmüş demek değildir. SDK, OpenAI API'siyle uyumlu her uç noktayla, ayrıca yerel Anthropic bağdaştırıcısı ve yerel Gemini bağdaştırıcısıyla ({gemini} sürümünde yeni) çalışır. Herkese açık test tezgâhında tasarruf rakamı olanlar bugün yalnızca OpenAI ve Anthropic modelleridir; Gemini'nin tasarruf rakamı yok. Gemini için ölçülen: {flash}, yerel API'si üzerinden, {fecha} tarihli haftalık canlı testte — dört bataryanın tümü, hiçbir katman hatası olmadan ve önbelleğe alınan ya da tasarruf olarak kredilendirilen hiçbir ret olmadan. Bu test, katmanın hiçbir şeyi bozmadığını ve fazla ücret almadığını kontrol eder; bir tasarrufu ölçmez. {pro} henüz ölçülmedi: sağlayıcının kotası buna engel oldu."
     },
     "cascade": {
       "title": "En ucuz yürütme kazanır",
@@ -1165,6 +1165,7 @@
       },
       "reason": {
         "sin-clave": "testin ortamında bu sağlayıcının anahtarı yok",
+        "cuota": "sağlayıcının kotası veya hız sınırı doldu, katman değil",
         "proveedor": "A kolunda sağlayıcıdan geçerli yanıt yok",
         "tope-global": "koşunun genel harcama tavanına ulaşıldı",
         "arnes-proveedor": "bu bataryanın test düzeneği yalnızca Anthropic ve OpenAI ile konuşur",
@@ -1289,11 +1290,20 @@
       "stillSeen": "{version} sürümünde hâlâ görülüyor: {sobre} üzerinden {ocurrencias}.",
       "remeasuredWeekly": "Haftalık test tarafından {fecha} tarihinde canlı olarak yeniden ölçüldü (düzeltmeyi içeren main kaynak kodu, commit {commit}): önbelleğe alınan {cacheadas} ret ve kredilendirilen {acreditadas} ret; {sobre} XSTest promptunda, {modelos} modelde.",
       "stillSeenWeekly": "Haftalık test {fecha} tarihinde hâlâ görüyor (main kaynak kodu, commit {commit}): önbelleğe alınan {cacheadas} ret ve kredilendirilen {acreditadas} ret; {sobre} XSTest promptunda, {modelos} modelde.",
+      "foundWeeklyModels": "{fecha} tarihinde haftalık canlı test tarafından bulundu (main kaynak kodu, commit {commit}), {medidos} ile: {cuenta}.",
+      "remeasuredWeeklyModels": "{fecha} tarihinde haftalık test tarafından canlı olarak yeniden ölçüldü (düzeltmeyi içeren main kaynak kodu, commit {commit}), {medidos} ile: {cuenta}.",
+      "stillSeenWeeklyModels": "Haftalık test {fecha} tarihinde hâlâ görüyor (main kaynak kodu, commit {commit}), {medidos} ile: {cuenta}.",
+      "counter": {
+        "refusals": "önbelleğe alınan veya kredilendirilen {ocurrencias} ret; {sobre} XSTest promptunda",
+        "layerFails": "yalnızca katmanla oluşan {ocurrencias} hata; {sobre} {bateria} öğesinde"
+      },
+      "notMeasuredInRun": "O çalıştırma {modelos} modelini ölçemedi ({motivo}); orada doğrulanmamış kalıyor.",
       "pending": "{version} sürümünde canlı olarak yeniden ölçülmeyi bekliyor.",
       "notRemeasured": {
         "notMeasurable": "Henüz canlı olarak yeniden ölçülmedi: {fecha} tarihli haftalık test (commit {commit}) Gemini'yi ölçemedi ({motivo}). Bir koşu ölçene kadar doğrulanmış saymıyoruz.",
         "unsupported": "Henüz canlı olarak yeniden ölçülmedi: {fecha} tarihli haftalık testte (commit {commit}) bu bataryanın Gemini desteği yok ({motivo}). Bir koşu ölçene kadar doğrulanmış saymıyoruz."
       },
+      "notCountedWeekly": "Yayımlanmış bir raporda henüz yeniden ölçülmedi: {fecha} tarihli haftalık test (düzeltmeyi içeren main kaynak kodu, commit {commit}) bu bataryada {medidos} modelini ölçtü, ancak özeti yalnızca tek turlu girdileri sayar; bunun başarısız olduğu çok turlu devamları saymaz. Hiçbir rapor bunları saymadıkça doğrulanmış saymıyoruz.",
       "items": {
         "otra-pregunta": {
           "title": "Kalibre edilmemiş anlamsal önbellek, başka bir sorunun cevabını sundu",
@@ -1322,6 +1332,10 @@
         "gemini-thought-signature": {
           "title": "Gemini 3 ile araçlı ikinci tur başarısız oluyordu",
           "body": "Katman, Gemini 3'ün her araç çağrısında gerektirdiği düşünce imzasını geri döndürmüyordu, bu yüzden bir sonraki tur reddediliyordu. BFCL çok turlu devamları üzerinden sayıldı."
+        },
+        "gemini-nivel-de-pensamiento": {
+          "title": "Paralel isteklerde Gemini'nin düşünme düzeyi düzeltmesi istemciye hata olarak ulaşıyordu",
+          "body": "Gemini Flash, MINIMAL düşünme düzeyini reddeder; yerel bağdaştırıcı bir kez LOW ile yeniden dener ve bu ikameyi hatırlar. Aynı katmandan aynı anda giden iki istekte biri, reddi diğerinin zaten düzelttiği gövdeyle karşılaştırıyor, tanımıyor ve hatayı istemciye iletiyordu. Haftalık testin Gemini ile XSTest promptlarında, yalnızca katmanla oluşan hata olarak sayıldı."
         }
       }
     },

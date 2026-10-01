@@ -69,7 +69,30 @@ export const BANCO_EN_VIVO = {
 
 /**
  * El adaptador nativo de Gemini (`GoogleProvider`, #410) llegó en la 0.4.33.
- * Compatible no es medido: no hay cifra de ahorro de Gemini publicada en
+ * Compatible no es medido: no hay cifra de AHORRO de Gemini publicada en
  * /benchmarks.
  */
 export const VERSION_GEMINI_NATIVO = "0.4.33";
+
+/**
+ * LO MEDIDO DE GEMINI (2026-10-01): el primer banco semanal en vivo con Gemini
+ * por su API nativa (run 1398eb, fuente de main 5bec174). Mide que la capa no
+ * rompe nada ni cobra de más — fallos solo con la capa, negativas cacheadas o
+ * acreditadas, informe frente a factura —, NO un porcentaje de ahorro: la
+ * portada no saca de aquí ninguna cifra.
+ *
+ *   · `medido`: el modelo con las CUATRO baterías medidas en ese informe, sin
+ *     ningún fallo de la capa y sin negativas cacheadas ni acreditadas.
+ *   · `sinMedir`: el modelo que esa tirada no pudo medir en ninguna batería
+ *     (la cuota del proveedor, 429).
+ *
+ * `portada-dice-lo-medido.test.ts` lo comprueba contra el JSON del informe: si
+ * el informe deja de sostener una de las dos frases, el build se pone rojo.
+ */
+export const GEMINI_EN_EL_SEMANAL = {
+  informe: "docs/benchmarks/2026-10-01/banco-semanal-5bec174.json",
+  /** Día en que empezó la tirada (su `inicio`). */
+  fecha: "2026-10-01",
+  medido: { modelo: "google/gemini-3.8-flash", nombre: "Gemini 3.8 Flash" },
+  sinMedir: { modelo: "google/gemini-3.1-pro-preview", nombre: "Gemini 3.1 Pro" },
+} as const;

@@ -787,7 +787,7 @@
       "proofTitle": "Measured against a real provider",
       "medidoEn": "Measured on",
       "compatibleCon": "Compatible with",
-      "compatibleNota": "Compatible is not measured. The SDK works with any endpoint compatible with the OpenAI API, plus the native Anthropic adapter and the native Gemini adapter (new in {gemini}). Measured — with a savings figure on the public bench — today only OpenAI and Anthropic models; Gemini has no measured saving yet."
+      "compatibleNota": "Compatible is not measured. The SDK works with any endpoint compatible with the OpenAI API, plus the native Anthropic adapter and the native Gemini adapter (new in {gemini}). With a savings figure on the public bench, today only OpenAI and Anthropic models; Gemini has no savings figure. What is measured for Gemini: {flash}, through its native API, in the weekly live bench of {fecha} — all four batteries, with no layer failures and no refusal cached or credited as savings. That bench checks that the layer breaks nothing and does not overcharge; it does not measure a saving. {pro} is not measured yet: the provider's quota stopped it."
     },
     "cascade": {
       "title": "Cheapest execution wins",
@@ -1165,6 +1165,7 @@
       },
       "reason": {
         "sin-clave": "no key for this provider in the bench's environment",
+        "cuota": "the provider's quota or rate limit ran out, not the layer",
         "proveedor": "no valid response from the provider in arm A",
         "tope-global": "the run's overall spend cap was reached",
         "arnes-proveedor": "this battery's harness only talks to Anthropic and OpenAI",
@@ -1289,11 +1290,20 @@
       "stillSeen": "Still seen on {version}: {ocurrencias} of {sobre}.",
       "remeasuredWeekly": "Re-measured live by the weekly bench on {fecha} (source of main with the fix, commit {commit}): {cacheadas} refusals cached and {acreditadas} credited, over {sobre} XSTest prompts on {modelos} models.",
       "stillSeenWeekly": "Still seen by the weekly bench on {fecha} (source of main, commit {commit}): {cacheadas} refusals cached and {acreditadas} credited, over {sobre} XSTest prompts on {modelos} models.",
+      "foundWeeklyModels": "Found by the weekly live bench on {fecha} (source of main, commit {commit}) with {medidos}: {cuenta}.",
+      "remeasuredWeeklyModels": "Re-measured live by the weekly bench on {fecha} (source of main with the fix, commit {commit}) with {medidos}: {cuenta}.",
+      "stillSeenWeeklyModels": "Still seen by the weekly bench on {fecha} (source of main, commit {commit}) with {medidos}: {cuenta}.",
+      "counter": {
+        "refusals": "{ocurrencias} refusals cached or credited, over {sobre} XSTest prompts",
+        "layerFails": "{ocurrencias} errors only with the layer, over {sobre} {bateria} items"
+      },
+      "notMeasuredInRun": "That run could not measure {modelos} ({motivo}); there it stays unverified.",
       "pending": "Waiting to be re-measured live on {version}.",
       "notRemeasured": {
         "notMeasurable": "Not re-measured live yet: the weekly bench of {fecha} (commit {commit}) could not measure Gemini ({motivo}). Until a run measures it, we do not count it as verified.",
         "unsupported": "Not re-measured live yet: in the weekly bench of {fecha} (commit {commit}) this battery has no Gemini support ({motivo}). Until a run measures it, we do not count it as verified."
       },
+      "notCountedWeekly": "Not re-measured in a published report yet: the weekly bench of {fecha} (source of main with the fix, commit {commit}) measured {medidos} in this battery, but its summary counts only single-turn entries, not the multi-turn continuations where this failed. Until a report counts them, we do not count it as verified.",
       "items": {
         "otra-pregunta": {
           "title": "The uncalibrated semantic cache served another question's answer",
@@ -1322,6 +1332,10 @@
         "gemini-thought-signature": {
           "title": "With Gemini 3, the second turn with tools failed",
           "body": "The layer did not return the thought signature Gemini 3 requires on each tool call, so the next turn was rejected. Counted in BFCL multi-turn continuations."
+        },
+        "gemini-nivel-de-pensamiento": {
+          "title": "With requests in parallel, Gemini's thinking-level correction reached the client as an error",
+          "body": "Gemini Flash rejects the MINIMAL thinking level; the native adapter retries once with LOW and remembers the substitute. With two requests in flight through the same layer, one compared the rejection with the body the other had already corrected, did not recognize it and passed the error to the client. Counted as errors only with the layer, in the weekly bench's XSTest prompts with Gemini."
         }
       }
     },
