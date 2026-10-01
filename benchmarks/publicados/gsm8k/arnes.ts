@@ -233,7 +233,14 @@ export function conReintentos(p: Provider, dormir = (ms: number) => new Promise<
 
 export interface Contador {
   coste: number;
+  /** Llamadas que el proveedor RESPONDIÓ (y cobró). */
   llamadas: number;
+  /**
+   * Peticiones que salieron al proveedor, respondidas o no (un 429 cuenta). La
+   * compara el banco semanal entre brazos: un 429 en un brazo con capa solo se
+   * atribuye a la cuota si ese brazo no mandó más peticiones que A (extraer.ts).
+   */
+  peticiones?: number;
   entrada: number;
   cacheada: number;
   escrita: number;
@@ -242,7 +249,7 @@ export interface Contador {
   pensamiento?: number;
   ultimoFinish?: string;
 }
-const contadorNuevo = (): Contador => ({ coste: 0, llamadas: 0, entrada: 0, cacheada: 0, escrita: 0, salida: 0, pensamiento: 0 });
+const contadorNuevo = (): Contador => ({ coste: 0, llamadas: 0, peticiones: 0, entrada: 0, cacheada: 0, escrita: 0, salida: 0, pensamiento: 0 });
 
 /**
  * LOS TOKENS DE PENSAMIENTO DE GEMINI QUE EL ADAPTADOR NO VE. Por el endpoint
@@ -284,6 +291,7 @@ export function conContador(p: Provider, model: string, caja: Caja, c: Contador)
       if (caja.gasto + caja.peorLlamada > caja.tope) {
         throw new PresupuestoAgotado(`budget: spent ${caja.gasto.toFixed(4)} of ${caja.tope} USD`);
       }
+      c.peticiones = (c.peticiones ?? 0) + 1;
       const resp: ProviderResponse = await p.generate(req, opts);
       const { escrituras } = escriturasDeLlamada(resp);
       const oculto = pensamientoOculto(model, resp);
@@ -620,6 +628,7 @@ export async function medirModelo(o: OpcionesDeModelo): Promise<MedicionDeModelo
     fila.latenciaMs = performance.now() - t0;
     fila.coste = c.coste - antes.coste;
     fila.llamadas = c.llamadas - antes.llamadas;
+    fila.peticiones = (c.peticiones ?? 0) - (antes.peticiones ?? 0);
     fila.entrada = c.entrada - antes.entrada;
     fila.cacheada = c.cacheada - antes.cacheada;
     fila.escrita = c.escrita - antes.escrita;
