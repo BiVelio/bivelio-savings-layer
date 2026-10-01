@@ -787,7 +787,7 @@
       "proofTitle": "Misurato contro un provider reale",
       "medidoEn": "Misurato su",
       "compatibleCon": "Compatibile con",
-      "compatibleNota": "Compatibile non vuol dire misurato. L'SDK funziona con qualsiasi endpoint compatibile con l'API di OpenAI, più l'adattatore nativo di Anthropic e l'adattatore nativo di Gemini (novità della {gemini}). Con una cifra di risparmio sul banco pubblico, oggi solo i modelli di OpenAI e di Anthropic; Gemini non ha una cifra di risparmio. Ciò che è misurato per Gemini: {flash}, tramite la sua API nativa, nel banco settimanale dal vivo del {fecha} — tutte e quattro le batterie, senza errori dello strato e senza alcun rifiuto in cache o accreditato come risparmio. Quel banco verifica che lo strato non rompa nulla e non faccia pagare di più; non misura un risparmio. {pro} non è ancora misurato: lo ha impedito la quota del fornitore."
+      "compatibleNota": "Compatibile non vuol dire misurato. L'SDK funziona con qualsiasi endpoint compatibile con l'API di OpenAI, più l'adattatore nativo di Anthropic e l'adattatore nativo di Gemini (novità della {gemini}). Con una cifra di risparmio sul banco pubblico, oggi solo i modelli di OpenAI e di Anthropic; Gemini non ha una cifra di risparmio. Ciò che è misurato per Gemini: {flash}, tramite la sua API nativa, nel banco settimanale dal vivo del {fecha} — tutte e quattro le batterie, senza errori dello strato e senza alcun rifiuto in cache o accreditato come risparmio. Quel banco verifica che lo strato non rompa nulla e non faccia pagare di più; non misura un risparmio. Misurato anche: {pro}, tramite la sua API nativa, in due esecuzioni parziali del {fechaPro} (la sua quota giornaliera del fornitore non basta per le quattro batterie in un giorno): tutte e quattro le batterie, anche qui senza alcun errore del livello e senza alcun rifiuto messo in cache o contato come risparmio."
     },
     "cascade": {
       "title": "Vince l'esecuzione più economica",
@@ -1189,7 +1189,11 @@
       "note": "Gli «errori del livello» sono errori del braccio B che il braccio A non ha avuto. «B − A» è la differenza di accuratezza in GSM8K e BFCL, quella del tasso di rifiuto in XSTest (p di McNemar, prompt appaiati) e, in MT-Bench, quanto spesso il giudice preferisce B (la metà è un pareggio). «Report rispetto alla fattura» è quanto il costo che il livello riporta per il braccio B si discosta da ciò che fattura il fornitore.",
       "earlierTitle": "Esecuzioni settimanali precedenti",
       "earlierOk": "{fecha} · commit {commit} · nessuna regressione.",
-      "earlierFailed": "{fecha} · commit {commit} · fallita (regole violate: {n})."
+      "earlierFailed": "{fecha} · commit {commit} · fallita (regole violate: {n}).",
+      "partialTitle": "Esecuzioni parziali",
+      "partialIntro": "Un'esecuzione parziale si lancia a mano con solo alcuni modelli o batterie; per esempio, l'altra giornata di un modello la cui quota giornaliera del fornitore non basta per le sue quattro batterie in un giorno. Misura ciò che dichiara, ma non è l'esecuzione settimanale: non conta per pubblicare.",
+      "partialOk": "{fecha} · commit {commit} · {modelos} · {baterias} · nessuna regressione.",
+      "partialFailed": "{fecha} · commit {commit} · {modelos} · {baterias} · fallita (regole violate: {n})."
     },
     "batteries": {
       "gsm8k": "Problemi matematici a parole con ripetizioni e parafrasi: quanto fa risparmiare la cache e se l'accuratezza cala.",

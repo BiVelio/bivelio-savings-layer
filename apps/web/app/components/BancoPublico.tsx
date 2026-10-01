@@ -658,6 +658,26 @@ function Semanal({ banco, t, f }: { banco: Banco; t: Traductor; f: F }) {
           </ul>
         </>
       )}
+      {banco.parciales.length > 0 && (
+        <>
+          <h3>{t("weekly.partialTitle")}</h3>
+          <p>{t("weekly.partialIntro")}</p>
+          <ul className="terms-list">
+            {banco.parciales.map((x) => (
+              <li key={x.ruta} data-run={x.runId} data-parcial={x.parcial!.modelos.join(",")}>
+                {t(x.ok ? "weekly.partialOk" : "weekly.partialFailed", {
+                  fecha: f.fecha(x.fecha),
+                  commit: x.commit,
+                  modelos: x.parcial!.modelos.join(", "),
+                  baterias: x.parcial!.baterias.map((b) => NOMBRE_BATERIA[b] ?? b).join(", "),
+                  n: f.ent(x.infracciones),
+                })}{" "}
+                <InformeEnlace ruta={x.ruta} />
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
     </section>
   );
 }

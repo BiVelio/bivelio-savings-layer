@@ -156,11 +156,14 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
   // Lo medido de Gemini (banco semanal en vivo): qué modelo y qué día, nunca
   // una cifra de ahorro. Nombres y fecha llegan por parámetro.
   const G = GEMINI_EN_EL_SEMANAL;
+  const diaLargo = new Intl.DateTimeFormat(locale, { dateStyle: "long", timeZone: "UTC" });
+  const dia = (d: string) => new Date(`${d}T00:00:00Z`);
   const notaCompatible = {
     gemini: VERSION_GEMINI_NATIVO,
     flash: G.medido.nombre,
-    pro: G.sinMedir.nombre,
-    fecha: new Intl.DateTimeFormat(locale, { dateStyle: "long", timeZone: "UTC" }).format(new Date(`${G.fecha}T00:00:00Z`)),
+    pro: G.pro.nombre,
+    fecha: diaLargo.format(dia(G.fecha)),
+    fechaPro: diaLargo.formatRange(dia(G.pro.desde), dia(G.pro.hasta)),
   };
 
   // Los límites de Medir salen de la constante que aplica la ingesta.

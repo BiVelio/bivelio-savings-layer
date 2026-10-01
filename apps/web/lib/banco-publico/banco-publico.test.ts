@@ -88,7 +88,7 @@ describe("banco público: la extracción, contra los informes publicados", () =>
       if (Array.isArray(j.sondas)) continue;
       // El banco semanal tampoco: entra en su propia sección (si es en vivo).
       if (esBancoSemanal(j)) {
-        if (String(j.modo).toLowerCase() === "vivo") expect(BANCO.semanales.some((s) => s.ruta === r), r).toBe(true);
+        if (String(j.modo).toLowerCase() === "vivo") expect([...BANCO.semanales, ...BANCO.parciales].some((s) => s.ruta === r), r).toBe(true);
         else expect(j.modo, r).toMatch(/seco/i);
         continue;
       }
@@ -325,7 +325,7 @@ describe("banco público: el banco semanal en vivo (su propia sección)", () => 
 
   it("reconoce cada resultado del banco semanal de la carpeta, y la sección enseña el más reciente", () => {
     expect(semanales.length).toBeGreaterThan(0);
-    expect(BANCO.semanales.map((s) => s.ruta).sort()).toEqual(semanales.filter((f) => f.json.modo === "vivo").map((f) => f.ruta).sort());
+    expect([...BANCO.semanales, ...BANCO.parciales].map((s) => s.ruta).sort()).toEqual(semanales.filter((f) => f.json.modo === "vivo").map((f) => f.ruta).sort());
     const ultima = BANCO.semanales[0]!;
     for (const s of BANCO.semanales) expect(s.inicio <= ultima.inicio).toBe(true);
     expect(html).toContain('id="weekly"');
@@ -343,9 +343,11 @@ describe("banco público: el banco semanal en vivo (su propia sección)", () => 
       expect(s.gastoUsd).toBe(j.gastoUsd);
       expect(s.ok).toBe(j.veredicto.ok);
       expect(s.infracciones).toBe(j.veredicto.infracciones.length);
-      expect(s.celdas.length).toBe(j.resultados.length);
+      // Las celdas aplazadas por la cuota diaria no se lanzaron: no son celdas de la tirada.
+      const lanzadas = (j.resultados as J[]).filter((x) => x.estado !== "aplazada-por-cuota");
+      expect(s.celdas.length).toBe(lanzadas.length);
       for (const [i, c] of s.celdas.entries()) {
-        const x = j.resultados[i];
+        const x = lanzadas[i];
         expect(c.modelo).toBe(x.modelo);
         const medida = x.estado === "medida" && x.medicion.estado === "medido";
         expect(c.estado === "medida", `${c.bateria} ${c.modelo}`).toBe(medida);
@@ -380,6 +382,28 @@ describe("banco público: el banco semanal en vivo (su propia sección)", () => 
     expect(html).not.toContain(esc(t("bugs.pending", { version: "0.4.32" })));
     expect(html).toContain('data-fallo="negativas-parciales"');
     expect(html).toContain('data-semanal="re-medido"');
+  });
+
+  it("un banco PARCIAL (la jornada de Gemini 3.1 Pro) sale aparte: no es «la última tirada semanal», y dice qué midió", () => {
+    expect(BANCO.parciales.length).toBeGreaterThan(0);
+    for (const p of BANCO.parciales) {
+      const j = crudo(p.ruta);
+      expect(j.modo).toBe("vivo");
+      expect(j.resultados.length).toBeLessThan(j.plan.length);
+      expect(BANCO.semanales.some((s) => s.ruta === p.ruta)).toBe(false);
+      // Solo las celdas lanzadas; las aplazadas por cuota, fuera.
+      const lanzadas = (j.resultados as J[]).filter((x) => x.estado !== "aplazada-por-cuota");
+      expect(p.celdas.length).toBe(lanzadas.length);
+      expect(p.parcial!.modelos).toEqual([...new Set(lanzadas.map((x) => x.modelo))]);
+      expect(p.parcial!.baterias.length).toBeGreaterThan(0);
+      expect(p.ok).toBe(j.veredicto.ok);
+      expect(html).toContain(`data-parcial="${p.parcial!.modelos.join(",")}"`);
+      expect(html).toContain(`data-run="${p.runId}"`);
+    }
+    const t = traductor("es");
+    expect(html).toContain(esc(t("weekly.partialTitle")));
+    // Un banco completo nunca es parcial.
+    for (const s of BANCO.semanales) expect(s.parcial).toBeUndefined();
   });
 
   it("Gemini: el primer semanal con Gemini nativo re-mide en Flash lo que su resumen cuenta; Pro, sin medir por cuota", () => {

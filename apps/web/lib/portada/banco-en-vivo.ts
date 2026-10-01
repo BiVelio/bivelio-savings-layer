@@ -83,8 +83,13 @@ export const VERSION_GEMINI_NATIVO = "0.4.33";
  *
  *   · `medido`: el modelo con las CUATRO baterías medidas en ese informe, sin
  *     ningún fallo de la capa y sin negativas cacheadas ni acreditadas.
- *   · `sinMedir`: el modelo que esa tirada no pudo medir en ninguna batería
- *     (la cuota del proveedor, 429).
+ *   · `pro`: el modelo que esa tirada NO pudo medir (la cuota del proveedor:
+ *     250 peticiones al día, 429 en las cuatro baterías). Desde #448 sus
+ *     baterías van en dos jornadas (benchmarks/banco-semanal/plan.ts,
+ *     CUOTA_DIARIA), y lo midieron dos bancos PARCIALES limitados a él
+ *     (runs 36925298365 y 36977332185, fuente de main b349d7a): BFCL y
+ *     MT-Bench el 1, GSM8K y XSTest el 2. Cada batería medida una vez, sin
+ *     fallos de la capa ni negativas cacheadas o acreditadas.
  *
  * `portada-dice-lo-medido.test.ts` lo comprueba contra el JSON del informe: si
  * el informe deja de sostener una de las dos frases, el build se pone rojo.
@@ -94,5 +99,16 @@ export const GEMINI_EN_EL_SEMANAL = {
   /** Día en que empezó la tirada (su `inicio`). */
   fecha: "2026-10-01",
   medido: { modelo: "google/gemini-3.8-flash", nombre: "Gemini 3.8 Flash" },
-  sinMedir: { modelo: "google/gemini-3.1-pro-preview", nombre: "Gemini 3.1 Pro" },
+  pro: {
+    modelo: "google/gemini-3.1-pro-preview",
+    nombre: "Gemini 3.1 Pro",
+    /** Los dos bancos parciales (una jornada cada uno), en orden. */
+    informes: [
+      "docs/benchmarks/2026-10-01/banco-semanal-b349d7a-gemini-31-pro-jornada-1.json",
+      "docs/benchmarks/2026-10-02/banco-semanal-b349d7a-gemini-31-pro-jornada-2.json",
+    ],
+    /** Primer y último día (su `inicio`). */
+    desde: "2026-10-01",
+    hasta: "2026-10-02",
+  },
 } as const;

@@ -787,7 +787,7 @@
       "proofTitle": "Medido contra proveedor real",
       "medidoEn": "Medido en",
       "compatibleCon": "Compatible con",
-      "compatibleNota": "Compatible no es medido. El SDK funciona con cualquier endpoint compatible con la API de OpenAI, más el adaptador nativo de Anthropic y el adaptador nativo de Gemini (nuevo en la {gemini}). Con cifra de ahorro en el banco público, hoy solo modelos de OpenAI y de Anthropic; Gemini no tiene cifra de ahorro. Lo medido de Gemini: {flash}, por su API nativa, en el banco semanal en vivo del {fecha} — las cuatro baterías, sin ningún fallo de la capa y sin ninguna negativa cacheada ni acreditada como ahorro. Ese banco comprueba que la capa no rompe nada ni cobra de más; no mide un ahorro. {pro} aún no está medido: lo impidió la cuota del proveedor."
+      "compatibleNota": "Compatible no es medido. El SDK funciona con cualquier endpoint compatible con la API de OpenAI, más el adaptador nativo de Anthropic y el adaptador nativo de Gemini (nuevo en la {gemini}). Con cifra de ahorro en el banco público, hoy solo modelos de OpenAI y de Anthropic; Gemini no tiene cifra de ahorro. Lo medido de Gemini: {flash}, por su API nativa, en el banco semanal en vivo del {fecha} — las cuatro baterías, sin ningún fallo de la capa y sin ninguna negativa cacheada ni acreditada como ahorro. Ese banco comprueba que la capa no rompe nada ni cobra de más; no mide un ahorro. También medido: {pro}, por su API nativa, en dos bancos parciales del {fechaPro} (su cuota diaria del proveedor no da para las cuatro baterías en un día): las cuatro baterías, también sin ningún fallo de la capa y sin ninguna negativa cacheada ni acreditada como ahorro."
     },
     "cascade": {
       "title": "Gana la ejecución más barata",
@@ -1189,7 +1189,11 @@
       "note": "«Fallos de la capa» son errores en el brazo B que el A no tuvo. «B − A» es la diferencia de exactitud en GSM8K y BFCL, la de la tasa de negativas en XSTest (p de McNemar, prompts emparejados) y, en MT-Bench, cuántas veces el juez prefiere B (la mitad es empate). «Informe frente a factura» es cuánto se aparta el coste que informa la capa para el brazo B de lo que factura el proveedor.",
       "earlierTitle": "Tiradas semanales anteriores",
       "earlierOk": "{fecha} · commit {commit} · sin regresiones.",
-      "earlierFailed": "{fecha} · commit {commit} · falló (reglas rotas: {n})."
+      "earlierFailed": "{fecha} · commit {commit} · falló (reglas rotas: {n}).",
+      "partialTitle": "Bancos parciales",
+      "partialIntro": "Un banco parcial se lanza a mano con solo algunos modelos o baterías; por ejemplo, la otra jornada de un modelo cuya cuota diaria del proveedor no da para sus cuatro baterías en un día. Mide lo que dice, pero no es la tirada semanal: no cuenta para publicar.",
+      "partialOk": "{fecha} · commit {commit} · {modelos} · {baterias} · sin regresiones.",
+      "partialFailed": "{fecha} · commit {commit} · {modelos} · {baterias} · falló (reglas rotas: {n})."
     },
     "batteries": {
       "gsm8k": "Problemas de matemáticas con repeticiones y paráfrasis: cuánto ahorra la caché y si se pierde exactitud.",

@@ -787,7 +787,7 @@
       "proofTitle": "Mesuré contre un fournisseur réel",
       "medidoEn": "Mesuré sur",
       "compatibleCon": "Compatible avec",
-      "compatibleNota": "Compatible ne veut pas dire mesuré. Le SDK fonctionne avec tout endpoint compatible avec l'API d'OpenAI, plus l'adaptateur natif d'Anthropic et l'adaptateur natif de Gemini (nouveau dans la {gemini}). Avec un chiffre d'économie sur le banc public, aujourd'hui seulement les modèles d'OpenAI et d'Anthropic ; Gemini n'a pas de chiffre d'économie. Ce qui est mesuré pour Gemini : {flash}, par son API native, dans le banc hebdomadaire en direct du {fecha} — les quatre batteries, sans aucune erreur de la couche et sans aucun refus mis en cache ni crédité comme économie. Ce banc vérifie que la couche ne casse rien et ne facture pas en trop ; il ne mesure pas une économie. {pro} n'est pas encore mesuré : le quota du fournisseur l'en a empêché."
+      "compatibleNota": "Compatible ne veut pas dire mesuré. Le SDK fonctionne avec tout endpoint compatible avec l'API d'OpenAI, plus l'adaptateur natif d'Anthropic et l'adaptateur natif de Gemini (nouveau dans la {gemini}). Avec un chiffre d'économie sur le banc public, aujourd'hui seulement les modèles d'OpenAI et d'Anthropic ; Gemini n'a pas de chiffre d'économie. Ce qui est mesuré pour Gemini : {flash}, par son API native, dans le banc hebdomadaire en direct du {fecha} — les quatre batteries, sans aucune erreur de la couche et sans aucun refus mis en cache ni crédité comme économie. Ce banc vérifie que la couche ne casse rien et ne facture pas en trop ; il ne mesure pas une économie. Également mesuré : {pro}, via son API native, en deux passes partielles le {fechaPro} (son quota quotidien du fournisseur ne permet pas les quatre batteries en un jour) : les quatre batteries, là aussi sans aucune défaillance de la couche et sans aucun refus mis en cache ni compté comme économie."
     },
     "cascade": {
       "title": "L'exécution la moins chère l'emporte",
@@ -1189,7 +1189,11 @@
       "note": "Les « échecs de la couche » sont des erreurs du bras B que le bras A n'a pas eues. « B − A » est l'écart d'exactitude pour GSM8K et BFCL, l'écart du taux de refus pour XSTest (p de McNemar, prompts appariés) et, pour MT-Bench, la fréquence à laquelle le juge préfère B (la moitié est une égalité). « Rapport vs facture » mesure l'écart entre le coût que la couche déclare pour le bras B et ce que facture le fournisseur.",
       "earlierTitle": "Passes hebdomadaires précédentes",
       "earlierOk": "{fecha} · commit {commit} · aucune régression.",
-      "earlierFailed": "{fecha} · commit {commit} · échec (règles enfreintes : {n})."
+      "earlierFailed": "{fecha} · commit {commit} · échec (règles enfreintes : {n}).",
+      "partialTitle": "Passes partielles",
+      "partialIntro": "Une passe partielle est lancée à la main avec seulement certains modèles ou batteries ; par exemple, l'autre journée d'un modèle dont le quota quotidien du fournisseur ne permet pas ses quatre batteries en un jour. Elle mesure ce qu'elle annonce, mais ce n'est pas la passe hebdomadaire : elle ne compte pas pour publier.",
+      "partialOk": "{fecha} · commit {commit} · {modelos} · {baterias} · aucune régression.",
+      "partialFailed": "{fecha} · commit {commit} · {modelos} · {baterias} · échec (règles enfreintes : {n})."
     },
     "batteries": {
       "gsm8k": "Problèmes de mathématiques avec répétitions et paraphrases : combien le cache fait économiser et si l'exactitude baisse.",
