@@ -15,21 +15,27 @@ import {
 import { esErrorDeCuota } from "../benchmarks/publicados/cuota.js";
 import { resumir as resumirGsm8k, type Ensayo } from "../benchmarks/publicados/gsm8k/medir.js";
 import { resumenMarkdown } from "../benchmarks/banco-semanal/resumen.js";
-import { claveQueFalta, filtrarCeldas, redactar, valoresSecretos } from "../benchmarks/banco-semanal/orquestador.js";
+import { claveQueFalta, filtrarCeldas, jornadaDelBanco, motivoDeAplazamiento, redactar, valoresSecretos } from "../benchmarks/banco-semanal/orquestador.js";
 import {
   argumentosDe,
   BATERIAS,
   CajaGlobal,
+  CUOTA_DIARIA,
+  FRACCION_USABLE_DE_LA_CUOTA,
+  jornadaPorDefecto,
   MARGEN_DE_CIERRE_MS,
   MODELOS_DEL_BANCO,
+  peticionesMaximas,
   PLAZO_DE_CELDA_MS,
   PRESUPUESTO_SEMANAL_USD,
   planificar,
   reparto,
   TECHO_DE_CELDA_USD,
   TopeGlobalAgotado,
+  SUBMUESTRA_POR_MODELO,
+  submuestraDe,
+  tocaEnLaJornada,
   validarPlan,
-  XSTEST_N_POR_MODELO,
   type Celda,
 } from "../benchmarks/banco-semanal/plan.js";
 import { evaluarPuerta, leerRuns, MAX_DIAS, ultimoBancoEnVivo, type RunDelBanco } from "../benchmarks/banco-semanal/puerta.js";
@@ -107,18 +113,100 @@ describe("banco semanal · el reparto de los 50 $", () => {
   });
 
   // Run 36771607171: XSTest · gemini-3.1-pro-preview («media», 200 ítems) agotó los
-  // 75 min de la celda. Su submuestra la fija el reloj, y todo XSTest para de
+  // 75 min de la celda; runs 36786990486 y 36795672930: su cuota de 250 peticiones
+  // al día. Su submuestra la fijan el reloj y la cuota, y todo XSTest para de
   // empezar ítems con margen antes del plazo de la celda.
-  it("XSTest de gemini-3.1-pro-preview mira 40 ítems y todo XSTest lleva su plazo de cierre", () => {
-    const vivo = (id: string) => argumentosDe(plan.find((c) => c.bateria === "xstest" && c.modelo.id === id)!, "vivo", "/tmp/x", "abc123");
-    expect(vivo("google/gemini-3.1-pro-preview")).toContain("--n=40");
-    // Los demás «media» siguen con los 200 de su gama.
-    expect(vivo("anthropic/claude-sonnet-5")).toContain("--n=200");
+  it("gemini-3.1-pro-preview mira su submuestra propia y todo XSTest lleva su plazo de cierre", () => {
+    const vivo = (b: string, id: string) => argumentosDe(plan.find((c) => c.bateria === b && c.modelo.id === id)!, "vivo", "/tmp/x", "abc123");
+    const pro = "google/gemini-3.1-pro-preview";
+    expect(vivo("xstest", pro)).toContain("--n=24");
+    expect(vivo("gsm8k", pro)).toEqual(expect.arrayContaining(["--n-unicos", "12"]));
+    expect(vivo("mt-bench", pro)).toContain("--max-preguntas=16");
+    expect(vivo("bfcl", pro)).toEqual(expect.arrayContaining(["--n=12", "--multi=2", "--repes=3"]));
+    // Los demás «media» siguen con la submuestra de su gama.
+    expect(vivo("xstest", "anthropic/claude-sonnet-5")).toContain("--n=200");
+    expect(vivo("gsm8k", "anthropic/claude-sonnet-5")).toEqual(expect.arrayContaining(["--n-unicos", "60"]));
     const plazoMin = (PLAZO_DE_CELDA_MS - MARGEN_DE_CIERRE_MS) / 60_000;
     expect(plazoMin).toBe(60);
-    for (const m of MODELOS_DEL_BANCO) expect(vivo(m.id)).toContain(`--plazo-min=${plazoMin}`);
+    for (const m of MODELOS_DEL_BANCO) expect(vivo("xstest", m.id)).toContain(`--plazo-min=${plazoMin}`);
     expect(validarPlan(plan)).toEqual([]);
-    expect(Object.keys(XSTEST_N_POR_MODELO).every((id) => MODELOS_DEL_BANCO.some((m) => m.id === id))).toBe(true);
+    expect(Object.keys(SUBMUESTRA_POR_MODELO).every((id) => MODELOS_DEL_BANCO.some((m) => m.id === id))).toBe(true);
+  });
+});
+
+describe("banco semanal · la cuota diaria de peticiones (runs 36786990486 y 36795672930)", () => {
+  const plan = planificar();
+  const pro = modelo("google/gemini-3.1-pro-preview");
+  const celdaPro = (b: string) => plan.find((c) => c.bateria === b && c.modelo.id === pro.id)!;
+
+  it("la cuenta del peor caso de cada arnés, con la submuestra de gemini-3.1-pro-preview", () => {
+    // GSM8K: 3 de sonda + 2 × 12 únicos × 4 brazos. BFCL: 12 × 4 categorías × 2 + 3 × 2 + 2 × 12.
+    expect(peticionesMaximas("gsm8k", pro)).toBe(3 + 2 * 12 * 4);
+    expect(peticionesMaximas("bfcl", pro)).toBe(96 + 6 + 24);
+    expect(peticionesMaximas("xstest", pro)).toBe(4 * 24);
+    expect(peticionesMaximas("mt-bench", pro)).toBe(4 * 16);
+    // Con las submuestras de su gama («media») no cabía ni con el banco solo para él.
+    const gama = BATERIAS.reduce((t, b) => t + peticionesMaximas(b, { ...pro, id: "x/sin-submuestra-propia" }), 0);
+    expect(gama).toBeGreaterThan(250);
+    expect(submuestraDe({ ...pro, id: "x/sin-submuestra-propia" }).xstestN).toBe(200);
+  });
+
+  it("cada jornada cabe en el 80 % de la cuota, y entre todas cada batería va una vez", () => {
+    const cuota = CUOTA_DIARIA[pro.id]!;
+    expect(cuota.peticiones).toBe(250);
+    expect(cuota.jornadas.flat().sort()).toEqual([...BATERIAS].sort());
+    for (const js of cuota.jornadas) {
+      const pide = js.reduce((t, b) => t + peticionesMaximas(b, pro), 0);
+      expect(pide).toBeLessThanOrEqual(Math.floor(cuota.peticiones * FRACCION_USABLE_DE_LA_CUOTA));
+    }
+  });
+
+  it("validarPlan rechaza una jornada que no cabe o un reparto que se deja una batería", () => {
+    const cuota = CUOTA_DIARIA[pro.id]! as { peticiones: number; jornadas: readonly (readonly string[])[] };
+    const original = cuota.jornadas;
+    try {
+      (cuota as { jornadas: unknown }).jornadas = [["bfcl", "mt-bench", "gsm8k", "xstest"]];
+      expect(validarPlan(plan).some((e) => /jornada 1 .* pide hasta \d+ peticiones y caben 200 de 250/.test(e))).toBe(true);
+      (cuota as { jornadas: unknown }).jornadas = [["bfcl"], ["gsm8k"]];
+      expect(validarPlan(plan).some((e) => /no reparten cada batería exactamente una vez/.test(e))).toBe(true);
+    } finally {
+      (cuota as { jornadas: unknown }).jornadas = original;
+    }
+    expect(validarPlan(plan)).toEqual([]);
+  });
+
+  it("la jornada rota cada semana; --jornada la elige (desde 1) y rechaza lo que no existe", () => {
+    const cuota = CUOTA_DIARIA[pro.id]!;
+    const lunes = new Date("2026-10-05T04:17:00Z");
+    const otroLunes = new Date("2026-10-12T04:17:00Z");
+    expect(jornadaPorDefecto(cuota, lunes)).not.toBe(jornadaPorDefecto(cuota, otroLunes));
+    expect(jornadaDelBanco(undefined, lunes)).toBe(jornadaPorDefecto(cuota, lunes));
+    expect(jornadaDelBanco("", lunes)).toBe(jornadaPorDefecto(cuota, lunes));
+    expect(jornadaDelBanco("2", lunes)).toBe(1);
+    expect(() => jornadaDelBanco("3", lunes)).toThrow(/no es una jornada/);
+    expect(() => jornadaDelBanco("uno", lunes)).toThrow(/no es una jornada/);
+  });
+
+  it("en vivo, la batería de otra jornada no se lanza y dice cuál es la suya; en seco y para los demás modelos, todo se lanza", () => {
+    expect(tocaEnLaJornada(celdaPro("bfcl"), 0)).toBe(true);
+    expect(tocaEnLaJornada(celdaPro("gsm8k"), 0)).toBe(false);
+    expect(motivoDeAplazamiento(celdaPro("bfcl"), 0, "vivo")).toBeNull();
+    const m = motivoDeAplazamiento(celdaPro("xstest"), 0, "vivo");
+    expect(m).toMatch(/250 peticiones al día/);
+    expect(m).toMatch(/--jornada 2/);
+    expect(motivoDeAplazamiento(celdaPro("xstest"), 0, "seco")).toBeNull();
+    const flash = plan.find((c) => c.bateria === "xstest" && c.modelo.id === "google/gemini-3.8-flash")!;
+    expect(motivoDeAplazamiento(flash, 0, "vivo")).toBeNull();
+  });
+
+  it("una celda aplazada es un aviso, no cuenta como intentada, y no tapa una batería sin medir", () => {
+    const aplazada: ResultadoDeCelda = { bateria: "xstest", modelo: pro.id, estado: "aplazada-por-cuota", motivo: "jornada 2" };
+    const v = evaluar([aplazada], null);
+    expect(v.ok).toBe(true);
+    expect(v.avisos.some((a) => /aplazada por cuota diaria/.test(a))).toBe(true);
+    // Si lo que sí tocaba no se pudo medir, la batería sigue cayendo.
+    const sinClave: ResultadoDeCelda = { bateria: "bfcl", modelo: pro.id, estado: "sin-clave", motivo: "sin clave" };
+    expect(evaluar([aplazada, sinClave], null).infracciones.map((i) => i.regla)).toEqual(["bateria-sin-medir"]);
   });
 });
 
@@ -808,7 +896,13 @@ describe("banco semanal · banco-semanal.yml", () => {
     expect(banco).toMatch(/^ {2}schedule:\n {4}- cron: "17 4 \* \* 1"$/m);
     expect(banco).toMatch(/^ {2}workflow_dispatch:$/m);
     expect(banco).toMatch(/options: \[vivo, seco\]/);
-    expect(banco).toMatch(/^run-name: "banco semanal \(\$\{\{ inputs\.modo \|\| 'vivo' \}\}\)"$/m);
+    const runName = /^run-name: "(.*)"$/m.exec(banco)![1]!;
+    expect(runName.startsWith("banco semanal (${{ inputs.modo || 'vivo' }}")).toBe(true);
+    // Un banco parcial lleva «parcial» DENTRO del paréntesis (la puerta no lo cuenta); la jornada va FUERA (sí cuenta).
+    expect(runName).toContain("format(' parcial: {0} {1}', inputs.modelos, inputs.baterias)");
+    expect(runName).toMatch(/\}\}\)\$\{\{ inputs\.jornada && format\(' · jornada \{0\}', inputs\.jornada\) \|\| '' \}\}$/);
+    expect(ultimoBancoEnVivo([{ status: "completed", conclusion: "success", createdAt: "2026-10-01T00:00:00Z", displayTitle: "banco semanal (vivo parcial: google/gemini-3.1-pro-preview )" }])).toBeNull();
+    expect(ultimoBancoEnVivo([{ status: "completed", conclusion: "success", createdAt: "2026-10-01T00:00:00Z", displayTitle: "banco semanal (vivo) · jornada 2" }])).not.toBeNull();
   });
 
   it("mínimo permiso, sin cancelar un banco pagado, y con plazo", () => {
@@ -830,7 +924,12 @@ describe("banco semanal · banco-semanal.yml", () => {
 
   it("en vivo solo desde main; resumen y artefacto aunque falle", () => {
     expect(banco).toMatch(/"\$MODO" = "vivo" \] && \[ "\$GITHUB_REF" != "refs\/heads\/main" \]/);
-    expect(banco).toMatch(/orquestador\.ts "--\$MODO" --salida banco-semanal-salida/);
+    expect(banco).toMatch(/orquestador\.ts "--\$MODO" --salida banco-semanal-salida "\$\{filtros\[@\]\}" --previa banco-semanal-previa$/m);
+    // Los filtros del formulario llegan por el entorno, nunca interpolados en el script.
+    for (const v of ["MODELOS", "BATERIAS", "JORNADA"]) expect(banco).toContain(`${v}: \${{ inputs.${v.toLowerCase()} }}`);
+    expect(banco).not.toMatch(/run: [^\n]*\$\{\{ inputs\./);
+    const script = /filtros=\(\)[\s\S]*?--previa banco-semanal-previa/.exec(banco)![0];
+    expect(script).not.toContain("${{");
     expect(banco).toMatch(/if: always\(\)\n\s+run: \|\n\s+if \[ -f banco-semanal-salida\/resumen\.md \]/);
     expect(banco).toMatch(/cat banco-semanal-salida\/resumen\.md >> "\$GITHUB_STEP_SUMMARY"/);
     expect(banco).toMatch(/- uses: actions\/upload-artifact@v4\n\s+if: always\(\)\n\s+with:\n\s+name: banco-semanal/);

@@ -134,22 +134,24 @@ tope, así que su intervalo de confianza es más ancho:
 | Gama | GSM8K (problemas únicos) | BFCL (por categoría / multi-turn / repeticiones) | XSTest (prompts) | MT-Bench (preguntas) |
 | --- | --- | --- | --- | --- |
 | barata | 100 | 25 / 4 / 5 | los 450 | 40 |
-| media | 60 | 12 / 2 / 3 | 200 (gemini-3.1-pro-preview: 40, ver abajo) | 24 |
+| media | 60 | 12 / 2 / 3 | 200 | 24 |
+| gemini-3.1-pro-preview (ver abajo) | 12 | 12 / 2 / 3 | 24 | 16 |
 | cara | 40 | 8 / 0 / 2 | 100 (Opus: 20 inseguros, lo fija el arnés) | 16 |
 
-**XSTest de gemini-3.1-pro-preview: 40 prompts, no 200.** Aquí manda el reloj,
-no el precio. El modelo piensa siempre (el esfuerzo mínimo que admite es
-`low`) y lleva 1.024 tokens de salida en A y en B, porque con 160 el pensamiento
-se comía el tope. En el run 36771607171 (el primero con Gemini nativo) agotó los
-75 min de la celda sin escribir nada: `arnes-falla · plazo de 75 min agotado`.
-Además, su tope de 1,10 $ lo cortaría de todos modos entre el ítem 30 y el 55:
-hasta 0,013 $ por llamada, y unas 2,9 llamadas por ítem contando las dos
-repeticiones de cada negativa. Pedir 200 solo alargaba la celda sin medir más.
-Con 40 ítems salen unas 115 llamadas, a lo sumo 60 en serie por trabajador, y caben
-en los 60 min del plazo de cierre aunque cada una tarde un minuto. Lo fija `XSTEST_N_POR_MODELO` en
-`benchmarks/banco-semanal/plan.ts`, y `validarPlan` comprueba que cada entrada
-sea un modelo del banco con un entero positivo. No cambia ningún tope: el reparto
-sigue en 44,20 $.
+**gemini-3.1-pro-preview tiene submuestra propia** (`SUBMUESTRA_POR_MODELO` en
+`benchmarks/banco-semanal/plan.ts`). Es «media» por precio, pero su tamaño lo
+fijan el reloj y la cuota, no el precio:
+
+- **El reloj.** El modelo piensa siempre (el esfuerzo mínimo que admite es
+  `low`) y lleva 1.024 tokens de salida en A y en B. En el run 36771607171, con
+  los 200 prompts de XSTest de su gama, agotó los 75 min de la celda sin
+  escribir nada: `arnes-falla · plazo de 75 min agotado`.
+- **La cuota diaria.** La clave de Gemini tiene **250 peticiones al día** para
+  este modelo. Ver [La cuota diaria de peticiones](#la-cuota-diaria-de-peticiones-jornadas).
+
+GSM8K 12 únicos y MT-Bench 16 preguntas no le quitan nada que el dinero no le
+quitara ya: en el run 36771607171 su tope de 1,10 $ lo cortó en 12 únicos y 10
+preguntas. No cambia ningún tope: el reparto sigue en 44,20 $.
 
 **Plazo de cierre de XSTest (`--plazo-min`).** Todas las celdas de XSTest salen
 con `--plazo-min=60`: el plazo de la celda (75 min) menos `MARGEN_DE_CIERRE_MS`
@@ -182,6 +184,55 @@ turno y no una medición. Se arregló en tres sitios:
 - `extraer.ts` exige **8 turnos juzgados** (`MINIMO_DE_TURNOS_JUZGADOS`) antes
   de dar la tasa de victoria. Con menos, la celda sale como «calidad sin medir»,
   con un aviso.
+
+### La cuota diaria de peticiones (jornadas)
+
+Los runs en vivo 36786990486 y 36795672930 dieron a gemini-3.1-pro-preview
+«no medible — cuota del proveedor» en las cuatro baterías. El error decía
+`generate_requests_per_model_per_day, limit: 250, model: gemini-3.1-pro`: es
+un límite de **peticiones al día** (RPD), no por minuto, así que espaciar las
+peticiones no lo arregla. Es de la clave, no del banco: la gasta cualquiera que
+la use, y se renueva a medianoche de Pacífico
+([docs de Google](https://ai.google.dev/gemini-api/docs/rate-limits)). El run
+36771607171, el único que lo midió con cuota, se la comió entero: BFCL 123
+peticiones, GSM8K 99 (sus cuatro brazos), MT-Bench 40, y XSTest el resto hasta
+el 429. Con las submuestras de su gama, un banco le pedía unas 430.
+
+Así que un modelo con cuota diaria (`CUOTA_DIARIA` en `plan.ts`) reparte sus
+baterías en **jornadas**, y cada banco mide **una**:
+
+| Jornada | Baterías de gemini-3.1-pro-preview | Peticiones, peor caso |
+| --- | --- | --- |
+| 1 | BFCL (126) + MT-Bench (64) | 190 |
+| 2 | GSM8K (99) + XSTest (96) | 195 |
+
+- **La cuenta.** `peticionesMaximas` da el peor caso de cada arnés, una petición
+  por llamada: GSM8K 3 de sonda + 2 × únicos × 4 brazos; BFCL 2 por entrada AST,
+  2 por repetición y 12 por multi-turn; XSTest 4 por prompt (A, B y dos
+  repeticiones o un control); MT-Bench 4 por pregunta (el juez va por AI
+  Gateway, con otra cuota). `validarPlan` rompe si una jornada pasa del **80 %**
+  de la cuota (200 de 250). El 20 % restante es para los reintentos de red y
+  para el uso ajeno de la clave.
+- **Cuál toca.** Sin `--jornada`, la de la semana: rota cada semana UTC, así que
+  cada batería se mide al menos cada dos semanas. Lo que no toca sale
+  **«aplazada (cuota diaria)»** en la tabla y en los avisos, con la jornada que
+  le corresponde. No hace fallar y no cuenta como intentada: una batería cuyas
+  celdas no se pudieron medir sigue cayendo en `bateria-sin-medir`. En SECO no
+  hay cuota y se lanza todo.
+- **La otra jornada, otro día.** A mano, con el banco limitado al modelo:
+
+  ```bash
+  gh workflow run banco-semanal.yml --ref main -f modelos=google/gemini-3.1-pro-preview -f jornada=2
+  ```
+
+  Un banco con `modelos` o `baterias` es **parcial**: su título es «banco
+  semanal (vivo parcial: …)», y ni la puerta de publicación ni la tirada
+  siguiente lo cuentan como «el último banco», porque no midió todo. Su
+  veredicto vale para lo que midió. `jornada` sola no lo hace parcial: va fuera
+  del paréntesis («banco semanal (vivo) · jornada 2»).
+- **Si la cuota sube.** Cambia `peticiones` en `CUOTA_DIARIA`. Con una sola
+  jornada que contenga las cuatro baterías (si cabe), el modelo vuelve a medirse
+  entero cada semana. `validarPlan` dirá si cabe.
 
 ### Coste esperado
 

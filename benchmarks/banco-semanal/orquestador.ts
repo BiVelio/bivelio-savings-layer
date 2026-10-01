@@ -8,6 +8,10 @@
  *   --salida DIR           por defecto benchmarks/out/banco-semanal/<runId>
  *   --modelos a,b          filtra por id (openai/gpt-4o-mini) o id corto (gpt-4o-mini)
  *   --baterias a,b         filtra baterías (gsm8k,bfcl,xstest,mt-bench)
+ *   --jornada N            para un modelo con cuota diaria de peticiones (plan.ts,
+ *                          CUOTA_DIARIA), qué jornada de sus baterías se mide (1, 2…).
+ *                          Por defecto, la de la semana (rota). Las demás baterías
+ *                          de ese modelo salen «aplazada por cuota».
  *   --previa DIR           la salida de la tirada EN VIVO anterior: sus cuadres de
  *                          factura pendientes se vuelven a leer (factura.ts)
  *
@@ -40,10 +44,14 @@ import {
   BATERIAS,
   CajaGlobal,
   CONCURRENCIA_POR_BATERIA,
+  CUOTA_DIARIA,
+  jornadaPorDefecto,
   MODELOS_DEL_BANCO,
+  peticionesMaximas,
   PLAZO_DE_CELDA_MS,
   planificar,
   reparto,
+  tocaEnLaJornada,
   TopeGlobalAgotado,
   validarPlan,
   type Bateria,
@@ -175,8 +183,21 @@ function artefactoDe(c: Celda, modo: Modo, dir: string): { json: string; crudo?:
   }
 }
 
-async function correrCelda(c: Celda, modo: Modo, raiz: string, runId: string, caja: CajaGlobal, secretos: readonly string[]): Promise<ResultadoDeCelda> {
+async function correrCelda(
+  c: Celda,
+  modo: Modo,
+  raiz: string,
+  runId: string,
+  caja: CajaGlobal,
+  secretos: readonly string[],
+  jornada: number | null,
+): Promise<ResultadoDeCelda> {
   const que = `${c.bateria}/${c.modelo.id}`;
+  const aplazada = motivoDeAplazamiento(c, jornada, modo);
+  if (aplazada) {
+    console.log(`[banco] ■ ${que}: aplazada por cuota diaria — ${aplazada}`);
+    return { bateria: c.bateria, modelo: c.modelo.id, estado: "aplazada-por-cuota", motivo: aplazada };
+  }
   const s = soporte(c.bateria, c.modelo);
   if (!s.ok) return { bateria: c.bateria, modelo: c.modelo.id, estado: "sin-soporte", motivo: s.motivo };
   // Sin la clave de su proveedor no se lanza el arnés ni se reserva caja: algunos
@@ -236,6 +257,33 @@ async function correrCelda(c: Celda, modo: Modo, raiz: string, runId: string, ca
   return resultado;
 }
 
+/**
+ * La jornada de este banco (índice desde 0) para los modelos con cuota diaria:
+ * la de `--jornada` (desde 1) o, sin ella, la de la semana. null si ningún
+ * modelo tiene cuota.
+ */
+export function jornadaDelBanco(argJornada: string | undefined, ahora: Date): number | null {
+  const cuotas = Object.values(CUOTA_DIARIA);
+  if (!cuotas.length) return null;
+  if (argJornada === undefined || argJornada.trim() === "") return jornadaPorDefecto(cuotas[0]!, ahora);
+  const n = Number(argJornada);
+  const max = Math.max(...cuotas.map((q) => q.jornadas.length));
+  if (!Number.isInteger(n) || n < 1 || n > max) throw new Error(`--jornada: ${argJornada} no es una jornada (1…${max})`);
+  return n - 1;
+}
+
+/** Por qué no se lanza la celda (su batería no toca en esta jornada), o null. En SECO no hay cuota que gastar: se lanza todo. */
+export function motivoDeAplazamiento(c: Celda, jornada: number | null, modo: Modo): string | null {
+  const cuota = CUOTA_DIARIA[c.modelo.id];
+  if (modo !== "vivo" || !cuota || jornada === null || tocaEnLaJornada(c, jornada)) return null;
+  const suya = cuota.jornadas.findIndex((js) => js.includes(c.bateria));
+  return (
+    `${cuota.peticiones} peticiones al día para ${c.modelo.id}: este banco mide su jornada ${(jornada % cuota.jornadas.length) + 1} ` +
+    `(${cuota.jornadas[jornada % cuota.jornadas.length]!.join(", ")}); ${c.bateria} va en la ${suya + 1} ` +
+    `(hasta ${peticionesMaximas(c.bateria, c.modelo)} peticiones) — \`--jornada ${suya + 1}\` otro día`
+  );
+}
+
 /** Corre las celdas de una batería con su concurrencia; las baterías van en paralelo entre sí. */
 async function correrCarril(celdas: Celda[], concurrencia: number, f: (c: Celda) => Promise<ResultadoDeCelda>): Promise<ResultadoDeCelda[]> {
   const out: ResultadoDeCelda[] = new Array(celdas.length);
@@ -273,12 +321,17 @@ async function principal(): Promise<void> {
   const errores = validarPlan(plan);
   if (errores.length) throw new Error(`plan inválido, no se gasta nada: ${errores.join("; ")}`);
   const celdas = filtrarCeldas(plan, arg("modelos"), arg("baterias"));
+  const jornada = jornadaDelBanco(arg("jornada"), new Date());
+  // Un banco que no lanzaría NADA (todo aplazado por cuota) no puede salir en verde sin medir.
+  if (celdas.length && celdas.every((c) => motivoDeAplazamiento(c, jornada, modo) !== null)) {
+    throw new Error(`nada que medir: todas las celdas elegidas quedan fuera de la jornada ${(jornada ?? 0) + 1}; elige otra con --jornada`);
+  }
   const caja = new CajaGlobal();
   const secretos = valoresSecretos(process.env);
   const inicio = new Date().toISOString();
   const r = reparto(plan);
   console.log(
-    `[banco] ${modo.toUpperCase()} · ${celdas.length} celdas · asignados ${r.asignadoUsd.toFixed(2)} $ de ${caja.limiteUsd.toFixed(2)} $ · salida ${raiz}`,
+    `[banco] ${modo.toUpperCase()} · ${celdas.length} celdas${jornada !== null ? ` · jornada ${jornada + 1} de los modelos con cuota diaria` : ""} · asignados ${r.asignadoUsd.toFixed(2)} $ de ${caja.limiteUsd.toFixed(2)} $ · salida ${raiz}`,
   );
 
   // BFCL en SECO lee el dataset de su caché: se baja y verifica una vez (red a GitHub, sin gasto).
@@ -292,7 +345,7 @@ async function principal(): Promise<void> {
       correrCarril(
         celdas.filter((c) => c.bateria === b),
         CONCURRENCIA_POR_BATERIA[b],
-        (c) => correrCelda(c, modo, raiz, runId, caja, secretos),
+        (c) => correrCelda(c, modo, raiz, runId, caja, secretos, jornada),
       ),
     ),
   );

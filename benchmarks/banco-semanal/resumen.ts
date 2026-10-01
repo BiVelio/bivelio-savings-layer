@@ -63,6 +63,8 @@ function estado(r: ResultadoDeCelda): string {
       return "**arnés falló**";
     case "omitida-por-tope-global":
       return "omitida (tope global)";
+    case "aplazada-por-cuota":
+      return "aplazada (cuota diaria)";
   }
 }
 
