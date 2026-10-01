@@ -59,7 +59,8 @@
  *                        las claves rechazadas): no hay nada que certifique.
  *
  * No hacen fallar (van al resumen como avisos): un modelo que el arnés todavía
- * no sabe medir (sin-soporte), uno «no medible» por su clave o su cuota (también
+ * no sabe medir (sin-soporte), una celda aplazada por la cuota diaria de su
+ * modelo (plan.ts, CUOTA_DIARIA: se mide en su jornada, otro día), uno «no medible» por su clave o su cuota (también
  * la celda que los 429 de cuota dejan sin ítems comparables, o por debajo de
  * MINIMO_COMPARABLE_TRAS_CUOTA: «no medible — cuota del proveedor»), los ítems
  * excluidos por cuota de una celda que sí se midió, una
@@ -102,7 +103,9 @@ export type ResultadoDeCelda =
   | { bateria: Bateria; modelo: string; estado: "sin-soporte"; motivo: string }
   | { bateria: Bateria; modelo: string; estado: "sin-clave"; motivo: string }
   | { bateria: Bateria; modelo: string; estado: "arnes-falla"; motivo: string; topeUsd: number }
-  | { bateria: Bateria; modelo: string; estado: "omitida-por-tope-global"; motivo: string };
+  | { bateria: Bateria; modelo: string; estado: "omitida-por-tope-global"; motivo: string }
+  /** Un modelo con cuota diaria (plan.ts, CUOTA_DIARIA) cuya batería no toca en la jornada de este banco: no se lanza. */
+  | { bateria: Bateria; modelo: string; estado: "aplazada-por-cuota"; motivo: string };
 
 export function fueraDeTolerancia(informeUsd: number, facturaUsd: number): boolean {
   const d = Math.abs(informeUsd - facturaUsd);
@@ -193,7 +196,7 @@ export function evaluar(resultados: readonly ResultadoDeCelda[], abortoGlobal: s
   const medidasPorBateria = new Map<Bateria, number>();
   const intentadasPorBateria = new Map<Bateria, number>();
   for (const r of resultados) {
-    if (r.estado !== "sin-soporte") intentadasPorBateria.set(r.bateria, (intentadasPorBateria.get(r.bateria) ?? 0) + 1);
+    if (r.estado !== "sin-soporte" && r.estado !== "aplazada-por-cuota") intentadasPorBateria.set(r.bateria, (intentadasPorBateria.get(r.bateria) ?? 0) + 1);
     switch (r.estado) {
       case "medida":
         infracciones.push(...infraccionesDe(r.medicion, r.topeUsd));
@@ -231,6 +234,10 @@ export function evaluar(resultados: readonly ResultadoDeCelda[], abortoGlobal: s
         infracciones.push({ regla: "arnes-falla", bateria: r.bateria, modelo: r.modelo, detalle: r.motivo });
         break;
       case "omitida-por-tope-global":
+        break;
+      // No cuenta como intentada: se mide en su jornada, en otro banco.
+      case "aplazada-por-cuota":
+        avisos.push(`${r.bateria} · ${r.modelo}: aplazada por cuota diaria — ${r.motivo}`);
         break;
     }
   }

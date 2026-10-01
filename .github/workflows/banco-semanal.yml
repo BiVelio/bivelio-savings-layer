@@ -23,7 +23,17 @@ name: banco-semanal
 #
 # LA PUERTA: publish.yml no publica si el último run EN VIVO de este workflow en
 # main falló o tiene más de 8 días (benchmarks/banco-semanal/puerta.ts). Por eso
-# el `run-name` lleva el modo: la puerta solo cuenta los «(vivo)».
+# el `run-name` lleva el modo: la puerta solo cuenta los «(vivo)». Un banco
+# PARCIAL (a mano, con `modelos` o `baterias`) se titula «(vivo parcial: …)»: no
+# certifica la release —no midió todo— y ni la puerta ni la tirada siguiente lo
+# cuentan como «el último banco».
+#
+# LA CUOTA DIARIA (plan.ts, CUOTA_DIARIA): gemini-3.1-pro-preview tiene 250
+# peticiones al día y sus cuatro baterías no caben en un día. Cada banco mide UNA
+# jornada suya (la de la semana; `jornada` la elige a mano) y el resto sale
+# «aplazada por cuota». Para medir la otra jornada, otro día (la cuota se renueva
+# a medianoche de Pacífico):
+#   gh workflow run banco-semanal.yml --ref main -f modelos=google/gemini-3.1-pro-preview -f jornada=2
 #
 # SECRETOS: se referencian por NOMBRE; los da de alta el dueño con `gh secret set`
 # (lista y coste en docs/BANCO-SEMANAL.md). Solo los recibe el paso que corre el
@@ -37,7 +47,7 @@ name: banco-semanal
 # es un aviso y no falla. Lo que el retraso del API deje pendiente lo decide la
 # tirada siguiente: por eso este trabajo baja el artefacto de la anterior
 # (`actions: read`).
-run-name: "banco semanal (${{ inputs.modo || 'vivo' }})"
+run-name: "banco semanal (${{ inputs.modo || 'vivo' }}${{ (inputs.modelos || inputs.baterias) && format(' parcial: {0} {1}', inputs.modelos, inputs.baterias) || '' }})${{ inputs.jornada && format(' · jornada {0}', inputs.jornada) || '' }}"
 
 on:
   schedule:
@@ -51,6 +61,18 @@ on:
         type: choice
         options: [vivo, seco]
         default: vivo
+      modelos:
+        description: "solo estos modelos, separados por comas (vacío: los diez). Un banco parcial no cuenta para la puerta."
+        type: string
+        default: ""
+      baterias:
+        description: "solo estas baterías: gsm8k,bfcl,xstest,mt-bench (vacío: las cuatro). Un banco parcial no cuenta para la puerta."
+        type: string
+        default: ""
+      jornada:
+        description: "jornada de los modelos con cuota diaria (1, 2…; vacío: la de la semana). Ver plan.ts, CUOTA_DIARIA."
+        type: string
+        default: ""
 
 permissions: {}
 
@@ -72,6 +94,10 @@ jobs:
       actions: read
     env:
       MODO: ${{ inputs.modo || 'vivo' }}
+      # Por el entorno, nunca interpolados en el script: son texto libre del formulario.
+      MODELOS: ${{ inputs.modelos }}
+      BATERIAS: ${{ inputs.baterias }}
+      JORNADA: ${{ inputs.jornada }}
     steps:
       # Se gasta dinero solo midiendo main: un banco en vivo desde otra rama no
       # certifica nada y la puerta no lo contaría.
@@ -131,7 +157,12 @@ jobs:
           BANCO_ANTHROPIC_API_KEY_ID: ${{ vars.BANCO_ANTHROPIC_API_KEY_ID }}
           BANCO_OPENAI_PROJECT_ID: ${{ vars.BANCO_OPENAI_PROJECT_ID }}
           BANCO_OPENAI_API_KEY_ID: ${{ vars.BANCO_OPENAI_API_KEY_ID }}
-        run: pnpm exec tsx benchmarks/banco-semanal/orquestador.ts "--$MODO" --salida banco-semanal-salida --previa banco-semanal-previa
+        run: |
+          filtros=()
+          [ -n "$MODELOS" ] && filtros+=(--modelos "$MODELOS")
+          [ -n "$BATERIAS" ] && filtros+=(--baterias "$BATERIAS")
+          [ -n "$JORNADA" ] && filtros+=(--jornada "$JORNADA")
+          pnpm exec tsx benchmarks/banco-semanal/orquestador.ts "--$MODO" --salida banco-semanal-salida "${filtros[@]}" --previa banco-semanal-previa
 
       - name: Resumen en el job summary
         if: always()
