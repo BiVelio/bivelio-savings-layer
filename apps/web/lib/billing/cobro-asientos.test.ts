@@ -10,7 +10,9 @@ import {
   esEstadoFinal,
   esItemDelAjuste,
   importeDelExceso,
+  lineaDeResumen,
   metadataDelAjuste,
+  MOTIVO_EXENTA,
   modoDeCobro,
   planYPeriodoDelPrecio,
   tarifaDelPlan,
@@ -108,6 +110,7 @@ describe("decidirAjuste", () => {
     plan: { plan: "pro", periodoPago: "monthly" },
     rotacionEnElMes: false,
     variasSuscripciones: false,
+    comisionExenta: false,
     respaldoComision: RESPALDO,
   };
 
@@ -128,6 +131,15 @@ describe("decidirAjuste", () => {
 
   it("rotación de clave en el mes: revisión humana, no se cobra un recuento inflado", () => {
     expect(decidirAjuste({ ...base, rotacionEnElMes: true })).toMatchObject({ accion: "registrar", estado: "revision_humana" });
+  });
+
+  it("org EXENTA (0028) con exceso: revisión humana, NUNCA cobrar — sin tarjeta acabaría impagada", () => {
+    const d = decidirAjuste({ ...base, comisionExenta: true });
+    expect(d).toMatchObject({ accion: "registrar", estado: "revision_humana", exceso: 3, centimos: 3 * PRO.monthly.asientoCentimos, motivo: MOTIVO_EXENTA });
+    // Aunque además no esté activa o no haya precio: nunca llega a «cobrar».
+    expect(decidirAjuste({ ...base, comisionExenta: true, status: "past_due" }).accion).not.toBe("cobrar");
+    // Sin exceso, nada: la exención no inventa revisiones.
+    expect(decidirAjuste({ ...base, comisionExenta: true, usados: 4 }).accion).toBe("nada");
   });
 
   it("varias suscripciones vivas: revisión humana", () => {
@@ -190,6 +202,17 @@ describe("lo que ve Stripe", () => {
   it("hacia delante: mensual sube la cantidad; anual no la toca y factura ya", () => {
     expect(comportamientoHaciaDelante("monthly")).toEqual({ subirCantidad: true, facturarYa: false });
     expect(comportamientoHaciaDelante("yearly")).toEqual({ subirCantidad: false, facturarYa: true });
+  });
+});
+
+describe("el resumen de la pasada", () => {
+  it("una línea con período, modo, recuentos y total en EUR", () => {
+    expect(
+      lineaDeResumen({ periodo: "2026-09", modo: "seco", evaluadas: 3, aCobrar: 0, revision: 0, exentas: 1, cobrados: 0, fallos: 0, totalCentimos: 0 }),
+    ).toBe("[cobrar-asientos] resumen periodo=2026-09 modo=seco evaluadas=3 a_cobrar=0 revision=0 exentas=1 cobrados=0 fallos=0 total_eur=0.00");
+    expect(
+      lineaDeResumen({ periodo: "2026-10", modo: "vivo", evaluadas: 5, aCobrar: 2, revision: 1, exentas: 0, cobrados: 2, fallos: 0, totalCentimos: 4_525 }),
+    ).toContain("total_eur=45.25");
   });
 });
 

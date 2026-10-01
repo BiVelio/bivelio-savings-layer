@@ -10,7 +10,9 @@ import {
   descripcionDelAjuste,
   esEstadoFinal,
   esItemDelAjuste,
+  lineaDeResumen,
   metadataDelAjuste,
+  MOTIVO_EXENTA,
   modoDeCobro,
   planYPeriodoDelPrecio,
   tarifaDelPlan,
@@ -64,8 +66,16 @@ import { leerTodo } from "@/lib/supabase/leer-todo";
  * `?seco=1` fuerza el ensayo aunque la variable diga `vivo`. `?periodo=YYYY-MM`
  * relanza un mes concreto (idempotente).
  *
+ * LAS EXENTAS (0028, `organizations.comision_exenta`): probadores con cupón
+ * del 100 % y cortesías, sin tarjeta. Su exceso NUNCA se cobra solo —ni en seco
+ * ni en vivo—: va a revisión humana, como un recuento no fiable.
+ *
+ * CADA PASADA DEJA UNA LÍNEA en el log (`lineaDeResumen`): período, modo y
+ * recuentos, aunque nadie deba nada. Sin correos, nombres ni ids.
+ *
  * FALLA CERRADO: sin CRON_SECRET, 501 con alerta; en `vivo` sin Stripe, 501;
- * sin la tabla de 0034, 503 con alerta. Un fallo con UNA org no para a las demás.
+ * sin la tabla de 0034, 503 con alerta; sin poder leer la exención, 500 con
+ * alerta. Un fallo con UNA org no para a las demás.
  */
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -200,12 +210,29 @@ export async function GET(req: Request): Promise<NextResponse> {
   const subsPorOrg = new Map<string, FilaSuscripcion[]>();
   for (const s of subs) subsPorOrg.set(String(s.org_id), [...(subsPorOrg.get(String(s.org_id)) ?? []), s]);
 
+  // 3) Las EXENTAS. Falla CERRADO, como el cierre: sin la marca no se sabe a
+  //    quién no se le puede cobrar, y cobrar a un probador sin tarjeta es justo
+  //    el fallo que 0028 tapa.
+  const exentas = new Set<string>();
+  try {
+    const marcadas = await leerTodo<{ id: string }>(() =>
+      bv().from("organizations").select("id").eq("comision_exenta", true).order("id", { ascending: true }),
+    );
+    for (const o of marcadas) exentas.add(String(o.id));
+  } catch (error) {
+    await alertar({ nivel: "critico", asunto: "Cobro de asientos NO ejecutado: no se pudo leer la exención (comision_exenta)", detalle: { periodo, motivo: motivoDeError(error) } });
+    return NextResponse.json({ error: "organizations read failed", periodo }, { status: 500 });
+  }
+
   const precios = preciosPorPeriodo();
   const stripe = modo === "vivo" ? getStripe() : null;
   const informe: LineaDelInforme[] = [];
   const revision: Array<{ orgId: string; motivo: string }> = [];
   const fallos: string[] = [];
   let cobrados = 0;
+  let aCobrar = 0;
+  let totalCentimos = 0;
+  let exentasEvaluadas = 0;
 
   // Las orgs con suscripción viva y, además, las que tienen un ajuste a medias
   // de este período (su suscripción pudo cancelarse después de apuntarlo).
@@ -213,6 +240,8 @@ export async function GET(req: Request): Promise<NextResponse> {
 
   for (const orgId of [...orgs].sort()) {
     const previa = porOrg.get(orgId) ?? null;
+    const exenta = exentas.has(orgId);
+    if (exenta) exentasEvaluadas += 1;
     try {
       // ── Ya decidido: no se toca. ─────────────────────────────────────────
       if (previa && esEstadoFinal(previa.estado)) {
@@ -225,6 +254,15 @@ export async function GET(req: Request): Promise<NextResponse> {
           informe.push(lineaDeFila(previa, previa.estado));
           continue;
         }
+        // Exenta desde que se apuntó: no se reintenta el cobro. La fila se
+        // queda como está (pudo llegar a Stripe) y la mira un humano.
+        if (exenta) {
+          revision.push({ orgId, motivo: MOTIVO_EXENTA });
+          informe.push({ ...lineaDeFila(previa, previa.estado), motivo: MOTIVO_EXENTA });
+          continue;
+        }
+        aCobrar += 1;
+        totalCentimos += Math.round(Number(previa.importe_eur) * 100);
         const sub = elegirSuscripcion(subsPorOrg.get(orgId) ?? [], previa.stripe_subscription_id);
         const resultado = await cobrar(supabase, stripe!, ajusteDeFila(previa), sub, previa.stripe_subscription_id, true);
         if (resultado === "cobrado") cobrados += 1;
@@ -268,6 +306,7 @@ export async function GET(req: Request): Promise<NextResponse> {
         plan,
         rotacionEnElMes,
         variasSuscripciones: lista.length > 1,
+        comisionExenta: exenta,
         respaldoComision: RESPALDO_COMISION,
       });
       if (decision.accion === "nada") {
@@ -297,6 +336,10 @@ export async function GET(req: Request): Promise<NextResponse> {
           .from("ajustes_asientos")
           .upsert({ ...base, estado: "seco", motivo: motivoDelEnsayo(decision) }, { onConflict: "org_id,periodo" });
         if (error) throw new Error(`ajustes_asientos (seco): ${error.message}`);
+        if (decision.accion === "cobrar") {
+          aCobrar += 1;
+          totalCentimos += decision.centimos;
+        }
         informe.push(lineaDeBase(base, decision.accion === "cobrar" ? "cobraria" : decision.estado, decision.motivo));
         continue;
       }
@@ -323,6 +366,8 @@ export async function GET(req: Request): Promise<NextResponse> {
       // El candado ANTES del cobro. Si otra ejecución ganó la carrera, `fijar`
       // lanza y esta org se salta: la otra la está cobrando.
       await fijar(supabase, previa, { ...base, estado: "pendiente", motivo: "" });
+      aCobrar += 1;
+      totalCentimos += decision.centimos;
       const ajuste: AjusteParaStripe = {
         orgId,
         periodo,
@@ -358,12 +403,27 @@ export async function GET(req: Request): Promise<NextResponse> {
     });
   }
 
+  // Lo auditable de la pasada, aunque nadie deba nada: una línea con recuentos.
+  const resumen = {
+    periodo,
+    modo,
+    evaluadas: orgs.size,
+    aCobrar,
+    revision: revision.length,
+    exentas: exentasEvaluadas,
+    cobrados,
+    fallos: fallos.length,
+    totalCentimos,
+  };
+  console.info(lineaDeResumen(resumen));
+
   return NextResponse.json({
     periodo,
     modo,
     cobrados,
     revision: revision.length,
     fallos: fallos.length,
+    resumen: { ...resumen, totalEur: totalCentimos / 100 },
     informe,
   });
 }
