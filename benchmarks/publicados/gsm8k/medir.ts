@@ -11,7 +11,7 @@
  *     independientes: una repetición servida de caché copia a su original.
  */
 import { bootstrapProporcionPorGrupos, bootstrapRatioCI, type CI } from "../../stats.js";
-import { esErrorDeCuota } from "../cuota.js";
+import { esErrorNoMedibleDelProveedor } from "../cuota.js";
 import { CLASES, CLASES_CON_ORO, CLASES_VARIANTE, type ClaseDePeticion } from "./flujo.js";
 
 export type Brazo = "A" | "B" | "S" | "E";
@@ -177,10 +177,13 @@ export function resumir(ensayos: readonly Ensayo[]): Resumen {
   if (A.length) {
     const aPorPos = new Map(A.map((e) => [e.pos, e]));
     for (const b of brazos.filter((x) => x !== "A")) {
-      // Una posición con un 429 por cuota del proveedor en A o en este brazo no
-      // se compara en ninguno de los dos: su `correcto: false` sería de la
-      // clave, no del modelo ni de la capa (run 36786990486; ../cuota.ts).
-      const es = porBrazo(b).filter((e) => aPorPos.has(e.pos) && !esErrorDeCuota(e.error) && !esErrorDeCuota(aPorPos.get(e.pos)!.error));
+      // Una posición con un 429 por cuota (run 36786990486) o un 529 por
+      // sobrecarga (run 36998187601) del proveedor en A o en este brazo no se
+      // compara en ninguno de los dos: su `correcto: false` sería de la clave o
+      // del proveedor en ese minuto, no del modelo ni de la capa (../cuota.ts).
+      const es = porBrazo(b).filter(
+        (e) => aPorPos.has(e.pos) && !esErrorNoMedibleDelProveedor(e.error) && !esErrorNoMedibleDelProveedor(aPorPos.get(e.pos)!.error),
+      );
       const fam = new Map<number, { a: number; b: number; num: number; den: number }>();
       for (const e of es) {
         const a = aPorPos.get(e.pos)!;

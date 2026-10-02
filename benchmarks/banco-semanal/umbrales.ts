@@ -207,9 +207,18 @@ export function evaluar(resultados: readonly ResultadoDeCelda[], abortoGlobal: s
           if (muestreo) avisos.push(muestreo);
         }
         if (r.medicion.estado === "medido" && r.medicion.excluidosPorCuota) {
-          avisos.push(
-            `${r.bateria} · ${r.modelo}: excluidos por cuota: ${r.medicion.excluidosPorCuota} (429 del proveedor por cuota o límite de tasa en A o en B; fuera de la comparación en los dos brazos, no cuentan como capa-falla)`,
-          );
+          const sobrecarga = r.medicion.excluidosPorSobrecarga ?? 0;
+          const cuota = r.medicion.excluidosPorCuota - sobrecarga;
+          if (cuota > 0) {
+            avisos.push(
+              `${r.bateria} · ${r.modelo}: excluidos por cuota: ${cuota} (429 del proveedor por cuota o límite de tasa en A o en B; fuera de la comparación en los dos brazos, no cuentan como capa-falla)`,
+            );
+          }
+          if (sobrecarga > 0) {
+            avisos.push(
+              `${r.bateria} · ${r.modelo}: excluidos por sobrecarga del proveedor: ${sobrecarga} (529 o 503 «overloaded» tras los reintentos del arnés, en A o en B; fuera de la comparación en los dos brazos, no cuentan como capa-falla)`,
+            );
+          }
         }
         if (r.medicion.estado === "medido" && r.medicion.calidadSinMedir) {
           avisos.push(`${r.bateria} · ${r.modelo}: calidad sin medir — ${r.medicion.calidadSinMedir}`);
