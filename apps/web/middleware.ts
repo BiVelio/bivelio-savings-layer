@@ -20,7 +20,8 @@ export default function middleware(request: NextRequest) {
 
 export const config = {
   // Corre en TODA ruta salvo las que no son páginas: los route handlers sin
-  // idioma (api/, auth/, licenses/), lo interno de Next y Vercel, las carpetas
+  // idioma (api/, auth/, licenses/, y benchmarks/data/, que sirve los informes
+  // `.json` del banco), lo interno de Next y Vercel, las carpetas
   // y ficheros de `public/` y los ficheros de metadatos de la raíz.
   //
   // POR QUÉ NO «cualquier ruta con un punto», que era la regla anterior (la que
@@ -36,6 +37,6 @@ export const config = {
   // Si se añade algo a la raíz de `public/`, hay que añadirlo aquí:
   // middleware-matcher.test.ts lo comprueba leyendo la carpeta.
   matcher: [
-    "/((?!(?:api|auth|licenses|_next|_vercel|brand|correo|data|fonts|measure|vendor|videos)/|(?:robots\\.txt|sitemap\\.xml|logo-bivelio\\.png|nvidia-inception-program\\.svg)$).*)",
+    "/((?!(?:api|auth|licenses|benchmarks/data|_next|_vercel|brand|correo|data|fonts|measure|vendor|videos)/|(?:robots\\.txt|sitemap\\.xml|logo-bivelio\\.png|nvidia-inception-program\\.svg)$).*)",
   ],
 };

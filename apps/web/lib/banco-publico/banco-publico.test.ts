@@ -685,7 +685,9 @@ describe("banco público: los informes servidos desde la web (/benchmarks/data/�
     expect(src).toContain("export const dynamicParams = false");
     expect(src).toContain("generateStaticParams");
     expect(src).toContain("cuerpoServido(");
-    // El middleware de idiomas no toca rutas con extensión.
-    expect(readFileSync(join(WEB, "middleware.ts"), "utf8")).toContain(".*\\\\..*");
+    // El middleware de idiomas no toca la ruta de los informes (si la tocara,
+    // next-intl la mandaría a /<idioma>/benchmarks/data/… y daría 404).
+    // middleware-matcher.test.ts lo comprueba contra el patrón compilado.
+    expect(readFileSync(join(WEB, "middleware.ts"), "utf8")).toContain("benchmarks/data|");
   });
 });

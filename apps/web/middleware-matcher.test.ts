@@ -71,6 +71,30 @@ describe("el matcher del middleware", () => {
     }
   });
 
+  it("los informes del banco (/benchmarks/data/…/x.json) quedan fuera; /benchmarks sin idioma, no", () => {
+    expect(pasaPorElMiddleware("/benchmarks/data/2026-10-01/banco-semanal-5bec174.json")).toBe(false);
+    expect(pasaPorElMiddleware("/benchmarks")).toBe(true);
+    expect(pasaPorElMiddleware("/en/benchmarks")).toBe(true);
+  });
+
+  it("todo route handler fuera de [locale] queda fuera del middleware", () => {
+    // Su prefijo estático (hasta el primer segmento dinámico) + algo con punto.
+    const handlers: string[] = [];
+    const recorrer = (dir: string, ruta: string[]) => {
+      for (const e of readdirSync(dir, { withFileTypes: true })) {
+        if (e.isDirectory() && e.name !== "[locale]") recorrer(`${dir}/${e.name}`, [...ruta, e.name]);
+        else if (e.name === "route.ts") handlers.push(ruta.join("/"));
+      }
+    };
+    recorrer(WEB + "app", []);
+    expect(handlers.length).toBeGreaterThan(3);
+    for (const h of handlers) {
+      const estatico = h.split("/").filter((s, i, a) => !a.slice(0, i + 1).some((x) => x.startsWith("[")));
+      const ruta = `/${[...estatico, "x", "y.json"].join("/")}`;
+      expect(pasaPorElMiddleware(ruta), `app/${h}/route.ts → ${ruta}`).toBe(false);
+    }
+  });
+
   it("todo lo que hay en la raíz de public/ queda fuera (si no, dejaría de servirse)", () => {
     const entradas = readdirSync(WEB + "public", { withFileTypes: true });
     expect(entradas.length).toBeGreaterThan(0);
