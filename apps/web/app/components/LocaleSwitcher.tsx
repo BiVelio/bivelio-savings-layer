@@ -96,12 +96,16 @@ export function LocaleSwitcher() {
         ref={triggerRef}
         type="button"
         className="toggle lang-trigger"
-        aria-label={t("langAria")}
         aria-haspopup="dialog"
         aria-expanded={open}
         onClick={() => setOpen(true)}
       >
         <GlobeIcon />
+        {/* El nombre accesible es «Cambiar idioma» + lo que se ve («English EN»).
+            Con `aria-label` el texto visible quedaba fuera del nombre, y quien
+            maneja la web por voz («pulsa English») no daba con el botón
+            (axe `label-content-name-mismatch`). */}
+        <span className="sr-only">{t("langAria")}</span>
         {/* El disparador nunca se queda mudo: por debajo de 640px el nombre
             nativo cede el sitio al código, como el `sm:hidden` del origen. */}
         <span className="lang-trigger-name">{activeMeta.native}</span>
