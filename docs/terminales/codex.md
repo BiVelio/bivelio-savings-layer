@@ -47,7 +47,7 @@ codex -c openai_base_url=http://127.0.0.1:8402/v1                 # ventana 2 �
 
 Codex añade `/responses` (`POST {base_url}/responses`, siempre `stream: true`)
 [V]. Si en el 8402 ya tienes el gateway de Anthropic para otros terminales,
-arranca este en otro puerto (`--puerto 8403`) y apunta ahí: un gateway habla con
+arranca este en otro puerto (`--port 8403`) y apunta ahí: un gateway habla con
 un solo upstream.
 
 No lo escribas en `~/.codex/config.toml`: ahí se quedaría fijo y Codex fallaría
