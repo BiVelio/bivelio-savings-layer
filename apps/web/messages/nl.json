@@ -375,6 +375,10 @@
       "summary": "{n, plural, one {# machine draait} other {# machines draaien}} een SDK ouder dan {minima} (de oudste meldt {antigua}). Tot ze zijn bijgewerkt, tellen hun herhaalde verzoeken als geschat, niet als gemeten via referentie: ze blijven in je totalen, maar buiten de basis.",
       "action": "Werk de SDK op die machine bij naar {minima} of nieuwer en herstart het proces:"
     },
+    "migrar05": {
+      "note": "De nieuwste versie is 0.5, met wijzigingen die niet compatibel zijn.",
+      "link": "Lees de migratiegids voordat je bijwerkt →"
+    },
     "maquinas": {
       "title": "machines (30 dagen)",
       "colSeat": "Machine",

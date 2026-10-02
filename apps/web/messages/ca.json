@@ -375,6 +375,10 @@
       "summary": "{n, plural, one {# màquina executa} other {# màquines executen}} un SDK anterior a {minima} (la més antiga declara {antigua}). Fins que s'actualitzin, les seves peticions repetides compten com a estimades, no com a mesurades per referència: continuen als teus totals, però fora de la base.",
       "action": "Actualitza l'SDK a {minima} o posterior en aquesta màquina i reinicia el procés:"
     },
+    "migrar05": {
+      "note": "La darrera versió és la 0.5, que porta canvis incompatibles.",
+      "link": "Llegeix la guia de migració abans d'actualitzar →"
+    },
     "maquinas": {
       "title": "màquines (30 dies)",
       "colSeat": "Màquina",

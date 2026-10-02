@@ -375,6 +375,10 @@
       "summary": "{n, plural, other {# makine}} {minima} sürümünden eski bir SDK çalıştırıyor (en eskisi {antigua} bildiriyor). Güncellenene kadar tekrarlanan istekleri referansla ölçülmüş değil, tahmini sayılır: toplamlarınızda kalır ama tabanın dışındadır.",
       "action": "O makinede SDK'yı {minima} veya daha yeni bir sürüme güncelleyin ve işlemi yeniden başlatın:"
     },
+    "migrar05": {
+      "note": "En son sürüm 0.5'tir ve uyumsuz değişiklikler içerir.",
+      "link": "Güncellemeden önce geçiş kılavuzunu okuyun →"
+    },
     "maquinas": {
       "title": "makineler (30 gün)",
       "colSeat": "Makine",

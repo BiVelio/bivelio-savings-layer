@@ -375,6 +375,10 @@
       "summary": "{n, plural, one {# machine exécute} other {# machines exécutent}} un SDK antérieur à {minima} (la plus ancienne déclare {antigua}). Tant qu'elles ne sont pas mises à jour, leurs requêtes répétées comptent comme estimées, et non comme mesurées par référence : elles restent dans vos totaux, mais hors de la base.",
       "action": "Mettez à jour le SDK vers {minima} ou plus récent sur cette machine et redémarrez le processus :"
     },
+    "migrar05": {
+      "note": "La dernière version est la 0.5, qui comporte des changements incompatibles.",
+      "link": "Lisez le guide de migration avant de mettre à jour →"
+    },
     "maquinas": {
       "title": "machines (30 jours)",
       "colSeat": "Machine",

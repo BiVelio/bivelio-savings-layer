@@ -375,6 +375,10 @@
       "summary": "{n, plural, one {# machine runs} other {# machines run}} an SDK older than {minima} (the oldest declares {antigua}). Until they update, their repeated requests count as estimated, not as measured by reference: they stay in your totals, but out of the base.",
       "action": "Update the SDK to {minima} or later on that machine and restart the process:"
     },
+    "migrar05": {
+      "note": "The latest version is 0.5, which has breaking changes.",
+      "link": "Read the migration guide before you update →"
+    },
     "maquinas": {
       "title": "machines (30 days)",
       "colSeat": "Machine",
