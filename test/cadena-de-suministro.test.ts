@@ -119,6 +119,27 @@ describe("publish.yml publica con trusted publishing y provenance", () => {
     expect(privada).toMatch(/::warning[^\n]*provenance/);
   });
 
+  it("una prerelease (`0.5.0-rc.1`) se publica en el dist-tag `next` y nunca mueve `latest`", () => {
+    // npm 11 se niega a publicar una prerelease sin `--tag`. Una versión final
+    // sale SIN `--tag`: npm la pone en `latest` y rechaza una versión menor que
+    // la más alta, así que un `--tag latest` explícito sería peor (movería
+    // `latest` hacia atrás con un arreglo de una línea vieja).
+    const p = paso(publicar, "Publish to npm");
+    const publicaciones = [...p.matchAll(/npm publish [^\n]*/g)].map((m) => m[0]);
+    for (const c of publicaciones) expect(c, c).toMatch(/ \$\{ETIQUETA_NPM:\+--tag "\$ETIQUETA_NPM"\}$/);
+    expect(p).not.toMatch(/--tag "?latest/);
+    const caso = /case "\$\{GITHUB_REF_NAME#v\}" in\n\s*\*-\*\) ETIQUETA_NPM="next" ;;\n\s*\*\) ETIQUETA_NPM="" ;;\n\s*esac/.exec(p);
+    expect(caso, "la etiqueta de npm no sale de la versión (sufijo → next, sin sufijo → sin --tag)").not.toBeNull();
+    expect(p.indexOf("esac")).toBeLessThan(p.indexOf("npm publish"));
+  });
+
+  it("`verificar` exige que la Release sea prerelease si y solo si la versión lleva sufijo", () => {
+    const p = paso(trabajo("verificar"), "La Release es prerelease si y solo si la versión lleva sufijo");
+    expect(p).toMatch(/ES_PRERELEASE: \$\{\{ github\.event\.release\.prerelease \}\}/);
+    expect(p).toMatch(/\*-\*\) CON_SUFIJO="true" ;;/);
+    expect(p).toMatch(/if \[ "\$CON_SUFIJO" != "\$ES_PRERELEASE" \]; then[\s\S]*?exit 1/);
+  });
+
   it("si el repo es público, comprueba en el registro que la provenance quedó puesta", () => {
     const p = paso(publicar, "El registro sirve el tarball verificado");
     expect(p).toMatch(/dist\.integrity/);
