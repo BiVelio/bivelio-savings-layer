@@ -1,7 +1,8 @@
 # Camino a la 0.5
 
 > Documento interno. Estado a **2026-10-02**, con la 0.4.36 publicada (#444) y
-> la candidata **0.5.0-rc.1** en el dist-tag `next` de npm (PR #434). La guía
+> la candidata **0.5.0-rc.1** en el dist-tag `next` de npm (PR #434), y la
+> 0.5.0 adelantada a hoy por decisión del dueño (criterio 5). La guía
 > para clientes es [`MIGRAR-A-0.5.md`](MIGRAR-A-0.5.md) (en inglés; publicada
 > en la web en `/migrate-to-0.5`) y el inventario de la API, con el veredicto
 > de cada nombre, es [`INVENTARIO-API-0.5.json`](INVENTARIO-API-0.5.json).
@@ -21,7 +22,7 @@ La 0.5 sale cuando se cumplen los seis criterios acordados:
 | 2 | Nunca empeora la respuesta | En el run 36795672930 y en los dos parciales de Gemini 3.1 Pro, todos los B−A dentro del ruido, 0 respuestas de otra pregunta y 0 llamadas cambiadas, en los tres proveedores. El recorte a 8 del catálogo tipado ya no existe: sin `maxTools` no se poda (#419) | 🟢 |
 | 3 | Nunca cobra lo que no debe | XSTest en el run 36795672930 y en los parciales de Gemini 3.1 Pro: 0 negativas cacheadas y 0 acreditadas en todos los modelos medidos, Gemini incluido. La negativa dentro de una salida estructurada de OpenAI, vista por una sonda en vivo, ya no se cachea ni acredita (#431, 0.4.35). Licencia Medir sin comisión (#417) | 🟢 |
 | 4 | El informe cuadra con la factura ±2 %, con el ahorro nativo aparte | `informe/factura` 0,00 % en todas las celdas medidas, y el ahorro nativo sale aparte (#412). Esa «factura» es uso × precio de lista: la comparación con la factura real (`benchmarks/banco-semanal/factura.ts`) espera las claves de administrador del dueño | 🟢 contra el precio de lista (§4, punto 4); la factura real, pendiente de las claves del dueño |
-| 5 | Banco semanal en CI como puerta de release | #413 y #421; `publish.yml` no publica si el último banco en vivo **completo** en main falló o tiene más de 8 días (los «vivo parcial» no cuentan). **Decisión del dueño (2026-10-02): «Salimos a producción este fin de semana».** La semana en verde se acorta al banco en vivo completo en verde con la 0.5.0-rc.x el viernes 2-oct y el sábado 3-oct; si los dos salen en verde, la 0.5.0 sale el domingo 4-oct | 🟡 decisión del dueño: bancos del 2-oct y del 3-oct con la candidata |
+| 5 | Banco semanal en CI como puerta de release | #413 y #421; `publish.yml` no publica si el último banco en vivo **completo** en main falló o tiene más de 8 días (los «vivo parcial» no cuentan). **Decisión del dueño (2026-10-02): «adelántalo a hoy».** La 0.5.0 sale **hoy, 2-oct**, en cuanto un banco en vivo completo en main salga en verde con la candidata; sustituye al plan de viernes y sábado («Salimos a producción este fin de semana», del mismo día). La puerta de `publish.yml` no cambia ni se relaja. El banco del 2-oct sobre la 0.5.0-rc.1 ([run 36998187601](https://github.com/BiVelio/bivelio-savings-layer/actions/runs/36998187601), main `e779dc3`) salió en rojo por un solo motivo: un 529 «Overloaded» de Anthropic contado como `capa-falla`; #450 lo trata como el 429. Banco en verde: `RUN_VERDE_PENDIENTE` | 🟡 decisión del dueño: un banco en vivo completo en verde, hoy |
 | 6 | API pública congelada con guía | Inventario, test y guía (#418); nombres nuevos y alias con aviso (#419, 0.4.33); `@deprecated` y avisos en la 0.4.34 (#424, #429). **PR #434**: raíz cerrada nombre a nombre, 73 exports y 7 campos fuera, `finishReason` cerrado, CLI solo en inglés, inventario 0.5.0 todo `estable` sin `pendientes`, guía final publicada en la web (`/migrate-to-0.5`) y la 0.5.0-rc.1 en `next` | 🟢 en la 0.5.0-rc.1; la 0.5.0 la congela |
 
 La tabla y [«Lo que falta, en orden»](#lo-que-falta-en-orden) son el estado
@@ -325,17 +326,26 @@ el PR #434: guía aplicada, `src/deprecaciones-0.5.ts` borrado, raíz sin
 web y versión **0.5.0-rc.1**, publicada en el dist-tag `next` (una prerelease
 nunca mueve `latest`: `publish.yml` desde el PR #434).
 
-1. **Banco en vivo completo con la 0.5.0-rc.1, viernes 2-oct** (criterio 5,
-   decisión del dueño): `gh workflow run banco-semanal.yml --ref main`, sin
-   `modelos` ni `baterias`. Gemini 3.1 Pro mide la jornada de la semana y deja
-   la otra «aplazada por cuota».
-2. **El mismo banco, sábado 3-oct.** Si sale en rojo, se leen las infracciones
-   enteras y se arregla primero: una 0.5.0-rc.2 y otro banco.
-3. **0.5.0, domingo 4-oct**, solo si los dos bancos están en verde: el PR de
-   release sube la versión a `0.5.0`, y la Release se corta sin
-   `--prerelease`, con lo que npm la pone en `latest`. La puerta del banco es
-   la de siempre: el último banco en vivo completo en main, en verde y con 8
-   días o menos.
+**Decisión del dueño, 2026-10-02: «adelántalo a hoy».** La 0.5.0 sale hoy, en
+cuanto haya **un** banco en vivo completo en verde en main. Sustituye al plan
+anterior del mismo día (bancos el viernes 2-oct y el sábado 3-oct, y la 0.5.0
+el domingo 4-oct). Lo que no cambia es la puerta de `publish.yml`: el último
+banco en vivo completo en main, en verde y con 8 días o menos.
+
+1. **Un banco en vivo completo en verde en main, hoy 2-oct** (criterio 5):
+   `gh workflow run banco-semanal.yml --ref main`, sin `modelos` ni
+   `baterias`. El del 2-oct sobre la 0.5.0-rc.1 (run 36998187601) salió en
+   rojo solo por un 529 «Overloaded» de Anthropic contado como `capa-falla`,
+   que arregla #450. Si sale en rojo por otra cosa, se leen las infracciones
+   enteras y se arregla primero (una 0.5.0-rc.2 si el arreglo toca `src/`) y
+   otro banco. Banco en verde: `RUN_VERDE_PENDIENTE`.
+2. **0.5.0, hoy, justo después:** fusionar el PR de release
+   («chore(release): 0.5.0 — …», preparado en borrador), que sube la versión a
+   `0.5.0`, y cortar la Release `v0.5.0` **sin** `--prerelease`, con lo que npm
+   la pone en `latest`.
+3. **Cliente de Python 0.1.1:** contra un gateway 0.5, la 0.1.0 de PyPI da
+   ahorro 0 (lee `cost.netSavings`, que la 0.5 renombra). El arreglo está en
+   main; publicarlo es cortar la Release `py-v0.1.1` (`publish-pypi.yml`).
 4. **Factura real** contra el informe (criterio 4, no bloquea la 0.5): las
    claves de administrador y los ids dedicados al banco, del dueño
    (`docs/BANCO-SEMANAL.md`, «La factura real»).
