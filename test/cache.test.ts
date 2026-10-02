@@ -3,11 +3,13 @@ import {
   InMemoryExactCache,
   Singleflight,
   InMemorySemanticCache,
-  cosine,
-  canonicalize,
 } from "../src/index.js";
+import { cosine } from "../src/cache/index.js";
+import { canonicalize } from "../src/canonicalization/index.js";
 import { keyTokensMatch } from "../src/cache/semantic.js";
-import type { SavingsRequest } from "../src/index.js";
+import type {
+  SavingsRequest,
+} from "../src/index.js";
 
 describe("InMemoryExactCache", () => {
   it("stores and retrieves; honors TTL", async () => {

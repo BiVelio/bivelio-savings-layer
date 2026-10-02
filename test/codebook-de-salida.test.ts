@@ -15,7 +15,7 @@ import { heuristicEstimator } from "../src/tokenizer/estimator.js";
 import {
   createSavingsLayer,
   createMockProvider,
-  precioDeLista,
+  listPrice,
   type JsonSchema,
   type ProviderRequest,
   type SavingsRequest,
@@ -50,10 +50,10 @@ import {
 const contar = (t: string) => heuristicEstimator.count(t);
 
 /** Precios de lista de verdad: la verja decide en dinero, no en tokens pelados. */
-const P_4O_MINI = precioDeLista("gpt-4o-mini")!; // salida = 4,0x entrada
-const P_4O = precioDeLista("gpt-4o")!; //           salida = 4,0x entrada
-const P_GPT4 = precioDeLista("gpt-4")!; //          salida = 2,0x entrada
-const P_OPUS = precioDeLista("claude-opus-4")!; //  salida = 5,0x entrada
+const P_4O_MINI = listPrice("gpt-4o-mini")!; // salida = 4,0x entrada
+const P_4O = listPrice("gpt-4o")!; //           salida = 4,0x entrada
+const P_GPT4 = listPrice("gpt-4")!; //          salida = 2,0x entrada
+const P_OPUS = listPrice("claude-opus-4")!; //  salida = 5,0x entrada
 
 /** Un delta de salida MEDIDO, con la procedencia que la verja exige. */
 const medido = (deltaTokens: number): EvidenciaDelCodebook => ({
@@ -1006,7 +1006,7 @@ describe("de dónde sale el delta de salida, y con qué procedencia", () => {
     // «−16» es un número sin unidades sobre el que nadie puede decidir.
     expect(pequeno?.pares).toBe(8);
     expect(pequeno?.contrato).toMatch(/triage/);
-    // La búsqueda respeta el corte por separador de `precioDeLista`: `gpt-4o` no
+    // La búsqueda respeta el corte por separador de `listPrice`: `gpt-4o` no
     // puede tragarse `gpt-4o-mini`, que es donde estaría el error caro.
     expect(deltaMedidoDeLista("gpt-4o-2024-08-06")?.deltaTokens).toBe(3);
     // Un modelo sin medir NO se rellena por familia: se queda sin dato.

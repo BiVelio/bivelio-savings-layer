@@ -16,7 +16,7 @@ import {
  * del AGENTS.md (Codex no tiene skills, y AGENTS.md va siempre activo). Los
  * invariantes que importan: una sola fuente (el bloque se genera del propio
  * SKILL.md), y NI UN BYTE del AGENTS.md del usuario fuera de las marcas se
- * toca jamás — ni al añadir, ni al actualizar, ni con --forzar.
+ * toca jamás — ni al añadir, ni al actualizar, ni con --force.
  */
 
 const RAIZ = join(new URL(".", import.meta.url).pathname, "..");
@@ -67,7 +67,7 @@ describe("instalarAgentsMd — el AGENTS.md del usuario es sagrado", () => {
     expect(fs.disco[DESTINO]!.trim().startsWith(MARCA_INICIO)).toBe(true);
   });
 
-  it("con --proyecto escribe ./AGENTS.md del directorio actual", () => {
+  it("con --project escribe ./AGENTS.md del directorio actual", () => {
     const fs = fsFalso({ [ORIGEN]: SKILL });
     const r = instalarAgentsMd({ ...base, proyecto: true, fs });
     expect(r.destino).toBe(join("/repo", "AGENTS.md"));
@@ -92,7 +92,7 @@ describe("instalarAgentsMd — el AGENTS.md del usuario es sagrado", () => {
     expect(fs.disco[DESTINO]).toBe(tras1);
   });
 
-  it("⛔ un bloque EDITADO no se pisa sin --forzar; con --forzar se actualiza SOLO el bloque", () => {
+  it("⛔ un bloque EDITADO no se pisa sin --force; con --force se actualiza SOLO el bloque", () => {
     const previo = `# Mis reglas\n\n${MARCA_INICIO}\neditado a mano\n${MARCA_FIN}\n\n# Más reglas mías\n`;
     const fs = fsFalso({ [ORIGEN]: SKILL, [DESTINO]: previo });
     const r = instalarAgentsMd({ ...base, fs });

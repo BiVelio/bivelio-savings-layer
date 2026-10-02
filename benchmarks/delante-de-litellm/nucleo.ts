@@ -172,8 +172,13 @@ export interface Veredicto {
  */
 export function versionAdmiteReferencia(version: string | null): boolean {
   if (superficieDe(version) !== "sdk") return false;
-  if (/-/.test(version!.slice(version!.indexOf("/") + 1))) return false;
-  return compararVersiones(version!, VERSION_MINIMA_REFERENCIA) >= 0;
+  // Como el servidor: una preliminar de una versión POSTERIOR a la mínima
+  // (`0.5.0-rc.1`) entra; solo la preliminar de la propia mínima (`0.4.35-rc.1`,
+  // que en semver va antes que `0.4.35`) se queda fuera. Hasta la 0.5.0-rc.1
+  // este espejo rechazaba toda preliminar y se desviaba de `admiteReferencia`.
+  const d = compararVersiones(version!, VERSION_MINIMA_REFERENCIA);
+  if (d !== 0) return d > 0;
+  return !/-/.test(version!.slice(version!.indexOf("/") + 1));
 }
 
 /**

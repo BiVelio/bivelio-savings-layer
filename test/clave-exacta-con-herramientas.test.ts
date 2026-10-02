@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { canonicalize, buildExactKey, buildInflightKey, sha256 } from "../src/index.js";
+import { canonicalize, buildExactKey, buildInflightKey, sha256 } from "../src/canonicalization/index.js";
 import { huellaDePeticion } from "../src/pipeline/referencia.js";
 import { createSavingsLayer } from "../src/pipeline/create.js";
 import { InMemoryExactCache } from "../src/cache/exact.js";
@@ -645,7 +645,7 @@ describe('5 · caché semántica con "include-agentic"', () => {
         provider: proveedorN,
         costModels: { "openai/gpt-4o-mini": { inputPer1k: 0.00015, outputPer1k: 0.0006 } },
         silenceWarnings: true,
-        semanticCache: new InMemorySemanticCache({ embed, similarityThreshold: 0.3, acceptThreshold: 0.3 }),
+        semanticCacheStore: new InMemorySemanticCache({ embed, similarityThreshold: 0.3, acceptThreshold: 0.3 }),
       });
       const { a, b } = variante(v);
       await layer.generate(req(a));

@@ -644,7 +644,7 @@ export interface Decision {
   brazo: Brazo;
   umbrales: Umbrales;
   /**
-   * El nivel ÚNICO que el gateway puede poner hoy (`BVSALA_GATEWAY_ESFUERZO`):
+   * El nivel ÚNICO que el gateway puede poner hoy (`BVSALA_GATEWAY_EFFORT`):
    * el gateway no distingue clases, así que tiene que valer para TODAS.
    */
   global: { nivel: Esfuerzo | null; sueloSalidaPct: number | null; motivos: string[] };

@@ -403,6 +403,30 @@ describe("5 · los dos lados del par salen del contador del proveedor", () => {
   });
 });
 
+describe("5 bis · el motivo de la copia, en el conjunto cerrado de la 0.5", () => {
+  // Un proveedor de terceros sigue pudiendo devolver el literal que quiera; el
+  // par lleva el MISMO valor cerrado que `SavingsResult.finishReason`.
+  it.each([
+    ["end_turn", "stop"],
+    ["stop_sequence", "stop"],
+    ["max_tokens", "length"],
+    ["model_context_window_exceeded", "length"],
+    ["tool_use", "tool_calls"],
+    ["content_filter: OTHER", "content_filter"],
+    ["pause_turn", "other"],
+    ["ALGO-RARO", "other"],
+  ] as const)("copia con %s → naive.finishReason %s", async (crudo, cerrado) => {
+    const p = new ProveedorPuro({ ajuste: (_req, esCopia) => (esCopia ? { finishReason: crudo } : {}) });
+    const checks: VerificationCheck[] = [];
+    const layer = capa(p, { verification: { sampleRate: 1, onCheck: (c) => checks.push(c) }, silenceWarnings: true });
+    await layer.generate({ model: MODELO, messages: [{ role: "user", content: `¿Motivo ${crudo}?` }] });
+    await asentar();
+    layer.close();
+    expect(checks[0]!.outcome).toBe("paired");
+    expect(checks[0]!.naive!.finishReason).toBe(cerrado);
+  });
+});
+
 describe("6 · cada exclusión: su motivo, cero copias y su conteo", () => {
   /** Una capa con emisor de verdad (fetch falso), para leer los conteos del sobre. */
   function conEmisor(provider: Provider, extra: Partial<SavingsLayerConfig> = {}) {

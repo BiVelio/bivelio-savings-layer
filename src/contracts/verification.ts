@@ -101,7 +101,12 @@ export interface VerificationCheck {
    * was not `missed`. Other pairs are counted and exported, but left out of every figure.
    */
   naive?: VerificationSide & {
-    finishReason?: string;
+    /**
+     * Why the provider stopped the copy, in the same closed set as
+     * `SavingsResult.finishReason` (`"stop"`, `"length"`, `"tool_calls"`,
+     * `"content_filter"`, `"other"`), whatever the provider.
+     */
+    finishReason?: "stop" | "length" | "tool_calls" | "content_filter" | "other";
     /** Whether the copy met your output contract: `none` without a contract or on a tool-call turn. */
     contract: "met" | "missed" | "none";
   };

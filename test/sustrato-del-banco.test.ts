@@ -20,7 +20,7 @@ import { tokensDeLaMayorRespuesta } from "../src/constraints/techo-de-salida.js"
 import {
   createSavingsLayer,
   createMockProvider,
-  registrarTokenizadorExacto,
+  registerExactTokenizer,
   type SavingsResult,
   type TraceEvent,
 } from "../src/index.js";
@@ -123,7 +123,7 @@ describe("sustrato del banco", () => {
  * repo ya pagó una vez (785 tokens publicados contra 262 reales).
  */
 const registroExacto = new TokenizerRegistry();
-const tokenizadorListo = registrarTokenizadorExacto(registroExacto);
+const tokenizadorListo = registerExactTokenizer(registroExacto);
 const contarExacto = (t: string): number => registroExacto.count(t, { model: "openai/gpt-4o-mini" });
 
 /** La capa tal y como la monta el banco: mismo tokenizador y mismo compresor. */

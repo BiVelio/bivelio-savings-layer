@@ -38,7 +38,7 @@ describe("toLangfuseGeneration", () => {
         calls: { actualLlm: 0, avoidedLlm: 1 },
         tokens: { actualInput: 0, actualOutput: 0 },
         cache: { result: "exact" },
-        cost: { basis: "estimated", baselineEstimate: 0.00003, actual: 0, netSavings: 1 },
+        cost: { basis: "estimated", baselineEstimate: 0.00003, actual: 0, netSavingsRatio: 1 },
       }),
     );
     expect(g.usageDetails).toEqual({ input: 0, output: 0 });

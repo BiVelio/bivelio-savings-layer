@@ -107,7 +107,7 @@ describe("basis: lo estimado no se cobra como medido", () => {
     });
 
     expect(r.report.cost.basis).toBe("measured");
-    expect(r.report.cost.netSavings).toBe(0);
+    expect(r.report.cost.netSavingsRatio).toBe(0);
   });
 });
 

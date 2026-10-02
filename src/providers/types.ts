@@ -205,8 +205,13 @@ export interface ProviderResponse {
    * valida, y reintentar con el MISMO tope vuelve a truncarlo — se paga una
    * segunda llamada para obtener el mismo fallo. Sin este campo el layer no
    * podía distinguirlo y hacía exactamente eso.
+   *
+   * A custom provider may return any string here; the layer normalizes it to
+   * `SavingsResult.finishReason`'s five values (`"stop"`, `"length"`,
+   * `"tool_calls"`, `"content_filter"`, `"other"`) and keeps the original in
+   * `finishReasonDetail` when it is not one of them.
    */
-  finishReason?: "stop" | "length" | "content_filter" | "tool_calls" | (string & {});
+  finishReason?: "stop" | "length" | "content_filter" | "tool_calls" | "other" | (string & {});
   /**
    * The provider's own reason behind `finishReason`, when it gave one: Gemini's
    * OpenAI-compatible endpoint stops a filtered answer with

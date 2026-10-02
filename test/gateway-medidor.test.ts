@@ -379,7 +379,7 @@ describe("informeMedido — v1: baseline = actual, basis measured, ahorro 0", ()
       calls: { avoidedLlm: number; actualLlm: number };
       tokens: Record<string, number>;
       cache: { result: string };
-      cost: { baselineEstimate: number; actual: number; netSavings: number; basis: string };
+      cost: { baselineEstimate: number; actual: number; netSavingsRatio: number; basis: string };
     };
     expect(r.requestId).toBe("req-1");
     expect(r.calls).toEqual({ avoidedLlm: 0, actualLlm: 1 });
@@ -390,7 +390,7 @@ describe("informeMedido — v1: baseline = actual, basis measured, ahorro 0", ()
     expect(r.cache.result).toBe("miss");
     expect(r.cost.actual).toBe(medido.costeUsd);
     expect(r.cost.baselineEstimate).toBe(medido.costeUsd);
-    expect(r.cost.netSavings).toBe(0);
+    expect(r.cost.netSavingsRatio).toBe(0);
     expect(r.cost.basis).toBe("measured");
   });
 });
@@ -404,7 +404,7 @@ describe("informeMedido — v1: baseline = actual, basis measured, ahorro 0", ()
 describe("el suelo de la elisión del proveedor (B2)", () => {
   const medido = costeMedido("claude-haiku-4-5", { input_tokens: 10, output_tokens: 5 })!;
   const TOKENS = 9_000;
-  type Cost = { baselineEstimate: number; actual: number; netSavings: number; basis: string; eliminatedInputFloorCost?: number };
+  type Cost = { baselineEstimate: number; actual: number; netSavingsRatio: number; basis: string; eliminatedInputFloorCost?: number };
 
   it("atribuible + conteo → cost.eliminatedInputFloorCost = tokens × cachedInputPer1k, y es 10× menos que a precio de entrada", () => {
     const r = informeMedido("req-s", "claude-haiku-4-5", medido, undefined, {
@@ -429,7 +429,7 @@ describe("el suelo de la elisión del proveedor (B2)", () => {
     }) as unknown as { cost: Cost };
     expect(con.cost.baselineEstimate).toBe(sin.cost.baselineEstimate);
     expect(con.cost.actual).toBe(sin.cost.actual);
-    expect(con.cost.netSavings).toBe(sin.cost.netSavings);
+    expect(con.cost.netSavingsRatio).toBe(sin.cost.netSavingsRatio);
     expect(con.cost.basis).toBe("measured");
   });
 
@@ -546,7 +546,7 @@ describe("informeCoalescido — netSavings es una PROPORCIÓN, no dólares", () 
       calls: { avoidedLlm: number; actualLlm: number };
       tokens: { baselineInput: number; baselineOutput: number; actualInput: number; providerCachedInput: number };
       cache: { result: string; reference?: { requestId: string } };
-      cost: { baselineEstimate: number; actual: number; netSavings: number; basis: string };
+      cost: { baselineEstimate: number; actual: number; netSavingsRatio: number; basis: string };
     };
     // Toda la entrada a precio de LECTURA (0,0015/1K) y sin salida (no hay
     // temperature 0): 400 × 0,0015 = $0,60, muy por debajo de los > $1 que costó.
@@ -554,7 +554,7 @@ describe("informeCoalescido — netSavings es una PROPORCIÓN, no dólares", () 
     expect(r.cost.baselineEstimate).toBeCloseTo(400 * CATALOGO["claude-opus-4"]!.cachedInputPer1k!, 10);
     expect(r.cost.baselineEstimate).toBeLessThan(medido.costeUsd);
     expect(r.cost.actual).toBe(0);
-    expect(r.cost.netSavings).toBe(1);
+    expect(r.cost.netSavingsRatio).toBe(1);
     expect(r.calls).toEqual({ avoidedLlm: 1, actualLlm: 0 });
     expect(r.tokens).toMatchObject({ baselineInput: 400000, baselineOutput: 0, actualInput: 0, providerCachedInput: 0 });
     expect(r.cache).toMatchObject({ result: "singleflight", reference: { requestId: "req-primaria" } });
@@ -568,14 +568,14 @@ describe("informeCoalescido — netSavings es una PROPORCIÓN, no dólares", () 
     const r = informeCoalescido("req-c", "claude-opus-4", medido) as unknown as {
       calls: { avoidedLlm: number; actualLlm: number };
       cache: { result: string };
-      cost: { baselineEstimate: number; actual: number; netSavings: number; basis: string };
+      cost: { baselineEstimate: number; actual: number; netSavingsRatio: number; basis: string };
     };
     expect(r.calls).toEqual({ avoidedLlm: 1, actualLlm: 0 });
     expect(r.cache.result).toBe("singleflight");
     expect(r.cost.actual).toBe(0);
     expect(r.cost.baselineEstimate).toBe(medido.costeUsd);
-    expect(r.cost.netSavings).toBe(1); // 100 % evitado, dentro de [-100, 1]
-    expect(r.cost.netSavings).toBeLessThanOrEqual(1); // la verja del ingest ya no lo rechaza
+    expect(r.cost.netSavingsRatio).toBe(1); // 100 % evitado, dentro de [-100, 1]
+    expect(r.cost.netSavingsRatio).toBeLessThanOrEqual(1); // la verja del ingest ya no lo rechaza
     expect(r.cost.basis).toBe("estimated");
   });
 });

@@ -123,7 +123,7 @@ describe("`shadow` mide y NO decide: el corazón del encargo", () => {
     expect(c.estimatedSwapSaving).toBeCloseTo(conFuerte - conBarato, 10);
     // Y no está en `netSavings`, que sigue midiendo lo que hicieron las otras
     // palancas: aquí, nada.
-    expect(res.report.cost.netSavings).toBe(0);
+    expect(res.report.cost.netSavingsRatio).toBe(0);
     expect(c.creditedLedger).toBe("none");
   });
 
@@ -147,7 +147,7 @@ describe("`shadow` mide y NO decide: el corazón del encargo", () => {
       peticion({ savings: { modelCascade: "shadow" } }),
     );
     expect(con.report.cost.actual).toBe(sin.report.cost.actual);
-    expect(con.report.cost.netSavings).toBe(sin.report.cost.netSavings);
+    expect(con.report.cost.netSavingsRatio).toBe(sin.report.cost.netSavingsRatio);
     expect(con.report.calls.actualLlm).toBe(sin.report.calls.actualLlm);
   });
 
@@ -203,7 +203,7 @@ describe("`shadow` con muestreo: la única forma de medir P(escalar), y se paga"
     expect(con.report.cost.baselineEstimate).toBe(sin.report.cost.baselineEstimate);
     // Y por tanto la petición muestreada reporta MENOS ahorro, que es lo que le
     // pasó a la factura.
-    expect(con.report.cost.netSavings).toBeLessThan(sin.report.cost.netSavings);
+    expect(con.report.cost.netSavingsRatio).toBeLessThan(sin.report.cost.netSavingsRatio);
   });
 
   it("un fallo del proveedor en la muestra NO toca la respuesta del cliente", async () => {
@@ -307,7 +307,7 @@ describe("`on` enruta de verdad, y nunca en silencio", () => {
     const sinCascada = await capa(new ProveedorPorModelo(roto)).generate(peticion());
 
     expect(conCascada.report.cost.actual).toBeGreaterThan(sinCascada.report.cost.actual);
-    expect(conCascada.report.cost.netSavings).toBeLessThan(sinCascada.report.cost.netSavings);
+    expect(conCascada.report.cost.netSavingsRatio).toBeLessThan(sinCascada.report.cost.netSavingsRatio);
   });
 
   it("`cost.actual` CUADRA: los tokens del intento descartado se publican", async () => {
@@ -391,7 +391,7 @@ describe("EL LIBRO: el cambio de modelo no acredita ninguno, y no mueve `netSavi
 
     expect(con.report.model).toBe(BARATO);
     expect(sin.report.model).toBe(FUERTE);
-    expect(con.report.cost.netSavings).toBe(sin.report.cost.netSavings);
+    expect(con.report.cost.netSavingsRatio).toBe(sin.report.cost.netSavingsRatio);
     // Y los cuatro libros tampoco se mueven: enrutar no evita una llamada, no
     // quita tokens, no los comprime y no es caché de proveedor.
     expect(con.report.calls.avoidedLlm).toBe(sin.report.calls.avoidedLlm);
@@ -411,7 +411,7 @@ describe("EL LIBRO: el cambio de modelo no acredita ninguno, y no mueve `netSavi
     const conFuerte = (1000 / 1000) * 0.0025 + (200 / 1000) * 0.01;
     expect(res.report.modelCascade!.estimatedSwapSaving).toBeCloseTo(conFuerte - conBarato, 10);
     // Y esa cifra NO está dentro de netSavings.
-    expect(res.report.cost.netSavings).not.toBeCloseTo(1 - conBarato / conFuerte, 3);
+    expect(res.report.cost.netSavingsRatio).not.toBeCloseTo(1 - conBarato / conFuerte, 3);
   });
 });
 
@@ -490,7 +490,7 @@ describe("LA CACHÉ: una respuesta del barato no se le sirve a quien pidió el f
       [BARATO]: { text: '{"answer":"del barato"}' },
       [FUERTE]: { text: '{"answer":"del fuerte"}' },
     });
-    const capaUnica = capa(p, { semanticCache });
+    const capaUnica = capa(p, { semanticCacheStore: semanticCache });
     const base = {
       model: FUERTE,
       response: CONTRATO,

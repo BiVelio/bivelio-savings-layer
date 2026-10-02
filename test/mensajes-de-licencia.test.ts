@@ -193,7 +193,7 @@ function informe(): SavingsReport {
       actualOutput: 5,
     },
     cache: { result: "miss" },
-    cost: { baselineEstimate: 0.001, actual: 0.001, netSavings: 0 },
+    cost: { baselineEstimate: 0.001, actual: 0.001, netSavingsRatio: 0 },
   } as unknown as SavingsReport;
 }
 

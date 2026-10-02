@@ -280,7 +280,8 @@ export interface SavingsReportLike {
     /** Present when this avoided call is valued by reference (the SDK's ReferenceCredit, reduced to what travels). */
     reference?: { requestId: string; at: number };
   };
-  cost: { baselineEstimate: number; actual: number; netSavings: number; basis?: string };
+  /** `netSavingsRatio` is the SDK report field (called `netSavings` up to 0.4.x); the wire record keeps `netSavings`. */
+  cost: { baselineEstimate: number; actual: number; netSavingsRatio: number; basis?: string };
 }
 
 /**
@@ -311,7 +312,7 @@ export function usageRecordFromReport(
     cacheResult: report.cache.result,
     baselineCost: report.cost.baselineEstimate,
     actualCost: report.cost.actual,
-    netSavings: report.cost.netSavings,
+    netSavings: report.cost.netSavingsRatio,
     ...(report.cost.basis ? { basis: report.cost.basis } : {}),
     // 0029 · the two reference fields travel ONLY with basis "reference" and only
     // in the exact shape the ingest keeps (it would drop anything else anyway).

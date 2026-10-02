@@ -63,8 +63,7 @@ function tokenizar(texto: string): string[] {
  * dominate the direction of the vector, and the result is L2-normalised so cosine
  * similarity is a plain dot product.
  *
- * @deprecated Internal detail of {@link localEmbedding}; leaves the public API in 0.5.
- * Use {@link localEmbedding}, which returns the same vector.
+ * Internal: the public name is {@link localEmbedding}, which returns the same vector.
  */
 export function vectorLocal(texto: string): number[] {
   const v = new Array<number>(DIMENSIONES).fill(0);
@@ -113,11 +112,6 @@ export function localEmbedding(text: string): number[] {
   return vectorLocal(text);
 }
 
-/** @deprecated Spanish name, removed in 0.5. Use {@link localEmbedding}. */
-export function embebedorLocal(texto: string): number[] {
-  return vectorLocal(texto);
-}
-
 /**
  * The similarity floor this embedder is calibrated for.
  *
@@ -128,6 +122,3 @@ export function embebedorLocal(texto: string): number[] {
  * populations stop being separable.
  */
 export const LOCAL_EMBEDDING_THRESHOLD = 0.72;
-
-/** @deprecated Spanish name, removed in 0.5. Use {@link LOCAL_EMBEDDING_THRESHOLD}. */
-export const UMBRAL_LOCAL = LOCAL_EMBEDDING_THRESHOLD;

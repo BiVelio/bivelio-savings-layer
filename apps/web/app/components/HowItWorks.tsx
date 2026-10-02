@@ -149,7 +149,7 @@ export async function HowItWorks({ variant }: { variant: "landing" | "app" }) {
           <span className="n"># 3 · {t("snip3")}</span>{"\n"}
           <span className="k">const</span>{" layer = createSavingsLayer({ provider, licenseKey, … });\n"}
           <span className="k">const</span>{" { text, report } = "}<span className="k">await</span>{" layer.generate({ model, messages });\n\n"}
-          {"console.log(report.cost.netSavings)  "}
+          {"console.log(report.cost.netSavingsRatio)  "}
           <span className="g">{"// ← "}{t("snipResult")}</span>
         </pre>
         <div className="hiw-cta">

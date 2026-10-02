@@ -121,9 +121,10 @@ bvsala gateway                                 # Anthropic, the default, on 8402
 
 Flags and environment variables are in English (`--port`, `--project`, `--force`,
 `BVSALA_GATEWAY_EFFORT`, `BVSALA_GATEWAY_SIBLING_MODEL`). The Spanish spellings from
-earlier versions (`--puerto`, `--proyecto`, `--forzar`, `BVSALA_GATEWAY_ESFUERZO`,
-`BVSALA_GATEWAY_MODELO_HERMANO`) keep working until 0.5 and print a deprecation
-notice; `BVSALA_SILENCE_DEPRECATIONS=1` silences it. `bvsala --help` lists them all.
+0.4.x (`--puerto`, `--proyecto`, `--forzar`, `BVSALA_GATEWAY_ESFUERZO`,
+`BVSALA_GATEWAY_MODELO_HERMANO`) were removed in 0.5: using one is an error that
+names the English spelling, and the gateway does not start. `bvsala --help` lists
+them all.
 
 ```python
 from openai import OpenAI
@@ -560,7 +561,7 @@ report.nativeSavings;
 ```
 
 It is present only when a call ran and the provider reported cache reads or writes;
-a cache hit or a coalesced request never carries it. It is not in `cost.netSavings`,
+a cache hit or a coalesced request never carries it. It is not in `cost.netSavingsRatio`,
 not in `cost.baselineEstimate`, and never in the commission base. Your dashboard shows
 it as its own card, **Native savings unlocked**, next to the credited savings.
 

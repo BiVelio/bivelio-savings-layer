@@ -19,8 +19,8 @@ import {
   createSavingsLayer,
   createMockProvider,
   LicenseError,
-  resolveLicense,
 } from "../../src/index.js";
+import { resolveLicense } from "../../src/license/index.js";
 
 const b64url = (b: Buffer | string) => Buffer.from(b).toString("base64url");
 

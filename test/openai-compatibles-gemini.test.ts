@@ -320,7 +320,7 @@ describe("2 · `content_filter: <motivo>` es una negativa", () => {
     const precio = CATALOGO["gemini-3.8-flash"]!;
     expect(r.report.cost.basis).toBe("measured");
     expect(r.report.cost.actual).toBeCloseTo((40 / 1000) * precio.inputPer1k, 12);
-    expect(r.report.cost.netSavings).toBe(0);
+    expect(r.report.cost.netSavingsRatio).toBe(0);
   });
 
   it("gateway: la negativa con motivo en JSON y en SSE", () => {

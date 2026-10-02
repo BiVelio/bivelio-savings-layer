@@ -199,7 +199,7 @@ describe("verja de dinero antes de reparar", () => {
 
     // Que es la promesa entera de la verja, dicha en dinero.
     expect(res.report.cost.actual).toBeLessThanOrEqual(res.report.cost.baselineEstimate);
-    expect(res.report.cost.netSavings).toBeGreaterThanOrEqual(0);
+    expect(res.report.cost.netSavingsRatio).toBeGreaterThanOrEqual(0);
   });
 
   it("ENCENDIDA, un rescate local sigue evitando la reparación sin tocar la verja", async () => {

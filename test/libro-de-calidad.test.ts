@@ -328,7 +328,7 @@ describe("de dónde vino la respuesta", () => {
 
   it("acierto semántico con el embebedor PROPIO: similitud, suelos y la verja", async () => {
     const semanticCache = new InMemorySemanticCache();
-    const c = capa(new ProveedorGuion([{ text: "the water cycle is evaporation, condensation and rain" }]), { semanticCache });
+    const c = capa(new ProveedorGuion([{ text: "the water cycle is evaporation, condensation and rain" }]), { semanticCacheStore: semanticCache });
     const base = { savings: { semanticCache: true as const, exactCache: false } };
     await generar(c, pide("describe the water cycle in simple terms", base));
     const r = await generar(c, pide("describe the water cycle in simple terms please", base));
@@ -352,7 +352,7 @@ describe("de dónde vino la respuesta", () => {
     const semanticCache = new InMemorySemanticCache({
       embed, verify: () => 0.9, similarityThreshold: 0.3, acceptThreshold: 0.3,
     });
-    const c = capa(new ProveedorGuion([{ text: "it merges identical requests" }]), { semanticCache });
+    const c = capa(new ProveedorGuion([{ text: "it merges identical requests" }]), { semanticCacheStore: semanticCache });
     const base = { savings: { semanticCache: true as const, exactCache: false } };
     await generar(c, pide("explain the coalescing mechanism briefly", base));
     const r = await generar(c, pide("explain briefly the coalescing mechanism", base));
@@ -371,7 +371,7 @@ describe("de dónde vino la respuesta", () => {
     const semanticCache = new InMemorySemanticCache({
       calibration: { maxErrorRate: 0.5, confidence: 0.9, auditRate: 0 },
     });
-    const c = capa(new ProveedorGuion([{ text: "the water cycle is evaporation, condensation and rain" }]), { semanticCache });
+    const c = capa(new ProveedorGuion([{ text: "the water cycle is evaporation, condensation and rain" }]), { semanticCacheStore: semanticCache });
     const base = { savings: { semanticCache: true as const, exactCache: false } };
     await generar(c, pide("describe the water cycle in simple terms", base));
     let r = await generar(c, pide("describe the water cycle in simple terms please", base));

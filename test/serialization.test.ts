@@ -5,8 +5,8 @@ import {
   csvSerializer,
   FormatSelector,
   TokenizerRegistry,
-  uniformColumns,
 } from "../src/index.js";
+import { uniformColumns } from "../src/serialization/index.js";
 
 describe("the compact encoder encoder", () => {
   it("emits a tabular header once for a uniform array of flat objects", () => {

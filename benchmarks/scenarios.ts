@@ -1458,7 +1458,7 @@ export const scenarios: Scenario[] = [
   // NO HAY ESCENARIO DE `semanticCache`, Y ES DELIBERADO.
   //
   // Ya no por falta de embebedor: `src/cache/embedder-local.ts` trae uno
-  // (`embebedorLocal`), determinista y sin red, escrito precisamente porque la
+  // (`localEmbedding`), determinista y sin red, escrito precisamente porque la
   // caché salía de fábrica sin ninguno y así no acertaba nunca. El motivo es
   // OTRO, y sobrevive intacto: ese vector es una bolsa de unigramas y bigramas,
   // o sea cercanía LÉXICA declarada como tal por su propia documentación. Un
@@ -1486,7 +1486,7 @@ export const PALANCAS_SIN_ESCENARIO: { palanca: Palanca; motivo: string }[] = [
   {
     palanca: "semanticCache",
     motivo:
-      "el embebedor que trae el repo (`embebedorLocal`, en `cache/embedder-local.ts`) " +
+      "el embebedor que trae el repo (`localEmbedding`, en `cache/embedder-local.ts`) " +
       "es léxico por diseño: bolsa de unigramas y bigramas, sin red ni coste. Mediría " +
       "solapamiento de palabras —lo que la verja determinista de `cache/semantic.ts` ya " +
       "comprueba por debajo— y no similitud semántica, así que el escenario saldría " +

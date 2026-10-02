@@ -433,7 +433,7 @@ describe("generateStream — entrega entera", () => {
       [0, 1, 2, 3].map((i) => [...t].filter((c) => c.charCodeAt(0) % 4 === i).length);
     const semanticCache = new InMemorySemanticCache({ embed, similarityThreshold: 0.3, acceptThreshold: 0.3 });
     const p = new Falso();
-    const layer = createSavingsLayer({ provider: p, semanticCache, devUnlicensed: true });
+    const layer = createSavingsLayer({ provider: p, semanticCacheStore: semanticCache, devUnlicensed: true });
     const base = {
       savings: { semanticCache: true as const, exactCache: false },
       context: { tenantId: "acme", knowledgeEpoch: "e1" },
@@ -595,7 +595,7 @@ describe("generateStream — contrato del stream", () => {
     const { layer, registros } = conMedicion(p);
     const r = await layer.generateStream(peticion()).result;
     expect(r.report.cost.basis).toBe("unmeasured");
-    expect(r.report.cost.netSavings).toBe(0);
+    expect(r.report.cost.netSavingsRatio).toBe(0);
     expect(r.report.cost.baselineEstimate).toBe(0);
     await vi.waitFor(() => expect(registros).toHaveLength(1));
     expect(registros[0]!["basis"]).toBe("unmeasured");

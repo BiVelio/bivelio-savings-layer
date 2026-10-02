@@ -13,13 +13,7 @@ import { TokenizerRegistry } from "../src/tokenizer/registry.js";
 import { reiniciarAvisos } from "../src/util/warn-once.js";
 import type { Provider, ProviderRequest, ProviderResponse } from "../src/providers/types.js";
 import type { SavingsRequest, ToolDescriptor } from "../src/contracts/types.js";
-import {
-  FLAGS_EN_ESPANOL,
-  SILENCIAR_OBSOLETOS,
-  VARIABLES_EN_ESPANOL,
-  traducirEntorno,
-  traducirFlags,
-} from "../gateway/argumentos.js";
+import { RETIRED_ENV_VARS, RETIRED_FLAGS, retiredNameErrors } from "../gateway/argumentos.js";
 
 /**
  * LAS CUATRO DECISIONES DEL DUEÑO (2026-09-29) QUE ENTRAN EN LA 0.4.33, sin
@@ -30,9 +24,9 @@ import {
  *      acredita. Con un catálogo grande donde la búsqueda nativa saldría a
  *      cuenta, un aviso único y silenciable.
  *   2. CLI y variables en inglés; los nombres españoles son alias que avisan.
- *   3. `finishReason` no cambia aquí; su JSDoc anuncia el conjunto cerrado.
- *   4. `semanticCacheStore` (alias `semanticCache` con aviso) y, en `cost`,
- *      `netSavingsRatio` + `netSavingsUsd`.
+ *   3. `finishReason` es el conjunto cerrado (desde la 0.5).
+ *   4. `semanticCacheStore` (el alias `semanticCache` se retiró en la 0.5) y,
+ *      en `cost`, `netSavingsRatio` + `netSavingsUsd` (sin `netSavings`).
  */
 
 const raiz = (p: string) => fileURLToPath(new URL(`../${p}`, import.meta.url));
@@ -198,82 +192,84 @@ describe("1 · el aviso del catálogo grande donde la búsqueda nativa saldría 
 });
 
 // ── 2 · CLI y variables en inglés ────────────────────────────────────────────
+//
+// Alias con aviso en la 0.4.33 y la 0.4.34; en la 0.5 el nombre español es un
+// ERROR que dice el nuevo (docs/MIGRAR-A-0.5.md §9). Nunca se ignora en
+// silencio: `--puerto 9000` acabaría en el 8402 y una variable ignorada apagaría
+// una palanca que el cliente cree encendida.
 
-describe("2 · los nombres españoles del CLI son alias que avisan una vez", () => {
-  it("cada flag español se traduce a su nombre inglés, con UN aviso por flag aunque se repita", () => {
-    const r = traducirFlags(["--puerto", "9000", "--proyecto", "--forzar", "--puerto", "9001"]);
-    expect(r.resto).toEqual(["--port", "9000", "--project", "--force", "--port", "9001"]);
-    expect(r.avisos).toHaveLength(3);
-    expect(r.avisos[0]).toContain("--puerto is deprecated: use --port");
-    expect(r.avisos.every((a) => a.includes(`${SILENCIAR_OBSOLETOS}=1`))).toBe(true);
+describe("2 · los nombres españoles del CLI se retiraron en la 0.5: error que dice el nuevo", () => {
+  const PARES: Array<[string, string]> = [
+    ["--puerto", "--port"],
+    ["--proyecto", "--project"],
+    ["--forzar", "--force"],
+  ];
+
+  it.each(PARES)("%s → error que nombra %s", (viejo, nuevo) => {
+    const errores = retiredNameErrors([viejo, "9000"], {}, { checkEnv: true });
+    expect(errores).toEqual([`[bvsala] ${viejo} was removed in 0.5: use ${nuevo}.`]);
   });
 
-  it("los ingleses pasan tal cual y sin aviso", () => {
-    const r = traducirFlags(["--port", "9000", "--project", "--force", "--upstream", "openai"]);
-    expect(r.resto).toEqual(["--port", "9000", "--project", "--force", "--upstream", "openai"]);
-    expect(r.avisos).toEqual([]);
+  it("también con `=` y UN error por flag aunque se repita", () => {
+    const errores = retiredNameErrors(["--puerto=9000", "--forzar", "--puerto", "1"], {}, { checkEnv: false });
+    expect(errores).toHaveLength(2);
+    expect(errores[0]).toContain("--puerto was removed in 0.5: use --port");
+    expect(errores[1]).toContain("--forzar was removed in 0.5: use --force");
   });
 
-  it(`${SILENCIAR_OBSOLETOS}=1 calla los avisos, pero el alias sigue funcionando`, () => {
-    const env = { [SILENCIAR_OBSOLETOS]: "1", BVSALA_GATEWAY_ESFUERZO: "low" };
-    const f = traducirFlags(["--puerto", "0"], env);
-    expect(f.resto).toEqual(["--port", "0"]);
-    expect(f.avisos).toEqual([]);
-    const e = traducirEntorno(env);
-    expect(e.env.BVSALA_GATEWAY_EFFORT).toBe("low");
-    expect(e.avisos).toEqual([]);
-  });
-
-  it("las variables españolas alimentan las inglesas, con aviso; si están las dos, gana la inglesa", () => {
-    const solo = traducirEntorno({ BVSALA_GATEWAY_ESFUERZO: "medium", BVSALA_GATEWAY_MODELO_HERMANO: "1" });
-    expect(solo.env.BVSALA_GATEWAY_EFFORT).toBe("medium");
-    expect(solo.env.BVSALA_GATEWAY_SIBLING_MODEL).toBe("1");
-    expect(solo.avisos).toHaveLength(2);
-    expect(solo.avisos[0]).toContain("BVSALA_GATEWAY_ESFUERZO is deprecated: use BVSALA_GATEWAY_EFFORT");
-
-    const dos = traducirEntorno({ BVSALA_GATEWAY_ESFUERZO: "medium", BVSALA_GATEWAY_EFFORT: "low" });
-    expect(dos.env.BVSALA_GATEWAY_EFFORT).toBe("low");
-    expect(dos.avisos[0]).toContain("Both are set: BVSALA_GATEWAY_EFFORT is the one in use.");
-
-    const ingles = traducirEntorno({ BVSALA_GATEWAY_EFFORT: "low" });
-    expect(ingles.env.BVSALA_GATEWAY_EFFORT).toBe("low");
-    expect(ingles.avisos).toEqual([]);
-  });
-
-  it("no toca el entorno que recibe", () => {
-    const env = { BVSALA_GATEWAY_MODELO_HERMANO: "1" };
-    traducirEntorno(env);
-    expect(env).toEqual({ BVSALA_GATEWAY_MODELO_HERMANO: "1" });
-  });
-
-  it("bin.ts lee solo los nombres ingleses y la ayuda los documenta (los españoles, como obsoletos)", () => {
-    const bin = readFileSync(raiz("gateway/bin.ts"), "utf8");
-    for (const espanol of [...Object.keys(VARIABLES_EN_ESPANOL)]) {
-      expect(bin, espanol).not.toContain(`process.env.${espanol}`);
+  it.each([
+    ["BVSALA_GATEWAY_ESFUERZO", "BVSALA_GATEWAY_EFFORT"],
+    ["BVSALA_GATEWAY_MODELO_HERMANO", "BVSALA_GATEWAY_SIBLING_MODEL"],
+  ])("%s puesta → error que nombra %s (aunque esté también la nueva)", (viejo, nuevo) => {
+    for (const env of [{ [viejo]: "1" }, { [viejo]: "1", [nuevo]: "1" }, { [viejo]: "" }]) {
+      const errores = retiredNameErrors([], env, { checkEnv: true });
+      expect(errores).toHaveLength(1);
+      expect(errores[0]).toContain(`${viejo} was removed in 0.5`);
+      expect(errores[0]).toContain(`rename it to ${nuevo}`);
     }
-    for (const espanol of Object.keys(FLAGS_EN_ESPANOL)) {
+  });
+
+  it("los nombres ingleses pasan sin error", () => {
+    const env = { BVSALA_GATEWAY_EFFORT: "low", BVSALA_GATEWAY_SIBLING_MODEL: "1" };
+    expect(retiredNameErrors(["--port", "9000", "--project", "--force", "--upstream", "openai"], env, { checkEnv: true })).toEqual([]);
+  });
+
+  it("las variables solo se miran donde se leen (checkEnv), los flags siempre que se pasan", () => {
+    expect(retiredNameErrors([], { BVSALA_GATEWAY_ESFUERZO: "low" }, { checkEnv: false })).toEqual([]);
+  });
+
+  it("bin.ts no lee los nombres españoles, sale con 1 ante uno retirado, y la ayuda y el README lo dicen", () => {
+    const bin = readFileSync(raiz("gateway/bin.ts"), "utf8");
+    for (const espanol of Object.keys(RETIRED_ENV_VARS)) {
+      expect(bin, espanol).not.toContain(`process.env.${espanol}`);
+      expect(bin, espanol).toContain(espanol); // en la ayuda, como retirada
+    }
+    for (const espanol of Object.keys(RETIRED_FLAGS)) {
       expect(bin, espanol).not.toContain(`"${espanol}"`);
     }
-    for (const nuevo of ["--port N", "--project", "--force", "BVSALA_GATEWAY_EFFORT", "BVSALA_GATEWAY_SIBLING_MODEL", SILENCIAR_OBSOLETOS]) {
+    expect(bin).toMatch(/retiredNameErrors\([\s\S]*?process\.exit\(1\)/);
+    expect(bin).not.toContain("still work until 0.5");
+    for (const nuevo of ["--port N", "--project", "--force", "BVSALA_GATEWAY_EFFORT", "BVSALA_GATEWAY_SIBLING_MODEL"]) {
       expect(bin, nuevo).toContain(nuevo);
     }
     const readme = readFileSync(raiz("README.md"), "utf8");
     expect(readme).toContain("BVSALA_GATEWAY_EFFORT");
-    expect(readme).toContain(SILENCIAR_OBSOLETOS);
+    expect(readme).toContain("were removed in 0.5");
+    expect(readme).not.toContain("keep working until 0.5");
   });
 });
 
-// ── 3 · finishReason: sin cambios en la 0.4.x ────────────────────────────────
+// ── 3 · finishReason: el conjunto cerrado llegó en la 0.5 ─────────────────────
+// (el comportamiento, por proveedor y por modo, en test/finish-reason-cerrado.test.ts)
 
-describe("3 · finishReason no cambia en la 0.4.33; su documentación anuncia la 0.5", () => {
-  it("el JSDoc de SavingsResult.finishReason nombra el conjunto cerrado y `finishReasonDetail`", () => {
+describe("3 · finishReason es el conjunto cerrado desde la 0.5", () => {
+  it("SavingsResult.finishReason se declara con los cinco valores y remite a `finishReasonDetail`", () => {
     const tipos = readFileSync(raiz("src/contracts/types.ts"), "utf8");
     const i = tipos.indexOf("export interface SavingsResult");
-    const bloque = tipos.slice(i, tipos.indexOf("finishReason?: string;", i));
-    expect(bloque).toContain("In 0.5 this becomes a CLOSED set");
-    for (const v of ['"stop"', '"length"', '"tool_calls"', '"content_filter"', '"other"', "finishReasonDetail"]) {
-      expect(bloque).toContain(v);
-    }
+    const cierre = 'finishReason?: "stop" | "length" | "tool_calls" | "content_filter" | "other";';
+    const j = tipos.indexOf(cierre, i);
+    expect(j, "SavingsResult.finishReason no es la unión cerrada").toBeGreaterThan(i);
+    expect(tipos.slice(i, j)).toContain("finishReasonDetail");
   });
 });
 
@@ -301,10 +297,13 @@ const pregunta = (content: string): SavingsRequest => ({
   savings: { semanticCache: true, exactCache: false },
 });
 
-describe("4 · `semanticCacheStore` en el constructor; `semanticCache` sigue valiendo con aviso", () => {
-  const FILTRO = "`createSavingsLayer({ semanticCache })` is deprecated";
+describe("4 · `semanticCacheStore` en el constructor; el alias `semanticCache` se retiró en la 0.5", () => {
+  const FILTRO = "`createSavingsLayer({ semanticCache })` was removed in 0.5";
+  // Desde JavaScript (sin tipos) el nombre viejo todavía puede llegar: se pasa
+  // sin comprobación de tipos, como lo haría un cliente sin TypeScript.
+  const sinTipos = (c: Record<string, unknown>) => createSavingsLayer(c as never);
 
-  it("`semanticCacheStore` es el almacén que usa la capa, sin aviso de obsoleto", async () => {
+  it("`semanticCacheStore` es el almacén que usa la capa, sin aviso", async () => {
     const store = new InMemorySemanticCache({ embed, similarityThreshold: 0.5, acceptThreshold: 0.5 });
     const capa = createSavingsLayer({ provider: new Fijo(), devUnlicensed: true, semanticCacheStore: store });
     await capa.generate(pregunta("¿Cuál es la capital de Francia?"));
@@ -314,48 +313,43 @@ describe("4 · `semanticCacheStore` en el constructor; `semanticCache` sigue val
     expect(avisos(FILTRO)).toEqual([]);
   });
 
-  it("el alias `semanticCache` funciona igual y avisa UNA vez aunque se creen varias capas", async () => {
+  it("el nombre viejo ya NO es un almacén: se ignora y avisa UNA vez, nombrando el nuevo", async () => {
     const store = new InMemorySemanticCache({ embed, similarityThreshold: 0.5, acceptThreshold: 0.5 });
-    const capa = createSavingsLayer({ provider: new Fijo(), devUnlicensed: true, semanticCache: store });
-    createSavingsLayer({ provider: new Fijo(), devUnlicensed: true, semanticCache: store });
+    const capa = sinTipos({ provider: new Fijo(), devUnlicensed: true, semanticCache: store });
+    sinTipos({ provider: new Fijo(), devUnlicensed: true, semanticCache: store });
     await capa.generate(pregunta("¿Cuál es la capital de Francia?"));
     await store.settled();
     const r = await capa.generate(pregunta("¿Cuál es la capital de Francia, por favor?"));
-    expect(r.report.cache.result).toBe("semantic");
+    expect(r.report.cache.result).not.toBe("semantic");
+    expect(store.size).toBe(0);
     const a = avisos(FILTRO);
     expect(a).toHaveLength(1);
     expect(a[0]).toContain("semanticCacheStore");
   });
 
   it("`silenceWarnings` calla el aviso", () => {
-    createSavingsLayer({ provider: new Fijo(), devUnlicensed: true, silenceWarnings: true, semanticCache: new InMemorySemanticCache({ embed }) });
+    sinTipos({ provider: new Fijo(), devUnlicensed: true, silenceWarnings: true, semanticCache: new InMemorySemanticCache({ embed }) });
     expect(avisos(FILTRO)).toEqual([]);
   });
 
-  it("con los dos, gana `semanticCacheStore` y el aviso lo dice", async () => {
-    const viejo = new InMemorySemanticCache({ embed, similarityThreshold: 0.5, acceptThreshold: 0.5 });
-    const nuevo = new InMemorySemanticCache({ embed, similarityThreshold: 0.5, acceptThreshold: 0.5 });
-    const capa = createSavingsLayer({ provider: new Fijo(), devUnlicensed: true, semanticCache: viejo, semanticCacheStore: nuevo });
-    await capa.generate(pregunta("¿Cuál es la capital de Francia?"));
-    await nuevo.settled();
-    await viejo.settled();
-    expect(nuevo.size).toBeGreaterThan(0);
-    expect(viejo.size).toBe(0);
-    expect(avisos(FILTRO)[0]).toContain("`semanticCacheStore` is the one in use");
+  it("`SavingsLayerConfig` ya no declara `semanticCache`", () => {
+    const config = readFileSync(raiz("src/pipeline/config.ts"), "utf8");
+    expect(config).not.toMatch(/^\s*semanticCache\??:/m);
+    expect(config).toMatch(/^\s*semanticCacheStore\?:/m);
   });
 });
 
 describe("4 · `cost.netSavingsRatio` y `cost.netSavingsUsd`", () => {
   const redondeo = (n: number) => Math.round(n * 1e10) / 1e10;
 
-  it("en una llamada evitada: la razón es la de `netSavings` y los dólares, baseline − actual", async () => {
+  it("en una llamada evitada: la razón es 1 y los dólares, baseline − actual; `netSavings` ya no existe", async () => {
     const r = await createSavingsLayer({ provider: new Fijo(), devUnlicensed: true }).generate({
       model: "openai/gpt-4o-mini",
       messages: [{ role: "user", content: "What is 2 + 2 * 3?" }],
     });
     const c = r.report.cost;
     expect(r.report.calls.avoidedLlm).toBe(1);
-    expect(c.netSavingsRatio).toBe(c.netSavings);
+    expect("netSavings" in c).toBe(false);
     expect(c.netSavingsRatio).toBe(1);
     expect(c.netSavingsUsd).toBe(redondeo(c.baselineEstimate - c.actual));
     expect(c.netSavingsUsd).toBeGreaterThan(0);
@@ -374,7 +368,7 @@ describe("4 · `cost.netSavingsRatio` y `cost.netSavingsUsd`", () => {
     });
     const c = r.report.cost;
     expect(r.report.calls.avoidedLlm).toBe(0);
-    expect(c.netSavingsRatio).toBe(c.netSavings);
+    expect("netSavings" in c).toBe(false);
     expect(c.netSavingsUsd).toBe(redondeo(c.baselineEstimate - c.actual));
   });
 });

@@ -48,7 +48,7 @@ const { text, report } = await layer.generate({
 });
 
 console.log(text);                    // the answer
-console.log(report.cost.netSavings);  // → 0..1: the share of the baseline you did not pay
+console.log(report.cost.netSavingsRatio);  // → 0..1: the share of the baseline you did not pay
 console.log(report.cost.basis);       // → "measured" | "reference" | "estimated" | "unmeasured" — how it was obtained`;
 
 /**

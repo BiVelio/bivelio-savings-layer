@@ -133,7 +133,7 @@ describe("instrumentSavingsLayer — un span por petición, con GenAI y com.bive
     const { report } = await traced.generate(pedir("capital of italy?"));
     const s = spans()[1]!;
     const clave = `com.bivelio.cost.saved.${report.cost.basis}`;
-    expect(s.attributes["com.bivelio.cost.net_savings_ratio"]).toBe(report.cost.netSavings);
+    expect(s.attributes["com.bivelio.cost.net_savings_ratio"]).toBe(report.cost.netSavingsRatio);
     expect(s.attributes[clave]).toBeCloseTo(report.cost.baselineEstimate - report.cost.actual, 12);
     // En una llamada evitada la proporción es 1 y el dinero es una fracción de céntimo.
     expect(s.attributes[clave]).not.toBe(s.attributes["com.bivelio.cost.net_savings_ratio"]);
@@ -144,7 +144,7 @@ describe("instrumentSavingsLayer — un span por petición, con GenAI y com.bive
 describe("una clave de dinero por basis, con signo, y nada de dinero sin medida", () => {
   it("measured con baseline 1 y actual 1,5: saved.measured = −0,5 y ninguna otra clave saved.*", () => {
     const a = savingsSpanAttributes(
-      informeSintetico({ cost: { basis: "measured", baselineEstimate: 1, actual: 1.5, netSavings: -0.5 } }),
+      informeSintetico({ cost: { basis: "measured", baselineEstimate: 1, actual: 1.5, netSavingsRatio: -0.5 } }),
     );
     expect(saved(a)).toEqual(["com.bivelio.cost.saved.measured"]);
     expect(a["com.bivelio.cost.saved.measured"]).toBe(-0.5);
@@ -168,7 +168,7 @@ describe("una clave de dinero por basis, con signo, y nada de dinero sin medida"
             tierFactor: 1,
           },
         },
-        cost: { basis: "reference", baselineEstimate: 0.0000069, actual: 0, netSavings: 1 },
+        cost: { basis: "reference", baselineEstimate: 0.0000069, actual: 0, netSavingsRatio: 1 },
       }),
     );
     expect(saved(a)).toEqual(["com.bivelio.cost.saved.reference"]);
@@ -200,7 +200,7 @@ describe("una clave de dinero por basis, con signo, y nada de dinero sin medida"
 
   it("shadow: sin dinero y sin uso (es hipotético)", () => {
     const a = savingsSpanAttributes(
-      informeSintetico({ cost: { basis: "shadow", baselineEstimate: 5, actual: 1, netSavings: 0.8 } }),
+      informeSintetico({ cost: { basis: "shadow", baselineEstimate: 5, actual: 1, netSavingsRatio: 0.8 } }),
     );
     expect(saved(a)).toEqual([]);
     expect(a).not.toHaveProperty("com.bivelio.cost.actual");
@@ -463,7 +463,7 @@ describe("generateStream instrumentado", () => {
 
 describe("las copias para Langfuse y Datadog, apagadas por defecto", () => {
   const report = informeSintetico({
-    cost: { basis: "measured", baselineEstimate: 0.002, actual: 0.0015, netSavings: 0.25 },
+    cost: { basis: "measured", baselineEstimate: 0.002, actual: 0.0015, netSavingsRatio: 0.25 },
     tokens: { providerCachedInput: 30 },
     qualityStatus: "not_verified",
   });

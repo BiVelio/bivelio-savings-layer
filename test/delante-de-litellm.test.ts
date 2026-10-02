@@ -363,7 +363,7 @@ describe("VERSION_MINIMA_REFERENCIA — 0.4.35, la primera que no repite ninguna
     for (const no of ["sdk/0.4.24", "sdk/0.4.25", "sdk/0.4.26", "sdk/0.4.27", "sdk/0.4.28", "sdk/0.4.29", "sdk/0.4.30", "sdk/0.4.31", "sdk/0.4.32", "sdk/0.4.33", "sdk/0.4.34"]) {
       expect(versionAdmiteReferencia(no), no).toBe(false);
     }
-    for (const si of ["sdk/0.4.35", "sdk/0.4.36", "sdk/0.5.0"]) {
+    for (const si of ["sdk/0.4.35", "sdk/0.4.36", "sdk/0.5.0", "sdk/0.5.0-rc.1", "sdk/0.4.36-rc.1"]) {
       expect(versionAdmiteReferencia(si), si).toBe(true);
     }
   });
@@ -382,7 +382,7 @@ describe("VERSION_MINIMA_REFERENCIA — 0.4.35, la primera que no repite ninguna
     if (compararVersiones(BV_SALA_VERSION, VERSION_MINIMA_REFERENCIA) >= 0) {
       expect(versionAdmiteReferencia(`sdk/${BV_SALA_VERSION}`)).toBe(true);
     } else {
-      const [a, b, c] = BV_SALA_VERSION.split(".").map(Number) as [number, number, number];
+      const [a, b, c] = BV_SALA_VERSION.split("-")[0]!.split(".").map(Number) as [number, number, number];
       expect(VERSION_MINIMA_REFERENCIA).toBe(`${a}.${b}.${c + 1}`);
       expect(versionAdmiteReferencia(`sdk/${BV_SALA_VERSION}`)).toBe(false);
     }

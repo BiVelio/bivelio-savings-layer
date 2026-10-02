@@ -195,7 +195,7 @@ describe("contabilidad: conteo en el libro 3, ni un céntimo reclamado", () => {
     expect(r.report.tokens.compressedInput).toBeGreaterThan(0);
     // La factura baja por su cuenta; el informe no se la atribuye.
     expect(r.report.cost.baselineEstimate).toBeCloseTo(r.report.cost.actual, 12);
-    expect(r.report.cost.netSavings).toBeCloseTo(0, 12);
+    expect(r.report.cost.netSavingsRatio).toBeCloseTo(0, 12);
     expect(r.report.cost.basis).toBe("measured");
   });
 });

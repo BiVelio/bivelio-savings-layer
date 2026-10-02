@@ -1,15 +1,15 @@
 import { describe, it, expect } from "vitest";
 import {
-  canonicalize,
-  buildExactKey,
-  buildInflightKey,
-  normalizeText,
-  keyTokensMatch,
-  evaluatePolicy,
   createDefaultResolvers,
   ToolSelector,
 } from "../src/index.js";
-import type { SavingsRequest, ToolDescriptor } from "../src/index.js";
+import { canonicalize, buildExactKey, buildInflightKey, normalizeText } from "../src/canonicalization/index.js";
+import { keyTokensMatch } from "../src/cache/index.js";
+import { evaluatePolicy } from "../src/policy/index.js";
+import type {
+  SavingsRequest,
+  ToolDescriptor,
+} from "../src/index.js";
 
 /**
  * LA CLAVE DE CACHÉ FALLABA POR UN SIGNO DE INTERROGACIÓN.

@@ -15,7 +15,7 @@ import {
   verifyGatewayLicense,
 } from "../gateway/license.js";
 import { CanalDeEntitlements } from "../gateway/entitlements.js";
-import { liveGateFromKey, RevocationSnapshot } from "../src/index.js";
+import { liveGateFromKey, RevocationSnapshot } from "../src/license/index.js";
 import { LicenseError } from "../src/license/errors.js";
 import { MAX_PENDIENTES, MAX_REINTENTOS, MUESTRAS_POR_SOBRE } from "../src/verification/emisor.js";
 import { computeNextDelay } from "../src/license/poller.js";

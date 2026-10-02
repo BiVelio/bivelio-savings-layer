@@ -155,7 +155,7 @@ describe("pedir caché semántica sin caché semántica AVISA", () => {
 
   it("con caché semántica configurada NO avisa", async () => {
     const semanticCache = new InMemorySemanticCache({ embed: () => [1, 0, 0] });
-    await capa({ semanticCache }).generate(peticion({ semanticCache: true }));
+    await capa({ semanticCacheStore: semanticCache }).generate(peticion({ semanticCache: true }));
     expect(sobreCacheSemantica()).toEqual([]);
   });
 });

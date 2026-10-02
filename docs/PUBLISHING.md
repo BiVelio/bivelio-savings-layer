@@ -99,9 +99,28 @@ The workflow publishes with npm 11, which (unlike npm 10) refuses, without `--ta
 prerelease version (`1.2.3-rc.1`) and any version lower than the highest one already
 published (`lib/commands/publish.js`,
 https://github.com/npm/cli/blob/v11.19.0/lib/commands/publish.js, checked 2026-09-27).
-The workflow passes no `--tag`, so today only a normal release above the latest one
-publishes. A prerelease or a fix on an older line needs the workflow to pass `--tag`
-first.
+### Prereleases go to `next`, never to `latest` (since 0.5.0-rc.1)
+
+The workflow picks the dist-tag from the version, not from free text:
+
+- a version with a suffix (`0.5.0-rc.1`) publishes with `--tag next`, so
+  `npm i @bivelio/savings-layer` keeps installing the current `latest` and
+  `npm i @bivelio/savings-layer@next` installs the candidate;
+- a version without a suffix (`0.5.0`) publishes with no `--tag`, as before: npm puts it
+  on `latest` and refuses a version lower than the highest one published, so a release
+  can never move `latest` backwards.
+
+`verificar` also requires the GitHub Release to be marked as a prerelease exactly when
+the version has a suffix, so cut a candidate with
+`gh release create v0.5.0-rc.1 --prerelease …` and a final release without it.
+
+The bench gate (`banco-semanal`) is the same for both: the last complete live run of
+`banco-semanal.yml` on `main` (title «banco semanal (vivo)»; partial runs titled
+«vivo parcial» do not count) must be green and at most 8 days old.
+
+A fix on an older line (a version lower than the highest one published) still fails at
+`npm publish`: it needs a `--tag` of its own (e.g. `0.4-lts`), which the workflow does
+not pass.
 
 ### If the check after publishing fails
 

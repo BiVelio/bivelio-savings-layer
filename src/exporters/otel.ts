@@ -119,7 +119,7 @@ function cerrarConResultado(
         ...atributosGenAiDelInforme(report),
         ...savingsSpanAttributes(report, opciones),
       };
-      if (typeof result.finishReason === "string" && result.finishReason !== "") {
+      if (typeof result.finishReason === "string") {
         a[GEN_AI.motivosDeFin] = [result.finishReason];
       }
       const s = report.streaming;

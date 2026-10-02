@@ -178,7 +178,7 @@ export async function conducirTripletas(
   };
   const layer = createSavingsLayer({
     provider: proveedorFalso(() => siguiente),
-    semanticCache,
+    semanticCacheStore: semanticCache,
     devUnlicensed: true,
     silenceWarnings: true,
   });
@@ -542,7 +542,7 @@ export async function conducirStream(
   let siguiente = "";
   const layer = createSavingsLayer({
     provider: proveedorFalso(() => siguiente),
-    semanticCache,
+    semanticCacheStore: semanticCache,
     devUnlicensed: true,
     silenceWarnings: true,
   });

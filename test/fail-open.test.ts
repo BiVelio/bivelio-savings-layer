@@ -24,7 +24,7 @@ describe("SDK reliability contract — fail open to the raw provider", () => {
     expect(res.text).toBe("the real answer");
     // A direct call ran; no optimization → zero claimed savings.
     expect(res.report.calls.actualLlm).toBe(1);
-    expect(res.report.cost.netSavings).toBe(0);
+    expect(res.report.cost.netSavingsRatio).toBe(0);
     // The degradation is observable in the trace.
     expect(res.report.traces.some((t) => t.stage === "fail-open")).toBe(true);
   });

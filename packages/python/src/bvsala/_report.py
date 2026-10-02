@@ -139,7 +139,9 @@ def parse_report(cuerpo: Mapping[str, Any]) -> Report:
         cost=Cost(
             baseline_estimate=_num(c, "baselineEstimate"),
             actual=_num(c, "actual"),
-            net_savings=_num(c, "netSavings"),
+            # El informe del SDK la llama `netSavingsRatio` desde la 0.5 (antes
+            # `netSavings`); se aceptan las dos para leer pasarelas de ambas versiones.
+            net_savings=_num(c, "netSavingsRatio") if "netSavingsRatio" in c else _num(c, "netSavings"),
             basis=c.get("basis") if isinstance(c.get("basis"), str) else None,
             eliminated_input_floor_cost=_num(c, "eliminatedInputFloorCost") if suelo is not None else None,
         ),

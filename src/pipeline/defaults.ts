@@ -33,9 +33,9 @@ export interface ResolvedDeps {
 export function resolveDependencies(config: SavingsLayerConfig): ResolvedDeps {
   return {
     exactCache: config.exactCache ?? new InMemoryExactCache(),
-    // `semanticCacheStore` es el nombre desde 0.4.33; `semanticCache` sigue
-    // valiendo (con aviso en create.ts) y pierde si vienen los dos.
-    semanticCache: config.semanticCacheStore ?? config.semanticCache,
+    // El almacén se llama `semanticCacheStore` (el alias `semanticCache` del
+    // constructor se fue en la 0.5; el campo de ResolvedDeps es interno).
+    semanticCache: config.semanticCacheStore,
     singleflight: config.singleflight ?? new Singleflight(),
     resolvers: config.resolvers ?? createDefaultResolvers(),
     router: config.router ?? new ExecutionRouter(),

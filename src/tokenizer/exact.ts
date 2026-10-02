@@ -93,12 +93,3 @@ export async function registerExactTokenizer(
 
   return algunaCargada;
 }
-
-/**
- * @deprecated Spanish-named aliases kept for one minor version. Use
- * {@link MODELS_BY_ENCODING} and {@link registerExactTokenizer}. The public
- * surface of this package is English-only; these leaked and are on the way out.
- */
-export const MODELOS_POR_CODIFICACION = MODELS_BY_ENCODING;
-/** @deprecated Use {@link registerExactTokenizer}. */
-export const registrarTokenizadorExacto = registerExactTokenizer;

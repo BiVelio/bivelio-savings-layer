@@ -7,13 +7,9 @@ import {
   createSavingsLayer,
   createMockProvider,
   LicenseError,
-  RevocationSnapshot,
-  RevocationPoller,
-  computeNextDelay,
-  liveGateFromKey,
-  verifyRevocationList,
   type SavingsRequest,
 } from "../src/index.js";
+import { RevocationSnapshot, RevocationPoller, computeNextDelay, liveGateFromKey, verifyRevocationList } from "../src/license/index.js";
 
 /**
  * Revocation call-home + live enforcement. BV-SALA is fail-closed; the suite runs

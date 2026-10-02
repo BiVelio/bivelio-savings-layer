@@ -126,7 +126,7 @@ describe("reference lane (0029) — usageRecordFromReport", () => {
     calls: { avoidedLlm: 1, actualLlm: 0 },
     tokens: { baselineInput: 1736, actualInput: 0, eliminatedInput: 0, compressedInput: 0, baselineOutput: 267, actualOutput: 0 },
     cache: { result: "exact", reference: { requestId: "r-populated", at: Date.now() - 1_000 } },
-    cost: { baselineEstimate: 0.0002904, actual: 0, netSavings: 1, basis: "reference" },
+    cost: { baselineEstimate: 0.0002904, actual: 0, netSavingsRatio: 1, basis: "reference" },
     ...over,
   });
 
@@ -143,7 +143,7 @@ describe("reference lane (0029) — usageRecordFromReport", () => {
 
   it("never carries them without basis reference, or with a malformed id", () => {
     const estimated = usageRecordFromReport(
-      report({ cost: { baselineEstimate: 0.001, actual: 0, netSavings: 1, basis: "estimated" } }),
+      report({ cost: { baselineEstimate: 0.001, actual: 0, netSavingsRatio: 1, basis: "estimated" } }),
       { orgId: "o", at: Date.now() },
     );
     expect("referenceRequestId" in estimated).toBe(false);

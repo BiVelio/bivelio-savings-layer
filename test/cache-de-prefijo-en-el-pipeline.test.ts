@@ -351,7 +351,7 @@ describe("el libro 4 y la prima de escritura", () => {
     // petición en la que la capa no hiciera nada reportaría ahorro sólo porque
     // el proveedor aplicó un descuento que habría aplicado igual.
     expect(r.report.tokens.providerCachedInput).toBe(900);
-    expect(r.report.cost.netSavings).toBe(0);
+    expect(r.report.cost.netSavingsRatio).toBe(0);
   });
 });
 

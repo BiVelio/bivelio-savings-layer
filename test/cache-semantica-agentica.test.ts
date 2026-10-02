@@ -176,7 +176,7 @@ describe("por la capa: por defecto, ni se lee ni se escribe", () => {
     it(`${f.nombre}: la reformulación sale miss y la caché queda vacía`, async () => {
       const cache = nuevaCache();
       const proveedor = new ProveedorFijo();
-      const capa = createSavingsLayer({ provider: proveedor, costModels: PRECIOS, silenceWarnings: true, semanticCache: cache });
+      const capa = createSavingsLayer({ provider: proveedor, costModels: PRECIOS, silenceWarnings: true, semanticCacheStore: cache });
       const extra = f.tools ? { tools: f.tools } : {};
       await capa.generate(peticion(f.original, { semanticCache: true }, extra));
       const segunda = await capa.generate(peticion(f.reformulada, { semanticCache: true }, extra));
@@ -196,7 +196,7 @@ describe("por la capa: por defecto, ni se lee ni se escribe", () => {
   it('"safe-only" se comporta igual que true', async () => {
     const f = FORMAS[0]!;
     const cache = nuevaCache();
-    const capa = createSavingsLayer({ provider: new ProveedorFijo(), costModels: PRECIOS, silenceWarnings: true, semanticCache: cache });
+    const capa = createSavingsLayer({ provider: new ProveedorFijo(), costModels: PRECIOS, silenceWarnings: true, semanticCacheStore: cache });
     await capa.generate(peticion(f.original, { semanticCache: "safe-only" }, { tools: f.tools! }));
     const segunda = await capa.generate(peticion(f.reformulada, { semanticCache: "safe-only" }, { tools: f.tools! }));
     expect(segunda.report.cache.result).toBe("miss");
@@ -209,7 +209,7 @@ describe("por la capa: por defecto, ni se lee ni se escribe", () => {
   });
 
   it("single-shot con semanticCache: true sigue acertando (sin cambios)", async () => {
-    const capa = createSavingsLayer({ provider: new ProveedorFijo(), costModels: PRECIOS, silenceWarnings: true, semanticCache: nuevaCache() });
+    const capa = createSavingsLayer({ provider: new ProveedorFijo(), costModels: PRECIOS, silenceWarnings: true, semanticCacheStore: nuevaCache() });
     await capa.generate(peticion([{ role: "user", content: PREGUNTA }], { semanticCache: true }));
     const r = await capa.generate(peticion([{ role: "user", content: REFORMULADA }], { semanticCache: true }));
     expect(r.report.cache.result).toBe("semantic");
@@ -220,7 +220,7 @@ describe("por la capa: por defecto, ni se lee ni se escribe", () => {
 describe('"include-agentic": se activa, y con la identidad completa', () => {
   for (const f of FORMAS) {
     it(`${f.nombre}: la reformulación acierta`, async () => {
-      const capa = createSavingsLayer({ provider: new ProveedorFijo(), costModels: PRECIOS, silenceWarnings: true, semanticCache: nuevaCache() });
+      const capa = createSavingsLayer({ provider: new ProveedorFijo(), costModels: PRECIOS, silenceWarnings: true, semanticCacheStore: nuevaCache() });
       const extra = f.tools ? { tools: f.tools } : {};
       await capa.generate(peticion(f.original, { semanticCache: "include-agentic" }, extra));
       const r = await capa.generate(peticion(f.reformulada, { semanticCache: "include-agentic" }, extra));
@@ -229,7 +229,7 @@ describe('"include-agentic": se activa, y con la identidad completa', () => {
   }
 
   it("mismo texto y OTRO catálogo de herramientas → miss (el filtro duro mira toolsetHash)", async () => {
-    const capa = createSavingsLayer({ provider: new ProveedorFijo(), costModels: PRECIOS, silenceWarnings: true, semanticCache: nuevaCache() });
+    const capa = createSavingsLayer({ provider: new ProveedorFijo(), costModels: PRECIOS, silenceWarnings: true, semanticCacheStore: nuevaCache() });
     const msgs: ChatMessage[] = [{ role: "user", content: PREGUNTA }];
     await capa.generate(peticion(msgs, { semanticCache: "include-agentic" }, { tools: [LECTURA] }));
     const otro = await capa.generate(peticion(msgs, { semanticCache: "include-agentic" }, { tools: [OTRA_LECTURA] }));
@@ -240,7 +240,7 @@ describe('"include-agentic": se activa, y con la identidad completa', () => {
   });
 
   it("temperature o seed distintos → miss (también son identidad)", async () => {
-    const capa = createSavingsLayer({ provider: new ProveedorFijo(), costModels: PRECIOS, silenceWarnings: true, semanticCache: nuevaCache() });
+    const capa = createSavingsLayer({ provider: new ProveedorFijo(), costModels: PRECIOS, silenceWarnings: true, semanticCacheStore: nuevaCache() });
     const msgs: ChatMessage[] = [{ role: "user", content: PREGUNTA }];
     await capa.generate(peticion(msgs, { semanticCache: true }, { temperature: 0, seed: 1 }));
     const otraTemp = await capa.generate(peticion(msgs, { semanticCache: true }, { temperature: 0.2, seed: 1 }));
@@ -258,7 +258,7 @@ describe('"include-agentic": se activa, y con la identidad completa', () => {
   // llamada evitada fuera de la base de la comisión (measured / reference).
   for (const f of FORMAS) {
     it(`${f.nombre}: el acierto admitido queda en estimated y sin referencia (fuera de la comisión)`, async () => {
-      const capa = createSavingsLayer({ provider: new ProveedorFijo(), costModels: PRECIOS, silenceWarnings: true, semanticCache: nuevaCache() });
+      const capa = createSavingsLayer({ provider: new ProveedorFijo(), costModels: PRECIOS, silenceWarnings: true, semanticCacheStore: nuevaCache() });
       const extra = f.tools ? { tools: f.tools } : {};
       await capa.generate(peticion(f.original, { semanticCache: "include-agentic" }, extra));
       const r = await capa.generate(peticion(f.reformulada, { semanticCache: "include-agentic" }, extra));
@@ -270,7 +270,7 @@ describe('"include-agentic": se activa, y con la identidad completa', () => {
 
   it('herramienta de escritura con "include-agentic": sigue apagada', async () => {
     const cache = nuevaCache();
-    const capa = createSavingsLayer({ provider: new ProveedorFijo(), costModels: PRECIOS, silenceWarnings: true, semanticCache: cache });
+    const capa = createSavingsLayer({ provider: new ProveedorFijo(), costModels: PRECIOS, silenceWarnings: true, semanticCacheStore: cache });
     await capa.generate(peticion([{ role: "user", content: PREGUNTA }], { semanticCache: "include-agentic" }, { tools: [ESCRITURA] }));
     const r = await capa.generate(peticion([{ role: "user", content: REFORMULADA }], { semanticCache: "include-agentic" }, { tools: [ESCRITURA] }));
     expect(r.report.cache.result).toBe("miss");
@@ -292,7 +292,7 @@ describe("no es silencioso: un aviso por proceso", () => {
     aviso.mock.calls.filter((c: unknown[]) => String(c[0]).includes('"include-agentic"'));
 
   it("se emite UNA vez aunque haya muchas peticiones agénticas", async () => {
-    const capa = createSavingsLayer({ provider: new ProveedorFijo(), costModels: PRECIOS, semanticCache: nuevaCache() });
+    const capa = createSavingsLayer({ provider: new ProveedorFijo(), costModels: PRECIOS, semanticCacheStore: nuevaCache() });
     await capa.generate(agentica(true));
     await capa.generate(agentica(true));
     await capa.generate(agentica("safe-only"));
@@ -301,7 +301,7 @@ describe("no es silencioso: un aviso por proceso", () => {
   });
 
   it("nada con silenceWarnings", async () => {
-    const capa = createSavingsLayer({ provider: new ProveedorFijo(), costModels: PRECIOS, silenceWarnings: true, semanticCache: nuevaCache() });
+    const capa = createSavingsLayer({ provider: new ProveedorFijo(), costModels: PRECIOS, silenceWarnings: true, semanticCacheStore: nuevaCache() });
     await capa.generate(agentica(true));
     expect(aviso).not.toHaveBeenCalled();
   });
@@ -322,7 +322,7 @@ describe("no es silencioso: un aviso por proceso", () => {
   ];
   for (const v of OTROS_VETOS) {
     it(`nada si otro veto la cierra igual: ${v.nombre}`, async () => {
-      const capa = createSavingsLayer({ provider: new ProveedorFijo(), costModels: PRECIOS, semanticCache: nuevaCache() });
+      const capa = createSavingsLayer({ provider: new ProveedorFijo(), costModels: PRECIOS, semanticCacheStore: nuevaCache() });
       const pedir = (s: SavingsToggles["semanticCache"], content: string) =>
         peticion([{ role: "user", content }], { semanticCache: s }, { tools: [LECTURA], ...v.extra });
       const r = await capa.generate(pedir(true, PREGUNTA));
@@ -336,7 +336,7 @@ describe("no es silencioso: un aviso por proceso", () => {
   }
 
   it('nada con "include-agentic": lo pidió explícitamente', async () => {
-    const capa = createSavingsLayer({ provider: new ProveedorFijo(), costModels: PRECIOS, semanticCache: nuevaCache() });
+    const capa = createSavingsLayer({ provider: new ProveedorFijo(), costModels: PRECIOS, semanticCacheStore: nuevaCache() });
     await capa.generate(agentica("include-agentic"));
     expect(delAviso()).toHaveLength(0);
   });

@@ -178,7 +178,7 @@ export async function etiquetasDelStream(
         return { text: siguiente, usage: { inputTokens: 10, outputTokens: 10 }, finishReason: "stop" };
       },
     },
-    semanticCache,
+    semanticCacheStore: semanticCache,
     devUnlicensed: true,
     silenceWarnings: true,
   });

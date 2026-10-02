@@ -237,7 +237,7 @@ describe("B · `SavingsResult.finishReasonDetail`", () => {
       expect(r.finishReasonDetail).toBe("cyber");
       // `cyber` antes de cualquier salida es de las que Anthropic no cobra: sigue a 0.
       expect(r.report.cost.actual).toBe(0);
-      expect(r.report.cost.netSavings).toBe(0);
+      expect(r.report.cost.netSavingsRatio).toBe(0);
     });
   }
 

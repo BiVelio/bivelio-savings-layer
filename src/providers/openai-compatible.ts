@@ -10,7 +10,7 @@ import {
 } from "./atestado-del-cable.js";
 import { endpointLimpio, registrarLotes, rutaRelativa } from "./lotes-del-proveedor.js";
 import { apiOficialDe, origenDeLaUrl } from "./origen-oficial.js";
-import { normalizarParada } from "./parada-de-filtro.js";
+import { cerrarParada } from "./motivo-de-parada.js";
 import { salidaOculta } from "./salida-oculta.js";
 import { sseMessages } from "./sse.js";
 import type {
@@ -282,10 +282,8 @@ const HOSTS_QUE_QUIEREN_EL_ID_DESNUDO = /(^|\.)api\.openai\.com$|\.openai\.azure
  * Decides the id that travels on the wire. Explicit option wins; otherwise the
  * endpoint decides: OpenAI/Azure and Google's own Gemini API get the bare id,
  * everything else keeps what the caller wrote. Exported for the pipeline-level test that pins the README
- * snippet; not part of the public API.
- *
- * @deprecated Not part of the public API; leaves it in 0.5. Use the adapter option
- * `stripProviderPrefix`.
+ * snippet; not part of the public API (the public switch is the adapter option
+ * `stripProviderPrefix`).
  */
 export function quitarPrefijoDeProveedor(
   model: string,
@@ -678,8 +676,9 @@ export class OpenAICompatibleProvider implements Provider {
     if (finishReason === undefined) {
       throw new Error("provider stream ended before completion (no finish_reason)");
     }
-    // `content_filter: OTHER` (Gemini) → `content_filter`, el motivo aparte.
-    const paradaDelStream = normalizarParada(finishReason);
+    // `content_filter: OTHER` (Gemini) → `content_filter`, el motivo aparte; lo
+    // que no es uno de los cinco, `other` con su literal (motivo-de-parada.ts).
+    const paradaDelStream = cerrarParada(finishReason);
 
     const inputAbsent = typeof uso?.prompt_tokens !== "number";
     const outputAbsent = typeof uso?.completion_tokens !== "number";
@@ -727,8 +726,7 @@ export class OpenAICompatibleProvider implements Provider {
         {
           text,
           ...(toolCalls.length > 0 ? { toolCalls } : {}),
-          finishReason: paradaDelStream.parada ?? finishReason,
-          ...(paradaDelStream.detalle !== undefined ? { finishReasonDetail: paradaDelStream.detalle } : {}),
+          ...paradaDelStream,
           ...(negativa !== "" ? { refusal: negativa } : {}),
           ...(servedServiceTier ? { servedServiceTier } : {}),
           usage,
@@ -1159,7 +1157,7 @@ export class OpenAICompatibleProvider implements Provider {
 
     // `content_filter: OTHER` (Gemini) → `content_filter`, el motivo aparte:
     // ver parada-de-filtro.ts.
-    const { parada: finishReason, detalle: detalleDeParada } = normalizarParada(json.choices?.[0]?.finish_reason);
+    const parada = cerrarParada(json.choices?.[0]?.finish_reason);
 
     // EL TIER QUE SE SIRVIÓ, NO EL QUE SE PIDIÓ. OpenAI lo dice sin rodeos: «the
     // response body will include the `service_tier` value based on the processing
@@ -1192,8 +1190,7 @@ export class OpenAICompatibleProvider implements Provider {
       {
         text,
         ...(toolCalls.length > 0 ? { toolCalls } : {}),
-        ...(finishReason ? { finishReason } : {}),
-        ...(detalleDeParada !== undefined ? { finishReasonDetail: detalleDeParada } : {}),
+        ...parada,
         ...(negativa !== undefined ? { refusal: negativa } : {}),
         ...(servedServiceTier ? { servedServiceTier } : {}),
         // Solo si el tier VIAJÓ: un endpoint que rechazó `service_tier` no lo recibió.

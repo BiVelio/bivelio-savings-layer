@@ -54,5 +54,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.7,
       alternates: { languages: benchLanguages },
     })),
+    // La guía de migración 0.4 → 0.5: en inglés en todos los idiomas, así que
+    // se indexa una sola vez, la de /en (su `canonical`).
+    {
+      url: absolute("/en/migrate-to-0.5"),
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    },
   ];
 }

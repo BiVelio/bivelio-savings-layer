@@ -92,7 +92,7 @@ export function subconjuntoBivelio(
     s.bivelio_baseline_cost = cost.baselineEstimate;
     s.bivelio_actual_cost = cost.actual;
     s[`bivelio_saved_${cost.basis}`] = ahorroDe(report);
-    s.bivelio_net_savings_ratio = cost.netSavings;
+    s.bivelio_net_savings_ratio = cost.netSavingsRatio;
   }
   s.bivelio_avoided_calls = calls.avoidedLlm;
   s.bivelio_eliminated_input_tokens = tokens.eliminatedInput;
@@ -156,7 +156,7 @@ export function savingsSpanAttributes(
     // diferencia. Las dos salen, cada una con su nombre, para que nadie sume
     // proporciones creyendo que suma dólares.
     poner(a, `${P}cost.saved.${cost.basis}`, ahorroDe(report));
-    poner(a, `${P}cost.net_savings_ratio`, cost.netSavings);
+    poner(a, `${P}cost.net_savings_ratio`, cost.netSavingsRatio);
     poner(a, `${P}cost.eliminated_input_floor`, cost.eliminatedInputFloorCost);
   }
 

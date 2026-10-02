@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { canonicalize, buildExactKey, buildInflightKey } from "../src/index.js";
-import type { SavingsRequest } from "../src/index.js";
+import { canonicalize, buildExactKey, buildInflightKey } from "../src/canonicalization/index.js";
+import type {
+  SavingsRequest,
+} from "../src/index.js";
 
 function req(overrides: Partial<SavingsRequest> = {}): SavingsRequest {
   return {

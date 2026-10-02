@@ -1,5 +1,4 @@
 import { AsyncLocalStorage } from "node:async_hooks";
-import { stableStringify } from "@bivelio/savings-layer";
 import type {
   ChatMessage,
   Provider,
@@ -166,4 +165,23 @@ export function crearPuente(marco: string, als: AsyncLocalStorage<LlamadaDelMarc
 
 export function crearAlmacen(): AsyncLocalStorage<LlamadaDelMarco> {
   return new AsyncLocalStorage<LlamadaDelMarco>();
+}
+
+// JSON con las claves ordenadas, para comparar dos valores sin que importe el
+// orden. Era `stableStringify` de la raíz del paquete, que la 0.5 deja de
+// exportar (pieza interna del pipeline): diez líneas puras, copiadas aquí.
+function stableStringify(valor: unknown): string {
+  return JSON.stringify(ordenar(valor));
+}
+
+function ordenar(valor: unknown): unknown {
+  if (Array.isArray(valor)) return valor.map(ordenar);
+  if (valor && typeof valor === "object") {
+    const out: Record<string, unknown> = {};
+    for (const k of Object.keys(valor as Record<string, unknown>).sort()) {
+      out[k] = ordenar((valor as Record<string, unknown>)[k]);
+    }
+    return out;
+  }
+  return valor;
 }

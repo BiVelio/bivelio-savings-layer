@@ -229,7 +229,7 @@ describe("con la cabecera: el informe del panel, de vuelta al cliente", () => {
     expect(reg!["basis"]).toBe(rep.cost.basis);
     expect(reg!["actualCost"]).toBe(rep.cost.actual);
     expect(reg!["baselineCost"]).toBe(rep.cost.baselineEstimate);
-    expect(reg!["netSavings"]).toBe(rep.cost.netSavings);
+    expect(reg!["netSavings"]).toBe(rep.cost.netSavingsRatio);
     expect(reg!["actualInputTokens"]).toBe(rep.tokens.actualInput);
     expect(reg!["actualOutputTokens"]).toBe(rep.tokens.actualOutput);
     expect(reg!["providerCachedInputTokens"]).toBe(rep.tokens.providerCachedInput ?? 0);

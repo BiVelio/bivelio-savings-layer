@@ -104,7 +104,7 @@ describe("privacy backstop — parseUsageRecord", () => {
       calls: { avoidedLlm: 1, actualLlm: 0 },
       tokens: { baselineInput: 10, actualInput: 0, eliminatedInput: 10, compressedInput: 0, baselineOutput: 5, actualOutput: 0 },
       cache: { result: "exact" },
-      cost: { baselineEstimate: 0.01, actual: 0, netSavings: 1 },
+      cost: { baselineEstimate: 0.01, actual: 0, netSavingsRatio: 1 },
     };
     const emitted = usageRecordFromReport(report, { orgId: "o", seatId: "svc-1", at: Date.now() });
     // Simulate the wire: strip the server-derived orgId, re-validate as the server would.

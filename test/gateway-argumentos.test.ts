@@ -19,13 +19,13 @@ describe("bvsala · la decisión de arranque", () => {
 
   it("un comando desconocido → ayuda con exit 1", () => {
     expect(decidirArranque(["gatewya"])).toEqual({ tipo: "ayuda", salida: 1 });
-    expect(decidirArranque(["--puerto", "8402"])).toEqual({ tipo: "ayuda", salida: 1 });
+    expect(decidirArranque(["--port", "8402"])).toEqual({ tipo: "ayuda", salida: 1 });
   });
 
   it("⛔ `gateway --help` y `doctor -h` → ayuda, NO arrancar (antes arrancaban el proxy / corrían el doctor)", () => {
     expect(decidirArranque(["gateway", "--help"])).toEqual({ tipo: "ayuda", salida: 0 });
     expect(decidirArranque(["gateway", "-h"])).toEqual({ tipo: "ayuda", salida: 0 });
-    expect(decidirArranque(["gateway", "--puerto", "8402", "--help"])).toEqual({ tipo: "ayuda", salida: 0 });
+    expect(decidirArranque(["gateway", "--port", "8402", "--help"])).toEqual({ tipo: "ayuda", salida: 0 });
     expect(decidirArranque(["doctor", "-h"])).toEqual({ tipo: "ayuda", salida: 0 });
     expect(decidirArranque(["doctor", "--help"])).toEqual({ tipo: "ayuda", salida: 0 });
     expect(decidirArranque(["skill", "--help"])).toEqual({ tipo: "ayuda", salida: 0 });
@@ -39,11 +39,11 @@ describe("bvsala · la decisión de arranque", () => {
     expect(decidirArranque(["gateway", "--version"])).toEqual({ tipo: "version" });
   });
 
-  it("`gateway --puerto 0`, `doctor` y `skill --codex` → arrancar, con el resto intacto", () => {
-    expect(decidirArranque(["gateway", "--puerto", "0"])).toEqual({ tipo: "arrancar", comando: "gateway", resto: ["--puerto", "0"] });
+  it("`gateway --port 0`, `doctor` y `skill --codex` → arrancar, con el resto intacto", () => {
+    expect(decidirArranque(["gateway", "--port", "0"])).toEqual({ tipo: "arrancar", comando: "gateway", resto: ["--port", "0"] });
     expect(decidirArranque(["gateway"])).toEqual({ tipo: "arrancar", comando: "gateway", resto: [] });
     expect(decidirArranque(["doctor"])).toEqual({ tipo: "arrancar", comando: "doctor", resto: [] });
-    expect(decidirArranque(["skill", "--codex", "--proyecto"])).toEqual({ tipo: "arrancar", comando: "skill", resto: ["--codex", "--proyecto"] });
+    expect(decidirArranque(["skill", "--codex", "--project"])).toEqual({ tipo: "arrancar", comando: "skill", resto: ["--codex", "--project"] });
   });
 
   it("los envoltorios NO interceptan -h/--help/--version: esos argumentos son del terminal hijo", () => {
@@ -79,7 +79,7 @@ describe("bvsala · el fallo de arranque traducido al probador", () => {
   const conCodigo = (code: string, puerto: number): Error & { code: string; puerto: number } =>
     Object.assign(new Error(`listen ${code}: address already in use 127.0.0.1:${puerto}`), { code, puerto });
 
-  it("EADDRINUSE → una sola línea con el puerto, la causa probable y la salida (--puerto M o apagar el otro)", () => {
+  it("EADDRINUSE → una sola línea con el puerto, la causa probable y la salida (--port M o apagar el otro)", () => {
     const linea = mensajeDeFalloDeArranque(conCodigo("EADDRINUSE", 8402), "gateway", 8402);
     expect(linea).toBe(
       "port 8402 is already in use (another gateway, or a terminal launched earlier?): use --port 8403 or stop the other process",

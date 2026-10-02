@@ -1,6 +1,6 @@
 {
-  "$comentario": "Inventario de la API pública de @bivelio/savings-layer (0.4.33) con el veredicto propuesto para la 0.5: estable | renombrar | quitar | cambiar-default. Lo vigila test/api-publica-congelada.test.ts: un export o un miembro nuevo que no figure aquí rompe el test. `exports`: nombres de cada entrada del paquete (tipo = solo tipo, valor = existe en tiempo de ejecución). `miembros`: campos de las interfaces que el cliente escribe o lee (un nivel de anidación). `pendientes`: lo que traen PR abiertos; puede faltar en dist hasta que se fusionen (vacío cuando no hay ninguno). Desde la 0.4.34, todo export o campo «quitar»/«renombrar» lleva @deprecated en el .d.ts publicado (lo exige el mismo test). Guía: docs/MIGRAR-A-0.5.md; estado: docs/CAMINO-A-0.5.md.",
-  "version": "0.4.33",
+  "$comentario": "Inventario CONGELADO de la API pública de @bivelio/savings-layer 0.5.0: todo lo que figura en `exports` y `miembros` es estable y solo cambia en una versión mayor. Lo vigila test/api-publica-congelada.test.ts contra el .d.ts construido: un export o un miembro que no figure aquí, uno de aquí que desaparezca, un cambio tipo ↔ valor o un veredicto distinto de «estable» rompen el test. `exports`: nombres de cada entrada del paquete (tipo = solo tipo, valor = existe en tiempo de ejecución). `miembros`: campos de las interfaces que el cliente escribe o lee (un nivel de anidación). `retirados`: lo que la 0.5 quitó o renombró respecto a la 0.4.34 (veredictos de este inventario en la 0.4.x); no puede volver a aparecer en dist y la guía docs/MIGRAR-A-0.5.md tiene que nombrarlo. `pendientes`: vacío en la 0.5 (el test lo exige). Estado: docs/CAMINO-A-0.5.md.",
+  "version": "0.5.0",
   "exports": {
     ".": {
       "AnswerJudge": { "tipo": "tipo", "veredicto": "estable" },
@@ -18,12 +18,6 @@
       "BatchSubmitOptions": { "tipo": "tipo", "veredicto": "estable" },
       "BatchSummary": { "tipo": "tipo", "veredicto": "estable" },
       "BivelioHandoff": { "tipo": "tipo", "veredicto": "estable" },
-      "CATALOGO": {
-        "tipo": "valor",
-        "veredicto": "renombrar",
-        "a": "PRICE_CATALOG",
-        "porque": "Nombre en español en la cara del producto (se exporta a propósito para que el cliente inspeccione el catálogo). Alias inglés + @deprecated en la 0.4.x; el nombre español sale en la 0.5."
-      },
       "COMPACTION_TRANSFORMS": { "tipo": "valor", "veredicto": "estable" },
       "COMPACT_ROWS_INSTRUCTION": { "tipo": "valor", "veredicto": "estable" },
       "CacheBreakpointStore": { "tipo": "tipo", "veredicto": "estable" },
@@ -34,19 +28,9 @@
       "CachedAnswer": { "tipo": "tipo", "veredicto": "estable" },
       "CalibrationObservation": { "tipo": "tipo", "veredicto": "estable" },
       "CalibrationStateError": { "tipo": "valor", "veredicto": "estable" },
-      "CanonicalRequest": {
-        "tipo": "tipo",
-        "veredicto": "quitar",
-        "porque": "Pieza interna del pipeline sin papel en la configuración ni en los ejemplos para clientes; exportarla congela su firma sin que nadie la necesite. Sale de la raíz en la 0.5."
-      },
       "ChatMessage": { "tipo": "tipo", "veredicto": "estable" },
       "CompactRowsDecodeOptions": { "tipo": "tipo", "veredicto": "estable" },
       "CompactRowsOptions": { "tipo": "tipo", "veredicto": "estable" },
-      "CompactVerification": {
-        "tipo": "tipo",
-        "veredicto": "quitar",
-        "porque": "Pieza interna del pipeline sin papel en la configuración ni en los ejemplos para clientes; exportarla congela su firma sin que nadie la necesite. Sale de la raíz en la 0.5."
-      },
       "CompactionTransform": { "tipo": "tipo", "veredicto": "estable" },
       "CompressionEconomics": { "tipo": "tipo", "veredicto": "estable" },
       "CompressionPolicyInput": { "tipo": "tipo", "veredicto": "estable" },
@@ -61,19 +45,9 @@
       "CostModel": { "tipo": "tipo", "veredicto": "estable" },
       "CsvValue": { "tipo": "tipo", "veredicto": "estable" },
       "DEFAULT_COST_MODEL": { "tipo": "valor", "veredicto": "estable" },
-      "DEFAULT_MAX_STALENESS_SECONDS": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Constante del sondeo de revocaciones; el valor por defecto ya se documenta en `licenseRevocation.maxStalenessSeconds`. Sale en la 0.5."
-      },
       "DEFAULT_MIN_SAVED_CHARS": { "tipo": "valor", "veredicto": "estable" },
       "DeferredExecutionReport": { "tipo": "tipo", "veredicto": "estable" },
       "DeterministicResolver": { "tipo": "tipo", "veredicto": "estable" },
-      "EMBEDDED_PUBLIC_KEY": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Maquinaria interna de la licencia (verificación, sondeo de revocaciones, medición). En el paquete publicado la licencia solo entra por `licenseKey`/`serviceAccountKey`; exponerla no sirve a un cliente y agranda la superficie de ataque. Sale en la 0.5."
-      },
       "EmbeddingFn": { "tipo": "tipo", "veredicto": "estable" },
       "EvidenceDoc": { "tipo": "tipo", "veredicto": "estable" },
       "ExactCache": { "tipo": "tipo", "veredicto": "estable" },
@@ -85,21 +59,9 @@
       "FormatChoice": { "tipo": "tipo", "veredicto": "estable" },
       "FormatSelector": { "tipo": "valor", "veredicto": "estable" },
       "FormatSelectorOptions": { "tipo": "tipo", "veredicto": "estable" },
-      "GoogleOptions": {
-        "tipo": "tipo",
-        "veredicto": "estable",
-        "porque": "Opciones del adaptador nativo. (#410)"
-      },
-      "GoogleProvider": {
-        "tipo": "valor",
-        "veredicto": "estable",
-        "porque": "Adaptador nativo de Gemini: criterio 1 de la 0.5 (decisión del dueño «nativo antes de la 0.5»). (#410)"
-      },
-      "GoogleThinkingConfig": {
-        "tipo": "tipo",
-        "veredicto": "estable",
-        "porque": "Configuración de pensamiento de Gemini. (#410)"
-      },
+      "GoogleOptions": { "tipo": "tipo", "veredicto": "estable", "porque": "Opciones del adaptador nativo. (#410)" },
+      "GoogleProvider": { "tipo": "valor", "veredicto": "estable", "porque": "Adaptador nativo de Gemini: criterio 1 de la 0.5 (decisión del dueño «nativo antes de la 0.5»). (#410)" },
+      "GoogleThinkingConfig": { "tipo": "tipo", "veredicto": "estable", "porque": "Configuración de pensamiento de Gemini. (#410)" },
       "HandoffFact": { "tipo": "tipo", "veredicto": "estable" },
       "HeuristicEstimator": { "tipo": "valor", "veredicto": "estable" },
       "InMemoryCacheBreakpointStore": { "tipo": "valor", "veredicto": "estable" },
@@ -111,34 +73,10 @@
       "LangfuseGenerationUpdate": { "tipo": "tipo", "veredicto": "estable" },
       "LicenseError": { "tipo": "valor", "veredicto": "estable" },
       "LicenseGate": { "tipo": "tipo", "veredicto": "estable" },
-      "LicenseKeyShape": {
-        "tipo": "tipo",
-        "veredicto": "quitar",
-        "porque": "Maquinaria interna de la licencia (verificación, sondeo de revocaciones, medición). En el paquete publicado la licencia solo entra por `licenseKey`/`serviceAccountKey`; exponerla no sirve a un cliente y agranda la superficie de ataque. Sale en la 0.5."
-      },
       "LicenseKeyset": { "tipo": "tipo", "veredicto": "estable" },
-      "LicenseStatus": {
-        "tipo": "tipo",
-        "veredicto": "quitar",
-        "porque": "Maquinaria interna de la licencia (verificación, sondeo de revocaciones, medición). En el paquete publicado la licencia solo entra por `licenseKey`/`serviceAccountKey`; exponerla no sirve a un cliente y agranda la superficie de ataque. Sale en la 0.5."
-      },
-      "LicenseTokenPayload": {
-        "tipo": "tipo",
-        "veredicto": "quitar",
-        "porque": "Maquinaria interna de la licencia (verificación, sondeo de revocaciones, medición). En el paquete publicado la licencia solo entra por `licenseKey`/`serviceAccountKey`; exponerla no sirve a un cliente y agranda la superficie de ataque. Sale en la 0.5."
-      },
       "LocalClassifier": { "tipo": "tipo", "veredicto": "estable" },
-      "MODELOS_POR_CODIFICACION": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Alias en español ya @deprecated («kept for one minor version»). Sale en la 0.5: usar MODELS_BY_ENCODING."
-      },
       "MODELS_BY_ENCODING": { "tipo": "valor", "veredicto": "estable" },
-      "MeasureReport": {
-        "tipo": "tipo",
-        "veredicto": "estable",
-        "porque": "Informe de la licencia Medir (plan `measure`). (#417)"
-      },
+      "MeasureReport": { "tipo": "tipo", "veredicto": "estable", "porque": "Informe de la licencia Medir (plan `measure`). (#417)" },
       "MemoryDelta": { "tipo": "tipo", "veredicto": "estable" },
       "MessageRole": { "tipo": "tipo", "veredicto": "estable" },
       "MockProvider": { "tipo": "valor", "veredicto": "estable" },
@@ -146,20 +84,10 @@
       "ModelCascadeMode": { "tipo": "tipo", "veredicto": "estable" },
       "ModelCascadeReport": { "tipo": "tipo", "veredicto": "estable" },
       "ModelCascadeSettings": { "tipo": "tipo", "veredicto": "estable" },
-      "NativeSavingsReport": {
-        "tipo": "tipo",
-        "veredicto": "estable",
-        "porque": "El ahorro nativo de la caché del proveedor, aparte y sin comisión (criterio 4). (#412)"
-      },
+      "NativeSavingsReport": { "tipo": "tipo", "veredicto": "estable", "porque": "El ahorro nativo de la caché del proveedor, aparte y sin comisión (criterio 4). (#412)" },
       "OpenAICompatibleOptions": { "tipo": "tipo", "veredicto": "estable" },
       "OpenAICompatibleProvider": { "tipo": "valor", "veredicto": "estable" },
       "OutputContract": { "tipo": "tipo", "veredicto": "estable" },
-      "PRECIOS_AL_DIA": {
-        "tipo": "valor",
-        "veredicto": "renombrar",
-        "a": "PRICES_AS_OF",
-        "porque": "Ídem CATALOGO."
-      },
       "PRICES_AS_OF": { "tipo": "valor", "veredicto": "estable" },
       "PRICE_CATALOG": { "tipo": "valor", "veredicto": "estable" },
       "Policy": { "tipo": "tipo", "veredicto": "estable" },
@@ -182,77 +110,17 @@
       "QualitySchemaCheck": { "tipo": "tipo", "veredicto": "estable" },
       "QualityStatus": { "tipo": "tipo", "veredicto": "estable" },
       "QualityTruncationCheck": { "tipo": "tipo", "veredicto": "estable" },
-      "REFERENCE_MAX_AGE_MS": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Constante de la regla interna de la comisión por referencia; si un cliente la lee, la regla queda congelada como API. Sale en la 0.5 (la regla se documenta en prosa)."
-      },
-      "REFERENCE_MESSAGE_ALLOWANCE": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Igual que REFERENCE_MAX_AGE_MS."
-      },
-      "REFERENCE_OUTPUT_SHARE": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Igual que REFERENCE_MAX_AGE_MS."
-      },
       "ReasoningEffort": { "tipo": "tipo", "veredicto": "estable" },
       "ReferenceCredit": { "tipo": "tipo", "veredicto": "estable" },
       "ReferenceRejection": { "tipo": "tipo", "veredicto": "estable" },
       "RequestContext": { "tipo": "tipo", "veredicto": "estable" },
       "Reranker": { "tipo": "tipo", "veredicto": "estable" },
-      "ResolvedDeps": {
-        "tipo": "tipo",
-        "veredicto": "quitar",
-        "porque": "Pieza interna del pipeline sin papel en la configuración ni en los ejemplos para clientes; exportarla congela su firma sin que nadie la necesite. Sale de la raíz en la 0.5."
-      },
-      "ResolvedGate": {
-        "tipo": "tipo",
-        "veredicto": "quitar",
-        "porque": "Maquinaria interna de la licencia (verificación, sondeo de revocaciones, medición). En el paquete publicado la licencia solo entra por `licenseKey`/`serviceAccountKey`; exponerla no sirve a un cliente y agranda la superficie de ataque. Sale en la 0.5."
-      },
-      "ResolvedLicense": {
-        "tipo": "tipo",
-        "veredicto": "quitar",
-        "porque": "Maquinaria interna de la licencia (verificación, sondeo de revocaciones, medición). En el paquete publicado la licencia solo entra por `licenseKey`/`serviceAccountKey`; exponerla no sirve a un cliente y agranda la superficie de ataque. Sale en la 0.5."
-      },
       "ResolverRegistry": { "tipo": "valor", "veredicto": "estable" },
       "ResolverResult": { "tipo": "tipo", "veredicto": "estable" },
       "RetrievalOptions": { "tipo": "tipo", "veredicto": "estable" },
       "RetrievalOutcome": { "tipo": "tipo", "veredicto": "estable" },
       "RetrievalPlan": { "tipo": "tipo", "veredicto": "estable" },
       "Retriever": { "tipo": "tipo", "veredicto": "estable" },
-      "RevocationListBody": {
-        "tipo": "tipo",
-        "veredicto": "quitar",
-        "porque": "Maquinaria interna de la licencia (verificación, sondeo de revocaciones, medición). En el paquete publicado la licencia solo entra por `licenseKey`/`serviceAccountKey`; exponerla no sirve a un cliente y agranda la superficie de ataque. Sale en la 0.5."
-      },
-      "RevocationListVerification": {
-        "tipo": "tipo",
-        "veredicto": "quitar",
-        "porque": "Maquinaria interna de la licencia (verificación, sondeo de revocaciones, medición). En el paquete publicado la licencia solo entra por `licenseKey`/`serviceAccountKey`; exponerla no sirve a un cliente y agranda la superficie de ataque. Sale en la 0.5."
-      },
-      "RevocationPollEvent": {
-        "tipo": "tipo",
-        "veredicto": "quitar",
-        "porque": "Maquinaria interna de la licencia (verificación, sondeo de revocaciones, medición). En el paquete publicado la licencia solo entra por `licenseKey`/`serviceAccountKey`; exponerla no sirve a un cliente y agranda la superficie de ataque. Sale en la 0.5."
-      },
-      "RevocationPoller": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Maquinaria interna de la licencia (verificación, sondeo de revocaciones, medición). En el paquete publicado la licencia solo entra por `licenseKey`/`serviceAccountKey`; exponerla no sirve a un cliente y agranda la superficie de ataque. Sale en la 0.5."
-      },
-      "RevocationPollerOptions": {
-        "tipo": "tipo",
-        "veredicto": "quitar",
-        "porque": "Maquinaria interna de la licencia (verificación, sondeo de revocaciones, medición). En el paquete publicado la licencia solo entra por `licenseKey`/`serviceAccountKey`; exponerla no sirve a un cliente y agranda la superficie de ataque. Sale en la 0.5."
-      },
-      "RevocationSnapshot": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Maquinaria interna de la licencia (verificación, sondeo de revocaciones, medición). En el paquete publicado la licencia solo entra por `licenseKey`/`serviceAccountKey`; exponerla no sirve a un cliente y agranda la superficie de ataque. Sale en la 0.5."
-      },
       "RouteDecision": { "tipo": "tipo", "veredicto": "estable" },
       "SavingsAdapterLevers": { "tipo": "tipo", "veredicto": "estable" },
       "SavingsAdapterOptions": { "tipo": "tipo", "veredicto": "estable" },
@@ -261,11 +129,6 @@
       "SavingsCallOptions": { "tipo": "tipo", "veredicto": "estable" },
       "SavingsLayer": { "tipo": "tipo", "veredicto": "estable" },
       "SavingsLayerConfig": { "tipo": "tipo", "veredicto": "estable" },
-      "SavingsLedger": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Pieza interna del pipeline sin papel en la configuración ni en los ejemplos para clientes; exportarla congela su firma sin que nadie la necesite. Sale de la raíz en la 0.5."
-      },
       "SavingsRecord": { "tipo": "tipo", "veredicto": "estable" },
       "SavingsReport": { "tipo": "tipo", "veredicto": "estable" },
       "SavingsReportForExport": { "tipo": "tipo", "veredicto": "estable" },
@@ -313,30 +176,9 @@
       "ToolSelector": { "tipo": "valor", "veredicto": "estable" },
       "ToolSelectorOptions": { "tipo": "tipo", "veredicto": "estable" },
       "ToolSetFreezer": { "tipo": "tipo", "veredicto": "estable" },
-      "TraceCollector": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Pieza interna del pipeline sin papel en la configuración ni en los ejemplos para clientes; exportarla congela su firma sin que nadie la necesite. Sale de la raíz en la 0.5."
-      },
       "TraceEvent": { "tipo": "tipo", "veredicto": "estable" },
       "TracerLike": { "tipo": "tipo", "veredicto": "estable" },
       "TracerProviderLike": { "tipo": "tipo", "veredicto": "estable" },
-      "UMBRAL_LOCAL": {
-        "tipo": "valor",
-        "veredicto": "renombrar",
-        "a": "LOCAL_EMBEDDING_THRESHOLD",
-        "porque": "Nombre en español del umbral calibrado para `localEmbedding`."
-      },
-      "UsageEmitter": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Maquinaria interna de la licencia (verificación, sondeo de revocaciones, medición). En el paquete publicado la licencia solo entra por `licenseKey`/`serviceAccountKey`; exponerla no sirve a un cliente y agranda la superficie de ataque. Sale en la 0.5."
-      },
-      "UsageEmitterOptions": {
-        "tipo": "tipo",
-        "veredicto": "quitar",
-        "porque": "Maquinaria interna de la licencia (verificación, sondeo de revocaciones, medición). En el paquete publicado la licencia solo entra por `licenseKey`/`serviceAccountKey`; exponerla no sirve a un cliente y agranda la superficie de ataque. Sale en la 0.5."
-      },
       "ValidationError": { "tipo": "tipo", "veredicto": "estable" },
       "ValidationResult": { "tipo": "tipo", "veredicto": "estable" },
       "VerificationCheck": { "tipo": "tipo", "veredicto": "estable" },
@@ -346,45 +188,10 @@
       "VerificationSettings": { "tipo": "tipo", "veredicto": "estable" },
       "VerificationSide": { "tipo": "tipo", "veredicto": "estable" },
       "VerificationStratum": { "tipo": "tipo", "veredicto": "estable" },
-      "adaptiveK": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Pieza interna del pipeline sin papel en la configuración ni en los ejemplos para clientes; exportarla congela su firma sin que nadie la necesite. Sale de la raíz en la 0.5."
-      },
       "arithmeticResolver": { "tipo": "valor", "veredicto": "estable" },
-      "buildExactKey": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Pieza interna del pipeline sin papel en la configuración ni en los ejemplos para clientes; exportarla congela su firma sin que nadie la necesite. Sale de la raíz en la 0.5."
-      },
-      "buildInflightKey": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Pieza interna del pipeline sin papel en la configuración ni en los ejemplos para clientes; exportarla congela su firma sin que nadie la necesite. Sale de la raíz en la 0.5."
-      },
       "calibrateSemanticFloor": { "tipo": "valor", "veredicto": "estable" },
-      "canonicalize": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Pieza interna del pipeline sin papel en la configuración ni en los ejemplos para clientes; exportarla congela su firma sin que nadie la necesite. Sale de la raíz en la 0.5."
-      },
       "compactRowsSerializer": { "tipo": "valor", "veredicto": "estable" },
       "compactToolOutput": { "tipo": "valor", "veredicto": "estable" },
-      "compresionFiel": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Nombre en español y comprobación interna de la compresión. Marcado @deprecated en la 0.4.x; sale en la 0.5."
-      },
-      "computeNextDelay": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Maquinaria interna de la licencia (verificación, sondeo de revocaciones, medición). En el paquete publicado la licencia solo entra por `licenseKey`/`serviceAccountKey`; exponerla no sirve a un cliente y agranda la superficie de ataque. Sale en la 0.5."
-      },
-      "cosine": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Pieza interna del pipeline sin papel en la configuración ni en los ejemplos para clientes; exportarla congela su firma sin que nadie la necesite. Sale de la raíz en la 0.5."
-      },
       "createCompactRowsSerializer": { "tipo": "valor", "veredicto": "estable" },
       "createDefaultResolvers": { "tipo": "valor", "veredicto": "estable" },
       "createHandoff": { "tipo": "valor", "veredicto": "estable" },
@@ -392,223 +199,26 @@
       "createSavingsLayer": { "tipo": "valor", "veredicto": "estable" },
       "csvSerializer": { "tipo": "valor", "veredicto": "estable" },
       "decodeCompactRows": { "tipo": "valor", "veredicto": "estable" },
-      "dedupe": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Pieza interna del pipeline sin papel en la configuración ni en los ejemplos para clientes; exportarla congela su firma sin que nadie la necesite. Sale de la raíz en la 0.5."
-      },
       "defaultTokenizerRegistry": { "tipo": "valor", "veredicto": "estable" },
-      "deriveSeatId": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Maquinaria interna de la licencia (verificación, sondeo de revocaciones, medición). En el paquete publicado la licencia solo entra por `licenseKey`/`serviceAccountKey`; exponerla no sirve a un cliente y agranda la superficie de ataque. Sale en la 0.5."
-      },
-      "deriveStatus": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Maquinaria interna de la licencia (verificación, sondeo de revocaciones, medición). En el paquete publicado la licencia solo entra por `licenseKey`/`serviceAccountKey`; exponerla no sirve a un cliente y agranda la superficie de ataque. Sale en la 0.5."
-      },
-      "detectCi": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Maquinaria interna de la licencia (verificación, sondeo de revocaciones, medición). En el paquete publicado la licencia solo entra por `licenseKey`/`serviceAccountKey`; exponerla no sirve a un cliente y agranda la superficie de ataque. Sale en la 0.5."
-      },
-      "embebedorLocal": {
-        "tipo": "valor",
-        "veredicto": "renombrar",
-        "a": "localEmbedding",
-        "porque": "Nombre en español de la función de embebido por defecto de InMemorySemanticCache, que un cliente sí puede querer pasar o envolver."
-      },
       "emptyState": { "tipo": "valor", "veredicto": "estable" },
       "encodeCompactRows": { "tipo": "valor", "veredicto": "estable" },
-      "evalArithmetic": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Pieza interna del pipeline sin papel en la configuración ni en los ejemplos para clientes; exportarla congela su firma sin que nadie la necesite. Sale de la raíz en la 0.5."
-      },
-      "evaluatePolicy": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Pieza interna del pipeline sin papel en la configuración ni en los ejemplos para clientes; exportarla congela su firma sin que nadie la necesite. Sale de la raíz en la 0.5."
-      },
-      "executeRetrievalPlan": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Pieza interna del pipeline sin papel en la configuración ni en los ejemplos para clientes; exportarla congela su firma sin que nadie la necesite. Sale de la raíz en la 0.5."
-      },
-      "gateFromKey": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Maquinaria interna de la licencia (verificación, sondeo de revocaciones, medición). En el paquete publicado la licencia solo entra por `licenseKey`/`serviceAccountKey`; exponerla no sirve a un cliente y agranda la superficie de ataque. Sale en la 0.5."
-      },
       "heuristicEstimator": { "tipo": "valor", "veredicto": "estable" },
       "instrumentSavingsLayer": { "tipo": "valor", "veredicto": "estable" },
-      "isKeyset": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Maquinaria interna de la licencia (verificación, sondeo de revocaciones, medición). En el paquete publicado la licencia solo entra por `licenseKey`/`serviceAccountKey`; exponerla no sirve a un cliente y agranda la superficie de ataque. Sale en la 0.5."
-      },
-      "isStrictCompatible": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Pieza interna del pipeline sin papel en la configuración ni en los ejemplos para clientes; exportarla congela su firma sin que nadie la necesite. Sale de la raíz en la 0.5."
-      },
       "jsonCompactSerializer": { "tipo": "valor", "veredicto": "estable" },
-      "keyTokensMatch": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Pieza interna del pipeline sin papel en la configuración ni en los ejemplos para clientes; exportarla congela su firma sin que nadie la necesite. Sale de la raíz en la 0.5."
-      },
-      "licenseKeyShape": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Maquinaria interna de la licencia (verificación, sondeo de revocaciones, medición). En el paquete publicado la licencia solo entra por `licenseKey`/`serviceAccountKey`; exponerla no sirve a un cliente y agranda la superficie de ataque. Sale en la 0.5."
-      },
       "listPrice": { "tipo": "valor", "veredicto": "estable" },
-      "liveGateFromKey": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Maquinaria interna de la licencia (verificación, sondeo de revocaciones, medición). En el paquete publicado la licencia solo entra por `licenseKey`/`serviceAccountKey`; exponerla no sirve a un cliente y agranda la superficie de ataque. Sale en la 0.5."
-      },
       "localEmbedding": { "tipo": "valor", "veredicto": "estable" },
       "mergeDelta": { "tipo": "valor", "veredicto": "estable" },
-      "modelFamilyOf": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Pieza interna del pipeline sin papel en la configuración ni en los ejemplos para clientes; exportarla congela su firma sin que nadie la necesite. Sale de la raíz en la 0.5."
-      },
-      "multisetEqual": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Pieza interna del pipeline sin papel en la configuración ni en los ejemplos para clientes; exportarla congela su firma sin que nadie la necesite. Sale de la raíz en la 0.5."
-      },
-      "negationCount": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Pieza interna del pipeline sin papel en la configuración ni en los ejemplos para clientes; exportarla congela su firma sin que nadie la necesite. Sale de la raíz en la 0.5."
-      },
       "noopCompressor": { "tipo": "valor", "veredicto": "estable" },
-      "normalizeLicenseKey": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Maquinaria interna de la licencia (verificación, sondeo de revocaciones, medición). En el paquete publicado la licencia solo entra por `licenseKey`/`serviceAccountKey`; exponerla no sirve a un cliente y agranda la superficie de ataque. Sale en la 0.5."
-      },
-      "normalizeText": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Pieza interna del pipeline sin papel en la configuración ni en los ejemplos para clientes; exportarla congela su firma sin que nadie la necesite. Sale de la raíz en la 0.5."
-      },
-      "numericTokens": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Pieza interna del pipeline sin papel en la configuración ni en los ejemplos para clientes; exportarla congela su firma sin que nadie la necesite. Sale de la raíz en la 0.5."
-      },
-      "precioDeLista": {
-        "tipo": "valor",
-        "veredicto": "renombrar",
-        "a": "listPrice",
-        "porque": "Ídem CATALOGO."
-      },
-      "projectContext": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Pieza interna del pipeline sin papel en la configuración ni en los ejemplos para clientes; exportarla congela su firma sin que nadie la necesite. Sale de la raíz en la 0.5."
-      },
       "providerNativeBackend": { "tipo": "valor", "veredicto": "estable" },
-      "quitarPrefijoDeProveedor": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Nombre en español; su propio JSDoc dice «not part of the public API» (existe por un test). Marcado @deprecated en la 0.4.x; sale en la 0.5 (la opción pública es `stripProviderPrefix`)."
-      },
-      "randomId": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Pieza interna del pipeline sin papel en la configuración ni en los ejemplos para clientes; exportarla congela su firma sin que nadie la necesite. Sale de la raíz en la 0.5."
-      },
       "recordSavingsOnSpan": { "tipo": "valor", "veredicto": "estable" },
       "registerExactTokenizer": { "tipo": "valor", "veredicto": "estable" },
-      "registrarTokenizadorExacto": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Alias en español ya @deprecated. Sale en la 0.5: usar registerExactTokenizer."
-      },
       "renderState": { "tipo": "valor", "veredicto": "estable" },
-      "resolveConstraintBackend": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Pieza interna del pipeline sin papel en la configuración ni en los ejemplos para clientes; exportarla congela su firma sin que nadie la necesite. Sale de la raíz en la 0.5."
-      },
-      "resolveDependencies": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Pieza interna del pipeline sin papel en la configuración ni en los ejemplos para clientes; exportarla congela su firma sin que nadie la necesite. Sale de la raíz en la 0.5."
-      },
-      "resolveLicense": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Maquinaria interna de la licencia (verificación, sondeo de revocaciones, medición). En el paquete publicado la licencia solo entra por `licenseKey`/`serviceAccountKey`; exponerla no sirve a un cliente y agranda la superficie de ataque. Sale en la 0.5."
-      },
-      "sameAnswer": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Pieza interna del pipeline sin papel en la configuración ni en los ejemplos para clientes; exportarla congela su firma sin que nadie la necesite. Sale de la raíz en la 0.5."
-      },
       "savingsSpanAttributes": { "tipo": "valor", "veredicto": "estable" },
-      "sha256": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Pieza interna del pipeline sin papel en la configuración ni en los ejemplos para clientes; exportarla congela su firma sin que nadie la necesite. Sale de la raíz en la 0.5."
-      },
-      "shouldCompress": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Pieza interna del pipeline sin papel en la configuración ni en los ejemplos para clientes; exportarla congela su firma sin que nadie la necesite. Sale de la raíz en la 0.5."
-      },
-      "stableStringify": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Pieza interna del pipeline sin papel en la configuración ni en los ejemplos para clientes; exportarla congela su firma sin que nadie la necesite. Sale de la raíz en la 0.5."
-      },
       "toCsv": { "tipo": "valor", "veredicto": "estable" },
       "toFocusRows": { "tipo": "valor", "veredicto": "estable" },
       "toLangfuseGeneration": { "tipo": "valor", "veredicto": "estable" },
       "toSavingsSeries": { "tipo": "valor", "veredicto": "estable" },
-      "uniformColumns": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Pieza interna del pipeline sin papel en la configuración ni en los ejemplos para clientes; exportarla congela su firma sin que nadie la necesite. Sale de la raíz en la 0.5."
-      },
-      "validateAgainstSchema": { "tipo": "valor", "veredicto": "estable" },
-      "vectorLocal": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Nombre en español; detalle del embebedor local (la función pública es el embebedor). Marcado @deprecated en la 0.4.x; sale en la 0.5."
-      },
-      "verifyCompactSignature": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Pieza interna del pipeline sin papel en la configuración ni en los ejemplos para clientes; exportarla congela su firma sin que nadie la necesite. Sale de la raíz en la 0.5."
-      },
-      "verifyLicenseToken": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Maquinaria interna de la licencia (verificación, sondeo de revocaciones, medición). En el paquete publicado la licencia solo entra por `licenseKey`/`serviceAccountKey`; exponerla no sirve a un cliente y agranda la superficie de ataque. Sale en la 0.5."
-      },
-      "verifyRevocationList": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Maquinaria interna de la licencia (verificación, sondeo de revocaciones, medición). En el paquete publicado la licencia solo entra por `licenseKey`/`serviceAccountKey`; exponerla no sirve a un cliente y agranda la superficie de ataque. Sale en la 0.5."
-      },
-      "withProtectedSpans": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Pieza interna del pipeline sin papel en la configuración ni en los ejemplos para clientes; exportarla congela su firma sin que nadie la necesite. Sale de la raíz en la 0.5."
-      },
-      "words": {
-        "tipo": "valor",
-        "veredicto": "quitar",
-        "porque": "Pieza interna del pipeline sin papel en la configuración ni en los ejemplos para clientes; exportarla congela su firma sin que nadie la necesite. Sale de la raíz en la 0.5."
-      }
+      "validateAgainstSchema": { "tipo": "valor", "veredicto": "estable" }
     },
     "./ai-sdk": {
       "SavingsMiddleware": { "tipo": "tipo", "veredicto": "estable" },
@@ -645,6 +255,22 @@
     "AnthropicOptions.maxCacheBreakpoints": "estable",
     "AnthropicOptions.requireUsage": "estable",
     "AnthropicOptions.stripProviderPrefix": "estable",
+    "BatchItemResult.contract": "estable",
+    "BatchItemResult.customId": "estable",
+    "BatchItemResult.data": "estable",
+    "BatchItemResult.error": "estable",
+    "BatchItemResult.error.message": "estable",
+    "BatchItemResult.error.type": "estable",
+    "BatchItemResult.finishReason": "estable",
+    "BatchItemResult.finishReasonDetail": "estable",
+    "BatchItemResult.model": "estable",
+    "BatchItemResult.outcome": "estable",
+    "BatchItemResult.reason": "estable",
+    "BatchItemResult.servedTier": "estable",
+    "BatchItemResult.text": "estable",
+    "BatchItemResult.tierSaving": "estable",
+    "BatchItemResult.toolCalls": "estable",
+    "BatchItemResult.usage": "estable",
     "ChatMessage.content": "estable",
     "ChatMessage.isError": "estable",
     "ChatMessage.metadata": "estable",
@@ -656,10 +282,6 @@
     "DeferredExecutionReport.credited": "estable",
     "DeferredExecutionReport.creditedLedger": "estable",
     "DeferredExecutionReport.discountRate": "estable",
-    "DeferredExecutionReport.estimatedTierSaving": {
-      "veredicto": "quitar",
-      "porque": "Ya @deprecated («Use `tierSaving.amount`; same value»). Sale en la 0.5."
-    },
     "DeferredExecutionReport.latency": "estable",
     "DeferredExecutionReport.reason": "estable",
     "DeferredExecutionReport.requestedTier": "estable",
@@ -685,10 +307,7 @@
     "OutputContract.schema": "estable",
     "OutputContract.version": "estable",
     "QualityTruncationCheck.capSetByCaller": "estable",
-    "QualityTruncationCheck.finishReason": {
-      "veredicto": "cambiar-default",
-      "porque": "El mismo caso que `SavingsResult.finishReason` (es el mismo valor, copiado al libro de calidad): hoy lleva el motivo tal cual lo deja el adaptador. En la 0.5, unión cerrada (`stop` | `length` | `tool_calls` | `content_filter` | `other`) y el literal del proveedor en `QualityTruncationCheck.finishReasonDetail`, que llega en la 0.4.34 para que la migración sea simétrica."
-    },
+    "QualityTruncationCheck.finishReason": "estable",
     "QualityTruncationCheck.finishReasonDetail": "estable",
     "QualityTruncationCheck.outputLimit": "estable",
     "QualityTruncationCheck.truncated": "estable",
@@ -712,10 +331,6 @@
     "SavingsLayerConfig.constraintMemory": "estable",
     "SavingsLayerConfig.costModels": "estable",
     "SavingsLayerConfig.defaultCostModel": "estable",
-    "SavingsLayerConfig.devUnlicensed": {
-      "veredicto": "quitar",
-      "porque": "Sin efecto en el paquete publicado. @deprecated en la 0.4.x; sale del tipo público en la 0.5 (sigue BVSALA_DEV_OPEN para builds desde el código)."
-    },
     "SavingsLayerConfig.exactCache": "estable",
     "SavingsLayerConfig.exactCacheTtlMs": "estable",
     "SavingsLayerConfig.exactTokenizer": "estable",
@@ -723,16 +338,8 @@
     "SavingsLayerConfig.formatSelector": "estable",
     "SavingsLayerConfig.generateId": "estable",
     "SavingsLayerConfig.licenseFetch": "estable",
-    "SavingsLayerConfig.licenseGate": {
-      "veredicto": "quitar",
-      "porque": "Ignorado en el paquete publicado (avisa y no hace nada). Solo sirve a builds desde el código fuente. @deprecated en la 0.4.x; sale del tipo público en la 0.5."
-    },
     "SavingsLayerConfig.licenseKey": "estable",
     "SavingsLayerConfig.licensePollIntervalSeconds": "estable",
-    "SavingsLayerConfig.licensePublicKey": {
-      "veredicto": "quitar",
-      "porque": "El build publicado verifica siempre contra la clave embebida e ignora esta opción. @deprecated en la 0.4.x; sale del tipo público en la 0.5."
-    },
     "SavingsLayerConfig.licenseRefresh": "estable",
     "SavingsLayerConfig.licenseRefresh.enabled": "estable",
     "SavingsLayerConfig.licenseRefresh.intervalMs": "estable",
@@ -763,11 +370,6 @@
     "SavingsLayerConfig.retriever": "estable",
     "SavingsLayerConfig.router": "estable",
     "SavingsLayerConfig.schemaRegistry": "estable",
-    "SavingsLayerConfig.semanticCache": {
-      "veredicto": "renombrar",
-      "a": "semanticCacheStore",
-      "porque": "#380: el mismo nombre significa «almacén» en el constructor y «úsala» en la petición (`savings.semanticCache`); pasar el almacén no la enciende y la gente lo creía. En la 0.5 el almacén se llama `semanticCacheStore` y la decisión sigue en `semanticCacheDefault`/`savings.semanticCache`. Desde la 0.4.33 `semanticCacheStore` existe y `semanticCache` es un alias que avisa una vez."
-    },
     "SavingsLayerConfig.semanticCacheDefault": "estable",
     "SavingsLayerConfig.semanticCacheStore": "estable",
     "SavingsLayerConfig.serviceAccountKey": "estable",
@@ -811,11 +413,6 @@
     "SavingsReport.cost.baselineEstimate": "estable",
     "SavingsReport.cost.basis": "estable",
     "SavingsReport.cost.eliminatedInputFloorCost": "estable",
-    "SavingsReport.cost.netSavings": {
-      "veredicto": "renombrar",
-      "a": "netSavingsRatio",
-      "porque": "Es una RAZÓN (1 − actual/baseline, 6 decimales) y los arneses la sumaban como dólares. En la 0.5 se llama `netSavingsRatio` y `netSavingsUsd` (= baselineEstimate − actual). Los exportadores ya la publican como `net_savings_ratio`. Desde la 0.4.33 los dos nombres nuevos ya van en el informe, junto al viejo."
-    },
     "SavingsReport.cost.netSavingsRatio": "estable",
     "SavingsReport.cost.netSavingsUsd": "estable",
     "SavingsReport.deferred": "estable",
@@ -869,10 +466,7 @@
     "SavingsRequest.tokenizer": "estable",
     "SavingsRequest.tools": "estable",
     "SavingsResult.data": "estable",
-    "SavingsResult.finishReason": {
-      "veredicto": "cambiar-default",
-      "porque": "Los adaptadores ya traducen lo común (end_turn → stop, max_tokens → length, tool_use → tool_calls), pero lo demás pasa tal cual («content_filter: OTHER» de Gemini compatible, stop_sequence, pause_turn…). En la 0.5, unión cerrada (`stop` | `length` | `tool_calls` | `content_filter` | `other`) y el literal del proveedor en `finishReasonDetail` (#416)."
-    },
+    "SavingsResult.finishReason": "estable",
     "SavingsResult.finishReasonDetail": "estable",
     "SavingsResult.refusal": "estable",
     "SavingsResult.rendered": "estable",
@@ -920,11 +514,94 @@
     "ToolDescriptor.schemaTokens": "estable",
     "ToolSelectorOptions.freezer": "estable",
     "ToolSelectorOptions.learningTurns": "estable",
-    "ToolSelectorOptions.maxTools": {
-      "veredicto": "cambiar-default",
-      "porque": "Decidido por el dueño y YA aplicado en la 0.4.33 (#419): sin `maxTools` el selector no poda por relevancia (antes, un catálogo tipado se recortaba a 8). Solo manda MÁS herramientas, y lo no podado no se acredita; las de escritura siguen retenidas fuera de peticiones de acción. Quien quiera el recorte fija `maxTools`. Figura aquí porque es un cambio de comportamiento que la guía cuenta."
-    },
+    "ToolSelectorOptions.maxTools": "estable",
     "ToolSelectorOptions.scoreIntentMatch": "estable"
+  },
+  "retirados": {
+    "exports": {
+      "CATALOGO": { "entrada": ".", "tipo": "valor", "veredicto": "renombrar", "a": "PRICE_CATALOG" },
+      "CanonicalRequest": { "entrada": ".", "tipo": "tipo", "veredicto": "quitar" },
+      "CompactVerification": { "entrada": ".", "tipo": "tipo", "veredicto": "quitar" },
+      "DEFAULT_MAX_STALENESS_SECONDS": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "EMBEDDED_PUBLIC_KEY": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "LicenseKeyShape": { "entrada": ".", "tipo": "tipo", "veredicto": "quitar" },
+      "LicenseStatus": { "entrada": ".", "tipo": "tipo", "veredicto": "quitar" },
+      "LicenseTokenPayload": { "entrada": ".", "tipo": "tipo", "veredicto": "quitar" },
+      "MODELOS_POR_CODIFICACION": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "PRECIOS_AL_DIA": { "entrada": ".", "tipo": "valor", "veredicto": "renombrar", "a": "PRICES_AS_OF" },
+      "REFERENCE_MAX_AGE_MS": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "REFERENCE_MESSAGE_ALLOWANCE": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "REFERENCE_OUTPUT_SHARE": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "ResolvedDeps": { "entrada": ".", "tipo": "tipo", "veredicto": "quitar" },
+      "ResolvedGate": { "entrada": ".", "tipo": "tipo", "veredicto": "quitar" },
+      "ResolvedLicense": { "entrada": ".", "tipo": "tipo", "veredicto": "quitar" },
+      "RevocationListBody": { "entrada": ".", "tipo": "tipo", "veredicto": "quitar" },
+      "RevocationListVerification": { "entrada": ".", "tipo": "tipo", "veredicto": "quitar" },
+      "RevocationPollEvent": { "entrada": ".", "tipo": "tipo", "veredicto": "quitar" },
+      "RevocationPoller": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "RevocationPollerOptions": { "entrada": ".", "tipo": "tipo", "veredicto": "quitar" },
+      "RevocationSnapshot": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "SavingsLedger": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "TraceCollector": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "UMBRAL_LOCAL": { "entrada": ".", "tipo": "valor", "veredicto": "renombrar", "a": "LOCAL_EMBEDDING_THRESHOLD" },
+      "UsageEmitter": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "UsageEmitterOptions": { "entrada": ".", "tipo": "tipo", "veredicto": "quitar" },
+      "adaptiveK": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "buildExactKey": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "buildInflightKey": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "canonicalize": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "compresionFiel": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "computeNextDelay": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "cosine": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "dedupe": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "deriveSeatId": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "deriveStatus": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "detectCi": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "embebedorLocal": { "entrada": ".", "tipo": "valor", "veredicto": "renombrar", "a": "localEmbedding" },
+      "evalArithmetic": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "evaluatePolicy": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "executeRetrievalPlan": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "gateFromKey": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "isKeyset": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "isStrictCompatible": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "keyTokensMatch": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "licenseKeyShape": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "liveGateFromKey": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "modelFamilyOf": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "multisetEqual": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "negationCount": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "normalizeLicenseKey": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "normalizeText": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "numericTokens": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "precioDeLista": { "entrada": ".", "tipo": "valor", "veredicto": "renombrar", "a": "listPrice" },
+      "projectContext": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "quitarPrefijoDeProveedor": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "randomId": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "registrarTokenizadorExacto": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "resolveConstraintBackend": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "resolveDependencies": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "resolveLicense": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "sameAnswer": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "sha256": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "shouldCompress": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "stableStringify": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "uniformColumns": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "vectorLocal": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "verifyCompactSignature": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "verifyLicenseToken": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "verifyRevocationList": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "withProtectedSpans": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" },
+      "words": { "entrada": ".", "tipo": "valor", "veredicto": "quitar" }
+    },
+    "miembros": {
+      "DeferredExecutionReport.estimatedTierSaving": { "veredicto": "quitar" },
+      "SavingsLayerConfig.devUnlicensed": { "veredicto": "quitar" },
+      "SavingsLayerConfig.licenseGate": { "veredicto": "quitar" },
+      "SavingsLayerConfig.licensePublicKey": { "veredicto": "quitar" },
+      "SavingsLayerConfig.semanticCache": { "veredicto": "renombrar", "a": "semanticCacheStore" },
+      "SavingsReport.cost.netSavings": { "veredicto": "renombrar", "a": "netSavingsRatio" },
+      "RevocationPollerOptions.silenciarAvisos": { "veredicto": "quitar" }
+    }
   },
   "pendientes": {}
 }

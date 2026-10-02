@@ -14,8 +14,7 @@ import {
   decidirArranque,
   isChildInfoRequest,
   mensajeDeFalloDeArranque,
-  traducirEntorno,
-  traducirFlags,
+  retiredNameErrors,
 } from "./argumentos.js";
 import { LICENSE_SERVER_URL, resolveStartupLicense } from "./license.js";
 import {
@@ -143,8 +142,8 @@ Commands:
                          (\`bvsala gateway --help\` starts nothing; \`bvsala claude --help\` or
                          \`--version\` go straight to the terminal, with no gateway).
 
-  The Spanish spellings --puerto, --proyecto and --forzar still work until 0.5, with a
-  deprecation notice (BVSALA_SILENCE_DEPRECATIONS=1 silences it).
+  The Spanish spellings --puerto, --proyecto and --forzar were removed in 0.5: they now
+  fail with an error that names the English flag.
 Environment:
   BIVELIO_SERVICE_KEY    Service key (bvk_…): REQUIRED. Identifies your organization, collects its
                          license (renewed by itself) and enables metering and seat identity.
@@ -196,12 +195,10 @@ Environment:
                          claude-opus-5-5): it never raises effort. Any other request travels
                          untouched. It is the only lever that can affect response quality: OFF
                          by default and not yet measured against the quality gate.
-  BVSALA_SILENCE_DEPRECATIONS
-                         =1 silences the notice printed when a deprecated Spanish name is used:
-                         BVSALA_GATEWAY_MODELO_HERMANO (now BVSALA_GATEWAY_SIBLING_MODEL),
-                         BVSALA_GATEWAY_ESFUERZO (now BVSALA_GATEWAY_EFFORT), --puerto, --proyecto,
-                         --forzar. The old names keep working until 0.5; the English one wins
-                         when both are set.
+  BVSALA_GATEWAY_ESFUERZO, BVSALA_GATEWAY_MODELO_HERMANO
+                         Removed in 0.5 (renamed BVSALA_GATEWAY_EFFORT and
+                         BVSALA_GATEWAY_SIBLING_MODEL): if either is set, the gateway refuses to
+                         start and names the new variable.
   BVSALA_CODEX_AUTH      api-key | chatgpt — forces the Codex auth mode.
   BVSALA_GATEWAY_LOG     =1 shows the per-request log inside the wrappers too (silenced by
                          default so it does not overwrite the TUI; use the dashboard instead).
@@ -229,15 +226,20 @@ if (decision.tipo === "version") {
 }
 const { comando } = decision;
 const esEnvoltorio = esTerminalConEnvoltorio(comando);
-// Los nombres españoles (--puerto, BVSALA_GATEWAY_ESFUERZO…) son alias de los
-// ingleses desde 0.4.33: se traducen AQUÍ, antes de leerse, con un aviso por
-// nombre (silenciable). Lo que va detrás de un terminal envuelto es suyo.
-const flags = esEnvoltorio ? { resto: decision.resto, avisos: [] } : traducirFlags(decision.resto, process.env);
-const resto = flags.resto;
-const entorno = traducirEntorno(process.env);
-for (const aviso of [...flags.avisos, ...entorno.avisos]) console.error(aviso);
-const effortEnv = entorno.env.BVSALA_GATEWAY_EFFORT;
-const siblingModelEnv = entorno.env.BVSALA_GATEWAY_SIBLING_MODEL;
+// Los nombres españoles (--puerto, BVSALA_GATEWAY_ESFUERZO…) se retiraron en
+// la 0.5: usarlos es un error que dice el nombre nuevo, ANTES de arrancar nada
+// (gateway/argumentos.ts). Lo que va detrás de un terminal envuelto es suyo;
+// las variables solo se miran donde se leen, en lo que arranca el gateway.
+const resto = decision.resto;
+const retirados = retiredNameErrors(esEnvoltorio ? [] : resto, process.env, {
+  checkEnv: esEnvoltorio || comando === "gateway",
+});
+if (retirados.length > 0) {
+  for (const error of retirados) console.error(error);
+  process.exit(1);
+}
+const effortEnv = process.env.BVSALA_GATEWAY_EFFORT;
+const siblingModelEnv = process.env.BVSALA_GATEWAY_SIBLING_MODEL;
 
 if (comando === "init") {
   // Antes del puerto, del upstream y de la verja de licencia: init es onboarding,

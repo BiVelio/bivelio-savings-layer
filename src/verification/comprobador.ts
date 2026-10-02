@@ -4,6 +4,7 @@ import type {
   VerificationReport,
   VerificationStratum,
 } from "../contracts/verification.js";
+import { cerrarParada } from "../providers/motivo-de-parada.js";
 import type { Provider, ProviderRequest, ProviderResponse } from "../providers/types.js";
 import type { CostModel } from "../tokenizer/accounting.js";
 import type { AjustesDeVerificacion } from "./ajustes.js";
@@ -253,9 +254,13 @@ export class ComprobadorAB {
       return { ...base, outcome: "check_unmeasured" };
     }
     const cachedEfectivo = Math.min(cached, entrada);
-    const fin = resp.finishReason;
-    const finishReason =
-      typeof fin === "string" ? (/^[a-z_]{1,32}$/.test(fin) ? fin : "other") : undefined;
+    // EL MOTIVO DE LA COPIA, en el MISMO conjunto cerrado que el brazo con capa
+    // (`stop | length | tool_calls | content_filter | other`, 0.5): los
+    // adaptadores propios ya lo entregan cerrado y `cerrarParada` cierra el de un
+    // proveedor de terceros, que sigue siendo abierto. Así `clasificar.ts`
+    // excluye con la misma regla a los dos lados. El literal del proveedor
+    // (`finishReasonDetail`) no viaja en el par: el panel solo compara motivos.
+    const { finishReason } = cerrarParada(resp.finishReason, resp.finishReasonDetail);
     return {
       ...base,
       outcome: "paired",

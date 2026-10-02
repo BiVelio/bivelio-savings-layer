@@ -134,6 +134,26 @@ jobs:
           fi
           echo "etiqueta y package.json coinciden en $VERSION"
 
+      # Una versión con sufijo (`0.5.0-rc.1`) se publica en el dist-tag `next`
+      # y una sin sufijo en `latest` (paso «Publish to npm»). La Release de
+      # GitHub tiene que decir lo mismo: una prerelease marcada como Release
+      # normal saldría en GitHub como «Latest», y una versión final marcada como
+      # prerelease movería `latest` en npm sin que GitHub lo anunciara.
+      - name: La Release es prerelease si y solo si la versión lleva sufijo
+        env:
+          ES_PRERELEASE: ${{ github.event.release.prerelease }}
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          case "$VERSION" in
+            *-*) CON_SUFIJO="true" ;;
+            *) CON_SUFIJO="false" ;;
+          esac
+          if [ "$CON_SUFIJO" != "$ES_PRERELEASE" ]; then
+            echo "::error::La versión '$VERSION' (con sufijo: $CON_SUFIJO) no casa con la Release (prerelease: $ES_PRERELEASE). Una versión con sufijo se corta con --prerelease y una sin sufijo, sin él."
+            exit 1
+          fi
+          echo "versión $VERSION, prerelease: $ES_PRERELEASE"
+
       # El tarball se empaqueta UNA vez, aquí, y es ese fichero el que se
       # comprueba, se describe en el SBOM y se publica (por ruta, en el trabajo
       # siguiente). `npm publish` a secas volvería a empaquetar —y a construir,
@@ -293,17 +313,31 @@ jobs:
             console.log("tarball verificado: sha512 " + real.slice(0, 16) + "…");
           ' "paquete/bivelio-savings-layer-$VERSION.tgz" "paquete/bivelio-savings-layer-$VERSION.cdx.json"
 
+      # LA ETIQUETA DE NPM (dist-tag) sale de la VERSIÓN, no de un texto libre:
+      # una versión con sufijo (`0.5.0-rc.1`) va a `next` y NUNCA mueve
+      # `latest`, que es lo que instala un `npm i` a secas. npm 11 se niega a
+      # publicar una prerelease sin `--tag` (docs/PUBLISHING.md). Una versión
+      # sin sufijo sale SIN `--tag`, como siempre: npm la pone en `latest` y se
+      # niega a publicar una menor que la más alta, así que un arreglo de una
+      # línea vieja no puede mover `latest` hacia atrás. Que la Release de
+      # GitHub esté marcada como prerelease justo cuando la versión lleva sufijo
+      # lo comprueba `verificar`.
       - name: Publish to npm (public, trusted publishing)
         id: publicar
         env:
           REPO_PRIVADO: ${{ github.event.repository.private }}
         run: |
           TGZ="./paquete/bivelio-savings-layer-${GITHUB_REF_NAME#v}.tgz"
+          case "${GITHUB_REF_NAME#v}" in
+            *-*) ETIQUETA_NPM="next" ;;
+            *) ETIQUETA_NPM="" ;;
+          esac
+          echo "etiqueta de npm: ${ETIQUETA_NPM:-latest (la de npm por defecto)}"
           if [ "$REPO_PRIVADO" = "false" ]; then
-            npm publish "$TGZ" --provenance --access public
+            npm publish "$TGZ" --provenance --access public ${ETIQUETA_NPM:+--tag "$ETIQUETA_NPM"}
           else
             echo "::warning title=Sin provenance::El repositorio es privado y npm no genera provenance desde repositorios privados (https://docs.npmjs.com/trusted-publishers). Se publica con trusted publishing y SIN provenance."
-            npm publish "$TGZ" --access public
+            npm publish "$TGZ" --access public ${ETIQUETA_NPM:+--tag "$ETIQUETA_NPM"}
           fi
           echo "publicado=true" >> "$GITHUB_OUTPUT"
 

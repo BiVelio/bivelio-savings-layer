@@ -1,3 +1,4 @@
+import type { MotivoDeParada } from "../providers/motivo-de-parada.js";
 import type { SemanticHit } from "../cache/semantic.js";
 import type {
   AnswerSource,
@@ -45,7 +46,7 @@ export interface HechosDeCalidad {
   /** Qué pasó cuando la PRIMERA validación del proveedor falló. */
   reparacion?: QualityRepairCheck;
   /** La respuesta final del proveedor: por qué paró y qué tope puso el llamante. */
-  final?: { finishReason?: string; finishReasonDetail?: string; topeDelLlamante?: number };
+  final?: { finishReason?: MotivoDeParada; finishReasonDetail?: string; topeDelLlamante?: number };
   /** El acierto semántico tal cual lo devolvió la caché. */
   semantico?: SemanticHit;
 }

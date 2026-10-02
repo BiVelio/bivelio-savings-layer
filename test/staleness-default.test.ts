@@ -1,7 +1,7 @@
 import { generateKeyPairSync, sign } from "node:crypto";
 import { describe, it, expect } from "vitest";
 
-import { liveGateFromKey, RevocationSnapshot } from "../src/index.js";
+import { liveGateFromKey, RevocationSnapshot } from "../src/license/index.js";
 import { DEFAULT_MAX_STALENESS_SECONDS } from "../src/pipeline/create.js";
 
 /**

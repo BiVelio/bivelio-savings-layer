@@ -64,7 +64,7 @@ describe("la entrada del reintento de reparación no engorda el baseline", () =>
     // EL DEFECTO: con la entrada del reintento dentro del baseline, esto salía
     // POSITIVO. La capa gastó más que el camino naive, así que el ahorro tiene
     // que ser negativo — un cliente no puede leer una pérdida como una ganancia.
-    expect(res.report.cost.netSavings).toBeLessThan(0);
+    expect(res.report.cost.netSavingsRatio).toBeLessThan(0);
   });
 
   it("el baseline de entrada no incluye la llamada de reparación", async () => {

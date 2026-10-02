@@ -5,7 +5,7 @@ import {
   tokensDeLaMayorRespuesta,
 } from "../src/constraints/techo-de-salida.js";
 import { TokenizerRegistry } from "../src/tokenizer/registry.js";
-import { registrarTokenizadorExacto } from "../src/tokenizer/exact.js";
+import { registerExactTokenizer } from "../src/tokenizer/exact.js";
 import { validateAgainstSchema } from "../src/constraints/validate.js";
 import type { JsonSchema } from "../src/contracts/types.js";
 
@@ -30,7 +30,7 @@ const esquemaDelBanco: JsonSchema = {
 };
 
 const registro = new TokenizerRegistry();
-const listo = registrarTokenizadorExacto(registro);
+const listo = registerExactTokenizer(registro);
 const contarCon = (modelo: string) => (t: string) => registro.count(t, { model: modelo });
 
 describe("la mayor respuesta que un esquema autoriza", () => {

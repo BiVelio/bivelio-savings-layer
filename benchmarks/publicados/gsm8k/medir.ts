@@ -18,8 +18,8 @@ export type Brazo = "A" | "B" | "S" | "E";
 export const DESCRIPCION_DE_BRAZOS: Record<Brazo, string> = {
   A: "directo al proveedor (sin capa), mismo prompt, mismo tope de salida (maxOutputTokens 1024) y mismo muestreo",
   B: "a través de la capa 0.4.31 con la configuración por defecto del README (caché exacta, resolvers, colocación fija de la caché de prefijo) y SavingsRequest.maxOutputTokens 1024",
-  S: "B + caché semántica CALIBRADA (InMemorySemanticCache({ calibration: { maxErrorRate: 0.02, judge: misma cifra final } })), encendida con createSavingsLayer({ semanticCache, semanticCacheDefault: true })",
-  E: "B + caché semántica TAL COMO SE ENVÍA (new InMemorySemanticCache() con sus umbrales por defecto), encendida con createSavingsLayer({ semanticCache, semanticCacheDefault: true })",
+  S: "B + caché semántica CALIBRADA (InMemorySemanticCache({ calibration: { maxErrorRate: 0.02, judge: misma cifra final } })), encendida con createSavingsLayer({ semanticCacheStore, semanticCacheDefault: true })",
+  E: "B + caché semántica TAL COMO SE ENVÍA (new InMemorySemanticCache() con sus umbrales por defecto), encendida con createSavingsLayer({ semanticCacheStore, semanticCacheDefault: true })",
 };
 
 export interface Ensayo {

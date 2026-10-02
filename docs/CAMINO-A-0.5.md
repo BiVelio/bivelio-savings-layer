@@ -1,10 +1,10 @@
 # Camino a la 0.5
 
-> Documento interno. Estado a **2026-09-29 (noche)**, con la 0.4.33 publicada
-> (#420) y main en `2ed379ff`. Actualizado por el PR de la 0.4.34, la que avisa
-> de todo lo que la 0.5 rompe. La guía para clientes es [`MIGRAR-A-0.5.md`](MIGRAR-A-0.5.md) (en
-> inglés) y el inventario de la API, con el veredicto de cada nombre, es
-> [`INVENTARIO-API-0.5.json`](INVENTARIO-API-0.5.json).
+> Documento interno. Estado a **2026-10-02**, con la 0.4.36 publicada (#444) y
+> la candidata **0.5.0-rc.1** en el dist-tag `next` de npm (PR #434). La guía
+> para clientes es [`MIGRAR-A-0.5.md`](MIGRAR-A-0.5.md) (en inglés; publicada
+> en la web en `/migrate-to-0.5`) y el inventario de la API, con el veredicto
+> de cada nombre, es [`INVENTARIO-API-0.5.json`](INVENTARIO-API-0.5.json).
 
 ## La decisión
 
@@ -17,12 +17,12 @@ La 0.5 sale cuando se cumplen los seis criterios acordados:
 
 | # | Criterio | Estado hoy | Veredicto |
 |---|---|---|---|
-| 1 | Funciona con Anthropic, OpenAI y Gemini (nativo) sin errores causados por la capa en el banco | Anthropic y OpenAI: `capa-falla 0` en todas las celdas medidas de las cuatro baterías del banco en vivo ([run 36611942632](https://github.com/BiVelio/bivelio-savings-layer/actions/runs/36611942632), main `1100960`, el código de la 0.4.33). El adaptador nativo de Gemini está fusionado (#410, en la 0.4.33), pero **Gemini no se ha medido**: sin `GEMINI_API_KEY` en el workflow sus celdas salen «no medible (sin clave)» (#421), y BFCL no lo soporta | 🟡 parcial: falta Gemini |
-| 2 | Nunca empeora la respuesta | En el run 36611942632, todos los B−A dentro del ruido (el peor, −3,1 pp [−9,4, 0,0] en BFCL gpt-5.5), 0 respuestas de otra pregunta y 0 llamadas cambiadas. El recorte a 8 del catálogo tipado ya no existe: sin `maxTools` no se poda (#419). Sin medir: Gemini | 🟡 parcial: falta Gemini |
-| 3 | Nunca cobra lo que no debe | XSTest en el run 36611942632: 0 negativas cacheadas y 0 acreditadas en los 8 modelos medidos. La negativa parcial y la carencia tras una disculpa ya no se cachean ni acreditan (#422), y la mínima del ingest sube a 0.4.33 (#423). Licencia Medir sin comisión (#417). Sin medir: Gemini y una negativa en vivo de OpenAI (`message.refusal`) | 🟡 parcial: falta Gemini |
-| 4 | El informe cuadra con la factura ±2 %, con el ahorro nativo aparte | `informe/factura` 0,00 % en todas las celdas del run 36611942632, y el ahorro nativo sale aparte (#412). Pero esa «factura» es uso × precio del catálogo: **nunca se ha comparado con una factura real** | 🟡 parcial: falta la factura real |
-| 5 | Banco semanal en CI como puerta de release | #413 fusionado (cron, 50 $, `publish.yml` bloqueado por `banco-semanal`) y #421 (sin clave = «no medible», no arnés caído). Primer run en vivo en verde: 36611942632, 13,74 $ | 🟢 (la condición de release sigue siendo una semana en verde con la candidata) |
-| 6 | API pública congelada con guía | Inventario, test y guía (#418); nombres nuevos y alias con aviso (#419, 0.4.33). La 0.4.34 (este PR) marca `@deprecated` en el `.d.ts` todo lo que se quita o renombra, avisa en consola de lo que los tipos no ven y pone el inventario al día | 🟡 listo para la 0.4.34; la congelación es la 0.5 |
+| 1 | Funciona con Anthropic, OpenAI y Gemini (nativo) sin errores causados por la capa en el banco | Anthropic, OpenAI y Gemini 3.8 Flash nativo: `capa-falla 0` en todas las celdas de las cuatro baterías del banco en vivo completo ([run 36795672930](https://github.com/BiVelio/bivelio-savings-layer/actions/runs/36795672930), main `5bec174`, 0.4.35; #442–#445). Gemini 3.1 Pro nativo, con 250 peticiones al día, en dos bancos parciales en vivo, uno por jornada de su cuota ([run 36925298365](https://github.com/BiVelio/bivelio-savings-layer/actions/runs/36925298365) y [run 36977332185](https://github.com/BiVelio/bivelio-savings-layer/actions/runs/36977332185), main `b349d7a`, 0.4.36; #448, #449): `capa-falla 0` en las cuatro baterías | 🟢 |
+| 2 | Nunca empeora la respuesta | En el run 36795672930 y en los dos parciales de Gemini 3.1 Pro, todos los B−A dentro del ruido, 0 respuestas de otra pregunta y 0 llamadas cambiadas, en los tres proveedores. El recorte a 8 del catálogo tipado ya no existe: sin `maxTools` no se poda (#419) | 🟢 |
+| 3 | Nunca cobra lo que no debe | XSTest en el run 36795672930 y en los parciales de Gemini 3.1 Pro: 0 negativas cacheadas y 0 acreditadas en todos los modelos medidos, Gemini incluido. La negativa dentro de una salida estructurada de OpenAI, vista por una sonda en vivo, ya no se cachea ni acredita (#431, 0.4.35). Licencia Medir sin comisión (#417) | 🟢 |
+| 4 | El informe cuadra con la factura ±2 %, con el ahorro nativo aparte | `informe/factura` 0,00 % en todas las celdas medidas, y el ahorro nativo sale aparte (#412). Esa «factura» es uso × precio de lista: la comparación con la factura real (`benchmarks/banco-semanal/factura.ts`) espera las claves de administrador del dueño | 🟢 contra el precio de lista (§4, punto 4); la factura real, pendiente de las claves del dueño |
+| 5 | Banco semanal en CI como puerta de release | #413 y #421; `publish.yml` no publica si el último banco en vivo **completo** en main falló o tiene más de 8 días (los «vivo parcial» no cuentan). **Decisión del dueño (2026-10-02): «Salimos a producción este fin de semana».** La semana en verde se acorta al banco en vivo completo en verde con la 0.5.0-rc.x el viernes 2-oct y el sábado 3-oct; si los dos salen en verde, la 0.5.0 sale el domingo 4-oct | 🟡 decisión del dueño: bancos del 2-oct y del 3-oct con la candidata |
+| 6 | API pública congelada con guía | Inventario, test y guía (#418); nombres nuevos y alias con aviso (#419, 0.4.33); `@deprecated` y avisos en la 0.4.34 (#424, #429). **PR #434**: raíz cerrada nombre a nombre, 73 exports y 7 campos fuera, `finishReason` cerrado, CLI solo en inglés, inventario 0.5.0 todo `estable` sin `pendientes`, guía final publicada en la web (`/migrate-to-0.5`) y la 0.5.0-rc.1 en `next` | 🟢 en la 0.5.0-rc.1; la 0.5.0 la congela |
 
 La tabla y [«Lo que falta, en orden»](#lo-que-falta-en-orden) son el estado
 vigente. Las secciones 1 a 5 conservan el detalle con el que se escribieron
@@ -168,6 +168,44 @@ umbrales cubren los criterios 1 a 4 (`capa-falla`, `exactitud-peor`,
 
 ## 6 · API congelada con guía
 
+**La 0.5 (PR #434, en borrador hasta los criterios de salida)**
+
+- **Raíz cerrada.** `src/index.ts` exporta una lista explícita, nombre a nombre,
+  sin un solo `export *`; `src/deprecaciones-0.5.ts` borrado. Salen 73 exports
+  de la raíz: los 68 «quitar» y los 5 españoles renombrados (sin alias). Quedan
+  230 en las cinco entradas, todos estables. Lo que los arneses, los tests, los
+  ejemplos y los adaptadores importaban de la raíz y ya no está lo importan de
+  su módulo interno (los adaptadores, de `src/util/hash.ts` y
+  `src/providers/motivo-de-parada.ts`, puros y en la lista blanca).
+- **Miembros.** Fuera `licenseGate`, `devUnlicensed`, `licensePublicKey`,
+  `semanticCache` (constructor), `cost.netSavings`,
+  `deferred.estimatedTierSaving` y `RevocationPollerOptions.silenciarAvisos`.
+  Las tres de licencia siguen vivas SOLO desde el fuente
+  (`ConfiguracionDesdeElFuente` en `src/pipeline/config.ts`, que no llega al
+  `.d.ts`; los tests y el banco las ven por
+  `test/helpers/opciones-desde-el-fuente.d.ts`). Desde JavaScript, en el paquete
+  publicado, `licenseGate`/`licensePublicKey`/`semanticCache` se ignoran con un
+  aviso único; `devUnlicensed`, en silencio (la verja de sala limpia).
+  `BVSALA_SILENCE_DEPRECATIONS` desaparece: no queda nada obsoleto que callar.
+- **`finishReason` cerrado** (`stop | length | tool_calls | content_filter |
+  other`) en `SavingsResult` y en `qualityLedger.truncation`, con el literal del
+  proveedor en `finishReasonDetail`. Un solo ayudante
+  (`src/providers/motivo-de-parada.ts`) para Anthropic, OpenAI-compatible,
+  Google nativo, el adaptador del SDK oficial y el pipeline (también con
+  proveedores de terceros). Tests por proveedor y por modo (JSON y stream) en
+  `test/finish-reason-cerrado.test.ts`.
+- **CLI solo en inglés.** `--puerto`/`--proyecto`/`--forzar` y
+  `BVSALA_GATEWAY_ESFUERZO`/`BVSALA_GATEWAY_MODELO_HERMANO` dan un error que
+  nombra el nuevo y `bvsala` sale con 1.
+- **Inventario** `version: "0.5.0"`, todo `estable`, sin `pendientes`, y una
+  sección `retirados` con lo que se fue. `test/api-publica-congelada.test.ts`
+  falla con cualquier export o miembro fuera del inventario, con un veredicto
+  no estable, si algo retirado reaparece o la guía deja de nombrarlo, si vuelve
+  un `export *` a la raíz o si el `.d.ts` publica un `@deprecated`.
+- **Guía** `MIGRAR-A-0.5.md` final, con el antes y el después de cada cambio.
+- Bundle: `dist/index.js` 419.561 B (0.4.34: 422.372 B); el techo de 450.000
+  no se toca. `dist/index.d.ts` baja de 315.928 B a 249.432 B.
+
 **La 0.4.34 (PR «la 0.4.34 avisa de todo lo que la 0.5 quita»)**
 
 - `@deprecated` en los 63 exports «quitar» que no lo llevaban, reexportados con
@@ -279,26 +317,25 @@ No es código TypeScript, así que el test no lo vigila. Su inventario:
 
 ## Lo que falta, en orden
 
-Hecho el 2026-09-29: #404, #410, #412, #413, #416, #417 y #419 fusionados y
-publicados en la 0.4.33 (#420); #421, #422 y #423 después; el primer banco en
-vivo en verde (run 36611942632). Las decisiones del dueño (`maxTools` sin tope,
-nombres del CLI, `semanticCacheStore`, `netSavingsUsd`) están tomadas y
-aplicadas.
+Hecho: la 0.4.34 (#429), Gemini nativo medido en el banco (3.8 Flash en el run
+36795672930; 3.1 Pro en dos jornadas, runs 36925298365 y 36977332185), la
+negativa de OpenAI dentro de la salida estructurada (#431), y la 0.5 entera en
+el PR #434: guía aplicada, `src/deprecaciones-0.5.ts` borrado, raíz sin
+`export *`, inventario 0.5.0 todo `estable`, test sin `pendientes`, guía en la
+web y versión **0.5.0-rc.1**, publicada en el dist-tag `next` (una prerelease
+nunca mueve `latest`: `publish.yml` desde el PR #434).
 
-1. **Publicar la 0.4.34** (este PR + el PR de release): `@deprecated` en todo
-   lo que se quita y avisos en ejecución (criterio 6).
-2. **Gemini en el banco** (criterios 1, 2 y 3): dar de alta `GEMINI_API_KEY`
-   en el workflow (se comprueba con `gh secret list`, por nombre) y medir el
-   adaptador nativo, no solo el endpoint compatible. BFCL con Gemini sigue «sin
-   soporte».
-3. **Factura real** contra el informe: la API de costes de cada proveedor, con
-   claves dedicadas al banco (criterio 4).
-4. Observar en vivo una negativa del API de OpenAI (`message.refusal`).
-5. **Una semana del banco en verde** con la candidata.
-6. **0.5.0**:
-   - Aplicar la guía: quitar, renombrar y normalizar `finishReason` (en
-     `SavingsResult` y en `qualityLedger.truncation`).
-   - Borrar `src/deprecaciones-0.5.ts` y cerrar los `export *` de la raíz.
-   - Regenerar el inventario con `version: "0.5.0"` y todo `estable`.
-   - Endurecer el test: en la 0.5 ya no se aceptan `pendientes`.
-   - Publicar la guía en la web.
+1. **Banco en vivo completo con la 0.5.0-rc.1, viernes 2-oct** (criterio 5,
+   decisión del dueño): `gh workflow run banco-semanal.yml --ref main`, sin
+   `modelos` ni `baterias`. Gemini 3.1 Pro mide la jornada de la semana y deja
+   la otra «aplazada por cuota».
+2. **El mismo banco, sábado 3-oct.** Si sale en rojo, se leen las infracciones
+   enteras y se arregla primero: una 0.5.0-rc.2 y otro banco.
+3. **0.5.0, domingo 4-oct**, solo si los dos bancos están en verde: el PR de
+   release sube la versión a `0.5.0`, y la Release se corta sin
+   `--prerelease`, con lo que npm la pone en `latest`. La puerta del banco es
+   la de siempre: el último banco en vivo completo en main, en verde y con 8
+   días o menos.
+4. **Factura real** contra el informe (criterio 4, no bloquea la 0.5): las
+   claves de administrador y los ids dedicados al banco, del dueño
+   (`docs/BANCO-SEMANAL.md`, «La factura real»).

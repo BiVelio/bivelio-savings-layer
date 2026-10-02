@@ -413,7 +413,7 @@ describe("la capa con la caché calibrada", () => {
   it("antes del suelo: cada candidata va al proveedor, se etiqueta, y la traza lo dice", async () => {
     const p = new Guion();
     const semanticCache = new InMemorySemanticCache({ calibration: { maxErrorRate: 0.05 } });
-    const capa = createSavingsLayer({ provider: p, semanticCache, costModels: PRECIOS, silenceWarnings: true });
+    const capa = createSavingsLayer({ provider: p, semanticCacheStore: semanticCache, costModels: PRECIOS, silenceWarnings: true });
     await capa.generate(pide("summarize the quarterly report for the board"));
     const r = await capa.generate(pide("please summarize the quarterly report for the board"));
     await semanticCache.settled();
@@ -433,7 +433,7 @@ describe("la capa con la caché calibrada", () => {
   it("tras el suelo: el acierto publica la cota en el libro de calidad, con la misma base de dinero que sin calibrar", async () => {
     const p = new Guion();
     const semanticCache = new InMemorySemanticCache({ calibration: CAL_RAPIDA });
-    const capa = createSavingsLayer({ provider: p, semanticCache, costModels: PRECIOS, silenceWarnings: true });
+    const capa = createSavingsLayer({ provider: p, semanticCacheStore: semanticCache, costModels: PRECIOS, silenceWarnings: true });
     await capa.generate(pide("summarize the quarterly report for the board"));
     let r = await capa.generate(pide("please summarize the quarterly report for the board"));
     for (let i = 0; i < 40 && r.report.cache.result !== "semantic"; i++) {
@@ -458,7 +458,7 @@ describe("la capa con la caché calibrada", () => {
 
     // La base del dinero de un acierto calibrado es la de uno sin calibrar.
     const sinCalibrar = new InMemorySemanticCache();
-    const otra = createSavingsLayer({ provider: new Guion(), semanticCache: sinCalibrar, costModels: PRECIOS, silenceWarnings: true });
+    const otra = createSavingsLayer({ provider: new Guion(), semanticCacheStore: sinCalibrar, costModels: PRECIOS, silenceWarnings: true });
     await otra.generate(pide("summarize the quarterly report for the board"));
     const r2 = await otra.generate(pide("please summarize the quarterly report for the board"));
     expect(r2.report.cache.result).toBe("semantic");
@@ -471,7 +471,7 @@ describe("la capa con la caché calibrada", () => {
   it("una respuesta que la caché no guardaría no se usa de etiqueta", async () => {
     const p = new Guion();
     const semanticCache = new InMemorySemanticCache({ calibration: { maxErrorRate: 0.05 } });
-    const capa = createSavingsLayer({ provider: p, semanticCache, costModels: PRECIOS, silenceWarnings: true });
+    const capa = createSavingsLayer({ provider: p, semanticCacheStore: semanticCache, costModels: PRECIOS, silenceWarnings: true });
     await capa.generate(pide("summarize the quarterly report for the board"));
     p.finishReason = "length";
     const r = await capa.generate(pide("please summarize the quarterly report for the board"));
@@ -484,7 +484,7 @@ describe("la capa con la caché calibrada", () => {
   it("el tráfico agéntico sigue fuera por defecto; con include-agentic calibra en SU segmento", async () => {
     const p = new Guion();
     const semanticCache = new InMemorySemanticCache({ calibration: { maxErrorRate: 0.05 } });
-    const capa = createSavingsLayer({ provider: p, semanticCache, costModels: PRECIOS, silenceWarnings: true });
+    const capa = createSavingsLayer({ provider: p, semanticCacheStore: semanticCache, costModels: PRECIOS, silenceWarnings: true });
     const historia = (ultimo: string) => [
       { role: "user" as const, content: "we are reviewing the quarterly report" },
       { role: "assistant" as const, content: "ok" },

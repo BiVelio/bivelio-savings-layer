@@ -167,7 +167,7 @@ export async function repetirSinRed(
     provider,
     ...capa.licencia,
     silenceWarnings: true,
-    ...(semanticCache ? { semanticCache } : {}),
+    ...(semanticCache ? { semanticCacheStore: semanticCache } : {}),
     ...(config === "semantica-defecto-capa" ? { semanticCacheDefault: true } : {}),
   });
   const porClase: ResultadoSinRed["porClase"] = {};

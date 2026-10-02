@@ -1,7 +1,7 @@
 import { generateKeyPairSync, sign } from "node:crypto";
 import { describe, it, expect } from "vitest";
 
-import { liveGateFromKey, RevocationSnapshot } from "../src/index.js";
+import { liveGateFromKey, RevocationSnapshot } from "../src/license/index.js";
 
 /**
  * El ciclo de vida de una licencia que PAGA. El requisito es simple y no admite

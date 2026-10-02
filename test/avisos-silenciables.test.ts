@@ -383,7 +383,7 @@ describe("⛔ la credencial de renovación rechazada NO se calla con `silenceWar
 
   it("el renovador suelto: ni pasándole `silenceWarnings` a la fuerza se calla, y sale una vez en cinco vueltas", async () => {
     const f = cp(401);
-    const r = renovador(f, { silenceWarnings: true, silenciarAvisos: true });
+    const r = renovador(f, { silenceWarnings: true });
     for (let i = 0; i < 5; i++) await r.checkNow();
     expect(llamadasDeRecogida(f)).toBe(5);
     expect(avisos.filter((a) => CREDENCIAL.test(a))).toHaveLength(1);

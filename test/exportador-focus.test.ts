@@ -78,7 +78,7 @@ function muchos(n: number, semilla = 42): SavingsRecord[] {
           basis,
           baselineEstimate: baseline,
           actual,
-          netSavings: 0,
+          netSavingsRatio: 0,
           ...(r() < 0.3 ? { eliminatedInputFloorCost: r() * 0.001 } : {}),
         },
       }),

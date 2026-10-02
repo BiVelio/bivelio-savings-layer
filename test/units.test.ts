@@ -4,17 +4,15 @@ import {
   SchemaRegistry,
   emptyState,
   mergeDelta,
-  projectContext,
-  withProtectedSpans,
-  shouldCompress,
-  dedupe,
-  adaptiveK,
-  evalArithmetic,
   createDefaultResolvers,
-  canonicalize,
   type JsonSchema,
   type Compressor,
 } from "../src/index.js";
+import { projectContext } from "../src/memory/index.js";
+import { withProtectedSpans, shouldCompress } from "../src/compression/index.js";
+import { dedupe, adaptiveK } from "../src/retrieval/index.js";
+import { evalArithmetic } from "../src/resolvers/index.js";
+import { canonicalize } from "../src/canonicalization/index.js";
 
 describe("schema validation", () => {
   const schema: JsonSchema = {

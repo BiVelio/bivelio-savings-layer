@@ -265,7 +265,7 @@ describe("el pipeline con `savings.toolSearch`", () => {
       peticion("¿Qué pedidos del servicio 17 siguen abiertos?", catalogoMcp(200), { toolSearch: "auto" }),
     );
     expect(report.tokens.eliminatedInput).toBe(0);
-    expect(report.cost.netSavings).toBe(0);
+    expect(report.cost.netSavingsRatio).toBe(0);
     expect(traza(report, "tool-selector")).toHaveLength(0);
     const referencia = traza(report, "reference")[0]!;
     expect(referencia.outcome).toBe("not-written");

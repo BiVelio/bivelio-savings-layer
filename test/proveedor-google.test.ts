@@ -426,7 +426,8 @@ describe("GoogleProvider · negativas del proveedor", () => {
     expect(traducirParadaDeGemini("STOP", undefined, true).parada).toBe("tool_calls");
     expect(traducirParadaDeGemini("MAX_TOKENS", undefined, false).parada).toBe("length");
     expect(traducirParadaDeGemini("MALFORMED_FUNCTION_CALL", undefined, false)).toEqual({
-      parada: "MALFORMED_FUNCTION_CALL",
+      parada: "other",
+      detalle: "MALFORMED_FUNCTION_CALL",
       reproducible: false,
     });
   });
@@ -460,7 +461,8 @@ describe("GoogleProvider · negativas del proveedor", () => {
       json: { candidates: [{ content: { parts: [], role: "model" }, finishReason: "MALFORMED_FUNCTION_CALL" }], usageMetadata: { promptTokenCount: 5, candidatesTokenCount: 0, totalTokenCount: 5 } },
     }));
     const r = await new GoogleProvider({ fetchImpl: s.fetchImpl }).generate(PETICION);
-    expect(r.finishReason).toBe("MALFORMED_FUNCTION_CALL");
+    expect(r.finishReason).toBe("other");
+    expect(r.finishReasonDetail).toBe("MALFORMED_FUNCTION_CALL");
     expect(r.replayable).toBe(false);
   });
 

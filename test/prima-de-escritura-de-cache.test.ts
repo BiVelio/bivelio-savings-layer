@@ -32,7 +32,7 @@ describe("prima de escritura de caché", () => {
     expect(c.actual).toBeCloseTo(0.01 + 0.0025, 10);
     expect(c.baselineEstimate).toBeCloseTo(0.01, 10);
     // Y por tanto el ahorro sale NEGATIVO: marcar costó dinero, y se dice.
-    expect(c.netSavings).toBeLessThan(0);
+    expect(c.netSavingsRatio).toBeLessThan(0);
   });
 
   it("multiplicador 1 (OpenAI, proveedor desconocido) no cobra nada", () => {

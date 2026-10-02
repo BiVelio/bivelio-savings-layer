@@ -523,7 +523,7 @@ describe("la contabilidad del sondeo es honesta", () => {
     expect(res.report.calls.actualLlm).toBe(2);
     expect(res.report.tokens.actualInput).toBe(4500);
     expect(res.report.tokens.baselineInput).toBe(4000);
-    expect(res.report.cost.netSavings).toBeLessThan(0);
+    expect(res.report.cost.netSavingsRatio).toBeLessThan(0);
   });
 
   it("cuando el patrón funciona, el baseline sigue contando los esquemas evitados", async () => {
@@ -536,7 +536,7 @@ describe("la contabilidad del sondeo es honesta", () => {
 
     expect(res.report.tokens.actualInput).toBe(1300); // 500 del sondeo + 800 de la buena
     expect(res.report.tokens.baselineInput).toBeGreaterThan(res.report.tokens.actualInput);
-    expect(res.report.cost.netSavings).toBeGreaterThan(0);
+    expect(res.report.cost.netSavingsRatio).toBeGreaterThan(0);
     // Un baseline RECONSTRUIDO no es dinero comprobable contra la factura.
     expect(res.report.cost.basis).toBe("estimated");
   });

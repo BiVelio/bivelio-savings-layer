@@ -9,7 +9,7 @@ import { instalarSkill, origenDelSkill, NOMBRE_SKILL, type FsDeSkill } from "../
  * factura, con topes). Verjas: el fichero empaquetado es válido y MAGRO (un
  * skill que ahorra tokens no puede costar mil por turno), viaja en el paquete
  * npm, y el instalador jamás pisa una instalación local modificada sin
- * --forzar.
+ * --force.
  */
 
 const RAIZ = join(new URL(".", import.meta.url).pathname, "..");
@@ -74,7 +74,7 @@ function fsFalso(inicial: Record<string, string> = {}): FsDeSkill & { disco: Rec
 const ORIGEN = join("/paquete", "skills", NOMBRE_SKILL, "SKILL.md");
 
 describe("instalarSkill — pura sobre un FS inyectado", () => {
-  it("instala en ~/.claude/skills por defecto y en .claude/skills con --proyecto", () => {
+  it("instala en ~/.claude/skills por defecto y en .claude/skills con --project", () => {
     for (const [proyecto, esperado] of [
       [false, join("/home/u", ".claude", "skills", NOMBRE_SKILL, "SKILL.md")],
       [true, join("/repo", ".claude", "skills", NOMBRE_SKILL, "SKILL.md")],
@@ -94,14 +94,14 @@ describe("instalarSkill — pura sobre un FS inyectado", () => {
     expect(origenDelSkill(["/a"], fs)).toBeNull();
   });
 
-  it("⛔ una instalación local MODIFICADA no se pisa sin --forzar", () => {
+  it("⛔ una instalación local MODIFICADA no se pisa sin --force", () => {
     const destino = join("/home/u", ".claude", "skills", NOMBRE_SKILL, "SKILL.md");
     const fs = fsFalso({ [ORIGEN]: "nuevo", [destino]: "editado a mano" });
     const r = instalarSkill({ origenes: ["/paquete"], home: "/home/u", cwd: "/repo", proyecto: false, forzar: false, fs });
     expect(r.ok).toBe(false);
     expect(fs.disco[destino]).toBe("editado a mano");
     expect(r.mensaje).toContain("--force");
-    // Con --forzar sí.
+    // Con --force sí.
     const r2 = instalarSkill({ origenes: ["/paquete"], home: "/home/u", cwd: "/repo", proyecto: false, forzar: true, fs });
     expect(r2.ok).toBe(true);
     expect(fs.disco[destino]).toBe("nuevo");

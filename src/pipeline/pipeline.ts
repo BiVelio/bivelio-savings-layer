@@ -22,6 +22,7 @@ import {
 import type { ToolSelection } from "../router/tool-selector.js";
 import { salidaNoRepetible } from "../pricing/razonamiento.js";
 import { esParadaDeFiltro } from "../providers/parada-de-filtro.js";
+import { cerrarParada, esMotivoCerrado } from "../providers/motivo-de-parada.js";
 
 import type {
   SavingsRequest,
@@ -115,7 +116,7 @@ import {
 import type { FormatChoice } from "../serialization/format-selector.js";
 import { LicenseError } from "../license/errors.js";
 import type { LicenseStatus, LicenseKeyShape } from "../license/verify.js";
-import { DEFAULT_COST_MODEL, type SavingsLayerConfig } from "./config.js";
+import { DEFAULT_COST_MODEL, type ConfiguracionDesdeElFuente, type SavingsLayerConfig } from "./config.js";
 import { precioDeLista } from "../pricing/catalogo.js";
 import { primaDeEscritura1h, primaDeEscrituraAutomatica } from "../pricing/primas.js";
 import { resolveDependencies, type ResolvedDeps } from "./defaults.js";
@@ -435,7 +436,7 @@ function mensajeDeGateIncompleto(): string {
 
 export class SavingsPipeline {
   private readonly deps: ResolvedDeps;
-  private readonly config: SavingsLayerConfig;
+  private readonly config: ConfiguracionDesdeElFuente;
   private readonly now: () => number;
   private readonly generateId: () => string;
   /**
@@ -532,7 +533,7 @@ export class SavingsPipeline {
    */
   private readonly comprobador: ComprobadorAB | undefined;
 
-  constructor(config: SavingsLayerConfig, interno: { verificacion?: SumideroDeVerificacion } = {}) {
+  constructor(config: ConfiguracionDesdeElFuente, interno: { verificacion?: SumideroDeVerificacion } = {}) {
     this.config = config;
     // Los avisos que el ADAPTADOR emite por su cuenta (el bucle de herramientas
     // de Anthropic que viaja como texto) también obedecen `silenceWarnings`.
@@ -789,7 +790,7 @@ export class SavingsPipeline {
     // saca `unmeasured` entera: una cifra con un contador ausente no es la del
     // proveedor, la sume quien la sume.
     if (r.usage.complete === false) testigo.sinContador += 1;
-    return r;
+    return cerrarMotivo(r);
   }
 
   // El hermano de llamarProveedor() para la primaria en vivo. Deja la misma
@@ -844,7 +845,7 @@ export class SavingsPipeline {
       final = heredarAtestado(final, { ...final, text: enviado });
     }
     sumidero.sirvioEnVivo = true;
-    return final;
+    return cerrarMotivo(final);
   }
 
   /**
@@ -4533,10 +4534,7 @@ export class SavingsPipeline {
         // Del `response` FINAL: tras la reparación o la escalada, que es el que
         // produjo lo servido.
         final: {
-          ...(response.finishReason !== undefined ? { finishReason: response.finishReason } : {}),
-          ...(response.finishReasonDetail !== undefined
-            ? { finishReasonDetail: response.finishReasonDetail }
-            : {}),
+          ...cerrarParada(response.finishReason, response.finishReasonDetail),
           ...(topeDeSalida(request) != null
             ? { topeDelLlamante: topeDeSalida(request)! }
             : {}),
@@ -4555,11 +4553,12 @@ export class SavingsPipeline {
     // moría una capa más arriba porque aquí solo se copiaba `text`, y el cliente
     // recibía cadena vacía como si fuera la respuesta buena.
     if (pidioHerramientas) result.toolCalls = response.toolCalls!;
-    if (response.finishReason !== undefined) result.finishReason = response.finishReason;
+    const motivo = cerrarParada(response.finishReason, response.finishReasonDetail);
+    if (motivo.finishReason !== undefined) result.finishReason = motivo.finishReason;
     // Y el motivo del proveedor (la categoría de una negativa de Anthropic, el
     // `content_filter: OTHER` de Gemini): sin él, el llamante veía
     // `content_filter` a secas y un `refusal` vacío, sin saber por qué.
-    if (response.finishReasonDetail !== undefined) result.finishReasonDetail = response.finishReasonDetail;
+    if (motivo.finishReasonDetail !== undefined) result.finishReasonDetail = motivo.finishReasonDetail;
     // La negativa también llega al llamante: sin ella, una negativa de salidas
     // estructuradas era un `text` vacío que incumplía el contrato sin decir por qué.
     if (response.refusal !== undefined) result.refusal = response.refusal;
@@ -5152,7 +5151,6 @@ export class SavingsPipeline {
       ...base,
       credited: true,
       discountRate: redondear(v.factorEfectivo),
-      estimatedTierSaving: v.importe,
       tierSaving: {
         amount: v.importe,
         basis: v.basis,
@@ -5620,7 +5618,7 @@ export class SavingsPipeline {
         ? via.sumidero
           ? await this.llamarProveedorEnStream(peticionDirecta, via.testigo, via.sumidero)
           : await this.llamarProveedor(peticionDirecta, via.testigo)
-        : await this.config.provider.generate(peticionDirecta);
+        : cerrarMotivo(await this.config.provider.generate(peticionDirecta));
     const providerMs = this.now() - providerStart;
 
     ledger.baselineLlm = 1;
@@ -5655,10 +5653,7 @@ export class SavingsPipeline {
     const hechos: HechosDeCalidad = {
       ...(medir ? {} : { origen: "fail_open" as const }),
       final: {
-        ...(response.finishReason !== undefined ? { finishReason: response.finishReason } : {}),
-        ...(response.finishReasonDetail !== undefined
-          ? { finishReasonDetail: response.finishReasonDetail }
-          : {}),
+        ...cerrarParada(response.finishReason, response.finishReasonDetail),
         ...(topeDeSalida(request) != null
           ? { topeDelLlamante: topeDeSalida(request)! }
           : {}),
@@ -5731,8 +5726,7 @@ export class SavingsPipeline {
         data: data as T,
         text: response.text,
         ...(pidioHerramientas ? { toolCalls: response.toolCalls! } : {}),
-        ...(response.finishReason !== undefined ? { finishReason: response.finishReason } : {}),
-        ...(response.finishReasonDetail !== undefined ? { finishReasonDetail: response.finishReasonDetail } : {}),
+        ...cerrarParada(response.finishReason, response.finishReasonDetail),
         ...(response.refusal !== undefined ? { refusal: response.refusal } : {}),
         report,
       },
@@ -6903,4 +6897,23 @@ function tramoDelModelo(
 ): CacheTier | null {
   const tier = tramoDeCache(model, econ);
   return tier.cacheReadMultiplier < 1 ? tier : null;
+}
+
+/**
+ * EL MOTIVO DE PARADA SALE CERRADO (0.5). Los adaptadores de este paquete ya lo
+ * entregan en uno de los cinco valores, pero `Provider` es una interfaz pública
+ * y un proveedor de terceros puede devolver cualquier cadena. Todo lo que llega
+ * del proveedor pasa por aquí antes de que el pipeline lo compare (`length`,
+ * `content_filter`) o lo copie al resultado y al libro de calidad: el literal
+ * del proveedor, si no es uno de los cinco, queda en `finishReasonDetail`.
+ */
+function cerrarMotivo(r: ProviderResponse): ProviderResponse {
+  if (r.finishReason === undefined || esMotivoCerrado(r.finishReason)) return r;
+  const { finishReason, finishReasonDetail } = cerrarParada(r.finishReason, r.finishReasonDetail);
+  const { finishReason: _crudo, finishReasonDetail: _detalle, ...resto } = r;
+  return heredarAtestado(r, {
+    ...resto,
+    ...(finishReason !== undefined ? { finishReason } : {}),
+    ...(finishReasonDetail !== undefined ? { finishReasonDetail } : {}),
+  });
 }

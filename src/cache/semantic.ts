@@ -18,7 +18,7 @@ import {
   type SemanticCalibrationStatus,
 } from "./calibration.js";
 import { cantidadesEnLetra } from "./cantidades-en-letra.js";
-import { embebedorLocal, UMBRAL_LOCAL } from "./embedder-local.js";
+import { localEmbedding, LOCAL_EMBEDDING_THRESHOLD } from "./embedder-local.js";
 import type { CachedAnswer } from "./exact.js";
 
 /**
@@ -147,7 +147,7 @@ export interface SemanticLookup {
 
 export interface SemanticCacheOptions {
   /**
-   * How text becomes a vector. OPTIONAL: omit it and {@link embebedorLocal} is
+   * How text becomes a vector. OPTIONAL: omit it and {@link localEmbedding} is
    * used — no network, no API key, no per-call cost.
    *
    * It used to be required, and the package shipped NO implementation, so this
@@ -468,7 +468,7 @@ export class InMemorySemanticCache {
     // construir —y por tanto medir— sin traerse un proveedor de embeddings.
     const propio = opts.embed == null;
     this.embebedorPropio = propio;
-    this.embed = opts.embed ?? embebedorLocal;
+    this.embed = opts.embed ?? localEmbedding;
     this.verify = opts.verify;
     // EL UMBRAL SIGUE AL EMBEBEDOR, y no hacerlo dejaba la palanca muerta igual.
     //
@@ -480,7 +480,7 @@ export class InMemorySemanticCache {
     // Solo cambia cuando el embebedor es el nuestro. Quien traiga el suyo
     // conserva 0,9 exactamente como hasta ahora.
     this.similarityThreshold =
-      opts.similarityThreshold ?? (propio ? UMBRAL_LOCAL : 0.9);
+      opts.similarityThreshold ?? (propio ? LOCAL_EMBEDDING_THRESHOLD : 0.9);
     this.acceptThreshold = opts.acceptThreshold ?? 0.85;
     this.aceptacionExplicita = opts.acceptThreshold != null;
     this.nombres = {

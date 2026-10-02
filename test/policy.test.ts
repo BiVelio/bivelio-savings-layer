@@ -1,6 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { canonicalize, evaluatePolicy } from "../src/index.js";
-import type { SavingsRequest } from "../src/index.js";
+import { canonicalize } from "../src/canonicalization/index.js";
+import { evaluatePolicy } from "../src/policy/index.js";
+import type {
+  SavingsRequest,
+} from "../src/index.js";
 
 function policyFor(overrides: Partial<SavingsRequest>) {
   const request: SavingsRequest = {
