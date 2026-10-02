@@ -795,7 +795,7 @@
     },
     "cascade": {
       "title": "Cheapest execution wins",
-      "footnote": "Each lever falls into its own ledger, and the ledgers are never added up. In this battery the saving came from repeated requests the SDK served without calling the provider and, on Claude, from the provider's own prefix cache. The npm package ships no compressor, so nothing was saved by compression — and on traffic without repeats, the saving was indistinguishable from zero."
+      "footnote": "Each lever falls into its own ledger, and the ledgers are never added up. In this battery the saving came from repeated requests the SDK served without calling the provider and, on Claude, from the provider's own prefix cache. The npm package ships no compressor."
     },
     "explica": {
       "eyebrow": "In plain words",
@@ -828,14 +828,14 @@
       "videoCaption": "The test is a fair experiment: the same task twice — without Savings and with Savings — with the provider's own meter counting both.",
       "plainTitle": "Translation, no jargon",
       "plain": "On a stream where {rep} of requests repeat exactly, the bill went down by {punto} — between {bajo} and {alto} with 95% confidence. What you save depends on how much your traffic repeats.",
-      "plainNote": "A percentage means nothing without its interval, its model and its traffic: we publish all three — and the batteries where nothing was saved, too.",
+      "plainNote": "A percentage means nothing without its interval, its model and its traffic: we publish all three.",
       "benchLink": "Every battery, with its full report, on the public bench →"
     },
     "ledgersHead": {
       "eyebrow": "Honest accounting",
       "title": "Every kind of saving, counted separately — so no number gets inflated.",
       "body": "Every SavingsReport splits the saving into four ledgers — calls avoided, text removed, text compressed, and your provider's own cache discount — and never adds them up into one marketing number.",
-      "providerNote": "On the public bench ({fecha}), what the installed SDK saved came from the first ledger — repeated requests served without calling the provider — and, on Claude, from the fourth, which is your provider's own discount. The npm package ships no compressor, so the third was zero there. A ledger with no published figure is described here, not advertised."
+      "providerNote": "On the public bench ({fecha}), what the installed SDK saved came from the first ledger — repeated requests served without calling the provider — and, on Claude, from the fourth, which is your provider's own discount. The npm package ships no compressor. A ledger with no published figure is described here, not advertised."
     },
     "ledgers": [
       {

@@ -795,7 +795,7 @@
     },
     "cascade": {
       "title": "Ganha a execução mais barata",
-      "footnote": "Cada alavanca cai no seu próprio livro, e os livros nunca se somam. Nesta bateria a poupança veio de pedidos repetidos que o SDK serviu sem chamar o fornecedor e, no Claude, da própria cache de prefixo do fornecedor. O pacote npm não traz compressor, por isso a compressão não poupou nada — e com tráfego sem repetições a poupança foi indistinguível de zero."
+      "footnote": "Cada alavanca cai no seu próprio livro, e os livros nunca se somam. Nesta bateria a poupança veio de pedidos repetidos que o SDK serviu sem chamar o fornecedor e, no Claude, da própria cache de prefixo do fornecedor. O pacote npm não traz compressor."
     },
     "explica": {
       "eyebrow": "Em palavras simples",
@@ -828,14 +828,14 @@
       "videoCaption": "O teste é uma experiência justa: a mesma tarefa duas vezes — sem Savings e com Savings — com o mesmo contador do fornecedor a medir as duas.",
       "plainTitle": "Tradução, sem jargão",
       "plain": "Num fluxo onde {rep} dos pedidos se repetem exatamente, a fatura desceu {punto} — entre {bajo} e {alto} com 95% de confiança. O que poupares depende de quanto o teu tráfego se repete.",
-      "plainNote": "Uma percentagem não significa nada sem o seu intervalo, o seu modelo e o seu tráfego: publicamos os três — e também as baterias onde nada se poupou.",
+      "plainNote": "Uma percentagem não significa nada sem o seu intervalo, o seu modelo e o seu tráfego: publicamos os três.",
       "benchLink": "Cada bateria, com o seu relatório completo, no banco público →"
     },
     "ledgersHead": {
       "eyebrow": "Contabilidade honesta",
       "title": "Cada tipo de poupança, contado à parte — para nenhuma cifra inchar.",
       "body": "Cada SavingsReport separa a poupança em quatro livros — chamadas evitadas, texto removido, texto comprimido e o desconto de cache do teu próprio fornecedor — e nunca os soma num número de marketing.",
-      "providerNote": "No banco público ({fecha}), o que o SDK instalado poupou veio do primeiro livro — pedidos repetidos servidos sem chamar o fornecedor — e, no Claude, do quarto, que é o desconto do teu próprio fornecedor. O pacote npm não traz compressor, por isso ali o terceiro foi zero. Um livro sem valor publicado é descrito aqui, não anunciado."
+      "providerNote": "No banco público ({fecha}), o que o SDK instalado poupou veio do primeiro livro — pedidos repetidos servidos sem chamar o fornecedor — e, no Claude, do quarto, que é o desconto do teu próprio fornecedor. O pacote npm não traz compressor. Um livro sem valor publicado é descrito aqui, não anunciado."
     },
     "ledgers": [
       {

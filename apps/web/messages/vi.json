@@ -795,7 +795,7 @@
     },
     "cascade": {
       "title": "Phương án thực thi rẻ nhất thắng",
-      "footnote": "Mỗi đòn bẩy rơi vào sổ riêng của nó, và các sổ không bao giờ được cộng lại. Trong bộ thử này, khoản tiết kiệm đến từ các yêu cầu lặp lại mà SDK phục vụ không cần gọi nhà cung cấp và, với Claude, từ bộ nhớ đệm tiền tố của chính nhà cung cấp. Gói npm không kèm bộ nén, nên nén không tiết kiệm được gì — và với lưu lượng không lặp lại, khoản tiết kiệm không phân biệt được với không."
+      "footnote": "Mỗi đòn bẩy rơi vào sổ riêng của nó, và các sổ không bao giờ được cộng lại. Trong bộ thử này, khoản tiết kiệm đến từ các yêu cầu lặp lại mà SDK phục vụ không cần gọi nhà cung cấp và, với Claude, từ bộ nhớ đệm tiền tố của chính nhà cung cấp. Gói npm không kèm bộ nén."
     },
     "explica": {
       "eyebrow": "Nói một cách dễ hiểu",
@@ -828,14 +828,14 @@
       "videoCaption": "Bài kiểm tra là một thí nghiệm công bằng: cùng một nhiệm vụ chạy hai lần — không có Savings và có Savings — và cùng một bộ đếm của nhà cung cấp đo cả hai.",
       "plainTitle": "Diễn giải, không thuật ngữ",
       "plain": "Trên một luồng mà {rep} số yêu cầu lặp lại y hệt, hóa đơn giảm {punto} — trong khoảng {bajo} đến {alto} với độ tin cậy 95%. Bạn tiết kiệm bao nhiêu tùy vào mức độ lặp lại của lưu lượng của bạn.",
-      "plainNote": "Một tỷ lệ phần trăm không có ý nghĩa gì nếu thiếu khoảng tin cậy, mô hình và lưu lượng của nó: chúng tôi công bố cả ba — và cả những bộ thử không tiết kiệm được gì.",
+      "plainNote": "Một tỷ lệ phần trăm không có ý nghĩa gì nếu thiếu khoảng tin cậy, mô hình và lưu lượng của nó: chúng tôi công bố cả ba.",
       "benchLink": "Từng bộ thử, kèm báo cáo đầy đủ, trên băng thử công khai →"
     },
     "ledgersHead": {
       "eyebrow": "Hạch toán trung thực",
       "title": "Mỗi loại tiết kiệm được đếm riêng — để không con số nào bị thổi phồng.",
       "body": "Mỗi SavingsReport chia khoản tiết kiệm vào bốn sổ — lệnh gọi tránh được, văn bản đã loại bỏ, văn bản đã nén và chiết khấu bộ nhớ đệm của chính nhà cung cấp — và không bao giờ cộng chúng thành một con số tiếp thị.",
-      "providerNote": "Trên băng thử công khai ({fecha}), khoản SDK đã cài tiết kiệm được đến từ sổ thứ nhất — các yêu cầu lặp lại được phục vụ mà không gọi nhà cung cấp — và, với Claude, từ sổ thứ tư, là chiết khấu của chính nhà cung cấp. Gói npm không kèm bộ nén, nên ở đó sổ thứ ba bằng không. Một sổ chưa có con số công bố thì được mô tả ở đây, không được quảng cáo."
+      "providerNote": "Trên băng thử công khai ({fecha}), khoản SDK đã cài tiết kiệm được đến từ sổ thứ nhất — các yêu cầu lặp lại được phục vụ mà không gọi nhà cung cấp — và, với Claude, từ sổ thứ tư, là chiết khấu của chính nhà cung cấp. Gói npm không kèm bộ nén. Một sổ chưa có con số công bố thì được mô tả ở đây, không được quảng cáo."
     },
     "ledgers": [
       {

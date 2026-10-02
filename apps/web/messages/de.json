@@ -795,7 +795,7 @@
     },
     "cascade": {
       "title": "Die günstigste Ausführung gewinnt",
-      "footnote": "Jeder Hebel landet in seinem eigenen Konto, und die Konten werden nie addiert. In dieser Batterie kam die Einsparung aus wiederholten Anfragen, die das SDK ohne Aufruf des Anbieters bediente, und bei Claude aus dem Präfix-Cache des Anbieters selbst. Das npm-Paket enthält keinen Kompressor, also sparte die Kompression nichts — und bei Traffic ohne Wiederholungen war die Einsparung nicht von null zu unterscheiden."
+      "footnote": "Jeder Hebel landet in seinem eigenen Konto, und die Konten werden nie addiert. In dieser Batterie kam die Einsparung aus wiederholten Anfragen, die das SDK ohne Aufruf des Anbieters bediente, und bei Claude aus dem Präfix-Cache des Anbieters selbst. Das npm-Paket enthält keinen Kompressor."
     },
     "explica": {
       "eyebrow": "In normalen Worten",
@@ -828,14 +828,14 @@
       "videoCaption": "Der Test ist ein faires Experiment: dieselbe Aufgabe zweimal — ohne Savings und mit Savings — und derselbe Zähler des Anbieters zählt beide.",
       "plainTitle": "Übersetzung, ohne Fachjargon",
       "plain": "Bei einem Strom, in dem sich {rep} der Anfragen exakt wiederholen, sank die Rechnung um {punto} — zwischen {bajo} und {alto} mit 95 % Konfidenz. Was du sparst, hängt davon ab, wie oft sich dein Traffic wiederholt.",
-      "plainNote": "Ein Prozentsatz bedeutet nichts ohne sein Intervall, sein Modell und seinen Traffic: Wir veröffentlichen alle drei — und auch die Batterien, in denen nichts gespart wurde.",
+      "plainNote": "Ein Prozentsatz bedeutet nichts ohne sein Intervall, sein Modell und seinen Traffic: Wir veröffentlichen alle drei.",
       "benchLink": "Jede Batterie mit ihrem vollständigen Bericht im öffentlichen Benchmark →"
     },
     "ledgersHead": {
       "eyebrow": "Ehrliche Abrechnung",
       "title": "Jede Art von Ersparnis, getrennt gezählt — damit keine Zahl aufgebläht wird.",
       "body": "Jeder SavingsReport teilt die Einsparung in vier Konten auf — vermiedene Aufrufe, entfernter Text, komprimierter Text und der Cache-Rabatt deines eigenen Anbieters — und addiert sie nie zu einer Marketingzahl.",
-      "providerNote": "Im öffentlichen Benchmark ({fecha}) kam die Einsparung des installierten SDK aus dem ersten Konto — wiederholte Anfragen, bedient ohne Aufruf des Anbieters — und bei Claude aus dem vierten, dem Rabatt deines eigenen Anbieters. Das npm-Paket enthält keinen Kompressor, also war das dritte dort null. Ein Konto ohne veröffentlichte Zahl wird hier beschrieben, nicht beworben."
+      "providerNote": "Im öffentlichen Benchmark ({fecha}) kam die Einsparung des installierten SDK aus dem ersten Konto — wiederholte Anfragen, bedient ohne Aufruf des Anbieters — und bei Claude aus dem vierten, dem Rabatt deines eigenen Anbieters. Das npm-Paket enthält keinen Kompressor. Ein Konto ohne veröffentlichte Zahl wird hier beschrieben, nicht beworben."
     },
     "ledgers": [
       {

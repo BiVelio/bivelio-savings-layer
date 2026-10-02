@@ -795,7 +795,7 @@
     },
     "cascade": {
       "title": "Guanya l'execució més barata",
-      "footnote": "Cada palanca cau al seu propi llibre, i els llibres no se sumen mai. En aquesta bateria l'estalvi va sortir de peticions repetides que l'SDK va servir sense cridar el proveïdor i, a Claude, de la mateixa memòria cau de prefix del proveïdor. El paquet d'npm no porta compressor, així que la compressió no va estalviar res; i amb trànsit sense repeticions l'estalvi va ser indistingible de zero."
+      "footnote": "Cada palanca cau al seu propi llibre, i els llibres no se sumen mai. En aquesta bateria l'estalvi va sortir de peticions repetides que l'SDK va servir sense cridar el proveïdor i, a Claude, de la mateixa memòria cau de prefix del proveïdor. El paquet d'npm no porta compressor."
     },
     "explica": {
       "eyebrow": "En paraules normals",
@@ -828,14 +828,14 @@
       "videoCaption": "La prova és un experiment just: la mateixa tasca dues vegades — sense Savings i amb Savings — amb el mateix comptador del proveïdor mesurant totes dues.",
       "plainTitle": "Traducció, sense argot",
       "plain": "En un flux on el {rep} de les peticions es repeteixen exactes, la factura va baixar un {punto}: entre {bajo} i {alto} amb un 95 % de confiança. El que estalviïs depèn de quant es repeteixi el teu trànsit.",
-      "plainNote": "Un percentatge no vol dir res sense el seu interval, el seu model i el seu trànsit: publiquem tots tres, i també les bateries on no es va estalviar res.",
+      "plainNote": "Un percentatge no vol dir res sense el seu interval, el seu model i el seu trànsit: publiquem tots tres.",
       "benchLink": "Cada bateria, amb el seu informe complet, al banc públic →"
     },
     "ledgersHead": {
       "eyebrow": "Comptabilitat honesta",
       "title": "Cada tipus d'estalvi, comptat a part — perquè cap xifra s'infli.",
       "body": "Cada SavingsReport separa l'estalvi en quatre llibres —crides evitades, text eliminat, text comprimit i el descompte de memòria cau del teu propi proveïdor— i no els suma mai en una xifra de màrqueting.",
-      "providerNote": "Al banc públic ({fecha}), el que va estalviar l'SDK instal·lat va sortir del primer llibre —peticions repetides servides sense cridar el proveïdor— i, a Claude, del quart, que és el descompte del teu propi proveïdor. El paquet d'npm no porta compressor, així que allà el tercer va ser zero. Un llibre sense xifra publicada es descriu aquí, no s'anuncia."
+      "providerNote": "Al banc públic ({fecha}), el que va estalviar l'SDK instal·lat va sortir del primer llibre —peticions repetides servides sense cridar el proveïdor— i, a Claude, del quart, que és el descompte del teu propi proveïdor. El paquet d'npm no porta compressor. Un llibre sense xifra publicada es descriu aquí, no s'anuncia."
     },
     "ledgers": [
       {

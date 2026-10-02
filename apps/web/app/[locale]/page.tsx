@@ -466,10 +466,9 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
               compresor de la tirada sintética es solo del banco y el paquete
               no lo trae. Fuera (2026-09-30). Debajo quedó una frase con el
               «≈ 0 %» del tráfico sin repeticiones; fuera también (dueño,
-              2026-10-02): lo honesto ya lo dicen la frase llana y su nota de
-              justo encima («depende de cuánto repita tu tráfico» y «también
-              las baterías donde no se ahorró nada»), y el cero vive en
-              /benchmarks con su informe. */}
+              2026-10-02): lo honesto ya lo dice la frase llana de justo
+              encima («depende de cuánto repita tu tráfico»), y el cero vive
+              en /benchmarks con su informe. */}
         </section>
 
         {/* LEDGERS — cuatro libros que nunca se suman. Hasta el 2026-09-29 cada
@@ -477,7 +476,8 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             12-09 («avoided_calls ≥ 22 %», «eliminated_tokens ≥ 43,2 %»): cifras
             de un banco con un compresor que npm no trae. Ahora las tarjetas
             DESCRIBEN los libros, sin cifra, y la nota dice de qué libro salió el
-            ahorro medido en el banco público (y que el tercero fue cero). */}
+            ahorro medido en el banco público. Sin «el tercero fue cero» (dueño,
+            2026-10-02): la portada no enseña ceros; /benchmarks, sí. */}
         <section>
           <div className="sec-head rv">
             <span className="eyebrow">{t("ledgersHead.eyebrow")}</span>

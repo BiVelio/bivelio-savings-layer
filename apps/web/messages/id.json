@@ -795,7 +795,7 @@
     },
     "cascade": {
       "title": "Eksekusi termurah menang",
-      "footnote": "Setiap tuas masuk ke buku besarnya sendiri, dan buku-buku itu tidak pernah dijumlahkan. Di baterai ini penghematan berasal dari permintaan berulang yang dilayani SDK tanpa memanggil penyedia dan, pada Claude, dari cache prefiks milik penyedia sendiri. Paket npm tidak menyertakan kompresor, jadi kompresi tidak menghemat apa pun — dan pada lalu lintas tanpa pengulangan, penghematannya tidak dapat dibedakan dari nol."
+      "footnote": "Setiap tuas masuk ke buku besarnya sendiri, dan buku-buku itu tidak pernah dijumlahkan. Di baterai ini penghematan berasal dari permintaan berulang yang dilayani SDK tanpa memanggil penyedia dan, pada Claude, dari cache prefiks milik penyedia sendiri. Paket npm tidak menyertakan kompresor."
     },
     "explica": {
       "eyebrow": "Dengan bahasa sehari-hari",
@@ -828,14 +828,14 @@
       "videoCaption": "Pengujian ini eksperimen yang adil: tugas yang sama dua kali — tanpa Savings dan dengan Savings — dengan meteran penyedia yang sama menghitung keduanya.",
       "plainTitle": "Terjemahan, tanpa jargon",
       "plain": "Pada aliran di mana {rep} permintaan berulang persis, tagihan turun {punto} — antara {bajo} dan {alto} dengan keyakinan 95%. Berapa yang Anda hemat bergantung pada seberapa sering lalu lintas Anda berulang.",
-      "plainNote": "Persentase tidak berarti apa-apa tanpa intervalnya, modelnya, dan lalu lintasnya: kami menerbitkan ketiganya — dan juga baterai yang tidak menghemat apa pun.",
+      "plainNote": "Persentase tidak berarti apa-apa tanpa intervalnya, modelnya, dan lalu lintasnya: kami menerbitkan ketiganya.",
       "benchLink": "Setiap baterai, dengan laporan lengkapnya, di bangku uji publik →"
     },
     "ledgersHead": {
       "eyebrow": "Penghitungan yang jujur",
       "title": "Setiap jenis penghematan dihitung terpisah — agar tak ada angka yang digelembungkan.",
       "body": "Setiap SavingsReport membagi penghematan ke dalam empat buku besar — panggilan yang dihindari, teks yang dihapus, teks yang dikompresi, dan diskon cache penyedia Anda sendiri — dan tidak pernah menjumlahkannya menjadi satu angka pemasaran.",
-      "providerNote": "Di bangku uji publik ({fecha}), penghematan SDK yang terpasang berasal dari buku besar pertama — permintaan berulang yang dilayani tanpa memanggil penyedia — dan, pada Claude, dari yang keempat, yaitu diskon penyedia Anda sendiri. Paket npm tidak menyertakan kompresor, jadi yang ketiga bernilai nol di sana. Buku besar tanpa angka yang diterbitkan dijelaskan di sini, tidak diiklankan."
+      "providerNote": "Di bangku uji publik ({fecha}), penghematan SDK yang terpasang berasal dari buku besar pertama — permintaan berulang yang dilayani tanpa memanggil penyedia — dan, pada Claude, dari yang keempat, yaitu diskon penyedia Anda sendiri. Paket npm tidak menyertakan kompresor. Buku besar tanpa angka yang diterbitkan dijelaskan di sini, tidak diiklankan."
     },
     "ledgers": [
       {
