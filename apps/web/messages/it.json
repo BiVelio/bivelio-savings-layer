@@ -375,6 +375,10 @@
       "summary": "{n, plural, one {# macchina esegue} other {# macchine eseguono}} un SDK precedente a {minima} (la più vecchia dichiara {antigua}). Finché non vengono aggiornate, le loro richieste ripetute contano come stimate, non come misurate per riferimento: restano nei tuoi totali, ma fuori dalla base.",
       "action": "Aggiorna l'SDK a {minima} o successivo su quella macchina e riavvia il processo:"
     },
+    "migrar05": {
+      "note": "L'ultima versione è la 0.5, che introduce modifiche incompatibili.",
+      "link": "Leggi la guida alla migrazione prima di aggiornare →"
+    },
     "maquinas": {
       "title": "macchine (30 giorni)",
       "colSeat": "Macchina",

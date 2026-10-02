@@ -375,6 +375,10 @@
       "summary": "{n, plural, other {# mesin menjalankan}} SDK yang lebih lama dari {minima} (yang tertua mendeklarasikan {antigua}). Sampai diperbarui, permintaan berulangnya dihitung sebagai estimasi, bukan diukur berdasarkan referensi: tetap ada di total Anda, tetapi di luar basis.",
       "action": "Perbarui SDK ke {minima} atau lebih baru di mesin itu dan mulai ulang prosesnya:"
     },
+    "migrar05": {
+      "note": "Versi terbaru adalah 0.5, yang membawa perubahan yang tidak kompatibel.",
+      "link": "Baca panduan migrasi sebelum memperbarui →"
+    },
     "maquinas": {
       "title": "mesin (30 hari)",
       "colSeat": "Mesin",

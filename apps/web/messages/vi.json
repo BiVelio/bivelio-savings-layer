@@ -375,6 +375,10 @@
       "summary": "{n, plural, other {# máy đang chạy}} SDK cũ hơn {minima} (máy cũ nhất khai báo {antigua}). Cho đến khi cập nhật, các yêu cầu lặp lại của chúng được tính là ước tính, không phải đo theo tham chiếu: vẫn nằm trong tổng của bạn, nhưng ngoài cơ sở.",
       "action": "Hãy cập nhật SDK trên máy đó lên {minima} trở lên và khởi động lại tiến trình:"
     },
+    "migrar05": {
+      "note": "Phiên bản mới nhất là 0.5, có các thay đổi không tương thích.",
+      "link": "Đọc hướng dẫn chuyển đổi trước khi cập nhật →"
+    },
     "maquinas": {
       "title": "máy (30 ngày)",
       "colSeat": "Máy",

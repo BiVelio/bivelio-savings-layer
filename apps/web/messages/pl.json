@@ -375,6 +375,10 @@
       "summary": "{n, plural, one {# maszyna działa} few {# maszyny działają} many {# maszyn działa} other {# maszyny działa}} na SDK starszym niż {minima} (najstarsza deklaruje {antigua}). Dopóki nie zostaną zaktualizowane, ich powtórzone żądania liczą się jako szacowane, a nie mierzone przez odniesienie: zostają w Twoich sumach, ale poza bazą.",
       "action": "Zaktualizuj SDK na tej maszynie do {minima} lub nowszego i uruchom proces ponownie:"
     },
+    "migrar05": {
+      "note": "Najnowsza wersja to 0.5, która wprowadza niezgodne zmiany.",
+      "link": "Przed aktualizacją przeczytaj przewodnik migracji →"
+    },
     "maquinas": {
       "title": "maszyny (30 dni)",
       "colSeat": "Maszyna",
