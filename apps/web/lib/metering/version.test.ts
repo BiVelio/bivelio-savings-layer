@@ -107,7 +107,8 @@ describe("admiteReferencia — la verja de la regla de la referencia", () => {
   });
 
   it("no está más allá del siguiente parche de la versión actual (una errata degradaría para siempre)", () => {
-    const [a, b, c] = pkg.version.split(".").map(Number) as [number, number, number];
+    // Sin el sufijo de una preliminar («0.5.0-rc.1» → 0.5.0).
+    const [a, b, c] = pkg.version.split("-")[0]!.split(".").map(Number) as [number, number, number];
     expect(compararVersiones(VERSION_MINIMA_REFERENCIA, `${a}.${b}.${c + 1}`)).toBeLessThanOrEqual(0);
   });
 
@@ -148,7 +149,7 @@ describe("admiteReferencia — la verja de la regla de la referencia", () => {
   });
 
   it("sdk/ desde la mínima: sí; anteriores, preliminares de la mínima o sin versión: no", () => {
-    for (const si of ["sdk/0.4.35", "sdk/0.4.36", "sdk/0.5.0", "sdk/1.0.0", "sdk/0.4.36-rc.1"]) {
+    for (const si of ["sdk/0.4.35", "sdk/0.4.36", "sdk/0.5.0", "sdk/1.0.0", "sdk/0.4.36-rc.1", "sdk/0.5.0-rc.1"]) {
       expect(admiteReferencia(si), si).toBe(true);
     }
     for (const no of [null, "sdk/0.4.23", "sdk/0.4.22", "sdk/0.4.35-rc.1", "0.4.35"]) {
