@@ -827,7 +827,7 @@
       "body": "Chaque scénario s'exécute deux fois contre le vrai fournisseur : tel quel, puis avec Savings devant. Les deux résultats sont comptés avec le compteur du fournisseur lui-même — celui qui fixe le prix de votre facture. Voici ce qui en est sorti, marge d'erreur comprise :",
       "videoCaption": "Le test est une expérience équitable : la même tâche deux fois — sans Savings et avec Savings — avec le même compteur du fournisseur qui mesure les deux.",
       "plainTitle": "Traduction, sans jargon",
-      "plain": "Sur un flux où {rep} des requêtes se répètent à l'identique, la facture a baissé de {punto} — entre {bajo} et {alto} avec 95 % de confiance. Sur un trafic qui ne se répète pas, elle a baissé de ≈ {cero}. Ce que vous économiserez dépend de la part du vôtre qui se répète.",
+      "plain": "Sur un flux où {rep} des requêtes se répètent à l'identique, la facture a baissé de {punto} — entre {bajo} et {alto} avec 95 % de confiance. Ce que vous économiserez dépend de la part de votre trafic qui se répète.",
       "plainNote": "Un pourcentage ne veut rien dire sans son intervalle, son modèle et son trafic : nous publions les trois — et aussi les batteries où rien n'a été économisé.",
       "benchLink": "Chaque batterie, avec son rapport complet, sur le banc public →"
     },
@@ -1004,9 +1004,6 @@
       "errorCorreo": "Cet e-mail ne semble pas valide.",
       "errorEnvio": "Nous n'avons pas pu l'envoyer.",
       "alterna": "Écrivez-nous"
-    },
-    "trabajos": {
-      "caption": "Toutes les requêtes n'ont pas quelque chose à économiser : sur le banc public, le trafic sans répétitions a économisé ≈ {cero}. Nous le publions aussi."
     },
     "devs": {
       "eyebrow": "Conçu pour les développeurs",

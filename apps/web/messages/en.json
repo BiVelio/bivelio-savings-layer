@@ -827,7 +827,7 @@
       "body": "Every scenario runs twice against the real provider: as-is, and with Savings in front. Both results are counted with the provider's own meter — the same one that prices your bill. Here is what came out, error margin included:",
       "videoCaption": "The test is a fair experiment: the same task twice — without Savings and with Savings — with the provider's own meter counting both.",
       "plainTitle": "Translation, no jargon",
-      "plain": "On a stream where {rep} of requests repeat exactly, the bill went down by {punto} — between {bajo} and {alto} with 95% confidence. On traffic that doesn't repeat, it went down by ≈ {cero}. What you save depends on how much yours repeats.",
+      "plain": "On a stream where {rep} of requests repeat exactly, the bill went down by {punto} — between {bajo} and {alto} with 95% confidence. What you save depends on how much your traffic repeats.",
       "plainNote": "A percentage means nothing without its interval, its model and its traffic: we publish all three — and the batteries where nothing was saved, too.",
       "benchLink": "Every battery, with its full report, on the public bench →"
     },
@@ -1004,9 +1004,6 @@
       "errorCorreo": "That email doesn't look valid.",
       "errorEnvio": "We couldn't send it.",
       "alterna": "Email us"
-    },
-    "trabajos": {
-      "caption": "Not every request carries something to save: on the public bench, traffic without repeats saved ≈ {cero}. We publish that too."
     },
     "devs": {
       "eyebrow": "Built for developers",

@@ -827,7 +827,7 @@
       "body": "Cada escenario se ejecuta dos veces contra el proveedor real: tal cual, y con Savings delante. Los dos resultados se cuentan con el contador del propio proveedor — el mismo que pone el precio en tu factura. Esto es lo que salió, con su margen de error:",
       "videoCaption": "La prueba es un experimento justo: la misma tarea dos veces — sin Savings y con Savings — y el mismo contador del proveedor midiendo las dos.",
       "plainTitle": "Traducción, sin jerga",
-      "plain": "En un flujo donde el {rep} de las peticiones se repiten exactas, la factura bajó un {punto}: entre {bajo} y {alto} con un 95 % de confianza. Con tráfico que no se repite, bajó ≈ {cero}. Lo que ahorres depende de cuánto repita el tuyo.",
+      "plain": "En un flujo donde el {rep} de las peticiones se repiten exactas, la factura bajó un {punto}: entre {bajo} y {alto} con un 95 % de confianza. Lo que ahorres depende de cuánto repita tu tráfico.",
       "plainNote": "Un porcentaje no significa nada sin su intervalo, su modelo y su tráfico: publicamos los tres, y también las baterías donde no se ahorró nada.",
       "benchLink": "Cada batería, con su informe completo, en el banco público →"
     },
@@ -1004,9 +1004,6 @@
       "errorCorreo": "Ese correo no parece válido.",
       "errorEnvio": "No hemos podido enviarlo.",
       "alterna": "Escríbenos"
-    },
-    "trabajos": {
-      "caption": "No todas las peticiones traen algo que ahorrar: en el banco público, el tráfico sin repeticiones ahorró ≈ {cero}. También lo publicamos."
     },
     "devs": {
       "eyebrow": "Hecho para desarrolladores",

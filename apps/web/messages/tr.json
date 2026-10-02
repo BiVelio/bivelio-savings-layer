@@ -827,7 +827,7 @@
       "body": "Her senaryo gerçek sağlayıcıya karşı iki kez çalışır: olduğu gibi ve önünde Savings ile. İki sonuç da sağlayıcının kendi sayacıyla sayılır — faturanızı fiyatlandıran sayaçla. İşte hata payıyla birlikte çıkan sonuç:",
       "videoCaption": "Test adil bir deneydir: aynı görev iki kez — Savings olmadan ve Savings ile — ve ikisini de sağlayıcının aynı sayacı ölçer.",
       "plainTitle": "Jargonsuz çevirisi",
-      "plain": "İsteklerin {rep} kadarının birebir tekrarlandığı bir akışta fatura {punto} düştü — %95 güvenle {bajo} ile {alto} arasında. Tekrarlanmayan trafikte ≈ {cero} düştü. Ne kadar tasarruf edeceğiniz, sizinkinin ne kadar tekrarlandığına bağlıdır.",
+      "plain": "İsteklerin {rep} kadarının birebir tekrarlandığı bir akışta fatura {punto} düştü — %95 güvenle {bajo} ile {alto} arasında. Ne kadar tasarruf edeceğiniz, trafiğinizin ne kadar tekrarlandığına bağlıdır.",
       "plainNote": "Bir yüzde; aralığı, modeli ve trafiği olmadan hiçbir şey ifade etmez: üçünü de yayımlıyoruz — hiçbir şeyin tasarruf edilmediği bataryaları da.",
       "benchLink": "Her batarya, tam raporuyla, herkese açık test tezgâhında →"
     },
@@ -1004,9 +1004,6 @@
       "errorCorreo": "Bu e-posta geçerli görünmüyor.",
       "errorEnvio": "Gönderemedik.",
       "alterna": "Bize yaz"
-    },
-    "trabajos": {
-      "caption": "Her istek tasarruf edilecek bir şey taşımaz: herkese açık test tezgâhında tekrar içermeyen trafik ≈ {cero} tasarruf etti. Bunu da yayımlıyoruz."
     },
     "devs": {
       "eyebrow": "Geliştiriciler için yapıldı",
