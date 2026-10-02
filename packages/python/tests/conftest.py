@@ -65,7 +65,11 @@ def informe_medido(request_id: str, response_id: Optional[str], *, basis: str = 
                 "baselineInput": 100, "actualInput": 100, "eliminatedInput": 0, "compressedInput": 0,
                 "baselineOutput": 20, "actualOutput": 20, "eliminatedOutput": 0, "providerCachedInput": 40,
             },
-            "cost": {"baselineEstimate": actual + net, "actual": actual, "netSavingsRatio": net, "basis": basis},
+            "cost": {
+                "baselineEstimate": actual + net, "actual": actual, "basis": basis,
+                # Como el gateway 0.5: la proporción y los dólares, por separado.
+                "netSavingsRatio": net / (actual + net) if actual + net > 0 else 0, "netSavingsUsd": net,
+            },
         },
     }
 
