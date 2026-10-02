@@ -2481,3 +2481,18 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
   .banco-stats dd { font-size: 1.1rem; }
   .banco-tbl .banco-texto { min-width: 160px; }
 }
+
+/* ── /migrate-to-0.5: la guía de migración (docs/MIGRAR-A-0.5.md) ─────────
+   Reusa las páginas de términos; las tablas y el código se desplazan dentro de
+   su caja, nunca la página entera. */
+.lp.terms-page .guia-page .terms-sec { max-width: 92ch; }
+.guia-page .terms-sec code, .guia-page .terms-hero code { font-family: var(--mono); font-size: .86em; overflow-wrap: anywhere; }
+.guia-page .terms-list { padding-left: 22px; }
+.guia-page .terms-list p { margin: 0 0 8px; }
+.guia-page blockquote.terms-governs p { margin: 0; color: var(--ink); }
+.guia-codigo { margin: 4px 0 16px; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface-2); overflow-x: auto; font-family: var(--mono); font-size: 12.5px; line-height: 1.55; color: var(--ink); }
+.guia-page .guia-codigo code { font-size: inherit; overflow-wrap: normal; white-space: pre; }
+.guia-tabla { overflow-x: auto; margin: 6px 0 16px; }
+.guia-tabla .tbl { min-width: 520px; }
+.guia-tabla .tbl th { cursor: default; }
+.guia-tabla th, .guia-tabla td { text-align: left; vertical-align: top; }
