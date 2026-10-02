@@ -1511,7 +1511,11 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .lp .ftr-grid { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 48px; }
 @media (max-width: 860px) { .lp .ftr-grid { grid-template-columns: minmax(0, 1fr); } }
 .lp .ftr-brand, .lp .ftr-cols, .lp .ftr-col { min-width: 0; }
-.lp .ftr-col a, .lp .ftr-col h3 { overflow-wrap: anywhere; }
+/* `hyphens: auto` antes que `anywhere`: en dos columnas de ~112px (móvil),
+   «Nutzungsbedin|gungen» o «Bezpieczeństw|o» partían por cualquier letra y
+   sin guion. Con el `lang` del <html> el navegador parte por sílaba y pone
+   el guion; `anywhere` queda de red para lo que no tenga diccionario. */
+.lp .ftr-col a, .lp .ftr-col h3 { overflow-wrap: anywhere; hyphens: auto; -webkit-hyphens: auto; }
 .lp .ftr-brand { display: flex; flex-direction: column; gap: 32px; }
 .lp .ftr-brand > p { max-width: min(340px, 100%); margin: 0; font-size: 16px; line-height: 1.6; color: var(--ink-soft); }
 .lp .ftr-logo { display: inline-flex; align-self: flex-start; }
@@ -2447,6 +2451,9 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .banco-delta { display: block; white-space: nowrap; }
 .banco-sub { color: var(--ink-soft); font-size: .85em; font-weight: 400; }
 .banco-tirada { font-family: var(--mono); font-size: 12px; white-space: nowrap; color: var(--brand); }
+/* En móvil los nombres largos (`banco-semanal-b349d7a-gemini-31-pro-jornada-2.json`)
+   se salían por la derecha y el final no se leía: allí parten. */
+@media (max-width: 640px) { .banco-tirada { display: inline-block; max-width: 100%; white-space: normal; overflow-wrap: anywhere; } }
 .banco-informes a { display: block; font-family: var(--mono); font-size: 12px; }
 .banco-informes { text-align: left !important; }
 .banco-matriz td { text-align: left; }
