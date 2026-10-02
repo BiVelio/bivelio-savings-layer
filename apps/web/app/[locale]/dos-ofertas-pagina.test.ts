@@ -58,12 +58,13 @@ describe("portada: dos ofertas, cada una con su bloque", () => {
     for (const prohibido of ["proofs", "cifra", "ab.", "%"]) expect(bruto, prohibido).not.toContain(prohibido);
   });
 
-  it("la tarjeta del SDK enseña las filas de lo medido: con repeticiones y sin ellas", () => {
+  it("la tarjeta del SDK enseña la cifra medida con repeticiones (sin la baldosa del cero, 2026-10-02)", () => {
     expect(CODIGO).toContain("const filasMedidas: FilaMedida[] = filasDelBancoEnVivo(t, locale);");
     expect(CODIGO).toContain("BANCO_EN_VIVO");
     const ofertas = seccion("offers");
     const sdk = ofertas.slice(ofertas.indexOf('t("offers.sdk.name")'), ofertas.indexOf('t("offers.gateway.name")'));
-    expect(sdk).toContain("<FilasMedidas filas={filasMedidas.slice(0, 2)} />");
+    expect(sdk).toContain("<FilasMedidas filas={filasMedidas.slice(0, 1)} />");
+    expect(sdk).toContain('t("offers.sdk.figureNote")');
     expect(sdk).toContain('href="#measured"');
     expect(sdk).toContain('href="#verify"');
   });

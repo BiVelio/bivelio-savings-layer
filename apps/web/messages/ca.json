@@ -827,7 +827,7 @@
       "body": "Cada escenari s'executa dues vegades contra el proveïdor real: tal qual, i amb Savings al davant. Els dos resultats es compten amb el comptador del mateix proveïdor — el mateix que posa el preu a la teva factura. Això és el que va sortir, amb el seu marge d'error:",
       "videoCaption": "La prova és un experiment just: la mateixa tasca dues vegades — sense Savings i amb Savings — amb el mateix comptador del proveïdor mesurant totes dues.",
       "plainTitle": "Traducció, sense argot",
-      "plain": "En un flux on el {rep} de les peticions es repeteixen exactes, la factura va baixar un {punto}: entre {bajo} i {alto} amb un 95 % de confiança. Amb trànsit que no es repeteix, va baixar ≈ {cero}. El que estalviïs depèn de quant es repeteixi el teu.",
+      "plain": "En un flux on el {rep} de les peticions es repeteixen exactes, la factura va baixar un {punto}: entre {bajo} i {alto} amb un 95 % de confiança. El que estalviïs depèn de quant es repeteixi el teu trànsit.",
       "plainNote": "Un percentatge no vol dir res sense el seu interval, el seu model i el seu trànsit: publiquem tots tres, i també les bateries on no es va estalviar res.",
       "benchLink": "Cada bateria, amb el seu informe complet, al banc públic →"
     },
@@ -1004,9 +1004,6 @@
       "errorCorreo": "Aquest correu no sembla vàlid.",
       "errorEnvio": "No hem pogut enviar-ho.",
       "alterna": "Escriu-nos"
-    },
-    "trabajos": {
-      "caption": "No totes les peticions porten alguna cosa a estalviar: al banc públic, el trànsit sense repeticions va estalviar ≈ {cero}. També ho publiquem."
     },
     "devs": {
       "eyebrow": "Fet per a desenvolupadors",

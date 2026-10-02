@@ -48,8 +48,9 @@ const LLMS = [
 // `public/data/ab-live.json` —una tirada sintética del 2026-09-12 con un
 // compresor que npm no trae— y de ahí salían el «al menos un 10 %», el recibo
 // del héroe y los libros «avoided_calls ≥ 22 %». Ya no lo lee: publica la cifra
-// CONDICIONADA del banco en vivo (GSM8K, con repeticiones), el ≈ 0 % sin
-// repeticiones y, aparte, la caché de prefijo del proveedor. Los números salen
+// CONDICIONADA del banco en vivo (GSM8K, con repeticiones) y, aparte, la caché
+// de prefijo del proveedor. El ≈ 0 % sin repeticiones vive en /benchmarks, no
+// en la portada (dueño, 2026-10-02). Los números salen
 // de lib/portada/banco-en-vivo.ts, con verja contra sus informes.
 
 // The "integrate" snippet: the same 3-step story as /how-it-works (package →
@@ -146,11 +147,12 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
   const pct1 = new Intl.NumberFormat(locale, { style: "percent", minimumFractionDigits: 1, maximumFractionDigits: 1 });
   const pct0 = new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 0 });
   const V = BANCO_EN_VIVO;
-  const cero = pct0.format(0);
   const rep = pct0.format(V.repeticiones);
-  // Las tres filas de lo medido: con repeticiones (OpenAI), sin repeticiones
-  // (≈ 0) y el mismo flujo en Claude, con la parte de la caché del proveedor
-  // dicha aparte. Cada cifra con su intervalo; ninguna con un «al menos».
+  // Las filas de lo medido: con repeticiones (OpenAI) y el mismo flujo en
+  // Claude, con la parte de la caché del proveedor dicha aparte. Cada cifra con
+  // su intervalo y su flujo; ninguna con un «al menos». La fila «sin
+  // repeticiones ≈ 0» salió de la portada (dueño, 2026-10-02): sigue entera en
+  // /benchmarks, y la frase de «depende de cuánto repita tu tráfico» se queda.
   const filasMedidas: FilaMedida[] = filasDelBancoEnVivo(t, locale);
   const pieMedido = t.rich("enVivo.pie", { bench: (c) => <Link href="/benchmarks">{c}</Link> });
   // Lo medido de Gemini (banco semanal en vivo): qué modelo y qué día, nunca
@@ -283,10 +285,10 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
               <p>{t("offers.sdk.what")}</p>
               <div className="offer-fig">
                 <span className="offer-fig-t">{t("offers.sdk.figureLabel")}</span>
-                {/* Las dos primeras filas de lo medido: con repeticiones y sin
-                    ellas. Nunca la primera sola: sin la segunda se leería como
-                    lo que ahorra cualquier tráfico. */}
-                <FilasMedidas filas={filasMedidas.slice(0, 2)} />
+                {/* La primera fila de lo medido (OpenAI), que ya dice su
+                    condición: «en un flujo donde el 30 % repite». Debajo, la
+                    nota de que depende de cuánto repita tu tráfico. */}
+                <FilasMedidas filas={filasMedidas.slice(0, 1)} />
                 <p className="offer-fig-note">{t("offers.sdk.figureNote")}</p>
               </div>
               <div className="offer-install">
@@ -445,7 +447,6 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
                   punto: pct1.format(V.openai.ahorro.point),
                   bajo: pct1.format(V.openai.ahorro.lower),
                   alto: pct1.format(V.openai.ahorro.upper),
-                  cero,
                 })}
               </p>
               <p className="nota">{t("step2.plainNote")}</p>
@@ -463,11 +464,12 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
               instalado sale de las peticiones repetidas servidas sin llamar al
               proveedor (y la caché de prefijo es del proveedor, aparte); el
               compresor de la tirada sintética es solo del banco y el paquete
-              no lo trae. Fuera (2026-09-30). Queda la frase honesta: el
-              tráfico sin repeticiones ahorró ≈ 0, y lo publicamos. */}
-          <div className="trabajos">
-            <p className="explica-nota">{t("trabajos.caption", { cero })}</p>
-          </div>
+              no lo trae. Fuera (2026-09-30). Debajo quedó una frase con el
+              «≈ 0 %» del tráfico sin repeticiones; fuera también (dueño,
+              2026-10-02): lo honesto ya lo dicen la frase llana y su nota de
+              justo encima («depende de cuánto repita tu tráfico» y «también
+              las baterías donde no se ahorró nada»), y el cero vive en
+              /benchmarks con su informe. */}
         </section>
 
         {/* LEDGERS — cuatro libros que nunca se suman. Hasta el 2026-09-29 cada

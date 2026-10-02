@@ -827,7 +827,7 @@
       "body": "Cada cenário corre duas vezes contra o fornecedor real: tal como está, e com o Savings à frente. Os dois resultados são contados com o contador do próprio fornecedor — o mesmo que dá preço à sua fatura. Foi isto que saiu, com a sua margem de erro:",
       "videoCaption": "O teste é uma experiência justa: a mesma tarefa duas vezes — sem Savings e com Savings — com o mesmo contador do fornecedor a medir as duas.",
       "plainTitle": "Tradução, sem jargão",
-      "plain": "Num fluxo onde {rep} dos pedidos se repetem exatamente, a fatura desceu {punto} — entre {bajo} e {alto} com 95% de confiança. Com tráfego que não se repete, desceu ≈ {cero}. O que poupares depende de quanto o teu se repete.",
+      "plain": "Num fluxo onde {rep} dos pedidos se repetem exatamente, a fatura desceu {punto} — entre {bajo} e {alto} com 95% de confiança. O que poupares depende de quanto o teu tráfego se repete.",
       "plainNote": "Uma percentagem não significa nada sem o seu intervalo, o seu modelo e o seu tráfego: publicamos os três — e também as baterias onde nada se poupou.",
       "benchLink": "Cada bateria, com o seu relatório completo, no banco público →"
     },
@@ -1004,9 +1004,6 @@
       "errorCorreo": "Esse email não parece válido.",
       "errorEnvio": "Não conseguimos enviar.",
       "alterna": "Escreve-nos"
-    },
-    "trabajos": {
-      "caption": "Nem todos os pedidos trazem algo para poupar: no banco público, o tráfego sem repetições poupou ≈ {cero}. Também o publicamos."
     },
     "devs": {
       "eyebrow": "Feito para programadores",

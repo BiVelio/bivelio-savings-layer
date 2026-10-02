@@ -827,7 +827,7 @@
       "body": "Mỗi kịch bản chạy hai lần với nhà cung cấp thật: nguyên trạng, và có Savings đứng trước. Cả hai kết quả được đếm bằng chính bộ đếm của nhà cung cấp — bộ đếm định giá hóa đơn của bạn. Đây là kết quả, kèm biên độ sai số:",
       "videoCaption": "Bài kiểm tra là một thí nghiệm công bằng: cùng một nhiệm vụ chạy hai lần — không có Savings và có Savings — và cùng một bộ đếm của nhà cung cấp đo cả hai.",
       "plainTitle": "Diễn giải, không thuật ngữ",
-      "plain": "Trên một luồng mà {rep} số yêu cầu lặp lại y hệt, hóa đơn giảm {punto} — trong khoảng {bajo} đến {alto} với độ tin cậy 95%. Với lưu lượng không lặp lại, hóa đơn giảm ≈ {cero}. Bạn tiết kiệm bao nhiêu tùy vào mức độ lặp lại của lưu lượng của bạn.",
+      "plain": "Trên một luồng mà {rep} số yêu cầu lặp lại y hệt, hóa đơn giảm {punto} — trong khoảng {bajo} đến {alto} với độ tin cậy 95%. Bạn tiết kiệm bao nhiêu tùy vào mức độ lặp lại của lưu lượng của bạn.",
       "plainNote": "Một tỷ lệ phần trăm không có ý nghĩa gì nếu thiếu khoảng tin cậy, mô hình và lưu lượng của nó: chúng tôi công bố cả ba — và cả những bộ thử không tiết kiệm được gì.",
       "benchLink": "Từng bộ thử, kèm báo cáo đầy đủ, trên băng thử công khai →"
     },
@@ -1004,9 +1004,6 @@
       "errorCorreo": "Email đó có vẻ không hợp lệ.",
       "errorEnvio": "Chúng tôi không gửi được.",
       "alterna": "Gửi email cho chúng tôi"
-    },
-    "trabajos": {
-      "caption": "Không phải yêu cầu nào cũng có gì để tiết kiệm: trên băng thử công khai, lưu lượng không lặp lại tiết kiệm ≈ {cero}. Chúng tôi cũng công bố điều đó."
     },
     "devs": {
       "eyebrow": "Xây dựng cho lập trình viên",

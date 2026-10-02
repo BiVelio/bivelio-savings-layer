@@ -827,7 +827,7 @@
       "body": "Każdy scenariusz uruchamiamy dwa razy u prawdziwego dostawcy: bez zmian i z Savings z przodu. Oba wyniki liczy licznik samego dostawcy — ten sam, który wycenia Twoją fakturę. Oto co wyszło, z marginesem błędu:",
       "videoCaption": "Test to uczciwy eksperyment: to samo zadanie dwa razy — bez Savings i z Savings — a oba mierzy ten sam licznik dostawcy.",
       "plainTitle": "Tłumaczenie, bez żargonu",
-      "plain": "Przy strumieniu, w którym {rep} zapytań powtarza się dokładnie, rachunek spadł o {punto} — między {bajo} a {alto} przy 95% ufności. Przy ruchu, który się nie powtarza, spadł o ≈ {cero}. Ile zaoszczędzisz, zależy od tego, jak często powtarza się Twój.",
+      "plain": "Przy strumieniu, w którym {rep} zapytań powtarza się dokładnie, rachunek spadł o {punto} — między {bajo} a {alto} przy 95% ufności. Ile zaoszczędzisz, zależy od tego, jak często powtarza się Twój ruch.",
       "plainNote": "Procent nic nie znaczy bez swojego przedziału, modelu i ruchu: publikujemy wszystkie trzy — a także baterie, w których nic nie zaoszczędzono.",
       "benchLink": "Każda bateria z pełnym raportem w publicznym benchmarku →"
     },
@@ -1004,9 +1004,6 @@
       "errorCorreo": "Ten e-mail nie wygląda na poprawny.",
       "errorEnvio": "Nie udało się wysłać.",
       "alterna": "Napisz do nas"
-    },
-    "trabajos": {
-      "caption": "Nie każde zapytanie ma coś do zaoszczędzenia: w publicznym benchmarku ruch bez powtórzeń zaoszczędził ≈ {cero}. To też publikujemy."
     },
     "devs": {
       "eyebrow": "Stworzone dla programistów",

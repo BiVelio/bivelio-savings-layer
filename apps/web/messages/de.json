@@ -827,7 +827,7 @@
       "body": "Jedes Szenario läuft zweimal gegen den echten Anbieter: unverändert und mit Savings davor. Beide Ergebnisse werden mit dem Zähler des Anbieters selbst gezählt — demselben, der deine Rechnung bepreist. Das kam heraus, samt Fehlermarge:",
       "videoCaption": "Der Test ist ein faires Experiment: dieselbe Aufgabe zweimal — ohne Savings und mit Savings — und derselbe Zähler des Anbieters zählt beide.",
       "plainTitle": "Übersetzung, ohne Fachjargon",
-      "plain": "Bei einem Strom, in dem sich {rep} der Anfragen exakt wiederholen, sank die Rechnung um {punto} — zwischen {bajo} und {alto} mit 95 % Konfidenz. Bei Traffic ohne Wiederholungen sank sie um ≈ {cero}. Was du sparst, hängt davon ab, wie oft sich deiner wiederholt.",
+      "plain": "Bei einem Strom, in dem sich {rep} der Anfragen exakt wiederholen, sank die Rechnung um {punto} — zwischen {bajo} und {alto} mit 95 % Konfidenz. Was du sparst, hängt davon ab, wie oft sich dein Traffic wiederholt.",
       "plainNote": "Ein Prozentsatz bedeutet nichts ohne sein Intervall, sein Modell und seinen Traffic: Wir veröffentlichen alle drei — und auch die Batterien, in denen nichts gespart wurde.",
       "benchLink": "Jede Batterie mit ihrem vollständigen Bericht im öffentlichen Benchmark →"
     },
@@ -1004,9 +1004,6 @@
       "errorCorreo": "Diese E-Mail sieht nicht gültig aus.",
       "errorEnvio": "Wir konnten es nicht senden.",
       "alterna": "Schreib uns"
-    },
-    "trabajos": {
-      "caption": "Nicht jede Anfrage enthält etwas zum Sparen: Im öffentlichen Benchmark sparte Traffic ohne Wiederholungen ≈ {cero}. Auch das veröffentlichen wir."
     },
     "devs": {
       "eyebrow": "Für Entwickler gebaut",

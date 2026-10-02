@@ -1355,10 +1355,6 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .lp .medido-llano-texto .nota { margin: 0; font-size: .85rem; color: var(--ink-soft); }
 @media (max-width: 860px) { .lp .medido-llano { grid-template-columns: minmax(0, 1fr); } }
 
-/* La frase de la portada sobre el tráfico sin repeticiones (los vídeos
-   «paja/magro» que iban aquí prometían recortar el texto: fuera, 2026-09-30). */
-.lp .trabajos { margin-top: 24px; }
-
 /* Libros mayores */
 .lp .ledgers { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
 .lp .ledger { min-width: 0; }

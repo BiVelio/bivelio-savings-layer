@@ -827,7 +827,7 @@
       "body": "Ogni scenario viene eseguito due volte contro il fornitore reale: così com'è, e con Savings davanti. Entrambi i risultati si contano con il contatore del fornitore stesso — lo stesso che dà il prezzo alla tua fattura. Ecco cosa è uscito, con il suo margine di errore:",
       "videoCaption": "Il test è un esperimento equo: lo stesso compito due volte — senza Savings e con Savings — con lo stesso contatore del fornitore che misura entrambi.",
       "plainTitle": "Traduzione, senza gergo",
-      "plain": "Su un flusso in cui il {rep} delle richieste si ripetono identiche, la bolletta è scesa del {punto} — tra {bajo} e {alto} con il 95% di confidenza. Con traffico che non si ripete, è scesa di ≈ {cero}. Quanto risparmierai dipende da quanto si ripete il tuo.",
+      "plain": "Su un flusso in cui il {rep} delle richieste si ripetono identiche, la bolletta è scesa del {punto} — tra {bajo} e {alto} con il 95% di confidenza. Quanto risparmierai dipende da quanto si ripete il tuo traffico.",
       "plainNote": "Una percentuale non significa nulla senza il suo intervallo, il suo modello e il suo traffico: pubblichiamo tutti e tre — e anche le batterie in cui non si è risparmiato nulla.",
       "benchLink": "Ogni batteria, con il suo report completo, sul banco pubblico →"
     },
@@ -1004,9 +1004,6 @@
       "errorCorreo": "Questa email non sembra valida.",
       "errorEnvio": "Non siamo riusciti a inviarlo.",
       "alterna": "Scrivici"
-    },
-    "trabajos": {
-      "caption": "Non ogni richiesta ha qualcosa da risparmiare: sul banco pubblico, il traffico senza ripetizioni ha risparmiato ≈ {cero}. Pubblichiamo anche questo."
     },
     "devs": {
       "eyebrow": "Fatto per sviluppatori",
