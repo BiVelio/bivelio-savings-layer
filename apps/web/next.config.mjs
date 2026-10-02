@@ -121,8 +121,18 @@ const nextConfig = {
    * `/es` serviría español a quien llegue desde un enlace en inglés, que es otra
    * variante del mismo problema que esto viene a cerrar.
    */
+  /*
+   * `/migrate-to-0.5` SIN IDIOMA. El punto de «0.5» hace que el `matcher` del
+   * middleware la tome por un fichero (excluye toda ruta con un punto), así que
+   * no se le negociaba idioma: `[locale]` recibía «migrate-to-0.5» y la respuesta
+   * era un 500. Es la URL corta que se comparte en notas de versión y correos, y
+   * la guía solo existe en inglés con su `canonical` en /en: va ahí directamente.
+   */
   async redirects() {
-    return [{ source: "/landing.html", destination: "/", statusCode: 301 }];
+    return [
+      { source: "/landing.html", destination: "/", statusCode: 301 },
+      { source: "/migrate-to-0.5", destination: "/en/migrate-to-0.5", statusCode: 301 },
+    ];
   },
 };
 
