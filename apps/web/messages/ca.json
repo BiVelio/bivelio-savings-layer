@@ -787,7 +787,7 @@
       "proofTitle": "Mesurat contra proveïdor real",
       "medidoEn": "Mesurat a",
       "compatibleCon": "Compatible amb",
-      "compatibleNota": "Compatible no vol dir mesurat. L'SDK funciona amb qualsevol endpoint compatible amb l'API d'OpenAI, més l'adaptador natiu d'Anthropic i l'adaptador natiu de Gemini (nou a la {gemini}). Amb xifra d'estalvi al banc públic, avui només models d'OpenAI i d'Anthropic; Gemini no té xifra d'estalvi. El que hi ha mesurat de Gemini: {flash}, per la seva API nativa, al banc setmanal en viu del {fecha} — les quatre bateries, sense cap error de la capa i sense cap negativa en memòria cau ni acreditada com a estalvi. Aquest banc comprova que la capa no trenca res ni cobra de més; no mesura un estalvi. {pro} encara no està mesurat: ho va impedir la quota del proveïdor."
+      "compatibleNota": "Compatible no vol dir mesurat. L'SDK funciona amb qualsevol endpoint compatible amb l'API d'OpenAI, més l'adaptador natiu d'Anthropic i l'adaptador natiu de Gemini (nou a la {gemini}). Amb xifra d'estalvi al banc públic, avui només models d'OpenAI i d'Anthropic; Gemini no té xifra d'estalvi. El que hi ha mesurat de Gemini: {flash}, per la seva API nativa, al banc setmanal en viu del {fecha} — les quatre bateries, sense cap error de la capa i sense cap negativa en memòria cau ni acreditada com a estalvi. Aquest banc comprova que la capa no trenca res ni cobra de més; no mesura un estalvi. També mesurat: {pro}, per la seva API nativa, en dos bancs parcials del {fechaPro} (la seva quota diària del proveïdor no dona per a les quatre bateries en un dia): les quatre bateries, també sense cap error de la capa i sense cap negativa a la memòria cau ni acreditada com a estalvi."
     },
     "cascade": {
       "title": "Guanya l'execució més barata",
@@ -1189,7 +1189,11 @@
       "note": "«Errors de la capa» són errors al braç B que l'A no va tenir. «B − A» és la diferència d'exactitud a GSM8K i BFCL, la de la taxa de negatives a XSTest (p de McNemar, prompts aparellats) i, a MT-Bench, quantes vegades el jutge prefereix B (la meitat és empat). «Informe davant factura» és quant s'aparta el cost que informa la capa per al braç B del que factura el proveïdor.",
       "earlierTitle": "Tirades setmanals anteriors",
       "earlierOk": "{fecha} · commit {commit} · sense regressions.",
-      "earlierFailed": "{fecha} · commit {commit} · ha fallat (regles trencades: {n})."
+      "earlierFailed": "{fecha} · commit {commit} · ha fallat (regles trencades: {n}).",
+      "partialTitle": "Bancs parcials",
+      "partialIntro": "Un banc parcial es llança a mà amb només alguns models o bateries; per exemple, l'altra jornada d'un model la quota diària del proveïdor del qual no dona per a les seves quatre bateries en un dia. Mesura el que diu, però no és la tirada setmanal: no compta per publicar.",
+      "partialOk": "{fecha} · commit {commit} · {modelos} · {baterias} · sense regressions.",
+      "partialFailed": "{fecha} · commit {commit} · {modelos} · {baterias} · ha fallat (regles trencades: {n})."
     },
     "batteries": {
       "gsm8k": "Problemes matemàtics amb repeticions i paràfrasis: quant estalvia la memòria cau i si es perd exactitud.",

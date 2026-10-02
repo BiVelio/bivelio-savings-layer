@@ -787,7 +787,7 @@
       "proofTitle": "Gerçek sağlayıcıya karşı ölçüldü",
       "medidoEn": "Ölçüldüğü yer",
       "compatibleCon": "Uyumlu",
-      "compatibleNota": "Uyumlu, ölçülmüş demek değildir. SDK, OpenAI API'siyle uyumlu her uç noktayla, ayrıca yerel Anthropic bağdaştırıcısı ve yerel Gemini bağdaştırıcısıyla ({gemini} sürümünde yeni) çalışır. Herkese açık test tezgâhında tasarruf rakamı olanlar bugün yalnızca OpenAI ve Anthropic modelleridir; Gemini'nin tasarruf rakamı yok. Gemini için ölçülen: {flash}, yerel API'si üzerinden, {fecha} tarihli haftalık canlı testte — dört bataryanın tümü, hiçbir katman hatası olmadan ve önbelleğe alınan ya da tasarruf olarak kredilendirilen hiçbir ret olmadan. Bu test, katmanın hiçbir şeyi bozmadığını ve fazla ücret almadığını kontrol eder; bir tasarrufu ölçmez. {pro} henüz ölçülmedi: sağlayıcının kotası buna engel oldu."
+      "compatibleNota": "Uyumlu, ölçülmüş demek değildir. SDK, OpenAI API'siyle uyumlu her uç noktayla, ayrıca yerel Anthropic bağdaştırıcısı ve yerel Gemini bağdaştırıcısıyla ({gemini} sürümünde yeni) çalışır. Herkese açık test tezgâhında tasarruf rakamı olanlar bugün yalnızca OpenAI ve Anthropic modelleridir; Gemini'nin tasarruf rakamı yok. Gemini için ölçülen: {flash}, yerel API'si üzerinden, {fecha} tarihli haftalık canlı testte — dört bataryanın tümü, hiçbir katman hatası olmadan ve önbelleğe alınan ya da tasarruf olarak kredilendirilen hiçbir ret olmadan. Bu test, katmanın hiçbir şeyi bozmadığını ve fazla ücret almadığını kontrol eder; bir tasarrufu ölçmez. Ayrıca ölçüldü: {pro}, yerel API'si üzerinden, {fechaPro} tarihli iki kısmi koşuda (sağlayıcının günlük kotası dört bataryaya bir günde yetmiyor): dört bataryanın tamamı, yine katmandan kaynaklı hiçbir hata olmadan ve önbelleğe alınmış ya da tasarruf sayılmış hiçbir ret olmadan."
     },
     "cascade": {
       "title": "En ucuz yürütme kazanır",
@@ -1189,7 +1189,11 @@
       "note": "“Katman hataları”, A kolunda olmayıp B kolunda çıkan hatalardır. “B − A”, GSM8K ve BFCL'de doğruluk farkı, XSTest'te ret oranı farkı (McNemar p değeri, eşleştirilmiş promptlar), MT-Bench'te ise hakemin B'yi ne sıklıkla tercih ettiğidir (yarısı beraberlik demektir). “Rapor ile fatura”, katmanın B kolu için bildirdiği maliyetin sağlayıcının faturaladığından ne kadar saptığıdır.",
       "earlierTitle": "Önceki haftalık koşular",
       "earlierOk": "{fecha} · commit {commit} · gerileme yok.",
-      "earlierFailed": "{fecha} · commit {commit} · başarısız (bozulan kurallar: {n})."
+      "earlierFailed": "{fecha} · commit {commit} · başarısız (bozulan kurallar: {n}).",
+      "partialTitle": "Kısmi koşular",
+      "partialIntro": "Kısmi koşu yalnızca bazı modeller veya bataryalarla elle başlatılır; örneğin sağlayıcının günlük kotası dört bataryasına bir günde yetmeyen bir modelin diğer günü. Söylediğini ölçer, ama haftalık koşu değildir: yayımlamak için sayılmaz.",
+      "partialOk": "{fecha} · commit {commit} · {modelos} · {baterias} · gerileme yok.",
+      "partialFailed": "{fecha} · commit {commit} · {modelos} · {baterias} · başarısız (bozulan kurallar: {n})."
     },
     "batteries": {
       "gsm8k": "Tekrarlar ve başka sözcüklerle ifade edilmiş halleriyle matematik problemleri: önbelleğin ne kadar tasarruf sağladığı ve doğruluğun düşüp düşmediği.",

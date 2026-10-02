@@ -787,7 +787,7 @@
       "proofTitle": "Measured against a real provider",
       "medidoEn": "Measured on",
       "compatibleCon": "Compatible with",
-      "compatibleNota": "Compatible is not measured. The SDK works with any endpoint compatible with the OpenAI API, plus the native Anthropic adapter and the native Gemini adapter (new in {gemini}). With a savings figure on the public bench, today only OpenAI and Anthropic models; Gemini has no savings figure. What is measured for Gemini: {flash}, through its native API, in the weekly live bench of {fecha} — all four batteries, with no layer failures and no refusal cached or credited as savings. That bench checks that the layer breaks nothing and does not overcharge; it does not measure a saving. {pro} is not measured yet: the provider's quota stopped it."
+      "compatibleNota": "Compatible is not measured. The SDK works with any endpoint compatible with the OpenAI API, plus the native Anthropic adapter and the native Gemini adapter (new in {gemini}). With a savings figure on the public bench, today only OpenAI and Anthropic models; Gemini has no savings figure. What is measured for Gemini: {flash}, through its native API, in the weekly live bench of {fecha} — all four batteries, with no layer failures and no refusal cached or credited as savings. That bench checks that the layer breaks nothing and does not overcharge; it does not measure a saving. Also measured: {pro}, through its native API, in two partial runs on {fechaPro} (its daily provider quota does not fit all four batteries in one day): all four batteries, again with no layer failures and no refusal cached or credited as savings."
     },
     "cascade": {
       "title": "Cheapest execution wins",
@@ -1189,7 +1189,11 @@
       "note": "“Layer failures” are errors in arm B that arm A did not have. “B − A” is the accuracy difference in GSM8K and BFCL, the refusal-rate difference in XSTest (McNemar's p, paired prompts) and, in MT-Bench, how often the judge prefers B (one half is a tie). “Report vs invoice” is how far the cost the layer reports for arm B strays from what the provider bills.",
       "earlierTitle": "Earlier weekly runs",
       "earlierOk": "{fecha} · commit {commit} · no regressions.",
-      "earlierFailed": "{fecha} · commit {commit} · failed (rules broken: {n})."
+      "earlierFailed": "{fecha} · commit {commit} · failed (rules broken: {n}).",
+      "partialTitle": "Partial runs",
+      "partialIntro": "A partial run is launched by hand with only some models or batteries; for example, the other day's share of a model whose daily provider quota does not fit its four batteries in one day. It measures what it says, but it is not the weekly run: it does not count for publishing.",
+      "partialOk": "{fecha} · commit {commit} · {modelos} · {baterias} · no regressions.",
+      "partialFailed": "{fecha} · commit {commit} · {modelos} · {baterias} · failed (rules broken: {n})."
     },
     "batteries": {
       "gsm8k": "Math word problems with repeats and paraphrases: how much the cache saves and whether accuracy drops.",

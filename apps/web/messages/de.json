@@ -787,7 +787,7 @@
       "proofTitle": "Gegen echten Provider gemessen",
       "medidoEn": "Gemessen auf",
       "compatibleCon": "Kompatibel mit",
-      "compatibleNota": "Kompatibel heißt nicht gemessen. Das SDK funktioniert mit jedem Endpunkt, der mit der OpenAI-API kompatibel ist, dazu mit dem nativen Anthropic-Adapter und dem nativen Gemini-Adapter (neu in {gemini}). Mit einer Einsparungszahl im öffentlichen Benchmark sind heute nur Modelle von OpenAI und Anthropic gemessen; für Gemini gibt es keine Einsparungszahl. Was für Gemini gemessen ist: {flash}, über seine native API, im wöchentlichen Live-Benchmark vom {fecha} — alle vier Batterien, ohne Fehler der Schicht und ohne gecachte oder als Einsparung gutgeschriebene Ablehnung. Dieser Benchmark prüft, dass die Schicht nichts kaputt macht und nicht zu viel berechnet; eine Einsparung misst er nicht. {pro} ist noch nicht gemessen: Das Kontingent des Anbieters hat es verhindert."
+      "compatibleNota": "Kompatibel heißt nicht gemessen. Das SDK funktioniert mit jedem Endpunkt, der mit der OpenAI-API kompatibel ist, dazu mit dem nativen Anthropic-Adapter und dem nativen Gemini-Adapter (neu in {gemini}). Mit einer Einsparungszahl im öffentlichen Benchmark sind heute nur Modelle von OpenAI und Anthropic gemessen; für Gemini gibt es keine Einsparungszahl. Was für Gemini gemessen ist: {flash}, über seine native API, im wöchentlichen Live-Benchmark vom {fecha} — alle vier Batterien, ohne Fehler der Schicht und ohne gecachte oder als Einsparung gutgeschriebene Ablehnung. Dieser Benchmark prüft, dass die Schicht nichts kaputt macht und nicht zu viel berechnet; eine Einsparung misst er nicht. Ebenfalls gemessen: {pro}, über seine native API, in zwei Teilläufen am {fechaPro} (sein tägliches Anbieterkontingent reicht nicht für alle vier Batterien an einem Tag): alle vier Batterien, ebenfalls ohne Fehler der Schicht und ohne gecachte oder als Ersparnis verbuchte Ablehnung."
     },
     "cascade": {
       "title": "Die günstigste Ausführung gewinnt",
@@ -1189,7 +1189,11 @@
       "note": "„Fehler der Schicht“ sind Fehler in Arm B, die Arm A nicht hatte. „B − A“ ist der Genauigkeitsunterschied bei GSM8K und BFCL, der Unterschied der Ablehnungsrate bei XSTest (p nach McNemar, gepaarte Prompts) und bei MT-Bench, wie oft der Richter B bevorzugt (die Hälfte ist ein Unentschieden). „Bericht vs. Rechnung“ ist, wie weit die Kosten, die die Schicht für Arm B meldet, von dem abweichen, was der Anbieter berechnet.",
       "earlierTitle": "Frühere wöchentliche Läufe",
       "earlierOk": "{fecha} · Commit {commit} · keine Regressionen.",
-      "earlierFailed": "{fecha} · Commit {commit} · fehlgeschlagen (verletzte Regeln: {n})."
+      "earlierFailed": "{fecha} · Commit {commit} · fehlgeschlagen (verletzte Regeln: {n}).",
+      "partialTitle": "Teilläufe",
+      "partialIntro": "Ein Teillauf wird von Hand mit nur einigen Modellen oder Batterien gestartet, etwa für den zweiten Tag eines Modells, dessen tägliches Anbieterkontingent nicht für alle vier Batterien an einem Tag reicht. Er misst, was er angibt, ist aber nicht der wöchentliche Lauf und zählt nicht für eine Veröffentlichung.",
+      "partialOk": "{fecha} · Commit {commit} · {modelos} · {baterias} · keine Regressionen.",
+      "partialFailed": "{fecha} · Commit {commit} · {modelos} · {baterias} · fehlgeschlagen (verletzte Regeln: {n})."
     },
     "batteries": {
       "gsm8k": "Textaufgaben in Mathematik mit Wiederholungen und Umformulierungen: wie viel der Cache einspart und ob die Genauigkeit sinkt.",

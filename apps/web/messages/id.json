@@ -787,7 +787,7 @@
       "proofTitle": "Diukur terhadap penyedia nyata",
       "medidoEn": "Diukur pada",
       "compatibleCon": "Kompatibel dengan",
-      "compatibleNota": "Kompatibel tidak sama dengan terukur. SDK bekerja dengan endpoint apa pun yang kompatibel dengan API OpenAI, ditambah adaptor native Anthropic dan adaptor native Gemini (baru di {gemini}). Dengan angka penghematan di bangku uji publik, saat ini hanya model OpenAI dan Anthropic; Gemini tidak memiliki angka penghematan. Yang terukur untuk Gemini: {flash}, melalui API native-nya, di bench mingguan langsung {fecha} — keempat baterai, tanpa kegagalan lapisan dan tanpa penolakan yang di-cache atau dikreditkan sebagai penghematan. Bench itu memeriksa bahwa lapisan tidak merusak apa pun dan tidak menagih lebih; bench itu tidak mengukur penghematan. {pro} belum terukur: kuota penyedia menghentikannya."
+      "compatibleNota": "Kompatibel tidak sama dengan terukur. SDK bekerja dengan endpoint apa pun yang kompatibel dengan API OpenAI, ditambah adaptor native Anthropic dan adaptor native Gemini (baru di {gemini}). Dengan angka penghematan di bangku uji publik, saat ini hanya model OpenAI dan Anthropic; Gemini tidak memiliki angka penghematan. Yang terukur untuk Gemini: {flash}, melalui API native-nya, di bench mingguan langsung {fecha} — keempat baterai, tanpa kegagalan lapisan dan tanpa penolakan yang di-cache atau dikreditkan sebagai penghematan. Bench itu memeriksa bahwa lapisan tidak merusak apa pun dan tidak menagih lebih; bench itu tidak mengukur penghematan. Juga terukur: {pro}, melalui API native-nya, dalam dua putaran parsial pada {fechaPro} (kuota harian penyedianya tidak cukup untuk keempat baterai dalam satu hari): keempat baterai, juga tanpa kegagalan lapisan dan tanpa penolakan yang di-cache atau dihitung sebagai penghematan."
     },
     "cascade": {
       "title": "Eksekusi termurah menang",
@@ -1189,7 +1189,11 @@
       "note": "“Kegagalan lapisan” adalah galat di lengan B yang tidak dialami lengan A. “B − A” adalah selisih akurasi di GSM8K dan BFCL, selisih tingkat penolakan di XSTest (p McNemar, prompt berpasangan) dan, di MT-Bench, seberapa sering juri memilih B (setengah berarti seri). “Laporan vs tagihan” adalah seberapa jauh biaya yang dilaporkan lapisan untuk lengan B menyimpang dari yang ditagih penyedia.",
       "earlierTitle": "Putaran mingguan sebelumnya",
       "earlierOk": "{fecha} · commit {commit} · tanpa regresi.",
-      "earlierFailed": "{fecha} · commit {commit} · gagal (aturan yang dilanggar: {n})."
+      "earlierFailed": "{fecha} · commit {commit} · gagal (aturan yang dilanggar: {n}).",
+      "partialTitle": "Putaran parsial",
+      "partialIntro": "Putaran parsial dijalankan secara manual dengan hanya sebagian model atau baterai; misalnya hari lain untuk model yang kuota harian penyedianya tidak cukup untuk keempat baterainya dalam satu hari. Ia mengukur apa yang dinyatakannya, tetapi bukan putaran mingguan: tidak dihitung untuk publikasi.",
+      "partialOk": "{fecha} · commit {commit} · {modelos} · {baterias} · tanpa regresi.",
+      "partialFailed": "{fecha} · commit {commit} · {modelos} · {baterias} · gagal (aturan yang dilanggar: {n})."
     },
     "batteries": {
       "gsm8k": "Soal cerita matematika dengan pengulangan dan parafrasa: berapa banyak yang dihemat cache dan apakah akurasi menurun.",

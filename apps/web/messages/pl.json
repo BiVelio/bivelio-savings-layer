@@ -787,7 +787,7 @@
       "proofTitle": "Zmierzone względem prawdziwego dostawcy",
       "medidoEn": "Zmierzone na",
       "compatibleCon": "Zgodne z",
-      "compatibleNota": "Zgodny nie znaczy zmierzony. SDK działa z każdym endpointem zgodnym z API OpenAI, a także z natywnym adapterem Anthropic i natywnym adapterem Gemini (nowość w {gemini}). Z liczbą oszczędności w publicznym benchmarku są dziś tylko modele OpenAI i Anthropic; Gemini nie ma liczby oszczędności. Co zmierzono dla Gemini: {flash}, przez jego natywne API, w cotygodniowym benchmarku na żywo z {fecha} — wszystkie cztery baterie, bez błędów warstwy i bez żadnej odmowy w cache ani zaliczonej jako oszczędność. Ten benchmark sprawdza, że warstwa niczego nie psuje i nie pobiera za dużo; nie mierzy oszczędności. {pro} nie jest jeszcze zmierzony: uniemożliwił to limit dostawcy."
+      "compatibleNota": "Zgodny nie znaczy zmierzony. SDK działa z każdym endpointem zgodnym z API OpenAI, a także z natywnym adapterem Anthropic i natywnym adapterem Gemini (nowość w {gemini}). Z liczbą oszczędności w publicznym benchmarku są dziś tylko modele OpenAI i Anthropic; Gemini nie ma liczby oszczędności. Co zmierzono dla Gemini: {flash}, przez jego natywne API, w cotygodniowym benchmarku na żywo z {fecha} — wszystkie cztery baterie, bez błędów warstwy i bez żadnej odmowy w cache ani zaliczonej jako oszczędność. Ten benchmark sprawdza, że warstwa niczego nie psuje i nie pobiera za dużo; nie mierzy oszczędności. Zmierzony także: {pro}, przez natywne API, w dwóch przebiegach częściowych {fechaPro} (jego dzienny limit dostawcy nie mieści wszystkich czterech baterii w jednym dniu): wszystkie cztery baterie, również bez żadnego błędu warstwy i bez żadnej odmowy z pamięci podręcznej ani zaliczonej jako oszczędność."
     },
     "cascade": {
       "title": "Wygrywa najtańsza realizacja",
@@ -1189,7 +1189,11 @@
       "note": "„Błędy warstwy” to błędy w ramieniu B, których nie miało ramię A. „B − A” to różnica dokładności w GSM8K i BFCL, różnica odsetka odmów w XSTest (p McNemara, sparowane prompty), a w MT-Bench to, jak często sędzia woli B (połowa oznacza remis). „Raport a faktura” to, jak bardzo koszt raportowany przez warstwę dla ramienia B odbiega od tego, co fakturuje dostawca.",
       "earlierTitle": "Wcześniejsze przebiegi cotygodniowe",
       "earlierOk": "{fecha} · commit {commit} · bez regresji.",
-      "earlierFailed": "{fecha} · commit {commit} · nie przeszedł (złamane reguły: {n})."
+      "earlierFailed": "{fecha} · commit {commit} · nie przeszedł (złamane reguły: {n}).",
+      "partialTitle": "Przebiegi częściowe",
+      "partialIntro": "Przebieg częściowy uruchamia się ręcznie tylko z niektórymi modelami lub bateriami; na przykład drugi dzień modelu, którego dzienny limit dostawcy nie mieści jego czterech baterii w jednym dniu. Mierzy to, co deklaruje, ale nie jest przebiegiem cotygodniowym: nie liczy się do publikacji.",
+      "partialOk": "{fecha} · commit {commit} · {modelos} · {baterias} · bez regresji.",
+      "partialFailed": "{fecha} · commit {commit} · {modelos} · {baterias} · nie przeszedł (złamane reguły: {n})."
     },
     "batteries": {
       "gsm8k": "Zadania tekstowe z matematyki z powtórzeniami i parafrazami: ile oszczędza pamięć podręczna i czy spada dokładność.",

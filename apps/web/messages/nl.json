@@ -787,7 +787,7 @@
       "proofTitle": "Gemeten tegen een echte provider",
       "medidoEn": "Gemeten op",
       "compatibleCon": "Compatibel met",
-      "compatibleNota": "Compatibel is niet gemeten. De SDK werkt met elk endpoint dat compatibel is met de OpenAI-API, plus de native Anthropic-adapter en de native Gemini-adapter (nieuw in {gemini}). Met een besparingscijfer op de publieke benchmark zijn vandaag alleen modellen van OpenAI en Anthropic gemeten; Gemini heeft geen besparingscijfer. Wat voor Gemini gemeten is: {flash}, via zijn native API, in de wekelijkse live bench van {fecha} — alle vier batterijen, zonder fouten van de laag en zonder weigering in de cache of als besparing gecrediteerd. Die bench controleert dat de laag niets breekt en niet te veel rekent; hij meet geen besparing. {pro} is nog niet gemeten: het quotum van de provider hield het tegen."
+      "compatibleNota": "Compatibel is niet gemeten. De SDK werkt met elk endpoint dat compatibel is met de OpenAI-API, plus de native Anthropic-adapter en de native Gemini-adapter (nieuw in {gemini}). Met een besparingscijfer op de publieke benchmark zijn vandaag alleen modellen van OpenAI en Anthropic gemeten; Gemini heeft geen besparingscijfer. Wat voor Gemini gemeten is: {flash}, via zijn native API, in de wekelijkse live bench van {fecha} — alle vier batterijen, zonder fouten van de laag en zonder weigering in de cache of als besparing gecrediteerd. Die bench controleert dat de laag niets breekt en niet te veel rekent; hij meet geen besparing. Ook gemeten: {pro}, via zijn native API, in twee gedeeltelijke runs op {fechaPro} (zijn dagelijkse providerquotum volstaat niet voor alle vier batterijen op één dag): alle vier batterijen, eveneens zonder fouten van de laag en zonder gecachte of als besparing geboekte weigering."
     },
     "cascade": {
       "title": "De goedkoopste uitvoering wint",
@@ -1189,7 +1189,11 @@
       "note": "„Fouten van de laag” zijn fouten in arm B die arm A niet had. „B − A” is het verschil in nauwkeurigheid bij GSM8K en BFCL, het verschil in weigeringspercentage bij XSTest (p volgens McNemar, gepaarde prompts) en bij MT-Bench hoe vaak de jury B verkiest (de helft is gelijkspel). „Rapport vs factuur” is hoe ver de kosten die de laag voor arm B rapporteert afwijken van wat de provider factureert.",
       "earlierTitle": "Eerdere wekelijkse runs",
       "earlierOk": "{fecha} · commit {commit} · geen regressies.",
-      "earlierFailed": "{fecha} · commit {commit} · gefaald (gebroken regels: {n})."
+      "earlierFailed": "{fecha} · commit {commit} · gefaald (gebroken regels: {n}).",
+      "partialTitle": "Gedeeltelijke runs",
+      "partialIntro": "Een gedeeltelijke run wordt met de hand gestart met slechts enkele modellen of batterijen; bijvoorbeeld de andere dag van een model waarvan het dagelijkse providerquotum niet voor zijn vier batterijen op één dag volstaat. Hij meet wat hij zegt, maar is niet de wekelijkse run: hij telt niet mee voor publiceren.",
+      "partialOk": "{fecha} · commit {commit} · {modelos} · {baterias} · geen regressies.",
+      "partialFailed": "{fecha} · commit {commit} · {modelos} · {baterias} · gefaald (gebroken regels: {n})."
     },
     "batteries": {
       "gsm8k": "Rekenvraagstukken met herhalingen en parafrases: hoeveel de cache bespaart en of de nauwkeurigheid daalt.",

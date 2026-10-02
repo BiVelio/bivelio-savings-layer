@@ -282,6 +282,14 @@ export interface TiradaSemanal {
   ok: boolean;
   infracciones: number;
   celdas: CeldaSemanal[];
+  /**
+   * Un banco PARCIAL (lanzado a mano con `--modelos` o `--baterias`): no tiene
+   * todas las celdas de su plan. Mide lo que mide —p. ej. la otra jornada de un
+   * modelo con cuota diaria (benchmarks/banco-semanal/plan.ts, CUOTA_DIARIA)—,
+   * pero no es «la tirada semanal»: ni la puerta de publicación ni esta página
+   * lo cuentan como la última. Sus modelos y baterías medidos, para decirlo.
+   */
+  parcial?: { modelos: string[]; baterias: Bateria[] };
 }
 
 /** ¿Es un resultado del banco semanal (benchmarks/banco-semanal/orquestador.ts)? */
@@ -358,7 +366,22 @@ export function tiradaSemanal(f: InformeFuente): TiradaSemanal | null {
     topeUsd: typeof r.asignadoUsd === "number" && typeof r.margenUsd === "number" ? r.asignadoUsd + r.margenUsd : undefined,
     ok: j.veredicto?.ok === true,
     infracciones: (j.veredicto?.infracciones ?? []).length,
-    celdas: (j.resultados as J[]).map(celdaSemanal),
+    // Las celdas que su jornada aplazó por la cuota diaria no se lanzaron: no son celdas de esta tirada.
+    celdas: (j.resultados as J[]).filter((x) => x.estado !== "aplazada-por-cuota").map(celdaSemanal),
+    ...(esParcial(j) ? { parcial: alcanceDe(j) } : {}),
+  };
+}
+
+/** ¿Le faltan celdas de su plan? (lanzado con `--modelos` o `--baterias`; una celda aplazada por cuota sí está). */
+function esParcial(j: J): boolean {
+  return Array.isArray(j.plan) && (j.resultados as J[]).length < (j.plan as J[]).length;
+}
+
+function alcanceDe(j: J): { modelos: string[]; baterias: Bateria[] } {
+  const lanzadas = (j.resultados as J[]).filter((x) => x.estado !== "aplazada-por-cuota");
+  return {
+    modelos: [...new Set(lanzadas.map((x) => String(x.modelo)))],
+    baterias: BATERIAS.filter((b) => lanzadas.some((x) => x.bateria === b)),
   };
 }
 
@@ -379,8 +402,10 @@ function negativasSemanales(t: TiradaSemanal): EvidenciaSemanal | null {
 
 export interface Banco {
   fuentes: { ruta: string; bateria: Bateria; version: string; fecha: string }[];
-  /** Las tiradas en vivo del banco semanal, de la más reciente a la más antigua. */
+  /** Las tiradas en vivo del banco semanal, de la más reciente a la más antigua. Sin las parciales. */
   semanales: TiradaSemanal[];
+  /** Los bancos en vivo PARCIALES (`TiradaSemanal.parcial`), de la más reciente a la más antigua. */
+  parciales: TiradaSemanal[];
   datasets: Dataset[];
   registros: Registro[];
   modelos: string[];
@@ -948,12 +973,13 @@ export function resumirBanco(informes: readonly InformeFuente[]): Banco {
   let sinRedDe: { version: string; fecha: string } | null = null;
 
   const semanales: TiradaSemanal[] = [];
+  const parciales: TiradaSemanal[] = [];
 
   const ordenados = [...informes].sort((a, b) => a.ruta.localeCompare(b.ruta));
   for (const f of ordenados) {
     if (esBancoSemanal(f.json)) {
       const t = tiradaSemanal(f);
-      if (t) semanales.push(t);
+      if (t) (t.parcial ? parciales : semanales).push(t);
       continue;
     }
     const bateria = bateriaDe(f.json);
@@ -1054,6 +1080,7 @@ export function resumirBanco(informes: readonly InformeFuente[]): Banco {
   };
 
   semanales.sort((a, b) => b.inicio.localeCompare(a.inicio) || b.ruta.localeCompare(a.ruta));
+  parciales.sort((a, b) => b.inicio.localeCompare(a.inicio) || b.ruta.localeCompare(a.ruta));
   const ultimaSemanal = semanales[0];
 
   const fallos: Fallo[] = [];
@@ -1128,6 +1155,7 @@ export function resumirBanco(informes: readonly InformeFuente[]): Banco {
   return {
     fuentes,
     semanales,
+    parciales,
     datasets: BATERIAS.map((b) => datasets.get(b)).filter((d): d is Dataset => !!d),
     registros,
     modelos,
