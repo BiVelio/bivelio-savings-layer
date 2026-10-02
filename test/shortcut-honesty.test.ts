@@ -29,21 +29,21 @@ describe("resolver determinista: no puede afirmar un contrato que no ha validado
     },
   };
 
-  it("marca structurallyValid=false cuando la respuesta del resolver viola el esquema", async () => {
+  it("no sirve la respuesta del resolver cuando viola el esquema: la petición sigue al proveedor", async () => {
+    // Antes se servía y el informe decía structurallyValid=false (y, antes aún,
+    // `true` por un valor por defecto). Ahora el resolver se aparta: ni se
+    // sirve lo que incumple el contrato ni se cuenta como llamada evitada.
     const layer = createSavingsLayer({
       provider: createMockProvider({ answer: "unused" }),
       devUnlicensed: true,
     });
     const res = await layer.generate(req);
 
-    // Se confirma primero que estamos en la ruta que interesa.
-    expect(res.report.cache.result).toBe("deterministic");
-    expect(res.report.calls.avoidedLlm).toBe(1);
-
-    // Y que el informe ya no miente sobre el contrato: antes salía `true`
-    // porque el parámetro de finish() traía `= true` por defecto y esta ruta
-    // nunca lo pasaba.
-    expect(res.report.constraints.structurallyValid).toBe(false);
+    expect(res.report.cache.result).not.toBe("deterministic");
+    expect(res.report.calls.avoidedLlm).toBe(0);
+    // El proveedor simulado contesta en la forma del contrato.
+    expect(res.data).toHaveProperty("answer");
+    expect(res.report.constraints.structurallyValid).toBe(true);
   });
 
   it("sigue diciendo true cuando no hay contrato que cumplir (control negativo)", async () => {

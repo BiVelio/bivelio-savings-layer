@@ -244,19 +244,43 @@ describe("rejected — no cumplió el contrato, ni después de reparar", () => {
     expect(res.report.qualityStatus).toBe("rejected");
   });
 
-  it("el incumplimiento MANDA sobre la procedencia: un resolver también es rechazable", async () => {
-    // El resolver aritmético devuelve `{value: 8}` a quien pidió `{answer}`:
-    // acierta el número y falla el contrato. Es exacto por construcción y aun
-    // así no puede quedarse la etiqueta `exact` — la calidad solo degrada.
-    const res = await capa(new ProveedorFijo("no debería llamarse")).generate({
+  it("un resolver cuya respuesta no cumple el contrato no la sirve: contesta el modelo", async () => {
+    // El resolver aritmético devuelve `{value: 8}` a quien pidió `{answer}`.
+    // Antes se servía igual y salía `rejected`, con la llamada contada como
+    // evitada; el cliente leía `data.answer === undefined`. Ahora el resolver
+    // se aparta y la petición llega al proveedor.
+    const proveedor = new ProveedorFijo('{"answer":"12"}');
+    const res = await capa(proveedor).generate({
       model: "openai/gpt-4o-mini",
       messages: [{ role: "user", content: "What is (2 + 2) * 3?" }],
       response: { contractId: "calc:v1", schema: CONTRATO.schema },
     });
 
+    expect(proveedor.llamadas).toBe(1);
+    expect(res.report.cache.result).not.toBe("deterministic");
+    expect(res.report.calls.avoidedLlm).toBe(0);
+    expect(res.data).toEqual({ answer: "12" });
+    expect(res.report.qualityStatus).not.toBe("rejected");
+    expect(res.report.traces).toContainEqual(
+      expect.objectContaining({ stage: "resolver", detail: expect.objectContaining({ skipReason: "contract_mismatch" }) }),
+    );
+  });
+
+  it("un resolver cuya respuesta SÍ cumple el contrato sigue sirviéndola sin llamar al modelo", async () => {
+    const proveedor = new ProveedorFijo("no debería llamarse");
+    const res = await capa(proveedor).generate({
+      model: "openai/gpt-4o-mini",
+      messages: [{ role: "user", content: "What is (2 + 2) * 3?" }],
+      response: {
+        contractId: "calc:value:v1",
+        schema: { type: "object", required: ["value"], properties: { value: { type: "number" } } },
+      },
+    });
+
+    expect(proveedor.llamadas).toBe(0);
     expect(res.report.cache.result).toBe("deterministic");
-    expect(res.report.constraints.structurallyValid).toBe(false);
-    expect(res.report.qualityStatus).toBe("rejected");
+    expect(res.data).toEqual({ value: 12 });
+    expect(res.report.constraints.structurallyValid).toBe(true);
   });
 });
 

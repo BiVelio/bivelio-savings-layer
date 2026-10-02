@@ -2049,7 +2049,22 @@ export class SavingsPipeline {
 
     // --- Stage 1: deterministic resolvers (avoid the call entirely). ---
     if (toggles.deterministicResolvers !== false) {
-      const resolved = this.deps.resolvers.try(canonical);
+      const encontrado = this.deps.resolvers.try(canonical);
+      // UN RESOLVER NO SIRVE LO QUE NO CUMPLE EL CONTRATO. El aritmético
+      // devuelve `{ value: 8 }`; a quien pidió `{ answer: number }` eso le daba
+      // `data.answer === undefined`, con la llamada contada como evitada y el
+      // informe en `rejected`. El README prometía `data.answer // 8`. Con un
+      // esquema que su respuesta no cumple, el resolver se aparta y la petición
+      // sigue su camino: el modelo contesta en la forma pedida.
+      const esquemaPedido = request.response?.schema;
+      const resolved =
+        encontrado && esquemaPedido && !validateAgainstSchema(encontrado.data, esquemaPedido).valid
+          ? (trace.record("resolver", "skipped: its answer does not meet the output contract", {
+              resolver: encontrado.resolver,
+              skipReason: "contract_mismatch",
+            }),
+            null)
+          : encontrado;
       if (resolved) {
         // Honest avoided-output baseline: the answer we serve is exactly what a
         // real call would have produced, so measure ITS tokens instead of crediting

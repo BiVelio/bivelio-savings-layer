@@ -1475,14 +1475,15 @@ export interface SavingsReport {
  */
 export interface LicenseGate {
   isEntitled(feature: string): boolean;
+  // Fue opcional "por compatibilidad", y esa opcionalidad era el bypass: un gate
+  // al que le faltara el método dejaba pasar todas las peticiones con solo un
+  // aviso por consola. (Esto no va en el JSDoc, que sí viaja en los tipos
+  // publicados: citaba `devUnlicensed`, que la 0.5 quita de la configuración.)
   /**
-   * Whether there is an overall active (or in-grace) license. La consulta la
-   * puerta de entrada fail-closed del pipeline.
+   * Whether there is an overall active (or in-grace) license. The pipeline's
+   * fail-closed entry check reads it.
    *
-   * OBLIGATORIO. Fue opcional "por compatibilidad", y esa opcionalidad era el
-   * bypass: un gate al que le faltara el método dejaba pasar todas las
-   * peticiones con solo un aviso por consola. Para desarrollo local está
-   * `devUnlicensed: true`, que es explícito y no se cuela sin querer.
+   * Required: a gate without it would let every request through.
    */
   isActive(): boolean;
   /**
