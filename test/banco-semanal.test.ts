@@ -12,7 +12,8 @@ import {
   type Medicion,
   type PreguntaCrudaMtBench,
 } from "../benchmarks/banco-semanal/extraer.js";
-import { esErrorDeCuota } from "../benchmarks/publicados/cuota.js";
+import { esErrorDeCuota, esErrorNoMedibleDelProveedor, esSobrecargaDelProveedor } from "../benchmarks/publicados/cuota.js";
+import { conReintentos } from "../benchmarks/publicados/gsm8k/arnes.js";
 import { resumir as resumirGsm8k, type Ensayo } from "../benchmarks/publicados/gsm8k/medir.js";
 import { resumenMarkdown } from "../benchmarks/banco-semanal/resumen.js";
 import { claveQueFalta, filtrarCeldas, jornadaDelBanco, motivoDeAplazamiento, redactar, valoresSecretos } from "../benchmarks/banco-semanal/orquestador.js";
@@ -797,6 +798,100 @@ describe("banco semanal · la lectura de los artefactos (tiradas publicadas de v
       const dif = (es: Ensayo[]) => resumirGsm8k(es).comparaciones[0]!.diferenciaExactitud?.point;
       expect(dif(conCuota)).toBe(dif(limpio));
       expect(dif(conOtro)).toBeLessThan(0);
+    });
+  });
+
+  describe("la sobrecarga del proveedor (529) tras los reintentos no es un fallo de la capa (run 36998187601)", () => {
+    // La celda real: GSM8K · claude-opus-5-5 sobre e779dc3 (0.5.0-rc.1). B pos 6
+    // acabó en `provider 529 overloaded_error` a los 108 s —la escalera entera de
+    // `conReintentos`, que está DEBAJO de la capa en los cuatro brazos— y A pos 11
+    // tardó 71 s en la misma escalera antes de su 200. El banco lo contó como
+    // capa-falla y bloqueó la release.
+    type Gsm8k = { modelos: { ensayos: { pos: number; brazo: string; error?: string; latenciaMs: number; peticiones: number }[] }[] };
+    const real = () => JSON.parse(leer("fixtures/banco-semanal-gsm8k-opus-529-36998187601.json")) as Gsm8k;
+    const opus = modelo("anthropic/claude-opus-5-5");
+    const celda = (m: Medicion): ResultadoDeCelda => ({ bateria: m.bateria, modelo: opus.id, estado: "medida", topeUsd: 1.5, medicion: m });
+
+    it("reconoce la sobrecarga por el 529 o por «overloaded» en un 503, y nada más", () => {
+      const b6 = real().modelos[0]!.ensayos.find((e) => e.brazo === "B" && e.pos === 6)!;
+      expect(esSobrecargaDelProveedor(b6.error)).toBe(true);
+      expect(esSobrecargaDelProveedor(undefined, 529)).toBe(true);
+      expect(esSobrecargaDelProveedor("HTTP 529: Overloaded")).toBe(true);
+      expect(esSobrecargaDelProveedor('{"type":"overloaded_error","message":"Overloaded"}')).toBe(true);
+      expect(esSobrecargaDelProveedor('HTTP 503: {"error":{"code":503,"message":"The model is overloaded. Please try again later.","status":"UNAVAILABLE"}}')).toBe(true);
+      // Un 5xx sin «overloaded», un 400 o un timeout siguen siendo errores normales.
+      expect(esSobrecargaDelProveedor("HTTP 503: UNAVAILABLE", 503)).toBe(false);
+      expect(esSobrecargaDelProveedor('provider 500: {"type":"api_error","message":"Internal server error"}')).toBe(false);
+      expect(esSobrecargaDelProveedor("provider 502: Bad Gateway")).toBe(false);
+      expect(esSobrecargaDelProveedor('provider 400: {"error":{"message":"overloaded parameter"}}')).toBe(false);
+      expect(esSobrecargaDelProveedor("transporte: The operation was aborted due to timeout")).toBe(false);
+      expect(esSobrecargaDelProveedor("pregunta 529: TypeError")).toBe(false);
+      // La cuota sigue siendo cuota y la sobrecarga no lo es: la suma, para excluir.
+      expect(esErrorDeCuota(b6.error)).toBe(false);
+      expect(esErrorNoMedibleDelProveedor(b6.error)).toBe(true);
+      expect(esErrorNoMedibleDelProveedor("provider 429: rate_limit_error")).toBe(true);
+    });
+
+    it("el arnés reintenta el 529 igual en todos los brazos, por debajo de la capa", async () => {
+      let intentos = 0;
+      const p = conReintentos(
+        {
+          id: "x",
+          async generate() {
+            intentos++;
+            throw new Error('provider 529: {"type":"error","error":{"type":"overloaded_error","message":"Overloaded"}}');
+          },
+        },
+        async () => {},
+      );
+      await expect(p.generate({ model: "m", messages: [] } as never)).rejects.toThrow(/provider 529/);
+      expect(intentos).toBe(6);
+    });
+
+    it("GSM8K · Opus: el 529 de B sale de los dos brazos y va a un aviso; la celda queda en verde", () => {
+      const art = real();
+      const es = art.modelos[0]!.ensayos;
+      const b6 = es.find((e) => e.brazo === "B" && e.pos === 6)!;
+      // La escalera entera (2+5+10+20+40 s de esperas) y no menos: la capa no le quitó reintentos.
+      expect(b6.latenciaMs).toBeGreaterThan(77_000);
+      expect(es.find((e) => e.brazo === "A" && e.pos === 11)!.latenciaMs).toBeGreaterThan(37_000);
+      const m = extraerGsm8k(art, opus);
+      expect(m).toMatchObject({ estado: "medido", fallosDeLaCapa: 0, excluidosPorCuota: 1, excluidosPorSobrecarga: 1 });
+      expect(infraccionesDe(m, 1.5)).toEqual([]);
+      const v = evaluar([celda(m)], null);
+      expect(v.ok).toBe(true);
+      expect(v.avisos).toContainEqual(expect.stringMatching(/^gsm8k · anthropic\/claude-opus-5-5: excluidos por sobrecarga del proveedor: 1 \(529/));
+      expect(v.avisos.some((a) => /excluidos por cuota/.test(a))).toBe(false);
+      const md = resumenMarkdown({ modo: "vivo", commit: "c", version: "v", inicio: "i", fin: "f", gastoUsd: 0, reparto: reparto(), resultados: [celda(m)], veredicto: v });
+      expect(md).toMatch(/capa-falla 0 · excluidos por sobrecarga 1/);
+      expect(md).not.toMatch(/excluidos por cuota/);
+    });
+
+    it("con más peticiones de B que de A, el 529 es de la capa: no se excluye", () => {
+      const art = real();
+      for (const e of art.modelos[0]!.ensayos) if (e.brazo === "B") e.peticiones = 3;
+      const m = extraerGsm8k(art, opus);
+      expect(m.excluidosPorCuota).toBeUndefined();
+      expect(m.fallosDeLaCapa).toBe(1);
+      expect(m.ejemplosDeFallos[0]).toMatch(/529 de sobrecarga con más peticiones al proveedor en B/);
+      expect(infraccionesDe(m, 1.5).map((i) => i.regla)).toEqual(["capa-falla"]);
+    });
+
+    it("un 500 solo en B sigue siendo capa-falla", () => {
+      const art = real();
+      art.modelos[0]!.ensayos.find((e) => e.brazo === "B" && e.pos === 6)!.error = 'provider 500: {"type":"api_error","message":"Internal server error"}';
+      const m = extraerGsm8k(art, opus);
+      expect(m).toMatchObject({ fallosDeLaCapa: 1 });
+      expect(m.excluidosPorCuota).toBeUndefined();
+      expect(infraccionesDe(m, 1.5).map((i) => i.regla)).toEqual(["capa-falla"]);
+    });
+
+    it("una celda que la sobrecarga deja sin ítems comparables es «no medible», con su motivo", () => {
+      const art = real();
+      for (const e of art.modelos[0]!.ensayos) if (e.brazo === "A") e.error = 'provider 529: {"type":"overloaded_error"}';
+      const m = extraerGsm8k(art, opus);
+      expect(m).toMatchObject({ estado: "no-medible", n: 0, fallosDeLaCapa: 0 });
+      expect(m.motivo).toMatch(/^cuota del proveedor: \d+ ítems con 529 por sobrecarga del proveedor/);
     });
   });
 

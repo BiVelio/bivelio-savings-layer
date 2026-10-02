@@ -1,0 +1,1339 @@
+{
+ "bateria": "gsm8k",
+ "runId": "efb68e",
+ "nota": "Recorte del artefacto real de GSM8K · anthropic/claude-opus-5-5 del run 36998187601 (banco semanal en vivo sobre e779dc3, 0.5.0-rc.1): solo los campos que lee extraerGsm8k y la latencia.",
+ "sinRed": {
+  "resultados": [
+   {
+    "config": "defecto",
+    "erroneas": 0
+   },
+   {
+    "config": "semantica-sin-interruptor",
+    "erroneas": 0
+   },
+   {
+    "config": "semantica-envio",
+    "erroneas": 0
+   },
+   {
+    "config": "semantica-defecto-capa",
+    "erroneas": 0
+   },
+   {
+    "config": "semantica-calibrada",
+    "erroneas": 0
+   }
+  ]
+ },
+ "modelos": [
+  {
+   "modelo": "anthropic/claude-opus-5-5",
+   "estado": "medido",
+   "gasto": {
+    "totalUsd": 0.538654
+   },
+   "resumen": {
+    "brazos": {
+     "A": {},
+     "B": {},
+     "E": {},
+     "S": {}
+    },
+    "variantesPorBrazo": {
+     "B": {
+      "n": 2,
+      "deCache": 0,
+      "deOtra": 0
+     },
+     "E": {
+      "n": 2,
+      "deCache": 0,
+      "deOtra": 0
+     },
+     "S": {
+      "n": 2,
+      "deCache": 0,
+      "deOtra": 0
+     }
+    },
+    "comparaciones": [
+     {
+      "brazo": "B",
+      "diferenciaExactitud": {
+       "point": -0.03333333333333333,
+       "lower": -0.10714285714285714,
+       "upper": 0
+      }
+     },
+     {
+      "brazo": "E",
+      "diferenciaExactitud": {
+       "point": 0,
+       "lower": 0,
+       "upper": 0
+      }
+     },
+     {
+      "brazo": "S",
+      "diferenciaExactitud": {
+       "point": 0,
+       "lower": 0,
+       "upper": 0
+      }
+     }
+    ]
+   },
+   "ensayos": [
+    {
+     "pos": 0,
+     "brazo": "A",
+     "coste": 0.008264,
+     "llamadas": 1,
+     "peticiones": 1,
+     "latenciaMs": 1821,
+     "correcto": true
+    },
+    {
+     "pos": 0,
+     "brazo": "B",
+     "coste": 0.01005,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.01005,
+     "latenciaMs": 5176,
+     "correcto": true
+    },
+    {
+     "pos": 0,
+     "brazo": "S",
+     "coste": 0.01005,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.01005,
+     "latenciaMs": 2775,
+     "correcto": true
+    },
+    {
+     "pos": 0,
+     "brazo": "E",
+     "coste": 0.01015,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.01015,
+     "latenciaMs": 2025,
+     "correcto": true
+    },
+    {
+     "pos": 1,
+     "brazo": "A",
+     "coste": 0.009604000000000001,
+     "llamadas": 1,
+     "peticiones": 1,
+     "latenciaMs": 1771,
+     "correcto": true
+    },
+    {
+     "pos": 1,
+     "brazo": "B",
+     "coste": 0.0027732,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0027732,
+     "latenciaMs": 1866,
+     "correcto": true
+    },
+    {
+     "pos": 1,
+     "brazo": "S",
+     "coste": 0.0024332,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0024332,
+     "latenciaMs": 1398,
+     "correcto": true
+    },
+    {
+     "pos": 1,
+     "brazo": "E",
+     "coste": 0.0032531999999999995,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0032532,
+     "latenciaMs": 1798,
+     "correcto": true
+    },
+    {
+     "pos": 2,
+     "brazo": "A",
+     "coste": 0.009300000000000003,
+     "llamadas": 1,
+     "peticiones": 1,
+     "latenciaMs": 2032,
+     "correcto": true
+    },
+    {
+     "pos": 2,
+     "brazo": "B",
+     "coste": 0.0020891999999999994,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0020892,
+     "latenciaMs": 2349,
+     "correcto": true
+    },
+    {
+     "pos": 2,
+     "brazo": "S",
+     "coste": 0.0021892000000000005,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0021892,
+     "latenciaMs": 2952,
+     "correcto": true
+    },
+    {
+     "pos": 2,
+     "brazo": "E",
+     "coste": 0.0020292,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0020292,
+     "latenciaMs": 1582,
+     "correcto": true
+    },
+    {
+     "pos": 3,
+     "brazo": "A",
+     "coste": 0.010967999999999999,
+     "llamadas": 1,
+     "peticiones": 1,
+     "latenciaMs": 2490,
+     "correcto": true
+    },
+    {
+     "pos": 3,
+     "brazo": "B",
+     "coste": 0.004517199999999999,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0045172,
+     "latenciaMs": 2682,
+     "correcto": true
+    },
+    {
+     "pos": 3,
+     "brazo": "S",
+     "coste": 0.0047171999999999995,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0047172,
+     "latenciaMs": 2697,
+     "correcto": true
+    },
+    {
+     "pos": 3,
+     "brazo": "E",
+     "coste": 0.0048372,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0048372,
+     "latenciaMs": 3775,
+     "correcto": true
+    },
+    {
+     "pos": 4,
+     "brazo": "A",
+     "coste": 0.01022,
+     "llamadas": 1,
+     "peticiones": 1,
+     "latenciaMs": 5566,
+     "correcto": true
+    },
+    {
+     "pos": 4,
+     "brazo": "B",
+     "coste": 0.0027492000000000003,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0027492,
+     "latenciaMs": 2852,
+     "correcto": true
+    },
+    {
+     "pos": 4,
+     "brazo": "S",
+     "coste": 0.004669199999999998,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0046692,
+     "latenciaMs": 6330,
+     "correcto": true
+    },
+    {
+     "pos": 4,
+     "brazo": "E",
+     "coste": 0.0028292000000000005,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0028292,
+     "latenciaMs": 5234,
+     "correcto": true
+    },
+    {
+     "pos": 5,
+     "brazo": "A",
+     "coste": 0.010675999999999998,
+     "llamadas": 1,
+     "peticiones": 1,
+     "latenciaMs": 2304,
+     "correcto": true
+    },
+    {
+     "pos": 5,
+     "brazo": "B",
+     "coste": 0.0038851999999999984,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0038852,
+     "latenciaMs": 2184,
+     "correcto": true
+    },
+    {
+     "pos": 5,
+     "brazo": "S",
+     "coste": 0.004085200000000001,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0040852,
+     "latenciaMs": 3464,
+     "correcto": true
+    },
+    {
+     "pos": 5,
+     "brazo": "E",
+     "coste": 0.0040252,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0040252,
+     "latenciaMs": 3280,
+     "correcto": true
+    },
+    {
+     "pos": 6,
+     "brazo": "A",
+     "coste": 0.010567999999999994,
+     "llamadas": 1,
+     "peticiones": 1,
+     "latenciaMs": 2529,
+     "correcto": true
+    },
+    {
+     "pos": 6,
+     "brazo": "B",
+     "coste": 0,
+     "llamadas": 0,
+     "peticiones": 1,
+     "error": "provider 529: {\"type\":\"error\",\"error\":{\"type\":\"overloaded_error\",\"message\":\"Overloaded\"},\"request_id\":\"req_011CfdKq4XmMJgMbBhTqKSgK\"}",
+     "latenciaMs": 108079,
+     "correcto": false
+    },
+    {
+     "pos": 6,
+     "brazo": "S",
+     "coste": 0.0038172000000000032,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0038172,
+     "latenciaMs": 4237,
+     "correcto": true
+    },
+    {
+     "pos": 6,
+     "brazo": "E",
+     "coste": 0.004337199999999996,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0043372,
+     "latenciaMs": 3315,
+     "correcto": true
+    },
+    {
+     "pos": 7,
+     "brazo": "A",
+     "coste": 0.009248000000000006,
+     "llamadas": 1,
+     "peticiones": 1,
+     "latenciaMs": 1525,
+     "correcto": true
+    },
+    {
+     "pos": 7,
+     "brazo": "B",
+     "coste": 0.0024372000000000005,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0024372,
+     "latenciaMs": 1640,
+     "correcto": true
+    },
+    {
+     "pos": 7,
+     "brazo": "S",
+     "coste": 0.0025171999999999972,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0025172,
+     "latenciaMs": 1459,
+     "correcto": true
+    },
+    {
+     "pos": 7,
+     "brazo": "E",
+     "coste": 0.002057200000000002,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0020572,
+     "latenciaMs": 2766,
+     "correcto": true
+    },
+    {
+     "pos": 8,
+     "brazo": "A",
+     "coste": 0.010588,
+     "llamadas": 1,
+     "peticiones": 1,
+     "latenciaMs": 2703,
+     "correcto": true
+    },
+    {
+     "pos": 8,
+     "brazo": "B",
+     "coste": 0,
+     "llamadas": 0,
+     "peticiones": 0,
+     "realCapa": 0,
+     "latenciaMs": 6,
+     "correcto": true
+    },
+    {
+     "pos": 8,
+     "brazo": "S",
+     "coste": 0,
+     "llamadas": 0,
+     "peticiones": 0,
+     "realCapa": 0,
+     "latenciaMs": 6,
+     "correcto": true
+    },
+    {
+     "pos": 8,
+     "brazo": "E",
+     "coste": 0,
+     "llamadas": 0,
+     "peticiones": 0,
+     "realCapa": 0,
+     "latenciaMs": 6,
+     "correcto": true
+    },
+    {
+     "pos": 9,
+     "brazo": "A",
+     "coste": 0.010635999999999993,
+     "llamadas": 1,
+     "peticiones": 1,
+     "latenciaMs": 2220,
+     "correcto": true
+    },
+    {
+     "pos": 9,
+     "brazo": "B",
+     "coste": 0,
+     "llamadas": 0,
+     "peticiones": 0,
+     "realCapa": 0,
+     "latenciaMs": 4,
+     "correcto": true
+    },
+    {
+     "pos": 9,
+     "brazo": "S",
+     "coste": 0,
+     "llamadas": 0,
+     "peticiones": 0,
+     "realCapa": 0,
+     "latenciaMs": 4,
+     "correcto": true
+    },
+    {
+     "pos": 9,
+     "brazo": "E",
+     "coste": 0,
+     "llamadas": 0,
+     "peticiones": 0,
+     "realCapa": 0,
+     "latenciaMs": 4,
+     "correcto": true
+    },
+    {
+     "pos": 10,
+     "brazo": "A",
+     "coste": 0.008636000000000005,
+     "llamadas": 1,
+     "peticiones": 1,
+     "latenciaMs": 1289,
+     "correcto": true
+    },
+    {
+     "pos": 10,
+     "brazo": "B",
+     "coste": 0.001925200000000002,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0019252,
+     "latenciaMs": 4728,
+     "correcto": true
+    },
+    {
+     "pos": 10,
+     "brazo": "S",
+     "coste": 0.0018451999999999982,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0018452,
+     "latenciaMs": 1690,
+     "correcto": true
+    },
+    {
+     "pos": 10,
+     "brazo": "E",
+     "coste": 0.001925200000000002,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0019252,
+     "latenciaMs": 2508,
+     "correcto": true
+    },
+    {
+     "pos": 11,
+     "brazo": "A",
+     "coste": 0.009580000000000005,
+     "llamadas": 1,
+     "peticiones": 1,
+     "latenciaMs": 71407,
+     "correcto": true
+    },
+    {
+     "pos": 11,
+     "brazo": "B",
+     "coste": 0.0032092000000000023,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0032092,
+     "latenciaMs": 3244,
+     "correcto": true
+    },
+    {
+     "pos": 11,
+     "brazo": "S",
+     "coste": 0.002609199999999999,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0026092,
+     "latenciaMs": 72899,
+     "correcto": true
+    },
+    {
+     "pos": 11,
+     "brazo": "E",
+     "coste": 0.003849199999999997,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0038492,
+     "latenciaMs": 57017,
+     "correcto": true
+    },
+    {
+     "pos": 12,
+     "brazo": "A",
+     "coste": 0.011552000000000007,
+     "llamadas": 1,
+     "peticiones": 1,
+     "latenciaMs": 3746,
+     "correcto": true
+    },
+    {
+     "pos": 12,
+     "brazo": "B",
+     "coste": 0.0039212,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0039212,
+     "latenciaMs": 2545,
+     "correcto": true
+    },
+    {
+     "pos": 12,
+     "brazo": "S",
+     "coste": 0.004501200000000004,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0045012,
+     "latenciaMs": 2644,
+     "correcto": true
+    },
+    {
+     "pos": 12,
+     "brazo": "E",
+     "coste": 0.0044611999999999985,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0044612,
+     "latenciaMs": 3678,
+     "correcto": true
+    },
+    {
+     "pos": 13,
+     "brazo": "A",
+     "coste": 0.009239999999999998,
+     "llamadas": 1,
+     "peticiones": 1,
+     "latenciaMs": 1691,
+     "correcto": true
+    },
+    {
+     "pos": 13,
+     "brazo": "B",
+     "coste": 0,
+     "llamadas": 0,
+     "peticiones": 0,
+     "realCapa": 0,
+     "latenciaMs": 4,
+     "correcto": true
+    },
+    {
+     "pos": 13,
+     "brazo": "S",
+     "coste": 0,
+     "llamadas": 0,
+     "peticiones": 0,
+     "realCapa": 0,
+     "latenciaMs": 4,
+     "correcto": true
+    },
+    {
+     "pos": 13,
+     "brazo": "E",
+     "coste": 0,
+     "llamadas": 0,
+     "peticiones": 0,
+     "realCapa": 0,
+     "latenciaMs": 4,
+     "correcto": true
+    },
+    {
+     "pos": 14,
+     "brazo": "A",
+     "coste": 0.009832000000000007,
+     "llamadas": 1,
+     "peticiones": 1,
+     "latenciaMs": 1963,
+     "correcto": true
+    },
+    {
+     "pos": 14,
+     "brazo": "B",
+     "coste": 0.0031211999999999976,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0031212,
+     "latenciaMs": 2433,
+     "correcto": true
+    },
+    {
+     "pos": 14,
+     "brazo": "S",
+     "coste": 0.0030612,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0030612,
+     "latenciaMs": 2239,
+     "correcto": true
+    },
+    {
+     "pos": 14,
+     "brazo": "E",
+     "coste": 0.0031211999999999976,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0031212,
+     "latenciaMs": 2445,
+     "correcto": true
+    },
+    {
+     "pos": 15,
+     "brazo": "A",
+     "coste": 0.009448000000000012,
+     "llamadas": 1,
+     "peticiones": 1,
+     "latenciaMs": 1400,
+     "correcto": true
+    },
+    {
+     "pos": 15,
+     "brazo": "B",
+     "coste": 0,
+     "llamadas": 0,
+     "peticiones": 0,
+     "realCapa": 0,
+     "latenciaMs": 3,
+     "correcto": true
+    },
+    {
+     "pos": 15,
+     "brazo": "S",
+     "coste": 0,
+     "llamadas": 0,
+     "peticiones": 0,
+     "realCapa": 0,
+     "latenciaMs": 3,
+     "correcto": true
+    },
+    {
+     "pos": 15,
+     "brazo": "E",
+     "coste": 0,
+     "llamadas": 0,
+     "peticiones": 0,
+     "realCapa": 0,
+     "latenciaMs": 3,
+     "correcto": true
+    },
+    {
+     "pos": 16,
+     "brazo": "A",
+     "coste": 0.009123999999999993,
+     "llamadas": 1,
+     "peticiones": 1,
+     "latenciaMs": 1817,
+     "correcto": true
+    },
+    {
+     "pos": 16,
+     "brazo": "B",
+     "coste": 0.0023332000000000006,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0023332,
+     "latenciaMs": 2538,
+     "correcto": true
+    },
+    {
+     "pos": 16,
+     "brazo": "S",
+     "coste": 0.002393199999999998,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0023932,
+     "latenciaMs": 1873,
+     "correcto": true
+    },
+    {
+     "pos": 16,
+     "brazo": "E",
+     "coste": 0.002293200000000002,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0022932,
+     "latenciaMs": 1847,
+     "correcto": true
+    },
+    {
+     "pos": 17,
+     "brazo": "A",
+     "coste": 0.008532000000000012,
+     "llamadas": 1,
+     "peticiones": 1,
+     "latenciaMs": 2064,
+     "correcto": true
+    },
+    {
+     "pos": 17,
+     "brazo": "B",
+     "coste": 0.0019812000000000024,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0019812,
+     "latenciaMs": 1646,
+     "correcto": true
+    },
+    {
+     "pos": 17,
+     "brazo": "S",
+     "coste": 0.0018012000000000028,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0018012,
+     "latenciaMs": 2346,
+     "correcto": true
+    },
+    {
+     "pos": 17,
+     "brazo": "E",
+     "coste": 0.0018012000000000028,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0018012,
+     "latenciaMs": 3316,
+     "correcto": true
+    },
+    {
+     "pos": 18,
+     "brazo": "A",
+     "coste": 0.008711999999999998,
+     "llamadas": 1,
+     "peticiones": 1,
+     "latenciaMs": 1467,
+     "correcto": true
+    },
+    {
+     "pos": 18,
+     "brazo": "B",
+     "coste": 0,
+     "llamadas": 0,
+     "peticiones": 0,
+     "realCapa": 0,
+     "latenciaMs": 3,
+     "correcto": true
+    },
+    {
+     "pos": 18,
+     "brazo": "S",
+     "coste": 0,
+     "llamadas": 0,
+     "peticiones": 0,
+     "realCapa": 0,
+     "latenciaMs": 3,
+     "correcto": true
+    },
+    {
+     "pos": 18,
+     "brazo": "E",
+     "coste": 0,
+     "llamadas": 0,
+     "peticiones": 0,
+     "realCapa": 0,
+     "latenciaMs": 3,
+     "correcto": true
+    },
+    {
+     "pos": 19,
+     "brazo": "A",
+     "coste": 0.00830800000000001,
+     "llamadas": 1,
+     "peticiones": 1,
+     "latenciaMs": 2328,
+     "correcto": true
+    },
+    {
+     "pos": 19,
+     "brazo": "B",
+     "coste": 0.0017771999999999996,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0017772,
+     "latenciaMs": 2325,
+     "correcto": true
+    },
+    {
+     "pos": 19,
+     "brazo": "S",
+     "coste": 0.0014371999999999996,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0014372,
+     "latenciaMs": 2177,
+     "correcto": true
+    },
+    {
+     "pos": 19,
+     "brazo": "E",
+     "coste": 0.0014371999999999996,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0014372,
+     "latenciaMs": 2305,
+     "correcto": true
+    },
+    {
+     "pos": 20,
+     "brazo": "A",
+     "coste": 0.00958400000000001,
+     "llamadas": 1,
+     "peticiones": 1,
+     "latenciaMs": 1822,
+     "correcto": true
+    },
+    {
+     "pos": 20,
+     "brazo": "B",
+     "coste": 0.002713199999999999,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0027132,
+     "latenciaMs": 1506,
+     "correcto": true
+    },
+    {
+     "pos": 20,
+     "brazo": "S",
+     "coste": 0.0027932000000000026,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0027932,
+     "latenciaMs": 2814,
+     "correcto": true
+    },
+    {
+     "pos": 20,
+     "brazo": "E",
+     "coste": 0.003393199999999999,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0033932,
+     "latenciaMs": 2972,
+     "correcto": true
+    },
+    {
+     "pos": 21,
+     "brazo": "A",
+     "coste": 0.009011999999999992,
+     "llamadas": 1,
+     "peticiones": 1,
+     "latenciaMs": 1703,
+     "correcto": true
+    },
+    {
+     "pos": 21,
+     "brazo": "B",
+     "coste": 0.002401199999999999,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0024012,
+     "latenciaMs": 1664,
+     "correcto": true
+    },
+    {
+     "pos": 21,
+     "brazo": "S",
+     "coste": 0.0017211999999999991,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0017212,
+     "latenciaMs": 2446,
+     "correcto": true
+    },
+    {
+     "pos": 21,
+     "brazo": "E",
+     "coste": 0,
+     "llamadas": 0,
+     "peticiones": 0,
+     "realCapa": 0,
+     "latenciaMs": 7,
+     "correcto": true
+    },
+    {
+     "pos": 22,
+     "brazo": "A",
+     "coste": 0.00958400000000001,
+     "llamadas": 1,
+     "peticiones": 1,
+     "latenciaMs": 1789,
+     "correcto": true
+    },
+    {
+     "pos": 22,
+     "brazo": "B",
+     "coste": 0,
+     "llamadas": 0,
+     "peticiones": 0,
+     "realCapa": 0,
+     "latenciaMs": 2,
+     "correcto": true
+    },
+    {
+     "pos": 22,
+     "brazo": "S",
+     "coste": 0,
+     "llamadas": 0,
+     "peticiones": 0,
+     "realCapa": 0,
+     "latenciaMs": 2,
+     "correcto": true
+    },
+    {
+     "pos": 22,
+     "brazo": "E",
+     "coste": 0,
+     "llamadas": 0,
+     "peticiones": 0,
+     "realCapa": 0,
+     "latenciaMs": 2,
+     "correcto": true
+    },
+    {
+     "pos": 23,
+     "brazo": "A",
+     "coste": 0.009104000000000001,
+     "llamadas": 1,
+     "peticiones": 1,
+     "latenciaMs": 1938,
+     "correcto": true
+    },
+    {
+     "pos": 23,
+     "brazo": "B",
+     "coste": 0.0015331999999999985,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0015332,
+     "latenciaMs": 2306,
+     "correcto": true
+    },
+    {
+     "pos": 23,
+     "brazo": "S",
+     "coste": 0.001593200000000003,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0015932,
+     "latenciaMs": 2171,
+     "correcto": true
+    },
+    {
+     "pos": 23,
+     "brazo": "E",
+     "coste": 0,
+     "llamadas": 0,
+     "peticiones": 0,
+     "realCapa": 0,
+     "latenciaMs": 6,
+     "correcto": true
+    },
+    {
+     "pos": 24,
+     "brazo": "A",
+     "coste": 0.009099999999999997,
+     "llamadas": 1,
+     "peticiones": 1,
+     "latenciaMs": 2541,
+     "correcto": true
+    },
+    {
+     "pos": 24,
+     "brazo": "B",
+     "coste": 0.002389200000000001,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0023892,
+     "latenciaMs": 2589,
+     "correcto": true
+    },
+    {
+     "pos": 24,
+     "brazo": "S",
+     "coste": 0.0023492000000000027,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0023492,
+     "latenciaMs": 2715,
+     "correcto": true
+    },
+    {
+     "pos": 24,
+     "brazo": "E",
+     "coste": 0.0024291999999999994,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0024292,
+     "latenciaMs": 1586,
+     "correcto": true
+    },
+    {
+     "pos": 25,
+     "brazo": "A",
+     "coste": 0.008304000000000006,
+     "llamadas": 1,
+     "peticiones": 1,
+     "latenciaMs": 2404,
+     "correcto": true
+    },
+    {
+     "pos": 25,
+     "brazo": "B",
+     "coste": 0,
+     "llamadas": 0,
+     "peticiones": 0,
+     "realCapa": 0,
+     "latenciaMs": 3,
+     "correcto": true
+    },
+    {
+     "pos": 25,
+     "brazo": "S",
+     "coste": 0,
+     "llamadas": 0,
+     "peticiones": 0,
+     "realCapa": 0,
+     "latenciaMs": 3,
+     "correcto": true
+    },
+    {
+     "pos": 25,
+     "brazo": "E",
+     "coste": 0,
+     "llamadas": 0,
+     "peticiones": 0,
+     "realCapa": 0,
+     "latenciaMs": 3,
+     "correcto": true
+    },
+    {
+     "pos": 26,
+     "brazo": "A",
+     "coste": 0.010375999999999996,
+     "llamadas": 1,
+     "peticiones": 1,
+     "latenciaMs": 2235,
+     "correcto": true
+    },
+    {
+     "pos": 26,
+     "brazo": "B",
+     "coste": 0,
+     "llamadas": 0,
+     "peticiones": 0,
+     "realCapa": 0,
+     "latenciaMs": 3,
+     "correcto": true
+    },
+    {
+     "pos": 26,
+     "brazo": "S",
+     "coste": 0,
+     "llamadas": 0,
+     "peticiones": 0,
+     "realCapa": 0,
+     "latenciaMs": 3,
+     "correcto": true
+    },
+    {
+     "pos": 26,
+     "brazo": "E",
+     "coste": 0,
+     "llamadas": 0,
+     "peticiones": 0,
+     "realCapa": 0,
+     "latenciaMs": 3,
+     "correcto": true
+    },
+    {
+     "pos": 27,
+     "brazo": "A",
+     "coste": 0.010460000000000025,
+     "llamadas": 1,
+     "peticiones": 1,
+     "latenciaMs": 3590,
+     "correcto": null
+    },
+    {
+     "pos": 27,
+     "brazo": "B",
+     "coste": 0.0030091999999999966,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0030092,
+     "latenciaMs": 2265,
+     "correcto": null
+    },
+    {
+     "pos": 27,
+     "brazo": "S",
+     "coste": 0.0031292000000000056,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0031292,
+     "latenciaMs": 2195,
+     "correcto": null
+    },
+    {
+     "pos": 27,
+     "brazo": "E",
+     "coste": 0.0037891999999999995,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0037892,
+     "latenciaMs": 2457,
+     "correcto": null
+    },
+    {
+     "pos": 28,
+     "brazo": "A",
+     "coste": 0.00906800000000002,
+     "llamadas": 1,
+     "peticiones": 1,
+     "latenciaMs": 2579,
+     "correcto": null
+    },
+    {
+     "pos": 28,
+     "brazo": "B",
+     "coste": 0.002817199999999999,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0028172,
+     "latenciaMs": 2714,
+     "correcto": null
+    },
+    {
+     "pos": 28,
+     "brazo": "S",
+     "coste": 0.0017772000000000066,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0017772,
+     "latenciaMs": 1588,
+     "correcto": null
+    },
+    {
+     "pos": 28,
+     "brazo": "E",
+     "coste": 0.001937200000000007,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0019372,
+     "latenciaMs": 2820,
+     "correcto": null
+    },
+    {
+     "pos": 29,
+     "brazo": "A",
+     "coste": 0.009099999999999997,
+     "llamadas": 1,
+     "peticiones": 1,
+     "latenciaMs": 2611,
+     "correcto": true
+    },
+    {
+     "pos": 29,
+     "brazo": "B",
+     "coste": 0,
+     "llamadas": 0,
+     "peticiones": 0,
+     "realCapa": 0,
+     "latenciaMs": 41,
+     "correcto": true
+    },
+    {
+     "pos": 29,
+     "brazo": "S",
+     "coste": 0,
+     "llamadas": 0,
+     "peticiones": 0,
+     "realCapa": 0,
+     "latenciaMs": 41,
+     "correcto": true
+    },
+    {
+     "pos": 29,
+     "brazo": "E",
+     "coste": 0,
+     "llamadas": 0,
+     "peticiones": 0,
+     "realCapa": 0,
+     "latenciaMs": 41,
+     "correcto": true
+    },
+    {
+     "pos": 30,
+     "brazo": "A",
+     "coste": 0.010807999999999984,
+     "llamadas": 1,
+     "peticiones": 1,
+     "latenciaMs": 2427,
+     "correcto": true
+    },
+    {
+     "pos": 30,
+     "brazo": "B",
+     "coste": 0.004377200000000005,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0043772,
+     "latenciaMs": 2801,
+     "correcto": true
+    },
+    {
+     "pos": 30,
+     "brazo": "S",
+     "coste": 0.004177200000000006,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0041772,
+     "latenciaMs": 2297,
+     "correcto": true
+    },
+    {
+     "pos": 30,
+     "brazo": "E",
+     "coste": 0.0041572,
+     "llamadas": 1,
+     "peticiones": 1,
+     "realCapa": 0.0041572,
+     "latenciaMs": 3100,
+     "correcto": true
+    },
+    {
+     "pos": 31,
+     "brazo": "A",
+     "coste": 0.009099999999999997,
+     "llamadas": 1,
+     "peticiones": 1,
+     "latenciaMs": 2631,
+     "correcto": true
+    },
+    {
+     "pos": 31,
+     "brazo": "B",
+     "coste": 0,
+     "llamadas": 0,
+     "peticiones": 0,
+     "realCapa": 0,
+     "latenciaMs": 2,
+     "correcto": true
+    },
+    {
+     "pos": 31,
+     "brazo": "S",
+     "coste": 0,
+     "llamadas": 0,
+     "peticiones": 0,
+     "realCapa": 0,
+     "latenciaMs": 2,
+     "correcto": true
+    },
+    {
+     "pos": 31,
+     "brazo": "E",
+     "coste": 0,
+     "llamadas": 0,
+     "peticiones": 0,
+     "realCapa": 0,
+     "latenciaMs": 2,
+     "correcto": true
+    }
+   ]
+  }
+ ]
+}
