@@ -152,3 +152,25 @@ def test_parse_report_rechaza_otro_esquema():
     assert r.cost.actual == 0.0
     assert r.cost.net_savings == 0.0
     assert r.cost.eliminated_input_floor_cost is None
+
+
+def _medido(cost):
+    return parse_report({
+        "schema": "bvsala.gateway.report/1", "requestId": RID, "responseId": None, "path": "/v1/messages",
+        "status": "metered", "reason": None, "report": {"model": "m", "cost": cost, "tokens": {}, "calls": {}},
+    })
+
+
+def test_ahorro_en_dolares_con_un_gateway_05():
+    # La 0.5 envía la proporción (`netSavingsRatio`) y los dólares (`netSavingsUsd`) por separado.
+    r = _medido({"baselineEstimate": 0.04, "actual": 0.01, "netSavingsRatio": 0.75, "netSavingsUsd": 0.03, "basis": "measured"})
+    assert r.cost.net_savings == pytest.approx(0.03)
+    assert r.cost.net_savings_ratio == pytest.approx(0.75)
+    assert "saved $0.030000" in r.summary()
+
+
+def test_ahorro_en_dolares_con_un_gateway_04():
+    # La 0.4 solo enviaba `netSavings`, que es una PROPORCIÓN: los dólares salen de baseline − real.
+    r = _medido({"baselineEstimate": 0.04, "actual": 0.01, "netSavings": 0.75, "basis": "measured"})
+    assert r.cost.net_savings == pytest.approx(0.03)
+    assert r.cost.net_savings_ratio == pytest.approx(0.75)
