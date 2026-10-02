@@ -2,7 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { BancoPublico, type Traductor } from "@/app/components/BancoPublico";
 import Footer from "@/app/components/Footer";
-import { absolute, languageAlternates } from "@/i18n/site";
+import { absolute, languageAlternates, tarjetaSocial } from "@/i18n/site";
 import { cargarBanco } from "@/lib/banco-publico/cargar";
 
 /**
@@ -24,13 +24,14 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const title = t("metaTitle");
   const description = t("metaDescription");
   const url = absolute(`/${locale}/benchmarks`);
+  const social = tarjetaSocial(locale, title);
 
   return {
     title,
     description,
     alternates: { canonical: url, languages: languageAlternates("benchmarks") },
-    openGraph: { title, description, url, siteName: "BiVelio Savings Layer", type: "article" },
-    twitter: { card: "summary", title, description },
+    openGraph: { title, description, url, siteName: "BiVelio Savings Layer", type: "article", ...social.openGraph },
+    twitter: { ...social.twitter, title, description },
   };
 }
 
