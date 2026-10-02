@@ -170,6 +170,9 @@ and the free **Measure** license, which runs the layer in shadow mode on your ow
 traffic and shows what it would have saved, valued with your provider's counter. The verifier that replays the optimizer on your own data
 lives in your dashboard once you sign in.
 
+**Upgrading from 0.4?** Every breaking change of 0.5, with a before and after for
+each, is in [Migrating from 0.4 to 0.5](https://savings.bivelio.com/en/migrate-to-0.5).
+
 ## Set it up in one command
 
 ```bash
@@ -914,7 +917,7 @@ Ask for a response contract and you also get `data`, validated against your sche
 ```ts
 const { data, text } = await layer.generate<{ answer: number }>({
   model: "openai/gpt-4o-mini",
-  messages: [{ role: "user", content: "What is 2 + 2 * 3?" }],
+  messages: [{ role: "user", content: "How many legs does a spider have?" }],
   response: {
     contractId: "answer:v1",
     schema: {
@@ -929,6 +932,11 @@ const { data, text } = await layer.generate<{ answer: number }>({
 
 console.log(data.answer); // 8
 ```
+
+A question the layer answers on its own (the arithmetic of the first example)
+never reaches the model, so its `data` is the resolver's `{ value: 8 }`, not
+your schema's shape: `report.qualityLedger` says the contract was not met.
+Ask the model for anything you want in your contract's shape.
 
 </details>
 

@@ -28,10 +28,14 @@ public, normalises `finishReason`, and keeps one default that changed in 0.4.33.
 In numbers: 73 exports leave the package root (68 removed, 5 renamed), and 7
 fields leave the public types (5 removed, 2 renamed).
 
-## Upgrade to 0.4.34 first
+## Upgrade to the latest 0.4 first
 
-0.4.34 changes nothing you rely on, and it tells you everything 0.5 breaks
-before you get there:
+0.4.34 and later (the last 0.4 is 0.4.36) change nothing you rely on, and they
+tell you everything 0.5 breaks before you get there:
+
+```sh
+npm i @bivelio/savings-layer@0.4   # the latest 0.4.x
+```
 
 - **The compiler.** Every export and option that 0.5 removes or renames is
   marked `@deprecated` in the 0.4.34 types, with what to use instead. Your
@@ -41,23 +45,31 @@ before you get there:
   `semanticCache`, `licensePublicKey` and `licenseGate` in
   `createSavingsLayer`, and the Spanish CLI flags and variables.
 
-When your build on 0.4.34 shows no deprecation and your logs show no notice,
+When your build on 0.4.34 or later shows no deprecation and your logs show no notice,
 the only change left is the value of `finishReason`
 ([section 4](#4-finishreason-is-normalised-the-providers-value-moves-to-finishreasondetail)),
 which no tool can flag for you.
 
 ## How to find what affects you
 
-1. **Build against 0.4.34** and fix every deprecation (see above).
+1. **Build against the latest 0.4** and fix every deprecation (see above).
 2. **Search your code** for the names on this page:
 
    ```sh
-   grep -rnE "CATALOGO|precioDeLista|PRECIOS_AL_DIA|embebedorLocal|UMBRAL_LOCAL|netSavings\b|estimatedTierSaving|finishReason|semanticCache:|licenseGate|devUnlicensed|licensePublicKey|maxTools|silenciarAvisos|--puerto|--proyecto|--forzar|BVSALA_GATEWAY_ESFUERZO|BVSALA_GATEWAY_MODELO_HERMANO" src/
+   grep -rnE "CATALOGO|precioDeLista|PRECIOS_AL_DIA|embebedorLocal|UMBRAL_LOCAL|MODELOS_POR_CODIFICACION|registrarTokenizadorExacto|vectorLocal|quitarPrefijoDeProveedor|netSavings\b|estimatedTierSaving|finishReason|semanticCache:|licenseGate|devUnlicensed|licensePublicKey|maxTools|silenciarAvisos|--puerto|--proyecto|--forzar|BVSALA_GATEWAY_ESFUERZO|BVSALA_GATEWAY_MODELO_HERMANO|BVSALA_SILENCE_DEPRECATIONS" src/
    ```
 
 3. **Anything else you import from the package root** is checked against the
    list in [section 7](#7-internal-exports-leave-the-package-root). On 0.5, a
    missing export is a TypeScript error (`has no exported member`).
+4. **Install 0.5** and build:
+
+   ```sh
+   npm i @bivelio/savings-layer@^0.5
+   ```
+
+   Every error the compiler reports is on this page. Then check
+   `finishReason` by hand (section 4).
 
 ---
 
@@ -90,7 +102,9 @@ const cache = new InMemorySemanticCache({ embed: localEmbedding, similarityThres
 The same goes for the exact-tokenizer helpers: see [section 8](#8-deprecated-aliases-are-removed).
 
 **Detect:** on 0.4.34 your editor marks the old names as deprecated; on 0.5
-TypeScript reports `has no exported member 'CATALOGO'` (and so on). The `grep`
+TypeScript reports `has no exported member 'embebedorLocal'` (and so on); for
+`CATALOGO`, `precioDeLista` and `PRECIOS_AL_DIA` the message reads
+`declares 'CATALOGO' locally, but it is not exported`. The `grep`
 above finds them.
 
 ## 2. `semanticCache` in the constructor becomes `semanticCacheStore`
