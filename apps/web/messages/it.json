@@ -795,7 +795,7 @@
     },
     "cascade": {
       "title": "Vince l'esecuzione più economica",
-      "footnote": "Ogni leva finisce nel proprio registro, e i registri non si sommano mai. In questa batteria il risparmio è venuto dalle richieste ripetute che l'SDK ha servito senza chiamare il fornitore e, su Claude, dalla cache di prefisso del fornitore stesso. Il pacchetto npm non include alcun compressore, quindi la compressione non ha risparmiato nulla — e con traffico senza ripetizioni il risparmio è stato indistinguibile da zero."
+      "footnote": "Ogni leva finisce nel proprio registro, e i registri non si sommano mai. In questa batteria il risparmio è venuto dalle richieste ripetute che l'SDK ha servito senza chiamare il fornitore e, su Claude, dalla cache di prefisso del fornitore stesso. Il pacchetto npm non include alcun compressore."
     },
     "explica": {
       "eyebrow": "In parole semplici",
@@ -828,14 +828,14 @@
       "videoCaption": "Il test è un esperimento equo: lo stesso compito due volte — senza Savings e con Savings — con lo stesso contatore del fornitore che misura entrambi.",
       "plainTitle": "Traduzione, senza gergo",
       "plain": "Su un flusso in cui il {rep} delle richieste si ripetono identiche, la bolletta è scesa del {punto} — tra {bajo} e {alto} con il 95% di confidenza. Quanto risparmierai dipende da quanto si ripete il tuo traffico.",
-      "plainNote": "Una percentuale non significa nulla senza il suo intervallo, il suo modello e il suo traffico: pubblichiamo tutti e tre — e anche le batterie in cui non si è risparmiato nulla.",
+      "plainNote": "Una percentuale non significa nulla senza il suo intervallo, il suo modello e il suo traffico: pubblichiamo tutti e tre.",
       "benchLink": "Ogni batteria, con il suo report completo, sul banco pubblico →"
     },
     "ledgersHead": {
       "eyebrow": "Contabilità onesta",
       "title": "Ogni tipo di risparmio, contato a parte — perché nessuna cifra si gonfi.",
       "body": "Ogni SavingsReport divide il risparmio in quattro registri — chiamate evitate, testo rimosso, testo compresso e lo sconto di cache del tuo stesso fornitore — e non li somma mai in una cifra di marketing.",
-      "providerNote": "Sul banco pubblico ({fecha}), ciò che ha risparmiato l'SDK installato è venuto dal primo registro — richieste ripetute servite senza chiamare il fornitore — e, su Claude, dal quarto, che è lo sconto del tuo stesso fornitore. Il pacchetto npm non include alcun compressore, quindi lì il terzo era a zero. Un registro senza cifra pubblicata è descritto qui, non pubblicizzato."
+      "providerNote": "Sul banco pubblico ({fecha}), ciò che ha risparmiato l'SDK installato è venuto dal primo registro — richieste ripetute servite senza chiamare il fornitore — e, su Claude, dal quarto, che è lo sconto del tuo stesso fornitore. Il pacchetto npm non include alcun compressore. Un registro senza cifra pubblicata è descritto qui, non pubblicizzato."
     },
     "ledgers": [
       {

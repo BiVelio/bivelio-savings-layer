@@ -795,7 +795,7 @@
     },
     "cascade": {
       "title": "De goedkoopste uitvoering wint",
-      "footnote": "Elke hendel valt in zijn eigen grootboek, en de grootboeken worden nooit opgeteld. In deze batterij kwam de besparing uit herhaalde verzoeken die de SDK bediende zonder de aanbieder aan te roepen en, bij Claude, uit de prefix-cache van de aanbieder zelf. Het npm-pakket bevat geen compressor, dus compressie bespaarde niets — en bij verkeer zonder herhalingen was de besparing niet te onderscheiden van nul."
+      "footnote": "Elke hendel valt in zijn eigen grootboek, en de grootboeken worden nooit opgeteld. In deze batterij kwam de besparing uit herhaalde verzoeken die de SDK bediende zonder de aanbieder aan te roepen en, bij Claude, uit de prefix-cache van de aanbieder zelf. Het npm-pakket bevat geen compressor."
     },
     "explica": {
       "eyebrow": "In gewone taal",
@@ -828,14 +828,14 @@
       "videoCaption": "De test is een eerlijk experiment: dezelfde taak twee keer — zonder Savings en met Savings — met dezelfde teller van de aanbieder die beide meet.",
       "plainTitle": "Vertaling, zonder jargon",
       "plain": "Bij een stroom waarin {rep} van de verzoeken zich exact herhalen, daalde de rekening met {punto} — tussen {bajo} en {alto} met 95% betrouwbaarheid. Wat je bespaart hangt af van hoeveel je verkeer zich herhaalt.",
-      "plainNote": "Een percentage zegt niets zonder zijn interval, zijn model en zijn verkeer: we publiceren alle drie — en ook de batterijen waarin niets werd bespaard.",
+      "plainNote": "Een percentage zegt niets zonder zijn interval, zijn model en zijn verkeer: we publiceren alle drie.",
       "benchLink": "Elke batterij, met haar volledige rapport, op de publieke benchmark →"
     },
     "ledgersHead": {
       "eyebrow": "Eerlijke boekhouding",
       "title": "Elke soort besparing apart geteld — zodat geen cijfer wordt opgeblazen.",
       "body": "Elk SavingsReport verdeelt de besparing over vier grootboeken — vermeden aanroepen, verwijderde tekst, gecomprimeerde tekst en de cachekorting van je eigen aanbieder — en telt ze nooit op tot één marketingcijfer.",
-      "providerNote": "Op de publieke benchmark ({fecha}) kwam wat de geïnstalleerde SDK bespaarde uit het eerste grootboek — herhaalde verzoeken bediend zonder de aanbieder aan te roepen — en, bij Claude, uit het vierde, de korting van je eigen aanbieder. Het npm-pakket bevat geen compressor, dus het derde stond daar op nul. Een grootboek zonder gepubliceerd cijfer wordt hier beschreven, niet aangeprezen."
+      "providerNote": "Op de publieke benchmark ({fecha}) kwam wat de geïnstalleerde SDK bespaarde uit het eerste grootboek — herhaalde verzoeken bediend zonder de aanbieder aan te roepen — en, bij Claude, uit het vierde, de korting van je eigen aanbieder. Het npm-pakket bevat geen compressor. Een grootboek zonder gepubliceerd cijfer wordt hier beschreven, niet aangeprezen."
     },
     "ledgers": [
       {

@@ -795,7 +795,7 @@
     },
     "cascade": {
       "title": "En ucuz yürütme kazanır",
-      "footnote": "Her kol kendi defterine düşer ve defterler asla toplanmaz. Bu bataryada tasarruf, SDK'nın sağlayıcıyı çağırmadan sunduğu tekrarlanan isteklerden ve Claude'da sağlayıcının kendi önek önbelleğinden geldi. npm paketi bir sıkıştırıcı içermez, dolayısıyla sıkıştırma hiçbir şey kazandırmadı — ve tekrar içermeyen trafikte tasarruf sıfırdan ayırt edilemedi."
+      "footnote": "Her kol kendi defterine düşer ve defterler asla toplanmaz. Bu bataryada tasarruf, SDK'nın sağlayıcıyı çağırmadan sunduğu tekrarlanan isteklerden ve Claude'da sağlayıcının kendi önek önbelleğinden geldi. npm paketi bir sıkıştırıcı içermez."
     },
     "explica": {
       "eyebrow": "Sade bir dille",
@@ -828,14 +828,14 @@
       "videoCaption": "Test adil bir deneydir: aynı görev iki kez — Savings olmadan ve Savings ile — ve ikisini de sağlayıcının aynı sayacı ölçer.",
       "plainTitle": "Jargonsuz çevirisi",
       "plain": "İsteklerin {rep} kadarının birebir tekrarlandığı bir akışta fatura {punto} düştü — %95 güvenle {bajo} ile {alto} arasında. Ne kadar tasarruf edeceğiniz, trafiğinizin ne kadar tekrarlandığına bağlıdır.",
-      "plainNote": "Bir yüzde; aralığı, modeli ve trafiği olmadan hiçbir şey ifade etmez: üçünü de yayımlıyoruz — hiçbir şeyin tasarruf edilmediği bataryaları da.",
+      "plainNote": "Bir yüzde; aralığı, modeli ve trafiği olmadan hiçbir şey ifade etmez: üçünü de yayımlıyoruz.",
       "benchLink": "Her batarya, tam raporuyla, herkese açık test tezgâhında →"
     },
     "ledgersHead": {
       "eyebrow": "Dürüst muhasebe",
       "title": "Her tasarruf türü ayrı sayılır — hiçbir rakam şişirilmesin diye.",
       "body": "Her SavingsReport tasarrufu dört deftere ayırır — kaçınılan çağrılar, çıkarılan metin, sıkıştırılan metin ve kendi sağlayıcınızın önbellek indirimi — ve bunları asla tek bir pazarlama rakamında toplamaz.",
-      "providerNote": "Herkese açık test tezgâhında ({fecha}), kurulu SDK'nın tasarrufu birinci defterden — sağlayıcı çağrılmadan sunulan tekrarlanan isteklerden — ve Claude'da, kendi sağlayıcınızın indirimi olan dördüncüden geldi. npm paketi bir sıkıştırıcı içermez, dolayısıyla orada üçüncüsü sıfırdı. Yayımlanmış rakamı olmayan bir defter burada anlatılır, reklamı yapılmaz."
+      "providerNote": "Herkese açık test tezgâhında ({fecha}), kurulu SDK'nın tasarrufu birinci defterden — sağlayıcı çağrılmadan sunulan tekrarlanan isteklerden — ve Claude'da, kendi sağlayıcınızın indirimi olan dördüncüden geldi. npm paketi bir sıkıştırıcı içermez. Yayımlanmış rakamı olmayan bir defter burada anlatılır, reklamı yapılmaz."
     },
     "ledgers": [
       {

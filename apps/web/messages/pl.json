@@ -795,7 +795,7 @@
     },
     "cascade": {
       "title": "Wygrywa najtańsza realizacja",
-      "footnote": "Każda dźwignia trafia do własnej księgi, a księgi nigdy się nie sumują. W tej baterii oszczędność pochodziła z powtórzonych zapytań, które SDK obsłużył bez wywołania dostawcy, a w Claude — z pamięci podręcznej prefiksu samego dostawcy. Pakiet npm nie zawiera kompresora, więc kompresja nic nie zaoszczędziła — a przy ruchu bez powtórzeń oszczędność była nieodróżnialna od zera."
+      "footnote": "Każda dźwignia trafia do własnej księgi, a księgi nigdy się nie sumują. W tej baterii oszczędność pochodziła z powtórzonych zapytań, które SDK obsłużył bez wywołania dostawcy, a w Claude — z pamięci podręcznej prefiksu samego dostawcy. Pakiet npm nie zawiera kompresora."
     },
     "explica": {
       "eyebrow": "Prostymi słowami",
@@ -828,14 +828,14 @@
       "videoCaption": "Test to uczciwy eksperyment: to samo zadanie dwa razy — bez Savings i z Savings — a oba mierzy ten sam licznik dostawcy.",
       "plainTitle": "Tłumaczenie, bez żargonu",
       "plain": "Przy strumieniu, w którym {rep} zapytań powtarza się dokładnie, rachunek spadł o {punto} — między {bajo} a {alto} przy 95% ufności. Ile zaoszczędzisz, zależy od tego, jak często powtarza się Twój ruch.",
-      "plainNote": "Procent nic nie znaczy bez swojego przedziału, modelu i ruchu: publikujemy wszystkie trzy — a także baterie, w których nic nie zaoszczędzono.",
+      "plainNote": "Procent nic nie znaczy bez swojego przedziału, modelu i ruchu: publikujemy wszystkie trzy.",
       "benchLink": "Każda bateria z pełnym raportem w publicznym benchmarku →"
     },
     "ledgersHead": {
       "eyebrow": "Uczciwe rozliczanie",
       "title": "Każdy rodzaj oszczędności liczony osobno — żeby żadna liczba nie była zawyżona.",
       "body": "Każdy SavingsReport dzieli oszczędność na cztery księgi — uniknięte wywołania, usunięty tekst, skompresowany tekst i rabat z pamięci podręcznej Twojego własnego dostawcy — i nigdy nie sumuje ich w jedną liczbę marketingową.",
-      "providerNote": "W publicznym benchmarku ({fecha}) to, co zaoszczędził zainstalowany SDK, pochodziło z pierwszej księgi — powtórzonych zapytań obsłużonych bez wywołania dostawcy — a w Claude z czwartej, czyli rabatu Twojego własnego dostawcy. Pakiet npm nie zawiera kompresora, więc trzecia wynosiła tam zero. Księga bez opublikowanej liczby jest tu opisana, nie reklamowana."
+      "providerNote": "W publicznym benchmarku ({fecha}) to, co zaoszczędził zainstalowany SDK, pochodziło z pierwszej księgi — powtórzonych zapytań obsłużonych bez wywołania dostawcy — a w Claude z czwartej, czyli rabatu Twojego własnego dostawcy. Pakiet npm nie zawiera kompresora. Księga bez opublikowanej liczby jest tu opisana, nie reklamowana."
     },
     "ledgers": [
       {

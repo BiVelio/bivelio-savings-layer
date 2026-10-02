@@ -795,7 +795,7 @@
     },
     "cascade": {
       "title": "L'exécution la moins chère l'emporte",
-      "footnote": "Chaque levier tombe dans son propre registre, et les registres ne s'additionnent jamais. Dans cette batterie, l'économie est venue des requêtes répétées que le SDK a servies sans appeler le fournisseur et, sur Claude, du cache de préfixe du fournisseur lui-même. Le paquet npm n'embarque aucun compresseur, donc la compression n'a rien économisé — et sur un trafic sans répétitions, l'économie était impossible à distinguer de zéro."
+      "footnote": "Chaque levier tombe dans son propre registre, et les registres ne s'additionnent jamais. Dans cette batterie, l'économie est venue des requêtes répétées que le SDK a servies sans appeler le fournisseur et, sur Claude, du cache de préfixe du fournisseur lui-même. Le paquet npm n'embarque aucun compresseur."
     },
     "explica": {
       "eyebrow": "En mots simples",
@@ -828,14 +828,14 @@
       "videoCaption": "Le test est une expérience équitable : la même tâche deux fois — sans Savings et avec Savings — avec le même compteur du fournisseur qui mesure les deux.",
       "plainTitle": "Traduction, sans jargon",
       "plain": "Sur un flux où {rep} des requêtes se répètent à l'identique, la facture a baissé de {punto} — entre {bajo} et {alto} avec 95 % de confiance. Ce que vous économiserez dépend de la part de votre trafic qui se répète.",
-      "plainNote": "Un pourcentage ne veut rien dire sans son intervalle, son modèle et son trafic : nous publions les trois — et aussi les batteries où rien n'a été économisé.",
+      "plainNote": "Un pourcentage ne veut rien dire sans son intervalle, son modèle et son trafic : nous publions les trois.",
       "benchLink": "Chaque batterie, avec son rapport complet, sur le banc public →"
     },
     "ledgersHead": {
       "eyebrow": "Comptabilité honnête",
       "title": "Chaque type d'économie, compté à part — pour qu'aucun chiffre ne soit gonflé.",
       "body": "Chaque SavingsReport répartit l'économie en quatre registres — appels évités, texte retiré, texte compressé et la remise de cache de votre propre fournisseur — et ne les additionne jamais en un chiffre marketing.",
-      "providerNote": "Sur le banc public ({fecha}), ce qu'a économisé le SDK installé est venu du premier registre — des requêtes répétées servies sans appeler le fournisseur — et, sur Claude, du quatrième, qui est la remise de votre propre fournisseur. Le paquet npm n'embarque aucun compresseur, donc le troisième y était à zéro. Un registre sans chiffre publié est décrit ici, pas annoncé."
+      "providerNote": "Sur le banc public ({fecha}), ce qu'a économisé le SDK installé est venu du premier registre — des requêtes répétées servies sans appeler le fournisseur — et, sur Claude, du quatrième, qui est la remise de votre propre fournisseur. Le paquet npm n'embarque aucun compresseur. Un registre sans chiffre publié est décrit ici, pas annoncé."
     },
     "ledgers": [
       {

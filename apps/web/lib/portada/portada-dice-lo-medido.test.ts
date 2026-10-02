@@ -650,17 +650,103 @@ describe("⛔ la portada no enseña el «≈ 0 %» del tráfico sin repeticiones
       expect(sinParams, loc).not.toMatch(/(^|[^0-9])0([^0-9]|$)/);
       const plain = t("step2.plain", { rep: pct0.format(V.repeticiones), punto: "31,5 %", bajo: "25,7 %", alto: "36,7 %" });
       expect(plain, loc).toContain("31,5 %");
-      // La nota de debajo sigue diciendo que se publican también las baterías
-      // sin ahorro, sin cifra.
+      // La nota de debajo, sin cifra.
       expect(t("step2.plainNote"), loc).not.toMatch(/[0-9%]/);
     });
   }
 
-  it("en/es: la frase llana termina con «depende de cuánto repita tu tráfico», y la nota publica también lo que no ahorró", () => {
+  it("en/es: la frase llana termina con «depende de cuánto repita tu tráfico»; la nota y los pies, sin ceros", () => {
     expect(cargar("en")["landing.step2.plain"]).toMatch(/with 95% confidence\. What you save depends on how much your traffic repeats\.$/);
     expect(cargar("es")["landing.step2.plain"]).toMatch(/con un 95 % de confianza\. Lo que ahorres depende de cuánto repita tu tráfico\.$/);
-    expect(cargar("en")["landing.step2.plainNote"]).toMatch(/and the batteries where nothing was saved, too\.$/);
-    expect(cargar("es")["landing.step2.plainNote"]).toMatch(/y también las baterías donde no se ahorró nada\.$/);
+    expect(cargar("en")["landing.step2.plainNote"]).toBe(
+      "A percentage means nothing without its interval, its model and its traffic: we publish all three.",
+    );
+    expect(cargar("es")["landing.step2.plainNote"]).toBe(
+      "Un porcentaje no significa nada sin su intervalo, su modelo y su tráfico: publicamos los tres.",
+    );
+    expect(cargar("en")["landing.cascade.footnote"]).toMatch(/The npm package ships no compressor\.$/);
+    expect(cargar("es")["landing.cascade.footnote"]).toMatch(/El paquete de npm no trae compresor\.$/);
+    expect(cargar("en")["landing.ledgersHead.providerNote"]).toContain("The npm package ships no compressor. A ledger with no published figure");
+    expect(cargar("es")["landing.ledgersHead.providerNote"]).toContain("El paquete de npm no trae compresor. Un libro sin cifra publicada");
+  });
+
+  /**
+   * Ni «indistinguible de cero» ni «el tercero fue cero» ni «no se ahorró nada»
+   * en la portada, en ningún idioma (dueño, 2026-10-02). Las frases prohibidas
+   * salen de los propios ficheros: lo que /benchmarks llama «indistinguible de
+   * cero» y lo que dice la fila del panel tras sus dos puntos, en cada idioma.
+   * Más la palabra «cero» en cada idioma, en las frases que hablan del ahorro.
+   */
+  const CERO: Record<Loc, RegExp> = {
+    en: /\bzero\b/i,
+    es: /\bcero\b/i,
+    ca: /\bzero\b/i,
+    de: /\bnull\b/i,
+    fr: /\bzéro\b/i,
+    id: /\bnol\b/i,
+    it: /\bzero\b/i,
+    nl: /\bnul\b/i,
+    pl: /\bzer[oa]\b/i,
+    pt: /\bzero\b/i,
+    tr: /sıfır/i,
+    vi: /bằng không|với không/i,
+  };
+  /** «No se ahorró nada», como lo decían la nota y el pie en cada idioma. */
+  const NADA_AHORRADO: Record<Loc, RegExp> = {
+    en: /nothing was saved|saved nothing/i,
+    es: /no se ahorró nada|no ahorró nada/i,
+    ca: /no es va estalviar res|no va estalviar res/i,
+    de: /nichts gespart|sparte .*nichts/i,
+    fr: /rien n'a été économisé|n'a rien économisé/i,
+    id: /tidak menghemat apa pun/i,
+    it: /non si è risparmiato nulla|non ha risparmiato nulla/i,
+    nl: /niets werd bespaard|bespaarde niets/i,
+    pl: /nic nie zaoszczędzono|nic nie zaoszczędziła/i,
+    pt: /nada se poupou|não poupou nada/i,
+    tr: /hiçbir şeyin tasarruf edilmediği|hiçbir şey kazandırmadı/i,
+    vi: /không tiết kiệm được gì/i,
+  };
+  /** Las frases de la portada que hablan del ahorro. */
+  const FRASES_DEL_AHORRO = [
+    "landing.hero.",
+    "landing.enVivo.titulo",
+    "landing.enVivo.conRepeticiones",
+    "landing.enVivo.anthropic",
+    "landing.enVivo.pie",
+    "landing.offers.sdk.",
+    "landing.step2.",
+    "landing.cascade.",
+    "landing.ledgersHead.",
+    "landing.ledgers.",
+  ];
+  for (const loc of LOCALES) {
+    it(`${loc}: la portada no dice «indistinguible de cero», ni «≈», ni «cero» ni «no se ahorró nada» al hablar del ahorro`, () => {
+      const d = cargar(loc);
+      // La fila del panel es la única clave de landing.* que lo dice, y la portada no la pinta.
+      const portada = Object.entries(d).filter(([k]) => k.startsWith("landing.") && k !== "landing.enVivo.sinRepeticiones");
+      const indistinguible = [d["benchmarksPage.noSavings.verdict.cero"]!, d["landing.enVivo.sinRepeticiones"]!.split(/\s*:\s*/).pop()!];
+      for (const f of indistinguible) expect(f.length, `${loc} ${f}`).toBeGreaterThan(5);
+      const malos = portada
+        .filter(([, v]) => v.includes("≈") || indistinguible.some((f) => v.toLowerCase().includes(f.toLowerCase())) || NADA_AHORRADO[loc].test(v))
+        .map(([k, v]) => `${k}: ${v}`);
+      expect(malos).toEqual([]);
+      const conCero = portada
+        .filter(([k]) => FRASES_DEL_AHORRO.some((p) => k.startsWith(p)))
+        .filter(([, v]) => CERO[loc].test(v))
+        .map(([k, v]) => `${k}: ${v}`);
+      expect(conCero).toEqual([]);
+    });
+  }
+
+  it("las verjas del cero cazan las frases viejas (si no, no protegen nada)", () => {
+    expect(CERO.en.test("so the third was zero there.")).toBe(true);
+    expect(CERO.es.test("así que allí el tercero fue cero.")).toBe(true);
+    expect(CERO.de.test("also war das dritte dort null.")).toBe(true);
+    expect(CERO.vi.test("nên ở đó sổ thứ ba bằng không.")).toBe(true);
+    expect(NADA_AHORRADO.en.test("and the batteries where nothing was saved, too.")).toBe(true);
+    expect(NADA_AHORRADO.es.test("y también las baterías donde no se ahorró nada.")).toBe(true);
+    expect(NADA_AHORRADO.tr.test("hiçbir şeyin tasarruf edilmediği bataryaları da.")).toBe(true);
+    expect(cargar("en")["benchmarksPage.noSavings.verdict.cero"]).toBe("indistinguishable from zero");
   });
 
   it("/benchmarks no se toca: el cero sigue allí, con su informe", () => {
