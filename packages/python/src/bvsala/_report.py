@@ -60,10 +60,13 @@ class Cost:
 
     baseline_estimate: float
     actual: float
+    #: Saved dollars: ``baseline_estimate - actual`` (the gateway's ``netSavingsUsd``).
     net_savings: float
     basis: Optional[str]
     #: Provider-side context clearing valued at the cached-input price; a separate lane, never in ``net_savings``.
     eliminated_input_floor_cost: Optional[float]
+    #: The same saving as a share of the baseline (``netSavingsRatio``; ``1`` = nothing paid). A ratio, not dollars.
+    net_savings_ratio: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -115,6 +118,19 @@ class Report:
         return linea
 
 
+def _es_cifra(v: Any) -> bool:
+    return isinstance(v, (int, float)) and not isinstance(v, bool)
+
+
+def _usd_ahorrados(c: Mapping[str, Any]) -> float:
+    """Los dólares ahorrados: `netSavingsUsd` (gateway 0.5) o, si no viene, baseline − real (gateway 0.4)."""
+    if _es_cifra(c.get("netSavingsUsd")):
+        return float(c["netSavingsUsd"])
+    if _es_cifra(c.get("baselineEstimate")) and _es_cifra(c.get("actual")):
+        return float(c["baselineEstimate"]) - float(c["actual"])
+    return 0.0
+
+
 def parse_report(cuerpo: Mapping[str, Any]) -> Report:
     """El JSON de ``GET /_bvsala/v1/reports/…`` → ``Report``. Lanza ``ValueError`` si no es uno."""
     if cuerpo.get("schema") != REPORT_SCHEMA:
@@ -139,11 +155,16 @@ def parse_report(cuerpo: Mapping[str, Any]) -> Report:
         cost=Cost(
             baseline_estimate=_num(c, "baselineEstimate"),
             actual=_num(c, "actual"),
-            # El informe del SDK la llama `netSavingsRatio` desde la 0.5 (antes
-            # `netSavings`); se aceptan las dos para leer pasarelas de ambas versiones.
-            net_savings=_num(c, "netSavingsRatio") if "netSavingsRatio" in c else _num(c, "netSavings"),
+            # DÓLARES, no la proporción. `netSavings` (0.4) y `netSavingsRatio`
+            # (0.5) son una PROPORCIÓN del baseline; los dólares son
+            # `netSavingsUsd`, que el gateway envía desde la 0.5. Un gateway 0.4
+            # no lo envía: entonces baseline − real, que es la misma cifra.
+            net_savings=_usd_ahorrados(c),
             basis=c.get("basis") if isinstance(c.get("basis"), str) else None,
             eliminated_input_floor_cost=_num(c, "eliminatedInputFloorCost") if suelo is not None else None,
+            # La proporción se llama `netSavingsRatio` desde la 0.5 (antes
+            # `netSavings`); se aceptan las dos para leer gateways de ambas versiones.
+            net_savings_ratio=_num(c, "netSavingsRatio") if "netSavingsRatio" in c else _num(c, "netSavings"),
         ),
         tokens=Tokens(
             baseline_input=_int(t, "baselineInput"),

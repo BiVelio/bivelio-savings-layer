@@ -370,10 +370,19 @@
       "noLever": "{n, plural, other {# máy đã cập nhật}}, nhưng đòn bẩy chưa hoạt động ở đó. Nếu vẫn vậy sau khi cập nhật, hãy viết cho support@bivelio.com.",
       "action": "Cập nhật @bivelio/savings-layer trên máy đó và khởi động lại terminal; bảng máy bên dưới cho thấy mỗi máy khai báo gì."
     },
+    "gatewayBruto": {
+      "title": "Khoản tiết kiệm của một số máy vẫn được báo cáo ở dạng gộp",
+      "summary": "{n, plural, other {# máy đang chạy}} gateway cũ hơn {minima} hoặc không khai báo phiên bản. Khoản tiết kiệm từ việc hạ TTL của bộ nhớ đệm tính phần phụ phí tránh được, nhưng không trừ những lần bộ nhớ đệm 5 phút hết hạn và phải ghi lại. Trên lưu lượng của chính chúng tôi, những lần trượt đó ăn mất khoảng 30% con số ấy. Từ {minima}, gateway trừ chúng đi và bảng điều khiển này hiển thị khoản tiết kiệm ròng.",
+      "action": "Cập nhật @bivelio/savings-layer lên {minima} hoặc mới hơn trên máy đó và khởi động lại terminal. Những gì đã ghi nhận không được tính lại: số ròng được tính từ lúc cập nhật."
+    },
     "sdkReferencia": {
       "title": "Một số máy đang chạy SDK cũ hơn {minima}: các lượt lặp lại của chúng không được đo theo tham chiếu",
       "summary": "{n, plural, other {# máy đang chạy}} SDK cũ hơn {minima} (máy cũ nhất khai báo {antigua}). Cho đến khi cập nhật, các yêu cầu lặp lại của chúng được tính là ước tính, không phải đo theo tham chiếu: vẫn nằm trong tổng của bạn, nhưng ngoài cơ sở.",
       "action": "Hãy cập nhật SDK trên máy đó lên {minima} trở lên và khởi động lại tiến trình:"
+    },
+    "migrar05": {
+      "note": "Phiên bản mới nhất là 0.5, có các thay đổi không tương thích.",
+      "link": "Đọc hướng dẫn chuyển đổi trước khi cập nhật →"
     },
     "maquinas": {
       "title": "máy (30 ngày)",
@@ -777,21 +786,22 @@
     "metaTitle": "BiVelio — Xác minh mức tiết kiệm LLM của bạn",
     "metaDescription": "Một SDK để ứng dụng của bạn chỉ trả cho nhà cung cấp LLM những gì nó cần, và một gateway đo agent lập trình của bạn. Tất cả bằng bộ đếm của nhà cung cấp: đo miễn phí, sau đó trả theo ghế — không có hoa hồng trên khoản tiết kiệm của bạn.",
     "hero": {
-      "eyebrow": "Dành cho các đội trả phí API LLM theo token",
       "title": "Hóa đơn LLM của bạn, trong tầm kiểm soát.",
       "titleAccent": "Được đo ở mỗi lời gọi.",
-      "lede": "Hai sản phẩm, một nguyên tắc. SDK được cài bên trong ứng dụng của bạn và chỉ cho qua những gì phải trả; gateway đứng trước agent lập trình của bạn và đo chi tiêu của nó. Cả hai đều đếm bằng chính bộ đếm của nhà cung cấp và tách riêng phần đo được với phần ước tính. Chúng tôi chỉ công bố những gì đã đo.",
-      "ctaOffers": "SDK hay gateway?",
-      "ctaPricing": "Xem bảng giá",
+      "sub": "Savings trả lời những gì ứng dụng của bạn lặp lại mà không gọi lại nhà cung cấp, và đo mỗi lệnh gọi bằng bộ đếm của họ.",
+      "ctaStart": "Bắt đầu",
+      "ctaBench": "Xem băng thử công khai",
+      "panelAlt": "Bảng điều khiển Savings với dữ liệu của băng thử công khai: khoản tiết kiệm đo được và phân bổ theo mô hình.",
+      "panelCaption": "Bảng điều khiển với dữ liệu của băng thử công khai",
+      "medidoEnVivo": "Đo trực tiếp bằng bộ đếm của từng nhà cung cấp",
       "note": "Cài đặt trong vài phút. Tin nhắn của bạn không bao giờ đi qua máy chủ của chúng tôi.",
       "proofTitle": "Đo với nhà cung cấp thật",
-      "medidoEn": "Đo trên",
       "compatibleCon": "Tương thích với",
       "compatibleNota": "Tương thích không có nghĩa là đã đo. SDK hoạt động với mọi endpoint tương thích với API của OpenAI, cùng bộ chuyển đổi gốc cho Anthropic và bộ chuyển đổi gốc cho Gemini (mới trong {gemini}). Có con số tiết kiệm trên băng thử công khai hiện chỉ có các mô hình của OpenAI và Anthropic; Gemini không có con số tiết kiệm. Điều đã đo với Gemini: {flash}, qua API gốc của nó, trong bench hằng tuần trực tiếp ngày {fecha} — cả bốn bộ thử, không có lỗi nào của lớp và không có lời từ chối nào được lưu cache hay ghi có thành tiết kiệm. Bench đó kiểm tra rằng lớp không làm hỏng gì và không tính phí quá mức; nó không đo khoản tiết kiệm. Cũng đã đo: {pro}, qua API gốc của nó, trong hai lượt một phần vào {fechaPro} (hạn mức hằng ngày của nhà cung cấp không đủ cho cả bốn bộ kiểm thử trong một ngày): cả bốn bộ kiểm thử, cũng không có lỗi nào của lớp và không có lời từ chối nào được lưu đệm hay tính là tiết kiệm."
     },
     "cascade": {
       "title": "Phương án thực thi rẻ nhất thắng",
-      "footnote": "Mỗi đòn bẩy rơi vào sổ riêng của nó, và các sổ không bao giờ được cộng lại. Trong bộ thử này, khoản tiết kiệm đến từ các yêu cầu lặp lại mà SDK phục vụ không cần gọi nhà cung cấp và, với Claude, từ bộ nhớ đệm tiền tố của chính nhà cung cấp. Gói npm không kèm bộ nén, nên nén không tiết kiệm được gì — và với lưu lượng không lặp lại, khoản tiết kiệm không phân biệt được với không."
+      "footnote": "Mỗi đòn bẩy rơi vào sổ riêng của nó, và các sổ không bao giờ được cộng lại. Trong bộ thử này, khoản tiết kiệm đến từ các yêu cầu lặp lại mà SDK phục vụ không cần gọi nhà cung cấp và, với Claude, từ bộ nhớ đệm tiền tố của chính nhà cung cấp. Gói npm không kèm bộ nén."
     },
     "explica": {
       "eyebrow": "Nói một cách dễ hiểu",
@@ -823,15 +833,15 @@
       "body": "Mỗi kịch bản chạy hai lần với nhà cung cấp thật: nguyên trạng, và có Savings đứng trước. Cả hai kết quả được đếm bằng chính bộ đếm của nhà cung cấp — bộ đếm định giá hóa đơn của bạn. Đây là kết quả, kèm biên độ sai số:",
       "videoCaption": "Bài kiểm tra là một thí nghiệm công bằng: cùng một nhiệm vụ chạy hai lần — không có Savings và có Savings — và cùng một bộ đếm của nhà cung cấp đo cả hai.",
       "plainTitle": "Diễn giải, không thuật ngữ",
-      "plain": "Trên một luồng mà {rep} số yêu cầu lặp lại y hệt, hóa đơn giảm {punto} — trong khoảng {bajo} đến {alto} với độ tin cậy 95%. Với lưu lượng không lặp lại, hóa đơn giảm ≈ {cero}. Bạn tiết kiệm bao nhiêu tùy vào mức độ lặp lại của lưu lượng của bạn.",
-      "plainNote": "Một tỷ lệ phần trăm không có ý nghĩa gì nếu thiếu khoảng tin cậy, mô hình và lưu lượng của nó: chúng tôi công bố cả ba — và cả những bộ thử không tiết kiệm được gì.",
+      "plain": "Trên một luồng mà {rep} số yêu cầu lặp lại y hệt, hóa đơn giảm {punto} — trong khoảng {bajo} đến {alto} với độ tin cậy 95%. Bạn tiết kiệm bao nhiêu tùy vào mức độ lặp lại của lưu lượng của bạn.",
+      "plainNote": "Một tỷ lệ phần trăm không có ý nghĩa gì nếu thiếu khoảng tin cậy, mô hình và lưu lượng của nó: chúng tôi công bố cả ba.",
       "benchLink": "Từng bộ thử, kèm báo cáo đầy đủ, trên băng thử công khai →"
     },
     "ledgersHead": {
       "eyebrow": "Hạch toán trung thực",
       "title": "Mỗi loại tiết kiệm được đếm riêng — để không con số nào bị thổi phồng.",
       "body": "Mỗi SavingsReport chia khoản tiết kiệm vào bốn sổ — lệnh gọi tránh được, văn bản đã loại bỏ, văn bản đã nén và chiết khấu bộ nhớ đệm của chính nhà cung cấp — và không bao giờ cộng chúng thành một con số tiếp thị.",
-      "providerNote": "Trên băng thử công khai ({fecha}), khoản SDK đã cài tiết kiệm được đến từ sổ thứ nhất — các yêu cầu lặp lại được phục vụ mà không gọi nhà cung cấp — và, với Claude, từ sổ thứ tư, là chiết khấu của chính nhà cung cấp. Gói npm không kèm bộ nén, nên ở đó sổ thứ ba bằng không. Một sổ chưa có con số công bố thì được mô tả ở đây, không được quảng cáo."
+      "providerNote": "Trên băng thử công khai ({fecha}), khoản SDK đã cài tiết kiệm được đến từ sổ thứ nhất — các yêu cầu lặp lại được phục vụ mà không gọi nhà cung cấp — và, với Claude, từ sổ thứ tư, là chiết khấu của chính nhà cung cấp. Gói npm không kèm bộ nén. Một sổ chưa có con số công bố thì được mô tả ở đây, không được quảng cáo."
     },
     "ledgers": [
       {
@@ -960,13 +970,14 @@
       "ctaTitle": "Đo trên chính lưu lượng của bạn",
       "ctaSub": "Sau khi cài đặt, mỗi lệnh gọi trả về SavingsReport của nó, phần đo được và phần ước tính tách riêng. Bắt đầu miễn phí với Đo lường (@bivelio/savings-layer {version} trở lên); Pro và Nhóm là phí cố định theo ghế, không có hoa hồng trên khoản tiết kiệm. Giấy phép là thứ cho phép bạn chạy BV‑SALA — SDK trong ứng dụng, gateway trong terminal.",
       "ctaStart": "Bắt đầu",
-      "tagline": "Hệ điều hành cho doanh nghiệp của bạn. Đây là <b>BV‑SALA</b>, bộ tối ưu chi phí LLM trung lập với nhà cung cấp của BiVelio — mọi con số công bố đều được đo theo bộ đếm của chính nhà cung cấp; ước tính được hiển thị riêng và không bao giờ tính phí.",
+      "tagline": "Hệ điều hành cho doanh nghiệp của bạn. Đây là <b>BV‑SALA</b>, bộ tối ưu chi phí LLM trung lập với nhà cung cấp của BiVelio — mọi con số đo được đều đo theo bộ đếm của chính nhà cung cấp; ước tính và mô phỏng được hiển thị riêng, nói rõ là như vậy, và không bao giờ tính phí.",
       "badge": "BV‑SALA · Savings Layer",
       "colSavings": "Savings Layer",
       "colBivelio": "BiVelio",
       "colLegal": "Pháp lý",
       "measured": "Kết quả đo được",
       "benchmarks": "Bộ đo công khai",
+      "migrate": "Chuyển lên 0.5",
       "pricing": "Giá",
       "home": "Trang chủ",
       "docs": "Tài liệu",
@@ -999,9 +1010,6 @@
       "errorCorreo": "Email đó có vẻ không hợp lệ.",
       "errorEnvio": "Chúng tôi không gửi được.",
       "alterna": "Gửi email cho chúng tôi"
-    },
-    "trabajos": {
-      "caption": "Không phải yêu cầu nào cũng có gì để tiết kiệm: trên băng thử công khai, lưu lượng không lặp lại tiết kiệm ≈ {cero}. Chúng tôi cũng công bố điều đó."
     },
     "devs": {
       "eyebrow": "Xây dựng cho lập trình viên",
@@ -1051,8 +1059,10 @@
         "band": "Gateway — cho agent lập trình dùng khóa API",
         "who": "Cho những ai dùng Claude Code, Codex CLI hoặc agent lập trình khác với khóa API.",
         "what": "Một lệnh đặt một bộ đo cục bộ trước terminal của bạn, không cần sửa mã. Gateway đếm từng lượt gọi mà nhà cung cấp có báo cáo mức sử dụng, bằng chính bộ đếm của nhà cung cấp — với các mô hình trong danh mục giá của chúng tôi — và cộng dồn chúng trong bảng điều khiển của bạn, theo ngày và theo mô hình.",
-        "figureLabel": "Chưa công bố con số tiết kiệm",
-        "figureNote": "Chúng tôi chưa công bố khoản tiết kiệm đo được nào cho agent lập trình, nên chúng tôi không quảng cáo con số nào. Với PRO, trên các mô hình Anthropic, gateway chuyển các lần ghi bộ nhớ đệm từ TTL một giờ sang TTL năm phút, chỉ ở những lượt mà một phần lớn prompt là mới — như lượt đầu tiên của một phiên hoặc sau khi nén ngữ cảnh — và giữ nguyên các lượt nối tiếp của một phiên đang chạy. Điều đó thay đổi giá, không bao giờ thay đổi những gì mô hình đọc, và chỉ phần được bộ đếm của nhà cung cấp xác nhận mới được tính trong báo cáo tiết kiệm của bạn.",
+        "figureLabel": "Con số chúng tôi công bố",
+      "figureQue": "hóa đơn nhờ việc hạ bộ nhớ đệm của PRO, đã trừ các lần trượt bộ nhớ đệm mà nó gây ra (khoảng {confianza}: từ {bajo} đến {alto}). Mô phỏng theo giá niêm yết trên {sesiones} phiên Claude Code của một tổ chức duy nhất, chính chúng tôi.",
+        "figureNote": "Đây không phải là dự báo cho nhóm của bạn: đó là một tổ chức, một nhà cung cấp và giá niêm yết, và là khoản tiết kiệm nhỏ, thấy rõ ở nơi chi tiêu cho Anthropic cao. Với PRO, trên các mô hình Anthropic, gateway chuyển các lần ghi bộ nhớ đệm từ TTL một giờ sang TTL năm phút, chỉ ở những lượt mà một phần lớn prompt là mới — như lượt đầu tiên của một phiên hoặc sau khi nén ngữ cảnh — và giữ nguyên các lượt nối tiếp của một phiên đang chạy. Điều đó thay đổi giá, không bao giờ thay đổi những gì mô hình đọc, và chỉ phần được bộ đếm của nhà cung cấp xác nhận mới được tính trong báo cáo tiết kiệm của bạn.",
+        "benchLink": "Báo cáo của phép đo TTL: đã mô phỏng những gì, phân tích theo mô hình và các giới hạn →",
         "cta": "Cài đặt gateway"
       },
       "skill": {
@@ -1233,6 +1243,54 @@
       "delta": "Δ {d} pp [{inf}, {sup}]",
       "originNote": "Mức tiết kiệm đến từ đâu, theo từng vị trí: “từ cache chính xác” là những gì A đã trả cho các yêu cầu mà lớp phục vụ mà không cần gọi nhà cung cấp; “trong các lệnh gọi” là chênh lệch ở những yêu cầu thực sự đến được nhà cung cấp, chủ yếu từ cache tiền tố của nhà cung cấp (cộng thêm một chút biến động ở đầu ra). Hai phần này cộng lại thành tổng mức tiết kiệm.",
       "accuracyNote": "Độ chính xác được đo trên các câu hỏi có đáp án đã công bố; các biến thể có một con số bị thay đổi chỉ dùng để kiểm tra rằng lớp không bao giờ trả về đáp án của một câu hỏi khác."
+    },
+    "gatewayTtl": {
+      "title": "Việc hạ bộ nhớ đệm của gateway: một phép mô phỏng, không phải A/B",
+      "kind": "Phần này không phải là một trong các bộ thử A/B của trang và <b>không được đo trực tiếp</b>: đây là một <b>replay</b>. Chúng tôi lấy mức sử dụng mà nhà cung cấp đã báo cáo cho các phiên Claude Code thật của <b>một tổ chức duy nhất, chính chúng tôi</b>, với một nhà cung cấp duy nhất (Anthropic), rồi tính theo <b>giá niêm yết</b> xem chúng sẽ tốn bao nhiêu khi có và khi không có việc hạ bộ nhớ đệm của PRO.",
+      "verdict": "Kết luận của báo cáo ngày {fecha}: việc hạ để lại <b>phần ròng {neto} hóa đơn</b> ({netoUsd} trên {factura}), sau khi trừ các lần trượt bộ nhớ đệm do chính nó gây ra.",
+      "stat": {
+        "sessions": "Phiên",
+        "requests": "Yêu cầu",
+        "days": "Ngày"
+      },
+      "thInterval": "Khoảng {confianza}",
+      "thNet": "Ròng, so với hóa đơn",
+      "bySession": "Lấy mẫu lại theo phiên (số cụm: {n})",
+      "byDay": "Lấy mẫu lại theo ngày (số cụm: {n})",
+      "intervalsNote": "Bootstrap với {remuestreos} lần lấy mẫu lại. Cả hai khoảng đều không chứa số không: với lưu lượng này, việc hạ có lãi. Thẻ ở trang chủ trích khoảng theo phiên.",
+      "resultTitle": "Kết quả, cùng những gì bị trừ đi",
+      "row": {
+        "downgrades": "Số lần hạ",
+        "gross": "Phụ phí tiết kiệm được, gộp",
+        "misses": "Số lần trượt bộ nhớ đệm gây ra",
+        "missCost": "Chi phí của các lần trượt đó",
+        "net": "Ròng",
+        "ceiling": "Trần: toàn bộ phụ phí một giờ"
+      },
+      "resultNote": "Các tỷ lệ phần trăm tính trên hóa đơn theo giá niêm yết của các yêu cầu được mô phỏng ({factura}). Trần là mức tối đa mà bất kỳ chính sách TTL nào có thể thu hồi, ngay cả khi không bao giờ trượt. Mỗi tỷ lệ phần trăm được làm tròn riêng.",
+      "modelsTitle": "Theo mô hình",
+      "thModelNet": "Ròng, so với hóa đơn của mô hình",
+      "tooFew": "không có tỷ lệ (số yêu cầu: {n})",
+      "ugly": "<b>{modelo} là trường hợp xấu</b>: nó chiếm {rebajas} số lần hạ và {fallos} số lần trượt, và phần ròng của nó gần như bằng không. Trong giai đoạn đầu của bản ghi, nó thậm chí còn lỗ: {perdida} hóa đơn của nó. Lưu lượng của nó là những luồng ngắn thường xuyên được dựng lại và quay lại sau khi năm phút đã trôi qua. Quy tắc này thực sự có lãi ở nơi việc khởi động phiên đắt và hiếm.",
+      "howTitle": "Cách thực hiện: mô hình bộ nhớ đệm, được công bố rõ",
+      "how": {
+        "rule": "Quy tắc chính là quy tắc mà gateway chạy, không phải bản sao: nó chuyển các lần ghi bộ nhớ đệm từ TTL một giờ sang TTL năm phút khi phần mới chiếm ít nhất {umbral} thân yêu cầu.",
+        "baseline": "Đường cơ sở là những gì nhà cung cấp đã đếm, với mức sử dụng thực, ở nơi việc hạ chưa bật; ở nơi đã bật, nó được dựng lại bằng cách hoàn tác việc hạ (xem phần giới hạn). Khi hạ, lượt được hạ trả phụ phí ghi năm phút thay vì phụ phí một giờ.",
+        "miss": "Một lần trượt bị gây ra: nếu lượt kế tiếp của cùng luồng đến sau năm phút và trước khi hết một giờ, những gì lượt bị hạ đã ghi sẽ không còn được đọc từ bộ nhớ đệm mà phải ghi lại, và chi phí đó bị trừ đi.",
+        "conservative": "Có một biến thể thận trọng, coi như mất cả phần tiền tố dùng chung giữa các luồng khác nhau. Nó hầu như không làm con số thay đổi: {neto}, với thêm vài lần trượt ({fallos}).",
+        "aggregates": "Chỉ có số liệu tổng hợp: không prompt, phản hồi, tiêu đề hay mã định danh phiên nào rời khỏi bản ghi."
+      },
+      "limitsTitle": "Giới hạn",
+      "limits": {
+        "oneOrg": "<b>Một tổ chức, một ứng dụng khách, một nhà cung cấp.</b> Claude Code với Anthropic, trên lưu lượng của chính chúng tôi. Không có tác nhân lập trình nào khác và không có nhà cung cấp nào khác.",
+        "listPrice": "<b>Giá niêm yết, mô phỏng.</b> Đây không phải hóa đơn: đây là mức sử dụng thật, được tính giá theo bảng giá. Chiết khấu, hạng tài khoản hoặc gói thuê bao sẽ làm số tiền thay đổi.",
+        "cacheModel": "<b>Mô hình bộ nhớ đệm là một mô hình.</b> Nó giả định cách nhà cung cấp lập chỉ mục các mục bộ nhớ đệm; nó không quan sát điều đó. Biến thể thận trọng giới hạn rủi ro này.",
+        "rebuilt": "<b>Phần lớn đường cơ sở được dựng lại.</b> {cuota} số yêu cầu được ghi khi việc hạ đã bật; ở đó đường cơ sở được dựng lại bằng cách hoàn tác việc hạ thực tế, và kém chắc chắn hơn đường cơ sở của giai đoạn đầu. Riêng giai đoạn đầu đó cho một khoảng rộng hơn nhiều: từ {bajo} đến {alto}.",
+        "ceiling": "<b>Mức trần thay đổi theo client.</b> Nó phụ thuộc vào việc agent lập trình gửi bao nhiêu lượt ghi một giờ, và các phiên bản Claude Code gần đây gửi ít hơn: trong {peticiones} yêu cầu, {sinMarca} yêu cầu không có lượt ghi nào để hạ.",
+        "gap": "<b>Khoảng trống giữa các lượt được đo từ lúc mỗi yêu cầu đến</b>, không phải từ lúc phản hồi kết thúc: nó đếm thừa vài lần trượt, không bao giờ đếm thiếu.",
+        "promise": "<b>Đây không phải dự báo cho nhóm của bạn.</b> Đây là một khoản tiết kiệm nhỏ, từ một lưu lượng duy nhất, và lưu lượng khác có thể cho con số khác, kể cả tệ hơn: hãy xem trường hợp xấu."
+      },
+      "production": "Trên môi trường thực tế: từ phiên bản {version} ({fecha}), gateway trừ các lần trượt mà nó quan sát được, ngay ở lượt phải chịu chúng, nên khoản tiết kiệm từ việc hạ này trên bảng điều khiển của bạn là số ròng. Những gì đã ghi nhận trước đó không được tính lại, và bảng điều khiển đánh dấu các máy chạy gateway cũ hơn là “gộp”."
     },
     "guarantees": {
       "title": "Các cam kết, được đếm",

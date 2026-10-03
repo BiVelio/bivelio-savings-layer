@@ -2,6 +2,8 @@ import { getTranslations } from "next-intl/server";
 
 import { decidirAvisoVersion, type AsientoVisto } from "@/lib/version/aviso-version";
 
+import { AvisoMigrar05 } from "./AvisoMigrar05";
+
 /**
  * Máquinas con gateway que llevan 7 días sin producir un euro MEDIDO — hermano
  * de BillingStateBanner, con su misma regla: null cuando no hay nada que decir.
@@ -39,6 +41,7 @@ export async function GatewayVersionBanner({ asientos }: { asientos: AsientoVist
       ) : null}
       {aviso.sinPalanca > 0 ? <p style={{ marginTop: 6 }}>{t("noLever", { n: aviso.sinPalanca })}</p> : null}
       <p className="ck-note" style={{ marginTop: 8, marginBottom: 0 }}>{t("action")}</p>
+      <AvisoMigrar05 />
     </div>
   );
 }

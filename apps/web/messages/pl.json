@@ -370,10 +370,19 @@
       "noLever": "{n, plural, one {# maszyna jest aktualna} few {# maszyny są aktualne} many {# maszyn jest aktualnych} other {# maszyny są aktualne}}, ale dźwignia tam nie zadziałała. Jeśli po aktualizacji nic się nie zmieni, napisz na support@bivelio.com.",
       "action": "Zaktualizuj @bivelio/savings-layer na tej maszynie i uruchom terminal ponownie; tabela maszyn poniżej pokazuje, co deklaruje każda z nich."
     },
+    "gatewayBruto": {
+      "title": "Oszczędności niektórych maszyn są nadal raportowane brutto",
+      "summary": "{n, plural, one {# maszyna używa} few {# maszyny używają} many {# maszyn używa} other {# maszyny używa}} gatewaya starszego niż {minima} lub nie deklaruje wersji. Jej oszczędność z obniżenia TTL pamięci podręcznej liczy unikniętą dopłatę, ale nie odejmuje sytuacji, w których 5-minutowa pamięć podręczna wygasa i trzeba ją zapisać ponownie. W naszym własnym ruchu te chybienia zjadają około 30% tej kwoty. Od wersji {minima} gateway je odejmuje, a ten panel pokazuje oszczędność netto.",
+      "action": "Zaktualizuj @bivelio/savings-layer do wersji {minima} lub nowszej na tej maszynie i uruchom ponownie terminal. To, co już zapisano, nie jest przeliczane: netto liczy się od aktualizacji."
+    },
     "sdkReferencia": {
       "title": "Niektóre maszyny działają na SDK starszym niż {minima}: ich powtórzenia nie są mierzone przez odniesienie",
       "summary": "{n, plural, one {# maszyna działa} few {# maszyny działają} many {# maszyn działa} other {# maszyny działa}} na SDK starszym niż {minima} (najstarsza deklaruje {antigua}). Dopóki nie zostaną zaktualizowane, ich powtórzone żądania liczą się jako szacowane, a nie mierzone przez odniesienie: zostają w Twoich sumach, ale poza bazą.",
       "action": "Zaktualizuj SDK na tej maszynie do {minima} lub nowszego i uruchom proces ponownie:"
+    },
+    "migrar05": {
+      "note": "Najnowsza wersja to 0.5, która wprowadza niezgodne zmiany.",
+      "link": "Przed aktualizacją przeczytaj przewodnik migracji →"
     },
     "maquinas": {
       "title": "maszyny (30 dni)",
@@ -777,21 +786,22 @@
     "metaTitle": "BiVelio — Zweryfikuj swoje oszczędności na LLM",
     "metaDescription": "SDK, dzięki któremu Twoja aplikacja płaci dostawcy LLM tylko za to, czego potrzebuje, i gateway, który mierzy Twojego agenta kodu. Wszystko licznikiem Twojego dostawcy: mierz za darmo, potem płać za stanowisko — bez prowizji od oszczędności.",
     "hero": {
-      "eyebrow": "Dla zespołów, które płacą za API LLM od tokena",
       "title": "Twoja faktura za LLM, pod kontrolą.",
       "titleAccent": "Mierzona przy każdym wywołaniu.",
-      "lede": "Dwa produkty, jedna zasada. SDK instaluje się w Twojej aplikacji i przepuszcza tylko to, za co trzeba zapłacić; gateway staje przed Twoim agentem programistycznym i mierzy jego wydatki. Oba liczą licznikiem Twojego dostawcy i trzymają to, co zmierzone, osobno od tego, co szacowane. Publikujemy tylko to, co zmierzyliśmy.",
-      "ctaOffers": "SDK czy gateway?",
-      "ctaPricing": "Zobacz cennik",
+      "sub": "Savings odpowiada na to, co Twoja aplikacja powtarza, bez ponownego wywołania dostawcy, i mierzy każde wywołanie jego licznikiem.",
+      "ctaStart": "Zacznij",
+      "ctaBench": "Zobacz publiczny benchmark",
+      "panelAlt": "Panel Savings z danymi publicznego benchmarku: zmierzona oszczędność i jej podział według modelu.",
+      "panelCaption": "Panel z danymi publicznego benchmarku",
+      "medidoEnVivo": "Mierzone na żywo licznikiem każdego dostawcy",
       "note": "Instalacja w kilka minut. Twoje wiadomości nigdy nie przechodzą przez nasze serwery.",
       "proofTitle": "Zmierzone względem prawdziwego dostawcy",
-      "medidoEn": "Zmierzone na",
       "compatibleCon": "Zgodne z",
       "compatibleNota": "Zgodny nie znaczy zmierzony. SDK działa z każdym endpointem zgodnym z API OpenAI, a także z natywnym adapterem Anthropic i natywnym adapterem Gemini (nowość w {gemini}). Z liczbą oszczędności w publicznym benchmarku są dziś tylko modele OpenAI i Anthropic; Gemini nie ma liczby oszczędności. Co zmierzono dla Gemini: {flash}, przez jego natywne API, w cotygodniowym benchmarku na żywo z {fecha} — wszystkie cztery baterie, bez błędów warstwy i bez żadnej odmowy w cache ani zaliczonej jako oszczędność. Ten benchmark sprawdza, że warstwa niczego nie psuje i nie pobiera za dużo; nie mierzy oszczędności. Zmierzony także: {pro}, przez natywne API, w dwóch przebiegach częściowych {fechaPro} (jego dzienny limit dostawcy nie mieści wszystkich czterech baterii w jednym dniu): wszystkie cztery baterie, również bez żadnego błędu warstwy i bez żadnej odmowy z pamięci podręcznej ani zaliczonej jako oszczędność."
     },
     "cascade": {
       "title": "Wygrywa najtańsza realizacja",
-      "footnote": "Każda dźwignia trafia do własnej księgi, a księgi nigdy się nie sumują. W tej baterii oszczędność pochodziła z powtórzonych zapytań, które SDK obsłużył bez wywołania dostawcy, a w Claude — z pamięci podręcznej prefiksu samego dostawcy. Pakiet npm nie zawiera kompresora, więc kompresja nic nie zaoszczędziła — a przy ruchu bez powtórzeń oszczędność była nieodróżnialna od zera."
+      "footnote": "Każda dźwignia trafia do własnej księgi, a księgi nigdy się nie sumują. W tej baterii oszczędność pochodziła z powtórzonych zapytań, które SDK obsłużył bez wywołania dostawcy, a w Claude — z pamięci podręcznej prefiksu samego dostawcy. Pakiet npm nie zawiera kompresora."
     },
     "explica": {
       "eyebrow": "Prostymi słowami",
@@ -823,15 +833,15 @@
       "body": "Każdy scenariusz uruchamiamy dwa razy u prawdziwego dostawcy: bez zmian i z Savings z przodu. Oba wyniki liczy licznik samego dostawcy — ten sam, który wycenia Twoją fakturę. Oto co wyszło, z marginesem błędu:",
       "videoCaption": "Test to uczciwy eksperyment: to samo zadanie dwa razy — bez Savings i z Savings — a oba mierzy ten sam licznik dostawcy.",
       "plainTitle": "Tłumaczenie, bez żargonu",
-      "plain": "Przy strumieniu, w którym {rep} zapytań powtarza się dokładnie, rachunek spadł o {punto} — między {bajo} a {alto} przy 95% ufności. Przy ruchu, który się nie powtarza, spadł o ≈ {cero}. Ile zaoszczędzisz, zależy od tego, jak często powtarza się Twój.",
-      "plainNote": "Procent nic nie znaczy bez swojego przedziału, modelu i ruchu: publikujemy wszystkie trzy — a także baterie, w których nic nie zaoszczędzono.",
+      "plain": "Przy strumieniu, w którym {rep} zapytań powtarza się dokładnie, rachunek spadł o {punto} — między {bajo} a {alto} przy 95% ufności. Ile zaoszczędzisz, zależy od tego, jak często powtarza się Twój ruch.",
+      "plainNote": "Procent nic nie znaczy bez swojego przedziału, modelu i ruchu: publikujemy wszystkie trzy.",
       "benchLink": "Każda bateria z pełnym raportem w publicznym benchmarku →"
     },
     "ledgersHead": {
       "eyebrow": "Uczciwe rozliczanie",
       "title": "Każdy rodzaj oszczędności liczony osobno — żeby żadna liczba nie była zawyżona.",
       "body": "Każdy SavingsReport dzieli oszczędność na cztery księgi — uniknięte wywołania, usunięty tekst, skompresowany tekst i rabat z pamięci podręcznej Twojego własnego dostawcy — i nigdy nie sumuje ich w jedną liczbę marketingową.",
-      "providerNote": "W publicznym benchmarku ({fecha}) to, co zaoszczędził zainstalowany SDK, pochodziło z pierwszej księgi — powtórzonych zapytań obsłużonych bez wywołania dostawcy — a w Claude z czwartej, czyli rabatu Twojego własnego dostawcy. Pakiet npm nie zawiera kompresora, więc trzecia wynosiła tam zero. Księga bez opublikowanej liczby jest tu opisana, nie reklamowana."
+      "providerNote": "W publicznym benchmarku ({fecha}) to, co zaoszczędził zainstalowany SDK, pochodziło z pierwszej księgi — powtórzonych zapytań obsłużonych bez wywołania dostawcy — a w Claude z czwartej, czyli rabatu Twojego własnego dostawcy. Pakiet npm nie zawiera kompresora. Księga bez opublikowanej liczby jest tu opisana, nie reklamowana."
     },
     "ledgers": [
       {
@@ -960,13 +970,14 @@
       "ctaTitle": "Zmierz to na własnym ruchu",
       "ctaSub": "Po instalacji każde wywołanie zwraca swój SavingsReport, z tym, co zmierzone, i tym, co oszacowane, osobno. Zacznij za darmo od Pomiaru (@bivelio/savings-layer {version} lub nowszy); Pro i Zespół to stała opłata za stanowisko, bez prowizji od oszczędności. Licencja pozwala uruchomić BV‑SALA — SDK w aplikacji, gateway w terminalu.",
       "ctaStart": "Zacznij",
-      "tagline": "System operacyjny dla Twojej firmy. To <b>BV‑SALA</b>, neutralny wobec dostawcy optymalizator kosztów LLM od BiVelio — każda opublikowana liczba zmierzona względem licznika dostawcy; szacunki pokazujemy osobno i nigdy nie fakturujemy.",
+      "tagline": "System operacyjny dla Twojej firmy. To <b>BV‑SALA</b>, neutralny wobec dostawcy optymalizator kosztów LLM od BiVelio — każda zmierzona liczba jest zmierzona względem licznika dostawcy; szacunki i symulacje pokazujemy osobno, nazwane wprost, i nigdy ich nie fakturujemy.",
       "badge": "BV‑SALA · Savings Layer",
       "colSavings": "Savings Layer",
       "colBivelio": "BiVelio",
       "colLegal": "Informacje prawne",
       "measured": "Zmierzone wyniki",
       "benchmarks": "Publiczny benchmark",
+      "migrate": "Migracja do 0.5",
       "pricing": "Cennik",
       "home": "Strona główna",
       "docs": "Dokumentacja",
@@ -999,9 +1010,6 @@
       "errorCorreo": "Ten e-mail nie wygląda na poprawny.",
       "errorEnvio": "Nie udało się wysłać.",
       "alterna": "Napisz do nas"
-    },
-    "trabajos": {
-      "caption": "Nie każde zapytanie ma coś do zaoszczędzenia: w publicznym benchmarku ruch bez powtórzeń zaoszczędził ≈ {cero}. To też publikujemy."
     },
     "devs": {
       "eyebrow": "Stworzone dla programistów",
@@ -1051,8 +1059,10 @@
         "band": "Gateway — dla agentów programistycznych z kluczem API",
         "who": "Dla osób, które pracują z Claude Code, Codex CLI lub innym agentem programistycznym na kluczu API.",
         "what": "Jedno polecenie stawia lokalny licznik przed Twoim terminalem, bez zmian w kodzie. Gateway liczy każde zapytanie, dla którego Twój dostawca raportuje zużycie, jego własnym licznikiem — dla modeli z naszego cennika — i sumuje je w Twoim panelu, według dnia i modelu.",
-        "figureLabel": "Brak opublikowanej liczby oszczędności",
-        "figureNote": "Nie opublikowaliśmy zmierzonej oszczędności dla agentów programistycznych, więc żadnej nie reklamujemy. Z PRO, na modelach Anthropic, gateway przestawia zapisy do pamięci podręcznej z godzinnego TTL na pięciominutowy tylko w turach, w których duża część promptu jest nowa — jak pierwsza tura sesji albo kompaktowanie — a kolejne tury trwającej sesji zostawia bez zmian. Zmienia to cenę, nigdy to, co czyta model, a w Twoim raporcie oszczędności liczy się tylko to, co potwierdzi licznik Twojego dostawcy.",
+        "figureLabel": "Liczba, którą publikujemy",
+      "figureQue": "rachunku dzięki obniżeniu pamięci podręcznej w PRO, po odjęciu chybień pamięci podręcznej, które ono powoduje (przedział {confianza}: od {bajo} do {alto}). Symulacja po cenach katalogowych na {sesiones} sesjach Claude Code jednej organizacji, naszej.",
+        "figureNote": "To nie jest prognoza dla twojego zespołu: to jedna organizacja, jeden dostawca i ceny katalogowe, a oszczędność jest niewielka i widać ją tam, gdzie wydatki w Anthropic są wysokie. Z PRO, na modelach Anthropic, gateway przestawia zapisy do pamięci podręcznej z godzinnego TTL na pięciominutowy tylko w turach, w których duża część promptu jest nowa — jak pierwsza tura sesji albo kompaktowanie — a kolejne tury trwającej sesji zostawia bez zmian. Zmienia to cenę, nigdy to, co czyta model, a w Twoim raporcie oszczędności liczy się tylko to, co potwierdzi licznik Twojego dostawcy.",
+        "benchLink": "Raport z pomiaru TTL: co symulowano, podział na modele i jego ograniczenia →",
         "cta": "Skonfiguruj gateway"
       },
       "skill": {
@@ -1233,6 +1243,54 @@
       "delta": "Δ {d} pp [{inf}, {sup}]",
       "originNote": "Skąd bierze się oszczędność, pozycja po pozycji: „z dokładnej pamięci podręcznej” to to, co zapłaciło A za żądania, które warstwa obsłużyła bez wywoływania dostawcy; „w wywołaniach” to różnica w tych, które faktycznie do niego dotarły, głównie dzięki pamięci podręcznej prefiksów dostawcy (plus trochę zmienności wyniku). Obie sumują się na całkowitą oszczędność.",
       "accuracyNote": "Dokładność jest mierzona na pytaniach z opublikowaną odpowiedzią; warianty ze zmienioną liczbą służą wyłącznie do sprawdzenia, czy warstwa nigdy nie zwraca odpowiedzi z innego pytania."
+    },
+    "gatewayTtl": {
+      "title": "Obniżenie pamięci podręcznej w gatewayu: symulacja, nie A/B",
+      "kind": "Ta sekcja nie jest jedną z baterii A/B na tej stronie i <b>nie jest mierzona na żywo</b>: to <b>replay</b>. Wzięliśmy użycie, które dostawca już zaraportował dla prawdziwych sesji Claude Code <b>jednej organizacji, naszej</b>, u jednego dostawcy (Anthropic), i policzyliśmy po <b>cenach katalogowych</b>, ile kosztowałyby z obniżeniem pamięci podręcznej w PRO i bez niego.",
+      "verdict": "Werdykt raportu z dnia {fecha}: obniżenie zostawia <b>netto {neto} rachunku</b> ({netoUsd} z {factura}), po odjęciu chybień pamięci podręcznej, które samo powoduje.",
+      "stat": {
+        "sessions": "Sesje",
+        "requests": "Żądania",
+        "days": "Dni"
+      },
+      "thInterval": "Przedział {confianza}",
+      "thNet": "Netto, jako część rachunku",
+      "bySession": "Losowanie ze zwracaniem po sesjach (grupy: {n})",
+      "byDay": "Losowanie ze zwracaniem po dniach (grupy: {n})",
+      "intervalsNote": "Bootstrap, liczba losowań: {remuestreos}. Oba przedziały wykluczają zero: na tym ruchu obniżenie zarabia. Karta na stronie głównej podaje przedział po sesjach.",
+      "resultTitle": "Wynik, razem z tym, co się odejmuje",
+      "row": {
+        "downgrades": "Obniżenia",
+        "gross": "Zaoszczędzona dopłata, brutto",
+        "misses": "Spowodowane chybienia pamięci podręcznej",
+        "missCost": "Ile kosztują te chybienia",
+        "net": "Netto",
+        "ceiling": "Sufit: cała dopłata za godzinę"
+      },
+      "resultNote": "Wartości procentowe odnoszą się do rachunku po cenach katalogowych za symulowane żądania ({factura}). Sufit to najwięcej, ile mogłaby odzyskać jakakolwiek polityka TTL, nawet gdyby nigdy nie chybiała. Każdy procent jest zaokrąglany osobno.",
+      "modelsTitle": "Według modelu",
+      "thModelNet": "Netto, jako część rachunku modelu",
+      "tooFew": "bez wartości procentowej (żądania: {n})",
+      "ugly": "<b>{modelo} to brzydki przypadek</b>: przypada na niego {rebajas} obniżeń i {fallos} chybień, a jego wynik netto jest bliski zera. W pierwszym okresie nagrania wręcz stracił: {perdida} swojego rachunku. Jego ruch to krótkie wątki, które często są budowane od nowa i wracają po upływie pięciu minut. Reguła naprawdę zarabia tam, gdzie starty sesji są drogie i rzadkie.",
+      "howTitle": "Jak to zrobiono: model pamięci podręcznej, podany jawnie",
+      "how": {
+        "rule": "Reguła jest tą samą, którą wykonuje gateway, a nie kopią: przenosi zapisy do pamięci podręcznej z TTL jednej godziny na TTL pięciu minut, gdy nowa część stanowi co najmniej {umbral} treści żądania.",
+        "baseline": "Linia bazowa to to, co policzył dostawca, z rzeczywistym użyciem, tam gdzie obniżenie nie było jeszcze aktywne; tam, gdzie już było, odtwarza się ją przez jego cofnięcie (zobacz ograniczenia). Przy obniżeniu obniżona tura płaci dopłatę za zapis pięciominutowy zamiast jednogodzinnego.",
+        "miss": "Spowodowane chybienie: jeśli następna tura tego samego wątku nadejdzie po pięciu minutach, a przed upływem godziny, to, co zapisała obniżona tura, nie jest już czytane z pamięci podręcznej, tylko zapisywane ponownie, i ten koszt się odejmuje.",
+        "conservative": "Jest też wariant zachowawczy, który dodatkowo uznaje za utracony prefiks współdzielony przez różne wątki. Prawie nie zmienia wyniku: {neto}, przy kilku dodatkowych chybieniach ({fallos}).",
+        "aggregates": "Tylko dane zagregowane: z nagrania nie wychodzi żaden prompt, odpowiedź, nagłówek ani identyfikator sesji."
+      },
+      "limitsTitle": "Ograniczenia",
+      "limits": {
+        "oneOrg": "<b>Jedna organizacja, jeden klient, jeden dostawca.</b> Claude Code wobec Anthropic, na naszym własnym ruchu. Żadnego innego agenta do kodu i żadnego innego dostawcy.",
+        "listPrice": "<b>Cena katalogowa, symulacja.</b> To nie jest faktura: to rzeczywiste użycie wycenione według cennika. Rabaty, poziomy konta lub subskrypcja zmieniłyby kwoty.",
+        "cacheModel": "<b>Model pamięci podręcznej jest modelem.</b> Zakłada, jak dostawca indeksuje swoje wpisy pamięci podręcznej; nie obserwuje tego. Wariant zachowawczy ogranicza to ryzyko.",
+        "rebuilt": "<b>Większość linii bazowej jest odtworzona.</b> {cuota} żądań zarejestrowano, gdy obniżenie było już aktywne; tam linię bazową odtwarza się przez cofnięcie rzeczywistego obniżenia i jest ona mniej pewna niż w pierwszym okresie. Sam pierwszy okres daje znacznie szerszy przedział: od {bajo} do {alto}.",
+        "ceiling": "<b>Pułap zmienia się wraz z klientem.</b> Zależy od tego, ile zapisów jednogodzinnych wysyła agent programistyczny, a nowsze wersje Claude Code wysyłają ich mniej: spośród {peticiones} żądań {sinMarca} nie zawierało żadnego do obniżenia.",
+        "gap": "<b>Przerwę między turami mierzy się od nadejścia każdego żądania</b>, a nie od końca odpowiedzi: liczy trochę chybień za dużo, nigdy za mało.",
+        "promise": "<b>To nie jest prognoza dla Twojego zespołu.</b> To mała oszczędność z jednego ruchu, a inny ruch może dać inny wynik, także gorszy: spójrz na brzydki przypadek."
+      },
+      "production": "W produkcji: od wersji {version} ({fecha}) gateway odejmuje chybienia, które obserwuje, w turze, która je ponosi, więc oszczędność z tego obniżenia widoczna w twoim panelu jest netto. To, co zapisano wcześniej, nie jest przeliczane, a panel oznacza maszyny ze starszym gatewayem jako „brutto”."
     },
     "guarantees": {
       "title": "Gwarancje, policzone",

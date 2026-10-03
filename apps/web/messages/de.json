@@ -370,10 +370,19 @@
       "noLever": "{n, plural, one {# Maschine ist aktuell} other {# Maschinen sind aktuell}}, aber der Hebel hat dort nicht gegriffen. Bleibt es nach dem Update so, schreib an support@bivelio.com.",
       "action": "Aktualisiere @bivelio/savings-layer auf dieser Maschine und starte das Terminal neu; die Maschinentabelle unten zeigt, was jede meldet."
     },
+    "gatewayBruto": {
+      "title": "Einige Maschinen melden ihre Ersparnis noch brutto",
+      "summary": "{n, plural, one {# Maschine nutzt} other {# Maschinen nutzen}} ein Gateway älter als {minima} oder meldet keine Version. Die Ersparnis durch die Cache-TTL-Senkung zählt den vermiedenen Aufschlag, zieht aber nicht ab, wenn der 5-Minuten-Cache abläuft und neu geschrieben werden muss. In unserem eigenen Traffic fressen diese Fehltreffer etwa 30 % dieses Betrags. Ab {minima} zieht das Gateway sie ab und dieses Dashboard zeigt die Netto-Ersparnis.",
+      "action": "Aktualisiere @bivelio/savings-layer auf dieser Maschine auf {minima} oder neuer und starte das Terminal neu. Bereits Erfasstes wird nicht neu berechnet: Netto zählt ab der Aktualisierung."
+    },
     "sdkReferencia": {
       "title": "Einige Maschinen laufen mit einem SDK älter als {minima}: ihre Wiederholungen werden nicht per Referenz gemessen",
       "summary": "{n, plural, one {# Maschine läuft} other {# Maschinen laufen}} mit einem SDK älter als {minima} (die älteste meldet {antigua}). Bis sie aktualisiert werden, zählen ihre wiederholten Anfragen als geschätzt, nicht als per Referenz gemessen: Sie bleiben in deinen Summen, aber außerhalb der Basis.",
       "action": "Aktualisiere das SDK auf dieser Maschine auf {minima} oder neuer und starte den Prozess neu:"
+    },
+    "migrar05": {
+      "note": "Die neueste Version ist 0.5 und enthält inkompatible Änderungen.",
+      "link": "Lies vor dem Update den Migrationsleitfaden →"
     },
     "maquinas": {
       "title": "Maschinen (30 Tage)",
@@ -777,21 +786,22 @@
     "metaTitle": "BiVelio — Verifiziere deine LLM-Einsparungen",
     "metaDescription": "Ein SDK, mit dem deine App dem LLM-Anbieter nur zahlt, was sie braucht, und ein Gateway, das deinen Coding-Agent misst. Gezählt mit dem Zähler deines Anbieters: kostenlos messen, dann pro Seat zahlen — ohne Provision auf deine Ersparnis.",
     "hero": {
-      "eyebrow": "Für Teams, die LLM-APIs pro Token bezahlen",
       "title": "Ihre LLM-Rechnung, unter Kontrolle.",
       "titleAccent": "Gemessen bei jedem Aufruf.",
-      "lede": "Zwei Produkte, eine Regel. Das SDK wird in deine App eingebaut und lässt nur durch, was bezahlt werden muss; das Gateway sitzt vor deinem Coding-Agenten und misst seine Ausgaben. Beide zählen mit dem eigenen Zähler deines Anbieters und halten Gemessenes und Geschätztes getrennt. Wir veröffentlichen nur, was wir gemessen haben.",
-      "ctaOffers": "SDK oder Gateway?",
-      "ctaPricing": "Preise ansehen",
+      "sub": "Savings beantwortet, was Ihre App wiederholt, ohne den Anbieter erneut aufzurufen, und misst jeden Aufruf mit dessen Zähler.",
+      "ctaStart": "Loslegen",
+      "ctaBench": "Öffentlichen Benchmark ansehen",
+      "panelAlt": "Das Savings-Dashboard mit den Daten des öffentlichen Benchmarks: die gemessene Einsparung und ihre Aufteilung nach Modell.",
+      "panelCaption": "Dashboard mit den Daten des öffentlichen Benchmarks",
+      "medidoEnVivo": "Live gemessen mit dem Zähler jedes Anbieters",
       "note": "In Minuten installiert. Deine Nachrichten laufen nie über unsere Server.",
       "proofTitle": "Gegen echten Provider gemessen",
-      "medidoEn": "Gemessen auf",
       "compatibleCon": "Kompatibel mit",
       "compatibleNota": "Kompatibel heißt nicht gemessen. Das SDK funktioniert mit jedem Endpunkt, der mit der OpenAI-API kompatibel ist, dazu mit dem nativen Anthropic-Adapter und dem nativen Gemini-Adapter (neu in {gemini}). Mit einer Einsparungszahl im öffentlichen Benchmark sind heute nur Modelle von OpenAI und Anthropic gemessen; für Gemini gibt es keine Einsparungszahl. Was für Gemini gemessen ist: {flash}, über seine native API, im wöchentlichen Live-Benchmark vom {fecha} — alle vier Batterien, ohne Fehler der Schicht und ohne gecachte oder als Einsparung gutgeschriebene Ablehnung. Dieser Benchmark prüft, dass die Schicht nichts kaputt macht und nicht zu viel berechnet; eine Einsparung misst er nicht. Ebenfalls gemessen: {pro}, über seine native API, in zwei Teilläufen am {fechaPro} (sein tägliches Anbieterkontingent reicht nicht für alle vier Batterien an einem Tag): alle vier Batterien, ebenfalls ohne Fehler der Schicht und ohne gecachte oder als Ersparnis verbuchte Ablehnung."
     },
     "cascade": {
       "title": "Die günstigste Ausführung gewinnt",
-      "footnote": "Jeder Hebel landet in seinem eigenen Konto, und die Konten werden nie addiert. In dieser Batterie kam die Einsparung aus wiederholten Anfragen, die das SDK ohne Aufruf des Anbieters bediente, und bei Claude aus dem Präfix-Cache des Anbieters selbst. Das npm-Paket enthält keinen Kompressor, also sparte die Kompression nichts — und bei Traffic ohne Wiederholungen war die Einsparung nicht von null zu unterscheiden."
+      "footnote": "Jeder Hebel landet in seinem eigenen Konto, und die Konten werden nie addiert. In dieser Batterie kam die Einsparung aus wiederholten Anfragen, die das SDK ohne Aufruf des Anbieters bediente, und bei Claude aus dem Präfix-Cache des Anbieters selbst. Das npm-Paket enthält keinen Kompressor."
     },
     "explica": {
       "eyebrow": "In normalen Worten",
@@ -823,15 +833,15 @@
       "body": "Jedes Szenario läuft zweimal gegen den echten Anbieter: unverändert und mit Savings davor. Beide Ergebnisse werden mit dem Zähler des Anbieters selbst gezählt — demselben, der deine Rechnung bepreist. Das kam heraus, samt Fehlermarge:",
       "videoCaption": "Der Test ist ein faires Experiment: dieselbe Aufgabe zweimal — ohne Savings und mit Savings — und derselbe Zähler des Anbieters zählt beide.",
       "plainTitle": "Übersetzung, ohne Fachjargon",
-      "plain": "Bei einem Strom, in dem sich {rep} der Anfragen exakt wiederholen, sank die Rechnung um {punto} — zwischen {bajo} und {alto} mit 95 % Konfidenz. Bei Traffic ohne Wiederholungen sank sie um ≈ {cero}. Was du sparst, hängt davon ab, wie oft sich deiner wiederholt.",
-      "plainNote": "Ein Prozentsatz bedeutet nichts ohne sein Intervall, sein Modell und seinen Traffic: Wir veröffentlichen alle drei — und auch die Batterien, in denen nichts gespart wurde.",
+      "plain": "Bei einem Strom, in dem sich {rep} der Anfragen exakt wiederholen, sank die Rechnung um {punto} — zwischen {bajo} und {alto} mit 95 % Konfidenz. Was du sparst, hängt davon ab, wie oft sich dein Traffic wiederholt.",
+      "plainNote": "Ein Prozentsatz bedeutet nichts ohne sein Intervall, sein Modell und seinen Traffic: Wir veröffentlichen alle drei.",
       "benchLink": "Jede Batterie mit ihrem vollständigen Bericht im öffentlichen Benchmark →"
     },
     "ledgersHead": {
       "eyebrow": "Ehrliche Abrechnung",
       "title": "Jede Art von Ersparnis, getrennt gezählt — damit keine Zahl aufgebläht wird.",
       "body": "Jeder SavingsReport teilt die Einsparung in vier Konten auf — vermiedene Aufrufe, entfernter Text, komprimierter Text und der Cache-Rabatt deines eigenen Anbieters — und addiert sie nie zu einer Marketingzahl.",
-      "providerNote": "Im öffentlichen Benchmark ({fecha}) kam die Einsparung des installierten SDK aus dem ersten Konto — wiederholte Anfragen, bedient ohne Aufruf des Anbieters — und bei Claude aus dem vierten, dem Rabatt deines eigenen Anbieters. Das npm-Paket enthält keinen Kompressor, also war das dritte dort null. Ein Konto ohne veröffentlichte Zahl wird hier beschrieben, nicht beworben."
+      "providerNote": "Im öffentlichen Benchmark ({fecha}) kam die Einsparung des installierten SDK aus dem ersten Konto — wiederholte Anfragen, bedient ohne Aufruf des Anbieters — und bei Claude aus dem vierten, dem Rabatt deines eigenen Anbieters. Das npm-Paket enthält keinen Kompressor. Ein Konto ohne veröffentlichte Zahl wird hier beschrieben, nicht beworben."
     },
     "ledgers": [
       {
@@ -960,13 +970,14 @@
       "ctaTitle": "Messen Sie es an Ihrem eigenen Traffic",
       "ctaSub": "Einmal installiert, liefert jeder Aufruf seinen SavingsReport, Gemessenes und Geschätztes getrennt. Starte kostenlos mit Measure (@bivelio/savings-layer {version} oder neuer); Pro und Team sind eine feste Gebühr pro Seat, ohne Provision auf deine Ersparnis. Die Lizenz ist das, was dich BV‑SALA ausführen lässt — das SDK in deiner App, das Gateway in deinem Terminal.",
       "ctaStart": "Loslegen",
-      "tagline": "Das Betriebssystem für Ihr Unternehmen. Das ist <b>BV‑SALA</b>, BiVelios anbieterneutraler LLM-Kostenoptimierer — jede veröffentlichte Zahl gegen den Zähler des Anbieters gemessen; Schätzungen werden getrennt gezeigt und nie berechnet.",
+      "tagline": "Das Betriebssystem für Ihr Unternehmen. Das ist <b>BV‑SALA</b>, BiVelios anbieterneutraler LLM-Kostenoptimierer — jede gemessene Zahl ist gegen den Zähler des Anbieters gemessen; Schätzungen und Simulationen werden getrennt gezeigt, als solche benannt, und nie berechnet.",
       "badge": "BV‑SALA · Savings Layer",
       "colSavings": "Savings Layer",
       "colBivelio": "BiVelio",
       "colLegal": "Rechtliches",
       "measured": "Gemessene Ergebnisse",
       "benchmarks": "Offener Benchmark",
+      "migrate": "Auf 0.5 migrieren",
       "pricing": "Preise",
       "home": "Startseite",
       "docs": "Dokumentation",
@@ -999,9 +1010,6 @@
       "errorCorreo": "Diese E-Mail sieht nicht gültig aus.",
       "errorEnvio": "Wir konnten es nicht senden.",
       "alterna": "Schreib uns"
-    },
-    "trabajos": {
-      "caption": "Nicht jede Anfrage enthält etwas zum Sparen: Im öffentlichen Benchmark sparte Traffic ohne Wiederholungen ≈ {cero}. Auch das veröffentlichen wir."
     },
     "devs": {
       "eyebrow": "Für Entwickler gebaut",
@@ -1051,8 +1059,10 @@
         "band": "Gateway — für Coding-Agenten mit API-Schlüssel",
         "who": "Für alle, die Claude Code, Codex CLI oder einen anderen Coding-Agenten mit API-Schlüssel nutzen.",
         "what": "Ein Befehl setzt einen lokalen Zähler vor dein Terminal, ohne Code anzufassen. Das Gateway zählt jede Anfrage, für die dein Anbieter die Nutzung meldet, mit dessen eigenem Zähler — für die Modelle in unserem Preiskatalog — und summiert sie in deinem Dashboard nach Tag und Modell.",
-        "figureLabel": "Keine Ersparniszahl veröffentlicht",
-        "figureNote": "Für Coding-Agenten haben wir keine gemessene Ersparnis veröffentlicht, also werben wir mit keiner. Mit PRO stellt das Gateway bei Anthropic-Modellen Cache-Schreibvorgänge von der einstündigen auf die fünfminütige TTL um — nur bei Zügen, in denen ein großer Teil des Prompts neu ist, etwa beim ersten Zug einer Sitzung oder nach einer Kompaktierung — und lässt die verketteten Züge einer laufenden Sitzung unverändert. Das ändert den Preis, nie das, was das Modell liest, und nur was der Zähler deines Anbieters bestätigt, zählt in deinem Einsparungsbericht.",
+        "figureLabel": "Die Zahl, die wir veröffentlichen",
+      "figureQue": "der Rechnung mit der Cache-Senkung von PRO, abzüglich der Cache-Fehltreffer, die sie verursacht ({confianza}-Intervall: {bajo} bis {alto}). Simuliert zu Listenpreisen über {sesiones} Claude-Code-Sitzungen einer einzigen Organisation, unserer eigenen.",
+        "figureNote": "Keine Prognose für dein Team: Es ist eine einzige Organisation, ein einziger Anbieter und Listenpreise, und es ist eine kleine Ersparnis, die sich dort zeigt, wo die Anthropic-Ausgaben hoch sind. Mit PRO stellt das Gateway bei Anthropic-Modellen Cache-Schreibvorgänge von der einstündigen auf die fünfminütige TTL um — nur bei Zügen, in denen ein großer Teil des Prompts neu ist, etwa beim ersten Zug einer Sitzung oder nach einer Kompaktierung — und lässt die verketteten Züge einer laufenden Sitzung unverändert. Das ändert den Preis, nie das, was das Modell liest, und nur was der Zähler deines Anbieters bestätigt, zählt in deinem Einsparungsbericht.",
+        "benchLink": "Der Bericht der TTL-Messung: was simuliert wurde, die Aufschlüsselung nach Modell und ihre Grenzen →",
         "cta": "Gateway einrichten"
       },
       "skill": {
@@ -1233,6 +1243,54 @@
       "delta": "Δ {d} pp [{inf}, {sup}]",
       "originNote": "Woher die Ersparnis stammt, Position für Position: „aus dem exakten Cache“ ist das, was A für die Anfragen bezahlt hat, die die Schicht bedient hat, ohne den Anbieter aufzurufen; „in den Aufrufen“ ist die Differenz bei denen, die ihn tatsächlich erreicht haben, meist der Präfix-Cache des Anbieters (plus etwas Variation in der Ausgabe). Beide zusammen ergeben die Gesamtersparnis.",
       "accuracyNote": "Die Genauigkeit wird anhand der Fragen mit veröffentlichter Antwort gemessen; die Varianten mit einer geänderten Zahl dienen nur dazu zu prüfen, dass die Schicht niemals die Antwort einer anderen Frage zurückgibt."
+    },
+    "gatewayTtl": {
+      "title": "Die Cache-Senkung des Gateways: eine Simulation, kein A/B",
+      "kind": "Dieser Abschnitt gehört nicht zu den A/B-Batterien dieser Seite und ist <b>nicht live gemessen</b>: Er ist ein <b>Replay</b>. Wir haben die Nutzung genommen, die der Anbieter für echte Claude-Code-Sitzungen <b>einer einzigen Organisation, unserer eigenen</b>, bei einem einzigen Anbieter (Anthropic) bereits gemeldet hatte, und zu <b>Listenpreisen</b> berechnet, was sie mit der Cache-Senkung von PRO und ohne sie gekostet hätten.",
+      "verdict": "Das Urteil des Berichts vom {fecha}: Die Senkung bringt <b>netto {neto} der Rechnung</b> ({netoUsd} von {factura}), nach Abzug der Cache-Fehltreffer, die sie selbst verursacht.",
+      "stat": {
+        "sessions": "Sitzungen",
+        "requests": "Anfragen",
+        "days": "Tage"
+      },
+      "thInterval": "{confianza}-Intervall",
+      "thNet": "Netto, Anteil an der Rechnung",
+      "bySession": "Resampling nach Sitzung (Cluster: {n})",
+      "byDay": "Resampling nach Tag (Cluster: {n})",
+      "intervalsNote": "Bootstrap mit {remuestreos} Wiederholungen. Beide Intervalle schließen die Null aus: Bei diesem Traffic verdient die Senkung Geld. Die Karte auf der Startseite nennt das Intervall nach Sitzung.",
+      "resultTitle": "Das Ergebnis, mit dem, was abgezogen wird",
+      "row": {
+        "downgrades": "Senkungen",
+        "gross": "Gesparter Aufschlag, brutto",
+        "misses": "Verursachte Cache-Fehltreffer",
+        "missCost": "Was diese Fehltreffer kosten",
+        "net": "Netto",
+        "ceiling": "Obergrenze: der gesamte Ein-Stunden-Aufschlag"
+      },
+      "resultNote": "Die Prozentwerte beziehen sich auf die Rechnung zu Listenpreisen für die simulierten Anfragen ({factura}). Die Obergrenze ist das Maximum, das irgendeine TTL-Politik zurückholen könnte, selbst wenn sie nie danebenläge. Jeder Prozentwert wird einzeln gerundet.",
+      "modelsTitle": "Nach Modell",
+      "thModelNet": "Netto, Anteil an der Rechnung des Modells",
+      "tooFew": "kein Prozentwert (Anfragen: {n})",
+      "ugly": "<b>{modelo} ist der hässliche Fall</b>: Auf ihn entfallen {rebajas} der Senkungen und {fallos} der Fehltreffer, und sein Netto ist fast null. Im ersten Zeitraum der Aufzeichnung hat er sogar verloren: {perdida} seiner Rechnung. Sein Traffic besteht aus kurzen Threads, die oft neu aufgebaut werden und nach Ablauf der fünf Minuten zurückkommen. Die Regel lohnt sich wirklich dort, wo Sitzungsstarts teuer und selten sind.",
+      "howTitle": "Wie es gemacht wurde: das Cache-Modell, offengelegt",
+      "how": {
+        "rule": "Die Regel ist dieselbe, die das Gateway ausführt, keine Kopie: Sie verschiebt Cache-Schreibvorgänge vom Ein-Stunden-TTL auf das Fünf-Minuten-TTL, wenn der neue Teil mindestens {umbral} des Anfragekörpers ausmacht.",
+        "baseline": "Die Basislinie ist das, was der Anbieter gezählt hat, mit der tatsächlichen Nutzung, wo die Senkung noch nicht aktiv war; wo sie es bereits war, wird sie rekonstruiert, indem die Senkung rückgängig gemacht wird (siehe Grenzen). Mit der Senkung zahlt der gesenkte Turn den Schreibaufschlag für fünf Minuten statt den für eine Stunde.",
+        "miss": "Ein verursachter Fehltreffer: Kommt der nächste Turn desselben Threads nach Ablauf der fünf Minuten und vor Ablauf der Stunde, wird das, was der gesenkte Turn geschrieben hat, nicht mehr aus dem Cache gelesen, sondern neu geschrieben, und diese Kosten werden abgezogen.",
+        "conservative": "Es gibt eine konservative Variante, die zusätzlich das zwischen verschiedenen Threads geteilte Präfix als verloren ansieht. Sie bewegt die Zahl kaum: {neto}, mit einigen Fehltreffern mehr ({fallos}).",
+        "aggregates": "Nur aggregierte Zahlen: Kein Prompt, keine Antwort, kein Header und keine Sitzungskennung verlässt die Aufzeichnung."
+      },
+      "limitsTitle": "Grenzen",
+      "limits": {
+        "oneOrg": "<b>Eine Organisation, ein Client, ein Anbieter.</b> Claude Code gegen Anthropic, mit unserem eigenen Traffic. Kein anderer Coding-Agent und kein anderer Anbieter.",
+        "listPrice": "<b>Listenpreis, simuliert.</b> Es ist keine Rechnung: Es ist die echte Nutzung, bepreist mit dem Preiskatalog. Rabatte, Kontostufen oder ein Abonnement würden das Geld verändern.",
+        "cacheModel": "<b>Das Cache-Modell ist ein Modell.</b> Es nimmt an, wie der Anbieter seine Cache-Einträge indexiert; es beobachtet das nicht. Die konservative Variante begrenzt dieses Risiko.",
+        "rebuilt": "<b>Der größte Teil der Basislinie ist rekonstruiert.</b> {cuota} der Anfragen wurden aufgezeichnet, als die Senkung bereits aktiv war; dort wird die Basislinie rekonstruiert, indem die tatsächliche Senkung rückgängig gemacht wird, und sie ist weniger belastbar als die des ersten Abschnitts. Dieser erste Abschnitt allein ergibt ein deutlich breiteres Intervall: {bajo} bis {alto}.",
+        "ceiling": "<b>Die Obergrenze ändert sich mit dem Client.</b> Sie hängt davon ab, wie viele Ein-Stunden-Schreibvorgänge der Coding-Agent sendet, und neuere Versionen von Claude Code senden weniger: Von den {peticiones} Anfragen enthielten {sinMarca} keinen, der sich senken ließe.",
+        "gap": "<b>Die Lücke zwischen Turns wird ab dem Eintreffen jeder Anfrage gemessen</b>, nicht ab dem Ende der Antwort: Sie zählt eher einen Fehltreffer zu viel, nie zu wenig.",
+        "promise": "<b>Es ist keine Prognose für dein Team.</b> Es ist eine kleine Ersparnis aus einem einzigen Traffic, und anderer Traffic kann eine andere Zahl ergeben, auch eine schlechtere: Sieh dir den hässlichen Fall an."
+      },
+      "production": "In Produktion: Seit Version {version} ({fecha}) zieht das Gateway die Fehltreffer, die es beobachtet, in dem Turn ab, der sie erleidet, sodass die Ersparnis aus dieser Senkung in deinem Dashboard netto ist. Früher Erfasstes wird nicht neu berechnet, und das Dashboard kennzeichnet Maschinen mit einem älteren Gateway als „brutto“."
     },
     "guarantees": {
       "title": "Garantien, gezählt",

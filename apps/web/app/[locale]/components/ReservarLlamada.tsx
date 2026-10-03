@@ -5,9 +5,9 @@ import { useState } from "react";
 /**
  * CTA de la landing: dejar el correo para una llamada de 15 minutos.
  *
- * Va en el hueco inferior derecho del heroe, debajo de la cascada, porque ahi
- * cae la mirada despues de leer la prueba medida — y porque el heroe ocupa la
- * pantalla entera, asi que este es el ultimo sitio visible sin bajar.
+ * Va en su propia franja justo antes de los precios (dueño, 2026-10-03): el
+ * héroe es ahora la captura del panel, y quien ha bajado hasta los precios ya
+ * ha leído la prueba medida — ahí es donde se ofrece hablar.
  *
  * El fallo se DICE. Un formulario que se traga un error y enseña «gracias»
  * pierde al cliente dos veces: no se le contacta y ademas cree que si.

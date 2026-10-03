@@ -2,14 +2,15 @@ import { Fragment } from "react";
 
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { getImageProps } from "next/image";
+
 import { ReservarLlamada } from "./components/ReservarLlamada";
 import { CursorGrid } from "@/app/components/CursorGrid";
 import { RevealObserver } from "@/app/components/RevealObserver";
-import { KineticTitle } from "@/app/components/KineticTitle";
 import { SnippetPorSistema } from "@/app/components/SnippetPorSistema";
 import { SkillPorSuperficie } from "@/app/components/SkillPorSuperficie";
 import { LogoProveedor } from "@/app/components/LogoProveedor";
-import { FilasMedidas, TarjetaMedidoEnVivo, filasDelBancoEnVivo, type FilaMedida } from "@/app/components/MedidoEnVivo";
+import { FilasMedidas, filaDeLaPalancaTtl, filasDelBancoEnVivo, type FilaMedida } from "@/app/components/MedidoEnVivo";
 import { NvidiaEcosystemBand } from "@/app/components/NvidiaInception";
 import { VideoExplicativo } from "@/app/components/VideoExplicativo";
 import { DIAS_ACTIVOS_PARA_CONTAR_ASIENTO } from "@/lib/billing/asientos";
@@ -21,6 +22,8 @@ import { tarifasDeLosPlanes } from "@/lib/stripe/pricing";
 import { terminosDeLosPlanes } from "@/lib/legal/precios-publicados";
 import { LIMITES_MEDIR, VERSION_MINIMA_MEDIR } from "@/lib/license/medir-publico";
 import { BANCO_EN_VIVO, GEMINI_EN_EL_SEMANAL, VERSION_GEMINI_NATIVO } from "@/lib/portada/banco-en-vivo";
+import panelDelBanco from "@/assets/portada/panel-del-banco.png";
+import panelDelBancoMovil from "@/assets/portada/panel-del-banco-movil.png";
 
 // Proveedores que exponen un endpoint OpenAI-compatible (o, en el caso de
 // Anthropic y de Gemini desde la 0.4.33, tienen adaptador nativo). Es una lista
@@ -44,12 +47,23 @@ const LLMS = [
   { marca: "vllm", label: "vLLM" },
 ] as const;
 
+// La franja bajo la captura del héroe: los proveedores con los que el banco
+// mide EN VIVO, con el contador de cada uno (OpenAI y Anthropic con cifra de
+// ahorro en /benchmarks; Gemini en el banco semanal, sin cifra de ahorro —
+// lo dice la nota de #measured).
+const MEDIDO_EN_VIVO = [
+  { marca: "openai", label: "OpenAI" },
+  { marca: "anthropic", label: "Anthropic" },
+  { marca: "google", label: "Google" },
+] as const;
+
 // LO QUE LA PORTADA PUBLICA COMO MEDIDO (2026-09-29). Hasta hoy la portada leía
 // `public/data/ab-live.json` —una tirada sintética del 2026-09-12 con un
 // compresor que npm no trae— y de ahí salían el «al menos un 10 %», el recibo
 // del héroe y los libros «avoided_calls ≥ 22 %». Ya no lo lee: publica la cifra
-// CONDICIONADA del banco en vivo (GSM8K, con repeticiones), el ≈ 0 % sin
-// repeticiones y, aparte, la caché de prefijo del proveedor. Los números salen
+// CONDICIONADA del banco en vivo (GSM8K, con repeticiones) y, aparte, la caché
+// de prefijo del proveedor. El ≈ 0 % sin repeticiones vive en /benchmarks, no
+// en la portada (dueño, 2026-10-02). Los números salen
 // de lib/portada/banco-en-vivo.ts, con verja contra sus informes.
 
 // The "integrate" snippet: the same 3-step story as /how-it-works (package →
@@ -142,17 +156,32 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
   const planes = terminosDeLosPlanes(locale, await tarifasDeLosPlanes());
   const moneda = planes.moneda;
 
+  // La captura del panel del héroe (el LCP en escritorio): `priority` pone
+  // carga inmediata y prioridad alta. Las dos tomas salen de la misma ruta con
+  // las mismas cifras (lib/portada/panel-del-banco.ts y su verja).
+  const comunes = { alt: "", quality: 80, priority: true } as const;
+  const { props: panelEscritorio } = getImageProps({
+    ...comunes,
+    src: panelDelBanco,
+    sizes: "(max-width: 1240px) calc(100vw - 48px), 1160px",
+  });
+  const { props: panelMovil } = getImageProps({
+    ...comunes,
+    src: panelDelBancoMovil,
+    sizes: "calc(100vw - 32px)",
+  });
+
   // Las cifras de lo medido, en el idioma de la página (app/components/MedidoEnVivo.tsx).
   const pct1 = new Intl.NumberFormat(locale, { style: "percent", minimumFractionDigits: 1, maximumFractionDigits: 1 });
   const pct0 = new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 0 });
   const V = BANCO_EN_VIVO;
-  const cero = pct0.format(0);
   const rep = pct0.format(V.repeticiones);
-  // Las tres filas de lo medido: con repeticiones (OpenAI), sin repeticiones
-  // (≈ 0) y el mismo flujo en Claude, con la parte de la caché del proveedor
-  // dicha aparte. Cada cifra con su intervalo; ninguna con un «al menos».
+  // Las filas de lo medido: con repeticiones (OpenAI) y el mismo flujo en
+  // Claude, con la parte de la caché del proveedor dicha aparte. Cada cifra con
+  // su intervalo y su flujo; ninguna con un «al menos». La fila «sin
+  // repeticiones ≈ 0» salió de la portada (dueño, 2026-10-02): sigue entera en
+  // /benchmarks, y la frase de «depende de cuánto repita tu tráfico» se queda.
   const filasMedidas: FilaMedida[] = filasDelBancoEnVivo(t, locale);
-  const pieMedido = t.rich("enVivo.pie", { bench: (c) => <Link href="/benchmarks">{c}</Link> });
   // Lo medido de Gemini (banco semanal en vivo): qué modelo y qué día, nunca
   // una cifra de ahorro. Nombres y fecha llegan por parámetro.
   const G = GEMINI_EN_EL_SEMANAL;
@@ -178,78 +207,78 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
       <CursorGrid />
       <RevealObserver />
       <main className="wrap">
-        {/* HERO */}
-        <section className="hero">
-          <div>
-            <span className="eyebrow">{t("hero.eyebrow")}</span>
+        {/* HERO (dueño, 2026-10-03): el producto es la imagen. Titular
+            centrado, una línea, dos botones y, debajo, una captura del panel
+            DE VERDAD —sus componentes— alimentado solo con el banco público
+            (lib/portada/panel-del-banco.ts, con verja contra los informes;
+            la regenera scripts/captura-panel.ts). El h1 pinta desde el HTML,
+            sin animación: es lo primero que se lee. La franja de debajo dice
+            con qué proveedores se midió en vivo; «compatible con» y la nota de
+            Gemini viven en #measured. */}
+        <section className="hero hero-panel">
+          <div className="hpanel-copy">
             <h1>
-              <KineticTitle text={t("hero.title")} />{" "}
-              <KineticTitle text={t("hero.titleAccent")} className="u" start={220} />
+              {t("hero.title")} <span className="u">{t("hero.titleAccent")}</span>
             </h1>
-            <p className="lede">{t("hero.lede")}</p>
-            {/* El botón principal pregunta «¿SDK o gateway?» y lleva a #offers:
-                la portada vende dos productos y el visitante elige el suyo
-                antes de leer cifras. La medición queda enlazada desde la
-                tarjeta del SDK y desde el menú. */}
+            <p className="lede">{t("hero.sub")}</p>
             <div className="hero-cta">
-              <a className="btn" href="#offers">
-                {t("hero.ctaOffers")}
-              </a>
-              <a className="btn ghost" href="#pricing">
-                {t("hero.ctaPricing")}
-              </a>
-            </div>
-            <div className="hero-note">
-              <span className="pulse" /> {t("hero.note")}
-            </div>
-
-            {/* HÉROE LIMPIO (petición del dueño, 2026-09-12): aquí solo el
-                titular, la entradilla, los botones y el carrusel de marcas. La
-                cifra medida vive en el recibo de la derecha y, con su tarjeta
-                «Medido contra proveedor real», en la sección de lo medido.
-                El sello del programa de startups que iba aquí bajo la nota
-                (2026-09-14) se fue el 2026-09-15 (decisión del dueño): vive en
-                la banda antes del pie y en la tarjeta del pie, no en el héroe.
-                «Compatible con» ≠ «Medido en»: la franja dice dónde CORRE el SDK
-                (cualquier endpoint OpenAI-compatible o el adaptador nativo); la
-                nota de debajo dice con qué modelo hay cifra publicada. */}
-            <div className="hero-compat">
-              <span className="hm-k">{t("hero.compatibleCon")}</span>
-              <div className="compat-marquee" aria-label={LLMS.map((l) => l.label).join(", ")}>
-                <div className="compat-track">
-                  {[0, 1].map((copia) =>
-                    LLMS.map((l) => (
-                      <span className="cm" key={`${copia}-${l.marca}`} aria-hidden={copia === 1}>
-                        <LogoProveedor marca={l.marca} size={15} />
-                        {l.label}
-                      </span>
-                    )),
-                  )}
-                </div>
-              </div>
-              <p className="compat-nota">{t("hero.compatibleNota", notaCompatible)}</p>
+              <Link className="btn" href="/signup">
+                {t("hero.ctaStart")}
+              </Link>
+              <Link className="btn ghost" href="/benchmarks">
+                {t("hero.ctaBench")}
+              </Link>
             </div>
           </div>
 
-          <div className="hero-col">
-            {/* Donde estaba el recibo de la tirada sintética (ReciboMedido, con
-                el «al menos un 10 %»): lo medido en vivo, condicionado a cuánto
-                repite el tráfico, con su intervalo y su informe enlazado. */}
-            <TarjetaMedidoEnVivo titulo={t("enVivo.titulo", { fecha: V.fecha })} filas={filasMedidas} pie={pieMedido} />
+          <figure className="hpanel-shot">
+            <div className="hpanel-frame-fade">
+              <div className="hpanel-frame">
+                <div className="hpanel-chrome" aria-hidden="true">
+                  <span className="hpanel-dots">
+                    <i />
+                    <i />
+                    <i />
+                  </span>
+                  <span className="hpanel-url">
+                    <svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true" focusable="false">
+                      <path d="M4.5 7V5a3.5 3.5 0 0 1 7 0v2h.5a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h.5Zm1.5 0h4V5a2 2 0 1 0-4 0v2Z" fill="currentColor" />
+                    </svg>
+                    savings.bivelio.com
+                  </span>
+                </div>
+                <div className="hpanel-img">
+                  {/* Dos tomas de la misma ruta y las mismas cifras: en móvil,
+                      el titular y la tabla solos y más grandes, para que se
+                      lean; en escritorio, el panel entero. */}
+                  <picture>
+                    <source
+                      media="(max-width: 640px)"
+                      srcSet={panelMovil.srcSet}
+                      sizes={panelMovil.sizes}
+                      width={panelMovil.width}
+                      height={panelMovil.height}
+                    />
+                    <img {...panelEscritorio} alt={t("hero.panelAlt")} />
+                  </picture>
+                </div>
+              </div>
+            </div>
+            <figcaption>
+              <Link href="/benchmarks">{t("hero.panelCaption")}</Link>
+            </figcaption>
+          </figure>
 
-            <ReservarLlamada
-              t={{
-                titulo: t("cta15.titulo"),
-                sub: t("cta15.sub"),
-                placeholder: t("cta15.placeholder"),
-                boton: t("cta15.boton"),
-                enviando: t("cta15.enviando"),
-                ok: t("cta15.ok"),
-                errorCorreo: t("cta15.errorCorreo"),
-                errorEnvio: t("cta15.errorEnvio"),
-                alterna: t("cta15.alterna"),
-              }}
-            />
+          <div className="hpanel-medido">
+            <span className="hpanel-marcas">
+              {MEDIDO_EN_VIVO.map((m) => (
+                <span className="hpanel-marca" key={m.marca}>
+                  <LogoProveedor marca={m.marca} size={18} />
+                  {m.label}
+                </span>
+              ))}
+            </span>
+            <span className="hpanel-medido-t">{t("hero.medidoEnVivo")}</span>
           </div>
         </section>
 
@@ -264,12 +293,15 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             · La cifra del SDK son las filas de lo medido (con y sin
               repeticiones), las mismas del héroe y de #measured: una sola
               fuente, lib/portada/banco-en-vivo.ts, con su verja.
-            · El gateway va SIN número a propósito: no hay ninguna medición
-              publicada de su ahorro, y aquí se publica lo medido o nada. Su promesa es medir y
-              enseñarlo en el panel, y con PRO pasar a 5m las escrituras de
-              caché SOLO en los turnos con buena parte del prompt nueva
-              (gateway/tarifa.ts, `decidirRebaja`): nunca «mientras la sesión
-              sigue caliente», que es la política de #229 que perdía dinero. */}
+            · El gateway lleva UNA cifra desde el 2026-10-03 (dueño): el neto de
+              la rebaja de caché de PRO que midió el banco de TTL, con su
+              intervalo y dicho como lo que es — un replay a precio de lista
+              sobre sesiones de una sola organización, no una previsión
+              (lib/portada/palanca-ttl.ts, con verja contra el informe). La
+              rebaja pasa a 5m las escrituras de caché SOLO en los turnos con
+              buena parte del prompt nueva (gateway/tarifa.ts, `decidirRebaja`):
+              nunca «mientras la sesión sigue caliente», que es la política de
+              #229 que perdía dinero. */}
         <section id="offers">
           <div className="sec-head rv">
             <span className="eyebrow">{t("offers.eyebrow")}</span>
@@ -283,10 +315,10 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
               <p>{t("offers.sdk.what")}</p>
               <div className="offer-fig">
                 <span className="offer-fig-t">{t("offers.sdk.figureLabel")}</span>
-                {/* Las dos primeras filas de lo medido: con repeticiones y sin
-                    ellas. Nunca la primera sola: sin la segunda se leería como
-                    lo que ahorra cualquier tráfico. */}
-                <FilasMedidas filas={filasMedidas.slice(0, 2)} />
+                {/* La primera fila de lo medido (OpenAI), que ya dice su
+                    condición: «en un flujo donde el 30 % repite». Debajo, la
+                    nota de que depende de cuánto repita tu tráfico. */}
+                <FilasMedidas filas={filasMedidas.slice(0, 1)} />
                 <p className="offer-fig-note">{t("offers.sdk.figureNote")}</p>
               </div>
               <div className="offer-install">
@@ -311,9 +343,16 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
               <h3 className="offer-name">{t("offers.gateway.name")}</h3>
               <p className="offer-who">{t("offers.gateway.who")}</p>
               <p>{t("offers.gateway.what")}</p>
-              <div className="offer-fig offer-nofig">
+              <div className="offer-fig">
                 <span className="offer-fig-t">{t("offers.gateway.figureLabel")}</span>
+                {/* El neto de la rebaja de TTL del banco del 2026-10-03, con su
+                    intervalo y su condición en la misma fila. */}
+                <FilasMedidas filas={[filaDeLaPalancaTtl(t, locale)]} />
                 <p className="offer-fig-note">{t("offers.gateway.figureNote")}</p>
+                {/* El informe entero, con sus límites, en su sección del banco público. */}
+                <p className="offer-fig-link">
+                  <Link href="/benchmarks#gateway-ttl">{t("offers.gateway.benchLink")}</Link>
+                </p>
               </div>
               <div className="offer-install">
                 <span className="offer-fig-t">{t("offers.install")}</span>
@@ -422,6 +461,26 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             <FilasMedidas filas={filasMedidas} />
             <p className="cascade-nota">{t("cascade.footnote")}</p>
           </div>
+          {/* «Compatible con» ≠ «Medido en» (estaba en el héroe hasta el
+              2026-10-03): la franja dice dónde CORRE el SDK (cualquier
+              endpoint OpenAI-compatible o el adaptador nativo); la nota de
+              debajo dice con qué modelo hay cifra publicada. */}
+          <div className="hero-compat rv">
+            <span className="hm-k">{t("hero.compatibleCon")}</span>
+            <div className="compat-marquee" aria-label={LLMS.map((l) => l.label).join(", ")}>
+              <div className="compat-track">
+                {[0, 1].map((copia) =>
+                  LLMS.map((l) => (
+                    <span className="cm" key={`${copia}-${l.marca}`} aria-hidden={copia === 1}>
+                      <LogoProveedor marca={l.marca} size={15} />
+                      {l.label}
+                    </span>
+                  )),
+                )}
+              </div>
+            </div>
+            <p className="compat-nota">{t("hero.compatibleNota", notaCompatible)}</p>
+          </div>
           {/* La traducción sin jerga (petición del dueño, 2026-09-04): el vídeo
               del experimento justo + las dos cifras del artefacto dichas en
               lenguaje llano. Los números llegan como PARÁMETROS desde el
@@ -445,7 +504,6 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
                   punto: pct1.format(V.openai.ahorro.point),
                   bajo: pct1.format(V.openai.ahorro.lower),
                   alto: pct1.format(V.openai.ahorro.upper),
-                  cero,
                 })}
               </p>
               <p className="nota">{t("step2.plainNote")}</p>
@@ -463,11 +521,11 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
               instalado sale de las peticiones repetidas servidas sin llamar al
               proveedor (y la caché de prefijo es del proveedor, aparte); el
               compresor de la tirada sintética es solo del banco y el paquete
-              no lo trae. Fuera (2026-09-30). Queda la frase honesta: el
-              tráfico sin repeticiones ahorró ≈ 0, y lo publicamos. */}
-          <div className="trabajos">
-            <p className="explica-nota">{t("trabajos.caption", { cero })}</p>
-          </div>
+              no lo trae. Fuera (2026-09-30). Debajo quedó una frase con el
+              «≈ 0 %» del tráfico sin repeticiones; fuera también (dueño,
+              2026-10-02): lo honesto ya lo dice la frase llana de justo
+              encima («depende de cuánto repita tu tráfico»), y el cero vive
+              en /benchmarks con su informe. */}
         </section>
 
         {/* LEDGERS — cuatro libros que nunca se suman. Hasta el 2026-09-29 cada
@@ -475,7 +533,8 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             12-09 («avoided_calls ≥ 22 %», «eliminated_tokens ≥ 43,2 %»): cifras
             de un banco con un compresor que npm no trae. Ahora las tarjetas
             DESCRIBEN los libros, sin cifra, y la nota dice de qué libro salió el
-            ahorro medido en el banco público (y que el tercero fue cero). */}
+            ahorro medido en el banco público. Sin «el tercero fue cero» (dueño,
+            2026-10-02): la portada no enseña ceros; /benchmarks, sí. */}
         <section>
           <div className="sec-head rv">
             <span className="eyebrow">{t("ledgersHead.eyebrow")}</span>
@@ -708,6 +767,24 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             ]}
           />
         </section>
+
+        {/* La llamada de 15 minutos, justo antes de los precios (dueño,
+            2026-10-03): salió del héroe con la captura del panel y vuelve aquí. */}
+        <div className="cta15-sec rv" id="llamada">
+          <ReservarLlamada
+            t={{
+              titulo: t("cta15.titulo"),
+              sub: t("cta15.sub"),
+              placeholder: t("cta15.placeholder"),
+              boton: t("cta15.boton"),
+              enviando: t("cta15.enviando"),
+              ok: t("cta15.ok"),
+              errorCorreo: t("cta15.errorCorreo"),
+              errorEnvio: t("cta15.errorEnvio"),
+              alterna: t("cta15.alterna"),
+            }}
+          />
+        </div>
 
         {/* PRICING — el modelo del 2026-09-29: Medir (gratis, sin tarjeta) → Pro
             (por asiento) → Equipo (asientos incluidos) → Enterprise. Ninguno

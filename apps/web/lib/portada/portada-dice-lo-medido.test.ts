@@ -8,7 +8,9 @@ import { describe, expect, it } from "vitest";
 import { LIMITES_MEDIR, VERSION_MINIMA_MEDIR } from "@/lib/license/medir-publico";
 import { MEASURE_LIMITS } from "../../../../packages/protocol/src/index";
 
-import { GEMINI_EN_EL_SEMANAL, VERSION_GEMINI_NATIVO } from "./banco-en-vivo";
+import { filasDelBancoEnVivo } from "@/app/components/MedidoEnVivo";
+
+import { BANCO_EN_VIVO, GEMINI_EN_EL_SEMANAL, VERSION_GEMINI_NATIVO } from "./banco-en-vivo";
 
 /**
  * LA PORTADA DICE SOLO LO MEDIDO (2026-09-29), EN LOS 12 IDIOMAS.
@@ -186,13 +188,15 @@ describe("el código de la portada y de «cómo funciona» no lee la tirada sint
     });
   }
 
-  it("la portada construye lo medido desde BANCO_EN_VIVO y enseña siempre la fila sin repeticiones", () => {
+  it("la portada construye lo medido desde BANCO_EN_VIVO, sin la fila «sin repeticiones ≈ 0» (dueño, 2026-10-02)", () => {
     const filas = codigo("app/components/MedidoEnVivo.tsx");
     expect(filas).toMatch(/from "@\/lib\/portada\/banco-en-vivo"/);
-    expect(filas).toContain('t("enVivo.sinRepeticiones")');
     expect(filas).toContain('t("enVivo.conRepeticiones"');
     expect(filas).toContain('t("enVivo.anthropic"');
-    expect(codigo("app/[locale]/page.tsx")).toContain("filasDelBancoEnVivo(t, locale)");
+    const portada = codigo("app/[locale]/page.tsx");
+    expect(portada).toContain("filasDelBancoEnVivo(t, locale)");
+    // La portada no pide la fila del cero, ni formatea un cero, ni pasa {cero}.
+    expect(portada).not.toMatch(/sinRepeticiones|format\(0\)|\bcero\b/);
   });
 });
 
@@ -219,7 +223,7 @@ describe("el panel: la cifra del banco en vivo y el dinero del cliente, nunca el
 
   it("/dashboard/proof abre con el banco en vivo y el dinero del cliente, y etiqueta la tirada sintética", () => {
     const src = codigo("app/[locale]/dashboard/proof/page.tsx");
-    const pos = ["filasDelBancoEnVivo(tl, locale)", 't.rich("proof.tuDinero"', 't("proof.sinteticaTitulo")', "<ReferenceModeBadge", "<NetSavingsCIBand"].map((x) =>
+    const pos = ["filasDelBancoEnVivo(tl, locale, { sinRepeticiones: true })", 't.rich("proof.tuDinero"', 't("proof.sinteticaTitulo")', "<ReferenceModeBadge", "<NetSavingsCIBand"].map((x) =>
       src.indexOf(x),
     );
     for (const p of pos) expect(p).toBeGreaterThan(-1);
@@ -297,10 +301,9 @@ const RECORTA: Record<Loc, RegExp> = {
 
 describe("⛔ la portada no promete recortar el texto de entrada", () => {
   for (const loc of LOCALES) {
-    it(`${loc}: fuera las claves de los vídeos «paja/magro»; la frase del tráfico sin repeticiones se queda`, () => {
-      const d = crudo(loc) as { landing: { trabajos: Record<string, unknown> } };
-      for (const k of ["pajaTitle", "pajaBody", "magroTitle", "magroBody"]) expect(d.landing.trabajos[k], `${loc} ${k}`).toBeUndefined();
-      expect(d.landing.trabajos.caption, loc).toContain("{cero}");
+    it(`${loc}: fuera las claves de los vídeos «paja/magro» y la frase del «≈ 0 %» que quedó debajo (2026-10-02)`, () => {
+      const d = crudo(loc) as { landing: Record<string, unknown> };
+      expect(d.landing.trabajos, loc).toBeUndefined();
     });
 
     it(`${loc}: ni la portada ni «cómo funciona» dicen que el paquete llega más pequeño`, () => {
@@ -327,7 +330,7 @@ describe("⛔ la portada no promete recortar el texto de entrada", () => {
   it("⛔ la portada no referencia los vídeos «paja/magro» ni sus claves, y los ficheros ya no existen", () => {
     const src = codigo("app/[locale]/page.tsx");
     expect(src).not.toMatch(/trabajos-paja|trabajos-magro|pajaTitle|pajaBody|magroTitle|magroBody/);
-    expect(src).toContain('t("trabajos.caption", { cero })');
+    expect(src).not.toContain("trabajos.caption");
     const videos = readdirSync(join(WEB, "public", "videos"));
     expect(videos.filter((f) => /^trabajos-(paja|magro)\./.test(f))).toEqual([]);
   });
@@ -534,8 +537,7 @@ describe("los textos nuevos se formatean en los 12 idiomas (ICU sin errores)", (
     "landing.enVivo.conRepeticiones": { bajo: "25,7 %", alto: "36,7 %", rep: "30 %", bateria: "GSM8K", version: "0.4.31" },
     "landing.enVivo.sinRepeticiones": {},
     "landing.enVivo.anthropic": { bajo: "69,3 %", alto: "79,6 %", prefijo: "41 %" },
-    "landing.step2.plain": { rep: "30 %", punto: "31,5 %", bajo: "25,7 %", alto: "36,7 %", cero: "0 %" },
-    "landing.trabajos.caption": { cero: "0 %" },
+    "landing.step2.plain": { rep: "30 %", punto: "31,5 %", bajo: "25,7 %", alto: "36,7 %" },
     "landing.ledgersHead.providerNote": { fecha: "2026-09-28" },
     "landing.hero.compatibleNota": { gemini: "0.4.33", flash: "Gemini 3.8 Flash", pro: "Gemini 3.1 Pro", fecha: "1 October 2026", fechaPro: "1–2 October 2026" },
     "landing.pricing.plans.medir.body": { seats: 5, requests: "20.000", version: "0.4.33" },
@@ -570,4 +572,243 @@ describe("los textos nuevos se formatean en los 12 idiomas (ICU sin errores)", (
       expect(JSON.stringify(medir)).toContain("0.4.33");
     });
   }
+});
+
+/**
+ * LA PORTADA NO ENSEÑA EL CERO (dueño, 2026-10-02: «tenemos que ser sinceros
+ * pero no tontos»). La baldosa «≈ 0 % — sin repeticiones» salía tres veces en la
+ * portada (héroe, tarjeta del SDK, #measured) y dos frases repetían el cero.
+ * Fuera de la portada; en /benchmarks y en los informes sigue entero.
+ *
+ * Esta verja exige, en los 12 idiomas, con el traductor de verdad:
+ *   · cada cifra que pintan las filas de la portada es una cifra de
+ *     BANCO_EN_VIVO, y banco-en-vivo.test.ts la cuadra contra su informe;
+ *   · ninguna fila de la portada es la del tráfico sin repeticiones, ni un cero;
+ *   · las frases de la portada que hablan del ahorro no traen {cero} ni «≈»
+ *     (la que lo decía, `landing.trabajos.caption`, ya no existe),
+ *     ni atribuyen un ahorro al tráfico que no se repite: la cifra va siempre
+ *     con su flujo «con repeticiones».
+ * El panel (/dashboard/proof) sí pide la fila del cero, y se comprueba que la
+ * opción sigue funcionando para que el panel no la pierda sin querer.
+ */
+describe("⛔ la portada no enseña el «≈ 0 %» del tráfico sin repeticiones", () => {
+  const V = BANCO_EN_VIVO;
+  const traductor = (loc: Loc) => {
+    const t = createTranslator({
+      locale: loc,
+      messages: crudo(loc) as never,
+      namespace: "landing" as never,
+      onError: (e) => {
+        throw e;
+      },
+    });
+    return t as unknown as (k: string, p?: Record<string, string | number>) => string;
+  };
+
+  for (const loc of LOCALES) {
+    it(`${loc}: las filas de la portada son OpenAI y Claude, con cifras de BANCO_EN_VIVO y sin ningún cero`, () => {
+      const pct1 = new Intl.NumberFormat(loc, { style: "percent", minimumFractionDigits: 1, maximumFractionDigits: 1 });
+      const pct0 = new Intl.NumberFormat(loc, { style: "percent", maximumFractionDigits: 0 });
+      const t = traductor(loc);
+      const filas = filasDelBancoEnVivo(t, loc);
+      expect(filas.map((f) => f.marca)).toEqual(["OpenAI", "Anthropic"]);
+      // Cada cifra pintada sale de BANCO_EN_VIVO (y esa, de su informe).
+      expect(filas.map((f) => f.cifra)).toEqual([pct1.format(V.openai.ahorro.point), pct1.format(V.anthropic.ahorro.point)]);
+      for (const f of filas) {
+        expect(f.cifra, `${loc} ${f.marca}`).not.toBe(`≈ ${pct0.format(0)}`);
+        expect(f.cifra, `${loc} ${f.marca}`).not.toContain("≈");
+        expect(f.que, `${loc} ${f.marca}`).not.toBe(t("enVivo.sinRepeticiones"));
+      }
+      // La primera cifra lleva su condición: el flujo con repeticiones.
+      expect(filas[0]!.que, loc).toContain(pct0.format(V.repeticiones));
+      // Las cifras con ahorro son de verdad distintas de cero.
+      expect(V.openai.ahorro.lower).toBeGreaterThan(0);
+      expect(V.anthropic.ahorro.lower).toBeGreaterThan(0);
+    });
+
+    it(`${loc}: el panel sí pide la fila sin repeticiones, entre las dos medidas`, () => {
+      const pct0 = new Intl.NumberFormat(loc, { style: "percent", maximumFractionDigits: 0 });
+      const t = traductor(loc);
+      const filas = filasDelBancoEnVivo(t, loc, { sinRepeticiones: true });
+      expect(filas.map((f) => f.cifra)[1]).toBe(`≈ ${pct0.format(0)}`);
+      expect(filas[1]!.que).toBe(t("enVivo.sinRepeticiones"));
+    });
+
+    it(`${loc}: las frases de la portada sobre el ahorro no traen el cero`, () => {
+      const t = traductor(loc);
+      const pct0 = new Intl.NumberFormat(loc, { style: "percent", maximumFractionDigits: 0 });
+      const d = cargar(loc);
+      for (const k of ["landing.step2.plain", "landing.step2.plainNote", "landing.enVivo.pie", "landing.offers.sdk.figureNote"]) {
+        expect(d[k], `${loc} ${k}`).toBeTruthy();
+        expect(d[k], `${loc} ${k}`).not.toMatch(/\{cero\}|≈/);
+      }
+      // La frase llana dice una sola cifra de ahorro, la del flujo con
+      // repeticiones: fuera de sus parámetros no lleva ningún cero escrito.
+      const params = ["{rep}", "{punto}", "{bajo}", "{alto}"];
+      for (const p of params) expect(d["landing.step2.plain"], `${loc} ${p}`).toContain(p);
+      const sinParams = d["landing.step2.plain"]!.replace(/\{\w+\}/g, "");
+      expect(sinParams, loc).not.toMatch(/(^|[^0-9])0([^0-9]|$)/);
+      const plain = t("step2.plain", { rep: pct0.format(V.repeticiones), punto: "31,5 %", bajo: "25,7 %", alto: "36,7 %" });
+      expect(plain, loc).toContain("31,5 %");
+      // La nota de debajo, sin cifra.
+      expect(t("step2.plainNote"), loc).not.toMatch(/[0-9%]/);
+    });
+  }
+
+  it("en/es: la frase llana termina con «depende de cuánto repita tu tráfico»; la nota y los pies, sin ceros", () => {
+    expect(cargar("en")["landing.step2.plain"]).toMatch(/with 95% confidence\. What you save depends on how much your traffic repeats\.$/);
+    expect(cargar("es")["landing.step2.plain"]).toMatch(/con un 95 % de confianza\. Lo que ahorres depende de cuánto repita tu tráfico\.$/);
+    expect(cargar("en")["landing.step2.plainNote"]).toBe(
+      "A percentage means nothing without its interval, its model and its traffic: we publish all three.",
+    );
+    expect(cargar("es")["landing.step2.plainNote"]).toBe(
+      "Un porcentaje no significa nada sin su intervalo, su modelo y su tráfico: publicamos los tres.",
+    );
+    expect(cargar("en")["landing.cascade.footnote"]).toMatch(/The npm package ships no compressor\.$/);
+    expect(cargar("es")["landing.cascade.footnote"]).toMatch(/El paquete de npm no trae compresor\.$/);
+    expect(cargar("en")["landing.ledgersHead.providerNote"]).toContain("The npm package ships no compressor. A ledger with no published figure");
+    expect(cargar("es")["landing.ledgersHead.providerNote"]).toContain("El paquete de npm no trae compresor. Un libro sin cifra publicada");
+  });
+
+  /**
+   * Ni «indistinguible de cero» ni «el tercero fue cero» ni «no se ahorró nada»
+   * en la portada, en ningún idioma (dueño, 2026-10-02). Las frases prohibidas
+   * salen de los propios ficheros: lo que /benchmarks llama «indistinguible de
+   * cero» y lo que dice la fila del panel tras sus dos puntos, en cada idioma.
+   * Más la palabra «cero» en cada idioma, en las frases que hablan del ahorro.
+   */
+  const CERO: Record<Loc, RegExp> = {
+    en: /\bzero\b/i,
+    es: /\bcero\b/i,
+    ca: /\bzero\b/i,
+    de: /\bnull\b/i,
+    fr: /\bzéro\b/i,
+    id: /\bnol\b/i,
+    it: /\bzero\b/i,
+    nl: /\bnul\b/i,
+    pl: /\bzer[oa]\b/i,
+    pt: /\bzero\b/i,
+    tr: /sıfır/i,
+    vi: /bằng không|với không/i,
+  };
+  /** «No se ahorró nada», como lo decían la nota y el pie en cada idioma. */
+  const NADA_AHORRADO: Record<Loc, RegExp> = {
+    en: /nothing was saved|saved nothing/i,
+    es: /no se ahorró nada|no ahorró nada/i,
+    ca: /no es va estalviar res|no va estalviar res/i,
+    de: /nichts gespart|sparte .*nichts/i,
+    fr: /rien n'a été économisé|n'a rien économisé/i,
+    id: /tidak menghemat apa pun/i,
+    it: /non si è risparmiato nulla|non ha risparmiato nulla/i,
+    nl: /niets werd bespaard|bespaarde niets/i,
+    pl: /nic nie zaoszczędzono|nic nie zaoszczędziła/i,
+    pt: /nada se poupou|não poupou nada/i,
+    tr: /hiçbir şeyin tasarruf edilmediği|hiçbir şey kazandırmadı/i,
+    vi: /không tiết kiệm được gì/i,
+  };
+  /** Las frases de la portada que hablan del ahorro. */
+  const FRASES_DEL_AHORRO = [
+    "landing.hero.",
+    "landing.enVivo.titulo",
+    "landing.enVivo.conRepeticiones",
+    "landing.enVivo.anthropic",
+    "landing.enVivo.pie",
+    "landing.offers.sdk.",
+    "landing.step2.",
+    "landing.cascade.",
+    "landing.ledgersHead.",
+    "landing.ledgers.",
+  ];
+  for (const loc of LOCALES) {
+    it(`${loc}: la portada no dice «indistinguible de cero», ni «≈», ni «cero» ni «no se ahorró nada» al hablar del ahorro`, () => {
+      const d = cargar(loc);
+      // La fila del panel es la única clave de landing.* que lo dice, y la portada no la pinta.
+      const portada = Object.entries(d).filter(([k]) => k.startsWith("landing.") && k !== "landing.enVivo.sinRepeticiones");
+      const indistinguible = [d["benchmarksPage.noSavings.verdict.cero"]!, d["landing.enVivo.sinRepeticiones"]!.split(/\s*:\s*/).pop()!];
+      for (const f of indistinguible) expect(f.length, `${loc} ${f}`).toBeGreaterThan(5);
+      const malos = portada
+        .filter(([, v]) => v.includes("≈") || indistinguible.some((f) => v.toLowerCase().includes(f.toLowerCase())) || NADA_AHORRADO[loc].test(v))
+        .map(([k, v]) => `${k}: ${v}`);
+      expect(malos).toEqual([]);
+      const conCero = portada
+        .filter(([k]) => FRASES_DEL_AHORRO.some((p) => k.startsWith(p)))
+        .filter(([, v]) => CERO[loc].test(v))
+        .map(([k, v]) => `${k}: ${v}`);
+      expect(conCero).toEqual([]);
+    });
+  }
+
+  it("las verjas del cero cazan las frases viejas (si no, no protegen nada)", () => {
+    expect(CERO.en.test("so the third was zero there.")).toBe(true);
+    expect(CERO.es.test("así que allí el tercero fue cero.")).toBe(true);
+    expect(CERO.de.test("also war das dritte dort null.")).toBe(true);
+    expect(CERO.vi.test("nên ở đó sổ thứ ba bằng không.")).toBe(true);
+    expect(NADA_AHORRADO.en.test("and the batteries where nothing was saved, too.")).toBe(true);
+    expect(NADA_AHORRADO.es.test("y también las baterías donde no se ahorró nada.")).toBe(true);
+    expect(NADA_AHORRADO.tr.test("hiçbir şeyin tasarruf edilmediği bataryaları da.")).toBe(true);
+    expect(cargar("en")["benchmarksPage.noSavings.verdict.cero"]).toBe("indistinguishable from zero");
+  });
+
+  it("/benchmarks no se toca: el cero sigue allí, con su informe", () => {
+    for (const loc of LOCALES) {
+      expect(cargar(loc)["benchmarksPage.noSavings.lead"], loc).toContain("{cero}");
+    }
+  });
+});
+
+/**
+ * EL HÉROE CON LA CAPTURA DEL PANEL (dueño, 2026-10-03).
+ *
+ * Las cifras del héroe viven DENTRO de la imagen: el panel de verdad con los
+ * datos del banco público (`panel-del-banco.ts`, que `panel-del-banco.test.ts`
+ * cuadra contra los informes y contra la huella de la imagen). Lo que se lee
+ * como texto —titular, línea, botones, pie, texto alternativo y franja— no
+ * trae ningún número escrito a mano, el pie enlaza a /benchmarks, y la imagen
+ * que la portada importa es esa captura.
+ */
+describe("el héroe: las cifras van en la captura del banco público, y el texto no trae ninguna", () => {
+  const CLAVES = ["sub", "ctaStart", "ctaBench", "panelAlt", "panelCaption", "medidoEnVivo"];
+  for (const loc of LOCALES) {
+    it(`${loc}: las claves del héroe existen, sin dígitos ni «%», y las viejas se fueron`, () => {
+      const d = cargar(loc);
+      for (const k of CLAVES) {
+        const v = d[`landing.hero.${k}`];
+        expect(v, `${loc} ${k}`).toBeTruthy();
+        expect(v, `${loc} ${k}`).not.toMatch(/[0-9%]/);
+      }
+      for (const k of ["eyebrow", "lede", "ctaOffers", "ctaPricing", "medidoEn"]) expect(d[`landing.hero.${k}`], `${loc} ${k}`).toBeUndefined();
+      // La llamada de 15 minutos salió del héroe pero NO de la portada: vive
+      // en su franja antes de los precios, con sus nueve claves.
+      for (const k of ["titulo", "sub", "placeholder", "boton", "enviando", "ok", "errorCorreo", "errorEnvio", "alterna"]) expect(d[`landing.cta15.${k}`], `${loc} cta15.${k}`).toBeTruthy();
+    });
+  }
+
+  it("en/es: el pie dice de dónde salen los datos del panel", () => {
+    expect(cargar("es")["landing.hero.panelCaption"]).toBe("Panel con los datos del banco público");
+    expect(cargar("en")["landing.hero.panelCaption"]).toBe("Dashboard with the public bench's data");
+    expect(cargar("es")["landing.hero.medidoEnVivo"]).toBe("Medido en vivo con el contador de cada proveedor");
+  });
+
+  it("la portada importa la captura del banco con next/image, con prioridad, alt traducido y el pie enlazado a /benchmarks", () => {
+    const src = codigo("app/[locale]/page.tsx");
+    expect(src).toContain('import panelDelBanco from "@/assets/portada/panel-del-banco.png";');
+    expect(src).toContain('import panelDelBancoMovil from "@/assets/portada/panel-del-banco-movil.png";');
+    // Las dos tomas, con next/image (getImageProps) y prioridad.
+    expect(src).toMatch(/const comunes = \{ alt: "", quality: 80, priority: true \} as const;/);
+    expect(src).toMatch(/getImageProps\(\{\s*\.\.\.comunes,\s*src: panelDelBanco,/);
+    expect(src).toMatch(/getImageProps\(\{\s*\.\.\.comunes,\s*src: panelDelBancoMovil,/);
+    const ini = src.indexOf('className="hero hero-panel"');
+    const heroe = src.slice(ini, src.indexOf("</section>", ini));
+    expect(heroe).toMatch(/<source\s+media="\(max-width: 640px\)"\s+srcSet=\{panelMovil\.srcSet\}/);
+    expect(heroe).toContain('<img {...panelEscritorio} alt={t("hero.panelAlt")} />');
+    expect(heroe).toMatch(/<figcaption>\s*<Link href="\/benchmarks">\{t\("hero\.panelCaption"\)\}<\/Link>\s*<\/figcaption>/);
+    expect(heroe).toContain('{t("hero.medidoEnVivo")}');
+    // Ni una cifra escrita en el JSX del héroe (fuera de atributos y del SVG del candado).
+    const texto = heroe.replace(/<svg[\s\S]*?<\/svg>/g, "").replace(/\{[^{}]*\}/g, "").replace(/"[^"]*"/g, "");
+    expect(texto).not.toMatch(/[0-9]+\s*%|\$\s*[0-9]/);
+    // La franja nombra solo proveedores medidos en vivo en el banco.
+    expect(src).toMatch(
+      /const MEDIDO_EN_VIVO = \[\s*\{ marca: "openai", label: "OpenAI" \},\s*\{ marca: "anthropic", label: "Anthropic" \},\s*\{ marca: "google", label: "Google" \},\s*\] as const;/,
+    );
+  });
 });

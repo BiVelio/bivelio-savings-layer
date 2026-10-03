@@ -19,8 +19,24 @@ export default function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Run on page routes only. Exclude API + auth + the public revocation endpoint
-  // (non-localized route handlers), Next/Vercel internals, and any path with a
-  // file extension (public assets).
-  matcher: ["/((?!api|auth|licenses|_next|_vercel|.*\\..*).*)"],
+  // Corre en TODA ruta salvo las que no son páginas: los route handlers sin
+  // idioma (api/, auth/, licenses/, y benchmarks/data/, que sirve los informes
+  // `.json` del banco), lo interno de Next y Vercel, las carpetas
+  // y ficheros de `public/` y los ficheros de metadatos de la raíz.
+  //
+  // POR QUÉ NO «cualquier ruta con un punto», que era la regla anterior (la que
+  // recomienda next-intl): una URL con punto que NO es un fichero —`/foo.png`,
+  // `/favicon.ico`, `/migrate-to-0.5`— se saltaba el middleware, nadie le
+  // negociaba idioma y `[locale]` la recibía como si «foo.png» fuera un idioma.
+  // El layout llama a `notFound()`, pero la página se pinta a la vez y
+  // `Intl.NumberFormat("foo.png")` revienta: 500 en vez de 404. Lo mismo con
+  // los prefijos sin barra (`/authors` caía en `auth`, `/apiary` en `api`).
+  //
+  // Ahora se enumera lo que de verdad es un fichero. Todo lo demás pasa por
+  // next-intl, que lo lleva a `/<idioma>/…` y allí lo atrapa la 404 propia.
+  // Si se añade algo a la raíz de `public/`, hay que añadirlo aquí:
+  // middleware-matcher.test.ts lo comprueba leyendo la carpeta.
+  matcher: [
+    "/((?!(?:api|auth|licenses|benchmarks/data|_next|_vercel|brand|correo|data|fonts|measure|vendor|videos)/|(?:robots\\.txt|sitemap\\.xml|logo-bivelio\\.png|nvidia-inception-program\\.svg)$).*)",
+  ],
 };

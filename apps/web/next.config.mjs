@@ -93,6 +93,9 @@ const nextConfig = {
   // apps/web is a standalone project (its own lockfile); trace from here, not the
   // SDK repo root — silences the multi-lockfile warning and keeps traces tight.
   outputFileTracingRoot: import.meta.dirname,
+  // La captura del panel del héroe (assets/portada/) es la imagen más grande
+  // de la primera pantalla: AVIF primero, WebP después y el PNG de reserva.
+  images: { formats: ["image/avif", "image/webp"], qualities: [75, 80] },
   // NOTE: no Edge/Node middleware for session refresh. @supabase/ssr in Edge
   // middleware pulls in realtime-js/ws (Edge-unsupported → deploy fails), and
   // Node middleware in Next 15.5 (experimental.nodeMiddleware) deploys but fails
@@ -121,8 +124,18 @@ const nextConfig = {
    * `/es` serviría español a quien llegue desde un enlace en inglés, que es otra
    * variante del mismo problema que esto viene a cerrar.
    */
+  /*
+   * `/migrate-to-0.5` SIN IDIOMA. El punto de «0.5» hace que el `matcher` del
+   * middleware la tome por un fichero (excluye toda ruta con un punto), así que
+   * no se le negociaba idioma: `[locale]` recibía «migrate-to-0.5» y la respuesta
+   * era un 500. Es la URL corta que se comparte en notas de versión y correos, y
+   * la guía solo existe en inglés con su `canonical` en /en: va ahí directamente.
+   */
   async redirects() {
-    return [{ source: "/landing.html", destination: "/", statusCode: 301 }];
+    return [
+      { source: "/landing.html", destination: "/", statusCode: 301 },
+      { source: "/migrate-to-0.5", destination: "/en/migrate-to-0.5", statusCode: 301 },
+    ];
   },
 };
 

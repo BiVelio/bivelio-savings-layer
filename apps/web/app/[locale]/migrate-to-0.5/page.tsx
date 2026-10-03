@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { setRequestLocale } from "next-intl/server";
 
 import Footer from "@/app/components/Footer";
-import { absolute } from "@/i18n/site";
+import { absolute, tarjetaSocial } from "@/i18n/site";
 import { cargarGuia } from "@/lib/guia-migracion/cargar";
 import { textoPlano, type Bloque, type EnLinea } from "@/lib/guia-migracion/markdown";
 
@@ -26,12 +26,13 @@ const DESCRIPCION =
 
 export function generateMetadata() {
   const url = absolute("/en/migrate-to-0.5");
+  const social = tarjetaSocial("en", TITULO);
   return {
     title: `${TITULO} · BiVelio Savings Layer`,
     description: DESCRIPCION,
     alternates: { canonical: url },
-    openGraph: { title: TITULO, description: DESCRIPCION, url, siteName: "BiVelio Savings Layer", type: "article" },
-    twitter: { card: "summary", title: TITULO, description: DESCRIPCION },
+    openGraph: { title: TITULO, description: DESCRIPCION, url, siteName: "BiVelio Savings Layer", type: "article", ...social.openGraph },
+    twitter: { ...social.twitter, title: TITULO, description: DESCRIPCION },
   };
 }
 

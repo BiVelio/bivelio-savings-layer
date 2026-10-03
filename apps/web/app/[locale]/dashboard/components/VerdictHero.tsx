@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { getTranslations } from "next-intl/server";
 
 import type { UsageRollup } from "../data";
@@ -22,6 +23,7 @@ export async function VerdictHero({
   failed = false,
   visibilidad,
   rango,
+  rotulos,
 }: {
   /** Ya CORTADO al rango: el titular suma exactamente lo que el rango dice. */
   usage: UsageRollup[];
@@ -30,6 +32,15 @@ export async function VerdictHero({
   rango: Rango;
   /** Por qué está vacío: `oculto` = las filas EXISTEN y esta cuenta no las ve. */
   visibilidad?: "con_datos" | "sin_trafico" | "oculto" | "desconocido";
+  /**
+   * SOLO para la captura del héroe de la portada (`/[locale]/captura-panel`),
+   * que pinta una organización de demostración con UN día del banco público:
+   * ahí «tu factura», «últimos 30 días», «live · tu organización» y el
+   * selector de rango serían falsos. Con `rotulos`, el antetítulo, la píldora
+   * y el pie son los que se pasan y el selector no sale. El panel de los
+   * clientes nunca lo pasa: sin él, todo sigue igual.
+   */
+  rotulos?: { antetitulo: string; pastilla: string; pie: ReactNode };
 }) {
   const t = await getTranslations("dashboard");
   const v = deriveVerdict(usage);
@@ -52,7 +63,7 @@ export async function VerdictHero({
     <div className="verdict">
       <div>
         <p className="ck-eyebrow">
-          {t("verdictHero.eyebrow")} · {t("verdictHero.rangeDays", { n: rango })}
+          {rotulos ? rotulos.antetitulo : `${t("verdictHero.eyebrow")} · ${t("verdictHero.rangeDays", { n: rango })}`}
         </p>
         {live && v.kind === "measured" ? (
           <>
@@ -66,10 +77,12 @@ export async function VerdictHero({
               </p>
             )}
             <div className="cap">
-              {t.rich("verdictHero.savedLine", {
-                money: money(v.saved),
-                b: (chunks) => <b>{chunks}</b>,
-              })}
+              {rotulos
+                ? rotulos.pie
+                : t.rich("verdictHero.savedLine", {
+                    money: money(v.saved),
+                    b: (chunks) => <b>{chunks}</b>,
+                  })}
             </div>
             {/* 0029 · la parte del titular medida POR REFERENCIA: repeticiones
                 servidas sin llamar al proveedor, valoradas con el contador de
@@ -106,11 +119,18 @@ export async function VerdictHero({
         )}
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: "12px", alignItems: "flex-end" }}>
-        <ProvenancePill kind={live ? "live" : "await"} />
+        {rotulos ? (
+          <span className="pill await">
+            <span className="dot" />
+            {rotulos.pastilla}
+          </span>
+        ) : (
+          <ProvenancePill kind={live ? "live" : "await"} />
+        )}
         {/* Vivo desde el 2026-09-19. Eran tres botones deshabilitados con
             `aria-hidden`: un control que promete y no hace nada es peor que
             ninguno. Ahora el rango viaja en la URL y lo aplica el servidor. */}
-        <RangeSwitch activo={rango} />
+        {rotulos ? null : <RangeSwitch activo={rango} />}
       </div>
     </div>
   );

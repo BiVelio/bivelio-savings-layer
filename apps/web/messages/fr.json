@@ -370,10 +370,19 @@
       "noLever": "{n, plural, one {# machine est à jour} other {# machines sont à jour}}, mais le levier n'y a pas agi. Si rien ne change après la mise à jour, écrivez à support@bivelio.com.",
       "action": "Mettez à jour @bivelio/savings-layer sur cette machine et relancez le terminal ; le tableau des machines ci-dessous montre ce que chacune déclare."
     },
+    "gatewayBruto": {
+      "title": "L'économie de certaines machines est encore déclarée en brut",
+      "summary": "{n, plural, one {# machine utilise} other {# machines utilisent}} un gateway antérieur à {minima} ou ne déclare pas de version. Son économie liée à la baisse du TTL du cache compte la prime évitée, mais ne retranche pas les fois où le cache de 5 minutes expire et doit être réécrit. Sur notre propre trafic, ces échecs absorbent environ 30 % de ce chiffre. À partir de la {minima}, le gateway les retranche et ce tableau de bord affiche l'économie nette.",
+      "action": "Mettez à jour @bivelio/savings-layer vers la {minima} ou une version ultérieure sur cette machine et redémarrez le terminal. Ce qui est déjà enregistré n'est pas recalculé : le net compte à partir de la mise à jour."
+    },
     "sdkReferencia": {
       "title": "Certaines machines exécutent un SDK antérieur à {minima} : leurs répétitions ne sont pas mesurées par référence",
       "summary": "{n, plural, one {# machine exécute} other {# machines exécutent}} un SDK antérieur à {minima} (la plus ancienne déclare {antigua}). Tant qu'elles ne sont pas mises à jour, leurs requêtes répétées comptent comme estimées, et non comme mesurées par référence : elles restent dans vos totaux, mais hors de la base.",
       "action": "Mettez à jour le SDK vers {minima} ou plus récent sur cette machine et redémarrez le processus :"
+    },
+    "migrar05": {
+      "note": "La dernière version est la 0.5, qui comporte des changements incompatibles.",
+      "link": "Lisez le guide de migration avant de mettre à jour →"
     },
     "maquinas": {
       "title": "machines (30 jours)",
@@ -777,21 +786,22 @@
     "metaTitle": "BiVelio — Vérifiez vos économies LLM",
     "metaDescription": "Un SDK pour que votre app ne paie au fournisseur de LLM que ce dont elle a besoin, et un gateway qui mesure votre agent de code. Le tout avec le compteur de votre fournisseur : mesurez gratuitement, puis payez par siège — sans commission sur vos économies.",
     "hero": {
-      "eyebrow": "Pour les équipes qui paient l'API LLM au token",
       "title": "Votre facture LLM, sous contrôle.",
       "titleAccent": "Mesurée à chaque appel.",
-      "lede": "Deux produits, une règle. Le SDK s'installe dans votre app et ne laisse passer que ce qui doit être payé ; le gateway se place devant votre agent de code et mesure sa dépense. Les deux comptent avec le compteur de votre fournisseur et séparent le mesuré de l'estimé. Nous ne publions que ce que nous avons mesuré.",
-      "ctaOffers": "SDK ou gateway ?",
-      "ctaPricing": "Voir les tarifs",
+      "sub": "Savings répond à ce que votre app répète sans rappeler le fournisseur, et mesure chaque appel avec son compteur.",
+      "ctaStart": "Commencer",
+      "ctaBench": "Voir le banc public",
+      "panelAlt": "Le tableau de bord de Savings avec les données du banc public : l'économie mesurée et sa répartition par modèle.",
+      "panelCaption": "Tableau de bord avec les données du banc public",
+      "medidoEnVivo": "Mesuré en direct avec le compteur de chaque fournisseur",
       "note": "Installé en quelques minutes. Vos messages ne passent jamais par nos serveurs.",
       "proofTitle": "Mesuré contre un fournisseur réel",
-      "medidoEn": "Mesuré sur",
       "compatibleCon": "Compatible avec",
       "compatibleNota": "Compatible ne veut pas dire mesuré. Le SDK fonctionne avec tout endpoint compatible avec l'API d'OpenAI, plus l'adaptateur natif d'Anthropic et l'adaptateur natif de Gemini (nouveau dans la {gemini}). Avec un chiffre d'économie sur le banc public, aujourd'hui seulement les modèles d'OpenAI et d'Anthropic ; Gemini n'a pas de chiffre d'économie. Ce qui est mesuré pour Gemini : {flash}, par son API native, dans le banc hebdomadaire en direct du {fecha} — les quatre batteries, sans aucune erreur de la couche et sans aucun refus mis en cache ni crédité comme économie. Ce banc vérifie que la couche ne casse rien et ne facture pas en trop ; il ne mesure pas une économie. Également mesuré : {pro}, via son API native, en deux passes partielles le {fechaPro} (son quota quotidien du fournisseur ne permet pas les quatre batteries en un jour) : les quatre batteries, là aussi sans aucune défaillance de la couche et sans aucun refus mis en cache ni compté comme économie."
     },
     "cascade": {
       "title": "L'exécution la moins chère l'emporte",
-      "footnote": "Chaque levier tombe dans son propre registre, et les registres ne s'additionnent jamais. Dans cette batterie, l'économie est venue des requêtes répétées que le SDK a servies sans appeler le fournisseur et, sur Claude, du cache de préfixe du fournisseur lui-même. Le paquet npm n'embarque aucun compresseur, donc la compression n'a rien économisé — et sur un trafic sans répétitions, l'économie était impossible à distinguer de zéro."
+      "footnote": "Chaque levier tombe dans son propre registre, et les registres ne s'additionnent jamais. Dans cette batterie, l'économie est venue des requêtes répétées que le SDK a servies sans appeler le fournisseur et, sur Claude, du cache de préfixe du fournisseur lui-même. Le paquet npm n'embarque aucun compresseur."
     },
     "explica": {
       "eyebrow": "En mots simples",
@@ -823,15 +833,15 @@
       "body": "Chaque scénario s'exécute deux fois contre le vrai fournisseur : tel quel, puis avec Savings devant. Les deux résultats sont comptés avec le compteur du fournisseur lui-même — celui qui fixe le prix de votre facture. Voici ce qui en est sorti, marge d'erreur comprise :",
       "videoCaption": "Le test est une expérience équitable : la même tâche deux fois — sans Savings et avec Savings — avec le même compteur du fournisseur qui mesure les deux.",
       "plainTitle": "Traduction, sans jargon",
-      "plain": "Sur un flux où {rep} des requêtes se répètent à l'identique, la facture a baissé de {punto} — entre {bajo} et {alto} avec 95 % de confiance. Sur un trafic qui ne se répète pas, elle a baissé de ≈ {cero}. Ce que vous économiserez dépend de la part du vôtre qui se répète.",
-      "plainNote": "Un pourcentage ne veut rien dire sans son intervalle, son modèle et son trafic : nous publions les trois — et aussi les batteries où rien n'a été économisé.",
+      "plain": "Sur un flux où {rep} des requêtes se répètent à l'identique, la facture a baissé de {punto} — entre {bajo} et {alto} avec 95 % de confiance. Ce que vous économiserez dépend de la part de votre trafic qui se répète.",
+      "plainNote": "Un pourcentage ne veut rien dire sans son intervalle, son modèle et son trafic : nous publions les trois.",
       "benchLink": "Chaque batterie, avec son rapport complet, sur le banc public →"
     },
     "ledgersHead": {
       "eyebrow": "Comptabilité honnête",
       "title": "Chaque type d'économie, compté à part — pour qu'aucun chiffre ne soit gonflé.",
       "body": "Chaque SavingsReport répartit l'économie en quatre registres — appels évités, texte retiré, texte compressé et la remise de cache de votre propre fournisseur — et ne les additionne jamais en un chiffre marketing.",
-      "providerNote": "Sur le banc public ({fecha}), ce qu'a économisé le SDK installé est venu du premier registre — des requêtes répétées servies sans appeler le fournisseur — et, sur Claude, du quatrième, qui est la remise de votre propre fournisseur. Le paquet npm n'embarque aucun compresseur, donc le troisième y était à zéro. Un registre sans chiffre publié est décrit ici, pas annoncé."
+      "providerNote": "Sur le banc public ({fecha}), ce qu'a économisé le SDK installé est venu du premier registre — des requêtes répétées servies sans appeler le fournisseur — et, sur Claude, du quatrième, qui est la remise de votre propre fournisseur. Le paquet npm n'embarque aucun compresseur. Un registre sans chiffre publié est décrit ici, pas annoncé."
     },
     "ledgers": [
       {
@@ -960,13 +970,14 @@
       "ctaTitle": "Mesurez-le sur votre propre trafic",
       "ctaSub": "Une fois installé, chaque appel renvoie son SavingsReport, mesuré et estimé séparés. Commencez gratuitement avec Mesurer (@bivelio/savings-layer {version} ou ultérieure) ; Pro et Équipe sont un forfait fixe par siège, sans commission sur vos économies. La licence est ce qui vous permet d’exécuter BV‑SALA — le SDK dans votre app, le gateway dans votre terminal.",
       "ctaStart": "Commencer",
-      "tagline": "Le système d'exploitation de votre entreprise. Voici <b>BV‑SALA</b>, l'optimiseur de coût LLM neutre vis-à-vis du fournisseur de BiVelio — chaque chiffre publié est mesuré contre le compteur du fournisseur ; les estimations sont montrées à part et jamais facturées.",
+      "tagline": "Le système d'exploitation de votre entreprise. Voici <b>BV‑SALA</b>, l'optimiseur de coût LLM neutre vis-à-vis du fournisseur de BiVelio — chaque chiffre mesuré l'est contre le compteur du fournisseur ; les estimations et les simulations sont montrées à part, présentées comme telles, et jamais facturées.",
       "badge": "BV‑SALA · Savings Layer",
       "colSavings": "Savings Layer",
       "colBivelio": "BiVelio",
       "colLegal": "Mentions légales",
       "measured": "Résultats mesurés",
       "benchmarks": "Banc d’essai public",
+      "migrate": "Migrer vers la 0.5",
       "pricing": "Tarifs",
       "home": "Accueil",
       "docs": "Documentation",
@@ -999,9 +1010,6 @@
       "errorCorreo": "Cet e-mail ne semble pas valide.",
       "errorEnvio": "Nous n'avons pas pu l'envoyer.",
       "alterna": "Écrivez-nous"
-    },
-    "trabajos": {
-      "caption": "Toutes les requêtes n'ont pas quelque chose à économiser : sur le banc public, le trafic sans répétitions a économisé ≈ {cero}. Nous le publions aussi."
     },
     "devs": {
       "eyebrow": "Conçu pour les développeurs",
@@ -1051,8 +1059,10 @@
         "band": "Gateway — pour les agents de code avec une clé d'API",
         "who": "Pour ceux qui utilisent Claude Code, Codex CLI ou un autre agent de code avec une clé d'API.",
         "what": "Une commande place un compteur local devant votre terminal, sans code à modifier. Le gateway compte chaque requête dont votre fournisseur déclare l'usage, avec le compteur du fournisseur lui-même — pour les modèles de notre catalogue de prix — et les additionne dans votre tableau de bord, par jour et par modèle.",
-        "figureLabel": "Aucun chiffre d'économie publié",
-        "figureNote": "Nous n'avons publié aucune économie mesurée pour les agents de code, donc nous n'en annonçons aucune. Avec PRO, sur les modèles Anthropic, le gateway fait passer les écritures de cache du TTL d'une heure à celui de cinq minutes, uniquement sur les tours où une grande partie du prompt est nouvelle — comme le premier tour d'une session ou une compaction — et laisse tels quels les tours enchaînés d'une session en cours. Cela change le prix, jamais ce que lit le modèle, et seul ce que confirme le compteur de votre fournisseur compte dans votre rapport d'économies.",
+        "figureLabel": "Le chiffre que nous publions",
+      "figureQue": "de la facture avec la baisse de cache de PRO, déduction faite des échecs de cache qu'elle provoque (intervalle à {confianza} : de {bajo} à {alto}). Simulé au prix catalogue sur {sesiones} sessions Claude Code d'une seule organisation, la nôtre.",
+        "figureNote": "Ce n'est pas une prévision pour votre équipe : c'est une seule organisation, un seul fournisseur et des prix catalogue, et c'est une petite économie qui se voit là où la dépense chez Anthropic est élevée. Avec PRO, sur les modèles Anthropic, le gateway fait passer les écritures de cache du TTL d'une heure à celui de cinq minutes, uniquement sur les tours où une grande partie du prompt est nouvelle — comme le premier tour d'une session ou une compaction — et laisse tels quels les tours enchaînés d'une session en cours. Cela change le prix, jamais ce que lit le modèle, et seul ce que confirme le compteur de votre fournisseur compte dans votre rapport d'économies.",
+        "benchLink": "Le rapport du banc TTL : ce qui a été simulé, le détail par modèle et ses limites →",
         "cta": "Installer le gateway"
       },
       "skill": {
@@ -1233,6 +1243,54 @@
       "delta": "Δ {d} pp [{inf}, {sup}]",
       "originNote": "D'où vient l'économie, position par position : « depuis le cache exact » est ce que A a payé sur les requêtes que la couche a servies sans appeler le fournisseur ; « dans les appels » est la différence sur celles qui l'ont effectivement atteint, surtout le cache de préfixe du fournisseur (plus une part de variation de la sortie). Les deux s'additionnent pour donner l'économie totale.",
       "accuracyNote": "L'exactitude est mesurée sur les questions avec une réponse publiée ; les variantes avec un nombre modifié servent uniquement à vérifier que la couche ne renvoie jamais la réponse d'une autre question."
+    },
+    "gatewayTtl": {
+      "title": "La baisse de cache du gateway : une simulation, pas un A/B",
+      "kind": "Cette section ne fait pas partie des batteries A/B de la page et elle n'est <b>pas mesurée en direct</b> : c'est un <b>replay</b>. Nous avons pris l'usage que le fournisseur avait déjà déclaré pour des sessions réelles de Claude Code <b>d'une seule organisation, la nôtre</b>, auprès d'un seul fournisseur (Anthropic), et calculé au <b>prix catalogue</b> ce qu'elles auraient coûté avec la baisse de cache de PRO et sans elle.",
+      "verdict": "Le verdict du rapport du {fecha} : la baisse laisse un <b>net de {neto} de la facture</b> ({netoUsd} sur {factura}), après déduction des échecs de cache qu'elle provoque elle-même.",
+      "stat": {
+        "sessions": "Sessions",
+        "requests": "Requêtes",
+        "days": "Jours"
+      },
+      "thInterval": "Intervalle à {confianza}",
+      "thNet": "Net, en part de la facture",
+      "bySession": "Rééchantillonnage par session (groupes : {n})",
+      "byDay": "Rééchantillonnage par jour (groupes : {n})",
+      "intervalsNote": "Bootstrap avec {remuestreos} rééchantillonnages. Les deux intervalles excluent le zéro : sur ce trafic, la baisse fait gagner de l'argent. La carte de la page d'accueil cite l'intervalle par session.",
+      "resultTitle": "Le résultat, avec ce qu'il déduit",
+      "row": {
+        "downgrades": "Baisses",
+        "gross": "Prime économisée, brute",
+        "misses": "Échecs de cache provoqués",
+        "missCost": "Ce que coûtent ces échecs",
+        "net": "Net",
+        "ceiling": "Plafond : toute la prime de l'heure"
+      },
+      "resultNote": "Les pourcentages portent sur la facture au prix catalogue des requêtes simulées ({factura}). Le plafond est le maximum que pourrait récupérer n'importe quelle politique de TTL, même sans jamais échouer. Chaque pourcentage est arrondi séparément.",
+      "modelsTitle": "Par modèle",
+      "thModelNet": "Net, en part de la facture du modèle",
+      "tooFew": "pas de pourcentage (requêtes : {n})",
+      "ugly": "<b>{modelo} est le cas laid</b> : il concentre {rebajas} des baisses et {fallos} des échecs, et son net est presque nul. Sur la première période de la capture, il a même perdu : {perdida} de sa facture. Son trafic est fait de fils courts, souvent reconstruits, qui reviennent une fois les cinq minutes passées. La règle gagne vraiment là où les démarrages sont chers et rares.",
+      "howTitle": "Comment cela a été fait : le modèle de cache, déclaré",
+      "how": {
+        "rule": "La règle est celle qu'exécute le gateway, pas une copie : elle fait passer les écritures de cache du TTL d'une heure à celui de cinq minutes quand la partie nouvelle représente au moins {umbral} du corps de la requête.",
+        "baseline": "La ligne de base est ce que le fournisseur a compté, avec son usage réel, là où la baisse n'était pas encore active ; là où elle l'était déjà, elle est reconstruite en l'annulant (voir les limites). Avec la baisse, le tour concerné paie la prime d'écriture de cinq minutes au lieu de celle d'une heure.",
+        "miss": "Un échec provoqué : si le tour suivant du même fil arrive après les cinq minutes et avant l'heure, ce que le tour abaissé a écrit n'est plus lu dans le cache, c'est réécrit, et ce coût est déduit.",
+        "conservative": "Il existe une variante prudente, qui considère en plus comme perdu le préfixe partagé entre des fils différents. Elle bouge à peine le chiffre : {neto}, avec quelques échecs de plus ({fallos}).",
+        "aggregates": "Uniquement des chiffres agrégés : aucun prompt, aucune réponse, aucun en-tête ni identifiant de session ne sort de la capture."
+      },
+      "limitsTitle": "Limites",
+      "limits": {
+        "oneOrg": "<b>Une organisation, un client, un fournisseur.</b> Claude Code face à Anthropic, avec notre propre trafic. Aucun autre agent de code et aucun autre fournisseur.",
+        "listPrice": "<b>Prix catalogue, simulé.</b> Ce n'est pas une facture : c'est l'usage réel, tarifé avec le catalogue de prix. Des remises, des niveaux de compte ou un abonnement changeraient les montants.",
+        "cacheModel": "<b>Le modèle de cache est un modèle.</b> Il suppose la façon dont le fournisseur indexe ses entrées de cache ; il ne l'observe pas. La variante prudente borne ce risque.",
+        "rebuilt": "<b>La majeure partie de la ligne de base est reconstruite.</b> {cuota} des requêtes ont été enregistrées avec la baisse déjà active ; là, la ligne de base est reconstruite en annulant la baisse réelle, et elle est moins solide que celle de la première période. Cette première période, seule, donne un intervalle bien plus large : de {bajo} à {alto}.",
+        "ceiling": "<b>Le plafond change avec le client.</b> Il dépend du nombre d'écritures d'une heure qu'envoie l'agent de code, et les versions récentes de Claude Code en envoient moins : sur les {peticiones} requêtes, {sinMarca} n'en portaient aucune à baisser.",
+        "gap": "<b>L'écart entre les tours est mesuré depuis l'arrivée de chaque requête</b>, et non depuis la fin de la réponse : il compte quelques échecs en trop, jamais en moins.",
+        "promise": "<b>Ce n'est pas une prévision pour votre équipe.</b> C'est une petite économie, tirée d'un seul trafic, et un autre trafic peut donner un autre chiffre, y compris pire : regardez le cas laid."
+      },
+      "production": "En production : depuis la version {version} ({fecha}), le gateway retranche les échecs qu'il observe, sur le tour qui les subit, de sorte que l'économie de cette baisse affichée dans votre tableau de bord est nette. Ce qui a été enregistré avant n'est pas recalculé, et le tableau de bord signale comme « en brut » les machines dont le gateway est antérieur."
     },
     "guarantees": {
       "title": "Garanties, comptées",

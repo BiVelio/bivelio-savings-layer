@@ -370,10 +370,19 @@
       "noLever": "{n, plural, one {# màquina està al dia} other {# màquines estan al dia}}, però la palanca no hi ha actuat. Si segueix igual després d'actualitzar, escriu-nos a support@bivelio.com.",
       "action": "Actualitza @bivelio/savings-layer en aquella màquina i reinicia el terminal; la taula de màquines de sota mostra què declara cadascuna."
     },
+    "gatewayBruto": {
+      "title": "L'estalvi d'algunes màquines encara s'informa en brut",
+      "summary": "{n, plural, one {# màquina executa} other {# màquines executen}} un gateway anterior a {minima} o no declara versió. El seu estalvi per la rebaixa de la memòria cau compta la prima que evita, però no resta les vegades que la memòria cau de 5 minuts caduca i cal tornar-la a escriure. En el nostre propi trànsit aquests errors es mengen al voltant d'un 30 % d'aquesta xifra. Des de la {minima} el gateway els resta i aquest tauler mostra l'estalvi net.",
+      "action": "Actualitza @bivelio/savings-layer a la {minima} o posterior en aquesta màquina i reinicia el terminal. El que ja està registrat no es recalcula: el net compta des de l'actualització."
+    },
     "sdkReferencia": {
       "title": "Algunes màquines executen un SDK anterior a {minima}: les seves repeticions no es mesuren per referència",
       "summary": "{n, plural, one {# màquina executa} other {# màquines executen}} un SDK anterior a {minima} (la més antiga declara {antigua}). Fins que s'actualitzin, les seves peticions repetides compten com a estimades, no com a mesurades per referència: continuen als teus totals, però fora de la base.",
       "action": "Actualitza l'SDK a {minima} o posterior en aquesta màquina i reinicia el procés:"
+    },
+    "migrar05": {
+      "note": "La darrera versió és la 0.5, que porta canvis incompatibles.",
+      "link": "Llegeix la guia de migració abans d'actualitzar →"
     },
     "maquinas": {
       "title": "màquines (30 dies)",
@@ -777,21 +786,22 @@
     "metaTitle": "BiVelio — Verifica el teu estalvi en LLM",
     "metaDescription": "Un SDK perquè la teva app pagui al proveïdor de LLM només el que necessita, i un gateway que mesura el teu agent de codi. Tot amb el comptador del teu proveïdor: mesura gratis i després paga per seient, sense comissió sobre el teu estalvi.",
     "hero": {
-      "eyebrow": "Per a equips que paguen l'API de LLM per tokens",
       "title": "La teva factura de LLM, sota control.",
       "titleAccent": "Mesurada a cada crida.",
-      "lede": "Dos productes, una regla. L'SDK s'instal·la dins de la teva app i deixa passar només el que cal pagar; el gateway es posa davant del teu agent de codi i en mesura la despesa. Tots dos compten amb el comptador del teu proveïdor i separen el mesurat de l'estimat. Publiquem només el que hem mesurat.",
-      "ctaOffers": "SDK o gateway?",
-      "ctaPricing": "Veure els preus",
+      "sub": "Savings respon el que la teva app repeteix sense tornar a cridar el proveïdor, i mesura cada crida amb el seu comptador.",
+      "ctaStart": "Comença",
+      "ctaBench": "Veure el banc públic",
+      "panelAlt": "El tauler de Savings amb les dades del banc públic: l'estalvi mesurat i el seu repartiment per model.",
+      "panelCaption": "Tauler amb les dades del banc públic",
+      "medidoEnVivo": "Mesurat en directe amb el comptador de cada proveïdor",
       "note": "S'instal·la en minuts. Els teus missatges no passen pels nostres servidors.",
       "proofTitle": "Mesurat contra proveïdor real",
-      "medidoEn": "Mesurat a",
       "compatibleCon": "Compatible amb",
       "compatibleNota": "Compatible no vol dir mesurat. L'SDK funciona amb qualsevol endpoint compatible amb l'API d'OpenAI, més l'adaptador natiu d'Anthropic i l'adaptador natiu de Gemini (nou a la {gemini}). Amb xifra d'estalvi al banc públic, avui només models d'OpenAI i d'Anthropic; Gemini no té xifra d'estalvi. El que hi ha mesurat de Gemini: {flash}, per la seva API nativa, al banc setmanal en viu del {fecha} — les quatre bateries, sense cap error de la capa i sense cap negativa en memòria cau ni acreditada com a estalvi. Aquest banc comprova que la capa no trenca res ni cobra de més; no mesura un estalvi. També mesurat: {pro}, per la seva API nativa, en dos bancs parcials del {fechaPro} (la seva quota diària del proveïdor no dona per a les quatre bateries en un dia): les quatre bateries, també sense cap error de la capa i sense cap negativa a la memòria cau ni acreditada com a estalvi."
     },
     "cascade": {
       "title": "Guanya l'execució més barata",
-      "footnote": "Cada palanca cau al seu propi llibre, i els llibres no se sumen mai. En aquesta bateria l'estalvi va sortir de peticions repetides que l'SDK va servir sense cridar el proveïdor i, a Claude, de la mateixa memòria cau de prefix del proveïdor. El paquet d'npm no porta compressor, així que la compressió no va estalviar res; i amb trànsit sense repeticions l'estalvi va ser indistingible de zero."
+      "footnote": "Cada palanca cau al seu propi llibre, i els llibres no se sumen mai. En aquesta bateria l'estalvi va sortir de peticions repetides que l'SDK va servir sense cridar el proveïdor i, a Claude, de la mateixa memòria cau de prefix del proveïdor. El paquet d'npm no porta compressor."
     },
     "explica": {
       "eyebrow": "En paraules normals",
@@ -823,15 +833,15 @@
       "body": "Cada escenari s'executa dues vegades contra el proveïdor real: tal qual, i amb Savings al davant. Els dos resultats es compten amb el comptador del mateix proveïdor — el mateix que posa el preu a la teva factura. Això és el que va sortir, amb el seu marge d'error:",
       "videoCaption": "La prova és un experiment just: la mateixa tasca dues vegades — sense Savings i amb Savings — amb el mateix comptador del proveïdor mesurant totes dues.",
       "plainTitle": "Traducció, sense argot",
-      "plain": "En un flux on el {rep} de les peticions es repeteixen exactes, la factura va baixar un {punto}: entre {bajo} i {alto} amb un 95 % de confiança. Amb trànsit que no es repeteix, va baixar ≈ {cero}. El que estalviïs depèn de quant es repeteixi el teu.",
-      "plainNote": "Un percentatge no vol dir res sense el seu interval, el seu model i el seu trànsit: publiquem tots tres, i també les bateries on no es va estalviar res.",
+      "plain": "En un flux on el {rep} de les peticions es repeteixen exactes, la factura va baixar un {punto}: entre {bajo} i {alto} amb un 95 % de confiança. El que estalviïs depèn de quant es repeteixi el teu trànsit.",
+      "plainNote": "Un percentatge no vol dir res sense el seu interval, el seu model i el seu trànsit: publiquem tots tres.",
       "benchLink": "Cada bateria, amb el seu informe complet, al banc públic →"
     },
     "ledgersHead": {
       "eyebrow": "Comptabilitat honesta",
       "title": "Cada tipus d'estalvi, comptat a part — perquè cap xifra s'infli.",
       "body": "Cada SavingsReport separa l'estalvi en quatre llibres —crides evitades, text eliminat, text comprimit i el descompte de memòria cau del teu propi proveïdor— i no els suma mai en una xifra de màrqueting.",
-      "providerNote": "Al banc públic ({fecha}), el que va estalviar l'SDK instal·lat va sortir del primer llibre —peticions repetides servides sense cridar el proveïdor— i, a Claude, del quart, que és el descompte del teu propi proveïdor. El paquet d'npm no porta compressor, així que allà el tercer va ser zero. Un llibre sense xifra publicada es descriu aquí, no s'anuncia."
+      "providerNote": "Al banc públic ({fecha}), el que va estalviar l'SDK instal·lat va sortir del primer llibre —peticions repetides servides sense cridar el proveïdor— i, a Claude, del quart, que és el descompte del teu propi proveïdor. El paquet d'npm no porta compressor. Un llibre sense xifra publicada es descriu aquí, no s'anuncia."
     },
     "ledgers": [
       {
@@ -960,13 +970,14 @@
       "ctaTitle": "Mesura-ho amb el teu propi trànsit",
       "ctaSub": "Un cop instal·lat, cada crida retorna el seu SavingsReport, amb el mesurat i l’estimat per separat. Comença gratis amb Mesurar (@bivelio/savings-layer {version} o posterior); Pro i Equip són una quota fixa per seient, sense comissió sobre el teu estalvi. La llicència és el que et deixa executar BV‑SALA: l’SDK a la teva app, el gateway al teu terminal.",
       "ctaStart": "Comença",
-      "tagline": "El sistema operatiu per al teu negoci. Això és <b>BV‑SALA</b>, l'optimitzador de cost de LLM neutral respecte al proveïdor de BiVelio — cada xifra publicada, mesurada contra el comptador del proveïdor; l'estimat es mostra a part i mai no es factura.",
+      "tagline": "El sistema operatiu per al teu negoci. Això és <b>BV‑SALA</b>, l'optimitzador de cost de LLM neutral respecte al proveïdor de BiVelio — cada xifra mesurada ho és contra el comptador del proveïdor; l'estimat i el simulat es mostren a part, dits com a tals, i mai no es facturen.",
       "badge": "BV‑SALA · Savings Layer",
       "colSavings": "Savings Layer",
       "colBivelio": "BiVelio",
       "colLegal": "Legal",
       "measured": "Resultats mesurats",
       "benchmarks": "Banc públic",
+      "migrate": "Migrar a la 0.5",
       "pricing": "Preus",
       "home": "Inici",
       "docs": "Documentació",
@@ -999,9 +1010,6 @@
       "errorCorreo": "Aquest correu no sembla vàlid.",
       "errorEnvio": "No hem pogut enviar-ho.",
       "alterna": "Escriu-nos"
-    },
-    "trabajos": {
-      "caption": "No totes les peticions porten alguna cosa a estalviar: al banc públic, el trànsit sense repeticions va estalviar ≈ {cero}. També ho publiquem."
     },
     "devs": {
       "eyebrow": "Fet per a desenvolupadors",
@@ -1051,8 +1059,10 @@
         "band": "Gateway — per a agents de codi amb API key",
         "who": "Per a qui treballa amb Claude Code, Codex CLI o un altre agent de codi amb API key.",
         "what": "Una ordre posa un mesurador local davant del teu terminal, sense tocar codi. Compta cada petició de la qual el teu proveïdor informa l'ús, amb el seu propi comptador —en els models del nostre catàleg de preus—, i ho suma al teu tauler, per dia i per model.",
-        "figureLabel": "Sense xifra d'estalvi publicada",
-        "figureNote": "No hem publicat cap estalvi mesurat per a agents de codi, així que no n'anunciem cap. Amb PRO, en models d'Anthropic, passa les escriptures de la memòria cau del TTL d'una hora al de cinc minuts només en els torns en què una part gran del prompt és nova —com el primer d'una sessió o una compactació— i deixa com estan els torns encadenats d'una sessió en marxa. Això canvia el preu, mai el que llegeix el model, i només el que confirma el comptador del teu proveïdor compta al teu informe d'estalvi.",
+        "figureLabel": "La xifra que publiquem",
+      "figureQue": "de la factura amb la rebaixa de memòria cau de PRO, ja restats els errors de memòria cau que provoca (interval del {confianza}: de {bajo} a {alto}). Simulat a preu de llista sobre {sesiones} sessions de Claude Code d'una sola organització, la nostra.",
+        "figureNote": "No és una previsió per al teu equip: és una sola organització, un sol proveïdor i preus de llista, i és un estalvi petit que es nota on la despesa en Anthropic és alta. Amb PRO, en models d'Anthropic, passa les escriptures de la memòria cau del TTL d'una hora al de cinc minuts només en els torns en què una part gran del prompt és nova —com el primer d'una sessió o una compactació— i deixa com estan els torns encadenats d'una sessió en marxa. Això canvia el preu, mai el que llegeix el model, i només el que confirma el comptador del teu proveïdor compta al teu informe d'estalvi.",
+        "benchLink": "L'informe del banc de TTL: què es va simular, el desglossament per model i els seus límits →",
         "cta": "Instal·la el gateway"
       },
       "skill": {
@@ -1233,6 +1243,54 @@
       "delta": "Δ {d} pp [{inf}, {sup}]",
       "originNote": "Origen de l'estalvi, posició a posició: «de la memòria cau exacta» és el que A va pagar en les peticions que la capa va servir sense trucar al proveïdor; «a les crides» és la diferència en les que sí que hi van arribar, sobretot memòria cau de prefix del proveïdor (més una mica de variació de la sortida). Les dues sumen l'estalvi total.",
       "accuracyNote": "L'exactitud es mesura sobre les preguntes amb resposta publicada; les variants amb una xifra canviada només serveixen per comprovar que la capa no lliura la resposta d'una altra pregunta."
+    },
+    "gatewayTtl": {
+      "title": "La rebaixa de memòria cau del gateway: una simulació, no un A/B",
+      "kind": "Aquesta secció no és una de les bateries A/B de la pàgina i <b>no està mesurada en viu</b>: és un <b>replay</b>. Vam prendre l'ús que el proveïdor ja havia informat en sessions reals de Claude Code <b>d'una sola organització, la nostra</b>, contra un sol proveïdor (Anthropic), i vam calcular a <b>preu de llista</b> quant haurien costat amb la rebaixa de memòria cau de PRO i sense.",
+      "verdict": "El veredicte de l'informe del {fecha}: la rebaixa deixa un <b>net de {neto} de la factura</b> ({netoUsd} sobre {factura}), després de restar els errors de memòria cau que ella mateixa provoca.",
+      "stat": {
+        "sessions": "Sessions",
+        "requests": "Peticions",
+        "days": "Dies"
+      },
+      "thInterval": "Interval del {confianza}",
+      "thNet": "Net, sobre la factura",
+      "bySession": "Remostrejant per sessió (grups: {n})",
+      "byDay": "Remostrejant per dia (grups: {n})",
+      "intervalsNote": "Bootstrap amb {remuestreos} remostrejos. Els dos intervals exclouen el zero: amb aquest trànsit, la rebaixa guanya diners. La targeta de la portada cita l'interval per sessió.",
+      "resultTitle": "El resultat, amb el que resta",
+      "row": {
+        "downgrades": "Rebaixes",
+        "gross": "Prima estalviada, en brut",
+        "misses": "Errors de memòria cau provocats",
+        "missCost": "El que costen aquests errors",
+        "net": "Net",
+        "ceiling": "Sostre: tota la prima de l'hora"
+      },
+      "resultNote": "Els percentatges són sobre la factura a preu de llista de les peticions simulades ({factura}). El sostre és el màxim que podria recuperar qualsevol política de TTL, encara que no fallés mai. Cada percentatge s'arrodoneix per separat.",
+      "modelsTitle": "Per model",
+      "thModelNet": "Net, sobre la factura del model",
+      "tooFew": "sense percentatge (peticions: {n})",
+      "ugly": "<b>{modelo} és el cas lleig</b>: concentra el {rebajas} de les rebaixes i el {fallos} dels errors, i el seu net és gairebé nul. En el primer període de la captura, de fet, va perdre: {perdida} de la seva factura. El seu trànsit són fils curts que es refan sovint i tornen passats els cinc minuts. La regla guanya de debò on les arrencades són cares i rares.",
+      "howTitle": "Com es va fer: el model de memòria cau, declarat",
+      "how": {
+        "rule": "La regla és la mateixa que executa el gateway, no una còpia: passa les escriptures de memòria cau del TTL d'una hora al de cinc minuts quan el que és nou és almenys el {umbral} del cos de la petició.",
+        "baseline": "La línia base és el que el proveïdor va comptar, amb el seu ús real, on la rebaixa encara no era activa; on ja ho era, es reconstrueix desfent-la (mira els límits). Amb la rebaixa, el torn rebaixat paga la prima d'escriptura de cinc minuts en lloc de la d'una hora.",
+        "miss": "Un error provocat: si el torn següent del mateix fil arriba passats els cinc minuts i abans de l'hora, el que el torn rebaixat va escriure ja no es llegeix de la memòria cau, es torna a escriure, i aquest cost es resta.",
+        "conservative": "Hi ha una variant conservadora, que a més dona per perdut el prefix compartit entre fils diferents. Gairebé no mou la xifra: {neto}, amb alguns errors més ({fallos}).",
+        "aggregates": "Només xifres agregades: de la captura no en surt cap prompt, resposta, capçalera ni identificador de sessió."
+      },
+      "limitsTitle": "Límits",
+      "limits": {
+        "oneOrg": "<b>Una organització, un client, un proveïdor.</b> Claude Code contra Anthropic, amb el nostre propi trànsit. Cap altre agent de codi i cap altre proveïdor.",
+        "listPrice": "<b>Preu de llista, simulat.</b> No és una factura: és l'ús real, tarifat amb el catàleg de preus. Descomptes, nivells de compte o una subscripció canviarien els diners.",
+        "cacheModel": "<b>El model de memòria cau és un model.</b> Suposa com indexa el proveïdor les seves entrades de memòria cau; no ho observa. La variant conservadora acota aquest risc.",
+        "rebuilt": "<b>La major part de la línia base està reconstruïda.</b> El {cuota} de les peticions es va gravar amb la rebaixa ja activa; allà la línia base es reconstrueix desfent la rebaixa real, i és menys ferma que la del primer tram. Aquest primer tram, sol, dona un interval molt més ample: de {bajo} a {alto}.",
+        "ceiling": "<b>El sostre canvia amb el client.</b> Depèn de quantes escriptures d'una hora enviï l'agent de codi, i les versions recents de Claude Code n'envien menys: de les {peticiones} peticions, {sinMarca} no en portaven cap per rebaixar.",
+        "gap": "<b>El buit entre torns es mesura des de l'arribada de cada petició</b>, no des del final de la resposta: compta algun error de més, mai de menys.",
+        "promise": "<b>No és una previsió per al teu equip.</b> És un estalvi petit, d'un sol trànsit, i un altre trànsit pot donar una altra xifra, també pitjor: mira el cas lleig."
+      },
+      "production": "En producció: des de la versió {version} ({fecha}), el gateway resta els errors que observa, en el torn que els pateix, de manera que l'estalvi d'aquesta rebaixa que veus al teu tauler va en net. El que s'ha registrat abans no es recalcula, i el tauler assenyala com a «en brut» les màquines amb un gateway anterior."
     },
     "guarantees": {
       "title": "Garanties, comptades",

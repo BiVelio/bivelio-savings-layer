@@ -370,10 +370,19 @@
       "noLever": "{n, plural, one {# machine is up to date} other {# machines are up to date}}, but the lever has not acted there. If it stays that way after updating, write to support@bivelio.com.",
       "action": "Update @bivelio/savings-layer on that machine and restart the terminal; the machines table below shows what each one declares."
     },
+    "gatewayBruto": {
+      "title": "Some machines still report their savings gross",
+      "summary": "{n, plural, one {# machine runs} other {# machines run}} a gateway older than {minima} or declares no version. Its saving from the cache TTL downgrade counts the premium it avoids, but does not subtract the times the 5-minute cache expires and has to be written again. On our own traffic those misses eat about 30% of that figure. From {minima} on, the gateway subtracts them and this dashboard shows net savings.",
+      "action": "Update @bivelio/savings-layer to {minima} or later on that machine and restart the terminal. What is already recorded is not recalculated: net counts from the update on."
+    },
     "sdkReferencia": {
       "title": "Some machines run an SDK older than {minima}: their repeats are not measured by reference",
       "summary": "{n, plural, one {# machine runs} other {# machines run}} an SDK older than {minima} (the oldest declares {antigua}). Until they update, their repeated requests count as estimated, not as measured by reference: they stay in your totals, but out of the base.",
       "action": "Update the SDK to {minima} or later on that machine and restart the process:"
+    },
+    "migrar05": {
+      "note": "The latest version is 0.5, which has breaking changes.",
+      "link": "Read the migration guide before you update →"
     },
     "maquinas": {
       "title": "machines (30 days)",
@@ -777,21 +786,22 @@
     "metaTitle": "BiVelio — Verify Your LLM Savings",
     "metaDescription": "An SDK that has your app pay the LLM provider only for what it needs, and a gateway that meters your coding agent. Counted with your provider's own meter: measure free, then pay per seat — no commission on your savings.",
     "hero": {
-      "eyebrow": "For teams that pay for LLM APIs by the token",
       "title": "Your LLM bill, under control.",
       "titleAccent": "Measured on every call.",
-      "lede": "Two products, one rule. The SDK installs inside your app and lets through only what has to be paid for; the gateway sits in front of your coding agent and meters its spend. Both count with your provider's own meter and keep measured and estimated apart. We publish only what we have measured.",
-      "ctaOffers": "SDK or gateway?",
-      "ctaPricing": "See pricing",
+      "sub": "Savings answers what your app repeats without calling the provider again, and measures every call with its counter.",
+      "ctaStart": "Get started",
+      "ctaBench": "See the public bench",
+      "panelAlt": "The Savings dashboard with the public bench's data: the measured saving and its split by model.",
+      "panelCaption": "Dashboard with the public bench's data",
+      "medidoEnVivo": "Measured live with each provider's own counter",
       "note": "Installs in minutes. Your messages never pass through our servers.",
       "proofTitle": "Measured against a real provider",
-      "medidoEn": "Measured on",
       "compatibleCon": "Compatible with",
       "compatibleNota": "Compatible is not measured. The SDK works with any endpoint compatible with the OpenAI API, plus the native Anthropic adapter and the native Gemini adapter (new in {gemini}). With a savings figure on the public bench, today only OpenAI and Anthropic models; Gemini has no savings figure. What is measured for Gemini: {flash}, through its native API, in the weekly live bench of {fecha} — all four batteries, with no layer failures and no refusal cached or credited as savings. That bench checks that the layer breaks nothing and does not overcharge; it does not measure a saving. Also measured: {pro}, through its native API, in two partial runs on {fechaPro} (its daily provider quota does not fit all four batteries in one day): all four batteries, again with no layer failures and no refusal cached or credited as savings."
     },
     "cascade": {
       "title": "Cheapest execution wins",
-      "footnote": "Each lever falls into its own ledger, and the ledgers are never added up. In this battery the saving came from repeated requests the SDK served without calling the provider and, on Claude, from the provider's own prefix cache. The npm package ships no compressor, so nothing was saved by compression — and on traffic without repeats, the saving was indistinguishable from zero."
+      "footnote": "Each lever falls into its own ledger, and the ledgers are never added up. In this battery the saving came from repeated requests the SDK served without calling the provider and, on Claude, from the provider's own prefix cache. The npm package ships no compressor."
     },
     "explica": {
       "eyebrow": "In plain words",
@@ -823,15 +833,15 @@
       "body": "Every scenario runs twice against the real provider: as-is, and with Savings in front. Both results are counted with the provider's own meter — the same one that prices your bill. Here is what came out, error margin included:",
       "videoCaption": "The test is a fair experiment: the same task twice — without Savings and with Savings — with the provider's own meter counting both.",
       "plainTitle": "Translation, no jargon",
-      "plain": "On a stream where {rep} of requests repeat exactly, the bill went down by {punto} — between {bajo} and {alto} with 95% confidence. On traffic that doesn't repeat, it went down by ≈ {cero}. What you save depends on how much yours repeats.",
-      "plainNote": "A percentage means nothing without its interval, its model and its traffic: we publish all three — and the batteries where nothing was saved, too.",
+      "plain": "On a stream where {rep} of requests repeat exactly, the bill went down by {punto} — between {bajo} and {alto} with 95% confidence. What you save depends on how much your traffic repeats.",
+      "plainNote": "A percentage means nothing without its interval, its model and its traffic: we publish all three.",
       "benchLink": "Every battery, with its full report, on the public bench →"
     },
     "ledgersHead": {
       "eyebrow": "Honest accounting",
       "title": "Every kind of saving, counted separately — so no number gets inflated.",
       "body": "Every SavingsReport splits the saving into four ledgers — calls avoided, text removed, text compressed, and your provider's own cache discount — and never adds them up into one marketing number.",
-      "providerNote": "On the public bench ({fecha}), what the installed SDK saved came from the first ledger — repeated requests served without calling the provider — and, on Claude, from the fourth, which is your provider's own discount. The npm package ships no compressor, so the third was zero there. A ledger with no published figure is described here, not advertised."
+      "providerNote": "On the public bench ({fecha}), what the installed SDK saved came from the first ledger — repeated requests served without calling the provider — and, on Claude, from the fourth, which is your provider's own discount. The npm package ships no compressor. A ledger with no published figure is described here, not advertised."
     },
     "ledgers": [
       {
@@ -960,13 +970,14 @@
       "ctaTitle": "Measure it on your own traffic",
       "ctaSub": "Once installed, every call returns its SavingsReport, measured and estimated kept apart. Start free with Measure (@bivelio/savings-layer {version} or later); Pro and Team are a fixed fee per seat, with no commission on your savings. The license is what lets you run BV‑SALA — the SDK in your app, the gateway in your terminal.",
       "ctaStart": "Get started",
-      "tagline": "The operating system for your business. This is <b>BV-SALA</b>, BiVelio's provider-neutral LLM cost optimizer — every published figure measured against the provider's own counter; estimates are shown apart and never billed.",
+      "tagline": "The operating system for your business. This is <b>BV-SALA</b>, BiVelio's provider-neutral LLM cost optimizer — every measured figure is measured against the provider's own counter; estimates and simulations are shown apart, labelled as such, and never billed.",
       "badge": "BV‑SALA · Savings Layer",
       "colSavings": "Savings Layer",
       "colBivelio": "BiVelio",
       "colLegal": "Legal",
       "measured": "Measured results",
       "benchmarks": "Public bench",
+      "migrate": "Migrate to 0.5",
       "pricing": "Pricing",
       "home": "Home",
       "docs": "Documentation",
@@ -999,9 +1010,6 @@
       "errorCorreo": "That email doesn't look valid.",
       "errorEnvio": "We couldn't send it.",
       "alterna": "Email us"
-    },
-    "trabajos": {
-      "caption": "Not every request carries something to save: on the public bench, traffic without repeats saved ≈ {cero}. We publish that too."
     },
     "devs": {
       "eyebrow": "Built for developers",
@@ -1051,8 +1059,10 @@
         "band": "Gateway — for coding agents on an API key",
         "who": "For developers who run Claude Code, Codex CLI or another coding agent on an API key.",
         "what": "One command puts a local meter in front of your terminal, with no code to change. It counts each request your provider reports usage for, with the provider's own counter — for models in our price catalog — and adds it up in your dashboard, by day and by model.",
-        "figureLabel": "No savings figure published",
-        "figureNote": "We have not published a measured saving for coding agents, so we don't advertise one. With PRO, on Anthropic models, it moves cache writes from the one-hour TTL to the five-minute one, only on turns where a large part of the prompt is new — such as a session's first turn or a compaction — and leaves the chained turns of a running session as they are. That changes the price, never what the model reads, and only what your provider's counter confirms counts in your savings report.",
+        "figureLabel": "The figure we publish",
+      "figureQue": "of the bill with PRO's cache downgrade, net of the cache misses it causes ({confianza} interval: {bajo} to {alto}). Simulated at list prices on {sesiones} Claude Code sessions from a single organization, our own.",
+        "figureNote": "Not a forecast for your team: it is one organization, one provider and list prices, and it is a small saving that shows where Anthropic spend is high. With PRO, on Anthropic models, it moves cache writes from the one-hour TTL to the five-minute one, only on turns where a large part of the prompt is new — such as a session's first turn or a compaction — and leaves the chained turns of a running session as they are. That changes the price, never what the model reads, and only what your provider's counter confirms counts in your savings report.",
+        "benchLink": "The TTL bench report: what was simulated, the per-model breakdown and its limits →",
         "cta": "Set up the gateway"
       },
       "skill": {
@@ -1233,6 +1243,54 @@
       "delta": "Δ {d} pp [{inf}, {sup}]",
       "originNote": "Where the savings come from, position by position: “from the exact cache” is what A paid on the requests the layer served without calling the provider; “in the calls” is the difference on the ones that did reach it, mostly the provider's prefix cache (plus some output variation). Together they make the total.",
       "accuracyNote": "Accuracy is measured on the questions with a published answer; the variants with a changed number only serve to check that the layer never hands back another question's answer."
+    },
+    "gatewayTtl": {
+      "title": "The gateway's cache downgrade: a simulation, not an A/B",
+      "kind": "This section is not one of the A/B batteries on this page and it is <b>not measured live</b>: it is a <b>replay</b>. We took the usage the provider had already reported for real Claude Code sessions from <b>a single organization, our own</b>, against a single provider (Anthropic), and computed at <b>list prices</b> what they would have cost with PRO's cache downgrade and without it.",
+      "verdict": "The verdict of the {fecha} report: the downgrade leaves a <b>net {neto} of the bill</b> ({netoUsd} out of {factura}), after subtracting the cache misses it causes itself.",
+      "stat": {
+        "sessions": "Sessions",
+        "requests": "Requests",
+        "days": "Days"
+      },
+      "thInterval": "{confianza} interval",
+      "thNet": "Net, as a share of the bill",
+      "bySession": "Resampling by session (clusters: {n})",
+      "byDay": "Resampling by day (clusters: {n})",
+      "intervalsNote": "Bootstrap with {remuestreos} resamples. Both intervals exclude zero: on this traffic, the downgrade makes money. The card on the home page quotes the per-session interval.",
+      "resultTitle": "The result, with what it subtracts",
+      "row": {
+        "downgrades": "Downgrades",
+        "gross": "Premium saved, gross",
+        "misses": "Cache misses caused",
+        "missCost": "What those misses cost",
+        "net": "Net",
+        "ceiling": "Ceiling: the whole one-hour premium"
+      },
+      "resultNote": "Percentages are shares of the list-price bill for the simulated requests ({factura}). The ceiling is the most any TTL policy could recover, even if it never missed. Each percentage is rounded separately.",
+      "modelsTitle": "By model",
+      "thModelNet": "Net, as a share of the model's bill",
+      "tooFew": "no percentage (requests: {n})",
+      "ugly": "<b>{modelo} is the ugly case</b>: it accounts for {rebajas} of the downgrades and {fallos} of the misses, and its net is close to nothing. In the first period of the capture it actually lost: {perdida} of its bill. Its traffic is short threads that are rebuilt often and come back after the five minutes have passed. The rule really pays where session starts are expensive and rare.",
+      "howTitle": "How it was done: the cache model, declared",
+      "how": {
+        "rule": "The rule is the one the gateway runs, not a copy: it moves cache writes from the one-hour TTL to the five-minute one when the new part is at least {umbral} of the request body.",
+        "baseline": "The baseline is what the provider counted, with its real usage, where the downgrade was not yet active; where it already was, it is rebuilt by undoing it (see the limits). With the downgrade, the downgraded turn pays the five-minute write premium instead of the one-hour one.",
+        "miss": "A caused miss: if the next turn of the same thread arrives after the five minutes and before the hour, what the downgraded turn wrote is no longer read from the cache, it is written again, and that cost is subtracted.",
+        "conservative": "There is a conservative variant, which also treats the prefix shared between different threads as lost. It barely moves the figure: {neto}, with a few more misses ({fallos}).",
+        "aggregates": "Aggregate figures only: no prompt, response, header or session identifier leaves the capture."
+      },
+      "limitsTitle": "Limits",
+      "limits": {
+        "oneOrg": "<b>One organization, one client, one provider.</b> Claude Code against Anthropic, on our own traffic. No other coding agent and no other provider.",
+        "listPrice": "<b>List price, simulated.</b> It is not an invoice: it is the real usage, priced with the price catalog. Discounts, account tiers or a subscription would change the money.",
+        "cacheModel": "<b>The cache model is a model.</b> It assumes how the provider indexes its cache entries; it does not observe it. The conservative variant bounds that risk.",
+        "rebuilt": "<b>Most of the baseline is reconstructed.</b> {cuota} of the requests were recorded with the downgrade already active; there the baseline is rebuilt by undoing the real downgrade, and it is less firm than that of the first stretch. That first stretch, on its own, gives a much wider interval: {bajo} to {alto}.",
+        "ceiling": "<b>The ceiling changes with the client.</b> It depends on how many one-hour writes the coding agent sends, and recent versions of Claude Code send fewer: of the {peticiones} requests, {sinMarca} carried none to downgrade.",
+        "gap": "<b>The gap between turns is measured from the arrival of each request</b>, not from the end of the response: it counts a few misses too many, never too few.",
+        "promise": "<b>It is not a forecast for your team.</b> It is a small saving, from one traffic pattern, and other traffic can give another figure, including a worse one: look at the ugly case."
+      },
+      "production": "In production: since version {version} ({fecha}), the gateway subtracts the misses it observes, on the turn that suffers them, so the savings from this downgrade shown in your dashboard are net. What was recorded earlier is not recomputed, and the dashboard labels machines running an earlier gateway as “gross”."
     },
     "guarantees": {
       "title": "Guarantees, counted",

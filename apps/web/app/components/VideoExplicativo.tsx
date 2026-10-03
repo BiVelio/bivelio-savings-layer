@@ -6,10 +6,18 @@ import { useEffect, useRef } from "react";
  * Animación explicativa de la sección «En palabras normales»: un MP4 corto,
  * mudo y en bucle que solo se reproduce mientras está a la vista.
  *
- * Sin `autoPlay` a secas a propósito: cuatro vídeos arrancando a la vez en el
- * primer pintado castigan al móvil y a quien nunca baja hasta la sección. El
- * IntersectionObserver arranca/pausa cada uno según entra o sale del viewport,
- * y `preload="metadata"` + póster mantienen la carga inicial en un puñado de KB.
+ * NADA SE DESCARGA HASTA QUE EL VÍDEO SE VE. Hasta la 0.5.0 el elemento
+ * llevaba `autoPlay` en el HTML, y el autoplay nativo pasa por encima de
+ * `preload="metadata"`: los cinco MP4 (~3,4 MB de los ~4,5 MB de la portada)
+ * se bajaban enteros al cargar /<idioma>, también en el móvil de quien nunca
+ * llega a la sección (Lighthouse móvil, 02-10-2026). Ahora sale con
+ * `preload="none"` y solo el póster; el IntersectionObserver es quien, al
+ * entrar en el viewport, enciende `autoplay`, pide los datos y llama a play().
+ *
+ * Se conserva el autoplay NATIVO —encendido por propiedad, no en el HTML—
+ * porque el primer play() programático de la página puede rechazarse en
+ * silencio (visto en prod); el autoplay de un vídeo silenciado no depende de
+ * él. El observer sigue pausando lo que sale de la vista.
  *
  * Los vídeos no llevan texto ni voz: la web se sirve en 12 idiomas y la
  * explicación hablada vive en los mensajes, no dentro del MP4.
@@ -26,8 +34,11 @@ export function VideoExplicativo({ src, poster, etiqueta }: { src: string; poste
     const observer = new IntersectionObserver(
       (entries) => {
         for (const e of entries) {
-          if (e.isIntersecting) void video.play().catch(() => {});
-          else video.pause();
+          if (e.isIntersecting) {
+            video.autoplay = true;
+            video.preload = "auto";
+            void video.play().catch(() => {});
+          } else video.pause();
         }
       },
       { threshold: 0.35 },
@@ -42,15 +53,10 @@ export function VideoExplicativo({ src, poster, etiqueta }: { src: string; poste
       className="explica-video"
       src={src}
       poster={poster}
-      // `autoPlay` además del observer: el primer play() programático de la
-      // página puede rechazarse en silencio (visto en prod); el autoplay nativo
-      // de vídeo silenciado no depende de él, y el observer sigue pausando lo
-      // que no está a la vista.
-      autoPlay
       muted
       loop
       playsInline
-      preload="metadata"
+      preload="none"
       aria-label={etiqueta}
     />
   );

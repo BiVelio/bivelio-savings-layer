@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 
 import { agregarAsientos, type FilaAsiento } from "./asientos";
 import { VERSION_MINIMA_REFERENCIA } from "../metering/version";
-import { DIA_MS, decidirAvisoReferencia, decidirAvisoVersion, estadoVersion, type AsientoVisto } from "./aviso-version";
+import { DIA_MS, decidirAvisoBruto, decidirAvisoReferencia, decidirAvisoVersion, estadoVersion, type AsientoVisto } from "./aviso-version";
 
 /**
  * El aviso se decide por DINERO y la versión solo explica. Los dos errores que
@@ -277,5 +277,54 @@ describe("decidirAvisoReferencia — un SDK por debajo de la mínima de la refer
     // El de referencia ve solo el SDK viejo, igual que sin el gateway.
     expect(referencia).toEqual(decidirAvisoReferencia([sdkViejo], AHORA));
     expect(referencia).toMatchObject({ tipo: "sdkSinReferencia", desactualizadas: 1 });
+  });
+});
+
+/**
+ * El ahorro EN BRUTO (2026-10-03): un gateway anterior a la 0.5.1 acredita la
+ * prima de la rebaja de TTL sin restar los fallos de caché que provoca. El
+ * panel lo etiqueta mientras haya máquinas así CON ahorro medido.
+ */
+describe("decidirAvisoBruto — un gateway que aún no resta los fallos de caché", () => {
+  const conAhorro = (v: string | null, p: Partial<AsientoVisto> = {}) =>
+    asiento({ versionMin: v, versionMax: v, surface: v ? "gateway" : null, ahorroMedido7dUsd: 12.5, ...p });
+
+  it("sin asientos, o sin ahorro medido: null (sin dinero no hay bruto que etiquetar)", () => {
+    expect(decidirAvisoBruto([], AHORA)).toBeNull();
+    expect(decidirAvisoBruto([conAhorro("gateway/0.5.0", { ahorroMedido7dUsd: 0 })], AHORA)).toBeNull();
+  });
+
+  it("gateway/0.5.0 con ahorro medido → aviso, con la mínima del neto", () => {
+    expect(decidirAvisoBruto([conAhorro("gateway/0.5.0"), conAhorro("gateway/0.4.36", { seatId: "otra" })], AHORA)).toEqual({
+      tipo: "gatewayAhorroBruto",
+      maquinas: 2,
+      sinDeclarar: 0,
+      minima: "0.5.1",
+    });
+  });
+
+  it("gateway/0.5.1 y posteriores → sin aviso: ya informan el neto", () => {
+    for (const v of ["gateway/0.5.1", "gateway/0.5.2", "gateway/0.10.0", "gateway/1.0.0"]) {
+      expect(decidirAvisoBruto([conAhorro(v)], AHORA), v).toBeNull();
+    }
+  });
+
+  it("sin versión declarada pero con ahorro → se etiqueta: no se puede afirmar que sea neto", () => {
+    expect(decidirAvisoBruto([conAhorro(null)], AHORA)).toMatchObject({ maquinas: 1, sinDeclarar: 1 });
+    expect(decidirAvisoBruto([conAhorro("gateway/0.5.1", { sinVersion7d: true })], AHORA)).toMatchObject({ maquinas: 1, sinDeclarar: 1 });
+  });
+
+  it("un SDK, un asiento de CI o uno no visto en 7 días no entran", () => {
+    expect(decidirAvisoBruto([conAhorro("sdk/0.4.36", { surface: "sdk" })], AHORA)).toBeNull();
+    expect(decidirAvisoBruto([conAhorro("gateway/0.5.0", { isCi: true })], AHORA)).toBeNull();
+    expect(decidirAvisoBruto([conAhorro("gateway/0.5.0", { lastSeenAt: hace(9) })], AHORA)).toBeNull();
+  });
+
+  it("mezcla: solo cuentan las que siguen en bruto", () => {
+    const aviso = decidirAvisoBruto(
+      [conAhorro("gateway/0.5.1"), conAhorro("gateway/0.5.0", { seatId: "vieja" }), conAhorro("gateway/0.5.0", { seatId: "sin", ahorroMedido7dUsd: 0 })],
+      AHORA,
+    );
+    expect(aviso).toMatchObject({ maquinas: 1, sinDeclarar: 0 });
   });
 });
