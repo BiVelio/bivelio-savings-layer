@@ -14,6 +14,8 @@ import {
   filasDiariasDelBanco,
   filasPorModeloDelBanco,
   huellaDelPanel,
+  pieDelTitular,
+  ahorroPorModeloDelBanco,
 } from "./panel-del-banco";
 
 /**
@@ -24,7 +26,7 @@ import {
  *   · cada número de esas filas salga de los JSON de los informes del banco
  *     (los mismos que sostienen `BANCO_EN_VIVO`), sin elegir modelos: entran
  *     TODOS los que esos informes midieron, y ninguno más;
- *   · lo que la captura pinta (titular, importe, reparto por modelo) sea lo
+ *   · lo que la captura pinta (titular, peticiones y ahorro por modelo) sea lo
  *     que el panel deriva de esas filas, y cuadre con las cifras publicadas;
  *   · la imagen se haya capturado con ESTAS cifras (la huella);
  *   · la ruta de la captura no exista fuera de desarrollo.
@@ -99,7 +101,7 @@ describe("lo que la captura pinta es lo que el panel deriva de esas filas", () =
     expect(v.share).toBe(1);
     expect(v.total).toBeNull();
     expect(v.byReference).toBeNull();
-    // Lo que se lee en la imagen: «32.7%» y «$0.27».
+    // Lo que se lee en la imagen: «32.7%» (el importe, $0.27, no se enseña: es un banco de céntimos).
     expect((v.net * 100).toFixed(1)).toBe("32.7");
     expect(v.saved.toFixed(2)).toBe("0.27");
     // Conservador: por debajo del ahorro total del A/B, que incluye al proveedor.
@@ -133,15 +135,53 @@ describe("lo que la captura pinta es lo que el panel deriva de esas filas", () =
 });
 
 describe("la imagen y la ruta que la produce", () => {
-  it("la imagen se capturó con ESTAS cifras (si cambian, `node scripts/captura-panel.ts`)", () => {
+  it("las dos imágenes se capturaron con ESTAS cifras (si cambian, `node scripts/captura-panel.ts`)", () => {
     const meta = JSON.parse(readFileSync(join(WEB, "assets", "portada", "panel-del-banco.json"), "utf8"));
     expect(meta.huella).toBe(huellaDelPanel());
     expect(meta.ruta).toBe("/es/captura-panel");
-    // Las dimensiones del PNG (cabecera IHDR) son las que dice su ficha: 2× de la ventana.
-    const png = readFileSync(join(WEB, "assets", "portada", "panel-del-banco.png"));
-    expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([meta.ancho, meta.alto]);
-    expect(meta.densidad).toBe(2);
-    expect(png.length).toBeLessThan(250 * 1024);
+    for (const [fichero, densidad] of [["panel-del-banco.png", 2], ["panel-del-banco-movil.png", 3]] as const) {
+      // Las dimensiones del PNG (cabecera IHDR) son las que dice su ficha.
+      const png = readFileSync(join(WEB, "assets", "portada", fichero));
+      expect([png.readUInt32BE(16), png.readUInt32BE(20)], fichero).toEqual([meta[fichero].ancho, meta[fichero].alto]);
+      expect(meta[fichero].densidad, fichero).toBe(densidad);
+      expect(png.length, fichero).toBeLessThan(250 * 1024);
+    }
+  });
+
+  it("los rótulos de la captura dicen lo que es: un día del banco, demo, sin «tu», sin «30 días», sin «live»", () => {
+    const R = P.rotulos;
+    const todos = Object.values(R).join(" | ");
+    expect(todos).not.toMatch(/\btu\b|\btus\b|30 días|últimos|live|en directo/i);
+    expect(R.pastilla).toMatch(/demo/i);
+    expect(R.antetitulo).toContain(P.dia);
+    expect(R.antetitulo).toContain(P.bateria);
+    expect(R.tituloPagina).toMatch(/banco público/);
+    // El pie no lleva dólares: los recuentos salen de las filas.
+    const pie = pieDelTitular();
+    expect(pie).not.toMatch(/\$/);
+    const d = filasDiariasDelBanco()[0]!;
+    expect(pie).toContain(`${d.requests} peticiones`);
+    expect(pie).toContain(`${d.avoidedLlm} respondidas sin llamar al proveedor`);
+  });
+
+  it("el ahorro de cada modelo es el de las filas (sin el proveedor) y cuadra con el informe", () => {
+    const a = ahorroPorModeloDelBanco();
+    expect(Object.fromEntries(Object.entries(a).map(([k, v]) => [k, (v * 100).toFixed(1)]))).toEqual({
+      "gpt-4o-mini": "31.5",
+      "gpt-5.4-mini": "31.7",
+      "claude-haiku-4-5": "32.2",
+      "claude-sonnet-5": "34.0",
+    });
+    for (const r of filasPorModeloDelBanco()) cerca(a[r.model]!, 1 - r.actualCost / r.baselineCost, r.model);
+  });
+
+  it("el panel de los clientes no pasa los rótulos ni la presentación de la captura", () => {
+    const panel = readFileSync(join(WEB, "app", "[locale]", "dashboard", "page.tsx"), "utf8");
+    expect(panel).not.toMatch(/rotulos=|presentacion=/);
+    const captura = readFileSync(join(WEB, "app", "[locale]", "captura-panel", "page.tsx"), "utf8");
+    expect(captura).toMatch(/rotulos=\{\{ antetitulo: R\.antetitulo, pastilla: R\.pastilla, pie: pieDelTitular\(\) \}\}/);
+    expect(captura).toContain('metrica: "peticiones"');
+    expect(captura).toContain("sinControles: true");
   });
 
   it("la ruta de la captura solo existe en desarrollo, y pinta solo estas filas", () => {

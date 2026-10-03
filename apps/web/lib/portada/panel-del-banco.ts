@@ -67,6 +67,21 @@ export const PANEL_DEL_BANCO = {
   versionSdk: BANCO_EN_VIVO.versionSdk,
   /** El nombre de la organización de demostración, tal como sale en la barra de la captura. */
   organizacion: "Banco público · demo",
+  /**
+   * Los rótulos que la captura pone donde el panel de un cliente diría «tu
+   * factura», «últimos 30 días» o «live · tu organización»: aquí son UN día
+   * del banco público en una organización de demostración, y se dice así.
+   * `{peticiones}` y `{evitadas}` se rellenan con las filas de abajo.
+   */
+  rotulos: {
+    antetituloPagina: "Banco público · demo",
+    tituloPagina: "Lo que ahorró Savings en el banco público",
+    antetitulo: "Medido en vivo contra el proveedor · GSM8K · 2026-09-28",
+    pastilla: "Banco público · demo",
+    pie: "menos factura · {peticiones} peticiones · {evitadas} respondidas sin llamar al proveedor",
+    columnaValor: "Peticiones",
+    columnaAhorro: "Ahorro",
+  },
   modelos: [
     {
       modelo: "openai/gpt-4o-mini",
@@ -174,6 +189,22 @@ export function filasDiariasDelBanco(): UsageRollup[] {
  * desarrollo: con cualquier otro NODE_ENV —el build y el servidor de Vercel
  * corren en `production`— contesta la 404.
  */
+/**
+ * El ahorro de cada modelo tal como lo enseña la captura: 1 − real / base, con
+ * la caché de prefijo del proveedor fuera (como el titular). Fracciones.
+ */
+export function ahorroPorModeloDelBanco(): Record<string, number> {
+  return Object.fromEntries(PANEL_DEL_BANCO.modelos.map((m) => [m.nombre, 1 - costeRealDelPanel(m) / m.costeA]));
+}
+
+/** El pie del titular de la captura, con sus dos recuentos sacados de las filas. */
+export function pieDelTitular(): string {
+  const d = filasDiariasDelBanco()[0]!;
+  return PANEL_DEL_BANCO.rotulos.pie
+    .replace("{peticiones}", d.requests.toLocaleString("es-ES"))
+    .replace("{evitadas}", d.avoidedLlm.toLocaleString("es-ES"));
+}
+
 /**
  * La huella de las cifras que pinta la captura. La ruta de la captura la deja
  * en la página y `scripts/captura-panel.ts` la guarda junto a la imagen

@@ -1,8 +1,15 @@
 {
-  "huella": "bdf9b9e1eb002456",
   "ruta": "/es/captura-panel",
-  "ancho": 2720,
-  "alto": 2080,
-  "densidad": 2,
-  "reloj": "2026-09-29T09:00:00.000Z"
+  "reloj": "2026-09-29T09:00:00.000Z",
+  "panel-del-banco.png": {
+    "ancho": 2720,
+    "alto": 1552,
+    "densidad": 2
+  },
+  "panel-del-banco-movil.png": {
+    "ancho": 1278,
+    "alto": 1716,
+    "densidad": 3
+  },
+  "huella": "8b0c5b77f9690927"
 }

@@ -2,7 +2,7 @@ import { Fragment } from "react";
 
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
-import Image from "next/image";
+import { getImageProps } from "next/image";
 
 import { CursorGrid } from "@/app/components/CursorGrid";
 import { RevealObserver } from "@/app/components/RevealObserver";
@@ -22,6 +22,7 @@ import { terminosDeLosPlanes } from "@/lib/legal/precios-publicados";
 import { LIMITES_MEDIR, VERSION_MINIMA_MEDIR } from "@/lib/license/medir-publico";
 import { BANCO_EN_VIVO, GEMINI_EN_EL_SEMANAL, VERSION_GEMINI_NATIVO } from "@/lib/portada/banco-en-vivo";
 import panelDelBanco from "@/assets/portada/panel-del-banco.png";
+import panelDelBancoMovil from "@/assets/portada/panel-del-banco-movil.png";
 
 // Proveedores que exponen un endpoint OpenAI-compatible (o, en el caso de
 // Anthropic y de Gemini desde la 0.4.33, tienen adaptador nativo). Es una lista
@@ -154,6 +155,21 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
   const planes = terminosDeLosPlanes(locale, await tarifasDeLosPlanes());
   const moneda = planes.moneda;
 
+  // La captura del panel del héroe (el LCP en escritorio): `priority` pone
+  // carga inmediata y prioridad alta. Las dos tomas salen de la misma ruta con
+  // las mismas cifras (lib/portada/panel-del-banco.ts y su verja).
+  const comunes = { alt: "", quality: 80, priority: true } as const;
+  const { props: panelEscritorio } = getImageProps({
+    ...comunes,
+    src: panelDelBanco,
+    sizes: "(max-width: 1240px) calc(100vw - 48px), 1160px",
+  });
+  const { props: panelMovil } = getImageProps({
+    ...comunes,
+    src: panelDelBancoMovil,
+    sizes: "calc(100vw - 32px)",
+  });
+
   // Las cifras de lo medido, en el idioma de la página (app/components/MedidoEnVivo.tsx).
   const pct1 = new Intl.NumberFormat(locale, { style: "percent", minimumFractionDigits: 1, maximumFractionDigits: 1 });
   const pct0 = new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 0 });
@@ -231,14 +247,19 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
                   </span>
                 </div>
                 <div className="hpanel-img">
-                  <Image
-                    src={panelDelBanco}
-                    alt={t("hero.panelAlt")}
-                    priority
-                    quality={80}
-                    placeholder="empty"
-                    sizes="(max-width: 640px) 128vw, (max-width: 1240px) calc(100vw - 48px), 1160px"
-                  />
+                  {/* Dos tomas de la misma ruta y las mismas cifras: en móvil,
+                      el titular y la tabla solos y más grandes, para que se
+                      lean; en escritorio, el panel entero. */}
+                  <picture>
+                    <source
+                      media="(max-width: 640px)"
+                      srcSet={panelMovil.srcSet}
+                      sizes={panelMovil.sizes}
+                      width={panelMovil.width}
+                      height={panelMovil.height}
+                    />
+                    <img {...panelEscritorio} alt={t("hero.panelAlt")} />
+                  </picture>
                 </div>
               </div>
             </div>

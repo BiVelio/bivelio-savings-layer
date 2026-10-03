@@ -790,9 +790,15 @@ describe("el héroe: las cifras van en la captura del banco público, y el texto
   it("la portada importa la captura del banco con next/image, con prioridad, alt traducido y el pie enlazado a /benchmarks", () => {
     const src = codigo("app/[locale]/page.tsx");
     expect(src).toContain('import panelDelBanco from "@/assets/portada/panel-del-banco.png";');
+    expect(src).toContain('import panelDelBancoMovil from "@/assets/portada/panel-del-banco-movil.png";');
+    // Las dos tomas, con next/image (getImageProps) y prioridad.
+    expect(src).toMatch(/const comunes = \{ alt: "", quality: 80, priority: true \} as const;/);
+    expect(src).toMatch(/getImageProps\(\{\s*\.\.\.comunes,\s*src: panelDelBanco,/);
+    expect(src).toMatch(/getImageProps\(\{\s*\.\.\.comunes,\s*src: panelDelBancoMovil,/);
     const ini = src.indexOf('className="hero hero-panel"');
     const heroe = src.slice(ini, src.indexOf("</section>", ini));
-    expect(heroe).toMatch(/<Image\s+src=\{panelDelBanco\}\s+alt=\{t\("hero\.panelAlt"\)\}\s+priority/);
+    expect(heroe).toMatch(/<source\s+media="\(max-width: 640px\)"\s+srcSet=\{panelMovil\.srcSet\}/);
+    expect(heroe).toContain('<img {...panelEscritorio} alt={t("hero.panelAlt")} />');
     expect(heroe).toMatch(/<figcaption>\s*<Link href="\/benchmarks">\{t\("hero\.panelCaption"\)\}<\/Link>\s*<\/figcaption>/);
     expect(heroe).toContain('{t("hero.medidoEnVivo")}');
     // Ni una cifra escrita en el JSX del héroe (fuera de atributos y del SVG del candado).

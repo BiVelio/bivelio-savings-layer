@@ -2513,8 +2513,8 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .lp .hpanel-marca { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; color: var(--ink); letter-spacing: -.01em; }
 .lp .hpanel-medido-t { font-size: 13px; color: var(--ink-soft); }
 
-/* En móvil: titular y botones primero; la captura, recortada al contenido del
-   panel (el raíl izquierdo queda fuera) y escalada al ancho. */
+/* En móvil: titular y botones primero; después, la toma móvil del panel (solo
+   el titular y la tabla, capturados a 430 px para que se lean), vía <picture>. */
 @media (max-width: 640px) {
   .lp .hero.hero-panel { padding: 36px 0 48px; }
   .lp .hero-panel h1 { font-size: clamp(2.05rem, 9.4vw, 2.6rem); }
@@ -2528,10 +2528,17 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
   .lp .hpanel-dots { gap: 5px; left: 10px; }
   .lp .hpanel-dots i { width: 7px; height: 7px; }
   .lp .hpanel-url { font-size: 10.5px; padding: 2px 10px; }
-  /* El raíl mide 288 de los 1360 px de la captura: se recorta desde 300 (22 %). */
-  .lp .hpanel-img img { width: 128.3%; max-width: none; margin-left: -28.3%; }
   .lp .hpanel-marcas { gap: 18px; }
   .lp .hpanel-marca { font-size: 14px; }
   .lp .hpanel-medido { flex-direction: column; gap: 10px; }
 }
 @media (prefers-reduced-motion: reduce) { .lp .hpanel-shot { animation: none; } }
+
+/* La tabla por modelo de la captura del héroe (UsageExplorer con
+   `presentacion.ahorroPorModelo`): la letra un punto más grande, porque la
+   imagen se ve reducida, y el ahorro en el verde de lo ahorrado. */
+.ux-tbl-ahorro th { font-size: 10.5px; }
+.ux-tbl-ahorro td { font-size: 14px; padding: 12px 0; }
+.ux-tbl-ahorro td.m { font-size: 13px; }
+.ux-tbl-ahorro td.b { width: 34%; }
+.ux-tbl-ahorro td.a { font-family: var(--font-heading); font-size: 16px; font-weight: 600; color: var(--good-ink); }
