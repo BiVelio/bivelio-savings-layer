@@ -970,7 +970,7 @@
       "ctaTitle": "Mesurez-le sur votre propre trafic",
       "ctaSub": "Une fois installé, chaque appel renvoie son SavingsReport, mesuré et estimé séparés. Commencez gratuitement avec Mesurer (@bivelio/savings-layer {version} ou ultérieure) ; Pro et Équipe sont un forfait fixe par siège, sans commission sur vos économies. La licence est ce qui vous permet d’exécuter BV‑SALA — le SDK dans votre app, le gateway dans votre terminal.",
       "ctaStart": "Commencer",
-      "tagline": "Le système d'exploitation de votre entreprise. Voici <b>BV‑SALA</b>, l'optimiseur de coût LLM neutre vis-à-vis du fournisseur de BiVelio — chaque chiffre publié est mesuré contre le compteur du fournisseur ; les estimations sont montrées à part et jamais facturées.",
+      "tagline": "Le système d'exploitation de votre entreprise. Voici <b>BV‑SALA</b>, l'optimiseur de coût LLM neutre vis-à-vis du fournisseur de BiVelio — chaque chiffre mesuré l'est contre le compteur du fournisseur ; les estimations et les simulations sont montrées à part, présentées comme telles, et jamais facturées.",
       "badge": "BV‑SALA · Savings Layer",
       "colSavings": "Savings Layer",
       "colBivelio": "BiVelio",
@@ -1062,6 +1062,7 @@
         "figureLabel": "Le chiffre que nous publions",
       "figureQue": "de la facture avec la baisse de cache de PRO, déduction faite des échecs de cache qu'elle provoque (intervalle à {confianza} : de {bajo} à {alto}). Simulé au prix catalogue sur {sesiones} sessions Claude Code d'une seule organisation, la nôtre.",
         "figureNote": "Ce n'est pas une prévision pour votre équipe : c'est une seule organisation, un seul fournisseur et des prix catalogue, et c'est une petite économie qui se voit là où la dépense chez Anthropic est élevée. Avec PRO, sur les modèles Anthropic, le gateway fait passer les écritures de cache du TTL d'une heure à celui de cinq minutes, uniquement sur les tours où une grande partie du prompt est nouvelle — comme le premier tour d'une session ou une compaction — et laisse tels quels les tours enchaînés d'une session en cours. Cela change le prix, jamais ce que lit le modèle, et seul ce que confirme le compteur de votre fournisseur compte dans votre rapport d'économies.",
+        "benchLink": "Le rapport du banc TTL : ce qui a été simulé, le détail par modèle et ses limites →",
         "cta": "Installer le gateway"
       },
       "skill": {
@@ -1242,6 +1243,54 @@
       "delta": "Δ {d} pp [{inf}, {sup}]",
       "originNote": "D'où vient l'économie, position par position : « depuis le cache exact » est ce que A a payé sur les requêtes que la couche a servies sans appeler le fournisseur ; « dans les appels » est la différence sur celles qui l'ont effectivement atteint, surtout le cache de préfixe du fournisseur (plus une part de variation de la sortie). Les deux s'additionnent pour donner l'économie totale.",
       "accuracyNote": "L'exactitude est mesurée sur les questions avec une réponse publiée ; les variantes avec un nombre modifié servent uniquement à vérifier que la couche ne renvoie jamais la réponse d'une autre question."
+    },
+    "gatewayTtl": {
+      "title": "La baisse de cache du gateway : une simulation, pas un A/B",
+      "kind": "Cette section ne fait pas partie des batteries A/B de la page et elle n'est <b>pas mesurée en direct</b> : c'est un <b>replay</b>. Nous avons pris l'usage que le fournisseur avait déjà déclaré pour des sessions réelles de Claude Code <b>d'une seule organisation, la nôtre</b>, auprès d'un seul fournisseur (Anthropic), et calculé au <b>prix catalogue</b> ce qu'elles auraient coûté avec la baisse de cache de PRO et sans elle.",
+      "verdict": "Le verdict du rapport du {fecha} : la baisse laisse un <b>net de {neto} de la facture</b> ({netoUsd} sur {factura}), après déduction des échecs de cache qu'elle provoque elle-même.",
+      "stat": {
+        "sessions": "Sessions",
+        "requests": "Requêtes",
+        "days": "Jours"
+      },
+      "thInterval": "Intervalle à {confianza}",
+      "thNet": "Net, en part de la facture",
+      "bySession": "Rééchantillonnage par session (groupes : {n})",
+      "byDay": "Rééchantillonnage par jour (groupes : {n})",
+      "intervalsNote": "Bootstrap avec {remuestreos} rééchantillonnages. Les deux intervalles excluent le zéro : sur ce trafic, la baisse fait gagner de l'argent. La carte de la page d'accueil cite l'intervalle par session.",
+      "resultTitle": "Le résultat, avec ce qu'il déduit",
+      "row": {
+        "downgrades": "Baisses",
+        "gross": "Prime économisée, brute",
+        "misses": "Échecs de cache provoqués",
+        "missCost": "Ce que coûtent ces échecs",
+        "net": "Net",
+        "ceiling": "Plafond : toute la prime de l'heure"
+      },
+      "resultNote": "Les pourcentages portent sur la facture au prix catalogue des requêtes simulées ({factura}). Le plafond est le maximum que pourrait récupérer n'importe quelle politique de TTL, même sans jamais échouer. Chaque pourcentage est arrondi séparément.",
+      "modelsTitle": "Par modèle",
+      "thModelNet": "Net, en part de la facture du modèle",
+      "tooFew": "pas de pourcentage (requêtes : {n})",
+      "ugly": "<b>{modelo} est le cas laid</b> : il concentre {rebajas} des baisses et {fallos} des échecs, et son net est presque nul. Sur la première période de la capture, il a même perdu : {perdida} de sa facture. Son trafic est fait de fils courts, souvent reconstruits, qui reviennent une fois les cinq minutes passées. La règle gagne vraiment là où les démarrages sont chers et rares.",
+      "howTitle": "Comment cela a été fait : le modèle de cache, déclaré",
+      "how": {
+        "rule": "La règle est celle qu'exécute le gateway, pas une copie : elle fait passer les écritures de cache du TTL d'une heure à celui de cinq minutes quand la partie nouvelle représente au moins {umbral} du corps de la requête.",
+        "baseline": "La ligne de base est ce que le fournisseur a compté, avec son usage réel, là où la baisse n'était pas encore active ; là où elle l'était déjà, elle est reconstruite en l'annulant (voir les limites). Avec la baisse, le tour concerné paie la prime d'écriture de cinq minutes au lieu de celle d'une heure.",
+        "miss": "Un échec provoqué : si le tour suivant du même fil arrive après les cinq minutes et avant l'heure, ce que le tour abaissé a écrit n'est plus lu dans le cache, c'est réécrit, et ce coût est déduit.",
+        "conservative": "Il existe une variante prudente, qui considère en plus comme perdu le préfixe partagé entre des fils différents. Elle bouge à peine le chiffre : {neto}, avec quelques échecs de plus ({fallos}).",
+        "aggregates": "Uniquement des chiffres agrégés : aucun prompt, aucune réponse, aucun en-tête ni identifiant de session ne sort de la capture."
+      },
+      "limitsTitle": "Limites",
+      "limits": {
+        "oneOrg": "<b>Une organisation, un client, un fournisseur.</b> Claude Code face à Anthropic, avec notre propre trafic. Aucun autre agent de code et aucun autre fournisseur.",
+        "listPrice": "<b>Prix catalogue, simulé.</b> Ce n'est pas une facture : c'est l'usage réel, tarifé avec le catalogue de prix. Des remises, des niveaux de compte ou un abonnement changeraient les montants.",
+        "cacheModel": "<b>Le modèle de cache est un modèle.</b> Il suppose la façon dont le fournisseur indexe ses entrées de cache ; il ne l'observe pas. La variante prudente borne ce risque.",
+        "rebuilt": "<b>La majeure partie de la ligne de base est reconstruite.</b> {cuota} des requêtes ont été enregistrées avec la baisse déjà active ; là, la ligne de base est reconstruite en annulant la baisse réelle, et elle est moins solide que celle de la première période. Cette première période, seule, donne un intervalle bien plus large : de {bajo} à {alto}.",
+        "ceiling": "<b>Le plafond change avec le client.</b> Il dépend du nombre d'écritures d'une heure qu'envoie l'agent de code, et les versions récentes de Claude Code en envoient moins : sur les {peticiones} requêtes, {sinMarca} n'en portaient aucune à baisser.",
+        "gap": "<b>L'écart entre les tours est mesuré depuis l'arrivée de chaque requête</b>, et non depuis la fin de la réponse : il compte quelques échecs en trop, jamais en moins.",
+        "promise": "<b>Ce n'est pas une prévision pour votre équipe.</b> C'est une petite économie, tirée d'un seul trafic, et un autre trafic peut donner un autre chiffre, y compris pire : regardez le cas laid."
+      },
+      "production": "En production : depuis la version {version} ({fecha}), le gateway retranche les échecs qu'il observe, sur le tour qui les subit, de sorte que l'économie de cette baisse affichée dans votre tableau de bord est nette. Ce qui a été enregistré avant n'est pas recalculé, et le tableau de bord signale comme « en brut » les machines dont le gateway est antérieur."
     },
     "guarantees": {
       "title": "Garanties, comptées",

@@ -970,7 +970,7 @@
       "ctaTitle": "Ukur dengan trafik Anda sendiri",
       "ctaSub": "Setelah terpasang, setiap panggilan mengembalikan SavingsReport-nya, yang terukur dan yang diperkirakan dipisahkan. Mulai gratis dengan Measure (@bivelio/savings-layer {version} atau lebih baru); Pro dan Tim adalah biaya tetap per kursi, tanpa komisi atas penghematan Anda. Lisensi adalah yang memungkinkan Anda menjalankan BV‑SALA — SDK di aplikasi Anda, gateway di terminal Anda.",
       "ctaStart": "Mulai",
-      "tagline": "Sistem operasi untuk bisnis Anda. Inilah <b>BV‑SALA</b>, pengoptimal biaya LLM BiVelio yang netral terhadap penyedia — setiap angka yang dipublikasikan diukur terhadap penghitung penyedia; estimasi ditampilkan terpisah dan tidak pernah ditagih.",
+      "tagline": "Sistem operasi untuk bisnis Anda. Inilah <b>BV‑SALA</b>, pengoptimal biaya LLM BiVelio yang netral terhadap penyedia — setiap angka terukur diukur terhadap penghitung penyedia; estimasi dan simulasi ditampilkan terpisah, disebut apa adanya, dan tidak pernah ditagih.",
       "badge": "BV‑SALA · Savings Layer",
       "colSavings": "Savings Layer",
       "colBivelio": "BiVelio",
@@ -1062,6 +1062,7 @@
         "figureLabel": "Angka yang kami publikasikan",
       "figureQue": "dari tagihan dengan penurunan cache PRO, sudah dikurangi kegagalan cache yang ditimbulkannya (interval {confianza}: {bajo} hingga {alto}). Disimulasikan dengan harga daftar pada {sesiones} sesi Claude Code dari satu organisasi saja, yaitu kami sendiri.",
         "figureNote": "Bukan prakiraan untuk tim Anda: ini satu organisasi, satu penyedia, dan harga daftar, dan ini penghematan kecil yang terasa ketika pengeluaran di Anthropic tinggi. Dengan PRO, pada model Anthropic, gateway memindahkan penulisan cache dari TTL satu jam ke TTL lima menit, hanya pada giliran ketika porsi besar dari prompt masih baru — seperti giliran pertama sebuah sesi atau setelah pemadatan — dan membiarkan giliran berantai dari sesi yang sedang berjalan apa adanya. Itu mengubah harga, tidak pernah apa yang dibaca model, dan hanya yang dikonfirmasi penghitung penyedia Anda yang dihitung dalam laporan penghematan Anda.",
+        "benchLink": "Laporan uji TTL: apa yang disimulasikan, rincian per model, dan batasannya →",
         "cta": "Pasang gateway"
       },
       "skill": {
@@ -1242,6 +1243,54 @@
       "delta": "Δ {d} pp [{inf}, {sup}]",
       "originNote": "Dari mana penghematan berasal, posisi demi posisi: “dari cache eksak” adalah yang dibayar A untuk permintaan yang dilayani lapisan tanpa memanggil penyedia; “dalam panggilan” adalah selisih pada permintaan yang memang sampai ke penyedia, sebagian besar dari cache prefiks penyedia (ditambah sedikit variasi output). Keduanya berjumlah total penghematan.",
       "accuracyNote": "Akurasi diukur pada pertanyaan dengan jawaban yang dipublikasikan; varian dengan angka yang diubah hanya berfungsi untuk memeriksa bahwa lapisan tidak pernah mengembalikan jawaban dari pertanyaan lain."
+    },
+    "gatewayTtl": {
+      "title": "Penurunan cache gateway: sebuah simulasi, bukan A/B",
+      "kind": "Bagian ini bukan salah satu baterai A/B di halaman ini dan <b>tidak diukur secara langsung</b>: ini adalah <b>replay</b>. Kami mengambil pemakaian yang sudah dilaporkan penyedia untuk sesi Claude Code nyata dari <b>satu organisasi saja, yaitu kami sendiri</b>, terhadap satu penyedia (Anthropic), lalu menghitung dengan <b>harga daftar</b> berapa biayanya dengan penurunan cache PRO dan tanpa penurunan itu.",
+      "verdict": "Putusan laporan {fecha}: penurunan ini menyisakan <b>neto {neto} dari tagihan</b> ({netoUsd} dari {factura}), setelah dikurangi kegagalan cache yang ditimbulkannya sendiri.",
+      "stat": {
+        "sessions": "Sesi",
+        "requests": "Permintaan",
+        "days": "Hari"
+      },
+      "thInterval": "Interval {confianza}",
+      "thNet": "Neto, terhadap tagihan",
+      "bySession": "Pengambilan sampel ulang per sesi (kelompok: {n})",
+      "byDay": "Pengambilan sampel ulang per hari (kelompok: {n})",
+      "intervalsNote": "Bootstrap dengan {remuestreos} pengambilan sampel ulang. Kedua interval tidak mencakup nol: pada lalu lintas ini, penurunan tersebut menghasilkan uang. Kartu di halaman depan mengutip interval per sesi.",
+      "resultTitle": "Hasilnya, beserta yang dikurangkan",
+      "row": {
+        "downgrades": "Penurunan",
+        "gross": "Premi yang dihemat, bruto",
+        "misses": "Kegagalan cache yang ditimbulkan",
+        "missCost": "Biaya kegagalan tersebut",
+        "net": "Neto",
+        "ceiling": "Batas atas: seluruh premi satu jam"
+      },
+      "resultNote": "Persentase dihitung terhadap tagihan harga daftar untuk permintaan yang disimulasikan ({factura}). Batas atas adalah jumlah terbesar yang bisa dipulihkan kebijakan TTL mana pun, bahkan jika tidak pernah gagal. Setiap persentase dibulatkan secara terpisah.",
+      "modelsTitle": "Per model",
+      "thModelNet": "Neto, terhadap tagihan model",
+      "tooFew": "tanpa persentase (permintaan: {n})",
+      "ugly": "<b>{modelo} adalah kasus yang buruk</b>: model ini menyumbang {rebajas} dari penurunan dan {fallos} dari kegagalan, dan netonya hampir nol. Pada periode pertama perekaman, model ini malah rugi: {perdida} dari tagihannya. Lalu lintasnya berupa utas pendek yang sering dibangun ulang dan kembali setelah lima menit berlalu. Aturan ini benar-benar untung ketika awal sesi mahal dan jarang.",
+      "howTitle": "Cara pengerjaannya: model cache, dinyatakan terbuka",
+      "how": {
+        "rule": "Aturannya sama dengan yang dijalankan gateway, bukan salinan: aturan ini memindahkan penulisan cache dari TTL satu jam ke TTL lima menit ketika bagian yang baru setidaknya {umbral} dari isi permintaan.",
+        "baseline": "Garis dasar adalah apa yang dihitung penyedia, dengan penggunaan nyatanya, ketika penurunan belum aktif; ketika sudah aktif, garis dasar direkonstruksi dengan membatalkannya (lihat batasan). Dengan penurunan, giliran yang diturunkan membayar premi penulisan lima menit, bukan premi satu jam.",
+        "miss": "Kegagalan yang ditimbulkan: jika giliran berikutnya di utas yang sama tiba setelah lima menit dan sebelum satu jam, apa yang ditulis giliran yang diturunkan tidak lagi dibaca dari cache, melainkan ditulis ulang, dan biaya itu dikurangkan.",
+        "conservative": "Ada varian konservatif, yang juga menganggap hilang prefiks yang dipakai bersama oleh utas yang berbeda. Angkanya nyaris tidak bergeser: {neto}, dengan beberapa kegagalan tambahan ({fallos}).",
+        "aggregates": "Hanya angka agregat: tidak ada prompt, respons, header, maupun pengenal sesi yang keluar dari rekaman."
+      },
+      "limitsTitle": "Batasan",
+      "limits": {
+        "oneOrg": "<b>Satu organisasi, satu klien, satu penyedia.</b> Claude Code terhadap Anthropic, dengan lalu lintas kami sendiri. Tidak ada agen kode lain dan tidak ada penyedia lain.",
+        "listPrice": "<b>Harga daftar, disimulasikan.</b> Ini bukan faktur: ini pemakaian nyata yang diberi harga dengan katalog harga. Diskon, tingkat akun, atau langganan akan mengubah nilai uangnya.",
+        "cacheModel": "<b>Model cache adalah sebuah model.</b> Model ini mengandaikan cara penyedia mengindeks entri cache-nya; tidak mengamatinya. Varian konservatif membatasi risiko itu.",
+        "rebuilt": "<b>Sebagian besar garis dasar direkonstruksi.</b> {cuota} permintaan direkam saat penurunan sudah aktif; di sana garis dasar direkonstruksi dengan membatalkan penurunan yang sebenarnya, dan kurang kokoh dibanding garis dasar pada rentang pertama. Rentang pertama itu saja memberikan interval yang jauh lebih lebar: {bajo} hingga {alto}.",
+        "ceiling": "<b>Batas atasnya berubah mengikuti klien.</b> Batas itu bergantung pada berapa banyak penulisan satu jam yang dikirim agen pemrograman, dan versi terbaru Claude Code mengirim lebih sedikit: dari {peticiones} permintaan, {sinMarca} tidak membawa satu pun yang bisa diturunkan.",
+        "gap": "<b>Jeda antargiliran diukur sejak tibanya setiap permintaan</b>, bukan sejak akhir respons: jeda ini menghitung beberapa kegagalan berlebih, tidak pernah kurang.",
+        "promise": "<b>Ini bukan prakiraan untuk tim Anda.</b> Ini penghematan kecil dari satu lalu lintas saja, dan lalu lintas lain bisa memberi angka lain, termasuk yang lebih buruk: lihat kasus yang buruk itu."
+      },
+      "production": "Di produksi: sejak versi {version} ({fecha}), gateway mengurangi kegagalan yang diamatinya, pada giliran yang mengalaminya, sehingga penghematan dari penurunan ini di dasbor Anda adalah angka bersih. Yang tercatat sebelumnya tidak dihitung ulang, dan dasbor menandai mesin dengan gateway yang lebih lama sebagai “bruto”."
     },
     "guarantees": {
       "title": "Jaminan, terhitung",

@@ -970,7 +970,7 @@
       "ctaTitle": "Messen Sie es an Ihrem eigenen Traffic",
       "ctaSub": "Einmal installiert, liefert jeder Aufruf seinen SavingsReport, Gemessenes und Geschätztes getrennt. Starte kostenlos mit Measure (@bivelio/savings-layer {version} oder neuer); Pro und Team sind eine feste Gebühr pro Seat, ohne Provision auf deine Ersparnis. Die Lizenz ist das, was dich BV‑SALA ausführen lässt — das SDK in deiner App, das Gateway in deinem Terminal.",
       "ctaStart": "Loslegen",
-      "tagline": "Das Betriebssystem für Ihr Unternehmen. Das ist <b>BV‑SALA</b>, BiVelios anbieterneutraler LLM-Kostenoptimierer — jede veröffentlichte Zahl gegen den Zähler des Anbieters gemessen; Schätzungen werden getrennt gezeigt und nie berechnet.",
+      "tagline": "Das Betriebssystem für Ihr Unternehmen. Das ist <b>BV‑SALA</b>, BiVelios anbieterneutraler LLM-Kostenoptimierer — jede gemessene Zahl ist gegen den Zähler des Anbieters gemessen; Schätzungen und Simulationen werden getrennt gezeigt, als solche benannt, und nie berechnet.",
       "badge": "BV‑SALA · Savings Layer",
       "colSavings": "Savings Layer",
       "colBivelio": "BiVelio",
@@ -1062,6 +1062,7 @@
         "figureLabel": "Die Zahl, die wir veröffentlichen",
       "figureQue": "der Rechnung mit der Cache-Senkung von PRO, abzüglich der Cache-Fehltreffer, die sie verursacht ({confianza}-Intervall: {bajo} bis {alto}). Simuliert zu Listenpreisen über {sesiones} Claude-Code-Sitzungen einer einzigen Organisation, unserer eigenen.",
         "figureNote": "Keine Prognose für dein Team: Es ist eine einzige Organisation, ein einziger Anbieter und Listenpreise, und es ist eine kleine Ersparnis, die sich dort zeigt, wo die Anthropic-Ausgaben hoch sind. Mit PRO stellt das Gateway bei Anthropic-Modellen Cache-Schreibvorgänge von der einstündigen auf die fünfminütige TTL um — nur bei Zügen, in denen ein großer Teil des Prompts neu ist, etwa beim ersten Zug einer Sitzung oder nach einer Kompaktierung — und lässt die verketteten Züge einer laufenden Sitzung unverändert. Das ändert den Preis, nie das, was das Modell liest, und nur was der Zähler deines Anbieters bestätigt, zählt in deinem Einsparungsbericht.",
+        "benchLink": "Der Bericht der TTL-Messung: was simuliert wurde, die Aufschlüsselung nach Modell und ihre Grenzen →",
         "cta": "Gateway einrichten"
       },
       "skill": {
@@ -1242,6 +1243,54 @@
       "delta": "Δ {d} pp [{inf}, {sup}]",
       "originNote": "Woher die Ersparnis stammt, Position für Position: „aus dem exakten Cache“ ist das, was A für die Anfragen bezahlt hat, die die Schicht bedient hat, ohne den Anbieter aufzurufen; „in den Aufrufen“ ist die Differenz bei denen, die ihn tatsächlich erreicht haben, meist der Präfix-Cache des Anbieters (plus etwas Variation in der Ausgabe). Beide zusammen ergeben die Gesamtersparnis.",
       "accuracyNote": "Die Genauigkeit wird anhand der Fragen mit veröffentlichter Antwort gemessen; die Varianten mit einer geänderten Zahl dienen nur dazu zu prüfen, dass die Schicht niemals die Antwort einer anderen Frage zurückgibt."
+    },
+    "gatewayTtl": {
+      "title": "Die Cache-Senkung des Gateways: eine Simulation, kein A/B",
+      "kind": "Dieser Abschnitt gehört nicht zu den A/B-Batterien dieser Seite und ist <b>nicht live gemessen</b>: Er ist ein <b>Replay</b>. Wir haben die Nutzung genommen, die der Anbieter für echte Claude-Code-Sitzungen <b>einer einzigen Organisation, unserer eigenen</b>, bei einem einzigen Anbieter (Anthropic) bereits gemeldet hatte, und zu <b>Listenpreisen</b> berechnet, was sie mit der Cache-Senkung von PRO und ohne sie gekostet hätten.",
+      "verdict": "Das Urteil des Berichts vom {fecha}: Die Senkung bringt <b>netto {neto} der Rechnung</b> ({netoUsd} von {factura}), nach Abzug der Cache-Fehltreffer, die sie selbst verursacht.",
+      "stat": {
+        "sessions": "Sitzungen",
+        "requests": "Anfragen",
+        "days": "Tage"
+      },
+      "thInterval": "{confianza}-Intervall",
+      "thNet": "Netto, Anteil an der Rechnung",
+      "bySession": "Resampling nach Sitzung (Cluster: {n})",
+      "byDay": "Resampling nach Tag (Cluster: {n})",
+      "intervalsNote": "Bootstrap mit {remuestreos} Wiederholungen. Beide Intervalle schließen die Null aus: Bei diesem Traffic verdient die Senkung Geld. Die Karte auf der Startseite nennt das Intervall nach Sitzung.",
+      "resultTitle": "Das Ergebnis, mit dem, was abgezogen wird",
+      "row": {
+        "downgrades": "Senkungen",
+        "gross": "Gesparter Aufschlag, brutto",
+        "misses": "Verursachte Cache-Fehltreffer",
+        "missCost": "Was diese Fehltreffer kosten",
+        "net": "Netto",
+        "ceiling": "Obergrenze: der gesamte Ein-Stunden-Aufschlag"
+      },
+      "resultNote": "Die Prozentwerte beziehen sich auf die Rechnung zu Listenpreisen für die simulierten Anfragen ({factura}). Die Obergrenze ist das Maximum, das irgendeine TTL-Politik zurückholen könnte, selbst wenn sie nie danebenläge. Jeder Prozentwert wird einzeln gerundet.",
+      "modelsTitle": "Nach Modell",
+      "thModelNet": "Netto, Anteil an der Rechnung des Modells",
+      "tooFew": "kein Prozentwert (Anfragen: {n})",
+      "ugly": "<b>{modelo} ist der hässliche Fall</b>: Auf ihn entfallen {rebajas} der Senkungen und {fallos} der Fehltreffer, und sein Netto ist fast null. Im ersten Zeitraum der Aufzeichnung hat er sogar verloren: {perdida} seiner Rechnung. Sein Traffic besteht aus kurzen Threads, die oft neu aufgebaut werden und nach Ablauf der fünf Minuten zurückkommen. Die Regel lohnt sich wirklich dort, wo Sitzungsstarts teuer und selten sind.",
+      "howTitle": "Wie es gemacht wurde: das Cache-Modell, offengelegt",
+      "how": {
+        "rule": "Die Regel ist dieselbe, die das Gateway ausführt, keine Kopie: Sie verschiebt Cache-Schreibvorgänge vom Ein-Stunden-TTL auf das Fünf-Minuten-TTL, wenn der neue Teil mindestens {umbral} des Anfragekörpers ausmacht.",
+        "baseline": "Die Basislinie ist das, was der Anbieter gezählt hat, mit der tatsächlichen Nutzung, wo die Senkung noch nicht aktiv war; wo sie es bereits war, wird sie rekonstruiert, indem die Senkung rückgängig gemacht wird (siehe Grenzen). Mit der Senkung zahlt der gesenkte Turn den Schreibaufschlag für fünf Minuten statt den für eine Stunde.",
+        "miss": "Ein verursachter Fehltreffer: Kommt der nächste Turn desselben Threads nach Ablauf der fünf Minuten und vor Ablauf der Stunde, wird das, was der gesenkte Turn geschrieben hat, nicht mehr aus dem Cache gelesen, sondern neu geschrieben, und diese Kosten werden abgezogen.",
+        "conservative": "Es gibt eine konservative Variante, die zusätzlich das zwischen verschiedenen Threads geteilte Präfix als verloren ansieht. Sie bewegt die Zahl kaum: {neto}, mit einigen Fehltreffern mehr ({fallos}).",
+        "aggregates": "Nur aggregierte Zahlen: Kein Prompt, keine Antwort, kein Header und keine Sitzungskennung verlässt die Aufzeichnung."
+      },
+      "limitsTitle": "Grenzen",
+      "limits": {
+        "oneOrg": "<b>Eine Organisation, ein Client, ein Anbieter.</b> Claude Code gegen Anthropic, mit unserem eigenen Traffic. Kein anderer Coding-Agent und kein anderer Anbieter.",
+        "listPrice": "<b>Listenpreis, simuliert.</b> Es ist keine Rechnung: Es ist die echte Nutzung, bepreist mit dem Preiskatalog. Rabatte, Kontostufen oder ein Abonnement würden das Geld verändern.",
+        "cacheModel": "<b>Das Cache-Modell ist ein Modell.</b> Es nimmt an, wie der Anbieter seine Cache-Einträge indexiert; es beobachtet das nicht. Die konservative Variante begrenzt dieses Risiko.",
+        "rebuilt": "<b>Der größte Teil der Basislinie ist rekonstruiert.</b> {cuota} der Anfragen wurden aufgezeichnet, als die Senkung bereits aktiv war; dort wird die Basislinie rekonstruiert, indem die tatsächliche Senkung rückgängig gemacht wird, und sie ist weniger belastbar als die des ersten Abschnitts. Dieser erste Abschnitt allein ergibt ein deutlich breiteres Intervall: {bajo} bis {alto}.",
+        "ceiling": "<b>Die Obergrenze ändert sich mit dem Client.</b> Sie hängt davon ab, wie viele Ein-Stunden-Schreibvorgänge der Coding-Agent sendet, und neuere Versionen von Claude Code senden weniger: Von den {peticiones} Anfragen enthielten {sinMarca} keinen, der sich senken ließe.",
+        "gap": "<b>Die Lücke zwischen Turns wird ab dem Eintreffen jeder Anfrage gemessen</b>, nicht ab dem Ende der Antwort: Sie zählt eher einen Fehltreffer zu viel, nie zu wenig.",
+        "promise": "<b>Es ist keine Prognose für dein Team.</b> Es ist eine kleine Ersparnis aus einem einzigen Traffic, und anderer Traffic kann eine andere Zahl ergeben, auch eine schlechtere: Sieh dir den hässlichen Fall an."
+      },
+      "production": "In Produktion: Seit Version {version} ({fecha}) zieht das Gateway die Fehltreffer, die es beobachtet, in dem Turn ab, der sie erleidet, sodass die Ersparnis aus dieser Senkung in deinem Dashboard netto ist. Früher Erfasstes wird nicht neu berechnet, und das Dashboard kennzeichnet Maschinen mit einem älteren Gateway als „brutto“."
     },
     "guarantees": {
       "title": "Garantien, gezählt",

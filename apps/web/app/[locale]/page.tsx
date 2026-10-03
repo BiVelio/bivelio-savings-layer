@@ -349,6 +349,10 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
                     intervalo y su condición en la misma fila. */}
                 <FilasMedidas filas={[filaDeLaPalancaTtl(t, locale)]} />
                 <p className="offer-fig-note">{t("offers.gateway.figureNote")}</p>
+                {/* El informe entero, con sus límites, en su sección del banco público. */}
+                <p className="offer-fig-link">
+                  <Link href="/benchmarks#gateway-ttl">{t("offers.gateway.benchLink")}</Link>
+                </p>
               </div>
               <div className="offer-install">
                 <span className="offer-fig-t">{t("offers.install")}</span>

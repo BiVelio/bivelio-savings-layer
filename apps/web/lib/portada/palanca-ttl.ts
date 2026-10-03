@@ -32,4 +32,67 @@ export const PALANCA_TTL = {
   sesiones: 51,
   peticiones: 19_779,
   dias: 13,
+
+  // -------------------------------------------------------------------------
+  // LO QUE AÑADE LA SECCIÓN PÚBLICA DE /benchmarks (#gateway-ttl).
+  // La tarjeta de la portada enlaza a esa sección, que cuenta el informe entero:
+  // el otro intervalo, el resultado, el desglose por modelo y los límites. Los
+  // mismos números, con la misma verja. Lo que NO sale del informe a la web: el
+  // contraste con producción (tablas, roles y cifras de clientes), los comandos
+  // y las rutas de quien midió, y los dólares por modelo o por periodo.
+  // -------------------------------------------------------------------------
+
+  /** El otro IC 95 % del informe: remuestreando por DÍA. */
+  netoPorDia: { lower: 0.0173, upper: 0.0482 },
+  /** Remuestreos del bootstrap de los dos intervalos. */
+  remuestreos: 10_000,
+  /** La regla: se rebaja cuando lo nuevo es al menos esta fracción del cuerpo. */
+  umbralNuevo: 0.3,
+  /**
+   * Los dólares del veredicto, a precio de lista: la factura simulada y el neto.
+   * El bruto y el coste de los fallos se guardan para pintarlos como fracción
+   * de la factura (la página no enseña más dólares que los del veredicto).
+   */
+  facturaUsd: 4563.61,
+  netoUsd: 113.45,
+  brutoUsd: 141.58,
+  costeFallosUsd: 28.14,
+  /** Rebajas aplicadas y fallos de caché que provocaron. */
+  rebajas: 2583,
+  fallos: 124,
+  /** La prima de la hora sobre la factura: el techo de cualquier política de TTL. */
+  techo: 0.072,
+  /** La variante conservadora del modelo de caché: su neto y los fallos que añade. */
+  conservadora: { neto: 0.0248, fallosDeMas: 3 },
+  /**
+   * Por modelo, en el orden del informe. `neto` es la fracción de la factura de
+   * ese modelo; `null` donde el informe no da porcentaje (n = 5).
+   */
+  porModelo: [
+    { modelo: "claude-fable-5", peticiones: 1921, rebajas: 23, fallos: 1, neto: 0.0464 },
+    { modelo: "claude-fable-5-1", peticiones: 2236, rebajas: 25, fallos: 0, neto: 0.0165 },
+    { modelo: "claude-opus-5", peticiones: 8344, rebajas: 70, fallos: 2, neto: 0.0161 },
+    { modelo: "claude-opus-4-8", peticiones: 1193, rebajas: 34, fallos: 0, neto: 0.0649 },
+    { modelo: "claude-sonnet-5", peticiones: 6080, rebajas: 2427, fallos: 121, neto: 0.0134 },
+    { modelo: "claude-haiku-4-5", peticiones: 5, rebajas: 4, fallos: 0, neto: null },
+  ],
+  /**
+   * El caso feo, que se enseña: casi todas las rebajas y casi todos los fallos,
+   * un neto casi nulo y, en el primer periodo de la captura, pérdida.
+   */
+  casoFeo: { modelo: "claude-sonnet-5", cuotaRebajas: 0.94, cuotaFallos: 0.98, netoPrimerPeriodo: -0.094 },
+  /**
+   * La línea base RECONSTRUIDA: las peticiones grabadas con la rebaja ya activa
+   * (los periodos P2 y P3 del informe). Son la mayoría, y la sección lo dice.
+   */
+  reconstruidas: { peticiones: 15_593 },
+  /** El único tramo con línea base firme (P1), solo: su IC 95 % por sesión, mucho más ancho. */
+  primerPeriodo: { lower: 0.0029, upper: 0.0912 },
+  /** Peticiones sin ninguna marca de una hora: fuera del alcance de la rebaja (el techo cambia con el cliente). */
+  sinMarcaDeHora: 7_327,
+  /** Versión del gateway desde la que producción resta los fallos (antes: bruto), y su fecha. */
+  netoEnProduccionDesde: "0.5.1",
+  netoEnProduccionFecha: "2026-10-03",
 } as const;
+
+export type PalancaTtl = typeof PALANCA_TTL;

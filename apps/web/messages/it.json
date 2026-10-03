@@ -970,7 +970,7 @@
       "ctaTitle": "Misuralo sul tuo traffico",
       "ctaSub": "Una volta installato, ogni chiamata restituisce il suo SavingsReport, con misurato e stimato separati. Inizia gratis con Misura (@bivelio/savings-layer {version} o successiva); Pro e Team sono un canone fisso per postazione, senza commissione sul tuo risparmio. La licenza è ciò che ti permette di eseguire BV‑SALA — l’SDK nella tua app, il gateway nel tuo terminale.",
       "ctaStart": "Inizia",
-      "tagline": "Il sistema operativo per la tua azienda. Questo è <b>BV‑SALA</b>, l'ottimizzatore di costo LLM di BiVelio, neutrale rispetto al fornitore — ogni cifra pubblicata è misurata contro il contatore del fornitore; le stime si mostrano a parte e non si fatturano mai.",
+      "tagline": "Il sistema operativo per la tua azienda. Questo è <b>BV‑SALA</b>, l'ottimizzatore di costo LLM di BiVelio, neutrale rispetto al fornitore — ogni cifra misurata lo è contro il contatore del fornitore; le stime e le simulazioni si mostrano a parte, dichiarate come tali, e non si fatturano mai.",
       "badge": "BV‑SALA · Savings Layer",
       "colSavings": "Savings Layer",
       "colBivelio": "BiVelio",
@@ -1062,6 +1062,7 @@
         "figureLabel": "La cifra che pubblichiamo",
       "figureQue": "della fattura con la riduzione della cache di PRO, al netto dei mancati riscontri di cache che provoca (intervallo al {confianza}: da {bajo} a {alto}). Simulato a prezzi di listino su {sesiones} sessioni di Claude Code di una sola organizzazione, la nostra.",
         "figureNote": "Non è una previsione per il tuo team: è una sola organizzazione, un solo fornitore e prezzi di listino, ed è un risparmio piccolo che si nota dove la spesa in Anthropic è alta. Con PRO, sui modelli Anthropic, il gateway sposta le scritture della cache dal TTL di un'ora a quello di cinque minuti, solo nei turni in cui una parte consistente del prompt è nuova — come il primo turno di una sessione o una compattazione — e lascia come sono i turni concatenati di una sessione in corso. Questo cambia il prezzo, mai ciò che legge il modello, e solo ciò che conferma il contatore del tuo fornitore conta nel tuo report di risparmio.",
+        "benchLink": "Il report del banco TTL: che cosa è stato simulato, il dettaglio per modello e i suoi limiti →",
         "cta": "Installa il gateway"
       },
       "skill": {
@@ -1242,6 +1243,54 @@
       "delta": "Δ {d} pp [{inf}, {sup}]",
       "originNote": "Da dove viene il risparmio, posizione per posizione: «dalla cache esatta» è ciò che A ha pagato sulle richieste che il livello ha servito senza chiamare il fornitore; «nelle chiamate» è la differenza su quelle che invece lo hanno raggiunto, soprattutto la cache di prefisso del fornitore (più un po' di variazione nell'output). Le due voci sommate danno il risparmio totale.",
       "accuracyNote": "L'accuratezza è misurata sulle domande con risposta pubblicata; le varianti con un numero cambiato servono solo a verificare che il livello non restituisca mai la risposta di un'altra domanda."
+    },
+    "gatewayTtl": {
+      "title": "La riduzione della cache del gateway: una simulazione, non un A/B",
+      "kind": "Questa sezione non è una delle batterie A/B della pagina e <b>non è misurata dal vivo</b>: è un <b>replay</b>. Abbiamo preso l'utilizzo che il provider aveva già comunicato per sessioni reali di Claude Code di <b>una sola organizzazione, la nostra</b>, verso un solo provider (Anthropic), e abbiamo calcolato a <b>prezzi di listino</b> quanto sarebbero costate con la riduzione della cache di PRO e senza.",
+      "verdict": "Il verdetto del report del {fecha}: la riduzione lascia un <b>netto di {neto} della fattura</b> ({netoUsd} su {factura}), dopo aver sottratto i mancati riscontri di cache che essa stessa provoca.",
+      "stat": {
+        "sessions": "Sessioni",
+        "requests": "Richieste",
+        "days": "Giorni"
+      },
+      "thInterval": "Intervallo al {confianza}",
+      "thNet": "Netto, sulla fattura",
+      "bySession": "Ricampionando per sessione (gruppi: {n})",
+      "byDay": "Ricampionando per giorno (gruppi: {n})",
+      "intervalsNote": "Bootstrap con {remuestreos} ricampionamenti. Entrambi gli intervalli escludono lo zero: con questo traffico, la riduzione fa guadagnare. La scheda della home page cita l'intervallo per sessione.",
+      "resultTitle": "Il risultato, con ciò che sottrae",
+      "row": {
+        "downgrades": "Riduzioni",
+        "gross": "Sovrapprezzo risparmiato, lordo",
+        "misses": "Mancati riscontri di cache provocati",
+        "missCost": "Quanto costano quei mancati riscontri",
+        "net": "Netto",
+        "ceiling": "Tetto: l'intero sovrapprezzo dell'ora"
+      },
+      "resultNote": "Le percentuali sono calcolate sulla fattura a prezzi di listino delle richieste simulate ({factura}). Il tetto è il massimo che qualsiasi politica di TTL potrebbe recuperare, anche senza sbagliare mai. Ogni percentuale è arrotondata separatamente.",
+      "modelsTitle": "Per modello",
+      "thModelNet": "Netto, sulla fattura del modello",
+      "tooFew": "nessuna percentuale (richieste: {n})",
+      "ugly": "<b>{modelo} è il caso brutto</b>: concentra il {rebajas} delle riduzioni e il {fallos} dei mancati riscontri, e il suo netto è quasi nullo. Nel primo periodo della cattura, anzi, ha perso: {perdida} della sua fattura. Il suo traffico è fatto di thread brevi che vengono ricostruiti spesso e tornano passati i cinque minuti. La regola guadagna davvero dove gli avvii sono costosi e rari.",
+      "howTitle": "Come è stato fatto: il modello di cache, dichiarato",
+      "how": {
+        "rule": "La regola è la stessa che esegue il gateway, non una copia: sposta le scritture di cache dal TTL di un'ora a quello di cinque minuti quando la parte nuova è almeno il {umbral} del corpo della richiesta.",
+        "baseline": "La linea di base è ciò che il fornitore ha contato, con il suo uso reale, dove la riduzione non era ancora attiva; dove lo era già, si ricostruisce annullandola (vedi i limiti). Con la riduzione, il turno ridotto paga il sovrapprezzo di scrittura da cinque minuti invece di quello da un'ora.",
+        "miss": "Un mancato riscontro provocato: se il turno successivo dello stesso thread arriva dopo i cinque minuti e prima dell'ora, ciò che il turno ridotto ha scritto non viene più letto dalla cache, viene riscritto, e quel costo viene sottratto.",
+        "conservative": "Esiste una variante conservativa, che considera perso anche il prefisso condiviso tra thread diversi. Sposta appena la cifra: {neto}, con qualche mancato riscontro in più ({fallos}).",
+        "aggregates": "Solo cifre aggregate: dalla cattura non esce alcun prompt, risposta, intestazione né identificativo di sessione."
+      },
+      "limitsTitle": "Limiti",
+      "limits": {
+        "oneOrg": "<b>Un'organizzazione, un client, un provider.</b> Claude Code verso Anthropic, con il nostro traffico. Nessun altro agente di codice e nessun altro provider.",
+        "listPrice": "<b>Prezzo di listino, simulato.</b> Non è una fattura: è l'utilizzo reale, tariffato con il catalogo dei prezzi. Sconti, livelli di account o un abbonamento cambierebbero gli importi.",
+        "cacheModel": "<b>Il modello di cache è un modello.</b> Ipotizza come il provider indicizza le sue voci di cache; non lo osserva. La variante conservativa delimita quel rischio.",
+        "rebuilt": "<b>La maggior parte della linea di base è ricostruita.</b> Il {cuota} delle richieste è stato registrato con la riduzione già attiva; lì la linea di base si ricostruisce annullando la riduzione reale, ed è meno solida di quella del primo tratto. Quel primo tratto, da solo, dà un intervallo molto più ampio: da {bajo} a {alto}.",
+        "ceiling": "<b>Il tetto cambia con il client.</b> Dipende da quante scritture da un'ora invia l'agente di codice, e le versioni recenti di Claude Code ne inviano meno: delle {peticiones} richieste, {sinMarca} non ne avevano nessuna da ridurre.",
+        "gap": "<b>L'intervallo tra i turni si misura dall'arrivo di ogni richiesta</b>, non dalla fine della risposta: conta qualche mancato riscontro in più, mai in meno.",
+        "promise": "<b>Non è una previsione per il tuo team.</b> È un risparmio piccolo, di un solo traffico, e un altro traffico può dare un'altra cifra, anche peggiore: guarda il caso brutto."
+      },
+      "production": "In produzione: dalla versione {version} ({fecha}), il gateway sottrae i mancati riscontri che osserva, nel turno che li subisce, così il risparmio di questa riduzione che vedi nel tuo pannello è al netto. Ciò che è stato registrato prima non viene ricalcolato, e il pannello segnala come «al lordo» le macchine con un gateway precedente."
     },
     "guarantees": {
       "title": "Garanzie, contate",

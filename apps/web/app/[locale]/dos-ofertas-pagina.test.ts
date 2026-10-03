@@ -8,9 +8,10 @@ import { describe, expect, it } from "vitest";
  *
  * Tres decisiones que un cambio posterior podría deshacer sin que nada se
  * ponga rojo:
- *   · El gateway va SIN cifra: no hay un ahorro medido y publicado que la
- *     respalde. Su tarjeta no lee `hero.proofs` ni el artefacto A/B, ni escribe
- *     un porcentaje.
+ *   · El gateway lleva UNA cifra desde el 2026-10-03: el neto de la rebaja de
+ *     caché que simuló el banco de TTL (lib/portada/palanca-ttl.ts, con verja
+ *     contra su informe), enlazada a su sección de /benchmarks. Su tarjeta no
+ *     lee `hero.proofs` ni el artefacto A/B, ni lleva un porcentaje tecleado.
  *   · La cifra del SDK son las filas de lo medido (con repeticiones Y sin
  *     ellas, nunca la primera sola), construidas de lib/portada/banco-en-vivo.ts
  *     —con verja contra sus informes— y no del artefacto sintético.
@@ -60,6 +61,21 @@ describe("portada: dos ofertas, cada una con su bloque", () => {
     expect(gateway).not.toContain("offer-nofig");
     // Ni el artefacto sintético ni un número tecleado en la tarjeta.
     for (const prohibido of ["proofs", "proofSdk", "ab.", "%"]) expect(gateway, prohibido).not.toContain(prohibido);
+  });
+
+  it("la tarjeta del gateway enlaza al informe: la sección #gateway-ttl del banco público, con idioma (dueño, 2026-10-03)", () => {
+    const ofertas = seccion("offers");
+    const gateway = ofertas.slice(ofertas.indexOf('t("offers.gateway.name")'));
+    // El `Link` de @/i18n/navigation antepone el idioma; un <a> a secas lo perdería.
+    expect(gateway).toMatch(/<Link href="\/benchmarks#gateway-ttl">\{t\("offers\.gateway\.benchLink"\)\}<\/Link>/);
+    expect(PAGINA).toMatch(/import \{[^}]*\bLink\b[^}]*\} from "@\/i18n\/navigation"/);
+    // Dentro de la caja de la cifra, justo debajo de su nota: la cifra y su informe van juntos.
+    const fig = gateway.slice(gateway.indexOf('className="offer-fig"'), gateway.indexOf('className="offer-install"'));
+    expect(fig.indexOf('t("offers.gateway.figureNote")')).toBeGreaterThan(-1);
+    expect(fig.indexOf("/benchmarks#gateway-ttl")).toBeGreaterThan(fig.indexOf('t("offers.gateway.figureNote")'));
+    // Y el ancla existe en la página de destino.
+    const banco = readFileSync(new URL("../components/BancoPublico.tsx", import.meta.url), "utf8");
+    expect(banco).toContain('id="gateway-ttl"');
   });
 
   it("la fila del gateway toma sus números de PALANCA_TTL y su texto de los mensajes", () => {
