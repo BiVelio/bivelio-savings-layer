@@ -11,6 +11,7 @@ import { MEASURE_LIMITS } from "../../../../packages/protocol/src/index";
 import { filasDelBancoEnVivo } from "@/app/components/MedidoEnVivo";
 
 import { BANCO_EN_VIVO, GEMINI_EN_EL_SEMANAL, VERSION_GEMINI_NATIVO } from "./banco-en-vivo";
+import { facturaDelHeroe } from "./factura-del-heroe";
 
 /**
  * LA PORTADA DICE SOLO LO MEDIDO (2026-09-29), EN LOS 12 IDIOMAS.
@@ -540,6 +541,8 @@ describe("los textos nuevos se formatean en los 12 idiomas (ICU sin errores)", (
     "landing.step2.plain": { rep: "30 %", punto: "31,5 %", bajo: "25,7 %", alto: "36,7 %" },
     "landing.ledgersHead.providerNote": { fecha: "2026-09-28" },
     "landing.hero.compatibleNota": { gemini: "0.4.33", flash: "Gemini 3.8 Flash", pro: "Gemini 3.1 Pro", fecha: "1 October 2026", fechaPro: "1–2 October 2026" },
+    "landing.hero.visual.intervalo": { bajo: "25,7 %", alto: "36,7 %" },
+    "landing.hero.visual.condicion": { rep: "30 %" },
     "landing.pricing.plans.medir.body": { seats: 5, requests: "20.000", version: "0.4.33" },
     "landing.footer.ctaSub": { version: "0.4.33" },
     "howItWorks.billWith": {},
@@ -753,5 +756,100 @@ describe("⛔ la portada no enseña el «≈ 0 %» del tráfico sin repeticiones
     for (const loc of LOCALES) {
       expect(cargar(loc)["benchmarksPage.noSavings.lead"], loc).toContain("{cero}");
     }
+  });
+});
+
+/**
+ * LA FACTURA DEL HÉROE (dueño, 2026-10-03: «mejor 1 imagen que 1000 palabras»).
+ *
+ * El héroe enseña ahora UNA imagen con números: la factura directa frente a la
+ * de Savings, con la cifra, su IC 95 % y su condición. La verja exige, en los
+ * 12 idiomas:
+ *   · cada número y cada ancho de barra sale de BANCO_EN_VIVO (y ese, de su
+ *     informe, por banco-en-vivo.test.ts); ni un número escrito a mano;
+ *   · la condición («con un 30 % de peticiones repetidas») va siempre, por
+ *     parámetro, y el enlace al informe también;
+ *   · ningún cero ni «≈» (ya lo vigila, para todo `landing.hero.`, la verja
+ *     de arriba);
+ *   · el titular pinta en seguida: sin titular cinético ni `lp-rise-lcp`.
+ */
+describe("⛔ la factura del héroe dice lo medido, con su condición", () => {
+  const V = BANCO_EN_VIVO;
+  const traductor = (loc: Loc) =>
+    createTranslator({
+      locale: loc,
+      messages: crudo(loc) as never,
+      namespace: "landing" as never,
+      onError: (e) => {
+        throw e;
+      },
+    }) as unknown as (k: string, p?: Record<string, string | number>) => string;
+
+  it("las barras son la factura relativa de BANCO_EN_VIVO, con la horquilla del IC 95 % alrededor de la cifra", () => {
+    const f = facturaDelHeroe("en");
+    expect(f.barra.con).toBeCloseTo(1 - V.openai.ahorro.point, 12);
+    expect(f.barra.desde).toBeCloseTo(1 - V.openai.ahorro.upper, 12);
+    expect(f.barra.hasta).toBeCloseTo(1 - V.openai.ahorro.lower, 12);
+    expect(f.barra.desde).toBeGreaterThan(0);
+    expect(f.barra.desde).toBeLessThan(f.barra.con);
+    expect(f.barra.con).toBeLessThan(f.barra.hasta);
+    expect(f.barra.hasta).toBeLessThan(1);
+    expect([f.marca, f.modelo, f.bateria, f.fecha]).toEqual(["OpenAI", "gpt-4o-mini", V.bateria, V.fecha]);
+  });
+
+  for (const loc of LOCALES) {
+    it(`${loc}: la cifra, el intervalo y la condición salen de BANCO_EN_VIVO, y los textos no traen números a mano`, () => {
+      const pct1 = new Intl.NumberFormat(loc, { style: "percent", minimumFractionDigits: 1, maximumFractionDigits: 1 });
+      const pct0 = new Intl.NumberFormat(loc, { style: "percent", maximumFractionDigits: 0 });
+      const f = facturaDelHeroe(loc);
+      expect(f.bajada.startsWith("−"), `${loc} ${f.bajada}`).toBe(true);
+      expect(f.bajada.slice(1)).toBe(pct1.format(V.openai.ahorro.point));
+      expect(f.bajo).toBe(pct1.format(V.openai.ahorro.lower));
+      expect(f.alto).toBe(pct1.format(V.openai.ahorro.upper));
+      expect(f.rep).toBe(pct0.format(V.repeticiones));
+      expect(`${f.bajada} ${f.bajo} ${f.alto}`).not.toContain("≈");
+
+      const d = cargar(loc);
+      const visual = Object.entries(d).filter(([k]) => k.startsWith("landing.hero.visual."));
+      expect(visual.map(([k]) => k.split(".").pop()).sort()).toEqual(["con", "condicion", "informe", "intervalo", "menos", "sin"]);
+      // Ni un número a mano: solo el nivel del intervalo (95), que es una etiqueta.
+      for (const [k, v] of visual) expect(v.replace(/95/g, ""), `${loc} ${k}`).not.toMatch(/[0-9]/);
+      for (const k of ["sub", "ctaStart", "ctaBench", "trustMedido", "trustPrivado"]) {
+        expect(d[`landing.hero.${k}`], `${loc} ${k}`).toBeTruthy();
+        expect(d[`landing.hero.${k}`], `${loc} ${k}`).not.toMatch(/[0-9%]/);
+      }
+      expect(d["landing.hero.visual.condicion"]).toContain("{rep}");
+      // Con el traductor de verdad: la condición lleva el 30 % y el intervalo, sus dos cotas.
+      const t = traductor(loc);
+      expect(t("hero.visual.condicion", { rep: f.rep })).toContain(f.rep);
+      const ic = t("hero.visual.intervalo", { bajo: f.bajo, alto: f.alto });
+      expect(ic).toContain(f.bajo);
+      expect(ic).toContain(f.alto);
+    });
+  }
+
+  it("el héroe pinta la factura desde facturaDelHeroe, con su condición y el enlace al informe; sin imagen de stock", () => {
+    const comp = codigo("app/components/FacturaMedida.tsx");
+    expect(comp).toContain("facturaDelHeroe(locale)");
+    expect(comp).toContain('t("hero.visual.condicion", { rep: f.rep })');
+    expect(comp).toContain('t("hero.visual.intervalo", { bajo: f.bajo, alto: f.alto })');
+    expect(comp).toContain('<Link href="/benchmarks">');
+    expect(comp).not.toMatch(/\d[.,]\d\s*%|<img|<Image|\.(png|jpe?g|webp|avif)\b/);
+    const lib = codigo("lib/portada/factura-del-heroe.ts");
+    expect(lib).toMatch(/from "\.\/banco-en-vivo"/);
+    // Ninguna fracción escrita a mano: todas salen de BANCO_EN_VIVO.
+    expect(lib).not.toMatch(/\b0?\.\d/);
+    const portada = codigo("app/[locale]/page.tsx");
+    const ini = portada.indexOf('<section className="hero">');
+    const heroe = portada.slice(ini, portada.indexOf("</section>", ini));
+    expect(heroe).toContain("<FacturaMedida t={t} locale={locale} />");
+    expect(heroe).not.toMatch(/KineticTitle|TarjetaMedidoEnVivo|ReservarLlamada|hero-compat/);
+  });
+
+  it("el titular pinta en seguida: fuera lp-rise-lcp y el titular cinético", () => {
+    const css = fuente("app/globals.css");
+    expect(css).not.toMatch(/lp-rise-lcp|lp-kin|\.kw-clip/);
+    // Lo único que se mueve en la factura se apaga con prefers-reduced-motion.
+    expect(css).toMatch(/@media \(prefers-reduced-motion: no-preference\) \{\n\s*\.lp \.fb-con \{ animation: fb-baja/);
   });
 });

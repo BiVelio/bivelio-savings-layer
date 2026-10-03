@@ -781,15 +781,23 @@
     "metaTitle": "BiVelio — Zweryfikuj swoje oszczędności na LLM",
     "metaDescription": "SDK, dzięki któremu Twoja aplikacja płaci dostawcy LLM tylko za to, czego potrzebuje, i gateway, który mierzy Twojego agenta kodu. Wszystko licznikiem Twojego dostawcy: mierz za darmo, potem płać za stanowisko — bez prowizji od oszczędności.",
     "hero": {
-      "eyebrow": "Dla zespołów, które płacą za API LLM od tokena",
       "title": "Twoja faktura za LLM, pod kontrolą.",
       "titleAccent": "Mierzona przy każdym wywołaniu.",
-      "lede": "Dwa produkty, jedna zasada. SDK instaluje się w Twojej aplikacji i przepuszcza tylko to, za co trzeba zapłacić; gateway staje przed Twoim agentem programistycznym i mierzy jego wydatki. Oba liczą licznikiem Twojego dostawcy i trzymają to, co zmierzone, osobno od tego, co szacowane. Publikujemy tylko to, co zmierzyliśmy.",
-      "ctaOffers": "SDK czy gateway?",
-      "ctaPricing": "Zobacz cennik",
+      "sub": "Savings odpowiada na zapytania, które Twoja aplikacja powtarza, więc nie płacisz dostawcy dwa razy.",
+      "ctaStart": "Zacznij",
+      "ctaBench": "Zobacz publiczny benchmark",
+      "trustMedido": "Mierzone na żywo licznikiem każdego dostawcy",
+      "trustPrivado": "Twoje wiadomości nigdy nie przechodzą przez nasze serwery",
+      "visual": {
+        "menos": "na rachunku",
+        "intervalo": "Przedział 95%: {bajo} – {alto}",
+        "sin": "Twój rachunek",
+        "con": "Z Savings",
+        "condicion": "Przy {rep} powtórzonych zapytań",
+        "informe": "Pełny raport →"
+      },
       "note": "Instalacja w kilka minut. Twoje wiadomości nigdy nie przechodzą przez nasze serwery.",
       "proofTitle": "Zmierzone względem prawdziwego dostawcy",
-      "medidoEn": "Zmierzone na",
       "compatibleCon": "Zgodne z",
       "compatibleNota": "Zgodny nie znaczy zmierzony. SDK działa z każdym endpointem zgodnym z API OpenAI, a także z natywnym adapterem Anthropic i natywnym adapterem Gemini (nowość w {gemini}). Z liczbą oszczędności w publicznym benchmarku są dziś tylko modele OpenAI i Anthropic; Gemini nie ma liczby oszczędności. Co zmierzono dla Gemini: {flash}, przez jego natywne API, w cotygodniowym benchmarku na żywo z {fecha} — wszystkie cztery baterie, bez błędów warstwy i bez żadnej odmowy w cache ani zaliczonej jako oszczędność. Ten benchmark sprawdza, że warstwa niczego nie psuje i nie pobiera za dużo; nie mierzy oszczędności. Zmierzony także: {pro}, przez natywne API, w dwóch przebiegach częściowych {fechaPro} (jego dzienny limit dostawcy nie mieści wszystkich czterech baterii w jednym dniu): wszystkie cztery baterie, również bez żadnego błędu warstwy i bez żadnej odmowy z pamięci podręcznej ani zaliczonej jako oszczędność."
     },

@@ -1291,23 +1291,17 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .lp h1 .u { color: var(--ink-soft); }
 .lp .lede { font-size: 17px; line-height: 1.65; color: var(--ink-soft); max-width: 46ch; margin: 0 0 28px; }
 .lp .hero-cta { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
-.lp .hero-note { font-size: 13px; color: var(--ink-soft); margin-top: 20px; display: flex; align-items: center; gap: 7px; }
-.lp .hero-note .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 0 0 var(--mint-soft); animation: lp-pulse 2.4s infinite; }
 @keyframes lp-pulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--mint) 40%, transparent); } 70% { box-shadow: 0 0 0 10px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
-@media (prefers-reduced-motion: reduce) { .lp .hero-note .pulse { animation: none; } }
 
 /* Entrada escalonada del hero, en CSS puro y con los tiempos del motion/react
-   de Hero.tsx. El h1 NO anima opacidad a propósito: pinta desde el HTML del
+   de Hero.tsx. El h1 NO anima nada (2026-10-03): pinta desde el HTML del
    servidor para no penalizar el LCP, igual que en el origen. El bloque global
    de prefers-reduced-motion ya las neutraliza. */
 @keyframes lp-rise     { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
-@keyframes lp-rise-lcp { from { transform: translateY(16px); } to { transform: none; } }
 @keyframes lp-fade     { from { opacity: 0; } to { opacity: 1; } }
 .lp .hero .eyebrow { animation: lp-rise .5s ease-out both; }
-.lp .hero h1       { animation: lp-rise-lcp .6s ease-out .05s both; }
 .lp .lede          { animation: lp-rise .6s ease-out .12s both; }
 .lp .hero-cta      { animation: lp-rise .6s ease-out .2s both; }
-.lp .hero-note     { animation: lp-fade .6s ease-out .28s both; }
 .lp .cascade       { animation: lp-fade .6s ease-out .34s both; }
 
 /* Tarjeta de cascada (derecha del hero) */
@@ -2065,9 +2059,6 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 
 .lp .hero .eyebrow { animation: lp-rise .5s ease-out both; }
 .lp h1 { font-size: clamp(2.5rem, 4.9vw, 3.9rem); line-height: 1.0; letter-spacing: -.035em; margin: 18px 0 20px; animation: none; }
-.lp h1 .kw-clip { display: inline-block; overflow: hidden; vertical-align: bottom; padding-bottom: .18em; margin-bottom: -.18em; }
-.lp h1 .kw { display: inline-block; animation: lp-kin .62s cubic-bezier(.16, 1, .3, 1) both; animation-delay: var(--d, 0ms); }
-@keyframes lp-kin { from { opacity: 0; transform: translateY(.5em); filter: blur(6px); } to { opacity: 1; transform: none; filter: blur(0); } }
 .lp .lede { font-size: 17.5px; max-width: 50ch; }
 .lp .hero-cta .btn { position: relative; overflow: hidden; padding: 11px 20px; font-size: 14.5px; }
 .lp .hero-cta .btn::after {
@@ -2243,7 +2234,7 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .lp .sec-head p { font-size: 16.5px; }
 
 @media (prefers-reduced-motion: reduce) {
-  .lp .hero::after, .lp .recibo-row, .lp .recibo-fecha .caret, .lp .sys-track, .lp h1 .kw, .lp .recibo { animation: none; }
+  .lp .hero::after, .lp .recibo-row, .lp .recibo-fecha .caret, .lp .sys-track, .lp .recibo { animation: none; }
   .lp.rv-on .rv { opacity: 1; transform: none; transition: none; }
   .lp .hero-cta .btn::after { display: none; }
 }
@@ -2499,3 +2490,116 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .guia-tabla .tbl { min-width: 520px; }
 .guia-tabla .tbl th { cursor: default; }
 .guia-tabla th, .guia-tabla td { text-align: left; vertical-align: top; }
+
+/* ── Héroe 2026-10-03: menos texto, una imagen ──────────────────────────────
+   Petición del dueño: «ponla bonita y bien encuadrada con menos texto… mejor 1
+   imagen que 1000 palabras». Titular + una línea, dos botones, dos sellos; a la
+   derecha, la factura con y sin Savings (FacturaMedida.tsx). Cabe entero en la
+   primera pantalla a 1440×900 y a 390×844. El h1 no anima (es el LCP); lo único
+   que se mueve es la barra de Savings, y solo sin prefers-reduced-motion. */
+.lp .hero {
+  grid-template-columns: minmax(0, 1.02fr) minmax(0, .98fr);
+  gap: clamp(36px, 5vw, 76px);
+  min-height: calc(100vh - var(--nav-h) - 40px);
+  min-height: calc(100svh - var(--nav-h) - 40px);
+  padding: clamp(32px, 5vh, 64px) 0;
+}
+.lp .hero h1 { font-size: clamp(2.5rem, 4.7vw, 4.1rem); line-height: 1.02; margin: 0 0 22px; }
+.lp .hero .lede { font-size: clamp(17px, 1.35vw, 19px); line-height: 1.55; color: var(--ink-soft); max-width: 36ch; margin: 0 0 30px; }
+.lp .hero-cta .btn { padding: 13px 22px; font-size: 15px; }
+/* Pantallas bajas: sin altura forzada, como el héroe anterior (ocupar la
+   pantalla entera ahí significaría cortar). */
+@media (max-height: 720px) { .lp .hero { min-height: 0; } }
+
+/* Sellos de confianza: frases cortas, no párrafos. */
+.lp .hero-confianza { list-style: none; margin: 28px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px 22px; font-size: 13px; color: var(--ink-soft); animation: lp-fade .6s ease-out .28s both; }
+.lp .hero-confianza li { display: inline-flex; align-items: center; gap: 9px; min-width: 0; }
+.lp .hc-logos { display: inline-flex; flex: none; }
+.lp .hc-logos svg { width: 24px; height: 24px; padding: 4px; box-sizing: border-box; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; }
+.lp .hc-logos svg + svg { margin-left: -7px; }
+.lp .hc-punto { flex: none; width: 8px; height: 8px; margin: 0 4px; border-radius: 999px; background: var(--mint); box-shadow: 0 0 0 4px var(--mint-soft); }
+
+/* La factura medida. */
+.lp .factura {
+  position: relative; margin: 0; display: grid; gap: 22px; min-width: 0;
+  padding: clamp(22px, 2.4vw, 32px);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-3xl);
+  box-shadow: var(--shadow-card), 0 40px 80px -48px rgba(15, 18, 24, .38);
+}
+.lp .factura-t { display: flex; align-items: flex-start; gap: 8px; font-family: var(--mono); font-size: 10.5px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-soft); line-height: 1.5; }
+.lp .factura-t::before { content: ""; flex: none; width: 7px; height: 7px; margin-top: .45em; border-radius: 999px; background: var(--mint); animation: lp-pulse 2.4s infinite; }
+.lp .factura-cifra { margin: 0; display: flex; align-items: flex-end; flex-wrap: wrap; gap: 6px 16px; }
+.lp .factura-n { font-family: var(--font-heading); font-weight: 600; font-size: clamp(3rem, 5vw, 4.4rem); line-height: .9; letter-spacing: -.045em; color: var(--good-ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.lp .factura-q { flex: 1 1 11em; min-width: 0; display: grid; gap: 3px; padding-bottom: 5px; font-size: 16px; font-weight: 600; color: var(--ink); line-height: 1.25; }
+.lp .factura-q small { font-size: 12.5px; font-weight: 400; color: var(--ink-soft); }
+
+.lp .factura-barras { display: grid; gap: 14px; }
+.lp .fb { display: grid; grid-template-columns: minmax(0, 8.5em) minmax(0, 1fr); align-items: center; gap: 14px; }
+.lp .fb-k { font-size: 13px; font-weight: 600; color: var(--ink); line-height: 1.25; }
+.lp .fb-pista { position: relative; display: block; height: 30px; }
+.lp .fb-pista i { position: absolute; top: 0; bottom: 0; display: block; border-radius: 8px; }
+.lp .fb-sin { left: 0; right: 0; background: color-mix(in srgb, var(--ink-soft) 42%, var(--surface-2)); }
+.lp .fb-con { left: 0; width: calc(var(--fb-con) * 100%); background: linear-gradient(90deg, var(--brand), var(--ui)); box-shadow: var(--shadow-brand); }
+/* Lo que ya no se paga: el hueco hasta la factura entera, en menta y discontinuo. */
+.lp .fb-ahorro { left: calc(var(--fb-con) * 100% + 4px); right: 0; box-sizing: border-box; background: var(--mint-soft); border: 1.5px dashed color-mix(in srgb, var(--mint) 70%, transparent); }
+/* La horquilla del IC 95 % sobre el extremo de la barra. */
+.lp .fb-pista .fb-ic {
+  top: -6px; bottom: -6px; border-radius: 0; box-sizing: border-box;
+  left: calc(var(--fb-desde) * 100%); width: calc((var(--fb-hasta) - var(--fb-desde)) * 100%);
+  --fb-ic-c: color-mix(in srgb, var(--ink) 72%, transparent);
+  border-left: 1.5px solid var(--fb-ic-c); border-right: 1.5px solid var(--fb-ic-c);
+  background: linear-gradient(var(--fb-ic-c), var(--fb-ic-c)) center / 100% 1.5px no-repeat;
+}
+@keyframes fb-baja { from { width: 100%; } }
+@media (prefers-reduced-motion: no-preference) {
+  .lp .fb-con { animation: fb-baja 1.3s cubic-bezier(.22, 1, .36, 1) .35s both; }
+  .lp .fb-ahorro, .lp .fb-pista .fb-ic { animation: lp-fade .5s ease-out 1.3s both; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lp .factura-t::before, .lp .hero-confianza { animation: none; }
+}
+
+.lp .factura-pie { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 13px; }
+.lp .factura-cond { font-weight: 600; color: var(--ink); }
+.lp .factura-meta { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px 9px; color: var(--ink-soft); }
+.lp .factura-meta code { font-family: var(--mono); font-size: 11.5px; background: var(--surface-2); border-radius: 6px; padding: 2px 6px; }
+.lp .factura-meta a { font-weight: 600; }
+
+/* «Compatible con», en su banda estrecha bajo el héroe. */
+.lp .compat-banda { padding: 26px 0 30px; }
+.lp .compat-banda .hero-compat { margin: 0; padding: 0; border-top: 0; animation: none; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 6px 24px; }
+.lp .compat-banda .compat-marquee { margin-top: 0; }
+.lp .compat-banda .compat-nota { grid-column: 1 / -1; max-width: 110ch; margin: 4px 0 0; }
+/* Quieta (reduced-motion), la marquesina se envuelve en filas: sin la segunda
+   copia, que solo existe para que el bucle no tenga costura. */
+@media (prefers-reduced-motion: reduce) { .lp .compat-track .cm[aria-hidden="true"] { display: none; } }
+
+/* La llamada de 15 min, ahora al cierre de lo medido. */
+.lp .cta15-medido { max-width: 620px; margin-top: 8px; }
+
+@media (max-width: 900px) {
+  .lp .hero { grid-template-columns: minmax(0, 1fr); min-height: 0; gap: 28px; padding: 28px 0 40px; }
+  .lp .hero .lede { max-width: 40ch; }
+  .lp .compat-banda .hero-compat { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 520px) {
+  .lp .hero { padding: 22px 0 32px; gap: 24px; }
+  .lp .hero h1 { font-size: 2.15rem; margin-bottom: 14px; }
+  .lp .hero .lede { font-size: 16px; margin-bottom: 20px; }
+  .lp .hero-cta { gap: 8px; }
+  .lp .hero-cta .btn { flex: 1 1 auto; justify-content: center; text-align: center; padding: 11px 14px; font-size: 14px; }
+  .lp .hero-confianza { margin-top: 16px; gap: 8px 16px; font-size: 12.5px; }
+  /* En el móvil, un solo sello: el de lo medido. La privacidad la vuelve a
+     decir más abajo el titular de la instalación (`landing.integrate.title`). */
+  .lp .hero-confianza li + li { display: none; }
+  .lp .factura { gap: 14px; padding: 16px 16px 14px; border-radius: var(--radius-2xl); }
+  .lp .factura-t { font-size: 9.5px; letter-spacing: .08em; }
+  .lp .factura-cifra { flex-wrap: nowrap; gap: 12px; }
+  .lp .factura-n { font-size: 2.55rem; }
+  .lp .factura-q { font-size: 14px; min-width: 0; }
+  .lp .factura-q small { font-size: 11.5px; }
+  .lp .fb { grid-template-columns: minmax(0, 7em) minmax(0, 1fr); gap: 10px; }
+  .lp .fb-k { font-size: 12px; }
+  .lp .fb-pista { height: 22px; }
+  .lp .factura-pie { padding-top: 12px; font-size: 12px; }
+}

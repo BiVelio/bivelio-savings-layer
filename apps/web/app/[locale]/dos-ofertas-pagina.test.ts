@@ -39,11 +39,16 @@ describe("portada: dos ofertas, cada una con su bloque", () => {
     expect([...pos].sort((a, b) => a - b)).toEqual(pos);
   });
 
-  it("el botón principal del héroe lleva a #offers, y el viejo «Ver lo medido» ya no está", () => {
-    const cta = CODIGO.slice(CODIGO.indexOf('className="hero-cta"'), CODIGO.indexOf('className="hero-note"'));
+  it("el héroe lleva dos botones: Empezar (a #offers) y el banco público; el viejo «Ver lo medido» ya no está", () => {
+    // Héroe del 2026-10-03: el principal lleva a #offers, donde cada producto
+    // trae su instalación; el secundario, al banco público con sus informes.
+    const cta = CODIGO.slice(CODIGO.indexOf('className="hero-cta"'), CODIGO.indexOf('className="hero-confianza"'));
     expect(cta).toContain('href="#offers"');
-    expect(cta).toContain('t("hero.ctaOffers")');
-    expect(PAGINA).not.toContain("hero.ctaRun");
+    expect(cta).toContain('t("hero.ctaStart")');
+    expect(cta).toContain('href="/benchmarks"');
+    expect(cta).toContain('t("hero.ctaBench")');
+    expect(cta.match(/className="btn/g)).toHaveLength(2);
+    expect(PAGINA).not.toMatch(/hero\.(ctaRun|ctaOffers|ctaPricing)/);
   });
 
   it("la tarjeta del gateway no lleva cifra: ni hero.proofs, ni el artefacto, ni un porcentaje", () => {

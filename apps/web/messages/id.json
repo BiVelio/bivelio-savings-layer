@@ -781,15 +781,23 @@
     "metaTitle": "BiVelio — Verifikasi Penghematan LLM Anda",
     "metaDescription": "SDK agar aplikasi Anda membayar penyedia LLM hanya untuk yang dibutuhkan, dan gateway yang mengukur agen kode Anda. Semua dengan penghitung penyedia Anda: ukur gratis, lalu bayar per kursi — tanpa komisi atas penghematan Anda.",
     "hero": {
-      "eyebrow": "Untuk tim yang membayar API LLM per token",
       "title": "Tagihan LLM Anda, terkendali.",
       "titleAccent": "Diukur di setiap panggilan.",
-      "lede": "Dua produk, satu aturan. SDK dipasang di dalam aplikasi Anda dan hanya meloloskan yang memang harus dibayar; gateway berdiri di depan agen pemrograman Anda dan mengukur pengeluarannya. Keduanya menghitung dengan penghitung penyedia Anda sendiri dan memisahkan yang terukur dari yang diperkirakan. Kami hanya mempublikasikan yang sudah kami ukur.",
-      "ctaOffers": "SDK atau gateway?",
-      "ctaPricing": "Lihat harga",
+      "sub": "Savings menjawab permintaan yang diulang aplikasi Anda, jadi Anda tidak membayar penyedia dua kali.",
+      "ctaStart": "Mulai",
+      "ctaBench": "Lihat bangku uji publik",
+      "trustMedido": "Diukur langsung dengan meteran milik setiap penyedia",
+      "trustPrivado": "Pesan Anda tidak pernah melewati server kami",
+      "visual": {
+        "menos": "pada tagihan",
+        "intervalo": "Interval 95%: {bajo} – {alto}",
+        "sin": "Tagihan Anda",
+        "con": "Dengan Savings",
+        "condicion": "Dengan {rep} permintaan berulang",
+        "informe": "Laporan lengkap →"
+      },
       "note": "Terpasang dalam hitungan menit. Pesan Anda tidak pernah melewati server kami.",
       "proofTitle": "Diukur terhadap penyedia nyata",
-      "medidoEn": "Diukur pada",
       "compatibleCon": "Kompatibel dengan",
       "compatibleNota": "Kompatibel tidak sama dengan terukur. SDK bekerja dengan endpoint apa pun yang kompatibel dengan API OpenAI, ditambah adaptor native Anthropic dan adaptor native Gemini (baru di {gemini}). Dengan angka penghematan di bangku uji publik, saat ini hanya model OpenAI dan Anthropic; Gemini tidak memiliki angka penghematan. Yang terukur untuk Gemini: {flash}, melalui API native-nya, di bench mingguan langsung {fecha} — keempat baterai, tanpa kegagalan lapisan dan tanpa penolakan yang di-cache atau dikreditkan sebagai penghematan. Bench itu memeriksa bahwa lapisan tidak merusak apa pun dan tidak menagih lebih; bench itu tidak mengukur penghematan. Juga terukur: {pro}, melalui API native-nya, dalam dua putaran parsial pada {fechaPro} (kuota harian penyedianya tidak cukup untuk keempat baterai dalam satu hari): keempat baterai, juga tanpa kegagalan lapisan dan tanpa penolakan yang di-cache atau dihitung sebagai penghematan."
     },

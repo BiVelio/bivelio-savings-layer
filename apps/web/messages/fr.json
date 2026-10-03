@@ -781,15 +781,23 @@
     "metaTitle": "BiVelio — Vérifiez vos économies LLM",
     "metaDescription": "Un SDK pour que votre app ne paie au fournisseur de LLM que ce dont elle a besoin, et un gateway qui mesure votre agent de code. Le tout avec le compteur de votre fournisseur : mesurez gratuitement, puis payez par siège — sans commission sur vos économies.",
     "hero": {
-      "eyebrow": "Pour les équipes qui paient l'API LLM au token",
       "title": "Votre facture LLM, sous contrôle.",
       "titleAccent": "Mesurée à chaque appel.",
-      "lede": "Deux produits, une règle. Le SDK s'installe dans votre app et ne laisse passer que ce qui doit être payé ; le gateway se place devant votre agent de code et mesure sa dépense. Les deux comptent avec le compteur de votre fournisseur et séparent le mesuré de l'estimé. Nous ne publions que ce que nous avons mesuré.",
-      "ctaOffers": "SDK ou gateway ?",
-      "ctaPricing": "Voir les tarifs",
+      "sub": "Savings répond aux requêtes que votre app répète : vous ne payez plus deux fois le fournisseur.",
+      "ctaStart": "Commencer",
+      "ctaBench": "Voir le banc public",
+      "trustMedido": "Mesuré en direct avec le compteur de chaque fournisseur",
+      "trustPrivado": "Vos messages ne passent jamais par nos serveurs",
+      "visual": {
+        "menos": "sur la facture",
+        "intervalo": "Intervalle à 95 % : {bajo} – {alto}",
+        "sin": "Votre facture",
+        "con": "Avec Savings",
+        "condicion": "Avec {rep} de requêtes répétées",
+        "informe": "Rapport complet →"
+      },
       "note": "Installé en quelques minutes. Vos messages ne passent jamais par nos serveurs.",
       "proofTitle": "Mesuré contre un fournisseur réel",
-      "medidoEn": "Mesuré sur",
       "compatibleCon": "Compatible avec",
       "compatibleNota": "Compatible ne veut pas dire mesuré. Le SDK fonctionne avec tout endpoint compatible avec l'API d'OpenAI, plus l'adaptateur natif d'Anthropic et l'adaptateur natif de Gemini (nouveau dans la {gemini}). Avec un chiffre d'économie sur le banc public, aujourd'hui seulement les modèles d'OpenAI et d'Anthropic ; Gemini n'a pas de chiffre d'économie. Ce qui est mesuré pour Gemini : {flash}, par son API native, dans le banc hebdomadaire en direct du {fecha} — les quatre batteries, sans aucune erreur de la couche et sans aucun refus mis en cache ni crédité comme économie. Ce banc vérifie que la couche ne casse rien et ne facture pas en trop ; il ne mesure pas une économie. Également mesuré : {pro}, via son API native, en deux passes partielles le {fechaPro} (son quota quotidien du fournisseur ne permet pas les quatre batteries en un jour) : les quatre batteries, là aussi sans aucune défaillance de la couche et sans aucun refus mis en cache ni compté comme économie."
     },

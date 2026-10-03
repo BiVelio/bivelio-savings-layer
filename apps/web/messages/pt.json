@@ -781,15 +781,23 @@
     "metaTitle": "BiVelio — Verifica a tua poupança em LLM",
     "metaDescription": "Um SDK para que a sua app pague ao fornecedor de LLM só o que precisa, e um gateway que mede o seu agente de código. Tudo com o contador do seu fornecedor: meça grátis e depois pague por lugar — sem comissão sobre a sua poupança.",
     "hero": {
-      "eyebrow": "Para equipas que pagam a API de LLM por tokens",
       "title": "A tua fatura de LLM, sob controlo.",
       "titleAccent": "Medida em cada chamada.",
-      "lede": "Dois produtos, uma regra. O SDK instala-se dentro da tua app e deixa passar só o que é preciso pagar; o gateway põe-se à frente do teu agente de código e mede o seu gasto. Os dois contam com o contador do teu fornecedor e separam o medido do estimado. Publicamos só o que medimos.",
-      "ctaOffers": "SDK ou gateway?",
-      "ctaPricing": "Ver preços",
+      "sub": "O Savings responde aos pedidos que a tua app repete, para não pagares duas vezes ao fornecedor.",
+      "ctaStart": "Começar",
+      "ctaBench": "Ver o banco público",
+      "trustMedido": "Medido ao vivo com o contador de cada fornecedor",
+      "trustPrivado": "As tuas mensagens nunca passam pelos nossos servidores",
+      "visual": {
+        "menos": "na fatura",
+        "intervalo": "Intervalo de 95%: {bajo} – {alto}",
+        "sin": "A tua fatura",
+        "con": "Com o Savings",
+        "condicion": "Com {rep} de pedidos repetidos",
+        "informe": "Relatório completo →"
+      },
       "note": "Instala-se em minutos. As suas mensagens nunca passam pelos nossos servidores.",
       "proofTitle": "Medido contra fornecedor real",
-      "medidoEn": "Medido em",
       "compatibleCon": "Compatível com",
       "compatibleNota": "Compatível não é medido. O SDK funciona com qualquer endpoint compatível com a API da OpenAI, mais o adaptador nativo da Anthropic e o adaptador nativo do Gemini (novo na {gemini}). Com um valor de poupança no banco público, hoje só modelos da OpenAI e da Anthropic; o Gemini não tem valor de poupança. O que está medido do Gemini: {flash}, pela sua API nativa, no banco semanal ao vivo de {fecha} — as quatro baterias, sem nenhum erro da camada e sem nenhuma recusa em cache nem creditada como poupança. Esse banco verifica que a camada não estraga nada nem cobra a mais; não mede uma poupança. Também medido: o {pro}, pela sua API nativa, em duas rodadas parciais de {fechaPro} (a sua quota diária do fornecedor não dá para as quatro baterias num dia): as quatro baterias, também sem nenhuma falha da camada e sem nenhuma recusa em cache nem creditada como poupança."
     },

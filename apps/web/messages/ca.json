@@ -781,15 +781,23 @@
     "metaTitle": "BiVelio — Verifica el teu estalvi en LLM",
     "metaDescription": "Un SDK perquè la teva app pagui al proveïdor de LLM només el que necessita, i un gateway que mesura el teu agent de codi. Tot amb el comptador del teu proveïdor: mesura gratis i després paga per seient, sense comissió sobre el teu estalvi.",
     "hero": {
-      "eyebrow": "Per a equips que paguen l'API de LLM per tokens",
       "title": "La teva factura de LLM, sota control.",
       "titleAccent": "Mesurada a cada crida.",
-      "lede": "Dos productes, una regla. L'SDK s'instal·la dins de la teva app i deixa passar només el que cal pagar; el gateway es posa davant del teu agent de codi i en mesura la despesa. Tots dos compten amb el comptador del teu proveïdor i separen el mesurat de l'estimat. Publiquem només el que hem mesurat.",
-      "ctaOffers": "SDK o gateway?",
-      "ctaPricing": "Veure els preus",
+      "sub": "Savings respon les peticions que la teva app repeteix, perquè no paguis dues vegades al proveïdor.",
+      "ctaStart": "Comença",
+      "ctaBench": "Veure el banc públic",
+      "trustMedido": "Mesurat en viu amb el comptador de cada proveïdor",
+      "trustPrivado": "Els teus missatges no passen pels nostres servidors",
+      "visual": {
+        "menos": "a la factura",
+        "intervalo": "Interval del 95 %: {bajo} – {alto}",
+        "sin": "La teva factura",
+        "con": "Amb Savings",
+        "condicion": "Amb un {rep} de peticions repetides",
+        "informe": "Informe complet →"
+      },
       "note": "S'instal·la en minuts. Els teus missatges no passen pels nostres servidors.",
       "proofTitle": "Mesurat contra proveïdor real",
-      "medidoEn": "Mesurat a",
       "compatibleCon": "Compatible amb",
       "compatibleNota": "Compatible no vol dir mesurat. L'SDK funciona amb qualsevol endpoint compatible amb l'API d'OpenAI, més l'adaptador natiu d'Anthropic i l'adaptador natiu de Gemini (nou a la {gemini}). Amb xifra d'estalvi al banc públic, avui només models d'OpenAI i d'Anthropic; Gemini no té xifra d'estalvi. El que hi ha mesurat de Gemini: {flash}, per la seva API nativa, al banc setmanal en viu del {fecha} — les quatre bateries, sense cap error de la capa i sense cap negativa en memòria cau ni acreditada com a estalvi. Aquest banc comprova que la capa no trenca res ni cobra de més; no mesura un estalvi. També mesurat: {pro}, per la seva API nativa, en dos bancs parcials del {fechaPro} (la seva quota diària del proveïdor no dona per a les quatre bateries en un dia): les quatre bateries, també sense cap error de la capa i sense cap negativa a la memòria cau ni acreditada com a estalvi."
     },

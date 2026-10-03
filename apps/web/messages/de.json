@@ -781,15 +781,23 @@
     "metaTitle": "BiVelio — Verifiziere deine LLM-Einsparungen",
     "metaDescription": "Ein SDK, mit dem deine App dem LLM-Anbieter nur zahlt, was sie braucht, und ein Gateway, das deinen Coding-Agent misst. Gezählt mit dem Zähler deines Anbieters: kostenlos messen, dann pro Seat zahlen — ohne Provision auf deine Ersparnis.",
     "hero": {
-      "eyebrow": "Für Teams, die LLM-APIs pro Token bezahlen",
       "title": "Ihre LLM-Rechnung, unter Kontrolle.",
       "titleAccent": "Gemessen bei jedem Aufruf.",
-      "lede": "Zwei Produkte, eine Regel. Das SDK wird in deine App eingebaut und lässt nur durch, was bezahlt werden muss; das Gateway sitzt vor deinem Coding-Agenten und misst seine Ausgaben. Beide zählen mit dem eigenen Zähler deines Anbieters und halten Gemessenes und Geschätztes getrennt. Wir veröffentlichen nur, was wir gemessen haben.",
-      "ctaOffers": "SDK oder Gateway?",
-      "ctaPricing": "Preise ansehen",
+      "sub": "Savings beantwortet die Anfragen, die Ihre App wiederholt – so zahlen Sie den Anbieter nicht zweimal.",
+      "ctaStart": "Loslegen",
+      "ctaBench": "Zum öffentlichen Benchmark",
+      "trustMedido": "Live gemessen am Zähler des jeweiligen Anbieters",
+      "trustPrivado": "Ihre Nachrichten laufen nie über unsere Server",
+      "visual": {
+        "menos": "auf der Rechnung",
+        "intervalo": "95-%-Intervall: {bajo} – {alto}",
+        "sin": "Ihre Rechnung",
+        "con": "Mit Savings",
+        "condicion": "Bei {rep} wiederholten Anfragen",
+        "informe": "Vollständiger Bericht →"
+      },
       "note": "In Minuten installiert. Deine Nachrichten laufen nie über unsere Server.",
       "proofTitle": "Gegen echten Provider gemessen",
-      "medidoEn": "Gemessen auf",
       "compatibleCon": "Kompatibel mit",
       "compatibleNota": "Kompatibel heißt nicht gemessen. Das SDK funktioniert mit jedem Endpunkt, der mit der OpenAI-API kompatibel ist, dazu mit dem nativen Anthropic-Adapter und dem nativen Gemini-Adapter (neu in {gemini}). Mit einer Einsparungszahl im öffentlichen Benchmark sind heute nur Modelle von OpenAI und Anthropic gemessen; für Gemini gibt es keine Einsparungszahl. Was für Gemini gemessen ist: {flash}, über seine native API, im wöchentlichen Live-Benchmark vom {fecha} — alle vier Batterien, ohne Fehler der Schicht und ohne gecachte oder als Einsparung gutgeschriebene Ablehnung. Dieser Benchmark prüft, dass die Schicht nichts kaputt macht und nicht zu viel berechnet; eine Einsparung misst er nicht. Ebenfalls gemessen: {pro}, über seine native API, in zwei Teilläufen am {fechaPro} (sein tägliches Anbieterkontingent reicht nicht für alle vier Batterien an einem Tag): alle vier Batterien, ebenfalls ohne Fehler der Schicht und ohne gecachte oder als Ersparnis verbuchte Ablehnung."
     },

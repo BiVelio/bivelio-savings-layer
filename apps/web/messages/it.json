@@ -781,15 +781,23 @@
     "metaTitle": "BiVelio — Verifica i tuoi risparmi sugli LLM",
     "metaDescription": "Un SDK perché la tua app paghi al fornitore di LLM solo ciò che le serve, e un gateway che misura il tuo agente di codice. Tutto con il contatore del tuo fornitore: misura gratis, poi paga per postazione — senza commissione sul tuo risparmio.",
     "hero": {
-      "eyebrow": "Per i team che pagano le API LLM a token",
       "title": "La tua fattura LLM, sotto controllo.",
       "titleAccent": "Misurata a ogni chiamata.",
-      "lede": "Due prodotti, una regola. L'SDK si installa nella tua app e lascia passare solo ciò che va pagato; il gateway si mette davanti al tuo agente di codice e ne misura la spesa. Entrambi contano con il contatore del tuo fornitore e tengono separati misurato e stimato. Pubblichiamo solo ciò che abbiamo misurato.",
-      "ctaOffers": "SDK o gateway?",
-      "ctaPricing": "Vedi i prezzi",
+      "sub": "Savings risponde alle richieste che la tua app ripete, così non paghi due volte il fornitore.",
+      "ctaStart": "Inizia",
+      "ctaBench": "Vedi il banco pubblico",
+      "trustMedido": "Misurato dal vivo con il contatore di ogni fornitore",
+      "trustPrivado": "I tuoi messaggi non passano mai dai nostri server",
+      "visual": {
+        "menos": "sulla fattura",
+        "intervalo": "Intervallo al 95%: {bajo} – {alto}",
+        "sin": "La tua fattura",
+        "con": "Con Savings",
+        "condicion": "Con il {rep} di richieste ripetute",
+        "informe": "Report completo →"
+      },
       "note": "Si installa in pochi minuti. I tuoi messaggi non passano mai dai nostri server.",
       "proofTitle": "Misurato contro un provider reale",
-      "medidoEn": "Misurato su",
       "compatibleCon": "Compatibile con",
       "compatibleNota": "Compatibile non vuol dire misurato. L'SDK funziona con qualsiasi endpoint compatibile con l'API di OpenAI, più l'adattatore nativo di Anthropic e l'adattatore nativo di Gemini (novità della {gemini}). Con una cifra di risparmio sul banco pubblico, oggi solo i modelli di OpenAI e di Anthropic; Gemini non ha una cifra di risparmio. Ciò che è misurato per Gemini: {flash}, tramite la sua API nativa, nel banco settimanale dal vivo del {fecha} — tutte e quattro le batterie, senza errori dello strato e senza alcun rifiuto in cache o accreditato come risparmio. Quel banco verifica che lo strato non rompa nulla e non faccia pagare di più; non misura un risparmio. Misurato anche: {pro}, tramite la sua API nativa, in due esecuzioni parziali del {fechaPro} (la sua quota giornaliera del fornitore non basta per le quattro batterie in un giorno): tutte e quattro le batterie, anche qui senza alcun errore del livello e senza alcun rifiuto messo in cache o contato come risparmio."
     },

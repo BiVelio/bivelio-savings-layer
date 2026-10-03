@@ -17,11 +17,14 @@ import { describe, it, expect } from "vitest";
 const leer = (f: string) => readFileSync(fileURLToPath(new URL(f, import.meta.url)), "utf8");
 
 describe("nombres accesibles", () => {
-  it("KineticTitle lleva la frase en un sr-only, no en aria-label", () => {
-    const src = leer("./KineticTitle.tsx");
-    expect(src).not.toMatch(/aria-label=/);
-    expect(src).toMatch(/<span className="sr-only">\{text\}<\/span>/);
-    expect(src).toMatch(/aria-hidden="true"/);
+  // El titular cinético (KineticTitle) se retiró con el héroe nuevo
+  // (2026-10-03): el h1 de la portada es texto llano, sin palabras sueltas
+  // ocultas, así que el nombre accesible es el propio texto.
+  it("el h1 de la portada es texto llano: sin titular cinético ni aria-label", () => {
+    const src = leer("../[locale]/page.tsx");
+    const h1 = src.slice(src.indexOf("<h1>"), src.indexOf("</h1>"));
+    expect(h1).toContain('t("hero.title")');
+    expect(h1).not.toMatch(/aria-label=|aria-hidden|KineticTitle/);
   });
 
   it("el botón de idioma no tapa su texto visible con aria-label", () => {

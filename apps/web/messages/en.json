@@ -781,15 +781,23 @@
     "metaTitle": "BiVelio — Verify Your LLM Savings",
     "metaDescription": "An SDK that has your app pay the LLM provider only for what it needs, and a gateway that meters your coding agent. Counted with your provider's own meter: measure free, then pay per seat — no commission on your savings.",
     "hero": {
-      "eyebrow": "For teams that pay for LLM APIs by the token",
       "title": "Your LLM bill, under control.",
       "titleAccent": "Measured on every call.",
-      "lede": "Two products, one rule. The SDK installs inside your app and lets through only what has to be paid for; the gateway sits in front of your coding agent and meters its spend. Both count with your provider's own meter and keep measured and estimated apart. We publish only what we have measured.",
-      "ctaOffers": "SDK or gateway?",
-      "ctaPricing": "See pricing",
+      "sub": "Savings answers the requests your app repeats, so you don't pay your provider twice.",
+      "ctaStart": "Get started",
+      "ctaBench": "See the public bench",
+      "trustMedido": "Measured live against each provider's own meter",
+      "trustPrivado": "Your messages never pass through our servers",
+      "visual": {
+        "menos": "on the bill",
+        "intervalo": "95% interval: {bajo} – {alto}",
+        "sin": "Your bill",
+        "con": "With Savings",
+        "condicion": "With {rep} repeated requests",
+        "informe": "Full report →"
+      },
       "note": "Installs in minutes. Your messages never pass through our servers.",
       "proofTitle": "Measured against a real provider",
-      "medidoEn": "Measured on",
       "compatibleCon": "Compatible with",
       "compatibleNota": "Compatible is not measured. The SDK works with any endpoint compatible with the OpenAI API, plus the native Anthropic adapter and the native Gemini adapter (new in {gemini}). With a savings figure on the public bench, today only OpenAI and Anthropic models; Gemini has no savings figure. What is measured for Gemini: {flash}, through its native API, in the weekly live bench of {fecha} — all four batteries, with no layer failures and no refusal cached or credited as savings. That bench checks that the layer breaks nothing and does not overcharge; it does not measure a saving. Also measured: {pro}, through its native API, in two partial runs on {fechaPro} (its daily provider quota does not fit all four batteries in one day): all four batteries, again with no layer failures and no refusal cached or credited as savings."
     },

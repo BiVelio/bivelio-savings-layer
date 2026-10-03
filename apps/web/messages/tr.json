@@ -781,15 +781,23 @@
     "metaTitle": "BiVelio — LLM Tasarrufunuzu Doğrulayın",
     "metaDescription": "Uygulamanızın LLM sağlayıcısına yalnızca ihtiyaç duyduğu kadar ödemesini sağlayan bir SDK ve kodlama ajanınızı ölçen bir gateway. Her şey sağlayıcınızın sayacıyla: ücretsiz ölçün, sonra koltuk başına ödeyin — tasarrufunuz üzerinden komisyon yok.",
     "hero": {
-      "eyebrow": "LLM API'lerine token başına ödeyen ekipler için",
       "title": "LLM faturanız, kontrol altında.",
       "titleAccent": "Her çağrıda ölçülür.",
-      "lede": "İki ürün, tek kural. SDK uygulamanızın içine kurulur ve yalnızca ödenmesi gerekeni geçirir; gateway kod ajanınızın önünde durur ve harcamasını ölçer. İkisi de sağlayıcınızın kendi sayacıyla sayar ve ölçüleni tahminiden ayrı tutar. Yalnızca ölçtüğümüzü yayımlarız.",
-      "ctaOffers": "SDK mı, gateway mi?",
-      "ctaPricing": "Fiyatları gör",
+      "sub": "Savings, uygulamanızın tekrarladığı istekleri yanıtlar; sağlayıcıya iki kez ödeme yapmazsınız.",
+      "ctaStart": "Başlayın",
+      "ctaBench": "Herkese açık test tezgâhını görün",
+      "trustMedido": "Her sağlayıcının kendi sayacıyla canlı ölçülür",
+      "trustPrivado": "Mesajlarınız asla sunucularımızdan geçmez",
+      "visual": {
+        "menos": "faturada",
+        "intervalo": "%95 aralık: {bajo} – {alto}",
+        "sin": "Faturanız",
+        "con": "Savings ile",
+        "condicion": "İsteklerin {rep} kadarı tekrarlandığında",
+        "informe": "Tam rapor →"
+      },
       "note": "Dakikalar içinde kurulur. Mesajlarınız asla bizim sunucularımızdan geçmez.",
       "proofTitle": "Gerçek sağlayıcıya karşı ölçüldü",
-      "medidoEn": "Ölçüldüğü yer",
       "compatibleCon": "Uyumlu",
       "compatibleNota": "Uyumlu, ölçülmüş demek değildir. SDK, OpenAI API'siyle uyumlu her uç noktayla, ayrıca yerel Anthropic bağdaştırıcısı ve yerel Gemini bağdaştırıcısıyla ({gemini} sürümünde yeni) çalışır. Herkese açık test tezgâhında tasarruf rakamı olanlar bugün yalnızca OpenAI ve Anthropic modelleridir; Gemini'nin tasarruf rakamı yok. Gemini için ölçülen: {flash}, yerel API'si üzerinden, {fecha} tarihli haftalık canlı testte — dört bataryanın tümü, hiçbir katman hatası olmadan ve önbelleğe alınan ya da tasarruf olarak kredilendirilen hiçbir ret olmadan. Bu test, katmanın hiçbir şeyi bozmadığını ve fazla ücret almadığını kontrol eder; bir tasarrufu ölçmez. Ayrıca ölçüldü: {pro}, yerel API'si üzerinden, {fechaPro} tarihli iki kısmi koşuda (sağlayıcının günlük kotası dört bataryaya bir günde yetmiyor): dört bataryanın tamamı, yine katmandan kaynaklı hiçbir hata olmadan ve önbelleğe alınmış ya da tasarruf sayılmış hiçbir ret olmadan."
     },

@@ -296,19 +296,17 @@ describe("«BiVelio» en el título de la banda: navy con las íes en color, com
 });
 
 describe("está en los dos sitios pedidos, y solo ahí — el héroe ya no", () => {
-  it("héroe: SIN el sello — de «Se instala en minutos…» se pasa a «Compatible con» como antes del distintivo", () => {
-    const cta = PAGINA.indexOf('className="hero-cta"');
-    const nota = PAGINA.indexOf('className="hero-note"');
+  it("héroe: SIN el sello — ni en el héroe ni en la banda «Compatible con» de debajo", () => {
+    // Desde el 2026-10-03 el héroe es titular, entradilla, botones, sellos de
+    // confianza y la factura medida; «Compatible con» va en su banda propia.
+    const heroe = PAGINA.indexOf('<section className="hero">');
     const compat = PAGINA.indexOf('className="hero-compat"');
-    expect(cta).toBeGreaterThan(-1);
-    expect(nota).toBeGreaterThan(cta);
-    expect(compat).toBeGreaterThan(nota);
-    // Entre la nota y «Compatible con» no hay componente, clase ni copy del
-    // programa: ni el distintivo desnudo, ni su <div>, ni la frase corta.
-    const entre = PAGINA.slice(nota, compat);
+    expect(heroe).toBeGreaterThan(-1);
+    expect(compat).toBeGreaterThan(heroe);
+    const entre = PAGINA.slice(heroe, PAGINA.indexOf("</section>", compat));
     expect(entre).not.toMatch(/Nvidia|nvidia|NVIDIA/);
     expect(entre).not.toContain("hero-nvidia");
-    expect(entre).not.toMatch(/<(a|img)\s/);
+    expect(entre).not.toMatch(/<img\s/);
     // Y en toda la página, solo la banda: ni el componente del héroe (que ya
     // no existe) ni su clave.
     expect(PAGINA).not.toContain("NvidiaInceptionBadge");
@@ -325,13 +323,6 @@ describe("está en los dos sitios pedidos, y solo ahí — el héroe ya no", () 
     expect(CSS).not.toContain(".nvi-badge");
     expect(CSS).not.toMatch(/max-height: 720px\)[^\n]*120px/);
     expect(CSS).toMatch(/@media \(max-height: 720px\) \{\n\s*\.lp \.hero \{ min-height: 0;/);
-    // La separación de antes del distintivo: «Compatible con» sigue a 30 px de
-    // la nota con su hairline y sus 20 px de aire, y la nota conserva sus 20.
-    const compat_css = regla(".hero-compat");
-    expect(compat_css).toMatch(/margin-top:\s*30px/);
-    expect(compat_css).toMatch(/padding-top:\s*20px/);
-    expect(compat_css).toMatch(/border-top:\s*1px solid var\(--line\)/);
-    expect(regla(".hero-note")).toMatch(/margin-top:\s*20px/);
   });
 
   it("banda: la de bivelio.com, a sangre completa entre el <main> y el pie, con las cuatro claves", () => {
