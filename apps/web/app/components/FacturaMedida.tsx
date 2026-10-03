@@ -12,7 +12,8 @@ type TraductorLanding = (clave: string, params?: Record<string, string | number>
  *
  * Dos barras en CSS (nada de imagen de stock ni generada): la factura directa
  * al proveedor y la de Savings, más corta en lo que midió el banco público en
- * vivo, con la horquilla del IC 95 % dibujada en su extremo. Encima, la cifra;
+ * vivo; el IC 95 % va en texto junto a la cifra (variante B: barras limpias,
+ * sin horquilla ni tramo discontinuo). Encima, la cifra;
  * debajo, su condición («con un 30 % de peticiones repetidas»), el modelo y el
  * enlace al informe. Las cifras y los anchos salen de facturaDelHeroe(), que
  * los lee de BANCO_EN_VIVO.
@@ -22,11 +23,7 @@ type TraductorLanding = (clave: string, params?: Record<string, string | number>
  */
 export function FacturaMedida({ t, locale }: { t: TraductorLanding; locale: string }) {
   const f = facturaDelHeroe(locale);
-  const anchos = {
-    "--fb-con": f.barra.con,
-    "--fb-desde": f.barra.desde,
-    "--fb-hasta": f.barra.hasta,
-  } as CSSProperties;
+  const anchos = { "--fb-con": f.barra.con } as CSSProperties;
   return (
     <figure className="factura" style={anchos}>
       <span className="factura-t">{t("enVivo.titulo", { fecha: f.fecha })}</span>
@@ -52,9 +49,7 @@ export function FacturaMedida({ t, locale }: { t: TraductorLanding; locale: stri
         <div className="fb">
           <span className="fb-k">{t("hero.visual.con")}</span>
           <span className="fb-pista" aria-hidden="true">
-            <i className="fb-ahorro" />
             <i className="fb-con" />
-            <i className="fb-ic" />
           </span>
         </div>
       </div>

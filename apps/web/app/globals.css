@@ -2540,20 +2540,9 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .lp .fb-pista i { position: absolute; top: 0; bottom: 0; display: block; border-radius: 8px; }
 .lp .fb-sin { left: 0; right: 0; background: color-mix(in srgb, var(--ink-soft) 42%, var(--surface-2)); }
 .lp .fb-con { left: 0; width: calc(var(--fb-con) * 100%); background: linear-gradient(90deg, var(--brand), var(--ui)); box-shadow: var(--shadow-brand); }
-/* Lo que ya no se paga: el hueco hasta la factura entera, en menta y discontinuo. */
-.lp .fb-ahorro { left: calc(var(--fb-con) * 100% + 4px); right: 0; box-sizing: border-box; background: var(--mint-soft); border: 1.5px dashed color-mix(in srgb, var(--mint) 70%, transparent); }
-/* La horquilla del IC 95 % sobre el extremo de la barra. */
-.lp .fb-pista .fb-ic {
-  top: -6px; bottom: -6px; border-radius: 0; box-sizing: border-box;
-  left: calc(var(--fb-desde) * 100%); width: calc((var(--fb-hasta) - var(--fb-desde)) * 100%);
-  --fb-ic-c: color-mix(in srgb, var(--ink) 72%, transparent);
-  border-left: 1.5px solid var(--fb-ic-c); border-right: 1.5px solid var(--fb-ic-c);
-  background: linear-gradient(var(--fb-ic-c), var(--fb-ic-c)) center / 100% 1.5px no-repeat;
-}
 @keyframes fb-baja { from { width: 100%; } }
 @media (prefers-reduced-motion: no-preference) {
   .lp .fb-con { animation: fb-baja 1.3s cubic-bezier(.22, 1, .36, 1) .35s both; }
-  .lp .fb-ahorro, .lp .fb-pista .fb-ic { animation: lp-fade .5s ease-out 1.3s both; }
 }
 @media (prefers-reduced-motion: reduce) {
   .lp .factura-t::before, .lp .hero-confianza { animation: none; }
