@@ -933,10 +933,11 @@ const { data, text } = await layer.generate<{ answer: number }>({
 console.log(data.answer); // 8
 ```
 
-A question the layer answers on its own (the arithmetic of the first example)
-never reaches the model, so its `data` is the resolver's `{ value: 8 }`, not
-your schema's shape: `report.qualityLedger` says the contract was not met.
-Ask the model for anything you want in your contract's shape.
+A question the layer can answer on its own (the arithmetic of the first
+example) is only served without the model when that answer meets your schema.
+The arithmetic resolver returns `{ value: 8 }`: with a `{ answer: number }`
+contract it steps aside and the request goes to the model, which answers in
+your contract's shape.
 
 </details>
 
