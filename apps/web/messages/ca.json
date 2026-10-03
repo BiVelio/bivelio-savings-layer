@@ -370,6 +370,11 @@
       "noLever": "{n, plural, one {# màquina està al dia} other {# màquines estan al dia}}, però la palanca no hi ha actuat. Si segueix igual després d'actualitzar, escriu-nos a support@bivelio.com.",
       "action": "Actualitza @bivelio/savings-layer en aquella màquina i reinicia el terminal; la taula de màquines de sota mostra què declara cadascuna."
     },
+    "gatewayBruto": {
+      "title": "L'estalvi d'algunes màquines encara s'informa en brut",
+      "summary": "{n, plural, one {# màquina executa} other {# màquines executen}} un gateway anterior a {minima} o no declara versió. El seu estalvi per la rebaixa de la memòria cau compta la prima que evita, però no resta les vegades que la memòria cau de 5 minuts caduca i cal tornar-la a escriure. En el nostre propi trànsit aquests errors es mengen al voltant d'un 30 % d'aquesta xifra. Des de la {minima} el gateway els resta i aquest tauler mostra l'estalvi net.",
+      "action": "Actualitza @bivelio/savings-layer a la {minima} o posterior en aquesta màquina i reinicia el terminal. El que ja està registrat no es recalcula: el net compta des de l'actualització."
+    },
     "sdkReferencia": {
       "title": "Algunes màquines executen un SDK anterior a {minima}: les seves repeticions no es mesuren per referència",
       "summary": "{n, plural, one {# màquina executa} other {# màquines executen}} un SDK anterior a {minima} (la més antiga declara {antigua}). Fins que s'actualitzin, les seves peticions repetides compten com a estimades, no com a mesurades per referència: continuen als teus totals, però fora de la base.",

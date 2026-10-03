@@ -34,7 +34,7 @@
  */
 
 import { VERSION_MINIMA_REFERENCIA, admiteReferencia } from "../metering/version";
-import { VERSION_MINIMA_PALANCA_TARIFA } from "./minima";
+import { VERSION_MINIMA_AHORRO_NETO, VERSION_MINIMA_PALANCA_TARIFA } from "./minima";
 import { compararVersiones, parsearVersion, superficieDe } from "./semver";
 
 export const DIA_MS = 86_400_000;
@@ -190,4 +190,54 @@ export function decidirAvisoReferencia(asientos: readonly AsientoVisto[], nowMs:
     versionMasAntigua: versionMasAntigua!,
     minima: VERSION_MINIMA_REFERENCIA,
   };
+}
+
+/**
+ * ¿Hay máquinas cuyo ahorro medido se está informando EN BRUTO? Decisión PURA,
+ * hermana de las dos de arriba e independiente de ellas.
+ *
+ * Hasta la 0.5.0 el gateway acreditaba la prima de cada escritura de caché
+ * rebajada (1h → 5 min) y no restaba el fallo que la rebaja provoca en el turno
+ * siguiente, cuando la entrada de 5 min ya caducó. Desde
+ * `VERSION_MINIMA_AHORRO_NETO` lo resta. Lo ya registrado no se recalcula, así
+ * que mientras una máquina siga por debajo, lo que suma al titular es bruto — y
+ * el panel lo dice en vez de callarlo.
+ *
+ *   · Solo asientos NO CI, de superficie gateway o sin declarar (el SDK no
+ *     lleva la rebaja de TTL), vistos en los últimos 7 días.
+ *   · Solo los que TIENEN ahorro medido en 7 días: sin dinero no hay bruto que
+ *     etiquetar (y de esos ya habla `decidirAvisoVersion`).
+ *   · Versión por debajo de la mínima, o sin declarar: en los dos casos no se
+ *     puede afirmar que el dato sea neto, y el lado seguro es etiquetarlo.
+ */
+export interface AvisoBruto {
+  tipo: "gatewayAhorroBruto";
+  /** Asientos con ahorro medido en 7 días que no declaran una versión con el neto. */
+  maquinas: number;
+  /** De ellas, las que no declaran versión. */
+  sinDeclarar: number;
+  minima: string;
+}
+
+export function decidirAvisoBruto(
+  asientos: readonly AsientoVisto[],
+  nowMs: number,
+  minima = VERSION_MINIMA_AHORRO_NETO,
+): AvisoBruto | null {
+  let maquinas = 0;
+  let sinDeclarar = 0;
+  for (const a of asientos) {
+    if (a.isCi || a.surface === "sdk") continue;
+    const visto = Date.parse(a.lastSeenAt);
+    if (Number.isNaN(visto)) continue;
+    const hace = nowMs - visto;
+    if (hace < 0 || hace > VENTANA_AVISO_DIAS * DIA_MS) continue;
+    if (!(a.ahorroMedido7dUsd > 0)) continue;
+    const estado = estadoVersion(a, minima);
+    if (estado === "alDia") continue;
+    maquinas++;
+    if (estado === "desconocida") sinDeclarar++;
+  }
+  if (maquinas === 0) return null;
+  return { tipo: "gatewayAhorroBruto", maquinas, sinDeclarar, minima };
 }

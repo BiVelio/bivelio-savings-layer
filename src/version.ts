@@ -6,7 +6,7 @@
  * on the customer's machine. `test/version-declarada.test.ts` ties this
  * constant to package.json so the two can never drift.
  */
-export const BV_SALA_VERSION = "0.5.0";
+export const BV_SALA_VERSION = "0.5.1";
 
 // ---------------------------------------------------------------------------
 // Lo de abajo es INTERNO: no sale por src/index.ts (la superficie pública solo
@@ -38,6 +38,21 @@ export const CABECERA_VERSION = "x-bvsala-version";
  * el espejo no derive y que no sea mayor que la versión publicada.
  */
 export const VERSION_MINIMA_PALANCA_TARIFA = "0.4.16";
+
+/**
+ * Política A MANO: la primera versión cuyo gateway informa el ahorro de la
+ * rebaja de TTL en NETO. Hasta la 0.5.0 acreditaba la prima de cada escritura
+ * rebajada (el bruto) y no restaba el fallo de caché que la rebaja provoca en
+ * el turno siguiente, cuando la entrada de 5 min ya caducó; el banco del
+ * 2026-10-03 (docs/benchmarks/2026-10-03/ttl.md) midió que esos fallos se
+ * comen alrededor de un 30 % del bruto. Desde la 0.5.1 el turno que sufre el
+ * fallo lo resta (gateway/fallos-ttl.ts).
+ *
+ * El panel la usa para ETIQUETAR: una máquina con gateway por debajo de esta
+ * versión y ahorro medido lo está informando en bruto, y el panel lo dice.
+ * Espejo en apps/web/lib/version/minima.ts, atado por test.
+ */
+export const VERSION_MINIMA_AHORRO_NETO = "0.5.1";
 
 /**
  * Política A MANO: la primera versión que emite registros `basis: "reference"`

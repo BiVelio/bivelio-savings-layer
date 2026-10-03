@@ -370,6 +370,11 @@
       "noLever": "{n, plural, one {# máquina está atualizada} other {# máquinas estão atualizadas}}, mas a alavanca não atuou aí. Se continuar igual depois de atualizar, escreve para support@bivelio.com.",
       "action": "Atualiza @bivelio/savings-layer nessa máquina e reinicia o terminal; a tabela de máquinas abaixo mostra o que cada uma declara."
     },
+    "gatewayBruto": {
+      "title": "A poupança de algumas máquinas ainda é reportada em bruto",
+      "summary": "{n, plural, one {# máquina corre} other {# máquinas correm}} um gateway anterior à {minima} ou não declara versão. A sua poupança pela redução do TTL da cache conta o prémio evitado, mas não subtrai as vezes em que a cache de 5 minutos expira e tem de ser escrita de novo. No nosso próprio tráfego essas falhas consomem cerca de 30% desse valor. A partir da {minima} o gateway subtrai-as e este painel mostra a poupança líquida.",
+      "action": "Atualiza @bivelio/savings-layer para a {minima} ou posterior nessa máquina e reinicia o terminal. O que já está registado não é recalculado: o líquido conta a partir da atualização."
+    },
     "sdkReferencia": {
       "title": "Algumas máquinas correm um SDK anterior a {minima}: as suas repetições não são medidas por referência",
       "summary": "{n, plural, one {# máquina corre} other {# máquinas correm}} um SDK anterior a {minima} (a mais antiga declara {antigua}). Até serem atualizadas, os seus pedidos repetidos contam como estimados, não como medidos por referência: continuam nos teus totais, mas fora da base.",

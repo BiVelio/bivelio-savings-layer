@@ -370,6 +370,11 @@
       "noLever": "{n, plural, one {# makine güncel} other {# makine güncel}}, ancak tarife kolu orada devreye girmedi. Güncellemeden sonra aynı kalırsa support@bivelio.com adresine yazın.",
       "action": "O makinede @bivelio/savings-layer paketini güncelleyin ve terminali yeniden başlatın; aşağıdaki makine tablosu her birinin ne bildirdiğini gösterir."
     },
+    "gatewayBruto": {
+      "title": "Bazı makinelerin tasarrufu hâlâ brüt olarak bildiriliyor",
+      "summary": "{n, plural, one {# makine} other {# makine}} {minima} sürümünden eski bir gateway çalıştırıyor veya sürüm bildirmiyor. Önbellek TTL indiriminden gelen tasarrufu, kaçınılan primi sayar; ancak 5 dakikalık önbelleğin süresinin dolduğu ve yeniden yazılması gereken durumları düşmez. Kendi trafiğimizde bu ıskalar o rakamın yaklaşık %30'unu yiyor. {minima} sürümünden itibaren gateway bunları düşer ve bu panel net tasarrufu gösterir.",
+      "action": "O makinede @bivelio/savings-layer paketini {minima} veya sonrasına güncelleyin ve terminali yeniden başlatın. Kaydedilmiş olanlar yeniden hesaplanmaz: net rakam güncellemeden itibaren sayılır."
+    },
     "sdkReferencia": {
       "title": "Bazı makineler {minima} sürümünden eski bir SDK çalıştırıyor: tekrarları referansla ölçülmüyor",
       "summary": "{n, plural, other {# makine}} {minima} sürümünden eski bir SDK çalıştırıyor (en eskisi {antigua} bildiriyor). Güncellenene kadar tekrarlanan istekleri referansla ölçülmüş değil, tahmini sayılır: toplamlarınızda kalır ama tabanın dışındadır.",

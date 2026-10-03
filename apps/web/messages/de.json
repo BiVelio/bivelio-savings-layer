@@ -370,6 +370,11 @@
       "noLever": "{n, plural, one {# Maschine ist aktuell} other {# Maschinen sind aktuell}}, aber der Hebel hat dort nicht gegriffen. Bleibt es nach dem Update so, schreib an support@bivelio.com.",
       "action": "Aktualisiere @bivelio/savings-layer auf dieser Maschine und starte das Terminal neu; die Maschinentabelle unten zeigt, was jede meldet."
     },
+    "gatewayBruto": {
+      "title": "Einige Maschinen melden ihre Ersparnis noch brutto",
+      "summary": "{n, plural, one {# Maschine nutzt} other {# Maschinen nutzen}} ein Gateway älter als {minima} oder meldet keine Version. Die Ersparnis durch die Cache-TTL-Senkung zählt den vermiedenen Aufschlag, zieht aber nicht ab, wenn der 5-Minuten-Cache abläuft und neu geschrieben werden muss. In unserem eigenen Traffic fressen diese Fehltreffer etwa 30 % dieses Betrags. Ab {minima} zieht das Gateway sie ab und dieses Dashboard zeigt die Netto-Ersparnis.",
+      "action": "Aktualisiere @bivelio/savings-layer auf dieser Maschine auf {minima} oder neuer und starte das Terminal neu. Bereits Erfasstes wird nicht neu berechnet: Netto zählt ab der Aktualisierung."
+    },
     "sdkReferencia": {
       "title": "Einige Maschinen laufen mit einem SDK älter als {minima}: ihre Wiederholungen werden nicht per Referenz gemessen",
       "summary": "{n, plural, one {# Maschine läuft} other {# Maschinen laufen}} mit einem SDK älter als {minima} (die älteste meldet {antigua}). Bis sie aktualisiert werden, zählen ihre wiederholten Anfragen als geschätzt, nicht als per Referenz gemessen: Sie bleiben in deinen Summen, aber außerhalb der Basis.",

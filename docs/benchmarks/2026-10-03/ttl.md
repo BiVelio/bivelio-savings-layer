@@ -153,6 +153,13 @@ En opus-5 y sonnet-5 producción vio más peticiones que la captura (el 10-09 y
 el 11-09 el espía no estuvo en todo el tráfico), de ahí que su bruto sea mayor
 que el de la captura ($31,66 y $21,79).
 
+> **Corregido en la 0.5.1 (2026-10-03).** Desde esa versión el gateway resta el
+> fallo en el turno que lo sufre (`gateway/fallos-ttl.ts`): observa que el turno
+> leyó menos de lo que conservaba del anterior y lo reescribió, y baja su
+> baseline. La sombra de la licencia Medir aplica la aritmética de este banco.
+> Lo registrado antes no se recalcula, y el panel etiqueta como «en bruto» a las
+> máquinas con un gateway anterior. Lo que sigue describe la 0.5.0 y anteriores.
+
 **La cifra de producción es BRUTA**, no neta: `sobrecosteEvitado`
 (`gateway/medidor.ts`) acredita la prima de cada escritura rebajada y no resta
 los fallos que la rebaja provoca en el turno siguiente — no puede: el turno que
