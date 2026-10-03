@@ -370,6 +370,11 @@
       "noLever": "{n, plural, other {# máy đã cập nhật}}, nhưng đòn bẩy chưa hoạt động ở đó. Nếu vẫn vậy sau khi cập nhật, hãy viết cho support@bivelio.com.",
       "action": "Cập nhật @bivelio/savings-layer trên máy đó và khởi động lại terminal; bảng máy bên dưới cho thấy mỗi máy khai báo gì."
     },
+    "gatewayBruto": {
+      "title": "Khoản tiết kiệm của một số máy vẫn được báo cáo ở dạng gộp",
+      "summary": "{n, plural, other {# máy đang chạy}} gateway cũ hơn {minima} hoặc không khai báo phiên bản. Khoản tiết kiệm từ việc hạ TTL của bộ nhớ đệm tính phần phụ phí tránh được, nhưng không trừ những lần bộ nhớ đệm 5 phút hết hạn và phải ghi lại. Trên lưu lượng của chính chúng tôi, những lần trượt đó ăn mất khoảng 30% con số ấy. Từ {minima}, gateway trừ chúng đi và bảng điều khiển này hiển thị khoản tiết kiệm ròng.",
+      "action": "Cập nhật @bivelio/savings-layer lên {minima} hoặc mới hơn trên máy đó và khởi động lại terminal. Những gì đã ghi nhận không được tính lại: số ròng được tính từ lúc cập nhật."
+    },
     "sdkReferencia": {
       "title": "Một số máy đang chạy SDK cũ hơn {minima}: các lượt lặp lại của chúng không được đo theo tham chiếu",
       "summary": "{n, plural, other {# máy đang chạy}} SDK cũ hơn {minima} (máy cũ nhất khai báo {antigua}). Cho đến khi cập nhật, các yêu cầu lặp lại của chúng được tính là ước tính, không phải đo theo tham chiếu: vẫn nằm trong tổng của bạn, nhưng ngoài cơ sở.",

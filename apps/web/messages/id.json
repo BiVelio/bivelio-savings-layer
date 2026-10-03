@@ -370,6 +370,11 @@
       "noLever": "{n, plural, other {# mesin sudah mutakhir}}, tetapi tuasnya tidak bekerja di sana. Jika tetap sama setelah memperbarui, tulis ke support@bivelio.com.",
       "action": "Perbarui @bivelio/savings-layer di mesin itu dan mulai ulang terminal; tabel mesin di bawah menunjukkan apa yang dideklarasikan masing-masing."
     },
+    "gatewayBruto": {
+      "title": "Penghematan beberapa mesin masih dilaporkan secara bruto",
+      "summary": "{n, plural, one {# mesin menjalankan} other {# mesin menjalankan}} gateway yang lebih lama dari {minima} atau tidak menyatakan versi. Penghematannya dari penurunan TTL cache menghitung premi yang dihindari, tetapi tidak mengurangi saat cache 5 menit kedaluwarsa dan harus ditulis ulang. Pada trafik kami sendiri, kegagalan itu memakan sekitar 30% dari angka tersebut. Mulai {minima}, gateway menguranginya dan dasbor ini menampilkan penghematan bersih.",
+      "action": "Perbarui @bivelio/savings-layer ke {minima} atau yang lebih baru di mesin itu dan mulai ulang terminal. Yang sudah tercatat tidak dihitung ulang: angka bersih berlaku sejak pembaruan."
+    },
     "sdkReferencia": {
       "title": "Beberapa mesin menjalankan SDK yang lebih lama dari {minima}: pengulangannya tidak diukur berdasarkan referensi",
       "summary": "{n, plural, other {# mesin menjalankan}} SDK yang lebih lama dari {minima} (yang tertua mendeklarasikan {antigua}). Sampai diperbarui, permintaan berulangnya dihitung sebagai estimasi, bukan diukur berdasarkan referensi: tetap ada di total Anda, tetapi di luar basis.",

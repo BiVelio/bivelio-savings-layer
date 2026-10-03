@@ -370,6 +370,11 @@
       "noLever": "{n, plural, one {# machine est à jour} other {# machines sont à jour}}, mais le levier n'y a pas agi. Si rien ne change après la mise à jour, écrivez à support@bivelio.com.",
       "action": "Mettez à jour @bivelio/savings-layer sur cette machine et relancez le terminal ; le tableau des machines ci-dessous montre ce que chacune déclare."
     },
+    "gatewayBruto": {
+      "title": "L'économie de certaines machines est encore déclarée en brut",
+      "summary": "{n, plural, one {# machine utilise} other {# machines utilisent}} un gateway antérieur à {minima} ou ne déclare pas de version. Son économie liée à la baisse du TTL du cache compte la prime évitée, mais ne retranche pas les fois où le cache de 5 minutes expire et doit être réécrit. Sur notre propre trafic, ces échecs absorbent environ 30 % de ce chiffre. À partir de la {minima}, le gateway les retranche et ce tableau de bord affiche l'économie nette.",
+      "action": "Mettez à jour @bivelio/savings-layer vers la {minima} ou une version ultérieure sur cette machine et redémarrez le terminal. Ce qui est déjà enregistré n'est pas recalculé : le net compte à partir de la mise à jour."
+    },
     "sdkReferencia": {
       "title": "Certaines machines exécutent un SDK antérieur à {minima} : leurs répétitions ne sont pas mesurées par référence",
       "summary": "{n, plural, one {# machine exécute} other {# machines exécutent}} un SDK antérieur à {minima} (la plus ancienne déclare {antigua}). Tant qu'elles ne sont pas mises à jour, leurs requêtes répétées comptent comme estimées, et non comme mesurées par référence : elles restent dans vos totaux, mais hors de la base.",

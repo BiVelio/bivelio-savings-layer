@@ -16,6 +16,7 @@ import { temaSensibleEnTextos, type TemaSensible } from "../src/policy/tema-sens
 import { SseParser, type SseMessage } from "../src/providers/sse.js";
 import type { HuellaDeLaPrimaria } from "./coalescencia.js";
 import type { CambioDeModelo } from "./hermano.js";
+import { costeDeFallo } from "./fallos-ttl.js";
 
 export type { CambioDeModelo } from "./hermano.js";
 
@@ -185,6 +186,14 @@ export interface RebajaAplicada {
    * declaraHerramientaDeServidor).
    */
   herramientaDeServidor: boolean;
+}
+
+/**
+ * El fallo de caché que la rebaja de TTL provocó en ESTE turno: tokens que con
+ * la entrada de 1h se habrían leído y hubo que reescribir (fallos-ttl.ts).
+ */
+export interface FalloTtl {
+  perdidos: number;
 }
 
 /** Lo que el proveedor declara haber borrado en una respuesta (su contador, no el nuestro). */
@@ -1102,9 +1111,15 @@ export function informeMedido(
    * mide a coste 0 y no se acredita nada. Ver construirInforme.
    */
   sinCobro?: boolean,
+  /**
+   * Los tokens que este turno reescribió porque la rebaja del turno anterior
+   * dejó caducar su entrada de 5 min. Se RESTAN del ahorro: ver construirInforme.
+   */
+  falloTtl?: FalloTtl | null,
 ): SavingsReport {
   return construirInforme(
     requestId, model, medido, false, atribucion, elision, rebaja, hermano, subscription, upstreamNoOficial, sinCobro === true,
+    falloTtl ?? null,
   );
 }
 
@@ -1487,6 +1502,7 @@ function construirInforme(
   subscription = false,
   upstreamNoOficial = false,
   sinCobro = false,
+  falloTtl: FalloTtl | null = null,
 ): SavingsReport {
   // UNA NEGATIVA QUE ANTHROPIC NO COBRA (decisión del dueño, 2026-09-28): una
   // negativa antes de cualquier salida en `cyber`, `general_harms` o categoría
@@ -1539,13 +1555,49 @@ function construirInforme(
   // Y una negativa que no se cobró tampoco acredita palanca alguna (arriba).
   const acreditaPalancas = acreditable && !sinCobro;
   const escrita5m = medido.tokens.cacheEscrita - medido.tokens.cacheEscrita1h;
+  // ── EL NETO (2026-10-03) · el fallo de caché que la rebaja provocó ───────
+  //
+  // Hasta la 0.5.0 esto acreditaba el BRUTO: la prima de cada escritura
+  // rebajada, sin restar que la entrada de 5 min caduca antes y el turno
+  // siguiente tiene que reescribir lo que con 1h habría leído. El banco de TTL
+  // (docs/benchmarks/2026-10-03/ttl.md) midió que esos fallos se comen
+  // alrededor de un 30 % del bruto. Ahora el turno que SUFRE el fallo lo resta:
+  // `falloTtl.perdidos` son los tokens que este turno reescribió por culpa de
+  // la rebaja del turno anterior (fallos-ttl.ts). Sin la palanca se habrían
+  // leído, así que
+  //  · el baseline los cuenta a precio de LECTURA, no a lo que se pagó
+  //    (`costeFalloTtl` baja el baseline: este turno puede salir en NEGATIVO);
+  //  · y si este turno también va rebajado, no acreditan prima: sin la palanca
+  //    no se habrían escrito a 1h, se habrían leído.
+  // Solo donde la palanca acredita dinero (`acreditaPalancas`): donde no se
+  // enseña el ahorro tampoco se enseña su coste.
+  const perdidos = acreditaPalancas && falloTtl ? Math.max(0, Math.min(falloTtl.perdidos, medido.tokens.cacheEscrita)) : 0;
+  const rebajaAcreditable =
+    acreditaPalancas && rebaja && rebaja.rebajadas > 0 && rebaja.yaEran5m === 0 && !rebaja.herramientaDeServidor;
   const sobrecosteEvitado =
-    acreditaPalancas && rebaja && rebaja.rebajadas > 0 && rebaja.yaEran5m === 0 && !rebaja.herramientaDeServidor && escrita5m > 0
-      ? (escrita5m / 1_000) * medido.precio.inputPer1k * (PRIMA_ESCRITURA_CACHE_1H - PRIMA_ESCRITURA_CACHE)
+    rebajaAcreditable && escrita5m - perdidos > 0
+      ? ((escrita5m - perdidos) / 1_000) * medido.precio.inputPer1k * (PRIMA_ESCRITURA_CACHE_1H - PRIMA_ESCRITURA_CACHE)
       : 0;
+  // La prima a la que se reescribió lo perdido: la media de las escrituras de
+  // ESTE turno (1,25× si todo fue a 5 min, 2× si todo fue a 1h).
+  const primaPagada =
+    medido.tokens.cacheEscrita > 0
+      ? (Math.max(0, escrita5m) * PRIMA_ESCRITURA_CACHE + medido.tokens.cacheEscrita1h * PRIMA_ESCRITURA_CACHE_1H) /
+        medido.tokens.cacheEscrita
+      : PRIMA_ESCRITURA_CACHE_1H;
+  const costeFalloTtl = Math.min(
+    medido.costeUsd,
+    costeDeFallo({
+      perdidos,
+      inputPer1k: medido.precio.inputPer1k,
+      cachedInputPer1k: medido.precio.cachedInputPer1k,
+      primaEscritura: primaPagada,
+    }),
+  );
   const ahorroHermano = acreditaPalancas && hermano ? ahorroDeHermano(hermano, medido) : 0;
-  const baselineMedido = medido.costeUsd + sobrecosteEvitado + ahorroHermano;
-  const ahorroMedido = sobrecosteEvitado + ahorroHermano;
+  // Nunca por debajo de 0: el baseline es un importe (la verja del ingest).
+  const baselineMedido = Math.max(0, medido.costeUsd + sobrecosteEvitado + ahorroHermano - costeFalloTtl);
+  const ahorroMedido = baselineMedido - medido.costeUsd;
   // B2 · el suelo de la elisión del proveedor (ver sueloDeElision). Una gemela
   // coalescida no viajó: no elidió nada y no tiene suelo.
   const sueloElision = coalescida || upstreamNoOficial || sinCobro ? 0 : sueloDeElision(medido.precio, elision);

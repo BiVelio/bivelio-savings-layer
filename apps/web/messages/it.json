@@ -370,6 +370,11 @@
       "noLever": "{n, plural, one {# macchina è aggiornata} other {# macchine sono aggiornate}}, ma la leva non ha agito lì. Se resta così dopo l'aggiornamento, scrivi a support@bivelio.com.",
       "action": "Aggiorna @bivelio/savings-layer su quella macchina e riavvia il terminale; la tabella delle macchine qui sotto mostra cosa dichiara ciascuna."
     },
+    "gatewayBruto": {
+      "title": "Il risparmio di alcune macchine è ancora riportato al lordo",
+      "summary": "{n, plural, one {# macchina usa} other {# macchine usano}} un gateway precedente alla {minima} o non dichiara la versione. Il suo risparmio per la riduzione del TTL della cache conta il sovrapprezzo evitato, ma non sottrae le volte in cui la cache di 5 minuti scade e va riscritta. Sul nostro traffico questi mancati riscontri si mangiano circa il 30% di quella cifra. Dalla {minima} il gateway li sottrae e questo pannello mostra il risparmio netto.",
+      "action": "Aggiorna @bivelio/savings-layer alla {minima} o successiva su quella macchina e riavvia il terminale. Ciò che è già registrato non viene ricalcolato: il netto conta dall'aggiornamento."
+    },
     "sdkReferencia": {
       "title": "Alcune macchine eseguono un SDK precedente a {minima}: le loro ripetizioni non sono misurate per riferimento",
       "summary": "{n, plural, one {# macchina esegue} other {# macchine eseguono}} un SDK precedente a {minima} (la più vecchia dichiara {antigua}). Finché non vengono aggiornate, le loro richieste ripetute contano come stimate, non come misurate per riferimento: restano nei tuoi totali, ma fuori dalla base.",

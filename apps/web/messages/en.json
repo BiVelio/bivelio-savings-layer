@@ -370,6 +370,11 @@
       "noLever": "{n, plural, one {# machine is up to date} other {# machines are up to date}}, but the lever has not acted there. If it stays that way after updating, write to support@bivelio.com.",
       "action": "Update @bivelio/savings-layer on that machine and restart the terminal; the machines table below shows what each one declares."
     },
+    "gatewayBruto": {
+      "title": "Some machines still report their savings gross",
+      "summary": "{n, plural, one {# machine runs} other {# machines run}} a gateway older than {minima} or declares no version. Its saving from the cache TTL downgrade counts the premium it avoids, but does not subtract the times the 5-minute cache expires and has to be written again. On our own traffic those misses eat about 30% of that figure. From {minima} on, the gateway subtracts them and this dashboard shows net savings.",
+      "action": "Update @bivelio/savings-layer to {minima} or later on that machine and restart the terminal. What is already recorded is not recalculated: net counts from the update on."
+    },
     "sdkReferencia": {
       "title": "Some machines run an SDK older than {minima}: their repeats are not measured by reference",
       "summary": "{n, plural, one {# machine runs} other {# machines run}} an SDK older than {minima} (the oldest declares {antigua}). Until they update, their repeated requests count as estimated, not as measured by reference: they stay in your totals, but out of the base.",

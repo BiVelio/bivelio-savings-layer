@@ -370,6 +370,11 @@
       "noLever": "{n, plural, one {# machine is bijgewerkt} other {# machines zijn bijgewerkt}}, maar de hefboom heeft daar niet gewerkt. Blijft het zo na het bijwerken, mail dan naar support@bivelio.com.",
       "action": "Werk @bivelio/savings-layer op die machine bij en herstart de terminal; de machinetabel hieronder toont wat elke machine meldt."
     },
+    "gatewayBruto": {
+      "title": "De besparing van sommige machines wordt nog bruto gemeld",
+      "summary": "{n, plural, one {# machine draait} other {# machines draaien}} een gateway ouder dan {minima} of meldt geen versie. De besparing door de verlaging van de cache-TTL telt de vermeden toeslag, maar trekt niet de keren af dat de cache van 5 minuten verloopt en opnieuw moet worden geschreven. In ons eigen verkeer eten die missers ongeveer 30% van dat bedrag op. Vanaf {minima} trekt de gateway ze af en toont dit dashboard de nettobesparing.",
+      "action": "Werk @bivelio/savings-layer op die machine bij naar {minima} of later en herstart de terminal. Wat al is vastgelegd wordt niet herberekend: netto telt vanaf de update."
+    },
     "sdkReferencia": {
       "title": "Sommige machines draaien een SDK ouder dan {minima}: hun herhalingen worden niet via referentie gemeten",
       "summary": "{n, plural, one {# machine draait} other {# machines draaien}} een SDK ouder dan {minima} (de oudste meldt {antigua}). Tot ze zijn bijgewerkt, tellen hun herhaalde verzoeken als geschat, niet als gemeten via referentie: ze blijven in je totalen, maar buiten de basis.",
