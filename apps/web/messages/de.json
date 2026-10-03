@@ -1059,8 +1059,9 @@
         "band": "Gateway — für Coding-Agenten mit API-Schlüssel",
         "who": "Für alle, die Claude Code, Codex CLI oder einen anderen Coding-Agenten mit API-Schlüssel nutzen.",
         "what": "Ein Befehl setzt einen lokalen Zähler vor dein Terminal, ohne Code anzufassen. Das Gateway zählt jede Anfrage, für die dein Anbieter die Nutzung meldet, mit dessen eigenem Zähler — für die Modelle in unserem Preiskatalog — und summiert sie in deinem Dashboard nach Tag und Modell.",
-        "figureLabel": "Keine Ersparniszahl veröffentlicht",
-        "figureNote": "Für Coding-Agenten haben wir keine gemessene Ersparnis veröffentlicht, also werben wir mit keiner. Mit PRO stellt das Gateway bei Anthropic-Modellen Cache-Schreibvorgänge von der einstündigen auf die fünfminütige TTL um — nur bei Zügen, in denen ein großer Teil des Prompts neu ist, etwa beim ersten Zug einer Sitzung oder nach einer Kompaktierung — und lässt die verketteten Züge einer laufenden Sitzung unverändert. Das ändert den Preis, nie das, was das Modell liest, und nur was der Zähler deines Anbieters bestätigt, zählt in deinem Einsparungsbericht.",
+        "figureLabel": "Die Zahl, die wir veröffentlichen",
+      "figureQue": "der Rechnung mit der Cache-Senkung von PRO, abzüglich der Cache-Fehltreffer, die sie verursacht ({confianza}-Intervall: {bajo} bis {alto}). Simuliert zu Listenpreisen über {sesiones} Claude-Code-Sitzungen einer einzigen Organisation, unserer eigenen.",
+        "figureNote": "Keine Prognose für dein Team: Es ist eine einzige Organisation, ein einziger Anbieter und Listenpreise, und es ist eine kleine Ersparnis, die sich dort zeigt, wo die Anthropic-Ausgaben hoch sind. Mit PRO stellt das Gateway bei Anthropic-Modellen Cache-Schreibvorgänge von der einstündigen auf die fünfminütige TTL um — nur bei Zügen, in denen ein großer Teil des Prompts neu ist, etwa beim ersten Zug einer Sitzung oder nach einer Kompaktierung — und lässt die verketteten Züge einer laufenden Sitzung unverändert. Das ändert den Preis, nie das, was das Modell liest, und nur was der Zähler deines Anbieters bestätigt, zählt in deinem Einsparungsbericht.",
         "cta": "Gateway einrichten"
       },
       "skill": {

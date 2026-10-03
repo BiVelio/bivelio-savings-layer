@@ -1059,8 +1059,9 @@
         "band": "Gateway — para agentes de código com chave de API",
         "who": "Para quem trabalha com Claude Code, Codex CLI ou outro agente de código com chave de API.",
         "what": "Um comando põe um medidor local à frente do teu terminal, sem tocar em código. O gateway conta cada pedido cujo uso o teu fornecedor reporta, com o contador do próprio fornecedor — nos modelos do nosso catálogo de preços — e soma-os no teu painel, por dia e por modelo.",
-        "figureLabel": "Sem número de poupança publicado",
-        "figureNote": "Não publicámos uma poupança medida para agentes de código, por isso não anunciamos nenhuma. Com PRO, em modelos da Anthropic, o gateway passa as escritas da cache do TTL de uma hora para o de cinco minutos só nos turnos em que uma boa parte do prompt é nova — como o primeiro turno de uma sessão ou uma compactação — e deixa como estão os turnos encadeados de uma sessão em curso. Isso muda o preço, nunca o que o modelo lê, e só o que o contador do teu fornecedor confirma conta no teu relatório de poupança.",
+        "figureLabel": "O número que publicamos",
+      "figureQue": "da fatura com a redução de cache do PRO, já descontadas as falhas de cache que provoca (intervalo de {confianza}: de {bajo} a {alto}). Simulado a preço de tabela sobre {sesiones} sessões de Claude Code de uma só organização, a nossa.",
+        "figureNote": "Não é uma previsão para a tua equipa: é uma só organização, um só fornecedor e preços de tabela, e é uma poupança pequena que se nota onde a despesa na Anthropic é alta. Com PRO, em modelos da Anthropic, o gateway passa as escritas da cache do TTL de uma hora para o de cinco minutos só nos turnos em que uma boa parte do prompt é nova — como o primeiro turno de uma sessão ou uma compactação — e deixa como estão os turnos encadeados de uma sessão em curso. Isso muda o preço, nunca o que o modelo lê, e só o que o contador do teu fornecedor confirma conta no teu relatório de poupança.",
         "cta": "Instalar o gateway"
       },
       "skill": {

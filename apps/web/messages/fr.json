@@ -1059,8 +1059,9 @@
         "band": "Gateway — pour les agents de code avec une clé d'API",
         "who": "Pour ceux qui utilisent Claude Code, Codex CLI ou un autre agent de code avec une clé d'API.",
         "what": "Une commande place un compteur local devant votre terminal, sans code à modifier. Le gateway compte chaque requête dont votre fournisseur déclare l'usage, avec le compteur du fournisseur lui-même — pour les modèles de notre catalogue de prix — et les additionne dans votre tableau de bord, par jour et par modèle.",
-        "figureLabel": "Aucun chiffre d'économie publié",
-        "figureNote": "Nous n'avons publié aucune économie mesurée pour les agents de code, donc nous n'en annonçons aucune. Avec PRO, sur les modèles Anthropic, le gateway fait passer les écritures de cache du TTL d'une heure à celui de cinq minutes, uniquement sur les tours où une grande partie du prompt est nouvelle — comme le premier tour d'une session ou une compaction — et laisse tels quels les tours enchaînés d'une session en cours. Cela change le prix, jamais ce que lit le modèle, et seul ce que confirme le compteur de votre fournisseur compte dans votre rapport d'économies.",
+        "figureLabel": "Le chiffre que nous publions",
+      "figureQue": "de la facture avec la baisse de cache de PRO, déduction faite des échecs de cache qu'elle provoque (intervalle à {confianza} : de {bajo} à {alto}). Simulé au prix catalogue sur {sesiones} sessions Claude Code d'une seule organisation, la nôtre.",
+        "figureNote": "Ce n'est pas une prévision pour votre équipe : c'est une seule organisation, un seul fournisseur et des prix catalogue, et c'est une petite économie qui se voit là où la dépense chez Anthropic est élevée. Avec PRO, sur les modèles Anthropic, le gateway fait passer les écritures de cache du TTL d'une heure à celui de cinq minutes, uniquement sur les tours où une grande partie du prompt est nouvelle — comme le premier tour d'une session ou une compaction — et laisse tels quels les tours enchaînés d'une session en cours. Cela change le prix, jamais ce que lit le modèle, et seul ce que confirme le compteur de votre fournisseur compte dans votre rapport d'économies.",
         "cta": "Installer le gateway"
       },
       "skill": {

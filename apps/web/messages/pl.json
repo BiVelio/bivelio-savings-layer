@@ -1059,8 +1059,9 @@
         "band": "Gateway — dla agentów programistycznych z kluczem API",
         "who": "Dla osób, które pracują z Claude Code, Codex CLI lub innym agentem programistycznym na kluczu API.",
         "what": "Jedno polecenie stawia lokalny licznik przed Twoim terminalem, bez zmian w kodzie. Gateway liczy każde zapytanie, dla którego Twój dostawca raportuje zużycie, jego własnym licznikiem — dla modeli z naszego cennika — i sumuje je w Twoim panelu, według dnia i modelu.",
-        "figureLabel": "Brak opublikowanej liczby oszczędności",
-        "figureNote": "Nie opublikowaliśmy zmierzonej oszczędności dla agentów programistycznych, więc żadnej nie reklamujemy. Z PRO, na modelach Anthropic, gateway przestawia zapisy do pamięci podręcznej z godzinnego TTL na pięciominutowy tylko w turach, w których duża część promptu jest nowa — jak pierwsza tura sesji albo kompaktowanie — a kolejne tury trwającej sesji zostawia bez zmian. Zmienia to cenę, nigdy to, co czyta model, a w Twoim raporcie oszczędności liczy się tylko to, co potwierdzi licznik Twojego dostawcy.",
+        "figureLabel": "Liczba, którą publikujemy",
+      "figureQue": "rachunku dzięki obniżeniu pamięci podręcznej w PRO, po odjęciu chybień pamięci podręcznej, które ono powoduje (przedział {confianza}: od {bajo} do {alto}). Symulacja po cenach katalogowych na {sesiones} sesjach Claude Code jednej organizacji, naszej.",
+        "figureNote": "To nie jest prognoza dla twojego zespołu: to jedna organizacja, jeden dostawca i ceny katalogowe, a oszczędność jest niewielka i widać ją tam, gdzie wydatki w Anthropic są wysokie. Z PRO, na modelach Anthropic, gateway przestawia zapisy do pamięci podręcznej z godzinnego TTL na pięciominutowy tylko w turach, w których duża część promptu jest nowa — jak pierwsza tura sesji albo kompaktowanie — a kolejne tury trwającej sesji zostawia bez zmian. Zmienia to cenę, nigdy to, co czyta model, a w Twoim raporcie oszczędności liczy się tylko to, co potwierdzi licznik Twojego dostawcy.",
         "cta": "Skonfiguruj gateway"
       },
       "skill": {

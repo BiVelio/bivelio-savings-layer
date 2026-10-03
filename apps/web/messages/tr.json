@@ -1059,8 +1059,9 @@
         "band": "Gateway — API anahtarıyla çalışan kod ajanları için",
         "who": "Claude Code, Codex CLI veya başka bir kod ajanını API anahtarıyla kullananlar için.",
         "what": "Tek bir komut, koda dokunmadan terminalinizin önüne yerel bir sayaç koyar. Gateway, sağlayıcınızın kullanımını bildirdiği her isteği sağlayıcının kendi sayacıyla sayar — fiyat kataloğumuzdaki modeller için — ve bunları panelinizde gün ve model bazında toplar.",
-        "figureLabel": "Yayımlanmış tasarruf rakamı yok",
-        "figureNote": "Kod ajanları için ölçülmüş bir tasarruf yayımlamadık, bu yüzden hiçbirini duyurmuyoruz. PRO ile, Anthropic modellerinde, gateway önbellek yazmalarını bir saatlik TTL'den beş dakikalık TTL'ye yalnızca prompt'un büyük bir kısmının yeni olduğu turlarda taşır — bir oturumun ilk turu ya da bir sıkıştırma gibi — ve süren bir oturumun ardışık turlarına dokunmaz. Bu fiyatı değiştirir, modelin okuduğunu asla; tasarruf raporunuzda da yalnızca sağlayıcınızın sayacının doğruladığı sayılır.",
+        "figureLabel": "Yayımladığımız rakam",
+      "figureQue": "faturadan, PRO'nun önbellek indirimiyle ve yol açtığı önbellek ıskaları düşüldükten sonra ({confianza} aralığı: {bajo} ile {alto} arası). Liste fiyatlarıyla, tek bir kuruluşun, yani bizim {sesiones} Claude Code oturumumuz üzerinde simüle edildi.",
+        "figureNote": "Ekibiniz için bir tahmin değildir: tek bir kuruluş, tek bir sağlayıcı ve liste fiyatlarıdır; Anthropic harcamasının yüksek olduğu yerde fark edilen küçük bir tasarruftur. PRO ile, Anthropic modellerinde, gateway önbellek yazmalarını bir saatlik TTL'den beş dakikalık TTL'ye yalnızca prompt'un büyük bir kısmının yeni olduğu turlarda taşır — bir oturumun ilk turu ya da bir sıkıştırma gibi — ve süren bir oturumun ardışık turlarına dokunmaz. Bu fiyatı değiştirir, modelin okuduğunu asla; tasarruf raporunuzda da yalnızca sağlayıcınızın sayacının doğruladığı sayılır.",
         "cta": "Gateway'i kurun"
       },
       "skill": {

@@ -1059,8 +1059,9 @@
         "band": "Gateway — for coding agents on an API key",
         "who": "For developers who run Claude Code, Codex CLI or another coding agent on an API key.",
         "what": "One command puts a local meter in front of your terminal, with no code to change. It counts each request your provider reports usage for, with the provider's own counter — for models in our price catalog — and adds it up in your dashboard, by day and by model.",
-        "figureLabel": "No savings figure published",
-        "figureNote": "We have not published a measured saving for coding agents, so we don't advertise one. With PRO, on Anthropic models, it moves cache writes from the one-hour TTL to the five-minute one, only on turns where a large part of the prompt is new — such as a session's first turn or a compaction — and leaves the chained turns of a running session as they are. That changes the price, never what the model reads, and only what your provider's counter confirms counts in your savings report.",
+        "figureLabel": "The figure we publish",
+      "figureQue": "of the bill with PRO's cache downgrade, net of the cache misses it causes ({confianza} interval: {bajo} to {alto}). Simulated at list prices on {sesiones} Claude Code sessions from a single organization, our own.",
+        "figureNote": "Not a forecast for your team: it is one organization, one provider and list prices, and it is a small saving that shows where Anthropic spend is high. With PRO, on Anthropic models, it moves cache writes from the one-hour TTL to the five-minute one, only on turns where a large part of the prompt is new — such as a session's first turn or a compaction — and leaves the chained turns of a running session as they are. That changes the price, never what the model reads, and only what your provider's counter confirms counts in your savings report.",
         "cta": "Set up the gateway"
       },
       "skill": {

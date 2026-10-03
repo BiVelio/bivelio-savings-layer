@@ -1059,8 +1059,9 @@
         "band": "Gateway — para agentes de código con API key",
         "who": "Para quien trabaja con Claude Code, Codex CLI u otro agente de código con API key.",
         "what": "Un comando pone un medidor local delante de tu terminal, sin tocar código. Cuenta cada petición de la que tu proveedor informa el uso, con su propio contador —en los modelos de nuestro catálogo de precios—, y lo suma en tu panel, por día y por modelo.",
-        "figureLabel": "Sin cifra de ahorro publicada",
-        "figureNote": "No hemos publicado un ahorro medido para agentes de código, así que no anunciamos ninguno. Con PRO, en modelos de Anthropic, pasa las escrituras de caché del TTL de una hora al de cinco minutos solo en los turnos en que una parte grande del prompt es nueva —como el primero de una sesión o una compactación— y deja como están los turnos encadenados de una sesión en marcha. Eso cambia el precio, nunca lo que lee el modelo, y solo lo que confirma el contador de tu proveedor cuenta en tu informe de ahorro.",
+        "figureLabel": "La cifra que publicamos",
+      "figureQue": "de la factura con la rebaja de caché de PRO, ya restados los fallos de caché que provoca (intervalo del {confianza}: de {bajo} a {alto}). Simulado a precio de lista sobre {sesiones} sesiones de Claude Code de una sola organización, la nuestra.",
+        "figureNote": "No es una previsión para tu equipo: es una sola organización, un solo proveedor y precios de lista, y es un ahorro pequeño que se nota donde el gasto en Anthropic es alto. Con PRO, en modelos de Anthropic, pasa las escrituras de caché del TTL de una hora al de cinco minutos solo en los turnos en que una parte grande del prompt es nueva —como el primero de una sesión o una compactación— y deja como están los turnos encadenados de una sesión en marcha. Eso cambia el precio, nunca lo que lee el modelo, y solo lo que confirma el contador de tu proveedor cuenta en tu informe de ahorro.",
         "cta": "Instalar el gateway"
       },
       "skill": {

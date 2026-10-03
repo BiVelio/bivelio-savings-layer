@@ -1059,8 +1059,9 @@
         "band": "Gateway — per a agents de codi amb API key",
         "who": "Per a qui treballa amb Claude Code, Codex CLI o un altre agent de codi amb API key.",
         "what": "Una ordre posa un mesurador local davant del teu terminal, sense tocar codi. Compta cada petició de la qual el teu proveïdor informa l'ús, amb el seu propi comptador —en els models del nostre catàleg de preus—, i ho suma al teu tauler, per dia i per model.",
-        "figureLabel": "Sense xifra d'estalvi publicada",
-        "figureNote": "No hem publicat cap estalvi mesurat per a agents de codi, així que no n'anunciem cap. Amb PRO, en models d'Anthropic, passa les escriptures de la memòria cau del TTL d'una hora al de cinc minuts només en els torns en què una part gran del prompt és nova —com el primer d'una sessió o una compactació— i deixa com estan els torns encadenats d'una sessió en marxa. Això canvia el preu, mai el que llegeix el model, i només el que confirma el comptador del teu proveïdor compta al teu informe d'estalvi.",
+        "figureLabel": "La xifra que publiquem",
+      "figureQue": "de la factura amb la rebaixa de memòria cau de PRO, ja restats els errors de memòria cau que provoca (interval del {confianza}: de {bajo} a {alto}). Simulat a preu de llista sobre {sesiones} sessions de Claude Code d'una sola organització, la nostra.",
+        "figureNote": "No és una previsió per al teu equip: és una sola organització, un sol proveïdor i preus de llista, i és un estalvi petit que es nota on la despesa en Anthropic és alta. Amb PRO, en models d'Anthropic, passa les escriptures de la memòria cau del TTL d'una hora al de cinc minuts només en els torns en què una part gran del prompt és nova —com el primer d'una sessió o una compactació— i deixa com estan els torns encadenats d'una sessió en marxa. Això canvia el preu, mai el que llegeix el model, i només el que confirma el comptador del teu proveïdor compta al teu informe d'estalvi.",
         "cta": "Instal·la el gateway"
       },
       "skill": {
