@@ -817,7 +817,10 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
                 <small> {t("pricing.per")}</small>
               </div>
               <p>{t.rich("pricing.plans.pro.note", { b: (c) => <b>{c}</b>, yearly: planes.pro.anual })}</p>
-              <Link className="btn" href="/signup">
+              {/* El plan elegido viaja en `next` hasta el panel (registro → correo →
+                  /auth/callback → signup/success → /dashboard?plan=…), donde el
+                  selector de BillingButtons arranca en él. */}
+              <Link className="btn" href={{ pathname: "/signup", query: { next: `/${locale}/dashboard?plan=pro` } }}>
                 {t("pricing.plans.pro.cta")}
               </Link>
             </div>
@@ -835,7 +838,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
                   yearly: planes.equipo.anual,
                 })}
               </p>
-              <Link className="btn ghost" href="/signup">
+              <Link className="btn ghost" href={{ pathname: "/signup", query: { next: `/${locale}/dashboard?plan=equipo` } }}>
                 {t("pricing.plans.team.cta")}
               </Link>
             </div>

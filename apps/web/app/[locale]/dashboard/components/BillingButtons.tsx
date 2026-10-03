@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 
 import { MAX_ASIENTOS, normalizarAsientos } from "@/lib/billing/asientos";
@@ -64,6 +64,21 @@ export function BillingButtons({
    */
   const [seats, setSeats] = useState("1");
   const [plan, setPlan] = useState<PlanEnVenta>("pro");
+  /**
+   * EL PLAN QUE SE ELIGIÓ EN LA PORTADA. «Elegir Equipo» lleva a
+   * `/signup?next=/<idioma>/dashboard?plan=equipo`, y ese `next` sobrevive al
+   * registro. Sin esto el selector arrancaba siempre en Pro y quien había
+   * pulsado Equipo tenía que volver a elegirlo. Se lee en un efecto y no con
+   * `useSearchParams()` por lo mismo que en AuthForm: el hook exige un
+   * `<Suspense>`. Solo preselecciona: no compra nada ni abre el checkout.
+   */
+  useEffect(() => {
+    const pedido = new URLSearchParams(window.location.search).get("plan");
+    if (pedido === "equipo") {
+      setPlan("equipo");
+      setSeats((s) => String(Math.max(precios.equipo.incluidos, normalizarAsientos(s))));
+    }
+  }, [precios.equipo.incluidos]);
   // Equipo no baja de los asientos incluidos (el checkout tampoco lo deja): se
   // enseña el número que de verdad se va a comprar.
   const minimo = plan === "equipo" ? precios.equipo.incluidos : 1;
