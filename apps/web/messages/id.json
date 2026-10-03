@@ -995,6 +995,17 @@
       "pricingTerms": "Ketentuan harga",
       "dataPrivacy": "Apa yang diterima BiVelio"
     },
+    "cta15": {
+      "titulo": "Book 15-min call",
+      "sub": "Kami beri tahu berapa yang bisa kamu hemat dengan trafikmu, tanpa memasang apa pun.",
+      "placeholder": "kamu@perusahaan.com",
+      "boton": "Book 15-min call",
+      "enviando": "Mengirim…",
+      "ok": "Diterima. Kami akan menulis hari ini juga untuk mengatur panggilannya.",
+      "errorCorreo": "Email itu sepertinya tidak valid.",
+      "errorEnvio": "Kami tidak dapat mengirimnya.",
+      "alterna": "Kirim email"
+    },
     "devs": {
       "eyebrow": "Dibuat untuk pengembang",
       "title": "Lebih sedikit sakit kepala soal tagihan. Tanpa ganti penyedia.",

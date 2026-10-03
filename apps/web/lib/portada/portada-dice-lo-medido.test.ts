@@ -777,7 +777,9 @@ describe("el héroe: las cifras van en la captura del banco público, y el texto
         expect(v, `${loc} ${k}`).not.toMatch(/[0-9%]/);
       }
       for (const k of ["eyebrow", "lede", "ctaOffers", "ctaPricing", "medidoEn"]) expect(d[`landing.hero.${k}`], `${loc} ${k}`).toBeUndefined();
-      expect((crudo(loc) as { landing: Record<string, unknown> }).landing.cta15, loc).toBeUndefined();
+      // La llamada de 15 minutos salió del héroe pero NO de la portada: vive
+      // en su franja antes de los precios, con sus nueve claves.
+      for (const k of ["titulo", "sub", "placeholder", "boton", "enviando", "ok", "errorCorreo", "errorEnvio", "alterna"]) expect(d[`landing.cta15.${k}`], `${loc} cta15.${k}`).toBeTruthy();
     });
   }
 
