@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import { LogoProveedor } from "@/app/components/LogoProveedor";
 import { BANCO_EN_VIVO } from "@/lib/portada/banco-en-vivo";
+import { PALANCA_TTL } from "@/lib/portada/palanca-ttl";
 
 /**
  * LO MEDIDO EN VIVO, UNA SOLA VEZ PARA TODA LA WEB.
@@ -64,6 +65,28 @@ export function filasDelBancoEnVivo(
       }),
     },
   ];
+}
+
+/**
+ * La fila de la tarjeta del GATEWAY: el neto de la rebaja de caché de PRO, con
+ * su intervalo y su condición (replay a precio de lista, una organización). Las
+ * cifras salen de lib/portada/palanca-ttl.ts, con verja contra el informe del
+ * banco de TTL; el texto, de `landing.offers.gateway.figureQue`, sin dígitos.
+ */
+export function filaDeLaPalancaTtl(t: TraductorLanding, locale: string): FilaMedida {
+  const pct1 = new Intl.NumberFormat(locale, { style: "percent", minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const pct0 = new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 0 });
+  const P = PALANCA_TTL;
+  return {
+    marca: "Anthropic",
+    cifra: pct1.format(P.neto.point),
+    que: t("offers.gateway.figureQue", {
+      bajo: pct1.format(P.neto.lower),
+      alto: pct1.format(P.neto.upper),
+      confianza: pct0.format(P.confianza),
+      sesiones: P.sesiones,
+    }),
+  };
 }
 
 /** Las filas, pintadas con las clases de la tarjeta de lo medido. */

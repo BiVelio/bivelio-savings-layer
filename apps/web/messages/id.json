@@ -1059,8 +1059,9 @@
         "band": "Gateway — untuk agen pemrograman dengan kunci API",
         "who": "Untuk Anda yang memakai Claude Code, Codex CLI, atau agen pemrograman lain dengan kunci API.",
         "what": "Satu perintah menempatkan pengukur lokal di depan terminal Anda, tanpa mengubah kode. Gateway menghitung setiap permintaan yang penggunaannya dilaporkan penyedia Anda, dengan penghitung milik penyedia itu sendiri — untuk model dalam katalog harga kami — lalu menjumlahkannya di dasbor Anda, per hari dan per model.",
-        "figureLabel": "Tidak ada angka penghematan yang dipublikasikan",
-        "figureNote": "Kami belum mempublikasikan penghematan terukur untuk agen pemrograman, jadi kami tidak mengiklankan angka apa pun. Dengan PRO, pada model Anthropic, gateway memindahkan penulisan cache dari TTL satu jam ke TTL lima menit, hanya pada giliran ketika porsi besar dari prompt masih baru — seperti giliran pertama sebuah sesi atau setelah pemadatan — dan membiarkan giliran berantai dari sesi yang sedang berjalan apa adanya. Itu mengubah harga, tidak pernah apa yang dibaca model, dan hanya yang dikonfirmasi penghitung penyedia Anda yang dihitung dalam laporan penghematan Anda.",
+        "figureLabel": "Angka yang kami publikasikan",
+      "figureQue": "dari tagihan dengan penurunan cache PRO, sudah dikurangi kegagalan cache yang ditimbulkannya (interval {confianza}: {bajo} hingga {alto}). Disimulasikan dengan harga daftar pada {sesiones} sesi Claude Code dari satu organisasi saja, yaitu kami sendiri.",
+        "figureNote": "Bukan prakiraan untuk tim Anda: ini satu organisasi, satu penyedia, dan harga daftar, dan ini penghematan kecil yang terasa ketika pengeluaran di Anthropic tinggi. Dengan PRO, pada model Anthropic, gateway memindahkan penulisan cache dari TTL satu jam ke TTL lima menit, hanya pada giliran ketika porsi besar dari prompt masih baru — seperti giliran pertama sebuah sesi atau setelah pemadatan — dan membiarkan giliran berantai dari sesi yang sedang berjalan apa adanya. Itu mengubah harga, tidak pernah apa yang dibaca model, dan hanya yang dikonfirmasi penghitung penyedia Anda yang dihitung dalam laporan penghematan Anda.",
         "cta": "Pasang gateway"
       },
       "skill": {

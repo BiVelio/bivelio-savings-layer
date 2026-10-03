@@ -10,7 +10,7 @@ import { RevealObserver } from "@/app/components/RevealObserver";
 import { SnippetPorSistema } from "@/app/components/SnippetPorSistema";
 import { SkillPorSuperficie } from "@/app/components/SkillPorSuperficie";
 import { LogoProveedor } from "@/app/components/LogoProveedor";
-import { FilasMedidas, filasDelBancoEnVivo, type FilaMedida } from "@/app/components/MedidoEnVivo";
+import { FilasMedidas, filaDeLaPalancaTtl, filasDelBancoEnVivo, type FilaMedida } from "@/app/components/MedidoEnVivo";
 import { NvidiaEcosystemBand } from "@/app/components/NvidiaInception";
 import { VideoExplicativo } from "@/app/components/VideoExplicativo";
 import { DIAS_ACTIVOS_PARA_CONTAR_ASIENTO } from "@/lib/billing/asientos";
@@ -293,12 +293,15 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             · La cifra del SDK son las filas de lo medido (con y sin
               repeticiones), las mismas del héroe y de #measured: una sola
               fuente, lib/portada/banco-en-vivo.ts, con su verja.
-            · El gateway va SIN número a propósito: no hay ninguna medición
-              publicada de su ahorro, y aquí se publica lo medido o nada. Su promesa es medir y
-              enseñarlo en el panel, y con PRO pasar a 5m las escrituras de
-              caché SOLO en los turnos con buena parte del prompt nueva
-              (gateway/tarifa.ts, `decidirRebaja`): nunca «mientras la sesión
-              sigue caliente», que es la política de #229 que perdía dinero. */}
+            · El gateway lleva UNA cifra desde el 2026-10-03 (dueño): el neto de
+              la rebaja de caché de PRO que midió el banco de TTL, con su
+              intervalo y dicho como lo que es — un replay a precio de lista
+              sobre sesiones de una sola organización, no una previsión
+              (lib/portada/palanca-ttl.ts, con verja contra el informe). La
+              rebaja pasa a 5m las escrituras de caché SOLO en los turnos con
+              buena parte del prompt nueva (gateway/tarifa.ts, `decidirRebaja`):
+              nunca «mientras la sesión sigue caliente», que es la política de
+              #229 que perdía dinero. */}
         <section id="offers">
           <div className="sec-head rv">
             <span className="eyebrow">{t("offers.eyebrow")}</span>
@@ -340,8 +343,11 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
               <h3 className="offer-name">{t("offers.gateway.name")}</h3>
               <p className="offer-who">{t("offers.gateway.who")}</p>
               <p>{t("offers.gateway.what")}</p>
-              <div className="offer-fig offer-nofig">
+              <div className="offer-fig">
                 <span className="offer-fig-t">{t("offers.gateway.figureLabel")}</span>
+                {/* El neto de la rebaja de TTL del banco del 2026-10-03, con su
+                    intervalo y su condición en la misma fila. */}
+                <FilasMedidas filas={[filaDeLaPalancaTtl(t, locale)]} />
                 <p className="offer-fig-note">{t("offers.gateway.figureNote")}</p>
               </div>
               <div className="offer-install">

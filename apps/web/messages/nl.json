@@ -1059,8 +1059,9 @@
         "band": "Gateway — voor coding-agents met een API-sleutel",
         "who": "Voor wie Claude Code, Codex CLI of een andere coding-agent met een API-sleutel gebruikt.",
         "what": "Eén commando zet een lokale meter vóór je terminal, zonder code aan te passen. De gateway telt elk verzoek waarvan je aanbieder het gebruik meldt, met de eigen teller van die aanbieder — voor de modellen in onze prijscatalogus — en zet het totaal in je dashboard, per dag en per model.",
-        "figureLabel": "Geen besparingscijfer gepubliceerd",
-        "figureNote": "We hebben geen gemeten besparing voor coding-agents gepubliceerd, dus we adverteren er ook geen. Met PRO zet de gateway op Anthropic-modellen cache-schrijfacties om van de TTL van een uur naar die van vijf minuten, alleen in beurten waarin een groot deel van de prompt nieuw is — zoals de eerste beurt van een sessie of een compactie — en laat de aaneengeschakelde beurten van een lopende sessie zoals ze zijn. Dat verandert de prijs, nooit wat het model leest, en alleen wat de teller van je aanbieder bevestigt, telt mee in je besparingsrapport.",
+        "figureLabel": "Het cijfer dat we publiceren",
+      "figureQue": "van de factuur met de cacheverlaging van PRO, na aftrek van de cachemissers die ze veroorzaakt ({confianza}-interval: {bajo} tot {alto}). Gesimuleerd tegen lijstprijzen over {sesiones} Claude Code-sessies van één enkele organisatie, de onze.",
+        "figureNote": "Geen voorspelling voor jouw team: het is één organisatie, één aanbieder en lijstprijzen, en het is een kleine besparing die merkbaar is waar de uitgaven bij Anthropic hoog zijn. Met PRO zet de gateway op Anthropic-modellen cache-schrijfacties om van de TTL van een uur naar die van vijf minuten, alleen in beurten waarin een groot deel van de prompt nieuw is — zoals de eerste beurt van een sessie of een compactie — en laat de aaneengeschakelde beurten van een lopende sessie zoals ze zijn. Dat verandert de prijs, nooit wat het model leest, en alleen wat de teller van je aanbieder bevestigt, telt mee in je besparingsrapport.",
         "cta": "Gateway instellen"
       },
       "skill": {

@@ -50,16 +50,24 @@ describe("portada: dos ofertas, cada una con su bloque", () => {
     expect(PAGINA).not.toContain("hero.ctaOffers");
   });
 
-  it("la tarjeta del gateway no lleva cifra: ni hero.proofs, ni el artefacto, ni un porcentaje", () => {
+  it("la tarjeta del gateway lleva UNA cifra, la del banco de TTL, y ninguna escrita a mano (dueño, 2026-10-03)", () => {
     const ofertas = seccion("offers");
     const gateway = ofertas.slice(ofertas.indexOf('t("offers.gateway.name")'));
     expect(gateway.length).toBeGreaterThan(200);
-    for (const prohibido of ["proofs", "cifra", "proofSdk", "ab.", "%"]) {
-      expect(gateway, prohibido).not.toContain(prohibido);
-    }
-    // Y en el fuente CON comentarios tampoco se cuela nada de eso dentro de la tarjeta.
-    const bruto = PAGINA.slice(PAGINA.indexOf('t("offers.gateway.name")'), PAGINA.indexOf("</section>", PAGINA.indexOf('t("offers.gateway.name")')));
-    for (const prohibido of ["proofs", "cifra", "ab.", "%"]) expect(bruto, prohibido).not.toContain(prohibido);
+    // La fila sale de lib/portada/palanca-ttl.ts (con su verja contra el informe).
+    expect(gateway).toContain("<FilasMedidas filas={[filaDeLaPalancaTtl(t, locale)]} />");
+    expect(gateway).toContain('t("offers.gateway.figureNote")');
+    expect(gateway).not.toContain("offer-nofig");
+    // Ni el artefacto sintético ni un número tecleado en la tarjeta.
+    for (const prohibido of ["proofs", "proofSdk", "ab.", "%"]) expect(gateway, prohibido).not.toContain(prohibido);
+  });
+
+  it("la fila del gateway toma sus números de PALANCA_TTL y su texto de los mensajes", () => {
+    const fuente = readFileSync(new URL("../components/MedidoEnVivo.tsx", import.meta.url), "utf8");
+    const fn = fuente.slice(fuente.indexOf("export function filaDeLaPalancaTtl"), fuente.indexOf("/** Las filas, pintadas"));
+    expect(fn).toContain("const P = PALANCA_TTL;");
+    expect(fn).toContain('t("offers.gateway.figureQue"');
+    for (const campo of ["P.neto.point", "P.neto.lower", "P.neto.upper", "P.confianza", "P.sesiones"]) expect(fn).toContain(campo);
   });
 
   it("la tarjeta del SDK enseña la cifra medida con repeticiones (sin la baldosa del cero, 2026-10-02)", () => {

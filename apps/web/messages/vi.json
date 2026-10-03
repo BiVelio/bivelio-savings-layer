@@ -1059,8 +1059,9 @@
         "band": "Gateway — cho agent lập trình dùng khóa API",
         "who": "Cho những ai dùng Claude Code, Codex CLI hoặc agent lập trình khác với khóa API.",
         "what": "Một lệnh đặt một bộ đo cục bộ trước terminal của bạn, không cần sửa mã. Gateway đếm từng lượt gọi mà nhà cung cấp có báo cáo mức sử dụng, bằng chính bộ đếm của nhà cung cấp — với các mô hình trong danh mục giá của chúng tôi — và cộng dồn chúng trong bảng điều khiển của bạn, theo ngày và theo mô hình.",
-        "figureLabel": "Chưa công bố con số tiết kiệm",
-        "figureNote": "Chúng tôi chưa công bố khoản tiết kiệm đo được nào cho agent lập trình, nên chúng tôi không quảng cáo con số nào. Với PRO, trên các mô hình Anthropic, gateway chuyển các lần ghi bộ nhớ đệm từ TTL một giờ sang TTL năm phút, chỉ ở những lượt mà một phần lớn prompt là mới — như lượt đầu tiên của một phiên hoặc sau khi nén ngữ cảnh — và giữ nguyên các lượt nối tiếp của một phiên đang chạy. Điều đó thay đổi giá, không bao giờ thay đổi những gì mô hình đọc, và chỉ phần được bộ đếm của nhà cung cấp xác nhận mới được tính trong báo cáo tiết kiệm của bạn.",
+        "figureLabel": "Con số chúng tôi công bố",
+      "figureQue": "hóa đơn nhờ việc hạ bộ nhớ đệm của PRO, đã trừ các lần trượt bộ nhớ đệm mà nó gây ra (khoảng {confianza}: từ {bajo} đến {alto}). Mô phỏng theo giá niêm yết trên {sesiones} phiên Claude Code của một tổ chức duy nhất, chính chúng tôi.",
+        "figureNote": "Đây không phải là dự báo cho nhóm của bạn: đó là một tổ chức, một nhà cung cấp và giá niêm yết, và là khoản tiết kiệm nhỏ, thấy rõ ở nơi chi tiêu cho Anthropic cao. Với PRO, trên các mô hình Anthropic, gateway chuyển các lần ghi bộ nhớ đệm từ TTL một giờ sang TTL năm phút, chỉ ở những lượt mà một phần lớn prompt là mới — như lượt đầu tiên của một phiên hoặc sau khi nén ngữ cảnh — và giữ nguyên các lượt nối tiếp của một phiên đang chạy. Điều đó thay đổi giá, không bao giờ thay đổi những gì mô hình đọc, và chỉ phần được bộ đếm của nhà cung cấp xác nhận mới được tính trong báo cáo tiết kiệm của bạn.",
         "cta": "Cài đặt gateway"
       },
       "skill": {

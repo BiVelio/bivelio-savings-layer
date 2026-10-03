@@ -1059,8 +1059,9 @@
         "band": "Gateway — per agenti di codice con chiave API",
         "who": "Per chi usa Claude Code, Codex CLI o un altro agente di codice con chiave API.",
         "what": "Un comando mette un contatore locale davanti al tuo terminale, senza codice da toccare. Il gateway conta ogni richiesta di cui il tuo fornitore riporta l'utilizzo, con il contatore del fornitore stesso — per i modelli del nostro catalogo prezzi — e le somma nella tua dashboard, per giorno e per modello.",
-        "figureLabel": "Nessuna cifra di risparmio pubblicata",
-        "figureNote": "Non abbiamo pubblicato un risparmio misurato per gli agenti di codice, quindi non ne annunciamo nessuno. Con PRO, sui modelli Anthropic, il gateway sposta le scritture della cache dal TTL di un'ora a quello di cinque minuti, solo nei turni in cui una parte consistente del prompt è nuova — come il primo turno di una sessione o una compattazione — e lascia come sono i turni concatenati di una sessione in corso. Questo cambia il prezzo, mai ciò che legge il modello, e solo ciò che conferma il contatore del tuo fornitore conta nel tuo report di risparmio.",
+        "figureLabel": "La cifra che pubblichiamo",
+      "figureQue": "della fattura con la riduzione della cache di PRO, al netto dei mancati riscontri di cache che provoca (intervallo al {confianza}: da {bajo} a {alto}). Simulato a prezzi di listino su {sesiones} sessioni di Claude Code di una sola organizzazione, la nostra.",
+        "figureNote": "Non è una previsione per il tuo team: è una sola organizzazione, un solo fornitore e prezzi di listino, ed è un risparmio piccolo che si nota dove la spesa in Anthropic è alta. Con PRO, sui modelli Anthropic, il gateway sposta le scritture della cache dal TTL di un'ora a quello di cinque minuti, solo nei turni in cui una parte consistente del prompt è nuova — come il primo turno di una sessione o una compattazione — e lascia come sono i turni concatenati di una sessione in corso. Questo cambia il prezzo, mai ciò che legge il modello, e solo ciò che conferma il contatore del tuo fornitore conta nel tuo report di risparmio.",
         "cta": "Installa il gateway"
       },
       "skill": {
