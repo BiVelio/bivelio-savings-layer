@@ -93,6 +93,9 @@ const nextConfig = {
   // apps/web is a standalone project (its own lockfile); trace from here, not the
   // SDK repo root — silences the multi-lockfile warning and keeps traces tight.
   outputFileTracingRoot: import.meta.dirname,
+  // La captura del panel del héroe (assets/portada/) es la imagen más grande
+  // de la primera pantalla: AVIF primero, WebP después y el PNG de reserva.
+  images: { formats: ["image/avif", "image/webp"], qualities: [75, 80] },
   // NOTE: no Edge/Node middleware for session refresh. @supabase/ssr in Edge
   // middleware pulls in realtime-js/ws (Edge-unsupported → deploy fails), and
   // Node middleware in Next 15.5 (experimental.nodeMiddleware) deploys but fails

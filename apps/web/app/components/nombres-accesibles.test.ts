@@ -17,11 +17,16 @@ import { describe, it, expect } from "vitest";
 const leer = (f: string) => readFileSync(fileURLToPath(new URL(f, import.meta.url)), "utf8");
 
 describe("nombres accesibles", () => {
-  it("KineticTitle lleva la frase en un sr-only, no en aria-label", () => {
-    const src = leer("./KineticTitle.tsx");
-    expect(src).not.toMatch(/aria-label=/);
-    expect(src).toMatch(/<span className="sr-only">\{text\}<\/span>/);
-    expect(src).toMatch(/aria-hidden="true"/);
+  it("el titular de la portada es texto llano: sin KineticTitle, sin aria-label y sin animación (2026-10-03)", () => {
+    // KineticTitle partía el h1 en palabras animadas (con la frase en un
+    // sr-only). El héroe nuevo pinta el titular tal cual desde el HTML.
+    const pagina = leer("../[locale]/page.tsx");
+    const h1 = pagina.slice(pagina.indexOf("<h1>"), pagina.indexOf("</h1>"));
+    expect(h1).toContain('{t("hero.title")}');
+    expect(h1).toContain('<span className="u">{t("hero.titleAccent")}</span>');
+    expect(h1).not.toMatch(/aria-label=/);
+    expect(pagina).not.toContain("KineticTitle");
+    expect(leer("../globals.css")).toMatch(/\.lp \.hero-panel h1 \{[^}]*animation: none;/);
   });
 
   it("el botón de idioma no tapa su texto visible con aria-label", () => {

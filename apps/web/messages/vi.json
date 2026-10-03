@@ -781,15 +781,16 @@
     "metaTitle": "BiVelio — Xác minh mức tiết kiệm LLM của bạn",
     "metaDescription": "Một SDK để ứng dụng của bạn chỉ trả cho nhà cung cấp LLM những gì nó cần, và một gateway đo agent lập trình của bạn. Tất cả bằng bộ đếm của nhà cung cấp: đo miễn phí, sau đó trả theo ghế — không có hoa hồng trên khoản tiết kiệm của bạn.",
     "hero": {
-      "eyebrow": "Dành cho các đội trả phí API LLM theo token",
       "title": "Hóa đơn LLM của bạn, trong tầm kiểm soát.",
       "titleAccent": "Được đo ở mỗi lời gọi.",
-      "lede": "Hai sản phẩm, một nguyên tắc. SDK được cài bên trong ứng dụng của bạn và chỉ cho qua những gì phải trả; gateway đứng trước agent lập trình của bạn và đo chi tiêu của nó. Cả hai đều đếm bằng chính bộ đếm của nhà cung cấp và tách riêng phần đo được với phần ước tính. Chúng tôi chỉ công bố những gì đã đo.",
-      "ctaOffers": "SDK hay gateway?",
-      "ctaPricing": "Xem bảng giá",
+      "sub": "Savings trả lời những gì ứng dụng của bạn lặp lại mà không gọi lại nhà cung cấp, và đo mỗi lệnh gọi bằng bộ đếm của họ.",
+      "ctaStart": "Bắt đầu",
+      "ctaBench": "Xem băng thử công khai",
+      "panelAlt": "Bảng điều khiển Savings với dữ liệu của băng thử công khai: khoản tiết kiệm đo được và phân bổ theo mô hình.",
+      "panelCaption": "Bảng điều khiển với dữ liệu của băng thử công khai",
+      "medidoEnVivo": "Đo trực tiếp bằng bộ đếm của từng nhà cung cấp",
       "note": "Cài đặt trong vài phút. Tin nhắn của bạn không bao giờ đi qua máy chủ của chúng tôi.",
       "proofTitle": "Đo với nhà cung cấp thật",
-      "medidoEn": "Đo trên",
       "compatibleCon": "Tương thích với",
       "compatibleNota": "Tương thích không có nghĩa là đã đo. SDK hoạt động với mọi endpoint tương thích với API của OpenAI, cùng bộ chuyển đổi gốc cho Anthropic và bộ chuyển đổi gốc cho Gemini (mới trong {gemini}). Có con số tiết kiệm trên băng thử công khai hiện chỉ có các mô hình của OpenAI và Anthropic; Gemini không có con số tiết kiệm. Điều đã đo với Gemini: {flash}, qua API gốc của nó, trong bench hằng tuần trực tiếp ngày {fecha} — cả bốn bộ thử, không có lỗi nào của lớp và không có lời từ chối nào được lưu cache hay ghi có thành tiết kiệm. Bench đó kiểm tra rằng lớp không làm hỏng gì và không tính phí quá mức; nó không đo khoản tiết kiệm. Cũng đã đo: {pro}, qua API gốc của nó, trong hai lượt một phần vào {fechaPro} (hạn mức hằng ngày của nhà cung cấp không đủ cho cả bốn bộ kiểm thử trong một ngày): cả bốn bộ kiểm thử, cũng không có lỗi nào của lớp và không có lời từ chối nào được lưu đệm hay tính là tiết kiệm."
     },
@@ -993,17 +994,6 @@
       "howItWorks": "Cách hoạt động",
       "pricingTerms": "Điều khoản giá",
       "dataPrivacy": "BiVelio nhận được gì"
-    },
-    "cta15": {
-      "titulo": "Book 15-min call",
-      "sub": "Chúng tôi sẽ cho bạn biết bạn tiết kiệm được bao nhiêu với lưu lượng của mình, không cần cài gì.",
-      "placeholder": "ban@congty.com",
-      "boton": "Book 15-min call",
-      "enviando": "Đang gửi…",
-      "ok": "Đã nhận. Chúng tôi sẽ viết cho bạn ngay hôm nay để sắp lịch gọi.",
-      "errorCorreo": "Email đó có vẻ không hợp lệ.",
-      "errorEnvio": "Chúng tôi không gửi được.",
-      "alterna": "Gửi email cho chúng tôi"
     },
     "devs": {
       "eyebrow": "Xây dựng cho lập trình viên",

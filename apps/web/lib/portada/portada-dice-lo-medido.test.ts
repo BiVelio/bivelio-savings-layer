@@ -755,3 +755,58 @@ describe("⛔ la portada no enseña el «≈ 0 %» del tráfico sin repeticiones
     }
   });
 });
+
+/**
+ * EL HÉROE CON LA CAPTURA DEL PANEL (dueño, 2026-10-03).
+ *
+ * Las cifras del héroe viven DENTRO de la imagen: el panel de verdad con los
+ * datos del banco público (`panel-del-banco.ts`, que `panel-del-banco.test.ts`
+ * cuadra contra los informes y contra la huella de la imagen). Lo que se lee
+ * como texto —titular, línea, botones, pie, texto alternativo y franja— no
+ * trae ningún número escrito a mano, el pie enlaza a /benchmarks, y la imagen
+ * que la portada importa es esa captura.
+ */
+describe("el héroe: las cifras van en la captura del banco público, y el texto no trae ninguna", () => {
+  const CLAVES = ["sub", "ctaStart", "ctaBench", "panelAlt", "panelCaption", "medidoEnVivo"];
+  for (const loc of LOCALES) {
+    it(`${loc}: las claves del héroe existen, sin dígitos ni «%», y las viejas se fueron`, () => {
+      const d = cargar(loc);
+      for (const k of CLAVES) {
+        const v = d[`landing.hero.${k}`];
+        expect(v, `${loc} ${k}`).toBeTruthy();
+        expect(v, `${loc} ${k}`).not.toMatch(/[0-9%]/);
+      }
+      for (const k of ["eyebrow", "lede", "ctaOffers", "ctaPricing", "medidoEn"]) expect(d[`landing.hero.${k}`], `${loc} ${k}`).toBeUndefined();
+      expect((crudo(loc) as { landing: Record<string, unknown> }).landing.cta15, loc).toBeUndefined();
+    });
+  }
+
+  it("en/es: el pie dice de dónde salen los datos del panel", () => {
+    expect(cargar("es")["landing.hero.panelCaption"]).toBe("Panel con los datos del banco público");
+    expect(cargar("en")["landing.hero.panelCaption"]).toBe("Dashboard with the public bench's data");
+    expect(cargar("es")["landing.hero.medidoEnVivo"]).toBe("Medido en vivo con el contador de cada proveedor");
+  });
+
+  it("la portada importa la captura del banco con next/image, con prioridad, alt traducido y el pie enlazado a /benchmarks", () => {
+    const src = codigo("app/[locale]/page.tsx");
+    expect(src).toContain('import panelDelBanco from "@/assets/portada/panel-del-banco.png";');
+    expect(src).toContain('import panelDelBancoMovil from "@/assets/portada/panel-del-banco-movil.png";');
+    // Las dos tomas, con next/image (getImageProps) y prioridad.
+    expect(src).toMatch(/const comunes = \{ alt: "", quality: 80, priority: true \} as const;/);
+    expect(src).toMatch(/getImageProps\(\{\s*\.\.\.comunes,\s*src: panelDelBanco,/);
+    expect(src).toMatch(/getImageProps\(\{\s*\.\.\.comunes,\s*src: panelDelBancoMovil,/);
+    const ini = src.indexOf('className="hero hero-panel"');
+    const heroe = src.slice(ini, src.indexOf("</section>", ini));
+    expect(heroe).toMatch(/<source\s+media="\(max-width: 640px\)"\s+srcSet=\{panelMovil\.srcSet\}/);
+    expect(heroe).toContain('<img {...panelEscritorio} alt={t("hero.panelAlt")} />');
+    expect(heroe).toMatch(/<figcaption>\s*<Link href="\/benchmarks">\{t\("hero\.panelCaption"\)\}<\/Link>\s*<\/figcaption>/);
+    expect(heroe).toContain('{t("hero.medidoEnVivo")}');
+    // Ni una cifra escrita en el JSX del héroe (fuera de atributos y del SVG del candado).
+    const texto = heroe.replace(/<svg[\s\S]*?<\/svg>/g, "").replace(/\{[^{}]*\}/g, "").replace(/"[^"]*"/g, "");
+    expect(texto).not.toMatch(/[0-9]+\s*%|\$\s*[0-9]/);
+    // La franja nombra solo proveedores medidos en vivo en el banco.
+    expect(src).toMatch(
+      /const MEDIDO_EN_VIVO = \[\s*\{ marca: "openai", label: "OpenAI" \},\s*\{ marca: "anthropic", label: "Anthropic" \},\s*\{ marca: "google", label: "Google" \},\s*\] as const;/,
+    );
+  });
+});

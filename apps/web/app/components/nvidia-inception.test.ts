@@ -296,16 +296,15 @@ describe("«BiVelio» en el título de la banda: navy con las íes en color, com
 });
 
 describe("está en los dos sitios pedidos, y solo ahí — el héroe ya no", () => {
-  it("héroe: SIN el sello — de «Se instala en minutos…» se pasa a «Compatible con» como antes del distintivo", () => {
-    const cta = PAGINA.indexOf('className="hero-cta"');
-    const nota = PAGINA.indexOf('className="hero-note"');
-    const compat = PAGINA.indexOf('className="hero-compat"');
-    expect(cta).toBeGreaterThan(-1);
-    expect(nota).toBeGreaterThan(cta);
-    expect(compat).toBeGreaterThan(nota);
-    // Entre la nota y «Compatible con» no hay componente, clase ni copy del
-    // programa: ni el distintivo desnudo, ni su <div>, ni la frase corta.
-    const entre = PAGINA.slice(nota, compat);
+  it("héroe: SIN el sello — ni en el héroe de la captura del panel (2026-10-03) ni en «Compatible con», que se fue a #measured", () => {
+    const heroe = PAGINA.slice(PAGINA.indexOf('className="hero hero-panel"'), PAGINA.indexOf("</section>", PAGINA.indexOf('className="hero hero-panel"')));
+    expect(heroe.length).toBeGreaterThan(200);
+    expect(heroe).toContain('className="hero-cta"');
+    expect(heroe).not.toMatch(/Nvidia|nvidia|NVIDIA/);
+    // «Compatible con» vive ahora en #measured, y entre él y su nota tampoco hay distintivo.
+    const compat = PAGINA.indexOf('className="hero-compat');
+    expect(compat).toBeGreaterThan(PAGINA.indexOf('<section id="measured">'));
+    const entre = PAGINA.slice(compat, PAGINA.indexOf("</section>", compat));
     expect(entre).not.toMatch(/Nvidia|nvidia|NVIDIA/);
     expect(entre).not.toContain("hero-nvidia");
     expect(entre).not.toMatch(/<(a|img)\s/);
@@ -325,13 +324,11 @@ describe("está en los dos sitios pedidos, y solo ahí — el héroe ya no", () 
     expect(CSS).not.toContain(".nvi-badge");
     expect(CSS).not.toMatch(/max-height: 720px\)[^\n]*120px/);
     expect(CSS).toMatch(/@media \(max-height: 720px\) \{\n\s*\.lp \.hero \{ min-height: 0;/);
-    // La separación de antes del distintivo: «Compatible con» sigue a 30 px de
-    // la nota con su hairline y sus 20 px de aire, y la nota conserva sus 20.
+    // «Compatible con» conserva su hairline y sus 20 px de aire.
     const compat_css = regla(".hero-compat");
     expect(compat_css).toMatch(/margin-top:\s*30px/);
     expect(compat_css).toMatch(/padding-top:\s*20px/);
     expect(compat_css).toMatch(/border-top:\s*1px solid var\(--line\)/);
-    expect(regla(".hero-note")).toMatch(/margin-top:\s*20px/);
   });
 
   it("banda: la de bivelio.com, a sangre completa entre el <main> y el pie, con las cuatro claves", () => {

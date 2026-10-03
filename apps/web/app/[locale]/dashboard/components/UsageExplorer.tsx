@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import type { UsageRollup, ModelDia } from "../data";
-import { money, intfmt, compact, pct0, LEDGER_COLOR } from "../format";
+import { money, intfmt, compact, pct, pct0, LEDGER_COLOR } from "../format";
 import {
   cortarPorPeriodo,
   serieDiaria,
@@ -136,20 +136,36 @@ function descargar(nombre: string, contenido: string): void {
   setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
+/**
+ * SOLO para la captura del héroe de la portada (`/[locale]/captura-panel`):
+ * vista y métrica fijas (sin leer ni escribir lo que recuerda el navegador),
+ * sin la botonera, y una columna con el ahorro de cada modelo tal como lo midió
+ * el banco público. El panel de los clientes nunca lo pasa.
+ */
+export interface PresentacionExplorador {
+  vista: Vista;
+  metrica: Metrica;
+  sinControles?: boolean;
+  ahorroPorModelo?: { titulo: string; tituloValor?: string; valores: Readonly<Record<string, number>> };
+}
+
 export function UsageExplorer({
   usage,
   porModelo,
   periodoInicial = 30,
+  presentacion,
 }: {
   usage: UsageRollup[];
   porModelo: ModelDia[];
   /** El rango del panel (URL). El explorador arranca ahí y luego el usuario puede afinar. */
   periodoInicial?: Periodo;
+  presentacion?: PresentacionExplorador;
 }) {
   const t = useTranslations("dashboard");
   const [periodo, setPeriodo] = useState<Periodo>(periodoInicial);
-  const [metrica, setMetrica] = useState<Metrica>("neto");
-  const [vista, setVista] = useState<Vista>("dia");
+  const [metrica, setMetrica] = useState<Metrica>(presentacion?.metrica ?? "neto");
+  const [vista, setVista] = useState<Vista>(presentacion?.vista ?? "dia");
+  const fija = presentacion !== undefined;
   const [seleccion, setSeleccion] = useState<Seleccion | null>(null);
   const [montado, setMontado] = useState(false);
 
@@ -162,11 +178,12 @@ export function UsageExplorer({
   // Métrica y vista se recuerdan tras montar: el primer render es el mismo en
   // servidor y cliente, y solo después se aplica lo que este navegador guardó.
   useEffect(() => {
+    if (fija) return;
     const r = leerRecordado();
     if (r.metrica) setMetrica(r.metrica);
     if (r.vista) setVista(r.vista);
     setMontado(true);
-  }, []);
+  }, [fija]);
   useEffect(() => {
     if (montado) recordar({ metrica, vista });
   }, [montado, metrica, vista]);
@@ -236,27 +253,29 @@ export function UsageExplorer({
 
   return (
     <div>
-      <div className="ux-controls">
-        {seg<Periodo>(t("usageExplorer.period"), periodo, (p) => { setPeriodo(p); setSeleccion(null); }, PERIODOS.map((p) => ({ v: p, label: String(p) })))}
-        {seg<Metrica>(t("usageExplorer.metric"), metrica, (m) => { setMetrica(m); setSeleccion(null); }, METRICAS.map((m) => ({ v: m.v, label: t(ETIQUETA[m.v]) })))}
-        {seg<Vista>(t("usageExplorer.view"), vista, setVista, [
-          { v: "dia", label: t("usageExplorer.viewDaily") },
-          { v: "acumulado", label: t("usageExplorer.viewCumulative") },
-          { v: "modelo", label: t("usageExplorer.viewModel") },
-        ])}
-        {!esModelo && ranuras.length > 0 && (
-          <div className="ux-seg ux-actions">
-            <span className="ck-eyebrow">{t("usageExplorer.actions")}</span>
-            <div className="opts">
-              <button type="button" onClick={exportar}>{t("usageExplorer.exportCsv")}</button>
+      {presentacion?.sinControles ? null : (
+        <div className="ux-controls">
+          {seg<Periodo>(t("usageExplorer.period"), periodo, (p) => { setPeriodo(p); setSeleccion(null); }, PERIODOS.map((p) => ({ v: p, label: String(p) })))}
+          {seg<Metrica>(t("usageExplorer.metric"), metrica, (m) => { setMetrica(m); setSeleccion(null); }, METRICAS.map((m) => ({ v: m.v, label: t(ETIQUETA[m.v]) })))}
+          {seg<Vista>(t("usageExplorer.view"), vista, setVista, [
+            { v: "dia", label: t("usageExplorer.viewDaily") },
+            { v: "acumulado", label: t("usageExplorer.viewCumulative") },
+            { v: "modelo", label: t("usageExplorer.viewModel") },
+          ])}
+          {!esModelo && ranuras.length > 0 && (
+            <div className="ux-seg ux-actions">
+              <span className="ck-eyebrow">{t("usageExplorer.actions")}</span>
+              <div className="opts">
+                <button type="button" onClick={exportar}>{t("usageExplorer.exportCsv")}</button>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
       {esModelo ? (
         metricaDisponiblePorModelo(metrica) ? (
-          <VistaModelo barras={barras} totalModelos={modelosTodos.length} metrica={metrica} fmt={fmt} fmtExact={fmtExact} t={t} />
+          <VistaModelo barras={barras} totalModelos={modelosTodos.length} metrica={metrica} fmt={fmt} fmtExact={fmtExact} t={t} ahorro={presentacion?.ahorroPorModelo} />
         ) : (
           <p className="ck-note">{t("usageExplorer.modelMetricUnavailable", { metric: t(ETIQUETA[metrica]) })}</p>
         )
@@ -708,7 +727,9 @@ function VistaModelo({
   fmt,
   fmtExact,
   t,
+  ahorro,
 }: {
+  ahorro?: PresentacionExplorador["ahorroPorModelo"];
   barras: { model: string; valor: number }[];
   totalModelos: number;
   metrica: Metrica;
@@ -719,7 +740,10 @@ function VistaModelo({
   if (barras.length === 0) return <p className="ck-note">{t("usageExplorer.modelEmpty")}</p>;
 
   const total = barras.reduce((s, b) => s + b.valor, 0);
-  const max = Math.max(...barras.map((b) => Math.abs(b.valor)), 1);
+  // La barra más larga es la del mayor valor. El suelo era 1 (un dólar, un
+  // token): con importes por debajo de 1 $ todas las barras salían a ras de
+  // cero. Solo se protege la división cuando todo vale 0.
+  const max = Math.max(...barras.map((b) => Math.abs(b.valor))) || 1;
   const cuota = (v: number) => (total !== 0 ? v / total : 0);
   let acc = 0;
   const filas = barras.map((b) => {
@@ -728,6 +752,49 @@ function VistaModelo({
   });
   const top3 = cuota(barras.slice(0, 3).reduce((s, b) => s + b.valor, 0));
   const color = metrica === "neto" ? "var(--mint)" : "var(--ink)";
+
+  if (ahorro) {
+    // La captura del héroe: la barra y la última columna son el ahorro medido
+    // de cada modelo; el valor es la métrica elegida (p. ej. peticiones).
+    const maxAhorro = Math.max(...filas.map((f) => ahorro.valores[f.model] ?? 0)) || 1;
+    return (
+      <table className="ux-tbl ux-tbl-ahorro">
+        <thead>
+          <tr>
+            <th scope="col">{t("usageExplorer.colModel")}</th>
+            <th scope="col" className="b" aria-hidden />
+            <th scope="col">{ahorro.tituloValor ?? t("usageExplorer.colValue")}</th>
+            <th scope="col">{ahorro.titulo}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filas.map((f) => {
+            const a = ahorro.valores[f.model] ?? 0;
+            return (
+              <tr key={f.model}>
+                <td className="m" title={f.model}>{f.model}</td>
+                <td className="b">
+                  <div className="track2">
+                    <div className="fill2" style={{ width: `${Math.max(2, (a / maxAhorro) * 100)}%`, background: "var(--mint)" }} />
+                  </div>
+                </td>
+                <td>{fmt(f.valor)}</td>
+                <td className="a">{pct(a)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td>{t("usageExplorer.rowTotal")}</td>
+            <td className="b" />
+            <td>{fmt(total)}</td>
+            <td />
+          </tr>
+        </tfoot>
+      </table>
+    );
+  }
 
   return (
     <div>

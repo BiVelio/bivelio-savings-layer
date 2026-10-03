@@ -781,15 +781,16 @@
     "metaTitle": "BiVelio — Verifica i tuoi risparmi sugli LLM",
     "metaDescription": "Un SDK perché la tua app paghi al fornitore di LLM solo ciò che le serve, e un gateway che misura il tuo agente di codice. Tutto con il contatore del tuo fornitore: misura gratis, poi paga per postazione — senza commissione sul tuo risparmio.",
     "hero": {
-      "eyebrow": "Per i team che pagano le API LLM a token",
       "title": "La tua fattura LLM, sotto controllo.",
       "titleAccent": "Misurata a ogni chiamata.",
-      "lede": "Due prodotti, una regola. L'SDK si installa nella tua app e lascia passare solo ciò che va pagato; il gateway si mette davanti al tuo agente di codice e ne misura la spesa. Entrambi contano con il contatore del tuo fornitore e tengono separati misurato e stimato. Pubblichiamo solo ciò che abbiamo misurato.",
-      "ctaOffers": "SDK o gateway?",
-      "ctaPricing": "Vedi i prezzi",
+      "sub": "Savings risponde a ciò che la tua app ripete senza richiamare il fornitore, e misura ogni chiamata con il suo contatore.",
+      "ctaStart": "Inizia",
+      "ctaBench": "Vedi il banco pubblico",
+      "panelAlt": "La dashboard di Savings con i dati del banco pubblico: il risparmio misurato e la sua ripartizione per modello.",
+      "panelCaption": "Dashboard con i dati del banco pubblico",
+      "medidoEnVivo": "Misurato dal vivo con il contatore di ogni fornitore",
       "note": "Si installa in pochi minuti. I tuoi messaggi non passano mai dai nostri server.",
       "proofTitle": "Misurato contro un provider reale",
-      "medidoEn": "Misurato su",
       "compatibleCon": "Compatibile con",
       "compatibleNota": "Compatibile non vuol dire misurato. L'SDK funziona con qualsiasi endpoint compatibile con l'API di OpenAI, più l'adattatore nativo di Anthropic e l'adattatore nativo di Gemini (novità della {gemini}). Con una cifra di risparmio sul banco pubblico, oggi solo i modelli di OpenAI e di Anthropic; Gemini non ha una cifra di risparmio. Ciò che è misurato per Gemini: {flash}, tramite la sua API nativa, nel banco settimanale dal vivo del {fecha} — tutte e quattro le batterie, senza errori dello strato e senza alcun rifiuto in cache o accreditato come risparmio. Quel banco verifica che lo strato non rompa nulla e non faccia pagare di più; non misura un risparmio. Misurato anche: {pro}, tramite la sua API nativa, in due esecuzioni parziali del {fechaPro} (la sua quota giornaliera del fornitore non basta per le quattro batterie in un giorno): tutte e quattro le batterie, anche qui senza alcun errore del livello e senza alcun rifiuto messo in cache o contato come risparmio."
     },
@@ -993,17 +994,6 @@
       "howItWorks": "Come funziona",
       "pricingTerms": "Condizioni di prezzo",
       "dataPrivacy": "Cosa riceve BiVelio"
-    },
-    "cta15": {
-      "titulo": "Book 15-min call",
-      "sub": "Ti diciamo quanto risparmieresti con il tuo traffico, senza installare nulla.",
-      "placeholder": "tu@azienda.com",
-      "boton": "Book 15-min call",
-      "enviando": "Invio…",
-      "ok": "Ricevuto. Ti scriviamo oggi stesso per fissare la chiamata.",
-      "errorCorreo": "Questa email non sembra valida.",
-      "errorEnvio": "Non siamo riusciti a inviarlo.",
-      "alterna": "Scrivici"
     },
     "devs": {
       "eyebrow": "Fatto per sviluppatori",
