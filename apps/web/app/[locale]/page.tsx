@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { getImageProps } from "next/image";
 
+import { ReservarLlamada } from "./components/ReservarLlamada";
 import { CursorGrid } from "@/app/components/CursorGrid";
 import { RevealObserver } from "@/app/components/RevealObserver";
 import { SnippetPorSistema } from "@/app/components/SnippetPorSistema";
@@ -756,6 +757,24 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             ]}
           />
         </section>
+
+        {/* La llamada de 15 minutos, justo antes de los precios (dueño,
+            2026-10-03): salió del héroe con la captura del panel y vuelve aquí. */}
+        <div className="cta15-sec rv" id="llamada">
+          <ReservarLlamada
+            t={{
+              titulo: t("cta15.titulo"),
+              sub: t("cta15.sub"),
+              placeholder: t("cta15.placeholder"),
+              boton: t("cta15.boton"),
+              enviando: t("cta15.enviando"),
+              ok: t("cta15.ok"),
+              errorCorreo: t("cta15.errorCorreo"),
+              errorEnvio: t("cta15.errorEnvio"),
+              alterna: t("cta15.alterna"),
+            }}
+          />
+        </div>
 
         {/* PRICING — el modelo del 2026-09-29: Medir (gratis, sin tarjeta) → Pro
             (por asiento) → Equipo (asientos incluidos) → Enterprise. Ninguno

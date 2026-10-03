@@ -995,6 +995,17 @@
       "pricingTerms": "Prijsvoorwaarden",
       "dataPrivacy": "Wat BiVelio ontvangt"
     },
+    "cta15": {
+      "titulo": "Book 15-min call",
+      "sub": "We vertellen je wat je zou besparen op jouw verkeer, zonder iets te installeren.",
+      "placeholder": "jij@bedrijf.com",
+      "boton": "Book 15-min call",
+      "enviando": "Versturen…",
+      "ok": "Ontvangen. We schrijven je vandaag nog om het gesprek in te plannen.",
+      "errorCorreo": "Dat e-mailadres lijkt niet geldig.",
+      "errorEnvio": "We konden het niet versturen.",
+      "alterna": "Mail ons"
+    },
     "devs": {
       "eyebrow": "Gebouwd voor ontwikkelaars",
       "title": "Minder hoofdpijn over de factuur. Zonder van aanbieder te wisselen.",

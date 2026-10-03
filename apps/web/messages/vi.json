@@ -995,6 +995,17 @@
       "pricingTerms": "Điều khoản giá",
       "dataPrivacy": "BiVelio nhận được gì"
     },
+    "cta15": {
+      "titulo": "Book 15-min call",
+      "sub": "Chúng tôi sẽ cho bạn biết bạn tiết kiệm được bao nhiêu với lưu lượng của mình, không cần cài gì.",
+      "placeholder": "ban@congty.com",
+      "boton": "Book 15-min call",
+      "enviando": "Đang gửi…",
+      "ok": "Đã nhận. Chúng tôi sẽ viết cho bạn ngay hôm nay để sắp lịch gọi.",
+      "errorCorreo": "Email đó có vẻ không hợp lệ.",
+      "errorEnvio": "Chúng tôi không gửi được.",
+      "alterna": "Gửi email cho chúng tôi"
+    },
     "devs": {
       "eyebrow": "Xây dựng cho lập trình viên",
       "title": "Bớt đau đầu vì hóa đơn. Không cần đổi nhà cung cấp.",

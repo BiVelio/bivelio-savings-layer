@@ -995,6 +995,17 @@
       "pricingTerms": "Condições de preço",
       "dataPrivacy": "O que a BiVelio recebe"
     },
+    "cta15": {
+      "titulo": "Book 15-min call",
+      "sub": "Dizemos-te quanto pouparias com o teu tráfego, sem instalar nada.",
+      "placeholder": "tu@empresa.com",
+      "boton": "Book 15-min call",
+      "enviando": "A enviar…",
+      "ok": "Recebido. Escrevemos-te hoje mesmo para marcar a chamada.",
+      "errorCorreo": "Esse email não parece válido.",
+      "errorEnvio": "Não conseguimos enviar.",
+      "alterna": "Escreve-nos"
+    },
     "devs": {
       "eyebrow": "Feito para programadores",
       "title": "Menos dores de cabeça com a fatura. Sem mudar de fornecedor.",
