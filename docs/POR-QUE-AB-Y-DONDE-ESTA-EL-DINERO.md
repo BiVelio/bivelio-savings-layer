@@ -320,7 +320,7 @@ petición, decidiendo solo con lo que el gateway sabe en ese momento:
 > que llama a la decisión real de `gateway/tarifa.ts`: sobre este mismo corpus
 > da +4,83 % (reproduce el +4,9 %), pero con todo el tráfico capturado —sonnet-5
 > incluido, que este corpus dejaba fuera— el neto es **+2,49 %** (IC 95 % por
-> sesión +1,50 % … +3,57 %). Ver `docs/benchmarks/ttl-2026-10-03.md`.
+> sesión +1,50 % … +3,57 %). Ver `docs/benchmarks/2026-10-03/ttl.md`.
 
 La política que salió en #229 **perdía el 6,3 % de la factura**. La corregida
 (`gateway/tarifa.ts`, `UMBRAL_REESCRITURA = 0.3`) mira el **prefijo**, no el
