@@ -370,6 +370,11 @@
       "noLever": "{n, plural, one {# macchina è aggiornata} other {# macchine sono aggiornate}}, ma la leva non ha agito lì. Se resta così dopo l'aggiornamento, scrivi a support@bivelio.com.",
       "action": "Aggiorna @bivelio/savings-layer su quella macchina e riavvia il terminale; la tabella delle macchine qui sotto mostra cosa dichiara ciascuna."
     },
+    "gatewayBruto": {
+      "title": "Il risparmio di alcune macchine è ancora riportato al lordo",
+      "summary": "{n, plural, one {# macchina usa} other {# macchine usano}} un gateway precedente alla {minima} o non dichiara la versione. Il suo risparmio per la riduzione del TTL della cache conta il sovrapprezzo evitato, ma non sottrae le volte in cui la cache di 5 minuti scade e va riscritta. Sul nostro traffico questi mancati riscontri si mangiano circa il 30% di quella cifra. Dalla {minima} il gateway li sottrae e questo pannello mostra il risparmio netto.",
+      "action": "Aggiorna @bivelio/savings-layer alla {minima} o successiva su quella macchina e riavvia il terminale. Ciò che è già registrato non viene ricalcolato: il netto conta dall'aggiornamento."
+    },
     "sdkReferencia": {
       "title": "Alcune macchine eseguono un SDK precedente a {minima}: le loro ripetizioni non sono misurate per riferimento",
       "summary": "{n, plural, one {# macchina esegue} other {# macchine eseguono}} un SDK precedente a {minima} (la più vecchia dichiara {antigua}). Finché non vengono aggiornate, le loro richieste ripetute contano come stimate, non come misurate per riferimento: restano nei tuoi totali, ma fuori dalla base.",
@@ -781,21 +786,22 @@
     "metaTitle": "BiVelio — Verifica i tuoi risparmi sugli LLM",
     "metaDescription": "Un SDK perché la tua app paghi al fornitore di LLM solo ciò che le serve, e un gateway che misura il tuo agente di codice. Tutto con il contatore del tuo fornitore: misura gratis, poi paga per postazione — senza commissione sul tuo risparmio.",
     "hero": {
-      "eyebrow": "Per i team che pagano le API LLM a token",
       "title": "La tua fattura LLM, sotto controllo.",
       "titleAccent": "Misurata a ogni chiamata.",
-      "lede": "Due prodotti, una regola. L'SDK si installa nella tua app e lascia passare solo ciò che va pagato; il gateway si mette davanti al tuo agente di codice e ne misura la spesa. Entrambi contano con il contatore del tuo fornitore e tengono separati misurato e stimato. Pubblichiamo solo ciò che abbiamo misurato.",
-      "ctaOffers": "SDK o gateway?",
-      "ctaPricing": "Vedi i prezzi",
+      "sub": "Savings risponde a ciò che la tua app ripete senza richiamare il fornitore, e misura ogni chiamata con il suo contatore.",
+      "ctaStart": "Inizia",
+      "ctaBench": "Vedi il banco pubblico",
+      "panelAlt": "La dashboard di Savings con i dati del banco pubblico: il risparmio misurato e la sua ripartizione per modello.",
+      "panelCaption": "Dashboard con i dati del banco pubblico",
+      "medidoEnVivo": "Misurato dal vivo con il contatore di ogni fornitore",
       "note": "Si installa in pochi minuti. I tuoi messaggi non passano mai dai nostri server.",
       "proofTitle": "Misurato contro un provider reale",
-      "medidoEn": "Misurato su",
       "compatibleCon": "Compatibile con",
       "compatibleNota": "Compatibile non vuol dire misurato. L'SDK funziona con qualsiasi endpoint compatibile con l'API di OpenAI, più l'adattatore nativo di Anthropic e l'adattatore nativo di Gemini (novità della {gemini}). Con una cifra di risparmio sul banco pubblico, oggi solo i modelli di OpenAI e di Anthropic; Gemini non ha una cifra di risparmio. Ciò che è misurato per Gemini: {flash}, tramite la sua API nativa, nel banco settimanale dal vivo del {fecha} — tutte e quattro le batterie, senza errori dello strato e senza alcun rifiuto in cache o accreditato come risparmio. Quel banco verifica che lo strato non rompa nulla e non faccia pagare di più; non misura un risparmio. Misurato anche: {pro}, tramite la sua API nativa, in due esecuzioni parziali del {fechaPro} (la sua quota giornaliera del fornitore non basta per le quattro batterie in un giorno): tutte e quattro le batterie, anche qui senza alcun errore del livello e senza alcun rifiuto messo in cache o contato come risparmio."
     },
     "cascade": {
       "title": "Vince l'esecuzione più economica",
-      "footnote": "Ogni leva finisce nel proprio registro, e i registri non si sommano mai. In questa batteria il risparmio è venuto dalle richieste ripetute che l'SDK ha servito senza chiamare il fornitore e, su Claude, dalla cache di prefisso del fornitore stesso. Il pacchetto npm non include alcun compressore, quindi la compressione non ha risparmiato nulla — e con traffico senza ripetizioni il risparmio è stato indistinguibile da zero."
+      "footnote": "Ogni leva finisce nel proprio registro, e i registri non si sommano mai. In questa batteria il risparmio è venuto dalle richieste ripetute che l'SDK ha servito senza chiamare il fornitore e, su Claude, dalla cache di prefisso del fornitore stesso. Il pacchetto npm non include alcun compressore."
     },
     "explica": {
       "eyebrow": "In parole semplici",
@@ -827,15 +833,15 @@
       "body": "Ogni scenario viene eseguito due volte contro il fornitore reale: così com'è, e con Savings davanti. Entrambi i risultati si contano con il contatore del fornitore stesso — lo stesso che dà il prezzo alla tua fattura. Ecco cosa è uscito, con il suo margine di errore:",
       "videoCaption": "Il test è un esperimento equo: lo stesso compito due volte — senza Savings e con Savings — con lo stesso contatore del fornitore che misura entrambi.",
       "plainTitle": "Traduzione, senza gergo",
-      "plain": "Su un flusso in cui il {rep} delle richieste si ripetono identiche, la bolletta è scesa del {punto} — tra {bajo} e {alto} con il 95% di confidenza. Con traffico che non si ripete, è scesa di ≈ {cero}. Quanto risparmierai dipende da quanto si ripete il tuo.",
-      "plainNote": "Una percentuale non significa nulla senza il suo intervallo, il suo modello e il suo traffico: pubblichiamo tutti e tre — e anche le batterie in cui non si è risparmiato nulla.",
+      "plain": "Su un flusso in cui il {rep} delle richieste si ripetono identiche, la bolletta è scesa del {punto} — tra {bajo} e {alto} con il 95% di confidenza. Quanto risparmierai dipende da quanto si ripete il tuo traffico.",
+      "plainNote": "Una percentuale non significa nulla senza il suo intervallo, il suo modello e il suo traffico: pubblichiamo tutti e tre.",
       "benchLink": "Ogni batteria, con il suo report completo, sul banco pubblico →"
     },
     "ledgersHead": {
       "eyebrow": "Contabilità onesta",
       "title": "Ogni tipo di risparmio, contato a parte — perché nessuna cifra si gonfi.",
       "body": "Ogni SavingsReport divide il risparmio in quattro registri — chiamate evitate, testo rimosso, testo compresso e lo sconto di cache del tuo stesso fornitore — e non li somma mai in una cifra di marketing.",
-      "providerNote": "Sul banco pubblico ({fecha}), ciò che ha risparmiato l'SDK installato è venuto dal primo registro — richieste ripetute servite senza chiamare il fornitore — e, su Claude, dal quarto, che è lo sconto del tuo stesso fornitore. Il pacchetto npm non include alcun compressore, quindi lì il terzo era a zero. Un registro senza cifra pubblicata è descritto qui, non pubblicizzato."
+      "providerNote": "Sul banco pubblico ({fecha}), ciò che ha risparmiato l'SDK installato è venuto dal primo registro — richieste ripetute servite senza chiamare il fornitore — e, su Claude, dal quarto, che è lo sconto del tuo stesso fornitore. Il pacchetto npm non include alcun compressore. Un registro senza cifra pubblicata è descritto qui, non pubblicizzato."
     },
     "ledgers": [
       {
@@ -964,7 +970,7 @@
       "ctaTitle": "Misuralo sul tuo traffico",
       "ctaSub": "Una volta installato, ogni chiamata restituisce il suo SavingsReport, con misurato e stimato separati. Inizia gratis con Misura (@bivelio/savings-layer {version} o successiva); Pro e Team sono un canone fisso per postazione, senza commissione sul tuo risparmio. La licenza è ciò che ti permette di eseguire BV‑SALA — l’SDK nella tua app, il gateway nel tuo terminale.",
       "ctaStart": "Inizia",
-      "tagline": "Il sistema operativo per la tua azienda. Questo è <b>BV‑SALA</b>, l'ottimizzatore di costo LLM di BiVelio, neutrale rispetto al fornitore — ogni cifra pubblicata è misurata contro il contatore del fornitore; le stime si mostrano a parte e non si fatturano mai.",
+      "tagline": "Il sistema operativo per la tua azienda. Questo è <b>BV‑SALA</b>, l'ottimizzatore di costo LLM di BiVelio, neutrale rispetto al fornitore — ogni cifra misurata lo è contro il contatore del fornitore; le stime e le simulazioni si mostrano a parte, dichiarate come tali, e non si fatturano mai.",
       "badge": "BV‑SALA · Savings Layer",
       "colSavings": "Savings Layer",
       "colBivelio": "BiVelio",
@@ -1004,9 +1010,6 @@
       "errorCorreo": "Questa email non sembra valida.",
       "errorEnvio": "Non siamo riusciti a inviarlo.",
       "alterna": "Scrivici"
-    },
-    "trabajos": {
-      "caption": "Non ogni richiesta ha qualcosa da risparmiare: sul banco pubblico, il traffico senza ripetizioni ha risparmiato ≈ {cero}. Pubblichiamo anche questo."
     },
     "devs": {
       "eyebrow": "Fatto per sviluppatori",
@@ -1056,8 +1059,10 @@
         "band": "Gateway — per agenti di codice con chiave API",
         "who": "Per chi usa Claude Code, Codex CLI o un altro agente di codice con chiave API.",
         "what": "Un comando mette un contatore locale davanti al tuo terminale, senza codice da toccare. Il gateway conta ogni richiesta di cui il tuo fornitore riporta l'utilizzo, con il contatore del fornitore stesso — per i modelli del nostro catalogo prezzi — e le somma nella tua dashboard, per giorno e per modello.",
-        "figureLabel": "Nessuna cifra di risparmio pubblicata",
-        "figureNote": "Non abbiamo pubblicato un risparmio misurato per gli agenti di codice, quindi non ne annunciamo nessuno. Con PRO, sui modelli Anthropic, il gateway sposta le scritture della cache dal TTL di un'ora a quello di cinque minuti, solo nei turni in cui una parte consistente del prompt è nuova — come il primo turno di una sessione o una compattazione — e lascia come sono i turni concatenati di una sessione in corso. Questo cambia il prezzo, mai ciò che legge il modello, e solo ciò che conferma il contatore del tuo fornitore conta nel tuo report di risparmio.",
+        "figureLabel": "La cifra che pubblichiamo",
+      "figureQue": "della fattura con la riduzione della cache di PRO, al netto dei mancati riscontri di cache che provoca (intervallo al {confianza}: da {bajo} a {alto}). Simulato a prezzi di listino su {sesiones} sessioni di Claude Code di una sola organizzazione, la nostra.",
+        "figureNote": "Non è una previsione per il tuo team: è una sola organizzazione, un solo fornitore e prezzi di listino, ed è un risparmio piccolo che si nota dove la spesa in Anthropic è alta. Con PRO, sui modelli Anthropic, il gateway sposta le scritture della cache dal TTL di un'ora a quello di cinque minuti, solo nei turni in cui una parte consistente del prompt è nuova — come il primo turno di una sessione o una compattazione — e lascia come sono i turni concatenati di una sessione in corso. Questo cambia il prezzo, mai ciò che legge il modello, e solo ciò che conferma il contatore del tuo fornitore conta nel tuo report di risparmio.",
+        "benchLink": "Il report del banco TTL: che cosa è stato simulato, il dettaglio per modello e i suoi limiti →",
         "cta": "Installa il gateway"
       },
       "skill": {
@@ -1238,6 +1243,54 @@
       "delta": "Δ {d} pp [{inf}, {sup}]",
       "originNote": "Da dove viene il risparmio, posizione per posizione: «dalla cache esatta» è ciò che A ha pagato sulle richieste che il livello ha servito senza chiamare il fornitore; «nelle chiamate» è la differenza su quelle che invece lo hanno raggiunto, soprattutto la cache di prefisso del fornitore (più un po' di variazione nell'output). Le due voci sommate danno il risparmio totale.",
       "accuracyNote": "L'accuratezza è misurata sulle domande con risposta pubblicata; le varianti con un numero cambiato servono solo a verificare che il livello non restituisca mai la risposta di un'altra domanda."
+    },
+    "gatewayTtl": {
+      "title": "La riduzione della cache del gateway: una simulazione, non un A/B",
+      "kind": "Questa sezione non è una delle batterie A/B della pagina e <b>non è misurata dal vivo</b>: è un <b>replay</b>. Abbiamo preso l'utilizzo che il provider aveva già comunicato per sessioni reali di Claude Code di <b>una sola organizzazione, la nostra</b>, verso un solo provider (Anthropic), e abbiamo calcolato a <b>prezzi di listino</b> quanto sarebbero costate con la riduzione della cache di PRO e senza.",
+      "verdict": "Il verdetto del report del {fecha}: la riduzione lascia un <b>netto di {neto} della fattura</b> ({netoUsd} su {factura}), dopo aver sottratto i mancati riscontri di cache che essa stessa provoca.",
+      "stat": {
+        "sessions": "Sessioni",
+        "requests": "Richieste",
+        "days": "Giorni"
+      },
+      "thInterval": "Intervallo al {confianza}",
+      "thNet": "Netto, sulla fattura",
+      "bySession": "Ricampionando per sessione (gruppi: {n})",
+      "byDay": "Ricampionando per giorno (gruppi: {n})",
+      "intervalsNote": "Bootstrap con {remuestreos} ricampionamenti. Entrambi gli intervalli escludono lo zero: con questo traffico, la riduzione fa guadagnare. La scheda della home page cita l'intervallo per sessione.",
+      "resultTitle": "Il risultato, con ciò che sottrae",
+      "row": {
+        "downgrades": "Riduzioni",
+        "gross": "Sovrapprezzo risparmiato, lordo",
+        "misses": "Mancati riscontri di cache provocati",
+        "missCost": "Quanto costano quei mancati riscontri",
+        "net": "Netto",
+        "ceiling": "Tetto: l'intero sovrapprezzo dell'ora"
+      },
+      "resultNote": "Le percentuali sono calcolate sulla fattura a prezzi di listino delle richieste simulate ({factura}). Il tetto è il massimo che qualsiasi politica di TTL potrebbe recuperare, anche senza sbagliare mai. Ogni percentuale è arrotondata separatamente.",
+      "modelsTitle": "Per modello",
+      "thModelNet": "Netto, sulla fattura del modello",
+      "tooFew": "nessuna percentuale (richieste: {n})",
+      "ugly": "<b>{modelo} è il caso brutto</b>: concentra il {rebajas} delle riduzioni e il {fallos} dei mancati riscontri, e il suo netto è quasi nullo. Nel primo periodo della cattura, anzi, ha perso: {perdida} della sua fattura. Il suo traffico è fatto di thread brevi che vengono ricostruiti spesso e tornano passati i cinque minuti. La regola guadagna davvero dove gli avvii sono costosi e rari.",
+      "howTitle": "Come è stato fatto: il modello di cache, dichiarato",
+      "how": {
+        "rule": "La regola è la stessa che esegue il gateway, non una copia: sposta le scritture di cache dal TTL di un'ora a quello di cinque minuti quando la parte nuova è almeno il {umbral} del corpo della richiesta.",
+        "baseline": "La linea di base è ciò che il fornitore ha contato, con il suo uso reale, dove la riduzione non era ancora attiva; dove lo era già, si ricostruisce annullandola (vedi i limiti). Con la riduzione, il turno ridotto paga il sovrapprezzo di scrittura da cinque minuti invece di quello da un'ora.",
+        "miss": "Un mancato riscontro provocato: se il turno successivo dello stesso thread arriva dopo i cinque minuti e prima dell'ora, ciò che il turno ridotto ha scritto non viene più letto dalla cache, viene riscritto, e quel costo viene sottratto.",
+        "conservative": "Esiste una variante conservativa, che considera perso anche il prefisso condiviso tra thread diversi. Sposta appena la cifra: {neto}, con qualche mancato riscontro in più ({fallos}).",
+        "aggregates": "Solo cifre aggregate: dalla cattura non esce alcun prompt, risposta, intestazione né identificativo di sessione."
+      },
+      "limitsTitle": "Limiti",
+      "limits": {
+        "oneOrg": "<b>Un'organizzazione, un client, un provider.</b> Claude Code verso Anthropic, con il nostro traffico. Nessun altro agente di codice e nessun altro provider.",
+        "listPrice": "<b>Prezzo di listino, simulato.</b> Non è una fattura: è l'utilizzo reale, tariffato con il catalogo dei prezzi. Sconti, livelli di account o un abbonamento cambierebbero gli importi.",
+        "cacheModel": "<b>Il modello di cache è un modello.</b> Ipotizza come il provider indicizza le sue voci di cache; non lo osserva. La variante conservativa delimita quel rischio.",
+        "rebuilt": "<b>La maggior parte della linea di base è ricostruita.</b> Il {cuota} delle richieste è stato registrato con la riduzione già attiva; lì la linea di base si ricostruisce annullando la riduzione reale, ed è meno solida di quella del primo tratto. Quel primo tratto, da solo, dà un intervallo molto più ampio: da {bajo} a {alto}.",
+        "ceiling": "<b>Il tetto cambia con il client.</b> Dipende da quante scritture da un'ora invia l'agente di codice, e le versioni recenti di Claude Code ne inviano meno: delle {peticiones} richieste, {sinMarca} non ne avevano nessuna da ridurre.",
+        "gap": "<b>L'intervallo tra i turni si misura dall'arrivo di ogni richiesta</b>, non dalla fine della risposta: conta qualche mancato riscontro in più, mai in meno.",
+        "promise": "<b>Non è una previsione per il tuo team.</b> È un risparmio piccolo, di un solo traffico, e un altro traffico può dare un'altra cifra, anche peggiore: guarda il caso brutto."
+      },
+      "production": "In produzione: dalla versione {version} ({fecha}), il gateway sottrae i mancati riscontri che osserva, nel turno che li subisce, così il risparmio di questa riduzione che vedi nel tuo pannello è al netto. Ciò che è stato registrato prima non viene ricalcolato, e il pannello segnala come «al lordo» le macchine con un gateway precedente."
     },
     "guarantees": {
       "title": "Garanzie, contate",

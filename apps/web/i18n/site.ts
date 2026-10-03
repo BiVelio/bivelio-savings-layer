@@ -28,3 +28,22 @@ export function languageAlternates(pathSinLocale = ""): Record<string, string> {
   mapa["x-default"] = url(defaultLocale);
   return mapa;
 }
+
+/**
+ * La imagen al compartir (Open Graph + X) de una página SIN `opengraph-image`
+ * propia: la de la portada de ese idioma.
+ *
+ * POR QUÉ HACE FALTA. En cuanto una página declara su propio objeto
+ * `openGraph`, Next deja de heredar la imagen del segmento padre: pricing,
+ * privacy, benchmarks y la guía de migración salían en LinkedIn, Slack o X
+ * sin imagen y con la tarjeta pequeña (`summary`). Las medidas viven aquí y
+ * no en la página porque /pricing no admite literales numéricos
+ * (lib/legal/precios-publicados.test.ts).
+ */
+export function tarjetaSocial(locale: string, alt: string) {
+  const imagen = absolute(`/${locale}/opengraph-image`);
+  return {
+    openGraph: { locale, images: [{ url: imagen, width: 1200, height: 630, alt }] },
+    twitter: { card: "summary_large_image" as const, images: [imagen] },
+  };
+}

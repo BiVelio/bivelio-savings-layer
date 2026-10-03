@@ -5,7 +5,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import Footer from "@/app/components/Footer";
 import { etiquetasQueRigen } from "@/app/components/LegalGoverns";
 import { Link } from "@/i18n/navigation";
-import { absolute, languageAlternates } from "@/i18n/site";
+import { absolute, languageAlternates, tarjetaSocial } from "@/i18n/site";
 import { terminosDeLosPlanes, terminosDePrecio } from "@/lib/legal/precios-publicados";
 import { LIMITES_MEDIR, VERSION_MINIMA_MEDIR } from "@/lib/license/medir-publico";
 import { preciosDelPlan, tarifasDeLosPlanes } from "@/lib/stripe/pricing";
@@ -34,13 +34,14 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const title = t("metaTitle");
   const description = t("metaDescription");
   const url = absolute(`/${locale}/pricing`);
+  const social = tarjetaSocial(locale, title);
 
   return {
     title,
     description,
     alternates: { canonical: url, languages: languageAlternates("pricing") },
-    openGraph: { title, description, url, siteName: "BiVelio Savings Layer", type: "article" },
-    twitter: { card: "summary", title, description },
+    openGraph: { title, description, url, siteName: "BiVelio Savings Layer", type: "article", ...social.openGraph },
+    twitter: { ...social.twitter, title, description },
   };
 }
 

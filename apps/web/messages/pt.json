@@ -370,6 +370,11 @@
       "noLever": "{n, plural, one {# máquina está atualizada} other {# máquinas estão atualizadas}}, mas a alavanca não atuou aí. Se continuar igual depois de atualizar, escreve para support@bivelio.com.",
       "action": "Atualiza @bivelio/savings-layer nessa máquina e reinicia o terminal; a tabela de máquinas abaixo mostra o que cada uma declara."
     },
+    "gatewayBruto": {
+      "title": "A poupança de algumas máquinas ainda é reportada em bruto",
+      "summary": "{n, plural, one {# máquina corre} other {# máquinas correm}} um gateway anterior à {minima} ou não declara versão. A sua poupança pela redução do TTL da cache conta o prémio evitado, mas não subtrai as vezes em que a cache de 5 minutos expira e tem de ser escrita de novo. No nosso próprio tráfego essas falhas consomem cerca de 30% desse valor. A partir da {minima} o gateway subtrai-as e este painel mostra a poupança líquida.",
+      "action": "Atualiza @bivelio/savings-layer para a {minima} ou posterior nessa máquina e reinicia o terminal. O que já está registado não é recalculado: o líquido conta a partir da atualização."
+    },
     "sdkReferencia": {
       "title": "Algumas máquinas correm um SDK anterior a {minima}: as suas repetições não são medidas por referência",
       "summary": "{n, plural, one {# máquina corre} other {# máquinas correm}} um SDK anterior a {minima} (a mais antiga declara {antigua}). Até serem atualizadas, os seus pedidos repetidos contam como estimados, não como medidos por referência: continuam nos teus totais, mas fora da base.",
@@ -781,21 +786,22 @@
     "metaTitle": "BiVelio — Verifica a tua poupança em LLM",
     "metaDescription": "Um SDK para que a sua app pague ao fornecedor de LLM só o que precisa, e um gateway que mede o seu agente de código. Tudo com o contador do seu fornecedor: meça grátis e depois pague por lugar — sem comissão sobre a sua poupança.",
     "hero": {
-      "eyebrow": "Para equipas que pagam a API de LLM por tokens",
       "title": "A tua fatura de LLM, sob controlo.",
       "titleAccent": "Medida em cada chamada.",
-      "lede": "Dois produtos, uma regra. O SDK instala-se dentro da tua app e deixa passar só o que é preciso pagar; o gateway põe-se à frente do teu agente de código e mede o seu gasto. Os dois contam com o contador do teu fornecedor e separam o medido do estimado. Publicamos só o que medimos.",
-      "ctaOffers": "SDK ou gateway?",
-      "ctaPricing": "Ver preços",
+      "sub": "O Savings responde ao que a tua app repete sem voltar a chamar o fornecedor, e mede cada chamada com o contador dele.",
+      "ctaStart": "Começar",
+      "ctaBench": "Ver o banco público",
+      "panelAlt": "O painel do Savings com os dados do banco público: a poupança medida e a sua repartição por modelo.",
+      "panelCaption": "Painel com os dados do banco público",
+      "medidoEnVivo": "Medido ao vivo com o contador de cada fornecedor",
       "note": "Instala-se em minutos. As suas mensagens nunca passam pelos nossos servidores.",
       "proofTitle": "Medido contra fornecedor real",
-      "medidoEn": "Medido em",
       "compatibleCon": "Compatível com",
       "compatibleNota": "Compatível não é medido. O SDK funciona com qualquer endpoint compatível com a API da OpenAI, mais o adaptador nativo da Anthropic e o adaptador nativo do Gemini (novo na {gemini}). Com um valor de poupança no banco público, hoje só modelos da OpenAI e da Anthropic; o Gemini não tem valor de poupança. O que está medido do Gemini: {flash}, pela sua API nativa, no banco semanal ao vivo de {fecha} — as quatro baterias, sem nenhum erro da camada e sem nenhuma recusa em cache nem creditada como poupança. Esse banco verifica que a camada não estraga nada nem cobra a mais; não mede uma poupança. Também medido: o {pro}, pela sua API nativa, em duas rodadas parciais de {fechaPro} (a sua quota diária do fornecedor não dá para as quatro baterias num dia): as quatro baterias, também sem nenhuma falha da camada e sem nenhuma recusa em cache nem creditada como poupança."
     },
     "cascade": {
       "title": "Ganha a execução mais barata",
-      "footnote": "Cada alavanca cai no seu próprio livro, e os livros nunca se somam. Nesta bateria a poupança veio de pedidos repetidos que o SDK serviu sem chamar o fornecedor e, no Claude, da própria cache de prefixo do fornecedor. O pacote npm não traz compressor, por isso a compressão não poupou nada — e com tráfego sem repetições a poupança foi indistinguível de zero."
+      "footnote": "Cada alavanca cai no seu próprio livro, e os livros nunca se somam. Nesta bateria a poupança veio de pedidos repetidos que o SDK serviu sem chamar o fornecedor e, no Claude, da própria cache de prefixo do fornecedor. O pacote npm não traz compressor."
     },
     "explica": {
       "eyebrow": "Em palavras simples",
@@ -827,15 +833,15 @@
       "body": "Cada cenário corre duas vezes contra o fornecedor real: tal como está, e com o Savings à frente. Os dois resultados são contados com o contador do próprio fornecedor — o mesmo que dá preço à sua fatura. Foi isto que saiu, com a sua margem de erro:",
       "videoCaption": "O teste é uma experiência justa: a mesma tarefa duas vezes — sem Savings e com Savings — com o mesmo contador do fornecedor a medir as duas.",
       "plainTitle": "Tradução, sem jargão",
-      "plain": "Num fluxo onde {rep} dos pedidos se repetem exatamente, a fatura desceu {punto} — entre {bajo} e {alto} com 95% de confiança. Com tráfego que não se repete, desceu ≈ {cero}. O que poupares depende de quanto o teu se repete.",
-      "plainNote": "Uma percentagem não significa nada sem o seu intervalo, o seu modelo e o seu tráfego: publicamos os três — e também as baterias onde nada se poupou.",
+      "plain": "Num fluxo onde {rep} dos pedidos se repetem exatamente, a fatura desceu {punto} — entre {bajo} e {alto} com 95% de confiança. O que poupares depende de quanto o teu tráfego se repete.",
+      "plainNote": "Uma percentagem não significa nada sem o seu intervalo, o seu modelo e o seu tráfego: publicamos os três.",
       "benchLink": "Cada bateria, com o seu relatório completo, no banco público →"
     },
     "ledgersHead": {
       "eyebrow": "Contabilidade honesta",
       "title": "Cada tipo de poupança, contado à parte — para nenhuma cifra inchar.",
       "body": "Cada SavingsReport separa a poupança em quatro livros — chamadas evitadas, texto removido, texto comprimido e o desconto de cache do teu próprio fornecedor — e nunca os soma num número de marketing.",
-      "providerNote": "No banco público ({fecha}), o que o SDK instalado poupou veio do primeiro livro — pedidos repetidos servidos sem chamar o fornecedor — e, no Claude, do quarto, que é o desconto do teu próprio fornecedor. O pacote npm não traz compressor, por isso ali o terceiro foi zero. Um livro sem valor publicado é descrito aqui, não anunciado."
+      "providerNote": "No banco público ({fecha}), o que o SDK instalado poupou veio do primeiro livro — pedidos repetidos servidos sem chamar o fornecedor — e, no Claude, do quarto, que é o desconto do teu próprio fornecedor. O pacote npm não traz compressor. Um livro sem valor publicado é descrito aqui, não anunciado."
     },
     "ledgers": [
       {
@@ -964,7 +970,7 @@
       "ctaTitle": "Meça-o com o seu próprio tráfego",
       "ctaSub": "Depois de instalado, cada chamada devolve o seu SavingsReport, com o medido e o estimado em separado. Comece grátis com Medir (@bivelio/savings-layer {version} ou posterior); Pro e Equipa são uma taxa fixa por lugar, sem comissão sobre a sua poupança. A licença é o que lhe permite executar o BV‑SALA — o SDK na sua app, o gateway no seu terminal.",
       "ctaStart": "Começar",
-      "tagline": "O sistema operativo para o teu negócio. Isto é o <b>BV‑SALA</b>, o otimizador de custo de LLM da BiVelio, neutro quanto ao fornecedor — cada valor publicado é medido contra o contador do fornecedor; o estimado mostra-se à parte e nunca se fatura.",
+      "tagline": "O sistema operativo para o teu negócio. Isto é o <b>BV‑SALA</b>, o otimizador de custo de LLM da BiVelio, neutro quanto ao fornecedor — cada valor medido é medido contra o contador do fornecedor; o estimado e o simulado mostram-se à parte, ditos como tais, e nunca se faturam.",
       "badge": "BV‑SALA · Savings Layer",
       "colSavings": "Savings Layer",
       "colBivelio": "BiVelio",
@@ -1004,9 +1010,6 @@
       "errorCorreo": "Esse email não parece válido.",
       "errorEnvio": "Não conseguimos enviar.",
       "alterna": "Escreve-nos"
-    },
-    "trabajos": {
-      "caption": "Nem todos os pedidos trazem algo para poupar: no banco público, o tráfego sem repetições poupou ≈ {cero}. Também o publicamos."
     },
     "devs": {
       "eyebrow": "Feito para programadores",
@@ -1056,8 +1059,10 @@
         "band": "Gateway — para agentes de código com chave de API",
         "who": "Para quem trabalha com Claude Code, Codex CLI ou outro agente de código com chave de API.",
         "what": "Um comando põe um medidor local à frente do teu terminal, sem tocar em código. O gateway conta cada pedido cujo uso o teu fornecedor reporta, com o contador do próprio fornecedor — nos modelos do nosso catálogo de preços — e soma-os no teu painel, por dia e por modelo.",
-        "figureLabel": "Sem número de poupança publicado",
-        "figureNote": "Não publicámos uma poupança medida para agentes de código, por isso não anunciamos nenhuma. Com PRO, em modelos da Anthropic, o gateway passa as escritas da cache do TTL de uma hora para o de cinco minutos só nos turnos em que uma boa parte do prompt é nova — como o primeiro turno de uma sessão ou uma compactação — e deixa como estão os turnos encadeados de uma sessão em curso. Isso muda o preço, nunca o que o modelo lê, e só o que o contador do teu fornecedor confirma conta no teu relatório de poupança.",
+        "figureLabel": "O número que publicamos",
+      "figureQue": "da fatura com a redução de cache do PRO, já descontadas as falhas de cache que provoca (intervalo de {confianza}: de {bajo} a {alto}). Simulado a preço de tabela sobre {sesiones} sessões de Claude Code de uma só organização, a nossa.",
+        "figureNote": "Não é uma previsão para a tua equipa: é uma só organização, um só fornecedor e preços de tabela, e é uma poupança pequena que se nota onde a despesa na Anthropic é alta. Com PRO, em modelos da Anthropic, o gateway passa as escritas da cache do TTL de uma hora para o de cinco minutos só nos turnos em que uma boa parte do prompt é nova — como o primeiro turno de uma sessão ou uma compactação — e deixa como estão os turnos encadeados de uma sessão em curso. Isso muda o preço, nunca o que o modelo lê, e só o que o contador do teu fornecedor confirma conta no teu relatório de poupança.",
+        "benchLink": "O relatório do banco de TTL: o que foi simulado, o detalhe por modelo e os seus limites →",
         "cta": "Instalar o gateway"
       },
       "skill": {
@@ -1238,6 +1243,54 @@
       "delta": "Δ {d} pp [{inf}, {sup}]",
       "originNote": "De onde vem a economia, posição por posição: «do cache exato» é o que A pagou nas requisições que a camada serviu sem chamar o fornecedor; «nas chamadas» é a diferença nas que realmente o alcançaram, sobretudo o cache de prefixo do fornecedor (mais alguma variação na saída). As duas somadas dão a economia total.",
       "accuracyNote": "A precisão é medida sobre as perguntas com resposta publicada; as variantes com um número alterado servem apenas para verificar que a camada nunca entrega a resposta de outra pergunta."
+    },
+    "gatewayTtl": {
+      "title": "A redução de cache do gateway: uma simulação, não um A/B",
+      "kind": "Esta secção não é uma das baterias A/B da página e <b>não é medida ao vivo</b>: é um <b>replay</b>. Pegámos no uso que o fornecedor já tinha reportado em sessões reais de Claude Code de <b>uma só organização, a nossa</b>, contra um só fornecedor (Anthropic), e calculámos a <b>preço de tabela</b> quanto teriam custado com a redução de cache do PRO e sem ela.",
+      "verdict": "O veredicto do relatório de {fecha}: a redução deixa um <b>líquido de {neto} da fatura</b> ({netoUsd} sobre {factura}), depois de descontadas as falhas de cache que ela própria provoca.",
+      "stat": {
+        "sessions": "Sessões",
+        "requests": "Pedidos",
+        "days": "Dias"
+      },
+      "thInterval": "Intervalo de {confianza}",
+      "thNet": "Líquido, sobre a fatura",
+      "bySession": "Reamostragem por sessão (grupos: {n})",
+      "byDay": "Reamostragem por dia (grupos: {n})",
+      "intervalsNote": "Bootstrap com {remuestreos} reamostragens. Os dois intervalos excluem o zero: com este tráfego, a redução ganha dinheiro. O cartão da página inicial cita o intervalo por sessão.",
+      "resultTitle": "O resultado, com o que desconta",
+      "row": {
+        "downgrades": "Reduções",
+        "gross": "Prémio poupado, em bruto",
+        "misses": "Falhas de cache provocadas",
+        "missCost": "Quanto custam essas falhas",
+        "net": "Líquido",
+        "ceiling": "Teto: todo o prémio da hora"
+      },
+      "resultNote": "As percentagens são sobre a fatura a preço de tabela dos pedidos simulados ({factura}). O teto é o máximo que qualquer política de TTL poderia recuperar, mesmo que nunca falhasse. Cada percentagem é arredondada em separado.",
+      "modelsTitle": "Por modelo",
+      "thModelNet": "Líquido, sobre a fatura do modelo",
+      "tooFew": "sem percentagem (pedidos: {n})",
+      "ugly": "<b>{modelo} é o caso feio</b>: concentra {rebajas} das reduções e {fallos} das falhas, e o seu líquido é quase nulo. No primeiro período da captura, aliás, perdeu: {perdida} da sua fatura. O seu tráfego são fios curtos que se refazem com frequência e voltam depois de passados os cinco minutos. A regra ganha a sério onde os arranques são caros e raros.",
+      "howTitle": "Como foi feito: o modelo de cache, declarado",
+      "how": {
+        "rule": "A regra é a mesma que o gateway executa, não uma cópia: passa as escritas de cache do TTL de uma hora para o de cinco minutos quando a parte nova é pelo menos {umbral} do corpo do pedido.",
+        "baseline": "A linha de base é o que o fornecedor contou, com o seu uso real, onde a redução ainda não estava ativa; onde já estava, reconstrói-se desfazendo-a (vê os limites). Com a redução, o turno reduzido paga o prémio de escrita de cinco minutos em vez do de uma hora.",
+        "miss": "Uma falha provocada: se o turno seguinte do mesmo fio chegar depois dos cinco minutos e antes da hora, o que o turno reduzido escreveu já não é lido da cache, volta a ser escrito, e esse custo é descontado.",
+        "conservative": "Há uma variante conservadora, que além disso dá como perdido o prefixo partilhado entre fios diferentes. Quase não mexe no número: {neto}, com mais algumas falhas ({fallos}).",
+        "aggregates": "Só números agregados: da captura não sai nenhum prompt, resposta, cabeçalho nem identificador de sessão."
+      },
+      "limitsTitle": "Limites",
+      "limits": {
+        "oneOrg": "<b>Uma organização, um cliente, um fornecedor.</b> Claude Code contra a Anthropic, com o nosso próprio tráfego. Nenhum outro agente de código e nenhum outro fornecedor.",
+        "listPrice": "<b>Preço de tabela, simulado.</b> Não é uma fatura: é o uso real, tarifado com o catálogo de preços. Descontos, níveis de conta ou uma subscrição mudariam o dinheiro.",
+        "cacheModel": "<b>O modelo de cache é um modelo.</b> Supõe como o fornecedor indexa as suas entradas de cache; não o observa. A variante conservadora limita esse risco.",
+        "rebuilt": "<b>A maior parte da linha de base está reconstruída.</b> {cuota} dos pedidos foram gravados com a redução já ativa; aí a linha de base reconstrói-se desfazendo a redução real, e é menos firme do que a do primeiro período. Esse primeiro período, sozinho, dá um intervalo muito mais largo: de {bajo} a {alto}.",
+        "ceiling": "<b>O teto muda com o cliente.</b> Depende de quantas escritas de uma hora o agente de código envia, e as versões recentes do Claude Code enviam menos: dos {peticiones} pedidos, {sinMarca} não traziam nenhuma para reduzir.",
+        "gap": "<b>O intervalo entre turnos mede-se a partir da chegada de cada pedido</b>, não do fim da resposta: conta algumas falhas a mais, nunca a menos.",
+        "promise": "<b>Não é uma previsão para a sua equipa.</b> É uma poupança pequena, de um só tráfego, e outro tráfego pode dar outro número, também pior: veja o caso feio."
+      },
+      "production": "Em produção: desde a versão {version} ({fecha}), o gateway subtrai as falhas que observa, no turno que as sofre, pelo que a poupança desta redução que vês no teu painel é líquida. O que foi registado antes não é recalculado, e o painel assinala como «em bruto» as máquinas com um gateway anterior."
     },
     "guarantees": {
       "title": "Garantias, contadas",

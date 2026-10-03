@@ -2,13 +2,17 @@ import type { ReactNode } from "react";
 
 import { LogoProveedor } from "@/app/components/LogoProveedor";
 import { BANCO_EN_VIVO } from "@/lib/portada/banco-en-vivo";
+import { PALANCA_TTL } from "@/lib/portada/palanca-ttl";
 
 /**
  * LO MEDIDO EN VIVO, UNA SOLA VEZ PARA TODA LA WEB.
  *
  * La portada (héroe, tarjeta del SDK, #measured) y el panel (/dashboard/proof)
- * enseñan las mismas filas: con repeticiones (OpenAI), sin repeticiones (≈ 0) y
- * el mismo flujo en Claude, con la caché de prefijo del proveedor dicha aparte.
+ * enseñan las mismas filas: con repeticiones (OpenAI) y el mismo flujo en
+ * Claude, con la caché de prefijo del proveedor dicha aparte. La fila «sin
+ * repeticiones (≈ 0)» ya no sale en la portada (dueño, 2026-10-02: «sinceros
+ * pero no tontos»): la ve quien la pide (el panel) y vive entera en
+ * /benchmarks con su informe.
  * Las cifras salen de lib/portada/banco-en-vivo.ts (con verja contra sus
  * informes) y los textos de `landing.enVivo.*`. Ninguna con un «al menos».
  */
@@ -19,8 +23,17 @@ export type FilaMedida = { marca?: string; modelo?: string; cifra: string; que: 
 /** El traductor del namespace `landing` (el de next-intl, reducido a lo que se usa aquí). */
 type TraductorLanding = (clave: string, params?: Record<string, string | number>) => string;
 
-/** Las tres filas en el idioma de la página. */
-export function filasDelBancoEnVivo(t: TraductorLanding, locale: string): FilaMedida[] {
+/**
+ * Las filas en el idioma de la página. Por defecto, solo las cifras con ahorro
+ * medido (OpenAI y Claude, cada una condicionada a su flujo con repeticiones);
+ * `{ sinRepeticiones: true }` añade entre ellas la fila del tráfico sin
+ * repeticiones (≈ 0), que solo pide el panel.
+ */
+export function filasDelBancoEnVivo(
+  t: TraductorLanding,
+  locale: string,
+  { sinRepeticiones = false }: { sinRepeticiones?: boolean } = {},
+): FilaMedida[] {
   // Porcentajes con el idioma de la página («31,5 %», «%31,5»): una décima para
   // las cifras con intervalo, ninguna para las redondas (30 %, 0 %, 41 %).
   const pct1 = new Intl.NumberFormat(locale, { style: "percent", minimumFractionDigits: 1, maximumFractionDigits: 1 });
@@ -40,7 +53,7 @@ export function filasDelBancoEnVivo(t: TraductorLanding, locale: string): FilaMe
         version: V.versionSdk,
       }),
     },
-    { cifra: `≈ ${pct0.format(0)}`, que: t("enVivo.sinRepeticiones") },
+    ...(sinRepeticiones ? [{ cifra: `≈ ${pct0.format(0)}`, que: t("enVivo.sinRepeticiones") }] : []),
     {
       marca: "Anthropic",
       modelo: modeloCorto(V.anthropic.modelo),
@@ -52,6 +65,28 @@ export function filasDelBancoEnVivo(t: TraductorLanding, locale: string): FilaMe
       }),
     },
   ];
+}
+
+/**
+ * La fila de la tarjeta del GATEWAY: el neto de la rebaja de caché de PRO, con
+ * su intervalo y su condición (replay a precio de lista, una organización). Las
+ * cifras salen de lib/portada/palanca-ttl.ts, con verja contra el informe del
+ * banco de TTL; el texto, de `landing.offers.gateway.figureQue`, sin dígitos.
+ */
+export function filaDeLaPalancaTtl(t: TraductorLanding, locale: string): FilaMedida {
+  const pct1 = new Intl.NumberFormat(locale, { style: "percent", minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const pct0 = new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 0 });
+  const P = PALANCA_TTL;
+  return {
+    marca: "Anthropic",
+    cifra: pct1.format(P.neto.point),
+    que: t("offers.gateway.figureQue", {
+      bajo: pct1.format(P.neto.lower),
+      alto: pct1.format(P.neto.upper),
+      confianza: pct0.format(P.confianza),
+      sesiones: P.sesiones,
+    }),
+  };
 }
 
 /** Las filas, pintadas con las clases de la tarjeta de lo medido. */
@@ -77,7 +112,7 @@ export function FilasMedidas({ filas }: { filas: FilaMedida[] }) {
   );
 }
 
-/** La tarjeta entera: título con la fecha, las tres filas y el pie con el enlace al banco. */
+/** La tarjeta entera: título con la fecha, las filas y el pie con el enlace al banco. */
 export function TarjetaMedidoEnVivo({
   titulo,
   filas,

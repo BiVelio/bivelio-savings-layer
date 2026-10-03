@@ -315,6 +315,13 @@ petición, decidiendo solo con lo que el gateway sabe en ese momento:
 | **Solo si lo nuevo ≥ 30 % del cuerpo** | 56 | $61,83 | $0,87 | 4 | **+$60,96 (+4,9 %)** |
 | Solo arranques (lectura = 0) | 25 | $43,75 | $0,87 | 3 | +$42,88 (+3,5 %) |
 
+> **Actualización (2026-10-03).** El script de esta simulación nunca se
+> versionó. Su sucesor reproducible es `benchmarks/ttl/` (`pnpm ttl:replay`),
+> que llama a la decisión real de `gateway/tarifa.ts`: sobre este mismo corpus
+> da +4,83 % (reproduce el +4,9 %), pero con todo el tráfico capturado —sonnet-5
+> incluido, que este corpus dejaba fuera— el neto es **+2,49 %** (IC 95 % por
+> sesión +1,50 % … +3,57 %). Ver `docs/benchmarks/2026-10-03/ttl.md`.
+
 La política que salió en #229 **perdía el 6,3 % de la factura**. La corregida
 (`gateway/tarifa.ts`, `UMBRAL_REESCRITURA = 0.3`) mira el **prefijo**, no el
 reloj: guarda la huella (hash por mensaje, sin las marcas de caché) del último

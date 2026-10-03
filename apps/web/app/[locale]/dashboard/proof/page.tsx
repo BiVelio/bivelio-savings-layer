@@ -48,7 +48,7 @@ export default async function ProofPage() {
       <TarjetaMedidoEnVivo
         className="hero-prueba medido-prueba"
         titulo={tl("enVivo.titulo", { fecha: BANCO_EN_VIVO.fecha })}
-        filas={filasDelBancoEnVivo(tl, locale)}
+        filas={filasDelBancoEnVivo(tl, locale, { sinRepeticiones: true })}
         pie={tl.rich("enVivo.pie", { bench: (c) => <Link href="/benchmarks">{c}</Link> })}
       />
       <p className="app-gap">{t.rich("proof.tuDinero", { overview: (c) => <Link href="/dashboard">{c}</Link> })}</p>

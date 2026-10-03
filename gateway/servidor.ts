@@ -63,8 +63,18 @@ import {
   huellaDe,
   MemoriaDePrefijos,
   parsearMensajes,
+  PRIMA_1H,
+  PRIMA_5M,
   rebajarTtlDeCache,
 } from "./tarifa.js";
+import {
+  cerrarTurno,
+  costeDeFallo,
+  MemoriaDeTurnos,
+  perdidosConRebajaAplicada,
+  perdidosConRebajaEnSombra,
+  type TurnoTtl,
+} from "./fallos-ttl.js";
 import { Coalescedor, claveDePeticion, materialDeCabeceras, MAX_CAPTURA_BYTES, type HuellaDeLaPrimaria } from "./coalescencia.js";
 import { esUpstreamOficial } from "./upstream.js";
 import { RecuentoDeMedicion, type EstadoDeMedicion } from "./recuento.js";
@@ -528,6 +538,10 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
   // (arranque, compactación) y nunca el turno encadenado, donde la prima es
   // calderilla y el fallo cuesta el prefijo entero.
   const memoria = new MemoriaDePrefijos();
+  // Y la de TURNOS: lo que cada turno dejó en riesgo de caducar, para que el
+  // turno siguiente RESTE el fallo de caché que la rebaja le provoque. Sin
+  // ella el ahorro de la palanca era bruto (fallos-ttl.ts).
+  const turnos = new MemoriaDeTurnos();
   // El vigía del tráfico degradado: una línea por sesión y tipo, y un contador.
   const vigia = new VigiaDeDegradacion();
   // Lo medido y lo que no, con su motivo: el resumen de salida de los envoltorios.
@@ -692,6 +706,12 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
      * (marcas contadas, nada reescrito). Solo alimenta el registro `shadow`.
      */
     rebajaSombra?: RebajaAplicada | null,
+    /**
+     * El turno de este hilo en la memoria de turnos (fallos-ttl.ts): de él sale
+     * el fallo de caché que la rebaja del turno ANTERIOR provocó en este, y en
+     * él se anota lo que este deja en riesgo para el siguiente.
+     */
+    turnoTtl?: TurnoTtl | null,
   ): void => {
     if (!emisor || !uso) {
       buzon.noMedido(
@@ -737,10 +757,34 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
             tierServido: entrega?.tierServido,
           })
         : null;
+      // EL NETO de la rebaja de TTL. Con la palanca APLICADA el fallo ocurrió
+      // y se observa en este usage; en SOMBRA (Medir) viajó intacto y es el
+      // contrafactual del banco. En los dos casos el turno se cierra para que
+      // el siguiente sepa qué quedó en riesgo. Una gemela no viajó: ni falla
+      // ni deja nada cacheado.
+      const enSombraTtl = live.license.payload.plan === "measure";
+      let perdidosTtl = 0;
+      if (turnoTtl && !coalescida) {
+        perdidosTtl = enSombraTtl
+          ? perdidosConRebajaEnSombra(turnoTtl, medido.tokens)
+          : perdidosConRebajaAplicada(turnoTtl, medido.tokens);
+        cerrarTurno(turnoTtl, medido.tokens, {
+          sombra: enSombraTtl,
+          // Atribuible = la rebaja de ESTE turno se acredita limpia: sin marcas
+          // de 5 min del cliente, sin herramientas de servidor, con factura por
+          // tokens a precio de lista. Solo entonces su fallo se resta después.
+          atribuible:
+            !!rebaja && rebaja.rebajadas > 0 && rebaja.yaEran5m === 0 && !rebaja.herramientaDeServidor &&
+            suscripcion !== true && upstreamOficial && sinCobro !== true,
+          perdidos: perdidosTtl,
+        });
+      }
+      const falloTtl = !enSombraTtl && perdidosTtl > 0 ? { perdidos: perdidosTtl } : null;
       const informe = coalescida
         ? informeCoalescido(requestId, model, medido, atribucion, valoracion?.ok ? valoracion.credit : null, sinCobro === true)
         : informeMedido(
             requestId, servido, medido, atribucion, elision, rebaja, hermano, suscripcion === true, !upstreamOficial, sinCobro === true,
+            falloTtl,
           );
       emisor.record(informe);
       if (coalescida) recuento.replica();
@@ -772,6 +816,12 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
                   : elision.tokensLimpiados > 0
                     ? " · thinking only (your config): counted, not credited"
                     : "")
+            : "") +
+          // El neto de la rebaja de TTL: este turno reescribió lo que la
+          // entrada de 5 min del turno anterior dejó caducar, y se le resta.
+          (falloTtl
+            ? ` · cache TTL miss: ${falloTtl.perdidos} tok rewritten because the 5m entry expired` +
+              ` (net $${informe.cost.netSavingsUsd.toFixed(6)} on this call)`
             : "") +
           (sinCobro ? " · refusal the provider does not bill: measured at $0, no saving credited" : "") +
           (suscripcion && !coalescida && (rebaja || hermano)
@@ -817,14 +867,26 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
           const ahorroTtl = rebajaSombra
             ? ahorroDeRebajaEnSombra(rebajaSombra, base.tokens.cacheEscrita1h, base.precio.inputPer1k)
             : 0;
-          const politica = base.costeUsd - ahorroTtl;
-          if (politica < medido.costeUsd) {
+          // EL NETO, también en la sombra: lo que este turno leyó y con la
+          // rebaja habría tenido que reescribir (la entrada de 5 min del turno
+          // anterior ya caducada), a la prima a la que se reescribiría. Un turno
+          // así sale MÁS caro con la política que sin ella, y se registra igual:
+          // una sombra que solo cuenta los turnos que ganan promete el bruto.
+          const falloSombra = costeDeFallo({
+            perdidos: perdidosTtl,
+            inputPer1k: base.precio.inputPer1k,
+            cachedInputPer1k: base.precio.cachedInputPer1k,
+            primaEscritura: rebajaSombra ? PRIMA_5M : PRIMA_1H,
+          });
+          const politica = base.costeUsd - ahorroTtl + falloSombra;
+          if (politica !== medido.costeUsd) {
             em.record(informeSombra(`${requestId}:shadow`, model, medido.costeUsd, politica, atribucion));
             log(
               `[gateway] measure (shadow) · ${model} · ` +
                 [
                   conHermano && hipotesis ? `sibling model ${hipotesis.cambio.servido}` : null,
                   ahorroTtl > 0 ? `cache TTL 1h→5m on ${base.tokens.cacheEscrita1h} written tok` : null,
+                  falloSombra > 0 ? `cache miss the 5m TTL would have caused on ${perdidosTtl} tok (+$${falloSombra.toFixed(6)})` : null,
                 ]
                   .filter(Boolean)
                   .join(" + ") +
@@ -1351,6 +1413,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       // Y va sobre `cuerpoSaliente`, no sobre `cuerpo`: la MEDICIÓN y la clave
       // de coalescencia siguen usando el cuerpo original del cliente.
       let rebaja: RebajaAplicada | null = null;
+      let turnoTtl: TurnoTtl | null = null;
       if (
         palancasArmadas &&
         !enMedicion &&
@@ -1373,9 +1436,13 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
             const ahoraMs = Date.now();
             const anterior = memoria.ultima(clave, ahoraMs);
             memoria.anotar(clave, huella, ahoraMs);
+            // Se abre SIEMPRE, se rebaje o no: el turno que sufre el fallo de
+            // la rebaja anterior casi nunca va rebajado (es un turno encadenado).
+            turnoTtl = turnos.abrir(clave, huella, ahoraMs, false);
             if (decidirRebaja({ fraccionNueva: fraccionNueva(anterior, huella) })) {
               const rebajado = rebajarTtlDeCache(json);
               if (rebajado !== null) {
+                turnoTtl.rebajado = true;
                 cuerpoSaliente = rebajado.cuerpo;
                 // Con herramientas de servidor la palanca se aplica igual (el
                 // cliente paga menos) pero no se acredita: parte de la escritura
@@ -1413,10 +1480,12 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
             const ahoraMs = Date.now();
             const anterior = memoria.ultima(clave, ahoraMs);
             memoria.anotar(clave, huella, ahoraMs);
+            turnoTtl = turnos.abrir(clave, huella, ahoraMs, false);
             if (decidirRebaja({ fraccionNueva: fraccionNueva(anterior, huella) })) {
               // `json` es una copia parseada del Buffer: marcarla no toca lo que viaja.
               const hipotesis = rebajarTtlDeCache(json);
               if (hipotesis !== null) {
+                turnoTtl.rebajado = true;
                 rebajaSombra = {
                   rebajadas: hipotesis.rebajadas,
                   yaEran5m: hipotesis.yaEran5m,
@@ -1531,6 +1600,8 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
         hermano = null;
         esfuerzoPuesto = false;
         rebaja = null;
+        // Viaja intacta: este turno ya no deja nada a 5 min.
+        if (turnoTtl && ttlReescrito) turnoTtl.rebajado = false;
         ttlReescrito = false;
         diales = null;
         inyectado = false;
@@ -1702,7 +1773,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
           const sinCobro = url.pathname === "/v1/messages" && observador instanceof ObservadorSse && observador.negativaNoCobrada();
           medir(
             requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, elision, rebaja, inicioMs, hermano, suscripcion,
-            undefined, undefined, sinCobro, rebajaSombra,
+            undefined, undefined, sinCobro, rebajaSombra, turnoTtl,
           );
           vigilarCache(url.pathname, cuerpo, codificacion, uso, ttlReescrito, sesionId);
         }
@@ -1726,7 +1797,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
           const elision = url.pathname === "/v1/messages" ? elisionDeJson(respuesta) : null;
           medir(
             requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, atribuir(elision, uso), rebaja, inicioMs, hermano, suscripcion,
-            undefined, undefined, negativaNoCobradaEnJson(url.pathname, respuesta), rebajaSombra,
+            undefined, undefined, negativaNoCobradaEnJson(url.pathname, respuesta), rebajaSombra, turnoTtl,
           );
           vigilarCache(url.pathname, cuerpo, codificacion, uso, ttlReescrito, sesionId);
         }

@@ -370,6 +370,11 @@
       "noLever": "{n, plural, one {# machine is bijgewerkt} other {# machines zijn bijgewerkt}}, maar de hefboom heeft daar niet gewerkt. Blijft het zo na het bijwerken, mail dan naar support@bivelio.com.",
       "action": "Werk @bivelio/savings-layer op die machine bij en herstart de terminal; de machinetabel hieronder toont wat elke machine meldt."
     },
+    "gatewayBruto": {
+      "title": "De besparing van sommige machines wordt nog bruto gemeld",
+      "summary": "{n, plural, one {# machine draait} other {# machines draaien}} een gateway ouder dan {minima} of meldt geen versie. De besparing door de verlaging van de cache-TTL telt de vermeden toeslag, maar trekt niet de keren af dat de cache van 5 minuten verloopt en opnieuw moet worden geschreven. In ons eigen verkeer eten die missers ongeveer 30% van dat bedrag op. Vanaf {minima} trekt de gateway ze af en toont dit dashboard de nettobesparing.",
+      "action": "Werk @bivelio/savings-layer op die machine bij naar {minima} of later en herstart de terminal. Wat al is vastgelegd wordt niet herberekend: netto telt vanaf de update."
+    },
     "sdkReferencia": {
       "title": "Sommige machines draaien een SDK ouder dan {minima}: hun herhalingen worden niet via referentie gemeten",
       "summary": "{n, plural, one {# machine draait} other {# machines draaien}} een SDK ouder dan {minima} (de oudste meldt {antigua}). Tot ze zijn bijgewerkt, tellen hun herhaalde verzoeken als geschat, niet als gemeten via referentie: ze blijven in je totalen, maar buiten de basis.",
@@ -781,21 +786,22 @@
     "metaTitle": "BiVelio — Verifieer je LLM-besparingen",
     "metaDescription": "Een SDK waarmee je app de LLM-provider alleen betaalt wat hij nodig heeft, en een gateway die je codeeragent meet. Geteld met de teller van je provider: meet gratis en betaal daarna per seat — zonder commissie op je besparing.",
     "hero": {
-      "eyebrow": "Voor teams die LLM-API's per token betalen",
       "title": "Je LLM-factuur, onder controle.",
       "titleAccent": "Gemeten bij elke aanroep.",
-      "lede": "Twee producten, één regel. De SDK wordt in je app geïnstalleerd en laat alleen door wat betaald moet worden; de gateway staat vóór je coding-agent en meet zijn uitgaven. Beide tellen met de eigen teller van je aanbieder en houden gemeten en geschat apart. We publiceren alleen wat we hebben gemeten.",
-      "ctaOffers": "SDK of gateway?",
-      "ctaPricing": "Bekijk prijzen",
+      "sub": "Savings beantwoordt wat je app herhaalt zonder de provider opnieuw aan te roepen, en meet elke aanroep met diens teller.",
+      "ctaStart": "Aan de slag",
+      "ctaBench": "Bekijk de publieke benchmark",
+      "panelAlt": "Het Savings-dashboard met de gegevens van de publieke benchmark: de gemeten besparing en de verdeling per model.",
+      "panelCaption": "Dashboard met de gegevens van de publieke benchmark",
+      "medidoEnVivo": "Live gemeten met de teller van elke provider",
       "note": "In minuten geïnstalleerd. Je berichten gaan nooit via onze servers.",
       "proofTitle": "Gemeten tegen een echte provider",
-      "medidoEn": "Gemeten op",
       "compatibleCon": "Compatibel met",
       "compatibleNota": "Compatibel is niet gemeten. De SDK werkt met elk endpoint dat compatibel is met de OpenAI-API, plus de native Anthropic-adapter en de native Gemini-adapter (nieuw in {gemini}). Met een besparingscijfer op de publieke benchmark zijn vandaag alleen modellen van OpenAI en Anthropic gemeten; Gemini heeft geen besparingscijfer. Wat voor Gemini gemeten is: {flash}, via zijn native API, in de wekelijkse live bench van {fecha} — alle vier batterijen, zonder fouten van de laag en zonder weigering in de cache of als besparing gecrediteerd. Die bench controleert dat de laag niets breekt en niet te veel rekent; hij meet geen besparing. Ook gemeten: {pro}, via zijn native API, in twee gedeeltelijke runs op {fechaPro} (zijn dagelijkse providerquotum volstaat niet voor alle vier batterijen op één dag): alle vier batterijen, eveneens zonder fouten van de laag en zonder gecachte of als besparing geboekte weigering."
     },
     "cascade": {
       "title": "De goedkoopste uitvoering wint",
-      "footnote": "Elke hendel valt in zijn eigen grootboek, en de grootboeken worden nooit opgeteld. In deze batterij kwam de besparing uit herhaalde verzoeken die de SDK bediende zonder de aanbieder aan te roepen en, bij Claude, uit de prefix-cache van de aanbieder zelf. Het npm-pakket bevat geen compressor, dus compressie bespaarde niets — en bij verkeer zonder herhalingen was de besparing niet te onderscheiden van nul."
+      "footnote": "Elke hendel valt in zijn eigen grootboek, en de grootboeken worden nooit opgeteld. In deze batterij kwam de besparing uit herhaalde verzoeken die de SDK bediende zonder de aanbieder aan te roepen en, bij Claude, uit de prefix-cache van de aanbieder zelf. Het npm-pakket bevat geen compressor."
     },
     "explica": {
       "eyebrow": "In gewone taal",
@@ -827,15 +833,15 @@
       "body": "Elk scenario draait twee keer tegen de echte aanbieder: zoals het is, en met Savings ervoor. Beide resultaten worden geteld met de teller van de aanbieder zelf — dezelfde die je factuur prijst. Dit kwam eruit, inclusief foutmarge:",
       "videoCaption": "De test is een eerlijk experiment: dezelfde taak twee keer — zonder Savings en met Savings — met dezelfde teller van de aanbieder die beide meet.",
       "plainTitle": "Vertaling, zonder jargon",
-      "plain": "Bij een stroom waarin {rep} van de verzoeken zich exact herhalen, daalde de rekening met {punto} — tussen {bajo} en {alto} met 95% betrouwbaarheid. Bij verkeer dat zich niet herhaalt, daalde ze met ≈ {cero}. Wat je bespaart hangt af van hoeveel het jouwe zich herhaalt.",
-      "plainNote": "Een percentage zegt niets zonder zijn interval, zijn model en zijn verkeer: we publiceren alle drie — en ook de batterijen waarin niets werd bespaard.",
+      "plain": "Bij een stroom waarin {rep} van de verzoeken zich exact herhalen, daalde de rekening met {punto} — tussen {bajo} en {alto} met 95% betrouwbaarheid. Wat je bespaart hangt af van hoeveel je verkeer zich herhaalt.",
+      "plainNote": "Een percentage zegt niets zonder zijn interval, zijn model en zijn verkeer: we publiceren alle drie.",
       "benchLink": "Elke batterij, met haar volledige rapport, op de publieke benchmark →"
     },
     "ledgersHead": {
       "eyebrow": "Eerlijke boekhouding",
       "title": "Elke soort besparing apart geteld — zodat geen cijfer wordt opgeblazen.",
       "body": "Elk SavingsReport verdeelt de besparing over vier grootboeken — vermeden aanroepen, verwijderde tekst, gecomprimeerde tekst en de cachekorting van je eigen aanbieder — en telt ze nooit op tot één marketingcijfer.",
-      "providerNote": "Op de publieke benchmark ({fecha}) kwam wat de geïnstalleerde SDK bespaarde uit het eerste grootboek — herhaalde verzoeken bediend zonder de aanbieder aan te roepen — en, bij Claude, uit het vierde, de korting van je eigen aanbieder. Het npm-pakket bevat geen compressor, dus het derde stond daar op nul. Een grootboek zonder gepubliceerd cijfer wordt hier beschreven, niet aangeprezen."
+      "providerNote": "Op de publieke benchmark ({fecha}) kwam wat de geïnstalleerde SDK bespaarde uit het eerste grootboek — herhaalde verzoeken bediend zonder de aanbieder aan te roepen — en, bij Claude, uit het vierde, de korting van je eigen aanbieder. Het npm-pakket bevat geen compressor. Een grootboek zonder gepubliceerd cijfer wordt hier beschreven, niet aangeprezen."
     },
     "ledgers": [
       {
@@ -964,7 +970,7 @@
       "ctaTitle": "Meet het op je eigen verkeer",
       "ctaSub": "Eenmaal geïnstalleerd geeft elke aanroep zijn SavingsReport terug, gemeten en geschat gescheiden. Begin gratis met Meten (@bivelio/savings-layer {version} of nieuwer); Pro en Team zijn een vaste vergoeding per seat, zonder commissie op je besparing. De licentie is wat je BV‑SALA laat draaien — de SDK in je app, de gateway in je terminal.",
       "ctaStart": "Aan de slag",
-      "tagline": "Het besturingssysteem voor je bedrijf. Dit is <b>BV‑SALA</b>, BiVelio's aanbieder-neutrale LLM-kostenoptimalisator — elk gepubliceerd cijfer gemeten tegen de teller van de aanbieder; schattingen worden apart getoond en nooit gefactureerd.",
+      "tagline": "Het besturingssysteem voor je bedrijf. Dit is <b>BV‑SALA</b>, BiVelio's aanbieder-neutrale LLM-kostenoptimalisator — elk gemeten cijfer is gemeten tegen de teller van de aanbieder; schattingen en simulaties worden apart getoond, als zodanig benoemd, en nooit gefactureerd.",
       "badge": "BV‑SALA · Savings Layer",
       "colSavings": "Savings Layer",
       "colBivelio": "BiVelio",
@@ -1004,9 +1010,6 @@
       "errorCorreo": "Dat e-mailadres lijkt niet geldig.",
       "errorEnvio": "We konden het niet versturen.",
       "alterna": "Mail ons"
-    },
-    "trabajos": {
-      "caption": "Niet elk verzoek bevat iets om te besparen: op de publieke benchmark bespaarde verkeer zonder herhalingen ≈ {cero}. Ook dat publiceren we."
     },
     "devs": {
       "eyebrow": "Gebouwd voor ontwikkelaars",
@@ -1056,8 +1059,10 @@
         "band": "Gateway — voor coding-agents met een API-sleutel",
         "who": "Voor wie Claude Code, Codex CLI of een andere coding-agent met een API-sleutel gebruikt.",
         "what": "Eén commando zet een lokale meter vóór je terminal, zonder code aan te passen. De gateway telt elk verzoek waarvan je aanbieder het gebruik meldt, met de eigen teller van die aanbieder — voor de modellen in onze prijscatalogus — en zet het totaal in je dashboard, per dag en per model.",
-        "figureLabel": "Geen besparingscijfer gepubliceerd",
-        "figureNote": "We hebben geen gemeten besparing voor coding-agents gepubliceerd, dus we adverteren er ook geen. Met PRO zet de gateway op Anthropic-modellen cache-schrijfacties om van de TTL van een uur naar die van vijf minuten, alleen in beurten waarin een groot deel van de prompt nieuw is — zoals de eerste beurt van een sessie of een compactie — en laat de aaneengeschakelde beurten van een lopende sessie zoals ze zijn. Dat verandert de prijs, nooit wat het model leest, en alleen wat de teller van je aanbieder bevestigt, telt mee in je besparingsrapport.",
+        "figureLabel": "Het cijfer dat we publiceren",
+      "figureQue": "van de factuur met de cacheverlaging van PRO, na aftrek van de cachemissers die ze veroorzaakt ({confianza}-interval: {bajo} tot {alto}). Gesimuleerd tegen lijstprijzen over {sesiones} Claude Code-sessies van één enkele organisatie, de onze.",
+        "figureNote": "Geen voorspelling voor jouw team: het is één organisatie, één aanbieder en lijstprijzen, en het is een kleine besparing die merkbaar is waar de uitgaven bij Anthropic hoog zijn. Met PRO zet de gateway op Anthropic-modellen cache-schrijfacties om van de TTL van een uur naar die van vijf minuten, alleen in beurten waarin een groot deel van de prompt nieuw is — zoals de eerste beurt van een sessie of een compactie — en laat de aaneengeschakelde beurten van een lopende sessie zoals ze zijn. Dat verandert de prijs, nooit wat het model leest, en alleen wat de teller van je aanbieder bevestigt, telt mee in je besparingsrapport.",
+        "benchLink": "Het rapport van de TTL-meting: wat er is gesimuleerd, de uitsplitsing per model en de grenzen →",
         "cta": "Gateway instellen"
       },
       "skill": {
@@ -1238,6 +1243,54 @@
       "delta": "Δ {d} pp [{inf}, {sup}]",
       "originNote": "Waar de besparing vandaan komt, positie voor positie: “uit de exacte cache” is wat A betaalde voor de verzoeken die de laag serveerde zonder de provider aan te roepen; “in de aanroepen” is het verschil bij de verzoeken die de provider wel bereikten, vooral de prefixcache van de provider (plus wat variatie in de output). Samen vormen ze de totale besparing.",
       "accuracyNote": "Nauwkeurigheid wordt gemeten op de vragen met een gepubliceerd antwoord; de varianten met een gewijzigd getal dienen alleen om te controleren dat de laag nooit het antwoord van een andere vraag teruggeeft."
+    },
+    "gatewayTtl": {
+      "title": "De cacheverlaging van de gateway: een simulatie, geen A/B",
+      "kind": "Deze sectie is geen van de A/B-batterijen op deze pagina en is <b>niet live gemeten</b>: het is een <b>replay</b>. We namen het gebruik dat de provider al had gerapporteerd voor echte Claude Code-sessies van <b>één enkele organisatie, de onze</b>, bij één enkele provider (Anthropic), en berekenden tegen <b>lijstprijzen</b> wat ze zouden hebben gekost met de cacheverlaging van PRO en zonder.",
+      "verdict": "Het oordeel van het rapport van {fecha}: de verlaging levert <b>netto {neto} van de factuur</b> op ({netoUsd} op {factura}), na aftrek van de cachemissers die ze zelf veroorzaakt.",
+      "stat": {
+        "sessions": "Sessies",
+        "requests": "Verzoeken",
+        "days": "Dagen"
+      },
+      "thInterval": "{confianza}-interval",
+      "thNet": "Netto, als deel van de factuur",
+      "bySession": "Herbemonstering per sessie (clusters: {n})",
+      "byDay": "Herbemonstering per dag (clusters: {n})",
+      "intervalsNote": "Bootstrap met {remuestreos} herbemonsteringen. Beide intervallen sluiten nul uit: op dit verkeer verdient de verlaging geld. De kaart op de startpagina noemt het interval per sessie.",
+      "resultTitle": "Het resultaat, met wat ervan afgaat",
+      "row": {
+        "downgrades": "Verlagingen",
+        "gross": "Bespaarde toeslag, bruto",
+        "misses": "Veroorzaakte cachemissers",
+        "missCost": "Wat die missers kosten",
+        "net": "Netto",
+        "ceiling": "Plafond: de volledige toeslag van het uur"
+      },
+      "resultNote": "De percentages zijn berekend over de factuur tegen lijstprijzen van de gesimuleerde verzoeken ({factura}). Het plafond is het maximum dat welk TTL-beleid dan ook zou kunnen terugwinnen, zelfs als het nooit zou missen. Elk percentage is afzonderlijk afgerond.",
+      "modelsTitle": "Per model",
+      "thModelNet": "Netto, als deel van de factuur van het model",
+      "tooFew": "geen percentage (verzoeken: {n})",
+      "ugly": "<b>{modelo} is het lelijke geval</b>: het is goed voor {rebajas} van de verlagingen en {fallos} van de missers, en het netto is bijna nul. In de eerste periode van de opname verloor het zelfs: {perdida} van zijn factuur. Zijn verkeer bestaat uit korte threads die vaak opnieuw worden opgebouwd en terugkomen nadat de vijf minuten voorbij zijn. De regel loont echt waar sessiestarts duur en zeldzaam zijn.",
+      "howTitle": "Hoe het is gedaan: het cachemodel, uitgeschreven",
+      "how": {
+        "rule": "De regel is dezelfde die de gateway uitvoert, geen kopie: ze verplaatst cacheschrijfacties van de TTL van één uur naar die van vijf minuten wanneer het nieuwe deel minstens {umbral} van de body van het verzoek is.",
+        "baseline": "De basislijn is wat de aanbieder heeft geteld, met het echte gebruik, waar de verlaging nog niet actief was; waar die dat al wel was, wordt ze gereconstrueerd door de verlaging ongedaan te maken (zie de beperkingen). Met de verlaging betaalt de verlaagde beurt de schrijftoeslag van vijf minuten in plaats van die van één uur.",
+        "miss": "Een veroorzaakte misser: als de volgende beurt van dezelfde thread na de vijf minuten en vóór het uur binnenkomt, wordt wat de verlaagde beurt schreef niet meer uit de cache gelezen maar opnieuw geschreven, en die kosten worden afgetrokken.",
+        "conservative": "Er is een conservatieve variant, die bovendien de prefix die verschillende threads delen als verloren beschouwt. Die verschuift het cijfer nauwelijks: {neto}, met enkele missers meer ({fallos}).",
+        "aggregates": "Alleen geaggregeerde cijfers: geen prompt, antwoord, header of sessie-id verlaat de opname."
+      },
+      "limitsTitle": "Grenzen",
+      "limits": {
+        "oneOrg": "<b>Eén organisatie, één client, één provider.</b> Claude Code tegenover Anthropic, met ons eigen verkeer. Geen andere codeeragent en geen andere provider.",
+        "listPrice": "<b>Lijstprijs, gesimuleerd.</b> Het is geen factuur: het is het werkelijke gebruik, geprijsd met de prijscatalogus. Kortingen, accountniveaus of een abonnement zouden het geld veranderen.",
+        "cacheModel": "<b>Het cachemodel is een model.</b> Het neemt aan hoe de provider zijn cache-items indexeert; het neemt dat niet waar. De conservatieve variant begrenst dat risico.",
+        "rebuilt": "<b>Het grootste deel van de basislijn is gereconstrueerd.</b> {cuota} van de verzoeken is opgenomen terwijl de verlaging al actief was; daar wordt de basislijn gereconstrueerd door de echte verlaging ongedaan te maken, en die is minder stevig dan die van het eerste deel. Dat eerste deel alleen geeft een veel breder interval: {bajo} tot {alto}.",
+        "ceiling": "<b>Het plafond verandert met de client.</b> Het hangt af van hoeveel schrijfacties van één uur de coding-agent stuurt, en recente versies van Claude Code sturen er minder: van de {peticiones} verzoeken bevatten er {sinMarca} geen enkele om te verlagen.",
+        "gap": "<b>Het gat tussen beurten wordt gemeten vanaf de aankomst van elk verzoek</b>, niet vanaf het einde van het antwoord: het telt een paar missers te veel, nooit te weinig.",
+        "promise": "<b>Het is geen voorspelling voor jouw team.</b> Het is een kleine besparing, uit één soort verkeer, en ander verkeer kan een ander cijfer geven, ook een slechter: kijk naar het lelijke geval."
+      },
+      "production": "In productie: sinds versie {version} ({fecha}) trekt de gateway de missers die hij waarneemt af in de beurt die ze ondergaat, zodat de besparing van deze verlaging in je dashboard netto is. Wat eerder is vastgelegd wordt niet herberekend, en het dashboard markeert machines met een oudere gateway als “bruto”."
     },
     "guarantees": {
       "title": "Garanties, geteld",
