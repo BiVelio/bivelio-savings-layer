@@ -970,7 +970,7 @@
       "ctaTitle": "Mídelo con tu propio tráfico",
       "ctaSub": "Instalado, cada llamada devuelve su SavingsReport, con lo medido y lo estimado por separado. Empieza gratis con Medir (@bivelio/savings-layer {version} o posterior); Pro y Equipo son una cuota fija por asiento, sin comisión sobre tu ahorro. La licencia es lo que te deja ejecutar BV‑SALA: el SDK en tu app, el gateway en tu terminal.",
       "ctaStart": "Empezar",
-      "tagline": "El sistema operativo para tu negocio. Esto es <b>BV‑SALA</b>, el optimizador de coste de LLM neutral respecto al proveedor de BiVelio — cada cifra publicada, medida contra el contador del proveedor; lo estimado se enseña aparte y nunca se factura.",
+      "tagline": "El sistema operativo para tu negocio. Esto es <b>BV‑SALA</b>, el optimizador de coste de LLM neutral respecto al proveedor de BiVelio — cada cifra medida lo está contra el contador del proveedor; lo estimado y lo simulado se enseñan aparte, dichos como tales, y nunca se facturan.",
       "badge": "BV‑SALA · Savings Layer",
       "colSavings": "Savings Layer",
       "colBivelio": "BiVelio",
@@ -1062,6 +1062,7 @@
         "figureLabel": "La cifra que publicamos",
       "figureQue": "de la factura con la rebaja de caché de PRO, ya restados los fallos de caché que provoca (intervalo del {confianza}: de {bajo} a {alto}). Simulado a precio de lista sobre {sesiones} sesiones de Claude Code de una sola organización, la nuestra.",
         "figureNote": "No es una previsión para tu equipo: es una sola organización, un solo proveedor y precios de lista, y es un ahorro pequeño que se nota donde el gasto en Anthropic es alto. Con PRO, en modelos de Anthropic, pasa las escrituras de caché del TTL de una hora al de cinco minutos solo en los turnos en que una parte grande del prompt es nueva —como el primero de una sesión o una compactación— y deja como están los turnos encadenados de una sesión en marcha. Eso cambia el precio, nunca lo que lee el modelo, y solo lo que confirma el contador de tu proveedor cuenta en tu informe de ahorro.",
+        "benchLink": "El informe del banco de TTL: qué se simuló, el desglose por modelo y sus límites →",
         "cta": "Instalar el gateway"
       },
       "skill": {
@@ -1242,6 +1243,54 @@
       "delta": "Δ {d} pp [{inf}, {sup}]",
       "originNote": "Origen del ahorro, posición a posición: «de la caché exacta» es lo que A pagó en las peticiones que la capa sirvió sin llamar al proveedor; «en las llamadas» es la diferencia en las que sí llegaron, sobre todo caché de prefijo del proveedor (más algo de variación de la salida). Las dos suman el ahorro total.",
       "accuracyNote": "La exactitud se mide sobre las preguntas con respuesta publicada; las variantes con una cifra cambiada solo sirven para comprobar que la capa no entrega la respuesta de otra pregunta."
+    },
+    "gatewayTtl": {
+      "title": "La rebaja de caché del gateway: una simulación, no un A/B",
+      "kind": "Esta sección no es una de las baterías A/B de la página y <b>no está medida en vivo</b>: es un <b>replay</b>. Tomamos el uso que el proveedor ya había informado en sesiones reales de Claude Code de <b>una sola organización, la nuestra</b>, contra un solo proveedor (Anthropic), y calculamos a <b>precio de lista</b> cuánto habrían costado con la rebaja de caché de PRO y sin ella.",
+      "verdict": "El veredicto del informe del {fecha}: la rebaja deja un <b>neto de {neto} de la factura</b> ({netoUsd} sobre {factura}), después de restar los fallos de caché que ella misma provoca.",
+      "stat": {
+        "sessions": "Sesiones",
+        "requests": "Peticiones",
+        "days": "Días"
+      },
+      "thInterval": "Intervalo del {confianza}",
+      "thNet": "Neto, sobre la factura",
+      "bySession": "Remuestreando por sesión (grupos: {n})",
+      "byDay": "Remuestreando por día (grupos: {n})",
+      "intervalsNote": "Bootstrap con {remuestreos} remuestreos. Los dos intervalos excluyen el cero: con este tráfico, la rebaja gana dinero. La tarjeta de la portada cita el intervalo por sesión.",
+      "resultTitle": "El resultado, con lo que resta",
+      "row": {
+        "downgrades": "Rebajas",
+        "gross": "Prima ahorrada, en bruto",
+        "misses": "Fallos de caché provocados",
+        "missCost": "Lo que cuestan esos fallos",
+        "net": "Neto",
+        "ceiling": "Techo: toda la prima de la hora"
+      },
+      "resultNote": "Los porcentajes son sobre la factura a precio de lista de las peticiones simuladas ({factura}). El techo es lo máximo que podría recuperar cualquier política de TTL, aunque no fallara nunca. Cada porcentaje se redondea por separado.",
+      "modelsTitle": "Por modelo",
+      "thModelNet": "Neto, sobre la factura del modelo",
+      "tooFew": "sin porcentaje (peticiones: {n})",
+      "ugly": "<b>{modelo} es el caso feo</b>: concentra el {rebajas} de las rebajas y el {fallos} de los fallos, y su neto es casi nulo. En el primer periodo de la captura, de hecho, perdió: {perdida} de su factura. Su tráfico son hilos cortos que se rehacen a menudo y vuelven pasados los cinco minutos. La regla gana de verdad donde los arranques son caros y raros.",
+      "howTitle": "Cómo se hizo: el modelo de caché, declarado",
+      "how": {
+        "rule": "La regla es la misma que ejecuta el gateway, no una copia: pasa las escrituras de caché del TTL de una hora al de cinco minutos cuando lo nuevo es al menos el {umbral} del cuerpo de la petición.",
+        "baseline": "La línea base es lo que el proveedor contó, con su uso real, donde la rebaja aún no estaba activa; donde ya lo estaba, se reconstruye deshaciéndola (mira los límites). Con la rebaja, el turno rebajado paga la prima de escritura de cinco minutos en vez de la de una hora.",
+        "miss": "Un fallo provocado: si el turno siguiente del mismo hilo llega pasados los cinco minutos y antes de la hora, lo que el turno rebajado escribió ya no se lee de la caché, se vuelve a escribir, y ese coste se resta.",
+        "conservative": "Hay una variante conservadora, que además da por perdido el prefijo compartido entre hilos distintos. Apenas mueve la cifra: {neto}, con algunos fallos más ({fallos}).",
+        "aggregates": "Solo cifras agregadas: de la captura no sale ningún prompt, respuesta, cabecera ni identificador de sesión."
+      },
+      "limitsTitle": "Límites",
+      "limits": {
+        "oneOrg": "<b>Una organización, un cliente, un proveedor.</b> Claude Code contra Anthropic, con nuestro propio tráfico. Ningún otro agente de código y ningún otro proveedor.",
+        "listPrice": "<b>Precio de lista, simulado.</b> No es una factura: es el uso real, tarifado con el catálogo de precios. Descuentos, niveles de cuenta o una suscripción cambiarían el dinero.",
+        "cacheModel": "<b>El modelo de caché es un modelo.</b> Supone cómo indexa el proveedor sus entradas de caché; no lo observa. La variante conservadora acota ese riesgo.",
+        "rebuilt": "<b>La mayor parte de la línea base está reconstruida.</b> El {cuota} de las peticiones se grabó con la rebaja ya activa; ahí la línea base se reconstruye deshaciendo la rebaja real, y es menos firme que la del primer tramo. Ese primer tramo, solo, da un intervalo mucho más ancho: de {bajo} a {alto}.",
+        "ceiling": "<b>El techo cambia con el cliente.</b> Depende de cuántas escrituras de una hora mande el agente de código, y las versiones recientes de Claude Code mandan menos: de las {peticiones} peticiones, {sinMarca} no traían ninguna que rebajar.",
+        "gap": "<b>El hueco entre turnos se mide desde la llegada de cada petición</b>, no desde el final de la respuesta: cuenta algún fallo de más, nunca de menos.",
+        "promise": "<b>No es una previsión para tu equipo.</b> Es un ahorro pequeño, de un solo tráfico, y otro tráfico puede dar otra cifra, también peor: mira el caso feo."
+      },
+      "production": "En producción: desde la versión {version} ({fecha}), el gateway resta los fallos que observa, en el turno que los sufre, así que el ahorro de esta rebaja que ves en tu panel va en neto. Lo registrado antes no se recalcula, y el panel señala como «en bruto» las máquinas con un gateway anterior."
     },
     "guarantees": {
       "title": "Garantías, contadas",

@@ -970,7 +970,7 @@
       "ctaTitle": "Kendi trafiğinde ölç",
       "ctaSub": "Kurulduktan sonra her çağrı, ölçülen ve tahmin edilen ayrı olarak SavingsReport’unu döndürür. Ölçüm ile ücretsiz başlayın (@bivelio/savings-layer {version} veya üstü); Pro ve Ekip koltuk başına sabit bir ücrettir, tasarrufunuz üzerinden komisyon yoktur. Lisans, BV‑SALA’yı çalıştırmanızı sağlayan şeydir — uygulamanızda SDK, terminalinizde gateway.",
       "ctaStart": "Başla",
-      "tagline": "İşletmeniz için işletim sistemi. Bu, BiVelio'nun sağlayıcıdan bağımsız LLM maliyet optimizasyonu <b>BV‑SALA</b> — yayımlanan her rakam sağlayıcının kendi sayacına göre ölçülür; tahminler ayrı gösterilir ve asla faturalanmaz.",
+      "tagline": "İşletmeniz için işletim sistemi. Bu, BiVelio'nun sağlayıcıdan bağımsız LLM maliyet optimizasyonu <b>BV‑SALA</b> — ölçülen her rakam sağlayıcının kendi sayacına göre ölçülür; tahminler ve simülasyonlar ayrı gösterilir, öyle oldukları belirtilir ve asla faturalanmaz.",
       "badge": "BV‑SALA · Savings Layer",
       "colSavings": "Savings Layer",
       "colBivelio": "BiVelio",
@@ -1062,6 +1062,7 @@
         "figureLabel": "Yayımladığımız rakam",
       "figureQue": "faturadan, PRO'nun önbellek indirimiyle ve yol açtığı önbellek ıskaları düşüldükten sonra ({confianza} aralığı: {bajo} ile {alto} arası). Liste fiyatlarıyla, tek bir kuruluşun, yani bizim {sesiones} Claude Code oturumumuz üzerinde simüle edildi.",
         "figureNote": "Ekibiniz için bir tahmin değildir: tek bir kuruluş, tek bir sağlayıcı ve liste fiyatlarıdır; Anthropic harcamasının yüksek olduğu yerde fark edilen küçük bir tasarruftur. PRO ile, Anthropic modellerinde, gateway önbellek yazmalarını bir saatlik TTL'den beş dakikalık TTL'ye yalnızca prompt'un büyük bir kısmının yeni olduğu turlarda taşır — bir oturumun ilk turu ya da bir sıkıştırma gibi — ve süren bir oturumun ardışık turlarına dokunmaz. Bu fiyatı değiştirir, modelin okuduğunu asla; tasarruf raporunuzda da yalnızca sağlayıcınızın sayacının doğruladığı sayılır.",
+        "benchLink": "TTL ölçümünün raporu: neyin simüle edildiği, modele göre dökümü ve sınırları →",
         "cta": "Gateway'i kurun"
       },
       "skill": {
@@ -1242,6 +1243,54 @@
       "delta": "Δ {d} pp [{inf}, {sup}]",
       "originNote": "Tasarrufun nereden geldiği, pozisyon pozisyon: “tam önbellekten” olan, katmanın sağlayıcıyı çağırmadan sunduğu isteklerde A'nın ödediği tutardır; “çağrılarda” olan ise, sağlayıcıya gerçekten ulaşanlardaki farktır, çoğunlukla sağlayıcının önek önbelleğinden (artı bir miktar çıktı değişkenliği). İkisi toplamda toplam tasarrufu oluşturur.",
       "accuracyNote": "Doğruluk, yayınlanmış bir cevabı olan sorular üzerinden ölçülür; sayısı değiştirilmiş varyantlar yalnızca katmanın başka bir sorunun cevabını asla geri vermediğini doğrulamaya yarar."
+    },
+    "gatewayTtl": {
+      "title": "Gateway'in önbellek indirimi: bir simülasyon, A/B değil",
+      "kind": "Bu bölüm, sayfadaki A/B bataryalarından biri değildir ve <b>canlı olarak ölçülmemiştir</b>: bir <b>replay</b>'dir. Sağlayıcının, <b>tek bir kuruluşun, yani bizim</b> gerçek Claude Code oturumlarımız için tek bir sağlayıcıda (Anthropic) zaten bildirdiği kullanımı aldık ve PRO'nun önbellek indirimiyle ve onsuz ne kadar tutacaklarını <b>liste fiyatlarıyla</b> hesapladık.",
+      "verdict": "{fecha} tarihli raporun hükmü: indirim, kendi yol açtığı önbellek ıskaları düşüldükten sonra <b>faturanın net {neto} kadarını</b> bırakıyor ({factura} üzerinden {netoUsd}).",
+      "stat": {
+        "sessions": "Oturum",
+        "requests": "İstek",
+        "days": "Gün"
+      },
+      "thInterval": "{confianza} aralığı",
+      "thNet": "Net, faturaya oranla",
+      "bySession": "Oturuma göre yeniden örnekleme (küme: {n})",
+      "byDay": "Güne göre yeniden örnekleme (küme: {n})",
+      "intervalsNote": "{remuestreos} yeniden örneklemeli bootstrap. İki aralık da sıfırı dışarıda bırakıyor: bu trafikte indirim para kazandırıyor. Ana sayfadaki kart, oturuma göre aralığı veriyor.",
+      "resultTitle": "Sonuç ve ondan düşülenler",
+      "row": {
+        "downgrades": "İndirimler",
+        "gross": "Tasarruf edilen prim, brüt",
+        "misses": "Yol açılan önbellek ıskaları",
+        "missCost": "Bu ıskaların maliyeti",
+        "net": "Net",
+        "ceiling": "Tavan: bir saatlik primin tamamı"
+      },
+      "resultNote": "Yüzdeler, simüle edilen isteklerin liste fiyatlı faturasına ({factura}) göredir. Tavan, hiç ıskalamasa bile herhangi bir TTL politikasının geri kazanabileceği en fazla tutardır. Her yüzde ayrı ayrı yuvarlanır.",
+      "modelsTitle": "Modele göre",
+      "thModelNet": "Net, modelin faturasına oranla",
+      "tooFew": "yüzde yok (istek: {n})",
+      "ugly": "<b>{modelo} çirkin örnektir</b>: indirimlerin {rebajas} kadarı ve ıskaların {fallos} kadarı ondadır, neti ise neredeyse sıfırdır. Kaydın ilk döneminde üstelik zarar etti: faturasının {perdida} kadarı. Trafiği, sık sık yeniden kurulan ve beş dakika geçtikten sonra geri dönen kısa konulardan oluşur. Kural, oturum başlangıçlarının pahalı ve seyrek olduğu yerde gerçekten kazandırır.",
+      "howTitle": "Nasıl yapıldı: önbellek modeli, açıkça beyan edilmiş hâliyle",
+      "how": {
+        "rule": "Kural, gateway'in çalıştırdığı kuralın kendisidir, bir kopyası değil: yeni kısım istek gövdesinin en az {umbral} kadarı olduğunda önbellek yazmalarını bir saatlik TTL'den beş dakikalık TTL'ye geçirir.",
+        "baseline": "Temel çizgi, indirimin henüz etkin olmadığı yerde sağlayıcının gerçek kullanımla saydığı şeydir; zaten etkin olduğu yerde ise indirim geri alınarak yeniden oluşturulur (sınırlara bakın). İndirimle, indirilen tur bir saatlik yazma primi yerine beş dakikalık yazma primini öder.",
+        "miss": "Yol açılan bir ıska: aynı konunun sonraki turu beş dakikadan sonra ve bir saat dolmadan gelirse, indirilen turun yazdığı şey artık önbellekten okunmaz, yeniden yazılır ve bu maliyet düşülür.",
+        "conservative": "Bir de temkinli varyant var; farklı konuların paylaştığı ön eki de kaybedilmiş sayar. Rakamı neredeyse hiç oynatmaz: {neto}, birkaç ıska fazlasıyla ({fallos}).",
+        "aggregates": "Yalnızca toplu rakamlar: kayıttan hiçbir prompt, yanıt, başlık veya oturum kimliği çıkmaz."
+      },
+      "limitsTitle": "Sınırlar",
+      "limits": {
+        "oneOrg": "<b>Tek kuruluş, tek istemci, tek sağlayıcı.</b> Anthropic'e karşı Claude Code, kendi trafiğimizle. Başka bir kod ajanı ve başka bir sağlayıcı yok.",
+        "listPrice": "<b>Liste fiyatı, simüle edilmiş.</b> Bu bir fatura değildir: fiyat kataloğuyla fiyatlandırılmış gerçek kullanımdır. İndirimler, hesap kademeleri veya bir abonelik parayı değiştirir.",
+        "cacheModel": "<b>Önbellek modeli bir modeldir.</b> Sağlayıcının önbellek girdilerini nasıl dizinlediğini varsayar; bunu gözlemlemez. Temkinli varyant bu riski sınırlar.",
+        "rebuilt": "<b>Temel çizginin büyük kısmı yeniden oluşturulmuştur.</b> İsteklerin {cuota} kadarı indirim zaten etkinken kaydedildi; orada temel çizgi, gerçek indirim geri alınarak yeniden oluşturulur ve ilk dönemdekinden daha az sağlamdır. O ilk dönem tek başına çok daha geniş bir aralık verir: {bajo} ile {alto} arası.",
+        "ceiling": "<b>Tavan, istemciye göre değişir.</b> Kod ajanının kaç tane bir saatlik yazma gönderdiğine bağlıdır ve Claude Code'un yeni sürümleri daha az gönderir: {peticiones} isteğin {sinMarca} tanesinde indirilecek hiçbir yazma yoktu.",
+        "gap": "<b>Turlar arasındaki boşluk, her isteğin gelişinden itibaren ölçülür</b>, yanıtın bitişinden değil: birkaç ıskayı fazladan sayar, asla eksik saymaz.",
+        "promise": "<b>Ekibiniz için bir tahmin değildir.</b> Tek bir trafikten gelen küçük bir tasarruftur ve başka bir trafik başka bir rakam verebilir, daha kötüsünü de: çirkin örneğe bakın."
+      },
+      "production": "Üretimde: {version} sürümünden ({fecha}) itibaren gateway, gözlemlediği ıskaları onlara maruz kalan turda düşer; böylece panelinizde gördüğünüz bu indirimin tasarrufu nettir. Daha önce kaydedilenler yeniden hesaplanmaz ve panel, daha eski bir gateway çalıştıran makineleri “brüt” olarak işaretler."
     },
     "guarantees": {
       "title": "Garantiler, sayılmış",

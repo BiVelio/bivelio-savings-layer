@@ -7,8 +7,9 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { createTranslator } from "next-intl";
 import { describe, expect, it } from "vitest";
 
-import { BancoPublico, CONTACTO, UMBRAL_P, type Traductor } from "@/app/components/BancoPublico";
+import { BancoPublico, CONTACTO, LIMITES_TTL, UMBRAL_P, type Traductor } from "@/app/components/BancoPublico";
 import { locales } from "@/i18n/config";
+import { PALANCA_TTL, type PalancaTtl } from "@/lib/portada/palanca-ttl";
 
 import { carpetaDelBanco, cuerpoServido, informesServidos, leerInformes } from "./cargar";
 import { compararVersion, esBancoSemanal, resumirBanco, type Banco, type InformeFuente, type RegistroGsm8k } from "./extraer";
@@ -59,8 +60,11 @@ function traductor(loc: string): Traductor {
   return t as unknown as Traductor;
 }
 
-function pagina(banco: Banco, loc = "es"): string {
-  return renderToStaticMarkup(React.createElement(BancoPublico, { banco, t: traductor(loc), locale: loc }));
+/** La página como la pinta /benchmarks: el banco y, en su sección, el informe del banco de TTL. */
+function pagina(banco: Banco, loc = "es", palancaTtl: PalancaTtl | null = PALANCA_TTL): string {
+  return renderToStaticMarkup(
+    React.createElement(BancoPublico, { banco, t: traductor(loc), locale: loc, palancaTtl: palancaTtl ?? undefined }),
+  );
 }
 
 const pct = (loc: string, x: number) => new Intl.NumberFormat(loc, { style: "percent", minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(x);
@@ -537,6 +541,178 @@ describe("banco público: 12 idiomas y las reglas de la copia", () => {
     expect(src).toContain('export const dynamic = "force-static"');
     expect(src).toContain("export const dynamicParams = false");
     expect(src).toContain("cargarBanco()");
+  });
+});
+
+// ---------------------------------------------------------------------------
+
+/**
+ * LA REBAJA DE CACHÉ DEL GATEWAY (#gateway-ttl): EL INFORME DEL BANCO DE TTL.
+ *
+ * La tarjeta del gateway de la portada publica una cifra y enlaza aquí. La
+ * sección no es una batería A/B: es un replay a precio de lista sobre una sola
+ * organización, y tiene que decirlo. Sus números no salen de `docs/benchmarks`
+ * al construir sino de lib/portada/palanca-ttl.ts, cuya verja
+ * (palanca-ttl.test.ts) los cuadra uno a uno con el informe; aquí se comprueba
+ * que la página pinta ESOS números, y que nada privado del informe se cuela.
+ */
+describe("banco público: la rebaja de caché del gateway, en su sección (#gateway-ttl)", () => {
+  const P = PALANCA_TTL;
+  /** El trozo de la página que es la sección, sin el resto. */
+  function seccionTtl(loc: string, p: PalancaTtl = P): string {
+    const html = pagina(BANCO, loc, p);
+    const ini = html.indexOf('<section class="terms-sec" aria-labelledby="gateway-ttl-h" id="gateway-ttl"');
+    expect(ini, `${loc}: la sección`).toBeGreaterThan(-1);
+    return html.slice(ini, html.indexOf("</section>", ini));
+  }
+  const fmt = (loc: string) => {
+    const n = (o: Intl.NumberFormatOptions) => new Intl.NumberFormat(loc, o);
+    const pct2 = n({ style: "percent", minimumFractionDigits: 2, maximumFractionDigits: 2, signDisplay: "exceptZero" });
+    const usd2 = n({ style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const ent = n({ maximumFractionDigits: 0 });
+    const pct0 = n({ style: "percent", maximumFractionDigits: 0 });
+    return {
+      pct2: (x: number) => esc(pct2.format(x)),
+      usd2: (x: number) => esc(usd2.format(x)),
+      ent: (x: number) => esc(ent.format(x)),
+      pct0: (x: number) => esc(pct0.format(x)),
+      pct1: (x: number) => esc(pct(loc, x)),
+    };
+  };
+
+  it("la sección existe, con su ancla, entre el ahorro medido y las garantías, y es aparte de las baterías A/B", () => {
+    const html = pagina(BANCO, "es");
+    const pos = ['id="savings"', 'id="gateway-ttl"', 'id="guarantees"'].map((x) => html.indexOf(x));
+    for (const p of pos) expect(p).toBeGreaterThan(-1);
+    expect([...pos].sort((a, b) => a - b)).toEqual(pos);
+    expect(html.match(/id="gateway-ttl"/g)).toHaveLength(1);
+    // Aparte: no es una fila de batería ni una tirada con informe enlazado.
+    const s = seccionTtl("es");
+    expect(s).not.toMatch(/data-bateria=|data-ruta=|href=/);
+    expect(s).toContain(`data-informe="${P.fecha}"`);
+  });
+
+  it("sin el informe no hay sección: no se pinta con números de ningún otro sitio", () => {
+    expect(pagina(BANCO, "es", null)).not.toContain("gateway-ttl");
+  });
+
+  for (const loc of locales) {
+    it(`${loc}: el veredicto, los dos intervalos y la muestra salen del módulo, formateados en el idioma`, () => {
+      const s = seccionTtl(loc);
+      const f = fmt(loc);
+      // Veredicto: el neto, y los únicos dólares de la sección.
+      expect(s).toContain(f.pct2(P.neto.point));
+      expect(s).toContain(f.usd2(P.netoUsd));
+      expect(s).toContain(f.usd2(P.facturaUsd));
+      // Los dos intervalos, cota a cota.
+      expect(s).toContain(`${f.pct2(P.neto.lower)} – ${f.pct2(P.neto.upper)}`);
+      expect(s).toContain(`${f.pct2(P.netoPorDia.lower)} – ${f.pct2(P.netoPorDia.upper)}`);
+      expect(s).toContain(f.pct0(P.confianza));
+      expect(s).toContain(f.ent(P.remuestreos));
+      // Sobre qué se midió.
+      for (const n of [P.sesiones, P.peticiones, P.dias]) expect(s).toContain(`<dd>${f.ent(n)}</dd>`);
+    });
+
+    it(`${loc}: el resultado (rebajas, bruto, fallos y su coste, neto, techo) y la fila de cada modelo`, () => {
+      const s = seccionTtl(loc);
+      const f = fmt(loc);
+      const fila = (clave: string) => {
+        const ini = s.indexOf(`data-ttl-fila="${clave}"`);
+        expect(ini, clave).toBeGreaterThan(-1);
+        return s.slice(ini, s.indexOf("</tr>", ini));
+      };
+      expect(fila("rebajas")).toContain(`>${f.ent(P.rebajas)}<`);
+      expect(fila("bruto")).toContain(f.pct2(P.brutoUsd / P.facturaUsd));
+      expect(fila("fallos")).toContain(`>${f.ent(P.fallos)}<`);
+      expect(fila("coste-fallos")).toContain(f.pct2(-P.costeFallosUsd / P.facturaUsd));
+      expect(fila("neto")).toContain(f.pct2(P.neto.point));
+      expect(fila("neto")).toContain(f.usd2(P.netoUsd));
+      expect(fila("techo")).toContain(f.pct1(P.techo));
+      for (const m of P.porModelo) {
+        const ini = s.indexOf(`data-ttl-modelo="${m.modelo}"`);
+        expect(ini, m.modelo).toBeGreaterThan(-1);
+        const tr = s.slice(ini, s.indexOf("</tr>", ini));
+        expect(tr).toContain(`<td>${f.ent(m.peticiones)}</td><td>${f.ent(m.rebajas)}</td><td>${f.ent(m.fallos)}</td>`);
+        // Donde el informe no da porcentaje (n = 5), la página tampoco lo inventa.
+        if (m.neto === null) expect(tr, m.modelo).not.toContain("%");
+        else expect(tr, m.modelo).toContain(`>${f.pct2(m.neto)}<`);
+      }
+    });
+
+    it(`${loc}: el caso feo se enseña, con su pérdida; la regla, la variante conservadora, los límites y la versión`, () => {
+      const s = seccionTtl(loc);
+      const f = fmt(loc);
+      const F = P.casoFeo;
+      expect(s).toContain(`<b>${F.modelo}`);
+      expect(s).toContain(f.pct0(F.cuotaRebajas));
+      expect(s).toContain(f.pct0(F.cuotaFallos));
+      // La pérdida, en valor absoluto y con el decimal del informe: el texto dice «perdió».
+      expect(F.netoPrimerPeriodo).toBeLessThan(0);
+      expect(s).toContain(f.pct1(Math.abs(F.netoPrimerPeriodo)));
+      // Los límites que llevan números: la línea base reconstruida es la MAYORÍA
+      // (con el intervalo del primer tramo, solo) y el techo cambia con el cliente.
+      expect(s).toContain(f.pct0(P.reconstruidas.peticiones / P.peticiones));
+      expect(s).toContain(f.pct2(P.primerPeriodo.lower));
+      expect(s).toContain(f.pct2(P.primerPeriodo.upper));
+      expect(s).toContain(f.ent(P.sinMarcaDeHora));
+      expect(s).toContain(f.pct0(P.umbralNuevo));
+      expect(s).toContain(f.pct2(P.conservadora.neto));
+      for (const k of LIMITES_TTL) expect(s, k).toContain(`data-ttl-limite="${k}"`);
+      expect(s).toContain(P.netoEnProduccionDesde);
+    });
+
+    it(`${loc}: nada privado del informe llega a la página, y no hay más dólares que los del veredicto`, () => {
+      const s = seccionTtl(loc);
+      // Lo que la verja de los informes servidos consideraría fuga: rutas, worktrees, claves, correos.
+      const fugas = contarSensibles(s);
+      expect(Object.values(fugas).reduce((a, b) => a + b, 0), JSON.stringify(fugas)).toBe(0);
+      // El contraste con producción, los comandos y la jerga interna del informe.
+      expect(s).not.toMatch(/supabase|usage_daily|measured_|shadow_|bvsala|\/tmp|~\/|ttl:replay|sobrecosteEvitado|medidor\.ts/i);
+      // Dólares: solo el neto y la factura del veredicto (ni el bruto, ni el coste de los fallos, ni por modelo).
+      const f = fmt(loc);
+      const sinVeredicto = s.split(f.usd2(P.netoUsd)).join("").split(f.usd2(P.facturaUsd)).join("");
+      expect(sinVeredicto).not.toMatch(/\$|USD/);
+      for (const x of [P.brutoUsd, P.costeFallosUsd]) expect(s).not.toContain(f.usd2(x));
+    });
+  }
+
+  it("la sinceridad, en español y en inglés: replay, no medido en vivo, una sola organización (la nuestra), precio de lista", () => {
+    const es = (mensajes("es") as { benchmarksPage: { gatewayTtl: { kind: string; title: string; limits: Record<string, string> } } }).benchmarksPage.gatewayTtl;
+    const en = (mensajes("en") as { benchmarksPage: { gatewayTtl: { kind: string; title: string; limits: Record<string, string> } } }).benchmarksPage.gatewayTtl;
+    expect(es.kind).toMatch(/no está medida en vivo/);
+    expect(es.kind).toMatch(/replay/);
+    expect(es.kind).toMatch(/una sola organización, la nuestra/);
+    expect(es.kind).toMatch(/precio de lista/);
+    expect(es.title).toMatch(/simulación, no un A\/B/);
+    expect(en.kind).toMatch(/not measured live/);
+    expect(en.kind).toMatch(/replay/);
+    expect(en.kind).toMatch(/a single organization, our own/);
+    expect(en.kind).toMatch(/list prices/);
+    // Y nunca al revés: ningún idioma dice que esto se midió en vivo sin negarlo.
+    expect(JSON.stringify(es)).not.toMatch(/(?<!no está )medid[oa] en vivo/);
+    expect(JSON.stringify(en)).not.toMatch(/(?<!not )measured live/);
+    expect(Object.keys(es.limits).sort()).toEqual([...LIMITES_TTL].sort());
+  });
+
+  it("cambiar un número del módulo cambia la sección (no hay cifras escritas en el componente)", () => {
+    const otro = { ...P, neto: { ...P.neto, point: 0.0311 }, rebajas: 2584 } as unknown as PalancaTtl;
+    const s = seccionTtl("es", otro);
+    const f = fmt("es");
+    expect(s).toContain(f.pct2(0.0311));
+    expect(s).not.toContain(f.pct2(P.neto.point));
+    expect(seccionTtl("es")).toContain(f.pct2(P.neto.point));
+    expect(s).toContain(`>${f.ent(2584)}<`);
+    const fuente = readFileSync(join(WEB, "app/components/BancoPublico.tsx"), "utf8");
+    const fn = fuente.slice(fuente.indexOf("function PalancaDeTtl"), fuente.indexOf("function Negativa"));
+    expect(fn.length).toBeGreaterThan(500);
+    // Ningún literal numérico (los dígitos de `h2`, `pct2` o `usd2` son nombres).
+    expect(fn).not.toMatch(/(?<![\w-])\d/);
+  });
+
+  it("la página pasa el informe a la sección", () => {
+    const src = readFileSync(join(WEB, "app/[locale]/benchmarks/page.tsx"), "utf8");
+    expect(src).toContain("palancaTtl={PALANCA_TTL}");
+    expect(src).toContain('import { PALANCA_TTL } from "@/lib/portada/palanca-ttl";');
   });
 });
 

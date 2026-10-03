@@ -14,6 +14,7 @@ import {
   type RegistroGsm8k,
 } from "@/lib/banco-publico/extraer";
 import { rutaServida } from "@/lib/banco-publico/publicar";
+import type { PalancaTtl } from "@/lib/portada/palanca-ttl";
 
 /**
  * EL BANCO PÚBLICO — la página /benchmarks, sin datos propios.
@@ -40,6 +41,9 @@ export const UMBRAL_P = 0.05;
 
 /** Pasos del método en «cómo reproducirlo» (el texto, en `repro.steps.<n>`). */
 export const PASOS_REPRO = ["dataset", "package", "arms", "cost", "compare"] as const;
+
+/** Los límites del banco de TTL que la sección dice con todas sus letras (`gatewayTtl.limits.<k>`). */
+export const LIMITES_TTL = ["oneOrg", "listPrice", "cacheModel", "rebuilt", "ceiling", "gap", "promise"] as const;
 
 const CLASE_ESTADO: Record<Registro["estado"], string> = {
   medido: "banco-estado banco-medido",
@@ -257,6 +261,170 @@ function Ahorro({ banco, t, f }: { banco: Banco; t: Traductor; f: F }) {
       </div>
       <p className="banco-nota">{t("savings.originNote")}</p>
       <p className="banco-nota">{t("savings.accuracyNote")}</p>
+    </section>
+  );
+}
+
+/**
+ * LA REBAJA DE CACHÉ DEL GATEWAY — el informe del banco de TTL, en su sección.
+ *
+ * No es una batería A/B y no sale de `banco`: es un REPLAY a precio de lista
+ * sobre sesiones de una sola organización (la nuestra), y la sección lo dice
+ * antes que la cifra. Los números llegan de lib/portada/palanca-ttl.ts, que
+ * tiene su verja contra el informe; los textos, de `gatewayTtl.*`, sin dígitos.
+ * La tarjeta del gateway de la portada enlaza aquí (#gateway-ttl).
+ *
+ * Sin enlaces: el informe no se sirve (lleva comandos, rutas y el contraste con
+ * producción), así que aquí va lo publicable, contado entero. Y sin más dólares
+ * que los del veredicto: el bruto y el coste de los fallos, sobre la factura.
+ */
+function PalancaDeTtl({ p, t, f, ricos }: { p: PalancaTtl; t: Traductor; f: F; ricos: Record<string, Rico> }) {
+  const rango = (x: { lower: number; upper: number }) => `${f.pct2(x.lower)} – ${f.pct2(x.upper)}`;
+  const muestra: [string, string][] = [
+    [f.ent(p.sesiones), t("gatewayTtl.stat.sessions")],
+    [f.ent(p.peticiones), t("gatewayTtl.stat.requests")],
+    [f.ent(p.dias), t("gatewayTtl.stat.days")],
+  ];
+  const resultado: [string, string, string][] = [
+    ["rebajas", t("gatewayTtl.row.downgrades"), f.ent(p.rebajas)],
+    ["bruto", t("gatewayTtl.row.gross"), f.pct2(p.brutoUsd / p.facturaUsd)],
+    ["fallos", t("gatewayTtl.row.misses"), f.ent(p.fallos)],
+    ["coste-fallos", t("gatewayTtl.row.missCost"), f.pct2(-p.costeFallosUsd / p.facturaUsd)],
+    ["neto", t("gatewayTtl.row.net"), `${f.pct2(p.neto.point)} · ${f.usd2(p.netoUsd)}`],
+    ["techo", t("gatewayTtl.row.ceiling"), f.pct(p.techo)],
+  ];
+  return (
+    <section className="terms-sec" aria-labelledby="gateway-ttl-h" id="gateway-ttl" data-informe={p.fecha}>
+      <h2 id="gateway-ttl-h">{t("gatewayTtl.title")}</h2>
+      <p>{t.rich("gatewayTtl.kind", ricos)}</p>
+      <p>
+        {t.rich("gatewayTtl.verdict", {
+          ...ricos,
+          fecha: f.fecha(p.fecha),
+          neto: f.pct2(p.neto.point),
+          netoUsd: f.usd2(p.netoUsd),
+          factura: f.usd2(p.facturaUsd),
+        })}
+      </p>
+      <dl className="banco-stats">
+        {muestra.map(([v, k]) => (
+          <div key={k}>
+            <dt>{k}</dt>
+            <dd>{v}</dd>
+          </div>
+        ))}
+      </dl>
+      <div className="tbl-scroll">
+        <table className="tbl banco-tbl">
+          <thead>
+            <tr>
+              <th scope="col">{t("gatewayTtl.thInterval", { confianza: f.pctRedondo(p.confianza) })}</th>
+              <th scope="col">{t("gatewayTtl.thNet")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-ttl-ic="sesion">
+              <td>{t("gatewayTtl.bySession", { n: f.ent(p.sesiones) })}</td>
+              <td className="banco-cifra">{rango(p.neto)}</td>
+            </tr>
+            <tr data-ttl-ic="dia">
+              <td>{t("gatewayTtl.byDay", { n: f.ent(p.dias) })}</td>
+              <td className="banco-cifra">{rango(p.netoPorDia)}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p className="banco-nota">{t("gatewayTtl.intervalsNote", { remuestreos: f.ent(p.remuestreos) })}</p>
+
+      <h3>{t("gatewayTtl.resultTitle")}</h3>
+      <div className="tbl-scroll">
+        <table className="tbl banco-tbl">
+          <tbody>
+            {resultado.map(([clave, etiqueta, valor]) => (
+              <tr key={clave} data-ttl-fila={clave}>
+                <td>{etiqueta}</td>
+                <td className="banco-cifra">{valor}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="banco-nota">{t("gatewayTtl.resultNote", { factura: f.usd2(p.facturaUsd) })}</p>
+
+      <h3>{t("gatewayTtl.modelsTitle")}</h3>
+      <div className="tbl-scroll">
+        <table className="tbl banco-tbl">
+          <thead>
+            <tr>
+              <th scope="col">{t("th.model")}</th>
+              <th scope="col">{t("gatewayTtl.stat.requests")}</th>
+              <th scope="col">{t("gatewayTtl.row.downgrades")}</th>
+              <th scope="col">{t("gatewayTtl.row.misses")}</th>
+              <th scope="col">{t("gatewayTtl.thModelNet")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {p.porModelo.map((m) => (
+              <tr key={m.modelo} data-ttl-modelo={m.modelo}>
+                <td>
+                  <code>{m.modelo}</code>
+                </td>
+                <td>{f.ent(m.peticiones)}</td>
+                <td>{f.ent(m.rebajas)}</td>
+                <td>{f.ent(m.fallos)}</td>
+                <td className="banco-cifra">
+                  {m.neto === null ? (
+                    <span className="banco-sub">{t("gatewayTtl.tooFew", { n: f.ent(m.peticiones) })}</span>
+                  ) : (
+                    f.pct2(m.neto)
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p>
+        {t.rich("gatewayTtl.ugly", {
+          ...ricos,
+          modelo: p.casoFeo.modelo,
+          rebajas: f.pctRedondo(p.casoFeo.cuotaRebajas),
+          fallos: f.pctRedondo(p.casoFeo.cuotaFallos),
+          // En valor absoluto y con el decimal del informe: el texto ya dice «perdió».
+          perdida: f.pct(Math.abs(p.casoFeo.netoPrimerPeriodo)),
+        })}
+      </p>
+
+      <h3>{t("gatewayTtl.howTitle")}</h3>
+      <ul className="terms-list">
+        <li>{t("gatewayTtl.how.rule", { umbral: f.pctRedondo(p.umbralNuevo) })}</li>
+        <li>{t("gatewayTtl.how.baseline")}</li>
+        <li>{t("gatewayTtl.how.miss")}</li>
+        <li>
+          {t("gatewayTtl.how.conservative", { neto: f.pct2(p.conservadora.neto), fallos: f.ent(p.conservadora.fallosDeMas) })}
+        </li>
+        <li>{t("gatewayTtl.how.aggregates")}</li>
+      </ul>
+
+      <h3>{t("gatewayTtl.limitsTitle")}</h3>
+      <ul className="terms-list">
+        {LIMITES_TTL.map((k) => (
+          <li key={k} data-ttl-limite={k}>
+            {t.rich(`gatewayTtl.limits.${k}`, {
+              ...ricos,
+              // Solo los usan «rebuilt» y «ceiling»; a los demás les sobran.
+              cuota: f.pctRedondo(p.reconstruidas.peticiones / p.peticiones),
+              bajo: f.pct2(p.primerPeriodo.lower),
+              alto: f.pct2(p.primerPeriodo.upper),
+              sinMarca: f.ent(p.sinMarcaDeHora),
+              peticiones: f.ent(p.peticiones),
+            })}
+          </li>
+        ))}
+      </ul>
+      <p className="banco-nota">
+        {t("gatewayTtl.production", { version: p.netoEnProduccionDesde, fecha: f.fecha(p.netoEnProduccionFecha) })}
+      </p>
     </section>
   );
 }
@@ -817,7 +985,18 @@ function Reproducir({ banco, t, ricos }: { banco: Banco; t: Traductor; ricos: Re
   );
 }
 
-export function BancoPublico({ banco, t, locale }: { banco: Banco; t: Traductor; locale: string }) {
+export function BancoPublico({
+  banco,
+  t,
+  locale,
+  palancaTtl,
+}: {
+  banco: Banco;
+  t: Traductor;
+  locale: string;
+  /** El informe del banco de TTL (lib/portada/palanca-ttl.ts). Sin él, la sección no sale. */
+  palancaTtl?: PalancaTtl;
+}) {
   const f = formatos(locale);
   const ricos: Record<string, Rico> = { b: (c) => <b>{c}</b>, code: (c) => <code>{c}</code> };
   return (
@@ -831,6 +1010,7 @@ export function BancoPublico({ banco, t, locale }: { banco: Banco; t: Traductor;
       <Metodo banco={banco} t={t} f={f} ricos={ricos} />
       {banco.semanales.length > 0 && <Semanal banco={banco} t={t} f={f} />}
       <Ahorro banco={banco} t={t} f={f} />
+      {palancaTtl && <PalancaDeTtl p={palancaTtl} t={t} f={f} ricos={ricos} />}
       <Garantias banco={banco} t={t} f={f} />
       <NoAhorra banco={banco} t={t} f={f} ricos={ricos} />
       <EstadoPorModelo banco={banco} t={t} f={f} />

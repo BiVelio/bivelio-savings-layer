@@ -970,7 +970,7 @@
       "ctaTitle": "Zmierz to na własnym ruchu",
       "ctaSub": "Po instalacji każde wywołanie zwraca swój SavingsReport, z tym, co zmierzone, i tym, co oszacowane, osobno. Zacznij za darmo od Pomiaru (@bivelio/savings-layer {version} lub nowszy); Pro i Zespół to stała opłata za stanowisko, bez prowizji od oszczędności. Licencja pozwala uruchomić BV‑SALA — SDK w aplikacji, gateway w terminalu.",
       "ctaStart": "Zacznij",
-      "tagline": "System operacyjny dla Twojej firmy. To <b>BV‑SALA</b>, neutralny wobec dostawcy optymalizator kosztów LLM od BiVelio — każda opublikowana liczba zmierzona względem licznika dostawcy; szacunki pokazujemy osobno i nigdy nie fakturujemy.",
+      "tagline": "System operacyjny dla Twojej firmy. To <b>BV‑SALA</b>, neutralny wobec dostawcy optymalizator kosztów LLM od BiVelio — każda zmierzona liczba jest zmierzona względem licznika dostawcy; szacunki i symulacje pokazujemy osobno, nazwane wprost, i nigdy ich nie fakturujemy.",
       "badge": "BV‑SALA · Savings Layer",
       "colSavings": "Savings Layer",
       "colBivelio": "BiVelio",
@@ -1062,6 +1062,7 @@
         "figureLabel": "Liczba, którą publikujemy",
       "figureQue": "rachunku dzięki obniżeniu pamięci podręcznej w PRO, po odjęciu chybień pamięci podręcznej, które ono powoduje (przedział {confianza}: od {bajo} do {alto}). Symulacja po cenach katalogowych na {sesiones} sesjach Claude Code jednej organizacji, naszej.",
         "figureNote": "To nie jest prognoza dla twojego zespołu: to jedna organizacja, jeden dostawca i ceny katalogowe, a oszczędność jest niewielka i widać ją tam, gdzie wydatki w Anthropic są wysokie. Z PRO, na modelach Anthropic, gateway przestawia zapisy do pamięci podręcznej z godzinnego TTL na pięciominutowy tylko w turach, w których duża część promptu jest nowa — jak pierwsza tura sesji albo kompaktowanie — a kolejne tury trwającej sesji zostawia bez zmian. Zmienia to cenę, nigdy to, co czyta model, a w Twoim raporcie oszczędności liczy się tylko to, co potwierdzi licznik Twojego dostawcy.",
+        "benchLink": "Raport z pomiaru TTL: co symulowano, podział na modele i jego ograniczenia →",
         "cta": "Skonfiguruj gateway"
       },
       "skill": {
@@ -1242,6 +1243,54 @@
       "delta": "Δ {d} pp [{inf}, {sup}]",
       "originNote": "Skąd bierze się oszczędność, pozycja po pozycji: „z dokładnej pamięci podręcznej” to to, co zapłaciło A za żądania, które warstwa obsłużyła bez wywoływania dostawcy; „w wywołaniach” to różnica w tych, które faktycznie do niego dotarły, głównie dzięki pamięci podręcznej prefiksów dostawcy (plus trochę zmienności wyniku). Obie sumują się na całkowitą oszczędność.",
       "accuracyNote": "Dokładność jest mierzona na pytaniach z opublikowaną odpowiedzią; warianty ze zmienioną liczbą służą wyłącznie do sprawdzenia, czy warstwa nigdy nie zwraca odpowiedzi z innego pytania."
+    },
+    "gatewayTtl": {
+      "title": "Obniżenie pamięci podręcznej w gatewayu: symulacja, nie A/B",
+      "kind": "Ta sekcja nie jest jedną z baterii A/B na tej stronie i <b>nie jest mierzona na żywo</b>: to <b>replay</b>. Wzięliśmy użycie, które dostawca już zaraportował dla prawdziwych sesji Claude Code <b>jednej organizacji, naszej</b>, u jednego dostawcy (Anthropic), i policzyliśmy po <b>cenach katalogowych</b>, ile kosztowałyby z obniżeniem pamięci podręcznej w PRO i bez niego.",
+      "verdict": "Werdykt raportu z dnia {fecha}: obniżenie zostawia <b>netto {neto} rachunku</b> ({netoUsd} z {factura}), po odjęciu chybień pamięci podręcznej, które samo powoduje.",
+      "stat": {
+        "sessions": "Sesje",
+        "requests": "Żądania",
+        "days": "Dni"
+      },
+      "thInterval": "Przedział {confianza}",
+      "thNet": "Netto, jako część rachunku",
+      "bySession": "Losowanie ze zwracaniem po sesjach (grupy: {n})",
+      "byDay": "Losowanie ze zwracaniem po dniach (grupy: {n})",
+      "intervalsNote": "Bootstrap, liczba losowań: {remuestreos}. Oba przedziały wykluczają zero: na tym ruchu obniżenie zarabia. Karta na stronie głównej podaje przedział po sesjach.",
+      "resultTitle": "Wynik, razem z tym, co się odejmuje",
+      "row": {
+        "downgrades": "Obniżenia",
+        "gross": "Zaoszczędzona dopłata, brutto",
+        "misses": "Spowodowane chybienia pamięci podręcznej",
+        "missCost": "Ile kosztują te chybienia",
+        "net": "Netto",
+        "ceiling": "Sufit: cała dopłata za godzinę"
+      },
+      "resultNote": "Wartości procentowe odnoszą się do rachunku po cenach katalogowych za symulowane żądania ({factura}). Sufit to najwięcej, ile mogłaby odzyskać jakakolwiek polityka TTL, nawet gdyby nigdy nie chybiała. Każdy procent jest zaokrąglany osobno.",
+      "modelsTitle": "Według modelu",
+      "thModelNet": "Netto, jako część rachunku modelu",
+      "tooFew": "bez wartości procentowej (żądania: {n})",
+      "ugly": "<b>{modelo} to brzydki przypadek</b>: przypada na niego {rebajas} obniżeń i {fallos} chybień, a jego wynik netto jest bliski zera. W pierwszym okresie nagrania wręcz stracił: {perdida} swojego rachunku. Jego ruch to krótkie wątki, które często są budowane od nowa i wracają po upływie pięciu minut. Reguła naprawdę zarabia tam, gdzie starty sesji są drogie i rzadkie.",
+      "howTitle": "Jak to zrobiono: model pamięci podręcznej, podany jawnie",
+      "how": {
+        "rule": "Reguła jest tą samą, którą wykonuje gateway, a nie kopią: przenosi zapisy do pamięci podręcznej z TTL jednej godziny na TTL pięciu minut, gdy nowa część stanowi co najmniej {umbral} treści żądania.",
+        "baseline": "Linia bazowa to to, co policzył dostawca, z rzeczywistym użyciem, tam gdzie obniżenie nie było jeszcze aktywne; tam, gdzie już było, odtwarza się ją przez jego cofnięcie (zobacz ograniczenia). Przy obniżeniu obniżona tura płaci dopłatę za zapis pięciominutowy zamiast jednogodzinnego.",
+        "miss": "Spowodowane chybienie: jeśli następna tura tego samego wątku nadejdzie po pięciu minutach, a przed upływem godziny, to, co zapisała obniżona tura, nie jest już czytane z pamięci podręcznej, tylko zapisywane ponownie, i ten koszt się odejmuje.",
+        "conservative": "Jest też wariant zachowawczy, który dodatkowo uznaje za utracony prefiks współdzielony przez różne wątki. Prawie nie zmienia wyniku: {neto}, przy kilku dodatkowych chybieniach ({fallos}).",
+        "aggregates": "Tylko dane zagregowane: z nagrania nie wychodzi żaden prompt, odpowiedź, nagłówek ani identyfikator sesji."
+      },
+      "limitsTitle": "Ograniczenia",
+      "limits": {
+        "oneOrg": "<b>Jedna organizacja, jeden klient, jeden dostawca.</b> Claude Code wobec Anthropic, na naszym własnym ruchu. Żadnego innego agenta do kodu i żadnego innego dostawcy.",
+        "listPrice": "<b>Cena katalogowa, symulacja.</b> To nie jest faktura: to rzeczywiste użycie wycenione według cennika. Rabaty, poziomy konta lub subskrypcja zmieniłyby kwoty.",
+        "cacheModel": "<b>Model pamięci podręcznej jest modelem.</b> Zakłada, jak dostawca indeksuje swoje wpisy pamięci podręcznej; nie obserwuje tego. Wariant zachowawczy ogranicza to ryzyko.",
+        "rebuilt": "<b>Większość linii bazowej jest odtworzona.</b> {cuota} żądań zarejestrowano, gdy obniżenie było już aktywne; tam linię bazową odtwarza się przez cofnięcie rzeczywistego obniżenia i jest ona mniej pewna niż w pierwszym okresie. Sam pierwszy okres daje znacznie szerszy przedział: od {bajo} do {alto}.",
+        "ceiling": "<b>Pułap zmienia się wraz z klientem.</b> Zależy od tego, ile zapisów jednogodzinnych wysyła agent programistyczny, a nowsze wersje Claude Code wysyłają ich mniej: spośród {peticiones} żądań {sinMarca} nie zawierało żadnego do obniżenia.",
+        "gap": "<b>Przerwę między turami mierzy się od nadejścia każdego żądania</b>, a nie od końca odpowiedzi: liczy trochę chybień za dużo, nigdy za mało.",
+        "promise": "<b>To nie jest prognoza dla Twojego zespołu.</b> To mała oszczędność z jednego ruchu, a inny ruch może dać inny wynik, także gorszy: spójrz na brzydki przypadek."
+      },
+      "production": "W produkcji: od wersji {version} ({fecha}) gateway odejmuje chybienia, które obserwuje, w turze, która je ponosi, więc oszczędność z tego obniżenia widoczna w twoim panelu jest netto. To, co zapisano wcześniej, nie jest przeliczane, a panel oznacza maszyny ze starszym gatewayem jako „brutto”."
     },
     "guarantees": {
       "title": "Gwarancje, policzone",
