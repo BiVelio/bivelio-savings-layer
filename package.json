@@ -114,6 +114,7 @@
     "corpus:arnes": "tsx corpus/arnes/informe.ts",
     "corpus:auditar": "tsx corpus/auditoria/auditar.ts",
     "sombra:corpus": "tsx benchmarks/sombra-corpus.ts",
+    "ttl:replay": "tsx benchmarks/ttl/replay.ts",
     "compactacion:banco": "tsx benchmarks/compactacion-de-cola/banco.ts",
     "sombra:diales": "tsx --env-file-if-exists=.env.bench benchmarks/sombra-diales.ts",
     "anillo1": "tsx --env-file-if-exists=.env.bench benchmarks/anillo1/arnes.ts",
