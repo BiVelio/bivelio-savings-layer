@@ -38,6 +38,8 @@ const RAIZ = join(WEB, "..", "..");
 type J = any;
 const informe = (ruta: string): J => JSON.parse(readFileSync(join(RAIZ, ruta), "utf8"));
 const P = PANEL_DEL_BANCO;
+/** La fracción de repeticiones exactas del flujo, en cada informe del panel. */
+const informes0 = () => [...new Set(P.modelos.map((m) => m.informe))].map((r) => informe(r).flujo.fraccionRepeticiones as number);
 const cerca = (a: number, b: number, msg: string) => expect(Math.abs(a - b), `${msg}: ${a} vs ${b}`).toBeLessThan(1e-9);
 
 describe("el panel del héroe, contra los informes del banco", () => {
@@ -162,6 +164,10 @@ describe("la imagen y la ruta que la produce", () => {
     const d = filasDiariasDelBanco()[0]!;
     expect(pie).toContain(`${d.requests} peticiones`);
     expect(pie).toContain(`${d.avoidedLlm} respondidas sin llamar al proveedor`);
+    // El titular solo vale para un flujo que repite así: la condición va al lado de la cifra.
+    expect(BANCO_EN_VIVO.repeticiones).toBe(0.3);
+    for (const r of informes0()) expect(r).toBe(BANCO_EN_VIVO.repeticiones);
+    expect(pie).toMatch(/^menos factura · en un flujo con un 30\s%\sde peticiones repetidas · /);
   });
 
   it("el ahorro de cada modelo es el de las filas (sin el proveedor) y cuadra con el informe", () => {

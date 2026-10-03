@@ -71,14 +71,16 @@ export const PANEL_DEL_BANCO = {
    * Los rótulos que la captura pone donde el panel de un cliente diría «tu
    * factura», «últimos 30 días» o «live · tu organización»: aquí son UN día
    * del banco público en una organización de demostración, y se dice así.
-   * `{peticiones}` y `{evitadas}` se rellenan con las filas de abajo.
+   * `{peticiones}` y `{evitadas}` se rellenan con las filas de abajo, y
+   * `{repeticiones}` con la condición del flujo (`BANCO_EN_VIVO.repeticiones`):
+   * el ahorro solo vale para un tráfico que repite así, y la captura lo dice.
    */
   rotulos: {
     antetituloPagina: "Banco público · demo",
     tituloPagina: "Lo que ahorró Savings en el banco público",
     antetitulo: "Medido en vivo contra el proveedor · GSM8K · 2026-09-28",
     pastilla: "Banco público · demo",
-    pie: "menos factura · {peticiones} peticiones · {evitadas} respondidas sin llamar al proveedor",
+    pie: "menos factura · en un flujo con un {repeticiones} de peticiones repetidas · {peticiones} peticiones, {evitadas} respondidas sin llamar al proveedor",
     columnaValor: "Peticiones",
     columnaAhorro: "Ahorro",
   },
@@ -201,6 +203,7 @@ export function ahorroPorModeloDelBanco(): Record<string, number> {
 export function pieDelTitular(): string {
   const d = filasDiariasDelBanco()[0]!;
   return PANEL_DEL_BANCO.rotulos.pie
+    .replace("{repeticiones}", new Intl.NumberFormat("es-ES", { style: "percent", maximumFractionDigits: 0 }).format(BANCO_EN_VIVO.repeticiones))
     .replace("{peticiones}", d.requests.toLocaleString("es-ES"))
     .replace("{evitadas}", d.avoidedLlm.toLocaleString("es-ES"));
 }
