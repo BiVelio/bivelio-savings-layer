@@ -2,14 +2,14 @@ import { Fragment } from "react";
 
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
-import { ReservarLlamada } from "./components/ReservarLlamada";
+import Image from "next/image";
+
 import { CursorGrid } from "@/app/components/CursorGrid";
 import { RevealObserver } from "@/app/components/RevealObserver";
-import { KineticTitle } from "@/app/components/KineticTitle";
 import { SnippetPorSistema } from "@/app/components/SnippetPorSistema";
 import { SkillPorSuperficie } from "@/app/components/SkillPorSuperficie";
 import { LogoProveedor } from "@/app/components/LogoProveedor";
-import { FilasMedidas, TarjetaMedidoEnVivo, filasDelBancoEnVivo, type FilaMedida } from "@/app/components/MedidoEnVivo";
+import { FilasMedidas, filasDelBancoEnVivo, type FilaMedida } from "@/app/components/MedidoEnVivo";
 import { NvidiaEcosystemBand } from "@/app/components/NvidiaInception";
 import { VideoExplicativo } from "@/app/components/VideoExplicativo";
 import { DIAS_ACTIVOS_PARA_CONTAR_ASIENTO } from "@/lib/billing/asientos";
@@ -21,6 +21,7 @@ import { tarifasDeLosPlanes } from "@/lib/stripe/pricing";
 import { terminosDeLosPlanes } from "@/lib/legal/precios-publicados";
 import { LIMITES_MEDIR, VERSION_MINIMA_MEDIR } from "@/lib/license/medir-publico";
 import { BANCO_EN_VIVO, GEMINI_EN_EL_SEMANAL, VERSION_GEMINI_NATIVO } from "@/lib/portada/banco-en-vivo";
+import panelDelBanco from "@/assets/portada/panel-del-banco.png";
 
 // Proveedores que exponen un endpoint OpenAI-compatible (o, en el caso de
 // Anthropic y de Gemini desde la 0.4.33, tienen adaptador nativo). Es una lista
@@ -42,6 +43,16 @@ const LLMS = [
   { marca: "aws", label: "Bedrock" },
   { marca: "ollama", label: "Ollama" },
   { marca: "vllm", label: "vLLM" },
+] as const;
+
+// La franja bajo la captura del héroe: los proveedores con los que el banco
+// mide EN VIVO, con el contador de cada uno (OpenAI y Anthropic con cifra de
+// ahorro en /benchmarks; Gemini en el banco semanal, sin cifra de ahorro —
+// lo dice la nota de #measured).
+const MEDIDO_EN_VIVO = [
+  { marca: "openai", label: "OpenAI" },
+  { marca: "anthropic", label: "Anthropic" },
+  { marca: "google", label: "Google" },
 ] as const;
 
 // LO QUE LA PORTADA PUBLICA COMO MEDIDO (2026-09-29). Hasta hoy la portada leía
@@ -154,7 +165,6 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
   // repeticiones ≈ 0» salió de la portada (dueño, 2026-10-02): sigue entera en
   // /benchmarks, y la frase de «depende de cuánto repita tu tráfico» se queda.
   const filasMedidas: FilaMedida[] = filasDelBancoEnVivo(t, locale);
-  const pieMedido = t.rich("enVivo.pie", { bench: (c) => <Link href="/benchmarks">{c}</Link> });
   // Lo medido de Gemini (banco semanal en vivo): qué modelo y qué día, nunca
   // una cifra de ahorro. Nombres y fecha llegan por parámetro.
   const G = GEMINI_EN_EL_SEMANAL;
@@ -180,78 +190,73 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
       <CursorGrid />
       <RevealObserver />
       <main className="wrap">
-        {/* HERO */}
-        <section className="hero">
-          <div>
-            <span className="eyebrow">{t("hero.eyebrow")}</span>
+        {/* HERO (dueño, 2026-10-03): el producto es la imagen. Titular
+            centrado, una línea, dos botones y, debajo, una captura del panel
+            DE VERDAD —sus componentes— alimentado solo con el banco público
+            (lib/portada/panel-del-banco.ts, con verja contra los informes;
+            la regenera scripts/captura-panel.ts). El h1 pinta desde el HTML,
+            sin animación: es lo primero que se lee. La franja de debajo dice
+            con qué proveedores se midió en vivo; «compatible con» y la nota de
+            Gemini viven en #measured. */}
+        <section className="hero hero-panel">
+          <div className="hpanel-copy">
             <h1>
-              <KineticTitle text={t("hero.title")} />{" "}
-              <KineticTitle text={t("hero.titleAccent")} className="u" start={220} />
+              {t("hero.title")} <span className="u">{t("hero.titleAccent")}</span>
             </h1>
-            <p className="lede">{t("hero.lede")}</p>
-            {/* El botón principal pregunta «¿SDK o gateway?» y lleva a #offers:
-                la portada vende dos productos y el visitante elige el suyo
-                antes de leer cifras. La medición queda enlazada desde la
-                tarjeta del SDK y desde el menú. */}
+            <p className="lede">{t("hero.sub")}</p>
             <div className="hero-cta">
-              <a className="btn" href="#offers">
-                {t("hero.ctaOffers")}
-              </a>
-              <a className="btn ghost" href="#pricing">
-                {t("hero.ctaPricing")}
-              </a>
-            </div>
-            <div className="hero-note">
-              <span className="pulse" /> {t("hero.note")}
-            </div>
-
-            {/* HÉROE LIMPIO (petición del dueño, 2026-09-12): aquí solo el
-                titular, la entradilla, los botones y el carrusel de marcas. La
-                cifra medida vive en el recibo de la derecha y, con su tarjeta
-                «Medido contra proveedor real», en la sección de lo medido.
-                El sello del programa de startups que iba aquí bajo la nota
-                (2026-09-14) se fue el 2026-09-15 (decisión del dueño): vive en
-                la banda antes del pie y en la tarjeta del pie, no en el héroe.
-                «Compatible con» ≠ «Medido en»: la franja dice dónde CORRE el SDK
-                (cualquier endpoint OpenAI-compatible o el adaptador nativo); la
-                nota de debajo dice con qué modelo hay cifra publicada. */}
-            <div className="hero-compat">
-              <span className="hm-k">{t("hero.compatibleCon")}</span>
-              <div className="compat-marquee" aria-label={LLMS.map((l) => l.label).join(", ")}>
-                <div className="compat-track">
-                  {[0, 1].map((copia) =>
-                    LLMS.map((l) => (
-                      <span className="cm" key={`${copia}-${l.marca}`} aria-hidden={copia === 1}>
-                        <LogoProveedor marca={l.marca} size={15} />
-                        {l.label}
-                      </span>
-                    )),
-                  )}
-                </div>
-              </div>
-              <p className="compat-nota">{t("hero.compatibleNota", notaCompatible)}</p>
+              <Link className="btn" href="/signup">
+                {t("hero.ctaStart")}
+              </Link>
+              <Link className="btn ghost" href="/benchmarks">
+                {t("hero.ctaBench")}
+              </Link>
             </div>
           </div>
 
-          <div className="hero-col">
-            {/* Donde estaba el recibo de la tirada sintética (ReciboMedido, con
-                el «al menos un 10 %»): lo medido en vivo, condicionado a cuánto
-                repite el tráfico, con su intervalo y su informe enlazado. */}
-            <TarjetaMedidoEnVivo titulo={t("enVivo.titulo", { fecha: V.fecha })} filas={filasMedidas} pie={pieMedido} />
+          <figure className="hpanel-shot">
+            <div className="hpanel-frame-fade">
+              <div className="hpanel-frame">
+                <div className="hpanel-chrome" aria-hidden="true">
+                  <span className="hpanel-dots">
+                    <i />
+                    <i />
+                    <i />
+                  </span>
+                  <span className="hpanel-url">
+                    <svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true" focusable="false">
+                      <path d="M4.5 7V5a3.5 3.5 0 0 1 7 0v2h.5a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h.5Zm1.5 0h4V5a2 2 0 1 0-4 0v2Z" fill="currentColor" />
+                    </svg>
+                    savings.bivelio.com
+                  </span>
+                </div>
+                <div className="hpanel-img">
+                  <Image
+                    src={panelDelBanco}
+                    alt={t("hero.panelAlt")}
+                    priority
+                    quality={80}
+                    placeholder="empty"
+                    sizes="(max-width: 640px) 128vw, (max-width: 1240px) calc(100vw - 48px), 1160px"
+                  />
+                </div>
+              </div>
+            </div>
+            <figcaption>
+              <Link href="/benchmarks">{t("hero.panelCaption")}</Link>
+            </figcaption>
+          </figure>
 
-            <ReservarLlamada
-              t={{
-                titulo: t("cta15.titulo"),
-                sub: t("cta15.sub"),
-                placeholder: t("cta15.placeholder"),
-                boton: t("cta15.boton"),
-                enviando: t("cta15.enviando"),
-                ok: t("cta15.ok"),
-                errorCorreo: t("cta15.errorCorreo"),
-                errorEnvio: t("cta15.errorEnvio"),
-                alterna: t("cta15.alterna"),
-              }}
-            />
+          <div className="hpanel-medido">
+            <span className="hpanel-marcas">
+              {MEDIDO_EN_VIVO.map((m) => (
+                <span className="hpanel-marca" key={m.marca}>
+                  <LogoProveedor marca={m.marca} size={18} />
+                  {m.label}
+                </span>
+              ))}
+            </span>
+            <span className="hpanel-medido-t">{t("hero.medidoEnVivo")}</span>
           </div>
         </section>
 
@@ -423,6 +428,26 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             <span className="hero-prueba-t">{t("hero.proofTitle")}</span>
             <FilasMedidas filas={filasMedidas} />
             <p className="cascade-nota">{t("cascade.footnote")}</p>
+          </div>
+          {/* «Compatible con» ≠ «Medido en» (estaba en el héroe hasta el
+              2026-10-03): la franja dice dónde CORRE el SDK (cualquier
+              endpoint OpenAI-compatible o el adaptador nativo); la nota de
+              debajo dice con qué modelo hay cifra publicada. */}
+          <div className="hero-compat rv">
+            <span className="hm-k">{t("hero.compatibleCon")}</span>
+            <div className="compat-marquee" aria-label={LLMS.map((l) => l.label).join(", ")}>
+              <div className="compat-track">
+                {[0, 1].map((copia) =>
+                  LLMS.map((l) => (
+                    <span className="cm" key={`${copia}-${l.marca}`} aria-hidden={copia === 1}>
+                      <LogoProveedor marca={l.marca} size={15} />
+                      {l.label}
+                    </span>
+                  )),
+                )}
+              </div>
+            </div>
+            <p className="compat-nota">{t("hero.compatibleNota", notaCompatible)}</p>
           </div>
           {/* La traducción sin jerga (petición del dueño, 2026-09-04): el vídeo
               del experimento justo + las dos cifras del artefacto dichas en

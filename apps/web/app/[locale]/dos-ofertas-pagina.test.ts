@@ -39,11 +39,15 @@ describe("portada: dos ofertas, cada una con su bloque", () => {
     expect([...pos].sort((a, b) => a - b)).toEqual(pos);
   });
 
-  it("el botón principal del héroe lleva a #offers, y el viejo «Ver lo medido» ya no está", () => {
-    const cta = CODIGO.slice(CODIGO.indexOf('className="hero-cta"'), CODIGO.indexOf('className="hero-note"'));
-    expect(cta).toContain('href="#offers"');
-    expect(cta).toContain('t("hero.ctaOffers")');
+  it("el héroe (dueño, 2026-10-03): «Empezar» lleva al alta y el secundario al banco público", () => {
+    // Hasta el 2026-10-03 el botón principal preguntaba «¿SDK o gateway?» y
+    // llevaba a #offers. El héroe nuevo es titular, línea, dos botones y la
+    // captura del panel: la elección entre las dos ofertas sigue justo debajo.
+    const cta = CODIGO.slice(CODIGO.indexOf('className="hero-cta"'), CODIGO.indexOf('className="hpanel-shot"'));
+    expect(cta).toMatch(/className="btn" href="\/signup">\s*\{t\("hero\.ctaStart"\)\}/);
+    expect(cta).toMatch(/className="btn ghost" href="\/benchmarks">\s*\{t\("hero\.ctaBench"\)\}/);
     expect(PAGINA).not.toContain("hero.ctaRun");
+    expect(PAGINA).not.toContain("hero.ctaOffers");
   });
 
   it("la tarjeta del gateway no lleva cifra: ni hero.proofs, ni el artefacto, ni un porcentaje", () => {

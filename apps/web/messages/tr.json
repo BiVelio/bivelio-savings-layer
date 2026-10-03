@@ -781,15 +781,16 @@
     "metaTitle": "BiVelio — LLM Tasarrufunuzu Doğrulayın",
     "metaDescription": "Uygulamanızın LLM sağlayıcısına yalnızca ihtiyaç duyduğu kadar ödemesini sağlayan bir SDK ve kodlama ajanınızı ölçen bir gateway. Her şey sağlayıcınızın sayacıyla: ücretsiz ölçün, sonra koltuk başına ödeyin — tasarrufunuz üzerinden komisyon yok.",
     "hero": {
-      "eyebrow": "LLM API'lerine token başına ödeyen ekipler için",
       "title": "LLM faturanız, kontrol altında.",
       "titleAccent": "Her çağrıda ölçülür.",
-      "lede": "İki ürün, tek kural. SDK uygulamanızın içine kurulur ve yalnızca ödenmesi gerekeni geçirir; gateway kod ajanınızın önünde durur ve harcamasını ölçer. İkisi de sağlayıcınızın kendi sayacıyla sayar ve ölçüleni tahminiden ayrı tutar. Yalnızca ölçtüğümüzü yayımlarız.",
-      "ctaOffers": "SDK mı, gateway mi?",
-      "ctaPricing": "Fiyatları gör",
+      "sub": "Savings, uygulamanızın tekrarladığı istekleri sağlayıcıyı yeniden çağırmadan yanıtlar ve her çağrıyı onun sayacıyla ölçer.",
+      "ctaStart": "Başla",
+      "ctaBench": "Herkese açık test tezgâhını görün",
+      "panelAlt": "Herkese açık test tezgâhının verileriyle Savings paneli: ölçülen tasarruf ve modele göre dağılımı.",
+      "panelCaption": "Herkese açık test tezgâhının verileriyle panel",
+      "medidoEnVivo": "Her sağlayıcının kendi sayacıyla canlı ölçüldü",
       "note": "Dakikalar içinde kurulur. Mesajlarınız asla bizim sunucularımızdan geçmez.",
       "proofTitle": "Gerçek sağlayıcıya karşı ölçüldü",
-      "medidoEn": "Ölçüldüğü yer",
       "compatibleCon": "Uyumlu",
       "compatibleNota": "Uyumlu, ölçülmüş demek değildir. SDK, OpenAI API'siyle uyumlu her uç noktayla, ayrıca yerel Anthropic bağdaştırıcısı ve yerel Gemini bağdaştırıcısıyla ({gemini} sürümünde yeni) çalışır. Herkese açık test tezgâhında tasarruf rakamı olanlar bugün yalnızca OpenAI ve Anthropic modelleridir; Gemini'nin tasarruf rakamı yok. Gemini için ölçülen: {flash}, yerel API'si üzerinden, {fecha} tarihli haftalık canlı testte — dört bataryanın tümü, hiçbir katman hatası olmadan ve önbelleğe alınan ya da tasarruf olarak kredilendirilen hiçbir ret olmadan. Bu test, katmanın hiçbir şeyi bozmadığını ve fazla ücret almadığını kontrol eder; bir tasarrufu ölçmez. Ayrıca ölçüldü: {pro}, yerel API'si üzerinden, {fechaPro} tarihli iki kısmi koşuda (sağlayıcının günlük kotası dört bataryaya bir günde yetmiyor): dört bataryanın tamamı, yine katmandan kaynaklı hiçbir hata olmadan ve önbelleğe alınmış ya da tasarruf sayılmış hiçbir ret olmadan."
     },
@@ -993,17 +994,6 @@
       "howItWorks": "Nasıl çalışır",
       "pricingTerms": "Fiyat koşulları",
       "dataPrivacy": "BiVelio ne alır"
-    },
-    "cta15": {
-      "titulo": "Book 15-min call",
-      "sub": "Kendi trafiğinde ne kadar tasarruf edeceğini söyleriz, hiçbir şey kurmadan.",
-      "placeholder": "sen@sirket.com",
-      "boton": "Book 15-min call",
-      "enviando": "Gönderiliyor…",
-      "ok": "Alındı. Görüşmeyi ayarlamak için bugün sana yazıyoruz.",
-      "errorCorreo": "Bu e-posta geçerli görünmüyor.",
-      "errorEnvio": "Gönderemedik.",
-      "alterna": "Bize yaz"
     },
     "devs": {
       "eyebrow": "Geliştiriciler için yapıldı",

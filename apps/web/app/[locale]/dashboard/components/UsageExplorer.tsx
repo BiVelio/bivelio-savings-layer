@@ -719,7 +719,10 @@ function VistaModelo({
   if (barras.length === 0) return <p className="ck-note">{t("usageExplorer.modelEmpty")}</p>;
 
   const total = barras.reduce((s, b) => s + b.valor, 0);
-  const max = Math.max(...barras.map((b) => Math.abs(b.valor)), 1);
+  // La barra más larga es la del mayor valor. El suelo era 1 (un dólar, un
+  // token): con importes por debajo de 1 $ todas las barras salían a ras de
+  // cero. Solo se protege la división cuando todo vale 0.
+  const max = Math.max(...barras.map((b) => Math.abs(b.valor))) || 1;
   const cuota = (v: number) => (total !== 0 ? v / total : 0);
   let acc = 0;
   const filas = barras.map((b) => {

@@ -781,15 +781,16 @@
     "metaTitle": "BiVelio — Verifica tu ahorro en LLM",
     "metaDescription": "Un SDK para que tu app pague al proveedor de LLM solo lo que necesita, y un gateway que mide tu agente de código. Todo con el contador de tu proveedor: mide gratis y después paga por asiento, sin comisión sobre tu ahorro.",
     "hero": {
-      "eyebrow": "Para equipos que pagan la API de LLM por tokens",
       "title": "Tu factura de LLM, bajo control.",
       "titleAccent": "Medida en cada llamada.",
-      "lede": "Dos productos, una regla. El SDK se instala dentro de tu app y deja pasar solo lo que hay que pagar; el gateway se pone delante de tu agente de código y mide su gasto. Los dos cuentan con el contador de tu proveedor y separan lo medido de lo estimado. Publicamos solo lo que hemos medido.",
-      "ctaOffers": "¿SDK o gateway?",
-      "ctaPricing": "Precios",
+      "sub": "Savings responde lo que tu app repite sin volver a llamar al proveedor, y mide cada llamada con su contador.",
+      "ctaStart": "Empezar",
+      "ctaBench": "Ver el banco público",
+      "panelAlt": "El panel de Savings con los datos del banco público: el ahorro medido y su reparto por modelo.",
+      "panelCaption": "Panel con los datos del banco público",
+      "medidoEnVivo": "Medido en vivo con el contador de cada proveedor",
       "note": "Se instala en minutos. Tus mensajes no pasan por nuestros servidores.",
       "proofTitle": "Medido contra proveedor real",
-      "medidoEn": "Medido en",
       "compatibleCon": "Compatible con",
       "compatibleNota": "Compatible no es medido. El SDK funciona con cualquier endpoint compatible con la API de OpenAI, más el adaptador nativo de Anthropic y el adaptador nativo de Gemini (nuevo en la {gemini}). Con cifra de ahorro en el banco público, hoy solo modelos de OpenAI y de Anthropic; Gemini no tiene cifra de ahorro. Lo medido de Gemini: {flash}, por su API nativa, en el banco semanal en vivo del {fecha} — las cuatro baterías, sin ningún fallo de la capa y sin ninguna negativa cacheada ni acreditada como ahorro. Ese banco comprueba que la capa no rompe nada ni cobra de más; no mide un ahorro. También medido: {pro}, por su API nativa, en dos bancos parciales del {fechaPro} (su cuota diaria del proveedor no da para las cuatro baterías en un día): las cuatro baterías, también sin ningún fallo de la capa y sin ninguna negativa cacheada ni acreditada como ahorro."
     },
@@ -993,17 +994,6 @@
       "howItWorks": "Cómo funciona",
       "pricingTerms": "Términos de precio",
       "dataPrivacy": "Qué recibe BiVelio"
-    },
-    "cta15": {
-      "titulo": "Book 15-min call",
-      "sub": "Te decimos qué ahorrarías con tu tráfico, sin instalar nada.",
-      "placeholder": "tu@empresa.com",
-      "boton": "Book 15-min call",
-      "enviando": "Enviando…",
-      "ok": "Recibido. Te escribimos hoy mismo para cuadrar la llamada.",
-      "errorCorreo": "Ese correo no parece válido.",
-      "errorEnvio": "No hemos podido enviarlo.",
-      "alterna": "Escríbenos"
     },
     "devs": {
       "eyebrow": "Hecho para desarrolladores",
