@@ -9,24 +9,68 @@ name: ci
 # Con esto, más `required_status_checks` en la protección de `main`, la cadena
 # queda cerrada: no se puede mergear en rojo, y como a `main` solo se entra por PR,
 # lo que Vercel despliega ya ha pasado por aquí.
+#
+# AHORRO DE MINUTOS (el repositorio es privado: cada minuto se factura, y cada
+# trabajo se redondea al minuto entero). Lo que cambia y por qué:
+#   - Ya NO corre en push a `main`. A `main` solo se entra por PR con
+#     `strict: true`, así que el commit mergeado ya pasó por aquí tal cual; la
+#     segunda pasada costaba ~11,6 min por merge para volver a ver lo mismo.
+#   - Sin `next build` de apps/web: Vercel construye cada PR (estado «Vercel»
+#     en el commit) antes de que llegue a producción. El typecheck y los tests
+#     de la web se quedan.
+#   - En el PR, una sola versión de Python para pytest (la más nueva que declara
+#     el pyproject) y solo si cambia el cliente de Python. La matriz completa
+#     corre los domingos, a mano y en cada Release.
 on:
-  push:
-    branches: [main]
   pull_request:
+  schedule:
+    # Domingos 05:41 UTC: lejos del banco semanal (lunes 04:17). Un workflow
+    # programado que falla manda correo al dueño del repositorio.
+    - cron: "41 5 * * 0"
+  workflow_dispatch:
+  release:
+    types: [published]
 
-# Un push nuevo sobre la misma rama cancela el run anterior: no tiene sentido
-# gastar minutos verificando un commit que ya está superado.
+# Un push nuevo sobre el mismo PR cancela el run anterior: no tiene sentido
+# gastar minutos verificando un commit que ya está superado. Fuera de los PR no
+# se cancela nada (un run programado o de Release se deja terminar).
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  group: ci-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  # `verificar` es el ÚNICO check requerido por la protección de `main`, así que
+  # corre SIEMPRE en todo PR (sin filtro de rutas a nivel de trabajo: un check
+  # requerido que no arranca deja el PR colgado en «Expected»). Lo que depende de
+  # rutas se decide paso a paso, dentro. Va en un solo trabajo a propósito: un
+  # trabajo aparte de «cambios» y otro agregador costarían 1 min facturado cada
+  # uno, más de lo que ahorran los pasos que se saltan.
+  #
+  # La suite de vitest NO se filtra por rutas: lee docs/, README, los workflows
+  # y el cliente de Python (test/cadena-de-suministro, test/python-cliente…),
+  # así que casi cualquier cambio puede romperla.
   verificar:
+    # En una Release ya verifican publish.yml / publish-pypi.yml; aquí solo
+    # corre la matriz de Python.
+    if: ${{ github.event_name != 'release' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      pull-requests: read # paths-filter lista los archivos del PR por la API
     steps:
       - uses: actions/checkout@v4
+
+      # Fijado por SHA de commit completo (v4.0.3), no por etiqueta movible.
+      - name: Qué ha cambiado (solo en PR)
+        id: cambios
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        with:
+          filters: |
+            python:
+              - 'packages/python/**'
+              - '.github/workflows/ci.yml'
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -76,18 +120,35 @@ jobs:
       - name: Typecheck de apps/web (el código que cobra)
         run: pnpm --dir apps/web run typecheck
 
-      # Construir la web aquí, y no dejar que el primero en enterarse sea el
-      # despliegue de producción. `next build` compila las rutas y ejecuta el
-      # prerender de las páginas estáticas, así que caza roturas que ni el
-      # typecheck ni los tests ven.
-      - name: Build de apps/web (antes que Vercel, no después)
-        run: pnpm --dir apps/web run build
+      # Sin `next build`: lo construye Vercel en cada PR (estado «Vercel»). Ver
+      # la cabecera de este archivo.
+
+      # pytest en la versión MÁS NUEVA que declara el pyproject, solo si cambia
+      # el cliente de Python (o este workflow). El extremo a extremo con el
+      # gateway ya corrió arriba, dentro de `pnpm test`. La más vieja (3.10) va
+      # en el trabajo `python`, fuera de los PR.
+      - name: Python 3.14 para pytest
+        if: ${{ github.event_name != 'pull_request' || steps.cambios.outputs.python == 'true' }}
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - name: pytest 3.14 — dependencias de prueba (fijadas por hash)
+        if: ${{ github.event_name != 'pull_request' || steps.cambios.outputs.python == 'true' }}
+        run: 'python -m pip install --require-hashes --only-binary :all: -r packages/python/requirements-ci.txt'
+      - name: pytest 3.14 (sin red)
+        if: ${{ github.event_name != 'pull_request' || steps.cambios.outputs.python == 'true' }}
+        run: python -m pytest packages/python -q
 
   # EL CLIENTE DE PYTHON en la versión más vieja y en la más nueva que declara
   # (pyproject: >=3.10). Solo pytest, sin Node: el extremo a extremo con el
   # gateway va en `verificar`. Las pruebas no tocan la red: conftest.py hace
   # fallar cualquier conexión que no sea a 127.0.0.1.
+  #
+  # FUERA DE LOS PR: domingos, a mano y en cada Release. En el PR basta la más
+  # nueva, que corre dentro de `verificar`. La matriz es la MISMA que la de
+  # publish-pypi.yml (test/publicar-pypi.test.ts lo exige).
   python:
+    if: ${{ github.event_name != 'pull_request' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
