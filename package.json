@@ -94,6 +94,7 @@
     "example:anthropic-sdk": "BVSALA_DEV_OPEN=1 tsx examples/stacks/anthropic-sdk/bivelio-check.ts",
     "example:litellm": "BVSALA_DEV_OPEN=1 tsx examples/litellm/check.ts",
     "init:ejemplos": "tsx scripts/ejemplos-de-init.ts",
+    "paridad:vectores": "tsx scripts/paridad-vectores.ts",
     "example:licensed": "tsx examples/licensing/licensed.ts",
     "license:demo": "tsx examples/licensing/demo.ts",
     "example:revocation": "tsx examples/licensing/revocation.ts",
