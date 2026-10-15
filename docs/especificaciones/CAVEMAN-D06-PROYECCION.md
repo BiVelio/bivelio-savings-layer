@@ -32,7 +32,7 @@ Todas en `test/proyeccion-estable-d06.test.ts`.
 - **Dos escritores convergen.** Mismos bytes; el perdedor borra su objeto del almacén (queda uno).
 - **Sin recuperación comprobada no hay omisiones.** Sin ejecutor, sin almacén, `tool_choice: none`, nombre de herramienta que choca, segmento > 1 MiB, almacén lleno o sha256 que no cuadra → JSON sin omisiones o el original, y sin herramienta.
 - **JSON nunca se omite**: solo `json-lossless`.
-- **Protegido**: `is_error: true`, el resultado de la propia recuperación, content con imágenes o varios bloques, ids repetidos. Fuera de los `tool_result` no se toca nada (system, user, assistant, `tool_use` con id y argumentos, thinking firmado, `cache_control`).
+- **Protegido**: la vista de un fichero (argumentos con `path`, `file_path`…, la regla de D03), `is_error: true`, el resultado de la propia recuperación, content con imágenes o varios bloques, ids repetidos. Fuera de los `tool_result` no se toca nada (system, user, assistant, `tool_use` con id y argumentos, thinking firmado, `cache_control`).
 - **Épocas.** Añadir al final conserva la época. Editar/reordenar/bifurcar (el manifiesto guardado deja de ser prefijo) abre época nueva y la historia va como la trae el llamante.
 - **Política.** Antes de cada envío se compara la huella vigente con la de cada sustitución no-`identity` que se reenviaría. Distinta → época nueva y no se reenvían esos bytes (por defecto) o `ErrorDeProyeccion("policy_changed")` con `alCambiarPolitica: "denegar"`. Un handle que ya no se puede leer → época nueva (`recovery_unavailable`).
 - **Revisión del adaptador.** Con otra `adapterRevision` se sigue mandando lo vigente; lo que propondría la nueva queda como sombra (`elecciones.sombras(...)`).

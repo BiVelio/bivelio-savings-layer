@@ -4,6 +4,7 @@ import { recorrerJsonEstricto } from "../util/json-estricto.js";
 import {
   compactToolOutput,
   DEFAULT_MIN_SAVED_CHARS,
+  esVistaDeFichero,
   LOSSLESS_JSON_TRANSFORM_ID,
   LOSSLESS_JSON_VERSION,
   type ToolOutputDecisionReason,
@@ -790,13 +791,24 @@ export class ProyectorEstable {
 function segmentosDe(cuerpo: Registro): Segmento[] {
   const mensajes = cuerpo.messages as unknown[];
   const nombres = new Map<string, string>();
+  const deFichero = new Set<string>();
   let ultimoAssistant = -1;
   mensajes.forEach((m, i) => {
     if (!esRegistro(m) || m.role !== "assistant") return;
     ultimoAssistant = i;
     if (!Array.isArray(m.content)) return;
     for (const b of m.content) {
-      if (esRegistro(b) && b.type === "tool_use" && typeof b.id === "string") nombres.set(b.id, String(b.name ?? ""));
+      if (!esRegistro(b) || b.type !== "tool_use" || typeof b.id !== "string") continue;
+      nombres.set(b.id, String(b.name ?? ""));
+      // La regla de D03: la vista de un fichero no se toca, porque un agente
+      // que edita por coincidencia exacta copia lo que leyó.
+      let argumentos: string | undefined;
+      try {
+        argumentos = JSON.stringify(b.input ?? {});
+      } catch {
+        argumentos = undefined;
+      }
+      if (esVistaDeFichero(argumentos)) deFichero.add(b.id);
     }
   });
   const salida: Segmento[] = [];
@@ -828,6 +840,7 @@ function segmentosDe(cuerpo: Registro): Segmento[] {
       const s: Segmento = { ...base, texto, sourceHash: sha256(texto), forma };
       if (b.is_error === true) s.protegido = "is_error";
       else if (nombres.get(b.tool_use_id) === HERRAMIENTA_DE_RECUPERACION) s.protegido = "recovery_result";
+      else if (deFichero.has(b.tool_use_id)) s.protegido = "protected";
       salida.push(s);
     });
   });

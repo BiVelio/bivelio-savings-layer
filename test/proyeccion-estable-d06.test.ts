@@ -232,6 +232,17 @@ describe("modo recuperable con ejecutor", () => {
     expect(e.almacen.size).toBe(0);
   });
 
+  it("la vista de un fichero no se toca (regla de D03): ni vista previa ni compacto", async () => {
+    const e = entorno();
+    const c = turno1();
+    const tu = ((c.messages as Registro[])[1]!.content as Registro[])[1]!;
+    tu.input = { file_path: "logs/ci.txt" };
+    const p = await e.proyector().proyectar(c);
+    expect(resultadoDe(p.cuerpo).content).toBe(LOG);
+    expect(p.informe.segments[0]).toMatchObject({ status: "bypassed", reason: "protected" });
+    expect(e.almacen.size).toBe(0);
+  });
+
   it("un tool_result con is_error no se toca", async () => {
     const e = entorno();
     const c = turno1();
