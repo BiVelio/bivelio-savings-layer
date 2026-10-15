@@ -1285,6 +1285,40 @@ export interface SavingsReport {
     fidelityPassed: boolean;
   };
 
+  /**
+   * Present only when tool-output compaction ran with `profile:
+   * "lossless-data"`: one explained decision per tool output in the request,
+   * applied or bypassed, in message order. Token counts come from the
+   * estimator named in `estimator` and are estimates, never a verified saving.
+   */
+  toolOutputCompaction?: {
+    profile: "lossless-data";
+    /** Always `"estimated"`: these counts are not the provider's. */
+    tokenBasis: "estimated";
+    /** Id of the token estimator that counted, and whether it uses the provider's rule. */
+    estimator: { id: string; exact: boolean };
+    decisions: Array<{
+      /** The tool call this output answers, unchanged. Absent when the message had none. */
+      toolCallId?: string;
+      status: "applied" | "bypassed";
+      reason:
+        | "applied"
+        | "not_json"
+        | "invalid_json"
+        | "duplicate_keys"
+        | "invalid_unicode"
+        | "not_smaller"
+        | "below_threshold"
+        | "protected";
+      transformId: string;
+      version: string;
+      tokensBefore: number;
+      /** What is sent: the compacted text when applied, the original otherwise. */
+      tokensAfter: number;
+      candidateTokens?: number;
+    }>;
+  };
+
   constraints: {
     backend: string;
     schemaVersion: string;
