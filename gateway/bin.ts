@@ -125,6 +125,12 @@ Commands:
                          (~/.codex; with --project, ./AGENTS.md) — Codex has no skills and
                          AGENTS.md is always active. Its effect is measured by the gateway,
                          not promised.
+  mcp [--gateway URL | --port N]
+                         A read-only MCP server on stdio for your MCP client (Claude Code, Codex,
+                         an IDE): the local gateway's status, cost per session and tool-output
+                         compaction decisions, read from its local routes (default
+                         http://127.0.0.1:8402). Metadata only: no request ids, no content, and
+                         no tool that changes anything.
   init [--write [--yes]] [--stack S] [--provider P] [--cwd DIR] [--json]
                          Set up the SDK in a JavaScript/TypeScript project (also:
                          npx @bivelio/savings-layer@latest init). Detects Next.js, Express, the
@@ -240,6 +246,22 @@ if (retirados.length > 0) {
 }
 const effortEnv = process.env.BVSALA_GATEWAY_EFFORT;
 const siblingModelEnv = process.env.BVSALA_GATEWAY_SIBLING_MODEL;
+
+if (comando === "mcp") {
+  // `bvsala mcp` (D12): un servidor MCP de SOLO LECTURA por stdio sobre los
+  // metadatos del gateway local (gateway/mcp.ts). Antes del puerto, del upstream y
+  // de la verja de licencia: no arranca ningún gateway, solo lee las rutas
+  // locales de uno que ya corre (que sí van detrás de su licencia). stdout es del
+  // protocolo: cualquier otra cosa, a stderr.
+  const { servirPorStdio, urlDelGateway } = await import("./mcp.js");
+  const destino = urlDelGateway(resto);
+  if (!destino.ok) {
+    console.error(`[bvsala mcp] ${destino.mensaje}`);
+    process.exit(1);
+  }
+  await servirPorStdio(process.stdin, process.stdout, { gateway: destino.url, version: BV_SALA_VERSION });
+  process.exit(0);
+}
 
 if (comando === "init") {
   // Antes del puerto, del upstream y de la verja de licencia: init es onboarding,
