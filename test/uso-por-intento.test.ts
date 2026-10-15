@@ -187,12 +187,14 @@ describe("tarifar en enteros con el catálogo versionado", () => {
 
   it("cifras grandes siguen siendo enteros exactos", () => {
     const u: AttemptUsage = {
-      inputUncached: 0, cacheRead: 7_000_001, cacheWrite5m: 0, cacheWrite1h: 0, output: 7_000_000,
+      inputUncached: 0, cacheRead: 199_999, cacheWrite5m: 0, cacheWrite1h: 0, output: 7_000_000,
       reasoningIncludedInOutput: true, basis: "provider_reported", completeness: "complete",
     };
-    // claude-opus-4: 75 µ$ la salida, 1,5 µ$ el leído → 525 000 000 + 10 500 001,5
+    // claude-opus-4: 75 µ$ la salida, 1,5 µ$ el leído → 525 000 000 + 299 998,5.
+    // (La entrada se queda bajo los 200K: por encima rige el tramo de contexto
+    // largo, que el catálogo no modela, y el intento ya no sale `priced`.)
     const p = tarifarIntento("claude-opus-4", u, DIA);
-    expect(p).toMatchObject({ state: "priced", amountMicroUsd: 535_500_002, exactAttoUsd: "535500001500000000000" });
+    expect(p).toMatchObject({ state: "priced", amountMicroUsd: 525_299_999, exactAttoUsd: "525299998500000000000" });
   });
 
   it("modelo desconocido → unpriced, nunca coste 0 ni el precio ilustrativo", () => {
@@ -383,5 +385,72 @@ describe("SavingsReport: un `actual` sobre contadores rellenos con 0 se declara 
     const r = await informe({ inputTokens: 1000, outputTokens: 10 });
     expect(r.cost.basis).toBe("measured");
     expect(r.cost).not.toHaveProperty("actualIsLowerBound");
+  });
+});
+
+// ── Revisión adversaria (D02): los defectos que la primera versión dejaba pasar ──
+
+describe("revisión: lo que no es un contador entero no llega a la tarifa", () => {
+  it("una iteración de compactación con un contador fraccionario no tumba la tarifa: unpriced, no RangeError", () => {
+    const u = normalizarUso({
+      dialecto: "anthropic",
+      uso: { input_tokens: 10, output_tokens: 5, iterations: [{ type: "compaction", input_tokens: 1.5, output_tokens: 2 }] },
+    });
+    const p = tarifarIntento("claude-sonnet-4-5", u, DIA);
+    expect(p).toMatchObject({ state: "unpriced", reason: "usage-invalid" });
+  });
+
+  it("un contador por encima de Number.MAX_SAFE_INTEGER no es un contador: el importe no puede perder precisión", () => {
+    const u = normalizarUso({ dialecto: "openai-chat", uso: { prompt_tokens: 2 ** 60, completion_tokens: 1 } });
+    expect(u.missing).toContain("input");
+    const p = tarifarIntento("gpt-4o", u, DIA);
+    expect(p.state).not.toBe("priced");
+    if (p.state === "uncertain" && p.lowerBoundMicroUsd !== undefined) expect(Number.isSafeInteger(p.lowerBoundMicroUsd)).toBe(true);
+  });
+
+  it("un AttemptUsage hecho a mano con un negativo o un NaN sale unpriced", () => {
+    const base: AttemptUsage = {
+      inputUncached: 100, cacheRead: 0, cacheWrite5m: 0, cacheWrite1h: 0, output: 10,
+      reasoningIncludedInOutput: true, basis: "provider_reported", completeness: "complete",
+    };
+    expect(tarifarIntento("claude-sonnet-4-5", { ...base, output: -10 }, DIA)).toMatchObject({ state: "unpriced", reason: "usage-invalid" });
+    expect(tarifarIntento("claude-sonnet-4-5", { ...base, cacheRead: Number.NaN }, DIA)).toMatchObject({ state: "unpriced", reason: "usage-invalid" });
+  });
+});
+
+describe("revisión: el tramo de contexto largo no se presenta como el coste", () => {
+  it("gpt-5.5 con 400K de entrada (tramo >272K, la petición entera a 2×/1,5×) → uncertain con el suelo de la tarifa corta", () => {
+    const u = normalizarUso({ dialecto: "openai-responses", uso: { input_tokens: 400_000, output_tokens: 1000 } });
+    const p = tarifarIntento("gpt-5.5", u, DIA);
+    // 400 000 × 5 µ$ + 1000 × 30 µ$ = 2 030 000 µ$ a tarifa corta: la factura es MÁS.
+    expect(p).toMatchObject({ state: "uncertain", reason: "long-context-tier", lowerBoundMicroUsd: 2_030_000 });
+  });
+
+  it("justo en 200K sigue priced; un token más ya no", () => {
+    const mk = (n: number) => normalizarUso({ dialecto: "openai-responses", uso: { input_tokens: n, output_tokens: 1 } });
+    expect(tarifarIntento("gpt-5.5", mk(200_000), DIA).state).toBe("priced");
+    expect(tarifarIntento("gpt-5.5", mk(200_001), DIA).state).toBe("uncertain");
+  });
+});
+
+describe("revisión: el libro no acepta un precio que no sale de su uso ni un instante que no es fecha", () => {
+  it("un recibo con price «priced 0» sobre un uso ausente → ConflictoDeRecibo, y el total no lo cuenta", () => {
+    const usage = normalizarUso({ dialecto: "anthropic", uso: null });
+    const r = reciboDeIntento({ logicalCallId: "lc-f", attempt: 0, kind: "primary", model: "claude-sonnet-4-5", at: DIA, usage });
+    const falso = {
+      ...r,
+      price: {
+        state: "priced" as const, amountMicroUsd: 0, exactAttoUsd: "0", currency: "USD" as const,
+        priceVersion: PRECIOS_AL_DIA, priceDay: "2026-10-01", catalogKey: "claude-sonnet-4-5",
+      },
+    };
+    const libro = new LibroDeRecibos();
+    expect(() => libro.registrar(falso)).toThrow(ConflictoDeRecibo);
+    expect(libro.total("lc-f")).toBeUndefined();
+  });
+
+  it("un recibo con at NaN no se construye: el día del precio no puede ser «hoy» según cuándo se mire", () => {
+    const usage = normalizarUso({ dialecto: "anthropic", uso: { input_tokens: 10, output_tokens: 5 } });
+    expect(() => reciboDeIntento({ logicalCallId: "lc-n", attempt: 0, kind: "primary", model: "claude-sonnet-4-5", at: Number.NaN, usage })).toThrow(TypeError);
   });
 });

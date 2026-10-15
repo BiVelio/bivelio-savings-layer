@@ -134,7 +134,9 @@ export type UsoCrudo =
   | { dialecto: "provider-usage"; uso: ProviderUsage | null | undefined };
 
 function entero(n: unknown): n is number {
-  return typeof n === "number" && Number.isInteger(n) && n >= 0;
+  // SEGURO, no solo entero: por encima de 2^53 un contador ya perdió unidades
+  // al parsearse, y el importe que saldría de él no sería exacto.
+  return typeof n === "number" && Number.isSafeInteger(n) && n >= 0;
 }
 
 /** Un contador opcional de caché: ausente o ilegible es «no hubo» (0). */
@@ -317,6 +319,8 @@ function deProviderUsage(u: ProviderUsage | null | undefined, basis: UsageBasis)
 export type MotivoSinPrecio =
   /** No llegó ningún contador. */
   | "usage-absent"
+  /** Algún contador no es un entero seguro ≥ 0 (p. ej. una iteración de compactación fraccionaria). */
+  | "usage-invalid"
   /** El catálogo no tiene precio para ese modelo ese día. */
   | "no-catalog-price";
 
@@ -332,6 +336,12 @@ export type MotivoIncierto =
   | "inherited-price"
   /** Ni un token de entrada: ningún intento real cuesta eso; huele a contador relleno. */
   | "implausible-zero-input"
+  /**
+   * Más entrada que el umbral de contexto largo más bajo publicado (200K): por
+   * encima, varios proveedores cobran la petición ENTERA a otra tarifa que el
+   * catálogo no modela. Lo tarifado a tarifa corta es un suelo.
+   */
+  | "long-context-tier"
   /** El precio del catálogo no cabe en la unidad entera de esta tarifa. */
   | "price-not-representable";
 
@@ -368,6 +378,19 @@ export type AttemptPrice =
 // producto `tokens × pico × centésimas` es un entero en 1e-14 USD; ×1e4, atto.
 const ATTO_POR_MICRO = 1_000_000_000_000n;
 
+/**
+ * El umbral de contexto largo MÁS BAJO publicado (src/pricing/tarifas-de-tier.ts):
+ * «prompts <= 200k tokens» en los Pro de Gemini, 200K en el 1M de Anthropic;
+ * 272K en gpt-5.4/5.5/gpt-6, y sin umbral publicado en gpt-5.6. El catálogo solo
+ * guarda la tarifa corta y el tramo largo es siempre MAYOR (P4), así que por
+ * encima de esto la cifra es un suelo. Se aplica a todos los modelos: en uno de
+ * precio plano el coste sale `uncertain` con el suelo exacto, que es el lado que
+ * no miente.
+ */
+const UMBRAL_CONTEXTO_LARGO = 200_000;
+
+const CONTADORES = ["inputUncached", "cacheRead", "cacheWrite5m", "cacheWrite1h", "output"] as const;
+
 function aEnteroExacto(x: number, escala: number): bigint | undefined {
   const v = x * escala;
   const r = Math.round(v);
@@ -395,6 +418,17 @@ function microPorDefecto(atto: bigint): number {
 export function tarifarIntento(model: string, uso: AttemptUsage, at?: number | Date): AttemptPrice {
   if (uso.completeness === "absent") {
     return { state: "unpriced", reason: "usage-absent", detail: "the provider reported no usage for this attempt" };
+  }
+  // `AttemptUsage` es un tipo público del módulo: quien lo construye a mano (o
+  // una compactación con contadores fraccionarios) no puede tumbar la tarifa
+  // con un RangeError de BigInt, ni colar un negativo que reste coste.
+  const invalido = CONTADORES.find((k) => !entero(uso[k]));
+  if (invalido !== undefined || (uso.reasoning !== undefined && !entero(uso.reasoning))) {
+    return {
+      state: "unpriced",
+      reason: "usage-invalid",
+      detail: `counter ${invalido ?? "reasoning"} is not a safe non-negative integer`,
+    };
   }
   const instante = at ?? Date.now();
   const dia = diaUtc(instante);
@@ -466,9 +500,28 @@ export function tarifarIntento(model: string, uso: AttemptUsage, at?: number | D
       priceVersion: PRECIOS_AL_DIA,
     };
   }
+  const entrada = uso.inputUncached + uso.cacheRead + uso.cacheWrite5m + uso.cacheWrite1h;
+  if (entrada > UMBRAL_CONTEXTO_LARGO) {
+    return {
+      state: "uncertain",
+      reason: "long-context-tier",
+      detail: `${entrada} input tokens exceed ${UMBRAL_CONTEXTO_LARGO}; the long-context rate is not in the catalog, the short rate is a floor`,
+      lowerBoundMicroUsd: microPorDefecto(atto),
+      priceVersion: PRECIOS_AL_DIA,
+    };
+  }
+  const importe = microRedondeado(atto);
+  if (!Number.isSafeInteger(importe)) {
+    return {
+      state: "uncertain",
+      reason: "price-not-representable",
+      detail: "the amount does not fit a safe integer of micro-USD",
+      priceVersion: PRECIOS_AL_DIA,
+    };
+  }
   return {
     state: "priced",
-    amountMicroUsd: microRedondeado(atto),
+    amountMicroUsd: importe,
     exactAttoUsd: atto.toString(),
     currency: "USD",
     priceVersion: PRECIOS_AL_DIA,
@@ -530,6 +583,17 @@ export interface ReciboDeIntento {
   price: AttemptPrice;
 }
 
+/**
+ * `at` decide el tramo de precio. Con un instante no representable `diaUtc`
+ * cae a HOY, así que el mismo recibo tarifaría distinto según el día en que se
+ * construya, y su huella (donde `NaN` se serializa como `null`) no lo diría.
+ */
+function comprobarInstante(at: unknown): asserts at is number {
+  if (typeof at !== "number" || !Number.isFinite(at) || Math.abs(at) > 8.64e15) {
+    throw new TypeError(`invalid attempt instant: ${String(at)}`);
+  }
+}
+
 /** Construye el recibo de un intento con sus ids y su precio. */
 export function reciboDeIntento(d: {
   logicalCallId: string;
@@ -539,6 +603,7 @@ export function reciboDeIntento(d: {
   at: number;
   usage: AttemptUsage;
 }): ReciboDeIntento {
+  comprobarInstante(d.at);
   return {
     eventId: idDeEvento(d.logicalCallId, d.attempt),
     logicalCallId: d.logicalCallId,
@@ -597,7 +662,9 @@ export interface TotalDeLlamada {
  *   · mismo id y mismo cuerpo → no-op (`"repetido"`), el total no se mueve;
  *   · mismo id y otro cuerpo → `ConflictoDeRecibo`, nunca un resultado al azar;
  *   · un `eventId` que no es el derivado de su intento → `ConflictoDeRecibo`
- *     (dos ids para el mismo intento serían una puerta a contarlo dos veces).
+ *     (dos ids para el mismo intento serían una puerta a contarlo dos veces);
+ *   · un `price` que no es el que `tarifarIntento` da para su uso, modelo e
+ *     instante → `ConflictoDeRecibo` (nada entra en el total sin salir de su uso).
  *
  * Devuelve copias: lo apuntado no se puede tocar desde fuera.
  */
@@ -612,6 +679,14 @@ export class LibroDeRecibos {
     }
     if (recibo.attemptId !== idDeIntento(recibo.logicalCallId, recibo.attempt)) {
       throw new ConflictoDeRecibo(recibo.eventId, `attemptId ${recibo.attemptId} does not match attempt ${recibo.attempt}`);
+    }
+    comprobarInstante(recibo.at);
+    // El precio es lo ÚNICO que se suma, y un recibo puede venir de fuera de
+    // `reciboDeIntento` (deserializado, hecho a mano): un «priced 0» sobre un
+    // uso ausente entraría en el total como medido. Se recalcula y se compara.
+    const esperadoPrecio = tarifarIntento(recibo.model, recibo.usage, recibo.at);
+    if (stableStringify(esperadoPrecio) !== stableStringify(recibo.price)) {
+      throw new ConflictoDeRecibo(recibo.eventId, "price does not follow from its usage, model and instant");
     }
     const huella = sha256(stableStringify(recibo));
     const previo = this.porEvento.get(recibo.eventId);
