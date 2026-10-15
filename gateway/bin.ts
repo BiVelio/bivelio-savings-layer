@@ -125,7 +125,7 @@ Commands:
                          (~/.codex; with --project, ./AGENTS.md) — Codex has no skills and
                          AGENTS.md is always active. Its effect is measured by the gateway,
                          not promised.
-  init [--write [--yes]] [--stack S] [--provider P] [--cwd DIR] [--json]
+  init [--write [--yes]] [--stack S] [--provider P] [--compaction M] [--cwd DIR] [--json]
                          Set up the SDK in a JavaScript/TypeScript project (also:
                          npx @bivelio/savings-layer@latest init). Detects Next.js, Express, the
                          Vercel AI SDK, Mastra, LangChain.js, the Anthropic SDK and the OpenAI SDK,
@@ -137,6 +137,11 @@ Commands:
                          --stack ai-sdk | mastra | langchain | anthropic-sdk | sdk   (default: detected)
                          --provider openai | anthropic                              (default: detected)
                          --json prints the plan for a script or a coding agent.
+                         --compaction off | measure | on                            (default: off)
+                           opt-in lossless compaction of JSON tool outputs: "on" adds one option to
+                           the wiring where the stack supports it (shown as a diff to review),
+                           "measure" adds a module that measures and changes nothing; both add a
+                           local check that prints the receipt and the coverage.
   --version | -v         Print the version only.
   --help | -h            This help; also accepted after gateway, doctor, skill or init
                          (\`bvsala gateway --help\` starts nothing; \`bvsala claude --help\` or

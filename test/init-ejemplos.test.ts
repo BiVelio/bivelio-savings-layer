@@ -9,8 +9,10 @@ import { afterAll, beforeAll, describe, it, expect } from "vitest";
 import {
   CAPAS,
   PROVEEDORES_DE,
+  LINEAS_DE_COMPACTACION,
   cableado,
   comprobacionRuta,
+  medicionDeCompactacion,
   comprobacionScript,
   usoExpress,
   usoNext,
@@ -121,8 +123,13 @@ describe("todas las combinaciones compilan pegadas tal cual", () => {
           escribir("app/api/bivelio-check/route.ts", comprobacionRuta(capa, proveedor));
           escribir("app/api/chat/route.ts", usoNext(capa, proveedor, { ts: true, importeDelCableado: "../../../lib/savings" }));
           escribir("server.ts", usoExpress(capa, proveedor));
+          // D11: con la opción de compactación dentro, en la capa que la acepta (el SDK). Los
+          // adaptadores de framework NO la tienen en sus opciones —TS2353 si se la pegas—,
+          // que es la otra cara de por qué init no la propone ahí.
+          if (capa === "sdk") escribir("lib/savings-compaction.ts", cableado(capa, proveedor, LINEAS_DE_COMPACTACION));
         }
       }
+      escribir0(dir, "medir/measure-tool-outputs.ts", medicionDeCompactacion());
       writeFileSync(
         join(dir, "tsconfig.json"),
         JSON.stringify({
@@ -171,6 +178,8 @@ describe("todas las combinaciones compilan pegadas tal cual", () => {
             ["ruta", comprobacionRuta(capa, proveedor)],
             ["uso", usoNext(capa, proveedor, { ts: false, importeDelCableado: "./x" })],
             ["express", usoExpress(capa, proveedor)],
+            ...(capa === "sdk" ? ([["cableado-compaction", cableado(capa, proveedor, LINEAS_DE_COMPACTACION)]] as Array<[string, string]>) : []),
+            ["medir", medicionDeCompactacion()],
           ];
           for (const [nombre, texto] of piezas) {
             const ruta = join(dir, `${capa}-${proveedor}-${nombre}.mjs`);
@@ -196,6 +205,9 @@ describe.concurrent("los ejemplos se ejecutan, sin red", () => {
     // conteste la capa: el valor no sale de la máquina (la red está prohibida).
     ["anthropic-sdk", { ANTHROPIC_API_KEY: "placeholder-not-sent" }],
     ["express", {}],
+    // D11: la misma comprobación en la pila que admite la compactación (y en la que la mide).
+    ["sdk-anthropic-compaction", {}],
+    ["sdk-anthropic-measure", {}],
   ];
 
   for (const [pila, extra] of scripts) {
@@ -350,6 +362,11 @@ describe("el CLI de verdad: bvsala init contra un proyecto en disco", () => {
     }
   }, 120_000);
 });
+
+function escribir0(dir: string, rel: string, texto: string): void {
+  mkdirSync(join(dir, rel, ".."), { recursive: true });
+  writeFileSync(join(dir, rel), texto);
+}
 
 function puertoLibre(): Promise<number> {
   return new Promise((resolver, rechazar) => {
