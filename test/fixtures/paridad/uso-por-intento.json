@@ -1,0 +1,1605 @@
+{
+  "formato": 1,
+  "generadoPor": "scripts/paridad-vectores.ts (desde test/helpers/paridad.ts)",
+  "priceVersion": "2026-09-29",
+  "priceDay": "2026-10-01",
+  "casos": [
+    {
+      "nombre": "anthropic completo con caché",
+      "entrada": {
+        "crudo": {
+          "dialecto": "anthropic",
+          "uso": {
+            "input_tokens": 1000,
+            "cache_read_input_tokens": 8000,
+            "cache_creation_input_tokens": 2000,
+            "output_tokens": 500
+          }
+        },
+        "basis": null,
+        "modelo": "claude-sonnet-4-5"
+      },
+      "fila": {
+        "catalogKey": "claude-sonnet-4-5",
+        "inputPer1k": 0.003,
+        "cachedInputPer1k": 0.0003,
+        "outputPer1k": 0.015,
+        "prima5m": 1.25,
+        "prima1h": 2,
+        "propio": true
+      },
+      "esperado": {
+        "uso": {
+          "inputUncached": 1000,
+          "cacheRead": 8000,
+          "cacheWrite5m": 2000,
+          "cacheWrite1h": 0,
+          "output": 500,
+          "reasoningIncludedInOutput": true,
+          "basis": "provider_reported",
+          "completeness": "complete"
+        },
+        "precio": {
+          "state": "priced",
+          "amountMicroUsd": 20400,
+          "exactAttoUsd": "20400000000000000",
+          "currency": "USD",
+          "priceVersion": "2026-09-29",
+          "priceDay": "2026-10-01",
+          "catalogKey": "claude-sonnet-4-5"
+        }
+      }
+    },
+    {
+      "nombre": "anthropic con desglose de 1 h",
+      "entrada": {
+        "crudo": {
+          "dialecto": "anthropic",
+          "uso": {
+            "input_tokens": 1000,
+            "cache_read_input_tokens": 8000,
+            "cache_creation_input_tokens": 2000,
+            "output_tokens": 500,
+            "cache_creation": {
+              "ephemeral_5m_input_tokens": 500,
+              "ephemeral_1h_input_tokens": 1500
+            }
+          }
+        },
+        "basis": null,
+        "modelo": "claude-sonnet-4-5"
+      },
+      "fila": {
+        "catalogKey": "claude-sonnet-4-5",
+        "inputPer1k": 0.003,
+        "cachedInputPer1k": 0.0003,
+        "outputPer1k": 0.015,
+        "prima5m": 1.25,
+        "prima1h": 2,
+        "propio": true
+      },
+      "esperado": {
+        "uso": {
+          "inputUncached": 1000,
+          "cacheRead": 8000,
+          "cacheWrite5m": 500,
+          "cacheWrite1h": 1500,
+          "output": 500,
+          "reasoningIncludedInOutput": true,
+          "basis": "provider_reported",
+          "completeness": "complete"
+        },
+        "precio": {
+          "state": "priced",
+          "amountMicroUsd": 23775,
+          "exactAttoUsd": "23775000000000000",
+          "currency": "USD",
+          "priceVersion": "2026-09-29",
+          "priceDay": "2026-10-01",
+          "catalogKey": "claude-sonnet-4-5"
+        }
+      }
+    },
+    {
+      "nombre": "anthropic sin total de escritura: se reconstruye del desglose",
+      "entrada": {
+        "crudo": {
+          "dialecto": "anthropic",
+          "uso": {
+            "input_tokens": 10,
+            "output_tokens": 5,
+            "cache_creation": {
+              "ephemeral_5m_input_tokens": 7,
+              "ephemeral_1h_input_tokens": 3
+            }
+          }
+        },
+        "basis": null,
+        "modelo": "claude-sonnet-4-5"
+      },
+      "fila": {
+        "catalogKey": "claude-sonnet-4-5",
+        "inputPer1k": 0.003,
+        "cachedInputPer1k": 0.0003,
+        "outputPer1k": 0.015,
+        "prima5m": 1.25,
+        "prima1h": 2,
+        "propio": true
+      },
+      "esperado": {
+        "uso": {
+          "inputUncached": 10,
+          "cacheRead": 0,
+          "cacheWrite5m": 7,
+          "cacheWrite1h": 3,
+          "output": 5,
+          "reasoningIncludedInOutput": true,
+          "basis": "provider_reported",
+          "completeness": "complete"
+        },
+        "precio": {
+          "state": "priced",
+          "amountMicroUsd": 149,
+          "exactAttoUsd": "149250000000000",
+          "currency": "USD",
+          "priceVersion": "2026-09-29",
+          "priceDay": "2026-10-01",
+          "catalogKey": "claude-sonnet-4-5"
+        }
+      }
+    },
+    {
+      "nombre": "anthropic con iteraciones de compactación",
+      "entrada": {
+        "crudo": {
+          "dialecto": "anthropic",
+          "uso": {
+            "input_tokens": 1000,
+            "cache_read_input_tokens": 8000,
+            "cache_creation_input_tokens": 2000,
+            "output_tokens": 500,
+            "iterations": [
+              {
+                "type": "compaction",
+                "input_tokens": 300,
+                "output_tokens": 40,
+                "cache_read_input_tokens": 10,
+                "cache_creation": {
+                  "ephemeral_1h_input_tokens": 5
+                }
+              },
+              {
+                "type": "message",
+                "input_tokens": 999
+              },
+              null
+            ]
+          }
+        },
+        "basis": null,
+        "modelo": "claude-sonnet-4-5"
+      },
+      "fila": {
+        "catalogKey": "claude-sonnet-4-5",
+        "inputPer1k": 0.003,
+        "cachedInputPer1k": 0.0003,
+        "outputPer1k": 0.015,
+        "prima5m": 1.25,
+        "prima1h": 2,
+        "propio": true
+      },
+      "esperado": {
+        "uso": {
+          "inputUncached": 1300,
+          "cacheRead": 8010,
+          "cacheWrite5m": 2000,
+          "cacheWrite1h": 5,
+          "output": 540,
+          "reasoningIncludedInOutput": true,
+          "basis": "provider_reported",
+          "completeness": "complete"
+        },
+        "precio": {
+          "state": "priced",
+          "amountMicroUsd": 21933,
+          "exactAttoUsd": "21933000000000000",
+          "currency": "USD",
+          "priceVersion": "2026-09-29",
+          "priceDay": "2026-10-01",
+          "catalogKey": "claude-sonnet-4-5"
+        }
+      }
+    },
+    {
+      "nombre": "anthropic: compactación con contador fraccionario → usage-invalid",
+      "entrada": {
+        "crudo": {
+          "dialecto": "anthropic",
+          "uso": {
+            "input_tokens": 1000,
+            "cache_read_input_tokens": 8000,
+            "cache_creation_input_tokens": 2000,
+            "output_tokens": 500,
+            "iterations": [
+              {
+                "type": "compaction",
+                "input_tokens": 1.5
+              }
+            ]
+          }
+        },
+        "basis": null,
+        "modelo": "claude-sonnet-4-5"
+      },
+      "fila": {
+        "catalogKey": "claude-sonnet-4-5",
+        "inputPer1k": 0.003,
+        "cachedInputPer1k": 0.0003,
+        "outputPer1k": 0.015,
+        "prima5m": 1.25,
+        "prima1h": 2,
+        "propio": true
+      },
+      "esperado": {
+        "uso": {
+          "inputUncached": 1001.5,
+          "cacheRead": 8000,
+          "cacheWrite5m": 2000,
+          "cacheWrite1h": 0,
+          "output": 500,
+          "reasoningIncludedInOutput": true,
+          "basis": "provider_reported",
+          "completeness": "complete"
+        },
+        "precio": {
+          "state": "unpriced",
+          "reason": "usage-invalid",
+          "detail": "counter inputUncached is not a safe non-negative integer"
+        }
+      }
+    },
+    {
+      "nombre": "anthropic cortado tras message_start",
+      "entrada": {
+        "crudo": {
+          "dialecto": "anthropic",
+          "uso": {
+            "input_tokens": 4300,
+            "output_tokens": 1
+          },
+          "final": false
+        },
+        "basis": null,
+        "modelo": "claude-sonnet-4-5"
+      },
+      "fila": {
+        "catalogKey": "claude-sonnet-4-5",
+        "inputPer1k": 0.003,
+        "cachedInputPer1k": 0.0003,
+        "outputPer1k": 0.015,
+        "prima5m": 1.25,
+        "prima1h": 2,
+        "propio": true
+      },
+      "esperado": {
+        "uso": {
+          "inputUncached": 4300,
+          "cacheRead": 0,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "output": 0,
+          "reasoningIncludedInOutput": true,
+          "basis": "provider_reported",
+          "completeness": "partial",
+          "missing": [
+            "output"
+          ]
+        },
+        "precio": {
+          "state": "uncertain",
+          "reason": "usage-partial",
+          "detail": "missing counter(s): output; priced counters are a floor",
+          "lowerBoundMicroUsd": 12900,
+          "priceVersion": "2026-09-29"
+        }
+      }
+    },
+    {
+      "nombre": "anthropic sin usage",
+      "entrada": {
+        "crudo": {
+          "dialecto": "anthropic",
+          "uso": null
+        },
+        "basis": null,
+        "modelo": "claude-sonnet-4-5"
+      },
+      "fila": {
+        "catalogKey": "claude-sonnet-4-5",
+        "inputPer1k": 0.003,
+        "cachedInputPer1k": 0.0003,
+        "outputPer1k": 0.015,
+        "prima5m": 1.25,
+        "prima1h": 2,
+        "propio": true
+      },
+      "esperado": {
+        "uso": {
+          "inputUncached": 0,
+          "cacheRead": 0,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "output": 0,
+          "reasoningIncludedInOutput": true,
+          "basis": "provider_reported",
+          "completeness": "absent",
+          "missing": [
+            "input",
+            "output"
+          ]
+        },
+        "precio": {
+          "state": "unpriced",
+          "reason": "usage-absent",
+          "detail": "the provider reported no usage for this attempt"
+        }
+      }
+    },
+    {
+      "nombre": "anthropic: contador como cadena no es contador",
+      "entrada": {
+        "crudo": {
+          "dialecto": "anthropic",
+          "uso": {
+            "input_tokens": "100",
+            "output_tokens": 5
+          }
+        },
+        "basis": null,
+        "modelo": "claude-sonnet-4-5"
+      },
+      "fila": {
+        "catalogKey": "claude-sonnet-4-5",
+        "inputPer1k": 0.003,
+        "cachedInputPer1k": 0.0003,
+        "outputPer1k": 0.015,
+        "prima5m": 1.25,
+        "prima1h": 2,
+        "propio": true
+      },
+      "esperado": {
+        "uso": {
+          "inputUncached": 0,
+          "cacheRead": 0,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "output": 5,
+          "reasoningIncludedInOutput": true,
+          "basis": "provider_reported",
+          "completeness": "partial",
+          "missing": [
+            "input"
+          ]
+        },
+        "precio": {
+          "state": "uncertain",
+          "reason": "usage-partial",
+          "detail": "missing counter(s): input; priced counters are a floor",
+          "lowerBoundMicroUsd": 75,
+          "priceVersion": "2026-09-29"
+        }
+      }
+    },
+    {
+      "nombre": "anthropic: un booleano no es contador",
+      "entrada": {
+        "crudo": {
+          "dialecto": "anthropic",
+          "uso": {
+            "input_tokens": true,
+            "output_tokens": 5
+          }
+        },
+        "basis": null,
+        "modelo": "claude-sonnet-4-5"
+      },
+      "fila": {
+        "catalogKey": "claude-sonnet-4-5",
+        "inputPer1k": 0.003,
+        "cachedInputPer1k": 0.0003,
+        "outputPer1k": 0.015,
+        "prima5m": 1.25,
+        "prima1h": 2,
+        "propio": true
+      },
+      "esperado": {
+        "uso": {
+          "inputUncached": 0,
+          "cacheRead": 0,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "output": 5,
+          "reasoningIncludedInOutput": true,
+          "basis": "provider_reported",
+          "completeness": "partial",
+          "missing": [
+            "input"
+          ]
+        },
+        "precio": {
+          "state": "uncertain",
+          "reason": "usage-partial",
+          "detail": "missing counter(s): input; priced counters are a floor",
+          "lowerBoundMicroUsd": 75,
+          "priceVersion": "2026-09-29"
+        }
+      }
+    },
+    {
+      "nombre": "anthropic: contador fraccionario en primer nivel",
+      "entrada": {
+        "crudo": {
+          "dialecto": "anthropic",
+          "uso": {
+            "input_tokens": 10.5,
+            "output_tokens": 5
+          }
+        },
+        "basis": null,
+        "modelo": "claude-sonnet-4-5"
+      },
+      "fila": {
+        "catalogKey": "claude-sonnet-4-5",
+        "inputPer1k": 0.003,
+        "cachedInputPer1k": 0.0003,
+        "outputPer1k": 0.015,
+        "prima5m": 1.25,
+        "prima1h": 2,
+        "propio": true
+      },
+      "esperado": {
+        "uso": {
+          "inputUncached": 0,
+          "cacheRead": 0,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "output": 5,
+          "reasoningIncludedInOutput": true,
+          "basis": "provider_reported",
+          "completeness": "partial",
+          "missing": [
+            "input"
+          ]
+        },
+        "precio": {
+          "state": "uncertain",
+          "reason": "usage-partial",
+          "detail": "missing counter(s): input; priced counters are a floor",
+          "lowerBoundMicroUsd": 75,
+          "priceVersion": "2026-09-29"
+        }
+      }
+    },
+    {
+      "nombre": "anthropic: contador por encima de 2^53",
+      "entrada": {
+        "crudo": {
+          "dialecto": "anthropic",
+          "uso": {
+            "input_tokens": 9007199254740992,
+            "output_tokens": 5
+          }
+        },
+        "basis": null,
+        "modelo": "claude-sonnet-4-5"
+      },
+      "fila": {
+        "catalogKey": "claude-sonnet-4-5",
+        "inputPer1k": 0.003,
+        "cachedInputPer1k": 0.0003,
+        "outputPer1k": 0.015,
+        "prima5m": 1.25,
+        "prima1h": 2,
+        "propio": true
+      },
+      "esperado": {
+        "uso": {
+          "inputUncached": 0,
+          "cacheRead": 0,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "output": 5,
+          "reasoningIncludedInOutput": true,
+          "basis": "provider_reported",
+          "completeness": "partial",
+          "missing": [
+            "input"
+          ]
+        },
+        "precio": {
+          "state": "uncertain",
+          "reason": "usage-partial",
+          "detail": "missing counter(s): input; priced counters are a floor",
+          "lowerBoundMicroUsd": 75,
+          "priceVersion": "2026-09-29"
+        }
+      }
+    },
+    {
+      "nombre": "anthropic: contador negativo",
+      "entrada": {
+        "crudo": {
+          "dialecto": "anthropic",
+          "uso": {
+            "input_tokens": -1,
+            "output_tokens": 5
+          }
+        },
+        "basis": null,
+        "modelo": "claude-sonnet-4-5"
+      },
+      "fila": {
+        "catalogKey": "claude-sonnet-4-5",
+        "inputPer1k": 0.003,
+        "cachedInputPer1k": 0.0003,
+        "outputPer1k": 0.015,
+        "prima5m": 1.25,
+        "prima1h": 2,
+        "propio": true
+      },
+      "esperado": {
+        "uso": {
+          "inputUncached": 0,
+          "cacheRead": 0,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "output": 5,
+          "reasoningIncludedInOutput": true,
+          "basis": "provider_reported",
+          "completeness": "partial",
+          "missing": [
+            "input"
+          ]
+        },
+        "precio": {
+          "state": "uncertain",
+          "reason": "usage-partial",
+          "detail": "missing counter(s): input; priced counters are a floor",
+          "lowerBoundMicroUsd": 75,
+          "priceVersion": "2026-09-29"
+        }
+      }
+    },
+    {
+      "nombre": "chat completo con caché",
+      "entrada": {
+        "crudo": {
+          "dialecto": "openai-chat",
+          "uso": {
+            "prompt_tokens": 11000,
+            "completion_tokens": 500,
+            "prompt_tokens_details": {
+              "cached_tokens": 8000,
+              "cache_write_tokens": 2000
+            }
+          }
+        },
+        "basis": null,
+        "modelo": "gpt-4o-mini"
+      },
+      "fila": {
+        "catalogKey": "gpt-4o-mini",
+        "inputPer1k": 0.00015,
+        "cachedInputPer1k": 0.000075,
+        "outputPer1k": 0.0006,
+        "prima5m": 1,
+        "prima1h": 1,
+        "propio": true
+      },
+      "esperado": {
+        "uso": {
+          "inputUncached": 1000,
+          "cacheRead": 8000,
+          "cacheWrite5m": 2000,
+          "cacheWrite1h": 0,
+          "output": 500,
+          "reasoningIncludedInOutput": true,
+          "basis": "provider_reported",
+          "completeness": "complete"
+        },
+        "precio": {
+          "state": "priced",
+          "amountMicroUsd": 1350,
+          "exactAttoUsd": "1350000000000000",
+          "currency": "USD",
+          "priceVersion": "2026-09-29",
+          "priceDay": "2026-10-01",
+          "catalogKey": "gpt-4o-mini"
+        }
+      }
+    },
+    {
+      "nombre": "chat con caché por encima del total: se recorta",
+      "entrada": {
+        "crudo": {
+          "dialecto": "openai-chat",
+          "uso": {
+            "prompt_tokens": 100,
+            "completion_tokens": 10,
+            "prompt_tokens_details": {
+              "cached_tokens": 80,
+              "cache_write_tokens": 50
+            }
+          }
+        },
+        "basis": null,
+        "modelo": "gpt-4o-mini"
+      },
+      "fila": {
+        "catalogKey": "gpt-4o-mini",
+        "inputPer1k": 0.00015,
+        "cachedInputPer1k": 0.000075,
+        "outputPer1k": 0.0006,
+        "prima5m": 1,
+        "prima1h": 1,
+        "propio": true
+      },
+      "esperado": {
+        "uso": {
+          "inputUncached": 0,
+          "cacheRead": 80,
+          "cacheWrite5m": 20,
+          "cacheWrite1h": 0,
+          "output": 10,
+          "reasoningIncludedInOutput": true,
+          "basis": "provider_reported",
+          "completeness": "complete"
+        },
+        "precio": {
+          "state": "priced",
+          "amountMicroUsd": 15,
+          "exactAttoUsd": "15000000000000",
+          "currency": "USD",
+          "priceVersion": "2026-09-29",
+          "priceDay": "2026-10-01",
+          "catalogKey": "gpt-4o-mini"
+        }
+      }
+    },
+    {
+      "nombre": "chat con reasoning_tokens (desglose, no sumando)",
+      "entrada": {
+        "crudo": {
+          "dialecto": "openai-chat",
+          "uso": {
+            "prompt_tokens": 200,
+            "completion_tokens": 900,
+            "completion_tokens_details": {
+              "reasoning_tokens": 700
+            }
+          }
+        },
+        "basis": null,
+        "modelo": "o4-mini"
+      },
+      "fila": {
+        "catalogKey": "o4-mini",
+        "inputPer1k": 0.0011,
+        "cachedInputPer1k": 0.000275,
+        "outputPer1k": 0.0044,
+        "prima5m": 1,
+        "prima1h": 1,
+        "propio": true
+      },
+      "esperado": {
+        "uso": {
+          "inputUncached": 200,
+          "cacheRead": 0,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "output": 900,
+          "reasoning": 700,
+          "reasoningIncludedInOutput": true,
+          "basis": "provider_reported",
+          "completeness": "complete"
+        },
+        "precio": {
+          "state": "priced",
+          "amountMicroUsd": 4180,
+          "exactAttoUsd": "4180000000000000",
+          "currency": "USD",
+          "priceVersion": "2026-09-29",
+          "priceDay": "2026-10-01",
+          "catalogKey": "o4-mini"
+        }
+      }
+    },
+    {
+      "nombre": "chat compatible de Gemini: pensamiento solo en total_tokens",
+      "entrada": {
+        "crudo": {
+          "dialecto": "openai-chat",
+          "uso": {
+            "prompt_tokens": 200,
+            "completion_tokens": 50,
+            "total_tokens": 400
+          }
+        },
+        "basis": null,
+        "modelo": "gemini-2.5-flash"
+      },
+      "fila": {
+        "catalogKey": "gemini-2.5-flash",
+        "inputPer1k": 0.0003,
+        "cachedInputPer1k": 0.00003,
+        "outputPer1k": 0.0025,
+        "prima5m": 1,
+        "prima1h": 1,
+        "propio": true
+      },
+      "esperado": {
+        "uso": {
+          "inputUncached": 200,
+          "cacheRead": 0,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "output": 200,
+          "reasoning": 150,
+          "reasoningIncludedInOutput": true,
+          "basis": "provider_reported",
+          "completeness": "complete"
+        },
+        "precio": {
+          "state": "priced",
+          "amountMicroUsd": 560,
+          "exactAttoUsd": "560000000000000",
+          "currency": "USD",
+          "priceVersion": "2026-09-29",
+          "priceDay": "2026-10-01",
+          "catalogKey": "gemini-2.5-flash"
+        }
+      }
+    },
+    {
+      "nombre": "chat sin el chunk final",
+      "entrada": {
+        "crudo": {
+          "dialecto": "openai-chat",
+          "uso": {
+            "prompt_tokens": 11000,
+            "completion_tokens": 500,
+            "prompt_tokens_details": {
+              "cached_tokens": 8000,
+              "cache_write_tokens": 2000
+            }
+          },
+          "final": false
+        },
+        "basis": null,
+        "modelo": "gpt-4o-mini"
+      },
+      "fila": {
+        "catalogKey": "gpt-4o-mini",
+        "inputPer1k": 0.00015,
+        "cachedInputPer1k": 0.000075,
+        "outputPer1k": 0.0006,
+        "prima5m": 1,
+        "prima1h": 1,
+        "propio": true
+      },
+      "esperado": {
+        "uso": {
+          "inputUncached": 0,
+          "cacheRead": 0,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "output": 0,
+          "reasoningIncludedInOutput": true,
+          "basis": "provider_reported",
+          "completeness": "absent",
+          "missing": [
+            "input",
+            "output"
+          ]
+        },
+        "precio": {
+          "state": "unpriced",
+          "reason": "usage-absent",
+          "detail": "the provider reported no usage for this attempt"
+        }
+      }
+    },
+    {
+      "nombre": "chat sin completion_tokens",
+      "entrada": {
+        "crudo": {
+          "dialecto": "openai-chat",
+          "uso": {
+            "prompt_tokens": 100
+          }
+        },
+        "basis": null,
+        "modelo": "gpt-4o-mini"
+      },
+      "fila": {
+        "catalogKey": "gpt-4o-mini",
+        "inputPer1k": 0.00015,
+        "cachedInputPer1k": 0.000075,
+        "outputPer1k": 0.0006,
+        "prima5m": 1,
+        "prima1h": 1,
+        "propio": true
+      },
+      "esperado": {
+        "uso": {
+          "inputUncached": 100,
+          "cacheRead": 0,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "output": 0,
+          "reasoningIncludedInOutput": true,
+          "basis": "provider_reported",
+          "completeness": "partial",
+          "missing": [
+            "output"
+          ]
+        },
+        "precio": {
+          "state": "uncertain",
+          "reason": "usage-partial",
+          "detail": "missing counter(s): output; priced counters are a floor",
+          "lowerBoundMicroUsd": 15,
+          "priceVersion": "2026-09-29"
+        }
+      }
+    },
+    {
+      "nombre": "responses con razonamiento",
+      "entrada": {
+        "crudo": {
+          "dialecto": "openai-responses",
+          "uso": {
+            "input_tokens": 11000,
+            "output_tokens": 500,
+            "input_tokens_details": {
+              "cached_tokens": 8000
+            },
+            "output_tokens_details": {
+              "reasoning_tokens": 300
+            }
+          }
+        },
+        "basis": null,
+        "modelo": "gpt-5.5"
+      },
+      "fila": {
+        "catalogKey": "gpt-5.5",
+        "inputPer1k": 0.005,
+        "cachedInputPer1k": 0.0005,
+        "outputPer1k": 0.03,
+        "prima5m": 1,
+        "prima1h": 1,
+        "propio": true
+      },
+      "esperado": {
+        "uso": {
+          "inputUncached": 3000,
+          "cacheRead": 8000,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "output": 500,
+          "reasoning": 300,
+          "reasoningIncludedInOutput": true,
+          "basis": "provider_reported",
+          "completeness": "complete"
+        },
+        "precio": {
+          "state": "priced",
+          "amountMicroUsd": 34000,
+          "exactAttoUsd": "34000000000000000",
+          "currency": "USD",
+          "priceVersion": "2026-09-29",
+          "priceDay": "2026-10-01",
+          "catalogKey": "gpt-5.5"
+        }
+      }
+    },
+    {
+      "nombre": "responses sin usage",
+      "entrada": {
+        "crudo": {
+          "dialecto": "openai-responses"
+        },
+        "basis": null,
+        "modelo": "gpt-5.5"
+      },
+      "fila": {
+        "catalogKey": "gpt-5.5",
+        "inputPer1k": 0.005,
+        "cachedInputPer1k": 0.0005,
+        "outputPer1k": 0.03,
+        "prima5m": 1,
+        "prima1h": 1,
+        "propio": true
+      },
+      "esperado": {
+        "uso": {
+          "inputUncached": 0,
+          "cacheRead": 0,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "output": 0,
+          "reasoningIncludedInOutput": true,
+          "basis": "provider_reported",
+          "completeness": "absent",
+          "missing": [
+            "input",
+            "output"
+          ]
+        },
+        "precio": {
+          "state": "unpriced",
+          "reason": "usage-absent",
+          "detail": "the provider reported no usage for this attempt"
+        }
+      }
+    },
+    {
+      "nombre": "provider-usage completo con 1 h",
+      "entrada": {
+        "crudo": {
+          "dialecto": "provider-usage",
+          "uso": {
+            "inputTokens": 11000,
+            "outputTokens": 500,
+            "cachedInputTokens": 8000,
+            "cacheWriteInputTokens": 2000,
+            "cacheWrite1hInputTokens": 500,
+            "reasoningTokens": 0
+          }
+        },
+        "basis": null,
+        "modelo": "claude-sonnet-4-5"
+      },
+      "fila": {
+        "catalogKey": "claude-sonnet-4-5",
+        "inputPer1k": 0.003,
+        "cachedInputPer1k": 0.0003,
+        "outputPer1k": 0.015,
+        "prima5m": 1.25,
+        "prima1h": 2,
+        "propio": true
+      },
+      "esperado": {
+        "uso": {
+          "inputUncached": 1000,
+          "cacheRead": 8000,
+          "cacheWrite5m": 1500,
+          "cacheWrite1h": 500,
+          "output": 500,
+          "reasoning": 0,
+          "reasoningIncludedInOutput": true,
+          "basis": "provider_reported",
+          "completeness": "complete"
+        },
+        "precio": {
+          "state": "priced",
+          "amountMicroUsd": 21525,
+          "exactAttoUsd": "21525000000000000",
+          "currency": "USD",
+          "priceVersion": "2026-09-29",
+          "priceDay": "2026-10-01",
+          "catalogKey": "claude-sonnet-4-5"
+        }
+      }
+    },
+    {
+      "nombre": "provider-usage incompleto y todo a 0 → absent",
+      "entrada": {
+        "crudo": {
+          "dialecto": "provider-usage",
+          "uso": {
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "complete": false
+          }
+        },
+        "basis": null,
+        "modelo": "gpt-4o-mini"
+      },
+      "fila": {
+        "catalogKey": "gpt-4o-mini",
+        "inputPer1k": 0.00015,
+        "cachedInputPer1k": 0.000075,
+        "outputPer1k": 0.0006,
+        "prima5m": 1,
+        "prima1h": 1,
+        "propio": true
+      },
+      "esperado": {
+        "uso": {
+          "inputUncached": 0,
+          "cacheRead": 0,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "output": 0,
+          "reasoningIncludedInOutput": true,
+          "basis": "provider_reported",
+          "completeness": "absent",
+          "missing": [
+            "input",
+            "output"
+          ]
+        },
+        "precio": {
+          "state": "unpriced",
+          "reason": "usage-absent",
+          "detail": "the provider reported no usage for this attempt"
+        }
+      }
+    },
+    {
+      "nombre": "provider-usage incompleto con solo la entrada",
+      "entrada": {
+        "crudo": {
+          "dialecto": "provider-usage",
+          "uso": {
+            "inputTokens": 4300,
+            "outputTokens": 0,
+            "complete": false
+          }
+        },
+        "basis": null,
+        "modelo": "claude-sonnet-4-5"
+      },
+      "fila": {
+        "catalogKey": "claude-sonnet-4-5",
+        "inputPer1k": 0.003,
+        "cachedInputPer1k": 0.0003,
+        "outputPer1k": 0.015,
+        "prima5m": 1.25,
+        "prima1h": 2,
+        "propio": true
+      },
+      "esperado": {
+        "uso": {
+          "inputUncached": 4300,
+          "cacheRead": 0,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "output": 0,
+          "reasoningIncludedInOutput": true,
+          "basis": "provider_reported",
+          "completeness": "partial",
+          "missing": [
+            "output"
+          ]
+        },
+        "precio": {
+          "state": "uncertain",
+          "reason": "usage-partial",
+          "detail": "missing counter(s): output; priced counters are a floor",
+          "lowerBoundMicroUsd": 12900,
+          "priceVersion": "2026-09-29"
+        }
+      }
+    },
+    {
+      "nombre": "provider-usage incompleto con los dos contadores",
+      "entrada": {
+        "crudo": {
+          "dialecto": "provider-usage",
+          "uso": {
+            "inputTokens": 4300,
+            "outputTokens": 20,
+            "complete": false
+          }
+        },
+        "basis": null,
+        "modelo": "claude-sonnet-4-5"
+      },
+      "fila": {
+        "catalogKey": "claude-sonnet-4-5",
+        "inputPer1k": 0.003,
+        "cachedInputPer1k": 0.0003,
+        "outputPer1k": 0.015,
+        "prima5m": 1.25,
+        "prima1h": 2,
+        "propio": true
+      },
+      "esperado": {
+        "uso": {
+          "inputUncached": 4300,
+          "cacheRead": 0,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "output": 20,
+          "reasoningIncludedInOutput": true,
+          "basis": "provider_reported",
+          "completeness": "partial",
+          "missing": []
+        },
+        "precio": {
+          "state": "uncertain",
+          "reason": "usage-partial",
+          "detail": "missing counter(s): unknown; priced counters are a floor",
+          "lowerBoundMicroUsd": 13200,
+          "priceVersion": "2026-09-29"
+        }
+      }
+    },
+    {
+      "nombre": "modelo desconocido → unpriced",
+      "entrada": {
+        "crudo": {
+          "dialecto": "anthropic",
+          "uso": {
+            "input_tokens": 1000,
+            "cache_read_input_tokens": 8000,
+            "cache_creation_input_tokens": 2000,
+            "output_tokens": 500
+          }
+        },
+        "basis": null,
+        "modelo": "acme-llm-9"
+      },
+      "fila": null,
+      "esperado": {
+        "uso": {
+          "inputUncached": 1000,
+          "cacheRead": 8000,
+          "cacheWrite5m": 2000,
+          "cacheWrite1h": 0,
+          "output": 500,
+          "reasoningIncludedInOutput": true,
+          "basis": "provider_reported",
+          "completeness": "complete"
+        },
+        "precio": {
+          "state": "unpriced",
+          "reason": "no-catalog-price",
+          "detail": "no list price for acme-llm-9 on 2026-10-01"
+        }
+      }
+    },
+    {
+      "nombre": "alias -latest: precio heredado → uncertain",
+      "entrada": {
+        "crudo": {
+          "dialecto": "openai-chat",
+          "uso": {
+            "prompt_tokens": 11000,
+            "completion_tokens": 500,
+            "prompt_tokens_details": {
+              "cached_tokens": 8000,
+              "cache_write_tokens": 2000
+            }
+          }
+        },
+        "basis": null,
+        "modelo": "gpt-4o-mini-latest"
+      },
+      "fila": {
+        "catalogKey": "gpt-4o-mini",
+        "inputPer1k": 0.00015,
+        "cachedInputPer1k": 0.000075,
+        "outputPer1k": 0.0006,
+        "prima5m": 1,
+        "prima1h": 1,
+        "propio": false
+      },
+      "esperado": {
+        "uso": {
+          "inputUncached": 1000,
+          "cacheRead": 8000,
+          "cacheWrite5m": 2000,
+          "cacheWrite1h": 0,
+          "output": 500,
+          "reasoningIncludedInOutput": true,
+          "basis": "provider_reported",
+          "completeness": "complete"
+        },
+        "precio": {
+          "state": "uncertain",
+          "reason": "inherited-price",
+          "detail": "gpt-4o-mini-latest has no catalog row of its own; gpt-4o-mini's price is an approximation",
+          "priceVersion": "2026-09-29"
+        }
+      }
+    },
+    {
+      "nombre": "instantánea con fecha: fila propia",
+      "entrada": {
+        "crudo": {
+          "dialecto": "anthropic",
+          "uso": {
+            "input_tokens": 1000,
+            "cache_read_input_tokens": 8000,
+            "cache_creation_input_tokens": 2000,
+            "output_tokens": 500
+          }
+        },
+        "basis": null,
+        "modelo": "claude-sonnet-4-5-20250929"
+      },
+      "fila": {
+        "catalogKey": "claude-sonnet-4-5",
+        "inputPer1k": 0.003,
+        "cachedInputPer1k": 0.0003,
+        "outputPer1k": 0.015,
+        "prima5m": 1.25,
+        "prima1h": 2,
+        "propio": true
+      },
+      "esperado": {
+        "uso": {
+          "inputUncached": 1000,
+          "cacheRead": 8000,
+          "cacheWrite5m": 2000,
+          "cacheWrite1h": 0,
+          "output": 500,
+          "reasoningIncludedInOutput": true,
+          "basis": "provider_reported",
+          "completeness": "complete"
+        },
+        "precio": {
+          "state": "priced",
+          "amountMicroUsd": 20400,
+          "exactAttoUsd": "20400000000000000",
+          "currency": "USD",
+          "priceVersion": "2026-09-29",
+          "priceDay": "2026-10-01",
+          "catalogKey": "claude-sonnet-4-5"
+        }
+      }
+    },
+    {
+      "nombre": "estimación → uncertain",
+      "entrada": {
+        "crudo": {
+          "dialecto": "anthropic",
+          "uso": {
+            "input_tokens": 1000,
+            "cache_read_input_tokens": 8000,
+            "cache_creation_input_tokens": 2000,
+            "output_tokens": 500
+          }
+        },
+        "basis": "estimated",
+        "modelo": "claude-sonnet-4-5"
+      },
+      "fila": {
+        "catalogKey": "claude-sonnet-4-5",
+        "inputPer1k": 0.003,
+        "cachedInputPer1k": 0.0003,
+        "outputPer1k": 0.015,
+        "prima5m": 1.25,
+        "prima1h": 2,
+        "propio": true
+      },
+      "esperado": {
+        "uso": {
+          "inputUncached": 1000,
+          "cacheRead": 8000,
+          "cacheWrite5m": 2000,
+          "cacheWrite1h": 0,
+          "output": 500,
+          "reasoningIncludedInOutput": true,
+          "basis": "estimated",
+          "completeness": "complete"
+        },
+        "precio": {
+          "state": "uncertain",
+          "reason": "usage-estimated",
+          "detail": "a token estimate is not a provider counter",
+          "priceVersion": "2026-09-29"
+        }
+      }
+    },
+    {
+      "nombre": "conteo del cliente → uncertain",
+      "entrada": {
+        "crudo": {
+          "dialecto": "anthropic",
+          "uso": {
+            "input_tokens": 1000,
+            "cache_read_input_tokens": 8000,
+            "cache_creation_input_tokens": 2000,
+            "output_tokens": 500
+          }
+        },
+        "basis": "client_observed",
+        "modelo": "claude-sonnet-4-5"
+      },
+      "fila": {
+        "catalogKey": "claude-sonnet-4-5",
+        "inputPer1k": 0.003,
+        "cachedInputPer1k": 0.0003,
+        "outputPer1k": 0.015,
+        "prima5m": 1.25,
+        "prima1h": 2,
+        "propio": true
+      },
+      "esperado": {
+        "uso": {
+          "inputUncached": 1000,
+          "cacheRead": 8000,
+          "cacheWrite5m": 2000,
+          "cacheWrite1h": 0,
+          "output": 500,
+          "reasoningIncludedInOutput": true,
+          "basis": "client_observed",
+          "completeness": "complete"
+        },
+        "precio": {
+          "state": "uncertain",
+          "reason": "usage-client-observed",
+          "detail": "counted by the client, not reported by the provider (hidden reasoning is not visible)",
+          "priceVersion": "2026-09-29"
+        }
+      }
+    },
+    {
+      "nombre": "cero de entrada → implausible",
+      "entrada": {
+        "crudo": {
+          "dialecto": "openai-chat",
+          "uso": {
+            "prompt_tokens": 0,
+            "completion_tokens": 10
+          }
+        },
+        "basis": null,
+        "modelo": "gpt-4o-mini"
+      },
+      "fila": {
+        "catalogKey": "gpt-4o-mini",
+        "inputPer1k": 0.00015,
+        "cachedInputPer1k": 0.000075,
+        "outputPer1k": 0.0006,
+        "prima5m": 1,
+        "prima1h": 1,
+        "propio": true
+      },
+      "esperado": {
+        "uso": {
+          "inputUncached": 0,
+          "cacheRead": 0,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "output": 10,
+          "reasoningIncludedInOutput": true,
+          "basis": "provider_reported",
+          "completeness": "complete"
+        },
+        "precio": {
+          "state": "uncertain",
+          "reason": "implausible-zero-input",
+          "detail": "a billed attempt always carries its prompt; zero input tokens looks like a zero-filled counter",
+          "lowerBoundMicroUsd": 6,
+          "priceVersion": "2026-09-29"
+        }
+      }
+    },
+    {
+      "nombre": "justo en 200K: priced",
+      "entrada": {
+        "crudo": {
+          "dialecto": "openai-responses",
+          "uso": {
+            "input_tokens": 200000,
+            "output_tokens": 10
+          }
+        },
+        "basis": null,
+        "modelo": "gpt-5.5"
+      },
+      "fila": {
+        "catalogKey": "gpt-5.5",
+        "inputPer1k": 0.005,
+        "cachedInputPer1k": 0.0005,
+        "outputPer1k": 0.03,
+        "prima5m": 1,
+        "prima1h": 1,
+        "propio": true
+      },
+      "esperado": {
+        "uso": {
+          "inputUncached": 200000,
+          "cacheRead": 0,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "output": 10,
+          "reasoningIncludedInOutput": true,
+          "basis": "provider_reported",
+          "completeness": "complete"
+        },
+        "precio": {
+          "state": "priced",
+          "amountMicroUsd": 1000300,
+          "exactAttoUsd": "1000300000000000000",
+          "currency": "USD",
+          "priceVersion": "2026-09-29",
+          "priceDay": "2026-10-01",
+          "catalogKey": "gpt-5.5"
+        }
+      }
+    },
+    {
+      "nombre": "200K + 1: long-context-tier",
+      "entrada": {
+        "crudo": {
+          "dialecto": "openai-responses",
+          "uso": {
+            "input_tokens": 200001,
+            "output_tokens": 10
+          }
+        },
+        "basis": null,
+        "modelo": "gpt-5.5"
+      },
+      "fila": {
+        "catalogKey": "gpt-5.5",
+        "inputPer1k": 0.005,
+        "cachedInputPer1k": 0.0005,
+        "outputPer1k": 0.03,
+        "prima5m": 1,
+        "prima1h": 1,
+        "propio": true
+      },
+      "esperado": {
+        "uso": {
+          "inputUncached": 200001,
+          "cacheRead": 0,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "output": 10,
+          "reasoningIncludedInOutput": true,
+          "basis": "provider_reported",
+          "completeness": "complete"
+        },
+        "precio": {
+          "state": "uncertain",
+          "reason": "long-context-tier",
+          "detail": "200001 input tokens exceed 200000; the long-context rate is not in the catalog, the short rate is a floor",
+          "lowerBoundMicroUsd": 1000305,
+          "priceVersion": "2026-09-29"
+        }
+      }
+    },
+    {
+      "nombre": "fracciones de micro-USD: se redondea UNA vez",
+      "entrada": {
+        "crudo": {
+          "dialecto": "openai-chat",
+          "uso": {
+            "prompt_tokens": 7,
+            "completion_tokens": 3
+          }
+        },
+        "basis": null,
+        "modelo": "gpt-4o-mini"
+      },
+      "fila": {
+        "catalogKey": "gpt-4o-mini",
+        "inputPer1k": 0.00015,
+        "cachedInputPer1k": 0.000075,
+        "outputPer1k": 0.0006,
+        "prima5m": 1,
+        "prima1h": 1,
+        "propio": true
+      },
+      "esperado": {
+        "uso": {
+          "inputUncached": 7,
+          "cacheRead": 0,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "output": 3,
+          "reasoningIncludedInOutput": true,
+          "basis": "provider_reported",
+          "completeness": "complete"
+        },
+        "precio": {
+          "state": "priced",
+          "amountMicroUsd": 3,
+          "exactAttoUsd": "2850000000000",
+          "currency": "USD",
+          "priceVersion": "2026-09-29",
+          "priceDay": "2026-10-01",
+          "catalogKey": "gpt-4o-mini"
+        }
+      }
+    },
+    {
+      "nombre": "mitad exacta de micro-USD: hacia arriba, no al par",
+      "entrada": {
+        "crudo": {
+          "dialecto": "openai-chat",
+          "uso": {
+            "prompt_tokens": 30,
+            "completion_tokens": 0
+          }
+        },
+        "basis": null,
+        "modelo": "gpt-4o-mini"
+      },
+      "fila": {
+        "catalogKey": "gpt-4o-mini",
+        "inputPer1k": 0.00015,
+        "cachedInputPer1k": 0.000075,
+        "outputPer1k": 0.0006,
+        "prima5m": 1,
+        "prima1h": 1,
+        "propio": true
+      },
+      "esperado": {
+        "uso": {
+          "inputUncached": 30,
+          "cacheRead": 0,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "output": 0,
+          "reasoningIncludedInOutput": true,
+          "basis": "provider_reported",
+          "completeness": "complete"
+        },
+        "precio": {
+          "state": "priced",
+          "amountMicroUsd": 5,
+          "exactAttoUsd": "4500000000000",
+          "currency": "USD",
+          "priceVersion": "2026-09-29",
+          "priceDay": "2026-10-01",
+          "catalogKey": "gpt-4o-mini"
+        }
+      }
+    },
+    {
+      "nombre": "gemini con escritura de caché (prima 1)",
+      "entrada": {
+        "crudo": {
+          "dialecto": "provider-usage",
+          "uso": {
+            "inputTokens": 5000,
+            "outputTokens": 100,
+            "cachedInputTokens": 1000,
+            "cacheWriteInputTokens": 500
+          }
+        },
+        "basis": null,
+        "modelo": "gemini-2.5-pro"
+      },
+      "fila": {
+        "catalogKey": "gemini-2.5-pro",
+        "inputPer1k": 0.00125,
+        "cachedInputPer1k": 0.000125,
+        "outputPer1k": 0.01,
+        "prima5m": 1,
+        "prima1h": 1,
+        "propio": true
+      },
+      "esperado": {
+        "uso": {
+          "inputUncached": 3500,
+          "cacheRead": 1000,
+          "cacheWrite5m": 500,
+          "cacheWrite1h": 0,
+          "output": 100,
+          "reasoningIncludedInOutput": true,
+          "basis": "provider_reported",
+          "completeness": "complete"
+        },
+        "precio": {
+          "state": "priced",
+          "amountMicroUsd": 6125,
+          "exactAttoUsd": "6125000000000000",
+          "currency": "USD",
+          "priceVersion": "2026-09-29",
+          "priceDay": "2026-10-01",
+          "catalogKey": "gemini-2.5-pro"
+        }
+      }
+    }
+  ]
+}
