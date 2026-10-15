@@ -1,0 +1,669 @@
+{
+  "formato": 1,
+  "generadoPor": "scripts/paridad-vectores.ts (desde test/helpers/paridad.ts)",
+  "transform": {
+    "id": "json-lossless",
+    "version": "1"
+  },
+  "estimador": "heuristic",
+  "casos": [
+    {
+      "nombre": "objeto sangrado que merece la pena",
+      "entrada": {
+        "texto": "{\n  \"filas\": [\n    {\n      \"id\": 0,\n      \"nombre\": \"fila-0\",\n      \"activo\": true,\n      \"peso\": 0\n    },\n    {\n      \"id\": 1,\n      \"nombre\": \"fila-1\",\n      \"activo\": false,\n      \"peso\": 0.25\n    },\n    {\n      \"id\": 2,\n      \"nombre\": \"fila-2\",\n      \"activo\": true,\n      \"peso\": 0.5\n    },\n    {\n      \"id\": 3,\n      \"nombre\": \"fila-3\",\n      \"activo\": false,\n      \"peso\": 0.75\n    },\n    {\n      \"id\": 4,\n      \"nombre\": \"fila-4\",\n      \"activo\": true,\n      \"peso\": 1\n    },\n    {\n      \"id\": 5,\n      \"nombre\": \"fila-5\",\n      \"activo\": false,\n      \"peso\": 1.25\n    },\n    {\n      \"id\": 6,\n      \"nombre\": \"fila-6\",\n      \"activo\": true,\n      \"peso\": 1.5\n    },\n    {\n      \"id\": 7,\n      \"nombre\": \"fila-7\",\n      \"activo\": false,\n      \"peso\": 1.75\n    },\n    {\n      \"id\": 8,\n      \"nombre\": \"fila-8\",\n      \"activo\": true,\n      \"peso\": 2\n    },\n    {\n      \"id\": 9,\n      \"nombre\": \"fila-9\",\n      \"activo\": false,\n      \"peso\": 2.25\n    },\n    {\n      \"id\": 10,\n      \"nombre\": \"fila-10\",\n      \"activo\": true,\n      \"peso\": 2.5\n    },\n    {\n      \"id\": 11,\n      \"nombre\": \"fila-11\",\n      \"activo\": false,\n      \"peso\": 2.75\n    }\n  ]\n}",
+        "minSavedChars": 256
+      },
+      "esperado": {
+        "changed": true,
+        "text": "{\"filas\":[{\"id\":0,\"nombre\":\"fila-0\",\"activo\":true,\"peso\":0},{\"id\":1,\"nombre\":\"fila-1\",\"activo\":false,\"peso\":0.25},{\"id\":2,\"nombre\":\"fila-2\",\"activo\":true,\"peso\":0.5},{\"id\":3,\"nombre\":\"fila-3\",\"activo\":false,\"peso\":0.75},{\"id\":4,\"nombre\":\"fila-4\",\"activo\":true,\"peso\":1},{\"id\":5,\"nombre\":\"fila-5\",\"activo\":false,\"peso\":1.25},{\"id\":6,\"nombre\":\"fila-6\",\"activo\":true,\"peso\":1.5},{\"id\":7,\"nombre\":\"fila-7\",\"activo\":false,\"peso\":1.75},{\"id\":8,\"nombre\":\"fila-8\",\"activo\":true,\"peso\":2},{\"id\":9,\"nombre\":\"fila-9\",\"activo\":false,\"peso\":2.25},{\"id\":10,\"nombre\":\"fila-10\",\"activo\":true,\"peso\":2.5},{\"id\":11,\"nombre\":\"fila-11\",\"activo\":false,\"peso\":2.75}]}",
+        "status": "applied",
+        "reason": "applied",
+        "tokensBefore": 685,
+        "tokensAfter": 416,
+        "candidateTokens": 416,
+        "originalChars": 1157,
+        "compactChars": 645
+      }
+    },
+    {
+      "nombre": "array sangrado con tabuladores",
+      "entrada": {
+        "texto": "[\n\t{\n\t\t\"id\": 0,\n\t\t\"nombre\": \"fila-0\",\n\t\t\"activo\": true,\n\t\t\"peso\": 0\n\t},\n\t{\n\t\t\"id\": 1,\n\t\t\"nombre\": \"fila-1\",\n\t\t\"activo\": false,\n\t\t\"peso\": 0.25\n\t},\n\t{\n\t\t\"id\": 2,\n\t\t\"nombre\": \"fila-2\",\n\t\t\"activo\": true,\n\t\t\"peso\": 0.5\n\t},\n\t{\n\t\t\"id\": 3,\n\t\t\"nombre\": \"fila-3\",\n\t\t\"activo\": false,\n\t\t\"peso\": 0.75\n\t},\n\t{\n\t\t\"id\": 4,\n\t\t\"nombre\": \"fila-4\",\n\t\t\"activo\": true,\n\t\t\"peso\": 1\n\t},\n\t{\n\t\t\"id\": 5,\n\t\t\"nombre\": \"fila-5\",\n\t\t\"activo\": false,\n\t\t\"peso\": 1.25\n\t},\n\t{\n\t\t\"id\": 6,\n\t\t\"nombre\": \"fila-6\",\n\t\t\"activo\": true,\n\t\t\"peso\": 1.5\n\t},\n\t{\n\t\t\"id\": 7,\n\t\t\"nombre\": \"fila-7\",\n\t\t\"activo\": false,\n\t\t\"peso\": 1.75\n\t},\n\t{\n\t\t\"id\": 8,\n\t\t\"nombre\": \"fila-8\",\n\t\t\"activo\": true,\n\t\t\"peso\": 2\n\t},\n\t{\n\t\t\"id\": 9,\n\t\t\"nombre\": \"fila-9\",\n\t\t\"activo\": false,\n\t\t\"peso\": 2.25\n\t},\n\t{\n\t\t\"id\": 10,\n\t\t\"nombre\": \"fila-10\",\n\t\t\"activo\": true,\n\t\t\"peso\": 2.5\n\t},\n\t{\n\t\t\"id\": 11,\n\t\t\"nombre\": \"fila-11\",\n\t\t\"activo\": false,\n\t\t\"peso\": 2.75\n\t},\n\t{\n\t\t\"id\": 12,\n\t\t\"nombre\": \"fila-12\",\n\t\t\"activo\": true,\n\t\t\"peso\": 3\n\t},\n\t{\n\t\t\"id\": 13,\n\t\t\"nombre\": \"fila-13\",\n\t\t\"activo\": false,\n\t\t\"peso\": 3.25\n\t},\n\t{\n\t\t\"id\": 14,\n\t\t\"nombre\": \"fila-14\",\n\t\t\"activo\": true,\n\t\t\"peso\": 3.5\n\t},\n\t{\n\t\t\"id\": 15,\n\t\t\"nombre\": \"fila-15\",\n\t\t\"activo\": false,\n\t\t\"peso\": 3.75\n\t},\n\t{\n\t\t\"id\": 16,\n\t\t\"nombre\": \"fila-16\",\n\t\t\"activo\": true,\n\t\t\"peso\": 4\n\t},\n\t{\n\t\t\"id\": 17,\n\t\t\"nombre\": \"fila-17\",\n\t\t\"activo\": false,\n\t\t\"peso\": 4.25\n\t},\n\t{\n\t\t\"id\": 18,\n\t\t\"nombre\": \"fila-18\",\n\t\t\"activo\": true,\n\t\t\"peso\": 4.5\n\t},\n\t{\n\t\t\"id\": 19,\n\t\t\"nombre\": \"fila-19\",\n\t\t\"activo\": false,\n\t\t\"peso\": 4.75\n\t},\n\t{\n\t\t\"id\": 20,\n\t\t\"nombre\": \"fila-20\",\n\t\t\"activo\": true,\n\t\t\"peso\": 5\n\t},\n\t{\n\t\t\"id\": 21,\n\t\t\"nombre\": \"fila-21\",\n\t\t\"activo\": false,\n\t\t\"peso\": 5.25\n\t},\n\t{\n\t\t\"id\": 22,\n\t\t\"nombre\": \"fila-22\",\n\t\t\"activo\": true,\n\t\t\"peso\": 5.5\n\t},\n\t{\n\t\t\"id\": 23,\n\t\t\"nombre\": \"fila-23\",\n\t\t\"activo\": false,\n\t\t\"peso\": 5.75\n\t}\n]",
+        "minSavedChars": 256
+      },
+      "esperado": {
+        "changed": true,
+        "text": "[{\"id\":0,\"nombre\":\"fila-0\",\"activo\":true,\"peso\":0},{\"id\":1,\"nombre\":\"fila-1\",\"activo\":false,\"peso\":0.25},{\"id\":2,\"nombre\":\"fila-2\",\"activo\":true,\"peso\":0.5},{\"id\":3,\"nombre\":\"fila-3\",\"activo\":false,\"peso\":0.75},{\"id\":4,\"nombre\":\"fila-4\",\"activo\":true,\"peso\":1},{\"id\":5,\"nombre\":\"fila-5\",\"activo\":false,\"peso\":1.25},{\"id\":6,\"nombre\":\"fila-6\",\"activo\":true,\"peso\":1.5},{\"id\":7,\"nombre\":\"fila-7\",\"activo\":false,\"peso\":1.75},{\"id\":8,\"nombre\":\"fila-8\",\"activo\":true,\"peso\":2},{\"id\":9,\"nombre\":\"fila-9\",\"activo\":false,\"peso\":2.25},{\"id\":10,\"nombre\":\"fila-10\",\"activo\":true,\"peso\":2.5},{\"id\":11,\"nombre\":\"fila-11\",\"activo\":false,\"peso\":2.75},{\"id\":12,\"nombre\":\"fila-12\",\"activo\":true,\"peso\":3},{\"id\":13,\"nombre\":\"fila-13\",\"activo\":false,\"peso\":3.25},{\"id\":14,\"nombre\":\"fila-14\",\"activo\":true,\"peso\":3.5},{\"id\":15,\"nombre\":\"fila-15\",\"activo\":false,\"peso\":3.75},{\"id\":16,\"nombre\":\"fila-16\",\"activo\":true,\"peso\":4},{\"id\":17,\"nombre\":\"fila-17\",\"activo\":false,\"peso\":4.25},{\"id\":18,\"nombre\":\"fila-18\",\"activo\":true,\"peso\":4.5},{\"id\":19,\"nombre\":\"fila-19\",\"activo\":false,\"peso\":4.75},{\"id\":20,\"nombre\":\"fila-20\",\"activo\":true,\"peso\":5},{\"id\":21,\"nombre\":\"fila-21\",\"activo\":false,\"peso\":5.25},{\"id\":22,\"nombre\":\"fila-22\",\"activo\":true,\"peso\":5.5},{\"id\":23,\"nombre\":\"fila-23\",\"activo\":false,\"peso\":5.75}]",
+        "status": "applied",
+        "reason": "applied",
+        "tokensBefore": 1058,
+        "tokensAfter": 817,
+        "candidateTokens": 817,
+        "originalChars": 1770,
+        "compactChars": 1289
+      }
+    },
+    {
+      "nombre": "sangrado con CRLF",
+      "entrada": {
+        "texto": "{\r\n  \"filas\": [\r\n    {\r\n      \"id\": 0,\r\n      \"nombre\": \"fila-0\",\r\n      \"activo\": true,\r\n      \"peso\": 0\r\n    },\r\n    {\r\n      \"id\": 1,\r\n      \"nombre\": \"fila-1\",\r\n      \"activo\": false,\r\n      \"peso\": 0.25\r\n    },\r\n    {\r\n      \"id\": 2,\r\n      \"nombre\": \"fila-2\",\r\n      \"activo\": true,\r\n      \"peso\": 0.5\r\n    },\r\n    {\r\n      \"id\": 3,\r\n      \"nombre\": \"fila-3\",\r\n      \"activo\": false,\r\n      \"peso\": 0.75\r\n    },\r\n    {\r\n      \"id\": 4,\r\n      \"nombre\": \"fila-4\",\r\n      \"activo\": true,\r\n      \"peso\": 1\r\n    },\r\n    {\r\n      \"id\": 5,\r\n      \"nombre\": \"fila-5\",\r\n      \"activo\": false,\r\n      \"peso\": 1.25\r\n    },\r\n    {\r\n      \"id\": 6,\r\n      \"nombre\": \"fila-6\",\r\n      \"activo\": true,\r\n      \"peso\": 1.5\r\n    },\r\n    {\r\n      \"id\": 7,\r\n      \"nombre\": \"fila-7\",\r\n      \"activo\": false,\r\n      \"peso\": 1.75\r\n    },\r\n    {\r\n      \"id\": 8,\r\n      \"nombre\": \"fila-8\",\r\n      \"activo\": true,\r\n      \"peso\": 2\r\n    },\r\n    {\r\n      \"id\": 9,\r\n      \"nombre\": \"fila-9\",\r\n      \"activo\": false,\r\n      \"peso\": 2.25\r\n    }\r\n  ]\r\n}",
+        "minSavedChars": 256
+      },
+      "esperado": {
+        "changed": true,
+        "text": "{\"filas\":[{\"id\":0,\"nombre\":\"fila-0\",\"activo\":true,\"peso\":0},{\"id\":1,\"nombre\":\"fila-1\",\"activo\":false,\"peso\":0.25},{\"id\":2,\"nombre\":\"fila-2\",\"activo\":true,\"peso\":0.5},{\"id\":3,\"nombre\":\"fila-3\",\"activo\":false,\"peso\":0.75},{\"id\":4,\"nombre\":\"fila-4\",\"activo\":true,\"peso\":1},{\"id\":5,\"nombre\":\"fila-5\",\"activo\":false,\"peso\":1.25},{\"id\":6,\"nombre\":\"fila-6\",\"activo\":true,\"peso\":1.5},{\"id\":7,\"nombre\":\"fila-7\",\"activo\":false,\"peso\":1.75},{\"id\":8,\"nombre\":\"fila-8\",\"activo\":true,\"peso\":2},{\"id\":9,\"nombre\":\"fila-9\",\"activo\":false,\"peso\":2.25}]}",
+        "status": "applied",
+        "reason": "applied",
+        "tokensBefore": 572,
+        "tokensAfter": 347,
+        "candidateTokens": 347,
+        "originalChars": 1026,
+        "compactChars": 535
+      }
+    },
+    {
+      "nombre": "pequeño: por debajo del mínimo",
+      "entrada": {
+        "texto": "{\n  \"a\": 1,\n  \"b\": [\n    1,\n    2\n  ]\n}",
+        "minSavedChars": 256
+      },
+      "esperado": {
+        "changed": false,
+        "text": "{\n  \"a\": 1,\n  \"b\": [\n    1,\n    2\n  ]\n}",
+        "status": "bypassed",
+        "reason": "below_threshold",
+        "tokensBefore": 30,
+        "tokensAfter": 30,
+        "candidateTokens": 17,
+        "originalChars": 39,
+        "compactChars": 39
+      }
+    },
+    {
+      "nombre": "pequeño con minSavedChars 1",
+      "entrada": {
+        "texto": "{\n  \"a\": 1,\n  \"b\": [\n    1,\n    2\n  ]\n}",
+        "minSavedChars": 1
+      },
+      "esperado": {
+        "changed": true,
+        "text": "{\"a\":1,\"b\":[1,2]}",
+        "status": "applied",
+        "reason": "applied",
+        "tokensBefore": 30,
+        "tokensAfter": 17,
+        "candidateTokens": 17,
+        "originalChars": 39,
+        "compactChars": 17
+      }
+    },
+    {
+      "nombre": "ya compacto: no cuesta menos tokens",
+      "entrada": {
+        "texto": "{\"filas\":[{\"id\":0,\"nombre\":\"fila-0\",\"activo\":true,\"peso\":0},{\"id\":1,\"nombre\":\"fila-1\",\"activo\":false,\"peso\":0.25},{\"id\":2,\"nombre\":\"fila-2\",\"activo\":true,\"peso\":0.5},{\"id\":3,\"nombre\":\"fila-3\",\"activo\":false,\"peso\":0.75},{\"id\":4,\"nombre\":\"fila-4\",\"activo\":true,\"peso\":1},{\"id\":5,\"nombre\":\"fila-5\",\"activo\":false,\"peso\":1.25},{\"id\":6,\"nombre\":\"fila-6\",\"activo\":true,\"peso\":1.5},{\"id\":7,\"nombre\":\"fila-7\",\"activo\":false,\"peso\":1.75},{\"id\":8,\"nombre\":\"fila-8\",\"activo\":true,\"peso\":2},{\"id\":9,\"nombre\":\"fila-9\",\"activo\":false,\"peso\":2.25},{\"id\":10,\"nombre\":\"fila-10\",\"activo\":true,\"peso\":2.5},{\"id\":11,\"nombre\":\"fila-11\",\"activo\":false,\"peso\":2.75}]}",
+        "minSavedChars": 256
+      },
+      "esperado": {
+        "changed": false,
+        "text": "{\"filas\":[{\"id\":0,\"nombre\":\"fila-0\",\"activo\":true,\"peso\":0},{\"id\":1,\"nombre\":\"fila-1\",\"activo\":false,\"peso\":0.25},{\"id\":2,\"nombre\":\"fila-2\",\"activo\":true,\"peso\":0.5},{\"id\":3,\"nombre\":\"fila-3\",\"activo\":false,\"peso\":0.75},{\"id\":4,\"nombre\":\"fila-4\",\"activo\":true,\"peso\":1},{\"id\":5,\"nombre\":\"fila-5\",\"activo\":false,\"peso\":1.25},{\"id\":6,\"nombre\":\"fila-6\",\"activo\":true,\"peso\":1.5},{\"id\":7,\"nombre\":\"fila-7\",\"activo\":false,\"peso\":1.75},{\"id\":8,\"nombre\":\"fila-8\",\"activo\":true,\"peso\":2},{\"id\":9,\"nombre\":\"fila-9\",\"activo\":false,\"peso\":2.25},{\"id\":10,\"nombre\":\"fila-10\",\"activo\":true,\"peso\":2.5},{\"id\":11,\"nombre\":\"fila-11\",\"activo\":false,\"peso\":2.75}]}",
+        "status": "bypassed",
+        "reason": "not_smaller",
+        "tokensBefore": 416,
+        "tokensAfter": 416,
+        "candidateTokens": 416,
+        "originalChars": 645,
+        "compactChars": 645
+      }
+    },
+    {
+      "nombre": "números tal como están escritos: 2^63+1, 1.10, 1e400, -0, 1E-7",
+      "entrada": {
+        "texto": "{\n  \"grande\": 9223372036854775809,\n  \"decimal\": 1.10,\n  \"enorme\": 1e400,\n  \"cero\": -0,\n  \"chico\": 1E-7,\n  \"relleno\": [\n  {\n    \"id\": 0,\n    \"nombre\": \"fila-0\",\n    \"activo\": true,\n    \"peso\": 0\n  },\n  {\n    \"id\": 1,\n    \"nombre\": \"fila-1\",\n    \"activo\": false,\n    \"peso\": 0.25\n  },\n  {\n    \"id\": 2,\n    \"nombre\": \"fila-2\",\n    \"activo\": true,\n    \"peso\": 0.5\n  },\n  {\n    \"id\": 3,\n    \"nombre\": \"fila-3\",\n    \"activo\": false,\n    \"peso\": 0.75\n  },\n  {\n    \"id\": 4,\n    \"nombre\": \"fila-4\",\n    \"activo\": true,\n    \"peso\": 1\n  },\n  {\n    \"id\": 5,\n    \"nombre\": \"fila-5\",\n    \"activo\": false,\n    \"peso\": 1.25\n  },\n  {\n    \"id\": 6,\n    \"nombre\": \"fila-6\",\n    \"activo\": true,\n    \"peso\": 1.5\n  },\n  {\n    \"id\": 7,\n    \"nombre\": \"fila-7\",\n    \"activo\": false,\n    \"peso\": 1.75\n  }\n]\n}",
+        "minSavedChars": 256
+      },
+      "esperado": {
+        "changed": true,
+        "text": "{\"grande\":9223372036854775809,\"decimal\":1.10,\"enorme\":1e400,\"cero\":-0,\"chico\":1E-7,\"relleno\":[{\"id\":0,\"nombre\":\"fila-0\",\"activo\":true,\"peso\":0},{\"id\":1,\"nombre\":\"fila-1\",\"activo\":false,\"peso\":0.25},{\"id\":2,\"nombre\":\"fila-2\",\"activo\":true,\"peso\":0.5},{\"id\":3,\"nombre\":\"fila-3\",\"activo\":false,\"peso\":0.75},{\"id\":4,\"nombre\":\"fila-4\",\"activo\":true,\"peso\":1},{\"id\":5,\"nombre\":\"fila-5\",\"activo\":false,\"peso\":1.25},{\"id\":6,\"nombre\":\"fila-6\",\"activo\":true,\"peso\":1.5},{\"id\":7,\"nombre\":\"fila-7\",\"activo\":false,\"peso\":1.75}]}",
+        "status": "applied",
+        "reason": "applied",
+        "tokensBefore": 474,
+        "tokensAfter": 332,
+        "candidateTokens": 332,
+        "originalChars": 781,
+        "compactChars": 515
+      }
+    },
+    {
+      "nombre": "escapes y espacio DENTRO de las cadenas se conservan",
+      "entrada": {
+        "texto": "{\n  \"s\": \"a  b\\n\\t \\\"c\\\" \\\\ \\/ \\u00e9 \\ud83d\\ude00\",\n  \"relleno\": [\n  {\n    \"id\": 0,\n    \"nombre\": \"fila-0\",\n    \"activo\": true,\n    \"peso\": 0\n  },\n  {\n    \"id\": 1,\n    \"nombre\": \"fila-1\",\n    \"activo\": false,\n    \"peso\": 0.25\n  },\n  {\n    \"id\": 2,\n    \"nombre\": \"fila-2\",\n    \"activo\": true,\n    \"peso\": 0.5\n  },\n  {\n    \"id\": 3,\n    \"nombre\": \"fila-3\",\n    \"activo\": false,\n    \"peso\": 0.75\n  },\n  {\n    \"id\": 4,\n    \"nombre\": \"fila-4\",\n    \"activo\": true,\n    \"peso\": 1\n  },\n  {\n    \"id\": 5,\n    \"nombre\": \"fila-5\",\n    \"activo\": false,\n    \"peso\": 1.25\n  },\n  {\n    \"id\": 6,\n    \"nombre\": \"fila-6\",\n    \"activo\": true,\n    \"peso\": 1.5\n  },\n  {\n    \"id\": 7,\n    \"nombre\": \"fila-7\",\n    \"activo\": false,\n    \"peso\": 1.75\n  }\n]\n}",
+        "minSavedChars": 1
+      },
+      "esperado": {
+        "changed": true,
+        "text": "{\"s\":\"a  b\\n\\t \\\"c\\\" \\\\ \\/ \\u00e9 \\ud83d\\ude00\",\"relleno\":[{\"id\":0,\"nombre\":\"fila-0\",\"activo\":true,\"peso\":0},{\"id\":1,\"nombre\":\"fila-1\",\"activo\":false,\"peso\":0.25},{\"id\":2,\"nombre\":\"fila-2\",\"activo\":true,\"peso\":0.5},{\"id\":3,\"nombre\":\"fila-3\",\"activo\":false,\"peso\":0.75},{\"id\":4,\"nombre\":\"fila-4\",\"activo\":true,\"peso\":1},{\"id\":5,\"nombre\":\"fila-5\",\"activo\":false,\"peso\":1.25},{\"id\":6,\"nombre\":\"fila-6\",\"activo\":true,\"peso\":1.5},{\"id\":7,\"nombre\":\"fila-7\",\"activo\":false,\"peso\":1.75}]}",
+        "status": "applied",
+        "reason": "applied",
+        "tokensBefore": 448,
+        "tokensAfter": 314,
+        "candidateTokens": 314,
+        "originalChars": 730,
+        "compactChars": 480
+      }
+    },
+    {
+      "nombre": "astrales y BMP en crudo dentro de cadenas",
+      "entrada": {
+        "texto": "{\n  \"emoji\": \"😀 ñ 中文 　 fin\",\n  \"filas\": [\n    {\n      \"id\": 0,\n      \"nombre\": \"fila-0\",\n      \"activo\": true,\n      \"peso\": 0\n    },\n    {\n      \"id\": 1,\n      \"nombre\": \"fila-1\",\n      \"activo\": false,\n      \"peso\": 0.25\n    },\n    {\n      \"id\": 2,\n      \"nombre\": \"fila-2\",\n      \"activo\": true,\n      \"peso\": 0.5\n    },\n    {\n      \"id\": 3,\n      \"nombre\": \"fila-3\",\n      \"activo\": false,\n      \"peso\": 0.75\n    },\n    {\n      \"id\": 4,\n      \"nombre\": \"fila-4\",\n      \"activo\": true,\n      \"peso\": 1\n    },\n    {\n      \"id\": 5,\n      \"nombre\": \"fila-5\",\n      \"activo\": false,\n      \"peso\": 1.25\n    },\n    {\n      \"id\": 6,\n      \"nombre\": \"fila-6\",\n      \"activo\": true,\n      \"peso\": 1.5\n    },\n    {\n      \"id\": 7,\n      \"nombre\": \"fila-7\",\n      \"activo\": false,\n      \"peso\": 1.75\n    }\n  ]\n}",
+        "minSavedChars": 256
+      },
+      "esperado": {
+        "changed": true,
+        "text": "{\"emoji\":\"😀 ñ 中文 　 fin\",\"filas\":[{\"id\":0,\"nombre\":\"fila-0\",\"activo\":true,\"peso\":0},{\"id\":1,\"nombre\":\"fila-1\",\"activo\":false,\"peso\":0.25},{\"id\":2,\"nombre\":\"fila-2\",\"activo\":true,\"peso\":0.5},{\"id\":3,\"nombre\":\"fila-3\",\"activo\":false,\"peso\":0.75},{\"id\":4,\"nombre\":\"fila-4\",\"activo\":true,\"peso\":1},{\"id\":5,\"nombre\":\"fila-5\",\"activo\":false,\"peso\":1.25},{\"id\":6,\"nombre\":\"fila-6\",\"activo\":true,\"peso\":1.5},{\"id\":7,\"nombre\":\"fila-7\",\"activo\":false,\"peso\":1.75}]}",
+        "status": "applied",
+        "reason": "applied",
+        "tokensBefore": 478,
+        "tokensAfter": 295,
+        "candidateTokens": 295,
+        "originalChars": 803,
+        "compactChars": 455
+      }
+    },
+    {
+      "nombre": "la misma clave en objetos distintos no es duplicada",
+      "entrada": {
+        "texto": "{\n  \"a\": {\n    \"k\": 1\n  },\n  \"b\": {\n    \"k\": 2\n  },\n  \"filas\": [\n    {\n      \"id\": 0,\n      \"nombre\": \"fila-0\",\n      \"activo\": true,\n      \"peso\": 0\n    },\n    {\n      \"id\": 1,\n      \"nombre\": \"fila-1\",\n      \"activo\": false,\n      \"peso\": 0.25\n    },\n    {\n      \"id\": 2,\n      \"nombre\": \"fila-2\",\n      \"activo\": true,\n      \"peso\": 0.5\n    },\n    {\n      \"id\": 3,\n      \"nombre\": \"fila-3\",\n      \"activo\": false,\n      \"peso\": 0.75\n    },\n    {\n      \"id\": 4,\n      \"nombre\": \"fila-4\",\n      \"activo\": true,\n      \"peso\": 1\n    },\n    {\n      \"id\": 5,\n      \"nombre\": \"fila-5\",\n      \"activo\": false,\n      \"peso\": 1.25\n    },\n    {\n      \"id\": 6,\n      \"nombre\": \"fila-6\",\n      \"activo\": true,\n      \"peso\": 1.5\n    },\n    {\n      \"id\": 7,\n      \"nombre\": \"fila-7\",\n      \"activo\": false,\n      \"peso\": 1.75\n    }\n  ]\n}",
+        "minSavedChars": 256
+      },
+      "esperado": {
+        "changed": true,
+        "text": "{\"a\":{\"k\":1},\"b\":{\"k\":2},\"filas\":[{\"id\":0,\"nombre\":\"fila-0\",\"activo\":true,\"peso\":0},{\"id\":1,\"nombre\":\"fila-1\",\"activo\":false,\"peso\":0.25},{\"id\":2,\"nombre\":\"fila-2\",\"activo\":true,\"peso\":0.5},{\"id\":3,\"nombre\":\"fila-3\",\"activo\":false,\"peso\":0.75},{\"id\":4,\"nombre\":\"fila-4\",\"activo\":true,\"peso\":1},{\"id\":5,\"nombre\":\"fila-5\",\"activo\":false,\"peso\":1.25},{\"id\":6,\"nombre\":\"fila-6\",\"activo\":true,\"peso\":1.5},{\"id\":7,\"nombre\":\"fila-7\",\"activo\":false,\"peso\":1.75}]}",
+        "status": "applied",
+        "reason": "applied",
+        "tokensBefore": 499,
+        "tokensAfter": 304,
+        "candidateTokens": 304,
+        "originalChars": 825,
+        "compactChars": 455
+      }
+    },
+    {
+      "nombre": "clave duplicada en la raíz",
+      "entrada": {
+        "texto": "{\n  \"a\": 1,\n  \"a\": 2,\n  \"relleno\": [\n  {\n    \"id\": 0,\n    \"nombre\": \"fila-0\",\n    \"activo\": true,\n    \"peso\": 0\n  },\n  {\n    \"id\": 1,\n    \"nombre\": \"fila-1\",\n    \"activo\": false,\n    \"peso\": 0.25\n  },\n  {\n    \"id\": 2,\n    \"nombre\": \"fila-2\",\n    \"activo\": true,\n    \"peso\": 0.5\n  },\n  {\n    \"id\": 3,\n    \"nombre\": \"fila-3\",\n    \"activo\": false,\n    \"peso\": 0.75\n  },\n  {\n    \"id\": 4,\n    \"nombre\": \"fila-4\",\n    \"activo\": true,\n    \"peso\": 1\n  },\n  {\n    \"id\": 5,\n    \"nombre\": \"fila-5\",\n    \"activo\": false,\n    \"peso\": 1.25\n  },\n  {\n    \"id\": 6,\n    \"nombre\": \"fila-6\",\n    \"activo\": true,\n    \"peso\": 1.5\n  },\n  {\n    \"id\": 7,\n    \"nombre\": \"fila-7\",\n    \"activo\": false,\n    \"peso\": 1.75\n  }\n]\n}",
+        "minSavedChars": 256
+      },
+      "esperado": {
+        "changed": false,
+        "text": "{\n  \"a\": 1,\n  \"a\": 2,\n  \"relleno\": [\n  {\n    \"id\": 0,\n    \"nombre\": \"fila-0\",\n    \"activo\": true,\n    \"peso\": 0\n  },\n  {\n    \"id\": 1,\n    \"nombre\": \"fila-1\",\n    \"activo\": false,\n    \"peso\": 0.25\n  },\n  {\n    \"id\": 2,\n    \"nombre\": \"fila-2\",\n    \"activo\": true,\n    \"peso\": 0.5\n  },\n  {\n    \"id\": 3,\n    \"nombre\": \"fila-3\",\n    \"activo\": false,\n    \"peso\": 0.75\n  },\n  {\n    \"id\": 4,\n    \"nombre\": \"fila-4\",\n    \"activo\": true,\n    \"peso\": 1\n  },\n  {\n    \"id\": 5,\n    \"nombre\": \"fila-5\",\n    \"activo\": false,\n    \"peso\": 1.25\n  },\n  {\n    \"id\": 6,\n    \"nombre\": \"fila-6\",\n    \"activo\": true,\n    \"peso\": 1.5\n  },\n  {\n    \"id\": 7,\n    \"nombre\": \"fila-7\",\n    \"activo\": false,\n    \"peso\": 1.75\n  }\n]\n}",
+        "status": "bypassed",
+        "reason": "duplicate_keys",
+        "tokensBefore": 428,
+        "tokensAfter": 428,
+        "candidateTokens": null,
+        "originalChars": 699,
+        "compactChars": 699
+      }
+    },
+    {
+      "nombre": "clave duplicada a profundidad",
+      "entrada": {
+        "texto": "{\n  \"x\": [ { \"y\": { \"k\": 1, \"k\": 1 } } ],\n  \"relleno\": [\n  {\n    \"id\": 0,\n    \"nombre\": \"fila-0\",\n    \"activo\": true,\n    \"peso\": 0\n  },\n  {\n    \"id\": 1,\n    \"nombre\": \"fila-1\",\n    \"activo\": false,\n    \"peso\": 0.25\n  },\n  {\n    \"id\": 2,\n    \"nombre\": \"fila-2\",\n    \"activo\": true,\n    \"peso\": 0.5\n  },\n  {\n    \"id\": 3,\n    \"nombre\": \"fila-3\",\n    \"activo\": false,\n    \"peso\": 0.75\n  },\n  {\n    \"id\": 4,\n    \"nombre\": \"fila-4\",\n    \"activo\": true,\n    \"peso\": 1\n  },\n  {\n    \"id\": 5,\n    \"nombre\": \"fila-5\",\n    \"activo\": false,\n    \"peso\": 1.25\n  },\n  {\n    \"id\": 6,\n    \"nombre\": \"fila-6\",\n    \"activo\": true,\n    \"peso\": 1.5\n  },\n  {\n    \"id\": 7,\n    \"nombre\": \"fila-7\",\n    \"activo\": false,\n    \"peso\": 1.75\n  }\n]\n}",
+        "minSavedChars": 256
+      },
+      "esperado": {
+        "changed": false,
+        "text": "{\n  \"x\": [ { \"y\": { \"k\": 1, \"k\": 1 } } ],\n  \"relleno\": [\n  {\n    \"id\": 0,\n    \"nombre\": \"fila-0\",\n    \"activo\": true,\n    \"peso\": 0\n  },\n  {\n    \"id\": 1,\n    \"nombre\": \"fila-1\",\n    \"activo\": false,\n    \"peso\": 0.25\n  },\n  {\n    \"id\": 2,\n    \"nombre\": \"fila-2\",\n    \"activo\": true,\n    \"peso\": 0.5\n  },\n  {\n    \"id\": 3,\n    \"nombre\": \"fila-3\",\n    \"activo\": false,\n    \"peso\": 0.75\n  },\n  {\n    \"id\": 4,\n    \"nombre\": \"fila-4\",\n    \"activo\": true,\n    \"peso\": 1\n  },\n  {\n    \"id\": 5,\n    \"nombre\": \"fila-5\",\n    \"activo\": false,\n    \"peso\": 1.25\n  },\n  {\n    \"id\": 6,\n    \"nombre\": \"fila-6\",\n    \"activo\": true,\n    \"peso\": 1.5\n  },\n  {\n    \"id\": 7,\n    \"nombre\": \"fila-7\",\n    \"activo\": false,\n    \"peso\": 1.75\n  }\n]\n}",
+        "status": "bypassed",
+        "reason": "duplicate_keys",
+        "tokensBefore": 440,
+        "tokensAfter": 440,
+        "candidateTokens": null,
+        "originalChars": 719,
+        "compactChars": 719
+      }
+    },
+    {
+      "nombre": "duplicada por escape: \"a\" y \"\\u0061\"",
+      "entrada": {
+        "texto": "{\n  \"a\": 1,\n  \"\\u0061\": 1,\n  \"relleno\": [\n  {\n    \"id\": 0,\n    \"nombre\": \"fila-0\",\n    \"activo\": true,\n    \"peso\": 0\n  },\n  {\n    \"id\": 1,\n    \"nombre\": \"fila-1\",\n    \"activo\": false,\n    \"peso\": 0.25\n  },\n  {\n    \"id\": 2,\n    \"nombre\": \"fila-2\",\n    \"activo\": true,\n    \"peso\": 0.5\n  },\n  {\n    \"id\": 3,\n    \"nombre\": \"fila-3\",\n    \"activo\": false,\n    \"peso\": 0.75\n  },\n  {\n    \"id\": 4,\n    \"nombre\": \"fila-4\",\n    \"activo\": true,\n    \"peso\": 1\n  },\n  {\n    \"id\": 5,\n    \"nombre\": \"fila-5\",\n    \"activo\": false,\n    \"peso\": 1.25\n  },\n  {\n    \"id\": 6,\n    \"nombre\": \"fila-6\",\n    \"activo\": true,\n    \"peso\": 1.5\n  },\n  {\n    \"id\": 7,\n    \"nombre\": \"fila-7\",\n    \"activo\": false,\n    \"peso\": 1.75\n  }\n]\n}",
+        "minSavedChars": 256
+      },
+      "esperado": {
+        "changed": false,
+        "text": "{\n  \"a\": 1,\n  \"\\u0061\": 1,\n  \"relleno\": [\n  {\n    \"id\": 0,\n    \"nombre\": \"fila-0\",\n    \"activo\": true,\n    \"peso\": 0\n  },\n  {\n    \"id\": 1,\n    \"nombre\": \"fila-1\",\n    \"activo\": false,\n    \"peso\": 0.25\n  },\n  {\n    \"id\": 2,\n    \"nombre\": \"fila-2\",\n    \"activo\": true,\n    \"peso\": 0.5\n  },\n  {\n    \"id\": 3,\n    \"nombre\": \"fila-3\",\n    \"activo\": false,\n    \"peso\": 0.75\n  },\n  {\n    \"id\": 4,\n    \"nombre\": \"fila-4\",\n    \"activo\": true,\n    \"peso\": 1\n  },\n  {\n    \"id\": 5,\n    \"nombre\": \"fila-5\",\n    \"activo\": false,\n    \"peso\": 1.25\n  },\n  {\n    \"id\": 6,\n    \"nombre\": \"fila-6\",\n    \"activo\": true,\n    \"peso\": 1.5\n  },\n  {\n    \"id\": 7,\n    \"nombre\": \"fila-7\",\n    \"activo\": false,\n    \"peso\": 1.75\n  }\n]\n}",
+        "status": "bypassed",
+        "reason": "duplicate_keys",
+        "tokensBefore": 431,
+        "tokensAfter": 431,
+        "candidateTokens": null,
+        "originalChars": 704,
+        "compactChars": 704
+      }
+    },
+    {
+      "nombre": "coma final",
+      "entrada": {
+        "texto": "{\n  \"a\": [1, 2, ],\n  \"relleno\": [\n  {\n    \"id\": 0,\n    \"nombre\": \"fila-0\",\n    \"activo\": true,\n    \"peso\": 0\n  },\n  {\n    \"id\": 1,\n    \"nombre\": \"fila-1\",\n    \"activo\": false,\n    \"peso\": 0.25\n  },\n  {\n    \"id\": 2,\n    \"nombre\": \"fila-2\",\n    \"activo\": true,\n    \"peso\": 0.5\n  },\n  {\n    \"id\": 3,\n    \"nombre\": \"fila-3\",\n    \"activo\": false,\n    \"peso\": 0.75\n  },\n  {\n    \"id\": 4,\n    \"nombre\": \"fila-4\",\n    \"activo\": true,\n    \"peso\": 1\n  },\n  {\n    \"id\": 5,\n    \"nombre\": \"fila-5\",\n    \"activo\": false,\n    \"peso\": 1.25\n  },\n  {\n    \"id\": 6,\n    \"nombre\": \"fila-6\",\n    \"activo\": true,\n    \"peso\": 1.5\n  },\n  {\n    \"id\": 7,\n    \"nombre\": \"fila-7\",\n    \"activo\": false,\n    \"peso\": 1.75\n  }\n]\n}",
+        "minSavedChars": 256
+      },
+      "esperado": {
+        "changed": false,
+        "text": "{\n  \"a\": [1, 2, ],\n  \"relleno\": [\n  {\n    \"id\": 0,\n    \"nombre\": \"fila-0\",\n    \"activo\": true,\n    \"peso\": 0\n  },\n  {\n    \"id\": 1,\n    \"nombre\": \"fila-1\",\n    \"activo\": false,\n    \"peso\": 0.25\n  },\n  {\n    \"id\": 2,\n    \"nombre\": \"fila-2\",\n    \"activo\": true,\n    \"peso\": 0.5\n  },\n  {\n    \"id\": 3,\n    \"nombre\": \"fila-3\",\n    \"activo\": false,\n    \"peso\": 0.75\n  },\n  {\n    \"id\": 4,\n    \"nombre\": \"fila-4\",\n    \"activo\": true,\n    \"peso\": 1\n  },\n  {\n    \"id\": 5,\n    \"nombre\": \"fila-5\",\n    \"activo\": false,\n    \"peso\": 1.25\n  },\n  {\n    \"id\": 6,\n    \"nombre\": \"fila-6\",\n    \"activo\": true,\n    \"peso\": 1.5\n  },\n  {\n    \"id\": 7,\n    \"nombre\": \"fila-7\",\n    \"activo\": false,\n    \"peso\": 1.75\n  }\n]\n}",
+        "status": "bypassed",
+        "reason": "invalid_json",
+        "tokensBefore": 425,
+        "tokensAfter": 425,
+        "candidateTokens": null,
+        "originalChars": 696,
+        "compactChars": 696
+      }
+    },
+    {
+      "nombre": "comillas simples",
+      "entrada": {
+        "texto": "{\n  'a': 1\n}",
+        "minSavedChars": 256
+      },
+      "esperado": {
+        "changed": false,
+        "text": "{\n  'a': 1\n}",
+        "status": "bypassed",
+        "reason": "invalid_json",
+        "tokensBefore": 10,
+        "tokensAfter": 10,
+        "candidateTokens": null,
+        "originalChars": 12,
+        "compactChars": 12
+      }
+    },
+    {
+      "nombre": "comentario",
+      "entrada": {
+        "texto": "{\n  // nota\n  \"a\": 1\n}",
+        "minSavedChars": 256
+      },
+      "esperado": {
+        "changed": false,
+        "text": "{\n  // nota\n  \"a\": 1\n}",
+        "status": "bypassed",
+        "reason": "invalid_json",
+        "tokensBefore": 15,
+        "tokensAfter": 15,
+        "candidateTokens": null,
+        "originalChars": 22,
+        "compactChars": 22
+      }
+    },
+    {
+      "nombre": "NaN",
+      "entrada": {
+        "texto": "{\n  \"a\": NaN\n}",
+        "minSavedChars": 256
+      },
+      "esperado": {
+        "changed": false,
+        "text": "{\n  \"a\": NaN\n}",
+        "status": "bypassed",
+        "reason": "invalid_json",
+        "tokensBefore": 10,
+        "tokensAfter": 10,
+        "candidateTokens": null,
+        "originalChars": 14,
+        "compactChars": 14
+      }
+    },
+    {
+      "nombre": "cero a la izquierda",
+      "entrada": {
+        "texto": "{\n  \"a\": 01\n}",
+        "minSavedChars": 256
+      },
+      "esperado": {
+        "changed": false,
+        "text": "{\n  \"a\": 01\n}",
+        "status": "bypassed",
+        "reason": "invalid_json",
+        "tokensBefore": 10,
+        "tokensAfter": 10,
+        "candidateTokens": null,
+        "originalChars": 13,
+        "compactChars": 13
+      }
+    },
+    {
+      "nombre": "escape desconocido",
+      "entrada": {
+        "texto": "{\n  \"a\": \"\\x41\"\n}",
+        "minSavedChars": 256
+      },
+      "esperado": {
+        "changed": false,
+        "text": "{\n  \"a\": \"\\x41\"\n}",
+        "status": "bypassed",
+        "reason": "invalid_json",
+        "tokensBefore": 14,
+        "tokensAfter": 14,
+        "candidateTokens": null,
+        "originalChars": 17,
+        "compactChars": 17
+      }
+    },
+    {
+      "nombre": "carácter de control sin escapar en una cadena",
+      "entrada": {
+        "texto": "{\n  \"a\": \"uno\u0001dos\"\n}",
+        "minSavedChars": 256
+      },
+      "esperado": {
+        "changed": false,
+        "text": "{\n  \"a\": \"uno\u0001dos\"\n}",
+        "status": "bypassed",
+        "reason": "invalid_json",
+        "tokensBefore": 14,
+        "tokensAfter": 14,
+        "candidateTokens": null,
+        "originalChars": 20,
+        "compactChars": 20
+      }
+    },
+    {
+      "nombre": "texto detrás del valor",
+      "entrada": {
+        "texto": "{\n  \"a\": 1\n} y más",
+        "minSavedChars": 256
+      },
+      "esperado": {
+        "changed": false,
+        "text": "{\n  \"a\": 1\n} y más",
+        "status": "bypassed",
+        "reason": "invalid_json",
+        "tokensBefore": 14,
+        "tokensAfter": 14,
+        "candidateTokens": null,
+        "originalChars": 18,
+        "compactChars": 18
+      }
+    },
+    {
+      "nombre": "NBSP entre lexemas",
+      "entrada": {
+        "texto": "{ \"a\": 1\n}",
+        "minSavedChars": 256
+      },
+      "esperado": {
+        "changed": false,
+        "text": "{ \"a\": 1\n}",
+        "status": "bypassed",
+        "reason": "invalid_json",
+        "tokensBefore": 8,
+        "tokensAfter": 8,
+        "candidateTokens": null,
+        "originalChars": 10,
+        "compactChars": 10
+      }
+    },
+    {
+      "nombre": "sustituto suelto EN CRUDO",
+      "entrada": {
+        "texto": "{\n  \"a\": \"x\ud800y\",\n  \"relleno\": [\n  {\n    \"id\": 0,\n    \"nombre\": \"fila-0\",\n    \"activo\": true,\n    \"peso\": 0\n  },\n  {\n    \"id\": 1,\n    \"nombre\": \"fila-1\",\n    \"activo\": false,\n    \"peso\": 0.25\n  },\n  {\n    \"id\": 2,\n    \"nombre\": \"fila-2\",\n    \"activo\": true,\n    \"peso\": 0.5\n  },\n  {\n    \"id\": 3,\n    \"nombre\": \"fila-3\",\n    \"activo\": false,\n    \"peso\": 0.75\n  },\n  {\n    \"id\": 4,\n    \"nombre\": \"fila-4\",\n    \"activo\": true,\n    \"peso\": 1\n  },\n  {\n    \"id\": 5,\n    \"nombre\": \"fila-5\",\n    \"activo\": false,\n    \"peso\": 1.25\n  },\n  {\n    \"id\": 6,\n    \"nombre\": \"fila-6\",\n    \"activo\": true,\n    \"peso\": 1.5\n  },\n  {\n    \"id\": 7,\n    \"nombre\": \"fila-7\",\n    \"activo\": false,\n    \"peso\": 1.75\n  }\n]\n}",
+        "minSavedChars": 256
+      },
+      "esperado": {
+        "changed": false,
+        "text": "{\n  \"a\": \"x\ud800y\",\n  \"relleno\": [\n  {\n    \"id\": 0,\n    \"nombre\": \"fila-0\",\n    \"activo\": true,\n    \"peso\": 0\n  },\n  {\n    \"id\": 1,\n    \"nombre\": \"fila-1\",\n    \"activo\": false,\n    \"peso\": 0.25\n  },\n  {\n    \"id\": 2,\n    \"nombre\": \"fila-2\",\n    \"activo\": true,\n    \"peso\": 0.5\n  },\n  {\n    \"id\": 3,\n    \"nombre\": \"fila-3\",\n    \"activo\": false,\n    \"peso\": 0.75\n  },\n  {\n    \"id\": 4,\n    \"nombre\": \"fila-4\",\n    \"activo\": true,\n    \"peso\": 1\n  },\n  {\n    \"id\": 5,\n    \"nombre\": \"fila-5\",\n    \"activo\": false,\n    \"peso\": 1.25\n  },\n  {\n    \"id\": 6,\n    \"nombre\": \"fila-6\",\n    \"activo\": true,\n    \"peso\": 1.5\n  },\n  {\n    \"id\": 7,\n    \"nombre\": \"fila-7\",\n    \"activo\": false,\n    \"peso\": 1.75\n  }\n]\n}",
+        "status": "bypassed",
+        "reason": "invalid_unicode",
+        "tokensBefore": 424,
+        "tokensAfter": 424,
+        "candidateTokens": null,
+        "originalChars": 693,
+        "compactChars": 693
+      }
+    },
+    {
+      "nombre": "sustituto bajo suelto EN CRUDO",
+      "entrada": {
+        "texto": "{\n  \"a\": \"x\udc00y\"\n}",
+        "minSavedChars": 256
+      },
+      "esperado": {
+        "changed": false,
+        "text": "{\n  \"a\": \"x\udc00y\"\n}",
+        "status": "bypassed",
+        "reason": "invalid_unicode",
+        "tokensBefore": 14,
+        "tokensAfter": 14,
+        "candidateTokens": null,
+        "originalChars": 16,
+        "compactChars": 16
+      }
+    },
+    {
+      "nombre": "sustituto ESCAPADO: gramática válida, sale byte a byte",
+      "entrada": {
+        "texto": "{\n  \"a\": \"\\ud800\",\n  \"relleno\": [\n  {\n    \"id\": 0,\n    \"nombre\": \"fila-0\",\n    \"activo\": true,\n    \"peso\": 0\n  },\n  {\n    \"id\": 1,\n    \"nombre\": \"fila-1\",\n    \"activo\": false,\n    \"peso\": 0.25\n  },\n  {\n    \"id\": 2,\n    \"nombre\": \"fila-2\",\n    \"activo\": true,\n    \"peso\": 0.5\n  },\n  {\n    \"id\": 3,\n    \"nombre\": \"fila-3\",\n    \"activo\": false,\n    \"peso\": 0.75\n  },\n  {\n    \"id\": 4,\n    \"nombre\": \"fila-4\",\n    \"activo\": true,\n    \"peso\": 1\n  },\n  {\n    \"id\": 5,\n    \"nombre\": \"fila-5\",\n    \"activo\": false,\n    \"peso\": 1.25\n  },\n  {\n    \"id\": 6,\n    \"nombre\": \"fila-6\",\n    \"activo\": true,\n    \"peso\": 1.5\n  },\n  {\n    \"id\": 7,\n    \"nombre\": \"fila-7\",\n    \"activo\": false,\n    \"peso\": 1.75\n  }\n]\n}",
+        "minSavedChars": 1
+      },
+      "esperado": {
+        "changed": true,
+        "text": "{\"a\":\"\\ud800\",\"relleno\":[{\"id\":0,\"nombre\":\"fila-0\",\"activo\":true,\"peso\":0},{\"id\":1,\"nombre\":\"fila-1\",\"activo\":false,\"peso\":0.25},{\"id\":2,\"nombre\":\"fila-2\",\"activo\":true,\"peso\":0.5},{\"id\":3,\"nombre\":\"fila-3\",\"activo\":false,\"peso\":0.75},{\"id\":4,\"nombre\":\"fila-4\",\"activo\":true,\"peso\":1},{\"id\":5,\"nombre\":\"fila-5\",\"activo\":false,\"peso\":1.25},{\"id\":6,\"nombre\":\"fila-6\",\"activo\":true,\"peso\":1.5},{\"id\":7,\"nombre\":\"fila-7\",\"activo\":false,\"peso\":1.75}]}",
+        "status": "applied",
+        "reason": "applied",
+        "tokensBefore": 425,
+        "tokensAfter": 291,
+        "candidateTokens": 291,
+        "originalChars": 696,
+        "compactChars": 446
+      }
+    },
+    {
+      "nombre": "espacio JSON delante y detrás del valor",
+      "entrada": {
+        "texto": " \n\t{\n  \"filas\": [\n    {\n      \"id\": 0,\n      \"nombre\": \"fila-0\",\n      \"activo\": true,\n      \"peso\": 0\n    },\n    {\n      \"id\": 1,\n      \"nombre\": \"fila-1\",\n      \"activo\": false,\n      \"peso\": 0.25\n    },\n    {\n      \"id\": 2,\n      \"nombre\": \"fila-2\",\n      \"activo\": true,\n      \"peso\": 0.5\n    },\n    {\n      \"id\": 3,\n      \"nombre\": \"fila-3\",\n      \"activo\": false,\n      \"peso\": 0.75\n    },\n    {\n      \"id\": 4,\n      \"nombre\": \"fila-4\",\n      \"activo\": true,\n      \"peso\": 1\n    },\n    {\n      \"id\": 5,\n      \"nombre\": \"fila-5\",\n      \"activo\": false,\n      \"peso\": 1.25\n    },\n    {\n      \"id\": 6,\n      \"nombre\": \"fila-6\",\n      \"activo\": true,\n      \"peso\": 1.5\n    },\n    {\n      \"id\": 7,\n      \"nombre\": \"fila-7\",\n      \"activo\": false,\n      \"peso\": 1.75\n    },\n    {\n      \"id\": 8,\n      \"nombre\": \"fila-8\",\n      \"activo\": true,\n      \"peso\": 2\n    },\n    {\n      \"id\": 9,\n      \"nombre\": \"fila-9\",\n      \"activo\": false,\n      \"peso\": 2.25\n    }\n  ]\n}\r\n ",
+        "minSavedChars": 256
+      },
+      "esperado": {
+        "changed": true,
+        "text": "{\"filas\":[{\"id\":0,\"nombre\":\"fila-0\",\"activo\":true,\"peso\":0},{\"id\":1,\"nombre\":\"fila-1\",\"activo\":false,\"peso\":0.25},{\"id\":2,\"nombre\":\"fila-2\",\"activo\":true,\"peso\":0.5},{\"id\":3,\"nombre\":\"fila-3\",\"activo\":false,\"peso\":0.75},{\"id\":4,\"nombre\":\"fila-4\",\"activo\":true,\"peso\":1},{\"id\":5,\"nombre\":\"fila-5\",\"activo\":false,\"peso\":1.25},{\"id\":6,\"nombre\":\"fila-6\",\"activo\":true,\"peso\":1.5},{\"id\":7,\"nombre\":\"fila-7\",\"activo\":false,\"peso\":1.75},{\"id\":8,\"nombre\":\"fila-8\",\"activo\":true,\"peso\":2},{\"id\":9,\"nombre\":\"fila-9\",\"activo\":false,\"peso\":2.25}]}",
+        "status": "applied",
+        "reason": "applied",
+        "tokensBefore": 576,
+        "tokensAfter": 347,
+        "candidateTokens": 347,
+        "originalChars": 969,
+        "compactChars": 535
+      }
+    },
+    {
+      "nombre": "texto plano",
+      "entrada": {
+        "texto": "Build succeeded in 3.2s\n  12 warnings\n",
+        "minSavedChars": 256
+      },
+      "esperado": {
+        "changed": false,
+        "text": "Build succeeded in 3.2s\n  12 warnings\n",
+        "status": "bypassed",
+        "reason": "not_json",
+        "tokensBefore": 16,
+        "tokensAfter": 16,
+        "candidateTokens": null,
+        "originalChars": 38,
+        "compactChars": 38
+      }
+    },
+    {
+      "nombre": "número suelto en la raíz",
+      "entrada": {
+        "texto": "   42   ",
+        "minSavedChars": 256
+      },
+      "esperado": {
+        "changed": false,
+        "text": "   42   ",
+        "status": "bypassed",
+        "reason": "not_json",
+        "tokensBefore": 3,
+        "tokensAfter": 3,
+        "candidateTokens": null,
+        "originalChars": 8,
+        "compactChars": 8
+      }
+    },
+    {
+      "nombre": "cadena suelta en la raíz",
+      "entrada": {
+        "texto": "\"hola\"",
+        "minSavedChars": 256
+      },
+      "esperado": {
+        "changed": false,
+        "text": "\"hola\"",
+        "status": "bypassed",
+        "reason": "not_json",
+        "tokensBefore": 3,
+        "tokensAfter": 3,
+        "candidateTokens": null,
+        "originalChars": 6,
+        "compactChars": 6
+      }
+    },
+    {
+      "nombre": "vacío",
+      "entrada": {
+        "texto": "",
+        "minSavedChars": 256
+      },
+      "esperado": {
+        "changed": false,
+        "text": "",
+        "status": "bypassed",
+        "reason": "not_json",
+        "tokensBefore": 0,
+        "tokensAfter": 0,
+        "candidateTokens": null,
+        "originalChars": 0,
+        "compactChars": 0
+      }
+    },
+    {
+      "nombre": "BOM delante",
+      "entrada": {
+        "texto": "﻿{\n  \"filas\": [\n    {\n      \"id\": 0,\n      \"nombre\": \"fila-0\",\n      \"activo\": true,\n      \"peso\": 0\n    },\n    {\n      \"id\": 1,\n      \"nombre\": \"fila-1\",\n      \"activo\": false,\n      \"peso\": 0.25\n    },\n    {\n      \"id\": 2,\n      \"nombre\": \"fila-2\",\n      \"activo\": true,\n      \"peso\": 0.5\n    },\n    {\n      \"id\": 3,\n      \"nombre\": \"fila-3\",\n      \"activo\": false,\n      \"peso\": 0.75\n    },\n    {\n      \"id\": 4,\n      \"nombre\": \"fila-4\",\n      \"activo\": true,\n      \"peso\": 1\n    },\n    {\n      \"id\": 5,\n      \"nombre\": \"fila-5\",\n      \"activo\": false,\n      \"peso\": 1.25\n    },\n    {\n      \"id\": 6,\n      \"nombre\": \"fila-6\",\n      \"activo\": true,\n      \"peso\": 1.5\n    },\n    {\n      \"id\": 7,\n      \"nombre\": \"fila-7\",\n      \"activo\": false,\n      \"peso\": 1.75\n    }\n  ]\n}",
+        "minSavedChars": 256
+      },
+      "esperado": {
+        "changed": false,
+        "text": "﻿{\n  \"filas\": [\n    {\n      \"id\": 0,\n      \"nombre\": \"fila-0\",\n      \"activo\": true,\n      \"peso\": 0\n    },\n    {\n      \"id\": 1,\n      \"nombre\": \"fila-1\",\n      \"activo\": false,\n      \"peso\": 0.25\n    },\n    {\n      \"id\": 2,\n      \"nombre\": \"fila-2\",\n      \"activo\": true,\n      \"peso\": 0.5\n    },\n    {\n      \"id\": 3,\n      \"nombre\": \"fila-3\",\n      \"activo\": false,\n      \"peso\": 0.75\n    },\n    {\n      \"id\": 4,\n      \"nombre\": \"fila-4\",\n      \"activo\": true,\n      \"peso\": 1\n    },\n    {\n      \"id\": 5,\n      \"nombre\": \"fila-5\",\n      \"activo\": false,\n      \"peso\": 1.25\n    },\n    {\n      \"id\": 6,\n      \"nombre\": \"fila-6\",\n      \"activo\": true,\n      \"peso\": 1.5\n    },\n    {\n      \"id\": 7,\n      \"nombre\": \"fila-7\",\n      \"activo\": false,\n      \"peso\": 1.75\n    }\n  ]\n}",
+        "status": "bypassed",
+        "reason": "not_json",
+        "tokensBefore": 461,
+        "tokensAfter": 461,
+        "candidateTokens": null,
+        "originalChars": 776,
+        "compactChars": 776
+      }
+    },
+    {
+      "nombre": "anidamiento profundo sin recursión",
+      "entrada": {
+        "texto": "[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n[\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n]\n",
+        "minSavedChars": 256
+      },
+      "esperado": {
+        "changed": true,
+        "text": "[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]",
+        "status": "applied",
+        "reason": "applied",
+        "tokensBefore": 12000,
+        "tokensAfter": 6000,
+        "candidateTokens": 6000,
+        "originalChars": 12000,
+        "compactChars": 6000
+      }
+    },
+    {
+      "nombre": "sin cerrar",
+      "entrada": {
+        "texto": "{\n  \"a\": [1, 2\n",
+        "minSavedChars": 256
+      },
+      "esperado": {
+        "changed": false,
+        "text": "{\n  \"a\": [1, 2\n",
+        "status": "bypassed",
+        "reason": "invalid_json",
+        "tokensBefore": 12,
+        "tokensAfter": 12,
+        "candidateTokens": null,
+        "originalChars": 15,
+        "compactChars": 15
+      }
+    },
+    {
+      "nombre": "literales true/false/null",
+      "entrada": {
+        "texto": "{\n  \"t\": true,\n  \"f\": false,\n  \"n\": null,\n  \"filas\": [\n    {\n      \"id\": 0,\n      \"nombre\": \"fila-0\",\n      \"activo\": true,\n      \"peso\": 0\n    },\n    {\n      \"id\": 1,\n      \"nombre\": \"fila-1\",\n      \"activo\": false,\n      \"peso\": 0.25\n    },\n    {\n      \"id\": 2,\n      \"nombre\": \"fila-2\",\n      \"activo\": true,\n      \"peso\": 0.5\n    },\n    {\n      \"id\": 3,\n      \"nombre\": \"fila-3\",\n      \"activo\": false,\n      \"peso\": 0.75\n    },\n    {\n      \"id\": 4,\n      \"nombre\": \"fila-4\",\n      \"activo\": true,\n      \"peso\": 1\n    },\n    {\n      \"id\": 5,\n      \"nombre\": \"fila-5\",\n      \"activo\": false,\n      \"peso\": 1.25\n    },\n    {\n      \"id\": 6,\n      \"nombre\": \"fila-6\",\n      \"activo\": true,\n      \"peso\": 1.5\n    },\n    {\n      \"id\": 7,\n      \"nombre\": \"fila-7\",\n      \"activo\": false,\n      \"peso\": 1.75\n    }\n  ]\n}",
+        "minSavedChars": 256
+      },
+      "esperado": {
+        "changed": true,
+        "text": "{\"t\":true,\"f\":false,\"n\":null,\"filas\":[{\"id\":0,\"nombre\":\"fila-0\",\"activo\":true,\"peso\":0},{\"id\":1,\"nombre\":\"fila-1\",\"activo\":false,\"peso\":0.25},{\"id\":2,\"nombre\":\"fila-2\",\"activo\":true,\"peso\":0.5},{\"id\":3,\"nombre\":\"fila-3\",\"activo\":false,\"peso\":0.75},{\"id\":4,\"nombre\":\"fila-4\",\"activo\":true,\"peso\":1},{\"id\":5,\"nombre\":\"fila-5\",\"activo\":false,\"peso\":1.25},{\"id\":6,\"nombre\":\"fila-6\",\"activo\":true,\"peso\":1.5},{\"id\":7,\"nombre\":\"fila-7\",\"activo\":false,\"peso\":1.75}]}",
+        "status": "applied",
+        "reason": "applied",
+        "tokensBefore": 486,
+        "tokensAfter": 299,
+        "candidateTokens": 299,
+        "originalChars": 815,
+        "compactChars": 459
+      }
+    }
+  ],
+  "estimadorHeuristico": [
+    {
+      "texto": "",
+      "tokens": 0
+    },
+    {
+      "texto": "hola",
+      "tokens": 1
+    },
+    {
+      "texto": "Hello, world! 12345",
+      "tokens": 9
+    },
+    {
+      "texto": "  \n\n   \t ",
+      "tokens": 6
+    },
+    {
+      "texto": "a\u000bb\fc",
+      "tokens": 3
+    },
+    {
+      "texto": "a b c d e f g h i　j﻿k",
+      "tokens": 11
+    },
+    {
+      "texto": "ab\u001cc\u001fd",
+      "tokens": 7
+    },
+    {
+      "texto": "😀😀 ñandú 中文",
+      "tokens": 9
+    },
+    {
+      "texto": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "tokens": 10
+    },
+    {
+      "texto": "1234567890123",
+      "tokens": 7
+    },
+    {
+      "texto": "{\"a\":[1,2,3],\"b\":\"texto largo con palabras\"}",
+      "tokens": 27
+    }
+  ]
+}

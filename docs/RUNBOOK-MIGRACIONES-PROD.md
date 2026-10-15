@@ -1,4 +1,4 @@
-# Runbook — migraciones 0007–0017 en producción (+ anexos 0024/0025 … 0035)
+# Runbook — migraciones 0007–0017 en producción (+ anexos 0024/0025 … 0035; 0036 escrita, sin aplicar)
 
 **Escrito el 2026-08-26.** Estado de partida conocido: 0001–0006 aplicadas
 (bitácoras de julio), 0012 **confirmada** aplicada (verificación del 2026-08-11
@@ -896,3 +896,54 @@ El bucle del paso 2 con `PENDIENTES="0034"`, tras anotar la hora, desde
   escritura a Stripe.
 - Revisión del estado del mes (solo lectura):
   `select estado, count(*), sum(importe_eur) from bvsala.ajustes_asientos where periodo = '<YYYY-MM>' group by 1;`
+
+## Anexo — 0036 (octubre de 2026): el presupuesto por intento — ESCRITA, SIN APLICAR
+
+> **No se aplica todavía.** Está escrita para revisarla (PR del ticket D07 del
+> plan Caveman 2026-10-14) y **no** figura en el diagnóstico del paso 1 a
+> propósito: el paso 2 aplica «lo que falte», y esta no debe faltar hasta que el
+> dueño decida activarla. Nada del código la llama: ni el gateway ni el ingest
+> están cableados a sus RPC.
+
+`db/migrations/0036_presupuesto_intentos.sql` es la versión duradera de
+`BudgetLedgerEnMemoria` (`src/metering/presupuesto.ts`):
+
+- **Tablas** (todas en `bvsala`, RLS activa): `presupuestos_proyecto` (tope y
+  lo comprometido, en micro-USD `bigint`, solo USD), `presupuesto_intentos` (la
+  máquina `reserved → dispatched → settled | uncertain → settled | estimated`,
+  y `reserved → released` solo con prueba de no-envío), `presupuesto_recibos`
+  (el recibo de D02, inmutable, UNIQUE por `receipt_event_id` y por intento),
+  `presupuesto_llamadas` (el `seq` por llamada lógica) y `presupuesto_outbox`
+  (un evento por transición, dedup por `event_id`, orden por proyecto +
+  llamada lógica).
+- **Triggers:** las transiciones permitidas y la reserva inmutable en
+  `presupuesto_intentos`; recibos que no se reescriben; eventos de la outbox
+  que solo cambian su `entregado_en`, una vez.
+- **RPC** (`security definer`, solo `service_role` ejecuta):
+  `presupuesto_definir`, `presupuesto_reservar` (el UPDATE condicional
+  `gastado + estimado + reservado + incierto + importe <= tope`, con la fila del
+  presupuesto bloqueada), `presupuesto_enviar`, `presupuesto_liquidar`,
+  `presupuesto_incierto`, `presupuesto_liberar`, `presupuesto_estimar`,
+  `presupuesto_abiertos` (la alerta por antigüedad) y
+  `presupuesto_outbox_pendientes` / `presupuesto_outbox_confirmar`.
+- **Privilegios:** ninguna tabla concede INSERT, UPDATE, DELETE ni TRUNCATE a
+  nadie (se escribe solo por RPC); el service role lee todas y los miembros de
+  la organización leen solo `presupuestos_proyecto` (`is_org_member`).
+- **No toca** `ingest_usage_batch`, `usage_daily` ni el cable de uso: regla 1
+  intacta. **Exige 0035 aplicada** y aborta sin ella (regla 2).
+- **Sin ejecutar nunca:** el repositorio no tiene parser de SQL ni base de
+  pruebas; `test/migracion-0036.test.ts` comprueba la forma, los privilegios y
+  que estados, transiciones, pruebas y el id de los eventos coinciden con el
+  SDK. Antes de aplicarla en producción, ensayarla en una base desechable.
+
+### Diagnóstico (solo lectura)
+
+```sql
+select to_regclass('bvsala.presupuesto_intentos') is not null as tabla_0036,
+       to_regprocedure('bvsala.presupuesto_reservar(uuid, text, text, integer, text, text, bigint, text, text, integer, text, text, text)') is not null as rpc_0036;
+```
+
+### Aplicar (cuando el dueño lo decida)
+
+El bucle del paso 2 con `PENDIENTES="0036"`, tras anotar la hora (regla 6),
+desde `db/migrations/0036_presupuesto_intentos.sql`.

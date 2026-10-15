@@ -1412,6 +1412,16 @@ export interface SavingsReport {
     baselineEstimate: number;
     actual: number;
     /**
+     * Present, and `true`, only when a billed call of this request reached the
+     * layer without its full provider counter (a stream cut before its final
+     * usage event, an endpoint that omitted a counter). `actual` then prices
+     * only the counters that did arrive, with the missing ones at 0: it is a
+     * FLOOR of what the provider billed, possibly 0, never the spend. The
+     * request is also `basis: "unmeasured"`. Do not add such an `actual` to
+     * measured spend. Absent whenever every counter arrived.
+     */
+    actualIsLowerBound?: true;
+    /**
      * The saving as a RATIO of the baseline: `1 - actual / baselineEstimate`,
      * rounded to six decimals (0 when nothing was saved or there is no baseline,
      * negative when the request cost more). Do not sum it across requests: sum
