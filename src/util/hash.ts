@@ -30,7 +30,15 @@ function rotr(x: number, n: number): number {
 }
 
 export function sha256(input: string): string {
-  const bytes = encoder.encode(input);
+  return sha256DeBytes(encoder.encode(input));
+}
+
+/**
+ * La misma SHA-256, sobre bytes en vez de sobre texto. Hace falta donde lo que
+ * se direcciona no es necesariamente UTF-8 válido (el almacén recuperable
+ * guarda bytes tal cual, y pasar por `string` los alteraría).
+ */
+export function sha256DeBytes(bytes: Uint8Array): string {
   const bitLen = bytes.length * 8;
 
   // Pad: append 0x80, then zeros, then 64-bit big-endian bit length.
@@ -79,4 +87,32 @@ export function sha256(input: string): string {
   let hex = "";
   for (let i = 0; i < 8; i++) hex += (h[i]! >>> 0).toString(16).padStart(8, "0");
   return hex;
+}
+
+/**
+ * HMAC-SHA256 (RFC 2104) sobre la SHA-256 de arriba, síncrona y sin
+ * `node:crypto`, por la misma razón que ella. Devuelve hex en minúsculas, igual
+ * que `createHmac("sha256", clave).update(mensaje).digest("hex")`.
+ */
+export function hmacSha256(clave: Uint8Array, mensaje: Uint8Array): string {
+  const BLOQUE = 64;
+  let k = clave.length > BLOQUE ? hexABytes(sha256DeBytes(clave)) : clave;
+  const relleno = new Uint8Array(BLOQUE);
+  relleno.set(k);
+  k = relleno;
+  const interior = new Uint8Array(BLOQUE + mensaje.length);
+  const exterior = new Uint8Array(BLOQUE + 32);
+  for (let i = 0; i < BLOQUE; i++) {
+    interior[i] = k[i]! ^ 0x36;
+    exterior[i] = k[i]! ^ 0x5c;
+  }
+  interior.set(mensaje, BLOQUE);
+  exterior.set(hexABytes(sha256DeBytes(interior)), BLOQUE);
+  return sha256DeBytes(exterior);
+}
+
+function hexABytes(hex: string): Uint8Array {
+  const out = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < out.length; i++) out[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
+  return out;
 }
