@@ -1,0 +1,2791 @@
+{
+  "fecha": "2026-10-15",
+  "metodo": "dry bench: seeded synthetic sessions (plan p. 11 families), a deterministic reader as the 'model' (answers from what each arm sends; in P-C it retrieves only when the preview is not enough), and the shadow-lane prefix-cache simulator (breakpoints on system and on the last block, 5m TTL). Input cost only, ESTIMATED.",
+  "advertencias": [
+    "offline: the reader is deterministic code, not an LLM; these results do NOT measure model quality",
+    "a paid replay (real model, real usage) needs budget approval; the approved budget for this round is 0",
+    "tokens are o200k_base, not Anthropic's tokenizer: USD is illustrative, the comparison between arms is the figure",
+    "output tokens are not simulated (also the small tool_use of each retrieval round)",
+    "retrievals happen only at the final question and are kept in the history of that call",
+    "P-D (Caveman) is not run: no pinned release/commit and third-party binaries are not downloaded or executed"
+  ],
+  "manifiesto": {
+    "semilla": 20261015,
+    "casosPorFamilia": 12,
+    "casos": 84,
+    "corpusSha256": "373e7aa6acdb7119dd1e096027c19ee7f4608b06af3813f10411024201d368ad",
+    "paquete": "@bivelio/savings-layer 0.5.2",
+    "tokenizador": "o200k_base (gpt-tokenizer)",
+    "catalogoDePrecios": "2026-09-29",
+    "transformaciones": {
+      "json-lossless": "1",
+      "recoverable-preview": "1"
+    },
+    "adaptador": "anthropic-messages/proyeccion-1",
+    "ordenDeBrazos": "alternated per case: even ids P-A,P-B,P-C; odd ids reversed; separate cache and store per arm"
+  },
+  "brazos": {
+    "P-A": {
+      "nombre": "referencia (Savings actual, caché nativa)",
+      "estado": "ejecutado"
+    },
+    "P-B": {
+      "nombre": "determinista (lossless-data, D03)",
+      "estado": "ejecutado"
+    },
+    "P-C": {
+      "nombre": "recuperable (proyección estable D06 + almacén D04)",
+      "estado": "ejecutado"
+    },
+    "P-D": {
+      "nombre": "competidor (Caveman estándar aislado)",
+      "estado": "no_ejecutado",
+      "motivo": "no release/commit pinned (D05 open) and, by the owner's rule, third-party binaries are not downloaded or executed"
+    }
+  },
+  "calidad": {
+    "P-A": {
+      "correctas": 84,
+      "total": 84,
+      "tasaPct": 100
+    },
+    "P-B": {
+      "correctas": 84,
+      "total": 84,
+      "tasaPct": 100
+    },
+    "P-C": {
+      "correctas": 84,
+      "total": 84,
+      "tasaPct": 100,
+      "correctasSinRecuperar": 67,
+      "recuperaciones": 43,
+      "recuperacionesExactas": 43
+    }
+  },
+  "resultados": {
+    "claude-sonnet-5": {
+      "frio": {
+        "P-A": {
+          "usdEstimado": 7.561403,
+          "ahorroPctFrenteA": 0,
+          "tokens": {
+            "entradaSinCache": 0,
+            "escrituraCache": 2497866,
+            "lecturaCache": 6583691,
+            "total": 9081557
+          },
+          "invalidacionUsd": 0.773124,
+          "overhead": {
+            "tokensEsquemaRecuperacion": 0,
+            "tokensRondasRecuperacion": 0,
+            "usdRondasRecuperacion": 0
+          },
+          "casosConAhorroNegativo": 0,
+          "usdPorTareaCorrecta": 0.090017
+        },
+        "P-B": {
+          "usdEstimado": 6.845165,
+          "ahorroPctFrenteA": 9.47,
+          "tokens": {
+            "entradaSinCache": 0,
+            "escrituraCache": 2266710,
+            "lecturaCache": 5891952,
+            "total": 8158662
+          },
+          "invalidacionUsd": 0.699074,
+          "overhead": {
+            "tokensEsquemaRecuperacion": 0,
+            "tokensRondasRecuperacion": 0,
+            "usdRondasRecuperacion": 0
+          },
+          "casosConAhorroNegativo": 0,
+          "usdPorTareaCorrecta": 0.08149
+        },
+        "P-C": {
+          "usdEstimado": 4.350504,
+          "ahorroPctFrenteA": 42.46,
+          "tokens": {
+            "entradaSinCache": 0,
+            "escrituraCache": 1473123,
+            "lecturaCache": 3338482,
+            "total": 4811605
+          },
+          "invalidacionUsd": 0.024385,
+          "overhead": {
+            "tokensEsquemaRecuperacion": 52894,
+            "tokensRondasRecuperacion": 1083291,
+            "usdRondasRecuperacion": 1.375677
+          },
+          "casosConAhorroNegativo": 28,
+          "usdPorTareaCorrecta": 0.051792
+        }
+      },
+      "caliente": {
+        "P-A": {
+          "usdEstimado": 7.538412,
+          "ahorroPctFrenteA": 0,
+          "tokens": {
+            "entradaSinCache": 0,
+            "escrituraCache": 2487870,
+            "lecturaCache": 6593687,
+            "total": 9081557
+          },
+          "invalidacionUsd": 0.773124,
+          "overhead": {
+            "tokensEsquemaRecuperacion": 0,
+            "tokensRondasRecuperacion": 0,
+            "usdRondasRecuperacion": 0
+          },
+          "casosConAhorroNegativo": 0,
+          "usdPorTareaCorrecta": 0.089743
+        },
+        "P-B": {
+          "usdEstimado": 6.822175,
+          "ahorroPctFrenteA": 9.5,
+          "tokens": {
+            "entradaSinCache": 0,
+            "escrituraCache": 2256714,
+            "lecturaCache": 5901948,
+            "total": 8158662
+          },
+          "invalidacionUsd": 0.699074,
+          "overhead": {
+            "tokensEsquemaRecuperacion": 0,
+            "tokensRondasRecuperacion": 0,
+            "usdRondasRecuperacion": 0
+          },
+          "casosConAhorroNegativo": 0,
+          "usdPorTareaCorrecta": 0.081216
+        },
+        "P-C": {
+          "usdEstimado": 4.307034,
+          "ahorroPctFrenteA": 42.87,
+          "tokens": {
+            "entradaSinCache": 0,
+            "escrituraCache": 1454223,
+            "lecturaCache": 3357382,
+            "total": 4811605
+          },
+          "invalidacionUsd": 0.024385,
+          "overhead": {
+            "tokensEsquemaRecuperacion": 52894,
+            "tokensRondasRecuperacion": 1083291,
+            "usdRondasRecuperacion": 1.375677
+          },
+          "casosConAhorroNegativo": 27,
+          "usdPorTareaCorrecta": 0.051274
+        }
+      }
+    },
+    "claude-opus-5-5": {
+      "frio": {
+        "P-A": {
+          "usdEstimado": 13.806068,
+          "ahorroPctFrenteA": 0,
+          "tokens": {
+            "entradaSinCache": 0,
+            "escrituraCache": 2497866,
+            "lecturaCache": 6583691,
+            "total": 9081557
+          },
+          "invalidacionUsd": 1.613477,
+          "overhead": {
+            "tokensEsquemaRecuperacion": 0,
+            "tokensRondasRecuperacion": 0,
+            "usdRondasRecuperacion": 0
+          },
+          "casosConAhorroNegativo": 0,
+          "usdPorTareaCorrecta": 0.164358
+        },
+        "P-B": {
+          "usdEstimado": 12.51194,
+          "ahorroPctFrenteA": 9.37,
+          "tokens": {
+            "entradaSinCache": 0,
+            "escrituraCache": 2266710,
+            "lecturaCache": 5891952,
+            "total": 8158662
+          },
+          "invalidacionUsd": 1.458936,
+          "overhead": {
+            "tokensEsquemaRecuperacion": 0,
+            "tokensRondasRecuperacion": 0,
+            "usdRondasRecuperacion": 0
+          },
+          "casosConAhorroNegativo": 0,
+          "usdPorTareaCorrecta": 0.148952
+        },
+        "P-C": {
+          "usdEstimado": 8.033311,
+          "ahorroPctFrenteA": 41.81,
+          "tokens": {
+            "entradaSinCache": 0,
+            "escrituraCache": 1473123,
+            "lecturaCache": 3338482,
+            "total": 4811605
+          },
+          "invalidacionUsd": 0.05089,
+          "overhead": {
+            "tokensEsquemaRecuperacion": 52894,
+            "tokensRondasRecuperacion": 1083291,
+            "usdRondasRecuperacion": 2.635479
+          },
+          "casosConAhorroNegativo": 28,
+          "usdPorTareaCorrecta": 0.095635
+        }
+      },
+      "caliente": {
+        "P-A": {
+          "usdEstimado": 13.758087,
+          "ahorroPctFrenteA": 0,
+          "tokens": {
+            "entradaSinCache": 0,
+            "escrituraCache": 2487870,
+            "lecturaCache": 6593687,
+            "total": 9081557
+          },
+          "invalidacionUsd": 1.613477,
+          "overhead": {
+            "tokensEsquemaRecuperacion": 0,
+            "tokensRondasRecuperacion": 0,
+            "usdRondasRecuperacion": 0
+          },
+          "casosConAhorroNegativo": 0,
+          "usdPorTareaCorrecta": 0.163787
+        },
+        "P-B": {
+          "usdEstimado": 12.46396,
+          "ahorroPctFrenteA": 9.41,
+          "tokens": {
+            "entradaSinCache": 0,
+            "escrituraCache": 2256714,
+            "lecturaCache": 5901948,
+            "total": 8158662
+          },
+          "invalidacionUsd": 1.458936,
+          "overhead": {
+            "tokensEsquemaRecuperacion": 0,
+            "tokensRondasRecuperacion": 0,
+            "usdRondasRecuperacion": 0
+          },
+          "casosConAhorroNegativo": 0,
+          "usdPorTareaCorrecta": 0.14838
+        },
+        "P-C": {
+          "usdEstimado": 7.942591,
+          "ahorroPctFrenteA": 42.27,
+          "tokens": {
+            "entradaSinCache": 0,
+            "escrituraCache": 1454223,
+            "lecturaCache": 3357382,
+            "total": 4811605
+          },
+          "invalidacionUsd": 0.05089,
+          "overhead": {
+            "tokensEsquemaRecuperacion": 52894,
+            "tokensRondasRecuperacion": 1083291,
+            "usdRondasRecuperacion": 2.635479
+          },
+          "casosConAhorroNegativo": 28,
+          "usdPorTareaCorrecta": 0.094555
+        }
+      }
+    }
+  },
+  "motivos": {
+    "P-A": {},
+    "P-B": {
+      "identity:duplicate_keys": 3,
+      "identity:not_json": 295,
+      "json-lossless:applied": 74
+    },
+    "P-C": {
+      "identity:born_before": 60,
+      "identity:duplicate_keys": 3,
+      "identity:not_json": 173,
+      "identity:recovery_result": 43,
+      "json-lossless:applied": 74,
+      "recoverable-preview:recoverable": 122
+    }
+  },
+  "porFamilia": {
+    "json-tablas": {
+      "P-A": {
+        "correctas": 12,
+        "total": 12,
+        "recuperaciones": 0,
+        "ahorroPctFrenteA": {
+          "claude-sonnet-5": {
+            "frio": 0,
+            "caliente": 0
+          },
+          "claude-opus-5-5": {
+            "frio": 0,
+            "caliente": 0
+          }
+        },
+        "casosConAhorroNegativo": {
+          "claude-sonnet-5": {
+            "frio": 0,
+            "caliente": 0
+          },
+          "claude-opus-5-5": {
+            "frio": 0,
+            "caliente": 0
+          }
+        }
+      },
+      "P-B": {
+        "correctas": 12,
+        "total": 12,
+        "recuperaciones": 0,
+        "ahorroPctFrenteA": {
+          "claude-sonnet-5": {
+            "frio": 25.73,
+            "caliente": 25.88
+          },
+          "claude-opus-5-5": {
+            "frio": 25.75,
+            "caliente": 25.91
+          }
+        },
+        "casosConAhorroNegativo": {
+          "claude-sonnet-5": {
+            "frio": 0,
+            "caliente": 0
+          },
+          "claude-opus-5-5": {
+            "frio": 0,
+            "caliente": 0
+          }
+        }
+      },
+      "P-C": {
+        "correctas": 12,
+        "total": 12,
+        "recuperaciones": 0,
+        "ahorroPctFrenteA": {
+          "claude-sonnet-5": {
+            "frio": 25.07,
+            "caliente": 25.75
+          },
+          "claude-opus-5-5": {
+            "frio": 25.11,
+            "caliente": 25.84
+          }
+        },
+        "casosConAhorroNegativo": {
+          "claude-sonnet-5": {
+            "frio": 3,
+            "caliente": 3
+          },
+          "claude-opus-5-5": {
+            "frio": 3,
+            "caliente": 3
+          }
+        }
+      }
+    },
+    "logs-tests": {
+      "P-A": {
+        "correctas": 12,
+        "total": 12,
+        "recuperaciones": 0,
+        "ahorroPctFrenteA": {
+          "claude-sonnet-5": {
+            "frio": 0,
+            "caliente": 0
+          },
+          "claude-opus-5-5": {
+            "frio": 0,
+            "caliente": 0
+          }
+        },
+        "casosConAhorroNegativo": {
+          "claude-sonnet-5": {
+            "frio": 0,
+            "caliente": 0
+          },
+          "claude-opus-5-5": {
+            "frio": 0,
+            "caliente": 0
+          }
+        }
+      },
+      "P-B": {
+        "correctas": 12,
+        "total": 12,
+        "recuperaciones": 0,
+        "ahorroPctFrenteA": {
+          "claude-sonnet-5": {
+            "frio": 0,
+            "caliente": 0
+          },
+          "claude-opus-5-5": {
+            "frio": 0,
+            "caliente": 0
+          }
+        },
+        "casosConAhorroNegativo": {
+          "claude-sonnet-5": {
+            "frio": 0,
+            "caliente": 0
+          },
+          "claude-opus-5-5": {
+            "frio": 0,
+            "caliente": 0
+          }
+        }
+      },
+      "P-C": {
+        "correctas": 12,
+        "total": 12,
+        "recuperaciones": 7,
+        "ahorroPctFrenteA": {
+          "claude-sonnet-5": {
+            "frio": 29.14,
+            "caliente": 30.21
+          },
+          "claude-opus-5-5": {
+            "frio": 27.52,
+            "caliente": 28.66
+          }
+        },
+        "casosConAhorroNegativo": {
+          "claude-sonnet-5": {
+            "frio": 9,
+            "caliente": 8
+          },
+          "claude-opus-5-5": {
+            "frio": 9,
+            "caliente": 9
+          }
+        }
+      }
+    },
+    "sesion-larga": {
+      "P-A": {
+        "correctas": 12,
+        "total": 12,
+        "recuperaciones": 0,
+        "ahorroPctFrenteA": {
+          "claude-sonnet-5": {
+            "frio": 0,
+            "caliente": 0
+          },
+          "claude-opus-5-5": {
+            "frio": 0,
+            "caliente": 0
+          }
+        },
+        "casosConAhorroNegativo": {
+          "claude-sonnet-5": {
+            "frio": 0,
+            "caliente": 0
+          },
+          "claude-opus-5-5": {
+            "frio": 0,
+            "caliente": 0
+          }
+        }
+      },
+      "P-B": {
+        "correctas": 12,
+        "total": 12,
+        "recuperaciones": 0,
+        "ahorroPctFrenteA": {
+          "claude-sonnet-5": {
+            "frio": 14.02,
+            "caliente": 14.05
+          },
+          "claude-opus-5-5": {
+            "frio": 13.79,
+            "caliente": 13.82
+          }
+        },
+        "casosConAhorroNegativo": {
+          "claude-sonnet-5": {
+            "frio": 0,
+            "caliente": 0
+          },
+          "claude-opus-5-5": {
+            "frio": 0,
+            "caliente": 0
+          }
+        }
+      },
+      "P-C": {
+        "correctas": 12,
+        "total": 12,
+        "recuperaciones": 0,
+        "ahorroPctFrenteA": {
+          "claude-sonnet-5": {
+            "frio": 65.24,
+            "caliente": 65.51
+          },
+          "claude-opus-5-5": {
+            "frio": 65.67,
+            "caliente": 65.98
+          }
+        },
+        "casosConAhorroNegativo": {
+          "claude-sonnet-5": {
+            "frio": 0,
+            "caliente": 0
+          },
+          "claude-opus-5-5": {
+            "frio": 0,
+            "caliente": 0
+          }
+        }
+      }
+    },
+    "sesion-fork": {
+      "P-A": {
+        "correctas": 12,
+        "total": 12,
+        "recuperaciones": 0,
+        "ahorroPctFrenteA": {
+          "claude-sonnet-5": {
+            "frio": 0,
+            "caliente": 0
+          },
+          "claude-opus-5-5": {
+            "frio": 0,
+            "caliente": 0
+          }
+        },
+        "casosConAhorroNegativo": {
+          "claude-sonnet-5": {
+            "frio": 0,
+            "caliente": 0
+          },
+          "claude-opus-5-5": {
+            "frio": 0,
+            "caliente": 0
+          }
+        }
+      },
+      "P-B": {
+        "correctas": 12,
+        "total": 12,
+        "recuperaciones": 0,
+        "ahorroPctFrenteA": {
+          "claude-sonnet-5": {
+            "frio": 10.46,
+            "caliente": 10.47
+          },
+          "claude-opus-5-5": {
+            "frio": 10.39,
+            "caliente": 10.41
+          }
+        },
+        "casosConAhorroNegativo": {
+          "claude-sonnet-5": {
+            "frio": 0,
+            "caliente": 0
+          },
+          "claude-opus-5-5": {
+            "frio": 0,
+            "caliente": 0
+          }
+        }
+      },
+      "P-C": {
+        "correctas": 12,
+        "total": 12,
+        "recuperaciones": 0,
+        "ahorroPctFrenteA": {
+          "claude-sonnet-5": {
+            "frio": 44.15,
+            "caliente": 44.3
+          },
+          "claude-opus-5-5": {
+            "frio": 44.93,
+            "caliente": 45.1
+          }
+        },
+        "casosConAhorroNegativo": {
+          "claude-sonnet-5": {
+            "frio": 0,
+            "caliente": 0
+          },
+          "claude-opus-5-5": {
+            "frio": 0,
+            "caliente": 0
+          }
+        }
+      }
+    },
+    "sesion-recuperacion-frecuente": {
+      "P-A": {
+        "correctas": 12,
+        "total": 12,
+        "recuperaciones": 0,
+        "ahorroPctFrenteA": {
+          "claude-sonnet-5": {
+            "frio": 0,
+            "caliente": 0
+          },
+          "claude-opus-5-5": {
+            "frio": 0,
+            "caliente": 0
+          }
+        },
+        "casosConAhorroNegativo": {
+          "claude-sonnet-5": {
+            "frio": 0,
+            "caliente": 0
+          },
+          "claude-opus-5-5": {
+            "frio": 0,
+            "caliente": 0
+          }
+        }
+      },
+      "P-B": {
+        "correctas": 12,
+        "total": 12,
+        "recuperaciones": 0,
+        "ahorroPctFrenteA": {
+          "claude-sonnet-5": {
+            "frio": 0,
+            "caliente": 0
+          },
+          "claude-opus-5-5": {
+            "frio": 0,
+            "caliente": 0
+          }
+        },
+        "casosConAhorroNegativo": {
+          "claude-sonnet-5": {
+            "frio": 0,
+            "caliente": 0
+          },
+          "claude-opus-5-5": {
+            "frio": 0,
+            "caliente": 0
+          }
+        }
+      },
+      "P-C": {
+        "correctas": 12,
+        "total": 12,
+        "recuperaciones": 36,
+        "ahorroPctFrenteA": {
+          "claude-sonnet-5": {
+            "frio": 25.76,
+            "caliente": 25.97
+          },
+          "claude-opus-5-5": {
+            "frio": 23.3,
+            "caliente": 23.54
+          }
+        },
+        "casosConAhorroNegativo": {
+          "claude-sonnet-5": {
+            "frio": 0,
+            "caliente": 0
+          },
+          "claude-opus-5-5": {
+            "frio": 0,
+            "caliente": 0
+          }
+        }
+      }
+    },
+    "sesion-noop": {
+      "P-A": {
+        "correctas": 12,
+        "total": 12,
+        "recuperaciones": 0,
+        "ahorroPctFrenteA": {
+          "claude-sonnet-5": {
+            "frio": 0,
+            "caliente": 0
+          },
+          "claude-opus-5-5": {
+            "frio": 0,
+            "caliente": 0
+          }
+        },
+        "casosConAhorroNegativo": {
+          "claude-sonnet-5": {
+            "frio": 0,
+            "caliente": 0
+          },
+          "claude-opus-5-5": {
+            "frio": 0,
+            "caliente": 0
+          }
+        }
+      },
+      "P-B": {
+        "correctas": 12,
+        "total": 12,
+        "recuperaciones": 0,
+        "ahorroPctFrenteA": {
+          "claude-sonnet-5": {
+            "frio": 0,
+            "caliente": 0
+          },
+          "claude-opus-5-5": {
+            "frio": 0,
+            "caliente": 0
+          }
+        },
+        "casosConAhorroNegativo": {
+          "claude-sonnet-5": {
+            "frio": 0,
+            "caliente": 0
+          },
+          "claude-opus-5-5": {
+            "frio": 0,
+            "caliente": 0
+          }
+        }
+      },
+      "P-C": {
+        "correctas": 12,
+        "total": 12,
+        "recuperaciones": 0,
+        "ahorroPctFrenteA": {
+          "claude-sonnet-5": {
+            "frio": -7.98,
+            "caliente": -3.2
+          },
+          "claude-opus-5-5": {
+            "frio": -7.55,
+            "caliente": -1.82
+          }
+        },
+        "casosConAhorroNegativo": {
+          "claude-sonnet-5": {
+            "frio": 12,
+            "caliente": 12
+          },
+          "claude-opus-5-5": {
+            "frio": 12,
+            "caliente": 12
+          }
+        }
+      }
+    },
+    "sesion-corta": {
+      "P-A": {
+        "correctas": 12,
+        "total": 12,
+        "recuperaciones": 0,
+        "ahorroPctFrenteA": {
+          "claude-sonnet-5": {
+            "frio": 0,
+            "caliente": 0
+          },
+          "claude-opus-5-5": {
+            "frio": 0,
+            "caliente": 0
+          }
+        },
+        "casosConAhorroNegativo": {
+          "claude-sonnet-5": {
+            "frio": 0,
+            "caliente": 0
+          },
+          "claude-opus-5-5": {
+            "frio": 0,
+            "caliente": 0
+          }
+        }
+      },
+      "P-B": {
+        "correctas": 12,
+        "total": 12,
+        "recuperaciones": 0,
+        "ahorroPctFrenteA": {
+          "claude-sonnet-5": {
+            "frio": 16.22,
+            "caliente": 17.58
+          },
+          "claude-opus-5-5": {
+            "frio": 16.21,
+            "caliente": 17.69
+          }
+        },
+        "casosConAhorroNegativo": {
+          "claude-sonnet-5": {
+            "frio": 0,
+            "caliente": 0
+          },
+          "claude-opus-5-5": {
+            "frio": 0,
+            "caliente": 0
+          }
+        }
+      },
+      "P-C": {
+        "correctas": 12,
+        "total": 12,
+        "recuperaciones": 0,
+        "ahorroPctFrenteA": {
+          "claude-sonnet-5": {
+            "frio": 8.14,
+            "caliente": 16.28
+          },
+          "claude-opus-5-5": {
+            "frio": 8.14,
+            "caliente": 17.01
+          }
+        },
+        "casosConAhorroNegativo": {
+          "claude-sonnet-5": {
+            "frio": 4,
+            "caliente": 4
+          },
+          "claude-opus-5-5": {
+            "frio": 4,
+            "caliente": 4
+          }
+        }
+      }
+    }
+  },
+  "porCaso": [
+    {
+      "id": "json-tablas-0000",
+      "familia": "json-tablas",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.03907,
+          "P-B": 0.025605,
+          "P-C": 0.025913
+        },
+        "caliente": {
+          "P-A": 0.038797,
+          "P-B": 0.025332,
+          "P-C": 0.025395
+        }
+      }
+    },
+    {
+      "id": "json-tablas-0001",
+      "familia": "json-tablas",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.055702,
+          "P-B": 0.036421,
+          "P-C": 0.036728
+        },
+        "caliente": {
+          "P-A": 0.055428,
+          "P-B": 0.036147,
+          "P-C": 0.036211
+        }
+      }
+    },
+    {
+      "id": "json-tablas-0002",
+      "familia": "json-tablas",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.057963,
+          "P-B": 0.037715,
+          "P-C": 0.038023
+        },
+        "caliente": {
+          "P-A": 0.057689,
+          "P-B": 0.037442,
+          "P-C": 0.037505
+        }
+      }
+    },
+    {
+      "id": "json-tablas-0003",
+      "familia": "json-tablas",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.050663,
+          "P-B": 0.050663,
+          "P-C": 0.05097
+        },
+        "caliente": {
+          "P-A": 0.050389,
+          "P-B": 0.050389,
+          "P-C": 0.050453
+        }
+      }
+    },
+    {
+      "id": "json-tablas-0004",
+      "familia": "json-tablas",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.046887,
+          "P-B": 0.030525,
+          "P-C": 0.030832
+        },
+        "caliente": {
+          "P-A": 0.046613,
+          "P-B": 0.030251,
+          "P-C": 0.030315
+        }
+      }
+    },
+    {
+      "id": "json-tablas-0005",
+      "familia": "json-tablas",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.028452,
+          "P-B": 0.018745,
+          "P-C": 0.019053
+        },
+        "caliente": {
+          "P-A": 0.028178,
+          "P-B": 0.018472,
+          "P-C": 0.018535
+        }
+      }
+    },
+    {
+      "id": "json-tablas-0006",
+      "familia": "json-tablas",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.045707,
+          "P-B": 0.029818,
+          "P-C": 0.030125
+        },
+        "caliente": {
+          "P-A": 0.045433,
+          "P-B": 0.029544,
+          "P-C": 0.029608
+        }
+      }
+    },
+    {
+      "id": "json-tablas-0007",
+      "familia": "json-tablas",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.03435,
+          "P-B": 0.03435,
+          "P-C": 0.034657
+        },
+        "caliente": {
+          "P-A": 0.034076,
+          "P-B": 0.034076,
+          "P-C": 0.03414
+        }
+      }
+    },
+    {
+      "id": "json-tablas-0008",
+      "familia": "json-tablas",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.048601,
+          "P-B": 0.031726,
+          "P-C": 0.032033
+        },
+        "caliente": {
+          "P-A": 0.048327,
+          "P-B": 0.031452,
+          "P-C": 0.031516
+        }
+      }
+    },
+    {
+      "id": "json-tablas-0009",
+      "familia": "json-tablas",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.050467,
+          "P-B": 0.033006,
+          "P-C": 0.033313
+        },
+        "caliente": {
+          "P-A": 0.050193,
+          "P-B": 0.032732,
+          "P-C": 0.032796
+        }
+      }
+    },
+    {
+      "id": "json-tablas-0010",
+      "familia": "json-tablas",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.040105,
+          "P-B": 0.02627,
+          "P-C": 0.026578
+        },
+        "caliente": {
+          "P-A": 0.039832,
+          "P-B": 0.025997,
+          "P-C": 0.02606
+        }
+      }
+    },
+    {
+      "id": "json-tablas-0011",
+      "familia": "json-tablas",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.058234,
+          "P-B": 0.058234,
+          "P-C": 0.058541
+        },
+        "caliente": {
+          "P-A": 0.05796,
+          "P-B": 0.05796,
+          "P-C": 0.058024
+        }
+      }
+    },
+    {
+      "id": "logs-tests-0000",
+      "familia": "logs-tests",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 1,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.031149,
+          "P-B": 0.031149,
+          "P-C": 0.032146
+        },
+        "caliente": {
+          "P-A": 0.030876,
+          "P-B": 0.030876,
+          "P-C": 0.031629
+        }
+      }
+    },
+    {
+      "id": "logs-tests-0001",
+      "familia": "logs-tests",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.045674,
+          "P-B": 0.045674,
+          "P-C": 0.004258
+        },
+        "caliente": {
+          "P-A": 0.0454,
+          "P-B": 0.0454,
+          "P-C": 0.003741
+        }
+      }
+    },
+    {
+      "id": "logs-tests-0002",
+      "familia": "logs-tests",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 1,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.024744,
+          "P-B": 0.024744,
+          "P-C": 0.025569
+        },
+        "caliente": {
+          "P-A": 0.024471,
+          "P-B": 0.024471,
+          "P-C": 0.025051
+        }
+      }
+    },
+    {
+      "id": "logs-tests-0003",
+      "familia": "logs-tests",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.015657,
+          "P-B": 0.015657,
+          "P-C": 0.015965
+        },
+        "caliente": {
+          "P-A": 0.015383,
+          "P-B": 0.015383,
+          "P-C": 0.015447
+        }
+      }
+    },
+    {
+      "id": "logs-tests-0004",
+      "familia": "logs-tests",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 1,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.03917,
+          "P-B": 0.03917,
+          "P-C": 0.039312
+        },
+        "caliente": {
+          "P-A": 0.038897,
+          "P-B": 0.038897,
+          "P-C": 0.038795
+        }
+      }
+    },
+    {
+      "id": "logs-tests-0005",
+      "familia": "logs-tests",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.033289,
+          "P-B": 0.033289,
+          "P-C": 0.003875
+        },
+        "caliente": {
+          "P-A": 0.033015,
+          "P-B": 0.033015,
+          "P-C": 0.003357
+        }
+      }
+    },
+    {
+      "id": "logs-tests-0006",
+      "familia": "logs-tests",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 1,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.039745,
+          "P-B": 0.039745,
+          "P-C": 0.040115
+        },
+        "caliente": {
+          "P-A": 0.039472,
+          "P-B": 0.039472,
+          "P-C": 0.039597
+        }
+      }
+    },
+    {
+      "id": "logs-tests-0007",
+      "familia": "logs-tests",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 1,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.023094,
+          "P-B": 0.023094,
+          "P-C": 0.024596
+        },
+        "caliente": {
+          "P-A": 0.022821,
+          "P-B": 0.022821,
+          "P-C": 0.024078
+        }
+      }
+    },
+    {
+      "id": "logs-tests-0008",
+      "familia": "logs-tests",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 1,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.023781,
+          "P-B": 0.023781,
+          "P-C": 0.025195
+        },
+        "caliente": {
+          "P-A": 0.023507,
+          "P-B": 0.023507,
+          "P-C": 0.024677
+        }
+      }
+    },
+    {
+      "id": "logs-tests-0009",
+      "familia": "logs-tests",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 1,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.027113,
+          "P-B": 0.027113,
+          "P-C": 0.028372
+        },
+        "caliente": {
+          "P-A": 0.026839,
+          "P-B": 0.026839,
+          "P-C": 0.027855
+        }
+      }
+    },
+    {
+      "id": "logs-tests-0010",
+      "familia": "logs-tests",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.04628,
+          "P-B": 0.04628,
+          "P-C": 0.003055
+        },
+        "caliente": {
+          "P-A": 0.046006,
+          "P-B": 0.046006,
+          "P-C": 0.002538
+        }
+      }
+    },
+    {
+      "id": "logs-tests-0011",
+      "familia": "logs-tests",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.017207,
+          "P-B": 0.017207,
+          "P-C": 0.017515
+        },
+        "caliente": {
+          "P-A": 0.016934,
+          "P-B": 0.016934,
+          "P-C": 0.016997
+        }
+      }
+    },
+    {
+      "id": "sesion-larga-0000",
+      "familia": "sesion-larga",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.17532,
+          "P-B": 0.157363,
+          "P-C": 0.04733
+        },
+        "caliente": {
+          "P-A": 0.175046,
+          "P-B": 0.157089,
+          "P-C": 0.046813
+        }
+      }
+    },
+    {
+      "id": "sesion-larga-0001",
+      "familia": "sesion-larga",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.096389,
+          "P-B": 0.092799,
+          "P-C": 0.015968
+        },
+        "caliente": {
+          "P-A": 0.096115,
+          "P-B": 0.092525,
+          "P-C": 0.015451
+        }
+      }
+    },
+    {
+      "id": "sesion-larga-0002",
+      "familia": "sesion-larga",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.137219,
+          "P-B": 0.122326,
+          "P-C": 0.056781
+        },
+        "caliente": {
+          "P-A": 0.136945,
+          "P-B": 0.122052,
+          "P-C": 0.056263
+        }
+      }
+    },
+    {
+      "id": "sesion-larga-0003",
+      "familia": "sesion-larga",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.193848,
+          "P-B": 0.154938,
+          "P-C": 0.077414
+        },
+        "caliente": {
+          "P-A": 0.193575,
+          "P-B": 0.154664,
+          "P-C": 0.076896
+        }
+      }
+    },
+    {
+      "id": "sesion-larga-0004",
+      "familia": "sesion-larga",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.253446,
+          "P-B": 0.196932,
+          "P-C": 0.111718
+        },
+        "caliente": {
+          "P-A": 0.253172,
+          "P-B": 0.196659,
+          "P-C": 0.111201
+        }
+      }
+    },
+    {
+      "id": "sesion-larga-0005",
+      "familia": "sesion-larga",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.177926,
+          "P-B": 0.177926,
+          "P-C": 0.016857
+        },
+        "caliente": {
+          "P-A": 0.177653,
+          "P-B": 0.177653,
+          "P-C": 0.01634
+        }
+      }
+    },
+    {
+      "id": "sesion-larga-0006",
+      "familia": "sesion-larga",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.142364,
+          "P-B": 0.124036,
+          "P-C": 0.058731
+        },
+        "caliente": {
+          "P-A": 0.142091,
+          "P-B": 0.123763,
+          "P-C": 0.058213
+        }
+      }
+    },
+    {
+      "id": "sesion-larga-0007",
+      "familia": "sesion-larga",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.220223,
+          "P-B": 0.17636,
+          "P-C": 0.087044
+        },
+        "caliente": {
+          "P-A": 0.219949,
+          "P-B": 0.176086,
+          "P-C": 0.086526
+        }
+      }
+    },
+    {
+      "id": "sesion-larga-0008",
+      "familia": "sesion-larga",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.121362,
+          "P-B": 0.105854,
+          "P-C": 0.039388
+        },
+        "caliente": {
+          "P-A": 0.121088,
+          "P-B": 0.10558,
+          "P-C": 0.038871
+        }
+      }
+    },
+    {
+      "id": "sesion-larga-0009",
+      "familia": "sesion-larga",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.175614,
+          "P-B": 0.141915,
+          "P-C": 0.069585
+        },
+        "caliente": {
+          "P-A": 0.17534,
+          "P-B": 0.141642,
+          "P-C": 0.069067
+        }
+      }
+    },
+    {
+      "id": "sesion-larga-0010",
+      "familia": "sesion-larga",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.146318,
+          "P-B": 0.131588,
+          "P-C": 0.039681
+        },
+        "caliente": {
+          "P-A": 0.146044,
+          "P-B": 0.131315,
+          "P-C": 0.039163
+        }
+      }
+    },
+    {
+      "id": "sesion-larga-0011",
+      "familia": "sesion-larga",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.092042,
+          "P-B": 0.079115,
+          "P-C": 0.051041
+        },
+        "caliente": {
+          "P-A": 0.091768,
+          "P-B": 0.078841,
+          "P-C": 0.050523
+        }
+      }
+    },
+    {
+      "id": "sesion-fork-0000",
+      "familia": "sesion-fork",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.302451,
+          "P-B": 0.284376,
+          "P-C": 0.157228
+        },
+        "caliente": {
+          "P-A": 0.302177,
+          "P-B": 0.284103,
+          "P-C": 0.156711
+        }
+      }
+    },
+    {
+      "id": "sesion-fork-0001",
+      "familia": "sesion-fork",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.136348,
+          "P-B": 0.122212,
+          "P-C": 0.095728
+        },
+        "caliente": {
+          "P-A": 0.136074,
+          "P-B": 0.121938,
+          "P-C": 0.095211
+        }
+      }
+    },
+    {
+      "id": "sesion-fork-0002",
+      "familia": "sesion-fork",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.145373,
+          "P-B": 0.140199,
+          "P-C": 0.063254
+        },
+        "caliente": {
+          "P-A": 0.145099,
+          "P-B": 0.139925,
+          "P-C": 0.062737
+        }
+      }
+    },
+    {
+      "id": "sesion-fork-0003",
+      "familia": "sesion-fork",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.207079,
+          "P-B": 0.185297,
+          "P-C": 0.108293
+        },
+        "caliente": {
+          "P-A": 0.206805,
+          "P-B": 0.185023,
+          "P-C": 0.107776
+        }
+      }
+    },
+    {
+      "id": "sesion-fork-0004",
+      "familia": "sesion-fork",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.168194,
+          "P-B": 0.168194,
+          "P-C": 0.063493
+        },
+        "caliente": {
+          "P-A": 0.16792,
+          "P-B": 0.16792,
+          "P-C": 0.062976
+        }
+      }
+    },
+    {
+      "id": "sesion-fork-0005",
+      "familia": "sesion-fork",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.350118,
+          "P-B": 0.288873,
+          "P-C": 0.220301
+        },
+        "caliente": {
+          "P-A": 0.349844,
+          "P-B": 0.288599,
+          "P-C": 0.219783
+        }
+      }
+    },
+    {
+      "id": "sesion-fork-0006",
+      "familia": "sesion-fork",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.362356,
+          "P-B": 0.305679,
+          "P-C": 0.222411
+        },
+        "caliente": {
+          "P-A": 0.362083,
+          "P-B": 0.305405,
+          "P-C": 0.221894
+        }
+      }
+    },
+    {
+      "id": "sesion-fork-0007",
+      "familia": "sesion-fork",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.264247,
+          "P-B": 0.250814,
+          "P-C": 0.120835
+        },
+        "caliente": {
+          "P-A": 0.263973,
+          "P-B": 0.25054,
+          "P-C": 0.120318
+        }
+      }
+    },
+    {
+      "id": "sesion-fork-0008",
+      "familia": "sesion-fork",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.374391,
+          "P-B": 0.327821,
+          "P-C": 0.20716
+        },
+        "caliente": {
+          "P-A": 0.374117,
+          "P-B": 0.327547,
+          "P-C": 0.206643
+        }
+      }
+    },
+    {
+      "id": "sesion-fork-0009",
+      "familia": "sesion-fork",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.171932,
+          "P-B": 0.171932,
+          "P-C": 0.076386
+        },
+        "caliente": {
+          "P-A": 0.171658,
+          "P-B": 0.171658,
+          "P-C": 0.075869
+        }
+      }
+    },
+    {
+      "id": "sesion-fork-0010",
+      "familia": "sesion-fork",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.291549,
+          "P-B": 0.243772,
+          "P-C": 0.197554
+        },
+        "caliente": {
+          "P-A": 0.291275,
+          "P-B": 0.243499,
+          "P-C": 0.197037
+        }
+      }
+    },
+    {
+      "id": "sesion-fork-0011",
+      "familia": "sesion-fork",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.049224,
+          "P-B": 0.038792,
+          "P-C": 0.044279
+        },
+        "caliente": {
+          "P-A": 0.04895,
+          "P-B": 0.038518,
+          "P-C": 0.043762
+        }
+      }
+    },
+    {
+      "id": "sesion-recuperacion-frecuente-0000",
+      "familia": "sesion-recuperacion-frecuente",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 3,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.132371,
+          "P-B": 0.132371,
+          "P-C": 0.100991
+        },
+        "caliente": {
+          "P-A": 0.132097,
+          "P-B": 0.132097,
+          "P-C": 0.100474
+        }
+      }
+    },
+    {
+      "id": "sesion-recuperacion-frecuente-0001",
+      "familia": "sesion-recuperacion-frecuente",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 3,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.14092,
+          "P-B": 0.14092,
+          "P-C": 0.11334
+        },
+        "caliente": {
+          "P-A": 0.140647,
+          "P-B": 0.140647,
+          "P-C": 0.112822
+        }
+      }
+    },
+    {
+      "id": "sesion-recuperacion-frecuente-0002",
+      "familia": "sesion-recuperacion-frecuente",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 3,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.146227,
+          "P-B": 0.146227,
+          "P-C": 0.102712
+        },
+        "caliente": {
+          "P-A": 0.145953,
+          "P-B": 0.145953,
+          "P-C": 0.102195
+        }
+      }
+    },
+    {
+      "id": "sesion-recuperacion-frecuente-0003",
+      "familia": "sesion-recuperacion-frecuente",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 3,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.133282,
+          "P-B": 0.133282,
+          "P-C": 0.097711
+        },
+        "caliente": {
+          "P-A": 0.133008,
+          "P-B": 0.133008,
+          "P-C": 0.097193
+        }
+      }
+    },
+    {
+      "id": "sesion-recuperacion-frecuente-0004",
+      "familia": "sesion-recuperacion-frecuente",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 3,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.184241,
+          "P-B": 0.184241,
+          "P-C": 0.135855
+        },
+        "caliente": {
+          "P-A": 0.183967,
+          "P-B": 0.183967,
+          "P-C": 0.135337
+        }
+      }
+    },
+    {
+      "id": "sesion-recuperacion-frecuente-0005",
+      "familia": "sesion-recuperacion-frecuente",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 3,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.15627,
+          "P-B": 0.15627,
+          "P-C": 0.111605
+        },
+        "caliente": {
+          "P-A": 0.155997,
+          "P-B": 0.155997,
+          "P-C": 0.111088
+        }
+      }
+    },
+    {
+      "id": "sesion-recuperacion-frecuente-0006",
+      "familia": "sesion-recuperacion-frecuente",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 3,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.146762,
+          "P-B": 0.146762,
+          "P-C": 0.102746
+        },
+        "caliente": {
+          "P-A": 0.146488,
+          "P-B": 0.146488,
+          "P-C": 0.102229
+        }
+      }
+    },
+    {
+      "id": "sesion-recuperacion-frecuente-0007",
+      "familia": "sesion-recuperacion-frecuente",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 3,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.179624,
+          "P-B": 0.179624,
+          "P-C": 0.138695
+        },
+        "caliente": {
+          "P-A": 0.179351,
+          "P-B": 0.179351,
+          "P-C": 0.138177
+        }
+      }
+    },
+    {
+      "id": "sesion-recuperacion-frecuente-0008",
+      "familia": "sesion-recuperacion-frecuente",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 3,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.112184,
+          "P-B": 0.112184,
+          "P-C": 0.086362
+        },
+        "caliente": {
+          "P-A": 0.11191,
+          "P-B": 0.11191,
+          "P-C": 0.085845
+        }
+      }
+    },
+    {
+      "id": "sesion-recuperacion-frecuente-0009",
+      "familia": "sesion-recuperacion-frecuente",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 3,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.148334,
+          "P-B": 0.148334,
+          "P-C": 0.107122
+        },
+        "caliente": {
+          "P-A": 0.14806,
+          "P-B": 0.14806,
+          "P-C": 0.106604
+        }
+      }
+    },
+    {
+      "id": "sesion-recuperacion-frecuente-0010",
+      "familia": "sesion-recuperacion-frecuente",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 3,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.16949,
+          "P-B": 0.16949,
+          "P-C": 0.133839
+        },
+        "caliente": {
+          "P-A": 0.169216,
+          "P-B": 0.169216,
+          "P-C": 0.133322
+        }
+      }
+    },
+    {
+      "id": "sesion-recuperacion-frecuente-0011",
+      "familia": "sesion-recuperacion-frecuente",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 3,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.131773,
+          "P-B": 0.131773,
+          "P-C": 0.09159
+        },
+        "caliente": {
+          "P-A": 0.131499,
+          "P-B": 0.131499,
+          "P-C": 0.091073
+        }
+      }
+    },
+    {
+      "id": "sesion-noop-0000",
+      "familia": "sesion-noop",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.004694,
+          "P-B": 0.004694,
+          "P-C": 0.005086
+        },
+        "caliente": {
+          "P-A": 0.00442,
+          "P-B": 0.00442,
+          "P-C": 0.004569
+        }
+      }
+    },
+    {
+      "id": "sesion-noop-0001",
+      "familia": "sesion-noop",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.004247,
+          "P-B": 0.004247,
+          "P-C": 0.004639
+        },
+        "caliente": {
+          "P-A": 0.003973,
+          "P-B": 0.003973,
+          "P-C": 0.004122
+        }
+      }
+    },
+    {
+      "id": "sesion-noop-0002",
+      "familia": "sesion-noop",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.00534,
+          "P-B": 0.00534,
+          "P-C": 0.005733
+        },
+        "caliente": {
+          "P-A": 0.005067,
+          "P-B": 0.005067,
+          "P-C": 0.005215
+        }
+      }
+    },
+    {
+      "id": "sesion-noop-0003",
+      "familia": "sesion-noop",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.004346,
+          "P-B": 0.004346,
+          "P-C": 0.004738
+        },
+        "caliente": {
+          "P-A": 0.004072,
+          "P-B": 0.004072,
+          "P-C": 0.004221
+        }
+      }
+    },
+    {
+      "id": "sesion-noop-0004",
+      "familia": "sesion-noop",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.004346,
+          "P-B": 0.004346,
+          "P-C": 0.004738
+        },
+        "caliente": {
+          "P-A": 0.004072,
+          "P-B": 0.004072,
+          "P-C": 0.00422
+        }
+      }
+    },
+    {
+      "id": "sesion-noop-0005",
+      "familia": "sesion-noop",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.005172,
+          "P-B": 0.005172,
+          "P-C": 0.005564
+        },
+        "caliente": {
+          "P-A": 0.004898,
+          "P-B": 0.004898,
+          "P-C": 0.005047
+        }
+      }
+    },
+    {
+      "id": "sesion-noop-0006",
+      "familia": "sesion-noop",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.004713,
+          "P-B": 0.004713,
+          "P-C": 0.005105
+        },
+        "caliente": {
+          "P-A": 0.004439,
+          "P-B": 0.004439,
+          "P-C": 0.004588
+        }
+      }
+    },
+    {
+      "id": "sesion-noop-0007",
+      "familia": "sesion-noop",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.005006,
+          "P-B": 0.005006,
+          "P-C": 0.005398
+        },
+        "caliente": {
+          "P-A": 0.004732,
+          "P-B": 0.004732,
+          "P-C": 0.00488
+        }
+      }
+    },
+    {
+      "id": "sesion-noop-0008",
+      "familia": "sesion-noop",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.005772,
+          "P-B": 0.005772,
+          "P-C": 0.006164
+        },
+        "caliente": {
+          "P-A": 0.005498,
+          "P-B": 0.005498,
+          "P-C": 0.005647
+        }
+      }
+    },
+    {
+      "id": "sesion-noop-0009",
+      "familia": "sesion-noop",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.005393,
+          "P-B": 0.005393,
+          "P-C": 0.005785
+        },
+        "caliente": {
+          "P-A": 0.005119,
+          "P-B": 0.005119,
+          "P-C": 0.005268
+        }
+      }
+    },
+    {
+      "id": "sesion-noop-0010",
+      "familia": "sesion-noop",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.004472,
+          "P-B": 0.004472,
+          "P-C": 0.004864
+        },
+        "caliente": {
+          "P-A": 0.004198,
+          "P-B": 0.004198,
+          "P-C": 0.004347
+        }
+      }
+    },
+    {
+      "id": "sesion-noop-0011",
+      "familia": "sesion-noop",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.005473,
+          "P-B": 0.005473,
+          "P-C": 0.005866
+        },
+        "caliente": {
+          "P-A": 0.0052,
+          "P-B": 0.0052,
+          "P-C": 0.005348
+        }
+      }
+    },
+    {
+      "id": "sesion-corta-0000",
+      "familia": "sesion-corta",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.002273,
+          "P-B": 0.001633,
+          "P-C": 0.00192
+        },
+        "caliente": {
+          "P-A": 0.002,
+          "P-B": 0.00136,
+          "P-C": 0.001402
+        }
+      }
+    },
+    {
+      "id": "sesion-corta-0001",
+      "familia": "sesion-corta",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.004564,
+          "P-B": 0.004564,
+          "P-C": 0.004851
+        },
+        "caliente": {
+          "P-A": 0.004291,
+          "P-B": 0.004291,
+          "P-C": 0.004333
+        }
+      }
+    },
+    {
+      "id": "sesion-corta-0002",
+      "familia": "sesion-corta",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.002484,
+          "P-B": 0.001785,
+          "P-C": 0.002071
+        },
+        "caliente": {
+          "P-A": 0.00221,
+          "P-B": 0.001511,
+          "P-C": 0.001553
+        }
+      }
+    },
+    {
+      "id": "sesion-corta-0003",
+      "familia": "sesion-corta",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.002919,
+          "P-B": 0.002039,
+          "P-C": 0.002325
+        },
+        "caliente": {
+          "P-A": 0.002645,
+          "P-B": 0.001765,
+          "P-C": 0.001808
+        }
+      }
+    },
+    {
+      "id": "sesion-corta-0004",
+      "familia": "sesion-corta",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.007427,
+          "P-B": 0.007427,
+          "P-C": 0.007713
+        },
+        "caliente": {
+          "P-A": 0.007153,
+          "P-B": 0.007153,
+          "P-C": 0.007195
+        }
+      }
+    },
+    {
+      "id": "sesion-corta-0005",
+      "familia": "sesion-corta",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.003717,
+          "P-B": 0.003717,
+          "P-C": 0.004003
+        },
+        "caliente": {
+          "P-A": 0.003444,
+          "P-B": 0.003444,
+          "P-C": 0.003486
+        }
+      }
+    },
+    {
+      "id": "sesion-corta-0006",
+      "familia": "sesion-corta",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.002462,
+          "P-B": 0.00176,
+          "P-C": 0.002046
+        },
+        "caliente": {
+          "P-A": 0.002189,
+          "P-B": 0.001487,
+          "P-C": 0.001529
+        }
+      }
+    },
+    {
+      "id": "sesion-corta-0007",
+      "familia": "sesion-corta",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.00198,
+          "P-B": 0.001459,
+          "P-C": 0.001745
+        },
+        "caliente": {
+          "P-A": 0.001706,
+          "P-B": 0.001185,
+          "P-C": 0.001228
+        }
+      }
+    },
+    {
+      "id": "sesion-corta-0008",
+      "familia": "sesion-corta",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.00409,
+          "P-B": 0.002805,
+          "P-C": 0.003091
+        },
+        "caliente": {
+          "P-A": 0.003817,
+          "P-B": 0.002531,
+          "P-C": 0.002574
+        }
+      }
+    },
+    {
+      "id": "sesion-corta-0009",
+      "familia": "sesion-corta",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.003531,
+          "P-B": 0.003531,
+          "P-C": 0.003817
+        },
+        "caliente": {
+          "P-A": 0.003257,
+          "P-B": 0.003257,
+          "P-C": 0.0033
+        }
+      }
+    },
+    {
+      "id": "sesion-corta-0010",
+      "familia": "sesion-corta",
+      "orden": "directo",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.002781,
+          "P-B": 0.001961,
+          "P-C": 0.002247
+        },
+        "caliente": {
+          "P-A": 0.002508,
+          "P-B": 0.001687,
+          "P-C": 0.001729
+        }
+      }
+    },
+    {
+      "id": "sesion-corta-0011",
+      "familia": "sesion-corta",
+      "orden": "inverso",
+      "correcta": {
+        "P-A": true,
+        "P-B": true,
+        "P-C": true
+      },
+      "recuperaciones": 0,
+      "usdSonnet": {
+        "frio": {
+          "P-A": 0.004287,
+          "P-B": 0.00294,
+          "P-C": 0.003226
+        },
+        "caliente": {
+          "P-A": 0.004014,
+          "P-B": 0.002666,
+          "P-C": 0.002709
+        }
+      }
+    }
+  ],
+  "veredicto": {
+    "resultado": "inconcluso",
+    "motivo": "pre-registered protocol (docs/especificaciones/CAVEMAN-D08-PROTOCOLO.md): quality needs a paid replay with a real model; offline figures only validate the contract, integrity and estimated input cost"
+  }
+}
