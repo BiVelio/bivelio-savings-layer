@@ -598,6 +598,37 @@ export class BudgetLedgerEnMemoria implements BudgetLedger {
     else c.reservado -= i.exposureMicroUsd;
   }
 
+  /**
+   * La transición y su evento son UNA cosa: si `encolar` falla (la outbox
+   * duradera caída, un conflicto de cuerpo), lo que `f` cambió en la cuenta se
+   * deshace —contadores, el intento y el `seq`— y el error sube. Sin esto, un
+   * libro que ya liquidó con una outbox que no lo sabe deja al agregador sin
+   * ese gasto para siempre: el reintento cae en la rama «repetido» y no emite.
+   */
+  private atomico<T>(c: CuentaDeProyecto, attemptId: string, f: () => T): T {
+    const previo = c.intentos.get(attemptId);
+    const foto = {
+      gastado: c.gastado,
+      estimado: c.estimado,
+      reservado: c.reservado,
+      incierto: c.incierto,
+      seq: new Map(c.seqPorLlamada),
+      intento: previo ? structuredClone(previo) : undefined,
+    };
+    try {
+      return f();
+    } catch (e) {
+      c.gastado = foto.gastado;
+      c.estimado = foto.estimado;
+      c.reservado = foto.reservado;
+      c.incierto = foto.incierto;
+      c.seqPorLlamada = foto.seq;
+      if (foto.intento) c.intentos.set(attemptId, foto.intento);
+      else c.intentos.delete(attemptId);
+      throw e;
+    }
+  }
+
   private emitir(c: CuentaDeProyecto, i: IntentoDePresupuesto, amountMicroUsd: number, label: EventoDePresupuesto["label"]): void {
     const seq = (c.seqPorLlamada.get(i.logicalCallId) ?? 0) + 1;
     c.seqPorLlamada.set(i.logicalCallId, seq);
@@ -714,9 +745,11 @@ export class BudgetLedgerEnMemoria implements BudgetLedger {
         reservedAt: ahora,
         envelopeFingerprint: huella,
       };
-      c.reservado += importe;
-      c.intentos.set(attemptId, i);
-      this.emitir(c, i, importe, "exposure");
+      this.atomico(c, attemptId, () => {
+        c.reservado += importe;
+        c.intentos.set(attemptId, i);
+        this.emitir(c, i, importe, "exposure");
+      });
       return { ok: true, attemptId, amountMicroUsd: importe, basis, repeated: false, budget: this.foto(c) };
     });
   }
@@ -725,10 +758,12 @@ export class BudgetLedgerEnMemoria implements BudgetLedger {
     await this.enExclusiva(projectId, () => {
       const { c, i } = this.intentoVivo(projectId, attemptId, "dispatched");
       if (i.state !== "reserved") throw new TransicionInvalida(attemptId, i.state, "dispatched");
-      i.state = "dispatched";
-      i.dispatchedAt = this.reloj();
-      if (d.providerCorrelation !== undefined) i.providerCorrelation = d.providerCorrelation;
-      this.emitir(c, i, i.exposureMicroUsd, "exposure");
+      this.atomico(c, attemptId, () => {
+        i.state = "dispatched";
+        i.dispatchedAt = this.reloj();
+        if (d.providerCorrelation !== undefined) i.providerCorrelation = d.providerCorrelation;
+        this.emitir(c, i, i.exposureMicroUsd, "exposure");
+      });
     });
   }
 
@@ -765,27 +800,35 @@ export class BudgetLedgerEnMemoria implements BudgetLedger {
           exceededReservation: i.exceededReservation === true,
         };
       }
-      if (d.providerCorrelation !== undefined) i.providerCorrelation = d.providerCorrelation;
       const p = recibo.price;
       if (p.state === "priced") {
+        // El recibo se valida en un libro de prueba ANTES de tocar nada (id
+        // derivado, precio que sale de su uso), y se apunta en el de verdad
+        // DESPUÉS del evento: así una outbox caída no deja un recibo huérfano.
+        // Un intento sin liquidar nunca tiene recibo en el libro, de modo que
+        // el apunte final no puede encontrar «otro cuerpo».
+        new LibroDeRecibos().registrar(recibo);
+        this.atomico(c, attemptId, () => {
+          if (d.providerCorrelation !== undefined) i.providerCorrelation = d.providerCorrelation;
+          this.soltarExposicion(c, i);
+          c.gastado += p.amountMicroUsd;
+          i.state = "settled";
+          i.exposureMicroUsd = 0;
+          i.costMicroUsd = p.amountMicroUsd;
+          i.receiptEventId = recibo.eventId;
+          i.exceededReservation = p.amountMicroUsd > i.reservedMicroUsd;
+          i.priceVersion = p.priceVersion;
+          i.closedAt = this.reloj();
+          delete i.uncertainReason;
+          this.emitir(c, i, p.amountMicroUsd, "verified");
+        });
         c.libro.registrar(recibo);
-        this.soltarExposicion(c, i);
-        c.gastado += p.amountMicroUsd;
-        i.state = "settled";
-        i.exposureMicroUsd = 0;
-        i.costMicroUsd = p.amountMicroUsd;
-        i.receiptEventId = recibo.eventId;
-        i.exceededReservation = p.amountMicroUsd > i.reservedMicroUsd;
-        i.priceVersion = p.priceVersion;
-        i.closedAt = this.reloj();
-        delete i.uncertainReason;
-        this.emitir(c, i, p.amountMicroUsd, "verified");
         return {
           state: "settled",
           repeated: false,
           costMicroUsd: p.amountMicroUsd,
           receiptEventId: recibo.eventId,
-          exceededReservation: i.exceededReservation,
+          exceededReservation: i.exceededReservation === true,
         };
       }
       // Sin precio verificable: incierto, CONSERVANDO la exposición (y subiéndola
@@ -801,7 +844,10 @@ export class BudgetLedgerEnMemoria implements BudgetLedger {
             ? "uso_parcial"
             : "precio_incierto";
       const suelo = p.state === "uncertain" ? p.lowerBoundMicroUsd : undefined;
-      this.pasarAIncierto(c, i, motivo, suelo);
+      this.atomico(c, attemptId, () => {
+        if (d.providerCorrelation !== undefined) i.providerCorrelation = d.providerCorrelation;
+        this.pasarAIncierto(c, i, motivo, suelo);
+      });
       return {
         state: "uncertain",
         reason: motivo,
@@ -835,12 +881,14 @@ export class BudgetLedgerEnMemoria implements BudgetLedger {
       ) {
         throw new PruebaInsuficiente(attemptId, `unaccepted proof ${JSON.stringify(prueba ?? null)}`);
       }
-      this.soltarExposicion(c, i);
-      i.state = "released";
-      i.exposureMicroUsd = 0;
-      i.releaseProof = structuredClone(prueba);
-      i.closedAt = this.reloj();
-      this.emitir(c, i, 0, "released");
+      this.atomico(c, attemptId, () => {
+        this.soltarExposicion(c, i);
+        i.state = "released";
+        i.exposureMicroUsd = 0;
+        i.releaseProof = structuredClone(prueba);
+        i.closedAt = this.reloj();
+        this.emitir(c, i, 0, "released");
+      });
     });
   }
 
@@ -854,7 +902,7 @@ export class BudgetLedgerEnMemoria implements BudgetLedger {
         const p = tarifarIntento(i.model, d.uso, i.dispatchedAt ?? i.reservedAt);
         suelo = p.state === "priced" ? p.amountMicroUsd : p.state === "uncertain" ? p.lowerBoundMicroUsd : undefined;
       }
-      this.pasarAIncierto(c, i, motivo, suelo);
+      this.atomico(c, attemptId, () => this.pasarAIncierto(c, i, motivo, suelo));
     });
   }
 
@@ -870,14 +918,16 @@ export class BudgetLedgerEnMemoria implements BudgetLedger {
       if (i.state !== "uncertain") throw new TransicionInvalida(attemptId, i.state, "estimated");
       // Nunca por debajo de lo que ya se sabe que costó.
       const importe = Math.max(d.amountMicroUsd, i.lowerBoundMicroUsd ?? 0);
-      this.soltarExposicion(c, i);
-      c.estimado += importe;
-      i.state = "estimated";
-      i.exposureMicroUsd = 0;
-      i.estimatedMicroUsd = importe;
-      i.estimateSource = d.source;
-      i.closedAt = this.reloj();
-      this.emitir(c, i, importe, "estimated");
+      this.atomico(c, attemptId, () => {
+        this.soltarExposicion(c, i);
+        c.estimado += importe;
+        i.state = "estimated";
+        i.exposureMicroUsd = 0;
+        i.estimatedMicroUsd = importe;
+        i.estimateSource = d.source;
+        i.closedAt = this.reloj();
+        this.emitir(c, i, importe, "estimated");
+      });
     });
   }
 
