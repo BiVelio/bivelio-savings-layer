@@ -117,6 +117,7 @@
     "sombra:corpus": "tsx benchmarks/sombra-corpus.ts",
     "ttl:replay": "tsx benchmarks/ttl/replay.ts",
     "compactacion:banco": "tsx benchmarks/compactacion-de-cola/banco.ts",
+    "ahorro:banco": "tsx benchmarks/ahorro-tool-results/banco.ts",
     "sombra:diales": "tsx --env-file-if-exists=.env.bench benchmarks/sombra-diales.ts",
     "anillo1": "tsx --env-file-if-exists=.env.bench benchmarks/anillo1/arnes.ts",
     "anillo2": "tsx benchmarks/anillo2/arnes.ts",
