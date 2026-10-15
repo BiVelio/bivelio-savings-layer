@@ -57,18 +57,18 @@ describe("verjas: el paquete de Python dice lo mismo que el de npm", () => {
   it("⛔ sin dependencias en ejecución: solo la biblioteca estándar", () => {
     const pyproject = leer("packages/python/pyproject.toml");
     expect(pyproject).toMatch(/^dependencies = \[\]$/m);
-    for (const f of ["_gateway.py", "_keys.py", "_report.py", "_errors.py", "__init__.py", "__main__.py"]) {
+    for (const f of ["_gateway.py", "_keys.py", "_report.py", "_errors.py", "__init__.py", "__main__.py", "_json_estricto.py", "_uso.py"]) {
       const src = leer(`packages/python/src/bvsala/${f}`);
       const importados = [...src.matchAll(/^(?:from|import) ([A-Za-z_][\w]*)/gm)].map((m) => m[1]);
       const ajenos = importados.filter(
-        (m) => !["__future__", "asyncio", "json", "os", "re", "threading", "urllib", "collections", "typing", "dataclasses", "argparse", "sys"].includes(m!),
+        (m) => !["__future__", "asyncio", "json", "os", "re", "threading", "urllib", "collections", "typing", "dataclasses", "argparse", "sys", "math"].includes(m!),
       );
       expect(ajenos, f).toEqual([]);
     }
   });
 
   it("⛔ el cliente jamás habla con BiVelio ni con el proveedor: solo con el gateway", () => {
-    for (const f of ["_gateway.py", "_keys.py", "_report.py", "__init__.py", "__main__.py"]) {
+    for (const f of ["_gateway.py", "_keys.py", "_report.py", "__init__.py", "__main__.py", "_json_estricto.py", "_uso.py"]) {
       const src = leer(`packages/python/src/bvsala/${f}`);
       // Las únicas URL del código son la del gateway local y las de la documentación.
       const urls = [...src.matchAll(/https?:\/\/[^\s"'`)<>]+/g)].map((m) => m[0]);
