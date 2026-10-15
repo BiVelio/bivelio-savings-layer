@@ -34,6 +34,8 @@
  * claves duplicadas ya dentro). Solo corre cuando una palanca está armada.
  */
 
+import { recorrerJsonEstricto } from "../src/util/json-estricto.js";
+
 // `ignoreBOM: true` CONSERVA una BOM inicial en el texto: así JSON.parse la
 // rechaza, como hacía `Buffer.toString`, en vez de quitarla en silencio.
 const decodificador = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true });
@@ -52,92 +54,21 @@ function esClaveDeIndice(clave: string): boolean {
   return /^(?:0|[1-9]\d{0,9})$/.test(clave) && Number(clave) < 4_294_967_295;
 }
 
-function esBlanco(c: number): boolean {
-  return c === 0x20 || c === 0x0a || c === 0x0d || c === 0x09;
-}
-
 /**
  * ¿`JSON.stringify(JSON.parse(texto))` conserva todo lo que el proveedor puede
  * ver? Es decir: ningún número deja de escribirse igual, ninguna clave cambia
- * de sitio y ninguna desaparece por repetida. Presupone un JSON ya validado
- * (quien llama parsea antes); aun así, ante un texto truncado termina y
- * devuelve false.
+ * de sitio y ninguna desaparece por repetida. El recorrido es el mismo que usa
+ * la compactación sin pérdida del SDK (`src/util/json-estricto.ts`): UN
+ * analizador para los dos, así que «duplicada» significa lo mismo en el cable
+ * y en la cola. Un texto que no sea JSON estricto (truncado, con comas finales…)
+ * también da false.
  */
 export function reserializacionFiel(texto: string): boolean {
-  const n = texto.length;
-  // Las claves ya vistas de cada objeto abierto (null: un array abierto).
-  const abiertos: (Set<string> | null)[] = [];
-  let i = 0;
-  while (i < n) {
-    const c = texto.charCodeAt(i);
-    if (c === 0x7b) {
-      abiertos.push(new Set());
-      i++;
-      continue;
-    }
-    if (c === 0x5b) {
-      abiertos.push(null);
-      i++;
-      continue;
-    }
-    if (c === 0x7d || c === 0x5d) {
-      abiertos.pop();
-      i++;
-      continue;
-    }
-    if (c === 0x22) {
-      // Una cadena: se salta entera, y si va seguida de «:» es una clave.
-      const inicio = i;
-      let conEscape = false;
-      i++;
-      for (;;) {
-        if (i >= n) return false;
-        const d = texto.charCodeAt(i);
-        if (d === 0x5c) {
-          conEscape = true;
-          i += 2;
-          continue;
-        }
-        if (d === 0x22) break;
-        i++;
-      }
-      i++;
-      let j = i;
-      while (j < n && esBlanco(texto.charCodeAt(j))) j++;
-      if (j < n && texto.charCodeAt(j) === 0x3a) {
-        let clave = texto.slice(inicio + 1, i - 1);
-        if (conEscape) {
-          try {
-            clave = JSON.parse(texto.slice(inicio, i)) as string;
-          } catch {
-            return false;
-          }
-        }
-        if (esClaveDeIndice(clave)) return false;
-        const vistas = abiertos.at(-1);
-        if (vistas) {
-          if (vistas.has(clave)) return false;
-          vistas.add(clave);
-        }
-      }
-      continue;
-    }
-    if (c === 0x2d || (c >= 0x30 && c <= 0x39)) {
-      // Un número: tiene que escribirse exactamente como lo escribiría JavaScript.
-      const inicio = i;
-      i++;
-      while (i < n) {
-        const d = texto.charCodeAt(i);
-        if ((d >= 0x30 && d <= 0x39) || d === 0x2e || d === 0x65 || d === 0x45 || d === 0x2b || d === 0x2d) i++;
-        else break;
-      }
-      const literal = texto.slice(inicio, i);
-      if (String(Number(literal)) !== literal) return false;
-      continue;
-    }
-    i++;
-  }
-  return true;
+  return recorrerJsonEstricto(texto, {
+    clave: (clave) => !esClaveDeIndice(clave),
+    // Un número tiene que escribirse exactamente como lo escribiría JavaScript.
+    numero: (literal) => String(Number(literal)) === literal,
+  }).ok;
 }
 
 /**
