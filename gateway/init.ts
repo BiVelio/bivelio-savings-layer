@@ -2,16 +2,22 @@ import { dirname, join, posix } from "node:path";
 
 import {
   CAPAS,
+  LINEAS_DE_COMPACTACION,
+  MODOS_DE_COMPACTACION,
   MODULO_DE_CAPA,
   NOMBRE_DE_CAPA,
   PROVEEDORES_DE,
+  admiteCompactacion,
   cableado,
   comprobacionRuta,
   comprobacionScript,
+  medicionDeCompactacion,
+  verificacionDeCompactacion,
   paquetesDeLaPila,
   usoExpress,
   usoNext,
   type Capa,
+  type ModoDeCompactacion,
   type Proveedor,
 } from "./init-fragmentos.js";
 
@@ -31,6 +37,16 @@ import {
  *  · Por defecto NO ESCRIBE. Con `--write` crea ficheros NUEVOS (nunca pisa uno que
  *    exista, ni siquiera si aparece entre la pregunta y la escritura: `wx`) y solo
  *    tras un «sí» explícito en la terminal, o `--yes` si no hay terminal.
+ *  · `--compaction measure|on` (D11, opt-in; sin él, la salida es la de siempre):
+ *    `on` añade al cableado UNA opción, `toolOutputCompaction: { profile:
+ *    "lossless-data" }`, solo donde la pila la admite, y la enseña como un diff que
+ *    se revisa y se deshace borrando esas líneas; donde no la admite dice por qué y
+ *    no cambia nada. `measure` no toca la inferencia: añade un módulo que mide.
+ *    Con cualquiera de los dos, el plan trae `bivelio-verify-compaction.mjs`: UNA
+ *    llamada local y acotada a un modelo falso que vive en el script, que imprime
+ *    el recibo (aplicado o desviado y por qué) y la COBERTURA, sin red y sin
+ *    prometer un ahorro (la muestra no es el tráfico del cliente). Es un script
+ *    que se corre con `node`, como la comprobación: init sigue sin ejecutar nada.
  *
  * Todo lo que decide es puro y se prueba aquí (test/init-*.test.ts): la sonda del
  * sistema de ficheros se inyecta. bin.ts solo conecta la sonda real y la pregunta.
@@ -54,6 +70,8 @@ export interface OpcionesDeInit {
   json: boolean;
   capa?: Capa;
   proveedor?: Proveedor;
+  /** `--compaction`. Ausente = `off`: init hace lo de siempre. */
+  compactacion?: ModoDeCompactacion;
 }
 
 export interface Deteccion {
@@ -82,7 +100,7 @@ export interface Deteccion {
 
 export interface FicheroNuevo {
   ruta: string;
-  proposito: "wiring" | "check";
+  proposito: "wiring" | "check" | "measure" | "verify";
   contenido: string;
   existe: boolean;
 }
@@ -108,6 +126,21 @@ export interface Plan {
   usos: Fragmento[];
   comoComprobar: string[];
   avisos: string[];
+  /** Solo con `--compaction measure|on`: qué se pidió, qué se hace y por qué. */
+  compactacion?: CompactacionDelPlan;
+}
+
+/** La compactación de tool outputs en el plan (D11). */
+export interface CompactacionDelPlan {
+  pedido: Exclude<ModoDeCompactacion, "off">;
+  /** Lo que de verdad se hace: `off` cuando se pidió `on` y la pila no lo admite. */
+  efectivo: ModoDeCompactacion;
+  /** ¿Admite la pila encenderla (`on`)? */
+  admite: boolean;
+  /** Por qué no, cuando no. */
+  motivo?: string;
+  /** Con `on` admitido: el diff unificado del cambio en el cableado, para revisarlo. */
+  diff?: string;
 }
 
 export type Resultado<T> = { ok: true; valor: T } | { ok: false; mensaje: string };
@@ -116,7 +149,7 @@ export type Resultado<T> = { ok: true; valor: T } | { ok: false; mensaje: string
 
 const USO =
   "usage: bvsala init [--write [--yes]] [--json] [--stack ai-sdk|mastra|langchain|anthropic-sdk|sdk] " +
-  "[--provider openai|anthropic] [--cwd <dir>]";
+  "[--provider openai|anthropic] [--compaction off|measure|on] [--cwd <dir>]";
 
 /** `resto` es lo que va detrás de `init`. `-h`/`--help` ya lo resolvió argumentos.ts. */
 export function leerArgumentosDeInit(resto: readonly string[], cwd: string): Resultado<OpcionesDeInit> {
@@ -142,6 +175,12 @@ export function leerArgumentosDeInit(resto: readonly string[], cwd: string): Res
       const v = valor();
       if (v !== "openai" && v !== "anthropic") return { ok: false, mensaje: `--provider needs openai or anthropic.\n${USO}` };
       o.proveedor = v;
+    } else if (a === "--compaction") {
+      const v = valor();
+      if (!v || !(MODOS_DE_COMPACTACION as readonly string[]).includes(v)) {
+        return { ok: false, mensaje: `--compaction needs one of: ${MODOS_DE_COMPACTACION.join(", ")}.\n${USO}` };
+      }
+      o.compactacion = v as ModoDeCompactacion;
     } else if (a === "--cwd") {
       const v = valor();
       if (!v) return { ok: false, mensaje: `--cwd needs a directory.\n${USO}` };
@@ -357,7 +396,7 @@ function comandoDelScript(d: Deteccion): string {
 
 export function planear(
   d: Deteccion,
-  o: Pick<OpcionesDeInit, "capa" | "proveedor">,
+  o: Pick<OpcionesDeInit, "capa" | "proveedor" | "compactacion">,
   entorno: { node: string; env: (nombre: string) => boolean },
 ): Resultado<Plan> {
   const [mayorNode = 0] = partes(entorno.node);
@@ -466,6 +505,17 @@ export function planear(
     avisos,
   };
   if (instalar.length > 0) plan.comandoDeInstalacion = `${COMANDO_ANADIR[d.gestor]} ${instalar.join(" ")}`;
+  const pedido = o.compactacion ?? "off";
+  if (pedido !== "off") {
+    const soporte = admiteCompactacion(capa, proveedor);
+    plan.compactacion = {
+      pedido,
+      // `measure` no toca la inferencia: vale en cualquier pila. `on` solo donde se admite.
+      efectivo: pedido === "on" && !soporte.admite ? "off" : pedido,
+      admite: soporte.admite,
+      ...(soporte.admite ? {} : { motivo: soporte.motivo }),
+    };
+  }
   return { ok: true, valor: plan };
 }
 
@@ -484,9 +534,12 @@ export function conFicheros(plan: Plan, sonda: SondaDeProyecto): Plan {
 
   const rutaDelCableado =
     d.anfitrion === "next" ? `${d.appDir?.startsWith("src/") ? "src/" : ""}lib/savings.${ext}` : `${d.src ? "src/" : ""}savings.${ext}`;
+  // `--compaction on` admitido: las líneas van DENTRO de las opciones de la capa.
+  const encendida = plan.compactacion?.efectivo === "on";
+  const extra = encendida ? LINEAS_DE_COMPACTACION : [];
 
   if (d.anfitrion === "next" && d.appDir) {
-    ficheros.push({ ruta: rutaDelCableado, proposito: "wiring", contenido: cableado(capa, proveedor), existe: existe(rutaDelCableado) });
+    ficheros.push({ ruta: rutaDelCableado, proposito: "wiring", contenido: cableado(capa, proveedor, extra), existe: existe(rutaDelCableado) });
     const rutaDeUso = `${d.appDir}/api/chat/route.${ext}`;
     const importe = posix.relative(posix.dirname(rutaDeUso), rutaDelCableado.replace(/\.[^.]+$/, ""));
     usos.push({
@@ -506,10 +559,10 @@ export function conFicheros(plan: Plan, sonda: SondaDeProyecto): Plan {
       usos.push({
         titulo: "In your Express server: the layer is created once at startup, then used by the route",
         ruta: `server.${ext}`,
-        contenido: usoExpress(capa, proveedor),
+        contenido: usoExpress(capa, proveedor, extra),
       });
     } else {
-      ficheros.push({ ruta: rutaDelCableado, proposito: "wiring", contenido: cableado(capa, proveedor), existe: existe(rutaDelCableado) });
+      ficheros.push({ ruta: rutaDelCableado, proposito: "wiring", contenido: cableado(capa, proveedor, extra), existe: existe(rutaDelCableado) });
     }
     ficheros.push({ ruta: "bivelio-check.mjs", proposito: "check", contenido: comprobacionScript(capa, proveedor), existe: existe("bivelio-check.mjs") });
     comoComprobar.push(`Run it: ${comandoDelScript(d)}`, 'It prints "ok: …" and exits 0 when the layer is in place, or "not ok: …" with what to fix and exits 1.');
@@ -523,7 +576,74 @@ export function conFicheros(plan: Plan, sonda: SondaDeProyecto): Plan {
     "The question (2 + 2 * 3) is answered on your machine: with the layer in place the model is not called, so your provider bills nothing for it,",
     "and the saving is `estimated`, which is never billed. Delete the check once it says ok.",
   );
-  return { ...plan, ficheros, usos, comoComprobar, avisos };
+  let compactacion = plan.compactacion;
+  if (compactacion?.efectivo === "measure") {
+    const base = d.anfitrion === "next" ? `${d.appDir?.startsWith("src/") ? "src/" : ""}lib/` : d.src ? "src/" : "";
+    const ruta = `${base}measure-tool-outputs.${ext}`;
+    ficheros.push({ ruta, proposito: "measure", contenido: medicionDeCompactacion(), existe: existe(ruta) });
+  }
+  if (compactacion) {
+    // La verificación: con `on` admitido, la de `on`; si no, la de medir (que no cambia nada).
+    const ruta = "bivelio-verify-compaction.mjs";
+    const modo = compactacion.efectivo === "on" ? "on" : "measure";
+    ficheros.push({ ruta, proposito: "verify", contenido: verificacionDeCompactacion(modo), existe: existe(ruta) });
+  }
+  if (encendida && compactacion) {
+    // El diff, sobre el fichero que lleva la capa: el cableado o, en Express, el servidor.
+    const enExpress = d.anfitrion === "express";
+    const ruta = enExpress ? `server.${ext}` : rutaDelCableado;
+    const antes = enExpress ? usoExpress(capa, proveedor) : cableado(capa, proveedor);
+    const despues = enExpress ? usoExpress(capa, proveedor, extra) : cableado(capa, proveedor, extra);
+    compactacion = { ...compactacion, diff: diffUnificado(ruta, antes, despues) };
+  }
+  return { ...plan, ficheros, usos, comoComprobar, avisos, ...(compactacion ? { compactacion } : {}) };
+}
+
+/**
+ * Un diff unificado de UN trozo (lo que cambia entre el prefijo y el sufijo
+ * comunes), con tres líneas de contexto: el formato que `git apply` y cualquier
+ * revisor entienden. Basta para lo que init propone, que es insertar unas líneas.
+ */
+export function diffUnificado(ruta: string, antes: string, despues: string, contexto = 3): string {
+  // Las LÍNEAS, sin el salto final ("x\n" es una línea, no dos). La última de un
+  // texto que NO acaba en salto lleva una marca, para que «tres» y «tres\n»
+  // cuenten como distintas, que es lo que son para diff.
+  const SIN_EOL = "\u0000";
+  const lineasDe = (t: string): string[] => {
+    if (t === "") return [];
+    if (t.endsWith("\n")) return t.slice(0, -1).split("\n");
+    const ls = t.split("\n");
+    ls[ls.length - 1] += SIN_EOL;
+    return ls;
+  };
+  const a = lineasDe(antes);
+  const b = lineasDe(despues);
+  let p = 0;
+  while (p < a.length && p < b.length && a[p] === b[p]) p++;
+  let sa = a.length;
+  let sb = b.length;
+  while (sa > p && sb > p && a[sa - 1] === b[sb - 1]) {
+    sa--;
+    sb--;
+  }
+  if (p === a.length && p === b.length) return "";
+  const desde = Math.max(0, p - contexto);
+  const hastaA = Math.min(a.length, sa + contexto);
+  const hastaB = Math.min(b.length, sb + contexto);
+  const linea = (signo: string) => (l: string) =>
+    l.endsWith(SIN_EOL) ? [`${signo}${l.slice(0, -1)}`, "\\ No newline at end of file"] : [`${signo}${l}`];
+  // Un lado vacío se numera desde 0, como lo hace diff.
+  const rango = (n: number) => `${n === 0 ? desde : desde + 1},${n}`;
+  const lineas = [
+    `--- a/${ruta}`,
+    `+++ b/${ruta}`,
+    `@@ -${rango(hastaA - desde)} +${rango(hastaB - desde)} @@`,
+    ...a.slice(desde, p).flatMap(linea(" ")),
+    ...a.slice(p, sa).flatMap(linea("-")),
+    ...b.slice(p, sb).flatMap(linea("+")),
+    ...a.slice(sa, hastaA).flatMap(linea(" ")),
+  ];
+  return `${lineas.join("\n")}\n`;
 }
 
 // ── La salida ──────────────────────────────────────────────────────────────
@@ -593,18 +713,62 @@ export function textoDelPlan(plan: Plan, cabecera: string, invocacion: string, o
   if (comprobacion) out.push(bloque(`${comprobacion.ruta} (new file${comprobacion.existe ? "; it already exists, compare it" : ""})`, comprobacion.contenido));
   for (const l of plan.comoComprobar) out.push(`  ${l}`);
 
+  if (plan.compactacion) out.push("", `${paso++} · Tool-output compaction (opt-in, lossless)`, ...textoDeCompactacion(plan, invocacion));
+
   const nuevos = plan.ficheros.filter((f) => !f.existe);
   if (opciones.escribira) return out.join("\n");
   out.push("");
   if (nuevos.length > 0) {
     out.push(
       `Nothing was written. To create ${nuevos.length === 1 ? "the new file" : `the ${nuevos.length} new files`} above (${nuevos.map((f) => f.ruta).join(", ")}): ` +
-        `${invocacion} --write. It asks first and never overwrites; nothing else is touched.`,
+        `${invocacion}${plan.compactacion ? ` --compaction ${plan.compactacion.pedido}` : ""} --write. It asks first and never overwrites; nothing else is touched.`,
     );
   } else {
     out.push("Nothing was written: the files above already exist in your project.");
   }
   return out.join("\n");
+}
+
+function textoDeCompactacion(plan: Plan, invocacion: string): string[] {
+  const c = plan.compactacion!;
+  const out: string[] = [];
+  if (c.efectivo === "on") {
+    out.push(
+      "  ON in the wiring above. This is the whole change, as a diff to review:",
+      bloque("diff", c.diff ?? ""),
+      "  To revert: delete those lines (or pass savings: { toolOutputCompaction: false } on one request).",
+      "  Only strict-JSON tool outputs change, and only their whitespace; system, user and assistant text,",
+      "  tool ids and arguments are never touched. Each request's report says, per tool output, applied or",
+      "  bypassed and why (report.toolOutputCompaction). Token counts there are estimates, not a saving.",
+    );
+    if (plan.deteccion.anfitrion === "express" || plan.ficheros.some((f) => f.proposito === "wiring" && f.existe)) {
+      out.push("  If you already have this file, add only the + lines to your createSavingsLayer options.");
+    }
+  } else if (c.efectivo === "measure") {
+    const f = plan.ficheros.find((x) => x.proposito === "measure")!;
+    out.push(
+      "  MEASURE ONLY: nothing sent to the model changes, and the wiring above is the usual one.",
+      bloque(`${f.ruta} (new file${f.existe ? "; it already exists, compare it" : ""})`, f.contenido),
+      "  Pass each tool output through measureToolOutput() where it is produced; it returns it unchanged.",
+      "  measuredSummary() prints the coverage first: how many outputs would be compacted, and why the others not.",
+      c.admite
+        ? `  When the coverage justifies it, ${invocacion} --compaction on adds the one option that turns it on.`
+        : `  Turning it on is not available for this stack: ${c.motivo}.`,
+    );
+  } else {
+    out.push(`  NOT turned on: ${c.motivo}.`, "  Nothing in the wiring above changed.", `  You can still measure it without changing anything: ${invocacion} --compaction measure`);
+  }
+  const v = plan.ficheros.find((x) => x.proposito === "verify");
+  if (v) {
+    const env = plan.deteccion.ficherosEnv[0];
+    out.push(
+      bloque(`${v.ruta} (new file${v.existe ? "; it already exists, compare it" : ""})`, v.contenido),
+      `  Verify it: ${env ? `node --env-file=${env} ${v.ruta}` : `node ${v.ruta}`}`,
+      "  ONE call to a fake model inside that file: no network, nothing billed. It prints the receipt",
+      "  (applied, or bypassed and why) and the coverage of a built-in sample, which is not your traffic.",
+    );
+  }
+  return out;
 }
 
 /** El plan como JSON, para un agente de código o un script. */
@@ -633,6 +797,18 @@ export function jsonDelPlan(plan: Plan, version: string): string {
       snippets: plan.usos.map((u) => ({ title: u.titulo, content: u.contenido })),
       check: plan.comoComprobar,
       notes: plan.avisos,
+      // Solo con `--compaction`: sin él, el JSON es el de siempre.
+      ...(plan.compactacion
+        ? {
+            toolOutputCompaction: {
+              requested: plan.compactacion.pedido,
+              effective: plan.compactacion.efectivo,
+              supported: plan.compactacion.admite,
+              reason: plan.compactacion.motivo ?? null,
+              diff: plan.compactacion.diff ?? null,
+            },
+          }
+        : {}),
     },
     null,
     2,

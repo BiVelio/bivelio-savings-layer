@@ -2,7 +2,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { conFicheros, detectar, planear, type Plan, type SondaDeProyecto } from "../gateway/init.js";
+import { conFicheros, detectar, planear, type OpcionesDeInit, type Plan, type SondaDeProyecto } from "../gateway/init.js";
 
 /**
  * LOS EJEMPLOS DE `examples/stacks/` SON LA SALIDA DE `bvsala init`, no una copia a mano.
@@ -27,6 +27,8 @@ interface Canonico {
   packageJson: Record<string, unknown>;
   /** Rutas (relativas) que existen además de package.json. */
   existen: string[];
+  /** Las opciones de init con que se genera (por defecto, ninguna: lo detectado). */
+  opciones?: Pick<OpcionesDeInit, "capa" | "proveedor" | "compactacion">;
 }
 
 const TS = { devDependencies: { typescript: "^5.7.0" } };
@@ -70,6 +72,20 @@ export const CANONICOS: readonly Canonico[] = [
     packageJson: { type: "module", dependencies: { "@anthropic-ai/sdk": "^0.128.0" }, ...TS },
     existen: ["tsconfig.json"],
   },
+  // D11: la compactación sin pérdida de tool outputs, en la única pila del piloto
+  // que la admite (el SDK con Anthropic, sin stream), y en modo medir.
+  {
+    nombre: "sdk-anthropic-compaction",
+    packageJson: { type: "module", dependencies: {}, ...TS },
+    existen: ["tsconfig.json"],
+    opciones: { capa: "sdk", proveedor: "anthropic", compactacion: "on" },
+  },
+  {
+    nombre: "sdk-anthropic-measure",
+    packageJson: { type: "module", dependencies: {}, ...TS },
+    existen: ["tsconfig.json"],
+    opciones: { capa: "sdk", proveedor: "anthropic", compactacion: "measure" },
+  },
 ];
 
 /** Una sonda en memoria: solo existe lo que el canónico declara. */
@@ -87,7 +103,7 @@ export function planDe(c: Canonico): Plan {
   const sonda = sondaDe(c);
   const d = detectar(RAIZ_FALSA, sonda);
   if (!d.ok) throw new Error(`${c.nombre}: ${d.mensaje}`);
-  const p = planear(d.valor, {}, { node: "22.14.0", env: () => false });
+  const p = planear(d.valor, c.opciones ?? {}, { node: "22.14.0", env: () => false });
   if (!p.ok) throw new Error(`${c.nombre}: ${p.mensaje}`);
   return conFicheros(p.valor, sonda);
 }
