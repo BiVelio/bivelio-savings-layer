@@ -2943,7 +2943,25 @@ export class SavingsPipeline {
       trace.record("tool-output-compaction", "degraded: feature not included in this license");
     }
     if (ajustesDeCompactacion && policy.allowCompression && this.entitled("long_context_compression")) {
-      const eleccion = seleccionarCompactables(messages, ajustesDeCompactacion);
+      // Con el perfil `lossless-data` la verja de beneficio neto cuenta en
+      // TOKENS con el estimador de esta petición (el mismo que el resto de la
+      // capa); sin él, la selección no cuenta nada y sale igual que siempre.
+      const sinPerdida = ajustesDeCompactacion.profile === "lossless-data";
+      const eleccion = seleccionarCompactables(
+        messages,
+        ajustesDeCompactacion,
+        sinPerdida ? (t) => this.tokensFor(t, request) : undefined,
+      );
+      if (eleccion.decisiones) {
+        // Una decisión por tool_result, aplicada o no, para que el recibo diga
+        // POR QUÉ. Es una estimación y se etiqueta como tal: nunca ahorro verificado.
+        ledger.toolOutputCompactionReport = {
+          profile: "lossless-data",
+          tokenBasis: "estimated",
+          estimator: this.estimadorDe(request),
+          decisions: eleccion.decisiones.map(({ indice: _indice, ...d }) => d),
+        };
+      }
       let antes = 0;
       let despues = 0;
       let enLaCola = 0;
@@ -2982,6 +3000,7 @@ export class SavingsPipeline {
         transforms: porTransformacion,
         fileViewsKeptVerbatim: eleccion.vistasDeFichero,
         exceptedTools: eleccion.exceptuados,
+        ...(sinPerdida ? { profile: "lossless-data" } : {}),
         cacheWriteMultiplier: tramo.cacheWriteMultiplier,
         cacheReadMultiplier: tramo.cacheReadMultiplier,
         note:
@@ -5510,6 +5529,7 @@ export class SavingsPipeline {
       // nadie: `report.compression` salía `undefined` aunque la compresión
       // hubiera corrido. Solo se publica cuando de verdad se aplicó.
       ...(ledger.compressionReport ? { compression: ledger.compressionReport } : {}),
+      ...(ledger.toolOutputCompactionReport ? { toolOutputCompaction: ledger.toolOutputCompactionReport } : {}),
       constraints: {
         backend,
         schemaVersion: canonical.schemaVersion,
@@ -6066,6 +6086,22 @@ export class SavingsPipeline {
       parts.push(textoDeHerramienta(tool));
     }
     return parts.join("\n");
+  }
+
+  /** Qué estimador cuenta para esta petición, para declararlo en un informe. Fail-closed como `estimatorEsExacto`. */
+  private estimadorDe(request: SavingsRequest): { id: string; exact: boolean } {
+    const registro = this.config.tokenizer as {
+      resolve?: (o: { tokenizer?: string; model?: string }) => { id?: string; exact?: boolean };
+    };
+    try {
+      const e =
+        typeof registro.resolve === "function"
+          ? registro.resolve({ ...(request.tokenizer ? { tokenizer: request.tokenizer } : {}), model: request.model })
+          : undefined;
+      return { id: typeof e?.id === "string" ? e.id : "unknown", exact: e?.exact === true };
+    } catch {
+      return { id: "unknown", exact: false };
+    }
   }
 
   private tokensFor(text: string, request: SavingsRequest): number {
