@@ -64,7 +64,9 @@ describe("los vectores dicen la verdad (oráculos que no son el código)", () =>
     const espacio = (s: string) => s.replace(/[^ \t\n\r]/g, "").length;
     for (const c of aplicados) {
       const { texto } = c.entrada;
-      expect(JSON.parse(c.esperado.text), c.nombre).toEqual(JSON.parse(texto));
+      // Comparar las reserializaciones nativas, no `toEqual`: el caso de 3000
+      // niveles de anidamiento desborda la pila del comparador recursivo en CI.
+      expect(JSON.stringify(JSON.parse(c.esperado.text)), c.nombre).toBe(JSON.stringify(JSON.parse(texto)));
       expect(texto.length - c.esperado.text.length, c.nombre).toBe(espacio(texto) - espacio(c.esperado.text));
       expect(c.esperado.tokensAfter, c.nombre).toBeLessThan(c.esperado.tokensBefore);
     }
