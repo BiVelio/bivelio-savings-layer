@@ -490,6 +490,7 @@ export class SavingsLedger {
     netSavingsRatio: number;
     netSavingsUsd: number;
     basis: CostBasis;
+    actualIsLowerBound?: true;
   } {
     // Honesty rule (do not credit phantom output savings): a call that actually
     // RAN still generates its answer — the layer does not shrink a ran call's
@@ -684,6 +685,14 @@ export class SavingsLedger {
       netSavingsRatio: razon,
       netSavingsUsd: roundUsd(baselinePublicado - actualPublicado),
       basis,
+      // UN `actual` SOBRE CEROS DEL ADAPTADOR NO ES EL GASTO. Con alguna llamada
+      // facturada sin su contador completo, `actual` tarifa solo lo que llegó:
+      // la salida de un stream cortado, o la llamada entera, vale 0 aquí y no en
+      // la factura. `basis: "unmeasured"` ya decía que no se reclama ahorro; esto
+      // dice además que el importe es un SUELO, para que nadie lo sume como gasto
+      // medido. Solo aparece en ese caso: con el contador completo la clave no
+      // existe y el informe es el de siempre (plan Caveman, D02).
+      ...(ranCall && this.callsWithoutUsage > 0 ? { actualIsLowerBound: true as const } : {}),
     };
   }
 }
