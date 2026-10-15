@@ -172,6 +172,7 @@ export const MOTIVOS = [
   "unsupported_shape",
   "unsupported_route",
   "recovery_unbound",
+  "recovery_unavailable",
   "unknown_capability",
   "version_retired",
   // presión
