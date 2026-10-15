@@ -11,7 +11,7 @@ import { esTerminalConEnvoltorio } from "./envoltorios.js";
  * probar: lo que se decide aquí, se prueba aquí (test/gateway-argumentos.test.ts).
  */
 
-const COMANDOS_PROPIOS = ["gateway", "doctor", "skill", "init"] as const;
+const COMANDOS_PROPIOS = ["gateway", "doctor", "skill", "init", "mcp"] as const;
 const PIDE_AYUDA = new Set(["help", "--help", "-h"]);
 const PIDE_VERSION = new Set(["version", "--version", "-v"]);
 

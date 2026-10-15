@@ -47,6 +47,7 @@ export const CABECERA_ID_DE_PETICION = "x-bvsala-request-id";
 export const PREFIJO_LOCAL = "/_bvsala/";
 export const ESQUEMA_INFORME = "bvsala.gateway.report/1";
 export const ESQUEMA_ESTADO = "bvsala.gateway.status/1";
+export const ESQUEMA_RESUMEN = "bvsala.gateway.summary/1";
 export const CAPACIDAD_POR_DEFECTO = 1000;
 /** Lo más que una petición al buzón espera a que su informe se cierre. */
 export const ESPERA_MAXIMA_MS = 30_000;
@@ -140,6 +141,15 @@ export class BuzonDeInformes {
 
   noMedido(requestId: string, reason: string): void {
     this.cerrar(requestId, "not_metered", reason, null);
+  }
+
+  /**
+   * Lo que el buzón guarda AHORA (lo caducado ya fuera), en orden de llegada.
+   * Solo para agregar (`resumenLocal`): ninguna ruta devuelve esta lista.
+   */
+  vigentes(): readonly InformeLocal[] {
+    this.purgar();
+    return [...this.entradas.values()].map((e) => e.informe);
   }
 
   porPeticion(requestId: string): InformeLocal | undefined {
@@ -292,6 +302,128 @@ export interface EstadoLocal {
   reports: { requestHeader: string; responseHeader: string; capacity: number };
 }
 
+// ── EL RESUMEN (D12): agregados, nunca informes ─────────────────────────────
+//
+// Lo lee el servidor MCP de solo lectura (gateway/mcp.ts) por
+// `GET /_bvsala/v1/summary`. Es una SUMA de lo que el buzón ya guarda, y lo que
+// no devuelve es tan importante como lo que sí:
+//   · ni un requestId ni un responseId: sin el id no hay informe (la regla del
+//     buzón sigue intacta), y un agregado no se puede usar para pedir uno;
+//   · ni contenido: de cada informe se leen contadores, la base del coste, el
+//     modelo, el motivo de no medido y los CÓDIGOS de decisión de la cola;
+//   · dinero de bases distintas jamás sumado: `measured`, `reference`,
+//     `estimated`… van cada uno en su cubo, como en el panel.
+// La «sesión» es la de Claude Code (`attribution.sessionId`, un id opaco que el
+// propio informe ya lleva); sin ella, `unattributed`.
+
+/** Un cubo de dinero: una sola base de coste. */
+export interface CuboDeCoste {
+  requests: number;
+  actualUsd: number;
+  baselineUsd: number;
+  netSavingsUsd: number;
+}
+
+export interface ResumenDeSesion {
+  /** El `attribution.sessionId` del informe, o `null` sin atribución. */
+  sessionId: string | null;
+  requests: { total: number; metered: number; notMetered: number; pending: number };
+  /** Por base de coste: nunca se suman entre sí. */
+  costByBasis: Record<string, CuboDeCoste>;
+  /** Por qué no se midió, con su número de peticiones. */
+  notMeteredReasons: Record<string, number>;
+  models: Record<string, number>;
+}
+
+export interface OportunidadesDeCompactacion {
+  /** Cuántos tool outputs trajeron una decisión de `lossless-data`. */
+  decisions: number;
+  applied: number;
+  /** Por código de motivo (`applied`, `not_json`, `duplicate_keys`…). */
+  byReason: Record<string, number>;
+  /** Tokens ESTIMADOS antes y después de lo aplicado. Nunca un ahorro verificado. */
+  appliedTokensBefore: number;
+  appliedTokensAfter: number;
+  tokenBasis: "estimated";
+}
+
+export interface ResumenLocal {
+  schema: typeof ESQUEMA_RESUMEN;
+  /** La ventana: lo que el buzón guarda (los últimos `capacity`, una hora como mucho). */
+  window: { reports: number; capacity: number; maxAgeMinutes: number };
+  sessions: ResumenDeSesion[];
+  toolOutputCompaction: OportunidadesDeCompactacion;
+}
+
+const cubo = (): CuboDeCoste => ({ requests: 0, actualUsd: 0, baselineUsd: 0, netSavingsUsd: 0 });
+const numero = (v: unknown): number => (typeof v === "number" && Number.isFinite(v) ? v : 0);
+// Un código de motivo o un nombre de modelo es metadato; aun así, acotado y sin
+// saltos de línea, para que un valor raro no se convierta en un canal.
+const etiqueta = (v: unknown, max = 120): string | null => {
+  if (typeof v !== "string") return null;
+  const t = v.replace(/[\u0000-\u001f]/g, " ").trim();
+  return t === "" ? null : t.slice(0, max);
+};
+const sumar = (m: Record<string, number>, k: string, n = 1) => {
+  m[k] = (m[k] ?? 0) + n;
+};
+
+/** El resumen del buzón: agregados por sesión y las decisiones de la cola. Pura. */
+export function resumenLocal(informes: readonly InformeLocal[], capacidad: number): ResumenLocal {
+  const sesiones = new Map<string | null, ResumenDeSesion>();
+  const compactacion: OportunidadesDeCompactacion = {
+    decisions: 0,
+    applied: 0,
+    byReason: {},
+    appliedTokensBefore: 0,
+    appliedTokensAfter: 0,
+    tokenBasis: "estimated",
+  };
+  for (const i of informes) {
+    const r = i.report;
+    const sid = etiqueta(r?.attribution?.sessionId, 200);
+    let s = sesiones.get(sid);
+    if (!s) {
+      s = { sessionId: sid, requests: { total: 0, metered: 0, notMetered: 0, pending: 0 }, costByBasis: {}, notMeteredReasons: {}, models: {} };
+      sesiones.set(sid, s);
+    }
+    s.requests.total++;
+    if (i.status === "pending") {
+      s.requests.pending++;
+      continue;
+    }
+    if (i.status === "not_metered" || !r) {
+      s.requests.notMetered++;
+      sumar(s.notMeteredReasons, etiqueta(i.reason) ?? "unknown");
+      continue;
+    }
+    s.requests.metered++;
+    const modelo = etiqueta(r.model);
+    if (modelo) sumar(s.models, modelo);
+    const base = etiqueta(r.cost?.basis, 40) ?? "unknown";
+    const c = (s.costByBasis[base] ??= cubo());
+    c.requests++;
+    c.actualUsd += numero(r.cost?.actual);
+    c.baselineUsd += numero(r.cost?.baselineEstimate);
+    c.netSavingsUsd += numero(r.cost?.netSavingsUsd);
+    for (const d of r.toolOutputCompaction?.decisions ?? []) {
+      compactacion.decisions++;
+      sumar(compactacion.byReason, etiqueta(d.reason, 40) ?? "unknown");
+      if (d.status === "applied") {
+        compactacion.applied++;
+        compactacion.appliedTokensBefore += numero(d.tokensBefore);
+        compactacion.appliedTokensAfter += numero(d.tokensAfter);
+      }
+    }
+  }
+  return {
+    schema: ESQUEMA_RESUMEN,
+    window: { reports: informes.length, capacity: capacidad, maxAgeMinutes: VIDA_MAXIMA_MS / 60_000 },
+    sessions: [...sesiones.values()],
+    toolOutputCompaction: compactacion,
+  };
+}
+
 /** El origen de una URL sin usuario ni contraseña. Una URL ilegible se dice tal cual: "unknown". */
 export function origenPublico(url: string): string {
   try {
@@ -340,6 +472,7 @@ function error(res: ServerResponse, status: number, tipo: string, mensaje: strin
  * Atiende una ruta local. Las rutas:
  *
  *   GET /_bvsala/v1/status
+ *   GET /_bvsala/v1/summary            (agregados, sin ids ni contenido: D12)
  *   GET /_bvsala/v1/reports/<requestId>[?wait_ms=N]
  *   GET /_bvsala/v1/reports?response_id=<id>[&wait_ms=N]
  *
@@ -363,6 +496,10 @@ export async function atenderRutaLocal(
   }
   if (url.pathname === "/_bvsala/v1/status") {
     responderJson(res, 200, ctx.estado());
+    return;
+  }
+  if (url.pathname === "/_bvsala/v1/summary") {
+    responderJson(res, 200, resumenLocal(ctx.buzon.vigentes(), ctx.buzon.limite));
     return;
   }
   const espera = Number(url.searchParams.get("wait_ms") ?? "0");
