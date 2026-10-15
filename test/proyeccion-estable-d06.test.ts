@@ -243,6 +243,24 @@ describe("modo recuperable con ejecutor", () => {
     expect(e.almacen.size).toBe(0);
   });
 
+  it("un JSON grande con una clave duplicada tampoco se omite: va el original", async () => {
+    const e = entorno();
+    const filas = Array.from({ length: 600 }, (_, i) => `  {"id": ${i}, "estado": "abierto"${i === 300 ? ', "estado": "cerrado"' : ""}}`);
+    const json = `[\n${filas.join(",\n")}\n]`;
+    expect(new TextEncoder().encode(json).length).toBeGreaterThan(16 * 1024);
+    const p = await e.proyector().proyectar(turno1(json));
+    expect(resultadoDe(p.cuerpo).content).toBe(json);
+    expect(p.informe.segments[0]).toMatchObject({ reason: "duplicate_keys", recoverable: false });
+    expect(e.almacen.size).toBe(0);
+  });
+
+  it("un log que empieza por [INFO] no es JSON: sí va en vista previa", async () => {
+    const e = entorno();
+    const log = LOG.split("\n").map((l) => `[INFO] ${l}`).join("\n");
+    const p = await e.proyector().proyectar(turno1(log));
+    expect(p.informe.segments[0]).toMatchObject({ reason: "recoverable", recoverable: true });
+  });
+
   it("un tool_result con is_error no se toca", async () => {
     const e = entorno();
     const c = turno1();

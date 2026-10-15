@@ -324,10 +324,18 @@ function esRegistro(v: unknown): v is Registro {
   return typeof v === "object" && v !== null && !Array.isArray(v);
 }
 
+/**
+ * ¿Es JSON (o casi)? Lo es si pasa el parser estricto, y también si solo lo
+ * para una clave duplicada o un surrogate suelto: eso es un JSON con datos que
+ * el compacto no puede garantizar, y omitir parte de él sería peor todavía.
+ * Un log que empieza por `[INFO]` no es JSON (`invalid_json`) y sí puede ir en
+ * vista previa.
+ */
 function esJsonEstructurado(texto: string): boolean {
   const t = texto.trimStart();
   if (!(t.startsWith("{") || t.startsWith("["))) return false;
-  return recorrerJsonEstricto(texto).ok;
+  const r = recorrerJsonEstricto(texto);
+  return r.ok || r.fallo === "duplicate_keys" || r.fallo === "invalid_unicode";
 }
 
 function campoValido(v: unknown): v is string {
