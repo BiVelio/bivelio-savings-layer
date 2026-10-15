@@ -410,6 +410,7 @@
     "SavingsReport.constraints.structurallyValid": "estable",
     "SavingsReport.cost": "estable",
     "SavingsReport.cost.actual": "estable",
+    "SavingsReport.cost.actualIsLowerBound": "estable",
     "SavingsReport.cost.baselineEstimate": "estable",
     "SavingsReport.cost.basis": "estable",
     "SavingsReport.cost.eliminatedInputFloorCost": "estable",
