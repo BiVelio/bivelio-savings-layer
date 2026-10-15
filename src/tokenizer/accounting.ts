@@ -386,6 +386,9 @@ export class SavingsLedger {
     | { originalTokens: number; compressedTokens: number; protectedSpans: number; fidelityPassed: boolean }
     | undefined = undefined;
 
+  /** Las decisiones explicadas del perfil `lossless-data`, para `SavingsReport.toolOutputCompaction`. */
+  toolOutputCompactionReport: import("../contracts/types.js").SavingsReport["toolOutputCompaction"] = undefined;
+
   /** Ledger 2: tokens removed because they were not needed. */
   eliminate(tokens: number): void {
     this.eliminatedInput += Math.max(0, tokens);
