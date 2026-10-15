@@ -1,4 +1,6 @@
 import type { ChatMessage } from "../contracts/types.js";
+import { heuristicEstimator } from "../tokenizer/estimator.js";
+import { lexemasJsonEstricto } from "../util/json-estricto.js";
 
 // LA COMPACTACIÓN DE LA COLA: quitar a la salida de una herramienta lo que no
 // es información (secuencias de color, estados intermedios de una barra de
@@ -68,6 +70,27 @@ import type { ChatMessage } from "../contracts/types.js";
 // con el disco y el intento falla — exactamente el «broken rewrite» que
 // JetBrains midió como coste. Tampoco se tocan `system`, `user` ni `assistant`:
 // sólo `role: "tool"`.
+//
+// EL PERFIL `lossless-data` (opt-in, D03). Para quien quiere la garantía en su
+// forma más dura: sólo corre la transformación de JSON, y con otra comprobación.
+// Ya no basta con que `JSON.parse` diga lo mismo —`JSON.parse` se queda con el
+// último valor de una clave repetida, así que dos textos con distinta
+// información pasaban por iguales—; aquí el texto tiene que ser JSON ESTRICTO
+// (RFC 8259, el recorrido de `util/json-estricto.ts`, el MISMO que usa el
+// gateway), sin claves duplicadas a ninguna profundidad, y el compacto tiene que
+// tener EXACTAMENTE los mismos lexemas, en el mismo orden, que el original: las
+// mismas cadenas con los mismos escapes, los mismos números escritos igual
+// (`2^63+1`, `1.10`, `1e400`, `-0`), las mismas claves en el mismo orden. Lo
+// único que desaparece es el espacio entre lexemas.
+//
+// Y una verja más, en TOKENS y no en caracteres: si el compacto no cuesta
+// estrictamente menos tokens con el estimador de la petición, no se toca. Es
+// función del texto y del modelo; como la caché de prefijo de un proveedor es
+// por modelo, cambiar de modelo a mitad de conversación ya la invalida entera, y
+// dentro de un mismo modelo la decisión sigue siendo la misma turno a turno.
+// Cada tool_result sale con su decisión (`applied` o `bypassed` con un código
+// estable) para que el recibo explique por qué se tocó o no. «No mejora» es un
+// resultado válido, no un error.
 
 /** A deterministic, content-only transformation applied to a tool output. */
 export type CompactionTransform = "ansi" | "carriage-return" | "json" | "repeated-lines";
@@ -108,6 +131,17 @@ export interface ToolOutputCompactionSettings {
    * would not match the file on disk.
    */
   compactFileViews?: boolean;
+  /**
+   * `"lossless-data"`: run only the JSON transformation, under a strict check.
+   * The output must be strict JSON (RFC 8259) with no duplicate key at any
+   * depth, and the compacted text must have exactly the same lexemes as the
+   * original — same strings with the same escapes, same number literals, same
+   * key order — with only insignificant whitespace removed. It is applied only
+   * when it is also strictly smaller in estimated tokens. `transforms` is
+   * ignored. Every tool output gets an explained decision. Default: unset (the
+   * four transformations, as before).
+   */
+  profile?: "lossless-data";
 }
 
 /** The outcome of compacting one tool output. */
@@ -121,7 +155,50 @@ export interface ToolOutputCompaction {
   compactChars: number;
   /** Why the output was, or was not, compacted. */
   reason: string;
+  /**
+   * Only with `profile: "lossless-data"`: the explained decision, with a stable
+   * reason code. Token counts are estimates from the estimator in use, never a
+   * verified saving.
+   */
+  decision?: ToolOutputDecision;
 }
+
+/**
+ * Why a `lossless-data` decision went the way it did. `applied`: whitespace
+ * removed. Bypass codes: `not_json` (the output is not a JSON object or array),
+ * `invalid_json` (it looks like one but is not strict JSON), `duplicate_keys`,
+ * `invalid_unicode` (an unpaired surrogate), `not_smaller` (no fewer tokens),
+ * `below_threshold` (fewer than `minSavedChars` removed), `protected` (a file
+ * view or an excepted tool).
+ */
+export type ToolOutputDecisionReason =
+  | "applied"
+  | "not_json"
+  | "invalid_json"
+  | "duplicate_keys"
+  | "invalid_unicode"
+  | "not_smaller"
+  | "below_threshold"
+  | "protected";
+
+/** One explained decision of the `lossless-data` profile. */
+export interface ToolOutputDecision {
+  status: "applied" | "bypassed";
+  reason: ToolOutputDecisionReason;
+  transformId: typeof LOSSLESS_JSON_TRANSFORM_ID;
+  version: typeof LOSSLESS_JSON_VERSION;
+  /** Estimated tokens of the original output. */
+  tokensBefore: number;
+  /** Estimated tokens of what is sent: the compacted text when applied, the original otherwise. */
+  tokensAfter: number;
+  /** Estimated tokens of the compacted candidate, when one was built (also when bypassed). */
+  candidateTokens?: number;
+}
+
+/** Id of the `lossless-data` transformation, as it appears in a decision. */
+export const LOSSLESS_JSON_TRANSFORM_ID = "json-lossless";
+/** Version of that transformation. A change of output for the same input bumps it. */
+export const LOSSLESS_JSON_VERSION = "1";
 
 /** Default minimum saving, in characters, for an output to be compacted. */
 export const DEFAULT_MIN_SAVED_CHARS = 256;
@@ -212,6 +289,33 @@ function minificarJson(texto: string): string | null {
   return compacto;
 }
 
+/**
+ * La versión estricta de `minificarJson`, la del perfil `lossless-data`. El
+ * compacto es la concatenación de los lexemas del original, y LA COMPROBACIÓN
+ * vuelve a recorrer el compacto y exige la misma lista de lexemas, uno a uno:
+ * no se reserializa nada, así que ningún número ni escape puede cambiar.
+ */
+function minificarJsonEstricto(
+  texto: string,
+): { compacto: string } | { motivo: "not_json" | "invalid_json" | "duplicate_keys" | "invalid_unicode" } {
+  let i = 0;
+  while (i < texto.length && esEspacioJson(texto.charCodeAt(i))) i++;
+  const primero = texto.charCodeAt(i);
+  if (primero !== 0x7b && primero !== 0x5b) return { motivo: "not_json" }; // { o [
+  const original = lexemasJsonEstricto(texto);
+  if (!original.ok) return { motivo: original.fallo === "stopped" ? "invalid_json" : original.fallo };
+  const compacto = original.lexemas.join("");
+  const vuelta = lexemasJsonEstricto(compacto);
+  if (
+    !vuelta.ok ||
+    vuelta.lexemas.length !== original.lexemas.length ||
+    vuelta.lexemas.some((l, k) => l !== original.lexemas[k])
+  ) {
+    return { motivo: "invalid_json" }; // no debería pasar nunca; si pasa, no se toca
+  }
+  return { compacto };
+}
+
 // --- repeated-lines ---------------------------------------------------------
 
 const RE_MARCADOR = /^\[previous line repeated (\d+) more times\]$/;
@@ -287,13 +391,20 @@ const TRANSFORMAR: Record<CompactionTransform, (t: string) => string | null> = {
  * is produced, before you append it to your conversation history, and the
  * history itself holds the compacted text — the provider's prefix cache is
  * never disturbed.
+ *
+ * `countTokens` is used only by the `lossless-data` profile, for its token
+ * gate; without it the built-in heuristic estimator counts.
  */
 export function compactToolOutput(
   text: string,
   settings: ToolOutputCompactionSettings = {},
+  countTokens?: (text: string) => number,
 ): ToolOutputCompaction {
-  const permitidas = new Set(settings.transforms ?? COMPACTION_TRANSFORMS);
   const minimo = Math.max(1, settings.minSavedChars ?? DEFAULT_MIN_SAVED_CHARS);
+  if (settings.profile === "lossless-data") {
+    return compactarSinPerdida(text, minimo, countTokens ?? ((t) => heuristicEstimator.count(t)));
+  }
+  const permitidas = new Set(settings.transforms ?? COMPACTION_TRANSFORMS);
 
   let actual = text;
   const aplicadas: CompactionTransform[] = [];
@@ -323,7 +434,57 @@ export function compactToolOutput(
   };
 }
 
-function sinCambio(text: string, reason: string): ToolOutputCompaction {
+// El perfil `lossless-data`. El orden de las verjas es el de la explicación:
+// primero si se PUEDE tocar (gramática, duplicadas, unicode), luego si MERECE
+// la pena (tokens, y el mínimo de caracteres de siempre).
+function compactarSinPerdida(
+  text: string,
+  minimo: number,
+  contar: (t: string) => number,
+): ToolOutputCompaction {
+  const antes = contar(text);
+  const r = minificarJsonEstricto(text);
+  if ("motivo" in r) return sinCambio(text, r.motivo, desvio(r.motivo, antes));
+  const candidato = contar(r.compacto);
+  if (candidato >= antes) {
+    return sinCambio(text, "not_smaller", desvio("not_smaller", antes, candidato));
+  }
+  const ahorro = text.length - r.compacto.length;
+  if (ahorro < minimo) {
+    return sinCambio(text, "below_threshold", desvio("below_threshold", antes, candidato));
+  }
+  return {
+    text: r.compacto,
+    changed: true,
+    applied: ["json"],
+    originalChars: text.length,
+    compactChars: r.compacto.length,
+    reason: "applied",
+    decision: {
+      status: "applied",
+      reason: "applied",
+      transformId: LOSSLESS_JSON_TRANSFORM_ID,
+      version: LOSSLESS_JSON_VERSION,
+      tokensBefore: antes,
+      tokensAfter: candidato,
+      candidateTokens: candidato,
+    },
+  };
+}
+
+function desvio(reason: ToolOutputDecisionReason, antes: number, candidato?: number): ToolOutputDecision {
+  return {
+    status: "bypassed",
+    reason,
+    transformId: LOSSLESS_JSON_TRANSFORM_ID,
+    version: LOSSLESS_JSON_VERSION,
+    tokensBefore: antes,
+    tokensAfter: antes,
+    ...(candidato !== undefined ? { candidateTokens: candidato } : {}),
+  };
+}
+
+function sinCambio(text: string, reason: string, decision?: ToolOutputDecision): ToolOutputCompaction {
   return {
     text,
     changed: false,
@@ -331,6 +492,7 @@ function sinCambio(text: string, reason: string): ToolOutputCompaction {
     originalChars: text.length,
     compactChars: text.length,
     reason,
+    ...(decision ? { decision } : {}),
   };
 }
 
@@ -379,6 +541,16 @@ export interface EleccionDeCompactacion {
   vistasDeFichero: number;
   /** tool_results que no se tocan por estar en `exceptTools`. */
   exceptuados: number;
+  /**
+   * Sólo con el perfil `lossless-data`: una decisión por cada `role: "tool"`,
+   * en el orden de los mensajes, tocado o no.
+   */
+  decisiones?: DecisionDeMensaje[];
+}
+
+export interface DecisionDeMensaje extends ToolOutputDecision {
+  indice: number;
+  toolCallId?: string;
 }
 
 /**
@@ -390,6 +562,7 @@ export interface EleccionDeCompactacion {
 export function seleccionarCompactables(
   messages: readonly ChatMessage[],
   ajustes: ToolOutputCompactionSettings = {},
+  contar?: (texto: string) => number,
 ): EleccionDeCompactacion {
   const llamadas = new Map<string, { nombre: string; argumentos: string }>();
   let ultimoAssistant = -1;
@@ -402,20 +575,44 @@ export function seleccionarCompactables(
   });
 
   const exceptuadas = new Set(ajustes.exceptTools ?? []);
-  const eleccion: EleccionDeCompactacion = { compactados: [], vistasDeFichero: 0, exceptuados: 0 };
+  const sinPerdida = ajustes.profile === "lossless-data";
+  const cuenta = contar ?? ((t: string) => heuristicEstimator.count(t));
+  const eleccion: EleccionDeCompactacion = {
+    compactados: [],
+    vistasDeFichero: 0,
+    exceptuados: 0,
+    ...(sinPerdida ? { decisiones: [] } : {}),
+  };
+  const anotar = (i: number, m: ChatMessage, d: ToolOutputDecision) =>
+    eleccion.decisiones?.push({ indice: i, ...(m.toolCallId ? { toolCallId: m.toolCallId } : {}), ...d });
+  const protegido = (i: number, m: ChatMessage) => {
+    if (!sinPerdida) return;
+    const t = cuenta(m.content);
+    anotar(i, m, {
+      status: "bypassed",
+      reason: "protected",
+      transformId: LOSSLESS_JSON_TRANSFORM_ID,
+      version: LOSSLESS_JSON_VERSION,
+      tokensBefore: t,
+      tokensAfter: t,
+    });
+  };
   messages.forEach((m, i) => {
     if (m.role !== "tool") return;
     const llamada = m.toolCallId ? llamadas.get(m.toolCallId) : undefined;
     const nombre = llamada?.nombre ?? m.name;
     if (nombre && exceptuadas.has(nombre)) {
       eleccion.exceptuados += 1;
+      protegido(i, m);
       return;
     }
     if (!ajustes.compactFileViews && esVistaDeFichero(llamada?.argumentos)) {
       eleccion.vistasDeFichero += 1;
+      protegido(i, m);
       return;
     }
-    const r = compactToolOutput(m.content, ajustes);
+    const r = compactToolOutput(m.content, ajustes, cuenta);
+    if (r.decision) anotar(i, m, r.decision);
     if (!r.changed) return;
     eleccion.compactados.push({ indice: i, texto: r.text, aplicadas: r.applied, enLaCola: i > ultimoAssistant });
   });

@@ -1285,6 +1285,40 @@ export interface SavingsReport {
     fidelityPassed: boolean;
   };
 
+  /**
+   * Present only when tool-output compaction ran with `profile:
+   * "lossless-data"`: one explained decision per tool output in the request,
+   * applied or bypassed, in message order. Token counts come from the
+   * estimator named in `estimator` and are estimates, never a verified saving.
+   */
+  toolOutputCompaction?: {
+    profile: "lossless-data";
+    /** Always `"estimated"`: these counts are not the provider's. */
+    tokenBasis: "estimated";
+    /** Id of the token estimator that counted, and whether it uses the provider's rule. */
+    estimator: { id: string; exact: boolean };
+    decisions: Array<{
+      /** The tool call this output answers, unchanged. Absent when the message had none. */
+      toolCallId?: string;
+      status: "applied" | "bypassed";
+      reason:
+        | "applied"
+        | "not_json"
+        | "invalid_json"
+        | "duplicate_keys"
+        | "invalid_unicode"
+        | "not_smaller"
+        | "below_threshold"
+        | "protected";
+      transformId: string;
+      version: string;
+      tokensBefore: number;
+      /** What is sent: the compacted text when applied, the original otherwise. */
+      tokensAfter: number;
+      candidateTokens?: number;
+    }>;
+  };
+
   constraints: {
     backend: string;
     schemaVersion: string;
@@ -1377,6 +1411,16 @@ export interface SavingsReport {
   cost: {
     baselineEstimate: number;
     actual: number;
+    /**
+     * Present, and `true`, only when a billed call of this request reached the
+     * layer without its full provider counter (a stream cut before its final
+     * usage event, an endpoint that omitted a counter). `actual` then prices
+     * only the counters that did arrive, with the missing ones at 0: it is a
+     * FLOOR of what the provider billed, possibly 0, never the spend. The
+     * request is also `basis: "unmeasured"`. Do not add such an `actual` to
+     * measured spend. Absent whenever every counter arrived.
+     */
+    actualIsLowerBound?: true;
     /**
      * The saving as a RATIO of the baseline: `1 - actual / baselineEstimate`,
      * rounded to six decimals (0 when nothing was saved or there is no baseline,
