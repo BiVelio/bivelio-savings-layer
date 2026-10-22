@@ -33,6 +33,18 @@ jobs:
       - name: Habilitar pnpm (desde packageManager)
         run: corepack enable
 
+      # CACHÉ DEL STORE DE PNPM (los dos lockfiles: raíz y apps/web). Sin ella
+      # cada run descargaba todo el árbol dos veces. La clave es el hash de los
+      # lockfiles, y `--frozen-lockfile` sigue verificando que lo instalado es
+      # exactamente lo fijado: la caché solo ahorra la descarga, no decide nada.
+      - name: Ruta del store de pnpm
+        run: echo "PNPM_STORE=$(pnpm store path --silent)" >> "$GITHUB_ENV"
+      - uses: actions/cache@v4
+        with:
+          path: ${{ env.PNPM_STORE }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'apps/web/pnpm-lock.yaml') }}
+          restore-keys: pnpm-${{ runner.os }}-
+
       - run: pnpm install --frozen-lockfile
 
       # `apps/web` es un PROYECTO APARTE: tiene su propio pnpm-lock.yaml y su
@@ -59,6 +71,8 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
+          cache: pip
+          cache-dependency-path: packages/python/requirements-ci.txt
       - name: Python — dependencias de prueba (fijadas por hash)
         run: 'python -m pip install --require-hashes --only-binary :all: -r packages/python/requirements-ci.txt'
 
@@ -80,6 +94,12 @@ jobs:
       # despliegue de producción. `next build` compila las rutas y ejecuta el
       # prerender de las páginas estáticas, así que caza roturas que ni el
       # typecheck ni los tests ven.
+      # Caché incremental de Next (.next/cache): misma salida, menos tiempo.
+      - uses: actions/cache@v4
+        with:
+          path: apps/web/.next/cache
+          key: next-${{ runner.os }}-${{ hashFiles('apps/web/pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: next-${{ runner.os }}-${{ hashFiles('apps/web/pnpm-lock.yaml') }}-
       - name: Build de apps/web (antes que Vercel, no después)
         run: pnpm --dir apps/web run build
 
@@ -99,6 +119,8 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: packages/python/requirements-ci.txt
       - name: Dependencias de prueba (fijadas por hash)
         run: 'python -m pip install --require-hashes --only-binary :all: -r packages/python/requirements-ci.txt'
       - name: pytest (sin red)
