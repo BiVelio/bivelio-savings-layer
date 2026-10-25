@@ -167,7 +167,7 @@ const RECIBO: Record<Loc, RegExp> = {
   ca: /rebut/i,
   de: /beleg/i,
   fr: /reçu/i,
-  id: /struk/i,
+  id: /\bstruk\b/i,
   it: /ricevut/i,
   nl: /\bbon\b/i,
   pl: /paragon/i,

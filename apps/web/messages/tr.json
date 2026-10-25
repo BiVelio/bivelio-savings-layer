@@ -801,7 +801,7 @@
     },
     "cascade": {
       "title": "En ucuz yürütme kazanır",
-      "footnote": "Her kol kendi defterine düşer ve defterler asla toplanmaz. Bu bataryada tasarruf, SDK'nın sağlayıcıyı çağırmadan sunduğu tekrarlanan isteklerden ve Claude'da sağlayıcının kendi önek önbelleğinden geldi. npm paketi bir sıkıştırıcı içermez."
+      "footnote": "Her kol kendi defterine düşer ve defterler asla toplanmaz. Bu bataryada tasarruf, SDK'nın sağlayıcıyı çağırmadan sunduğu tekrarlanan isteklerden ve Claude'da B kolunda cache_control ile etkinleştirilen önek önbelleği etkisinden geldi. npm paketi bir sıkıştırıcı içermez."
     },
     "explica": {
       "eyebrow": "Sade bir dille",
@@ -818,7 +818,7 @@
         },
         {
           "title": "Doğrulayabileceğiniz bir makbuz",
-          "body": "İnanç istemiyoruz. Her tasarruf, sağlayıcının resmî sayacıyla ölçülür — size fatura kestiği sayaçla — ve makbuzunuza işlenir. Faturayla karşılaştırılamayan hiçbir şey duyurulmaz."
+          "body": "Körü körüne güven istemiyoruz. Ölçülen tutarlar, sağlayıcının bildirdiği kullanımı ve belgelenmiş fiyatları kullanır ve SavingsReport'unuzda görünür. Referansla değerlenen ve tahmini tutarlar ayrı etiketlenir; hiçbiri faturayla mutabık gibi sunulmaz."
         },
         {
           "title": "Ücretsiz ölçün, sonra koltuk başına ödeyin",
@@ -830,7 +830,7 @@
     "step2": {
       "eyebrow": "Vaat yok: ölçümler",
       "title": "Tasarruf ettirdiğini nereden biliyoruz? Ölçüyoruz — ve her denemeyi tek tek yayımlıyoruz.",
-      "body": "Her senaryo gerçek sağlayıcıya karşı iki kez çalışır: olduğu gibi ve önünde Savings ile. İki sonuç da sağlayıcının kendi sayacıyla sayılır — faturanızı fiyatlandıran sayaçla. İşte hata payıyla birlikte çıkan sonuç:",
+      "body": "Her SDK senaryosu gerçek sağlayıcıya karşı iki kez çalışır: olduğu gibi ve önünde Savings ile. İki kol da sağlayıcının bildirdiği kullanımdan sürümlenmiş liste fiyatlarıyla değerlenir, faturayla mutabık hale getirilmez. İşte hata payıyla birlikte çıkan sonuç:",
       "videoCaption": "Test adil bir deneydir: aynı görev iki kez — Savings olmadan ve Savings ile — ve ikisini de sağlayıcının aynı sayacı ölçer.",
       "plainTitle": "Jargonsuz çevirisi",
       "plain": "İsteklerin {rep} kadarının birebir tekrarlandığı bir akışta fatura {punto} düştü — %95 güvenle {bajo} ile {alto} arasında. Ne kadar tasarruf edeceğiniz, trafiğinizin ne kadar tekrarlandığına bağlıdır.",
@@ -841,7 +841,7 @@
       "eyebrow": "Dürüst muhasebe",
       "title": "Her tasarruf türü ayrı sayılır — hiçbir rakam şişirilmesin diye.",
       "body": "Her SavingsReport tasarrufu dört deftere ayırır — kaçınılan çağrılar, çıkarılan metin, sıkıştırılan metin ve kendi sağlayıcınızın önbellek indirimi — ve bunları asla tek bir pazarlama rakamında toplamaz.",
-      "providerNote": "Herkese açık test tezgâhında ({fecha}), kurulu SDK'nın tasarrufu birinci defterden — sağlayıcı çağrılmadan sunulan tekrarlanan isteklerden — ve Claude'da, kendi sağlayıcınızın indirimi olan dördüncüden geldi. npm paketi bir sıkıştırıcı içermez. Yayımlanmış rakamı olmayan bir defter burada anlatılır, reklamı yapılmaz."
+      "providerNote": "Herkese açık test tezgâhında ({fecha}), kurulu SDK'nın tasarrufu birinci defterden — sağlayıcı çağrılmadan sunulan tekrarlanan isteklerden — ve Claude'da dördüncü defterden, B kolunda cache_control ile etkinleştirilen önek önbelleği etkisiyle geldi; önceden var olan bir sağlayıcı indirimi değildi. npm paketi bir sıkıştırıcı içermez. Yayımlanmış rakamı olmayan bir defter burada anlatılır, reklamı yapılmaz."
     },
     "ledgers": [
       {
@@ -1060,7 +1060,7 @@
         "who": "Claude Code, Codex CLI veya başka bir kod ajanını API anahtarıyla kullananlar için.",
         "what": "Tek bir komut, koda dokunmadan terminalinizin önüne yerel bir sayaç koyar. Gateway, sağlayıcınızın kullanımını bildirdiği her isteği sağlayıcının kendi sayacıyla sayar — fiyat kataloğumuzdaki modeller için — ve bunları panelinizde gün ve model bazında toplar.",
         "figureLabel": "Yayımladığımız rakam",
-      "figureQue": "faturadan, PRO'nun önbellek indirimiyle ve yol açtığı önbellek ıskaları düşüldükten sonra ({confianza} aralığı: {bajo} ile {alto} arası). Liste fiyatlarıyla, tek bir kuruluşun, yani bizim {sesiones} Claude Code oturumumuz üzerinde simüle edildi.",
+      "figureQue": "PRO'nun önbellek TTL değişikliğiyle liste fiyatı maliyetinde, yol açılan önbellek ıskaları düşüldükten sonra tahmini net azalma ({confianza} aralığı: {bajo} ile {alto} arası). Bir kuruluşun {sesiones} Claude Code oturumunda, taban çizgisi kısmen yeniden oluşturulmuş karşı-olgusal yeniden oynatma; canlı A/B çalışması veya fatura mutabakatı değildir.",
         "figureNote": "Ekibiniz için bir tahmin değildir: tek bir kuruluş, tek bir sağlayıcı ve liste fiyatlarıdır; Anthropic harcamasının yüksek olduğu yerde fark edilen küçük bir tasarruftur. PRO ile, Anthropic modellerinde, gateway önbellek yazmalarını bir saatlik TTL'den beş dakikalık TTL'ye yalnızca prompt'un büyük bir kısmının yeni olduğu turlarda taşır — bir oturumun ilk turu ya da bir sıkıştırma gibi — ve süren bir oturumun ardışık turlarına dokunmaz. Bu fiyatı değiştirir, modelin okuduğunu asla; tasarruf raporunuzda da yalnızca sağlayıcınızın sayacının doğruladığı sayılır.",
         "benchLink": "TTL ölçümünün raporu: neyin simüle edildiği, modele göre dökümü ve sınırları →",
         "cta": "Gateway'i kurun"
@@ -1098,9 +1098,9 @@
     },
     "enVivo": {
       "titulo": "Herkese açık test tezgâhı · sağlayıcıya karşı canlı · {fecha}",
-      "conRepeticiones": "daha düşük fatura (%95 aralık: {bajo} ile {alto} arası), isteklerin {rep} kadarının birebir tekrar olduğu bir akışta — {bateria}, SDK {version}",
+      "conRepeticiones": "sürümlenmiş liste fiyatlarıyla daha düşük maliyet (%95 aralık: {bajo} ile {alto} arası), isteklerin {rep} kadarının birebir tekrar olduğu bir akışta — {familias} aile / kol başına {peticiones} istek, {bateria}, SDK {version}",
       "sinRepeticiones": "tekrar içermeyen trafikte (MT-Bench, BFCL): sıfırdan ayırt edilemez",
-      "anthropic": "aynı akış (%95 aralık: {bajo} ile {alto} arası). Orijinal faturanın yaklaşık {prefijo} kadarı Anthropic'in kendi önek önbelleği indirimidir — sağlayıcının, bizim değil, ve ayrı gösterilir",
+      "anthropic": "OpenAI akışından farklı, azaltılmış akış: {familias} aile / kol başına {peticiones} istek (%95 aralık: {bajo} ile {alto} arası). A'nın liste fiyatı maliyetinin yaklaşık {prefijo} kadarı, B kolunda cache_control ile etkinleştirilen önek önbelleği etkisidir; önceden var olan bir Anthropic indirimi değildir",
       "pie": "Trafiğinizin ne kadar tekrarlandığına bağlıdır. Her batarya, tam raporuyla: <bench>herkese açık test tezgâhı</bench>."
     }
   },
@@ -1153,10 +1153,11 @@
     "method": {
       "title": "Ne ölçülüyor ve nasıl",
       "arms": "<b>İki kol, aynı istek.</b> A, katman olmadan doğrudan sağlayıcıya gider; B, varsayılan yapılandırmasıyla katmandan geçer. Aynı prompt, aynı örnekleme, aynı çıktı sınırı.",
-      "cost": "<b>Maliyeti sağlayıcı sayar.</b> Her kol, API'nin her çağrıda döndürdüğü <code>usage</code> değeriyle, liste fiyatı üzerinden fiyatlandırılır. Tasarruf, aynı koşunun 1 − maliyet(B) / maliyet(A) değeridir, katmanın kendisi hakkında söyledikleri değil.",
+      "cost": "<b>Sağlayıcının bildirdiği kullanım ve sürümlenmiş liste fiyatları.</b> Her kol, API'nin döndürdüğü <code>usage</code> ve tarihli bir liste fiyatı kataloğuyla değerlenir. Tasarruf, aynı koşunun 1 − maliyet(B) / maliyet(A) değeridir. Tutarlar kanıtlarına göre measured, reference-valued veya estimated olarak etiketlenir; bu bir fatura mutabakatı değildir.",
       "intervals": "<b>{nivel} aralıkları.</b> Bunları her test düzeneği hesaplar (bütün soru ailelerinin yeniden örneklenmesi, ret oranları için Wilson). Sıfırı kesen bir aralık “sıfırdan ayırt edilemez” demektir ve bunu böyle söylüyoruz.",
       "package": "<b>Kurduğunuz paket.</b> Aşağıdaki tablolardaki A/B koşuları {version} ile yapıldı: B kolu o etiketin kaynak kodunu çalıştırır ve <code>dist/index.js</code> dosyası npm tarball'ındakiyle bayt bayt aynıdır (sha256 <code>{sha}</code>). Haftalık canlı test ise başka bir şey: her koşuda main'in o günkü kaynak kodunu, yayımlanmadan önce ölçer.",
       "guard": "<b>Kestirme yok.</b> Her test düzeneği konuştuğu sunucuları izler ve kod içinde yazılı, model başına bir harcama sınırı taşır. Ölçülemeyen bir model, nedeniyle birlikte “ölçülmedi” olarak raporlanır.",
+      "paper": "<paper>17 sayfalık araştırma makalesini okuyun (PDF)</paper>: yöntem, kanıt türleri ve sınırlamalar; OpenAI'nin 1,05 oranının neden ampirik bir eğim değil, tek bir çalışma noktasını tanımladığı da buna dâhil.",
       "batteriesTitle": "Dört batarya, herkese açık veri kümeleri, sabitlenmiş",
       "commitOnly": "commit ile sabitlenmiş"
     },
@@ -1196,7 +1197,7 @@
         "safe": "güvenli {d} pp (p = {p})",
         "unsafe": "güvensiz {d} pp (p = {p})"
       },
-      "note": "“Katman hataları”, A kolunda olmayıp B kolunda çıkan hatalardır. “B − A”, GSM8K ve BFCL'de doğruluk farkı, XSTest'te ret oranı farkı (McNemar p değeri, eşleştirilmiş promptlar), MT-Bench'te ise hakemin B'yi ne sıklıkla tercih ettiğidir (yarısı beraberlik demektir). “Rapor ile fatura”, katmanın B kolu için bildirdiği maliyetin sağlayıcının faturaladığından ne kadar saptığıdır.",
+      "note": "“Katman hataları”, A kolunda olmayıp B kolunda çıkan hatalardır. “B − A”, GSM8K ve BFCL'de doğruluk farkı, XSTest'te ret oranı farkı (McNemar p değeri, eşleştirilmiş promptlar), MT-Bench'te ise hakemin B'yi ne sıklıkla tercih ettiğidir (yarısı beraberlik demektir). “Rapor ile liste fiyatı maliyeti”, katmanın B için bildirdiği maliyeti, sağlayıcının bildirdiği kullanımdan aynı sürümlenmiş liste fiyatlarıyla bağımsız hesaplanan maliyetle karşılaştırır; fatura mutabakatı değildir.",
       "earlierTitle": "Önceki haftalık koşular",
       "earlierOk": "{fecha} · commit {commit} · gerileme yok.",
       "earlierFailed": "{fecha} · commit {commit} · başarısız (bozulan kurallar: {n}).",
@@ -1234,7 +1235,7 @@
       "layerFails": "Katman hataları",
       "counts": "Ne sayar",
       "diff": "B − A",
-      "reportVsInvoice": "Rapor ile fatura"
+      "reportVsInvoice": "Rapor ile liste fiyatı maliyeti"
     },
     "savings": {
       "title": "Model başına ölçülen tasarruf",
@@ -1246,7 +1247,7 @@
     },
     "gatewayTtl": {
       "title": "Gateway'in önbellek indirimi: bir simülasyon, A/B değil",
-      "kind": "Bu bölüm, sayfadaki A/B bataryalarından biri değildir ve <b>canlı olarak ölçülmemiştir</b>: bir <b>replay</b>'dir. Sağlayıcının, <b>tek bir kuruluşun, yani bizim</b> gerçek Claude Code oturumlarımız için tek bir sağlayıcıda (Anthropic) zaten bildirdiği kullanımı aldık ve PRO'nun önbellek indirimiyle ve onsuz ne kadar tutacaklarını <b>liste fiyatlarıyla</b> hesapladık.",
+      "kind": "Bu, <b>taban çizgisi kısmen yeniden oluşturulmuş</b> bir <b>karşı-olgusal yeniden oynatmadır</b>; sayfadaki canlı A/B bataryalarından biri değildir. <b>Tek bir kuruluşun, yani bizim</b> gerçek Claude Code oturumlarında tek sağlayıcının (Anthropic) bildirdiği kullanımı aldık ve PRO'nun önbellek TTL değişikliğiyle ve onsuz maliyetleri <b>sürümlenmiş liste fiyatlarıyla</b> tahmin ettik. Canlı çift çalıştırma veya fatura mutabakatı değildir.",
       "verdict": "{fecha} tarihli raporun hükmü: indirim, kendi yol açtığı önbellek ıskaları düşüldükten sonra <b>faturanın net {neto} kadarını</b> bırakıyor ({factura} üzerinden {netoUsd}).",
       "stat": {
         "sessions": "Oturum",
@@ -1408,7 +1409,7 @@
         "dataset": "<b>Veri kümesi.</b> Her herkese açık veri kümesini yukarıdaki tablodaki commit'te indirin ve kullanmadan önce her dosyanın sha256 değerini kontrol edin. Tutmuyorsa aynı veri kümesi değildir.",
         "package": "<b>Katman.</b> <code>@bivelio/savings-layer</code> paketini npm'den raporun belirttiği sürümde kurun ve <code>dist/index.js</code> dosyasının sha256 değerini kontrol edin: her rapor kendi değerini içerir.",
         "arms": "<b>Prompt başına iki kol.</b> A doğrudan sağlayıcıya gider; B aynı prompt'u, aynı modele ve aynı çıktı sınırıyla, varsayılan yapılandırmasıyla katman üzerinden gönderir. Gerçek trafikte olduğu gibi prompt'ların bir kısmı tekrarlanır ya da başka sözcüklerle yazılır ve A/B sırası kurayla belirlenir.",
-        "cost": "<b>Maliyeti sağlayıcı söyler.</b> Sağlayıcının döndürdüğü <code>usage</code> değerine göre her kolun faturasını yayımlanan fiyattan toplayın. Tasarruf, aralığıyla birlikte <code>1 − maliyet B / maliyet A</code> olur.",
+        "cost": "<b>Kullanım ve liste fiyatları değerlemeyi belgeler.</b> Her kolun maliyetini sağlayıcının bildirdiği <code>usage</code> değerinden sürümlenmiş liste fiyatıyla toplayın. Tasarruf, aralığıyla birlikte <code>1 − maliyet B / maliyet A</code> olur; bu bir fatura mutabakatı değildir.",
         "compare": "<b>Kalite, aynı çalıştırmada.</b> İki kolun yanıtlarını aynı şekilde puanlayın (GSM8K'da kesin yanıt, BFCL'de araç çağrısı, XSTest'te ret olup olmadığı, MT-Bench'te bir hakem) ve aynı batarya ile sürümün JSON raporuyla karşılaştırın."
       },
       "reportsTitle": "Raporlar",

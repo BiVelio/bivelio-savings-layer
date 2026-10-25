@@ -15,9 +15,9 @@
  *     por defecto) frente a A (directo al proveedor), con su IC 95 %.
  *   · Sin repeticiones (MT-Bench, BFCL): ≈ 0. Esa frase la pinta /benchmarks
  *     con sus propias cifras; aquí solo se dice y se enlaza.
- *   · El mismo flujo contra Claude Sonnet 5: el total de B, y cuánto de ese
- *     total es la caché de prefijo del PROVEEDOR (su descuento, no el nuestro,
- *     y que Pro/Equipo no cobran de ninguna forma).
+ *   · Un flujo reducido distinto contra Claude Sonnet 5: el total de B, y
+ *     cuánto corresponde al efecto de caché de prefijo habilitado por la capa
+ *     mediante cache_control en B, no a un descuento preexistente de Anthropic.
  *
  * Los números están escritos aquí A MANO a propósito — la portada es ISR y en
  * Vercel no puede leer `docs/` al regenerarse —, pero no sin verja:
@@ -50,18 +50,22 @@ export const BANCO_EN_VIVO = {
   openai: {
     informe: "docs/benchmarks/2026-09-28/gsm8k-0431.json",
     modelo: "openai/gpt-4o-mini",
+    familias: 100,
+    peticionesPorBrazo: 200,
     /** Ahorro medido de B frente a A (`resumen.comparaciones[B].ahorroMedido`), redondeado a la décima. */
     ahorro: { point: 0.315, lower: 0.257, upper: 0.367 } satisfies Intervalo,
   },
   anthropic: {
     informe: "docs/benchmarks/2026-09-28/gsm8k-0431-claude.json",
     modelo: "anthropic/claude-sonnet-5",
-    /** Ahorro TOTAL de B frente a A, caché de prefijo del proveedor incluida. */
+    familias: 31,
+    peticionesPorBrazo: 62,
+    /** Ahorro TOTAL de B frente a A, incluido el efecto de cache_control habilitado en B. */
     ahorro: { point: 0.751, lower: 0.693, upper: 0.796 } satisfies Intervalo,
     /**
-     * La parte de la factura de A que es caché de prefijo del proveedor
-     * (`desglose[B].prefijoNetoUsd / costeA`), redondeada a la unidad hacia
-     * abajo: estimación puntual, sin intervalo propio en el informe.
+     * La parte del coste de A a precios de lista atribuible al efecto de caché
+     * habilitado en B (`desglose[B].prefijoNetoUsd / costeA`), redondeada a la
+     * unidad hacia abajo: estimación puntual, sin intervalo propio en el informe.
      */
     prefijoDelProveedor: 0.41,
   },

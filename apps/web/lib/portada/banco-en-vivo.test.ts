@@ -59,6 +59,10 @@ describe("las cifras de la portada salen de sus informes", () => {
     // …y la que de verdad llevó el flujo medido de este modelo.
     const m = modeloDe(inf, V.openai.modelo);
     expect(m.flujo.repeticion / m.peticionesCompletadas).toBeCloseTo(V.repeticiones, 2);
+    expect(m.nUnicos).toBe(V.openai.familias);
+    expect(m.peticionesCompletadas).toBe(V.openai.peticionesPorBrazo);
+    expect(m.resumen.brazos.A.peticiones).toBe(V.openai.peticionesPorBrazo);
+    expect(m.resumen.brazos.B.peticiones).toBe(V.openai.peticionesPorBrazo);
   });
 
   it(`OpenAI ${V.openai.modelo}: ahorro de B frente a A, con su IC 95 %`, () => {
@@ -68,17 +72,22 @@ describe("las cifras de la portada salen de sus informes", () => {
     expect(brazoB(m).diferenciaExactitud.lower).toBeGreaterThanOrEqual(0);
   });
 
-  it(`Anthropic ${V.anthropic.modelo}: el total de B y la parte de la caché de prefijo del proveedor`, () => {
+  it(`Anthropic ${V.anthropic.modelo}: el total de B y el efecto de cache_control habilitado en B`, () => {
     const inf = informe(V.anthropic.informe);
     expect(inf.fecha).toBe(V.fecha);
     expect(inf.modo).toBe("LIVE");
     expect(inf.procedencia.version).toBe(V.versionSdk);
     expect(inf.flujo.fraccionRepeticiones).toBe(V.repeticiones);
     const m = modeloDe(inf, V.anthropic.modelo);
+    expect(m.nUnicos).toBe(V.anthropic.familias);
+    expect(m.peticionesCompletadas).toBe(V.anthropic.peticionesPorBrazo);
+    expect(m.resumen.brazos.A.peticiones).toBe(V.anthropic.peticionesPorBrazo);
+    expect(m.resumen.brazos.B.peticiones).toBe(V.anthropic.peticionesPorBrazo);
+    expect(m.resumen.brazos.A.tokens.cacheada).toBe(0);
+    expect(m.resumen.brazos.B.tokens.cacheada).toBeGreaterThan(0);
     const b = brazoB(m);
     cuadra(V.anthropic.ahorro, b.ahorroMedido);
-    // «Cerca de X de la factura original es la caché de prefijo del proveedor»:
-    // el prefijo neto del brazo B sobre el coste de A, redondeado hacia abajo.
+    // El efecto habilitado en B sobre el coste de A, redondeado hacia abajo.
     const d = (m.desglose as J[]).find((x) => x.brazo === "B");
     const parte = d.prefijoNetoUsd / b.costeA;
     expect(V.anthropic.prefijoDelProveedor).toBe(Math.floor(parte * 100) / 100);

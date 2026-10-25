@@ -801,7 +801,7 @@
     },
     "cascade": {
       "title": "Wygrywa najtańsza realizacja",
-      "footnote": "Każda dźwignia trafia do własnej księgi, a księgi nigdy się nie sumują. W tej baterii oszczędność pochodziła z powtórzonych zapytań, które SDK obsłużył bez wywołania dostawcy, a w Claude — z pamięci podręcznej prefiksu samego dostawcy. Pakiet npm nie zawiera kompresora."
+      "footnote": "Każda dźwignia trafia do własnej księgi, a księgi nigdy się nie sumują. W tej baterii oszczędność pochodziła z powtórzonych zapytań, które SDK obsłużył bez wywołania dostawcy, a w Claude — z efektu pamięci podręcznej prefiksu włączonego przez cache_control w ramieniu B. Pakiet npm nie zawiera kompresora."
     },
     "explica": {
       "eyebrow": "Prostymi słowami",
@@ -818,7 +818,7 @@
         },
         {
           "title": "Rachunek, który możesz sprawdzić",
-          "body": "Nie prosimy o wiarę. Każdą oszczędność mierzy oficjalny licznik dostawcy — ten sam, którym wystawia Ci faktury — i trafia ona na Twój rachunek. Czego nie da się porównać z fakturą, tego nigdy nie ogłaszamy."
+          "body": "Nie prosimy o ślepe zaufanie. Zmierzone kwoty korzystają z użycia raportowanego przez dostawcę i udokumentowanych cen, i trafiają do Twojego SavingsReport. Kwoty wycenione przez odniesienie i oszacowane są oznaczane osobno; żadna nie jest przedstawiana jako uzgodniona z fakturą."
         },
         {
           "title": "Mierz za darmo, potem płać za stanowisko",
@@ -830,7 +830,7 @@
     "step2": {
       "eyebrow": "Bez obietnic: pomiary",
       "title": "Skąd wiemy, że oszczędza? Mierzymy to — i publikujemy każdą próbę, jedna po drugiej.",
-      "body": "Każdy scenariusz uruchamiamy dwa razy u prawdziwego dostawcy: bez zmian i z Savings z przodu. Oba wyniki liczy licznik samego dostawcy — ten sam, który wycenia Twoją fakturę. Oto co wyszło, z marginesem błędu:",
+      "body": "Każdy scenariusz SDK uruchamiamy dwa razy u prawdziwego dostawcy: bez zmian i z Savings z przodu. Oba ramiona są wyceniane na podstawie użycia raportowanego przez dostawcę po wersjonowanych cenach katalogowych, bez uzgadniania z fakturą. Oto co wyszło, z marginesem błędu:",
       "videoCaption": "Test to uczciwy eksperyment: to samo zadanie dwa razy — bez Savings i z Savings — a oba mierzy ten sam licznik dostawcy.",
       "plainTitle": "Tłumaczenie, bez żargonu",
       "plain": "Przy strumieniu, w którym {rep} zapytań powtarza się dokładnie, rachunek spadł o {punto} — między {bajo} a {alto} przy 95% ufności. Ile zaoszczędzisz, zależy od tego, jak często powtarza się Twój ruch.",
@@ -841,7 +841,7 @@
       "eyebrow": "Uczciwe rozliczanie",
       "title": "Każdy rodzaj oszczędności liczony osobno — żeby żadna liczba nie była zawyżona.",
       "body": "Każdy SavingsReport dzieli oszczędność na cztery księgi — uniknięte wywołania, usunięty tekst, skompresowany tekst i rabat z pamięci podręcznej Twojego własnego dostawcy — i nigdy nie sumuje ich w jedną liczbę marketingową.",
-      "providerNote": "W publicznym benchmarku ({fecha}) to, co zaoszczędził zainstalowany SDK, pochodziło z pierwszej księgi — powtórzonych zapytań obsłużonych bez wywołania dostawcy — a w Claude z czwartej, czyli rabatu Twojego własnego dostawcy. Pakiet npm nie zawiera kompresora. Księga bez opublikowanej liczby jest tu opisana, nie reklamowana."
+      "providerNote": "W publicznym benchmarku ({fecha}) to, co zaoszczędził zainstalowany SDK, pochodziło z pierwszej księgi — powtórzonych zapytań obsłużonych bez wywołania dostawcy — a w Claude z czwartej przez efekt pamięci podręcznej prefiksu włączony przez cache_control w ramieniu B, a nie z istniejącego wcześniej rabatu dostawcy. Pakiet npm nie zawiera kompresora. Księga bez opublikowanej liczby jest tu opisana, nie reklamowana."
     },
     "ledgers": [
       {
@@ -1060,7 +1060,7 @@
         "who": "Dla osób, które pracują z Claude Code, Codex CLI lub innym agentem programistycznym na kluczu API.",
         "what": "Jedno polecenie stawia lokalny licznik przed Twoim terminalem, bez zmian w kodzie. Gateway liczy każde zapytanie, dla którego Twój dostawca raportuje zużycie, jego własnym licznikiem — dla modeli z naszego cennika — i sumuje je w Twoim panelu, według dnia i modelu.",
         "figureLabel": "Liczba, którą publikujemy",
-      "figureQue": "rachunku dzięki obniżeniu pamięci podręcznej w PRO, po odjęciu chybień pamięci podręcznej, które ono powoduje (przedział {confianza}: od {bajo} do {alto}). Symulacja po cenach katalogowych na {sesiones} sesjach Claude Code jednej organizacji, naszej.",
+      "figureQue": "szacowanej netto redukcji kosztu według cen katalogowych dzięki zmianie TTL pamięci podręcznej w PRO, po odjęciu wywołanych chybień (przedział {confianza}: od {bajo} do {alto}). Kontrfaktyczne odtworzenie z częściowo zrekonstruowaną bazą odniesienia na {sesiones} sesjach Claude Code jednej organizacji; nie jest to A/B na żywo ani uzgodnienie faktur.",
         "figureNote": "To nie jest prognoza dla twojego zespołu: to jedna organizacja, jeden dostawca i ceny katalogowe, a oszczędność jest niewielka i widać ją tam, gdzie wydatki w Anthropic są wysokie. Z PRO, na modelach Anthropic, gateway przestawia zapisy do pamięci podręcznej z godzinnego TTL na pięciominutowy tylko w turach, w których duża część promptu jest nowa — jak pierwsza tura sesji albo kompaktowanie — a kolejne tury trwającej sesji zostawia bez zmian. Zmienia to cenę, nigdy to, co czyta model, a w Twoim raporcie oszczędności liczy się tylko to, co potwierdzi licznik Twojego dostawcy.",
         "benchLink": "Raport z pomiaru TTL: co symulowano, podział na modele i jego ograniczenia →",
         "cta": "Skonfiguruj gateway"
@@ -1098,9 +1098,9 @@
     },
     "enVivo": {
       "titulo": "Publiczny benchmark · na żywo u dostawcy · {fecha}",
-      "conRepeticiones": "niższy rachunek (przedział 95%: od {bajo} do {alto}) przy strumieniu, w którym {rep} zapytań to dokładne powtórzenia — {bateria}, SDK {version}",
+      "conRepeticiones": "niższy koszt według wersjonowanych cen katalogowych (przedział 95%: od {bajo} do {alto}) przy strumieniu, w którym {rep} zapytań to dokładne powtórzenia — {familias} rodzin / {peticiones} zapytań na ramię, {bateria}, SDK {version}",
       "sinRepeticiones": "przy ruchu bez powtórzeń (MT-Bench, BFCL): nieodróżnialne od zera",
-      "anthropic": "ten sam strumień (przedział 95%: od {bajo} do {alto}). Około {prefijo} pierwotnego rachunku to rabat z pamięci podręcznej prefiksu samego Anthropic — dostawcy, nie nasz, i pokazany osobno",
+      "anthropic": "zredukowany strumień, inny niż w OpenAI: {familias} rodzin / {peticiones} zapytań na ramię (przedział 95%: od {bajo} do {alto}). Około {prefijo} kosztu A według cen katalogowych to efekt pamięci podręcznej prefiksu włączony przez cache_control w ramieniu B, a nie istniejący wcześniej rabat Anthropic",
       "pie": "To zależy od tego, jak często Twój ruch się powtarza. Każda bateria z pełnym raportem: <bench>publiczny benchmark</bench>."
     }
   },
@@ -1153,10 +1153,11 @@
     "method": {
       "title": "Co jest mierzone i jak",
       "arms": "<b>Dwa ramiona, to samo żądanie.</b> A trafia bezpośrednio do dostawcy, bez warstwy; B przechodzi przez warstwę z jej domyślną konfiguracją. Ten sam prompt, to samo próbkowanie, ten sam limit odpowiedzi.",
-      "cost": "<b>Koszt liczy dostawca.</b> Każde ramię jest wyceniane na podstawie <code>usage</code> zwracanego przez API przy każdym wywołaniu, w cenie cennikowej. Oszczędność to 1 − koszt(B) / koszt(A) tego samego przebiegu, a nie to, co warstwa mówi sama o sobie.",
+      "cost": "<b>Użycie raportowane przez dostawcę i wersjonowane ceny katalogowe.</b> Każde ramię jest wyceniane na podstawie <code>usage</code> zwracanego przez API i datowanego katalogu cen. Oszczędność to 1 − koszt(B) / koszt(A) tego samego przebiegu. Kwoty są oznaczane measured, reference-valued lub estimated zależnie od dowodów; nie jest to uzgodnienie faktur.",
       "intervals": "<b>Przedziały na poziomie {nivel}.</b> Oblicza je każdy harness (resampling całych rodzin pytań, Wilson dla odsetka odmów). Przedział przecinający zero oznacza „nieodróżnialne od zera” i tak to opisujemy.",
       "package": "<b>Pakiet, który instalujesz.</b> Przebiegi A/B z tabel poniżej wykonano na wersji {version}: ramię B uruchamia kod źródłowy tego taga, a jego <code>dist/index.js</code> jest bajt w bajt identyczny z tym z tarballa npm (sha256 <code>{sha}</code>). Cotygodniowy benchmark na żywo to co innego: w każdym przebiegu mierzy kod źródłowy gałęzi main w stanie z danego dnia, jeszcze przed publikacją.",
       "guard": "<b>Bez skrótów.</b> Każdy harness obserwuje hosty, z którymi się komunikuje, i ma w kodzie zapisany limit wydatków na model. Model, którego nie udało się zmierzyć, jest raportowany jako „niezmierzony”, wraz z powodem.",
+      "paper": "<paper>Przeczytaj 17-stronicowy artykuł badawczy (PDF)</paper>: metoda, rodzaje dowodów i ograniczenia, w tym dlaczego współczynnik 1,05 dla OpenAI opisuje jeden punkt pracy, a nie empirycznie wyznaczone nachylenie.",
       "batteriesTitle": "Cztery baterie testów, publiczne zbiory danych, przypięte",
       "commitOnly": "przypięte do commita"
     },
@@ -1196,7 +1197,7 @@
         "safe": "bezpieczne {d} pp (p = {p})",
         "unsafe": "niebezpieczne {d} pp (p = {p})"
       },
-      "note": "„Błędy warstwy” to błędy w ramieniu B, których nie miało ramię A. „B − A” to różnica dokładności w GSM8K i BFCL, różnica odsetka odmów w XSTest (p McNemara, sparowane prompty), a w MT-Bench to, jak często sędzia woli B (połowa oznacza remis). „Raport a faktura” to, jak bardzo koszt raportowany przez warstwę dla ramienia B odbiega od tego, co fakturuje dostawca.",
+      "note": "„Błędy warstwy” to błędy w ramieniu B, których nie miało ramię A. „B − A” to różnica dokładności w GSM8K i BFCL, różnica odsetka odmów w XSTest (p McNemara, sparowane prompty), a w MT-Bench to, jak często sędzia woli B (połowa oznacza remis). „Raport a koszt katalogowy” porównuje koszt raportowany przez warstwę dla B z kosztem obliczonym niezależnie z użycia raportowanego przez dostawcę po tych samych wersjonowanych cenach katalogowych; nie jest to uzgodnienie faktur.",
       "earlierTitle": "Wcześniejsze przebiegi cotygodniowe",
       "earlierOk": "{fecha} · commit {commit} · bez regresji.",
       "earlierFailed": "{fecha} · commit {commit} · nie przeszedł (złamane reguły: {n}).",
@@ -1234,7 +1235,7 @@
       "layerFails": "Błędy warstwy",
       "counts": "Co liczy",
       "diff": "B − A",
-      "reportVsInvoice": "Raport a faktura"
+      "reportVsInvoice": "Raport a koszt katalogowy"
     },
     "savings": {
       "title": "Zmierzona oszczędność na model",
@@ -1246,7 +1247,7 @@
     },
     "gatewayTtl": {
       "title": "Obniżenie pamięci podręcznej w gatewayu: symulacja, nie A/B",
-      "kind": "Ta sekcja nie jest jedną z baterii A/B na tej stronie i <b>nie jest mierzona na żywo</b>: to <b>replay</b>. Wzięliśmy użycie, które dostawca już zaraportował dla prawdziwych sesji Claude Code <b>jednej organizacji, naszej</b>, u jednego dostawcy (Anthropic), i policzyliśmy po <b>cenach katalogowych</b>, ile kosztowałyby z obniżeniem pamięci podręcznej w PRO i bez niego.",
+      "kind": "To <b>kontrfaktyczne odtworzenie</b> z <b>częściowo zrekonstruowaną bazą odniesienia</b>, a nie jedna z baterii A/B na żywo na tej stronie. Użyliśmy użycia raportowanego przez dostawcę z prawdziwych sesji Claude Code <b>jednej organizacji, naszej</b>, u jednego dostawcy (Anthropic) i oszacowaliśmy koszty według <b>wersjonowanych cen katalogowych</b> ze zmianą TTL pamięci podręcznej w PRO i bez niej. Nie jest to podwójne wykonanie na żywo ani uzgodnienie faktur.",
       "verdict": "Werdykt raportu z dnia {fecha}: obniżenie zostawia <b>netto {neto} rachunku</b> ({netoUsd} z {factura}), po odjęciu chybień pamięci podręcznej, które samo powoduje.",
       "stat": {
         "sessions": "Sesje",
@@ -1408,7 +1409,7 @@
         "dataset": "<b>Zbiór danych.</b> Pobierz każdy publiczny zbiór danych z commita z tabeli powyżej i przed użyciem sprawdź sha256 każdego pliku. Jeśli się nie zgadza, to nie jest ten sam zbiór.",
         "package": "<b>Warstwa.</b> Zainstaluj <code>@bivelio/savings-layer</code> z npm w wersji podanej w raporcie i sprawdź sha256 pliku <code>dist/index.js</code>: każdy raport go zawiera.",
         "arms": "<b>Dwa ramiona na prompt.</b> A idzie prosto do dostawcy; B wysyła ten sam prompt, do tego samego modelu i z tym samym limitem wyjścia, przez warstwę w domyślnej konfiguracji. Część promptów się powtarza lub parafrazuje, jak w prawdziwym ruchu, a kolejność A/B jest losowana.",
-        "cost": "<b>Koszt podaje dostawca.</b> Zsumuj, ile kosztuje każde ramię według <code>usage</code> zwracanego przez dostawcę, po jego opublikowanej cenie. Oszczędność to <code>1 − koszt B / koszt A</code>, wraz z przedziałem.",
+        "cost": "<b>Użycie i ceny katalogowe dokumentują wycenę.</b> Zsumuj koszt każdego ramienia na podstawie <code>usage</code> raportowanego przez dostawcę, po wersjonowanej cenie katalogowej. Oszczędność to <code>1 − koszt B / koszt A</code>, wraz z przedziałem; nie jest to uzgodnienie faktur.",
         "compare": "<b>Jakość, w tym samym przebiegu.</b> Oceń tak samo odpowiedzi obu ramion (dokładna odpowiedź w GSM8K, wywołanie narzędzia w BFCL, odmowa lub nie w XSTest, sędzia w MT-Bench) i porównaj je z raportem JSON tej samej baterii i wersji."
       },
       "reportsTitle": "Raporty",

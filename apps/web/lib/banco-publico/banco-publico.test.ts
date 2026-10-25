@@ -512,7 +512,8 @@ describe("banco público: 12 idiomas y las reglas de la copia", () => {
 
     it(`${loc}: los mensajes de la página no llevan cifras propias ni «hasta X %»`, () => {
       const b = (mensajes(loc) as { benchmarksPage: unknown }).benchmarksPage;
-      const texto = valores(b).join("\n");
+      // La referencia bibliográfica sí declara las 9 páginas y el ratio 1,05.
+      const texto = valores(b).filter((x) => !x.includes("<paper>")).join("\n");
       expect(texto).not.toMatch(COMPETIDORES);
       // Lo único numérico permitido son nombres propios y la fórmula del ahorro.
       const limpio = texto.replace(/GSM8K|Gemini 3|sha256|dist\/index|1 − /g, "");
@@ -676,18 +677,20 @@ describe("banco público: la rebaja de caché del gateway, en su sección (#gate
     });
   }
 
-  it("la sinceridad, en español y en inglés: replay, no medido en vivo, una sola organización (la nuestra), precio de lista", () => {
+  it("la sinceridad, en español y en inglés: replay contrafactual, baseline parcial, una organización y precios de lista", () => {
     const es = (mensajes("es") as { benchmarksPage: { gatewayTtl: { kind: string; title: string; limits: Record<string, string> } } }).benchmarksPage.gatewayTtl;
     const en = (mensajes("en") as { benchmarksPage: { gatewayTtl: { kind: string; title: string; limits: Record<string, string> } } }).benchmarksPage.gatewayTtl;
-    expect(es.kind).toMatch(/no está medida en vivo/);
-    expect(es.kind).toMatch(/replay/);
+    expect(es.kind).toMatch(/reproducción contrafactual/);
+    expect(es.kind).toMatch(/línea base parcialmente reconstruida/);
+    expect(es.kind).toMatch(/No es una doble ejecución en vivo/);
     expect(es.kind).toMatch(/una sola organización, la nuestra/);
-    expect(es.kind).toMatch(/precio de lista/);
+    expect(es.kind).toMatch(/precios de lista versionados/);
     expect(es.title).toMatch(/simulación, no un A\/B/);
-    expect(en.kind).toMatch(/not measured live/);
-    expect(en.kind).toMatch(/replay/);
+    expect(en.kind).toMatch(/counterfactual replay/);
+    expect(en.kind).toMatch(/partially reconstructed baseline/);
+    expect(en.kind).toMatch(/not a live double-run/);
     expect(en.kind).toMatch(/a single organization, our own/);
-    expect(en.kind).toMatch(/list prices/);
+    expect(en.kind).toMatch(/versioned list prices/);
     // Y nunca al revés: ningún idioma dice que esto se midió en vivo sin negarlo.
     expect(JSON.stringify(es)).not.toMatch(/(?<!no está )medid[oa] en vivo/);
     expect(JSON.stringify(en)).not.toMatch(/(?<!not )measured live/);
@@ -726,9 +729,9 @@ describe("banco público: sin enlaces al código (el repositorio es privado)", (
       expect(html).not.toMatch(/githubusercontent/i);
       expect(html).not.toMatch(/bivelio-savings-layer\/(?:blob|tree)/i);
       expect(html).not.toMatch(/pnpm bench|benchmarks\/publicados|\.env\.bench/);
-      // Todo enlace es interno (los informes servidos) o el correo de contacto.
+      // Todo enlace es interno (informes o paper servidos) o el correo de contacto.
       for (const [, href] of html.matchAll(/href="([^"]+)"/g)) {
-        expect(href!, href).toMatch(/^(?:\/benchmarks\/data\/|mailto:)/);
+        expect(href!, href).toMatch(/^(?:\/benchmarks\/data\/|\/papers\/bv-sala-savings-layer-2026-10\.pdf|mailto:)/);
       }
     });
 

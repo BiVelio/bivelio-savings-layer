@@ -154,6 +154,7 @@ function Metodo({ banco, t, f, ricos }: { banco: Banco; t: Traductor; f: F; rico
         {ultima && <li>{t.rich("method.package", { ...ricos, version: ultima, sha: banco.distPorVersion[ultima]! })}</li>}
         <li>{t.rich("method.guard", ricos)}</li>
       </ul>
+      <p>{t.rich("method.paper", ricos)}</p>
       <h3>{t("method.batteriesTitle")}</h3>
       <div className="tbl-scroll">
         <table className="tbl banco-tbl">
@@ -998,7 +999,15 @@ export function BancoPublico({
   palancaTtl?: PalancaTtl;
 }) {
   const f = formatos(locale);
-  const ricos: Record<string, Rico> = { b: (c) => <b>{c}</b>, code: (c) => <code>{c}</code> };
+  const ricos: Record<string, Rico> = {
+    b: (c) => <b>{c}</b>,
+    code: (c) => <code>{c}</code>,
+    paper: (c) => (
+      <a href="/papers/bv-sala-savings-layer-2026-10.pdf" target="_blank" rel="noopener">
+        {c}
+      </a>
+    ),
+  };
   return (
     <main className="wrap banco-page">
       <section className="terms-hero">

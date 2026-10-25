@@ -801,7 +801,7 @@
     },
     "cascade": {
       "title": "Eksekusi termurah menang",
-      "footnote": "Setiap tuas masuk ke buku besarnya sendiri, dan buku-buku itu tidak pernah dijumlahkan. Di baterai ini penghematan berasal dari permintaan berulang yang dilayani SDK tanpa memanggil penyedia dan, pada Claude, dari cache prefiks milik penyedia sendiri. Paket npm tidak menyertakan kompresor."
+      "footnote": "Setiap tuas masuk ke buku besarnya sendiri, dan buku-buku itu tidak pernah dijumlahkan. Di baterai ini penghematan berasal dari permintaan berulang yang dilayani SDK tanpa memanggil penyedia dan, pada Claude, dari efek cache prefiks yang diaktifkan oleh cache_control di cabang B. Paket npm tidak menyertakan kompresor."
     },
     "explica": {
       "eyebrow": "Dengan bahasa sehari-hari",
@@ -818,7 +818,7 @@
         },
         {
           "title": "Struk yang bisa Anda periksa",
-          "body": "Kami tidak meminta kepercayaan buta. Setiap penghematan diukur dengan meteran resmi penyedia — meteran yang sama untuk menagih Anda — dan muncul di struk Anda. Yang tidak bisa dicocokkan dengan tagihan tidak pernah diumumkan."
+          "body": "Kami tidak meminta kepercayaan buta. Jumlah terukur memakai penggunaan yang dilaporkan penyedia dan harga terdokumentasi, lalu muncul di SavingsReport Anda. Jumlah yang dinilai berdasarkan referensi dan diestimasi diberi label terpisah; tidak ada yang disajikan sebagai telah direkonsiliasi dengan faktur."
         },
         {
           "title": "Ukur gratis, lalu bayar per kursi",
@@ -830,7 +830,7 @@
     "step2": {
       "eyebrow": "Tanpa janji: pengukuran",
       "title": "Dari mana kami tahu ini menghemat? Kami mengukurnya — dan kami menerbitkan setiap percobaan, satu per satu.",
-      "body": "Setiap skenario dijalankan dua kali terhadap penyedia sungguhan: apa adanya, dan dengan Savings di depan. Kedua hasil dihitung dengan meteran milik penyedia sendiri — meteran yang menentukan harga tagihan Anda. Inilah hasilnya, lengkap dengan margin galat:",
+      "body": "Setiap skenario SDK dijalankan dua kali terhadap penyedia sungguhan: apa adanya, dan dengan Savings di depan. Kedua lengan dinilai dari penggunaan yang dilaporkan penyedia pada harga daftar berversi, tanpa rekonsiliasi dengan faktur. Inilah hasilnya, lengkap dengan margin galat:",
       "videoCaption": "Pengujian ini eksperimen yang adil: tugas yang sama dua kali — tanpa Savings dan dengan Savings — dengan meteran penyedia yang sama menghitung keduanya.",
       "plainTitle": "Terjemahan, tanpa jargon",
       "plain": "Pada aliran di mana {rep} permintaan berulang persis, tagihan turun {punto} — antara {bajo} dan {alto} dengan keyakinan 95%. Berapa yang Anda hemat bergantung pada seberapa sering lalu lintas Anda berulang.",
@@ -841,7 +841,7 @@
       "eyebrow": "Penghitungan yang jujur",
       "title": "Setiap jenis penghematan dihitung terpisah — agar tak ada angka yang digelembungkan.",
       "body": "Setiap SavingsReport membagi penghematan ke dalam empat buku besar — panggilan yang dihindari, teks yang dihapus, teks yang dikompresi, dan diskon cache penyedia Anda sendiri — dan tidak pernah menjumlahkannya menjadi satu angka pemasaran.",
-      "providerNote": "Di bangku uji publik ({fecha}), penghematan SDK yang terpasang berasal dari buku besar pertama — permintaan berulang yang dilayani tanpa memanggil penyedia — dan, pada Claude, dari yang keempat, yaitu diskon penyedia Anda sendiri. Paket npm tidak menyertakan kompresor. Buku besar tanpa angka yang diterbitkan dijelaskan di sini, tidak diiklankan."
+      "providerNote": "Di bangku uji publik ({fecha}), penghematan SDK yang terpasang berasal dari buku besar pertama — permintaan berulang yang dilayani tanpa memanggil penyedia — dan, pada Claude, dari yang keempat melalui efek cache prefiks yang diaktifkan oleh cache_control di cabang B, bukan diskon penyedia yang sudah ada sebelumnya. Paket npm tidak menyertakan kompresor. Buku besar tanpa angka yang diterbitkan dijelaskan di sini, tidak diiklankan."
     },
     "ledgers": [
       {
@@ -1060,7 +1060,7 @@
         "who": "Untuk Anda yang memakai Claude Code, Codex CLI, atau agen pemrograman lain dengan kunci API.",
         "what": "Satu perintah menempatkan pengukur lokal di depan terminal Anda, tanpa mengubah kode. Gateway menghitung setiap permintaan yang penggunaannya dilaporkan penyedia Anda, dengan penghitung milik penyedia itu sendiri — untuk model dalam katalog harga kami — lalu menjumlahkannya di dasbor Anda, per hari dan per model.",
         "figureLabel": "Angka yang kami publikasikan",
-      "figureQue": "dari tagihan dengan penurunan cache PRO, sudah dikurangi kegagalan cache yang ditimbulkannya (interval {confianza}: {bajo} hingga {alto}). Disimulasikan dengan harga daftar pada {sesiones} sesi Claude Code dari satu organisasi saja, yaitu kami sendiri.",
+      "figureQue": "estimasi penurunan bersih biaya harga daftar dengan perubahan TTL cache PRO, setelah dikurangi kegagalan cache yang ditimbulkan (interval {confianza}: {bajo} hingga {alto}). Pemutaran ulang kontrafaktual dengan baseline yang direkonstruksi sebagian pada {sesiones} sesi Claude Code dari satu organisasi; bukan A/B langsung atau rekonsiliasi faktur.",
         "figureNote": "Bukan prakiraan untuk tim Anda: ini satu organisasi, satu penyedia, dan harga daftar, dan ini penghematan kecil yang terasa ketika pengeluaran di Anthropic tinggi. Dengan PRO, pada model Anthropic, gateway memindahkan penulisan cache dari TTL satu jam ke TTL lima menit, hanya pada giliran ketika porsi besar dari prompt masih baru — seperti giliran pertama sebuah sesi atau setelah pemadatan — dan membiarkan giliran berantai dari sesi yang sedang berjalan apa adanya. Itu mengubah harga, tidak pernah apa yang dibaca model, dan hanya yang dikonfirmasi penghitung penyedia Anda yang dihitung dalam laporan penghematan Anda.",
         "benchLink": "Laporan uji TTL: apa yang disimulasikan, rincian per model, dan batasannya →",
         "cta": "Pasang gateway"
@@ -1098,9 +1098,9 @@
     },
     "enVivo": {
       "titulo": "Bangku uji publik · langsung terhadap penyedia · {fecha}",
-      "conRepeticiones": "tagihan lebih kecil (interval 95%: {bajo} hingga {alto}) pada aliran di mana {rep} permintaan adalah pengulangan persis — {bateria}, SDK {version}",
+      "conRepeticiones": "biaya lebih rendah menurut harga daftar berversi (interval 95%: {bajo} hingga {alto}) pada aliran dengan {rep} permintaan berupa pengulangan persis — {familias} keluarga / {peticiones} permintaan per cabang, {bateria}, SDK {version}",
       "sinRepeticiones": "pada lalu lintas tanpa pengulangan (MT-Bench, BFCL): tidak dapat dibedakan dari nol",
-      "anthropic": "aliran yang sama (interval 95%: {bajo} hingga {alto}). Sekitar {prefijo} dari tagihan awal adalah diskon cache prefiks milik Anthropic sendiri — milik penyedia, bukan kami, dan ditampilkan terpisah",
+      "anthropic": "aliran yang diperkecil, berbeda dari aliran OpenAI: {familias} keluarga / {peticiones} permintaan per cabang (interval 95%: {bajo} hingga {alto}). Sekitar {prefijo} biaya harga daftar A merupakan efek cache prefiks yang diaktifkan oleh cache_control di cabang B, bukan diskon Anthropic yang sudah ada sebelumnya",
       "pie": "Bergantung pada seberapa sering lalu lintas Anda berulang. Setiap baterai, dengan laporan lengkapnya: <bench>bangku uji publik</bench>."
     }
   },
@@ -1153,10 +1153,11 @@
     "method": {
       "title": "Apa yang diukur, dan bagaimana",
       "arms": "<b>Dua lengan, permintaan yang sama.</b> A langsung ke penyedia, tanpa lapisan; B melewati lapisan dengan konfigurasi bawaannya. Prompt yang sama, sampling yang sama, batas output yang sama.",
-      "cost": "<b>Penyedia yang menghitung biaya.</b> Setiap lengan dihargai berdasarkan <code>usage</code> yang dikembalikan API pada setiap panggilan, pada harga daftar. Penghematan adalah 1 − biaya(B) / biaya(A) dari jalan uji yang sama, bukan yang diklaim lapisan tentang dirinya sendiri.",
+      "cost": "<b>Penggunaan yang dilaporkan penyedia dan harga daftar berversi.</b> Setiap lengan dinilai dari <code>usage</code> yang dikembalikan API dan katalog harga daftar bertanggal. Penghematan adalah 1 − biaya(B) / biaya(A) dari jalan uji yang sama. Jumlah diberi label measured, reference-valued atau estimated sesuai buktinya; ini bukan rekonsiliasi faktur.",
       "intervals": "<b>Interval {nivel}.</b> Dihitung oleh setiap harness (resampling seluruh keluarga pertanyaan, Wilson untuk tingkat penolakan). Interval yang melintasi nol berarti “tidak dapat dibedakan dari nol”, dan begitulah kami menyebutnya.",
       "package": "<b>Paket yang Anda pasang.</b> Putaran A/B di tabel-tabel di bawah dibuat dengan {version}: lengan B menjalankan kode sumber tag itu, dan <code>dist/index.js</code>-nya identik byte demi byte dengan milik tarball npm (sha256 <code>{sha}</code>). Bench mingguan langsung berbeda: di setiap putaran ia mengukur kode sumber main apa adanya pada hari itu, sebelum dirilis.",
       "guard": "<b>Tanpa jalan pintas.</b> Setiap harness mengawasi host yang dihubunginya dan membawa batas pengeluaran per model yang tertulis dalam kode. Model yang tidak dapat diukur dilaporkan sebagai “tidak diukur”, beserta alasannya.",
+      "paper": "<paper>Baca makalah penelitian 17 halaman (PDF)</paper>: metode, jenis bukti, dan keterbatasan, termasuk mengapa rasio 1,05 OpenAI menggambarkan satu titik operasi, bukan kemiringan empiris.",
       "batteriesTitle": "Empat baterai, dataset publik, dipatok",
       "commitOnly": "dipatok pada commit"
     },
@@ -1196,7 +1197,7 @@
         "safe": "aman {d} pp (p = {p})",
         "unsafe": "tidak aman {d} pp (p = {p})"
       },
-      "note": "“Kegagalan lapisan” adalah galat di lengan B yang tidak dialami lengan A. “B − A” adalah selisih akurasi di GSM8K dan BFCL, selisih tingkat penolakan di XSTest (p McNemar, prompt berpasangan) dan, di MT-Bench, seberapa sering juri memilih B (setengah berarti seri). “Laporan vs tagihan” adalah seberapa jauh biaya yang dilaporkan lapisan untuk lengan B menyimpang dari yang ditagih penyedia.",
+      "note": "“Kegagalan lapisan” adalah galat di lengan B yang tidak dialami lengan A. “B − A” adalah selisih akurasi di GSM8K dan BFCL, selisih tingkat penolakan di XSTest (p McNemar, prompt berpasangan) dan, di MT-Bench, seberapa sering juri memilih B (setengah berarti seri). “Laporan vs biaya harga daftar” membandingkan biaya yang dilaporkan lapisan untuk B dengan biaya yang dihitung independen dari penggunaan yang dilaporkan penyedia pada harga daftar berversi yang sama; ini bukan rekonsiliasi faktur.",
       "earlierTitle": "Putaran mingguan sebelumnya",
       "earlierOk": "{fecha} · commit {commit} · tanpa regresi.",
       "earlierFailed": "{fecha} · commit {commit} · gagal (aturan yang dilanggar: {n}).",
@@ -1234,7 +1235,7 @@
       "layerFails": "Kegagalan lapisan",
       "counts": "Yang dihitung",
       "diff": "B − A",
-      "reportVsInvoice": "Laporan vs tagihan"
+      "reportVsInvoice": "Laporan vs biaya harga daftar"
     },
     "savings": {
       "title": "Penghematan terukur per model",
@@ -1246,7 +1247,7 @@
     },
     "gatewayTtl": {
       "title": "Penurunan cache gateway: sebuah simulasi, bukan A/B",
-      "kind": "Bagian ini bukan salah satu baterai A/B di halaman ini dan <b>tidak diukur secara langsung</b>: ini adalah <b>replay</b>. Kami mengambil pemakaian yang sudah dilaporkan penyedia untuk sesi Claude Code nyata dari <b>satu organisasi saja, yaitu kami sendiri</b>, terhadap satu penyedia (Anthropic), lalu menghitung dengan <b>harga daftar</b> berapa biayanya dengan penurunan cache PRO dan tanpa penurunan itu.",
+      "kind": "Ini adalah <b>pemutaran ulang kontrafaktual</b> dengan <b>baseline yang direkonstruksi sebagian</b>, bukan salah satu baterai A/B langsung di halaman ini. Kami memakai penggunaan yang dilaporkan penyedia dari sesi Claude Code nyata di <b>satu organisasi saja, yaitu kami sendiri</b>, dengan satu penyedia (Anthropic), lalu memperkirakan biaya pada <b>harga daftar berversi</b> dengan dan tanpa perubahan TTL cache PRO. Ini bukan eksekusi ganda langsung atau rekonsiliasi faktur.",
       "verdict": "Putusan laporan {fecha}: penurunan ini menyisakan <b>neto {neto} dari tagihan</b> ({netoUsd} dari {factura}), setelah dikurangi kegagalan cache yang ditimbulkannya sendiri.",
       "stat": {
         "sessions": "Sesi",
@@ -1408,7 +1409,7 @@
         "dataset": "<b>Dataset.</b> Unduh setiap dataset publik pada commit di tabel di atas dan periksa sha256 setiap berkas sebelum digunakan. Jika tidak cocok, itu bukan dataset yang sama.",
         "package": "<b>Lapisan.</b> Pasang <code>@bivelio/savings-layer</code> dari npm pada versi yang disebut laporan dan periksa sha256 dari <code>dist/index.js</code>: setiap laporan mencantumkannya.",
         "arms": "<b>Dua lengan per prompt.</b> A langsung ke penyedia; B mengirim prompt yang sama, ke model yang sama dan dengan batas keluaran yang sama, melalui lapisan dengan konfigurasi bawaannya. Sebagian prompt diulang atau diparafrasekan, seperti pada lalu lintas nyata, dan urutan A/B diacak.",
-        "cost": "<b>Biaya ditentukan penyedia.</b> Jumlahkan tagihan setiap lengan menurut <code>usage</code> yang dikembalikan penyedia, dengan tarif resminya. Penghematan adalah <code>1 − biaya B / biaya A</code>, beserta intervalnya.",
+        "cost": "<b>Penggunaan dan harga daftar mendokumentasikan penilaian.</b> Jumlahkan biaya setiap lengan dari <code>usage</code> yang dilaporkan penyedia, pada harga daftar berversi. Penghematan adalah <code>1 − biaya B / biaya A</code>, beserta intervalnya; ini bukan rekonsiliasi faktur.",
         "compare": "<b>Kualitas, dalam proses yang sama.</b> Nilai jawaban kedua lengan dengan cara yang sama (jawaban tepat di GSM8K, pemanggilan alat di BFCL, penolakan atau tidak di XSTest, juri di MT-Bench) dan bandingkan dengan laporan JSON dari baterai dan versi yang sama."
       },
       "reportsTitle": "Laporan",

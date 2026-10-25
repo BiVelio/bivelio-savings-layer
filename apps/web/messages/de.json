@@ -801,7 +801,7 @@
     },
     "cascade": {
       "title": "Die günstigste Ausführung gewinnt",
-      "footnote": "Jeder Hebel landet in seinem eigenen Konto, und die Konten werden nie addiert. In dieser Batterie kam die Einsparung aus wiederholten Anfragen, die das SDK ohne Aufruf des Anbieters bediente, und bei Claude aus dem Präfix-Cache des Anbieters selbst. Das npm-Paket enthält keinen Kompressor."
+      "footnote": "Jeder Hebel landet in seinem eigenen Konto, und die Konten werden nie addiert. In dieser Batterie kam die Einsparung aus wiederholten Anfragen, die das SDK ohne Aufruf des Anbieters bediente, und bei Claude aus einem Präfix-Cache-Effekt, der durch cache_control in Arm B aktiviert wurde. Das npm-Paket enthält keinen Kompressor."
     },
     "explica": {
       "eyebrow": "In normalen Worten",
@@ -818,7 +818,7 @@
         },
         {
           "title": "Ein Beleg, den du prüfen kannst",
-          "body": "Wir bitten nicht um Vertrauen. Jede Ersparnis wird mit dem offiziellen Zähler des Anbieters gemessen — demselben, mit dem er dir Rechnungen stellt — und landet auf deinem Beleg. Was sich nicht mit der Rechnung abgleichen lässt, wird nie verkündet."
+          "body": "Wir bitten nicht um blindes Vertrauen. Gemessene Beträge beruhen auf der vom Anbieter gemeldeten Nutzung und dokumentierten Preisen und erscheinen in deinem SavingsReport. Per Referenz bewertete und geschätzte Beträge werden getrennt gekennzeichnet; keiner wird als mit einer Rechnung abgestimmt dargestellt."
         },
         {
           "title": "Kostenlos messen, dann pro Seat zahlen",
@@ -830,7 +830,7 @@
     "step2": {
       "eyebrow": "Keine Versprechen: Messungen",
       "title": "Woher wissen wir, dass es spart? Wir messen es — und wir veröffentlichen jeden einzelnen Versuch.",
-      "body": "Jedes Szenario läuft zweimal gegen den echten Anbieter: unverändert und mit Savings davor. Beide Ergebnisse werden mit dem Zähler des Anbieters selbst gezählt — demselben, der deine Rechnung bepreist. Das kam heraus, samt Fehlermarge:",
+      "body": "Jedes SDK-Szenario läuft zweimal gegen den echten Anbieter: unverändert und mit Savings davor. Beide Arme werden anhand der vom Anbieter gemeldeten Nutzung zu versionierten Listenpreisen bewertet, nicht mit einer Rechnung abgestimmt. Das kam heraus, samt Fehlermarge:",
       "videoCaption": "Der Test ist ein faires Experiment: dieselbe Aufgabe zweimal — ohne Savings und mit Savings — und derselbe Zähler des Anbieters zählt beide.",
       "plainTitle": "Übersetzung, ohne Fachjargon",
       "plain": "Bei einem Strom, in dem sich {rep} der Anfragen exakt wiederholen, sank die Rechnung um {punto} — zwischen {bajo} und {alto} mit 95 % Konfidenz. Was du sparst, hängt davon ab, wie oft sich dein Traffic wiederholt.",
@@ -841,7 +841,7 @@
       "eyebrow": "Ehrliche Abrechnung",
       "title": "Jede Art von Ersparnis, getrennt gezählt — damit keine Zahl aufgebläht wird.",
       "body": "Jeder SavingsReport teilt die Einsparung in vier Konten auf — vermiedene Aufrufe, entfernter Text, komprimierter Text und der Cache-Rabatt deines eigenen Anbieters — und addiert sie nie zu einer Marketingzahl.",
-      "providerNote": "Im öffentlichen Benchmark ({fecha}) kam die Einsparung des installierten SDK aus dem ersten Konto — wiederholte Anfragen, bedient ohne Aufruf des Anbieters — und bei Claude aus dem vierten, dem Rabatt deines eigenen Anbieters. Das npm-Paket enthält keinen Kompressor. Ein Konto ohne veröffentlichte Zahl wird hier beschrieben, nicht beworben."
+      "providerNote": "Im öffentlichen Benchmark ({fecha}) kam die Einsparung des installierten SDK aus dem ersten Konto — wiederholte Anfragen, bedient ohne Aufruf des Anbieters — und bei Claude aus dem vierten durch einen Präfix-Cache-Effekt, der durch cache_control in Arm B aktiviert wurde, nicht aus einem bereits bestehenden Anbieterrabatt. Das npm-Paket enthält keinen Kompressor. Ein Konto ohne veröffentlichte Zahl wird hier beschrieben, nicht beworben."
     },
     "ledgers": [
       {
@@ -1060,7 +1060,7 @@
         "who": "Für alle, die Claude Code, Codex CLI oder einen anderen Coding-Agenten mit API-Schlüssel nutzen.",
         "what": "Ein Befehl setzt einen lokalen Zähler vor dein Terminal, ohne Code anzufassen. Das Gateway zählt jede Anfrage, für die dein Anbieter die Nutzung meldet, mit dessen eigenem Zähler — für die Modelle in unserem Preiskatalog — und summiert sie in deinem Dashboard nach Tag und Modell.",
         "figureLabel": "Die Zahl, die wir veröffentlichen",
-      "figureQue": "der Rechnung mit der Cache-Senkung von PRO, abzüglich der Cache-Fehltreffer, die sie verursacht ({confianza}-Intervall: {bajo} bis {alto}). Simuliert zu Listenpreisen über {sesiones} Claude-Code-Sitzungen einer einzigen Organisation, unserer eigenen.",
+      "figureQue": "geschätzte Nettoreduktion der Listenpreiskosten durch die Cache-TTL-Änderung von PRO, nach Abzug der verursachten Cache-Fehltreffer ({confianza}-Intervall: {bajo} bis {alto}). Kontrafaktische Wiederholung mit teilweise rekonstruierter Basislinie über {sesiones} Claude-Code-Sitzungen einer Organisation; kein Live-A/B-Lauf und keine Rechnungsabstimmung.",
         "figureNote": "Keine Prognose für dein Team: Es ist eine einzige Organisation, ein einziger Anbieter und Listenpreise, und es ist eine kleine Ersparnis, die sich dort zeigt, wo die Anthropic-Ausgaben hoch sind. Mit PRO stellt das Gateway bei Anthropic-Modellen Cache-Schreibvorgänge von der einstündigen auf die fünfminütige TTL um — nur bei Zügen, in denen ein großer Teil des Prompts neu ist, etwa beim ersten Zug einer Sitzung oder nach einer Kompaktierung — und lässt die verketteten Züge einer laufenden Sitzung unverändert. Das ändert den Preis, nie das, was das Modell liest, und nur was der Zähler deines Anbieters bestätigt, zählt in deinem Einsparungsbericht.",
         "benchLink": "Der Bericht der TTL-Messung: was simuliert wurde, die Aufschlüsselung nach Modell und ihre Grenzen →",
         "cta": "Gateway einrichten"
@@ -1098,9 +1098,9 @@
     },
     "enVivo": {
       "titulo": "Öffentlicher Benchmark · live gegen den Anbieter · {fecha}",
-      "conRepeticiones": "weniger Rechnung (95-%-Intervall: {bajo} bis {alto}) bei einem Strom, in dem {rep} der Anfragen exakte Wiederholungen sind — {bateria}, SDK {version}",
+      "conRepeticiones": "geringere Kosten zu versionierten Listenpreisen (95-%-Intervall: {bajo} bis {alto}) bei einem Strom, in dem {rep} der Anfragen exakte Wiederholungen sind — {familias} Familien / {peticiones} Anfragen pro Arm, {bateria}, SDK {version}",
       "sinRepeticiones": "bei Traffic ohne Wiederholungen (MT-Bench, BFCL): nicht von null zu unterscheiden",
-      "anthropic": "derselbe Strom (95-%-Intervall: {bajo} bis {alto}). Etwa {prefijo} der ursprünglichen Rechnung ist der Präfix-Cache-Rabatt von Anthropic selbst — der des Anbieters, nicht unserer, und getrennt ausgewiesen",
+      "anthropic": "reduzierter Strom, nicht derselbe wie bei OpenAI: {familias} Familien / {peticiones} Anfragen pro Arm (95-%-Intervall: {bajo} bis {alto}). Etwa {prefijo} der Listenpreiskosten von A sind ein Präfix-Cache-Effekt, der durch cache_control in Arm B aktiviert wurde, kein bereits bestehender Anthropic-Rabatt",
       "pie": "Es hängt davon ab, wie oft sich dein Traffic wiederholt. Jede Batterie mit ihrem vollständigen Bericht: <bench>öffentlicher Benchmark</bench>."
     }
   },
@@ -1153,10 +1153,11 @@
     "method": {
       "title": "Was gemessen wird, und wie",
       "arms": "<b>Zwei Arme, dieselbe Anfrage.</b> A geht direkt zum Anbieter, ohne die Schicht; B läuft durch die Schicht mit ihrer Standardkonfiguration. Gleicher Prompt, gleiches Sampling, gleiche Ausgabeobergrenze.",
-      "cost": "<b>Die Kosten zählt der Anbieter.</b> Jeder Arm wird anhand des <code>usage</code>-Werts bepreist, den die API bei jedem Aufruf zurückgibt, zum Listenpreis. Die Ersparnis ist 1 − Kosten(B) / Kosten(A) desselben Laufs, nicht das, was die Schicht über sich selbst sagt.",
+      "cost": "<b>Vom Anbieter gemeldete Nutzung und versionierte Listenpreise.</b> Jeder Arm wird anhand des von der API zurückgegebenen <code>usage</code> und eines datierten Listenpreiskatalogs bewertet. Die Ersparnis ist 1 − Kosten(B) / Kosten(A) desselben Laufs. Beträge werden je nach Evidenz als measured, reference-valued oder estimated gekennzeichnet; dies ist keine Rechnungsabstimmung.",
       "intervals": "<b>Intervalle zum {nivel}.</b> Jeder Testharness berechnet sie (Resampling ganzer Fragefamilien, Wilson für Ablehnungsraten). Ein Intervall, das die Null überschreitet, bedeutet „nicht von null unterscheidbar“, und das sagen wir dann auch.",
       "package": "<b>Das Paket, das Sie installieren.</b> Die A/B-Läufe in den Tabellen unten liefen mit {version}: Arm B führt den Quellcode dieses Tags aus, und seine <code>dist/index.js</code> ist Byte für Byte identisch mit der aus dem npm-Tarball (sha256 <code>{sha}</code>). Der wöchentliche Live-Benchmark ist etwas anderes: Bei jedem Lauf misst er den Quellcode von main, wie er an diesem Tag ist, noch vor der Veröffentlichung.",
       "guard": "<b>Keine Abkürzungen.</b> Jeder Testharness überwacht die Hosts, mit denen er spricht, und trägt ein im Code festgelegtes Ausgabenlimit pro Modell. Ein Modell, das nicht gemessen werden konnte, wird als „nicht gemessen“ ausgewiesen, mit Begründung.",
+      "paper": "<paper>Den 17-seitigen Forschungsbericht lesen (PDF)</paper>: Methodik, Evidenzarten und Grenzen, einschließlich der Erklärung, warum das OpenAI-Verhältnis 1,05 einen einzigen Betriebspunkt beschreibt und keine empirische Steigung ist.",
       "batteriesTitle": "Vier Testreihen, öffentliche Datensätze, festgelegt",
       "commitOnly": "per Commit festgelegt"
     },
@@ -1196,7 +1197,7 @@
         "safe": "sicher {d} pp (p = {p})",
         "unsafe": "unsicher {d} pp (p = {p})"
       },
-      "note": "„Fehler der Schicht“ sind Fehler in Arm B, die Arm A nicht hatte. „B − A“ ist der Genauigkeitsunterschied bei GSM8K und BFCL, der Unterschied der Ablehnungsrate bei XSTest (p nach McNemar, gepaarte Prompts) und bei MT-Bench, wie oft der Richter B bevorzugt (die Hälfte ist ein Unentschieden). „Bericht vs. Rechnung“ ist, wie weit die Kosten, die die Schicht für Arm B meldet, von dem abweichen, was der Anbieter berechnet.",
+      "note": "„Fehler der Schicht“ sind Fehler in Arm B, die Arm A nicht hatte. „B − A“ ist der Genauigkeitsunterschied bei GSM8K und BFCL, der Unterschied der Ablehnungsrate bei XSTest (p nach McNemar, gepaarte Prompts) und bei MT-Bench, wie oft der Richter B bevorzugt (die Hälfte ist ein Unentschieden). „Bericht vs. Listenpreiskosten“ vergleicht die von der Schicht für B gemeldeten Kosten mit den unabhängig aus der gemeldeten Anbieternutzung zu denselben versionierten Listenpreisen berechneten Kosten; dies ist keine Rechnungsabstimmung.",
       "earlierTitle": "Frühere wöchentliche Läufe",
       "earlierOk": "{fecha} · Commit {commit} · keine Regressionen.",
       "earlierFailed": "{fecha} · Commit {commit} · fehlgeschlagen (verletzte Regeln: {n}).",
@@ -1234,7 +1235,7 @@
       "layerFails": "Fehler der Schicht",
       "counts": "Was er zählt",
       "diff": "B − A",
-      "reportVsInvoice": "Bericht vs. Rechnung"
+      "reportVsInvoice": "Bericht vs. Listenpreiskosten"
     },
     "savings": {
       "title": "Gemessene Ersparnis pro Modell",
@@ -1246,7 +1247,7 @@
     },
     "gatewayTtl": {
       "title": "Die Cache-Senkung des Gateways: eine Simulation, kein A/B",
-      "kind": "Dieser Abschnitt gehört nicht zu den A/B-Batterien dieser Seite und ist <b>nicht live gemessen</b>: Er ist ein <b>Replay</b>. Wir haben die Nutzung genommen, die der Anbieter für echte Claude-Code-Sitzungen <b>einer einzigen Organisation, unserer eigenen</b>, bei einem einzigen Anbieter (Anthropic) bereits gemeldet hatte, und zu <b>Listenpreisen</b> berechnet, was sie mit der Cache-Senkung von PRO und ohne sie gekostet hätten.",
+      "kind": "Dies ist eine <b>kontrafaktische Wiederholung</b> mit einer <b>teilweise rekonstruierten Basislinie</b>, keine der Live-A/B-Batterien dieser Seite. Wir verwendeten die vom Anbieter gemeldete Nutzung echter Claude-Code-Sitzungen <b>einer einzigen Organisation, unserer eigenen</b>, bei einem Anbieter (Anthropic) und schätzten die Kosten zu <b>versionierten Listenpreisen</b> mit und ohne die Cache-TTL-Änderung von PRO. Es ist weder ein Live-Doppellauf noch eine Rechnungsabstimmung.",
       "verdict": "Das Urteil des Berichts vom {fecha}: Die Senkung bringt <b>netto {neto} der Rechnung</b> ({netoUsd} von {factura}), nach Abzug der Cache-Fehltreffer, die sie selbst verursacht.",
       "stat": {
         "sessions": "Sitzungen",
@@ -1408,7 +1409,7 @@
         "dataset": "<b>Der Datensatz.</b> Laden Sie jeden öffentlichen Datensatz beim Commit aus der Tabelle oben herunter und prüfen Sie vor der Nutzung den sha256 jeder Datei. Stimmt er nicht, ist es nicht derselbe Datensatz.",
         "package": "<b>Die Schicht.</b> Installieren Sie <code>@bivelio/savings-layer</code> von npm in der Version, die der Bericht nennt, und prüfen Sie den sha256 von <code>dist/index.js</code>: Jeder Bericht enthält seinen.",
         "arms": "<b>Zwei Arme pro Prompt.</b> A geht direkt zum Anbieter; B schickt denselben Prompt an dasselbe Modell mit demselben Ausgabelimit durch die Schicht in ihrer Standardkonfiguration. Ein Teil der Prompts wird wiederholt oder umformuliert, wie im echten Verkehr, und die Reihenfolge A/B wird ausgelost.",
-        "cost": "<b>Die Kosten nennt der Anbieter.</b> Summieren Sie, was jeder Arm laut dem vom Anbieter gelieferten <code>usage</code> zum veröffentlichten Preis kostet. Die Ersparnis ist <code>1 − Kosten B / Kosten A</code>, mit ihrem Intervall.",
+        "cost": "<b>Nutzung und Listenpreise dokumentieren die Bewertung.</b> Summieren Sie die Kosten jedes Arms aus der vom Anbieter gemeldeten <code>usage</code> zum versionierten Listenpreis. Die Ersparnis ist <code>1 − Kosten B / Kosten A</code>, mit ihrem Intervall; dies ist keine Rechnungsabstimmung.",
         "compare": "<b>Die Qualität, im selben Lauf.</b> Bewerten Sie die Antworten beider Arme gleich (exakte Antwort bei GSM8K, Tool-Aufruf bei BFCL, Ablehnung oder nicht bei XSTest, ein Richter bei MT-Bench) und vergleichen Sie sie mit dem JSON-Bericht derselben Batterie und Version."
       },
       "reportsTitle": "Die Berichte",
