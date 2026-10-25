@@ -801,7 +801,7 @@
     },
     "cascade": {
       "title": "Ganha a execução mais barata",
-      "footnote": "Cada alavanca cai no seu próprio livro, e os livros nunca se somam. Nesta bateria a poupança veio de pedidos repetidos que o SDK serviu sem chamar o fornecedor e, no Claude, da própria cache de prefixo do fornecedor. O pacote npm não traz compressor."
+      "footnote": "Cada alavanca cai no seu próprio livro, e os livros nunca se somam. Nesta bateria a poupança veio de pedidos repetidos que o SDK serviu sem chamar o fornecedor e, no Claude, de um efeito da cache de prefixo ativado por cache_control no braço B. O pacote npm não traz compressor."
     },
     "explica": {
       "eyebrow": "Em palavras simples",
@@ -818,7 +818,7 @@
         },
         {
           "title": "Um recibo que pode conferir",
-          "body": "Não pedimos fé. Cada poupança é medida com o contador oficial do fornecedor — o mesmo com que ele o fatura — e aparece no seu recibo. O que não se pode conferir com a fatura nunca é anunciado."
+          "body": "Não pedimos confiança cega. Os montantes medidos usam o uso reportado pelo fornecedor e preços documentados, e aparecem no teu SavingsReport. Os montantes valorizados por referência e os estimados são etiquetados à parte; nenhum é apresentado como reconciliado com uma fatura."
         },
         {
           "title": "Meça grátis e depois pague por lugar",
@@ -830,7 +830,7 @@
     "step2": {
       "eyebrow": "Sem promessas: medições",
       "title": "Como sabemos que poupa? Medimos — e publicamos cada ensaio, um a um.",
-      "body": "Cada cenário corre duas vezes contra o fornecedor real: tal como está, e com o Savings à frente. Os dois resultados são contados com o contador do próprio fornecedor — o mesmo que dá preço à sua fatura. Foi isto que saiu, com a sua margem de erro:",
+      "body": "Cada cenário do SDK corre duas vezes contra o fornecedor real: tal como está, e com o Savings à frente. Os dois braços são valorizados com o uso reportado pelo fornecedor a preços de tabela versionados, sem reconciliação com faturas. Foi isto que saiu, com a sua margem de erro:",
       "videoCaption": "O teste é uma experiência justa: a mesma tarefa duas vezes — sem Savings e com Savings — com o mesmo contador do fornecedor a medir as duas.",
       "plainTitle": "Tradução, sem jargão",
       "plain": "Num fluxo onde {rep} dos pedidos se repetem exatamente, a fatura desceu {punto} — entre {bajo} e {alto} com 95% de confiança. O que poupares depende de quanto o teu tráfego se repete.",
@@ -841,7 +841,7 @@
       "eyebrow": "Contabilidade honesta",
       "title": "Cada tipo de poupança, contado à parte — para nenhuma cifra inchar.",
       "body": "Cada SavingsReport separa a poupança em quatro livros — chamadas evitadas, texto removido, texto comprimido e o desconto de cache do teu próprio fornecedor — e nunca os soma num número de marketing.",
-      "providerNote": "No banco público ({fecha}), o que o SDK instalado poupou veio do primeiro livro — pedidos repetidos servidos sem chamar o fornecedor — e, no Claude, do quarto, que é o desconto do teu próprio fornecedor. O pacote npm não traz compressor. Um livro sem valor publicado é descrito aqui, não anunciado."
+      "providerNote": "No banco público ({fecha}), o que o SDK instalado poupou veio do primeiro livro — pedidos repetidos servidos sem chamar o fornecedor — e, no Claude, do quarto através de um efeito da cache de prefixo ativado por cache_control no braço B, não de um desconto preexistente do fornecedor. O pacote npm não traz compressor. Um livro sem valor publicado é descrito aqui, não anunciado."
     },
     "ledgers": [
       {
@@ -1060,7 +1060,7 @@
         "who": "Para quem trabalha com Claude Code, Codex CLI ou outro agente de código com chave de API.",
         "what": "Um comando põe um medidor local à frente do teu terminal, sem tocar em código. O gateway conta cada pedido cujo uso o teu fornecedor reporta, com o contador do próprio fornecedor — nos modelos do nosso catálogo de preços — e soma-os no teu painel, por dia e por modelo.",
         "figureLabel": "O número que publicamos",
-      "figureQue": "da fatura com a redução de cache do PRO, já descontadas as falhas de cache que provoca (intervalo de {confianza}: de {bajo} a {alto}). Simulado a preço de tabela sobre {sesiones} sessões de Claude Code de uma só organização, a nossa.",
+      "figureQue": "de redução líquida estimada do custo a preços de tabela com a alteração do TTL da cache do PRO, descontadas as falhas de cache induzidas (intervalo de {confianza}: de {bajo} a {alto}). Replay contrafactual com baseline parcialmente reconstruída sobre {sesiones} sessões de Claude Code de uma organização; não é um A/B ao vivo nem uma reconciliação de faturas.",
         "figureNote": "Não é uma previsão para a tua equipa: é uma só organização, um só fornecedor e preços de tabela, e é uma poupança pequena que se nota onde a despesa na Anthropic é alta. Com PRO, em modelos da Anthropic, o gateway passa as escritas da cache do TTL de uma hora para o de cinco minutos só nos turnos em que uma boa parte do prompt é nova — como o primeiro turno de uma sessão ou uma compactação — e deixa como estão os turnos encadeados de uma sessão em curso. Isso muda o preço, nunca o que o modelo lê, e só o que o contador do teu fornecedor confirma conta no teu relatório de poupança.",
         "benchLink": "O relatório do banco de TTL: o que foi simulado, o detalhe por modelo e os seus limites →",
         "cta": "Instalar o gateway"
@@ -1098,9 +1098,9 @@
     },
     "enVivo": {
       "titulo": "Banco público · ao vivo contra o fornecedor · {fecha}",
-      "conRepeticiones": "menos fatura (intervalo de 95%: de {bajo} a {alto}) num fluxo onde {rep} dos pedidos são repetições exatas — {bateria}, SDK {version}",
+      "conRepeticiones": "menor custo a preços de tabela versionados (intervalo de 95%: de {bajo} a {alto}) num fluxo onde {rep} dos pedidos são repetições exatas — {familias} famílias / {peticiones} pedidos por braço, {bateria}, SDK {version}",
       "sinRepeticiones": "com tráfego sem repetições (MT-Bench, BFCL): indistinguível de zero",
-      "anthropic": "mesmo fluxo (intervalo de 95%: de {bajo} a {alto}). Cerca de {prefijo} da fatura original é o desconto da cache de prefixo da própria Anthropic — do fornecedor, não nosso, e mostrado à parte",
+      "anthropic": "fluxo reduzido, diferente do da OpenAI: {familias} famílias / {peticiones} pedidos por braço (intervalo de 95%: de {bajo} a {alto}). Cerca de {prefijo} do custo de A a preços de tabela é um efeito da cache de prefixo ativado por cache_control no braço B, não um desconto preexistente da Anthropic",
       "pie": "Depende de quanto o teu tráfego se repete. Cada bateria, com o seu relatório completo: <bench>banco público</bench>."
     }
   },
@@ -1153,10 +1153,11 @@
     "method": {
       "title": "O que é medido, e como",
       "arms": "<b>Dois braços, o mesmo pedido.</b> A vai direto ao fornecedor, sem a camada; B passa pela camada com a sua configuração predefinida. Mesmo prompt, mesma amostragem, mesmo limite de saída.",
-      "cost": "<b>O custo é contado pelo fornecedor.</b> Cada braço é avaliado a partir do <code>usage</code> que a API devolve em cada chamada, ao preço de tabela. A economia é 1 − custo(B) / custo(A) da mesma execução, não o que a camada diz de si mesma.",
+      "cost": "<b>Uso reportado pelo fornecedor e preços de tabela versionados.</b> Cada braço é valorizado a partir do <code>usage</code> devolvido pela API e de um catálogo datado de preços de tabela. A poupança é 1 − custo(B) / custo(A) da mesma execução. Os montantes são etiquetados measured, reference-valued ou estimated conforme a evidência; isto não é uma reconciliação de faturas.",
       "intervals": "<b>Intervalos ao {nivel}.</b> Cada harness calcula-os (reamostragem por famílias de perguntas, Wilson para as taxas de recusa). Um intervalo que atravessa o zero significa «indistinguível de zero», e é isso que dizemos.",
       "package": "<b>O pacote que você instala.</b> As rodadas A/B das tabelas abaixo foram feitas com a {version}: o braço B executa o código-fonte dessa tag, e o seu <code>dist/index.js</code> é idêntico byte a byte ao do tarball do npm (sha256 <code>{sha}</code>). O banco semanal ao vivo é outra coisa: em cada rodada mede o código-fonte do main tal como está nesse dia, antes de ser publicado.",
       "guard": "<b>Sem atalhos.</b> Cada harness vigia os hosts com que fala e traz um limite de gasto por modelo escrito no código. Um modelo que não pôde ser medido aparece como «não medido», com o motivo.",
+      "paper": "<paper>Lê o artigo de investigação de 9 páginas (PDF)</paper>: método, tipos de evidência e limitações, incluindo por que o rácio 1,05 da OpenAI descreve um único ponto de operação e não uma declividade empírica.",
       "batteriesTitle": "Quatro baterias, conjuntos de dados públicos, fixados",
       "commitOnly": "fixado por commit"
     },
@@ -1196,7 +1197,7 @@
         "safe": "seguros {d} pp (p = {p})",
         "unsafe": "inseguros {d} pp (p = {p})"
       },
-      "note": "“Falhas da camada” são erros no braço B que o braço A não teve. “B − A” é a diferença de exatidão no GSM8K e no BFCL, a da taxa de recusas no XSTest (p de McNemar, prompts emparelhados) e, no MT-Bench, com que frequência o juiz prefere B (metade é empate). “Relatório vs fatura” é quanto o custo que a camada informa para o braço B se afasta do que o provedor fatura.",
+      "note": "“Falhas da camada” são erros no braço B que o braço A não teve. “B − A” é a diferença de exatidão no GSM8K e no BFCL, a da taxa de recusas no XSTest (p de McNemar, prompts emparelhados) e, no MT-Bench, com que frequência o juiz prefere B (metade é empate). “Relatório vs custo de tabela” compara o custo reportado pela camada para B com o calculado independentemente a partir do uso reportado pelo fornecedor aos mesmos preços de tabela versionados; não é uma reconciliação de faturas.",
       "earlierTitle": "Rodadas semanais anteriores",
       "earlierOk": "{fecha} · commit {commit} · sem regressões.",
       "earlierFailed": "{fecha} · commit {commit} · falhou (regras quebradas: {n}).",
@@ -1234,7 +1235,7 @@
       "layerFails": "Falhas da camada",
       "counts": "O que conta",
       "diff": "B − A",
-      "reportVsInvoice": "Relatório vs fatura"
+      "reportVsInvoice": "Relatório vs custo de tabela"
     },
     "savings": {
       "title": "Economia medida por modelo",
@@ -1246,7 +1247,7 @@
     },
     "gatewayTtl": {
       "title": "A redução de cache do gateway: uma simulação, não um A/B",
-      "kind": "Esta secção não é uma das baterias A/B da página e <b>não é medida ao vivo</b>: é um <b>replay</b>. Pegámos no uso que o fornecedor já tinha reportado em sessões reais de Claude Code de <b>uma só organização, a nossa</b>, contra um só fornecedor (Anthropic), e calculámos a <b>preço de tabela</b> quanto teriam custado com a redução de cache do PRO e sem ela.",
+      "kind": "Este é um <b>replay contrafactual</b> com uma <b>baseline parcialmente reconstruída</b>, não uma das baterias A/B ao vivo desta página. Usámos o uso reportado pelo fornecedor em sessões reais de Claude Code de <b>uma só organização, a nossa</b>, com um só fornecedor (Anthropic), e estimámos os custos a <b>preços de tabela versionados</b> com e sem a alteração do TTL da cache do PRO. Não é uma dupla execução ao vivo nem uma reconciliação de faturas.",
       "verdict": "O veredicto do relatório de {fecha}: a redução deixa um <b>líquido de {neto} da fatura</b> ({netoUsd} sobre {factura}), depois de descontadas as falhas de cache que ela própria provoca.",
       "stat": {
         "sessions": "Sessões",
@@ -1408,7 +1409,7 @@
         "dataset": "<b>O dataset.</b> Descarregue cada dataset público no commit da tabela acima e verifique o sha256 de cada ficheiro antes de o usar. Se não bater certo, não é o mesmo dataset.",
         "package": "<b>A camada.</b> Instale <code>@bivelio/savings-layer</code> a partir do npm na versão indicada pelo relatório e verifique o sha256 de <code>dist/index.js</code>: cada relatório traz o seu.",
         "arms": "<b>Dois braços por prompt.</b> A vai direto ao fornecedor; B envia o mesmo prompt, ao mesmo modelo e com o mesmo limite de saída, através da camada com a configuração padrão. Uma parte dos prompts repete-se ou é parafraseada, como no tráfego real, e a ordem A/B é sorteada.",
-        "cost": "<b>O custo é o fornecedor que o diz.</b> Some o que cada braço é faturado segundo o <code>usage</code> devolvido pelo fornecedor, à sua tarifa publicada. A poupança é <code>1 − custo B / custo A</code>, com o seu intervalo.",
+        "cost": "<b>O uso e os preços de tabela documentam a valorização.</b> Soma o custo de cada braço a partir do <code>usage</code> reportado pelo fornecedor, ao preço de tabela versionado. A poupança é <code>1 − custo B / custo A</code>, com o seu intervalo; não é uma reconciliação de faturas.",
         "compare": "<b>A qualidade, na mesma execução.</b> Pontue da mesma forma as respostas dos dois braços (resposta exata no GSM8K, chamada de ferramenta no BFCL, recusa ou não no XSTest, um juiz no MT-Bench) e compare-as com o relatório JSON da mesma bateria e versão."
       },
       "reportsTitle": "Os relatórios",

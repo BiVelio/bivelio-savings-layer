@@ -78,11 +78,12 @@ describe("portada: dos ofertas, cada una con su bloque", () => {
     expect(banco).toContain('id="gateway-ttl"');
   });
 
-  it("la fila del gateway toma sus números de PALANCA_TTL y su texto de los mensajes", () => {
+  it("la fila del gateway toma sus números de PALANCA_TTL, con dos decimales, y su texto de los mensajes", () => {
     const fuente = readFileSync(new URL("../components/MedidoEnVivo.tsx", import.meta.url), "utf8");
     const fn = fuente.slice(fuente.indexOf("export function filaDeLaPalancaTtl"), fuente.indexOf("/** Las filas, pintadas"));
     expect(fn).toContain("const P = PALANCA_TTL;");
     expect(fn).toContain('t("offers.gateway.figureQue"');
+    expect(fn).toContain("minimumFractionDigits: 2, maximumFractionDigits: 2");
     for (const campo of ["P.neto.point", "P.neto.lower", "P.neto.upper", "P.confianza", "P.sesiones"]) expect(fn).toContain(campo);
   });
 

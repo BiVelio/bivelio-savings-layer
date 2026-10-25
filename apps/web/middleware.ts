@@ -37,6 +37,6 @@ export const config = {
   // Si se añade algo a la raíz de `public/`, hay que añadirlo aquí:
   // middleware-matcher.test.ts lo comprueba leyendo la carpeta.
   matcher: [
-    "/((?!(?:api|auth|licenses|benchmarks/data|_next|_vercel|brand|correo|data|fonts|measure|vendor|videos)/|(?:robots\\.txt|sitemap\\.xml|logo-bivelio\\.png|nvidia-inception-program\\.svg)$).*)",
+    "/((?!(?:api|auth|licenses|benchmarks/data|_next|_vercel|brand|correo|data|fonts|measure|papers|vendor|videos)/|(?:robots\\.txt|sitemap\\.xml|logo-bivelio\\.png|nvidia-inception-program\\.svg)$).*)",
   ],
 };

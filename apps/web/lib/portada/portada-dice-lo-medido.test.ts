@@ -534,9 +534,9 @@ describe("Medir: sus límites y su versión mínima, donde se ofrece", () => {
 describe("los textos nuevos se formatean en los 12 idiomas (ICU sin errores)", () => {
   const PARAMS: Record<string, Record<string, string | number>> = {
     "landing.enVivo.titulo": { fecha: "2026-09-28" },
-    "landing.enVivo.conRepeticiones": { bajo: "25,7 %", alto: "36,7 %", rep: "30 %", bateria: "GSM8K", version: "0.4.31" },
+    "landing.enVivo.conRepeticiones": { bajo: "25,7 %", alto: "36,7 %", rep: "30 %", familias: "100", peticiones: "200", bateria: "GSM8K", version: "0.4.31" },
     "landing.enVivo.sinRepeticiones": {},
-    "landing.enVivo.anthropic": { bajo: "69,3 %", alto: "79,6 %", prefijo: "41 %" },
+    "landing.enVivo.anthropic": { bajo: "69,3 %", alto: "79,6 %", prefijo: "41 %", familias: "31", peticiones: "62" },
     "landing.step2.plain": { rep: "30 %", punto: "31,5 %", bajo: "25,7 %", alto: "36,7 %" },
     "landing.ledgersHead.providerNote": { fecha: "2026-09-28" },
     "landing.hero.compatibleNota": { gemini: "0.4.33", flash: "Gemini 3.8 Flash", pro: "Gemini 3.1 Pro", fecha: "1 October 2026", fechaPro: "1–2 October 2026" },

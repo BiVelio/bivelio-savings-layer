@@ -801,7 +801,7 @@
     },
     "cascade": {
       "title": "De goedkoopste uitvoering wint",
-      "footnote": "Elke hendel valt in zijn eigen grootboek, en de grootboeken worden nooit opgeteld. In deze batterij kwam de besparing uit herhaalde verzoeken die de SDK bediende zonder de aanbieder aan te roepen en, bij Claude, uit de prefix-cache van de aanbieder zelf. Het npm-pakket bevat geen compressor."
+      "footnote": "Elke hendel valt in zijn eigen grootboek, en de grootboeken worden nooit opgeteld. In deze batterij kwam de besparing uit herhaalde verzoeken die de SDK bediende zonder de aanbieder aan te roepen en, bij Claude, uit een prefixcache-effect dat door cache_control in arm B is ingeschakeld. Het npm-pakket bevat geen compressor."
     },
     "explica": {
       "eyebrow": "In gewone taal",
@@ -818,7 +818,7 @@
         },
         {
           "title": "Een bon die je kunt controleren",
-          "body": "We vragen geen blind vertrouwen. Elke besparing wordt gemeten met de officiële teller van de aanbieder — dezelfde waarmee hij je factureert — en komt op je bon. Wat niet naast de factuur te leggen valt, wordt nooit aangekondigd."
+          "body": "We vragen geen blind vertrouwen. Gemeten bedragen gebruiken het door de aanbieder gemelde gebruik en gedocumenteerde prijzen, en verschijnen in je SavingsReport. Via referentie gewaardeerde en geschatte bedragen krijgen een apart label; geen daarvan wordt als met een factuur afgestemd gepresenteerd."
         },
         {
           "title": "Meet gratis, betaal daarna per seat",
@@ -830,7 +830,7 @@
     "step2": {
       "eyebrow": "Geen beloftes: metingen",
       "title": "Hoe weten we dat het bespaart? We meten het — en we publiceren elke proef, stuk voor stuk.",
-      "body": "Elk scenario draait twee keer tegen de echte aanbieder: zoals het is, en met Savings ervoor. Beide resultaten worden geteld met de teller van de aanbieder zelf — dezelfde die je factuur prijst. Dit kwam eruit, inclusief foutmarge:",
+      "body": "Elk SDK-scenario draait twee keer tegen de echte aanbieder: zoals het is, en met Savings ervoor. Beide armen worden gewaardeerd op basis van het door de aanbieder gemelde gebruik tegen versiebeheerste catalogusprijzen, zonder afstemming met een factuur. Dit kwam eruit, inclusief foutmarge:",
       "videoCaption": "De test is een eerlijk experiment: dezelfde taak twee keer — zonder Savings en met Savings — met dezelfde teller van de aanbieder die beide meet.",
       "plainTitle": "Vertaling, zonder jargon",
       "plain": "Bij een stroom waarin {rep} van de verzoeken zich exact herhalen, daalde de rekening met {punto} — tussen {bajo} en {alto} met 95% betrouwbaarheid. Wat je bespaart hangt af van hoeveel je verkeer zich herhaalt.",
@@ -841,7 +841,7 @@
       "eyebrow": "Eerlijke boekhouding",
       "title": "Elke soort besparing apart geteld — zodat geen cijfer wordt opgeblazen.",
       "body": "Elk SavingsReport verdeelt de besparing over vier grootboeken — vermeden aanroepen, verwijderde tekst, gecomprimeerde tekst en de cachekorting van je eigen aanbieder — en telt ze nooit op tot één marketingcijfer.",
-      "providerNote": "Op de publieke benchmark ({fecha}) kwam wat de geïnstalleerde SDK bespaarde uit het eerste grootboek — herhaalde verzoeken bediend zonder de aanbieder aan te roepen — en, bij Claude, uit het vierde, de korting van je eigen aanbieder. Het npm-pakket bevat geen compressor. Een grootboek zonder gepubliceerd cijfer wordt hier beschreven, niet aangeprezen."
+      "providerNote": "Op de publieke benchmark ({fecha}) kwam wat de geïnstalleerde SDK bespaarde uit het eerste grootboek — herhaalde verzoeken bediend zonder de aanbieder aan te roepen — en, bij Claude, uit het vierde via een prefixcache-effect dat door cache_control in arm B is ingeschakeld, niet uit een reeds bestaande korting van de aanbieder. Het npm-pakket bevat geen compressor. Een grootboek zonder gepubliceerd cijfer wordt hier beschreven, niet aangeprezen."
     },
     "ledgers": [
       {
@@ -1060,7 +1060,7 @@
         "who": "Voor wie Claude Code, Codex CLI of een andere coding-agent met een API-sleutel gebruikt.",
         "what": "Eén commando zet een lokale meter vóór je terminal, zonder code aan te passen. De gateway telt elk verzoek waarvan je aanbieder het gebruik meldt, met de eigen teller van die aanbieder — voor de modellen in onze prijscatalogus — en zet het totaal in je dashboard, per dag en per model.",
         "figureLabel": "Het cijfer dat we publiceren",
-      "figureQue": "van de factuur met de cacheverlaging van PRO, na aftrek van de cachemissers die ze veroorzaakt ({confianza}-interval: {bajo} tot {alto}). Gesimuleerd tegen lijstprijzen over {sesiones} Claude Code-sessies van één enkele organisatie, de onze.",
+      "figureQue": "geschatte nettoverlaging van de catalogusprijskosten door de cache-TTL-wijziging van PRO, na aftrek van de veroorzaakte cachemissers ({confianza}-interval: {bajo} tot {alto}). Contrafeitelijke replay met een deels gereconstrueerde basislijn over {sesiones} Claude Code-sessies van één organisatie; geen live A/B-run of factuurafstemming.",
         "figureNote": "Geen voorspelling voor jouw team: het is één organisatie, één aanbieder en lijstprijzen, en het is een kleine besparing die merkbaar is waar de uitgaven bij Anthropic hoog zijn. Met PRO zet de gateway op Anthropic-modellen cache-schrijfacties om van de TTL van een uur naar die van vijf minuten, alleen in beurten waarin een groot deel van de prompt nieuw is — zoals de eerste beurt van een sessie of een compactie — en laat de aaneengeschakelde beurten van een lopende sessie zoals ze zijn. Dat verandert de prijs, nooit wat het model leest, en alleen wat de teller van je aanbieder bevestigt, telt mee in je besparingsrapport.",
         "benchLink": "Het rapport van de TTL-meting: wat er is gesimuleerd, de uitsplitsing per model en de grenzen →",
         "cta": "Gateway instellen"
@@ -1098,9 +1098,9 @@
     },
     "enVivo": {
       "titulo": "Publieke benchmark · live tegen de aanbieder · {fecha}",
-      "conRepeticiones": "minder rekening (95%-interval: {bajo} tot {alto}) bij een stroom waarin {rep} van de verzoeken exacte herhalingen zijn — {bateria}, SDK {version}",
+      "conRepeticiones": "lagere kosten tegen versiebeheerste catalogusprijzen (95%-interval: {bajo} tot {alto}) bij een stroom waarin {rep} van de verzoeken exacte herhalingen zijn — {familias} families / {peticiones} verzoeken per arm, {bateria}, SDK {version}",
       "sinRepeticiones": "bij verkeer zonder herhalingen (MT-Bench, BFCL): niet te onderscheiden van nul",
-      "anthropic": "dezelfde stroom (95%-interval: {bajo} tot {alto}). Ongeveer {prefijo} van de oorspronkelijke rekening is de prefix-cachekorting van Anthropic zelf — die van de aanbieder, niet de onze, en apart getoond",
+      "anthropic": "verkleinde stroom, anders dan die van OpenAI: {familias} families / {peticiones} verzoeken per arm (95%-interval: {bajo} tot {alto}). Ongeveer {prefijo} van de catalogusprijskosten van A is een prefixcache-effect dat door cache_control in arm B is ingeschakeld, geen reeds bestaande Anthropic-korting",
       "pie": "Het hangt af van hoeveel je verkeer zich herhaalt. Elke batterij, met haar volledige rapport: <bench>publieke benchmark</bench>."
     }
   },
@@ -1153,10 +1153,11 @@
     "method": {
       "title": "Wat wordt gemeten, en hoe",
       "arms": "<b>Twee armen, hetzelfde verzoek.</b> A gaat rechtstreeks naar de provider, zonder de laag; B loopt via de laag met de standaardconfiguratie. Dezelfde prompt, dezelfde sampling, dezelfde outputgrens.",
-      "cost": "<b>De provider telt de kosten.</b> Elke arm wordt geprijsd op basis van de <code>usage</code> die de API bij elke aanroep teruggeeft, tegen de lijstprijs. De besparing is 1 − kosten(B) / kosten(A) van dezelfde run, niet wat de laag zelf beweert.",
+      "cost": "<b>Door de provider gemeld gebruik en versiebeheerste catalogusprijzen.</b> Elke arm wordt gewaardeerd op basis van de door de API teruggegeven <code>usage</code> en een gedateerde catalogus met lijstprijzen. De besparing is 1 − kosten(B) / kosten(A) van dezelfde run. Bedragen krijgen afhankelijk van het bewijs het label measured, reference-valued of estimated; dit is geen factuurafstemming.",
       "intervals": "<b>{nivel}-intervallen.</b> Elke harness berekent ze (resampling van hele vraagfamilies, Wilson voor weigeringspercentages). Een interval dat nul kruist betekent “niet te onderscheiden van nul”, en dat zeggen we ook.",
       "package": "<b>Het pakket dat je installeert.</b> De A/B-runs in de tabellen hieronder zijn gedaan met {version}: arm B draait de broncode van die tag, en de <code>dist/index.js</code> daarvan is byte voor byte gelijk aan die in de npm-tarball (sha256 <code>{sha}</code>). De wekelijkse live-bench is iets anders: bij elke run meet hij de broncode van main zoals die er die dag bij staat, nog vóór de publicatie.",
       "guard": "<b>Geen kortere wegen.</b> Elke harness houdt de hosts in de gaten waarmee hij praat en heeft een in code vastgelegd uitgavenplafond per model. Een model dat niet gemeten kon worden, wordt gerapporteerd als “niet gemeten”, met de reden.",
+      "paper": "<paper>Lees het onderzoeksrapport van 17 pagina's (PDF)</paper>: methode, bewijssoorten en beperkingen, waaronder waarom de OpenAI-ratio 1,05 één werkingspunt beschrijft en geen empirische helling is.",
       "batteriesTitle": "Vier batterijen, openbare datasets, vastgepind",
       "commitOnly": "vastgepind op commit"
     },
@@ -1196,7 +1197,7 @@
         "safe": "veilig {d} pp (p = {p})",
         "unsafe": "onveilig {d} pp (p = {p})"
       },
-      "note": "„Fouten van de laag” zijn fouten in arm B die arm A niet had. „B − A” is het verschil in nauwkeurigheid bij GSM8K en BFCL, het verschil in weigeringspercentage bij XSTest (p volgens McNemar, gepaarde prompts) en bij MT-Bench hoe vaak de jury B verkiest (de helft is gelijkspel). „Rapport vs factuur” is hoe ver de kosten die de laag voor arm B rapporteert afwijken van wat de provider factureert.",
+      "note": "„Fouten van de laag” zijn fouten in arm B die arm A niet had. „B − A” is het verschil in nauwkeurigheid bij GSM8K en BFCL, het verschil in weigeringspercentage bij XSTest (p volgens McNemar, gepaarde prompts) en bij MT-Bench hoe vaak de jury B verkiest (de helft is gelijkspel). „Rapport vs catalogusprijskosten” vergelijkt de door de laag voor B gerapporteerde kosten met de kosten die onafhankelijk uit het door de provider gemelde gebruik tegen dezelfde versiebeheerste catalogusprijzen zijn berekend; dit is geen factuurafstemming.",
       "earlierTitle": "Eerdere wekelijkse runs",
       "earlierOk": "{fecha} · commit {commit} · geen regressies.",
       "earlierFailed": "{fecha} · commit {commit} · gefaald (gebroken regels: {n}).",
@@ -1234,7 +1235,7 @@
       "layerFails": "Fouten van de laag",
       "counts": "Wat hij telt",
       "diff": "B − A",
-      "reportVsInvoice": "Rapport vs factuur"
+      "reportVsInvoice": "Rapport vs catalogusprijskosten"
     },
     "savings": {
       "title": "Gemeten besparing per model",
@@ -1246,7 +1247,7 @@
     },
     "gatewayTtl": {
       "title": "De cacheverlaging van de gateway: een simulatie, geen A/B",
-      "kind": "Deze sectie is geen van de A/B-batterijen op deze pagina en is <b>niet live gemeten</b>: het is een <b>replay</b>. We namen het gebruik dat de provider al had gerapporteerd voor echte Claude Code-sessies van <b>één enkele organisatie, de onze</b>, bij één enkele provider (Anthropic), en berekenden tegen <b>lijstprijzen</b> wat ze zouden hebben gekost met de cacheverlaging van PRO en zonder.",
+      "kind": "Dit is een <b>contrafeitelijke replay</b> met een <b>deels gereconstrueerde basislijn</b>, geen van de live A/B-batterijen op deze pagina. We gebruikten het door de provider gemelde gebruik van echte Claude Code-sessies bij <b>één enkele organisatie, de onze</b>, met één provider (Anthropic), en schatten de kosten tegen <b>versiebeheerste catalogusprijzen</b> met en zonder de cache-TTL-wijziging van PRO. Het is geen live dubbele run of factuurafstemming.",
       "verdict": "Het oordeel van het rapport van {fecha}: de verlaging levert <b>netto {neto} van de factuur</b> op ({netoUsd} op {factura}), na aftrek van de cachemissers die ze zelf veroorzaakt.",
       "stat": {
         "sessions": "Sessies",
@@ -1408,7 +1409,7 @@
         "dataset": "<b>De dataset.</b> Download elke openbare dataset op de commit uit de tabel hierboven en controleer de sha256 van elk bestand voordat je het gebruikt. Klopt die niet, dan is het niet dezelfde dataset.",
         "package": "<b>De laag.</b> Installeer <code>@bivelio/savings-layer</code> vanaf npm in de versie die het rapport noemt en controleer de sha256 van <code>dist/index.js</code>: elk rapport vermeldt de zijne.",
         "arms": "<b>Twee armen per prompt.</b> A gaat rechtstreeks naar de provider; B stuurt dezelfde prompt, naar hetzelfde model en met dezelfde uitvoerlimiet, via de laag met de standaardconfiguratie. Een deel van de prompts wordt herhaald of geparafraseerd, zoals in echt verkeer, en de volgorde A/B wordt geloot.",
-        "cost": "<b>De kosten zegt de provider.</b> Tel op wat elke arm gefactureerd krijgt volgens het <code>usage</code> dat de provider teruggeeft, tegen het gepubliceerde tarief. De besparing is <code>1 − kosten B / kosten A</code>, met haar interval.",
+        "cost": "<b>Gebruik en catalogusprijzen documenteren de waardering.</b> Tel de kosten van elke arm op uit het door de provider gemelde <code>usage</code> tegen de versiebeheerste catalogusprijs. De besparing is <code>1 − kosten B / kosten A</code>, met haar interval; dit is geen factuurafstemming.",
         "compare": "<b>De kwaliteit, in dezelfde run.</b> Beoordeel de antwoorden van beide armen op dezelfde manier (exact antwoord bij GSM8K, toolaanroep bij BFCL, weigering of niet bij XSTest, een beoordelaar bij MT-Bench) en vergelijk ze met het JSON-rapport van dezelfde batterij en versie."
       },
       "reportsTitle": "De rapporten",
