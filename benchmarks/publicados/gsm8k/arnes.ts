@@ -43,6 +43,7 @@ import { muestreoPareadoPara } from "../../scenarios.js";
 import { mulberry32 } from "../../stats.js";
 import { endpointDeModelo, fetchConPlazo, proveedorDelBanco, sinSecretos, type ConfigDeTransporte } from "../../transporte.js";
 import { fabricaDeCapa, PAQUETE_NPM, SinLicencia, type FabricaDeCapa } from "./capa.js";
+import { resumirLatencias, type InformeLatencia, type MuestrasPorBrazo } from "../../b2/latencia.js";
 import { comparar, type ArtefactoComparable, type Comparacion0430 } from "./comparar.js";
 import { escribirDocumento } from "./documento.js";
 import {
@@ -353,6 +354,8 @@ export interface OpcionesDeModelo {
   log?: (s: string) => void;
   /** Los brazos de cada petición uno tras otro en vez de a la vez (≤ N simultáneas por proveedor). */
   enSerie?: boolean;
+  /** Marca los tiempos como instrumentales, nunca como evidencia LIVE. */
+  seco?: boolean;
 }
 
 export interface MedicionDeModelo {
@@ -370,6 +373,8 @@ export interface MedicionDeModelo {
   estimacion?: { porPeticionUsd: number; peorLlamadaUsd: number; previstoUsd: number; nUnicosPrevisto?: number };
   gasto: { topeUsd: number; totalUsd: number; porBrazo: Partial<Record<Brazo | "sonda", number>> };
   resumen?: Resumen;
+  /** Ausente al releer artefactos anteriores a la instrumentación B2. */
+  latency?: InformeLatencia;
   /** De dónde sale el ahorro de cada brazo: lo que no llamó frente a la caché de prefijo del proveedor. */
   desglose?: DesgloseDeBrazo[];
   calibracionS?: unknown;
@@ -608,11 +613,13 @@ export async function medirModelo(o: OpcionesDeModelo): Promise<MedicionDeModelo
       if (b === "A") {
         const r = await prov.A!.generate(peticionDirecta(peticionDe(model, salSistema(o.runId, "a", o.sistema), q.texto, tope), model));
         texto = r.text;
+        fila.proveedorMs = performance.now() - t0;
       } else {
         const carril = b.toLowerCase();
         const r = await capas[b]!.generate(peticionDe(model, salSistema(o.runId, carril, o.sistema), q.texto, tope));
         texto = r.text;
         const rep = r.report;
+        fila.proveedorMs = rep.latencyMs.provider;
         fila.fuente = rep.qualityLedger?.source ?? (rep.cache.result === "miss" ? "provider" : rep.cache.result);
         fila.base = rep.cost.basis;
         fila.lineaBaseCapa = rep.cost.baselineEstimate;
@@ -626,6 +633,7 @@ export async function medirModelo(o: OpcionesDeModelo): Promise<MedicionDeModelo
       fila.error = sinSecretos(err instanceof Error ? err.message : String(err)).slice(0, 300);
     }
     fila.latenciaMs = performance.now() - t0;
+    fila.proveedorMs ??= fila.latenciaMs;
     fila.coste = c.coste - antes.coste;
     fila.llamadas = c.llamadas - antes.llamadas;
     fila.peticiones = (c.peticiones ?? 0) - (antes.peticiones ?? 0);
@@ -694,6 +702,10 @@ export async function medirModelo(o: OpcionesDeModelo): Promise<MedicionDeModelo
     ...(abortado || motivoCaida ? { motivo: [abortado, motivoCaida].filter(Boolean).join("; ") } : {}),
     peticionesCompletadas: completadas,
     resumen,
+    latency: resumirLatencias(
+      Object.fromEntries(o.brazos.map((b) => [b, ensayos.filter((e) => e.brazo === b).map((e) => ({ totalMs: e.latenciaMs, providerMs: e.proveedorMs ?? e.latenciaMs }))])) as MuestrasPorBrazo,
+      o.seco ? "MOCK" : "LIVE",
+    ),
     desglose: desgloseDelAhorro(ensayos, {
       inputPer1k: precio.inputPer1k,
       cachedInputPer1k: precio.cachedInputPer1k ?? precio.inputPer1k,
@@ -922,7 +934,7 @@ async function principal(): Promise<void> {
       const nFijo = anterior?.modelos.find((x) => x.modelo === model)?.nUnicos;
       log(`• ${model} (${seco ? "seco" : e!.host})`);
       const m = await medirModelo({
-        model, test, sistema, brazos, nUnicosMax, topeUsd, runId, capa, enSerie,
+        model, test, sistema, brazos, nUnicosMax, topeUsd, runId, capa, enSerie, seco,
         log: (x: string) => log(enSerie ? `[${model}] ${x.trim()}` : x),
         ...(nFijo !== undefined ? { nUnicosFijo: nFijo } : {}),
         host: seco ? null : e!.host,

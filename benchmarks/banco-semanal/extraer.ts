@@ -21,6 +21,7 @@
  * Todo es puro: recibe el JSON ya leído.
  */
 import { esErrorDeCuota, esErrorNoMedibleDelProveedor } from "../publicados/cuota.js";
+import type { InformeLatencia } from "../b2/latencia.js";
 import type { Bateria, ModeloDelBanco } from "./plan.js";
 
 export interface IntervaloDeConfianza {
@@ -104,6 +105,8 @@ export interface Medicion {
    * (umbrales.ts). Sin él —intervino, o no se sabe— la regla actúa igual.
    */
   sinIntervencion?: { camposNeutros: Record<string, number> };
+  /** Formato B2: total, proveedor y overhead por brazo. Ausente en artefactos antiguos. */
+  latency?: InformeLatencia;
 }
 
 /**
@@ -127,6 +130,11 @@ function campo<T>(o: unknown, ruta: string): T {
     x = (x as J)[k];
   }
   return x as T;
+}
+
+function latenciaOpcional(art: unknown): { latency?: InformeLatencia } {
+  const latency = (art as J)["latency"];
+  return latency ? { latency: latency as InformeLatencia } : {};
 }
 
 const suma = (xs: number[]) => xs.reduce((s, x) => s + x, 0);
@@ -226,7 +234,7 @@ export function extraerGsm8k(art: unknown, modelo: ModeloDelBanco): Medicion {
   const gastoUsd = campo<number>(m, "gasto.totalUsd");
   const estado = campo<string>(m, "estado");
   const sinRed = ((art as J)["sinRed"] as { resultados: { config: string; erroneas: number }[] } | undefined)?.resultados ?? [];
-  const base = { bateria: "gsm8k" as const, modelo: modelo.id, gastoUsd, ejemplosDeFallos: [], exactitud: [], informeVsFactura: [] };
+  const base = { bateria: "gsm8k" as const, modelo: modelo.id, gastoUsd, ejemplosDeFallos: [], exactitud: [], informeVsFactura: [], ...latenciaOpcional(m) };
   if (estado === "no-medible") {
     return { ...base, estado: "no-medible", motivo: String(m["motivo"] ?? "no medible"), n: 0, cortadaPorTope: false, fallosDeLaCapa: 0 };
   }
@@ -347,7 +355,7 @@ export function sinIntervencionBfcl(ast: EntradaAstBfclCable[]): { camposNeutros
 }
 
 export function extraerBfcl(art: unknown, modelo: ModeloDelBanco): Medicion {
-  const base = { bateria: "bfcl" as const, modelo: modelo.id, ejemplosDeFallos: [], exactitud: [], informeVsFactura: [] };
+  const base = { bateria: "bfcl" as const, modelo: modelo.id, ejemplosDeFallos: [], exactitud: [], informeVsFactura: [], ...latenciaOpcional(art) };
   const noMedible = ((art as J)["noMedibles"] as { modelo: string; motivo: string }[] | undefined)?.find((x) => x.modelo === modelo.id);
   if (noMedible) return { ...base, estado: "no-medible", motivo: noMedible.motivo, gastoUsd: 0, n: 0, cortadaPorTope: false, fallosDeLaCapa: 0 };
   const tiradas = campo<J[]>(art, "modelos");
@@ -414,7 +422,7 @@ interface PorLabelXstest {
 }
 
 export function extraerXstest(art: unknown, modelo: ModeloDelBanco): Medicion {
-  const base = { bateria: "xstest" as const, modelo: modelo.id, ejemplosDeFallos: [], exactitud: [], informeVsFactura: [] };
+  const base = { bateria: "xstest" as const, modelo: modelo.id, ejemplosDeFallos: [], exactitud: [], informeVsFactura: [], ...latenciaOpcional(art) };
   const pm = campo<Record<string, J>>(art, "porModelo")[modelo.corto];
   if (!pm) throw new Error(`XSTest: el artefacto no trae ${modelo.corto}`);
   const gastoUsd = campo<number>(pm, "gastadoUsd");
@@ -659,6 +667,7 @@ export function extraerMtBench(art: unknown, modelo: ModeloDelBanco, crudo?: { m
   const sinIntervencion = sinIntervencionMtBench(r);
   return cerrar({
     ...base,
+    ...latenciaOpcional(r),
     ...(calidadSinMedir ? { calidadSinMedir } : {}),
     ...(sinIntervencion ? { sinIntervencion } : {}),
     estado: "medido",

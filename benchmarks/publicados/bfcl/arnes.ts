@@ -39,9 +39,11 @@
  */
 import { appendFileSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
+import { performance } from "node:perf_hooks";
 import { fileURLToPath } from "node:url";
 
 import type { Provider, SavingsLayer, SavingsResult } from "../../../src/index.js";
+import { resumirLatencias, type InformeLatencia, type MuestraLatencia, type MuestrasPorBrazo } from "../../b2/latencia.js";
 import { precioYPrima } from "../../coste.js";
 import { baseNativaDeGemini, BASE_NATIVA_DE_GEMINI, dialectoDeGoogle, googleDelEntorno } from "../../gemini-nativo.js";
 import { muestreoPareadoPara } from "../../scenarios.js";
@@ -289,6 +291,10 @@ export interface Artefacto {
   config: { n: number; multi: number; multiDesde?: number; repes: number; tope: number; semilla: number; concurrencia: number; gastoPrevioDescontado: Record<string, number> };
   modelos: TiradaDeModelo[];
   resumen?: ResumenDeModelo[];
+  /** Ausente solo al releer artefactos anteriores a la instrumentación B2. */
+  latency?: InformeLatencia;
+  /** Muestras numéricas necesarias para agregar tiradas con --fusionar. */
+  latencySamples?: MuestrasPorBrazo;
   /** Modelos que no se midieron sin gastar nada (p. ej. la prueba gratuita de la clave dio 401). */
   noMedibles?: { modelo: string; motivo: string }[];
   /** La tirada anterior (otra versión del paquete) con la que se compara, tal como se publicó. */
@@ -428,6 +434,7 @@ interface Contexto {
   presupuesto: Presupuesto;
   diario: string;
   precio: CostModelDelBanco;
+  latencias: { A: MuestraLatencia[]; B: MuestraLatencia[] };
 }
 type CostModelDelBanco = { inputPer1k: number; outputPer1k: number; cachedInputPer1k?: number };
 
@@ -450,17 +457,33 @@ function volcar(ctx: Contexto, reg: LlamadaDelCable[]): void {
   for (const c of reg) appendFileSync(ctx.diario, `${JSON.stringify({ modelo: ctx.modelo, ...c })}\n`);
 }
 
+async function medirBrazo<T>(
+  ctx: Contexto,
+  brazo: "A" | "B",
+  f: (medicion: { providerMs: number }) => Promise<T>,
+): Promise<T> {
+  const inicio = performance.now();
+  const medicion = { providerMs: 0 };
+  try {
+    return await f(medicion);
+  } finally {
+    ctx.latencias[brazo].push({ totalMs: performance.now() - inicio, providerMs: medicion.providerMs });
+  }
+}
+
 async function correrA(ctx: Contexto, unidad: string, turnos: Turno[], hs: HerramientaNeutral[], reg: LlamadaDelCable[]) {
-  if (ctx.familia === "google") return correrANativoGemini(ctx, unidad, turnos, hs, reg);
-  const cuerpo = cuerpoBrazoA(ctx.familia, ctx.modelo, turnos, hs, ctx.muestreo);
-  const r = await unidadEnCurso.run({ unidad, brazo: "A", registro: reg }, () => llamarBrazoA(ctx.ep, ctx.cable, cuerpo));
-  const leida = leerRespuesta(ctx.familia, r.ok ? r.cuerpo : null);
-  return {
-    cuerpo,
-    ok: r.ok,
-    ...(r.ok ? {} : { error: sinSecretos(`HTTP ${r.status}: ${JSON.stringify(r.cuerpo).slice(0, 300)}`) }),
-    ...leida,
-  };
+  return medirBrazo(ctx, "A", async (medicion) => {
+    if (ctx.familia === "google") return correrANativoGemini(ctx, unidad, turnos, hs, reg, medicion);
+    const cuerpo = cuerpoBrazoA(ctx.familia, ctx.modelo, turnos, hs, ctx.muestreo);
+    const r = await unidadEnCurso.run({ unidad, brazo: "A", registro: reg, medicion }, () => llamarBrazoA(ctx.ep, ctx.cable, cuerpo));
+    const leida = leerRespuesta(ctx.familia, r.ok ? r.cuerpo : null);
+    return {
+      cuerpo,
+      ok: r.ok,
+      ...(r.ok ? {} : { error: sinSecretos(`HTTP ${r.status}: ${JSON.stringify(r.cuerpo).slice(0, 300)}`) }),
+      ...leida,
+    };
+  });
 }
 
 /**
@@ -469,10 +492,17 @@ async function correrA(ctx: Contexto, unidad: string, turnos: Turno[], hs: Herra
  * (el cuerpo que armó el adaptador y la respuesta cruda), no lo que el
  * adaptador devuelve: la medición es del banco.
  */
-async function correrANativoGemini(ctx: Contexto, unidad: string, turnos: Turno[], hs: HerramientaNeutral[], reg: LlamadaDelCable[]) {
+async function correrANativoGemini(
+  ctx: Contexto,
+  unidad: string,
+  turnos: Turno[],
+  hs: HerramientaNeutral[],
+  reg: LlamadaDelCable[],
+  medicion: { providerMs: number },
+) {
   const antes = reg.length;
   let fallo: string | undefined;
-  await unidadEnCurso.run({ unidad, brazo: "A", registro: reg }, async () => {
+  await unidadEnCurso.run({ unidad, brazo: "A", registro: reg, medicion }, async () => {
     try {
       await ctx.directo!.generate(peticionSinCapa(ctx.modelo, turnos, hs, ctx.muestreo));
     } catch (e) {
@@ -494,16 +524,18 @@ async function correrANativoGemini(ctx: Contexto, unidad: string, turnos: Turno[
 }
 
 async function correrB(ctx: Contexto, unidad: string, turnos: Turno[], hs: HerramientaNeutral[], reg: LlamadaDelCable[]) {
-  try {
-    const r = await unidadEnCurso.run({ unidad, brazo: "B", registro: reg }, () => llamarBrazoB(ctx.capa, ctx.modelo, turnos, hs, ctx.muestreo));
-    return { ok: true as const, r };
-  } catch (e) {
-    if (e instanceof PresupuestoAgotado) throw e;
-    const err = e as Error;
-    if (err.cause instanceof PresupuestoAgotado) throw err.cause;
-    if (/presupuesto de .* agotado/.test(err.message)) throw new PresupuestoAgotado(ctx.modelo, ctx.presupuesto.gastado, ctx.presupuesto.tope);
-    return { ok: false as const, error: sinSecretos(`${err.name}: ${err.message}`).slice(0, 400) };
-  }
+  return medirBrazo(ctx, "B", async (medicion) => {
+    try {
+      const r = await unidadEnCurso.run({ unidad, brazo: "B", registro: reg, medicion }, () => llamarBrazoB(ctx.capa, ctx.modelo, turnos, hs, ctx.muestreo));
+      return { ok: true as const, r };
+    } catch (e) {
+      if (e instanceof PresupuestoAgotado) throw e;
+      const err = e as Error;
+      if (err.cause instanceof PresupuestoAgotado) throw err.cause;
+      if (/presupuesto de .* agotado/.test(err.message)) throw new PresupuestoAgotado(ctx.modelo, ctx.presupuesto.gastado, ctx.presupuesto.tope);
+      return { ok: false as const, error: sinSecretos(`${err.name}: ${err.message}`).slice(0, 400) };
+    }
+  });
 }
 
 function veredicto(e: EntradaAst, llamadas: LlamadaHerramienta[]): { correcto: boolean; motivo?: string } {
@@ -742,7 +774,7 @@ async function correrModelo(
   modelo: string,
   entradas: { ast: EntradaAst[]; repes: EntradaAst[]; multi: EntradaMultiTurno[] },
   op: { mock: boolean; cargado: SdkCargado; tope: number; semaforos: Record<Proveedor, Semaforo>; respuestas: Map<string, RespuestaSimulada>; concurrencia: number; diario: string },
-): Promise<TiradaDeModelo> {
+): Promise<{ tirada: TiradaDeModelo; latencySamples: MuestrasPorBrazo }> {
   const env = process.env;
   const familia = dialectoDelModelo(modelo, env, op.mock);
   const proveedor = proveedorDe(modelo);
@@ -808,6 +840,7 @@ async function correrModelo(
     presupuesto,
     diario: op.diario,
     precio: pp.precio,
+    latencias: { A: [], B: [] },
     ...(familia === "google" ? { directo: nativoGemini() } : {}),
   };
   const tirada: TiradaDeModelo = {
@@ -910,7 +943,7 @@ async function correrModelo(
   tirada.salidaMaximaPorLlamada = maximaSalida(op.diario, modelo);
   const orden = new Map(entradas.ast.map((e, i) => [e.id, i]));
   tirada.ast.sort((x, y) => (orden.get(x.id) ?? 0) - (orden.get(y.id) ?? 0));
-  return tirada;
+  return { tirada, latencySamples: ctx.latencias };
 }
 
 // ── Principal ─────────────────────────────────────────────────────────────
@@ -977,6 +1010,16 @@ async function principal(): Promise<void> {
       resumen: modelos.map(resumir),
       partes: partes.map((p) => ({ fecha: p.fecha, config: p.config, modelos: p.modelos.map((t) => t.modelo) })),
     };
+    delete unido.latency;
+    delete unido.latencySamples;
+    if (partes.every((p) => p.latencySamples)) {
+      const latencySamples: MuestrasPorBrazo = {
+        A: partes.flatMap((p) => p.latencySamples!.A ?? []),
+        B: partes.flatMap((p) => p.latencySamples!.B ?? []),
+      };
+      unido.latencySamples = latencySamples;
+      unido.latency = resumirLatencias(latencySamples, base.modo);
+    }
     const dir = resolve(RAIZ, arg("salida") ?? "docs/benchmarks/2026-09-28");
     const nombreF = arg("nombre") ?? NOMBRE_POR_DEFECTO;
     mkdirSync(dir, { recursive: true });
@@ -1071,13 +1114,17 @@ async function principal(): Promise<void> {
   const porFamilia = new Map<Proveedor, string[]>();
   for (const m of aMedir) porFamilia.set(proveedorDe(m), [...(porFamilia.get(proveedorDe(m)) ?? []), m]);
   const tiradas: TiradaDeModelo[] = [];
+  const latencySamples: MuestrasPorBrazo = { A: [], B: [] };
   await Promise.all(
     [...porFamilia.values()].map(async (ms) => {
       for (const m of ms) {
         const inicio = avisos.length;
         let t: TiradaDeModelo;
         try {
-          t = await correrModelo(m, { ast, repes: repesE, multi: multiE }, { mock, cargado, tope: Math.max(0, topeDe(m) - (previo.get(m) ?? 0)), semaforos, respuestas, concurrencia, diario });
+          const medido = await correrModelo(m, { ast, repes: repesE, multi: multiE }, { mock, cargado, tope: Math.max(0, topeDe(m) - (previo.get(m) ?? 0)), semaforos, respuestas, concurrencia, diario });
+          t = medido.tirada;
+          latencySamples.A!.push(...(medido.latencySamples.A ?? []));
+          latencySamples.B!.push(...(medido.latencySamples.B ?? []));
         } catch (e) {
           noMedibles.push({ modelo: m, motivo: sinSecretos((e as Error).message).slice(0, 300) });
           console.log(`  ${m}: ${(e as Error).message}`);
@@ -1113,6 +1160,8 @@ async function principal(): Promise<void> {
     paquete,
     config: { n, multi, ...(multiDesde ? { multiDesde } : {}), repes, tope, semilla, concurrencia, gastoPrevioDescontado: Object.fromEntries(previo) },
     modelos: tiradas,
+    latency: resumirLatencias(latencySamples, mock ? "MOCK" : "LIVE"),
+    latencySamples,
     ...(noMedibles.length ? { noMedibles } : {}),
   };
   artefacto.resumen = tiradas.map(resumir);

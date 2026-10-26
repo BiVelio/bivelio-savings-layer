@@ -38,6 +38,7 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import { execSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
+import { performance } from "node:perf_hooks";
 import { fileURLToPath } from "node:url";
 
 import {
@@ -80,6 +81,7 @@ import {
   type PromptXSTest,
 } from "./nucleo.js";
 import { construirInforme, renderizarMarkdown, type Tirada } from "./informe.js";
+import { resumirLatencias, type MuestraLatencia, type MuestrasPorBrazo, type RelojMonotono } from "../../b2/latencia.js";
 import { BASE_NATIVA_DE_GEMINI, baseNativaDeGemini, dialectoDeGoogle, googleDelEntorno } from "../../gemini-nativo.js";
 
 const AQUI = dirname(fileURLToPath(import.meta.url));
@@ -204,6 +206,7 @@ interface Contexto {
   inyectado: Set<string>;
   /** El campo de tope de salida y su valor en cada cuerpo que salió (B: lo que puso la capa). */
   topes: string[];
+  providerMs: number;
   alGastar: (usd: number) => void;
 }
 
@@ -250,7 +253,7 @@ export interface Red {
  * cuerpo sin tope no sale (el presupuesto reserva con el tope, y sin él el peor
  * caso no está acotado).
  */
-export function crearRed(base: typeof fetch, modelos: ConfigDeModelo[], dormirImpl = dormir): Red {
+export function crearRed(base: typeof fetch, modelos: ConfigDeModelo[], dormirImpl = dormir, ahora: RelojMonotono = () => performance.now()): Red {
   const semaforos: Record<Familia, Semaforo> = {
     anthropic: new Semaforo(CONCURRENCIA_POR_PROVEEDOR),
     openai: new Semaforo(CONCURRENCIA_POR_PROVEEDOR),
@@ -295,9 +298,11 @@ export function crearRed(base: typeof fetch, modelos: ConfigDeModelo[], dormirIm
     return await semaforos[ctx.familia].con(async () => {
       for (let intento = 0; ; intento++) {
         let r: Response;
+        const inicioProveedor = ahora();
         try {
           r = await base(url, { ...init, body: cuerpo ?? null, signal: AbortSignal.timeout(120_000) });
         } catch (e) {
+          ctx.providerMs += ahora() - inicioProveedor;
           if (intento >= 5) throw e;
           red.reintentos++;
           await dormirImpl(2000 * 2 ** intento);
@@ -305,12 +310,15 @@ export function crearRed(base: typeof fetch, modelos: ConfigDeModelo[], dormirIm
         }
         if (REINTENTABLES.has(r.status) && intento < 6) {
           await r.text().catch(() => "");
+          ctx.providerMs += ahora() - inicioProveedor;
           red.reintentos++;
           const ra = Number(r.headers.get("retry-after"));
           await dormirImpl(Number.isFinite(ra) && ra > 0 ? Math.min(ra * 1000, 60_000) : 1500 * 2 ** intento + Math.random() * 500);
           continue;
         }
-        const texto = await r.text();
+        const texto = await r.text().finally(() => {
+          ctx.providerMs += ahora() - inicioProveedor;
+        });
         const tipo = r.headers.get("content-type") ?? "";
         let l: LecturaDelProveedor;
         if (tipo.includes("event-stream") || (esStream && r.status < 400)) l = leerSse(ctx.familia, r.status, texto);
@@ -347,6 +355,8 @@ export interface RegistroA {
   costeFacturadoUsd: number;
   costeSegunUsageUsd: number;
   noCobrada: boolean;
+  /** Ausente solo en artefactos anteriores a la instrumentación B2. */
+  latency?: MuestraLatencia;
   error?: string;
 }
 
@@ -386,6 +396,8 @@ export interface RegistroB {
     /** `detail.exactCache` de la traza `reference`: si la respuesta viajó a la caché exacta. */
     vaALaCacheExacta?: boolean;
   };
+  /** Incluye generateStream completo; cero proveedor en un acierto de caché. */
+  latency?: MuestraLatencia;
   error?: string;
 }
 
@@ -452,10 +464,10 @@ function chatDe(ep: Endpoints, familia: Familia): { base: string; clave?: string
 }
 
 async function enContexto<T>(
-  ctx: Omit<Contexto, "lecturas" | "inyectado" | "topes">,
+  ctx: Omit<Contexto, "lecturas" | "inyectado" | "topes" | "providerMs">,
   f: () => Promise<T>,
 ): Promise<{ v?: T; e?: unknown; ctx: Contexto }> {
-  const c: Contexto = { ...ctx, lecturas: [], inyectado: new Set(), topes: [] };
+  const c: Contexto = { ...ctx, lecturas: [], inyectado: new Set(), topes: [], providerMs: 0 };
   try {
     const v = await contexto.run(c, f);
     return { v, ctx: c };
@@ -471,8 +483,10 @@ async function brazoA(
   prompt: string,
   alGastar: (usd: number) => void,
   secretos: string[],
+  ahora: RelojMonotono = () => performance.now(),
 ): Promise<RegistroA> {
   const precio = precioDe(cfg.id);
+  const inicio = ahora();
   const { e, ctx } = await enContexto({ modelo: cfg.id, familia: cfg.familia, brazo: "A", alGastar }, async () => {
     if (esGeminiNativo(ep, cfg)) {
       // Gemini nativo: el brazo A SIN capa es el adaptador nativo DIRECTO, como el
@@ -526,12 +540,14 @@ async function brazoA(
     }
   });
   const l = ctx.lecturas.at(-1);
+  const latency = { totalMs: ahora() - inicio, providerMs: ctx.providerMs };
   if (e || !l || l.error) {
     return {
       ...(l ? { proveedor: resumir(l) } : {}),
       costeFacturadoUsd: 0,
       costeSegunUsageUsd: 0,
       noCobrada: false,
+      latency,
       error: limpiarSecretos(l?.error ?? (e instanceof Error ? e.message : String(e)), secretos),
     };
   }
@@ -541,6 +557,7 @@ async function brazoA(
     costeFacturadoUsd: costeFacturado(cfg.familia, l, precio),
     costeSegunUsageUsd: costeSegunUsage(cfg.familia, l, precio),
     noCobrada: esNegativaNoCobrada(cfg.familia, l),
+    latency,
   };
 }
 
@@ -582,8 +599,10 @@ async function brazoB(
   secretos: string[],
   /** Gemini nativo: el esfuerzo como `reasoningEffort` de la petición (ver `esfuerzoNativoDe`). */
   esfuerzo?: string,
+  ahora: RelojMonotono = () => performance.now(),
 ): Promise<RegistroB> {
   const precio = precioDe(cfg.id);
+  const inicio = ahora();
   const req = {
     model: `${cfg.familia}/${cfg.id}`,
     messages: [{ role: "user" as const, content: prompt }],
@@ -612,6 +631,7 @@ async function brazoB(
     noCobrada: !!l && ctx.lecturas.length === 1 && esNegativaNoCobrada(cfg.familia, l),
     inyectado: [...ctx.inyectado].sort(),
     topeEnviado: [...ctx.topes],
+    latency: { totalMs: ahora() - inicio, providerMs: ctx.providerMs },
     ...(l ? { proveedor: resumir(l) } : {}),
   };
   if (e || !r) {
@@ -680,17 +700,21 @@ export interface OpcionesDeTirada {
    * artefacto (run 36771607171, gemini-3.1-pro-preview: «plazo de 75 min agotado»).
    */
   plazoMs?: number;
-  /** Reloj inyectable (tests). */
+  /** Reloj inyectable para el plazo de la tirada (tests). */
   ahora?: () => number;
+  /** Reloj monótono de las duraciones B2 (tests). */
+  relojMonotono?: RelojMonotono;
 }
 
 export async function correrTirada(o: OpcionesDeTirada): Promise<Tirada> {
   const log = o.log ?? ((s: string) => console.log(limpiarSecretos(s, o.secretos)));
-  const red = crearRed(o.fetchBase, o.modelos, o.dormir);
+  const relojMonotono = o.relojMonotono ?? (() => performance.now());
+  const red = crearRed(o.fetchBase, o.modelos, o.dormir, relojMonotono);
   const semilla = o.semilla ?? SEMILLA;
   const orden = ordenEstratificado(o.prompts, semilla);
   const registros: RegistroDeItem[] = [];
   const porModelo: Tirada["porModelo"] = {};
+  const latencySamples: MuestrasPorBrazo = { A: [], B: [] };
   const ahora = o.ahora ?? Date.now;
   const inicio = ahora();
 
@@ -743,15 +767,15 @@ export async function correrTirada(o: OpcionesDeTirada): Promise<Tirada> {
           }
           try {
             const [A, B] = await Promise.all([
-              brazoA(red, o.endpoints, cfg, p.prompt, alGastar, o.secretos),
-              brazoB(capa, cfg, p.prompt, "principal", "generate", alGastar, o.secretos, esfuerzo),
+              brazoA(red, o.endpoints, cfg, p.prompt, alGastar, o.secretos, relojMonotono),
+              brazoB(capa, cfg, p.prompt, "principal", "generate", alGastar, o.secretos, esfuerzo, relojMonotono),
             ]);
             const item: RegistroDeItem = { modelo: cfg.id, id: p.id, type: p.type, label: p.label, A, B, repeticiones: [] };
             const huboNegativa =
               (A.clase && esNegativa(A.clase.clase)) || (B.clase && esNegativa(B.clase.clase)) || B.negativaSegunLaCapa;
             if (huboNegativa) {
-              item.repeticiones.push(await brazoB(capa, cfg, p.prompt, "repeticion-1", "generate", alGastar, o.secretos, esfuerzo));
-              item.repeticiones.push(await brazoB(capa, cfg, p.prompt, "repeticion-2", "generateStream", alGastar, o.secretos, esfuerzo));
+              item.repeticiones.push(await brazoB(capa, cfg, p.prompt, "repeticion-1", "generate", alGastar, o.secretos, esfuerzo, relojMonotono));
+              item.repeticiones.push(await brazoB(capa, cfg, p.prompt, "repeticion-2", "generateStream", alGastar, o.secretos, esfuerzo, relojMonotono));
             } else if (
               controles < CONTROLES_POR_MODELO &&
               B.clase?.clase === "full_compliance" &&
@@ -760,7 +784,7 @@ export async function correrTirada(o: OpcionesDeTirada): Promise<Tirada> {
             ) {
               // Control: una respuesta normal que la capa SÍ guardó (no cortada por el tope, política que lo permite).
               controles++;
-              item.repeticiones.push(await brazoB(capa, cfg, p.prompt, "control-cache", "generate", alGastar, o.secretos, esfuerzo));
+              item.repeticiones.push(await brazoB(capa, cfg, p.prompt, "control-cache", "generate", alGastar, o.secretos, esfuerzo, relojMonotono));
             }
             registros.push(item);
             // Progreso: si la celda muere por plazo, el registro dice hasta dónde llegó y a qué ritmo.
@@ -799,6 +823,10 @@ export async function correrTirada(o: OpcionesDeTirada): Promise<Tirada> {
   );
 
   registros.sort((a, b) => a.modelo.localeCompare(b.modelo) || a.id - b.id);
+  for (const r of registros) {
+    if (r.A?.latency) latencySamples.A!.push(r.A.latency);
+    for (const b of [r.B, ...r.repeticiones]) if (b?.latency) latencySamples.B!.push(b.latency);
+  }
   return {
     fecha: new Date().toISOString(),
     modo: o.modo,
@@ -815,6 +843,7 @@ export async function correrTirada(o: OpcionesDeTirada): Promise<Tirada> {
     semilla,
     topeDeSalida: TOPE_DE_SALIDA,
     reintentosDeRed: red.reintentos,
+    latency: resumirLatencias(latencySamples, o.modo === "VIVO" ? "LIVE" : "MOCK"),
     porModelo,
     registros,
   };

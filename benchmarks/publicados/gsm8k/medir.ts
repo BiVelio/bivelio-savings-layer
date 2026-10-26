@@ -42,6 +42,8 @@ export interface Ensayo {
   escrita: number;
   salida: number;
   latenciaMs: number;
+  /** Tiempo anidado de proveedor; 0 cuando la respuesta salió sin llamada. */
+  proveedorMs?: number;
   /** De dónde salió la respuesta: `provider`, `exact_cache`, `semantic_cache`, `coalesced`, `deterministic`. */
   fuente: string;
   /** Solo en los brazos con capa: lo que dice su informe. */
