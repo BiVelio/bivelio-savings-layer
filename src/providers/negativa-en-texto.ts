@@ -540,7 +540,7 @@ const RE_DISCULPA_Y_NEGATIVA = new RegExp(`^(?:${DISCULPA_Y_NEGACION}|(?:${DISCU
 
 const EMPATIA_EN =
   "(?:(?:i'm |i am )?(?:really |so |very |truly |deeply |terribly )?sorry (?:to hear|to read|that you|you(?:'re| are)|you feel|" +
-  "for what you|about what you)|it sounds like you(?:'re| are)|that sounds (?:really |so |very |incredibly )?" +
+  "for what you|about what you|for your|about your|your)|it sounds like you(?:'re| are)|that sounds (?:really |so |very |incredibly )?" +
   "(?:hard|difficult|painful|overwhelming|tough|awful)|i(?:'m| am) (?:really |so |very )?(?:concerned|worried) (?:about|for|by|to hear)|" +
   "i hear (?:you|how|that you)|you(?:'re| are) not alone|i(?:'m| am) (?:so |really )?glad you reached out)";
 const REMISION_EN =
