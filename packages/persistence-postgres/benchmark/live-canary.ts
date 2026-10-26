@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { generateKeyPairSync, randomUUID, sign } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import { access, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
@@ -125,7 +125,6 @@ async function layerFor(tenant) {
     layers.set(tenant, createSavingsLayer({
       provider,
       licenseKey: license.token,
-      licensePublicKey: license.publicKey,
       exactCache: exact,
       semanticCacheStore: semantic,
       semanticCacheDefault: true,
@@ -267,34 +266,13 @@ interface WorkerResult {
   providerCalls: number;
 }
 
-function ephemeralLicense(tenantId: string): { token: string; publicKey: string } {
-  const { publicKey, privateKey } = generateKeyPairSync("ed25519", {
-    publicKeyEncoding: { type: "spki", format: "pem" },
-    privateKeyEncoding: { type: "pkcs8", format: "pem" },
-  });
-  const b64url = (value: Buffer | string) => Buffer.from(value).toString("base64url");
-  const header = b64url(JSON.stringify({ alg: "EdDSA", typ: "BVL", v: 1 }));
-  const now = Math.floor(Date.now() / 1000);
-  const payload = b64url(JSON.stringify({
-    jti: `live-canary-${randomUUID()}`,
-    org_id: tenantId,
-    plan: "pro",
-    seats: 1,
-    features: ["semantic_cache", "dashboards"],
-    issued_at: now,
-    expires_at: now + 3600,
-    grace_days: 0,
-    iss: "bivelio-live-canary",
-  }));
-  const signature = sign(null, Buffer.from(`${header}.${payload}`), privateKey);
-  return { token: `${header}.${payload}.${b64url(signature)}`, publicKey };
-}
-
 async function main(): Promise<void> {
   const missing = [
     process.env.BIVELIO_LIVE_CANARY === "1" ? null : "BIVELIO_LIVE_CANARY=1",
     process.env.BIVELIO_TEST_POSTGRES_URL ? null : "BIVELIO_TEST_POSTGRES_URL",
     process.env.BVSALA_DEMO_GOOGLE_API_KEY ? null : "BVSALA_DEMO_GOOGLE_API_KEY",
+    process.env.CANARY_LICENSE_A ? null : "CANARY_LICENSE_A",
+    process.env.CANARY_LICENSE_B ? null : "CANARY_LICENSE_B",
   ].filter((item): item is string => item != null);
   if (missing.length > 0) {
     console.log("Live canary not run; no provider calls were made. Use a disposable PostgreSQL + pgvector database and set:");
@@ -306,7 +284,10 @@ async function main(): Promise<void> {
 
   await access(join(root, "dist", "index.js"));
   await access(join(packageRoot, "dist", "index.js"));
-  const licenses = Object.fromEntries(["tenant-a", "tenant-b"].map((tenant) => [tenant, ephemeralLicense(tenant)]));
+  const licenses = {
+    "tenant-a": { token: process.env.CANARY_LICENSE_A! },
+    "tenant-b": { token: process.env.CANARY_LICENSE_B! },
+  };
   const temporary = await mkdtemp(join(tmpdir(), "bivelio-live-canary-"));
   const namespace = `live-canary-${randomUUID()}`;
   const keysPath = join(temporary, "exact-keys.txt");
@@ -369,7 +350,7 @@ async function main(): Promise<void> {
       measuredNetSavingsUsd > 0 && p95Ms <= gates.p95Ms && maxMs <= gates.maxMs;
     const report = {
       kind: "packaged-postgresql-gemini-live-canary",
-      license: "ephemeral-ed25519-offline-test",
+      license: "short-lived-per-tenant-offline-test",
       processes: results.map((result) => ({ phase: result.phase, requests: result.records.length, providerCalls: result.providerCalls })),
       requests: records.length,
       providerCalls: results.reduce((sum, result) => sum + result.providerCalls, 0),
