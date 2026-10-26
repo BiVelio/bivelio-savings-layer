@@ -115,6 +115,26 @@ function assertHit(hit, kind, quality) {
   }
 }
 
+let exact;
+let semantic;
+let provider;
+async function layerFor(tenant) {
+  if (!layers.has(tenant)) {
+    const license = licenses[tenant];
+    assert(license, "missing canary license for tenant");
+    layers.set(tenant, createSavingsLayer({
+      provider,
+      licenseKey: license.token,
+      licensePublicKey: license.publicKey,
+      exactCache: exact,
+      semanticCacheStore: semantic,
+      semanticCacheDefault: true,
+      silenceWarnings: true
+    }));
+  }
+  return layers.get(tenant);
+}
+
 try {
   pool = new Pool({
     connectionString: env.BIVELIO_TEST_POSTGRES_URL,
@@ -132,15 +152,15 @@ try {
     }
   }
 
-  const exact = new TrackedExactCache({ pool, queryTimeoutMs: 75 });
-  const semantic = new PgSemanticCache({
+  exact = new TrackedExactCache({ pool, queryTimeoutMs: 75 });
+  semantic = new PgSemanticCache({
     pool,
     namespace,
     queryTimeoutMs: 75,
     lockTimeoutMs: 50,
     calibration: { maxErrorRate: 0.5, confidence: 0.9, auditRate: 0 }
   });
-  const provider = new GoogleProvider({
+  provider = new GoogleProvider({
     apiKey: env.BVSALA_DEMO_GOOGLE_API_KEY,
     baseUrl: "https://generativelanguage.googleapis.com/v1beta",
     requireUsage: true,
@@ -150,22 +170,6 @@ try {
       return fetch(url, { ...init, signal: AbortSignal.timeout(4_500) });
     }
   });
-  async function layerFor(tenant) {
-    if (!layers.has(tenant)) {
-      const license = licenses[tenant];
-      assert(license, "missing canary license for tenant");
-      layers.set(tenant, createSavingsLayer({
-        provider,
-        licenseKey: license.token,
-        licensePublicKey: license.publicKey,
-        exactCache: exact,
-        semanticCacheStore: semantic,
-        semanticCacheDefault: true,
-        silenceWarnings: true
-      }));
-    }
-    return layers.get(tenant);
-  }
 
   const originalText = "For this synthetic persistence check, reply with exactly GREEN-742 and nothing else.";
   const rewordedText = "Synthetic persistence check: output only GREEN-742, please.";
