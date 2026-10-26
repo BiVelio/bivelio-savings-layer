@@ -218,10 +218,14 @@ try {
   await layer.close();
   await pool.end();
   await writeFile(resultPath, JSON.stringify({ ok: true, phase, records, baselineHash, providerCalls }));
-} catch {
+} catch (error) {
+  const errorName = error && typeof error === "object" && "constructor" in error && typeof error.constructor === "function"
+    ? error.constructor.name
+    : "Error";
+  const providerStatus = error instanceof Error ? /provider (\d{3})/.exec(error.message)?.[1] ?? null : null;
   try { await layer?.close(); } catch {}
   try { await pool?.end(); } catch {}
-  try { await writeFile(resultPath, JSON.stringify({ ok: false, phase, records, providerCalls })); } catch {}
+  try { await writeFile(resultPath, JSON.stringify({ ok: false, phase, errorName, providerStatus, records, providerCalls })); } catch {}
   process.exitCode = 1;
 }
 `;
@@ -242,6 +246,8 @@ interface WorkerRecord {
 interface WorkerResult {
   ok: boolean;
   phase: string;
+  errorName?: string;
+  providerStatus?: string | null;
   records: WorkerRecord[];
   providerCalls: number;
 }
@@ -325,7 +331,10 @@ async function main(): Promise<void> {
       try {
         await command(process.execPath, [workerPath], consumer, childEnv);
       } catch {
-        throw new Error(`${phase} packaged worker failed; provider output and credentials were suppressed`);
+        const failure = JSON.parse(await readFile(resultPath, "utf8").catch(() => "{}")) as Partial<WorkerResult>;
+        const name = failure.errorName ? ` (${failure.errorName})` : "";
+        const status = failure.providerStatus ? ` provider ${failure.providerStatus}` : "";
+        throw new Error(`${phase} packaged worker failed${name}${status}`);
       }
       const result = JSON.parse(await readFile(resultPath, "utf8")) as WorkerResult;
       if (!result.ok) throw new Error(`${phase} packaged worker failed its gates`);
@@ -386,7 +395,7 @@ async function main(): Promise<void> {
 
 try {
   await main();
-} catch {
-  console.error("Live canary failed; error details are suppressed to avoid exposing credentials or request content.");
+} catch (error) {
+  console.error("Live canary failed; safe diagnostic:", error instanceof Error ? error.message : "unknown error");
   process.exitCode = 1;
 }
