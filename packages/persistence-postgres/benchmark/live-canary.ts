@@ -236,7 +236,7 @@ try {
     ? error.constructor.name
     : "Error";
   const providerStatus = error instanceof Error ? /provider (\d{3})/.exec(error.message)?.[1] ?? null : null;
-  const diagnostic = error instanceof ReferenceError || error instanceof TypeError ? error.message : null;
+  const diagnostic = error instanceof ReferenceError || error instanceof TypeError || (error && typeof error === "object" && "status" in error) ? error.message : null;
   try { await Promise.all([...layers.values()].map((activeLayer) => activeLayer.close())); } catch {}
   try { await pool?.end(); } catch {}
   try { await writeFile(resultPath, JSON.stringify({ ok: false, phase, errorName, providerStatus, diagnostic, records, providerCalls })); } catch {}
