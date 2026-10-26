@@ -1,3 +1,6 @@
+BEGIN;
+SELECT pg_advisory_xact_lock(hashtext('bivelio_savings_migration'));
+
 CREATE SCHEMA IF NOT EXISTS bivelio_savings;
 
 CREATE TABLE IF NOT EXISTS bivelio_savings.exact_cache_entries (
@@ -16,3 +19,5 @@ CREATE TABLE IF NOT EXISTS bivelio_savings.breakpoint_measurements (
   expires_at_ms bigint NOT NULL,
   version bigint NOT NULL
 );
+
+COMMIT;

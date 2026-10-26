@@ -1,3 +1,6 @@
+BEGIN;
+SELECT pg_advisory_xact_lock(hashtext('bivelio_savings_migration'));
+
 CREATE EXTENSION IF NOT EXISTS vector;
 
 CREATE SCHEMA IF NOT EXISTS bivelio_savings;
@@ -75,3 +78,5 @@ CREATE TABLE IF NOT EXISTS bivelio_savings.semantic_calibration_observations (
 
 CREATE INDEX IF NOT EXISTS semantic_calibration_observations_namespace_record_id_idx
   ON bivelio_savings.semantic_calibration_observations (namespace, record_id);
+
+COMMIT;
