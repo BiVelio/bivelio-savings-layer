@@ -119,10 +119,19 @@
       "traffic": "verkeer",
       "steps": {
         "accountCreated": "Account aangemaakt",
-        "sdkInstalled": "Serviceaccount-sleutel aangemaakt",
-        "licenseActive": "Licentie actief",
-        "firstReport": "Eerste rapport",
-        "liveMeter": "Live meter"
+        "sdkInstalled": "SDK of gateway geïnstalleerd",
+        "licenseActive": "Inloggegevens en actieve licentie",
+        "firstRequest": "Eerste echte verzoek",
+        "reportReady": "Rapport beschikbaar"
+      },
+      "readErrors": {
+        "title": "Sommige gegevens konden niet worden gelezen",
+        "intro": "Dit is een leesfout, geen leeg account. Betrokken onderdelen tonen geen nullen in de plaats.",
+        "org": "Je organisatie kon niet worden bepaald.",
+        "usage": "Dagelijks gebruik kon niet worden gelezen.",
+        "models": "De uitsplitsing per model kon niet worden gelezen.",
+        "sessions": "Sessiekosten konden niet worden gelezen.",
+        "seats": "Machineactiviteit kon niet worden gelezen."
       }
     },
     "proof": {
@@ -266,11 +275,44 @@
       "statusDone": "klaar",
       "statusNext": "volgende",
       "statusPending": "in behandeling",
+      "statusUnavailable": "niet beschikbaar",
       "nextLabel": "Volgende: {label}",
       "installComment": "# herkent je stack en drukt de exacte koppeling af — je prompts verlaten nooit je eigen infrastructuur",
-      "hintLicense": "Plak je BiVelio-licentiesleutel zodat de SDK de beheerde functies ontgrendelt en het gebruik rapporteert.",
-      "hintFirstReport": "Wikkel een echte provideraanroep in — het eerste SavingsReport landt hier en je meter gaat live.",
-      "hintDefault": "Dit wordt ontgrendeld zodra je eerste usage_daily-rij binnenkomt."
+      "hintLicense": "Maak of haal je licentie en servicegegevens op in Account. Een sleutel alleen bewijst geen installatie.",
+      "hintInstall": "Kies SDK of gateway en stuur een echt verzoek. Een sleutel maken of een lege batch sturen bewijst geen installatie.",
+      "hintFirstRequest": "Stuur een echt providerverzoek via SDK of gateway. Het gebruiksrapport voltooit deze stap.",
+      "hintReport": "Het rapport verschijnt zodra het eerste echte verzoek binnenkomt.",
+      "hintDefault": "Open je account om verder te configureren.",
+      "linkAccount": "Account openen",
+      "linkInstall": "Installatie openen",
+      "linkSdk": "SDK-route",
+      "linkGateway": "Gateway-route",
+      "unavailableHint": "Gebruik kan nu niet worden gelezen, dus installatie en rapportage kunnen niet worden beoordeeld. Dit betekent niet dat het account leeg is."
+    },
+    "shadowOpportunities": {
+      "title": "Waar je potentiële besparing zit",
+      "badge": "SHADOW · GESCHAT",
+      "intro": "Hypothetische kansen per model, alleen berekend met SHADOW-telemetrie. Nooit gemeten besparingen of gefactureerde bedragen.",
+      "error": "Kansen per model konden niet worden gelezen. Probeer het zo opnieuw.",
+      "hidden": "De uitsplitsing bestaat, maar dit account kan ze niet zien. Dit is een zichtbaarheidsfout, geen ontbrekende data.",
+      "unavailable": "De SHADOW-uitsplitsing per model is nog niet beschikbaar op deze server. Geschiedenis zonder model kan niet worden gereconstrueerd.",
+      "historical": "Er zijn SHADOW-verzoeken, maar de modeluitsplitsing is niet beschikbaar voor geschiedenis van vóór deze migratie.",
+      "empty": "Nog geen SHADOW-verzoeken in deze periode. Stuur echt verkeer met Meten om kansen te gaan schatten.",
+      "colModel": "Model",
+      "colRequests": "SHADOW-verzoeken",
+      "colBaseline": "Baseline-uitgaven",
+      "colActual": "Hypothetische kosten",
+      "colSavings": "Hypothetische besparing",
+      "colCoverage": "Dekking",
+      "coverage": "Modeldekking: {coverage} van SHADOW-verzoeken ({attributed} van {total}).",
+      "coveragePartial": "Gedeeltelijke dekking: de uitsplitsing bevat {attributed} van {total} SHADOW-verzoeken ({coverage}); geschiedenis zonder model valt buiten.",
+      "coverageUnavailable": "Dekking is niet beschikbaar omdat het dagelijkse SHADOW-totaal niet kon worden gelezen.",
+      "note": "Hypothetische schatting: baseline − SHADOW-kosten. Nooit gemeten, gefactureerd of opgeteld bij erkende besparingen.",
+      "action": "Bekijk Account om beschikbare besparingshendels te activeren of rond de SDK/gateway-installatie af. Hendel en oppervlak zijn niet beschikbaar: de huidige wire bewaart ze niet; hiervoor is een server-first-wijziging nodig.",
+      "accountCta": "Account bekijken",
+      "installCta": "Installatie afronden",
+      "exportCsv": "CSV exporteren",
+      "exportJson": "JSON exporteren"
     },
     "scenarioTable": {
       "colScenario": "scenario",

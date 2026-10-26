@@ -228,6 +228,37 @@ describe("UsageEmitter", () => {
     await em.flush();
     await em.flush(); // buffer should be empty now → no second POST
     expect(hits).toBe(1);
+    expect(em.stats()).toEqual({ sent: 0, requeued: 0, discarded: 1, dropped: 0 });
+  });
+
+  it("requeues 429, honors Retry-After and reports the eventual delivery", async () => {
+    let hits = 0;
+    const fn = (() => {
+      hits++;
+      return Promise.resolve(
+        hits === 1
+          ? new Response(null, { status: 429, headers: { "retry-after": "0" } })
+          : new Response(null, { status: 202 }),
+      );
+    }) as unknown as typeof fetch;
+    const em = new UsageEmitter({ url: URL, serviceAccountKey: "bvk_x", fetchImpl: fn, retryDelayMs: 0 });
+    em.record(mkReport());
+    await em.flush();
+    expect(em.stats()).toEqual({ sent: 0, requeued: 1, discarded: 0, dropped: 0 });
+    await em.flush();
+    expect(hits).toBe(2);
+    expect(em.stats()).toEqual({ sent: 1, requeued: 1, discarded: 0, dropped: 0 });
+  });
+
+  it("times out a stalled POST without throwing or losing the buffered record", async () => {
+    const fn = ((_url: string, init: RequestInit) =>
+      new Promise<Response>((_resolve, reject) => {
+        init.signal?.addEventListener("abort", () => reject(new DOMException("aborted", "AbortError")));
+      })) as unknown as typeof fetch;
+    const em = new UsageEmitter({ url: URL, serviceAccountKey: "bvk_x", fetchImpl: fn, requestTimeoutMs: 5 });
+    em.record(mkReport());
+    await em.flush();
+    expect(em.stats()).toEqual({ sent: 0, requeued: 1, discarded: 0, dropped: 0 });
   });
 
   it("caps records per POST at maxBatch", async () => {

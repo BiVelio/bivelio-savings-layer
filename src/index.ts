@@ -147,6 +147,8 @@ export {
   InMemoryCacheBreakpointStore,
   InMemoryExactCache,
   InMemorySemanticCache,
+  SemanticCacheSafety,
+  SemanticCalibrationJournal,
   LOCAL_EMBEDDING_THRESHOLD,
   localEmbedding,
   Singleflight,
@@ -159,6 +161,8 @@ export type {
   EmbeddingFn,
   ExactCache,
   SemanticCacheOptions,
+  SemanticCacheStore,
+  SemanticCalibrationIdentity,
   SemanticCalibrationOptions,
   SemanticCalibrationSegmentState,
   SemanticCalibrationState,
@@ -339,3 +343,4 @@ export type {
   TracerLike,
   TracerProviderLike,
 } from "./exporters/index.js";
+export type { ConstraintMemoryStore } from "./constraints/memory.js";

@@ -6,6 +6,7 @@ import { providerNativeBackend } from "../src/constraints/backends.js";
 import { libroDeCalidad, libroDelSeguidor } from "../src/pipeline/libro-de-calidad.js";
 import { reiniciarAvisos } from "../src/util/warn-once.js";
 import { comprobarCoherencia, clavesDeDinero, textosDelLibro } from "./helpers/libro-de-calidad.js";
+import { CALIBRACION_DE_PRUEBA, certificarRespuestaSemantica } from "./helpers/semantic-cache.js";
 import type { Provider, ProviderRequest, ProviderResponse } from "../src/providers/types.js";
 import type { ExactCache } from "../src/cache/exact.js";
 import type { SavingsLayerConfig } from "../src/pipeline/config.js";
@@ -327,11 +328,14 @@ describe("de dónde vino la respuesta", () => {
   });
 
   it("acierto semántico con el embebedor PROPIO: similitud, suelos y la verja", async () => {
-    const semanticCache = new InMemorySemanticCache();
+    const semanticCache = new InMemorySemanticCache({ calibration: CALIBRACION_DE_PRUEBA });
     const c = capa(new ProveedorGuion([{ text: "the water cycle is evaporation, condensation and rain" }]), { semanticCacheStore: semanticCache });
     const base = { savings: { semanticCache: true as const, exactCache: false } };
-    await generar(c, pide("describe the water cycle in simple terms", base));
-    const r = await generar(c, pide("describe the water cycle in simple terms please", base));
+    const original = pide("describe the water cycle in simple terms", base);
+    const primera = await generar(c, original);
+    const reformulada = pide("describe the water cycle in simple terms please", base);
+    await certificarRespuestaSemantica(semanticCache, original, primera, { query: reformulada });
+    const r = await generar(c, reformulada);
     const m = r.report.qualityLedger!.cacheMatch!;
     expect(r.report.qualityLedger!.source).toBe("semantic_cache");
     if (m.kind !== "semantic") throw new Error("se esperaba un acierto semántico");
@@ -351,17 +355,20 @@ describe("de dónde vino la respuesta", () => {
       [0, 1, 2, 3].map((i) => [...t].filter((ch) => ch.charCodeAt(0) % 4 === i).length);
     const semanticCache = new InMemorySemanticCache({
       embed, verify: () => 0.9, similarityThreshold: 0.3, acceptThreshold: 0.3,
+      calibration: CALIBRACION_DE_PRUEBA,
     });
     const c = capa(new ProveedorGuion([{ text: "it merges identical requests" }]), { semanticCacheStore: semanticCache });
     const base = { savings: { semanticCache: true as const, exactCache: false } };
-    await generar(c, pide("explain the coalescing mechanism briefly", base));
+    const original = pide("explain the coalescing mechanism briefly", base);
+    const primera = await generar(c, original);
+    await certificarRespuestaSemantica(semanticCache, original, primera);
     const r = await generar(c, pide("explain briefly the coalescing mechanism", base));
     const m = r.report.qualityLedger!.cacheMatch!;
     if (m.kind !== "semantic") throw new Error("se esperaba un acierto semántico");
     expect(m.embedder).toBe("custom");
     expect(m.verifierScore).toBe(0.9);
     expect(m.similarityFloor).toBe(0.3);
-    expect(m.acceptFloor).toBe(0.3);
+    expect(m.acceptFloor).toBe(m.calibration!.floor);
     expect(Math.min(m.similarity, m.verifierScore!)).toBe(r.report.cache.confidence);
     expect(r.report.quality.semanticScore).toBe(m.similarity);
   });

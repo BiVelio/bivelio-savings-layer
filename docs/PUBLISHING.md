@@ -52,6 +52,12 @@ The workflow runs three jobs, each with the minimum permission:
 `test/cadena-de-suministro.test.ts` fails in CI if the workflow loses `id-token: write`,
 `--provenance`, the tarball checks or the SBOM, or brings back a stored token.
 `bash scripts/simular-ci.sh <branch>` runs the same checks and the SBOM in a clean clone.
+For the 0.6 release candidate, `pnpm run rc:verify` additionally packs both packages,
+checks clean npm/pnpm consumers and Docker Node 20.19/22.13, validates their SBOM
+hashes and audits production and development dependencies. PostgreSQL persistence
+has its own `publish-postgres.yml` path for `pg-v*` tags, with the same real
+PostgreSQL tests, weekly gate, hash and trusted publishing controls; `publish.yml`
+skips those tags. No RC artifact is published by these verification commands.
 
 ### One-time setup on npmjs.com (owner) — required before the next Release
 

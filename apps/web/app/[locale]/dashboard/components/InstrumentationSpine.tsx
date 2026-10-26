@@ -14,11 +14,13 @@ import { CopyButton } from "./CopyButton";
  */
 const INSTALL_CMD = "npx @bivelio/savings-layer@latest init";
 
-/** The 5-node activation spine — derived, never faked. The current step expands
- *  into a task card; steps beyond it read grey "pending". */
+/** The 5-node activation spine — derived, never faked. */
 export async function InstrumentationSpine({ steps }: { steps: StepState[] }) {
   const t = await getTranslations("dashboard");
   const current = steps.find((s) => s.status === "current");
+  const hasUnavailable = steps.some((s) => s.status === "unavailable");
+  const accountCta = current?.id === "Account created" || current?.id === "License active";
+  const installCta = current?.id === "First real request";
   return (
     <section className="app-section">
       <div className="app-sec-head">
@@ -29,7 +31,7 @@ export async function InstrumentationSpine({ steps }: { steps: StepState[] }) {
       </div>
       <div className="spine">
         {steps.map((s, i) => (
-          <div key={s.label} className={`spine-node ${s.status}`}>
+          <div key={s.id} className={`spine-node ${s.status}`}>
             <span className="idx">{s.status === "done" ? "✓" : i + 1}</span>
             <div className="lbl">{s.label}</div>
             <div className="st">
@@ -37,7 +39,9 @@ export async function InstrumentationSpine({ steps }: { steps: StepState[] }) {
                 ? t("instrumentationSpine.statusDone")
                 : s.status === "current"
                   ? t("instrumentationSpine.statusNext")
-                  : t("instrumentationSpine.statusPending")}
+                  : s.status === "unavailable"
+                    ? t("instrumentationSpine.statusUnavailable")
+                    : t("instrumentationSpine.statusPending")}
             </div>
           </div>
         ))}
@@ -45,27 +49,39 @@ export async function InstrumentationSpine({ steps }: { steps: StepState[] }) {
       {current ? (
         <div className="spine-task">
           <p className="t">{t("instrumentationSpine.nextLabel", { label: current.label })}</p>
-          {current.id === "SDK installed" ? (
-            <div className="code2">
-              <span>
-                <span className="c">{t("instrumentationSpine.installComment")}</span>
-                {"\n"}
-                {INSTALL_CMD}
-              </span>
-              <CopyButton text={INSTALL_CMD} />
-            </div>
+          {current.id === "SDK or gateway installed" ? (
+            <>
+              <div className="code2">
+                <span>
+                  <span className="c">{t("instrumentationSpine.installComment")}</span>
+                  <span style={{ display: "block" }}>{INSTALL_CMD}</span>
+                </span>
+                <CopyButton text={INSTALL_CMD} />
+              </div>
+              <p className="note">{t("instrumentationSpine.hintInstall")}</p>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <a className="btn" href="/dashboard/install#sdk">{t("instrumentationSpine.linkSdk")}</a>
+                <a className="btn" href="/dashboard/install#gateway">{t("instrumentationSpine.linkGateway")}</a>
+              </div>
+            </>
           ) : (
-            <p className="note">
-              {/* Por el `id`, no por la etiqueta: la etiqueta va traducida y en 11
-                  de los 12 idiomas nunca casaba, así que salía la pista genérica. */}
-              {current.id === "License active"
-                ? t("instrumentationSpine.hintLicense")
-                : current.id === "First report"
-                  ? t("instrumentationSpine.hintFirstReport")
-                  : t("instrumentationSpine.hintDefault")}
-            </p>
+            <>
+              <p className="note">
+                {current.id === "License active"
+                  ? t("instrumentationSpine.hintLicense")
+                  : current.id === "First real request"
+                    ? t("instrumentationSpine.hintFirstRequest")
+                    : current.id === "Report ready"
+                      ? t("instrumentationSpine.hintReport")
+                      : t("instrumentationSpine.hintDefault")}
+              </p>
+              {accountCta ? <a className="btn" href="/dashboard/account">{t("instrumentationSpine.linkAccount")}</a> : null}
+              {installCta ? <a className="btn" href="/dashboard/install">{t("instrumentationSpine.linkInstall")}</a> : null}
+            </>
           )}
         </div>
+      ) : hasUnavailable ? (
+        <p className="note" role="status">{t("instrumentationSpine.unavailableHint")}</p>
       ) : null}
     </section>
   );

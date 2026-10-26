@@ -1,0 +1,198 @@
+name: publish-postgres
+
+on:
+  release:
+    types: [published]
+
+permissions: {}
+
+jobs:
+  verificar:
+    if: ${{ startsWith(github.event.release.tag_name, 'pg-v') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      sha512: ${{ steps.hash.outputs.sha512 }}
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: bivelio_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d bivelio_test"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.5
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile --dir apps/web
+      - run: pnpm run build:all
+      - run: pnpm run typecheck:all
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - run: 'python -m pip install --require-hashes --only-binary :all: -r packages/python/requirements-ci.txt'
+      - run: pnpm test
+        env:
+          BIVELIO_TEST_POSTGRES_URL: postgresql://postgres:postgres@127.0.0.1:5432/bivelio_test
+
+      - name: La etiqueta coincide con persistence-postgres
+        run: |
+          ETIQUETA="${GITHUB_REF_NAME#pg-v}"
+          VERSION="$(node -p "require('./packages/persistence-postgres/package.json').version")"
+          test "$ETIQUETA" = "$VERSION" || { echo "::error::Release $GITHUB_REF_NAME, paquete $VERSION"; exit 1; }
+
+      - name: La Release es prerelease si y solo si la versión lleva sufijo
+        env:
+          ES_PRERELEASE: ${{ github.event.release.prerelease }}
+        run: |
+          VERSION="$(node -p "require('./packages/persistence-postgres/package.json').version")"
+          case "$VERSION" in *-*) ESPERADO="true" ;; *) ESPERADO="false" ;; esac
+          test "$ESPERADO" = "$ES_PRERELEASE" || { echo "::error::Versión y prerelease no coinciden"; exit 1; }
+
+      - name: Empaquetar persistencia
+        run: |
+          VERSION="$(node -p "require('./packages/persistence-postgres/package.json').version")"
+          mkdir -p paquete
+          pnpm --dir packages/persistence-postgres pack --pack-destination ../../paquete >/dev/null
+          test -f "paquete/bivelio-persistence-postgres-$VERSION.tgz"
+
+      - name: Verificar contenido y manifiesto
+        run: |
+          VERSION="$(node -p "require('./packages/persistence-postgres/package.json').version")"
+          DIR="$(mktemp -d)"
+          tar xzf "paquete/bivelio-persistence-postgres-$VERSION.tgz" -C "$DIR"
+          test -f "$DIR/package/sql/003_constraint_memory.sql"
+          if find "$DIR/package" -name "*.map" | grep -q .; then echo "::error::sourcemaps"; exit 1; fi
+          if grep -rqaE "PRIVATE KEY|UFJJVkFURSBLRV|BSSVZBVEUgS0VZ|QUklWQVRFIEtFW|workspace:" "$DIR/package"; then
+            echo "::error::material privado o workspace en el paquete"; exit 1;
+          fi
+          node -e 'const p=require(process.argv[1]);if(p.peerDependencies["@bivelio/savings-layer"]!==">=0.6.0-rc.1 <1")throw Error("peer SDK");if(p.peerDependencies.pg!==">=8.23.1 <9")throw Error("peer pg");if(p.peerDependenciesMeta?.pg?.optional)throw Error("pg sigue opcional")' "$DIR/package/package.json"
+          rm -rf "$DIR"
+
+      - name: SBOM CycloneDX de persistencia
+        run: |
+          VERSION="$(node -p "require('./packages/persistence-postgres/package.json').version")"
+          pnpm exec tsx scripts/sbom.ts "paquete/bivelio-persistence-postgres-$VERSION.tgz" "paquete/bivelio-persistence-postgres-$VERSION.cdx.json" packages/persistence-postgres
+
+      - name: Hash del tarball verificado
+        id: hash
+        run: |
+          VERSION="$(node -p "require('./packages/persistence-postgres/package.json').version")"
+          H="$(node -e 'process.stdout.write(require("crypto").createHash("sha512").update(require("fs").readFileSync(process.argv[1])).digest("hex"))' "paquete/bivelio-persistence-postgres-$VERSION.tgz")"
+          echo "sha512=$H" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: paquete-postgres
+          path: paquete/
+          if-no-files-found: error
+
+  banco-semanal:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: benchmarks/banco-semanal/puerta.ts
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: El último banco semanal está verde y tiene 8 días o menos
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BANCO_SEMANAL_EMERGENCIA: ${{ vars.BANCO_SEMANAL_EMERGENCIA }}
+        run: |
+          gh run list --repo "$GITHUB_REPOSITORY" --workflow banco-semanal.yml --branch main --limit 30 \
+            --json databaseId,status,conclusion,createdAt,displayTitle,event,url,headSha > runs.json || echo "null" > runs.json
+          node benchmarks/banco-semanal/puerta.ts runs.json
+
+  publicar:
+    needs: [verificar, banco-semanal]
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      id-token: write
+    outputs:
+      publicado: ${{ steps.publicar.outputs.publicado }}
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - uses: actions/download-artifact@v4
+        with:
+          name: paquete-postgres
+          path: paquete
+      - name: npm con trusted publishing
+        run: node -e 'const [a,b,c]=process.argv[1].split(".").map(Number);process.exit(a>11||(a===11&&(b>5||(b===5&&c>=1)))?0:1)' "$(npm --version)"
+      - name: El tarball es el verificado
+        env:
+          SHA512_VERIFICADO: ${{ needs.verificar.outputs.sha512 }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#pg-v}"
+          node -e '
+            const fs=require("fs"),c=require("crypto");
+            const [tgz,sbom]=process.argv.slice(1), esperado=process.env.SHA512_VERIFICADO;
+            const real=c.createHash("sha512").update(fs.readFileSync(tgz)).digest("hex");
+            if(real!==esperado)throw Error("tarball distinto");
+            const delSbom=JSON.parse(fs.readFileSync(sbom,"utf8")).metadata.component.hashes.find(h=>h.alg==="SHA-512").content;
+            if(delSbom!==real)throw Error("SBOM distinto");
+          ' "paquete/bivelio-persistence-postgres-$VERSION.tgz" "paquete/bivelio-persistence-postgres-$VERSION.cdx.json"
+
+      - name: Publish persistence to npm
+        id: publicar
+        env:
+          REPO_PRIVADO: ${{ github.event.repository.private }}
+        run: |
+          TGZ="./paquete/bivelio-persistence-postgres-${GITHUB_REF_NAME#pg-v}.tgz"
+          case "${GITHUB_REF_NAME#pg-v}" in *-*) TAG="next" ;; *) TAG="" ;; esac
+          if [ "$REPO_PRIVADO" = "false" ]; then
+            npm publish "$TGZ" --provenance --access public ${TAG:+--tag "$TAG"}
+          else
+            npm publish "$TGZ" --access public ${TAG:+--tag "$TAG"}
+          fi
+          echo "publicado=true" >> "$GITHUB_OUTPUT"
+
+      - name: El registro sirve el tarball verificado
+        env:
+          NPM_CONFIG_USERCONFIG: /dev/null
+        run: |
+          VERSION="${GITHUB_REF_NAME#pg-v}"
+          TGZ="./paquete/bivelio-persistence-postgres-$VERSION.tgz"
+          LOCAL="sha512-$(node -e 'process.stdout.write(require("crypto").createHash("sha512").update(require("fs").readFileSync(process.argv[1])).digest("base64"))' "$TGZ")"
+          REMOTO=""
+          for i in $(seq 1 30); do
+            REMOTO="$(npm view "@bivelio/persistence-postgres@$VERSION" dist.integrity 2>/dev/null || true)"
+            [ -n "$REMOTO" ] && break
+            sleep 10
+          done
+          test -n "$REMOTO" && test "$REMOTO" = "$LOCAL"
+
+  sbom:
+    needs: publicar
+    if: ${{ always() && needs.publicar.outputs.publicado == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: paquete-postgres
+          path: paquete
+      - name: Adjuntar SBOM
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$GITHUB_REF_NAME" "paquete/bivelio-persistence-postgres-${GITHUB_REF_NAME#pg-v}.cdx.json" --repo "$GITHUB_REPOSITORY" --clobber

@@ -71,7 +71,16 @@ describe("una tirada MOCK sin ninguna variable: el SDK tal como se instala, con 
     aggregateNativeVsB0: { savings: CI };
     floors: { vsB0: number; vsB1: number; vsB2: number; min: number; minAgainst: string };
     native: { simulated: boolean; decisions: { feature: string; source: { url: string; checked: string } }[] };
-    scenarios: { name: string; armA2?: unknown; measuredB2?: unknown; cacheWrites: unknown; sampling: unknown }[];
+    latency: {
+      status: string;
+      instrumental: boolean;
+      productionSla: string;
+      budgets: { p95Ms: number; maxMs: number };
+      activeArms: string[];
+      arms: Record<string, { total: { n: number; p50: number; p95: number; max: number }; provider: unknown }>;
+      gate: { approved: boolean; reasons: string[] };
+    };
+    scenarios: { name: string; armA2?: unknown; measuredB2?: unknown; cacheWrites: unknown; sampling: unknown; latency: { arms: Record<string, unknown> } }[];
     scenariosNotApplicable: unknown[];
     scenarioSet: { size: number; names: string[] };
     pricing: { listPriceKnown: boolean; cacheWrites: { premium: number; metered: boolean | null } };
@@ -117,6 +126,23 @@ describe("una tirada MOCK sin ninguna variable: el SDK tal como se instala, con 
     }
   });
 
+  it("latencia B2: todos los brazos, por escenario y agregado; MOCK es instrumental, nunca SLA", () => {
+    expect(art.latency).toMatchObject({
+      status: "estimated",
+      instrumental: true,
+      productionSla: "not-applicable",
+      budgets: { p95Ms: 3000, maxMs: 5000 },
+      activeArms: ["A", "A1", "A2", "B"],
+      gate: { approved: true, reasons: [] },
+    });
+    for (const brazo of art.latency.activeArms) {
+      expect(art.latency.arms[brazo]?.total.n, brazo).toBeGreaterThan(0);
+      expect(art.latency.arms[brazo]?.provider, brazo).toBeDefined();
+    }
+    for (const s of art.scenarios) expect(Object.keys(s.latency.arms), s.name).toEqual(art.latency.activeArms);
+    expect(r.salida).toContain("INSTRUMENTAL, never a production SLA");
+  });
+
   it("ninguna fila se cae: scenarioSet = medidos + no aplicables", () => {
     expect(art.scenarioSet.size).toBe(art.scenarios.length + art.scenariosNotApplicable.length);
     expect(art.scenarioSet.names).toHaveLength(art.scenarioSet.size);
@@ -132,10 +158,14 @@ describe("una tirada MOCK sin ninguna variable: el SDK tal como se instala, con 
     expect(art.cost.spentUsd).toBeLessThanOrEqual(art.cost.ceilingUsd);
   });
 
-  it("el CSV de ensayos lleva la columna de B2", () => {
+  it("el CSV de ensayos lleva B2 y las duraciones total/proveedor de todos los brazos", () => {
     const cabecera = csv.split("\n")[0]!.split(",");
     expect(cabecera).toEqual(
-      expect.arrayContaining(["scenario", "costA", "costA1", "costA2", "costB", "savedFractionB2"]),
+      expect.arrayContaining([
+        "scenario", "costA", "costA1", "costA2", "costB", "savedFractionB2",
+        "totalMsA", "providerMsA", "totalMsA1", "providerMsA1",
+        "totalMsA2", "providerMsA2", "totalMsB", "providerMsB",
+      ]),
     );
   });
 

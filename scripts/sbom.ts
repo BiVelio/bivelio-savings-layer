@@ -3,7 +3,7 @@
  *
  * Uso (desde la raíz del repo, con `dist/` ya construido y empaquetado):
  *
- *   pnpm exec tsx scripts/sbom.ts <bivelio-savings-layer-X.tgz> <salida.cdx.json>
+ *   pnpm exec tsx scripts/sbom.ts <paquete-X.tgz> <salida.cdx.json> [raiz-del-paquete]
  *
  * ── POR QUÉ NO `npm sbom` ─────────────────────────────────────────────────────
  * `npm sbom` describe el árbol de dependencias DECLARADO en package.json, y el
@@ -41,8 +41,8 @@ export interface ComponenteDeTerceros {
   version?: string;
   /** El campo `license` de su package.json, tal cual. */
   license?: string;
-  /** `bundled`: va dentro de dist/. `optional-peer`: lo carga el SDK solo si está instalado. */
-  inclusion: "bundled" | "optional-peer";
+  /** `bundled`: va dentro de dist/. `required-peer`: debe instalarlo el cliente. `optional-peer`: se carga solo si está instalado. */
+  inclusion: "bundled" | "required-peer" | "optional-peer";
   /** Rango declarado, solo para los peers. */
   range?: string;
 }
@@ -130,7 +130,7 @@ export function construirSbom(e: EntradaSbom): Record<string, unknown> {
         name: gn.name,
         ...(c.version ? { version: c.version } : {}),
         purl: ref,
-        scope: c.inclusion === "bundled" ? "required" : "optional",
+        scope: c.inclusion === "optional-peer" ? "optional" : "required",
         ...(licencias(c.license) ? { licenses: licencias(c.license) } : {}),
         properties: [
           { name: "bivelio:inclusion", value: c.inclusion },
@@ -213,18 +213,19 @@ interface Metafile {
 
 /**
  * Reconstruye el bundle de npm con metafile, comprueba que es el del tarball y
- * devuelve el SBOM. Tiene que correr desde la raíz del repo (las entradas de
- * tsup y las rutas del metafile son relativas al directorio de trabajo).
+ * devuelve el SBOM. Tiene que correr desde la raíz del repo; `packageRoot`
+ * selecciona el manifiesto y la configuración del paquete que se va a describir.
  */
 export async function generarSbom(
   tarball: string,
-  opts: { now?: () => Date; serialNumber?: string } = {},
+  opts: { now?: () => Date; serialNumber?: string; packageRoot?: string } = {},
 ): Promise<Record<string, unknown>> {
   if (resolve(process.cwd()) !== resolve(RAIZ)) {
     throw new Error(`sbom: ejecútalo desde la raíz del repo (${RAIZ}), no desde ${process.cwd()}`);
   }
+  const packageRoot = resolve(opts.packageRoot ?? RAIZ);
   const bytes = readFileSync(tarball);
-  const pkg = JSON.parse(readFileSync(join(RAIZ, "package.json"), "utf8")) as {
+  const pkg = JSON.parse(readFileSync(join(packageRoot, "package.json"), "utf8")) as {
     name: string;
     version: string;
     license?: string;
@@ -253,12 +254,27 @@ export async function generarSbom(
     // La configuración se LEE de tsup.config.ts (la entrada que escribe en
     // `dist`), no se copia: si alguien cambia el build, el SBOM lo sigue.
     const { build } = await import("tsup");
-    const cfgMod = (await import(pathToFileURL(join(RAIZ, "tsup.config.ts")).href)) as { default: unknown };
+    const cfgMod = (await import(pathToFileURL(join(packageRoot, "tsup.config.ts")).href)) as { default: unknown };
     const lista = (Array.isArray(cfgMod.default) ? cfgMod.default : [cfgMod.default]) as Record<string, unknown>[];
-    const cfgNpm = lista.find((c) => c.outDir === "dist");
+    const cfgNpm = lista.find((c) => (c.outDir ?? "dist") === "dist");
     if (!cfgNpm) throw new Error("sbom: tsup.config.ts no tiene una entrada con outDir 'dist'");
+    const esbuildOptions = cfgNpm.esbuildOptions as ((options: { absWorkingDir?: string }) => void) | undefined;
+    const tsconfig = join(packageRoot, "tsconfig.json");
     const salida = join(tmp, "build");
-    await build({ ...cfgNpm, outDir: salida, dts: false, metafile: true, clean: true, silent: true, config: false });
+    await build({
+      ...cfgNpm,
+      ...(existsSync(tsconfig) ? { tsconfig } : {}),
+      esbuildOptions(options) {
+        esbuildOptions?.(options);
+        options.absWorkingDir = packageRoot;
+      },
+      outDir: salida,
+      dts: false,
+      metafile: true,
+      clean: true,
+      silent: true,
+      config: false,
+    });
     const metaFichero = readdirSync(salida).find((f) => /^metafile-.*\.json$/.test(f));
     if (!metaFichero) throw new Error("sbom: tsup no escribió el metafile");
     const meta = JSON.parse(readFileSync(join(salida, metaFichero), "utf8")) as Metafile;
@@ -287,7 +303,7 @@ export async function generarSbom(
     for (const entrada of Object.keys(meta.inputs)) {
       const p = paqueteDeRuta(entrada);
       if (!p) continue;
-      const manifest = JSON.parse(readFileSync(join(resolve(process.cwd(), p.raiz), "package.json"), "utf8")) as {
+      const manifest = JSON.parse(readFileSync(join(resolve(packageRoot, p.raiz), "package.json"), "utf8")) as {
         name?: string;
         version?: string;
         license?: string;
@@ -326,11 +342,11 @@ export async function generarSbom(
       }
     }
 
-    // Los peers opcionales: no viajan, pero el SDK los carga si están.
+    // Los peers no viajan: son obligatorios salvo que su metadata diga lo contrario.
     const peers: ComponenteDeTerceros[] = Object.entries(pkg.peerDependencies ?? {}).map(([name, range]) => ({
       name,
       range,
-      inclusion: "optional-peer",
+      inclusion: pkg.peerDependenciesMeta?.[name]?.optional === true ? "optional-peer" : "required-peer",
     }));
     if (Object.keys(pkg.dependencies ?? {}).length > 0) {
       // Hoy no hay ninguna; si un día las hay, este SBOM tiene que aprender a
@@ -359,13 +375,13 @@ const esPrincipal = ((): boolean => {
 })();
 
 if (esPrincipal) {
-  const [tarball, destino] = process.argv.slice(2);
+  const [tarball, destino, packageRoot] = process.argv.slice(2);
   if (!tarball || !destino || !existsSync(tarball)) {
-    console.error("uso: tsx scripts/sbom.ts <bivelio-savings-layer-X.tgz> <salida.cdx.json>");
+    console.error("uso: tsx scripts/sbom.ts <paquete-X.tgz> <salida.cdx.json> [raiz-del-paquete]");
     process.exit(2);
   }
   try {
-    const sbom = await generarSbom(tarball);
+    const sbom = await generarSbom(tarball, { packageRoot });
     writeFileSync(destino, `${JSON.stringify(sbom, null, 2)}\n`);
     const comps = (sbom.components as { name: string; group?: string; version?: string; scope: string }[]).map(
       (c) => `${c.group ? `${c.group}/` : ""}${c.name}${c.version ? `@${c.version}` : ""} (${c.scope})`,

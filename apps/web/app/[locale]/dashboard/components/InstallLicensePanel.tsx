@@ -206,7 +206,7 @@ export async function InstallLicensePanel({ ctx }: { ctx: OrgContext }) {
       </p>
 
       {/* La alternativa: instalar (npm público, sin token) y cablear a mano. */}
-      <p className="ck-note" style={{ marginTop: 12 }}>
+      <p className="ck-note" id="sdk" style={{ marginTop: 12 }}>
         {t.rich("installLicensePanel.manualInstall", { b: (chunks) => <b>{chunks}</b> })}
       </p>
       <div className="code2">
@@ -228,7 +228,7 @@ export async function InstallLicensePanel({ ctx }: { ctx: OrgContext }) {
       {/* Terminal (gateway) — la vía sin código: medir los agentes de código.
           La clave de servicio del paso 2 es la única credencial que se exporta:
           con ella el gateway recoge la licencia, sin la cual no arranca. */}
-      <p className="ck-note" style={{ marginTop: 16 }}>
+      <p className="ck-note" id="gateway" style={{ marginTop: 16 }}>
         {t.rich("installLicensePanel.gatewayNote", {
           b: (chunks) => <b>{chunks}</b>,
           code: (chunks) => <code>{chunks}</code>,

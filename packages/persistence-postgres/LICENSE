@@ -1,0 +1,163 @@
+BiVelio Inc. — BV-SALA Commercial Software License Agreement
+
+Copyright (c) 2026 BiVelio Inc. All Rights Reserved.
+
+IMPORTANT — READ BEFORE USE. This Commercial Software License Agreement (the
+"Agreement") governs your use of the "@bivelio/savings-layer" software, also known
+as "BV-SALA" (the "Software"), published by BiVelio Inc. ("BiVelio"). By installing,
+copying, or using the Software, you agree to this Agreement. If you do not agree, do
+not install or use the Software.
+
+1. LICENSE GRANT. Subject to your continuous compliance with this Agreement and to
+   an active BiVelio subscription (paid, or granted by BiVelio at no charge, for
+   example through a promotional code, a pilot, or the free Measure license) with a
+   valid license key ("License Key"), BiVelio grants you a limited, non-exclusive,
+   non-transferable, non-sublicensable, revocable license to install and use the
+   Software, as published, solely for your own internal business purposes, and only
+   for the number of seats covered by your subscription. The Software is licensed,
+   not sold. Under a Measure license the Software runs in shadow mode only: it
+   forwards your requests to your provider unchanged, applies no optimization, and
+   reports estimated savings that are never billed.
+
+2. LICENSE KEY; FAIL-CLOSED OPERATION. The Software requires a valid, active License
+   Key and does not operate without one. Expiry, non-payment, revocation, suspension,
+   or termination of your subscription immediately ends the license granted in
+   Section 1, and the Software will cease to function; when a paid subscription
+   ends, BiVelio may instead grant you a Measure license, under which the Software
+   continues in shadow mode only. You will not circumvent, disable, remove, or tamper
+   with the Software's licensing, metering, or revocation mechanisms, nor use the
+   Software after your license has ended.
+
+3. RESTRICTIONS. Except as expressly permitted above, you will not: (a) distribute,
+   publish, resell, rent, lease, lend, offer as a hosted or managed service, or
+   otherwise make the Software available to any third party; (b) sublicense, assign,
+   or transfer your rights; (c) use the Software for more seats than your
+   subscription covers, or share a License Key across more machines or service
+   identities than it covers; (d) remove, alter, or obscure any proprietary or
+   copyright notice; (e) reverse engineer, decompile, or disassemble the Software,
+   except to the limited extent applicable law expressly permits notwithstanding
+   this restriction; or (f) use the Software to develop, train, or improve a product
+   or service that competes with the Software.
+
+4. OWNERSHIP. The Software is the exclusive property of BiVelio and its licensors and
+   embodies valuable proprietary information and trade secrets. BiVelio retains all
+   right, title, and interest in and to the Software and all intellectual property
+   rights therein. No rights are granted to you except as expressly set out in this
+   Agreement, whether by implication, estoppel, or otherwise.
+
+5. YOUR DATA; PRIVACY.
+   (a) What the Software never sends to BiVelio. The Software never transmits to
+   BiVelio the content of your requests or responses (including prompts, system
+   instructions, messages, tool definitions, tool arguments and results, retrieved
+   documents, and completions) or the credentials you use with your LLM provider
+   (API keys, OAuth tokens, or other authorization headers). That content and those
+   credentials travel only between your systems and the LLM provider you configure.
+   (b) What the Software sends to BiVelio. The SDK contacts BiVelio only when you
+   configure a license server or metering URL; the local gateway always does. With a
+   BiVelio service-account key, the Software sends BiVelio's control plane usage
+   records for the requests it meters, each limited to:
+     (i) identifiers: a request identifier generated on your side (at random, or by
+         your own generator); for a repeated request valued by reference, the
+         identifier and timestamp of the earlier request whose provider counter is
+         used; a seat identifier, which is either a value you set or an opaque value
+         computed on your machine as a keyed hash (HMAC-SHA-256 wherever the
+         runtime provides it), keyed with your service-account key, of the
+         platform, CPU architecture, runtime executable path, host name,
+         operating-system user name, and home directory (those underlying values
+         are never sent); for traffic through the local gateway,
+         the session and sub-agent identifiers that your coding agent attaches to
+         its own requests (for example, Claude Code's session id), only when they
+         are plain identifiers; an organization hint; and a flag marking CI or
+         ephemeral runners;
+     (ii) the identifier of the model that served the request (the model named in
+         the request or, where the Software sent the request to another model under
+         a setting you enabled, that model; for a self-hosted or Azure deployment,
+         the name you gave it) and the time of the request;
+     (iii) counts: LLM calls executed and avoided; input and output tokens before
+         and after the Software's optimizations, including tokens removed,
+         compressed, or read from the provider's cache; and the cache outcome; and
+     (iv) cost figures computed by the Software from its price catalogue (or from
+         a cost model you supply): baseline cost, actual cost, the net-saving
+         ratio, the basis of the figures (measured, reference, estimated, shadow,
+         or unmeasured), the value, at the provider's cache-read price, of
+         input tokens your provider reported as cleared from context, and the
+         discount your provider's own prompt cache gave the request and the
+         cache-write premium it billed, which are shown apart and never used to
+         calculate the fees in Section 6.
+   Each batch of records also carries the Software's surface and version (for
+   example, "gateway/0.4.23"). BiVelio's ingest rejects any record that carries a
+   field not listed above. Separately, the Software fetches from BiVelio its current
+   license token, the signed license revocation list and, for the gateway, your
+   organization's feature entitlements; these requests carry your service-account
+   key where authentication is required, and no request data. Like any HTTPS
+   request, all of the above also reveals ordinary network metadata, such as your
+   IP address. If you enable the SDK's optional verification, which is off by
+   default, the SDK also sends BiVelio, through a separate channel and for each
+   request it samples: a label marking the record as a verification sample; the
+   request identifier and time; the model requested and the model that served it;
+   the cache outcome; the category of the request and the outcome of the check;
+   the input, cached-input, and output token counts and the cost of the served
+   request and of the unoptimized copy the SDK sent to your LLM provider; how
+   that copy finished and whether it met the response contract; and the per-token
+   prices applied; together with daily counts of requests per category and a
+   random batch identifier. That channel likewise rejects any field not listed
+   here, and none of it is used to calculate the fees in Section 6.
+   (c) BiVelio uses this data to operate licensing and revocation, show your
+   dashboard, count billable seats, and calculate the fees in Section 6. Each
+   field, and how long BiVelio keeps it, is further described at
+   https://savings.bivelio.com/privacy.
+
+6. FEES. Your subscription is subject to BiVelio's pricing as published at
+   https://savings.bivelio.com/pricing (the "Published Pricing") for each billing
+   period:
+   (a) a subscription fee, per seat or for a plan that includes a number of seats,
+   payable whether or not the Software produces any saving; and (b) only if your
+   subscription is on a plan that the Published Pricing lists as carrying a
+   commission, a commission, at tiered marginal rates, charged only on measured
+   savings, meaning savings whose basis is labelled "measured" or "reference" in
+   your usage records (Section 5(b)(iv)). A "measured" saving is established from
+   your LLM provider's own usage counter for that request; a "reference" saving, for
+   a repeated request the Software served without calling your provider, from your
+   provider's counter for the identical earlier request that did run. Both are
+   valued at the per-token prices the Software applied to that request: those of a
+   cost model you configure, where you configure one, and otherwise your provider's
+   list prices in the price catalogue included in the Software. Savings labelled
+   "estimated", "shadow", or "unmeasured" never carry commission. Traffic the
+   Software identifies as a flat-rate provider subscription (a Claude or ChatGPT
+   subscription used through the local gateway) is metered but credited no measured
+   saving, so it carries no commission. A period with no measured savings carries no
+   commission. The first calendar month (UTC) in which your organization reports any
+   usage is a calibration period, however little of that month remains, and carries
+   no commission. Nor is commission charged for a period that BiVelio closes while
+   your account is exempt from it. Your account is exempt if BiVelio grants it an
+   exemption and, until a payment is made on the account, if its subscription was
+   activated with a promotional code that waives the subscription fee in full for
+   its entire term. For a calibration or exempt period the statement still shows the
+   commission that would have applied. Each period's commission is
+   itemized on a statement in your dashboard, together with the exchange rate
+   applied. Rates, tier thresholds, and currency are those of the Published Pricing
+   and are not restated here.
+
+7. TERM AND TERMINATION. This Agreement remains in effect while your subscription is
+   active. BiVelio may terminate this Agreement immediately if you breach it. Upon
+   expiry or termination you must cease all use of the Software and destroy your
+   copies. Sections 2 through 10 survive termination.
+
+8. DISCLAIMER OF WARRANTY. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
+   KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT.
+
+9. LIMITATION OF LIABILITY. TO THE MAXIMUM EXTENT PERMITTED BY LAW, IN NO EVENT SHALL
+   BIVELIO INC. BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR
+   EXEMPLARY DAMAGES, OR FOR ANY LOSS OF PROFITS, REVENUE, OR DATA, ARISING FROM OR
+   RELATED TO THE SOFTWARE OR THIS AGREEMENT. BIVELIO'S TOTAL LIABILITY SHALL NOT
+   EXCEED THE FEES YOU PAID FOR THE SOFTWARE IN THE TWELVE MONTHS PRECEDING THE CLAIM.
+
+10. GENERAL. This Agreement is governed by the laws of the State of Delaware, USA,
+   without regard to its conflict-of-laws rules. If any provision is held
+   unenforceable, the remaining provisions remain in effect. This Agreement, together
+   with the applicable BiVelio subscription terms, constitutes the entire agreement
+   between you and BiVelio regarding the Software. Unauthorized use, reproduction, or
+   distribution of the Software may result in civil and criminal penalties.
+
+For licensing and compliance inquiries, contact: BiVelio Inc. — privacy@bivelio.com

@@ -1,6 +1,6 @@
 import { InMemoryExactCache, type ExactCache } from "../cache/exact.js";
 import { Singleflight } from "../cache/singleflight.js";
-import type { InMemorySemanticCache } from "../cache/semantic.js";
+import type { SemanticCacheStore } from "../cache/semantic.js";
 import {
   createDefaultResolvers,
   type ResolverRegistry,
@@ -15,7 +15,7 @@ import type { SavingsLayerConfig } from "./config.js";
 /** Fully-resolved, non-optional dependency set the pipeline runs against. */
 export interface ResolvedDeps {
   exactCache: ExactCache;
-  semanticCache: InMemorySemanticCache | undefined;
+  semanticCache: SemanticCacheStore | undefined;
   singleflight: Singleflight;
   resolvers: ResolverRegistry;
   router: ExecutionRouter;

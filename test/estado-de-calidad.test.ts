@@ -7,6 +7,7 @@ import type { Provider, ProviderRequest, ProviderResponse } from "../src/provide
 import type { ExactCache } from "../src/cache/exact.js";
 import type { QualityStatus, SavingsReport, SavingsRequest, ToolDescriptor } from "../src/contracts/types.js";
 import { comprobarCoherencia } from "./helpers/libro-de-calidad.js";
+import { CALIBRACION_DE_PRUEBA, certificarRespuestaSemantica } from "./helpers/semantic-cache.js";
 
 /**
  * EL ESTADO DE CALIDAD DEJA DE SER UN BOOLEANO.
@@ -20,7 +21,8 @@ import { comprobarCoherencia } from "./helpers/libro-de-calidad.js";
  *
  * La regla que hay detrás: NUNCA decir «sin pérdida» cuando lo único medido es
  * coseno, BLEU, ROUGE o el juicio de otro LLM. De ahí que el único atajo no
- * exacto que sube de `not_verified` sea el que pasa una verja DETERMINISTA.
+ * exacto que sube de `not_verified` pase una verja DETERMINISTA y tenga una
+ * calibración certificada.
  */
 
 const PRECIOS = { "openai/gpt-4o-mini": { inputPer1k: 0.00015, outputPer1k: 0.0006 } };
@@ -110,13 +112,14 @@ describe("exact — la respuesta es exacta POR CONSTRUCCIÓN", () => {
   });
 });
 
-describe("task_equivalent — no es idéntico, pero pasó una verja determinista", () => {
+describe("task_equivalent — no es idéntico, pero pasó las verjas y tiene calibración", () => {
   it("acierto de caché semántica: otra redacción de la MISMA pregunta", async () => {
     const proveedor = new ProveedorFijo("paris");
     const semanticCache = new InMemorySemanticCache({
       embed,
       similarityThreshold: 0.3,
       acceptThreshold: 0.3,
+      calibration: CALIBRACION_DE_PRUEBA,
     });
     const capaUnica = capa(proveedor, { semanticCacheStore: semanticCache });
     const base = {
@@ -125,10 +128,12 @@ describe("task_equivalent — no es idéntico, pero pasó una verja determinista
       context: { tenantId: "acme", knowledgeEpoch: "e1" },
     };
 
-    await capaUnica.generate({
+    const original: SavingsRequest = {
       ...base,
       messages: [{ role: "user", content: "explain the coalescing mechanism briefly" }],
-    });
+    };
+    const primera = await capaUnica.generate(original);
+    await certificarRespuestaSemantica(semanticCache, original, primera);
     // Mismas palabras, otro orden: para la verja determinista es la MISMA
     // pregunta (mismos números, misma paridad de negaciones, mismas entidades).
     const reformulada = await capaUnica.generate({
@@ -139,8 +144,8 @@ describe("task_equivalent — no es idéntico, pero pasó una verja determinista
     expect(reformulada.report.cache.result).toBe("semantic");
     // NO es `exact` (el texto no se derivó de esta pregunta) y NO es
     // `not_verified` (pasó la verja determinista que corre bajo el embebedor:
-    // números y fechas, paridad de negaciones, entidades). El coseno solo no
-    // habría comprado la etiqueta.
+    // números y fechas, paridad de negaciones, entidades, y tiene calibración).
+    // El coseno solo no habría comprado la etiqueta.
     expect(reformulada.report.qualityStatus).toBe("task_equivalent");
   });
 });
@@ -423,6 +428,7 @@ describe("el vocabulario declarado es exactamente el que se produce", () => {
       embed,
       similarityThreshold: 0.3,
       acceptThreshold: 0.3,
+      calibration: CALIBRACION_DE_PRUEBA,
     });
     const capaSemantica = capa(new ProveedorFijo("berlin"), { semanticCacheStore: semanticCache });
     const base = {
@@ -430,10 +436,12 @@ describe("el vocabulario declarado es exactamente el que se produce", () => {
       savings: { semanticCache: true as const, exactCache: false },
       context: { tenantId: "acme", knowledgeEpoch: "e2" },
     };
-    await capaSemantica.generate({
+    const original: SavingsRequest = {
       ...base,
       messages: [{ role: "user", content: "describe the water cycle briefly" }],
-    });
+    };
+    const primera = await capaSemantica.generate(original);
+    await certificarRespuestaSemantica(semanticCache, original, primera);
     anota(
       (
         await capaSemantica.generate({

@@ -6,10 +6,11 @@
 > of them can come back into the package. Everything on it was announced with
 > `@deprecated` and run-time notices in 0.4.34.
 
-0.5 freezes the public API of `@bivelio/savings-layer`. From 0.5, everything
-the package exports is stable and changes only in a major release. To get
-there, 0.5 renames a few things, removes exports that were never meant to be
-public, normalises `finishReason`, and keeps one default that changed in 0.4.33.
+0.5 establishes the compatibility baseline of `@bivelio/savings-layer`. Existing
+exports are stable and change or disappear only in a major release; a minor such
+as 0.6 may only add deliberately reviewed APIs. To get there, 0.5 renames a few
+things, removes exports that were never meant to be public, normalises
+`finishReason`, and keeps one default that changed in 0.4.33.
 
 ## Summary
 
@@ -96,8 +97,14 @@ const cache = new InMemorySemanticCache({ embed: embebedorLocal, similarityThres
 // After (0.4.33+ and 0.5)
 import { listPrice, localEmbedding, LOCAL_EMBEDDING_THRESHOLD } from "@bivelio/savings-layer";
 const price = listPrice("gpt-4o-mini");
-const cache = new InMemorySemanticCache({ embed: localEmbedding, similarityThreshold: LOCAL_EMBEDDING_THRESHOLD });
+const cache = new InMemorySemanticCache({
+  embed: localEmbedding,
+  similarityThreshold: LOCAL_EMBEDDING_THRESHOLD,
+  calibration: { maxErrorRate: 0.02 },
+});
 ```
+
+Without `calibration`, the cache only stores in shadow mode and never serves a semantic hit.
 
 The same goes for the exact-tokenizer helpers: see [section 8](#8-deprecated-aliases-are-removed).
 

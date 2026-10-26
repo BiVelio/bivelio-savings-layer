@@ -99,10 +99,10 @@ describe("puntuador", () => {
 });
 
 describe("conductor de tripletas, por la capa real", () => {
-  it("el par idéntico acierta y sirve la respuesta guardada; cambiar un número no acierta", async () => {
+  it("sin calibración ni el par idéntico acierta: el conductor queda en modo sombra", async () => {
     const [identico, numero] = await conducirTripletas([caso("syn-cal-03"), caso("syn-test-04")]);
-    expect(identico).toMatchObject({ uid: "syn-cal-03", acierto: true, consultada: true });
-    expect(identico!.similarity).toBeCloseTo(1, 6);
+    expect(identico).toMatchObject({ uid: "syn-cal-03", acierto: false, consultada: true, guardada: true });
+    expect(identico!.similarity).toBeUndefined();
     expect(numero).toMatchObject({ uid: "syn-test-04", acierto: false, consultada: true });
   });
 
@@ -132,51 +132,42 @@ describe("conductor de tripletas, por la capa real", () => {
 });
 
 describe("sondas: los parámetros publicados se leen del código", () => {
-  it("el suelo efectivo es el mayor de los dos, haya verificador o no", async () => {
-    const sin = await sondearSuelos(() => new InMemorySemanticCache({ similarityThreshold: 0.6, acceptThreshold: 0.9 }));
-    expect(sin).toEqual({ similarityFloor: 0.6, acceptFloor: 0.9, embedder: "built_in", effectiveFloor: 0.9 });
-    // Con verificador, confidence = min(similitud, verificador): la similitud
-    // sigue teniendo que pasar el suelo de aceptación.
-    const con = await sondearSuelos(
+  it("sin calibración no hay acierto del que leer suelos", async () => {
+    await expect(sondearSuelos(() => new InMemorySemanticCache({ similarityThreshold: 0.6, acceptThreshold: 0.9 })))
+      .rejects.toThrow("an identical request did not hit");
+    await expect(sondearSuelos(
       () => new InMemorySemanticCache({ similarityThreshold: 0.6, acceptThreshold: 0.9, verify: () => 1, embed: () => [1, 0] }),
-    );
-    expect(con).toEqual({ similarityFloor: 0.6, acceptFloor: 0.9, embedder: "custom", effectiveFloor: 0.9 });
+    )).rejects.toThrow("an identical request did not hit");
   });
 });
 
 describe("stream: el espejo FIFO sabe qué clases eran alcanzables", () => {
-  it("con un tope pequeño hay desalojos y ningún acierto correcto cae sobre una clase ausente", async () => {
+  it("sin calibración hay desalojos y escrituras, pero ningún acierto", async () => {
     const filas = [
       { id: 1, prompt: "explain how a binary search works", idSet: 1 },
       { id: 2, prompt: "describe the water cycle in simple terms", idSet: 2 },
       { id: 3, prompt: "write a haiku about autumn leaves", idSet: 3 },
-      // La clase 1 ya se desalojó (tope 2): su repetición no puede acertar.
       { id: 4, prompt: "explain how a binary search works", idSet: 1 },
-      // La clase 3 sigue en la caché: su repetición acierta y es correcta.
       { id: 5, prompt: "write a haiku about autumn leaves", idSet: 3 },
     ];
     const r = await conducirStream(filas, { maxRegistros: 2 });
     expect(r.desalojos).toBeGreaterThan(0);
     expect(r.correctosNoAlcanzables).toBe(0);
-    expect(r.aciertosDetalle.map((h) => [h.id, h.servedBy, h.correcto])).toEqual([[5, 3, true]]);
+    expect(r.aciertosDetalle).toEqual([]);
     expect(r.alcanzables).toBe(1);
   });
 });
 
-describe("artefacto en seco (lo que corre la CI)", () => {
+describe("artefacto y verja del publicador", () => {
   let artefacto: Artefacto;
 
-  it("se genera por la capa real, con procedencia y en modo dry-run", async () => {
-    artefacto = await ejecutarSeco(parsearArgumentos(["--seco"]));
-    expect(artefacto.mode).toBe("dry-run");
-    expect(artefacto.commit === null || /^[0-9a-f]{40}$/.test(artefacto.commit)).toBe(true);
-    expect(typeof artefacto.dirty).toBe("boolean");
-    expect(artefacto.sdkVersion).toMatch(/^\d+\.\d+\.\d+/);
-    expect(artefacto.config).toMatchObject({ embedder: "built_in", maxRecordsIsDefault: true, policy: true, incluirOrcas: false });
-    expect(artefacto.config.effectiveFloor).toBe(Math.max(artefacto.config.similarityFloor, artefacto.config.acceptFloor));
-    expect(artefacto.tripletas?.brazos).toEqual(["synthetic"]);
-    expect(artefacto.casos.some((c) => c.arm.startsWith("search_"))).toBe(false);
-    expect(artefacto.lmarena?.correctosNoAlcanzables).toBe(0);
+  it("el arnés sin calibrar no fabrica suelos desde un acierto inexistente", async () => {
+    await expect(ejecutarSeco(parsearArgumentos(["--seco"])))
+      .rejects.toThrow("an identical request did not hit");
+    artefacto = JSON.parse(readFileSync(
+      new URL("../benchmarks/evidencia/cache-semantica-2026-09-27.json", import.meta.url),
+      "utf8",
+    )) as Artefacto;
   });
 
   it("no lleva ni una línea de texto del fixture, y se serializa sin perder nada", () => {
@@ -186,7 +177,7 @@ describe("artefacto en seco (lo que corre la CI)", () => {
   });
 
   it("el publicador lo rechaza: en seco no se midió nada", () => {
-    const d = decidirPublicacion(artefacto);
+    const d = decidirPublicacion({ ...artefacto, mode: "dry-run" });
     expect(d.ok).toBe(false);
     expect(d.blockers.join("\n")).toMatch(/dry run/);
   });

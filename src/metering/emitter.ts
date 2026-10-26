@@ -77,6 +77,10 @@ export interface UsageEmitterOptions {
   maxBatch?: number;
   /** Hard in-memory cap; oldest records are dropped past it (default 1000). */
   maxBuffer?: number;
+  /** Maximum time for one ingest POST (default 10000 ms). */
+  requestTimeoutMs?: number;
+  /** Initial delay before retrying a rate-limited batch (default 250 ms). */
+  retryDelayMs?: number;
   /** Injectable fetch (defaults to the global). */
   fetchImpl?: typeof fetch;
   /** Injectable clock. */
@@ -106,6 +110,13 @@ export interface UsageEmitterOptions {
    * dashboard stays empty forever.
    */
   silenceWarnings?: boolean;
+}
+
+export interface UsageEmitterStats {
+  sent: number;
+  requeued: number;
+  discarded: number;
+  dropped: number;
 }
 
 interface Entry {
@@ -143,6 +154,7 @@ export class UsageEmitter {
    * only confuse whoever reads the logs.
    */
   private fallosSeguidos = 0;
+  private readonly contadores: UsageEmitterStats = { sent: 0, requeued: 0, discarded: 0, dropped: 0 };
 
   constructor(options: UsageEmitterOptions) {
     this.options = options;
@@ -160,6 +172,11 @@ export class UsageEmitter {
     this.ci = ci;
   }
 
+  /** Delivery counters, in records rather than batches. */
+  stats(): Readonly<UsageEmitterStats> {
+    return { ...this.contadores };
+  }
+
   /** Record one request's usage. Never blocks; O(1). */
   record(report: SavingsReport): void {
     const at = this.now();
@@ -172,7 +189,9 @@ export class UsageEmitter {
     const sombra = informeSombraDeMedir(report);
     if (sombra) this.buffer.push({ report: sombra, at });
     if (this.buffer.length > this.maxBuffer) {
-      this.buffer.splice(0, this.buffer.length - this.maxBuffer); // drop oldest
+      const descartados = this.buffer.length - this.maxBuffer;
+      this.contadores.dropped += descartados;
+      this.buffer.splice(0, descartados); // drop oldest
     }
     if (this.buffer.length >= this.maxBatch) void this.flush();
   }
@@ -196,9 +215,8 @@ export class UsageEmitter {
   }
 
   /** Clean shutdown: stop the timer and DRAIN the buffer, awaiting each POST.
-   *  Unlike `stop()` (fire-and-forget), this resolves only once the final batch
-   *  has actually been sent, so a graceful exit doesn't lose the last session's
-   *  usage. Bounded, so an unreachable control plane can't block shutdown. */
+   *  Unlike `stop()` (fire-and-forget), this makes a bounded final delivery
+   *  attempt. Persistent failures leave the batch queued and visible in stats. */
   // Antes `stop()` disparaba el flush sin esperarlo y el exit del gateway mataba
   // el POST en vuelo: el último lote de CADA sesión de `bvsala claude` se perdía
   // (caza del 27-08). Acotado: si un 5xx re-encola y no se avanza, se corta.
@@ -226,9 +244,9 @@ export class UsageEmitter {
   }
 
   /**
-   * Flush one batch. Never throws. A transient server error (5xx) or network
-   * failure re-queues the batch (capped); a 4xx (bad request / bad key) drops it,
-   * since retrying a rejected payload would loop forever.
+   * Flush one batch. Never throws. A transient server error (5xx), rate limit
+   * (429) or network failure re-queues the batch (capped); other 4xx responses
+   * drop it, since retrying a rejected payload would loop forever.
    */
   async flush(): Promise<void> {
     // Un flush ya en curso se ESPERA (no se salta): así el drenaje del cierre no
@@ -247,6 +265,8 @@ export class UsageEmitter {
     const doFetch = this.options.fetchImpl ?? (globalThis as { fetch?: typeof fetch }).fetch;
     if (!doFetch) return; // no fetch → cannot emit; never throw
     const batch = this.buffer.splice(0, this.maxBatch);
+    const ac = new AbortController();
+    const timeout = setTimeout(() => ac.abort(), Math.max(1, this.options.requestTimeoutMs ?? 10_000));
     try {
       const records: UsageWire[] = batch.map((e) => this.toWire(e));
       const res = await doFetch(this.options.url, {
@@ -265,21 +285,22 @@ export class UsageEmitter {
           [CABECERA_VERSION]: `${this.options.surface ?? "sdk"}/${BV_SALA_VERSION}`,
         },
         body: JSON.stringify(records),
+        signal: ac.signal,
       });
       if (res.ok) {
         this.fallosSeguidos = 0;
+        this.contadores.sent += batch.length;
+      } else if (res.status === 429) {
+        this.fallosSeguidos++;
+        this.requeue(batch);
+        this.avisarDeFallo("the server rate-limited the batch with HTTP 429");
+        await this.esperarReintento(res);
       } else if (res.status >= 500) {
         this.fallosSeguidos++;
         this.requeue(batch);
         this.avisarDeFallo(`the server responded ${res.status}`);
       } else if (res.status === 401 || res.status === 403) {
-        // UNA CREDENCIAL MALA NO SE CURA SOLA, a diferencia de un 5xx, y hasta
-        // ahora este lote se descartaba SIN log, sin excepción y sin callback.
-        // Consecuencia: rotar la `bvk_` y olvidar actualizarla dejaba de reportar
-        // uso para siempre, en silencio — y el panel, al no llegarle filas, le
-        // decía al cliente «aún no estamos midiendo tu tráfico: instala el SDK»
-        // a alguien que lo tenía instalado y funcionando. El síntoma apuntaba al
-        // sitio opuesto de la causa.
+        this.contadores.discarded += batch.length;
         avisarUnaVez(
           `metering-auth-${res.status}`,
           `[bv-sala] usage reporting is being rejected with HTTP ${res.status} at ${this.options.url}. ` +
@@ -289,14 +310,7 @@ export class UsageEmitter {
         );
         this.options.onAuthError?.(res.status);
       } else {
-        // EL HUECO QUE FALTABA, y el más fácil de pisar: un 404 o un 405 no es
-        // 5xx ni es 401/403, así que el lote se descartaba SIN UNA SOLA SEÑAL.
-        //
-        // Es exactamente lo que pasa con la `meteringUrl` mal puesta: por defecto
-        // es `${licenseServerUrl}/api/metering/usage`, y quien la fija "para ser
-        // explícito" olvidando la ruta apunta a la raíz del sitio, que contesta
-        // con una página. El uso se pierde entero y el panel dice, durante meses,
-        // que no ve tráfico — a alguien que lo tiene todo funcionando.
+        this.contadores.discarded += batch.length;
         this.fallosSeguidos++;
         this.avisarDeFallo(
           res.status === 404 || res.status === 405
@@ -308,7 +322,24 @@ export class UsageEmitter {
       this.fallosSeguidos++;
       this.requeue(batch);
       this.avisarDeFallo(err instanceof Error ? err.message : "network error");
+    } finally {
+      clearTimeout(timeout);
     }
+  }
+
+  private async esperarReintento(res: Response): Promise<void> {
+    const retryAfter = res.headers?.get("retry-after");
+    const segundos = retryAfter !== null && retryAfter !== undefined ? Number(retryAfter) : Number.NaN;
+    const fecha = retryAfter ? Date.parse(retryAfter) : Number.NaN;
+    const indicado = Number.isFinite(segundos)
+      ? segundos * 1000
+      : Number.isFinite(fecha)
+        ? fecha - this.now()
+        : Number.NaN;
+    const base = Math.max(0, this.options.retryDelayMs ?? 250);
+    const backoff = base * 2 ** Math.min(8, this.fallosSeguidos - 1);
+    const ms = Math.min(30_000, Math.max(0, Number.isFinite(indicado) ? indicado : backoff));
+    if (ms > 0) await new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**
@@ -336,8 +367,12 @@ export class UsageEmitter {
   }
 
   private requeue(batch: Entry[]): void {
+    this.contadores.requeued += batch.length;
     this.buffer = [...batch, ...this.buffer];
-    if (this.buffer.length > this.maxBuffer) this.buffer.length = this.maxBuffer;
+    if (this.buffer.length > this.maxBuffer) {
+      this.contadores.dropped += this.buffer.length - this.maxBuffer;
+      this.buffer.length = this.maxBuffer;
+    }
   }
 
   private toWire(e: Entry): UsageWire {

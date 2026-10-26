@@ -7,6 +7,7 @@ import {
 import { cosine } from "../src/cache/index.js";
 import { canonicalize } from "../src/canonicalization/index.js";
 import { keyTokensMatch } from "../src/cache/semantic.js";
+import { CALIBRACION_DE_PRUEBA, certificarCacheSemantica } from "./helpers/semantic-cache.js";
 import type {
   SavingsRequest,
 } from "../src/index.js";
@@ -71,16 +72,18 @@ describe("InMemorySemanticCache — safety filters", () => {
   }
 
   it("never returns a hit from another tenant", async () => {
-    const cache = new InMemorySemanticCache({ embed, similarityThreshold: 0, acceptThreshold: 0 });
-    await cache.store(canon("capital of france", "t1"), { text: "Paris", storedAtMs: 0 });
+    const cache = new InMemorySemanticCache({ embed, similarityThreshold: 0, acceptThreshold: 0, calibration: CALIBRACION_DE_PRUEBA });
+    const original = canon("capital of france", "t1");
+    await certificarCacheSemantica(cache, original, { text: "Paris", storedAtMs: 0 });
     const hit = await cache.find(canon("capital of france", "t2"));
     expect(hit).toBeNull();
   });
 
   it("returns a verified hit within the same tenant", async () => {
-    const cache = new InMemorySemanticCache({ embed, similarityThreshold: 0.5, acceptThreshold: 0.5 });
-    await cache.store(canon("capital of france", "t1"), { text: "Paris", storedAtMs: 0 });
-    const hit = await cache.find(canon("capital of france", "t1"));
+    const cache = new InMemorySemanticCache({ embed, similarityThreshold: 0.5, acceptThreshold: 0.5, calibration: CALIBRACION_DE_PRUEBA });
+    const original = canon("capital of france", "t1");
+    await certificarCacheSemantica(cache, original, { text: "Paris", storedAtMs: 0 });
+    const hit = await cache.find(original);
     expect(hit?.record.answer.text).toBe("Paris");
   });
 
@@ -94,12 +97,13 @@ describe("InMemorySemanticCache — safety filters", () => {
 
   it("rejects a high-similarity but factually-different query (precision guard)", async () => {
     // similarityThreshold 0 ⇒ the embedding never blocks; only the key-token guard can.
-    const cache = new InMemorySemanticCache({ embed, similarityThreshold: 0, acceptThreshold: 0 });
-    await cache.store(canon("convert 100 usd to eur", "t1"), { text: "≈92 EUR", storedAtMs: 0 });
+    const cache = new InMemorySemanticCache({ embed, similarityThreshold: 0, acceptThreshold: 0, calibration: CALIBRACION_DE_PRUEBA });
+    const original = canon("convert 100 usd to eur", "t1");
+    await certificarCacheSemantica(cache, original, { text: "≈92 EUR", storedAtMs: 0 });
     // Swapped number ⇒ must NOT serve the 100-USD answer for a 200-USD question.
     expect(await cache.find(canon("convert 200 usd to eur", "t1"))).toBeNull();
     // The identical question still hits.
-    expect((await cache.find(canon("convert 100 usd to eur", "t1")))?.record.answer.text).toBe("≈92 EUR");
+    expect((await cache.find(original))?.record.answer.text).toBe("≈92 EUR");
   });
 });
 

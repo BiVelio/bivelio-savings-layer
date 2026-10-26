@@ -1,0 +1,51 @@
+{
+  "name": "@bivelio/persistence-postgres",
+  "version": "0.1.0-rc.1",
+  "description": "Customer-operated PostgreSQL persistence for BV-SALA caches and learning.",
+  "type": "module",
+  "license": "SEE LICENSE IN LICENSE",
+  "author": "BiVelio Inc.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BiVelio/bivelio-savings-layer.git"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "sql",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "@bivelio/savings-layer": ">=0.6.0-rc.1 <1",
+    "pg": ">=8.23.1 <9"
+  },
+  "devDependencies": {
+    "@bivelio/savings-layer": "workspace:*",
+    "@types/pg": "^8.11.10",
+    "pg": "^8.23.1",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "vitest": "^4.1.12"
+  }
+}

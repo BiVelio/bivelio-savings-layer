@@ -62,7 +62,7 @@ async function countMembers(orgId: string): Promise<number | undefined> {
 }
 
 async function load(): Promise<SidebarState> {
-  const { user, ctx, usage, usageFailed, asientos, orgId } = await loadDashboard();
+  const { user, ctx, usage, usageFailed, visibilidad, asientos, orgId, orgFallo } = await loadDashboard();
   const role = ctx.role;
   const plan = ctx.org?.plan ?? null;
   const orgName = ctx.org?.name ?? "";
@@ -72,11 +72,15 @@ async function load(): Promise<SidebarState> {
     typeof asientos.usados === "number" && typeof ctx.seats === "number"
       ? { used: asientos.usados, seats: ctx.seats }
       : undefined;
+  const unreadable = usageFailed || orgFallo || visibilidad === "oculto";
 
   const [members, progress] = await Promise.all([
     puede(role, "gestionar_miembros") ? countMembers(orgId) : Promise.resolve(undefined),
     puede(role, "gestionar_claves")
-      ? activationSteps(true, ctx, usage).then((steps) => setupProgress(steps, usageFailed))
+      ? activationSteps(true, ctx, usage, {
+          usageFailed: usageFailed || orgFallo,
+          usageHidden: visibilidad === "oculto",
+        }).then((steps) => setupProgress(steps, unreadable))
       : Promise.resolve(undefined),
   ]);
 

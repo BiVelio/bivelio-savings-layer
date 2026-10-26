@@ -2,7 +2,7 @@ import { createServer, type Server } from "node:http";
 import { describe, it, expect, afterEach, vi } from "vitest";
 
 import { parseUsageRecords } from "../apps/web/lib/metering/usage.js";
-import { Coalescedor, claveDePeticion, MAX_CAPTURA_BYTES } from "../gateway/coalescencia.js";
+import { Coalescedor, claveDePeticion, esOperacionCoalescible, MAX_CAPTURA_BYTES } from "../gateway/coalescencia.js";
 import { arrancarGateway, type GatewayArrancado } from "../gateway/servidor.js";
 import { CATALOGO } from "../src/pricing/catalogo.js";
 import { REFERENCE_OUTPUT_SHARE } from "../src/tokenizer/accounting.js";
@@ -14,6 +14,17 @@ describe("Coalescedor — unidad", () => {
     expect(claveDePeticion("POST", "/v1/messages", Buffer.from("x"))).toBe(a);
     expect(claveDePeticion("POST", "/v1/messages", Buffer.from("y"))).not.toBe(a);
     expect(claveDePeticion("POST", "/v1/otro", Buffer.from("x"))).not.toBe(a);
+  });
+
+  it("solo admite inferencia de lectura; escrituras y rutas desconocidas quedan fuera", () => {
+    for (const path of ["/v1/messages", "/v1/chat/completions", "/v1/responses", "/v1/embeddings"]) {
+      expect(esOperacionCoalescible("POST", path)).toBe(true);
+    }
+    expect(esOperacionCoalescible("POST", "/openai/deployments/gpt/chat/completions")).toBe(true);
+    for (const path of ["/v1/batches", "/v1/files", "/v1/models/delete", "/admin", "/v1/messages/count_tokens"]) {
+      expect(esOperacionCoalescible("POST", path)).toBe(false);
+    }
+    expect(esOperacionCoalescible("GET", "/v1/messages")).toBe(false);
   });
 
   it("una réplica 2xx íntegra llega a la gemela", async () => {
@@ -553,6 +564,19 @@ describe("gateway con coalescencia (bandera encendida)", () => {
     const p1 = pedir(CUERPO);
     await new Promise((r) => setTimeout(r, 30));
     const p2 = pedir(CUERPO.replace("hola", "adios"));
+    await Promise.all([p1, p2]);
+    expect(contador.hits).toBe(2);
+  });
+
+  it("dos creaciones idénticas fuera de inferencia ejecutan dos operaciones", async () => {
+    const contador = { hits: 0 };
+    const upstream = await upstreamLento(contador, 100);
+    const gw = await arrancarGateway({ license: testLicense(), puerto: 0 as never, upstream: `http://127.0.0.1:${upstream}`, coalescer: true, log: () => {} });
+    recursos.push(gw);
+    const pedir = () => fetch(`http://127.0.0.1:${gw.puerto}/v1/batches`, { method: "POST", body: CUERPO }).then((r) => r.text());
+    const p1 = pedir();
+    await new Promise((r) => setTimeout(r, 30));
+    const p2 = pedir();
     await Promise.all([p1, p2]);
     expect(contador.hits).toBe(2);
   });

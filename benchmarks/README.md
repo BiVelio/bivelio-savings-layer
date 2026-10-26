@@ -88,6 +88,13 @@ claim. For every scenario it sends **two real requests to the same provider/mode
 can enter, and both are counted by the *same* tokenizer. Savings = the measured
 paired dollar delta.
 
+**All arms are also timed end to end** with the monotonic `performance.now()` clock,
+under the [B2-F0 protocol](b2/README.md): per-scenario and aggregate p50/p95/max,
+plus provider time and layer overhead. Publication requires **total p95 ≤ 3000 ms
+and max ≤ 5000 ms** for every active arm, both per scenario and in the aggregate.
+The CSV keeps total/provider durations for every paired rep. MOCK durations are
+`estimated` and **instrumental only — never a production SLA**.
+
 ```bash
 pnpm ab            # MOCK: exercises the whole A/B pipeline; dollars labeled ESTIMATED (not a claim)
 
@@ -341,6 +348,10 @@ pnpm ab:publish              # benchmarks/out → apps/web/public/data
   declare `scenarioSet`;
 - `floors` does not match its aggregates, `floors.min` is not the lowest of
   them, or a LIVE run has no `floors`;
+- the B2-F0 latency report is missing/malformed, any active arm has total
+  `p95 > 3000 ms` or `max > 5000 ms` in the aggregate or a scenario, or its
+  `measured`/`estimated` and MOCK-instrumental labels are wrong. The exact
+  reasons are stored in `latency.gate.reasons` and recomputed by the publisher;
 - savings exceed 100%, the interval is inverted, or the point estimate falls
   outside its own interval.
 
@@ -383,7 +394,12 @@ request shape** — not «everything on». A setting that cannot fire here measu
 nothing and adds risk (beta headers, 400s), so each one has an applicability
 rule with its official source, and the artifact publishes every decision in
 `native.decisions` (and per scenario in `scenarios[].native`) so anyone can
-check it against the documentation.
+check it against the documentation. The Fase 0 protocol in
+[`benchmarks/b2/README.md`](b2/README.md) adds the hard latency budget without
+creating another harness: it reuses these scenarios, paired reps, seed and CIs.
+Non-inferiority still means passing the existing quality/contract/truncation
+gates and keeping every savings claim under `floors.min`; a faster or cheaper
+answer never compensates a quality regression.
 
 | Setting | B2 applies it when | Source (checked 2026-09-27) |
 |---|---|---|

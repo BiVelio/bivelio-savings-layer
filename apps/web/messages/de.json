@@ -119,10 +119,19 @@
       "traffic": "Traffic",
       "steps": {
         "accountCreated": "Konto erstellt",
-        "sdkInstalled": "Service-Account-Schlüssel erstellt",
-        "licenseActive": "Lizenz aktiv",
-        "firstReport": "Erster Bericht",
-        "liveMeter": "Live-Zähler"
+        "sdkInstalled": "SDK oder Gateway installiert",
+        "licenseActive": "Zugangsdaten und aktive Lizenz",
+        "firstRequest": "Erste echte Anfrage",
+        "reportReady": "Bericht verfügbar"
+      },
+      "readErrors": {
+        "title": "Einige Daten konnten nicht gelesen werden",
+        "intro": "Dies ist ein Lesefehler, kein leeres Konto. Betroffene Bereiche zeigen stattdessen keine Nullen.",
+        "org": "Deine Organisation konnte nicht aufgelöst werden.",
+        "usage": "Die tägliche Nutzung konnte nicht gelesen werden.",
+        "models": "Die Aufschlüsselung nach Modell konnte nicht gelesen werden.",
+        "sessions": "Die Sitzungskosten konnten nicht gelesen werden.",
+        "seats": "Die Maschinenaktivität konnte nicht gelesen werden."
       }
     },
     "proof": {
@@ -266,11 +275,44 @@
       "statusDone": "erledigt",
       "statusNext": "als Nächstes",
       "statusPending": "ausstehend",
+      "statusUnavailable": "nicht verfügbar",
       "nextLabel": "Als Nächstes: {label}",
       "installComment": "# erkennt deinen Stack und gibt die genaue Einbindung aus — deine Prompts verlassen niemals deine Infrastruktur",
-      "hintLicense": "Füge deinen BiVelio-Lizenzschlüssel ein, damit das SDK die verwalteten Funktionen freischaltet und die Nutzung meldet.",
-      "hintFirstReport": "Umschließe einen echten Provider-Aufruf — der erste SavingsReport landet hier und dein Zähler geht live.",
-      "hintDefault": "Das wird freigeschaltet, sobald deine erste usage_daily-Zeile eintrifft."
+      "hintLicense": "Erstelle oder rufe Lizenz und Service-Zugangsdaten unter Konto ab. Ein Zugangsschlüssel allein beweist keine Installation.",
+      "hintInstall": "Wähle SDK oder Gateway und sende eine echte Anfrage. Ein erstellter Schlüssel oder ein leerer Batch beweist keine Installation.",
+      "hintFirstRequest": "Sende eine echte Provider-Anfrage über SDK oder Gateway. Ihr Nutzungsbericht schließt diesen Schritt ab.",
+      "hintReport": "Der Bericht erscheint, sobald die erste echte Anfrage eintrifft.",
+      "hintDefault": "Öffne dein Konto, um die Einrichtung fortzusetzen.",
+      "linkAccount": "Konto öffnen",
+      "linkInstall": "Installation öffnen",
+      "linkSdk": "SDK-Pfad",
+      "linkGateway": "Gateway-Pfad",
+      "unavailableHint": "Die Nutzung kann gerade nicht gelesen werden; Installation und Bericht lassen sich daher nicht beurteilen. Das Konto ist deshalb nicht leer."
+    },
+    "shadowOpportunities": {
+      "title": "Wo dein Einsparpotenzial liegt",
+      "badge": "SHADOW · GESCHÄTZT",
+      "intro": "Hypothetische Chancen nach Modell, nur aus SHADOW-Telemetrie berechnet. Niemals gemessene Einsparungen oder abgerechnete Beträge.",
+      "error": "Die Chancen nach Modell konnten nicht gelesen werden. Versuche es gleich erneut.",
+      "hidden": "Die Aufschlüsselung existiert, aber dieses Konto kann sie nicht sehen. Das ist ein Sichtbarkeitsfehler, nicht fehlende Daten.",
+      "unavailable": "Die SHADOW-Aufschlüsselung nach Modell ist auf diesem Server noch nicht verfügbar. Verlauf ohne Modell kann nicht rekonstruiert werden.",
+      "historical": "Es gibt SHADOW-Anfragen, aber für Verlaufsdaten vor dieser Migration ist keine Modellaufschlüsselung verfügbar.",
+      "empty": "In diesem Zeitraum gibt es noch keine SHADOW-Anfragen. Sende echten Verkehr mit Messen, um Chancen zu schätzen.",
+      "colModel": "Modell",
+      "colRequests": "SHADOW-Anfragen",
+      "colBaseline": "Baseline-Ausgaben",
+      "colActual": "Hypothetische Kosten",
+      "colSavings": "Hypothetische Einsparung",
+      "colCoverage": "Abdeckung",
+      "coverage": "Modellabdeckung: {coverage} der SHADOW-Anfragen ({attributed} von {total}).",
+      "coveragePartial": "Teilabdeckung: Die Aufschlüsselung enthält {attributed} von {total} SHADOW-Anfragen ({coverage}); Verlauf ohne Modell fehlt.",
+      "coverageUnavailable": "Die Abdeckung ist nicht verfügbar, weil die tägliche SHADOW-Summe nicht gelesen werden konnte.",
+      "note": "Hypothetische Schätzung: Baseline − SHADOW-Kosten. Niemals gemessen, abgerechnet oder zu anerkannten Einsparungen addiert.",
+      "action": "Prüfe unter Konto die verfügbaren Sparhebel oder schließe die SDK/Gateway-Installation ab. Hebel und Oberfläche sind nicht verfügbar: Der aktuelle Wire speichert sie nicht; dafür ist eine Server-first-Änderung nötig.",
+      "accountCta": "Konto prüfen",
+      "installCta": "Installation abschließen",
+      "exportCsv": "CSV exportieren",
+      "exportJson": "JSON exportieren"
     },
     "scenarioTable": {
       "colScenario": "Szenario",

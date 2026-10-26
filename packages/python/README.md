@@ -28,7 +28,7 @@ a PRO license.
 ## Requirements
 
 - Python 3.10 or newer.
-- Node.js 20 or newer, for the gateway, and a BiVelio license with a service key
+- Node.js 20.19 or newer, for the gateway, and a BiVelio license with a service key
   (`BIVELIO_SERVICE_KEY`): the gateway does not start without them.
 
 ## Install

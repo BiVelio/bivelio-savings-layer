@@ -431,6 +431,7 @@ export interface IdentidadDeCalibracion {
   embedder: string;
   verifier: string | null;
   judge: string;
+  backend?: string;
   maxErrorRate: number;
   confidence: number;
   similarityThreshold: number;
@@ -454,6 +455,7 @@ export function escribirEstado(
     embedder: id.embedder,
     verifier: id.verifier,
     judge: id.judge,
+    ...(id.backend !== undefined ? { backend: id.backend } : {}),
     config: {
       maxErrorRate: id.maxErrorRate,
       confidence: id.confidence,
@@ -488,6 +490,7 @@ export function leerEstado(datos: unknown, id: IdentidadDeCalibracion): Map<Segm
   comparar("embedder", d["embedder"], id.embedder);
   comparar("verifier", d["verifier"], id.verifier);
   comparar("judge", d["judge"], id.judge);
+  comparar("backend", d["backend"] ?? null, id.backend ?? null);
   comparar("maxErrorRate", config["maxErrorRate"], id.maxErrorRate);
   comparar("confidence", config["confidence"], id.confidence);
   comparar("similarityThreshold", config["similarityThreshold"], id.similarityThreshold);

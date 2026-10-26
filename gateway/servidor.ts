@@ -75,7 +75,7 @@ import {
   perdidosConRebajaEnSombra,
   type TurnoTtl,
 } from "./fallos-ttl.js";
-import { Coalescedor, claveDePeticion, materialDeCabeceras, MAX_CAPTURA_BYTES, type HuellaDeLaPrimaria } from "./coalescencia.js";
+import { Coalescedor, claveDePeticion, esOperacionCoalescible, materialDeCabeceras, MAX_CAPTURA_BYTES, type HuellaDeLaPrimaria } from "./coalescencia.js";
 import { esUpstreamOficial } from "./upstream.js";
 import { RecuentoDeMedicion, type EstadoDeMedicion } from "./recuento.js";
 import {
@@ -1140,8 +1140,12 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       cuerpoPeticion = cuerpo;
       url = new URL(req.url ?? "/", upstreamBase);
 
-      // ── F2 · coalescencia (solo bajo bandera, solo POST con cuerpo) ──
-      const coalescible = coalescedor !== null && !enMedicion && req.method === "POST" && cuerpo.length > 0;
+      // ── F2 · coalescencia (solo bajo bandera e inferencia de lectura) ──
+      const coalescible =
+        coalescedor !== null &&
+        !enMedicion &&
+        cuerpo.length > 0 &&
+        esOperacionCoalescible(req.method ?? "", url.pathname);
       // La clave lleva ahora las cabeceras de identidad (credencial, versión,
       // betas): sin ellas, una gemela con OTRA credencial recibía la respuesta
       // de la primaria.

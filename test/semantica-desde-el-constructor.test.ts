@@ -7,6 +7,7 @@ import { createSavingsLayer } from "../src/pipeline/create.js";
 import { InMemorySemanticCache, type SemanticCacheOptions } from "../src/cache/semantic.js";
 import { InMemoryCacheBreakpointStore } from "../src/cache/breakpoint-store.js";
 import { reiniciarAvisos } from "../src/util/warn-once.js";
+import { CALIBRACION_DE_PRUEBA, certificarRespuestaSemantica } from "./helpers/semantic-cache.js";
 import type { Provider, ProviderRequest, ProviderResponse } from "../src/providers/types.js";
 import type { ChatMessage, SavingsRequest, SavingsToggles } from "../src/contracts/types.js";
 
@@ -40,7 +41,7 @@ class ProveedorFijo implements Provider {
 // El de cache-semantica-agentica: reordenar palabras da el MISMO vector.
 const embed = async (t: string): Promise<number[]> =>
   [0, 1, 2, 3].map((i) => [...t].filter((c) => c.charCodeAt(0) % 4 === i).length);
-const nuevaCache = () => new InMemorySemanticCache({ embed, similarityThreshold: 0.3, acceptThreshold: 0.3 });
+const nuevaCache = () => new InMemorySemanticCache({ embed, similarityThreshold: 0.3, acceptThreshold: 0.3, calibration: CALIBRACION_DE_PRUEBA });
 
 const PREGUNTA = "explain the coalescing mechanism briefly";
 const REFORMULADA = "explain briefly the coalescing mechanism";
@@ -150,9 +151,11 @@ describe("semanticCacheDefault: la capa la pide, la petición gana", () => {
       semanticCacheStore: cache,
       semanticCacheDefault: true,
     });
-    await capa.generate(peticion(PREGUNTA, { exactCache: false }));
+    const original = peticion(PREGUNTA, { exactCache: false });
+    const primera = await capa.generate(original);
+    await certificarRespuestaSemantica(cache, original, primera);
     const r = await capa.generate(peticion(REFORMULADA, { exactCache: false }));
-    expect(cache.size).toBe(1);
+    expect(cache.size).toBeGreaterThan(0);
     expect(r.report.cache.result).toBe("semantic");
   });
 
@@ -177,15 +180,20 @@ describe("semanticCacheDefault: la capa la pide, la petición gana", () => {
       { role: "user", content: "give an example please" },
     ];
     for (const [defecto, esperado] of [[true, "miss"], ["include-agentic", "semantic"]] as const) {
+      const cache = nuevaCache();
       const capa = createSavingsLayer({
         provider: new ProveedorFijo(),
         costModels: PRECIOS,
         silenceWarnings: true,
-        semanticCacheStore: nuevaCache(),
+        semanticCacheStore: cache,
         semanticCacheDefault: defecto,
       });
       const extra = { savings: { exactCache: false } };
-      await capa.generate({ ...peticion("", undefined, extra), messages: dosTurnos(PREGUNTA) });
+      const original = { ...peticion("", undefined, extra), messages: dosTurnos(PREGUNTA) };
+      const primera = await capa.generate(original);
+      if (defecto === "include-agentic") {
+        await certificarRespuestaSemantica(cache, original, primera, { agentic: true });
+      }
       const r = await capa.generate({ ...peticion("", undefined, extra), messages: dosTurnos(REFORMULADA) });
       expect(r.report.cache.result).toBe(esperado);
     }

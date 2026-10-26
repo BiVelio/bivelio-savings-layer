@@ -1,7 +1,7 @@
 import type { CostModel } from "../tokenizer/accounting.js";
 import type { TokenizerRegistry } from "../tokenizer/registry.js";
 import type { ExactCache } from "../cache/exact.js";
-import type { InMemorySemanticCache } from "../cache/semantic.js";
+import type { SemanticCacheStore } from "../cache/semantic.js";
 import type { CacheBreakpointStore } from "../cache/breakpoint-store.js";
 import type { Singleflight } from "../cache/singleflight.js";
 import type { ResolverRegistry } from "../resolvers/resolvers.js";
@@ -10,6 +10,7 @@ import type { ToolSelector } from "../router/tool-selector.js";
 import type { FormatSelector } from "../serialization/format-selector.js";
 import type { SchemaRegistry } from "../constraints/schema-registry.js";
 import type { ConstraintBackend } from "../constraints/backends.js";
+import type { ConstraintMemoryStore } from "../constraints/memory.js";
 import type { Compressor } from "../compression/compression.js";
 import type { ToolOutputCompactionSettings } from "../compression/cola.js";
 import type { CompressionEconomics } from "../economics/politica-compresion.js";
@@ -38,6 +39,12 @@ export interface SavingsLayerConfig {
    * Solo guarda identificadores de contrato, nunca contenido de peticiones.
    */
   constraintMemory?: Set<string>;
+  /**
+   * Optional durable backend. The local Set remains a write-through cache, so
+   * both options compose. Durable keys also include tenant, scope, provider and
+   * served model; store failures never repeat a provider call.
+   */
+  constraintMemoryStore?: ConstraintMemoryStore;
 
   provider: Provider;
   tokenizer: TokenizerRegistry;
@@ -55,7 +62,7 @@ export interface SavingsLayerConfig {
    * the per-request switch (`savings.semanticCache`) no longer share a name.
    * See the 0.5 migration guide.
    */
-  semanticCacheStore?: InMemorySemanticCache;
+  semanticCacheStore?: SemanticCacheStore;
   /**
    * Default for `savings.semanticCache` on every request of this layer. A
    * request's own value always wins, `false` included. Unset, the semantic cache

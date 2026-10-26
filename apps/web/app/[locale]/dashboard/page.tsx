@@ -23,6 +23,7 @@ import { PanelEditable } from "./components/PanelEditable";
 import { SesionesCard } from "./components/SesionesCard";
 import { VerdictHero } from "./components/VerdictHero";
 import { MedirSavingsCard } from "./components/MedirSavingsCard";
+import { ShadowOpportunitiesCard } from "./components/ShadowOpportunitiesCard";
 
 export const dynamic = "force-dynamic";
 
@@ -41,42 +42,56 @@ export default async function OverviewPage({
   if (!authConfigured) {
     return <p className="note">{t("overview.authNotWired")}</p>;
   }
-  const { ctx, usage: usageCompleto, usageFailed, porModelo: porModeloCompleto, visibilidad, orgId } = await loadDashboard();
-  // EL RANGO SE APLICA AQUÍ, una vez, antes de derivar nada: el titular, los
-  // libros y el tráfico suman exactamente los días que el selector dice. La
-  // consulta sigue trayendo 120 días (el máximo), así que el corte es local y
-  // barato. El ritmo del mes y la espina de activación miran el conjunto
-  // completo: uno es un cálculo de calendario y el otro una historia de alta.
+  const {
+    ctx,
+    usage: usageCompleto,
+    usageFailed,
+    porModelo: porModeloCompleto,
+    porModeloFailed,
+    sombraPorModelo: sombraCompleta,
+    sombraStatus,
+    visibilidad,
+    orgId,
+    orgFallo,
+  } = await loadDashboard();
   const rango = rangoDesdeParametro((await searchParams).range);
   const usage = rango === RANGO_POR_DEFECTO ? usageCompleto : cortarPorPeriodo(usageCompleto, rango);
   const porModelo = rango === RANGO_POR_DEFECTO ? porModeloCompleto : cortarPorPeriodo(porModeloCompleto, rango);
-  const steps = await activationSteps(true, ctx, usageCompleto);
-  // Coste por sesión (0019) y máquinas (0024): lecturas aparte y tolerantes —
-  // sin tabla o sin columnas (migración por detrás del deploy) o sin filas, la
-  // tarjeta no existe y el panel sigue. Un solo cliente de solo lectura para las dos.
+  const sombraPorModelo = rango === RANGO_POR_DEFECTO ? sombraCompleta : cortarPorPeriodo(sombraCompleta, rango);
+  const steps = await activationSteps(true, ctx, usageCompleto, {
+    usageFailed: usageFailed || orgFallo,
+    usageHidden: visibilidad === "oculto",
+  });
   const lector = orgId ? await createReadOnlyClient() : null;
   const [sesiones, asientos] = lector && orgId
-    ? await Promise.all([getSesiones(lector, orgId).then((r) => r.rows), getAsientos(lector, orgId).then((r) => r.rows)])
-    : [[], []];
+    ? await Promise.all([getSesiones(lector, orgId), getAsientos(lector, orgId)])
+    : [{ rows: [], failed: false }, { rows: [], failed: false }];
+  const readErrors = [
+    orgFallo ? "org" : null,
+    usageFailed ? "usage" : null,
+    porModeloFailed ? "models" : null,
+    sesiones.failed ? "sessions" : null,
+    asientos.failed ? "seats" : null,
+  ].filter((x): x is string => x !== null);
 
   return (
     <>
       <PageHead eyebrow={t("overview.eyebrow")} title={t("overview.title")} sub={t("overview.intro")} />
-
-      {/* Lo primero de la primera pantalla: si el cobro va mal, se entera aquí
-          y no cuando el SDK se le pare. */}
       <BillingStateBanner ctx={ctx} />
-      {/* Y justo detrás, si alguna máquina con gateway lleva una semana sin un
-          euro MEDIDO: decide el dinero por asiento, la versión solo explica. */}
-      <GatewayVersionBanner asientos={asientos} />
-      {/* Y si alguna máquina con gateway todavía informa su ahorro en BRUTO
-          (anterior a la versión que resta los fallos de caché): se etiqueta. */}
-      <GatewayBrutoBanner asientos={asientos} />
-      {/* Y si alguna máquina corre un SDK por debajo de la mínima de la
-          referencia: sus repeticiones entran como estimated, no en la base. */}
-      <SdkReferenciaBanner asientos={asientos} />
-      {/* Licencia gratuita Medir: «esto habrías ahorrado» y el paso a pago. */}
+      <GatewayVersionBanner asientos={asientos.rows} />
+      <GatewayBrutoBanner asientos={asientos.rows} />
+      <SdkReferenciaBanner asientos={asientos.rows} />
       {ctx.medir === "solo-medir" ? <MedirSavingsCard usage={usage} /> : null}
+
+      {readErrors.length > 0 ? (
+        <section className="card card-pad" role="alert" aria-labelledby="dashboard-read-errors">
+          <h2 className="n card-title" id="dashboard-read-errors">{t("overview.readErrors.title")}</h2>
+          <p className="ck-note">{t("overview.readErrors.intro")}</p>
+          <ul>
+            {readErrors.map((source) => <li key={source}>{t(`overview.readErrors.${source}`)}</li>)}
+          </ul>
+        </section>
+      ) : null}
 
       <InstrumentationSpine steps={steps} />
 
@@ -89,32 +104,23 @@ export default async function OverviewPage({
         </div>
         <div className="panel-stack">
           <VerdictHero usage={usage} failed={usageFailed} visibilidad={visibilidad} rango={rango} />
-          {/* Lo que sigue lo ordena y filtra quien mira (PanelEditable): las
-              tarjetas llegan ya renderizadas por el servidor con sus datos, y
-              el cliente solo decide orden y visibilidad. El titular de arriba
-              y los avisos NO entran: no son decoración. */}
           <PanelEditable
             tarjetas={[
-              // Justo detrás del titular: a qué velocidad va y dónde acaba el mes.
-              // Mira el mes completo, no el rango: es un cálculo de calendario.
               { id: "ritmo", titulo: t("panel.cards.ritmo"), contenido: <RitmoCard usage={usageCompleto} /> },
-              // EL AHORRO NATIVO de la caché del proveedor, APARTE del titular
-              // (0032, decisión del dueño): lo que la caché de prefijo del
-              // proveedor le quitó a su factura. Sin comisión: el titular no lo
-              // suma y el extracto no lo lee. Está para que el panel cuadre con
-              // la factura del proveedor.
               {
                 id: "nativo",
                 titulo: t("panel.cards.nativo"),
                 contenido: <AhorroNativoCard usage={usage} porModelo={porModelo} />,
               },
-              // Los TOTALES antes que la atribución por libro: "cuántos tokens he
-              // gastado" es la pregunta que se hace primero, y los cuatro libros de
-              // abajo la responden por partes que NO se pueden sumar entre sí.
+              {
+                id: "oportunidades",
+                titulo: t("shadowOpportunities.title"),
+                contenido: (
+                  <ShadowOpportunitiesCard rows={sombraPorModelo} usage={usage} status={sombraStatus} rango={rango} />
+                ),
+              },
               { id: "tokens", titulo: t("panel.cards.tokens"), contenido: <TokenTotalsTiles usage={usage} /> },
               { id: "libros", titulo: t("panel.cards.libros"), contenido: <LiveLedgerTiles usage={usage} /> },
-              // El explorador configurable (por día · periodo · modelo · libro) a
-              // lo ancho: necesita sitio para los controles y las barras.
               {
                 id: "explorador",
                 titulo: t("usageExplorer.title"),
@@ -135,24 +141,12 @@ export default async function OverviewPage({
                   </div>
                 ),
               },
-              { id: "sesiones", titulo: t("panel.cards.sesiones"), contenido: <SesionesCard sesiones={sesiones} /> },
-              { id: "maquinas", titulo: t("panel.cards.maquinas"), contenido: <MaquinasCard asientos={asientos} /> },
+              { id: "sesiones", titulo: t("panel.cards.sesiones"), contenido: <SesionesCard sesiones={sesiones.rows} /> },
+              { id: "maquinas", titulo: t("panel.cards.maquinas"), contenido: <MaquinasCard asientos={asientos.rows} /> },
             ]}
           />
-          {/* FUERA LAS DOS TARJETAS DE ELISIÓN (2026-09-10).
-              La elisión está muerta para el cliente: sus diales llevan apagados
-              desde el 09-09 y hoy se quitó `context_elision` de las tres
-              licencias pro vivas. Enseñar un −39,5 % en rojo grande sobre
-              $735,43 «simulados» de una palanca que el cliente NO PUEDE
-              encender no le informa de nada: le da un susto sobre algo que no
-              ha pasado y no va a pasar. Lo mismo la del borrado del proveedor,
-              que contaba peticiones acreditadas por unos diales apagados.
-              La medición NO se pierde: las columnas `shadow_*` y
-              `eliminated_*` se siguen escribiendo y son nuestras para
-              consultarlas. Lo que se quita es enseñarle al cliente nuestra
-              investigación y perdida como si fuera su cuenta. Si algún día la
-              palanca vuelve con neto positivo medido, las tarjetas vuelven —
-              los componentes siguen en el repo. */}
+          {/* La sombra se presenta solo como estimación hipotética por modelo;
+              nunca entra en el titular medido, el extracto ni la comisión. */}
         </div>
       </section>
     </>

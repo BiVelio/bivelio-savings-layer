@@ -121,11 +121,24 @@ TOON for the wire.
 
 ## Extension points
 
-Every subsystem is an interface with an in-memory default:
+The main extension points, with in-memory defaults where applicable:
 
 - `Provider` — OpenAI-compatible, Anthropic-compatible, self-hosted.
-- `ExactCache` — Redis / KV / LRU.
-- semantic cache backend — pgvector / Qdrant.
+- `ExactCache` — Redis / KV / LRU, or `@bivelio/persistence-postgres` for a
+  customer-operated PostgreSQL database. The optional adapter preserves the
+  canonical cache key and stores JSON-compatible answers with their TTL.
+- `CacheBreakpointStore` — shared prompt-cache measurements. The PostgreSQL
+  adapter also supports versioned compare-and-set; the pipeline reapplies an
+  observation to the latest snapshot after a conflict, within a bounded retry
+  and time budget, instead of overwriting another instance's measurement.
+- `ConstraintMemoryStore` — optional durable value-constraint hints with a local
+  write-through Set. Keys hash tenant, scope, provider, served model and contract;
+  inserts are idempotent and store failures never trigger another provider call.
+- `SemanticCacheStore` — in-memory by default, or `PgSemanticCache` in the
+  optional customer-operated PostgreSQL + pgvector package. Both use the same
+  deterministic guards and `SemanticCalibrationJournal`. PostgreSQL coordinates
+  one calibration history with short transactions and idempotent observations;
+  its candidate policy and backend identity are calibrated explicitly.
 - `TokenEstimator` — tiktoken / provider tokenizer.
 - `Compressor` — LLMLingua-2 / LongLLMLingua sidecar.
 - `ConstraintBackend` — XGrammar / llguidance / Outlines / provider-native.

@@ -119,10 +119,19 @@
       "traffic": "ruch",
       "steps": {
         "accountCreated": "Konto utworzone",
-        "sdkInstalled": "Klucz konta serwisowego utworzony",
-        "licenseActive": "Licencja aktywna",
-        "firstReport": "Pierwszy raport",
-        "liveMeter": "Licznik na żywo"
+        "sdkInstalled": "Zainstalowany SDK lub gateway",
+        "licenseActive": "Dane dostępowe i aktywna licencja",
+        "firstRequest": "Pierwsze rzeczywiste żądanie",
+        "reportReady": "Raport dostępny"
+      },
+      "readErrors": {
+        "title": "Nie udało się odczytać niektórych danych",
+        "intro": "To błąd odczytu, nie puste konto. Objęte sekcje nie pokazują zer zamiast danych.",
+        "org": "Nie udało się ustalić Twojej organizacji.",
+        "usage": "Nie udało się odczytać dziennego użycia.",
+        "models": "Nie udało się odczytać podziału według modelu.",
+        "sessions": "Nie udało się odczytać kosztów sesji.",
+        "seats": "Nie udało się odczytać aktywności maszyn."
       }
     },
     "proof": {
@@ -266,11 +275,44 @@
       "statusDone": "gotowe",
       "statusNext": "następny",
       "statusPending": "oczekuje",
+      "statusUnavailable": "niedostępne",
       "nextLabel": "Następny: {label}",
       "installComment": "# wykrywa Twój stos i wypisuje dokładne podłączenie — Twoje prompty nigdy nie opuszczają Twojej infrastruktury",
-      "hintLicense": "Wklej klucz licencyjny BiVelio, aby SDK odblokował funkcje zarządzane i raportował użycie.",
-      "hintFirstReport": "Opakuj prawdziwe wywołanie dostawcy — pierwszy SavingsReport trafi tutaj, a Twój licznik ruszy na żywo.",
-      "hintDefault": "To odblokuje się w chwili, gdy pojawi się Twój pierwszy wiersz usage_daily."
+      "hintLicense": "Utwórz lub pobierz licencję i dane usługi w Koncie. Sam klucz nie dowodzi instalacji.",
+      "hintInstall": "Wybierz SDK lub gateway i wyślij rzeczywiste żądanie. Utworzenie klucza lub wysłanie pustej partii nie dowodzi instalacji.",
+      "hintFirstRequest": "Wyślij rzeczywiste żądanie do dostawcy przez SDK lub gateway. Raport użycia zakończy ten krok.",
+      "hintReport": "Raport pojawi się po nadejściu pierwszego rzeczywistego żądania.",
+      "hintDefault": "Otwórz konto, aby kontynuować konfigurację.",
+      "linkAccount": "Otwórz Konto",
+      "linkInstall": "Otwórz instalację",
+      "linkSdk": "Ścieżka SDK",
+      "linkGateway": "Ścieżka gateway",
+      "unavailableHint": "Nie można teraz odczytać użycia, więc nie da się ocenić instalacji ani raportu. Nie oznacza to, że konto jest puste."
+    },
+    "shadowOpportunities": {
+      "title": "Gdzie są Twoje potencjalne oszczędności",
+      "badge": "SHADOW · SZACUNEK",
+      "intro": "Hipotetyczne możliwości według modelu, obliczone wyłącznie z telemetrii SHADOW. Nigdy zmierzone oszczędności ani kwoty na fakturze.",
+      "error": "Nie udało się odczytać możliwości według modelu. Spróbuj ponownie za chwilę.",
+      "hidden": "Podział istnieje, ale to konto nie może go zobaczyć. To błąd widoczności, nie brak danych.",
+      "unavailable": "Podział SHADOW według modelu nie jest jeszcze dostępny na tym serwerze. Historii bez modelu nie można odtworzyć.",
+      "historical": "Istnieją żądania SHADOW, ale podział według modelu jest niedostępny dla historii sprzed tej migracji.",
+      "empty": "Brak żądań SHADOW w tym okresie. Wyślij rzeczywisty ruch z Mierzeniem, aby zacząć szacować możliwości.",
+      "colModel": "Model",
+      "colRequests": "Żądania SHADOW",
+      "colBaseline": "Wydatki bazowe",
+      "colActual": "Koszt hipotetyczny",
+      "colSavings": "Oszczędność hipotetyczna",
+      "colCoverage": "Pokrycie",
+      "coverage": "Pokrycie według modelu: {coverage} żądań SHADOW ({attributed} z {total}).",
+      "coveragePartial": "Pokrycie częściowe: podział obejmuje {attributed} z {total} żądań SHADOW ({coverage}); historia bez modelu jest pominięta.",
+      "coverageUnavailable": "Pokrycie jest niedostępne, ponieważ nie odczytano dziennej sumy SHADOW.",
+      "note": "Szacunek hipotetyczny: baza − koszt SHADOW. Nigdy mierzony, fakturowany ani dodawany do zatwierdzonych oszczędności.",
+      "action": "Sprawdź Konto, aby włączyć dostępne dźwignie, lub dokończ instalację SDK/gateway. Dźwignia i powierzchnia są niedostępne: obecny wire ich nie zachowuje; wymagają zmiany server-first.",
+      "accountCta": "Sprawdź Konto",
+      "installCta": "Dokończ instalację",
+      "exportCsv": "Eksportuj CSV",
+      "exportJson": "Eksportuj JSON"
     },
     "scenarioTable": {
       "colScenario": "scenariusz",

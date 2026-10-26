@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, it, expect } from "vitest";
 
 import { deriveVerdict } from "./derive";
@@ -71,5 +72,26 @@ describe("VerdictHero — un cero por error no puede verse como un cero honesto"
   it("el fallo de consulta NO se disfraza de tráfico cuando además hay filas viejas vacías", () => {
     // filas presentes pero baseline 0 Y failed: prioriza el error real.
     expect(estado([{ baselineCost: 0, actualCost: 0, requests: 0 }], true)).toBe("error");
+  });
+});
+
+describe("OverviewPage — ninguna lectura failed se descarta", () => {
+  const pagina = readFileSync(new URL("./page.tsx", import.meta.url), "utf8");
+  const loader = readFileSync(new URL("./load.ts", import.meta.url), "utf8");
+
+  it("modelos conserva failed en el loader y la página lo presenta", () => {
+    expect(loader).toContain("porModeloFailed: porModelo.failed");
+    expect(pagina).toContain("porModeloFailed");
+    expect(pagina).toContain('porModeloFailed ? "models" : null');
+  });
+
+  it("sesiones y asientos llegan como resultado completo y sus failed son visibles", () => {
+    expect(pagina).toContain("Promise.all([getSesiones(lector, orgId), getAsientos(lector, orgId)])");
+    expect(pagina).not.toContain("getSesiones(lector, orgId).then((r) => r.rows)");
+    expect(pagina).not.toContain("getAsientos(lector, orgId).then((r) => r.rows)");
+    expect(pagina).toContain('sesiones.failed ? "sessions" : null');
+    expect(pagina).toContain('asientos.failed ? "seats" : null');
+    expect(pagina).toContain('role="alert"');
+    expect(pagina).toContain("overview.readErrors.title");
   });
 });

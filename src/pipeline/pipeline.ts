@@ -102,6 +102,7 @@ import { seleccionarSupersesion, aplicarElision, MUNON_ELISION } from "./elision
 import { politicaDeCompresion, tramoDeCache } from "../economics/politica-compresion.js";
 import { TraceCollector } from "../telemetry/traces.js";
 import type { CachedAnswer } from "../cache/exact.js";
+import type { VersionedCacheBreakpointStore } from "../cache/breakpoint-store.js";
 import type { SemanticProbe } from "../cache/semantic.js";
 import type { Provider, ProviderRequest, ProviderResponse, ProviderToolSearch } from "../providers/types.js";
 import type { RouteDecision } from "../router/router.js";
@@ -450,7 +451,8 @@ export class SavingsPipeline {
    *
    * Así que se avisa solo donde está demostrado que hace falta: la primera
    * petición que incumpla paga su reparación, y a partir de ahí ese contrato
-   * lleva el aviso. Vive en la instancia, no en el módulo.
+   * lleva el aviso. Vive en la instancia por defecto; un store opcional lo
+   * comparte con aislamiento por tenant, permisos, proveedor y modelo.
    */
   private readonly contratosQueIncumplen: Set<string>;
 
@@ -574,6 +576,67 @@ export class SavingsPipeline {
   /** Decide en el acto cada copia de verificación en vuelo (`abandoned`). Lo llama `close()`. */
   cerrarVerificacion(): void {
     this.comprobador?.cerrar();
+  }
+
+  private claveMemoriaDeContrato(
+    request: SavingsRequest,
+    canonical: ReturnType<typeof canonicalize>,
+    modeloServido: string,
+  ): string {
+    return sha256(stableStringify({
+      v: 1,
+      tenantId: canonical.tenantId,
+      authorizationScope: canonical.authorizationScope,
+      provider: this.config.provider.id,
+      model: modeloServido,
+      contract: contractKey(request),
+    }));
+  }
+
+  private async leerMemoriaDeContrato(
+    request: SavingsRequest,
+    canonical: ReturnType<typeof canonicalize>,
+    modeloServido: string,
+    trace: TraceCollector,
+  ): Promise<boolean> {
+    if (!request.response) return false;
+    const contrato = contractKey(request);
+    if (this.contratosQueIncumplen.has(contrato)) return true;
+    const store = this.config.constraintMemoryStore;
+    if (!store) return false;
+    try {
+      if (await store.has(this.claveMemoriaDeContrato(request, canonical, modeloServido))) {
+        this.contratosQueIncumplen.add(contrato);
+        return true;
+      }
+    } catch {
+      trace.record("constraint-memory", "store-error", {
+        operation: "read",
+        reason: "durable read failed; continuing without a durable hint",
+      });
+    }
+    return false;
+  }
+
+  private async aprenderMemoriaDeContrato(
+    request: SavingsRequest,
+    canonical: ReturnType<typeof canonicalize>,
+    modeloServido: string,
+    trace: TraceCollector,
+  ): Promise<void> {
+    if (!request.response) return;
+    const contrato = contractKey(request);
+    this.contratosQueIncumplen.add(contrato);
+    const store = this.config.constraintMemoryStore;
+    if (!store) return;
+    try {
+      await store.remember(this.claveMemoriaDeContrato(request, canonical, modeloServido));
+    } catch {
+      trace.record("constraint-memory", "store-error", {
+        operation: "write",
+        reason: "durable write failed; local learning was kept and the response was not retried",
+      });
+    }
   }
 
   /**
@@ -1316,13 +1379,15 @@ export class SavingsPipeline {
     trace: TraceCollector,
     espejo: EspejoDeCache = this.espejoDeCache,
     respuesta: RespuestaMarcada = {},
-  ): void {
+    emitirTrazas = true,
+  ): () => void {
     const c = marcado.colocacion!;
     const informo = uso.complete !== false;
     const leidos = Math.max(0, uso.cachedInputTokens ?? 0);
     const escritos = Math.max(0, uso.cacheWriteInputTokens ?? 0);
     const marco = c.ultimo != null && c.indiceDelUltimo != null;
     const k = c.coincidencia?.indice;
+    let trazaVerificada: (() => void) | undefined;
     if (
       informo &&
       marco &&
@@ -1337,8 +1402,8 @@ export class SavingsPipeline {
       if (despues.predichas > antes.predichas) {
         const confirmada = despues.confirmadas > antes.confirmadas;
         const diag = respuesta.diagnostico;
-        trace.record("prefix-cache-placement", "verified", {
-          predictedRead: c.coincidencia.posicionDelProveedor,
+        trazaVerificada = () => trace.record("prefix-cache-placement", "verified", {
+          predictedRead: c.coincidencia!.posicionDelProveedor,
           providerCacheRead: leidos,
           confirmed: confirmada,
           // Por qué no llegó la lectura, según el proveedor (`cacheMissDiagnostics`).
@@ -1371,6 +1436,9 @@ export class SavingsPipeline {
       // Solo si se pidió el diagnóstico: sin él no hay a quién pasarle el id.
       idDelProveedor: this.config.cacheMissDiagnostics === true && marco ? (respuesta.id ?? null) : null,
     });
+    const emitir = () => trazaVerificada?.();
+    if (emitirTrazas) emitir();
+    return emitir;
   }
 
   /**
@@ -1386,6 +1454,8 @@ export class SavingsPipeline {
    * Si el almacén falla al leer, esta petición no se apunta y NO se escribe
    * nada: escribir sobre una lectura fallida borraría lo que otras instancias
    * aprendieron. Si la instantánea la escribió un SDK más nuevo, tampoco.
+   * Un almacén versionado además fusiona la observación sobre cada revisión
+   * nueva; agotar los reintentos deja intacta la versión ganadora.
    */
   private async apuntarEnElAlmacen(
     marcado: MarcadoDeCache,
@@ -1394,34 +1464,80 @@ export class SavingsPipeline {
     respuesta: RespuestaMarcada,
   ): Promise<void> {
     const almacen = this.config.cacheBreakpointStore!;
+    const posibleVersionado = almacen as Partial<VersionedCacheBreakpointStore>;
+    const versionado = typeof posibleVersionado.getVersioned === "function" &&
+      typeof posibleVersionado.compareAndSet === "function"
+      ? almacen as VersionedCacheBreakpointStore
+      : null;
     const c = marcado.colocacion!;
     const clave = claveDelAlmacen(c.clase);
-    let texto: unknown;
-    try {
-      texto = await almacen.get(clave);
-    } catch (e) {
-      trace.record("prefix-cache-placement", "store-error", {
-        // Solo el tipo del error: el mensaje de un cliente de Redis puede traer
-        // el host o la URL de conexión, y la traza viaja a la telemetría.
-        reason: `could not read the placement store (${nombreDelError(e)}), so this request was not recorded`,
-      });
-      return;
-    }
-    const espejo = new EspejoDeCache();
-    if (texto != null && espejo.importarClase(c.clase, texto) === "newer") {
-      trace.record("prefix-cache-placement", "store-error", {
-        reason: "the placement store holds a state written by a newer SDK version; left untouched",
-      });
-      return;
-    }
-    espejo.observar(c.clase, c.huellas, c.enviada);
-    this.apuntarEnElEspejo(marcado, uso, trace, espejo, respuesta);
-    try {
-      await almacen.set(clave, espejo.exportarClase(c.clase), TTL_DEL_ALMACEN_MS);
-    } catch (e) {
-      trace.record("prefix-cache-placement", "store-error", {
-        reason: `could not write the placement store (${nombreDelError(e)})`,
-      });
+    const inicio = Date.now();
+    const maxIntentos = 64;
+    const presupuestoMs = 1_000;
+    for (let intento = 0; intento < maxIntentos; intento++) {
+      let texto: unknown;
+      let versionEsperada: string | null = null;
+      try {
+        if (versionado) {
+          const actual = await versionado.getVersioned(clave);
+          texto = actual?.value;
+          versionEsperada = actual?.version ?? null;
+        } else {
+          texto = await almacen.get(clave);
+        }
+      } catch (e) {
+        trace.record("prefix-cache-placement", "store-error", {
+          // Solo el tipo del error: el mensaje de un cliente de Redis puede traer
+          // el host o la URL de conexión, y la traza viaja a la telemetría.
+          reason: `could not read the placement store (${nombreDelError(e)}), so this request was not recorded`,
+        });
+        return;
+      }
+      const espejo = new EspejoDeCache();
+      if (texto != null && espejo.importarClase(c.clase, texto) === "newer") {
+        trace.record("prefix-cache-placement", "store-error", {
+          reason: "the placement store holds a state written by a newer SDK version; left untouched",
+        });
+        return;
+      }
+      espejo.observar(c.clase, c.huellas, c.enviada);
+      const emitirVerificacion = this.apuntarEnElEspejo(
+        marcado,
+        uso,
+        trace,
+        espejo,
+        respuesta,
+        versionado === null,
+      );
+      try {
+        if (versionado) {
+          const escrito = await versionado.compareAndSet(
+            clave,
+            espejo.exportarClase(c.clase),
+            TTL_DEL_ALMACEN_MS,
+            versionEsperada,
+          );
+          if (escrito) {
+            emitirVerificacion();
+            return;
+          }
+          if (intento + 1 === maxIntentos || Date.now() - inicio >= presupuestoMs) {
+            trace.record("prefix-cache-placement", "store-error", {
+              reason: "the placement store exceeded the bounded merge budget (64 attempts / 1000 ms); the concurrent version was left untouched",
+            });
+            return;
+          }
+          await new Promise<void>((resolve) => setTimeout(resolve, Math.floor(Math.random() * 4)));
+        } else {
+          await almacen.set(clave, espejo.exportarClase(c.clase), TTL_DEL_ALMACEN_MS);
+          return;
+        }
+      } catch (e) {
+        trace.record("prefix-cache-placement", "store-error", {
+          reason: `could not write the placement store (${nombreDelError(e)})`,
+        });
+        return;
+      }
     }
   }
 
@@ -1920,8 +2036,8 @@ export class SavingsPipeline {
         "palanca-sin-cache-semantica",
         "[bv-sala] `savings.semanticCache` was requested but this layer has no semantic cache, so " +
           "every rephrased question will come out `cache: \"miss\"` and be paid to the provider again. " +
-          "It is not on by default because it needs an embedder, which is your own cost and provider: " +
-          "plug it in with `createSavingsLayer({ semanticCacheStore: new InMemorySemanticCache({ embed }) })`. " +
+          "Serving reworded answers requires calibration on your own traffic: " +
+          "plug it in with `createSavingsLayer({ semanticCacheStore: new InMemorySemanticCache({ embed, calibration: { maxErrorRate: 0.02 } }) })`. " +
           "The exact cache and the rest of the layer keep working.",
       );
     }
@@ -2305,13 +2421,11 @@ export class SavingsPipeline {
       this.deps.semanticCache &&
       semanticLicensed
     ) {
-      // CON CALIBRACIÓN, `lookup` además devuelve la candidata que NO se sirvió
-      // (la sonda), para etiquetarla en la etapa 12 con la respuesta que dé el
-      // proveedor. Sin calibración, el camino de siempre, byte a byte.
+      // `lookup` devuelve la candidata que NO se sirvió para etiquetarla en la
+      // etapa 12. Sin calibración no hay acierto ni sonda: el almacén sigue en
+      // modo sombra y la etapa 12 puede guardar respuestas para calibrar después.
       const cacheSemantica = this.deps.semanticCache;
-      const consulta = cacheSemantica.calibrated
-        ? await cacheSemantica.lookup(canonical, { agentic: policy.isAgentic })
-        : { hit: await cacheSemantica.find(canonical), probe: null };
+      const consulta = await cacheSemantica.lookup(canonical, { agentic: policy.isAgentic });
       // La misma guarda que la caché exacta: una negativa en texto guardada por
       // una versión anterior no se sirve como respuesta a una pregunta parecida.
       const reglaSemantica = consulta.hit
@@ -2358,7 +2472,15 @@ export class SavingsPipeline {
       trace.record(
         "semantic-cache",
         "miss",
-        sondaSemantica ? { calibration: sondaSemantica.reason, score: sondaSemantica.score } : undefined,
+        sondaSemantica
+          ? { calibration: sondaSemantica.reason, score: sondaSemantica.score }
+          : cacheSemantica.calibrated
+            ? undefined
+            : {
+                calibration: "missing",
+                mode: "shadow",
+                reason: "no calibration; stored answers are not served",
+              },
       );
     }
 
@@ -2535,7 +2657,6 @@ export class SavingsPipeline {
     //
     // Cuesta unos pocos tokens de entrada y los cuenta el ledger como cualquier
     // otro: no se esconde en el baseline.
-    const idContrato = contractKey(request);
     // El techo REAL de caracteres: el que impone el presupuesto de salida, que
     // suele ser más estricto que el `maxLength` del contrato. Anunciar 1200
     // caracteres cuando el tope de 600 tokens solo da para ~1600 —menos el
@@ -2548,7 +2669,7 @@ export class SavingsPipeline {
     const techoPorTokens = topeEfectivo != null
       ? Math.floor(topeEfectivo * 3.2) // ~3,2 car/token en prosa, conservador
       : null;
-    const reglasDeValor = this.contratosQueIncumplen.has(idContrato)
+    const reglasDeValor = await this.leerMemoriaDeContrato(request, canonical, cascada.modeloServido, trace)
       ? describeValueConstraints(request.response?.schema, "", techoPorTokens)
       : "";
     if (reglasDeValor) {
@@ -3759,7 +3880,7 @@ export class SavingsPipeline {
       // maxLength: el modo estructurado ya cubre la forma. Apuntar esos casos
       // haría pagar el aviso para siempre sin ganar nada.
       if (!validation.valid && esFalloDeValor(validation.errors)) {
-        this.contratosQueIncumplen.add(contractKey(request));
+        await this.aprenderMemoriaDeContrato(request, canonical, modeloServido, trace);
       }
 
       // Un JSON cortado a media cadena por el tope de salida NO se arregla
@@ -3856,7 +3977,7 @@ export class SavingsPipeline {
         const tope = topeDeSalida(request) ?? null;
         const desbordaSuContrato =
           techoDelEsquema !== null && tope != null && techoDelEsquema <= tope;
-        if (desbordaSuContrato) this.contratosQueIncumplen.add(contractKey(request));
+        if (desbordaSuContrato) await this.aprenderMemoriaDeContrato(request, canonical, modeloServido, trace);
         trace.record("validation", "repair-skipped", {
           reason: "output truncated by maxOutputTokens; a retry with the same cap would truncate again",
           maxOutputTokens: topeDeSalida(request) ?? null,

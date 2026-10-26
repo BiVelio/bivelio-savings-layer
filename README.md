@@ -578,18 +578,20 @@ single-shot requests only: requests that declare tools, carry tool calls or resu
 hold more than one user turn are left out unless you set
 `savings.semanticCache: "include-agentic"`.
 
-**Calibrated reuse (opt-in).** A fixed similarity floor means something different for
-every embedder and every workload, so you can make the cache earn its floor on your own
-traffic instead: `new InMemorySemanticCache({ embed, calibration: { maxErrorRate: 0.02 } })`.
-It then serves no reworded answer until your labels show, at 95 % confidence, that at
-most 2 % of the answers it would reuse from some score up are wrong, and it re-tests that
-floor as labels accumulate. Until then every candidate goes to your provider, exactly as
-it would without the cache, and the fresh answer is compared with the stored one by your
-`judge` (by default only identical answers count, which suits classification and
-structured output; pass your own for free text). Each calibrated reuse carries its bound
-and the labels behind it in `report.qualityLedger.cacheMatch.calibration`. Calibration
-costs reuses, never an extra call, and it does not change how anything is billed. If you
-already have labeled pairs, `calibrateSemanticFloor()` runs the same test offline.
+**Calibrated reuse (required to serve).** A fixed similarity floor means something different
+for every embedder and every workload, so the cache must earn its floor on your own
+traffic: `new InMemorySemanticCache({ embed, calibration: { maxErrorRate: 0.02 } })`.
+Without `calibration`, it runs in shadow mode: it may store answers for future calibration,
+but `find()` and `lookup()` never return a hit. With calibration it serves no reworded answer
+until your labels show, at 95 % confidence, that at most 2 % of the answers it would reuse
+from some score up are wrong, and it re-tests that floor as labels accumulate. Until then
+every candidate goes to your provider, exactly as it would without the cache, and the fresh
+answer is compared with the stored one by your `judge` (by default only identical answers
+count, which suits classification and structured output; pass your own for free text). Each
+calibrated reuse carries its bound and the labels behind it in
+`report.qualityLedger.cacheMatch.calibration`. Calibration costs reuses, never an extra call,
+and it does not change how anything is billed. If you already have labeled pairs,
+`calibrateSemanticFloor()` runs the same test offline.
 
 And a promise you can hold it to: **never worse than your JSON.** Payload encodings
 are chosen by counting real tokens with the destination model's own tokenizer, and
@@ -640,9 +642,11 @@ and every pair as a CSV download.
 - **Only counts leave your infrastructure.** The copy goes to your own provider, like
   the original; BiVelio receives token counts, costs, model ids and outcomes — never
   prompts or answers.
-- **`close()` settles every copy still running:** it is recorded as abandoned, never
-  as a pair. On serverless platforms, pass your runtime's `waitUntil` as
-  `verification.waitUntil` so checks can finish.
+- **`await close()` settles every copy still running and drains usage:** an
+  unfinished copy is recorded as abandoned, never as a pair. Awaiting close makes
+  a bounded final delivery attempt; calling it without await remains safe. On
+  serverless platforms, pass your runtime's `waitUntil` as `verification.waitUntil`
+  so checks can finish.
 
 </details>
 
@@ -893,19 +897,46 @@ async function serverlessLayer(kv: SharedKeyValue) {
   verifier, judge or configuration is refused with `CalibrationStateError`. If you pass
   your own `embed`, `verify` or `judge`, name them (`embedderId`, `verifierId`,
   `calibration.judgeId`) so a state can say what it was recorded with.
-- **One line of history.** The bound holds along one line: restore the latest state and
-  save from where it went. Instances that continue the same state at the same time
-  each spend its remaining confidence again, and the last one to save overwrites the
-  others' labels. For one bound across many concurrent instances, calibrate in a single
-  long-lived process, or offline with `calibrateSemanticFloor()`, and give every
-  instance the certified floor as `acceptThreshold`. The cached answers themselves
-  still live in each instance's memory.
+- **One line of history for in-memory snapshots.** Restoring and saving the latest
+  state continues one line. Instances that manually continue the same snapshot at
+  the same time each spend its remaining confidence again, and the last save
+  overwrites the others. Use one long-lived process or offline calibration for that
+  manual model. For shared records and one coordinated history across instances,
+  use `PgSemanticCache`: its transactions and observation IDs prevent lost labels
+  and repeated confidence spending. The in-memory cached answers still live in
+  each instance unless you inject a persistent store.
 - **Why a predicted cache read did not happen** (Anthropic's own API). With
   `cacheMissDiagnostics: true`, the layer asks Anthropic to compare each marked request
   with the one whose cache entry it expected to read, and puts the provider's
   `cache_miss_reason` in `report.traces` when that read does not arrive. Anthropic
   keeps a short-lived fingerprint (hashes and token-count estimates) of each request
   that opts in; check that against your data-retention terms first.
+
+</details>
+
+<details>
+<summary><b>Customer-operated PostgreSQL for caches and learning</b></summary>
+
+The optional `@bivelio/persistence-postgres` package provides `PgExactCache`,
+`PgSemanticCache`, `PgCacheBreakpointStore` and `PgConstraintMemoryStore` without
+adding a database driver to the core SDK. You supply the `pg` pool, apply its
+versioned SQL migrations yourself, and inject the stores; nothing connects or
+changes your schema automatically. Exact and semantic entries contain customer
+queries, answers or derived embeddings and need the same access, retention and
+deletion controls as the original data. Breakpoints contain fingerprints,
+timestamps and counters, never prompt text. Constraint learning stores only a
+hash of tenant, scope, provider, served model and contract.
+
+The breakpoint adapter uses revisions and compare-and-set. Semantic calibration
+uses short transactions and idempotent observation IDs, so concurrent instances
+continue one history instead of spending the same confidence budget independently.
+Both use the same deterministic candidate guards and statistical journal as memory.
+The semantic backend requires the PostgreSQL vector extension and is opt-in; existing key-value stores
+and in-memory defaults keep their previous behavior. Removing `constraintMemoryStore`
+rolls constraint learning back to process memory without reading the new table.
+
+See [`packages/persistence-postgres/README.md`](packages/persistence-postgres/README.md)
+for setup, ownership, cleanup, benchmark evidence and shutdown.
 
 </details>
 

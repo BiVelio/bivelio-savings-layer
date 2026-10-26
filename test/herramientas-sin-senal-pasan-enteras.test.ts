@@ -137,7 +137,7 @@ beforeEach(() => {
 });
 afterEach(() => aviso.mockRestore());
 
-const avisosDePoda = () => aviso.mock.calls.map((c) => String(c[0])).filter((m) => m.includes("tool selector sent"));
+const avisosDePoda = () => aviso.mock.calls.map((c: unknown[]) => String(c[0])).filter((m: string) => m.includes("tool selector sent"));
 
 // ── 1-2 · Sin tipar: las 20, sin crédito ────────────────────────────────────
 

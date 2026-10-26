@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { AdminClient } from "@/lib/supabase/admin";
 import { elegirLicencia } from "./derive";
 import { estadoMedir, type EstadoMedir } from "./medir";
 import { agregarAsientos, type FilaAsiento } from "@/lib/version/asientos";
@@ -701,6 +702,76 @@ export async function getUsageByModel(
   }
 }
 
+// ---- Oportunidades sombra por modelo (0037) ----
+
+export interface ShadowModelDia {
+  day: string;
+  model: string;
+  shadowRequests: number;
+  shadowBaselineCost: number;
+  shadowActualCost: number;
+}
+
+export type ShadowReadStatus = "data" | "empty" | "hidden" | "error" | "unavailable";
+export interface ShadowByModelResult {
+  rows: ShadowModelDia[];
+  status: ShadowReadStatus;
+  /** Solo un fallo de lectura. Una migración ausente es `unavailable`, no un fallo. */
+  failed: boolean;
+}
+
+/**
+ * Lee el desglose sombra sin confundir tabla ausente, vacío, RLS y error. La
+ * comprobación admin solo se hace cuando el usuario ve cero filas: RLS devuelve
+ * ese mismo cero cuando esconde datos. Nunca devuelve contenido de prompts.
+ */
+export async function getShadowByModel(
+  supabase: SupabaseClient,
+  orgId: string,
+  admin?: AdminClient,
+): Promise<ShadowByModelResult> {
+  const since = new Date(Date.now() - 120 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  try {
+    const { data, error } = await supabase
+      .schema("bvsala")
+      .from("usage_daily_shadow_by_model")
+      .select("day, model, shadow_requests, shadow_baseline_cost, shadow_actual_cost")
+      .eq("org_id", orgId)
+      .gte("day", since)
+      .order("day", { ascending: true });
+    if (error) {
+      if (esTablaInexistente(error)) return { rows: [], status: "unavailable", failed: false };
+      console.error("[dashboard] usage_daily_shadow_by_model read failed:", error.code, error.message);
+      return { rows: [], status: "error", failed: true };
+    }
+    const rows = ((data ?? []) as unknown as Record<string, number | string>[]).map((r) => ({
+      day: String(r["day"]),
+      model: String(r["model"] ?? "unknown"),
+      shadowRequests: Number(r["shadow_requests"] ?? 0),
+      shadowBaselineCost: Number(r["shadow_baseline_cost"] ?? 0),
+      shadowActualCost: Number(r["shadow_actual_cost"] ?? 0),
+    }));
+    if (rows.length > 0 || !admin) return { rows, status: rows.length > 0 ? "data" : "empty", failed: false };
+
+    const { count, error: errorReal } = await admin
+      .schema("bvsala")
+      .from("usage_daily_shadow_by_model")
+      .select("org_id", { count: "exact", head: true })
+      .eq("org_id", orgId)
+      .gte("day", since);
+    if (errorReal) {
+      if (esTablaInexistente(errorReal)) return { rows: [], status: "unavailable", failed: false };
+      console.error("[dashboard] no se pudo comprobar la visibilidad sombra:", errorReal.code, errorReal.message);
+      return { rows: [], status: "error", failed: true };
+    }
+    if (typeof count !== "number") return { rows: [], status: "error", failed: true };
+    return { rows: [], status: count > 0 ? "hidden" : "empty", failed: false };
+  } catch (err) {
+    console.error("[dashboard] usage_daily_shadow_by_model read threw:", err);
+    return { rows: [], status: "error", failed: true };
+  }
+}
+
 // ---- Derived connection / activation state ----
 export type Metering = "awaiting" | "live";
 export function meteringState(usage: UsageRollup[]): Metering {
@@ -708,36 +779,44 @@ export function meteringState(usage: UsageRollup[]): Metering {
 }
 
 export interface StepState {
-  /** Stable, locale-independent identity (the original English label). Logic keys off this. */
+  /** Stable, locale-independent identity. Logic keys off this, never off the label. */
   id: string;
-  /** Human-readable, localized display label. */
   label: string;
-  status: "done" | "current" | "pending";
+  status: "done" | "current" | "pending" | "unavailable";
 }
-/** The 5-node activation spine, derived (never stored). */
+
+export interface ActivationReadState {
+  usageFailed: boolean;
+  usageHidden: boolean;
+}
+
+/** Cuenta → licencia → instalación → petición real → informe. */
 export async function activationSteps(
   hasUser: boolean,
   ctx: OrgContext,
   usage: UsageRollup[],
+  read: ActivationReadState,
 ): Promise<StepState[]> {
   const t = await getTranslations("dashboard");
-  const installed = ctx.serviceAccount != null;
-  // Sin `|| ctx.org != null`. Ese fallback era el que encendía el paso: la
-  // organización la crea el endpoint de claves, así que no prueba nada sobre la
-  // licencia. Una licencia en periodo de gracia SÍ cuenta: sigue vigente.
+  const firstRequest = usage.some((r) => r.requests > 0);
+  // Una service account es una credencial, no una instalación. Con la telemetría
+  // actual solo una petición real prueba que SDK o gateway están conectados.
+  const installed = firstRequest;
   const licensed = ctx.license?.status === "active" || ctx.license?.status === "grace";
-  const reporting = usage.length > 0;
-  const raw: Array<[string, string, boolean]> = [
-    ["Account created", t("overview.steps.accountCreated"), hasUser],
-    ["SDK installed", t("overview.steps.sdkInstalled"), installed],
-    ["License active", t("overview.steps.licenseActive"), licensed],
-    ["First report", t("overview.steps.firstReport"), reporting],
-    ["Live meter", t("overview.steps.liveMeter"), reporting],
+  const credentialsAndLicense = licensed && ctx.serviceAccount != null;
+  const reporting = firstRequest && usage.length > 0;
+  const usageReadable = !read.usageFailed && !read.usageHidden;
+  const raw: Array<[string, string, boolean, boolean]> = [
+    ["Account created", t("overview.steps.accountCreated"), hasUser, true],
+    ["License active", t("overview.steps.licenseActive"), credentialsAndLicense, true],
+    ["SDK or gateway installed", t("overview.steps.sdkInstalled"), installed, usageReadable],
+    ["First real request", t("overview.steps.firstRequest"), firstRequest, usageReadable],
+    ["Report ready", t("overview.steps.reportReady"), reporting, usageReadable],
   ];
-  // First not-done step is "current"; the rest "pending".
   let currentAssigned = false;
-  return raw.map(([id, label, done]) => {
+  return raw.map(([id, label, done, available]) => {
     if (done) return { id, label, status: "done" as const };
+    if (!available) return { id, label, status: "unavailable" as const };
     if (!currentAssigned) {
       currentAssigned = true;
       return { id, label, status: "current" as const };

@@ -119,10 +119,19 @@
       "traffic": "trafik",
       "steps": {
         "accountCreated": "Hesap oluşturuldu",
-        "sdkInstalled": "Servis hesabı anahtarı oluşturuldu",
-        "licenseActive": "Lisans etkin",
-        "firstReport": "İlk rapor",
-        "liveMeter": "Canlı sayaç"
+        "sdkInstalled": "SDK veya gateway kuruldu",
+        "licenseActive": "Kimlik bilgileri ve etkin lisans",
+        "firstRequest": "İlk gerçek istek",
+        "reportReady": "Rapor hazır"
+      },
+      "readErrors": {
+        "title": "Bazı veriler okunamadı",
+        "intro": "Bu bir okuma hatası, boş bir hesap değil. Etkilenen bölümler bunun yerine sıfır göstermez.",
+        "org": "Kuruluşunuz çözümlenemedi.",
+        "usage": "Günlük kullanım okunamadı.",
+        "models": "Modele göre döküm okunamadı.",
+        "sessions": "Oturum maliyetleri okunamadı.",
+        "seats": "Makine etkinliği okunamadı."
       }
     },
     "proof": {
@@ -266,11 +275,44 @@
       "statusDone": "tamam",
       "statusNext": "sıradaki",
       "statusPending": "beklemede",
+      "statusUnavailable": "kullanılamıyor",
       "nextLabel": "Sıradaki: {label}",
       "installComment": "# yığınınızı algılar ve tam bağlantı kodunu yazdırır — prompt'larınız altyapınızdan asla çıkmaz",
-      "hintLicense": "BiVelio lisans anahtarınızı yapıştırın; böylece SDK, yönetilen özellikleri açar ve kullanımı raporlar.",
-      "hintFirstReport": "Gerçek bir sağlayıcı çağrısını sarmalayın — ilk SavingsReport buraya düşer ve sayacınız canlanır.",
-      "hintDefault": "Bu, ilk usage_daily satırınız geldiği anda açılır."
+      "hintLicense": "Hesap bölümünde lisansınızı ve hizmet kimlik bilgilerinizi oluşturun veya alın. Tek başına bir anahtar kurulumu kanıtlamaz.",
+      "hintInstall": "SDK veya gateway seçin ve gerçek bir istek gönderin. Anahtar oluşturmak ya da boş toplu iş göndermek kurulumu kanıtlamaz.",
+      "hintFirstRequest": "SDK veya gateway üzerinden sağlayıcıya gerçek bir istek gönderin. Kullanım raporu bu adımı tamamlar.",
+      "hintReport": "İlk gerçek istek ulaştığında rapor görünür.",
+      "hintDefault": "Kuruluma devam etmek için hesabınızı açın.",
+      "linkAccount": "Hesabı aç",
+      "linkInstall": "Kurulumu aç",
+      "linkSdk": "SDK yolu",
+      "linkGateway": "Gateway yolu",
+      "unavailableHint": "Kullanım şu anda okunamıyor; bu nedenle kurulum ve raporlama değerlendirilemiyor. Bu, hesabın boş olduğu anlamına gelmez."
+    },
+    "shadowOpportunities": {
+      "title": "Potansiyel tasarrufunuz nerede",
+      "badge": "SHADOW · TAHMİNİ",
+      "intro": "Yalnızca SHADOW telemetrisinden hesaplanan modele göre varsayımsal fırsatlar. Asla ölçülmüş tasarruf veya faturalanan tutar değildir.",
+      "error": "Modele göre fırsatlar okunamadı. Birazdan tekrar deneyin.",
+      "hidden": "Döküm var, ancak bu hesap göremiyor. Bu bir görünürlük hatası, veri yokluğu değil.",
+      "unavailable": "Modele göre SHADOW dökümü bu sunucuda henüz kullanılamıyor. Modelsiz geçmiş yeniden oluşturulamaz.",
+      "historical": "SHADOW istekleri var, ancak bu migrasyondan önceki geçmiş için model dökümü kullanılamıyor.",
+      "empty": "Bu dönemde henüz SHADOW isteği yok. Fırsatları tahmin etmeye başlamak için Ölç ile gerçek trafik gönderin.",
+      "colModel": "Model",
+      "colRequests": "SHADOW istekleri",
+      "colBaseline": "Temel harcama",
+      "colActual": "Varsayımsal maliyet",
+      "colSavings": "Varsayımsal tasarruf",
+      "colCoverage": "Kapsam",
+      "coverage": "Model kapsamı: SHADOW isteklerinin {coverage} kadarı ({attributed} / {total}).",
+      "coveragePartial": "Kısmi kapsam: döküm {total} SHADOW isteğinin {attributed} kadarını içeriyor ({coverage}); modelsiz geçmiş hariçtir.",
+      "coverageUnavailable": "Günlük SHADOW toplamı okunamadığı için kapsam kullanılamıyor.",
+      "note": "Varsayımsal tahmin: temel − SHADOW maliyeti. Asla ölçülmez, faturalanmaz veya onaylı tasarrufa eklenmez.",
+      "action": "Tasarruf kaldıraçlarını etkinleştirmek için Hesabı inceleyin veya SDK/gateway kurulumunu tamamlayın. Kaldıraç ve yüzey kullanılamıyor: mevcut wire bunları saklamıyor; server-first değişikliği gerekiyor.",
+      "accountCta": "Hesabı incele",
+      "installCta": "Kurulumu tamamla",
+      "exportCsv": "CSV dışa aktar",
+      "exportJson": "JSON dışa aktar"
     },
     "scenarioTable": {
       "colScenario": "senaryo",

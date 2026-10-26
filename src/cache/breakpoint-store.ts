@@ -30,6 +30,27 @@ export interface CacheBreakpointStore {
   set(key: string, value: string, ttlMs: number): Promise<unknown>;
 }
 
+export interface VersionedBreakpointValue {
+  /** Null when the row is absent from the logical cache, including an expired row. */
+  value: unknown;
+  /** Opaque revision. Expiration must not make a previously used revision reusable. */
+  version: string;
+}
+
+/**
+ * Optional atomic extension. The pipeline rereads and reapplies its observation
+ * after a conflict; a failed compare-and-set is never followed by an overwrite.
+ */
+export interface VersionedCacheBreakpointStore extends CacheBreakpointStore {
+  getVersioned(key: string): Promise<VersionedBreakpointValue | null>;
+  compareAndSet(
+    key: string,
+    value: string,
+    ttlMs: number,
+    expectedVersion: string | null,
+  ): Promise<boolean>;
+}
+
 interface Entrada {
   valor: string;
   vence: number;

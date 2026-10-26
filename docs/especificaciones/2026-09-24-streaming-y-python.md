@@ -32,7 +32,7 @@ Cómo se resuelve cada defecto bloqueante de las críticas:
 | C2-6 | El gateway medía con `usage()` y no con `usageFinal()` (servidor.ts:795), lo que generaba registros «measured» a medias | Se usa `usageFinal()` en todos los observadores, también en la réplica coalescida. |
 | C2-7 | La tarjeta de la landing vendía como medido lo que es estimado | Texto reescrito: «same basis rules… a stream without it is reported as unmeasured and never billed». |
 
-También se adoptan las mejoras no bloqueantes que valen la pena: exigir `finish_reason`/`stop_reason` para cerrar un stream (media respuesta nunca se cachea), `requireUsage` lanza en el propio 4xx, la verja de prefijo no registra llamadas sin contador, `usageFinal` del chat exige `[DONE]` o el chunk de usage con `choices: []` (cubre el caso vLLM), `getReader()` en lugar de `for await` sobre `ReadableStream`, el try/catch dentro del callback de metering, `firstEventMs` solo en entrega «live», `requestSent` en lugar de `billed`, abort alineado con el gateway, y no refactorizar `ObservadorSse`/`ObservadorResponses`.
+También se adoptan las mejoras no bloqueantes que valen la pena: exigir `finish_reason`/`stop_reason` para cerrar un stream (media respuesta nunca se cachea), `requireUsage` lanza en el propio 4xx, la verja de prefijo no registra llamadas sin contador, `usageFinal` del chat exige `[DONE]` o el chunk de usage con `choices: []` (cubre el caso vLLM), `getReader()` en lugar de `for await` sobre `ReadableStream`, el try/catch dentro del callback de metering, `firstEventMs` solo en entrega «live», `requestSent` en lugar de `billed`, abort alineado con el gateway, y `SseParser` compartido en `ObservadorSse`/`ObservadorResponses`.
 
 `Singleflight.has()` no hace falta, pero sí algo equivalente para «seguir sin liderar»: `run()` siempre registra como líder cuando la clave no está en vuelo. Por eso se añade `join()` (§5.5).
 
@@ -43,10 +43,10 @@ También se adoptan las mejoras no bloqueantes que valen la pena: exigir `finish
 «Ahorro medido con el contador del proveedor, nunca una estimación; comisión solo sobre lo medido; publicamos el suelo.»
 
 1. **La fórmula de `basis` no cambia.** Sigue siendo `SavingsLedger.estimateCost` (accounting.ts:283-429). Solo se le antepone una guarda: si alguna llamada facturada llegó sin contador completo, el resultado es `unmeasured` (§4).
-2. **El contador se lee del evento FINAL del proveedor.** En OpenAI chat es el chunk con `usage` (el SDK siempre pide `stream_options.include_usage`). En Anthropic es `message_delta`: el `output_tokens: 1` de `message_start` es un marcador (medidor.ts:94-96). Un stream sin ese evento lleva `usage {0, 0, complete: false}` y sale `unmeasured`, con baseline de entrada 0 y `netSavings ≤ 0` (§4.3).
+2. **El contador se lee del evento FINAL del proveedor y se exige el cierre terminal.** En OpenAI chat es el chunk con `usage` (el SDK siempre pide `stream_options.include_usage`). En Anthropic, `message_delta` aporta el contador y `message_stop` confirma el cierre: el `output_tokens: 1` de `message_start` es un marcador. Sin contador, `usage {0, 0, complete: false}` y `unmeasured`; sin `message_stop`, el adaptador rechaza la respuesta parcial.
 3. **El registro de metering se emite una sola vez, cuando `result` se resuelve, y nunca si `result` se rechaza** (§5.8).
 4. **El wire y la base de datos no cambian.** `toWire` (emitter.ts:313-375) arma el registro campo a campo, así que `report.streaming` no viaja. `basis` sigue en {measured, estimated, unmeasured, shadow}. No hay migraciones y no hace falta `vercel --prod` antes del npm.
-5. **Media respuesta nunca se cachea.** Un stream que termina sin `finish_reason` (OpenAI) o sin `message_delta` ni `message_stop` (Anthropic) hace que el adaptador lance un error. Cuenta como fallo del proveedor: se propaga, no hay fail-open, no hay registro y no hay caché.
+5. **Media respuesta nunca se cachea.** Un stream que termina sin `finish_reason` (OpenAI) o sin `message_stop` (Anthropic) hace que el adaptador lance un error. Cuenta como fallo del proveedor: se propaga, no hay fail-open, no hay registro y no hay caché.
 
 ---
 
@@ -180,7 +180,7 @@ export interface SavingsLayer {
    * Await `result` before calling close(), or its usage record may be lost.
    */
   generateStream<T = unknown>(request: SavingsRequest, options?: SavingsStreamOptions): SavingsStream<T>;
-  close(): void;
+  close(): void | Promise<void>;
 }
 ```
 

@@ -10,6 +10,7 @@ import { OpenAICompatibleProvider } from "../src/providers/openai-compatible.js"
 import type { Provider, ProviderRequest, ProviderResponse } from "../src/providers/types.js";
 import type { ChatMessage, SavingsRequest, SavingsResult, ToolDescriptor } from "../src/contracts/types.js";
 import { apiDeMensajes } from "./helpers/api-de-mensajes-falsa.js";
+import { CALIBRACION_DE_PRUEBA, certificarRespuestaSemantica } from "./helpers/semantic-cache.js";
 
 /**
  * LA CLAVE DE LA CACHÉ EXACTA VE LO QUE VE EL MODELO EN UN BUCLE DE HERRAMIENTAS.
@@ -641,19 +642,22 @@ describe('5 · caché semántica con "include-agentic"', () => {
   for (const v of DEL_FALLO) {
     it(`${v.nombre}: miss, y la misma conversación sí acierta`, async () => {
       const proveedorN = new ProveedorNumerado();
+      const semanticCache = new InMemorySemanticCache({ embed, similarityThreshold: 0.3, acceptThreshold: 0.3, calibration: CALIBRACION_DE_PRUEBA });
       const layer = createSavingsLayer({
         provider: proveedorN,
         costModels: { "openai/gpt-4o-mini": { inputPer1k: 0.00015, outputPer1k: 0.0006 } },
         silenceWarnings: true,
-        semanticCacheStore: new InMemorySemanticCache({ embed, similarityThreshold: 0.3, acceptThreshold: 0.3 }),
+        semanticCacheStore: semanticCache,
       });
       const { a, b } = variante(v);
-      await layer.generate(req(a));
+      const original = req(a);
+      const primera = await layer.generate(original);
       const cruzada = await layer.generate(req(b));
       expect(cruzada.report.cache.result).toBe("miss");
       expect(proveedorN.llamadas).toBe(2);
 
-      const misma = await layer.generate(req(a));
+      await certificarRespuestaSemantica(semanticCache, original, primera, { agentic: true });
+      const misma = await layer.generate(original);
       expect(misma.report.cache.result).toBe("semantic");
       expect(misma.text).toBe("respuesta 0");
     });

@@ -157,7 +157,7 @@ como salen hoy:
 | `the request did not ask for usage (stream_options.include_usage)` | Chat Completions en stream sin `include_usage`: el proveedor no manda contador | añade `stream_options={"include_usage": True}` a la llamada, o arranca con `BVSALA_GATEWAY_USAGE_INJECT=1` |
 | `…; usage injection skips compressed request bodies` | la inyección está puesta, pero solo añade la opción a cuerpos sin comprimir | pídelo en la llamada |
 | `…, and the upstream rejects that option` | el upstream rechazó `stream_options` y la inyección quedó apagada para el resto del proceso | en stream no hay arreglo desde el gateway; con `stream: false` sí se mide |
-| `the stream ended without the provider's final usage event` | el stream se cortó antes de su evento final (`message_delta`, `response.completed`/`incomplete`/`failed`, el chunk de uso o `[DONE]`): sin él no hay contador | nada |
+| `the stream ended without the provider's final usage event` | el stream se cortó antes de completarse (`message_delta` y `message_stop` en Anthropic, `response.completed`/`incomplete`/`failed`, el chunk de uso o `[DONE]`): sin contador y cierre terminal no hay medida | nada |
 | `the response ended as response.failed without usage` | la Responses API cerró con `response.failed` sin `usage`. Si lo trae, sí se mide | nada |
 | `the response ended as response.incomplete without usage` | la Responses API cerró con `response.incomplete` sin `usage`. Si lo trae, sí se mide: un `response.incomplete` por `max_output_tokens` o por el filtro de contenido lo factura el proveedor | nada |
 | `the response carried no usage` | respuesta JSON (`stream: false`) sin `usage` | nada |
@@ -165,8 +165,10 @@ como salen hoy:
 | `the response is neither JSON nor an event stream (content-type: …)` | el upstream contestó con otro tipo de contenido en una ruta que sí sabe medir | revisa el upstream |
 | `no usage dialect for this route` | ruta sin contador que el gateway sepa leer (embeddings, imágenes, audio…): solo mide `/v1/messages`, `…/chat/completions` y `…/responses` | nada |
 
-Con `BVSALA_GATEWAY_COALESCE=1` (apagada por defecto), una petición idéntica a
-otra que sigue en vuelo no viaja: recibe la réplica y su línea lleva
+Con `BVSALA_GATEWAY_COALESCE=1` (apagada por defecto), una petición idéntica de
+inferencia de lectura (`messages`, `chat/completions`, `responses` o `embeddings`)
+a otra que sigue en vuelo no viaja: recibe la réplica. Batches, administración y
+rutas desconocidas siempre se ejecutan por separado. La línea lleva
 `· COALESCED (call avoided)`. Detrás va `· by reference: floor $… (cache read
 price, …)` cuando se valora con el contador de la petición que sí viajó —a
 precio de lectura de caché, sin primas y con la salida solo si el cuerpo trae
