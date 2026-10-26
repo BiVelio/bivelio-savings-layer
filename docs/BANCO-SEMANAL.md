@@ -571,8 +571,10 @@ El Markdown de cada arnés es el mismo informe que se publica en
 instala nada: Node 24 ejecuta `benchmarks/banco-semanal/puerta.ts` tal cual.
 El trabajo lee los runs de `banco-semanal.yml` en `main` y toma el último
 **completado** cuyo título lleva «(vivo)». La puerta cierra si ese run no
-terminó en `success`, o si tiene **más de 8 días**. Los runs en seco o en curso
-no cuentan. Un run cancelado sí cuenta, y como fallo.
+terminó en `success`, si tiene **más de 8 días** o si su `headSha` no es el
+commit de la Release (`BANCO_SEMANAL_SHA=${{ github.sha }}` en el workflow).
+Un banco verde de otro commit no certifica esta Release. Los runs en seco o en
+curso no cuentan. Un run cancelado sí cuenta, y como fallo.
 
 **Solo `publicar` depende de la puerta.** `verificar` no: el tarball verificado
 se sigue construyendo y subiendo como artefacto aunque la puerta esté cerrada.
