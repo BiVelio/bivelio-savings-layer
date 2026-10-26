@@ -1,6 +1,6 @@
 /**
  * LA PUERTA DE PUBLICACIÓN: no se publica en npm si el último banco semanal en
- * vivo falló o tiene más de 8 días.
+ * vivo falló, tiene más de 8 días o no certifica el SHA de la Release.
  * ---------------------------------------------------------------------------
  * La corre el trabajo `banco-semanal` de .github/workflows/publish.yml, del que
  * depende `publicar` (NO `verificar`: el tarball verificado se sigue
@@ -61,7 +61,7 @@ export function ultimoBancoEnVivo(runs: readonly RunDelBanco[]): RunDelBanco | n
   return vivos[0] ?? null;
 }
 
-function estadoDelBanco(runs: readonly RunDelBanco[] | null, ahora: Date, maxDias: number): { ok: boolean; mensaje: string } {
+function estadoDelBanco(runs: readonly RunDelBanco[] | null, ahora: Date, maxDias: number, shaRequerido?: string): { ok: boolean; mensaje: string } {
   if (!runs) return { ok: false, mensaje: "no se pudo leer la lista de runs de banco-semanal.yml en main (¿el workflow aún no existe en main?)" };
   const u = ultimoBancoEnVivo(runs);
   if (!u) return { ok: false, mensaje: "no hay ningún banco semanal EN VIVO completado en main" };
@@ -71,14 +71,21 @@ function estadoDelBanco(runs: readonly RunDelBanco[] | null, ahora: Date, maxDia
   if (u.conclusion !== "success") {
     return { ok: false, mensaje: `el último banco semanal en vivo (${donde}) terminó en «${u.conclusion ?? "sin conclusión"}»` };
   }
+  if (shaRequerido && u.headSha !== shaRequerido) {
+    return {
+      ok: false,
+      mensaje: `el último banco semanal en vivo (${donde}) está en verde, pero certifica ${u.headSha ?? "un commit desconocido"}, no la release ${shaRequerido}`,
+    };
+  }
   if (dias > maxDias) {
     return { ok: false, mensaje: `el último banco semanal en vivo en verde (${donde}) tiene ${dias.toFixed(1)} días; el máximo es ${maxDias}` };
   }
   return { ok: true, mensaje: `el último banco semanal en vivo (${donde}) está en verde y tiene ${dias.toFixed(1)} días` };
 }
 
-export function evaluarPuerta(runs: readonly RunDelBanco[] | null, ahora: Date, opciones: { maxDias?: number; emergencia?: string } = {}): Decision {
-  const e = estadoDelBanco(runs, ahora, opciones.maxDias ?? MAX_DIAS);
+export function evaluarPuerta(runs: readonly RunDelBanco[] | null, ahora: Date, opciones: { maxDias?: number; emergencia?: string; shaRequerido?: string } = {}): Decision {
+  const shaRequerido = opciones.shaRequerido?.trim();
+  const e = estadoDelBanco(runs, ahora, opciones.maxDias ?? MAX_DIAS, shaRequerido || undefined);
   const emergencia = opciones.emergencia?.trim();
   if (e.ok) return { ok: true, nivel: "notice", mensaje: `Banco semanal: ${e.mensaje}.` };
   if (emergencia) {
@@ -114,7 +121,10 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   } catch {
     texto = "";
   }
-  const d = evaluarPuerta(leerRuns(texto), new Date(), { emergencia: process.env["BANCO_SEMANAL_EMERGENCIA"] ?? "" });
+  const d = evaluarPuerta(leerRuns(texto), new Date(), {
+    emergencia: process.env["BANCO_SEMANAL_EMERGENCIA"] ?? "",
+    shaRequerido: process.env["BANCO_SEMANAL_SHA"] ?? "",
+  });
   console.log(`::${d.nivel}::${d.mensaje}`);
   process.exit(d.ok ? 0 : 1);
 }
