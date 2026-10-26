@@ -45,8 +45,9 @@ const namespace = env.CANARY_NAMESPACE;
 const model = env.CANARY_MODEL || "google/gemini-3.8-flash";
 const phase = env.CANARY_PHASE;
 const records = [];
+const licenses = JSON.parse(env.CANARY_LICENSES);
+const layers = new Map();
 let providerCalls = 0;
-let layer;
 let pool;
 
 class TrackedExactCache extends PgExactCache {
@@ -85,7 +86,8 @@ function request(text, tenant, exact = true) {
 async function invoke(payload) {
   const before = providerCalls;
   const started = performance.now();
-  const result = await layer.generate(payload);
+  const activeLayer = await layerFor(payload.context.tenantId);
+  const result = await activeLayer.generate(payload);
   const elapsed = performance.now() - started;
   const summary = {
     cache: result.report.cache.result,
@@ -148,15 +150,22 @@ try {
       return fetch(url, { ...init, signal: AbortSignal.timeout(4_500) });
     }
   });
-  layer = createSavingsLayer({
-    provider,
-    licenseKey: env.BIVELIO_LICENSE_KEY,
-    licensePublicKey: env.CANARY_LICENSE_PUBLIC_KEY,
-    exactCache: exact,
-    semanticCacheStore: semantic,
-    semanticCacheDefault: true,
-    silenceWarnings: true
-  });
+  async function layerFor(tenant) {
+    if (!layers.has(tenant)) {
+      const license = licenses[tenant];
+      assert(license, "missing canary license for tenant");
+      layers.set(tenant, createSavingsLayer({
+        provider,
+        licenseKey: license.token,
+        licensePublicKey: license.publicKey,
+        exactCache: exact,
+        semanticCacheStore: semantic,
+        semanticCacheDefault: true,
+        silenceWarnings: true
+      }));
+    }
+    return layers.get(tenant);
+  }
 
   const originalText = "For this synthetic persistence check, reply with exactly GREEN-742 and nothing else.";
   const rewordedText = "Synthetic persistence check: output only GREEN-742, please.";
@@ -215,7 +224,7 @@ try {
     }
   }
 
-  await layer.close();
+  await Promise.all([...layers.values()].map((activeLayer) => activeLayer.close()));
   await pool.end();
   await writeFile(resultPath, JSON.stringify({ ok: true, phase, records, baselineHash, providerCalls }));
 } catch (error) {
@@ -223,7 +232,7 @@ try {
     ? error.constructor.name
     : "Error";
   const providerStatus = error instanceof Error ? /provider (\d{3})/.exec(error.message)?.[1] ?? null : null;
-  try { await layer?.close(); } catch {}
+  try { await Promise.all([...layers.values()].map((activeLayer) => activeLayer.close())); } catch {}
   try { await pool?.end(); } catch {}
   try { await writeFile(resultPath, JSON.stringify({ ok: false, phase, errorName, providerStatus, records, providerCalls })); } catch {}
   process.exitCode = 1;
@@ -252,7 +261,7 @@ interface WorkerResult {
   providerCalls: number;
 }
 
-function ephemeralLicense(): { token: string; publicKey: string } {
+function ephemeralLicense(tenantId: string): { token: string; publicKey: string } {
   const { publicKey, privateKey } = generateKeyPairSync("ed25519", {
     publicKeyEncoding: { type: "spki", format: "pem" },
     privateKeyEncoding: { type: "pkcs8", format: "pem" },
@@ -262,7 +271,7 @@ function ephemeralLicense(): { token: string; publicKey: string } {
   const now = Math.floor(Date.now() / 1000);
   const payload = b64url(JSON.stringify({
     jti: `live-canary-${randomUUID()}`,
-    org_id: "live-canary",
+    org_id: tenantId,
     plan: "pro",
     seats: 1,
     features: ["semantic_cache", "dashboards"],
@@ -291,7 +300,7 @@ async function main(): Promise<void> {
 
   await access(join(root, "dist", "index.js"));
   await access(join(packageRoot, "dist", "index.js"));
-  const license = ephemeralLicense();
+  const licenses = Object.fromEntries(["tenant-a", "tenant-b"].map((tenant) => [tenant, ephemeralLicense(tenant)]));
   const temporary = await mkdtemp(join(tmpdir(), "bivelio-live-canary-"));
   const namespace = `live-canary-${randomUUID()}`;
   const keysPath = join(temporary, "exact-keys.txt");
@@ -320,8 +329,7 @@ async function main(): Promise<void> {
       const resultPath = join(temporary, `${phase}.json`);
       const childEnv = {
         ...process.env,
-        BIVELIO_LICENSE_KEY: license.token,
-        CANARY_LICENSE_PUBLIC_KEY: license.publicKey,
+        CANARY_LICENSES: JSON.stringify(licenses),
         CANARY_PHASE: phase,
         CANARY_RESULT: resultPath,
         CANARY_KEYS: keysPath,
