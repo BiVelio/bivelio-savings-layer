@@ -71,6 +71,7 @@
  */
 import type { Bateria } from "./plan.js";
 import type { Medicion } from "./extraer.js";
+import { PRESUPUESTOS_LATENCIA_B2 } from "../b2/latencia.js";
 import { lineaDelCuadre, type Cuadre } from "./factura.js";
 
 export const TOLERANCIA_INFORME_RELATIVA = 0.02;
@@ -86,6 +87,7 @@ export type Regla =
   | "exactitud-peor"
   | "informe-vs-factura"
   | "factura-no-cuadra"
+  | "latencia-excedida"
   | "arnes-falla"
   | "tope-excedido"
   | "tope-global"
@@ -163,6 +165,14 @@ export function infraccionesDe(m: Medicion, topeUsd: number): Infraccion[] {
     if (fueraDeTolerancia(f.informeUsd, f.facturaUsd)) {
       const rel = f.facturaUsd !== 0 ? ` (${pct((f.informeUsd - f.facturaUsd) / f.facturaUsd)})` : "";
       add("informe-vs-factura", `brazo ${f.brazo}: el informe dice ${f.informeUsd.toFixed(6)} $ y la factura ${f.facturaUsd.toFixed(6)} $${rel} en ${f.llamadas} llamadas`);
+    }
+  }
+  for (const [brazo, l] of Object.entries(m.latency?.arms ?? {})) {
+    if (l.total.p95 > PRESUPUESTOS_LATENCIA_B2.p95Ms) {
+      add("latencia-excedida", `brazo ${brazo}: p95=${l.total.p95.toFixed(0)} ms supera ${PRESUPUESTOS_LATENCIA_B2.p95Ms} ms`);
+    }
+    if (l.total.max > PRESUPUESTOS_LATENCIA_B2.maxMs) {
+      add("latencia-excedida", `brazo ${brazo}: max=${l.total.max.toFixed(0)} ms supera ${PRESUPUESTOS_LATENCIA_B2.maxMs} ms`);
     }
   }
   return out;

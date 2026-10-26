@@ -5,6 +5,7 @@
  */
 import { describe, expect, it } from "vitest";
 
+import { resumirLatencias } from "../benchmarks/b2/latencia.js";
 import { comprobarEntrada, NumJ, normalizarCadena, parsearJson, salidaDeLlamadas, type ValorJ } from "../benchmarks/publicados/bfcl/ast.js";
 import { conArgumentoCambiado, familiaDe, HOSTS_OFICIALES, MODELOS_GAMA_ALTA, muestraEstratificada, NOMBRE_POR_DEFECTO, PRECIOS_CITADOS, proveedorDe, techoDe, TOPE_GAMA_ALTA, TOPE_MAXIMO, violacionesDeCache, type VarianteMultiTurno } from "../benchmarks/publicados/bfcl/arnes.js";
 import { cuerpoBrazoA, diferenciasDelCable, leerRespuesta, normalizarBase } from "../benchmarks/publicados/bfcl/brazos.js";
@@ -155,8 +156,9 @@ describe("BFCL · presupuesto y cable", () => {
     expect(llamadas).toBe(0);
   });
 
-  it("reintenta los 429, carga el coste al brazo de la unidad y no guarda cabeceras", async () => {
+  it("reintenta los 429, suma el tiempo de ambos proveedores y excluye el backoff", async () => {
     let n = 0;
+    let reloj = 0;
     const pres = new Presupuesto("m", 1);
     const cable = crearCable({
       familia: "openai",
@@ -165,20 +167,25 @@ describe("BFCL · presupuesto y cable", () => {
       prima: 1,
       semaforo: new Semaforo(2),
       pausasMs: [1, 1],
-      dormir: async () => {},
+      dormir: async () => { reloj += 100; },
+      ahora: () => reloj,
       base: async () => {
         n++;
+        reloj += 5;
         if (n === 1) return new Response('{"error":"rate"}', { status: 429 });
         return new Response(JSON.stringify({ choices: [{ message: { content: "ok" } }], usage: { prompt_tokens: 1000, completion_tokens: 0 } }), { status: 200 });
       },
     });
     const reg: LlamadaDelCable[] = [];
-    const r = await unidadEnCurso.run({ unidad: "u", brazo: "A", registro: reg }, () =>
+    const medicion = { providerMs: 0 };
+    const r = await unidadEnCurso.run({ unidad: "u", brazo: "A", registro: reg, medicion }, () =>
       cable("https://api.openai.com/v1/chat/completions", { method: "POST", headers: { authorization: "Bearer sk-secretsecretsecret" }, body: '{"model":"x"}' }),
     );
     expect(r.status).toBe(200);
     expect(n).toBe(2);
     expect(reg[0]!.intentos).toBe(2);
+    expect(reg[0]!.providerMs).toBe(10);
+    expect(medicion.providerMs).toBe(10);
     expect(pres.porBrazo.A).toBeCloseTo(0.001, 12);
     expect(JSON.stringify(reg)).not.toMatch(/secret|Bearer/);
   });
@@ -254,6 +261,21 @@ describe("BFCL · presupuesto y cable", () => {
 
   it("redacta credenciales en textos de error", () => {
     expect(sinSecretos('x-api-key: "sk-ant-abcdef123456" and Bearer abc.def')).not.toMatch(/abcdef123456|abc\.def/);
+  });
+
+  it("el informe B2 conserva p95/max y separa proveedor de overhead en A y B", () => {
+    const informe = resumirLatencias({
+      A: [10, 20, 30, 40, 100].map((totalMs, i) => ({ totalMs, providerMs: (i + 1) * 2 })),
+      B: [{ totalMs: 3, providerMs: 0 }],
+    }, "MOCK");
+    expect(informe.activeArms).toEqual(["A", "B"]);
+    expect(informe.arms.A?.total).toMatchObject({ n: 5, max: 100 });
+    expect(informe.arms.A?.total.p95).toBeCloseTo(88, 10);
+    expect(informe.arms.A?.provider.max).toBe(10);
+    expect(informe.arms.A?.layerOverhead.max).toBe(90);
+    expect(informe.arms.B).toMatchObject({ total: { max: 3 }, provider: { max: 0 }, layerOverhead: { max: 3 } });
+    expect(informe.status).toBe("estimated");
+    expect(informe.instrumental).toBe(true);
   });
 });
 

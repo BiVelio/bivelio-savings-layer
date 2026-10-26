@@ -19,8 +19,10 @@
  * respuesta; nunca las cabeceras, que es donde viaja la clave.
  */
 import { AsyncLocalStorage } from "node:async_hooks";
+import { performance } from "node:perf_hooks";
 
 import type { CostModel } from "../../../src/index.js";
+import type { RelojMonotono } from "../../b2/latencia.js";
 import { usoNativoDeGemini } from "../../gemini-nativo.js";
 
 /**
@@ -230,10 +232,17 @@ export interface LlamadaDelCable {
   uso: UsoCrudo | null;
   coste: number;
   intentos: number;
+  /** Tiempo de las llamadas al proveedor, reintentos incluidos; esperas de backoff no. */
+  providerMs: number;
 }
 
 /** La unidad de trabajo en curso (la entrada BFCL), para atribuir llamadas del brazo B aunque vayan en paralelo. */
-export const unidadEnCurso = new AsyncLocalStorage<{ unidad: string; brazo: Brazo; registro: LlamadaDelCable[] }>();
+export const unidadEnCurso = new AsyncLocalStorage<{
+  unidad: string;
+  brazo: Brazo;
+  registro: LlamadaDelCable[];
+  medicion?: { providerMs: number };
+}>();
 
 const REINTENTABLE = new Set([408, 409, 429, 500, 502, 503, 504, 529]);
 
@@ -248,6 +257,7 @@ export interface OpcionesDelCable {
   dormir?: (ms: number) => Promise<void>;
   /** Plazo de una llamada (defecto {@link PLAZO_POR_LLAMADA_MS}); los tests lo acortan. */
   plazoMs?: number;
+  ahora?: RelojMonotono;
 }
 
 /** Quita de un texto cualquier cosa con forma de credencial (por si un error del proveedor la repitiera). */
@@ -284,6 +294,7 @@ export function crearCable(o: OpcionesDelCable): typeof fetch {
   const pausas = o.pausasMs ?? [1000, 2000, 4000, 8000, 16000, 30000];
   const dormir = o.dormir ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
   const plazoMs = o.plazoMs ?? PLAZO_POR_LLAMADA_MS;
+  const ahora = o.ahora ?? (() => performance.now());
   return async (input, init) => {
     const ctx = unidadEnCurso.getStore();
     const brazo: Brazo = ctx?.brazo ?? "B";
@@ -299,6 +310,7 @@ export function crearCable(o: OpcionesDelCable): typeof fetch {
     }
     let intentos = 0;
     let deTransporte = 0;
+    let providerMs = 0;
     let resp: Response | null = null;
     let texto = "";
     for (;;) {
@@ -307,10 +319,14 @@ export function crearCable(o: OpcionesDelCable): typeof fetch {
       // adaptador mandaran una, una cancelación suya NO se reintenta).
       const plazo = AbortSignal.timeout(plazoMs);
       const senal = init?.signal ? AbortSignal.any([init.signal, plazo]) : plazo;
+      const inicioProveedor = ahora();
       try {
         resp = await o.semaforo.con(() => base(input, { ...init, signal: senal }));
         texto = await resp.text();
       } catch (e) {
+        const transcurrido = ahora() - inicioProveedor;
+        providerMs += transcurrido;
+        if (ctx?.medicion) ctx.medicion.providerMs += transcurrido;
         const porPlazo = plazo.aborted;
         const porRed = !porPlazo && e instanceof TypeError && !(init?.signal?.aborted ?? false);
         if (!(porPlazo || porRed)) throw e;
@@ -321,6 +337,9 @@ export function crearCable(o: OpcionesDelCable): typeof fetch {
         await dormir(pausas[Math.min(deTransporte - 1, pausas.length - 1)]!);
         continue;
       }
+      const transcurrido = ahora() - inicioProveedor;
+      providerMs += transcurrido;
+      if (ctx?.medicion) ctx.medicion.providerMs += transcurrido;
       if (!REINTENTABLE.has(resp.status) || intentos > pausas.length) break;
       const ra = Number(resp.headers.get("retry-after"));
       const pausa = Math.min(60_000, Math.max(pausas[intentos - 1]!, Number.isFinite(ra) ? ra * 1000 : 0));
@@ -335,7 +354,7 @@ export function crearCable(o: OpcionesDelCable): typeof fetch {
     const uso = resp.ok ? usoDeRespuesta(o.familia, respuesta) : null;
     const coste = uso ? costeDeUso(uso, o.precio, o.prima) : 0;
     if (uso) o.presupuesto.cargar(brazo, coste);
-    ctx?.registro.push({ brazo, unidad: ctx.unidad, url: new URL(url).pathname, status: resp.status, peticion, respuesta, uso, coste, intentos });
+    ctx?.registro.push({ brazo, unidad: ctx.unidad, url: new URL(url).pathname, status: resp.status, peticion, respuesta, uso, coste, intentos, providerMs });
     return new Response(resp.ok ? texto : sinSecretos(texto), {
       status: resp.status,
       headers: { "content-type": resp.headers.get("content-type") ?? "application/json" },

@@ -3,6 +3,7 @@
  * los hallazgos. Puro: la verja lo ejercita con registros de mentira.
  */
 import { CATALOGO } from "../../../src/pricing/catalogo.js";
+import type { InformeLatencia } from "../../b2/latencia.js";
 import { esNegativa, mcnemarExacto, wilson, type Clase } from "./nucleo.js";
 import type { RegistroB, RegistroDeItem } from "./banco.js";
 
@@ -15,6 +16,8 @@ export interface Tirada {
   semilla: number;
   topeDeSalida: number;
   reintentosDeRed: number;
+  /** Ausente al rehacer informes de artefactos anteriores a la instrumentación B2. */
+  latency?: InformeLatencia;
   porModelo: Record<
     string,
     {

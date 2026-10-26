@@ -14,6 +14,7 @@ import {
 } from "../benchmarks/banco-semanal/extraer.js";
 import { esErrorDeCuota, esErrorNoMedibleDelProveedor, esSobrecargaDelProveedor } from "../benchmarks/publicados/cuota.js";
 import { conReintentos } from "../benchmarks/publicados/gsm8k/arnes.js";
+import { resumirLatencias } from "../benchmarks/b2/latencia.js";
 import { resumir as resumirGsm8k, type Ensayo } from "../benchmarks/publicados/gsm8k/medir.js";
 import { resumenMarkdown } from "../benchmarks/banco-semanal/resumen.js";
 import { claveQueFalta, filtrarCeldas, jornadaDelBanco, motivoDeAplazamiento, redactar, valoresSecretos } from "../benchmarks/banco-semanal/orquestador.js";
@@ -346,6 +347,18 @@ function medicionLimpia(extra: Partial<Medicion> = {}): Medicion {
 describe("banco semanal · los umbrales", () => {
   it("una medición limpia no infringe nada (un IC que toca el 0 no es significativo)", () => {
     expect(infraccionesDe(medicionLimpia(), 0.75)).toEqual([]);
+  });
+
+  it("latencia B2: p95 ≤ 3 s y max ≤ 5 s por brazo; una cola extrema también bloquea", () => {
+    const latency = resumirLatencias({
+      A: Array.from({ length: 20 }, () => ({ totalMs: 100, providerMs: 90 })),
+      B: [...Array.from({ length: 19 }, () => ({ totalMs: 100, providerMs: 90 })), { totalMs: 6000, providerMs: 5000 }],
+    }, "LIVE");
+    expect(infraccionesDe(medicionLimpia({ latency }), 0.75)).toEqual([
+      { regla: "latencia-excedida", bateria: "gsm8k", modelo: "openai/gpt-4o-mini", detalle: "brazo B: max=6000 ms supera 5000 ms" },
+    ]);
+    const p95Lento = resumirLatencias({ A: Array.from({ length: 20 }, () => ({ totalMs: 4000, providerMs: 3000 })) }, "LIVE");
+    expect(infraccionesDe(medicionLimpia({ latency: p95Lento }), 0.75).map((i) => i.detalle)).toEqual(["brazo A: p95=4000 ms supera 3000 ms"]);
   });
 
   it.each([

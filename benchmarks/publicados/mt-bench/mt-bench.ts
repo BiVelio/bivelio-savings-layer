@@ -63,6 +63,7 @@
  */
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
+import { resumirLatencias, type InformeLatencia, type MuestraLatencia } from "../../b2/latencia.js";
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -1311,6 +1312,8 @@ interface ResumenDeModelo {
     ahorroPorLecturasUsdB: number;
   };
   latencia: { A: { p50: number | null; p95: number | null }; B: { p50: number | null; p95: number | null }; deltaMedioMs: CI | null; llamadasSinReintento: number };
+  /** Ausente al releer artefactos anteriores a la instrumentación B2. */
+  latency?: InformeLatencia;
   truncadas: { A: number; B: number };
   cable: { turnos: number; identicos: number; diferencias: Record<string, number>; modelosServidosB: string[]; modelosServidosA: string[] };
   capa: {
@@ -1365,6 +1368,7 @@ function resumir(
   topeJuez: Tope | null,
   llamadasJuez: number,
   corteJuez: boolean,
+  mock = false,
 ): ResumenDeModelo {
   const completas = resultados.filter((r) => !r.error && r.A.length === 2 && r.B.length === 2);
   const llamadas = completas.flatMap((r) => r.llamadas);
@@ -1382,6 +1386,10 @@ function resumir(
   const latTurno = (b: Brazo) => completas.flatMap((r) => r[b].map((t) => t.latenciaMs));
   const latA = latTurno("A");
   const latB = latTurno("B");
+  const latencySamples = {
+    A: completas.flatMap((r): MuestraLatencia[] => r.A.map((t) => ({ totalMs: t.latenciaMs, providerMs: t.latenciaMs }))),
+    B: completas.flatMap((r): MuestraLatencia[] => r.B.map((t) => ({ totalMs: t.latenciaMs, providerMs: t.informe?.latencyMs.provider ?? t.latenciaMs }))),
+  };
   const ahorroEstratificado = completas.length ? bootstrapRatioCIEstratificado(estratos, { seed: SEMILLA_DE_MUESTRA }) : null;
 
   // El cable: la PRIMERA llamada de cada brazo en cada turno (la que responde).
@@ -1517,6 +1525,7 @@ function resumir(
       deltaMedioMs: latA.length ? bootstrapMeanCI(latB.map((b, i) => b - latA[i]!), { seed: SEMILLA_DE_MUESTRA }) : null,
       llamadasSinReintento: lat("A").length + lat("B").length,
     },
+    latency: resumirLatencias(latencySamples, mock ? "MOCK" : "LIVE"),
     truncadas: {
       A: completas.flatMap((r) => r.A).filter((t) => t.fin === "max_tokens" || t.fin === "length").length,
       B: completas.flatMap((r) => r.B).filter((t) => t.fin === "max_tokens" || t.fin === "length").length,
@@ -1991,7 +2000,7 @@ async function main(): Promise<void> {
         corteJuez = previo?.corteJuez ?? false;
       }
     }
-    const res = resumir(m, precio, orden.length, resultados, tope, corte, juicios, topeJuez, llamadasJuez, corteJuez);
+    const res = resumir(m, precio, orden.length, resultados, tope, corte, juicios, topeJuez, llamadasJuez, corteJuez, op.mock);
     resumenes.push(res);
     gastoGen += previo ? 0 : tope.gastado;
     gastoJuez += topeJuez ? topeJuez.gastado - previoJuez : 0;
