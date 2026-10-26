@@ -349,7 +349,8 @@ async function main(): Promise<void> {
         const name = failure.errorName ? ` (${failure.errorName})` : "";
         const status = failure.providerStatus ? ` provider ${failure.providerStatus}` : "";
         const detail = failure.diagnostic ? `: ${failure.diagnostic}` : "";
-        throw new Error(`${phase} packaged worker failed${name}${status}${detail}`);
+        const completed = failure.records?.length ?? 0;
+        throw new Error(`${phase} packaged worker failed after ${completed} requests${name}${status}${detail}`);
       }
       const result = JSON.parse(await readFile(resultPath, "utf8")) as WorkerResult;
       if (!result.ok) throw new Error(`${phase} packaged worker failed its gates`);
