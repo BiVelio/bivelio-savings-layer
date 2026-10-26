@@ -1,5 +1,22 @@
 # Changelog
 
+## Unreleased
+
+### Production-readiness evidence
+
+- Add an opt-in live canary that installs the built tarballs in a temporary
+  consumer and exercises cold/restart, exact and calibrated semantic hits,
+  tenant isolation, measured savings, B2 latency and database-stall fail-open in
+  two independent Node processes. It uses an ephemeral Ed25519 test license,
+  never logs credentials or request content, and has a manual GitHub workflow.
+- Add a disposable-database `pg_dump`/`pg_restore` integration drill covering
+  exact, semantic and calibration recovery, stale restore rejection, memory
+  rollback, retention and tenant deletion.
+- Gate cold semantic lookup at 250 ms and every warm maximum at 100 ms, in
+  addition to the existing warm p95/p99, recall, FIFO and index gates.
+- Document migration, backup/PITR, restore drills, rollback, retention, tenant
+  deletion, canary execution and release gates.
+
 ## 0.6.0-rc.1 — SDK release candidate
 
 This prerelease adds opt-in, customer-operated persistence while preserving the

@@ -1,0 +1,63 @@
+name: persistence-canary
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: persistence-canary
+  cancel-in-progress: false
+
+jobs:
+  canary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_PASSWORD: validation
+          POSTGRES_DB: bivelio_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Habilitar pnpm
+        run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build:all
+      - name: Backup, restore y benchmark PostgreSQL
+        env:
+          BIVELIO_TEST_POSTGRES_URL: postgresql://postgres:validation@127.0.0.1:5432/bivelio_test
+          BIVELIO_PG_CLIENT_DOCKER: pgvector/pgvector:pg17
+          BIVELIO_BENCH_OUTPUT: persistence-results/semantic-postgres-100k.json
+        run: |
+          mkdir -p persistence-results
+          pnpm --filter @bivelio/persistence-postgres exec vitest run test/disaster-recovery.integration.test.ts
+          pnpm run bench:postgres-semantica
+      - name: Canario vivo de dos procesos con Gemini
+        env:
+          BIVELIO_LIVE_CANARY: "1"
+          BIVELIO_TEST_POSTGRES_URL: postgresql://postgres:validation@127.0.0.1:5432/bivelio_test
+          BVSALA_DEMO_GOOGLE_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          BIVELIO_LIVE_CANARY_OUTPUT: persistence-results/live-canary.json
+          CANARY_MODEL: google/gemini-3.8-flash
+        run: pnpm exec tsx packages/persistence-postgres/benchmark/live-canary.ts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: persistence-canary-results
+          path: persistence-results/
+          if-no-files-found: warn
+          retention-days: 90
