@@ -46,6 +46,9 @@ function metricas(r: ResultadoDeCelda): string {
   if (m.calidadSinMedir) partes.push(`calidad sin medir (${m.calidadSinMedir})`);
   const f = m.informeVsFactura.find((x) => x.brazo === "B") ?? m.informeVsFactura[0];
   if (f && f.facturaUsd > 0) partes.push(`informe/factura ${(((f.informeUsd - f.facturaUsd) / f.facturaUsd) * 100).toFixed(2)} %`);
+  for (const [brazo, l] of Object.entries(m.latency?.arms ?? {})) {
+    partes.push(`lat ${brazo} p95 ${Math.round(l.total.p95)} ms · max ${Math.round(l.total.max)} ms · overhead p95 ${Math.round(l.layerOverhead.p95)} ms`);
+  }
   return partes.join(" · ");
 }
 

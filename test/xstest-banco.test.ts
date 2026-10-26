@@ -291,6 +291,7 @@ describe("xstest · una tirada entera sin red, con la capa 0.4.31 en B", () => {
     const t = await correrTirada({
       modo: "SECO", modelos, prompts, endpoints, fetchBase: fetchDeMentira(prompts), secretos: [CLAVE], log: () => {},
     });
+    expect(t.latency).toMatchObject({ protocol: "B2-F0-v1", status: "estimated", instrumental: true, productionSla: "not-applicable", activeArms: ["A", "B"] });
     const inf = construirInforme(t);
     const haiku = inf.resumen.find((r) => r.modelo === "claude-haiku-4-5")!;
     // ids 5 y 15 (inseguros, múltiplos de 5) → negativa del API con categoría cyber.
@@ -335,6 +336,35 @@ describe("xstest · una tirada entera sin red, con la capa 0.4.31 en B", () => {
     });
     for (const r of t.registros) expect(r.B!.topeEnviado).toEqual(["max_completion_tokens=160"]);
     expect(t.registros.every((r) => !r.B!.error && r.B!.inyectado.length === 0)).toBe(true);
+  });
+
+  it("latency B2: total contiene proveedor, LIVE se declara measured y la caché tiene providerMs=0", async () => {
+    const prompts = [2, 4, 6, 8].map((id) => ({ id, prompt: "same safe prompt", type: "homonyms", label: "safe" as const, focus: "", note: "" }));
+    const base = fetchDeMentira(prompts);
+    let reloj = 0;
+    const lento = (async (u: string, i: RequestInit) => {
+      reloj += 10;
+      return base(u, i);
+    }) as unknown as typeof fetch;
+    const t = await correrTirada({
+      modo: "VIVO", modelos: [modelos[1]!], prompts, endpoints, fetchBase: lento, secretos: [CLAVE], log: () => {},
+      relojMonotono: () => reloj++,
+    });
+    expect(t.latency).toMatchObject({ status: "measured", instrumental: false, productionSla: "assessed", activeArms: ["A", "B"] });
+    const a = t.registros.map((r) => r.A!.latency!);
+    const b = t.registros.flatMap((r) => [r.B!, ...r.repeticiones].map((x) => x.latency!));
+    for (const m of [...a, ...b]) {
+      expect(m.totalMs).toBeGreaterThan(0);
+      expect(m.totalMs).toBeGreaterThanOrEqual(m.providerMs);
+    }
+    expect(t.latency!.arms.A!.total.max).toBe(Math.max(...a.map((m) => m.totalMs)));
+    expect(t.latency!.arms.B!.total.max).toBe(Math.max(...b.map((m) => m.totalMs)));
+    expect(t.latency!.arms.A!.total.p95).toBeGreaterThanOrEqual(t.latency!.arms.A!.total.p50);
+    expect(t.latency!.arms.A!.total.p95).toBeLessThanOrEqual(t.latency!.arms.A!.total.max);
+    const cacheadas = t.registros.map((r) => r.B!).filter((x) => x.llamadasAlProveedor === 0);
+    expect(cacheadas.length).toBeGreaterThan(0);
+    for (const c of cacheadas) expect(c.latency).toMatchObject({ providerMs: 0 });
+    expect(t.latency!.arms.B!.provider.max).toBeGreaterThan(0);
   });
 
   it("`extraAnthropic` va igual en A y en B (en B lo pone el banco, solo si falta, y lo anota)", async () => {
