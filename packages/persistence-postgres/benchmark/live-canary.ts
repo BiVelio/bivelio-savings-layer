@@ -232,9 +232,10 @@ try {
     ? error.constructor.name
     : "Error";
   const providerStatus = error instanceof Error ? /provider (\d{3})/.exec(error.message)?.[1] ?? null : null;
+  const diagnostic = error instanceof ReferenceError || error instanceof TypeError ? error.message : null;
   try { await Promise.all([...layers.values()].map((activeLayer) => activeLayer.close())); } catch {}
   try { await pool?.end(); } catch {}
-  try { await writeFile(resultPath, JSON.stringify({ ok: false, phase, errorName, providerStatus, records, providerCalls })); } catch {}
+  try { await writeFile(resultPath, JSON.stringify({ ok: false, phase, errorName, providerStatus, diagnostic, records, providerCalls })); } catch {}
   process.exitCode = 1;
 }
 `;
@@ -257,6 +258,7 @@ interface WorkerResult {
   phase: string;
   errorName?: string;
   providerStatus?: string | null;
+  diagnostic?: string | null;
   records: WorkerRecord[];
   providerCalls: number;
 }
@@ -342,7 +344,8 @@ async function main(): Promise<void> {
         const failure = JSON.parse(await readFile(resultPath, "utf8").catch(() => "{}")) as Partial<WorkerResult>;
         const name = failure.errorName ? ` (${failure.errorName})` : "";
         const status = failure.providerStatus ? ` provider ${failure.providerStatus}` : "";
-        throw new Error(`${phase} packaged worker failed${name}${status}`);
+        const detail = failure.diagnostic ? `: ${failure.diagnostic}` : "";
+        throw new Error(`${phase} packaged worker failed${name}${status}${detail}`);
       }
       const result = JSON.parse(await readFile(resultPath, "utf8")) as WorkerResult;
       if (!result.ok) throw new Error(`${phase} packaged worker failed its gates`);
