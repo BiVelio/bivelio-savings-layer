@@ -334,13 +334,13 @@ async function main(): Promise<void> {
       };
       try {
         await command(process.execPath, [workerPath], consumer, childEnv);
-      } catch {
+      } catch (caught) {
         const failure = JSON.parse(await readFile(resultPath, "utf8").catch(() => "{}")) as Partial<WorkerResult>;
         const name = failure.errorName ? ` (${failure.errorName})` : "";
         const status = failure.providerStatus ? ` provider ${failure.providerStatus}` : "";
-        const detail = failure.diagnostic ? `: ${failure.diagnostic}` : "";
+        const detail = failure.diagnostic ?? (caught instanceof Error ? caught.message : "unknown worker error");
         const completed = failure.records?.length ?? 0;
-        throw new Error(`${phase} packaged worker failed after ${completed} requests${name}${status}${detail}`);
+        throw new Error(`${phase} packaged worker failed after ${completed} requests${name}${status}: ${detail}`);
       }
       const result = JSON.parse(await readFile(resultPath, "utf8")) as WorkerResult;
       if (!result.ok) throw new Error(`${phase} packaged worker failed its gates`);
