@@ -175,6 +175,6 @@ El benchmark de 100k conserva las verificaciones de recall@1 >= 0,95, FIFO e ín
 | warm p99, concurrencia 1/8/32 | <= 100 ms |
 | warm max, concurrencia 1/8/32 | <= 100 ms |
 
-En el runner compartido de GitHub, el workflow usa un presupuesto explícito distinto: p95 <= 250 ms y p99/max <= 500 ms, aún muy inferior al presupuesto interactivo de 3–5 s. Se configura con `BIVELIO_BENCH_P95_MS`, `BIVELIO_BENCH_P99_MS` y `BIVELIO_BENCH_MAX_MS`; no cambia los umbrales estrictos locales ni oculta los valores medidos.
+En el runner compartido de GitHub, el workflow usa un presupuesto explícito distinto: p95 <= 250 ms y p99/max <= 500 ms, aún muy inferior al presupuesto interactivo de 3–5 s. Se configura con `BIVELIO_BENCH_P95_MS`, `BIVELIO_BENCH_P99_MS` y `BIVELIO_BENCH_MAX_MS`; no cambia los umbrales estrictos locales ni oculta los valores medidos. `BIVELIO_BENCH_QUERY_TIMEOUT_MS=1000` evita abortos de consulta en esa infraestructura compartida, manteniendo 250 ms por defecto.
 
 El informe `benchmarks/out/semantic-postgres-100k.json` incluye valores y umbrales. No lances si falta una evidencia, si el backup/restore se omite por herramientas en una release que exige ese gate, o si el canary vivo falla. Guarda informe, versiones, configuración del pool, PostgreSQL/`pgvector`, modelo y fecha sin incluir secretos ni contenido de requests.

@@ -183,12 +183,14 @@ async function main(): Promise<void> {
        ON CONFLICT (namespace) DO NOTHING`,
       [namespace, backend, JSON.stringify(journal.export()), Date.now()],
     );
+    const queryTimeoutMs = Number(process.env.BIVELIO_BENCH_QUERY_TIMEOUT_MS ?? 250);
+    if (!Number.isFinite(queryTimeoutMs) || queryTimeoutMs <= 0) throw new Error("BIVELIO_BENCH_QUERY_TIMEOUT_MS must be a positive number");
     const cache = new PgSemanticCache({
       pool,
       namespace,
       maxRecords: target,
       calibration: { maxErrorRate: 0.5, confidence: 0.9, auditRate: 0 },
-      queryTimeoutMs: 250,
+      queryTimeoutMs,
     });
     const cold = await timed(() => cache.lookup(requestFor(groups - 1, tenantCount - 1)));
     if (!cold.value.hit) throw new Error("cold lookup did not hit");
@@ -265,7 +267,7 @@ async function main(): Promise<void> {
       dimensions: 256,
       tenantCount,
       candidateLimit: 32,
-      queryTimeoutMs: 250,
+      queryTimeoutMs,
       coldMs: cold.ms,
       lookupMs: warm,
       embeddingMs: summary(embeddingTimes),
