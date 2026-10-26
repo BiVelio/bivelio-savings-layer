@@ -119,8 +119,8 @@ describePostgres("disposable PostgreSQL backup and restore", () => {
     await Promise.all(storesToClose.map((store) => store.close()));
     await Promise.all([source?.end(), restored?.end()]);
     if (admin != null) {
-      await admin.query(`DROP DATABASE IF EXISTS ${identifier(restoreName)} WITH (FORCE)`);
-      await admin.query(`DROP DATABASE IF EXISTS ${identifier(sourceName)} WITH (FORCE)`);
+      await admin.query(`DROP DATABASE IF EXISTS ${identifier(restoreName)}`);
+      await admin.query(`DROP DATABASE IF EXISTS ${identifier(sourceName)}`);
       await admin.end();
     }
     if (directory != null) await rm(directory, { recursive: true, force: true });
