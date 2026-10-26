@@ -115,8 +115,8 @@ jobs:
       - name: Habilitar pnpm (desde packageManager)
         run: corepack enable
       - run: pnpm install --frozen-lockfile
-      # src/ importa @bivelio/license-client y @bivelio/protocol por su dist/.
-      - run: pnpm run build:packages
+      # Igual que CI: el SDK raíz y los servicios también necesitan los dist/ del workspace.
+      - run: pnpm run build:all
 
       # La factura de la tirada anterior que el retraso del API dejó pendiente se
       # decide ahora (factura.ts). Sin tirada anterior o sin artefacto, no pasa nada.

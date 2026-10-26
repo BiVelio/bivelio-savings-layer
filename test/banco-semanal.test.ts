@@ -1008,6 +1008,14 @@ describe("banco semanal · banco-semanal.yml", () => {
     expect(Number(/timeout-minutes: (\d+)/.exec(t)![1])).toBeLessThanOrEqual(360);
   });
 
+  it("construye el SDK, los paquetes y los servicios con la misma orden que CI", () => {
+    const t = trabajo(banco, "banco");
+    expect(t).toMatch(/^ {6}- run: pnpm run build:all$/m);
+    expect(t).not.toMatch(/run: pnpm run build:(?:packages|services)$/);
+    const ci = sinComentarios(leer("../.github/workflows/ci.yml"));
+    expect(trabajo(ci, "verificar")).toMatch(/^ {6}- run: pnpm run build:all$/m);
+  });
+
   it("los secretos van por NOMBRE, solo al paso del banco y solo en vivo; nada da de alta ni lee secretos", () => {
     const refs = [...banco.matchAll(/secrets\.([A-Z_]+)/g)].map((m) => m[1]);
     expect(new Set(refs)).toEqual(new Set(["ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GEMINI_API_KEY", "AI_GATEWAY_API_KEY", "ANTHROPIC_ADMIN_API_KEY", "OPENAI_ADMIN_API_KEY"]));
