@@ -40,6 +40,9 @@ jobs:
         env:
           BIVELIO_TEST_POSTGRES_URL: postgresql://postgres:validation@127.0.0.1:5432/bivelio_test
           BIVELIO_PG_CLIENT_DOCKER: pgvector/pgvector:pg17
+          BIVELIO_BENCH_P95_MS: 250
+          BIVELIO_BENCH_P99_MS: 500
+          BIVELIO_BENCH_MAX_MS: 500
           BIVELIO_BENCH_OUTPUT: persistence-results/semantic-postgres-100k.json
         run: |
           mkdir -p persistence-results

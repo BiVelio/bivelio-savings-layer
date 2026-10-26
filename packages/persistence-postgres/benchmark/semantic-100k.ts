@@ -251,6 +251,14 @@ async function main(): Promise<void> {
       );
       fifoValid = beforeEviction === target && afterEviction === target && oldest.rows[0]?.count === 0;
     }
+    const gate = (name: string, fallback: number): number => {
+      const value = Number(process.env[name] ?? fallback);
+      if (!Number.isFinite(value) || value <= 0) throw new Error(`${name} must be a positive number`);
+      return value;
+    };
+    const warmP95Ms = gate("BIVELIO_BENCH_P95_MS", 50);
+    const warmP99Ms = gate("BIVELIO_BENCH_P99_MS", 100);
+    const warmMaxMs = gate("BIVELIO_BENCH_MAX_MS", 100);
     const report = {
       kind: "local-postgresql-pgvector",
       records: target,
@@ -269,10 +277,10 @@ async function main(): Promise<void> {
       recallAtOne,
       fifoChecked,
       fifoValid,
-      gates: { coldMs: 250, warmP95Ms: 50, warmP99Ms: 100, warmMaxMs: 100, minRecallAtOne: 0.95 },
+      gates: { coldMs: 250, warmP95Ms, warmP99Ms, warmMaxMs, minRecallAtOne: 0.95 },
     };
     const passed = ((indexedPlan && !seqScanUsed) || target < 100_000) && fifoValid && recallAtOne >= 0.95 &&
-      cold.ms <= 250 && Object.values(warm).every((item) => item.p95 <= 50 && item.p99 <= 100 && item.max <= 100);
+      cold.ms <= 250 && Object.values(warm).every((item) => item.p95 <= warmP95Ms && item.p99 <= warmP99Ms && item.max <= warmMaxMs);
     await mkdir(new URL("../../../benchmarks/out/", import.meta.url), { recursive: true });
     await writeFile(output, `${JSON.stringify({ ...report, passed }, null, 2)}\n`);
     console.log(JSON.stringify({ ...report, passed, output }, null, 2));
