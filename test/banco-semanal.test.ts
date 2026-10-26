@@ -931,6 +931,15 @@ describe("banco semanal · la puerta de publish.yml", () => {
     expect(evaluarPuerta([run(MAX_DIAS, "success")], ahora).ok).toBe(true);
   });
 
+  it("cuando la release exige un SHA, un banco verde de otro commit o sin SHA no certifica", () => {
+    const sha = "a".repeat(40);
+    const valido = { ...run(1, "success"), headSha: sha };
+    expect(evaluarPuerta([valido], ahora, { shaRequerido: sha })).toMatchObject({ ok: true, nivel: "notice" });
+    expect(evaluarPuerta([{ ...valido, headSha: "b".repeat(40) }], ahora, { shaRequerido: sha }).mensaje).toMatch(/no la release/);
+    expect(evaluarPuerta([run(1, "success")], ahora, { shaRequerido: sha }).mensaje).toMatch(/commit desconocido/);
+    expect(evaluarPuerta([{ ...valido, headSha: "b".repeat(40) }], ahora, { shaRequerido: `  ${sha}  ` }).ok).toBe(false);
+  });
+
   it("no pasa si el último falló, se canceló o es viejo — aunque antes hubiera uno verde", () => {
     expect(evaluarPuerta([run(1, "failure"), run(3, "success")], ahora)).toMatchObject({ ok: false, nivel: "error" });
     expect(evaluarPuerta([run(1, "cancelled")], ahora).ok).toBe(false);
@@ -1095,6 +1104,12 @@ describe("banco semanal · la puerta en publish.yml", () => {
     expect(puerta).toMatch(/\|\| echo "null" > runs\.json/);
     expect(puerta).toMatch(/node benchmarks\/banco-semanal\/puerta\.ts runs\.json/);
     expect(puerta).toMatch(/BANCO_SEMANAL_EMERGENCIA: \$\{\{ vars\.BANCO_SEMANAL_EMERGENCIA \}\}/);
+  });
+
+  it("las dos publicaciones exigen que el banco verde sea del commit de la Release", () => {
+    for (const workflow of [publish, sinComentarios(leer("../.github/workflows/publish-postgres.yml"))]) {
+      expect(trabajo(workflow, "banco-semanal")).toMatch(/BANCO_SEMANAL_SHA: \$\{\{ github\.sha \}\}/);
+    }
   });
 
   it("puerta.ts corre con Node sin instalar nada: no importa nada fuera de node:*", () => {

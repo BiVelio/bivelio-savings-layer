@@ -110,10 +110,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - name: El último banco semanal está verde y tiene 8 días o menos
+      - name: El último banco semanal está verde, es de este commit y tiene 8 días o menos
         env:
           GH_TOKEN: ${{ github.token }}
           BANCO_SEMANAL_EMERGENCIA: ${{ vars.BANCO_SEMANAL_EMERGENCIA }}
+          BANCO_SEMANAL_SHA: ${{ github.sha }}
         run: |
           gh run list --repo "$GITHUB_REPOSITORY" --workflow banco-semanal.yml --branch main --limit 30 \
             --json databaseId,status,conclusion,createdAt,displayTitle,event,url,headSha > runs.json || echo "null" > runs.json

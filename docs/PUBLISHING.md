@@ -122,7 +122,9 @@ the version has a suffix, so cut a candidate with
 
 The bench gate (`banco-semanal`) is the same for both: the last complete live run of
 `banco-semanal.yml` on `main` (title «banco semanal (vivo)»; partial runs titled
-«vivo parcial» do not count) must be green and at most 8 days old.
+«vivo parcial» do not count) must be green, at most 8 days old, and have the same
+`headSha` as the commit being released. A green run for another commit does not
+certify the release.
 
 A fix on an older line (a version lower than the highest one published) still fails at
 `npm publish`: it needs a `--tag` of its own (e.g. `0.4-lts`), which the workflow does
