@@ -56,7 +56,7 @@ Una restauración antigua no debe fusionarse con el estado actual. En particular
 
 ## 3. Ejercicio real de backup y restore
 
-La prueba `disaster-recovery.integration.test.ts` crea dos bases desechables con nombres aleatorios, migra y siembra una, ejecuta `pg_dump`/`pg_restore` a la segunda y elimina ambas al terminar. Nunca restaura sobre una base existente. Requiere un rol con `CREATEDB`, permiso para crear `vector` y binarios PostgreSQL compatibles. Sin `BIVELIO_TEST_POSTGRES_URL` se omite; sin `pg_dump` o `pg_restore`, se omite con ese motivo antes de crear bases.
+La prueba `disaster-recovery.integration.test.ts` crea dos bases desechables con nombres aleatorios, migra y siembra una, ejecuta `pg_dump`/`pg_restore` a la segunda y elimina ambas al terminar. Nunca restaura sobre una base existente. Requiere un rol con `CREATEDB`, permiso para crear `vector` y binarios PostgreSQL compatibles. Sin `BIVELIO_TEST_POSTGRES_URL` se omite; sin `pg_dump` o `pg_restore`, se omite con ese motivo antes de crear bases. Cuando el runner no tiene el cliente de la misma versión, `BIVELIO_PG_CLIENT_DOCKER=pgvector/pgvector:pg17` ejecuta esos binarios dentro de la misma imagen que el servicio.
 
 ```sh
 BIVELIO_TEST_POSTGRES_URL='postgresql://usuario:clave@localhost/base_admin_desechable' \

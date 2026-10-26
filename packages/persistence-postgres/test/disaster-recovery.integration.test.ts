@@ -46,26 +46,38 @@ function identifier(name: string): string {
   return `"${name}"`;
 }
 
+const dockerImage = process.env.BIVELIO_PG_CLIENT_DOCKER;
+
 async function run(command: string, args: string[], url: URL): Promise<void> {
+  const env = {
+    ...process.env,
+    PGPASSWORD: decodeURIComponent(url.password),
+    ...(url.searchParams.get("sslmode") ? { PGSSLMODE: url.searchParams.get("sslmode")! } : {}),
+  };
+  const child = dockerImage
+    ? spawn("docker", [
+        "run", "--rm", "--add-host=host.docker.internal:host-gateway",
+        "-v", `${directory}:/backup`,
+        "-e", "PGPASSWORD",
+        ...(env.PGSSLMODE ? ["-e", "PGSSLMODE"] : []),
+        dockerImage, command, ...args.map((arg) => arg.replace(directory, "/backup")),
+      ], { env, stdio: ["ignore", "ignore", "pipe"] })
+    : spawn(command, args, { env, stdio: ["ignore", "ignore", "pipe"] });
+  let stderr = "";
+  child.stderr.on("data", (chunk: Buffer) => { stderr = (stderr + chunk.toString()).slice(-2_000); });
   await new Promise<void>((resolve, reject) => {
-    const child = spawn(command, args, {
-      env: {
-        ...process.env,
-        PGPASSWORD: decodeURIComponent(url.password),
-        ...(url.searchParams.get("sslmode") ? { PGSSLMODE: url.searchParams.get("sslmode")! } : {}),
-      },
-      stdio: "ignore",
-    });
     child.once("error", reject);
     child.once("exit", (code) => code === 0
       ? resolve()
-      : reject(new Error(`${command} failed with exit code ${code}`)));
+      : reject(new Error(`${command} failed with exit code ${code}: ${stderr.trim()}`)));
   });
 }
 
 async function probeBinary(command: string): Promise<boolean> {
   return new Promise((resolve, reject) => {
-    const child = spawn(command, ["--version"], { stdio: "ignore" });
+    const child = dockerImage
+      ? spawn("docker", ["run", "--rm", dockerImage, command, "--version"], { stdio: "ignore" })
+      : spawn(command, ["--version"], { stdio: "ignore" });
     child.once("error", (error: NodeJS.ErrnoException) => error.code === "ENOENT" ? resolve(false) : reject(error));
     child.once("exit", (code) => code === 0 ? resolve(true) : reject(new Error(`${command} --version failed`)));
   });
@@ -73,7 +85,7 @@ async function probeBinary(command: string): Promise<boolean> {
 
 function pgArguments(url: URL): string[] {
   return [
-    "--host", decodeURIComponent(url.hostname),
+    "--host", dockerImage ? "host.docker.internal" : decodeURIComponent(url.hostname),
     "--port", url.port || "5432",
     "--username", decodeURIComponent(url.username),
   ];
