@@ -143,6 +143,19 @@ async function layerFor(tenant) {
   return layers.get(tenant);
 }
 
+async function ensurePostgresReady() {
+  for (let attempt = 0; attempt < 5; attempt++) {
+    try {
+      await pool.query("SELECT 1");
+      return;
+    } catch (error) {
+      const code = error && typeof error === "object" && "code" in error ? error.code : undefined;
+      if (!["25P03", "57P01", "ECONNRESET"].includes(code) || attempt === 4) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 200 * 2 ** attempt));
+    }
+  }
+}
+
 try {
   pool = new Pool({
     connectionString: env.BIVELIO_TEST_POSTGRES_URL,
@@ -153,6 +166,7 @@ try {
     idle_in_transaction_session_timeout: 1_000,
     keepAlive: true
   });
+  await ensurePostgresReady();
   if (phase === "cold") {
     for (const file of ["001_exact_and_breakpoints.sql", "002_semantic_cache.sql"]) {
       const migration = new URL("../sql/" + file, import.meta.resolve("@bivelio/persistence-postgres"));
