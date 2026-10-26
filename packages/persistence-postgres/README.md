@@ -162,7 +162,7 @@ PostgreSQL pertenece al cliente. Este paquete no envía copias a BiVelio ni a ot
 
 ## Alcance
 
-El paquete no aplica migraciones, purgas programadas, despliegues ni garantías de SLA en vivo. El benchmark local de 100.000 registros mide una configuración concreta; no sustituye la latencia extremo a extremo con los proveedores y datos del cliente.
+El paquete no aplica migraciones, purgas programadas ni despliegues. Incluye un benchmark local, una prueba real de backup/restore y un canary vivo opt-in como verjas de release; ninguno garantiza un SLA ni sustituye la validación con los proveedores y datos del cliente. Las instrucciones operativas completas están en [`docs/PERSISTENCIA-POSTGRES-PRODUCCION.md`](../../docs/PERSISTENCIA-POSTGRES-PRODUCCION.md).
 
 ## Pruebas y benchmark
 
@@ -172,4 +172,4 @@ BIVELIO_TEST_POSTGRES_URL='postgresql://usuario:clave@localhost/base_desechable'
 BIVELIO_TEST_POSTGRES_URL='postgresql://usuario:clave@localhost/base_desechable' pnpm run bench:postgres-semantica
 ```
 
-Las pruebas de integración se omiten si falta la URL y nunca crean una base. El benchmark carga 100.000 registros, mide concurrencia 1/8/32, comprueba recall y FIFO, y exige `p95 <= 50 ms`, `p99 <= 100 ms` y recall `@1 >= 0.95`. En la tirada completa exige un plan indexado sin `Seq Scan` y registra por separado si el planner eligió HNSW o el índice compuesto de identidad. `BIVELIO_BENCH_RECORDS` permite un humo menor. El resultado se escribe en `benchmarks/out/semantic-postgres-100k.json`. `BIVELIO_BENCH_POOL_MAX` ajusta el pool (16 en la medición documentada); `BIVELIO_BENCH_KEEP`, `BIVELIO_BENCH_REUSE` y `BIVELIO_BENCH_NAMESPACE` permiten repeticiones de solo lectura, marcadas con `fifoChecked: false`.
+Las pruebas de integración se omiten si falta la URL. Las pruebas existentes operan sobre la base desechable indicada; la prueba de recuperación es la excepción controlada y crea dos bases con nombres aleatorios, que destruye al terminar, sin tocar objetos existentes. Se omite con un motivo claro si faltan `pg_dump`/`pg_restore`. El benchmark carga 100.000 registros, mide concurrencia 1/8/32 y exige cold `<= 250 ms`, warm `p95 <= 50 ms`, `p99 <= 100 ms`, `max <= 100 ms`, recall `@1 >= 0.95` y FIFO. En la tirada completa exige un plan indexado sin `Seq Scan` y registra por separado si el planner eligió HNSW o el índice compuesto de identidad. `BIVELIO_BENCH_RECORDS` permite un humo menor. El resultado incluye los umbrales y se escribe en `benchmarks/out/semantic-postgres-100k.json`. `BIVELIO_BENCH_POOL_MAX` ajusta el pool (16 en la medición documentada); `BIVELIO_BENCH_KEEP`, `BIVELIO_BENCH_REUSE` y `BIVELIO_BENCH_NAMESPACE` permiten repeticiones de solo lectura, marcadas con `fifoChecked: false`. El canary vivo y sus credenciales opt-in se describen en el runbook enlazado arriba.

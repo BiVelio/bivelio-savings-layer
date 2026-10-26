@@ -269,10 +269,10 @@ async function main(): Promise<void> {
       recallAtOne,
       fifoChecked,
       fifoValid,
-      gates: { p95Ms: 50, p99Ms: 100, minRecallAtOne: 0.95 },
+      gates: { coldMs: 250, warmP95Ms: 50, warmP99Ms: 100, warmMaxMs: 100, minRecallAtOne: 0.95 },
     };
     const passed = ((indexedPlan && !seqScanUsed) || target < 100_000) && fifoValid && recallAtOne >= 0.95 &&
-      Object.values(warm).every((item) => item.p95 <= 50 && item.p99 <= 100);
+      cold.ms <= 250 && Object.values(warm).every((item) => item.p95 <= 50 && item.p99 <= 100 && item.max <= 100);
     await mkdir(new URL("../../../benchmarks/out/", import.meta.url), { recursive: true });
     await writeFile(output, `${JSON.stringify({ ...report, passed }, null, 2)}\n`);
     console.log(JSON.stringify({ ...report, passed, output }, null, 2));
