@@ -11,6 +11,15 @@ const packageRoot = fileURLToPath(new URL("..", import.meta.url));
 const output = process.env.BIVELIO_LIVE_CANARY_OUTPUT ??
   join(packageRoot, "benchmark", "out", "live-canary.json");
 
+function redact(text: string, env: NodeJS.ProcessEnv): string {
+  let out = text;
+  for (const [name, value] of Object.entries(env)) {
+    if (value && value.length > 4 && /KEY|TOKEN|SECRET|LICENSE/.test(name)) out = out.replaceAll(value, "[redacted]");
+  }
+  if (env.BIVELIO_TEST_POSTGRES_URL) out = out.replaceAll(env.BIVELIO_TEST_POSTGRES_URL, "[redacted]");
+  return out.replaceAll("GREEN-742", "[redacted]");
+}
+
 function command(command: string, args: string[], cwd: string, env = process.env): Promise<string> {
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, { cwd, env, stdio: ["ignore", "pipe", "pipe"] });
@@ -21,7 +30,7 @@ function command(command: string, args: string[], cwd: string, env = process.env
     child.once("error", () => reject(new Error(`could not execute ${command}`)));
     child.once("exit", (code) => code === 0
       ? resolve(stdout)
-      : reject(new Error(`${command} failed with exit code ${code}; output suppressed for safety: ${stderr.length > 0}`)));
+      : reject(new Error(`${command} failed with exit code ${code}: ${redact(stderr, env).slice(-2_000)}`)));
   });
 }
 
