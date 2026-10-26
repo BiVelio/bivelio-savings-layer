@@ -98,8 +98,9 @@ describe("el panel de instalación renderiza en los 12 idiomas", () => {
  * vía que la segunda presentaba como la alternativa.
  */
 const { InstrumentationSpine } = await import("./components/InstrumentationSpine");
+const { activationSteps } = await import("./data");
 
-const PASOS = ["Account created", "SDK installed", "License active", "First report", "Live meter"] as const;
+const PASOS = ["Account created", "License active", "SDK or gateway installed", "First real request", "Report ready"] as const;
 
 async function renderizarEspina(loc: string, actual: (typeof PASOS)[number]): Promise<string> {
   estado.locale = loc;
@@ -107,10 +108,10 @@ async function renderizarEspina(loc: string, actual: (typeof PASOS)[number]): Pr
   const t = createTranslator({ locale: loc, messages: estado.messages as AbstractIntlMessages, namespace: "dashboard" as never, onError: lanzar });
   const claves: Record<(typeof PASOS)[number], string> = {
     "Account created": "overview.steps.accountCreated",
-    "SDK installed": "overview.steps.sdkInstalled",
+    "SDK or gateway installed": "overview.steps.sdkInstalled",
     "License active": "overview.steps.licenseActive",
-    "First report": "overview.steps.firstReport",
-    "Live meter": "overview.steps.liveMeter",
+    "First real request": "overview.steps.firstRequest",
+    "Report ready": "overview.steps.reportReady",
   };
   const i = PASOS.indexOf(actual);
   const steps = PASOS.map((id, j) => ({
@@ -130,21 +131,66 @@ async function renderizarEspina(loc: string, actual: (typeof PASOS)[number]): Pr
   );
 }
 
-describe("el paso «SDK installed» del inicio recomienda `init`, en los 12 idiomas", () => {
+describe("la espina de instalación recomienda `init` y enlaza SDK/gateway en los 12 idiomas", () => {
   for (const loc of LOCALES) {
     it(loc, async () => {
-      const html = await renderizarEspina(loc, "SDK installed");
+      const html = await renderizarEspina(loc, "SDK or gateway installed");
       expect(html).toContain("npx @bivelio/savings-layer@latest init");
       expect(html).not.toContain("pnpm add");
+      expect(html).toContain('href="/dashboard/install#sdk"');
+      expect(html).toContain('href="/dashboard/install#gateway"');
     });
   }
 
-  it("las pistas de los pasos siguientes salen por el `id`, no por la etiqueta traducida", async () => {
-    // La etiqueta va traducida; comparar contra «License active» solo casaba en
-    // inglés y en los otros 11 idiomas salía la pista genérica.
+  it("las pistas y los CTA salen por el `id`, no por la etiqueta traducida", async () => {
     const es = mensajesDe("es") as { dashboard: { instrumentationSpine: Record<string, string> } };
     const pistas = es.dashboard.instrumentationSpine;
-    expect(await renderizarEspina("es", "License active")).toContain(pistas["hintLicense"]!.slice(0, 30));
-    expect(await renderizarEspina("es", "First report")).toContain(pistas["hintFirstReport"]!.slice(0, 30));
+    const licencia = await renderizarEspina("es", "License active");
+    expect(licencia).toContain(pistas["hintLicense"]!.slice(0, 30));
+    expect(licencia).toContain('href="/dashboard/account"');
+    expect(await renderizarEspina("es", "First real request")).toContain(pistas["hintFirstRequest"]!.slice(0, 30));
   });
+});
+
+describe("activationSteps — orden y pruebas de activación", () => {
+  const ctx = {
+    license: { status: "active", expiresAt: "2027-01-01", graceDays: 0 },
+    serviceAccount: { keyPrefix: "bvk_prueba", lastUsedAt: null },
+  } as never;
+  const lectura = { usageFailed: false, usageHidden: false };
+
+  it("cuenta → licencia → instalación → petición real → informe; una clave no instala", async () => {
+    estado.locale = "en";
+    estado.messages = mensajesDe("en") as Record<string, unknown>;
+    const steps = await activationSteps(true, ctx, [], lectura);
+    expect(steps.map((s) => s.id)).toEqual(PASOS);
+    expect(steps.map((s) => s.status)).toEqual(["done", "done", "current", "pending", "pending"]);
+  });
+
+  it("licencia sin credencial de servicio mantiene el paso de credenciales como siguiente", async () => {
+    const sinClave = { license: { status: "active", expiresAt: "2027-01-01", graceDays: 0 }, serviceAccount: null } as never;
+    const steps = await activationSteps(true, sinClave, [], lectura);
+    expect(steps[1]!.status).toBe("current");
+    expect(steps[2]!.status).toBe("pending");
+  });
+
+  it("un lote vacío o solo sombra tampoco prueba instalación", async () => {
+    const steps = await activationSteps(true, ctx, [{ requests: 0, shadowRequests: 4 }] as never, lectura);
+    expect(steps[2]!.status).toBe("current");
+    expect(steps[3]!.status).toBe("pending");
+  });
+
+  it("la primera petición real completa instalación, petición e informe", async () => {
+    const steps = await activationSteps(true, ctx, [{ requests: 1 }] as never, lectura);
+    expect(steps.every((s) => s.status === "done")).toBe(true);
+  });
+
+  it.each([{ usageFailed: true, usageHidden: false }, { usageFailed: false, usageHidden: true }])(
+    "error/RLS no se presenta como «instala»: %o",
+    async (estadoLectura) => {
+      const steps = await activationSteps(true, ctx, [], estadoLectura);
+      expect(steps.slice(2).every((s) => s.status === "unavailable")).toBe(true);
+      expect(steps.some((s) => s.id === "SDK or gateway installed" && s.status === "current")).toBe(false);
+    },
+  );
 });

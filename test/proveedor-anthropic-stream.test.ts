@@ -217,6 +217,18 @@ describe("AnthropicProvider.generateStream", () => {
     ).rejects.toThrow(/ended before completion/);
   });
 
+  it("un EOF tras message_delta pero sin message_stop no entrega una respuesta parcial como completa", async () => {
+    const cuerpo =
+      inicio({ input_tokens: 10, output_tokens: 1 }) +
+      textoBloque(0) +
+      textoDelta(0, "a medias") +
+      delta("end_turn", { output_tokens: 3 });
+    const s = espia(cuerpo);
+    await expect(
+      recoger(new AnthropicProvider({ fetchImpl: s.fetchImpl }).generateStream(PETICION)),
+    ).rejects.toThrow(/no message_stop/);
+  });
+
   it("usage.service_tier produce servedServiceTier", async () => {
     const cuerpo =
       inicio({ input_tokens: 10, output_tokens: 1, service_tier: "standard" }) +

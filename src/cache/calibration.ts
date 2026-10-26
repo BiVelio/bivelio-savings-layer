@@ -23,8 +23,8 @@ import {
 export type AnswerJudge = (stored: CachedAnswer, fresh: CachedAnswer) => boolean | Promise<boolean>;
 
 /**
- * Opt-in calibration of the semantic cache: instead of a fixed acceptance floor,
- * the cache serves a reworded request only at or above a floor that labeled
+ * Calibration required for semantic reuse: the cache serves a reworded request
+ * only at or above a floor that labeled
  * traffic has certified, so that at most `maxErrorRate` of the reuses served
  * from that floor up are wrong, at the stated `confidence`.
  *
@@ -97,6 +97,8 @@ export interface SemanticCalibrationState {
   verifier: string | null;
   /** `built_in:<version>` for {@link sameAnswer}, `custom:<judgeId>` for yours. */
   judge: string;
+  /** Storage backend whose observations produced this state; absent in states written before backend identities. */
+  backend?: string;
   config: {
     maxErrorRate: number;
     confidence: number;

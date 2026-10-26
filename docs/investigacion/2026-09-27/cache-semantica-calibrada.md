@@ -125,7 +125,7 @@ La garantía se cumple con holgura: el método es conservador, con un suelo fina
 
 1. **La garantía es sobre lo que se publica.** El producto dice «Precision is the number to read». La cota tiene que ser sobre la precisión, no sobre el error por petición, que se diluye con el tráfico sin candidata. Publicamos el suelo.
 2. **No paramétrica y exacta.** Un test binomial exacto (equivalente a Clopper‑Pearson [7]) sobre una mitad retenida que el candidato no ha visto: la afirmación es sobre la población, no sobre la muestra. La secuencia fija [6] permite probar una escalera de candidatos sin repartir α. Las miradas en línea gastan α_k = 6α/(π²(k+1)²), que suma α: la confianza vale para toda la vida de la caché. Supuestos, escritos en el código: tráfico intercambiable, y que una respuesta guardada no es más probable que esté mal a más puntuación.
-3. **Nada puede cobrar de más.** Una sonda es una llamada normal al proveedor. Un acierto semántico, calibrado o no, sigue con base `estimated` y sin comisión. Lo comprueba el test «la base del dinero de un acierto calibrado es la de uno sin calibrar».
+3. **Nada puede cobrar de más.** Una sonda es una llamada normal al proveedor. Un acierto semántico solo existe con calibración certificada y sigue con base `estimated` y sin comisión. Sin calibración no se sirve ni se acredita ninguna respuesta guardada.
 
 **Por qué no B:** no se puede usar su código [2]. Además, su δ premia las exploraciones (con la métrica de vCache, nuestra caché estática ya cumpliría δ = 2 %: da un 1,4 % por petición [E1]). Y la parte «por embedding» que da los 12,5× (bajar el umbral de un registro concreto) exige un modelo paramétrico compartido. Con una garantía sobre la precisión, cada registro necesitaría del orden de ⌈ln α / ln(1 − δ)⌉ etiquetas propias (149 con δ = 2 % y α = 5 %). **Por embedding solo se construye en la dirección segura:** un registro juzgado erróneo a una puntuación ya no se sirve a esa puntuación ni por debajo.
 
@@ -140,11 +140,11 @@ La garantía se cumple con holgura: el método es conservador, con un suelo fina
   - `calibrationStatus()` y `settled()`;
   - segmentos separados para lo agéntico y lo de un turno.
 
-  Sin `calibration`, `find()` hace exactamente lo de siempre, y el pipeline no toca ese camino.
-- **Pipeline:** etiqueta en la etapa 12, sin `await`, solo lo que la caché guardaría: una respuesta cortada, que incumple su contrato o que dio otro modelo no sirve de etiqueta. Las trazas dicen por qué no se sirvió (`semantic-cache` / `miss` con `calibration`) y si hubo etiqueta (`semantic-calibration`).
+  Sin `calibration`, `find()` y `lookup()` no devuelven aciertos ni sondas: el almacén queda en modo sombra y puede seguir guardando respuestas.
+- **Pipeline:** etiqueta en la etapa 12, sin `await`, solo lo que la caché guardaría: una respuesta cortada, que incumple su contrato o que dio otro modelo no sirve de etiqueta. Las trazas dicen por qué no se sirvió (`semantic-cache` / `miss` con `calibration`; sin calibración, también `mode: "shadow"`) y si hubo etiqueta (`semantic-calibration`).
 - **Libro de calidad (#335):** `cacheMatch.calibration = { maxErrorRate, confidence, floor, heldOutAtFloor, wrongHeldOutAtFloor, labeled, segment }`. Solo números y un enum, y se copia en el seguidor coalescido.
 - **Banco:** `pnpm cache-semantica:calibrada` (brazos, tabla por tramos, calibración fuera de línea y tripletas) y `pnpm cache-semantica:simulacion`. Arreglado de paso: `--embebedor dataset:*` no corría nunca, porque los vectores del parquet vienen como texto JSON y solo se aceptaban arrays.
-- **README:** un párrafo, «Calibrated reuse (opt-in)», sin ninguna cifra medida.
+- **README:** un párrafo, «Calibrated reuse (required to serve)», sin ninguna cifra medida.
 - **Tests** (32 nuevos): la estadística, la garantía por Monte Carlo fuera y dentro de línea (α = 10 %, 300 tiradas), la caché, la capa, el vocabulario cerrado del libro, el conteo del ruido de etiqueta y la alineación etiqueta‑puntuación del banco. Este último guarda un fallo que tuvo la primera versión del banco en esta misma rama: el juez corre dentro de la etapa 12, antes de que exista la traza, y aquella versión casaba cada veredicto con la puntuación de la candidata anterior. No llegó a ningún commit, pero fue lo que se usó en la primera inspección manual, que se rehízo.
 
 ## 6. Qué queda

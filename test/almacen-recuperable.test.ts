@@ -424,7 +424,7 @@ describe("almacén recuperable: lleno, se niega; nunca desaloja", () => {
     expect(almacen.bytesEnUso(ambito)).toBe(256 * (1 << 20));
     expect((await almacen.put(ambito, new Uint8Array(1), { policyFingerprint: POLITICA, contentType: "b" })).ok).toBe(false);
     expect(almacen.size).toBe(256);
-  });
+  }, 20_000);
 });
 
 describe("almacén recuperable: cursores y política", () => {

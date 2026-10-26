@@ -100,6 +100,14 @@ export interface RespuestaCapturada {
 /** Por encima de esto la primaria deja de capturarse y sus gemelas van solas. */
 export const MAX_CAPTURA_BYTES = 5 * 1024 * 1024;
 
+const RUTA_DE_INFERENCIA = /^\/v1\/(?:messages|chat\/completions|responses|embeddings)\/?$/;
+const RUTA_DE_AZURE = /^\/openai\/deployments\/[^/]+\/(?:chat\/completions|responses|embeddings)\/?$/;
+
+/** Solo inferencia de lectura: batches, administración y rutas desconocidas pasan siempre solas. */
+export function esOperacionCoalescible(method: string, path: string): boolean {
+  return method === "POST" && (RUTA_DE_INFERENCIA.test(path) || RUTA_DE_AZURE.test(path));
+}
+
 /**
  * Las cabeceras que IDENTIFICAN la respuesta y por tanto tienen que entrar en la
  * clave: si dos peticiones difieren en cualquiera de ellas, su respuesta puede
@@ -111,6 +119,8 @@ export const MAX_CAPTURA_BYTES = 5 * 1024 * 1024;
 export const CABECERAS_DE_IDENTIDAD = [
   "authorization",
   "x-api-key",
+  "x-goog-api-key",
+  "cookie",
   "anthropic-version",
   "anthropic-beta",
   // Con `--upstream <origen>` delante de cualquier endpoint compatible con
@@ -119,6 +129,10 @@ export const CABECERAS_DE_IDENTIDAD = [
   "api-key",
   "openai-organization",
   "openai-project",
+  "openai-beta",
+  "accept",
+  "content-type",
+  "content-encoding",
 ] as const;
 
 /**

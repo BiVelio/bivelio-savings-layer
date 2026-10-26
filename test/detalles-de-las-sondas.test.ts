@@ -81,7 +81,7 @@ describe("A · el aviso del selector solo recomienda `toolSearch: \"auto\"` dond
   });
   afterEach(() => aviso.mockRestore());
   const avisoDePoda = (): string | undefined =>
-    aviso.mock.calls.map((c) => String(c[0])).find((m) => m.includes("tool selector sent"));
+    aviso.mock.calls.map((c: unknown[]) => String(c[0])).find((m: string) => m.includes("tool selector sent"));
 
   for (const savings of [{}, { toolSearch: "auto" as const }]) {
     it(`120 herramientas en claude-haiku-4-5 (${JSON.stringify(savings)}): la verja se queda con el selector y el aviso NO recomienda "auto"`, async () => {

@@ -105,13 +105,13 @@ export interface SavingsLayer {
    */
   readonly batches: SavingsBatches;
   /**
-   * Stop the background revocation poller (when the online call-home was enabled
-   * via `licenseServerUrl`) and abort any in-flight request, and settle every
-   * verification check still in flight (recorded as abandoned). Always safe to
-   * call — a no-op when there is no poller. Call it when shutting down a
-   * long-running process so the interval timer and any pending fetch are released.
+   * Stop background work, drain usage batches and await a semantic store's
+   * optional `settled()` method last. Backends should handle their own expected
+   * observation failures; an unexpected `settled()` rejection is propagated
+   * after the other components have closed rather than silently discarded.
+   * Calling close() without await preserves fire-and-forget shutdown behavior.
    */
-  close(): void;
+  close(): void | Promise<void>;
 }
 
 /**
@@ -505,14 +505,14 @@ export function createSavingsLayer(
       );
       return stream;
     },
-    close: () => {
-      // Primero se deciden las copias de verificación en vuelo (abandoned) y se
-      // vacía su emisor; después, lo de siempre.
+    close: async () => {
       pipeline.cerrarVerificacion();
       emisorVerif?.stop();
       poller?.stop();
       refresher?.stop();
-      emitter?.stop();
+      await emitter?.stopAndDrain();
+      const settled = (config.semanticCacheStore as { settled?: unknown } | undefined)?.settled;
+      if (typeof settled === "function") await settled.call(config.semanticCacheStore);
     },
   };
 }

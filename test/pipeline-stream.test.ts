@@ -429,16 +429,19 @@ describe("generateStream — entrega entera", () => {
 
   it("un acierto semántico sin esquema emite UN text igual a result.text", async () => {
     const { InMemorySemanticCache } = await import("../src/cache/semantic.js");
+    const { CALIBRACION_DE_PRUEBA, certificarRespuestaSemantica } = await import("./helpers/semantic-cache.js");
     const embed = async (t: string): Promise<number[]> =>
       [0, 1, 2, 3].map((i) => [...t].filter((c) => c.charCodeAt(0) % 4 === i).length);
-    const semanticCache = new InMemorySemanticCache({ embed, similarityThreshold: 0.3, acceptThreshold: 0.3 });
+    const semanticCache = new InMemorySemanticCache({ embed, similarityThreshold: 0.3, acceptThreshold: 0.3, calibration: CALIBRACION_DE_PRUEBA });
     const p = new Falso();
     const layer = createSavingsLayer({ provider: p, semanticCacheStore: semanticCache, devUnlicensed: true });
     const base = {
       savings: { semanticCache: true as const, exactCache: false },
       context: { tenantId: "acme", knowledgeEpoch: "e1" },
     };
-    await layer.generateStream(peticion(base)).result;
+    const original = peticion(base);
+    const primera = await layer.generateStream(original).result;
+    await certificarRespuestaSemantica(semanticCache, original, primera);
     const s = layer.generateStream(
       peticion({ ...base, messages: [{ role: "user", content: "Write a short greeting for the whole world!" }] }),
     );

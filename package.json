@@ -1,6 +1,6 @@
 {
   "name": "@bivelio/savings-layer",
-  "version": "0.5.2",
+  "version": "0.6.0-rc.1",
   "description": "The savings layer for your LLM bill: a library inside your code that lets through only what has to be paid for and returns a SavingsReport per call, measured with your provider's own meter and kept apart from estimates. Commercial license, paid per seat, commission only on measured savings. Your prompts never leave your infrastructure.",
   "keywords": [
     "llm",
@@ -64,16 +64,17 @@
     "docs/terminales",
     "skills",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=20.19.0"
   },
   "scripts": {
     "build": "tsup",
     "build:packages": "pnpm -r --filter=./packages/* build",
     "build:services": "pnpm -r --filter=./services/* build",
-    "build:all": "pnpm run build:packages && pnpm run build:services && pnpm run build",
+    "build:all": "pnpm run build && pnpm run build:packages && pnpm run build:services",
     "typecheck": "tsc --noEmit",
     "typecheck:packages": "pnpm -r --filter=./packages/* --filter=./services/* typecheck",
     "typecheck:all": "pnpm run typecheck && pnpm run typecheck:packages && pnpm run typecheck:ejemplos",
@@ -130,6 +131,7 @@
     "luz-verde": "bash scripts/luz-verde.sh",
     "sonda:sdk": "BVSALA_DEV_OPEN=1 tsx --env-file-if-exists=.env.bench benchmarks/sdk/sonda.ts",
     "sbom:tarball": "tsx scripts/sbom.ts",
+    "rc:verify": "pnpm run build:all && pnpm exec tsx scripts/release-candidate.ts",
     "cache-semantica": "BVSALA_DEV_OPEN=1 tsx benchmarks/cache-semantica/arnes.ts",
     "cache-semantica:publicar": "tsx benchmarks/cache-semantica/publicar.ts",
     "latencia:gateways": "tsx benchmarks/latencia-gateways/arnes.ts",
@@ -138,43 +140,62 @@
     "catalogo:contraste": "tsx scripts/contraste-catalogo.ts",
     "cache-semantica:calibrada": "BVSALA_DEV_OPEN=1 tsx benchmarks/cache-semantica/calibrada.ts",
     "cache-semantica:simulacion": "tsx benchmarks/cache-semantica/simulacion.ts",
+    "bench:postgres-semantica": "tsx packages/persistence-postgres/benchmark/semantic-100k.ts",
     "bench:bfcl": "tsx --env-file-if-exists=.env.bench benchmarks/publicados/bfcl/arnes.ts",
     "bench:gsm8k": "tsx --env-file-if-exists=.env.bench benchmarks/publicados/gsm8k/arnes.ts",
     "bench:xstest": "tsx --env-file-if-exists=.env.bench benchmarks/publicados/xstest/banco.ts",
     "banco:semanal": "BVSALA_DEV_OPEN=1 tsx --env-file-if-exists=.env.bench benchmarks/banco-semanal/orquestador.ts"
   },
   "devDependencies": {
-    "@noble/curves": "^2.2.0",
-    "@opentelemetry/api": "^1.9.1",
-    "@opentelemetry/sdk-trace-base": "^2.11.0",
-    "@types/node": "^22.10.2",
-    "gpt-tokenizer": "^3.4.0",
-    "hyparquet": "^1.31.2",
-    "tsup": "^8.3.5",
-    "tsx": "^4.19.2",
-    "typescript": "^5.7.2",
-    "vitest": "^2.1.8",
     "@ai-sdk/anthropic": "4.0.65",
     "@ai-sdk/openai": "4.0.78",
     "@anthropic-ai/sdk": "0.128.0",
     "@langchain/core": "1.2.13",
     "@langchain/openai": "1.6.0",
     "@mastra/core": "1.71.0",
+    "@noble/curves": "^2.2.0",
+    "@opentelemetry/api": "^1.9.1",
+    "@opentelemetry/sdk-trace-base": "^2.11.0",
+    "@types/express": "5.0.6",
+    "@types/node": "^22.10.2",
+    "@types/pg": "^8.23.1",
     "ai": "7.0.118",
     "ai-v6": "npm:ai@6.0.293",
-    "@types/express": "5.0.6",
     "express": "5.2.1",
+    "gpt-tokenizer": "^3.4.0",
+    "hyparquet": "^1.31.2",
     "langchain": "1.5.14",
-    "zod": "4.6.5"
+    "pg": "^8.23.1",
+    "tsup": "^8.3.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^4.1.12",
+    "zod": "4.6.6"
   },
   "packageManager": "pnpm@10.17.1",
+  "pnpm": {
+    "overrides": {
+      "zod": "4.6.6",
+      "undici": "7.30.1",
+      "hono": "4.13.14",
+      "langsmith": "0.11.1",
+      "vite": "6.4.4",
+      "vitest": "4.1.12",
+      "esbuild": "0.28.1",
+      "tinypool": "2.1.2",
+      "source-map-js": "1.2.2",
+      "nanoid": "3.3.20",
+      "postcss": "8.5.23",
+      "body-parser": "2.4.0"
+    }
+  },
   "peerDependencies": {
-    "@opentelemetry/api": "^1.9.0",
-    "gpt-tokenizer": "^3",
     "@anthropic-ai/sdk": ">=0.103.0 <1",
     "@langchain/core": ">=1.1.0 <2",
     "@mastra/core": ">=1.68.0 <2",
+    "@opentelemetry/api": "^1.9.0",
     "ai": "^6.0.0 || ^7.0.0",
+    "gpt-tokenizer": "^3",
     "langchain": ">=1.1.0 <2"
   },
   "peerDependenciesMeta": {

@@ -119,10 +119,19 @@
       "traffic": "tráfico",
       "steps": {
         "accountCreated": "Cuenta creada",
-        "sdkInstalled": "Clave de cuenta de servicio creada",
-        "licenseActive": "Licencia activa",
-        "firstReport": "Primer informe",
-        "liveMeter": "Medidor en vivo"
+        "sdkInstalled": "SDK o gateway instalado",
+        "licenseActive": "Credenciales y licencia activa",
+        "firstRequest": "Primera petición real",
+        "reportReady": "Informe disponible"
+      },
+      "readErrors": {
+        "title": "Algunos datos no se han podido leer",
+        "intro": "Esto es un fallo de lectura, no una cuenta vacía. Las secciones afectadas no muestran ceros en su lugar.",
+        "org": "No se ha podido resolver tu organización.",
+        "usage": "No se ha podido leer el uso diario.",
+        "models": "No se ha podido leer el desglose por modelo.",
+        "sessions": "No se ha podido leer el coste por sesión.",
+        "seats": "No se ha podido leer la actividad de las máquinas."
       }
     },
     "proof": {
@@ -266,11 +275,44 @@
       "statusDone": "listo",
       "statusNext": "siguiente",
       "statusPending": "pendiente",
+      "statusUnavailable": "no disponible",
       "nextLabel": "Siguiente: {label}",
       "installComment": "# detecta tu pila e imprime el cableado exacto — tus prompts nunca salen de tu infraestructura",
-      "hintLicense": "Pega tu clave de licencia de BiVelio para que el SDK desbloquee las funciones gestionadas y reporte el uso.",
-      "hintFirstReport": "Envuelve una llamada real al proveedor — el primer SavingsReport llega aquí y tu medidor se activa.",
-      "hintDefault": "Esto se desbloquea en cuanto llegue tu primera fila usage_daily."
+      "hintLicense": "Crea o recupera en Cuenta tu licencia y las credenciales de servicio. Una credencial por sí sola no prueba la instalación.",
+      "hintInstall": "Elige SDK o gateway y envía una petición real. Crear una clave o enviar un lote vacío no prueba la instalación.",
+      "hintFirstRequest": "Envía una petición real al proveedor a través del SDK o gateway. Su informe de uso completará este paso.",
+      "hintReport": "El informe aparece cuando llega la primera petición real.",
+      "hintDefault": "Abre tu cuenta para continuar la configuración.",
+      "linkAccount": "Abrir Cuenta",
+      "linkInstall": "Abrir instalación",
+      "linkSdk": "Recorrido SDK",
+      "linkGateway": "Recorrido gateway",
+      "unavailableHint": "Ahora no se puede leer el uso, así que no podemos evaluar la instalación ni el informe. No significa que la cuenta esté vacía."
+    },
+    "shadowOpportunities": {
+      "title": "Dónde está tu ahorro potencial",
+      "badge": "SHADOW · ESTIMADO",
+      "intro": "Oportunidades hipotéticas por modelo, calculadas solo con telemetría SHADOW. Nunca son ahorro medido ni un importe facturado.",
+      "error": "No se han podido leer las oportunidades por modelo. Inténtalo de nuevo en un momento.",
+      "hidden": "El desglose existe, pero esta cuenta no puede verlo. Es un fallo de visibilidad, no una ausencia de datos.",
+      "unavailable": "El desglose SHADOW por modelo aún no está disponible en este servidor. El histórico sin modelo no se puede reconstruir.",
+      "historical": "Hay peticiones SHADOW, pero su desglose por modelo no está disponible para el histórico anterior a esta migración.",
+      "empty": "Aún no hay peticiones SHADOW en este periodo. Envía tráfico real con Medir para empezar a estimar oportunidades.",
+      "colModel": "Modelo",
+      "colRequests": "Peticiones SHADOW",
+      "colBaseline": "Gasto baseline",
+      "colActual": "Coste hipotético",
+      "colSavings": "Ahorro hipotético",
+      "colCoverage": "Cobertura",
+      "coverage": "Cobertura por modelo: {coverage} de las peticiones SHADOW ({attributed} de {total}).",
+      "coveragePartial": "Cobertura parcial: el desglose incluye {attributed} de {total} peticiones SHADOW ({coverage}); el histórico sin modelo queda fuera.",
+      "coverageUnavailable": "La cobertura no está disponible porque no se pudo leer el total diario SHADOW.",
+      "note": "Estimación hipotética: baseline − coste SHADOW. Nunca medida, nunca facturada y nunca sumada al ahorro acreditado.",
+      "action": "Revisa Cuenta para activar las palancas disponibles o completa la instalación SDK/gateway. Palanca y superficie no están disponibles: el wire actual no las conserva; requieren un cambio servidor-primero.",
+      "accountCta": "Revisar Cuenta",
+      "installCta": "Completar instalación",
+      "exportCsv": "Exportar CSV",
+      "exportJson": "Exportar JSON"
     },
     "scenarioTable": {
       "colScenario": "escenario",

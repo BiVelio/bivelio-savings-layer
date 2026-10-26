@@ -36,11 +36,11 @@ import {
  * `savings.semanticCache: true` en la petición ni `semanticCacheDefault`: así no
  * se consulta ni se escribe nunca (en la 0.4.31, además, avisa; aquí se silencia).
  *
- * `semantica-defecto-capa` (nueva en la 0.4.31, #380) es el fragmento «Serverless»
- * del README de la 0.4.31: la caché sin calibrar y `semanticCacheDefault: true` en
- * el constructor, sin nada en la petición. `semantica-envio` es la misma caché con
- * el interruptor en cada petición, como en la tirada de la 0.4.30: las dos tienen
- * que decidir lo mismo.
+ * `semantica-defecto-capa` (nueva en la 0.4.31, #380) reproduce el fragmento
+ * «Serverless» de la 0.4.31 con `semanticCacheDefault: true` en el constructor,
+ * sin nada en la petición. `semantica-envio` usa el interruptor en cada petición.
+ * Al no tener calibración, ambas quedan en modo sombra: pueden almacenar, pero no
+ * sirven aciertos semánticos.
  */
 export type ConfigSinRed =
   | "defecto"

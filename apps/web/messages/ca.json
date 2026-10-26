@@ -119,10 +119,19 @@
       "traffic": "trànsit",
       "steps": {
         "accountCreated": "Compte creat",
-        "sdkInstalled": "Clau de compte de servei creada",
-        "licenseActive": "Llicència activa",
-        "firstReport": "Primer informe",
-        "liveMeter": "Mesurador en viu"
+        "sdkInstalled": "SDK o gateway instal·lat",
+        "licenseActive": "Credencials i llicència activa",
+        "firstRequest": "Primera petició real",
+        "reportReady": "Informe disponible"
+      },
+      "readErrors": {
+        "title": "No s'han pogut llegir algunes dades",
+        "intro": "És un error de lectura, no un compte buit. Les seccions afectades no hi mostren zeros.",
+        "org": "No s'ha pogut resoldre la teva organització.",
+        "usage": "No s'ha pogut llegir l'ús diari.",
+        "models": "No s'ha pogut llegir el desglossament per model.",
+        "sessions": "No s'ha pogut llegir el cost per sessió.",
+        "seats": "No s'ha pogut llegir l'activitat de les màquines."
       }
     },
     "proof": {
@@ -266,11 +275,44 @@
       "statusDone": "fet",
       "statusNext": "següent",
       "statusPending": "pendent",
+      "statusUnavailable": "no disponible",
       "nextLabel": "Següent: {label}",
       "installComment": "# detecta la teva pila i imprimeix la connexió exacta — els teus prompts mai no surten de la teva infraestructura",
-      "hintLicense": "Enganxa la teva clau de llicència de BiVelio perquè el SDK desbloquegi les funcions gestionades i informi de l'ús.",
-      "hintFirstReport": "Embolcalla una crida real al proveïdor: el primer SavingsReport arriba aquí i el teu mesurador s'activa.",
-      "hintDefault": "Això es desbloqueja en el moment que arriba la teva primera fila usage_daily."
+      "hintLicense": "Crea o recupera a Compte la llicència i les credencials de servei. Una credencial sola no demostra la instal·lació.",
+      "hintInstall": "Tria SDK o gateway i envia una petició real. Crear una clau o enviar un lot buit no demostra la instal·lació.",
+      "hintFirstRequest": "Envia una petició real al proveïdor a través del SDK o gateway. El seu informe d'ús completarà aquest pas.",
+      "hintReport": "L'informe apareix quan arriba la primera petició real.",
+      "hintDefault": "Obre el compte per continuar la configuració.",
+      "linkAccount": "Obrir Compte",
+      "linkInstall": "Obrir instal·lació",
+      "linkSdk": "Recorregut SDK",
+      "linkGateway": "Recorregut gateway",
+      "unavailableHint": "Ara no es pot llegir l'ús, així que no podem avaluar la instal·lació ni l'informe. No vol dir que el compte sigui buit."
+    },
+    "shadowOpportunities": {
+      "title": "On és el teu estalvi potencial",
+      "badge": "SHADOW · ESTIMAT",
+      "intro": "Oportunitats hipotètiques per model, calculades només amb telemetria SHADOW. Mai no són estalvi mesurat ni un import facturat.",
+      "error": "No s'han pogut llegir les oportunitats per model. Torna-ho a provar d'aquí a un moment.",
+      "hidden": "El desglossament existeix, però aquest compte no el pot veure. És un error de visibilitat, no una manca de dades.",
+      "unavailable": "El desglossament SHADOW per model encara no està disponible en aquest servidor. L'històric sense model no es pot reconstruir.",
+      "historical": "Hi ha peticions SHADOW, però el desglossament per model no està disponible per a l'històric anterior a aquesta migració.",
+      "empty": "Encara no hi ha peticions SHADOW en aquest període. Envia trànsit real amb Mesurar per començar a estimar oportunitats.",
+      "colModel": "Model",
+      "colRequests": "Peticions SHADOW",
+      "colBaseline": "Despesa baseline",
+      "colActual": "Cost hipotètic",
+      "colSavings": "Estalvi hipotètic",
+      "colCoverage": "Cobertura",
+      "coverage": "Cobertura per model: {coverage} de les peticions SHADOW ({attributed} de {total}).",
+      "coveragePartial": "Cobertura parcial: el desglossament inclou {attributed} de {total} peticions SHADOW ({coverage}); l'històric sense model queda fora.",
+      "coverageUnavailable": "La cobertura no està disponible perquè no s'ha pogut llegir el total diari SHADOW.",
+      "note": "Estimació hipotètica: baseline − cost SHADOW. Mai mesurada, mai facturada i mai sumada a l'estalvi acreditat.",
+      "action": "Revisa Compte per activar les palanques disponibles o completa la instal·lació SDK/gateway. Palanca i superfície no estan disponibles: el wire actual no les conserva; requereixen un canvi servidor-primer.",
+      "accountCta": "Revisar Compte",
+      "installCta": "Completar instal·lació",
+      "exportCsv": "Exportar CSV",
+      "exportJson": "Exportar JSON"
     },
     "scenarioTable": {
       "colScenario": "escenari",

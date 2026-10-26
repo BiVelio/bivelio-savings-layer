@@ -25,7 +25,13 @@
  *           Dollars are REAL provider tokens & cost.
  *   MOCK  — no network. Exercises the entire A/B pipeline deterministically to
  *           prove the plumbing, but every dollar is labeled "ESTIMATED — NOT a
- *           savings claim" because the mock is not a real model.
+ *           savings claim" because the mock is not a real model. Sus duraciones
+ *           son ESTIMATED/INSTRUMENTAL: prueban la cronometría, nunca un SLA.
+ *
+ * LATENCIA B2-F0 (benchmarks/b2/): todos los brazos usan performance.now().
+ * El artefacto conserva p50/p95/max por escenario y agregado, total y proveedor.
+ * p95 > 3000 ms o max > 5000 ms en cualquier brazo activo impide publicar;
+ * `latency.gate.reasons` deja el motivo. Semilla, CI, calidad y floors no cambian.
  *
  * EL ENDPOINT NATIVO DE ANTHROPIC, Y POR QUÉ HACE FALTA UNO APARTE.
  * `BVSALA_DEMO_BASE_URL` apunta casi siempre a una PASARELA que habla el
@@ -142,6 +148,14 @@ import { avisoDeTruncado, cortadaPorElTope, veredictoDeCalidad } from "./verja-d
 import { bootstrapRatioCI, bootstrapRatioCIEstratificado, wilcoxonSignedRankP, mean, type CI } from "./stats.js";
 import { writeReport, writeCsv } from "./report.js";
 import { validateAgainstSchema } from "../src/constraints/validate.js";
+import {
+  conVerjaDeLatencia,
+  cronometrar,
+  resumirLatencias,
+  type InformeLatencia,
+  type MuestraLatencia,
+  type MuestrasPorBrazo,
+} from "./b2/latencia.js";
 
 function tryParseJson(s: string): unknown {
   try { return JSON.parse(s); } catch { return undefined; }
@@ -655,6 +669,21 @@ function safeExpect(s: Scenario, res: SavingsResult): boolean {
   }
 }
 
+interface LatenciasPareadas {
+  A: MuestraLatencia;
+  A1?: MuestraLatencia;
+  A2?: MuestraLatencia;
+  B: MuestraLatencia;
+}
+
+interface ParDeEnsayo {
+  costA: number;
+  costA1?: number;
+  costA2?: number;
+  costB: number;
+  latencies: LatenciasPareadas;
+}
+
 interface ScenarioResult {
   name: string;
   lever: string;
@@ -773,7 +802,10 @@ interface ScenarioResult {
     compressedInputTokens: number;
     providerCachedInputTokens: number;
   };
-  paired: { costA: number; costA1?: number; costA2?: number; costB: number }[];
+  paired: ParDeEnsayo[];
+  latency: InformeLatencia;
+  /** Muestras internas: el agregado incluye sonda y amortización, no solo las parejas del CSV. */
+  latencySamples: MuestrasPorBrazo;
   /** El plan de B2 de este escenario (interno: se resume en `native` y en el agregado). */
   planB2?: PlanNativo;
   /** Escrituras de caché de B2 en las repeticiones SIN breakpoint, y de B0 en esas mismas. */
@@ -855,21 +887,13 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
   let planB2: PlanNativo | undefined;
   const sondaDeModo = { escriturasB2SinBreakpoint: 0, escriturasB0: 0, reps: 0 };
 
-  // Probe the optimized arm once (fresh layer) to classify the scenario.
-  // `warm` scenarios demonstrate caching (their value is repeat-traffic, shown
-  // in the amortization pass); the COLD headline treats their first call like
-  // any ran call so caches honestly read ~0% per single call.
-  const probe = await nuevaCapa(provider, model, memoriaNueva()).generate(reqDeRep("sonda"));
-  comprobarGasto();
-  const kind: Kind = s.warm
-    ? "cache"
-    : probe.report.calls.actualLlm === 0
-      ? "resolver"
-      : "ran";
-
-  const minReps = kind === "ran" ? REPS : Math.max(2, Math.ceil(REPS / 2));
-
-  const paired: { costA: number; costA1?: number; costA2?: number; costB: number }[] = [];
+  const latencias: MuestrasPorBrazo = {
+    A: [],
+    ...(B1_ACTIVO ? { A1: [] } : {}),
+    ...(B2_ACTIVO ? { A2: [] } : {}),
+    B: [],
+  };
+  const paired: ParDeEnsayo[] = [];
   const aIn: number[] = [], aOut: number[] = [], bIn: number[] = [], bOut: number[] = [];
   const a1In: number[] = [], a1Out: number[] = [];
   const a2In: number[] = [], a2Out: number[] = [];
@@ -896,6 +920,7 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
   const razonamiento = { naive: 0, razonable: 0, nativo: 0, optimizado: 0 };
   let escriturasEnEstaRep = 0;
   let razonamientoEnEstaRep = 0;
+  let proveedorEnEstaRep = 0;
   /**
    * Envuelve el proveedor para poder ver qué modelo sirvió al brazo B, y si la
    * petición llevaba la pista de límites de la capa: es la única forma de saber
@@ -907,7 +932,9 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
     id: provider.id,
     generate: async (r) => {
       if (llevaPistaDeLimites(r.messages)) pistaEnEstaRep = true;
-      const resp = await provider.generate(r);
+      const medida = await cronometrar(() => provider.generate(r));
+      const resp = medida.value;
+      proveedorEnEstaRep += medida.durationMs;
       const m = modeloDe(resp.raw);
       if (m) modelosServidos.add(m);
       // Las escrituras de TODAS las llamadas de la capa en esta repetición
@@ -918,6 +945,19 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
       return resp;
     },
   };
+
+  // El sondeo de clasificación también es una request de B y entra en el techo.
+  proveedorEnEstaRep = 0;
+  const probeMedida = await cronometrar(() => nuevaCapa(espia, model, memoriaNueva()).generate(reqDeRep("sonda")));
+  const probe = probeMedida.value;
+  latencias.B!.push({ totalMs: probeMedida.durationMs, providerMs: proveedorEnEstaRep });
+  comprobarGasto();
+  const kind: Kind = s.warm
+    ? "cache"
+    : probe.report.calls.actualLlm === 0
+      ? "resolver"
+      : "ran";
+  const minReps = kind === "ran" ? REPS : Math.max(2, Math.ceil(REPS / 2));
   let qPass = 0;
   let gate = "structural";
   // Acumuladores de caché de prefijo, uno por brazo.
@@ -940,7 +980,10 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
     // La MISMA sal para los dos brazos de esta repetición: pareado de verdad.
     const reqRep = reqDeRep(String(t));
     // Arm A: naive baseline — a real call, measured.
-    const respA = await provider.generate(buildNaive(reqRep, forzado));
+    const medicionA = await cronometrar(() => provider.generate(buildNaive(reqRep, forzado)));
+    const respA = medicionA.value;
+    const latenciaA = { totalMs: medicionA.durationMs, providerMs: medicionA.durationMs };
+    latencias.A!.push(latenciaA);
     comprobarGasto();
     const fp = (respA.raw as { system_fingerprint?: string } | undefined)?.system_fingerprint;
     if (fp) fingerprints.add(fp);
@@ -984,9 +1027,13 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
     // Los escenarios sin sal (prefijo estable, caché exacta) siguen sin sal en
     // los tres brazos: ahí el prefijo repetido ES lo que se mide.
     let costA1: number | undefined;
+    let latenciaA1: MuestraLatencia | undefined;
     if (B1_ACTIVO) {
       const reqRepB1 = reqDeRep(`${t}-b1`);
-      const respA1 = await provider.generate(construirBrazoRazonable(reqRepB1, model, { toolsB1: s.toolsB1 }));
+      const medicionA1 = await cronometrar(() => provider.generate(construirBrazoRazonable(reqRepB1, model, { toolsB1: s.toolsB1 })));
+      const respA1 = medicionA1.value;
+      latenciaA1 = { totalMs: medicionA1.durationMs, providerMs: medicionA1.durationMs };
+      latencias.A1!.push(latenciaA1);
       comprobarGasto();
       modelosServidos.add(modeloDe(respA1.raw) ?? "(sin declarar)");
       const uA1 = usoDe(respA1);
@@ -1007,6 +1054,7 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
     // antes. Su contrato se valida como el del naive: B2 puede abaratar
     // contestando peor (esfuerzo bajo), y eso cuenta EN CONTRA nuestra.
     let costA2: number | undefined;
+    let latenciaA2: MuestraLatencia | undefined;
     if (proveedorB2) {
       const reqRepB2 = reqDeRep(`${t}-b2`);
       const peticionB2 = construirBrazoNativo(reqRepB2, model, {
@@ -1015,7 +1063,10 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
       });
       const planDeEstaRep = planPara(peticionB2);
       planB2 ??= planDeEstaRep;
-      const respA2 = await proveedorB2.generate(peticionB2);
+      const medicionA2 = await cronometrar(() => proveedorB2.generate(peticionB2));
+      const respA2 = medicionA2.value;
+      latenciaA2 = { totalMs: medicionA2.durationMs, providerMs: medicionA2.durationMs };
+      latencias.A2!.push(latenciaA2);
       comprobarGasto();
       modelosServidos.add(modeloDe(respA2.raw) ?? "(sin declarar)");
       const uA2 = usoDe(respA2);
@@ -1047,7 +1098,11 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
     pistaEnEstaRep = false;
     escriturasEnEstaRep = 0;
     razonamientoEnEstaRep = 0;
-    const resB = await nuevaCapa(espia, model, memoriaNueva()).generate(reqRep);
+    proveedorEnEstaRep = 0;
+    const medicionB = await cronometrar(() => nuevaCapa(espia, model, memoriaNueva()).generate(reqRep));
+    const resB = medicionB.value;
+    const latenciaB = { totalMs: medicionB.durationMs, providerMs: proveedorEnEstaRep };
+    latencias.B!.push(latenciaB);
     comprobarGasto();
     if (pistaEnEstaRep) repsConPista++;
     const uB = usageOf(resB);
@@ -1057,7 +1112,18 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
     const ran = resB.report.calls.actualLlm > 0;
     const costB = ran ? cost(model, uB, escriturasEnEstaRep) : 0;
 
-    paired.push({ costA, ...(costA1 != null ? { costA1 } : {}), ...(costA2 != null ? { costA2 } : {}), costB });
+    paired.push({
+      costA,
+      ...(costA1 != null ? { costA1 } : {}),
+      ...(costA2 != null ? { costA2 } : {}),
+      costB,
+      latencies: {
+        A: latenciaA,
+        ...(latenciaA1 ? { A1: latenciaA1 } : {}),
+        ...(latenciaA2 ? { A2: latenciaA2 } : {}),
+        B: latenciaB,
+      },
+    });
     aIn.push(uA.inputTokens); aOut.push(uA.outputTokens);
     bIn.push(uB.inputTokens); bOut.push(uB.outputTokens);
 
@@ -1199,6 +1265,8 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
     fingerprints: [...fingerprints],
     attribution,
     paired,
+    latency: resumirLatencias(latencias, mode),
+    latencySamples: latencias,
   };
 
   // Cache amortization: repeat traffic pays the miss ONCE, then hits are $0.
@@ -1209,11 +1277,17 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
     const layer = nuevaCapa(espia, model, memoriaNueva());
     const reqAmortizacion = conMuestreoPareado(req);
     escriturasEnEstaRep = 0;
-    const miss = await layer.generate(reqAmortizacion); // cold miss (real optimized cost)
+    proveedorEnEstaRep = 0;
+    const medicionMiss = await cronometrar(() => layer.generate(reqAmortizacion)); // cold miss (real optimized cost)
+    const miss = medicionMiss.value;
+    latencias.B!.push({ totalMs: medicionMiss.durationMs, providerMs: proveedorEnEstaRep });
     comprobarGasto();
     const coldMissCost = miss.report.calls.actualLlm > 0 ? cost(model, usageOf(miss), escriturasEnEstaRep) : 0;
     escriturasEnEstaRep = 0;
-    const hit = await layer.generate(reqAmortizacion); // warmed → hit
+    proveedorEnEstaRep = 0;
+    const medicionHit = await cronometrar(() => layer.generate(reqAmortizacion)); // warmed → hit
+    const hit = medicionHit.value;
+    latencias.B!.push({ totalMs: medicionHit.durationMs, providerMs: proveedorEnEstaRep });
     comprobarGasto();
     const hitCost = hit.report.calls.actualLlm > 0 ? cost(model, usageOf(hit), escriturasEnEstaRep) : 0;
     // The hit must actually be a cache hit AND satisfy the scenario's own
@@ -1229,6 +1303,7 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
     }
     result.amortization = { coldMissCost, hitCost, breakEvenK };
   }
+  result.latency = resumirLatencias(latencias, mode);
 
   return result;
 }
@@ -1616,10 +1691,20 @@ interface Tirada {
   modelStable: boolean;
   ledgerRollup: FilaDeLibro[];
   palancas: EstadoDePalancaEnLaTirada[];
+  latencia: InformeLatencia;
   artefacto: Record<string, unknown>;
 }
 
 const sumArr = (xs: number[]): number => xs.reduce((n, x) => n + x, 0);
+
+function agregarMuestrasDeLatencia(results: readonly ScenarioResult[]): MuestrasPorBrazo {
+  const out: MuestrasPorBrazo = {};
+  for (const brazo of ["A", "A1", "A2", "B"] as const) {
+    const muestras = results.flatMap((r) => r.latencySamples[brazo] ?? []);
+    if (muestras.length > 0) out[brazo] = muestras;
+  }
+  return out;
+}
 
 async function medirModelo(modelo: string | null): Promise<Tirada> {
   const etiqueta = modelo ?? "(el de cada escenario)";
@@ -1641,6 +1726,7 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
 
   const results: ScenarioResult[] = [];
   for (const s of aplican) results.push(await runScenario(s, modelo));
+  const latenciaBase = resumirLatencias(agregarMuestrasDeLatencia(results), mode);
 
   for (const r of results) {
     const qa = `${r.quality.passed}/${r.quality.total}`;
@@ -2123,8 +2209,23 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
     }
   }
 
+  const escenariosDelArtefacto = results.map((r) => ({
+    ...r,
+    paired: undefined,
+    planB2: undefined,
+    latencySamples: undefined,
+  }));
+  const latencia = conVerjaDeLatencia(latenciaBase, escenariosDelArtefacto, mode);
+  console.log(`\nLatency B2-F0 (total end-to-end ms; ${mode === "MOCK" ? "INSTRUMENTAL, never a production SLA" : "measured"})`);
+  for (const brazo of latencia.activeArms) {
+    const l = latencia.arms[brazo]!.total;
+    console.log(`  ${pad(brazo, 4)} n=${l.n}  p50=${l.p50.toFixed(1)}  p95=${l.p95.toFixed(1)}  max=${l.max.toFixed(1)}`);
+  }
+  console.log(`  gate: ${latencia.gate!.approved ? "within p95 ≤ 3000ms and max ≤ 5000ms" : latencia.gate!.reasons.join("; ")}`);
+
   const artefacto: Record<string, unknown> = {
     mode,
+    latency: latencia,
     ...(modelo ? { model: modelo } : {}),
     // SELLO DE PROCEDENCIA. Sin él, un artefacto publicado no dice de qué tirada
     // salió, así que era imposible detectar a posteriori que el JSON y el CSV de
@@ -2191,7 +2292,9 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
       "over all trials is kept in `aggregatePooled` for comparison with earlier artefacts; it is no longer the headline" +
       (B1_ACTIVO ? "; `aggregateB1` is the same stratified headline against Arm A1 — the research guide's «additional value of Savings»" : "") +
       (B2_ACTIVO ? "; `aggregateB2` is the same stratified headline against Arm A2, and `floors.min` is the lowest of the three lower bounds: any claim must fit under it" : "") +
-      ". Quality gate voids regressed answers. Cache savings amortized separately with a break-even K.",
+      ". Quality gate voids regressed answers. Cache savings amortized separately with a break-even K. " +
+      "B2-F0 latency uses a monotonic clock for every arm; per-scenario and aggregate p50/p95/max cover total, provider and layer overhead. " +
+      "Publication requires total p95 ≤ 3000ms and max ≤ 5000ms. MOCK timings are estimated/instrumental, never a production SLA.",
     arms: {
       A: DEFINICION_DE_BRAZOS.A,
       ...(B1_ACTIVO ? { A1: DEFINICION_DE_BRAZOS.A1 } : {}),
@@ -2213,8 +2316,8 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
       ...(B2_ACTIVO ? { b2Effort: ESFUERZO_B2 } : {}),
       reasoningHeadroomTokens: MARGEN_RAZONAMIENTO,
     },
-    // `planB2` es interno (se publica resumido en `scenarios[].native` y en `native`).
-    scenarios: results.map((r) => ({ ...r, paired: undefined, planB2: undefined })),
+    // `planB2` y las muestras crudas auxiliares son internos; los percentiles sí se publican.
+    scenarios: escenariosDelArtefacto,
     // LOS ESCENARIOS QUE NO SE MIDIERON CONTRA ESTE MODELO, con su motivo. Sin
     // esta lista, un artefacto de `gpt-4o-mini` y uno de `claude-haiku` parecen
     // comparables aunque midan conjuntos de escenarios distintos.
@@ -2389,6 +2492,7 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
     modelStable: allFpStable,
     ledgerRollup,
     palancas,
+    latencia,
     artefacto,
   };
 }
@@ -2410,6 +2514,14 @@ const COLUMNAS_DE_ENSAYOS = [
   "savedFraction",
   "savedFractionB1",
   "savedFractionB2",
+  "totalMsA",
+  "providerMsA",
+  "totalMsA1",
+  "providerMsA1",
+  "totalMsA2",
+  "providerMsA2",
+  "totalMsB",
+  "providerMsB",
 ];
 
 function filasDeEnsayos(t: Tirada): Record<string, unknown>[] {
@@ -2427,6 +2539,14 @@ function filasDeEnsayos(t: Tirada): Record<string, unknown>[] {
       savedFraction: fraccion(p.costA, p.costB),
       savedFractionB1: fraccion(p.costA1, p.costB),
       savedFractionB2: fraccion(p.costA2, p.costB),
+      totalMsA: p.latencies.A.totalMs,
+      providerMsA: p.latencies.A.providerMs,
+      totalMsA1: p.latencies.A1?.totalMs ?? "",
+      providerMsA1: p.latencies.A1?.providerMs ?? "",
+      totalMsA2: p.latencies.A2?.totalMs ?? "",
+      providerMsA2: p.latencies.A2?.providerMs ?? "",
+      totalMsB: p.latencies.B.totalMs,
+      providerMsB: p.latencies.B.providerMs,
     })),
   );
 }
@@ -2695,6 +2815,7 @@ async function main(): Promise<void> {
             : {}),
           floors: t.floors,
           cost: t.coste,
+          latency: t.latencia,
           ...(t.nativo ? { native: t.nativo } : {}),
           ledgers: t.ledgerRollup.map((l) => ({ ledger: l.ledger, savings: l.savings, scenarios: l.scenarios.length })),
           levers: t.palancas,
@@ -2708,6 +2829,7 @@ async function main(): Promise<void> {
             ...(r.measuredB2 ? { savingsB2: r.measuredB2.savings } : {}),
             quality: r.quality,
             truncated: r.truncated,
+            latency: r.latency,
             palanca: r.palanca,
           })),
         })),

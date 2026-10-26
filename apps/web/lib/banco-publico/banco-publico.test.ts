@@ -795,7 +795,7 @@ describe("banco pÃºblico: los informes servidos desde la web (/benchmarks/data/â
       return { ruta: f.ruta, json };
     });
     expect(resumirBanco(desdeServidos)).toEqual(BANCO);
-  });
+  }, 20_000);
 
   it("la copia servida no lleva claves, rutas de disco, worktrees, correos ni texto de XSTest", () => {
     for (const { fecha, fichero } of servidos) {

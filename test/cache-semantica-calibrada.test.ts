@@ -244,23 +244,17 @@ async function certificar(cache: InMemorySemanticCache, n = 40, agentic = false)
 }
 
 describe("InMemorySemanticCache con calibración", () => {
-  it("sin calibración, nada cambia: lookup = find y no hay sondas ni estado", async () => {
+  it("sin calibración es modo sombra: conserva lo guardado, pero find y lookup nunca sirven", async () => {
     const cache = new InMemorySemanticCache();
-    await cache.store(canon("describe the water cycle in simple terms"), resp("rain"));
-    const q = canon("describe the water cycle in simple terms please");
-    const hit = await cache.find(q);
-    const l = await cache.lookup(q);
-    expect(hit).not.toBeNull();
-    // Dos lecturas en dos instantes: todo igual salvo la edad, que en la segunda
-    // solo puede ser mayor o igual. Compararla entera fallaba con la máquina cargada.
-    const { ageMs: edadFind, ...restoFind } = hit!;
-    const { ageMs: edadLookup, ...restoLookup } = l.hit!;
-    expect(restoLookup).toEqual(restoFind);
-    expect(edadLookup).toBeGreaterThanOrEqual(edadFind);
-    expect(l.probe).toBeNull();
+    const original = canon("describe the water cycle in simple terms");
+    await cache.store(original, resp("rain"));
+    for (const q of [original, canon("describe the water cycle in simple terms please")]) {
+      expect(await cache.find(q)).toBeNull();
+      expect(await cache.lookup(q)).toEqual({ hit: null, probe: null });
+    }
+    expect(cache.size).toBe(1);
     expect(cache.calibrated).toBe(false);
     expect(cache.calibrationStatus()).toBeNull();
-    expect(hit!.calibration).toBeUndefined();
   });
 
   it("hasta que hay suelo NO sirve nada: la candidata sale como sonda «calibrating»", async () => {
@@ -409,7 +403,30 @@ const pide = (content: string, extra: Partial<SavingsRequest> = {}): SavingsRequ
   ...extra,
 });
 
-describe("la capa con la caché calibrada", () => {
+describe("la capa con la caché semántica", () => {
+  it("sin calibración no sirve ni acredita la respuesta guardada, pero sigue almacenando", async () => {
+    const p = new Guion();
+    const semanticCache = new InMemorySemanticCache();
+    const capa = createSavingsLayer({ provider: p, semanticCacheStore: semanticCache, costModels: PRECIOS, silenceWarnings: true });
+    const pregunta = pide("summarize the quarterly report for the board");
+    await capa.generate(pregunta);
+    const r = await capa.generate(pregunta);
+    expect(p.llamadas).toBe(2);
+    expect(semanticCache.size).toBe(2);
+    expect(r.report.cache.result).toBe("miss");
+    expect(r.report.qualityStatus).not.toBe("task_equivalent");
+    expect(r.report.calls.avoidedLlm).toBe(0);
+    expect(r.report.calls.actualLlm).toBe(1);
+    const miss = r.report.traces.find((t) => t.stage === "semantic-cache");
+    expect(miss?.outcome).toBe("miss");
+    expect(miss?.detail).toMatchObject({
+      calibration: "missing",
+      mode: "shadow",
+      reason: "no calibration; stored answers are not served",
+    });
+    await capa.close();
+  });
+
   it("antes del suelo: cada candidata va al proveedor, se etiqueta, y la traza lo dice", async () => {
     const p = new Guion();
     const semanticCache = new InMemorySemanticCache({ calibration: { maxErrorRate: 0.05 } });
@@ -430,7 +447,7 @@ describe("la capa con la caché calibrada", () => {
     await capa.close();
   });
 
-  it("tras el suelo: el acierto publica la cota en el libro de calidad, con la misma base de dinero que sin calibrar", async () => {
+  it("tras el suelo: el acierto publica la cota y conserva su base de dinero", async () => {
     const p = new Guion();
     const semanticCache = new InMemorySemanticCache({ calibration: CAL_RAPIDA });
     const capa = createSavingsLayer({ provider: p, semanticCacheStore: semanticCache, costModels: PRECIOS, silenceWarnings: true });
@@ -455,17 +472,8 @@ describe("la capa con la caché calibrada", () => {
       segment: "single_shot",
     });
     expect(m.acceptFloor).toBe(s.floor);
-
-    // La base del dinero de un acierto calibrado es la de uno sin calibrar.
-    const sinCalibrar = new InMemorySemanticCache();
-    const otra = createSavingsLayer({ provider: new Guion(), semanticCacheStore: sinCalibrar, costModels: PRECIOS, silenceWarnings: true });
-    await otra.generate(pide("summarize the quarterly report for the board"));
-    const r2 = await otra.generate(pide("please summarize the quarterly report for the board"));
-    expect(r2.report.cache.result).toBe("semantic");
-    expect(r.report.cost.basis).toBe(r2.report.cost.basis);
     expect(r.report.cost.basis).not.toBe("reference");
     await capa.close();
-    await otra.close();
   });
 
   it("una respuesta que la caché no guardaría no se usa de etiqueta", async () => {

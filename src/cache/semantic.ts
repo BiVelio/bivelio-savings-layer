@@ -2,14 +2,12 @@ import type { CanonicalRequest } from "../canonicalization/canonicalize.js";
 import type { SemanticCalibrationBound } from "../contracts/types.js";
 import {
   CalibrationStateError,
-  EstadoDeCalibracion,
-  escribirEstado,
   indiceEnRejilla,
-  leerEstado,
   umbralDeIndice,
   validarCalibracion,
   type IdentidadDeCalibracion,
 } from "./calibracion.js";
+import { SemanticCalibrationJournal } from "./semantic-journal.js";
 import {
   sameAnswer,
   type AnswerJudge,
@@ -29,7 +27,8 @@ import type { CachedAnswer } from "./exact.js";
  * question. Therefore the headline metric here is NOT hit ratio — it is the
  * PRECISION of hits. Every candidate must pass: tenant/permission filter,
  * knowledge-epoch filter, a similarity threshold, a stronger local verifier, a
- * freshness check, and an output-contract compatibility check.
+ * freshness check, an output-contract compatibility check, and a certified
+ * calibration floor. Without calibration the cache is shadow-only and serves nothing.
  */
 export interface EmbeddingFn {
   (text: string): Promise<number[]> | number[];
@@ -45,6 +44,8 @@ export interface SemanticVerifier {
 }
 
 export interface SemanticRecord {
+  /** Stable backend identifier, when the store assigns one. */
+  recordId?: string;
   embedding: number[];
   query: string;
   answer: CachedAnswer;
@@ -133,6 +134,8 @@ export interface SemanticHit {
  */
 export interface SemanticProbe {
   reason: "calibrating" | "below_floor" | "record_floor" | "audit";
+  /** Stable backend identifier for this observation, when the store assigns one. */
+  observationId?: string;
   /** The score the decision was made on: the lower of similarity and your verifier's score. */
   score: number;
   segment: "single_shot" | "agentic";
@@ -143,6 +146,14 @@ export interface SemanticProbe {
 export interface SemanticLookup {
   hit: SemanticHit | null;
   probe: SemanticProbe | null;
+}
+
+/** Structural contract required by the pipeline; backends may add persistence and lifecycle methods. */
+export interface SemanticCacheStore {
+  readonly calibrated: boolean;
+  lookup(c: CanonicalRequest, opts?: { agentic?: boolean }): Promise<SemanticLookup>;
+  store(c: CanonicalRequest, answer: CachedAnswer): Promise<void>;
+  observe(probe: SemanticProbe, fresh: CachedAnswer): Promise<boolean | null>;
 }
 
 export interface SemanticCacheOptions {
@@ -178,15 +189,16 @@ export interface SemanticCacheOptions {
   verifierId?: string;
   /** Cosine similarity floor for a candidate to be considered at all. */
   similarityThreshold?: number;
-  /** Verifier score floor for acceptance. */
+  /** Explicit verifier score floor applied in addition to the certified floor. */
   acceptThreshold?: number;
   ttlMs?: number;
   maxRecords?: number;
   now?: () => number;
   /**
-   * Opt-in: replace the fixed acceptance floor with one your own labeled
-   * traffic certifies for a wrong-reuse rate you choose. Off by default. See
-   * {@link SemanticCalibrationOptions}.
+   * Required to serve semantic hits: your own labeled traffic certifies a floor
+   * for a wrong-reuse rate you choose. Without it the cache is shadow-only and
+   * may store answers, but {@link find} and {@link lookup} never return a hit.
+   * See {@link SemanticCalibrationOptions}.
    */
   calibration?: SemanticCalibrationOptions;
 }
@@ -428,7 +440,7 @@ const ID_DEL_JUEZ_POR_DEFECTO = "same-answer-v1";
  * to the store. The verification logic — the part that makes it *safe* — stays
  * identical regardless of the backend.
  */
-export class InMemorySemanticCache {
+export class InMemorySemanticCache implements SemanticCacheStore {
   private readonly records: SemanticRecord[] = [];
   private readonly embed: EmbeddingFn;
   private readonly verify: SemanticVerifier | undefined;
@@ -454,7 +466,7 @@ export class InMemorySemanticCache {
         random: () => number;
       }
     | undefined;
-  private readonly estados = new Map<SemanticProbe["segment"], EstadoDeCalibracion>();
+  private readonly diario: SemanticCalibrationJournal | undefined;
   // Los nombres que declaró el llamante para su embebedor, su verificador y su
   // juez. Solo los lee la identidad de un estado exportado.
   private readonly nombres: { embedder?: string; verifier?: string; judge?: string };
@@ -501,6 +513,7 @@ export class InMemorySemanticCache {
         perRecordFloors: opts.calibration.perRecordFloors ?? true,
         random: opts.calibration.random ?? Math.random,
       };
+      this.diario = new SemanticCalibrationJournal(this.identidad(null));
     }
   }
 
@@ -514,23 +527,20 @@ export class InMemorySemanticCache {
    * FIRST and hard — a candidate from another tenant, scope, or knowledge epoch
    * is never even scored.
    *
-   * With calibration on, it returns only a hit served under a certified floor
-   * and labels nothing: without {@link lookup} and {@link observe} (the layer
-   * calls both) the calibration never gets a label and never certifies.
+   * Only a certified calibration floor can authorize a hit. Without calibration
+   * this always returns null, including for direct callers. It labels nothing:
+   * without {@link lookup} and {@link observe} (the layer calls both) the
+   * calibration never gets a label and never certifies.
    */
   async find(c: CanonicalRequest): Promise<SemanticHit | null> {
-    // Con calibración, lo que se sirve lo decide `lookup`; `find` devuelve solo
-    // el acierto (una candidata que no se sirve no deja etiqueta por aquí).
-    if (this.calibracion) return (await this.lookup(c)).hit;
-    return this.mejorCandidata(c, true);
+    return (await this.lookup(c)).hit;
   }
 
   /**
    * The best candidate that passes every hard filter, the similarity floor and
-   * the fact guard. With `conAceptacion`, also the confidence floor (the path
-   * without calibration, unchanged); without it, calibration decides.
+   * the fact guard. Calibration decides whether it can be served.
    */
-  private async mejorCandidata(c: CanonicalRequest, conAceptacion: boolean): Promise<SemanticHit | null> {
+  private async mejorCandidata(c: CanonicalRequest): Promise<SemanticHit | null> {
     if (this.records.length === 0) return null;
     const queryEmbedding = await this.embed(c.normalizedText);
 
@@ -597,7 +607,6 @@ export class InMemorySemanticCache {
         ? await this.verify(c.normalizedText, record.query)
         : similarity;
       const confidence = Math.min(similarity, verifierScore);
-      if (conAceptacion && confidence < this.acceptThreshold) continue;
 
       if (!best || confidence > best.confidence) {
         best = {
@@ -619,23 +628,23 @@ export class InMemorySemanticCache {
   /**
    * Like {@link find}, and with calibration on it also returns the candidate it
    * did not serve, so the caller can label it with {@link observe} once the
-   * provider has answered. Without calibration, `probe` is always null.
+   * provider has answered. Without calibration, both `hit` and `probe` are null:
+   * stored answers remain available for future calibration but are never served.
    *
    * `agentic` picks the traffic segment: calibrations are kept apart for
    * single-shot and agentic requests.
    */
   async lookup(c: CanonicalRequest, opts: { agentic?: boolean } = {}): Promise<SemanticLookup> {
     const cal = this.calibracion;
-    if (!cal) return { hit: await this.mejorCandidata(c, true), probe: null };
+    if (!cal) return { hit: null, probe: null };
     const segment: SemanticProbe["segment"] = opts.agentic ? "agentic" : "single_shot";
     // LA CANDIDATA ES LA MÁS CERCANA, SE SIRVA O NO. Si la más cercana no se
     // puede servir, no se busca la segunda: la etiqueta describe exactamente la
     // decisión «servir la más cercana si su puntuación llega al suelo», que es
     // lo que la prueba certifica.
-    const candidata = await this.mejorCandidata(c, false);
+    const candidata = await this.mejorCandidata(c);
     if (!candidata) return { hit: null, probe: null };
-    const estado = this.estadoDe(segment);
-    const suelo = estado.suelo;
+    const suelo = this.diario!.floorIndex(segment);
     const score = candidata.confidence;
     const sonda = (reason: SemanticProbe["reason"]): SemanticLookup => ({
       hit: null,
@@ -652,7 +661,7 @@ export class InMemorySemanticCache {
     // calibra, la sonda ya es obligatoria y no hay nada que auditar.
     if (cal.auditRate > 0 && cal.random() < cal.auditRate) return sonda("audit");
     const floor = umbralDeIndice(suelo);
-    const r = estado.resumen();
+    const r = this.diario!.status(segment);
     return {
       hit: {
         ...candidata,
@@ -661,9 +670,9 @@ export class InMemorySemanticCache {
           maxErrorRate: cal.maxErrorRate,
           confidence: cal.confidence,
           floor,
-          heldOutAtFloor: r.retenidasEnSuelo,
-          wrongHeldOutAtFloor: r.erroneasEnSuelo,
-          labeled: r.etiquetas,
+          heldOutAtFloor: r.heldOutAtFloor,
+          wrongHeldOutAtFloor: r.wrongHeldOutAtFloor,
+          labeled: r.labeled,
           segment,
         },
       },
@@ -695,7 +704,7 @@ export class InMemorySemanticCache {
     } catch {
       return null;
     }
-    this.estadoDe(probe.segment).anotar(probe.score, correcta);
+    this.diario!.record(probe.segment, probe.score, correcta);
     if (!correcta && cal.perRecordFloors) {
       probe.record.failedAtScore = Math.max(probe.record.failedAtScore ?? -Infinity, probe.score);
     }
@@ -709,20 +718,7 @@ export class InMemorySemanticCache {
 
   /** Where the calibration of a traffic segment stands, or null without calibration. */
   calibrationStatus(segment: SemanticProbe["segment"] = "single_shot"): SemanticCalibrationStatus | null {
-    const cal = this.calibracion;
-    if (!cal) return null;
-    const r = this.estadoDe(segment).resumen();
-    return {
-      maxErrorRate: cal.maxErrorRate,
-      confidence: cal.confidence,
-      floor: r.suelo == null ? null : umbralDeIndice(r.suelo),
-      labeled: r.etiquetas,
-      heldOut: r.retenidas,
-      heldOutAtFloor: r.retenidasEnSuelo,
-      wrongHeldOutAtFloor: r.erroneasEnSuelo,
-      minHeldOutToCertify: r.minimasParaLaSiguiente,
-      nextTestAt: r.etiquetasParaLaSiguiente,
-    };
+    return this.diario?.status(segment) ?? null;
   }
 
   /**
@@ -743,7 +739,8 @@ export class InMemorySemanticCache {
    * (`embedderId`, `verifierId`, `calibration.judgeId`).
    */
   exportCalibration(): SemanticCalibrationState {
-    return escribirEstado(this.identidad("exportCalibration"), this.estados);
+    this.identidad("exportCalibration");
+    return this.diario!.export();
   }
 
   /**
@@ -759,35 +756,20 @@ export class InMemorySemanticCache {
    * (merging two histories would count some labels twice).
    */
   importCalibration(state: SemanticCalibrationState | string | unknown): void {
-    const id = this.identidad("importCalibration");
-    let datos = state;
-    if (typeof state === "string") {
-      try {
-        datos = JSON.parse(state);
-      } catch {
-        throw new CalibrationStateError("importCalibration: the state is a string but not JSON");
-      }
-    }
-    const leidos = leerEstado(datos, id);
-    for (const [segmento] of leidos) {
-      const actual = this.estados.get(segmento);
-      if (actual && actual.resumen().etiquetas > 0) {
-        throw new CalibrationStateError(
-          `importCalibration: this cache has already recorded ${actual.resumen().etiquetas} labels in the ` +
-            `${segmento} segment; import right after constructing it`,
-        );
-      }
-    }
-    for (const [segmento, estado] of leidos) this.estados.set(segmento, estado);
+    this.identidad("importCalibration");
+    this.diario!.import(state);
   }
 
   // Quién puntúa, quién juzga y con qué números: lo que un estado exportado
   // tiene que compartir con la caché que lo importa. Sin nombre para una pieza
   // del cliente no hay identidad que comparar, y se rechaza en vez de adivinar.
-  private identidad(accion: string): IdentidadDeCalibracion {
+  // Con `accion` nula se construye la identidad operativa: los nombres ausentes
+  // siguen fallando solo al importar/exportar, nunca al construir o consultar.
+  private identidad(accion: string | null): IdentidadDeCalibracion {
     const cal = this.calibracion;
     if (!cal) throw new CalibrationStateError(`${accion}: this cache runs without \`calibration\``);
-    const falta = (opcion: string, pieza: string): never => {
+    const falta = (opcion: string, pieza: string): string => {
+      if (accion == null) return "";
       throw new CalibrationStateError(
         `${accion}: pass \`${opcion}\` naming your ${pieza}, so that a saved calibration is only ever ` +
           "restored under the same one",
@@ -809,16 +791,6 @@ export class InMemorySemanticCache {
       confidence: cal.confidence,
       similarityThreshold: this.similarityThreshold,
     };
-  }
-
-  private estadoDe(segmento: SemanticProbe["segment"]): EstadoDeCalibracion {
-    let e = this.estados.get(segmento);
-    if (!e) {
-      const cal = this.calibracion!;
-      e = new EstadoDeCalibracion(cal.maxErrorRate, 1 - cal.confidence);
-      this.estados.set(segmento, e);
-    }
-    return e;
   }
 
   async store(c: CanonicalRequest, answer: CachedAnswer): Promise<void> {

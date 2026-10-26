@@ -32,9 +32,15 @@ function bancoDePruebas(artefacto: unknown, csv: string, sufijo = ""): string {
   temporales.push(dir);
   mkdirSync(join(dir, "benchmarks", "out"), { recursive: true });
   mkdirSync(join(dir, "apps", "web", "public", "data"), { recursive: true });
-  for (const f of ["publish.ts", "publish-guard.ts"]) {
+  for (const f of ["publish.ts", "publish-guard.ts", "stats.ts"]) {
     cpSync(join(raiz, "benchmarks", f), join(dir, "benchmarks", f));
   }
+  cpSync(join(raiz, "benchmarks", "b2"), join(dir, "benchmarks", "b2"), { recursive: true });
+  mkdirSync(join(dir, "benchmarks", "latencia-gateways"), { recursive: true });
+  cpSync(
+    join(raiz, "benchmarks", "latencia-gateways", "nucleo.ts"),
+    join(dir, "benchmarks", "latencia-gateways", "nucleo.ts"),
+  );
   writeFileSync(join(dir, "benchmarks", "out", `ab-live${sufijo}.json`), JSON.stringify(artefacto, null, 2));
   writeFileSync(join(dir, "benchmarks", "out", `ab-live-trials${sufijo}.csv`), csv);
   return dir;
@@ -52,6 +58,12 @@ function publicar(dir: string, ...args: string[]): { code: number; salida: strin
 
 /** Un artefacto LIVE que pasa el guardarraíl de publicación (con B2 y sus suelos, desde el 2026-09-27). */
 function artefactoLive(trials: number | null, model = "gpt-4o-mini") {
+  const brazo = {
+    total: { n: 1, p50: 100, p95: 200, max: 300 },
+    provider: { n: 1, p50: 90, p95: 190, max: 290 },
+    layerOverhead: { n: 1, p50: 10, p95: 10, max: 10 },
+  };
+  const arms = Object.fromEntries(["A", "A1", "A2", "B"].map((id) => [id, brazo]));
   return {
     mode: "LIVE",
     model,
@@ -67,9 +79,19 @@ function artefactoLive(trials: number | null, model = "gpt-4o-mini") {
     floors: { vsB0: 0.2, vsB1: null, vsB2: 0.1, min: 0.1, minAgainst: "B2" },
     transport: { kind: "openai-compatible", endpointHost: "api.openai.com" },
     pricing: { listPriceKnown: true, cacheWrites: { premium: 1, metered: true } },
+    latency: {
+      protocol: "B2-F0-v1",
+      clock: "performance.now (monotonic)",
+      status: "measured",
+      instrumental: false,
+      productionSla: "assessed",
+      budgets: { p95Ms: 3000, maxMs: 5000 },
+      activeArms: ["A", "A1", "A2", "B"],
+      arms,
+    },
     // El guardarraíl exige escenarios: un artefacto sin ellos no se publica,
     // y con razón (un titular sin nada detrás). Y que estén TODOS.
-    scenarios: [{ name: "resumen", kind: "exact", savings: { lower: 0.2, point: 0.3, upper: 0.4 } }],
+    scenarios: [{ name: "resumen", kind: "exact", savings: { lower: 0.2, point: 0.3, upper: 0.4 }, latency: { arms } }],
     scenarioSet: { size: 1, names: ["resumen"] },
   };
 }

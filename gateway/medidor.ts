@@ -61,7 +61,7 @@ export interface UsoSse {
  * es el orden en que Anthropic los emite — catálogo F0).
  */
 export class ObservadorSse {
-  private resto = "";
+  private readonly parser = new SseParser();
   private uso: UsoSse | null = null;
   private elisionObservada: ElisionAplicada | null = null;
   private paradaFinal: string | null = null;
@@ -69,31 +69,30 @@ export class ObservadorSse {
   private readonly texto = new InicioDelTexto();
   readonly eventos: Record<string, number> = {};
 
+  private finalizado = false;
+
   observar(chunk: Buffer | string): void {
-    this.resto += typeof chunk === "string" ? chunk : chunk.toString("utf8");
-    let idx: number;
-    while ((idx = this.resto.indexOf("\n\n")) >= 0) {
-      const bloque = this.resto.slice(0, idx);
-      this.resto = this.resto.slice(idx + 2);
-      const ev = /^event: (.+)$/m.exec(bloque)?.[1];
-      if (ev) this.eventos[ev] = (this.eventos[ev] ?? 0) + 1;
+    this.procesar(this.parser.push(chunk));
+  }
+
+  private procesar(mensajes: SseMessage[]): void {
+    for (const mensaje of mensajes) {
+      const ev = mensaje.event;
+      this.eventos[ev] = (this.eventos[ev] ?? 0) + 1;
       // E7-quater · el INICIO del texto, para ver una negativa escrita como
       // texto (`negativaEnTexto`). Solo hasta el techo: luego ni se parsea.
       if (ev === "content_block_delta" && !this.texto.lleno()) {
-        const data = /^data: (.+)$/m.exec(bloque)?.[1];
         try {
-          const d = data ? (JSON.parse(data) as { delta?: { type?: unknown; text?: unknown } }) : null;
-          if (d?.delta?.type === "text_delta") this.texto.sumar(d.delta.text);
+          const d = JSON.parse(mensaje.data) as { delta?: { type?: unknown; text?: unknown } };
+          if (d.delta?.type === "text_delta") this.texto.sumar(d.delta.text);
         } catch {
           /* un data ilegible no puede tumbar el passthrough */
         }
         continue;
       }
       if (ev !== "message_start" && ev !== "message_delta") continue;
-      const data = /^data: (.+)$/m.exec(bloque)?.[1];
-      if (!data) continue;
       try {
-        const d = JSON.parse(data) as {
+        const d = JSON.parse(mensaje.data) as {
           usage?: UsoSse;
           message?: { usage?: UsoSse };
           context_management?: unknown;
@@ -128,9 +127,13 @@ export class ObservadorSse {
     return this.uso;
   }
 
-  /** El usage solo si el proveedor emitió su evento FINAL (message_delta). */
+  /** El usage solo si llegaron el contador y el cierre terminal completo. */
   usageFinal(): UsoSse | null {
-    return (this.eventos["message_delta"] ?? 0) > 0 ? this.uso : null;
+    if (!this.finalizado) {
+      this.finalizado = true;
+      this.procesar(this.parser.end());
+    }
+    return (this.eventos["message_delta"] ?? 0) > 0 && (this.eventos["message_stop"] ?? 0) > 0 ? this.uso : null;
   }
 
   /** Los borrados que el PROVEEDOR declaró para esta respuesta (S4a), si hubo. */
@@ -318,26 +321,26 @@ interface UsoResponses {
  * inventa en su lugar.
  */
 export class ObservadorResponses {
-  private resto = "";
+  private readonly parser = new SseParser();
   private uso: UsoSse | null = null;
   private final: EstadoFinalResponses | null = null;
   private negada = false;
   private readonly texto = new InicioDelTexto();
   readonly eventos: Record<string, number> = {};
 
+  private finalizado = false;
+
   observar(chunk: Buffer | string): void {
-    this.resto += typeof chunk === "string" ? chunk : chunk.toString("utf8");
-    let idx: number;
-    while ((idx = this.resto.indexOf("\n\n")) >= 0) {
-      const bloque = this.resto.slice(0, idx);
-      this.resto = this.resto.slice(idx + 2);
-      const ev = /^event: (.+)$/m.exec(bloque)?.[1];
-      if (ev) this.eventos[ev] = (this.eventos[ev] ?? 0) + 1;
-      const data = /^data: (.+)$/m.exec(bloque)?.[1];
-      if (!data) continue;
+    this.procesar(this.parser.push(chunk));
+  }
+
+  private procesar(mensajes: SseMessage[]): void {
+    for (const mensaje of mensajes) {
+      const ev = mensaje.event;
+      this.eventos[ev] = (this.eventos[ev] ?? 0) + 1;
       try {
-        const d = JSON.parse(data) as { type?: string; response?: { usage?: UsoResponses | null } };
-        const tipo = ev ?? d.type;
+        const d = JSON.parse(mensaje.data) as { type?: string; response?: { usage?: UsoResponses | null } };
+        const tipo = ev !== "message" ? ev : d.type;
         if (eventoDeNegativaResponses(tipo, d)) this.negada = true;
         if (tipo === "response.output_text.delta") this.texto.sumar((d as { delta?: unknown }).delta);
         // Object.hasOwn: el literal hereda de Object.prototype, y un evento
@@ -361,6 +364,10 @@ export class ObservadorResponses {
 
   /** En Responses el usage solo existe en el evento final: es el mismo. */
   usageFinal(): UsoSse | null {
+    if (!this.finalizado) {
+      this.finalizado = true;
+      this.procesar(this.parser.end());
+    }
     return this.uso;
   }
 

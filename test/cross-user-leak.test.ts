@@ -5,6 +5,7 @@ import { InMemorySemanticCache } from "../src/cache/semantic.js";
 import type { Provider, ProviderRequest, ProviderResponse } from "../src/providers/types.js";
 import type { SavingsRequest } from "../src/contracts/types.js";
 import type { CanonicalRequest } from "../src/canonicalization/canonicalize.js";
+import { CALIBRACION_DE_PRUEBA, certificarCacheSemantica } from "./helpers/semantic-cache.js";
 
 /**
  * La clase de fallo más cara de una capa de caché: servir a un usuario la
@@ -53,8 +54,8 @@ describe("B2 · la caché semántica aísla por principal", () => {
     }) as unknown as CanonicalRequest;
 
   it("la respuesta de un usuario NO se sirve a otro", async () => {
-    const cache = new InMemorySemanticCache({ embed, similarityThreshold: 0.3, acceptThreshold: 0.3 });
-    await cache.store(canonical("ana"), { text: "saldo de Ana", data: null, storedAtMs: 0 });
+    const cache = new InMemorySemanticCache({ embed, similarityThreshold: 0.3, acceptThreshold: 0.3, calibration: CALIBRACION_DE_PRUEBA });
+    await certificarCacheSemantica(cache, canonical("ana"), { text: "saldo de Ana", data: null, storedAtMs: 0 });
 
     // Mismo texto, mismo tenant, OTRA persona. Sin el filtro por principal,
     // Luis recibía el saldo de Ana.
@@ -63,8 +64,8 @@ describe("B2 · la caché semántica aísla por principal", () => {
   });
 
   it("la MISMA persona sí reutiliza su respuesta (sin regresión)", async () => {
-    const cache = new InMemorySemanticCache({ embed, similarityThreshold: 0.3, acceptThreshold: 0.3 });
-    await cache.store(canonical("ana"), { text: "saldo de Ana", data: null, storedAtMs: 0 });
+    const cache = new InMemorySemanticCache({ embed, similarityThreshold: 0.3, acceptThreshold: 0.3, calibration: CALIBRACION_DE_PRUEBA });
+    await certificarCacheSemantica(cache, canonical("ana"), { text: "saldo de Ana", data: null, storedAtMs: 0 });
 
     const hit = await cache.find(canonical("ana"));
     expect(hit?.record.answer.text).toBe("saldo de Ana");
@@ -72,8 +73,8 @@ describe("B2 · la caché semántica aísla por principal", () => {
 
   it("dos peticiones anónimas del mismo tenant sí comparten (null === null)", async () => {
     // No hay a quién aislar: apagar esto sería el bug opuesto, matar el cacheo.
-    const cache = new InMemorySemanticCache({ embed, similarityThreshold: 0.3, acceptThreshold: 0.3 });
-    await cache.store(canonical(null), { text: "dato público", data: null, storedAtMs: 0 });
+    const cache = new InMemorySemanticCache({ embed, similarityThreshold: 0.3, acceptThreshold: 0.3, calibration: CALIBRACION_DE_PRUEBA });
+    await certificarCacheSemantica(cache, canonical(null), { text: "dato público", data: null, storedAtMs: 0 });
 
     const hit = await cache.find(canonical(null));
     expect(hit?.record.answer.text).toBe("dato público");

@@ -17,6 +17,7 @@ import type { SavingsLayerConfig } from "../src/pipeline/config.js";
 import type { Provider, ProviderRequest, ProviderResponse } from "../src/providers/types.js";
 import type { JsonSchema, SavingsReport, SavingsRequest, SavingsResult, ToolDescriptor } from "../src/contracts/types.js";
 import { ToolSelector } from "../src/router/tool-selector.js";
+import { CALIBRACION_DE_PRUEBA, certificarRespuestaSemantica } from "./helpers/semantic-cache.js";
 
 /**
  * MEDIDO POR REFERENCIA (basis "reference"), de punta a punta.
@@ -899,13 +900,15 @@ describe("18-19 · lo que queda fuera, a propósito", () => {
   it("18 · un acierto semántico no es la misma petición: estimated y sin referencia", async () => {
     const embed = async (t: string): Promise<number[]> =>
       [0, 1, 2, 3].map((i) => [...t].filter((c) => c.charCodeAt(0) % 4 === i).length);
-    const semanticCache = new InMemorySemanticCache({ embed, similarityThreshold: 0.3, acceptThreshold: 0.3 });
+    const semanticCache = new InMemorySemanticCache({ embed, similarityThreshold: 0.3, acceptThreshold: 0.3, calibration: CALIBRACION_DE_PRUEBA });
     const { layer } = montar(new ProveedorFijo(1736, 282), { semanticCacheStore: semanticCache });
     const base = {
       savings: { semanticCache: true as const, exactCache: false },
       context: { tenantId: "acme", knowledgeEpoch: "e1" },
     };
-    await layer.generate(peticion({ ...base, messages: [{ role: "user", content: "explain the coalescing mechanism briefly" }] }));
+    const original = peticion({ ...base, messages: [{ role: "user", content: "explain the coalescing mechanism briefly" }] });
+    const primera = await layer.generate(original);
+    await certificarRespuestaSemantica(semanticCache, original, primera);
     const hit = await layer.generate(
       peticion({ ...base, messages: [{ role: "user", content: "explain briefly the coalescing mechanism" }] }),
     );

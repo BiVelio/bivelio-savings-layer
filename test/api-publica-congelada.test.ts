@@ -5,7 +5,7 @@ import ts from "typescript";
 import { describe, it, expect } from "vitest";
 
 /**
- * LA API PÚBLICA DE LA 0.5 ESTÁ CONGELADA.
+ * LA API PÚBLICA DESDE LA 0.5 ES COMPATIBLE POR ADICIÓN.
  *
  * Decisión del dueño (2026-09-29): «la 0.5 congela la API y publica una guía de
  * migración 0.4 → 0.5; se permiten cambios rompientes, documentados en un
@@ -173,8 +173,8 @@ describe("la API pública de la 0.5, congelada", () => {
   it("el inventario es el de la 0.5.0 y el paquete no es anterior a él", () => {
     const pkg = JSON.parse(readFileSync(raiz("package.json"), "utf8")) as { version: string };
     expect(inv.version).toBe("0.5.0");
-    // La subida de versión la hace el PR de release: hasta entonces, 0.4.x.
-    expect(/^0\.(4|5)\./.test(pkg.version), pkg.version).toBe(true);
+    // La baseline sigue siendo 0.5; una minor posterior solo puede añadir APIs.
+    expect(/^0\.(4|5|6)\./.test(pkg.version), pkg.version).toBe(true);
   });
 
   it("la raíz es una lista cerrada: ni un `export *` en src/index.ts", () => {

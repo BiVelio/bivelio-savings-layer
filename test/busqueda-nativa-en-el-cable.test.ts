@@ -404,7 +404,7 @@ describe("el pipeline con `savings.toolSearch`", () => {
     await p.generate(peticion("¿Qué pedidos del servicio 17 siguen abiertos?", catalogoMcp(20)));
     // Antes: las 8 primeras y un aviso que solo existía en Anthropic.
     expect(herramientasDe(capturas[0]!)).toHaveLength(20);
-    expect(aviso.mock.calls.map((c) => String(c[0])).filter((m) => m.includes("tool selector"))).toHaveLength(0);
+    expect(aviso.mock.calls.map((c: unknown[]) => String(c[0])).filter((m: string) => m.includes("tool selector"))).toHaveLength(0);
   });
 
   it("con un catálogo TIPADO que el selector poda, avisa UNA vez y, en un modelo con búsqueda nativa, la menciona", async () => {
@@ -417,7 +417,7 @@ describe("el pipeline con `savings.toolSearch`", () => {
     const p = capa(new AnthropicProvider({ fetchImpl: fetchEspia([]) }), { toolSelector: new ToolSelector({ maxTools: 8 }) });
     await p.generate(peticion("¿Qué pedidos abiertos hay?", tipadas));
     await p.generate(peticion("Otra vez: ¿qué pedidos abiertos hay?", tipadas));
-    const avisos = aviso.mock.calls.map((c) => String(c[0])).filter((m) => m.includes("tool selector"));
+    const avisos = aviso.mock.calls.map((c: unknown[]) => String(c[0])).filter((m: string) => m.includes("tool selector"));
     expect(avisos).toHaveLength(1);
     expect(avisos[0]).toContain("sent 1 of 20");
     expect(avisos[0]).toContain("toolSearch");
@@ -430,7 +430,7 @@ describe("el pipeline con `savings.toolSearch`", () => {
     ];
     const p = capa(new AnthropicProvider({ fetchImpl: fetchEspia([]) }), { toolSelector: new ToolSelector({ maxTools: 8 }) });
     await p.generate(peticion("¿Qué pedidos abiertos hay?", tipadas, {}, { model: "anthropic/claude-sonnet-5" }));
-    const avisos = aviso.mock.calls.map((c) => String(c[0])).filter((m) => m.includes("tool selector"));
+    const avisos = aviso.mock.calls.map((c: unknown[]) => String(c[0])).filter((m: string) => m.includes("tool selector"));
     expect(avisos).toHaveLength(1);
     expect(avisos[0]).not.toContain("toolSearch");
   });

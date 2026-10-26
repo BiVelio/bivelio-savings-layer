@@ -168,6 +168,7 @@ describe("gateway: el medidor suma la compactación", () => {
     const obs = new ObservadorSse();
     obs.observar(`event: message_start\ndata: ${JSON.stringify({ message: { usage: { input_tokens: 23_000, output_tokens: 1 } } })}\n\n`);
     obs.observar(`event: message_delta\ndata: ${JSON.stringify({ usage: { output_tokens: 1_000, iterations: USO_OFICIAL.iterations } })}\n\n`);
+    obs.observar("event: message_stop\ndata: {}\n\n");
     const s = costeMedido("claude-opus-5-5", obs.usageFinal()!)!;
     expect(s.costeUsd).toBeCloseTo(esperado, 12);
   });

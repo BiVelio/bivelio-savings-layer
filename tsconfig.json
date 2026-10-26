@@ -34,7 +34,8 @@
     "test/**/*.ts",
     "examples/**/*.ts",
     "benchmarks/**/*.ts",
+    "packages/**/benchmark/**/*.ts",
     "corpus/**/*.ts"
   ],
-  "exclude": ["node_modules", "dist", "examples/stacks"]
+  "exclude": ["node_modules", "dist", "examples/stacks", "benchmarks/out"]
 }

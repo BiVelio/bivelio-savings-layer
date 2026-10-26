@@ -76,7 +76,7 @@ describe("publish-pypi.yml publica con trusted publishing", () => {
     expect(construir).toMatch(/needs: pruebas/);
     expect(publicar).toMatch(/needs: construir/);
     // Sin este salto, `py-v0.1.0` lanzaría también la cadena de npm.
-    expect(trabajo(npm, "verificar")).toMatch(/^ {4}if: \$\{\{ !startsWith\(github\.event\.release\.tag_name, 'py-v'\) \}\}$/m);
+    expect(trabajo(npm, "verificar")).toMatch(/^ {4}if: \$\{\{ !startsWith\(github\.event\.release\.tag_name, 'py-v'\) && !startsWith\(github\.event\.release\.tag_name, 'pg-v'\) \}\}$/m);
   });
 
   it("solo el trabajo que publica pide `id-token: write`, y nada por defecto", () => {

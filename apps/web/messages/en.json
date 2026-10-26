@@ -119,10 +119,19 @@
       "traffic": "traffic",
       "steps": {
         "accountCreated": "Account created",
-        "sdkInstalled": "Service account key created",
-        "licenseActive": "License active",
-        "firstReport": "First report",
-        "liveMeter": "Live meter"
+        "sdkInstalled": "SDK or gateway installed",
+        "licenseActive": "Credentials and active license",
+        "firstRequest": "First real request",
+        "reportReady": "Report ready"
+      },
+      "readErrors": {
+        "title": "Some data could not be read",
+        "intro": "This is a read failure, not an empty account. Affected sections do not show zeros instead.",
+        "org": "Your organization could not be resolved.",
+        "usage": "Daily usage could not be read.",
+        "models": "The model breakdown could not be read.",
+        "sessions": "Session costs could not be read.",
+        "seats": "Machine activity could not be read."
       }
     },
     "proof": {
@@ -266,11 +275,44 @@
       "statusDone": "done",
       "statusNext": "next",
       "statusPending": "pending",
+      "statusUnavailable": "unavailable",
       "nextLabel": "Next: {label}",
       "installComment": "# detects your stack and prints the exact wiring — your prompts never leave your infra",
-      "hintLicense": "Paste your BiVelio license key so the SDK unlocks the managed features and reports usage.",
-      "hintFirstReport": "Wrap a real provider call — the first SavingsReport lands here and your meter goes live.",
-      "hintDefault": "This unlocks the moment your first usage_daily row lands."
+      "hintLicense": "Create or retrieve your license and service credentials in Account. A credential alone does not prove installation.",
+      "hintInstall": "Choose SDK or gateway and send a real request. Creating a key or sending an empty batch does not prove installation.",
+      "hintFirstRequest": "Send a real provider request through the SDK or gateway. Its usage report will complete this step.",
+      "hintReport": "Your report appears after the first real request arrives.",
+      "hintDefault": "Open your account to continue setup.",
+      "linkAccount": "Open Account",
+      "linkInstall": "Open installation",
+      "linkSdk": "SDK route",
+      "linkGateway": "Gateway route",
+      "unavailableHint": "Usage cannot be read right now, so installation and reporting cannot be assessed. This does not mean the account is empty."
+    },
+    "shadowOpportunities": {
+      "title": "Where your potential savings are",
+      "badge": "SHADOW · ESTIMATED",
+      "intro": "Hypothetical opportunities by model, calculated only from SHADOW telemetry. Never measured savings or a billed amount.",
+      "error": "Could not read opportunities by model. Try again in a moment.",
+      "hidden": "The breakdown exists, but this account cannot see it. This is a visibility fault, not missing data.",
+      "unavailable": "The SHADOW breakdown by model is not available on this server yet. History without a model cannot be reconstructed.",
+      "historical": "There are SHADOW requests, but their model breakdown is unavailable for history predating this migration.",
+      "empty": "No SHADOW requests in this period yet. Send real traffic with Measure to start estimating opportunities.",
+      "colModel": "Model",
+      "colRequests": "SHADOW requests",
+      "colBaseline": "Baseline spend",
+      "colActual": "Hypothetical cost",
+      "colSavings": "Hypothetical savings",
+      "colCoverage": "Coverage",
+      "coverage": "Model coverage: {coverage} of SHADOW requests ({attributed} of {total}).",
+      "coveragePartial": "Partial coverage: the breakdown includes {attributed} of {total} SHADOW requests ({coverage}); history without a model is excluded.",
+      "coverageUnavailable": "Coverage is unavailable because the daily SHADOW total could not be read.",
+      "note": "Hypothetical estimate: baseline − SHADOW cost. Never measured, never billed, and never added to accredited savings.",
+      "action": "Review Account to activate available savings levers, or complete the SDK/gateway installation. Lever and surface are unavailable: the current wire does not preserve them; they require a server-first change.",
+      "accountCta": "Review Account",
+      "installCta": "Complete installation",
+      "exportCsv": "Export CSV",
+      "exportJson": "Export JSON"
     },
     "scenarioTable": {
       "colScenario": "scenario",

@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 
 import { babosaDeModelo, decidePublish, type ArtifactShape } from "../benchmarks/publish-guard.js";
+import { resumirLatencias, type ModoDelBanco } from "../benchmarks/b2/latencia.js";
 
 /**
  * La cifra que la landing enseña es la afirmación comercial del producto. Este
@@ -8,16 +9,25 @@ import { babosaDeModelo, decidePublish, type ArtifactShape } from "../benchmarks
  * probar que no se puede publicar una mentira por descuido.
  */
 
+const latenciaValida = (mode: ModoDelBanco) => resumirLatencias({
+  A: [{ totalMs: 100, providerMs: 95 }],
+  A1: [{ totalMs: 100, providerMs: 95 }],
+  A2: [{ totalMs: 100, providerMs: 95 }],
+  B: [{ totalMs: 110, providerMs: 95 }],
+}, mode);
+
+const escenarioValido = (name: string, mode: ModoDelBanco) => ({ name, latency: latenciaValida(mode) });
+
 /**
- * Un artefacto LIVE completo desde el 2026-09-27: los tres brazos de control
- * (B0, B1, B2), sus suelos, el endpoint, el coste y el conjunto de escenarios.
+ * Un artefacto LIVE completo: los tres controles, sus suelos y la latencia B2.
  */
 const live = (over: Partial<ArtifactShape> = {}): ArtifactShape => ({
   mode: "LIVE",
   model: "gpt-4o-mini",
   modelStable: true,
   reconciliation: { reconciled: true, residual: 0 },
-  scenarios: [{}, {}],
+  latency: latenciaValida("LIVE"),
+  scenarios: [escenarioValido("uno", "LIVE"), escenarioValido("dos", "LIVE")],
   scenariosNotApplicable: [{}],
   scenarioSet: { size: 3 },
   sdk: { version: "0.4.23", asShipped: true },
@@ -36,7 +46,8 @@ const mock = (over: Partial<ArtifactShape> = {}): ArtifactShape => ({
   mode: "MOCK",
   modelStable: true,
   reconciliation: { reconciled: true, residual: 0 },
-  scenarios: [{}],
+  latency: latenciaValida("MOCK"),
+  scenarios: [escenarioValido("mock", "MOCK")],
   scenarioSet: { size: 1 },
   sdk: { version: "0.4.23", asShipped: true },
   aggregate: { savings: { point: 0.6, lower: 0.6, upper: 0.6 }, proven: false, qualityPassRate: 1 },
@@ -243,6 +254,35 @@ describe("verja de publicación: los bloqueos del banco de 2026 (recomendación 
     expect(d.ok).toBe(true);
     expect(d.warnings.join(" ")).toMatch(/floors\.min = 3\.0% \(frente a B2\).*contabilidad/);
     expect(decidePublish(null, live()).warnings.join(" ")).not.toMatch(/contabilidad/);
+  });
+
+  it("p95 > 3000ms impide publicar aunque el artefacto declare gate.approved", () => {
+    const latency = resumirLatencias({
+      A: [{ totalMs: 100, providerMs: 90 }],
+      A1: [{ totalMs: 100, providerMs: 90 }],
+      A2: [{ totalMs: 100, providerMs: 90 }],
+      B: [{ totalMs: 100, providerMs: 90 }, { totalMs: 4000, providerMs: 3900 }],
+    }, "LIVE");
+    const d = decidePublish(null, live({ latency: { ...latency, gate: { approved: true, reasons: [] } } }));
+    expect(d.ok).toBe(false);
+    expect(d.blockers.join(" ")).toMatch(/p95=3805ms.*3000ms/);
+  });
+
+  it("max > 5000ms en un escenario impide publicar, y sin latencia tampoco hay aprobación", () => {
+    const latency = latenciaValida("LIVE");
+    const escenarioLento = {
+      name: "lento",
+      latency: resumirLatencias({
+        A: [{ totalMs: 100, providerMs: 90 }],
+        A1: [{ totalMs: 100, providerMs: 90 }],
+        A2: [{ totalMs: 5001, providerMs: 4900 }],
+        B: [{ totalMs: 100, providerMs: 90 }],
+      }, "LIVE"),
+    };
+    const d = decidePublish(null, live({ latency, scenarios: [escenarioValido("uno", "LIVE"), escenarioLento] }));
+    expect(d.ok).toBe(false);
+    expect(d.blockers.join(" ")).toMatch(/scenario lento.*max=5001ms.*5000ms/);
+    expect(decidePublish(null, live({ latency: undefined })).blockers.join(" ")).toMatch(/falta el informe agregado/);
   });
 
   it("la babosa del modelo es la misma para escribir el artefacto y para publicarlo", () => {

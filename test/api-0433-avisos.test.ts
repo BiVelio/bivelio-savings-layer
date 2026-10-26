@@ -14,6 +14,7 @@ import { reiniciarAvisos } from "../src/util/warn-once.js";
 import type { Provider, ProviderRequest, ProviderResponse } from "../src/providers/types.js";
 import type { SavingsRequest, ToolDescriptor } from "../src/contracts/types.js";
 import { RETIRED_ENV_VARS, RETIRED_FLAGS, retiredNameErrors } from "../gateway/argumentos.js";
+import { CALIBRACION_DE_PRUEBA, certificarRespuestaSemantica } from "./helpers/semantic-cache.js";
 
 /**
  * LAS CUATRO DECISIONES DEL DUEÑO (2026-09-29) QUE ENTRAN EN LA 0.4.33, sin
@@ -39,7 +40,7 @@ beforeEach(() => {
 afterEach(() => {
   aviso.mockRestore();
 });
-const avisos = (filtro: string): string[] => aviso.mock.calls.map((c) => String(c[0])).filter((m) => m.includes(filtro));
+const avisos = (filtro: string): string[] => aviso.mock.calls.map((c: unknown[]) => String(c[0])).filter((m: string) => m.includes(filtro));
 
 // ── 1 · maxTools sin tope por defecto ────────────────────────────────────────
 
@@ -304,11 +305,13 @@ describe("4 · `semanticCacheStore` en el constructor; el alias `semanticCache` 
   const sinTipos = (c: Record<string, unknown>) => createSavingsLayer(c as never);
 
   it("`semanticCacheStore` es el almacén que usa la capa, sin aviso", async () => {
-    const store = new InMemorySemanticCache({ embed, similarityThreshold: 0.5, acceptThreshold: 0.5 });
+    const store = new InMemorySemanticCache({ embed, similarityThreshold: 0.5, acceptThreshold: 0.5, calibration: CALIBRACION_DE_PRUEBA });
     const capa = createSavingsLayer({ provider: new Fijo(), devUnlicensed: true, semanticCacheStore: store });
-    await capa.generate(pregunta("¿Cuál es la capital de Francia?"));
-    await store.settled();
-    const r = await capa.generate(pregunta("¿Cuál es la capital de Francia, por favor?"));
+    const original = pregunta("¿Cuál es la capital de Francia?");
+    const primera = await capa.generate(original);
+    const reformulada = pregunta("¿Cuál es la capital de Francia, por favor?");
+    await certificarRespuestaSemantica(store, original, primera, { query: reformulada });
+    const r = await capa.generate(reformulada);
     expect(r.report.cache.result).toBe("semantic");
     expect(avisos(FILTRO)).toEqual([]);
   });

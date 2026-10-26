@@ -133,6 +133,7 @@ export const PLAZOS_DE_RETENCION: readonly PlazoDeRetencion[] = [
 export const SIN_BORRADO_AUTOMATICO: readonly string[] = [
   "usage_daily",
   "usage_daily_by_model",
+  "usage_daily_shadow_by_model",
   "usage_sessions",
   "seat_activity",
   "extractos",

@@ -77,6 +77,52 @@ describe("ObservadorSse — observa sin tocar", () => {
     expect(o.usage()).toBeNull();
   });
 
+  it("un delta sin message_stop no es un contador final", () => {
+    const o = new ObservadorSse();
+    o.observar('event: message_delta\ndata: {"usage":{"input_tokens":5,"output_tokens":2}}\n\n');
+    expect(o.usage()).toEqual({ input_tokens: 5, output_tokens: 2 });
+    expect(o.usageFinal()).toBeNull();
+    o.observar("event: message_stop\ndata: {}\n\n");
+    expect(o.usageFinal()).toEqual({ input_tokens: 5, output_tokens: 2 });
+  });
+
+  it("despacha el último evento sin línea en blanco final, una sola vez y en los tres dialectos", () => {
+    const messages = new ObservadorSse();
+    messages.observar(streamF0().trimEnd());
+    expect(messages.usageFinal()?.output_tokens).toBe(91);
+    expect(messages.usageFinal()?.output_tokens).toBe(91);
+    expect(messages.eventos["message_stop"]).toBe(1);
+
+    const responses = new ObservadorResponses();
+    responses.observar(streamResponses({ input_tokens: 5, output_tokens: 2 }).trimEnd());
+    expect(responses.usageFinal()?.output_tokens).toBe(2);
+    expect(responses.usageFinal()?.output_tokens).toBe(2);
+    expect(responses.eventos["response.completed"]).toBe(1);
+
+    const chat = new ObservadorChatCompletions();
+    chat.observar('data: {"choices":[],"usage":{"prompt_tokens":5,"completion_tokens":2}}\n\ndata: [DONE]');
+    expect(chat.usageFinal()?.output_tokens).toBe(2);
+    expect(chat.usageFinal()?.output_tokens).toBe(2);
+    expect(chat.eventos["done"]).toBe(1);
+  });
+
+  it("acepta CRLF y conserva UTF-8 dividido entre chunks binarios", () => {
+    const o = new ObservadorSse();
+    const bytes = Buffer.from(streamF0().replaceAll("\n", "\r\n"));
+    const punto = bytes.indexOf(Buffer.from("message_stop"));
+    for (const chunk of [bytes.subarray(0, punto), bytes.subarray(punto)]) o.observar(chunk);
+    expect(o.usageFinal()?.output_tokens).toBe(91);
+
+    const texto = new ObservadorSse();
+    const unicode = Buffer.from(
+      'event: content_block_delta\r\ndata: {"delta":{"type":"text_delta","text":"Pedido 🚚"}}\r\n\r\n',
+    );
+    const dentro = unicode.indexOf(Buffer.from("🚚")) + 1;
+    texto.observar(unicode.subarray(0, dentro));
+    texto.observar(unicode.subarray(dentro));
+    expect(texto.textoInicial()).toBe("Pedido 🚚");
+  });
+
   it("⛔ un delta con cache_creation PARCIAL se fusiona, no pisa: el desglose 1h sobrevive", () => {
     // Si la API hiciera acumulativos los campos de caché en los deltas (como ya
     // hizo con input_tokens), un spread superficial borraba ephemeral_1h y la
@@ -152,6 +198,15 @@ describe("ObservadorResponses — el dialecto de Codex CLI, mapeado a UsoSse", (
       for (let i = 0; i < s.length; i += corte) o.observar(s.slice(i, i + corte));
       expect(o.usage()?.output_tokens, `corte=${corte}`).toBe(7);
     }
+  });
+
+  it("acepta CRLF y UTF-8 dividido entre chunks binarios", () => {
+    const o = new ObservadorResponses();
+    const bytes = Buffer.from(streamResponses({ input_tokens: 100, output_tokens: 7 }).replaceAll("\n", "\r\n"));
+    const dentro = bytes.indexOf(Buffer.from("response.completed")) + 3;
+    o.observar(bytes.subarray(0, dentro));
+    o.observar(bytes.subarray(dentro));
+    expect(o.usageFinal()).toEqual({ input_tokens: 100, output_tokens: 7, cache_read_input_tokens: 0, cache_creation_input_tokens: 0 });
   });
 
   it("plausibilidad: cached + writes > input se recorta al lado que infra-mide, nunca negativo", () => {
@@ -294,12 +349,14 @@ describe("primaDeEscritura — 1,25× solo donde el proveedor la cobra", () => {
 });
 
 describe("usageFinal — solo con el evento terminal del proveedor", () => {
-  it("Anthropic: null tras message_start, usage tras message_delta", () => {
+  it("Anthropic: exige message_delta y después message_stop", () => {
     const o = new ObservadorSse();
     o.observar('event: message_start\ndata: {"type":"message_start","message":{"usage":{"input_tokens":10,"output_tokens":1}}}\n\n');
     expect(o.usage()).not.toBeNull();
     expect(o.usageFinal()).toBeNull();
     o.observar('event: message_delta\ndata: {"type":"message_delta","usage":{"output_tokens":42}}\n\n');
+    expect(o.usageFinal()).toBeNull();
+    o.observar("event: message_stop\ndata: {}\n\n");
     expect(o.usageFinal()?.output_tokens).toBe(42);
   });
 

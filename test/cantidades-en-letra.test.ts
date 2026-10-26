@@ -7,6 +7,7 @@ import { InMemorySemanticCache, keyTokensMatch } from "../src/cache/semantic.js"
 import { normalizeText } from "../src/canonicalization/canonicalize.js";
 import { createSavingsLayer } from "../src/pipeline/create.js";
 import type { Provider, ProviderRequest, ProviderResponse } from "../src/providers/types.js";
+import { CALIBRACION_DE_PRUEBA, certificarRespuestaSemantica } from "./helpers/semantic-cache.js";
 
 /**
  * LA VERJA SEMÁNTICA LEÍA LOS NÚMEROS SOLO EN DÍGITOS.
@@ -186,19 +187,23 @@ describe("de punta a punta: la capa con la caché semántica tal como se envía"
     // El par de la petición 175 de gpt-4o-mini: servida 19, la suya era 23.
     const par = FIXTURE.pares.find((p) => p.original.startsWith("Amy had two eyeshadow"))!;
     const proveedor = new ProveedorQueCuenta();
+    const semanticCache = new InMemorySemanticCache({ calibration: CALIBRACION_DE_PRUEBA });
     const capa = createSavingsLayer({
       provider: proveedor,
       costModels: PRECIOS,
       silenceWarnings: true,
-      semanticCacheStore: new InMemorySemanticCache(),
+      semanticCacheStore: semanticCache,
     });
     try {
-      await capa.generate(pedir(par.original));
+      const original = pedir(par.original);
+      const primera = await capa.generate(original);
       const variante = await capa.generate(pedir(par.variante));
       expect(variante.report.cache.result).not.toBe("semantic");
       expect(proveedor.llamadas).toBe(2);
 
-      const parafrasis = await capa.generate(pedir(lexica(par.original)));
+      const consultaParafraseada = pedir(lexica(par.original));
+      await certificarRespuestaSemantica(semanticCache, original, primera, { query: consultaParafraseada });
+      const parafrasis = await capa.generate(consultaParafraseada);
       expect(parafrasis.report.cache.result).toBe("semantic");
       expect(proveedor.llamadas).toBe(2);
     } finally {

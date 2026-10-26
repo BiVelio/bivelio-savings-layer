@@ -246,8 +246,7 @@ describe("licencia Medir · informa lo que habría ahorrado", () => {
     });
     await capa.generate(PETICION);
     const r2 = await capa.generate(PETICION);
-    capa.close();
-    await new Promise((r) => setTimeout(r, 10));
+    await capa.close();
 
     const registros = lotes.flat() as Record<string, unknown>[];
     const medidos = registros.filter((x) => x["basis"] === "measured");

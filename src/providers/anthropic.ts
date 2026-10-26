@@ -431,10 +431,10 @@ export class AnthropicProvider implements Provider {
       // `ping` y cualquier evento nuevo se ignoran.
     }
 
-    // Sin `message_delta` ni `message_stop` el proveedor no terminó: el cuerpo
-    // se cortó. Media respuesta no se entrega como si fuera entera.
-    if (!vioStop && !vioDelta) {
-      throw new Error("provider stream ended before completion (no message_delta)");
+    // El cierre terminal es message_stop. Un delta con usage puede preceder a
+    // un corte de red: no convierte una respuesta parcial en una respuesta entera.
+    if (!vioStop) {
+      throw new Error("provider stream ended before completion (no message_stop)");
     }
 
     // `message_start` trae la entrada y un `output_tokens` provisional (un

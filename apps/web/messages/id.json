@@ -119,10 +119,19 @@
       "traffic": "lalu lintas",
       "steps": {
         "accountCreated": "Akun dibuat",
-        "sdkInstalled": "Kunci akun layanan dibuat",
-        "licenseActive": "Lisensi aktif",
-        "firstReport": "Laporan pertama",
-        "liveMeter": "Meteran langsung"
+        "sdkInstalled": "SDK atau gateway terpasang",
+        "licenseActive": "Kredensial dan lisensi aktif",
+        "firstRequest": "Permintaan nyata pertama",
+        "reportReady": "Laporan tersedia"
+      },
+      "readErrors": {
+        "title": "Beberapa data tidak dapat dibaca",
+        "intro": "Ini adalah kegagalan pembacaan, bukan akun kosong. Bagian terdampak tidak menampilkan angka nol sebagai pengganti.",
+        "org": "Organisasi Anda tidak dapat ditentukan.",
+        "usage": "Penggunaan harian tidak dapat dibaca.",
+        "models": "Rincian per model tidak dapat dibaca.",
+        "sessions": "Biaya per sesi tidak dapat dibaca.",
+        "seats": "Aktivitas mesin tidak dapat dibaca."
       }
     },
     "proof": {
@@ -266,11 +275,44 @@
       "statusDone": "selesai",
       "statusNext": "berikutnya",
       "statusPending": "menunggu",
+      "statusUnavailable": "tidak tersedia",
       "nextLabel": "Berikutnya: {label}",
       "installComment": "# mendeteksi stack Anda dan mencetak cara menyambungkannya dengan tepat — prompt Anda tidak pernah keluar dari infrastruktur Anda",
-      "hintLicense": "Tempel kunci lisensi BiVelio Anda agar SDK membuka fitur terkelola dan melaporkan penggunaan.",
-      "hintFirstReport": "Bungkus panggilan penyedia yang sebenarnya — SavingsReport pertama tiba di sini dan meteran Anda menjadi aktif.",
-      "hintDefault": "Ini terbuka begitu baris usage_daily pertama Anda tiba."
+      "hintLicense": "Buat atau ambil lisensi dan kredensial layanan di Akun. Kredensial saja tidak membuktikan pemasangan.",
+      "hintInstall": "Pilih SDK atau gateway dan kirim permintaan nyata. Membuat kunci atau mengirim batch kosong tidak membuktikan pemasangan.",
+      "hintFirstRequest": "Kirim permintaan penyedia nyata melalui SDK atau gateway. Laporan penggunaannya akan menyelesaikan langkah ini.",
+      "hintReport": "Laporan muncul setelah permintaan nyata pertama tiba.",
+      "hintDefault": "Buka akun Anda untuk melanjutkan konfigurasi.",
+      "linkAccount": "Buka Akun",
+      "linkInstall": "Buka pemasangan",
+      "linkSdk": "Jalur SDK",
+      "linkGateway": "Jalur gateway",
+      "unavailableHint": "Penggunaan tidak dapat dibaca saat ini, sehingga pemasangan dan pelaporan tidak dapat dinilai. Ini bukan berarti akun kosong."
+    },
+    "shadowOpportunities": {
+      "title": "Di mana potensi penghematan Anda",
+      "badge": "SHADOW · ESTIMASI",
+      "intro": "Peluang hipotetis per model, hanya dihitung dari telemetri SHADOW. Bukan penghematan terukur atau jumlah yang ditagih.",
+      "error": "Peluang per model tidak dapat dibaca. Coba lagi sebentar lagi.",
+      "hidden": "Rincian tersedia, tetapi akun ini tidak dapat melihatnya. Ini adalah kesalahan visibilitas, bukan data yang hilang.",
+      "unavailable": "Rincian SHADOW per model belum tersedia di server ini. Riwayat tanpa model tidak dapat direkonstruksi.",
+      "historical": "Ada permintaan SHADOW, tetapi rincian modelnya tidak tersedia untuk riwayat sebelum migrasi ini.",
+      "empty": "Belum ada permintaan SHADOW pada periode ini. Kirim lalu lintas nyata dengan Ukur untuk mulai memperkirakan peluang.",
+      "colModel": "Model",
+      "colRequests": "Permintaan SHADOW",
+      "colBaseline": "Pengeluaran baseline",
+      "colActual": "Biaya hipotetis",
+      "colSavings": "Penghematan hipotetis",
+      "colCoverage": "Cakupan",
+      "coverage": "Cakupan model: {coverage} dari permintaan SHADOW ({attributed} dari {total}).",
+      "coveragePartial": "Cakupan sebagian: rincian mencakup {attributed} dari {total} permintaan SHADOW ({coverage}); riwayat tanpa model dikecualikan.",
+      "coverageUnavailable": "Cakupan tidak tersedia karena total SHADOW harian tidak dapat dibaca.",
+      "note": "Estimasi hipotetis: baseline − biaya SHADOW. Tidak pernah diukur, ditagih, atau ditambahkan ke penghematan terakreditasi.",
+      "action": "Tinjau Akun untuk mengaktifkan tuas penghematan atau selesaikan pemasangan SDK/gateway. Tuas dan permukaan tidak tersedia: wire saat ini tidak menyimpannya; keduanya memerlukan perubahan server-first.",
+      "accountCta": "Tinjau Akun",
+      "installCta": "Selesaikan pemasangan",
+      "exportCsv": "Ekspor CSV",
+      "exportJson": "Ekspor JSON"
     },
     "scenarioTable": {
       "colScenario": "skenario",

@@ -10,6 +10,8 @@
  * tocar el disco ni la red.
  */
 
+import { motivosBloqueoLatencia } from "./b2/latencia.js";
+
 export interface CI {
   point: number;
   lower: number;
@@ -49,6 +51,7 @@ export interface ArtifactShape {
   scenarioSet?: { size?: unknown };
   scenariosNotApplicable?: unknown;
   pricing?: { listPriceKnown?: unknown; cacheWrites?: { premium?: unknown; metered?: unknown } };
+  latency?: unknown;
   scenarios?: unknown;
 }
 
@@ -220,6 +223,10 @@ export function decidePublish(
   } else if (esLive) {
     blockers.push("el artefacto no trae floors: cualquier cifra tiene que caber bajo el menor de los suelos");
   }
+
+  // ── 2h. Latencia B2: p95 y techo por brazo, agregado y por escenario. Se
+  // recalcula aquí; un `latency.gate.approved` escrito a mano no aprueba nada.
+  blockers.push(...motivosBloqueoLatencia(incoming.latency, incoming.scenarios, esLive ? "LIVE" : "MOCK"));
 
   // ── 3. Integridad interna. Estas las calcula el propio benchmark; si alguna
   // falla, la tirada no vale aunque el porcentaje sea bonito.

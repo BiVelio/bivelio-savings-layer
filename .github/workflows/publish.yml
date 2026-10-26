@@ -62,10 +62,24 @@ jobs:
     # publish-pypi.yml. Sin este salto, cortar `py-v0.1.0` lanzaría también
     # esta cadena, que caería en «La etiqueta coincide con package.json». Con
     # `verificar` saltado, `publicar` y `sbom` no corren.
-    if: ${{ !startsWith(github.event.release.tag_name, 'py-v') }}
+    if: ${{ !startsWith(github.event.release.tag_name, 'py-v') && !startsWith(github.event.release.tag_name, 'pg-v') }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: bivelio_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d bivelio_test"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=12
     # El sha512 del tarball verificado viaja como SALIDA del trabajo, no dentro
     # del artefacto: así el trabajo que publica tiene contra qué comparar lo que
     # le llega, y un artefacto cambiado por el camino no trae su propio hash.
@@ -75,7 +89,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 20.19.5
       - name: Enable pnpm (from packageManager)
         run: corepack enable
       - run: pnpm install --frozen-lockfile
@@ -119,6 +133,8 @@ jobs:
         run: 'python -m pip install --require-hashes --only-binary :all: -r packages/python/requirements-ci.txt'
       - name: Tests
         run: pnpm test
+        env:
+          BIVELIO_TEST_POSTGRES_URL: postgresql://postgres:postgres@127.0.0.1:5432/bivelio_test
 
       # La versión que se publica tiene que ser la que se etiquetó. Sin esto, cortar
       # una Release v0.2.0 sobre un package.json que sigue en 0.1.0 falla en el
