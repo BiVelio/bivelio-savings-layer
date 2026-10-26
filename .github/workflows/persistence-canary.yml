@@ -43,6 +43,7 @@ jobs:
           BIVELIO_BENCH_P95_MS: 250
           BIVELIO_BENCH_P99_MS: 500
           BIVELIO_BENCH_MAX_MS: 500
+          BIVELIO_BENCH_QUERY_TIMEOUT_MS: 1000
           BIVELIO_BENCH_OUTPUT: persistence-results/semantic-postgres-100k.json
         run: |
           mkdir -p persistence-results
