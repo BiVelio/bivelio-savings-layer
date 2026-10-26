@@ -126,7 +126,7 @@ Los hints de restricciones y breakpoints también requieren retirada coordinada.
 
 `benchmark/live-canary.ts` empaqueta los `dist` ya construidos del SDK y de persistencia, instala esos tarballs en un consumidor temporal bajo `os.tmpdir()` y ejecuta dos procesos Node independientes (frío y reinicio). No cambia dependencias del repositorio. Usa Gemini nativo en `https://generativelanguage.googleapis.com/v1beta` y PostgreSQL+pgvector reales.
 
-**Hace llamadas facturables.** Puede necesitar hasta 40 respuestas de calibración semántica, además de las comprobaciones de aislamiento y fail-open. No imprime credenciales, prompts ni respuestas. Sin cualquiera de las variables obligatorias, imprime instrucciones y termina sin llamar al proveedor. Genera un par Ed25519 efímero y una licencia de prueba que el SDK empaquetado verifica offline; no usa la clave privada ni una licencia de cliente.
+**Hace llamadas facturables.** Puede necesitar hasta 40 respuestas de calibración semántica, además de las comprobaciones de aislamiento y fail-open. No imprime credenciales, prompts ni respuestas. Sin cualquiera de las variables obligatorias, imprime instrucciones y termina sin llamar al proveedor. Usa una licencia temporal por tenant, verificada por la clave pública embarcada en el SDK; los tokens se inyectan como `CANARY_LICENSE_A` y `CANARY_LICENSE_B`, sin persistir una licencia en el control plane.
 
 ```sh
 pnpm run build
@@ -134,10 +134,12 @@ pnpm --filter @bivelio/persistence-postgres run build
 BIVELIO_LIVE_CANARY=1 \
 BIVELIO_TEST_POSTGRES_URL='postgresql://usuario:clave@localhost/base_desechable' \
 BVSALA_DEMO_GOOGLE_API_KEY='…' \
+CANARY_LICENSE_A='…' \
+CANARY_LICENSE_B='…' \
   pnpm exec tsx packages/persistence-postgres/benchmark/live-canary.ts
 ```
 
-Opcional: `CANARY_MODEL` (por defecto `google/gemini-3.8-flash`) y `BIVELIO_LIVE_CANARY_OUTPUT`. El informe seguro por defecto es `packages/persistence-postgres/benchmark/out/live-canary.json`. En GitHub, `persistence-canary.yml` ejecuta el mismo canario con PostgreSQL desechable y el secreto `GEMINI_API_KEY`.
+Opcional: `CANARY_MODEL` (por defecto `google/gemini-3.8-flash`) y `BIVELIO_LIVE_CANARY_OUTPUT`. El informe seguro por defecto es `packages/persistence-postgres/benchmark/out/live-canary.json`. En GitHub, `persistence-canary.yml` ejecuta el mismo canario con PostgreSQL desechable y los secretos `GEMINI_API_KEY`, `CANARY_LICENSE_A` y `CANARY_LICENSE_B`.
 
 El canary exige:
 
