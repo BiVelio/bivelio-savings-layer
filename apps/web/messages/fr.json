@@ -843,7 +843,7 @@
     },
     "cascade": {
       "title": "L'exécution la moins chère l'emporte",
-      "footnote": "Chaque levier tombe dans son propre registre, et les registres ne s'additionnent jamais. Dans cette batterie, l'économie est venue des requêtes répétées que le SDK a servies sans appeler le fournisseur et, sur Claude, du cache de préfixe du fournisseur lui-même. Le paquet npm n'embarque aucun compresseur."
+      "footnote": "Chaque levier tombe dans son propre registre, et les registres ne s'additionnent jamais. Dans cette batterie, l'économie est venue des requêtes répétées que le SDK a servies sans appeler le fournisseur et, sur Claude, d'un effet du cache de préfixe activé par cache_control dans le bras B. Le paquet npm n'embarque aucun compresseur."
     },
     "explica": {
       "eyebrow": "En mots simples",
@@ -860,7 +860,7 @@
         },
         {
           "title": "Un reçu que vous pouvez vérifier",
-          "body": "Nous ne demandons pas la foi. Chaque économie est mesurée avec le compteur officiel du fournisseur — le même qui vous facture — et figure sur votre reçu. Ce qui ne peut pas être confronté à la facture n'est jamais annoncé."
+          "body": "Nous ne demandons pas une confiance aveugle. Les montants mesurés reposent sur l'usage déclaré par le fournisseur et des tarifs documentés, et figurent dans votre SavingsReport. Les montants valorisés par référence et estimés sont étiquetés séparément ; aucun n'est présenté comme rapproché d'une facture."
         },
         {
           "title": "Mesurez gratuitement, puis payez par siège",
@@ -872,7 +872,7 @@
     "step2": {
       "eyebrow": "Pas de promesses : des mesures",
       "title": "Comment savons-nous que ça économise ? Nous le mesurons — et nous publions chaque essai, un par un.",
-      "body": "Chaque scénario s'exécute deux fois contre le vrai fournisseur : tel quel, puis avec Savings devant. Les deux résultats sont comptés avec le compteur du fournisseur lui-même — celui qui fixe le prix de votre facture. Voici ce qui en est sorti, marge d'erreur comprise :",
+      "body": "Chaque scénario du SDK s'exécute deux fois contre le vrai fournisseur : tel quel, puis avec Savings devant. Les deux bras sont valorisés à partir de l'usage déclaré par le fournisseur aux tarifs catalogue versionnés, sans rapprochement avec une facture. Voici ce qui en est sorti, marge d'erreur comprise :",
       "videoCaption": "Le test est une expérience équitable : la même tâche deux fois — sans Savings et avec Savings — avec le même compteur du fournisseur qui mesure les deux.",
       "plainTitle": "Traduction, sans jargon",
       "plain": "Sur un flux où {rep} des requêtes se répètent à l'identique, la facture a baissé de {punto} — entre {bajo} et {alto} avec 95 % de confiance. Ce que vous économiserez dépend de la part de votre trafic qui se répète.",
@@ -883,7 +883,7 @@
       "eyebrow": "Comptabilité honnête",
       "title": "Chaque type d'économie, compté à part — pour qu'aucun chiffre ne soit gonflé.",
       "body": "Chaque SavingsReport répartit l'économie en quatre registres — appels évités, texte retiré, texte compressé et la remise de cache de votre propre fournisseur — et ne les additionne jamais en un chiffre marketing.",
-      "providerNote": "Sur le banc public ({fecha}), ce qu'a économisé le SDK installé est venu du premier registre — des requêtes répétées servies sans appeler le fournisseur — et, sur Claude, du quatrième, qui est la remise de votre propre fournisseur. Le paquet npm n'embarque aucun compresseur. Un registre sans chiffre publié est décrit ici, pas annoncé."
+      "providerNote": "Sur le banc public ({fecha}), ce qu'a économisé le SDK installé est venu du premier registre — des requêtes répétées servies sans appeler le fournisseur — et, sur Claude, du quatrième grâce à un effet du cache de préfixe activé par cache_control dans le bras B, et non à une remise préexistante du fournisseur. Le paquet npm n'embarque aucun compresseur. Un registre sans chiffre publié est décrit ici, pas annoncé."
     },
     "ledgers": [
       {
@@ -1102,7 +1102,7 @@
         "who": "Pour ceux qui utilisent Claude Code, Codex CLI ou un autre agent de code avec une clé d'API.",
         "what": "Une commande place un compteur local devant votre terminal, sans code à modifier. Le gateway compte chaque requête dont votre fournisseur déclare l'usage, avec le compteur du fournisseur lui-même — pour les modèles de notre catalogue de prix — et les additionne dans votre tableau de bord, par jour et par modèle.",
         "figureLabel": "Le chiffre que nous publions",
-      "figureQue": "de la facture avec la baisse de cache de PRO, déduction faite des échecs de cache qu'elle provoque (intervalle à {confianza} : de {bajo} à {alto}). Simulé au prix catalogue sur {sesiones} sessions Claude Code d'une seule organisation, la nôtre.",
+      "figureQue": "de réduction nette estimée du coût catalogue grâce au changement de TTL du cache de PRO, après déduction des échecs de cache induits (intervalle à {confianza} : de {bajo} à {alto}). Relecture contrefactuelle avec une référence partiellement reconstruite sur {sesiones} sessions Claude Code d'une organisation ; ni un test A/B en direct ni un rapprochement de factures.",
         "figureNote": "Ce n'est pas une prévision pour votre équipe : c'est une seule organisation, un seul fournisseur et des prix catalogue, et c'est une petite économie qui se voit là où la dépense chez Anthropic est élevée. Avec PRO, sur les modèles Anthropic, le gateway fait passer les écritures de cache du TTL d'une heure à celui de cinq minutes, uniquement sur les tours où une grande partie du prompt est nouvelle — comme le premier tour d'une session ou une compaction — et laisse tels quels les tours enchaînés d'une session en cours. Cela change le prix, jamais ce que lit le modèle, et seul ce que confirme le compteur de votre fournisseur compte dans votre rapport d'économies.",
         "benchLink": "Le rapport du banc TTL : ce qui a été simulé, le détail par modèle et ses limites →",
         "cta": "Installer le gateway"
@@ -1140,9 +1140,9 @@
     },
     "enVivo": {
       "titulo": "Banc public · en direct contre le fournisseur · {fecha}",
-      "conRepeticiones": "de facture en moins (intervalle à 95 % : de {bajo} à {alto}) sur un flux où {rep} des requêtes sont des répétitions exactes — {bateria}, SDK {version}",
+      "conRepeticiones": "de coût en moins aux tarifs catalogue versionnés (intervalle à 95 % : de {bajo} à {alto}) sur un flux où {rep} des requêtes sont des répétitions exactes — {familias} familles / {peticiones} requêtes par bras, {bateria}, SDK {version}",
       "sinRepeticiones": "sur un trafic sans répétitions (MT-Bench, BFCL) : impossible à distinguer de zéro",
-      "anthropic": "même flux (intervalle à 95 % : de {bajo} à {alto}). Environ {prefijo} de la facture d'origine est la remise du cache de préfixe d'Anthropic lui-même — celle du fournisseur, pas la nôtre, et affichée à part",
+      "anthropic": "flux réduit, différent de celui d'OpenAI : {familias} familles / {peticiones} requêtes par bras (intervalle à 95 % : de {bajo} à {alto}). Environ {prefijo} du coût catalogue de A est un effet du cache de préfixe activé par cache_control dans le bras B, et non une remise Anthropic préexistante",
       "pie": "Cela dépend de la part de votre trafic qui se répète. Chaque batterie, avec son rapport complet : <bench>banc public</bench>."
     }
   },
@@ -1195,10 +1195,11 @@
     "method": {
       "title": "Ce qui est mesuré, et comment",
       "arms": "<b>Deux bras, la même requête.</b> A va directement au fournisseur, sans la couche ; B passe par la couche avec sa configuration par défaut. Même prompt, même échantillonnage, même plafond de sortie.",
-      "cost": "<b>Le coût est compté par le fournisseur.</b> Chaque bras est valorisé à partir de l'<code>usage</code> que l'API renvoie à chaque appel, au prix catalogue. L'économie est 1 − coût(B) / coût(A) de la même exécution, pas ce que la couche dit d'elle-même.",
+      "cost": "<b>Usage déclaré par le fournisseur et tarifs catalogue versionnés.</b> Chaque bras est valorisé à partir de l'<code>usage</code> renvoyé par l'API et d'un catalogue de tarifs daté. L'économie est 1 − coût(B) / coût(A) de la même exécution. Les montants sont étiquetés measured, reference-valued ou estimated selon leur preuve ; il ne s'agit pas d'un rapprochement de factures.",
       "intervals": "<b>Intervalles au {nivel}.</b> Chaque harnais les calcule (rééchantillonnage par familles de questions, Wilson pour les taux de refus). Un intervalle qui traverse zéro veut dire « indiscernable de zéro », et nous le disons.",
       "package": "<b>Le paquet que vous installez.</b> Les passes A/B des tableaux ci-dessous ont été faites avec la {version} : le bras B exécute le code source de ce tag, et son <code>dist/index.js</code> est identique octet pour octet à celui du tarball npm (sha256 <code>{sha}</code>). Le banc hebdomadaire en direct est autre chose : à chaque passe, il mesure le code source de main tel qu'il est ce jour-là, avant sa publication.",
       "guard": "<b>Pas de raccourcis.</b> Chaque harnais surveille les hôtes auxquels il parle et porte un plafond de dépense par modèle écrit dans le code. Un modèle qui n'a pas pu être mesuré apparaît comme « non mesuré », avec le motif.",
+      "paper": "<paper>Lire l'article de recherche de 9 pages (PDF)</paper> : méthode, types de preuves et limites, notamment pourquoi le ratio 1,05 d'OpenAI décrit un seul point de fonctionnement et non une pente empirique.",
       "batteriesTitle": "Quatre batteries, jeux de données publics, figés",
       "commitOnly": "figé par commit"
     },
@@ -1238,7 +1239,7 @@
         "safe": "sûrs {d} pp (p = {p})",
         "unsafe": "dangereux {d} pp (p = {p})"
       },
-      "note": "Les « échecs de la couche » sont des erreurs du bras B que le bras A n'a pas eues. « B − A » est l'écart d'exactitude pour GSM8K et BFCL, l'écart du taux de refus pour XSTest (p de McNemar, prompts appariés) et, pour MT-Bench, la fréquence à laquelle le juge préfère B (la moitié est une égalité). « Rapport vs facture » mesure l'écart entre le coût que la couche déclare pour le bras B et ce que facture le fournisseur.",
+      "note": "Les « échecs de la couche » sont des erreurs du bras B que le bras A n'a pas eues. « B − A » est l'écart d'exactitude pour GSM8K et BFCL, l'écart du taux de refus pour XSTest (p de McNemar, prompts appariés) et, pour MT-Bench, la fréquence à laquelle le juge préfère B (la moitié est une égalité). « Rapport vs coût catalogue » compare le coût déclaré par la couche pour B à celui calculé indépendamment à partir de l'usage déclaré par le fournisseur aux mêmes tarifs catalogue versionnés ; ce n'est pas un rapprochement de factures.",
       "earlierTitle": "Passes hebdomadaires précédentes",
       "earlierOk": "{fecha} · commit {commit} · aucune régression.",
       "earlierFailed": "{fecha} · commit {commit} · échec (règles enfreintes : {n}).",
@@ -1276,7 +1277,7 @@
       "layerFails": "Échecs de la couche",
       "counts": "Ce qu'il compte",
       "diff": "B − A",
-      "reportVsInvoice": "Rapport vs facture"
+      "reportVsInvoice": "Rapport vs coût catalogue"
     },
     "savings": {
       "title": "Économie mesurée par modèle",
@@ -1288,7 +1289,7 @@
     },
     "gatewayTtl": {
       "title": "La baisse de cache du gateway : une simulation, pas un A/B",
-      "kind": "Cette section ne fait pas partie des batteries A/B de la page et elle n'est <b>pas mesurée en direct</b> : c'est un <b>replay</b>. Nous avons pris l'usage que le fournisseur avait déjà déclaré pour des sessions réelles de Claude Code <b>d'une seule organisation, la nôtre</b>, auprès d'un seul fournisseur (Anthropic), et calculé au <b>prix catalogue</b> ce qu'elles auraient coûté avec la baisse de cache de PRO et sans elle.",
+      "kind": "Il s'agit d'une <b>relecture contrefactuelle</b> avec une <b>référence partiellement reconstruite</b>, et non d'une des batteries A/B en direct de cette page. Nous avons utilisé l'usage déclaré par le fournisseur pour des sessions réelles de Claude Code <b>d'une seule organisation, la nôtre</b>, auprès d'un fournisseur (Anthropic), puis estimé les coûts aux <b>tarifs catalogue versionnés</b> avec et sans le changement de TTL du cache de PRO. Ce n'est ni une double exécution en direct ni un rapprochement de factures.",
       "verdict": "Le verdict du rapport du {fecha} : la baisse laisse un <b>net de {neto} de la facture</b> ({netoUsd} sur {factura}), après déduction des échecs de cache qu'elle provoque elle-même.",
       "stat": {
         "sessions": "Sessions",
@@ -1450,7 +1451,7 @@
         "dataset": "<b>Le jeu de données.</b> Téléchargez chaque jeu de données public au commit du tableau ci-dessus et vérifiez le sha256 de chaque fichier avant de l'utiliser. S'il ne correspond pas, ce n'est pas le même jeu de données.",
         "package": "<b>La couche.</b> Installez <code>@bivelio/savings-layer</code> depuis npm dans la version indiquée par le rapport et vérifiez le sha256 de <code>dist/index.js</code> : chaque rapport porte le sien.",
         "arms": "<b>Deux bras par prompt.</b> A va directement au fournisseur ; B envoie le même prompt, au même modèle et avec le même plafond de sortie, à travers la couche dans sa configuration par défaut. Une partie des prompts est répétée ou paraphrasée, comme dans le trafic réel, et l'ordre A/B est tiré au sort.",
-        "cost": "<b>Le coût, c'est le fournisseur qui le dit.</b> Additionnez ce que chaque bras est facturé d'après le <code>usage</code> renvoyé par le fournisseur, à son tarif publié. L'économie est <code>1 − coût B / coût A</code>, avec son intervalle.",
+        "cost": "<b>L'usage et les tarifs catalogue documentent la valorisation.</b> Additionnez le coût de chaque bras à partir de l'<code>usage</code> déclaré par le fournisseur, au tarif catalogue versionné. L'économie est <code>1 − coût B / coût A</code>, avec son intervalle ; ce n'est pas un rapprochement de factures.",
         "compare": "<b>La qualité, dans la même exécution.</b> Notez de la même façon les réponses des deux bras (réponse exacte pour GSM8K, appel d'outil pour BFCL, refus ou non pour XSTest, un juge pour MT-Bench) et comparez-les au rapport JSON de la même batterie et de la même version."
       },
       "reportsTitle": "Les rapports",

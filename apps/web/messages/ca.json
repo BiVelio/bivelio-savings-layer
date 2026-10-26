@@ -843,7 +843,7 @@
     },
     "cascade": {
       "title": "Guanya l'execució més barata",
-      "footnote": "Cada palanca cau al seu propi llibre, i els llibres no se sumen mai. En aquesta bateria l'estalvi va sortir de peticions repetides que l'SDK va servir sense cridar el proveïdor i, a Claude, de la mateixa memòria cau de prefix del proveïdor. El paquet d'npm no porta compressor."
+      "footnote": "Cada palanca cau al seu propi llibre, i els llibres no se sumen mai. En aquesta bateria l'estalvi va sortir de peticions repetides que l'SDK va servir sense cridar el proveïdor i, a Claude, d'un efecte de memòria cau de prefix habilitat per cache_control al braç B. El paquet d'npm no porta compressor."
     },
     "explica": {
       "eyebrow": "En paraules normals",
@@ -860,7 +860,7 @@
         },
         {
           "title": "Un rebut que pots comprovar",
-          "body": "No et demanem fe. Cada estalvi es mesura amb el comptador oficial del proveïdor — el mateix amb què et factura — i apareix al teu rebut. El que no es pot contrastar amb la factura, no s'anuncia."
+          "body": "No et demanem fe. Els imports mesurats usen l'ús reportat pel proveïdor i preus documentats, i apareixen al teu SavingsReport. Els imports valorats per referència i els estimats s'etiqueten a part; cap es presenta com a conciliat amb una factura."
         },
         {
           "title": "Mesura gratis i després paga per seient",
@@ -872,7 +872,7 @@
     "step2": {
       "eyebrow": "Sense promeses: mesuraments",
       "title": "Com sabem que estalvia? Ho mesurem — i publiquem els assaigs, un per un.",
-      "body": "Cada escenari s'executa dues vegades contra el proveïdor real: tal qual, i amb Savings al davant. Els dos resultats es compten amb el comptador del mateix proveïdor — el mateix que posa el preu a la teva factura. Això és el que va sortir, amb el seu marge d'error:",
+      "body": "Cada escenari de l'SDK s'executa dues vegades contra el proveïdor real: tal qual, i amb Savings al davant. Els dos braços es valoren amb l'ús reportat pel proveïdor a preus de llista versionats, sense conciliació amb factures. Això és el que va sortir, amb el seu marge d'error:",
       "videoCaption": "La prova és un experiment just: la mateixa tasca dues vegades — sense Savings i amb Savings — amb el mateix comptador del proveïdor mesurant totes dues.",
       "plainTitle": "Traducció, sense argot",
       "plain": "En un flux on el {rep} de les peticions es repeteixen exactes, la factura va baixar un {punto}: entre {bajo} i {alto} amb un 95 % de confiança. El que estalviïs depèn de quant es repeteixi el teu trànsit.",
@@ -883,7 +883,7 @@
       "eyebrow": "Comptabilitat honesta",
       "title": "Cada tipus d'estalvi, comptat a part — perquè cap xifra s'infli.",
       "body": "Cada SavingsReport separa l'estalvi en quatre llibres —crides evitades, text eliminat, text comprimit i el descompte de memòria cau del teu propi proveïdor— i no els suma mai en una xifra de màrqueting.",
-      "providerNote": "Al banc públic ({fecha}), el que va estalviar l'SDK instal·lat va sortir del primer llibre —peticions repetides servides sense cridar el proveïdor— i, a Claude, del quart, que és el descompte del teu propi proveïdor. El paquet d'npm no porta compressor. Un llibre sense xifra publicada es descriu aquí, no s'anuncia."
+      "providerNote": "Al banc públic ({fecha}), el que va estalviar l'SDK instal·lat va sortir del primer llibre —peticions repetides servides sense cridar el proveïdor— i, a Claude, del quart mitjançant un efecte de memòria cau de prefix habilitat per cache_control al braç B, no un descompte preexistent del proveïdor. El paquet d'npm no porta compressor. Un llibre sense xifra publicada es descriu aquí, no s'anuncia."
     },
     "ledgers": [
       {
@@ -1102,7 +1102,7 @@
         "who": "Per a qui treballa amb Claude Code, Codex CLI o un altre agent de codi amb API key.",
         "what": "Una ordre posa un mesurador local davant del teu terminal, sense tocar codi. Compta cada petició de la qual el teu proveïdor informa l'ús, amb el seu propi comptador —en els models del nostre catàleg de preus—, i ho suma al teu tauler, per dia i per model.",
         "figureLabel": "La xifra que publiquem",
-      "figureQue": "de la factura amb la rebaixa de memòria cau de PRO, ja restats els errors de memòria cau que provoca (interval del {confianza}: de {bajo} a {alto}). Simulat a preu de llista sobre {sesiones} sessions de Claude Code d'una sola organització, la nostra.",
+      "figureQue": "de reducció neta estimada del cost a preus de llista amb el canvi de TTL de memòria cau de PRO, restats els errors de memòria cau induïts (interval del {confianza}: de {bajo} a {alto}). Reproducció contrafactual amb línia base parcialment reconstruïda sobre {sesiones} sessions de Claude Code d'una organització; no és un A/B en viu ni una conciliació de factures.",
         "figureNote": "No és una previsió per al teu equip: és una sola organització, un sol proveïdor i preus de llista, i és un estalvi petit que es nota on la despesa en Anthropic és alta. Amb PRO, en models d'Anthropic, passa les escriptures de la memòria cau del TTL d'una hora al de cinc minuts només en els torns en què una part gran del prompt és nova —com el primer d'una sessió o una compactació— i deixa com estan els torns encadenats d'una sessió en marxa. Això canvia el preu, mai el que llegeix el model, i només el que confirma el comptador del teu proveïdor compta al teu informe d'estalvi.",
         "benchLink": "L'informe del banc de TTL: què es va simular, el desglossament per model i els seus límits →",
         "cta": "Instal·la el gateway"
@@ -1140,9 +1140,9 @@
     },
     "enVivo": {
       "titulo": "Banc públic · en viu contra el proveïdor · {fecha}",
-      "conRepeticiones": "menys factura (interval del 95 %: de {bajo} a {alto}) en un flux on el {rep} de les peticions són repeticions exactes — {bateria}, SDK {version}",
+      "conRepeticiones": "menor cost a preus de llista versionats (interval del 95 %: de {bajo} a {alto}) en un flux on el {rep} de les peticions són repeticions exactes — {familias} famílies / {peticiones} peticions per braç, {bateria}, SDK {version}",
       "sinRepeticiones": "amb trànsit sense repeticions (MT-Bench, BFCL): indistingible de zero",
-      "anthropic": "mateix flux (interval del 95 %: de {bajo} a {alto}). Prop de {prefijo} de la factura original és el descompte de la memòria cau de prefix del mateix Anthropic: del proveïdor, no nostre, i es mostra a part",
+      "anthropic": "flux reduït, diferent del d'OpenAI: {familias} famílies / {peticiones} peticions per braç (interval del 95 %: de {bajo} a {alto}). Prop de {prefijo} del cost d'A a preus de llista és un efecte de memòria cau de prefix habilitat per cache_control al braç B, no un descompte preexistent d'Anthropic",
       "pie": "Depèn de quant es repeteixi el teu trànsit. Cada bateria, amb el seu informe complet: <bench>banc públic</bench>."
     }
   },
@@ -1195,10 +1195,11 @@
     "method": {
       "title": "Què es mesura i com",
       "arms": "<b>Dos braços, la mateixa petició.</b> A va directament al proveïdor, sense la capa; B passa per la capa amb la seva configuració per defecte. Mateix prompt, mateix mostreig i mateix límit de sortida.",
-      "cost": "<b>El cost el compta el proveïdor.</b> Cada braç es valora amb l'<code>usage</code> que retorna l'API a cada crida, al preu de llista. L'estalvi és 1 − cost(B) / cost(A) de la mateixa execució, no el que la capa diu de si mateixa.",
+      "cost": "<b>Ús reportat pel proveïdor i preus de llista versionats.</b> Cada braç es valora amb l'<code>usage</code> que retorna l'API i un catàleg de preus de llista datat. L'estalvi és 1 − cost(B) / cost(A) de la mateixa execució. Els imports s'etiqueten measured, reference-valued o estimated segons l'evidència; això no és una conciliació de factures.",
       "intervals": "<b>Intervals al {nivel}.</b> Els calcula cada arnès (remostreig per famílies de preguntes, Wilson en les taxes de negativa). Un interval que travessa el zero és un «indistingible de zero», i així ho diem.",
       "package": "<b>El paquet que instal·les.</b> Les tirades A/B de les taules de sota es van fer amb la {version}: el braç B executa el codi font d'aquesta etiqueta, i el seu <code>dist/index.js</code> és idèntic byte a byte al del tarball de npm (sha256 <code>{sha}</code>). El banc setmanal en viu és una altra cosa: a cada tirada mesura el codi font de main tal com és aquell dia, abans de publicar-se.",
       "guard": "<b>Sense dreceres.</b> Cada arnès vigila els hosts amb què parla i porta un límit de despesa per model escrit al codi. Un model que no s'ha pogut mesurar surt com a «no mesurat», amb el motiu.",
+      "paper": "<paper>Llegeix l'article de recerca de 17 pàgines (PDF)</paper>: mètode, tipus d'evidència i limitacions, inclòs per què la raó 1,05 d'OpenAI descriu un únic punt d'operació i no un pendent empíric.",
       "batteriesTitle": "Quatre bateries, conjunts de dades públics, fixats",
       "commitOnly": "fixat per commit"
     },
@@ -1238,7 +1239,7 @@
         "safe": "segurs {d} pp (p = {p})",
         "unsafe": "insegurs {d} pp (p = {p})"
       },
-      "note": "«Errors de la capa» són errors al braç B que l'A no va tenir. «B − A» és la diferència d'exactitud a GSM8K i BFCL, la de la taxa de negatives a XSTest (p de McNemar, prompts aparellats) i, a MT-Bench, quantes vegades el jutge prefereix B (la meitat és empat). «Informe davant factura» és quant s'aparta el cost que informa la capa per al braç B del que factura el proveïdor.",
+      "note": "«Errors de la capa» són errors al braç B que l'A no va tenir. «B − A» és la diferència d'exactitud a GSM8K i BFCL, la de la taxa de negatives a XSTest (p de McNemar, prompts aparellats) i, a MT-Bench, quantes vegades el jutge prefereix B (la meitat és empat). «Informe davant cost de llista» compara el cost que informa la capa per a B amb el calculat independentment a partir de l'ús reportat pel proveïdor als mateixos preus de llista versionats; no és una conciliació de factures.",
       "earlierTitle": "Tirades setmanals anteriors",
       "earlierOk": "{fecha} · commit {commit} · sense regressions.",
       "earlierFailed": "{fecha} · commit {commit} · ha fallat (regles trencades: {n}).",
@@ -1276,7 +1277,7 @@
       "layerFails": "Errors de la capa",
       "counts": "Què compta",
       "diff": "B − A",
-      "reportVsInvoice": "Informe davant factura"
+      "reportVsInvoice": "Informe davant cost de llista"
     },
     "savings": {
       "title": "Estalvi mesurat per model",
@@ -1288,7 +1289,7 @@
     },
     "gatewayTtl": {
       "title": "La rebaixa de memòria cau del gateway: una simulació, no un A/B",
-      "kind": "Aquesta secció no és una de les bateries A/B de la pàgina i <b>no està mesurada en viu</b>: és un <b>replay</b>. Vam prendre l'ús que el proveïdor ja havia informat en sessions reals de Claude Code <b>d'una sola organització, la nostra</b>, contra un sol proveïdor (Anthropic), i vam calcular a <b>preu de llista</b> quant haurien costat amb la rebaixa de memòria cau de PRO i sense.",
+      "kind": "Aquesta és una <b>reproducció contrafactual</b> amb una <b>línia base parcialment reconstruïda</b>, no una de les bateries A/B en viu d'aquesta pàgina. Vam prendre l'ús reportat pel proveïdor en sessions reals de Claude Code <b>d'una sola organització, la nostra</b>, amb un sol proveïdor (Anthropic), i vam estimar els costos a <b>preus de llista versionats</b> amb el canvi de TTL de memòria cau de PRO i sense. No és una doble execució en viu ni una conciliació de factures.",
       "verdict": "El veredicte de l'informe del {fecha}: la rebaixa deixa un <b>net de {neto} de la factura</b> ({netoUsd} sobre {factura}), després de restar els errors de memòria cau que ella mateixa provoca.",
       "stat": {
         "sessions": "Sessions",
@@ -1450,7 +1451,7 @@
         "dataset": "<b>El dataset.</b> Descarrega cada dataset públic al commit de la taula de dalt i comprova el sha256 de cada fitxer abans de fer-lo servir. Si no quadra, no és el mateix dataset.",
         "package": "<b>La capa.</b> Instal·la <code>@bivelio/savings-layer</code> des de npm a la versió que diu l'informe i comprova el sha256 de <code>dist/index.js</code>: cada informe porta el seu.",
         "arms": "<b>Dos braços per prompt.</b> A va directe al proveïdor; B envia el mateix prompt, al mateix model i amb el mateix límit de sortida, a través de la capa amb la configuració per defecte. Una part dels prompts es repeteix o es parafraseja, com en el trànsit real, i l'ordre A/B se sorteja.",
-        "cost": "<b>El cost el diu el proveïdor.</b> Suma el que factura cada braç segons l'<code>usage</code> que retorna el proveïdor, a la seva tarifa publicada. L'estalvi és <code>1 − cost B / cost A</code>, amb el seu interval.",
+        "cost": "<b>L'ús i els preus de llista documenten la valoració.</b> Suma el cost de cada braç a partir de l'<code>usage</code> reportat pel proveïdor, al preu de llista versionat. L'estalvi és <code>1 − cost B / cost A</code>, amb el seu interval; no és una conciliació de factures.",
         "compare": "<b>La qualitat, a la mateixa tirada.</b> Puntua igual les respostes dels dos braços (resposta exacta a GSM8K, crida a eina a BFCL, negativa o no a XSTest, jutge a MT-Bench) i compara-les amb l'informe JSON de la mateixa bateria i versió."
       },
       "reportsTitle": "Els informes",

@@ -843,7 +843,7 @@
     },
     "cascade": {
       "title": "Phương án thực thi rẻ nhất thắng",
-      "footnote": "Mỗi đòn bẩy rơi vào sổ riêng của nó, và các sổ không bao giờ được cộng lại. Trong bộ thử này, khoản tiết kiệm đến từ các yêu cầu lặp lại mà SDK phục vụ không cần gọi nhà cung cấp và, với Claude, từ bộ nhớ đệm tiền tố của chính nhà cung cấp. Gói npm không kèm bộ nén."
+      "footnote": "Mỗi đòn bẩy rơi vào sổ riêng của nó, và các sổ không bao giờ được cộng lại. Trong bộ thử này, khoản tiết kiệm đến từ các yêu cầu lặp lại mà SDK phục vụ không cần gọi nhà cung cấp và, với Claude, từ hiệu ứng bộ nhớ đệm tiền tố được cache_control bật ở nhánh B. Gói npm không kèm bộ nén."
     },
     "explica": {
       "eyebrow": "Nói một cách dễ hiểu",
@@ -860,7 +860,7 @@
         },
         {
           "title": "Một biên lai bạn có thể kiểm chứng",
-          "body": "Chúng tôi không xin niềm tin. Mỗi khoản tiết kiệm được đo bằng bộ đếm chính thức của nhà cung cấp — chính bộ đếm dùng để tính tiền bạn — và hiện trên biên lai của bạn. Điều gì không đối chiếu được với hóa đơn thì không bao giờ được công bố."
+          "body": "Chúng tôi không đòi hỏi niềm tin mù quáng. Các khoản đã đo dùng mức sử dụng do nhà cung cấp báo cáo và giá có tài liệu, và xuất hiện trong SavingsReport của bạn. Các khoản định giá theo tham chiếu và ước tính được gắn nhãn riêng; không khoản nào được trình bày là đã đối chiếu với hóa đơn."
         },
         {
           "title": "Đo miễn phí, sau đó trả theo ghế",
@@ -872,7 +872,7 @@
     "step2": {
       "eyebrow": "Không hứa hẹn: đo lường",
       "title": "Làm sao chúng tôi biết nó tiết kiệm? Chúng tôi đo — và chúng tôi công bố từng lượt thử một.",
-      "body": "Mỗi kịch bản chạy hai lần với nhà cung cấp thật: nguyên trạng, và có Savings đứng trước. Cả hai kết quả được đếm bằng chính bộ đếm của nhà cung cấp — bộ đếm định giá hóa đơn của bạn. Đây là kết quả, kèm biên độ sai số:",
+      "body": "Mỗi kịch bản SDK chạy hai lần với nhà cung cấp thật: nguyên trạng, và có Savings đứng trước. Cả hai nhánh được định giá từ mức sử dụng do nhà cung cấp báo cáo theo giá niêm yết có phiên bản, không đối chiếu với hóa đơn. Đây là kết quả, kèm biên độ sai số:",
       "videoCaption": "Bài kiểm tra là một thí nghiệm công bằng: cùng một nhiệm vụ chạy hai lần — không có Savings và có Savings — và cùng một bộ đếm của nhà cung cấp đo cả hai.",
       "plainTitle": "Diễn giải, không thuật ngữ",
       "plain": "Trên một luồng mà {rep} số yêu cầu lặp lại y hệt, hóa đơn giảm {punto} — trong khoảng {bajo} đến {alto} với độ tin cậy 95%. Bạn tiết kiệm bao nhiêu tùy vào mức độ lặp lại của lưu lượng của bạn.",
@@ -883,7 +883,7 @@
       "eyebrow": "Hạch toán trung thực",
       "title": "Mỗi loại tiết kiệm được đếm riêng — để không con số nào bị thổi phồng.",
       "body": "Mỗi SavingsReport chia khoản tiết kiệm vào bốn sổ — lệnh gọi tránh được, văn bản đã loại bỏ, văn bản đã nén và chiết khấu bộ nhớ đệm của chính nhà cung cấp — và không bao giờ cộng chúng thành một con số tiếp thị.",
-      "providerNote": "Trên băng thử công khai ({fecha}), khoản SDK đã cài tiết kiệm được đến từ sổ thứ nhất — các yêu cầu lặp lại được phục vụ mà không gọi nhà cung cấp — và, với Claude, từ sổ thứ tư, là chiết khấu của chính nhà cung cấp. Gói npm không kèm bộ nén. Một sổ chưa có con số công bố thì được mô tả ở đây, không được quảng cáo."
+      "providerNote": "Trên băng thử công khai ({fecha}), khoản SDK đã cài tiết kiệm được đến từ sổ thứ nhất — các yêu cầu lặp lại được phục vụ mà không gọi nhà cung cấp — và, với Claude, từ sổ thứ tư thông qua hiệu ứng bộ nhớ đệm tiền tố được cache_control bật ở nhánh B, không phải chiết khấu nhà cung cấp có sẵn từ trước. Gói npm không kèm bộ nén. Một sổ chưa có con số công bố thì được mô tả ở đây, không được quảng cáo."
     },
     "ledgers": [
       {
@@ -1102,7 +1102,7 @@
         "who": "Cho những ai dùng Claude Code, Codex CLI hoặc agent lập trình khác với khóa API.",
         "what": "Một lệnh đặt một bộ đo cục bộ trước terminal của bạn, không cần sửa mã. Gateway đếm từng lượt gọi mà nhà cung cấp có báo cáo mức sử dụng, bằng chính bộ đếm của nhà cung cấp — với các mô hình trong danh mục giá của chúng tôi — và cộng dồn chúng trong bảng điều khiển của bạn, theo ngày và theo mô hình.",
         "figureLabel": "Con số chúng tôi công bố",
-      "figureQue": "hóa đơn nhờ việc hạ bộ nhớ đệm của PRO, đã trừ các lần trượt bộ nhớ đệm mà nó gây ra (khoảng {confianza}: từ {bajo} đến {alto}). Mô phỏng theo giá niêm yết trên {sesiones} phiên Claude Code của một tổ chức duy nhất, chính chúng tôi.",
+      "figureQue": "mức giảm ròng ước tính của chi phí theo giá niêm yết nhờ thay đổi TTL bộ nhớ đệm của PRO, sau khi trừ các lần trượt bộ nhớ đệm gây ra (khoảng {confianza}: từ {bajo} đến {alto}). Phát lại theo kịch bản giả định với đường cơ sở được tái dựng một phần trên {sesiones} phiên Claude Code của một tổ chức; không phải A/B chạy thật hay đối chiếu hóa đơn.",
         "figureNote": "Đây không phải là dự báo cho nhóm của bạn: đó là một tổ chức, một nhà cung cấp và giá niêm yết, và là khoản tiết kiệm nhỏ, thấy rõ ở nơi chi tiêu cho Anthropic cao. Với PRO, trên các mô hình Anthropic, gateway chuyển các lần ghi bộ nhớ đệm từ TTL một giờ sang TTL năm phút, chỉ ở những lượt mà một phần lớn prompt là mới — như lượt đầu tiên của một phiên hoặc sau khi nén ngữ cảnh — và giữ nguyên các lượt nối tiếp của một phiên đang chạy. Điều đó thay đổi giá, không bao giờ thay đổi những gì mô hình đọc, và chỉ phần được bộ đếm của nhà cung cấp xác nhận mới được tính trong báo cáo tiết kiệm của bạn.",
         "benchLink": "Báo cáo của phép đo TTL: đã mô phỏng những gì, phân tích theo mô hình và các giới hạn →",
         "cta": "Cài đặt gateway"
@@ -1140,9 +1140,9 @@
     },
     "enVivo": {
       "titulo": "Băng thử công khai · chạy thật với nhà cung cấp · {fecha}",
-      "conRepeticiones": "hóa đơn giảm (khoảng tin cậy 95%: từ {bajo} đến {alto}) trên một luồng mà {rep} số yêu cầu là lặp lại y hệt — {bateria}, SDK {version}",
+      "conRepeticiones": "chi phí thấp hơn theo giá niêm yết có phiên bản (khoảng tin cậy 95%: từ {bajo} đến {alto}) trên một luồng mà {rep} số yêu cầu là lặp lại y hệt — {familias} họ / {peticiones} yêu cầu mỗi nhánh, {bateria}, SDK {version}",
       "sinRepeticiones": "với lưu lượng không lặp lại (MT-Bench, BFCL): không phân biệt được với không",
-      "anthropic": "cùng luồng (khoảng tin cậy 95%: từ {bajo} đến {alto}). Khoảng {prefijo} hóa đơn ban đầu là chiết khấu bộ nhớ đệm tiền tố của chính Anthropic — của nhà cung cấp, không phải của chúng tôi, và được hiển thị riêng",
+      "anthropic": "luồng rút gọn, khác với luồng OpenAI: {familias} họ / {peticiones} yêu cầu mỗi nhánh (khoảng tin cậy 95%: từ {bajo} đến {alto}). Khoảng {prefijo} chi phí theo giá niêm yết của A là hiệu ứng bộ nhớ đệm tiền tố được cache_control bật ở nhánh B, không phải chiết khấu Anthropic có sẵn từ trước",
       "pie": "Tùy vào mức độ lặp lại của lưu lượng. Từng bộ thử, kèm báo cáo đầy đủ: <bench>băng thử công khai</bench>."
     }
   },
@@ -1195,10 +1195,11 @@
     "method": {
       "title": "Đo cái gì, và đo như thế nào",
       "arms": "<b>Hai nhánh, cùng một yêu cầu.</b> A đi thẳng đến nhà cung cấp, không qua lớp; B đi qua lớp với cấu hình mặc định của nó. Cùng prompt, cùng cách lấy mẫu, cùng giới hạn đầu ra.",
-      "cost": "<b>Nhà cung cấp tính chi phí.</b> Mỗi nhánh được định giá dựa trên <code>usage</code> mà API trả về ở mỗi lần gọi, theo giá niêm yết. Mức tiết kiệm là 1 − chi phí(B) / chi phí(A) của cùng một lần chạy, không phải những gì lớp tự nói về mình.",
+      "cost": "<b>Mức sử dụng do nhà cung cấp báo cáo và giá niêm yết có phiên bản.</b> Mỗi nhánh được định giá dựa trên <code>usage</code> do API trả về và danh mục giá niêm yết có ngày. Mức tiết kiệm là 1 − chi phí(B) / chi phí(A) của cùng một lần chạy. Các khoản được gắn nhãn measured, reference-valued hoặc estimated tùy theo bằng chứng; đây không phải đối chiếu hóa đơn.",
       "intervals": "<b>Khoảng tin cậy {nivel}.</b> Mỗi bộ khai thác tự tính (lấy mẫu lại toàn bộ họ câu hỏi, Wilson cho tỷ lệ từ chối). Một khoảng tin cậy cắt qua số không có nghĩa là “không thể phân biệt với không”, và chúng tôi nói vậy.",
       "package": "<b>Gói bạn cài đặt.</b> Các lượt A/B trong các bảng bên dưới được chạy trên {version}: nhánh B chạy mã nguồn của tag đó, và <code>dist/index.js</code> của nó giống từng byte với tệp trong tarball npm (sha256 <code>{sha}</code>). Bench trực tiếp hằng tuần thì khác: ở mỗi lượt, nó đo mã nguồn của main đúng như ngày hôm đó, trước khi phát hành.",
       "guard": "<b>Không đường tắt.</b> Mỗi bộ khai thác theo dõi các máy chủ mà nó liên lạc và mang một giới hạn chi tiêu theo từng mô hình được viết sẵn trong mã. Một mô hình không thể đo được sẽ được báo cáo là “không đo được”, kèm lý do.",
+      "paper": "<paper>Đọc bài nghiên cứu 17 trang (PDF)</paper>: phương pháp, các loại bằng chứng và giới hạn, trong đó giải thích vì sao tỷ số 1,05 của OpenAI chỉ mô tả một điểm vận hành, không phải hệ số góc thực nghiệm.",
       "batteriesTitle": "Bốn bộ kiểm tra, tập dữ liệu công khai, được ghim cố định",
       "commitOnly": "ghim theo commit"
     },
@@ -1238,7 +1239,7 @@
         "safe": "an toàn {d} pp (p = {p})",
         "unsafe": "không an toàn {d} pp (p = {p})"
       },
-      "note": "“Lỗi của lớp” là các lỗi ở nhánh B mà nhánh A không gặp. “B − A” là chênh lệch độ chính xác ở GSM8K và BFCL, chênh lệch tỷ lệ từ chối ở XSTest (p của McNemar, prompt ghép cặp) và, ở MT-Bench, tần suất giám khảo chọn B (một nửa là hòa). “Báo cáo so với hóa đơn” là mức chênh giữa chi phí lớp báo cáo cho nhánh B và số tiền nhà cung cấp tính.",
+      "note": "“Lỗi của lớp” là các lỗi ở nhánh B mà nhánh A không gặp. “B − A” là chênh lệch độ chính xác ở GSM8K và BFCL, chênh lệch tỷ lệ từ chối ở XSTest (p của McNemar, prompt ghép cặp) và, ở MT-Bench, tần suất giám khảo chọn B (một nửa là hòa). “Báo cáo so với chi phí giá niêm yết” so sánh chi phí lớp báo cáo cho B với chi phí được tính độc lập từ mức sử dụng do nhà cung cấp báo cáo theo cùng giá niêm yết có phiên bản; đây không phải đối chiếu hóa đơn.",
       "earlierTitle": "Các lượt hằng tuần trước đó",
       "earlierOk": "{fecha} · commit {commit} · không có hồi quy.",
       "earlierFailed": "{fecha} · commit {commit} · thất bại (số quy tắc bị vi phạm: {n}).",
@@ -1276,7 +1277,7 @@
       "layerFails": "Lỗi của lớp",
       "counts": "Những gì được đếm",
       "diff": "B − A",
-      "reportVsInvoice": "Báo cáo so với hóa đơn"
+      "reportVsInvoice": "Báo cáo so với chi phí giá niêm yết"
     },
     "savings": {
       "title": "Mức tiết kiệm đo được theo mô hình",
@@ -1288,7 +1289,7 @@
     },
     "gatewayTtl": {
       "title": "Việc hạ bộ nhớ đệm của gateway: một phép mô phỏng, không phải A/B",
-      "kind": "Phần này không phải là một trong các bộ thử A/B của trang và <b>không được đo trực tiếp</b>: đây là một <b>replay</b>. Chúng tôi lấy mức sử dụng mà nhà cung cấp đã báo cáo cho các phiên Claude Code thật của <b>một tổ chức duy nhất, chính chúng tôi</b>, với một nhà cung cấp duy nhất (Anthropic), rồi tính theo <b>giá niêm yết</b> xem chúng sẽ tốn bao nhiêu khi có và khi không có việc hạ bộ nhớ đệm của PRO.",
+      "kind": "Đây là <b>lượt phát lại theo kịch bản giả định</b> với <b>đường cơ sở được tái dựng một phần</b>, không phải một trong các bộ thử A/B chạy thật của trang. Chúng tôi dùng mức sử dụng do nhà cung cấp báo cáo từ các phiên Claude Code thật của <b>một tổ chức duy nhất, chính chúng tôi</b>, với một nhà cung cấp (Anthropic), rồi ước tính chi phí theo <b>giá niêm yết có phiên bản</b> khi có và không có thay đổi TTL bộ nhớ đệm của PRO. Đây không phải lần chạy kép trực tiếp hay đối chiếu hóa đơn.",
       "verdict": "Kết luận của báo cáo ngày {fecha}: việc hạ để lại <b>phần ròng {neto} hóa đơn</b> ({netoUsd} trên {factura}), sau khi trừ các lần trượt bộ nhớ đệm do chính nó gây ra.",
       "stat": {
         "sessions": "Phiên",
@@ -1450,7 +1451,7 @@
         "dataset": "<b>Bộ dữ liệu.</b> Tải từng bộ dữ liệu công khai tại commit trong bảng ở trên và kiểm tra sha256 của từng tệp trước khi dùng. Nếu không khớp, đó không phải cùng một bộ dữ liệu.",
         "package": "<b>Lớp.</b> Cài <code>@bivelio/savings-layer</code> từ npm ở phiên bản mà báo cáo ghi và kiểm tra sha256 của <code>dist/index.js</code>: mỗi báo cáo đều ghi giá trị của nó.",
         "arms": "<b>Hai nhánh cho mỗi prompt.</b> A đi thẳng tới nhà cung cấp; B gửi cùng prompt, tới cùng mô hình và với cùng giới hạn đầu ra, qua lớp với cấu hình mặc định. Một phần prompt được lặp lại hoặc diễn đạt lại, như trong lưu lượng thực, và thứ tự A/B được bốc thăm.",
-        "cost": "<b>Chi phí do nhà cung cấp nói.</b> Cộng số tiền mỗi nhánh bị tính theo <code>usage</code> mà nhà cung cấp trả về, với giá đã công bố. Mức tiết kiệm là <code>1 − chi phí B / chi phí A</code>, kèm khoảng tin cậy.",
+        "cost": "<b>Mức sử dụng và giá niêm yết làm bằng chứng cho việc định giá.</b> Cộng chi phí từng nhánh từ <code>usage</code> do nhà cung cấp báo cáo, theo giá niêm yết có phiên bản. Mức tiết kiệm là <code>1 − chi phí B / chi phí A</code>, kèm khoảng tin cậy; đây không phải đối chiếu hóa đơn.",
         "compare": "<b>Chất lượng, trong cùng lần chạy.</b> Chấm điểm câu trả lời của hai nhánh theo cùng một cách (đáp án chính xác với GSM8K, lời gọi công cụ với BFCL, từ chối hay không với XSTest, một giám khảo với MT-Bench) và so sánh với báo cáo JSON của cùng bộ kiểm tra và phiên bản."
       },
       "reportsTitle": "Các báo cáo",

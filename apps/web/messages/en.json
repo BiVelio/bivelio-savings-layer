@@ -843,7 +843,7 @@
     },
     "cascade": {
       "title": "Cheapest execution wins",
-      "footnote": "Each lever falls into its own ledger, and the ledgers are never added up. In this battery the saving came from repeated requests the SDK served without calling the provider and, on Claude, from the provider's own prefix cache. The npm package ships no compressor."
+      "footnote": "Each lever falls into its own ledger, and the ledgers are never added up. In this battery the saving came from repeated requests the SDK served without calling the provider and, on Claude, from a prefix-cache effect enabled by cache_control in arm B. The npm package ships no compressor."
     },
     "explica": {
       "eyebrow": "In plain words",
@@ -860,7 +860,7 @@
         },
         {
           "title": "A receipt you can verify",
-          "body": "We don't ask for faith. Every saving is measured with the provider's official meter — the same one they bill you with — and lands on your receipt. Anything that can't be checked against the bill is never announced."
+          "body": "We don't ask for faith. Measured amounts use provider-reported usage and documented prices and appear in your SavingsReport. Reference-valued and estimated amounts are labelled separately; none is presented as invoice-reconciled."
         },
         {
           "title": "Measure free, then pay per seat",
@@ -872,7 +872,7 @@
     "step2": {
       "eyebrow": "No promises: measurements",
       "title": "How do we know it saves? We measure it — and we publish every trial, one by one.",
-      "body": "Every scenario runs twice against the real provider: as-is, and with Savings in front. Both results are counted with the provider's own meter — the same one that prices your bill. Here is what came out, error margin included:",
+      "body": "Every SDK scenario runs twice against the real provider: as-is, and with Savings in front. Both arms are valued from provider-reported usage at versioned list prices, not reconciled with an invoice. Here is what came out, error margin included:",
       "videoCaption": "The test is a fair experiment: the same task twice — without Savings and with Savings — with the provider's own meter counting both.",
       "plainTitle": "Translation, no jargon",
       "plain": "On a stream where {rep} of requests repeat exactly, the bill went down by {punto} — between {bajo} and {alto} with 95% confidence. What you save depends on how much your traffic repeats.",
@@ -883,7 +883,7 @@
       "eyebrow": "Honest accounting",
       "title": "Every kind of saving, counted separately — so no number gets inflated.",
       "body": "Every SavingsReport splits the saving into four ledgers — calls avoided, text removed, text compressed, and your provider's own cache discount — and never adds them up into one marketing number.",
-      "providerNote": "On the public bench ({fecha}), what the installed SDK saved came from the first ledger — repeated requests served without calling the provider — and, on Claude, from the fourth, which is your provider's own discount. The npm package ships no compressor. A ledger with no published figure is described here, not advertised."
+      "providerNote": "On the public bench ({fecha}), what the installed SDK saved came from the first ledger — repeated requests served without calling the provider — and, on Claude, from the fourth through a prefix-cache effect enabled by cache_control in arm B, not a pre-existing provider discount. The npm package ships no compressor. A ledger with no published figure is described here, not advertised."
     },
     "ledgers": [
       {
@@ -1102,7 +1102,7 @@
         "who": "For developers who run Claude Code, Codex CLI or another coding agent on an API key.",
         "what": "One command puts a local meter in front of your terminal, with no code to change. It counts each request your provider reports usage for, with the provider's own counter — for models in our price catalog — and adds it up in your dashboard, by day and by model.",
         "figureLabel": "The figure we publish",
-      "figureQue": "of the bill with PRO's cache downgrade, net of the cache misses it causes ({confianza} interval: {bajo} to {alto}). Simulated at list prices on {sesiones} Claude Code sessions from a single organization, our own.",
+      "figureQue": "estimated net reduction in list-price cost with PRO's cache TTL change, after induced cache misses ({confianza} interval: {bajo} to {alto}). Counterfactual replay with a partially reconstructed baseline on {sesiones} Claude Code sessions from one organization; not a live A/B run or invoice reconciliation.",
         "figureNote": "Not a forecast for your team: it is one organization, one provider and list prices, and it is a small saving that shows where Anthropic spend is high. With PRO, on Anthropic models, it moves cache writes from the one-hour TTL to the five-minute one, only on turns where a large part of the prompt is new — such as a session's first turn or a compaction — and leaves the chained turns of a running session as they are. That changes the price, never what the model reads, and only what your provider's counter confirms counts in your savings report.",
         "benchLink": "The TTL bench report: what was simulated, the per-model breakdown and its limits →",
         "cta": "Set up the gateway"
@@ -1140,9 +1140,9 @@
     },
     "enVivo": {
       "titulo": "Public bench · live against the provider · {fecha}",
-      "conRepeticiones": "less bill (95% interval: {bajo} to {alto}) on a stream where {rep} of requests are exact repeats — {bateria}, SDK {version}",
+      "conRepeticiones": "lower cost at versioned list prices (95% interval: {bajo} to {alto}) on a stream where {rep} of requests are exact repeats — {familias} families / {peticiones} requests per arm, {bateria}, SDK {version}",
       "sinRepeticiones": "on traffic without repeats (MT-Bench, BFCL): indistinguishable from zero",
-      "anthropic": "same stream (95% interval: {bajo} to {alto}). About {prefijo} of the original bill is Anthropic's own prefix-cache discount — the provider's, not ours, and shown apart",
+      "anthropic": "reduced flow, not the OpenAI stream: {familias} families / {peticiones} requests per arm (95% interval: {bajo} to {alto}). About {prefijo} of A's list-price cost is a prefix-cache effect enabled by cache_control in arm B, not a pre-existing Anthropic discount",
       "pie": "It depends on how much your traffic repeats. Every battery, with its full report: <bench>public bench</bench>."
     }
   },
@@ -1195,10 +1195,11 @@
     "method": {
       "title": "What is measured, and how",
       "arms": "<b>Two arms, the same request.</b> A goes straight to the provider, without the layer; B goes through the layer with its default configuration. Same prompt, same sampling, same output cap.",
-      "cost": "<b>The provider counts the cost.</b> Each arm is priced from the <code>usage</code> the API returns on every call, at list price. Savings are 1 − cost(B) / cost(A) of the same run, not what the layer says about itself.",
+      "cost": "<b>Provider-reported usage and versioned list prices.</b> Each arm is valued from the <code>usage</code> returned by the API and a dated list-price catalogue. Savings are 1 − cost(B) / cost(A) of the same run. Amounts are labelled measured, reference-valued or estimated according to their evidence; this is not invoice reconciliation.",
       "intervals": "<b>{nivel} intervals.</b> Each harness computes them (resampling whole question families, Wilson for refusal rates). An interval that crosses zero means “indistinguishable from zero”, and we say so.",
       "package": "<b>The package you install.</b> The A/B runs in the tables below were made on {version}: arm B runs the source of that tag, and its <code>dist/index.js</code> is byte-identical to the npm tarball's (sha256 <code>{sha}</code>). The weekly live bench is different: on every run it measures the source of main as it stands that day, before it is released.",
       "guard": "<b>No shortcuts.</b> Each harness watches the hosts it talks to and carries a per-model spend cap written in code. A model that could not be measured is reported as “not measured”, with the reason.",
+      "paper": "<paper>Read the 17-page research paper (PDF)</paper>: methods, evidence types and limitations, including why the OpenAI ratio 1.05 describes one operating point, not an empirical slope.",
       "batteriesTitle": "Four batteries, public datasets, pinned",
       "commitOnly": "pinned by commit"
     },
@@ -1238,7 +1239,7 @@
         "safe": "safe {d} pp (p = {p})",
         "unsafe": "unsafe {d} pp (p = {p})"
       },
-      "note": "“Layer failures” are errors in arm B that arm A did not have. “B − A” is the accuracy difference in GSM8K and BFCL, the refusal-rate difference in XSTest (McNemar's p, paired prompts) and, in MT-Bench, how often the judge prefers B (one half is a tie). “Report vs invoice” is how far the cost the layer reports for arm B strays from what the provider bills.",
+      "note": "“Layer failures” are errors in arm B that arm A did not have. “B − A” is the accuracy difference in GSM8K and BFCL, the refusal-rate difference in XSTest (McNemar's p, paired prompts) and, in MT-Bench, how often the judge prefers B (one half is a tie). “Report vs list-price cost” compares the layer's reported cost for arm B with the cost independently calculated from provider-reported usage at the same versioned list prices; it is not invoice reconciliation.",
       "earlierTitle": "Earlier weekly runs",
       "earlierOk": "{fecha} · commit {commit} · no regressions.",
       "earlierFailed": "{fecha} · commit {commit} · failed (rules broken: {n}).",
@@ -1276,7 +1277,7 @@
       "layerFails": "Layer failures",
       "counts": "What it counts",
       "diff": "B − A",
-      "reportVsInvoice": "Report vs invoice"
+      "reportVsInvoice": "Report vs list-price cost"
     },
     "savings": {
       "title": "Measured savings per model",
@@ -1288,7 +1289,7 @@
     },
     "gatewayTtl": {
       "title": "The gateway's cache downgrade: a simulation, not an A/B",
-      "kind": "This section is not one of the A/B batteries on this page and it is <b>not measured live</b>: it is a <b>replay</b>. We took the usage the provider had already reported for real Claude Code sessions from <b>a single organization, our own</b>, against a single provider (Anthropic), and computed at <b>list prices</b> what they would have cost with PRO's cache downgrade and without it.",
+      "kind": "This is a <b>counterfactual replay</b> with a <b>partially reconstructed baseline</b>, not one of this page's live A/B batteries. We took provider-reported usage from real Claude Code sessions at <b>a single organization, our own</b>, with one provider (Anthropic), and estimated costs at <b>versioned list prices</b> with and without PRO's cache TTL change. It is not a live double-run or invoice reconciliation.",
       "verdict": "The verdict of the {fecha} report: the downgrade leaves a <b>net {neto} of the bill</b> ({netoUsd} out of {factura}), after subtracting the cache misses it causes itself.",
       "stat": {
         "sessions": "Sessions",
@@ -1450,7 +1451,7 @@
         "dataset": "<b>The dataset.</b> Download each public dataset at the commit in the table above and check every file's sha256 before using it. If it does not match, it is not the same dataset.",
         "package": "<b>The layer.</b> Install <code>@bivelio/savings-layer</code> from npm at the version the report names and check the sha256 of <code>dist/index.js</code>: every report carries its own.",
         "arms": "<b>Two arms per prompt.</b> A goes straight to the provider; B sends the same prompt, to the same model and with the same output cap, through the layer with its default configuration. Part of the prompts are repeated or paraphrased, as in real traffic, and the A/B order is randomised.",
-        "cost": "<b>The provider states the cost.</b> Add up what each arm is billed according to the <code>usage</code> the provider returns, at its published price. Savings are <code>1 − cost B / cost A</code>, with their interval.",
+        "cost": "<b>Usage and list prices document the valuation.</b> Add each arm's cost from provider-reported <code>usage</code> at the versioned list price. Savings are <code>1 − cost B / cost A</code>, with their interval; this is not invoice reconciliation.",
         "compare": "<b>Quality, in the same run.</b> Score both arms' answers the same way (exact answer in GSM8K, tool call in BFCL, refusal or not in XSTest, a judge in MT-Bench) and compare them with the JSON report for the same battery and version."
       },
       "reportsTitle": "The reports",

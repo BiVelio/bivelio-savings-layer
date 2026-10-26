@@ -8,8 +8,9 @@ import { PALANCA_TTL } from "@/lib/portada/palanca-ttl";
  * LO MEDIDO EN VIVO, UNA SOLA VEZ PARA TODA LA WEB.
  *
  * La portada (héroe, tarjeta del SDK, #measured) y el panel (/dashboard/proof)
- * enseñan las mismas filas: con repeticiones (OpenAI) y el mismo flujo en
- * Claude, con la caché de prefijo del proveedor dicha aparte. La fila «sin
+ * enseñan las mismas filas: OpenAI con 100 familias y Claude con un flujo
+ * reducido distinto de 31, con el efecto de cache_control habilitado en B dicho
+ * aparte. La fila «sin
  * repeticiones (≈ 0)» ya no sale en la portada (dueño, 2026-10-02: «sinceros
  * pero no tontos»): la ve quien la pide (el panel) y vive entera en
  * /benchmarks con su informe.
@@ -38,6 +39,7 @@ export function filasDelBancoEnVivo(
   // las cifras con intervalo, ninguna para las redondas (30 %, 0 %, 41 %).
   const pct1 = new Intl.NumberFormat(locale, { style: "percent", minimumFractionDigits: 1, maximumFractionDigits: 1 });
   const pct0 = new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 0 });
+  const ent = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 });
   const V = BANCO_EN_VIVO;
   const modeloCorto = (m: string) => m.split("/").pop() ?? m;
   return [
@@ -49,6 +51,8 @@ export function filasDelBancoEnVivo(
         bajo: pct1.format(V.openai.ahorro.lower),
         alto: pct1.format(V.openai.ahorro.upper),
         rep: pct0.format(V.repeticiones),
+        familias: ent.format(V.openai.familias),
+        peticiones: ent.format(V.openai.peticionesPorBrazo),
         bateria: V.bateria,
         version: V.versionSdk,
       }),
@@ -62,27 +66,30 @@ export function filasDelBancoEnVivo(
         bajo: pct1.format(V.anthropic.ahorro.lower),
         alto: pct1.format(V.anthropic.ahorro.upper),
         prefijo: pct0.format(V.anthropic.prefijoDelProveedor),
+        familias: ent.format(V.anthropic.familias),
+        peticiones: ent.format(V.anthropic.peticionesPorBrazo),
       }),
     },
   ];
 }
 
 /**
- * La fila de la tarjeta del GATEWAY: el neto de la rebaja de caché de PRO, con
- * su intervalo y su condición (replay a precio de lista, una organización). Las
- * cifras salen de lib/portada/palanca-ttl.ts, con verja contra el informe del
- * banco de TTL; el texto, de `landing.offers.gateway.figureQue`, sin dígitos.
+ * La fila de la tarjeta del GATEWAY: el neto estimado de la rebaja de caché de
+ * PRO, con dos decimales y su condición (replay contrafactual a precio de lista,
+ * línea base parcialmente reconstruida, una organización). Las cifras salen de
+ * lib/portada/palanca-ttl.ts, con verja contra el informe del banco de TTL; el
+ * texto, de `landing.offers.gateway.figureQue`, sin dígitos.
  */
 export function filaDeLaPalancaTtl(t: TraductorLanding, locale: string): FilaMedida {
-  const pct1 = new Intl.NumberFormat(locale, { style: "percent", minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const pct2 = new Intl.NumberFormat(locale, { style: "percent", minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const pct0 = new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 0 });
   const P = PALANCA_TTL;
   return {
     marca: "Anthropic",
-    cifra: pct1.format(P.neto.point),
+    cifra: pct2.format(P.neto.point),
     que: t("offers.gateway.figureQue", {
-      bajo: pct1.format(P.neto.lower),
-      alto: pct1.format(P.neto.upper),
+      bajo: pct2.format(P.neto.lower),
+      alto: pct2.format(P.neto.upper),
       confianza: pct0.format(P.confianza),
       sesiones: P.sesiones,
     }),

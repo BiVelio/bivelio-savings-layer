@@ -176,9 +176,10 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
   const pct0 = new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 0 });
   const V = BANCO_EN_VIVO;
   const rep = pct0.format(V.repeticiones);
-  // Las filas de lo medido: con repeticiones (OpenAI) y el mismo flujo en
-  // Claude, con la parte de la caché del proveedor dicha aparte. Cada cifra con
-  // su intervalo y su flujo; ninguna con un «al menos». La fila «sin
+  // Las filas de lo medido: OpenAI con 100 familias y Claude con un flujo
+  // reducido distinto de 31, con el efecto de cache_control habilitado en B
+  // dicho aparte. Cada cifra con su intervalo y su flujo; ninguna con un
+  // «al menos». La fila «sin
   // repeticiones ≈ 0» salió de la portada (dueño, 2026-10-02): sigue entera en
   // /benchmarks, y la frase de «depende de cuánto repita tu tráfico» se queda.
   const filasMedidas: FilaMedida[] = filasDelBancoEnVivo(t, locale);
