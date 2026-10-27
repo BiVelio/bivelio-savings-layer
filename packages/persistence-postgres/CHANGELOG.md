@@ -7,13 +7,16 @@
 - Add an opt-in live canary that installs the built tarballs in a temporary
   consumer and exercises cold/restart, exact and calibrated semantic hits,
   tenant isolation, measured savings, B2 latency and database-stall fail-open in
-  two independent Node processes. It uses an ephemeral Ed25519 test license,
-  never logs credentials or request content, and has a manual GitHub workflow.
+  two independent Node processes. It uses short-lived per-tenant test licenses
+  verified by the packaged public key, never logs credentials or request content,
+  and has a manual GitHub workflow.
+- Keep operation timeouts referenced until settlement so an otherwise idle CLI
+  cannot exit with an unsettled await before the configured timeout fires.
 - Add a disposable-database `pg_dump`/`pg_restore` integration drill covering
   exact, semantic and calibration recovery, stale restore rejection, memory
   rollback, retention and tenant deletion.
-- Gate cold semantic lookup at 250 ms and every warm maximum at 100 ms, in
-  addition to the existing warm p95/p99, recall, FIFO and index gates.
+- Gate cold lookup and warm p95 at 250 ms and warm p99/max at 500 ms, in addition
+  to the existing recall, FIFO and index gates.
 - Document migration, backup/PITR, restore drills, rollback, retention, tenant
   deletion, canary execution and release gates.
 

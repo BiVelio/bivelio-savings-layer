@@ -92,11 +92,25 @@ function request(text, tenant, exact = true) {
   };
 }
 
+function isTransientPostgresError(error) {
+  const code = error && typeof error === "object" && "code" in error ? error.code : undefined;
+  return ["25P03", "57P01", "ECONNRESET"].includes(code);
+}
+
 async function invoke(payload) {
   const before = providerCalls;
   const started = performance.now();
-  const activeLayer = await layerFor(payload.context.tenantId);
-  const result = await activeLayer.generate(payload);
+  let result;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    try {
+      const activeLayer = await layerFor(payload.context.tenantId);
+      result = await activeLayer.generate(payload);
+      break;
+    } catch (error) {
+      if (providerCalls !== before || !isTransientPostgresError(error) || attempt === 4) throw error;
+      await ensurePostgresReady();
+    }
+  }
   const elapsed = performance.now() - started;
   const summary = {
     cache: result.report.cache.result,
@@ -149,8 +163,7 @@ async function ensurePostgresReady() {
       await pool.query("SELECT 1");
       return;
     } catch (error) {
-      const code = error && typeof error === "object" && "code" in error ? error.code : undefined;
-      if (!["25P03", "57P01", "ECONNRESET"].includes(code) || attempt === 4) throw error;
+      if (!isTransientPostgresError(error) || attempt === 4) throw error;
       await new Promise((resolve) => setTimeout(resolve, 200 * 2 ** attempt));
     }
   }
@@ -166,6 +179,8 @@ try {
     idle_in_transaction_session_timeout: 1_000,
     keepAlive: true
   });
+  pool.on("error", () => {});
+  pool.on("connect", (client) => client.on("error", () => {}));
   await ensurePostgresReady();
   if (phase === "cold") {
     for (const file of ["001_exact_and_breakpoints.sql", "002_semantic_cache.sql"]) {
@@ -236,6 +251,7 @@ try {
 
     const lock = await pool.connect();
     try {
+      await lock.query("SELECT set_config('idle_in_transaction_session_timeout', '0', false)");
       await lock.query("BEGIN");
       await lock.query("LOCK TABLE bivelio_savings.exact_cache_entries, bivelio_savings.semantic_cache_records, bivelio_savings.semantic_calibrations, bivelio_savings.semantic_calibration_observations IN ACCESS EXCLUSIVE MODE");
       for (const stalled of [originalA, originalB]) {
@@ -251,18 +267,32 @@ try {
   }
 
   await Promise.all([...layers.values()].map((activeLayer) => activeLayer.close()));
-  await pool.end();
+  await closePool();
   await writeFile(resultPath, JSON.stringify({ ok: true, phase, records, baselineHash, providerCalls }));
 } catch (error) {
   const errorName = error && typeof error === "object" && "constructor" in error && typeof error.constructor === "function"
     ? error.constructor.name
     : "Error";
   const providerStatus = error instanceof Error ? /provider (\d{3})/.exec(error.message)?.[1] ?? null : null;
-  const diagnostic = error instanceof ReferenceError || error instanceof TypeError || (error && typeof error === "object" && "status" in error) ? error.message : null;
+  const errorCode = error && typeof error === "object" && "code" in error && typeof error.code === "string" ? error.code : null;
+  const safeOperationalError = error instanceof Error && /^PostgreSQL (operation timed out after \d+ ms|pool close timed out)$/.test(error.message);
+  const diagnostic = error instanceof ReferenceError || error instanceof TypeError || safeOperationalError || (error && typeof error === "object" && "status" in error) ? error.message : null;
+  try { await writeFile(resultPath, JSON.stringify({ ok: false, phase, errorName, errorCode, providerStatus, diagnostic, records, providerCalls })); } catch {}
   try { await Promise.all([...layers.values()].map((activeLayer) => activeLayer.close())); } catch {}
-  try { await pool?.end(); } catch {}
-  try { await writeFile(resultPath, JSON.stringify({ ok: false, phase, errorName, providerStatus, diagnostic, records, providerCalls })); } catch {}
+  try { await closePool(); } catch {}
   process.exitCode = 1;
+}
+
+async function closePool() {
+  let timer;
+  try {
+    await Promise.race([
+      pool?.end(),
+      new Promise((_, reject) => { timer = setTimeout(() => reject(new Error("PostgreSQL pool close timed out")), 1_000); })
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
 }
 `;
 
@@ -283,6 +313,7 @@ interface WorkerResult {
   ok: boolean;
   phase: string;
   errorName?: string;
+  errorCode?: string | null;
   providerStatus?: string | null;
   diagnostic?: string | null;
   records: WorkerRecord[];
@@ -351,10 +382,11 @@ async function main(): Promise<void> {
       } catch (caught) {
         const failure = JSON.parse(await readFile(resultPath, "utf8").catch(() => "{}")) as Partial<WorkerResult>;
         const name = failure.errorName ? ` (${failure.errorName})` : "";
+        const code = failure.errorCode ? ` SQLSTATE ${failure.errorCode}` : "";
         const status = failure.providerStatus ? ` provider ${failure.providerStatus}` : "";
         const detail = failure.diagnostic ?? (caught instanceof Error ? caught.message : "unknown worker error");
         const completed = failure.records?.length ?? 0;
-        throw new Error(`${phase} packaged worker failed after ${completed} requests${name}${status}: ${detail}`);
+        throw new Error(`${phase} packaged worker failed after ${completed} requests${name}${code}${status}: ${detail}`);
       }
       const result = JSON.parse(await readFile(resultPath, "utf8")) as WorkerResult;
       if (!result.ok) throw new Error(`${phase} packaged worker failed its gates`);
