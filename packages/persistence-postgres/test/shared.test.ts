@@ -1,3 +1,5 @@
+import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it, vi } from "vitest";
 import { canonicalize } from "../../../src/canonicalization/canonicalize.js";
 import type { SavingsRequest } from "../../../src/contracts/types.js";
@@ -28,6 +30,23 @@ describe("shared PostgreSQL behavior", () => {
     const cache = new PgExactCache({ pool, queryTimeoutMs: 5 });
 
     await expect(cache.get("key")).rejects.toThrow("timed out after 5 ms");
+  });
+
+  it("keeps the timeout alive in an otherwise idle process", () => {
+    const modulePath = JSON.stringify(fileURLToPath(new URL("../src/index.ts", import.meta.url)));
+    const root = fileURLToPath(new URL("../../..", import.meta.url));
+    const result = spawnSync(process.execPath, [
+      "--import", "tsx", "--input-type=module", "--eval",
+      `import { PgExactCache } from ${modulePath};
+       const cache = new PgExactCache({ pool: { query: () => new Promise(() => undefined), end: async () => undefined }, queryTimeoutMs: 20 });
+       await cache.get("key").then(() => { throw new Error("expected timeout"); }, (error) => {
+         if (!error.message.includes("timed out after 20 ms")) throw error;
+         console.log("timeout-observed");
+       });`,
+    ], { cwd: root, encoding: "utf8", timeout: 5_000 });
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain("timeout-observed");
   });
 
   it("propagates a query rejection before the timeout", async () => {

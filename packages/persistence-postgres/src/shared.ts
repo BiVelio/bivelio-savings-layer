@@ -146,7 +146,6 @@ export abstract class PgStore {
       timer = setTimeout(() => {
         reject(new Error(`PostgreSQL operation timed out after ${this.queryTimeoutMs} ms`));
       }, this.queryTimeoutMs);
-      timer.unref();
     });
     try {
       return await Promise.race([pending, timeout]);
