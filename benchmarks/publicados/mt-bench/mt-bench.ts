@@ -1161,7 +1161,10 @@ export async function juzgarPregunta(
       if (e instanceof PresupuestoAgotado) return "sin presupuesto";
       throw e;
     }
-    if (!res.ok) return "error";
+    if (!res.ok) {
+      console.error(`MT-Bench: juez HTTP ${res.status} (${cred.juez.modelo})`);
+      return "error";
+    }
     const j = (await res.json()) as { choices?: { message?: { content?: string } }[] };
     return leerVeredicto(j.choices?.[0]?.message?.content ?? "");
   };

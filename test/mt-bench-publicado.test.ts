@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import { juzgarPregunta } from "../benchmarks/publicados/mt-bench/mt-bench.js";
 import {
   CATEGORIAS,
   DATASET,
@@ -121,6 +122,40 @@ describe("MT-Bench: juez de pares con posiciones intercambiadas", () => {
     expect(leerVeredicto("bla [[B]]")).toBe("B");
     expect(leerVeredicto("bla [[C]]")).toBe("empate");
     expect(leerVeredicto("sin formato")).toBe("error");
+  });
+
+  it("diagnostica el HTTP del juez sin exponer el cuerpo", async () => {
+    const prompts = new Map<string, PromptDelJuez>([
+      ["pair-v2", { name: "pair-v2", type: "pairwise", output_format: "[[A]]", system_prompt: "judge", prompt_template: "{question} {answer_a} {answer_b}" }],
+      ["pair-v2-multi-turn", { name: "pair-v2-multi-turn", type: "pairwise", output_format: "[[A]]", system_prompt: "judge", prompt_template: "{question_1} {answer_a_1} {answer_b_1} {question_2} {answer_a_2} {answer_b_2}" }],
+    ]);
+    const pregunta: Pregunta = { id: 81, categoria: "writing", turnos: ["q1", "q2"] };
+    const resultado = {
+      A: [{ texto: "a1" }, { texto: "a2" }],
+      B: [{ texto: "b1" }, { texto: "b2" }],
+    } as Parameters<typeof juzgarPregunta>[0];
+    const dataset: Parameters<typeof juzgarPregunta>[2] = {
+      origen: "sintetico-mock", preguntas: [pregunta], referencias: new Map(), prompts,
+    };
+    const credenciales = { juez: { base: "https://juez.invalid/v1", clave: "test-secret", modelo: "openai/gpt-4o" } } as Parameters<typeof juzgarPregunta>[3];
+    const diagnostico = vi.spyOn(console, "error").mockImplementation(() => {});
+    let llamadas = 0;
+    try {
+      const juicios = await juzgarPregunta(
+        resultado, pregunta, dataset, credenciales, new Tope("juez", 1, () => {}),
+        { inputPer1k: 0.001, outputPer1k: 0.005 },
+        async () => { llamadas++; return new Response("provider-secret-body", { status: 401 }); },
+        true,
+      );
+
+      expect(juicios.every((juicio) => juicio.ganador === "error")).toBe(true);
+      expect(llamadas).toBe(4);
+      expect(diagnostico).toHaveBeenCalledTimes(4);
+      expect(diagnostico.mock.calls.every(([mensaje]) => mensaje === "MT-Bench: juez HTTP 401 (openai/gpt-4o)")).toBe(true);
+      expect(JSON.stringify(diagnostico.mock.calls)).not.toContain("secret");
+    } finally {
+      diagnostico.mockRestore();
+    }
   });
 
   it("traduce la segunda partida a brazos y declara empate si discrepan", () => {
