@@ -180,6 +180,7 @@ try {
     keepAlive: true
   });
   pool.on("error", () => {});
+  pool.on("connect", (client) => client.on("error", () => {}));
   await ensurePostgresReady();
   if (phase === "cold") {
     for (const file of ["001_exact_and_breakpoints.sql", "002_semantic_cache.sql"]) {
