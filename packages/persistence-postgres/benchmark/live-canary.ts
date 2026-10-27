@@ -266,7 +266,7 @@ try {
   }
 
   await Promise.all([...layers.values()].map((activeLayer) => activeLayer.close()));
-  await pool.end();
+  await closePool();
   await writeFile(resultPath, JSON.stringify({ ok: true, phase, records, baselineHash, providerCalls }));
 } catch (error) {
   const errorName = error && typeof error === "object" && "constructor" in error && typeof error.constructor === "function"
@@ -275,10 +275,22 @@ try {
   const providerStatus = error instanceof Error ? /provider (\d{3})/.exec(error.message)?.[1] ?? null : null;
   const errorCode = error && typeof error === "object" && "code" in error && typeof error.code === "string" ? error.code : null;
   const diagnostic = error instanceof ReferenceError || error instanceof TypeError || (error && typeof error === "object" && "status" in error) ? error.message : null;
-  try { await Promise.all([...layers.values()].map((activeLayer) => activeLayer.close())); } catch {}
-  try { await pool?.end(); } catch {}
   try { await writeFile(resultPath, JSON.stringify({ ok: false, phase, errorName, errorCode, providerStatus, diagnostic, records, providerCalls })); } catch {}
+  try { await Promise.all([...layers.values()].map((activeLayer) => activeLayer.close())); } catch {}
+  try { await closePool(); } catch {}
   process.exitCode = 1;
+}
+
+async function closePool() {
+  let timer;
+  try {
+    await Promise.race([
+      pool?.end(),
+      new Promise((_, reject) => { timer = setTimeout(() => reject(new Error("PostgreSQL pool close timed out")), 1_000); })
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
 }
 `;
 
