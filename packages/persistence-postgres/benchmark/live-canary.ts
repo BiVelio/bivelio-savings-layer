@@ -92,11 +92,25 @@ function request(text, tenant, exact = true) {
   };
 }
 
+function isTransientPostgresError(error) {
+  const code = error && typeof error === "object" && "code" in error ? error.code : undefined;
+  return ["25P03", "57P01", "ECONNRESET"].includes(code);
+}
+
 async function invoke(payload) {
   const before = providerCalls;
   const started = performance.now();
-  const activeLayer = await layerFor(payload.context.tenantId);
-  const result = await activeLayer.generate(payload);
+  let result;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    try {
+      const activeLayer = await layerFor(payload.context.tenantId);
+      result = await activeLayer.generate(payload);
+      break;
+    } catch (error) {
+      if (providerCalls !== before || !isTransientPostgresError(error) || attempt === 4) throw error;
+      await ensurePostgresReady();
+    }
+  }
   const elapsed = performance.now() - started;
   const summary = {
     cache: result.report.cache.result,
@@ -149,8 +163,7 @@ async function ensurePostgresReady() {
       await pool.query("SELECT 1");
       return;
     } catch (error) {
-      const code = error && typeof error === "object" && "code" in error ? error.code : undefined;
-      if (!["25P03", "57P01", "ECONNRESET"].includes(code) || attempt === 4) throw error;
+      if (!isTransientPostgresError(error) || attempt === 4) throw error;
       await new Promise((resolve) => setTimeout(resolve, 200 * 2 ** attempt));
     }
   }
@@ -166,6 +179,7 @@ try {
     idle_in_transaction_session_timeout: 1_000,
     keepAlive: true
   });
+  pool.on("error", () => {});
   await ensurePostgresReady();
   if (phase === "cold") {
     for (const file of ["001_exact_and_breakpoints.sql", "002_semantic_cache.sql"]) {
