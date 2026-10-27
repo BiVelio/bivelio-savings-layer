@@ -272,10 +272,11 @@ try {
     ? error.constructor.name
     : "Error";
   const providerStatus = error instanceof Error ? /provider (\d{3})/.exec(error.message)?.[1] ?? null : null;
+  const errorCode = error && typeof error === "object" && "code" in error && typeof error.code === "string" ? error.code : null;
   const diagnostic = error instanceof ReferenceError || error instanceof TypeError || (error && typeof error === "object" && "status" in error) ? error.message : null;
   try { await Promise.all([...layers.values()].map((activeLayer) => activeLayer.close())); } catch {}
   try { await pool?.end(); } catch {}
-  try { await writeFile(resultPath, JSON.stringify({ ok: false, phase, errorName, providerStatus, diagnostic, records, providerCalls })); } catch {}
+  try { await writeFile(resultPath, JSON.stringify({ ok: false, phase, errorName, errorCode, providerStatus, diagnostic, records, providerCalls })); } catch {}
   process.exitCode = 1;
 }
 `;
@@ -297,6 +298,7 @@ interface WorkerResult {
   ok: boolean;
   phase: string;
   errorName?: string;
+  errorCode?: string | null;
   providerStatus?: string | null;
   diagnostic?: string | null;
   records: WorkerRecord[];
@@ -365,10 +367,11 @@ async function main(): Promise<void> {
       } catch (caught) {
         const failure = JSON.parse(await readFile(resultPath, "utf8").catch(() => "{}")) as Partial<WorkerResult>;
         const name = failure.errorName ? ` (${failure.errorName})` : "";
+        const code = failure.errorCode ? ` SQLSTATE ${failure.errorCode}` : "";
         const status = failure.providerStatus ? ` provider ${failure.providerStatus}` : "";
         const detail = failure.diagnostic ?? (caught instanceof Error ? caught.message : "unknown worker error");
         const completed = failure.records?.length ?? 0;
-        throw new Error(`${phase} packaged worker failed after ${completed} requests${name}${status}: ${detail}`);
+        throw new Error(`${phase} packaged worker failed after ${completed} requests${name}${code}${status}: ${detail}`);
       }
       const result = JSON.parse(await readFile(resultPath, "utf8")) as WorkerResult;
       if (!result.ok) throw new Error(`${phase} packaged worker failed its gates`);
