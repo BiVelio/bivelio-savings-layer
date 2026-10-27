@@ -251,6 +251,7 @@ try {
 
     const lock = await pool.connect();
     try {
+      await lock.query("SELECT set_config('idle_in_transaction_session_timeout', '0', false)");
       await lock.query("BEGIN");
       await lock.query("LOCK TABLE bivelio_savings.exact_cache_entries, bivelio_savings.semantic_cache_records, bivelio_savings.semantic_calibrations, bivelio_savings.semantic_calibration_observations IN ACCESS EXCLUSIVE MODE");
       for (const stalled of [originalA, originalB]) {
