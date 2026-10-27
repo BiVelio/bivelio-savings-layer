@@ -190,6 +190,31 @@ describe("BFCL · presupuesto y cable", () => {
     expect(JSON.stringify(reg)).not.toMatch(/secret|Bearer/);
   });
 
+  it("no reintenta un 429 por saldo agotado", async () => {
+    let llamadas = 0;
+    const cable = crearCable({
+      familia: "openai",
+      presupuesto: new Presupuesto("m", 1),
+      precio,
+      prima: 1,
+      semaforo: new Semaforo(1),
+      pausasMs: [1, 1],
+      dormir: async () => { throw new Error("no debe esperar"); },
+      base: async () => {
+        llamadas++;
+        return new Response('{"error":{"code":"credit_balance_exhausted"}}', { status: 429 });
+      },
+    });
+    const reg: LlamadaDelCable[] = [];
+    const response = await unidadEnCurso.run({ unidad: "u", brazo: "A", registro: reg }, () =>
+      cable("https://api.openai.com/v1/chat/completions", { method: "POST", body: "{}" }),
+    );
+
+    expect(response.status).toBe(429);
+    expect(llamadas).toBe(1);
+    expect(reg[0]!.intentos).toBe(1);
+  });
+
   // Run 36771607171: dos llamadas de gemini-3.1-pro-preview se colgaron 180 s
   // (parallel_multiple_133, parallel_196) y, sin reintento de transporte, salieron
   // como «arm B failed» → `capa-falla`. El plazo es el mismo en los dos brazos

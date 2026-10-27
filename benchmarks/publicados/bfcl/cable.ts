@@ -13,7 +13,8 @@
  * al volver, el coste se calcula del `usage` CRUDO del proveedor con el precio
  * de lista del catálogo — la misma aritmética para los dos brazos, sin leer
  * nada del informe de la capa; (3) 429/5xx/529 se reintentan con espera
- * exponencial (respetando `retry-after`), igual para los dos brazos.
+ * exponencial (respetando `retry-after`), igual para los dos brazos, salvo un
+ * saldo agotado explícito: reintentarlo no puede producir una respuesta válida.
  *
  * Lo que se guarda de cada llamada es el CUERPO de la petición y de la
  * respuesta; nunca las cabeceras, que es donde viaja la clave.
@@ -340,7 +341,8 @@ export function crearCable(o: OpcionesDelCable): typeof fetch {
       const transcurrido = ahora() - inicioProveedor;
       providerMs += transcurrido;
       if (ctx?.medicion) ctx.medicion.providerMs += transcurrido;
-      if (!REINTENTABLE.has(resp.status) || intentos > pausas.length) break;
+      const saldoAgotado = resp.status === 429 && /credit_balance_exhausted|no credits remaining/i.test(texto);
+      if (saldoAgotado || !REINTENTABLE.has(resp.status) || intentos > pausas.length) break;
       const ra = Number(resp.headers.get("retry-after"));
       const pausa = Math.min(60_000, Math.max(pausas[intentos - 1]!, Number.isFinite(ra) ? ra * 1000 : 0));
       await dormir(pausa * (0.75 + Math.random() * 0.5));
