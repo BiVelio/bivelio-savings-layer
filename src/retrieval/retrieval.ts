@@ -85,10 +85,12 @@ export function adaptiveK(
 /**
  * Execute a retrieval plan. NO_RETRIEVAL / TOOL_ACTION classes retrieve nothing.
  * Otherwise: retrieve -> dedupe -> rerank -> adaptive-k, bounded by maxRounds.
+ * The optional guard runs before and after each external dependency call.
  */
 export async function executeRetrievalPlan(
   plan: RetrievalPlan,
   deps: { retriever?: Retriever; reranker?: Reranker },
+  antesDeLlamada: () => void = () => {},
 ): Promise<RetrievalOutcome> {
   if (
     plan.execution === "NO_RETRIEVAL" ||
@@ -105,13 +107,19 @@ export async function executeRetrievalPlan(
 
   let all: EvidenceDoc[] = [];
   for (let r = 0; r < rounds; r++) {
+    antesDeLlamada();
     const fetched = await deps.retriever.retrieve(plan.query, plan.maxDocuments * 2);
+    antesDeLlamada();
     all.push(...fetched);
   }
   const retrievedCount = all.length;
 
   all = dedupe(all);
-  if (deps.reranker) all = await deps.reranker.rerank(plan.query, all);
+  if (deps.reranker) {
+    antesDeLlamada();
+    all = await deps.reranker.rerank(plan.query, all);
+    antesDeLlamada();
+  }
   const kept = adaptiveK(all, { maxDocuments: plan.maxDocuments });
 
   return {

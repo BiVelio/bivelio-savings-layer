@@ -100,6 +100,7 @@ export type {
   SavingsCallOptions,
   SavingsReport,
   SavingsRequest,
+  SavingsRequestOptions,
   SavingsResult,
   SavingsStream,
   SavingsStreamEvent,
@@ -302,6 +303,7 @@ export {
   BatchSubmitError,
   createSavingsLayer,
   DEFAULT_COST_MODEL,
+  RequestTimeoutError,
   StreamAbortedError,
 } from "./pipeline/index.js";
 export type {

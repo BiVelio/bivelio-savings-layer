@@ -1,4 +1,26 @@
 /**
+ * The total request deadline expired. No partial result or zero-cost report is
+ * returned: tokens already sent to the provider may still appear on its invoice.
+ */
+export class RequestTimeoutError extends Error {
+  readonly code = "REQUEST_TIMEOUT";
+  /** True when at least one provider request had already been sent. */
+  readonly requestSent: boolean;
+  readonly timeoutMs: number;
+
+  constructor(requestSent: boolean, timeoutMs: number) {
+    super(
+      requestSent
+        ? `[bvsala] request exceeded its ${timeoutMs} ms total deadline after a provider request was sent; partial provider usage may be billed and no response was cached`
+        : `[bvsala] request exceeded its ${timeoutMs} ms total deadline before any provider request was sent`,
+    );
+    this.name = "RequestTimeoutError";
+    this.requestSent = requestSent;
+    this.timeoutMs = timeoutMs;
+  }
+}
+
+/**
  * Rejection of `SavingsStream.result` when the stream was aborted before the
  * provider finished its answer. Nothing was cached and no usage was recorded.
  */

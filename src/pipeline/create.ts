@@ -3,6 +3,7 @@ import { MODELS_BY_ENCODING, registerExactTokenizer } from "../tokenizer/exact.j
 import { avisarUnaVez } from "../util/warn-once.js";
 import type {
   SavingsRequest,
+  SavingsRequestOptions,
   SavingsResult,
   SavingsStream,
   SavingsStreamOptions,
@@ -73,7 +74,7 @@ const AVISO_TOKENIZADOR =
 
 /** The public handle returned by {@link createSavingsLayer}. */
 export interface SavingsLayer {
-  generate<T = unknown>(request: SavingsRequest): Promise<SavingsResult<T>>;
+  generate<T = unknown>(request: SavingsRequest, options?: SavingsRequestOptions): Promise<SavingsResult<T>>;
   /**
    * Same request as generate(), delivered as a stream of events.
    *
@@ -458,12 +459,14 @@ export function createSavingsLayer(
     // `pipeline` NO se expone: layer.pipeline.generateOptimized() corría el
     // optimizador entero saltándose assertLicensed(). El único punto de entrada
     // público es generate(), que sí gatea.
-    generate: async <T = unknown>(request: SavingsRequest): Promise<SavingsResult<T>> => {
-      // La primera petición espera a que el exacto esté (o no) cargado: sin esto
-      // la primera medición de cada proceso saldría con el heurístico aunque el
-      // peer estuviera instalado. Es un `import` local, sin red: milisegundos.
+    generate: async <T = unknown>(
+      request: SavingsRequest,
+      options: SavingsRequestOptions = {},
+    ): Promise<SavingsResult<T>> => {
+      // La espera del exacto entra en el deadline: el pipeline arranca su reloj
+      // antes de aguardarla, en la entrada pública de la petición.
+      const result = await pipeline.generate<T>(request, options, exactoListo);
       const exacto = await exactoListo;
-      const result = await pipeline.generate<T>(request);
       // Después de la petición, no antes: un llamante sin licencia debe ver el
       // error de licencia, no un aviso sobre el tokenizador.
       if (!exacto && MODELOS_CON_EXACTO.has(request.model)) {

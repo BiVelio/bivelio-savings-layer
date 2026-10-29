@@ -827,10 +827,29 @@ export type SavingsStreamEvent<T = unknown> =
   /** Always the last event, exactly once. `result` is the same object `SavingsStream.result` resolves to. */
   | { type: "done"; result: SavingsResult<T> };
 
+/** Optional cancellation and total-deadline controls for one request. */
+export interface SavingsRequestOptions {
+  /** Cancels this request without cancelling other users of the same layer. */
+  signal?: AbortSignal;
+  /**
+   * Total budget from the public entry point until the answer is delivered, in
+   * milliseconds. It must be a positive finite integer no greater than
+   * 2,147,483,647 (about 24.8 days), the largest portable `setTimeout` delay.
+   *
+   * Expiry aborts the provider signal and throws `RequestTimeoutError`. A custom
+   * provider that ignores that signal is awaited until its work stops; if it never
+   * stops, rejection is delayed indefinitely too. No late cache or learning write
+   * is started after the provider finally settles.
+   */
+  requestTimeoutMs?: number;
+}
+
 /** Options for `generateStream`. */
-export interface SavingsStreamOptions {
+export interface SavingsStreamOptions extends SavingsRequestOptions {
   /** Aborting it has the same effect as calling `abort()` on the stream. */
   signal?: AbortSignal;
+  /** Total budget for this stream; see `SavingsRequestOptions.requestTimeoutMs`. */
+  requestTimeoutMs?: number;
 }
 
 /**
