@@ -6,6 +6,7 @@ import {
   herramientasSinParametros,
   sinContrato,
 } from "./atestado-del-cable.js";
+import { comprobarSenalDeProvider } from "./abort.js";
 import { apiOficialDe, origenDeLaUrl } from "./origen-oficial.js";
 import { HERRAMIENTA_DE_BUSQUEDA } from "../router/busqueda-nativa.js";
 import { instruccionDeJsonPorPrompt } from "./json-por-prompt.js";
@@ -326,7 +327,7 @@ export class AnthropicProvider implements Provider {
     // stream aparecería como una llamada a herramienta. generate() ya sabe
     // convertirla en texto; el pipeline, además, entrega esas peticiones enteras.
     if (req.schema != null || req.deferrable === true) {
-      const r = await this.generate(req);
+      const r = await this.generate(req, options);
       if (r.text !== "") yield { type: "text", delta: r.text };
       yield { type: "done", response: r };
       return;
@@ -584,6 +585,7 @@ export class AnthropicProvider implements Provider {
 
   // El POST a `/messages`, compartido por generate() y generateStream().
   private async enviar(body: Record<string, unknown>, signal?: AbortSignal): Promise<Response> {
+    comprobarSenalDeProvider(signal);
     const base = (this.opts.baseUrl ?? "https://api.anthropic.com/v1").replace(/\/$/, "");
     return await this.fetchImpl(`${base}/messages`, {
       method: "POST",

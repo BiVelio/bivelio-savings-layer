@@ -1,4 +1,5 @@
 import { atestiguar, atestiguarOrigen, avisarDelProveedor, declararOrigen, sinContrato } from "./atestado-del-cable.js";
+import { comprobarSenalDeProvider } from "./abort.js";
 import { apiOficialDe, origenDeLaUrl } from "./origen-oficial.js";
 import { sseMessages } from "./sse.js";
 import { TIER_DIFERIBLE_OPENAI } from "../economics/tier-diferido.js";
@@ -233,6 +234,7 @@ export class GoogleProvider implements Provider {
     stream: boolean,
     signal: AbortSignal | undefined,
   ): Promise<Response> {
+    comprobarSenalDeProvider(signal);
     const metodo = stream ? "streamGenerateContent?alt=sse" : "generateContent";
     return await this.fetchImpl(`${this.base}/models/${encodeURIComponent(model)}:${metodo}`, {
       method: "POST",

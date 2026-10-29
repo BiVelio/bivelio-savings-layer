@@ -26,6 +26,7 @@ import { cerrarParada, esMotivoCerrado } from "../providers/motivo-de-parada.js"
 
 import type {
   SavingsRequest,
+  SavingsRequestOptions,
   SavingsResult,
   SavingsReport,
   SavingsStream,
@@ -134,7 +135,13 @@ import {
 } from "./referencia.js";
 import { CanalDeStream, type MotivoEntero, type SumideroDeStream } from "./stream.js";
 import { libroDeCalidad, libroDelSeguidor, type HechosDeCalidad } from "./libro-de-calidad.js";
-import { StreamAbortedError } from "./errors.js";
+import { RequestTimeoutError, StreamAbortedError } from "./errors.js";
+import {
+  comprobarAbortExterno,
+  crearDeadline,
+  opcionesDelProvider,
+  type DeadlineDePeticion,
+} from "./request-deadline.js";
 import { AVISO_MEDIR, MemoriaDeSombra, PALANCAS_NO_SIMULADAS, URL_DE_PAGO, redondearUsd } from "./medir.js";
 import { negativaEnTexto } from "../providers/negativa-en-texto.js";
 import { normalizarAjustes } from "../verification/ajustes.js";
@@ -201,6 +208,15 @@ interface TestigoDeFacturacion {
   falloDelProveedor: boolean;
   /** Llamadas facturadas que volvieron SIN contador completo (`usage.complete === false`). */
   sinContador: number;
+  deadline?: DeadlineDePeticion;
+  stream?: {
+    abortado: () => boolean;
+    signal: AbortSignal;
+  };
+  /** Solo live comparte la señal del canal; whole usa la del deadline combinado. */
+  streamEnVivo?: boolean;
+  /** En live, un abort posterior al done del proveedor no deshace lo ya facturado. */
+  proveedorTerminado?: boolean;
 }
 
 /**
@@ -566,11 +582,16 @@ export class SavingsPipeline {
 
   // El resultado servido, con su bloque `verification` y —si le toca— la copia
   // sin capa lanzada DESPUÉS de servir. Sin comprobador, el mismo objeto.
-  private conVerificacion<T>(request: SavingsRequest, r: SavingsResult<T>, via: ViaDeServicio): SavingsResult<T> {
+  private conVerificacion<T>(
+    request: SavingsRequest,
+    r: SavingsResult<T>,
+    via: ViaDeServicio,
+    deadline?: DeadlineDePeticion,
+  ): SavingsResult<T> {
     // En sombra (licencia Medir) lo servido YA es la petición sin capa: una copia
     // de verificación sería pagar dos veces la misma llamada para comparar nada.
     if (r.report.measure) return r;
-    return this.comprobador ? this.comprobador.decidir(request, r, via) : r;
+    return this.comprobador ? this.comprobador.decidir(request, r, via, deadline) : r;
   }
 
   /** Decide en el acto cada copia de verificación en vuelo (`abandoned`). Lo llama `close()`. */
@@ -598,22 +619,27 @@ export class SavingsPipeline {
     canonical: ReturnType<typeof canonicalize>,
     modeloServido: string,
     trace: TraceCollector,
+    testigo?: TestigoDeFacturacion,
   ): Promise<boolean> {
+    if (testigo) this.comprobarInterrupcion(testigo);
     if (!request.response) return false;
     const contrato = contractKey(request);
     if (this.contratosQueIncumplen.has(contrato)) return true;
     const store = this.config.constraintMemoryStore;
     if (!store) return false;
+    let encontrado = false;
     try {
-      if (await store.has(this.claveMemoriaDeContrato(request, canonical, modeloServido))) {
-        this.contratosQueIncumplen.add(contrato);
-        return true;
-      }
+      encontrado = await store.has(this.claveMemoriaDeContrato(request, canonical, modeloServido));
     } catch {
       trace.record("constraint-memory", "store-error", {
         operation: "read",
         reason: "durable read failed; continuing without a durable hint",
       });
+    }
+    if (testigo) this.comprobarInterrupcion(testigo);
+    if (encontrado) {
+      this.contratosQueIncumplen.add(contrato);
+      return true;
     }
     return false;
   }
@@ -623,7 +649,9 @@ export class SavingsPipeline {
     canonical: ReturnType<typeof canonicalize>,
     modeloServido: string,
     trace: TraceCollector,
+    testigo?: TestigoDeFacturacion,
   ): Promise<void> {
+    if (testigo) this.comprobarInterrupcion(testigo);
     if (!request.response) return;
     const contrato = contractKey(request);
     this.contratosQueIncumplen.add(contrato);
@@ -637,6 +665,7 @@ export class SavingsPipeline {
         reason: "durable write failed; local learning was kept and the response was not retried",
       });
     }
+    if (testigo) this.comprobarInterrupcion(testigo);
   }
 
   /**
@@ -649,54 +678,81 @@ export class SavingsPipeline {
    * still serve the request for free.
    *
    * Then the fail-open reliability contract: an internal optimizer error must
-   * never take down the customer's request, so any error from the optimized path
-   * falls back to a direct provider call. A genuine provider error propagates.
+   * never take down the customer's request, so it falls back to a direct provider
+   * call. A genuine provider error, timeout or external abort propagates instead.
    */
-  async generate<T = unknown>(request: SavingsRequest): Promise<SavingsResult<T>> {
+  async generate<T = unknown>(
+    request: SavingsRequest,
+    options: SavingsRequestOptions = {},
+    antes?: Promise<unknown>,
+  ): Promise<SavingsResult<T>> {
+    const deadline = crearDeadline(options, this.now);
+    try {
+      if (antes) await antes;
+      return await this.generateConDeadline<T>(request, options, deadline);
+    } finally {
+      deadline?.dispose();
+    }
+  }
+
+  private comprobarInterrupcion(testigo: TestigoDeFacturacion): void {
+    testigo.deadline?.comprobar(testigo.llamadas > 0);
+    // El done del proveedor cierra la cancelación externa en live, pero nunca
+    // reabre el deadline: después de ese punto todavía no se escribe nada tarde.
+    if (testigo.proveedorTerminado) return;
+    if (testigo.stream && (testigo.stream.signal.aborted || testigo.stream.abortado())) {
+      throw new StreamAbortedError(testigo.llamadas > 0);
+    }
+    if (!testigo.stream) comprobarAbortExterno(testigo.deadline?.externalSignal);
+  }
+
+  private async generateConDeadline<T>(
+    request: SavingsRequest,
+    options: SavingsRequestOptions,
+    deadline: DeadlineDePeticion | undefined,
+    testigo: TestigoDeFacturacion = {
+      llamadas: 0,
+      falloDelProveedor: false,
+      sinContador: 0,
+      ...(deadline ? { deadline } : {}),
+    },
+  ): Promise<SavingsResult<T>> {
+    this.comprobarInterrupcion(testigo);
     this.assertLicensed();
     // Un tope de petición inválido es un error de quien llama: se dice ANTES del
     // try del fail-open, que si no lo mandaría crudo al proveedor como 400.
     comprobarTopeDePeticion(request);
     request = this.conPalancasPorDefecto(request);
-    // Testigo de facturación de ESTA petición. No puede ser un campo de la
-    // instancia: una misma capa sirve peticiones concurrentes.
-    const testigo: TestigoDeFacturacion = { llamadas: 0, falloDelProveedor: false, sinContador: 0 };
     let servido: SavingsResult<T>;
     try {
       servido = await this.generateOptimized<T>(request, testigo);
+      this.comprobarInterrupcion(testigo);
     } catch (err) {
-      if (err instanceof LicenseError) throw err;
+      if (err instanceof LicenseError || err instanceof RequestTimeoutError || err instanceof StreamAbortedError) throw err;
+      // Un timeout/abort nunca se rescata con otra llamada facturable.
+      this.comprobarInterrupcion(testigo);
       if (this.config.failOpen === false) throw err;
 
       // El fail-open existe para que un fallo INTERNO del optimizador no tumbe la
-      // petición del cliente. Se le habían colado dos casos que no son eso, y los
-      // dos cuestan dinero de verdad:
-      //
-      //  1. UN FALLO DEL PROVEEDOR. El docstring dice desde el principio que «a
-      //     genuine provider error propagates», pero el catch solo excluía
-      //     LicenseError: un 429 o un 5xx del proveedor provocaba OTRA llamada
-      //     completa contra el mismo proveedor que acababa de fallar. No arregla
-      //     nada y duplica el gasto.
-      //  2. CUALQUIER EXCEPCIÓN POSTERIOR A UNA LLAMADA YA FACTURADA. failOpenDirect
-      //     construye un ledger NUEVO desde cero (actualLlm = 1), así que las
-      //     llamadas anteriores desaparecían del informe. Reproducido por la
-      //     auditoría con TRES llamadas facturadas y un informe que decía
-      //     `actualLlm: 1`, `retries: 0`, el coste de un solo intento y encima
-      //     `basis: "measured"` — justo el campo que el panel presenta como
-      //     contrastable con la factura. El cliente no tenía forma de verlo.
-      //
-      // Regla: el fail-open solo puede rescatar lo que aún no ha costado nada.
+      // petición del cliente. Un fallo del proveedor, o cualquier excepción tras
+      // una llamada que pudo facturar, sale sin repetir ese gasto.
       if (testigo.falloDelProveedor) throw err;
       if (testigo.llamadas > 0) throw err;
       // El mismo criterio cuando quien pagó fue el líder del singleflight: su
       // testigo no es el nuestro, así que la deuda viaja marcada en el error.
       if (errorYaFacturado(err)) throw err;
 
-      return this.conVerificacion(request, await this.failOpenDirect<T>(request, err), "fail-open");
+      const directo = await this.failOpenDirect<T>(request, err, options, testigo);
+      this.comprobarInterrupcion(testigo);
+      const verificado = this.conVerificacion(request, directo, "fail-open", deadline);
+      this.comprobarInterrupcion(testigo);
+      return verificado;
     }
     // FUERA del try: la verificación nunca lanza, y aunque lo hiciera no puede
     // disparar un fail-open (una segunda llamada) sobre algo ya servido.
-    return this.conVerificacion(request, servido, "optimizado");
+    const verificado = this.conVerificacion(request, servido, "optimizado", deadline);
+    this.comprobarInterrupcion(testigo);
+    return verificado;
   }
 
   // LA MISMA PETICIÓN QUE generate(), ENTREGADA COMO STREAM.
@@ -711,16 +767,18 @@ export class SavingsPipeline {
     antes?: Promise<unknown>,
   ): SavingsStream<T> {
     let canal: CanalDeStream<T>;
+    let deadline: DeadlineDePeticion | undefined;
     try {
-      canal = new CanalDeStream<T>(this.now, options?.signal);
+      deadline = crearDeadline(options, this.now);
+      canal = new CanalDeStream<T>(this.now, deadline?.signal ?? options.signal);
     } catch (err) {
-      // Una `signal` que no es un AbortSignal de verdad: el error va al handle,
-      // como cualquier otro, en vez de lanzarse aquí.
+      deadline?.dispose();
+      // Una señal u opción inválida va al handle, como cualquier otro error.
       const roto = new CanalDeStream<T>(this.now);
       roto.fallar(err);
       return roto.handle;
     }
-    void this.ejecutarStream<T>(request, canal, antes);
+    void this.ejecutarStream<T>(request, canal, options, deadline, antes);
     return canal.handle;
   }
 
@@ -736,17 +794,26 @@ export class SavingsPipeline {
   private async ejecutarStream<T>(
     request: SavingsRequest,
     canal: CanalDeStream<T>,
+    options: SavingsStreamOptions,
+    deadline: DeadlineDePeticion | undefined,
     antes?: Promise<unknown>,
   ): Promise<void> {
+    const testigo: TestigoDeFacturacion = {
+      llamadas: 0,
+      falloDelProveedor: false,
+      sinContador: 0,
+      ...(deadline ? { deadline } : {}),
+      stream: { abortado: () => canal.abortado, signal: canal.sumidero.senal },
+    };
     try {
       if (antes) await antes;
-      if (canal.abortado) throw new StreamAbortedError(false);
+      this.comprobarInterrupcion(testigo);
       // Antes de decidir la entrega: una petición diferible POR CONFIGURACIÓN se
       // entrega entera igual que una que lo declaró.
       request = this.conPalancasPorDefecto(request);
       const motivo = this.motivoDeEntregaEntera(request);
       if (motivo) {
-        const r = await this.generate<T>(request);
+        const r = await this.generateConDeadline<T>(request, options, deadline, testigo);
         canal.completar(r, { vivo: false, motivo });
         return;
       }
@@ -756,30 +823,37 @@ export class SavingsPipeline {
       // Síncrono tras la comprobación de abort: no hay hueco en el que un abort
       // llegue sin saber si ya hay que cancelar al proveedor.
       canal.entrarEnVivo();
-      const testigo: TestigoDeFacturacion = { llamadas: 0, falloDelProveedor: false, sinContador: 0 };
+      testigo.streamEnVivo = true;
       let r: SavingsResult<T>;
       try {
         r = await this.generateOptimized<T>(request, testigo, canal.sumidero);
+        this.comprobarInterrupcion(testigo);
       } catch (err) {
-        if (err instanceof LicenseError || err instanceof StreamAbortedError) throw err;
-        if (canal.sumidero.senal.aborted) throw new StreamAbortedError(testigo.llamadas > 0);
+        if (err instanceof LicenseError || err instanceof RequestTimeoutError || err instanceof StreamAbortedError) throw err;
+        this.comprobarInterrupcion(testigo);
         // Las mismas reglas del fail-open que generate(): solo se rescata lo que
         // aún no ha costado nada.
         if (this.config.failOpen === false) throw err;
         if (testigo.falloDelProveedor || testigo.llamadas > 0 || errorYaFacturado(err)) throw err;
-        const rescate = this.conVerificacion(request, await this.failOpenDirect<T>(request, err), "fail-open");
+        const directo = await this.failOpenDirect<T>(request, err, options, testigo);
+        this.comprobarInterrupcion(testigo);
+        const rescate = this.conVerificacion(request, directo, "fail-open", deadline);
+        this.comprobarInterrupcion(testigo);
         canal.completar(rescate, { vivo: false, motivo: "fail-open" });
         return;
       }
       // La entrega «whole» ya decidió dentro de generate(); ésta es la única
       // decisión de la entrega en vivo.
-      r = this.conVerificacion(request, r, "optimizado");
+      r = this.conVerificacion(request, r, "optimizado", deadline);
+      this.comprobarInterrupcion(testigo);
       // Lo que decide si el texto se sintetiza entero no es el modo elegido sino
       // si HUBO servicio en vivo: un atajo (resolver, caché, seguidor) no emitió
       // nada, y el llamante tiene que recibir el texto igual.
       canal.completar(r, canal.sumidero.sirvioEnVivo ? { vivo: true } : { vivo: false, motivo: "shortcut" });
     } catch (err) {
       canal.fallar(err);
+    } finally {
+      deadline?.dispose();
     }
   }
 
@@ -839,11 +913,24 @@ export class SavingsPipeline {
     req: Parameters<Provider["generate"]>[0],
     testigo: TestigoDeFacturacion,
   ): Promise<ProviderResponse> {
+    this.comprobarInterrupcion(testigo);
     testigo.llamadas += 1;
+    const options = testigo.deadline
+      ? testigo.streamEnVivo && testigo.stream
+        ? { signal: testigo.stream.signal }
+        : opcionesDelProvider(testigo.deadline)
+      : undefined;
     let r: ProviderResponse;
     try {
-      r = await this.config.provider.generate(req);
+      // Sin opciones se conserva la llamada de un solo argumento, byte a byte.
+      r = options
+        ? await this.config.provider.generate(req, options)
+        : await this.config.provider.generate(req);
+      // Sin Promise.race: un provider que ignore la señal termina su trabajo;
+      // solo entonces se rechaza y ninguna escritura tardía llega a empezar.
+      this.comprobarInterrupcion(testigo);
     } catch (err) {
+      this.comprobarInterrupcion(testigo);
       testigo.falloDelProveedor = true;
       throw err;
     }
@@ -867,17 +954,17 @@ export class SavingsPipeline {
     testigo: TestigoDeFacturacion,
     sumidero: SumideroDeStream,
   ): Promise<ProviderResponse> {
-    if (sumidero.senal.aborted) throw new StreamAbortedError(testigo.llamadas > 0);
+    this.comprobarInterrupcion(testigo);
     testigo.llamadas += 1;
     let enviado = "";
     let final: ProviderResponse | undefined;
     try {
       for await (const ev of this.config.provider.generateStream!(req, { signal: sumidero.senal })) {
-        // Un proveedor que no atiende la señal no retiene al llamante: se deja
-        // de leer en el siguiente evento.
-        if (sumidero.senal.aborted) break;
+        // Tras abortar se deja de entregar texto, pero NO se abandona el iterador:
+        // un provider que ignore la señal todavía tiene que detenerse antes de
+        // que el SDK rechace, y así no queda trabajo con efectos tardíos suelto.
         if (ev.type === "text") {
-          if (ev.delta !== "") {
+          if (ev.delta !== "" && !sumidero.senal.aborted) {
             enviado += ev.delta;
             sumidero.texto(ev.delta);
           }
@@ -886,17 +973,19 @@ export class SavingsPipeline {
           break;
         }
       }
+      this.comprobarInterrupcion(testigo);
     } catch (err) {
-      if (sumidero.senal.aborted) throw new StreamAbortedError(true);
+      this.comprobarInterrupcion(testigo);
       testigo.falloDelProveedor = true;
       throw err;
     }
     if (!final) {
-      if (sumidero.senal.aborted) throw new StreamAbortedError(true);
+      this.comprobarInterrupcion(testigo);
       testigo.falloDelProveedor = true;
       throw new Error(`provider "${this.config.provider.id}" stream ended without a final response`);
     }
     sumidero.proveedorTermino();
+    testigo.proveedorTerminado = true;
     if (final.usage.complete === false) testigo.sinContador += 1;
     if (final.text !== enviado) {
       this.avisar(
@@ -1380,7 +1469,9 @@ export class SavingsPipeline {
     espejo: EspejoDeCache = this.espejoDeCache,
     respuesta: RespuestaMarcada = {},
     emitirTrazas = true,
+    testigo?: TestigoDeFacturacion,
   ): () => void {
+    if (testigo) this.comprobarInterrupcion(testigo);
     const c = marcado.colocacion!;
     const informo = uso.complete !== false;
     const leidos = Math.max(0, uso.cachedInputTokens ?? 0);
@@ -1462,7 +1553,9 @@ export class SavingsPipeline {
     uso: ProviderResponse["usage"],
     trace: TraceCollector,
     respuesta: RespuestaMarcada,
+    testigo: TestigoDeFacturacion,
   ): Promise<void> {
+    this.comprobarInterrupcion(testigo);
     const almacen = this.config.cacheBreakpointStore!;
     const posibleVersionado = almacen as Partial<VersionedCacheBreakpointStore>;
     const versionado = typeof posibleVersionado.getVersioned === "function" &&
@@ -1475,6 +1568,7 @@ export class SavingsPipeline {
     const maxIntentos = 64;
     const presupuestoMs = 1_000;
     for (let intento = 0; intento < maxIntentos; intento++) {
+      this.comprobarInterrupcion(testigo);
       let texto: unknown;
       let versionEsperada: string | null = null;
       try {
@@ -1493,6 +1587,7 @@ export class SavingsPipeline {
         });
         return;
       }
+      this.comprobarInterrupcion(testigo);
       const espejo = new EspejoDeCache();
       if (texto != null && espejo.importarClase(c.clase, texto) === "newer") {
         trace.record("prefix-cache-placement", "store-error", {
@@ -1508,7 +1603,9 @@ export class SavingsPipeline {
         espejo,
         respuesta,
         versionado === null,
+        testigo,
       );
+      this.comprobarInterrupcion(testigo);
       try {
         if (versionado) {
           const escrito = await versionado.compareAndSet(
@@ -1533,6 +1630,7 @@ export class SavingsPipeline {
           return;
         }
       } catch (e) {
+        this.comprobarInterrupcion(testigo);
         trace.record("prefix-cache-placement", "store-error", {
           reason: `could not write the placement store (${nombreDelError(e)})`,
         });
@@ -1554,7 +1652,9 @@ export class SavingsPipeline {
     messages: ChatMessage[],
     toolSelection: { tools: SavingsRequest["tools"] & object; setIsStable: boolean },
     descubrimientoActivo: boolean,
+    testigo?: TestigoDeFacturacion,
   ): Promise<EspejoCargado | null> {
+    if (testigo) this.comprobarInterrupcion(testigo);
     if (this.config.cacheBreakpoints !== "auto" || !toolSelection.setIsStable || descubrimientoActivo) return null;
     const origen = origenDelProveedor(this.config.provider);
     // Lo mismo que `decidirMarcadoDeCache`: con el modo explícito DECLARADO el
@@ -1568,12 +1668,14 @@ export class SavingsPipeline {
     const clase = huellas[cabeceraDeSistema(messages)]!;
     const espejo = new EspejoDeCache();
     let estado: EspejoCargado["estado"];
+    if (testigo) this.comprobarInterrupcion(testigo);
     try {
       const texto = await this.config.cacheBreakpointStore!.get(claveDelAlmacen(clase));
       estado = texto == null ? "empty" : espejo.importarClase(clase, texto) === "loaded" ? "loaded" : "unreadable";
     } catch {
       estado = "unavailable";
     }
+    if (testigo) this.comprobarInterrupcion(testigo);
     return { clase, huellas, espejo, estado };
   }
 
@@ -2084,6 +2186,7 @@ export class SavingsPipeline {
     // reexporta la clase) no debe poder correr el optimizador sin licencia. Es
     // idempotente con la llamada de generate().
     this.assertLicensed();
+    this.comprobarInterrupcion(testigo);
     // LA LICENCIA MEDIR: antes de cualquier etapa. Nada de lo que viene después
     // (resolvers, cachés, singleflight, cascada, compresión, marcas de caché…)
     // llega a mirar la petición: sale intacta por la llamada directa.
@@ -2218,7 +2321,9 @@ export class SavingsPipeline {
     // proceso ni desde otro que comparta el Redis.
     const exactKey = buildExactKey(canonical, { servedModel: cascada.modeloServido });
     if (policy.allowExactCache && toggles.exactCache !== false) {
+      this.comprobarInterrupcion(testigo);
       const guardada = await this.deps.exactCache.get<T>(exactKey);
+      this.comprobarInterrupcion(testigo);
       // UNA NEGATIVA EN TEXTO NO SE SIRVE DESDE LA CACHÉ, aunque esté guardada:
       // la escribió una versión anterior a esta regla (0.4.30 o antes) o otro
       // proceso que comparte el Redis. Se ignora como si no estuviera: la
@@ -2326,6 +2431,7 @@ export class SavingsPipeline {
           typeof sf.join === "function" ? sf.join<SavingsResult<T>>(inflightKey) : undefined;
         if (enVuelo) {
           const value = await enVuelo;
+          this.comprobarInterrupcion(testigo);
           // Una respuesta que no se puede repetir se sirve solo a quien la
           // pidió: el seguidor hace su propia llamada, con su propio contador.
           if (this.noReproducibles.has(value)) {
@@ -2341,6 +2447,7 @@ export class SavingsPipeline {
         return runExpensive();
       }
       const { value, coalesced } = await this.deps.singleflight.run(inflightKey, runExpensive);
+      this.comprobarInterrupcion(testigo);
       if (coalesced && this.noReproducibles.has(value)) {
         // La misma regla que en la puerta del stream: el líder contestó algo que
         // no se puede repetir, así que este seguidor paga y mide su propia llamada.
@@ -2387,6 +2494,7 @@ export class SavingsPipeline {
     /** El instante de precio de la petición (ver `generateOptimized`). */
     instantePrecio: number,
   ): Promise<SavingsResult<T>> {
+    this.comprobarInterrupcion(testigo);
     // --- Stage 4: safe semantic cache (managed feature — license-gated). ---
     const semanticLicensed = this.entitled("semantic_cache");
     // La candidata que la caché calibrada no sirvió: se etiqueta en la etapa 12.
@@ -2425,7 +2533,9 @@ export class SavingsPipeline {
       // etapa 12. Sin calibración no hay acierto ni sonda: el almacén sigue en
       // modo sombra y la etapa 12 puede guardar respuestas para calibrar después.
       const cacheSemantica = this.deps.semanticCache;
+      this.comprobarInterrupcion(testigo);
       const consulta = await cacheSemantica.lookup(canonical, { agentic: policy.isAgentic });
+      this.comprobarInterrupcion(testigo);
       // La misma guarda que la caché exacta: una negativa en texto guardada por
       // una versión anterior no se sirve como respuesta a una pregunta parecida.
       const reglaSemantica = consulta.hit
@@ -2570,7 +2680,9 @@ export class SavingsPipeline {
       },
       { ...(this.config.retriever ? { retriever: this.config.retriever } : {}),
         ...(this.config.reranker ? { reranker: this.config.reranker } : {}) },
+      () => this.comprobarInterrupcion(testigo),
     );
+    this.comprobarInterrupcion(testigo);
     ledger.actualRetrieval = retrieval.rounds;
     if (retrieval.retrievedCount > 0) {
       trace.record("retrieval", `kept ${retrieval.keptCount}/${retrieval.retrievedCount}`, {
@@ -2669,7 +2781,7 @@ export class SavingsPipeline {
     const techoPorTokens = topeEfectivo != null
       ? Math.floor(topeEfectivo * 3.2) // ~3,2 car/token en prosa, conservador
       : null;
-    const reglasDeValor = await this.leerMemoriaDeContrato(request, canonical, cascada.modeloServido, trace)
+    const reglasDeValor = await this.leerMemoriaDeContrato(request, canonical, cascada.modeloServido, trace, testigo)
       ? describeValueConstraints(request.response?.schema, "", techoPorTokens)
       : "";
     if (reglasDeValor) {
@@ -2829,7 +2941,9 @@ export class SavingsPipeline {
             continue;
           }
           const before = this.tokensFor(m.content, request);
+          this.comprobarInterrupcion(testigo);
           const result = await this.config.compressor.compress({ text: m.content });
+          this.comprobarInterrupcion(testigo);
           // LA FIDELIDAD SE COMPRUEBA, NO SE CREE. `result.fidelityPassed` lo
           // declara el propio compresor, y la palanca es INYECTABLE: ese `true`
           // puede venir de cualquier parte. El camino por defecto tampoco lo
@@ -3239,8 +3353,9 @@ export class SavingsPipeline {
     // EL ESPEJO DEL ALMACÉN (`cacheBreakpointStore`), solo si lo hay: sin él no
     // se espera nada y el camino es exactamente el de siempre.
     const espejoCargado = this.config.cacheBreakpointStore
-      ? await this.cargarEspejo(request, cascada.modeloServido, messages, herramientasDelPrefijo, conDescubrimiento)
+      ? await this.cargarEspejo(request, cascada.modeloServido, messages, herramientasDelPrefijo, conDescubrimiento, testigo)
       : null;
+    this.comprobarInterrupcion(testigo);
     const marcado = this.decidirMarcadoDeCache(
       request,
       cascada.modeloServido,
@@ -3278,9 +3393,9 @@ export class SavingsPipeline {
     // lo están ni pueden estarlo: no salieron gratis, las pagó una llamada extra.
     // Los dos conjuntos son disjuntos —el sondeo solo mira lo que el selector
     // dejó pasar—, así que ningún token se cuenta dos veces.
-    // En «live», un abort que llegó durante las etapas previas no puede pagar
-    // el sondeo: su respuesta solo sirve a una primaria que ya no va a salir.
-    if (sumidero?.senal.aborted) throw new StreamAbortedError(testigo.llamadas > 0);
+    // Un abort/deadline durante las etapas previas no puede pagar el sondeo:
+    // su respuesta solo sirve a una primaria que ya no va a salir.
+    this.comprobarInterrupcion(testigo);
     const descubrimiento = nativa
       ? this.sinDescubrimientoPorBusquedaNativa(toggles, toolSelection.tools, trace)
       : await this.descubrirHerramientas(
@@ -3486,6 +3601,7 @@ export class SavingsPipeline {
       // Se apunta SIEMPRE, acepte o rechace: la tasa de escalado de este workload
       // es la razón de ser de la verja, y solo se puede medir sobre peticiones que
       // de verdad se enrutaron.
+      this.comprobarInterrupcion(testigo);
       this.verjaDeCascada.registrar(cascada.bucket, !veredicto.acepta);
       trace.record("model-cascade", veredicto.acepta ? "accepted" : "escalating", {
         servedModel: cascada.modeloServido,
@@ -3728,6 +3844,7 @@ export class SavingsPipeline {
       // en verde mientras la verja mide otra cosa. Medido al provocarlo: en una
       // petición escalada la traza publicaba 1800 tokens de acierto y la verja
       // apuntaba 0, o sea que se habría apagado sola por una lectura ajena.
+      this.comprobarInterrupcion(testigo);
       this.verjaDeCache.registrar(marcado.claveDeVerja, usoDeLaLlamadaMarcada);
       trace.record("prefix-cache", "measured", {
         cacheRead: usoDeLaLlamadaMarcada.cachedInputTokens ?? 0,
@@ -3742,10 +3859,11 @@ export class SavingsPipeline {
     // EL ESPEJO APUNTA ESTA PETICIÓN, y el contador del proveedor juzga lo que
     // el espejo predijo. Va después de la respuesta, como en el proveedor: una
     // entrada solo se puede leer cuando la respuesta que la escribió ya empezó.
+    this.comprobarInterrupcion(testigo);
     if (marcado.colocacion?.conAlmacen) {
-      await this.apuntarEnElAlmacen(marcado, usoDeLaLlamadaMarcada, trace, respuestaMarcada);
+      await this.apuntarEnElAlmacen(marcado, usoDeLaLlamadaMarcada, trace, respuestaMarcada, testigo);
     } else if (marcado.colocacion) {
-      this.apuntarEnElEspejo(marcado, usoDeLaLlamadaMarcada, trace, this.espejoDeCache, respuestaMarcada);
+      this.apuntarEnElEspejo(marcado, usoDeLaLlamadaMarcada, trace, this.espejoDeCache, respuestaMarcada, true, testigo);
     }
 
     // --- Etapa 10d: la MUESTRA del modo sombra (opt-in, y cuesta dinero). ---
@@ -3791,6 +3909,7 @@ export class SavingsPipeline {
           finishReason: respuestaBarata.finishReason,
           pidioHerramientas: (respuestaBarata.toolCalls?.length ?? 0) > 0,
         });
+        this.comprobarInterrupcion(testigo);
         this.verjaDeCascada.registrar(cascada.bucket, !veredicto.acepta);
         // La divergencia solo tiene sentido cuando las DOS respuestas pasan el
         // contrato: si la barata ya lo incumple, el desacuerdo no dice nada nuevo.
@@ -3809,6 +3928,7 @@ export class SavingsPipeline {
             "money figure, not a quality one",
         });
       } catch (err) {
+        this.comprobarInterrupcion(testigo);
         // Ni un token que apuntar y, sobre todo, ni una excepción que propagar:
         // la respuesta del cliente ya está en la mano.
         trace.record("model-cascade", "sample failed (measurement only; the answer is unaffected)", {
@@ -3816,6 +3936,7 @@ export class SavingsPipeline {
         });
       }
     }
+    this.comprobarInterrupcion(testigo);
 
     // --- Stage 11: structural validation (+ at most one repair). ---
     let data: unknown = textoServido;
@@ -3880,7 +4001,7 @@ export class SavingsPipeline {
       // maxLength: el modo estructurado ya cubre la forma. Apuntar esos casos
       // haría pagar el aviso para siempre sin ganar nada.
       if (!validation.valid && esFalloDeValor(validation.errors)) {
-        await this.aprenderMemoriaDeContrato(request, canonical, modeloServido, trace);
+        await this.aprenderMemoriaDeContrato(request, canonical, modeloServido, trace, testigo);
       }
 
       // Un JSON cortado a media cadena por el tope de salida NO se arregla
@@ -3977,7 +4098,7 @@ export class SavingsPipeline {
         const tope = topeDeSalida(request) ?? null;
         const desbordaSuContrato =
           techoDelEsquema !== null && tope != null && techoDelEsquema <= tope;
-        if (desbordaSuContrato) await this.aprenderMemoriaDeContrato(request, canonical, modeloServido, trace);
+        if (desbordaSuContrato) await this.aprenderMemoriaDeContrato(request, canonical, modeloServido, trace, testigo);
         trace.record("validation", "repair-skipped", {
           reason: "output truncated by maxOutputTokens; a retry with the same cap would truncate again",
           maxOutputTokens: topeDeSalida(request) ?? null,
@@ -4470,7 +4591,9 @@ export class SavingsPipeline {
     // Cache writes are best-effort side effects AFTER the provider was already
     // billed. A failing cache backend must never fail this request — and must
     // never bubble to the fail-open handler, which would re-invoke (double-bill)
-    // the provider. Swallow-and-trace instead.
+    // the provider. Swallow-and-trace instead. Cancellation is the exception:
+    // it propagates and none of these writes may start after the deadline.
+    this.comprobarInterrupcion(testigo);
     try {
       if (!cacheable) {
         trace.record(
@@ -4537,6 +4660,7 @@ export class SavingsPipeline {
         // El registro va en `meta.reference`, con la clave bajo la que se guarda
         // (el testigo que el lector compara). La caché semántica de abajo recibe
         // el `answer` SIN `meta`: un acierto semántico no es la misma petición.
+        this.comprobarInterrupcion(testigo);
         await this.deps.exactCache.set(
           claveDeEscritura,
           typeof registro === "object"
@@ -4556,6 +4680,7 @@ export class SavingsPipeline {
       // cascada apagada y todo, y el informe diría `semantic` sin más. La clave
       // exacta sí lo separa (lleva el modelo servido); ésta no puede, porque el
       // filtro es de la caché y no nuestro. Así que no se guarda.
+      this.comprobarInterrupcion(testigo);
       const respuestaEnrutada = modeloServido !== request.model;
       if (
         cacheable &&
@@ -4578,6 +4703,7 @@ export class SavingsPipeline {
       // arriba—: media respuesta, una que incumple su contrato o la de otro
       // modelo no dicen nada de si la guardada valía. Sin `await`: un juez que
       // llame a un modelo no puede alargar esta petición; `observe` no rechaza.
+      this.comprobarInterrupcion(testigo);
       if (sondaSemantica && this.deps.semanticCache) {
         if (cacheable && !respuestaEnrutada && policy.allowSemanticCache && toggles.semanticCache) {
           trace.record("semantic-calibration", "label requested", {
@@ -4590,6 +4716,7 @@ export class SavingsPipeline {
         }
       }
     } catch (err) {
+      this.comprobarInterrupcion(testigo);
       trace.record("cache-write", "failed (non-fatal; answer already served)", {
         error: err instanceof Error ? err.message : String(err),
       });
@@ -5119,6 +5246,7 @@ export class SavingsPipeline {
         ...(request.reasoningEffort != null ? { reasoningEffort: request.reasoningEffort } : {}),
       }, testigo);
     } catch (err) {
+      this.comprobarInterrupcion(testigo);
       // Ni un token que apuntar: la llamada no llegó a devolver uso. Lo que sí
       // queda es la constancia de que se intentó, porque el intento pudo costar
       // dinero y el cliente no puede enterarse de esto por su factura.
@@ -5699,12 +5827,32 @@ export class SavingsPipeline {
    * NO optimization: baseline equals actual, so it never claims a saving. The
    * report carries a `fail-open` trace so the degradation is observable.
    */
-  private async failOpenDirect<T>(request: SavingsRequest, cause: unknown): Promise<SavingsResult<T>> {
+  private async failOpenDirect<T>(
+    request: SavingsRequest,
+    cause: unknown,
+    options: SavingsRequestOptions = {},
+    testigo?: TestigoDeFacturacion,
+  ): Promise<SavingsResult<T>> {
     const trace = new TraceCollector(this.now);
     trace.record("fail-open", "internal optimizer error — bypassed to a direct provider call", {
       error: cause instanceof Error ? cause.message : String(cause),
     });
-    return (await this.llamadaDirecta<T>(request, trace, { origen: "fail_open" })).result;
+    const propio = testigo ? undefined : crearDeadline(options, this.now);
+    const efectivo: TestigoDeFacturacion = testigo ?? {
+      llamadas: 0,
+      falloDelProveedor: false,
+      sinContador: 0,
+      ...(propio ? { deadline: propio } : {}),
+    };
+    try {
+      return (await this.llamadaDirecta<T>(request, trace, {
+        origen: "fail_open",
+        testigo: efectivo,
+        sumidero: null,
+      })).result;
+    } finally {
+      propio?.dispose();
+    }
   }
 
   /**
@@ -5712,8 +5860,8 @@ export class SavingsPipeline {
    * palanca, con baseline == actual (no reclama ahorro). La comparten dos
    * caminos que por razones distintas no pueden optimizar nada:
    *
-   *  · `fail_open`: el optimizador falló y es el último recurso. Llama al
-   *    proveedor directamente, fuera del testigo (así fue siempre).
+   *  · `fail_open`: el optimizador falló y es el último recurso. Comparte el
+   *    testigo y el deadline: nunca es una vía para repetir tras timeout/abort.
    *  · `measure`: la licencia Medir. Pasa por el testigo como cualquier gasto
    *    (el fail-open de generate() sabe así que ya se pagó) y, en un stream en
    *    vivo, reenvía el texto según llega.
@@ -5724,9 +5872,11 @@ export class SavingsPipeline {
   private async llamadaDirecta<T>(
     request: SavingsRequest,
     trace: TraceCollector,
-    via:
-      | { origen: "fail_open" }
-      | { origen: "measure"; testigo: TestigoDeFacturacion; sumidero: SumideroDeStream | null },
+    via: {
+      origen: "fail_open" | "measure";
+      testigo: TestigoDeFacturacion;
+      sumidero: SumideroDeStream | null;
+    },
   ): Promise<{ result: SavingsResult<T>; response: ProviderResponse }> {
     const medir = via.origen === "measure";
     const ledger = new SavingsLedger();
@@ -5769,12 +5919,9 @@ export class SavingsPipeline {
       ...(request.seed != null ? { seed: request.seed } : {}),
       ...(request.reasoningEffort != null ? { reasoningEffort: request.reasoningEffort } : {}),
     };
-    const response =
-      via.origen === "measure"
-        ? via.sumidero
-          ? await this.llamarProveedorEnStream(peticionDirecta, via.testigo, via.sumidero)
-          : await this.llamarProveedor(peticionDirecta, via.testigo)
-        : cerrarMotivo(await this.config.provider.generate(peticionDirecta));
+    const response = via.sumidero
+      ? await this.llamarProveedorEnStream(peticionDirecta, via.testigo, via.sumidero)
+      : await this.llamarProveedor(peticionDirecta, via.testigo);
     const providerMs = this.now() - providerStart;
 
     ledger.baselineLlm = 1;
@@ -5975,6 +6122,7 @@ export class SavingsPipeline {
     if (cacheable) {
       const ttlBase = this.config.exactCacheTtlMs ?? 24 * 60 * 60 * 1000;
       const ttl = politica!.maxCacheAgeMs == null ? ttlBase : Math.min(ttlBase, politica!.maxCacheAgeMs);
+      this.comprobarInterrupcion(testigo);
       this.memoriaDeSombra.anotar(claveExacta!, this.now() + ttl);
     }
 
