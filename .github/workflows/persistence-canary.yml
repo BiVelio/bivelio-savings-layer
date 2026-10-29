@@ -49,16 +49,15 @@ jobs:
           mkdir -p persistence-results
           pnpm --filter @bivelio/persistence-postgres exec vitest run test/disaster-recovery.integration.test.ts
           pnpm run bench:postgres-semantica
-      - name: Canario vivo de dos procesos con Gemini
+      - name: Smoke de las RC instaladas desde npm
         env:
-          BIVELIO_LIVE_CANARY: "1"
-          BIVELIO_TEST_POSTGRES_URL: postgresql://postgres:validation@127.0.0.1:5432/bivelio_test
           BVSALA_DEMO_GOOGLE_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           CANARY_LICENSE_A: ${{ secrets.CANARY_LICENSE_A }}
-          CANARY_LICENSE_B: ${{ secrets.CANARY_LICENSE_B }}
-          BIVELIO_LIVE_CANARY_OUTPUT: persistence-results/live-canary.json
-          CANARY_MODEL: google/gemini-3.8-flash
-        run: pnpm exec tsx packages/persistence-postgres/benchmark/live-canary.ts
+        run: |
+          npm install --prefix "$RUNNER_TEMP/npm-consumer" --ignore-scripts --no-audit --no-fund @bivelio/savings-layer@0.6.0-rc.1 @bivelio/persistence-postgres@0.1.0-rc.1 pg@8.23.1
+          npm list --prefix "$RUNNER_TEMP/npm-consumer" --depth=0
+          cp scripts/rc-npm-smoke.mjs "$RUNNER_TEMP/npm-consumer/smoke.mjs"
+          node "$RUNNER_TEMP/npm-consumer/smoke.mjs"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
