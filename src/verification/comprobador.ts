@@ -7,6 +7,7 @@ import type {
 import { cerrarParada } from "../providers/motivo-de-parada.js";
 import type { Provider, ProviderRequest, ProviderResponse } from "../providers/types.js";
 import type { CostModel } from "../tokenizer/accounting.js";
+import type { DeadlineDePeticion } from "../pipeline/request-deadline.js";
 import type { AjustesDeVerificacion } from "./ajustes.js";
 import { AVISO_VERIFICACION_FALLO_INTERNO } from "./ajustes.js";
 import { construirPeticionSinCapa } from "./brazo-sin-capa.js";
@@ -36,6 +37,8 @@ interface Vuelo {
   abortar: AbortController;
   decidido: boolean;
   reloj: ReturnType<typeof setTimeout> | undefined;
+  relojDelDeadline: ReturnType<typeof setTimeout> | undefined;
+  quitarEscucha: (() => void) | undefined;
   /** Se resuelve cuando el par está decidido y, si era el último, el emisor vaciado. */
   terminar: () => void;
 }
@@ -97,7 +100,12 @@ export class ComprobadorAB {
     return this.enVuelo.size;
   }
 
-  decidir<T>(request: SavingsRequest, result: SavingsResult<T>, via: ViaDeServicio): SavingsResult<T> {
+  decidir<T>(
+    request: SavingsRequest,
+    result: SavingsResult<T>,
+    via: ViaDeServicio,
+    deadline?: DeadlineDePeticion,
+  ): SavingsResult<T> {
     if (this.cerrado) return result;
     try {
       const report = result.report;
@@ -119,7 +127,7 @@ export class ComprobadorAB {
       }
       const at = this.now();
       this.sumidero.contar?.(diaUTC(at), "estrato" in clase ? clase.estrato : clase.excluida);
-      if (copia) this.lanzar(request, result as SavingsResult<unknown>, at, copia);
+      if (copia && !deadline?.haVencido()) this.lanzar(request, result as SavingsResult<unknown>, at, copia, deadline);
       const bloque: VerificationReport =
         "estrato" in clase ? { sampled, stratum: clase.estrato } : { sampled, excluded: clase.excluida };
       return { ...result, report: { ...report, verification: bloque } };
@@ -139,6 +147,9 @@ export class ComprobadorAB {
       if (vuelo.decidido) continue;
       vuelo.decidido = true;
       if (vuelo.reloj) clearTimeout(vuelo.reloj);
+      if (vuelo.relojDelDeadline) clearTimeout(vuelo.relojDelDeadline);
+      vuelo.quitarEscucha?.();
+      vuelo.quitarEscucha = undefined;
       try {
         vuelo.abortar.abort();
       } catch {
@@ -154,6 +165,7 @@ export class ComprobadorAB {
     result: SavingsResult<unknown>,
     at: number,
     copia: { peticion: ProviderRequest; precios: CostModel; estrato: VerificationStratum },
+    deadline?: DeadlineDePeticion,
   ): void {
     const r = result.report;
     const p = copia.precios;
@@ -181,11 +193,20 @@ export class ComprobadorAB {
       return;
     }
 
+    if (deadline?.haVencido()) return;
     let terminar: () => void = () => {};
     const terminado = new Promise<void>((resolve) => {
       terminar = resolve;
     });
-    const vuelo: Vuelo = { base, abortar: new AbortController(), decidido: false, reloj: undefined, terminar };
+    const vuelo: Vuelo = {
+      base,
+      abortar: new AbortController(),
+      decidido: false,
+      reloj: undefined,
+      relojDelDeadline: undefined,
+      quitarEscucha: undefined,
+      terminar,
+    };
     this.enVuelo.add(vuelo);
 
     vuelo.reloj = setTimeout(() => {
@@ -200,9 +221,40 @@ export class ComprobadorAB {
 
     // DESPUÉS DE SERVIR: la copia sale en la siguiente vuelta del bucle de
     // eventos, cuando la continuación del `await` del llamante ya ha corrido.
-    // Cero latencia en su camino.
+    // Cero latencia en su camino. El vencimiento absoluto sigue vivo aquí aunque
+    // el temporizador de la entrada principal ya se haya limpiado.
     setTimeout(() => {
       if (vuelo.decidido) return; // cerrada antes de salir: ni se llama
+      const vencer = (): void => {
+        try {
+          vuelo.abortar.abort();
+        } catch {
+          /* nada que hacer */
+        }
+        void this.resolverVuelo(vuelo, { ...base, outcome: "check_failed" });
+      };
+      if (deadline?.haVencido()) {
+        vencer();
+        return;
+      }
+      const restante = deadline?.restanteMs();
+      if (restante !== undefined) {
+        if (restante <= 0) {
+          vencer();
+          return;
+        }
+        vuelo.relojDelDeadline = setTimeout(vencer, Math.max(1, Math.ceil(restante)));
+        (vuelo.relojDelDeadline as unknown as { unref?: () => void }).unref?.();
+      }
+      const externa = deadline?.externalSignal;
+      if (externa) {
+        if (externa.aborted) {
+          vencer();
+          return;
+        }
+        externa.addEventListener("abort", vencer, { once: true });
+        vuelo.quitarEscucha = () => externa.removeEventListener("abort", vencer);
+      }
       let llamada: Promise<ProviderResponse>;
       try {
         llamada = Promise.resolve(this.provider.generate(copia.peticion, { signal: vuelo.abortar.signal }));
@@ -279,6 +331,9 @@ export class ComprobadorAB {
     if (vuelo.decidido) return;
     vuelo.decidido = true;
     if (vuelo.reloj) clearTimeout(vuelo.reloj);
+    if (vuelo.relojDelDeadline) clearTimeout(vuelo.relojDelDeadline);
+    vuelo.quitarEscucha?.();
+    vuelo.quitarEscucha = undefined;
     this.enVuelo.delete(vuelo);
     this.registrar(check);
     if (this.enVuelo.size === 0) {

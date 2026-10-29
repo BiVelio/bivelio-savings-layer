@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 
 import { OpenAICompatibleProvider } from "../src/providers/openai-compatible.js";
 import { AnthropicProvider } from "../src/providers/anthropic.js";
+import { GoogleProvider } from "../src/providers/google.js";
 import type { ProviderRequest } from "../src/providers/types.js";
 
 /**
@@ -91,5 +92,59 @@ describe("Anthropic", () => {
     await new AnthropicProvider({ fetchImpl: b.fetchImpl }).generate(q, { signal: ctrl.signal });
     expect(b.inits[0]!.signal).toBe(ctrl.signal);
     expect(b.inits[0]!.body).toBe(a.inits[0]!.body);
+  });
+});
+
+describe("generateStream con entrega entera", () => {
+  it("OpenAI conserva options al delegar en generate por contrato", async () => {
+    const { inits, fetchImpl } = espia({
+      choices: [{ message: { content: '{"a":1}' }, finish_reason: "stop" }],
+      usage: { prompt_tokens: 5, completion_tokens: 2 },
+    });
+    const ctrl = new AbortController();
+    const provider = new OpenAICompatibleProvider({ baseUrl: "https://x.test/v1", fetchImpl });
+    for await (const _event of provider.generateStream(
+      { ...PETICION, schema: { type: "object" } },
+      { signal: ctrl.signal },
+    )) {
+      // Consumir la entrega ejecuta la rama entera.
+    }
+    expect(inits).toHaveLength(1);
+    expect(inits[0]!.signal).toBe(ctrl.signal);
+  });
+
+  it("Anthropic conserva options al delegar en generate por contrato", async () => {
+    const { inits, fetchImpl } = espia({
+      content: [{ type: "text", text: '{"a":1}' }],
+      stop_reason: "end_turn",
+      usage: { input_tokens: 5, output_tokens: 2 },
+    });
+    const ctrl = new AbortController();
+    const provider = new AnthropicProvider({ fetchImpl });
+    for await (const _event of provider.generateStream(
+      { ...PETICION, model: "claude-sonnet-4-5", schema: { type: "object" } },
+      { signal: ctrl.signal },
+    )) {
+      // Consumir la entrega ejecuta la rama entera.
+    }
+    expect(inits).toHaveLength(1);
+    expect(inits[0]!.signal).toBe(ctrl.signal);
+  });
+
+  it("Google conserva options al delegar en generate por contrato", async () => {
+    const { inits, fetchImpl } = espia({
+      candidates: [{ content: { role: "model", parts: [{ text: '{"a":1}' }] }, finishReason: "STOP" }],
+      usageMetadata: { promptTokenCount: 5, candidatesTokenCount: 2 },
+    });
+    const ctrl = new AbortController();
+    const provider = new GoogleProvider({ fetchImpl });
+    for await (const _event of provider.generateStream(
+      { ...PETICION, model: "gemini-3-flash-preview", schema: { type: "object" } },
+      { signal: ctrl.signal },
+    )) {
+      // Consumir la entrega ejecuta la rama entera.
+    }
+    expect(inits).toHaveLength(1);
+    expect(inits[0]!.signal).toBe(ctrl.signal);
   });
 });

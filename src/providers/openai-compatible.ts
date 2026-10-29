@@ -1,6 +1,7 @@
 import { TIER_DIFERIBLE_OPENAI } from "../economics/tier-diferido.js";
 import { explicitaAplicable } from "../economics/escrituras-de-cache.js";
 import { avisarDelProveedor } from "./atestado-del-cable.js";
+import { comprobarSenalDeProvider } from "./abort.js";
 import {
   atestiguar,
   atestiguarOrigen,
@@ -447,8 +448,8 @@ export class OpenAICompatibleProvider implements Provider {
 
   async generate(req: ProviderRequest, options?: ProviderStreamOptions): Promise<ProviderResponse> {
     const model = quitarPrefijoDeProveedor(req.model, this.opts.stripProviderPrefix, this.opts.baseUrl);
-    // La señal solo existe si el llamante la pasa (la copia de verificación, que
-    // se aborta al cerrar la capa). Sin ella, la petición HTTP es la de siempre.
+    // La señal solo existe si el llamante la pasa (cancelación/deadline de la
+    // petición o copia de verificación). Sin ella, la HTTP es la de siempre.
     const senal = options?.signal;
 
     // Se intenta la vía nativa salvo que ESTE modelo ya la haya rechazado antes.
@@ -532,7 +533,7 @@ export class OpenAICompatibleProvider implements Provider {
     // enteras, y así el camino de `response_format` (con su degradación a JSON
     // por prompt) sigue viviendo en un solo sitio.
     if (req.schema != null || req.deferrable === true) {
-      const r = await this.generate(req);
+      const r = await this.generate(req, options);
       if (r.text !== "") yield { type: "text", delta: r.text };
       yield { type: "done", response: r };
       return;
@@ -852,6 +853,7 @@ export class OpenAICompatibleProvider implements Provider {
     stream?: { includeUsage: boolean; signal?: AbortSignal },
     senal?: AbortSignal,
   ): Promise<Response> {
+    comprobarSenalDeProvider(stream?.signal ?? senal);
     const body = this.construirCuerpo(model, req, nativo, stream);
     return await this.fetchImpl(
       `${this.opts.baseUrl.replace(/\/$/, "")}/chat/completions`,
