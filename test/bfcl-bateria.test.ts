@@ -177,7 +177,7 @@ describe("BFCL · presupuesto y cable", () => {
       },
     });
     const reg: LlamadaDelCable[] = [];
-    const medicion = { providerMs: 0 };
+    const medicion = { providerMs: 0, harnessMs: 0 };
     const r = await unidadEnCurso.run({ unidad: "u", brazo: "A", registro: reg, medicion }, () =>
       cable("https://api.openai.com/v1/chat/completions", { method: "POST", headers: { authorization: "Bearer sk-secretsecretsecret" }, body: '{"model":"x"}' }),
     );
@@ -186,6 +186,7 @@ describe("BFCL · presupuesto y cable", () => {
     expect(reg[0]!.intentos).toBe(2);
     expect(reg[0]!.providerMs).toBe(10);
     expect(medicion.providerMs).toBe(10);
+    expect(medicion.harnessMs).toBe(100);
     expect(pres.porBrazo.A).toBeCloseTo(0.001, 12);
     expect(JSON.stringify(reg)).not.toMatch(/secret|Bearer/);
   });

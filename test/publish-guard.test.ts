@@ -18,6 +18,27 @@ const latenciaValida = (mode: ModoDelBanco) => resumirLatencias({
 
 const escenarioValido = (name: string, mode: ModoDelBanco) => ({ name, latency: latenciaValida(mode) });
 
+type EstadoF1 = "completed" | "deadline_exceeded" | "provider_error";
+const muestraF1 = (totalMs: number, providerWaitMs: number, layerWorkMs: number, harnessMs: number, estado: EstadoF1 = "completed") => ({
+  totalMs,
+  providerWaitMs,
+  layerWorkMs,
+  harnessMs,
+  estado,
+});
+const latenciaF1Valida = (mode: ModoDelBanco) => resumirLatencias({
+  A: [muestraF1(100, 90, 0, 10)],
+  A1: [muestraF1(100, 90, 0, 10)],
+  A2: [muestraF1(100, 90, 0, 10)],
+  B: [muestraF1(120, 90, 20, 10)],
+}, mode);
+const escenarioF1Valido = (name: string, mode: ModoDelBanco) => ({ name, latency: latenciaF1Valida(mode) });
+const liveF1 = (over: Partial<ArtifactShape> = {}): ArtifactShape => live({
+  latency: latenciaF1Valida("LIVE"),
+  scenarios: [escenarioF1Valido("uno", "LIVE"), escenarioF1Valido("dos", "LIVE")],
+  ...over,
+});
+
 /**
  * Un artefacto LIVE completo: los tres controles, sus suelos y la latencia B2.
  */
@@ -56,11 +77,15 @@ const mock = (over: Partial<ArtifactShape> = {}): ArtifactShape => ({
 });
 
 describe("verja de publicación del artefacto A/B", () => {
-  it("una tirada LIVE limpia se publica", () => {
+  it("una tirada LIVE limpia se publica y F0 sigue legible sin evidencia F1 inventada", () => {
     const d = decidePublish(null, live());
-    expect(d.ok).toBe(true);
+    expect(d).toMatchObject({ ok: true, releaseOk: true, interactiveSloOk: true, layerOk: null });
     expect(d.blockers).toEqual([]);
     expect(d.warnings).toEqual([]);
+  });
+
+  it("una tirada F1 limpia separa SLO, capa y release", () => {
+    expect(decidePublish(null, liveF1())).toMatchObject({ ok: true, releaseOk: true, interactiveSloOk: true, layerOk: true, blockers: [] });
   });
 
   it("un MOCK NO se publica por defecto — es como llegó el de hoy a la web", () => {
@@ -256,7 +281,7 @@ describe("verja de publicación: los bloqueos del banco de 2026 (recomendación 
     expect(decidePublish(null, live()).warnings.join(" ")).not.toMatch(/contabilidad/);
   });
 
-  it("p95 > 3000ms impide publicar aunque el artefacto declare gate.approved", () => {
+  it("p95 > 3000ms deja el SLO visible sin bloquear la release, aunque el artefacto declare gate.approved", () => {
     const latency = resumirLatencias({
       A: [{ totalMs: 100, providerMs: 90 }],
       A1: [{ totalMs: 100, providerMs: 90 }],
@@ -264,11 +289,12 @@ describe("verja de publicación: los bloqueos del banco de 2026 (recomendación 
       B: [{ totalMs: 100, providerMs: 90 }, { totalMs: 4000, providerMs: 3900 }],
     }, "LIVE");
     const d = decidePublish(null, live({ latency: { ...latency, gate: { approved: true, reasons: [] } } }));
-    expect(d.ok).toBe(false);
-    expect(d.blockers.join(" ")).toMatch(/p95=3805ms.*3000ms/);
+    expect(d.ok).toBe(true);
+    expect(d.blockers).toEqual([]);
+    expect(d.warnings.join(" ")).toMatch(/p95=3805ms.*3000ms/);
   });
 
-  it("max > 5000ms en un escenario impide publicar, y sin latencia tampoco hay aprobación", () => {
+  it("max > 5000ms en un escenario queda visible, y sin latencia no hay aprobación", () => {
     const latency = latenciaValida("LIVE");
     const escenarioLento = {
       name: "lento",
@@ -280,9 +306,49 @@ describe("verja de publicación: los bloqueos del banco de 2026 (recomendación 
       }, "LIVE"),
     };
     const d = decidePublish(null, live({ latency, scenarios: [escenarioValido("uno", "LIVE"), escenarioLento] }));
-    expect(d.ok).toBe(false);
-    expect(d.blockers.join(" ")).toMatch(/scenario lento.*max=5001ms.*5000ms/);
+    expect(d.ok).toBe(true);
+    expect(d.blockers).toEqual([]);
+    expect(d.warnings.join(" ")).toMatch(/scenario lento.*max=5001ms.*5000ms/);
     expect(decidePublish(null, live({ latency: undefined })).blockers.join(" ")).toMatch(/falta el informe agregado/);
+  });
+
+  it("F1 recalcula A y B lentas: layerOk=true no aprueba interactiveSlo aunque el artefacto lo declare", () => {
+    const latency = resumirLatencias({
+      A: [muestraF1(4000, 3950, 0, 50)],
+      A1: [muestraF1(100, 90, 0, 10)],
+      A2: [muestraF1(100, 90, 0, 10)],
+      B: [muestraF1(4200, 4100, 50, 50)],
+    }, "LIVE");
+    const d = decidePublish(null, liveF1({ latency: { ...latency, interactiveSloOk: true, layerOk: true, gate: { approved: true, reasons: [] } } }));
+    expect(d).toMatchObject({ ok: true, releaseOk: true, interactiveSloOk: false, layerOk: true });
+    expect(d.blockers).toEqual([]);
+    expect(d.warnings.join(" ")).toMatch(/arms\.A\.total p95=4000ms/);
+    expect(d.warnings.join(" ")).toMatch(/arms\.B\.total p95=4200ms/);
+  });
+
+  it("F1 recalcula el presupuesto de trabajo de capa sin confundirlo con el SLO", () => {
+    const latency = resumirLatencias({
+      A: [muestraF1(100, 90, 0, 10)],
+      A1: [muestraF1(100, 90, 0, 10)],
+      A2: [muestraF1(100, 90, 0, 10)],
+      B: [muestraF1(400, 50, 300, 50)],
+    }, "LIVE");
+    const d = decidePublish(null, liveF1({ latency }));
+    expect(d).toMatchObject({ ok: false, releaseOk: false, interactiveSloOk: true, layerOk: false });
+    expect(d.blockers.join(" ")).toMatch(/layerWork p95=300ms.*250ms/);
+  });
+
+  it("F1 conserva un deadline corto en las muestras y bloquea aunque gate y el total digan que pasa", () => {
+    const latency = resumirLatencias({
+      A: [muestraF1(100, 90, 0, 10)],
+      A1: [muestraF1(100, 90, 0, 10)],
+      A2: [muestraF1(100, 90, 0, 10)],
+      B: [muestraF1(100, 90, 5, 5, "deadline_exceeded")],
+    }, "LIVE");
+    expect(latency.arms.B).toMatchObject({ total: { n: 1, max: 100 }, outcomes: { deadline_exceeded: 1 } });
+    const d = decidePublish(null, liveF1({ latency: { ...latency, interactiveSloOk: true, gate: { approved: true, reasons: [] } } }));
+    expect(d).toMatchObject({ ok: false, interactiveSloOk: false, layerOk: true });
+    expect(d.blockers.join(" ")).toMatch(/deadline_exceeded/);
   });
 
   it("la babosa del modelo es la misma para escribir el artefacto y para publicarlo", () => {

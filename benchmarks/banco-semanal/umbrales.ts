@@ -48,6 +48,11 @@
  *                        real no comprobada». Un pendiente por el retraso del
  *                        API se decide en la tirada siguiente (factura.ts).
  *
+ *   latencia-excedida    SLO interactivo: total p95 > 3000 ms, max > 5000 ms o
+ *                        cualquier deadline_exceeded (siempre falla petición y SLO).
+ *   trabajo-capa-excedido Trabajo local F1 p95 > 250 ms o max > 500 ms; presupuesto
+ *                        observado independiente del SLO, nunca un SLA futuro.
+ *
  * Y cuatro que no son «empeorar» pero impiden certificar que no empeoró:
  *
  *   arnes-falla          Una celda cuyo arnés murió, se colgó o no dejó
@@ -71,7 +76,7 @@
  */
 import type { Bateria } from "./plan.js";
 import type { Medicion } from "./extraer.js";
-import { PRESUPUESTOS_LATENCIA_B2 } from "../b2/latencia.js";
+import { PRESUPUESTOS_LATENCIA_B2, PRESUPUESTOS_TRABAJO_CAPA_B2, PROTOCOLO_LATENCIA_B2 } from "../b2/latencia.js";
 import { lineaDelCuadre, type Cuadre } from "./factura.js";
 
 export const TOLERANCIA_INFORME_RELATIVA = 0.02;
@@ -88,6 +93,8 @@ export type Regla =
   | "informe-vs-factura"
   | "factura-no-cuadra"
   | "latencia-excedida"
+  | "deadline-excedido"
+  | "trabajo-capa-excedido"
   | "arnes-falla"
   | "tope-excedido"
   | "tope-global"
@@ -154,6 +161,25 @@ export function infraccionesDe(m: Medicion, topeUsd: number): Infraccion[] {
   if (m.gastoUsd > topeUsd + EXCESO_DE_TOPE_USD) add("tope-excedido", `gastó ${m.gastoUsd.toFixed(4)} $ con un tope de ${topeUsd.toFixed(2)} $`);
   // Antes de mirar si se midió: una celda sin ítems comparables porque la capa falló en todos sigue fallando.
   if (m.fallosDeLaCapa > 0) add("capa-falla", `${m.fallosDeLaCapa} errores solo con la capa${m.ejemplosDeFallos.length ? `: ${m.ejemplosDeFallos.join(" · ")}` : ""}`);
+  for (const [brazo, l] of Object.entries(m.latency?.arms ?? {})) {
+    if (l.total.p95 > PRESUPUESTOS_LATENCIA_B2.p95Ms) {
+      add("latencia-excedida", `brazo ${brazo}: p95=${l.total.p95.toFixed(0)} ms supera ${PRESUPUESTOS_LATENCIA_B2.p95Ms} ms`);
+    }
+    if (l.total.max > PRESUPUESTOS_LATENCIA_B2.maxMs) {
+      add("latencia-excedida", `brazo ${brazo}: max=${l.total.max.toFixed(0)} ms supera ${PRESUPUESTOS_LATENCIA_B2.maxMs} ms`);
+    }
+    if (m.latency?.protocol === PROTOCOLO_LATENCIA_B2) {
+      if (l.outcomes.deadline_exceeded > 0) {
+        add("deadline-excedido", `brazo ${brazo}: ${l.outcomes.deadline_exceeded} petición(es) deadline_exceeded; un deadline siempre falla la petición y el SLO`);
+      }
+      if (l.layerWork.p95 > PRESUPUESTOS_TRABAJO_CAPA_B2.p95Ms) {
+        add("trabajo-capa-excedido", `brazo ${brazo}: trabajo de capa p95=${l.layerWork.p95.toFixed(0)} ms supera el presupuesto observado de ${PRESUPUESTOS_TRABAJO_CAPA_B2.p95Ms} ms`);
+      }
+      if (l.layerWork.max > PRESUPUESTOS_TRABAJO_CAPA_B2.maxMs) {
+        add("trabajo-capa-excedido", `brazo ${brazo}: trabajo de capa max=${l.layerWork.max.toFixed(0)} ms supera el presupuesto observado de ${PRESUPUESTOS_TRABAJO_CAPA_B2.maxMs} ms`);
+      }
+    }
+  }
   if (m.estado !== "medido") return out;
   if ((m.respuestasDeOtraPregunta ?? 0) > 0) add("otra-pregunta", `${m.respuestasDeOtraPregunta} respuestas servidas de otra pregunta`);
   if ((m.llamadasCambiadas ?? 0) > 0) add("llamada-cambiada", `${m.llamadasCambiadas} llamadas a herramienta cambiadas u omitidas por la capa`);
@@ -167,19 +193,18 @@ export function infraccionesDe(m: Medicion, topeUsd: number): Infraccion[] {
       add("informe-vs-factura", `brazo ${f.brazo}: el informe dice ${f.informeUsd.toFixed(6)} $ y la factura ${f.facturaUsd.toFixed(6)} $${rel} en ${f.llamadas} llamadas`);
     }
   }
-  for (const [brazo, l] of Object.entries(m.latency?.arms ?? {})) {
-    if (l.total.p95 > PRESUPUESTOS_LATENCIA_B2.p95Ms) {
-      add("latencia-excedida", `brazo ${brazo}: p95=${l.total.p95.toFixed(0)} ms supera ${PRESUPUESTOS_LATENCIA_B2.p95Ms} ms`);
-    }
-    if (l.total.max > PRESUPUESTOS_LATENCIA_B2.maxMs) {
-      add("latencia-excedida", `brazo ${brazo}: max=${l.total.max.toFixed(0)} ms supera ${PRESUPUESTOS_LATENCIA_B2.maxMs} ms`);
-    }
-  }
   return out;
 }
 
 export interface Veredicto {
+  /** Alias compatible del veredicto de release. */
   ok: boolean;
+  releaseOk: boolean;
+  interactiveSloOk: boolean;
+  /** null cuando todas las celdas son legacy y no hay evidencia F1 de trabajo de capa. */
+  layerOk: boolean | null;
+  interactiveSloInfracciones: Infraccion[];
+  layerInfracciones: Infraccion[];
   infracciones: Infraccion[];
   avisos: string[];
 }
@@ -269,5 +294,18 @@ export function evaluar(resultados: readonly ResultadoDeCelda[], abortoGlobal: s
   const fac = evaluarFactura(factura);
   infracciones.push(...fac.infracciones);
   avisos.push(...fac.avisos);
-  return { ok: infracciones.length === 0, infracciones, avisos };
+  const interactiveSloInfracciones = infracciones.filter((i) => i.regla === "latencia-excedida" || i.regla === "deadline-excedido");
+  const layerInfracciones = infracciones.filter((i) => i.regla === "trabajo-capa-excedido");
+  const hayEvidenciaF1 = resultados.some((r) => r.estado === "medida" && r.medicion.latency?.protocol === PROTOCOLO_LATENCIA_B2);
+  const releaseOk = infracciones.filter((i) => i.regla !== "latencia-excedida").length === 0;
+  return {
+    ok: releaseOk,
+    releaseOk,
+    interactiveSloOk: interactiveSloInfracciones.length === 0,
+    layerOk: hayEvidenciaF1 ? layerInfracciones.length === 0 : null,
+    interactiveSloInfracciones,
+    layerInfracciones,
+    infracciones,
+    avisos,
+  };
 }

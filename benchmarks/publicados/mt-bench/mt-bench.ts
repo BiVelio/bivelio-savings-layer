@@ -63,7 +63,7 @@
  */
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { resumirLatencias, type InformeLatencia, type MuestraLatencia } from "../../b2/latencia.js";
+import { estadoDeMuestra, resumirLatencias, type InformeLatencia, type MuestraLatenciaF1, type MuestrasPorBrazo } from "../../b2/latencia.js";
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -670,6 +670,12 @@ interface LlamadaMedida {
   error?: string;
 }
 
+interface MedicionDeTurno {
+  providerWaitMs: number;
+  harnessMs: number;
+  deadlineExcedido: boolean;
+}
+
 interface ContextoDeTransporte {
   familia: Familia;
   /** Prima de escritura de caché de ESTE modelo (ver `primaDeTransporte`). */
@@ -681,6 +687,19 @@ interface ContextoDeTransporte {
   turno: 1 | 2;
   registro: LlamadaMedida[];
   base: typeof fetch;
+  medicion?: MedicionDeTurno;
+}
+
+function muestraDeTurno(brazo: Brazo, totalMs: number, medicion: MedicionDeTurno, error?: unknown): MuestraLatenciaF1 {
+  const providerWaitMs = medicion.providerWaitMs;
+  const harnessMs = brazo === "A" ? Math.max(0, totalMs - providerWaitMs) : medicion.harnessMs;
+  return {
+    totalMs,
+    providerWaitMs,
+    layerWorkMs: brazo === "A" ? 0 : Math.max(0, totalMs - providerWaitMs - harnessMs),
+    harnessMs,
+    estado: estadoDeMuestra(error, medicion.deadlineExcedido),
+  };
 }
 
 /**
@@ -741,21 +760,40 @@ function fetchMedido(ctx: ContextoDeTransporte): typeof fetch {
     let reintentos = 0;
     let res: Response | null = null;
     let ultimoError: unknown = null;
+    const sumarProveedor = (inicio: number): void => {
+      if (ctx.medicion) ctx.medicion.providerWaitMs += Math.max(0, performance.now() - inicio);
+    };
+    const dormirHarness = async (ms: number): Promise<void> => {
+      const inicio = performance.now();
+      try {
+        await esperar(ms);
+      } finally {
+        if (ctx.medicion) ctx.medicion.harnessMs += Math.max(0, performance.now() - inicio);
+      }
+    };
     for (let intento = 0; intento < 7; intento++) {
+      const inicioProveedor = performance.now();
       try {
         res = await ctx.base(input, init);
-        if (!REINTENTABLE.has(res.status) || intento === 6) break;
-        const ra = Number(res.headers.get("retry-after"));
-        await res.text().catch(() => "");
-        reintentos++;
-        await esperar(Math.min(60_000, (Number.isFinite(ra) && ra > 0 ? ra * 1000 : 2000 * 2 ** intento) + Math.random() * 500));
       } catch (e) {
+        sumarProveedor(inicioProveedor);
+        if (ctx.medicion && estadoDeMuestra(e) === "deadline_exceeded") ctx.medicion.deadlineExcedido = true;
         ultimoError = e;
         res = null;
         if (intento === 6) break;
         reintentos++;
-        await esperar(Math.min(60_000, 2000 * 2 ** intento));
+        await dormirHarness(Math.min(60_000, 2000 * 2 ** intento));
+        continue;
       }
+      sumarProveedor(inicioProveedor);
+      if (res.status === 408 && ctx.medicion) ctx.medicion.deadlineExcedido = true;
+      if (!REINTENTABLE.has(res.status) || intento === 6) break;
+      const ra = Number(res.headers.get("retry-after"));
+      const inicioCuerpo = performance.now();
+      await res.text().catch(() => "");
+      sumarProveedor(inicioCuerpo);
+      reintentos++;
+      await dormirHarness(Math.min(60_000, (Number.isFinite(ra) && ra > 0 ? ra * 1000 : 2000 * 2 ** intento) + Math.random() * 500));
     }
     const latenciaMs = performance.now() - t0;
     if (!res) {
@@ -764,7 +802,9 @@ function fetchMedido(ctx: ContextoDeTransporte): typeof fetch {
       ctx.registro.push({ brazo: ctx.brazo, turno: ctx.turno, status: 0, uso: null, coste: 0, latenciaMs, reintentos, modeloServido: null, finDeGeneracion: null, cuerpo, error: err });
       throw new Error(`transporte: ${err}`);
     }
+    const inicioLectura = performance.now();
     const crudo = await res.clone().text();
+    sumarProveedor(inicioLectura);
     let json: unknown = null;
     try {
       json = JSON.parse(crudo);
@@ -1051,6 +1091,8 @@ interface TurnoDeBrazo {
   texto: string;
   fin: string | null;
   latenciaMs: number;
+  /** Evidencia B2-F1; ausente al releer crudos legacy. */
+  latency?: MuestraLatenciaF1;
   informe?: Pick<InformeDeLaCapa, "calls" | "tokens" | "cache" | "routing" | "cost" | "qualityStatus" | "latencyMs"> & { etapas: string[] };
 }
 
@@ -1088,40 +1130,74 @@ async function correrPregunta(
     for (const turno of [1, 2] as const) {
       ctxA.turno = turno;
       ctxB.turno = turno;
+      ctxA.medicion = { providerWaitMs: 0, harnessMs: 0, deadlineExcedido: false };
+      ctxB.medicion = { providerWaitMs: 0, harnessMs: 0, deadlineExcedido: false };
       histA.push({ role: "user", content: p.turnos[turno - 1]! });
       histB.push({ role: "user", content: p.turnos[turno - 1]! });
+      let totalA = 0;
+      let totalB = 0;
       const [ra, rb] = await Promise.all([
-        llamarDirecto(m, cred, [...histA], temperatura, fA),
         (async () => {
           const t0 = performance.now();
-          const r = await capa.generate({
-            model: idCualificado(m),
-            messages: [...histB],
-            maxOutputTokens: m.maxSalida,
-            ...(temperatura !== undefined ? { temperature: temperatura } : {}),
-          });
-          return { r, latenciaMs: performance.now() - t0 };
+          try {
+            return { r: await llamarDirecto(m, cred, [...histA], temperatura, fA) };
+          } catch (e) {
+            return { e: e as unknown };
+          } finally {
+            totalA = Math.max(0, performance.now() - t0);
+          }
+        })(),
+        (async () => {
+          const t0 = performance.now();
+          try {
+            return {
+              r: await capa.generate({
+                model: idCualificado(m),
+                messages: [...histB],
+                maxOutputTokens: m.maxSalida,
+                ...(temperatura !== undefined ? { temperature: temperatura } : {}),
+              }),
+            };
+          } catch (e) {
+            return { e: e as unknown };
+          } finally {
+            totalB = Math.max(0, performance.now() - t0);
+          }
         })(),
       ]);
-      out.A.push({ texto: ra.texto, fin: ra.fin, latenciaMs: ra.latenciaMs });
-      const inf = rb.r.report;
+      const latencyA = muestraDeTurno("A", totalA, ctxA.medicion, ra.e);
+      const latencyB = muestraDeTurno("B", totalB, ctxB.medicion, rb.e);
+      out.A.push({ texto: ra.r?.texto ?? "", fin: ra.r?.fin ?? null, latenciaMs: ra.r?.latenciaMs ?? totalA, latency: latencyA });
+      const inf = rb.r?.report;
       out.B.push({
-        texto: rb.r.text ?? "",
-        fin: rb.r.finishReason ?? null,
-        latenciaMs: rb.latenciaMs,
-        informe: {
-          calls: inf.calls,
-          tokens: inf.tokens,
-          cache: inf.cache,
-          routing: inf.routing,
-          cost: inf.cost,
-          ...(inf.qualityStatus ? { qualityStatus: inf.qualityStatus } : {}),
-          latencyMs: inf.latencyMs,
-          etapas: (inf.traces ?? []).map((t) => `${t.stage}:${t.outcome}`),
-        },
+        texto: rb.r?.text ?? "",
+        fin: rb.r?.finishReason ?? null,
+        latenciaMs: totalB,
+        latency: latencyB,
+        ...(inf
+          ? {
+              informe: {
+                calls: inf.calls,
+                tokens: inf.tokens,
+                cache: inf.cache,
+                routing: inf.routing,
+                cost: inf.cost,
+                ...(inf.qualityStatus ? { qualityStatus: inf.qualityStatus } : {}),
+                latencyMs: inf.latencyMs,
+                etapas: (inf.traces ?? []).map((t) => `${t.stage}:${t.outcome}`),
+              },
+            }
+          : {}),
       });
-      histA.push({ role: "assistant", content: ra.texto });
-      histB.push({ role: "assistant", content: rb.r.text ?? "" });
+      const error = ra.e ?? rb.e;
+      if (ra.e !== undefined || rb.e !== undefined) {
+        out.error = tapar(String((error as Error)?.message ?? error));
+        const presupuesto = [ra.e, rb.e].find((e): e is PresupuestoAgotado => e instanceof PresupuestoAgotado);
+        if (presupuesto) throw presupuesto;
+        break;
+      }
+      histA.push({ role: "assistant", content: ra.r!.texto });
+      histB.push({ role: "assistant", content: rb.r!.text ?? "" });
     }
   } catch (e) {
     out.error = tapar(String((e as Error)?.message ?? e));
@@ -1389,10 +1465,17 @@ function resumir(
   const latTurno = (b: Brazo) => completas.flatMap((r) => r[b].map((t) => t.latenciaMs));
   const latA = latTurno("A");
   const latB = latTurno("B");
-  const latencySamples = {
-    A: completas.flatMap((r): MuestraLatencia[] => r.A.map((t) => ({ totalMs: t.latenciaMs, providerMs: t.latenciaMs }))),
-    B: completas.flatMap((r): MuestraLatencia[] => r.B.map((t) => ({ totalMs: t.latenciaMs, providerMs: t.informe?.latencyMs.provider ?? t.latenciaMs }))),
-  };
+  const turnosDeLatencia = resultados.flatMap((r) => [...r.A, ...r.B]);
+  const separadas = turnosDeLatencia.every((t) => t.latency !== undefined);
+  const latencySamples: MuestrasPorBrazo = separadas
+    ? {
+        A: resultados.flatMap((r) => r.A.map((t) => t.latency!)),
+        B: resultados.flatMap((r) => r.B.map((t) => t.latency!)),
+      }
+    : {
+        A: resultados.flatMap((r) => r.A.map((t) => ({ totalMs: t.latenciaMs, providerMs: t.latenciaMs }))),
+        B: resultados.flatMap((r) => r.B.map((t) => ({ totalMs: t.latenciaMs, providerMs: t.informe?.latencyMs.provider ?? t.latenciaMs }))),
+      };
   const ahorroEstratificado = completas.length ? bootstrapRatioCIEstratificado(estratos, { seed: SEMILLA_DE_MUESTRA }) : null;
 
   // El cable: la PRIMERA llamada de cada brazo en cada turno (la que responde).

@@ -3,10 +3,16 @@ import { describe, expect, it } from "vitest";
 import {
   conVerjaDeLatencia,
   cronometrar,
+  evaluarLatencia,
   motivosBloqueoLatencia,
   percentilesLatencia,
   PRESUPUESTOS_LATENCIA_B2,
+  PRESUPUESTOS_TRABAJO_CAPA_B2,
+  PROTOCOLO_LATENCIA_B2,
+  PROTOCOLO_LATENCIA_B2_F0,
   resumirLatencias,
+  type EstadoDeMuestra,
+  type MuestraLatenciaF1,
 } from "../benchmarks/b2/latencia.js";
 
 const muestrasValidas = {
@@ -15,6 +21,20 @@ const muestrasValidas = {
   A2: [{ totalMs: 100, providerMs: 95 }],
   B: [{ totalMs: 120, providerMs: 95 }],
 };
+
+const f1 = (totalMs: number, providerWaitMs: number, layerWorkMs: number, harnessMs: number, estado: EstadoDeMuestra = "completed"): MuestraLatenciaF1 => ({
+  totalMs,
+  providerWaitMs,
+  layerWorkMs,
+  harnessMs,
+  estado,
+});
+const muestrasF1Validas = () => ({
+  A: [f1(100, 90, 0, 10)],
+  A1: [f1(100, 90, 0, 10)],
+  A2: [f1(100, 90, 0, 10)],
+  B: [f1(120, 90, 20, 10)],
+});
 
 describe("protocolo B2-F0: presupuesto y cronometría", () => {
   it("fija p95 en 3000ms y el techo absoluto en 5000ms", () => {
@@ -91,5 +111,88 @@ describe("protocolo B2-F0: verja de latencia", () => {
   it("MOCK nunca puede presentarse como medición de SLA de producción", () => {
     const informe = resumirLatencias(muestrasValidas, "LIVE");
     expect(motivosBloqueoLatencia(informe, [], "MOCK").join(" ")).toMatch(/productionSla.*not-applicable/);
+  });
+});
+
+describe("protocolo B2-F1: evidencia separada y fallos visibles", () => {
+  it("conserva los cuatro componentes y publica el resultado de ambos presupuestos por brazo", () => {
+    const informe = resumirLatencias(muestrasF1Validas(), "LIVE");
+    expect(informe.protocol).toBe(PROTOCOLO_LATENCIA_B2);
+    expect(PRESUPUESTOS_TRABAJO_CAPA_B2).toEqual({ p95Ms: 250, maxMs: 500 });
+    expect(informe.arms.B).toMatchObject({
+      total: { n: 1, p95: 120, max: 120 },
+      providerWait: { n: 1, p95: 90, max: 90 },
+      layerWork: { n: 1, p95: 20, max: 20 },
+      harness: { n: 1, p95: 10, max: 10 },
+      outcomes: { completed: 1, deadline_exceeded: 0, provider_error: 0 },
+      interactiveSlo: { ok: true },
+      layerWorkBudget: { ok: true },
+    });
+    expect(evaluarLatencia(informe, [], "LIVE")).toMatchObject({ interactiveSloOk: true, layerOk: true, releaseOk: true });
+  });
+
+  it("A lenta y B lenta quedan visibles aunque el proveedor explique el total y la capa pase aparte", () => {
+    const informe = resumirLatencias({
+      ...muestrasF1Validas(),
+      A: [f1(4000, 3950, 0, 50)],
+      B: [f1(4200, 4100, 50, 50)],
+    }, "LIVE");
+    const v = evaluarLatencia(informe, [], "LIVE");
+    expect(v.interactiveSloOk).toBe(false);
+    expect(v.layerOk).toBe(true);
+    expect(v.releaseOk).toBe(true);
+    expect(v.interactiveSloReasons.join(" ")).toMatch(/arms\.A\.total p95=4000ms/);
+    expect(v.interactiveSloReasons.join(" ")).toMatch(/arms\.B\.total p95=4200ms/);
+  });
+
+  it("el trabajo de capa decide aparte aunque el total interactivo esté dentro de presupuesto", () => {
+    const informe = resumirLatencias({ ...muestrasF1Validas(), B: [f1(400, 50, 300, 50)] }, "LIVE");
+    const v = evaluarLatencia(informe, [], "LIVE");
+    expect(v.interactiveSloOk).toBe(true);
+    expect(v.layerOk).toBe(false);
+    expect(v.layerReasons.join(" ")).toMatch(/layerWork p95=300ms.*250ms/);
+  });
+
+  it("un timeout conserva duración y muestra, falla el SLO incluso por debajo de 5 s y no borra otros errores", () => {
+    const informe = resumirLatencias({
+      ...muestrasF1Validas(),
+      B: [f1(100, 90, 5, 5, "deadline_exceeded"), f1(110, 90, 10, 10, "provider_error")],
+    }, "LIVE");
+    expect(informe.arms.B).toMatchObject({
+      total: { n: 2, max: 110 },
+      providerWait: { n: 2 },
+      layerWork: { n: 2 },
+      harness: { n: 2 },
+      outcomes: { completed: 0, deadline_exceeded: 1, provider_error: 1 },
+    });
+    const v = evaluarLatencia(informe, [], "LIVE");
+    expect(v.interactiveSloOk).toBe(false);
+    expect(v.layerOk).toBe(true);
+    expect(v.interactiveSloReasons.join(" ")).toMatch(/deadline_exceeded/);
+    expect(conVerjaDeLatencia(informe, [], "LIVE").gate?.approved).toBe(false);
+  });
+
+  it("no pierde brazos y recalcula también el trabajo de capa por escenario", () => {
+    const conExtra = resumirLatencias({ ...muestrasF1Validas(), S: [f1(100, 80, 10, 10)], E: [f1(100, 80, 10, 10)] }, "LIVE");
+    expect(conExtra.activeArms).toEqual(expect.arrayContaining(["A", "A1", "A2", "B", "S", "E"]));
+    const escenario = resumirLatencias({ ...muestrasF1Validas(), B: [f1(400, 50, 300, 50)] }, "LIVE");
+    const v = evaluarLatencia(resumirLatencias(muestrasF1Validas(), "LIVE"), [{ name: "celda", latency: escenario }], "LIVE");
+    expect(v.interactiveSloOk).toBe(true);
+    expect(v.layerOk).toBe(false);
+    expect(v.layerReasons.join(" ")).toMatch(/scenario celda arms\.B\.layerWork/);
+    const sinB = { name: "incompleta", latency: { ...escenario, arms: Object.fromEntries(Object.entries(escenario.arms).filter(([b]) => b !== "B")) } };
+    expect(evaluarLatencia(resumirLatencias(muestrasF1Validas(), "LIVE"), [sinB], "LIVE").reasons.join(" ")).toMatch(/scenario incompleta arms\.B falta/);
+  });
+
+  it("B2-F0-v1 sigue siendo legible sin inventar evidencia de capa F1", () => {
+    const legacy = resumirLatencias(muestrasValidas, "LIVE");
+    expect(legacy.protocol).toBe(PROTOCOLO_LATENCIA_B2_F0);
+    expect(legacy.arms.B?.layerOverhead.p95).toBe(25);
+    expect(evaluarLatencia(legacy, [], "LIVE")).toMatchObject({ interactiveSloOk: true, layerOk: null, releaseOk: true });
+    const escenarioSoloTotal = {
+      name: "f0",
+      latency: { arms: Object.fromEntries(legacy.activeArms.map((b) => [b, { total: legacy.arms[b]!.total }])) },
+    };
+    expect(evaluarLatencia(legacy, [escenarioSoloTotal], "LIVE").releaseOk).toBe(true);
   });
 });

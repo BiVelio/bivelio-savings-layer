@@ -242,7 +242,7 @@ export const unidadEnCurso = new AsyncLocalStorage<{
   unidad: string;
   brazo: Brazo;
   registro: LlamadaDelCable[];
-  medicion?: { providerMs: number };
+  medicion?: { providerMs: number; harnessMs?: number; deadlineExcedido?: boolean; providerError?: boolean };
 }>();
 
 const REINTENTABLE = new Set([408, 409, 429, 500, 502, 503, 504, 529]);
@@ -298,6 +298,14 @@ export function crearCable(o: OpcionesDelCable): typeof fetch {
   const ahora = o.ahora ?? (() => performance.now());
   return async (input, init) => {
     const ctx = unidadEnCurso.getStore();
+    const dormirHarness = async (ms: number): Promise<void> => {
+      const inicio = ahora();
+      try {
+        await dormir(ms);
+      } finally {
+        if (ctx?.medicion) ctx.medicion.harnessMs = (ctx.medicion.harnessMs ?? 0) + Math.max(0, ahora() - inicio);
+      }
+    };
     const brazo: Brazo = ctx?.brazo ?? "B";
     const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
     const cuerpo = typeof init?.body === "string" ? init.body : "";
@@ -329,23 +337,25 @@ export function crearCable(o: OpcionesDelCable): typeof fetch {
         providerMs += transcurrido;
         if (ctx?.medicion) ctx.medicion.providerMs += transcurrido;
         const porPlazo = plazo.aborted;
+        if (porPlazo && ctx?.medicion) ctx.medicion.deadlineExcedido = true;
         const porRed = !porPlazo && e instanceof TypeError && !(init?.signal?.aborted ?? false);
         if (!(porPlazo || porRed)) throw e;
         o.presupuesto.cargarAbortada(brazo, peorCaso);
         if (deTransporte >= REINTENTOS_DE_TRANSPORTE) throw e;
         deTransporte++;
         o.presupuesto.comprobarLlamada(peorCaso);
-        await dormir(pausas[Math.min(deTransporte - 1, pausas.length - 1)]!);
+        await dormirHarness(pausas[Math.min(deTransporte - 1, pausas.length - 1)]!);
         continue;
       }
       const transcurrido = ahora() - inicioProveedor;
       providerMs += transcurrido;
       if (ctx?.medicion) ctx.medicion.providerMs += transcurrido;
+      if (resp.status === 408 && ctx?.medicion) ctx.medicion.deadlineExcedido = true;
       const saldoAgotado = resp.status === 429 && /credit_balance_exhausted|no credits remaining/i.test(texto);
       if (saldoAgotado || !REINTENTABLE.has(resp.status) || intentos > pausas.length) break;
       const ra = Number(resp.headers.get("retry-after"));
       const pausa = Math.min(60_000, Math.max(pausas[intentos - 1]!, Number.isFinite(ra) ? ra * 1000 : 0));
-      await dormir(pausa * (0.75 + Math.random() * 0.5));
+      await dormirHarness(pausa * (0.75 + Math.random() * 0.5));
     }
     let respuesta: Obj | null = null;
     try {

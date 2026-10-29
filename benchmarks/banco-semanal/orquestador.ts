@@ -368,7 +368,9 @@ async function principal(): Promise<void> {
     modo === "vivo"
       ? bruto
       : {
+          ...bruto,
           ok: bruto.infracciones.every((i) => !REGLAS_DE_FONTANERIA.has(i.regla)),
+          releaseOk: bruto.infracciones.every((i) => !REGLAS_DE_FONTANERIA.has(i.regla)),
           infracciones: bruto.infracciones.filter((i) => REGLAS_DE_FONTANERIA.has(i.regla)),
           avisos: [
             ...bruto.infracciones.filter((i) => !REGLAS_DE_FONTANERIA.has(i.regla)).map((i) => `(SECO, no cuenta) ${i.regla} · ${i.bateria} · ${i.modelo}: ${i.detalle}`),

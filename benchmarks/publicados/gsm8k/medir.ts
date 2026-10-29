@@ -11,6 +11,7 @@
  *     independientes: una repetición servida de caché copia a su original.
  */
 import { bootstrapProporcionPorGrupos, bootstrapRatioCI, type CI } from "../../stats.js";
+import type { MuestraLatenciaF1 } from "../../b2/latencia.js";
 import { esErrorNoMedibleDelProveedor } from "../cuota.js";
 import { CLASES, CLASES_CON_ORO, CLASES_VARIANTE, type ClaseDePeticion } from "./flujo.js";
 
@@ -42,8 +43,10 @@ export interface Ensayo {
   escrita: number;
   salida: number;
   latenciaMs: number;
-  /** Tiempo anidado de proveedor; 0 cuando la respuesta salió sin llamada. */
+  /** Campo legacy: tiempo anidado de proveedor; 0 cuando la respuesta salió sin llamada. */
   proveedorMs?: number;
+  /** Evidencia B2-F1; opcional solo al releer artefactos F0 o anteriores. */
+  latency?: MuestraLatenciaF1;
   /** De dónde salió la respuesta: `provider`, `exact_cache`, `semantic_cache`, `coalesced`, `deterministic`. */
   fuente: string;
   /** Solo en los brazos con capa: lo que dice su informe. */

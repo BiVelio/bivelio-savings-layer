@@ -3,6 +3,7 @@
  * Puro: del resultado ya evaluado al texto.
  */
 import { BATERIAS, PRESUPUESTO_SEMANAL_USD, type Modo, type Reparto } from "./plan.js";
+import { PROTOCOLO_LATENCIA_B2 } from "../b2/latencia.js";
 import { lineaDelCuadre, type Cuadre } from "./factura.js";
 import type { ResultadoDeCelda, Veredicto } from "./umbrales.js";
 
@@ -26,7 +27,7 @@ const escapar = (s: string) => s.replace(/\|/g, "\\|").replace(/\n/g, " ");
 function metricas(r: ResultadoDeCelda): string {
   if (r.estado !== "medida") return "—";
   const m = r.medicion;
-  if (m.estado !== "medido") return "—";
+  if (m.estado !== "medido" && !m.latency) return "—";
   const partes: string[] = [];
   if (m.respuestasDeOtraPregunta !== undefined) partes.push(`otra pregunta ${m.respuestasDeOtraPregunta}`);
   if (m.llamadasCambiadas !== undefined) partes.push(`llamadas cambiadas ${m.llamadasCambiadas}`);
@@ -47,7 +48,15 @@ function metricas(r: ResultadoDeCelda): string {
   const f = m.informeVsFactura.find((x) => x.brazo === "B") ?? m.informeVsFactura[0];
   if (f && f.facturaUsd > 0) partes.push(`informe/factura ${(((f.informeUsd - f.facturaUsd) / f.facturaUsd) * 100).toFixed(2)} %`);
   for (const [brazo, l] of Object.entries(m.latency?.arms ?? {})) {
-    partes.push(`lat ${brazo} p95 ${Math.round(l.total.p95)} ms · max ${Math.round(l.total.max)} ms · overhead p95 ${Math.round(l.layerOverhead.p95)} ms`);
+    partes.push(`lat ${brazo} p95 ${Math.round(l.total.p95)} ms · max ${Math.round(l.total.max)} ms`);
+    if (m.latency?.protocol === PROTOCOLO_LATENCIA_B2) {
+      partes.push(
+        `SLO ${brazo} ${l.interactiveSlo.ok ? "ok" : "FALLA"} · capa p95 ${Math.round(l.layerWork.p95)} ms ${l.layerWorkBudget.ok ? "ok" : "FALLA"} · arnés p95 ${Math.round(l.harness.p95)} ms` +
+          ` · deadlines ${l.outcomes.deadline_exceeded} · errores ${l.outcomes.provider_error}`,
+      );
+    } else {
+      partes.push(`overhead legacy p95 ${Math.round(l.layerOverhead.p95)} ms`);
+    }
   }
   return partes.join(" · ");
 }
@@ -77,7 +86,7 @@ function estado(r: ResultadoDeCelda): string {
 
 export function resumenMarkdown(d: DatosDelResumen): string {
   const L: string[] = [];
-  const ok = d.veredicto.ok;
+  const ok = d.veredicto.releaseOk;
   L.push(`# Banco semanal — ${ok ? "✅ sin regresiones" : "❌ REGRESIÓN o banco incompleto"}`);
   L.push("");
   L.push(
@@ -89,6 +98,22 @@ export function resumenMarkdown(d: DatosDelResumen): string {
     L.push("## Lo que hace fallar el banco");
     L.push("");
     for (const i of d.veredicto.infracciones) L.push(`- **${i.regla}** · ${i.bateria} · ${i.modelo}: ${escapar(i.detalle)}`);
+    L.push("");
+  }
+  if (d.veredicto.interactiveSloInfracciones.length) {
+    L.push("## Incumplimientos del SLO interactivo");
+    L.push("");
+    L.push("El trabajo de capa se evalúa aparte: que su presupuesto observado pase no convierte este SLO en aprobado.");
+    L.push("");
+    for (const i of d.veredicto.interactiveSloInfracciones) L.push(`- ${i.bateria} · ${i.modelo}: ${escapar(i.detalle)}`);
+    L.push("");
+  }
+  if (d.veredicto.layerInfracciones.length) {
+    L.push("## Trabajo de capa fuera del presupuesto observado");
+    L.push("");
+    L.push("Presupuesto de trabajo local observado (p95 ≤ 250 ms, máximo ≤ 500 ms); no es un SLA futuro.");
+    L.push("");
+    for (const i of d.veredicto.layerInfracciones) L.push(`- ${i.bateria} · ${i.modelo}: ${escapar(i.detalle)}`);
     L.push("");
   }
   L.push("## Celdas");
