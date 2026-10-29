@@ -300,7 +300,7 @@ describe("xstest · una tirada entera sin red, con la capa 0.4.31 en B", () => {
     const t = await correrTirada({
       modo: "SECO", modelos, prompts, endpoints, fetchBase: fetchDeMentira(prompts), secretos: [CLAVE], log: () => {},
     });
-    expect(t.latency).toMatchObject({ protocol: "B2-F0-v1", status: "estimated", instrumental: true, productionSla: "not-applicable", activeArms: ["A", "B"] });
+    expect(t.latency).toMatchObject({ protocol: "B2-F1-v1", status: "estimated", instrumental: true, productionSla: "not-applicable", activeArms: ["A", "B"] });
     const inf = construirInforme(t);
     const haiku = inf.resumen.find((r) => r.modelo === "claude-haiku-4-5")!;
     // ids 5 y 15 (inseguros, múltiplos de 5) → negativa del API con categoría cyber.
@@ -347,7 +347,7 @@ describe("xstest · una tirada entera sin red, con la capa 0.4.31 en B", () => {
     expect(t.registros.every((r) => !r.B!.error && r.B!.inyectado.length === 0)).toBe(true);
   });
 
-  it("latency B2: total contiene proveedor, LIVE se declara measured y la caché tiene providerMs=0", async () => {
+  it("latency B2-F1: separa proveedor, capa y arnés; LIVE es measured y la caché no espera al proveedor", async () => {
     const prompts = [2, 4, 6, 8].map((id) => ({ id, prompt: "same safe prompt", type: "homonyms", label: "safe" as const, focus: "", note: "" }));
     const base = fetchDeMentira(prompts);
     let reloj = 0;
@@ -359,21 +359,24 @@ describe("xstest · una tirada entera sin red, con la capa 0.4.31 en B", () => {
       modo: "VIVO", modelos: [modelos[1]!], prompts, endpoints, fetchBase: lento, secretos: [CLAVE], log: () => {},
       relojMonotono: () => reloj++,
     });
-    expect(t.latency).toMatchObject({ status: "measured", instrumental: false, productionSla: "assessed", activeArms: ["A", "B"] });
+    expect(t.latency).toMatchObject({ protocol: "B2-F1-v1", status: "measured", instrumental: false, productionSla: "assessed", activeArms: ["A", "B"] });
+    if (t.latency?.protocol !== "B2-F1-v1") throw new Error("se esperaba B2-F1-v1");
     const a = t.registros.map((r) => r.A!.latency!);
     const b = t.registros.flatMap((r) => [r.B!, ...r.repeticiones].map((x) => x.latency!));
     for (const m of [...a, ...b]) {
       expect(m.totalMs).toBeGreaterThan(0);
-      expect(m.totalMs).toBeGreaterThanOrEqual(m.providerMs);
+      expect(m.totalMs).toBeGreaterThanOrEqual(m.providerWaitMs);
+      expect(m.totalMs).toBeCloseTo(m.providerWaitMs + m.layerWorkMs + m.harnessMs, 8);
+      expect(m.estado).toBe("completed");
     }
-    expect(t.latency!.arms.A!.total.max).toBe(Math.max(...a.map((m) => m.totalMs)));
-    expect(t.latency!.arms.B!.total.max).toBe(Math.max(...b.map((m) => m.totalMs)));
-    expect(t.latency!.arms.A!.total.p95).toBeGreaterThanOrEqual(t.latency!.arms.A!.total.p50);
-    expect(t.latency!.arms.A!.total.p95).toBeLessThanOrEqual(t.latency!.arms.A!.total.max);
+    expect(t.latency.arms.A!.total.max).toBe(Math.max(...a.map((m) => m.totalMs)));
+    expect(t.latency.arms.B!.total.max).toBe(Math.max(...b.map((m) => m.totalMs)));
+    expect(t.latency.arms.A!.total.p95).toBeGreaterThanOrEqual(t.latency.arms.A!.total.p50);
+    expect(t.latency.arms.A!.total.p95).toBeLessThanOrEqual(t.latency.arms.A!.total.max);
     const cacheadas = t.registros.map((r) => r.B!).filter((x) => x.llamadasAlProveedor === 0);
     expect(cacheadas.length).toBeGreaterThan(0);
-    for (const c of cacheadas) expect(c.latency).toMatchObject({ providerMs: 0 });
-    expect(t.latency!.arms.B!.provider.max).toBeGreaterThan(0);
+    for (const c of cacheadas) expect(c.latency).toMatchObject({ providerWaitMs: 0 });
+    expect(t.latency.arms.B!.providerWait.max).toBeGreaterThan(0);
   });
 
   it("`extraAnthropic` va igual en A y en B (en B lo pone el banco, solo si falta, y lo anota)", async () => {
@@ -487,19 +490,27 @@ describe("xstest · una tirada entera sin red, con la capa 0.4.31 en B", () => {
     expect(renderizarMarkdown(t, construirInforme(t))).toMatch(/\(corte\)/);
   });
 
-  it("429 del proveedor: se reintenta con backoff y la capa no lo ve", async () => {
+  it("429 del proveedor: el backoff queda medido en harnessMs y la capa no lo ve", async () => {
     const prompts = promptsSinteticos().slice(0, 2);
     const base = fetchDeMentira(prompts);
     let n = 0;
+    let reloj = 0;
     const conLimite = (async (u: string, i: RequestInit) => {
       if (n++ < 2) return new Response("{}", { status: 429, headers: { "retry-after": "0" } });
       return base(u, i);
     }) as unknown as typeof fetch;
     const t = await correrTirada({
-      modo: "SECO", modelos: [modelos[0]!], prompts, endpoints, fetchBase: conLimite, secretos: [CLAVE], log: () => {}, dormir: async () => {},
+      modo: "SECO", modelos: [modelos[0]!], prompts, endpoints, fetchBase: conLimite, secretos: [CLAVE], log: () => {},
+      dormir: async () => { reloj += 100; }, relojMonotono: () => reloj,
     });
     expect(t.reintentosDeRed).toBe(2);
     expect(t.registros.every((r) => !r.A?.error && !r.B?.error)).toBe(true);
+    for (const m of t.registros.flatMap((r) => [r.A!.latency!, r.B!.latency!])) {
+      expect(m.estado).toBe("completed");
+    }
+    const muestras = t.registros.flatMap((r) => [r.A!.latency!, r.B!.latency!]);
+    expect(muestras.some((m) => m.harnessMs > 0)).toBe(true);
+    expect(muestras.every((m) => Number.isFinite(m.providerWaitMs) && Number.isFinite(m.layerWorkMs))).toBe(true);
   });
 
   it("prevuelo: credencial rechazada o id inexistente → no medible, sin una sola llamada de pago", async () => {

@@ -10,7 +10,7 @@
  * tocar el disco ni la red.
  */
 
-import { motivosBloqueoLatencia } from "./b2/latencia.js";
+import { evaluarLatencia } from "./b2/latencia.js";
 
 export interface CI {
   point: number;
@@ -56,7 +56,12 @@ export interface ArtifactShape {
 }
 
 export interface Decision {
+  /** Alias compatible del veredicto de release. */
   ok: boolean;
+  releaseOk: boolean;
+  interactiveSloOk: boolean;
+  /** null en F0: no hay evidencia separada de trabajo de capa que evaluar. */
+  layerOk: boolean | null;
   /** Por qué NO se publica. Vacío cuando `ok`. */
   blockers: string[];
   /** Se publica, pero el que lo lea tiene que saberlo. */
@@ -224,9 +229,11 @@ export function decidePublish(
     blockers.push("el artefacto no trae floors: cualquier cifra tiene que caber bajo el menor de los suelos");
   }
 
-  // ── 2h. Latencia B2: p95 y techo por brazo, agregado y por escenario. Se
-  // recalcula aquí; un `latency.gate.approved` escrito a mano no aprueba nada.
-  blockers.push(...motivosBloqueoLatencia(incoming.latency, incoming.scenarios, esLive ? "LIVE" : "MOCK"));
+  // ── 2h. SLO interactivo y trabajo de capa se recalculan por separado, en el
+  // agregado y por escenario. Ni `gate.approved` ni los booleanos F1 aprueban nada.
+  const latencia = evaluarLatencia(incoming.latency, incoming.scenarios, esLive ? "LIVE" : "MOCK");
+  blockers.push(...latencia.structuralReasons, ...latencia.layerReasons, ...latencia.deadlineReasons);
+  warnings.push(...latencia.interactiveSloReasons.filter((reason) => !latencia.deadlineReasons.includes(reason)));
 
   // ── 3. Integridad interna. Estas las calcula el propio benchmark; si alguna
   // falla, la tirada no vale aunque el porcentaje sea bonito.
@@ -316,5 +323,6 @@ export function decidePublish(
     warnings.push("publicando un artefacto MOCK a petición explícita: NO es una afirmación de ahorro");
   }
 
-  return { ok: blockers.length === 0, blockers, warnings };
+  const releaseOk = blockers.length === 0;
+  return { ok: releaseOk, releaseOk, interactiveSloOk: latencia.interactiveSloOk, layerOk: latencia.layerOk, blockers, warnings };
 }

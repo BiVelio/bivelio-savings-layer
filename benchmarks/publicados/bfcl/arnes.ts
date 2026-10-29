@@ -43,7 +43,7 @@ import { performance } from "node:perf_hooks";
 import { fileURLToPath } from "node:url";
 
 import type { Provider, SavingsLayer, SavingsResult } from "../../../src/index.js";
-import { resumirLatencias, type InformeLatencia, type MuestraLatencia, type MuestrasPorBrazo } from "../../b2/latencia.js";
+import { estadoDeMuestra, resumirLatencias, type InformeLatencia, type MuestraLatenciaF1, type MuestrasPorBrazo } from "../../b2/latencia.js";
 import { precioYPrima } from "../../coste.js";
 import { baseNativaDeGemini, BASE_NATIVA_DE_GEMINI, dialectoDeGoogle, googleDelEntorno } from "../../gemini-nativo.js";
 import { muestreoPareadoPara } from "../../scenarios.js";
@@ -434,9 +434,16 @@ interface Contexto {
   presupuesto: Presupuesto;
   diario: string;
   precio: CostModelDelBanco;
-  latencias: { A: MuestraLatencia[]; B: MuestraLatencia[] };
+  latencias: { A: MuestraLatenciaF1[]; B: MuestraLatenciaF1[] };
 }
 type CostModelDelBanco = { inputPer1k: number; outputPer1k: number; cachedInputPer1k?: number };
+
+interface MedicionDeBrazo {
+  providerMs: number;
+  harnessMs: number;
+  deadlineExcedido: boolean;
+  providerError: boolean;
+}
 
 /** La mayor salida de una llamada de este modelo en el diario del cable de ESTA tirada. */
 function maximaSalida(diario: string, modelo: string): number {
@@ -460,22 +467,39 @@ function volcar(ctx: Contexto, reg: LlamadaDelCable[]): void {
 async function medirBrazo<T>(
   ctx: Contexto,
   brazo: "A" | "B",
-  f: (medicion: { providerMs: number }) => Promise<T>,
+  f: (medicion: MedicionDeBrazo) => Promise<T>,
 ): Promise<T> {
   const inicio = performance.now();
-  const medicion = { providerMs: 0 };
+  const medicion: MedicionDeBrazo = { providerMs: 0, harnessMs: 0, deadlineExcedido: false, providerError: false };
   try {
     return await f(medicion);
+  } catch (e) {
+    medicion.providerError = true;
+    throw e;
   } finally {
-    ctx.latencias[brazo].push({ totalMs: performance.now() - inicio, providerMs: medicion.providerMs });
+    const totalMs = Math.max(0, performance.now() - inicio);
+    const providerWaitMs = medicion.providerMs;
+    const harnessMs = brazo === "A" ? Math.max(0, totalMs - providerWaitMs) : medicion.harnessMs;
+    ctx.latencias[brazo].push({
+      totalMs,
+      providerWaitMs,
+      layerWorkMs: brazo === "A" ? 0 : Math.max(0, totalMs - providerWaitMs - harnessMs),
+      harnessMs,
+      estado: estadoDeMuestra(medicion.providerError ? "provider error" : undefined, medicion.deadlineExcedido),
+    });
   }
 }
 
 async function correrA(ctx: Contexto, unidad: string, turnos: Turno[], hs: HerramientaNeutral[], reg: LlamadaDelCable[]) {
   return medirBrazo(ctx, "A", async (medicion) => {
-    if (ctx.familia === "google") return correrANativoGemini(ctx, unidad, turnos, hs, reg, medicion);
+    if (ctx.familia === "google") {
+      const resultado = await correrANativoGemini(ctx, unidad, turnos, hs, reg, medicion);
+      if (!resultado.ok) medicion.providerError = true;
+      return resultado;
+    }
     const cuerpo = cuerpoBrazoA(ctx.familia, ctx.modelo, turnos, hs, ctx.muestreo);
     const r = await unidadEnCurso.run({ unidad, brazo: "A", registro: reg, medicion }, () => llamarBrazoA(ctx.ep, ctx.cable, cuerpo));
+    if (!r.ok) medicion.providerError = true;
     const leida = leerRespuesta(ctx.familia, r.ok ? r.cuerpo : null);
     return {
       cuerpo,
@@ -533,6 +557,7 @@ async function correrB(ctx: Contexto, unidad: string, turnos: Turno[], hs: Herra
       const err = e as Error;
       if (err.cause instanceof PresupuestoAgotado) throw err.cause;
       if (/presupuesto de .* agotado/.test(err.message)) throw new PresupuestoAgotado(ctx.modelo, ctx.presupuesto.gastado, ctx.presupuesto.tope);
+      medicion.providerError = true;
       return { ok: false as const, error: sinSecretos(`${err.name}: ${err.message}`).slice(0, 400) };
     }
   });

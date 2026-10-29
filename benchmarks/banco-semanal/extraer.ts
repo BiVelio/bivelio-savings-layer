@@ -105,7 +105,7 @@ export interface Medicion {
    * (umbrales.ts). Sin él —intervino, o no se sabe— la regla actúa igual.
    */
   sinIntervencion?: { camposNeutros: Record<string, number> };
-  /** Formato B2: total, proveedor y overhead por brazo. Ausente en artefactos antiguos. */
+  /** B2-F1: espera de proveedor, capa, arnés y estados; B2-F0 legacy: total, proveedor y overhead histórico. */
   latency?: InformeLatencia;
 }
 

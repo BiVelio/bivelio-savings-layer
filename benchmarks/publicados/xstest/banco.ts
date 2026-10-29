@@ -81,7 +81,7 @@ import {
   type PromptXSTest,
 } from "./nucleo.js";
 import { construirInforme, renderizarMarkdown, type Tirada } from "./informe.js";
-import { resumirLatencias, type MuestraLatencia, type MuestrasPorBrazo, type RelojMonotono } from "../../b2/latencia.js";
+import { estadoDeMuestra, resumirLatencias, type MuestraLatenciaF1, type MuestrasPorBrazoF1, type RelojMonotono } from "../../b2/latencia.js";
 import { BASE_NATIVA_DE_GEMINI, baseNativaDeGemini, dialectoDeGoogle, googleDelEntorno } from "../../gemini-nativo.js";
 
 const AQUI = dirname(fileURLToPath(import.meta.url));
@@ -206,11 +206,22 @@ interface Contexto {
   inyectado: Set<string>;
   /** El campo de tope de salida y su valor en cada cuerpo que salió (B: lo que puso la capa). */
   topes: string[];
-  providerMs: number;
+  providerWaitMs: number;
+  harnessMs: number;
+  deadlineExcedido: boolean;
   alGastar: (usd: number) => void;
 }
 
 const contexto = new AsyncLocalStorage<Contexto>();
+
+async function dormirEnHarness(ctx: Contexto, dormirImpl: (ms: number) => Promise<unknown>, ms: number, ahora: RelojMonotono): Promise<void> {
+  const inicio = ahora();
+  try {
+    await dormirImpl(ms);
+  } finally {
+    ctx.harnessMs += Math.max(0, ahora() - inicio);
+  }
+}
 
 class Semaforo {
   private libres: number;
@@ -299,25 +310,28 @@ export function crearRed(base: typeof fetch, modelos: ConfigDeModelo[], dormirIm
       for (let intento = 0; ; intento++) {
         let r: Response;
         const inicioProveedor = ahora();
+        const plazo = AbortSignal.timeout(120_000);
         try {
-          r = await base(url, { ...init, body: cuerpo ?? null, signal: AbortSignal.timeout(120_000) });
+          r = await base(url, { ...init, body: cuerpo ?? null, signal: plazo });
         } catch (e) {
-          ctx.providerMs += ahora() - inicioProveedor;
+          ctx.providerWaitMs += ahora() - inicioProveedor;
+          if (plazo.aborted) ctx.deadlineExcedido = true;
           if (intento >= 5) throw e;
           red.reintentos++;
-          await dormirImpl(2000 * 2 ** intento);
+          await dormirEnHarness(ctx, dormirImpl, 2000 * 2 ** intento, ahora);
           continue;
         }
+        if (r.status === 408) ctx.deadlineExcedido = true;
         if (REINTENTABLES.has(r.status) && intento < 6) {
           await r.text().catch(() => "");
-          ctx.providerMs += ahora() - inicioProveedor;
+          ctx.providerWaitMs += ahora() - inicioProveedor;
           red.reintentos++;
           const ra = Number(r.headers.get("retry-after"));
-          await dormirImpl(Number.isFinite(ra) && ra > 0 ? Math.min(ra * 1000, 60_000) : 1500 * 2 ** intento + Math.random() * 500);
+          await dormirEnHarness(ctx, dormirImpl, Number.isFinite(ra) && ra > 0 ? Math.min(ra * 1000, 60_000) : 1500 * 2 ** intento + Math.random() * 500, ahora);
           continue;
         }
         const texto = await r.text().finally(() => {
-          ctx.providerMs += ahora() - inicioProveedor;
+          ctx.providerWaitMs += ahora() - inicioProveedor;
         });
         const tipo = r.headers.get("content-type") ?? "";
         let l: LecturaDelProveedor;
@@ -356,7 +370,7 @@ export interface RegistroA {
   costeSegunUsageUsd: number;
   noCobrada: boolean;
   /** Ausente solo en artefactos anteriores a la instrumentación B2. */
-  latency?: MuestraLatencia;
+  latency?: MuestraLatenciaF1;
   error?: string;
 }
 
@@ -397,7 +411,7 @@ export interface RegistroB {
     vaALaCacheExacta?: boolean;
   };
   /** Incluye generateStream completo; cero proveedor en un acierto de caché. */
-  latency?: MuestraLatencia;
+  latency?: MuestraLatenciaF1;
   error?: string;
 }
 
@@ -464,16 +478,29 @@ function chatDe(ep: Endpoints, familia: Familia): { base: string; clave?: string
 }
 
 async function enContexto<T>(
-  ctx: Omit<Contexto, "lecturas" | "inyectado" | "topes" | "providerMs">,
+  ctx: Omit<Contexto, "lecturas" | "inyectado" | "topes" | "providerWaitMs" | "harnessMs" | "deadlineExcedido">,
   f: () => Promise<T>,
 ): Promise<{ v?: T; e?: unknown; ctx: Contexto }> {
-  const c: Contexto = { ...ctx, lecturas: [], inyectado: new Set(), topes: [], providerMs: 0 };
+  const c: Contexto = { ...ctx, lecturas: [], inyectado: new Set(), topes: [], providerWaitMs: 0, harnessMs: 0, deadlineExcedido: false };
   try {
     const v = await contexto.run(c, f);
     return { v, ctx: c };
   } catch (e) {
     return { e, ctx: c };
   }
+}
+
+function muestraF1(ctx: Contexto, inicio: number, ahora: RelojMonotono, error?: unknown): MuestraLatenciaF1 {
+  const totalMs = Math.max(0, ahora() - inicio);
+  const providerWaitMs = ctx.providerWaitMs;
+  const harnessMs = ctx.brazo === "A" ? Math.max(0, totalMs - providerWaitMs) : ctx.harnessMs;
+  return {
+    totalMs,
+    providerWaitMs,
+    layerWorkMs: ctx.brazo === "A" ? 0 : Math.max(0, totalMs - providerWaitMs - harnessMs),
+    harnessMs,
+    estado: estadoDeMuestra(error, ctx.deadlineExcedido),
+  };
 }
 
 async function brazoA(
@@ -540,7 +567,8 @@ async function brazoA(
     }
   });
   const l = ctx.lecturas.at(-1);
-  const latency = { totalMs: ahora() - inicio, providerMs: ctx.providerMs };
+  const error = e || !l || l.error ? limpiarSecretos(l?.error ?? (e instanceof Error ? e.message : String(e)), secretos) : undefined;
+  const latency = muestraF1(ctx, inicio, ahora, error);
   if (e || !l || l.error) {
     return {
       ...(l ? { proveedor: resumir(l) } : {}),
@@ -548,7 +576,7 @@ async function brazoA(
       costeSegunUsageUsd: 0,
       noCobrada: false,
       latency,
-      error: limpiarSecretos(l?.error ?? (e instanceof Error ? e.message : String(e)), secretos),
+      error: error!,
     };
   }
   return {
@@ -620,6 +648,7 @@ async function brazoB(
     return await flujo.result;
   });
   const l = ctx.lecturas.at(-1);
+  const error = e || !r ? limpiarSecretos(l?.error ?? (e instanceof Error ? e.message : String(e)), secretos) : undefined;
   const base: RegistroB = {
     fase,
     via,
@@ -631,11 +660,11 @@ async function brazoB(
     noCobrada: !!l && ctx.lecturas.length === 1 && esNegativaNoCobrada(cfg.familia, l),
     inyectado: [...ctx.inyectado].sort(),
     topeEnviado: [...ctx.topes],
-    latency: { totalMs: ahora() - inicio, providerMs: ctx.providerMs },
+    latency: muestraF1(ctx, inicio, ahora, error),
     ...(l ? { proveedor: resumir(l) } : {}),
   };
-  if (e || !r) {
-    return { ...base, error: limpiarSecretos(l?.error ?? (e instanceof Error ? e.message : String(e)), secretos) };
+  if (error) {
+    return { ...base, error };
   }
   const res = r as SavingsResult;
   const negativaCapa = res.finishReason === "content_filter" || (typeof res.refusal === "string" && res.refusal !== "");
@@ -714,7 +743,7 @@ export async function correrTirada(o: OpcionesDeTirada): Promise<Tirada> {
   const orden = ordenEstratificado(o.prompts, semilla);
   const registros: RegistroDeItem[] = [];
   const porModelo: Tirada["porModelo"] = {};
-  const latencySamples: MuestrasPorBrazo = { A: [], B: [] };
+  const latencySamples: MuestrasPorBrazoF1 = { A: [], B: [] };
   const ahora = o.ahora ?? Date.now;
   const inicio = ahora();
 

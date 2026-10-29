@@ -28,6 +28,7 @@
  * npm (verificado por sha256) con `BIVELIO_LICENSE_KEY`; sin esa variable la
  * tirada LIVE aborta antes de la primera llamada de pago (`capa.ts`).
  */
+import { AsyncLocalStorage } from "node:async_hooks";
 import { createHash, randomBytes } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -43,7 +44,7 @@ import { muestreoPareadoPara } from "../../scenarios.js";
 import { mulberry32 } from "../../stats.js";
 import { endpointDeModelo, fetchConPlazo, proveedorDelBanco, sinSecretos, type ConfigDeTransporte } from "../../transporte.js";
 import { fabricaDeCapa, PAQUETE_NPM, SinLicencia, type FabricaDeCapa } from "./capa.js";
-import { resumirLatencias, type InformeLatencia, type MuestrasPorBrazo } from "../../b2/latencia.js";
+import { estadoDeMuestra, resumirLatencias, type InformeLatencia, type MuestraLatenciaF1, type MuestrasPorBrazoF1 } from "../../b2/latencia.js";
 import { comparar, type ArtefactoComparable, type Comparacion0430 } from "./comparar.js";
 import { escribirDocumento } from "./documento.js";
 import {
@@ -213,6 +214,13 @@ export class PresupuestoAgotado extends Error {
 const REINTENTABLE = /^provider (429|500|502|503|504|529)\b/;
 const PAUSAS_MS = [2_000, 5_000, 10_000, 20_000, 40_000];
 
+interface MedicionDeLatenciaGsm8k {
+  providerWaitMs: number;
+  harnessMs: number;
+  deadlineExcedido: boolean;
+}
+const contextoLatencia = new AsyncLocalStorage<MedicionDeLatenciaGsm8k>();
+
 /** Reintenta con espera creciente lo que el proveedor no cobró: 429 y 5xx, y los fallos de red. */
 export function conReintentos(p: Provider, dormir = (ms: number) => new Promise<void>((r) => setTimeout(r, ms))): Provider {
   return {
@@ -220,12 +228,25 @@ export function conReintentos(p: Provider, dormir = (ms: number) => new Promise<
     async generate(req, opts) {
       for (let i = 0; ; i++) {
         try {
-          return await p.generate(req, opts);
+          const inicio = performance.now();
+          try {
+            return await p.generate(req, opts);
+          } finally {
+            const ctx = contextoLatencia.getStore();
+            if (ctx) ctx.providerWaitMs += Math.max(0, performance.now() - inicio);
+          }
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
+          const ctx = contextoLatencia.getStore();
+          if (ctx && (estadoDeMuestra(err) === "deadline_exceeded" || /^provider 408\b/.test(msg))) ctx.deadlineExcedido = true;
           const red = /fetch failed|socket hang up|timeout|ECONNRESET/i.test(msg);
           if (i >= PAUSAS_MS.length || !(REINTENTABLE.test(msg) || red)) throw err;
-          await dormir(PAUSAS_MS[i]! * (1 + Math.random() * 0.25));
+          const inicioBackoff = performance.now();
+          try {
+            await dormir(PAUSAS_MS[i]! * (1 + Math.random() * 0.25));
+          } finally {
+            if (ctx) ctx.harnessMs += Math.max(0, performance.now() - inicioBackoff);
+          }
         }
       }
     },
@@ -609,31 +630,42 @@ export async function medirModelo(o: OpcionesDeModelo): Promise<MedicionDeModelo
       latenciaMs: 0, fuente: "provider",
     };
     let texto = "";
-    try {
-      if (b === "A") {
-        const r = await prov.A!.generate(peticionDirecta(peticionDe(model, salSistema(o.runId, "a", o.sistema), q.texto, tope), model));
-        texto = r.text;
-        fila.proveedorMs = performance.now() - t0;
-      } else {
-        const carril = b.toLowerCase();
-        const r = await capas[b]!.generate(peticionDe(model, salSistema(o.runId, carril, o.sistema), q.texto, tope));
-        texto = r.text;
-        const rep = r.report;
-        fila.proveedorMs = rep.latencyMs.provider;
-        fila.fuente = rep.qualityLedger?.source ?? (rep.cache.result === "miss" ? "provider" : rep.cache.result);
-        fila.base = rep.cost.basis;
-        fila.lineaBaseCapa = rep.cost.baselineEstimate;
-        fila.realCapa = rep.cost.actual;
-        fila.comprimidos = rep.tokens.compressedInput;
-        const cm = rep.qualityLedger?.cacheMatch;
-        if (cm && cm.kind === "semantic") fila.similitud = cm.similarity;
+    const medicion: MedicionDeLatenciaGsm8k = { providerWaitMs: 0, harnessMs: 0, deadlineExcedido: false };
+    await contextoLatencia.run(medicion, async () => {
+      try {
+        if (b === "A") {
+          const r = await prov.A!.generate(peticionDirecta(peticionDe(model, salSistema(o.runId, "a", o.sistema), q.texto, tope), model));
+          texto = r.text;
+          fila.proveedorMs = performance.now() - t0;
+        } else {
+          const carril = b.toLowerCase();
+          const r = await capas[b]!.generate(peticionDe(model, salSistema(o.runId, carril, o.sistema), q.texto, tope));
+          texto = r.text;
+          const rep = r.report;
+          fila.proveedorMs = rep.latencyMs.provider;
+          fila.fuente = rep.qualityLedger?.source ?? (rep.cache.result === "miss" ? "provider" : rep.cache.result);
+          fila.base = rep.cost.basis;
+          fila.lineaBaseCapa = rep.cost.baselineEstimate;
+          fila.realCapa = rep.cost.actual;
+          fila.comprimidos = rep.tokens.compressedInput;
+          const cm = rep.qualityLedger?.cacheMatch;
+          if (cm && cm.kind === "semantic") fila.similitud = cm.similarity;
+        }
+      } catch (err) {
+        if (err instanceof PresupuestoAgotado) throw err;
+        fila.error = sinSecretos(err instanceof Error ? err.message : String(err)).slice(0, 300);
       }
-    } catch (err) {
-      if (err instanceof PresupuestoAgotado) throw err;
-      fila.error = sinSecretos(err instanceof Error ? err.message : String(err)).slice(0, 300);
-    }
+    });
     fila.latenciaMs = performance.now() - t0;
     fila.proveedorMs ??= fila.latenciaMs;
+    const harnessMs = b === "A" ? Math.max(0, fila.latenciaMs - medicion.providerWaitMs) : medicion.harnessMs;
+    fila.latency = {
+      totalMs: fila.latenciaMs,
+      providerWaitMs: medicion.providerWaitMs,
+      layerWorkMs: b === "A" ? 0 : Math.max(0, fila.latenciaMs - medicion.providerWaitMs - harnessMs),
+      harnessMs,
+      estado: estadoDeMuestra(fila.error, medicion.deadlineExcedido),
+    } satisfies MuestraLatenciaF1;
     fila.coste = c.coste - antes.coste;
     fila.llamadas = c.llamadas - antes.llamadas;
     fila.peticiones = (c.peticiones ?? 0) - (antes.peticiones ?? 0);
@@ -703,7 +735,7 @@ export async function medirModelo(o: OpcionesDeModelo): Promise<MedicionDeModelo
     peticionesCompletadas: completadas,
     resumen,
     latency: resumirLatencias(
-      Object.fromEntries(o.brazos.map((b) => [b, ensayos.filter((e) => e.brazo === b).map((e) => ({ totalMs: e.latenciaMs, providerMs: e.proveedorMs ?? e.latenciaMs }))])) as MuestrasPorBrazo,
+      Object.fromEntries(o.brazos.map((b) => [b, ensayos.filter((e) => e.brazo === b).map((e) => e.latency!)])) as MuestrasPorBrazoF1,
       o.seco ? "MOCK" : "LIVE",
     ),
     desglose: desgloseDelAhorro(ensayos, {

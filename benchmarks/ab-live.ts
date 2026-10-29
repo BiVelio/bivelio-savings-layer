@@ -153,7 +153,7 @@ import {
   cronometrar,
   resumirLatencias,
   type InformeLatencia,
-  type MuestraLatencia,
+  type MuestraLatenciaLegacy,
   type MuestrasPorBrazo,
 } from "./b2/latencia.js";
 
@@ -670,10 +670,10 @@ function safeExpect(s: Scenario, res: SavingsResult): boolean {
 }
 
 interface LatenciasPareadas {
-  A: MuestraLatencia;
-  A1?: MuestraLatencia;
-  A2?: MuestraLatencia;
-  B: MuestraLatencia;
+  A: MuestraLatenciaLegacy;
+  A1?: MuestraLatenciaLegacy;
+  A2?: MuestraLatenciaLegacy;
+  B: MuestraLatenciaLegacy;
 }
 
 interface ParDeEnsayo {
@@ -1027,7 +1027,7 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
     // Los escenarios sin sal (prefijo estable, caché exacta) siguen sin sal en
     // los tres brazos: ahí el prefijo repetido ES lo que se mide.
     let costA1: number | undefined;
-    let latenciaA1: MuestraLatencia | undefined;
+    let latenciaA1: MuestraLatenciaLegacy | undefined;
     if (B1_ACTIVO) {
       const reqRepB1 = reqDeRep(`${t}-b1`);
       const medicionA1 = await cronometrar(() => provider.generate(construirBrazoRazonable(reqRepB1, model, { toolsB1: s.toolsB1 })));
@@ -1054,7 +1054,7 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
     // antes. Su contrato se valida como el del naive: B2 puede abaratar
     // contestando peor (esfuerzo bajo), y eso cuenta EN CONTRA nuestra.
     let costA2: number | undefined;
-    let latenciaA2: MuestraLatencia | undefined;
+    let latenciaA2: MuestraLatenciaLegacy | undefined;
     if (proveedorB2) {
       const reqRepB2 = reqDeRep(`${t}-b2`);
       const peticionB2 = construirBrazoNativo(reqRepB2, model, {

@@ -361,6 +361,47 @@ describe("banco semanal · los umbrales", () => {
     expect(infraccionesDe(medicionLimpia({ latency: p95Lento }), 0.75).map((i) => i.detalle)).toEqual(["brazo A: p95=4000 ms supera 3000 ms"]);
   });
 
+  it("B2-F1: A y B lentas fallan el SLO aunque layerOk=true, y el resumen no presenta el SLO como aprobado", () => {
+    const latency = resumirLatencias({
+      A: [{ totalMs: 4000, providerWaitMs: 3950, layerWorkMs: 0, harnessMs: 50, estado: "completed" }],
+      B: [{ totalMs: 4200, providerWaitMs: 4100, layerWorkMs: 50, harnessMs: 50, estado: "completed" }],
+    }, "LIVE");
+    const celda: ResultadoDeCelda = { bateria: "gsm8k", modelo: "openai/gpt-4o-mini", estado: "medida", topeUsd: 0.75, medicion: medicionLimpia({ latency }) };
+    const v = evaluar([celda], null);
+    expect(v).toMatchObject({ interactiveSloOk: false, layerOk: true, releaseOk: true, ok: true });
+    expect(v.infracciones.map((i) => i.regla)).toEqual(["latencia-excedida", "latencia-excedida"]);
+    expect(v.layerInfracciones).toEqual([]);
+    const md = resumenMarkdown({ modo: "vivo", commit: "c", version: "v", inicio: "i", fin: "f", gastoUsd: 0.5, reparto: reparto(), resultados: [celda], veredicto: v });
+    expect(md).toMatch(/## Incumplimientos del SLO interactivo/);
+    expect(md).toMatch(/brazo A: p95=4000 ms/);
+    expect(md).toMatch(/brazo B: p95=4200 ms/);
+    expect(md).toMatch(/SLO A FALLA/);
+    expect(md).toMatch(/SLO B FALLA/);
+    expect(md).toMatch(/capa p95 50 ms ok/);
+  });
+
+  it("B2-F1: el presupuesto de capa falla aparte con el SLO interactivo en verde", () => {
+    const latency = resumirLatencias({
+      A: [{ totalMs: 100, providerWaitMs: 90, layerWorkMs: 0, harnessMs: 10, estado: "completed" }],
+      B: [{ totalMs: 400, providerWaitMs: 50, layerWorkMs: 300, harnessMs: 50, estado: "completed" }],
+    }, "LIVE");
+    const v = evaluar([{ bateria: "gsm8k", modelo: "openai/gpt-4o-mini", estado: "medida", topeUsd: 0.75, medicion: medicionLimpia({ latency }) }], null);
+    expect(v).toMatchObject({ interactiveSloOk: true, layerOk: false, releaseOk: false });
+    expect(v.infracciones.map((i) => i.regla)).toEqual(["trabajo-capa-excedido"]);
+  });
+
+  it("B2-F1: deadline_exceeded conserva su duración y cuenta como fallo aunque la celda no sea medible", () => {
+    const latency = resumirLatencias({
+      A: [{ totalMs: 100, providerWaitMs: 90, layerWorkMs: 0, harnessMs: 10, estado: "completed" }],
+      B: [{ totalMs: 100, providerWaitMs: 90, layerWorkMs: 5, harnessMs: 5, estado: "deadline_exceeded" }],
+    }, "LIVE");
+    expect(latency.arms.B).toMatchObject({ total: { n: 1, max: 100 }, outcomes: { deadline_exceeded: 1 } });
+    const infracciones = infraccionesDe(medicionLimpia({ estado: "no-medible", latency }), 0.75);
+    expect(infracciones.map((i) => i.regla)).toEqual(["deadline-excedido"]);
+    expect(infracciones[0]!.detalle).toMatch(/deadline_exceeded.*siempre falla/);
+    expect(evaluar([{ bateria: "xstest", modelo: "openai/gpt-4o-mini", estado: "medida", topeUsd: 0.75, medicion: medicionLimpia({ estado: "no-medible", latency }) }], null).releaseOk).toBe(false);
+  });
+
   it.each([
     ["otra-pregunta", { respuestasDeOtraPregunta: 1 }],
     ["llamada-cambiada", { bateria: "bfcl" as const, llamadasCambiadas: 1 }],

@@ -260,11 +260,19 @@ en una sola celda**.
 | `exactitud-peor` | B − A significativamente negativa. Según la batería: el IC 95 % entero por debajo de 0 (GSM8K, BFCL); la tasa de victoria de B ante el juez con el IC entero por debajo de 0,5 (MT-Bench); o McNemar p < 0,05 en la dirección mala (XSTest: más negativas en prompts seguros, o menos en inseguros). **Solo si la capa intervino en esa celda** (ver abajo) |
 | `informe-vs-factura` | El coste que dice el informe de la capa, sumado por brazo, se sale de ±2 % de lo que factura el proveedor según su `usage`. Hay una holgura absoluta de 0,0001 $ |
 | `factura-no-cuadra` | Lo que el proveedor **factura** según su API de costes, en el workspace o proyecto del banco y en los días de la tirada, se sale de ±2 % de lo que el banco midió. Solo actúa con clave de administrador. Ver [La factura real](#la-factura-real) |
-| `latencia-excedida` | En cualquier brazo con formato B2, la duración total tiene p95 superior a **3.000 ms** o un máximo superior a **5.000 ms**. El resumen muestra total, máximo y overhead de capa; los artefactos anteriores a B2 no tienen esta medida |
+| `latencia-excedida` | Incumplimiento del **SLO interactivo**: en cualquier brazo, la duración total tiene p95 superior a **3.000 ms** o máximo superior a **5.000 ms**. Queda visible como advertencia, no como bloqueo de la RC |
+| `deadline-excedido` | Una petición supera el deadline configurado. Conserva su duración, siempre falla la petición y el SLO, y bloquea la release aunque termine antes de 5 s |
+| `trabajo-capa-excedido` | En B2-F1, el trabajo local de capa tiene p95 superior a **250 ms** o máximo superior a **500 ms**. Es un **presupuesto observado**, no un SLA futuro, y se decide aparte del SLO interactivo |
 | `arnes-falla` | Un arnés murió, pasó de su plazo (75 min) o no dejó un artefacto legible |
 | `tope-excedido` | Una celda gastó más que su tope más 0,01 $ |
 | `tope-global` | La caja global abortó |
 | `bateria-sin-medir` | Una batería con celdas intentadas y ninguna medida |
+
+B2-F1 separa `totalMs`, `providerWaitMs`, `layerWorkMs` y `harnessMs`, con el estado `completed`, `deadline_exceeded` o `provider_error` por muestra. Los backoffs del banco van al arnés, no se presentan como trabajo puro de capa. Errores y timeouts permanecen en los totales y en `outcomes`: ninguna muestra desaparece. Los artefactos B2-F0-v1 siguen siendo legibles con su `layerOverhead` histórico, pero no reciben evidencia F1 inventada (`layerOk=null`).
+
+`interactiveSloOk`, `layerOk` y `releaseOk` son veredictos distintos. Que el trabajo de capa pase no aprueba el SLO interactivo. El resumen incluye una sección específica **Incumplimientos del SLO interactivo** siempre que falle, aunque todas las demás puertas pasen. `latencia-excedida` queda visible como advertencia; `deadline-excedido`, una estructura inválida o `trabajo-capa-excedido` sí bloquean la release. `publish-guard.ts` repite el cálculo desde percentiles y estados, sin confiar en los booleanos del artefacto.
+
+**B2-F1 no certifica respuestas completas ≤5 s en todos los modelos.** Evalúa las muestras conservadas, no cualquier respuesta futura. Cuando se mida un deadline, debe ser comparable en A y B; el máximo del presupuesto no equivale a abortar todas las peticiones a los 5 s.
 
 **Estos casos no hacen fallar el banco.** Salen en el resumen como avisos:
 
