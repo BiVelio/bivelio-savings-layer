@@ -366,6 +366,10 @@ const resumir = (l: LecturaDelProveedor): ResumenDeLectura => {
 };
 
 export interface RegistroA {
+  /** Llamadas que llegaron al proveedor, incluidos los reintentos internos del adaptador. */
+  llamadasAlProveedor?: number;
+  /** Tope de salida enviado en cada llamada; ausente solo en artefactos anteriores. */
+  topeEnviado?: string[];
   proveedor?: ResumenDeLectura;
   clase?: Clasificacion;
   costeFacturadoUsd: number;
@@ -573,6 +577,8 @@ async function brazoA(
   const latency = muestraF1(ctx, inicio, ahora, error);
   if (e || !l || l.error) {
     return {
+      llamadasAlProveedor: ctx.lecturas.length,
+      topeEnviado: [...ctx.topes],
       ...(l ? { proveedor: resumir(l) } : {}),
       costeFacturadoUsd: 0,
       costeSegunUsageUsd: 0,
@@ -582,6 +588,8 @@ async function brazoA(
     };
   }
   return {
+    llamadasAlProveedor: ctx.lecturas.length,
+    topeEnviado: [...ctx.topes],
     proveedor: resumir(l),
     clase: clasificar(l.texto, l.negativaDelApi),
     costeFacturadoUsd: costeFacturado(cfg.familia, l, precio),

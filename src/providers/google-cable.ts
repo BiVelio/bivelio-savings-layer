@@ -183,7 +183,7 @@ export function pensamientoPorEsfuerzo(
     const p = presupuestos[e];
     return p === undefined ? null : { config: { thinkingBudget: p }, noSeApaga: false };
   }
-  const bajo = esPro(model) ? "LOW" : "MINIMAL";
+  const bajo = esPro(model) || model === "gemini-3.8-flash" || model === "gemini-3.8-flash-latest" ? "LOW" : "MINIMAL";
   switch (e) {
     case "none":
       return { config: { thinkingLevel: bajo }, noSeApaga: true };
