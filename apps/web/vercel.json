@@ -1,5 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "git": {
+    "deploymentEnabled": {
+      "diag/xstest-351-apertura": false
+    }
+  },
   "regions": [
     "fra1"
   ],
