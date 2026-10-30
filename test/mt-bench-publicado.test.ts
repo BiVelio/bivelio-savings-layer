@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { juzgarPregunta, turnoParaCrudo, type ResultadoDePregunta } from "../benchmarks/publicados/mt-bench/mt-bench.js";
+import { juzgarPregunta, trazasParaCrudo, turnoParaCrudo, type ResultadoDePregunta } from "../benchmarks/publicados/mt-bench/mt-bench.js";
 import {
   CATEGORIAS,
   DATASET,
@@ -370,5 +370,18 @@ describe("MT-Bench: evidencia F1 en las respuestas crudas", () => {
     const legacy = turnoParaCrudo({ fin: null, latenciaMs: 8.4, texto: "legacy" });
     expect(legacy).toEqual({ fin: null, latenciaMs: 8, texto: "legacy" });
     expect(JSON.stringify(legacy)).not.toContain('"latency"');
+  });
+});
+
+describe("MT-Bench: tiempos por etapa en el artefacto", () => {
+  it("conserva atMs sin cambiar stage/outcome y admite trazas legacy", () => {
+    expect(trazasParaCrudo([
+      { stage: "canonicalize", outcome: "done", atMs: 0 },
+      { stage: "provider", outcome: "done", atMs: 12.75 },
+      { stage: "legacy", outcome: "done" },
+    ])).toEqual([
+      { stage: "canonicalize", outcome: "done", atMs: 0 },
+      { stage: "provider", outcome: "done", atMs: 12.75 },
+    ]);
   });
 });
