@@ -3377,6 +3377,7 @@ export class SavingsPipeline {
     // espera el cliente. Dejarlas fuera vendería como "preprocesamiento" la mitad
     // de una latencia que se duplicó.
     const providerStart = this.now();
+    trace.record("provider", "start");
 
     // --- Etapa 10a-bis: schema-on-demand (opt-in, y cambia el contrato de latencia). ---
     //
@@ -4349,6 +4350,7 @@ export class SavingsPipeline {
     }
 
     const providerMs = this.now() - providerStart;
+    trace.record("provider", "done", { providerMs });
 
     // --- Stage 12: local render + approved cache writes. ---
     const rendered = renderLocally(data);
