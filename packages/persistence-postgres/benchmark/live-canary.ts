@@ -2,7 +2,7 @@ import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { access, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Pool } from "pg";
 
@@ -270,13 +270,13 @@ try {
   await closePool();
   await writeFile(resultPath, JSON.stringify({ ok: true, phase, records, baselineHash, providerCalls }));
 } catch (error) {
-  const errorName = error && typeof error === "object" && "constructor" in error && typeof error.constructor === "function"
-    ? error.constructor.name
-    : "Error";
+  const errorName = error && typeof error === "object" && "name" in error && typeof error.name === "string" ? error.name : "Error";
   const providerStatus = error instanceof Error ? /provider (\d{3})/.exec(error.message)?.[1] ?? null : null;
   const errorCode = error && typeof error === "object" && "code" in error && typeof error.code === "string" ? error.code : null;
   const safeOperationalError = error instanceof Error && /^PostgreSQL (operation timed out after \d+ ms|pool close timed out)$/.test(error.message);
-  const diagnostic = error instanceof ReferenceError || error instanceof TypeError || safeOperationalError || (error && typeof error === "object" && "status" in error) ? error.message : null;
+  const diagnostic = errorName === "TimeoutError" || errorName === "AbortError"
+    ? "operation aborted before completion (timeout or cancellation)"
+    : error instanceof ReferenceError || error instanceof TypeError || safeOperationalError || (error && typeof error === "object" && "status" in error) ? error.message : null;
   try { await writeFile(resultPath, JSON.stringify({ ok: false, phase, errorName, errorCode, providerStatus, diagnostic, records, providerCalls })); } catch {}
   try { await Promise.all([...layers.values()].map((activeLayer) => activeLayer.close())); } catch {}
   try { await closePool(); } catch {}
@@ -381,10 +381,20 @@ async function main(): Promise<void> {
         await command(process.execPath, [workerPath], consumer, childEnv);
       } catch (caught) {
         const failure = JSON.parse(await readFile(resultPath, "utf8").catch(() => "{}")) as Partial<WorkerResult>;
+        const preservedFailure: WorkerResult = {
+          ...failure,
+          ok: false,
+          phase: failure.phase ?? phase,
+          records: failure.records ?? [],
+          providerCalls: failure.providerCalls ?? 0,
+        };
+        await mkdir(dirname(output), { recursive: true });
+        await writeFile(output, redact(JSON.stringify(preservedFailure), process.env));
         const name = failure.errorName ? ` (${failure.errorName})` : "";
         const code = failure.errorCode ? ` SQLSTATE ${failure.errorCode}` : "";
         const status = failure.providerStatus ? ` provider ${failure.providerStatus}` : "";
-        const detail = failure.diagnostic ?? (caught instanceof Error ? caught.message : "unknown worker error");
+        const detail = failure.diagnostic ? redact(failure.diagnostic, process.env)
+          : caught instanceof Error ? caught.message : "unknown worker error";
         const completed = failure.records?.length ?? 0;
         throw new Error(`${phase} packaged worker failed after ${completed} requests${name}${code}${status}: ${detail}`);
       }
