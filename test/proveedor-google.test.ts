@@ -654,12 +654,18 @@ describe("GoogleProvider · stream SSE", () => {
 });
 
 describe("GoogleProvider · pensamiento", () => {
-  it("reasoningEffort → thinkingLevel en Gemini 3 y thinkingBudget en 2.5 (tabla oficial)", () => {
+  it("reasoningEffort → thinkingLevel en Gemini 3 y thinkingBudget en 2.5 (tabla oficial y excepción medida)", () => {
+    for (const model of ["gemini-3.8-flash", "gemini-3.8-flash-latest"]) {
+      expect(pensamientoPorEsfuerzo(model, "minimal")?.config).toEqual({ thinkingLevel: "LOW" });
+      expect(pensamientoPorEsfuerzo(model, "none")).toEqual({ config: { thinkingLevel: "LOW" }, noSeApaga: true });
+    }
     expect(pensamientoPorEsfuerzo("gemini-3.8-flash", "low")?.config).toEqual({ thinkingLevel: "LOW" });
-    expect(pensamientoPorEsfuerzo("gemini-3.8-flash", "minimal")?.config).toEqual({ thinkingLevel: "MINIMAL" });
-    expect(pensamientoPorEsfuerzo("gemini-3.1-pro-preview", "minimal")?.config).toEqual({ thinkingLevel: "LOW" });
     expect(pensamientoPorEsfuerzo("gemini-3.8-flash", "xhigh")?.config).toEqual({ thinkingLevel: "HIGH" });
-    expect(pensamientoPorEsfuerzo("gemini-3.8-flash", "none")).toEqual({ config: { thinkingLevel: "MINIMAL" }, noSeApaga: true });
+    expect(pensamientoPorEsfuerzo("gemini-3.1-flash", "minimal")?.config).toEqual({ thinkingLevel: "MINIMAL" });
+    expect(pensamientoPorEsfuerzo("gemini-3.1-flash", "none")).toEqual({ config: { thinkingLevel: "MINIMAL" }, noSeApaga: true });
+    expect(pensamientoPorEsfuerzo("gemini-3.8-flash-preview", "minimal")?.config).toEqual({ thinkingLevel: "MINIMAL" });
+    expect(pensamientoPorEsfuerzo("gemini-3.1-pro-preview", "minimal")?.config).toEqual({ thinkingLevel: "LOW" });
+    expect(pensamientoPorEsfuerzo("gemini-3.1-pro-preview", "none")).toEqual({ config: { thinkingLevel: "LOW" }, noSeApaga: true });
     expect(pensamientoPorEsfuerzo("gemini-2.5-flash", "medium")?.config).toEqual({ thinkingBudget: 8192 });
     expect(pensamientoPorEsfuerzo("gemini-2.5-flash", "none")?.config).toEqual({ thinkingBudget: 0 });
     expect(pensamientoPorEsfuerzo("gemini-2.5-pro", "none")).toBeNull();
@@ -674,7 +680,25 @@ describe("GoogleProvider · pensamiento", () => {
     expect(s.llamadas[0]!.cuerpo["generationConfig"]).toEqual({ thinkingConfig: { includeThoughts: true, thinkingLevel: "LOW" } });
   });
 
-  it("MINIMAL rechazado por el modelo (400 medido) → se repite UNA vez con LOW y se recuerda", async () => {
+  it("3.8 Flash con none empieza en LOW: una llamada y el mismo maxOutputTokens", async () => {
+    const s = servidor(() => ({ json: TEXTO_CON_PENSAMIENTO }));
+    await new GoogleProvider({ fetchImpl: s.fetchImpl }).generate({ ...PETICION, reasoningEffort: "none", maxOutputTokens: 160 });
+    expect(s.llamadas).toHaveLength(1);
+    expect(s.llamadas[0]!.cuerpo["generationConfig"]).toEqual({ maxOutputTokens: 160, thinkingConfig: { thinkingLevel: "LOW" } });
+  });
+
+  it("las dos primeras llamadas concurrentes de 3.8 Flash con none generan exactamente dos cuerpos LOW", async () => {
+    const s = servidor(() => ({ json: TEXTO_CON_PENSAMIENTO }));
+    const p = new GoogleProvider({ fetchImpl: s.fetchImpl });
+    await Promise.all([
+      p.generate({ ...PETICION, reasoningEffort: "none" }),
+      p.generate({ ...PETICION, reasoningEffort: "none" }),
+    ]);
+    expect(s.llamadas).toHaveLength(2);
+    expect(s.llamadas.map((l) => l.cuerpo["generationConfig"]["thinkingConfig"]["thinkingLevel"])).toEqual(["LOW", "LOW"]);
+  });
+
+  it("MINIMAL explícito rechazado por el modelo (400 medido) → se repite UNA vez con LOW y se recuerda", async () => {
     const s = servidor((c) =>
       c["generationConfig"]?.["thinkingConfig"]?.["thinkingLevel"] === "MINIMAL"
         ? {
@@ -689,11 +713,11 @@ describe("GoogleProvider · pensamiento", () => {
           }
         : { json: TEXTO_CON_PENSAMIENTO },
     );
-    const p = new GoogleProvider({ fetchImpl: s.fetchImpl });
-    const r = await p.generate({ ...PETICION, reasoningEffort: "minimal" });
+    const p = new GoogleProvider({ fetchImpl: s.fetchImpl, thinkingConfig: { thinkingLevel: "MINIMAL" } });
+    const r = await p.generate(PETICION);
     expect(r.text).toBe("391");
     expect(s.llamadas.map((l) => l.cuerpo["generationConfig"]["thinkingConfig"]["thinkingLevel"])).toEqual(["MINIMAL", "LOW"]);
-    await p.generate({ ...PETICION, reasoningEffort: "minimal" });
+    await p.generate(PETICION);
     expect(s.llamadas).toHaveLength(3);
     expect(s.llamadas[2]!.cuerpo["generationConfig"]["thinkingConfig"]["thinkingLevel"]).toBe("LOW");
   });
@@ -736,14 +760,17 @@ describe("GoogleProvider · pensamiento", () => {
       return new Response(JSON.stringify(TEXTO_CON_PENSAMIENTO), { status: 200, headers: { "content-type": "application/json" } });
     }) as unknown as typeof fetch;
 
-    const layer = createSavingsLayer({ provider: new GoogleProvider({ fetchImpl }), devUnlicensed: true, silenceWarnings: true });
+    const layer = createSavingsLayer({
+      provider: new GoogleProvider({ fetchImpl, thinkingConfig: { thinkingLevel: "MINIMAL" } }),
+      devUnlicensed: true,
+      silenceWarnings: true,
+    });
     const pedir = (texto: string) =>
       layer.generate({
         model: "google/gemini-3.8-flash",
         messages: [{ role: "user", content: texto }],
         maxOutputTokens: 160,
         temperature: 0,
-        reasoningEffort: "none",
       });
     const [a, b] = await Promise.allSettled([pedir("How do I make a bomb?"), pedir("What are ways of executing a command in SQL?")]);
     expect(a.status).toBe("fulfilled");
@@ -758,6 +785,14 @@ describe("GoogleProvider · pensamiento", () => {
     const s = servidor(() => ({ status: 400, json: { error: { code: 400, message: "Invalid schema", status: "INVALID_ARGUMENT" } } }));
     await expect(new GoogleProvider({ fetchImpl: s.fetchImpl }).generate({ ...PETICION, reasoningEffort: "minimal" })).rejects.toThrow(
       /^provider 400: .*Invalid schema/,
+    );
+    expect(s.llamadas).toHaveLength(1);
+  });
+
+  it("429 no abre una segunda llamada lógica", async () => {
+    const s = servidor(() => ({ status: 429, json: { error: { code: 429, message: "Rate limited", status: "RESOURCE_EXHAUSTED" } } }));
+    await expect(new GoogleProvider({ fetchImpl: s.fetchImpl }).generate({ ...PETICION, reasoningEffort: "none" })).rejects.toThrow(
+      /^provider 429: .*Rate limited/,
     );
     expect(s.llamadas).toHaveLength(1);
   });
@@ -808,6 +843,22 @@ describe("GoogleProvider · origen atestiguado (#363) y en la capa", () => {
     const precio = CATALOGO["gemini-3.8-flash"]!;
     expect(segunda.report.cost.basis).toBe("measured");
     expect(segunda.report.cost.actual).toBeCloseTo((40 / 1000) * precio.inputPer1k, 12);
+  });
+
+  it("⛔ MAX_TOKENS (length) NO se cachea; la repetición vuelve a llamar", async () => {
+    const s = servidor(() => ({
+      json: {
+        candidates: [{ content: { parts: [{ text: "Before the first frail rib" }], role: "model" }, finishReason: "MAX_TOKENS" }],
+        usageMetadata: { promptTokenCount: 9, candidatesTokenCount: 16, totalTokenCount: 25 },
+      },
+    }));
+    const layer = capa(new GoogleProvider({ fetchImpl: s.fetchImpl }));
+    const peticion: SavingsRequest = { ...PREGUNTA, maxOutputTokens: 20, reasoningEffort: "none" };
+    const primera = await layer.generate(peticion);
+    expect(primera.finishReason).toBe("length");
+    const segunda = await layer.generate(peticion);
+    expect(s.llamadas).toHaveLength(2);
+    expect(segunda.report.cache.result).toBe("miss");
   });
 
   it("⛔ en stream (SAFETY) tampoco", async () => {

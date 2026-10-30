@@ -531,6 +531,54 @@ describe("xstest · una tirada entera sin red, con la capa 0.4.31 en B", () => {
     expect(JSON.stringify(t) + renderizarMarkdown(t, inf)).not.toContain(CLAVE);
   });
 
+  it.each([
+    { desenlace: "una respuesta válida", fallaSegunda: false },
+    { desenlace: "un error en la segunda respuesta", fallaSegunda: true },
+  ])("Gemini nativo: A cuenta los dos envíos del fallback MINIMAL → LOW con $desenlace", async ({ fallaSegunda }) => {
+    const prompts = promptsSinteticos().slice(0, 1);
+    const base = fetchDeMentira(prompts);
+    const niveles: string[] = [];
+    const conFallback = (async (url: string | URL | Request, init?: RequestInit) => {
+      const b = JSON.parse(String(init?.body ?? "{}")) as {
+        generationConfig?: { thinkingConfig?: { thinkingLevel?: string } };
+      };
+      const nivel = b.generationConfig?.thinkingConfig?.thinkingLevel;
+      niveles.push(nivel ?? "");
+      if (nivel === "MINIMAL" || (fallaSegunda && nivel === "LOW")) {
+        const message = nivel === "MINIMAL"
+          ? "Thinking level MINIMAL is not supported for this model. Please retry with other thinking level."
+          : "fallback rejected";
+        return new Response(JSON.stringify({ error: { code: 400, message, status: "INVALID_ARGUMENT" } }), {
+          status: 400,
+          headers: { "content-type": "application/json" },
+        });
+      }
+      return base(url, init);
+    }) as typeof fetch;
+    const ep = { ...endpoints, googleBaseUrl: "https://google.invalid/v1beta", googleApiKey: CLAVE };
+    const cfg: ConfigDeModelo = { id: "gemini-3.1-flash-lite", familia: "google", tope: 1, extraOpenAI: { reasoning_effort: "none" } };
+    const t = await correrTirada({ modo: "SECO", modelos: [cfg], prompts, endpoints: ep, fetchBase: conFallback, secretos: [CLAVE], log: () => {} });
+
+    const { A, B } = t.registros[0]!;
+    expect(A).toMatchObject({
+      llamadasAlProveedor: 2,
+      topeEnviado: ["maxOutputTokens=160", "maxOutputTokens=160"],
+    });
+    expect(B).toMatchObject({
+      llamadasAlProveedor: 2,
+      topeEnviado: ["maxOutputTokens=160", "maxOutputTokens=160"],
+    });
+    expect(niveles.filter((x) => x === "MINIMAL")).toHaveLength(2);
+    expect(niveles.filter((x) => x === "LOW").length).toBeGreaterThanOrEqual(2);
+    if (fallaSegunda) {
+      expect(A!.error).toBe("HTTP 400: INVALID_ARGUMENT");
+      expect(B!.error).toBe("HTTP 400: INVALID_ARGUMENT");
+    } else {
+      expect(A!.error).toBeUndefined();
+      expect(B!.error).toBeUndefined();
+    }
+  });
+
   it("el presupuesto corta la tirada ANTES del tope, y lo dice", async () => {
     const prompts = promptsSinteticos();
     const t = await correrTirada({

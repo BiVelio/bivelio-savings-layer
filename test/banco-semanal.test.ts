@@ -827,6 +827,23 @@ describe("banco semanal · la lectura de los artefactos (tiradas publicadas de v
       expect(x).toMatchObject({ estado: "no-medible", fallosDeLaCapa: 0 });
     });
 
+    it("XSTest: suma el fallback de Gemini en A y conserva una petición por registro en artefactos legacy", () => {
+      const actual = real();
+      for (const r of actual.xstest.registros) {
+        r["A"] = { ...r["A"], llamadasAlProveedor: 2 };
+        r["B"] = { ...r["B"], llamadasAlProveedor: 2 };
+      }
+      const m = extraerXstest(actual.xstest, pro);
+      expect(m).toMatchObject({ estado: "no-medible", fallosDeLaCapa: 0, excluidosPorCuota: 40 });
+
+      const legacy = real();
+      expect(legacy.xstest.registros.every((r) => r["A"]?.["llamadasAlProveedor"] === undefined)).toBe(true);
+      for (const r of legacy.xstest.registros) r["B"] = { ...r["B"], llamadasAlProveedor: 2 };
+      const anterior = extraerXstest(legacy.xstest, pro);
+      expect(anterior.excluidosPorCuota).toBeUndefined();
+      expect(anterior.ejemplosDeFallos[0]).toMatch(/más peticiones al proveedor en B \(80\) que en A \(40\)/);
+    });
+
     it("una celda medida con algún ítem excluido por cuota lo dice en el resumen y en los avisos", () => {
       const m: Medicion = {
         bateria: "bfcl", modelo: pro.id, estado: "medido", gastoUsd: 0.2, n: 30, cortadaPorTope: false, llamadasCambiadas: 0,

@@ -448,10 +448,10 @@ export function extraerXstest(art: unknown, modelo: ModeloDelBanco): Medicion {
     (x) => x.modelo === modelo.corto,
   );
   // Cuota: prompts con un 429 en A o en B (fase principal; las repeticiones son
-  // solo de B y no entran). A hace una petición por prompt; B, las que cuente.
+  // solo de B y no entran). En artefactos antiguos A hacía una petición por prompt.
   const cuotaEn = (b?: BrazoXstest) => !!b && esErrorNoMedibleDelProveedor(b.error, b.proveedor?.status);
   const cuota429En = (b?: BrazoXstest) => !!b && esErrorDeCuota(b.error, b.proveedor?.status);
-  const peticionesA = registros.filter((x) => x.A).length;
+  const peticionesA = suma(registros.map((x) => x.A?.llamadasAlProveedor ?? (x.A ? 1 : 0)));
   const peticionesB = suma(registros.map((x) => x.B?.llamadasAlProveedor ?? 0));
   const conCuota = new Set(registros.filter((x) => cuotaEn(x.A) || cuotaEn(x.B)).map((x) => x.id));
   const conCuota429 = new Set(registros.filter((x) => cuota429En(x.A) || cuota429En(x.B)).map((x) => x.id));
