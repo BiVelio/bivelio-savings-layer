@@ -18,7 +18,7 @@ describe("live canary failure diagnostics", () => {
     if (start < 0 || end < 0) throw new Error("worker error handler is missing");
     const body = worker.slice(start + "} catch (error) {".length, end);
     const execute = new Function(
-      "error", "resultPath", "layers", "closePool", "writeFile", "process", "providerCalls", "phase", "records",
+      "error", "resultPath", "layers", "closePool", "writeFile", "process", "providerCalls", "phase", "records", "env",
       `return (async () => {
         try { throw error; } catch (error) {
 ${body}
@@ -38,9 +38,46 @@ ${body}
       14,
       "cold",
       [],
+      {},
     );
 
     expect(JSON.parse(report)).toMatchObject({ ok: false, errorName: "TimeoutError", providerCalls: 14 });
+    expect(report).not.toContain("canary-secret");
+    expect(childProcess.exitCode).toBe(1);
+    expect(closed).toBe(2);
+  });
+
+  it("keeps an operational error message only after redacting environment secrets", async () => {
+    const { worker } = await canarySource();
+    const start = worker.lastIndexOf("} catch (error) {");
+    const end = worker.indexOf("\n}\n\nasync function closePool", start);
+    if (start < 0 || end < 0) throw new Error("worker error handler is missing");
+    const body = worker.slice(start + "} catch (error) {".length, end);
+    const execute = new Function(
+      "error", "resultPath", "layers", "closePool", "writeFile", "process", "providerCalls", "phase", "records", "env",
+      `return (async () => {
+        try { throw error; } catch (error) {
+${body}
+        }
+      })()`,
+    );
+    let report = "";
+    let closed = 0;
+    const childProcess = { exitCode: 0 };
+    await execute(
+      new Error("license rejected: canary-secret"),
+      "unused.json",
+      new Map([["tenant", { close: async () => { closed++; } }]]),
+      async () => { closed++; },
+      async (_path: string, text: string) => { report = text; },
+      childProcess,
+      0,
+      "cold",
+      [],
+      { CANARY_LICENSE_A: "canary-secret" },
+    );
+
+    expect(JSON.parse(report)).toMatchObject({ ok: false, errorName: "Error", diagnostic: "license rejected: [redacted]", providerCalls: 0 });
     expect(report).not.toContain("canary-secret");
     expect(childProcess.exitCode).toBe(1);
     expect(closed).toBe(2);

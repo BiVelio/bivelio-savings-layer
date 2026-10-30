@@ -273,10 +273,17 @@ try {
   const errorName = error && typeof error === "object" && "name" in error && typeof error.name === "string" ? error.name : "Error";
   const providerStatus = error instanceof Error ? /provider (\d{3})/.exec(error.message)?.[1] ?? null : null;
   const errorCode = error && typeof error === "object" && "code" in error && typeof error.code === "string" ? error.code : null;
-  const safeOperationalError = error instanceof Error && /^PostgreSQL (operation timed out after \d+ ms|pool close timed out)$/.test(error.message);
-  const diagnostic = errorName === "TimeoutError" || errorName === "AbortError"
+  const diagnosticCrudo = errorName === "TimeoutError" || errorName === "AbortError"
     ? "operation aborted before completion (timeout or cancellation)"
-    : error instanceof ReferenceError || error instanceof TypeError || safeOperationalError || (error && typeof error === "object" && "status" in error) ? error.message : null;
+    : error instanceof Error || (error && typeof error === "object" && "message" in error && typeof error.message === "string") ? error.message : null;
+  let diagnostic = diagnosticCrudo;
+  if (diagnostic !== null) {
+    for (const [nombre, valor] of Object.entries(env)) {
+      if (valor && valor.length > 4 && /KEY|TOKEN|SECRET|LICENSE/.test(nombre)) diagnostic = diagnostic.replaceAll(valor, "[redacted]");
+    }
+    if (env.BIVELIO_TEST_POSTGRES_URL) diagnostic = diagnostic.replaceAll(env.BIVELIO_TEST_POSTGRES_URL, "[redacted]");
+    diagnostic = diagnostic.replaceAll("GREEN-742", "[redacted]");
+  }
   try { await writeFile(resultPath, JSON.stringify({ ok: false, phase, errorName, errorCode, providerStatus, diagnostic, records, providerCalls })); } catch {}
   try { await Promise.all([...layers.values()].map((activeLayer) => activeLayer.close())); } catch {}
   try { await closePool(); } catch {}
