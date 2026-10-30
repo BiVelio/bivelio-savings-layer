@@ -18,8 +18,8 @@ is not a final release or a live-SLA claim.
   `RequestTimeoutError` and no cache or learning writes for incomplete answers.
 - Exact-tokenizer loading only for the encodings used by the requested or served
   model, avoiding unrelated cold-start work without changing token accounting.
-- Anthropic history normalization that preserves empty assistant turns with a
-  single-space text block instead of dropping their role.
+- Anthropic history normalization that preserves empty assistant turns with an
+  explicit `(empty)` text block instead of dropping their role.
 - PostgreSQL integration coverage, including real concurrency and 100,000-record
   local benchmark evidence.
 

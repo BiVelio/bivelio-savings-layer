@@ -198,7 +198,7 @@ describe("puntos de ruptura de la caché de prefijo", () => {
       content: { text: string; cache_control?: unknown }[];
     }[];
     expect(messages[1]!.content).toEqual([
-      { type: "text", text: " ", cache_control: { type: "ephemeral" } },
+      { type: "text", text: "(empty)", cache_control: { type: "ephemeral" } },
     ]);
     expect(messages[0]!.content[0]!.cache_control).toBeUndefined();
     expect(messages[2]!.content[0]!.cache_control).toBeUndefined();
@@ -558,13 +558,14 @@ describe("mapeo de conversaciones", () => {
         { role: "user", content: "turno 2" },
       ],
     });
-    const messages = enviados[0]!["messages"];
+    const messages = enviados[0]!["messages"] as { content: { text: string }[] }[];
     expect(messages).toEqual([
       { role: "user", content: [{ type: "text", text: "turno 1" }] },
-      { role: "assistant", content: [{ type: "text", text: " " }] },
+      { role: "assistant", content: [{ type: "text", text: "(empty)" }] },
       { role: "user", content: [{ type: "text", text: "turno 2" }] },
     ]);
     expect(JSON.stringify(messages)).not.toContain('"text":""');
+    expect(messages[1]!.content[0]!.text.trim()).not.toBe("");
   });
 
   it("preservar un assistant vacío no cambia los turnos con texto y herramientas", async () => {
@@ -597,7 +598,7 @@ describe("mapeo de conversaciones", () => {
         role: "user",
         content: [{ type: "tool_result", tool_use_id: "toolu_1", content: '{"estado":"entregado"}' }],
       },
-      { role: "assistant", content: [{ type: "text", text: " " }] },
+      { role: "assistant", content: [{ type: "text", text: "(empty)" }] },
       { role: "user", content: [{ type: "text", text: "turno siguiente" }] },
     ]);
   });
