@@ -183,6 +183,27 @@ describe("puntos de ruptura de la caché de prefijo", () => {
     expect(messages[1]!.content[0]!.cache_control).toBeUndefined();
   });
 
+  it("un assistant vacío conserva su bloque como final del prefijo estable", async () => {
+    const { enviados, fetchImpl } = espia(respuestaDeTexto("ok"));
+    await new AnthropicProvider({ fetchImpl }).generate({
+      model: "claude-sonnet-4-5",
+      messages: [
+        { role: "user", content: "turno 1" },
+        { role: "assistant", content: "" },
+        { role: "user", content: "pregunta de HOY" },
+      ],
+      stablePrefixMessages: 2,
+    });
+    const messages = enviados[0]!["messages"] as {
+      content: { text: string; cache_control?: unknown }[];
+    }[];
+    expect(messages[1]!.content).toEqual([
+      { type: "text", text: " ", cache_control: { type: "ephemeral" } },
+    ]);
+    expect(messages[0]!.content[0]!.cache_control).toBeUndefined();
+    expect(messages[2]!.content[0]!.cache_control).toBeUndefined();
+  });
+
   it("nunca se gastan más de los 4 puntos que permite la API", async () => {
     const { enviados, fetchImpl } = espia(respuestaDeTexto("ok"));
     await new AnthropicProvider({ fetchImpl }).generate({
@@ -525,6 +546,60 @@ describe("mapeo de conversaciones", () => {
     const messages = enviados[0]!["messages"] as { role: string }[];
     // Perderlo dejaría al modelo respondiendo sin el resultado que él mismo pidió.
     expect(messages.map((m) => m.role)).toEqual(["user", "assistant", "user"]);
+  });
+
+  it("un assistant vacío conserva la secuencia de roles sin mandar texto vacío", async () => {
+    const { enviados, fetchImpl } = espia(respuestaDeTexto("ok"));
+    await new AnthropicProvider({ fetchImpl }).generate({
+      model: "claude-sonnet-4-5",
+      messages: [
+        { role: "user", content: "turno 1" },
+        { role: "assistant", content: "" },
+        { role: "user", content: "turno 2" },
+      ],
+    });
+    const messages = enviados[0]!["messages"];
+    expect(messages).toEqual([
+      { role: "user", content: [{ type: "text", text: "turno 1" }] },
+      { role: "assistant", content: [{ type: "text", text: " " }] },
+      { role: "user", content: [{ type: "text", text: "turno 2" }] },
+    ]);
+    expect(JSON.stringify(messages)).not.toContain('"text":""');
+  });
+
+  it("preservar un assistant vacío no cambia los turnos con texto y herramientas", async () => {
+    const { enviados, fetchImpl } = espia(respuestaDeTexto("ok"));
+    await new AnthropicProvider({ fetchImpl }).generate({
+      model: "claude-sonnet-4-5",
+      messages: [
+        { role: "user", content: "busca el pedido" },
+        {
+          role: "assistant",
+          content: "llamando",
+          toolCalls: [{ id: "toolu_1", name: "buscar", arguments: '{"id":"42"}' }],
+        },
+        { role: "tool", toolCallId: "toolu_1", content: '{"estado":"entregado"}' },
+        { role: "assistant", content: "" },
+        { role: "user", content: "turno siguiente" },
+      ],
+      tools: [{ id: "buscar", intents: [], risk: "read" }],
+    });
+    expect(enviados[0]!["messages"]).toEqual([
+      { role: "user", content: [{ type: "text", text: "busca el pedido" }] },
+      {
+        role: "assistant",
+        content: [
+          { type: "text", text: "llamando" },
+          { type: "tool_use", id: "toolu_1", name: "buscar", input: { id: "42" } },
+        ],
+      },
+      {
+        role: "user",
+        content: [{ type: "tool_result", tool_use_id: "toolu_1", content: '{"estado":"entregado"}' }],
+      },
+      { role: "assistant", content: [{ type: "text", text: " " }] },
+      { role: "user", content: [{ type: "text", text: "turno siguiente" }] },
+    ]);
   });
 
   it("una petición sin ningún turno de usuario falla en claro, no con un 400 crudo", async () => {

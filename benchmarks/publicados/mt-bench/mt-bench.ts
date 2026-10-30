@@ -1106,6 +1106,16 @@ export interface ResultadoDePregunta {
   error?: string;
 }
 
+export function turnoParaCrudo(t: ResultadoDePregunta["A"][number]): ResultadoDePregunta["A"][number] {
+  return {
+    fin: t.fin,
+    latenciaMs: Math.round(t.latenciaMs),
+    texto: t.texto,
+    ...(t.latency ? { latency: t.latency } : {}),
+    ...(t.informe ? { informe: t.informe } : {}),
+  };
+}
+
 async function correrPregunta(
   p: Pregunta,
   m: ModeloDeLaBateria,
@@ -2100,8 +2110,8 @@ async function main(): Promise<void> {
         id: r.id,
         categoria: r.categoria,
         error: r.error,
-        A: r.A.map((t) => ({ fin: t.fin, latenciaMs: Math.round(t.latenciaMs), texto: t.texto })),
-        B: r.B.map((t) => ({ fin: t.fin, latenciaMs: Math.round(t.latenciaMs), texto: t.texto, informe: t.informe })),
+        A: r.A.map(turnoParaCrudo),
+        B: r.B.map(turnoParaCrudo),
         llamadas: r.llamadas.map((l) => ({ ...l, latenciaMs: Math.round(l.latenciaMs) })),
         juicio: juicios.get(r.id) ?? null,
       })),

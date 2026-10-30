@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { juzgarPregunta } from "../benchmarks/publicados/mt-bench/mt-bench.js";
+import { juzgarPregunta, turnoParaCrudo, type ResultadoDePregunta } from "../benchmarks/publicados/mt-bench/mt-bench.js";
 import {
   CATEGORIAS,
   DATASET,
@@ -345,5 +345,30 @@ describe("MT-Bench gama alta (2026-09-29): Gemini, precios citados y topes", () 
     expect(hostPermitido("http://generativelanguage.googleapis.com/v1beta/openai")).toBe(false);
     expect(hostPermitido("https://generativelanguage.googleapis.com.evil.example/v1beta")).toBe(false);
     expect(hostPermitido("https://aiplatform.googleapis.com/v1")).toBe(false);
+  });
+});
+
+describe("MT-Bench: evidencia F1 en las respuestas crudas", () => {
+  it("sobrevive a la ida y vuelta JSONL y sigue siendo opcional en crudos legacy", () => {
+    const turno: ResultadoDePregunta["A"][number] = {
+      fin: "stop",
+      latenciaMs: 12.6,
+      texto: "respuesta",
+      latency: { totalMs: 20, providerWaitMs: 12, layerWorkMs: 5, harnessMs: 3, estado: "completed" },
+    };
+    const linea = JSON.stringify({
+      modelo: "m",
+      preguntas: [{ A: [turnoParaCrudo(turno)], B: [turnoParaCrudo({ ...turno, texto: "respuesta B" })] }],
+    });
+    const vuelta = JSON.parse(linea) as {
+      preguntas: { A: ResultadoDePregunta["A"]; B: ResultadoDePregunta["B"] }[];
+    };
+    expect(vuelta.preguntas[0]!.A[0]!.latency).toEqual(turno.latency);
+    expect(vuelta.preguntas[0]!.B[0]!.latency).toEqual(turno.latency);
+    expect(vuelta.preguntas[0]!.A[0]!.latenciaMs).toBe(13);
+
+    const legacy = turnoParaCrudo({ fin: null, latenciaMs: 8.4, texto: "legacy" });
+    expect(legacy).toEqual({ fin: null, latenciaMs: 8, texto: "legacy" });
+    expect(JSON.stringify(legacy)).not.toContain('"latency"');
   });
 });

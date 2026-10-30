@@ -306,7 +306,9 @@ export function crearRed(base: typeof fetch, modelos: ConfigDeModelo[], dormirIm
         cuerpo = JSON.stringify(b);
       }
     }
+    const inicioCola = ahora();
     return await semaforos[ctx.familia].con(async () => {
+      ctx.harnessMs += Math.max(0, ahora() - inicioCola);
       for (let intento = 0; ; intento++) {
         let r: Response;
         const inicioProveedor = ahora();

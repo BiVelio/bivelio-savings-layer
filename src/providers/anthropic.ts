@@ -1500,9 +1500,11 @@ export class AnthropicProvider implements Provider {
  * mandó ids sigue mandando el mismo cuerpo.
  *
  * NUNCA UN BLOQUE DE TEXTO VACÍO. Un mensaje cuyo único contenido sería un
- * texto vacío no se manda: era un 400 seguro, y el turno que se pierde no decía
- * nada. Sin bucle de herramientas y sin textos vacíos, el cuerpo es el de antes
- * byte a byte (`test/fixtures/anthropic-cuerpos-sin-herramientas.json`).
+ * texto vacío no se manda como tal: era un 400 seguro. Un turno del asistente
+ * sin herramientas y sin bloques válidos conserva su rol con un espacio, porque
+ * la secuencia de roles sí importa; los mensajes vacíos de otros roles se omiten. Sin bucle de
+ * herramientas y sin textos vacíos, el cuerpo es el de antes byte a byte
+ * (`test/fixtures/anthropic-cuerpos-sin-herramientas.json`).
  */
 //
 // `anteponer` solo llega con la búsqueda nativa: los pares de búsqueda que el
@@ -1593,8 +1595,11 @@ function repartirMensajes(
     }
     // Sin llamadas, o un intercambio que no puede viajar nativo: lo de antes.
     const contenido = previos ? [...previos, ...texto] : texto;
-    if (contenido.length > 0) {
-      messages.push({ role: "assistant", content: contenido });
+    if (contenido.length > 0 || llamadas.length === 0) {
+      messages.push({
+        role: "assistant",
+        content: contenido.length > 0 ? contenido : [{ type: "text", text: " " }],
+      });
       cerrar(i);
     }
     // Los resultados de ese intercambio, como texto y sin otro aviso: ya se dio.

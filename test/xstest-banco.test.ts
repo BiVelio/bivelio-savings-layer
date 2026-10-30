@@ -375,8 +375,94 @@ describe("xstest · una tirada entera sin red, con la capa 0.4.31 en B", () => {
     expect(t.latency.arms.A!.total.p95).toBeLessThanOrEqual(t.latency.arms.A!.total.max);
     const cacheadas = t.registros.map((r) => r.B!).filter((x) => x.llamadasAlProveedor === 0);
     expect(cacheadas.length).toBeGreaterThan(0);
-    for (const c of cacheadas) expect(c.latency).toMatchObject({ providerWaitMs: 0 });
+    for (const c of cacheadas) {
+      expect(c.latency).toMatchObject({ providerWaitMs: 0, harnessMs: 0 });
+      expect(c.latency!.layerWorkMs).toBe(c.latency!.totalMs);
+      expect(c.latency!.layerWorkMs).toBeGreaterThan(0);
+    }
     expect(t.latency.arms.B!.providerWait.max).toBeGreaterThan(0);
+  });
+
+  it("la cola real del semáforo es harness, no trabajo de capa, y no altera total ni outcomes", async () => {
+    const prompts = [2, 4].map((id) => ({ id, prompt: `safe queue prompt ${id}`, type: "homonyms", label: "safe" as const, focus: "", note: "" }));
+    const base = fetchDeMentira(prompts);
+    let reloj = 0;
+    let llamadas = 0;
+    let activas = 0;
+    let maxActivas = 0;
+    let avisarTres!: () => void;
+    let liberar!: () => void;
+    const tresEnElProveedor = new Promise<void>((r) => { avisarTres = r; });
+    const salida = new Promise<void>((r) => { liberar = r; });
+    const saturado = (async (u: string, i: RequestInit) => {
+      const r = await base(u, i);
+      const n = ++llamadas;
+      if (n <= 3) {
+        activas++;
+        maxActivas = Math.max(maxActivas, activas);
+        if (n === 3) avisarTres();
+        await salida;
+        activas--;
+      }
+      return r;
+    }) as unknown as typeof fetch;
+    const pendiente = correrTirada({
+      modo: "SECO", modelos: [modelos[1]!], prompts, endpoints, fetchBase: saturado, secretos: [CLAVE], log: () => {},
+      relojMonotono: () => reloj,
+    });
+    await tresEnElProveedor;
+    for (let i = 0; i < 4; i++) await new Promise<void>((r) => setImmediate(r));
+    expect(llamadas).toBe(3);
+    expect(activas).toBe(3);
+    reloj += 2000;
+    liberar();
+    const t = await pendiente;
+
+    expect(maxActivas).toBe(3);
+    expect(t.registros).toHaveLength(2);
+    expect(t.registros.every((r) => !r.A!.error && !r.B!.error)).toBe(true);
+    const muestras = t.registros.flatMap((r) => [r.A!.latency!, r.B!.latency!]);
+    expect(muestras).toHaveLength(4);
+    for (const m of muestras) {
+      expect(m.totalMs).toBe(2000);
+      expect(m.estado).toBe("completed");
+      expect(m.totalMs).toBeCloseTo(m.providerWaitMs + m.layerWorkMs + m.harnessMs, 8);
+    }
+    const enCola = t.registros.map((r) => r.B!.latency!).filter((m) => m.harnessMs === 2000);
+    expect(enCola).toHaveLength(1);
+    expect(enCola[0]).toMatchObject({ totalMs: 2000, providerWaitMs: 0, layerWorkMs: 0, estado: "completed" });
+  });
+
+  it("el tiempo de leer los bodies JSON y SSE queda en providerWait", async () => {
+    const prompts = [{ id: 5, prompt: "unsafe body timing prompt", type: "homonyms", label: "unsafe" as const, focus: "", note: "" }];
+    const base = fetchDeMentira(prompts);
+    let reloj = 0;
+    let llamadas = 0;
+    const tipos: string[] = [];
+    const cuerposLentos = (async (u: string, i: RequestInit) => {
+      const n = ++llamadas;
+      const r = await base(u, i);
+      tipos[n] = r.headers.get("content-type") ?? "";
+      const leerTexto = r.text.bind(r);
+      Object.defineProperty(r, "text", {
+        value: async () => {
+          if (n === 3) reloj += 40;
+          if (n === 4) reloj += 70;
+          return leerTexto();
+        },
+      });
+      return r;
+    }) as unknown as typeof fetch;
+    const t = await correrTirada({
+      modo: "SECO", modelos: [modelos[1]!], prompts, endpoints, fetchBase: cuerposLentos, secretos: [CLAVE], log: () => {},
+      relojMonotono: () => reloj,
+    });
+
+    expect(llamadas).toBe(4);
+    expect(tipos.slice(3, 5)).toEqual(["application/json", "text/event-stream"]);
+    const [json, sse] = t.registros[0]!.repeticiones;
+    expect(json!.latency).toMatchObject({ totalMs: 40, providerWaitMs: 40, layerWorkMs: 0, harnessMs: 0, estado: "completed" });
+    expect(sse!.latency).toMatchObject({ totalMs: 70, providerWaitMs: 70, layerWorkMs: 0, harnessMs: 0, estado: "completed" });
   });
 
   it("`extraAnthropic` va igual en A y en B (en B lo pone el banco, solo si falta, y lo anota)", async () => {

@@ -1,5 +1,5 @@
 import { defaultTokenizerRegistry } from "../tokenizer/registry.js";
-import { MODELS_BY_ENCODING, registerExactTokenizer } from "../tokenizer/exact.js";
+import { codificacionDeModelo, MODELS_BY_ENCODING, registerExactTokenizer } from "../tokenizer/exact.js";
 import { avisarUnaVez } from "../util/warn-once.js";
 import type {
   SavingsRequest,
@@ -54,10 +54,18 @@ export const DEFAULT_MAX_STALENESS_SECONDS = 72 * 3600;
  * `estimated` nunca entra en el extracto. O sea que el peer "opcional" era, en
  * la práctica, inalcanzable desde `createSavingsLayer`.
  *
- * Memoizado a nivel de módulo porque el registro por defecto es un singleton:
- * cargar la codificación una vez por capa creada serían decenas de MB por capa.
+ * Memoizado por codificación porque el registro por defecto es un singleton:
+ * cargarla una vez por capa creada serían decenas de MB por capa.
  */
-let cargaDelExacto: Promise<boolean> | undefined;
+const cargasDelExacto = new Map<string, Promise<boolean>>();
+
+function cargarCodificacion(codificacion: string): Promise<boolean> {
+  const previa = cargasDelExacto.get(codificacion);
+  if (previa) return previa;
+  const carga = registerExactTokenizer(defaultTokenizerRegistry, { codificaciones: [codificacion] }).catch(() => false);
+  cargasDelExacto.set(codificacion, carga);
+  return carga;
+}
 
 /** Modelos con tokenizador exacto disponible, con y sin prefijo `openai/`. */
 const MODELOS_CON_EXACTO = new Set(
@@ -207,12 +215,16 @@ export function createSavingsLayer(
     tokenizer: config.tokenizer ?? defaultTokenizerRegistry,
   };
 
-  // Registro por defecto → intentamos el exacto. Un registro propio del
-  // llamante se respeta tal cual: quien lo construye decide qué contiene.
-  const exactoListo: Promise<boolean> =
-    config.tokenizer == null && config.exactTokenizer !== false
-      ? (cargaDelExacto ??= registerExactTokenizer(defaultTokenizerRegistry).catch(() => false))
-      : Promise.resolve(true);
+  // Registro por defecto → cargamos solo lo que usa el modelo pedido o servido.
+  // Un registro propio del llamante se respeta tal cual.
+  const cargarTokenizador = async (modeloPedido: string, modeloServido: string): Promise<boolean> => {
+    if (config.tokenizer != null || config.exactTokenizer === false) return true;
+    const codificaciones = [
+      ...new Set([codificacionDeModelo(modeloPedido), codificacionDeModelo(modeloServido)].filter((c): c is string => c !== undefined)),
+    ];
+    const resultados = await Promise.all(codificaciones.map(cargarCodificacion));
+    return resultados.every(Boolean);
+  };
 
   let poller: RevocationPoller | undefined;
   let refresher: LicenseRefresher | undefined;
@@ -463,14 +475,13 @@ export function createSavingsLayer(
       request: SavingsRequest,
       options: SavingsRequestOptions = {},
     ): Promise<SavingsResult<T>> => {
-      // La espera del exacto entra en el deadline: el pipeline arranca su reloj
-      // antes de aguardarla, en la entrada pública de la petición.
-      const result = await pipeline.generate<T>(request, options, exactoListo);
-      const exacto = await exactoListo;
+      // La espera del exacto, cuando hace falta, entra en el deadline.
+      const result = await pipeline.generate<T>(request, options, cargarTokenizador);
       // Después de la petición, no antes: un llamante sin licencia debe ver el
       // error de licencia, no un aviso sobre el tokenizador.
-      if (!exacto && MODELOS_CON_EXACTO.has(request.model)) {
-        avisar("tokenizador-exacto-ausente", AVISO_TOKENIZADOR);
+      if (MODELOS_CON_EXACTO.has(request.model)) {
+        const exacto = await cargarTokenizador(request.model, request.model);
+        if (!exacto) avisar("tokenizador-exacto-ausente", AVISO_TOKENIZADOR);
       }
       if (emitter) {
         try {
@@ -489,7 +500,7 @@ export function createSavingsLayer(
       request: SavingsRequest,
       options?: SavingsStreamOptions,
     ): SavingsStream<T> => {
-      const stream = pipeline.generateStream<T>(request, options ?? {}, exactoListo);
+      const stream = pipeline.generateStream<T>(request, options ?? {}, cargarTokenizador);
       void stream.result.then(
         async (result) => {
           if (emitter) {
@@ -499,9 +510,9 @@ export function createSavingsLayer(
               /* metering must never affect the caller */
             }
           }
-          const exacto = await exactoListo;
-          if (!exacto && MODELOS_CON_EXACTO.has(request.model)) {
-            avisar("tokenizador-exacto-ausente", AVISO_TOKENIZADOR);
+          if (MODELOS_CON_EXACTO.has(request.model)) {
+            const exacto = await cargarTokenizador(request.model, request.model);
+            if (!exacto) avisar("tokenizador-exacto-ausente", AVISO_TOKENIZADOR);
           }
         },
         () => {},
