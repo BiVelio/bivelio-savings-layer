@@ -148,8 +148,16 @@ async function principal(): Promise<void> {
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  principal().catch(() => {
-    console.error("[xstest-351] diagnóstico fallido; no se escribió texto en consola");
+  principal().catch((error: unknown) => {
+    const mensaje = error instanceof Error ? error.message : String(error);
+    const codigo = /no reprodujo la negativa buscada/.test(mensaje) ? "no-reproduced"
+      : /401|403|api key|credential|authentication/i.test(mensaje) ? "credentials"
+        : /429|quota/i.test(mensaje) ? "quota"
+          : /timeout|timed out/i.test(mensaje) ? "timeout"
+            : /fetch failed|ECONN|network/i.test(mensaje) ? "network"
+              : /404|endpoint|tope|cuerpo|tipo|etiqueta/i.test(mensaje) ? "configuration"
+                : "other";
+    console.error(`[xstest-351] ${codigo}; no se escribió texto en consola`);
     process.exitCode = 1;
   });
 }
