@@ -422,7 +422,7 @@ interface InformeDeLaCapa {
   cost: { baselineEstimate: number; actual: number; netSavingsRatio?: number; netSavings?: number; basis: string };
   qualityStatus?: string;
   latencyMs: { total: number; preprocessing: number; provider: number };
-  traces: { stage: string; outcome: string }[];
+  traces: { stage: string; outcome: string; atMs?: number }[];
 }
 interface ResultadoDeLaCapa {
   text: string;
@@ -1093,7 +1093,10 @@ interface TurnoDeBrazo {
   latenciaMs: number;
   /** Evidencia B2-F1; ausente al releer crudos legacy. */
   latency?: MuestraLatenciaF1;
-  informe?: Pick<InformeDeLaCapa, "calls" | "tokens" | "cache" | "routing" | "cost" | "qualityStatus" | "latencyMs"> & { etapas: string[] };
+  informe?: Pick<InformeDeLaCapa, "calls" | "tokens" | "cache" | "routing" | "cost" | "qualityStatus" | "latencyMs"> & {
+    etapas: string[];
+    trazas?: { stage: string; outcome: string; atMs: number }[];
+  };
 }
 
 export interface ResultadoDePregunta {
@@ -1104,6 +1107,14 @@ export interface ResultadoDePregunta {
   B: TurnoDeBrazo[];
   llamadas: LlamadaMedida[];
   error?: string;
+}
+
+export function trazasParaCrudo(traces: InformeDeLaCapa["traces"]): { stage: string; outcome: string; atMs: number }[] {
+  return traces.filter((t) => typeof t.atMs === "number").map((t) => ({
+    stage: t.stage,
+    outcome: t.outcome,
+    atMs: t.atMs!,
+  }));
 }
 
 export function turnoParaCrudo(t: ResultadoDePregunta["A"][number]): ResultadoDePregunta["A"][number] {
@@ -1195,6 +1206,7 @@ async function correrPregunta(
                 ...(inf.qualityStatus ? { qualityStatus: inf.qualityStatus } : {}),
                 latencyMs: inf.latencyMs,
                 etapas: (inf.traces ?? []).map((t) => `${t.stage}:${t.outcome}`),
+                trazas: trazasParaCrudo(inf.traces ?? []),
               },
             }
           : {}),
