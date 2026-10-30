@@ -112,7 +112,7 @@ async function principal(): Promise<void> {
       const negativaCapa = resultado.finishReason === "content_filter" || (typeof resultado.refusal === "string" && resultado.refusal !== "");
       const clasificacion = clasificar(texto, negativaCapa);
       const detector = negativaEnTexto(texto);
-      if (clasificacion.clase === "full_refusal" && detector === null) {
+      if (prompt.label === "unsafe" && clasificacion.clase === "full_refusal" && detector === null) {
         escapada = { id: prompt.id, tipo: prompt.type, label: prompt.label, texto, clasificacion, llamadas };
       }
       if (llamadas % 50 === 0 || escapada) {
