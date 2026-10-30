@@ -70,7 +70,7 @@ async function principal(): Promise<void> {
       reintentos: 0,
       fetch: (async (url: string | URL | Request, init?: RequestInit) => {
         llamadas++;
-        if (llamadas !== 1) throw new Error("el diagnóstico admite una sola llamada B");
+        if (llamadas > 2) throw new Error("el diagnóstico admite como máximo dos llamadas B");
         const u = new URL(typeof url === "string" ? url : url instanceof URL ? url.href : url.url);
         if (u.protocol !== "https:" || u.host !== "api.openai.com") {
           throw new Error("la llamada B solo puede ir a https://api.openai.com");
@@ -97,47 +97,52 @@ async function principal(): Promise<void> {
     };
 
     capa = crearCapa(red, endpoints, cfg, licencia);
-    const resultado = await capa.generate({
-      model: "openai/gpt-5.4-mini",
-      messages: [{ role: "user", content: prompt.prompt }],
-      maxOutputTokens: tope,
-      ...(cfg.temperatura !== undefined ? { temperature: cfg.temperatura } : {}),
-    });
-    if (llamadas !== 1) throw new Error("la llamada B no llegó exactamente una vez al proveedor");
+    let reproduce = false;
+    for (let muestra = 1; muestra <= 2; muestra++) {
+      const resultado = await capa.generate({
+        model: "openai/gpt-5.4-mini",
+        messages: [{ role: "user", content: prompt.prompt }],
+        maxOutputTokens: tope,
+        ...(cfg.temperatura !== undefined ? { temperature: cfg.temperatura } : {}),
+      });
+      if (llamadas !== muestra) throw new Error("la llamada B no llegó exactamente una vez al proveedor por muestra");
 
-    const texto = resultado.text ?? "";
-    const negativaCapa = resultado.finishReason === "content_filter" || (typeof resultado.refusal === "string" && resultado.refusal !== "");
-    const clasificacion = clasificar(texto, negativaCapa);
-    const detector = negativaEnTexto(texto);
-    console.log(JSON.stringify({ clasificacion, detector, longitud: texto.length, llamadas, nuevaMuestra: true }));
-    const reproduce =
-      clasificacion.clase === "full_refusal" &&
-      clasificacion.fuente === "strmatch-paper" &&
-      clasificacion.paper === "1_full_compliance" &&
-      detector === null;
-    if (!reproduce) throw new Error("XSTest 351 no reprodujo la negativa buscada");
+      const texto = resultado.text ?? "";
+      const negativaCapa = resultado.finishReason === "content_filter" || (typeof resultado.refusal === "string" && resultado.refusal !== "");
+      const clasificacion = clasificar(texto, negativaCapa);
+      const detector = negativaEnTexto(texto);
+      console.log(JSON.stringify({ muestra, clasificacion, detector, longitud: texto.length, llamadas, nuevaMuestra: true }));
+      reproduce =
+        clasificacion.clase === "full_refusal" &&
+        clasificacion.fuente === "strmatch-paper" &&
+        clasificacion.paper === "1_full_compliance" &&
+        detector === null;
+      if (!reproduce) continue;
 
-    const salida = {
-      id: 351,
-      modelo: "openai/gpt-5.4-mini",
-      commit,
-      nuevaMuestra: true,
-      bytesOriginales: false,
-      longitud: texto.length,
-      sha256: sha256Hex(texto),
-      clasificacion,
-      detector,
-      llamadas,
-      apertura: texto.slice(0, 240),
-    };
-    const json = limpiarSecretos(JSON.stringify(salida, null, 2), secretos);
-    if (contieneSecreto(json, secretos)) throw new Error("un secreto llegó al diagnóstico");
-    const directorio = join(RAIZ, "diagnostico-xstest-351");
-    const ruta = join(directorio, "apertura.json");
-    mkdirSync(directorio, { recursive: true, mode: 0o700 });
-    writeFileSync(ruta, json + "\n", { encoding: "utf8", mode: 0o600 });
-    chmodSync(ruta, 0o600);
-    console.log("[xstest-351] diagnóstico escrito con una llamada B");
+      const salida = {
+        id: 351,
+        modelo: "openai/gpt-5.4-mini",
+        commit,
+        nuevaMuestra: true,
+        bytesOriginales: false,
+        longitud: texto.length,
+        sha256: sha256Hex(texto),
+        clasificacion,
+        detector,
+        llamadas,
+        apertura: texto.slice(0, 240),
+      };
+      const json = limpiarSecretos(JSON.stringify(salida, null, 2), secretos);
+      if (contieneSecreto(json, secretos)) throw new Error("un secreto llegó al diagnóstico");
+      const directorio = join(RAIZ, "diagnostico-xstest-351");
+      const ruta = join(directorio, "apertura.json");
+      mkdirSync(directorio, { recursive: true, mode: 0o700 });
+      writeFileSync(ruta, json + "\n", { encoding: "utf8", mode: 0o600 });
+      chmodSync(ruta, 0o600);
+      console.log("[xstest-351] diagnóstico escrito");
+      break;
+    }
+    if (!reproduce) throw new Error("XSTest 351 no reprodujo la negativa buscada en dos muestras");
   } finally {
     try {
       if (capa) await capa.close();
