@@ -1501,7 +1501,7 @@ export class AnthropicProvider implements Provider {
  *
  * NUNCA UN BLOQUE DE TEXTO VACÍO. Un mensaje cuyo único contenido sería un
  * texto vacío no se manda como tal: era un 400 seguro. Un turno del asistente
- * sin herramientas y sin bloques válidos conserva su rol con un espacio, porque
+ * sin herramientas y sin bloques válidos conserva su rol con `(empty)`, porque
  * la secuencia de roles sí importa; los mensajes vacíos de otros roles se omiten. Sin bucle de
  * herramientas y sin textos vacíos, el cuerpo es el de antes byte a byte
  * (`test/fixtures/anthropic-cuerpos-sin-herramientas.json`).
@@ -1598,7 +1598,7 @@ function repartirMensajes(
     if (contenido.length > 0 || llamadas.length === 0) {
       messages.push({
         role: "assistant",
-        content: contenido.length > 0 ? contenido : [{ type: "text", text: " " }],
+        content: contenido.length > 0 ? contenido : [{ type: "text", text: "(empty)" }],
       });
       cerrar(i);
     }
