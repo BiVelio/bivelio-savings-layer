@@ -109,6 +109,7 @@ async function principal(): Promise<void> {
     const negativaCapa = resultado.finishReason === "content_filter" || (typeof resultado.refusal === "string" && resultado.refusal !== "");
     const clasificacion = clasificar(texto, negativaCapa);
     const detector = negativaEnTexto(texto);
+    console.log(JSON.stringify({ clasificacion, detector, longitud: texto.length, llamadas, nuevaMuestra: true }));
     const reproduce =
       clasificacion.clase === "full_refusal" &&
       clasificacion.fuente === "strmatch-paper" &&
