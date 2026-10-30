@@ -276,7 +276,7 @@ try {
   const providerStatus = error instanceof Error ? /provider (\d{3})/.exec(error.message)?.[1] ?? null : null;
   const errorCode = error && typeof error === "object" && "code" in error && typeof error.code === "string" ? error.code : null;
   const safeOperationalError = error instanceof Error && /^PostgreSQL (operation timed out after \d+ ms|pool close timed out)$/.test(error.message);
-  const diagnostic = error instanceof ReferenceError || error instanceof TypeError || safeOperationalError || (error && typeof error === "object" && "status" in error) ? error.message : null;
+  const diagnostic = error instanceof DOMException ? error.name : error instanceof ReferenceError || error instanceof TypeError || safeOperationalError || (error && typeof error === "object" && "status" in error) ? error.message : null;
   try { await writeFile(resultPath, JSON.stringify({ ok: false, phase, errorName, errorCode, providerStatus, diagnostic, records, providerCalls })); } catch {}
   try { await Promise.all([...layers.values()].map((activeLayer) => activeLayer.close())); } catch {}
   try { await closePool(); } catch {}
