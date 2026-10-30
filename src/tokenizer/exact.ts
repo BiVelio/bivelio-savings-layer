@@ -47,6 +47,11 @@ export const MODELS_BY_ENCODING: Readonly<Record<string, readonly string[]>> = {
   cl100k_base: ["gpt-4", "gpt-4-turbo", "gpt-3.5-turbo", "text-embedding-3-small", "text-embedding-3-large"],
 } as const;
 
+export function codificacionDeModelo(model: string): string | undefined {
+  const sinProveedor = model.startsWith("openai/") ? model.slice("openai/".length) : model;
+  return Object.entries(MODELS_BY_ENCODING).find(([, modelos]) => modelos.includes(sinProveedor))?.[0];
+}
+
 /**
  * Carga `gpt-tokenizer` si está instalado y registra el tokenizador exacto para
  * los modelos de OpenAI. Devuelve `false` —sin lanzar— cuando no está: la

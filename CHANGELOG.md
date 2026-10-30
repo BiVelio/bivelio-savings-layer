@@ -3,8 +3,8 @@
 ## 0.6.0-rc.1 — SDK release candidate
 
 This prerelease adds opt-in, customer-operated persistence while preserving the
-0.5 compatibility baseline. Existing in-memory defaults and provider behavior
-are unchanged. It is not a final release or a live-SLA claim.
+0.5 API compatibility baseline. Existing in-memory defaults remain in place. It
+is not a final release or a live-SLA claim.
 
 ### Added
 
@@ -14,6 +14,12 @@ are unchanged. It is not a final release or a live-SLA claim.
   write-through `Set` and no provider-call retry on storage failure.
 - Exact-cache and semantic-cache reference behavior, coordinated breakpoint
   learning and calibration across instances.
+- `requestTimeoutMs` and `signal` in `generate` and `generateStream`, with
+  `RequestTimeoutError` and no cache or learning writes for incomplete answers.
+- Exact-tokenizer loading only for the encodings used by the requested or served
+  model, avoiding unrelated cold-start work without changing token accounting.
+- Anthropic history normalization that preserves empty assistant turns with a
+  single-space text block instead of dropping their role.
 - PostgreSQL integration coverage, including real concurrency and 100,000-record
   local benchmark evidence.
 

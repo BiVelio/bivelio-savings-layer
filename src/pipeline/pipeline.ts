@@ -201,6 +201,8 @@ const ELISION_EN_VIVO: boolean = true;
  * compress what remains -> constrain generation. Provider prefix/KV caching is
  * recorded as ledger 4 (cheaper tokens), never as eliminated tokens.
  */
+type CargarTokenizador = (modeloPedido: string, modeloServido: string) => Promise<unknown>;
+
 /** Rastro de lo que esta peticion ya ha gastado, para que el fail-open no
  *  rescate algo que ya costo dinero ni reintente un fallo del proveedor. */
 interface TestigoDeFacturacion {
@@ -684,12 +686,11 @@ export class SavingsPipeline {
   async generate<T = unknown>(
     request: SavingsRequest,
     options: SavingsRequestOptions = {},
-    antes?: Promise<unknown>,
+    antes?: CargarTokenizador,
   ): Promise<SavingsResult<T>> {
     const deadline = crearDeadline(options, this.now);
     try {
-      if (antes) await antes;
-      return await this.generateConDeadline<T>(request, options, deadline);
+      return await this.generateConDeadline<T>(request, options, deadline, undefined, antes);
     } finally {
       deadline?.dispose();
     }
@@ -716,6 +717,7 @@ export class SavingsPipeline {
       sinContador: 0,
       ...(deadline ? { deadline } : {}),
     },
+    antes?: CargarTokenizador,
   ): Promise<SavingsResult<T>> {
     this.comprobarInterrupcion(testigo);
     this.assertLicensed();
@@ -725,7 +727,7 @@ export class SavingsPipeline {
     request = this.conPalancasPorDefecto(request);
     let servido: SavingsResult<T>;
     try {
-      servido = await this.generateOptimized<T>(request, testigo);
+      servido = await this.generateOptimized<T>(request, testigo, null, antes);
       this.comprobarInterrupcion(testigo);
     } catch (err) {
       if (err instanceof LicenseError || err instanceof RequestTimeoutError || err instanceof StreamAbortedError) throw err;
@@ -758,13 +760,12 @@ export class SavingsPipeline {
   // LA MISMA PETICIÓN QUE generate(), ENTREGADA COMO STREAM.
   //
   // Nunca lanza de forma síncrona: todo error —también `LicenseError`— aparece
-  // en `result` y en el primer `next()` del iterador. `antes` es lo que la
-  // fábrica tiene que esperar antes de la primera medición (la carga del
-  // tokenizador exacto); se espera DENTRO, para que el handle vuelva ya.
+  // en `result` y en el primer `next()` del iterador. `antes` carga solo el
+  // tokenizador que necesite el modelo; se espera DENTRO, para que el handle vuelva ya.
   generateStream<T = unknown>(
     request: SavingsRequest,
     options: SavingsStreamOptions = {},
-    antes?: Promise<unknown>,
+    antes?: CargarTokenizador,
   ): SavingsStream<T> {
     let canal: CanalDeStream<T>;
     let deadline: DeadlineDePeticion | undefined;
@@ -796,7 +797,7 @@ export class SavingsPipeline {
     canal: CanalDeStream<T>,
     options: SavingsStreamOptions,
     deadline: DeadlineDePeticion | undefined,
-    antes?: Promise<unknown>,
+    antes?: CargarTokenizador,
   ): Promise<void> {
     const testigo: TestigoDeFacturacion = {
       llamadas: 0,
@@ -806,14 +807,13 @@ export class SavingsPipeline {
       stream: { abortado: () => canal.abortado, signal: canal.sumidero.senal },
     };
     try {
-      if (antes) await antes;
       this.comprobarInterrupcion(testigo);
       // Antes de decidir la entrega: una petición diferible POR CONFIGURACIÓN se
       // entrega entera igual que una que lo declaró.
       request = this.conPalancasPorDefecto(request);
       const motivo = this.motivoDeEntregaEntera(request);
       if (motivo) {
-        const r = await this.generateConDeadline<T>(request, options, deadline, testigo);
+        const r = await this.generateConDeadline<T>(request, options, deadline, testigo, antes);
         canal.completar(r, { vivo: false, motivo });
         return;
       }
@@ -826,7 +826,7 @@ export class SavingsPipeline {
       testigo.streamEnVivo = true;
       let r: SavingsResult<T>;
       try {
-        r = await this.generateOptimized<T>(request, testigo, canal.sumidero);
+        r = await this.generateOptimized<T>(request, testigo, canal.sumidero, antes);
         this.comprobarInterrupcion(testigo);
       } catch (err) {
         if (err instanceof LicenseError || err instanceof RequestTimeoutError || err instanceof StreamAbortedError) throw err;
@@ -2179,6 +2179,7 @@ export class SavingsPipeline {
     // entonces por `provider.generateStream` y su texto se reenvía según llega.
     // Con `null` (generate(), y cualquier llamada directa) nada cambia.
     sumidero: SumideroDeStream | null = null,
+    antes?: CargarTokenizador,
   ): Promise<SavingsResult<T>> {
     // Defensa en profundidad: el gate también aquí, no solo en generate(). El
     // `private` de TypeScript se borra al compilar, así que si alguien alcanzara
@@ -2236,6 +2237,10 @@ export class SavingsPipeline {
     // fuerte con el siguiente. Es la misma regla que el gateway (`inicioMs`).
     const instantePrecio = this.now();
     const cascada = this.decidirCascada(request, canonical, toggles, trace, instantePrecio);
+    if (antes) {
+      await antes(request.model, cascada.modeloServido);
+      this.comprobarInterrupcion(testigo);
+    }
     // El precio con el que se tarifa TODA la petición es el del modelo que va a
     // contestar. Si sirve el barato y se tarifara con el fuerte, `cost.actual`
     // —la única cifra del informe que se contrasta contra la factura— saldría
