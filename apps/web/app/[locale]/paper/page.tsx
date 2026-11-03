@@ -82,7 +82,9 @@ const esReferencia = (b: Bloque) => b.tipo === "p" && /^\[\d+\]/.test(b.texto);
 export default function PaperPage() {
   const iAbstract = BLOQUES.findIndex((b) => b.tipo === "h2" && b.id === "abstract");
   const iFinAbstract = BLOQUES.findIndex((b, i) => i > iAbstract && b.tipo === "hr");
-  const resumen = BLOQUES.slice(iAbstract + 1, iFinAbstract < 0 ? BLOQUES.length : iFinAbstract);
+  const resumen = BLOQUES.slice(iAbstract + 1, iFinAbstract < 0 ? BLOQUES.length : iFinAbstract).filter(
+    (b): b is Bloque & { texto: string } => "texto" in b,
+  );
   const cuerpoBloques = BLOQUES.slice(iFinAbstract < 0 ? iAbstract + 1 : iFinAbstract + 1);
   const secciones = cuerpoBloques.filter((b): b is Bloque & { tipo: "h2" } => b.tipo === "h2");
 
