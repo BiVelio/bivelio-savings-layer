@@ -1040,7 +1040,8 @@
       "bottomTerms": "Conditions",
       "howItWorks": "Comment ça marche",
       "pricingTerms": "Conditions tarifaires",
-      "dataPrivacy": "Ce que reçoit BiVelio"
+      "dataPrivacy": "Ce que reçoit BiVelio",
+      "paper": "Article"
     },
     "cta15": {
       "titulo": "Book 15-min call",

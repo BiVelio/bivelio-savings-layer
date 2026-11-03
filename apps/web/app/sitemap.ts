@@ -54,6 +54,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.7,
       alternates: { languages: benchLanguages },
     })),
+    // El paper técnico: mismo contenido en los 12 idiomas (el documento es en
+    // inglés, con apéndice en español), así que se indexa una sola vez, la de
+    // /en, igual que la guía de migración.
+    {
+      url: absolute("/en/paper"),
+      changeFrequency: "yearly" as const,
+      priority: 0.6,
+      alternates: { languages: languageAlternates("paper") },
+    },
     // La guía de migración 0.4 → 0.5: en inglés en todos los idiomas, así que
     // se indexa una sola vez, la de /en (su `canonical`).
     {

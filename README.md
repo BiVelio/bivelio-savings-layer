@@ -97,6 +97,11 @@ console.log(report.cost.basis);               // "estimated": nothing ran, so th
 installed coding agent. The published benchmark, trial by trial, with the raw CSV,
 is at **[savings.bivelio.com/en/how-it-works](https://savings.bivelio.com/en/how-it-works)**.
 
+📄 **The paper:** [Verifiable Measurement of Cost Savings in LLM Applications
+(open-core edition, v2)](./docs/PAPER.md) — live double-runs, percentile cluster
+bootstrap, four ledgers, and every limitation stated. Also at
+**[savings.bivelio.com/paper](https://savings.bivelio.com/paper)**.
+
 ### Community vs Cloud
 
 | | Community (default, no keys) | Cloud (optional `BIVELIO_*` keys) |
