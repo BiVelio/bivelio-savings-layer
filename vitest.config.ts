@@ -34,6 +34,11 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "node",
+    // Los pipelines pesados (colocador, deadlines con timers reales) se pasan
+    // de los 5 s por defecto cuando el CI corre toda la suite en paralelo:
+    // subir el techo evita los timeouts intermitentes de las Releases.
+    testTimeout: 30_000,
+    hookTimeout: 30_000,
     // The suite runs "self-managed / dev-open" as before: many pipeline tests
     // exercise the dev path explicitly. The OPEN-CORE default (a layer with no
     // licenseKey runs on the Community gate) made the old reason obsolete —

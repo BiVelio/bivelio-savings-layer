@@ -958,7 +958,7 @@
         "medir": {
           "name": "Measure",
           "price": "Free",
-          "body": "Free, no card. The free CLOUD plan: shadow mode for one organization, up to {seats} seats and {requests} requests a day — nothing you send changes, nothing is served from cache, it is never part of any commission, and your dashboard shows what it would have saved. The local levers don't need it: open core runs without any key.",
+          "body": "Free, no card. The free CLOUD plan: shadow mode for one organization, up to {seats} seats and {requests} requests a day — nothing you send changes, nothing is served from cache, it is never part of any commission, and your dashboard shows what it would have saved. The local levers don't need it: open core runs without any key. It needs @bivelio/savings-layer {version} or later.",
           "cta": "Start free →"
         },
         "pro": {

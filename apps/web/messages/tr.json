@@ -958,7 +958,7 @@
         "medir": {
           "name": "Ölçüm",
           "price": "Ücretsiz",
-          "body": "Ücretsiz, kartsız. Ücretsiz BULUT planı: bir kuruluş için gölge modu, günde {seats} koltuğa ve {requests} isteğe kadar — gönderdiğiniz hiçbir şey değişmez, önbellekten hiçbir şey sunulmaz, hiçbir komisyonun parçası olmaz ve paneliniz ne tasarruf edeceğini gösterir. Yerel kolların buna ihtiyacı yok: açık çekirdek hiçbir anahtar olmadan çalışır.",
+          "body": "Ücretsiz, kartsız. Ücretsiz BULUT planı: bir kuruluş için gölge modu, günde {seats} koltuğa ve {requests} isteğe kadar — gönderdiğiniz hiçbir şey değişmez, önbellekten hiçbir şey sunulmaz, hiçbir komisyonun parçası olmaz ve paneliniz ne tasarruf edeceğini gösterir. Yerel kolların buna ihtiyacı yok: açık çekirdek hiçbir anahtar olmadan çalışır. @bivelio/savings-layer {version} veya üzeri gerekir.",
           "cta": "Ücretsiz başlayın →"
         },
         "pro": {

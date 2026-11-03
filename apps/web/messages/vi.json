@@ -958,7 +958,7 @@
         "medir": {
           "name": "Đo lường",
           "price": "Miễn phí",
-          "body": "Miễn phí, không cần thẻ. Gói CLOUD miễn phí: chế độ bóng cho một tổ chức, tối đa {seats} chỗ và {requests} yêu cầu mỗi ngày — không gì bạn gửi thay đổi, không gì được phục vụ từ cache, không bao giờ nằm trong bất kỳ hoa hồng nào, và bảng điều khiển cho thấy mức lẽ ra tiết kiệm được. Các đòn bẩy cục bộ không cần nó: open core chạy không cần khóa nào.",
+          "body": "Miễn phí, không cần thẻ. Gói CLOUD miễn phí: chế độ bóng cho một tổ chức, tối đa {seats} chỗ và {requests} yêu cầu mỗi ngày — không gì bạn gửi thay đổi, không gì được phục vụ từ cache, không bao giờ nằm trong bất kỳ hoa hồng nào, và bảng điều khiển cho thấy mức lẽ ra tiết kiệm được. Các đòn bẩy cục bộ không cần nó: open core chạy không cần khóa nào. Cần @bivelio/savings-layer {version} trở lên.",
           "cta": "Bắt đầu miễn phí →"
         },
         "pro": {

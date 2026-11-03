@@ -958,7 +958,7 @@
         "medir": {
           "name": "Medir",
           "price": "Grátis",
-          "body": "Grátis, sem cartão. O plano NUVEM gratuito: modo sombra para uma organização, até {seats} lugares e {requests} pedidos por dia — nada do que envias muda, nada é servido da cache, nunca entra em nenhuma comissão, e o teu painel mostra quanto teria poupado. As alavancas locais não precisam dele: o open core corre sem chave nenhuma.",
+          "body": "Grátis, sem cartão. O plano NUVEM gratuito: modo sombra para uma organização, até {seats} lugares e {requests} pedidos por dia — nada do que envias muda, nada é servido da cache, nunca entra em nenhuma comissão, e o teu painel mostra quanto teria poupado. As alavancas locais não precisam dele: o open core corre sem chave nenhuma. Precisa de @bivelio/savings-layer {version} ou posterior.",
           "cta": "Começar grátis →"
         },
         "pro": {

@@ -958,7 +958,7 @@
         "medir": {
           "name": "Misura",
           "price": "Gratis",
-          "body": "Gratis, senza carta. Il piano CLOUD gratuito: modalità ombra per un'organizzazione, fino a {seats} postazioni e {requests} richieste al giorno — nulla di ciò che invii cambia, nulla è servito dalla cache, mai parte di alcuna commissione, e la dashboard mostra quanto avrebbe risparmiato. Le leve locali non ne hanno bisogno: l'open core funziona senza alcuna chiave.",
+          "body": "Gratis, senza carta. Il piano CLOUD gratuito: modalità ombra per un'organizzazione, fino a {seats} postazioni e {requests} richieste al giorno — nulla di ciò che invii cambia, nulla è servito dalla cache, mai parte di alcuna commissione, e la dashboard mostra quanto avrebbe risparmiato. Le leve locali non ne hanno bisogno: l'open core funziona senza alcuna chiave. Serve @bivelio/savings-layer {version} o successivo.",
           "cta": "Inizia gratis →"
         },
         "pro": {

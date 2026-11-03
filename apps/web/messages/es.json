@@ -958,7 +958,7 @@
         "medir": {
           "name": "Medir",
           "price": "Gratis",
-          "body": "Gratis, sin tarjeta. El plan de NUBE gratis: modo sombra para una organización, hasta {seats} asientos y {requests} peticiones al día — nada de lo que envías cambia, nada se sirve de caché, nunca entra en ninguna comisión, y tu panel muestra lo que habría ahorrado. Las palancas locales no lo necesitan: el open core corre sin ninguna clave.",
+          "body": "Gratis, sin tarjeta. El plan de NUBE gratis: modo sombra para una organización, hasta {seats} asientos y {requests} peticiones al día — nada de lo que envías cambia, nada se sirve de caché, nunca entra en ninguna comisión, y tu panel muestra lo que habría ahorrado. Las palancas locales no lo necesitan: el open core corre sin ninguna clave. Necesita @bivelio/savings-layer {version} o posterior.",
           "cta": "Empieza gratis →"
         },
         "pro": {

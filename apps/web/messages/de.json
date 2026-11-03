@@ -958,7 +958,7 @@
         "medir": {
           "name": "Measure",
           "price": "Kostenlos",
-          "body": "Kostenlos, ohne Karte. Der kostenlose CLOUD-Plan: Schattenmodus für eine Organisation, bis zu {seats} Sitze und {requests} Anfragen pro Tag — nichts ändert sich an dem, was du sendest, nichts wird aus dem Cache bedient, nie Teil einer Provision, und dein Dashboard zeigt, was es gespart hätte. Die lokalen Hebel brauchen ihn nicht: Open Core läuft ohne jeden Schlüssel.",
+          "body": "Kostenlos, ohne Karte. Der kostenlose CLOUD-Plan: Schattenmodus für eine Organisation, bis zu {seats} Sitze und {requests} Anfragen pro Tag — nichts ändert sich an dem, was du sendest, nichts wird aus dem Cache bedient, nie Teil einer Provision, und dein Dashboard zeigt, was es gespart hätte. Die lokalen Hebel brauchen ihn nicht: Open Core läuft ohne jeden Schlüssel. Es braucht @bivelio/savings-layer {version} oder neuer.",
           "cta": "Kostenlos starten →"
         },
         "pro": {

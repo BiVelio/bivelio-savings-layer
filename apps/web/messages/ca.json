@@ -958,7 +958,7 @@
         "medir": {
           "name": "Mesurar",
           "price": "Gratis",
-          "body": "Gratis, sense targeta. El pla de NÚVOL gratuït: mode ombra per a una organització, fins a {seats} seients i {requests} peticions al dia — res del que envies canvia, res se serveix de la memòria cau, mai entra en cap comissió, i el teu tauler mostra què hauria estalviat. Les palanques locals no el necessiten: l'open core corre sense cap clau.",
+          "body": "Gratis, sense targeta. El pla de NÚVOL gratuït: mode ombra per a una organització, fins a {seats} seients i {requests} peticions al dia — res del que envies canvia, res se serveix de la memòria cau, mai entra en cap comissió, i el teu tauler mostra què hauria estalviat. Les palanques locals no el necessiten: l'open core corre sense cap clau. Necessita @bivelio/savings-layer {version} o posterior.",
           "cta": "Comença gratis →"
         },
         "pro": {

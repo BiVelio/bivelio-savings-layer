@@ -958,7 +958,7 @@
         "medir": {
           "name": "Measure",
           "price": "Gratis",
-          "body": "Gratis, tanpa kartu. Paket CLOUD gratis: mode bayangan untuk satu organisasi, hingga {seats} kursi dan {requests} permintaan per hari — tidak ada yang Anda kirim berubah, tidak ada yang dilayani dari cache, tidak pernah menjadi bagian komisi mana pun, dan dasbor Anda menunjukkan berapa yang akan dihemat. Tuas lokal tidak membutuhkannya: open core berjalan tanpa kunci apa pun.",
+          "body": "Gratis, tanpa kartu. Paket CLOUD gratis: mode bayangan untuk satu organisasi, hingga {seats} kursi dan {requests} permintaan per hari — tidak ada yang Anda kirim berubah, tidak ada yang dilayani dari cache, tidak pernah menjadi bagian komisi mana pun, dan dasbor Anda menunjukkan berapa yang akan dihemat. Tuas lokal tidak membutuhkannya: open core berjalan tanpa kunci apa pun. Butuh @bivelio/savings-layer {version} atau lebih baru.",
           "cta": "Mulai gratis →"
         },
         "pro": {

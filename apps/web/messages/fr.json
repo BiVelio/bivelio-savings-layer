@@ -958,7 +958,7 @@
         "medir": {
           "name": "Mesurer",
           "price": "Gratuit",
-          "body": "Gratuit, sans carte. Le plan CLOUD gratuit : mode fantôme pour une organisation, jusqu'à {seats} sièges et {requests} requêtes par jour — rien de ce que vous envoyez ne change, rien n'est servi depuis le cache, jamais aucune commission, et votre tableau de bord montre ce que cela aurait économisé. Les leviers locaux n'en ont pas besoin : l'open core fonctionne sans aucune clé.",
+          "body": "Gratuit, sans carte. Le plan CLOUD gratuit : mode fantôme pour une organisation, jusqu'à {seats} sièges et {requests} requêtes par jour — rien de ce que vous envoyez ne change, rien n'est servi depuis le cache, jamais aucune commission, et votre tableau de bord montre ce que cela aurait économisé. Les leviers locaux n'en ont pas besoin : l'open core fonctionne sans aucune clé. Il faut @bivelio/savings-layer {version} ou plus récent.",
           "cta": "Commencer gratuitement →"
         },
         "pro": {

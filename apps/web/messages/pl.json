@@ -958,7 +958,7 @@
         "medir": {
           "name": "Pomiar",
           "price": "Za darmo",
-          "body": "Za darmo, bez karty. Darmowy plan CHMUROWY: tryb cienia dla jednej organizacji, do {seats} stanowisk i {requests} żądań dziennie — nic z tego, co wysyłasz, się nie zmienia, nic nie jest serwowane z pamięci podręcznej, nigdy żadnej prowizji, a panel pokazuje, ile by zaoszczędzono. Lokalne dźwignie go nie potrzebują: open core działa bez żadnego klucza.",
+          "body": "Za darmo, bez karty. Darmowy plan CHMUROWY: tryb cienia dla jednej organizacji, do {seats} stanowisk i {requests} żądań dziennie — nic z tego, co wysyłasz, się nie zmienia, nic nie jest serwowane z pamięci podręcznej, nigdy żadnej prowizji, a panel pokazuje, ile by zaoszczędzono. Lokalne dźwignie go nie potrzebują: open core działa bez żadnego klucza. Wymaga @bivelio/savings-layer {version} lub nowszej.",
           "cta": "Zacznij za darmo →"
         },
         "pro": {

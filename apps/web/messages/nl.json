@@ -958,7 +958,7 @@
         "medir": {
           "name": "Meten",
           "price": "Gratis",
-          "body": "Gratis, zonder kaart. Het gratis CLOUD-plan: schaduwmodus voor één organisatie, tot {seats} seats en {requests} verzoeken per dag — niets van wat je stuurt verandert, niets komt uit de cache, nooit deel van enige commissie, en je dashboard toont wat het bespaard zou hebben. De lokale hendels hebben het niet nodig: open core draait zonder enige sleutel.",
+          "body": "Gratis, zonder kaart. Het gratis CLOUD-plan: schaduwmodus voor één organisatie, tot {seats} seats en {requests} verzoeken per dag — niets van wat je stuurt verandert, niets komt uit de cache, nooit deel van enige commissie, en je dashboard toont wat het bespaard zou hebben. De lokale hendels hebben het niet nodig: open core draait zonder enige sleutel. Het vereist @bivelio/savings-layer {version} of nieuwer.",
           "cta": "Gratis beginnen →"
         },
         "pro": {
