@@ -1523,11 +1523,11 @@
   },
   "pricingPage": {
     "metaTitle": "Termes de preu · BV-SALA",
-    "metaDescription": "L'open core és gratuït (Apache-2.0); Measure, Pro, Team i Enterprise són els plans de núvol — cap no porta comissió sobre el teu estalvi. Xifres publicades des de les mateixes constants que facturen.",
+    "metaDescription": "L'open core és gratuït ; Measure, Pro, Team i Enterprise són els plans de núvol — cap no porta comissió sobre el teu estalvi. Xifres publicades des de les mateixes constants que facturen.",
     "eyebrow": "Preus publicats",
     "title": "Termes de preu",
     "governs": "Aquesta pàgina descriu com funciona el servei avui; regeixen la <license>LICENSE</license> i els <terms>Termes de BiVelio</terms>.",
-    "lede": "El paquet és open core (Apache-2.0): no necessita claus. Aquesta pàgina posa preu al núvol opcional — Measure gratuït, després Pro per seient o un pla Team, sense comissió sobre el teu estalvi. Cada xifra d'aquesta pàgina es llegeix del mateix codi que et factura, així que canvia quan canvia el preu.",
+    "lede": "El paquet és open core : no necessita claus. Aquesta pàgina posa preu al núvol opcional — Measure gratuït, després Pro per seient o un pla Team, sense comissió sobre el teu estalvi. Cada xifra d'aquesta pàgina es llegeix del mateix codi que et factura, així que canvia quan canvia el preu.",
     "plans": {
       "title": "Plans",
       "intro": "Quatre plans, de menys a més. Pro i Equip es paguen per seient i no porten comissió.",

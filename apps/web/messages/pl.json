@@ -1523,11 +1523,11 @@
   },
   "pricingPage": {
     "metaTitle": "Warunki cenowe · BV-SALA",
-    "metaDescription": "Open core jest darmowy (Apache-2.0); Measure, Pro, Team i Enterprise to plany chmurowe — żaden nie pobiera prowizji od Twoich oszczędności. Liczby publikowane z tych samych stałych, które naliczają opłaty.",
+    "metaDescription": "Open core jest darmowy ; Measure, Pro, Team i Enterprise to plany chmurowe — żaden nie pobiera prowizji od Twoich oszczędności. Liczby publikowane z tych samych stałych, które naliczają opłaty.",
     "eyebrow": "Opublikowany cennik",
     "title": "Warunki cenowe",
     "governs": "Ta strona opisuje, jak usługa działa dziś; wiążące są <license>LICENSE</license> i <terms>Warunki BiVelio</terms>.",
-    "lede": "Pakiet to open core (Apache-2.0): nie potrzebuje kluczy. Ta strona wycenia opcjonalną chmurę — Measure za darmo, potem Pro za stanowisko lub plan Team, bez prowizji od Twoich oszczędności. Każda liczba na tej stronie pochodzi z tego samego kodu, który Cię rozlicza, i zmienia się, gdy zmienia się cena.",
+    "lede": "Pakiet to open core : nie potrzebuje kluczy. Ta strona wycenia opcjonalną chmurę — Measure za darmo, potem Pro za stanowisko lub plan Team, bez prowizji od Twoich oszczędności. Każda liczba na tej stronie pochodzi z tego samego kodu, który Cię rozlicza, i zmienia się, gdy zmienia się cena.",
     "plans": {
       "title": "Plany",
       "intro": "Cztery plany, od najmniejszego do największego. Pro i Zespół są płatne za stanowisko i nie mają prowizji.",

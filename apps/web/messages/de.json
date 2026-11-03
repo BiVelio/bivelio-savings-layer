@@ -1523,11 +1523,11 @@
   },
   "pricingPage": {
     "metaTitle": "Preisbedingungen · BV-SALA",
-    "metaDescription": "Open Core ist gratis (Apache-2.0); Measure, Pro, Team und Enterprise sind die Cloud-Pläne — keiner trägt eine Provision auf deine Ersparnis. Zahlen, veröffentlicht aus denselben Konstanten, die abrechnen.",
+    "metaDescription": "Open Core ist gratis ; Measure, Pro, Team und Enterprise sind die Cloud-Pläne — keiner trägt eine Provision auf deine Ersparnis. Zahlen, veröffentlicht aus denselben Konstanten, die abrechnen.",
     "eyebrow": "Veröffentlichte Preise",
     "title": "Preisbedingungen",
     "governs": "Diese Seite beschreibt, wie der Dienst heute funktioniert; maßgeblich sind die <license>LICENSE</license> und die <terms>BiVelio-Bedingungen</terms>.",
-    "lede": "Das Paket ist Open Core (Apache-2.0): kein Schlüssel nötig. Diese Seite bepreist die optionale Cloud — Measure gratis, dann Pro pro Sitz oder ein Team-Plan, ohne Provision auf deine Ersparnis. Jede Zahl hier kommt aus demselben Code, der dich abrechnet, und ändert sich, wenn sich der Preis ändert.",
+    "lede": "Das Paket ist Open Core : kein Schlüssel nötig. Diese Seite bepreist die optionale Cloud — Measure gratis, dann Pro pro Sitz oder ein Team-Plan, ohne Provision auf deine Ersparnis. Jede Zahl hier kommt aus demselben Code, der dich abrechnet, und ändert sich, wenn sich der Preis ändert.",
     "plans": {
       "title": "Pläne",
       "intro": "Vier Pläne, vom kleinsten zum größten. Pro und Team werden pro Seat bezahlt und tragen keine Provision.",

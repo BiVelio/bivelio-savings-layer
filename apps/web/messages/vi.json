@@ -1523,11 +1523,11 @@
   },
   "pricingPage": {
     "metaTitle": "Điều khoản giá · BV-SALA",
-    "metaDescription": "Open core miễn phí (Apache-2.0); Measure, Pro, Team và Enterprise là các gói cloud — không gói nào mang hoa hồng trên khoản tiết kiệm của bạn. Số liệu công bố từ chính các hằng số dùng để tính phí.",
+    "metaDescription": "Open core miễn phí ; Measure, Pro, Team và Enterprise là các gói cloud — không gói nào mang hoa hồng trên khoản tiết kiệm của bạn. Số liệu công bố từ chính các hằng số dùng để tính phí.",
     "eyebrow": "Bảng giá công bố",
     "title": "Điều khoản giá",
     "governs": "Trang này mô tả cách dịch vụ hoạt động hiện nay; văn bản có hiệu lực là <license>LICENSE</license> và <terms>Điều khoản của BiVelio</terms>.",
-    "lede": "Gói là open core (Apache-2.0): không cần khóa. Trang này định giá cloud tùy chọn — Measure miễn phí, rồi Pro theo chỗ hoặc gói Team, không hoa hồng trên khoản tiết kiệm của bạn. Mọi con số ở đây đọc từ chính mã tính phí bạn, nên nó đổi khi giá đổi.",
+    "lede": "Gói là open core : không cần khóa. Trang này định giá cloud tùy chọn — Measure miễn phí, rồi Pro theo chỗ hoặc gói Team, không hoa hồng trên khoản tiết kiệm của bạn. Mọi con số ở đây đọc từ chính mã tính phí bạn, nên nó đổi khi giá đổi.",
     "plans": {
       "title": "Các gói",
       "intro": "Bốn gói, từ nhỏ đến lớn. Pro và Nhóm trả theo chỗ và không có hoa hồng.",

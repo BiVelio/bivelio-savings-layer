@@ -1523,11 +1523,11 @@
   },
   "pricingPage": {
     "metaTitle": "Fiyat koşulları · BV-SALA",
-    "metaDescription": "Açık çekirdek ücretsizdir (Apache-2.0); Measure, Pro, Team ve Enterprise bulut planlarıdır — hiçbiri tasarrufunuz üzerinden komisyon almaz. Faturalayan sabitlerden yayımlanan rakamlar.",
+    "metaDescription": "Açık çekirdek ücretsizdir ; Measure, Pro, Team ve Enterprise bulut planlarıdır — hiçbiri tasarrufunuz üzerinden komisyon almaz. Faturalayan sabitlerden yayımlanan rakamlar.",
     "eyebrow": "Yayımlanan fiyatlar",
     "title": "Fiyat koşulları",
     "governs": "Bu sayfa hizmetin bugün nasıl işlediğini anlatır; bağlayıcı metinler <license>LICENSE</license> ve <terms>BiVelio Koşulları</terms> olarak kalır.",
-    "lede": "Paket açık çekirdektir (Apache-2.0): anahtar gerekmez. Bu sayfa isteğe bağlı bulutu fiyatlandırır — Measure ücretsiz, sonra koltuk başına Pro veya bir Team planı, tasarrufunuz üzerinden komisyonsuz. Buradaki her rakam sizi faturalayan kodun aynısından gelir ve fiyat değişince değişir.",
+    "lede": "Paket açık çekirdektir : anahtar gerekmez. Bu sayfa isteğe bağlı bulutu fiyatlandırır — Measure ücretsiz, sonra koltuk başına Pro veya bir Team planı, tasarrufunuz üzerinden komisyonsuz. Buradaki her rakam sizi faturalayan kodun aynısından gelir ve fiyat değişince değişir.",
     "plans": {
       "title": "Planlar",
       "intro": "Küçükten büyüğe dört plan. Pro ve Ekip koltuk başına ödenir ve komisyon içermez.",

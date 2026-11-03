@@ -1523,11 +1523,11 @@
   },
   "pricingPage": {
     "metaTitle": "Prijsvoorwaarden · BV-SALA",
-    "metaDescription": "Open core is gratis (Apache-2.0); Measure, Pro, Team en Enterprise zijn de cloud-plannen — geen ervan draagt een commissie op je besparing. Cijfers gepubliceerd vanuit dezelfde constanten die factureren.",
+    "metaDescription": "Open core is gratis ; Measure, Pro, Team en Enterprise zijn de cloud-plannen — geen ervan draagt een commissie op je besparing. Cijfers gepubliceerd vanuit dezelfde constanten die factureren.",
     "eyebrow": "Gepubliceerde prijzen",
     "title": "Prijsvoorwaarden",
     "governs": "Deze pagina beschrijft hoe de dienst vandaag werkt; de <license>LICENSE</license> en de <terms>BiVelio-voorwaarden</terms> zijn leidend.",
-    "lede": "Het pakket is open core (Apache-2.0): geen sleutel nodig. Deze pagina prijst de optionele cloud — Measure gratis, daarna Pro per seat of een Team-plan, zonder commissie op je besparing. Elk cijfer hier komt uit dezelfde code die je factureert, en verandert als de prijs verandert.",
+    "lede": "Het pakket is open core : geen sleutel nodig. Deze pagina prijst de optionele cloud — Measure gratis, daarna Pro per seat of een Team-plan, zonder commissie op je besparing. Elk cijfer hier komt uit dezelfde code die je factureert, en verandert als de prijs verandert.",
     "plans": {
       "title": "Plannen",
       "intro": "Vier plannen, van klein naar groot. Pro en Team betaal je per seat en hebben geen commissie.",

@@ -1523,11 +1523,11 @@
   },
   "pricingPage": {
     "metaTitle": "Ketentuan harga · BV-SALA",
-    "metaDescription": "Open core gratis (Apache-2.0); Measure, Pro, Team, dan Enterprise adalah paket cloud — tidak ada yang membawa komisi atas penghematan Anda. Angka diterbitkan dari konstanta yang sama yang menagih.",
+    "metaDescription": "Open core gratis ; Measure, Pro, Team, dan Enterprise adalah paket cloud — tidak ada yang membawa komisi atas penghematan Anda. Angka diterbitkan dari konstanta yang sama yang menagih.",
     "eyebrow": "Harga yang diterbitkan",
     "title": "Ketentuan harga",
     "governs": "Halaman ini menjelaskan cara layanan bekerja saat ini; yang mengikat adalah <license>LICENSE</license> dan <terms>Ketentuan BiVelio</terms>.",
-    "lede": "Paketnya open core (Apache-2.0): tanpa kunci. Halaman ini memberi harga pada cloud opsional — Measure gratis, lalu Pro per kursi atau paket Team, tanpa komisi atas penghematan Anda. Setiap angka di halaman ini dibaca dari kode yang sama yang menagih Anda, jadi ia berubah saat harga berubah.",
+    "lede": "Paketnya open core : tanpa kunci. Halaman ini memberi harga pada cloud opsional — Measure gratis, lalu Pro per kursi atau paket Team, tanpa komisi atas penghematan Anda. Setiap angka di halaman ini dibaca dari kode yang sama yang menagih Anda, jadi ia berubah saat harga berubah.",
     "plans": {
       "title": "Paket",
       "intro": "Empat paket, dari yang terkecil hingga terbesar. Pro dan Tim dibayar per kursi dan tidak dikenai komisi.",

@@ -951,7 +951,7 @@
     "pricing": {
       "eyebrow": "Planes",
       "title": "Mide gratis. Paga por asiento cuando quieras el ahorro.",
-      "body": "El paquete es open core Apache-2.0: sin claves, todas las palancas locales encendidas, cero telemetría. La nube es opcional — Measure es el plan gratis, Pro y Team se facturan por asiento, en {currency}, ahorres o no, y sin comisión sobre tu ahorro.",
+      "body": "El paquete es open core Apache-2.0: sin claves, todas las palancas locales encendidas, cero telemetría. La nube es opcional — Measure es el plan gratis, Pro y Team se facturan por asiento, en {currency}, ahorres o no, y no llevan comisión sobre tu ahorro.",
       "amount": "{amount}",
       "per": "/ asiento / mes",
       "plans": {
@@ -1523,11 +1523,11 @@
   },
   "pricingPage": {
     "metaTitle": "Términos de precio · BV-SALA",
-    "metaDescription": "El open core es gratis (Apache-2.0); Measure, Pro, Team y Enterprise son los planes de nube — ninguno lleva comisión sobre tu ahorro. Cifras publicadas desde las mismas constantes que facturan.",
+    "metaDescription": "El open core es gratis ; Measure, Pro, Team y Enterprise son los planes de nube — ninguno lleva comisión sobre tu ahorro. Cifras publicadas desde las mismas constantes que facturan.",
     "eyebrow": "Precios publicados",
     "title": "Términos de precio",
     "governs": "Esta página describe cómo funciona el servicio hoy; rigen la <license>LICENSE</license> y los <terms>Términos de BiVelio</terms>.",
-    "lede": "El paquete es open core (Apache-2.0): no necesita claves. Esta página pone precio a la nube opcional — Measure gratis, luego Pro por asiento o un plan Team, sin comisión sobre tu ahorro. Cada cifra de esta página se lee del mismo código que te factura, así que cambia cuando cambia el precio.",
+    "lede": "El paquete es open core : no necesita claves. Esta página pone precio a la nube opcional — Measure gratis, luego Pro por asiento o un plan Team, sin comisión sobre tu ahorro. Cada cifra de esta página se lee del mismo código que te factura, así que cambia cuando cambia el precio.",
     "plans": {
       "title": "Planes",
       "intro": "Cuatro planes, de menos a más. Pro y Equipo se pagan por asiento y no llevan comisión.",

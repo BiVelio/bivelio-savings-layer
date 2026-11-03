@@ -1523,11 +1523,11 @@
   },
   "pricingPage": {
     "metaTitle": "Condizioni di prezzo · BV-SALA",
-    "metaDescription": "L'open core è gratis (Apache-2.0); Measure, Pro, Team ed Enterprise sono i piani cloud — nessuno porta commissioni sul tuo risparmio. Cifre pubblicate dalle stesse costanti che fatturano.",
+    "metaDescription": "L'open core è gratis ; Measure, Pro, Team ed Enterprise sono i piani cloud — nessuno porta commissioni sul tuo risparmio. Cifre pubblicate dalle stesse costanti che fatturano.",
     "eyebrow": "Prezzi pubblicati",
     "title": "Condizioni di prezzo",
     "governs": "Questa pagina descrive come funziona il servizio oggi; prevalgono la <license>LICENSE</license> e i <terms>Termini di BiVelio</terms>.",
-    "lede": "Il pacchetto è open core (Apache-2.0): nessuna chiave. Questa pagina dà un prezzo al cloud opzionale — Measure gratis, poi Pro per postazione o un piano Team, senza commissioni sul tuo risparmio. Ogni cifra qui viene dallo stesso codice che ti fattura, e cambia quando cambia il prezzo.",
+    "lede": "Il pacchetto è open core : nessuna chiave. Questa pagina dà un prezzo al cloud opzionale — Measure gratis, poi Pro per postazione o un piano Team, senza commissioni sul tuo risparmio. Ogni cifra qui viene dallo stesso codice che ti fattura, e cambia quando cambia il prezzo.",
     "plans": {
       "title": "Piani",
       "intro": "Quattro piani, dal più piccolo al più grande. Pro e Team si pagano per postazione e non prevedono commissioni.",
