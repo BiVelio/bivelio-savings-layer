@@ -64,7 +64,7 @@
     "createAnAccount": "Create an account",
     "backToVerifier": "← Back to home",
     "createYourAccount": "Create your account",
-    "signupSubtitle": "One BiVelio account across the suite. Create yours to subscribe and get your license key.",
+    "signupSubtitle": "One BiVelio account across the suite. Create yours to use the cloud: dashboard, shared caches and license management. The package itself needs no account — open core runs without a key.",
     "alreadyHaveAccount": "Already have a BiVelio account?",
     "signIn": "Sign in",
     "workEmail": "Work email",
@@ -104,7 +104,7 @@
       "network": "No connection. Check your network and try again.",
       "missingFields": "Enter your email and password."
     },
-    "signupMedir": "Or start free with Measure: no card, shadow mode, up to {seats} seats and {requests} requests a day. It needs @bivelio/savings-layer {version} or later."
+    "signupMedir": "Or start free with Measure: the free cloud plan, no card, shadow mode, up to {seats} seats and {requests} requests a day. It needs @bivelio/savings-layer {version} or later."
   },
   "dashboard": {
     "overview": {
@@ -468,7 +468,7 @@
       "personalNote": "Personal — no organization linked yet. One BiVelio account, shared across the suite.",
       "plan": "plan",
       "seatsCount": "{count, plural, one {# seat} other {# seats}}.",
-      "planBody": "BV-SALA is fail-closed — it only runs with an active license. Pro: {monthly} per seat per month or {yearly} per seat per year. Team: {teamMonthly} per month with {included} seats included. No commission on your savings. A seat is one active machine or service identity, not a person.",
+      "planBody": "BV-SALA is open core — with no key it runs in COMMUNITY mode; a key that is set but invalid fails closed. The cloud adds the dashboard, shared caches and org entitlements. Pro: {monthly} per seat per month or {yearly} per seat per year. Team: {teamMonthly} per month with {included} seats included. No commission on your savings. A seat is one active machine or service identity, not a person.",
       "managePlan": "Manage plan →",
       "subscribe": "Subscribe →",
       "checkoutMonthly": "Subscribe — {monthly}/seat/mo →",
@@ -826,7 +826,7 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Verify Your LLM Savings",
-    "metaDescription": "An SDK that has your app pay the LLM provider only for what it needs, and a gateway that meters your coding agent. Counted with your provider's own meter: measure free, then pay per seat — no commission on your savings.",
+    "metaDescription": "An SDK that has your app pay the LLM provider only for what it needs, and a gateway that meters your coding agent. Apache-2.0 open core: no key, no signup, no telemetry — measured with your provider's own meter; the optional cloud is a flat fee with no commission on your savings.",
     "hero": {
       "title": "Your LLM bill, under control.",
       "titleAccent": "Measured on every call.",
@@ -863,8 +863,8 @@
           "body": "We don't ask for faith. Measured amounts use provider-reported usage and documented prices and appear in your SavingsReport. Reference-valued and estimated amounts are labelled separately; none is presented as invoice-reconciled."
         },
         {
-          "title": "Measure free, then pay per seat",
-          "body": "Start with the free Measure license: the layer runs in shadow mode and shows what it would have saved on your own traffic. To turn the levers on, you pay a fixed fee per seat, or a Team plan, whether or not you save — and no commission on your savings."
+          "title": "Open core: it saves with no keys",
+          "body": "Install the package and the levers are on: COMMUNITY mode runs every local saving lever with zero telemetry, and a key that is set but invalid still fails closed. The cloud is optional: team dashboard, shared caches and license management for a fixed fee per seat, whether or not you save — and no commission on your savings."
         }
       ],
       "nota": "The animations illustrate the idea. The real numbers — measured against live providers — are right below."
@@ -946,19 +946,19 @@
       "eyebrow": "Five lines to start",
       "title": "Run it in your own app. Your prompts never touch our servers.",
       "body": "Drop the SDK in front of your provider. Every response carries a full SavingsReport you can chart — the same numbers the dashboard reads.",
-      "initNote": "<b>Or let one command tailor it to your stack.</b> <code>init</code> reads your <code>package.json</code> (Next.js, Express, the Vercel AI SDK, Mastra, LangChain.js, the Anthropic or the OpenAI SDK) and prints the install line, the exact code for your adapter and a check that spends no tokens: once your license is in place, the layer answers it on your machine, without calling the model. It writes nothing unless you ask it to."
+      "initNote": "<b>Or let one command tailor it to your stack.</b> <code>init</code> reads your <code>package.json</code> (Next.js, Express, the Vercel AI SDK, Mastra, LangChain.js, the Anthropic or the OpenAI SDK) and prints the install line, the exact code for your adapter and a check that spends no tokens: with no keys at all, the layer answers it on your machine, without calling the model. It writes nothing unless you ask it to."
     },
     "pricing": {
       "eyebrow": "Plans",
       "title": "Measure for free. Pay per seat when you want the savings.",
-      "body": "Start with Measure: free and without a card. The layer runs in shadow mode on your own traffic and your dashboard shows what it would have saved, valued with your provider's counter. Pro and Team are billed per seat, in {currency}, whether or not you save, and carry no commission on your savings.",
+      "body": "The package is Apache-2.0 open core: no key needed, every local lever on, zero telemetry. The cloud is optional — Measure is the free plan, Pro and Team are billed per seat, in {currency}, whether or not you save, and carry no commission on your savings.",
       "amount": "{amount}",
       "per": "/ seat / month",
       "plans": {
         "medir": {
           "name": "Measure",
           "price": "Free",
-          "body": "No card. The layer in shadow mode for one organization, up to {seats} seats and {requests} requests a day: nothing you send changes, nothing is served from cache, it is never part of any commission — and you see what it would have saved. Needs @bivelio/savings-layer {version} or later.",
+          "body": "Free, no card. The free CLOUD plan: shadow mode for one organization, up to {seats} seats and {requests} requests a day — nothing you send changes, nothing is served from cache, it is never part of any commission, and your dashboard shows what it would have saved. The local levers don't need it: open core runs without any key. It needs @bivelio/savings-layer {version} or later.",
           "cta": "Start free →"
         },
         "pro": {
@@ -1010,7 +1010,7 @@
     },
     "footer": {
       "ctaTitle": "Measure it on your own traffic",
-      "ctaSub": "Once installed, every call returns its SavingsReport, measured and estimated kept apart. Start free with Measure (@bivelio/savings-layer {version} or later); Pro and Team are a fixed fee per seat, with no commission on your savings. The license is what lets you run BV‑SALA — the SDK in your app, the gateway in your terminal.",
+      "ctaSub": "Once installed, every call returns its SavingsReport, measured and estimated kept apart. Open core needs no key: the levers run locally with zero telemetry. The optional cloud starts free with Measure and is billed per seat with no commission on your savings (@bivelio/savings-layer {version} or later).",
       "ctaStart": "Get started",
       "tagline": "The operating system for your business. This is <b>BV-SALA</b>, BiVelio's provider-neutral LLM cost optimizer — every measured figure is measured against the provider's own counter; estimates and simulations are shown apart, labelled as such, and never billed.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1083,7 +1083,7 @@
     "offers": {
       "eyebrow": "Two products",
       "title": "Where do your tokens go: your app, or your coding agent?",
-      "sub": "Both are licensed per seat and both count with your provider's own meter. They do different jobs, so each makes its own promise — and today only one of them has a published savings figure.",
+      "sub": "Both are open core and both count with your provider's own meter. They do different jobs, so each makes its own promise — and today only one of them has a published savings figure.",
       "install": "Install",
       "installMore": "Full setup",
       "sdk": {
@@ -1496,7 +1496,7 @@
     "caseCodeBody": "On a subscription the fee is flat — but capped: the same skill installs with a single command and stretches the same weekly cap. With an API key there is a real token invoice — and the meter is already running: with no keys at all, “bvsala claude” launches Claude Code through the local gateway and your spend shows up in the panel, token by token, without touching a line of code. With PRO, on Anthropic models, it also moves cache writes from the one-hour TTL to the five-minute one only on turns where a large part of the prompt is new (a session's first turn, a compaction): a saving computed on your provider's own token count, never on an estimate.",
     "caseAppName": "Your application",
     "caseAppSub": "your code + your API key",
-    "caseAppBody": "The case BV‑SALA exists for. Your app calls the API with your key, the provider bills every token, and the layer installs in three steps: package, license, and wrapping the call. From the first request it returns a <b>SavingsReport</b> with the saving, split into measured and estimated.",
+    "caseAppBody": "The case BV‑SALA exists for. Your app calls the API with your key, the provider bills every token, and the layer installs in two steps: package and wrapping the call. From the first request it returns a <b>SavingsReport</b> with the saving, split into measured and estimated.",
     "verdictNothing": "Nothing to install",
     "verdictSkill": "Skill available",
     "verdictMeasures": "Measuring now",
@@ -1506,7 +1506,7 @@
     "s3Sub": "The product has two different numbers, and they shouldn't be mixed.",
     "mBeforeK": "Before installing",
     "mBeforeV": "Estimate",
-    "mBeforeBody": "The free Measure license runs the layer in shadow mode on your own traffic and shows what it would have saved, request by request. It changes nothing and applies nothing — that's why it carries the “estimate” tag.",
+    "mBeforeBody": "The free cloud plan runs the layer in shadow mode on your own traffic and shows what it would have saved, request by request. It changes nothing and applies nothing — that's why it carries the “estimate” tag. No plan at all? Open core: the local levers run with no key and zero telemetry.",
     "mAfterK": "After installing",
     "mAfterV": "Real measurement",
     "mAfterBody": "Every call returns a SavingsReport: the calls you never paid for and the net saving per request. Auditable, request by request, on your own infrastructure.",
@@ -1523,17 +1523,17 @@
   },
   "pricingPage": {
     "metaTitle": "Pricing terms · BV-SALA",
-    "metaDescription": "Measure free, Pro per seat, Team and Enterprise — none of them carries a commission on your savings. Figures published from the same constants that bill.",
+    "metaDescription": "Open core is free ; Measure, Pro, Team and Enterprise are the cloud plans — none of them carries a commission on your savings. Figures published from the same constants that bill.",
     "eyebrow": "Published pricing",
     "title": "Pricing terms",
     "governs": "This page describes how the service works today; the <license>LICENSE</license> and the <terms>BiVelio Terms</terms> govern.",
-    "lede": "You pay per seat or for a Team plan, with no commission on your savings. Every figure on this page is read from the same code that bills you, so it changes when the price changes.",
+    "lede": "The package is open core : no key needed. This page prices the optional cloud — Measure free, then Pro per seat or a Team plan, with no commission on your savings. Every figure here is read from the same code that bills you, so it changes when the price changes.",
     "plans": {
       "title": "Plans",
       "intro": "Four plans, from smallest to largest. Pro and Team are paid per seat and carry no commission.",
       "medir": {
         "name": "Measure",
-        "body": "<b>Free, no card.</b> The layer runs in shadow mode for one organization, for up to <b>{seats} seats</b> and <b>{requests} requests a day</b>: every request reaches your provider exactly as you built it, nothing is served from cache and no lever is applied. Your dashboard shows what it would have saved — an estimate that never carries a commission. It needs <b>@bivelio/savings-layer {version} or later</b>: earlier versions do not recognise the Measure license. The levers need Pro or Team."
+        "body": "<b>Free, no card.</b> The free CLOUD plan: the layer runs in shadow mode for one organization, for up to <b>{seats} seats</b> and <b>{requests} requests a day</b>: every request reaches your provider exactly as you built it, nothing is served from cache and no lever is applied. Your dashboard shows what it would have saved — an estimate that never carries a commission. It needs <b>@bivelio/savings-layer {version} or later</b>. The local levers need no plan at all: open core runs without a key; the cloud levers need Pro or Team."
       },
       "pro": {
         "name": "Pro",
