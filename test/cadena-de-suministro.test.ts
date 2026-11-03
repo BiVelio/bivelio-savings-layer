@@ -393,7 +393,7 @@ describe("el SBOM describe lo que viaja", () => {
 
     /** Ejecuta TAL CUAL el paso «El paquete no filtra lo que no debe» sobre un tarball. */
     function verjaDelPaquete(tarball: string): { ok: boolean; salida: string } {
-      const script = scriptDe(paso(trabajo("verificar"), "El paquete no regala el producto"));
+      const script = scriptDe(paso(trabajo("verificar"), "El paquete no filtra lo que no debe"));
       const cwd = mkdtempSync(join(tmpdir(), "bvsala-verja-"));
       try {
         const { version } = JSON.parse(leer("../package.json")) as { version: string };
