@@ -11,6 +11,7 @@ import type {
 import type { SavingsBatches } from "../contracts/batch.js";
 import { crearLotes } from "../batch/lotes.js";
 import { gateFromKey } from "../license/gate.js";
+import { communityGate } from "../license/community.js";
 import { liveGateFromKey } from "../license/live-gate.js";
 import { RevocationSnapshot } from "../license/revocation.js";
 import { RevocationPoller } from "../license/poller.js";
@@ -130,14 +131,16 @@ export interface SavingsLayer {
  * cache, a vector-backed semantic cache, a real tokenizer, a compressor sidecar,
  * XGrammar/llguidance backends, etc.).
  *
- * A `licenseKey` is not optional in practice: `generate()` is fail-closed and
- * throws {@link LicenseError} without one, so it belongs in the smallest example
- * there is.
+ * Open core: no `licenseKey` is needed. Without one the layer runs on the
+ * COMMUNITY gate — every local saving lever on, zero telemetry, zero network.
+ * A `licenseKey` (from savings.bivelio.com) turns on the paid surfaces: cloud
+ * metering, license renewal/revocation and org entitlements. An INVALID or
+ * EXPIRED key still fails closed with {@link LicenseError}; only its absence is
+ * a working product.
  *
  * @example
- * // `licenseKey` is the signed token from savings.bivelio.com/dashboard/install,
- * // read from wherever you keep secrets (BIVELIO_LICENSE_KEY in the README).
- * const layer = createSavingsLayer({ provider, licenseKey });
+ * // No license: full savings, no telemetry.
+ * const layer = createSavingsLayer({ provider });
  * const { text, report } = await layer.generate({
  *   model: "openai/gpt-4o-mini",
  *   messages: [{ role: "user", content: "What is 2 + 2 * 3?" }],
@@ -328,6 +331,19 @@ export function createSavingsLayer(
       // mid-process (no restart needed), just with no revocation source.
       resolved.licenseGate = gateFromKey(config.licenseKey, publicKey, config.now);
     }
+  }
+
+  // ── OPEN CORE: sin clave y sin gate inyectado → el gate COMUNITARIO. ───────
+  //
+  // La capa de ahorro entera funciona sin licencia (caché exacta y semántica,
+  // coalescencia, cascada de modelos, compresión, colocación de caché, contratos
+  // de salida, los cuatro ledgers). Lo que sigue exigiendo credenciales propias
+  // es la nube (metering, renovación, entitlements de org), y eso ya se cablea
+  // solo con `serviceAccountKey`. El fail-closed no desaparece: protege las
+  // superficies DE PAGO — una `licenseKey` inválida o caducada sigue lanzando
+  // `LicenseError`; lo que dejó de ser un error es NO traer clave.
+  if (!config.licenseKey && !config.licenseGate) {
+    resolved.licenseGate = communityGate();
   }
 
   // LA VERIFICACIÓN A/B OPCIONAL («tu propio banco»). Apagada por defecto; con

@@ -178,25 +178,16 @@ describe("savingsProcessor", () => {
     proc.close();
   });
 
-  it("(h) sin licencia: el agente falla con la licencia y el modelo NO se llama", async () => {
+  it("(h) sin licencia: modo Community — el agente llama al modelo y el gancho directo resuelve", async () => {
     const d = doble();
     await sinLicencia(async () => {
       const proc = savingsProcessor({ silenceWarnings: true });
-      // Mastra RECREA el error que sale de un procesador: conserva el nombre, el
-      // mensaje y `status`, no la clase.
-      const e = (await agente(d, proc)
-        .generate("Say hello")
-        .then(
-          () => undefined,
-          (x: unknown) => x,
-        )) as { name?: string; message?: string; status?: string } | undefined;
-      expect(e?.name).toBe("LicenseError");
-      expect(e?.status).toBe("none");
-      expect(e?.message).toContain("https://savings.bivelio.com/dashboard/install");
+      const res = await agente(d, proc).generate("Say hello");
+      expect(res.text).toBeTruthy();
       proc.close();
     });
-    expect(d.llamadas).toBe(0);
-    // Y la clase es la de siempre cuando el gancho se llama directamente.
+    expect(d.llamadas).toBe(1);
+    // Y el gancho directo tampoco falla por licencia.
     await sinLicencia(async () => {
       const proc = savingsProcessor({ silenceWarnings: true }) as unknown as {
         processLLMRequest(a: unknown): Promise<unknown>;
@@ -209,7 +200,7 @@ describe("savingsProcessor", () => {
           prompt: [{ role: "user", content: [{ type: "text", text: "hi" }] }],
           model: { provider: "openai.chat", modelId: "gpt-4o-mini" },
         }),
-      ).rejects.toBeInstanceOf(LicenseError);
+      ).resolves.toBeUndefined();
       proc.close();
     });
   });

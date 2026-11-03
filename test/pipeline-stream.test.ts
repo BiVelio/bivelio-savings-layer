@@ -613,7 +613,7 @@ describe("generateStream — contrato del stream", () => {
     expect(avisos.filter((a) => a.includes("streamed text that differs"))).toHaveLength(1);
   });
 
-  it("sin licencia: el primer next() y result rechazan con LicenseError, sin llamar al proveedor", async () => {
+  it("sin licencia: modo Community — el stream llega al proveedor y result resuelve", async () => {
     const guardado = process.env.BVSALA_DEV_OPEN;
     delete process.env.BVSALA_DEV_OPEN;
     try {
@@ -621,15 +621,14 @@ describe("generateStream — contrato del stream", () => {
       const layer = createSavingsLayer({ provider: p });
       const s = layer.generateStream(peticion());
       const it = s[Symbol.asyncIterator]();
-      await expect(it.next()).rejects.toBeInstanceOf(LicenseError);
-      await expect(s.result).rejects.toBeInstanceOf(LicenseError);
-      expect(await it.next()).toEqual({ done: true, value: undefined });
-      expect(p.llamadasStream + p.llamadasGenerate).toBe(0);
+      const primera = await it.next();
+      expect(primera.done).toBe(false);
+      await expect(s.result).resolves.toBeTruthy();
+      expect(p.llamadasStream + p.llamadasGenerate).toBeGreaterThan(0);
 
-      // Tampoco por la entrega entera.
+      // Y por la entrega entera.
       const s2 = layer.generateStream(peticion({ response: { contractId: "respuesta", schema: ESQUEMA } }));
-      await expect(s2.result).rejects.toBeInstanceOf(LicenseError);
-      expect(p.llamadasStream + p.llamadasGenerate).toBe(0);
+      await expect(s2.result).resolves.toBeTruthy();
     } finally {
       if (guardado !== undefined) process.env.BVSALA_DEV_OPEN = guardado;
     }

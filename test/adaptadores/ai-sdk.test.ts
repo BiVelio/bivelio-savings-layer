@@ -247,16 +247,21 @@ describe.each(VERSIONES)("savingsMiddleware con %s", (_nombre, lib, Mock) => {
     }
   });
 
-  it("(h) sin licencia: LicenseError y el modelo NO se llama (generate y stream)", async () => {
+  it("(h) sin licencia: modo Community — genera y streamea llamando al modelo", async () => {
     const d = doble(Mock, lib);
     await sinLicencia(async () => {
       const mw = savingsMiddleware({ silenceWarnings: true });
       const model = lib.wrapLanguageModel({ model: d.model, middleware: mw });
-      await expect(model.doGenerate({ prompt: [{ role: "user", content: [{ type: "text", text: "hi" }] }] } as never)).rejects.toBeInstanceOf(LicenseError);
-      await expect(model.doStream({ prompt: [{ role: "user", content: [{ type: "text", text: "hi" }] }] } as never)).rejects.toBeInstanceOf(LicenseError);
+      await expect(
+        model.doGenerate({ prompt: [{ role: "user", content: [{ type: "text", text: "hi" }] }] } as never),
+      ).resolves.toBeTruthy();
+      const { stream } = await model.doStream({ prompt: [{ role: "user", content: [{ type: "text", text: "hi" }] }] } as never);
+      await leer(stream);
       mw.close();
     });
-    expect(d.llamadas).toBe(0);
+    // El modelo se llamó al menos una vez; la petición idéntica del stream la
+    // sirve la caché exacta — que es la capa haciendo su trabajo.
+    expect(d.llamadas).toBeGreaterThanOrEqual(1);
   });
 
   it("(i) el modelo recibe EL MISMO objeto de parámetros que envió el framework", async () => {

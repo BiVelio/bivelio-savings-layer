@@ -34,26 +34,17 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "node",
-    // The suite runs "self-managed / dev-open" so pipeline tests that call
-    // generate() without a license aren't blocked by fail-closed enforcement.
-    // The license-gate test toggles this off to assert real denial.
+    // The suite runs "self-managed / dev-open" as before: many pipeline tests
+    // exercise the dev path explicitly. The OPEN-CORE default (a layer with no
+    // licenseKey runs on the Community gate) made the old reason obsolete —
+    // without a key nothing is blocked anymore — but dev-open still matters
+    // for the tests that assert the explicit dev escape and for benchmarks.
     //
-    // OJO CON LO QUE ESTO **NO** CUBRE, que es lo que dejó vivo un fallo desde la
-    // publicación. Esta variable solo abre la puerta cuando se corre DESDE EL
-    // FUENTE: en el build de npm `__BV_SALA_ALLOW_DEV_OPEN__` se compila a
-    // `false` y tanto esta variable como `devUnlicensed` son inertes. O sea que
-    // la puerta CERRADA del paquete publicado —la primera superficie que toca
-    // TODO cliente— no la ejercita ningún test que importe de `src/`, corra con
-    // la puerta abierta o cerrada. Quien la ejercita, ejecutando el tarball de
-    // verdad, es `test/sala-limpia-del-tarball.test.ts`; si se toca el mensaje de
-    // licencia o los `define` de tsup, ESE es el test que hay que mirar.
-    //
-    // Medido antes de decidir dejarlo así: cerrar la puerta aquí por defecto
-    // tumba 209 tests en 18 ficheros (cada uno tendría que pasar
-    // `devUnlicensed: true` a mano), y aun así NO habría cazado aquel fallo —
-    // desde el fuente el mensaje siempre fue el correcto. La granularidad buena
-    // es la que ya se usa: el fichero que quiere denegación de verdad se quita la
-    // variable él mismo (license-gate, paywall-surface).
+    // What it does NOT cover is unchanged: this variable only opens the door
+    // when running FROM SOURCE; in the npm build `__BV_SALA_ALLOW_DEV_OPEN__`
+    // compiles to `false` and both the variable and `devUnlicensed` are inert.
+    // The published-package contract (community mode, invalid keys still
+    // fail-closed) is exercised for real by `test/sala-limpia-del-tarball.test.ts`.
     env: { BVSALA_DEV_OPEN: "1" },
     include: [
       "test/**/*.test.ts",

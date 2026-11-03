@@ -247,19 +247,20 @@ describe("anthropicSavings", () => {
     }
   });
 
-  it("(h) sin licencia: LicenseError y fetch NO se llama", async () => {
+  it("(h) sin licencia: modo Community — crea y streamea llamando a fetch", async () => {
     const n = red();
     await sinLicencia(async () => {
       const s = anthropicSavings({ silenceWarnings: true });
       const c = cliente(n, s, { maxRetries: 0 });
-      await expect(c.messages.create(PEDIDO)).rejects.toBeInstanceOf(LicenseError);
-      // `MessageStream` envuelve todo error ajeno en un AnthropicError y guarda el
-      // original en `cause`: el LicenseError sigue ahí, con su mensaje.
-      const enStream = await c.messages.stream(PEDIDO).finalMessage().catch((e: unknown) => e);
-      expect((enStream as { cause?: unknown }).cause).toBeInstanceOf(LicenseError);
+      const m = await c.messages.create(PEDIDO);
+      expect(m.content).toBeTruthy();
+      const enStream = await c.messages.stream(PEDIDO).finalMessage();
+      expect(enStream.content).toBeTruthy();
       s.close();
     });
-    expect(n.llamadas).toHaveLength(0);
+    // fetch se llamó al menos una vez; el `PEDIDO` idéntico del stream lo sirve
+    // la caché exacta — que es la capa haciendo su trabajo.
+    expect(n.llamadas.length).toBeGreaterThanOrEqual(1);
   });
 
   it("(i) el cuerpo que llega a fetch es el que serializó el SDK, sin reserializar", async () => {
