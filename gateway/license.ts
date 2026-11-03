@@ -296,8 +296,9 @@ export interface StartupInput {
 export type StartupResult =
   | {
       ok: true;
-      license: VerifiedLicense;
-      source: "online" | "offline";
+      /** `null` solo en modo comunitario: no hay token que verificar. */
+      license: VerifiedLicense | null;
+      source: "online" | "offline" | "community";
       status: "active" | "grace";
       line: string;
       lineIsWarning: boolean;
@@ -452,9 +453,48 @@ export async function resolveStartupLicense(input: StartupInput): Promise<Startu
   // E0 · sin clave pública no hay nada que verificar (solo pasa desde el fuente).
   if (claveVacia(publicKey)) return fallo("no-public-key");
 
-  // E1 · la clave de servicio: la identidad de la org, sin red.
+  // E1 · la clave de servicio: la identidad de la org, sin red. SIN clave y SIN
+  // licenseKey el gateway arranca igual: en MODO COMUNITARIO (open core) — todo
+  // el ahorro local, cero telemetría, nada que verificar ni recoger.
   const key = input.serviceAccountKey?.trim();
-  if (!key) return fallo("service-key-missing");
+  if (!key) {
+    // El respaldo offline puede abrir una org por sí solo (sin metering ni
+    // canal: las palancas quedan apagadas, como siempre sin org consultable).
+    if (input.licenseKey !== undefined) {
+      const c = verifyGatewayLicense(input.licenseKey, publicKey);
+      if (c.ok) {
+        const s = licenseState(c.license.payload, now());
+        if (!concede(s)) {
+          return fallo("license-expired", {
+            expiresAt: c.license.payload.expires_at,
+            graceDays: c.license.payload.grace_days,
+          });
+        }
+        return {
+          ok: true,
+          license: c.license,
+          source: "offline",
+          status: s,
+          line: licenseLine(c.license.payload, "offline", s),
+          lineIsWarning: true,
+          warnings: [],
+        };
+      }
+      if (c.shape !== "empty") {
+        return fallo("license-invalid", { tokenSource: "BIVELIO_LICENSE_KEY", shape: c.shape, reason: c.reason });
+      }
+      // `BIVELIO_LICENSE_KEY` vacío tras normalizar: comunidad, igual que no tenerlo.
+    }
+    return {
+      ok: true,
+      license: null,
+      source: "community",
+      status: "active",
+      line: "COMMUNITY MODE (open core): every local saving lever on, zero telemetry - no BiVelio keys set",
+      lineIsWarning: false,
+      warnings: [],
+    };
+  }
   if (!key.startsWith("bvk_")) {
     return fallo("service-key-malformed", {
       keyLooksLikeLicense: licenseKeyShape(normalizeLicenseKey(key)) === "token",

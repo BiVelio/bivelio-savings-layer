@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import Anthropic from "@anthropic-ai/sdk";
-import { AnthropicProvider, LicenseError } from "../../src/index.js";
+import { AnthropicProvider } from "../../src/index.js";
 import { anthropicSavings } from "@bivelio/savings-layer/anthropic-sdk";
 import { coleccion, medicion, prohibirLaRed, sinLicencia, vaciar } from "./ayudas.js";
 

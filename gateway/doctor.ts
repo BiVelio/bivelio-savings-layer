@@ -344,7 +344,8 @@ export async function doctor(puerto: number, opts: OpcionesDoctor = {}): Promise
     `bvsala doctor — local gateway at ${base}`,
     "Print only: it writes no configuration. Detection by existence (binaries on the PATH and",
     "user configuration files); the contents of a file are never read.",
-    "The gateway needs BIVELIO_SERVICE_KEY and an active BiVelio license in every mode: it collects the license with that key and does not start without one.",
+    "The gateway starts with no keys at all (COMMUNITY mode: every local saving lever on, nothing sent to BiVelio).",
+    "BIVELIO_SERVICE_KEY adds the cloud dashboard, org entitlements and team metering.",
     "",
   ];
 

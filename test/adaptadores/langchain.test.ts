@@ -4,7 +4,6 @@ import { AIMessage, type BaseMessage } from "@langchain/core/messages";
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import { InMemoryCache } from "@langchain/core/caches";
 import { z } from "zod";
-import { LicenseError } from "../../src/index.js";
 import { getSavingsReportFromMessage, savingsAgentMiddleware } from "@bivelio/savings-layer/langchain";
 import { coleccion, medicion, prohibirLaRed, sinLicencia, vaciar } from "./ayudas.js";
 

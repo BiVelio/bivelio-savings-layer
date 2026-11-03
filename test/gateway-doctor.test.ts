@@ -169,11 +169,11 @@ describe("bvsala doctor — la forma exacta del base URL por terminal", () => {
     expect(texto).toContain("docs/terminales/");
   });
 
-  it("dice que el gateway exige licencia en todos los modos, y que la suscripción no lleva comisión", async () => {
-    // LICENSE §2: el doctor imprime recetas que acaban en `bvsala gateway`, y
-    // quien las siga sin licencia no arranca. Se dice ANTES de que lo descubra.
+  it("dice que el gateway arranca sin claves (modo Community) y que la suscripción no lleva comisión", async () => {
+    // Open core: el doctor imprime recetas que acaban en `bvsala gateway`, y
+    // quien las siga arranca sin ninguna clave, con todas las palancas locales.
     const { texto } = await vacio();
-    expect(texto).toContain("active BiVelio license");
+    expect(texto).toContain("COMMUNITY");
     expect(texto).toContain("no commission");
     expect(texto).not.toContain("but not billed");
   });

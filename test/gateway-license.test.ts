@@ -102,18 +102,17 @@ describe("resolveStartupLicense — el arranque, en orden estricto", () => {
     expect(keysetVacio).toMatchObject({ ok: false, code: "no-public-key" });
   });
 
-  it("E1 · sin clave de servicio → service-key-missing con las DOS condiciones y sus dos URL, sin red", async () => {
+  it("E1 · sin clave de servicio ni licenseKey → modo comunitario, sin red; una clave presente pero mala sigue cerrando", async () => {
     for (const serviceAccountKey of [undefined, "", "   "]) {
       const f = responde(200);
       const r = await arrancar({ serviceAccountKey, fetchImpl: f as unknown as typeof fetch });
-      expect(r.ok).toBe(false);
-      if (r.ok) return;
-      expect(r.code).toBe("service-key-missing");
-      expect(r.message).toContain("BIVELIO_SERVICE_KEY is not set");
-      expect(r.message).toContain("https://savings.bivelio.com/dashboard/account");
-      expect(r.message).toContain("https://savings.bivelio.com/dashboard/install");
+      expect(r).toMatchObject({ ok: true, source: "community", license: null, status: "active" });
+      expect(r.ok && r.line).toContain("COMMUNITY MODE");
       expect(llamadas(f)).toHaveLength(0);
     }
+    // El fail-closed que queda: una clave PRESENTE pero inválida.
+    const malo = await arrancar({ licenseKey: "no-es-una-clave", fetchImpl: responde(200) as unknown as typeof fetch });
+    expect(malo).toMatchObject({ ok: false, code: "license-invalid" });
   });
 
   it("E1 · una clave que no es bvk_ → service-key-malformed; si es un token de licencia, lo dice", async () => {
@@ -246,7 +245,8 @@ describe("resolveStartupLicense — el arranque, en orden estricto", () => {
     });
     expect(r).toMatchObject({ ok: true, source: "online" });
     if (!r.ok) return;
-    expect(r.license.payload.org_id).toBe("org-test");
+    expect(r.license).not.toBeNull();
+    expect(r.license!.payload.org_id).toBe("org-test");
     expect(r.warnings[0]).toContain("different organization");
   });
 

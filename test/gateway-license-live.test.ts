@@ -175,11 +175,11 @@ function licenciaCaducada(over: Record<string, unknown> = {}) {
   return testLicense({ expires_at: ahora - 40 * DIA, grace_days: 14, ...over });
 }
 
-describe("L1 · sin licencia verificada no hay gateway", () => {
-  it("sin `license` rechaza; con un token de otra clave, también", async () => {
-    await expect(arrancarGateway({ puerto: 0 } as unknown as OpcionesGateway)).rejects.toThrow(
-      "a verified BiVelio license is required",
-    );
+describe("L1 · sin licencia hay gateway: modo comunitario (open core)", () => {
+  it("sin `license` arranca en modo comunitario; con un token de otra clave, rechaza", async () => {
+    const comunitario = await arrancarGateway({ puerto: 0, log: () => {} } as unknown as OpcionesGateway);
+    expect(comunitario.puerto).toBeGreaterThan(0);
+    await comunitario.cerrar();
     const otra = generateKeyPairSync("ed25519", {
       publicKeyEncoding: { type: "spki", format: "pem" },
       privateKeyEncoding: { type: "pkcs8", format: "pem" },

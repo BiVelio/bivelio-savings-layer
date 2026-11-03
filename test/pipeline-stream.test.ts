@@ -3,7 +3,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createSavingsLayer } from "../src/pipeline/create.js";
 import { SavingsPipeline } from "../src/pipeline/pipeline.js";
 import { StreamAbortedError } from "../src/pipeline/errors.js";
-import { LicenseError } from "../src/license/errors.js";
 import { TokenizerRegistry } from "../src/tokenizer/registry.js";
 import { reiniciarAvisos } from "../src/util/warn-once.js";
 import type {

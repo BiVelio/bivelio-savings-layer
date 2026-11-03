@@ -4,7 +4,6 @@ import { createTool } from "@mastra/core/tools";
 import { MockLanguageModelV4 } from "ai/test";
 import { simulateReadableStream } from "ai";
 import { z } from "zod";
-import { LicenseError } from "../../src/index.js";
 import { savingsProcessor } from "@bivelio/savings-layer/mastra";
 import { coleccion, medicion, prohibirLaRed, sinLicencia, vaciar } from "./ayudas.js";
 

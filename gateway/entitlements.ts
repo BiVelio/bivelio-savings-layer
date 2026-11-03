@@ -31,6 +31,33 @@ export interface OpcionesCanal {
 const TTL_POR_DEFECTO_MS = 300_000;
 const TIMEOUT_MS = 10_000;
 
+/**
+ * La forma común del canal de entitlements: responde si la org (o el modo) tiene
+ * un feature y si el control plane bloquea. `CanalDeEntitlements` la resuelve
+ * contra savings.bivelio.com; `CanalComunitario` la concede entera, localmente.
+ */
+export interface FuenteDeEntitlements {
+  tiene(feature: string): boolean;
+  blockReason(): string | null;
+}
+
+/**
+ * EL CANAL COMUNITARIO (open core). Sin clave de servicio no hay org que
+ * consultar, así que el gateway concede LOCALMENTE las palancas de la casa:
+ * la rebaja de TTL (`cache_ttl_tuning`), la elisión (`context_elision`), el
+ * modelo hermano (`sibling_model_routing`) y el techo de esfuerzo
+ * (`per_turn_effort`). Nada llama a la red: es el ahorro entero, gratis, y
+ * lo que un license key añade es la nube (dashboard, org, metering de equipo).
+ */
+export class CanalComunitario implements FuenteDeEntitlements {
+  tiene(): boolean {
+    return true;
+  }
+  blockReason(): string | null {
+    return null;
+  }
+}
+
 /** La clave dejó de valer con el proceso vivo (borrada o rotada). No corta nada. */
 const LINEA_401 =
   "[gateway] entitlements: BIVELIO_SERVICE_KEY is no longer recognised (HTTP 401): savings features disabled " +

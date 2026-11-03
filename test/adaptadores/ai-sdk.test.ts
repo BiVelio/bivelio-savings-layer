@@ -3,7 +3,6 @@ import * as ai7 from "ai";
 import { MockLanguageModelV4 } from "ai/test";
 import * as ai6 from "ai-v6";
 import { MockLanguageModelV3 } from "ai-v6/test";
-import { LicenseError } from "../../src/index.js";
 import { getSavingsReport, savingsMiddleware } from "@bivelio/savings-layer/ai-sdk";
 import { coleccion, medicion, prohibirLaRed, sinLicencia, vaciar } from "./ayudas.js";
 

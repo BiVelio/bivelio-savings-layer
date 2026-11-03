@@ -5,7 +5,6 @@ import { OpenAICompatibleProvider } from "../src/providers/openai-compatible.js"
 import { MockProvider } from "../src/providers/mock.js";
 import { createSavingsLayer } from "../src/pipeline/create.js";
 import { BatchSubmitError } from "../src/pipeline/errors.js";
-import { LicenseError } from "../src/license/errors.js";
 import { reiniciarAvisos } from "../src/util/warn-once.js";
 import type { BatchJob, BatchRequest } from "../src/contracts/batch.js";
 import type { JsonSchema, SavingsRequest } from "../src/contracts/types.js";
