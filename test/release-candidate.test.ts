@@ -5,15 +5,15 @@ const root = new URL("../", import.meta.url);
 const json = (path: string) => JSON.parse(readFileSync(new URL(path, root), "utf8")) as Record<string, unknown>;
 const text = (path: string) => readFileSync(new URL(path, root), "utf8");
 
-describe("release candidate 0.6 packaging guards", () => {
+describe("release 1.0 packaging guards", () => {
   it("keeps SDK and persistence versions and peers compatible", () => {
     const sdk = json("package.json");
     const persistence = json("packages/persistence-postgres/package.json");
-    expect(sdk.version).toBe("0.6.0-rc.1");
+    expect(sdk.version).toBe("1.0.0");
     expect(persistence.version).toBe("0.1.0-rc.1");
-    expect(text("src/version.ts")).toContain('"0.6.0-rc.1"');
+    expect(text("src/version.ts")).toContain('"1.0.0"');
     expect(persistence.peerDependencies).toEqual({
-      "@bivelio/savings-layer": ">=0.6.0-rc.1 <1",
+      "@bivelio/savings-layer": ">=1.0.0 <2",
       pg: ">=8.23.1 <9",
     });
     expect(persistence.peerDependenciesMeta).toBeUndefined();
@@ -21,9 +21,11 @@ describe("release candidate 0.6 packaging guards", () => {
     expect(persistence.engines).toEqual({ node: ">=20.19.0" });
   });
 
-  it("keeps proprietary sourcemaps out of persistence", () => {
+  it("keeps sourcemaps out of persistence and ships both licenses", () => {
     expect(text("packages/persistence-postgres/tsup.config.ts")).toContain("sourcemap: false");
     expect(json("package.json").files).toContain("CHANGELOG.md");
+    expect(json("package.json").files).toContain("LICENSE-CLOUD.md");
+    expect(json("package.json").files).toContain("NOTICE");
     expect(json("packages/persistence-postgres/package.json").files).toContain("CHANGELOG.md");
   });
 

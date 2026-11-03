@@ -1,6 +1,11 @@
 # Changelog
 
-## Unreleased — the open-core release (Community mode)
+## 1.0.0 — the open-core release (Community mode)
+
+### License
+
+- The npm package is now **Apache-2.0** (LICENSE); the optional cloud services
+  keep their own terms in LICENSE-CLOUD.md (§5 fields, §6 fees) and a NOTICE`n  covers trademarks and attribution.
 
 ### Changed (breaking for the license contract)
 

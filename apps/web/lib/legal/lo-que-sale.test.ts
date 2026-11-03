@@ -58,7 +58,7 @@ describe("registro de uso: la página enumera la lista blanca del ingest, campo 
     expect(CAMPOS_DEL_REGISTRO_DE_USO.length).toBeGreaterThan(20);
     expect(
       ordenado(enLaPagina),
-      "campo nuevo en la lista blanca: añádelo a lib/legal/lo-que-sale.ts, a su frase en privacyPage (12 idiomas) y a la LICENSE §5",
+      "campo nuevo en la lista blanca: añádelo a lib/legal/lo-que-sale.ts, a su frase en privacyPage (12 idiomas) y a la LICENSE-CLOUD.md §5",
     ).toEqual(ordenado(CAMPOS_DEL_REGISTRO_DE_USO));
   });
 
@@ -87,7 +87,7 @@ describe("verificación opcional (#324): la página enumera la lista blanca de s
     expect(CAMPOS_DEL_CABLE_DE_VERIFICACION.muestra.length).toBeGreaterThan(15);
     expect(
       ordenado(enLaPagina),
-      "campo nuevo en el cable de verificación: añádelo a lib/legal/lo-que-sale.ts, a privacyPage y a la LICENSE §5",
+      "campo nuevo en el cable de verificación: añádelo a lib/legal/lo-que-sale.ts, a privacyPage y a la LICENSE-CLOUD.md §5",
     ).toEqual(ordenado(listaBlanca));
   });
 
@@ -132,8 +132,8 @@ describe("la página pinta ESTAS listas, y cada grupo tiene su texto", () => {
     expect(Object.keys(en.privacyPage.retention.items).sort()).toEqual(PLAZOS_DE_RETENCION.map((p) => p.clave).sort());
   });
 
-  it("⛔ lo que «nunca sale» dice lo mismo que la LICENSE §5(a)", () => {
-    const licencia = leer("LICENSE").replace(/\s+/g, " ");
+  it("⛔ lo que «nunca sale» dice lo mismo que la LICENSE-CLOUD.md §5(a)", () => {
+    const licencia = leer("LICENSE-CLOUD.md").replace(/\s+/g, " ");
     const nunca = JSON.parse(readFileSync(fileURLToPath(new URL("../../messages/en.json", import.meta.url)), "utf8"))
       .privacyPage.never as { content: string; credentials: string };
     // La lista tras los dos puntos, sin etiquetas ni punto final.

@@ -160,10 +160,10 @@ describe("publish-pypi.yml conserva las verjas de antes de publicar", () => {
     expect([...orden].sort((a, b) => a - b)).toEqual(orden);
   });
 
-  it("los archivos: LICENSE, licencia comercial, sin dependencias y sin clave privada (la misma búsqueda que npm)", () => {
+  it("los archivos: LICENSE (Apache-2.0), sin dependencias y sin clave privada (la misma búsqueda que npm)", () => {
     const p = paso(construir, "Los archivos llevan lo que deben");
     expect(p).toMatch(/cmp -s LICENSE/);
-    expect(p).toMatch(/License-Expression: LicenseRef-BiVelio-Commercial/);
+    expect(p).toMatch(/License-Expression: Apache-2.0/);
     expect(p).toMatch(/\^Requires-Dist:/);
     const privadaPy = /grep -rqaE "([^"]+)" "\$DIR"/.exec(p)?.[1];
     const privadaNpm = /grep -rqaE "([^"]+)" "\$DIR\/package"/.exec(npm)?.[1];
@@ -177,7 +177,7 @@ describe("publish-pypi.yml conserva las verjas de antes de publicar", () => {
   it("el pyproject declara lo que la verja comprueba", () => {
     const py = leer("packages/python/pyproject.toml");
     expect(py).toMatch(/^name = "bivelio-savings-layer"$/m);
-    expect(py).toMatch(/^license = "LicenseRef-BiVelio-Commercial"$/m);
+    expect(py).toMatch(/^license = "Apache-2.0"$/m);
     expect(py).toMatch(/^dynamic = \["version"\]$/m);
     expect(py).toMatch(/^\[tool\.hatch\.version\]\npath = "src\/bvsala\/__init__\.py"$/m);
     expect(py).toMatch(/^requires-python = ">=3\.10"$/m);

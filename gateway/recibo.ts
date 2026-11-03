@@ -164,7 +164,7 @@ export function renderizarRecibo(datos: DatosDelRecibo): string {
   L.push("  · Un mes sin ahorro es un mes sin comisión: 0 €.");
   L.push("  · Tus prompts, respuestas y claves del proveedor nunca llegan");
   L.push("    a BiVelio: al panel suben conteos de tokens, coste, el id del");
-  L.push("    modelo e ids opacos (la lista exacta, en la LICENSE §5).");
+  L.push("    modelo e ids opacos (la lista exacta, en la LICENSE-CLOUD.md §5).");
   L.push("");
   L.push(`  Precios del catálogo ${datos.versionPrecios} · gateway ${datos.version}`);
   L.push("  Verifícalo contra tu consola del proveedor. Si no cuadra, es un");

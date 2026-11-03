@@ -11,6 +11,7 @@
 <p align="center">
   <a href="https://www.npmjs.com/package/@bivelio/savings-layer"><img src="https://img.shields.io/npm/v/%40bivelio%2Fsavings-layer?color=2F63D8&label=npm" alt="npm version"></a>
   <img src="https://img.shields.io/badge/node-%E2%89%A520-14A06F" alt="Node ≥ 20">
+  <img src="https://img.shields.io/badge/license-Apache--2.0-2F63D8" alt="Apache-2.0">
   <img src="https://img.shields.io/badge/runtime%20dependencies-0-14A06F" alt="0 runtime dependencies">
   <img src="https://img.shields.io/badge/telemetry-off%20by%20default-0F1218" alt="Telemetry off by default">
 </p>
@@ -32,7 +33,7 @@ split into four ledgers (`avoided_calls`, `eliminated_tokens`, `compressed_token
 `provider_cached_tokens`) and labelled `measured`, `reference` or `estimated`.
 Nothing is sent to BiVelio unless you choose to add a key: **zero telemetry by
 default**, and prompts, completions and provider keys never reach BiVelio
-(the exact per-request fields a cloud key sends are in [LICENSE](./LICENSE) §5).
+(the exact per-request fields a cloud key sends are in [LICENSE-CLOUD.md](./LICENSE-CLOUD.md) §5).
 
 The free part is the whole savings layer. What a (paid, optional) BiVelio key adds
 is the cloud: the team dashboard, shared semantic caches across seats, org
@@ -40,7 +41,7 @@ entitlements and license management. The cloud subscription is a fixed fee, paid
 whether or not you save — Pro €15 / seat / month or €150 / seat / year; Team
 €129 / month with 10 seats included (€12 per extra seat; €1,290 / year, €120 per
 extra seat), EUR, VAT not included — and there is never a commission on what you
-save (see [LICENSE](./LICENSE) §6).
+save (see [LICENSE-CLOUD.md](./LICENSE-CLOUD.md) §6).
 
 ### Install anywhere, in 60 seconds
 
@@ -76,8 +77,8 @@ const layer = createSavingsLayer({
   provider,
   // OPEN CORE: nothing else is required — COMMUNITY mode, zero telemetry.
   // For the cloud dashboard + team metering, add (all optional):
-  //   licenseKey: process.env.BIVELIO_LICENSE_KEY,
-  //   licenseServerUrl: "https://savings.bivelio.com",
+  //   // licenseKey: process.env.BIVELIO_LICENSE_KEY,   (optional: cloud)
+  //   // licenseServerUrl: "https://savings.bivelio.com",
   //   serviceAccountKey: process.env.BIVELIO_SERVICE_KEY,
 });
 
@@ -105,7 +106,7 @@ is at **[savings.bivelio.com/en/how-it-works](https://savings.bivelio.com/en/how
 | Compression, output contracts, four savings ledgers | ✅ | ✅ |
 | Gateway + `bvsala` CLI + MCP server | ✅ | ✅ |
 | Team dashboard, seat metering, shared caches | — | ✅ |
-| Anything sent to BiVelio | **Nothing** | Per-request usage only (counts, cost, model id, opaque ids — [LICENSE](./LICENSE) §5), never prompts or keys |
+| Anything sent to BiVelio | **Nothing** | Per-request usage only (counts, cost, model id, opaque ids — [LICENSE-CLOUD.md](./LICENSE-CLOUD.md) §5), never prompts or keys |
 
 A license key that **is** configured but invalid or expired still fails closed with
 `LicenseError` — only its absence is a working product.
@@ -122,7 +123,7 @@ shadow-mode usage is never part of any commission. No trial. The free
 changed — and shows what the levers would have saved, request by request. The
 older commission-only modality is **closed to new customers**. Your
 prompts, completions and provider keys never reach BiVelio: a cloud key sends
-only the per-request usage fields listed in [LICENSE](./LICENSE) §5.
+only the per-request usage fields listed in [LICENSE-CLOUD.md](./LICENSE-CLOUD.md) §5.
 
 ## Where it installs
 
@@ -301,8 +302,8 @@ const layer = createSavingsLayer({
   provider,
   // OPEN CORE: nothing else is required — COMMUNITY mode, zero telemetry.
   // For the cloud dashboard + team metering, add (all optional):
-  //   licenseKey: process.env.BIVELIO_LICENSE_KEY,
-  //   licenseServerUrl: "https://savings.bivelio.com",
+  //   // licenseKey: process.env.BIVELIO_LICENSE_KEY,   (optional: cloud)
+  //   // licenseServerUrl: "https://savings.bivelio.com",
   //   serviceAccountKey: process.env.BIVELIO_SERVICE_KEY,
 });
 
@@ -441,7 +442,7 @@ point, from a subpath of this same package. The four adapters behave alike:
 - **Tools are treated as having side effects** unless you list them in
   `readOnlyTools`: a request that offers any other tool is never answered from a
   cache, because the action has to run.
-- **Fail‑closed, like the SDK**: without an active license the call fails with
+- **Open core, like the SDK**: with no key the adapter runs in COMMUNITY mode; a key that is set but invalid fails closed with
   `LicenseError` (a framework may wrap it, keeping its name and message) and the
   model is not called. **Put the adapter last**, so nothing sits between it and the
   model.
@@ -461,8 +462,8 @@ import { openai } from "@ai-sdk/openai";
 import { savingsMiddleware, getSavingsReport } from "@bivelio/savings-layer/ai-sdk";
 
 const savings = savingsMiddleware({
-  licenseKey: process.env.BIVELIO_LICENSE_KEY,
-  licenseServerUrl: "https://savings.bivelio.com",
+  // licenseKey: process.env.BIVELIO_LICENSE_KEY,   (optional: cloud)
+  // licenseServerUrl: "https://savings.bivelio.com",
   serviceAccountKey: process.env.BIVELIO_SERVICE_KEY,
   readOnlyTools: ["get_weather"],
 });
@@ -488,8 +489,8 @@ import { Agent } from "@mastra/core/agent";
 import { savingsProcessor } from "@bivelio/savings-layer/mastra";
 
 const bivelio = savingsProcessor({
-  licenseKey: process.env.BIVELIO_LICENSE_KEY,
-  licenseServerUrl: "https://savings.bivelio.com",
+  // licenseKey: process.env.BIVELIO_LICENSE_KEY,   (optional: cloud)
+  // licenseServerUrl: "https://savings.bivelio.com",
   serviceAccountKey: process.env.BIVELIO_SERVICE_KEY,
   onReport: (r) => console.log(r.cost.basis),
 });
@@ -520,8 +521,8 @@ import { createAgent } from "langchain";
 import { savingsAgentMiddleware, getSavingsReportFromMessage } from "@bivelio/savings-layer/langchain";
 
 const agentSavings = savingsAgentMiddleware({
-  licenseKey: process.env.BIVELIO_LICENSE_KEY,
-  licenseServerUrl: "https://savings.bivelio.com",
+  // licenseKey: process.env.BIVELIO_LICENSE_KEY,   (optional: cloud)
+  // licenseServerUrl: "https://savings.bivelio.com",
   serviceAccountKey: process.env.BIVELIO_SERVICE_KEY,
 });
 const lcAgent = createAgent({ model: "openai:gpt-4o-mini", tools: [], middleware: [agentSavings] }); // last
@@ -543,8 +544,8 @@ import Anthropic from "@anthropic-ai/sdk";
 import { anthropicSavings } from "@bivelio/savings-layer/anthropic-sdk";
 
 const claudeSavings = anthropicSavings({
-  licenseKey: process.env.BIVELIO_LICENSE_KEY,
-  licenseServerUrl: "https://savings.bivelio.com",
+  // licenseKey: process.env.BIVELIO_LICENSE_KEY,   (optional: cloud)
+  // licenseServerUrl: "https://savings.bivelio.com",
   serviceAccountKey: process.env.BIVELIO_SERVICE_KEY,
 });
 const client = new Anthropic({ middleware: [claudeSavings.middleware] }); // last in the list
@@ -677,8 +678,8 @@ your provider, turn on verification sampling:
 ```ts
 const checkedLayer = createSavingsLayer({
   provider,
-  licenseKey: process.env.BIVELIO_LICENSE_KEY,
-  licenseServerUrl: "https://savings.bivelio.com",
+  // licenseKey: process.env.BIVELIO_LICENSE_KEY,   (optional: cloud)
+  // licenseServerUrl: "https://savings.bivelio.com",
   serviceAccountKey: process.env.BIVELIO_SERVICE_KEY,
   verification: { sampleRate: 0.02 }, // about 2 in every 100 eligible requests
 });
@@ -759,7 +760,7 @@ default was not run.
 ```ts
 const leveredLayer = createSavingsLayer({
   provider,
-  licenseKey: process.env.BIVELIO_LICENSE_KEY,
+  // licenseKey: process.env.BIVELIO_LICENSE_KEY,   (optional: cloud)
   priceLevers: { deferrable: true, onCapacityError: "standard" }, // layer-wide defaults
 });
 
@@ -830,7 +831,7 @@ verbatim, so an agent that edits by exact match still sees the file as it is.
 ```ts
 const agentLayer = createSavingsLayer({
   provider,
-  licenseKey: process.env.BIVELIO_LICENSE_KEY,
+  // licenseKey: process.env.BIVELIO_LICENSE_KEY,   (optional: cloud)
   toolOutputCompaction: true, // or { exceptTools: ["read_logs"], minSavedChars: 512 }
 });
 // or per request: savings: { toolOutputCompaction: true }
@@ -898,7 +899,7 @@ saving and never part of any commission.
 ```ts
 const placedLayer = createSavingsLayer({
   provider, // Anthropic, or OpenAI GPT-5.6+ on OpenAI's own API
-  licenseKey: process.env.BIVELIO_LICENSE_KEY,
+  // licenseKey: process.env.BIVELIO_LICENSE_KEY,   (optional: cloud)
   cacheBreakpoints: "auto",
 });
 ```
@@ -933,7 +934,7 @@ async function serverlessLayer(kv: SharedKeyValue) {
 
   const layer = createSavingsLayer({
     provider,
-    licenseKey: process.env.BIVELIO_LICENSE_KEY,
+    // licenseKey: process.env.BIVELIO_LICENSE_KEY,   (optional: cloud)
     semanticCacheStore: semanticCache,
     // Passing the cache does not switch it on; this asks for it on every request.
     semanticCacheDefault: true,
@@ -1053,7 +1054,7 @@ import { GoogleProvider } from "@bivelio/savings-layer";
 
 const gemini = createSavingsLayer({
   provider: new GoogleProvider({ apiKey: process.env.GEMINI_API_KEY, requireUsage: true }),
-  licenseKey: process.env.BIVELIO_LICENSE_KEY,
+  // licenseKey: process.env.BIVELIO_LICENSE_KEY,   (optional: cloud)
 });
 
 const { text: answer, report: geminiReport } = await gemini.generate({
@@ -1259,7 +1260,7 @@ import { AnthropicProvider } from "@bivelio/savings-layer";
 
 const claude = createSavingsLayer({
   provider: new AnthropicProvider({ apiKey: process.env.ANTHROPIC_API_KEY }),
-  licenseKey: process.env.BIVELIO_LICENSE_KEY,
+  // licenseKey: process.env.BIVELIO_LICENSE_KEY,   (optional: cloud)
 });
 
 const mcpTools: ToolDescriptor[] = []; // every tool your MCP servers list
@@ -1459,7 +1460,7 @@ BVSALA_SEAT_ID=worker-03   # stable per replica; [A-Za-z0-9._:/-], max 128 chars
 BV‑SALA is commercial software. The plans are **Measure** (free), **Pro** (per seat),
 **Team** (a number of seats included, plus each extra seat) and **Enterprise** (by
 contract); Pro and Team are paid whether or not you save and carry **no commission** on
-your savings. The prices are at the top of this page, in [LICENSE](./LICENSE) §6 and in
+your savings. The prices are at the top of this page, in [LICENSE-CLOUD.md](./LICENSE-CLOUD.md) §6 and in
 the Published Pricing it refers to,
 **[savings.bivelio.com/pricing](https://savings.bivelio.com/pricing)**. No trial. There is one free license,
 **Measure** — no card, one organization per verified account, up to 5 seats and 20,000
@@ -1483,7 +1484,7 @@ The license is a signed token your SDK and the
 gateway verify **offline**; the managed control plane and the revocation kill‑switch
 are served from BiVelio. Your LLM traffic goes **straight to your provider** —
 BiVelio receives per‑request usage (counts, cost, the model id and opaque ids), never
-prompts, completions or provider keys; [LICENSE](./LICENSE) §5 lists every field, and
+prompts, completions or provider keys; [LICENSE-CLOUD.md](./LICENSE-CLOUD.md) §5 lists every field, and
 **[savings.bivelio.com/privacy](https://savings.bivelio.com/privacy)** says how long
 each one is kept.
 

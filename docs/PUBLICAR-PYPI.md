@@ -47,7 +47,7 @@ Tres trabajos, cada uno con el mínimo permiso (`permissions: {}` por defecto):
    hash (`requirements-publicar.txt`, construido `--no-isolation` para que el
    backend también llegue por hash); `twine check --strict`; exactamente dos
    archivos, la LICENSE del repositorio dentro, `License-Expression:
-   LicenseRef-BiVelio-Commercial`, ningún `Requires-Dist` y ninguna clave privada
+   Apache-2.0`, ningún `Requires-Dist` y ninguna clave privada
    (la misma búsqueda que `publish.yml`); instala el wheel en un entorno limpio y
    comprueba `bvsala.__version__`. Su salida es el sha256 del conjunto.
 3. **`publicar`** (`id-token: write`, environment `pypi`): no hace checkout ni

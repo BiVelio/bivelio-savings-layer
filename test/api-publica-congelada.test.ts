@@ -174,7 +174,9 @@ describe("la API pública de la 0.5, congelada", () => {
     const pkg = JSON.parse(readFileSync(raiz("package.json"), "utf8")) as { version: string };
     expect(inv.version).toBe("0.5.0");
     // La baseline sigue siendo 0.5; una minor posterior solo puede añadir APIs.
-    expect(/^0\.(4|5|6)\./.test(pkg.version), pkg.version).toBe(true);
+    // La 1.0.0 cambió la LICENCIA (open core, Apache-2.0), no la superficie: el
+    // inventario 0.5.0 sigue gobernando los exports.
+    expect(/^(0\.(4|5|6)\.|1\.)/.test(pkg.version), pkg.version).toBe(true);
   });
 
   it("la raíz es una lista cerrada: ni un `export *` en src/index.ts", () => {

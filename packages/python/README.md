@@ -7,19 +7,20 @@ token counts, the cost at the model's list price, and where the figure comes
 from (`cost.basis`).
 
 - **The gateway does the work.** It ships in the npm package
-  [`@bivelio/savings-layer`](https://www.npmjs.com/package/@bivelio/savings-layer),
-  holds your BiVelio license, forwards each request to your provider and
+  [`@bivelio/savings-layer`](https://www.npmjs.com/package/@bivelio/savings-layer)
+  (Apache-2.0), forwards each request to your provider and
   measures it with the provider's usage counter. This package prices nothing
   itself, so its numbers are exactly the dashboard's.
-- **Fail-closed.** Without a running gateway and a live license, `wrap()`
-  raises. It never falls back to calling your provider directly.
+- **Open core.** The gateway starts with no keys at all (COMMUNITY mode: every
+  local lever on, zero telemetry). Without a running gateway, `wrap()` raises;
+  it never falls back to calling your provider directly.
 - **No dependencies.** Standard library only. It does not import the OpenAI or
   Anthropic SDKs; you bring them.
 - **Your prompts never reach BiVelio.** The client only talks to the gateway on
   `127.0.0.1`, ignoring any HTTP proxy settings, and the gateway forwards your
-  requests to your provider. What it sends to BiVelio is per-request usage
-  (token counts, cost, the model id and opaque ids), never your content: the
-  LICENSE, section 5, lists every field.
+  requests to your provider. What a cloud key sends to BiVelio is per-request
+  usage (token counts, cost, the model id and opaque ids), never your content:
+  LICENSE-CLOUD.md, section 5, lists every field.
 
 This package measures. The saving levers of the TypeScript SDK do not run in
 Python; the gateway's own levers apply to Anthropic `/v1/messages` traffic with
@@ -28,8 +29,8 @@ a PRO license.
 ## Requirements
 
 - Python 3.10 or newer.
-- Node.js 20.19 or newer, for the gateway, and a BiVelio license with a service key
-  (`BIVELIO_SERVICE_KEY`): the gateway does not start without them.
+- Node.js 20.19 or newer, for the gateway. No keys required: the gateway starts
+  in COMMUNITY mode; `BIVELIO_SERVICE_KEY` (optional) adds the cloud dashboard.
 
 ## Install
 
