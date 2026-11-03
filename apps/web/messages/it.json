@@ -1040,7 +1040,8 @@
       "bottomTerms": "Termini",
       "howItWorks": "Come funziona",
       "pricingTerms": "Condizioni di prezzo",
-      "dataPrivacy": "Cosa riceve BiVelio"
+      "dataPrivacy": "Cosa riceve BiVelio",
+      "paper": "Ricerca"
     },
     "cta15": {
       "titulo": "Book 15-min call",
@@ -1683,8 +1684,5 @@
     "title": "Pagina non trovata",
     "body": "Questa pagina non esiste o è stata spostata.",
     "home": "← Torna alla home"
-  },
-  "footer": {
-    "paper": "Ricerca"
   }
 }

@@ -1040,7 +1040,8 @@
       "bottomTerms": "Termes",
       "howItWorks": "Com funciona",
       "pricingTerms": "Termes de preu",
-      "dataPrivacy": "Què rep BiVelio"
+      "dataPrivacy": "Què rep BiVelio",
+      "paper": "Article"
     },
     "cta15": {
       "titulo": "Book 15-min call",
@@ -1683,8 +1684,5 @@
     "title": "Pàgina no trobada",
     "body": "Aquesta pàgina no existeix o s'ha mogut.",
     "home": "← Torna a l'inici"
-  },
-  "footer": {
-    "paper": "Article"
   }
 }
