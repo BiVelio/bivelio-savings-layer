@@ -675,8 +675,8 @@ describe("la copia que viaja en npm (README y guías de terminales)", () => {
   const readme = leer("../README.md");
   const terminales = leer("../docs/terminales/README.md");
 
-  it("el README dice que el gateway exige licencia, que solo corta las NUEVAS y que la suscripción no comisiona", () => {
-    expect(readme).toMatch(/active\s+BiVelio\s+license/);
+  it("el README dice que el gateway arranca sin claves (COMMUNITY), que solo corta las NUEVAS y que la suscripción no comisiona", () => {
+    expect(readme).toMatch(/COMMUNITY\s+mode/);
     expect(readme).toMatch(/only\s+new\s+requests\s+are\s+refused/);
     expect(readme).toMatch(/never\s+carries\s+commission/);
     expect(readme).toMatch(/cache-write\s+TTL/);

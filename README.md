@@ -124,11 +124,12 @@ in VS Code, `bvsala doctor` prints the exact config block. The gateway starts
 with **no keys at all** (COMMUNITY mode: every local saving lever armed, zero
 telemetry); `BIVELIO_SERVICE_KEY` adds the cloud dashboard and org entitlements.
 Once running it never interrupts a request in flight: with a live license that
-lapses, only new requests are refused (HTTP 402) until it is renewed. The TTL
-lever is armed by default; the other levers (sibling model, per-turn effort)
-switch on with their flags. On a Claude or ChatGPT subscription there is no
-per-token invoice, so that traffic is metered at list-price equivalent and
-never carries commission.
+lapses, only new requests are refused (HTTP 402) until it is renewed. The
+cache-write TTL lever (1h→5m, the saving that changes the rate, never the
+content the model reads) is armed by default; the other levers (sibling model,
+per-turn effort) switch on with their flags. On a Claude or ChatGPT subscription
+there is no per-token invoice, so that traffic is metered at list-price
+equivalent and never carries commission.
 
 **The gateway forwards what your terminal sends.** With no lever armed, your
 provider receives the request body byte for byte and every header your client
