@@ -2,16 +2,14 @@ import { readdirSync, readFileSync } from "node:fs";
 import { describe, it, expect } from "vitest";
 
 /**
- * La copia pública del gateway dice lo mismo que el binario: sin licencia activa
- * no arranca.
+ * La copia pública del gateway dice lo mismo que el binario: open core, arranca
+ * sin claves (modo Community), y una clave puesta pero inválida sigue cerrando.
  *
  * Hasta la versión con la verja de licencia, el panel prometía «para medir no hace
- * falta clave de licencia» y ofrecía `bvsala claude` a quien solo usa suscripción.
- * Las dos frases pasan a ser falsas el día que npm sirve esa versión, y en 12
- * idiomas: quien las lea, instale y exporte solo la `bvk_` de una org sin licencia
- * se encuentra un exit 1 que la web le había dicho que no existía.
- *
- * Este test fija las seis cadenas que cambian (§6.12 de la especificación del
+ * falta clave de licencia» y ofrecía `bvsala claude` a quien solo usa suscripción;
+ * después exigía licencia activa en los 12 idiomas. Con el open core las dos
+ * versiones son falsas a la vez: sin claves arranca (Community), con clave mala
+ * no. Este test fija las seis cadenas que cambian (§6.12 de la especificación del
  * frente 3) y caza lo que más fácil se escapa en una traducción a mano: un idioma
  * que se quedó con el texto inglés, o con la frase vieja.
  *
@@ -54,7 +52,7 @@ const CAMBIADAS = [GATEWAY_NOTE, LANDING_NOTE, CASE_CODE, ONLY_CHAT, CX_NOTA, ST
 const en = cargar("en");
 const es = cargar("es");
 
-describe("copia pública: el gateway no arranca sin licencia activa", () => {
+describe("copia pública: el gateway arranca sin claves (Community) y una clave inválida sigue cerrando", () => {
   it("están los 12 locales (si falta alguno, este test no protege nada)", () => {
     expect(LOCALES).toEqual(["ca", "de", "en", "es", "fr", "id", "it", "nl", "pl", "pt", "tr", "vi"]);
   });
@@ -76,14 +74,14 @@ describe("copia pública: el gateway no arranca sin licencia activa", () => {
     }
   });
 
-  it("en · gatewayNote: exige licencia activa y ya no dice que medir no la necesita", () => {
-    expect(en[GATEWAY_NOTE]).not.toMatch(/needs no license/i);
-    expect(en[GATEWAY_NOTE]).toMatch(/active license/);
+  it("en · gatewayNote: open core — arranca sin claves y ya no dice que sin licencia no arranca", () => {
+    expect(en[GATEWAY_NOTE]).toMatch(/COMMUNITY/);
+    expect(en[GATEWAY_NOTE]).not.toMatch(/does not start without an active license/i);
   });
 
-  it("es · gatewayNote: exige licencia activa y ya no dice que no hace falta", () => {
-    expect(es[GATEWAY_NOTE]).not.toMatch(/no hace falta clave de licencia/);
-    expect(es[GATEWAY_NOTE]).toMatch(/licencia activa/);
+  it("es · gatewayNote: open core — arranca sin claves (modo Community)", () => {
+    expect(es[GATEWAY_NOTE]).toMatch(/modo Community/);
+    expect(es[GATEWAY_NOTE]).not.toMatch(/no arranca sin una licencia activa/);
   });
 
   // A quien solo usa suscripción ya no se le ofrece el gateway: ese tráfico no
