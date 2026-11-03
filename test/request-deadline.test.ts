@@ -180,7 +180,7 @@ describe("deadline durante la primaria y efectos tardíos", () => {
   it("un provider que ignora abort es esperado y su respuesta tardía no se cachea ni se aprende", async () => {
     let terminado = 0;
     const provider = new Controlado(async () => {
-      await dormir(30);
+      await dormir(200);
       terminado += 1;
       return respuesta("not json");
     });
@@ -198,13 +198,17 @@ describe("deadline durante la primaria y efectos tardíos", () => {
         async remember() { aprendizaje += 1; },
       },
     });
+    // Márgenes amplios: el deadline (40 ms) vence MUCHO después de que la
+    // petición esté marcada como enviada (sobrecarga del CI aparte) y el
+    // proveedor termina mucho después (200 ms). Antes eran 5/30 ms y la
+    // aserción `requestSent` caía en falso cuando el runner iba cargado.
     const error = await timeoutDe(
-      layer.generate(peticion({ response: CONTRATO }), { requestTimeoutMs: 5 }),
+      layer.generate(peticion({ response: CONTRATO }), { requestTimeoutMs: 40 }),
     );
     expect(error.requestSent).toBe(true);
     expect(terminado).toBe(1);
     expect(provider.llamadas).toBe(1);
-    await dormir(25);
+    await dormir(260);
     expect(cache).toBe(0);
     expect(aprendizaje).toBe(0);
   });
