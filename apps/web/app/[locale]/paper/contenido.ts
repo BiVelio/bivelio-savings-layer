@@ -1,4 +1,4 @@
-// GENERADO desde docs/PAPER.md — no editar a mano (ver _research/paper-to-ts.ts).
+// GENERADO desde docs/PAPER.md — no editar a mano (ver scripts/paper.ts).
 export type Bloque =
   | { tipo: "h1" | "h2" | "h3" | "p" | "li" | "cita"; texto: string }
   | { tipo: "tabla"; filas: string[][] };
@@ -6,15 +6,23 @@ export type Bloque =
 export const BLOQUES: Bloque[] = [
   {
     "tipo": "h1",
-    "texto": "BV-SALA Savings Layer v2 — Improved Draft"
+    "texto": "BV-SALA Savings Layer"
+  },
+  {
+    "tipo": "h2",
+    "texto": "Verifiable Measurement of Cost Savings in LLM Applications — Open-Core Edition"
   },
   {
     "tipo": "p",
-    "texto": "**Verifiable Measurement of Cost Savings in LLM Applications, Open-Core Edition**"
+    "texto": "Joan-Marc Fisa, Founder @ BiVelio · jmfisa@bivelio.com · November 2026 (v2)."
   },
   {
     "tipo": "p",
-    "texto": "Joan-Marc Fisa, Founder @ BiVelio — draft for review, November 2026. Improves and supersedes the August 2026 paper (\"BV-SALA Savings Layer: Verifiable Measurement of Cost Savings in Large Language Model Applications\", [bivelio.com/es/research/papers/bv-sala-savings-layer](https://bivelio.com/es/research/papers/bv-sala-savings-layer))."
+    "texto": "Supersedes the August 2026 edition (\"BV-SALA Savings Layer: Verifiable Measurement of Cost Savings in Large Language Model Applications\", [bivelio.com/es/research/papers/bv-sala-savings-layer](https://bivelio.com/es/research/papers/bv-sala-savings-layer))."
+  },
+  {
+    "tipo": "p",
+    "texto": "Published at [savings.bivelio.com/paper](https://savings.bivelio.com/paper) · source of this document: [docs/PAPER.md](PAPER.md) (this file is the single source; the web page is generated from it)."
   },
   {
     "tipo": "p",

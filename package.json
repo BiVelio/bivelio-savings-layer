@@ -81,6 +81,7 @@
     "typecheck:packages": "pnpm -r --filter=./packages/* --filter=./services/* typecheck",
     "typecheck:all": "pnpm run typecheck && pnpm run typecheck:packages && pnpm run typecheck:ejemplos",
     "typecheck:ejemplos": "tsc -p examples/stacks/tsconfig.json",
+    "paper:contenido": "tsx scripts/paper.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "tsc --noEmit",
