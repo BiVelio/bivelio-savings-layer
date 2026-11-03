@@ -64,7 +64,7 @@
     "createAnAccount": "Criar uma conta",
     "backToVerifier": "← Voltar ao início",
     "createYourAccount": "Cria a tua conta",
-    "signupSubtitle": "Uma só conta BiVelio para toda a suite. Cria-a para subscreveres e obteres a tua chave de licença.",
+    "signupSubtitle": "Uma conta BiVelio para toda a suite. Cria-a para a nuvem: painel, caches partilhadas e gestão de licenças. O pacote em si não precisa de conta — o open core corre sem chave.",
     "alreadyHaveAccount": "Já tens uma conta BiVelio?",
     "signIn": "Iniciar sessão",
     "workEmail": "Email profissional",
@@ -104,7 +104,7 @@
       "network": "Sem ligação. Verifica a tua rede e tenta de novo.",
       "missingFields": "Escreve o teu email e a palavra-passe."
     },
-    "signupMedir": "Ou comece grátis com Medir: sem cartão, em modo sombra, até {seats} lugares e {requests} pedidos por dia. Requer @bivelio/savings-layer {version} ou posterior."
+    "signupMedir": "Ou começa grátis com Measure: o plano de nuvem gratuito, sem cartão, modo sombra, até {seats} lugares e {requests} pedidos por dia. Precisa de @bivelio/savings-layer {version} ou posterior."
   },
   "dashboard": {
     "overview": {
@@ -468,7 +468,7 @@
       "personalNote": "Pessoal — ainda não há nenhuma organização associada. Uma só conta BiVelio, partilhada em toda a suite.",
       "plan": "plano",
       "seatsCount": "{count, plural, one {# lugar} other {# lugares}}.",
-      "planBody": "O BV-SALA é fail-closed — só funciona com uma licença ativa. Pro: {monthly} por lugar por mês ou {yearly} por lugar por ano. Equipa: {teamMonthly} por mês com {included} lugares incluídos. Sem comissão sobre a sua poupança. Um lugar é uma máquina ou identidade de serviço ativa, não uma pessoa.",
+      "planBody": "A BV-SALA é open core — sem chave corre em modo Community; uma chave definida mas inválida continua fail-closed. A nuvem acrescenta o painel, as caches partilhadas e os direitos da org. Pro: {monthly} por lugar por mês ou {yearly} por lugar por ano. Team: {teamMonthly} por mês com {included} lugares incluídos. Sem comissão sobre a tua poupança. Um lugar é uma máquina ou identidade de serviço ativa, não uma pessoa.",
       "managePlan": "Gerir plano →",
       "subscribe": "Subscrever →",
       "checkoutMonthly": "Subscrever — {monthly}/lugar/mês →",
@@ -826,7 +826,7 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Verifica a tua poupança em LLM",
-    "metaDescription": "Um SDK para que a sua app pague ao fornecedor de LLM só o que precisa, e um gateway que mede o seu agente de código. Tudo com o contador do seu fornecedor: meça grátis e depois pague por lugar — sem comissão sobre a sua poupança.",
+    "metaDescription": "Um SDK que faz a tua app pagar ao fornecedor de LLM só o que precisa, e um gateway que mede o teu agente de código. Open core Apache-2.0: sem chaves, sem conta, sem telemetria — medido com o contador do teu fornecedor; a nuvem opcional é uma taxa fixa sem comissão sobre a tua poupança.",
     "hero": {
       "title": "A tua fatura de LLM, sob controlo.",
       "titleAccent": "Medida em cada chamada.",
@@ -863,8 +863,8 @@
           "body": "Não pedimos confiança cega. Os montantes medidos usam o uso reportado pelo fornecedor e preços documentados, e aparecem no teu SavingsReport. Os montantes valorizados por referência e os estimados são etiquetados à parte; nenhum é apresentado como reconciliado com uma fatura."
         },
         {
-          "title": "Meça grátis e depois pague por lugar",
-          "body": "Comece com a licença Medir, gratuita: a camada funciona em modo sombra e mostra o que teria poupado com o seu próprio tráfego. Para ativar as alavancas, paga uma taxa fixa por lugar, ou um plano Equipa, poupe ou não — e sem comissão sobre a sua poupança."
+          "title": "Open core: poupa sem chaves",
+          "body": "Instala o pacote e as alavancas ficam ligadas: o modo Community liga cada alavanca local com zero telemetria, e uma chave definida mas inválida continua fail-closed. A nuvem é opcional: painel de equipa, caches partilhadas e gestão de licenças por uma taxa fixa por lugar — e sem comissão sobre a tua poupança."
         }
       ],
       "nota": "As animações ilustram a ideia. Os números a sério — medidos contra fornecedores reais — estão logo abaixo."
@@ -946,19 +946,19 @@
       "eyebrow": "Cinco linhas para começar",
       "title": "Executa-o na tua própria app. Os teus prompts nunca tocam nos nossos servidores.",
       "body": "Coloca o SDK à frente do teu fornecedor. Cada resposta traz um SavingsReport completo que podes representar em gráfico — os mesmos números que o painel lê.",
-      "initNote": "<b>Ou deixa que um comando o ajuste à tua stack.</b> O <code>init</code> lê o teu <code>package.json</code> (Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, o SDK da Anthropic ou o da OpenAI) e imprime a linha de instalação, o código exato do teu adaptador e uma verificação que não gasta tokens: com a tua licença já configurada, é a camada que lhe responde, na tua máquina, sem chamar o modelo. Não escreve nada se não lho pedires."
+      "initNote": "<b>Ou deixa que um comando o adapte ao teu stack.</b> O <code>init</code> lê o teu <code>package.json</code> (Next.js, Express, o Vercel AI SDK, Mastra, LangChain.js, o SDK da Anthropic ou o da OpenAI) e imprime a linha de instalação, o código exato para o teu adaptador e uma verificação que não gasta tokens: sem chave nenhuma, a camada responde na tua máquina, sem chamar o modelo. Não escreve nada sem pedires."
     },
     "pricing": {
       "eyebrow": "Planos",
       "title": "Meça grátis. Pague por lugar quando quiser a poupança.",
-      "body": "Comece com Medir: grátis e sem cartão. A camada funciona em modo sombra com o seu próprio tráfego e o seu painel mostra o que teria poupado, valorizado com o contador do seu fornecedor. Pro e Equipa são cobrados por lugar, em {currency}, poupe ou não, e não têm comissão sobre a sua poupança.",
+      "body": "O pacote é open core Apache-2.0: sem chaves, todas as alavancas locais ligadas, zero telemetria. A nuvem é opcional — Measure é o plano gratuito, Pro e Team são faturados por lugar, em {currency}, sem comissão sobre a tua poupança.",
       "amount": "{amount}",
       "per": "/ lugar / mês",
       "plans": {
         "medir": {
           "name": "Medir",
           "price": "Grátis",
-          "body": "Sem cartão. A camada em modo sombra para uma organização, até {seats} lugares e {requests} pedidos por dia: nada do que envia muda, nada é servido da cache, nunca faz parte de nenhuma comissão — e vê o que teria poupado. Requer @bivelio/savings-layer {version} ou posterior.",
+          "body": "Grátis, sem cartão. O plano NUVEM gratuito: modo sombra para uma organização, até {seats} lugares e {requests} pedidos por dia — nada do que envias muda, nada é servido da cache, nunca entra em nenhuma comissão, e o teu painel mostra quanto teria poupado. As alavancas locais não precisam dele: o open core corre sem chave nenhuma.",
           "cta": "Começar grátis →"
         },
         "pro": {
@@ -1010,7 +1010,7 @@
     },
     "footer": {
       "ctaTitle": "Meça-o com o seu próprio tráfego",
-      "ctaSub": "Depois de instalado, cada chamada devolve o seu SavingsReport, com o medido e o estimado em separado. Comece grátis com Medir (@bivelio/savings-layer {version} ou posterior); Pro e Equipa são uma taxa fixa por lugar, sem comissão sobre a sua poupança. A licença é o que lhe permite executar o BV‑SALA — o SDK na sua app, o gateway no seu terminal.",
+      "ctaSub": "Uma vez instalado, cada chamada devolve o seu SavingsReport, com medido e estimado separados. O open core não precisa de chaves: as alavancas correm em local com zero telemetria. A nuvem opcional começa grátis com Measure e é faturada por lugar, sem comissão sobre a tua poupança.",
       "ctaStart": "Começar",
       "tagline": "O sistema operativo para o teu negócio. Isto é o <b>BV‑SALA</b>, o otimizador de custo de LLM da BiVelio, neutro quanto ao fornecedor — cada valor medido é medido contra o contador do fornecedor; o estimado e o simulado mostram-se à parte, ditos como tais, e nunca se faturam.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1083,7 +1083,7 @@
     "offers": {
       "eyebrow": "Dois produtos",
       "title": "Para onde vão os teus tokens: para a tua app ou para o teu agente de código?",
-      "sub": "Os dois são licenciados por lugar e os dois contam com o contador do teu fornecedor. Fazem trabalhos diferentes, por isso cada um faz a sua própria promessa — e hoje só um tem um número de poupança publicado.",
+      "sub": "Ambos são open core e ambos contam com o contador do teu fornecedor. Fazem trabalhos diferentes, por isso cada um faz a sua promessa — e hoje só um tem um número de poupança publicado.",
       "install": "Instalação",
       "installMore": "Instalação completa",
       "sdk": {
@@ -1496,7 +1496,7 @@
     "caseCodeBody": "Com subscrição a mensalidade é fixa — mas com tetos: a mesma skill instala-se com um único comando e estica o mesmo teto semanal. Com chave de API há uma fatura de tokens real — e o medidor já está em marcha: sem nenhuma chave, «bvsala claude» lança o Claude Code através do gateway local e o teu gasto aparece no painel, token a token, sem tocar numa linha de código. Com PRO, em modelos da Anthropic, passa também as escritas da cache do TTL de uma hora para o de cinco minutos só nos turnos em que uma boa parte do prompt é nova (o primeiro turno de uma sessão, uma compactação): uma poupança calculada sobre a contagem de tokens do teu próprio fornecedor, nunca sobre uma estimativa.",
     "caseAppName": "Sua aplicação",
     "caseAppSub": "seu código + sua chave de API",
-    "caseAppBody": "O caso para o qual o BV‑SALA existe. A tua app chama a API com a tua chave, o fornecedor fatura cada token, e a camada instala-se em três passos: pacote, licença e envolver a chamada. Desde o primeiro pedido devolve um <b>SavingsReport</b> com a poupança, separada em medido e estimado.",
+    "caseAppBody": "O caso para o qual a BV‑SALA existe. A tua app chama a API com a tua chave, o fornecedor fatura cada token, e a camada instala-se em dois passos: o pacote e envolver a chamada. Desde o primeiro pedido devolve um <b>SavingsReport</b> com a poupança, dividida entre medido e estimado.",
     "verdictNothing": "Nada a instalar",
     "verdictSkill": "Skill disponível",
     "verdictMeasures": "Já mede",
@@ -1506,7 +1506,7 @@
     "s3Sub": "O produto tem dois números diferentes e é melhor não misturá-los.",
     "mBeforeK": "Antes de instalar",
     "mBeforeV": "Estimativa",
-    "mBeforeBody": "A licença Medir, gratuita, executa a camada em modo sombra com o seu próprio tráfego e mostra o que teria poupado, pedido a pedido. Não altera nada nem aplica nada — por isso tem a etiqueta «estimativa».",
+    "mBeforeBody": "O plano de nuvem gratuito corre a camada em modo sombra sobre o teu próprio tráfego e mostra quanto teria poupado, pedido a pedido. Não muda nada e não aplica nada — por isso leva a etiqueta «estimativa». Sem plano nenhum? Open core: as alavancas locais correm sem chave e com zero telemetria.",
     "mAfterK": "Depois de instalar",
     "mAfterV": "Medição real",
     "mAfterBody": "Cada chamada devolve um SavingsReport: as chamadas que você nunca pagou e a economia líquida por requisição. Auditável, requisição a requisição, na sua própria infraestrutura.",
@@ -1523,17 +1523,17 @@
   },
   "pricingPage": {
     "metaTitle": "Condições de preço · BV-SALA",
-    "metaDescription": "Medir grátis, Pro por lugar, Equipa e Enterprise — nenhum tem comissão sobre a sua poupança. Valores publicados a partir das mesmas constantes que cobram.",
+    "metaDescription": "O open core é grátis (Apache-2.0); Measure, Pro, Team e Enterprise são os planos de nuvem — nenhum leva comissão sobre a tua poupança. Números publicados a partir das mesmas constantes que faturam.",
     "eyebrow": "Preços publicados",
     "title": "Condições de preço",
     "governs": "Esta página descreve como o serviço funciona hoje; prevalecem a <license>LICENSE</license> e os <terms>Termos da BiVelio</terms>.",
-    "lede": "Paga por lugar ou por um plano Equipa, sem comissão sobre a sua poupança. Cada valor desta página é lido do mesmo código que lhe cobra, por isso muda quando o preço muda.",
+    "lede": "O pacote é open core (Apache-2.0): não precisa de chaves. Esta página dá preço à nuvem opcional — Measure grátis, depois Pro por lugar ou um plano Team, sem comissão sobre a tua poupança. Cada número desta página vem do mesmo código que te fatura, e muda quando o preço muda.",
     "plans": {
       "title": "Planos",
       "intro": "Quatro planos, do menor para o maior. Pro e Equipa pagam-se por assento e não têm comissão.",
       "medir": {
         "name": "Medir",
-        "body": "<b>Grátis, sem cartão.</b> A camada funciona em modo sombra para uma organização, até <b>{seats} lugares</b> e <b>{requests} pedidos por dia</b>: cada pedido chega ao seu fornecedor tal como o construiu, nada é servido da cache e nenhuma alavanca é aplicada. O seu painel mostra o que teria poupado — uma estimativa que nunca tem comissão. Requer <b>@bivelio/savings-layer {version} ou posterior</b>: as versões anteriores não reconhecem a licença Medir. As alavancas precisam de Pro ou Equipa."
+        "body": "<b>Grátis, sem cartão.</b> O plano NUVEM gratuito: a camada corre em modo sombra para uma organização, até <b>{seats} lugares</b> e <b>{requests} pedidos por dia</b>: cada pedido chega ao teu fornecedor exatamente como o escreveste, nada é servido da cache e nenhuma alavanca é aplicada. O teu painel mostra quanto teria poupado — uma estimativa que nunca leva comissão. Precisa de <b>@bivelio/savings-layer {version} ou posterior</b>. As alavancas locais não precisam de plano nenhum: o open core corre sem chave; as alavancas de nuvem precisam de Pro ou Team."
       },
       "pro": {
         "name": "Pro",

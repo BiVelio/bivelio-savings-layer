@@ -64,7 +64,7 @@
     "createAnAccount": "Crea un account",
     "backToVerifier": "← Torna alla home",
     "createYourAccount": "Crea il tuo account",
-    "signupSubtitle": "Un unico account BiVelio per tutta la suite. Crealo per abbonarti e ottenere la tua chiave di licenza.",
+    "signupSubtitle": "Un account BiVelio per tutta la suite. Crealo per il cloud: dashboard, cache condivise e gestione licenze. Il pacchetto non ha bisogno di account — l'open core gira senza chiave.",
     "alreadyHaveAccount": "Hai già un account BiVelio?",
     "signIn": "Accedi",
     "workEmail": "Email di lavoro",
@@ -104,7 +104,7 @@
       "network": "Nessuna connessione. Controlla la rete e riprova.",
       "missingFields": "Inserisci email e password."
     },
-    "signupMedir": "Oppure inizia gratis con Misura: senza carta, in modalità ombra, fino a {seats} postazioni e {requests} richieste al giorno. Richiede @bivelio/savings-layer {version} o successiva."
+    "signupMedir": "Oppure parti gratis con Measure: il piano cloud gratuito, senza carta, modalità ombra, fino a {seats} postazioni e {requests} richieste al giorno. Serve @bivelio/savings-layer {version} o successivo."
   },
   "dashboard": {
     "overview": {
@@ -468,7 +468,7 @@
       "personalNote": "Personale — nessuna organizzazione ancora collegata. Un unico account BiVelio, condiviso in tutta la suite.",
       "plan": "piano",
       "seatsCount": "{count, plural, one {# postazione} other {# postazioni}}.",
-      "planBody": "BV-SALA è fail-closed — funziona solo con una licenza attiva. Pro: {monthly} per postazione al mese o {yearly} per postazione all’anno. Team: {teamMonthly} al mese con {included} postazioni incluse. Nessuna commissione sul tuo risparmio. Una postazione è una macchina o identità di servizio attiva, non una persona.",
+      "planBody": "BV-SALA è open core — senza chiave gira in modalità Community; una chiave impostata ma non valida resta fail-closed. Il cloud aggiunge dashboard, cache condivise e diritti dell'org. Pro: {monthly} per postazione al mese o {yearly} per postazione all'anno. Team: {teamMonthly} al mese con {included} postazioni incluse. Nessuna commissione sul tuo risparmio. Una postazione è una macchina o identità di servizio attiva, non una persona.",
       "managePlan": "Gestisci piano →",
       "subscribe": "Abbonati →",
       "checkoutMonthly": "Abbonati — {monthly}/postazione/mese →",
@@ -826,7 +826,7 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Verifica i tuoi risparmi sugli LLM",
-    "metaDescription": "Un SDK perché la tua app paghi al fornitore di LLM solo ciò che le serve, e un gateway che misura il tuo agente di codice. Tutto con il contatore del tuo fornitore: misura gratis, poi paga per postazione — senza commissione sul tuo risparmio.",
+    "metaDescription": "Un SDK che fa pagare alla tua app solo ciò che serve al provider di LLM, e un gateway che misura il tuo agente di codice. Open core Apache-2.0: nessuna chiave, nessun account, zero telemetria — misurato col contatore del tuo provider; il cloud opzionale è un canone fisso senza commissioni sul tuo risparmio.",
     "hero": {
       "title": "La tua fattura LLM, sotto controllo.",
       "titleAccent": "Misurata a ogni chiamata.",
@@ -863,8 +863,8 @@
           "body": "Non ti chiediamo fiducia cieca. Gli importi misurati usano l'utilizzo riportato dal fornitore e prezzi documentati, e compaiono nel tuo SavingsReport. Gli importi valorizzati per riferimento e quelli stimati sono etichettati separatamente; nessuno è presentato come riconciliato con una fattura."
         },
         {
-          "title": "Misura gratis, poi paga per postazione",
-          "body": "Inizia con la licenza Misura, gratuita: il livello funziona in modalità ombra e ti mostra quanto avrebbe risparmiato con il tuo traffico. Per attivare le leve paghi un canone fisso per postazione, o un piano Team, che tu risparmi o no — e nessuna commissione sul tuo risparmio."
+          "title": "Open core: risparmia senza chiavi",
+          "body": "Installa il pacchetto e le leve sono attive: la modalità Community accende ogni leva locale con zero telemetria, e una chiave impostata ma non valida resta fail-closed. Il cloud è opzionale: dashboard di team, cache condivise e gestione licenze con un canone fisso per postazione — e nessuna commissione sul tuo risparmio."
         }
       ],
       "nota": "Le animazioni illustrano l'idea. Le cifre vere — misurate contro fornitori reali — sono subito sotto."
@@ -946,19 +946,19 @@
       "eyebrow": "Cinque righe per iniziare",
       "title": "Eseguilo nella tua app. I tuoi prompt non toccano mai i nostri server.",
       "body": "Metti l'SDK davanti al tuo provider. Ogni risposta include un SavingsReport completo che puoi rappresentare in grafici — le stesse cifre che legge la dashboard.",
-      "initNote": "<b>Oppure lascia che un comando lo adatti al tuo stack.</b> <code>init</code> legge il tuo <code>package.json</code> (Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, l'SDK di Anthropic o quello di OpenAI) e stampa la riga di installazione, il codice esatto del tuo adattatore e una verifica che non consuma token: con la tua licenza già attiva, a risponderle è il layer, sulla tua macchina, senza chiamare il modello. Non scrive nulla se non glielo chiedi."
+      "initNote": "<b>O lascia che un comando lo adatti al tuo stack.</b> <code>init</code> legge il tuo <code>package.json</code> (Next.js, Express, il Vercel AI SDK, Mastra, LangChain.js, l'SDK di Anthropic o quello di OpenAI) e stampa la riga di installazione, il codice esatto per il tuo adattatore e una verifica che non spende token: senza alcuna chiave, il layer risponde sulla tua macchina, senza chiamare il modello. Non scrive nulla se non glielo chiedi."
     },
     "pricing": {
       "eyebrow": "Piani",
       "title": "Misura gratis. Paga per postazione quando vuoi il risparmio.",
-      "body": "Inizia con Misura: gratis e senza carta. Il livello funziona in modalità ombra con il tuo traffico e la tua dashboard mostra quanto avrebbe risparmiato, valutato con il contatore del tuo fornitore. Pro e Team si pagano per postazione, in {currency}, che tu risparmi o no, e non hanno commissione sul tuo risparmio.",
+      "body": "Il pacchetto è open core Apache-2.0: nessuna chiave, tutte le leve locali attive, zero telemetria. Il cloud è opzionale — Measure è il piano gratuito, Pro e Team si fatturano per postazione, in {currency}, senza commissioni sul tuo risparmio.",
       "amount": "{amount}",
       "per": "/ postazione / mese",
       "plans": {
         "medir": {
           "name": "Misura",
           "price": "Gratis",
-          "body": "Senza carta. Il livello in modalità ombra per un’organizzazione, fino a {seats} postazioni e {requests} richieste al giorno: nulla di ciò che invii cambia, nulla viene servito dalla cache, non entra mai in alcuna commissione — e vedi quanto avrebbe risparmiato. Richiede @bivelio/savings-layer {version} o successiva.",
+          "body": "Gratis, senza carta. Il piano CLOUD gratuito: modalità ombra per un'organizzazione, fino a {seats} postazioni e {requests} richieste al giorno — nulla di ciò che invii cambia, nulla è servito dalla cache, mai parte di alcuna commissione, e la dashboard mostra quanto avrebbe risparmiato. Le leve locali non ne hanno bisogno: l'open core funziona senza alcuna chiave.",
           "cta": "Inizia gratis →"
         },
         "pro": {
@@ -1010,7 +1010,7 @@
     },
     "footer": {
       "ctaTitle": "Misuralo sul tuo traffico",
-      "ctaSub": "Una volta installato, ogni chiamata restituisce il suo SavingsReport, con misurato e stimato separati. Inizia gratis con Misura (@bivelio/savings-layer {version} o successiva); Pro e Team sono un canone fisso per postazione, senza commissione sul tuo risparmio. La licenza è ciò che ti permette di eseguire BV‑SALA — l’SDK nella tua app, il gateway nel tuo terminale.",
+      "ctaSub": "Una volta installato, ogni chiamata restituisce il suo SavingsReport, con misurato e stimato separati. L'open core non ha bisogno di chiavi: le leve girano in locale con zero telemetria. Il cloud opzionale parte gratis con Measure e si fattura per postazione, senza commissioni sul tuo risparmio.",
       "ctaStart": "Inizia",
       "tagline": "Il sistema operativo per la tua azienda. Questo è <b>BV‑SALA</b>, l'ottimizzatore di costo LLM di BiVelio, neutrale rispetto al fornitore — ogni cifra misurata lo è contro il contatore del fornitore; le stime e le simulazioni si mostrano a parte, dichiarate come tali, e non si fatturano mai.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1083,7 +1083,7 @@
     "offers": {
       "eyebrow": "Due prodotti",
       "title": "Dove vanno i tuoi token: nella tua app o nel tuo agente di codice?",
-      "sub": "Entrambi si licenziano per postazione ed entrambi contano con il contatore del tuo fornitore. Fanno lavori diversi, quindi ognuno fa la sua promessa — e oggi solo uno ha una cifra di risparmio pubblicata.",
+      "sub": "Sono entrambi open core ed entrambi contano col contatore del tuo provider. Fanno mestieri diversi, quindi ognuno fa la sua promessa — e oggi solo uno ha una cifra di risparmio pubblicata.",
       "install": "Installazione",
       "installMore": "Configurazione completa",
       "sdk": {
@@ -1496,7 +1496,7 @@
     "caseCodeBody": "Con l'abbonamento la quota è fissa — ma con tetti: la stessa skill si installa con un solo comando e allunga lo stesso tetto settimanale. Con la chiave API c'è una fattura di token reale — e il misuratore è già in moto: senza alcuna chiave, «bvsala claude» lancia Claude Code attraverso il gateway locale e la tua spesa appare nel pannello, token per token, senza toccare una riga di codice. Con PRO, sui modelli Anthropic, sposta anche le scritture della cache dal TTL di un'ora a quello di cinque minuti solo nei turni in cui una parte consistente del prompt è nuova (il primo turno di una sessione, una compattazione): un risparmio calcolato sul conteggio dei token del tuo stesso fornitore, mai su una stima.",
     "caseAppName": "La tua applicazione",
     "caseAppSub": "il tuo codice + la tua chiave API",
-    "caseAppBody": "Il caso per cui esiste BV‑SALA. La tua app chiama l'API con la tua chiave, il fornitore fattura ogni token, e il layer si installa in tre passi: pacchetto, licenza e incapsulamento della chiamata. Dalla prima richiesta restituisce un <b>SavingsReport</b> con il risparmio, separato in misurato e stimato.",
+    "caseAppBody": "Il caso per cui esiste BV‑SALA. La tua app chiama l'API con la tua chiave, il provider fattura ogni token, e il layer si installa in due passi: il pacchetto e avvolgere la chiamata. Dalla prima richiesta restituisce un <b>SavingsReport</b> con il risparmio, diviso tra misurato e stimato.",
     "verdictNothing": "Niente da installare",
     "verdictSkill": "Skill disponibile",
     "verdictMeasures": "Già misura",
@@ -1506,7 +1506,7 @@
     "s3Sub": "Il prodotto ha due numeri diversi ed è meglio non mescolarli.",
     "mBeforeK": "Prima di installare",
     "mBeforeV": "Stima",
-    "mBeforeBody": "La licenza Misura, gratuita, esegue il livello in modalità ombra con il tuo traffico e mostra quanto avrebbe risparmiato, richiesta per richiesta. Non cambia nulla e non applica nulla — per questo porta l’etichetta «stima».",
+    "mBeforeBody": "Il piano cloud gratuito fa girare il layer in modalità ombra sul tuo traffico e mostra quanto avrebbe risparmiato, richiesta per richiesta. Non cambia nulla e non applica nulla — per questo porta l'etichetta «stima». Nessun piano? Open core: le leve locali girano senza chiave e con zero telemetria.",
     "mAfterK": "Dopo l'installazione",
     "mAfterV": "Misurazione reale",
     "mAfterBody": "Ogni chiamata restituisce un SavingsReport: le chiamate che non hai mai pagato e il risparmio netto per richiesta. Verificabile, richiesta per richiesta, sulla tua infrastruttura.",
@@ -1523,17 +1523,17 @@
   },
   "pricingPage": {
     "metaTitle": "Condizioni di prezzo · BV-SALA",
-    "metaDescription": "Misura gratis, Pro per postazione, Team ed Enterprise — nessuno ha una commissione sul tuo risparmio. Cifre pubblicate dalle stesse costanti che fatturano.",
+    "metaDescription": "L'open core è gratis (Apache-2.0); Measure, Pro, Team ed Enterprise sono i piani cloud — nessuno porta commissioni sul tuo risparmio. Cifre pubblicate dalle stesse costanti che fatturano.",
     "eyebrow": "Prezzi pubblicati",
     "title": "Condizioni di prezzo",
     "governs": "Questa pagina descrive come funziona il servizio oggi; prevalgono la <license>LICENSE</license> e i <terms>Termini di BiVelio</terms>.",
-    "lede": "Paghi per postazione o per un piano Team, senza commissione sul tuo risparmio. Ogni cifra di questa pagina si legge dallo stesso codice che ti fattura, quindi cambia quando cambia il prezzo.",
+    "lede": "Il pacchetto è open core (Apache-2.0): nessuna chiave. Questa pagina dà un prezzo al cloud opzionale — Measure gratis, poi Pro per postazione o un piano Team, senza commissioni sul tuo risparmio. Ogni cifra qui viene dallo stesso codice che ti fattura, e cambia quando cambia il prezzo.",
     "plans": {
       "title": "Piani",
       "intro": "Quattro piani, dal più piccolo al più grande. Pro e Team si pagano per postazione e non prevedono commissioni.",
       "medir": {
         "name": "Misura",
-        "body": "<b>Gratis, senza carta.</b> Il livello funziona in modalità ombra per un’organizzazione, fino a <b>{seats} postazioni</b> e <b>{requests} richieste al giorno</b>: ogni richiesta arriva al tuo fornitore esattamente come l’hai costruita, nulla viene servito dalla cache e nessuna leva viene applicata. La tua dashboard mostra quanto avrebbe risparmiato — una stima che non ha mai commissione. Richiede <b>@bivelio/savings-layer {version} o successiva</b>: le versioni precedenti non riconoscono la licenza Misura. Le leve richiedono Pro o Team."
+        "body": "<b>Gratis, senza carta.</b> Il piano CLOUD gratuito: il layer gira in modalità ombra per un'organizzazione, fino a <b>{seats} postazioni</b> e <b>{requests} richieste al giorno</b>: ogni richiesta raggiunge il tuo provider esattamente come l'hai scritta, nulla è servito dalla cache e nessuna leva è applicata. La dashboard mostra quanto avrebbe risparmiato — una stima che non porta mai commissioni. Serve <b>@bivelio/savings-layer {version} o successivo</b>. Le leve locali non hanno bisogno di alcun piano: l'open core gira senza chiave; le leve cloud richiedono Pro o Team."
       },
       "pro": {
         "name": "Pro",

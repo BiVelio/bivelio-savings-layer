@@ -64,7 +64,7 @@
     "createAnAccount": "Hesap oluştur",
     "backToVerifier": "← Ana sayfaya dön",
     "createYourAccount": "Hesabınızı oluşturun",
-    "signupSubtitle": "Tüm paket için tek bir BiVelio hesabı. Abone olmak ve lisans anahtarınızı almak için hesabınızı oluşturun.",
+    "signupSubtitle": "Tüm süit için tek BiVelio hesabı. Bulutu kullanmak için oluşturun: panel, paylaşılan önbellekler ve lisans yönetimi. Paketin kendisi hesap gerektirmez — açık çekirdek anahtarsız çalışır.",
     "alreadyHaveAccount": "Zaten bir BiVelio hesabınız var mı?",
     "signIn": "Giriş yap",
     "workEmail": "İş e-postası",
@@ -104,7 +104,7 @@
       "network": "Bağlantı yok. Ağınızı kontrol edip tekrar deneyin.",
       "missingFields": "E-postanızı ve şifrenizi girin."
     },
-    "signupMedir": "Ya da Ölçüm ile ücretsiz başlayın: kart gerekmez, gölge modunda, en fazla {seats} koltuk ve günde {requests} istek. @bivelio/savings-layer {version} veya üstü gerekir."
+    "signupMedir": "Ya da Measure ile ücretsiz başlayın: ücretsiz bulut planı, kartsız, gölge modu, günde {seats} koltuğa ve {requests} isteğe kadar. @bivelio/savings-layer {version} veya üzeri gerekir."
   },
   "dashboard": {
     "overview": {
@@ -468,7 +468,7 @@
       "personalNote": "Kişisel — henüz bağlı bir kuruluş yok. Tek bir BiVelio hesabı, tüm paket boyunca paylaşılır.",
       "plan": "plan",
       "seatsCount": "{count, plural, other {# koltuk}}.",
-      "planBody": "BV-SALA fail-closed’dur — yalnızca etkin bir lisansla çalışır. Pro: koltuk başına aylık {monthly} veya yıllık {yearly}. Ekip: {included} koltuk dahil aylık {teamMonthly}. Tasarrufunuz üzerinden komisyon yok. Koltuk, bir kişi değil, etkin bir makine veya hizmet kimliğidir.",
+      "planBody": "BV-SALA açık çekirdektir — anahtar olmadan Community modunda çalışır; ayarlanmış ama geçersiz bir anahtar yine de fail-closed kalır. Bulut; paneli, paylaşılan önbellekleri ve kuruluş yetkilerini ekler. Pro: ayda koltuk başına {monthly} veya yılda koltuk başına {yearly}. Team: ayda {teamMonthly}, {included} koltuk dahil. Tasarrufunuz üzerinden komisyon yok. Koltuk; kişi değil, aktif bir makine veya hizmet kimliğidir.",
       "managePlan": "Planı yönet →",
       "subscribe": "Abone ol →",
       "checkoutMonthly": "Abone ol — {monthly}/koltuk/ay →",
@@ -826,7 +826,7 @@
   },
   "landing": {
     "metaTitle": "BiVelio — LLM Tasarrufunuzu Doğrulayın",
-    "metaDescription": "Uygulamanızın LLM sağlayıcısına yalnızca ihtiyaç duyduğu kadar ödemesini sağlayan bir SDK ve kodlama ajanınızı ölçen bir gateway. Her şey sağlayıcınızın sayacıyla: ücretsiz ölçün, sonra koltuk başına ödeyin — tasarrufunuz üzerinden komisyon yok.",
+    "metaDescription": "Uygulamanızın LLM sağlayıcısına yalnızca ihtiyacı olanı ödeten bir SDK ve kodlama aracınızı ölçen bir ağ geçidi. Apache-2.0 açık çekirdek: anahtar yok, hesap yok, telemetri yok — sağlayıcınızın kendi sayacıyla ölçülür; isteğe bağlı bulut, tasarrufunuz üzerinden komisyonsuz sabit bir ücrettir.",
     "hero": {
       "title": "LLM faturanız, kontrol altında.",
       "titleAccent": "Her çağrıda ölçülür.",
@@ -863,8 +863,8 @@
           "body": "Körü körüne güven istemiyoruz. Ölçülen tutarlar, sağlayıcının bildirdiği kullanımı ve belgelenmiş fiyatları kullanır ve SavingsReport'unuzda görünür. Referansla değerlenen ve tahmini tutarlar ayrı etiketlenir; hiçbiri faturayla mutabık gibi sunulmaz."
         },
         {
-          "title": "Ücretsiz ölçün, sonra koltuk başına ödeyin",
-          "body": "Ücretsiz Ölçüm lisansıyla başlayın: katman gölge modunda çalışır ve kendi trafiğinizde ne kadar tasarruf edeceğini gösterir. Kolları açmak için, tasarruf etseniz de etmeseniz de koltuk başına sabit bir ücret ya da bir Ekip planı ödersiniz — tasarrufunuz üzerinden komisyon olmadan."
+          "title": "Açık çekirdek: anahtarsız tasarruf",
+          "body": "Paketi kurun, kollar açık: Community modu her yerel kolu sıfır telemetriyle çalıştırır ve ayarlanmış ama geçersiz bir anahtar yine de fail-closed kalır. Bulut isteğe bağlıdır: ekip paneli, paylaşılan önbellekler ve lisans yönetimi koltuk başına sabit ücretle — tasarrufunuz üzerinden komisyonsuz."
         }
       ],
       "nota": "Animasyonlar fikri anlatır. Gerçek rakamlar — gerçek sağlayıcılara karşı ölçülmüş — hemen aşağıda."
@@ -946,19 +946,19 @@
       "eyebrow": "Başlamak için beş satır",
       "title": "Kendi uygulamanızda çalıştırın. Prompt'larınız sunucularımıza asla dokunmaz.",
       "body": "SDK'yı sağlayıcınızın önüne yerleştirin. Her yanıt, grafiğe dökebileceğiniz eksiksiz bir SavingsReport taşır — panelin okuduğu rakamların aynısı.",
-      "initNote": "<b>Ya da tek bir komut bunu yığınınıza göre uyarlasın.</b> <code>init</code>, <code>package.json</code> dosyanızı okur (Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, Anthropic veya OpenAI SDK'sı) ve kurulum satırını, adaptörünüz için tam kodu ve token harcamayan bir kontrolü yazdırır: lisansınız yerindeyken bu kontrolü modeli çağırmadan, kendi makinenizde katman yanıtlar. Siz istemedikçe hiçbir şey yazmaz."
+      "initNote": "<b>Ya da tek bir komutun yığınınıza uyarlamasına izin verin.</b> <code>init</code> sizin <code>package.json</code> dosyanızı okur (Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, Anthropic veya OpenAI SDK'sı) ve kurulum satırını, adaptörünüz için tam kodu ve token harcamayan bir denetimi yazdırır: hiçbir anahtar olmadan katman bunu makinenizde, modeli çağırmadan yanıtlar. Siz istemedikçe hiçbir şey yazmaz."
     },
     "pricing": {
       "eyebrow": "Planlar",
       "title": "Ücretsiz ölçün. Tasarruf istediğinizde koltuk başına ödeyin.",
-      "body": "Ölçüm ile başlayın: ücretsiz ve kart gerekmez. Katman kendi trafiğinizde gölge modunda çalışır ve paneliniz, sağlayıcınızın sayacıyla değerlenmiş olarak ne kadar tasarruf edeceğini gösterir. Pro ve Ekip, tasarruf etseniz de etmeseniz de koltuk başına {currency} cinsinden faturalandırılır ve tasarrufunuz üzerinden komisyon içermez.",
+      "body": "Paket Apache-2.0 açık çekirdektir: anahtar gerekmez, tüm yerel kollar açık, sıfır telemetri. Bulut isteğe bağlıdır — Measure ücretsiz plandır, Pro ve Team koltuk başına, {currency} cinsinden, tasarrufunuz üzerinden komisyonsuz faturalanır.",
       "amount": "{amount}",
       "per": "/ koltuk / ay",
       "plans": {
         "medir": {
           "name": "Ölçüm",
           "price": "Ücretsiz",
-          "body": "Kart gerekmez. Bir kuruluş için gölge modunda katman, en fazla {seats} koltuk ve günde {requests} istek: gönderdiğiniz hiçbir şey değişmez, önbellekten hiçbir şey sunulmaz, asla hiçbir komisyonun parçası olmaz — ve ne kadar tasarruf edeceğini görürsünüz. @bivelio/savings-layer {version} veya üstü gerekir.",
+          "body": "Ücretsiz, kartsız. Ücretsiz BULUT planı: bir kuruluş için gölge modu, günde {seats} koltuğa ve {requests} isteğe kadar — gönderdiğiniz hiçbir şey değişmez, önbellekten hiçbir şey sunulmaz, hiçbir komisyonun parçası olmaz ve paneliniz ne tasarruf edeceğini gösterir. Yerel kolların buna ihtiyacı yok: açık çekirdek hiçbir anahtar olmadan çalışır.",
           "cta": "Ücretsiz başlayın →"
         },
         "pro": {
@@ -1010,7 +1010,7 @@
     },
     "footer": {
       "ctaTitle": "Kendi trafiğinde ölç",
-      "ctaSub": "Kurulduktan sonra her çağrı, ölçülen ve tahmin edilen ayrı olarak SavingsReport’unu döndürür. Ölçüm ile ücretsiz başlayın (@bivelio/savings-layer {version} veya üstü); Pro ve Ekip koltuk başına sabit bir ücrettir, tasarrufunuz üzerinden komisyon yoktur. Lisans, BV‑SALA’yı çalıştırmanızı sağlayan şeydir — uygulamanızda SDK, terminalinizde gateway.",
+      "ctaSub": "Kurulduktan sonra her çağrı SavingsReport'unu döndürür; ölçülen ve tahmin edilen ayrı tutulur. Açık çekirdek anahtar gerektirmez: kollar yerelde sıfır telemetriyle çalışır. İsteğe bağlı bulut Measure ile ücretsiz başlar ve koltuk başına, tasarrufunuz üzerinden komisyonsuz faturalanır.",
       "ctaStart": "Başla",
       "tagline": "İşletmeniz için işletim sistemi. Bu, BiVelio'nun sağlayıcıdan bağımsız LLM maliyet optimizasyonu <b>BV‑SALA</b> — ölçülen her rakam sağlayıcının kendi sayacına göre ölçülür; tahminler ve simülasyonlar ayrı gösterilir, öyle oldukları belirtilir ve asla faturalanmaz.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1083,7 +1083,7 @@
     "offers": {
       "eyebrow": "İki ürün",
       "title": "Token'larınız nereye gidiyor: uygulamanıza mı, kod ajanınıza mı?",
-      "sub": "İkisi de koltuk başına lisanslanır ve ikisi de sağlayıcınızın kendi sayacıyla sayar. Farklı işler yaparlar, bu yüzden her biri kendi sözünü verir — ve bugün yalnızca birinin yayımlanmış bir tasarruf rakamı var.",
+      "sub": "İkisi de açık çekirdektir ve ikisi de sağlayıcınızın kendi sayacıyla sayar. Farklı işler yaparlar, bu yüzden her biri kendi sözünü verir — ve bugün yalnızca birinin yayımlanmış bir tasarruf rakamı vardır.",
       "install": "Kurulum",
       "installMore": "Tam kurulum",
       "sdk": {
@@ -1496,7 +1496,7 @@
     "caseCodeBody": "Abonelikte ücret sabittir — ama limitlidir: aynı skill tek komutla kurulur ve aynı haftalık limiti esnetir. API anahtarıyla gerçek bir token faturası vardır — ve sayaç zaten çalışıyor: hiçbir anahtar olmadan “bvsala claude” Claude Code'u yerel gateway üzerinden başlatır ve harcamanız panelde token token görünür, tek satır koda dokunmadan. PRO ile, Anthropic modellerinde, ayrıca önbellek yazmalarını bir saatlik TTL'den beş dakikalık TTL'ye yalnızca prompt'un büyük bir kısmının yeni olduğu turlarda taşır (bir oturumun ilk turu, bir sıkıştırma): kendi sağlayıcınızın token sayımı üzerinden hesaplanan bir tasarruf, asla bir tahmin üzerinden değil.",
     "caseAppName": "Senin uygulaman",
     "caseAppSub": "senin kodun + senin API anahtarın",
-    "caseAppBody": "BV‑SALA'nın var olma nedeni olan durum. Uygulamanız API'yi kendi anahtarınızla çağırır, sağlayıcı her token'ı faturalar ve katman üç adımda kurulur: paket, lisans ve çağrıyı sarmalama. İlk istekten itibaren, ölçülen ve tahmini olarak ayrılmış tasarrufla bir <b>SavingsReport</b> döndürür.",
+    "caseAppBody": "BV‑SALA'nın var olma sebebi. Uygulamanız API'yi kendi anahtarınızla çağırır, sağlayıcı her token'ı faturalar ve katman iki adımda kurulur: paket ve çağrıyı sarmak. İlk istekten itibaren, tasarrufu ölçülen ve tahmin edilen olarak ayrılmış bir <b>SavingsReport</b> döndürür.",
     "verdictNothing": "Kurulacak bir şey yok",
     "verdictSkill": "Skill mevcut",
     "verdictMeasures": "Artık ölçüyor",
@@ -1506,7 +1506,7 @@
     "s3Sub": "Ürünün iki farklı rakamı var ve bunları karıştırmamak gerekir.",
     "mBeforeK": "Kurulumdan önce",
     "mBeforeV": "Tahmin",
-    "mBeforeBody": "Ücretsiz Ölçüm lisansı katmanı kendi trafiğinizde gölge modunda çalıştırır ve istek istek ne kadar tasarruf edeceğini gösterir. Hiçbir şeyi değiştirmez ve hiçbir şey uygulamaz — bu yüzden “tahmin” etiketini taşır.",
+    "mBeforeBody": "Ücretsiz bulut planı, katmanı kendi trafiğiniz üzerinde gölge modda çalıştırır ve istek istek ne tasarruf edeceğini gösterir. Hiçbir şeyi değiştirmez ve hiçbir şey uygulamaz — bu yüzden «tahmin» etiketini taşır. Hiç plan yok mu? Açık çekirdek: yerel kollar anahtarsız ve sıfır telemetriyle çalışır.",
     "mAfterK": "Kurulumdan sonra",
     "mAfterV": "Gerçek ölçüm",
     "mAfterBody": "Her çağrı bir SavingsReport döndürür: hiç ödemediğin çağrılar ve istek başına net tasarruf. Denetlenebilir, istek istek, kendi altyapında.",
@@ -1523,17 +1523,17 @@
   },
   "pricingPage": {
     "metaTitle": "Fiyat koşulları · BV-SALA",
-    "metaDescription": "Ölçüm ücretsiz, Pro koltuk başına, Ekip ve Enterprise — hiçbiri tasarrufunuz üzerinden komisyon içermez. Rakamlar, faturalandıran aynı sabitlerden yayımlanır.",
+    "metaDescription": "Açık çekirdek ücretsizdir (Apache-2.0); Measure, Pro, Team ve Enterprise bulut planlarıdır — hiçbiri tasarrufunuz üzerinden komisyon almaz. Faturalayan sabitlerden yayımlanan rakamlar.",
     "eyebrow": "Yayımlanan fiyatlar",
     "title": "Fiyat koşulları",
     "governs": "Bu sayfa hizmetin bugün nasıl işlediğini anlatır; bağlayıcı metinler <license>LICENSE</license> ve <terms>BiVelio Koşulları</terms> olarak kalır.",
-    "lede": "Koltuk başına ya da bir Ekip planı için ödersiniz, tasarrufunuz üzerinden komisyon olmadan. Bu sayfadaki her rakam sizi faturalandıran aynı koddan okunur; fiyat değişince o da değişir.",
+    "lede": "Paket açık çekirdektir (Apache-2.0): anahtar gerekmez. Bu sayfa isteğe bağlı bulutu fiyatlandırır — Measure ücretsiz, sonra koltuk başına Pro veya bir Team planı, tasarrufunuz üzerinden komisyonsuz. Buradaki her rakam sizi faturalayan kodun aynısından gelir ve fiyat değişince değişir.",
     "plans": {
       "title": "Planlar",
       "intro": "Küçükten büyüğe dört plan. Pro ve Ekip koltuk başına ödenir ve komisyon içermez.",
       "medir": {
         "name": "Ölçüm",
-        "body": "<b>Ücretsiz, kart gerekmez.</b> Katman bir kuruluş için, en fazla <b>{seats} koltuk</b> ve <b>günde {requests} istek</b> ile gölge modunda çalışır: her istek sağlayıcınıza tam kurduğunuz gibi ulaşır, önbellekten hiçbir şey sunulmaz ve hiçbir kol uygulanmaz. Paneliniz ne kadar tasarruf edeceğini gösterir — asla komisyon içermeyen bir tahmin. <b>@bivelio/savings-layer {version} veya üstü</b> gerekir: önceki sürümler Ölçüm lisansını tanımaz. Kollar için Pro veya Ekip gerekir."
+        "body": "<b>Ücretsiz, kartsız.</b> Ücretsiz BULUT planı: katman bir kuruluş için gölge modda çalışır, <b>{seats} koltuğa</b> ve günde <b>{requests} isteğe</b> kadar: her istek sağlayıcınıza tam yazdığınız gibi ulaşır, önbellekten hiçbir şey sunulmaz ve hiçbir kol uygulanmaz. Paneliniz ne tasarruf edeceğini gösterir — asla komisyon taşımayan bir tahmin. <b>@bivelio/savings-layer {version} veya üzeri</b> gerekir. Yerel kolların hiçbir plana ihtiyacı yok: açık çekirdek anahtarsız çalışır; bulut kolları Pro veya Team ister."
       },
       "pro": {
         "name": "Pro",

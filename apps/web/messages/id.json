@@ -64,7 +64,7 @@
     "createAnAccount": "Buat akun",
     "backToVerifier": "← Kembali ke beranda",
     "createYourAccount": "Buat akun Anda",
-    "signupSubtitle": "Satu akun BiVelio untuk seluruh suite. Buat akun untuk berlangganan dan mendapatkan kunci lisensi Anda.",
+    "signupSubtitle": "Satu akun BiVelio untuk seluruh suite. Buat untuk memakai cloud: dasbor, cache bersama, dan pengelolaan lisensi. Paketnya sendiri tidak butuh akun — open core berjalan tanpa kunci.",
     "alreadyHaveAccount": "Sudah punya akun BiVelio?",
     "signIn": "Masuk",
     "workEmail": "Email kerja",
@@ -104,7 +104,7 @@
       "network": "Tidak ada koneksi. Periksa jaringan Anda dan coba lagi.",
       "missingFields": "Masukkan email dan kata sandi Anda."
     },
-    "signupMedir": "Atau mulai gratis dengan Measure: tanpa kartu, mode bayangan, hingga {seats} kursi dan {requests} permintaan per hari. Memerlukan @bivelio/savings-layer {version} atau lebih baru."
+    "signupMedir": "Atau mulai gratis dengan Measure: paket cloud gratis, tanpa kartu, mode bayangan, hingga {seats} kursi dan {requests} permintaan per hari. Butuh @bivelio/savings-layer {version} atau lebih baru."
   },
   "dashboard": {
     "overview": {
@@ -468,7 +468,7 @@
       "personalNote": "Pribadi — belum ada organisasi yang tertaut. Satu akun BiVelio, dibagikan di seluruh suite.",
       "plan": "paket",
       "seatsCount": "{count, plural, other {# kursi}}.",
-      "planBody": "BV-SALA bersifat fail-closed — hanya berjalan dengan lisensi aktif. Pro: {monthly} per kursi per bulan atau {yearly} per kursi per tahun. Tim: {teamMonthly} per bulan dengan {included} kursi termasuk. Tanpa komisi atas penghematan Anda. Satu kursi adalah satu mesin atau identitas layanan aktif, bukan orang.",
+      "planBody": "BV-SALA adalah open core — tanpa kunci ia berjalan dalam mode Community; kunci yang diatur tetapi tidak valid tetap fail-closed. Cloud menambahkan dasbor, cache bersama, dan hak organisasi. Pro: {monthly} per kursi per bulan atau {yearly} per kursi per tahun. Team: {teamMonthly} per bulan dengan {included} kursi termasuk. Tanpa komisi atas penghematan Anda. Satu kursi adalah satu mesin atau identitas layanan yang aktif, bukan orang.",
       "managePlan": "Kelola paket →",
       "subscribe": "Berlangganan →",
       "checkoutMonthly": "Berlangganan — {monthly}/kursi/bln →",
@@ -826,7 +826,7 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Verifikasi Penghematan LLM Anda",
-    "metaDescription": "SDK agar aplikasi Anda membayar penyedia LLM hanya untuk yang dibutuhkan, dan gateway yang mengukur agen kode Anda. Semua dengan penghitung penyedia Anda: ukur gratis, lalu bayar per kursi — tanpa komisi atas penghematan Anda.",
+    "metaDescription": "SDK yang membuat aplikasi Anda membayar penyedia LLM hanya untuk yang dibutuhkan, dan gateway yang mengukur agen coding Anda. Open core Apache-2.0: tanpa kunci, tanpa akun, tanpa telemetri — diukur dengan penghitung penyedia Anda; cloud opsional adalah biaya tetap tanpa komisi atas penghematan Anda.",
     "hero": {
       "title": "Tagihan LLM Anda, terkendali.",
       "titleAccent": "Diukur di setiap panggilan.",
@@ -863,8 +863,8 @@
           "body": "Kami tidak meminta kepercayaan buta. Jumlah terukur memakai penggunaan yang dilaporkan penyedia dan harga terdokumentasi, lalu muncul di SavingsReport Anda. Jumlah yang dinilai berdasarkan referensi dan diestimasi diberi label terpisah; tidak ada yang disajikan sebagai telah direkonsiliasi dengan faktur."
         },
         {
-          "title": "Ukur gratis, lalu bayar per kursi",
-          "body": "Mulailah dengan lisensi Measure yang gratis: lapisan berjalan dalam mode bayangan dan menunjukkan berapa yang akan dihemat pada lalu lintas Anda sendiri. Untuk menyalakan tuasnya, Anda membayar biaya tetap per kursi, atau paket Tim, baik Anda hemat atau tidak — dan tanpa komisi atas penghematan Anda."
+          "title": "Open core: hemat tanpa kunci",
+          "body": "Pasang paketnya dan tuasnya aktif: mode Community menjalankan setiap tuas lokal dengan nol telemetri, dan kunci yang diatur tetapi tidak valid tetap fail-closed. Cloud bersifat opsional: dasbor tim, cache bersama, dan pengelolaan lisensi dengan biaya tetap per kursi — tanpa komisi atas penghematan Anda."
         }
       ],
       "nota": "Animasi ini menggambarkan idenya. Angka sesungguhnya — diukur terhadap penyedia sungguhan — ada tepat di bawah."
@@ -946,19 +946,19 @@
       "eyebrow": "Lima baris untuk memulai",
       "title": "Jalankan di aplikasi Anda sendiri. Prompt Anda tidak pernah menyentuh server kami.",
       "body": "Tempatkan SDK di depan penyedia Anda. Setiap respons membawa SavingsReport lengkap yang bisa Anda grafikkan — angka yang sama yang dibaca dasbor.",
-      "initNote": "<b>Atau biarkan satu perintah menyesuaikannya dengan stack Anda.</b> <code>init</code> membaca <code>package.json</code> Anda (Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, SDK Anthropic, atau SDK OpenAI) lalu mencetak baris instalasi, kode persis untuk adaptor Anda, dan sebuah pemeriksaan yang tidak memakai token: setelah lisensi Anda terpasang, lapisan menjawabnya di mesin Anda tanpa memanggil model. Perintah ini tidak menulis apa pun kecuali Anda memintanya."
+      "initNote": "<b>Atau biarkan satu perintah menyesuaikannya dengan stack Anda.</b> <code>init</code> membaca <code>package.json</code> Anda (Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, SDK Anthropic atau OpenAI) dan mencetak baris instalasi, kode persis untuk adaptor Anda, dan pemeriksaan yang tidak menghabiskan token: tanpa kunci apa pun, lapisan menjawabnya di mesin Anda, tanpa memanggil model. Ia tidak menulis apa pun kecuali Anda memintanya."
     },
     "pricing": {
       "eyebrow": "Paket",
       "title": "Ukur gratis. Bayar per kursi saat Anda menginginkan penghematannya.",
-      "body": "Mulailah dengan Measure: gratis dan tanpa kartu. Lapisan berjalan dalam mode bayangan pada lalu lintas Anda sendiri dan dasbor Anda menunjukkan berapa yang akan dihemat, dinilai dengan penghitung penyedia Anda. Pro dan Tim ditagih per kursi, dalam {currency}, baik Anda hemat atau tidak, dan tanpa komisi atas penghematan Anda.",
+      "body": "Paketnya open core Apache-2.0: tanpa kunci, semua tuas lokal aktif, nol telemetri. Cloud bersifat opsional — Measure adalah paket gratis, Pro dan Team ditagih per kursi, dalam {currency}, tanpa komisi atas penghematan Anda.",
       "amount": "{amount}",
       "per": "/ kursi / bulan",
       "plans": {
         "medir": {
           "name": "Measure",
           "price": "Gratis",
-          "body": "Tanpa kartu. Lapisan dalam mode bayangan untuk satu organisasi, hingga {seats} kursi dan {requests} permintaan per hari: tidak ada yang Anda kirim yang berubah, tidak ada yang dilayani dari cache, tidak pernah menjadi bagian dari komisi apa pun — dan Anda melihat berapa yang akan dihemat. Memerlukan @bivelio/savings-layer {version} atau lebih baru.",
+          "body": "Gratis, tanpa kartu. Paket CLOUD gratis: mode bayangan untuk satu organisasi, hingga {seats} kursi dan {requests} permintaan per hari — tidak ada yang Anda kirim berubah, tidak ada yang dilayani dari cache, tidak pernah menjadi bagian komisi mana pun, dan dasbor Anda menunjukkan berapa yang akan dihemat. Tuas lokal tidak membutuhkannya: open core berjalan tanpa kunci apa pun.",
           "cta": "Mulai gratis →"
         },
         "pro": {
@@ -1010,7 +1010,7 @@
     },
     "footer": {
       "ctaTitle": "Ukur dengan trafik Anda sendiri",
-      "ctaSub": "Setelah terpasang, setiap panggilan mengembalikan SavingsReport-nya, yang terukur dan yang diperkirakan dipisahkan. Mulai gratis dengan Measure (@bivelio/savings-layer {version} atau lebih baru); Pro dan Tim adalah biaya tetap per kursi, tanpa komisi atas penghematan Anda. Lisensi adalah yang memungkinkan Anda menjalankan BV‑SALA — SDK di aplikasi Anda, gateway di terminal Anda.",
+      "ctaSub": "Setelah terpasang, setiap panggilan mengembalikan SavingsReport-nya, terukur dan terestimasi terpisah. Open core tidak butuh kunci: tuasnya berjalan lokal dengan nol telemetri. Cloud opsional mulai gratis dengan Measure dan ditagih per kursi, tanpa komisi atas penghematan Anda.",
       "ctaStart": "Mulai",
       "tagline": "Sistem operasi untuk bisnis Anda. Inilah <b>BV‑SALA</b>, pengoptimal biaya LLM BiVelio yang netral terhadap penyedia — setiap angka terukur diukur terhadap penghitung penyedia; estimasi dan simulasi ditampilkan terpisah, disebut apa adanya, dan tidak pernah ditagih.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1083,7 +1083,7 @@
     "offers": {
       "eyebrow": "Dua produk",
       "title": "Ke mana token Anda pergi: ke aplikasi Anda atau ke agen pemrograman Anda?",
-      "sub": "Keduanya dilisensikan per kursi dan keduanya menghitung dengan penghitung penyedia Anda sendiri. Keduanya mengerjakan tugas yang berbeda, jadi masing-masing membuat janjinya sendiri — dan hari ini hanya satu yang memiliki angka penghematan yang dipublikasikan.",
+      "sub": "Keduanya open core dan keduanya menghitung dengan penghitung penyedia Anda. Pekerjaannya berbeda, jadi masing-masing membuat janjinya sendiri — dan hari ini hanya satu yang punya angka penghematan terpublikasi.",
       "install": "Pemasangan",
       "installMore": "Pemasangan lengkap",
       "sdk": {
@@ -1496,7 +1496,7 @@
     "caseCodeBody": "Dengan langganan, biayanya tetap — tapi berbatas: skill yang sama terpasang dengan satu perintah dan merenggangkan batas mingguan yang sama. Dengan API key ada tagihan token sungguhan — dan meterannya sudah berjalan: tanpa kunci apa pun Anda, “bvsala claude” meluncurkan Claude Code lewat gateway lokal dan pengeluaran Anda muncul di panel, token demi token, tanpa menyentuh satu baris kode. Dengan PRO, pada model Anthropic, gateway juga memindahkan penulisan cache dari TTL satu jam ke TTL lima menit hanya pada giliran ketika porsi besar dari prompt masih baru (giliran pertama sebuah sesi, pemadatan): penghematan yang dihitung dari hitungan token penyedia Anda sendiri, tidak pernah dari estimasi.",
     "caseAppName": "Aplikasi kamu",
     "caseAppSub": "kode kamu + kunci API kamu",
-    "caseAppBody": "Kasus yang menjadi alasan BV‑SALA ada. Aplikasi Anda memanggil API dengan kunci Anda, penyedia menagih setiap token, dan lapisan ini dipasang dalam tiga langkah: paket, lisensi, dan membungkus panggilan. Sejak permintaan pertama ia mengembalikan <b>SavingsReport</b> dengan penghematan, dipisah menjadi terukur dan estimasi.",
+    "caseAppBody": "Kasus yang menjadi alasan BV‑SALA ada. Aplikasi Anda memanggil API dengan kunci Anda, penyedia menagih setiap token, dan lapisan terpasang dalam dua langkah: paket dan membungkus panggilan. Sejak permintaan pertama ia mengembalikan <b>SavingsReport</b> dengan penghematan, terpisah antara terukur dan terestimasi.",
     "verdictNothing": "Tidak ada yang dipasang",
     "verdictSkill": "Skill tersedia",
     "verdictMeasures": "Sudah mengukur",
@@ -1506,7 +1506,7 @@
     "s3Sub": "Produk ini punya dua angka berbeda dan sebaiknya tidak dicampur.",
     "mBeforeK": "Sebelum memasang",
     "mBeforeV": "Estimasi",
-    "mBeforeBody": "Lisensi Measure yang gratis menjalankan lapisan dalam mode bayangan pada lalu lintas Anda sendiri dan menunjukkan berapa yang akan dihemat, permintaan demi permintaan. Tidak mengubah apa pun dan tidak menerapkan apa pun — itulah sebabnya ia berlabel “perkiraan”.",
+    "mBeforeBody": "Paket cloud gratis menjalankan lapisan dalam mode bayangan di atas lalu lintas Anda sendiri dan menunjukkan berapa yang akan dihemat, permintaan demi permintaan. Ia tidak mengubah apa pun dan tidak menerapkan apa pun — karena itu ia membawa label «estimasi». Tidak ada paket sama sekali? Open core: tuas lokal berjalan tanpa kunci dan dengan nol telemetri.",
     "mAfterK": "Setelah memasang",
     "mAfterV": "Pengukuran nyata",
     "mAfterBody": "Setiap panggilan mengembalikan SavingsReport: panggilan yang tidak pernah kamu bayar dan penghematan bersih per permintaan. Dapat diaudit, permintaan demi permintaan, di infrastrukturmu sendiri.",
@@ -1523,17 +1523,17 @@
   },
   "pricingPage": {
     "metaTitle": "Ketentuan harga · BV-SALA",
-    "metaDescription": "Measure gratis, Pro per kursi, Tim dan Enterprise — tidak ada yang membawa komisi atas penghematan Anda. Angka diterbitkan dari konstanta yang sama yang menagih.",
+    "metaDescription": "Open core gratis (Apache-2.0); Measure, Pro, Team, dan Enterprise adalah paket cloud — tidak ada yang membawa komisi atas penghematan Anda. Angka diterbitkan dari konstanta yang sama yang menagih.",
     "eyebrow": "Harga yang diterbitkan",
     "title": "Ketentuan harga",
     "governs": "Halaman ini menjelaskan cara layanan bekerja saat ini; yang mengikat adalah <license>LICENSE</license> dan <terms>Ketentuan BiVelio</terms>.",
-    "lede": "Anda membayar per kursi atau untuk paket Tim, tanpa komisi atas penghematan Anda. Setiap angka di halaman ini dibaca dari kode yang sama yang menagih Anda, jadi berubah ketika harganya berubah.",
+    "lede": "Paketnya open core (Apache-2.0): tanpa kunci. Halaman ini memberi harga pada cloud opsional — Measure gratis, lalu Pro per kursi atau paket Team, tanpa komisi atas penghematan Anda. Setiap angka di halaman ini dibaca dari kode yang sama yang menagih Anda, jadi ia berubah saat harga berubah.",
     "plans": {
       "title": "Paket",
       "intro": "Empat paket, dari yang terkecil hingga terbesar. Pro dan Tim dibayar per kursi dan tidak dikenai komisi.",
       "medir": {
         "name": "Measure",
-        "body": "<b>Gratis, tanpa kartu.</b> Lapisan berjalan dalam mode bayangan untuk satu organisasi, hingga <b>{seats} kursi</b> dan <b>{requests} permintaan per hari</b>: setiap permintaan sampai ke penyedia Anda persis seperti yang Anda buat, tidak ada yang dilayani dari cache dan tidak ada tuas yang diterapkan. Dasbor Anda menunjukkan berapa yang akan dihemat — perkiraan yang tidak pernah membawa komisi. Memerlukan <b>@bivelio/savings-layer {version} atau lebih baru</b>: versi sebelumnya tidak mengenali lisensi Measure. Tuas memerlukan Pro atau Tim."
+        "body": "<b>Gratis, tanpa kartu.</b> Paket CLOUD gratis: lapisan berjalan dalam mode bayangan untuk satu organisasi, hingga <b>{seats} kursi</b> dan <b>{requests} permintaan per hari</b>: setiap permintaan sampai ke penyedia Anda persis seperti yang Anda bangun, tidak ada yang dilayani dari cache, dan tidak ada tuas yang diterapkan. Dasbor Anda menunjukkan berapa yang akan dihemat — estimasi yang tidak pernah membawa komisi. Ia butuh <b>@bivelio/savings-layer {version} atau lebih baru</b>. Tuas lokal tidak butuh paket apa pun: open core berjalan tanpa kunci; tuas cloud butuh Pro atau Team."
       },
       "pro": {
         "name": "Pro",

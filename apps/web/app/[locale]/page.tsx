@@ -66,22 +66,19 @@ const MEDIDO_EN_VIVO = [
 // en la portada (dueño, 2026-10-02). Los números salen
 // de lib/portada/banco-en-vivo.ts, con verja contra sus informes.
 
-// The "integrate" snippet: the same 3-step story as /how-it-works (package →
-// license → wrap the call), with its step headers localized via the shared
-// `howItWorks.snip*` keys. Code tokens stay verbatim; each carries a color
-// class: n = paso (brand, bold), k = keyword (brand), s = string (ámbar),
-// c = comentario (soft), g = resultado (menta).
+// The "integrate" snippet: the open-core 2-step story (package → wrap the
+// call), with its step headers localized via the shared `howItWorks.snip*`
+// keys. Code tokens stay verbatim; each carries a color class: n = paso
+// (brand, bold), k = keyword (brand), s = string (ámbar), c = comentario
+// (soft), g = resultado (menta).
 type TokenCls = "c" | "k" | "s" | "n" | "g";
 function lineasDelSnippet(th: (k: string) => string): { cls?: TokenCls; v: string }[][] {
   return [
     [{ cls: "n", v: `# 1 · ${th("snip1")}` }],
     [{ v: "pnpm add " }, { cls: "s", v: "@bivelio/savings-layer" }],
     [],
-    [{ cls: "n", v: `# 2 · ${th("snip2")}` }],
-    [{ v: "export " }, { cls: "s", v: "BIVELIO_LICENSE_KEY" }, { v: "=…" }],
-    [],
-    [{ cls: "n", v: `# 3 · ${th("snip3")}` }],
-    [{ cls: "k", v: "const" }, { v: " layer = createSavingsLayer({ provider, licenseKey, … });" }],
+    [{ cls: "n", v: `# 2 · ${th("snip3")}` }],
+    [{ cls: "k", v: "const" }, { v: " layer = createSavingsLayer({ provider });" }],
     [
       { cls: "k", v: "const" },
       { v: " { text, report } = " },

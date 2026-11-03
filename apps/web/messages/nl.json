@@ -64,7 +64,7 @@
     "createAnAccount": "Een account aanmaken",
     "backToVerifier": "← Terug naar de startpagina",
     "createYourAccount": "Maak je account aan",
-    "signupSubtitle": "Eén BiVelio-account voor de hele suite. Maak er een aan om je te abonneren en je licentiesleutel te krijgen.",
+    "signupSubtitle": "Eén BiVelio-account voor de hele suite. Maak het aan voor de cloud: dashboard, gedeelde caches en licentiebeheer. Het pakket zelf heeft geen account nodig — open core draait zonder sleutel.",
     "alreadyHaveAccount": "Heb je al een BiVelio-account?",
     "signIn": "Inloggen",
     "workEmail": "Zakelijk e-mailadres",
@@ -104,7 +104,7 @@
       "network": "Geen verbinding. Controleer je netwerk en probeer het opnieuw.",
       "missingFields": "Vul je e-mailadres en wachtwoord in."
     },
-    "signupMedir": "Of begin gratis met Meten: zonder kaart, in schaduwmodus, tot {seats} seats en {requests} verzoeken per dag. Vereist @bivelio/savings-layer {version} of nieuwer."
+    "signupMedir": "Of start gratis met Measure: het gratis cloud-plan, zonder kaart, schaduwmodus, tot {seats} seats en {requests} verzoeken per dag. Het vereist @bivelio/savings-layer {version} of nieuwer."
   },
   "dashboard": {
     "overview": {
@@ -468,7 +468,7 @@
       "personalNote": "Persoonlijk — nog geen organisatie gekoppeld. Eén BiVelio-account, gedeeld over de hele suite.",
       "plan": "abonnement",
       "seatsCount": "{count, plural, one {# seat} other {# seats}}.",
-      "planBody": "BV-SALA is fail-closed — het draait alleen met een actieve licentie. Pro: {monthly} per seat per maand of {yearly} per seat per jaar. Team: {teamMonthly} per maand met {included} seats inbegrepen. Geen commissie op je besparing. Een seat is een actieve machine of service-identiteit, geen persoon.",
+      "planBody": "BV-SALA is open core — zonder sleutel draait het in de Community-modus; een ingestelde maar ongeldige sleutel blijft fail-closed. De cloud voegt het dashboard, gedeelde caches en org-rechten toe. Pro: {monthly} per seat per maand of {yearly} per seat per jaar. Team: {teamMonthly} per maand met {included} seats inbegrepen. Geen commissie op je besparing. Een seat is een actieve machine of service-identiteit, geen persoon.",
       "managePlan": "Abonnement beheren →",
       "subscribe": "Abonneren →",
       "checkoutMonthly": "Abonneren — {monthly}/seat/mnd →",
@@ -826,7 +826,7 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Verifieer je LLM-besparingen",
-    "metaDescription": "Een SDK waarmee je app de LLM-provider alleen betaalt wat hij nodig heeft, en een gateway die je codeeragent meet. Geteld met de teller van je provider: meet gratis en betaal daarna per seat — zonder commissie op je besparing.",
+    "metaDescription": "Een SDK die jouw app de LLM-provider alleen laat betalen voor wat ze nodig heeft, en een gateway die je coding-agent meet. Apache-2.0 open core: geen sleutel, geen account, geen telemetrie — gemeten met de teller van je provider; de optionele cloud is een vast bedrag zonder commissie op je besparing.",
     "hero": {
       "title": "Je LLM-factuur, onder controle.",
       "titleAccent": "Gemeten bij elke aanroep.",
@@ -863,8 +863,8 @@
           "body": "We vragen geen blind vertrouwen. Gemeten bedragen gebruiken het door de aanbieder gemelde gebruik en gedocumenteerde prijzen, en verschijnen in je SavingsReport. Via referentie gewaardeerde en geschatte bedragen krijgen een apart label; geen daarvan wordt als met een factuur afgestemd gepresenteerd."
         },
         {
-          "title": "Meet gratis, betaal daarna per seat",
-          "body": "Begin met de gratis Meten-licentie: de laag draait in schaduwmodus en laat zien wat hij met je eigen verkeer bespaard zou hebben. Om de hendels aan te zetten betaal je een vaste vergoeding per seat, of een Team-abonnement, of je nu bespaart of niet — en geen commissie op je besparing."
+          "title": "Open core: bespaart zonder sleutels",
+          "body": "Installeer het pakket en de hendels staan aan: de Community-modus zet elke lokale hendel aan met nul telemetrie, en een ingestelde maar ongeldige sleutel blijft fail-closed. De cloud is optioneel: teamdashboard, gedeelde caches en licentiebeheer voor een vast bedrag per seat — en geen commissie op je besparing."
         }
       ],
       "nota": "De animaties illustreren het idee. De echte cijfers — gemeten tegen echte aanbieders — staan er direct onder."
@@ -946,19 +946,19 @@
       "eyebrow": "Vijf regels om te beginnen",
       "title": "Draai het in je eigen app. Je prompts raken nooit onze servers.",
       "body": "Plaats de SDK vóór je provider. Elke respons bevat een volledig SavingsReport dat je kunt uitzetten in grafieken — dezelfde cijfers die het dashboard leest.",
-      "initNote": "<b>Of laat één commando het op je stack afstemmen.</b> <code>init</code> leest je <code>package.json</code> (Next.js, Express, de Vercel AI SDK, Mastra, LangChain.js, de Anthropic- of de OpenAI-SDK) en drukt de installatieregel af, de exacte code voor je adapter en een controle die geen tokens kost: zodra je licentie erin staat, beantwoordt de laag die op je eigen machine, zonder het model aan te roepen. Het schrijft niets, tenzij je erom vraagt."
+      "initNote": "<b>Of laat één commando het aan je stack aanpassen.</b> <code>init</code> leest je <code>package.json</code> (Next.js, Express, het Vercel AI SDK, Mastra, LangChain.js, de Anthropic- of de OpenAI-SDK) en print de installatieregel, de exacte code voor je adapter en een check die geen tokens kost: zonder enige sleutel beantwoordt de laag hem op je machine, zonder het model te roepen. Ze schrijft niets tenzij je het vraagt."
     },
     "pricing": {
       "eyebrow": "Abonnementen",
       "title": "Meet gratis. Betaal per seat wanneer je de besparing wilt.",
-      "body": "Begin met Meten: gratis en zonder kaart. De laag draait in schaduwmodus op je eigen verkeer en je dashboard laat zien wat hij bespaard zou hebben, gewaardeerd met de teller van je provider. Pro en Team worden per seat gefactureerd, in {currency}, of je nu bespaart of niet, en dragen geen commissie op je besparing.",
+      "body": "Het pakket is Apache-2.0 open core: geen sleutel nodig, alle lokale hendels aan, nul telemetrie. De cloud is optioneel — Measure is het gratis plan, Pro en Team worden per seat gefactureerd, in {currency}, zonder commissie op je besparing.",
       "amount": "{amount}",
       "per": "/ seat / maand",
       "plans": {
         "medir": {
           "name": "Meten",
           "price": "Gratis",
-          "body": "Zonder kaart. De laag in schaduwmodus voor één organisatie, tot {seats} seats en {requests} verzoeken per dag: niets van wat je verstuurt verandert, niets komt uit de cache, het telt nooit mee voor een commissie — en je ziet wat hij bespaard zou hebben. Vereist @bivelio/savings-layer {version} of nieuwer.",
+          "body": "Gratis, zonder kaart. Het gratis CLOUD-plan: schaduwmodus voor één organisatie, tot {seats} seats en {requests} verzoeken per dag — niets van wat je stuurt verandert, niets komt uit de cache, nooit deel van enige commissie, en je dashboard toont wat het bespaard zou hebben. De lokale hendels hebben het niet nodig: open core draait zonder enige sleutel.",
           "cta": "Gratis beginnen →"
         },
         "pro": {
@@ -1010,7 +1010,7 @@
     },
     "footer": {
       "ctaTitle": "Meet het op je eigen verkeer",
-      "ctaSub": "Eenmaal geïnstalleerd geeft elke aanroep zijn SavingsReport terug, gemeten en geschat gescheiden. Begin gratis met Meten (@bivelio/savings-layer {version} of nieuwer); Pro en Team zijn een vaste vergoeding per seat, zonder commissie op je besparing. De licentie is wat je BV‑SALA laat draaien — de SDK in je app, de gateway in je terminal.",
+      "ctaSub": "Eenmaal geïnstalleerd levert elke aanroep zijn SavingsReport, met gemeten en geschat gescheiden. Open core heeft geen sleutel nodig: de hendels draaien lokaal met nul telemetrie. De optionele cloud start gratis met Measure en wordt per seat gefactureerd, zonder commissie op je besparing.",
       "ctaStart": "Aan de slag",
       "tagline": "Het besturingssysteem voor je bedrijf. Dit is <b>BV‑SALA</b>, BiVelio's aanbieder-neutrale LLM-kostenoptimalisator — elk gemeten cijfer is gemeten tegen de teller van de aanbieder; schattingen en simulaties worden apart getoond, als zodanig benoemd, en nooit gefactureerd.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1083,7 +1083,7 @@
     "offers": {
       "eyebrow": "Twee producten",
       "title": "Waar gaan je tokens heen: naar je app of naar je coding-agent?",
-      "sub": "Beide worden per seat gelicentieerd en beide tellen met de eigen teller van je aanbieder. Ze doen verschillend werk, dus elk doet zijn eigen belofte — en vandaag heeft er maar één een gepubliceerd besparingscijfer.",
+      "sub": "Beide zijn open core en beide tellen met de teller van je provider. Ze doen verschillend werk, dus elk doet zijn eigen belofte — en vandaag heeft er maar één een gepubliceerd besparingscijfer.",
       "install": "Installatie",
       "installMore": "Volledige installatie",
       "sdk": {
@@ -1496,7 +1496,7 @@
     "caseCodeBody": "Met een abonnement is het tarief vast — maar begrensd: dezelfde skill installeert met één commando en rekt dezelfde weeklimiet op. Met een API-sleutel is er een echte tokenfactuur — en de meter loopt al: zonder sleutels start “bvsala claude” Claude Code via de lokale gateway en je uitgaven verschijnen in het paneel, token voor token, zonder één regel code aan te raken. Met PRO zet hij op Anthropic-modellen bovendien cache-schrijfacties om van de TTL van een uur naar die van vijf minuten, alleen in beurten waarin een groot deel van de prompt nieuw is (de eerste beurt van een sessie, een compactie): een besparing berekend op de tokentelling van je eigen provider, nooit op een schatting.",
     "caseAppName": "Jouw applicatie",
     "caseAppSub": "jouw code + jouw API-sleutel",
-    "caseAppBody": "Het geval waarvoor BV‑SALA bestaat. Je app roept de API aan met je sleutel, de aanbieder factureert elk token, en de laag wordt in drie stappen geïnstalleerd: pakket, licentie en het omhullen van de aanroep. Vanaf het eerste verzoek geeft hij een <b>SavingsReport</b> terug met de besparing, gesplitst in gemeten en geschat.",
+    "caseAppBody": "Het geval waarvoor BV‑SALA bestaat. Je app roept de API met je sleutel, de provider factureert elke token, en de laag installeert zich in twee stappen: het pakket en de aanroep omhullen. Vanaf het eerste verzoek levert ze een <b>SavingsReport</b> met de besparing, gesplitst in gemeten en geschat.",
     "verdictNothing": "Niets te installeren",
     "verdictSkill": "Skill beschikbaar",
     "verdictMeasures": "Meet al",
@@ -1506,7 +1506,7 @@
     "s3Sub": "Het product heeft twee verschillende cijfers, en die kun je beter niet mengen.",
     "mBeforeK": "Vóór installatie",
     "mBeforeV": "Schatting",
-    "mBeforeBody": "De gratis Meten-licentie draait de laag in schaduwmodus op je eigen verkeer en laat zien wat hij bespaard zou hebben, verzoek voor verzoek. Hij verandert niets en past niets toe — daarom draagt hij het label ‘schatting’.",
+    "mBeforeBody": "Het gratis cloud-plan draait de laag in schaduwmodus over je eigen verkeer en toont wat ze bespaard zou hebben, verzoek voor verzoek. Ze verandert niets en past niets toe — daarom draagt ze het «schatting»-label. Helemaal geen plan? Open core: de lokale hendels draaien zonder sleutel en met nul telemetrie.",
     "mAfterK": "Na installatie",
     "mAfterV": "Echte meting",
     "mAfterBody": "Elke aanroep levert een SavingsReport: de aanroepen die je nooit betaalde en de nettobesparing per verzoek. Controleerbaar, verzoek voor verzoek, op je eigen infrastructuur.",
@@ -1523,17 +1523,17 @@
   },
   "pricingPage": {
     "metaTitle": "Prijsvoorwaarden · BV-SALA",
-    "metaDescription": "Meten gratis, Pro per seat, Team en Enterprise — geen van alle draagt commissie op je besparing. Cijfers gepubliceerd uit dezelfde constanten die factureren.",
+    "metaDescription": "Open core is gratis (Apache-2.0); Measure, Pro, Team en Enterprise zijn de cloud-plannen — geen ervan draagt een commissie op je besparing. Cijfers gepubliceerd vanuit dezelfde constanten die factureren.",
     "eyebrow": "Gepubliceerde prijzen",
     "title": "Prijsvoorwaarden",
     "governs": "Deze pagina beschrijft hoe de dienst vandaag werkt; de <license>LICENSE</license> en de <terms>BiVelio-voorwaarden</terms> zijn leidend.",
-    "lede": "Je betaalt per seat of voor een Team-abonnement, zonder commissie op je besparing. Elk cijfer op deze pagina wordt gelezen uit dezelfde code die je factureert, dus het verandert als de prijs verandert.",
+    "lede": "Het pakket is open core (Apache-2.0): geen sleutel nodig. Deze pagina prijst de optionele cloud — Measure gratis, daarna Pro per seat of een Team-plan, zonder commissie op je besparing. Elk cijfer hier komt uit dezelfde code die je factureert, en verandert als de prijs verandert.",
     "plans": {
       "title": "Plannen",
       "intro": "Vier plannen, van klein naar groot. Pro en Team betaal je per seat en hebben geen commissie.",
       "medir": {
         "name": "Meten",
-        "body": "<b>Gratis, zonder kaart.</b> De laag draait in schaduwmodus voor één organisatie, tot <b>{seats} seats</b> en <b>{requests} verzoeken per dag</b>: elk verzoek bereikt je provider precies zoals je het bouwde, niets komt uit de cache en er wordt geen hendel toegepast. Je dashboard laat zien wat hij bespaard zou hebben — een schatting die nooit commissie draagt. Vereist <b>@bivelio/savings-layer {version} of nieuwer</b>: eerdere versies herkennen de Meten-licentie niet. De hendels vragen Pro of Team."
+        "body": "<b>Gratis, zonder kaart.</b> Het gratis CLOUD-plan: de laag draait in schaduwmodus voor één organisatie, tot <b>{seats} seats</b> en <b>{requests} verzoeken per dag</b>: elk verzoek bereikt je provider precies zoals je het bouwde, niets komt uit de cache en geen hendel wordt toegepast. Je dashboard toont wat het bespaard zou hebben — een schatting die nooit een commissie draagt. Het vereist <b>@bivelio/savings-layer {version} of nieuwer</b>. De lokale hendels hebben geen enkel plan nodig: open core draait zonder sleutel; de cloud-hendels vereisen Pro of Team."
       },
       "pro": {
         "name": "Pro",

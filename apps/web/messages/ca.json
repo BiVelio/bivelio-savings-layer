@@ -64,7 +64,7 @@
     "createAnAccount": "Crea un compte",
     "backToVerifier": "← Torna a l'inici",
     "createYourAccount": "Crea el teu compte",
-    "signupSubtitle": "Un sol compte de BiVelio per a tota la suite. Crea'l per subscriure't i obtenir la teva clau de llicència.",
+    "signupSubtitle": "Un compte BiVelio per a tota la suite. Crea'l per fer servir el núvol: tauler, memòries cau compartides i gestió de llicències. El paquet no necessita compte — l'open core corre sense clau.",
     "alreadyHaveAccount": "Ja tens un compte de BiVelio?",
     "signIn": "Inicia la sessió",
     "workEmail": "Correu de la feina",
@@ -104,7 +104,7 @@
       "network": "Sense connexió. Comprova la xarxa i torna-ho a intentar.",
       "missingFields": "Escriu el teu correu i la contrasenya."
     },
-    "signupMedir": "O comença gratis amb Mesurar: sense targeta, en mode ombra, fins a {seats} seients i {requests} peticions al dia. Requereix @bivelio/savings-layer {version} o posterior."
+    "signupMedir": "O comença gratis amb Measure: el pla de núvol gratuït, sense targeta, mode ombra, fins a {seats} seients i {requests} peticions al dia. Necessita @bivelio/savings-layer {version} o posterior."
   },
   "dashboard": {
     "overview": {
@@ -468,7 +468,7 @@
       "personalNote": "Personal: encara no hi ha cap organització vinculada. Un sol compte de BiVelio, compartit a tota la suite.",
       "plan": "pla",
       "seatsCount": "{count, plural, one {# seient} other {# seients}}.",
-      "planBody": "BV-SALA és fail-closed: només funciona amb una llicència activa. Pro: {monthly} per seient al mes o {yearly} per seient a l’any. Equip: {teamMonthly} al mes amb {included} seients inclosos. Sense comissió sobre el teu estalvi. Un seient és una màquina o identitat de servei activa, no una persona.",
+      "planBody": "BV-SALA és open core — sense clau corre en mode Community; una clau posada però invàlida continua fail-closed. El núvol afegeix el tauler, les memòries cau compartides i els entitlements de l'org. Pro: {monthly} per seient al mes o {yearly} per seient a l'any. Team: {teamMonthly} al mes amb {included} seients inclosos. Sense comissió sobre el teu estalvi. Un seient és una màquina o identitat de servei activa, no una persona.",
       "managePlan": "Gestiona el pla →",
       "subscribe": "Subscriu-te →",
       "checkoutMonthly": "Subscriu-t'hi — {monthly}/seient/mes →",
@@ -826,7 +826,7 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Verifica el teu estalvi en LLM",
-    "metaDescription": "Un SDK perquè la teva app pagui al proveïdor de LLM només el que necessita, i un gateway que mesura el teu agent de codi. Tot amb el comptador del teu proveïdor: mesura gratis i després paga per seient, sense comissió sobre el teu estalvi.",
+    "metaDescription": "Un SDK que fa que la teva app pagui al proveïdor d'LLM només pel que necessita, i un gateway que mesura el teu agent de codi. Open core Apache-2.0: sense claus, sense registre, sense telemetria — mesurat amb el comptador del teu proveïdor; el núvol opcional és una quota fixa sense comissió sobre el teu estalvi.",
     "hero": {
       "title": "La teva factura de LLM, sota control.",
       "titleAccent": "Mesurada a cada crida.",
@@ -863,8 +863,8 @@
           "body": "No et demanem fe. Els imports mesurats usen l'ús reportat pel proveïdor i preus documentats, i apareixen al teu SavingsReport. Els imports valorats per referència i els estimats s'etiqueten a part; cap es presenta com a conciliat amb una factura."
         },
         {
-          "title": "Mesura gratis i després paga per seient",
-          "body": "Comença amb la llicència Mesurar, gratuïta: la capa funciona en mode ombra i et mostra el que hauria estalviat amb el teu propi trànsit. Per activar les palanques pagues una quota fixa per seient, o un pla d’Equip, tant si estalvies com si no, i sense comissió sobre el teu estalvi."
+          "title": "Open core: estalvia sense claus",
+          "body": "Instal·la el paquet i les palanques estan enceses: el mode Community corre cada palanca local amb zero telemetria, i una clau posada però invàlida continua fail-closed. El núvol és opcional: tauler d'equip, memòries cau compartides i gestió de llicències per una quota fixa per seient, estalviïs o no — i sense comissió sobre el teu estalvi."
         }
       ],
       "nota": "Les animacions il·lustren la idea. Les xifres de debò — mesurades contra proveïdors reals — són just a sota."
@@ -946,19 +946,19 @@
       "eyebrow": "Cinc línies per començar",
       "title": "Executa'l a la teva pròpia app. Els teus prompts mai no toquen els nostres servidors.",
       "body": "Col·loca el SDK davant del teu proveïdor. Cada resposta porta un SavingsReport complet que pots representar en gràfics — les mateixes xifres que llegeix el tauler.",
-      "initNote": "<b>O deixa que una ordre ho adapti a la teva pila.</b> <code>init</code> llegeix el teu <code>package.json</code> (Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, l'SDK d'Anthropic o el d'OpenAI) i imprimeix la línia d'instal·lació, el codi exacte del teu adaptador i una comprovació que no gasta tokens: amb la teva llicència ja posada, la respon la capa a la teva màquina, sense cridar el model. No escriu res si no li ho demanes."
+      "initNote": "<b>O deixa que una ordre ho adapti al teu stack.</b> <code>init</code> llegeix el teu <code>package.json</code> (Next.js, Express, el Vercel AI SDK, Mastra, LangChain.js, l'SDK d'Anthropic o el d'OpenAI) i imprimeix la línia d'instal·lació, el codi exacte per al teu adaptador i una comprovació que no gasta tokens: sense cap clau, la capa la respon a la teva màquina, sense cridar el model. No escriu res si no ho demanes."
     },
     "pricing": {
       "eyebrow": "Plans",
       "title": "Mesura gratis. Paga per seient quan vulguis l’estalvi.",
-      "body": "Comença amb Mesurar: gratis i sense targeta. La capa funciona en mode ombra amb el teu propi trànsit i el teu panell mostra el que hauria estalviat, valorat amb el comptador del teu proveïdor. Pro i Equip es cobren per seient, en {currency}, tant si estalvies com si no, i no porten comissió sobre el teu estalvi.",
+      "body": "El paquet és open core Apache-2.0: sense claus, totes les palanques locals enceses, zero telemetria. El núvol és opcional — Measure és el pla gratuït, Pro i Team es facturen per seient, en {currency}, estalviïs o no, i sense comissió sobre el teu estalvi.",
       "amount": "{amount}",
       "per": "/ seient / mes",
       "plans": {
         "medir": {
           "name": "Mesurar",
           "price": "Gratis",
-          "body": "Sense targeta. La capa en mode ombra per a una organització, fins a {seats} seients i {requests} peticions al dia: res del que envies canvia, res no se serveix de la memòria cau, mai no forma part de cap comissió, i veus el que hauria estalviat. Requereix @bivelio/savings-layer {version} o posterior.",
+          "body": "Gratis, sense targeta. El pla de NÚVOL gratuït: mode ombra per a una organització, fins a {seats} seients i {requests} peticions al dia — res del que envies canvia, res se serveix de la memòria cau, mai entra en cap comissió, i el teu tauler mostra què hauria estalviat. Les palanques locals no el necessiten: l'open core corre sense cap clau.",
           "cta": "Comença gratis →"
         },
         "pro": {
@@ -1010,7 +1010,7 @@
     },
     "footer": {
       "ctaTitle": "Mesura-ho amb el teu propi trànsit",
-      "ctaSub": "Un cop instal·lat, cada crida retorna el seu SavingsReport, amb el mesurat i l’estimat per separat. Comença gratis amb Mesurar (@bivelio/savings-layer {version} o posterior); Pro i Equip són una quota fixa per seient, sense comissió sobre el teu estalvi. La llicència és el que et deixa executar BV‑SALA: l’SDK a la teva app, el gateway al teu terminal.",
+      "ctaSub": "Un cop instal·lat, cada trucada retorna el seu SavingsReport, amb el mesurat i l'estimat separats. L'open core no necessita claus: les palanques corren en local amb zero telemetria. El núvol opcional comença gratis amb Measure i es factura per seient, sense comissió sobre el teu estalvi.",
       "ctaStart": "Comença",
       "tagline": "El sistema operatiu per al teu negoci. Això és <b>BV‑SALA</b>, l'optimitzador de cost de LLM neutral respecte al proveïdor de BiVelio — cada xifra mesurada ho és contra el comptador del proveïdor; l'estimat i el simulat es mostren a part, dits com a tals, i mai no es facturen.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1083,7 +1083,7 @@
     "offers": {
       "eyebrow": "Dos productes",
       "title": "On van els teus tokens: a la teva app o al teu agent de codi?",
-      "sub": "Tots dos es llicencien per seient i tots dos compten amb el comptador del teu proveïdor. Fan feines diferents, així que cadascun fa la seva pròpia promesa, i avui només un té una xifra d'estalvi publicada.",
+      "sub": "Tots dos són open core i tots dos compten amb el comptador del teu proveïdor. Fan feines diferents, així que cadascun fa la seva pròpia promesa — i avui només un té una xifra d'estalvi publicada.",
       "install": "Instal·lació",
       "installMore": "Instal·lació completa",
       "sdk": {
@@ -1496,7 +1496,7 @@
     "caseCodeBody": "Amb subscripció la quota és fixa — però amb topalls: el mateix skill s'instal·la amb una sola ordre i estira el mateix topall setmanal. Amb clau d'API hi ha una factura per tokens real — i el mesurador ja està en marxa: sense cap clau, «bvsala claude» llança Claude Code a través del gateway local i la teva despesa apareix al panell, token a token, sense tocar una línia de codi. Amb PRO, en models d'Anthropic, passa a més les escriptures de la memòria cau del TTL d'una hora al de cinc minuts només en els torns en què una part gran del prompt és nova (el primer d'una sessió, una compactació): un estalvi calculat sobre el recompte de tokens del teu propi proveïdor, mai sobre una estimació.",
     "caseAppName": "La teva aplicació",
     "caseAppSub": "el teu codi + la teva clau d'API",
-    "caseAppBody": "El cas per al qual existeix BV‑SALA. La teva app crida l'API amb la teva clau, el proveïdor factura cada token, i la capa s'instal·la en tres passos: paquet, llicència i embolcallar la crida. Des de la primera petició retorna un <b>SavingsReport</b> amb l'estalvi, separat en mesurat i estimat.",
+    "caseAppBody": "El cas per al qual existeix BV‑SALA. La teva app crida l'API amb la teva clau, el proveïdor factura cada token, i la capa s'instal·la en dos passos: el paquet i embolicar la trucada. Des de la primera petició retorna un <b>SavingsReport</b> amb l'estalvi, separat en mesurat i estimat.",
     "verdictNothing": "Res a instal·lar",
     "verdictSkill": "Skill disponible",
     "verdictMeasures": "Ja mesura",
@@ -1506,7 +1506,7 @@
     "s3Sub": "El producte té dues xifres diferents i convé no barrejar-les.",
     "mBeforeK": "Abans d'instal·lar",
     "mBeforeV": "Estimació",
-    "mBeforeBody": "La llicència Mesurar, gratuïta, executa la capa en mode ombra amb el teu propi trànsit i et mostra el que hauria estalviat, petició a petició. No canvia res ni aplica res: per això porta l’etiqueta «estimació».",
+    "mBeforeBody": "El pla de núvol gratuït executa la capa en mode ombra sobre el teu propi trànsit i mostra què hauria estalviat, petició a petició. No canvia res i no aplica res — per això porta l'etiqueta d'«estimació». Sense pla? Open core: les palanques locals corren sense clau i amb zero telemetria.",
     "mAfterK": "Després d'instal·lar",
     "mAfterV": "Mesurament real",
     "mAfterBody": "Cada crida retorna un SavingsReport: les crides que mai no vas pagar i l'estalvi net per petició. Auditable, petició a petició, a la teva pròpia infraestructura.",
@@ -1523,17 +1523,17 @@
   },
   "pricingPage": {
     "metaTitle": "Termes de preu · BV-SALA",
-    "metaDescription": "Mesurar gratis, Pro per seient, Equip i Enterprise: cap no porta comissió sobre el teu estalvi. Xifres publicades des de les mateixes constants que cobren.",
+    "metaDescription": "L'open core és gratuït (Apache-2.0); Measure, Pro, Team i Enterprise són els plans de núvol — cap no porta comissió sobre el teu estalvi. Xifres publicades des de les mateixes constants que facturen.",
     "eyebrow": "Preus publicats",
     "title": "Termes de preu",
     "governs": "Aquesta pàgina descriu com funciona el servei avui; regeixen la <license>LICENSE</license> i els <terms>Termes de BiVelio</terms>.",
-    "lede": "Pagues per seient o per un pla d’equip, sense comissió sobre el teu estalvi. Cada xifra que veus aquí es llegeix del mateix codi que et cobra, així que canvia quan canvia el preu.",
+    "lede": "El paquet és open core (Apache-2.0): no necessita claus. Aquesta pàgina posa preu al núvol opcional — Measure gratuït, després Pro per seient o un pla Team, sense comissió sobre el teu estalvi. Cada xifra d'aquesta pàgina es llegeix del mateix codi que et factura, així que canvia quan canvia el preu.",
     "plans": {
       "title": "Plans",
       "intro": "Quatre plans, de menys a més. Pro i Equip es paguen per seient i no porten comissió.",
       "medir": {
         "name": "Mesurar",
-        "body": "<b>Gratis i sense targeta.</b> La capa funciona en mode ombra per a una organització, fins a <b>{seats} seients</b> i <b>{requests} peticions al dia</b>: cada petició arriba al teu proveïdor tal com la vas construir, no se serveix res de la memòria cau i no s’aplica cap palanca. El teu panell mostra el que hauria estalviat: una estimació que mai no porta comissió. Requereix <b>@bivelio/savings-layer {version} o posterior</b>: les versions anteriors no reconeixen la llicència Mesurar. Les palanques necessiten Pro o Equip."
+        "body": "<b>Gratis, sense targeta.</b> El pla de NÚVOL gratuït: la capa corre en mode ombra per a una organització, fins a <b>{seats} seients</b> i <b>{requests} peticions al dia</b>: cada petició arriba al teu proveïdor exactament com la vas construir, res se serveix de la memòria cau i cap palanca s'aplica. El teu tauler mostra què hauria estalviat — una estimació que mai no porta comissió. Necessita <b>@bivelio/savings-layer {version} o posterior</b>. Les palanques locals no necessiten cap pla: l'open core corre sense clau; les palanques de núvol necessiten Pro o Team."
       },
       "pro": {
         "name": "Pro",

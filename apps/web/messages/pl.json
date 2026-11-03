@@ -64,7 +64,7 @@
     "createAnAccount": "Załóż konto",
     "backToVerifier": "← Powrót na stronę główną",
     "createYourAccount": "Załóż konto",
-    "signupSubtitle": "Jedno konto BiVelio w całym pakiecie. Załóż je, aby wykupić subskrypcję i otrzymać klucz licencyjny.",
+    "signupSubtitle": "Jedno konto BiVelio dla całej suity. Załóż je, by korzystać z chmury: panel, współdzielone pamięci podręczne i zarządzanie licencjami. Sam pakiet nie wymaga konta — open core działa bez klucza.",
     "alreadyHaveAccount": "Masz już konto BiVelio?",
     "signIn": "Zaloguj się",
     "workEmail": "Służbowy e-mail",
@@ -104,7 +104,7 @@
       "network": "Brak połączenia. Sprawdź sieć i spróbuj ponownie.",
       "missingFields": "Wpisz e-mail i hasło."
     },
-    "signupMedir": "Albo zacznij za darmo od Pomiaru: bez karty, w trybie cienia, do {seats} stanowisk i {requests} zapytań dziennie. Wymaga @bivelio/savings-layer {version} lub nowszego."
+    "signupMedir": "Albo zacznij za darmo z Measure: darmowy plan chmurowy, bez karty, tryb cienia, do {seats} stanowisk i {requests} żądań dziennie. Wymaga @bivelio/savings-layer {version} lub nowszej."
   },
   "dashboard": {
     "overview": {
@@ -468,7 +468,7 @@
       "personalNote": "Osobiste — brak powiązanej organizacji. Jedno konto BiVelio, współdzielone w całym pakiecie.",
       "plan": "plan",
       "seatsCount": "{count, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}.",
-      "planBody": "BV-SALA jest fail-closed — działa tylko z aktywną licencją. Pro: {monthly} za stanowisko miesięcznie lub {yearly} za stanowisko rocznie. Zespół: {teamMonthly} miesięcznie z {included} stanowiskami w cenie. Bez prowizji od oszczędności. Stanowisko to aktywna maszyna lub tożsamość usługi, nie osoba.",
+      "planBody": "BV-SALA to open core — bez klucza działa w trybie Community; ustawiony, ale nieprawidłowy klucz nadal działa fail-closed. Chmura dodaje panel, współdzielone pamięci podręczne i uprawnienia organizacji. Pro: {monthly} za stanowisko miesięcznie lub {yearly} za stanowisko rocznie. Team: {teamMonthly} miesięcznie z {included} stanowiskami w cenie. Bez prowizji od Twoich oszczędności. Stanowisko to aktywna maszyna lub tożsamość usługi, nie osoba.",
       "managePlan": "Zarządzaj planem →",
       "subscribe": "Subskrybuj →",
       "checkoutMonthly": "Subskrybuj — {monthly}/stanowisko/mies. →",
@@ -826,7 +826,7 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Zweryfikuj swoje oszczędności na LLM",
-    "metaDescription": "SDK, dzięki któremu Twoja aplikacja płaci dostawcy LLM tylko za to, czego potrzebuje, i gateway, który mierzy Twojego agenta kodu. Wszystko licznikiem Twojego dostawcy: mierz za darmo, potem płać za stanowisko — bez prowizji od oszczędności.",
+    "metaDescription": "SDK, który sprawia, że Twoja aplikacja płaci dostawcy LLM tylko za to, czego potrzebuje, oraz bramka mierząca Twojego agenta kodowania. Open core Apache-2.0: bez kluczy, bez konta, bez telemetrii — mierzone licznikiem Twojego dostawcy; opcjonalna chmura to stała opłata bez prowizji od Twoich oszczędności.",
     "hero": {
       "title": "Twoja faktura za LLM, pod kontrolą.",
       "titleAccent": "Mierzona przy każdym wywołaniu.",
@@ -863,8 +863,8 @@
           "body": "Nie prosimy o ślepe zaufanie. Zmierzone kwoty korzystają z użycia raportowanego przez dostawcę i udokumentowanych cen, i trafiają do Twojego SavingsReport. Kwoty wycenione przez odniesienie i oszacowane są oznaczane osobno; żadna nie jest przedstawiana jako uzgodniona z fakturą."
         },
         {
-          "title": "Mierz za darmo, potem płać za stanowisko",
-          "body": "Zacznij od bezpłatnej licencji Pomiar: warstwa działa w trybie cienia i pokazuje, ile zaoszczędziłaby na Twoim własnym ruchu. Aby włączyć dźwignie, płacisz stałą opłatę za stanowisko albo plan Zespół, niezależnie od tego, czy oszczędzasz — i bez prowizji od oszczędności."
+          "title": "Open core: oszczędza bez kluczy",
+          "body": "Zainstaluj pakiet i dźwignie są włączone: tryb Community uruchamia każdą lokalną dźwignię z zerową telemetrią, a ustawiony, ale nieprawidłowy klucz nadal działa fail-closed. Chmura jest opcjonalna: panel zespołu, współdzielone pamięci podręczne i zarządzanie licencjami za stałą opłatą za stanowisko — bez prowizji od Twoich oszczędności."
         }
       ],
       "nota": "Animacje ilustrują pomysł. Prawdziwe liczby — zmierzone u prawdziwych dostawców — są tuż poniżej."
@@ -946,19 +946,19 @@
       "eyebrow": "Pięć linijek na start",
       "title": "Uruchom to w swojej własnej aplikacji. Twoje prompty nigdy nie dotykają naszych serwerów.",
       "body": "Umieść SDK przed swoim dostawcą. Każda odpowiedź niesie pełny SavingsReport, który możesz przedstawić na wykresie — te same liczby, które odczytuje panel.",
-      "initNote": "<b>Albo pozwól, by jedno polecenie dopasowało to do Twojego stosu.</b> <code>init</code> czyta Twój <code>package.json</code> (Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, SDK Anthropic lub OpenAI) i wypisuje linię instalacji, dokładny kod dla Twojego adaptera oraz test, który nie zużywa tokenów: gdy masz już licencję, odpowiada na niego warstwa na Twojej maszynie, bez wywoływania modelu. Niczego nie zapisuje, dopóki go o to nie poprosisz."
+      "initNote": "<b>Albo pozwól jednemu poleceniu dopasować to do Twojego stacka.</b> <code>init</code> czyta Twój <code>package.json</code> (Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, SDK Anthropic lub OpenAI) i wypisuje linię instalacji, dokładny kod dla Twojego adaptera oraz sprawdzenie, które nie kosztuje tokenów: bez żadnego klucza warstwa odpowiada na Twoim komputerze, bez wywoływania modelu. Nic nie zapisuje, dopóki nie poprosisz."
     },
     "pricing": {
       "eyebrow": "Plany",
       "title": "Mierz za darmo. Płać za stanowisko, gdy chcesz oszczędności.",
-      "body": "Zacznij od Pomiaru: za darmo i bez karty. Warstwa działa w trybie cienia na Twoim własnym ruchu, a panel pokazuje, ile by zaoszczędziła, wyceniając to licznikiem Twojego dostawcy. Pro i Zespół są rozliczane za stanowisko, w {currency}, niezależnie od tego, czy oszczędzasz, i nie mają prowizji od oszczędności.",
+      "body": "Pakiet to open core Apache-2.0: bez kluczy, wszystkie lokalne dźwignie włączone, zerowa telemetria. Chmura jest opcjonalna — Measure to plan darmowy, Pro i Team są rozliczane za stanowisko, w {currency}, bez prowizji od Twoich oszczędności.",
       "amount": "{amount}",
       "per": "/ stanowisko / mies.",
       "plans": {
         "medir": {
           "name": "Pomiar",
           "price": "Za darmo",
-          "body": "Bez karty. Warstwa w trybie cienia dla jednej organizacji, do {seats} stanowisk i {requests} zapytań dziennie: nic z tego, co wysyłasz, się nie zmienia, nic nie jest serwowane z pamięci podręcznej, nigdy nie wchodzi do żadnej prowizji — a Ty widzisz, ile by zaoszczędziła. Wymaga @bivelio/savings-layer {version} lub nowszego.",
+          "body": "Za darmo, bez karty. Darmowy plan CHMUROWY: tryb cienia dla jednej organizacji, do {seats} stanowisk i {requests} żądań dziennie — nic z tego, co wysyłasz, się nie zmienia, nic nie jest serwowane z pamięci podręcznej, nigdy żadnej prowizji, a panel pokazuje, ile by zaoszczędzono. Lokalne dźwignie go nie potrzebują: open core działa bez żadnego klucza.",
           "cta": "Zacznij za darmo →"
         },
         "pro": {
@@ -1010,7 +1010,7 @@
     },
     "footer": {
       "ctaTitle": "Zmierz to na własnym ruchu",
-      "ctaSub": "Po instalacji każde wywołanie zwraca swój SavingsReport, z tym, co zmierzone, i tym, co oszacowane, osobno. Zacznij za darmo od Pomiaru (@bivelio/savings-layer {version} lub nowszy); Pro i Zespół to stała opłata za stanowisko, bez prowizji od oszczędności. Licencja pozwala uruchomić BV‑SALA — SDK w aplikacji, gateway w terminalu.",
+      "ctaSub": "Po instalacji każde wywołanie zwraca swój SavingsReport, z rozdzielonym zmierzonym i oszacowanym. Open core nie potrzebuje kluczy: dźwignie działają lokalnie z zerową telemetrią. Opcjonalna chmura zaczyna się za darmo od Measure i jest rozliczana za stanowisko, bez prowizji od Twoich oszczędności.",
       "ctaStart": "Zacznij",
       "tagline": "System operacyjny dla Twojej firmy. To <b>BV‑SALA</b>, neutralny wobec dostawcy optymalizator kosztów LLM od BiVelio — każda zmierzona liczba jest zmierzona względem licznika dostawcy; szacunki i symulacje pokazujemy osobno, nazwane wprost, i nigdy ich nie fakturujemy.",
       "badge": "BV‑SALA · Savings Layer",
@@ -1083,7 +1083,7 @@
     "offers": {
       "eyebrow": "Dwa produkty",
       "title": "Dokąd idą Twoje tokeny: do Twojej aplikacji czy do Twojego agenta programistycznego?",
-      "sub": "Oba są licencjonowane za stanowisko i oba liczą własnym licznikiem Twojego dostawcy. Wykonują różne zadania, więc każdy składa własną obietnicę — a dziś tylko jeden ma opublikowaną liczbę oszczędności.",
+      "sub": "Oba są open core i oba liczą licznikiem Twojego dostawcy. Robią różne rzeczy, więc każde składa własną obietnicę — a dziś tylko jedno ma opublikowaną liczbę oszczędności.",
       "install": "Instalacja",
       "installMore": "Pełna konfiguracja",
       "sdk": {
@@ -1496,7 +1496,7 @@
     "caseCodeBody": "Przy subskrypcji opłata jest stała — ale z limitami: ten sam skill instaluje się jednym poleceniem i rozciąga ten sam tygodniowy limit. Z kluczem API jest prawdziwa faktura za tokeny — a miernik już działa: bez żadnych kluczy „bvsala claude” uruchamia Claude Code przez lokalną bramkę i Twoje wydatki pojawiają się w panelu, token po tokenie, bez dotykania linijki kodu. Z PRO, na modelach Anthropic, przestawia też zapisy do pamięci podręcznej z godzinnego TTL na pięciominutowy tylko w turach, w których duża część promptu jest nowa (pierwsza tura sesji, kompaktowanie): oszczędność wyliczona z liczby tokenów podanej przez Twojego własnego dostawcę, nigdy z szacunków.",
     "caseAppName": "Twoja aplikacja",
     "caseAppSub": "Twój kod + Twój klucz API",
-    "caseAppBody": "Przypadek, dla którego istnieje BV‑SALA. Twoja aplikacja wywołuje API Twoim kluczem, dostawca fakturuje każdy token, a warstwa instaluje się w trzech krokach: pakiet, licencja i opakowanie wywołania. Od pierwszego zapytania zwraca <b>SavingsReport</b> z oszczędnością, rozdzieloną na zmierzoną i szacowaną.",
+    "caseAppBody": "Przypadek, dla którego istnieje BV‑SALA. Twoja aplikacja wywołuje API Twoim kluczem, dostawca nalicza każdy token, a warstwa instaluje się w dwóch krokach: pakiet i opakowanie wywołania. Od pierwszej prośby zwraca <b>SavingsReport</b> z oszczędnością, rozdzieloną na zmierzone i oszacowane.",
     "verdictNothing": "Nie ma czego instalować",
     "verdictSkill": "Skill dostępny",
     "verdictMeasures": "Już mierzy",
@@ -1506,7 +1506,7 @@
     "s3Sub": "Produkt ma dwie różne liczby i lepiej ich nie mieszać.",
     "mBeforeK": "Przed instalacją",
     "mBeforeV": "Szacunek",
-    "mBeforeBody": "Bezpłatna licencja Pomiar uruchamia warstwę w trybie cienia na Twoim własnym ruchu i pokazuje, ile by zaoszczędziła, zapytanie po zapytaniu. Niczego nie zmienia i niczego nie stosuje — dlatego ma etykietę „szacunek”.",
+    "mBeforeBody": "Darmowy plan chmurowy uruchamia warstwę w trybie cienia na Twoim własnym ruchu i pokazuje, ile by zaoszczędziła, żądanie po żądaniu. Nic nie zmienia i niczego nie stosuje — dlatego nosi etykietę «oszacowanie». W ogóle bez planu? Open core: lokalne dźwignie działają bez klucza i z zerową telemetrią.",
     "mAfterK": "Po instalacji",
     "mAfterV": "Prawdziwy pomiar",
     "mAfterBody": "Każde wywołanie zwraca SavingsReport: wywołania, za które nigdy nie zapłaciłeś, i oszczędność netto na żądanie. Audytowalne, żądanie po żądaniu, na Twojej własnej infrastrukturze.",
@@ -1523,17 +1523,17 @@
   },
   "pricingPage": {
     "metaTitle": "Warunki cenowe · BV-SALA",
-    "metaDescription": "Pomiar za darmo, Pro za stanowisko, Zespół i Enterprise — żaden nie ma prowizji od Twoich oszczędności. Kwoty publikowane z tych samych stałych, które rozliczają.",
+    "metaDescription": "Open core jest darmowy (Apache-2.0); Measure, Pro, Team i Enterprise to plany chmurowe — żaden nie pobiera prowizji od Twoich oszczędności. Liczby publikowane z tych samych stałych, które naliczają opłaty.",
     "eyebrow": "Opublikowany cennik",
     "title": "Warunki cenowe",
     "governs": "Ta strona opisuje, jak usługa działa dziś; wiążące są <license>LICENSE</license> i <terms>Warunki BiVelio</terms>.",
-    "lede": "Płacisz za stanowisko albo za plan Zespół, bez prowizji od oszczędności. Każda kwota na tej stronie jest odczytywana z tego samego kodu, który Cię rozlicza, więc zmienia się, gdy zmienia się cena.",
+    "lede": "Pakiet to open core (Apache-2.0): nie potrzebuje kluczy. Ta strona wycenia opcjonalną chmurę — Measure za darmo, potem Pro za stanowisko lub plan Team, bez prowizji od Twoich oszczędności. Każda liczba na tej stronie pochodzi z tego samego kodu, który Cię rozlicza, i zmienia się, gdy zmienia się cena.",
     "plans": {
       "title": "Plany",
       "intro": "Cztery plany, od najmniejszego do największego. Pro i Zespół są płatne za stanowisko i nie mają prowizji.",
       "medir": {
         "name": "Pomiar",
-        "body": "<b>Za darmo, bez karty.</b> Warstwa działa w trybie cienia dla jednej organizacji, do <b>{seats} stanowisk</b> i <b>{requests} zapytań dziennie</b>: każde zapytanie trafia do dostawcy dokładnie tak, jak je zbudowałeś, nic nie jest serwowane z pamięci podręcznej i żadna dźwignia nie jest stosowana. Panel pokazuje, ile by zaoszczędziła — szacunek, od którego nigdy nie ma prowizji. Wymaga <b>@bivelio/savings-layer {version} lub nowszego</b>: wcześniejsze wersje nie rozpoznają licencji Pomiar. Dźwignie wymagają Pro lub Zespołu."
+        "body": "<b>Za darmo, bez karty.</b> Darmowy plan CHMUROWY: warstwa działa w trybie cienia dla jednej organizacji, do <b>{seats} stanowisk</b> i <b>{requests} żądań dziennie</b>: każde żądanie dociera do Twojego dostawcy dokładnie tak, jak je zbudowałeś, nic nie jest serwowane z pamięci podręcznej i żadna dźwignia nie jest stosowana. Panel pokazuje, ile by zaoszczędzono — oszacowanie, które nigdy nie niesie prowizji. Wymaga <b>@bivelio/savings-layer {version} lub nowszej</b>. Lokalne dźwignie nie potrzebują żadnego planu: open core działa bez klucza; dźwignie chmurowe wymagają Pro lub Team."
       },
       "pro": {
         "name": "Pro",
