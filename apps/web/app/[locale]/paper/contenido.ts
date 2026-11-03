@@ -1,36 +1,15 @@
 // GENERADO desde docs/PAPER.md — no editar a mano (ver scripts/paper.ts).
 export type Bloque =
-  | { tipo: "h1" | "h2" | "h3" | "p" | "li" | "cita"; texto: string }
-  | { tipo: "tabla"; filas: string[][] };
+  | { tipo: "h2" | "h3" | "p" | "cita"; texto: string; id?: string }
+  | { tipo: "li"; texto: string; ordenada: boolean }
+  | { tipo: "tabla"; filas: string[][] }
+  | { tipo: "hr" };
 
 export const BLOQUES: Bloque[] = [
   {
-    "tipo": "h1",
-    "texto": "BV-SALA Savings Layer"
-  },
-  {
     "tipo": "h2",
-    "texto": "Verifiable Measurement of Cost Savings in Large Language Model Applications — Open-Core Edition"
-  },
-  {
-    "tipo": "p",
-    "texto": "Joan-Marc Fisa · Founder, BiVelio Inc · jmfisa@bivelio.com · https://savings.bivelio.com"
-  },
-  {
-    "tipo": "p",
-    "texto": "**Preprint · November 2026 (v2.1, open-core release 1.0.0) · Technical report**"
-  },
-  {
-    "tipo": "p",
-    "texto": "Supersedes the August 2026 edition (\"BV-SALA Savings Layer: Verifiable Measurement of Cost Savings in Large Language Model Applications\", [bivelio.com/es/research/papers/bv-sala-savings-layer](https://bivelio.com/es/research/papers/bv-sala-savings-layer)). This document is the single source of the preprint; the web page at [savings.bivelio.com/paper](https://savings.bivelio.com/paper) is generated from it, and the arXiv-ready LaTeX source ships in `docs/paper/main.tex` of the repository."
-  },
-  {
-    "tipo": "p",
-    "texto": "---"
-  },
-  {
-    "tipo": "h2",
-    "texto": "Abstract"
+    "texto": "Abstract",
+    "id": "abstract"
   },
   {
     "tipo": "p",
@@ -41,16 +20,17 @@ export const BLOQUES: Bloque[] = [
     "texto": "**Keywords:** large language models; inference cost; provider-reported usage; prefix caching; semantic caching; cluster bootstrap; evidence labels; open core; model routing; measurement methodology."
   },
   {
-    "tipo": "p",
-    "texto": "---"
+    "tipo": "hr"
   },
   {
     "tipo": "h2",
-    "texto": "1 · Introduction"
+    "texto": "1 · Introduction",
+    "id": "1-introduction"
   },
   {
     "tipo": "h3",
-    "texto": "1.1 Problem"
+    "texto": "1.1 Problem",
+    "id": "1-1-problem"
   },
   {
     "tipo": "p",
@@ -58,7 +38,8 @@ export const BLOQUES: Bloque[] = [
   },
   {
     "tipo": "h3",
-    "texto": "1.2 Contributions"
+    "texto": "1.2 Contributions",
+    "id": "1-2-contributions"
   },
   {
     "tipo": "p",
@@ -82,27 +63,33 @@ export const BLOQUES: Bloque[] = [
   },
   {
     "tipo": "li",
-    "texto": "**A formal accounting object** (Section 3): the request→report function, the four"
+    "texto": "**A formal accounting object** (Section 3): the request→report function, the four",
+    "ordenada": true
   },
   {
     "tipo": "li",
-    "texto": "**An estimator and an uncertainty procedure** (Section 4): the ratio estimator over"
+    "texto": "**An estimator and an uncertainty procedure** (Section 4): the ratio estimator over",
+    "ordenada": true
   },
   {
     "tipo": "li",
-    "texto": "**Live evidence** (Section 6) for two providers under a paired design, with the"
+    "texto": "**Live evidence** (Section 6) for two providers under a paired design, with the",
+    "ordenada": true
   },
   {
     "tipo": "li",
-    "texto": "**An open-core system contract** (Section 3.4): community mode as a structural gate"
+    "texto": "**An open-core system contract** (Section 3.4): community mode as a structural gate",
+    "ordenada": true
   },
   {
     "tipo": "li",
-    "texto": "**A preregistered roadmap** (Section 9) that names the designs this edition does not"
+    "texto": "**A preregistered roadmap** (Section 9) that names the designs this edition does not",
+    "ordenada": true
   },
   {
     "tipo": "h3",
-    "texto": "1.3 Research questions"
+    "texto": "1.3 Research questions",
+    "id": "1-3-research-questions"
   },
   {
     "tipo": "p",
@@ -126,27 +113,33 @@ export const BLOQUES: Bloque[] = [
   },
   {
     "tipo": "li",
-    "texto": "**RQ1.** What cost reductions are observed in the specified live SDK double-runs when"
+    "texto": "**RQ1.** What cost reductions are observed in the specified live SDK double-runs when",
+    "ordenada": false
   },
   {
     "tipo": "li",
-    "texto": "**RQ2.** How much uncertainty remains when dependence is handled by family- or"
+    "texto": "**RQ2.** How much uncertainty remains when dependence is handled by family- or",
+    "ordenada": false
   },
   {
     "tipo": "li",
-    "texto": "**RQ3.** Which components are attributable to avoided calls, to token elimination or"
+    "texto": "**RQ3.** Which components are attributable to avoided calls, to token elimination or",
+    "ordenada": false
   },
   {
     "tipo": "li",
-    "texto": "**RQ4.** What quality and latency observations are available, and which claims remain"
+    "texto": "**RQ4.** What quality and latency observations are available, and which claims remain",
+    "ordenada": false
   },
   {
     "tipo": "li",
-    "texto": "**RQ5.** How should a counterfactual replay and a provisional break-even calculation be"
+    "texto": "**RQ5.** How should a counterfactual replay and a provisional break-even calculation be",
+    "ordenada": false
   },
   {
     "tipo": "h3",
-    "texto": "1.4 What changed since the August edition"
+    "texto": "1.4 What changed since the August edition",
+    "id": "1-4-what-changed-since-the-august-edition"
   },
   {
     "tipo": "p",
@@ -170,31 +163,35 @@ export const BLOQUES: Bloque[] = [
   },
   {
     "tipo": "li",
-    "texto": "**Community mode (open core).** `createSavingsLayer({ provider })` without a"
+    "texto": "**Community mode (open core).** `createSavingsLayer({ provider })` without a",
+    "ordenada": true
   },
   {
     "tipo": "li",
-    "texto": "**Three protocols, one meter.** The gateway reads provider-reported usage from the"
+    "texto": "**Three protocols, one meter.** The gateway reads provider-reported usage from the",
+    "ordenada": true
   },
   {
     "tipo": "li",
-    "texto": "**Chinese providers at list price.** The versioned catalog adds DeepSeek (flash and"
+    "texto": "**Chinese providers at list price.** The versioned catalog adds DeepSeek (flash and",
+    "ordenada": true
   },
   {
     "tipo": "li",
-    "texto": "**Zero-telemetry default.** Community mode sends nothing to BiVelio; the optional"
+    "texto": "**Zero-telemetry default.** Community mode sends nothing to BiVelio; the optional",
+    "ordenada": true
   },
   {
     "tipo": "p",
     "texto": "Nothing in this release changes the four-ledger accounting, the evidence labels, or the versioned list-price basis. The August results remain the primary evidence; this edition adds analyses, not re-analysis."
   },
   {
-    "tipo": "p",
-    "texto": "---"
+    "tipo": "hr"
   },
   {
     "tipo": "h2",
-    "texto": "2 · Related work"
+    "texto": "2 · Related work",
+    "id": "2-related-work"
   },
   {
     "tipo": "p",
@@ -209,16 +206,17 @@ export const BLOQUES: Bloque[] = [
     "texto": "BV-SALA combines established mechanisms with request-identity guards, separate ledgers, calibrated abstention and economic gating. Its differentiation is the integration of *accounting and safety*, not any single cache, serialization or observability mechanism. vCache is the closest comparator for semantic caching; the present work does not establish equivalent guarantees, model coverage or hit rates. Structured-data rewriting requires task- and model-specific quality evaluation: Notation Matters shows that token reductions can reduce tool-calling accuracy and amplify multi-turn parsing failures [26]. The uncertainty discussion uses established terminology [18, 19] without asserting calibration-chain traceability. The evidence therefore supports a measurement-and- guardrails contribution, not a claim of general optimization leadership."
   },
   {
-    "tipo": "p",
-    "texto": "---"
+    "tipo": "hr"
   },
   {
     "tipo": "h2",
-    "texto": "3 · System model and accounting object"
+    "texto": "3 · System model and accounting object",
+    "id": "3-system-model-and-accounting-object"
   },
   {
     "tipo": "h3",
-    "texto": "3.1 Notation"
+    "texto": "3.1 Notation",
+    "id": "3-1-notation"
   },
   {
     "tipo": "tabla",
@@ -267,7 +265,8 @@ export const BLOQUES: Bloque[] = [
   },
   {
     "tipo": "h3",
-    "texto": "3.2 The layer"
+    "texto": "3.2 The layer",
+    "id": "3-2-the-layer"
   },
   {
     "tipo": "p",
@@ -283,7 +282,8 @@ export const BLOQUES: Bloque[] = [
   },
   {
     "tipo": "h3",
-    "texto": "3.3 Proposition 1 — ledger decomposition"
+    "texto": "3.3 Proposition 1 — ledger decomposition",
+    "id": "3-3-proposition-1-ledger-decomposition"
   },
   {
     "tipo": "p",
@@ -311,7 +311,8 @@ export const BLOQUES: Bloque[] = [
   },
   {
     "tipo": "h3",
-    "texto": "3.4 The open-core contract"
+    "texto": "3.4 The open-core contract",
+    "id": "3-4-the-open-core-contract"
   },
   {
     "tipo": "p",
@@ -323,15 +324,18 @@ export const BLOQUES: Bloque[] = [
   },
   {
     "tipo": "li",
-    "texto": "With no key configured, the layer runs the full local stack and sends nothing."
+    "texto": "With no key configured, the layer runs the full local stack and sends nothing.",
+    "ordenada": true
   },
   {
     "tipo": "li",
-    "texto": "With a key configured but invalid, expired or revoked, the layer fails closed."
+    "texto": "With a key configured but invalid, expired or revoked, the layer fails closed.",
+    "ordenada": true
   },
   {
     "tipo": "li",
-    "texto": "With a valid cloud key, the layer additionally reports the per-request fields"
+    "texto": "With a valid cloud key, the layer additionally reports the per-request fields",
+    "ordenada": true
   },
   {
     "tipo": "p",
@@ -339,23 +343,25 @@ export const BLOQUES: Bloque[] = [
   },
   {
     "tipo": "h3",
-    "texto": "3.5 Metering the three protocols"
+    "texto": "3.5 Metering the three protocols",
+    "id": "3-5-metering-the-three-protocols"
   },
   {
     "tipo": "p",
     "texto": "The gateway reads usage from Anthropic Messages, OpenAI Chat Completions/Responses, and the Gemini protocol. For Gemini, `:generateContent` (JSON) and `:streamGenerateContent` (SSE, both `alt=sse` and newline-delimited JSON) are forwarded byte-for-byte; the observer maps `usageMetadata` onto the internal usage shape, discounting implicit-cache tokens from ordinary input and summing thinking tokens into output. A stream without a final `usageMetadata` is reported `unmeasured`. These are operational (non-breakage and fidelity) checks, not savings claims."
   },
   {
-    "tipo": "p",
-    "texto": "---"
+    "tipo": "hr"
   },
   {
     "tipo": "h2",
-    "texto": "4 · Measurement methodology"
+    "texto": "4 · Measurement methodology",
+    "id": "4-measurement-methodology"
   },
   {
     "tipo": "h3",
-    "texto": "4.1 Design"
+    "texto": "4.1 Design",
+    "id": "4-1-design"
   },
   {
     "tipo": "p",
@@ -363,7 +369,8 @@ export const BLOQUES: Bloque[] = [
   },
   {
     "tipo": "h3",
-    "texto": "4.2 Estimator"
+    "texto": "4.2 Estimator",
+    "id": "4-2-estimator"
   },
   {
     "tipo": "p",
@@ -371,7 +378,8 @@ export const BLOQUES: Bloque[] = [
   },
   {
     "tipo": "h3",
-    "texto": "4.3 Uncertainty"
+    "texto": "4.3 Uncertainty",
+    "id": "4-3-uncertainty"
   },
   {
     "tipo": "p",
@@ -379,7 +387,8 @@ export const BLOQUES: Bloque[] = [
   },
   {
     "tipo": "h3",
-    "texto": "4.4 Attribution of the Anthropic effect"
+    "texto": "4.4 Attribution of the Anthropic effect",
+    "id": "4-4-attribution-of-the-anthropic-effect"
   },
   {
     "tipo": "p",
@@ -387,19 +396,20 @@ export const BLOQUES: Bloque[] = [
   },
   {
     "tipo": "h3",
-    "texto": "4.5 What the method cannot do"
+    "texto": "4.5 What the method cannot do",
+    "id": "4-5-what-the-method-cannot-do"
   },
   {
     "tipo": "p",
     "texto": "The method cannot establish invoice reconciliation (negotiated prices, credits, taxes and rounding are out of scope), non-inferiority in quality or latency (no adequately powered test is run), or generalization beyond the measured workloads. These are threats (Section 7), not caveats to be buried."
   },
   {
-    "tipo": "p",
-    "texto": "---"
+    "tipo": "hr"
   },
   {
     "tipo": "h2",
-    "texto": "5 · Experimental design"
+    "texto": "5 · Experimental design",
+    "id": "5-experimental-design"
   },
   {
     "tipo": "tabla",
@@ -451,16 +461,17 @@ export const BLOQUES: Bloque[] = [
     "texto": "Workload construction: GSM8K [21] questions are grouped into families by a template; within a family, 30 % of requests repeat exactly and 20 % are paraphrases, which is the regime in which the layer's mechanisms are expected to act. The benchmark publishes each trial individually, with its raw CSV, and not only the aggregate."
   },
   {
-    "tipo": "p",
-    "texto": "---"
+    "tipo": "hr"
   },
   {
     "tipo": "h2",
-    "texto": "6 · Results"
+    "texto": "6 · Results",
+    "id": "6-results"
   },
   {
     "tipo": "h3",
-    "texto": "6.1 Primary evidence (unchanged from the August edition)"
+    "texto": "6.1 Primary evidence (unchanged from the August edition)",
+    "id": "6-1-primary-evidence-unchanged-from-the-august-edition"
   },
   {
     "tipo": "tabla",
@@ -497,7 +508,8 @@ export const BLOQUES: Bloque[] = [
   },
   {
     "tipo": "h3",
-    "texto": "6.2 New operational evidence (this edition)"
+    "texto": "6.2 New operational evidence (this edition)",
+    "id": "6-2-new-operational-evidence-this-edition"
   },
   {
     "tipo": "p",
@@ -513,19 +525,23 @@ export const BLOQUES: Bloque[] = [
   },
   {
     "tipo": "li",
-    "texto": "**Gemini protocol metering.** `:generateContent` and `:streamGenerateContent` (SSE with"
+    "texto": "**Gemini protocol metering.** `:generateContent` and `:streamGenerateContent` (SSE with",
+    "ordenada": false
   },
   {
     "tipo": "li",
-    "texto": "**DeepSeek Anthropic-format rewrite.** `/v1/messages` travels to"
+    "texto": "**DeepSeek Anthropic-format rewrite.** `/v1/messages` travels to",
+    "ordenada": false
   },
   {
     "tipo": "li",
-    "texto": "**Catalog guard.** The price guard test rejected a ×1000 per-million copy error during"
+    "texto": "**Catalog guard.** The price guard test rejected a ×1000 per-million copy error during",
+    "ordenada": false
   },
   {
     "tipo": "h3",
-    "texto": "6.3 Routing economics at list prices (conditional arithmetic)"
+    "texto": "6.3 Routing economics at list prices (conditional arithmetic)",
+    "id": "6-3-routing-economics-at-list-prices-conditional-arithmetic"
   },
   {
     "tipo": "tabla",
@@ -580,19 +596,20 @@ export const BLOQUES: Bloque[] = [
   },
   {
     "tipo": "h3",
-    "texto": "6.4 Break-even (provisional)"
+    "texto": "6.4 Break-even (provisional)",
+    "id": "6-4-break-even-provisional"
   },
   {
     "tipo": "p",
     "texto": "At a list-price reduction `R` applied to a monthly list-price bill `B`, a seat with a total monthly fee `F` pays off iff `R · B > F`. With `F = €15` per seat per month and the live OpenAI figure `R = 0.315`, the break-even bill is `B* = F / R ≈ €47.6` per month. This is conditional arithmetic on a measured ratio, not a forecast: the ratio is a property of a workload, and a workload with less repetition has a smaller `R`."
   },
   {
-    "tipo": "p",
-    "texto": "---"
+    "tipo": "hr"
   },
   {
     "tipo": "h2",
-    "texto": "7 · Threats to validity"
+    "texto": "7 · Threats to validity",
+    "id": "7-threats-to-validity"
   },
   {
     "tipo": "tabla",
@@ -640,12 +657,12 @@ export const BLOQUES: Bloque[] = [
     ]
   },
   {
-    "tipo": "p",
-    "texto": "---"
+    "tipo": "hr"
   },
   {
     "tipo": "h2",
-    "texto": "8 · Limitations"
+    "texto": "8 · Limitations",
+    "id": "8-limitations"
   },
   {
     "tipo": "p",
@@ -661,19 +678,21 @@ export const BLOQUES: Bloque[] = [
   },
   {
     "tipo": "li",
-    "texto": "The Chinese-provider rows rely on pricing pages consulted 2026-11-03, with DeepSeek at"
+    "texto": "The Chinese-provider rows rely on pricing pages consulted 2026-11-03, with DeepSeek at",
+    "ordenada": true
   },
   {
     "tipo": "li",
-    "texto": "Community mode shifts the risk model: without the cloud key there is no revocation or"
+    "texto": "Community mode shifts the risk model: without the cloud key there is no revocation or",
+    "ordenada": true
   },
   {
-    "tipo": "p",
-    "texto": "---"
+    "tipo": "hr"
   },
   {
     "tipo": "h2",
-    "texto": "9 · Preregistered research roadmap"
+    "texto": "9 · Preregistered research roadmap",
+    "id": "9-preregistered-research-roadmap"
   },
   {
     "tipo": "p",
@@ -705,63 +724,70 @@ export const BLOQUES: Bloque[] = [
   },
   {
     "tipo": "li",
-    "texto": "**Factorial design**: deduplication × `cache_control` (attribution of the 41 pp), with"
+    "texto": "**Factorial design**: deduplication × `cache_control` (attribution of the 41 pp), with",
+    "ordenada": true
   },
   {
     "tipo": "li",
-    "texto": "**ρ sweep**: exact-repeat rate swept across families to estimate the response curve"
+    "texto": "**ρ sweep**: exact-repeat rate swept across families to estimate the response curve",
+    "ordenada": true
   },
   {
     "tipo": "li",
-    "texto": "**Hierarchical multi-day experiment**: families × sessions × days, multiple"
+    "texto": "**Hierarchical multi-day experiment**: families × sessions × days, multiple",
+    "ordenada": true
   },
   {
     "tipo": "li",
-    "texto": "**Non-inferiority tests**: answer quality, freshness and latency, preregistered and"
+    "texto": "**Non-inferiority tests**: answer quality, freshness and latency, preregistered and",
+    "ordenada": true
   },
   {
     "tipo": "li",
-    "texto": "**Calibrated semantic cache at scale**: multi-tenant precision across cache"
+    "texto": "**Calibrated semantic cache at scale**: multi-tenant precision across cache",
+    "ordenada": true
   },
   {
     "tipo": "li",
-    "texto": "**Invoice reconciliation**: negotiated prices, credits, taxes, rounding — one real"
+    "texto": "**Invoice reconciliation**: negotiated prices, credits, taxes, rounding — one real",
+    "ordenada": true
   },
   {
     "tipo": "li",
-    "texto": "**External replication**: an independent team reproduces the live double-runs from the"
+    "texto": "**External replication**: an independent team reproduces the live double-runs from the",
+    "ordenada": true
   },
   {
-    "tipo": "p",
-    "texto": "---"
+    "tipo": "hr"
   },
   {
     "tipo": "h2",
-    "texto": "10 · Data and code availability"
+    "texto": "10 · Data and code availability",
+    "id": "10-data-and-code-availability"
   },
   {
     "tipo": "p",
     "texto": "Public-bench summaries, each trial individually and its raw CSV, remain at [savings.bivelio.com/benchmarks](https://savings.bivelio.com/en/benchmarks). The open-core software ships on npm (`@bivelio/savings-layer`, Apache-2.0) and on PyPI (`bivelio-savings-layer`); the gateway test suites — including the Gemini and DeepSeek rewrites — run against fake upstreams with no network. This preprint's source is `docs/PAPER.md` and its arXiv-ready LaTeX source is `docs/paper/main.tex`. Raw gateway logs remain private; the counterfactual replay's aggregate artifacts are public."
   },
   {
-    "tipo": "p",
-    "texto": "---"
+    "tipo": "hr"
   },
   {
     "tipo": "h2",
-    "texto": "11 · Conflict of interest"
+    "texto": "11 · Conflict of interest",
+    "id": "11-conflict-of-interest"
   },
   {
     "tipo": "p",
     "texto": "The author is the founder of BiVelio Inc, which develops the evaluated product. No independent replication is reported."
   },
   {
-    "tipo": "p",
-    "texto": "---"
+    "tipo": "hr"
   },
   {
     "tipo": "h2",
-    "texto": "References"
+    "texto": "References",
+    "id": "references"
   },
   {
     "tipo": "p",
@@ -876,12 +902,12 @@ export const BLOQUES: Bloque[] = [
     "texto": "[28] BiVelio. Calibrated semantic-cache evaluation and abstention report. Public benchmark documentation, September 2026. https://savings.bivelio.com/benchmarks"
   },
   {
-    "tipo": "p",
-    "texto": "---"
+    "tipo": "hr"
   },
   {
     "tipo": "h2",
-    "texto": "Appendix A · Notation and derivations"
+    "texto": "Appendix A · Notation and derivations",
+    "id": "appendix-a-notation-and-derivations"
   },
   {
     "tipo": "p",
@@ -897,27 +923,33 @@ export const BLOQUES: Bloque[] = [
   },
   {
     "tipo": "h2",
-    "texto": "Appendix B · Bootstrap procedure"
+    "texto": "Appendix B · Bootstrap procedure",
+    "id": "appendix-b-bootstrap-procedure"
   },
   {
     "tipo": "li",
-    "texto": "For each family `f`, compute `R_f` from the paired arm totals."
+    "texto": "For each family `f`, compute `R_f` from the paired arm totals.",
+    "ordenada": true
   },
   {
     "tipo": "li",
-    "texto": "Draw `B = 10,000` resamples of the family index set with replacement."
+    "texto": "Draw `B = 10,000` resamples of the family index set with replacement.",
+    "ordenada": true
   },
   {
     "tipo": "li",
-    "texto": "For each resample `b`, compute `R̂_b` as the mean over the drawn families."
+    "texto": "For each resample `b`, compute `R̂_b` as the mean over the drawn families.",
+    "ordenada": true
   },
   {
     "tipo": "li",
-    "texto": "Report the empirical 2.5th and 97.5th percentiles of `{R̂_b}`."
+    "texto": "Report the empirical 2.5th and 97.5th percentiles of `{R̂_b}`.",
+    "ordenada": true
   },
   {
     "tipo": "li",
-    "texto": "Publish the seed, the resample count, and the artifact hash."
+    "texto": "Publish the seed, the resample count, and the artifact hash.",
+    "ordenada": true
   },
   {
     "tipo": "p",
@@ -925,7 +957,8 @@ export const BLOQUES: Bloque[] = [
   },
   {
     "tipo": "h2",
-    "texto": "Appendix C · Reproducibility"
+    "texto": "Appendix C · Reproducibility",
+    "id": "appendix-c-reproducibility"
   },
   {
     "tipo": "p",
@@ -941,23 +974,28 @@ export const BLOQUES: Bloque[] = [
   },
   {
     "tipo": "li",
-    "texto": "Install the SDK: `pnpm add @bivelio/savings-layer` (or `npm i`), Node ≥ 20.19."
+    "texto": "Install the SDK: `pnpm add @bivelio/savings-layer` (or `npm i`), Node ≥ 20.19.",
+    "ordenada": false
   },
   {
     "tipo": "li",
-    "texto": "Run the benchmark from source: `pnpm bench` with `BIVELIO_LICENSE_KEY` only when"
+    "texto": "Run the benchmark from source: `pnpm bench` with `BIVELIO_LICENSE_KEY` only when",
+    "ordenada": false
   },
   {
     "tipo": "li",
-    "texto": "The gateway's live bench and the weekly live battery run in CI; their reports are"
+    "texto": "The gateway's live bench and the weekly live battery run in CI; their reports are",
+    "ordenada": false
   },
   {
     "tipo": "li",
-    "texto": "The catalog version that produced every figure in this paper is recorded in"
+    "texto": "The catalog version that produced every figure in this paper is recorded in",
+    "ordenada": false
   },
   {
     "tipo": "h2",
-    "texto": "Appendix D · Resumen en español"
+    "texto": "Appendix D · Resumen en español",
+    "id": "appendix-d-resumen-en-espanol"
   },
   {
     "tipo": "p",
@@ -968,3 +1006,14 @@ export const BLOQUES: Bloque[] = [
     "texto": "La contribución metodológica es una descomposición formal del ahorro en cuatro libros que nunca se suman, con una proposición que explicita las condiciones de aditividad y un residuo de interacción que se declara, y una jerarquía de etiquetas de evidencia (medido, referencia, estimado, no medido) que impide presentar una estimación como un hecho de factura."
   }
 ];
+
+export const CABECERA = {
+  "coleccion": "BV-SALA Savings Layer",
+  "titulo": "Verifiable Measurement of Cost Savings in Large Language Model Applications",
+  "subtitulo": "Open-Core Edition",
+  "autor": "Joan-Marc Fisa",
+  "afiliacion": "Founder, BiVelio Inc",
+  "email": "jmfisa@bivelio.com",
+  "fecha": "November 2026",
+  "version": "Preprint v2.1 · open-core release 1.0.0"
+} as const;

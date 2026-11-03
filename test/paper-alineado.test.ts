@@ -25,10 +25,21 @@ describe("paper: el markdown del repo y la página /paper, byte a byte", () => {
   it("el módulo generado declara los bloques que la página consume", () => {
     const contenido = readFileSync(raiz(RUTAS.modulo), "utf8");
     expect(contenido).toContain("export const BLOQUES: Bloque[]");
+    expect(contenido).toContain("export const CABECERA");
     const bloques = generarContenido(readFileSync(raiz(RUTAS.md), "utf8"));
+    // La cabecera académica sale de CABECERA: el cuerpo empieza en «Abstract»
+    // y no repite el título (nada de h1 en el cuerpo).
+    expect(bloques[0]).toMatchObject({ tipo: "h2", id: "abstract" });
+    expect(bloques.some((b) => (b as { tipo: string }).tipo === "h1")).toBe(false);
     expect(bloques.length).toBeGreaterThan(40);
     expect(bloques.filter((b) => b.tipo === "tabla").length).toBeGreaterThanOrEqual(2);
-    expect(bloques.some((b) => b.tipo === "h1")).toBe(true);
+    expect(bloques.filter((b) => b.tipo === "h2").length).toBeGreaterThanOrEqual(8);
+    // Las listas numeradas de la hoja de ruta existen como tales.
+    expect(bloques.some((b) => b.tipo === "li" && b.ordenada)).toBe(true);
+    // Los anclas de sección son estables y sin acentos.
+    for (const b of bloques) {
+      if (b.tipo === "h2" || b.tipo === "h3") expect(b.id, b.texto).toMatch(/^[a-z0-9-]+$/);
+    }
   });
 
   it("el paper publica sus cifras con intervalo y sus límites", () => {
