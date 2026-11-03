@@ -26,6 +26,7 @@ const layer = createSavingsLayer({
       return { text: "Two SKUs are low on stock.", usage: { inputTokens: 1000, outputTokens: 8 } };
     },
   },
+  licenseKey: process.env.BIVELIO_LICENSE_KEY || undefined,
   toolOutputCompaction: { profile: "lossless-data" },
 });
 

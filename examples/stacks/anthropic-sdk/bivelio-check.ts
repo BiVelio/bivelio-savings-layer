@@ -10,8 +10,9 @@ import { anthropicSavings } from "@bivelio/savings-layer/anthropic-sdk";
 const seen = { calls: 0, avoidedLlm: 0, basis: "" };
 const claudeSavings = anthropicSavings({
   // OPEN CORE: no license needed — the layer runs with every local saving lever on, zero telemetry.
-  // For the cloud dashboard, team metering and license auto-renewal, add these three lines:
-  // licenseKey: process.env.BIVELIO_LICENSE_KEY,
+  // A license key that IS set but invalid still fails closed. For the cloud dashboard,
+  // team metering and license auto-renewal, add these lines (all optional):
+  licenseKey: process.env.BIVELIO_LICENSE_KEY || undefined,
   // licenseServerUrl: "https://savings.bivelio.com",
   // serviceAccountKey: process.env.BIVELIO_SERVICE_KEY,
   onReport: (report) => {

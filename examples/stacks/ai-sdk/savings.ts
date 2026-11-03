@@ -6,8 +6,9 @@ import { savingsMiddleware } from "@bivelio/savings-layer/ai-sdk";
 
 export const savings = savingsMiddleware({
   // OPEN CORE: no license needed — the layer runs with every local saving lever on, zero telemetry.
-  // For the cloud dashboard, team metering and license auto-renewal, add these three lines:
-  // licenseKey: process.env.BIVELIO_LICENSE_KEY,
+  // A license key that IS set but invalid still fails closed. For the cloud dashboard,
+  // team metering and license auto-renewal, add these lines (all optional):
+  licenseKey: process.env.BIVELIO_LICENSE_KEY || undefined,
   // licenseServerUrl: "https://savings.bivelio.com",
   // serviceAccountKey: process.env.BIVELIO_SERVICE_KEY,
 });

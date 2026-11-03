@@ -156,7 +156,13 @@ beforeAll(() => {
   // 1) El fragmento del README, EJECUTADO. Los `import` se izan (dentro de un
   //    bloque son un error de sintaxis) y el resto va en un try/catch, que es lo
   //    único que hay que añadirle para poder mirar el error que recibe el cliente.
-  const imports: string[] = ['import { writeFileSync } from "node:fs";'];
+  const imports: string[] = [
+    'import { writeFileSync } from "node:fs";',
+    // El bloque del README no repite el import (el test de fragmentos lo concatena
+    // con el bloque «Wrap the call», que sí lo trae): aquí se inyecta, como haría
+    // quien pega los dos bloques en orden.
+    'import { createSavingsLayer, OpenAICompatibleProvider } from "@bivelio/savings-layer";',
+  ];
   const cuerpo = bloqueDelReadme()
     .split("\n")
     .filter((linea) => {
@@ -321,7 +327,7 @@ describe("sala limpia: el binario del gateway publicado", () => {
     expect((r.error as NodeJS.ErrnoException | undefined)?.code).toBe("ETIMEDOUT");
     expect(`${r.stdout}${r.stderr}`).toContain("COMMUNITY MODE");
     expect(r.stdout).toContain("listening on http://127.0.0.1:");
-  });
+  }, 40_000);
 
   it("(c) con clave y SIN red: exit 1, «could not collect your license» con el respaldo, y jamás la clave", () => {
     // Sin red de verdad: el preámbulo pisa `fetch` ANTES de cargar el binario,
@@ -452,7 +458,7 @@ describe("sala limpia: los adaptadores publicados, SIN clave", () => {
       ["anthropic-sdk", adaptadores.anthropic],
     ] as const) {
       expect(`${nombre}: ${r.resultado}/${r.nombre}`).toBe(`${nombre}: CORRIO/undefined`);
-      expect(r.mensaje).not.toMatch(/devUnlicensed|BVSALA_DEV_OPEN/);
+      expect(r.mensaje ?? "").not.toMatch(/devUnlicensed|BVSALA_DEV_OPEN/);
     }
   });
 

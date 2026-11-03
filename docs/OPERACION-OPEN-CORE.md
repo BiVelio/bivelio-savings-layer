@@ -74,10 +74,18 @@ Portkey crecen con open core o freemium; nadie adopta asiduamente una caja cerra
    instalaciones vía el cloud opcional, design partners de YC.
 4. **Paper v2**: el borrador mejorado está en `_research/paper-v2.md`.
 
-## Estado de la suite (Windows, 2026-11-03)
+## Estado de la suite
 
 - `pnpm run build` ✓ · `pnpm run typecheck` ✓
-- `vitest run test/…`: todo lo que toca esta operación pasa en aislamiento (SDK,
-  gateway, licencias, catálogo, Gemini, doctor, upstream, envoltorios).
-- Los fallos restantes de la suite completa son los preexistentes del entorno Windows
-  (mismos ficheros y mismos tests que en el árbol limpio) más flakiness de paralelismo.
+- Local (Windows): todo lo que toca esta operación pasa en aislamiento (SDK,
+  gateway, licencias, catálogo, Gemini, doctor, upstream, envoltorios, README,
+  mensajes). Los fallos restantes de la suite completa son los preexistentes del
+  entorno Windows (mismos ficheros y mismos tests que en el árbol limpio:
+  rutas `F:\F:\` del loader de tests, spawn de `tsx` en vitest, secrets de
+  apps/web, migraciones con BBDD) más flakiness de paralelismo.
+- CI (Linux, PR #523): primera vuelta 28 fallos, todos corregidos — regenerados
+  examples/vectores/evidencia, catálogo clasificado (razonamiento + suelo float),
+  README compilable y con los precios anclados, sala-limpia reescrita al contrato
+  comunitario, textos web en 12 idiomas. Segunda vuelta en curso.
+- Pendiente del fundador: la decisión de LICENSE (Apache-2.0 preparado), la web
+  de precios pública (savings.bivelio.com) y el pase de marketing de la landing.

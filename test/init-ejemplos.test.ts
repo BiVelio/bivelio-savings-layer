@@ -227,7 +227,7 @@ describe.concurrent("los ejemplos se ejecutan, sin red", () => {
       env: { PATH: process.env.PATH ?? "", HOME: casa },
       timeout: 90_000,
     }).then(
-      () => ({ code: 0, stdout: "" }),
+      (salida: { stdout?: string }) => ({ code: 0, stdout: salida.stdout ?? "" }),
       (err: { code?: number; stdout?: string }) => ({ code: err.code ?? -1, stdout: err.stdout ?? "" }),
     );
     expect(r.code).toBe(0);
