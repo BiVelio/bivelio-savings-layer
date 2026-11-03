@@ -682,8 +682,8 @@ describe("la copia que viaja en npm (README y guías de terminales)", () => {
     expect(readme).toMatch(/cache-write\s+TTL/);
   });
 
-  it("⛔ las guías de terminales ya no prometen reenviar sin clave", () => {
-    expect(terminales).toMatch(/licencia\s+BiVelio\s+activa/);
+  it("⛔ las guías de terminales dicen modo Community, y no prometen reenviar sin clave", () => {
+    expect(terminales).toMatch(/modo\s+Community/);
     expect(terminales).not.toMatch(/Nunca\s+corta\s+el\s+tráfico:\s+sin\s+clave/);
     expect(terminales).not.toMatch(/Sin ella: reenvía, NO mide/);
     expect(terminales).toMatch(/TTL\s+de\s+escritura\s+de\s+caché/);

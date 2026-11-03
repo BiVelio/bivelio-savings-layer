@@ -66,8 +66,8 @@ const INIT = "npx @bivelio/savings-layer@latest init";
  * `bvsala` (gateway/bin.ts). Tiene que coincidir con TERMINALES_CON_ENVOLTORIO
  * (gateway/envoltorios.ts): un comando que el binario no conoce imprime la ayuda
  * y sale con 1, y la web lo habría anunciado. El nombre del producto no se
- * traduce; Cursor y Gemini CLI NO van aquí porque no se pueden medir hoy
- * (docs/terminales/no-soportados.md): lo dice `agentsNote`.
+ * traduce; Cursor NO va aquí (no es un envoltorio: se configura por la UI con
+ * su override de base URL, docs/terminales/cursor.md): lo dice `agentsNote`.
  */
 const AGENTES: readonly (readonly [comando: string, producto: string])[] = [
   ["claude", "Claude Code"],
@@ -78,6 +78,7 @@ const AGENTES: readonly (readonly [comando: string, producto: string])[] = [
   ["kilo", "Kilo CLI"],
   ["copilot", "GitHub Copilot CLI"],
   ["aider", "Aider"],
+  ["gemini", "Gemini CLI"],
 ];
 
 /**

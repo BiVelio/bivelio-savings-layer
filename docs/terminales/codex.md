@@ -14,12 +14,12 @@ cifras.
   suscripción ChatGPT (se enruta y se mide a precio de lista equivalente, **sin
   comisión**: no hay factura por tokens; la licencia por asiento hace falta
   igual; ver más abajo).
-- `bvsala` instalado, `BIVELIO_SERVICE_KEY` exportada y una licencia BiVelio activa (la recoge el gateway con la clave; ver [README](README.md)).
+- `bvsala` instalado. Open core: sin claves el gateway arranca en modo Community (todo el ahorro local, cero telemetría); `BIVELIO_SERVICE_KEY` añade el panel y los entitlements de la org (ver [README](README.md)).
 
 ## Envoltorio: `bvsala codex [args…]`
 
 ```bash
-export BIVELIO_SERVICE_KEY=bvk_…
+export BIVELIO_SERVICE_KEY=bvk_…  # OPCIONAL: panel + entitlements de org (sin ella: modo Community)
 bvsala codex                       # cualquier argumento pasa tal cual a codex
 ```
 
@@ -107,7 +107,7 @@ del staff, a diferencia de Anthropic, que lo documenta). Postura idéntica a
 Claude Code: cero persistencia de `Authorization` / `ChatGPT-Account-ID`,
 binario sin modificar, y no se promociona como modo de ahorro.
 
-**Comisión 0 por diseño (desde la versión en que el gateway exige licencia):**
+**Comisión 0 por diseño:**
 el gateway clasifica como suscripción el tráfico de `/backend-api/…` o con
 upstream chatgpt.com (y el de Claude Code con `anthropic-beta: oauth-*`) y no le
 acredita ahorro: `baseline == actual`. Laguna que queda: el registro no lleva

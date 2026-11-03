@@ -8,7 +8,7 @@ import {
   RAZONA_POR_FILA,
   salidaNoRepetible,
 } from "../src/pricing/razonamiento.js";
-import { SavingsLedger, REFERENCE_MESSAGE_ALLOWANCE } from "../src/tokenizer/accounting.js";
+import { SavingsLedger, REFERENCE_MESSAGE_ALLOWANCE, roundUsd } from "../src/tokenizer/accounting.js";
 import {
   evaluarReferencia,
   precioDeListaPropio,
@@ -57,8 +57,6 @@ const entero = (r: () => number, min: number, max: number): number =>
   min + Math.floor(r() * (max - min + 1));
 
 const SEMILLAS = 500;
-/** El redondeo de `roundUsd` (1e-10) puede subir medio cuanto. */
-const CUANTO = 5e-11;
 
 function registro(r: () => number, modelo: string): RegistroDeReferencia {
   // Razonamiento declarado: 0 la mitad de las veces, positivo o callado el resto.
@@ -158,8 +156,12 @@ describe("la referencia es un suelo (propiedad sobre el catálogo)", () => {
               (salidaAcreditable ? salidaTope : 0) * precio.outputPer1k)) /
           1000;
         const aLista = (reg.inputTokens * precio.inputPer1k + reg.outputTokens * precio.outputPer1k) / 1000;
-        expect(coste.baselineEstimate, `semilla ${semilla}`).toBeLessThanOrEqual(suelo + CUANTO);
-        expect(coste.baselineEstimate, `semilla ${semilla}`).toBeLessThanOrEqual(aLista + CUANTO);
+        // El informe publica `roundUsd` (1e-10): se compara contra el SUELO con el
+        // MISMO redondeo. `roundUsd` es monótono y `baseline ≤ suelo` en crudo
+        // (misma fórmula, una sola división, salida acreditada ≤ salida del tope),
+        // así que el importe publicado nunca puede pasar del suelo redondeado.
+        expect(coste.baselineEstimate, `semilla ${semilla}`).toBeLessThanOrEqual(roundUsd(suelo));
+        expect(coste.baselineEstimate, `semilla ${semilla}`).toBeLessThanOrEqual(roundUsd(aLista));
       }
     });
   }
@@ -376,6 +378,7 @@ describe("la guarda de salida: temperatura ignorada y modelos sin clasificar", (
         "claude-sonnet-4",
         "claude-sonnet-4-5",
         "claude-sonnet-4-6",
+        "deepseek-flash",
         "gpt-3.5-turbo",
         "gpt-4",
         "gpt-4-turbo",
@@ -384,6 +387,8 @@ describe("la guarda de salida: temperatura ignorada y modelos sin clasificar", (
         "gpt-4.1-nano",
         "gpt-4o",
         "gpt-4o-mini",
+        "qwen-flash",
+        "qwen-plus",
       ].sort(),
     );
   });

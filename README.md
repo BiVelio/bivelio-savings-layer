@@ -36,7 +36,11 @@ default**, and prompts, completions and provider keys never reach BiVelio
 
 The free part is the whole savings layer. What a (paid, optional) BiVelio key adds
 is the cloud: the team dashboard, shared semantic caches across seats, org
-entitlements and license management. The cloud subscription is a fixed fee, paid whether or not you save — and there is never a commission on what you save (see [LICENSE](./LICENSE) §6).
+entitlements and license management. The cloud subscription is a fixed fee, paid
+whether or not you save — Pro €15 / seat / month or €150 / seat / year; Team
+€129 / month with 10 seats included (€12 per extra seat; €1,290 / year, €120 per
+extra seat), EUR, VAT not included — and there is never a commission on what you
+save (see [LICENSE](./LICENSE) §6).
 
 ### Install anywhere, in 60 seconds
 
@@ -61,10 +65,20 @@ npm i @bivelio/savings-layer
 ```
 
 ```ts
-import { createSavingsLayer, OpenAICompatibleProvider } from "@bivelio/savings-layer";
-
-const layer = createSavingsLayer({           // no licenseKey: COMMUNITY mode, zero telemetry
-  provider: new OpenAICompatibleProvider({ baseUrl: "https://api.openai.com/v1", apiKey: process.env.OPENAI_API_KEY }),
+// The imports come from the "Wrap the call" block below; this block compiles
+// together with it (the repo test concatenates every README block into one
+// program, as if you pasted them in order).
+const provider = new OpenAICompatibleProvider({
+  baseUrl: "https://api.openai.com/v1",
+  apiKey: process.env.OPENAI_API_KEY,
+});
+const layer = createSavingsLayer({
+  provider,
+  // OPEN CORE: nothing else is required — COMMUNITY mode, zero telemetry.
+  // For the cloud dashboard + team metering, add (all optional):
+  //   licenseKey: process.env.BIVELIO_LICENSE_KEY,
+  //   licenseServerUrl: "https://savings.bivelio.com",
+  //   serviceAccountKey: process.env.BIVELIO_SERVICE_KEY,
 });
 
 const { text, report } = await layer.generate({
@@ -86,7 +100,7 @@ is at **[savings.bivelio.com/en/how-it-works](https://savings.bivelio.com/en/how
 
 | | Community (default, no keys) | Cloud (optional `BIVELIO_*` keys) |
 | --- | --- | --- |
-| Exact + semantic cache, deduplication, singleflight | ✅ | ✅ |
+| Exact + semantic cache, deduplication of identical requests | ✅ | ✅ |
 | Model cascade, sibling routing, prompt-cache placement | ✅ | ✅ |
 | Compression, output contracts, four savings ledgers | ✅ | ✅ |
 | Gateway + `bvsala` CLI + MCP server | ✅ | ✅ |
@@ -95,6 +109,20 @@ is at **[savings.bivelio.com/en/how-it-works](https://savings.bivelio.com/en/how
 
 A license key that **is** configured but invalid or expired still fails closed with
 `LicenseError` — only its absence is a working product.
+
+### Cloud pricing (the optional, paid part)
+
+The cloud subscription is a fixed fee, paid whether or not you save: **Pro
+€15 / seat / month** or **€150 / seat / year**; **Team €129 / month with 10 seats included** (**€12 per extra seat**; **€1,290 / year, €120 per extra seat**), EUR, VAT not included. The first month carries no commission, and the
+commission on measured savings runs from **10 % down to 4 %** by volume —
+keeping you **at least 90 % of every euro saved**, never from estimates, and
+shadow-mode usage is never part of any commission. No trial. The free
+**Measure** license (no card) still exists for the cloud: it runs the layer in
+**shadow mode** — nothing is served from any cache, nothing you send is
+changed — and shows what the levers would have saved, request by request. The
+older commission-only modality is **closed to new customers**. Your
+prompts, completions and provider keys never reach BiVelio: a cloud key sends
+only the per-request usage fields listed in [LICENSE](./LICENSE) §5.
 
 ## Where it installs
 

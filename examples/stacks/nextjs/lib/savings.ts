@@ -5,9 +5,11 @@ import { openai } from "@ai-sdk/openai";
 import { savingsMiddleware } from "@bivelio/savings-layer/ai-sdk";
 
 export const savings = savingsMiddleware({
-  licenseKey: process.env.BIVELIO_LICENSE_KEY,
-  licenseServerUrl: "https://savings.bivelio.com",
-  serviceAccountKey: process.env.BIVELIO_SERVICE_KEY,
+  // OPEN CORE: no license needed — the layer runs with every local saving lever on, zero telemetry.
+  // For the cloud dashboard, team metering and license auto-renewal, add these three lines:
+  // licenseKey: process.env.BIVELIO_LICENSE_KEY,
+  // licenseServerUrl: "https://savings.bivelio.com",
+  // serviceAccountKey: process.env.BIVELIO_SERVICE_KEY,
 });
 
 // Pass `model` wherever you pass a model today (generateText, streamText…).

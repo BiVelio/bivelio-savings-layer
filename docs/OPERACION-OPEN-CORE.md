@@ -47,9 +47,10 @@ Portkey crecen con open core o freemium; nadie adopta asiduamente una caja cerra
 1. **LICENSE**: el fichero sigue siendo el comercial. El código YA funciona sin clave
    (open core funcional), pero el texto legal no lo dice. Opciones: (a) Apache-2.0 para
    el paquete npm + términos comerciales solo para la nube/enterprise (lo que recomiendo
-   para YC: LiteLLM y Kong lo hacen), (b) dual-license, (c) mantener la LICENSE actual y
-   redactar una sección «Community». Mientras tanto el badge del README no miente:
-   «telemetry off by default», sin afirmar licencia OSS.
+   para YC: LiteLLM y Kong lo hacen) — el texto completo preparado está en
+   `LICENSE-APACHE-2.0.txt` listo para adoptar, (b) dual-license, (c) mantener la
+   LICENSE actual y redactar una sección «Community». Mientras tanto el badge del
+   README no miente: «telemetry off by default», sin afirmar licencia OSS.
 2. **Web de precios** (savings.bivelio.com): las páginas de pricing dicen «Measure →
    Pro/Team por asiento». Con open core el discurso debe girar: gratis = la capa entera;
    de pago = panel de equipo, cachés compartidas, entitlements. Actualizar cuando se

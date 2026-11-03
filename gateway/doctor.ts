@@ -333,6 +333,19 @@ const TERMINALES: readonly Terminal[] = [
       "use it to give coding agents a local free tier while the gateway keeps metering the paid calls.",
     ],
   },
+  {
+    id: "claude-desktop",
+    nombre: "Claude Desktop (MCP: estado y coste de la sesión)",
+    configs: [],
+    detectable: false,
+    estadoSinDeteccion: "no detection: the recipe is a JSON block for claude_desktop_config.json",
+    receta: ({ base }) => [
+      "mechanism: Claude Desktop → Settings → Developer → Edit Config (claude_desktop_config.json), add this mcpServers entry:",
+      `"mcpServers": { "bvsala": { "command": "bvsala", "args": ["mcp", "--gateway", "${base}"] } }`,
+      "The MCP server is read-only: gateway status, cost per session and tool-output compaction",
+      "decisions, read from the local routes. Metadata only: no request ids, no content.",
+    ],
+  },
   // Los SDK oficiales, en cualquier lenguaje: no hay binario ni config que
   // buscar, así que no se detectan; la receta va siempre. Cada URL termina en
   // comillas a propósito (el test de formas de URL las recorta ahí).

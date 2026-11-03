@@ -644,9 +644,16 @@ export class SavingsLedger {
     const baselineEstimate = this.servedUnbilledRefusal
       ? 0
       : r
-      ? r.tierFactor *
-        ((this.baselineInput / 1000) * r.cachedInputPer1k +
-          (this.baselineOutput / 1000) * r.outputPer1k)
+      ? // LA FÓRMULA DEL SPEC, con UNA sola división al final: la forma
+        // «(x/1000)·precio + (y/1000)·precio» redondeaba distinto por el orden
+        // de operaciones y podía quedar 1 ulp POR ENCIMA del suelo de la regla
+        // (la propiedad que fija test/referencia-es-suelo.test.ts, semilla 54
+        // con qwen-plus). Misma fórmula = misma aritmética = el crédito nunca
+        // puede pasar del suelo.
+        r.tierFactor *
+        ((this.baselineInput * r.cachedInputPer1k +
+          this.baselineOutput * r.outputPer1k) /
+          1000)
       : precioEntrada(this.baselineInput) + (baselineOutputHonesto / 1000) * model.outputPer1k + primaDelProveedor;
     if (r) basis = baselineEstimate > 0 ? "reference" : "estimated";
     // Lo servido es una negativa que no se cobró: nada que acreditar. En una
@@ -712,8 +719,12 @@ export class SavingsLedger {
  *
  * 1e-10 mantiene el propósito original —quitar la basura binaria del tipo
  * 0.30000000000000004— sin tirar precisión que sí vale dinero.
+ *
+ * Exportado para que la propiedad del suelo (test/referencia-es-suelo.test.ts)
+ * compare contra la MISMA aritmética que publica el informe: el redondeo es
+ * monótono, así que `roundUsd(x) ≤ roundUsd(y)` siempre que `x ≤ y`.
  */
-function roundUsd(n: number): number {
+export function roundUsd(n: number): number {
   return Math.round(n * 1e10) / 1e10;
 }
 

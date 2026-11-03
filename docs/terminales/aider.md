@@ -9,7 +9,7 @@ variables que mandan son las de litellm [V].
 ## Qué necesitas
 
 - `aider` en el PATH y tu **API key** (`ANTHROPIC_API_KEY` o `OPENAI_API_KEY`).
-- `bvsala` instalado, `BIVELIO_SERVICE_KEY` exportada y una licencia BiVelio activa (ver [README](README.md)).
+- `bvsala` instalado. Open core: sin claves arranca en modo Community; `BIVELIO_SERVICE_KEY` (opcional) añade el panel y los entitlements (ver [README](README.md)).
 
 ## Envoltorio: `bvsala aider [args…]`
 

@@ -1,7 +1,7 @@
 {
   "formato": 1,
   "generadoPor": "scripts/paridad-vectores.ts (desde test/helpers/paridad.ts)",
-  "priceVersion": "2026-09-29",
+  "priceVersion": "2026-11-03",
   "priceDay": "2026-10-01",
   "casos": [
     {
@@ -44,7 +44,7 @@
           "amountMicroUsd": 20400,
           "exactAttoUsd": "20400000000000000",
           "currency": "USD",
-          "priceVersion": "2026-09-29",
+          "priceVersion": "2026-11-03",
           "priceDay": "2026-10-01",
           "catalogKey": "claude-sonnet-4-5"
         }
@@ -94,7 +94,7 @@
           "amountMicroUsd": 23775,
           "exactAttoUsd": "23775000000000000",
           "currency": "USD",
-          "priceVersion": "2026-09-29",
+          "priceVersion": "2026-11-03",
           "priceDay": "2026-10-01",
           "catalogKey": "claude-sonnet-4-5"
         }
@@ -142,7 +142,7 @@
           "amountMicroUsd": 149,
           "exactAttoUsd": "149250000000000",
           "currency": "USD",
-          "priceVersion": "2026-09-29",
+          "priceVersion": "2026-11-03",
           "priceDay": "2026-10-01",
           "catalogKey": "claude-sonnet-4-5"
         }
@@ -204,7 +204,7 @@
           "amountMicroUsd": 21933,
           "exactAttoUsd": "21933000000000000",
           "currency": "USD",
-          "priceVersion": "2026-09-29",
+          "priceVersion": "2026-11-03",
           "priceDay": "2026-10-01",
           "catalogKey": "claude-sonnet-4-5"
         }
@@ -300,7 +300,7 @@
           "reason": "usage-partial",
           "detail": "missing counter(s): output; priced counters are a floor",
           "lowerBoundMicroUsd": 12900,
-          "priceVersion": "2026-09-29"
+          "priceVersion": "2026-11-03"
         }
       }
     },
@@ -386,7 +386,7 @@
           "reason": "usage-partial",
           "detail": "missing counter(s): input; priced counters are a floor",
           "lowerBoundMicroUsd": 75,
-          "priceVersion": "2026-09-29"
+          "priceVersion": "2026-11-03"
         }
       }
     },
@@ -431,7 +431,7 @@
           "reason": "usage-partial",
           "detail": "missing counter(s): input; priced counters are a floor",
           "lowerBoundMicroUsd": 75,
-          "priceVersion": "2026-09-29"
+          "priceVersion": "2026-11-03"
         }
       }
     },
@@ -476,7 +476,7 @@
           "reason": "usage-partial",
           "detail": "missing counter(s): input; priced counters are a floor",
           "lowerBoundMicroUsd": 75,
-          "priceVersion": "2026-09-29"
+          "priceVersion": "2026-11-03"
         }
       }
     },
@@ -521,7 +521,7 @@
           "reason": "usage-partial",
           "detail": "missing counter(s): input; priced counters are a floor",
           "lowerBoundMicroUsd": 75,
-          "priceVersion": "2026-09-29"
+          "priceVersion": "2026-11-03"
         }
       }
     },
@@ -566,7 +566,7 @@
           "reason": "usage-partial",
           "detail": "missing counter(s): input; priced counters are a floor",
           "lowerBoundMicroUsd": 75,
-          "priceVersion": "2026-09-29"
+          "priceVersion": "2026-11-03"
         }
       }
     },
@@ -612,7 +612,7 @@
           "amountMicroUsd": 1350,
           "exactAttoUsd": "1350000000000000",
           "currency": "USD",
-          "priceVersion": "2026-09-29",
+          "priceVersion": "2026-11-03",
           "priceDay": "2026-10-01",
           "catalogKey": "gpt-4o-mini"
         }
@@ -660,7 +660,7 @@
           "amountMicroUsd": 15,
           "exactAttoUsd": "15000000000000",
           "currency": "USD",
-          "priceVersion": "2026-09-29",
+          "priceVersion": "2026-11-03",
           "priceDay": "2026-10-01",
           "catalogKey": "gpt-4o-mini"
         }
@@ -708,7 +708,7 @@
           "amountMicroUsd": 4180,
           "exactAttoUsd": "4180000000000000",
           "currency": "USD",
-          "priceVersion": "2026-09-29",
+          "priceVersion": "2026-11-03",
           "priceDay": "2026-10-01",
           "catalogKey": "o4-mini"
         }
@@ -754,7 +754,7 @@
           "amountMicroUsd": 560,
           "exactAttoUsd": "560000000000000",
           "currency": "USD",
-          "priceVersion": "2026-09-29",
+          "priceVersion": "2026-11-03",
           "priceDay": "2026-10-01",
           "catalogKey": "gemini-2.5-flash"
         }
@@ -849,7 +849,7 @@
           "reason": "usage-partial",
           "detail": "missing counter(s): output; priced counters are a floor",
           "lowerBoundMicroUsd": 15,
-          "priceVersion": "2026-09-29"
+          "priceVersion": "2026-11-03"
         }
       }
     },
@@ -898,7 +898,7 @@
           "amountMicroUsd": 34000,
           "exactAttoUsd": "34000000000000000",
           "currency": "USD",
-          "priceVersion": "2026-09-29",
+          "priceVersion": "2026-11-03",
           "priceDay": "2026-10-01",
           "catalogKey": "gpt-5.5"
         }
@@ -987,7 +987,7 @@
           "amountMicroUsd": 21525,
           "exactAttoUsd": "21525000000000000",
           "currency": "USD",
-          "priceVersion": "2026-09-29",
+          "priceVersion": "2026-11-03",
           "priceDay": "2026-10-01",
           "catalogKey": "claude-sonnet-4-5"
         }
@@ -1080,7 +1080,7 @@
           "reason": "usage-partial",
           "detail": "missing counter(s): output; priced counters are a floor",
           "lowerBoundMicroUsd": 12900,
-          "priceVersion": "2026-09-29"
+          "priceVersion": "2026-11-03"
         }
       }
     },
@@ -1124,7 +1124,7 @@
           "reason": "usage-partial",
           "detail": "missing counter(s): unknown; priced counters are a floor",
           "lowerBoundMicroUsd": 13200,
-          "priceVersion": "2026-09-29"
+          "priceVersion": "2026-11-03"
         }
       }
     },
@@ -1203,7 +1203,7 @@
           "state": "uncertain",
           "reason": "inherited-price",
           "detail": "gpt-4o-mini-latest has no catalog row of its own; gpt-4o-mini's price is an approximation",
-          "priceVersion": "2026-09-29"
+          "priceVersion": "2026-11-03"
         }
       }
     },
@@ -1247,7 +1247,7 @@
           "amountMicroUsd": 20400,
           "exactAttoUsd": "20400000000000000",
           "currency": "USD",
-          "priceVersion": "2026-09-29",
+          "priceVersion": "2026-11-03",
           "priceDay": "2026-10-01",
           "catalogKey": "claude-sonnet-4-5"
         }
@@ -1292,7 +1292,7 @@
           "state": "uncertain",
           "reason": "usage-estimated",
           "detail": "a token estimate is not a provider counter",
-          "priceVersion": "2026-09-29"
+          "priceVersion": "2026-11-03"
         }
       }
     },
@@ -1335,7 +1335,7 @@
           "state": "uncertain",
           "reason": "usage-client-observed",
           "detail": "counted by the client, not reported by the provider (hidden reasoning is not visible)",
-          "priceVersion": "2026-09-29"
+          "priceVersion": "2026-11-03"
         }
       }
     },
@@ -1377,7 +1377,7 @@
           "reason": "implausible-zero-input",
           "detail": "a billed attempt always carries its prompt; zero input tokens looks like a zero-filled counter",
           "lowerBoundMicroUsd": 6,
-          "priceVersion": "2026-09-29"
+          "priceVersion": "2026-11-03"
         }
       }
     },
@@ -1419,7 +1419,7 @@
           "amountMicroUsd": 1000300,
           "exactAttoUsd": "1000300000000000000",
           "currency": "USD",
-          "priceVersion": "2026-09-29",
+          "priceVersion": "2026-11-03",
           "priceDay": "2026-10-01",
           "catalogKey": "gpt-5.5"
         }
@@ -1463,7 +1463,7 @@
           "reason": "long-context-tier",
           "detail": "200001 input tokens exceed 200000; the long-context rate is not in the catalog, the short rate is a floor",
           "lowerBoundMicroUsd": 1000305,
-          "priceVersion": "2026-09-29"
+          "priceVersion": "2026-11-03"
         }
       }
     },
@@ -1505,7 +1505,7 @@
           "amountMicroUsd": 3,
           "exactAttoUsd": "2850000000000",
           "currency": "USD",
-          "priceVersion": "2026-09-29",
+          "priceVersion": "2026-11-03",
           "priceDay": "2026-10-01",
           "catalogKey": "gpt-4o-mini"
         }
@@ -1549,7 +1549,7 @@
           "amountMicroUsd": 5,
           "exactAttoUsd": "4500000000000",
           "currency": "USD",
-          "priceVersion": "2026-09-29",
+          "priceVersion": "2026-11-03",
           "priceDay": "2026-10-01",
           "catalogKey": "gpt-4o-mini"
         }
@@ -1595,7 +1595,7 @@
           "amountMicroUsd": 6125,
           "exactAttoUsd": "6125000000000000",
           "currency": "USD",
-          "priceVersion": "2026-09-29",
+          "priceVersion": "2026-11-03",
           "priceDay": "2026-10-01",
           "catalogKey": "gemini-2.5-pro"
         }

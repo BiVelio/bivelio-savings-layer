@@ -15,12 +15,12 @@ construcción, con test.
   pero ahí no hay factura por token: el gateway lo mide a precio de lista
   equivalente y nunca le acredita ahorro ni comisión (la licencia por asiento
   hace falta igual).
-- `bvsala` instalado, `BIVELIO_SERVICE_KEY` exportada y una licencia BiVelio activa (la recoge el gateway con la clave; ver [README](README.md)).
+- `bvsala` instalado. Open core: sin claves el gateway arranca en modo Community (todo el ahorro local, cero telemetría); `BIVELIO_SERVICE_KEY` añade el panel y los entitlements de la org (ver [README](README.md)).
 
 ## Envoltorio: `bvsala claude` (recomendado)
 
 ```bash
-export BIVELIO_SERVICE_KEY=bvk_…
+export BIVELIO_SERVICE_KEY=bvk_…  # OPCIONAL: panel + entitlements de org (sin ella: modo Community)
 bvsala claude                    # cualquier argumento pasa tal cual: bvsala claude -p "hola"
 ```
 

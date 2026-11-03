@@ -16,7 +16,7 @@
     "corpusSha256": "373e7aa6acdb7119dd1e096027c19ee7f4608b06af3813f10411024201d368ad",
     "paquete": "@bivelio/savings-layer 0.5.2",
     "tokenizador": "o200k_base (gpt-tokenizer)",
-    "catalogoDePrecios": "2026-09-29",
+    "catalogoDePrecios": "2026-11-03",
     "transformaciones": {
       "json-lossless": "1",
       "recoverable-preview": "1"

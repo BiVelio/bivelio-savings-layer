@@ -66,9 +66,9 @@ describe("panel de instalación: los comandos existen en el binario", () => {
     expect(comandos).toEqual([...TERMINALES_CON_ENVOLTORIO]);
   });
 
-  it("la lista del panel no ofrece Cursor ni Gemini CLI como envoltorio", () => {
+  it("la lista del panel no ofrece Cursor como envoltorio (va por la UI)", () => {
     const bloque = PANEL.match(/const AGENTES[^=]*=\s*\[([\s\S]*?)\n\];/)![1]!;
-    expect(bloque).not.toMatch(/cursor|gemini/i);
+    expect(bloque).not.toMatch(/cursor/i);
   });
 });
 
@@ -148,7 +148,7 @@ describe("panel de instalación: lo que dicen los textos, en los 12 idiomas", ()
 });
 
 describe("lo que los textos atribuyen al doctor, el doctor lo hace", () => {
-  it("Crush, Droid, Cline, Continue y Copilot en VS Code tienen receta; Cursor no se puede y Gemini CLI todavía no", async () => {
+  it("Crush, Droid, Cline, Continue y Copilot en VS Code tienen receta; Cursor y Gemini CLI también la tienen ya", async () => {
     const { texto } = await doctor(8402, { home: "/casa/prueba", path: "", existe: () => false, enPath: () => false });
     const seccion = (id: string): string => {
       const s = texto.split(/^» /m).find((t) => t.startsWith(`${id}:`));
@@ -158,7 +158,7 @@ describe("lo que los textos atribuyen al doctor, el doctor lo hace", () => {
     for (const id of ["crush", "droid", "cline", "continue", "vscode-copilot"]) {
       expect(seccion(id), id).toContain("http://127.0.0.1:8402");
     }
-    expect(seccion("cursor")).toContain("NOT supported");
-    expect(seccion("gemini")).toContain("NOT metered yet");
+    expect(seccion("cursor")).toContain("OpenAI API Base URL");
+    expect(seccion("gemini")).toContain("bvsala gemini");
   });
 });

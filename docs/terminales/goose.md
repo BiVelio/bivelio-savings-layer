@@ -9,12 +9,12 @@ forma del URL.
 
 - `goose` en el PATH, con el proveedor Anthropic elegido.
 - `ANTHROPIC_API_KEY` exportada (Goose es solo BYOK).
-- `bvsala` instalado, `BIVELIO_SERVICE_KEY` exportada y una licencia BiVelio activa (la recoge el gateway con la clave; ver [README](README.md)).
+- `bvsala` instalado. Open core: sin claves el gateway arranca en modo Community (todo el ahorro local, cero telemetría); `BIVELIO_SERVICE_KEY` añade el panel y los entitlements de la org (ver [README](README.md)).
 
 ## Envoltorio: `bvsala goose`
 
 ```bash
-export BIVELIO_SERVICE_KEY=bvk_…
+export BIVELIO_SERVICE_KEY=bvk_…  # OPCIONAL: panel + entitlements de org (sin ella: modo Community)
 bvsala goose                       # espejo exacto de `bvsala claude`
 ```
 
