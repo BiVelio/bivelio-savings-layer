@@ -1,0 +1,494 @@
+% =============================================================================
+% BV-SALA Savings Layer — Verifiable Measurement of Cost Savings in LLM
+% Applications (Open-Core Edition), v2.1, November 2026.
+%
+% arXiv-ready source. Compile with:
+%   pdflatex main && pdflatex main
+% Standard packages only (TeX Live 2023+ / arXiv default).
+% The canonical source of this paper is docs/PAPER.md; this file is its
+% LaTeX rendering.
+% =============================================================================
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=black,citecolor=black,urlcolor=blue}
+
+\newtheorem{proposition}{Proposition}
+\newtheorem{definition}{Definition}
+\newtheorem{assumption}{Assumption}
+
+\title{BV-SALA Savings Layer:\\ Verifiable Measurement of Cost Savings in Large Language Model Applications\\ \large (Open-Core Edition)}
+\author{Joan-Marc Fisa\\ \small Founder, BiVelio Inc\\ \small \texttt{jmfisa@bivelio.com} \quad \url{https://savings.bivelio.com}}
+\date{November 2026 (v2.1) \\ \small Preprint --- technical report}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Cost claims for large language model (LLM) optimizations are only interpretable when the
+workload, the uncertainty, and the cost basis are stated explicitly. This paper evaluates
+BV-SALA Savings Layer---an in-process SDK and a local gateway that combine
+provider-reported usage with versioned list prices---in its \emph{open-core} distribution,
+where the entire local saving stack runs with no license key, arms every local lever, and
+sends zero telemetry by default. We formalize the accounting object as a function from a
+request to a vector of four mutually exclusive, never-summed ledgers
+(\texttt{avoided\_calls}, \texttt{eliminated\_tokens}, \texttt{compressed\_tokens},
+\texttt{provider\_cached\_tokens}) and an evidence label in the lattice
+\{measured, reference, estimated, unmeasured\}; we give conditions under which the cost
+ratio decomposes additively over the ledgers (Proposition~1). Live double-runs under a
+paired design with percentile cluster bootstrap (10{,}000 resamples, family as the
+resampling unit) yield a \textbf{31.5\,\% reduction} (95\,\% CI 25.7--36.7; 100 families,
+200 requests per arm) on \texttt{gpt-4o-mini}, and \textbf{75.1\,\%} (95\,\% CI
+69.3--79.6; 31 families, 62 requests per arm) on \texttt{claude-sonnet-5}, of which
+approximately \textbf{41 percentage points} are attributable to a prefix-cache effect
+enabled by \texttt{cache\_control} in the instrumented arm rather than to a pre-existing
+provider discount. A counterfactual replay of \textbf{19{,}779 gateway requests} (51
+sessions, 13 days) estimates \textbf{2.49\,\%} (95\,\% CI 1.50--3.57) and is reported as
+reference-valued, not measured. We add a routing-economics gradient at versioned list
+prices across DeepSeek, Qwen and GLM siblings, presented as conditional arithmetic rather
+than measured savings; a semantic-cache positioning against the published AWS benchmark
+and GPTCache; and a preregistered roadmap specifying the factorial and non-inferiority
+designs. No invoice reconciliation is claimed; every number is reproducible from public
+artifacts.
+\end{abstract}
+
+\noindent\textbf{Keywords:} large language models; inference cost; provider-reported
+usage; prefix caching; semantic caching; cluster bootstrap; evidence labels; open core;
+model routing; measurement methodology.
+
+\section{Introduction}\label{sec:intro}
+
+\subsection{Problem}
+The dominant cost of deploying a language model application is the provider invoice,
+metered in tokens and priced by a commercial list that changes without notice. A family of
+interventions---response caching, prompt compression, prompt restructuring, model routing,
+prompt-cache placement---can reduce that invoice. Their literature is large
+(Section~\ref{sec:related}), but the \emph{evidence} for their economic effect in a
+specific deployment is usually absent: a vendor may report a percentage without a
+workload, an interval, or a distinction between what the provider's counter confirmed and
+what was reconstructed. This paper's thesis is that a cost claim is a measurement claim,
+and inherits its obligations: an explicit instrument, a stated workload, an uncertainty
+statement, and a separation between what was observed and what was inferred.
+
+\subsection{Contributions}
+\begin{enumerate}[leftmargin=1.4em]
+  \item A formal accounting object (Section~\ref{sec:model}): the request$\to$report
+  function, the four ledgers, the evidence lattice, and Proposition~\ref{prop:decomp}.
+  \item An estimator and an uncertainty procedure (Section~\ref{sec:method}): the ratio
+  estimator over paired requests with percentile cluster bootstrap at family or session
+  level, and stated seeds.
+  \item Live evidence (Section~\ref{sec:results}) for two providers under a paired design,
+  with the Anthropic effect separated from a pre-existing provider discount, plus one
+  counterfactual replay explicitly labelled as such.
+  \item An open-core system contract (Section~\ref{sec:open-core}): community mode as a
+  structural gate with no control plane, which removes the adoption barrier of the August
+  edition while preserving every auditable guarantee.
+  \item A preregistered roadmap (Section~\ref{sec:roadmap}) naming the designs this
+  edition does not run.
+\end{enumerate}
+
+\subsection{Research questions}
+\textbf{RQ1.} What cost reductions are observed in the specified live SDK double-runs when
+provider-reported usage is valued at versioned list prices? \textbf{RQ2.} How much
+uncertainty remains when dependence is handled by family- or session-level cluster
+bootstrap? \textbf{RQ3.} Which components are attributable to avoided calls, to token
+elimination or compression, and to cache effects enabled by the instrumented arm?
+\textbf{RQ4.} What quality and latency observations are available, and which claims remain
+unsupported? \textbf{RQ5.} How should a counterfactual replay and a provisional break-even
+calculation be interpreted relative to live evidence?
+
+\subsection{What changed since the August edition}
+The August edition evaluated a commercial, fail-closed distribution: the layer executed
+only with a verified license key, and the gateway metered Anthropic and OpenAI traffic but
+not Gemini. The November release changes the system, not the measurement doctrine.
+(i) \emph{Community mode}: \texttt{createSavingsLayer(\{provider\})} without a
+\texttt{licenseKey} runs the full local saving stack with telemetry off, and the gateway
+starts with no keys; a key that is present but invalid still fails closed.
+(ii) \emph{Three protocols, one meter}: the gateway reads provider-reported usage from the
+Gemini protocol, mapping \texttt{usageMetadata} onto the same usage shape as Anthropic and
+OpenAI.
+(iii) \emph{Chinese providers at list price}: the catalog adds DeepSeek, Qwen and GLM at
+peak rates.
+(iv) \emph{Zero-telemetry default}.
+Nothing changes the four-ledger accounting, the evidence labels or the versioned
+list-price basis.
+
+\section{Related work}\label{sec:related}
+
+Token pricing is a commercial decision, not a property of the Transformer. One line of
+work reuses computation: PromptCache~\cite{promptcache}, CachedAttention~\cite{cachedatt},
+SGLang~\cite{sglang} and CacheBlend~\cite{cacheblend} study attention or KV-cache reuse,
+and Anthropic and OpenAI document provider-side prompt caching~\cite{anthropic-pc,
+openai-pc}. These mechanisms can lower usage charges, but an experiment must distinguish
+caching already present in both arms from caching \emph{enabled} by the intervention---the
+attribution problem of Section~\ref{sec:attribution}.
+
+A second line reduces prompt tokens: LLMLingua~\cite{llmlingua}, LLMLingua-2~\cite{llmlingua2}
+and gist tokens~\cite{gist}. A third reuses responses: GPTCache~\cite{gptcache},
+SCALM~\cite{scalm}, MeanCache~\cite{meancache} and vCache~\cite{vcache} address freshness,
+privacy and per-prompt error bounds; P-CHR AUC and Operational Retention Rate evaluate
+deployment~\cite{opgap}. Routing systems such as FrugalGPT~\cite{frugalgpt},
+RouteLLM~\cite{routellm} and RouteNLP~\cite{routenlp} select among models and calibrate
+escalation. Serving-efficiency work---vLLM~\cite{vllm}, SGLang~\cite{sglang}, speculative
+decoding~\cite{specdec}---is orthogonal, as this paper does not measure throughput.
+OpenTelemetry's GenAI conventions~\cite{otel} provide a vocabulary, not cost attribution.
+
+BV-SALA combines established mechanisms with request-identity guards, separate ledgers,
+calibrated abstention and economic gating; its differentiation is the integration of
+accounting and safety, not any single mechanism. vCache is the closest comparator for
+semantic caching; this work does not establish equivalent guarantees or hit rates.
+Structured-data rewriting requires task- and model-specific quality evaluation: Notation
+Matters shows token reductions can reduce tool-calling accuracy~\cite{notation}. The
+uncertainty discussion uses established terminology~\cite{jcgm100,jcgm200} without
+asserting calibration-chain traceability.
+
+\section{System model and accounting object}\label{sec:model}
+
+\subsection{Notation}
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}ll@{}}
+\toprule
+Symbol & Meaning \\
+\midrule
+$r$ & request: model, messages, tools, structured data, constraints \\
+$u(r)=(i,o,c)$ & provider-reported usage: input, output, cache-read input tokens \\
+$\pi_p=(\pi_{in},\pi_{out},\pi_{cache})$ & provider $p$'s list prices, USD per million tokens \\
+$C(\pi,u)$ & cost: $(\pi_{in}i+\pi_{out}o+\pi_{cache}c)/10^6$ \\
+$L$ & the layer: $r\mapsto(r',R)$ \\
+$R=(C_{base}-C_{opt})/C_{base}$ & the cost ratio (primary estimand) \\
+$F$ & semantic family (SDK) or session (gateway); resampling unit \\
+$B$ & bootstrap resamples, $B=10{,}000$ \\
+\bottomrule
+\end{tabular}
+\caption{Notation.}
+\end{table}
+
+All amounts are \emph{list-price} amounts at the catalog version that produced them, never
+a negotiated or reconciled invoice. The internal catalog stores prices per 1{,}000 tokens;
+a guard test rejects per-million values written by mistake.
+
+\subsection{The layer}
+\begin{definition}[request transform]
+The layer is a (possibly partial) function $L:r\to(r',R)$ returning a transformed request
+$r'$ and a report $R$. The transformation is \emph{content-preserving} under an
+equivalence predicate $E(r,r')$ certified per mechanism: exact identity for cache hits, a
+declared delimiter for structured-data rewriting, an output contract for constrained
+decoding, header identity for upstream rewriting. Where $E$ cannot be certified, $L$ falls
+back to the identity transform and reports the stage as failed-open.
+\end{definition}
+
+\begin{definition}[report]
+A report is $R=(\text{calls},\text{tokens},\text{ledgers},\text{cost},\text{traces})$
+where ledgers is the four-vector $(A,E,K,P)$---avoided calls, eliminated tokens,
+compressed tokens, provider-cached tokens---and cost carries
+$(\text{baseline},\text{actual},\text{ratio},\text{basis})$.
+\end{definition}
+
+\begin{definition}[evidence labels]
+For a value $v$: \texttt{measured} (provider-reported usage plus a versioned list price),
+\texttt{reference} (explicit matching against a prior \emph{executed} request whose
+provider counter is reused), \texttt{estimated} (reconstructed), \texttt{unmeasured} (no
+final provider counter). The labels form a partial order
+$\texttt{measured}\succ\texttt{reference}\succ\texttt{estimated}\succ\texttt{unmeasured}$,
+with no operation promoting a value across the order.
+\end{definition}
+
+\subsection{Ledger decomposition}\label{sec:prop}
+\begin{assumption}[A1]
+For a fixed request and model, the provider's usage counter is deterministic enough that
+two identical requests produce the same $u$ within reported precision.
+\end{assumption}
+\begin{assumption}[A2]
+Mechanisms act on disjoint token populations: a token avoided by call avoidance is not
+also counted as eliminated; a token eliminated by rewriting is not also counted as cached.
+\end{assumption}
+\begin{assumption}[A3]
+Prices are non-negative and the cost functional is linear in $u$.
+\end{assumption}
+
+\begin{proposition}\label{prop:decomp}
+Under A1--A3, $R=R_A+R_E+R_K+R_P+\varepsilon$, where $R_A,R_E,R_K,R_P$ are the cost ratios
+attributable to each ledger and $\varepsilon$ collects interaction effects between
+mechanisms applied to the same request.
+\end{proposition}
+\begin{proof}[Proof sketch]
+By A3, $C_{base}-C_{opt}=\sum_j\Delta_j$ over disjoint token populations (A2), each
+$\Delta_j$ being the cost of the tokens attributable to mechanism $j$ valued at the
+provider price of the token class they occupy. Dividing by $C_{base}$ yields the
+decomposition; $\varepsilon$ collects the non-diagonal terms A2 does not eliminate (for
+example, a compressed prompt changing the cache-placement decision).
+\end{proof}
+
+The proposition is deliberately conditional: it licenses reporting the ledgers
+\emph{separately} and forbids summing them into one unconditional figure unless
+$\varepsilon$ is bounded. The implementation never sums them.
+
+\subsection{The open-core contract}\label{sec:open-core}
+Community mode is a structural license gate that answers ``active, entitled to every local
+feature'' with no network dependency, and an entitlements channel in the gateway grants
+the four local levers without a service key. The contract: (1) with no key the layer runs
+the full local stack and sends nothing; (2) with a key that is invalid, expired or revoked
+the layer fails closed; (3) with a valid cloud key it additionally reports the per-request
+fields enumerated in the Cloud Services Terms---never prompt content, completions or
+provider credentials. Limitation: without a cloud key there is no revocation channel
+(Section~\ref{sec:limits}).
+
+\subsection{Metering the three protocols}
+The gateway reads usage from Anthropic Messages, OpenAI Chat Completions/Responses and the
+Gemini protocol. For Gemini, \texttt{:generateContent} and \texttt{:streamGenerateContent}
+(SSE, \texttt{alt=sse} and newline-delimited JSON) are forwarded byte-for-byte; the
+observer maps \texttt{usageMetadata}, discounting implicit-cache tokens from input and
+summing thinking tokens into output. A stream without final \texttt{usageMetadata} is
+reported \texttt{unmeasured}. These are operational checks, not savings claims.
+
+\section{Measurement methodology}\label{sec:method}
+
+\subsection{Design}
+Each scenario runs twice against the same live provider on the same constructed content:
+arm A without the layer, arm B instrumented. The unit of analysis is the semantic family---a
+group of requests sharing a template and differing only in fields---so that repetition is
+represented realistically. Both arms are valued with provider-reported usage at the same
+catalog version.
+
+\subsection{Estimator}
+For family $f$ with $n_f$ requests per arm, $R_f=(C_{base}(f)-C_{opt}(f))/C_{base}(f)$ and
+the estimand is $R=\frac1F\sum_f R_f$, treating each family as one observation: a
+ratio-of-sums per family and a mean across families, not a pooled token average.
+
+\subsection{Uncertainty}
+Percentile cluster bootstrap: resample families with replacement, $B=10{,}000$, recompute
+$R$, report empirical 2.5th and 97.5th percentiles. Resampling at family or session level
+respects within-family dependence. Seeds and artifacts are published. This is a percentile
+interval, not BCa~\cite{efron,davison}---a stated limitation.
+
+\subsection{Attribution of the Anthropic effect}\label{sec:attribution}
+The \texttt{claude-sonnet-5} reduction contains a prefix-cache effect arm B enables by
+placing \texttt{cache\_control} markers. Comparing arm A's cache-read tokens (the
+provider's own behavior) with arm B's isolates the enabled effect: approximately 41
+percentage points of the 75.1\,\%. This is an attribution within the experiment, not a
+decomposition certified by the provider.
+
+\subsection{What the method cannot do}
+It cannot establish invoice reconciliation, non-inferiority in quality or latency, or
+generalization beyond the measured workloads. These are threats
+(Section~\ref{sec:threats}), not buried caveats.
+
+\section{Experimental design}\label{sec:design}
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{@{}p{3.2cm}p{5.6cm}p{5.2cm}@{}}
+\toprule
+Dimension & Live SDK double-run & Gateway replay \\
+\midrule
+Unit & semantic family (100 + 31) & session (51) \\
+Requests per arm & 200 / 62 & 19{,}779 total \\
+Traffic & GSM8K-derived, 30\,\% exact repeats + 20\,\% paraphrases & production sessions, one organization, 13 days \\
+Models & \texttt{gpt-4o-mini}, \texttt{claude-sonnet-5} & Anthropic (Claude Code) \\
+Cost basis & versioned list prices & versioned list prices, partially reconstructed baseline \\
+Interval & percentile cluster bootstrap, $B=10^4$ & same at session level \\
+Status & \texttt{measured} (live) & \texttt{reference} (counterfactual) \\
+\bottomrule
+\end{tabular}
+\caption{Experimental design.}
+\end{table}
+
+\section{Results}\label{sec:results}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+Evidence, system, model & Reduction & 95\,\% CI & Workload and basis \\
+\midrule
+Live SDK A/B, \texttt{gpt-4o-mini} & \textbf{31.5\,\%} & [25.7; 36.7] & 100 families / 200 per arm; 30\,\% exact + 20\,\% paraphrases; SDK 0.4.31; measured \\
+Live SDK A/B, \texttt{claude-sonnet-5} & \textbf{75.1\,\%} & [69.3; 79.6] & 31 families / 62 per arm; \texttt{cache\_control} in B ($\approx$41\,pp); measured \\
+Counterfactual replay, Anthropic TTL & \textbf{2.49\,\%} & [1.50; 3.57] & 19{,}779 requests / 51 sessions / 13 days; partial baseline; reference \\
+\bottomrule
+\end{tabular}
+\caption{Primary evidence (unchanged from the August edition).}
+\end{table}
+
+The OpenAI figure is the clean case: repetition-dominated traffic and a saving from calls
+never executed. The Anthropic figure is large mainly because the instrumented arm enables
+a provider cache the baseline did not use; both the raw figure and the enabled share are
+reported. The gateway figure is small and reference-valued.
+
+\paragraph{New operational evidence.}
+Gemini protocol metering forwards \texttt{:generateContent} and
+\texttt{:streamGenerateContent} byte-for-byte and maps \texttt{usageMetadata} to the same
+ledger shape (non-breakage and fidelity). The DeepSeek Anthropic-format rewrite sends
+\texttt{/v1/messages} to \texttt{/anthropic/v1/messages} with client headers intact
+(test-locked). A catalog guard rejected a $\times$1000 per-million copy error during this
+edition's development.
+
+\subsection{Routing economics at list prices}
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{@{}lrrrl@{}}
+\toprule
+Model & Input & Output & Cached input & Note \\
+\midrule
+\texttt{claude-sonnet-5} & $\sim$2.00 & $\sim$15.00 & 0.20 & 1-h cache writes 2$\times$ \\
+\texttt{gpt-4o-mini} & 0.15 & 0.60 & 0.075 & automatic caching \\
+\texttt{deepseek-flash} & 0.30 (peak) & 1.20 & \textbf{0.003} & off-peak half; Anthropic-format endpoint \\
+\texttt{qwen3.8-flash} & 0.15 & 0.47 & 0.015 & explicit cache, 1.25$\times$ writes \\
+\texttt{glm-5.3-flash} & $\sim$0.11 & $\sim$0.39 & --- & CNY$\to$USD at 7.2 \\
+\bottomrule
+\end{tabular}
+\caption{List prices, USD per million tokens (catalog 2026-11-03). Conditional arithmetic,
+not a measurement.}
+\end{table}
+
+A cached input token is $\sim$66$\times$ cheaper on \texttt{deepseek-flash} than on
+\texttt{claude-sonnet-5} ($0.20/0.003\approx 66.7$); off-peak DeepSeek input is
+$\sim$13$\times$ cheaper than Sonnet input ($2.00/0.15\approx 13.3$). The cross-provider
+quality gap is exactly what a cascade's gate must certify before this becomes savings; the
+paper publishes the price gradient and not a routing win-rate, because no win-rate has been
+measured.
+
+\subsection{Break-even (provisional)}
+At a reduction $R$ on a monthly list-price bill $B$, a seat with fee $F$ pays off iff
+$RB>F$. With $F=\text{\euro}15$ per seat per month and $R=0.315$, $B^*=F/R\approx
+\text{\euro}47.6$ per month. This is conditional arithmetic on a measured ratio, not a
+forecast.
+
+\section{Threats to validity}\label{sec:threats}
+\emph{Construct:} list prices are not invoices (negotiated rates, credits, taxes,
+rounding absent); every figure is labelled at list prices. \emph{Internal:} the Anthropic
+effect includes a cache the instrumented arm enables, reported separately; mechanism
+interactions are kept apart by Proposition~\ref{prop:decomp} with $\varepsilon$ stated.
+\emph{External:} two small constructed workloads, one gateway organization, two providers.
+\emph{Statistical:} percentile intervals, $B=10^4$, family-level resampling, seeds
+published, no BCa claim. \emph{Reliability:} no independent replication.
+\emph{Conclusion:} vendor evaluation by the product's author; every claim bounded to
+reported artifacts.
+
+\section{Limitations}\label{sec:limits}
+All August limitations stand: small constructed samples (100 + 31 families), one gateway
+organization, no invoice reconciliation, no independent replication, no quality or latency
+non-inferiority, an in-memory linear semantic store, and the author's developer role. Two
+additions: (i) the Chinese-provider rows rely on pricing pages consulted 2026-11-03, with
+DeepSeek at peak rates and GLM converted at 7.2 CNY/USD; Kimi and MiniMax prices were not
+verifiable and stay out of the catalog; (ii) community mode has no revocation channel by
+design---the intended open-core trade, and the reason the cloud remains the paid surface.
+
+\section{Preregistered research roadmap}\label{sec:roadmap}
+\begin{enumerate}[leftmargin=1.4em]
+  \item Factorial design: deduplication $\times$ \texttt{cache\_control} with per-cell power.
+  \item $\rho$ sweep: exact-repeat rate swept across families (response curve).
+  \item Hierarchical multi-day experiment across families, sessions, days, organizations.
+  \item Non-inferiority tests: quality, freshness, latency; routing gate and TTL lever.
+  \item Calibrated semantic cache at scale: multi-tenant precision, ORR~\cite{opgap}.
+  \item Invoice reconciliation against one organization's provider invoices.
+  \item External replication from the published branch and artifacts.
+\end{enumerate}
+
+\section{Data and code availability}
+Public-bench summaries and raw CSVs: \url{https://savings.bivelio.com/benchmarks}. Software:
+npm \texttt{@bivelio/savings-layer} (Apache-2.0) and PyPI
+\texttt{bivelio-savings-layer}. Gateway test suites run against fake upstreams with no
+network. Preprint source: \texttt{docs/PAPER.md}; LaTeX: \texttt{docs/paper/main.tex}.
+Raw gateway logs remain private; aggregate replay artifacts are public.
+
+\section{Conflict of interest}
+The author is the founder of BiVelio Inc, which develops the evaluated product. No
+independent replication is reported.
+
+\begin{thebibliography}{99}
+\small
+\bibitem{llmlingua} H. Jiang, Q. Wu, C.-Y. Lin, Y. Yang, L. Qiu. LLMLingua: Compressing prompts for accelerated inference of large language models. EMNLP, 2023.
+\bibitem{llmlingua2} Z. Pan, Q. Wu, H. Jiang, et al. LLMLingua-2: Data distillation for efficient and faithful task-agnostic prompt compression. Findings of ACL, 2024.
+\bibitem{gist} J. Mu, X. L. Li, N. Goodman. Learning to compress prompts with gist tokens. NeurIPS 36, 2023.
+\bibitem{promptcache} I. Gim, G. Chen, S.-s. Lee, et al. Prompt Cache: Modular attention reuse for low-latency inference. arXiv:2311.04934, 2023.
+\bibitem{cachedatt} B. Gao, Z. He, P. Sharma, et al. Cost-efficient large language model serving for multi-turn conversations with CachedAttention. USENIX NSDI, 2024.
+\bibitem{sglang} L. Zheng, L. Yin, Z. Xie, et al. SGLang: Efficient execution of structured language model programs. arXiv:2312.07104, 2023.
+\bibitem{cacheblend} J. Yao, H. Li, Y. Liu, et al. CacheBlend: Fast large language model serving for RAG with cached knowledge fusion. EuroSys, 2025.
+\bibitem{anthropic-pc} Anthropic. Prompt caching --- documentation. \url{https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching}
+\bibitem{openai-pc} OpenAI. Prompt caching --- API guide. \url{https://platform.openai.com/docs/guides/prompt-caching}
+\bibitem{gptcache} F. Bang. GPTCache: An open-source semantic cache for LLM applications enabling faster answers and cost savings. NLP-OSS Workshop, 2023.
+\bibitem{scalm} J. Li, C. Xu, F. Wang, et al. SCALM: Towards semantic caching for automated chat services with large language models. arXiv:2406.00025, 2024.
+\bibitem{meancache} W. Gill, M. Elidrisi, P. Kalapatapu, et al. MeanCache: User-centric semantic caching for LLM web services. arXiv:2403.02694, 2024.
+\bibitem{frugalgpt} L. Chen, M. Zaharia, J. Zou. FrugalGPT: How to use large language models while reducing cost and improving performance. arXiv:2305.05176, 2023.
+\bibitem{routellm} I. Ong, A. Almahairi, V. Wu, et al. RouteLLM: Learning to route LLMs with preference data. ICLR, 2025. arXiv:2406.18665.
+\bibitem{vllm} W. Kwon, Z. Li, S. Zhuang, et al. Efficient memory management for large language model serving with PagedAttention. ACM SOSP, 2023.
+\bibitem{specdec} Y. Leviathan, M. Kalman, Y. Matias. Fast inference from transformers via speculative decoding. ICML, 2023.
+\bibitem{otel} OpenTelemetry Project. Generative AI semantic conventions. \url{https://opentelemetry.io/docs/specs/semconv/gen-ai/}
+\bibitem{jcgm100} Joint Committee for Guides in Metrology. Guide to the expression of uncertainty in measurement. JCGM 100:2008, 2008.
+\bibitem{jcgm200} Joint Committee for Guides in Metrology. International vocabulary of metrology (VIM), 3rd ed. JCGM 200:2012, 2012.
+\bibitem{claudecode} Anthropic. Claude Code --- agentic coding tool documentation. \url{https://www.anthropic.com/claude-code}
+\bibitem{gsm8k} K. Cobbe, V. Kosaraju, M. Bavarian, et al. Training verifiers to solve math word problems. arXiv:2110.14168, 2021.
+\bibitem{efron} B. Efron, R. J. Tibshirani. An Introduction to the Bootstrap. Chapman and Hall/CRC, 1993.
+\bibitem{davison} A. C. Davison, D. V. Hinkley. Bootstrap Methods and Their Application. Cambridge University Press, 1997.
+\bibitem{vcache} L. G. Schroeder, A. Desai, A. Cuadron, et al. vCache: Verified semantic prompt caching. ICLR, 2026. arXiv:2502.03771.
+\bibitem{routenlp} D. Guo, J. Wu, S. M. Yiu. RouteNLP: Closed-loop LLM routing with conformal cascading and distillation co-optimization. arXiv:2604.23577, 2026.
+\bibitem{notation} B. C. Geiger. Notation matters: A benchmark study of token-optimized formats in agentic AI systems. arXiv:2605.29676, 2026.
+\bibitem{opgap} A. Baral. Closing the operational gap in semantic caching. arXiv:2606.19719, 2026.
+\bibitem{bench} BiVelio. Calibrated semantic-cache evaluation and abstention report. Public benchmark documentation, September 2026. \url{https://savings.bivelio.com/benchmarks}
+\end{thebibliography}
+
+\appendix
+
+\section{Notation and derivations}
+\paragraph{A.1 Cost functional.}
+$C(\pi,u)=(\pi_{in}i+\pi_{out}o+\pi_{cache}c)/10^6$. The catalog stores per-1{,}000
+prices and the implementation divides by $10^3$; the two conventions produce the same
+amount only when used consistently, which is why the per-million copy error the guard
+rejected was material.
+
+\paragraph{A.2 Ratio estimator.}
+With per-family ratios $R_f$, $\hat R=\frac1F\sum_f R_f$ is a ratio-of-sums per family and
+a mean across families. Its ratio bias is $O(1/F)$; the bootstrap interval captures
+sampling variability of families, not the bias term.
+
+\paragraph{A.3 Additivity residual.}
+$\varepsilon$ is bounded in practice by the largest single-request interaction observed in
+the traces; the implementation reports every stage that ran, so co-occurring mechanisms are
+auditable.
+
+\section{Bootstrap procedure}
+\begin{enumerate}[leftmargin=1.4em]
+  \item Compute $R_f$ from the paired arm totals of each family.
+  \item Draw $B=10{,}000$ resamples of the family index set with replacement.
+  \item Compute $\hat R_b$ as the mean over drawn families.
+  \item Report the empirical 2.5th and 97.5th percentiles of $\{\hat R_b\}$.
+  \item Publish the seed, the resample count and the artifact hash.
+\end{enumerate}
+The procedure is $O(BF)$; with $F\le 100$ and $B=10^4$ it runs in milliseconds and is
+rerun in CI so a red test blocks a release.
+
+\section{Reproducibility}
+Install with \texttt{pnpm add @bivelio/savings-layer} (Node $\ge$ 20.19). Community mode
+requires no key; the cloud key is optional. The weekly live battery and the gateway live
+bench run in CI and publish each trial at \url{https://savings.bivelio.com/benchmarks}. The
+catalog version that produced every figure is recorded in \texttt{src/pricing/catalogo.ts}
+and echoed in each report as \texttt{versionPrecios}.
+
+\section{Resumen en español}
+Esta edición extiende la evaluación de agosto a la distribución open core: la capa corre
+sin clave en modo comunitario (todas las palancas locales, telemetría cero), mide tres
+protocolos de proveedor ---incluido el protocolo Gemini--- y el endpoint en formato
+Anthropic de DeepSeek, y añade al catálogo versionado los precios de lista de DeepSeek,
+Qwen y GLM. Las cifras primarias no cambian: 31,5\,\% [25,7; 36,7] en OpenAI y 75,1\,\%
+[69,3; 79,6] en Anthropic, con $\approx$41 puntos porcentuales de efecto de caché habilitado
+por el brazo instrumentado; el replay contrafactual del gateway sigue en 2,49\,\% [1,50;
+3,57]. Se añade un análisis económico del enrutamiento presentado como aritmética
+condicional ---no como ahorro medido---, una posición frente al benchmark publicado de
+caché semántica, y un mapa de investigación prerregistrado. La contribución metodológica
+es una descomposición formal del ahorro en cuatro libros que nunca se suman, con una
+proposición que explicita las condiciones de aditividad y un residuo de interacción
+declarado, y una jerarquía de etiquetas de evidencia que impide presentar una estimación
+como un hecho de factura.
+
+\end{document}
