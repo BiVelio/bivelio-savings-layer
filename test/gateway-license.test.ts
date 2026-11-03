@@ -102,18 +102,17 @@ describe("resolveStartupLicense — el arranque, en orden estricto", () => {
     expect(keysetVacio).toMatchObject({ ok: false, code: "no-public-key" });
   });
 
-  it("E1 · sin clave de servicio → service-key-missing con las DOS condiciones y sus dos URL, sin red", async () => {
+  it("E1 · sin clave de servicio ni licenseKey → modo comunitario, sin red; una clave presente pero mala sigue cerrando", async () => {
     for (const serviceAccountKey of [undefined, "", "   "]) {
       const f = responde(200);
       const r = await arrancar({ serviceAccountKey, fetchImpl: f as unknown as typeof fetch });
-      expect(r.ok).toBe(false);
-      if (r.ok) return;
-      expect(r.code).toBe("service-key-missing");
-      expect(r.message).toContain("BIVELIO_SERVICE_KEY is not set");
-      expect(r.message).toContain("https://savings.bivelio.com/dashboard/account");
-      expect(r.message).toContain("https://savings.bivelio.com/dashboard/install");
+      expect(r).toMatchObject({ ok: true, source: "community", license: null, status: "active" });
+      expect(r.ok && r.line).toContain("COMMUNITY MODE");
       expect(llamadas(f)).toHaveLength(0);
     }
+    // El fail-closed que queda: una clave PRESENTE pero inválida.
+    const malo = await arrancar({ licenseKey: "no-es-una-clave", fetchImpl: responde(200) as unknown as typeof fetch });
+    expect(malo).toMatchObject({ ok: false, code: "license-invalid" });
   });
 
   it("E1 · una clave que no es bvk_ → service-key-malformed; si es un token de licencia, lo dice", async () => {
@@ -246,7 +245,8 @@ describe("resolveStartupLicense — el arranque, en orden estricto", () => {
     });
     expect(r).toMatchObject({ ok: true, source: "online" });
     if (!r.ok) return;
-    expect(r.license.payload.org_id).toBe("org-test");
+    expect(r.license).not.toBeNull();
+    expect(r.license!.payload.org_id).toBe("org-test");
     expect(r.warnings[0]).toContain("different organization");
   });
 
@@ -675,15 +675,15 @@ describe("la copia que viaja en npm (README y guías de terminales)", () => {
   const readme = leer("../README.md");
   const terminales = leer("../docs/terminales/README.md");
 
-  it("el README dice que el gateway exige licencia, que solo corta las NUEVAS y que la suscripción no comisiona", () => {
-    expect(readme).toMatch(/active\s+BiVelio\s+license/);
+  it("el README dice que el gateway arranca sin claves (COMMUNITY), que solo corta las NUEVAS y que la suscripción no comisiona", () => {
+    expect(readme).toMatch(/COMMUNITY\s+mode/);
     expect(readme).toMatch(/only\s+new\s+requests\s+are\s+refused/);
     expect(readme).toMatch(/never\s+carries\s+commission/);
     expect(readme).toMatch(/cache-write\s+TTL/);
   });
 
-  it("⛔ las guías de terminales ya no prometen reenviar sin clave", () => {
-    expect(terminales).toMatch(/licencia\s+BiVelio\s+activa/);
+  it("⛔ las guías de terminales dicen modo Community, y no prometen reenviar sin clave", () => {
+    expect(terminales).toMatch(/modo\s+Community/);
     expect(terminales).not.toMatch(/Nunca\s+corta\s+el\s+tráfico:\s+sin\s+clave/);
     expect(terminales).not.toMatch(/Sin ella: reenvía, NO mide/);
     expect(terminales).toMatch(/TTL\s+de\s+escritura\s+de\s+caché/);

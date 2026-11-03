@@ -71,7 +71,10 @@ export function ahorroNativo(
   if (leidos === 0 && escritos === 0) return undefined;
 
   const familia = familiaDeTarifa(modelo);
-  const provider: NativeSavingsReport["provider"] = familia ?? "unknown";
+  // Los proveedores chinos no publican contadores de caché nativa por el cable
+  // que este bloque lee: familia "unknown" (el bloque no se acredita como suyo).
+  const provider: NativeSavingsReport["provider"] =
+    familia === "anthropic" || familia === "openai" || familia === "google" ? familia : "unknown";
   const mult = primaDeEscritura(modelo);
   const mult1h = primaDeEscritura1h(modelo);
   const lectura = precio.cachedInputPer1k;

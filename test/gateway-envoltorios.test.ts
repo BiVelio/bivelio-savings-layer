@@ -68,12 +68,12 @@ describe("envoltorioDe — la forma exacta del base URL por terminal", () => {
   });
 
   it("los que se enrutan por entorno tienen envoltorio; los de archivo o UI van por doctor", () => {
-    for (const t of ["claude", "codex", "goose", "qwen", "opencode", "kilo", "copilot", "aider"]) {
+    for (const t of ["claude", "codex", "goose", "qwen", "opencode", "kilo", "copilot", "aider", "gemini"]) {
       expect(esTerminalConEnvoltorio(t), t).toBe(true);
     }
     // Crush, Droid y Continue solo por archivo; Cline y el BYOK de VS Code por UI;
-    // Gemini CLI y Cursor no se miden (ver doctor).
-    for (const t of ["crush", "droid", "continue", "cn", "cline", "gemini", "cursor"]) {
+    // Cursor solo por su override de base URL en la UI (ver doctor).
+    for (const t of ["crush", "droid", "continue", "cn", "cline", "cursor"]) {
       expect(esTerminalConEnvoltorio(t), t).toBe(false);
     }
     expect(esTerminalConEnvoltorio(undefined)).toBe(false);

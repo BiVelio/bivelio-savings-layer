@@ -5,7 +5,6 @@ import { OpenAICompatibleProvider } from "../src/providers/openai-compatible.js"
 import { MockProvider } from "../src/providers/mock.js";
 import { createSavingsLayer } from "../src/pipeline/create.js";
 import { BatchSubmitError } from "../src/pipeline/errors.js";
-import { LicenseError } from "../src/license/errors.js";
 import { reiniciarAvisos } from "../src/util/warn-once.js";
 import type { BatchJob, BatchRequest } from "../src/contracts/batch.js";
 import type { JsonSchema, SavingsRequest } from "../src/contracts/types.js";
@@ -682,16 +681,16 @@ describe("layer.batches · puertas", () => {
     else delete process.env.BVSALA_DEV_OPEN;
   });
 
-  it("sin licencia, ninguna de las cuatro operaciones llega al proveedor", async () => {
+  it("sin licencia: modo Community — ninguna operación de lotes falla por licencia", async () => {
     const { layer, llamadas } = anthropic();
     const job = await layer.batches.submit(lote(1));
     const antes = llamadas.length;
     delete process.env.BVSALA_DEV_OPEN;
-    await expect(layer.batches.submit(lote(1))).rejects.toBeInstanceOf(LicenseError);
-    await expect(layer.batches.status(job)).rejects.toBeInstanceOf(LicenseError);
-    await expect(layer.batches.results(job)).rejects.toBeInstanceOf(LicenseError);
-    await expect(layer.batches.cancel(job)).rejects.toBeInstanceOf(LicenseError);
-    expect(llamadas.length).toBe(antes);
+    await expect(layer.batches.submit(lote(1))).resolves.toBeTruthy();
+    await expect(layer.batches.status(job)).resolves.toBeTruthy();
+    await expect(layer.batches.results(job)).resolves.toBeTruthy();
+    await expect(layer.batches.cancel(job)).resolves.toBeTruthy();
+    expect(llamadas.length).toBeGreaterThan(antes);
   });
 
   it("un proveedor de terceros (o el de demo) no tiene lotes: error claro", async () => {

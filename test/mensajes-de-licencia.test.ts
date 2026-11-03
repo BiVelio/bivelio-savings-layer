@@ -88,20 +88,28 @@ describe("el mensaje de «no hay licencia» es correcto en el contexto FUENTE", 
     expect(enlaces.filter((u) => !/savings\.bivelio\.com\/\w/.test(u))).toEqual([]);
   });
 
-  it("y el error que se lanza trae el estado, no `undefined`", async () => {
-    // El asidero estable para ramificar en código del cliente. La suite corre
-    // dev-open (vitest.config.ts); aquí se cierra la puerta para ver la
-    // denegación real, y se restaura.
+  it("sin clave ya no es un error: corre el modo Community, y una clave inválida sigue trayendo estado", async () => {
+    // Open core: sin `licenseKey` la capa corre con el gate comunitario. La
+    // suite corre dev-open (vitest.config.ts); aquí se cierra la puerta para
+    // ver el camino real, y se restaura.
     const guardado = process.env.BVSALA_DEV_OPEN;
     delete process.env.BVSALA_DEV_OPEN;
     try {
       const capa = createSavingsLayer({ provider: createMockProvider({ answer: "x" }) });
-      const err = await capa
+      const res = await capa.generate({ model: "m", messages: [{ role: "user", content: "hola" }] });
+      expect(res.report.requestId).toBeTruthy();
+      // El fail-closed que queda es el de la clave PRESENTE pero inválida: el
+      // asidero estable para ramificar en código del cliente.
+      const conClaveMala = createSavingsLayer({
+        provider: createMockProvider({ answer: "x" }),
+        licenseKey: "no-es-una-clave",
+      });
+      const err = await conClaveMala
         .generate({ model: "m", messages: [{ role: "user", content: "hola" }] })
         .then(() => null)
         .catch((e: unknown) => e);
       expect(err).toBeInstanceOf(LicenseError);
-      expect((err as LicenseError).status).toBe("none");
+      expect(["invalid", "none"]).toContain((err as LicenseError).status);
     } finally {
       if (guardado !== undefined) process.env.BVSALA_DEV_OPEN = guardado;
     }

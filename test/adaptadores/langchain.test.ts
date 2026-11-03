@@ -4,7 +4,6 @@ import { AIMessage, type BaseMessage } from "@langchain/core/messages";
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import { InMemoryCache } from "@langchain/core/caches";
 import { z } from "zod";
-import { LicenseError } from "../../src/index.js";
 import { getSavingsReportFromMessage, savingsAgentMiddleware } from "@bivelio/savings-layer/langchain";
 import { coleccion, medicion, prohibirLaRed, sinLicencia, vaciar } from "./ayudas.js";
 
@@ -189,19 +188,16 @@ describe("savingsAgentMiddleware", () => {
     mw.close();
   });
 
-  it("(h) sin licencia: LicenseError y el modelo NO se llama", async () => {
+  it("(h) sin licencia: modo Community — el agente llama al modelo y responde", async () => {
     const m = new ModeloDePrueba();
     await sinLicencia(async () => {
       const mw = savingsAgentMiddleware({ silenceWarnings: true });
       const agente = createAgent({ model: m, tools: [], middleware: [mw] });
-      // LangChain envuelve el error de un middleware en su `MiddlewareError`, que
-      // conserva el nombre y lleva el original en `cause`.
-      const e = (await agente.invoke(PREGUNTA).catch((x: unknown) => x)) as { name?: string; cause?: unknown };
-      expect(e.name).toBe("LicenseError");
-      expect(e.cause).toBeInstanceOf(LicenseError);
+      const res = await agente.invoke(PREGUNTA);
+      expect(res).toBeTruthy();
       mw.close();
     });
-    expect(m.llamadas).toBe(0);
+    expect(m.llamadas).toBe(1);
   });
 
   it("(i) lo que sigue hacia el modelo son LOS MISMOS objetos que recibió el adaptador", async () => {

@@ -63,17 +63,15 @@ describe("init desde el tarball, como lo corre el cliente", () => {
     expect(existsSync(join(proyecto, "bivelio-check.mjs"))).toBe(false);
   });
 
-  it("--write --yes escribe la comprobación, y ejecutada sin clave dice «not ok» con el arreglo, sin llamar a nadie", () => {
+  it("--write --yes escribe la comprobación, y ejecutada sin clave sale «ok» (modo Community), sin llamar a nadie", () => {
     const w = spawnSync(process.execPath, [bin, "init", "--write", "--yes"], { cwd: proyecto, env: ENTORNO(), encoding: "utf8", timeout: 30_000 });
     expect(w.status, w.stderr).toBe(0);
     expect(w.stdout).toMatch(/created savings\.js\ncreated bivelio-check\.mjs/);
 
     const c = spawnSync(process.execPath, ["--import", SIN_RED, "bivelio-check.mjs"], { cwd: proyecto, env: ENTORNO(), encoding: "utf8", timeout: 30_000 });
-    expect(c.status).toBe(1);
-    expect(c.stdout.trim()).toMatch(/^not ok: BiVelio license required: none was configured\./);
-    expect(c.stdout).toContain("https://savings.bivelio.com/dashboard/install");
-    // El paquete publicado no tiene modo sin licencia: el mensaje no puede sugerirlo.
-    expect(c.stdout).not.toMatch(/devUnlicensed|BVSALA_DEV_OPEN/);
-    expect(c.stdout).toContain("This published package has no unlicensed mode.");
+    expect(c.status).toBe(0);
+    expect(c.stdout.trim()).toMatch(/^ok: the layer answered "8" on this machine without calling the model/);
+    // Open core: sin clave no hay error, y el modo sin licencia ya no existe como puerta.
+    expect(c.stdout).not.toMatch(/devUnlicensed|BVSALA_DEV_OPEN|license required/);
   });
 });

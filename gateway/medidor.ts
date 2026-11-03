@@ -12,6 +12,7 @@ import { negativaNoCobrada } from "../src/providers/anthropic-uso.js";
 import { negativaEnTexto } from "../src/providers/negativa-en-texto.js";
 import { esParadaDeFiltro } from "../src/providers/parada-de-filtro.js";
 import { salidaOculta } from "../src/providers/salida-oculta.js";
+import { usoDeGemini, type UsoMetadataGemini } from "./gemini.js";
 import { temaSensibleEnTextos, type TemaSensible } from "../src/policy/tema-sensible.js";
 import { SseParser, type SseMessage } from "../src/providers/sse.js";
 import type { HuellaDeLaPrimaria } from "./coalescencia.js";
@@ -748,9 +749,13 @@ export function usoDeJsonPorRuta(path: string, cuerpo: Buffer | string): UsoSse 
   if (path === "/v1/messages") return usoDeJson(cuerpo);
   if (!tieneDialecto(path)) return null;
   try {
-    const d = JSON.parse(typeof cuerpo === "string" ? cuerpo : cuerpo.toString("utf8")) as { usage?: unknown } | null;
+    const d = JSON.parse(typeof cuerpo === "string" ? cuerpo : cuerpo.toString("utf8")) as
+      | { usage?: unknown; usageMetadata?: unknown }
+      | null;
     if (d === null || typeof d !== "object") return null;
     if (path.endsWith("/chat/completions")) return mapearUsoChat(d.usage as UsoChat | undefined);
+    // Gemini (`:generateContent` sin stream): el contador vive en `usageMetadata`.
+    if (path.endsWith(":generateContent")) return usoDeGemini(d.usageMetadata as UsoMetadataGemini | undefined);
     const u = d.usage as UsoResponses | null | undefined;
     return u && typeof u.input_tokens === "number" && typeof u.output_tokens === "number" ? mapearUsoResponses(u) : null;
   } catch {
@@ -989,7 +994,13 @@ export function tierServidoDeRespuesta(path: string, cuerpo: Buffer | string): s
 
 /** ¿La ruta tiene un dialecto de `usage` que el gateway sabe leer? */
 export function tieneDialecto(path: string): boolean {
-  return path === "/v1/messages" || path.endsWith("/chat/completions") || path.endsWith("/responses");
+  return (
+    path === "/v1/messages" ||
+    path.endsWith("/chat/completions") ||
+    path.endsWith("/responses") ||
+    path.endsWith(":generateContent") ||
+    path.endsWith(":streamGenerateContent")
+  );
 }
 
 /** El resultado de intentar pedir el usage final en un stream de Chat Completions. */

@@ -33,12 +33,14 @@ const provider = new OpenAICompatibleProvider({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// 2 · the layer, wrapped around it.
+// 2 · the layer, wrapped around it. OPEN CORE: nothing else is required —
+//     COMMUNITY mode (every local lever on, zero telemetry). The three lines
+//     below are OPTIONAL and add the cloud dashboard + team metering:
 const layer = createSavingsLayer({
   provider,
-  licenseKey: process.env.BIVELIO_LICENSE_KEY,          // step 1 — unlocks the SDK
-  serviceAccountKey: process.env.BIVELIO_SERVICE_KEY,   // step 2 — metering + auto-renewal
-  licenseServerUrl: "https://savings.bivelio.com",      // revocation, renewal + metering — omit it and step 2 does nothing
+  // licenseKey: process.env.BIVELIO_LICENSE_KEY,          // step 1 (optional)
+  // serviceAccountKey: process.env.BIVELIO_SERVICE_KEY,   // step 2 (optional) — metering + auto-renewal
+  // licenseServerUrl: "https://savings.bivelio.com",      // revocation, renewal + metering
 });
 
 // 3 · call it exactly where you called your provider before.
@@ -66,8 +68,8 @@ const INIT = "npx @bivelio/savings-layer@latest init";
  * `bvsala` (gateway/bin.ts). Tiene que coincidir con TERMINALES_CON_ENVOLTORIO
  * (gateway/envoltorios.ts): un comando que el binario no conoce imprime la ayuda
  * y sale con 1, y la web lo habría anunciado. El nombre del producto no se
- * traduce; Cursor y Gemini CLI NO van aquí porque no se pueden medir hoy
- * (docs/terminales/no-soportados.md): lo dice `agentsNote`.
+ * traduce; Cursor NO va aquí (no es un envoltorio: se configura por la UI con
+ * su override de base URL, docs/terminales/cursor.md): lo dice `agentsNote`.
  */
 const AGENTES: readonly (readonly [comando: string, producto: string])[] = [
   ["claude", "Claude Code"],
@@ -78,6 +80,7 @@ const AGENTES: readonly (readonly [comando: string, producto: string])[] = [
   ["kilo", "Kilo CLI"],
   ["copilot", "GitHub Copilot CLI"],
   ["aider", "Aider"],
+  ["gemini", "Gemini CLI"],
 ];
 
 /**
@@ -226,8 +229,9 @@ export async function InstallLicensePanel({ ctx }: { ctx: OrgContext }) {
       </p>
 
       {/* Terminal (gateway) — la vía sin código: medir los agentes de código.
-          La clave de servicio del paso 2 es la única credencial que se exporta:
-          con ella el gateway recoge la licencia, sin la cual no arranca. */}
+          Open core: sin claves arranca en modo Community (todo el ahorro local,
+          cero telemetría); la clave de servicio es OPCIONAL y añade el panel y
+          los entitlements de la org. */}
       <p className="ck-note" id="gateway" style={{ marginTop: 16 }}>
         {t.rich("installLicensePanel.gatewayNote", {
           b: (chunks) => <b>{chunks}</b>,
@@ -239,18 +243,19 @@ export async function InstallLicensePanel({ ctx }: { ctx: OrgContext }) {
         <CopyButton text="npm i -g @bivelio/savings-layer" />
       </div>
       {/* La línea de la clave difiere por sistema: `export` es POSIX y en
-          Windows (PowerShell) es `$env:VAR = "…"`. Pestañas con detección. */}
+          Windows (PowerShell) es `$env:VAR = "…"`. Pestañas con detección.
+          OPCIONAL: sin ella, modo Community. */}
       <div style={{ marginTop: 8 }}>
         <SnippetPorSistema
           unix={
             <div className="code2">
-              <span>export BIVELIO_SERVICE_KEY=bvk_…</span>
+              <span>export BIVELIO_SERVICE_KEY=bvk_…  # optional: cloud dashboard + org entitlements</span>
               <CopyButton text="export BIVELIO_SERVICE_KEY=" />
             </div>
           }
           windows={
             <div className="code2">
-              <span>{'$env:BIVELIO_SERVICE_KEY = "bvk_…"'}</span>
+              <span>{'$env:BIVELIO_SERVICE_KEY = "bvk_…"  # optional: cloud dashboard + org entitlements'}</span>
               <CopyButton text={'$env:BIVELIO_SERVICE_KEY = ""'} />
             </div>
           }

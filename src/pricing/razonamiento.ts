@@ -126,6 +126,21 @@ export const RAZONA_POR_FILA: Readonly<Record<string, boolean>> = {
   "gemini-3.1-pro-preview": true,
   "gemini-2.5-pro": true,
   "gemini-2.5-flash": true,
+  // ── Proveedores chinos ──
+  // DeepSeek Flash (V4.1-Flash) no razona por defecto y honra temperature: su
+  // salida bajo `temperature: 0` se puede repetir y acreditar por referencia.
+  // (deepseek-v4-pro sí razona; su nombre no lo delata, así que la fila lo dice.
+  // Qwen 3.x razona por defecto —la familia híbrida de qwen3—; qwen-flash y
+  // qwen-plus no. GLM 5.x razona por defecto.)
+  "deepseek-flash": false,
+  "deepseek-v4-pro": true,
+  "qwen3.8-max": true,
+  "qwen3.8-flash": true,
+  "qwen3.7-flash": true,
+  "qwen-flash": false,
+  "qwen-plus": false,
+  "glm-5.3": true,
+  "glm-5.3-flash": true,
 };
 
 /**
@@ -178,6 +193,9 @@ export type SalidaNoRepetible = "reasoning-model" | "temperature-ignored" | "unc
 export function salidaNoRepetible(model: string): SalidaNoRepetible | undefined {
   const barra = model.lastIndexOf("/");
   const desnudo = (barra >= 0 ? model.slice(barra + 1) : model).toLowerCase();
+  // EL NOMBRE SUMA, NUNCA RESTA: un id que delata razonamiento (`-thinking`,
+  // `-reasoning`, la familia qwen3…) razona aunque la fila que hereda diga lo
+  // contrario — el nombre añade razonamiento, jamás lo quita a una fila `true`.
   if (NOMBRE_DE_RAZONAMIENTO.some((re) => re.test(desnudo))) return "reasoning-model";
   const clave = claveDeCatalogo(model);
   if (clave === undefined) return "unclassified-model";

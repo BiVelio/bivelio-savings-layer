@@ -10,9 +10,11 @@ import {
 } from "../src/index.js";
 
 /**
- * BV-SALA is fail-closed: the pipeline refuses to run without a valid, active
- * license. The suite as a whole runs dev-open (see vitest.config.ts); this file
- * turns that OFF so it can assert real denial, then restores it.
+ * The OPEN-CORE contract: with no `licenseKey` (and no injected gate) the layer
+ * runs on the COMMUNITY gate — every local lever on, zero telemetry. The
+ * fail-closed enforcement that remains protects the PAID surfaces: an invalid,
+ * expired or inactive key still throws. The suite as a whole runs dev-open (see
+ * vitest.config.ts); this file turns that OFF so it can assert the real paths.
  */
 let savedDevOpen: string | undefined;
 beforeAll(() => {
@@ -69,8 +71,12 @@ const req: SavingsRequest = {
 };
 
 describe("fail-closed license enforcement", () => {
-  it("DENIES generate() with no license configured", async () => {
-    await expect(layer({}).generate(req)).rejects.toBeInstanceOf(LicenseError);
+  it("RUNS with no license configured — the Community gate (open core)", async () => {
+    const res = await layer({}).generate(req);
+    expect(res.report.requestId).toBeTruthy();
+    // Community grants every local feature: the semantic cache must not degrade.
+    const traces = res.report.traces.map((t) => `${t.stage}:${t.outcome}`);
+    expect(traces.some((t) => t.startsWith("semantic-cache:degraded"))).toBe(false);
   });
 
   it("DENIES an expired license", async () => {

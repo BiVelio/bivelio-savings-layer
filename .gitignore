@@ -39,3 +39,6 @@ apps/web/.next/
 # Notas locales de trabajo (grep de entorno, citas): nunca se versionan.
 /entorno.txt
 /docs-citas.txt
+
+# local research and analysis scratch space
+_research/

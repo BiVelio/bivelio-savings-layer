@@ -74,7 +74,9 @@ function esGptConPrimaDeEscritura(m: string): boolean {
  * Prima de escritura de caché por modelo. OpenAI cachea la entrada pero no
  * cobra por escribirla hasta la 5.5 (de la 5.6 en adelante sí, 1,25×); el
  * resto de OpenAI y Gemini no tienen prima — cobrar 1,25× sería inventar de
- * más. Se mira el id SIN prefijo de pasarela: `openai/gpt-4o` no es Anthropic.
+ * más. Los proveedores chinos (DeepSeek, Qwen, GLM) tampoco: su caché es
+ * implícita y sin recargo de escritura. Se mira el id SIN prefijo de pasarela:
+ * `openai/gpt-4o` no es Anthropic.
  */
 export function primaDeEscritura(model: string): number {
   const m = desnudo(model);
@@ -82,6 +84,7 @@ export function primaDeEscritura(model: string): number {
     return esGptConPrimaDeEscritura(m) ? PRIMA_ESCRITURA_CACHE : 1;
   }
   if (m.startsWith("gemini")) return 1;
+  if (m.startsWith("deepseek-") || m.startsWith("qwen") || m.startsWith("glm-")) return 1;
   return PRIMA_ESCRITURA_CACHE;
 }
 

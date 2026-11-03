@@ -11,7 +11,7 @@ Esto sustituye a la receta anterior (proveedor custom por UI, forma inferida).
 ## Qué necesitas
 
 - Kilo (CLI `kilo`, o la extensión) con el proveedor **`anthropic`** y tu **API key** de Anthropic.
-- `bvsala` instalado, `BIVELIO_SERVICE_KEY` exportada y una licencia BiVelio activa (la recoge el gateway con la clave; ver [README](README.md)).
+- `bvsala` instalado. Open core: sin claves el gateway arranca en modo Community (todo el ahorro local, cero telemetría); `BIVELIO_SERVICE_KEY` añade el panel y los entitlements de la org (ver [README](README.md)).
 
 **Lo que no pasa por aquí:** el proveedor por defecto de Kilo es su propia
 pasarela (Kilo Gateway, modelos alojados por Kilo con su cuenta). Ese tráfico va
@@ -20,7 +20,7 @@ a Kilo, no a un base URL tuyo, y no se mide. Tampoco los demás proveedores.
 ## Envoltorio (CLI): `bvsala kilo [args…]`
 
 ```bash
-export BIVELIO_SERVICE_KEY=bvk_…
+export BIVELIO_SERVICE_KEY=bvk_…  # OPCIONAL: panel + entitlements de org (sin ella: modo Community)
 bvsala kilo
 ```
 

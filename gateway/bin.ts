@@ -74,11 +74,13 @@ import { EMBEDDED_PUBLIC_KEY } from "../src/license/index.js";
  *   solo `bin`) — el doctor del SDK: detecta la pila del proyecto e imprime el
  *   código exacto de su adaptador y una comprobación gratuita (gateway/init.ts).
  *
- * El gateway y los envoltorios EXIGEN LICENCIA al arrancar (LICENSE §2), como el
- * SDK: la recogen con BIVELIO_SERVICE_KEY y la verifican contra la clave pública
- * embebida (gateway/license.ts); sin ella, exit 1 con el arreglo exacto. La
- * ayuda, la versión, el doctor, el skill, init y `bvsala <terminal> --help|-h|--version`
- * no usan el servicio ni la red, y siguen funcionando sin licencia.
+ * El gateway y los envoltorios arrancan SIN LICENCIA en MODO COMUNITARIO (open
+ * core): todo el ahorro local, cero telemetría. Con BIVELIO_SERVICE_KEY recogen
+ * la licencia de la org y la verifican contra la clave pública embebida
+ * (gateway/license.ts); una clave presente pero inválida sigue cerrando la
+ * puerta con exit 1 y el arreglo exacto. La ayuda, la versión, el doctor, el
+ * skill, init y `bvsala <terminal> --help|-h|--version` no usan el servicio ni
+ * la red, y siguen funcionando sin licencia.
  *
  * La decisión «ayuda / versión / arrancar» es una función pura
  * (gateway/argumentos.ts) porque este fichero arranca cosas al importarse y
@@ -91,11 +93,16 @@ function ayuda(): void {
 
 Commands:
   gateway [--port N] [--upstream U]
-                         Local metering proxy (default port 8402) for anything that honours a
+                         Local saving + metering proxy (default port 8402) for anything that honours a
                          base URL: Claude Code, opencode, Goose, Crush… and the official OpenAI
                          and Anthropic SDKs in any language, Python included.
-                         Needs BIVELIO_SERVICE_KEY and an active BiVelio license.
-                         --upstream openai | anthropic | an origin URL (default: anthropic).
+                         Works out of the box — no keys needed (COMMUNITY mode: every local lever
+                         on, zero telemetry). BIVELIO_SERVICE_KEY adds the cloud dashboard,
+                         org entitlements and team metering.
+                         --upstream openai | anthropic | gemini | deepseek | qwen | glm |
+                         moonshot | minimax | openrouter | ollama | vllm | lmstudio | an
+                         origin URL (default: anthropic). DeepSeek rewrites Anthropic
+                         traffic to its /anthropic endpoint automatically.
                          One gateway talks to ONE upstream: run a second one on another port
                          for the other provider. Behind an origin that is not the provider's
                          own API (a proxy such as LiteLLM), requests are metered but no
@@ -114,6 +121,8 @@ Commands:
                          use a base URL and are not metered.
   aider [args…]          Run Aider through the gateway: Anthropic models by default
                          (ANTHROPIC_API_BASE); OpenAI with BVSALA_GATEWAY_UPSTREAM=openai.
+  gemini [args…]         Run the Gemini CLI through the gateway (GOOGLE_GEMINI_BASE_URL,
+                         upstream gemini): usage read from :generateContent responses.
                          Every wrapper prints, on exit, how many requests it metered and
                          which ones it forwarded without metering, and why.
   doctor [--port N]      Detect installed terminals and print the exact configuration for each.
@@ -156,8 +165,10 @@ Commands:
   The Spanish spellings --puerto, --proyecto and --forzar were removed in 0.5: they now
   fail with an error that names the English flag.
 Environment:
-  BIVELIO_SERVICE_KEY    Service key (bvk_…): REQUIRED. Identifies your organization, collects its
+  BIVELIO_SERVICE_KEY    Service key (bvk_…): OPTIONAL. Identifies your organization, collects its
                          license (renewed by itself) and enables metering and seat identity.
+                         Without it the gateway runs in COMMUNITY mode: all local levers on,
+                         nothing sent to BiVelio.
   BIVELIO_LICENSE_KEY    License key (optional fallback): used only if savings.bivelio.com cannot be
                          reached at start; verified on this machine. Replace it every billing period.
   BVSALA_SEAT_ID         Stable seat identity per replica (optional).
@@ -215,11 +226,13 @@ Environment:
                          default so it does not overwrite the TUI; use the dashboard instead).
   CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1  (Claude Code, API key only) your models in /model.
 
-The gateway is fail-closed, like the SDK: it starts only with BIVELIO_SERVICE_KEY and an active
-BiVelio license. It never interrupts a request in flight: if the license lapses, only NEW requests
-are refused (HTTP 402) until it is renewed. Metering is best-effort: with ingestion down, it
-forwards and warns. On a Claude or ChatGPT subscription there is no per-token invoice: that
-traffic is metered at list-price equivalent and never carries commission.
+The gateway is open core: it starts with no keys at all (COMMUNITY mode) and arms every local
+saving lever, with zero telemetry. With a license (service key or offline fallback) an invalid
+or expired key still fails closed, and if a live license lapses only NEW requests are refused
+(HTTP 402) until it is renewed — a request in flight is never interrupted. Metering is
+best-effort: with ingestion down, it forwards and warns. On a Claude or ChatGPT subscription
+there is no per-token invoice: that traffic is metered at list-price equivalent and never
+carries commission.
 Your prompts, completions and provider keys never reach BiVelio: what it receives is per-request
 usage (token counts, cost, the model id and opaque ids); LICENSE §5 lists every field.
 More: savings.bivelio.com`);
@@ -432,10 +445,11 @@ if (!up.ok) {
   process.exit(1);
 }
 
-// ── LA VERJA DE LICENCIA (LICENSE §2) ─────────────────────────────────────
-// Antes del envoltorio, del anillo 2 y de cualquier lectura de fichero: sin
-// licencia verificada, el gateway no arranca. Se recoge SIEMPRE online con la
-// clave de servicio (la ata a su org); BIVELIO_LICENSE_KEY solo es el respaldo
+// ── LA LICENCIA (ahora OPCIONAL: open core) ───────────────────────────────
+// Antes del envoltorio, del anillo 2 y de cualquier lectura de fichero. Sin
+// clave de servicio NI licenseKey el gateway arranca en MODO COMUNITARIO (todo
+// el ahorro local, cero telemetría). Con clave de servicio la licencia se
+// recoge SIEMPRE online (la ata a su org); BIVELIO_LICENSE_KEY es el respaldo
 // cuando savings.bivelio.com no responde. La URL es SIEMPRE la de producción:
 // BVSALA_METERING_URL ya no redirige ni la licencia ni el canal.
 const serviceAccountKey = process.env.BIVELIO_SERVICE_KEY?.trim() || undefined;
@@ -498,17 +512,22 @@ try {
     ...(silencioso ? { log: () => {}, avisosDeNoMedido: false } : {}),
     // La licencia ya verificada, y la base del control plane para el canal, las
     // revocaciones y el renovador. Un arranque OFFLINE pide recogida inmediata.
-    license: {
-      token: licencia.license.token,
-      publicKey: EMBEDDED_PUBLIC_KEY,
-      licenseServerUrl: LICENSE_SERVER_URL,
-      checkOnStart: licencia.source === "offline",
-    },
+    // Sin licencia (modo comunitario) no se pasa nada: arrancarGateway lo arma.
+    ...(licencia.license
+      ? {
+          license: {
+            token: licencia.license.token,
+            publicKey: EMBEDDED_PUBLIC_KEY,
+            licenseServerUrl: LICENSE_SERVER_URL,
+            checkOnStart: licencia.source === "offline",
+          },
+        }
+      : {}),
     // Las transiciones de licencia NO se silencian en los envoltorios: un 402 a
     // mitad de sesión tiene que decir por qué y dónde se arregla.
     warn: (l: string) => console.error(l),
-    // Garantizada por la verja de arriba.
-    serviceAccountKey: serviceAccountKey!,
+    // Solo en modo con clave: la identidad de la org para el metering.
+    ...(serviceAccountKey ? { serviceAccountKey } : {}),
     ...(process.env.BVSALA_SEAT_ID ? { seatId: process.env.BVSALA_SEAT_ID } : {}),
     ...(upstreamPedido
       ? { upstream: upstreamPedido }
@@ -570,7 +589,11 @@ const upstreamEfectivo = upstreamPedido ?? envoltorio?.upstream ?? "https://api.
 console.log(`[bvsala gateway] v${BV_SALA_VERSION} listening on http://127.0.0.1:${arranque.puerto} → ${upstreamEfectivo}`);
 (licencia.lineIsWarning ? console.error : console.log)(`[bvsala gateway] ${licencia.line}`);
 for (const w of licencia.warnings) console.error(`[bvsala gateway] ${w}`);
-console.log("[bvsala gateway] metering: ON (service key present)");
+console.log(
+  serviceAccountKey
+    ? "[bvsala gateway] metering: ON (service key present)"
+    : "[bvsala gateway] metering: OFF (community mode — no BiVelio service key; local reports stay available with x-bvsala-report)",
+);
 if (process.env.BVSALA_METERING_URL) {
   console.error(
     `[bvsala gateway] WARNING: BVSALA_METERING_URL=${process.env.BVSALA_METERING_URL} redirects usage reporting away ` +

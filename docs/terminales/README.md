@@ -9,20 +9,21 @@ terminal). Cada afirmación va marcada **[V]** (verificada en fuente) o **[I]**
 
 `bvsala gateway` es un proxy local medidor: escucha en `127.0.0.1`, reenvía
 cada petición al proveedor (`https://api.anthropic.com` por defecto) —**byte a
-byte**, salvo las palancas que se explican abajo (con licencia PRO, la de tarifa
-va encendida por defecto)— y, una vez servida la respuesta, lee el `usage` del
+byte**, salvo las palancas que se explican abajo (la de tarifa va armada por
+defecto)— y, una vez servida la respuesta, lee el `usage` del
 stream y lo convierte en coste. Ni tus prompts, ni las respuestas, ni la clave de
 tu proveedor salen de tu máquina hacia BiVelio: solo viaja el uso de cada
 petición —cuentas de tokens, coste, el id del modelo, un id de petición y los ids
 opacos de asiento y de sesión—, y la lista exacta de campos está en la
-LICENSE §5. Es fail-closed como el SDK: arranca solo con tu clave de servicio
-(`BIVELIO_SERVICE_KEY`) y una licencia BiVelio activa, que recoge con esa clave y
-cuya firma verifica en tu máquina. Una vez arrancado, jamás corta una petición en
-curso: si la licencia caduca o se revoca, solo las peticiones NUEVAS reciben un
-HTTP 402 hasta renovarla. La medición es best-effort: con la ingesta caída,
+LICENSE §5. **Open core**: arranca sin ninguna clave, en modo Community —todas
+las palancas locales armadas, cero telemetría, y el metering se queda en las
+rutas locales `/_bvsala`—. `BIVELIO_SERVICE_KEY` (opcional) añade el panel, los
+entitlements de la org y la recogida de licencia; una licencia PRESENTE pero
+caducada o revocada solo corta las peticiones NUEVAS con un HTTP 402 hasta
+renovarla, jamás una en curso. La medición es best-effort: con la ingesta caída,
 reenvía y avisa.
 
-Mide cada petición. Con licencia PRO aplica por defecto **una sola palanca**:
+Mide cada petición con contador de proveedor. La **palanca por defecto**:
 rebaja el TTL de escritura de caché mientras la sesión sigue caliente — cambia la
 tarifa, nunca el contenido que lee el modelo. Las demás (modelo hermano, esfuerzo
 por turno) van apagadas hasta que las enciendes. Y mide **todo el tráfico de inferencia**
@@ -31,8 +32,7 @@ lo que su terminal manda por fuera.
 
 En suscripción (login de claude.ai en Claude Code, cuenta ChatGPT en Codex) no
 hay factura por tokens: ese tráfico se mide a precio de lista equivalente y
-nunca se le acredita ahorro ni comisión; la licencia por asiento hace falta
-igual.
+nunca se le acredita ahorro ni comisión.
 
 ## Índice
 
@@ -51,8 +51,10 @@ igual.
 | [Crush](crush.md) | `http://127.0.0.1:8402/v1` | **con**, sin barra final | `~/.config/crush/crushrc` | — (config de usuario) | [V] |
 | [Droid](droid.md) | `http://127.0.0.1:8402` | sin **[I]** | `~/.factory/settings.json` | — (config de usuario) | validar en mano |
 | [Cline](cline.md) | `http://127.0.0.1:8402/v1` | **con** | UI | — | [V] |
-| [Gemini CLI](no-soportados.md#gemini-cli--no-se-mide-todavía) | — | — | env `GOOGLE_GEMINI_BASE_URL` | — | **no se mide**: el gateway no lee el dialecto de Gemini |
-| [Cursor](no-soportados.md#cursor--no-se-puede) | — | — | sus servidores, no tu máquina | — | **no se puede**: Cursor no alcanza `127.0.0.1` |
+| [Gemini CLI](gemini.md) | `http://127.0.0.1:8402` | n/a (protocolo Gemini) | env `GOOGLE_GEMINI_BASE_URL` | `bvsala gemini` ✅ | [V] en test (upstream falso): `:generateContent` y `:streamGenerateContent` |
+| [Cursor](cursor.md) (BYOK) | `http://127.0.0.1:8402/v1` | **con** | UI → Settings → Models → OpenAI API Base URL | — (config de la UI) | [I]: solo el tráfico con TU clave pasa por el gateway |
+| [Claude Code con DeepSeek](deepseek.md) | `http://127.0.0.1:8402` | **sin** | env `ANTHROPIC_BASE_URL` | `bvsala gateway --upstream deepseek` | [V] en test: `/v1/messages` → `/anthropic` |
+| [Ollama / vLLM / LM Studio](ollama.md) (locales) | `http://127.0.0.1:8402/v1` | **con** | `base_url` del SDK | `bvsala gateway --upstream ollama|vllm|lmstudio` | [V] en test; sin precio de lista → reenviado, no metido en dólares |
 | [Python y cualquier SDK](../../README.md#python-and-any-other-language-the-local-gateway) (OpenAI · Anthropic) | OpenAI: `http://127.0.0.1:8403/v1` · Anthropic: `http://127.0.0.1:8402` | OpenAI **con**, Anthropic **sin** | `base_url` del SDK | `bvsala gateway --upstream openai` | [V] en test (upstream falso) |
 
 Reglas de la columna «Base URL»: **nunca barra final**, **nunca redirecciones**
@@ -60,9 +62,9 @@ Reglas de la columna «Base URL»: **nunca barra final**, **nunca redirecciones*
 en vez de seguirlo). Y nunca copies el URL de un terminal a otro: cada SDK añade
 su propio tramo de ruta y el error es silencioso (§ «Comprobar que mide»).
 
-Claude Code, Codex, Goose, Qwen Code, opencode, Kilo, Copilot CLI (BYOK) y Aider
-tienen **envoltorio propio** (`bvsala
-claude|codex|goose|qwen|opencode|kilo|copilot|aider`): arrancan un gateway en
+Claude Code, Codex, Goose, Qwen Code, opencode, Kilo, Copilot CLI (BYOK), Aider
+y Gemini CLI tienen **envoltorio propio** (`bvsala
+claude|codex|goose|qwen|opencode|kilo|copilot|aider|gemini`): arrancan un gateway en
 puerto efímero, lanzan el terminal apuntándole y lo apagan al salir. Cero
 configuración persistente: opencode y Kilo reciben la suya por variable
 (`OPENCODE_CONFIG_CONTENT`, `KILO_CONFIG_CONTENT`), fusionada con la tuya. La
@@ -88,24 +90,26 @@ tráfico degradado: no viaja a BiVelio.
 
 ```bash
 npm i -g @bivelio/savings-layer      # trae el binario `bvsala`
-export BIVELIO_SERVICE_KEY=bvk_…     # clave de servicio, desde tu panel. Obligatoria: sin ella el gateway no arranca
-bvsala gateway                        # escucha en http://127.0.0.1:8402
+bvsala gateway                        # escucha en http://127.0.0.1:8402 — sin claves: modo Community
 bvsala gateway --port 8500            # otro puerto si el 8402 está ocupado
+bvsala gateway --upstream deepseek    # Claude Code con DeepSeek; qwen|glm|moonshot|minimax|gemini|ollama|vllm|lmstudio también
+export BIVELIO_SERVICE_KEY=bvk_…      # OPCIONAL: panel + entitlements de org (sin ella: modo Community)
 ```
 
 Al arrancar imprime, entre otras, estas líneas:
 
 ```
-[bvsala gateway] v0.4.x listening on http://127.0.0.1:8402 → https://api.anthropic.com
-[bvsala gateway] license: PRO, active until 2026-10-24 (+14 days grace), collected with your service key and verified on this machine
-[bvsala gateway] metering: ON (service key present)
+[bvsala gateway] v0.6.x listening on http://127.0.0.1:8402 → https://api.anthropic.com
+[bvsala gateway] COMMUNITY MODE (open core): every local saving lever on, zero telemetry - no BiVelio keys set
+[bvsala gateway] metering: OFF (community mode - no BiVelio service key; local reports stay available with x-bvsala-report)
 ```
 
-Si no arranca (sale con código 1), el mensaje dice exactamente qué falta:
+Con `BIVELIO_SERVICE_KEY` la licencia se recoge sola (línea `license: PRO, active
+until …`) y el metering queda ON. Si algo no arranca (sale con código 1), el
+mensaje dice exactamente qué falta:
 
 | Mensaje | Qué pasa | Arreglo |
 |---|---|---|
-| `BIVELIO_SERVICE_KEY is not set` | falta la clave de servicio | créala en el panel (Instalar, paso 2), expórtala y relanza |
 | `BIVELIO_SERVICE_KEY is not recognised` | clave borrada, rotada o copiada a medias | crea otra |
 | `your organization has no active BiVelio license` | no hay suscripción | suscríbete en Cuenta y relanza |
 | `your BiVelio license expired on …` | licencia caducada y sin gracia | renueva en Cuenta |
@@ -151,7 +155,7 @@ como salen hoy:
 
 | `· not metered: …` | Qué pasa | Arreglo |
 |---|---|---|
-| `no BIVELIO_SERVICE_KEY` | un gateway arrancado desde código sin clave de servicio: reenvía, no mide (el CLI `bvsala` ni arranca sin ella) | exporta `BIVELIO_SERVICE_KEY` |
+| `no BIVELIO_SERVICE_KEY` | modo Community: sin clave no hay ingesta a la que medir — el tráfico se reenvía y los informes locales (`/_bvsala`) siguen funcionando | exporta `BIVELIO_SERVICE_KEY` si quieres el panel |
 | `model "…" has no list price in the catalog` | modelo fuera del catálogo de precios, a propósito: un precio presente y equivocado es peor que ninguno (la consola lo avisa una vez por modelo) | nada; se reenvía sin medir |
 | `could not read the model from the request body (content-encoding: …)` | el cuerpo no se pudo leer: JSON ilegible o una compresión que este Node no abre (zstd, el de Codex, necesita Node ≥ 22.15) | actualiza Node |
 | `the request did not ask for usage (stream_options.include_usage)` | Chat Completions en stream sin `include_usage`: el proveedor no manda contador | añade `stream_options={"include_usage": True}` a la llamada, o arranca con `BVSALA_GATEWAY_USAGE_INJECT=1` |
@@ -163,7 +167,7 @@ como salen hoy:
 | `the response carried no usage` | respuesta JSON (`stream: false`) sin `usage` | nada |
 | `the response was too large to read its usage` | respuesta JSON de más de 5 MB: el gateway no la guarda entera para leerla | nada |
 | `the response is neither JSON nor an event stream (content-type: …)` | el upstream contestó con otro tipo de contenido en una ruta que sí sabe medir | revisa el upstream |
-| `no usage dialect for this route` | ruta sin contador que el gateway sepa leer (embeddings, imágenes, audio…): solo mide `/v1/messages`, `…/chat/completions` y `…/responses` | nada |
+| `no usage dialect for this route` | ruta sin contador que el gateway sepa leer (embeddings, imágenes, audio…): solo mide `/v1/messages`, `…/chat/completions`, `…/responses` y el protocolo Gemini (`:generateContent` / `:streamGenerateContent`) | nada |
 
 Con `BVSALA_GATEWAY_COALESCE=1` (apagada por defecto), una petición idéntica de
 inferencia de lectura (`messages`, `chat/completions`, `responses` o `embeddings`)
@@ -182,7 +186,7 @@ razonamiento que declara el proveedor y la regla `reference-v2` los exige.
 |---|---|
 | `no-primary-record` | la petición que viajó no dejó su contador final (ni evento final del stream ni `usage` en el JSON) |
 | `subscription` | tráfico de suscripción (Claude o ChatGPT): no hay factura por token |
-| `unofficial-upstream` | el gateway no habla con `api.anthropic.com` ni `api.openai.com` (un mock, un proxy, Azure, un revendedor): el precio de lista no está en ninguna factura |
+| `unofficial-upstream` | el gateway no habla con el origen oficial de un proveedor (un mock, un proxy, Azure, un revendedor — Ollama/vLLM/LM Studio y OpenRouter incluidos): el precio de lista no está en ninguna factura |
 | `layer-changed-request` | una palanca cambió lo que viajó (modelo, cuerpo, cabeceras; también la rebaja de TTL de la caché): ya no es la petición del cliente byte a byte |
 | `primary-failed` | la petición que viajó cerró con `response.failed` |
 | `client-disconnected` | el cliente de esta petición se fue antes de recibir la réplica entera |
@@ -204,7 +208,7 @@ sistemas. Lo que cambia es cómo se fija la clave en la sesión — el `export` 
 estas guías es POSIX; en PowerShell:
 
 ```powershell
-$env:BIVELIO_SERVICE_KEY = "bvk_…"
+$env:BIVELIO_SERVICE_KEY = "bvk_…"  # OPCIONAL: panel + entitlements de org (sin ella: modo Community)
 bvsala claude
 ```
 
@@ -285,8 +289,8 @@ license state. These routes are answered by the gateway and never forwarded;
 the gateway listens on 127.0.0.1 only, they send no CORS headers, they answer
 403 to a `Host` other than 127.0.0.1 or localhost (so a web page cannot reach
 them by rebinding its own name to 127.0.0.1), no route lists reports (you need
-the id), and like every other route they answer 402 when the license does not
-serve. The gateway
+the id), and like every other route they answer 402 when a live license does not
+serve (in COMMUNITY mode there is no license: they answer as usual). The gateway
 keeps the last 1,000 reports for one hour at most, in memory; nothing is
 written to disk and nothing more is sent to BiVelio.
 
@@ -303,7 +307,7 @@ would fail it.
 
 | Lever | Applies to | What changes | What does not |
 |---|---|---|---|
-| Cache TTL (`cache_ttl_tuning`, on by default with PRO) | `/v1/messages` requests where a large part of the prompt is new (session start, compaction); a chained turn travels untouched | every `cache_control` with `ttl: "1h"` becomes `"5m"`, the top-level one included (a 1-hour top-level marker behind 5-minute block markers would be a 400) | a key named `cache_control` inside a tool call's `input` or a tool's `input_schema` is content and stays as it is; so does the advisor's `caching`; headers are untouched |
+| Cache TTL (`cache_ttl_tuning`, armed by default in community and PRO) | `/v1/messages` requests where a large part of the prompt is new (session start, compaction); a chained turn travels untouched | every `cache_control` with `ttl: "1h"` becomes `"5m"`, the top-level one included (a 1-hour top-level marker behind 5-minute block markers would be a 400) | a key named `cache_control` inside a tool call's `input` or a tool's `input_schema` is content and stays as it is; so does the advisor's `caching`; headers are untouched |
 | Per-turn effort (`BVSALA_GATEWAY_EFFORT=low` or `medium`) | `/v1/messages` for `claude-fable-5-1`, `claude-mythos-5-1`, `claude-opus-5-5` and `claude-opus-5`, when the level is below the model's default effort (`high`; `medium` on `claude-opus-5-5`) and the request carries no `output_config` of its own (top level or in a message); a level at or above the default leaves the request untouched | one message appended at the end of `messages`, `{"role":"system","content":[],"output_config":{"effort":…}}`, and `mid-conversation-output-config-2026-07-01` appended after your `anthropic-beta` value | your `anthropic-beta` value is kept verbatim in front; nothing earlier in `messages` moves |
 | Sibling model (`BVSALA_GATEWAY_SIBLING_MODEL=1`) | `/v1/messages` and `/v1/messages/count_tokens` for `claude-fable-5`, except with a forced `tool_choice` or the 1M-context beta | `model` becomes `claude-fable-5-1` | headers are untouched |
 | Context-editing dials (`BVSALA_GATEWAY_DIALES_ELISION=1`; measured as a net loss, off) | `/v1/messages` | your `clear_tool_uses_20250919` edit in `context_management` is replaced by ours | your other edits are kept, `clear_thinking_20251015` first; your `anthropic-beta` value is kept verbatim, with `context-management-2025-06-27` appended if it was not there |

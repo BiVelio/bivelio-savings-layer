@@ -92,6 +92,7 @@ interface SalidaDeLasPalancas {
   version: string;
   sinNada: Intento;
   conDevUnlicensed: Intento;
+  conClaveMala: Intento;
 }
 
 let dir = "";
@@ -155,7 +156,13 @@ beforeAll(() => {
   // 1) El fragmento del README, EJECUTADO. Los `import` se izan (dentro de un
   //    bloque son un error de sintaxis) y el resto va en un try/catch, que es lo
   //    único que hay que añadirle para poder mirar el error que recibe el cliente.
-  const imports: string[] = ['import { writeFileSync } from "node:fs";'];
+  const imports: string[] = [
+    'import { writeFileSync } from "node:fs";',
+    // El bloque del README no repite el import (el test de fragmentos lo concatena
+    // con el bloque «Wrap the call», que sí lo trae): aquí se inyecta, como haría
+    // quien pega los dos bloques en orden.
+    'import { createSavingsLayer, OpenAICompatibleProvider } from "@bivelio/savings-layer";',
+  ];
   const cuerpo = bloqueDelReadme()
     .split("\n")
     .filter((linea) => {
@@ -173,6 +180,8 @@ beforeAll(() => {
       "try {",
       cuerpo,
       '  salida.resultado = "CORRIO SIN LICENCIA";',
+      '  salida.mensaje = text;',
+      '  salida.estado = report.cost.basis;',
       "} catch (e) {",
       '  salida.resultado = "lanzo";',
       "  salida.nombre = e?.name;",
@@ -214,6 +223,7 @@ beforeAll(() => {
     "salida.version = BV_SALA_VERSION;",
     "salida.sinNada = await intento({});",
     "salida.conDevUnlicensed = await intento({ devUnlicensed: true });",
+    'salida.conClaveMala = await intento({ licenseKey: "bvl_esto-no-es-una-licencia_123" });',
     "writeFileSync(process.argv[2], JSON.stringify(salida));",
   ].join("\n");
   palancasLimpio = ejecutar<SalidaDeLasPalancas>(guionDeLasPalancas, "palancas", ENTORNO_LIMPIO);
@@ -237,55 +247,48 @@ describe("sala limpia: el paquete de npm, instalado y ejecutado SIN clave", () =
     expect(palancasContaminado.puertaEnElEntorno).toBe("1");
   });
 
-  it("el fragmento del README se EJECUTA y para en la puerta de licencia", () => {
+  it("el fragmento del README se EJECUTA y responde SIN licencia (modo Community, sin red)", () => {
     // Control positivo del arnés: el tarball carga, `createSavingsLayer` monta la
-    // capa y `generate()` llega hasta el gate. Si esto fallara con otro nombre de
-    // error, lo que sigue estaría juzgando un mensaje que no es el que se lleva
-    // el cliente. (Un control de licencia VÁLIDA no es posible desde aquí: la
-    // clave privada de firma vive en el control plane, y así debe seguir.)
-    expect(readme.resultado).toBe("lanzo");
-    expect(readme.nombre).toBe("LicenseError");
+    // capa y `generate()` contesta en modo Community. La pregunta es aritmética
+    // (2 + 2 * 3), así que la responde el resolver local SIN llamar al proveedor:
+    // el stub de fetch que prohíbe la red no se llega a tocar.
+    expect(readme.resultado).toBe("CORRIO SIN LICENCIA");
+    expect(readme.nombre).toBeUndefined();
+    expect(readme.mensaje).toBe("8");
+    expect(readme.estado).toBe("estimated");
     expect(palancasLimpio.version).toBe(
       (JSON.parse(readFileSync(join(RAIZ, "package.json"), "utf8")) as { version: string }).version,
     );
   });
 
-  it("⛔ el mensaje NO recomienda ninguna palanca tapiada — EL FALLO", () => {
-    // El bucle cerrado, en una línea: recomendar en el paquete publicado algo
-    // que el paquete publicado compila fuera.
-    expect(readme.mensaje).not.toMatch(/devUnlicensed/);
-    expect(readme.mensaje).not.toMatch(/BVSALA_DEV_OPEN/);
-    expect(palancasLimpio.sinNada.mensaje).not.toMatch(/devUnlicensed|BVSALA_DEV_OPEN/);
+  it("⛔ una clave PRESENTE pero inválida sigue fail-closed, con el estado estable y la página que resuelve", () => {
+    // El fail-closed que queda en open core es el de la clave que NO vale: el
+    // mensaje tiene que decir qué mirar, con el enlace que resuelve, y nunca
+    // proponer una palanca tapiada.
+    const m = palancasLimpio.conClaveMala;
+    expect(`${m.resultado}/${m.nombre}`).toBe("lanzo/LicenseError");
+    expect(m.estado).toBe("invalid");
+    expect(m.mensaje).toMatch(/license status: invalid/);
+    expect(m.mensaje).toMatch(/https:\/\/savings\.bivelio\.com\/dashboard\/install/);
+    expect(m.mensaje).not.toMatch(/devUnlicensed|BVSALA_DEV_OPEN/);
+    const enlaces = m.mensaje?.match(/https:\/\/savings\.bivelio\.com[^\s)]*/g) ?? [];
+    expect(enlaces.length).toBeGreaterThan(0);
+    expect(enlaces.filter((u) => !/savings\.bivelio\.com\/\w/.test(u))).toEqual([]);
   });
 
-  it("y esas palancas son de verdad inertes aquí: por eso no se nombran", () => {
-    // La prohibición de arriba no es cautela, es el hecho medido. Los cuatro
-    // caminos que el mensaje viejo proponía terminan en el MISMO error.
+  it("sin clave corre (Community), con devUnlicensed o BVSALA_DEV_OPEN también: la puerta de desarrollo está plegada", () => {
+    // Los cuatro caminos terminan CORRIENDO: sin clave es el modo Community, y
+    // las dos palancas de desarrollo están compiladas fuera del paquete
+    // publicado (el entorno contaminado corre igual, no "más").
     for (const [donde, intento] of [
       ["limpio · sin nada", palancasLimpio.sinNada],
       ["limpio · devUnlicensed:true", palancasLimpio.conDevUnlicensed],
       ["BVSALA_DEV_OPEN=1 · sin nada", palancasContaminado.sinNada],
       ["BVSALA_DEV_OPEN=1 · devUnlicensed:true", palancasContaminado.conDevUnlicensed],
     ] as const) {
-      expect(`${donde}: ${intento.resultado}/${intento.nombre}`).toBe(`${donde}: lanzo/LicenseError`);
+      expect(`${donde}: ${intento.resultado}/${intento.mensaje}`).toBe(`${donde}: CORRIO/no se deberia llegar aqui`);
+      expect(intento.nombre).toBeUndefined();
     }
-  });
-
-  it("el mensaje dice el paso REAL y con qué código buscarlo", () => {
-    expect(readme.mensaje).toMatch(/licenseKey/);
-    // El estado ya no viene `undefined`: es el asidero estable para ramificar
-    // («no configuraste nada») frente a «lo configuraste y no vale».
-    expect(readme.estado).toBe("none");
-    expect(readme.mensaje).toMatch(/license status: none/);
-  });
-
-  it("el enlace lleva a la página que RESUELVE el problema, no a la portada", () => {
-    expect(readme.mensaje).toMatch(/https:\/\/savings\.bivelio\.com\/dashboard\/install/);
-    // Ningún enlace puede quedarse en la raíz: la raíz es la portada de venta, y
-    // a quien ya pagó le obliga a buscar su clave otra vez.
-    const enlaces = readme.mensaje?.match(/https:\/\/savings\.bivelio\.com[^\s)]*/g) ?? [];
-    expect(enlaces.length).toBeGreaterThan(0);
-    expect(enlaces.filter((u) => !/savings\.bivelio\.com\/\w/.test(u))).toEqual([]);
   });
 
   it("el tarball no lleva la puerta de desarrollo dentro", () => {
@@ -316,13 +319,15 @@ describe("sala limpia: el binario del gateway publicado", () => {
     expect(readFileSync(bin(), "utf8")).toContain("BEGIN PUBLIC KEY");
   });
 
-  it("(b) sin BIVELIO_SERVICE_KEY: exit 1 y las dos cosas que faltan, con sus URL", () => {
+  it("(b) sin BIVELIO_SERVICE_KEY: arranca en MODO COMMUNITY y se queda escuchando (el timeout lo mata)", () => {
+    // Open core: sin claves el gateway NO sale — arranca con las palancas locales
+    // y cero telemetría. spawnSync lo mata al vencer su timeout, y lo capturado
+    // antes del kill es justo la prueba de que estaba VIVO y escuchando.
     const r = correr(["gateway", "--port", "0"], ENTORNO_LIMPIO);
-    expect(r.status).toBe(1);
-    expect(r.stderr).toContain("BIVELIO_SERVICE_KEY is not set");
-    expect(r.stderr).toContain("/dashboard/account");
-    expect(r.stderr).toContain("/dashboard/install");
-  });
+    expect((r.error as NodeJS.ErrnoException | undefined)?.code).toBe("ETIMEDOUT");
+    expect(`${r.stdout}${r.stderr}`).toContain("COMMUNITY MODE");
+    expect(r.stdout).toContain("listening on http://127.0.0.1:");
+  }, 40_000);
 
   it("(c) con clave y SIN red: exit 1, «could not collect your license» con el respaldo, y jamás la clave", () => {
     // Sin red de verdad: el preámbulo pisa `fetch` ANTES de cargar el binario,
@@ -363,7 +368,7 @@ describe("sala limpia: el binario del gateway publicado", () => {
     );
     const doctor = correr(["doctor"], ENTORNO_LIMPIO);
     expect(doctor.status).toBe(0);
-    expect(doctor.stdout).toContain("active BiVelio license");
+    expect(doctor.stdout).toContain("COMMUNITY");
   });
 
   it("(f) `bvsala claude --version` va directo al terminal: ni gateway ni licencia", () => {
@@ -446,19 +451,20 @@ describe("sala limpia: los adaptadores publicados, SIN clave", () => {
     expect(adaptadores.puertaEnElEntorno).toBe("<sin definir>");
   });
 
-  it("los tres paran en la puerta de licencia, con la clase del paquete", () => {
+  it("los tres CORREN en modo Community, con la clase del paquete cargada", () => {
     for (const [nombre, r] of [
       ["ai-sdk", adaptadores.aiSdk],
       ["mastra", adaptadores.mastra],
       ["anthropic-sdk", adaptadores.anthropic],
     ] as const) {
-      expect(`${nombre}: ${r.resultado}/${r.nombre}/${r.estado}`).toBe(`${nombre}: lanzo/LicenseError/none`);
-      expect(r.misma, `${nombre}: el LicenseError es el del dist/index.js del cliente`).toBe(true);
-      expect(r.mensaje).not.toMatch(/devUnlicensed|BVSALA_DEV_OPEN/);
+      expect(`${nombre}: ${r.resultado}/${r.nombre}`).toBe(`${nombre}: CORRIO/undefined`);
+      expect(r.mensaje ?? "").not.toMatch(/devUnlicensed|BVSALA_DEV_OPEN/);
     }
   });
 
-  it("⛔ y el modelo (o el fetch) no se llamó ni una vez", () => {
-    expect(adaptadores.llamadas).toBe(0);
+  it("⛔ y el modelo (o el fetch) SÍ se llama: open core ejecuta, no es un modo sombra", () => {
+    // ai-sdk llama a su doble (contar) y anthropic-sdk a su `next`; mastra no
+    // toca el modelo con esta petición (su gancho responde sin red).
+    expect(adaptadores.llamadas).toBe(2);
   });
 });

@@ -2,7 +2,7 @@ import { createServer, type ServerResponse } from "node:http";
 import { randomUUID } from "node:crypto";
 
 import { UsageEmitter, deriveSeatId, detectCi } from "../src/metering/index.js";
-import { RevocationPoller, RevocationSnapshot } from "../src/license/index.js";
+import { RevocationPoller, RevocationSnapshot, type LicenseKeyset } from "../src/license/index.js";
 import { avisarUnaVez } from "../src/util/warn-once.js";
 import {
   ObservadorSse,
@@ -35,7 +35,7 @@ import {
   type UsoSse,
 } from "./medidor.js";
 import { CarrilSombra } from "./sombra-vivo.js";
-import { CanalDeEntitlements } from "./entitlements.js";
+import { CanalComunitario, CanalDeEntitlements, type FuenteDeEntitlements } from "./entitlements.js";
 import {
   FORCED_RENEWAL_MIN_INTERVAL_MS,
   LicenseRenewer,
@@ -53,6 +53,7 @@ import {
   type VerifiedLicense,
 } from "./license.js";
 import { ajustarDiales, conBetaDeElision } from "./palanca.js";
+import { dialectoGemini, modeloDeRutaGemini, ObservadorGemini } from "./gemini.js";
 import { avisoDeBusquedaDeHerramientas, verHerramientas } from "./busqueda-de-herramientas.js";
 import { aplicarEsfuerzo, conBetaDeEsfuerzo, esNivel } from "./esfuerzo.js";
 import { reescribirModelo, type CambioDeModelo } from "./hermano.js";
@@ -76,7 +77,7 @@ import {
   type TurnoTtl,
 } from "./fallos-ttl.js";
 import { Coalescedor, claveDePeticion, esOperacionCoalescible, materialDeCabeceras, MAX_CAPTURA_BYTES, type HuellaDeLaPrimaria } from "./coalescencia.js";
-import { esUpstreamOficial } from "./upstream.js";
+import { esUpstreamOficial, rutaReescrita } from "./upstream.js";
 import { RecuentoDeMedicion, type EstadoDeMedicion } from "./recuento.js";
 import {
   BuzonDeInformes,
@@ -210,10 +211,14 @@ export interface OpcionesGateway {
    */
   modeloHermano?: boolean;
   /**
-   * OBLIGATORIA (LICENSE §2): la licencia ya verificada al arrancar. Con ella se
-   * construye la verja de cada petición NUEVA; sin ella no hay gateway.
+   * La licencia ya verificada al arrancar (recogida con la clave de servicio o
+   * el respaldo offline). Con ella se construye la verja de cada petición NUEVA.
+   * SIN ella el gateway arranca en MODO COMUNITARIO (open core): todas las
+   * palancas locales armadas, cero telemetría y cero red hacia BiVelio — no hay
+   * licencia que corte peticiones, y el metering queda apagado al no haber
+   * clave de servicio que lo autorice.
    */
-  license: GatewayLicense;
+  license?: GatewayLicense;
   /** Solo tests: TTL del canal de entitlements (por defecto 300 000). */
   entitlementsTtlMs?: number;
   /**
@@ -446,13 +451,21 @@ function entregaCompleta(res: ServerResponse): Promise<boolean> {
 }
 
 export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArrancado> {
-  // LICENSE §2, antes que nada (ni emisor, ni canal, ni timers): el Software no
-  // opera sin una licencia válida. Un token CADUCADO sí se acepta aquí —la verja
-  // por petición lo cortará con un 402—; uno que no verifica, no.
-  if (!opts?.license) throw new Error("arrancarGateway: a verified BiVelio license is required (LICENSE section 2)");
-  const publicKey = effectivePublicKey(opts.license.publicKey);
-  const comprobada = verifyGatewayLicense(opts.license.token, publicKey);
-  if (!comprobada.ok) throw new Error(`arrancarGateway: the license token does not verify (${comprobada.reason})`);
+  // ── OPEN CORE ─────────────────────────────────────────────────────────────
+  // Sin licencia el gateway arranca en MODO COMUNITARIO: el ahorro local entero
+  // (rebaja de TTL, modelo hermano, esfuerzo, elisión) sin clave de servicio y
+  // sin red hacia BiVelio. Una licencia PRESENTE sigue verificándose aquí: un
+  // token CADUCADO se acepta —la verja por petición lo cortará con un 402—; uno
+  // que no verifica, no.
+  const comunidad = !opts?.license;
+  let publicKey: string | LicenseKeyset = "";
+  let verificada: VerifiedLicense | null = null;
+  if (opts?.license) {
+    publicKey = effectivePublicKey(opts.license.publicKey);
+    const comprobada = verifyGatewayLicense(opts.license.token, publicKey);
+    if (!comprobada.ok) throw new Error(`arrancarGateway: the license token does not verify (${comprobada.reason})`);
+    verificada = comprobada.license;
+  }
 
   const upstreamBase = (opts.upstream ?? "https://api.anthropic.com").replace(/\/+$/, "");
   // Parte G · solo el origen oficial deja un contador que esté en una factura
@@ -461,15 +474,19 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
   const fetchImpl = opts.fetchImpl ?? fetch;
   const log = opts.log ?? ((l: string) => console.log(l));
   const warn = opts.warn ?? ((l: string) => console.error(l));
-  const now = opts.license.now ?? Date.now;
-  const baseLicencias = opts.license.licenseServerUrl?.replace(/\/+$/, "");
+  const now = opts.license?.now ?? Date.now;
+  const baseLicencias = opts.license?.licenseServerUrl?.replace(/\/+$/, "");
 
   // ── La licencia EN VIVO ─────────────────────────────────────────────────
   // Un gate vivo (reloj real + snapshot de revocaciones compartido con el
   // poller y el renovador) sobre el token verificado. Es lo ÚNICO que lee la
-  // verja por petición, junto al `reason` del canal.
+  // verja por petición, junto al `reason` del canal. En modo comunitario no
+  // existe: no hay token que vigilar ni revocación que comprobar.
   const revocation = new RevocationSnapshot();
-  let live: LiveLicense = buildLiveLicense(comprobada.license, publicKey, revocation, now);
+  let live: LiveLicense | null = verificada
+    ? buildLiveLicense(verificada, publicKey, revocation, now)
+    : null;
+  const planActual = (): string | undefined => live?.license.payload.plan;
 
   let emisor: UsageEmitter | undefined;
   if (opts.serviceAccountKey) {
@@ -490,11 +507,20 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
     if (opts.seatId) emisor.setSeat(opts.seatId, ci);
     else void deriveSeatId(opts.serviceAccountKey).then((s) => emisor?.setSeat(s, ci)).catch(() => {});
     emisor.start();
+  } else if (comunidad) {
+    avisarUnaVez(
+      "gateway-modo-comunitario",
+      "[bvsala gateway] COMMUNITY MODE (open core): no BIVELIO_SERVICE_KEY - every local saving lever is on and " +
+        "traffic is metered only in the local report routes (x-bvsala-report). Nothing is sent to BiVelio. " +
+        "Add a service key to get the cloud dashboard, org entitlements and team metering.",
+    );
   } else {
+    // Licencia presente (offline) pero sin clave de servicio: no hay org cuyo
+    // metering autorizar ni entitlements que consultar.
     avisarUnaVez(
       "gateway-sin-clave",
       "[bvsala gateway] no BIVELIO_SERVICE_KEY: this in-process gateway forwards traffic but does not meter it " +
-        "(the bvsala CLI refuses to start without the key).",
+        "(a service key is what authorizes metering).",
     );
   }
 
@@ -547,7 +573,11 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
   // Lo medido y lo que no, con su motivo: el resumen de salida de los envoltorios.
   const recuento = new RecuentoDeMedicion();
 
-  const canal = opts.serviceAccountKey
+  // S4a · el canal de entitlements existe SIEMPRE que haya clave de servicio
+  // (sin clave no hay org que consultar). En modo comunitario el canal es
+  // LOCAL y concede las palancas de la casa (context_elision, cache_ttl_tuning,
+  // sibling_model_routing, per_turn_effort): open core = el ahorro entero.
+  const canal: FuenteDeEntitlements | null = opts.serviceAccountKey
     ? new CanalDeEntitlements({
         url: baseLicencias
           ? `${baseLicencias}/api/org/entitlements`
@@ -557,19 +587,25 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
         ...(opts.entitlementsTtlMs !== undefined ? { ttlMs: opts.entitlementsTtlMs } : {}),
         log,
       })
-    : null;
+    : comunidad
+      ? new CanalComunitario()
+      : null;
   const palancasArmadas = canal !== null && opts.elision !== false;
 
   // ── La verja por petición y sus transiciones ────────────────────────────
-  const veredicto = (): Verdict => licenseVerdict(live.gate, canal?.blockReason() ?? null, live.license.payload);
+  const veredicto = (): Verdict =>
+    comunidad
+      ? { serve: true, state: "active" }
+      : licenseVerdict(live!.gate, canal?.blockReason() ?? null, live!.license.payload);
   // El último estado ANUNCIADO: una línea por transición, nunca una por petición.
   let anunciado: GatewayLicenseState | null = null;
-  {
-    const inicial = licenseVerdict(live.gate, null, live.license.payload);
+  if (!comunidad) {
+    const inicial = licenseVerdict(live!.gate, null, live!.license.payload);
     if (inicial.serve) anunciado = inicial.state;
   }
   const anunciar = (v: Verdict): void => {
-    const linea = transitionLine(anunciado, v, live.license.payload);
+    if (comunidad) return;
+    const linea = transitionLine(anunciado, v, live!.license.payload);
     anunciado = v.state;
     if (linea) warn(linea);
   };
@@ -591,14 +627,19 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
   /**
    * El observador según el DIALECTO de la ruta: `/v1/messages` habla Anthropic;
    * cualquier `…/responses` (`/v1/responses` con API key, `/backend-api/codex/
-   * responses` con ChatGPT) habla la Responses API de OpenAI (Codex CLI); y
+   * responses` con ChatGPT) habla la Responses API de OpenAI (Codex CLI);
    * cualquier `…/chat/completions` habla Chat Completions (los SDK oficiales de
-   * OpenAI en cualquier lenguaje, Python incluido). Otras rutas SSE no se miden.
+   * OpenAI en cualquier lenguaje, Python incluido); y `:generateContent` /
+   * `:streamGenerateContent` hablan el protocolo de Gemini. Otras rutas SSE no
+   * se miden.
    */
-  const observadorPara = (pathname: string): ObservadorSse | ObservadorResponses | ObservadorChatCompletions | null => {
+  const observadorPara = (
+    pathname: string,
+  ): ObservadorSse | ObservadorResponses | ObservadorChatCompletions | ObservadorGemini | null => {
     if (pathname === "/v1/messages") return new ObservadorSse();
     if (pathname.endsWith("/responses")) return new ObservadorResponses();
     if (pathname.endsWith("/chat/completions")) return new ObservadorChatCompletions();
+    if (dialectoGemini(pathname) === "stream") return new ObservadorGemini();
     return null;
   };
 
@@ -639,7 +680,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
    * se intentó (la réplica coalescida no lo sabe y no avisa).
    */
   const porQueSinUsoEnStream = (
-    obs: ObservadorSse | ObservadorResponses | ObservadorChatCompletions,
+    obs: ObservadorSse | ObservadorResponses | ObservadorChatCompletions | ObservadorGemini,
     cuerpo: Buffer,
     codificacion: string | undefined,
     inyeccion: "inyectado" | "rechazada-por-el-upstream" | Exclude<InyeccionDeUso["motivo"], "inyectado"> | null,
@@ -712,6 +753,11 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
      * él se anota lo que este deja en riesgo para el siguiente.
      */
     turnoTtl?: TurnoTtl | null,
+    /**
+     * El modelo leído de la RUTA (Gemini lo lleva en `/v1beta/models/{model}:…`,
+     * no en el cuerpo). Gana al que saldría de `modeloDelCuerpo`.
+     */
+    modeloDeRuta?: string | null,
   ): void => {
     if (!emisor || !uso) {
       buzon.noMedido(
@@ -722,7 +768,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
     }
     const em = emisor;
     const usoFinal: UsoSse = uso;
-    const model = modeloDelCuerpo(cuerpo, codificacion);
+    const model = modeloDeRuta ?? modeloDelCuerpo(cuerpo, codificacion);
     // Cada petición que se queda sin medir deja SU línea, no solo la primera:
     // el aviso por consola sale una vez por ruta o por modelo, pero quien lee
     // el log tiene que poder contar cuántas se quedaron fuera y por qué.
@@ -762,7 +808,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       // contrafactual del banco. En los dos casos el turno se cierra para que
       // el siguiente sepa qué quedó en riesgo. Una gemela no viajó: ni falla
       // ni deja nada cacheado.
-      const enSombraTtl = live.license.payload.plan === "measure";
+      const enSombraTtl = planActual() === "measure";
       let perdidosTtl = 0;
       if (turnoTtl && !coalescida) {
         perdidosTtl = enSombraTtl
@@ -857,7 +903,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       //  · la rebaja de TTL: los tokens que el proveedor facturó como escritura de
       //    1h, a la prima de 5 min (`ahorroDeRebaja`), al precio del modelo que
       //    habría servido. Solo si la capa HABRÍA rebajado (`rebajaSombra`).
-      const enMedicionAhora = live.license.payload.plan === "measure";
+      const enMedicionAhora = planActual() === "measure";
       if (enMedicionAhora && !coalescida && path === "/v1/messages" && !suscripcion && upstreamOficial && sinCobro !== true) {
         try {
           const hipotesis = reescribirModelo(cuerpo, codificacion);
@@ -1019,7 +1065,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
     // usage, ni carril de elisión — el cuerpo sale al upstream byte a byte como
     // lo mandó el cliente. Se decide POR PETICIÓN porque la licencia se renueva
     // en caliente: al recoger la de pago, la siguiente petición ya las arma.
-    const enMedicion = live.license.payload.plan === "measure";
+    const enMedicion = planActual() === "measure";
     if (enMedicion) avisarUnaVez("gateway-licencia-medir", AVISO_GATEWAY_MEDIR);
 
     // ── LAS RUTAS LOCALES (/_bvsala/v1/…) · informes-locales.ts ─────────────
@@ -1033,11 +1079,13 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
           gateway: "bvsala",
           version: BV_SALA_VERSION,
           upstream: origenPublico(upstreamBase),
-          license: {
-            state: v.state,
-            plan: live.license.payload.plan ?? null,
-            expiresAt: isoDay(live.license.payload.expires_at),
-          },
+          license: comunidad
+            ? { state: "active", plan: "community", expiresAt: null }
+            : {
+                state: v.state,
+                plan: planActual() ?? null,
+                expiresAt: live ? isoDay(live.license.payload.expires_at) : null,
+              },
           metering: emisor !== undefined,
           reports: { requestHeader: CABECERA_PIDE_INFORME, responseHeader: CABECERA_ID_DE_PETICION, capacity: buzon.limite },
         }),
@@ -1073,11 +1121,14 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
 
     let captura: ReturnType<Coalescedor["registrar"]> = null;
     let url = new URL(req.url ?? "/", upstreamBase);
+    // DeepSeek sirve el protocolo Anthropic bajo /anthropic: el cliente (Claude
+    // Code) manda /v1/messages y el gateway lo reescribe sin que él lo sepa.
+    url.pathname = rutaReescrita(upstreamBase, url.pathname);
     // Fuera del try: si el cliente cierra la conexión ANTES de que el upstream
     // termine (Codex CLI lo hace nada más recibir `response.completed`), la
     // medición del camino normal no se alcanza, pero el usage YA observado es
     // del proveedor y se mide igual — el corte del cliente no lo desdice.
-    let observador: ObservadorSse | ObservadorResponses | ObservadorChatCompletions | null = null;
+    let observador: ObservadorSse | ObservadorResponses | ObservadorChatCompletions | ObservadorGemini | null = null;
     let cuerpoPeticion: Buffer = Buffer.alloc(0);
     let medida = false;
     // El upstream respondió 2xx: un corte del cliente antes del usage final solo
@@ -1139,6 +1190,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       const cuerpo = Buffer.concat(chunks);
       cuerpoPeticion = cuerpo;
       url = new URL(req.url ?? "/", upstreamBase);
+      url.pathname = rutaReescrita(upstreamBase, url.pathname);
 
       // ── F2 · coalescencia (solo bajo bandera e inferencia de lectura) ──
       const coalescible =
@@ -1658,8 +1710,12 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       // observador no vería eventos y no se mediría nada (nunca de más). Solo
       // en los dos dialectos donde se ha visto: Chat Completions no se asume.
       const tipo = upstream.headers.get("content-type") ?? "";
+      // Gemini sin `alt=sse` responde application/json por trozos (un array de
+      // objetos separados por saltos de línea): se observa igual que un SSE.
+      const geminiPorLineas = dialectoGemini(url.pathname) === "stream" && tipo.includes("application/json");
       const esSse =
         tipo.includes("text/event-stream") ||
+        geminiPorLineas ||
         (tipo === "" && upstream.ok && observadorPara(url.pathname) !== null && !url.pathname.endsWith("/chat/completions"));
       observador = esSse ? observadorPara(url.pathname) : null;
       respuestaOk = upstream.ok;
@@ -1778,6 +1834,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
           medir(
             requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, elision, rebaja, inicioMs, hermano, suscripcion,
             undefined, undefined, sinCobro, rebajaSombra, turnoTtl,
+            observador instanceof ObservadorGemini ? modeloDeRutaGemini(url.pathname) : undefined,
           );
           vigilarCache(url.pathname, cuerpo, codificacion, uso, ttlReescrito, sesionId);
         }
@@ -1802,6 +1859,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
           medir(
             requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, atribuir(elision, uso), rebaja, inicioMs, hermano, suscripcion,
             undefined, undefined, negativaNoCobradaEnJson(url.pathname, respuesta), rebajaSombra, turnoTtl,
+            url.pathname.endsWith(":generateContent") ? modeloDeRutaGemini(url.pathname) : undefined,
           );
           vigilarCache(url.pathname, cuerpo, codificacion, uso, ttlReescrito, sesionId);
         }
@@ -1867,7 +1925,8 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
           const sinCobro = url.pathname === "/v1/messages" && observador instanceof ObservadorSse && observador.negativaNoCobrada();
           medir(
             requestId, cuerpoPeticion, uso, false, url.pathname, codificacion, atribucion, elision, undefined, inicioMs, hermano, suscripcion,
-            undefined, undefined, sinCobro,
+            undefined, undefined, sinCobro, undefined, undefined,
+            observador instanceof ObservadorGemini ? modeloDeRutaGemini(url.pathname) : undefined,
           );
           vigilarCache(url.pathname, cuerpoPeticion, codificacion, uso, ttlReescrito, sesionId);
         } else {
@@ -1943,9 +2002,9 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
   const puerto = (server.address() as { port: number }).port;
 
   // ── Los procesos de fondo de la licencia, DESPUÉS de listen: si escuchar
-  // falla no queda ningún timer vivo. Sin base del control plane (solo tests),
-  // cero llamadas de licencia.
-  if (baseLicencias) {
+  // falla no queda ningún timer vivo. Sin base del control plane (solo tests,
+  // o modo comunitario), cero llamadas de licencia.
+  if (baseLicencias && live && opts.license) {
     // Revocación por jti: la lista firmada, pública, contra la MISMA clave
     // pública. Sus avisos en consola se callan (el gateway habla por su `log`) y
     // un rechazo se dice una vez por causa.
@@ -1953,7 +2012,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       url: `${baseLicencias}/licenses/revocations`,
       publicKeyPem: publicKey,
       snapshot: revocation,
-      getRefreshAfter: () => live.gate.refreshAfter?.(),
+      getRefreshAfter: () => live?.gate.refreshAfter?.(),
       nowSeconds: () => Math.floor(now() / 1000),
       ...(opts.fetchImpl ? { fetchImpl: opts.fetchImpl } : {}),
       silenceWarnings: true,
@@ -1971,7 +2030,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
         serviceAccountKey: opts.serviceAccountKey,
         publicKey,
         revocation,
-        current: () => live.license,
+        current: () => live!.license,
         onAdopt: (l: VerifiedLicense) => {
           live = buildLiveLicense(l, publicKey, revocation, now);
           log(`[gateway] renewed license adopted (expires ${isoDay(l.payload.expires_at)})`);

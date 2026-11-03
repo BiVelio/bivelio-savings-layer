@@ -4,9 +4,12 @@ import Anthropic from "@anthropic-ai/sdk";
 import { anthropicSavings } from "@bivelio/savings-layer/anthropic-sdk";
 
 export const claudeSavings = anthropicSavings({
-  licenseKey: process.env.BIVELIO_LICENSE_KEY,
-  licenseServerUrl: "https://savings.bivelio.com",
-  serviceAccountKey: process.env.BIVELIO_SERVICE_KEY,
+  // OPEN CORE: no license needed — the layer runs with every local saving lever on, zero telemetry.
+  // A license key that IS set but invalid still fails closed. For the cloud dashboard,
+  // team metering and license auto-renewal, add these lines (all optional):
+  licenseKey: process.env.BIVELIO_LICENSE_KEY || undefined,
+  // licenseServerUrl: "https://savings.bivelio.com",
+  // serviceAccountKey: process.env.BIVELIO_SERVICE_KEY,
 });
 
 // Use `client` for messages.create(); `claudeSavings.middleware` goes LAST in the list.

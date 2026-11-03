@@ -26,7 +26,7 @@ tokens por modelo). Con BYOK, la CLI funciona **sin cuenta de GitHub** [V].
   ```
 
   (Con OpenAI, el tipo por defecto, el base URL es `https://api.openai.com/v1`: ver «El tipo `openai`» abajo.)
-- `bvsala` instalado, `BIVELIO_SERVICE_KEY` exportada y una licencia BiVelio activa (ver [README](README.md)).
+- `bvsala` instalado. Open core: sin claves arranca en modo Community; `BIVELIO_SERVICE_KEY` (opcional) añade el panel y los entitlements (ver [README](README.md)).
 
 ### Envoltorio: `bvsala copilot [args…]`
 

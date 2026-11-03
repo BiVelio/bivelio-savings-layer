@@ -21,7 +21,7 @@ import { construirExtracto, type Extracto, type FilaDiaria } from "./extracto";
  * 2026-09-29, docs/VERSION-DEL-CATALOGO.md): dos extractos con la misma
  * `version_precios` se valoraron con los mismos precios.
  */
-export const VERSION_PRECIOS_CATALOGO = "2026-09-29";
+export const VERSION_PRECIOS_CATALOGO = "2026-11-03";
 
 /**
  * FX de la SOMBRA: una referencia fija y declarada, no un tipo de mercado.

@@ -4,9 +4,12 @@ import { OpenAICompatibleProvider, createSavingsLayer } from "@bivelio/savings-l
 // Created once, at startup, not inside the handler: the exact cache lives in this instance.
 const layer = createSavingsLayer({
   provider: new OpenAICompatibleProvider({ baseUrl: "https://api.openai.com/v1", apiKey: process.env.OPENAI_API_KEY }),
-  licenseKey: process.env.BIVELIO_LICENSE_KEY,
-  licenseServerUrl: "https://savings.bivelio.com",
-  serviceAccountKey: process.env.BIVELIO_SERVICE_KEY,
+  // OPEN CORE: no license needed — the layer runs with every local saving lever on, zero telemetry.
+  // A license key that IS set but invalid still fails closed. For the cloud dashboard,
+  // team metering and license auto-renewal, add these lines (all optional):
+  licenseKey: process.env.BIVELIO_LICENSE_KEY || undefined,
+  // licenseServerUrl: "https://savings.bivelio.com",
+  // serviceAccountKey: process.env.BIVELIO_SERVICE_KEY,
 });
 
 const app = express();

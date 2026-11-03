@@ -1,5 +1,38 @@
 # Changelog
 
+## Unreleased — the open-core release (Community mode)
+
+### Changed (breaking for the license contract)
+
+- **Open core.** `createSavingsLayer({ provider })` without a `licenseKey` now
+  runs on the COMMUNITY gate: every local saving lever on, zero telemetry, zero
+  network. A license key that IS configured but invalid, expired or revoked
+  still fails closed with `LicenseError`; only its absence stopped being an
+  error.
+- **Gateway starts with no keys.** `bvsala gateway` (and every `bvsala <agent>`
+  wrapper) launches in COMMUNITY mode: local levers armed by default, local
+  `/_bvsala` reports working, nothing sent to BiVelio. `BIVELIO_SERVICE_KEY`
+  remains the (optional) door to the cloud dashboard, org entitlements and
+  metering.
+
+### Added
+
+- **Gemini protocol in the gateway**: `:generateContent` and
+  `:streamGenerateContent` (SSE with `alt=sse` and newline-delimited JSON) are
+  metered from `usageMetadata` (implicit-cache discount, thinking tokens as
+  output), plus the `bvsala gemini` wrapper (`GOOGLE_GEMINI_BASE_URL`).
+- **Chinese providers and local servers as first-class upstreams**:
+  `--upstream deepseek | qwen | glm | moonshot | minimax | openrouter | ollama |
+  vllm | lmstudio`; DeepSeek rewrites Anthropic traffic to its `/anthropic`
+  endpoint automatically.
+- **Catalog**: list-price rows for deepseek-flash / deepseek-v4-pro (peak rates,
+  the conservative side), qwen3.8 / qwen3.7 / qwen-flash / qwen-plus and
+  glm-5.3 (+flash); cache-write premium is 1× for Chinese providers. Moonshot and
+  MiniMax stay out until their official pages are verifiable.
+- **Cursor recipe** (Settings → Models → OpenAI API Base URL, BYOK) and a
+  **Claude Desktop MCP recipe** in `bvsala doctor`, plus new terminal guides
+  (Gemini CLI, Cursor, DeepSeek, Ollama/vLLM/LM Studio).
+
 ## 0.6.0-rc.1 — SDK release candidate
 
 This prerelease adds opt-in, customer-operated persistence while preserving the
