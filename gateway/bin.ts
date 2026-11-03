@@ -234,7 +234,7 @@ best-effort: with ingestion down, it forwards and warns. On a Claude or ChatGPT 
 there is no per-token invoice: that traffic is metered at list-price equivalent and never
 carries commission.
 Your prompts, completions and provider keys never reach BiVelio: what it receives is per-request
-usage (token counts, cost, the model id and opaque ids); LICENSE §5 lists every field.
+usage (token counts, cost, the model id and opaque ids); LICENSE-CLOUD.md §5 lists every field.
 More: savings.bivelio.com`);
 }
 

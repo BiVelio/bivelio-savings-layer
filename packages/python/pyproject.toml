@@ -12,9 +12,9 @@ dynamic = ["version"]
 description = "Python client for the BiVelio Savings Layer gateway: route the official OpenAI and Anthropic SDKs through your local bvsala gateway and get each request's report, measured with your provider's own usage counter."
 readme = "README.md"
 requires-python = ">=3.10"
-# Software comercial: la LICENSE es la misma que la del paquete de npm, byte a
+# Open core: la LICENSE es la del paquete de npm, byte a
 # byte (test/python-cliente.test.ts lo comprueba).
-license = "LicenseRef-BiVelio-Commercial"
+license = "Apache-2.0"
 license-files = ["LICENSE"]
 authors = [{ name = "BiVelio Inc.", email = "support@bivelio.com" }]
 keywords = ["llm", "cost-optimization", "llm-costs", "token-accounting", "openai", "anthropic"]

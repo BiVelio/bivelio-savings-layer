@@ -25,7 +25,7 @@ import { describe, it, expect } from "vitest";
 const leer = (ruta: string) => readFileSync(fileURLToPath(new URL(ruta, import.meta.url)), "utf8");
 const plano = (t: string) => t.replace(/\s+/g, " ");
 
-const licencia = leer("../LICENSE");
+const licencia = leer("../LICENSE-CLOUD.md");
 const readme = leer("../README.md");
 const emisor = leer("../src/metering/emitter.ts");
 const ingesta = leer("../apps/web/lib/metering/usage.ts");
@@ -378,16 +378,16 @@ describe("el README que viaja a npm promete lo que se cobra", () => {
     expect(readme).toMatch(/never reach BiVelio/);
   });
 
-  it("remite a la LICENSE para la lista de campos y para las tarifas", () => {
-    expect(readme).toMatch(/LICENSE\]\(\.\/LICENSE\) §5/);
-    expect(readme).toMatch(/LICENSE\]\(\.\/LICENSE\) §6/);
+  it("remite a la LICENSE-CLOUD.md para la lista de campos y para las tarifas", () => {
+    expect(readme).toMatch(/LICENSE-CLOUD\.md\]\(\.\/LICENSE-CLOUD\.md\) §5/);
+    expect(readme).toMatch(/LICENSE-CLOUD\.md\]\(\.\/LICENSE-CLOUD\.md\) §6/);
   });
 });
 
 describe("las guías de terminales (también viajan a npm) no prometen de menos lo que viaja", () => {
   it("⛔ ni «solo cuentas y coste» ni cabeceras de sesión «sin consumirlas»", () => {
     expect(leer("../docs/terminales/README.md")).not.toMatch(/solo\s+cuentas\s+y\s+coste/);
-    expect(leer("../docs/terminales/README.md")).toMatch(/LICENSE\s+§5/);
+    expect(leer("../docs/terminales/README.md")).toMatch(/LICENSE-CLOUD\.md\s+§5/);
     expect(leer("../docs/terminales/claude-code.md")).not.toMatch(/sin\s+consumirlas/);
   });
 
@@ -446,6 +446,6 @@ describe("⛔ nada de lo que viaja en el tarball vuelve a «solo cuentas y coste
   it("la ayuda del gateway dice a quién NO llegan los prompts y remite a la §5", () => {
     const bin = plano(leer("../gateway/bin.ts"));
     expect(bin).toMatch(/Your prompts, completions and provider keys never reach BiVelio/);
-    expect(bin).toMatch(/LICENSE §5 lists every field/);
+    expect(bin).toMatch(/LICENSE-CLOUD\.md §5 lists every field/);
   });
 });

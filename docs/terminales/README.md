@@ -15,7 +15,7 @@ stream y lo convierte en coste. Ni tus prompts, ni las respuestas, ni la clave d
 tu proveedor salen de tu máquina hacia BiVelio: solo viaja el uso de cada
 petición —cuentas de tokens, coste, el id del modelo, un id de petición y los ids
 opacos de asiento y de sesión—, y la lista exacta de campos está en la
-LICENSE §5. **Open core**: arranca sin ninguna clave, en modo Community —todas
+LICENSE-CLOUD.md §5. **Open core**: arranca sin ninguna clave, en modo Community —todas
 las palancas locales armadas, cero telemetría, y el metering se queda en las
 rutas locales `/_bvsala`—. `BIVELIO_SERVICE_KEY` (opcional) añade el panel, los
 entitlements de la org y la recogida de licencia; una licencia PRESENTE pero
@@ -336,7 +336,7 @@ Each kind is logged once per session (Claude Code's session id; once per gateway
 process for clients that send none) and every case is counted. `bvsala` prints
 the totals when it exits, because the per-request log is silent inside `bvsala
 claude|codex|goose|qwen` (unless `BVSALA_GATEWAY_LOG=1`). None of this is sent to BiVelio: the usage record has
-no field for it (LICENSE §5), so it stays on your machine.
+no field for it (LICENSE-CLOUD.md §5), so it stays on your machine.
 
 **Limits.**
 

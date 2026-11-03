@@ -1,7 +1,7 @@
 {
   "name": "@bivelio/savings-layer",
-  "version": "0.6.0-rc.1",
-  "description": "The savings layer for your LLM bill: a library inside your code that lets through only what has to be paid for and returns a SavingsReport per call, measured with your provider's own meter and kept apart from estimates. Commercial license, paid per seat, commission only on measured savings. Your prompts never leave your infrastructure.",
+  "version": "1.0.0",
+  "description": "The savings layer for your LLM bill: a zero-dependency open-core layer inside your code — and a local gateway for coding agents — that lets through only what has to be paid for, and returns a SavingsReport per call measured with your provider's own meter. Apache-2.0, zero telemetry by default; the optional cloud adds team dashboard and shared caches.",
   "keywords": [
     "llm",
     "cost-optimization",
@@ -19,7 +19,7 @@
     "type": "git",
     "url": "git+https://github.com/BiVelio/bivelio-savings-layer.git"
   },
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "Apache-2.0",
   "author": "BiVelio Inc.",
   "type": "module",
   "publishConfig": {
@@ -65,7 +65,9 @@
     "skills",
     "README.md",
     "CHANGELOG.md",
-    "LICENSE"
+    "LICENSE",
+    "LICENSE-CLOUD.md",
+    "NOTICE"
   ],
   "engines": {
     "node": ">=20.19.0"

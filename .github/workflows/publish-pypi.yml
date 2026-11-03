@@ -141,8 +141,8 @@ jobs:
             echo "::error::El wheel no lleva la LICENSE del repositorio."
             exit 1
           fi
-          if ! grep -qx "License-Expression: LicenseRef-BiVelio-Commercial" "$DIR/whl/bivelio_savings_layer-$V.dist-info/METADATA"; then
-            echo "::error::El wheel no declara la licencia comercial."
+          if ! grep -qx "License-Expression: Apache-2.0" "$DIR/whl/bivelio_savings_layer-$V.dist-info/METADATA"; then
+            echo "::error::El wheel no declara Apache-2.0."
             exit 1
           fi
           if grep -q "^Requires-Dist:" "$DIR/whl/bivelio_savings_layer-$V.dist-info/METADATA"; then

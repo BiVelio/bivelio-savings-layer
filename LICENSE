@@ -1,163 +1,183 @@
-BiVelio Inc. — BV-SALA Commercial Software License Agreement
+Apache License
+Version 2.0, January 2004
+http://www.apache.org/licenses/
 
-Copyright (c) 2026 BiVelio Inc. All Rights Reserved.
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
 
-IMPORTANT — READ BEFORE USE. This Commercial Software License Agreement (the
-"Agreement") governs your use of the "@bivelio/savings-layer" software, also known
-as "BV-SALA" (the "Software"), published by BiVelio Inc. ("BiVelio"). By installing,
-copying, or using the Software, you agree to this Agreement. If you do not agree, do
-not install or use the Software.
+1. Definitions.
 
-1. LICENSE GRANT. Subject to your continuous compliance with this Agreement and to
-   an active BiVelio subscription (paid, or granted by BiVelio at no charge, for
-   example through a promotional code, a pilot, or the free Measure license) with a
-   valid license key ("License Key"), BiVelio grants you a limited, non-exclusive,
-   non-transferable, non-sublicensable, revocable license to install and use the
-   Software, as published, solely for your own internal business purposes, and only
-   for the number of seats covered by your subscription. The Software is licensed,
-   not sold. Under a Measure license the Software runs in shadow mode only: it
-   forwards your requests to your provider unchanged, applies no optimization, and
-   reports estimated savings that are never billed.
+"License" shall mean the terms and conditions for use, reproduction, and
+distribution as defined by Sections 1 through 9 of this document.
 
-2. LICENSE KEY; FAIL-CLOSED OPERATION. The Software requires a valid, active License
-   Key and does not operate without one. Expiry, non-payment, revocation, suspension,
-   or termination of your subscription immediately ends the license granted in
-   Section 1, and the Software will cease to function; when a paid subscription
-   ends, BiVelio may instead grant you a Measure license, under which the Software
-   continues in shadow mode only. You will not circumvent, disable, remove, or tamper
-   with the Software's licensing, metering, or revocation mechanisms, nor use the
-   Software after your license has ended.
+"Licensor" shall mean the copyright owner or entity authorized by the copyright
+owner that is granting the License.
 
-3. RESTRICTIONS. Except as expressly permitted above, you will not: (a) distribute,
-   publish, resell, rent, lease, lend, offer as a hosted or managed service, or
-   otherwise make the Software available to any third party; (b) sublicense, assign,
-   or transfer your rights; (c) use the Software for more seats than your
-   subscription covers, or share a License Key across more machines or service
-   identities than it covers; (d) remove, alter, or obscure any proprietary or
-   copyright notice; (e) reverse engineer, decompile, or disassemble the Software,
-   except to the limited extent applicable law expressly permits notwithstanding
-   this restriction; or (f) use the Software to develop, train, or improve a product
-   or service that competes with the Software.
+"Legal Entity" shall mean the union of the acting entity and all other entities
+that control, are controlled by, or are under common control with that entity.
+For the purposes of this definition, "control" means (i) the power, direct or
+indirect, to cause the direction or management of such entity, whether by
+contract or otherwise, or (ii) ownership of fifty percent (50%) or more of the
+outstanding shares, or (iii) beneficial ownership of such entity.
 
-4. OWNERSHIP. The Software is the exclusive property of BiVelio and its licensors and
-   embodies valuable proprietary information and trade secrets. BiVelio retains all
-   right, title, and interest in and to the Software and all intellectual property
-   rights therein. No rights are granted to you except as expressly set out in this
-   Agreement, whether by implication, estoppel, or otherwise.
+"You" (or "Your") shall mean an individual or Legal Entity exercising
+permissions granted by this License.
 
-5. YOUR DATA; PRIVACY.
-   (a) What the Software never sends to BiVelio. The Software never transmits to
-   BiVelio the content of your requests or responses (including prompts, system
-   instructions, messages, tool definitions, tool arguments and results, retrieved
-   documents, and completions) or the credentials you use with your LLM provider
-   (API keys, OAuth tokens, or other authorization headers). That content and those
-   credentials travel only between your systems and the LLM provider you configure.
-   (b) What the Software sends to BiVelio. The SDK contacts BiVelio only when you
-   configure a license server or metering URL; the local gateway always does. With a
-   BiVelio service-account key, the Software sends BiVelio's control plane usage
-   records for the requests it meters, each limited to:
-     (i) identifiers: a request identifier generated on your side (at random, or by
-         your own generator); for a repeated request valued by reference, the
-         identifier and timestamp of the earlier request whose provider counter is
-         used; a seat identifier, which is either a value you set or an opaque value
-         computed on your machine as a keyed hash (HMAC-SHA-256 wherever the
-         runtime provides it), keyed with your service-account key, of the
-         platform, CPU architecture, runtime executable path, host name,
-         operating-system user name, and home directory (those underlying values
-         are never sent); for traffic through the local gateway,
-         the session and sub-agent identifiers that your coding agent attaches to
-         its own requests (for example, Claude Code's session id), only when they
-         are plain identifiers; an organization hint; and a flag marking CI or
-         ephemeral runners;
-     (ii) the identifier of the model that served the request (the model named in
-         the request or, where the Software sent the request to another model under
-         a setting you enabled, that model; for a self-hosted or Azure deployment,
-         the name you gave it) and the time of the request;
-     (iii) counts: LLM calls executed and avoided; input and output tokens before
-         and after the Software's optimizations, including tokens removed,
-         compressed, or read from the provider's cache; and the cache outcome; and
-     (iv) cost figures computed by the Software from its price catalogue (or from
-         a cost model you supply): baseline cost, actual cost, the net-saving
-         ratio, the basis of the figures (measured, reference, estimated, shadow,
-         or unmeasured), the value, at the provider's cache-read price, of
-         input tokens your provider reported as cleared from context, and the
-         discount your provider's own prompt cache gave the request and the
-         cache-write premium it billed, which are shown apart and never used to
-         calculate the fees in Section 6.
-   Each batch of records also carries the Software's surface and version (for
-   example, "gateway/0.4.23"). BiVelio's ingest rejects any record that carries a
-   field not listed above. Separately, the Software fetches from BiVelio its current
-   license token, the signed license revocation list and, for the gateway, your
-   organization's feature entitlements; these requests carry your service-account
-   key where authentication is required, and no request data. Like any HTTPS
-   request, all of the above also reveals ordinary network metadata, such as your
-   IP address. If you enable the SDK's optional verification, which is off by
-   default, the SDK also sends BiVelio, through a separate channel and for each
-   request it samples: a label marking the record as a verification sample; the
-   request identifier and time; the model requested and the model that served it;
-   the cache outcome; the category of the request and the outcome of the check;
-   the input, cached-input, and output token counts and the cost of the served
-   request and of the unoptimized copy the SDK sent to your LLM provider; how
-   that copy finished and whether it met the response contract; and the per-token
-   prices applied; together with daily counts of requests per category and a
-   random batch identifier. That channel likewise rejects any field not listed
-   here, and none of it is used to calculate the fees in Section 6.
-   (c) BiVelio uses this data to operate licensing and revocation, show your
-   dashboard, count billable seats, and calculate the fees in Section 6. Each
-   field, and how long BiVelio keeps it, is further described at
-   https://savings.bivelio.com/privacy.
+"Source" form shall mean the preferred form for making modifications, including
+but not limited to software source code, documentation source, and configuration
+files.
 
-6. FEES. Your subscription is subject to BiVelio's pricing as published at
-   https://savings.bivelio.com/pricing (the "Published Pricing") for each billing
-   period:
-   (a) a subscription fee, per seat or for a plan that includes a number of seats,
-   payable whether or not the Software produces any saving; and (b) only if your
-   subscription is on a plan that the Published Pricing lists as carrying a
-   commission, a commission, at tiered marginal rates, charged only on measured
-   savings, meaning savings whose basis is labelled "measured" or "reference" in
-   your usage records (Section 5(b)(iv)). A "measured" saving is established from
-   your LLM provider's own usage counter for that request; a "reference" saving, for
-   a repeated request the Software served without calling your provider, from your
-   provider's counter for the identical earlier request that did run. Both are
-   valued at the per-token prices the Software applied to that request: those of a
-   cost model you configure, where you configure one, and otherwise your provider's
-   list prices in the price catalogue included in the Software. Savings labelled
-   "estimated", "shadow", or "unmeasured" never carry commission. Traffic the
-   Software identifies as a flat-rate provider subscription (a Claude or ChatGPT
-   subscription used through the local gateway) is metered but credited no measured
-   saving, so it carries no commission. A period with no measured savings carries no
-   commission. The first calendar month (UTC) in which your organization reports any
-   usage is a calibration period, however little of that month remains, and carries
-   no commission. Nor is commission charged for a period that BiVelio closes while
-   your account is exempt from it. Your account is exempt if BiVelio grants it an
-   exemption and, until a payment is made on the account, if its subscription was
-   activated with a promotional code that waives the subscription fee in full for
-   its entire term. For a calibration or exempt period the statement still shows the
-   commission that would have applied. Each period's commission is
-   itemized on a statement in your dashboard, together with the exchange rate
-   applied. Rates, tier thresholds, and currency are those of the Published Pricing
-   and are not restated here.
+"Object" form shall mean any form resulting from mechanical transformation or
+translation of a Source form, including but not limited to compiled object code,
+generated documentation, and conversions to other media types.
 
-7. TERM AND TERMINATION. This Agreement remains in effect while your subscription is
-   active. BiVelio may terminate this Agreement immediately if you breach it. Upon
-   expiry or termination you must cease all use of the Software and destroy your
-   copies. Sections 2 through 10 survive termination.
+"Work" shall mean the work of authorship, whether in Source or Object form, made
+available under the License, as indicated by a copyright notice that is included
+in or attached to the work (an example is provided in the Appendix below).
 
-8. DISCLAIMER OF WARRANTY. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
-   KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT.
+"Derivative Works" shall mean any work, whether in Source or Object form, that is
+based on (or derived from) the Work and for which the editorial revisions,
+annotations, elaborations, or other modifications represent, as a whole, an
+original work of authorship. For the purposes of this License, Derivative Works
+shall not include works that remain separable from, or merely link (or bind by
+name) to the interfaces of, the Work and Derivative Works thereof.
 
-9. LIMITATION OF LIABILITY. TO THE MAXIMUM EXTENT PERMITTED BY LAW, IN NO EVENT SHALL
-   BIVELIO INC. BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR
-   EXEMPLARY DAMAGES, OR FOR ANY LOSS OF PROFITS, REVENUE, OR DATA, ARISING FROM OR
-   RELATED TO THE SOFTWARE OR THIS AGREEMENT. BIVELIO'S TOTAL LIABILITY SHALL NOT
-   EXCEED THE FEES YOU PAID FOR THE SOFTWARE IN THE TWELVE MONTHS PRECEDING THE CLAIM.
+"Contribution" shall mean any work of authorship, including the original version
+of the Work and any modifications or additions to that Work or Derivative Works
+thereof, that is intentionally submitted to Licensor for inclusion in the Work
+by the copyright owner or by an individual or Legal Entity authorized to submit
+on behalf of the copyright owner. For the purposes of this definition,
+"submitted" means any form of electronic, verbal, or written communication sent
+to the Licensor or its representatives, including but not limited to
+communication on electronic mailing lists, source code control systems, and
+issue tracking systems that are managed by, or on behalf of, the Licensor for
+the purpose of discussing and improving the Work, but excluding communication
+that is conspicuously marked or otherwise designated in writing by the copyright
+owner as "Not a Contribution."
 
-10. GENERAL. This Agreement is governed by the laws of the State of Delaware, USA,
-   without regard to its conflict-of-laws rules. If any provision is held
-   unenforceable, the remaining provisions remain in effect. This Agreement, together
-   with the applicable BiVelio subscription terms, constitutes the entire agreement
-   between you and BiVelio regarding the Software. Unauthorized use, reproduction, or
-   distribution of the Software may result in civil and criminal penalties.
+"Contributor" shall mean Licensor and any individual or Legal Entity on behalf of
+whom a Contribution has been received by Licensor and subsequently incorporated
+within the Work.
 
-For licensing and compliance inquiries, contact: BiVelio Inc. — privacy@bivelio.com
+2. Grant of Copyright License. Subject to the terms and conditions of this
+License, each Contributor hereby grants to You a perpetual, worldwide,
+non-exclusive, no-charge, royalty-free, irrevocable copyright license to
+reproduce, prepare Derivative Works of, publicly display, publicly perform,
+sublicense, and distribute the Work and such Derivative Works in Source or
+Object form.
+
+3. Grant of Patent License. Subject to the terms and conditions of this License,
+each Contributor hereby grants to You a perpetual, worldwide, non-exclusive,
+no-charge, royalty-free, irrevocable (except as stated in this section) patent
+license to make, have made, use, offer to sell, sell, import, and otherwise
+transfer the Work, where such license applies only to those patent claims
+licensable by such Contributor that are necessarily infringed by their
+Contribution(s) alone or by combination of their Contribution(s) with the Work
+to which such Contribution(s) was submitted. If You institute patent litigation
+against any entity (including a cross-claim or counterclaim in a lawsuit)
+alleging that the Work or a Contribution incorporated within the Work
+constitutes direct or contributory patent infringement, then any patent licenses
+granted to You under this License for that Work shall terminate as of the date
+such litigation is filed.
+
+4. Redistribution. You may reproduce and distribute copies of the Work or
+Derivative Works thereof in any medium, with or without modifications, and in
+Source or Object form, provided that You meet the following conditions:
+
+(a) You must give any other recipients of the Work or Derivative Works a copy of
+this License; and
+
+(b) You must cause any modified files to carry prominent notices stating that
+You changed the files; and
+
+(c) You must retain, in the Source form of any Derivative Works that You
+distribute, all copyright, patent, trademark, and attribution notices from the
+Source form of the Work, excluding those notices that do not pertain to any part
+of the Derivative Works; and
+
+(d) If the Work includes a "NOTICE" text file as part of its distribution, then
+any Derivative Works that You distribute must include a readable copy of the
+attribution notices contained within such NOTICE file, excluding those notices
+that do not pertain to any part of the Derivative Works, in at least one of the
+following places: within a NOTICE text file distributed as part of the
+Derivative Works; within the Source form or documentation, if provided along
+with the Derivative Works; or, within a display generated by the Derivative
+Works, if and wherever such third-party notices normally appear. The contents of
+the NOTICE file are for informational purposes only and do not modify the
+License. You may add Your own attribution notices within Derivative Works that
+You distribute, alongside or as an addendum to the NOTICE text from the Work,
+provided that such additional attribution notices cannot be construed as
+modifying the License.
+
+You may add Your own copyright statement to Your modifications and may provide
+additional or different license terms and conditions for use, reproduction, or
+distribution of Your modifications, or for any such Derivative Works as a whole,
+provided Your use, reproduction, and distribution of the Work otherwise
+complies with the conditions stated in this License.
+
+5. Submission of Contributions. Unless You explicitly state otherwise, any
+Contribution intentionally submitted for inclusion in the Work by You to the
+Licensor shall be under the terms and conditions of this License, without any
+additional terms or conditions. Notwithstanding the above, nothing herein shall
+supersede or modify the terms of any separate license agreement you may have
+executed with Licensor regarding such Contributions.
+
+6. Trademarks. This License does not grant permission to use the trade names,
+trademarks, service marks, or product names of the Licensor, except as required
+for reasonable and customary use in describing the origin of the Work and
+reproducing the content of the NOTICE file.
+
+7. Disclaimer of Warranty. Unless required by applicable law or agreed to in
+writing, Licensor provides the Work (and each Contributor provides its
+Contributions) on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied, including, without limitation, any warranties
+or conditions of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+PARTICULAR PURPOSE. You are solely responsible for determining the
+appropriateness of using or redistributing the Work and assume any risks
+associated with Your exercise of permissions under this License.
+
+8. Limitation of Liability. In no event and under no legal theory, whether in
+tort (including negligence), contract, or otherwise, unless required by
+applicable law (such as deliberate and grossly negligent acts) or agreed to in
+writing, shall any Contributor be liable to You for damages, including any
+direct, indirect, special, incidental, or consequential damages of any character
+arising as a result of this License or out of the use or inability to use the
+Work (including but not limited to damages for loss of goodwill, work stoppage,
+computer failure or malfunction, or any and all other commercial damages or
+losses), even if such Contributor has been advised of the possibility of such
+damages.
+
+9. Accepting Warranty or Additional Liability. While redistributing the Work or
+Derivative Works thereof, You may choose to offer, and charge a fee for,
+acceptance of support, warranty, indemnity, or other liability obligations
+and/or rights consistent with this License. However, in accepting such
+obligations, You may act only on Your own behalf and on Your sole
+responsibility, not on behalf of any other Contributor, and only if You agree to
+indemnify, defend, and hold each Contributor harmless for any liability incurred
+by, or claims asserted against, such Contributor by reason of your accepting any
+such warranty or additional liability.
+
+END OF TERMS AND CONDITIONS
+
+APPENDIX: How to apply the Apache License to your work.
+
+To apply the Apache License to your work, attach the following boilerplate
+notice, with the fields enclosed by brackets "[]" replaced with your own
+identifying information. (Don't include the brackets!) The text should be
+enclosed in the appropriate comment syntax for the file format. We also
+recommend that a file or class name and description of purpose be included on
+the same "printed page" as the copyright notice for easier identification within
+third-party archives.
+
+Copyright 2026 BiVelio Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.

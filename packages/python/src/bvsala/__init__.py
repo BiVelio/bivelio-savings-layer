@@ -22,7 +22,7 @@ from ._gateway import DEFAULT_URL, ENV_URL, REPORT_HEADER, REPORT_HEADERS, Gatew
 from ._keys import REQUEST_ID_HEADER
 from ._report import Calls, Cost, GatewayStatus, Report, Tokens, Totals
 
-__version__ = "0.1.1"
+__version__ = "1.0.0"
 
 __all__ = [
     "BvsalaError",

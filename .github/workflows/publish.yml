@@ -184,7 +184,7 @@ jobs:
       # Lo que de verdad se va a subir, comprobado sobre el tarball y no sobre el
       # árbol de trabajo: que el paywall va cerrado (la puerta de desarrollo se
       # compila fuera del build publicado) y que no se filtra el código fuente.
-      - name: El paquete no regala el producto
+      - name: El paquete no filtra lo que no debe
         run: |
           VERSION="$(node -p "require('./package.json').version")"
           DIR="$(mktemp -d)"
