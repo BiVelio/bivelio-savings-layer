@@ -53,6 +53,7 @@ import {
   type VerifiedLicense,
 } from "./license.js";
 import { ajustarDiales, conBetaDeElision } from "./palanca.js";
+import { dialectoGemini, modeloDeRutaGemini, ObservadorGemini } from "./gemini.js";
 import { avisoDeBusquedaDeHerramientas, verHerramientas } from "./busqueda-de-herramientas.js";
 import { aplicarEsfuerzo, conBetaDeEsfuerzo, esNivel } from "./esfuerzo.js";
 import { reescribirModelo, type CambioDeModelo } from "./hermano.js";
@@ -76,7 +77,7 @@ import {
   type TurnoTtl,
 } from "./fallos-ttl.js";
 import { Coalescedor, claveDePeticion, esOperacionCoalescible, materialDeCabeceras, MAX_CAPTURA_BYTES, type HuellaDeLaPrimaria } from "./coalescencia.js";
-import { esUpstreamOficial } from "./upstream.js";
+import { esUpstreamOficial, rutaReescrita } from "./upstream.js";
 import { RecuentoDeMedicion, type EstadoDeMedicion } from "./recuento.js";
 import {
   BuzonDeInformes,
@@ -626,14 +627,19 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
   /**
    * El observador según el DIALECTO de la ruta: `/v1/messages` habla Anthropic;
    * cualquier `…/responses` (`/v1/responses` con API key, `/backend-api/codex/
-   * responses` con ChatGPT) habla la Responses API de OpenAI (Codex CLI); y
+   * responses` con ChatGPT) habla la Responses API de OpenAI (Codex CLI);
    * cualquier `…/chat/completions` habla Chat Completions (los SDK oficiales de
-   * OpenAI en cualquier lenguaje, Python incluido). Otras rutas SSE no se miden.
+   * OpenAI en cualquier lenguaje, Python incluido); y `:generateContent` /
+   * `:streamGenerateContent` hablan el protocolo de Gemini. Otras rutas SSE no
+   * se miden.
    */
-  const observadorPara = (pathname: string): ObservadorSse | ObservadorResponses | ObservadorChatCompletions | null => {
+  const observadorPara = (
+    pathname: string,
+  ): ObservadorSse | ObservadorResponses | ObservadorChatCompletions | ObservadorGemini | null => {
     if (pathname === "/v1/messages") return new ObservadorSse();
     if (pathname.endsWith("/responses")) return new ObservadorResponses();
     if (pathname.endsWith("/chat/completions")) return new ObservadorChatCompletions();
+    if (dialectoGemini(pathname) === "stream") return new ObservadorGemini();
     return null;
   };
 
@@ -674,7 +680,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
    * se intentó (la réplica coalescida no lo sabe y no avisa).
    */
   const porQueSinUsoEnStream = (
-    obs: ObservadorSse | ObservadorResponses | ObservadorChatCompletions,
+    obs: ObservadorSse | ObservadorResponses | ObservadorChatCompletions | ObservadorGemini,
     cuerpo: Buffer,
     codificacion: string | undefined,
     inyeccion: "inyectado" | "rechazada-por-el-upstream" | Exclude<InyeccionDeUso["motivo"], "inyectado"> | null,
@@ -747,6 +753,11 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
      * él se anota lo que este deja en riesgo para el siguiente.
      */
     turnoTtl?: TurnoTtl | null,
+    /**
+     * El modelo leído de la RUTA (Gemini lo lleva en `/v1beta/models/{model}:…`,
+     * no en el cuerpo). Gana al que saldría de `modeloDelCuerpo`.
+     */
+    modeloDeRuta?: string | null,
   ): void => {
     if (!emisor || !uso) {
       buzon.noMedido(
@@ -757,7 +768,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
     }
     const em = emisor;
     const usoFinal: UsoSse = uso;
-    const model = modeloDelCuerpo(cuerpo, codificacion);
+    const model = modeloDeRuta ?? modeloDelCuerpo(cuerpo, codificacion);
     // Cada petición que se queda sin medir deja SU línea, no solo la primera:
     // el aviso por consola sale una vez por ruta o por modelo, pero quien lee
     // el log tiene que poder contar cuántas se quedaron fuera y por qué.
@@ -1110,11 +1121,14 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
 
     let captura: ReturnType<Coalescedor["registrar"]> = null;
     let url = new URL(req.url ?? "/", upstreamBase);
+    // DeepSeek sirve el protocolo Anthropic bajo /anthropic: el cliente (Claude
+    // Code) manda /v1/messages y el gateway lo reescribe sin que él lo sepa.
+    url.pathname = rutaReescrita(upstreamBase, url.pathname);
     // Fuera del try: si el cliente cierra la conexión ANTES de que el upstream
     // termine (Codex CLI lo hace nada más recibir `response.completed`), la
     // medición del camino normal no se alcanza, pero el usage YA observado es
     // del proveedor y se mide igual — el corte del cliente no lo desdice.
-    let observador: ObservadorSse | ObservadorResponses | ObservadorChatCompletions | null = null;
+    let observador: ObservadorSse | ObservadorResponses | ObservadorChatCompletions | ObservadorGemini | null = null;
     let cuerpoPeticion: Buffer = Buffer.alloc(0);
     let medida = false;
     // El upstream respondió 2xx: un corte del cliente antes del usage final solo
@@ -1176,6 +1190,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       const cuerpo = Buffer.concat(chunks);
       cuerpoPeticion = cuerpo;
       url = new URL(req.url ?? "/", upstreamBase);
+      url.pathname = rutaReescrita(upstreamBase, url.pathname);
 
       // ── F2 · coalescencia (solo bajo bandera e inferencia de lectura) ──
       const coalescible =
@@ -1695,8 +1710,12 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       // observador no vería eventos y no se mediría nada (nunca de más). Solo
       // en los dos dialectos donde se ha visto: Chat Completions no se asume.
       const tipo = upstream.headers.get("content-type") ?? "";
+      // Gemini sin `alt=sse` responde application/json por trozos (un array de
+      // objetos separados por saltos de línea): se observa igual que un SSE.
+      const geminiPorLineas = dialectoGemini(url.pathname) === "stream" && tipo.includes("application/json");
       const esSse =
         tipo.includes("text/event-stream") ||
+        geminiPorLineas ||
         (tipo === "" && upstream.ok && observadorPara(url.pathname) !== null && !url.pathname.endsWith("/chat/completions"));
       observador = esSse ? observadorPara(url.pathname) : null;
       respuestaOk = upstream.ok;
@@ -1815,6 +1834,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
           medir(
             requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, elision, rebaja, inicioMs, hermano, suscripcion,
             undefined, undefined, sinCobro, rebajaSombra, turnoTtl,
+            observador instanceof ObservadorGemini ? modeloDeRutaGemini(url.pathname) : undefined,
           );
           vigilarCache(url.pathname, cuerpo, codificacion, uso, ttlReescrito, sesionId);
         }
@@ -1839,6 +1859,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
           medir(
             requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, atribuir(elision, uso), rebaja, inicioMs, hermano, suscripcion,
             undefined, undefined, negativaNoCobradaEnJson(url.pathname, respuesta), rebajaSombra, turnoTtl,
+            url.pathname.endsWith(":generateContent") ? modeloDeRutaGemini(url.pathname) : undefined,
           );
           vigilarCache(url.pathname, cuerpo, codificacion, uso, ttlReescrito, sesionId);
         }
@@ -1904,7 +1925,8 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
           const sinCobro = url.pathname === "/v1/messages" && observador instanceof ObservadorSse && observador.negativaNoCobrada();
           medir(
             requestId, cuerpoPeticion, uso, false, url.pathname, codificacion, atribucion, elision, undefined, inicioMs, hermano, suscripcion,
-            undefined, undefined, sinCobro,
+            undefined, undefined, sinCobro, undefined, undefined,
+            observador instanceof ObservadorGemini ? modeloDeRutaGemini(url.pathname) : undefined,
           );
           vigilarCache(url.pathname, cuerpoPeticion, codificacion, uso, ttlReescrito, sesionId);
         } else {

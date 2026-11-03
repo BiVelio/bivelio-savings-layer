@@ -140,6 +140,9 @@ const PROVEEDOR_LITELLM: Readonly<Record<OrigenDeTarifa, { proveedor: string; pr
   openai: { proveedor: "openai", prefijo: "openai" },
   anthropic: { proveedor: "anthropic", prefijo: "anthropic" },
   google: { proveedor: "gemini", prefijo: "gemini" },
+  deepseek: { proveedor: "deepseek", prefijo: "deepseek" },
+  qwen: { proveedor: "qwen", prefijo: "qwen" },
+  glm: { proveedor: "zhipu", prefijo: "zhipu" },
 };
 
 export type TablaLiteLLM = Readonly<Record<string, unknown>>;

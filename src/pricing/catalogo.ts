@@ -53,7 +53,7 @@ import type { CostModel } from "../tokenizer/accounting.js";
  * announced price steps, cache-write premiums, tier rates). Two computations
  * citing the same version were priced with the same content.
  */
-export const PRECIOS_AL_DIA = "2026-09-29";
+export const PRECIOS_AL_DIA = "2026-11-03";
 
 /**
  * Huella sha256 del contenido de cada versión desde que existe la regla, en
@@ -64,6 +64,7 @@ export const PRECIOS_AL_DIA = "2026-09-29";
  */
 export const HUELLAS_DEL_CATALOGO: Readonly<Record<string, string>> = {
   "2026-09-29": "bfbf91f324c7a3c7319db6c816cb7cce545f4a285e1ff0ad4ac9f1b706634a2e",
+  "2026-11-03": "b8afdbfebb9745ad9d0aad5ab114e4e314e4a91a3d3460e27b2e2b9e7084894b",
 };
 
 /**
@@ -296,16 +297,40 @@ export const CATALOGO: Readonly<Record<string, CostModel>> = {
   "gemini-2.5-pro":         { inputPer1k: 0.00125, outputPer1k: 0.01,    cachedInputPer1k: 0.000125 },
   "gemini-2.5-flash":       { inputPer1k: 0.0003,  outputPer1k: 0.0025,  cachedInputPer1k: 0.00003  },
 
-  // Models whose published price is NOT known with certainty stay out on purpose:
-  // they fall back to the illustrative default and warn, which is the honest answer.
+  // ── DeepSeek, Qwen, GLM — proveedores chinos ───────────────────────────────
   //
   // DeepSeek (https://api-docs.deepseek.com/quick_start/pricing, consultada el
-  // 2026-09-27) publica precio pero el catálogo no cubre la familia, y su
-  // tarifa cambia por HORA del día: «Peak hours are 01:00 - 04:00 and 06:00 -
-  // 10:00 UTC, Monday through Friday, excluding Chinese public holidays», y
-  // «Off-peak rates are half of the peak rates». Una fila por modelo mentiría
-  // en una de las dos franjas —a la mitad o al doble, según cuál se pusiera—.
-  // Queda fuera hasta que la vigencia sepa de franjas horarias.
+  // 2026-11-03) publica tarifa POR FRANJA HORARIA: off-peak $0.15/$0.60 y peak
+  // el doble ($0.30/$1.20 para deepseek-flash; $0.66/$1.98 y $1.32/$3.96 para
+  // deepseek-v4-pro), con peak de 01:00 a 10:00 UTC entre semana. La fila se
+  // tarifa al PEAK a propósito: la cifra que sale del catálogo nunca puede
+  // acreditar un ahorro de más; en off-peak el informe infra-acredita (el
+  // comentario de la línea lo dice). El hit de caché ($0.003/1M) no cambia por
+  // franja.
+  //
+  // Qwen / Model Studio (https://www.alibabacloud.com/help/en/model-studio/model-pricing,
+  // consultada el 2026-11-03): la caché explícita factura la escritura a 1,25×
+  // la entrada y el hit al 10 % de la entrada.
+  //
+  // GLM / Zhipu (https://docs.bigmodel.cn/cn/guide/start/pricing, consultada el
+  // 2026-11-03) publica en CNY: se convierten a USD a 7,2 CNY/USD, la tasa que
+  // cita la propia página de facturación internacional. El precio de HIT de
+  // caché publicado no distingue modelos en la tabla fuente, así que la fila lo
+  // omite: un hit se tarifa a entrada ordinaria (infra-acredita, jamás de más).
+  //
+  // Moonshot (Kimi) y MiniMax quedan FUERA: sus precios por modelo no se
+  // pudieron leer de la página oficial en la revisión del 2026-11-03, y una
+  // fila con el precio equivocado es peor que ninguna (ver el aviso de arriba).
+  // El tráfico de esos modelos se reenvía y se dice «not metered».
+  "deepseek-flash":  { inputPer1k: 0.0003,  outputPer1k: 0.0012, cachedInputPer1k: 0.000003 }, // peak; off-peak half
+  "deepseek-v4-pro": { inputPer1k: 0.00132, outputPer1k: 0.00396, cachedInputPer1k: 0.000003 }, // peak; off-peak half
+  "qwen3.8-max":     { inputPer1k: 0.002,   outputPer1k: 0.006,   cachedInputPer1k: 0.0002 },
+  "qwen3.8-flash":   { inputPer1k: 0.00015, outputPer1k: 0.00047, cachedInputPer1k: 0.000015 },
+  "qwen3.7-flash":   { inputPer1k: 0.00003, outputPer1k: 0.00013, cachedInputPer1k: 0.000003 },
+  "qwen-flash":      { inputPer1k: 0.00005, outputPer1k: 0.0004,  cachedInputPer1k: 0.000005 },
+  "qwen-plus":       { inputPer1k: 0.000115, outputPer1k: 0.000287, cachedInputPer1k: 0.0000115 },
+  "glm-5.3":         { inputPer1k: 0.001111, outputPer1k: 0.003889 }, // ¥8/¥28 a 7,2 CNY/USD
+  "glm-5.3-flash":   { inputPer1k: 0.000111, outputPer1k: 0.000389 }, // ¥0,8/¥2,8 a 7,2 CNY/USD
 };
 
 // ═══════════════════════════════════════════════════════════════════════════

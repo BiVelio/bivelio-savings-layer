@@ -110,7 +110,7 @@ import { primaDeEscritura } from "./primas.js";
 // tiene columnas largas y NO dice dónde empiezan.
 
 /** Origen oficial de un proveedor con tabla de tiers aquí. */
-export type OrigenDeTarifa = "openai" | "google" | "anthropic";
+export type OrigenDeTarifa = "openai" | "google" | "anthropic" | "deepseek" | "qwen" | "glm";
 
 /** Tarifa plana de un tramo (estándar o tier), en USD por 1K. */
 export interface TarifaPlana {
@@ -480,6 +480,11 @@ export const TARIFAS_DE_TIER: Readonly<
       "gemini-3-flash-preview": go({ inputPer1k: 0.00025, outputPer1k: 0.0015, cachedInputPer1k: 0.00005 }),
     },
   },
+  // Los proveedores chinos no publican tiers comparables (flex/batch) hoy:
+  // tablas vacías, para que el tipo cierre y el contraste las recorra sin filas.
+  deepseek: {},
+  qwen: {},
+  glm: {},
 };
 
 /** El id sin prefijo de proveedor: `openai/gpt-5-mini` → `gpt-5-mini`. */
@@ -501,9 +506,15 @@ export function familiaDeTarifa(model: string): OrigenDeTarifa | null {
   if (vendor === "openai" || vendor === "azure-openai") return "openai";
   if (vendor === "google" || vendor === "google-vertex") return "google";
   if (vendor === "anthropic") return "anthropic";
+  if (vendor === "deepseek") return "deepseek";
+  if (vendor === "qwen" || vendor === "dashscope") return "qwen";
+  if (vendor === "glm" || vendor === "zhipu") return "glm";
   if (/^(gpt-|o[1-9](-|$))/.test(desnudo)) return "openai";
   if (desnudo.startsWith("gemini")) return "google";
   if (desnudo.startsWith("claude-")) return "anthropic";
+  if (desnudo.startsWith("deepseek-")) return "deepseek";
+  if (desnudo.startsWith("qwen")) return "qwen";
+  if (desnudo.startsWith("glm-")) return "glm";
   return null;
 }
 

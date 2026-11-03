@@ -99,7 +99,10 @@ Commands:
                          Works out of the box — no keys needed (COMMUNITY mode: every local lever
                          on, zero telemetry). BIVELIO_SERVICE_KEY adds the cloud dashboard,
                          org entitlements and team metering.
-                         --upstream openai | anthropic | an origin URL (default: anthropic).
+                         --upstream openai | anthropic | gemini | deepseek | qwen | glm |
+                         moonshot | minimax | openrouter | ollama | vllm | lmstudio | an
+                         origin URL (default: anthropic). DeepSeek rewrites Anthropic
+                         traffic to its /anthropic endpoint automatically.
                          One gateway talks to ONE upstream: run a second one on another port
                          for the other provider. Behind an origin that is not the provider's
                          own API (a proxy such as LiteLLM), requests are metered but no
@@ -118,6 +121,8 @@ Commands:
                          use a base URL and are not metered.
   aider [args…]          Run Aider through the gateway: Anthropic models by default
                          (ANTHROPIC_API_BASE); OpenAI with BVSALA_GATEWAY_UPSTREAM=openai.
+  gemini [args…]         Run the Gemini CLI through the gateway (GOOGLE_GEMINI_BASE_URL,
+                         upstream gemini): usage read from :generateContent responses.
                          Every wrapper prints, on exit, how many requests it metered and
                          which ones it forwarded without metering, and why.
   doctor [--port N]      Detect installed terminals and print the exact configuration for each.

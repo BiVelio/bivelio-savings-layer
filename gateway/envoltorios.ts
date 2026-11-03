@@ -35,7 +35,7 @@ export interface Envoltorio {
   nota?: string;
 }
 
-export const TERMINALES_CON_ENVOLTORIO = ["claude", "codex", "goose", "qwen", "opencode", "kilo", "copilot", "aider"] as const;
+export const TERMINALES_CON_ENVOLTORIO = ["claude", "codex", "goose", "qwen", "opencode", "kilo", "copilot", "aider", "gemini"] as const;
 export type TerminalConEnvoltorio = (typeof TERMINALES_CON_ENVOLTORIO)[number];
 
 export function esTerminalConEnvoltorio(comando: string | undefined): comando is TerminalConEnvoltorio {
@@ -130,6 +130,7 @@ export const CODEX_DESTINO: Record<ModoAuthCodex, { upstream: string; prefijo: s
 
 const ORIGEN_ANTHROPIC = "https://api.anthropic.com";
 const ORIGEN_OPENAI = "https://api.openai.com";
+const ORIGEN_GEMINI = "https://generativelanguage.googleapis.com";
 
 /** La variable que lleva la config inline de cada terminal de la familia opencode. */
 const VARIABLE_DE_CONFIG = { opencode: "OPENCODE_CONFIG_CONTENT", kilo: "KILO_CONFIG_CONTENT" } as const;
@@ -368,6 +369,21 @@ export function envoltorioDe(
           "(for OpenAI models: BVSALA_GATEWAY_UPSTREAM=openai bvsala aider).",
       };
     }
+    case "gemini":
+      // La CLI de Gemini solo habla el protocolo generativelanguage
+      // (GOOGLE_GEMINI_BASE_URL), no un endpoint compatible con OpenAI: el
+      // gateway la envuelve con --upstream gemini y lee el usage de
+      // :generateContent / :streamGenerateContent (gateway/gemini.ts). La
+      // API key del usuario viaja en x-goog-api-key, intacta.
+      return {
+        bin: "gemini",
+        args: resto,
+        env: { GOOGLE_GEMINI_BASE_URL: base },
+        upstream: ORIGEN_GEMINI,
+        nota:
+          "Gemini CLI through the gateway (GOOGLE_GEMINI_BASE_URL): usage is read from the Gemini responses, " +
+          "metered for models with a list price. Your GEMINI_API_KEY stays yours and never leaves the machine.",
+      };
     case "codex": {
       const modo = opts.modoCodex ?? "api-key";
       const destino = CODEX_DESTINO[modo];
