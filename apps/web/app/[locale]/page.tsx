@@ -354,10 +354,11 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
               </div>
               <div className="offer-install">
                 <span className="offer-fig-t">{t("offers.install")}</span>
-                {/* La clave de servicio va en el fragmento: sin ella el gateway
-                    no recoge la licencia y no arranca. */}
+                {/* Open core: sin claves el gateway arranca en modo Community.
+                    La clave de servicio es OPCIONAL (nube: panel de equipo). */}
                 <pre className="code">
                   {"npm i -g @bivelio/savings-layer\n"}
+                  {"# optional: cloud dashboard\n"}
                   {"export "}
                   <span className="s">BIVELIO_SERVICE_KEY</span>
                   {"=bvk_…\n"}
@@ -648,6 +649,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             unix={
               <pre className="code">
                 {"npm i -g @bivelio/savings-layer\n"}
+                {"# optional: cloud dashboard\n"}
                 {"export "}
                 <span className="s">BIVELIO_SERVICE_KEY</span>
                 {"=bvk_…\n\n"}
@@ -658,6 +660,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             windows={
               <pre className="code">
                 {"npm i -g @bivelio/savings-layer\n"}
+                {"# optional: cloud dashboard\n"}
                 <span className="s">$env:BIVELIO_SERVICE_KEY</span>
                 {' = "bvk_…"\n\n'}
                 <span className="k">bvsala</span>
