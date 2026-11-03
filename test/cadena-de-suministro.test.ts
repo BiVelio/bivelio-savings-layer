@@ -225,7 +225,7 @@ describe("publish.yml conserva las verjas de antes de publicar", () => {
   });
 
   it("el tarball: paywall cerrado, sin sourcemaps, con la clave pública en el SDK y en el gateway, y sin ninguna privada", () => {
-    const p = paso(verificar, "El paquete no regala el producto");
+    const p = paso(verificar, "El paquete no filtra lo que no debe");
     expect(p).toMatch(/grep -q "BVSALA_DEV_OPEN" "\$DIR\/package\/dist\/index\.js"/);
     expect(p).toMatch(/-name "\*\.map"/);
     expect(p).toMatch(/grep -q "BEGIN PUBLIC KEY" "\$DIR\/package\/dist\/index\.js"/);
@@ -391,7 +391,7 @@ describe("el SBOM describe lo que viaja", () => {
       return salida;
     }
 
-    /** Ejecuta TAL CUAL el paso «El paquete no regala el producto» sobre un tarball. */
+    /** Ejecuta TAL CUAL el paso «El paquete no filtra lo que no debe» sobre un tarball. */
     function verjaDelPaquete(tarball: string): { ok: boolean; salida: string } {
       const script = scriptDe(paso(trabajo("verificar"), "El paquete no regala el producto"));
       const cwd = mkdtempSync(join(tmpdir(), "bvsala-verja-"));
