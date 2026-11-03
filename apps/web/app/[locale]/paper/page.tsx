@@ -24,7 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-const VERSION = "Version 2 · November 2026";
+const VERSION = "Preprint v2.1 · November 2026 · open-core release 1.0.0";
 
 /** Inline: **bold**, `code`, [text](url). Nada más (el markdown del paper es simple). */
 function Inline({ texto }: { texto: string }) {
@@ -123,6 +123,14 @@ export default function PaperPage() {
             rel="noopener noreferrer"
           >
             Markdown en GitHub
+          </a>
+          <a
+            className="btn btn-ghost"
+            href="https://github.com/BiVelio/bivelio-savings-layer/blob/main/docs/paper/main.tex"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            LaTeX para arXiv
           </a>
           <Link className="btn btn-ghost" href="/benchmarks">
             Los datos del banco público
