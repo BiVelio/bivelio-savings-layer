@@ -382,7 +382,7 @@ export function envoltorioDe(
         upstream: ORIGEN_GEMINI,
         nota:
           "Gemini CLI through the gateway (GOOGLE_GEMINI_BASE_URL): usage is read from the Gemini responses, " +
-          "metered for models with a list price. Your GEMINI_API_KEY stays yours and never leaves the machine.",
+          "metered for models with a list price. Your GEMINI_API_KEY stays yours and never reaches BiVelio.",
       };
     case "codex": {
       const modo = opts.modoCodex ?? "api-key";

@@ -22,6 +22,11 @@ const FUENTES: Record<OrigenDeTarifa, string> = {
   openai: "https://developers.openai.com/api/docs/pricing",
   google: "https://ai.google.dev/gemini-api/docs/pricing",
   anthropic: "https://platform.claude.com/docs/en/about-claude/pricing",
+  // Los proveedores chinos no tienen tabla de tiers (TARIFAS_DE_TIER vacía):
+  // la fuente no se usa, pero el Record tiene que cerrar.
+  deepseek: "https://api-docs.deepseek.com/quick_start/pricing",
+  qwen: "https://www.alibabacloud.com/help/en/model-studio/model-pricing",
+  glm: "https://docs.bigmodel.cn/cn/guide/start/pricing",
 };
 
 const filas = Object.entries(TARIFAS_DE_TIER).flatMap(([origen, porTier]) =>

@@ -11,50 +11,90 @@
 <p align="center">
   <a href="https://www.npmjs.com/package/@bivelio/savings-layer"><img src="https://img.shields.io/npm/v/%40bivelio%2Fsavings-layer?color=2F63D8&label=npm" alt="npm version"></a>
   <img src="https://img.shields.io/badge/node-%E2%89%A520-14A06F" alt="Node ≥ 20">
-  <img src="https://img.shields.io/badge/license-commercial-0F1218" alt="Commercial license">
+  <img src="https://img.shields.io/badge/runtime%20dependencies-0-14A06F" alt="0 runtime dependencies">
+  <img src="https://img.shields.io/badge/telemetry-off%20by%20default-0F1218" alt="Telemetry off by default">
 </p>
 
-### In plain words
+### Open core: install it and it saves. No key. No signup. No telemetry.
 
-Every request your app sends to an AI is paid for by the text going in and out.
-**Savings** sits on that path and lets through only what's needed — skipping calls
-that don't have to happen, and trimming what does — so you pay for less. It is not a
-promise you take on faith: **every saving we report is measured with your provider's
-own usage counter, the one your bill is built from** (for a repeat served without
-calling the provider, the counter of the identical call that ran), and every saving —
-measured or estimated, and labelled as such — is handed back to you request by request.
+`@bivelio/savings-layer` (**BV‑SALA**) sits between your app — or your coding agent —
+and the LLM provider, and lets through only what has to be paid for: it skips calls
+that don't have to happen (exact + semantic cache, deduplication), trims what does
+(prompt-cache placement, context and tool-output compaction, serialization), and
+routes each request to the cheapest execution that meets your quality bar (model
+cascade, sibling models, provider failover) — on OpenAI, Anthropic, Gemini,
+**DeepSeek, Qwen, GLM, Moonshot**, any OpenAI‑compatible endpoint, and local
+servers (Ollama, vLLM, LM Studio).
 
-**Measure for free, then pay per seat — with no commission on your savings.** The
-free **Measure** license (no card) runs the layer in shadow mode on your own traffic and
-shows what it would have saved, valued with your provider's counter. To turn the levers
-on, **Pro** is **€15 / seat / month** or **€150 / seat / year**, and **Team** is **€129 / month
-with 10 seats included** (€12 per extra seat; €1,290 / year, €120 per extra seat), EUR,
-VAT not included — a fixed fee, paid whether or not you save, and no commission on what
-you save. Enterprise (more seats, your own contract or invoicing terms) is by contract.
-And your prompts and completions **never reach BiVelio**: what BiVelio receives is per‑request
-usage — token counts, cost, the model id and opaque ids — never your content
-([LICENSE](./LICENSE) §5 lists every field; [savings.bivelio.com/privacy](https://savings.bivelio.com/privacy)
-explains each one and how long it is kept).
+It is not a promise you take on faith: **every saving is reported request by
+request, valued with your provider's own usage counter at versioned list prices**,
+split into four ledgers (`avoided_calls`, `eliminated_tokens`, `compressed_tokens`,
+`provider_cached_tokens`) and labelled `measured`, `reference` or `estimated`.
+Nothing is sent to BiVelio unless you choose to add a key: **zero telemetry by
+default**, and prompts, completions and provider keys never reach BiVelio
+(the exact per-request fields a cloud key sends are in [LICENSE](./LICENSE) §5).
 
-### For engineers, in one line
+The free part is the whole savings layer. What a (paid, optional) BiVelio key adds
+is the cloud: the team dashboard, shared semantic caches across seats, org
+entitlements and license management. The cloud subscription is a fixed fee, paid whether or not you save — and there is never a commission on what you save (see [LICENSE](./LICENSE) §6).
 
-`@bivelio/savings-layer` (**BV‑SALA**) is one layer you add inside your code, right
-where your app calls the OpenAI‑compatible or Anthropic API. For every request it
-picks the cheapest execution that still meets your quality bar and hands you an
-auditable `SavingsReport` — the same numbers your dashboard reads. Traffic still
-goes straight from your app to your provider; the SDK is never a middleman server.
+### Install anywhere, in 60 seconds
 
-> **Commercial software — © 2026 BiVelio Inc.** Free to install, **paid to save**:
-> BV‑SALA is fail‑closed and executes only with an active BiVelio license key. The
-> free **Measure** license (no card) runs it in shadow mode: nothing you send is
-> changed, nothing is served from cache, and you see what it would have saved.
-> The license signature is verified **offline**; with `licenseServerUrl` set, the SDK
-> also calls `savings.bivelio.com` for the revocation list, license renewal and usage
-> metering. **Your prompts, completions and provider keys never reach BiVelio** — what
-> travels is per‑request usage: token counts, cost, the model id, a request id and
-> opaque seat and session ids (the exact list is in [LICENSE](./LICENSE) §5). Use is
-> governed by the LICENSE, which also sets out the fees, and the
-> BiVelio Terms. Not a wrapper around any third‑party library.
+```shell
+# 1 · Any OpenAI SDK, any language — point it at the local gateway (Python, Node, Cursor, Aider, Cline, OpenWebUI…)
+npx @bivelio/savings-layer gateway --upstream openai --port 8403     # or: deepseek | qwen | glm | moonshot | gemini | ollama | vllm | lmstudio
+#    python: OpenAI(base_url="http://127.0.0.1:8403/v1")
+
+# 2 · Coding agents, one command, zero configuration
+npx @bivelio/savings-layer claude      # Claude Code through the gateway
+npx @bivelio/savings-layer gemini      # Gemini CLI (native Gemini protocol)
+npx @bivelio/savings-layer codex       # Codex CLI (OpenAI or ChatGPT auth)
+npx @bivelio/savings-layer qwen        # Qwen Code
+npx @bivelio/savings-layer aider       # Aider
+
+# Claude Code with DeepSeek's Anthropic-format endpoint (cache reads at $0.003/1M):
+#   ANTHROPIC_BASE_URL=http://127.0.0.1:8402 ANTHROPIC_AUTH_TOKEN=<deepseek key> claude
+#   with: npx @bivelio/savings-layer gateway --upstream deepseek
+
+# 3 · Your app, TypeScript/JavaScript — the SDK in your code (zero runtime dependencies)
+npm i @bivelio/savings-layer
+```
+
+```ts
+import { createSavingsLayer, OpenAICompatibleProvider } from "@bivelio/savings-layer";
+
+const layer = createSavingsLayer({           // no licenseKey: COMMUNITY mode, zero telemetry
+  provider: new OpenAICompatibleProvider({ baseUrl: "https://api.openai.com/v1", apiKey: process.env.OPENAI_API_KEY }),
+});
+
+const { text, report } = await layer.generate({
+  model: "openai/gpt-4o-mini",
+  messages: [{ role: "user", content: "What is 2 + 2 * 3?" }],
+});
+console.log(text);                            // "8" — computed locally, no LLM call
+console.log(report.calls.avoidedLlm);         // → 1: a whole call you never paid for
+console.log(report.cost.basis);               // "estimated": nothing ran, so there is no provider counter
+```
+
+`npx @bivelio/savings-layer init` prints the exact three steps for your stack
+(Next.js, Express, Vercel AI SDK, Mastra, LangChain.js, Anthropic/OpenAI SDK) and
+`npx @bivelio/savings-layer doctor` prints the exact configuration for every
+installed coding agent. The published benchmark, trial by trial, with the raw CSV,
+is at **[savings.bivelio.com/en/how-it-works](https://savings.bivelio.com/en/how-it-works)**.
+
+### Community vs Cloud
+
+| | Community (default, no keys) | Cloud (optional `BIVELIO_*` keys) |
+| --- | --- | --- |
+| Exact + semantic cache, deduplication, singleflight | ✅ | ✅ |
+| Model cascade, sibling routing, prompt-cache placement | ✅ | ✅ |
+| Compression, output contracts, four savings ledgers | ✅ | ✅ |
+| Gateway + `bvsala` CLI + MCP server | ✅ | ✅ |
+| Team dashboard, seat metering, shared caches | — | ✅ |
+| Anything sent to BiVelio | **Nothing** | Per-request usage only (counts, cost, model id, opaque ids — [LICENSE](./LICENSE) §5), never prompts or keys |
+
+A license key that **is** configured but invalid or expired still fails closed with
+`LicenseError` — only its absence is a working product.
 
 ## Where it installs
 
@@ -74,25 +114,21 @@ products charge a flat subscription, so there is no per‑token bill to cut. The
 story, in plain words:
 **[Where does the saving install?](https://savings.bivelio.com/en/how-it-works)**
 
-**A coding agent with an API key?** The package also ships a local measuring
-gateway: `bvsala claude` (or `bvsala codex`, `goose`, `qwen`, `opencode`, `kilo`,
-`copilot` with your own Anthropic key, `aider`) launches the agent through it and your real
-spend shows up in your dashboard, token by token — nothing to configure, nothing
-persisted. On exit it tells you how many requests it metered and which ones it
-could not, and why. For Crush, Droid, Cline, Continue or Copilot in VS Code,
-`bvsala doctor` prints the exact config block. Gemini CLI and Cursor cannot be
-metered today, and the doctor says so. Like the SDK, the gateway is
-fail‑closed: it starts only with your service key (`BIVELIO_SERVICE_KEY`) and an
-active BiVelio license, which it collects with that key and verifies against the
-key embedded in the package. Once running it never interrupts a request in flight:
-if the license lapses, only new requests are refused (HTTP 402) until it is
-renewed. It measures every request. With a PRO license it also applies one saving
-by default: it shortens the cache-write TTL while your session stays hot, which
-changes the price, never the content the model reads. The other levers (sibling
-model, per-turn effort) stay off until you switch them on. On a Claude or ChatGPT
-subscription there is no per-token invoice, so that traffic is metered at
-list-price equivalent and never carries commission; the per-seat license applies
-as for any other use.
+**A coding agent with an API key?** The package also ships a local gateway:
+`bvsala claude` (or `bvsala codex`, `goose`, `qwen`, `opencode`, `kilo`, `gemini`,
+`copilot` with your own Anthropic key, `aider`) launches the agent through it and
+your real spend is metered locally, token by token — nothing to configure,
+nothing persisted. On exit it tells you how many requests it metered and which
+ones it could not, and why. For Crush, Droid, Cline, Continue, Cursor or Copilot
+in VS Code, `bvsala doctor` prints the exact config block. The gateway starts
+with **no keys at all** (COMMUNITY mode: every local saving lever armed, zero
+telemetry); `BIVELIO_SERVICE_KEY` adds the cloud dashboard and org entitlements.
+Once running it never interrupts a request in flight: with a live license that
+lapses, only new requests are refused (HTTP 402) until it is renewed. The TTL
+lever is armed by default; the other levers (sibling model, per-turn effort)
+switch on with their flags. On a Claude or ChatGPT subscription there is no
+per-token invoice, so that traffic is metered at list-price equivalent and
+never carries commission.
 
 **The gateway forwards what your terminal sends.** With no lever armed, your
 provider receives the request body byte for byte and every header your client
@@ -117,6 +153,8 @@ the language:
 ```bash
 bvsala gateway --upstream openai --port 8403   # one gateway per upstream
 bvsala gateway                                 # Anthropic, the default, on 8402
+bvsala gateway --upstream deepseek             # DeepSeek: /v1/messages → its /anthropic endpoint
+bvsala gateway --upstream gemini               # Gemini protocol (bvsala gemini wraps the CLI)
 ```
 
 Flags and environment variables are in English (`--port`, `--project`, `--force`,
@@ -142,13 +180,14 @@ claude = Anthropic(base_url="http://127.0.0.1:8402")    # NO /v1
 ```
 
 With `BIVELIO_SERVICE_KEY` set, the gateway measures every request whose usage the
-provider reports — Anthropic Messages, OpenAI Chat Completions and Responses, streamed
-or not — for models with a list price in its catalog, priced at that list price. A
+provider reports — Anthropic Messages, OpenAI Chat Completions and Responses, and
+the Gemini protocol (`:generateContent` / `:streamGenerateContent`), streamed or
+not — for models with a list price in its catalog, priced at that list price. A
 request it cannot meter (a model without a list price, a body it cannot read, a stream
-that never asked for usage) is still forwarded, and its log line says so and why. That
-is measurement, not savings: the saving levers of the SDK are TypeScript, and the
-gateway's own levers apply to Anthropic `/v1/messages` traffic with a PRO license.
-`bvsala doctor` prints the recipe for each SDK.
+that never asked for usage) is still forwarded, and its log line says so and why.
+Without a key (COMMUNITY mode) the metering numbers stay local: the local report
+routes below work the same, and nothing is sent to BiVelio.
+`bvsala doctor` prints the recipe for each SDK and agent.
 
 Each request can also bring its report back to your code. Send the header
 `x-bvsala-report: 1` (in Python, `default_headers={"x-bvsala-report": "1"}` on
@@ -163,12 +202,11 @@ provider, and a request without it is not changed at all:
 
 ## Check it before you install
 
-What you can check before paying is what we have measured: the published benchmark,
-trial by trial, with the raw CSV linked, at
-**[savings.bivelio.com/en/how-it-works](https://savings.bivelio.com/en/how-it-works)**,
-and the free **Measure** license, which runs the layer in shadow mode on your own
-traffic and shows what it would have saved, valued with your provider's counter. The verifier that replays the optimizer on your own data
-lives in your dashboard once you sign in.
+What you can check before installing is what we have measured: the published
+benchmark, trial by trial, with the raw CSV linked, at
+**[savings.bivelio.com/en/how-it-works](https://savings.bivelio.com/en/how-it-works)**.
+With no keys at all, the layer runs the full savings stack locally on your own
+traffic and reports per request — nothing leaves your machine.
 
 **Upgrading from 0.4?** Every breaking change of 0.5, with a before and after for
 each, is in [Migrating from 0.4 to 0.5](https://savings.bivelio.com/en/migrate-to-0.5).
@@ -204,13 +242,13 @@ to a built‑in estimate and the reconstructed savings are less accurate. Either
 saving where the layer removed something is reported as `estimated`, and estimated
 savings are never billed — the SDK warns once when the tokenizer is missing.
 
-**2 · The license** — from your [dashboard](https://savings.bivelio.com/dashboard/install)
-(free **Measure** license, no card; **Pro** €15 / seat / month or €150 / seat / year;
-**Team** €129 / month with 10 seats included — EUR)
+**2 · The cloud (optional)** — a [BiVelio key](https://savings.bivelio.com/dashboard/install)
+adds the team dashboard, shared caches and license management. Skip this step and
+nothing changes except the dashboard: the layer keeps working, fully, offline.
 
 ```bash
-export BIVELIO_LICENSE_KEY=…   # your license key
-export BIVELIO_SERVICE_KEY=…   # service-account key: auto-renewal + seat metering (required by the gateway)
+export BIVELIO_LICENSE_KEY=…   # optional: a key that IS set but invalid still fails closed
+export BIVELIO_SERVICE_KEY=…   # optional: cloud metering + license auto-renewal
 ```
 
 **3 · Wrap the call** — this is the entire code change. The package is ESM only:
@@ -232,9 +270,11 @@ const provider = new OpenAICompatibleProvider({
 
 const layer = createSavingsLayer({
   provider,
-  licenseKey: process.env.BIVELIO_LICENSE_KEY,        // required — from your savings.bivelio.com dashboard
-  licenseServerUrl: "https://savings.bivelio.com",    // revocation list, renewal + metering — omit it and the two lines below do nothing
-  serviceAccountKey: process.env.BIVELIO_SERVICE_KEY, // seat metering + AUTO-RENEWAL pickup
+  // OPEN CORE: nothing else is required — COMMUNITY mode, zero telemetry.
+  // For the cloud dashboard + team metering, add (all optional):
+  //   licenseKey: process.env.BIVELIO_LICENSE_KEY,
+  //   licenseServerUrl: "https://savings.bivelio.com",
+  //   serviceAccountKey: process.env.BIVELIO_SERVICE_KEY,
 });
 
 const { text, report } = await layer.generate({

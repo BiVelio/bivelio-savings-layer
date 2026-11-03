@@ -282,15 +282,15 @@ describe("la verificación: un script, UNA llamada local, el recibo y la cobertu
     const falsa = "bvl_valor-de-prueba-que-no-debe-imprimirse_9f3c";
     const r = await correr("sdk-anthropic-compaction", { BIVELIO_LICENSE_KEY: falsa });
     expect(r.code).toBe(1);
-    expect(r.stdout).toMatch(/not ok: the license did not verify offline\. Set BIVELIO_LICENSE_KEY in your environment/);
+    expect(r.stdout).toMatch(/not ok: BIVELIO_LICENSE_KEY is set but does not verify/);
     expect(r.stdout).not.toContain("9f3c");
     expect(r.stdout).not.toMatch(/\[sin-red\]/);
   }, 120_000);
 
-  it("⛔ sin licencia: lo mismo, por nombre", async () => {
+  it("sin licencia: open core — la comprobación sale «ok» en modo Community, sin red", async () => {
     const r = await correr("sdk-anthropic-compaction", {});
-    expect(r.code).toBe(1);
-    expect(r.stdout).toMatch(/BIVELIO_LICENSE_KEY/);
+    expect(r.code).toBe(0);
+    expect(r.stdout).toMatch(/^ok: /m);
   }, 120_000);
 
   it("diffUnificado: sin cambios, nada; con cambios, cabeceras y un trozo que git aplica", () => {

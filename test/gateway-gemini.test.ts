@@ -150,7 +150,11 @@ async function gateway(puertoUpstream: number, extra: Partial<OpcionesGateway> =
     gw,
     registros: async (): Promise<Record<string, unknown>[]> => {
       await gw.cerrar();
-      await new Promise((r) => setTimeout(r, 50));
+      // El emisor drena asíncrono: esperar al lote, con tope, como los otros tests.
+      const t0 = Date.now();
+      while (lotes.flat().length === 0 && Date.now() - t0 < 3000) {
+        await new Promise((r) => setTimeout(r, 20));
+      }
       return lotes.flat() as Record<string, unknown>[];
     },
   };
@@ -186,10 +190,12 @@ describe("gateway · protocolo Gemini", () => {
     expect(regs).toHaveLength(1);
     expect(regs[0]!.model).toBe(MODELO);
     expect(regs[0]!.basis).toBe("measured");
-    // El mapeo exacto (entrada 60 = 100 − 40 de caché; salida 25 = 20 + 5 de
-    // pensamiento) lo fija el unit de `usoDeGemini`; aquí basta el contador.
-    expect(JSON.stringify(regs[0])).toContain("60");
-    expect(JSON.stringify(regs[0])).toContain("25");
+    // Entrada total 100 (60 ordinaria + 40 de caché implícita), salida 25
+    // (20 + 5 de pensamiento): el descuento de caché va en el coste, el conteo
+    // del cable es el total que factura el proveedor.
+    expect(regs[0]!.actualInputTokens).toBe(100);
+    expect(regs[0]!.providerCachedInputTokens).toBe(40);
+    expect(regs[0]!.actualOutputTokens).toBe(25);
   });
 
   it(":streamGenerateContent?alt=sse se observa y se mide con el último usageMetadata", async () => {
@@ -234,7 +240,7 @@ describe("gateway · protocolo Gemini", () => {
 
 describe("gateway · --upstream deepseek reescribe Anthropic a /anthropic", () => {
   it("POST /v1/messages viaja a /anthropic/v1/messages con las cabeceras del cliente", async () => {
-    const up = await upstreamFalso((r, res) => {
+    const up = await upstreamFalso((_r, res) => {
       res.writeHead(200, { "content-type": "text/event-stream" });
       res.end(
         `data: ${JSON.stringify({ type: "message_start", message: { usage: { input_tokens: 10, output_tokens: 1 } } })}\n\n` +

@@ -465,8 +465,12 @@ export function planear(
   }
 
   const claves: Plan["claves"] = [
-    { nombre: "BIVELIO_LICENSE_KEY", puesta: entorno.env("BIVELIO_LICENSE_KEY"), para: "required: the layer is fail-closed" },
-    { nombre: "BIVELIO_SERVICE_KEY", puesta: entorno.env("BIVELIO_SERVICE_KEY"), para: "seat metering and license auto-renewal" },
+    {
+      nombre: "BIVELIO_LICENSE_KEY",
+      puesta: entorno.env("BIVELIO_LICENSE_KEY"),
+      para: "OPTIONAL (open core): without it the layer runs in COMMUNITY mode with every local lever on; a key adds cloud dashboard + team metering",
+    },
+    { nombre: "BIVELIO_SERVICE_KEY", puesta: entorno.env("BIVELIO_SERVICE_KEY"), para: "OPTIONAL: seat metering, license auto-renewal and the cloud dashboard" },
   ];
   if (capa === "anthropic-sdk") {
     claves.push({
@@ -698,8 +702,9 @@ export function textoDelPlan(plan: Plan, cabecera: string, invocacion: string, o
   const ancho = Math.max(...plan.claves.map((k) => k.nombre.length));
   for (const k of plan.claves) out.push(`  ${k.nombre.padEnd(ancho)}  ${k.puesta ? "set    " : "not set"}  ${k.para}`);
   out.push(
-    "  Copy the BiVelio keys from https://savings.bivelio.com/dashboard/install. Running needs an active license:",
-    "  without one, every call fails with LicenseError and the model is not called.",
+    "  OPEN CORE: no keys are required — without them the layer runs in COMMUNITY mode with every local lever on",
+    "  and nothing sent to BiVelio. The BiVelio keys (https://savings.bivelio.com/dashboard/install) add the cloud",
+    "  dashboard, team metering and license auto-renewal.",
     `  ${plan.dondeVanLasClaves}`,
   );
 

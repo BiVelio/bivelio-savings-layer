@@ -126,6 +126,14 @@ export const RAZONA_POR_FILA: Readonly<Record<string, boolean>> = {
   "gemini-3.1-pro-preview": true,
   "gemini-2.5-pro": true,
   "gemini-2.5-flash": true,
+  // ── Proveedores chinos ──
+  // DeepSeek Flash (V4.1-Flash) no razona por defecto y honra temperature: su
+  // salida bajo `temperature: 0` se puede repetir y acreditar por referencia.
+  // (deepseek-v4-pro sí razona; su nombre no lo delata, así que la fila lo dice.)
+  "deepseek-flash": false,
+  "deepseek-v4-pro": true,
+  "qwen-flash": false,
+  "qwen-plus": false,
 };
 
 /**

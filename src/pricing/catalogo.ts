@@ -64,7 +64,7 @@ export const PRECIOS_AL_DIA = "2026-11-03";
  */
 export const HUELLAS_DEL_CATALOGO: Readonly<Record<string, string>> = {
   "2026-09-29": "bfbf91f324c7a3c7319db6c816cb7cce545f4a285e1ff0ad4ac9f1b706634a2e",
-  "2026-11-03": "b8afdbfebb9745ad9d0aad5ab114e4e314e4a91a3d3460e27b2e2b9e7084894b",
+  "2026-11-03": "b7af1b67089b16c9e408a685257f411b6883bf255b7acd85bcf5056d1ce104fb",
 };
 
 /**

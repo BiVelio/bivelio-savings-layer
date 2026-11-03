@@ -291,7 +291,7 @@ const TERMINALES: readonly Terminal[] = [
     ],
   },
   {
-    id: "deepseek-claude",
+    id: "claude-via-deepseek",
     nombre: "Claude Code with DeepSeek (its Anthropic-format endpoint)",
     configs: [],
     detectable: false,
@@ -299,7 +299,7 @@ const TERMINALES: readonly Terminal[] = [
     comprobar: "check: the gateway log must show [gateway] POST /v1/messages → … with the model id in the line.",
     receta: ({ base, puerto }) => [
       `start: bvsala gateway --upstream deepseek --port ${puerto}   (the gateway rewrites /v1/messages to DeepSeek's /anthropic endpoint)`,
-      `env:   ANTHROPIC_BASE_URL=${base}   ANTHROPIC_AUTH_TOKEN=<your DeepSeek API key>   ANTHROPIC_MODEL=deepseek-chat`,
+      `env:   ANTHROPIC_BASE_URL=${base}   ANTHROPIC_AUTH_TOKEN=<your DeepSeek API key>   ANTHROPIC_MODEL=deepseek-flash`,
       "Why: DeepSeek cache reads cost $0.003/1M and off-peak input $0.15/1M — the cheapest sibling for Claude traffic,",
       "served in Anthropic's own protocol. Metered for models with a list price in the catalog.",
     ],

@@ -221,7 +221,7 @@ describe.concurrent("los ejemplos se ejecutan, sin red", () => {
     }, 120_000);
   }
 
-  it("⛔ sin licencia (la puerta cerrada), la comprobación dice «not ok» con el arreglo y sale con 1", async ({ expect }) => {
+  it("sin licencia (open core): la comprobación sale «ok» en modo Community, sin llamar al modelo", async ({ expect }) => {
     const r = await ejecutar(TSX, ["--import", SIN_RED, join(PILAS, "ai-sdk", "bivelio-check.ts")], {
       cwd: RAIZ,
       env: { PATH: process.env.PATH ?? "", HOME: casa },
@@ -230,9 +230,8 @@ describe.concurrent("los ejemplos se ejecutan, sin red", () => {
       () => ({ code: 0, stdout: "" }),
       (err: { code?: number; stdout?: string }) => ({ code: err.code ?? -1, stdout: err.stdout ?? "" }),
     );
-    expect(r.code).toBe(1);
-    expect(r.stdout).toMatch(/^not ok: BiVelio license required: none was configured\./);
-    expect(r.stdout).toMatch(/https:\/\/savings\.bivelio\.com\/dashboard\/install/);
+    expect(r.code).toBe(0);
+    expect(r.stdout).toMatch(/^ok: the layer answered "8" on this machine without calling the model/);
   }, 120_000);
 
   it("Next.js: la ruta de comprobación y la de uso, llamadas como las llama Next.js (Request → Response)", async ({ expect }) => {
