@@ -83,9 +83,10 @@ Portkey crecen con open core o freemium; nadie adopta asiduamente una caja cerra
   entorno Windows (mismos ficheros y mismos tests que en el árbol limpio:
   rutas `F:\F:\` del loader de tests, spawn de `tsx` en vitest, secrets de
   apps/web, migraciones con BBDD) más flakiness de paralelismo.
-- CI (Linux, PR #523): primera vuelta 28 fallos, todos corregidos — regenerados
-  examples/vectores/evidencia, catálogo clasificado (razonamiento + suelo float),
-  README compilable y con los precios anclados, sala-limpia reescrita al contrato
-  comunitario, textos web en 12 idiomas. Segunda vuelta en curso.
+- CI (Linux, PR #523): **VERDE** — `verificar` (458 ficheros), Python 3.10/3.14 y
+  Vercel. Tres vueltas de arreglos: regenerados examples/vectores/evidencia,
+  catálogo clasificado (razonamiento + suelo float), README compilable y con los
+  precios anclados, sala-limpia reescrita al contrato comunitario, textos web y
+  de la landing en 12 idiomas (etiquetas rich idénticas, paridad limpia).
 - Pendiente del fundador: la decisión de LICENSE (Apache-2.0 preparado), la web
   de precios pública (savings.bivelio.com) y el pase de marketing de la landing.
