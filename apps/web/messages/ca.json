@@ -1010,7 +1010,7 @@
     },
     "footer": {
       "ctaTitle": "Mesura-ho amb el teu propi trànsit",
-      "ctaSub": "Un cop instal·lat, cada trucada retorna el seu SavingsReport, amb el mesurat i l'estimat separats. L'open core no necessita claus: les palanques corren en local amb zero telemetria. El núvol opcional comença gratis amb Measure i es factura per seient, sense comissió sobre el teu estalvi.",
+      "ctaSub": "Un cop instal·lat, cada trucada retorna el seu SavingsReport, amb el mesurat i l'estimat separats. L'open core no necessita claus: les palanques corren en local amb zero telemetria. El núvol opcional comença gratis amb Measure i es factura per seient, sense comissió sobre el teu estalvi (@bivelio/savings-layer {version} o posterior).",
       "ctaStart": "Comença",
       "tagline": "El sistema operatiu per al teu negoci. Això és <b>BV‑SALA</b>, l'optimitzador de cost de LLM neutral respecte al proveïdor de BiVelio — cada xifra mesurada ho és contra el comptador del proveïdor; l'estimat i el simulat es mostren a part, dits com a tals, i mai no es facturen.",
       "badge": "BV‑SALA · Savings Layer",

@@ -1010,7 +1010,7 @@
     },
     "footer": {
       "ctaTitle": "Kendi trafiğinde ölç",
-      "ctaSub": "Kurulduktan sonra her çağrı SavingsReport'unu döndürür; ölçülen ve tahmin edilen ayrı tutulur. Açık çekirdek anahtar gerektirmez: kollar yerelde sıfır telemetriyle çalışır. İsteğe bağlı bulut Measure ile ücretsiz başlar ve koltuk başına, tasarrufunuz üzerinden komisyonsuz faturalanır.",
+      "ctaSub": "Kurulduktan sonra her çağrı SavingsReport'unu döndürür; ölçülen ve tahmin edilen ayrı tutulur. Açık çekirdek anahtar gerektirmez: kollar yerelde sıfır telemetriyle çalışır. İsteğe bağlı bulut Measure ile ücretsiz başlar ve koltuk başına, tasarrufunuz üzerinden komisyonsuz faturalanır (@bivelio/savings-layer {version} veya üzeri).",
       "ctaStart": "Başla",
       "tagline": "İşletmeniz için işletim sistemi. Bu, BiVelio'nun sağlayıcıdan bağımsız LLM maliyet optimizasyonu <b>BV‑SALA</b> — ölçülen her rakam sağlayıcının kendi sayacına göre ölçülür; tahminler ve simülasyonlar ayrı gösterilir, öyle oldukları belirtilir ve asla faturalanmaz.",
       "badge": "BV‑SALA · Savings Layer",

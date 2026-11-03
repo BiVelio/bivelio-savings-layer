@@ -1010,7 +1010,7 @@
     },
     "footer": {
       "ctaTitle": "Meet het op je eigen verkeer",
-      "ctaSub": "Eenmaal geïnstalleerd levert elke aanroep zijn SavingsReport, met gemeten en geschat gescheiden. Open core heeft geen sleutel nodig: de hendels draaien lokaal met nul telemetrie. De optionele cloud start gratis met Measure en wordt per seat gefactureerd, zonder commissie op je besparing.",
+      "ctaSub": "Eenmaal geïnstalleerd levert elke aanroep zijn SavingsReport, met gemeten en geschat gescheiden. Open core heeft geen sleutel nodig: de hendels draaien lokaal met nul telemetrie. De optionele cloud start gratis met Measure en wordt per seat gefactureerd, zonder commissie op je besparing (@bivelio/savings-layer {version} of nieuwer).",
       "ctaStart": "Aan de slag",
       "tagline": "Het besturingssysteem voor je bedrijf. Dit is <b>BV‑SALA</b>, BiVelio's aanbieder-neutrale LLM-kostenoptimalisator — elk gemeten cijfer is gemeten tegen de teller van de aanbieder; schattingen en simulaties worden apart getoond, als zodanig benoemd, en nooit gefactureerd.",
       "badge": "BV‑SALA · Savings Layer",

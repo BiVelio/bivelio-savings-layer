@@ -1010,7 +1010,7 @@
     },
     "footer": {
       "ctaTitle": "Measure it on your own traffic",
-      "ctaSub": "Once installed, every call returns its SavingsReport, measured and estimated kept apart. Open core needs no key: the levers run locally with zero telemetry. The optional cloud starts free with Measure and is billed per seat with no commission on your savings.",
+      "ctaSub": "Once installed, every call returns its SavingsReport, measured and estimated kept apart. Open core needs no key: the levers run locally with zero telemetry. The optional cloud starts free with Measure and is billed per seat with no commission on your savings (@bivelio/savings-layer {version} or later).",
       "ctaStart": "Get started",
       "tagline": "The operating system for your business. This is <b>BV-SALA</b>, BiVelio's provider-neutral LLM cost optimizer — every measured figure is measured against the provider's own counter; estimates and simulations are shown apart, labelled as such, and never billed.",
       "badge": "BV‑SALA · Savings Layer",

@@ -1010,7 +1010,7 @@
     },
     "footer": {
       "ctaTitle": "Zmierz to na własnym ruchu",
-      "ctaSub": "Po instalacji każde wywołanie zwraca swój SavingsReport, z rozdzielonym zmierzonym i oszacowanym. Open core nie potrzebuje kluczy: dźwignie działają lokalnie z zerową telemetrią. Opcjonalna chmura zaczyna się za darmo od Measure i jest rozliczana za stanowisko, bez prowizji od Twoich oszczędności.",
+      "ctaSub": "Po instalacji każde wywołanie zwraca swój SavingsReport, z rozdzielonym zmierzonym i oszacowanym. Open core nie potrzebuje kluczy: dźwignie działają lokalnie z zerową telemetrią. Opcjonalna chmura zaczyna się za darmo od Measure i jest rozliczana za stanowisko, bez prowizji od Twoich oszczędności (@bivelio/savings-layer {version} lub nowsza).",
       "ctaStart": "Zacznij",
       "tagline": "System operacyjny dla Twojej firmy. To <b>BV‑SALA</b>, neutralny wobec dostawcy optymalizator kosztów LLM od BiVelio — każda zmierzona liczba jest zmierzona względem licznika dostawcy; szacunki i symulacje pokazujemy osobno, nazwane wprost, i nigdy ich nie fakturujemy.",
       "badge": "BV‑SALA · Savings Layer",

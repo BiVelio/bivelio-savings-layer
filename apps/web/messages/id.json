@@ -1010,7 +1010,7 @@
     },
     "footer": {
       "ctaTitle": "Ukur dengan trafik Anda sendiri",
-      "ctaSub": "Setelah terpasang, setiap panggilan mengembalikan SavingsReport-nya, terukur dan terestimasi terpisah. Open core tidak butuh kunci: tuasnya berjalan lokal dengan nol telemetri. Cloud opsional mulai gratis dengan Measure dan ditagih per kursi, tanpa komisi atas penghematan Anda.",
+      "ctaSub": "Setelah terpasang, setiap panggilan mengembalikan SavingsReport-nya, terukur dan terestimasi terpisah. Open core tidak butuh kunci: tuasnya berjalan lokal dengan nol telemetri. Cloud opsional mulai gratis dengan Measure dan ditagih per kursi, tanpa komisi atas penghematan Anda (@bivelio/savings-layer {version} atau lebih baru).",
       "ctaStart": "Mulai",
       "tagline": "Sistem operasi untuk bisnis Anda. Inilah <b>BV‑SALA</b>, pengoptimal biaya LLM BiVelio yang netral terhadap penyedia — setiap angka terukur diukur terhadap penghitung penyedia; estimasi dan simulasi ditampilkan terpisah, disebut apa adanya, dan tidak pernah ditagih.",
       "badge": "BV‑SALA · Savings Layer",

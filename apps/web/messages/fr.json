@@ -1010,7 +1010,7 @@
     },
     "footer": {
       "ctaTitle": "Mesurez-le sur votre propre trafic",
-      "ctaSub": "Une fois installé, chaque appel renvoie son SavingsReport, mesuré et estimé séparés. L'open core n'a besoin d'aucune clé : les leviers tournent en local avec zéro télémétrie. Le cloud optionnel démarre gratuitement avec Measure et se facture par siège, sans commission sur vos économies.",
+      "ctaSub": "Une fois installé, chaque appel renvoie son SavingsReport, mesuré et estimé séparés. L'open core n'a besoin d'aucune clé : les leviers tournent en local avec zéro télémétrie. Le cloud optionnel démarre gratuitement avec Measure et se facture par siège, sans commission sur vos économies (@bivelio/savings-layer {version} ou plus récent).",
       "ctaStart": "Commencer",
       "tagline": "Le système d'exploitation de votre entreprise. Voici <b>BV‑SALA</b>, l'optimiseur de coût LLM neutre vis-à-vis du fournisseur de BiVelio — chaque chiffre mesuré l'est contre le compteur du fournisseur ; les estimations et les simulations sont montrées à part, présentées comme telles, et jamais facturées.",
       "badge": "BV‑SALA · Savings Layer",

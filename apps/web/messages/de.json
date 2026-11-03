@@ -1010,7 +1010,7 @@
     },
     "footer": {
       "ctaTitle": "Messen Sie es an Ihrem eigenen Traffic",
-      "ctaSub": "Einmal installiert, liefert jeder Aufruf seinen SavingsReport, mit Gemessenem und Geschätztem getrennt. Open Core braucht keinen Schlüssel: Die Hebel laufen lokal mit null Telemetrie. Die optionale Cloud startet gratis mit Measure und wird pro Sitz abgerechnet, ohne Provision auf deine Ersparnis.",
+      "ctaSub": "Einmal installiert, liefert jeder Aufruf seinen SavingsReport, mit Gemessenem und Geschätztem getrennt. Open Core braucht keinen Schlüssel: Die Hebel laufen lokal mit null Telemetrie. Die optionale Cloud startet gratis mit Measure und wird pro Sitz abgerechnet, ohne Provision auf deine Ersparnis (@bivelio/savings-layer {version} oder neuer).",
       "ctaStart": "Loslegen",
       "tagline": "Das Betriebssystem für Ihr Unternehmen. Das ist <b>BV‑SALA</b>, BiVelios anbieterneutraler LLM-Kostenoptimierer — jede gemessene Zahl ist gegen den Zähler des Anbieters gemessen; Schätzungen und Simulationen werden getrennt gezeigt, als solche benannt, und nie berechnet.",
       "badge": "BV‑SALA · Savings Layer",

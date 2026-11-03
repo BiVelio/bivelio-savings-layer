@@ -1010,7 +1010,7 @@
     },
     "footer": {
       "ctaTitle": "Đo trên chính lưu lượng của bạn",
-      "ctaSub": "Sau khi cài, mỗi lời gọi trả về SavingsReport, tách riêng phần đo được và ước tính. Open core không cần khóa: các đòn bẩy chạy cục bộ với zero telemetry. Cloud tùy chọn bắt đầu miễn phí với Measure và tính phí theo chỗ, không hoa hồng trên khoản tiết kiệm của bạn.",
+      "ctaSub": "Sau khi cài, mỗi lời gọi trả về SavingsReport, tách riêng phần đo được và ước tính. Open core không cần khóa: các đòn bẩy chạy cục bộ với zero telemetry. Cloud tùy chọn bắt đầu miễn phí với Measure và tính phí theo chỗ, không hoa hồng trên khoản tiết kiệm của bạn (@bivelio/savings-layer {version} trở lên).",
       "ctaStart": "Bắt đầu",
       "tagline": "Hệ điều hành cho doanh nghiệp của bạn. Đây là <b>BV‑SALA</b>, bộ tối ưu chi phí LLM trung lập với nhà cung cấp của BiVelio — mọi con số đo được đều đo theo bộ đếm của chính nhà cung cấp; ước tính và mô phỏng được hiển thị riêng, nói rõ là như vậy, và không bao giờ tính phí.",
       "badge": "BV‑SALA · Savings Layer",
