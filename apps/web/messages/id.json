@@ -1683,5 +1683,8 @@
     "title": "Halaman tidak ditemukan",
     "body": "Halaman ini tidak ada atau telah dipindahkan.",
     "home": "← Kembali ke beranda"
+  },
+  "footer": {
+    "paper": "Makalah"
   }
 }

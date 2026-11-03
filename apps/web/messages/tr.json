@@ -1683,5 +1683,8 @@
     "title": "Sayfa bulunamadı",
     "body": "Bu sayfa mevcut değil veya taşınmış.",
     "home": "← Ana sayfaya dön"
+  },
+  "footer": {
+    "paper": "Makale"
   }
 }

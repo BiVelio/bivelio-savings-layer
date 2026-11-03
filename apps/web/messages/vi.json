@@ -1683,5 +1683,8 @@
     "title": "Không tìm thấy trang",
     "body": "Trang này không tồn tại hoặc đã được chuyển đi.",
     "home": "← Quay lại trang chủ"
+  },
+  "footer": {
+    "paper": "B�i b�o"
   }
 }

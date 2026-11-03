@@ -1683,5 +1683,8 @@
     "title": "Pagina niet gevonden",
     "body": "Deze pagina bestaat niet of is verplaatst.",
     "home": "← Terug naar de startpagina"
+  },
+  "footer": {
+    "paper": "Paper"
   }
 }

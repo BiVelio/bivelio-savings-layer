@@ -1683,5 +1683,8 @@
     "title": "Pàgina no trobada",
     "body": "Aquesta pàgina no existeix o s'ha mogut.",
     "home": "← Torna a l'inici"
+  },
+  "footer": {
+    "paper": "Article"
   }
 }

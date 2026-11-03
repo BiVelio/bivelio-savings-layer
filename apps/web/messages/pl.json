@@ -1683,5 +1683,8 @@
     "title": "Nie znaleziono strony",
     "body": "Ta strona nie istnieje lub została przeniesiona.",
     "home": "← Powrót na stronę główną"
+  },
+  "footer": {
+    "paper": "Artykul"
   }
 }

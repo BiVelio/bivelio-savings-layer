@@ -1683,5 +1683,8 @@
     "title": "Página no encontrada",
     "body": "Esta página no existe o se ha movido.",
     "home": "← Volver al inicio"
+  },
+  "footer": {
+    "paper": "Art�culo"
   }
 }

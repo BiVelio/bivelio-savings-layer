@@ -120,6 +120,8 @@ export default async function Footer({ sinGitHub = false }: { sinGitHub?: boolea
     // El banco público A/B (/benchmarks): cómo se mide, lo que ahorra y lo que
     // no, y cómo repetirlo. Aquí y no en el menú, para no tocar /pricing.
     [t("footer.benchmarks"), "/benchmarks"],
+    // El paper técnico (/paper): la credibilidad medida, enlazada desde el pie.
+    [t("footer.paper"), "/paper"],
     // La guía 0.4 → 0.5 (/migrate-to-0.5). Sin este enlace, quien actualiza
     // desde la 0.4 solo llegaba a ella desde npm o GitHub.
     [t("footer.migrate"), "/migrate-to-0.5"],

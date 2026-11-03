@@ -1683,5 +1683,8 @@
     "title": "Page not found",
     "body": "This page doesn't exist or has moved.",
     "home": "← Back to home"
+  },
+  "footer": {
+    "paper": "Paper"
   }
 }

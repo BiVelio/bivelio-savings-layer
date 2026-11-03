@@ -1683,5 +1683,8 @@
     "title": "Página não encontrada",
     "body": "Esta página não existe ou foi movida.",
     "home": "← Voltar ao início"
+  },
+  "footer": {
+    "paper": "Artigo"
   }
 }

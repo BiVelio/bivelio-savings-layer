@@ -1683,5 +1683,8 @@
     "title": "Seite nicht gefunden",
     "body": "Diese Seite existiert nicht oder wurde verschoben.",
     "home": "← Zurück zur Startseite"
+  },
+  "footer": {
+    "paper": "Paper"
   }
 }
