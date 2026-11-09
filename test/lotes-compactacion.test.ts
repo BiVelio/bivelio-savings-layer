@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 
 import { AnthropicProvider } from "../src/providers/anthropic.js";
 import { createSavingsLayer } from "../src/pipeline/create.js";
-import type { BatchRequest, BatchJob } from "../src/contracts/batch.js";
+import type { BatchJob } from "../src/contracts/batch.js";
 import type { SavingsRequest } from "../src/contracts/types.js";
 
 /**
