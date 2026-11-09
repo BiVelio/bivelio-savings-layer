@@ -1,0 +1,33 @@
+name: compilar-paper
+
+# Compila docs/paper/main.tex a PDF (2 pasadas, latexmk) y lo deja como artefacto
+# descargable. Se dispara al tocar docs/paper/** o a mano. El PDF NO se publica
+# automáticamente: el dueño lo baja del artefacto y lo sube donde quiera
+# (bivelio.com, Zenodo, arXiv).
+
+on:
+  push:
+    paths:
+      - "docs/paper/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  paper:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compilar paper (LaTeX -> PDF)
+        uses: xu-cheng/latex-action@v3
+        with:
+          working_directory: docs/paper
+          root_file: main.tex
+      - name: Subir el PDF
+        uses: actions/upload-artifact@v4
+        with:
+          name: bv-sala-paper
+          path: docs/paper/main.pdf
+          if-no-files-found: error
+          retention-days: 90

@@ -1,6 +1,6 @@
 % =============================================================================
 % BV-SALA Savings Layer — Verifiable Measurement of Cost Savings in LLM
-% Applications (Open-Core Edition), v2.1, November 2026.
+% Applications (Open-Core Edition), v2.2, November 2026 (open-core release 1.1.0).
 %
 % arXiv-ready source. Compile with:
 %   pdflatex main && pdflatex main
@@ -27,7 +27,7 @@
 
 \title{BV-SALA Savings Layer:\\ Verifiable Measurement of Cost Savings in Large Language Model Applications\\ \large (Open-Core Edition)}
 \author{Joan-Marc Fisa\\ \small Founder, BiVelio Inc\\ \small \texttt{jmfisa@bivelio.com} \quad \url{https://savings.bivelio.com}}
-\date{November 2026 (v2.1) \\ \small Preprint --- technical report}
+\date{November 2026 (v2.2; open-core release 1.1.0) \\ \small Preprint --- technical report}
 
 \begin{document}
 \maketitle
@@ -120,6 +120,28 @@ peak rates.
 (iv) \emph{Zero-telemetry default}.
 Nothing changes the four-ledger accounting, the evidence labels or the versioned
 list-price basis.
+
+\subsection{What changed in the 1.1.0 release}
+The 1.1.0 release extends the open-core edition without touching the measurement doctrine,
+the four ledgers or the evidence labels:
+\begin{enumerate}[leftmargin=1.4em]
+  \item \emph{Cache-break audit.} A deterministic, network-free detector scans the cacheable
+  \texttt{system} prefix for per-request content---ISO 8601 and RFC 2822 timestamps, UUID v4
+  and epoch milliseconds/seconds---and reports it as a \texttt{cache-audit} trace plus a
+  one-per-process warning (Section~\ref{sec:cache-audit}). It diagnoses the most common
+  silent cause of a prompt cache that never hits, and never rewrites the caller's prompt.
+  \item \emph{Levers inside the batch.} \texttt{layer.batches.submit()} now runs the same
+  pure, lossless request-body levers as \texttt{generate()}---elision by supersession
+  (default-on) and tool-output compaction (opt-in)---so a batch item's prompt byte-equals the
+  prompt \texttt{generate()} sends for the same request and toggle (Section~\ref{sec:batch}).
+  \item \emph{Intra-batch deduplication} (opt-in). Requests whose final provider body is
+  identical are sent once and replayed from the first result; the batch summary counts the
+  money over the sent executions, never twice (Section~\ref{sec:dedup}).
+  \item \emph{Cascade 2026.} The default model-cascade table now covers the current frontier's
+  same-family cheap siblings (\texttt{gpt-5/5.2/5.4} $\to$ \texttt{*-mini},
+  \texttt{claude-opus-5/-5-5} $\to$ \texttt{claude-haiku-4-5}); \texttt{claude-sonnet-5/-5-5}
+  remain without a default pair because $r=0.50$ exactly leaves no quality margin.
+\end{enumerate}
 
 \section{Related work}\label{sec:related}
 
@@ -250,6 +272,28 @@ observer maps \texttt{usageMetadata}, discounting implicit-cache tokens from inp
 summing thinking tokens into output. A stream without final \texttt{usageMetadata} is
 reported \texttt{unmeasured}. These are operational checks, not savings claims.
 
+\subsection{The cache-break audit}\label{sec:cache-audit}
+The dominant failure mode of prompt caching is not the provider's discount but the hit rate:
+a mutable token in the otherwise stable prefix forces a full miss on every request. The layer
+runs a deterministic, side-effect-free audit over the cacheable \texttt{system} header that
+flags ISO 8601 and RFC 2822 timestamps, UUID v4, and epoch milliseconds/seconds, and emits a
+\texttt{cache-audit} trace plus a one-per-process warning keyed by the detected pattern. The
+audit is diagnostic, never rewriting: changing the \texttt{system} prompt is a quality
+decision that belongs to the caller, and the compaction doctrine forbids changing an opinion
+about a block the provider has already cached.
+
+\subsection{Levers inside the batch}\label{sec:batch}
+The batch surface (\texttt{layer.batches}) previously sent requests ``as written'', skipping
+the layer's per-request levers; a batch item therefore missed the token reduction
+\texttt{generate()} applies, on top of the batch discount. The 1.1.0 release runs the two
+lossless, pure request-body levers on batch items before translation, reusing the same
+functions the pipeline calls---elision by supersession and tool-output compaction---so an
+item's provider body is byte-for-byte the body \texttt{generate()} produces for the same
+request and toggle. Intra-batch deduplication collapses byte-identical bodies into one
+execution, replaying the dropped items from the first result; it is opt-in because it changes
+what the caller observes and is only sound when identical bodies imply identical answers
+(deterministic sampling).
+
 \section{Measurement methodology}\label{sec:method}
 
 \subsection{Design}
@@ -363,6 +407,17 @@ At a reduction $R$ on a monthly list-price bill $B$, a seat with fee $F$ pays of
 $RB>F$. With $F=\text{EUR~}15$ per seat per month and $R=0.315$,
 $B^*=F/R\approx\text{EUR~}47.6$ per month. This is conditional arithmetic on a measured
 ratio, not a forecast.
+
+\subsection{Intra-batch dedup (deterministic)}\label{sec:dedup}
+Deduplication is an identity, not an estimate: two requests with byte-identical provider
+bodies produce byte-identical results, so sending one and replaying the other avoids a
+provider execution without changing any answer. A deterministic benchmark against a counting
+batch adapter reports executions avoided exactly proportional to the duplicate rate of the
+workload: 10\,\% duplicates $\to$ 10\,\% of executions and input tokens avoided; 30\,\%
+$\to$ 30\,\%; 50\,\% $\to$ 50\,\% (1{,}000 items; artifacts in
+\texttt{benchmarks/evidencia/dedup-de-lote-2026-11-09.json}). The saving composes with the
+50\,\% batch discount and is never double-counted: the summary credits each sent execution
+once and reports the deduplicated count separately.
 
 \section{Threats to validity}\label{sec:threats}
 \emph{Construct:} list prices are not invoices (negotiated rates, credits, taxes,
