@@ -123,13 +123,13 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
       description,
       url,
       locale,
-      images: [{ url: `${url}/opengraph-image`, width: 1200, height: 630, alt: title }],
+      images: [{ url: absolute("/brand/og-image.png"), width: 1731, height: 909, alt: title }],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [`${url}/opengraph-image`],
+      images: [absolute("/brand/og-image.png")],
     },
   };
 }
