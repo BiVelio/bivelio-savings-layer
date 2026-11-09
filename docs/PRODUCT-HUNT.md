@@ -77,10 +77,18 @@ Developer Tools → APIs · LLMs · Cost Optimization.
 ## Assets que faltan (por orden de impacto)
 
 1. **Demo GIF / video corto** (el activo nº1 en PH): `npx @bivelio/savings-layer
-   claude` en una terminal → el `SavingsReport` al salir, con el ahorro medido.
-   20–30 segundos, sin narración o con subtítulos.
-2. **Logo / og:image** (1024×512 para PH): el `savings-logo.png` + `savings-mark.png`
-   ya existen en `apps/web/public/brand/`; falta componer la imagen de la tarjeta.
+   claude` en una terminal → el `SavingsReport` al salir. 20–30 s. Hay un
+   **terminal SVG estático listo** (`docs/launch/demo-terminal.svg`) con la
+   salida REAL del SDK como placeholder; para el GIF de verdad hace falta una
+   grabadora:
+   ```bash
+   asciinema rec demo.cast   # o cualquier grabador de pantalla
+   # y convertir:  asciinema-agg demo.cast demo.gif --theme monokai
+   ```
+2. **Logo / og:image** — ✅ **ya en vivo**: la og:image dinámica (1200×630,
+   `next/og`) se sirve en `https://savings.bivelio.com/en/opengraph-image`
+   (verificada HTTP 200, image/png). Product Hunt la toma automáticamente del
+   sitio; no hay que crear una aparte.
 3. **Screenshots** (máx. 5): (a) el dashboard con el banco público y su split por
    modelo; (b) el recibo de ahorro por request; (c) la tabla de precios; (d) el
    paper; (e) el `bvsala doctor` listando configuraciones.
