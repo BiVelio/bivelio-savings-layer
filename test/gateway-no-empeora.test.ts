@@ -970,10 +970,11 @@ describe("5 · la garantía publicada cita esta batería y dice sus límites", (
     expect(guia).not.toContain("because of something other than the gateway");
   });
 
-  it("el README cita la batería, dice que el repositorio es privado y no culpa a otro del tool search apagado", () => {
+  it("el README cita la batería, ya no dice «private» (el repo es público) y no culpa a otro del tool search apagado", () => {
     const readme = leer("../README.md");
     expect(readme).toContain("test/gateway-no-empeora.test.ts");
-    expect(readme).toContain("the repository is private");
+    // El repo es público desde la 1.0.0: la nota «the repository is private» quedó obsoleta.
+    expect(readme).not.toContain("the repository is private");
     expect(readme).toContain("this one included");
     expect(readme).not.toContain("something else in the chain");
   });

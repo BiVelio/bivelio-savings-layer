@@ -135,5 +135,7 @@ header as a dict, for `extra_headers=` or `default_headers=`.
 
 ## License
 
-Commercial software, © 2026 BiVelio Inc. Free to install, paid to run: see
+Apache-2.0, © 2026 BiVelio Inc. This client is open source; the gateway it talks
+to is open core (Apache-2.0, no keys required, COMMUNITY mode runs with zero
+telemetry). The optional BiVelio cloud is a separate commercial service: see
 [LICENSE](./LICENSE) and [savings.bivelio.com](https://savings.bivelio.com).

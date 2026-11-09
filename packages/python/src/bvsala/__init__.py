@@ -14,7 +14,7 @@ report the gateway recorded for your dashboard::
     resp = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": "Hi"}])
     print(gw.report(resp).summary())
 
-Commercial software, © 2026 BiVelio Inc. See LICENSE.
+Apache-2.0, © 2026 BiVelio Inc. See LICENSE.
 """
 
 from ._errors import BvsalaError, GatewayMismatch, GatewayUnavailable, LicenseInactive, ReportNotFound
