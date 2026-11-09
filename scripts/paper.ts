@@ -26,7 +26,7 @@ export const CABECERA = {
   afiliacion: "Founder, BiVelio Inc",
   email: "jmfisa@bivelio.com",
   fecha: "November 2026",
-  version: "Preprint v2.1 · open-core release 1.0.0",
+  version: "Preprint v2.2 · open-core release 1.1.0",
 } as const;
 
 /** Slug estable para anclar una sección (`#3-system-model-and-accounting-object`). */
