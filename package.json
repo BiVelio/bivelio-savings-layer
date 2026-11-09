@@ -1,6 +1,6 @@
 {
   "name": "@bivelio/savings-layer",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "The savings layer for your LLM bill: a zero-dependency open-core layer inside your code — and a local gateway for coding agents — that lets through only what has to be paid for, and returns a SavingsReport per call measured with your provider's own meter. Apache-2.0, zero telemetry by default; the optional cloud adds team dashboard and shared caches.",
   "keywords": [
     "llm",
