@@ -193,6 +193,22 @@ describe("qué modelo barato le toca a cada id", () => {
     expect(modeloBarato("")).toBeNull();
   });
 
+  it("la frontera 2026 enruta a su hermano barato de la misma familia", () => {
+    expect(modeloBarato("gpt-5")).toBe("gpt-5-mini");
+    expect(modeloBarato("gpt-5.2")).toBe("gpt-5-mini");
+    expect(modeloBarato("gpt-5.4")).toBe("gpt-5.4-mini");
+    expect(modeloBarato("claude-opus-5")).toBe("claude-haiku-4-5");
+    expect(modeloBarato("claude-opus-5-5")).toBe("claude-haiku-4-5");
+  });
+
+  it("sonnet 5 y gpt-5.5 se quedan sin par por defecto, a propósito", () => {
+    // r = 0,50 exacto contra haiku: sin margen para el riesgo de calidad.
+    expect(modeloBarato("claude-sonnet-5")).toBeNull();
+    expect(modeloBarato("claude-sonnet-5-5")).toBeNull();
+    // Distancia frontera→mini mayor de la que se quiere por defecto.
+    expect(modeloBarato("gpt-5.5")).toBeNull();
+  });
+
   it("⛔ un sufijo de TAMAÑO no hereda el par de su base, o se enruta a sí mismo", () => {
     // `gpt-4o-mini` empieza por `gpt-4o`. Con la regla de prefijo laxa heredaba su
     // par y salía `gpt-4o-mini → gpt-4o-mini`: un cambio de modelo por él mismo,
