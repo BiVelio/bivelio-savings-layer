@@ -141,6 +141,8 @@ interface Linea {
   bytes: number;
   /** El modelo del cable, para trocear por modelo en OpenAI. */
   modelo: string;
+  /** El cuerpo final serializado, SIN `custom_id`: es la identidad de la dedup. */
+  identidad: string;
 }
 
 async function enviarLote(
@@ -186,16 +188,42 @@ async function enviarLote(
       linea,
       bytes: codificador.encode(texto).length,
       modelo: typeof cuerpo["model"] === "string" ? (cuerpo["model"] as string) : request.model,
+      identidad: JSON.stringify(cuerpo),
     };
   });
 
-  const trozos = trocear(lineas, cap.protocolo, tope);
+  // DEDUP INTRA-LOTE (opt-in): peticiones cuyo cuerpo final (tras elisión,
+  // compactación y traducción) es byte a byte idéntico se envían UNA vez; las
+  // réplicas se sirven desde el resultado de la primera en results(). Opt-in
+  // porque cambia lo observable (requestCount y el resultado por ítem) y porque
+  // solo es correcto cuando cuerpo idéntico implica respuesta idéntica (muestreo
+  // determinista): con temperature > 0 y sin seed, cada copia habría muestreado
+  // por su cuenta y deduplicarlas entregaría a todas la respuesta de la primera.
+  const deduplicar = options.deduplicate === true;
+  const primeraPorIdentidad = new Map<string, string>();
+  const enviadas: Linea[] = [];
+  const duplicados: NonNullable<BatchJob["duplicates"]> = [];
+  for (const l of lineas) {
+    if (deduplicar) {
+      const primera = primeraPorIdentidad.get(l.identidad);
+      if (primera !== undefined) {
+        duplicados.push({ customId: l.customId, sameAs: primera, model: l.modelo });
+        continue;
+      }
+      primeraPorIdentidad.set(l.identidad, l.customId);
+    }
+    enviadas.push(l);
+  }
 
+  const trozos = trocear(enviadas, cap.protocolo, tope);
+
+  const requestPorId = new Map(requests.map((r) => [r.customId, r.request] as const));
   const schemas: JsonSchema[] = [];
   const indiceDeEsquema = new Map<string, number>();
   const trozoDe = new Map<string, number>();
   trozos.forEach((t, i) => t.forEach((l) => trozoDe.set(l.customId, i)));
-  const peticiones: BatchJob["requests"] = requests.map(({ customId, request }) => {
+  const peticiones: BatchJob["requests"] = enviadas.map((l) => {
+    const request = requestPorId.get(l.customId)!;
     const schema = request.response?.schema;
     let indice: number | undefined;
     if (schema) {
@@ -208,9 +236,9 @@ async function enviarLote(
       }
     }
     return {
-      customId,
+      customId: l.customId,
       model: request.model,
-      batch: trozoDe.get(customId)!,
+      batch: trozoDe.get(l.customId)!,
       ...(indice !== undefined ? { schema: indice } : {}),
     };
   });
@@ -223,6 +251,7 @@ async function enviarLote(
     batchIds: [],
     submittedAt: new Date(dep.now()).toISOString(),
     requests: peticiones,
+    ...(duplicados.length > 0 ? { duplicates: duplicados } : {}),
     schemas,
   };
 
@@ -588,20 +617,49 @@ async function resultadosDelLote<T>(
 
   const ahoraMs = Math.max(dep.now(), Date.parse(job.submittedAt) || 0);
   const items: BatchItemResult<T>[] = [];
+  const porId = new Map<string, BatchItemResult<T>>();
+  const pendientesDe = new Set<string>();
   let pendientes = 0;
   for (const r of job.requests) {
     const trozo = trozos[r.batch]!;
     if (!trozo.terminado) {
       pendientes += 1;
+      pendientesDe.add(r.customId);
       continue;
     }
     const schema = r.schema !== undefined ? job.schemas[r.schema] : undefined;
-    items.push(resultadoDe<T>(dep, cap, r, schema, lineas.get(r.customId), trozo, ahoraMs));
+    const it = resultadoDe<T>(dep, cap, r, schema, lineas.get(r.customId), trozo, ahoraMs);
+    porId.set(r.customId, it);
+    items.push(it);
+  }
+  // Los duplicados comparten la ejecución de su origen: el clone lleva su id y su
+  // model; el dinero (tierSaving) se cuenta UNA vez, en el origen, y el resumen lo
+  // excluye de la suma. Si el origen sigue en curso, el duplicado también lo está.
+  const enviados = items.slice();
+  for (const d of job.duplicates ?? []) {
+    const fuente = porId.get(d.sameAs);
+    if (fuente) {
+      items.push({
+        ...fuente,
+        customId: d.customId,
+        model: d.model,
+        reason: `deduplicated: identical to "${d.sameAs}" (sent once, billed once)`,
+      });
+    } else if (pendientesDe.has(d.sameAs)) {
+      pendientes += 1;
+    } else {
+      items.push({
+        customId: d.customId,
+        model: d.model,
+        outcome: "missing",
+        reason: `deduplicated but its source "${d.sameAs}" has no result`,
+      });
+    }
   }
   return {
     ended: trozos.every((t) => t.terminado),
     items,
-    summary: resumir(job, items, pendientes),
+    summary: resumir(job, items, enviados, pendientes, job.duplicates?.length ?? 0),
   };
 }
 
@@ -843,24 +901,35 @@ function motivoSinCredito(motivo: MotivoSinValoracion, servido: string | undefin
 // podría dejar el total una pizca POR ENCIMA de la suma de las diferencias reales.
 const GRANO = 1e10;
 
-function resumir(job: BatchJob, items: BatchItemResult[], pendientes: number): BatchSummary {
+function resumir(
+  job: BatchJob,
+  items: BatchItemResult[],
+  enviados: BatchItemResult[],
+  pendientes: number,
+  deduplicados: number,
+): BatchSummary {
   let exito = 0;
   let errores = 0;
   let canceladas = 0;
   let caducadas = 0;
   let perdidas = 0;
-  let acreditadas = 0;
-  let medidas = 0;
-  let unidades = 0n;
-  let estandar = 0;
-  let aplicado = 0;
-  let consultado: string | undefined;
   for (const it of items) {
     if (it.outcome === "succeeded") exito += 1;
     else if (it.outcome === "errored") errores += 1;
     else if (it.outcome === "canceled") canceladas += 1;
     else if (it.outcome === "expired") caducadas += 1;
     else perdidas += 1;
+  }
+  // El dinero se cuenta sobre lo ENVIADO (cada ejecución, una vez). Un duplicado
+  // hereda el tierSaving de su origen para la vista por ítem, pero sumarlo aquí
+  // contaría dos veces la MISMA ejecución y el total pasaría de la diferencia real.
+  let acreditadas = 0;
+  let medidas = 0;
+  let unidades = 0n;
+  let estandar = 0;
+  let aplicado = 0;
+  let consultado: string | undefined;
+  for (const it of enviados) {
     const t = it.tierSaving;
     if (!t) continue;
     acreditadas += 1;
@@ -873,22 +942,25 @@ function resumir(job: BatchJob, items: BatchItemResult[], pendientes: number): B
     aplicado += t.appliedCost;
     if (!consultado || t.pricesCheckedOn < consultado) consultado = t.pricesCheckedOn;
   }
+  const total = job.requests.length + deduplicados;
   const basis: BatchSummary["basis"] = acreditadas === 0 ? "none" : medidas === acreditadas ? "measured" : "estimated";
   const reason =
-    `${exito} of ${job.requests.length} requests succeeded` +
+    `${exito} of ${total} requests succeeded` +
+    (deduplicados > 0 ? ` (${deduplicados} sent once, identical to an earlier one)` : "") +
     (pendientes > 0 ? ` (${pendientes} still running)` : "") +
     `; ${acreditadas} were valued at the provider's standard and batch published rate cards` +
     (basis === "none" ? "" : ` (${basis})`) +
     ". Reported only: batch requests are not metered and this saving is never billed. The layer's own " +
     "per-request savings do not run on batches.";
   return {
-    requestCount: job.requests.length,
+    requestCount: total,
     succeeded: exito,
     errored: errores,
     canceled: canceladas,
     expired: caducadas,
     missing: perdidas,
     pending: pendientes,
+    ...(deduplicados > 0 ? { deduplicated: deduplicados } : {}),
     credited: acreditadas,
     tierSaving: Number(unidades) / GRANO,
     standardCost: roundUsd(estandar),

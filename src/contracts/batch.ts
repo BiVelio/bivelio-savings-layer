@@ -39,6 +39,16 @@ export interface BatchSubmitOptions {
    * OpenAI, by model).
    */
   maxRequestsPerBatch?: number;
+  /**
+   * Deduplicate requests whose final provider body is byte-identical within THIS
+   * submission: the first is sent and the rest are replayed from its result, so the
+   * provider bills each unique request once. Defaults to false. Only turn it on when
+   * identical bodies imply identical answers — deterministic sampling (temperature 0 or
+   * unset), or a seed you control. With temperature > 0 and no seed the provider would
+   * have sampled each copy independently, and deduplication hands every copy the first
+   * one's answer.
+   */
+  deduplicate?: boolean;
   /** Cancels the HTTP calls of this submission. Batches already created stay created. */
   signal?: AbortSignal;
 }
@@ -64,6 +74,13 @@ export interface BatchJob {
    * batch that carries it, and its output schema as an index into `schemas`.
    */
   requests: { customId: string; model: string; batch: number; schema?: number }[];
+  /**
+   * Requests that were NOT sent because an identical one (same final provider body) was
+   * already in this submission. Each entry names its own id, the id it duplicates, and
+   * its model. `results()` replays the duplicate from the source's result; nothing about
+   * the answer is stored here. Present only when at least one request was deduplicated.
+   */
+  duplicates?: { customId: string; sameAs: string; model: string }[];
   /** The distinct output schemas of the job, stored once each. */
   schemas: JsonSchema[];
 }
@@ -151,6 +168,8 @@ export interface BatchSummary {
   missing: number;
   /** Requests whose provider batch has not ended yet: not in `items`. */
   pending: number;
+  /** Requests dropped at submit() because an identical one was already in the job. */
+  deduplicated?: number;
   /** Succeeded requests with a `tierSaving`. */
   credited: number;
   /** Sum of every `tierSaving.amount`. Never more than the sum of each request's published difference. */
