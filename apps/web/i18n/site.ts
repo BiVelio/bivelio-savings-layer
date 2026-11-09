@@ -41,9 +41,9 @@ export function languageAlternates(pathSinLocale = ""): Record<string, string> {
  * (lib/legal/precios-publicados.test.ts).
  */
 export function tarjetaSocial(locale: string, alt: string) {
-  const imagen = absolute(`/${locale}/opengraph-image`);
+  const imagen = absolute("/brand/og-image.png");
   return {
-    openGraph: { locale, images: [{ url: imagen, width: 1200, height: 630, alt }] },
+    openGraph: { locale, images: [{ url: imagen, width: 1731, height: 909, alt }] },
     twitter: { card: "summary_large_image" as const, images: [imagen] },
   };
 }

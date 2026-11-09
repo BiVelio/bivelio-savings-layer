@@ -1,5 +1,9 @@
 # BiVelio Savings Layer for Python
 
+<p align="center">
+  <img src="https://savings.bivelio.com/brand/og-image.png" alt="BiVelio Savings Layer" width="720">
+</p>
+
 A thin client for the local **bvsala gateway**. It routes the official OpenAI
 and Anthropic Python SDKs through the gateway and hands you, for each request,
 the report the gateway recorded for your BiVelio dashboard: the provider's own

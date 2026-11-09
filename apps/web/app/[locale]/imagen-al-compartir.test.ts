@@ -42,11 +42,11 @@ describe("la imagen al compartir", () => {
     }
   });
 
-  it("tarjetaSocial apunta a la imagen de la portada del idioma, 1200×630", () => {
+  it("tarjetaSocial apunta a la imagen de marca, 1731×909", () => {
     const s = tarjetaSocial("de", "Titel");
     expect(s.openGraph.locale).toBe("de");
-    expect(s.openGraph.images[0]).toMatchObject({ width: 1200, height: 630, alt: "Titel" });
-    expect(s.openGraph.images[0].url).toMatch(/\/de\/opengraph-image$/);
+    expect(s.openGraph.images[0]).toMatchObject({ width: 1731, height: 909, alt: "Titel" });
+    expect(s.openGraph.images[0].url).toMatch(/\/brand\/og-image\.png$/);
     expect(s.twitter.card).toBe("summary_large_image");
     expect(s.twitter.images[0]).toBe(s.openGraph.images[0].url);
   });
