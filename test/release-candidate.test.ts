@@ -9,9 +9,9 @@ describe("release 1.1 packaging guards", () => {
   it("keeps SDK and persistence versions and peers compatible", () => {
     const sdk = json("package.json");
     const persistence = json("packages/persistence-postgres/package.json");
-    expect(sdk.version).toBe("1.1.0");
+    expect(sdk.version).toBe("1.1.1");
     expect(persistence.version).toBe("0.1.0-rc.1");
-    expect(text("src/version.ts")).toContain('"1.1.0"');
+    expect(text("src/version.ts")).toContain('"1.1.1"');
     expect(persistence.peerDependencies).toEqual({
       "@bivelio/savings-layer": ">=1.0.0 <2",
       pg: ">=8.23.1 <9",

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.1 — corrected packaging text
+
+- The Python client's README and module docstring no longer say "Commercial
+  software … paid to run": they state the Apache-2.0 open-core license, matching
+  the package and the gateway it talks to.
+- The npm README no longer says "the repository is private" (it is public) and
+  links the paper as v2.2.
+
 ## 1.1.0 — savings levers reach the batch surface, cache audit, cascade 2026
 
 ### Added
