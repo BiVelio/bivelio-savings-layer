@@ -105,6 +105,7 @@ import { TraceCollector } from "../telemetry/traces.js";
 import type { CachedAnswer } from "../cache/exact.js";
 import type { VersionedCacheBreakpointStore } from "../cache/breakpoint-store.js";
 import type { SemanticProbe } from "../cache/semantic.js";
+import { detectarContenidoMutable } from "../cache/cache-audit.js";
 import type { Provider, ProviderRequest, ProviderResponse, ProviderToolSearch } from "../providers/types.js";
 import type { RouteDecision } from "../router/router.js";
 import {
@@ -1142,6 +1143,26 @@ export class SavingsPipeline {
     }
 
     const prefijo = messages.slice(0, mensajesDePrefijo);
+
+    // LA AUDITORÍA DE CACHE BREAKS (diagnóstico, no rewriting): sobre la
+    // cabecera de `system` —el tramo que DEBERÍA ser estable entre peticiones—
+    // señala el contenido que cambia en cada llamada y hace que la caché del
+    // proveedor no acierte nunca. La muestra sale recortada del texto del propio
+    // cliente; no se reescribe nada porque cambiar el `system` es una decisión
+    // de calidad que solo el llamante puede tomar.
+    if (S > 0) {
+      const mutable = detectarContenidoMutable(this.assemblePromptText(messages.slice(0, S)));
+      if (mutable.length > 0) {
+        trace.record("cache-audit", "mutable-system-prefix", {
+          patrones: mutable.map((f) => f.patron),
+          muestras: mutable.map((f) => f.muestra),
+          razon:
+            "the system header carries per-request content (timestamp or UUID): the provider prompt " +
+            "cache can never hit on this prefix — move it to the query tail",
+        });
+      }
+    }
+
     const stablePrefixTokens = this.tokensFor(
       this.assemblePromptText(prefijo, toolSelection.tools),
       request,

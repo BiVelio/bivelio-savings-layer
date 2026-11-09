@@ -1,9 +1,12 @@
 /**
  * bivelio-savings-layer (BV-SALA)
  * ---------------------------------------------------------------------------
- * PROPRIETARY AND CONFIDENTIAL. Copyright (c) 2026 BiVelio Inc.
- * All Rights Reserved. Unauthorized copying, distribution, or use of this
- * software, in whole or in part, is strictly prohibited. See LICENSE.
+ * Copyright (c) 2026 BiVelio Inc.
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy
+ * of the License at https://www.apache.org/licenses/LICENSE-2.0 — the full
+ * text ships in this repository's LICENSE file. The optional BiVelio cloud
+ * services keep their own terms in LICENSE-CLOUD.md.
  * ---------------------------------------------------------------------------
  *
  * A provider-neutral LLM execution optimizer. For every request it answers, in
