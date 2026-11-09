@@ -9,7 +9,8 @@ import type {
   BatchSummary,
   SavingsBatches,
 } from "../contracts/batch.js";
-import type { JsonSchema, PriceLeverSaving, SavingsRequest } from "../contracts/types.js";
+import type { ChatMessage, JsonSchema, PriceLeverSaving, SavingsRequest } from "../contracts/types.js";
+import { seleccionarCompactables, type ToolOutputCompactionSettings } from "../compression/cola.js";
 import { validateAgainstSchema } from "../constraints/validate.js";
 import { topeDeSalida } from "../contracts/tope-de-salida.js";
 import { valorarTierServido, type MotivoSinValoracion } from "../economics/tier-diferido.js";
@@ -63,6 +64,14 @@ export interface DependenciasDeLotes {
    */
   exigirPalancas?: () => void;
   now: () => number;
+  /**
+   * Layer default for `savings.toolOutputCompaction` on batch items, identical to
+   * `generate()`: off unless set, and a request's own toggle always wins. The
+   * compaction is the same pure, deterministic, lossless transform the pipeline
+   * runs (`seleccionarCompactables`), so a batch item's prompt byte-equals the
+   * prompt `generate()` sends for the same request and toggle.
+   */
+  toolOutputCompaction?: boolean | ToolOutputCompactionSettings;
 }
 
 // LÍMITES POR LOTE, de las guías oficiales (leídas el 2026-09-27):
@@ -150,9 +159,12 @@ async function enviarLote(
   const marcarPrefijo = options.cacheSharedPrefix === true && cap.protocolo === "anthropic";
   const codificador = new TextEncoder();
   const lineas: Linea[] = requests.map(({ customId, request }) => {
+    // La compactación de la cola, opt-in y con la MISMA función pura del pipeline.
+    const ajustes = resolverCompactacion(dep.toolOutputCompaction, request.savings?.toolOutputCompaction);
+    const mensajes = ajustes ? compactarSiProcede(request.messages, ajustes) : request.messages;
     let cuerpo: Record<string, unknown>;
     try {
-      cuerpo = cap.cuerpo(aPeticionDeProveedor(request, marcarPrefijo));
+      cuerpo = cap.cuerpo(aPeticionDeProveedor({ ...request, messages: mensajes }, marcarPrefijo));
     } catch (err) {
       throw new TypeError(`[bvsala] batch request "${customId}": ${mensajeDe(err)}`);
     }
@@ -279,10 +291,46 @@ function topeDePeticiones(pedido: number | undefined, protocolo: "anthropic" | "
   return Math.min(pedido, limite);
 }
 
+// LA COMPACTACIÓN DE LA COLA EN EL LOTE (primer incremento de «palancas dentro
+// del lote»): la MISMA transformación pura, determinista y sin pérdida que
+// `generate()` aplica a los `role: "tool"` (ver `seleccionarCompactables` en
+// compression/cola.ts). Reusar la función —y no una copia— es lo que garantiza
+// que el cuerpo de un ítem del lote sea byte a byte el prompt que `generate()`
+// manda para la misma petición y el mismo interruptor.
+//
+// Opt-in, igual que en generate(): sin toggle de la capa ni de la petición no se
+// toca nada, y el comportamiento actual («se envía como se escribió») se conserva.
+// El perfil `lossless-data` cuenta con el estimador heurístico (el mismo de
+// `seleccionarCompactables` sin `contar`), así que no hay dependencia del
+// tokenizador cargado en esta superficie.
+function resolverCompactacion(
+  deLaCapa: boolean | ToolOutputCompactionSettings | undefined,
+  deLaPeticion: boolean | undefined,
+): ToolOutputCompactionSettings | null {
+  if (deLaPeticion === false) return null;
+  const ajustes = typeof deLaCapa === "object" && deLaCapa !== null ? deLaCapa : {};
+  if (deLaPeticion === true) return ajustes;
+  return deLaCapa ? ajustes : null;
+}
+
+/** Mensajes con la cola compactada, sin mutar el array del llamante. */
+function compactarSiProcede(
+  messages: ChatMessage[],
+  ajustes: ToolOutputCompactionSettings,
+): ChatMessage[] {
+  const eleccion = seleccionarCompactables(messages, ajustes);
+  if (eleccion.compactados.length === 0) return messages;
+  const nuevos = messages.slice();
+  for (const c of eleccion.compactados) {
+    nuevos[c.indice] = { ...nuevos[c.indice]!, content: c.texto };
+  }
+  return nuevos;
+}
+
 // La petición del cliente en la forma neutra del adaptador, SIN nada del
-// pipeline: lo que el cliente escribió. Con `marcarPrefijo`, la cabecera de
-// mensajes `system` se declara prefijo estable y el adaptador de Anthropic pone
-// su `cache_control` al final (ver `marcarCache` en providers/anthropic.ts).
+// pipeline salvo la compactación de la cola opt-in de arriba. Con `marcarPrefijo`,
+// la cabecera de mensajes `system` se declara prefijo estable y el adaptador de
+// Anthropic pone su `cache_control` al final (ver `marcarCache` en providers/anthropic.ts).
 function aPeticionDeProveedor(r: SavingsRequest, marcarPrefijo: boolean): ProviderRequest {
   let cabecera = 0;
   while (cabecera < r.messages.length && r.messages[cabecera]!.role === "system") cabecera += 1;
