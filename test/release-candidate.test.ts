@@ -5,13 +5,13 @@ const root = new URL("../", import.meta.url);
 const json = (path: string) => JSON.parse(readFileSync(new URL(path, root), "utf8")) as Record<string, unknown>;
 const text = (path: string) => readFileSync(new URL(path, root), "utf8");
 
-describe("release 1.0 packaging guards", () => {
+describe("release 1.1 packaging guards", () => {
   it("keeps SDK and persistence versions and peers compatible", () => {
     const sdk = json("package.json");
     const persistence = json("packages/persistence-postgres/package.json");
-    expect(sdk.version).toBe("1.0.0");
+    expect(sdk.version).toBe("1.1.0");
     expect(persistence.version).toBe("0.1.0-rc.1");
-    expect(text("src/version.ts")).toContain('"1.0.0"');
+    expect(text("src/version.ts")).toContain('"1.1.0"');
     expect(persistence.peerDependencies).toEqual({
       "@bivelio/savings-layer": ">=1.0.0 <2",
       pg: ">=8.23.1 <9",

@@ -6,7 +6,7 @@
  * on the customer's machine. `test/version-declarada.test.ts` ties this
  * constant to package.json so the two can never drift.
  */
-export const BV_SALA_VERSION = "1.0.0";
+export const BV_SALA_VERSION = "1.1.0";
 
 // ---------------------------------------------------------------------------
 // Lo de abajo es INTERNO: no sale por src/index.ts (la superficie pública solo

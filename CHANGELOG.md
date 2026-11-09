@@ -1,11 +1,34 @@
 # Changelog
 
+## 1.1.0 — savings levers reach the batch surface, cache audit, cascade 2026
+
+### Added
+
+- **Cache-break audit.** The layer detects per-request content (ISO/RFC 2822
+  timestamps, UUID v4, epoch ms/s) in the cacheable `system` prefix and reports it
+  as a `cache-audit` trace plus a one-per-process warning: the diagnosis of a
+  prompt cache that never hits, without rewriting the caller's prompt.
+- **Levers inside the batch.** `layer.batches.submit()` now runs the same pure,
+  lossless request-body levers as `generate()`: elision by supersession
+  (default-on, `savings.elision: false` opts out) and tool-output compaction
+  (opt-in, same as `generate()`). A batch item's prompt byte-equals the prompt
+  `generate()` sends for the same request and toggle.
+- **Intra-batch dedup** (opt-in `submit(…, { deduplicate: true })`): requests whose
+  final provider body is identical are sent once and replayed from the first
+  result; the summary counts the money once, over the sent executions, and reports
+  a `deduplicated` count.
+- **Cascade 2026.** The default model-cascade table now covers the current
+  frontier's same-family cheap siblings (`gpt-5/5.2/5.4 → *-mini`,
+  `claude-opus-5/-5-5 → claude-haiku-4-5`); `claude-sonnet-5/-5-5` stay without a
+  default pair on purpose (r = 0.50 exact leaves no quality margin).
+
 ## 1.0.0 — the open-core release (Community mode)
 
 ### License
 
 - The npm package is now **Apache-2.0** (LICENSE); the optional cloud services
-  keep their own terms in LICENSE-CLOUD.md (§5 fields, §6 fees) and a NOTICE`n  covers trademarks and attribution.
+  keep their own terms in LICENSE-CLOUD.md (§5 fields, §6 fees) and a NOTICE
+  covers trademarks and attribution.
 
 ### Changed (breaking for the license contract)
 
