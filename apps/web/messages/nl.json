@@ -1087,6 +1087,7 @@
       "sub": "Beide zijn open core en beide tellen met de teller van je provider. Ze doen verschillend werk, dus elk doet zijn eigen belofte — en vandaag heeft er maar één een gepubliceerd besparingscijfer.",
       "install": "Installatie",
       "installMore": "Volledige installatie",
+      "figNoteToggle": "Waarom dit getal, en de grenzen ervan",
       "sdk": {
         "name": "SDK",
         "band": "SDK — voor JavaScript- en TypeScript-apps met een API-sleutel",

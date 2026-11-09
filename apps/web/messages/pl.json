@@ -1087,6 +1087,7 @@
       "sub": "Oba są open core i oba liczą licznikiem Twojego dostawcy. Robią różne rzeczy, więc każde składa własną obietnicę — a dziś tylko jedno ma opublikowaną liczbę oszczędności.",
       "install": "Instalacja",
       "installMore": "Pełna konfiguracja",
+      "figNoteToggle": "Dlaczego ta liczba i jej ograniczenia",
       "sdk": {
         "name": "SDK",
         "band": "SDK — dla aplikacji w JavaScript i TypeScript z kluczem API",

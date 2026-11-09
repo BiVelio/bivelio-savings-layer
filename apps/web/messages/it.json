@@ -1087,6 +1087,7 @@
       "sub": "Sono entrambi open core ed entrambi contano col contatore del tuo provider. Fanno mestieri diversi, quindi ognuno fa la sua promessa — e oggi solo uno ha una cifra di risparmio pubblicata.",
       "install": "Installazione",
       "installMore": "Configurazione completa",
+      "figNoteToggle": "Perché questa cifra, e i suoi limiti",
       "sdk": {
         "name": "SDK",
         "band": "SDK — per app JavaScript e TypeScript con chiave API",

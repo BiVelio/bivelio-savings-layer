@@ -1087,6 +1087,7 @@
       "sub": "İkisi de açık çekirdektir ve ikisi de sağlayıcınızın kendi sayacıyla sayar. Farklı işler yaparlar, bu yüzden her biri kendi sözünü verir — ve bugün yalnızca birinin yayımlanmış bir tasarruf rakamı vardır.",
       "install": "Kurulum",
       "installMore": "Tam kurulum",
+      "figNoteToggle": "Bu rakam neden ve sınırları",
       "sdk": {
         "name": "SDK",
         "band": "SDK — API anahtarıyla çalışan JavaScript ve TypeScript uygulamaları için",
