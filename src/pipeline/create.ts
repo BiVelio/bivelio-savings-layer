@@ -480,6 +480,12 @@ export function createSavingsLayer(
     exigirLicencia: () => pipeline.exigirLicencia(),
     exigirPalancas: () => pipeline.exigirPalancas(),
     now: resolved.now ?? Date.now,
+    // La compactación de la cola también corre en los lotes (opt-in, misma
+    // función pura del pipeline): sin pasarla, `layer.batches` ignoraría el
+    // ajuste de la capa y un lote no compactaría lo que generate() sí compacta.
+    ...(config.toolOutputCompaction !== undefined
+      ? { toolOutputCompaction: config.toolOutputCompaction }
+      : {}),
   });
 
   return {
