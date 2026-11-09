@@ -11,6 +11,7 @@ import type {
 } from "../contracts/batch.js";
 import type { ChatMessage, JsonSchema, PriceLeverSaving, SavingsRequest } from "../contracts/types.js";
 import { seleccionarCompactables, type ToolOutputCompactionSettings } from "../compression/cola.js";
+import { aplicarElision, seleccionarSupersesion } from "../pipeline/elision.js";
 import { validateAgainstSchema } from "../constraints/validate.js";
 import { topeDeSalida } from "../contracts/tope-de-salida.js";
 import { valorarTierServido, type MotivoSinValoracion } from "../economics/tier-diferido.js";
@@ -159,9 +160,16 @@ async function enviarLote(
   const marcarPrefijo = options.cacheSharedPrefix === true && cap.protocolo === "anthropic";
   const codificador = new TextEncoder();
   const lineas: Linea[] = requests.map(({ customId, request }) => {
-    // La compactación de la cola, opt-in y con la MISMA función pura del pipeline.
+    // LAS PALANCAS DENTRO DEL LOTE (en el orden del pipeline):
+    //   1. elisión por supersesión (default-on, opt-out por `savings.elision:false`)
+    //   2. compactación de la cola (opt-in, ver resolverCompactacion)
+    // Ambas con las MISMAS funciones puras del pipeline, así que el prompt del
+    // ítem es byte a byte el que generate() manda para la misma petición.
+    const elididos = request.savings?.elision !== false
+      ? aplicarElision(request.messages, seleccionarSupersesion(request.messages).indices)
+      : request.messages;
     const ajustes = resolverCompactacion(dep.toolOutputCompaction, request.savings?.toolOutputCompaction);
-    const mensajes = ajustes ? compactarSiProcede(request.messages, ajustes) : request.messages;
+    const mensajes = ajustes ? compactarSiProcede(elididos, ajustes) : elididos;
     let cuerpo: Record<string, unknown>;
     try {
       cuerpo = cap.cuerpo(aPeticionDeProveedor({ ...request, messages: mensajes }, marcarPrefijo));

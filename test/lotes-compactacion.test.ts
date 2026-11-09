@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 
 import { AnthropicProvider } from "../src/providers/anthropic.js";
 import { createSavingsLayer } from "../src/pipeline/create.js";
+import { MUNON_ELISION } from "../src/pipeline/elision.js";
 import type { BatchJob } from "../src/contracts/batch.js";
 import type { SavingsRequest } from "../src/contracts/types.js";
 
@@ -127,5 +128,55 @@ describe("lotes · compactación de la cola (palancas dentro del lote)", () => {
     const job = (await c.layer.batches.submit([{ customId: "a", request: peticionConHerramienta() }])) as BatchJob;
     expect(JSON.stringify(job)).not.toContain('"a": 1');
     expect(job.requests[0]).toEqual({ customId: "a", model: "anthropic/claude-haiku-4-5", batch: 0 });
+  });
+});
+
+// ── Elisión por supersesión (default-on, opt-out por `savings.elision:false`) ──
+
+const GRANDE_VIEJO = "RELOJ=" + "x".repeat(1400);
+const GRANDE_NUEVO = "RELOJ=" + "y".repeat(1400);
+
+/** Dos lecturas del MISMO recurso: la vieja queda superada por la nueva. */
+function peticionConRelectura(): SavingsRequest {
+  return {
+    model: "anthropic/claude-haiku-4-5",
+    messages: [
+      { role: "system", content: "You read files." },
+      { role: "assistant", content: "", toolCalls: [{ id: "t1", name: "leer", arguments: '{"path":"a.txt"}' }] },
+      { role: "tool", toolCallId: "t1", content: GRANDE_VIEJO },
+      { role: "assistant", content: "", toolCalls: [{ id: "t2", name: "leer", arguments: '{"path":"a.txt"}' }] },
+      { role: "tool", toolCallId: "t2", content: GRANDE_NUEVO },
+      { role: "user", content: "resume" },
+    ],
+  } as SavingsRequest;
+}
+
+describe("lotes · elisión por supersesión (palancas dentro del lote)", () => {
+  it("elide la lectura vieja superada por una nueva del mismo recurso", async () => {
+    const c = capa(undefined);
+    await c.layer.batches.submit([{ customId: "a", request: peticionConRelectura() }]);
+    const textos = textosDelCuerpo(envio(c));
+    expect(textos).toContain(MUNON_ELISION);
+    expect(textos).not.toContain(GRANDE_VIEJO);
+    expect(textos).toContain(GRANDE_NUEVO);
+  });
+
+  it("savings.elision: false la apaga (se envía tal cual)", async () => {
+    const c = capa(undefined);
+    await c.layer.batches.submit([
+      { customId: "a", request: { ...peticionConRelectura(), savings: { elision: false } } },
+    ]);
+    const textos = textosDelCuerpo(envio(c));
+    expect(textos).toContain(GRANDE_VIEJO);
+    expect(textos).toContain(GRANDE_NUEVO);
+    expect(textos).not.toContain(MUNON_ELISION);
+  });
+
+  it("no muta los mensajes del llamante", async () => {
+    const c = capa(undefined);
+    const request = peticionConRelectura();
+    const original = JSON.stringify(request.messages);
+    await c.layer.batches.submit([{ customId: "a", request }]);
+    expect(JSON.stringify(request.messages)).toBe(original);
   });
 });
