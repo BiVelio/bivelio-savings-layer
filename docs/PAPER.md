@@ -4,7 +4,7 @@
 
 Joan-Marc Fisa · Founder, BiVelio Inc · jmfisa@bivelio.com · https://savings.bivelio.com
 
-**Preprint · November 2026 (v2.1, open-core release 1.0.0) · Technical report**
+**Preprint · November 2026 (v2.2, open-core release 1.1.0) · Technical report**
 
 Supersedes the August 2026 edition ("BV-SALA Savings Layer: Verifiable Measurement of
 Cost Savings in Large Language Model Applications",
@@ -119,6 +119,28 @@ but not Gemini. The November release changes the *system*, not the *measurement 
 Nothing in this release changes the four-ledger accounting, the evidence labels, or the
 versioned list-price basis. The August results remain the primary evidence; this edition
 adds analyses, not re-analysis.
+
+### 1.5 What changed in the 1.1.0 release
+
+The 1.1.0 release extends the open-core edition without touching the measurement doctrine,
+the four ledgers or the evidence labels:
+
+1. **Cache-break audit.** A deterministic, network-free detector scans the cacheable
+   `system` prefix for per-request content — ISO 8601 and RFC 2822 timestamps, UUID v4 and
+   epoch milliseconds/seconds — and reports it as a `cache-audit` trace plus a
+   one-per-process warning. It diagnoses the most common silent cause of a prompt cache
+   that never hits, and never rewrites the caller's prompt (Section 3.6).
+2. **Levers inside the batch.** `layer.batches.submit()` now runs the same pure, lossless
+   request-body levers as `generate()` — elision by supersession (default-on) and
+   tool-output compaction (opt-in) — so a batch item's prompt byte-equals the prompt
+   `generate()` sends for the same request and toggle (Section 3.7).
+3. **Intra-batch deduplication** (opt-in). Requests whose final provider body is identical
+   are sent once and replayed from the first result; the batch summary counts the money
+   over the sent executions, never twice (Section 6.5).
+4. **Cascade 2026.** The default model-cascade table now covers the current frontier's
+   same-family cheap siblings (`gpt-5/5.2/5.4 → *-mini`, `claude-opus-5/-5-5 →
+   claude-haiku-4-5`); `claude-sonnet-5/-5-5` remain without a default pair because
+   r = 0.50 exactly leaves no quality margin (Section 6.3).
 
 ---
 
@@ -256,6 +278,32 @@ tokens from ordinary input and summing thinking tokens into output. A stream wit
 final `usageMetadata` is reported `unmeasured`. These are operational (non-breakage and
 fidelity) checks, not savings claims.
 
+### 3.6 The cache-break audit
+
+The dominant failure mode of prompt caching is not the provider's discount but the
+hit-rate: a mutable token in the otherwise stable prefix forces a full miss on every
+request. The layer therefore runs a deterministic, side-effect-free audit over the
+cacheable `system` header that flags ISO 8601 and RFC 2822 timestamps, UUID v4, and epoch
+milliseconds/seconds, and emits a `cache-audit` trace plus a one-per-process warning keyed
+by the detected pattern. The audit is diagnostic, never rewriting: changing the `system`
+prompt is a quality decision that belongs to the caller, and the layer's compaction
+doctrine forbids changing an opinion about a block the provider has already cached. The
+mechanism is unit-tested for determinism and for the absence of false positives on
+ordinary numbers of other magnitudes.
+
+### 3.7 Levers inside the batch
+
+The batch surface (`layer.batches`) previously sent requests "as written", skipping the
+layer's per-request levers; a batch item therefore missed the token reduction `generate()`
+applies, on top of the batch discount. The 1.1.0 release runs the two lossless, pure
+request-body levers on batch items before translation, reusing the exact same functions
+the pipeline calls — elision by supersession (Section 3.2) and tool-output compaction —
+so an item's provider body is byte-for-byte the body `generate()` produces for the same
+request and toggle. Intra-batch deduplication collapses byte-identical bodies into one
+execution, replaying the dropped items from the first result; it is opt-in because it
+changes what the caller observes and is only sound when identical bodies imply identical
+answers (deterministic sampling).
+
 ---
 
 ## 4 · Measurement methodology
@@ -379,6 +427,18 @@ total monthly fee `F` pays off iff `R · B > F`. With `F = €15` per seat per m
 live OpenAI figure `R = 0.315`, the break-even bill is `B* = F / R ≈ €47.6` per month.
 This is conditional arithmetic on a measured ratio, not a forecast: the ratio is a
 property of a workload, and a workload with less repetition has a smaller `R`.
+
+### 6.5 Intra-batch dedup (deterministic)
+
+Deduplication is an identity, not an estimate: two requests with byte-identical provider
+bodies produce byte-identical results, so sending one and replaying the other avoids a
+provider execution without changing any answer. A deterministic benchmark against a
+counting batch adapter reports executions avoided exactly proportional to the duplicate
+rate of the workload: 10 % duplicates → 10 % of executions and input tokens avoided;
+30 % → 30 %; 50 % → 50 % (1,000 items; artifacts in
+`benchmarks/evidencia/dedup-de-lote-2026-11-09.json`). The saving composes with the 50 %
+batch discount and is never double-counted: the summary credits each sent execution once
+and reports the deduplicated count separately.
 
 ---
 

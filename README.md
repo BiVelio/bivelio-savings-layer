@@ -1462,7 +1462,9 @@ BVSALA_SEAT_ID=worker-03   # stable per replica; [A-Za-z0-9._:/-], max 128 chars
 
 ## Licensing & privacy
 
-BV‑SALA is commercial software. The plans are **Measure** (free), **Pro** (per seat),
+BV‑SALA is open core: the npm package is **Apache-2.0** and free — install it with no keys
+(COMMUNITY mode runs every local lever, zero telemetry, nothing sent to BiVelio). The
+optional **cloud** is commercial. Its plans are **Measure** (free), **Pro** (per seat),
 **Team** (a number of seats included, plus each extra seat) and **Enterprise** (by
 contract); Pro and Team are paid whether or not you save and carry **no commission** on
 your savings. The prices are at the top of this page, in [LICENSE-CLOUD.md](./LICENSE-CLOUD.md) §6 and in
