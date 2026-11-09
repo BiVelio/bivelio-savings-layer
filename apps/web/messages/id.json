@@ -1087,6 +1087,7 @@
       "sub": "Keduanya open core dan keduanya menghitung dengan penghitung penyedia Anda. Pekerjaannya berbeda, jadi masing-masing membuat janjinya sendiri — dan hari ini hanya satu yang punya angka penghematan terpublikasi.",
       "install": "Pemasangan",
       "installMore": "Pemasangan lengkap",
+      "figNoteToggle": "Mengapa angka ini, dan batasannya",
       "sdk": {
         "name": "SDK",
         "band": "SDK — untuk aplikasi JavaScript dan TypeScript dengan kunci API",

@@ -2112,6 +2112,9 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .lp .offer-fig .hp { background: var(--surface); }
 .lp .offer-fig-t { display: block; font-family: var(--mono); font-size: 10.5px; letter-spacing: .13em; text-transform: uppercase; color: var(--ink-soft); }
 .lp .offer-fig-note { margin: 0; font-size: .8rem; line-height: 1.5; color: var(--ink-soft); }
+.lp .offer-fig-details { margin-top: .5rem; }
+.lp .offer-fig-details summary { cursor: pointer; font-size: .8rem; font-weight: 600; color: var(--ink); list-style-position: inside; }
+.lp .offer-fig-details .offer-fig-note { margin-top: .45rem; }
 .lp .offer-fig-link { margin: 0; font-size: .85rem; line-height: 1.5; }
 .lp .offer-fig-link a { font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
 /* Sin cifra: la caja se queda, con borde discontinuo, y dice por qué no hay número. */

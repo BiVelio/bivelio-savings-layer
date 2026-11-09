@@ -1087,6 +1087,7 @@
       "sub": "Beide sind Open Core und beide zählen mit dem Zähler deines Anbieters. Sie tun Unterschiedliches, also verspricht jedes sein Eigenes — und heute hat nur eines eine veröffentlichte Sparzahl.",
       "install": "Installation",
       "installMore": "Vollständige Einrichtung",
+      "figNoteToggle": "Warum diese Zahl — und ihre Grenzen",
       "sdk": {
         "name": "SDK",
         "band": "SDK — für JavaScript- und TypeScript-Apps mit API-Schlüssel",

@@ -1087,6 +1087,7 @@
       "sub": "Ambos são open core e ambos contam com o contador do teu fornecedor. Fazem trabalhos diferentes, por isso cada um faz a sua promessa — e hoje só um tem um número de poupança publicado.",
       "install": "Instalação",
       "installMore": "Instalação completa",
+      "figNoteToggle": "Por que este número e seus limites",
       "sdk": {
         "name": "SDK",
         "band": "SDK — para apps em JavaScript ou TypeScript com chave de API",

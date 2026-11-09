@@ -317,7 +317,10 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
                     condición: «en un flujo donde el 30 % repite». Debajo, la
                     nota de que depende de cuánto repita tu tráfico. */}
                 <FilasMedidas filas={filasMedidas.slice(0, 1)} />
-                <p className="offer-fig-note">{t("offers.sdk.figureNote")}</p>
+                <details className="offer-fig-details">
+                  <summary>{t("offers.figNoteToggle")}</summary>
+                  <p className="offer-fig-note">{t("offers.sdk.figureNote")}</p>
+                </details>
               </div>
               <div className="offer-install">
                 <span className="offer-fig-t">{t("offers.install")}</span>
@@ -346,7 +349,10 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
                 {/* El neto de la rebaja de TTL del banco del 2026-10-03, con su
                     intervalo y su condición en la misma fila. */}
                 <FilasMedidas filas={[filaDeLaPalancaTtl(t, locale)]} />
-                <p className="offer-fig-note">{t("offers.gateway.figureNote")}</p>
+                <details className="offer-fig-details">
+                  <summary>{t("offers.figNoteToggle")}</summary>
+                  <p className="offer-fig-note">{t("offers.gateway.figureNote")}</p>
+                </details>
                 {/* El informe entero, con sus límites, en su sección del banco público. */}
                 <p className="offer-fig-link">
                   <Link href="/benchmarks#gateway-ttl">{t("offers.gateway.benchLink")}</Link>

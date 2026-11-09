@@ -1087,6 +1087,7 @@
       "sub": "Tots dos són open core i tots dos compten amb el comptador del teu proveïdor. Fan feines diferents, així que cadascun fa la seva pròpia promesa — i avui només un té una xifra d'estalvi publicada.",
       "install": "Instal·lació",
       "installMore": "Instal·lació completa",
+      "figNoteToggle": "Per què aquesta xifra i els seus límits",
       "sdk": {
         "name": "SDK",
         "band": "SDK — per a apps en JavaScript o TypeScript amb API key",

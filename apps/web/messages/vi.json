@@ -1087,6 +1087,7 @@
       "sub": "Cả hai đều open core và đều đếm bằng chính bộ đếm của nhà cung cấp. Chúng làm việc khác nhau, nên mỗi cái đưa ra lời hứa riêng — và hôm nay chỉ một cái có con số tiết kiệm được công bố.",
       "install": "Cài đặt",
       "installMore": "Hướng dẫn cài đặt đầy đủ",
+      "figNoteToggle": "Vì sao con số này và giới hạn của nó",
       "sdk": {
         "name": "SDK",
         "band": "SDK — cho ứng dụng JavaScript và TypeScript dùng khóa API",

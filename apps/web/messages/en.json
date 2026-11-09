@@ -1087,6 +1087,7 @@
       "sub": "Both are open core and both count with your provider's own meter. They do different jobs, so each makes its own promise — and today only one of them has a published savings figure.",
       "install": "Install",
       "installMore": "Full setup",
+      "figNoteToggle": "Why this number, and its limits",
       "sdk": {
         "name": "SDK",
         "band": "SDK — for JavaScript and TypeScript apps on an API key",
