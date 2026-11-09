@@ -1160,6 +1160,17 @@ export class SavingsPipeline {
             "the system header carries per-request content (timestamp or UUID): the provider prompt " +
             "cache can never hit on this prefix — move it to the query tail",
         });
+        // Un aviso POR PATRÓN y por proceso (la clave es el patrón, no el texto,
+        // que cambiaría en cada petición y haría saltar el aviso sin parar):
+        // silenciable con `silenceWarnings`, igual que el resto de avisos.
+        for (const f of mutable) {
+          this.avisar(
+            `cache-audit:${f.patron}`,
+            `[bvsala] your system prompt carries per-request content (${f.patron}); the provider prompt ` +
+              "cache can never hit on it, so cache reads you expect are billing as full writes. Move the " +
+              "per-request value to the query tail. (reported once per process)",
+          );
+        }
       }
     }
 
