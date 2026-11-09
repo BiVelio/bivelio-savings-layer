@@ -98,7 +98,7 @@ installed coding agent. The published benchmark, trial by trial, with the raw CS
 is at **[savings.bivelio.com/en/how-it-works](https://savings.bivelio.com/en/how-it-works)**.
 
 📄 **The paper:** [Verifiable Measurement of Cost Savings in LLM Applications
-(open-core edition, v2)](./docs/PAPER.md) — live double-runs, percentile cluster
+(open-core edition, v2.2)](./docs/PAPER.md) — live double-runs, percentile cluster
 bootstrap, four ledgers, and every limitation stated. Also at
 **[savings.bivelio.com/paper](https://savings.bivelio.com/paper)**.
 
@@ -172,8 +172,8 @@ the limits): `cache_control` and its 1-hour TTL, tool search and
 `tool_reference` blocks, the advisor, every `anthropic-beta` value. An armed lever
 changes only what it declares, and a request it cannot rewrite exactly travels
 untouched. A test suite checks this against a fake upstream on every change
-(`test/gateway-no-empeora.test.ts`; the repository is private, so the linked
-section lists exactly what it checks). The gateway also logs, once per session,
+(`test/gateway-no-empeora.test.ts`; the section below lists exactly what it
+checks). The gateway also logs, once per session,
 requests that come out worse than your client asked for: cache markers the
 provider ignored, a 1-hour TTL written at 5 minutes upstream, and tool search off
 (Claude Code turns it off by default behind any proxy, this one included;
