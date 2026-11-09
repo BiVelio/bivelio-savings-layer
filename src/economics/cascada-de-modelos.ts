@@ -208,6 +208,26 @@ export const PARES_POR_DEFECTO: Readonly<Record<string, string>> = {
   "claude-opus-4": "claude-haiku-4-5",
   "claude-sonnet-4": "claude-haiku-4-5",
   "claude-3-5-sonnet": "claude-3-5-haiku",
+  // La frontera 2026 (misma familia, el hermano barato de menor distancia de
+  // capacidad). Los pares de abajo se validan solos contra el catálogo en
+  // `test/cascada-de-modelos.test.ts` («TODOS los pares por defecto son
+  // viables»): si un precio cambia y un par deja de salir a cuenta, el test se
+  // pone rojo en vez de que la tabla mienta.
+  "gpt-5": "gpt-5-mini", // r = 0,20
+  "gpt-5.2": "gpt-5-mini", // r = 0,14
+  "gpt-5.4": "gpt-5.4-mini", // r = 0,30
+  "claude-opus-5": "claude-haiku-4-5", // r = 0,20
+  "claude-opus-5-5": "claude-haiku-4-5", // r = 0,25
+  // AUSENTES A PROPÓSITO, no por olvido:
+  //   · claude-sonnet-5 / claude-sonnet-5-5 → claude-haiku-4-5: r = 0,50 EXACTO.
+  //     El listón de producto (captura 50%) se alcanza solo con CERO escalados:
+  //     no hay margen para el riesgo de calidad, así que no es un par por defecto.
+  //   · gpt-5.5 → gpt-5.4-mini: sí es viable (r = 0,15) pero mete una distancia
+  //     de capacidad frontera→mini mayor que la que se quiere por defecto; quien
+  //     la quiera la declara en `modelCascade.pairs`.
+  //   · Cross-provider (p. ej. claude-sonnet-5 → deepseek-flash, r ≈ 0,15): NO es
+  //     una decisión de coste, es cambiar de integración a espaldas del llamante
+  //     (otro proveedor, otra credencial, otro dialecto). Por defecto nunca.
 };
 
 /** Claves más largas primero, para que gane el prefijo más específico. */
