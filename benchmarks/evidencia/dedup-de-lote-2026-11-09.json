@@ -1,0 +1,35 @@
+{
+  "titulo": "Dedup intra-lote (submit { deduplicate: true }): ejecuciones evitadas",
+  "fecha": "2026-11-09",
+  "metodo": "Proveedor de lotes falso que cuenta las líneas de cada submit. Misma carga sintética enviada con deduplicate false y true; la diferencia de líneas es lo que el proveedor deja de ejecutar (y de facturar, a su tarifa de lote). Sin red; determinista.",
+  "casos": [
+    {
+      "items": 1000,
+      "distintos": 900,
+      "tasaDeDuplicados": "0.100",
+      "ejecucionesSinDedup": 1000,
+      "ejecucionesConDedup": 900,
+      "ejecucionesEvitadas": 100,
+      "tokensDeEntradaEvitados": 3763
+    },
+    {
+      "items": 1000,
+      "distintos": 700,
+      "tasaDeDuplicados": "0.300",
+      "ejecucionesSinDedup": 1000,
+      "ejecucionesConDedup": 700,
+      "ejecucionesEvitadas": 300,
+      "tokensDeEntradaEvitados": 11315
+    },
+    {
+      "items": 1000,
+      "distintos": 500,
+      "tasaDeDuplicados": "0.500",
+      "ejecucionesSinDedup": 1000,
+      "ejecucionesConDedup": 500,
+      "ejecucionesEvitadas": 500,
+      "tokensDeEntradaEvitados": 18874
+    }
+  ],
+  "lectura": "Cada ejecución evitada es una petición que el proveedor no factura. Con un 10% de duplicados se evita el 10% de las ejecuciones y de sus tokens de entrada; con un 30%, el 30%; con un 50%, el 50%. El ahorro es proporcional a la tasa de duplicados de la carga, exactamente, porque la dedup es una identidad (mismo cuerpo → misma respuesta)."
+}
