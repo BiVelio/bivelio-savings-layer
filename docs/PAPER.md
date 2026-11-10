@@ -405,7 +405,7 @@ generalization.
 
 | Model | Input | Output | Cached input | Note |
 | --- | --- | --- | --- | --- |
-| `claude-sonnet-5` | ~2.00 | ~15.00 | 0.20 | Anthropic 1-h cache writes 2× |
+| `claude-sonnet-5` | ~2.00 | ~10.00 | 0.20 | Anthropic 1-h cache writes 2× |
 | `gpt-4o-mini` | 0.15 | 0.60 | 0.075 | OpenAI automatic caching |
 | `deepseek-flash` | 0.30 (peak) | 1.20 | **0.003** | off-peak half; Anthropic-format endpoint |
 | `qwen3.8-flash` | 0.15 | 0.47 | 0.015 | explicit cache, 1.25× writes |

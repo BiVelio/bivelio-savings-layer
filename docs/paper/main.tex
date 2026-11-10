@@ -64,6 +64,8 @@ artifacts.
 usage; prefix caching; semantic caching; cluster bootstrap; evidence labels; open core;
 model routing; measurement methodology.
 
+\clearpage
+
 \section{Introduction}\label{sec:intro}
 
 \subsection{Problem}
@@ -346,6 +348,11 @@ Status & \texttt{measured} (live) & \texttt{reference} (counterfactual) \\
 \caption{Experimental design.}
 \end{table}
 
+Workload construction: GSM8K~\cite{gsm8k} questions are grouped into families by a
+template; within a family, 30\,\% of requests repeat exactly and 20\,\% are paraphrases,
+which is the regime in which the layer's mechanisms are expected to act. The benchmark
+publishes each trial individually, with its raw CSV, and not only the aggregate.
+
 \section{Results}\label{sec:results}
 
 \begin{table}[h]
@@ -384,7 +391,7 @@ edition's development.
 \toprule
 Model & Input & Output & Cached input & Note \\
 \midrule
-\texttt{claude-sonnet-5} & $\sim$2.00 & $\sim$15.00 & 0.20 & 1-h cache writes 2$\times$ \\
+\texttt{claude-sonnet-5} & $\sim$2.00 & $\sim$10.00 & 0.20 & 1-h cache writes 2$\times$ \\
 \texttt{gpt-4o-mini} & 0.15 & 0.60 & 0.075 & automatic caching \\
 \texttt{deepseek-flash} & 0.30 (peak) & 1.20 & \textbf{0.003} & off-peak half; Anthropic-format endpoint \\
 \texttt{qwen3.8-flash} & 0.15 & 0.47 & 0.015 & explicit cache, 1.25$\times$ writes \\
