@@ -619,7 +619,7 @@ export const BLOQUES: Bloque[] = [
       [
         "`claude-sonnet-5`",
         "~2.00",
-        "~15.00",
+        "~10.00",
         "0.20",
         "Anthropic 1-h cache writes 2×"
       ],
