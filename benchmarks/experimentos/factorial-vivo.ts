@@ -24,19 +24,33 @@ import { AnthropicProvider, createSavingsLayer, TokenizerRegistry, type SavingsR
 
 const OUT = process.env.BVSALA_EXP_OUT ?? "evidencia-factorial-vivo";
 
+// Un manual NEUTRO: la política declina la caché exacta si el texto lleva
+// marcadores personales («account», «subscription»…) o de frescura («today»…),
+// y el factorial mide la dedup, no ese guardarraíl. Estable, determinista y
+// ~1500 tokens (por encima del mínimo cacheable).
+const FRAGMENTOS = [
+  "answers are one paragraph long",
+  "definitions state the category and one example",
+  "comparisons list three differences before any similarity",
+  "science answers include the unit of measure",
+  "history answers name the century",
+  "geography answers name the continent",
+  "numbers under twenty are written out in words",
+  "acronyms are expanded on first use",
+  "the shorter of two correct phrasings is preferred",
+  "never add a caveat the question did not ask for",
+];
 function manual(sal: string): string {
   const reglas: string[] = [];
   for (let i = 1; i <= 60; i++) {
     reglas.push(
-      `Rule ${i}. Invoices are issued on the first business day of each month and cover the period from the previous invoice; ` +
-        `a customer with a pending payment of over ${(i * 37) % 90 + 10} days receives a reminder by email at day ${i % 4 + 2} of the grace window, ` +
-        `and the account is suspended only after two reminders unless the balance is below the threshold of ${i * 2}.50 EUR; ` +
-        `disputes about invoice line items must be filed within ${i % 3 + 1}0 days of the invoice date and are resolved within five business days.`,
+      `Rule ${i}. ${FRAGMENTOS[(i - 1) % FRAGMENTOS.length]}; clause ${i} adds that an answer mentions the field named in the question when there is one, and ` +
+        `a rule numbered ${(i * 7) % 60 + 1} applies only when the question is about classification or ordering.`,
     );
   }
   return (
-    `You are a billing support assistant for a SaaS company (${sal} division). You answer with the company handbook, which is this system prompt. ` +
-    "Never invent policy; if the handbook does not cover the case, say 'not covered by the handbook'. " +
+    `You are a general-knowledge assistant (${sal} wing). You answer from this handbook, which is the system prompt. ` +
+    "If the handbook does not cover the case, say 'not covered by the handbook'. " +
     "The handbook:\n\n" +
     reglas.join("\n")
   );
