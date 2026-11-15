@@ -494,6 +494,7 @@
     "SavingsResult.toolCalls": "estable",
     "SavingsStreamOptions.requestTimeoutMs": "estable",
     "SavingsStreamOptions.signal": "estable",
+    "SavingsToggles.cachePrefix": "estable",
     "SavingsToggles.compression": "estable",
     "SavingsToggles.deferrable": "estable",
     "SavingsToggles.deterministicResolvers": "estable",
