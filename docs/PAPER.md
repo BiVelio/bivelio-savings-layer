@@ -526,6 +526,13 @@ zero additional failures give a one-sided 95 % upper bound `1 − 0.05^(1/24) = 
 probability of an additional failure (baseline correct and cascade incorrect). This illustration is
 not a retrospective non-inferiority test of the present selected trivia set.
 
+Following this review, a corrected exploratory re-run (15 November 2026) replaced the grader
+with an exact normalized match against per-question declared acceptance sets and published the
+individual answers of both arms. It records 24/24 accepted answers in each arm, 23/24 normalized
+agreement, costs $0.064568 and $0.020718 (−67.91 %), and zero escalations (artifact:
+`benchmarks/evidencia/cascada-piloto-corregido-2026-11-15.json`). This is a regradeable
+exploratory pilot, not a non-inferiority test; the caveats above remain in force.
+
 ## 7 · Economic scope and deployment implications
 
 Model price comparisons are conditional arithmetic. Cross-model savings require complete usage,
