@@ -4,7 +4,7 @@
 
 Joan-Marc Fisa · Founder, BiVelio Inc · jmfisa@bivelio.com · https://savings.bivelio.com
 
-**Preprint · November 2026 (v2.2, open-core release 1.1.0) · Technical report**
+**Preprint · November 2026 (v2.3, open-core release 1.2.0) · Technical report**
 
 Supersedes the August 2026 edition ("BV-SALA Savings Layer: Verifiable Measurement of
 Cost Savings in Large Language Model Applications",

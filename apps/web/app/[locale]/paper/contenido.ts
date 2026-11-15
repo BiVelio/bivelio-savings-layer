@@ -1136,5 +1136,5 @@ export const CABECERA = {
   "afiliacion": "Founder, BiVelio Inc",
   "email": "jmfisa@bivelio.com",
   "fecha": "November 2026",
-  "version": "Preprint v2.2 · open-core release 1.1.0"
+  "version": "Preprint v2.3 · open-core release 1.2.0"
 } as const;
