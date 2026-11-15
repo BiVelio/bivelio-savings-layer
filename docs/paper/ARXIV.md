@@ -2,7 +2,8 @@
 
 El fuente (`main.tex`) es **arXiv-ready**: un solo fichero, solo paquetes estándar
 de TeX Live, sin imágenes ni `.bib` (la bibliografía va con `thebibliography`).
-El PDF compilado es `main.pdf` (12 páginas). Solo falta tu cuenta.
+El PDF compilado es `main.pdf` (15 páginas; portada con título, autores, abstract
+y keywords, Introducción en la página 2). Solo falta tu cuenta.
 
 ## 1 · Cuenta y endorsement (una sola vez)
 
