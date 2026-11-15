@@ -53,9 +53,24 @@ function normalizar(s: string): string {
   return s.toLowerCase().replace(/[^a-z0-9]/g, " ").replace(/\s+/g, " ").trim();
 }
 
+// Nombres de número → la cifra dorada. El juez es un match EXACTO normalizado:
+// `includes` admitía «Not Paris» para «paris», «12» para «2» y «20» para «0»
+// (hallazgo del informe de revisión 2026-11-15). Las respuestas cerradas se
+// aceptan solo si normalizadas son IGUALES a la dorada o a una equivalencia
+// declarada.
+const EQUIVALENCIAS: Record<string, string> = {
+  seven: "7",
+  two: "2",
+  zero: "0",
+  six: "6",
+  twelve: "12",
+  "one hundred and twenty": "120",
+  "one hundred twenty": "120",
+};
+
 function acierta(respuesta: string, dorada: string): boolean {
   const n = normalizar(respuesta);
-  return n.includes(dorada) || n.startsWith(dorada);
+  return n === dorada || EQUIVALENCIAS[n] === dorada;
 }
 
 function peticion(texto: string, cascade: boolean): SavingsRequest {
@@ -123,13 +138,25 @@ async function main() {
     if (normalizar(respuestasA[i]!) === normalizar(respuestasB[i]!)) acuerdo += 1;
   }
 
+  // Las RESPUESTAS INDIVIDUALES se publican: sin ellas, los aciertos no se
+  // pueden regradar de forma independiente (hallazgo del informe de revisión).
+  const respuestas = PREGUNTAS.map((p, i) => ({
+    pregunta: p.q,
+    dorada: p.dorada,
+    A: respuestasA[i]!,
+    B: respuestasB[i]!,
+    aciertaA: acierta(respuestasA[i]!, p.dorada),
+    aciertaB: acierta(respuestasB[i]!, p.dorada),
+  }));
+
   const evidencia = {
-    titulo: "No-inferioridad de la cascada — en vivo, coste y calidad",
+    titulo: "Cascada: coste y calidad — piloto exploratorio (juez exacto normalizado)",
     fecha: new Date().toISOString().slice(0, 10),
     metodo:
       `${PREGUNTAS.length} preguntas de respuesta única con lista dorada, ${MODELO} (cascada por defecto a su hermano barato), temperature 0. ` +
       "Arm A: siempre el fuerte. Arm B: modelCascade on (enruta al barato, escala si la verja rechaza). Calidad contra la lista dorada " +
-      "y acuerdo entre brazos; coste con el contador del proveedor.",
+      "con un juez de match EXACTO normalizado (con equivalencias de números escritos); acuerdo entre brazos; coste con el contador del " +
+      "proveedor. Las respuestas individuales de ambos brazos se publican para su regrado independiente.",
     casos: [
       { brazo: "A · sin cascada", costeUsd: redondear(costeA), aciertosDorados: aciertosA, de: PREGUNTAS.length },
       {
@@ -142,10 +169,12 @@ async function main() {
         acuerdoConA: acuerdo,
       },
     ],
+    respuestas,
     lectura:
-      "La cascada promete lo que su verja certifica (la forma, no la verdad): la no-inferioridad se lee en los aciertos " +
-      "dorados de B frente a A con su margen, en el acuerdo entre brazos y en el coste. Lo que la verja NO puede ver es el " +
-      "falso-válido — el barato contesta distinto y pasa la forma — y este experimento lo mide directamente.",
+      "PILOTO EXPLORATORIO, no una prueba de no-inferioridad (sin margen δ ni diseño de potencia prespecificado; el conjunto es " +
+      "trivia seleccionada). El juez corrige el fallo del informe de revisión 2026-11-15: ya no acepta subcadenas («Not Paris», " +
+      "«12» para «2»). La verja de la cascada certifica la forma, no la verdad; este piloto mide el acuerdo factual de forma " +
+      "exploratoria y publica cada respuesta para que cualquiera pueda regradar.",
   };
   mkdirSync(join(process.cwd(), OUT), { recursive: true });
   const ruta = join(process.cwd(), OUT, "no-inferioridad-vivo.json");

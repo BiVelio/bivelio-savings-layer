@@ -96,4 +96,49 @@ describe("reordenarPrefijoCacheable", () => {
     const b = reordenarPrefijoCacheable(texto);
     expect(a).toEqual(b);
   });
+
+  // ── EL GUARDIA ESTRUCTURAL (revisión previa a publicación, 2026-11-15) ──
+
+  it("se ABSTIENE ante una propiedad ISO dentro de un bloque JSON multilínea", () => {
+    const json = [
+      "You are an assistant that reads the following document:",
+      "{",
+      '  "order_id": 1042,',
+      '  "created_at": "2026-11-15T10:00:00Z",',
+      '  "lines": [1, 2]',
+      "}",
+    ].join("\n");
+    // Mover «created_at» fuera de las llaves dejaría el JSON inválido.
+    expect(reordenarPrefijoCacheable(json)).toBeNull();
+  });
+
+  it("se ABSTIENE ante un timestamp dentro de una cerca de código JSON", () => {
+    const conCerca = [
+      "Here is the context:",
+      "```json",
+      '{ "created_at": "2026-11-15T10:00:00Z", "n": 3 }',
+      "```",
+      "Answer briefly.",
+    ].join("\n");
+    expect(reordenarPrefijoCacheable(conCerca)).toBeNull();
+  });
+
+  it("se ABSTIENE ante un timestamp dentro de una etiqueta XML", () => {
+    const xml = ["<document>", "  <created>2026-11-15T10:00:00Z</created>", "  <body>text</body>", "</document>"].join("\n");
+    expect(reordenarPrefijoCacheable(xml)).toBeNull();
+  });
+
+  it("mueve la línea mutable cuando queda FUERA de la estructura", () => {
+    const mixto = [
+      "Rules:",
+      "{",
+      '  "static": true',
+      "}",
+      "Generated at 2026-11-15T10:00:00Z.",
+      "Be brief.",
+    ].join("\n");
+    const r = reordenarPrefijoCacheable(mixto)!;
+    expect(r.texto).toBe("Rules:\n{\n  \"static\": true\n}\nBe brief.\nGenerated at 2026-11-15T10:00:00Z.");
+    expect(r.patrones).toEqual(["iso-timestamp"]);
+  });
 });
