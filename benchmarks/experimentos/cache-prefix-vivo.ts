@@ -27,18 +27,26 @@ const N = Number(process.env.BVSALA_EXP_N ?? 20);
 const MODELO = process.env.BVSALA_EXP_MODEL ?? "anthropic/claude-haiku-4-5";
 const OUT = process.env.BVSALA_EXP_OUT ?? "evidencia-cache-prefix-vivo";
 
-const PLANTILLA_ESTABLE = [
-  "You are a billing support assistant for a SaaS company.",
-  "Rules:",
-  "1. Answer in exactly one sentence.",
-  "2. Cite the policy number that applies.",
-  "3. Never invent a discount: the only discounts are EARLY (10%, plan BP-2026-01) and ANNUAL (20%, plan BP-2026-02).",
-  "4. Refunds follow policy R-2026-03: full within 14 days, prorated after.",
-  "5. Plan changes take effect at the start of the next billing cycle (policy PC-2026-04).",
-  "6. If the question is outside billing, say 'outside billing scope'.",
-  "7. Be polite and concise; do not repeat the rules.",
-  "Your handbook is attached below in the user turn.",
-].join("\n");
+// El prefijo estable tiene que superar el MÍNIMO CACHEABLE del proveedor
+// (Anthropic: ~1024 tokens en Haiku): por debajo, el `cache_control` se ignora
+// y no hay ni escritura ni lectura. Un manual de política largo y determinista
+// (~1500 tokens) deja la comparación limpia: brazo A escribe el manual entero
+// con el timestamp dentro; brazo B cachea el manual estable y solo el
+// timestamp viaja fuera.
+const REGLAS: string[] = [];
+for (let i = 1; i <= 60; i++) {
+  REGLAS.push(
+    `Rule ${i}. Invoices are issued on the first business day of each month and cover the period from the previous invoice; ` +
+      `a customer with a pending payment of over ${(i * 37) % 90 + 10} days receives a reminder by email at day ${i % 4 + 2} of the grace window, ` +
+      `and the account is suspended only after two reminders unless the balance is below the threshold of ${i * 2}.50 EUR; ` +
+      `disputes about invoice line items must be filed within ${i % 3 + 1}0 days of the invoice date and are resolved within five business days.`,
+  );
+}
+const PLANTILLA_ESTABLE =
+  "You are a billing support assistant for a SaaS company. You answer with the company handbook, which is this system prompt. " +
+  "Never invent policy; if the handbook does not cover the case, say 'not covered by the handbook'. " +
+  "The handbook:\n\n" +
+  REGLAS.join("\n");
 
 function sistema(ts: string): string {
   return `${PLANTILLA_ESTABLE}\nGenerated at ${ts}.`;
