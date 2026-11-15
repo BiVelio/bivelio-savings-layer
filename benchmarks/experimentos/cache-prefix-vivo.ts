@@ -63,6 +63,8 @@ interface FilaDeBrazo {
   cacheWrite: number;
   output: number;
   costeUsd: number;
+  nativoPresente: number;
+  trazasDePrefijo: Record<string, unknown>[];
 }
 
 async function brazo(cachePrefix: boolean): Promise<FilaDeBrazo> {
@@ -73,7 +75,7 @@ async function brazo(cachePrefix: boolean): Promise<FilaDeBrazo> {
     }),
     tokenizer: new TokenizerRegistry(),
   });
-  const fila: FilaDeBrazo = { input: 0, cacheRead: 0, cacheWrite: 0, output: 0, costeUsd: 0 };
+  const fila: FilaDeBrazo = { input: 0, cacheRead: 0, cacheWrite: 0, output: 0, costeUsd: 0, nativoPresente: 0, trazasDePrefijo: [] };
   for (let i = 0; i < N; i++) {
     // El MISMO timestamp en los dos brazos: comparación pareada.
     const ts = new Date(Date.UTC(2026, 10, 15, 10, 0, 0, i)).toISOString();
@@ -85,6 +87,13 @@ async function brazo(cachePrefix: boolean): Promise<FilaDeBrazo> {
     if (nativo?.basis === "measured") {
       fila.cacheRead += nativo.cacheReadTokens;
       fila.cacheWrite += nativo.cacheWriteTokens;
+      fila.nativoPresente += 1;
+    }
+    // Las trazas del prefijo de la PRIMERA petición: dicen por qué marcó o no.
+    if (i === 0) {
+      fila.trazasDePrefijo = r.report.traces
+        .filter((t) => t.stage.startsWith("prefix-cache") || t.stage === "cache-prefix")
+        .map((t) => ({ stage: t.stage, outcome: t.outcome, detail: t.detail }));
     }
   }
   return fila;

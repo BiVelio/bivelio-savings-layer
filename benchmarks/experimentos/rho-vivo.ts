@@ -60,7 +60,8 @@ function peticion(texto: string, exactCache: boolean): SavingsRequest {
     messages: [{ role: "user", content: texto }],
     maxOutputTokens: 24,
     temperature: 0,
-    savings: { exactCache },
+    // Sin resolutores locales: la curva mide SOLO la caché exacta.
+    savings: { exactCache, deterministicResolvers: false },
   } as SavingsRequest;
 }
 
@@ -68,17 +69,19 @@ async function main() {
   if (!process.env.BVSALA_DEMO_OPENAI_API_KEY) {
     throw new Error("BVSALA_DEMO_OPENAI_API_KEY no está: sin clave no hay contador real.");
   }
-  const capa = createSavingsLayer({
-    provider: new OpenAICompatibleProvider({
-      apiKey: process.env.BVSALA_DEMO_OPENAI_API_KEY!,
-      baseUrl: process.env.BVSALA_DEMO_OPENAI_BASE_URL ?? "https://api.openai.com/v1",
-    }),
-    tokenizer: new TokenizerRegistry(),
-  });
+  // UNA capa NUEVA por ρ: la caché exacta es por proceso, y compartirla entre
+  // niveles contaría como aciertos de una ρ las únicas de la anterior.
   const unicas = preguntasUnicas();
 
   const filas: unknown[] = [];
   for (const rho of RHOS) {
+    const capa = createSavingsLayer({
+      provider: new OpenAICompatibleProvider({
+        apiKey: process.env.BVSALA_DEMO_OPENAI_API_KEY!,
+        baseUrl: process.env.BVSALA_DEMO_OPENAI_BASE_URL ?? "https://api.openai.com/v1",
+      }),
+      tokenizer: new TokenizerRegistry(),
+    });
     const flujoDePreguntas = flujo(unicas, rho);
     // Arm A: MISMA instrumentación, con la caché exacta apagada: todo al proveedor.
     let costeA = 0;
