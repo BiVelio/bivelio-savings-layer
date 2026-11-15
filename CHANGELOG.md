@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.2.0 — cache-aware prompt management, cross-provider shadow, live evidence
 
 ### Added
 
@@ -9,9 +9,16 @@
   ms/s) move to the end of the header, and only the stable part is declared as the cache
   prefix — the provider's prefix cache can hit where a mutable token used to force a full
   miss plus a paid write on every call. The `cache-prefix` trace reports what moved; the
-  saving stays the provider's. Deterministic benchmark (`pnpm cache-prefix:banco`):
-  1,000 requests with a per-request timestamp → 1,000 distinct cacheable prefixes without
-  the reorder vs. one identical prefix with it (100 % stable).
+  saving stays the provider's. **Live A/B** (claude-haiku-4-5): 0 % → 95 % hit-rate,
+  −82.8 % per request, measured with the provider's cache counters.
+- **Cross-provider shadow** (`savings.crossProviderShadow: true`, measure-only): what
+  THIS request's measured usage would have cost on DeepSeek/Qwen/GLM at list prices,
+  published as `report.crossProviderShadow` (`basis: "shadow"`). Nothing is routed or
+  billed; the alternative's quality is what the cascade's gate certifies.
+- **Live experiments of the preregistered roadmap** (`pnpm` via the `experimentos.yml`
+  workflow): the ρ curve (14.7 % / 23.7 %), the dedup × cache_control factorial (85.9 %
+  with attribution) and the cascade non-inferiority (67.9 %, no quality loss on a golden
+  list). Evidence in `benchmarks/evidencia/*-2026-11-15.json`; paper §6.6–6.9.
 
 ## 1.1.1 — corrected packaging text
 
