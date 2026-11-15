@@ -14,10 +14,13 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { OpenAICompatibleProvider, createSavingsLayer, TokenizerRegistry, type SavingsRequest } from "../../src/index.js";
+import { AnthropicProvider, createSavingsLayer, TokenizerRegistry, type SavingsRequest } from "../../src/index.js";
 
 const OUT = process.env.BVSALA_EXP_OUT ?? "evidencia-no-inferioridad-vivo";
-const MODELO = process.env.BVSALA_EXP_NI_MODELO ?? "openai/gpt-5";
+// El par por defecto de la cascada: opus-5-5 → haiku-4-5. Anthropic acepta
+// temperature 0 (gpt-5 no: solo admite su default 1), y la comparación A/B
+// necesita muestreo determinista.
+const MODELO = process.env.BVSALA_EXP_NI_MODELO ?? "anthropic/claude-opus-5-5";
 
 const PREGUNTAS: { q: string; dorada: string }[] = [
   { q: "What is the capital of France?", dorada: "paris" },
@@ -74,14 +77,14 @@ function respuestaDe(r: { data?: unknown; text: string }): string {
 }
 
 async function main() {
-  if (!process.env.BVSALA_DEMO_OPENAI_API_KEY) {
-    throw new Error("BVSALA_DEMO_OPENAI_API_KEY no está: sin clave no hay contador real.");
+  if (!process.env.BVSALA_DEMO_ANTHROPIC_API_KEY) {
+    throw new Error("BVSALA_DEMO_ANTHROPIC_API_KEY no está: sin clave no hay contador real.");
   }
   const hacerCapa = () =>
     createSavingsLayer({
-      provider: new OpenAICompatibleProvider({
-        apiKey: process.env.BVSALA_DEMO_OPENAI_API_KEY!,
-        baseUrl: process.env.BVSALA_DEMO_OPENAI_BASE_URL ?? "https://api.openai.com/v1",
+      provider: new AnthropicProvider({
+        apiKey: process.env.BVSALA_DEMO_ANTHROPIC_API_KEY!,
+        baseUrl: process.env.BVSALA_DEMO_ANTHROPIC_BASE_URL ?? "https://api.anthropic.com/v1",
       }),
       tokenizer: new TokenizerRegistry(),
     });

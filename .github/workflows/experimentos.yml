@@ -103,8 +103,8 @@ jobs:
     timeout-minutes: 30
     env:
       BVSALA_DEV_OPEN: "1"
-      BVSALA_DEMO_OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      BVSALA_DEMO_OPENAI_BASE_URL: https://api.openai.com/v1
+      BVSALA_DEMO_ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      BVSALA_DEMO_ANTHROPIC_BASE_URL: https://api.anthropic.com/v1
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
