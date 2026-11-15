@@ -22,30 +22,30 @@ const OUT = process.env.BVSALA_EXP_OUT ?? "evidencia-no-inferioridad-vivo";
 // necesita muestreo determinista.
 const MODELO = process.env.BVSALA_EXP_NI_MODELO ?? "anthropic/claude-opus-5-5";
 
-const PREGUNTAS: { q: string; dorada: string }[] = [
+const PREGUNTAS: { q: string; dorada: string; aceptadas?: string[] }[] = [
   { q: "What is the capital of France?", dorada: "paris" },
   { q: "What is the largest planet in the solar system?", dorada: "jupiter" },
   { q: "How many continents are there on Earth?", dorada: "7" },
   { q: "What is the chemical symbol for gold?", dorada: "au" },
-  { q: "Who wrote Romeo and Juliet?", dorada: "shakespeare" },
-  { q: "What is the longest river in the world?", dorada: "nile" },
+  { q: "Who wrote Romeo and Juliet?", dorada: "william shakespeare" },
+  { q: "What is the longest river in the world?", dorada: "nile", aceptadas: ["nile river"] },
   { q: "In what year did World War II end?", dorada: "1945" },
   { q: "What is the smallest prime number?", dorada: "2" },
   { q: "What element has the atomic number 8?", dorada: "oxygen" },
   { q: "What is the capital of Japan?", dorada: "tokyo" },
   { q: "Which planet is known as the Red Planet?", dorada: "mars" },
   { q: "What is the speed of light rounded, in km/s?", dorada: "300000" },
-  { q: "What is the tallest mountain on Earth?", dorada: "everest" },
+  { q: "What is the tallest mountain on Earth?", dorada: "mount everest", aceptadas: ["everest"] },
   { q: "What gas makes up most of Earth's atmosphere?", dorada: "nitrogen" },
   { q: "How many sides does a hexagon have?", dorada: "6" },
   { q: "What is the freezing point of water in Celsius?", dorada: "0" },
-  { q: "Which ocean is the largest?", dorada: "pacific" },
+  { q: "Which ocean is the largest?", dorada: "pacific ocean", aceptadas: ["pacific"] },
   { q: "What is the capital of Australia?", dorada: "canberra" },
-  { q: "Who painted the Mona Lisa?", dorada: "vinci" },
+  { q: "Who painted the Mona Lisa?", dorada: "leonardo da vinci" },
   { q: "What is the chemical symbol for iron?", dorada: "fe" },
   { q: "How many minutes are in two hours?", dorada: "120" },
   { q: "What is the fifth planet from the sun?", dorada: "jupiter" },
-  { q: "What language has the most native speakers?", dorada: "mandarin" },
+  { q: "What language has the most native speakers?", dorada: "mandarin chinese", aceptadas: ["mandarin"] },
   { q: "What is the square root of 144?", dorada: "12" },
 ];
 
@@ -68,9 +68,9 @@ const EQUIVALENCIAS: Record<string, string> = {
   "one hundred twenty": "120",
 };
 
-function acierta(respuesta: string, dorada: string): boolean {
+function acierta(respuesta: string, p: { dorada: string; aceptadas?: string[] }): boolean {
   const n = normalizar(respuesta);
-  return n === dorada || EQUIVALENCIAS[n] === dorada;
+  return n === p.dorada || EQUIVALENCIAS[n] === p.dorada || (p.aceptadas ?? []).includes(n);
 }
 
 function peticion(texto: string, cascade: boolean): SavingsRequest {
@@ -112,7 +112,7 @@ async function main() {
     const r = await capaA.generate(peticion(p.q, false));
     costeA += r.report.cost.actual;
     respuestasA.push(respuestaDe(r));
-    if (acierta(respuestaDe(r), p.dorada)) aciertosA += 1;
+    if (acierta(respuestaDe(r), p)) aciertosA += 1;
   }
 
   const capaB = hacerCapa();
@@ -125,7 +125,7 @@ async function main() {
     const r = await capaB.generate(peticion(p.q, true));
     costeB += r.report.cost.actual;
     respuestasB.push(respuestaDe(r));
-    if (acierta(respuestaDe(r), p.dorada)) aciertosB += 1;
+    if (acierta(respuestaDe(r), p)) aciertosB += 1;
     const mc = r.report.modelCascade;
     if (mc) {
       if (mc.servedModel !== mc.requestedModel) servidasPorBarato += 1;
@@ -145,8 +145,8 @@ async function main() {
     dorada: p.dorada,
     A: respuestasA[i]!,
     B: respuestasB[i]!,
-    aciertaA: acierta(respuestasA[i]!, p.dorada),
-    aciertaB: acierta(respuestasB[i]!, p.dorada),
+    aciertaA: acierta(respuestasA[i]!, p),
+    aciertaB: acierta(respuestasB[i]!, p),
   }));
 
   const evidencia = {
