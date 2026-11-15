@@ -42,19 +42,22 @@ function manual(sal: string): string {
   );
 }
 
+// Impersonales a propósito: la política declina la caché exacta en peticiones
+// personalizadas («my account», «my invoice»…), y el factorial mide la dedup,
+// no ese guardarraíl.
 const PREGUNTAS = [
-  "Can I change from monthly to annual billing mid-cycle?",
-  "Where do I find my invoice history?",
-  "What happens if my payment fails twice?",
-  "Do you issue credit notes for overpayments?",
-  "How does the prorated refund work after day 14?",
-  "Can I add a second payment method?",
-  "What currency do you invoice in?",
-  "How do I cancel without losing my data?",
-  "Is there a discount for nonprofits?",
-  "What is the VAT treatment for EU customers?",
-  "Can I pause my subscription for a month?",
-  "Who can I email about a billing dispute?",
+  "What is the capital of France?",
+  "How many legs does a spider have?",
+  "Which planet is closest to the sun?",
+  "What is the chemical symbol for water?",
+  "Which is bigger: an elephant or a mouse?",
+  "How many continents are there?",
+  "What color is the sky on a clear day?",
+  "In which organ is insulin produced?",
+  "What is the boiling point of water in Celsius?",
+  "Which language has the most native speakers?",
+  "What gas do plants absorb from the air?",
+  "How many minutes are in three hours?",
 ];
 
 function peticion(sal: string, texto: string, savings: Record<string, unknown>): SavingsRequest {
@@ -123,10 +126,11 @@ async function main() {
   if (!process.env.BVSALA_DEMO_ANTHROPIC_API_KEY) {
     throw new Error("BVSALA_DEMO_ANTHROPIC_API_KEY no está: sin clave no hay contador real.");
   }
-  const A = await celda("A · ni dedup ni marcado", "North", 0, { exactCache: false });
-  const B = await celda("B · solo marcado", "East", 4, { exactCache: false });
-  const C = await celda("C · solo dedup", "South", 0, {});
-  const D = await celda("D · ambos (la capa)", "West", 4, {});
+  // Sin resolutores locales: el factorial mide SOLO la dedup de la caché exacta.
+  const A = await celda("A · ni dedup ni marcado", "North", 0, { exactCache: false, deterministicResolvers: false });
+  const B = await celda("B · solo marcado", "East", 4, { exactCache: false, deterministicResolvers: false });
+  const C = await celda("C · solo dedup", "South", 0, { deterministicResolvers: false });
+  const D = await celda("D · ambos (la capa)", "West", 4, { deterministicResolvers: false });
 
   const coste = (c: Fila) => c.costeUsd;
   const evidencia = {
