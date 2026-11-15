@@ -40,7 +40,11 @@ three analyses that the August edition identified as missing: (i) a routing-econ
 gradient at versioned list prices across DeepSeek, Qwen and GLM siblings, presented as
 conditional arithmetic rather than as measured savings; (ii) a semantic-cache
 positioning against the published AWS benchmark and GPTCache; and (iii) a preregistered
-research roadmap specifying factorial and non-inferiority designs. No invoice
+research roadmap specifying factorial and non-inferiority designs — now executed live: a
+cacheable-prefix reorder lifts a poisoned prompt cache from 0 % to 95 % hit-rate (an
+82.8 % per-request cost reduction), a 2×2 dedup × cache_control factorial yields an
+85.9 % total reduction with measured attribution, and a cascade non-inferiority run cuts
+cost 67.9 % with no quality loss on a golden list. No invoice
 reconciliation is claimed. Every number in this paper is reproducible from artifacts in
 the public repository or from the public bench.
 
