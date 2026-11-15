@@ -261,6 +261,20 @@ export interface SavingsToggles {
    * stable, the request travels exactly as written.
    */
   cachePrefix?: boolean;
+  /**
+   * OPT-IN, MEASURE-ONLY, COSTS NOTHING. Evaluate what THIS request's measured
+   * usage would have cost on the cheaper models of other providers (DeepSeek,
+   * Qwen, GLM) at versioned list prices, and publish it as
+   * `report.crossProviderShadow` with `basis: "shadow"`.
+   *
+   * NOTHING IS ROUTED OR BILLED. Routing to another provider is a decision of
+   * integration, not of cost, and the layer never takes it silently; this lever
+   * only shows the number against your provider's own counter, so you can decide.
+   * The figure is hypothetical: it never enters `cost.*`, is never part of any
+   * commission base, and says nothing about the alternative model's QUALITY on
+   * this task — that is what the cascade's gate certifies before real routing.
+   */
+  crossProviderShadow?: boolean;
   serialization?: boolean | "auto";
   singleflight?: boolean;
   deterministicResolvers?: boolean;
@@ -1538,8 +1552,28 @@ export interface SavingsReport {
    */
   measure?: MeasureReport;
 
+  /**
+   * Present only when `savings.crossProviderShadow: true`: what THIS request's
+   * measured usage would have cost on the cheaper models of other providers, at
+   * versioned list prices. Pure arithmetic on the provider's counter; nothing
+   * is routed or billed, and `basis` is always `"shadow"` (never in `cost.*`,
+   * never in any commission base).
+   */
+  crossProviderShadow?: SombraCrossProviderReport;
+
   /** Ordered pipeline decision breadcrumbs, for debugging and audit. */
   traces: TraceEvent[];
+}
+
+/** The hypothetical cost of the same measured usage on other providers' cheap models. */
+export interface SombraCrossProviderReport {
+  /** The model that actually served this request (id of catalog). */
+  servido: string;
+  /** Its measured cost (`cost.actual`), USD. */
+  servidoUsd: number;
+  /** The alternatives, cheapest first; `ratio` < 1 saves, > 1 says it is not cheaper. */
+  alternativas: { model: string; listPriceUsd: number; ratio: number }[];
+  basis: "shadow";
 }
 
 /**
