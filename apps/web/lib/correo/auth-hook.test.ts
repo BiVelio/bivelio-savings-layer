@@ -1,7 +1,15 @@
 import { createHmac } from "node:crypto";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 
-import { verificarFirma, elegirProducto, idiomaDe, construirEnlace } from "./auth-hook";
+import {
+  verificarFirma,
+  elegirProducto,
+  elegirMarca,
+  idiomaDe,
+  construirEnlace,
+  callbackPorDefecto,
+  VAR_CALLBACK_PRIVACY,
+} from "./auth-hook";
 import { componerCorreoAuth, juegoPara } from "./auth-plantillas";
 import { IDIOMAS } from "./invitacion";
 
@@ -72,6 +80,113 @@ describe("elegirProducto — por el dominio del redirect", () => {
     expect(elegirProducto("https://app.bivelio.com")).toBe("gpos");
     expect(elegirProducto(null)).toBe("gpos");
   });
+
+  it("shield.bivelio.com y sus previews son el producto privacy (BiVelio Shield), no GPOS", () => {
+    expect(elegirProducto("https://shield.bivelio.com/auth/callback?next=/en/dashboard")).toBe("privacy");
+    expect(elegirProducto("https://SHIELD.bivelio.com/auth/callback")).toBe("privacy");
+    expect(elegirProducto("https://shield.bivelio.com")).toBe("privacy");
+    expect(elegirProducto("https://bivelio-shield-git-rama-x.vercel.app/auth/callback")).toBe("privacy");
+  });
+
+  it("privacy.bivelio.com y sus previews siguen exactamente igual", () => {
+    expect(elegirProducto("https://privacy.bivelio.com/auth/callback?next=/es/dashboard")).toBe("privacy");
+    expect(elegirProducto("https://privacy.bivelio.com")).toBe("privacy");
+    expect(elegirProducto("https://bivelio-privacy-gateway-git-rama-x.vercel.app/auth/callback")).toBe("privacy");
+  });
+
+  it("un dominio desconocido sigue cayendo en GPOS, como hasta hoy", () => {
+    expect(elegirProducto("https://desconocido.example/auth/callback")).toBe("gpos");
+    expect(elegirProducto("https://otra.bivelio.com/auth/callback")).toBe("gpos");
+    expect(elegirProducto("")).toBe("gpos");
+  });
+});
+
+describe("el callback por defecto de privacy — el interruptor del día del cambio", () => {
+  const SHIELD = "https://shield.bivelio.com/auth/callback";
+  afterEach(() => vi.restoreAllMocks());
+
+  it("sin la variable (hoy) sigue siendo privacy.bivelio.com", () => {
+    expect(callbackPorDefecto("privacy", {})).toBe("https://privacy.bivelio.com/auth/callback");
+    expect(construirEnlace("privacy", "", "th_d", "signup", {})).toBe(
+      "https://privacy.bivelio.com/auth/callback?token_hash=th_d&type=signup",
+    );
+  });
+
+  it("con la variable a shield, un redirect vacío o roto cae en shield", () => {
+    const env = { [VAR_CALLBACK_PRIVACY]: SHIELD };
+    expect(callbackPorDefecto("privacy", env)).toBe(SHIELD);
+    expect(construirEnlace("privacy", "", "th_d", "recovery", env)).toBe(`${SHIELD}?token_hash=th_d&type=recovery`);
+    expect(construirEnlace("privacy", "esto-no-es-una-url", "th_d", "recovery", env)).toBe(
+      `${SHIELD}?token_hash=th_d&type=recovery`,
+    );
+    // El origen pelado también vale: se le pone la ruta del callback.
+    expect(construirEnlace("privacy", "", "th_d", "signup", { [VAR_CALLBACK_PRIVACY]: "https://shield.bivelio.com" })).toBe(
+      `${SHIELD}?token_hash=th_d&type=signup`,
+    );
+  });
+
+  it("la variable NUNCA pisa un redirect válido: privacy sigue llevando a privacy", () => {
+    const env = { [VAR_CALLBACK_PRIVACY]: SHIELD };
+    expect(construirEnlace("privacy", "https://privacy.bivelio.com/auth/callback?next=/en/d", "th_d", "signup", env)).toBe(
+      "https://privacy.bivelio.com/auth/callback?next=%2Fen%2Fd&token_hash=th_d&type=signup",
+    );
+  });
+
+  it("⛔ un valor que no es https a privacy/shield se ignora (y avisa): nunca enlaces a otro sitio", () => {
+    const aviso = vi.spyOn(console, "warn").mockImplementation(() => {});
+    for (const malo of [
+      "http://shield.bivelio.com/auth/callback",
+      "https://shield.bivelio.com.evil.example/auth/callback",
+      "https://evil.example/auth/callback",
+      "https://app.bivelio.com/auth/callback",
+      "https://shield.bivelio.com:8443/auth/callback",
+      "https://usuario:clave@shield.bivelio.com/auth/callback",
+      "javascript:alert(1)",
+      "esto no es una url",
+    ]) {
+      expect(callbackPorDefecto("privacy", { [VAR_CALLBACK_PRIVACY]: malo }), malo).toBe(
+        "https://privacy.bivelio.com/auth/callback",
+      );
+    }
+    expect(aviso).toHaveBeenCalled();
+    // El aviso nombra la variable, nunca repite su valor.
+    expect(String(aviso.mock.calls[0]![0])).toContain(VAR_CALLBACK_PRIVACY);
+  });
+
+  it("la variable solo toca a privacy: savings y GPOS no se mueven", () => {
+    const env = { [VAR_CALLBACK_PRIVACY]: SHIELD };
+    expect(callbackPorDefecto("savings", env)).toBe("https://savings.bivelio.com/auth/callback");
+    expect(callbackPorDefecto("gpos", env)).toBe("https://app.bivelio.com/auth/callback");
+    expect(construirEnlace("gpos", "", "th_d", "signup", env)).toContain("https://app.bivelio.com/auth/callback?");
+  });
+});
+
+describe("elegirMarca — Privacy o BiVelio Shield, según adónde lleva el enlace", () => {
+  const SHIELD = { [VAR_CALLBACK_PRIVACY]: "https://shield.bivelio.com/auth/callback" };
+
+  it("un alta en shield se presenta como BiVelio Shield", () => {
+    expect(elegirMarca("privacy", "https://shield.bivelio.com/auth/callback?next=/en/dashboard", {})).toBe("shield");
+    expect(elegirMarca("privacy", "https://bivelio-shield-git-rama-x.vercel.app/auth/callback", {})).toBe("shield");
+  });
+
+  it("un alta en privacy sigue siendo Privacy, aunque el interruptor ya apunte a shield", () => {
+    expect(elegirMarca("privacy", "https://privacy.bivelio.com/auth/callback?next=/es/dashboard", {})).toBe("privacy");
+    expect(elegirMarca("privacy", "https://privacy.bivelio.com/auth/callback", SHIELD)).toBe("privacy");
+    expect(elegirMarca("privacy", "https://bivelio-privacy-gateway-git-rama-x.vercel.app/auth/callback", {})).toBe("privacy");
+    // Lo que decide es el HOST, no un «shield» suelto en la query.
+    expect(elegirMarca("privacy", "https://privacy.bivelio.com/auth/callback?next=/shield.bivelio.com", {})).toBe("privacy");
+  });
+
+  it("sin redirect, la marca sigue al callback por defecto (el interruptor)", () => {
+    expect(elegirMarca("privacy", "", {})).toBe("privacy");
+    expect(elegirMarca("privacy", null, SHIELD)).toBe("shield");
+  });
+
+  it("savings y GPOS conservan la suya pase lo que pase", () => {
+    expect(elegirMarca("savings", "https://savings.bivelio.com/auth/callback", SHIELD)).toBe("savings");
+    expect(elegirMarca("gpos", "https://app.bivelio.com/auth/callback", SHIELD)).toBe("gpos");
+    expect(elegirMarca("gpos", "https://desconocido.example/auth/callback", SHIELD)).toBe("gpos");
+  });
 });
 
 describe("idiomaDe — el locale que viaja en el redirect", () => {
@@ -103,6 +218,15 @@ describe("construirEnlace — donde murió el bug del «&»", () => {
     expect(construirEnlace("savings", "", "th_3", "recovery")).toContain("https://savings.bivelio.com/auth/callback?");
     expect(construirEnlace("privacy", "esto-no-es-una-url", "th_3", "recovery")).toContain("https://privacy.bivelio.com/auth/callback?");
   });
+
+  it("un redirect a shield lleva a shield, con su next y su idioma", () => {
+    const r = "https://shield.bivelio.com/auth/callback?next=/fr/dashboard";
+    expect(elegirProducto(r)).toBe("privacy");
+    expect(idiomaDe(r)).toBe("fr");
+    expect(construirEnlace("privacy", r, "th_4", "signup", {})).toBe(
+      "https://shield.bivelio.com/auth/callback?next=%2Ffr%2Fdashboard&token_hash=th_4&type=signup",
+    );
+  });
 });
 
 describe("las plantillas", () => {
@@ -132,6 +256,48 @@ describe("las plantillas", () => {
     expect(gpos.html).toContain("#070B14"); // la carcasa oscura de GPOS
     expect(gpos.html).toContain("Governed Process");
     expect(privacy.html).toContain("privacy.bivelio.com");
+  });
+
+  it("privacy se ve EXACTAMENTE como hasta hoy: «Privacy.» + «BY BIVELIO», sin rastro de Shield", () => {
+    const base = { producto: "privacy" as const, accion: "signup" as const, idioma: "es" as const, enlace: "https://privacy.bivelio.com/auth/callback?token_hash=t&type=signup", destinatario: "persona@ejemplo.com" };
+    const sinMarca = componerCorreoAuth(base);
+    expect(componerCorreoAuth({ ...base, marca: "privacy" })).toEqual(sinMarca);
+    expect(sinMarca.html).toContain('Privacy<span style="color:#2F63D8">.</span><span');
+    expect(sinMarca.html).toContain("BY BIVELIO</span></p>");
+    expect(sinMarca.html).toContain('href="https://privacy.bivelio.com"');
+    expect(sinMarca.html).not.toContain("Shield");
+    expect(sinMarca.texto.endsWith("BiVelio · privacy.bivelio.com")).toBe(true);
+  });
+
+  it("shield: «BiVelio Shield» en la cabecera y el pie, en los 12 idiomas y los 3 juegos", () => {
+    for (const accion of ["signup", "recovery", "magiclink"] as const) {
+      for (const idioma of IDIOMAS) {
+        const c = componerCorreoAuth({
+          producto: "privacy",
+          marca: "shield",
+          accion,
+          idioma,
+          enlace: "https://shield.bivelio.com/auth/callback?token_hash=t&type=signup",
+          destinatario: "persona@ejemplo.com",
+        });
+        const donde = `${accion}/${idioma}`;
+        expect(c.html, donde).toContain('BiVelio Shield<span style="color:#2F63D8">.</span></p>');
+        expect(c.html, donde).toContain('href="https://shield.bivelio.com"');
+        // La marca nueva ya dice BiVelio: nada de «BiVelio Shield. BY BIVELIO».
+        expect(c.html, donde).not.toContain("BY BIVELIO");
+        expect(c.html, donde).not.toContain("privacy.bivelio.com");
+        expect(c.html, donde).not.toContain("#070B14");
+        expect(c.texto.endsWith("BiVelio Shield · shield.bivelio.com"), donde).toBe(true);
+        // La copy es de la plataforma: el asunto es el mismo que en privacy.
+        expect(c.asunto, donde).toBe(juegoPara(accion)[idioma].asunto);
+      }
+    }
+  });
+
+  it("⛔ la marca shield solo existe dentro de privacy: GPOS y savings la ignoran", () => {
+    const base = { accion: "signup" as const, idioma: "en" as const, enlace: "https://x.example/cb?token_hash=t&type=signup", destinatario: "persona@ejemplo.com" };
+    expect(componerCorreoAuth({ ...base, producto: "gpos", marca: "shield" })).toEqual(componerCorreoAuth({ ...base, producto: "gpos" }));
+    expect(componerCorreoAuth({ ...base, producto: "savings", marca: "shield" })).toEqual(componerCorreoAuth({ ...base, producto: "savings" }));
   });
 
   it("⛔ el enlace va escapado en el HTML", () => {
