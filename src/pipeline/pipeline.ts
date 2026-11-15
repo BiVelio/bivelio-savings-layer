@@ -106,6 +106,7 @@ import type { CachedAnswer } from "../cache/exact.js";
 import type { VersionedCacheBreakpointStore } from "../cache/breakpoint-store.js";
 import type { SemanticProbe } from "../cache/semantic.js";
 import { detectarContenidoMutable } from "../cache/cache-audit.js";
+import { reordenarPrefijoCacheable } from "../cache/cache-prefix.js";
 import type { Provider, ProviderRequest, ProviderResponse, ProviderToolSearch } from "../providers/types.js";
 import type { RouteDecision } from "../router/router.js";
 import {
@@ -1149,9 +1150,13 @@ export class SavingsPipeline {
     // señala el contenido que cambia en cada llamada y hace que la caché del
     // proveedor no acierte nunca. La muestra sale recortada del texto del propio
     // cliente; no se reescribe nada porque cambiar el `system` es una decisión
-    // de calidad que solo el llamante puede tomar.
+    // de calidad que solo el llamante puede tomar. Cuando el REORDEN del prefijo
+    // (`savings.cachePrefix`) ya corrió, se audita solo la parte estable — la
+    // cola mutable ya está fuera del prefijo declarado y moverla otra vez no
+    // toca.
     if (S > 0) {
-      const mutable = detectarContenidoMutable(this.assemblePromptText(messages.slice(0, S)));
+      const auditado = messages.slice(0, Math.min(S, mensajesDePrefijo));
+      const mutable = detectarContenidoMutable(this.assemblePromptText(auditado));
       if (mutable.length > 0) {
         trace.record("cache-audit", "mutable-system-prefix", {
           patrones: mutable.map((f) => f.patron),
@@ -2734,6 +2739,41 @@ export class SavingsPipeline {
     let formatChoice = jsonFallbackChoice();
     let messages: ChatMessage[] = [...request.messages];
 
+    // --- REORDEN DEL PREFIJO CACHEABLE (opt-in) -------------------------------
+    //
+    // La auditoría de cache breaks DIAGNOSTICA; esto ARREGLA con permiso
+    // explícito (`savings.cachePrefix: true`): las líneas del `system` con
+    // contenido mutable (timestamp, UUID, epoch) pasan al final, y la cabecera
+    // queda partida en dos mensajes — [estable][mutable] — de modo que el
+    // prefijo declarado pueda cubrir SOLO el tramo estable (ver el recorte de
+    // `finDelPrefijo` más abajo) y el proveedor acierte su caché petición tras
+    // petición. La cola mutable viaja fuera del tramo cacheado y se paga a 1×;
+    // el ahorro es del PROVEEDOR, nunca acreditado a la capa.
+    //
+    // Solo sobre el PRIMER mensaje cuando es un `system` de texto: es la
+    // cabecera, y la unidad de reorden es la línea (ver cache-prefix.ts).
+    let reordenDePrefijo: { corteEn: number } | null = null;
+    if (toggles.cachePrefix === true && messages[0]?.role === "system" && typeof messages[0].content === "string") {
+      const reorden = reordenarPrefijoCacheable(messages[0].content);
+      if (reorden) {
+        messages.splice(
+          0,
+          1,
+          { role: "system", content: reorden.texto.slice(0, reorden.corte) },
+          { role: "system", content: reorden.texto.slice(reorden.corte).replace(/^\r?\n/, "") },
+        );
+        reordenDePrefijo = { corteEn: 0 };
+        trace.record("cache-prefix", "reordered", {
+          movedLines: reorden.movidas.length,
+          patterns: reorden.patrones,
+        });
+      } else {
+        trace.record("cache-prefix", "skipped", {
+          reason: "no mutable lines to move, or no stable prefix left",
+        });
+      }
+    }
+
     // --- MONTAJE SEGMENTADO DEL PROMPT ---------------------------------------
     //
     // El prompt que sale de aquí tiene tres tramos, y el orden entre ellos es lo
@@ -2761,7 +2801,13 @@ export class SavingsPipeline {
     // evidencia, que es el bloque más grande y el más variable, es la última en
     // insertarse y por tanto la más lejos de la frontera. Lo fija
     // `test/cache-de-prefijo-en-el-pipeline.test.ts`.
-    const finDelPrefijo = limiteDelPrefijoEstable(request.messages);
+    // CON EL REORDEN, el prefijo es exactamente [estable]: la cabecera quedó
+    // partida en el índice 0 y la cola mutable vive en el 1, así que ninguna
+    // frontera puede pasarla por encima sin volver a envenenar la huella. El
+    // historial de una conversación queda fuera del prefijo en estas peticiones
+    // — el coste honesto de reordenar, documentado en el flag.
+    const finDelPrefijo =
+      reordenDePrefijo !== null ? 1 : limiteDelPrefijoEstable(request.messages);
     // La compresión reescribe mensajes que NO son `system`, o sea que puede
     // tocar el historial que acabamos de meter en el prefijo. Se anota y, si
     // ocurre, el prefijo se recorta al tramo de `system` inicial — lo único que
@@ -3399,7 +3445,11 @@ export class SavingsPipeline {
       messages,
       herramientasDelPrefijo,
       conDescubrimiento,
-      comprimioElPrefijo ? limiteDelPrefijoEstable(messages, true) : finDelPrefijo,
+      comprimioElPrefijo
+        ? reordenDePrefijo !== null
+          ? 1
+          : limiteDelPrefijoEstable(messages, true)
+        : finDelPrefijo,
       trace,
       espejoCargado,
     );
