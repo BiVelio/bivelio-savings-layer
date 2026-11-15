@@ -65,7 +65,7 @@ function peticion(texto: string, cascade: boolean): SavingsRequest {
     maxOutputTokens: 80,
     temperature: 0,
     savings: { deterministicResolvers: false, ...(cascade ? { modelCascade: "on" } : {}) },
-  } as SavingsRequest;
+  } as unknown as SavingsRequest;
 }
 
 function respuestaDe(r: { data?: unknown; text: string }): string {
