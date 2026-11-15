@@ -130,7 +130,7 @@ arXiv-ready LaTeX in [`docs/paper/main.tex`](./docs/paper/main.tex).
 A license key that **is** configured but invalid or expired still fails closed with
 `LicenseError` — only its absence is a working product.
 
-**Pricing:** Pro **€15 / seat / month** (or **€150 / year**) · Team **€129 / month with 10 seats** (**€12 per extra seat**) — a fixed fee, no commission on what you save. Full terms:
+**Pricing:** fixed fee per seat (Pro and Team), **no commission on what you save**. Full numbers:
 
 <details>
 <summary><b>Cloud pricing (the optional, paid part) — full terms</b></summary>
