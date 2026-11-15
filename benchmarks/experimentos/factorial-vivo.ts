@@ -42,10 +42,10 @@ const FRAGMENTOS = [
 ];
 function manual(sal: string): string {
   const reglas: string[] = [];
-  for (let i = 1; i <= 60; i++) {
+  for (let i = 1; i <= 80; i++) {
     reglas.push(
-      `Rule ${i}. ${FRAGMENTOS[(i - 1) % FRAGMENTOS.length]}; clause ${i} adds that an answer mentions the field named in the question when there is one, and ` +
-        `a rule numbered ${(i * 7) % 60 + 1} applies only when the question is about classification or ordering.`,
+      `Rule ${i}. ${FRAGMENTOS[(i - 1) % FRAGMENTOS.length]}; clause ${i} adds that an answer mentions the field named in the question when there is one, and a rule numbered ${(i * 7) % 80 + 1} applies only when the question is about classification or ordering, ` +
+        `while ${FRAGMENTOS[(i + 3) % FRAGMENTOS.length]} applies when the question compares two named entities, in which case the comparison ends with a one-line summary of the most important difference between them.`,
     );
   }
   return (
