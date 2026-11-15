@@ -22,30 +22,30 @@ const OUT = process.env.BVSALA_EXP_OUT ?? "evidencia-no-inferioridad-vivo";
 // necesita muestreo determinista.
 const MODELO = process.env.BVSALA_EXP_NI_MODELO ?? "anthropic/claude-opus-5-5";
 
-const PREGUNTAS: { q: string; dorada: string }[] = [
+const PREGUNTAS: { q: string; dorada: string; aceptadas?: string[] }[] = [
   { q: "What is the capital of France?", dorada: "paris" },
   { q: "What is the largest planet in the solar system?", dorada: "jupiter" },
   { q: "How many continents are there on Earth?", dorada: "7" },
   { q: "What is the chemical symbol for gold?", dorada: "au" },
-  { q: "Who wrote Romeo and Juliet?", dorada: "shakespeare" },
-  { q: "What is the longest river in the world?", dorada: "nile" },
+  { q: "Who wrote Romeo and Juliet?", dorada: "william shakespeare" },
+  { q: "What is the longest river in the world?", dorada: "nile", aceptadas: ["nile river"] },
   { q: "In what year did World War II end?", dorada: "1945" },
   { q: "What is the smallest prime number?", dorada: "2" },
   { q: "What element has the atomic number 8?", dorada: "oxygen" },
   { q: "What is the capital of Japan?", dorada: "tokyo" },
   { q: "Which planet is known as the Red Planet?", dorada: "mars" },
   { q: "What is the speed of light rounded, in km/s?", dorada: "300000" },
-  { q: "What is the tallest mountain on Earth?", dorada: "everest" },
+  { q: "What is the tallest mountain on Earth?", dorada: "mount everest", aceptadas: ["everest"] },
   { q: "What gas makes up most of Earth's atmosphere?", dorada: "nitrogen" },
   { q: "How many sides does a hexagon have?", dorada: "6" },
   { q: "What is the freezing point of water in Celsius?", dorada: "0" },
-  { q: "Which ocean is the largest?", dorada: "pacific" },
+  { q: "Which ocean is the largest?", dorada: "pacific ocean", aceptadas: ["pacific"] },
   { q: "What is the capital of Australia?", dorada: "canberra" },
-  { q: "Who painted the Mona Lisa?", dorada: "vinci" },
+  { q: "Who painted the Mona Lisa?", dorada: "leonardo da vinci" },
   { q: "What is the chemical symbol for iron?", dorada: "fe" },
   { q: "How many minutes are in two hours?", dorada: "120" },
   { q: "What is the fifth planet from the sun?", dorada: "jupiter" },
-  { q: "What language has the most native speakers?", dorada: "mandarin" },
+  { q: "What language has the most native speakers?", dorada: "mandarin chinese", aceptadas: ["mandarin"] },
   { q: "What is the square root of 144?", dorada: "12" },
 ];
 
@@ -53,9 +53,24 @@ function normalizar(s: string): string {
   return s.toLowerCase().replace(/[^a-z0-9]/g, " ").replace(/\s+/g, " ").trim();
 }
 
-function acierta(respuesta: string, dorada: string): boolean {
+// Nombres de número → la cifra dorada. El juez es un match EXACTO normalizado:
+// `includes` admitía «Not Paris» para «paris», «12» para «2» y «20» para «0»
+// (hallazgo del informe de revisión 2026-11-15). Las respuestas cerradas se
+// aceptan solo si normalizadas son IGUALES a la dorada o a una equivalencia
+// declarada.
+const EQUIVALENCIAS: Record<string, string> = {
+  seven: "7",
+  two: "2",
+  zero: "0",
+  six: "6",
+  twelve: "12",
+  "one hundred and twenty": "120",
+  "one hundred twenty": "120",
+};
+
+function acierta(respuesta: string, p: { dorada: string; aceptadas?: string[] }): boolean {
   const n = normalizar(respuesta);
-  return n.includes(dorada) || n.startsWith(dorada);
+  return n === p.dorada || EQUIVALENCIAS[n] === p.dorada || (p.aceptadas ?? []).includes(n);
 }
 
 function peticion(texto: string, cascade: boolean): SavingsRequest {
@@ -97,7 +112,7 @@ async function main() {
     const r = await capaA.generate(peticion(p.q, false));
     costeA += r.report.cost.actual;
     respuestasA.push(respuestaDe(r));
-    if (acierta(respuestaDe(r), p.dorada)) aciertosA += 1;
+    if (acierta(respuestaDe(r), p)) aciertosA += 1;
   }
 
   const capaB = hacerCapa();
@@ -110,7 +125,7 @@ async function main() {
     const r = await capaB.generate(peticion(p.q, true));
     costeB += r.report.cost.actual;
     respuestasB.push(respuestaDe(r));
-    if (acierta(respuestaDe(r), p.dorada)) aciertosB += 1;
+    if (acierta(respuestaDe(r), p)) aciertosB += 1;
     const mc = r.report.modelCascade;
     if (mc) {
       if (mc.servedModel !== mc.requestedModel) servidasPorBarato += 1;
@@ -123,13 +138,25 @@ async function main() {
     if (normalizar(respuestasA[i]!) === normalizar(respuestasB[i]!)) acuerdo += 1;
   }
 
+  // Las RESPUESTAS INDIVIDUALES se publican: sin ellas, los aciertos no se
+  // pueden regradar de forma independiente (hallazgo del informe de revisión).
+  const respuestas = PREGUNTAS.map((p, i) => ({
+    pregunta: p.q,
+    dorada: p.dorada,
+    A: respuestasA[i]!,
+    B: respuestasB[i]!,
+    aciertaA: acierta(respuestasA[i]!, p),
+    aciertaB: acierta(respuestasB[i]!, p),
+  }));
+
   const evidencia = {
-    titulo: "No-inferioridad de la cascada — en vivo, coste y calidad",
+    titulo: "Cascada: coste y calidad — piloto exploratorio (juez exacto normalizado)",
     fecha: new Date().toISOString().slice(0, 10),
     metodo:
       `${PREGUNTAS.length} preguntas de respuesta única con lista dorada, ${MODELO} (cascada por defecto a su hermano barato), temperature 0. ` +
       "Arm A: siempre el fuerte. Arm B: modelCascade on (enruta al barato, escala si la verja rechaza). Calidad contra la lista dorada " +
-      "y acuerdo entre brazos; coste con el contador del proveedor.",
+      "con un juez de match EXACTO normalizado (con equivalencias de números escritos); acuerdo entre brazos; coste con el contador del " +
+      "proveedor. Las respuestas individuales de ambos brazos se publican para su regrado independiente.",
     casos: [
       { brazo: "A · sin cascada", costeUsd: redondear(costeA), aciertosDorados: aciertosA, de: PREGUNTAS.length },
       {
@@ -142,10 +169,12 @@ async function main() {
         acuerdoConA: acuerdo,
       },
     ],
+    respuestas,
     lectura:
-      "La cascada promete lo que su verja certifica (la forma, no la verdad): la no-inferioridad se lee en los aciertos " +
-      "dorados de B frente a A con su margen, en el acuerdo entre brazos y en el coste. Lo que la verja NO puede ver es el " +
-      "falso-válido — el barato contesta distinto y pasa la forma — y este experimento lo mide directamente.",
+      "PILOTO EXPLORATORIO, no una prueba de no-inferioridad (sin margen δ ni diseño de potencia prespecificado; el conjunto es " +
+      "trivia seleccionada). El juez corrige el fallo del informe de revisión 2026-11-15: ya no acepta subcadenas («Not Paris», " +
+      "«12» para «2»). La verja de la cascada certifica la forma, no la verdad; este piloto mide el acuerdo factual de forma " +
+      "exploratoria y publica cada respuesta para que cualquiera pueda regradar.",
   };
   mkdirSync(join(process.cwd(), OUT), { recursive: true });
   const ruta = join(process.cwd(), OUT, "no-inferioridad-vivo.json");

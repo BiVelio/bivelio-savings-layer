@@ -1,0 +1,217 @@
+{
+  "titulo": "Cascada: coste y calidad — piloto exploratorio (juez exacto normalizado)",
+  "fecha": "2026-11-15",
+  "metodo": "24 preguntas de respuesta única con lista dorada, anthropic/claude-opus-5-5 (cascada por defecto a su hermano barato), temperature 0. Arm A: siempre el fuerte. Arm B: modelCascade on (enruta al barato, escala si la verja rechaza). Calidad contra la lista dorada con un juez de match EXACTO normalizado (con equivalencias de números escritos); acuerdo entre brazos; coste con el contador del proveedor. Las respuestas individuales de ambos brazos se publican para su regrado independiente.",
+  "casos": [
+    {
+      "brazo": "A · sin cascada",
+      "costeUsd": 0.064568,
+      "aciertosDorados": 24,
+      "de": 24
+    },
+    {
+      "brazo": "B · con cascada",
+      "costeUsd": 0.020718,
+      "aciertosDorados": 24,
+      "de": 24,
+      "servidasPorElBarato": 24,
+      "escaladas": 0,
+      "acuerdoConA": 23
+    }
+  ],
+  "respuestas": [
+    {
+      "pregunta": "What is the capital of France?",
+      "dorada": "paris",
+      "A": "Paris",
+      "B": "Paris",
+      "aciertaA": true,
+      "aciertaB": true
+    },
+    {
+      "pregunta": "What is the largest planet in the solar system?",
+      "dorada": "jupiter",
+      "A": "Jupiter",
+      "B": "Jupiter",
+      "aciertaA": true,
+      "aciertaB": true
+    },
+    {
+      "pregunta": "How many continents are there on Earth?",
+      "dorada": "7",
+      "A": "7",
+      "B": "7",
+      "aciertaA": true,
+      "aciertaB": true
+    },
+    {
+      "pregunta": "What is the chemical symbol for gold?",
+      "dorada": "au",
+      "A": "Au",
+      "B": "Au",
+      "aciertaA": true,
+      "aciertaB": true
+    },
+    {
+      "pregunta": "Who wrote Romeo and Juliet?",
+      "dorada": "william shakespeare",
+      "A": "William Shakespeare",
+      "B": "William Shakespeare",
+      "aciertaA": true,
+      "aciertaB": true
+    },
+    {
+      "pregunta": "What is the longest river in the world?",
+      "dorada": "nile",
+      "A": "Nile",
+      "B": "Nile River",
+      "aciertaA": true,
+      "aciertaB": true
+    },
+    {
+      "pregunta": "In what year did World War II end?",
+      "dorada": "1945",
+      "A": "1945",
+      "B": "1945",
+      "aciertaA": true,
+      "aciertaB": true
+    },
+    {
+      "pregunta": "What is the smallest prime number?",
+      "dorada": "2",
+      "A": "2",
+      "B": "2",
+      "aciertaA": true,
+      "aciertaB": true
+    },
+    {
+      "pregunta": "What element has the atomic number 8?",
+      "dorada": "oxygen",
+      "A": "Oxygen",
+      "B": "Oxygen",
+      "aciertaA": true,
+      "aciertaB": true
+    },
+    {
+      "pregunta": "What is the capital of Japan?",
+      "dorada": "tokyo",
+      "A": "Tokyo",
+      "B": "Tokyo",
+      "aciertaA": true,
+      "aciertaB": true
+    },
+    {
+      "pregunta": "Which planet is known as the Red Planet?",
+      "dorada": "mars",
+      "A": "Mars",
+      "B": "Mars",
+      "aciertaA": true,
+      "aciertaB": true
+    },
+    {
+      "pregunta": "What is the speed of light rounded, in km/s?",
+      "dorada": "300000",
+      "A": "300000",
+      "B": "300000",
+      "aciertaA": true,
+      "aciertaB": true
+    },
+    {
+      "pregunta": "What is the tallest mountain on Earth?",
+      "dorada": "mount everest",
+      "A": "Mount Everest",
+      "B": "Mount Everest",
+      "aciertaA": true,
+      "aciertaB": true
+    },
+    {
+      "pregunta": "What gas makes up most of Earth's atmosphere?",
+      "dorada": "nitrogen",
+      "A": "Nitrogen",
+      "B": "Nitrogen",
+      "aciertaA": true,
+      "aciertaB": true
+    },
+    {
+      "pregunta": "How many sides does a hexagon have?",
+      "dorada": "6",
+      "A": "6",
+      "B": "6",
+      "aciertaA": true,
+      "aciertaB": true
+    },
+    {
+      "pregunta": "What is the freezing point of water in Celsius?",
+      "dorada": "0",
+      "A": "0",
+      "B": "0",
+      "aciertaA": true,
+      "aciertaB": true
+    },
+    {
+      "pregunta": "Which ocean is the largest?",
+      "dorada": "pacific ocean",
+      "A": "Pacific Ocean",
+      "B": "Pacific Ocean",
+      "aciertaA": true,
+      "aciertaB": true
+    },
+    {
+      "pregunta": "What is the capital of Australia?",
+      "dorada": "canberra",
+      "A": "Canberra",
+      "B": "Canberra",
+      "aciertaA": true,
+      "aciertaB": true
+    },
+    {
+      "pregunta": "Who painted the Mona Lisa?",
+      "dorada": "leonardo da vinci",
+      "A": "Leonardo da Vinci",
+      "B": "Leonardo da Vinci",
+      "aciertaA": true,
+      "aciertaB": true
+    },
+    {
+      "pregunta": "What is the chemical symbol for iron?",
+      "dorada": "fe",
+      "A": "Fe",
+      "B": "Fe",
+      "aciertaA": true,
+      "aciertaB": true
+    },
+    {
+      "pregunta": "How many minutes are in two hours?",
+      "dorada": "120",
+      "A": "120",
+      "B": "120",
+      "aciertaA": true,
+      "aciertaB": true
+    },
+    {
+      "pregunta": "What is the fifth planet from the sun?",
+      "dorada": "jupiter",
+      "A": "Jupiter",
+      "B": "Jupiter",
+      "aciertaA": true,
+      "aciertaB": true
+    },
+    {
+      "pregunta": "What language has the most native speakers?",
+      "dorada": "mandarin chinese",
+      "A": "Mandarin Chinese",
+      "B": "Mandarin Chinese",
+      "aciertaA": true,
+      "aciertaB": true
+    },
+    {
+      "pregunta": "What is the square root of 144?",
+      "dorada": "12",
+      "A": "12",
+      "B": "12",
+      "aciertaA": true,
+      "aciertaB": true
+    }
+  ],
+  "lectura": "PILOTO EXPLORATORIO, no una prueba de no-inferioridad (sin margen δ ni diseño de potencia prespecificado; el conjunto es trivia seleccionada). El juez corrige el fallo del informe de revisión 2026-11-15: ya no acepta subcadenas («Not Paris», «12» para «2»). La verja de la cascada certifica la forma, no la verdad; este piloto mide el acuerdo factual de forma exploratoria y publica cada respuesta para que cualquiera pueda regradar."
+}

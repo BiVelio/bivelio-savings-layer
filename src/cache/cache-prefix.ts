@@ -59,12 +59,44 @@ export interface ReordenDePrefijo {
 }
 
 /**
+ * La profundidad estructural al inicio de cada línea: el balance de `{`/`[` de
+ * las líneas anteriores, con las cercas de código (``` o ~~~) tratadas como
+ * estructura. Sirve para ABSTENERSE: una línea mutable dentro de un bloque JSON
+ * o de una cerca no se puede mover sin romper la estructura (hallazgo de la
+ * revisión previa a publicación, 2026-11-15: una propiedad ISO dentro de un
+ * bloque JSON multilínea deja el JSON inválido al moverla).
+ */
+function profundidadEstructural(lineas: string[]): number[] {
+  const prof: number[] = new Array<number>(lineas.length).fill(0);
+  let p = 0;
+  let cerca: string | null = null;
+  for (let i = 0; i < lineas.length; i++) {
+    prof[i] = cerca !== null ? Math.max(1, p) : p;
+    const l = lineas[i]!;
+    const m = l.match(/^\s*(```+|~~~+)/);
+    if (m) {
+      if (cerca === null) cerca = m[1]!;
+      else if (m[1]!.startsWith(cerca[0]!) && m[1]!.length >= cerca.length) cerca = null;
+      continue;
+    }
+    if (cerca !== null) continue;
+    // Llaves/corchetes (JSON) y etiquetas XML: una apertura sube, un cierre baja.
+    const aperturas = (l.match(/[{\[]/g) ?? []).length + (l.match(/<[a-zA-Z][^>]*?[^/>]\s*>/g) ?? []).length;
+    const cierres = (l.match(/[}\]]/g) ?? []).length + (l.match(/<\/[a-zA-Z][^>]*>|\/>/g) ?? []).length;
+    p = Math.max(0, p + aperturas - cierres);
+  }
+  return prof;
+}
+
+/**
  * Reordena el texto del `system` para que el prefijo cacheable quede estable:
  * las líneas con contenido mutable pasan al final.
  *
  * Devuelve `null` cuando no hay nada que hacer: sin líneas mutables, sin parte
- * estable que cachear (todo mutable o solo espacios), o texto vacío. En ese caso
- * la petición debe viajar tal cual la escribió el llamante.
+ * estable que cachear (todo mutable o solo espacios), texto vacío, o una línea
+ * mutable DENTRO de una estructura (JSON/XML/cerca de código) que se rompería
+ * al moverla. En esos casos la petición debe viajar tal cual la escribió el
+ * llamante.
  */
 export function reordenarPrefijoCacheable(texto: string): ReordenDePrefijo | null {
   if (!texto || !texto.trim()) return null;
@@ -78,13 +110,20 @@ export function reordenarPrefijoCacheable(texto: string): ReordenDePrefijo | nul
     lineas.pop();
   }
 
+  // EL GUARDIA ESTRUCTURAL: la revisión previa a publicación (2026-11-15)
+  // demostró que mover una línea ISO fuera de un bloque JSON multilínea deja el
+  // JSON inválido. El reorden solo es seguro a profundidad estructural cero.
+  const estructura = profundidadEstructural(lineas);
+
   const estables: string[] = [];
   const mutables: LineaMovida[] = [];
   const patrones = new Set<string>();
 
-  for (const linea of lineas) {
+  for (let i = 0; i < lineas.length; i++) {
+    const linea = lineas[i]!;
     const hallazgos = detectarContenidoMutable(linea);
     if (hallazgos.length > 0) {
+      if (estructura[i]! > 0) return null; // mutable dentro de JSON/XML/fence: abstenerse
       for (const h of hallazgos) patrones.add(h.patron);
       mutables.push({ linea, patron: hallazgos[0]!.patron });
     } else {
