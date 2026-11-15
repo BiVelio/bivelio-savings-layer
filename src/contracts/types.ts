@@ -242,6 +242,25 @@ export interface SavingsToggles {
    * shows the effect.
    */
   toolOutputCompaction?: boolean;
+  /**
+   * OPT-IN. Reorder the leading `system` prompt so its STABLE part leads and the
+   * lines whose content changes every request (ISO 8601 and RFC 2822 timestamps,
+   * UUID v4, epoch ms/s) move to the end, outside the cacheable prefix. The layer
+   * then declares only the stable part as the cache prefix, so the provider's
+   * prompt cache can hit where a mutable token would otherwise force a full miss
+   * (and a paid cache write) on every call.
+   *
+   * THE CALLER TAKES THE QUALITY DECISION. The model reads the same lines in a
+   * different order: the layer never does this silently, and the `cache-prefix`
+   * trace says exactly which lines moved and why. The saving is the PROVIDER's
+   * (its cache hits at the discounted read rate); it is never credited as the
+   * layer's saving.
+   *
+   * It runs on the first message when it is a string `system`, and only when
+   * there is a stable part left to keep: with no mutable lines, or with nothing
+   * stable, the request travels exactly as written.
+   */
+  cachePrefix?: boolean;
   serialization?: boolean | "auto";
   singleflight?: boolean;
   deterministicResolvers?: boolean;
