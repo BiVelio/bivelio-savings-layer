@@ -451,9 +451,25 @@ the full write premium. With \texttt{cachePrefix: true} the 1{,}000 requests sha
 \textbf{one identical cacheable prefix}---100\,\% stable---with 69.6\,\% of the system
 bytes inside the cached span and only the moved timestamp line paid at the full rate
 (artifacts in \texttt{benchmarks/evidencia/cache-prefix-2026-11-15.json}). This measures
-the mechanical precondition of the hit, not the provider's hit-rate: the latter needs
-live double-runs with the provider's \texttt{cache\_read} counters, scheduled on the
-weekly live bench.
+the mechanical precondition of the hit, not the provider's hit-rate.
+
+\textbf{Live double-run.} On \texttt{claude-haiku-4-5}, 20 paired requests whose system
+carries a long stable handbook plus a per-request ISO timestamp: without the reorder,
+the marked prefix changes on every call---\textbf{0\,\% hit-rate}, 126{,}260 cache-write
+tokens paid at 1.25$\times$, \$0.166 of list-price cost. With \texttt{cachePrefix: true},
+the stable prefix is written once and read 19 times---\textbf{95\,\% hit-rate}, 119{,}567
+cache-read tokens, \$0.0287 total---an \textbf{82.8\,\% cost reduction per request},
+measured with the provider's own \texttt{cache\_read}/\texttt{cache\_creation} counters
+(artifacts in \texttt{benchmarks/evidencia/cache-prefix-vivo-2026-11-15.json}).
+
+\subsection{The $\rho$ curve (live)}
+The saving of the exact cache as a function of the exact-repeat rate, preregistered in
+Section~\ref{sec:roadmap}: on \texttt{gpt-4o-mini} with 20 unique questions and
+temperature 0, the measured saving is \textbf{14.7\,\% at $\rho=0.3$} and
+\textbf{23.7\,\% at $\rho=0.6$}, avoiding 5 of 6 and 10 of 12 repeats (artifacts in
+\texttt{benchmarks/evidencia/rho-vivo-2026-11-15.json}). The curve grows with $\rho$ as
+preregistered, and sits below the identity: the exact cache does not capture every
+repeat---the gap is what the roadmap's factorial design is set up to explain.
 
 \section{Threats to validity}\label{sec:threats}
 \emph{Construct:} list prices are not invoices (negotiated rates, credits, taxes,

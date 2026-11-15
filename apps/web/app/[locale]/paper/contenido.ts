@@ -691,7 +691,20 @@ export const BLOQUES: Bloque[] = [
   },
   {
     "tipo": "p",
-    "texto": "The reorder is a mechanical transform, so its precondition for cache hits is measurable without the provider: on 1,000 requests whose system template carries a per-request ISO timestamp, the translated Anthropic body (the same wire translation as `generate()`) produces **1,000 distinct cacheable prefixes** without the reorder — the byte-match the provider requires can never succeed, and every request pays the full write premium. With `cachePrefix: true` the 1,000 requests share **one identical cacheable prefix** — 100 % stable — with 69.6 % of the system bytes inside the cached span and only the moved timestamp line paid at the full rate (artifacts in `benchmarks/evidencia/cache-prefix-2026-11-15.json`). This measures the mechanical precondition of the hit, not the provider's hit-rate: the latter needs live double-runs with the provider's `cache_read` counters, scheduled on the weekly live bench."
+    "texto": "The reorder is a mechanical transform, so its precondition for cache hits is measurable without the provider: on 1,000 requests whose system template carries a per-request ISO timestamp, the translated Anthropic body (the same wire translation as `generate()`) produces **1,000 distinct cacheable prefixes** without the reorder — the byte-match the provider requires can never succeed, and every request pays the full write premium. With `cachePrefix: true` the 1,000 requests share **one identical cacheable prefix** — 100 % stable — with 69.6 % of the system bytes inside the cached span and only the moved timestamp line paid at the full rate (artifacts in `benchmarks/evidencia/cache-prefix-2026-11-15.json`). This measures the mechanical precondition of the hit, not the provider's hit-rate."
+  },
+  {
+    "tipo": "p",
+    "texto": "**Live double-run.** On `claude-haiku-4-5`, 20 paired requests whose system carries a long stable handbook plus a per-request ISO timestamp: without the reorder, the marked prefix changes on every call — **0 % hit-rate**, 126,260 cache-write tokens paid at 1.25×, $0.166 of list-price cost. With `cachePrefix: true`, the stable prefix is written once and read 19 times — **95 % hit-rate**, 119,567 cache-read tokens, $0.0287 total — an **82.8 % cost reduction per request**, measured with the provider's own `cache_read`/`cache_creation` counters (artifacts in `benchmarks/evidencia/cache-prefix-vivo-2026-11-15.json`)."
+  },
+  {
+    "tipo": "h3",
+    "texto": "6.7 The ρ curve (live)",
+    "id": "6-7-the-curve-live"
+  },
+  {
+    "tipo": "p",
+    "texto": "The saving of the exact cache as a function of the exact-repeat rate, preregistered in Section 9: on `gpt-4o-mini` with 20 unique questions and temperature 0, the measured saving is **14.7 % at ρ = 0.3** and **23.7 % at ρ = 0.6**, avoiding 5 of 6 and 10 of 12 repeats (artifacts in `benchmarks/evidencia/rho-vivo-2026-11-15.json`). The curve grows with ρ as preregistered, and sits below the identity: the exact cache does not capture every repeat — the gap is what the roadmap's factorial design is set up to explain."
   },
   {
     "tipo": "hr"
