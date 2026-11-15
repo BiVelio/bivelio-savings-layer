@@ -707,6 +707,15 @@ export const BLOQUES: Bloque[] = [
     "texto": "The saving of the exact cache as a function of the exact-repeat rate, preregistered in Section 9: on `gpt-4o-mini` with 20 unique questions and temperature 0, the measured saving is **14.7 % at ρ = 0.3** and **23.7 % at ρ = 0.6**, avoiding 5 of 6 and 10 of 12 repeats (artifacts in `benchmarks/evidencia/rho-vivo-2026-11-15.json`). The curve grows with ρ as preregistered, and sits below the identity: the exact cache does not capture every repeat — the gap is what the roadmap's factorial design is set up to explain."
   },
   {
+    "tipo": "h3",
+    "texto": "6.8 Factorial dedup × cache_control (live)",
+    "id": "6-8-factorial-dedup-cache-control-live"
+  },
+  {
+    "tipo": "p",
+    "texto": "The 2×2 factorial of the roadmap, on `claude-haiku-4-5` with 12 unique questions plus their 12 exact repeats and a stable ~6.2k-token system handbook: the marked effect (prefix caching) cuts $0.178 → $0.031 per 24 requests (−$0.147); the dedup effect cuts $0.178 → $0.119 (−$0.059, avoiding 8 of 12 repeats); both together cut to $0.025 (−$0.153, an **85.9 % reduction**). The interaction is +$0.053 — the two effects are not fully additive, as expected: a deduplicated request does not exist to read the cache. Artifacts in `benchmarks/evidencia/factorial-vivo-2026-11-15.json`."
+  },
+  {
     "tipo": "hr"
   },
   {
