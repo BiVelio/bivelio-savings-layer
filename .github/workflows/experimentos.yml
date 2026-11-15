@@ -96,3 +96,29 @@ jobs:
           path: evidencia-factorial-vivo/
           if-no-files-found: error
           retention-days: 90
+
+  no-inferioridad:
+    if: ${{ inputs.solo == '' || inputs.solo == 'no-inferioridad' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      BVSALA_DEV_OPEN: "1"
+      BVSALA_DEMO_ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      BVSALA_DEMO_ANTHROPIC_BASE_URL: https://api.anthropic.com/v1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Habilitar pnpm (desde packageManager)
+        run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build:all
+      - name: No-inferioridad de la cascada (en vivo)
+        run: pnpm exec tsx benchmarks/experimentos/no-inferioridad-vivo.ts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: no-inferioridad-vivo
+          path: evidencia-no-inferioridad-vivo/
+          if-no-files-found: error
+          retention-days: 90

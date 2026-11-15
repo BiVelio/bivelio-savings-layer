@@ -496,6 +496,18 @@ $0.178 → $0.119 (−$0.059, avoiding 8 of 12 repeats); both together cut to $0
 fully additive, as expected: a deduplicated request does not exist to read the cache.
 Artifacts in `benchmarks/evidencia/factorial-vivo-2026-11-15.json`.
 
+### 6.9 Cascade non-inferiority (live)
+
+The roadmap's non-inferiority design, on 24 single-answer questions with a golden list,
+`claude-opus-5-5` as the strong model and its default cascade to `claude-haiku-4-5`:
+without the cascade the strong model answers all 24 correctly at $0.065; with it, the
+cheap model served 24/24 (zero escalations), all 24 answers matched the golden list, 23/24
+agreed verbatim with the strong model, and the cost fell to $0.021 — a **67.9 % reduction
+with no measured quality loss** on this workload (artifacts in
+`benchmarks/evidencia/no-inferioridad-vivo-2026-11-15.json`). The one verbatim disagreement
+is the honest reminder of the failure the deterministic gate cannot see (Section 6.3):
+form compliance is not truth, and this workload is trivia, not production traffic.
+
 ---
 
 ## 7 · Threats to validity

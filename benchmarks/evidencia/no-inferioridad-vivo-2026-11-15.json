@@ -1,0 +1,23 @@
+{
+  "titulo": "No-inferioridad de la cascada — en vivo, coste y calidad",
+  "fecha": "2026-11-15",
+  "metodo": "24 preguntas de respuesta única con lista dorada, anthropic/claude-opus-5-5 (cascada por defecto a su hermano barato), temperature 0. Arm A: siempre el fuerte. Arm B: modelCascade on (enruta al barato, escala si la verja rechaza). Calidad contra la lista dorada y acuerdo entre brazos; coste con el contador del proveedor.",
+  "casos": [
+    {
+      "brazo": "A · sin cascada",
+      "costeUsd": 0.064568,
+      "aciertosDorados": 24,
+      "de": 24
+    },
+    {
+      "brazo": "B · con cascada",
+      "costeUsd": 0.020718,
+      "aciertosDorados": 24,
+      "de": 24,
+      "servidasPorElBarato": 24,
+      "escaladas": 0,
+      "acuerdoConA": 23
+    }
+  ],
+  "lectura": "La cascada promete lo que su verja certifica (la forma, no la verdad): la no-inferioridad se lee en los aciertos dorados de B frente a A con su margen, en el acuerdo entre brazos y en el coste. Lo que la verja NO puede ver es el falso-válido — el barato contesta distinto y pasa la forma — y este experimento lo mide directamente."
+}

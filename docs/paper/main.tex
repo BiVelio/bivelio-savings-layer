@@ -481,6 +481,18 @@ interaction is $+\$0.053$---the two effects are not fully additive, as expected:
 deduplicated request does not exist to read the cache. Artifacts in
 \texttt{benchmarks/evidencia/factorial-vivo-2026-11-15.json}.
 
+\subsection{Cascade non-inferiority (live)}
+The roadmap's non-inferiority design, on 24 single-answer questions with a golden list,
+\texttt{claude-opus-5-5} as the strong model and its default cascade to
+\texttt{claude-haiku-4-5}: without the cascade the strong model answers all 24 correctly
+at \$0.065; with it, the cheap model served 24/24 (zero escalations), all 24 answers
+matched the golden list, 23/24 agreed verbatim with the strong model, and the cost fell
+to \$0.021---a \textbf{67.9\,\% reduction with no measured quality loss} on this workload
+(artifacts in \texttt{benchmarks/evidencia/no-inferioridad-vivo-2026-11-15.json}). The one
+verbatim disagreement is the honest reminder of the failure the deterministic gate cannot
+see (Section~\ref{sec:results}): form compliance is not truth, and this workload is
+trivia, not production traffic.
+
 \section{Threats to validity}\label{sec:threats}
 \emph{Construct:} list prices are not invoices (negotiated rates, credits, taxes,
 rounding absent); every figure is labelled at list prices. \emph{Internal:} the Anthropic
