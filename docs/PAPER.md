@@ -1,730 +1,713 @@
-# BV-SALA Savings Layer
-
-## Verifiable Measurement of Cost Savings in Large Language Model Applications — Open-Core Edition
+# BV-SALA Savings Layer: Verifiable Measurement of Cost Savings in Large Language Model Applications (Open-Core Edition)
 
 Joan-Marc Fisa · Founder, BiVelio Inc · jmfisa@bivelio.com · https://savings.bivelio.com
 
-**Preprint · November 2026 (v2.3, open-core release 1.2.0) · Technical report**
+**Preprint · 15 November 2026 (v2.3-r1, open-core release 1.2.0) · Technical report**
 
-Supersedes the August 2026 edition ("BV-SALA Savings Layer: Verifiable Measurement of
-Cost Savings in Large Language Model Applications",
-[bivelio.com/es/research/papers/bv-sala-savings-layer](https://bivelio.com/es/research/papers/bv-sala-savings-layer)).
+Revised after an external pre-publication review. This revision corrects the mathematical
+description and qualifies the evidence in v2.3. Offline recomputation is distinguished from
+new provider experiments. The review snapshot is commit `239c84b99fe8320f7efaa9da9e63def08d62aed6`.
+
 This document is the single source of the preprint; the web page at
-[savings.bivelio.com/paper](https://savings.bivelio.com/paper) is generated from it, and
-the arXiv-ready LaTeX source ships in `docs/paper/main.tex` of the repository.
+[savings.bivelio.com/paper](https://savings.bivelio.com/paper) is generated from it, and the
+arXiv-ready LaTeX source ships in `docs/paper/main.tex` of the repository.
 
 ---
 
 ## Abstract
 
-Cost claims for large language model (LLM) optimizations are only interpretable when the
-workload, the uncertainty, and the cost basis are stated explicitly. This paper evaluates
-BV-SALA Savings Layer — an in-process SDK and a local gateway that combine
-provider-reported usage with versioned list prices — in its **open-core** distribution,
-where the entire local saving stack runs with no license key, arms every local lever,
-and sends zero telemetry by default. We formalize the accounting object as a function
-from a request to a vector of four mutually exclusive, never-summed ledgers
-(`avoided_calls`, `eliminated_tokens`, `compressed_tokens`,
-`provider_cached_tokens`) and an evidence label in the lattice
-{measured, reference, estimated, unmeasured}; we prove, under three stated assumptions,
-that the cost ratio decomposes additively over the ledgers (Proposition 1). Live
-double-runs under a paired design with percentile cluster bootstrap (10,000 resamples,
-family as the resampling unit) yield a **31.5 % reduction (95 % CI 25.7–36.7; 100
-families, 200 requests per arm)** on `gpt-4o-mini`, and **75.1 % (95 % CI 69.3–79.6; 31
-families, 62 requests per arm)** on `claude-sonnet-5`, of which approximately **41
-percentage points** are attributable to a prefix-cache effect enabled by `cache_control`
-in the instrumented arm rather than to a pre-existing provider discount. A
-counterfactual replay of **19,779 gateway requests (51 sessions, 13 days)** estimates
-**2.49 % (95 % CI 1.50–3.57)** and is reported as reference-valued, not measured. We add
-three analyses that the August edition identified as missing: (i) a routing-economics
-gradient at versioned list prices across DeepSeek, Qwen and GLM siblings, presented as
-conditional arithmetic rather than as measured savings; (ii) a semantic-cache
-positioning against the published AWS benchmark and GPTCache; and (iii) a preregistered
-research roadmap specifying factorial and non-inferiority designs — now executed live: a
-cacheable-prefix reorder lifts a poisoned prompt cache from 0 % to 95 % hit-rate (an
-82.8 % per-request cost reduction), a 2×2 dedup × cache_control factorial yields an
-85.9 % total reduction with measured attribution, and a cascade non-inferiority run cuts
-cost 67.9 % with no quality loss on a golden list. No invoice
-reconciliation is claimed. Every number in this paper is reproducible from artifacts in
-the public repository or from the public bench.
+Cost claims for large language model (LLM) applications require an explicit workload, cost
+basis and counterfactual. BV-SALA is an open-core SDK and gateway integrating established
+optimization mechanisms with usage accounting. We specify provider usage as disjoint billable
+categories, distinguish observed costs from reference-valued and estimated counterfactuals,
+and separate mechanism diagnostics from experimental attribution. Recomputing public
+September 2026 artifacts yields a pooled list-price cost reduction of **31.50 %** (percentile
+family bootstrap interval 25.74–36.75 %) on `gpt-4o-mini`, and **75.08 %** (69.31–79.60 %) on
+`claude-sonnet-5`. The corresponding equal-family means are 22.88 % and 70.71 %; these answer
+different questions. Approximately **41.08 percentage points** of the Anthropic pooled result
+correspond to a descriptive net cache-pricing contrast, not an independently identified causal
+effect. Additional public November summaries report cost reductions from prefix reordering,
+response reuse and a model cascade; these are exploratory and do not establish quality
+non-inferiority. We identify explicit limits of line-based prefix reordering, replay equivalence
+and permissive answer matching. The contribution is a measurement and reproducibility
+framework, with results bounded to the published workloads and prices. No invoice
+reconciliation, general semantic-preservation guarantee or independent live replication is
+claimed.
 
-**Keywords:** large language models; inference cost; provider-reported usage; prefix
-caching; semantic caching; cluster bootstrap; evidence labels; open core; model routing;
-measurement methodology.
+**Keywords:** LLM cost accounting; prefix caching; response reuse; cluster bootstrap;
+counterfactual evidence; reproducibility.
 
 ---
 
 ## 1 · Introduction
 
-### 1.1 Problem
+LLM applications incur provider usage charges as well as infrastructure, orchestration and
+verification costs. Caching, compression and model routing may reduce some of these costs, but
+a percentage alone does not identify what was measured, which baseline was used, or whether
+answer quality was preserved. A list-price usage reduction is also distinct from a reduction in
+a reconciled invoice.
 
-The dominant cost of deploying a language model application is the provider invoice,
-which is metered in tokens and priced by a commercial list that changes without notice.
-A family of engineering interventions — response caching, prompt compression, prompt
-restructuring, model routing, prompt-cache placement — can reduce that invoice. The
-literature for these mechanisms is large (Section 2), but the *evidence* for their
-economic effect in a specific deployment is usually absent: a vendor may report a
-percentage without a workload, an interval, or a distinction between what the provider's
-counter confirmed and what was reconstructed. This paper's thesis is that a cost claim is
-a measurement claim, and therefore inherits the obligations of a measurement claim:
-an explicit instrument, a stated workload, an uncertainty statement, and a separation
-between what was observed and what was inferred.
+BV-SALA combines established interventions in an SDK and local gateway. The contribution
+evaluated here is their integration with an auditable measurement contract, rather than the
+invention of response caching, prefix caching or routing. Four diagnostic ledgers record avoided
+calls, eliminated tokens, compressed tokens and provider-cached tokens. Their counts have
+different meanings and are not independently additive causal effects.
 
-### 1.2 Contributions
+This revision makes three distinctions explicit: (i) cost aggregation versus equal-family
+performance; (ii) accounting arithmetic versus causal attribution; and (iii) successful software
+checks versus task-quality guarantees. It corrects the original estimator description to match the
+public analysis code. Historical SDK 0.4.31 experiments remain evidence about that version and
+workload, not a live revalidation of every feature of release 1.2.0.
 
-1. **A formal accounting object** (Section 3): the request→report function, the four
-   ledgers, and the evidence lattice; Proposition 1 gives the conditions under which the
-   cost ratio decomposes additively over the ledgers.
-2. **An estimator and an uncertainty procedure** (Section 4): the ratio estimator over
-   paired requests, with percentile cluster bootstrap whose resampling unit is the
-   semantic family (SDK) or session (gateway), and stated seeds.
-3. **Live evidence** (Section 6) for two providers under a paired design, with the
-   attribution of the Anthropic effect separated from a pre-existing provider discount,
-   and one counterfactual replay explicitly labelled as such.
-4. **An open-core system contract** (Section 3.4): community mode as a structural gate
-   with no control plane, which removes the adoption barrier of the August edition while
-   preserving every auditable guarantee.
-5. **A preregistered roadmap** (Section 9) that names the designs this edition does not
-   run, including the factorial attribution and the non-inferiority tests.
-
-### 1.3 Research questions
-
-- **RQ1.** What cost reductions are observed in the specified live SDK double-runs when
-  provider-reported usage is valued at versioned list prices?
-- **RQ2.** How much uncertainty remains when dependence is handled by family- or
-  session-level cluster bootstrap?
-- **RQ3.** Which components are attributable to avoided calls, to token elimination or
-  compression, and to cache effects enabled by the instrumented arm?
-- **RQ4.** What quality and latency observations are available, and which claims remain
-  unsupported?
-- **RQ5.** How should a counterfactual replay and a provisional break-even calculation be
-  interpreted relative to live evidence?
-
-### 1.4 What changed since the August edition
-
-The August edition evaluated a commercial, fail-closed distribution: the layer executed
-only with a verified license key, and the gateway metered Anthropic and OpenAI traffic
-but not Gemini. The November release changes the *system*, not the *measurement doctrine*:
-
-1. **Community mode (open core).** `createSavingsLayer({ provider })` without a
-   `licenseKey` runs the entire local saving stack with telemetry off, and the gateway
-   starts with no keys and arms its local levers. A key that *is* present but invalid,
-   expired or revoked still fails closed; only its absence stopped being an error.
-2. **Three protocols, one meter.** The gateway reads provider-reported usage from the
-   Gemini protocol, mapping `usageMetadata` onto the same usage shape as Anthropic and
-   OpenAI, with implicit-cache tokens discounted from ordinary input and thinking tokens
-   summed into output.
-3. **Chinese providers at list price.** The versioned catalog adds DeepSeek (flash and
-   v4-pro, at peak rates — the conservative direction, since off-peak is half), Qwen and
-   GLM, with first-class upstream aliases in the gateway.
-4. **Zero-telemetry default.** Community mode sends nothing to BiVelio; the optional
-   cloud key sends only the per-request fields enumerated in the Cloud Services Terms.
-
-Nothing in this release changes the four-ledger accounting, the evidence labels, or the
-versioned list-price basis. The August results remain the primary evidence; this edition
-adds analyses, not re-analysis.
-
-### 1.5 What changed in the 1.1.0 release
-
-The 1.1.0 release extends the open-core edition without touching the measurement doctrine,
-the four ledgers or the evidence labels:
-
-1. **Cache-break audit.** A deterministic, network-free detector scans the cacheable
-   `system` prefix for per-request content — ISO 8601 and RFC 2822 timestamps, UUID v4 and
-   epoch milliseconds/seconds — and reports it as a `cache-audit` trace plus a
-   one-per-process warning. It diagnoses the most common silent cause of a prompt cache
-   that never hits, and never rewrites the caller's prompt (Section 3.6).
-2. **Levers inside the batch.** `layer.batches.submit()` now runs the same pure, lossless
-   request-body levers as `generate()` — elision by supersession (default-on) and
-   tool-output compaction (opt-in) — so a batch item's prompt byte-equals the prompt
-   `generate()` sends for the same request and toggle (Section 3.7).
-3. **Intra-batch deduplication** (opt-in). Requests whose final provider body is identical
-   are sent once and replayed from the first result; the batch summary counts the money
-   over the sent executions, never twice (Section 6.5).
-4. **Cascade 2026.** The default model-cascade table now covers the current frontier's
-   same-family cheap siblings (`gpt-5/5.2/5.4 → *-mini`, `claude-opus-5/-5-5 →
-   claude-haiku-4-5`); `claude-sonnet-5/-5-5` remain without a default pair because
-   r = 0.50 exactly leaves no quality margin (Section 6.3).
-
----
+The research questions are: what cost contrast is supported by the public artifacts; what
+uncertainty the recorded sampling design permits; which mechanism effects can be separately
+identified; and which operational and quality claims require further evidence. The November
+experiments are treated as exploratory. The term *preregistered* is reserved for a protocol with
+a verifiable record preceding the relevant data collection.
 
 ## 2 · Related work
 
-Token pricing is a commercial decision, not a property of the Transformer architecture.
-Against that background, one line of work reuses computation: PromptCache [4],
-CachedAttention [5], SGLang [6] and CacheBlend [7] study attention or KV-cache reuse
-under different serving assumptions, and Anthropic and OpenAI document provider-side
-prompt caching [8, 9]. These mechanisms can lower usage charges, but an experiment must
-distinguish caching already present in both arms from caching *enabled* by the
-intervention — which is precisely the attribution problem of Section 4.4.
+Token pricing is a commercial decision, not a property of the Transformer. One line of work
+reuses computation: PromptCache [4], CachedAttention [5], SGLang [6] and CacheBlend [7] study
+attention or KV-cache reuse, and Anthropic and OpenAI document provider-side prompt caching
+[8, 9]. These mechanisms can lower usage charges, but an experiment must distinguish caching
+already present in both arms from caching *enabled* by the intervention — the attribution
+problem of Section 4.4.
 
-A second line reduces prompt tokens: LLMLingua [1], LLMLingua-2 [2] and gist tokens [3]
-use distinct compression strategies. A third reuses responses: GPTCache [10], SCALM
-[11], MeanCache [12] and vCache [24] address freshness, privacy and per-prompt error
-bounds, and P-CHR AUC and Operational Retention Rate evaluate deployment [27]. Routing
-systems such as FrugalGPT [13], RouteLLM [14] and RouteNLP [25] select among models and
-calibrate escalation. Serving-efficiency work — vLLM [15], SGLang [6], speculative
-decoding [16] — is orthogonal to this paper, which does not measure serving throughput.
-OpenTelemetry's GenAI conventions [17] provide an observability vocabulary, not cost
-attribution.
+A second line reduces prompt tokens: LLMLingua [1], LLMLingua-2 [2] and gist tokens [3]. A
+third reuses responses: GPTCache [10], SCALM [11], MeanCache [12] and vCache [24] address
+freshness, privacy and per-prompt error bounds; P-CHR AUC and Operational Retention Rate
+evaluate deployment [27]. Routing systems such as FrugalGPT [13], RouteLLM [14] and RouteNLP
+[25] select among models and calibrate escalation. Serving-efficiency work — vLLM [15], SGLang
+[6], speculative decoding [16] — is orthogonal, as this paper does not measure throughput.
+OpenTelemetry's GenAI conventions [17] provide a vocabulary, not cost attribution.
 
 BV-SALA combines established mechanisms with request-identity guards, separate ledgers,
-calibrated abstention and economic gating. Its differentiation is the integration of
-*accounting and safety*, not any single cache, serialization or observability mechanism.
-vCache is the closest comparator for semantic caching; the present work does not
-establish equivalent guarantees, model coverage or hit rates. Structured-data rewriting
-requires task- and model-specific quality evaluation: Notation Matters shows that token
-reductions can reduce tool-calling accuracy and amplify multi-turn parsing failures
-[26]. The uncertainty discussion uses established terminology [18, 19] without asserting
-calibration-chain traceability. The evidence therefore supports a measurement-and-
-guardrails contribution, not a claim of general optimization leadership.
-
----
+abstention controls and economic gating; its differentiation is the integration of accounting and
+safety, not any single mechanism. vCache is the closest comparator for semantic caching; this
+work does not establish equivalent guarantees or hit rates. Structured-data rewriting requires
+task- and model-specific quality evaluation: Notation Matters shows token reductions can reduce
+tool-calling accuracy [26]. The uncertainty discussion uses established terminology [18, 19]
+without asserting calibration-chain traceability.
 
 ## 3 · System model and accounting object
 
-### 3.1 Notation
+### 3.1 Notation and cost basis
 
-| Symbol | Meaning |
-| --- | --- |
-| `r` | A request: model, messages, tools, structured data, and constraints |
-| `u(r) = (i, o, c)` | Provider-reported usage: input, output, and cache-read input tokens |
-| `π_p = (π_in, π_out, π_cache)` | Provider `p`'s list prices, USD per million tokens, versioned |
-| `C(π, u)` | Cost: `π_in·i + π_out·o + π_cache·c` divided by one million |
-| `L` | The layer: a function from `r` to `(r', R)` where `R` is the report |
-| `R = (C_base − C_opt) / C_base` | The cost ratio — the primary estimand |
-| `F` | The semantic family (SDK) or session (gateway); the resampling unit |
-| `B` | Bootstrap resamples, `B = 10,000` |
+We distinguish a **logical request** from a **provider execution**. A logical request may cause no
+execution when a response is replayed, one execution, or several executions when routing,
+escalation, or retries are involved. All reported monetary amounts are valued at a specified
+version of the list-price catalog. They are not negotiated or reconciled invoices.
 
-All amounts in this paper are *list-price* amounts: the provider's published price at the
-catalog version that produced them, never a negotiated or reconciled invoice. Prices are
-USD per million tokens; the internal catalog stores per-1,000 and a guard test rejects
-per-million values written by mistake.
+For execution `e`, let the normalized usage vector be
 
-### 3.2 The layer
+```
+x_e = ( n_{u,e}, n_{r,e}, n_{w5,e}, n_{w1,e}, n_{o,e} ),
+```
 
-**Definition 1 (request transform).** The layer is a (possibly partial) function
-`L: r → (r', R)` that returns a transformed request `r'` and a report `R`. The
-transformation is *content-preserving* under an equivalence predicate `E(r, r')` that the
-implementation must certify per mechanism: exact identity for cache hits, a declared
-delimiter for structured-data rewriting, an output contract for constrained decoding, and
-a header-identity check for upstream rewriting. Where `E` cannot be certified, `L` must
-fall back to the identity transform and report the stage as failed-open.
+where the components are uncached input, cache-read input, five-minute cache-write input,
+one-hour cache-write input, and billable output tokens. These are **non-overlapping billing
+categories**; write categories not offered by a provider are omitted. Let `π_{e,k}` be the list
+price in USD per million tokens for category `k`, the model and endpoint used by execution `e`,
+the applicable billing mode, and the stated catalog version. Define
 
-**Definition 2 (report).** A report is a tuple
-`R = (calls, tokens, ledgers, cost, traces)` where `ledgers` is a four-vector
-`(A, E, K, P)` — avoided calls, eliminated tokens, compressed tokens, provider-cached
-tokens — and `cost` carries `(baseline, actual, ratio, basis)` with `basis` an evidence
-label.
+```
+C_e = 10⁻⁶ · Σ_{k ∈ {u,r,w5,w1,o}} π_{e,k} · x_{k,e} + g_e,        (1)
+```
 
-**Definition 3 (evidence labels).** For a value `v`, its label is one of `measured`
-(provider-reported usage plus a versioned list price), `reference` (an explicit matching
-condition against a prior *executed* request whose provider counter is reused),
-`estimated` (reconstructed: modeled, simulated, or extrapolated), or `unmeasured` (no
-final provider counter, e.g. a stream that closed before usage). The labels form a
-partial order by evidential strength:
-`measured ≻ reference ≻ estimated ≻ unmeasured`, with no operation that promotes a value
-across the order. In particular, a ratio whose numerator or denominator is `reference`
-or `estimated` is never reported as an invoice fact.
+where `g_e` contains any separately itemized charges included in the stated scope. The
+experiments below concern provider token charges; ancillary charges and local infrastructure
+costs that were not measured are outside that scope, not evidence of zero cost. Additional
+billable categories require an explicit extension of the usage vector and catalog. Batch and
+cache prices must be represented by the applicable rates, rather than by adding purported
+discount percentages.
 
-### 3.3 Proposition 1 — ledger decomposition
+The mapping from raw counters to `x_e` is provider-specific. If a raw input counter includes
+cache reads or writes, those components are subtracted before assigning `n_{u,e}`; if it excludes
+them, they are not subtracted again. Reasoning tokens are included exactly once in billable
+output according to the provider's counter semantics. A separately reported reasoning count is
+not an additional charge when already included in the output total. A missing counter or price
+is not silently replaced with zero. Partial observations must retain their incompleteness.
 
-**Assumption A1 (temperature-zero determinism of the counter).** For a fixed request and
-model, the provider's usage counter is deterministic enough that two identical requests
-produce the same `u` within the provider's reported precision.
+For an arm with execution set `E`, its cost is `C_arm = Σ_{e ∈ E} C_e`. This sum includes every
+billable attempt, including cheap-model attempts before escalation, repeated attempts, and
+failed attempts when they incur a charge. Known executed costs and missing or reconstructed
+components must be reported separately. An avoided execution has zero actual provider-execution
+cost, but its counterfactual cost requires separate evidence. The catalog implementation stores
+token prices per 1,000 tokens; this is equivalent to Equation (1) only with the corresponding
+unit conversion.
 
-**Assumption A2 (separability).** The mechanisms act on disjoint token populations: a
-token avoided by a call-avoidance decision is not also counted as eliminated; a token
-eliminated by rewriting is not also counted as cached.
+### 3.2 The layer and its report
 
-**Assumption A3 (monotone pricing).** Prices are non-negative and the cost functional is
-linear in `u`.
+**Definition 1 (stateful request policy).** The layer is a stateful policy. Given a logical request
+`r` and current state `s`, it may return a stored response or initiate one or more provider
+executions, possibly adapting later decisions to earlier responses. Its output consists of the
+response, a report `R`, and updated state `s′`. State includes relevant cache contents, freshness
+metadata, configuration, and execution history. Provider responses and cache behavior may be
+stochastic or depend on state outside the layer's control.
 
-**Proposition 1.** Under A1–A3, the baseline-cost ratio decomposes additively:
-`R = R_A + R_E + R_K + R_P + ε`, where `R_A`, `R_E`, `R_K`, `R_P` are the cost ratios
-attributable to each ledger and `ε` accounts for interaction effects between mechanisms
-applied to the same request.
+This model does **not** assume that identical request bodies imply identical provider responses
+or usage counters. Cold and warm prefix caches alone can change usage categories for otherwise
+identical requests. Exact request matching establishes a key match under the implemented
+identity policy; it does not, by itself, establish that a cached answer remains correct, authorized,
+or fresh. Likewise, a reversible serialization, a declared delimiter, or a valid output schema is
+not a proof of task-level semantic equivalence. Each mechanism needs explicit applicability
+conditions and a stated quality-evaluation scope. Unsupported transforms should decline without
+changing the request.
 
-*Proof sketch.* By A3, `C_base − C_opt = Σ_j Δ_j` over disjoint token populations
-(A2), each `Δ_j` being the cost of the tokens attributable to mechanism `j`, valued at
-the provider price of the token class they occupy. Dividing by `C_base` gives the
-decomposition; `ε` collects the non-diagonal terms that A2 does not eliminate (for
-example, a compressed prompt changing the cache-placement decision).
+**Definition 2 (report).** A report `R` records logical requests, provider executions, normalized
+usage, activity ledgers, costs, provenance, and traces. The four activity ledgers are avoided
+calls, eliminated tokens, compressed tokens, and provider-cached tokens. They describe different
+activities and units. They are not assumed to be four additive monetary or causal contributions.
+Cost reporting distinguishes baseline, actual, ratio, catalog version, and evidence basis.
 
-The proposition is deliberately conditional: it licenses reporting the four ledgers
-*separately* and forbids summing them into a single unconditional figure unless `ε` is
-bounded. The implementation never sums them; the UI shows the four ledgers and the
-`basis` next to every amount.
+**Definition 3 (evidence provenance).** For each reported quantity, `measured` denotes an observed
+counter, or a cost obtained from observed usage and specified catalog prices; `reference` denotes
+a value borrowed from an explicitly identified prior execution under a stated matching rule;
+`estimated` denotes a reconstructed value; and `unmeasured` denotes a required observation that
+is absent.
+
+These labels are a reporting convention, not probabilities of correctness. Baseline cost, actual
+cost, and any attributed effect retain separate provenance. A derived quantity cannot be assigned
+stronger provenance than the weakest necessary input without additional evidence. Mixed observed
+and reconstructed components must be disclosed. Missing values must not be presented as complete
+totals. In particular, `measured` usage valued at list prices does not imply invoice reconciliation,
+semantic correctness, or causal attribution.
+
+### 3.3 Accounting and factorial attribution
+
+For positive baseline cost, the observed aggregate reduction is
+
+```
+R = 1 − C_opt / C_base.                                          (2)
+```
+
+If `C_base = 0`, this ratio is undefined and is reported as unavailable. Negative reductions are
+permitted: an intervention can increase cost. This identity depends on complete, consistently
+scoped arm costs, not on a partition of savings among activity ledgers.
+
+For attribution, consider a specified two-factor experiment. Let `C_ab` denote the cost for the
+same workload and price basis with factor states `a, b ∈ {0, 1}`. The factors may, for example, be
+response deduplication and explicit prefix-cache markers. Observed finite-run cell costs and
+population expected cell costs must not be interchanged without specifying which is intended.
+
+**Proposition 1 (two-factor cost identity).** Define the cost interaction
+
+```
+IC = C_11 − C_10 − C_01 + C_00.
+```
+
+Then the combined cost reduction satisfies
+
+```
+C_00 − C_11 = (C_00 − C_10) + (C_00 − C_01) − IC.
+```
+
+If `C_00 > 0`, the corresponding reduction ratios satisfy `R_11 = R_10 + R_01 − IC / C_00`, where
+`R_ab = (C_00 − C_ab) / C_00`.
+
+*Proof.* Substitution of the definition of `IC` cancels `C_10` and `C_01` and leaves
+`C_00 − C_11`. Division by a positive `C_00` gives the ratio identity.
+
+This is an exact algebraic contrast, not a claim of algorithmic novelty or a guarantee of causal
+identification. Positive `IC` means that the combined saving is smaller than the sum of the two
+baseline-relative standalone savings. Its sign is therefore opposite to the residual in a
+sum-of-savings equation. Estimating a causal interaction requires an appropriate assignment and
+state-control protocol; uncertainty requires independent replicated units or other justified
+inference. Traces showing that two mechanisms ran do not observe their absent-intervention
+counterfactuals. Neither those traces nor the largest interaction observed in a finite sample
+establish a bound for future workloads. Routing, output-length changes, retries, and other effects
+also need explicit contrasts if attributed.
 
 ### 3.4 The open-core contract
 
-Community mode is a structural license gate (`src/license/community.ts`) that answers
-"active, entitled to every local feature" with no network dependency, and a
-corresponding entitlements channel in the gateway that grants the four local levers
-without a service key. The contract is:
-
-1. With no key configured, the layer runs the full local stack and sends nothing.
-2. With a key configured but invalid, expired or revoked, the layer fails closed.
-3. With a valid cloud key, the layer additionally reports the per-request fields
-   enumerated in the Cloud Services Terms — never prompt content, completions or
-   provider credentials.
-
-This is a *design* contribution with an honest limitation (Section 8): without a cloud
-key there is no revocation channel at all.
+In the described distribution, community mode grants local feature entitlements without a
+license key or a control-plane dependency. Availability of a feature is distinct from whether it is
+enabled by its default configuration: opt-in mechanisms remain opt-in. With no cloud key, the
+local layer sends no BiVelio telemetry; provider API traffic needed to serve requests is separate.
+A supplied invalid, expired, or revoked key fails the license gate. With a valid cloud key, the
+additional telemetry surface is the per-request metadata specified by the Cloud Services Terms,
+excluding prompt content, completions, and provider credentials. Community mode has no cloud
+revocation channel by design (Section 9). These are distribution and configuration properties,
+not experimentally measured cost reductions.
 
 ### 3.5 Metering the three protocols
 
-The gateway reads usage from Anthropic Messages, OpenAI Chat Completions/Responses, and
-the Gemini protocol. For Gemini, `:generateContent` (JSON) and `:streamGenerateContent`
-(SSE, both `alt=sse` and newline-delimited JSON) are forwarded byte-for-byte; the
-observer maps `usageMetadata` onto the internal usage shape, discounting implicit-cache
-tokens from ordinary input and summing thinking tokens into output. A stream without a
-final `usageMetadata` is reported `unmeasured`. These are operational (non-breakage and
-fidelity) checks, not savings claims.
+The gateway observes usage from Anthropic Messages, OpenAI Chat Completions/Responses, and
+the Gemini protocol. For Gemini, `:generateContent` and `:streamGenerateContent`, including
+their supported streaming transports, are forwarded while the observer maps `usageMetadata`.
+The mapping separates cache reads from uncached input and accounts for billable thinking output
+according to the native protocol's counter semantics. Other protocol adapters require their own
+mapping; similarly named fields must not be assumed to have identical inclusion rules. A stream
+without the required final usage remains `unmeasured`, or partially measured where specific
+counters are available. Protocol-fidelity tests validate the tested formats and forwarding
+behavior; they do not establish savings or invoice accuracy.
 
 ### 3.6 The cache-break audit
 
-The dominant failure mode of prompt caching is not the provider's discount but the
-hit-rate: a mutable token in the otherwise stable prefix forces a full miss on every
-request. The layer therefore runs a deterministic, side-effect-free audit over the
-cacheable `system` header that flags ISO 8601 and RFC 2822 timestamps, UUID v4, and epoch
-milliseconds/seconds, and emits a `cache-audit` trace plus a one-per-process warning keyed
-by the detected pattern. The audit is diagnostic, never rewriting: changing the `system`
-prompt is a quality decision that belongs to the caller, and the layer's compaction
-doctrine forbids changing an opinion about a block the provider has already cached. The
-mechanism is unit-tested for determinism and for the absence of false positives on
-ordinary numbers of other magnitudes.
+The deterministic, local audit scans the cacheable `system` header for ISO 8601 and RFC 2822
+timestamps, UUID v4 values, and epoch timestamps, and records a `cache-audit` trace and a
+warning keyed by the detected pattern. Such content can indicate a variable prefix that reduces
+cache reuse. A pattern match does not prove that the value changes between requests or that
+moving it preserves meaning. A changed prefix can invalidate reuse from the affected position
+onward; the actual outcome depends on the provider's cache rules and eligible stable prefix. The
+audit itself is diagnostic and does not rewrite the prompt. No general claim that this is the
+dominant production failure mode is made without workload data.
 
 ### 3.7 Levers inside the batch
 
-The batch surface (`layer.batches`) previously sent requests "as written", skipping the
-layer's per-request levers; a batch item therefore missed the token reduction `generate()`
-applies, on top of the batch discount. The 1.1.0 release runs the two lossless, pure
-request-body levers on batch items before translation, reusing the exact same functions
-the pipeline calls — elision by supersession (Section 3.2) and tool-output compaction —
-so an item's provider body is byte-for-byte the body `generate()` produces for the same
-request and toggle. Intra-batch deduplication collapses byte-identical bodies into one
-execution, replaying the dropped items from the first result; it is opt-in because it
-changes what the caller observes and is only sound when identical bodies imply identical
-answers (deterministic sampling).
+The batch surface shares elision by supersession and optional tool-output compaction with the
+generation pipeline. This parity claim is limited to the transformations and options common to
+both paths; it does not cover every generation-only lever. Byte-level parity tests can establish
+that the two paths produce the same transformed payload for tested inputs and options. They do
+not establish task-level losslessness of either path.
+
+Opt-in intra-batch deduplication submits one execution for matching final provider bodies and
+replays its result to the matching logical requests. Its applicability requires that the workload's
+contract permits response replay under the relevant identity, authorization, sampling, and
+freshness conditions. It is not equivalent to obtaining independent fresh samples, and identical
+bodies do not guarantee identical fresh provider responses. The deterministic adapter benchmark
+validates execution counting under its fixture. Counts, input tokens, and monetary savings are
+reported separately; equal percentage reductions require additional workload and pricing
+conditions. Each submitted execution is counted once in actual cost.
 
 ### 3.8 The cacheable-prefix reorder
 
-The cache-break audit (Section 3.6) diagnoses a mutable system prompt; the reorder fixes
-it with the caller's explicit permission (`savings.cachePrefix: true`). Lines of the
-leading `system` prompt that carry per-request content (ISO 8601 and RFC 2822 timestamps,
-UUID v4, epoch ms/s) move to the end of the header, the header is split into two messages
-— the stable part, then the moved lines — and only the stable part is declared as the
-cache prefix. The provider's prefix cache can then match the stable part on every request,
-where a mutable token inside the prefix would force a full miss plus a paid cache write on
-each call. The model reads the same lines in a different order, so the lever is opt-in by
-design and the `cache-prefix` trace reports exactly what moved; the saving is the
-provider's (its cache hits at the discounted read rate) and is never credited to the
-layer. It runs on the first message when it is a string `system`, and declines cleanly —
-the request travels unchanged — when there is nothing to move or nothing stable left.
+With explicit opt-in through `savings.cachePrefix`, the described transform moves matching lines
+from a leading string `system` message to the end of the header, splits the stable and moved
+portions, and marks only the stable portion as the cacheable prefix. It declines when there is no
+movable content or no stable content. The reviewed trace records the number of moved lines and
+detected patterns, not the moved text or exact offsets.
 
----
+The resulting stable prefix can enable provider-cache reuse when length, TTL, placement, request
+compatibility, and provider state permit it. Byte stability is a mechanical precondition, not a
+guarantee of a hit. Keeping the same lines in a different order does not guarantee equivalent
+model behavior, so task-level quality requires evaluation. The provider supplies the cache tariff;
+the intervention may enable its use. Those two facts must be kept distinct when interpreting
+savings.
 
 ## 4 · Measurement methodology
 
 ### 4.1 Design
 
-Each scenario runs **twice against the same live provider** on the same constructed
-content: arm A without the layer, arm B instrumented. The unit of analysis is the
-semantic family — a group of requests that share a template and differ only in fields —
-so that repetition, which is what the mechanisms exploit, is represented realistically.
-Both arms are valued with the provider-reported usage at the same catalog version.
+The live SDK comparisons execute baseline and instrumented arms on paired constructed content.
+Families group related requests; the gateway analysis instead uses sessions and a reconstructed
+counterfactual. The two designs have different evidence bases. Both arms of a live comparison use
+a common price-catalog version, while execution-specific model and cache rates are retained.
+Repeated calls are affected by state. A reproducible protocol must specify arm order, cache
+initialization and warming, TTL, isolation or sharing of cache keys, model identifiers, sampling
+parameters, scheduling, and failed-attempt handling. Pairing alone does not remove temporal
+confounding or cache spillover. Where such controls are not established, the comparison is an
+observed paired contrast on the executed workload rather than an isolated causal effect of one
+mechanism.
 
 ### 4.2 Estimator
 
-For family `f` with `n_f` requests per arm, let `C_base(f)` and `C_opt(f)` be the summed
-costs; the per-family ratio is `R_f = (C_base(f) − C_opt(f)) / C_base(f)`, and the
-estimand is `R = mean_f R_f` over families, treating each family as one independent
-observation. This is a ratio-of-sums estimator per family and a mean across families; it
-is not a pooled token average, which would overweight large families.
+Let `b_f` and `o_f` be total baseline and optimized costs for family `f`, including all executions in
+the respective arm. The primary economic estimator implemented by the paired benchmark is the
+pooled ratio of cost sums,
+
+```
+R̂_pooled = 1 − ( Σ_{f=1..F} o_f ) / ( Σ_{f=1..F} b_f ),   Σ_f b_f > 0.   (3)
+```
+
+It measures reduction in the aggregate cost of that workload. When every `b_f > 0`, it is a
+baseline-cost-weighted average of family reductions,
+
+```
+R̂_pooled = Σ_f w_f R_f,    w_f = b_f / Σ_j b_j,    R_f = 1 − o_f / b_f.
+```
+
+A distinct secondary descriptive statistic is `R̂_macro = F⁻¹ Σ_f R_f`, which gives each family
+equal weight. The two statistics answer different questions and need not agree. The macro
+statistic is undefined for a family with zero baseline cost unless an explicit exclusion policy is
+stated; it is not substituted for the pooled estimator. Neither statistic automatically predicts the
+reduction for a future workload with a different mix of requests. Financial break-even arithmetic
+additionally assumes that the reduction applies to the priced bill and that all relevant incremental
+charges are included.
 
 ### 4.3 Uncertainty
 
-**Percentile cluster bootstrap.** Resample families with replacement, `B = 10,000`
-resamples, recompute `R` on each, and report the empirical 2.5th and 97.5th percentiles.
-Resampling at family (SDK) or session (gateway) level respects dependence within a family
-and avoids the anti-conservative intervals that a request-level bootstrap would produce.
-The seeds and resample artifacts are published with the bench. The procedure is the one
-described in Efron & Tibshirani [22] and Davison & Hinkley [23]; it is a percentile
-interval, not a BCa interval, and that choice is stated as a limitation.
+The percentile cluster bootstrap samples `F` family indices with replacement for each of
+`B = 10,000` resamples, retains the complete paired records of each sampled family, and
+recomputes Equation (3) from the resampled cost sums. The interval consists of the empirical
+2.5th and 97.5th percentiles. The historical gateway report describes session-level resampling; its
+interval is not independently recomputed here because the required session-level costs were not
+located in the public artifacts. A zero-denominator resample is undefined and must be disclosed
+rather than assigned an artificial ratio. The seed, quantile convention, resample count, and
+input-artifact identifier are required for exact numerical reproduction.
 
-### 4.4 Attribution of the Anthropic effect
+Resampling families preserves observed within-family dependence. Its inferential interpretation
+requires a population of exchangeable independent family units, or another explicit justification
+for the resampling model. Shared provider-cache state, execution days, accounts, or scheduling
+can induce dependence between families that this procedure does not capture. The interval does
+not incorporate uncertainty from unmeasured costs, reconstructed counterfactuals, price errors, or
+uncontrolled state. It is a percentile interval, not BCa [22, 23], and does not correct an
+unsupported design or a mismatch of estimands. No universal `O(1/F)` bias claim is made for the
+mean of family ratios.
 
-The `claude-sonnet-5` reduction contains a prefix-cache effect that arm B *enables* by
-placing `cache_control` markers. To separate a pre-existing provider discount from an
-effect of the intervention, the analysis compares arm A's cache-read tokens (the
-provider's own behavior) with arm B's, and reports the difference as an *enabled* effect
-— approximately 41 percentage points of the 75.1 %. This is an attribution within the
-experiment, not a decomposition certified by the provider.
+### 4.4 Interpreting the Anthropic comparison
+
+The instrumented arm enables explicit `cache_control` markers and reports more cache-read usage.
+This supports a descriptive account of how its observed usage differs from the baseline. Comparing
+cache-read counts alone does not isolate a causal saving: writes, uncached input, output length,
+avoided executions, and cache state may also change. The previously reported approximately
+41-percentage-point attribution must therefore be treated as a descriptive calculation under its
+specified counterfactual assumptions, not as a separately identified causal effect. A defensible
+numerical attribution requires its formula, price basis, and contributing usage records. A factorial
+comparison on another model or workload does not retrospectively identify this effect.
 
 ### 4.5 What the method cannot do
 
-The method cannot establish invoice reconciliation (negotiated prices, credits, taxes and
-rounding are out of scope), non-inferiority in quality or latency (no adequately powered
-test is run), or generalization beyond the measured workloads. These are threats
-(Section 7), not caveats to be buried.
-
----
+These comparisons do not establish invoice reconciliation, generalization beyond the stated
+workload and resampling model, or quality and latency non-inferiority. Observed agreement on a
+small answer-key test is a useful exploratory result, but non-inferiority additionally requires a
+prespecified endpoint, margin, sampling design, and appropriate one-sided interval or test.
+Activity counters, cost contrasts, semantic quality, and operational correctness are separate
+claims with separate evidence requirements (Section 8).
 
 ## 5 · Experimental design
 
-| Dimension | Live SDK double-run | Gateway replay |
-| --- | --- | --- |
-| Unit | semantic family (100 + 31) | session (51) |
-| Requests per arm | 200 / 62 | 19,779 total |
-| Traffic | GSM8K-derived, 30 % exact repeats + 20 % paraphrases | production sessions, one organization, 13 days |
-| Models | `gpt-4o-mini`, `claude-sonnet-5` | Anthropic (Claude Code) |
-| Cost basis | versioned list prices | versioned list prices, partially reconstructed baseline |
-| Interval | percentile cluster bootstrap, B = 10,000 | same procedure at session level |
-| Status | **measured** (live) | **reference** (counterfactual) |
+The primary artifacts are dated 28 September 2026 and identify SDK 0.4.31. The OpenAI workload
+contains 200 logical requests in 100 families: 100 original GSM8K-derived questions, 60 exact
+repetitions, 10 surface paraphrases, 10 lexical paraphrases, 10 numeric variants and 10 word
+variants. The latter two categories change the expected answer; they are not answer-preserving
+paraphrases. Thus the realized mix is 50 % original, 30 % exact-repeat, 10 % paraphrase and 10 %
+answer-changing variation across the workload, not within every family. Family sizes vary from
+one to six requests.
 
-Workload construction: GSM8K [21] questions are grouped into families by a template;
-within a family, 30 % of requests repeat exactly and 20 % are paraphrases, which is the
-regime in which the layer's mechanisms are expected to act. The benchmark publishes each
-trial individually, with its raw CSV, and not only the aggregate.
+The Anthropic artifact contains 62 requests in 31 families: 31 originals, 19 exact repetitions, and
+three examples of each of the other four categories. Family sizes vary from one to five. For both
+models, logical requests must be distinguished from provider executions: a served cache hit
+remains a logical request but does not execute a new provider call. The paired families are the
+units resampled in the published bootstrap.
 
----
+The data permit computational reproduction of the reported aggregate analysis. They do not
+authenticate the provider origin of every stored counter, independently rerun the APIs, or
+establish population representativeness. Shared provider-cache state may introduce dependence
+across families; the reported bootstrap conditions on the observed run and does not reconstruct
+cache warm-up under resampled request orders.
 
 ## 6 · Results
 
-### 6.1 Primary evidence (unchanged from the August edition)
+### 6.1 Recomputed historical SDK experiments
 
-| Evidence, system, model | Reduction | 95 % CI | Workload and basis |
+Table 1 reports the ratio of aggregate costs used by the public code. Costs are USD at the recorded
+list-price basis. Bootstrap intervals use 10,000 family resamples and seed `0xa11`; they are
+percentile intervals, not BCa intervals.
+
+| Model | Baseline USD | Optimized USD | Reduction [95 % interval] |
 | --- | --- | --- | --- |
-| Live SDK A/B · `gpt-4o-mini` | **31.5 %** | [25.7; 36.7] | 100 families / 200 requests per arm; 30 % exact repeats + 20 % paraphrases; SDK 0.4.31; measured |
-| Live SDK A/B · `claude-sonnet-5` | **75.1 %** | [69.3; 79.6] | 31 families / 62 requests per arm; `cache_control` enabled in B (≈41 pp of the effect); measured |
-| Counterfactual gateway replay · Anthropic TTL | **2.49 %** | [1.50; 3.57] | 19,779 requests / 51 sessions / 13 days; partially reconstructed baseline; reference |
+| `gpt-4o-mini` | 0.0412380 | 0.0282477 | **31.50 %** [25.74; 36.75] |
+| `claude-sonnet-5` | 0.3152840 | 0.0785669 | **75.08 %** [69.31; 79.60] |
 
-Reading the table: the OpenAI figure is the clean case — repetition-dominated traffic and
-a saving that comes from calls never executed. The Anthropic figure is large mainly
-because the instrumented arm enables a provider cache the baseline arm did not use; the
-paper reports both the raw figure and the enabled share, because quoting 75.1 % as
-"the layer's saving" would overstate the attribution. The gateway figure is small and
-reference-valued; it shows where Anthropic spend is concentrated, not a validated
-generalization.
+**Table 1:** Offline recomputation of published September 2026 artifacts; no new provider calls.
 
-### 6.2 New operational evidence (this edition)
+As a secondary estimand, the equal-family mean is 22.88 % [17.56; 28.10] for OpenAI and 70.71 %
+[65.69; 75.40] for Anthropic, using the same bootstrap draws. This difference is a weighting effect,
+not an arithmetic contradiction. The original manuscript described this secondary estimand while
+reporting the pooled result.
 
-- **Gemini protocol metering.** `:generateContent` and `:streamGenerateContent` (SSE with
-  `alt=sse`, and newline-delimited JSON) forward byte-for-byte against a fake upstream
-  and produce a `measured` record with the provider's `usageMetadata` mapped to the same
-  ledger shape. Non-breakage and fidelity, not a savings interval.
-- **DeepSeek Anthropic-format rewrite.** `/v1/messages` travels to
-  `/anthropic/v1/messages` with client headers intact (test-locked). Operational.
-- **Catalog guard.** The price guard test rejected a ×1000 per-million copy error during
-  this edition's development, before publication — evidence that the "a wrong price is
-  worse than no catalogue" doctrine is enforced mechanically, not by review.
+In the Anthropic artifact, the baseline has no cache reads or writes. The optimized arm records
+72,447 read tokens and 1,767 written tokens across 42 provider executions for 62 logical requests.
+The pricing contrast
 
-### 6.3 Routing economics at list prices (conditional arithmetic)
+```
+D_cache = ( (2.00 − 0.20)·72,447 − (2.50 − 2.00)·1,767 ) / 10⁶ = 0.1295211 USD
+```
 
-| Model | Input | Output | Cached input | Note |
+is 41.08 % of the baseline cost. This values those observed tokens against ordinary input pricing.
+It does not isolate a causal effect while holding response reuse, model outputs and cache history
+fixed. In particular, absent calls cannot also read the provider cache.
+
+### 6.2 Counterfactual gateway replay
+
+The original report gives 2.49 % [1.50; 3.57] for 19,779 requests, 51 sessions and 13 days. This is
+retained as an author-reported historical counterfactual estimate, not as a live paired
+measurement. Reused measured counters and reconstructed components must retain separate
+provenance; a mixed estimate cannot be upgraded wholesale to measured evidence. Raw gateway
+logs remain private. Before using this as a primary independently reproducible result, publish the
+exact session-level baseline/optimized totals, their inclusion rules and a runnable analysis tied
+to this interval.
+
+### 6.3 Batch deduplication checks
+
+A counting adapter verifies that byte-identical bodies can be executed once and the resulting
+response replayed to duplicates. For equal-weight synthetic requests, duplicate fractions of 10, 30
+and 50 % produce the corresponding execution-count reductions. This is a deterministic adapter
+check. It does not prove that two independent provider executions would return identical answers,
+even at temperature zero. Monetary and token reductions equal the duplicate fraction only under
+the relevant equal-cost or equal-token assumptions. Replay must be an explicit part of the
+application's output contract.
+
+### 6.4 Prefix reordering: observed cost and structural limitation
+
+A mechanical 1,000-request check reports one stable prefix after reordering and 69.6 % of system
+bytes in that span. Byte stability is an eligibility condition, not a provider hit-rate measurement;
+eligibility also depends on length, expiration, scope and provider policy. A changed prefix may
+still leave an earlier eligible prefix reusable.
+
+The public 20-request-per-arm `claude-haiku-4-5` summary reports no reads and 126,260 written
+tokens without reordering. With reordering, it reports 119,567 read tokens, 6,293 written tokens
+and a 95 % request hit rate. Recorded costs are $0.166225 and $0.02865795, a reduction of
+**82.76 %** in this constructed sequence. These totals include the write premium. No quality
+non-inferiority or interval across independent runs is established.
+
+The line-based transformation is **not structure-preserving in general**. For example, moving an
+ISO-timestamp property line out of a multiline JSON system block can make valid JSON invalid. An
+offline regression case demonstrates this failure without invoking a model. Therefore the
+transformation must not be described as universally lossless. Explicit caller-supplied stable and
+dynamic segments are a proposed replacement; they are not claimed to be implemented by the
+reviewed release. Prompt-order sensitivity still requires task evaluation.
+
+### 6.5 Repeat-rate pilot: corrected denominator
+
+The generator uses 20 unique questions and appends `⌊20q⌋` repetitions. Consequently `q` is
+repeats per unique question; the realized fraction among all requests is `ρ = ⌊20q⌋ / (20 + ⌊20q⌋)`.
+
+| Generator q | Requests | Actual repeat fraction | Avoided repeats | Reported saving |
 | --- | --- | --- | --- | --- |
-| `claude-sonnet-5` | ~2.00 | ~10.00 | 0.20 | Anthropic 1-h cache writes 2× |
-| `gpt-4o-mini` | 0.15 | 0.60 | 0.075 | OpenAI automatic caching |
-| `deepseek-flash` | 0.30 (peak) | 1.20 | **0.003** | off-peak half; Anthropic-format endpoint |
-| `qwen3.8-flash` | 0.15 | 0.47 | 0.015 | explicit cache, 1.25× writes |
-| `glm-5.3-flash` | ~0.11 | ~0.39 | — | CNY→USD at 7.2; hit price not split per model |
+| 0.3 | 26 | 6/26 = 23.08 % | 5/6 | 14.67 % |
+| 0.6 | 32 | 12/32 = 37.50 % | 10/12 | 23.67 % |
 
-*Conditional arithmetic, not a measurement.* For a workload whose prompts repeat within
-the cache window, list prices make a cached input token **~66× cheaper** on
-`deepseek-flash` than on `claude-sonnet-5` (0.20 / 0.003 ≈ 66.7), and off-peak DeepSeek
-input is **~13× cheaper** than Sonnet input (2.00 / 0.15 ≈ 13.3). The cross-provider
-quality gap is exactly what a cascade's deterministic gate must certify before any of
-this becomes savings; until then the layer may route in shadow mode (measure-only) at
-zero additional provider cost. The paper deliberately publishes the price gradient and
-not a routing win-rate, because no win-rate has been measured yet.
+**Table 2:** Exploratory `gpt-4o-mini` runs; savings taken from stored ratio fields.
 
-### 6.4 Break-even (provisional)
+The stored dollar totals are rounded and cannot reproduce the ratio fields exactly. Publish
+unrounded totals or integer accounting units in the next artifact. The summary does not explain
+why every repeat was not served from cache; request-level admission and skip reasons are needed.
+These two runs are not a general response curve or a calibrated quality evaluation.
 
-At a list-price reduction `R` applied to a monthly list-price bill `B`, a seat with a
-total monthly fee `F` pays off iff `R · B > F`. With `F = €15` per seat per month and the
-live OpenAI figure `R = 0.315`, the break-even bill is `B* = F / R ≈ €47.6` per month.
-This is conditional arithmetic on a measured ratio, not a forecast: the ratio is a
-property of a workload, and a workload with less repetition has a smaller `R`.
+### 6.6 Exploratory factorial: response reuse and prefix caching
 
-### 6.5 Intra-batch dedup (deterministic)
+The four cells contain the same 12 questions and 12 repeats on `claude-haiku-4-5`, with a per-cell
+salt intended to isolate provider caches. Here "dedup" refers to the exact-response-cache policy in
+the live harness, not the batch API operation.
 
-Deduplication is an identity, not an estimate: two requests with byte-identical provider
-bodies produce byte-identical results, so sending one and replaying the other avoids a
-provider execution without changing any answer. A deterministic benchmark against a
-counting batch adapter reports executions avoided exactly proportional to the duplicate
-rate of the workload: 10 % duplicates → 10 % of executions and input tokens avoided;
-30 % → 30 %; 50 % → 50 % (1,000 items; artifacts in
-`benchmarks/evidencia/dedup-de-lote-2026-11-09.json`). The saving composes with the 50 %
-batch discount and is never double-counted: the summary credits each sent execution once
-and reports the deduplicated count separately.
+| Response reuse | Prefix caching | Cost USD | Avoided calls |
+| --- | --- | --- | --- |
+| Off | Off | 0.178171 | 0 |
+| Off | On | 0.031128 | 0 |
+| On | Off | 0.119482 | 8 |
+| On | On | 0.025044 | 7 |
 
-### 6.6 Cacheable-prefix reorder (deterministic)
+**Table 3:** Public aggregate cells from 15 November 2026. No replicated-cell uncertainty is reported.
 
-The reorder is a mechanical transform, so its precondition for cache hits is measurable
-without the provider: on 1,000 requests whose system template carries a per-request ISO
-timestamp, the translated Anthropic body (the same wire translation as `generate()`)
-produces **1,000 distinct cacheable prefixes** without the reorder — the byte-match the
-provider requires can never succeed, and every request pays the full write premium. With
-`cachePrefix: true` the 1,000 requests share **one identical cacheable prefix** — 100 %
-stable — with 69.6 % of the system bytes inside the cached span and only the moved
-timestamp line paid at the full rate (artifacts in
-`benchmarks/evidencia/cache-prefix-2026-11-15.json`). This measures the mechanical
-precondition of the hit, not the provider's hit-rate.
+With `C_00, C_01, C_10, C_11` in table order, the cost interaction is
 
-**Live double-run.** On `claude-haiku-4-5`, 20 paired requests whose system carries a
-long stable handbook plus a per-request ISO timestamp: without the reorder, the marked
-prefix changes on every call — **0 % hit-rate**, 126,260 cache-write tokens paid at
-1.25×, $0.166 of list-price cost. With `cachePrefix: true`, the stable prefix is written
-once and read 19 times — **95 % hit-rate**, 119,567 cache-read tokens, $0.0287 total —
-an **82.8 % cost reduction per request**, measured with the provider's own
-`cache_read`/`cache_creation` counters (artifacts in
-`benchmarks/evidencia/cache-prefix-vivo-2026-11-15.json`).
+```
+IC = C_11 − C_10 − C_01 + C_00 = 0.052605 USD.
+```
 
-### 6.7 The ρ curve (live)
+The combined reduction is `1 − C_11/C_00 = 85.94 %`. The two baseline-relative savings cannot be
+added without subtracting `IC`: avoided calls remove opportunities for cache reads. This is an
+algebraic decomposition of recorded cell totals. The difference in admitted repeats (8 versus 7),
+fixed execution sequence and lack of independent replicated cells prevent a precise causal
+attribution claim with a sampling interval. The cached block recorded in this artifact is 7,229
+provider tokens; approximate token lengths in earlier prose should not substitute for that counter.
 
-The saving of the exact cache as a function of the exact-repeat rate, preregistered in
-Section 9: on `gpt-4o-mini` with 20 unique questions and temperature 0, the measured
-saving is **14.7 % at ρ = 0.3** and **23.7 % at ρ = 0.6**, avoiding 5 of 6 and 10 of 12
-repeats (artifacts in `benchmarks/evidencia/rho-vivo-2026-11-15.json`). The curve grows
-with ρ as preregistered, and sits below the identity: the exact cache does not capture
-every repeat — the gap is what the roadmap's factorial design is set up to explain.
+### 6.7 Cascade cost pilot; quality result not validated
 
-### 6.8 Factorial dedup × cache_control (live)
+On 24 trivia questions, the published summary compares `claude-opus-5-5` with a cascade serving
+all 24 requests through `claude-haiku-4-5`, with no escalations. Costs of $0.064568 and $0.020718
+imply a **67.91 %** reduction. The artifact records 24/24 accepted answers in each arm and 23/24
+agreement after text normalization, rather than verbatim agreement.
 
-The 2×2 factorial of the roadmap, on `claude-haiku-4-5` with 12 unique questions plus
-their 12 exact repeats and a stable ~6.2k-token system handbook: the marked effect
-(prefix caching) cuts $0.178 → $0.031 per 24 requests (−$0.147); the dedup effect cuts
-$0.178 → $0.119 (−$0.059, avoiding 8 of 12 repeats); both together cut to $0.025
-(−$0.153, an **85.9 % reduction**). The interaction is +$0.053 — the two effects are not
-fully additive, as expected: a deduplicated request does not exist to read the cache.
-Artifacts in `benchmarks/evidencia/factorial-vivo-2026-11-15.json`.
+The evaluation function accepts a response containing the expected answer as a substring. For
+example, it accepts "not Paris" for "paris" and "12" for "2". This proves that the grader is
+permissive; it does not prove that those errors occurred in the recorded responses. Because
+individual responses are absent from the public summary, its 24/24 scores cannot be independently
+regraded. These scores must not support a non-inferiority claim.
 
-### 6.9 Cascade non-inferiority (live)
+A future paired non-inferiority evaluation must specify a quality metric, margin `δ`, one-sided
+significance level, sampling population, sample-size justification and a validated grader before
+collection. For accuracy difference `∆ = p_B − p_A`, the criterion is a suitable one-sided lower
+confidence bound exceeding `−δ`. Even 24 independently sampled and perfectly graded cases with
+zero additional failures give a one-sided 95 % upper bound `1 − 0.05^(1/24) = 11.73 %` on the
+probability of an additional failure (baseline correct and cascade incorrect). This illustration is
+not a retrospective non-inferiority test of the present selected trivia set.
 
-The roadmap's non-inferiority design, on 24 single-answer questions with a golden list,
-`claude-opus-5-5` as the strong model and its default cascade to `claude-haiku-4-5`:
-without the cascade the strong model answers all 24 correctly at $0.065; with it, the
-cheap model served 24/24 (zero escalations), all 24 answers matched the golden list, 23/24
-agreed verbatim with the strong model, and the cost fell to $0.021 — a **67.9 % reduction
-with no measured quality loss** on this workload (artifacts in
-`benchmarks/evidencia/no-inferioridad-vivo-2026-11-15.json`). The one verbatim disagreement
-is the honest reminder of the failure the deterministic gate cannot see (Section 6.3):
-form compliance is not truth, and this workload is trivia, not production traffic.
+## 7 · Economic scope and deployment implications
 
----
+Model price comparisons are conditional arithmetic. Cross-model savings require complete usage,
+escalation costs and a validated quality gate; an output schema verifies form rather than truth.
+Historical price rows should be frozen with effective date, model identifier, region, tier,
+cache-write lifetime and currency assumptions, rather than reconstructed from a moving latest
+catalog.
 
-## 7 · Threats to validity
+For a deployment with baseline list-price spend `B`, applicable pooled reduction `R`, incremental
+operating cost `H` and service fee `F`, net benefit is `RB − H − F`. A historical example
+`F = 15 EUR` and `R = 0.315` gives `B* = 47.62 EUR` only if `H = 0` and the workload and
+currency basis are appropriate. It is not a current price offer or a forecast. Gross provider
+savings and all-in deployment economics should be reported separately.
 
-| Threat | Statement | Mitigation in this paper |
-| --- | --- | --- |
-| Construct | List prices are not invoices: negotiated rates, credits, taxes and rounding are absent | Every figure is labelled `measured` at list prices; invoice reconciliation is out of scope |
-| Internal | The Anthropic effect includes a cache the instrumented arm enables | The enabled share (≈41 pp) is reported separately; A-arm cache behavior is described |
-| Internal | A mechanism applied to the same request interacts with another | Proposition 1 keeps the ledgers separate and states `ε`; no unconditional sum is reported |
-| External | Two small constructed workloads, one gateway organization, two providers | Results are restricted to the measured regimes; the roadmap schedules replication |
-| Statistical | Percentile intervals, B = 10,000, family-level resampling | Seeds and artifacts published; interval type stated; no BCa claim |
-| Reliability | No independent replication | Stated as a limitation; the roadmap preregisters external replication |
-| Conclusion | Vendor evaluation by the product's author | Conflict of interest declared; every claim is bounded to reported artifacts |
+## 8 · Threats to validity
 
----
+The experiments use small constructed workloads with deliberate repetition. Families may share
+cache history, and the original family bootstrap does not remove dependence between families. A
+stronger design randomizes policy order across independent workloads or time blocks, preserves
+chronological execution within each block, and isolates or explicitly measures warm-up. Provider
+model changes, output stochasticity, time-varying tariffs and cache policies limit transportability.
 
-## 8 · Limitations
+Public artifacts support offline recomputation but are not signed provider receipts or reconciled
+invoices. Some November artifacts contain only rounded aggregates and selected traces.
+Counterfactual replay introduces additional modeling uncertainty not represented by resampling
+observed records alone. Results from SDK 0.4.31 do not validate all behavior of SDK 1.2.0. No
+independent live replication or population-level quality, freshness or latency guarantee has been
+established.
 
-All August limitations stand: small constructed samples (100 + 31 families), one gateway
-organization, no invoice reconciliation, no independent replication, no quality or
-latency non-inferiority, an in-memory linear semantic store, and the authors' developer
-role. Two additions for this edition:
+## 9 · Limitations
 
-1. The Chinese-provider rows rely on pricing pages consulted 2026-11-03, with DeepSeek at
-   peak rates and GLM converted at 7.2 CNY/USD; per-model Kimi and MiniMax prices were
-   not verifiable from official pages at review time and stay out of the catalog.
-2. Community mode shifts the risk model: without the cloud key there is no revocation or
-   entitlement channel at all (by design). A distribution with a present but invalid key
-   remains fail-closed; a user who never configures one has an ungated local product —
-   the intended open-core trade, and the reason the cloud remains the paid surface.
+The layer integrates known optimization mechanisms; this report does not establish exclusive
+scientific priority or patentability. The diagnostic ledgers prevent particular reporting confusions
+only if event identity and cost provenance are correct. They do not by themselves identify causal
+savings. Community mode's absence of a revocation channel is a distribution property, not an
+experimental result. Generic line rearrangement, compression and semantic cache hits require
+application-specific validity checks. The reviewed subset of implementation is not a comprehensive
+security or billing audit.
 
----
+## 10 · Prospective research plan
 
-## 9 · Preregistered research roadmap
+1. Freeze a protocol before the next collection: hypotheses, estimands, randomization unit, cache
+   initialization, stopping rules, quality margin and analysis code.
+2. Replicate the response-reuse/prefix-cache factorial across independent blocks; publish all four
+   cells, execution order, uncertainty and cache-state handling.
+3. Sweep the realized repeat fraction, recording token and cost weights, cache admission, skip
+   reasons and final usage for every request.
+4. Replace permissive substring grading with task-specific validated grading and publish paired
+   outputs or suitable auditable access. Separate gate selection data from retained evaluation data.
+5. Evaluate explicit stable/dynamic prompt segmentation, structured data, negations, tool calls,
+   freshness and tenant boundaries.
+6. Reconcile one deployment with provider invoices and measure incremental infrastructure and
+   verification costs.
+7. Archive immutable data/code/catalog versions and obtain an independent live replication.
 
-1. **Factorial design**: deduplication × `cache_control` (attribution of the 41 pp), with
-   a per-cell power analysis.
-2. **ρ sweep**: exact-repeat rate swept across families to estimate the response curve
-   (replacing the single-point extrapolation).
-3. **Hierarchical multi-day experiment**: families × sessions × days, multiple
-   organizations; immutable resampling artifacts released.
-4. **Non-inferiority tests**: answer quality, freshness and latency, preregistered and
-   adequately powered; includes the routing gate and the TTL lever.
-5. **Calibrated semantic cache at scale**: multi-tenant precision across cache
-   utilization and Operational Retention Rate, against the AWS/GPTCache reference points
-   of Section 6.3 and [27].
-6. **Invoice reconciliation**: negotiated prices, credits, taxes, rounding — one real
-   organization's provider invoices versus the layer's list-price ledger.
-7. **External replication**: an independent team reproduces the live double-runs from the
-   published branch and artifacts.
+These items are a prospective plan. The presence of similar topics in an earlier roadmap is not
+itself evidence of a fully specified preregistration.
 
----
+## 11 · Data and code availability
 
-## 10 · Data and code availability
+Public repository: https://github.com/BiVelio/bivelio-savings-layer. Review snapshot:
+`239c84b99fe8320f7efaa9da9e63def08d62aed6`.
 
-Public-bench summaries, each trial individually and its raw CSV, remain at
-[savings.bivelio.com/benchmarks](https://savings.bivelio.com/en/benchmarks). The
-open-core software ships on npm (`@bivelio/savings-layer`, Apache-2.0) and on PyPI
-(`bivelio-savings-layer`); the gateway test suites — including the Gemini and DeepSeek
-rewrites — run against fake upstreams with no network. This preprint's source is
-`docs/PAPER.md` and its arXiv-ready LaTeX source is `docs/paper/main.tex`. Raw gateway
-logs remain private; the counterfactual replay's aggregate artifacts are public.
+Historical primary artifacts are `docs/benchmarks/2026-09-28/gsm8k-0431.json` and
+`docs/benchmarks/2026-09-28/gsm8k-0431-claude.json`, with the corresponding CSVs. The estimator
+is implemented in `benchmarks/stats.ts` and called by `benchmarks/publicados/gsm8k/medir.ts`.
+November summaries are in `benchmarks/evidencia/`; harnesses are in `benchmarks/experimentos/`.
+The public benchmark index is https://savings.bivelio.com/benchmarks.
 
----
+The companion review package contains an offline recomputation script, selected public fixtures,
+hashes and targeted counterexamples. It supports recalculation of the claims explicitly identified
+as recomputed. New API experiments require credentials and execution costs and were not run for
+this revision. The draft needs author review and the identified quality-evidence work before
+submission.
 
-## 11 · Conflict of interest
+## 12 · Conflict of interest
 
-The author is the founder of BiVelio Inc, which develops the evaluated product. No
-independent replication is reported.
+The original author is the founder of BiVelio Inc, which develops the evaluated product. This
+proposed editorial and technical revision does not constitute independent live replication or
+peer-review acceptance.
 
 ---
 
 ## References
 
-[1] Huiqiang Jiang, Qianhui Wu, Chin-Yew Lin, Yuqing Yang, Lili Qiu. LLMLingua:
-Compressing prompts for accelerated inference of large language models. EMNLP, 2023.
+[1] H. Jiang, Q. Wu, C.-Y. Lin, Y. Yang, L. Qiu. *LLMLingua: Compressing prompts for accelerated inference of large language models.* EMNLP, 2023.
 
-[2] Zhuoshi Pan, Qianhui Wu, Huiqiang Jiang, et al. LLMLingua-2: Data distillation for
-efficient and faithful task-agnostic prompt compression. Findings of ACL, 2024.
+[2] Z. Pan, Q. Wu, H. Jiang, et al. *LLMLingua-2: Data distillation for efficient and faithful task-agnostic prompt compression.* Findings of ACL, 2024.
 
-[3] Jesse Mu, Xiang Lisa Li, Noah Goodman. Learning to compress prompts with gist tokens.
-NeurIPS 36, 2023.
+[3] J. Mu, X. L. Li, N. Goodman. *Learning to compress prompts with gist tokens.* NeurIPS 36, 2023.
 
-[4] In Gim, Guojun Chen, Seung-seob Lee, et al. Prompt Cache: Modular attention reuse for
-low-latency inference. arXiv:2311.04934, 2023.
+[4] I. Gim, G. Chen, S.-s. Lee, et al. *Prompt Cache: Modular attention reuse for low-latency inference.* arXiv:2311.04934, 2023.
 
-[5] Bin Gao, Ziming He, Purushotham Sharma, et al. Cost-efficient large language model
-serving for multi-turn conversations with CachedAttention. USENIX NSDI, 2024.
+[5] B. Gao, Z. He, P. Sharma, et al. *Cost-efficient large language model serving for multi-turn conversations with CachedAttention.* USENIX ATC, pp. 111–126, 2024.
 
-[6] Lianmin Zheng, Liangsheng Yin, Zhiqiang Xie, et al. SGLang: Efficient execution of
-structured language model programs. arXiv:2312.07104, 2023.
+[6] L. Zheng, L. Yin, Z. Xie, et al. *SGLang: Efficient execution of structured language model programs.* arXiv:2312.07104, 2023.
 
-[7] Jiayi Yao, Hanchen Li, Yuhan Liu, et al. CacheBlend: Fast large language model
-serving for RAG with cached knowledge fusion. EuroSys, 2025.
+[7] J. Yao, H. Li, Y. Liu, et al. *CacheBlend: Fast large language model serving for RAG with cached knowledge fusion.* EuroSys, 2025.
 
-[8] Anthropic. Prompt caching — documentation. https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching
+[8] Anthropic. *Prompt caching — documentation.* https://platform.claude.com/docs/en/build-with-claude/prompt-caching
 
-[9] OpenAI. Prompt caching — API guide. https://platform.openai.com/docs/guides/prompt-caching
+[9] OpenAI. *Prompt caching — API guide.* https://platform.openai.com/docs/guides/prompt-caching
 
-[10] Fu Bang. GPTCache: An open-source semantic cache for LLM applications enabling
-faster answers and cost savings. NLP-OSS Workshop, 2023.
+[10] F. Bang. *GPTCache: An open-source semantic cache for LLM applications enabling faster answers and cost savings.* NLP-OSS Workshop, 2023.
 
-[11] Jiaxing Li, Chi Xu, Feng Wang, et al. SCALM: Towards semantic caching for automated
-chat services with large language models. arXiv:2406.00025, 2024.
+[11] J. Li, C. Xu, F. Wang, et al. *SCALM: Towards semantic caching for automated chat services with large language models.* arXiv:2406.00025, 2024.
 
-[12] Waris Gill, Mohamed Elidrisi, Pallavi Kalapatapu, et al. MeanCache: User-centric
-semantic caching for LLM web services. arXiv:2403.02694, 2024.
+[12] W. Gill, M. Elidrisi, P. Kalapatapu, et al. *MeanCache: User-centric semantic caching for LLM web services.* arXiv:2403.02694, 2024.
 
-[13] Lingjiao Chen, Matei Zaharia, James Zou. FrugalGPT: How to use large language models
-while reducing cost and improving performance. arXiv:2305.05176, 2023.
+[13] L. Chen, M. Zaharia, J. Zou. *FrugalGPT: How to use large language models while reducing cost and improving performance.* arXiv:2305.05176, 2023.
 
-[14] Isaac Ong, Amjad Almahairi, Vincent Wu, et al. RouteLLM: Learning to route LLMs
-with preference data. ICLR, 2025. arXiv:2406.18665.
+[14] I. Ong, A. Almahairi, V. Wu, et al. *RouteLLM: Learning to route LLMs with preference data.* ICLR, 2025. arXiv:2406.18665.
 
-[15] Woosuk Kwon, Zhuohan Li, Siyuan Zhuang, et al. Efficient memory management for large
-language model serving with PagedAttention. ACM SOSP, 2023.
+[15] W. Kwon, Z. Li, S. Zhuang, et al. *Efficient memory management for large language model serving with PagedAttention.* ACM SOSP, 2023.
 
-[16] Yaniv Leviathan, Matan Kalman, Yossi Matias. Fast inference from transformers via
-speculative decoding. ICML, 2023.
+[16] Y. Leviathan, M. Kalman, Y. Matias. *Fast inference from transformers via speculative decoding.* ICML, 2023.
 
-[17] OpenTelemetry Project. Generative AI semantic conventions.
-https://opentelemetry.io/docs/specs/semconv/gen-ai/
+[17] OpenTelemetry Project. *Generative AI semantic conventions.* https://opentelemetry.io/docs/specs/semconv/gen-ai/
 
-[18] Joint Committee for Guides in Metrology. Guide to the expression of uncertainty in
-measurement. JCGM 100:2008, 2008.
+[18] Joint Committee for Guides in Metrology. *Guide to the expression of uncertainty in measurement.* JCGM 100:2008, 2008.
 
-[19] Joint Committee for Guides in Metrology. International vocabulary of metrology
-(VIM), 3rd ed. JCGM 200:2012, 2012.
+[19] Joint Committee for Guides in Metrology. *International vocabulary of metrology (VIM), 3rd ed.* JCGM 200:2012, 2012.
 
-[20] Anthropic. Claude Code — agentic coding tool documentation.
-https://www.anthropic.com/claude-code
+[20] Anthropic. *Claude Code — agentic coding tool documentation.* https://www.anthropic.com/claude-code
 
-[21] Karl Cobbe, Vineet Kosaraju, Mohammad Bavarian, et al. Training verifiers to solve
-math word problems. arXiv:2110.14168, 2021.
+[21] K. Cobbe, V. Kosaraju, M. Bavarian, et al. *Training verifiers to solve math word problems.* arXiv:2110.14168, 2021.
 
-[22] Bradley Efron, Robert J. Tibshirani. An Introduction to the Bootstrap. Chapman and
-Hall/CRC, 1993.
+[22] B. Efron, R. J. Tibshirani. *An Introduction to the Bootstrap.* Chapman and Hall/CRC, 1993.
 
-[23] A. C. Davison, D. V. Hinkley. Bootstrap Methods and Their Application. Cambridge
-University Press, 1997.
+[23] A. C. Davison, D. V. Hinkley. *Bootstrap Methods and Their Application.* Cambridge University Press, 1997.
 
-[24] Luis Gaspar Schroeder, Aditya Desai, Alejandro Cuadron, et al. vCache: Verified
-semantic prompt caching. ICLR, 2026. arXiv:2502.03771.
+[24] L. G. Schroeder, A. Desai, A. Cuadron, et al. *vCache: Verified semantic prompt caching.* ICLR, 2026. arXiv:2502.03771.
 
-[25] Dongxin Guo, Jikun Wu, Siu Ming Yiu. RouteNLP: Closed-loop LLM routing with
-conformal cascading and distillation co-optimization. arXiv:2604.23577, 2026.
+[25] D. Guo, J. Wu, S. M. Yiu. *RouteNLP: Closed-loop LLM routing with conformal cascading and distillation co-optimization.* arXiv:2604.23577, 2026.
 
-[26] Bernhard C. Geiger. Notation matters: A benchmark study of token-optimized formats
-in agentic AI systems. arXiv:2605.29676, 2026.
+[26] L. Kutschka and B. Geiger. *Notation matters: A benchmark study of token-optimized formats in agentic AI systems.* arXiv:2605.29676, 2026.
 
-[27] Aditeya Baral. Closing the operational gap in semantic caching. arXiv:2606.19719,
-2026.
+[27] A. Baral, R. Ralev, I. S. Zhechev, S. Rajamohan, J. Agarwal. *Closing the operational gap in semantic caching.* EMNLP Industry, pp. 988–1011, 2026. https://aclanthology.org/2026.emnlp-industry.60/
 
-[28] BiVelio. Calibrated semantic-cache evaluation and abstention report. Public
-benchmark documentation, September 2026. https://savings.bivelio.com/benchmarks
+[28] BiVelio. *Calibrated semantic-cache evaluation and abstention report.* Public benchmark documentation, September 2026. https://savings.bivelio.com/benchmarks
 
 ---
 
-## Appendix A · Notation and derivations
+## Appendix A · Exact recomputation procedure
 
-**A.1 Cost functional.** `C(π, u) = (π_in·i + π_out·o + π_cache·c) / 10^6`. The
-catalog stores prices per 1,000 tokens; the division by 10^6 above assumes per-million
-values, and the implementation divides by 10^3 after multiplying by per-1,000 prices; the
-two conventions produce the same amount only when used consistently, which is why the
-per-million copy error that the guard rejected was material.
+For the two historical GSM8K artifacts:
 
-**A.2 Ratio estimator.** With per-family ratios `R_f`, the mean-over-families estimator
-`R̂ = (1/F) Σ_f R_f` is a ratio-of-sums per family and a simple mean across families. Its
-bias is `O(1/F)` for the ratio component; the bootstrap interval captures the sampling
-variability of the families, not the bias term — a stated limitation.
+1. Pair baseline and optimized observations by the recorded logical request, using the published ordering and family assignment.
+2. Sum costs within each family to obtain `(b_f, o_f)`.
+3. Compute `1 − Σ_f o_f / Σ_f b_f`.
+4. For each of 10,000 replicates, draw `F` family indices with replacement using the published mulberry32 generator and seed `0xa11`; sum the sampled paired costs and recompute the ratio.
+5. Sort the replicate ratios. Select the zero-based order statistic at index `⌊(B−1)p⌋` for `p = 0.025` and `0.975`, with no interpolation, matching the published implementation.
+6. As a separate secondary analysis, average the per-family ratios and bootstrap that mean using the same sampled indices.
 
-**A.3 Additivity residual.** In the notation of Proposition 1, `ε` is bounded in
-practice by the largest single-request interaction observed in the traces: the
-implementation reports every stage that ran, so a reader can audit which mechanisms
-co-occurred on a request.
+All observed and resampled primary denominators in these artifacts are positive. A general
+implementation must report undefined ratios instead of silently replacing them by zero. The
+companion script checks input hashes and reproduces the published pooled points and endpoints. It
+is a computational audit of stored observations, not a new sample of model behavior.
 
-## Appendix B · Bootstrap procedure
+## Appendix B · Publication evidence still required
 
-1. For each family `f`, compute `R_f` from the paired arm totals.
-2. Draw `B = 10,000` resamples of the family index set with replacement.
-3. For each resample `b`, compute `R̂_b` as the mean over the drawn families.
-4. Report the empirical 2.5th and 97.5th percentiles of `{R̂_b}`.
-5. Publish the seed, the resample count, and the artifact hash.
+The primary estimator correction can be made without changing the historical headline
+percentages. Claims of general losslessness, independently identified mechanism effects and
+quality non-inferiority cannot be restored by editorial changes alone. They require implementation
+changes or additional experiments. Specifically, the quality pilot needs saved outputs and
+validated grading; generalized prefix rewriting needs a sound applicability contract; causal
+factorial claims need independent replicated, controlled assignments; and the gateway interval
+needs sufficient session-level data. Each released table should identify its exact artifact, model,
+run date, SDK version, catalog and scope.
 
-The procedure is `O(B·F)`; with `F ≤ 100` and `B = 10^4` it runs in milliseconds and is
-rerun inside the CI so that a red test blocks a release.
+## Appendix C · Resumen en español
 
-## Appendix C · Reproducibility
+Esta revisión conserva los resultados que se han podido recalcular y corrige su interpretación. El
+ahorro agregado es el cociente entre sumas de costes: 31,50 % en OpenAI y 75,08 % en Anthropic.
+La media no ponderada entre familias da 22,88 % y 70,71 %, respectivamente, y constituye otra
+métrica. Se amplía la fórmula de coste para separar entrada normal, lecturas y escrituras de caché
+por duración y salida facturable. Los cuatro libros describen actividad; no demuestran una
+partición causal del ahorro.
 
-- Install the SDK: `pnpm add @bivelio/savings-layer` (or `npm i`), Node ≥ 20.19.
-- Run the benchmark from source: `pnpm bench` with `BIVELIO_LICENSE_KEY` only when
-  exercising the cloud; community mode requires no key.
-- The gateway's live bench and the weekly live battery run in CI; their reports are
-  published trial by trial at the public bench.
-- The catalog version that produced every figure in this paper is recorded in
-  `src/pricing/catalogo.ts` and echoed in each report as `versionPrecios`.
-
-## Appendix D · Resumen en español
-
-Esta edición extiende la evaluación de agosto a la distribución open core: la capa corre
-sin clave en modo comunitario (todas las palancas locales, telemetría cero), mide tres
-protocolos de proveedor —incluido el protocolo Gemini— y el endpoint en formato Anthropic
-de DeepSeek, y añade al catálogo versionado los precios de lista de DeepSeek, Qwen y GLM
-(DeepSeek a tarifa peak, el lado conservador). Las cifras primarias no cambian: 31,5 %
-[25,7; 36,7] en OpenAI y 75,1 % [69,3; 79,6] en Anthropic, con ≈41 puntos porcentuales de
-efecto de caché habilitado por el brazo instrumentado; el replay contrafactual del gateway
-sigue en 2,49 % [1,50; 3,57]. Se añade un análisis económico del enrutamiento presentado
-como aritmética condicional —no como ahorro medido—, una posición frente al benchmark de
-caché semántica publicado, y un mapa de investigación prerregistrado para los diseños
-factorial y de no inferioridad que la edición de agosto dejó como trabajo futuro.
-
-La contribución metodológica es una descomposición formal del ahorro en cuatro libros
-que nunca se suman, con una proposición que explicita las condiciones de aditividad y un
-residuo de interacción que se declara, y una jerarquía de etiquetas de evidencia
-(medido, referencia, estimado, no medido) que impide presentar una estimación como un
-hecho de factura.
+Los ensayos de noviembre se presentan como exploratorios. Se corrigen las tasas reales de
+repetición y la interpretación de las interacciones. El ensayo de cascada no demuestra no
+inferioridad: el evaluador admite coincidencias parciales y no publica respuestas individuales. La
+reordenación por líneas puede romper estructuras JSON. El borrador propone contratos explícitos
+y pruebas adicionales antes de sostener garantías generales. No se han ejecutado nuevas llamadas
+a proveedores ni conciliado facturas.

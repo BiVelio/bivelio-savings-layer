@@ -44,7 +44,7 @@ describe("paper: el markdown del repo y la página /paper, byte a byte", () => {
 
   it("el paper publica sus cifras con intervalo y sus límites", () => {
     const md = readFileSync(raiz(RUTAS.md), "utf8");
-    for (const t of ["31.5", "75.1", "2.49", "95 ", "measured", "reference", "estimated", "Limitations"]) {
+    for (const t of ["31.50", "75.08", "2.49", "95 ", "measured", "reference", "estimated", "Limitations"]) {
       expect(md, t).toContain(t);
     }
     // El apéndice en español viaja con el paper.
