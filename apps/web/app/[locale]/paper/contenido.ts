@@ -716,6 +716,15 @@ export const BLOQUES: Bloque[] = [
     "texto": "The 2×2 factorial of the roadmap, on `claude-haiku-4-5` with 12 unique questions plus their 12 exact repeats and a stable ~6.2k-token system handbook: the marked effect (prefix caching) cuts $0.178 → $0.031 per 24 requests (−$0.147); the dedup effect cuts $0.178 → $0.119 (−$0.059, avoiding 8 of 12 repeats); both together cut to $0.025 (−$0.153, an **85.9 % reduction**). The interaction is +$0.053 — the two effects are not fully additive, as expected: a deduplicated request does not exist to read the cache. Artifacts in `benchmarks/evidencia/factorial-vivo-2026-11-15.json`."
   },
   {
+    "tipo": "h3",
+    "texto": "6.9 Cascade non-inferiority (live)",
+    "id": "6-9-cascade-non-inferiority-live"
+  },
+  {
+    "tipo": "p",
+    "texto": "The roadmap's non-inferiority design, on 24 single-answer questions with a golden list, `claude-opus-5-5` as the strong model and its default cascade to `claude-haiku-4-5`: without the cascade the strong model answers all 24 correctly at $0.065; with it, the cheap model served 24/24 (zero escalations), all 24 answers matched the golden list, 23/24 agreed verbatim with the strong model, and the cost fell to $0.021 — a **67.9 % reduction with no measured quality loss** on this workload (artifacts in `benchmarks/evidencia/no-inferioridad-vivo-2026-11-15.json`). The one verbatim disagreement is the honest reminder of the failure the deterministic gate cannot see (Section 6.3): form compliance is not truth, and this workload is trivia, not production traffic."
+  },
+  {
     "tipo": "hr"
   },
   {
