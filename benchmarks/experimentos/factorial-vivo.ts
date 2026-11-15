@@ -98,6 +98,7 @@ interface Fila {
   cacheWrite: number;
   costeUsd: number;
   resultadosDeCache: Record<string, number>;
+  trazasDePrefijo: Record<string, unknown>[];
 }
 
 async function celda(nombre: string, sal: string, maxBreakpoints: number, savings: Record<string, unknown>): Promise<Fila> {
@@ -118,8 +119,11 @@ async function celda(nombre: string, sal: string, maxBreakpoints: number, saving
     cacheWrite: 0,
     costeUsd: 0,
     resultadosDeCache: {},
+    trazasDePrefijo: [],
   };
+  let n = 0;
   for (const texto of FLUJO) {
+    n += 1;
     const r = await capa.generate(peticion(sal, texto, savings));
     fila.costeUsd += r.report.cost.actual;
     fila.llamadas += r.report.calls.actualLlm;
@@ -130,6 +134,12 @@ async function celda(nombre: string, sal: string, maxBreakpoints: number, saving
     if (nativo?.basis === "measured") {
       fila.cacheRead += nativo.cacheReadTokens;
       fila.cacheWrite += nativo.cacheWriteTokens;
+    }
+    // Las trazas de marcado de las DOS primeras peticiones: dicen por qué marcó o no.
+    if (n <= 2) {
+      fila.trazasDePrefijo.push(...r.report.traces
+        .filter((t) => t.stage.startsWith("prefix-cache") || t.stage === "cache-prefix")
+        .map((t) => ({ n, stage: t.stage, outcome: t.outcome, detail: t.detail })));
     }
   }
   fila.costeUsd = redondear(fila.costeUsd);
