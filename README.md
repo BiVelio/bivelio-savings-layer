@@ -16,6 +16,18 @@
   <img src="https://img.shields.io/badge/telemetry-off%20by%20default-0F1218" alt="Telemetry off by default">
 </p>
 
+### Measured, not promised — and independently re-checked
+
+- **Live A/B on the provider's own counters** (`claude-haiku-4-5`): the
+  cacheable-prefix reorder takes a poisoned prompt cache from **0 % → 95 %
+  hit-rate**, −**82.76 %** cost per request.
+- **Recomputed from the public artifacts**: **31.50 %** (gpt-4o-mini) and
+  **75.08 %** (claude-sonnet-5) pooled reductions with bootstrap intervals; the
+  equal-family means (22.88 % / 70.71 %) are reported separately, as they should be.
+- **Reviewed before publication** (paper v2.3-r1, external pre-publication review):
+  what the evidence proves and what it does not are both stated. Artifacts in
+  [`benchmarks/evidencia`](./benchmarks/evidencia), method in the paper.
+
 ### Open core: install it and it saves. No key. No signup. No telemetry.
 
 `@bivelio/savings-layer` (**BV‑SALA**) sits between your app — or your coding agent —
@@ -98,9 +110,11 @@ installed coding agent. The published benchmark, trial by trial, with the raw CS
 is at **[savings.bivelio.com/en/how-it-works](https://savings.bivelio.com/en/how-it-works)**.
 
 📄 **The paper:** [Verifiable Measurement of Cost Savings in LLM Applications
-(open-core edition, v2.2)](./docs/PAPER.md) — live double-runs, percentile cluster
-bootstrap, four ledgers, and every limitation stated. Also at
-**[savings.bivelio.com/paper](https://savings.bivelio.com/paper)**.
+(open-core edition, v2.3-r1)](./docs/PAPER.md) — revised after an external
+pre-publication review: pooled reductions of **31.50 %** and **75.08 %** with
+percentile cluster-bootstrap intervals, four ledgers, and every limitation stated.
+Also at **[savings.bivelio.com/paper](https://savings.bivelio.com/paper)**, with the
+arXiv-ready LaTeX in [`docs/paper/main.tex`](./docs/paper/main.tex).
 
 ### Community vs Cloud
 
@@ -909,6 +923,59 @@ const placedLayer = createSavingsLayer({
 });
 ```
 
+</details>
+
+<details>
+<summary><b>Cache-aware prompt management: mutable tokens out of the cacheable prefix (opt-in)</b></summary>
+
+A timestamp, UUID or epoch in your `system` prompt poisons the provider's prefix
+cache: every request misses and pays a full-price cache write. With
+`savings: { cachePrefix: true }`, the layer moves the mutable lines to the end of
+the header and marks only the stable part with `cache_control` — the provider's
+cache can hit where a mutable token used to force a miss plus a paid write on every
+call.
+
+- **The saving is the provider's**, read from its own cache counters (`nativeSavings`),
+  never credited as the layer's saving and never part of any commission.
+- **It abstains instead of breaking structure.** A mutable line inside a JSON/XML
+  block or a code fence is never moved — that would corrupt the payload — and the
+  request travels untouched. The `cache-prefix` trace reports what moved and why it
+  abstained; it records counts and patterns, never your prompt text.
+- **Measured live** (v2.3-r1 evidence): 0 % → 95 % hit-rate, −82.76 % per request
+  (claude-haiku-4-5, provider's counters;
+  [`benchmarks/evidencia/cache-prefix-vivo-2026-11-15.json`](./benchmarks/evidencia/cache-prefix-vivo-2026-11-15.json)).
+
+```ts
+const { report } = await layer.generate({
+  model: "anthropic/claude-haiku-4-5",
+  messages: [
+    { role: "system", content: "You are a support bot. Generated at 2026-11-15T10:00:00Z. Be brief." },
+    { role: "user", content: "Where is my order?" },
+  ],
+  savings: { cachePrefix: true },
+});
+// report.traces "cache-prefix": what moved; report.nativeSavings: the provider's cache reads/writes
+```
+</details>
+
+<details>
+<summary><b>Cross-provider shadow: what your usage would cost elsewhere (measure-only)</b></summary>
+
+With `savings: { crossProviderShadow: true }`, each report adds
+`report.crossProviderShadow`: the same measured usage priced at the list rates of
+DeepSeek, Qwen and GLM siblings. Nothing is routed and nothing is billed — it is a
+priced comparison for your routing decisions (`basis: "shadow"`), never credited as
+a saving and never part of any commission.
+
+```ts
+const { report } = await layer.generate({
+  model: "openai/gpt-5-mini",
+  messages: [{ role: "user", content: "Summarize this…" }],
+  savings: { crossProviderShadow: true },
+});
+console.log(report.crossProviderShadow);
+// { servido: "openai/gpt-5-mini", servidoUsd, alternativas: [{ model, listPriceUsd, ratio }, …], basis: "shadow" }
+```
 </details>
 
 <details>
