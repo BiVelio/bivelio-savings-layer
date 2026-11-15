@@ -1,0 +1,30 @@
+{
+  "titulo": "Curva ρ — ahorro del SDK frente a la tasa de repetición exacta (en vivo)",
+  "fecha": "2026-11-15",
+  "metodo": "K=20 preguntas únicas por ρ, temperature 0, openai/gpt-4o-mini. Arm A: todas al proveedor. Arm B: por la capa, cuya caché exacta sirve las repeticiones sin llamar (contador `avoidedLlm`). Costes medidos con el contador del proveedor.",
+  "filas": [
+    {
+      "rho": 0.3,
+      "peticiones": 26,
+      "repeticiones": 6,
+      "costeA": 0.000219,
+      "costeB": 0.000187,
+      "llamadasDelProveedorEnB": 21,
+      "evitadasEnB": 5,
+      "ahorroMedido": 0.146676,
+      "repeticionesEsperadasEvitadas": 6
+    },
+    {
+      "rho": 0.6,
+      "peticiones": 32,
+      "repeticiones": 12,
+      "costeA": 0.000267,
+      "costeB": 0.000204,
+      "llamadasDelProveedorEnB": 22,
+      "evitadasEnB": 10,
+      "ahorroMedido": 0.23665,
+      "repeticionesEsperadasEvitadas": 12
+    }
+  ],
+  "lectura": "La caché exacta es una identidad: cada repetición evitada es una llamada (y su coste) que no ocurre. La curva esperada es ahorro ≈ ρ; la medida confirma o corrige el rendimiento real de la caché exacta en vivo."
+}

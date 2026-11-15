@@ -1,0 +1,82 @@
+{
+  "titulo": "Reorden del prefijo cacheable — A/B en vivo con el contador del proveedor",
+  "fecha": "2026-11-15",
+  "metodo": "N=20 peticiones por brazo contra anthropic/claude-haiku-4-5, mismas timestamps en ambos brazos. Arm A sin cachePrefix (el timestamp viaja dentro del prefijo marcado), arm B con savings.cachePrefix (el prefijo marcado es solo la parte estable). Contadores del proveedor (cache_read/cache_creation), coste a precios de lista.",
+  "casos": [
+    {
+      "brazo": "A · sin cachePrefix",
+      "peticiones": 20,
+      "input": 126760,
+      "cacheRead": 0,
+      "cacheWrite": 126260,
+      "output": 1580,
+      "costeUsd": 0.16622499999999996,
+      "nativoPresente": 20,
+      "trazasDePrefijo": [
+        {
+          "stage": "prefix-cache",
+          "outcome": "marked",
+          "detail": {
+            "reason": "exploring the prefix cache (0/8); hit rate is only observable on requests that were marked",
+            "stablePrefixTokens": 7902,
+            "breakEvenHitRate": 0.2173913043475295,
+            "observedHitRate": null
+          }
+        },
+        {
+          "stage": "prefix-cache",
+          "outcome": "measured",
+          "detail": {
+            "cacheRead": 0,
+            "cacheWritePremiumTokens": 6313
+          }
+        }
+      ],
+      "hitRate": 0,
+      "costePorPeticion": 0.008311249999999997
+    },
+    {
+      "brazo": "B · con cachePrefix",
+      "peticiones": 20,
+      "input": 126740,
+      "cacheRead": 119567,
+      "cacheWrite": 6293,
+      "output": 1591,
+      "costeUsd": 0.028657949999999995,
+      "nativoPresente": 20,
+      "trazasDePrefijo": [
+        {
+          "stage": "cache-prefix",
+          "outcome": "reordered",
+          "detail": {
+            "movedLines": 1,
+            "patterns": [
+              "iso-timestamp"
+            ]
+          }
+        },
+        {
+          "stage": "prefix-cache",
+          "outcome": "marked",
+          "detail": {
+            "reason": "exploring the prefix cache (0/8); hit rate is only observable on requests that were marked",
+            "stablePrefixTokens": 7880,
+            "breakEvenHitRate": 0.2173913043475295,
+            "observedHitRate": null
+          }
+        },
+        {
+          "stage": "prefix-cache",
+          "outcome": "measured",
+          "detail": {
+            "cacheRead": 0,
+            "cacheWritePremiumTokens": 6293
+          }
+        }
+      ],
+      "hitRate": 0.95,
+      "costePorPeticion": 0.0014328974999999998
+    }
+  ],
+  "lectura": "Arm A: el prefijo marcado cambia en cada petición → hit-rate ~0 y la escritura completa (1,25×) se paga siempre. Arm B: la primera petición escribe la parte estable y las N−1 siguientes la LEEN a 0,1× — el hit-rate se acerca a (N−1)/N y el coste por petición cae. La diferencia es la medida REAL de lo que el reorden desbloquea; el ahorro es del proveedor (su caché acierta)."
+}
