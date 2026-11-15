@@ -130,7 +130,10 @@ arXiv-ready LaTeX in [`docs/paper/main.tex`](./docs/paper/main.tex).
 A license key that **is** configured but invalid or expired still fails closed with
 `LicenseError` — only its absence is a working product.
 
-### Cloud pricing (the optional, paid part)
+**Pricing:** fixed fee per seat (Pro and Team), **no commission on what you save**. Full numbers:
+
+<details>
+<summary><b>Cloud pricing (the optional, paid part) — full terms</b></summary>
 
 The cloud subscription is a fixed fee, paid whether or not you save: **Pro
 €15 / seat / month** or **€150 / seat / year**; **Team €129 / month with 10 seats included** (**€12 per extra seat**; **€1,290 / year, €120 per extra seat**), EUR, VAT not included. The first month carries no commission, and the
@@ -143,6 +146,11 @@ changed — and shows what the levers would have saved, request by request. The
 older commission-only modality is **closed to new customers**. Your
 prompts, completions and provider keys never reach BiVelio: a cloud key sends
 only the per-request usage fields listed in [LICENSE-CLOUD.md](./LICENSE-CLOUD.md) §5.
+
+</details>
+
+<details>
+<summary><b>Where it installs — the full story</b></summary>
 
 ## Where it installs
 
@@ -193,6 +201,11 @@ provider ignored, a 1-hour TTL written at 5 minutes upstream, and tool search of
 (Claude Code turns it off by default behind any proxy, this one included;
 `bvsala claude` turns it back on). What it checks, and its limits:
 [docs/terminales/README.md](./docs/terminales/README.md#what-the-gateway-guarantees-it-forwards-what-your-client-sends).
+
+</details>
+
+<details>
+<summary><b>Python and any other language: the local gateway — details</b></summary>
 
 ### Python and any other language: the local gateway
 
@@ -249,6 +262,8 @@ log line. `?response_id=<the provider's response id>` finds it too, and
 provider, and a request without it is not changed at all:
 [the details](./docs/terminales/README.md#what-the-gateway-guarantees-it-forwards-what-your-client-sends).
 
+</details>
+
 ## Check it before you install
 
 What you can check before installing is what we have measured: the published
@@ -259,6 +274,9 @@ traffic and reports per request — nothing leaves your machine.
 
 **Upgrading from 0.4?** Every breaking change of 0.5, with a before and after for
 each, is in [Migrating from 0.4 to 0.5](https://savings.bivelio.com/en/migrate-to-0.5).
+
+<details>
+<summary><b>Full install manual: init + the three steps</b></summary>
 
 ## Set it up in one command
 
@@ -449,6 +467,11 @@ still writing cancels its request, and nothing is cached or recorded; once its a
 is complete, or when it arrives in one piece, nothing is cancelled.
 `await stream.result` tells you which happened.
 
+</details>
+
+<details>
+<summary><b>Framework adapters: Vercel AI SDK, Mastra, LangChain, Anthropic SDK</b></summary>
+
 ## Inside your framework
 
 Already on an agent framework? The layer plugs in at that framework's own extension
@@ -619,6 +642,11 @@ use](https://platform.claude.com/docs/en/agents-and-tools/tool-use/define-tools#
 
 </details>
 
+</details>
+
+<details>
+<summary><b>The report in detail: ledgers, native savings, quality ledger, serialization</b></summary>
+
 ## What you get on every request
 
 A `SavingsReport` with the numbers behind every claim, kept in **four separate
@@ -686,6 +714,8 @@ And a promise you can hold it to: **never worse than your JSON.** Payload encodi
 are chosen by counting real tokens with the destination model's own tokenizer, and
 BV‑SALA only moves away from plain JSON when the saving clearly clears the bar —
 `report.serialization` shows what was chosen and what each candidate would have cost.
+
+</details>
 
 <details>
 <summary><b>Your own A/B — verification sampling (opt-in, off by default)</b></summary>
