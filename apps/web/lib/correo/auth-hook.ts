@@ -89,11 +89,18 @@ export function verificarFirma(
  * app. Los previews de Vercel también se reconocen (bivelio-savings-…,
  * bivelio-privacy-…): un alta desde un preview recibe el correo del producto
  * correcto aunque GoTrue haya degradado el redirect al site_url.
+ *
+ * shield.bivelio.com (y sus previews bivelio-shield-…) es el MISMO producto
+ * que privacy.bivelio.com con su nombre nuevo, BiVelio Shield (decisión del
+ * dueño, 2026-11-15: la web se muda a shield y privacy no se apaga nunca).
+ * Sin esta línea, el primer alta en shield caería en «cualquier cosa
+ * desconocida» y recibiría el correo de GPOS con un enlace a app.bivelio.com.
  */
 export function elegirProducto(redirectTo: string | null | undefined): Producto {
   const s = (redirectTo ?? "").toLowerCase();
   if (s.includes("savings.bivelio.com") || s.includes("bivelio-savings")) return "savings";
   if (s.includes("privacy.bivelio.com") || s.includes("bivelio-privacy")) return "privacy";
+  if (s.includes("shield.bivelio.com") || s.includes("bivelio-shield")) return "privacy";
   // app.bivelio.com, el site_url de respaldo y cualquier cosa desconocida.
   return "gpos";
 }
@@ -127,6 +134,75 @@ const CALLBACK_POR_DEFECTO: Record<Producto, string> = {
   gpos: "https://app.bivelio.com/auth/callback",
 };
 
+/** Lo que leemos del entorno; `process.env` en producción, un objeto en los tests. */
+export type Entorno = Readonly<Record<string, string | undefined>>;
+
+/**
+ * EL INTERRUPTOR DEL DÍA DEL CAMBIO DE DOMINIO. Vacía (hoy), el callback por
+ * defecto de privacy sigue siendo privacy.bivelio.com; el día que la web pase
+ * a shield.bivelio.com basta con poner aquí `https://shield.bivelio.com/auth/callback`
+ * en Vercel y redesplegar — sin tocar código. Deshacer = borrarla.
+ */
+export const VAR_CALLBACK_PRIVACY = "BVSALA_CORREO_CALLBACK_PRIVACY";
+
+/** Los únicos dominios donde vive el producto privacy (el nombre viejo y el nuevo). */
+const HOSTS_PRIVACY: ReadonlySet<string> = new Set(["privacy.bivelio.com", "shield.bivelio.com"]);
+
+/**
+ * El callback por defecto del producto, con el de privacy configurable. Un
+ * valor que no sea un https a uno de los dos dominios de privacy se IGNORA
+ * (y se avisa en el registro): una errata en la variable no puede mandar
+ * enlaces de sesión a otro sitio; como mucho deja el de siempre, que sigue
+ * vivo porque privacy.bivelio.com no se apaga.
+ */
+export function callbackPorDefecto(producto: Producto, env: Entorno = process.env): string {
+  const configurado = producto === "privacy" ? env[VAR_CALLBACK_PRIVACY]?.trim() : "";
+  if (configurado) {
+    try {
+      const u = new URL(configurado);
+      if (u.protocol === "https:" && HOSTS_PRIVACY.has(u.hostname) && !u.port && !u.username && !u.password) {
+        return u.toString();
+      }
+    } catch {
+      /* cae al aviso de abajo */
+    }
+    console.warn(`[auth/correo] ${VAR_CALLBACK_PRIVACY} no es un https a privacy/shield.bivelio.com: se usa el callback de siempre`);
+  }
+  return CALLBACK_POR_DEFECTO[producto];
+}
+
+/** Adónde lleva el enlace: el redirect de la app si es una URL, si no el callback por defecto. */
+function destinoDelEnlace(producto: Producto, redirectTo: string | null | undefined, env: Entorno): URL {
+  if (redirectTo) {
+    try {
+      return new URL(redirectTo);
+    } catch {
+      /* redirect roto: al callback del producto */
+    }
+  }
+  return new URL(callbackPorDefecto(producto, env));
+}
+
+/**
+ * Con qué NOMBRE se presenta el correo. Privacy y BiVelio Shield son el mismo
+ * producto (misma cuenta, mismas licencias) con dos nombres mientras dura la
+ * mudanza de dominio, y el correo lleva el nombre del dominio al que apunta
+ * su enlace: un alta en privacy.bivelio.com recibe el correo de siempre; una
+ * en shield.bivelio.com, el de BiVelio Shield. El día del cambio la web nueva
+ * manda sus redirects a shield y los correos cambian de nombre solos.
+ */
+export type Marca = Producto | "shield";
+
+export function elegirMarca(
+  producto: Producto,
+  redirectTo: string | null | undefined,
+  env: Entorno = process.env,
+): Marca {
+  if (producto !== "privacy") return producto;
+  const host = destinoDelEnlace(producto, redirectTo, env).hostname.toLowerCase();
+  return host === "shield.bivelio.com" || host.startsWith("bivelio-shield") ? "shield" : "privacy";
+}
+
 /**
  * El enlace del correo, construido con URL de verdad. Aquí muere el contrato
  * frágil de la plantilla vieja: daba igual si el redirect traía `?` o no —
@@ -137,13 +213,9 @@ export function construirEnlace(
   redirectTo: string | null | undefined,
   tokenHash: string,
   tipo: string,
+  env: Entorno = process.env,
 ): string {
-  let url: URL;
-  try {
-    url = new URL(redirectTo || CALLBACK_POR_DEFECTO[producto]);
-  } catch {
-    url = new URL(CALLBACK_POR_DEFECTO[producto]);
-  }
+  const url = destinoDelEnlace(producto, redirectTo, env);
   // El site_url pelado («https://app.bivelio.com») no es un callback: se le da
   // la ruta que sus tres apps comparten.
   if (url.pathname === "/" && !url.search) url.pathname = "/auth/callback";

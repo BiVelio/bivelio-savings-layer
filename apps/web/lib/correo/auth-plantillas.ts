@@ -1,6 +1,6 @@
 import { botonTinta, escapar, tarjetaClara } from "./carcasa";
 import { type Idioma, type CorreoCompuesto } from "./invitacion";
-import type { AccionAuth, Producto } from "./auth-hook";
+import type { AccionAuth, Marca, Producto } from "./auth-hook";
 
 /**
  * LAS PLANTILLAS DE LOS CORREOS DE AUTH — la mitad visible del hook.
@@ -334,15 +334,24 @@ export function juegoPara(accion: AccionAuth): Juego {
   return GENERICA;
 }
 
-/** El pie de cada producto: marca + dominio. La copy es de la plataforma; esto es lo suyo. */
-const PIE: Record<Producto, string> = {
+/** El pie de cada producto: marca + dominio. La copy es de la plataforma; esto es lo suyo.
+ *  `shield` es privacy con su nombre nuevo (ver elegirMarca en auth-hook.ts):
+ *  sin cabecera en el texto plano, el pie dice el nombre entero. */
+const PIE: Record<Marca, string> = {
   savings: "BiVelio · savings.bivelio.com",
   privacy: "BiVelio · privacy.bivelio.com",
+  shield: "BiVelio Shield · shield.bivelio.com",
   gpos: "BiVelio · Governed Process Operating System",
 };
 
 export interface DatosCorreoAuth {
   producto: Producto;
+  /**
+   * El nombre con que se presenta (elegirMarca). Opcional: por defecto, el del
+   * producto. Solo privacy tiene dos —«Privacy» y «BiVelio Shield»— y `shield`
+   * se ignora en cualquier otro producto: GPOS y savings no cambian nunca.
+   */
+  marca?: Marca;
   accion: AccionAuth;
   idioma: Idioma;
   /** El enlace ya construido; vacío si la acción solo trae código. */
@@ -356,10 +365,17 @@ export interface DatosCorreoAuth {
  *  la mayoría de clientes de correo bloquean imágenes por defecto, así que un
  *  logo <img> llega roto justo en la primera impresión — el texto llega
  *  siempre. El punto en azul de marca es la firma visual del sitio. */
-const MARCA_CLARA: Record<Exclude<Producto, "gpos">, { nombre: string; dominio: string }> = {
-  savings: { nombre: "Savings", dominio: "savings.bivelio.com" },
-  privacy: { nombre: "Privacy", dominio: "privacy.bivelio.com" },
+const MARCA_CLARA: Record<Exclude<Marca, "gpos">, { nombre: string; dominio: string; porBivelio: boolean }> = {
+  savings: { nombre: "Savings", dominio: "savings.bivelio.com", porBivelio: true },
+  privacy: { nombre: "Privacy", dominio: "privacy.bivelio.com", porBivelio: true },
+  // La marca nueva ya lleva BiVelio delante: sin el «BY BIVELIO» de las otras.
+  shield: { nombre: "BiVelio Shield", dominio: "shield.bivelio.com", porBivelio: false },
 };
+
+/** La marca efectiva: `shield` solo existe dentro del producto privacy. */
+function marcaDe(d: DatosCorreoAuth): Marca {
+  return d.producto === "privacy" && d.marca === "shield" ? "shield" : d.producto;
+}
 
 /**
  * Carcasa clara de la casa (savings y privacy), vestida de marca — el dueño
@@ -369,7 +385,8 @@ const MARCA_CLARA: Record<Exclude<Producto, "gpos">, { nombre: string; dominio: 
  * duplicar el dominio (PIE ya lo llevaba y la tarjeta lo añade enlazado).
  */
 function carcasaClara(t: CopyAuth, d: DatosCorreoAuth): string {
-  const marca = MARCA_CLARA[d.producto === "privacy" ? "privacy" : "savings"];
+  const clave = marcaDe(d);
+  const marca = MARCA_CLARA[clave === "gpos" ? "savings" : clave];
   // El enlace SOLO en el botón (pedido del dueño, 2026-08-27): la URL desnuda
   // afeaba el correo. El respaldo para clientes sin HTML es la versión en
   // texto plano, que la lleva entera.
@@ -378,8 +395,9 @@ function carcasaClara(t: CopyAuth, d: DatosCorreoAuth): string {
     : `<p style="margin:24px 0;font-size:26px;letter-spacing:0.25em;font-weight:700;color:#0F1218">${escapar(d.codigo ?? "")}</p>`;
   return tarjetaClara({
     nombreMarca: marca.nombre,
-    // Solo savings tiene su PNG publicado; privacy cae al wordmark de texto.
-    ...(d.producto !== "privacy" ? { logoUrl: "https://savings.bivelio.com/correo/logo-savings.png" } : {}),
+    porBivelio: marca.porBivelio,
+    // Solo savings tiene su PNG publicado; privacy y shield caen al wordmark de texto.
+    ...(clave === "savings" ? { logoUrl: "https://savings.bivelio.com/correo/logo-savings.png" } : {}),
     dominio: marca.dominio,
     titulo: t.asunto,
     saludo: t.saludo,
@@ -433,7 +451,7 @@ export function componerCorreoAuth(d: DatosCorreoAuth): CorreoCompuesto {
     t.seguridad,
     t.ignorar,
     "",
-    PIE[d.producto],
+    PIE[marcaDe(d)],
   ].join("\n");
   return { asunto: t.asunto, html, texto };
 }

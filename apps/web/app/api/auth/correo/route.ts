@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import {
   verificarFirma,
   elegirProducto,
+  elegirMarca,
   idiomaDe,
   construirEnlace,
   type CargaHook,
@@ -67,6 +68,8 @@ export async function POST(req: Request): Promise<NextResponse> {
   }
 
   const producto = elegirProducto(datos.redirect_to || datos.site_url);
+  // Privacy o BiVelio Shield: el nombre del dominio al que lleva el enlace.
+  const marca = elegirMarca(producto, datos.redirect_to);
   const idioma = idiomaDe(datos.redirect_to);
   // Con token_hash hay enlace; sin él (reauthentication) se muestra el código.
   const enlace = datos.token_hash
@@ -75,6 +78,7 @@ export async function POST(req: Request): Promise<NextResponse> {
 
   const { asunto, html, texto } = componerCorreoAuth({
     producto,
+    marca,
     accion,
     idioma,
     enlace,
