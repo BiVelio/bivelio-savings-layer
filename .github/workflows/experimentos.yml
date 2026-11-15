@@ -1,0 +1,65 @@
+name: experimentos
+
+# LOS EXPERIMENTOS EN VIVO PRERREGISTRADOS (paper §9), a mano y con claves del
+# banco. Dos celdas, cada una con su propio artefacto de evidencia:
+#   · cache-prefix: A/B del reorden del prefijo cacheable (Anthropic).
+#   · rho:          la curva del ahorro frente a la tasa de repetición exacta (OpenAI).
+# Coste esperado: céntimos por celda (preguntas cortas, N pequeño); el tope
+# duro lo pone el plan del banco semanal, no estas celdas.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cache-prefix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      BVSALA_DEV_OPEN: "1"
+      BVSALA_DEMO_ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      BVSALA_DEMO_ANTHROPIC_BASE_URL: https://api.anthropic.com/v1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Habilitar pnpm (desde packageManager)
+        run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build:all
+      - name: A/B del reorden de prefijo (en vivo)
+        run: pnpm exec tsx benchmarks/experimentos/cache-prefix-vivo.ts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cache-prefix-vivo
+          path: evidencia-cache-prefix-vivo/
+          if-no-files-found: error
+          retention-days: 90
+
+  rho:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      BVSALA_DEV_OPEN: "1"
+      BVSALA_DEMO_OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      BVSALA_DEMO_OPENAI_BASE_URL: https://api.openai.com/v1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Habilitar pnpm (desde packageManager)
+        run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build:all
+      - name: Curva ρ (en vivo)
+        run: pnpm exec tsx benchmarks/experimentos/rho-vivo.ts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rho-vivo
+          path: evidencia-rho-vivo/
+          if-no-files-found: error
+          retention-days: 90
