@@ -1,0 +1,22 @@
+{
+  "titulo": "Reorden del prefijo cacheable (savings.cachePrefix): estabilidad del tramo cacheado",
+  "fecha": "2026-11-15",
+  "metodo": "Sin red, determinista. N peticiones con un system plantilla + timestamp ISO por petición (el patrón nº1 de cache break). El ProviderRequest del pipeline se traduce al cuerpo Anthropic real y se cuenta cuántos prefijos cacheables DISTINTOS salen por brazo: distintos = el proveedor no puede acertar (el emparejamiento es por bytes); uno solo = el prefijo es estable petición a petición. Esto mide la precondición mecánica del hit, no el hit-rate del proveedor.",
+  "casos": [
+    {
+      "brazo": "sin cachePrefix (hoy)",
+      "peticiones": 1000,
+      "prefijosDistintos": 1000,
+      "estabilidadDelPrefijo": "0.001",
+      "parteDelSystemCacheada": "100.0%"
+    },
+    {
+      "brazo": "con cachePrefix: true",
+      "peticiones": 1000,
+      "prefijosDistintos": 1,
+      "estabilidadDelPrefijo": "1.000",
+      "parteDelSystemCacheada": "69.6%"
+    }
+  ],
+  "lectura": "Sin el reorden, el timestamp dentro del tramo cacheado hace que el prefijo cambie en CADA petición: 0 % de estabilidad, la caché no puede acertar y cada petición paga la escritura entera (1,25× en Anthropic). Con el reorden, el 100 % de las peticiones comparte el MISMO prefijo cacheable: el proveedor lee la parte estable a su tarifa de lectura (0,1×) y solo la línea del timestamp viaja a precio completo. A un 80 % de hit-rate, el «90 % de descuento» del proveedor se queda en ~31 % de ahorro real (informe de mercado): lo que decide es el hit-rate, y esto es lo que lo desbloquea."
+}

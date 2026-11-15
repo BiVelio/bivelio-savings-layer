@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- **Cacheable-prefix reorder** (`savings.cachePrefix: true`, opt-in): lines of the leading
+  `system` prompt that carry per-request content (ISO/RFC 2822 timestamps, UUID v4, epoch
+  ms/s) move to the end of the header, and only the stable part is declared as the cache
+  prefix — the provider's prefix cache can hit where a mutable token used to force a full
+  miss plus a paid write on every call. The `cache-prefix` trace reports what moved; the
+  saving stays the provider's. Deterministic benchmark (`pnpm cache-prefix:banco`):
+  1,000 requests with a per-request timestamp → 1,000 distinct cacheable prefixes without
+  the reorder vs. one identical prefix with it (100 % stable).
+
 ## 1.1.1 — corrected packaging text
 
 - The Python client's README and module docstring no longer say "Commercial
