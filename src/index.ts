@@ -111,6 +111,7 @@ export type {
   SavingsToggles,
   SemanticCalibrationBound,
   SerializationFormat,
+  SombraCrossProviderReport,
   StreamingReport,
   ToolCallRequest,
   ToolDescriptor,

@@ -107,6 +107,7 @@ import type { VersionedCacheBreakpointStore } from "../cache/breakpoint-store.js
 import type { SemanticProbe } from "../cache/semantic.js";
 import { detectarContenidoMutable } from "../cache/cache-audit.js";
 import { reordenarPrefijoCacheable } from "../cache/cache-prefix.js";
+import { sombraCrossProvider } from "../economics/sombra-cross-provider.js";
 import type { Provider, ProviderRequest, ProviderResponse, ProviderToolSearch } from "../providers/types.js";
 import type { RouteDecision } from "../router/router.js";
 import {
@@ -5812,6 +5813,21 @@ export class SavingsPipeline {
     // convierte el informe en algo que se puede leer sin engañarse: `model` pasa
     // a nombrar al que contestó, y `qualityStatus` baja a `bounded_degradation`.
     const degradado = cascada != null && cascada.servedModel !== cascada.requestedModel;
+    // LA SOMBRA CROSS-PROVIDER (opt-in): lo que el MISMO uso medido costaría en
+    // los modelos baratos de otro proveedor, a precios de lista versionados.
+    // Aritmética pura sobre el contador del proveedor; nada se enruta ni se
+    // factura (`basis: "shadow"`). Solo con una llamada que corrió y se cobró:
+    // sin coste servido no hay denominador para ningún ratio.
+    const sombraCross =
+      request.savings?.crossProviderShadow === true && ledger.avoidedLlm === 0 && ledger.actualLlm > 0
+        ? sombraCrossProvider(cascada?.servedModel ?? request.model, {
+            inputTokens: ledger.actualInput,
+            outputTokens: ledger.actualOutput,
+            cachedInputTokens: ledger.providerCachedInput,
+            cacheWriteInputTokens: ledger.nativeCacheWriteInput,
+            servidoUsd: cost.actual,
+          })
+        : undefined;
     return {
       requestId: requestId ?? this.generateId(),
       // EL INFORME DECLARA SIEMPRE EL MODELO QUE CONTESTÓ. Sin la cascada esto es
@@ -5893,6 +5909,7 @@ export class SavingsPipeline {
       ...(diferido ? { deferred: diferido } : {}),
       ...(escrituras ? { cacheWrites: escrituras } : {}),
       ...(nativo ? { nativeSavings: nativo } : {}),
+      ...(sombraCross ? { crossProviderShadow: sombraCross } : {}),
       quality: {
         ...(cacheResult !== "miss" ? { freshnessPassed: !evaluatePolicy(canonical).requiresFreshData } : {}),
         // Declarado desde el principio y sin productor: la similitud del acierto
