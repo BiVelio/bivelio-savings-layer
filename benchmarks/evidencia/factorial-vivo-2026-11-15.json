@@ -1,0 +1,232 @@
+{
+  "titulo": "Factorial dedup × cache_control (2×2) — en vivo con el contador del proveedor",
+  "fecha": "2026-11-15",
+  "metodo": "Misma carga en las cuatro celdas: 12 preguntas únicas + 12 repeticiones exactas, manual estable ~1500 tokens (con una sal por celda para aislar la caché del proveedor entre celdas), claude-haiku-4-5, temperature 0. A = ni dedup ni marcado; B = solo marcado; C = solo dedup; D = ambos. Costes medidos con el contador del proveedor.",
+  "celdas": [
+    {
+      "celda": "A · ni dedup ni marcado",
+      "peticiones": 24,
+      "llamadas": 24,
+      "evitadas": 0,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "costeUsd": 0.178171,
+      "resultadosDeCache": {
+        "miss": 24
+      },
+      "trazasDePrefijo": [
+        {
+          "n": 1,
+          "stage": "prefix-cache",
+          "outcome": "marked",
+          "detail": {
+            "reason": "exploring the prefix cache (0/8); hit rate is only observable on requests that were marked",
+            "stablePrefixTokens": 9790,
+            "breakEvenHitRate": 0.2173913043475295,
+            "observedHitRate": null
+          }
+        },
+        {
+          "n": 1,
+          "stage": "prefix-cache",
+          "outcome": "measured",
+          "detail": {
+            "cacheRead": 0,
+            "cacheWritePremiumTokens": 0
+          }
+        },
+        {
+          "n": 2,
+          "stage": "prefix-cache",
+          "outcome": "marked",
+          "detail": {
+            "reason": "exploring the prefix cache (1/8); hit rate is only observable on requests that were marked",
+            "stablePrefixTokens": 9790,
+            "breakEvenHitRate": 0.2173913043475295,
+            "observedHitRate": 0
+          }
+        },
+        {
+          "n": 2,
+          "stage": "prefix-cache",
+          "outcome": "measured",
+          "detail": {
+            "cacheRead": 0,
+            "cacheWritePremiumTokens": 0
+          }
+        }
+      ]
+    },
+    {
+      "celda": "B · solo marcado",
+      "peticiones": 24,
+      "llamadas": 24,
+      "evitadas": 0,
+      "cacheRead": 166267,
+      "cacheWrite": 7229,
+      "costeUsd": 0.031128,
+      "resultadosDeCache": {
+        "miss": 24
+      },
+      "trazasDePrefijo": [
+        {
+          "n": 1,
+          "stage": "prefix-cache",
+          "outcome": "marked",
+          "detail": {
+            "reason": "exploring the prefix cache (0/8); hit rate is only observable on requests that were marked",
+            "stablePrefixTokens": 9789,
+            "breakEvenHitRate": 0.2173913043475295,
+            "observedHitRate": null
+          }
+        },
+        {
+          "n": 1,
+          "stage": "prefix-cache",
+          "outcome": "measured",
+          "detail": {
+            "cacheRead": 0,
+            "cacheWritePremiumTokens": 7229
+          }
+        },
+        {
+          "n": 2,
+          "stage": "prefix-cache",
+          "outcome": "marked",
+          "detail": {
+            "reason": "exploring the prefix cache (1/8); hit rate is only observable on requests that were marked",
+            "stablePrefixTokens": 9789,
+            "breakEvenHitRate": 0.2173913043475295,
+            "observedHitRate": 0
+          }
+        },
+        {
+          "n": 2,
+          "stage": "prefix-cache",
+          "outcome": "measured",
+          "detail": {
+            "cacheRead": 7229,
+            "cacheWritePremiumTokens": 0
+          }
+        }
+      ]
+    },
+    {
+      "celda": "C · solo dedup",
+      "peticiones": 24,
+      "llamadas": 16,
+      "evitadas": 8,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "costeUsd": 0.119482,
+      "resultadosDeCache": {
+        "miss": 16,
+        "exact": 8
+      },
+      "trazasDePrefijo": [
+        {
+          "n": 1,
+          "stage": "prefix-cache",
+          "outcome": "marked",
+          "detail": {
+            "reason": "exploring the prefix cache (0/8); hit rate is only observable on requests that were marked",
+            "stablePrefixTokens": 9790,
+            "breakEvenHitRate": 0.2173913043475295,
+            "observedHitRate": null
+          }
+        },
+        {
+          "n": 1,
+          "stage": "prefix-cache",
+          "outcome": "measured",
+          "detail": {
+            "cacheRead": 0,
+            "cacheWritePremiumTokens": 0
+          }
+        },
+        {
+          "n": 2,
+          "stage": "prefix-cache",
+          "outcome": "marked",
+          "detail": {
+            "reason": "exploring the prefix cache (1/8); hit rate is only observable on requests that were marked",
+            "stablePrefixTokens": 9790,
+            "breakEvenHitRate": 0.2173913043475295,
+            "observedHitRate": 0
+          }
+        },
+        {
+          "n": 2,
+          "stage": "prefix-cache",
+          "outcome": "measured",
+          "detail": {
+            "cacheRead": 0,
+            "cacheWritePremiumTokens": 0
+          }
+        }
+      ]
+    },
+    {
+      "celda": "D · ambos (la capa)",
+      "peticiones": 24,
+      "llamadas": 17,
+      "evitadas": 7,
+      "cacheRead": 115664,
+      "cacheWrite": 7229,
+      "costeUsd": 0.025044,
+      "resultadosDeCache": {
+        "miss": 17,
+        "exact": 7
+      },
+      "trazasDePrefijo": [
+        {
+          "n": 1,
+          "stage": "prefix-cache",
+          "outcome": "marked",
+          "detail": {
+            "reason": "exploring the prefix cache (0/8); hit rate is only observable on requests that were marked",
+            "stablePrefixTokens": 9789,
+            "breakEvenHitRate": 0.2173913043475295,
+            "observedHitRate": null
+          }
+        },
+        {
+          "n": 1,
+          "stage": "prefix-cache",
+          "outcome": "measured",
+          "detail": {
+            "cacheRead": 0,
+            "cacheWritePremiumTokens": 7229
+          }
+        },
+        {
+          "n": 2,
+          "stage": "prefix-cache",
+          "outcome": "marked",
+          "detail": {
+            "reason": "exploring the prefix cache (1/8); hit rate is only observable on requests that were marked",
+            "stablePrefixTokens": 9789,
+            "breakEvenHitRate": 0.2173913043475295,
+            "observedHitRate": 0
+          }
+        },
+        {
+          "n": 2,
+          "stage": "prefix-cache",
+          "outcome": "measured",
+          "detail": {
+            "cacheRead": 7229,
+            "cacheWritePremiumTokens": 0
+          }
+        }
+      ]
+    }
+  ],
+  "atribucion": {
+    "efectoDelMarcadoUsd": -0.147043,
+    "efectoDeLaDedupUsd": -0.058689,
+    "interaccionUsd": 0.052605,
+    "totalUsd": -0.153127
+  },
+  "lectura": "El marcado de caché actúa sobre las llamadas que CORREN (rebaja su entrada); la dedup actúa sobre las que NO corren (no existen). El factorial separa los dos efectos y su interacción, igual que el paper atribuyó los 41 pp del efecto caché en el A/B de agosto."
+}

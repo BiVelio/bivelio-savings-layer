@@ -9,12 +9,18 @@ name: experimentos
 
 on:
   workflow_dispatch:
+    inputs:
+      solo:
+        description: "solo una celda: cache-prefix | rho | factorial (vacío: las tres)"
+        type: string
+        default: ""
 
 permissions:
   contents: read
 
 jobs:
   cache-prefix:
+    if: ${{ inputs.solo == '' || inputs.solo == 'cache-prefix' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
@@ -40,6 +46,7 @@ jobs:
           retention-days: 90
 
   rho:
+    if: ${{ inputs.solo == '' || inputs.solo == 'rho' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
@@ -61,5 +68,31 @@ jobs:
         with:
           name: rho-vivo
           path: evidencia-rho-vivo/
+          if-no-files-found: error
+          retention-days: 90
+
+  factorial:
+    if: ${{ inputs.solo == '' || inputs.solo == 'factorial' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      BVSALA_DEV_OPEN: "1"
+      BVSALA_DEMO_ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      BVSALA_DEMO_ANTHROPIC_BASE_URL: https://api.anthropic.com/v1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Habilitar pnpm (desde packageManager)
+        run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build:all
+      - name: Factorial dedup × cache_control (en vivo)
+        run: pnpm exec tsx benchmarks/experimentos/factorial-vivo.ts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: factorial-vivo
+          path: evidencia-factorial-vivo/
           if-no-files-found: error
           retention-days: 90
