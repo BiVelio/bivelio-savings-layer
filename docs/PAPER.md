@@ -304,6 +304,21 @@ execution, replaying the dropped items from the first result; it is opt-in becau
 changes what the caller observes and is only sound when identical bodies imply identical
 answers (deterministic sampling).
 
+### 3.8 The cacheable-prefix reorder
+
+The cache-break audit (Section 3.6) diagnoses a mutable system prompt; the reorder fixes
+it with the caller's explicit permission (`savings.cachePrefix: true`). Lines of the
+leading `system` prompt that carry per-request content (ISO 8601 and RFC 2822 timestamps,
+UUID v4, epoch ms/s) move to the end of the header, the header is split into two messages
+— the stable part, then the moved lines — and only the stable part is declared as the
+cache prefix. The provider's prefix cache can then match the stable part on every request,
+where a mutable token inside the prefix would force a full miss plus a paid cache write on
+each call. The model reads the same lines in a different order, so the lever is opt-in by
+design and the `cache-prefix` trace reports exactly what moved; the saving is the
+provider's (its cache hits at the discounted read rate) and is never credited to the
+layer. It runs on the first message when it is a string `system`, and declines cleanly —
+the request travels unchanged — when there is nothing to move or nothing stable left.
+
 ---
 
 ## 4 · Measurement methodology
@@ -439,6 +454,20 @@ rate of the workload: 10 % duplicates → 10 % of executions and input tokens av
 `benchmarks/evidencia/dedup-de-lote-2026-11-09.json`). The saving composes with the 50 %
 batch discount and is never double-counted: the summary credits each sent execution once
 and reports the deduplicated count separately.
+
+### 6.6 Cacheable-prefix reorder (deterministic)
+
+The reorder is a mechanical transform, so its precondition for cache hits is measurable
+without the provider: on 1,000 requests whose system template carries a per-request ISO
+timestamp, the translated Anthropic body (the same wire translation as `generate()`)
+produces **1,000 distinct cacheable prefixes** without the reorder — the byte-match the
+provider requires can never succeed, and every request pays the full write premium. With
+`cachePrefix: true` the 1,000 requests share **one identical cacheable prefix** — 100 %
+stable — with 69.6 % of the system bytes inside the cached span and only the moved
+timestamp line paid at the full rate (artifacts in
+`benchmarks/evidencia/cache-prefix-2026-11-15.json`). This measures the mechanical
+precondition of the hit, not the provider's hit-rate: the latter needs live double-runs
+with the provider's `cache_read` counters, scheduled on the weekly live bench.
 
 ---
 

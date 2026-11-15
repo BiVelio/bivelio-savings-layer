@@ -414,6 +414,15 @@ export const BLOQUES: Bloque[] = [
     "texto": "The batch surface (`layer.batches`) previously sent requests \"as written\", skipping the layer's per-request levers; a batch item therefore missed the token reduction `generate()` applies, on top of the batch discount. The 1.1.0 release runs the two lossless, pure request-body levers on batch items before translation, reusing the exact same functions the pipeline calls — elision by supersession (Section 3.2) and tool-output compaction — so an item's provider body is byte-for-byte the body `generate()` produces for the same request and toggle. Intra-batch deduplication collapses byte-identical bodies into one execution, replaying the dropped items from the first result; it is opt-in because it changes what the caller observes and is only sound when identical bodies imply identical answers (deterministic sampling)."
   },
   {
+    "tipo": "h3",
+    "texto": "3.8 The cacheable-prefix reorder",
+    "id": "3-8-the-cacheable-prefix-reorder"
+  },
+  {
+    "tipo": "p",
+    "texto": "The cache-break audit (Section 3.6) diagnoses a mutable system prompt; the reorder fixes it with the caller's explicit permission (`savings.cachePrefix: true`). Lines of the leading `system` prompt that carry per-request content (ISO 8601 and RFC 2822 timestamps, UUID v4, epoch ms/s) move to the end of the header, the header is split into two messages — the stable part, then the moved lines — and only the stable part is declared as the cache prefix. The provider's prefix cache can then match the stable part on every request, where a mutable token inside the prefix would force a full miss plus a paid cache write on each call. The model reads the same lines in a different order, so the lever is opt-in by design and the `cache-prefix` trace reports exactly what moved; the saving is the provider's (its cache hits at the discounted read rate) and is never credited to the layer. It runs on the first message when it is a string `system`, and declines cleanly — the request travels unchanged — when there is nothing to move or nothing stable left."
+  },
+  {
     "tipo": "hr"
   },
   {
@@ -674,6 +683,15 @@ export const BLOQUES: Bloque[] = [
   {
     "tipo": "p",
     "texto": "Deduplication is an identity, not an estimate: two requests with byte-identical provider bodies produce byte-identical results, so sending one and replaying the other avoids a provider execution without changing any answer. A deterministic benchmark against a counting batch adapter reports executions avoided exactly proportional to the duplicate rate of the workload: 10 % duplicates → 10 % of executions and input tokens avoided; 30 % → 30 %; 50 % → 50 % (1,000 items; artifacts in `benchmarks/evidencia/dedup-de-lote-2026-11-09.json`). The saving composes with the 50 % batch discount and is never double-counted: the summary credits each sent execution once and reports the deduplicated count separately."
+  },
+  {
+    "tipo": "h3",
+    "texto": "6.6 Cacheable-prefix reorder (deterministic)",
+    "id": "6-6-cacheable-prefix-reorder-deterministic"
+  },
+  {
+    "tipo": "p",
+    "texto": "The reorder is a mechanical transform, so its precondition for cache hits is measurable without the provider: on 1,000 requests whose system template carries a per-request ISO timestamp, the translated Anthropic body (the same wire translation as `generate()`) produces **1,000 distinct cacheable prefixes** without the reorder — the byte-match the provider requires can never succeed, and every request pays the full write premium. With `cachePrefix: true` the 1,000 requests share **one identical cacheable prefix** — 100 % stable — with 69.6 % of the system bytes inside the cached span and only the moved timestamp line paid at the full rate (artifacts in `benchmarks/evidencia/cache-prefix-2026-11-15.json`). This measures the mechanical precondition of the hit, not the provider's hit-rate: the latter needs live double-runs with the provider's `cache_read` counters, scheduled on the weekly live bench."
   },
   {
     "tipo": "hr"
