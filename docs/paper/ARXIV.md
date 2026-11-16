@@ -24,7 +24,10 @@ Cost claims for large language model (LLM) optimizations are only interpretable 
 ```
 
 - **Comments**: `12 pages. Technical report; open-core software at https://savings.bivelio.com (Apache-2.0).`
-- **Categorías**: primaria `cs.LG` (Machine Learning), secundarias `cs.SE` (Software Engineering) y `econ.GN` (General Economics).
+- **Categorías**: primaria **`cs.SE`** (Software Engineering — la contribución es un
+  marco de medición y reproducibilidad dentro de un SDK/gateway); secundarias
+  **`cs.LG`** (Machine Learning — economía de coste de LLMs y análisis bootstrap)
+  y **`econ.GN`** (General Economics — contabilidad de costes y precios de lista).
 - **License**: arXiv default (non-exclusive) — el código del producto es Apache-2.0, el texto del paper es tuyo.
 
 ## 3 · Subida
