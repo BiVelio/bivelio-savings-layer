@@ -961,7 +961,7 @@
       "reenviarAyuda": "“Opnieuw versturen” zet het e-mailadres en de rol in het formulier hierboven, zodat je de uitnodiging opnieuw kunt versturen.",
       "accionesDe": "Acties voor {email}",
       "quitarTitulo": "{email} uit de organisatie verwijderen?",
-      "quitarCuerpo": "Deze persoon heeft dan geen toegang meer tot deze organisatie. Je seats en je factuur veranderen niet. Servicesleutels die deze persoon heeft aangemaakt blijven actief: trek ze in onder <instalar>Eerste stappen</instalar>.",
+      "quitarCuerpo": "Deze persoon heeft dan geen toegang meer tot deze organisatie. Uw seats en uw factuur veranderen niet. Servicesleutels die deze persoon heeft aangemaakt blijven actief: trek ze in onder <instalar>Eerste stappen</instalar>.",
       "quitarConfirmar": "Ja, verwijderen",
       "avisosLabel": "Meldingen",
       "avisoCerrar": "Melding sluiten",

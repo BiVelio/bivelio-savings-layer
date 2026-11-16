@@ -395,17 +395,17 @@ export default async function GaleriaDeEstados({
             <h2 className="t-section">Raíl · bloque de puesta en marcha</h2>
             <div style={{ display: "grid", gap: 24, gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 264px), 288px))", alignItems: "start" }}>
               <Caso titulo="Leído · 2 de 5">
-                <aside className="app-sidebar" style={{ border: "1px solid var(--line)", borderRadius: 14 }}>
+                <aside className="app-sidebar gal-rail" style={{ border: "1px solid var(--line)", borderRadius: 14 }}>
                   <SetupProgress progress={setupProgress(pasos(2), false)} />
                 </aside>
               </Caso>
               <Caso titulo="Leído · completo">
-                <aside className="app-sidebar" style={{ border: "1px solid var(--line)", borderRadius: 14 }}>
+                <aside className="app-sidebar gal-rail" style={{ border: "1px solid var(--line)", borderRadius: 14 }}>
                   <SetupProgress progress={setupProgress(COMPLETO, false)} />
                 </aside>
               </Caso>
               <Caso titulo="Sin leer · sin barra ni «0 de 5»">
-                <aside className="app-sidebar" style={{ border: "1px solid var(--line)", borderRadius: 14 }}>
+                <aside className="app-sidebar gal-rail" style={{ border: "1px solid var(--line)", borderRadius: 14 }}>
                   <SetupProgress progress={setupProgress(pasos(2), true)} />
                 </aside>
               </Caso>

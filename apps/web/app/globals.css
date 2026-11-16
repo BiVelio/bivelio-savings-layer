@@ -5979,3 +5979,27 @@ a.card:active, button.card:active, .card-link:active { transform: translateY(0);
    4,49:1. Con `:root` delante gana a la hoja vendorizada sea cual sea el orden
    de carga. */
 :root .ui-bdgc { --ui-bdgc-danger-fg: var(--danger-ink); }
+/* ==== SLOT DETALLES FINALES ==== */
+/* Tu banco, resultado inconcluso: la banda del intervalo acompaña a la cifra.
+   Si cruza el cero va en tinta (sin verde de ahorro); si queda entera por
+   debajo, en el rojo del coste. El verde sigue siendo solo del ahorro medido. */
+.yb .ci-track2[data-tono="neutral"] .ci-fill2 { background: color-mix(in srgb, var(--ink) 9%, transparent); }
+.yb .ci-track2[data-tono="neutral"] .ci-lo { background: var(--ink-soft); }
+.yb .ci-track2[data-tono="negative"] .ci-fill2 { background: color-mix(in srgb, var(--danger) 12%, transparent); }
+.yb .ci-track2[data-tono="negative"] .ci-lo { background: var(--danger); }
+/* Tu banco, reuniendo pares: el recibo del coste va suelto entre dos tarjetas y
+   su sombra cae sobre la siguiente; lleva el aire de una sección del panel por
+   arriba y por abajo (en el resultado va dentro de un dúo y no cambia). */
+.yb > .yb-coste { margin-top: var(--sp-7); }
+.yb > .yb-coste + * { margin-top: calc(var(--sp-7) + var(--sp-3)); }
+/* Cómo funciona, dentro del panel: el bloque de instalación ocupa la columna
+   de contenido, como las secciones de encima. La página pública conserva su tope. */
+.app-inner .hiw-code { max-width: none; }
+/* Galería de desarrollo: las muestras del raíl no son la tira móvil del panel;
+   por debajo de 860px siguen enseñando el bloque de puesta en marcha. */
+.app-sidebar.gal-rail { position: static; z-index: auto; -webkit-backdrop-filter: none; backdrop-filter: none; }
+@media (max-width: 860px) {
+  .app .app-sidebar.gal-rail { padding: 16px 12px; }
+  .app-sidebar.gal-rail .app-setup, .app-sidebar.gal-rail .app-setup-unreadable { display: block; }
+}
+/* ==== FIN SLOT DETALLES FINALES ==== */

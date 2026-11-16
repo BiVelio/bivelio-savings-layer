@@ -56,6 +56,10 @@ export async function YourBenchHeadline({
       : f.upper > 0
         ? ({ label: t("yourBench.readout.statusInconclusive"), tone: "amber" } as const)
         : ({ label: t("yourBench.readout.statusNegative"), tone: "red" } as const);
+  // EL COLOR DE LA CIFRA DICE LO MISMO QUE LA ETIQUETA, con los mismos cortes:
+  // verde solo si el intervalo entero es ahorro, rojo solo si entero es coste;
+  // si cruza el cero la cifra va en tinta, sin veredicto de color.
+  const tono = estado.tone === "green" ? "positive" : estado.tone === "red" ? "negative" : "neutral";
   const dia = (iso: string) =>
     new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "UTC" }).format(new Date(`${iso}T00:00:00Z`));
   const periodo = desde && hasta ? `${dia(desde)} – ${dia(hasta)}` : null;
@@ -70,7 +74,7 @@ export async function YourBenchHeadline({
         note={periodo ?? undefined}
         badge={<EvidenceBadge tipo="tus-datos" label={tu("evidence.tusDatos")} />}
         figure={<>≥ {pctFloor(f.lower)}</>}
-        figureTone={f.lower >= 0 ? "positive" : "negative"}
+        figureTone={tono}
         caption={
           completa
             ? t.rich("yourBench.headlineCaption", pie)
@@ -117,7 +121,7 @@ export async function YourBenchHeadline({
           </a>
         }
       >
-        <div className="ci-track2">
+        <div className="ci-track2" data-tono={tono}>
           <div className="ci-fill2" style={{ left: `${xp(f.lower)}%`, width: `${xp(f.upper) - xp(f.lower)}%` }} />
           <div className="ci-zero2" style={{ left: `${xp(0)}%` }} />
           <div className="ci-lo" style={{ left: `${xp(f.lower)}%` }} />
