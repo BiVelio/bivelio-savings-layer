@@ -5912,3 +5912,40 @@ a.card:active, button.card:active, .card-link:active { transform: translateY(0);
 .nf-vacio .nf-destinos { margin-top: 4px; }
 @media (max-width: 480px) { .nf-vacio .ui-estc__action { align-self: stretch; flex-direction: column; } }
 /* ==== FIN SLOT E4 ==== */
+
+/* ==== SLOT ACABADO FINAL ==== */
+/* Recibos de la portada: la etiqueta de procedencia va en su renglón en los tres,
+   no al lado del texto en dos y encima en el tercero según lo larga que sea. */
+.recibo--ancho .recibo-procedencia { flex-basis: 100%; }
+/* Hechos del conector: una leyenda de dos renglones no se parte con guion. */
+.conecta-hechos li > span { -webkit-hyphens: manual; hyphens: manual; }
+/* Palancas de la prueba: la que no despliega detalle lleva el mismo tipo y la
+   misma separación que las que sí (botón .lg-name: mono, 6px + 4px tras el punto). */
+.prf-kpis .kpi.lg > .n { font-family: var(--mono); }
+.prf-kpis .kpi.lg > .n > .ltag:first-child { margin-right: 10px; }
+/* Vacíos de una sola frase dentro de una tarjeta del Resumen (Tráfico, Ahorro
+   nativo): la frase arranca en el margen del título y se lee como la nota del
+   Explorador, no como un titular en negrita sangrado 16px. */
+.app .card > .empty-state--bare.empty-state--start:not(:has(.empty-state-text, .empty-state-icon, .empty-state-actions)) { margin-top: 10px; padding: 0 0 2px; }
+.app .card > .empty-state--bare.empty-state--start:not(:has(.empty-state-text, .empty-state-icon, .empty-state-actions)) > .empty-state-title { font-size: var(--fs-note); font-weight: var(--fw-body); letter-spacing: 0; line-height: var(--lh-body); color: var(--ink-soft); }
+/* Resumen en móvil: el título de cada tarjeta arranca en el mismo margen
+   (antes 28, 33, 36 y 39px según el componente). */
+@media (max-width: 640px) {
+  .app .card.card-pad.ox-card { padding-inline: 16px; }
+  .app .ui-muc.ov-providers { padding-inline: 16px; }
+  .app .ov-breakdown .ui-cb__card { padding-inline: 12px; }
+  .app .ov-chart .ui-kpic__head { padding-inline: 4px; }
+}
+/* Titular del Resumen: cuando la única acción es el enlace discreto, su texto
+   arranca en el margen del párrafo (el botón lleva 18px de relleno + 1px de borde). */
+@media (min-width: 641px) { .verdict-actions > .btn-quiet:first-child { margin-inline-start: -19px; } }
+/* Extracto: el aviso de lectura fallida deja bajo la nota el mismo aire (12px)
+   que el estado vacío que ocupa ese sitio cuando la lectura sí llega. */
+.app-section > .ext-h + .note + .notice { margin-top: 12px; }
+/* Tu banco: el nombre del grupo no se parte a media palabra («Respondi-da») en
+   una tabla que ya se desplaza; la columna guarda sitio para dos renglones. */
+@media (max-width: 900px) {
+  .ui-dtc__table .st-name { min-width: 168px; }
+  .ui-dtc__table .st-name-t { overflow-wrap: break-word; }
+}
+/* ==== FIN SLOT ACABADO FINAL ==== */
