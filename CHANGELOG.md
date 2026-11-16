@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.2.1 — README revisado para la comunidad, paper v2.3-r1 enlazado
+
+### Changed
+
+- **README**: primera lectura de ~135 líneas (héroe, evidencia medida, pitch,
+  instalación en 60 s, paper, tabla Community/Cloud) y el manual completo plegado
+  en `<details>`; enlace del paper a la **v2.3-r1** (revisada externamente) y
+  documentación de los levers 1.2.0 (`cachePrefix` y `crossProviderShadow`).
+- `.zenodo.json` con los metadatos del depósito (listo para la integración
+  GitHub→Zenodo).
+
+Sin cambios de código: misma superficie que 1.2.0.
+
 ## 1.2.0 — cache-aware prompt management, cross-provider shadow, live evidence
 
 ### Added
