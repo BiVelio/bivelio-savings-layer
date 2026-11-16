@@ -13,7 +13,12 @@
     "dashboard": "Bảng điều khiển",
     "signOut": "Đăng xuất",
     "howItWorks": "Cách hoạt động",
-    "menu": "Menu"
+    "menu": "Menu",
+    "product": "Sản phẩm",
+    "results": "Kết quả",
+    "code": "Mã nguồn",
+    "mainAria": "Điều hướng chính",
+    "newTab": "(mở trong thẻ mới)"
   },
   "app": {
     "sidebar": {
@@ -53,6 +58,34 @@
         "pro": "Pro",
         "enterprise": "Enterprise"
       }
+    }
+  },
+  "ui": {
+    "copy": "Sao chép",
+    "copied": "Đã sao chép",
+    "evidence": {
+      "abSdk": "A/B với SDK",
+      "replayGateway": "Phát lại trên gateway",
+      "sintetico": "Tổng hợp",
+      "estimacion": "Ước tính",
+      "sombra": "Chế độ bóng",
+      "benchmark": "Benchmark",
+      "tusDatos": "Dữ liệu của bạn"
+    },
+    "recibo": {
+      "ilustrativo": "Ví dụ minh họa",
+      "comoSeMidio": "Cách đo",
+      "total": "Tổng",
+      "procedencia": "Nguồn gốc"
+    },
+    "code": {
+      "expected": "Kết quả mong đợi"
+    },
+    "state": {
+      "loading": "Đang tải…",
+      "empty": "Chưa có dữ liệu",
+      "error": "Không thể tải",
+      "retry": "Thử lại"
     }
   },
   "auth": {

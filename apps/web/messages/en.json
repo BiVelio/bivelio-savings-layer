@@ -13,7 +13,12 @@
     "dashboard": "Dashboard",
     "signOut": "Sign out",
     "howItWorks": "How it works",
-    "menu": "Menu"
+    "menu": "Menu",
+    "product": "Product",
+    "results": "Results",
+    "code": "Code",
+    "mainAria": "Main navigation",
+    "newTab": "(opens in a new tab)"
   },
   "app": {
     "sidebar": {
@@ -53,6 +58,34 @@
         "pro": "Pro",
         "enterprise": "Enterprise"
       }
+    }
+  },
+  "ui": {
+    "copy": "Copy",
+    "copied": "Copied",
+    "evidence": {
+      "abSdk": "SDK A/B",
+      "replayGateway": "Gateway replay",
+      "sintetico": "Synthetic",
+      "estimacion": "Estimate",
+      "sombra": "Shadow mode",
+      "benchmark": "Benchmark",
+      "tusDatos": "Your data"
+    },
+    "recibo": {
+      "ilustrativo": "Illustrative example",
+      "comoSeMidio": "How it was measured",
+      "total": "Total",
+      "procedencia": "Provenance"
+    },
+    "code": {
+      "expected": "Expected output"
+    },
+    "state": {
+      "loading": "Loading…",
+      "empty": "No data yet",
+      "error": "Could not load",
+      "retry": "Retry"
     }
   },
   "auth": {

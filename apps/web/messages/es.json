@@ -13,7 +13,12 @@
     "dashboard": "Panel",
     "signOut": "Cerrar sesión",
     "howItWorks": "Cómo funciona",
-    "menu": "Menú"
+    "menu": "Menú",
+    "product": "Producto",
+    "results": "Resultados",
+    "code": "Código",
+    "mainAria": "Navegación principal",
+    "newTab": "(se abre en una pestaña nueva)"
   },
   "app": {
     "sidebar": {
@@ -53,6 +58,34 @@
         "pro": "Pro",
         "enterprise": "Enterprise"
       }
+    }
+  },
+  "ui": {
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "evidence": {
+      "abSdk": "A/B con SDK",
+      "replayGateway": "Replay en gateway",
+      "sintetico": "Sintético",
+      "estimacion": "Estimación",
+      "sombra": "Modo sombra",
+      "benchmark": "Benchmark",
+      "tusDatos": "Tus datos"
+    },
+    "recibo": {
+      "ilustrativo": "Ejemplo ilustrativo",
+      "comoSeMidio": "Cómo se midió",
+      "total": "Total",
+      "procedencia": "Procedencia"
+    },
+    "code": {
+      "expected": "Resultado esperado"
+    },
+    "state": {
+      "loading": "Cargando…",
+      "empty": "Todavía no hay datos",
+      "error": "No se pudo cargar",
+      "retry": "Reintentar"
     }
   },
   "auth": {

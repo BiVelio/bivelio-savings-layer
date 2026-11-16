@@ -37,11 +37,13 @@ export default async function LocaleLayout({
       <head>
         {/* Las @font-face viven dentro de globals.css, así que el navegador no
             descubre los woff2 hasta parsear la hoja — un round-trip extra justo
-            sobre el elemento LCP (el h1 en Space Grotesk). JetBrains Mono NO se
-            precarga, replicando el `preload: false` de bivelio.com: nada por
-            encima del pliegue depende de ella. */}
-        <link rel="preload" href="/fonts/inter-var.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
-        <link rel="preload" href="/fonts/space-grotesk-var.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+            sobre el elemento LCP (el h1 en Plus Jakarta Sans). Solo los dos
+            subconjuntos latinos que pinta el primer pliegue: Geist (cuerpo y
+            cabecera) y Plus Jakarta Sans (titular). Geist Mono, Instrument
+            Serif y los latin-ext NO se precargan: el navegador los pide solo
+            si la página los usa. */}
+        <link rel="preload" href="/fonts/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+        <link rel="preload" href="/fonts/plus-jakarta-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
       </head>
       <body>
         {/* Google tag (gtag.js) — seguimiento de conversiones de Google Ads

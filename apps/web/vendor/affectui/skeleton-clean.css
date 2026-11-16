@@ -1,0 +1,42 @@
+/*
+ * Vendored from affectUI 'Skeleton (Clean)' — https://github.com/flohoeller/affectui @ 8f15236c790d3a21a668c98a663037e5219dd9c9
+ * MIT License, Copyright (c) 2026 Florian Höller (adfects). Full text: ./LICENSE.
+ * Adapted for BiVelio Savings (light theme only, BiVelio tokens); changes from upstream are listed in ./VENDOR.md.
+ */
+/* Colors and motion as variables – override them on .ui-sklc (see Theming in the docs) */
+.ui-sklc {
+  --ui-sklc-fill: var(--surface-2);
+  --ui-sklc-sheen: color-mix(in srgb, var(--surface) 75%, transparent);
+  --ui-sklc-speed: 1.6s;
+  --ui-sklc-ease: var(--aui-ease, cubic-bezier(0.22, 1, 0.36, 1));
+
+  position: relative;
+  display: block;
+  flex: none;
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow: hidden;
+  border-radius: var(--aui-radius-sm, 6px);
+  background: var(--ui-sklc-fill);
+}
+/* The sheen: every skeleton sweeps at the same time, so a whole list breathes as one */
+.ui-sklc::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, var(--ui-sklc-sheen), transparent);
+  translate: -100% 0;
+  animation: ui-sklc-sweep var(--ui-sklc-speed) var(--ui-sklc-ease) infinite;
+}
+@keyframes ui-sklc-sweep { 60%, 100% { translate: 100% 0; } }
+
+/* line: a box one text line tall, the shape centered in it */
+.ui-sklc__line { display: flex; align-items: center; min-width: 0; max-width: 100%; }
+
+/* The wrapper fades in a beat late – a load under 150ms never shows the skeletons at all */
+.ui-sklc-loading { --ui-sklc-delay: 150ms; animation: ui-sklc-in 300ms ease var(--ui-sklc-delay) both; }
+@keyframes ui-sklc-in { from { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-sklc::after { display: none; }
+}

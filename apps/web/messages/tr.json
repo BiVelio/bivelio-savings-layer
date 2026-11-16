@@ -13,7 +13,12 @@
     "dashboard": "Panel",
     "signOut": "Çıkış yap",
     "howItWorks": "Nasıl çalışır",
-    "menu": "Menü"
+    "menu": "Menü",
+    "product": "Ürün",
+    "results": "Sonuçlar",
+    "code": "Kod",
+    "mainAria": "Ana gezinme",
+    "newTab": "(yeni sekmede açılır)"
   },
   "app": {
     "sidebar": {
@@ -53,6 +58,34 @@
         "pro": "Pro",
         "enterprise": "Enterprise"
       }
+    }
+  },
+  "ui": {
+    "copy": "Kopyala",
+    "copied": "Kopyalandı",
+    "evidence": {
+      "abSdk": "SDK ile A/B",
+      "replayGateway": "Gateway tekrarı",
+      "sintetico": "Sentetik",
+      "estimacion": "Tahmin",
+      "sombra": "Gölge modu",
+      "benchmark": "Benchmark",
+      "tusDatos": "Sizin verileriniz"
+    },
+    "recibo": {
+      "ilustrativo": "Örnek amaçlı gösterim",
+      "comoSeMidio": "Nasıl ölçüldü",
+      "total": "Toplam",
+      "procedencia": "Kaynak"
+    },
+    "code": {
+      "expected": "Beklenen çıktı"
+    },
+    "state": {
+      "loading": "Yükleniyor…",
+      "empty": "Henüz veri yok",
+      "error": "Yüklenemedi",
+      "retry": "Yeniden dene"
     }
   },
   "auth": {

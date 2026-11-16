@@ -13,7 +13,12 @@
     "dashboard": "Dashboard",
     "signOut": "Uitloggen",
     "howItWorks": "Hoe het werkt",
-    "menu": "Menu"
+    "menu": "Menu",
+    "product": "Product",
+    "results": "Resultaten",
+    "code": "Code",
+    "mainAria": "Hoofdnavigatie",
+    "newTab": "(opent in een nieuw tabblad)"
   },
   "app": {
     "sidebar": {
@@ -53,6 +58,34 @@
         "pro": "Pro",
         "enterprise": "Enterprise"
       }
+    }
+  },
+  "ui": {
+    "copy": "Kopiëren",
+    "copied": "Gekopieerd",
+    "evidence": {
+      "abSdk": "A/B met SDK",
+      "replayGateway": "Gateway-replay",
+      "sintetico": "Synthetisch",
+      "estimacion": "Schatting",
+      "sombra": "Schaduwmodus",
+      "benchmark": "Benchmark",
+      "tusDatos": "Jouw data"
+    },
+    "recibo": {
+      "ilustrativo": "Illustratief voorbeeld",
+      "comoSeMidio": "Hoe het is gemeten",
+      "total": "Totaal",
+      "procedencia": "Herkomst"
+    },
+    "code": {
+      "expected": "Verwachte uitvoer"
+    },
+    "state": {
+      "loading": "Laden…",
+      "empty": "Nog geen gegevens",
+      "error": "Laden mislukt",
+      "retry": "Opnieuw proberen"
     }
   },
   "auth": {

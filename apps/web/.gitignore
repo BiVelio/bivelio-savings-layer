@@ -21,7 +21,11 @@ next-env.d.ts
 # supabase CLI local artifacts (project ref / temp) — never commit the mapping
 /supabase/
 # tsup web-build output (the SERVED copy is public/vendor/, which stays tracked)
-/vendor/
+# `/vendor/*` y no `/vendor/`: con el directorio entero ignorado no se puede
+# re-incluir nada de dentro, y vendor/affectui SÍ se versiona (código de
+# terceros vendorizado; ver vendor/affectui/VENDOR.md).
+/vendor/*
+!/vendor/affectui/
 
 # Sin barra: también el ENLACE SIMBÓLICO. `node_modules/` solo ignora directorios,
 # y un worktree con el node_modules enlazado lo colaba en el árbol (CI, 22-09).

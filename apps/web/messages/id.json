@@ -13,7 +13,12 @@
     "dashboard": "Dasbor",
     "signOut": "Keluar",
     "howItWorks": "Cara kerjanya",
-    "menu": "Menu"
+    "menu": "Menu",
+    "product": "Produk",
+    "results": "Hasil",
+    "code": "Kode",
+    "mainAria": "Navigasi utama",
+    "newTab": "(terbuka di tab baru)"
   },
   "app": {
     "sidebar": {
@@ -53,6 +58,34 @@
         "pro": "Pro",
         "enterprise": "Enterprise"
       }
+    }
+  },
+  "ui": {
+    "copy": "Salin",
+    "copied": "Disalin",
+    "evidence": {
+      "abSdk": "A/B dengan SDK",
+      "replayGateway": "Replay di gateway",
+      "sintetico": "Sintetis",
+      "estimacion": "Estimasi",
+      "sombra": "Mode bayangan",
+      "benchmark": "Benchmark",
+      "tusDatos": "Data Anda"
+    },
+    "recibo": {
+      "ilustrativo": "Contoh ilustratif",
+      "comoSeMidio": "Cara pengukurannya",
+      "total": "Total",
+      "procedencia": "Asal data"
+    },
+    "code": {
+      "expected": "Keluaran yang diharapkan"
+    },
+    "state": {
+      "loading": "Memuat…",
+      "empty": "Belum ada data",
+      "error": "Gagal memuat",
+      "retry": "Coba lagi"
     }
   },
   "auth": {

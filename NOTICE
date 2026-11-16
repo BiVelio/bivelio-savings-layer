@@ -9,3 +9,22 @@ BiVelio Cloud Services Terms (LICENSE-CLOUD.md). The "BiVelio", "Savings" and
 BV-SALA names and logos are trademarks of BiVelio Inc.; the Apache License does
 not grant any right to use them except as permitted by applicable law and the
 license itself.
+
+Third-party code in apps/web/vendor/affectui
+--------------------------------------------
+The directory apps/web/vendor/affectui contains third-party UI components from
+affectUI (https://www.affectui.com, https://github.com/flohoeller/affectui),
+adapted for this product. They are NOT all covered by the Apache License of
+this repository:
+
+  * Free pieces are distributed under the MIT License, Copyright (c) 2026
+    Florian Höller (adfects); see apps/web/vendor/affectui/LICENSE.
+  * Files derived from affectUI Pro pieces are used under the affectUI Pro
+    license held by BiVelio. They carry a notice in each file, remain under
+    that license and must not be redistributed as a component kit.
+
+apps/web/vendor/affectui/VENDOR.md lists every file, its origin and licence.
+
+The fonts in apps/web/public/fonts (Geist, Geist Mono, Plus Jakarta Sans,
+Instrument Serif) are distributed under the SIL Open Font License 1.1; see
+apps/web/public/fonts/README.md.

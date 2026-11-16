@@ -9,6 +9,14 @@ import { NvidiaFooterCard } from "./NvidiaInception";
 
 import { ArrowRightIcon, GitHubIcon, LinkedInIcon } from "./icons";
 import { SavingsLogo } from "./SavingsLogo";
+import { URL_DEL_CODIGO } from "./sitio";
+
+/** «Código», la etiqueta del enlace al repositorio: la misma clave que usa la
+ *  cabecera (`nav.code`), para que el destino se llame igual arriba y abajo. */
+async function etiquetaDelCodigo(): Promise<string> {
+  const t = await getTranslations("nav");
+  return t("code");
+}
 
 // Cuentas propiedad de BiVelio, las mismas que publica el SocialDock de
 // bivelio.com. No hay cuenta de X (x.com/bivelio es un 404), así que X no está
@@ -126,6 +134,10 @@ export default async function Footer({ sinGitHub = false }: { sinGitHub?: boolea
     // desde la 0.4 solo llegaba a ella desde npm o GitHub.
     [t("footer.migrate"), "/migrate-to-0.5"],
     [t("footer.pricing"), "/#pricing"],
+    // El repositorio del motor open source, visible también en el pie (guía
+    // §6, fila 10). Donde el pie recibe `sinGitHub` NO se pinta: esa decisión
+    // tiene su propio PR y aquí no se toca.
+    ...(sinGitHub ? [] : [[await etiquetaDelCodigo(), URL_DEL_CODIGO]]),
   ];
   // «Documentación» apuntaba a docs.bivelio.com y «Estado» a status.bivelio.com,
   // y ninguno de los dos dominios resuelve (2026-09-13): dos enlaces muertos en

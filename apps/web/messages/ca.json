@@ -13,7 +13,12 @@
     "dashboard": "Tauler",
     "signOut": "Tanca la sessió",
     "howItWorks": "Com funciona",
-    "menu": "Menú"
+    "menu": "Menú",
+    "product": "Producte",
+    "results": "Resultats",
+    "code": "Codi",
+    "mainAria": "Navegació principal",
+    "newTab": "(s'obre en una pestanya nova)"
   },
   "app": {
     "sidebar": {
@@ -53,6 +58,34 @@
         "pro": "Pro",
         "enterprise": "Enterprise"
       }
+    }
+  },
+  "ui": {
+    "copy": "Copia",
+    "copied": "Copiat",
+    "evidence": {
+      "abSdk": "A/B amb SDK",
+      "replayGateway": "Replay al gateway",
+      "sintetico": "Sintètic",
+      "estimacion": "Estimació",
+      "sombra": "Mode ombra",
+      "benchmark": "Benchmark",
+      "tusDatos": "Les teves dades"
+    },
+    "recibo": {
+      "ilustrativo": "Exemple il·lustratiu",
+      "comoSeMidio": "Com es va mesurar",
+      "total": "Total",
+      "procedencia": "Procedència"
+    },
+    "code": {
+      "expected": "Resultat esperat"
+    },
+    "state": {
+      "loading": "S'està carregant…",
+      "empty": "Encara no hi ha dades",
+      "error": "No s'ha pogut carregar",
+      "retry": "Torna-ho a provar"
     }
   },
   "auth": {
