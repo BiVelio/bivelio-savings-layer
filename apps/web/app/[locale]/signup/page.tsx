@@ -34,6 +34,9 @@ export default async function SignupPage({ params }: { params: Promise<{ locale:
             version: VERSION_MINIMA_MEDIR,
           })}
         </p>
+        {/* La identidad es COMPARTIDA con el resto de la suite (Shield, Privacy,
+            la app de BiVelio): quien ya tenga cuenta allí no debe crear otra. */}
+        <p className="sub">{t("signupSsoNote")}</p>
         <AuthForm mode="signup" />
         <p className="auth-alt">
           {t("alreadyHaveAccount")} <Link href="/login">{t("signIn")}</Link>
