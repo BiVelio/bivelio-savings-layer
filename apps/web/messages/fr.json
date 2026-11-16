@@ -60,7 +60,7 @@
       "orgLabel": "Organisation : {org}",
       "accountLink": "Paramètres du compte de {email}",
       "plan": {
-        "free": "Free",
+        "free": "Gratuit",
         "pro": "Pro",
         "enterprise": "Enterprise"
       }
@@ -472,7 +472,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "appels LLM/récupération/outil qui n'ont jamais été exécutés",
       "whatEliminatedTokens": "tokens d'entrée que le fournisseur n'a jamais traités",
-      "elisionNota": "Si vous utilisez la passerelle, une partie de ce chiffre est l'effacement que votre fournisseur applique d'après votre propre configuration : cette part n'est pas notre mérite et n'entre jamais dans votre commission.",
+      "elisionNota": "Si vous utilisez la passerelle, une partie de ce chiffre est l'effacement que votre fournisseur applique d'après votre propre configuration : cette part n'est pas notre mérite et ne compte jamais comme économie créditée.",
       "whatCompressedTokens": "tokens d'entrée réencodés plus compacts",
       "whatProviderCachedTokens": "tokens d'entrée facturés au prix réduit du cache de préfixe. C'est votre client qui le demande, pas nous : notre levier n'en règle que la durée",
       "ghostAwaiting": "en attente du premier rapport",
@@ -518,7 +518,7 @@
       "hidden": "La répartition existe, mais ce compte ne peut pas la voir. C'est un défaut de visibilité, pas une absence de données.",
       "unavailable": "La répartition SHADOW par modèle n'est pas encore disponible sur ce serveur. L'historique sans modèle ne peut pas être reconstruit.",
       "historical": "Des requêtes SHADOW existent, mais leur répartition par modèle est indisponible pour l'historique antérieur à cette migration.",
-      "empty": "Aucune requête SHADOW sur cette période. Envoyez du trafic réel avec Mesurer pour commencer à estimer les opportunités.",
+      "empty": "Aucune requête SHADOW sur cette période. Envoyez du trafic réel avec Measure pour commencer à estimer les opportunités.",
       "colModel": "Modèle",
       "colRequests": "Requêtes SHADOW",
       "colBaseline": "Dépense de référence",
@@ -714,10 +714,8 @@
     "accountPlanStrip": {
       "noActivePlan": "Aucun forfait actif",
       "signedInAs": "connecté en tant que",
-      "organization": "Organisation : <b>{name}</b>",
       "personalNote": "Personnel — aucune organisation liée pour l'instant. Un seul compte BiVelio, partagé dans toute la suite.",
       "plan": "forfait",
-      "seatsCount": "{count, plural, one {# siège} other {# sièges}}.",
       "planBody": "BV-SALA est open core — sans clé, il tourne en mode Community ; une clé définie mais invalide reste fail-closed. Le cloud ajoute le tableau de bord, les caches partagées et les droits de l'org. Pro : {monthly} par siège et par mois ou {yearly} par siège et par an. Team : {teamMonthly} par mois avec {included} sièges inclus. Aucune commission sur vos économies. Un siège est une machine active ou une identité de service, pas une personne.",
       "managePlan": "Gérer le forfait →",
       "subscribe": "S'abonner →",
@@ -726,7 +724,6 @@
       "checkoutError": "Une erreur s'est produite — veuillez réessayer.",
       "seatsLabel": "Sièges",
       "seatsHint": "Un poste est une machine ou une identité de service active, pas une personne. Comptez les processus qui exécuteront le SDK, pas vos effectifs. Sur Kubernetes, définissez BVSALA_SEAT_ID par réplique.",
-      "seatsInUse": "{used, plural, one {# siège utilisé} other {# sièges utilisés}} ce mois-ci.",
       "seatsOver": "{used, plural, one {# siège utilisé} other {# sièges utilisés}}, {paid, plural, one {# payé} other {# payés}}. L'excédent est facturé à la clôture du mois, au prix de votre forfait. En paiement mensuel, il s'ajoute à votre prochaine facture et la quantité souscrite passe au nombre de sièges utilisés. En paiement annuel, il est facturé à la clôture du mois, au tarif annuel divisé par douze, et la quantité souscrite ne change pas. Vous pouvez aussi ajuster la quantité depuis « Gérer le forfait ».",
       "seatsLastMonth": "{period} : {used, plural, one {# siège utilisé} other {# sièges utilisés}}, {paid, plural, one {# payé} other {# payés}}. Excédent : {extra, plural, one {# siège} other {# sièges}} ({amount}). En paiement mensuel, il figure sur votre prochaine facture et la quantité souscrite passe au nombre de sièges utilisés. En paiement annuel, il est facturé à la clôture du mois, au tarif annuel divisé par douze, sans modifier la quantité souscrite.",
       "seatsRotated": "{used, plural, one {# siège compté} other {# sièges comptés}} ce mois-ci. Vous avez révoqué une clé de compte de service : en la remplaçant, vos machines changent d'identité de siège, donc ce mois-ci elles sont comptées deux fois. Cela se règle tout seul le mois prochain — inutile de changer de forfait.",
@@ -738,11 +735,11 @@
       "errCodigoInvalido": "Ce code n'existe pas ou n'est plus actif. Vous pouvez continuer sans lui ou écrire à support@bivelio.com.",
       "planPickLabel": "Plan",
       "planPro": "Pro",
-      "planTeam": "Équipe",
-      "teamHint": "Équipe inclut {included} sièges ; chaque siège supplémentaire coûte {extra} par mois. On ne peut pas en acheter moins de {included}.",
-      "checkoutTeamMonthly": "S’abonner à Équipe — {monthly}/mois, {included} sièges →",
-      "checkoutTeamYearly": "S’abonner à Équipe — {yearly}/an, {included} sièges →",
-      "errPlanCerrado": "Ce plan n’est plus proposé aux nouveaux clients. Choisissez Pro ou Équipe.",
+      "planTeam": "Team",
+      "teamHint": "Team inclut {included} sièges ; chaque siège supplémentaire coûte {extra} par mois. On ne peut pas en acheter moins de {included}.",
+      "checkoutTeamMonthly": "S’abonner à Team — {monthly}/mois, {included} sièges →",
+      "checkoutTeamYearly": "S’abonner à Team — {yearly}/an, {included} sièges →",
+      "errPlanCerrado": "Ce plan n’est plus proposé aux nouveaux clients. Choisissez Pro ou Team.",
       "statusLabel": "Statut",
       "statusActive": "Abonnement actif",
       "statusPastDue": "Paiement échoué",
@@ -852,7 +849,6 @@
       "rolAdmin": "Administrateur",
       "rolMember": "Membre",
       "rolBilling": "Facturation",
-      "ayudaRoles": "L'administrateur gère l'équipe et les identifiants. La facturation voit l'offre et peut payer, mais ne peut pas télécharger la licence. Le membre consulte seulement le tableau de bord.",
       "miembrosTitulo": "Membres",
       "columnaPersona": "Personne",
       "columnaRol": "Rôle",
@@ -907,18 +903,18 @@
     "sombraElision": {
       "title": "Élision en ombre (hypothétique)",
       "detalle": "≈{usd} sur {requests} requêtes simulées",
-      "nota": "Ce que l'élision de contexte aurait économisé sur votre trafic réel, calculé par la passerelle sans toucher un seul octet. Jamais ajouté au titre, jamais compté dans la commission : le levier ne s'allumera que lorsque ce chiffre le justifiera.",
+      "nota": "Ce que l'élision de contexte aurait économisé sur votre trafic réel, calculé par la passerelle sans toucher un seul octet. Jamais ajouté au titre, jamais compté comme économie créditée : le levier ne s'allumera que lorsque ce chiffre le justifiera.",
       "notaNegativa": "Sur votre trafic, l'élision aurait coûté de l'argent : réécrire des blocs invalide le cache de préfixe du fournisseur. Cette voie existe précisément pour voir cela avant d'allumer quoi que ce soit — c'est pourquoi elle reste éteinte."
     },
     "elisionProveedor": {
       "title": "Effacement par le fournisseur provoqué par nos réglages",
       "detalle": "{requests} requêtes créditées",
-      "nota": "Le décompte est celui du fournisseur (applied_edits). Ce n'est pas une économie mesurée et cela n'entre jamais dans ta commission ; l'argent suivra quand le net par modèle sera mesuré — effacer réécrit le cache de préfixe, et sur certains modèles le net est négatif."
+      "nota": "Le décompte est celui du fournisseur (applied_edits). Ce n'est pas une économie mesurée et cela ne compte jamais comme économie créditée ; l'argent suivra quand le net par modèle sera mesuré — effacer réécrit le cache de préfixe, et sur certains modèles le net est négatif."
     },
     "ahorroNativo": {
       "title": "Économies natives activées",
       "detalle": "{requests} requêtes avec cache du fournisseur · lectures {lectura} − surcoût d'écriture {prima}",
-      "nota": "C'est la remise du cache de préfixe de votre fournisseur (Anthropic avec cache_control, OpenAI automatique, Gemini implicite), nette du surcoût d'écriture qu'il facture, calculée à partir de son propre compteur au prix catalogue. Vous la voyez sur la facture de votre fournisseur, pas sur la nôtre : elle reste à part des économies créditées et n'entre jamais dans votre commission.",
+      "nota": "C'est la remise du cache de préfixe de votre fournisseur (Anthropic avec cache_control, OpenAI automatique, Gemini implicite), nette du surcoût d'écriture qu'il facture, calculée à partir de son propre compteur au prix catalogue. Vous la voyez sur la facture de votre fournisseur, pas sur la nôtre : elle reste à part des économies créditées et ne s'y ajoute jamais.",
       "vacio": "Aucune requête n'a encore lu ou écrit le cache de préfixe de votre fournisseur sur cette période.",
       "proveedor": {
         "anthropic": "Anthropic",
@@ -933,9 +929,9 @@
       "badgeMedido": "Mesuré",
       "proyeccionTitulo": "Économie projetée pour {periodo}",
       "proyeccionNota": "Ce qui est mesuré à ce jour, plus votre rythme des {dias} derniers jours sur les {restantes} jours restants. Une estimation, pas une facture.",
-      "comision": "Commission projetée",
-      "comisionNota": "{pct} de ce que vous économisez. Un mois sans économie est un mois sans commission.",
-      "comisionCalibracion": "Mois de calibrage : rien n'est facturé. Le chiffre correspond à la commission qui s'appliquerait.",
+      "comision": "Commission de l'ancienne formule (référence)",
+      "comisionNota": "{pct} de l'économie projetée, selon la formule avec commission, fermée aux nouvelles souscriptions. Les forfaits à prix fixe ne comportent aucune commission.",
+      "comisionCalibracion": "Mois de calibrage de la formule avec commission : rien n'est facturé. Les forfaits à prix fixe ne comportent aucune commission.",
       "cerrado": "Période clôturée : voici ce qui a été, pas où cela va.",
       "pocosDias": "Trop tôt pour tracer la droite : il faut {min} jours complets et il y en a {n}. Ce qui est mesuré est déjà réel.",
       "medido": "Économisé à ce jour (mesuré)",
@@ -957,10 +953,8 @@
       "notaCalibracion": "Mois de calibration : la commission aurait été de {habria} — et elle n'est pas facturée.",
       "notaSombra": "Chiffre en ombre : la commission calculée est de {comision}. Aucune facture ne l'inclut encore.",
       "baseMedida": "Base mesurée",
-      "enUsd": "{usd} aux prix du fournisseur",
       "requests": "{n} requêtes mesurées",
       "ahorroMedido": "Économie mesurée",
-      "ratio": "ratio {pct}",
       "tramosTitulo": "La commission, tranche par tranche",
       "sinAhorro": "Aucune économie mesurée cette période — sans économie, pas de commission. Jamais.",
       "colTramo": "Tranche",
@@ -968,11 +962,11 @@
       "colBase": "Base de la tranche",
       "colComision": "Commission",
       "estimadoExcluido": "Économie estimée exclue de la base (contexte, jamais facturable) : {usd}.",
-      "sombraElision": "Voie ombre : l'élision aurait économisé {usd} sur {requests} requêtes simulées. Hypothétique — n'entre jamais dans la base ni dans la commission.",
+      "sombraElision": "Voie ombre : l'élision aurait économisé {usd} sur {requests} requêtes simulées. Hypothétique — n'entre jamais dans la base.",
       "sombraElisionNegativa": "Voie ombre : l'élision aurait coûté {usd} de plus sur {requests} requêtes simulées. Voilà pourquoi elle reste éteinte : on n'allume que ce qui économise vraiment.",
-      "elisionProveedor": "Voie de l'effacement par le fournisseur : {requests} requêtes où nos réglages ont fait effacer du contexte au fournisseur. Un décompte, pas une économie — il n'entre jamais dans la base ni dans la commission.",
+      "elisionProveedor": "Voie de l'effacement par le fournisseur : {requests} requêtes où nos réglages ont fait effacer du contexte au fournisseur. Un décompte, pas une économie — il n'entre jamais dans la base.",
       "referencia": "Mesuré par référence : {usd} sur {requests, plural, one {# requête répétée servie} other {# requêtes répétées servies}} sans appeler votre fournisseur. Chacune est valorisée avec le compteur que votre fournisseur a renvoyé pour la requête identique déjà exécutée — il figure dans le rapport de cette requête et dans l'usage de votre fournisseur ce jour-là — au tarif d'entrée en cache, le plus bas que votre fournisseur facture pour répéter un prompt ; la sortie ne compte que si l'échantillonnage était déterministe et que la requête exécutée ne comportait aucun raisonnement caché (votre fournisseur a déclaré zéro jeton de raisonnement ou, s'il ne les détaille pas, sa réponse ne contenait aucun bloc de raisonnement). Inclus dans la base.",
-      "referenciaExcluida": "Mesuré par référence : {usd} sur {requests, plural, one {# requête répétée} other {# requêtes répétées}}. Affiché à titre indicatif — pour l'instant, il reste hors de la base et de la commission.",
+      "referenciaExcluida": "Mesuré par référence : {usd} sur {requests, plural, one {# requête répétée} other {# requêtes répétées}}. Affiché à titre indicatif — pour l'instant, il reste hors de la base.",
       "exportarReferencias": "Télécharger les requêtes répétées de cette période, une ligne par requête (CSV)",
       "exportarReferenciasPorDia": "Trop de requêtes répétées pour un seul fichier — télécharger cette période jour par jour (CSV) :",
       "parametros": "Paramètres du relevé — catalogue de prix {version} · taux de change {fx}.",
@@ -1116,28 +1110,28 @@
       "metaTitle": "Équipe · BiVelio Savings Layer"
     },
     "measurePlan": {
-      "title": "Ou commencez gratuitement : la licence Mesurer, sans carte",
+      "title": "Ou commencez gratuitement : la licence Measure, sans carte",
       "body": "Fait tourner la couche en mode ombre pour 1 organisation et jusqu'à {seats} postes : chaque requête part vers votre fournisseur sans modification et rien n'est servi depuis le cache. Votre tableau de bord montre ce que les leviers auraient économisé ; passez à une offre payante pour les activer.",
-      "claim": "Obtenir ma licence Mesurer gratuite",
+      "claim": "Obtenir ma licence Measure gratuite",
       "claiming": "Émission…",
-      "keyLabel": "Votre clé de licence Mesurer (mode ombre : aucun levier appliqué)",
+      "keyLabel": "Votre clé de licence Measure (mode ombre : aucun levier appliqué)",
       "keyHint": "Utilisez-la comme BIVELIO_LICENSE_KEY, exactement comme une clé payante. Quand vous passez à une offre payante, la couche récupère seule la licence payante et les leviers s'activent.",
       "errEmailNotVerified": "Confirmez d'abord votre adresse e-mail, puis réessayez.",
-      "errDisposableEmail": "Les adresses e-mail jetables ne peuvent pas obtenir la licence Mesurer. Inscris-toi avec une adresse permanente (celle du travail, par exemple) et réessaie.",
-      "errOneOrgPerAccount": "Ce compte détient déjà une licence Mesurer pour une autre organisation : la licence gratuite couvre une organisation par compte.",
+      "errDisposableEmail": "Les adresses e-mail jetables ne peuvent pas obtenir la licence Measure. Inscris-toi avec une adresse permanente (celle du travail, par exemple) et réessaie.",
+      "errOneOrgPerAccount": "Ce compte détient déjà une licence Measure pour une autre organisation : la licence gratuite couvre une organisation par compte.",
       "errAlreadyLicensed": "Votre organisation a déjà une licence payante : utilisez la clé ci-dessus.",
-      "errBlocked": "La licence Mesurer n'est pas disponible pour cette organisation. Écrivez à support@bivelio.com.",
+      "errBlocked": "La licence Measure n'est pas disponible pour cette organisation. Écrivez à support@bivelio.com.",
       "errRole": "Votre rôle ne permet pas de télécharger la licence. Demandez à un owner ou à un admin.",
       "errSignIn": "Connectez-vous d'abord.",
-      "errGeneric": "Impossible d'émettre la licence Mesurer. Réessayez dans un instant.",
-      "planLabel": "Mesurer (gratuit)",
-      "pricingNote": "Mesurer : gratuit, sans carte. La couche en mode ombre pour 1 organisation et jusqu'à {seats} postes, pour voir ce qu'elle économiserait avant de payer.",
+      "errGeneric": "Impossible d'émettre la licence Measure. Réessayez dans un instant.",
+      "planLabel": "Measure (gratuit)",
+      "pricingNote": "Measure : gratuit, sans carte. La couche en mode ombre pour 1 organisation et jusqu'à {seats} postes, pour voir ce qu'elle économiserait avant de payer.",
       "card": {
-        "eyebrow": "Licence Mesurer · mode ombre",
+        "eyebrow": "Licence Measure · mode ombre",
         "title": "Ce que vous auriez économisé",
         "amount": "{amount} que vous n'auriez pas dépensés",
         "context": "Sur {spend} de dépense mesurée en {requests} requêtes. Une estimation de la voie ombre, valorisée avec le compteur de votre propre fournisseur : dans le SDK, les appels répétés et les doublons simultanés ; dans le gateway, en plus, le modèle frère et la baisse du TTL du cache. Rien n'a été appliqué et rien n'est facturé.",
-        "empty": "Pas encore d'estimation d'économie : elle apparaît dès que votre couche voit une requête répétée ou, dans le gateway, une requête où le modèle frère ou la baisse du TTL du cache aurait fait économiser. La licence Mesurer ne modifie jamais ce que vous envoyez.",
+        "empty": "Pas encore d'estimation d'économie : elle apparaît dès que votre couche voit une requête répétée ou, dans le gateway, une requête où le modèle frère ou la baisse du TTL du cache aurait fait économiser. La licence Measure ne modifie jamais ce que vous envoyez.",
         "limits": "Gratuit pour 1 organisation, jusqu'à {seats} postes et {requests} requêtes par jour.",
         "cta": "Activer les leviers : voir les offres"
       }
@@ -1259,7 +1253,7 @@
       "eyebrow": "Gateway · terminaux de code",
       "title": "Claude Code avec une clé d'API ? Voyez la dépense réelle, token par token.",
       "body": "Une seule commande place un compteur local devant votre terminal, sans toucher à votre code : vous exportez votre clé de service et lancez votre agent via bvsala. Vos prompts ne passent pas par les serveurs de BiVelio : ils vont au fournisseur que vous configurez, et seuls les comptages et le coût arrivent dans votre tableau de bord.",
-      "note": "La passerelle mesure, avec le compteur de votre fournisseur, chaque requête dont celui-ci déclare l'usage (pour les modèles de notre catalogue de prix) et, comme le SDK, démarre sans aucune clé (mode Community) : une clé de service facultative ajoute le tableau de bord et les droits de l'org. Avec une licence PRO, sur les modèles Anthropic, elle applique aussi un levier par défaut : elle fait passer les écritures de cache du TTL d'une heure à celui de cinq minutes, uniquement sur les tours où une grande partie du prompt est nouvelle — comme le premier tour d'une session ou une compaction — et laisse tels quels les tours enchaînés. Cela change le prix, jamais le contenu que lit le modèle. Les autres leviers restent éteints tant que vous ne les activez pas. Le skill savings-mode est disponible pour vos plafonds, son effet restant à mesurer. La passerelle fonctionne aussi avec Codex CLI, Goose, Qwen Code, opencode, Kilo, Aider et, avec votre propre clé Anthropic, GitHub Copilot CLI ; pour d'autres, comme Cline ou Continue, bvsala doctor imprime la configuration exacte. Cursor fonctionne via sa substitution d'URL de base OpenAI avec votre propre cl�, et la Gemini CLI se lance avec bvsala gemini.",
+      "note": "La passerelle mesure, avec le compteur de votre fournisseur, chaque requête dont celui-ci déclare l'usage (pour les modèles de notre catalogue de prix) et, comme le SDK, démarre sans aucune clé (mode Community) : une clé de service facultative ajoute le tableau de bord et les droits de l'org. Avec une licence PRO, sur les modèles Anthropic, elle applique aussi un levier par défaut : elle fait passer les écritures de cache du TTL d'une heure à celui de cinq minutes, uniquement sur les tours où une grande partie du prompt est nouvelle — comme le premier tour d'une session ou une compaction — et laisse tels quels les tours enchaînés. Cela change le prix, jamais le contenu que lit le modèle. Les autres leviers restent éteints tant que vous ne les activez pas. Le skill savings-mode est disponible pour vos plafonds, son effet restant à mesurer. La passerelle fonctionne aussi avec Codex CLI, Goose, Qwen Code, opencode, Kilo, Aider et, avec votre propre clé Anthropic, GitHub Copilot CLI ; pour d'autres, comme Cline ou Continue, bvsala doctor imprime la configuration exacte. Cursor fonctionne via sa substitution d'URL de base OpenAI avec votre propre clé, et la Gemini CLI se lance avec bvsala gemini.",
       "pythonNote": "Python ou un autre langage ? Pointez le SDK officiel d'OpenAI ou d'Anthropic vers la passerelle et chaque requête dont le fournisseur rapporte la consommation, pour un modèle qui a un prix catalogue, est enregistrée dans ce panneau à ce prix ; le journal de la passerelle signale quand une requête ne l'est pas. bvsala doctor affiche l'URL de base de chaque SDK. En streaming avec OpenAI, demandez la consommation dans la requête (stream_options.include_usage).",
       "cta": "Voir comment ça marche →"
     },
@@ -1291,7 +1285,7 @@
           "name": "Team",
           "per": "/ mois",
           "note": "<b>{included} sièges inclus</b> ; chaque siège supplémentaire {extra} / mois. Ou <b>{yearly} / an</b>. Sans commission.",
-          "cta": "Choisir Équipe →"
+          "cta": "Choisir Team →"
         },
         "enterprise": {
           "name": "Enterprise",
@@ -1367,10 +1361,10 @@
       "paper": "Article"
     },
     "cta15": {
-      "titulo": "Book 15-min call",
+      "titulo": "Demander un appel de 15 min",
       "sub": "On vous dit ce que vous économiseriez sur votre trafic, sans rien installer.",
       "placeholder": "vous@entreprise.com",
-      "boton": "Book 15-min call",
+      "boton": "Demander un appel de 15 min",
       "enviando": "Envoi…",
       "ok": "Bien reçu. Nous vous écrivons aujourd'hui même pour caler l'appel.",
       "errorCorreo": "Cet e-mail ne semble pas valide.",
@@ -1413,7 +1407,6 @@
       "figNoteToggle": "Pourquoi ce chiffre, et ses limites",
       "sdk": {
         "name": "SDK",
-        "band": "SDK — pour les apps JavaScript et TypeScript avec une clé d'API",
         "who": "Pour les apps Node.js, en JavaScript ou TypeScript, qui appellent une API de LLM avec votre propre clé et paient chaque token.",
         "what": "Il enveloppe l'appel dans votre code, n'envoie au fournisseur que ce qui doit être payé et renvoie un SavingsReport avec chaque réponse.",
         "figureLabel": "Le chiffre que nous publions",
@@ -1424,7 +1417,6 @@
       },
       "gateway": {
         "name": "Gateway",
-        "band": "Gateway — pour les agents de code avec une clé d'API",
         "who": "Pour ceux qui utilisent Claude Code, Codex CLI ou un autre agent de code avec une clé d'API.",
         "what": "Une commande place un compteur local devant votre terminal, sans code à modifier. Le gateway compte chaque requête dont votre fournisseur déclare l'usage, avec le compteur du fournisseur lui-même — pour les modèles de notre catalogue de prix — et les additionne dans votre tableau de bord, par jour et par modèle.",
         "figureLabel": "Le chiffre que nous publions",
@@ -1433,9 +1425,6 @@
         "benchLink": "Le rapport du banc TTL : ce qui a été simulé, le détail par modèle et ses limites →",
         "cta": "Installer le gateway",
         "requires": "Node.js avec npm et un agent de code qui utilise sa propre clé d’API."
-      },
-      "skill": {
-        "band": "Skill — pour les agents de code sur abonnement"
       },
       "requires": "Prérequis :"
     },
@@ -1953,7 +1942,7 @@
   },
   "howItWorks": {
     "metaTitle": "Où s'installe l'économie ? · BiVelio Savings Layer",
-    "metaDescription": "BV‑SALA est une couche qui s'installe dans le code de votre application, là où l'API est appelée. Ce qu'elle peut économiser, où elle ne s'applique pas et comment on mesure vraiment.",
+    "metaDescription": "Savings s'exécute dans votre infrastructure, comme SDK dans votre application ou comme passerelle locale. Moteur open source et Savings Cloud en option : ce qu'il peut économiser, où il ne s'applique pas et comment on mesure vraiment.",
     "eyebrow": "La couche, expliquée · sans jargon",
     "title": "Où s'installe l'économie ?",
     "lede": "BV‑SALA n'est ni une app, ni une extension, ni un réglage de ChatGPT. C'est un morceau de code qu'un développeur place dans sa propre application, exactement là où cette application appelle l'API de votre fournisseur. Elle ne peut économiser que là où existe une facture au token — et ne peut le mesurer que là où elle voit passer chaque requête.",
@@ -2121,7 +2110,7 @@
     "lede": "Le paquet est open core : aucune clé requise. Cette page tarifie le cloud optionnel — Measure gratuit, puis Pro par siège ou un plan Team, sans commission sur vos économies. Chaque chiffre vient du même code qui vous facture, et change quand le prix change.",
     "plans": {
       "title": "Plans",
-      "intro": "Quatre plans, du plus petit au plus grand. Pro et Équipe se paient par siège et ne comportent aucune commission.",
+      "intro": "Quatre plans, du plus petit au plus grand. Pro et Team se paient par siège et ne comportent aucune commission.",
       "medir": {
         "name": "Measure",
         "body": "<b>Gratuit, sans carte.</b> Le plan CLOUD gratuit : la couche tourne en mode fantôme pour une organisation, jusqu'à <b>{seats} sièges</b> et <b>{requests} requêtes par jour</b> : chaque requête atteint votre fournisseur exactement comme vous l'avez écrite, rien n'est servi depuis le cache et aucun levier n'est appliqué. Votre tableau de bord montre ce qu'elle aurait économisé — une estimation qui ne porte jamais de commission. Il faut <b>@bivelio/savings-layer {version} ou plus récent</b>. Les leviers locaux n'ont besoin d'aucun plan : l'open core tourne sans clé ; les leviers cloud demandent Pro ou Team."
@@ -2159,7 +2148,7 @@
     },
     "commission": {
       "title": "Ancienne formule avec commission (fermée aux nouveaux clients)",
-      "optional": "Cette formule <b>n’est plus proposée aux nouveaux clients</b>. Si votre abonnement l’a déjà, vous la conservez sans changement et les conditions ci-dessous la régissent : un forfait par siège plus bas et une commission uniquement sur les économies que vous pouvez rapprocher de la facture de votre fournisseur. Pro et Équipe ne la portent jamais ; leur relevé montre la commission qui se serait appliquée, à titre de référence seulement.",
+      "optional": "Cette formule <b>n’est plus proposée aux nouveaux clients</b>. Si votre abonnement l’a déjà, vous la conservez sans changement et les conditions ci-dessous la régissent : un forfait par siège plus bas et une commission uniquement sur les économies que vous pouvez rapprocher de la facture de votre fournisseur. Pro et Team ne la portent jamais ; leur relevé montre la commission qui se serait appliquée, à titre de référence seulement.",
       "seat": "Tarif par siège dans cette formule : <b>{monthly}</b> par siège et par mois, ou <b>{yearly}</b> par siège et par an, en {currency}.",
       "only": "Une commission n'est prélevée <b>que sur l'économie mesurée</b> : l'économie étiquetée {labels} dans vos enregistrements d'usage. L'économie étiquetée {never} ne porte jamais de commission.",
       "measured": "Une économie mesurée est établie à partir du propre compteur d'usage de votre fournisseur de LLM pour cette requête.",
@@ -2304,7 +2293,7 @@
     },
     "verification": {
       "title": "Vérification optionnelle (SDK uniquement, désactivée par défaut)",
-      "when": "Si vous activez l'option de vérification du SDK, le SDK renvoie à votre propre fournisseur un échantillon des requêtes qu'il a servies, sans optimisation, et écarte cette seconde réponse. Pour chaque requête échantillonnée, il envoie à BiVelio, <b>par un canal distinct, uniquement les champs ci-dessous</b> ; ce canal rejette lui aussi tout autre champ, et rien de ce qu'il reçoit ne sert à calculer la commission.",
+      "when": "Si vous activez l'option de vérification du SDK, le SDK renvoie à votre propre fournisseur un échantillon des requêtes qu'il a servies, sans optimisation, et écarte cette seconde réponse. Pour chaque requête échantillonnée, il envoie à BiVelio, <b>par un canal distinct, uniquement les champs ci-dessous</b> ; ce canal rejette lui aussi tout autre champ, et rien de ce qu'il reçoit ne sert à la facturation.",
       "groups": {
         "sample": {
           "title": "Chaque requête échantillonnée",
@@ -2371,7 +2360,7 @@
       "verification": {
         "data": "Échantillons de vérification (optionnel, SDK uniquement, désactivé par défaut)",
         "destination": "BiVelio, par un canal séparé",
-        "purpose": "Jamais pour calculer la commission",
+        "purpose": "Jamais pour la facturation",
         "retention": "Supprimés une fois leur délai dépassé"
       },
       "account": {

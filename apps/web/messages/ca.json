@@ -60,7 +60,7 @@
       "orgLabel": "Organització: {org}",
       "accountLink": "Configuració del compte de {email}",
       "plan": {
-        "free": "Free",
+        "free": "Gratis",
         "pro": "Pro",
         "enterprise": "Enterprise"
       }
@@ -472,7 +472,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "crides a LLM/recuperació/eines que mai no s'han executat",
       "whatEliminatedTokens": "tokens d'entrada que el proveïdor no va arribar a processar",
-      "elisionNota": "Si fas servir el gateway, part d'aquesta xifra és l'esborrat que aplica el teu proveïdor per la teva pròpia configuració: aquesta part no és mèrit nostre i mai no entra a la teva comissió.",
+      "elisionNota": "Si fas servir el gateway, part d'aquesta xifra és l'esborrat que aplica el teu proveïdor per la teva pròpia configuració: aquesta part no és mèrit nostre i mai no compta com a estalvi acreditat.",
       "whatCompressedTokens": "tokens d'entrada recodificats de manera més compacta",
       "whatProviderCachedTokens": "tokens d'entrada facturats al preu rebaixat de la memòria cau de prefix. Ho demana el teu client, no nosaltres: la nostra palanca només n'ajusta la durada",
       "ghostAwaiting": "esperant el primer informe",
@@ -518,7 +518,7 @@
       "hidden": "El desglossament existeix, però aquest compte no el pot veure. És un error de visibilitat, no una manca de dades.",
       "unavailable": "El desglossament SHADOW per model encara no està disponible en aquest servidor. L'històric sense model no es pot reconstruir.",
       "historical": "Hi ha peticions SHADOW, però el desglossament per model no està disponible per a l'històric anterior a aquesta migració.",
-      "empty": "Encara no hi ha peticions SHADOW en aquest període. Envia trànsit real amb Mesurar per començar a estimar oportunitats.",
+      "empty": "Encara no hi ha peticions SHADOW en aquest període. Envia trànsit real amb Measure per començar a estimar oportunitats.",
       "colModel": "Model",
       "colRequests": "Peticions SHADOW",
       "colBaseline": "Despesa baseline",
@@ -714,10 +714,8 @@
     "accountPlanStrip": {
       "noActivePlan": "Sense pla actiu",
       "signedInAs": "sessió iniciada com a",
-      "organization": "Organització: <b>{name}</b>",
       "personalNote": "Personal: encara no hi ha cap organització vinculada. Un sol compte de BiVelio, compartit a tota la suite.",
       "plan": "pla",
-      "seatsCount": "{count, plural, one {# seient} other {# seients}}.",
       "planBody": "BV-SALA és open core — sense clau corre en mode Community; una clau posada però invàlida continua fail-closed. El núvol afegeix el tauler, les memòries cau compartides i els entitlements de l'org. Pro: {monthly} per seient al mes o {yearly} per seient a l'any. Team: {teamMonthly} al mes amb {included} seients inclosos. Sense comissió sobre el teu estalvi. Un seient és una màquina o identitat de servei activa, no una persona.",
       "managePlan": "Gestiona el pla →",
       "subscribe": "Subscriu-te →",
@@ -726,7 +724,6 @@
       "checkoutError": "Alguna cosa ha anat malament — torna-ho a provar.",
       "seatsLabel": "Seients",
       "seatsHint": "Un seient és una màquina o identitat de servei activa, no una persona. Compta els processos que executaran l'SDK, no els teus empleats. A Kubernetes, fixa BVSALA_SEAT_ID a cada rèplica.",
-      "seatsInUse": "{used, plural, one {# seient} other {# seients}} en ús aquest mes.",
       "seatsOver": "{used, plural, one {# seient} other {# seients}} en ús i {paid, plural, one {# pagat} other {# pagats}}. L'excés es cobra en tancar el mes, al preu del teu pla. Amb pagament mensual s'afegeix a la teva propera factura i la quantitat contractada puja fins als seients en ús. Amb pagament anual es factura al tancament del mes, a la tarifa anual dividida entre dotze, i la quantitat contractada no canvia. També pots ajustar la quantitat des de «Gestiona el pla».",
       "seatsLastMonth": "{period}: {used, plural, one {# seient usat} other {# seients usats}} i {paid, plural, one {# pagat} other {# pagats}}. Excés: {extra, plural, one {# seient} other {# seients}} ({amount}). Amb pagament mensual va a la teva propera factura i la quantitat contractada puja fins als seients usats. Amb pagament anual es factura al tancament del mes, a la tarifa anual dividida entre dotze, sense canviar la quantitat contractada.",
       "seatsRotated": "{used, plural, one {# seient comptat} other {# seients comptats}} aquest mes. Has revocat una clau de servei i, en rotar-la, les teves màquines estrenen identitat de seient, així que aquest mes es compten dues vegades. Es corregeix sol el mes vinent: no has de canviar de pla.",
@@ -738,11 +735,11 @@
       "errCodigoInvalido": "Aquest codi no existeix o ja no està actiu. Pots continuar sense ell o escriure'ns a support@bivelio.com.",
       "planPickLabel": "Pla",
       "planPro": "Pro",
-      "planTeam": "Equip",
-      "teamHint": "Equip inclou {included} seients; cada seient més costa {extra} al mes. No se’n poden comprar menys de {included}.",
-      "checkoutTeamMonthly": "Subscriu-te a Equip — {monthly}/mes, {included} seients →",
-      "checkoutTeamYearly": "Subscriu-te a Equip — {yearly}/any, {included} seients →",
-      "errPlanCerrado": "Aquest pla ja no s’ofereix a clients nous. Tria Pro o Equip.",
+      "planTeam": "Team",
+      "teamHint": "Team inclou {included} seients; cada seient més costa {extra} al mes. No se’n poden comprar menys de {included}.",
+      "checkoutTeamMonthly": "Subscriu-te a Team — {monthly}/mes, {included} seients →",
+      "checkoutTeamYearly": "Subscriu-te a Team — {yearly}/any, {included} seients →",
+      "errPlanCerrado": "Aquest pla ja no s’ofereix a clients nous. Tria Pro o Team.",
       "statusLabel": "Estat",
       "statusActive": "Subscripció activa",
       "statusPastDue": "Cobrament fallit",
@@ -852,7 +849,6 @@
       "rolAdmin": "Administrador",
       "rolMember": "Membre",
       "rolBilling": "Facturació",
-      "ayudaRoles": "L'administrador gestiona l'equip i les credencials. Facturació veu el pla i paga, però no pot baixar la llicència. Membre només consulta el tauler.",
       "miembrosTitulo": "Membres",
       "columnaPersona": "Persona",
       "columnaRol": "Perfil",
@@ -907,18 +903,18 @@
     "sombraElision": {
       "title": "Elisió en ombra (hipotètic)",
       "detalle": "≈{usd} en {requests} peticions simulades",
-      "nota": "El que hauria estalviat l'elisió de context amb el teu trànsit real, calculat pel gateway sense tocar ni un byte. No se suma mai al titular ni entra a la comissió: la palanca només s'encendrà quan aquesta xifra ho justifiqui.",
+      "nota": "El que hauria estalviat l'elisió de context amb el teu trànsit real, calculat pel gateway sense tocar ni un byte. No se suma mai al titular ni compta com a estalvi acreditat: la palanca només s'encendrà quan aquesta xifra ho justifiqui.",
       "notaNegativa": "Amb el teu trànsit, l'elisió hauria costat diners: reescriure blocs invalida la memòria cau de prefix del proveïdor. Aquest carril existeix exactament per veure això abans d'encendre res — i per això segueix apagada."
     },
     "elisionProveedor": {
       "title": "Esborrat del proveïdor causat pels nostres dials",
       "detalle": "{requests} peticions acreditades",
-      "nota": "El recompte és del proveïdor (applied_edits). No és un estalvi mesurat i mai no entra a la teva comissió; el diner arribarà quan el net per model estigui mesurat — esborrar reescriu la memòria cau de prefix, i en alguns models el net surt negatiu."
+      "nota": "El recompte és del proveïdor (applied_edits). No és un estalvi mesurat i mai no compta com a estalvi acreditat; el diner arribarà quan el net per model estigui mesurat — esborrar reescriu la memòria cau de prefix, i en alguns models el net surt negatiu."
     },
     "ahorroNativo": {
       "title": "Estalvi natiu activat",
       "detalle": "{requests} peticions amb memòria cau del proveïdor · lectura {lectura} − prima d'escriptura {prima}",
-      "nota": "És el descompte de la memòria cau de prefix del teu proveïdor (Anthropic amb cache_control, OpenAI automàtica, Gemini implícita), net de la prima d'escriptura que cobra, calculat amb el seu propi comptador a preu de llista. El veus a la factura del teu proveïdor, no a la nostra: va a part de l'estalvi acreditat i mai no entra a la teva comissió.",
+      "nota": "És el descompte de la memòria cau de prefix del teu proveïdor (Anthropic amb cache_control, OpenAI automàtica, Gemini implícita), net de la prima d'escriptura que cobra, calculat amb el seu propi comptador a preu de llista. El veus a la factura del teu proveïdor, no a la nostra: va a part de l'estalvi acreditat i mai no s'hi suma.",
       "vacio": "Encara no hi ha peticions que hagin llegit o escrit la memòria cau de prefix del teu proveïdor en aquest període.",
       "proveedor": {
         "anthropic": "Anthropic",
@@ -933,9 +929,9 @@
       "badgeMedido": "Mesurat",
       "proyeccionTitulo": "Estalvi projectat per a {periodo}",
       "proyeccionNota": "El que s'ha mesurat fins ara més el teu ritme dels últims {dias} dies pels {restantes} dies que queden. És una estimació, no una factura.",
-      "comision": "Comissió projectada",
-      "comisionNota": "El {pct} del que estalvies. Un mes sense estalvi és un mes sense comissió.",
-      "comisionCalibracion": "Mes de calibratge: no es cobra res. La xifra és la comissió que hi hauria.",
+      "comision": "Comissió de la modalitat anterior (referència)",
+      "comisionNota": "El {pct} de l'estalvi projectat, segons la modalitat amb comissió, tancada a noves altes. Els plans de quota fixa no porten comissió.",
+      "comisionCalibracion": "Mes de calibratge de la modalitat amb comissió: no es cobra res. Els plans de quota fixa no porten comissió.",
       "cerrado": "Període tancat: això és el que va ser, no cap on va.",
       "pocosDias": "Encara és aviat per traçar la recta: calen {min} dies complets i en portes {n}. El que s'ha mesurat ja és real.",
       "medido": "Estalviat fins ara (mesurat)",
@@ -957,10 +953,8 @@
       "notaCalibracion": "Mes de calibració: la comissió hauria estat {habria} — i no es cobra.",
       "notaSombra": "Xifra en ombra: la comissió calculada és {comision}. Cap factura no la inclou encara.",
       "baseMedida": "Base mesurada",
-      "enUsd": "{usd} a preus del proveïdor",
       "requests": "{n} peticions mesurades",
       "ahorroMedido": "Estalvi mesurat",
-      "ratio": "ràtio {pct}",
       "tramosTitulo": "La comissió, tram a tram",
       "sinAhorro": "Sense estalvi mesurat aquest període — sense estalvi no hi ha comissió, mai.",
       "colTramo": "Tram",
@@ -968,11 +962,11 @@
       "colBase": "Base del tram",
       "colComision": "Comissió",
       "estimadoExcluido": "Estalvi estimat exclòs de la base (context, mai facturable): {usd}.",
-      "sombraElision": "Carril ombra: l'elisió hauria estalviat {usd} en {requests} peticions simulades. Hipotètic — mai no entra a la base ni a la comissió.",
+      "sombraElision": "Carril ombra: l'elisió hauria estalviat {usd} en {requests} peticions simulades. Hipotètic — mai no entra a la base.",
       "sombraElisionNegativa": "Carril ombra: l'elisió hauria costat {usd} de més en {requests} peticions simulades. Per això està apagada: només s'encén el que estalvia de veritat.",
-      "elisionProveedor": "Carril de l'esborrat del proveïdor: {requests} peticions en què els nostres dials van fer que el proveïdor esborrés context. Un recompte, no un estalvi — mai no entra a la base ni a la comissió.",
+      "elisionProveedor": "Carril de l'esborrat del proveïdor: {requests} peticions en què els nostres dials van fer que el proveïdor esborrés context. Un recompte, no un estalvi — mai no entra a la base.",
       "referencia": "Mesurat per referència: {usd} en {requests, plural, one {# petició repetida que es va servir} other {# peticions repetides que es van servir}} sense cridar el teu proveïdor. Cadascuna es valora amb el comptador que el teu proveïdor va retornar per a la petició idèntica que ja es va executar —és a l'informe d'aquella petició i a l'ús del teu proveïdor d'aquell dia— al preu d'entrada en memòria cau, el més baix que el teu proveïdor cobra per repetir un prompt; la sortida només compta si el mostreig era determinista i la petició que es va executar no va portar raonament ocult (el teu proveïdor va declarar zero tokens de raonament o, si no els desglossa, la seva resposta no duia cap bloc de raonament). Entra a la base.",
-      "referenciaExcluida": "Mesurat per referència: {usd} en {requests, plural, one {# petició repetida} other {# peticions repetides}}. Es mostra com a context: de moment queda fora de la base i de la comissió.",
+      "referenciaExcluida": "Mesurat per referència: {usd} en {requests, plural, one {# petició repetida} other {# peticions repetides}}. Es mostra com a context: de moment queda fora de la base.",
       "exportarReferencias": "Descarrega les peticions repetides d'aquest període, una fila per petició (CSV)",
       "exportarReferenciasPorDia": "Massa peticions repetides per a un sol fitxer: descarrega aquest període dia a dia (CSV):",
       "parametros": "Paràmetres de l'extracte — catàleg de preus {version} · tipus de canvi {fx}.",
@@ -1116,28 +1110,28 @@
       "metaTitle": "Equip · BiVelio Savings Layer"
     },
     "measurePlan": {
-      "title": "O comença gratis: la llicència Mesurar, sense targeta",
+      "title": "O comença gratis: la llicència Measure, sense targeta",
       "body": "Executa la capa en mode ombra per a 1 organització i fins a {seats} seients: cada petició arriba al teu proveïdor sense canvis i res no se serveix de la memòria cau. El teu tauler mostra el que haurien estalviat les palanques; passa a pagament per activar-les.",
-      "claim": "Obtenir la meva llicència Mesurar gratis",
+      "claim": "Obtenir la meva llicència Measure gratis",
       "claiming": "Emetent…",
-      "keyLabel": "La teva clau de llicència Mesurar (mode ombra: no s'aplica cap palanca)",
+      "keyLabel": "La teva clau de llicència Measure (mode ombra: no s'aplica cap palanca)",
       "keyHint": "Fes-la servir com a BIVELIO_LICENSE_KEY, igual que una clau de pagament. Quan passis a pagament, la capa recull sola la llicència de pagament i les palanques s'activen.",
       "errEmailNotVerified": "Confirma primer la teva adreça de correu i torna-ho a provar.",
-      "errDisposableEmail": "No acceptem adreces de correu d'un sol ús per a la llicència Mesurar. Registra't amb un correu permanent (el de la feina, per exemple) i torna-ho a provar.",
-      "errOneOrgPerAccount": "Aquest compte ja té una llicència Mesurar per a una altra organització: la llicència gratuïta cobreix una organització per compte.",
+      "errDisposableEmail": "No acceptem adreces de correu d'un sol ús per a la llicència Measure. Registra't amb un correu permanent (el de la feina, per exemple) i torna-ho a provar.",
+      "errOneOrgPerAccount": "Aquest compte ja té una llicència Measure per a una altra organització: la llicència gratuïta cobreix una organització per compte.",
       "errAlreadyLicensed": "La teva organització ja té una llicència de pagament: fes servir la clau de dalt.",
-      "errBlocked": "La llicència Mesurar no està disponible per a aquesta organització. Escriu a support@bivelio.com.",
+      "errBlocked": "La llicència Measure no està disponible per a aquesta organització. Escriu a support@bivelio.com.",
       "errRole": "El teu rol no permet descarregar la llicència. Demana-ho a un owner o admin.",
       "errSignIn": "Inicia sessió primer.",
-      "errGeneric": "No s'ha pogut emetre la llicència Mesurar. Torna-ho a provar d'aquí a un moment.",
-      "planLabel": "Mesurar (gratis)",
-      "pricingNote": "Mesurar: gratis, sense targeta. La capa en mode ombra per a 1 organització i fins a {seats} seients, per veure el que estalviaria abans de pagar.",
+      "errGeneric": "No s'ha pogut emetre la llicència Measure. Torna-ho a provar d'aquí a un moment.",
+      "planLabel": "Measure (gratis)",
+      "pricingNote": "Measure: gratis, sense targeta. La capa en mode ombra per a 1 organització i fins a {seats} seients, per veure el que estalviaria abans de pagar.",
       "card": {
-        "eyebrow": "Llicència Mesurar · mode ombra",
+        "eyebrow": "Llicència Measure · mode ombra",
         "title": "El que hauries estalviat",
         "amount": "{amount} que no hauries gastat",
         "context": "De {spend} de despesa mesurada en {requests} peticions. Una estimació del carril ombra, valorada amb el comptador del teu propi proveïdor: a l'SDK, les crides repetides i les duplicades en vol; al gateway, a més, el model germà i la rebaixa del TTL de la memòria cau. No s'ha aplicat res i no es factura res.",
-        "empty": "Encara no hi ha estimació d'estalvi: apareix quan la teva capa vegi una petició repetida o, al gateway, una en què haurien estalviat el model germà o la rebaixa del TTL de la memòria cau. La llicència Mesurar mai no canvia el que envies.",
+        "empty": "Encara no hi ha estimació d'estalvi: apareix quan la teva capa vegi una petició repetida o, al gateway, una en què haurien estalviat el model germà o la rebaixa del TTL de la memòria cau. La llicència Measure mai no canvia el que envies.",
         "limits": "Gratis per a 1 organització, fins a {seats} seients i {requests} peticions al dia.",
         "cta": "Activa les palanques: veure plans"
       }
@@ -1259,7 +1253,7 @@
       "eyebrow": "Gateway · terminals de codi",
       "title": "Claude Code amb clau d'API? Mira la despesa real, token a token.",
       "body": "Una sola ordre posa un mesurador local davant del teu terminal, sense tocar el teu codi: exportes la teva clau de servei i arrenques el teu agent amb bvsala. Els teus prompts no passen pels servidors de BiVelio: van al proveïdor que configuris, i al teu tauler només hi arriben recomptes i cost.",
-      "note": "El gateway mesura, amb el comptador del teu proveïdor, cada petició de la qual aquest informa l'ús (en els models del nostre catàleg de preus) i, com l'SDK, arrenca sense cap clau (mode Community): una clau de servei opcional afegeix el tauler i els entitlements de l'org. Amb llicència PRO, en models d'Anthropic, aplica a més una palanca per defecte: passa les escriptures de la memòria cau del TTL d'una hora al de cinc minuts només en els torns en què una part gran del prompt és nova —com el primer d'una sessió o una compactació— i deixa com estan els torns encadenats. Això canvia el preu, mai el contingut que llegeix el model. La resta de palanques van apagades fins que les encens. L'skill savings-mode està disponible per als teus topalls, amb l'efecte pendent de mesurar. El gateway funciona també amb Codex CLI, Goose, Qwen Code, opencode, Kilo, Aider i, amb la teva pròpia clau d'Anthropic, GitHub Copilot CLI; per a d'altres, com Cline o Continue, bvsala doctor imprimeix la configuració exacta. Cursor funciona amb el seu override de base URL i la teva pr�pia clau, i la Gemini CLI s'envolta amb bvsala gemini.",
+      "note": "El gateway mesura, amb el comptador del teu proveïdor, cada petició de la qual aquest informa l'ús (en els models del nostre catàleg de preus) i, com l'SDK, arrenca sense cap clau (mode Community): una clau de servei opcional afegeix el tauler i els entitlements de l'org. Amb llicència PRO, en models d'Anthropic, aplica a més una palanca per defecte: passa les escriptures de la memòria cau del TTL d'una hora al de cinc minuts només en els torns en què una part gran del prompt és nova —com el primer d'una sessió o una compactació— i deixa com estan els torns encadenats. Això canvia el preu, mai el contingut que llegeix el model. La resta de palanques van apagades fins que les encens. L'skill savings-mode està disponible per als teus topalls, amb l'efecte pendent de mesurar. El gateway funciona també amb Codex CLI, Goose, Qwen Code, opencode, Kilo, Aider i, amb la teva pròpia clau d'Anthropic, GitHub Copilot CLI; per a d'altres, com Cline o Continue, bvsala doctor imprimeix la configuració exacta. Cursor funciona amb el seu override de base URL i la teva pròpia clau, i la Gemini CLI s'envolta amb bvsala gemini.",
       "pythonNote": "Python o qualsevol altre llenguatge? Apunta l'SDK oficial d'OpenAI o d'Anthropic al gateway i cada petició de la qual el proveïdor informi l'ús, d'un model amb preu de llista, queda registrada en aquest tauler a aquest preu; el log del gateway avisa quan una no es mesura. bvsala doctor imprimeix el base URL de cada SDK. En streaming amb OpenAI, demana l'ús a la petició (stream_options.include_usage).",
       "cta": "Mira com funciona →"
     },
@@ -1291,7 +1285,7 @@
           "name": "Team",
           "per": "/ mes",
           "note": "<b>{included} seients inclosos</b>; cada seient més, {extra} / mes. O <b>{yearly} / any</b>. Sense comissió.",
-          "cta": "Tria Equip →"
+          "cta": "Tria Team →"
         },
         "enterprise": {
           "name": "Enterprise",
@@ -1367,10 +1361,10 @@
       "paper": "Article"
     },
     "cta15": {
-      "titulo": "Book 15-min call",
+      "titulo": "Demana una trucada de 15 min",
       "sub": "Et diem què estalviaries amb el teu trànsit, sense instal·lar res.",
       "placeholder": "tu@empresa.com",
-      "boton": "Book 15-min call",
+      "boton": "Demana una trucada de 15 min",
       "enviando": "Enviant…",
       "ok": "Rebut. T'escrivim avui mateix per quadrar la trucada.",
       "errorCorreo": "Aquest correu no sembla vàlid.",
@@ -1413,7 +1407,6 @@
       "figNoteToggle": "Per què aquesta xifra i els seus límits",
       "sdk": {
         "name": "SDK",
-        "band": "SDK — per a apps en JavaScript o TypeScript amb API key",
         "who": "Per a apps de Node.js, en JavaScript o TypeScript, que criden una API de LLM amb la teva pròpia clau i paguen cada token.",
         "what": "Embolcalla la crida dins del teu codi, envia al proveïdor només el que cal pagar i retorna un SavingsReport amb cada resposta.",
         "figureLabel": "La xifra que publiquem",
@@ -1424,7 +1417,6 @@
       },
       "gateway": {
         "name": "Gateway",
-        "band": "Gateway — per a agents de codi amb API key",
         "who": "Per a qui treballa amb Claude Code, Codex CLI o un altre agent de codi amb API key.",
         "what": "Una ordre posa un mesurador local davant del teu terminal, sense tocar codi. Compta cada petició de la qual el teu proveïdor informa l'ús, amb el seu propi comptador —en els models del nostre catàleg de preus—, i ho suma al teu tauler, per dia i per model.",
         "figureLabel": "La xifra que publiquem",
@@ -1433,9 +1425,6 @@
         "benchLink": "L'informe del banc de TTL: què es va simular, el desglossament per model i els seus límits →",
         "cta": "Instal·la el gateway",
         "requires": "Node.js amb npm i un agent de codi que faci servir la seva pròpia API key."
-      },
-      "skill": {
-        "band": "Skill — per a agents de codi amb subscripció"
       },
       "requires": "Requisits:"
     },
@@ -1953,7 +1942,7 @@
   },
   "howItWorks": {
     "metaTitle": "On s'instal·la l'estalvi? · BiVelio Savings Layer",
-    "metaDescription": "BV‑SALA és una capa que s'instal·la al codi de la teva aplicació, on es crida l'API. Què pot estalviar, on no aplica i com es mesura de veritat.",
+    "metaDescription": "Savings s'executa dins la teva infraestructura, com a SDK a la teva aplicació o com a gateway local. Motor open source i Savings Cloud opcional: què pot estalviar, on no aplica i com es mesura de veritat.",
     "eyebrow": "La capa, explicada · sense argot",
     "title": "On s'instal·la l'estalvi?",
     "lede": "BV‑SALA no és una app, ni una extensió, ni un ajust de ChatGPT. És una peça de codi que un desenvolupador col·loca dins de la seva pròpia aplicació, just on aquesta aplicació crida l'API del teu proveïdor. Només pot estalviar on existeix una factura per tokens — i només pot mesurar-ho on veu passar cada petició.",
@@ -2114,14 +2103,14 @@
   },
   "pricingPage": {
     "metaTitle": "Termes de preu · BV-SALA",
-    "metaDescription": "L'open core és gratuït ; Measure, Pro, Team i Enterprise són els plans de núvol — cap no porta comissió sobre el teu estalvi. Xifres publicades des de les mateixes constants que facturen.",
+    "metaDescription": "L'open core és gratuït; Measure, Pro, Team i Enterprise són els plans de núvol — cap no porta comissió sobre el teu estalvi. Xifres publicades des de les mateixes constants que facturen.",
     "eyebrow": "Preus publicats",
     "title": "Motor open source. Control cloud per al teu equip.",
     "governs": "Aquesta pàgina descriu com funciona el servei avui; regeixen la <license>LICENSE</license> i els <terms>Termes de BiVelio</terms>.",
-    "lede": "El paquet és open core : no necessita claus. Aquesta pàgina posa preu al núvol opcional — Measure gratuït, després Pro per seient o un pla Team, sense comissió sobre el teu estalvi. Cada xifra d'aquesta pàgina es llegeix del mateix codi que et factura, així que canvia quan canvia el preu.",
+    "lede": "El paquet és open core: no necessita claus. Aquesta pàgina posa preu al núvol opcional — Measure gratuït, després Pro per seient o un pla Team, sense comissió sobre el teu estalvi. Cada xifra d'aquesta pàgina es llegeix del mateix codi que et factura, així que canvia quan canvia el preu.",
     "plans": {
       "title": "Plans",
-      "intro": "Quatre plans, de menys a més. Pro i Equip es paguen per seient i no porten comissió.",
+      "intro": "Quatre plans, de menys a més. Pro i Team es paguen per seient i no porten comissió.",
       "medir": {
         "name": "Measure",
         "body": "<b>Gratis, sense targeta.</b> El pla de NÚVOL gratuït: la capa corre en mode ombra per a una organització, fins a <b>{seats} seients</b> i <b>{requests} peticions al dia</b>: cada petició arriba al teu proveïdor exactament com la vas construir, res se serveix de la memòria cau i cap palanca s'aplica. El teu tauler mostra què hauria estalviat — una estimació que mai no porta comissió. Necessita <b>@bivelio/savings-layer {version} o posterior</b>. Les palanques locals no necessiten cap pla: l'open core corre sense clau; les palanques de núvol necessiten Pro o Team."
@@ -2159,7 +2148,7 @@
     },
     "commission": {
       "title": "Modalitat anterior amb comissió (tancada a clients nous)",
-      "optional": "Aquesta modalitat <b>ja no s’ofereix a clients nous</b>. Si la teva subscripció ja la té, la conserves sense canvis i la regeixen les condicions de sota: una quota per seient més baixa i una comissió només sobre l’estalvi que pot quadrar amb la factura del teu proveïdor. Pro i Equip no la porten mai; el seu extracte mostra la que s’hauria aplicat només com a referència.",
+      "optional": "Aquesta modalitat <b>ja no s’ofereix a clients nous</b>. Si la teva subscripció ja la té, la conserves sense canvis i la regeixen les condicions de sota: una quota per seient més baixa i una comissió només sobre l’estalvi que pot quadrar amb la factura del teu proveïdor. Pro i Team no la porten mai; el seu extracte mostra la que s’hauria aplicat només com a referència.",
       "seat": "Quota per seient en aquesta modalitat: <b>{monthly}</b> per seient i mes, o <b>{yearly}</b> per seient i any, en {currency}.",
       "only": "Es cobra comissió <b>només sobre l'estalvi mesurat</b>: l'estalvi etiquetat {labels} als teus registres d'ús. L'estalvi etiquetat {never} mai no porta comissió.",
       "measured": "Un estalvi mesurat surt del comptador d'ús del teu mateix proveïdor de LLM per a aquella petició.",
@@ -2304,7 +2293,7 @@
     },
     "verification": {
       "title": "Verificació opcional (només l'SDK, apagada per defecte)",
-      "when": "Si actives l'opció de verificació de l'SDK, l'SDK torna a enviar al teu propi proveïdor una mostra de les peticions que va servir, sense optimitzar, i descarta aquesta segona resposta. Per cada petició de la mostra envia a BiVelio, <b>per un canal a part, només els camps de sota</b>; aquest canal també rebutja qualsevol altre camp, i res del que rep no s'usa per calcular la comissió.",
+      "when": "Si actives l'opció de verificació de l'SDK, l'SDK torna a enviar al teu propi proveïdor una mostra de les peticions que va servir, sense optimitzar, i descarta aquesta segona resposta. Per cada petició de la mostra envia a BiVelio, <b>per un canal a part, només els camps de sota</b>; aquest canal també rebutja qualsevol altre camp, i res del que rep no s'usa per facturar.",
       "groups": {
         "sample": {
           "title": "Cada petició de la mostra",
@@ -2371,7 +2360,7 @@
       "verification": {
         "data": "Mostres de verificació (opcional, només l'SDK, apagada per defecte)",
         "destination": "BiVelio, per un canal a part",
-        "purpose": "Mai per calcular la comissió",
+        "purpose": "Mai per facturar",
         "retention": "S'esborren en superar el termini"
       },
       "account": {

@@ -472,7 +472,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "LLM/retrieval/tool calls that never ran",
       "whatEliminatedTokens": "input tokens the provider never processed",
-      "elisionNota": "If you use the gateway, part of this figure is input your provider drops because of your own configuration: that part isn't ours to claim and never enters your commission.",
+      "elisionNota": "If you use the gateway, part of this figure is input your provider drops because of your own configuration: that part isn't ours to claim and never counts as credited savings.",
       "whatCompressedTokens": "input tokens re-encoded smaller",
       "whatProviderCachedTokens": "input tokens billed at the discounted prefix-cache price. Your client asks for it, not us: our lever only tunes how long it lasts",
       "ghostAwaiting": "awaiting first report",
@@ -714,10 +714,8 @@
     "accountPlanStrip": {
       "noActivePlan": "No active plan",
       "signedInAs": "signed in as",
-      "organization": "Organization: <b>{name}</b>",
       "personalNote": "Personal — no organization linked yet. One BiVelio account, shared across the suite.",
       "plan": "plan",
-      "seatsCount": "{count, plural, one {# seat} other {# seats}}.",
       "planBody": "BV-SALA is open core — with no key it runs in COMMUNITY mode; a key that is set but invalid fails closed. The cloud adds the dashboard, shared caches and org entitlements. Pro: {monthly} per seat per month or {yearly} per seat per year. Team: {teamMonthly} per month with {included} seats included. No commission on your savings. A seat is one active machine or service identity, not a person.",
       "managePlan": "Manage plan →",
       "subscribe": "Subscribe →",
@@ -726,7 +724,6 @@
       "checkoutError": "Something went wrong — try again.",
       "seatsLabel": "Seats",
       "seatsHint": "A seat is one active machine or service identity — not a person. Count the processes that will run the SDK, not your headcount. On Kubernetes, set BVSALA_SEAT_ID per replica.",
-      "seatsInUse": "{used, plural, one {# seat} other {# seats}} in use this month.",
       "seatsOver": "{used, plural, one {# seat} other {# seats}} in use, {paid, plural, one {# paid for} other {# paid for}}. The extra seats are charged when the month closes, at your plan's price. On monthly billing they are added to your next invoice and your subscribed quantity goes up to the seats in use. On annual billing they are invoiced at month close, at the annual rate divided by twelve, and your subscribed quantity does not change. You can also adjust the quantity from “Manage plan”.",
       "seatsLastMonth": "{period}: {used, plural, one {# seat used} other {# seats used}}, {paid, plural, one {# paid for} other {# paid for}}. Extra: {extra, plural, one {# seat} other {# seats}} ({amount}). On monthly billing it goes on your next invoice and your subscribed quantity goes up to the seats used. On annual billing it is invoiced at month close, at the annual rate divided by twelve, without changing your subscribed quantity.",
       "seatsRotated": "{used, plural, one {# seat} other {# seats}} counted this month. You revoked a service-account key, and machines get a new seat identity when the key rotates — so this month counts them twice. It settles next month; you don't need to change your plan.",
@@ -852,7 +849,6 @@
       "rolAdmin": "Administrator",
       "rolMember": "Member",
       "rolBilling": "Billing",
-      "ayudaRoles": "Administrators manage the team and credentials. Billing sees the plan and can pay, but can't download the license. Members only view the dashboard.",
       "miembrosTitulo": "Members",
       "columnaPersona": "Person",
       "columnaRol": "Role",
@@ -907,18 +903,18 @@
     "sombraElision": {
       "title": "Shadow elision (hypothetical)",
       "detalle": "≈{usd} across {requests} simulated requests",
-      "nota": "What context elision would have saved on your real traffic, computed by the gateway without touching a single byte. It is never added to the headline and never enters the commission: the lever only turns on when this figure justifies it.",
+      "nota": "What context elision would have saved on your real traffic, computed by the gateway without touching a single byte. It is never added to the headline and never counts as credited savings: the lever only turns on when this figure justifies it.",
       "notaNegativa": "On your traffic, elision would have cost money: rewriting blocks invalidates the provider's prefix cache. This lane exists precisely to see that before turning anything on — which is why it stays off."
     },
     "elisionProveedor": {
       "title": "Provider clearing caused by our dials",
       "detalle": "{requests} credited requests",
-      "nota": "The count is the provider's (applied_edits). It is not a measured saving and never enters your commission; money will follow once the net per model is measured — clearing rewrites the prefix cache, and on some models the net is negative."
+      "nota": "The count is the provider's (applied_edits). It is not a measured saving and never counts as credited savings; money will follow once the net per model is measured — clearing rewrites the prefix cache, and on some models the net is negative."
     },
     "ahorroNativo": {
       "title": "Native savings unlocked",
       "detalle": "{requests} requests with provider cache · reads {lectura} − write premium {prima}",
-      "nota": "This is your provider's own prefix-cache discount (Anthropic with cache_control, OpenAI automatic, Gemini implicit), net of the cache-write premium it bills, computed from its own counter at list price. You see it on your provider's invoice, not ours: it is kept apart from the credited savings and never enters your commission.",
+      "nota": "This is your provider's own prefix-cache discount (Anthropic with cache_control, OpenAI automatic, Gemini implicit), net of the cache-write premium it bills, computed from its own counter at list price. You see it on your provider's invoice, not ours: it is kept apart from the credited savings and is never added to them.",
       "vacio": "No requests read or wrote your provider's prefix cache in this period yet.",
       "proveedor": {
         "anthropic": "Anthropic",
@@ -933,9 +929,9 @@
       "badgeMedido": "Measured",
       "proyeccionTitulo": "Projected saving for {periodo}",
       "proyeccionNota": "What is measured so far, plus your last {dias} days of pace across the {restantes} days still to come. An estimate, not an invoice.",
-      "comision": "Projected commission",
-      "comisionNota": "{pct} of what you save. A month with no saving is a month with no commission.",
-      "comisionCalibracion": "Calibration month: nothing is charged. The figure is the commission there would be.",
+      "comision": "Earlier commission model (reference)",
+      "comisionNota": "{pct} of the projected saving, under the commission model that is closed to new sign-ups. Fixed-fee plans carry no commission.",
+      "comisionCalibracion": "Calibration month of the commission model: nothing is charged. Fixed-fee plans carry no commission.",
       "cerrado": "Closed period: this is what it was, not where it is heading.",
       "pocosDias": "Too early to draw the line: {min} complete days are needed and there are {n}. What is measured is already real.",
       "medido": "Saved so far (measured)",
@@ -957,10 +953,8 @@
       "notaCalibracion": "Calibration month: the commission would have been {habria} — and it is not charged.",
       "notaSombra": "Shadow figure: the computed commission is {comision}. No invoice includes it yet.",
       "baseMedida": "Measured base",
-      "enUsd": "{usd} at provider prices",
       "requests": "{n} measured requests",
       "ahorroMedido": "Measured savings",
-      "ratio": "ratio {pct}",
       "tramosTitulo": "The commission, bracket by bracket",
       "sinAhorro": "No measured savings this period — no measured savings, no commission. Ever.",
       "colTramo": "Bracket",
@@ -968,11 +962,11 @@
       "colBase": "Bracket base",
       "colComision": "Commission",
       "estimadoExcluido": "Estimated savings excluded from the base (context, never billable): {usd}.",
-      "sombraElision": "Shadow lane: elision would have saved {usd} across {requests} simulated requests. Hypothetical — it never enters the base or the commission.",
+      "sombraElision": "Shadow lane: elision would have saved {usd} across {requests} simulated requests. Hypothetical — it never enters the base.",
       "sombraElisionNegativa": "Shadow lane: elision would have cost an extra {usd} across {requests} simulated requests. That is why it stays off: only what truly saves gets turned on.",
-      "elisionProveedor": "Provider clearing lane: {requests} requests where our dials made the provider clear context. A count, not a saving — it never enters the base or the commission.",
+      "elisionProveedor": "Provider clearing lane: {requests} requests where our dials made the provider clear context. A count, not a saving — it never enters the base.",
       "referencia": "Measured by reference: {usd} across {requests, plural, one {# repeated request} other {# repeated requests}} served without calling your provider. Each is valued with the counter your provider returned for the identical request that already ran — it is in that request's report and in your provider's usage for that day — at the cached-input rate, the lowest your provider bills for repeating a prompt; the output only counts when sampling was deterministic and the call that ran carried no hidden reasoning (your provider reported zero reasoning tokens or, where it does not break them out, its answer had no reasoning block). Included in the base.",
-      "referenciaExcluida": "Measured by reference: {usd} across {requests, plural, one {# repeated request} other {# repeated requests}}. Shown for context — for now it is kept out of the base and the commission.",
+      "referenciaExcluida": "Measured by reference: {usd} across {requests, plural, one {# repeated request} other {# repeated requests}}. Shown for context — for now it is kept out of the base.",
       "exportarReferencias": "Download the repeated requests of this period, one row each (CSV)",
       "exportarReferenciasPorDia": "Too many repeated requests for a single file — download this period one day at a time (CSV):",
       "parametros": "Statement parameters — price catalog {version} · exchange rate {fx}.",
@@ -1413,7 +1407,6 @@
       "figNoteToggle": "Why this number, and its limits",
       "sdk": {
         "name": "SDK",
-        "band": "SDK — for JavaScript and TypeScript apps on an API key",
         "who": "For Node.js apps, in JavaScript or TypeScript, that call an LLM API with your own key and pay for every token.",
         "what": "It wraps the call inside your code, sends the provider only what has to be paid for, and returns a SavingsReport with every response.",
         "figureLabel": "The figure we publish",
@@ -1424,7 +1417,6 @@
       },
       "gateway": {
         "name": "Gateway",
-        "band": "Gateway — for coding agents on an API key",
         "who": "For developers who run Claude Code, Codex CLI or another coding agent on an API key.",
         "what": "One command puts a local meter in front of your terminal, with no code to change. It counts each request your provider reports usage for, with the provider's own counter — for models in our price catalog — and adds it up in your dashboard, by day and by model.",
         "figureLabel": "The figure we publish",
@@ -1433,9 +1425,6 @@
         "benchLink": "The TTL bench report: what was simulated, the per-model breakdown and its limits →",
         "cta": "Set up the gateway",
         "requires": "Node.js with npm, and a coding agent that uses its own API key."
-      },
-      "skill": {
-        "band": "Skill — for coding agents on a subscription plan"
       },
       "requires": "Requirements:"
     },
@@ -1953,7 +1942,7 @@
   },
   "howItWorks": {
     "metaTitle": "Where does the saving install? · BiVelio Savings Layer",
-    "metaDescription": "BV‑SALA is a layer that installs in your application's code, where the API is called. What it can save, where it doesn't apply, and how it's truly measured.",
+    "metaDescription": "Savings runs inside your infrastructure, as an SDK in your application or as a local gateway. Open-source engine, optional Savings Cloud: what it can save, where it doesn't apply, and how it's truly measured.",
     "eyebrow": "The layer, explained · no jargon",
     "title": "Where does the saving install?",
     "lede": "BV‑SALA is not an app, not an extension, not a ChatGPT setting. It's a piece of code a developer places inside their own application, right where that application calls your provider's API. It can only save where a per-token bill exists — and can only measure it where it sees every request go by.",
@@ -2114,11 +2103,11 @@
   },
   "pricingPage": {
     "metaTitle": "Pricing terms · BV-SALA",
-    "metaDescription": "Open core is free ; Measure, Pro, Team and Enterprise are the cloud plans — none of them carries a commission on your savings. Figures published from the same constants that bill.",
+    "metaDescription": "Open core is free; Measure, Pro, Team and Enterprise are the cloud plans — none of them carries a commission on your savings. Figures published from the same constants that bill.",
     "eyebrow": "Published pricing",
     "title": "Open-source engine. Cloud control for your team.",
     "governs": "This page describes how the service works today; the <license>LICENSE</license> and the <terms>BiVelio Terms</terms> govern.",
-    "lede": "The package is open core : no key needed. This page prices the optional cloud — Measure free, then Pro per seat or a Team plan, with no commission on your savings. Every figure here is read from the same code that bills you, so it changes when the price changes.",
+    "lede": "The package is open core: no key needed. This page prices the optional cloud — Measure free, then Pro per seat or a Team plan, with no commission on your savings. Every figure here is read from the same code that bills you, so it changes when the price changes.",
     "plans": {
       "title": "Plans",
       "intro": "Four plans, from smallest to largest. Pro and Team are paid per seat and carry no commission.",
@@ -2304,7 +2293,7 @@
     },
     "verification": {
       "title": "Optional verification (SDK only, off by default)",
-      "when": "If you turn on the SDK's verification option, the SDK sends a sample of the requests it served to your own provider again, without optimization, and discards that second response. For each sampled request it sends BiVelio, <b>through a separate channel, only the fields below</b>; that channel also rejects any other field, and nothing it receives is used to calculate the commission.",
+      "when": "If you turn on the SDK's verification option, the SDK sends a sample of the requests it served to your own provider again, without optimization, and discards that second response. For each sampled request it sends BiVelio, <b>through a separate channel, only the fields below</b>; that channel also rejects any other field, and nothing it receives is used for billing.",
       "groups": {
         "sample": {
           "title": "Each sampled request",
@@ -2371,7 +2360,7 @@
       "verification": {
         "data": "Verification samples (optional, SDK only, off by default)",
         "destination": "BiVelio, over a separate channel",
-        "purpose": "Never used to calculate the commission",
+        "purpose": "Never used for billing",
         "retention": "Deleted once past their period"
       },
       "account": {

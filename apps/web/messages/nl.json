@@ -60,7 +60,7 @@
       "orgLabel": "Organisatie: {org}",
       "accountLink": "Accountinstellingen voor {email}",
       "plan": {
-        "free": "Free",
+        "free": "Gratis",
         "pro": "Pro",
         "enterprise": "Enterprise"
       }
@@ -472,7 +472,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "LLM-/ophaal-/tool-aanroepen die nooit werden uitgevoerd",
       "whatEliminatedTokens": "invoertokens die de aanbieder nooit heeft verwerkt",
-      "elisionNota": "Als je de gateway gebruikt, is een deel van dit cijfer invoer die je aanbieder laat vallen door je eigen configuratie: dat deel is niet onze verdienste en telt nooit mee voor je commissie.",
+      "elisionNota": "Als je de gateway gebruikt, is een deel van dit cijfer invoer die je aanbieder laat vallen door je eigen configuratie: dat deel is niet onze verdienste en telt nooit als gecrediteerde besparing.",
       "whatCompressedTokens": "invoertokens die compacter zijn gehercodeerd",
       "whatProviderCachedTokens": "invoertokens gefactureerd tegen de kortingsprijs van de prefix-cache. Je client vraagt erom, wij niet: onze hefboom stelt alleen de duur in",
       "ghostAwaiting": "wacht op eerste rapport",
@@ -518,7 +518,7 @@
       "hidden": "De uitsplitsing bestaat, maar dit account kan ze niet zien. Dit is een zichtbaarheidsfout, geen ontbrekende data.",
       "unavailable": "De SHADOW-uitsplitsing per model is nog niet beschikbaar op deze server. Geschiedenis zonder model kan niet worden gereconstrueerd.",
       "historical": "Er zijn SHADOW-verzoeken, maar de modeluitsplitsing is niet beschikbaar voor geschiedenis van vóór deze migratie.",
-      "empty": "Nog geen SHADOW-verzoeken in deze periode. Stuur echt verkeer met Meten om kansen te gaan schatten.",
+      "empty": "Nog geen SHADOW-verzoeken in deze periode. Stuur echt verkeer met Measure om kansen te gaan schatten.",
       "colModel": "Model",
       "colRequests": "SHADOW-verzoeken",
       "colBaseline": "Baseline-uitgaven",
@@ -714,10 +714,8 @@
     "accountPlanStrip": {
       "noActivePlan": "Geen actief abonnement",
       "signedInAs": "ingelogd als",
-      "organization": "Organisatie: <b>{name}</b>",
       "personalNote": "Persoonlijk — nog geen organisatie gekoppeld. Eén BiVelio-account, gedeeld over de hele suite.",
       "plan": "abonnement",
-      "seatsCount": "{count, plural, one {# seat} other {# seats}}.",
       "planBody": "BV-SALA is open core — zonder sleutel draait het in de Community-modus; een ingestelde maar ongeldige sleutel blijft fail-closed. De cloud voegt het dashboard, gedeelde caches en org-rechten toe. Pro: {monthly} per seat per maand of {yearly} per seat per jaar. Team: {teamMonthly} per maand met {included} seats inbegrepen. Geen commissie op je besparing. Een seat is een actieve machine of service-identiteit, geen persoon.",
       "managePlan": "Abonnement beheren →",
       "subscribe": "Abonneren →",
@@ -726,7 +724,6 @@
       "checkoutError": "Er is iets misgegaan — probeer het opnieuw.",
       "seatsLabel": "Seats",
       "seatsHint": "Een plaats is één actieve machine of service-identiteit, geen persoon. Tel de processen die de SDK draaien, niet je medewerkers. Op Kubernetes: stel BVSALA_SEAT_ID per replica in.",
-      "seatsInUse": "{used, plural, one {# seat} other {# seats}} deze maand in gebruik.",
       "seatsOver": "{used, plural, one {# seat} other {# seats}} in gebruik, {paid, plural, one {# betaald} other {# betaald}}. De extra seats worden bij het afsluiten van de maand berekend, tegen de prijs van je abonnement. Bij maandelijkse betaling komen ze op je volgende factuur en gaat het afgenomen aantal omhoog naar de seats in gebruik. Bij jaarlijkse betaling worden ze bij het afsluiten van de maand gefactureerd tegen het jaartarief gedeeld door twaalf, en verandert het afgenomen aantal niet. Je kunt het aantal ook aanpassen via “Abonnement beheren”.",
       "seatsLastMonth": "{period}: {used, plural, one {# seat gebruikt} other {# seats gebruikt}}, {paid, plural, one {# betaald} other {# betaald}}. Extra: {extra, plural, one {# seat} other {# seats}} ({amount}). Bij maandelijkse betaling staat het op je volgende factuur en gaat het afgenomen aantal omhoog naar de gebruikte seats. Bij jaarlijkse betaling wordt het bij het afsluiten van de maand gefactureerd tegen het jaartarief gedeeld door twaalf, zonder het afgenomen aantal te wijzigen.",
       "seatsRotated": "{used, plural, one {# seat} other {# seats}} deze maand geteld. Je hebt een service-account-sleutel ingetrokken, en bij het roteren krijgen je machines een nieuwe seat-identiteit — daardoor telt deze maand ze dubbel. Volgende maand klopt het weer; je hoeft je abonnement niet te wijzigen.",
@@ -852,7 +849,6 @@
       "rolAdmin": "Beheerder",
       "rolMember": "Lid",
       "rolBilling": "Facturatie",
-      "ayudaRoles": "De beheerder beheert het team en de inloggegevens. Facturatie ziet het abonnement en kan betalen, maar kan de licentie niet downloaden. Een lid bekijkt alleen het dashboard.",
       "miembrosTitulo": "Leden",
       "columnaPersona": "Persoon",
       "columnaRol": "Rol",
@@ -907,18 +903,18 @@
     "sombraElision": {
       "title": "Schaduw-elisie (hypothetisch)",
       "detalle": "≈{usd} over {requests} gesimuleerde verzoeken",
-      "nota": "Wat context-elisie op uw echte verkeer zou hebben bespaard, berekend door de gateway zonder één byte aan te raken. Wordt nooit bij de kop opgeteld en telt nooit mee in de commissie: de hendel gaat pas aan wanneer dit cijfer het rechtvaardigt.",
+      "nota": "Wat context-elisie op uw echte verkeer zou hebben bespaard, berekend door de gateway zonder één byte aan te raken. Wordt nooit bij de kop opgeteld en telt nooit als gecrediteerde besparing: de hendel gaat pas aan wanneer dit cijfer het rechtvaardigt.",
       "notaNegativa": "Op uw verkeer zou elisie geld hebben gekost: blokken herschrijven maakt de prefix-cache van de provider ongeldig. Precies daarvoor bestaat dit spoor — om dat te zien vóór er iets aangaat. Daarom blijft het uit."
     },
     "elisionProveedor": {
       "title": "Wissen door de provider, veroorzaakt door onze instellingen",
       "detalle": "{requests} gecrediteerde verzoeken",
-      "nota": "De telling is van de provider (applied_edits). Het is geen gemeten besparing en telt nooit mee in je commissie; het geld volgt zodra het netto per model is gemeten — wissen herschrijft de prefix-cache, en bij sommige modellen is het netto negatief."
+      "nota": "De telling is van de provider (applied_edits). Het is geen gemeten besparing en telt nooit als gecrediteerde besparing; het geld volgt zodra het netto per model is gemeten — wissen herschrijft de prefix-cache, en bij sommige modellen is het netto negatief."
     },
     "ahorroNativo": {
       "title": "Geactiveerde native besparing",
       "detalle": "{requests} verzoeken met providercache · lezen {lectura} − schrijftoeslag {prima}",
-      "nota": "Dit is de korting uit de prefixcache van je provider (Anthropic met cache_control, OpenAI automatisch, Gemini impliciet), na aftrek van de schrijftoeslag die hij rekent, berekend met zijn eigen teller tegen catalogusprijs. Je ziet hem op de factuur van je provider, niet op de onze: hij staat los van de gecrediteerde besparing en telt nooit mee voor je commissie.",
+      "nota": "Dit is de korting uit de prefixcache van je provider (Anthropic met cache_control, OpenAI automatisch, Gemini impliciet), na aftrek van de schrijftoeslag die hij rekent, berekend met zijn eigen teller tegen catalogusprijs. Je ziet hem op de factuur van je provider, niet op de onze: hij staat los van de gecrediteerde besparing en wordt er nooit bij opgeteld.",
       "vacio": "In deze periode heeft nog geen verzoek de prefixcache van je provider gelezen of beschreven.",
       "proveedor": {
         "anthropic": "Anthropic",
@@ -933,9 +929,9 @@
       "badgeMedido": "Gemeten",
       "proyeccionTitulo": "Verwachte besparing voor {periodo}",
       "proyeccionNota": "Wat tot nu toe is gemeten, plus je tempo van de afgelopen {dias} dagen over de {restantes} resterende dagen. Een schatting, geen factuur.",
-      "comision": "Verwachte commissie",
-      "comisionNota": "{pct} van wat je bespaart. Een maand zonder besparing is een maand zonder commissie.",
-      "comisionCalibracion": "Kalibratiemaand: er wordt niets in rekening gebracht. Het bedrag is de commissie die er zou zijn.",
+      "comision": "Commissie van het eerdere model (referentie)",
+      "comisionNota": "{pct} van de verwachte besparing, volgens het commissiemodel dat gesloten is voor nieuwe aanmeldingen. Abonnementen met vaste prijs hebben geen commissie.",
+      "comisionCalibracion": "Kalibratiemaand van het commissiemodel: er wordt niets in rekening gebracht. Abonnementen met vaste prijs hebben geen commissie.",
       "cerrado": "Afgesloten periode: dit is wat het was, niet waar het heen gaat.",
       "pocosDias": "Nog te vroeg om een lijn te trekken: er zijn {min} volledige dagen nodig en er zijn er {n}. Wat gemeten is, is al echt.",
       "medido": "Tot nu toe bespaard (gemeten)",
@@ -957,10 +953,8 @@
       "notaCalibracion": "Kalibratiemaand: de commissie zou {habria} zijn geweest — en wordt niet afgeschreven.",
       "notaSombra": "Schaduwcijfer: de berekende commissie is {comision}. Nog geen enkele factuur bevat haar.",
       "baseMedida": "Gemeten basis",
-      "enUsd": "{usd} tegen providerprijzen",
       "requests": "{n} gemeten verzoeken",
       "ahorroMedido": "Gemeten besparing",
-      "ratio": "ratio {pct}",
       "tramosTitulo": "De commissie, schijf voor schijf",
       "sinAhorro": "Geen gemeten besparing deze periode — zonder besparing geen commissie. Nooit.",
       "colTramo": "Schijf",
@@ -968,11 +962,11 @@
       "colBase": "Schijfbasis",
       "colComision": "Commissie",
       "estimadoExcluido": "Geschatte besparing uitgesloten van de basis (context, nooit factureerbaar): {usd}.",
-      "sombraElision": "Schaduwspoor: elisie zou {usd} hebben bespaard over {requests} gesimuleerde verzoeken. Hypothetisch — telt nooit mee in de basis of de commissie.",
+      "sombraElision": "Schaduwspoor: elisie zou {usd} hebben bespaard over {requests} gesimuleerde verzoeken. Hypothetisch — telt nooit mee in de basis.",
       "sombraElisionNegativa": "Schaduwspoor: elisie zou {usd} extra hebben gekost over {requests} gesimuleerde verzoeken. Daarom blijft het uit: alleen wat echt bespaart gaat aan.",
-      "elisionProveedor": "Baan van het wissen door de provider: {requests} verzoeken waarbij onze instellingen de provider context lieten wissen. Een telling, geen besparing — telt nooit mee in de basis of de commissie.",
+      "elisionProveedor": "Baan van het wissen door de provider: {requests} verzoeken waarbij onze instellingen de provider context lieten wissen. Een telling, geen besparing — telt nooit mee in de basis.",
       "referencia": "Gemeten via referentie: {usd} over {requests, plural, one {# herhaald verzoek dat is afgehandeld} other {# herhaalde verzoeken die zijn afgehandeld}} zonder je aanbieder aan te roepen. Elk wordt gewaardeerd met de teller die je aanbieder teruggaf voor het identieke verzoek dat al is uitgevoerd — die staat in het rapport van dat verzoek en in het gebruik van je aanbieder op die dag — tegen het tarief voor gecachte invoer, het laagste dat je aanbieder rekent voor het herhalen van een prompt; de uitvoer telt alleen bij deterministische sampling en als het uitgevoerde verzoek geen verborgen redeneren bevatte (je aanbieder meldde nul redeneertokens of, als hij die niet uitsplitst, zijn antwoord bevatte geen redeneerblok). Opgenomen in de basis.",
-      "referenciaExcluida": "Gemeten via referentie: {usd} over {requests, plural, one {# herhaald verzoek} other {# herhaalde verzoeken}}. Getoond als context — voorlopig blijft het buiten de basis en de commissie.",
+      "referenciaExcluida": "Gemeten via referentie: {usd} over {requests, plural, one {# herhaald verzoek} other {# herhaalde verzoeken}}. Getoond als context — voorlopig blijft het buiten de basis.",
       "exportarReferencias": "Download de herhaalde verzoeken van deze periode, één rij per verzoek (CSV)",
       "exportarReferenciasPorDia": "Te veel herhaalde verzoeken voor één bestand — download deze periode per dag (CSV):",
       "parametros": "Parameters van het overzicht — prijscatalogus {version} · wisselkoers {fx}.",
@@ -1116,28 +1110,28 @@
       "metaTitle": "Team · BiVelio Savings Layer"
     },
     "measurePlan": {
-      "title": "Of begin gratis: de Meten-licentie, zonder kaart",
+      "title": "Of begin gratis: de Measure-licentie, zonder kaart",
       "body": "Draait de laag in schaduwmodus voor 1 organisatie en tot {seats} plaatsen: elk verzoek gaat ongewijzigd naar je provider en niets wordt uit de cache geserveerd. Je dashboard toont wat de hefbomen zouden hebben bespaard; upgrade om ze aan te zetten.",
-      "claim": "Mijn gratis Meten-licentie ophalen",
+      "claim": "Mijn gratis Measure-licentie ophalen",
       "claiming": "Bezig met uitgeven…",
-      "keyLabel": "Je Meten-licentiesleutel (schaduwmodus: geen hefbomen toegepast)",
+      "keyLabel": "Je Measure-licentiesleutel (schaduwmodus: geen hefbomen toegepast)",
       "keyHint": "Gebruik hem als BIVELIO_LICENSE_KEY, precies zoals een betaalde sleutel. Na een upgrade haalt de laag de betaalde licentie zelf op en gaan de hefbomen aan.",
       "errEmailNotVerified": "Bevestig eerst je e-mailadres en probeer het dan opnieuw.",
-      "errDisposableEmail": "Wegwerp-e-mailadressen kunnen de Meten-licentie niet aanvragen. Registreer je met een vast adres (bijvoorbeeld je werkadres) en probeer het opnieuw.",
-      "errOneOrgPerAccount": "Dit account heeft al een Meten-licentie voor een andere organisatie: de gratis licentie geldt voor één organisatie per account.",
+      "errDisposableEmail": "Wegwerp-e-mailadressen kunnen de Measure-licentie niet aanvragen. Registreer je met een vast adres (bijvoorbeeld je werkadres) en probeer het opnieuw.",
+      "errOneOrgPerAccount": "Dit account heeft al een Measure-licentie voor een andere organisatie: de gratis licentie geldt voor één organisatie per account.",
       "errAlreadyLicensed": "Je organisatie heeft al een betaalde licentie: gebruik de sleutel hierboven.",
-      "errBlocked": "De Meten-licentie is niet beschikbaar voor deze organisatie. Schrijf naar support@bivelio.com.",
+      "errBlocked": "De Measure-licentie is niet beschikbaar voor deze organisatie. Schrijf naar support@bivelio.com.",
       "errRole": "Je rol staat het downloaden van de licentie niet toe. Vraag het een owner of admin.",
       "errSignIn": "Log eerst in.",
-      "errGeneric": "De Meten-licentie kon niet worden uitgegeven. Probeer het zo meteen opnieuw.",
-      "planLabel": "Meten (gratis)",
-      "pricingNote": "Meten: gratis, zonder kaart. De laag in schaduwmodus voor 1 organisatie en tot {seats} plaatsen, zodat je ziet wat hij zou besparen voordat je betaalt.",
+      "errGeneric": "De Measure-licentie kon niet worden uitgegeven. Probeer het zo meteen opnieuw.",
+      "planLabel": "Measure (gratis)",
+      "pricingNote": "Measure: gratis, zonder kaart. De laag in schaduwmodus voor 1 organisatie en tot {seats} plaatsen, zodat je ziet wat hij zou besparen voordat je betaalt.",
       "card": {
-        "eyebrow": "Meten-licentie · schaduwmodus",
+        "eyebrow": "Measure-licentie · schaduwmodus",
         "title": "Wat je zou hebben bespaard",
         "amount": "{amount} die je niet zou hebben uitgegeven",
         "context": "Van {spend} gemeten uitgaven over {requests} verzoeken. Een schatting uit het schaduwspoor, gewaardeerd met de teller van je eigen provider: in de SDK herhaalde en gelijktijdig dubbele aanroepen; in de gateway ook het zustermodel en de verlaging van de cache-TTL. Er is niets toegepast en niets wordt gefactureerd.",
-        "empty": "Nog geen besparingsschatting: die verschijnt zodra je laag een herhaald verzoek ziet of, in de gateway, een verzoek waarop het zustermodel of de verlaging van de cache-TTL zou hebben bespaard. De Meten-licentie verandert nooit wat je verstuurt.",
+        "empty": "Nog geen besparingsschatting: die verschijnt zodra je laag een herhaald verzoek ziet of, in de gateway, een verzoek waarop het zustermodel of de verlaging van de cache-TTL zou hebben bespaard. De Measure-licentie verandert nooit wat je verstuurt.",
         "limits": "Gratis voor 1 organisatie, tot {seats} plaatsen en {requests} verzoeken per dag.",
         "cta": "Zet de hefbomen aan: bekijk de plannen"
       }
@@ -1367,10 +1361,10 @@
       "paper": "Paper"
     },
     "cta15": {
-      "titulo": "Book 15-min call",
+      "titulo": "Vraag een gesprek van 15 min aan",
       "sub": "We vertellen je wat je zou besparen op jouw verkeer, zonder iets te installeren.",
       "placeholder": "jij@bedrijf.com",
-      "boton": "Book 15-min call",
+      "boton": "Vraag een gesprek van 15 min aan",
       "enviando": "Versturen…",
       "ok": "Ontvangen. We schrijven je vandaag nog om het gesprek in te plannen.",
       "errorCorreo": "Dat e-mailadres lijkt niet geldig.",
@@ -1413,7 +1407,6 @@
       "figNoteToggle": "Waarom dit getal, en de grenzen ervan",
       "sdk": {
         "name": "SDK",
-        "band": "SDK — voor JavaScript- en TypeScript-apps met een API-sleutel",
         "who": "Voor Node.js-apps, in JavaScript of TypeScript, die een LLM-API aanroepen met je eigen sleutel en voor elke token betalen.",
         "what": "De SDK omhult de aanroep in je code, stuurt de aanbieder alleen wat betaald moet worden en geeft bij elk antwoord een SavingsReport terug.",
         "figureLabel": "Het cijfer dat we publiceren",
@@ -1424,7 +1417,6 @@
       },
       "gateway": {
         "name": "Gateway",
-        "band": "Gateway — voor coding-agents met een API-sleutel",
         "who": "Voor wie Claude Code, Codex CLI of een andere coding-agent met een API-sleutel gebruikt.",
         "what": "Eén commando zet een lokale meter vóór je terminal, zonder code aan te passen. De gateway telt elk verzoek waarvan je aanbieder het gebruik meldt, met de eigen teller van die aanbieder — voor de modellen in onze prijscatalogus — en zet het totaal in je dashboard, per dag en per model.",
         "figureLabel": "Het cijfer dat we publiceren",
@@ -1433,9 +1425,6 @@
         "benchLink": "Het rapport van de TTL-meting: wat er is gesimuleerd, de uitsplitsing per model en de grenzen →",
         "cta": "Gateway instellen",
         "requires": "Node.js met npm en een code-agent die zijn eigen API-sleutel gebruikt."
-      },
-      "skill": {
-        "band": "Skill — voor coding-agents met een abonnement"
       },
       "requires": "Vereisten:"
     },
@@ -1953,7 +1942,7 @@
   },
   "howItWorks": {
     "metaTitle": "Waar wordt de besparing geïnstalleerd? · BiVelio Savings Layer",
-    "metaDescription": "BV‑SALA is een laag die je installeert in de code van je applicatie, waar de API wordt aangeroepen. Wat het kan besparen, waar het niet geldt en hoe er echt gemeten wordt.",
+    "metaDescription": "Savings draait binnen je eigen infrastructuur, als SDK in je applicatie of als lokale gateway. Open-source engine en optionele Savings Cloud: wat het kan besparen, waar het niet geldt en hoe er echt gemeten wordt.",
     "eyebrow": "De laag, uitgelegd · zonder jargon",
     "title": "Waar wordt de besparing geïnstalleerd?",
     "lede": "BV‑SALA is geen app, geen extensie en geen ChatGPT-instelling. Het is een stuk code dat een ontwikkelaar in de eigen applicatie plaatst, precies waar die applicatie de API van je aanbieder aanroept. Het kan alleen besparen waar een tokenrekening bestaat — en alleen meten waar het elk verzoek voorbij ziet komen.",
@@ -2114,11 +2103,11 @@
   },
   "pricingPage": {
     "metaTitle": "Prijsvoorwaarden · BV-SALA",
-    "metaDescription": "Open core is gratis ; Measure, Pro, Team en Enterprise zijn de cloud-plannen — geen ervan draagt een commissie op je besparing. Cijfers gepubliceerd vanuit dezelfde constanten die factureren.",
+    "metaDescription": "Open core is gratis; Measure, Pro, Team en Enterprise zijn de cloud-plannen — geen ervan draagt een commissie op je besparing. Cijfers gepubliceerd vanuit dezelfde constanten die factureren.",
     "eyebrow": "Gepubliceerde prijzen",
     "title": "Open-source-engine. Cloudcontrole voor je team.",
     "governs": "Deze pagina beschrijft hoe de dienst vandaag werkt; de <license>LICENSE</license> en de <terms>BiVelio-voorwaarden</terms> zijn leidend.",
-    "lede": "Het pakket is open core : geen sleutel nodig. Deze pagina prijst de optionele cloud — Measure gratis, daarna Pro per seat of een Team-plan, zonder commissie op je besparing. Elk cijfer hier komt uit dezelfde code die je factureert, en verandert als de prijs verandert.",
+    "lede": "Het pakket is open core: geen sleutel nodig. Deze pagina prijst de optionele cloud — Measure gratis, daarna Pro per seat of een Team-plan, zonder commissie op je besparing. Elk cijfer hier komt uit dezelfde code die je factureert, en verandert als de prijs verandert.",
     "plans": {
       "title": "Plannen",
       "intro": "Vier plannen, van klein naar groot. Pro en Team betaal je per seat en hebben geen commissie.",
@@ -2304,7 +2293,7 @@
     },
     "verification": {
       "title": "Optionele verificatie (alleen de SDK, standaard uit)",
-      "when": "Als je de verificatie-optie van de SDK inschakelt, stuurt de SDK een steekproef van de beantwoorde verzoeken opnieuw, zonder optimalisatie, naar je eigen provider en gooit dat tweede antwoord weg. Voor elk verzoek in de steekproef stuurt ze naar BiVelio <b>via een apart kanaal alleen de velden hieronder</b>; ook dat kanaal weigert elk ander veld, en niets van wat het ontvangt wordt gebruikt om de commissie te berekenen.",
+      "when": "Als je de verificatie-optie van de SDK inschakelt, stuurt de SDK een steekproef van de beantwoorde verzoeken opnieuw, zonder optimalisatie, naar je eigen provider en gooit dat tweede antwoord weg. Voor elk verzoek in de steekproef stuurt ze naar BiVelio <b>via een apart kanaal alleen de velden hieronder</b>; ook dat kanaal weigert elk ander veld, en niets van wat het ontvangt wordt gebruikt voor facturering.",
       "groups": {
         "sample": {
           "title": "Elk verzoek in de steekproef",
@@ -2371,7 +2360,7 @@
       "verification": {
         "data": "Verificatiesteekproeven (optioneel, alleen de SDK, standaard uit)",
         "destination": "BiVelio, via een apart kanaal",
-        "purpose": "Nooit om de commissie te berekenen",
+        "purpose": "Nooit voor facturering",
         "retention": "Verwijderd zodra hun termijn voorbij is"
       },
       "account": {

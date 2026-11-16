@@ -60,7 +60,7 @@
       "orgLabel": "Organizzazione: {org}",
       "accountLink": "Impostazioni dell'account di {email}",
       "plan": {
-        "free": "Free",
+        "free": "Gratis",
         "pro": "Pro",
         "enterprise": "Enterprise"
       }
@@ -472,7 +472,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "chiamate a LLM/recupero/strumenti mai eseguite",
       "whatEliminatedTokens": "token di input che il fornitore non ha mai elaborato",
-      "elisionNota": "Se usi il gateway, parte di questa cifra è la cancellazione che il tuo fornitore applica dalla tua stessa configurazione: quella parte non è merito nostro e non entra mai nella tua commissione.",
+      "elisionNota": "Se usi il gateway, parte di questa cifra è la cancellazione che il tuo fornitore applica dalla tua stessa configurazione: quella parte non è merito nostro e non conta mai come risparmio accreditato.",
       "whatCompressedTokens": "token di input ricodificati in modo più compatto",
       "whatProviderCachedTokens": "token di input fatturati al prezzo scontato della cache di prefisso. Lo chiede il tuo client, non noi: la nostra leva ne regola solo la durata",
       "ghostAwaiting": "in attesa del primo report",
@@ -518,7 +518,7 @@
       "hidden": "Il dettaglio esiste, ma questo account non può vederlo. È un errore di visibilità, non un'assenza di dati.",
       "unavailable": "Il dettaglio SHADOW per modello non è ancora disponibile su questo server. Lo storico senza modello non può essere ricostruito.",
       "historical": "Ci sono richieste SHADOW, ma il dettaglio per modello non è disponibile per lo storico precedente a questa migrazione.",
-      "empty": "Ancora nessuna richiesta SHADOW in questo periodo. Invia traffico reale con Misura per iniziare a stimare le opportunità.",
+      "empty": "Ancora nessuna richiesta SHADOW in questo periodo. Invia traffico reale con Measure per iniziare a stimare le opportunità.",
       "colModel": "Modello",
       "colRequests": "Richieste SHADOW",
       "colBaseline": "Spesa baseline",
@@ -714,10 +714,8 @@
     "accountPlanStrip": {
       "noActivePlan": "Nessun piano attivo",
       "signedInAs": "connesso come",
-      "organization": "Organizzazione: <b>{name}</b>",
       "personalNote": "Personale — nessuna organizzazione ancora collegata. Un unico account BiVelio, condiviso in tutta la suite.",
       "plan": "piano",
-      "seatsCount": "{count, plural, one {# postazione} other {# postazioni}}.",
       "planBody": "BV-SALA è open core — senza chiave gira in modalità Community; una chiave impostata ma non valida resta fail-closed. Il cloud aggiunge dashboard, cache condivise e diritti dell'org. Pro: {monthly} per postazione al mese o {yearly} per postazione all'anno. Team: {teamMonthly} al mese con {included} postazioni incluse. Nessuna commissione sul tuo risparmio. Una postazione è una macchina o identità di servizio attiva, non una persona.",
       "managePlan": "Gestisci piano →",
       "subscribe": "Abbonati →",
@@ -726,7 +724,6 @@
       "checkoutError": "Qualcosa è andato storto — riprova.",
       "seatsLabel": "Postazioni",
       "seatsHint": "Una postazione è una macchina o identità di servizio attiva, non una persona. Conta i processi che eseguiranno l'SDK, non i dipendenti. Su Kubernetes, imposta BVSALA_SEAT_ID per ogni replica.",
-      "seatsInUse": "{used, plural, one {# postazione} other {# postazioni}} in uso questo mese.",
       "seatsOver": "{used, plural, one {# postazione} other {# postazioni}} in uso e {paid, plural, one {# pagata} other {# pagate}}. L'eccedenza si addebita alla chiusura del mese, al prezzo del tuo piano. Con pagamento mensile si aggiunge alla tua prossima fattura e la quantità sottoscritta sale alle postazioni in uso. Con pagamento annuale si fattura alla chiusura del mese, alla tariffa annuale divisa per dodici, e la quantità sottoscritta non cambia. Puoi anche modificare la quantità da «Gestisci piano».",
       "seatsLastMonth": "{period}: {used, plural, one {# postazione usata} other {# postazioni usate}} e {paid, plural, one {# pagata} other {# pagate}}. Eccedenza: {extra, plural, one {# postazione} other {# postazioni}} ({amount}). Con pagamento mensile va nella tua prossima fattura e la quantità sottoscritta sale alle postazioni usate. Con pagamento annuale si fattura alla chiusura del mese, alla tariffa annuale divisa per dodici, senza cambiare la quantità sottoscritta.",
       "seatsRotated": "{used, plural, one {# postazione conteggiata} other {# postazioni conteggiate}} questo mese. Hai revocato una chiave di servizio e, ruotandola, le tue macchine cambiano identità di postazione: per questo il mese le conta due volte. Si sistema da solo il mese prossimo, non devi cambiare piano.",
@@ -852,7 +849,6 @@
       "rolAdmin": "Amministratore",
       "rolMember": "Membro",
       "rolBilling": "Fatturazione",
-      "ayudaRoles": "L'amministratore gestisce il team e le credenziali. Fatturazione vede il piano e può pagare, ma non può scaricare la licenza. Il membro consulta solo il pannello.",
       "miembrosTitulo": "Membri",
       "columnaPersona": "Persona",
       "columnaRol": "Ruolo",
@@ -907,18 +903,18 @@
     "sombraElision": {
       "title": "Elisione in ombra (ipotetico)",
       "detalle": "≈{usd} su {requests} richieste simulate",
-      "nota": "Quanto avrebbe risparmiato l'elisione del contesto sul tuo traffico reale, calcolato dal gateway senza toccare un solo byte. Non si somma mai al titolo e non entra mai nella commissione: la leva si accenderà solo quando questa cifra lo giustificherà.",
+      "nota": "Quanto avrebbe risparmiato l'elisione del contesto sul tuo traffico reale, calcolato dal gateway senza toccare un solo byte. Non si somma mai al titolo e non conta mai come risparmio accreditato: la leva si accenderà solo quando questa cifra lo giustificherà.",
       "notaNegativa": "Sul tuo traffico, l'elisione avrebbe fatto spendere di più: riscrivere blocchi invalida la cache di prefisso del provider. Questa corsia esiste esattamente per vederlo prima di accendere qualcosa — ed è per questo che resta spenta."
     },
     "elisionProveedor": {
       "title": "Cancellazione del provider causata dai nostri parametri",
       "detalle": "{requests} richieste accreditate",
-      "nota": "Il conteggio è del provider (applied_edits). Non è un risparmio misurato e non entra mai nella tua commissione; il denaro arriverà quando il netto per modello sarà misurato — cancellare riscrive la cache di prefisso, e su alcuni modelli il netto è negativo."
+      "nota": "Il conteggio è del provider (applied_edits). Non è un risparmio misurato e non conta mai come risparmio accreditato; il denaro arriverà quando il netto per modello sarà misurato — cancellare riscrive la cache di prefisso, e su alcuni modelli il netto è negativo."
     },
     "ahorroNativo": {
       "title": "Risparmio nativo attivato",
       "detalle": "{requests} richieste con cache del fornitore · letture {lectura} − sovrapprezzo di scrittura {prima}",
-      "nota": "È lo sconto della cache di prefisso del tuo fornitore (Anthropic con cache_control, OpenAI automatica, Gemini implicita), al netto del sovrapprezzo di scrittura che applica, calcolato con il suo stesso contatore a prezzo di listino. Lo vedi nella fattura del tuo fornitore, non nella nostra: resta separato dal risparmio accreditato e non entra mai nella tua commissione.",
+      "nota": "È lo sconto della cache di prefisso del tuo fornitore (Anthropic con cache_control, OpenAI automatica, Gemini implicita), al netto del sovrapprezzo di scrittura che applica, calcolato con il suo stesso contatore a prezzo di listino. Lo vedi nella fattura del tuo fornitore, non nella nostra: resta separato dal risparmio accreditato e non vi si somma mai.",
       "vacio": "In questo periodo nessuna richiesta ha ancora letto o scritto la cache di prefisso del tuo fornitore.",
       "proveedor": {
         "anthropic": "Anthropic",
@@ -933,9 +929,9 @@
       "badgeMedido": "Misurato",
       "proyeccionTitulo": "Risparmio proiettato per {periodo}",
       "proyeccionNota": "Quanto misurato finora più il tuo ritmo degli ultimi {dias} giorni per i {restantes} giorni che restano. È una stima, non una fattura.",
-      "comision": "Commissione proiettata",
-      "comisionNota": "Il {pct} di quanto risparmi. Un mese senza risparmio è un mese senza commissione.",
-      "comisionCalibracion": "Mese di calibrazione: non si addebita nulla. La cifra è la commissione che ci sarebbe.",
+      "comision": "Commissione della formula precedente (riferimento)",
+      "comisionNota": "Il {pct} del risparmio proiettato, secondo la formula con commissione, chiusa alle nuove adesioni. I piani a canone fisso non prevedono commissioni.",
+      "comisionCalibracion": "Mese di calibrazione della formula con commissione: non si addebita nulla. I piani a canone fisso non prevedono commissioni.",
       "cerrado": "Periodo chiuso: questo è ciò che è stato, non dove sta andando.",
       "pocosDias": "È ancora presto per tracciare la retta: servono {min} giorni completi e ce ne sono {n}. Ciò che è misurato è già reale.",
       "medido": "Risparmiato finora (misurato)",
@@ -957,10 +953,8 @@
       "notaCalibracion": "Mese di calibrazione: la commissione sarebbe stata {habria} — e non si addebita.",
       "notaSombra": "Cifra in ombra: la commissione calcolata è {comision}. Nessuna fattura la include ancora.",
       "baseMedida": "Base misurata",
-      "enUsd": "{usd} a prezzi del provider",
       "requests": "{n} richieste misurate",
       "ahorroMedido": "Risparmio misurato",
-      "ratio": "rapporto {pct}",
       "tramosTitulo": "La commissione, scaglione per scaglione",
       "sinAhorro": "Nessun risparmio misurato in questo periodo — senza risparmio niente commissione, mai.",
       "colTramo": "Scaglione",
@@ -968,11 +962,11 @@
       "colBase": "Base dello scaglione",
       "colComision": "Commissione",
       "estimadoExcluido": "Risparmio stimato escluso dalla base (contesto, mai fatturabile): {usd}.",
-      "sombraElision": "Corsia ombra: l'elisione avrebbe risparmiato {usd} su {requests} richieste simulate. Ipotetico — non entra mai nella base né nella commissione.",
+      "sombraElision": "Corsia ombra: l'elisione avrebbe risparmiato {usd} su {requests} richieste simulate. Ipotetico — non entra mai nella base.",
       "sombraElisionNegativa": "Corsia ombra: l'elisione avrebbe fatto spendere {usd} in più su {requests} richieste simulate. Per questo resta spenta: si accende solo ciò che fa risparmiare davvero.",
-      "elisionProveedor": "Corsia della cancellazione del provider: {requests} richieste in cui i nostri parametri hanno fatto cancellare contesto al provider. Un conteggio, non un risparmio — non entra mai nella base né nella commissione.",
+      "elisionProveedor": "Corsia della cancellazione del provider: {requests} richieste in cui i nostri parametri hanno fatto cancellare contesto al provider. Un conteggio, non un risparmio — non entra mai nella base.",
       "referencia": "Misurato per riferimento: {usd} su {requests, plural, one {# richiesta ripetuta servita} other {# richieste ripetute servite}} senza chiamare il tuo fornitore. Ciascuna è valutata con il contatore che il tuo fornitore ha restituito per la richiesta identica già eseguita — si trova nel report di quella richiesta e nell'utilizzo del tuo fornitore di quel giorno — alla tariffa dell'input in cache, la più bassa che il tuo fornitore applica per ripetere un prompt; l'output conta solo se il campionamento era deterministico e la richiesta eseguita non conteneva ragionamento nascosto (il tuo fornitore ha dichiarato zero token di ragionamento o, se non li dettaglia, la sua risposta non conteneva alcun blocco di ragionamento). Incluso nella base.",
-      "referenciaExcluida": "Misurato per riferimento: {usd} su {requests, plural, one {# richiesta ripetuta} other {# richieste ripetute}}. Mostrato a titolo informativo — per ora resta fuori dalla base e dalla commissione.",
+      "referenciaExcluida": "Misurato per riferimento: {usd} su {requests, plural, one {# richiesta ripetuta} other {# richieste ripetute}}. Mostrato a titolo informativo — per ora resta fuori dalla base.",
       "exportarReferencias": "Scarica le richieste ripetute di questo periodo, una riga per richiesta (CSV)",
       "exportarReferenciasPorDia": "Troppe richieste ripetute per un solo file: scarica questo periodo giorno per giorno (CSV):",
       "parametros": "Parametri dell'estratto — listino prezzi {version} · tasso di cambio {fx}.",
@@ -1116,28 +1110,28 @@
       "metaTitle": "Team · BiVelio Savings Layer"
     },
     "measurePlan": {
-      "title": "Oppure inizia gratis: la licenza Misura, senza carta",
+      "title": "Oppure inizia gratis: la licenza Measure, senza carta",
       "body": "Esegue il livello in modalità ombra per 1 organizzazione e fino a {seats} postazioni: ogni richiesta arriva al tuo fornitore senza modifiche e nulla viene servito dalla cache. La dashboard mostra quanto avrebbero risparmiato le leve; passa a un piano a pagamento per attivarle.",
-      "claim": "Ottieni la mia licenza Misura gratuita",
+      "claim": "Ottieni la mia licenza Measure gratuita",
       "claiming": "Emissione…",
-      "keyLabel": "La tua chiave di licenza Misura (modalità ombra: nessuna leva applicata)",
+      "keyLabel": "La tua chiave di licenza Measure (modalità ombra: nessuna leva applicata)",
       "keyHint": "Usala come BIVELIO_LICENSE_KEY, esattamente come una chiave a pagamento. Quando passi al piano a pagamento, il livello recupera da solo la licenza a pagamento e le leve si attivano.",
       "errEmailNotVerified": "Conferma prima il tuo indirizzo email, poi riprova.",
-      "errDisposableEmail": "Gli indirizzi email usa e getta non possono ottenere la licenza Misura. Registrati con un indirizzo permanente (quello di lavoro, per esempio) e riprova.",
-      "errOneOrgPerAccount": "Questo account ha già una licenza Misura per un'altra organizzazione: la licenza gratuita copre un'organizzazione per account.",
+      "errDisposableEmail": "Gli indirizzi email usa e getta non possono ottenere la licenza Measure. Registrati con un indirizzo permanente (quello di lavoro, per esempio) e riprova.",
+      "errOneOrgPerAccount": "Questo account ha già una licenza Measure per un'altra organizzazione: la licenza gratuita copre un'organizzazione per account.",
       "errAlreadyLicensed": "La tua organizzazione ha già una licenza a pagamento: usa la chiave qui sopra.",
-      "errBlocked": "La licenza Misura non è disponibile per questa organizzazione. Scrivi a support@bivelio.com.",
+      "errBlocked": "La licenza Measure non è disponibile per questa organizzazione. Scrivi a support@bivelio.com.",
       "errRole": "Il tuo ruolo non consente di scaricare la licenza. Chiedi a un owner o admin.",
       "errSignIn": "Accedi prima.",
-      "errGeneric": "Impossibile emettere la licenza Misura. Riprova tra un momento.",
-      "planLabel": "Misura (gratis)",
-      "pricingNote": "Misura: gratis, senza carta. Il livello in modalità ombra per 1 organizzazione e fino a {seats} postazioni, per vedere quanto risparmierebbe prima di pagare.",
+      "errGeneric": "Impossibile emettere la licenza Measure. Riprova tra un momento.",
+      "planLabel": "Measure (gratis)",
+      "pricingNote": "Measure: gratis, senza carta. Il livello in modalità ombra per 1 organizzazione e fino a {seats} postazioni, per vedere quanto risparmierebbe prima di pagare.",
       "card": {
-        "eyebrow": "Licenza Misura · modalità ombra",
+        "eyebrow": "Licenza Measure · modalità ombra",
         "title": "Quanto avresti risparmiato",
         "amount": "{amount} che non avresti speso",
         "context": "Su {spend} di spesa misurata in {requests} richieste. Una stima della corsia ombra, valutata con il contatore del tuo stesso fornitore: nell'SDK, le chiamate ripetute e i duplicati simultanei; nel gateway, anche il modello fratello e la riduzione del TTL della cache. Non è stato applicato nulla e non viene fatturato nulla.",
-        "empty": "Ancora nessuna stima di risparmio: compare appena il tuo livello vede una richiesta ripetuta o, nel gateway, una in cui il modello fratello o la riduzione del TTL della cache avrebbero fatto risparmiare. La licenza Misura non cambia mai ciò che invii.",
+        "empty": "Ancora nessuna stima di risparmio: compare appena il tuo livello vede una richiesta ripetuta o, nel gateway, una in cui il modello fratello o la riduzione del TTL della cache avrebbero fatto risparmiare. La licenza Measure non cambia mai ciò che invii.",
         "limits": "Gratis per 1 organizzazione, fino a {seats} postazioni e {requests} richieste al giorno.",
         "cta": "Attiva le leve: vedi i piani"
       }
@@ -1367,10 +1361,10 @@
       "paper": "Ricerca"
     },
     "cta15": {
-      "titulo": "Book 15-min call",
+      "titulo": "Richiedi una chiamata di 15 min",
       "sub": "Ti diciamo quanto risparmieresti con il tuo traffico, senza installare nulla.",
       "placeholder": "tu@azienda.com",
-      "boton": "Book 15-min call",
+      "boton": "Richiedi una chiamata di 15 min",
       "enviando": "Invio…",
       "ok": "Ricevuto. Ti scriviamo oggi stesso per fissare la chiamata.",
       "errorCorreo": "Questa email non sembra valida.",
@@ -1413,7 +1407,6 @@
       "figNoteToggle": "Perché questa cifra, e i suoi limiti",
       "sdk": {
         "name": "SDK",
-        "band": "SDK — per app JavaScript e TypeScript con chiave API",
         "who": "Per app Node.js, in JavaScript o TypeScript, che chiamano un'API di LLM con la tua chiave e pagano ogni token.",
         "what": "Avvolge la chiamata nel tuo codice, invia al fornitore solo ciò che va pagato e restituisce un SavingsReport con ogni risposta.",
         "figureLabel": "La cifra che pubblichiamo",
@@ -1424,7 +1417,6 @@
       },
       "gateway": {
         "name": "Gateway",
-        "band": "Gateway — per agenti di codice con chiave API",
         "who": "Per chi usa Claude Code, Codex CLI o un altro agente di codice con chiave API.",
         "what": "Un comando mette un contatore locale davanti al tuo terminale, senza codice da toccare. Il gateway conta ogni richiesta di cui il tuo fornitore riporta l'utilizzo, con il contatore del fornitore stesso — per i modelli del nostro catalogo prezzi — e le somma nella tua dashboard, per giorno e per modello.",
         "figureLabel": "La cifra che pubblichiamo",
@@ -1433,9 +1425,6 @@
         "benchLink": "Il report del banco TTL: che cosa è stato simulato, il dettaglio per modello e i suoi limiti →",
         "cta": "Installa il gateway",
         "requires": "Node.js con npm e un agente di codice che usa la propria API key."
-      },
-      "skill": {
-        "band": "Skill — per agenti di codice in abbonamento"
       },
       "requires": "Requisiti:"
     },
@@ -1953,7 +1942,7 @@
   },
   "howItWorks": {
     "metaTitle": "Dove si installa il risparmio? · BiVelio Savings Layer",
-    "metaDescription": "BV‑SALA è uno strato che si installa nel codice della tua applicazione, dove viene chiamata l'API. Cosa può risparmiare, dove non si applica e come si misura davvero.",
+    "metaDescription": "Savings gira dentro la tua infrastruttura, come SDK nella tua applicazione o come gateway locale. Motore open source e Savings Cloud opzionale: cosa può risparmiare, dove non si applica e come si misura davvero.",
     "eyebrow": "Lo strato, spiegato · senza gergo",
     "title": "Dove si installa il risparmio?",
     "lede": "BV‑SALA non è un'app, né un'estensione, né un'impostazione di ChatGPT. È un pezzo di codice che uno sviluppatore colloca dentro la propria applicazione, esattamente dove quell'applicazione chiama l'API del tuo fornitore. Può risparmiare solo dove esiste una fattura a token — e può misurarlo solo dove vede passare ogni richiesta.",
@@ -2114,11 +2103,11 @@
   },
   "pricingPage": {
     "metaTitle": "Condizioni di prezzo · BV-SALA",
-    "metaDescription": "L'open core è gratis ; Measure, Pro, Team ed Enterprise sono i piani cloud — nessuno porta commissioni sul tuo risparmio. Cifre pubblicate dalle stesse costanti che fatturano.",
+    "metaDescription": "L'open core è gratis; Measure, Pro, Team ed Enterprise sono i piani cloud — nessuno porta commissioni sul tuo risparmio. Cifre pubblicate dalle stesse costanti che fatturano.",
     "eyebrow": "Prezzi pubblicati",
     "title": "Motore open source. Controllo cloud per il tuo team.",
     "governs": "Questa pagina descrive come funziona il servizio oggi; prevalgono la <license>LICENSE</license> e i <terms>Termini di BiVelio</terms>.",
-    "lede": "Il pacchetto è open core : nessuna chiave. Questa pagina dà un prezzo al cloud opzionale — Measure gratis, poi Pro per postazione o un piano Team, senza commissioni sul tuo risparmio. Ogni cifra qui viene dallo stesso codice che ti fattura, e cambia quando cambia il prezzo.",
+    "lede": "Il pacchetto è open core: nessuna chiave. Questa pagina dà un prezzo al cloud opzionale — Measure gratis, poi Pro per postazione o un piano Team, senza commissioni sul tuo risparmio. Ogni cifra qui viene dallo stesso codice che ti fattura, e cambia quando cambia il prezzo.",
     "plans": {
       "title": "Piani",
       "intro": "Quattro piani, dal più piccolo al più grande. Pro e Team si pagano per postazione e non prevedono commissioni.",
@@ -2304,7 +2293,7 @@
     },
     "verification": {
       "title": "Verifica facoltativa (solo SDK, disattivata per impostazione predefinita)",
-      "when": "Se attivi l'opzione di verifica dell'SDK, l'SDK rimanda al tuo stesso provider un campione delle richieste che ha servito, senza ottimizzazione, e scarta quella seconda risposta. Per ogni richiesta del campione invia a BiVelio, <b>attraverso un canale separato, solo i campi qui sotto</b>; anche quel canale rifiuta qualsiasi altro campo, e nulla di ciò che riceve viene usato per calcolare la commissione.",
+      "when": "Se attivi l'opzione di verifica dell'SDK, l'SDK rimanda al tuo stesso provider un campione delle richieste che ha servito, senza ottimizzazione, e scarta quella seconda risposta. Per ogni richiesta del campione invia a BiVelio, <b>attraverso un canale separato, solo i campi qui sotto</b>; anche quel canale rifiuta qualsiasi altro campo, e nulla di ciò che riceve viene usato per la fatturazione.",
       "groups": {
         "sample": {
           "title": "Ogni richiesta del campione",
@@ -2371,7 +2360,7 @@
       "verification": {
         "data": "Campioni di verifica (facoltativa, solo SDK, disattivata per impostazione predefinita)",
         "destination": "BiVelio, su un canale separato",
-        "purpose": "Mai per calcolare la commissione",
+        "purpose": "Mai per la fatturazione",
         "retention": "Cancellati una volta superato il termine"
       },
       "account": {

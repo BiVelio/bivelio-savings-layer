@@ -60,7 +60,7 @@
       "orgLabel": "Organisasi: {org}",
       "accountLink": "Pengaturan akun untuk {email}",
       "plan": {
-        "free": "Free",
+        "free": "Gratis",
         "pro": "Pro",
         "enterprise": "Enterprise"
       }
@@ -472,7 +472,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "panggilan LLM/retrieval/tool yang tidak pernah dijalankan",
       "whatEliminatedTokens": "token masukan yang tidak pernah diproses penyedia",
-      "elisionNota": "Jika Anda memakai gateway, sebagian angka ini adalah penghapusan yang diterapkan penyedia Anda dari konfigurasi Anda sendiri: bagian itu bukan jasa kami dan tidak pernah masuk komisi Anda.",
+      "elisionNota": "Jika Anda memakai gateway, sebagian angka ini adalah penghapusan yang diterapkan penyedia Anda dari konfigurasi Anda sendiri: bagian itu bukan jasa kami dan tidak pernah dihitung sebagai penghematan yang dikreditkan.",
       "whatCompressedTokens": "token input yang dikodekan ulang lebih ringkas",
       "whatProviderCachedTokens": "token masukan yang ditagih dengan harga diskon cache prefiks. Klien Anda yang memintanya, bukan kami: tuas kami hanya mengatur durasinya",
       "ghostAwaiting": "menunggu laporan pertama",
@@ -518,7 +518,7 @@
       "hidden": "Rincian tersedia, tetapi akun ini tidak dapat melihatnya. Ini adalah kesalahan visibilitas, bukan data yang hilang.",
       "unavailable": "Rincian SHADOW per model belum tersedia di server ini. Riwayat tanpa model tidak dapat direkonstruksi.",
       "historical": "Ada permintaan SHADOW, tetapi rincian modelnya tidak tersedia untuk riwayat sebelum migrasi ini.",
-      "empty": "Belum ada permintaan SHADOW pada periode ini. Kirim lalu lintas nyata dengan Ukur untuk mulai memperkirakan peluang.",
+      "empty": "Belum ada permintaan SHADOW pada periode ini. Kirim lalu lintas nyata dengan Measure untuk mulai memperkirakan peluang.",
       "colModel": "Model",
       "colRequests": "Permintaan SHADOW",
       "colBaseline": "Pengeluaran baseline",
@@ -714,10 +714,8 @@
     "accountPlanStrip": {
       "noActivePlan": "Tidak ada paket aktif",
       "signedInAs": "masuk sebagai",
-      "organization": "Organisasi: <b>{name}</b>",
       "personalNote": "Pribadi — belum ada organisasi yang tertaut. Satu akun BiVelio, dibagikan di seluruh suite.",
       "plan": "paket",
-      "seatsCount": "{count, plural, other {# kursi}}.",
       "planBody": "BV-SALA adalah open core — tanpa kunci ia berjalan dalam mode Community; kunci yang diatur tetapi tidak valid tetap fail-closed. Cloud menambahkan dasbor, cache bersama, dan hak organisasi. Pro: {monthly} per kursi per bulan atau {yearly} per kursi per tahun. Team: {teamMonthly} per bulan dengan {included} kursi termasuk. Tanpa komisi atas penghematan Anda. Satu kursi adalah satu mesin atau identitas layanan yang aktif, bukan orang.",
       "managePlan": "Kelola paket →",
       "subscribe": "Berlangganan →",
@@ -726,7 +724,6 @@
       "checkoutError": "Terjadi kesalahan — silakan coba lagi.",
       "seatsLabel": "Kursi",
       "seatsHint": "Satu kursi adalah satu mesin atau identitas layanan aktif, bukan orang. Hitung proses yang akan menjalankan SDK, bukan jumlah karyawan. Di Kubernetes, setel BVSALA_SEAT_ID per replika.",
-      "seatsInUse": "{used, plural, other {# kursi}} terpakai bulan ini.",
       "seatsOver": "{used, plural, other {# kursi}} terpakai, {paid, plural, other {# kursi}} dibayar. Kelebihan kursi ditagih saat bulan ditutup, dengan harga paket Anda. Pada pembayaran bulanan, kelebihan itu ditambahkan ke tagihan berikutnya dan jumlah kursi langganan naik menjadi jumlah kursi yang terpakai. Pada pembayaran tahunan, kelebihan itu ditagih saat tutup bulan dengan tarif tahunan dibagi dua belas, dan jumlah kursi langganan tidak berubah. Anda juga bisa menyesuaikan jumlahnya lewat «Kelola paket».",
       "seatsLastMonth": "{period}: {used, plural, other {# kursi}} terpakai, {paid, plural, other {# kursi}} dibayar. Kelebihan: {extra, plural, other {# kursi}} ({amount}). Pada pembayaran bulanan, kelebihan ini masuk ke tagihan berikutnya dan jumlah kursi langganan naik menjadi jumlah kursi yang terpakai. Pada pembayaran tahunan, kelebihan ini ditagih saat tutup bulan dengan tarif tahunan dibagi dua belas, tanpa mengubah jumlah kursi langganan.",
       "seatsRotated": "{used, plural, other {# kursi}} terhitung bulan ini. Anda mencabut kunci akun layanan, dan saat kunci diganti mesin-mesin Anda mendapat identitas kursi baru — jadi bulan ini terhitung dua kali. Bulan depan normal kembali; Anda tidak perlu mengubah paket.",
@@ -738,11 +735,11 @@
       "errCodigoInvalido": "Kode itu tidak ada atau sudah tidak aktif. Anda bisa melanjutkan tanpanya atau menulis ke support@bivelio.com.",
       "planPickLabel": "Paket",
       "planPro": "Pro",
-      "planTeam": "Tim",
-      "teamHint": "Tim mencakup {included} kursi; setiap kursi tambahan {extra} per bulan. Tidak bisa membeli kurang dari {included}.",
-      "checkoutTeamMonthly": "Berlangganan Tim — {monthly}/bulan, {included} kursi →",
-      "checkoutTeamYearly": "Berlangganan Tim — {yearly}/tahun, {included} kursi →",
-      "errPlanCerrado": "Paket itu tidak lagi ditawarkan kepada pelanggan baru. Pilih Pro atau Tim.",
+      "planTeam": "Team",
+      "teamHint": "Team mencakup {included} kursi; setiap kursi tambahan {extra} per bulan. Tidak bisa membeli kurang dari {included}.",
+      "checkoutTeamMonthly": "Berlangganan Team — {monthly}/bulan, {included} kursi →",
+      "checkoutTeamYearly": "Berlangganan Team — {yearly}/tahun, {included} kursi →",
+      "errPlanCerrado": "Paket itu tidak lagi ditawarkan kepada pelanggan baru. Pilih Pro atau Team.",
       "statusLabel": "Status",
       "statusActive": "Langganan aktif",
       "statusPastDue": "Pembayaran gagal",
@@ -852,7 +849,6 @@
       "rolAdmin": "Administrator",
       "rolMember": "Anggota",
       "rolBilling": "Penagihan",
-      "ayudaRoles": "Administrator mengelola tim dan kredensial. Penagihan melihat paket dan dapat membayar, tetapi tidak dapat mengunduh lisensi. Anggota hanya melihat dasbor.",
       "miembrosTitulo": "Anggota",
       "columnaPersona": "Orang",
       "columnaRol": "Peran",
@@ -907,18 +903,18 @@
     "sombraElision": {
       "title": "Elisi bayangan (hipotetis)",
       "detalle": "≈{usd} pada {requests} permintaan tersimulasi",
-      "nota": "Berapa yang akan dihemat elisi konteks pada trafik nyata Anda, dihitung oleh gateway tanpa menyentuh satu byte pun. Tidak pernah ditambahkan ke tajuk dan tidak pernah masuk komisi: tuas hanya dinyalakan bila angka ini membenarkannya.",
+      "nota": "Berapa yang akan dihemat elisi konteks pada trafik nyata Anda, dihitung oleh gateway tanpa menyentuh satu byte pun. Tidak pernah ditambahkan ke tajuk dan tidak pernah dihitung sebagai penghematan yang dikreditkan: tuas hanya dinyalakan bila angka ini membenarkannya.",
       "notaNegativa": "Pada trafik Anda, elisi justru akan menambah biaya: menulis ulang blok membatalkan cache prefiks penyedia. Jalur ini ada persis untuk melihat hal itu sebelum menyalakan apa pun — karena itulah tetap mati."
     },
     "elisionProveedor": {
       "title": "Penghapusan oleh penyedia akibat pengaturan kami",
       "detalle": "{requests} permintaan dikreditkan",
-      "nota": "Hitungan ini milik penyedia (applied_edits). Bukan penghematan terukur dan tidak pernah masuk ke komisimu; uangnya menyusul setelah neto per model terukur — penghapusan menulis ulang cache prefiks, dan pada beberapa model netonya negatif."
+      "nota": "Hitungan ini milik penyedia (applied_edits). Bukan penghematan terukur dan tidak pernah dihitung sebagai penghematan yang dikreditkan; uangnya menyusul setelah neto per model terukur — penghapusan menulis ulang cache prefiks, dan pada beberapa model netonya negatif."
     },
     "ahorroNativo": {
       "title": "Penghematan native yang diaktifkan",
       "detalle": "{requests} permintaan dengan cache penyedia · baca {lectura} − premi tulis {prima}",
-      "nota": "Ini adalah diskon cache prefiks milik penyedia Anda (Anthropic dengan cache_control, OpenAI otomatis, Gemini implisit), dikurangi premi tulis cache yang ditagihkannya, dihitung dari penghitungnya sendiri dengan harga daftar. Anda melihatnya di tagihan penyedia Anda, bukan tagihan kami: dipisahkan dari penghematan yang dikreditkan dan tidak pernah masuk ke komisi Anda.",
+      "nota": "Ini adalah diskon cache prefiks milik penyedia Anda (Anthropic dengan cache_control, OpenAI otomatis, Gemini implisit), dikurangi premi tulis cache yang ditagihkannya, dihitung dari penghitungnya sendiri dengan harga daftar. Anda melihatnya di tagihan penyedia Anda, bukan tagihan kami: dipisahkan dari penghematan yang dikreditkan dan tidak pernah ditambahkan ke dalamnya.",
       "vacio": "Belum ada permintaan yang membaca atau menulis cache prefiks penyedia Anda pada periode ini.",
       "proveedor": {
         "anthropic": "Anthropic",
@@ -933,9 +929,9 @@
       "badgeMedido": "Terukur",
       "proyeccionTitulo": "Penghematan proyeksi untuk {periodo}",
       "proyeccionNota": "Yang terukur sampai sekarang ditambah laju {dias} hari terakhir Anda dikalikan {restantes} hari tersisa. Ini perkiraan, bukan tagihan.",
-      "comision": "Komisi proyeksi",
-      "comisionNota": "{pct} dari yang Anda hemat. Bulan tanpa penghematan adalah bulan tanpa komisi.",
-      "comisionCalibracion": "Bulan kalibrasi: tidak ada yang ditagih. Angka ini adalah komisi yang akan berlaku.",
+      "comision": "Komisi model sebelumnya (referensi)",
+      "comisionNota": "{pct} dari penghematan yang diproyeksikan, menurut model komisi yang sudah ditutup bagi pendaftar baru. Paket biaya tetap tidak dikenai komisi.",
+      "comisionCalibracion": "Bulan kalibrasi model komisi: tidak ada yang ditagih. Paket biaya tetap tidak dikenai komisi.",
       "cerrado": "Periode tertutup: ini yang sudah terjadi, bukan ke mana arahnya.",
       "pocosDias": "Masih terlalu awal untuk menarik garis: dibutuhkan {min} hari penuh dan baru ada {n}. Yang terukur sudah nyata.",
       "medido": "Dihemat sampai kini (terukur)",
@@ -957,10 +953,8 @@
       "notaCalibracion": "Bulan kalibrasi: komisinya akan sebesar {habria} — dan tidak ditagih.",
       "notaSombra": "Angka bayangan: komisi yang dihitung adalah {comision}. Belum ada faktur yang memuatnya.",
       "baseMedida": "Basis terukur",
-      "enUsd": "{usd} dengan harga penyedia",
       "requests": "{n} permintaan terukur",
       "ahorroMedido": "Penghematan terukur",
-      "ratio": "rasio {pct}",
       "tramosTitulo": "Komisi, jenjang demi jenjang",
       "sinAhorro": "Tidak ada penghematan terukur periode ini — tanpa penghematan tidak ada komisi. Tidak pernah.",
       "colTramo": "Jenjang",
@@ -968,11 +962,11 @@
       "colBase": "Basis jenjang",
       "colComision": "Komisi",
       "estimadoExcluido": "Penghematan estimasi dikecualikan dari basis (konteks, tak pernah ditagih): {usd}.",
-      "sombraElision": "Jalur bayangan: elisi akan menghemat {usd} pada {requests} permintaan tersimulasi. Hipotetis — tidak pernah masuk basis maupun komisi.",
+      "sombraElision": "Jalur bayangan: elisi akan menghemat {usd} pada {requests} permintaan tersimulasi. Hipotetis — tidak pernah masuk basis.",
       "sombraElisionNegativa": "Jalur bayangan: elisi akan menambah biaya {usd} pada {requests} permintaan tersimulasi. Karena itu tetap mati: hanya yang benar-benar menghemat yang dinyalakan.",
-      "elisionProveedor": "Jalur penghapusan oleh penyedia: {requests} permintaan di mana pengaturan kami membuat penyedia menghapus konteks. Sebuah hitungan, bukan penghematan — tidak pernah masuk ke basis maupun komisi.",
+      "elisionProveedor": "Jalur penghapusan oleh penyedia: {requests} permintaan di mana pengaturan kami membuat penyedia menghapus konteks. Sebuah hitungan, bukan penghematan — tidak pernah masuk ke basis.",
       "referencia": "Diukur berdasarkan referensi: {usd} dari {requests, number} permintaan berulang yang dilayani tanpa memanggil penyedia Anda. Masing-masing dinilai dengan penghitung yang dikembalikan penyedia Anda untuk permintaan identik yang sudah dijalankan — ada di laporan permintaan itu dan di penggunaan penyedia Anda pada hari itu — pada tarif input ter-cache, tarif terendah yang ditagihkan penyedia Anda untuk mengulang sebuah prompt; output hanya dihitung jika sampling-nya deterministik dan permintaan yang dijalankan tidak membawa penalaran tersembunyi (penyedia Anda melaporkan nol token penalaran atau, jika tidak merincinya, jawabannya tidak memuat blok penalaran). Termasuk dalam basis.",
-      "referenciaExcluida": "Diukur berdasarkan referensi: {usd} dari {requests, number} permintaan berulang. Ditampilkan sebagai konteks — untuk saat ini tidak dimasukkan ke basis maupun komisi.",
+      "referenciaExcluida": "Diukur berdasarkan referensi: {usd} dari {requests, number} permintaan berulang. Ditampilkan sebagai konteks — untuk saat ini tidak dimasukkan ke basis.",
       "exportarReferencias": "Unduh permintaan berulang periode ini, satu baris per permintaan (CSV)",
       "exportarReferenciasPorDia": "Terlalu banyak permintaan berulang untuk satu file — unduh periode ini per hari (CSV):",
       "parametros": "Parameter laporan — katalog harga {version} · nilai tukar {fx}.",
@@ -1291,7 +1285,7 @@
           "name": "Team",
           "per": "/ bulan",
           "note": "<b>{included} kursi termasuk</b>; setiap kursi tambahan {extra} / bulan. Atau <b>{yearly} / tahun</b>. Tanpa komisi.",
-          "cta": "Pilih Tim →"
+          "cta": "Pilih Team →"
         },
         "enterprise": {
           "name": "Enterprise",
@@ -1367,10 +1361,10 @@
       "paper": "Makalah"
     },
     "cta15": {
-      "titulo": "Book 15-min call",
+      "titulo": "Minta panggilan 15 menit",
       "sub": "Kami beri tahu berapa yang bisa kamu hemat dengan trafikmu, tanpa memasang apa pun.",
       "placeholder": "kamu@perusahaan.com",
-      "boton": "Book 15-min call",
+      "boton": "Minta panggilan 15 menit",
       "enviando": "Mengirim…",
       "ok": "Diterima. Kami akan menulis hari ini juga untuk mengatur panggilannya.",
       "errorCorreo": "Email itu sepertinya tidak valid.",
@@ -1413,7 +1407,6 @@
       "figNoteToggle": "Mengapa angka ini, dan batasannya",
       "sdk": {
         "name": "SDK",
-        "band": "SDK — untuk aplikasi JavaScript dan TypeScript dengan kunci API",
         "who": "Untuk aplikasi Node.js, dalam JavaScript atau TypeScript, yang memanggil API LLM dengan kunci Anda sendiri dan membayar setiap token.",
         "what": "SDK membungkus panggilan di dalam kode Anda, hanya mengirim ke penyedia yang memang harus dibayar, dan mengembalikan SavingsReport bersama setiap respons.",
         "figureLabel": "Angka yang kami publikasikan",
@@ -1424,7 +1417,6 @@
       },
       "gateway": {
         "name": "Gateway",
-        "band": "Gateway — untuk agen pemrograman dengan kunci API",
         "who": "Untuk Anda yang memakai Claude Code, Codex CLI, atau agen pemrograman lain dengan kunci API.",
         "what": "Satu perintah menempatkan pengukur lokal di depan terminal Anda, tanpa mengubah kode. Gateway menghitung setiap permintaan yang penggunaannya dilaporkan penyedia Anda, dengan penghitung milik penyedia itu sendiri — untuk model dalam katalog harga kami — lalu menjumlahkannya di dasbor Anda, per hari dan per model.",
         "figureLabel": "Angka yang kami publikasikan",
@@ -1433,9 +1425,6 @@
         "benchLink": "Laporan uji TTL: apa yang disimulasikan, rincian per model, dan batasannya →",
         "cta": "Pasang gateway",
         "requires": "Node.js dengan npm dan agen koding yang memakai kunci API-nya sendiri."
-      },
-      "skill": {
-        "band": "Skill — untuk agen pemrograman dengan langganan"
       },
       "requires": "Persyaratan:"
     },
@@ -1953,7 +1942,7 @@
   },
   "howItWorks": {
     "metaTitle": "Di mana penghematan dipasang? · BiVelio Savings Layer",
-    "metaDescription": "BV‑SALA adalah lapisan yang dipasang di dalam kode aplikasi kamu, tempat API dipanggil. Apa yang bisa dihemat, di mana tidak berlaku, dan bagaimana pengukurannya yang sebenarnya.",
+    "metaDescription": "Savings berjalan di dalam infrastruktur Anda, sebagai SDK di aplikasi Anda atau sebagai gateway lokal. Mesin open source dan Savings Cloud opsional: apa yang bisa dihemat, di mana tidak berlaku, dan bagaimana pengukurannya yang sebenarnya.",
     "eyebrow": "Lapisannya, dijelaskan · tanpa jargon",
     "title": "Di mana penghematan dipasang?",
     "lede": "BV‑SALA bukan aplikasi, bukan ekstensi, bukan pula pengaturan ChatGPT. Ia adalah sepotong kode yang ditempatkan developer di dalam aplikasinya sendiri, tepat di tempat aplikasi itu memanggil API penyedia Anda. Ia hanya bisa menghemat di tempat ada tagihan per token — dan hanya bisa mengukurnya di tempat ia melihat setiap permintaan lewat.",
@@ -2114,14 +2103,14 @@
   },
   "pricingPage": {
     "metaTitle": "Ketentuan harga · BV-SALA",
-    "metaDescription": "Open core gratis ; Measure, Pro, Team, dan Enterprise adalah paket cloud — tidak ada yang membawa komisi atas penghematan Anda. Angka diterbitkan dari konstanta yang sama yang menagih.",
+    "metaDescription": "Open core gratis; Measure, Pro, Team, dan Enterprise adalah paket cloud — tidak ada yang membawa komisi atas penghematan Anda. Angka diterbitkan dari konstanta yang sama yang menagih.",
     "eyebrow": "Harga yang diterbitkan",
     "title": "Mesin open source. Kendali cloud untuk tim Anda.",
     "governs": "Halaman ini menjelaskan cara layanan bekerja saat ini; yang mengikat adalah <license>LICENSE</license> dan <terms>Ketentuan BiVelio</terms>.",
-    "lede": "Paketnya open core : tanpa kunci. Halaman ini memberi harga pada cloud opsional — Measure gratis, lalu Pro per kursi atau paket Team, tanpa komisi atas penghematan Anda. Setiap angka di halaman ini dibaca dari kode yang sama yang menagih Anda, jadi ia berubah saat harga berubah.",
+    "lede": "Paketnya open core: tanpa kunci. Halaman ini memberi harga pada cloud opsional — Measure gratis, lalu Pro per kursi atau paket Team, tanpa komisi atas penghematan Anda. Setiap angka di halaman ini dibaca dari kode yang sama yang menagih Anda, jadi ia berubah saat harga berubah.",
     "plans": {
       "title": "Paket",
-      "intro": "Empat paket, dari yang terkecil hingga terbesar. Pro dan Tim dibayar per kursi dan tidak dikenai komisi.",
+      "intro": "Empat paket, dari yang terkecil hingga terbesar. Pro dan Team dibayar per kursi dan tidak dikenai komisi.",
       "medir": {
         "name": "Measure",
         "body": "<b>Gratis, tanpa kartu.</b> Paket CLOUD gratis: lapisan berjalan dalam mode bayangan untuk satu organisasi, hingga <b>{seats} kursi</b> dan <b>{requests} permintaan per hari</b>: setiap permintaan sampai ke penyedia Anda persis seperti yang Anda bangun, tidak ada yang dilayani dari cache, dan tidak ada tuas yang diterapkan. Dasbor Anda menunjukkan berapa yang akan dihemat — estimasi yang tidak pernah membawa komisi. Ia butuh <b>@bivelio/savings-layer {version} atau lebih baru</b>. Tuas lokal tidak butuh paket apa pun: open core berjalan tanpa kunci; tuas cloud butuh Pro atau Team."
@@ -2159,7 +2148,7 @@
     },
     "commission": {
       "title": "Model sebelumnya dengan komisi (ditutup untuk pelanggan baru)",
-      "optional": "Model ini <b>tidak lagi ditawarkan kepada pelanggan baru</b>. Jika langganan Anda sudah memakainya, Anda mempertahankannya tanpa perubahan dan ketentuan di bawah tetap berlaku: biaya per kursi yang lebih rendah ditambah komisi hanya atas penghematan yang dapat Anda cocokkan dengan faktur penyedia Anda. Pro dan Tim tidak pernah membawanya; laporan mereka menunjukkan komisi yang akan berlaku hanya sebagai referensi.",
+      "optional": "Model ini <b>tidak lagi ditawarkan kepada pelanggan baru</b>. Jika langganan Anda sudah memakainya, Anda mempertahankannya tanpa perubahan dan ketentuan di bawah tetap berlaku: biaya per kursi yang lebih rendah ditambah komisi hanya atas penghematan yang dapat Anda cocokkan dengan faktur penyedia Anda. Pro dan Team tidak pernah membawanya; laporan mereka menunjukkan komisi yang akan berlaku hanya sebagai referensi.",
       "seat": "Biaya per kursi dalam opsi ini: <b>{monthly}</b> per kursi per bulan, atau <b>{yearly}</b> per kursi per tahun, dalam {currency}.",
       "only": "Komisi dikenakan <b>hanya atas penghematan terukur</b>: penghematan yang berlabel {labels} di catatan penggunaanmu. Penghematan berlabel {never} tidak pernah dikenai komisi.",
       "measured": "Penghematan terukur ditetapkan dari penghitung penggunaan milik penyedia LLM-mu sendiri untuk permintaan itu.",
@@ -2304,7 +2293,7 @@
     },
     "verification": {
       "title": "Verifikasi opsional (hanya SDK, nonaktif secara bawaan)",
-      "when": "Jika kamu mengaktifkan opsi verifikasi SDK, SDK mengirim ulang sampel permintaan yang telah dilayaninya ke penyediamu sendiri, tanpa optimasi, lalu membuang respons kedua itu. Untuk setiap permintaan dalam sampel, SDK mengirim ke BiVelio, <b>melalui saluran terpisah, hanya kolom di bawah ini</b>; saluran itu juga menolak kolom lain apa pun, dan tidak ada yang diterimanya yang dipakai untuk menghitung komisi.",
+      "when": "Jika kamu mengaktifkan opsi verifikasi SDK, SDK mengirim ulang sampel permintaan yang telah dilayaninya ke penyediamu sendiri, tanpa optimasi, lalu membuang respons kedua itu. Untuk setiap permintaan dalam sampel, SDK mengirim ke BiVelio, <b>melalui saluran terpisah, hanya kolom di bawah ini</b>; saluran itu juga menolak kolom lain apa pun, dan tidak ada yang diterimanya yang dipakai untuk penagihan.",
       "groups": {
         "sample": {
           "title": "Setiap permintaan dalam sampel",
@@ -2371,7 +2360,7 @@
       "verification": {
         "data": "Sampel verifikasi (opsional, hanya SDK, nonaktif secara bawaan)",
         "destination": "BiVelio, melalui kanal terpisah",
-        "purpose": "Tidak pernah untuk menghitung komisi",
+        "purpose": "Tidak pernah untuk penagihan",
         "retention": "Dihapus setelah melewati jangka waktunya"
       },
       "account": {

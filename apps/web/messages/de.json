@@ -60,7 +60,7 @@
       "orgLabel": "Organisation: {org}",
       "accountLink": "Kontoeinstellungen für {email}",
       "plan": {
-        "free": "Free",
+        "free": "Kostenlos",
         "pro": "Pro",
         "enterprise": "Enterprise"
       }
@@ -472,7 +472,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "LLM-/Retrieval-/Tool-Aufrufe, die nie ausgeführt wurden",
       "whatEliminatedTokens": "Eingabe-Tokens, die der Anbieter nie verarbeitet hat",
-      "elisionNota": "Wenn du das Gateway nutzt, ist ein Teil dieser Zahl Eingabe, die dein Anbieter wegen deiner eigenen Konfiguration verwirft: dieser Teil ist nicht unser Verdienst und geht nie in deine Provision ein.",
+      "elisionNota": "Wenn du das Gateway nutzt, ist ein Teil dieser Zahl Eingabe, die dein Anbieter wegen deiner eigenen Konfiguration verwirft: dieser Teil ist nicht unser Verdienst und zählt nie als gutgeschriebene Ersparnis.",
       "whatCompressedTokens": "Eingabe-Tokens, die kompakter neu kodiert wurden",
       "whatProviderCachedTokens": "Eingabe-Tokens zum vergünstigten Präfix-Cache-Preis. Ihr Client fordert das an, nicht wir: Unser Hebel stellt nur die Dauer ein",
       "ghostAwaiting": "wartet auf ersten Bericht",
@@ -518,7 +518,7 @@
       "hidden": "Die Aufschlüsselung existiert, aber dieses Konto kann sie nicht sehen. Das ist ein Sichtbarkeitsfehler, nicht fehlende Daten.",
       "unavailable": "Die SHADOW-Aufschlüsselung nach Modell ist auf diesem Server noch nicht verfügbar. Verlauf ohne Modell kann nicht rekonstruiert werden.",
       "historical": "Es gibt SHADOW-Anfragen, aber für Verlaufsdaten vor dieser Migration ist keine Modellaufschlüsselung verfügbar.",
-      "empty": "In diesem Zeitraum gibt es noch keine SHADOW-Anfragen. Sende echten Verkehr mit Messen, um Chancen zu schätzen.",
+      "empty": "In diesem Zeitraum gibt es noch keine SHADOW-Anfragen. Sende echten Verkehr mit Measure, um Chancen zu schätzen.",
       "colModel": "Modell",
       "colRequests": "SHADOW-Anfragen",
       "colBaseline": "Baseline-Ausgaben",
@@ -714,10 +714,8 @@
     "accountPlanStrip": {
       "noActivePlan": "Kein aktiver Plan",
       "signedInAs": "angemeldet als",
-      "organization": "Organisation: <b>{name}</b>",
       "personalNote": "Persönlich — noch keine Organisation verknüpft. Ein BiVelio-Konto, das in der gesamten Suite geteilt wird.",
       "plan": "Plan",
-      "seatsCount": "{count, plural, one {# Seat} other {# Seats}}.",
       "planBody": "BV-SALA ist Open Core — ohne Schlüssel läuft es im Community-Modus; ein gesetzter, aber ungültiger Schlüssel bleibt fail-closed. Die Cloud ergänzt Dashboard, geteilte Caches und Org-Berechtigungen. Pro: {monthly} pro Sitz und Monat oder {yearly} pro Sitz und Jahr. Team: {teamMonthly} pro Monat mit {included} Sitzen enthalten. Keine Provision auf deine Ersparnis. Ein Sitz ist eine aktive Maschine oder Dienstidentität, keine Person.",
       "managePlan": "Plan verwalten →",
       "subscribe": "Abonnieren →",
@@ -726,7 +724,6 @@
       "checkoutError": "Etwas ist schiefgelaufen — versuche es erneut.",
       "seatsLabel": "Seats",
       "seatsHint": "Ein Platz ist eine aktive Maschine oder Service-Identität, keine Person. Zähle die Prozesse, die das SDK ausführen, nicht deine Mitarbeitenden. In Kubernetes: BVSALA_SEAT_ID pro Replica setzen.",
-      "seatsInUse": "{used, plural, one {# Seat} other {# Seats}} diesen Monat in Benutzung.",
       "seatsOver": "{used, plural, one {# Seat} other {# Seats}} in Benutzung, {paid, plural, one {# bezahlt} other {# bezahlt}}. Die zusätzlichen Seats werden zum Monatsabschluss zum Preis deines Plans berechnet. Bei monatlicher Zahlung kommen sie auf deine nächste Rechnung, und die gebuchte Anzahl steigt auf die genutzten Seats. Bei jährlicher Zahlung werden sie zum Monatsabschluss zum Jahrespreis geteilt durch zwölf berechnet, und die gebuchte Anzahl bleibt unverändert. Du kannst die Anzahl auch unter „Plan verwalten“ anpassen.",
       "seatsLastMonth": "{period}: {used, plural, one {# Seat genutzt} other {# Seats genutzt}}, {paid, plural, one {# bezahlt} other {# bezahlt}}. Zusätzlich: {extra, plural, one {# Seat} other {# Seats}} ({amount}). Bei monatlicher Zahlung steht der Betrag auf deiner nächsten Rechnung, und die gebuchte Anzahl steigt auf die genutzten Seats. Bei jährlicher Zahlung wird er zum Monatsabschluss zum Jahrespreis geteilt durch zwölf berechnet, ohne die gebuchte Anzahl zu ändern.",
       "seatsRotated": "{used, plural, one {# Seat} other {# Seats}} in diesem Monat gezählt. Du hast einen Service-Account-Schlüssel widerrufen, und beim Rotieren bekommen deine Maschinen eine neue Seat-Identität — deshalb zählt dieser Monat sie doppelt. Nächsten Monat ist es wieder normal; du musst deinen Plan nicht ändern.",
@@ -852,7 +849,6 @@
       "rolAdmin": "Administrator",
       "rolMember": "Mitglied",
       "rolBilling": "Buchhaltung",
-      "ayudaRoles": "Administratoren verwalten Team und Zugangsdaten. Die Buchhaltung sieht den Tarif und kann bezahlen, aber die Lizenz nicht herunterladen. Mitglieder sehen nur das Dashboard.",
       "miembrosTitulo": "Mitglieder",
       "columnaPersona": "Person",
       "columnaRol": "Rolle",
@@ -907,18 +903,18 @@
     "sombraElision": {
       "title": "Schatten-Elision (hypothetisch)",
       "detalle": "≈{usd} über {requests} simulierte Anfragen",
-      "nota": "Was Kontext-Elision bei Ihrem echten Traffic gespart hätte, vom Gateway berechnet, ohne ein einziges Byte anzufassen. Wird nie zur Schlagzeile addiert und fließt nie in die Provision ein: der Hebel wird erst aktiviert, wenn diese Zahl es rechtfertigt.",
+      "nota": "Was Kontext-Elision bei Ihrem echten Traffic gespart hätte, vom Gateway berechnet, ohne ein einziges Byte anzufassen. Wird nie zur Schlagzeile addiert und zählt nie als gutgeschriebene Ersparnis: der Hebel wird erst aktiviert, wenn diese Zahl es rechtfertigt.",
       "notaNegativa": "Bei Ihrem Traffic hätte Elision Geld gekostet: das Umschreiben von Blöcken invalidiert den Prefix-Cache des Anbieters. Genau dafür existiert diese Spur — um das zu sehen, bevor irgendetwas aktiviert wird. Deshalb bleibt sie aus."
     },
     "elisionProveedor": {
       "title": "Löschung durch den Anbieter, ausgelöst durch unsere Regler",
       "detalle": "{requests} angerechnete Anfragen",
-      "nota": "Die Zählung stammt vom Anbieter (applied_edits). Sie ist keine gemessene Ersparnis und fließt nie in deine Provision ein; der Geldwert folgt, sobald das Netto pro Modell gemessen ist — Löschen schreibt den Prefix-Cache neu, und bei manchen Modellen ist das Netto negativ."
+      "nota": "Die Zählung stammt vom Anbieter (applied_edits). Sie ist keine gemessene Ersparnis und zählt nie als gutgeschriebene Ersparnis; der Geldwert folgt, sobald das Netto pro Modell gemessen ist — Löschen schreibt den Prefix-Cache neu, und bei manchen Modellen ist das Netto negativ."
     },
     "ahorroNativo": {
       "title": "Aktivierte native Ersparnis",
       "detalle": "{requests} Anfragen mit Anbieter-Cache · Lesen {lectura} − Schreibaufschlag {prima}",
-      "nota": "Das ist der Rabatt aus dem Prefix-Cache Ihres Anbieters (Anthropic mit cache_control, OpenAI automatisch, Gemini implizit), abzüglich des Schreibaufschlags, den er berechnet – ermittelt aus seinem eigenen Zähler zum Listenpreis. Sie sehen ihn auf der Rechnung Ihres Anbieters, nicht auf unserer: Er steht getrennt von der gutgeschriebenen Ersparnis und fließt nie in Ihre Provision ein.",
+      "nota": "Das ist der Rabatt aus dem Prefix-Cache Ihres Anbieters (Anthropic mit cache_control, OpenAI automatisch, Gemini implizit), abzüglich des Schreibaufschlags, den er berechnet – ermittelt aus seinem eigenen Zähler zum Listenpreis. Sie sehen ihn auf der Rechnung Ihres Anbieters, nicht auf unserer: Er steht getrennt von der gutgeschriebenen Ersparnis und wird ihr nie hinzugerechnet.",
       "vacio": "In diesem Zeitraum hat noch keine Anfrage den Prefix-Cache Ihres Anbieters gelesen oder beschrieben.",
       "proveedor": {
         "anthropic": "Anthropic",
@@ -933,9 +929,9 @@
       "badgeMedido": "Gemessen",
       "proyeccionTitulo": "Prognostizierte Ersparnis für {periodo}",
       "proyeccionNota": "Das bisher Gemessene plus dein Tempo der letzten {dias} Tage über die {restantes} verbleibenden Tage. Eine Schätzung, keine Rechnung.",
-      "comision": "Prognostizierte Provision",
-      "comisionNota": "{pct} dessen, was du sparst. Ein Monat ohne Ersparnis ist ein Monat ohne Provision.",
-      "comisionCalibracion": "Kalibrierungsmonat: Es wird nichts berechnet. Die Zahl ist die Provision, die anfallen würde.",
+      "comision": "Provision des früheren Modells (Referenz)",
+      "comisionNota": "{pct} der prognostizierten Ersparnis nach dem Provisionsmodell, das für Neuanmeldungen geschlossen ist. Pläne mit fester Gebühr tragen keine Provision.",
+      "comisionCalibracion": "Kalibrierungsmonat des Provisionsmodells: Es wird nichts berechnet. Pläne mit fester Gebühr tragen keine Provision.",
       "cerrado": "Abgeschlossener Zeitraum: Das ist, was war, nicht wohin es geht.",
       "pocosDias": "Noch zu früh für eine Gerade: {min} vollständige Tage sind nötig, vorhanden sind {n}. Das Gemessene ist bereits real.",
       "medido": "Bisher gespart (gemessen)",
@@ -957,10 +953,8 @@
       "notaCalibracion": "Kalibrierungsmonat: die Provision wäre {habria} gewesen — und wird nicht berechnet.",
       "notaSombra": "Schattenzahl: die berechnete Provision beträgt {comision}. Noch enthält sie keine Rechnung.",
       "baseMedida": "Gemessene Basis",
-      "enUsd": "{usd} zu Anbieterpreisen",
       "requests": "{n} gemessene Anfragen",
       "ahorroMedido": "Gemessene Ersparnis",
-      "ratio": "Quote {pct}",
       "tramosTitulo": "Die Provision, Stufe für Stufe",
       "sinAhorro": "Keine gemessene Ersparnis in diesem Zeitraum — ohne Ersparnis keine Provision. Niemals.",
       "colTramo": "Stufe",
@@ -968,11 +962,11 @@
       "colBase": "Stufenbasis",
       "colComision": "Provision",
       "estimadoExcluido": "Geschätzte Ersparnis, von der Basis ausgeschlossen (Kontext, nie abrechenbar): {usd}.",
-      "sombraElision": "Schattenspur: Elision hätte {usd} über {requests} simulierte Anfragen gespart. Hypothetisch — fließt nie in die Basis oder die Provision ein.",
+      "sombraElision": "Schattenspur: Elision hätte {usd} über {requests} simulierte Anfragen gespart. Hypothetisch — fließt nie in die Basis ein.",
       "sombraElisionNegativa": "Schattenspur: Elision hätte {usd} zusätzlich über {requests} simulierte Anfragen gekostet. Deshalb bleibt sie aus: aktiviert wird nur, was wirklich spart.",
-      "elisionProveedor": "Spur der Anbieter-Löschung: {requests} Anfragen, bei denen unsere Regler den Anbieter Kontext löschen ließen. Eine Zählung, keine Ersparnis — sie fließt nie in die Basis oder die Provision ein.",
+      "elisionProveedor": "Spur der Anbieter-Löschung: {requests} Anfragen, bei denen unsere Regler den Anbieter Kontext löschen ließen. Eine Zählung, keine Ersparnis — sie fließt nie in die Basis ein.",
       "referencia": "Per Referenz gemessen: {usd} über {requests, plural, one {# wiederholte Anfrage, die ohne Aufruf deines Anbieters bedient wurde} other {# wiederholte Anfragen, die ohne Aufruf deines Anbieters bedient wurden}}. Jede wird mit dem Zähler bewertet, den dein Anbieter für die identische, bereits gelaufene Anfrage zurückgegeben hat — er steht im Bericht dieser Anfrage und in der Nutzung deines Anbieters an diesem Tag — zum Preis für gecachte Eingabe, dem niedrigsten, den dein Anbieter für die Wiederholung eines Prompts berechnet; die Ausgabe zählt nur bei deterministischem Sampling und wenn die gelaufene Anfrage kein verborgenes Reasoning enthielt (dein Anbieter hat null Reasoning-Tokens gemeldet oder, falls er sie nicht ausweist, seine Antwort enthielt keinen Reasoning-Block). In der Basis enthalten.",
-      "referenciaExcluida": "Per Referenz gemessen: {usd} über {requests, plural, one {# wiederholte Anfrage} other {# wiederholte Anfragen}}. Zur Einordnung gezeigt — vorerst bleibt es außerhalb der Basis und der Provision.",
+      "referenciaExcluida": "Per Referenz gemessen: {usd} über {requests, plural, one {# wiederholte Anfrage} other {# wiederholte Anfragen}}. Zur Einordnung gezeigt — vorerst bleibt es außerhalb der Basis.",
       "exportarReferencias": "Die wiederholten Anfragen dieses Zeitraums herunterladen, eine Zeile pro Anfrage (CSV)",
       "exportarReferenciasPorDia": "Zu viele wiederholte Anfragen für eine einzige Datei — diesen Zeitraum Tag für Tag herunterladen (CSV):",
       "parametros": "Parameter des Auszugs — Preiskatalog {version} · Wechselkurs {fx}.",
@@ -1259,7 +1253,7 @@
       "eyebrow": "Gateway · Coding-Terminals",
       "title": "Claude Code mit API-Schlüssel? Sieh die echten Ausgaben, Token für Token.",
       "body": "Ein einziger Befehl setzt einen lokalen Zähler vor dein Terminal, ohne deinen Code anzufassen: Du exportierst deinen Service-Schlüssel und startest deinen Agenten über bvsala. Deine Prompts laufen nicht über die Server von BiVelio: Sie gehen an den Anbieter, den du konfigurierst, und in dein Dashboard gelangen nur Zählwerte und Kosten.",
-      "note": "Das Gateway misst mit dem Zähler deines Anbieters jede Anfrage, für die dieser die Nutzung meldet (bei den Modellen in unserem Preiskatalog), und läuft, wie das SDK, startet es ganz ohne Schlüssel (Community-Modus): ein optionaler Service-Schlüssel ergänzt das Dashboard und die Org-Berechtigungen. Mit einer PRO-Lizenz wendet es bei Anthropic-Modellen außerdem standardmäßig einen Hebel an: Es stellt Cache-Schreibvorgänge von der einstündigen auf die fünfminütige TTL um — nur bei Zügen, in denen ein großer Teil des Prompts neu ist, etwa beim ersten Zug einer Sitzung oder nach einer Kompaktierung — und lässt die verketteten Züge unverändert. Das ändert den Preis, nie den Inhalt, den das Modell liest. Die übrigen Hebel bleiben aus, bis du sie einschaltest. Der Skill savings-mode steht für deine Limits bereit, seine Wirkung ist noch zu messen. Das Gateway funktioniert auch mit Codex CLI, Goose, Qwen Code, opencode, Kilo, Aider und, mit deinem eigenen Anthropic-Schlüssel, GitHub Copilot CLI; für andere wie Cline oder Continue gibt bvsala doctor die genaue Konfiguration aus. Cursor funktioniert �ber die OpenAI-Base-URL-�berschreibung mit deinem eigenen Schl�ssel, und die Gemini CLI l�uft �ber bvsala gemini.",
+      "note": "Das Gateway misst mit dem Zähler deines Anbieters jede Anfrage, für die dieser die Nutzung meldet (bei den Modellen in unserem Preiskatalog), und startet, wie das SDK, ganz ohne Schlüssel (Community-Modus): ein optionaler Service-Schlüssel ergänzt das Dashboard und die Org-Berechtigungen. Mit einer PRO-Lizenz wendet es bei Anthropic-Modellen außerdem standardmäßig einen Hebel an: Es stellt Cache-Schreibvorgänge von der einstündigen auf die fünfminütige TTL um — nur bei Zügen, in denen ein großer Teil des Prompts neu ist, etwa beim ersten Zug einer Sitzung oder nach einer Kompaktierung — und lässt die verketteten Züge unverändert. Das ändert den Preis, nie den Inhalt, den das Modell liest. Die übrigen Hebel bleiben aus, bis du sie einschaltest. Der Skill savings-mode steht für deine Limits bereit, seine Wirkung ist noch zu messen. Das Gateway funktioniert auch mit Codex CLI, Goose, Qwen Code, opencode, Kilo, Aider und, mit deinem eigenen Anthropic-Schlüssel, GitHub Copilot CLI; für andere wie Cline oder Continue gibt bvsala doctor die genaue Konfiguration aus. Cursor funktioniert über die OpenAI-Base-URL-Überschreibung mit deinem eigenen Schlüssel, und die Gemini CLI läuft über bvsala gemini.",
       "pythonNote": "Python oder eine andere Sprache? Richte das offizielle SDK von OpenAI oder Anthropic auf das Gateway, und jede Anfrage, deren Verbrauch der Anbieter meldet, wird für ein Modell mit Listenpreis in diesem Panel zu diesem Preis erfasst; das Log des Gateways sagt, wenn eine nicht gemessen wird. bvsala doctor gibt die Base-URL für jedes SDK aus. Fordere beim Streaming mit OpenAI den Verbrauch in der Anfrage an (stream_options.include_usage).",
       "cta": "So funktioniert es →"
     },
@@ -1367,10 +1361,10 @@
       "paper": "Paper"
     },
     "cta15": {
-      "titulo": "Book 15-min call",
+      "titulo": "15-Minuten-Gespräch anfragen",
       "sub": "Wir sagen dir, was du mit deinem Traffic sparen würdest — ohne etwas zu installieren.",
       "placeholder": "du@firma.com",
-      "boton": "Book 15-min call",
+      "boton": "15-Minuten-Gespräch anfragen",
       "enviando": "Wird gesendet…",
       "ok": "Erhalten. Wir melden uns noch heute, um den Termin abzustimmen.",
       "errorCorreo": "Diese E-Mail sieht nicht gültig aus.",
@@ -1413,7 +1407,6 @@
       "figNoteToggle": "Warum diese Zahl — und ihre Grenzen",
       "sdk": {
         "name": "SDK",
-        "band": "SDK — für JavaScript- und TypeScript-Apps mit API-Schlüssel",
         "who": "Für Node.js-Apps in JavaScript oder TypeScript, die eine LLM-API mit deinem eigenen Schlüssel aufrufen und jedes Token bezahlen.",
         "what": "Es umschließt den Aufruf in deinem Code, schickt dem Anbieter nur, was bezahlt werden muss, und liefert zu jeder Antwort einen SavingsReport.",
         "figureLabel": "Die Zahl, die wir veröffentlichen",
@@ -1424,7 +1417,6 @@
       },
       "gateway": {
         "name": "Gateway",
-        "band": "Gateway — für Coding-Agenten mit API-Schlüssel",
         "who": "Für alle, die Claude Code, Codex CLI oder einen anderen Coding-Agenten mit API-Schlüssel nutzen.",
         "what": "Ein Befehl setzt einen lokalen Zähler vor dein Terminal, ohne Code anzufassen. Das Gateway zählt jede Anfrage, für die dein Anbieter die Nutzung meldet, mit dessen eigenem Zähler — für die Modelle in unserem Preiskatalog — und summiert sie in deinem Dashboard nach Tag und Modell.",
         "figureLabel": "Die Zahl, die wir veröffentlichen",
@@ -1433,9 +1425,6 @@
         "benchLink": "Der Bericht der TTL-Messung: was simuliert wurde, die Aufschlüsselung nach Modell und ihre Grenzen →",
         "cta": "Gateway einrichten",
         "requires": "Node.js mit npm und ein Coding-Agent, der seinen eigenen API-Schlüssel verwendet."
-      },
-      "skill": {
-        "band": "Skill — für Coding-Agenten im Abo"
       },
       "requires": "Voraussetzungen:"
     },
@@ -1953,7 +1942,7 @@
   },
   "howItWorks": {
     "metaTitle": "Wo wird die Ersparnis installiert? · BiVelio Savings Layer",
-    "metaDescription": "BV‑SALA ist eine Schicht, die im Code deiner Anwendung installiert wird — dort, wo die API aufgerufen wird. Was sie sparen kann, wo sie nicht greift und wie wirklich gemessen wird.",
+    "metaDescription": "Savings läuft in deiner Infrastruktur, als SDK in deiner Anwendung oder als lokales Gateway. Open-Source-Engine und optionale Savings Cloud: was es sparen kann, wo es nicht greift und wie wirklich gemessen wird.",
     "eyebrow": "Die Schicht, erklärt · ohne Jargon",
     "title": "Wo wird die Ersparnis installiert?",
     "lede": "BV‑SALA ist keine App, keine Erweiterung und keine ChatGPT-Einstellung. Es ist ein Stück Code, das ein Entwickler in seine eigene Anwendung einbaut — genau dort, wo diese Anwendung die API des Anbieters aufruft. Sparen kann es nur, wo eine Token-Rechnung existiert — und messen nur, wo es jede Anfrage vorbeiziehen sieht.",
@@ -2114,11 +2103,11 @@
   },
   "pricingPage": {
     "metaTitle": "Preisbedingungen · BV-SALA",
-    "metaDescription": "Open Core ist gratis ; Measure, Pro, Team und Enterprise sind die Cloud-Pläne — keiner trägt eine Provision auf deine Ersparnis. Zahlen, veröffentlicht aus denselben Konstanten, die abrechnen.",
+    "metaDescription": "Open Core ist gratis; Measure, Pro, Team und Enterprise sind die Cloud-Pläne — keiner trägt eine Provision auf deine Ersparnis. Zahlen, veröffentlicht aus denselben Konstanten, die abrechnen.",
     "eyebrow": "Veröffentlichte Preise",
     "title": "Open-Source-Engine. Cloud-Kontrolle für dein Team.",
     "governs": "Diese Seite beschreibt, wie der Dienst heute funktioniert; maßgeblich sind die <license>LICENSE</license> und die <terms>BiVelio-Bedingungen</terms>.",
-    "lede": "Das Paket ist Open Core : kein Schlüssel nötig. Diese Seite bepreist die optionale Cloud — Measure gratis, dann Pro pro Sitz oder ein Team-Plan, ohne Provision auf deine Ersparnis. Jede Zahl hier kommt aus demselben Code, der dich abrechnet, und ändert sich, wenn sich der Preis ändert.",
+    "lede": "Das Paket ist Open Core: kein Schlüssel nötig. Diese Seite bepreist die optionale Cloud — Measure gratis, dann Pro pro Sitz oder ein Team-Plan, ohne Provision auf deine Ersparnis. Jede Zahl hier kommt aus demselben Code, der dich abrechnet, und ändert sich, wenn sich der Preis ändert.",
     "plans": {
       "title": "Pläne",
       "intro": "Vier Pläne, vom kleinsten zum größten. Pro und Team werden pro Seat bezahlt und tragen keine Provision.",
@@ -2304,7 +2293,7 @@
     },
     "verification": {
       "title": "Optionale Verifizierung (nur SDK, standardmäßig aus)",
-      "when": "Wenn du die Verifizierungsoption des SDK einschaltest, sendet das SDK eine Stichprobe der bedienten Anfragen ohne Optimierung erneut an deinen eigenen Anbieter und verwirft diese zweite Antwort. Für jede Anfrage der Stichprobe sendet es an BiVelio <b>über einen eigenen Kanal nur die folgenden Felder</b>; auch dieser Kanal weist jedes andere Feld zurück, und nichts, was er empfängt, wird zur Berechnung der Provision verwendet.",
+      "when": "Wenn du die Verifizierungsoption des SDK einschaltest, sendet das SDK eine Stichprobe der bedienten Anfragen ohne Optimierung erneut an deinen eigenen Anbieter und verwirft diese zweite Antwort. Für jede Anfrage der Stichprobe sendet es an BiVelio <b>über einen eigenen Kanal nur die folgenden Felder</b>; auch dieser Kanal weist jedes andere Feld zurück, und nichts, was er empfängt, wird für die Abrechnung verwendet.",
       "groups": {
         "sample": {
           "title": "Jede Anfrage der Stichprobe",
@@ -2371,7 +2360,7 @@
       "verification": {
         "data": "Verifizierungsstichproben (optional, nur SDK, standardmäßig aus)",
         "destination": "BiVelio, über einen getrennten Kanal",
-        "purpose": "Nie zur Berechnung der Provision",
+        "purpose": "Nie für die Abrechnung",
         "retention": "Werden nach Ablauf ihrer Frist gelöscht"
       },
       "account": {

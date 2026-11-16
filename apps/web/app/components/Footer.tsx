@@ -107,9 +107,12 @@ function GlassWordmark() {
 }
 
 /**
- * `sinGitHub`: /benchmarks se publica sin enlaces a GitHub mientras el
- * repositorio sea privado (decisión del dueño, 2026-09-29): allí un icono de
- * GitHub se leería como «el código está aquí». El resto de páginas no cambia.
+ * `sinGitHub`: opción que quita del pie los enlaces a GitHub (el icono del
+ * muelle social y «Código» en la columna Savings). Nació cuando el repositorio
+ * era privado (2026-09-29) y /benchmarks la pasaba; con el motor ya open
+ * source ninguna página la pasa (P1 de la guía del rediseño): el centro de
+ * evidencia y la guía de migración enseñan el repositorio como las demás. Se
+ * conserva por si una página necesita un pie sin esos enlaces.
  */
 export default async function Footer({ sinGitHub = false }: { sinGitHub?: boolean } = {}) {
   const t = await getTranslations("landing");
@@ -135,8 +138,8 @@ export default async function Footer({ sinGitHub = false }: { sinGitHub?: boolea
     [t("footer.migrate"), "/migrate-to-0.5"],
     [t("footer.pricing"), "/#pricing"],
     // El repositorio del motor open source, visible también en el pie (guía
-    // §6, fila 10). Donde el pie recibe `sinGitHub` NO se pinta: esa decisión
-    // tiene su propio PR y aquí no se toca.
+    // §6, fila 10). Solo deja de pintarse si el pie recibe `sinGitHub`, que hoy
+    // no pasa ninguna página.
     ...(sinGitHub ? [] : [[await etiquetaDelCodigo(), URL_DEL_CODIGO]]),
   ];
   // «Documentación» apuntaba a docs.bivelio.com y «Estado» a status.bivelio.com,

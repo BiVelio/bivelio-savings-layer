@@ -258,7 +258,7 @@ export default async function MigrateTo05Page({ params }: { params: Promise<{ lo
           </div>
         </div>
       </main>
-      <Footer sinGitHub />
+      <Footer />
     </div>
   );
 }

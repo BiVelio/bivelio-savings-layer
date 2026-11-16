@@ -60,7 +60,7 @@
       "orgLabel": "Tổ chức: {org}",
       "accountLink": "Cài đặt tài khoản của {email}",
       "plan": {
-        "free": "Free",
+        "free": "Miễn phí",
         "pro": "Pro",
         "enterprise": "Enterprise"
       }
@@ -472,7 +472,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "lệnh gọi LLM/truy xuất/công cụ chưa từng chạy",
       "whatEliminatedTokens": "token đầu vào mà nhà cung cấp chưa từng xử lý",
-      "elisionNota": "Nếu bạn dùng gateway, một phần con số này là phần xóa mà nhà cung cấp áp dụng từ chính cấu hình của bạn: phần đó không phải công của chúng tôi và không bao giờ tính vào hoa hồng của bạn.",
+      "elisionNota": "Nếu bạn dùng gateway, một phần con số này là phần xóa mà nhà cung cấp áp dụng từ chính cấu hình của bạn: phần đó không phải công của chúng tôi và không bao giờ được tính là khoản tiết kiệm được ghi nhận.",
       "whatCompressedTokens": "token đầu vào được mã hóa lại nhỏ gọn hơn",
       "whatProviderCachedTokens": "token đầu vào được tính theo giá ưu đãi của bộ nhớ đệm tiền tố. Máy khách của bạn yêu cầu điều đó, không phải chúng tôi: đòn bẩy của chúng tôi chỉ điều chỉnh thời lượng",
       "ghostAwaiting": "đang chờ báo cáo đầu tiên",
@@ -518,7 +518,7 @@
       "hidden": "Chi tiết tồn tại nhưng tài khoản này không thể xem. Đây là lỗi hiển thị, không phải thiếu dữ liệu.",
       "unavailable": "Chi tiết SHADOW theo mô hình chưa khả dụng trên máy chủ này. Không thể tái tạo lịch sử thiếu mô hình.",
       "historical": "Có yêu cầu SHADOW nhưng chi tiết theo mô hình không khả dụng cho lịch sử trước lần di chuyển này.",
-      "empty": "Chưa có yêu cầu SHADOW trong giai đoạn này. Gửi lưu lượng thực với Đo để bắt đầu ước tính cơ hội.",
+      "empty": "Chưa có yêu cầu SHADOW trong giai đoạn này. Gửi lưu lượng thực với Measure để bắt đầu ước tính cơ hội.",
       "colModel": "Mô hình",
       "colRequests": "Yêu cầu SHADOW",
       "colBaseline": "Chi tiêu nền",
@@ -714,10 +714,8 @@
     "accountPlanStrip": {
       "noActivePlan": "Không có gói đang hoạt động",
       "signedInAs": "đã đăng nhập với tư cách",
-      "organization": "Tổ chức: <b>{name}</b>",
       "personalNote": "Cá nhân — chưa có tổ chức nào được liên kết. Một tài khoản BiVelio, dùng chung cho cả bộ sản phẩm.",
       "plan": "gói",
-      "seatsCount": "{count, plural, other {# ghế}}.",
       "planBody": "BV-SALA là open core — không khóa nó chạy ở chế độ Community; khóa được đặt nhưng không hợp lệ vẫn fail-closed. Cloud thêm bảng điều khiển, cache dùng chung và quyền của tổ chức. Pro: {monthly} mỗi chỗ mỗi tháng hoặc {yearly} mỗi chỗ mỗi năm. Team: {teamMonthly} mỗi tháng với {included} chỗ kèm theo. Không hoa hồng trên khoản tiết kiệm của bạn. Một chỗ là một máy hoặc danh tính dịch vụ đang hoạt động, không phải một người.",
       "managePlan": "Quản lý gói →",
       "subscribe": "Đăng ký →",
@@ -726,7 +724,6 @@
       "checkoutError": "Đã xảy ra lỗi — vui lòng thử lại.",
       "seatsLabel": "Ghế",
       "seatsHint": "Một chỗ là một máy hoặc danh tính dịch vụ đang hoạt động, không phải một người. Hãy đếm số tiến trình sẽ chạy SDK, không phải số nhân viên. Trên Kubernetes, đặt BVSALA_SEAT_ID cho mỗi bản sao.",
-      "seatsInUse": "{used, plural, other {# ghế}} đang dùng trong tháng này.",
       "seatsOver": "{used, plural, other {# ghế}} đang dùng, {paid, plural, other {# ghế}} đã trả. Số ghế vượt được tính khi khép tháng, theo giá gói của bạn. Với thanh toán theo tháng, khoản này được cộng vào hoá đơn kế tiếp và số ghế đăng ký tăng lên bằng số ghế đang dùng. Với thanh toán theo năm, khoản này được lập hoá đơn khi khép tháng theo mức giá năm chia cho mười hai, và số ghế đăng ký không thay đổi. Bạn cũng có thể điều chỉnh số lượng ở «Quản lý gói».",
       "seatsLastMonth": "{period}: đã dùng {used, plural, other {# ghế}}, đã trả {paid, plural, other {# ghế}}. Vượt: {extra, plural, other {# ghế}} ({amount}). Với thanh toán theo tháng, khoản này vào hoá đơn kế tiếp và số ghế đăng ký tăng lên bằng số ghế đã dùng. Với thanh toán theo năm, khoản này được lập hoá đơn khi khép tháng theo mức giá năm chia cho mười hai, không thay đổi số ghế đăng ký.",
       "seatsRotated": "Tháng này đếm được {used, plural, other {# ghế}}. Bạn đã thu hồi một khoá tài khoản dịch vụ, và khi khoá được thay thì các máy nhận danh tính ghế mới — nên tháng này chúng bị đếm hai lần. Tháng sau sẽ trở lại bình thường; bạn không cần đổi gói.",
@@ -738,11 +735,11 @@
       "errCodigoInvalido": "Mã này không tồn tại hoặc không còn hiệu lực. Bạn có thể tiếp tục mà không cần mã hoặc viết cho support@bivelio.com.",
       "planPickLabel": "Gói",
       "planPro": "Pro",
-      "planTeam": "Nhóm",
-      "teamHint": "Nhóm bao gồm {included} ghế; mỗi ghế thêm {extra} mỗi tháng. Không thể mua ít hơn {included}.",
-      "checkoutTeamMonthly": "Đăng ký Nhóm — {monthly}/tháng, {included} ghế →",
-      "checkoutTeamYearly": "Đăng ký Nhóm — {yearly}/năm, {included} ghế →",
-      "errPlanCerrado": "Gói đó không còn được cung cấp cho khách hàng mới. Chọn Pro hoặc Nhóm.",
+      "planTeam": "Team",
+      "teamHint": "Team bao gồm {included} ghế; mỗi ghế thêm {extra} mỗi tháng. Không thể mua ít hơn {included}.",
+      "checkoutTeamMonthly": "Đăng ký Team — {monthly}/tháng, {included} ghế →",
+      "checkoutTeamYearly": "Đăng ký Team — {yearly}/năm, {included} ghế →",
+      "errPlanCerrado": "Gói đó không còn được cung cấp cho khách hàng mới. Chọn Pro hoặc Team.",
       "statusLabel": "Trạng thái",
       "statusActive": "Gói đăng ký đang hoạt động",
       "statusPastDue": "Thanh toán thất bại",
@@ -852,7 +849,6 @@
       "rolAdmin": "Quản trị viên",
       "rolMember": "Thành viên",
       "rolBilling": "Thanh toán",
-      "ayudaRoles": "Quản trị viên quản lý nhóm và thông tin xác thực. Thanh toán xem gói và có thể trả tiền, nhưng không thể tải giấy phép. Thành viên chỉ xem bảng điều khiển.",
       "miembrosTitulo": "Thành viên",
       "columnaPersona": "Người",
       "columnaRol": "Vai trò",
@@ -907,18 +903,18 @@
     "sombraElision": {
       "title": "Lược bỏ trong bóng (giả định)",
       "detalle": "≈{usd} trên {requests} yêu cầu mô phỏng",
-      "nota": "Số tiền mà việc lược bỏ ngữ cảnh lẽ ra đã tiết kiệm trên lưu lượng thực của bạn, do gateway tính toán mà không chạm vào một byte nào. Không bao giờ được cộng vào tiêu đề và không bao giờ vào hoa hồng: đòn bẩy chỉ được bật khi con số này chứng minh điều đó.",
+      "nota": "Số tiền mà việc lược bỏ ngữ cảnh lẽ ra đã tiết kiệm trên lưu lượng thực của bạn, do gateway tính toán mà không chạm vào một byte nào. Không bao giờ được cộng vào tiêu đề và không bao giờ được tính là khoản tiết kiệm được ghi nhận: đòn bẩy chỉ được bật khi con số này chứng minh điều đó.",
       "notaNegativa": "Trên lưu lượng của bạn, việc lược bỏ lẽ ra đã tốn tiền: viết lại các khối làm mất hiệu lực bộ nhớ đệm tiền tố của nhà cung cấp. Làn này tồn tại chính xác để thấy điều đó trước khi bật bất cứ thứ gì — vì vậy nó vẫn tắt."
     },
     "elisionProveedor": {
       "title": "Xóa bởi nhà cung cấp do cấu hình của chúng tôi gây ra",
       "detalle": "{requests} yêu cầu được ghi nhận",
-      "nota": "Số đếm là của nhà cung cấp (applied_edits). Đây không phải khoản tiết kiệm đã đo và không bao giờ tính vào hoa hồng của bạn; tiền sẽ đến khi phần ròng theo từng mô hình được đo — việc xóa ghi lại bộ nhớ đệm tiền tố, và ở một số mô hình phần ròng là âm."
+      "nota": "Số đếm là của nhà cung cấp (applied_edits). Đây không phải khoản tiết kiệm đã đo và không bao giờ được tính là khoản tiết kiệm được ghi nhận; tiền sẽ đến khi phần ròng theo từng mô hình được đo — việc xóa ghi lại bộ nhớ đệm tiền tố, và ở một số mô hình phần ròng là âm."
     },
     "ahorroNativo": {
       "title": "Khoản tiết kiệm gốc đã kích hoạt",
       "detalle": "{requests} yêu cầu có bộ nhớ đệm của nhà cung cấp · đọc {lectura} − phụ phí ghi {prima}",
-      "nota": "Đây là khoản giảm giá từ bộ nhớ đệm tiền tố của chính nhà cung cấp của bạn (Anthropic với cache_control, OpenAI tự động, Gemini ngầm định), sau khi trừ phụ phí ghi bộ nhớ đệm mà họ tính, được tính từ bộ đếm của chính họ theo giá niêm yết. Bạn thấy nó trên hóa đơn của nhà cung cấp, không phải của chúng tôi: nó được tách riêng khỏi khoản tiết kiệm được ghi nhận và không bao giờ tính vào hoa hồng của bạn.",
+      "nota": "Đây là khoản giảm giá từ bộ nhớ đệm tiền tố của chính nhà cung cấp của bạn (Anthropic với cache_control, OpenAI tự động, Gemini ngầm định), sau khi trừ phụ phí ghi bộ nhớ đệm mà họ tính, được tính từ bộ đếm của chính họ theo giá niêm yết. Bạn thấy nó trên hóa đơn của nhà cung cấp, không phải của chúng tôi: nó được tách riêng khỏi khoản tiết kiệm được ghi nhận và không bao giờ được cộng vào đó.",
       "vacio": "Trong kỳ này chưa có yêu cầu nào đọc hoặc ghi bộ nhớ đệm tiền tố của nhà cung cấp.",
       "proveedor": {
         "anthropic": "Anthropic",
@@ -933,9 +929,9 @@
       "badgeMedido": "Đã đo",
       "proyeccionTitulo": "Tiết kiệm dự phóng cho {periodo}",
       "proyeccionNota": "Phần đã đo đến nay cộng với nhịp độ {dias} ngày gần nhất của bạn nhân cho {restantes} ngày còn lại. Đây là ước tính, không phải hóa đơn.",
-      "comision": "Hoa hồng dự phóng",
-      "comisionNota": "{pct} của phần bạn tiết kiệm được. Một tháng không tiết kiệm là một tháng không hoa hồng.",
-      "comisionCalibracion": "Tháng hiệu chuẩn: không thu phí. Con số này là mức hoa hồng sẽ có.",
+      "comision": "Hoa hồng theo mô hình cũ (tham khảo)",
+      "comisionNota": "{pct} của khoản tiết kiệm dự phóng, theo mô hình hoa hồng đã đóng với đăng ký mới. Các gói phí cố định không có hoa hồng.",
+      "comisionCalibracion": "Tháng hiệu chuẩn của mô hình hoa hồng: không thu phí. Các gói phí cố định không có hoa hồng.",
       "cerrado": "Kỳ đã đóng: đây là những gì đã diễn ra, không phải hướng đi tiếp theo.",
       "pocosDias": "Còn quá sớm để vẽ đường thẳng: cần {min} ngày trọn vẹn và mới có {n}. Phần đã đo thì đã là thật.",
       "medido": "Đã tiết kiệm đến nay (đã đo)",
@@ -957,10 +953,8 @@
       "notaCalibracion": "Tháng hiệu chuẩn: hoa hồng lẽ ra là {habria} — và không bị thu.",
       "notaSombra": "Con số trong bóng: hoa hồng tính được là {comision}. Chưa hóa đơn nào bao gồm nó.",
       "baseMedida": "Cơ sở đã đo",
-      "enUsd": "{usd} theo giá nhà cung cấp",
       "requests": "{n} yêu cầu đã đo",
       "ahorroMedido": "Tiết kiệm đã đo",
-      "ratio": "tỷ lệ {pct}",
       "tramosTitulo": "Hoa hồng, theo từng bậc",
       "sinAhorro": "Không có tiết kiệm đã đo trong kỳ này — không tiết kiệm thì không hoa hồng. Không bao giờ.",
       "colTramo": "Bậc",
@@ -968,11 +962,11 @@
       "colBase": "Cơ sở bậc",
       "colComision": "Hoa hồng",
       "estimadoExcluido": "Tiết kiệm ước tính bị loại khỏi cơ sở (bối cảnh, không bao giờ tính phí): {usd}.",
-      "sombraElision": "Làn bóng: việc lược bỏ lẽ ra đã tiết kiệm {usd} trên {requests} yêu cầu mô phỏng. Giả định — không bao giờ vào cơ sở hay hoa hồng.",
+      "sombraElision": "Làn bóng: việc lược bỏ lẽ ra đã tiết kiệm {usd} trên {requests} yêu cầu mô phỏng. Giả định — không bao giờ vào cơ sở.",
       "sombraElisionNegativa": "Làn bóng: việc lược bỏ lẽ ra đã tốn thêm {usd} trên {requests} yêu cầu mô phỏng. Vì thế nó vẫn tắt: chỉ bật những gì thực sự tiết kiệm.",
-      "elisionProveedor": "Làn xóa bởi nhà cung cấp: {requests} yêu cầu mà cấu hình của chúng tôi khiến nhà cung cấp xóa ngữ cảnh. Một số đếm, không phải tiết kiệm — không bao giờ tính vào cơ sở hay hoa hồng.",
+      "elisionProveedor": "Làn xóa bởi nhà cung cấp: {requests} yêu cầu mà cấu hình của chúng tôi khiến nhà cung cấp xóa ngữ cảnh. Một số đếm, không phải tiết kiệm — không bao giờ tính vào cơ sở.",
       "referencia": "Đo theo tham chiếu: {usd} trên {requests, number} lượt gọi lặp lại được phục vụ mà không gọi nhà cung cấp của bạn. Mỗi lượt được định giá bằng bộ đếm mà nhà cung cấp trả về cho lượt gọi giống hệt đã được thực hiện — có trong báo cáo của lượt gọi đó và trong mức sử dụng của nhà cung cấp ngày hôm đó — theo giá đầu vào đã lưu bộ nhớ đệm, mức thấp nhất nhà cung cấp tính cho việc lặp lại một prompt; đầu ra chỉ được tính khi lấy mẫu là tất định và lượt gọi đã chạy không có suy luận ẩn (nhà cung cấp báo cáo số token suy luận bằng không hoặc, nếu không tách riêng, câu trả lời không có khối suy luận). Được tính vào cơ sở.",
-      "referenciaExcluida": "Đo theo tham chiếu: {usd} trên {requests, number} lượt gọi lặp lại. Hiển thị để tham khảo — hiện tại không được tính vào cơ sở lẫn hoa hồng.",
+      "referenciaExcluida": "Đo theo tham chiếu: {usd} trên {requests, number} lượt gọi lặp lại. Hiển thị để tham khảo — hiện tại không được tính vào cơ sở.",
       "exportarReferencias": "Tải xuống các lượt gọi lặp lại của kỳ này, mỗi lượt một dòng (CSV)",
       "exportarReferenciasPorDia": "Quá nhiều lượt gọi lặp lại cho một tệp — tải xuống kỳ này theo từng ngày (CSV):",
       "parametros": "Tham số sao kê — bảng giá {version} · tỷ giá {fx}.",
@@ -1116,28 +1110,28 @@
       "metaTitle": "Nhóm · BiVelio Savings Layer"
     },
     "measurePlan": {
-      "title": "Hoặc bắt đầu miễn phí: giấy phép Đo lường, không cần thẻ",
+      "title": "Hoặc bắt đầu miễn phí: giấy phép Measure, không cần thẻ",
       "body": "Chạy lớp ở chế độ bóng cho 1 tổ chức và tối đa {seats} chỗ: mọi yêu cầu được gửi đến nhà cung cấp của bạn nguyên vẹn và không có gì được phục vụ từ bộ nhớ đệm. Bảng điều khiển cho thấy các đòn bẩy lẽ ra đã tiết kiệm bao nhiêu; nâng cấp lên gói trả phí để bật chúng.",
-      "claim": "Nhận giấy phép Đo lường miễn phí",
+      "claim": "Nhận giấy phép Measure miễn phí",
       "claiming": "Đang cấp…",
-      "keyLabel": "Khóa giấy phép Đo lường của bạn (chế độ bóng: không áp dụng đòn bẩy nào)",
+      "keyLabel": "Khóa giấy phép Measure của bạn (chế độ bóng: không áp dụng đòn bẩy nào)",
       "keyHint": "Dùng làm BIVELIO_LICENSE_KEY, giống hệt một khóa trả phí. Khi bạn nâng cấp, lớp tự nhận giấy phép trả phí và các đòn bẩy được bật.",
       "errEmailNotVerified": "Hãy xác nhận địa chỉ email trước, rồi thử lại.",
-      "errDisposableEmail": "Địa chỉ email dùng một lần không thể nhận giấy phép Đo lường. Hãy đăng ký bằng một địa chỉ cố định (ví dụ email công việc) rồi thử lại.",
-      "errOneOrgPerAccount": "Tài khoản này đã có giấy phép Đo lường cho một tổ chức khác: giấy phép miễn phí áp dụng cho một tổ chức mỗi tài khoản.",
+      "errDisposableEmail": "Địa chỉ email dùng một lần không thể nhận giấy phép Measure. Hãy đăng ký bằng một địa chỉ cố định (ví dụ email công việc) rồi thử lại.",
+      "errOneOrgPerAccount": "Tài khoản này đã có giấy phép Measure cho một tổ chức khác: giấy phép miễn phí áp dụng cho một tổ chức mỗi tài khoản.",
       "errAlreadyLicensed": "Tổ chức của bạn đã có giấy phép trả phí: hãy dùng khóa ở trên.",
-      "errBlocked": "Giấy phép Đo lường không khả dụng cho tổ chức này. Hãy viết cho support@bivelio.com.",
+      "errBlocked": "Giấy phép Measure không khả dụng cho tổ chức này. Hãy viết cho support@bivelio.com.",
       "errRole": "Vai trò của bạn không cho phép tải giấy phép. Hãy nhờ owner hoặc admin.",
       "errSignIn": "Hãy đăng nhập trước.",
-      "errGeneric": "Không thể cấp giấy phép Đo lường. Hãy thử lại sau giây lát.",
-      "planLabel": "Đo lường (miễn phí)",
-      "pricingNote": "Đo lường: miễn phí, không cần thẻ. Lớp ở chế độ bóng cho 1 tổ chức và tối đa {seats} chỗ, để bạn thấy nó sẽ tiết kiệm bao nhiêu trước khi trả tiền.",
+      "errGeneric": "Không thể cấp giấy phép Measure. Hãy thử lại sau giây lát.",
+      "planLabel": "Measure (miễn phí)",
+      "pricingNote": "Measure: miễn phí, không cần thẻ. Lớp ở chế độ bóng cho 1 tổ chức và tối đa {seats} chỗ, để bạn thấy nó sẽ tiết kiệm bao nhiêu trước khi trả tiền.",
       "card": {
-        "eyebrow": "Giấy phép Đo lường · chế độ bóng",
+        "eyebrow": "Giấy phép Measure · chế độ bóng",
         "title": "Số tiền lẽ ra bạn đã tiết kiệm",
         "amount": "{amount} lẽ ra bạn đã không phải chi",
         "context": "Trên {spend} chi tiêu đo được qua {requests} yêu cầu. Một ước tính từ làn bóng, được định giá bằng bộ đếm của chính nhà cung cấp của bạn: trong SDK là các lệnh gọi lặp lại và trùng lặp đồng thời; trong gateway còn có mô hình anh em và việc giảm TTL của bộ nhớ đệm. Không có gì được áp dụng và không có gì bị tính phí.",
-        "empty": "Chưa có ước tính tiết kiệm: nó xuất hiện ngay khi lớp của bạn thấy một yêu cầu lặp lại hoặc, trong gateway, một yêu cầu mà mô hình anh em hoặc việc giảm TTL của bộ nhớ đệm lẽ ra đã giúp tiết kiệm. Giấy phép Đo lường không bao giờ thay đổi những gì bạn gửi.",
+        "empty": "Chưa có ước tính tiết kiệm: nó xuất hiện ngay khi lớp của bạn thấy một yêu cầu lặp lại hoặc, trong gateway, một yêu cầu mà mô hình anh em hoặc việc giảm TTL của bộ nhớ đệm lẽ ra đã giúp tiết kiệm. Giấy phép Measure không bao giờ thay đổi những gì bạn gửi.",
         "limits": "Miễn phí cho 1 tổ chức, tối đa {seats} chỗ và {requests} yêu cầu mỗi ngày.",
         "cta": "Bật các đòn bẩy: xem các gói"
       }
@@ -1259,7 +1253,7 @@
       "eyebrow": "Gateway · terminal lập trình",
       "title": "Dùng Claude Code với khóa API? Xem chi tiêu thật, từng token một.",
       "body": "Một lệnh duy nhất đặt một bộ đo cục bộ trước terminal của bạn, không cần sửa mã: bạn xuất khóa dịch vụ và khởi chạy agent qua bvsala. Prompt của bạn không đi qua máy chủ của BiVelio: chúng được gửi tới nhà cung cấp mà bạn cấu hình, và bảng điều khiển của bạn chỉ nhận số đếm và chi phí.",
-      "note": "Gateway đo, bằng chính bộ đếm của nhà cung cấp, mọi yêu cầu mà nhà cung cấp của bạn có báo cáo mức sử dụng (với các mô hình trong danh mục giá của chúng tôi) và, gi?ng nhu SDK, kh?i d?ng m� kh�ng c?n kh�a n�o (ch? d? Community): kh�a d?ch v? t�y ch?n th�m b?ng di?u khi?n v� quy?n c?a t? ch?c. Với giấy phép PRO, trên các mô hình Anthropic, nó còn áp dụng mặc định một đòn bẩy: chuyển các lần ghi bộ nhớ đệm từ TTL một giờ sang TTL năm phút, chỉ ở những lượt mà một phần lớn prompt là mới — như lượt đầu tiên của một phiên hoặc sau khi nén ngữ cảnh — và giữ nguyên các lượt nối tiếp. Điều này thay đổi giá, không bao giờ thay đổi nội dung mà mô hình đọc. Các đòn bẩy khác vẫn tắt cho đến khi bạn bật chúng. Skill savings-mode đã sẵn sàng cho các giới hạn của bạn, hiệu quả còn chờ đo. Gateway cũng hoạt động với Codex CLI, Goose, Qwen Code, opencode, Kilo, Aider và, với khóa Anthropic của riêng bạn, GitHub Copilot CLI; với các công cụ khác như Cline hoặc Continue, bvsala doctor in ra cấu hình chính xác. Cursor không thể đo được, còn Gemini CLI thì chưa.",
+      "note": "Gateway đo, bằng chính bộ đếm của nhà cung cấp, mọi yêu cầu mà nhà cung cấp của bạn có báo cáo mức sử dụng (với các mô hình trong danh mục giá của chúng tôi) và, giống như SDK, khởi động mà không cần khóa nào (chế độ Community): khóa dịch vụ tùy chọn thêm bảng điều khiển và quyền của tổ chức. Với giấy phép PRO, trên các mô hình Anthropic, nó còn áp dụng mặc định một đòn bẩy: chuyển các lần ghi bộ nhớ đệm từ TTL một giờ sang TTL năm phút, chỉ ở những lượt mà một phần lớn prompt là mới — như lượt đầu tiên của một phiên hoặc sau khi nén ngữ cảnh — và giữ nguyên các lượt nối tiếp. Điều này thay đổi giá, không bao giờ thay đổi nội dung mà mô hình đọc. Các đòn bẩy khác vẫn tắt cho đến khi bạn bật chúng. Skill savings-mode đã sẵn sàng cho các giới hạn của bạn, hiệu quả còn chờ đo. Gateway cũng hoạt động với Codex CLI, Goose, Qwen Code, opencode, Kilo, Aider và, với khóa Anthropic của riêng bạn, GitHub Copilot CLI; với các công cụ khác như Cline hoặc Continue, bvsala doctor in ra cấu hình chính xác. Cursor hoạt động thông qua tùy chọn ghi đè URL gốc OpenAI với khóa của riêng bạn, còn Gemini CLI được bọc bằng bvsala gemini.",
       "pythonNote": "Python hay bất kỳ ngôn ngữ nào khác? Trỏ SDK chính thức của OpenAI hoặc Anthropic tới gateway và mọi yêu cầu mà nhà cung cấp báo cáo mức sử dụng, với mô hình có giá niêm yết, đều được ghi vào bảng điều khiển này theo giá đó; log của gateway sẽ báo khi có yêu cầu không được đo. bvsala doctor in ra base URL cho từng SDK. Với streaming của OpenAI, hãy yêu cầu mức sử dụng ngay trong yêu cầu (stream_options.include_usage).",
       "cta": "Xem cách hoạt động →"
     },
@@ -1291,7 +1285,7 @@
           "name": "Team",
           "per": "/ tháng",
           "note": "<b>Bao gồm {included} ghế</b>; mỗi ghế thêm {extra} / tháng. Hoặc <b>{yearly} / năm</b>. Không hoa hồng.",
-          "cta": "Chọn Nhóm →"
+          "cta": "Chọn Team →"
         },
         "enterprise": {
           "name": "Enterprise",
@@ -1367,10 +1361,10 @@
       "paper": "Bài báo"
     },
     "cta15": {
-      "titulo": "Book 15-min call",
+      "titulo": "Yêu cầu cuộc gọi 15 phút",
       "sub": "Chúng tôi sẽ cho bạn biết bạn tiết kiệm được bao nhiêu với lưu lượng của mình, không cần cài gì.",
       "placeholder": "ban@congty.com",
-      "boton": "Book 15-min call",
+      "boton": "Yêu cầu cuộc gọi 15 phút",
       "enviando": "Đang gửi…",
       "ok": "Đã nhận. Chúng tôi sẽ viết cho bạn ngay hôm nay để sắp lịch gọi.",
       "errorCorreo": "Email đó có vẻ không hợp lệ.",
@@ -1413,7 +1407,6 @@
       "figNoteToggle": "Vì sao con số này và giới hạn của nó",
       "sdk": {
         "name": "SDK",
-        "band": "SDK — cho ứng dụng JavaScript và TypeScript dùng khóa API",
         "who": "Cho ứng dụng Node.js, viết bằng JavaScript hoặc TypeScript, gọi một API LLM bằng khóa của chính bạn và trả tiền cho từng token.",
         "what": "SDK bọc lời gọi ngay trong mã của bạn, chỉ gửi cho nhà cung cấp những gì phải trả và trả về một SavingsReport kèm mỗi phản hồi.",
         "figureLabel": "Con số chúng tôi công bố",
@@ -1424,7 +1417,6 @@
       },
       "gateway": {
         "name": "Gateway",
-        "band": "Gateway — cho agent lập trình dùng khóa API",
         "who": "Cho những ai dùng Claude Code, Codex CLI hoặc agent lập trình khác với khóa API.",
         "what": "Một lệnh đặt một bộ đo cục bộ trước terminal của bạn, không cần sửa mã. Gateway đếm từng lượt gọi mà nhà cung cấp có báo cáo mức sử dụng, bằng chính bộ đếm của nhà cung cấp — với các mô hình trong danh mục giá của chúng tôi — và cộng dồn chúng trong bảng điều khiển của bạn, theo ngày và theo mô hình.",
         "figureLabel": "Con số chúng tôi công bố",
@@ -1433,9 +1425,6 @@
         "benchLink": "Báo cáo của phép đo TTL: đã mô phỏng những gì, phân tích theo mô hình và các giới hạn →",
         "cta": "Cài đặt gateway",
         "requires": "Node.js kèm npm và một agent lập trình dùng khóa API riêng."
-      },
-      "skill": {
-        "band": "Skill — cho agent lập trình dùng gói thuê bao"
       },
       "requires": "Yêu cầu:"
     },
@@ -1953,7 +1942,7 @@
   },
   "howItWorks": {
     "metaTitle": "Khoản tiết kiệm được cài ở đâu? · BiVelio Savings Layer",
-    "metaDescription": "BV‑SALA là một lớp được cài vào mã của ứng dụng của bạn, nơi API được gọi. Nó tiết kiệm được gì, ở đâu không áp dụng và cách đo lường thực sự.",
+    "metaDescription": "Savings chạy bên trong hạ tầng của bạn, dưới dạng SDK trong ứng dụng hoặc gateway cục bộ. Động cơ mã nguồn mở và Savings Cloud tùy chọn: nó tiết kiệm được gì, ở đâu không áp dụng và cách đo lường thực sự.",
     "eyebrow": "Lớp tiết kiệm, giải thích · không thuật ngữ",
     "title": "Khoản tiết kiệm được cài ở đâu?",
     "lede": "BV‑SALA không phải là ứng dụng, không phải tiện ích mở rộng, cũng không phải một cài đặt của ChatGPT. Nó là một đoạn mã mà lập trình viên đặt vào bên trong ứng dụng của chính họ, ngay tại nơi ứng dụng đó gọi API của nhà cung cấp. Nó chỉ có thể tiết kiệm ở nơi tồn tại hóa đơn theo token — và chỉ có thể đo ở nơi nó thấy từng yêu cầu đi qua.",
@@ -2114,14 +2103,14 @@
   },
   "pricingPage": {
     "metaTitle": "Điều khoản giá · BV-SALA",
-    "metaDescription": "Open core miễn phí ; Measure, Pro, Team và Enterprise là các gói cloud — không gói nào mang hoa hồng trên khoản tiết kiệm của bạn. Số liệu công bố từ chính các hằng số dùng để tính phí.",
+    "metaDescription": "Open core miễn phí; Measure, Pro, Team và Enterprise là các gói cloud — không gói nào mang hoa hồng trên khoản tiết kiệm của bạn. Số liệu công bố từ chính các hằng số dùng để tính phí.",
     "eyebrow": "Bảng giá công bố",
     "title": "Engine mã nguồn mở. Kiểm soát trên cloud cho nhóm của bạn.",
     "governs": "Trang này mô tả cách dịch vụ hoạt động hiện nay; văn bản có hiệu lực là <license>LICENSE</license> và <terms>Điều khoản của BiVelio</terms>.",
-    "lede": "Gói là open core : không cần khóa. Trang này định giá cloud tùy chọn — Measure miễn phí, rồi Pro theo chỗ hoặc gói Team, không hoa hồng trên khoản tiết kiệm của bạn. Mọi con số ở đây đọc từ chính mã tính phí bạn, nên nó đổi khi giá đổi.",
+    "lede": "Gói là open core: không cần khóa. Trang này định giá cloud tùy chọn — Measure miễn phí, rồi Pro theo chỗ hoặc gói Team, không hoa hồng trên khoản tiết kiệm của bạn. Mọi con số ở đây đọc từ chính mã tính phí bạn, nên nó đổi khi giá đổi.",
     "plans": {
       "title": "Các gói",
-      "intro": "Bốn gói, từ nhỏ đến lớn. Pro và Nhóm trả theo chỗ và không có hoa hồng.",
+      "intro": "Bốn gói, từ nhỏ đến lớn. Pro và Team trả theo chỗ và không có hoa hồng.",
       "medir": {
         "name": "Measure",
         "body": "<b>Miễn phí, không cần thẻ.</b> Gói CLOUD miễn phí: tầng chạy ở chế độ bóng cho một tổ chức, tối đa <b>{seats} chỗ</b> và <b>{requests} yêu cầu mỗi ngày</b>: mỗi yêu cầu đến nhà cung cấp đúng như bạn viết, không gì được phục vụ từ cache và không đòn bẩy nào được áp dụng. Bảng điều khiển cho thấy mức lẽ ra tiết kiệm được — một ước tính không bao giờ mang hoa hồng. Cần <b>@bivelio/savings-layer {version} trở lên</b>. Các đòn bẩy cục bộ không cần gói nào: open core chạy không khóa; đòn bẩy cloud cần Pro hoặc Team."
@@ -2159,7 +2148,7 @@
     },
     "commission": {
       "title": "Mô hình trước đây có hoa hồng (đóng với khách hàng mới)",
-      "optional": "Mô hình này <b>không còn được cung cấp cho khách hàng mới</b>. Nếu gói đăng ký của bạn đã có nó, bạn giữ nguyên và các điều khoản bên dưới vẫn áp dụng: phí theo ghế thấp hơn cộng hoa hồng chỉ trên khoản tiết kiệm bạn có thể đối chiếu với hóa đơn của nhà cung cấp. Pro và Nhóm không bao giờ có nó; bảng kê của họ chỉ hiển thị hoa hồng lẽ ra được áp dụng để tham khảo.",
+      "optional": "Mô hình này <b>không còn được cung cấp cho khách hàng mới</b>. Nếu gói đăng ký của bạn đã có nó, bạn giữ nguyên và các điều khoản bên dưới vẫn áp dụng: phí theo ghế thấp hơn cộng hoa hồng chỉ trên khoản tiết kiệm bạn có thể đối chiếu với hóa đơn của nhà cung cấp. Pro và Team không bao giờ có nó; bảng kê của họ chỉ hiển thị hoa hồng lẽ ra được áp dụng để tham khảo.",
       "seat": "Phí mỗi chỗ trong phương án này: <b>{monthly}</b> mỗi chỗ mỗi tháng, hoặc <b>{yearly}</b> mỗi chỗ mỗi năm, bằng {currency}.",
       "only": "Hoa hồng <b>chỉ được tính trên khoản tiết kiệm đã đo</b>: khoản tiết kiệm được gắn nhãn {labels} trong bản ghi sử dụng của bạn. Khoản tiết kiệm gắn nhãn {never} không bao giờ bị tính hoa hồng.",
       "measured": "Khoản tiết kiệm đã đo được xác lập từ chính bộ đếm sử dụng của nhà cung cấp LLM của bạn cho yêu cầu đó.",
@@ -2304,7 +2293,7 @@
     },
     "verification": {
       "title": "Xác minh tùy chọn (chỉ SDK, tắt theo mặc định)",
-      "when": "Nếu bạn bật tùy chọn xác minh của SDK, SDK gửi lại một mẫu các yêu cầu đã phục vụ tới chính nhà cung cấp của bạn, không tối ưu hóa, rồi bỏ phản hồi thứ hai đó. Với mỗi yêu cầu trong mẫu, SDK gửi tới BiVelio, <b>qua một kênh riêng, chỉ các trường bên dưới</b>; kênh đó cũng từ chối mọi trường khác, và không dữ liệu nào nó nhận được dùng để tính hoa hồng.",
+      "when": "Nếu bạn bật tùy chọn xác minh của SDK, SDK gửi lại một mẫu các yêu cầu đã phục vụ tới chính nhà cung cấp của bạn, không tối ưu hóa, rồi bỏ phản hồi thứ hai đó. Với mỗi yêu cầu trong mẫu, SDK gửi tới BiVelio, <b>qua một kênh riêng, chỉ các trường bên dưới</b>; kênh đó cũng từ chối mọi trường khác, và không dữ liệu nào nó nhận được dùng để tính phí.",
       "groups": {
         "sample": {
           "title": "Mỗi yêu cầu trong mẫu",
@@ -2371,7 +2360,7 @@
       "verification": {
         "data": "Mẫu xác minh (tùy chọn, chỉ SDK, tắt theo mặc định)",
         "destination": "BiVelio, qua một kênh riêng",
-        "purpose": "Không bao giờ dùng để tính hoa hồng",
+        "purpose": "Không bao giờ dùng để tính phí",
         "retention": "Bị xóa khi quá thời hạn"
       },
       "account": {
