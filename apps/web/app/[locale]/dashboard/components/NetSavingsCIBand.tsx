@@ -7,6 +7,8 @@ import { EvidenceBadge } from "@/app/components/ui";
 import type { AbArtifact } from "../data";
 import { pct } from "../format";
 
+import { EjeDelIntervalo } from "./EjeDelIntervalo";
+
 /**
  * The headline is the 95% CI LOWER bound (never the point estimate).
  *
@@ -49,11 +51,7 @@ export async function NetSavingsCIBand({ ab }: { ab: AbArtifact }) {
           <div className="ci-lo" style={{ left: `${xp(savings.lower)}%` }} />
           <div className="ci-pt" style={{ left: `${xp(savings.point)}%` }} />
         </div>
-        <div className="ci-legend2">
-          <span>{pct(dmin)}</span>
-          <span>0%</span>
-          <span>{pct(dmax)}</span>
-        </div>
+        <EjeDelIntervalo min={pct(dmin)} cero="0%" max={pct(dmax)} x0={xp(0)} />
       </div>
     </div>
   );

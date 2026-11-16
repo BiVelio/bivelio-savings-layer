@@ -8,6 +8,8 @@ import { ExperimentReadout } from "@/vendor/affectui/experiment-readout";
 import { NIVEL, POR_CADA, type InformeDelBancoPropio } from "@/lib/verificacion/banco-propio";
 import { intfmt, moneySigned, pct, pct0, pct0Floor, pctFloor } from "../format";
 
+import { EjeDelIntervalo } from "./EjeDelIntervalo";
+
 /**
  * EL TITULAR DE «TU PROPIO BANCO»: el SUELO del IC de la fracción ahorrada
  * (nunca la estimación puntual), con las mismas clases que la banda del banco
@@ -127,11 +129,7 @@ export async function YourBenchHeadline({
           <div className="ci-lo" style={{ left: `${xp(f.lower)}%` }} />
           <div className="ci-pt" style={{ left: `${xp(f.point)}%` }} />
         </div>
-        <div className="ci-legend2">
-          <span>{pct(dmin)}</span>
-          <span>{pct(0)}</span>
-          <span>{pct(dmax)}</span>
-        </div>
+        <EjeDelIntervalo min={pct(dmin)} cero={pct(0)} max={pct(dmax)} x0={xp(0)} />
       </ExperimentReadout>
       <div className="yb-notas">
         <p className="ck-note">

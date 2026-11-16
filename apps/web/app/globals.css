@@ -6002,4 +6002,13 @@ a.card:active, button.card:active, .card-link:active { transform: translateY(0);
   .app .app-sidebar.gal-rail { padding: 16px 12px; }
   .app-sidebar.gal-rail .app-setup, .app-sidebar.gal-rail .app-setup-unreadable { display: block; }
 }
+/* Banda del intervalo: el «0 %» de la leyenda va debajo de su línea, no en el
+   centro (EjeDelIntervalo.tsx). Los extremos se quedan en sus bordes. */
+.ci-legend2.ci-eje { position: relative; display: block; height: 1.4em; }
+.ci-eje > span { position: absolute; top: 0; }
+.ci-eje-min { left: 0; }
+.ci-eje-max { right: 0; }
+.ci-eje-cero { transform: translateX(-50%); color: var(--ink); }
+.ci-eje-cero[data-alinear="inicio"] { transform: translateX(-1px); }
+.ci-eje-cero[data-alinear="fin"] { transform: translateX(calc(-100% + 1px)); }
 /* ==== FIN SLOT DETALLES FINALES ==== */
