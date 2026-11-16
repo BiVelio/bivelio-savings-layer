@@ -40,6 +40,9 @@ para poder comparar al actualizar.
 | Segmented Control (Clean) | `segmented-control-clean.tsx` + `.css` | MIT | `components/segmented-control-clean.tsx` | `8547e6335fc70ec9aa8e5a89dec96deb95bb46de5894c3c0e2b26e1763abd506` |
 | Number Ticker | `number-ticker.tsx` + `.css` | MIT | `motion/number-ticker.tsx` | `c56e7605203d19041fa33c6f177bccd4a02bf75b7923ba037461fd64f8440a6d` |
 | Experiment Card | `experiment-card.tsx` + `.css` | **affectUI Pro** | registro Pro, `experiment-card` (descarga del 2026-11-16) | `f6d08216b0a7803c47c196d52ea51e6d88e1d1900a3f584dba183a8459411373` |
+| Pricing Plans | `pricing-plans.tsx` + `.css` | **affectUI Pro** | registro Pro, `pricing-plans` (descarga del 2026-11-16) | `37e802dab0624e23b07369ae5a7b0191624f3612c42be4e2780c3aa94472ceaf` |
+| Gradient Text | `gradient-text.tsx` + `.css` | **affectUI Pro** | registro Pro, `gradient-text` (descarga del 2026-11-16) | `45e5c18b337ce322268f821185b5e384e20a953ee2af0b652c1d7646957659ef` |
+| Gradient Floor | `gradient-floor.tsx` + `.css` | **affectUI Pro** | registro Pro, `gradient-floor` (descarga del 2026-11-16) | `df01c384627d3c66b2fa91ed3981212c71832124f92b4f0262d4937359c400d9` |
 
 ## Cambios respecto a upstream
 
@@ -83,6 +86,34 @@ para poder comparar al actualizar.
   (`ExperimentCardLabels`: todas las cadenas visibles y de `aria-label`) y
   `locale` (los formatos numéricos ya no son `"en-US"` fijo). Tarjeta y
   pistas a `--surface`/`--surface-2`, transición 400 ms con `--aui-ease`.
+
+- **pricing-plans** (Pro; frente F1, landing y `/pricing`) — reescrito como
+  **componente de servidor sin datos propios**. Fuera: los planes, precios y
+  textos de la demo (prueba de 14 días, dólares, descuento anual, SSO,
+  workspaces, visitantes, integraciones y sus logos, «Popular»), el formateo
+  de moneda (`money`, `"en-US"`), el rodillo de dígitos al cambiar de periodo,
+  el plegado de detalles y los textos recortados con elipsis y `title`. Dentro:
+  `plans` con importes YA formateados por quien llama, valores por periodo
+  (`{ monthly, yearly }`) para precio y límites, `unit` (la unidad que se
+  cobra, bajo el precio), `summary`, `limits` como `<dl>`, `action` y `footer`
+  como nodos (el enlace real lo pone la página) y `labels` obligatorias. El
+  selector mensual/anual son **dos radios nativos + CSS `:has()`**: funciona
+  con teclado y sin JavaScript, y no anima cifras. Cuatro planes en fila
+  (≥1040px del contenedor), dos y una columna, con filas compartidas
+  (`subgrid`) para que la misma línea de cada tarjeta quede a la misma altura.
+  El texto contractual parte línea; nada depende del hover. El precio anual se
+  rotula como cargo anual: el componente nunca divide ni multiplica importes.
+- **gradient-text** (Pro; F1, una frase del héroe) — colores a azul de marca →
+  verde azulado (todas las paradas ≥ 3:1 sobre marfil), ciclo de 12 s (antes
+  8), barrido de 900 ms, `-webkit-user-select`, y un bloque `forced-colors`
+  que deja solo el texto real. El texto real sigue en el DOM (seleccionable y
+  leído); la copia coloreada es `aria-hidden`.
+- **gradient-floor** (Pro; F1, cierre de la landing) — `speed` por defecto `0`
+  (la forma no se mueve), deriva lateral de 18 s (antes 2,5 s) ajustable con
+  `--ui-gf-drift`, intensidad con `--ui-gf-strength`, fondo desde
+  `--ui-gf-bg`/`--aui-surface`, colores por defecto azules de BiVelio, y las
+  longitudes `u(n)` de la plantilla JS pasadas a `calc(n * 100cqw / 2200)` en
+  el `.css`. Guarda contra una entrada vacía del IntersectionObserver.
 
 ## Cómo vendorizar una pieza nueva (frentes)
 

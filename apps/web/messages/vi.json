@@ -863,18 +863,20 @@
     "metaTitle": "BiVelio — Xác minh mức tiết kiệm LLM của bạn",
     "metaDescription": "SDK giúp ứng dụng của bạn chỉ trả nhà cung cấp LLM đúng phần cần thiết, và gateway đo lường agent lập trình của bạn. Open core Apache-2.0: không khóa, không tài khoản, không telemetry — đo bằng chính bộ đếm của nhà cung cấp; cloud tùy chọn là phí cố định, không hoa hồng trên khoản tiết kiệm của bạn.",
     "hero": {
-      "title": "Hóa đơn LLM của bạn, trong tầm kiểm soát.",
-      "titleAccent": "Được đo ở mỗi lời gọi.",
-      "sub": "Savings trả lời những gì ứng dụng của bạn lặp lại mà không gọi lại nhà cung cấp, và đo mỗi lệnh gọi bằng bộ đếm của họ.",
-      "ctaStart": "Bắt đầu",
-      "ctaBench": "Xem băng thử công khai",
+      "title": "Tối ưu các lệnh gọi LLM.",
+      "titleAccent": "Kiểm chứng từng khoản tiết kiệm.",
+      "sub": "Chạy engine mã nguồn mở trên hạ tầng của chính bạn. Kết nối Savings Cloud để tập trung việc đo lường và quản lý cho cả nhóm, với các gói phí cố định.",
+      "ctaStart": "Bắt đầu với Measure",
+      "ctaBench": "Xem kết quả có thể tái lập",
       "panelAlt": "Bảng điều khiển Savings với dữ liệu của băng thử công khai: khoản tiết kiệm đo được và phân bổ theo mô hình.",
       "panelCaption": "Bảng điều khiển với dữ liệu của băng thử công khai",
       "medidoEnVivo": "Đo trực tiếp bằng bộ đếm của từng nhà cung cấp",
       "note": "Cài đặt trong vài phút. Tin nhắn của bạn không bao giờ đi qua máy chủ của chúng tôi.",
       "proofTitle": "Đo với nhà cung cấp thật",
       "compatibleCon": "Tương thích với",
-      "compatibleNota": "Tương thích không có nghĩa là đã đo. SDK hoạt động với mọi endpoint tương thích với API của OpenAI, cùng bộ chuyển đổi gốc cho Anthropic và bộ chuyển đổi gốc cho Gemini (mới trong {gemini}). Có con số tiết kiệm trên băng thử công khai hiện chỉ có các mô hình của OpenAI và Anthropic; Gemini không có con số tiết kiệm. Điều đã đo với Gemini: {flash}, qua API gốc của nó, trong bench hằng tuần trực tiếp ngày {fecha} — cả bốn bộ thử, không có lỗi nào của lớp và không có lời từ chối nào được lưu cache hay ghi có thành tiết kiệm. Bench đó kiểm tra rằng lớp không làm hỏng gì và không tính phí quá mức; nó không đo khoản tiết kiệm. Cũng đã đo: {pro}, qua API gốc của nó, trong hai lượt một phần vào {fechaPro} (hạn mức hằng ngày của nhà cung cấp không đủ cho cả bốn bộ kiểm thử trong một ngày): cả bốn bộ kiểm thử, cũng không có lỗi nào của lớp và không có lời từ chối nào được lưu đệm hay tính là tiết kiệm."
+      "compatibleNota": "Tương thích không có nghĩa là đã đo. SDK hoạt động với mọi endpoint tương thích với API của OpenAI, cùng bộ chuyển đổi gốc cho Anthropic và bộ chuyển đổi gốc cho Gemini (mới trong {gemini}). Có con số tiết kiệm trên băng thử công khai hiện chỉ có các mô hình của OpenAI và Anthropic; Gemini không có con số tiết kiệm. Điều đã đo với Gemini: {flash}, qua API gốc của nó, trong bench hằng tuần trực tiếp ngày {fecha} — cả bốn bộ thử, không có lỗi nào của lớp và không có lời từ chối nào được lưu cache hay ghi có thành tiết kiệm. Bench đó kiểm tra rằng lớp không làm hỏng gì và không tính phí quá mức; nó không đo khoản tiết kiệm. Cũng đã đo: {pro}, qua API gốc của nó, trong hai lượt một phần vào {fechaPro} (hạn mức hằng ngày của nhà cung cấp không đủ cho cả bốn bộ kiểm thử trong một ngày): cả bốn bộ kiểm thử, cũng không có lỗi nào của lớp và không có lời từ chối nào được lưu đệm hay tính là tiết kiệm.",
+      "ctaOss": "Cài bản mã nguồn mở",
+      "kicker": "Engine mã nguồn mở · Cloud tùy chọn"
     },
     "cascade": {
       "title": "Phương án thực thi rẻ nhất thắng",
@@ -972,7 +974,7 @@
     "gateway": {
       "eyebrow": "Gateway · terminal lập trình",
       "title": "Dùng Claude Code với khóa API? Xem chi tiêu thật, từng token một.",
-      "body": "Một lệnh duy nhất đặt một bộ đo cục bộ trước terminal của bạn, không cần sửa mã: bạn xuất khóa dịch vụ và khởi chạy agent qua bvsala. Prompt của bạn không bao giờ rời khỏi máy — bảng điều khiển của bạn chỉ nhận số đếm và chi phí.",
+      "body": "Một lệnh duy nhất đặt một bộ đo cục bộ trước terminal của bạn, không cần sửa mã: bạn xuất khóa dịch vụ và khởi chạy agent qua bvsala. Prompt của bạn không đi qua máy chủ của BiVelio: chúng được gửi tới nhà cung cấp mà bạn cấu hình, và bảng điều khiển của bạn chỉ nhận số đếm và chi phí.",
       "note": "Gateway đo, bằng chính bộ đếm của nhà cung cấp, mọi yêu cầu mà nhà cung cấp của bạn có báo cáo mức sử dụng (với các mô hình trong danh mục giá của chúng tôi) và, gi?ng nhu SDK, kh?i d?ng m� kh�ng c?n kh�a n�o (ch? d? Community): kh�a d?ch v? t�y ch?n th�m b?ng di?u khi?n v� quy?n c?a t? ch?c. Với giấy phép PRO, trên các mô hình Anthropic, nó còn áp dụng mặc định một đòn bẩy: chuyển các lần ghi bộ nhớ đệm từ TTL một giờ sang TTL năm phút, chỉ ở những lượt mà một phần lớn prompt là mới — như lượt đầu tiên của một phiên hoặc sau khi nén ngữ cảnh — và giữ nguyên các lượt nối tiếp. Điều này thay đổi giá, không bao giờ thay đổi nội dung mà mô hình đọc. Các đòn bẩy khác vẫn tắt cho đến khi bạn bật chúng. Skill savings-mode đã sẵn sàng cho các giới hạn của bạn, hiệu quả còn chờ đo. Gateway cũng hoạt động với Codex CLI, Goose, Qwen Code, opencode, Kilo, Aider và, với khóa Anthropic của riêng bạn, GitHub Copilot CLI; với các công cụ khác như Cline hoặc Continue, bvsala doctor in ra cấu hình chính xác. Cursor không thể đo được, còn Gemini CLI thì chưa.",
       "pythonNote": "Python hay bất kỳ ngôn ngữ nào khác? Trỏ SDK chính thức của OpenAI hoặc Anthropic tới gateway và mọi yêu cầu mà nhà cung cấp báo cáo mức sử dụng, với mô hình có giá niêm yết, đều được ghi vào bảng điều khiển này theo giá đó; log của gateway sẽ báo khi có yêu cầu không được đo. bvsala doctor in ra base URL cho từng SDK. Với streaming của OpenAI, hãy yêu cầu mức sử dụng ngay trong yêu cầu (stream_options.include_usage).",
       "cta": "Xem cách hoạt động →"
@@ -985,13 +987,13 @@
     },
     "pricing": {
       "eyebrow": "Các gói",
-      "title": "Đo miễn phí. Trả theo ghế khi bạn muốn khoản tiết kiệm.",
+      "title": "Engine mã nguồn mở. Kiểm soát trên cloud cho nhóm của bạn.",
       "body": "Gói là open core Apache-2.0: không cần khóa, mọi đòn bẩy cục bộ bật, zero telemetry. Cloud là tùy chọn — Measure là gói miễn phí, Pro và Team tính phí theo chỗ, bằng {currency}, không hoa hồng trên khoản tiết kiệm của bạn.",
       "amount": "{amount}",
       "per": "/ ghế / tháng",
       "plans": {
         "medir": {
-          "name": "Đo lường",
+          "name": "Measure",
           "price": "Miễn phí",
           "body": "Miễn phí, không cần thẻ. Gói CLOUD miễn phí: chế độ bóng cho một tổ chức, tối đa {seats} chỗ và {requests} yêu cầu mỗi ngày — không gì bạn gửi thay đổi, không gì được phục vụ từ cache, không bao giờ nằm trong bất kỳ hoa hồng nào, và bảng điều khiển cho thấy mức lẽ ra tiết kiệm được. Các đòn bẩy cục bộ không cần nó: open core chạy không cần khóa nào. Cần @bivelio/savings-layer {version} trở lên.",
           "cta": "Bắt đầu miễn phí →"
@@ -1002,7 +1004,7 @@
           "cta": "Chọn Pro →"
         },
         "team": {
-          "name": "Nhóm",
+          "name": "Team",
           "per": "/ tháng",
           "note": "<b>Bao gồm {included} ghế</b>; mỗi ghế thêm {extra} / tháng. Hoặc <b>{yearly} / năm</b>. Không hoa hồng.",
           "cta": "Chọn Nhóm →"
@@ -1019,7 +1021,7 @@
         "Mọi tối ưu hóa của BV‑SALA, không giới hạn",
         "Biên lai cho mỗi yêu cầu: SavingsReport với bốn sổ cái, đo được và ước tính tách riêng",
         "Bảng điều khiển tiết kiệm & phân tích cho nhóm",
-        "Prompt của bạn không bao giờ rời khỏi hạ tầng của bạn"
+        "Prompt của bạn không đi qua máy chủ của BiVelio: chúng được gửi tới nhà cung cấp mà bạn cấu hình"
       ],
       "cta": "Bắt đầu →",
       "trustTitle": "Vì sao giá có thể thấp đến vậy",
@@ -1041,7 +1043,9 @@
           "rest": "Việc tính phí đọc cùng một SavingsReport mà bạn xác minh ở trên — không có hộp đen."
         }
       ],
-      "taxNote": "Chưa bao gồm VAT. Nếu công ty của quý vị có mã số VAT của EU, cơ chế reverse charge sẽ được áp dụng."
+      "taxNote": "Chưa bao gồm VAT. Nếu công ty của quý vị có mã số VAT của EU, cơ chế reverse charge sẽ được áp dụng.",
+      "community": "<b>Community không phải là một gói.</b> Engine mã nguồn mở miễn phí và chạy không cần tài khoản: <install>cài đặt</install> bất cứ lúc nào. Bốn gói bên dưới thuộc Savings Cloud.",
+      "fullTerms": "Xem bảng giá đã công bố"
     },
     "footer": {
       "ctaTitle": "Đo trên chính lưu lượng của bạn",
@@ -1117,9 +1121,9 @@
       ]
     },
     "offers": {
-      "eyebrow": "Hai sản phẩm",
+      "eyebrow": "Kết nối ở đâu",
       "title": "Token của bạn đi đâu: vào ứng dụng hay vào agent lập trình của bạn?",
-      "sub": "Cả hai đều open core và đều đếm bằng chính bộ đếm của nhà cung cấp. Chúng làm việc khác nhau, nên mỗi cái đưa ra lời hứa riêng — và hôm nay chỉ một cái có con số tiết kiệm được công bố.",
+      "sub": "SDK và gateway là hai cách tích hợp cùng một engine mã nguồn mở, và cả hai đều đếm bằng chính bộ đếm của nhà cung cấp. Số liệu của chúng không cùng một loại bằng chứng: số của SDK đến từ thử nghiệm A/B trực tiếp; số của gateway đến từ việc phát lại phản thực tế các phiên đã ghi.",
       "install": "Cài đặt",
       "installMore": "Hướng dẫn cài đặt đầy đủ",
       "figNoteToggle": "Vì sao con số này và giới hạn của nó",
@@ -1131,7 +1135,8 @@
         "figureLabel": "Con số chúng tôi công bố",
         "figureNote": "Không phải dự báo: bạn tiết kiệm bao nhiêu tùy vào mức độ lặp lại của lưu lượng. Chỉ phần được bộ đếm của nhà cung cấp xác nhận mới được tính trong báo cáo tiết kiệm của bạn — kể cả các lượt gọi lặp lại được phục vụ mà không gọi nhà cung cấp, mỗi lượt được định giá bằng bộ đếm của lượt gọi giống hệt đã được thực hiện.",
         "ctaMeasured": "Cách chúng tôi đo",
-        "ctaVerify": "Thử một đòn bẩy trên dữ liệu của bạn"
+        "ctaVerify": "Thử một đòn bẩy trên dữ liệu của bạn",
+        "requires": "Node.js và khóa API của nhà cung cấp."
       },
       "gateway": {
         "name": "Gateway",
@@ -1142,11 +1147,13 @@
         "figureQue": "mức giảm ròng ước tính của chi phí theo giá niêm yết nhờ thay đổi TTL bộ nhớ đệm của PRO, sau khi trừ các lần trượt bộ nhớ đệm gây ra (khoảng {confianza}: từ {bajo} đến {alto}). Phát lại theo kịch bản giả định với đường cơ sở được tái dựng một phần trên {sesiones} phiên Claude Code của một tổ chức; không phải A/B chạy thật hay đối chiếu hóa đơn.",
         "figureNote": "Đây không phải là dự báo cho nhóm của bạn: đó là một tổ chức, một nhà cung cấp và giá niêm yết, và là khoản tiết kiệm nhỏ, thấy rõ ở nơi chi tiêu cho Anthropic cao. Với PRO, trên các mô hình Anthropic, gateway chuyển các lần ghi bộ nhớ đệm từ TTL một giờ sang TTL năm phút, chỉ ở những lượt mà một phần lớn prompt là mới — như lượt đầu tiên của một phiên hoặc sau khi nén ngữ cảnh — và giữ nguyên các lượt nối tiếp của một phiên đang chạy. Điều đó thay đổi giá, không bao giờ thay đổi những gì mô hình đọc, và chỉ phần được bộ đếm của nhà cung cấp xác nhận mới được tính trong báo cáo tiết kiệm của bạn.",
         "benchLink": "Báo cáo của phép đo TTL: đã mô phỏng những gì, phân tích theo mô hình và các giới hạn →",
-        "cta": "Cài đặt gateway"
+        "cta": "Cài đặt gateway",
+        "requires": "Node.js kèm npm và một agent lập trình dùng khóa API riêng."
       },
       "skill": {
         "band": "Skill — cho agent lập trình dùng gói thuê bao"
-      }
+      },
+      "requires": "Yêu cầu:"
     },
     "verify": {
       "eyebrow": "SDK · một đòn bẩy, trên dữ liệu của bạn, trước khi trả tiền",
@@ -1181,6 +1188,108 @@
       "sinRepeticiones": "với lưu lượng không lặp lại (MT-Bench, BFCL): không phân biệt được với không",
       "anthropic": "luồng rút gọn, khác với luồng OpenAI: {familias} họ / {peticiones} yêu cầu mỗi nhánh (khoảng tin cậy 95%: từ {bajo} đến {alto}). Khoảng {prefijo} chi phí theo giá niêm yết của A là một đối chiếu mô tả thuần về giá bộ nhớ đệm (lượt đọc bộ nhớ đệm của nhánh B được định giá theo giá đầu vào thông thường), không phải hiệu ứng nhân quả được xác định riêng biệt cũng không phải chiết khấu Anthropic có sẵn từ trước",
       "pie": "Tùy vào mức độ lặp lại của lưu lượng. Từng bộ thử, kèm báo cáo đầy đủ: <bench>băng thử công khai</bench>."
+    },
+    "receipt": {
+      "title": "Biên lai của một lần đo",
+      "model": "Mô hình",
+      "sample": "Mẫu",
+      "sampleValue": "{familias} họ · {peticiones} yêu cầu mỗi nhánh",
+      "repeats": "Yêu cầu lặp lại",
+      "interval": "Khoảng tin cậy 95%",
+      "total": "Chi phí giảm",
+      "source": "A/B trực tiếp với nhà cung cấp, theo giá niêm yết có phiên bản. Không phải đối soát hóa đơn."
+    },
+    "ways": {
+      "eyebrow": "Engine mở, Cloud tùy chọn",
+      "title": "Hai cách dùng Savings.",
+      "sub": "Engine vẫn là một. Điều thay đổi là nơi bạn quản lý nó và những gì rời khỏi hạ tầng của bạn.",
+      "q": {
+        "runs": "Chạy ở đâu",
+        "account": "Tài khoản",
+        "telemetry": "Dữ liệu đo từ xa",
+        "manage": "Quản lý"
+      },
+      "community": {
+        "name": "Community",
+        "tag": "Mã nguồn mở · Apache-2.0",
+        "lede": "Engine, SDK và gateway cục bộ. Cho một người hoặc cho cả một công ty.",
+        "runs": "Trên hạ tầng của bạn: SDK nằm trong tiến trình của bạn hoặc gateway chạy trên máy bạn.",
+        "account": "Không cần. Không đăng ký, không thẻ và không cần khóa BiVelio.",
+        "telemetry": "Mặc định là không có.",
+        "manage": "Tại chỗ: mỗi lệnh gọi trả về SavingsReport của nó.",
+        "code": "Xem mã nguồn"
+      },
+      "cloud": {
+        "name": "Savings Cloud",
+        "tag": "Tùy chọn · bắt đầu miễn phí",
+        "lede": "Bảng điều khiển để tập trung việc đo lường và quản lý cho nhóm của bạn.",
+        "runs": "Engine vẫn nằm trên hạ tầng của bạn. Cloud bổ sung bảng điều khiển.",
+        "account": "Một tài khoản Savings và một khóa dịch vụ.",
+        "telemetry": "Số đếm và chi phí, tùy theo gói của bạn. Prompt của bạn không đi qua máy chủ của BiVelio.",
+        "manage": "Bảng điều khiển nhóm, tổ chức và giấy phép.",
+        "plans": "Xem các gói"
+      }
+    },
+    "evidence": {
+      "dated": "Báo cáo ngày {fecha}",
+      "report": "Xem báo cáo"
+    },
+    "flow": {
+      "eyebrow": "Dữ liệu đi như thế nào",
+      "title": "Từ hạ tầng của bạn đến nhà cung cấp, không đi qua BiVelio.",
+      "sub": "SDK và gateway chạy tại chỗ và gọi thẳng tới nhà cung cấp mà bạn cấu hình. Kết nối Savings Cloud là tùy chọn: khi kết nối, bảng điều khiển của bạn nhận số đếm và chi phí theo gói của bạn, không nhận nội dung prompt.",
+      "app": "Ứng dụng hoặc agent của bạn",
+      "local": "SDK hoặc gateway cục bộ",
+      "localSub": "Trên hạ tầng của bạn",
+      "provider": "Nhà cung cấp LLM của bạn",
+      "providerSub": "Do bạn cấu hình",
+      "cloud": "Savings Cloud",
+      "cloudSub": "Tùy chọn",
+      "prompts": "Prompt và phản hồi",
+      "telemetry": "Đo từ xa: số đếm và chi phí",
+      "caption": "Minh họa cách hoạt động.",
+      "privacy": "BiVelio nhận những gì, theo từng trường →"
+    },
+    "faq": {
+      "eyebrow": "Câu hỏi trước khi mua",
+      "title": "Những điều nên biết trước khi trả tiền.",
+      "more": "Chi tiết hợp đồng nằm ở <pricing>bảng giá đã công bố</pricing>; những gì Phần mềm gửi tới BiVelio nằm ở <privacy>trang quyền riêng tư</privacy>.",
+      "items": [
+        {
+          "q": "Chính xác thì trả tiền cho cái gì?",
+          "a": "Engine mã nguồn mở là miễn phí. Savings Cloud có một gói miễn phí là Measure và hai gói phí cố định theo ghế là Pro và Team. Phí được tính dù có tiết kiệm hay không, không có hoa hồng trên khoản tiết kiệm và không bao gồm chi phí sử dụng tại nhà cung cấp LLM của bạn: bạn vẫn tự trả khoản đó theo điều khoản của họ."
+        },
+        {
+          "q": "Ghế là gì?",
+          "a": "Là một máy hoặc một danh tính dịch vụ chạy Savings. Không phải là một người: thành viên trong nhóm của bạn được quản lý riêng trong bảng điều khiển. Các runner CI và runner tạm thời không được tính là ghế."
+        },
+        {
+          "q": "Measure và Community khác nhau thế nào?",
+          "a": "Community là engine mã nguồn mở trên hạ tầng của bạn: không tài khoản, không khóa BiVelio và mặc định không có dữ liệu đo từ xa. Measure là gói miễn phí của Savings Cloud: cần tài khoản và chạy ở chế độ bóng, nên không thay đổi yêu cầu của bạn và không trả lời từ bộ nhớ đệm; bảng điều khiển cho thấy lẽ ra đã tiết kiệm được bao nhiêu."
+        },
+        {
+          "q": "Có dùng được cho gói thuê bao như ChatGPT Plus không?",
+          "a": "Không phải dưới dạng tiết kiệm trên hóa đơn. Savings tối ưu và đo các lệnh gọi tới API trả theo mức sử dụng; một gói thuê bao giá cố định không phải là hóa đơn API có thể tối ưu. Qua gateway, lưu lượng đó vẫn được đo nhưng không được ghi nhận khoản tiết kiệm nào. Với giới hạn của gói thuê bao, có skill savings-mode, một tài nguyên bổ trợ mà hiệu quả chưa được đo."
+        },
+        {
+          "q": "Tôi có phải đổi nhà cung cấp không?",
+          "a": "Không. Bạn giữ nguyên nhà cung cấp và khóa của mình, và các lệnh gọi vẫn đi thẳng tới đó. Tương thích không có nghĩa là đã được đo: bộ kiểm chuẩn công khai cho biết mô hình nào có số liệu đã công bố."
+        },
+        {
+          "q": "BiVelio nhận những dữ liệu gì?",
+          "a": "Với Community, mặc định là không có gì. Khi bạn kết nối Savings Cloud, bảng điều khiển nhận số đếm và chi phí theo gói của bạn; prompt của bạn không đi qua máy chủ của BiVelio. Trang quyền riêng tư liệt kê chi tiết theo từng trường."
+        },
+        {
+          "q": "Các bạn có cam kết mức tiết kiệm không?",
+          "a": "Không. Mức tiết kiệm phụ thuộc vào lưu lượng của bạn; chẳng hạn, vào việc có bao nhiêu phần lặp lại. Chúng tôi công bố từng phép đo kèm mô hình, mẫu và khoảng tin cậy, và Measure cho bạn thấy lẽ ra đã tiết kiệm được bao nhiêu trên chính lưu lượng của bạn trước khi trả bất kỳ khoản nào."
+        }
+      ]
+    },
+    "closing": {
+      "title": "Đo trước.",
+      "titleAccent": "Quyết định sau.",
+      "sub": "Measure miễn phí và không yêu cầu thẻ: nó chạy ở chế độ bóng và cho bạn thấy lẽ ra đã tiết kiệm được bao nhiêu trên chính lưu lượng của bạn. Engine là mã nguồn mở và mã của nó công khai.",
+      "repo": "Xem kho mã"
     }
   },
   "invitacion": {
@@ -1562,14 +1671,14 @@
     "metaTitle": "Điều khoản giá · BV-SALA",
     "metaDescription": "Open core miễn phí ; Measure, Pro, Team và Enterprise là các gói cloud — không gói nào mang hoa hồng trên khoản tiết kiệm của bạn. Số liệu công bố từ chính các hằng số dùng để tính phí.",
     "eyebrow": "Bảng giá công bố",
-    "title": "Điều khoản giá",
+    "title": "Engine mã nguồn mở. Kiểm soát trên cloud cho nhóm của bạn.",
     "governs": "Trang này mô tả cách dịch vụ hoạt động hiện nay; văn bản có hiệu lực là <license>LICENSE</license> và <terms>Điều khoản của BiVelio</terms>.",
     "lede": "Gói là open core : không cần khóa. Trang này định giá cloud tùy chọn — Measure miễn phí, rồi Pro theo chỗ hoặc gói Team, không hoa hồng trên khoản tiết kiệm của bạn. Mọi con số ở đây đọc từ chính mã tính phí bạn, nên nó đổi khi giá đổi.",
     "plans": {
       "title": "Các gói",
       "intro": "Bốn gói, từ nhỏ đến lớn. Pro và Nhóm trả theo chỗ và không có hoa hồng.",
       "medir": {
-        "name": "Đo lường",
+        "name": "Measure",
         "body": "<b>Miễn phí, không cần thẻ.</b> Gói CLOUD miễn phí: tầng chạy ở chế độ bóng cho một tổ chức, tối đa <b>{seats} chỗ</b> và <b>{requests} yêu cầu mỗi ngày</b>: mỗi yêu cầu đến nhà cung cấp đúng như bạn viết, không gì được phục vụ từ cache và không đòn bẩy nào được áp dụng. Bảng điều khiển cho thấy mức lẽ ra tiết kiệm được — một ước tính không bao giờ mang hoa hồng. Cần <b>@bivelio/savings-layer {version} trở lên</b>. Các đòn bẩy cục bộ không cần gói nào: open core chạy không khóa; đòn bẩy cloud cần Pro hoặc Team."
       },
       "pro": {
@@ -1578,7 +1687,7 @@
         "body": "Mọi tối ưu của lớp, biên nhận cho từng yêu cầu và bảng điều khiển. <b>Không hoa hồng</b> trên khoản tiết kiệm: bạn trả cho các chỗ, dù có tiết kiệm hay không."
       },
       "team": {
-        "name": "Nhóm",
+        "name": "Team",
         "amount": "<b>{monthly}</b> mỗi tháng với <b>{included} chỗ đã bao gồm</b> (khoảng {perSeat} mỗi chỗ), hoặc <b>{yearly}</b> mỗi năm, bằng {currency}.",
         "extra": "Mỗi chỗ vượt quá số đã bao gồm: {monthly} mỗi tháng, hoặc {yearly} mỗi năm.",
         "body": "Giống Pro, cho cả một đội máy: phí cố định bao gồm các chỗ đã tính sẵn dù bạn dùng ít hơn. <b>Không hoa hồng</b> trên khoản tiết kiệm."
@@ -1586,7 +1695,8 @@
       "enterprise": {
         "name": "Enterprise",
         "body": "Cho số chỗ nhiều hơn mức thanh toán trực tuyến cho phép, hợp đồng riêng hoặc điều kiện hóa đơn thỏa thuận: <contact>hãy viết cho chúng tôi</contact>."
-      }
+      },
+      "termsTitle": "Điều khoản của từng gói"
     },
     "seat": {
       "title": "Cách đếm và tính phí một chỗ",
@@ -1597,7 +1707,10 @@
       "what": "Một ghế là một <b>máy hoặc danh tính dịch vụ</b> chạy Phần mềm, không phải một người. Bạn chọn số ghế mà gói đăng ký của mình bao gồm (tối đa {max} khi thanh toán), và giấy phép của bạn bao gồm đúng số đó.",
       "counted": "Mỗi tháng dương lịch (UTC), BiVelio tính là đang dùng mọi mã ghế riêng biệt đã hoạt động ít nhất {dias} ngày khác nhau trong tháng đó. Các danh tính được đánh dấu là CI hoặc trình chạy tạm thời không được tính. Bảng điều khiển của bạn so sánh con số đó với số ghế mà gói đăng ký bao gồm.",
       "overage": "Nếu trong một tháng bạn dùng nhiều ghế hơn số gói đăng ký bao gồm, phần chênh lệch được tự động tính một lần khi khép tháng, vào hoá đơn kế tiếp: giá của số ghế vượt đó trong một tháng theo gói của bạn (với gói năm là một phần mười hai giá năm). Với gói tháng, gói đăng ký của bạn sau đó được nâng lên số ghế bạn dùng. Nếu số đếm không đáng tin — chẳng hạn vì tháng đó bạn đã xoay vòng một khoá tài khoản dịch vụ — thì không tính phí: chúng tôi kiểm tra thủ công.",
-      "identifier": "Cách tạo mã ghế, và mọi thứ khác mà Phần mềm gửi tới BiVelio, có trên <privacy>trang quyền riêng tư</privacy>."
+      "identifier": "Cách tạo mã ghế, và mọi thứ khác mà Phần mềm gửi tới BiVelio, có trên <privacy>trang quyền riêng tư</privacy>.",
+      "provider": "Phí không bao gồm chi phí sử dụng tại nhà cung cấp LLM của bạn: bạn giữ nguyên nhà cung cấp và trả phí sử dụng theo điều khoản của họ.",
+      "manageTitle": "Cách quản lý gói thuê bao",
+      "manage": "Bạn chọn và thanh toán gói từ <account>tài khoản của mình</account>, trong bảng điều khiển, qua trang thanh toán do Stripe lưu trữ. Thay đổi đối với gói thuê bao đang có được thực hiện trong cổng thanh toán của Stripe, mở từ chính trang đó. Trang này không thu bất kỳ khoản nào."
     },
     "commission": {
       "title": "Mô hình trước đây có hoa hồng (đóng với khách hàng mới)",
@@ -1632,6 +1745,80 @@
     "statement": {
       "title": "Sao kê và hóa đơn",
       "body": "Hoa hồng được tính theo tháng dương lịch (UTC). Khi một tháng kết thúc, BiVelio chốt tháng đó: sao kê của tháng trong bảng điều khiển được niêm phong cùng cơ sở đã đo, các bậc, tỷ giá và phiên bản danh mục giá, và hoa hồng được xuất hóa đơn dựa trên sao kê đó qua Stripe, trên một hóa đơn riêng, tách khỏi phí theo ghế."
+    },
+    "access": {
+      "code": "Xem mã nguồn",
+      "install": "Cài bản mã nguồn mở"
+    },
+    "modes": {
+      "title": "Community và Cloud là hai thứ khác nhau",
+      "community": {
+        "tag": "Mã nguồn mở · không tính phí",
+        "name": "Community",
+        "body": "Engine, SDK và gateway cục bộ chạy trên hạ tầng của bạn: không cần khóa BiVelio, không bắt buộc đăng ký và mặc định không có dữ liệu đo từ xa. Đây không phải là một gói và trang này không định giá cho nó."
+      },
+      "cloud": {
+        "tag": "Tùy chọn · có các gói",
+        "name": "Savings Cloud",
+        "body": "Bảng điều khiển, đo lường dùng chung, tổ chức và giấy phép. Measure là gói miễn phí, chạy ở chế độ bóng; Pro và Team trả phí cố định theo ghế, không tính hoa hồng trên khoản tiết kiệm."
+      }
+    },
+    "cards": {
+      "period": "Kỳ thanh toán",
+      "monthly": "Hàng tháng",
+      "yearly": "Hàng năm",
+      "listLabel": "Các gói Savings Cloud",
+      "free": "Miễn phí",
+      "noCard": "không cần thẻ",
+      "custom": "Theo yêu cầu",
+      "byContract": "theo hợp đồng",
+      "perSeatMonth": "mỗi ghế mỗi tháng",
+      "perSeatYear": "mỗi ghế mỗi năm",
+      "perMonth": "mỗi tháng",
+      "perYear": "mỗi năm",
+      "chargeMonthly": "Thu hàng tháng",
+      "chargeYearly": "Thu hàng năm",
+      "unitSeat": "Một ghế là một máy hoặc một danh tính dịch vụ, không phải một người.",
+      "seats": "Số ghế",
+      "requestsDay": "Yêu cầu mỗi ngày",
+      "included": "Số ghế bao gồm",
+      "extraSeat": "Ghế bổ sung",
+      "commission": "Hoa hồng trên khoản tiết kiệm",
+      "none": "Không có",
+      "upTo": "Tối đa {n}",
+      "moreThan": "Hơn {n}",
+      "seatsChosen": "Theo số bạn đăng ký",
+      "amountMonthly": "{amount} mỗi tháng",
+      "amountYearly": "{amount} mỗi năm",
+      "terms": "Xem điều khoản",
+      "provider": "Phí không bao gồm chi phí sử dụng tại nhà cung cấp LLM của bạn: bạn vẫn tự trả khoản đó theo điều khoản của họ. Số tiền chưa gồm VAT.",
+      "medir": {
+        "unit": "Gói cloud miễn phí, chạy ở chế độ bóng.",
+        "summary": "Đo mà không thay đổi gì: yêu cầu của bạn tới nhà cung cấp đúng như bạn tạo ra, và bảng điều khiển cho thấy lẽ ra đã tiết kiệm được bao nhiêu.",
+        "cta": "Bắt đầu với Measure",
+        "version": "Cần @bivelio/savings-layer {version} trở lên."
+      },
+      "pro": {
+        "summary": "Mọi tối ưu, biên lai cho từng yêu cầu và bảng điều khiển. Phí cố định: trả dù có tiết kiệm hay không.",
+        "cta": "Chọn Pro"
+      },
+      "team": {
+        "unit": "Bao gồm {included} ghế: máy hoặc danh tính dịch vụ.",
+        "summary": "Giống Pro, dành cho cả một đội máy. Phí bao trọn số ghế đi kèm dù bạn dùng ít hơn.",
+        "cta": "Chọn Team"
+      },
+      "enterprise": {
+        "unit": "Dành cho nhu cầu vượt ngoài thanh toán trực tuyến.",
+        "summary": "Nhiều ghế hơn, hợp đồng riêng hoặc điều khoản hóa đơn theo thỏa thuận.",
+        "cta": "Liên hệ với chúng tôi"
+      }
+    },
+    "legacy": {
+      "title": "Mô hình cũ, đã đóng với đăng ký mới",
+      "note": "Các điều khoản trong khối này chỉ áp dụng cho những gói thuê bao đã có mô hình tính hoa hồng. Không thể đăng ký mới và không gói nào ở trên có mô hình này."
+    },
+    "toc": {
+      "label": "Trên trang này"
     }
   },
   "privacyPage": {

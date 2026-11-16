@@ -863,18 +863,20 @@
     "metaTitle": "BiVelio — Verifiziere deine LLM-Einsparungen",
     "metaDescription": "Ein SDK, das deine App den LLM-Anbieter nur für das zahlen lässt, was sie braucht, und ein Gateway, das deinen Coding-Agenten misst. Apache-2.0 Open Core: kein Schlüssel, kein Konto, keine Telemetrie — gemessen mit dem Zähler deines Anbieters; die optionale Cloud ist eine Pauschale ohne Provision auf deine Ersparnis.",
     "hero": {
-      "title": "Ihre LLM-Rechnung, unter Kontrolle.",
-      "titleAccent": "Gemessen bei jedem Aufruf.",
-      "sub": "Savings beantwortet, was Ihre App wiederholt, ohne den Anbieter erneut aufzurufen, und misst jeden Aufruf mit dessen Zähler.",
-      "ctaStart": "Loslegen",
-      "ctaBench": "Öffentlichen Benchmark ansehen",
+      "title": "Optimiere deine LLM-Aufrufe.",
+      "titleAccent": "Prüfe jede Ersparnis.",
+      "sub": "Betreibe die Open-Source-Engine in deiner eigenen Infrastruktur. Verbinde Savings Cloud, um Messung und Verwaltung für dein Team zu bündeln – zu festen Gebühren.",
+      "ctaStart": "Mit Measure starten",
+      "ctaBench": "Reproduzierbare Ergebnisse ansehen",
       "panelAlt": "Das Savings-Dashboard mit den Daten des öffentlichen Benchmarks: die gemessene Einsparung und ihre Aufteilung nach Modell.",
       "panelCaption": "Dashboard mit den Daten des öffentlichen Benchmarks",
       "medidoEnVivo": "Live gemessen mit dem Zähler jedes Anbieters",
       "note": "In Minuten installiert. Deine Nachrichten laufen nie über unsere Server.",
       "proofTitle": "Gegen echten Provider gemessen",
       "compatibleCon": "Kompatibel mit",
-      "compatibleNota": "Kompatibel heißt nicht gemessen. Das SDK funktioniert mit jedem Endpunkt, der mit der OpenAI-API kompatibel ist, dazu mit dem nativen Anthropic-Adapter und dem nativen Gemini-Adapter (neu in {gemini}). Mit einer Einsparungszahl im öffentlichen Benchmark sind heute nur Modelle von OpenAI und Anthropic gemessen; für Gemini gibt es keine Einsparungszahl. Was für Gemini gemessen ist: {flash}, über seine native API, im wöchentlichen Live-Benchmark vom {fecha} — alle vier Batterien, ohne Fehler der Schicht und ohne gecachte oder als Einsparung gutgeschriebene Ablehnung. Dieser Benchmark prüft, dass die Schicht nichts kaputt macht und nicht zu viel berechnet; eine Einsparung misst er nicht. Ebenfalls gemessen: {pro}, über seine native API, in zwei Teilläufen am {fechaPro} (sein tägliches Anbieterkontingent reicht nicht für alle vier Batterien an einem Tag): alle vier Batterien, ebenfalls ohne Fehler der Schicht und ohne gecachte oder als Ersparnis verbuchte Ablehnung."
+      "compatibleNota": "Kompatibel heißt nicht gemessen. Das SDK funktioniert mit jedem Endpunkt, der mit der OpenAI-API kompatibel ist, dazu mit dem nativen Anthropic-Adapter und dem nativen Gemini-Adapter (neu in {gemini}). Mit einer Einsparungszahl im öffentlichen Benchmark sind heute nur Modelle von OpenAI und Anthropic gemessen; für Gemini gibt es keine Einsparungszahl. Was für Gemini gemessen ist: {flash}, über seine native API, im wöchentlichen Live-Benchmark vom {fecha} — alle vier Batterien, ohne Fehler der Schicht und ohne gecachte oder als Einsparung gutgeschriebene Ablehnung. Dieser Benchmark prüft, dass die Schicht nichts kaputt macht und nicht zu viel berechnet; eine Einsparung misst er nicht. Ebenfalls gemessen: {pro}, über seine native API, in zwei Teilläufen am {fechaPro} (sein tägliches Anbieterkontingent reicht nicht für alle vier Batterien an einem Tag): alle vier Batterien, ebenfalls ohne Fehler der Schicht und ohne gecachte oder als Ersparnis verbuchte Ablehnung.",
+      "ctaOss": "Open Source installieren",
+      "kicker": "Open-Source-Engine · Cloud optional"
     },
     "cascade": {
       "title": "Die günstigste Ausführung gewinnt",
@@ -972,7 +974,7 @@
     "gateway": {
       "eyebrow": "Gateway · Coding-Terminals",
       "title": "Claude Code mit API-Schlüssel? Sieh die echten Ausgaben, Token für Token.",
-      "body": "Ein einziger Befehl setzt einen lokalen Zähler vor dein Terminal, ohne deinen Code anzufassen: Du exportierst deinen Service-Schlüssel und startest deinen Agenten über bvsala. Deine Prompts verlassen nie deine Maschine — in dein Dashboard gelangen nur Zählwerte und Kosten.",
+      "body": "Ein einziger Befehl setzt einen lokalen Zähler vor dein Terminal, ohne deinen Code anzufassen: Du exportierst deinen Service-Schlüssel und startest deinen Agenten über bvsala. Deine Prompts laufen nicht über die Server von BiVelio: Sie gehen an den Anbieter, den du konfigurierst, und in dein Dashboard gelangen nur Zählwerte und Kosten.",
       "note": "Das Gateway misst mit dem Zähler deines Anbieters jede Anfrage, für die dieser die Nutzung meldet (bei den Modellen in unserem Preiskatalog), und läuft, wie das SDK, startet es ganz ohne Schlüssel (Community-Modus): ein optionaler Service-Schlüssel ergänzt das Dashboard und die Org-Berechtigungen. Mit einer PRO-Lizenz wendet es bei Anthropic-Modellen außerdem standardmäßig einen Hebel an: Es stellt Cache-Schreibvorgänge von der einstündigen auf die fünfminütige TTL um — nur bei Zügen, in denen ein großer Teil des Prompts neu ist, etwa beim ersten Zug einer Sitzung oder nach einer Kompaktierung — und lässt die verketteten Züge unverändert. Das ändert den Preis, nie den Inhalt, den das Modell liest. Die übrigen Hebel bleiben aus, bis du sie einschaltest. Der Skill savings-mode steht für deine Limits bereit, seine Wirkung ist noch zu messen. Das Gateway funktioniert auch mit Codex CLI, Goose, Qwen Code, opencode, Kilo, Aider und, mit deinem eigenen Anthropic-Schlüssel, GitHub Copilot CLI; für andere wie Cline oder Continue gibt bvsala doctor die genaue Konfiguration aus. Cursor funktioniert �ber die OpenAI-Base-URL-�berschreibung mit deinem eigenen Schl�ssel, und die Gemini CLI l�uft �ber bvsala gemini.",
       "pythonNote": "Python oder eine andere Sprache? Richte das offizielle SDK von OpenAI oder Anthropic auf das Gateway, und jede Anfrage, deren Verbrauch der Anbieter meldet, wird für ein Modell mit Listenpreis in diesem Panel zu diesem Preis erfasst; das Log des Gateways sagt, wenn eine nicht gemessen wird. bvsala doctor gibt die Base-URL für jedes SDK aus. Fordere beim Streaming mit OpenAI den Verbrauch in der Anfrage an (stream_options.include_usage).",
       "cta": "So funktioniert es →"
@@ -985,7 +987,7 @@
     },
     "pricing": {
       "eyebrow": "Pläne",
-      "title": "Kostenlos messen. Pro Seat zahlen, wenn du die Ersparnis willst.",
+      "title": "Open-Source-Engine. Cloud-Kontrolle für dein Team.",
       "body": "Das Paket ist Apache-2.0 Open Core: kein Schlüssel nötig, alle lokalen Hebel an, null Telemetrie. Die Cloud ist optional — Measure ist der Gratisplan, Pro und Team werden pro Sitz abgerechnet, in {currency}, mit keiner Provision auf deine Ersparnis.",
       "amount": "{amount}",
       "per": "/ Seat / Monat",
@@ -1019,7 +1021,7 @@
         "Jede BV‑SALA-Optimierung, ohne Limit",
         "Ein Beleg pro Anfrage: SavingsReport mit vier Büchern, gemessen und geschätzt getrennt",
         "Einsparungs-Dashboards und Team-Analysen",
-        "Deine Prompts verlassen niemals deine Infrastruktur"
+        "Deine Prompts laufen nicht über die Server von BiVelio: Sie gehen an den Anbieter, den du konfigurierst"
       ],
       "cta": "Loslegen →",
       "trustTitle": "Warum der Preis so niedrig sein kann",
@@ -1041,7 +1043,9 @@
           "rest": "Die Abrechnung liest denselben SavingsReport, den du oben verifizierst — keine Blackbox."
         }
       ],
-      "taxNote": "Zzgl. MwSt. Bei Unternehmen mit EU-USt-IdNr. gilt das Reverse-Charge-Verfahren."
+      "taxNote": "Zzgl. MwSt. Bei Unternehmen mit EU-USt-IdNr. gilt das Reverse-Charge-Verfahren.",
+      "community": "<b>Community ist kein Tarif.</b> Die Open-Source-Engine ist kostenlos und läuft ohne Konto: <install>installiere sie</install>, wann du willst. Die vier Tarife unten gehören zu Savings Cloud.",
+      "fullTerms": "Veröffentlichte Preise ansehen"
     },
     "footer": {
       "ctaTitle": "Messen Sie es an Ihrem eigenen Traffic",
@@ -1117,9 +1121,9 @@
       ]
     },
     "offers": {
-      "eyebrow": "Zwei Produkte",
+      "eyebrow": "Wo du es anschließt",
       "title": "Wohin gehen deine Tokens: in deine App oder in deinen Coding-Agenten?",
-      "sub": "Beide sind Open Core und beide zählen mit dem Zähler deines Anbieters. Sie tun Unterschiedliches, also verspricht jedes sein Eigenes — und heute hat nur eines eine veröffentlichte Sparzahl.",
+      "sub": "SDK und Gateway sind zwei Wege, dieselbe Open-Source-Engine einzubinden, und beide zählen mit dem Zähler deines Anbieters. Ihre Zahlen gehören nicht zur selben Evidenzklasse: Die des SDK stammt aus einem Live-A/B-Test, die des Gateways aus einem kontrafaktischen Replay aufgezeichneter Sitzungen.",
       "install": "Installation",
       "installMore": "Vollständige Einrichtung",
       "figNoteToggle": "Warum diese Zahl — und ihre Grenzen",
@@ -1131,7 +1135,8 @@
         "figureLabel": "Die Zahl, die wir veröffentlichen",
         "figureNote": "Keine Prognose: Was du sparst, hängt davon ab, wie oft sich dein Traffic wiederholt. In deinem Einsparungsbericht zählt nur, was der Zähler deines Anbieters bestätigt — auch bei wiederholten Anfragen, die ohne Aufruf deines Anbieters bedient werden; jede wird mit dem Zähler der identischen Anfrage bewertet, die bereits gelaufen ist.",
         "ctaMeasured": "Wie wir es gemessen haben",
-        "ctaVerify": "Probier einen Hebel mit deinen Daten"
+        "ctaVerify": "Probier einen Hebel mit deinen Daten",
+        "requires": "Node.js und der API-Schlüssel deines Anbieters."
       },
       "gateway": {
         "name": "Gateway",
@@ -1142,11 +1147,13 @@
         "figureQue": "geschätzte Nettoreduktion der Listenpreiskosten durch die Cache-TTL-Änderung von PRO, nach Abzug der verursachten Cache-Fehltreffer ({confianza}-Intervall: {bajo} bis {alto}). Kontrafaktische Wiederholung mit teilweise rekonstruierter Basislinie über {sesiones} Claude-Code-Sitzungen einer Organisation; kein Live-A/B-Lauf und keine Rechnungsabstimmung.",
         "figureNote": "Keine Prognose für dein Team: Es ist eine einzige Organisation, ein einziger Anbieter und Listenpreise, und es ist eine kleine Ersparnis, die sich dort zeigt, wo die Anthropic-Ausgaben hoch sind. Mit PRO stellt das Gateway bei Anthropic-Modellen Cache-Schreibvorgänge von der einstündigen auf die fünfminütige TTL um — nur bei Zügen, in denen ein großer Teil des Prompts neu ist, etwa beim ersten Zug einer Sitzung oder nach einer Kompaktierung — und lässt die verketteten Züge einer laufenden Sitzung unverändert. Das ändert den Preis, nie das, was das Modell liest, und nur was der Zähler deines Anbieters bestätigt, zählt in deinem Einsparungsbericht.",
         "benchLink": "Der Bericht der TTL-Messung: was simuliert wurde, die Aufschlüsselung nach Modell und ihre Grenzen →",
-        "cta": "Gateway einrichten"
+        "cta": "Gateway einrichten",
+        "requires": "Node.js mit npm und ein Coding-Agent, der seinen eigenen API-Schlüssel verwendet."
       },
       "skill": {
         "band": "Skill — für Coding-Agenten im Abo"
-      }
+      },
+      "requires": "Voraussetzungen:"
     },
     "verify": {
       "eyebrow": "SDK · ein Hebel, mit deinen Daten, vor dem Bezahlen",
@@ -1181,6 +1188,108 @@
       "sinRepeticiones": "bei Traffic ohne Wiederholungen (MT-Bench, BFCL): nicht von null zu unterscheiden",
       "anthropic": "reduzierter Strom, nicht derselbe wie bei OpenAI: {familias} Familien / {peticiones} Anfragen pro Arm (95-%-Intervall: {bajo} bis {alto}). Etwa {prefijo} der Listenpreiskosten von A sind ein deskriptiver Netto-Cache-Preis-Kontrast (die Cache-Lesungen von Arm B, bewertet gegen den normalen Eingabepreis), kein separat identifizierter kausaler Effekt und kein bereits bestehender Anthropic-Rabatt",
       "pie": "Es hängt davon ab, wie oft sich dein Traffic wiederholt. Jede Batterie mit ihrem vollständigen Bericht: <bench>öffentlicher Benchmark</bench>."
+    },
+    "receipt": {
+      "title": "Beleg einer Messung",
+      "model": "Modell",
+      "sample": "Stichprobe",
+      "sampleValue": "{familias} Familien · {peticiones} Anfragen je Arm",
+      "repeats": "Wiederholte Anfragen",
+      "interval": "95-%-Intervall",
+      "total": "Geringere Kosten",
+      "source": "Live-A/B gegen den Anbieter, zu versionierten Listenpreisen. Kein Rechnungsabgleich."
+    },
+    "ways": {
+      "eyebrow": "Offene Engine, Cloud optional",
+      "title": "Zwei Wege, Savings zu nutzen.",
+      "sub": "Die Engine ist dieselbe. Es ändert sich, wo du sie verwaltest und was deine Infrastruktur verlässt.",
+      "q": {
+        "runs": "Wo es läuft",
+        "account": "Konto",
+        "telemetry": "Telemetrie",
+        "manage": "Verwaltung"
+      },
+      "community": {
+        "name": "Community",
+        "tag": "Open Source · Apache-2.0",
+        "lede": "Die Engine, das SDK und das lokale Gateway. Für eine Person oder ein ganzes Unternehmen.",
+        "runs": "In deiner Infrastruktur: das SDK in deinem Prozess oder das Gateway auf deiner Maschine.",
+        "account": "Nicht nötig. Keine Registrierung, keine Karte, kein BiVelio-Schlüssel.",
+        "telemetry": "Standardmäßig keine.",
+        "manage": "Lokal: Jeder Aufruf liefert seinen SavingsReport.",
+        "code": "Code ansehen"
+      },
+      "cloud": {
+        "name": "Savings Cloud",
+        "tag": "Optional · kostenlos starten",
+        "lede": "Das Dashboard, das Messung und Verwaltung für dein Team bündelt.",
+        "runs": "Die Engine bleibt in deiner Infrastruktur. Cloud ergänzt das Dashboard.",
+        "account": "Ein Savings-Konto und ein Service-Schlüssel.",
+        "telemetry": "Zählwerte und Kosten, je nach Tarif. Deine Prompts laufen nicht über die Server von BiVelio.",
+        "manage": "Team-Dashboard, Organisation und Lizenzen.",
+        "plans": "Tarife ansehen"
+      }
+    },
+    "evidence": {
+      "dated": "Bericht vom {fecha}",
+      "report": "Bericht lesen"
+    },
+    "flow": {
+      "eyebrow": "Wie die Daten fließen",
+      "title": "Von deiner Infrastruktur zu deinem Anbieter – nicht über BiVelio.",
+      "sub": "SDK und Gateway laufen lokal und rufen den von dir konfigurierten Anbieter direkt auf. Savings Cloud zu verbinden ist optional: Dann gelangen je nach Tarif Zählwerte und Kosten in dein Dashboard, nicht der Inhalt deiner Prompts.",
+      "app": "Deine App oder dein Agent",
+      "local": "SDK oder lokales Gateway",
+      "localSub": "In deiner Infrastruktur",
+      "provider": "Dein LLM-Anbieter",
+      "providerSub": "Der, den du konfigurierst",
+      "cloud": "Savings Cloud",
+      "cloudSub": "Optional",
+      "prompts": "Prompts und Antworten",
+      "telemetry": "Telemetrie: Zählwerte und Kosten",
+      "caption": "Schematische Darstellung der Funktionsweise.",
+      "privacy": "Was BiVelio erhält, Feld für Feld →"
+    },
+    "faq": {
+      "eyebrow": "Fragen vor dem Kauf",
+      "title": "Was du wissen solltest, bevor du zahlst.",
+      "more": "Die vertraglichen Details stehen in den <pricing>veröffentlichten Preisen</pricing>; was die Software an BiVelio sendet, auf der <privacy>Datenschutzseite</privacy>.",
+      "items": [
+        {
+          "q": "Wofür zahle ich genau?",
+          "a": "Die Open-Source-Engine ist kostenlos. Savings Cloud hat einen kostenlosen Tarif, Measure, und zwei Tarife mit fester Gebühr pro Seat, Pro und Team. Die Gebühr fällt an, ob du sparst oder nicht, enthält keine Provision auf die Ersparnis und deckt nicht den Verbrauch bei deinem LLM-Anbieter: Den zahlst du weiterhin selbst, zu dessen Bedingungen."
+        },
+        {
+          "q": "Was ist ein Seat?",
+          "a": "Eine Maschine oder eine Dienstidentität, die Savings ausführt. Keine Person: Die Mitglieder deines Teams werden getrennt im Dashboard verwaltet. CI-Runner und kurzlebige Runner zählen nicht als Seats."
+        },
+        {
+          "q": "Worin unterscheiden sich Measure und Community?",
+          "a": "Community ist die Open-Source-Engine in deiner Infrastruktur: ohne Konto, ohne BiVelio-Schlüssel und standardmäßig ohne Telemetrie. Measure ist der kostenlose Tarif von Savings Cloud: Er braucht ein Konto und läuft im Schattenmodus, verändert also weder deine Anfragen noch liefert er Antworten aus dem Cache; dein Dashboard zeigt, was gespart worden wäre."
+        },
+        {
+          "q": "Hilft es bei einem Abo wie ChatGPT Plus?",
+          "a": "Nicht als Ersparnis auf einer Rechnung. Savings optimiert und misst Aufrufe einer API, die nach Verbrauch bezahlt wird; ein Pauschal-Abo ist keine optimierbare API-Rechnung. Über das Gateway wird dieser Traffic gemessen, aber es wird ihm keine Ersparnis gutgeschrieben. Für die Limits eines Abos gibt es den Skill savings-mode, eine ergänzende Ressource, deren Wirkung noch nicht gemessen ist."
+        },
+        {
+          "q": "Muss ich den Anbieter wechseln?",
+          "a": "Nein. Du behältst deinen Anbieter und deinen eigenen Schlüssel, und deine Aufrufe gehen weiterhin direkt dorthin. Kompatibel heißt nicht gemessen: Welche Modelle eine veröffentlichte Zahl haben, steht in der öffentlichen Bench."
+        },
+        {
+          "q": "Welche Daten erhält BiVelio?",
+          "a": "Mit Community standardmäßig keine. Sobald du Savings Cloud verbindest, erhält dein Dashboard je nach Tarif Zählwerte und Kosten; deine Prompts laufen nicht über die Server von BiVelio. Die Datenschutzseite führt es Feld für Feld auf."
+        },
+        {
+          "q": "Garantiert ihr eine Ersparnis?",
+          "a": "Nein. Was du sparst, hängt von deinem Traffic ab, zum Beispiel davon, wie viel sich wiederholt. Wir veröffentlichen jede Messung mit Modell, Stichprobe und Intervall, und mit Measure siehst du, was mit deinem eigenen Traffic gespart worden wäre, bevor du etwas zahlst."
+        }
+      ]
+    },
+    "closing": {
+      "title": "Erst messen.",
+      "titleAccent": "Dann entscheiden.",
+      "sub": "Measure ist kostenlos und verlangt keine Karte: Es läuft im Schattenmodus und zeigt, was mit deinem eigenen Traffic gespart worden wäre. Die Engine ist Open Source, ihr Code liegt offen.",
+      "repo": "Repository ansehen"
     }
   },
   "invitacion": {
@@ -1562,7 +1671,7 @@
     "metaTitle": "Preisbedingungen · BV-SALA",
     "metaDescription": "Open Core ist gratis ; Measure, Pro, Team und Enterprise sind die Cloud-Pläne — keiner trägt eine Provision auf deine Ersparnis. Zahlen, veröffentlicht aus denselben Konstanten, die abrechnen.",
     "eyebrow": "Veröffentlichte Preise",
-    "title": "Preisbedingungen",
+    "title": "Open-Source-Engine. Cloud-Kontrolle für dein Team.",
     "governs": "Diese Seite beschreibt, wie der Dienst heute funktioniert; maßgeblich sind die <license>LICENSE</license> und die <terms>BiVelio-Bedingungen</terms>.",
     "lede": "Das Paket ist Open Core : kein Schlüssel nötig. Diese Seite bepreist die optionale Cloud — Measure gratis, dann Pro pro Sitz oder ein Team-Plan, ohne Provision auf deine Ersparnis. Jede Zahl hier kommt aus demselben Code, der dich abrechnet, und ändert sich, wenn sich der Preis ändert.",
     "plans": {
@@ -1586,7 +1695,8 @@
       "enterprise": {
         "name": "Enterprise",
         "body": "Für mehr Seats, als der Online-Checkout zulässt, einen eigenen Vertrag oder verhandelte Rechnungsbedingungen: <contact>schreib uns</contact>."
-      }
+      },
+      "termsTitle": "Bedingungen der einzelnen Tarife"
     },
     "seat": {
       "title": "Wie ein Seat gezählt und abgerechnet wird",
@@ -1597,7 +1707,10 @@
       "what": "Ein Seat ist eine <b>Maschine oder Dienstidentität</b>, auf der die Software läuft – keine Person. Du wählst, wie viele Seats dein Abo abdeckt (bis zu {max} beim Bezahlen), und deine Lizenz deckt genau so viele ab.",
       "counted": "In jedem Kalendermonat (UTC) zählt BiVelio jede eindeutige Seat-Kennung als genutzt, die an mindestens {dias} verschiedenen Tagen dieses Monats aktiv war. Als CI oder kurzlebige Runner markierte Identitäten zählen nicht. Dein Dashboard vergleicht diese Zahl mit den Seats, die dein Abo abdeckt.",
       "overage": "Nutzt du in einem Monat mehr Seats, als dein Abo abdeckt, wird die Differenz nach Monatsabschluss einmalig und automatisch mit deiner nächsten Rechnung berechnet: der Preis dieser zusätzlichen Seats für einen Monat in deinem Plan (beim Jahresplan ein Zwölftel des Jahrespreises). Bei Monatsplänen deckt dein Abo danach die Seats ab, die du nutzt. Ist die Zählung nicht verlässlich – etwa weil du in dem Monat einen Service-Account-Schlüssel rotiert hast –, wird nichts berechnet: Wir prüfen sie von Hand.",
-      "identifier": "Wie eine Seat-Kennung gebildet wird und alles andere, was die Software an BiVelio sendet, steht auf der <privacy>Datenschutzseite</privacy>."
+      "identifier": "Wie eine Seat-Kennung gebildet wird und alles andere, was die Software an BiVelio sendet, steht auf der <privacy>Datenschutzseite</privacy>.",
+      "provider": "Die Gebühr deckt nicht den Verbrauch bei deinem LLM-Anbieter: Du behältst deinen Anbieter und zahlst dessen Nutzung zu seinen Bedingungen.",
+      "manageTitle": "So verwaltest du dein Abo",
+      "manage": "Den Tarif wählst und bezahlst du in <account>deinem Konto</account> im Dashboard, über den von Stripe gehosteten Checkout. Änderungen an einem bestehenden Abo nimmst du im Abrechnungsportal von Stripe vor, das sich von derselben Seite aus öffnet. Diese Seite bucht nichts ab."
     },
     "commission": {
       "title": "Früheres Modell mit Provision (für Neukunden geschlossen)",
@@ -1632,6 +1745,80 @@
     "statement": {
       "title": "Abrechnung und Rechnung",
       "body": "Die Provision wird pro Kalendermonat (UTC) berechnet. Nach Ende eines Monats schließt BiVelio ihn ab: Die Abrechnung dieses Monats in deinem Dashboard wird mit der gemessenen Basis, den Stufen, dem Wechselkurs und der Version des Preiskatalogs versiegelt, und die Provision wird auf Grundlage dieser Abrechnung über Stripe in Rechnung gestellt, auf einer eigenen Rechnung, getrennt von der Gebühr pro Seat."
+    },
+    "access": {
+      "code": "Code ansehen",
+      "install": "Open Source installieren"
+    },
+    "modes": {
+      "title": "Community und Cloud sind zwei verschiedene Dinge",
+      "community": {
+        "tag": "Open Source · ohne Preis",
+        "name": "Community",
+        "body": "Die Engine, das SDK und das lokale Gateway laufen in deiner Infrastruktur: ohne BiVelio-Schlüssel, ohne Pflichtregistrierung und standardmäßig ohne Telemetrie. Das ist kein Tarif, und diese Seite nennt dafür keinen Preis."
+      },
+      "cloud": {
+        "tag": "Optional · mit Tarifen",
+        "name": "Savings Cloud",
+        "body": "Das Dashboard, die gemeinsame Messung, die Organisation und die Lizenzen. Measure ist der kostenlose Tarif im Schattenmodus; Pro und Team kosten eine feste Gebühr pro Seat, ohne Provision auf die Ersparnis."
+      }
+    },
+    "cards": {
+      "period": "Abrechnungszeitraum",
+      "monthly": "Monatlich",
+      "yearly": "Jährlich",
+      "listLabel": "Tarife von Savings Cloud",
+      "free": "Kostenlos",
+      "noCard": "ohne Karte",
+      "custom": "Individuell",
+      "byContract": "per Vertrag",
+      "perSeatMonth": "pro Seat und Monat",
+      "perSeatYear": "pro Seat und Jahr",
+      "perMonth": "pro Monat",
+      "perYear": "pro Jahr",
+      "chargeMonthly": "Monatliche Abbuchung",
+      "chargeYearly": "Jährliche Abbuchung",
+      "unitSeat": "Ein Seat ist eine Maschine oder eine Dienstidentität, keine Person.",
+      "seats": "Seats",
+      "requestsDay": "Anfragen pro Tag",
+      "included": "Enthaltene Seats",
+      "extraSeat": "Zusätzlicher Seat",
+      "commission": "Provision auf die Ersparnis",
+      "none": "Keine",
+      "upTo": "Bis zu {n}",
+      "moreThan": "Mehr als {n}",
+      "seatsChosen": "So viele, wie du buchst",
+      "amountMonthly": "{amount} pro Monat",
+      "amountYearly": "{amount} pro Jahr",
+      "terms": "Bedingungen ansehen",
+      "provider": "Die Gebühr deckt nicht den Verbrauch bei deinem LLM-Anbieter: Den zahlst du weiterhin selbst, zu dessen Bedingungen. Beträge ohne MwSt.",
+      "medir": {
+        "unit": "Kostenloser Cloud-Tarif im Schattenmodus.",
+        "summary": "Messen, ohne etwas zu ändern: Deine Anfragen erreichen deinen Anbieter genau so, wie du sie baust, und das Dashboard zeigt, was gespart worden wäre.",
+        "cta": "Mit Measure starten",
+        "version": "Erfordert @bivelio/savings-layer {version} oder neuer."
+      },
+      "pro": {
+        "summary": "Alle Optimierungen, der Beleg pro Anfrage und das Dashboard. Feste Gebühr, fällig, ob du sparst oder nicht.",
+        "cta": "Pro wählen"
+      },
+      "team": {
+        "unit": "Enthält {included} Seats: Maschinen oder Dienstidentitäten.",
+        "summary": "Dasselbe wie Pro, für eine Flotte. Die Gebühr deckt die enthaltenen Seats, auch wenn du weniger nutzt.",
+        "cta": "Team wählen"
+      },
+      "enterprise": {
+        "unit": "Für alles, was der Online-Checkout nicht abdeckt.",
+        "summary": "Mehr Seats, ein eigener Vertrag oder vereinbarte Rechnungsbedingungen.",
+        "cta": "Schreib uns"
+      }
+    },
+    "legacy": {
+      "title": "Altes Modell, für Neuabschlüsse geschlossen",
+      "note": "Die Bedingungen in diesem Block gelten nur für Abos, die das Provisionsmodell bereits haben. Es kann nicht gebucht werden, und keiner der Tarife oben enthält es."
+    },
+    "toc": {
+      "label": "Auf dieser Seite"
     }
   },
   "privacyPage": {
