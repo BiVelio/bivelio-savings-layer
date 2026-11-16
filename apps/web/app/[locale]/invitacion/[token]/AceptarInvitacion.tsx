@@ -6,7 +6,13 @@ import { useLocale, useTranslations } from "next-intl";
 import { AccesoEnviado, MensajeDeAcceso } from "@/app/components/acceso/AccesoEstado";
 import { AccesoShell } from "@/app/components/acceso/AccesoShell";
 import { CampoClave } from "@/app/components/acceso/CampoClave";
+import { Icono } from "@/app/components/acceso/iconos";
 import { Skeleton, SkeletonGroup } from "@/app/components/ui/Skeleton";
+import { Badge } from "@/vendor/affectui/badge-clean";
+import { Button } from "@/vendor/affectui/button-clean";
+import { Spinner } from "@/vendor/affectui/spinner-clean";
+import { TeamInvite } from "@/vendor/affectui/team-invite";
+import { TextField } from "@/vendor/affectui/text-field-clean";
 
 type Estado =
   | "comprobando"
@@ -201,7 +207,33 @@ export function AceptarInvitacion({ token }: { token: string }) {
   const clavesDistintas = errorForm !== "" && errorForm === t("passDistintas");
 
   return (
-    <AccesoShell>
+    <AccesoShell
+      etiquetaLateral={t("title")}
+      lateral={
+        // LA ESCENA: una organización y su panel ya unidos, y quien llega
+        // entrando en el hueco. Glifos, no retratos: aquí no se inventa a nadie.
+        <div className="acc-panel inv-panel">
+          <div className="acc-panel-texto">
+            <p className="kicker">BiVelio Savings Cloud</p>
+            <h2 className="editorial-title acc-panel-titulo">
+              {t.rich("panelTitle", { em: (c) => <span className="serif-accent serif-accent--brand">{c}</span> })}
+            </h2>
+            <p className="lede-text acc-panel-lede">{t("panelBody")}</p>
+          </div>
+          <div className="inv-escena">
+            <TeamInvite
+              label={t("arteAlt")}
+              nodes={[
+                <Icono key="org" nombre="organizacion" />,
+                // eslint-disable-next-line @next/next/no-img-element
+                <img key="savings" src="/brand/savings-mark.png" alt="" width={48} height={48} decoding="async" />,
+                <Icono key="tu" nombre="persona" />,
+              ]}
+            />
+          </div>
+        </div>
+      }
+    >
       <div className="acc-intro">
         <p className="kicker">{t("kicker")}</p>
         <h1>{t("title")}</h1>
@@ -222,7 +254,7 @@ export function AceptarInvitacion({ token }: { token: string }) {
           <div className="inv-fila">
             <dt>{tp("equipo.columnaRol")}</dt>
             <dd>
-              <span className="tag">{perfil}</span>
+              <Badge tone="info">{perfil}</Badge>
             </dd>
           </div>
         </dl>
@@ -237,7 +269,7 @@ export function AceptarInvitacion({ token }: { token: string }) {
 
       {esperando ? (
         <p className="acc-progreso" role="status">
-          <span className="acc-spin" aria-hidden />
+          <Spinner size={16} />
           {estado === "aceptando" ? t("aceptando") : t("comprobando")}
         </p>
       ) : null}
@@ -254,10 +286,17 @@ export function AceptarInvitacion({ token }: { token: string }) {
             {/* El correo se ENSEÑA y no se puede tocar: sale de la invitación, no
                 de lo que escriba quien llega. Va desactivado para que se vea con
                 qué cuenta se está entrando. */}
-            <div className="field">
-              <label htmlFor="inv-email">{t("tuCorreo")}</label>
-              <input id="inv-email" type="email" autoComplete="username" value={vista?.email ?? ""} disabled readOnly />
-            </div>
+            <TextField
+              className="acc-campo"
+              id="inv-email"
+              label={t("tuCorreo")}
+              type="email"
+              icon={<Icono nombre="correo" />}
+              autoComplete="username"
+              value={vista?.email ?? ""}
+              disabled
+              readOnly
+            />
             <CampoClave
               id="inv-pass1"
               etiqueta={t("passNueva")}
@@ -282,16 +321,9 @@ export function AceptarInvitacion({ token }: { token: string }) {
               mostrar={ta("showPassword")}
               ocultar={ta("hidePassword")}
             />
-            <button type="submit" className="btn btn-primary auth-submit" disabled={estado === "creando"}>
-              {estado === "creando" ? (
-                <>
-                  <span className="acc-spin" aria-hidden />
-                  {t("creando")}
-                </>
-              ) : (
-                t("crearYEntrar")
-              )}
-            </button>
+            <Button className="acc-enviar" type="submit" variant="primary" size="xl" block loading={estado === "creando"}>
+              {estado === "creando" ? t("creando") : t("crearYEntrar")}
+            </Button>
           </form>
           <p className="auth-alt acc-cruce">
             {t("yaTengoCuenta")} <a href={login}>{t("iniciarSesion")}</a>
@@ -320,9 +352,9 @@ export function AceptarInvitacion({ token }: { token: string }) {
           {sesion ? (
             <>
               <p className="sub inv-sesion">{t.rich("sesionActual", { email: sesion, b: (c) => <b>{c}</b> })}</p>
-              <button type="button" className="btn btn-primary btn-block" onClick={cerrarSesion} disabled={cerrando}>
+              <Button variant="primary" size="xl" block onClick={cerrarSesion} loading={cerrando}>
                 {cerrando ? t("cerrando") : t("cerrarYContinuar")}
-              </button>
+              </Button>
             </>
           ) : motivo === "otro_correo" || motivo === "ya_en_otra" ? (
             // Con la vuelta puesta: tras entrar con la cuenta correcta se

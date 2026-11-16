@@ -1,3 +1,6 @@
+import { ScrollArea } from "@/vendor/affectui/scroll-area-clean";
+import { Separator } from "@/vendor/affectui/separator-clean";
+
 import { IndiceActivo, type EntradaDeIndice } from "./IndiceActivo";
 
 /**
@@ -25,9 +28,15 @@ export function DocIndice({
 }) {
   return (
     <>
-      <nav className="doc-toc doc-toc--carril" aria-label={titulo}>
+      {/* El carril: el Scroll Area de affectUI (barra fina propia, fundido en
+          el borde donde queda más) en vez de la barra del sistema. Solo es una
+          parada de tabulación cuando de verdad desborda. */}
+      <nav className="doc-toc doc-toc--carril doc-toc--area" aria-label={titulo}>
         <p className="doc-toc-t">{titulo}</p>
-        <IndiceActivo entradas={entradas} lang={lang} />
+        <Separator className="doc-toc-regla" />
+        <ScrollArea className="doc-toc-scroll" fade>
+          <IndiceActivo entradas={entradas} lang={lang} />
+        </ScrollArea>
       </nav>
       <nav className="doc-toc doc-toc--plegable" aria-label={titulo}>
         <details>

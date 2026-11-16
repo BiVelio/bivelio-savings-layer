@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { DocIndice } from "@/app/components/docs/DocIndice";
+import { Migas } from "@/app/components/docs/Migas";
 import Footer from "@/app/components/Footer";
 import { etiquetasQueRigen } from "@/app/components/LegalGoverns";
 import { Link } from "@/i18n/navigation";
@@ -16,6 +17,9 @@ import {
   type GrupoDeCampos,
 } from "@/lib/legal/lo-que-sale";
 import { CABECERA_VERSION } from "@/lib/metering/version";
+import { Badge } from "@/vendor/affectui/badge-clean";
+import { GlassFolder } from "@/vendor/affectui/glass-folder";
+import { GridBackground } from "@/vendor/affectui/grid-background";
 
 /**
  * LO QUE SALE DE TU INFRAESTRUCTURA — la página a la que remite la LICENSE §5.
@@ -151,12 +155,25 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
   return (
     <div className="lp terms-page doc-page priv-page">
       <main className="wrap">
-        <section className="terms-hero" id="inicio">
-          <span className="eyebrow">{t("eyebrow")}</span>
-          <h1>{t("title")}</h1>
-          <p className="lede">{t("lede")}</p>
-          <p className="terms-governs">{t.rich("governs", etiquetasQueRigen(locale))}</p>
-        </section>
+        <GridBackground className="doc-fondo">
+          <section className="terms-hero priv-hero" id="inicio">
+            <div className="priv-hero-texto">
+              <Migas actual={t("eyebrow")} />
+              <span className="eyebrow">{t("eyebrow")}</span>
+              <h1>{t("title")}</h1>
+              <p className="lede">{t("lede")}</p>
+              <p className="terms-governs">{t.rich("governs", etiquetasQueRigen(locale))}</p>
+            </div>
+            {/* LA CARPETA (Glass Folder de affectUI): tus documentos, dentro y
+                tuyos. No es un diagrama de flujo —eso lo dice la tabla de
+                abajo—: dibuja lo único que esta página promete sin matices,
+                que el contenido no sale. Quieta; solo responde al puntero. */}
+            <figure className="priv-hero-arte">
+              <GlassFolder label={t("art.alt")} />
+              <figcaption>{t("art.caption")}</figcaption>
+            </figure>
+          </section>
+        </GridBackground>
 
         <div className="doc-grid">
           <DocIndice titulo={td("contents")} entradas={indice} />
@@ -247,7 +264,7 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
                         {t(`retention.items.${r.clave}`, { dias: dias.format(r.dias) })}
                       </td>
                       <td role="cell" data-label={t("retention.colPeriod")}>
-                        <span className="priv-plazo">{t("retention.period", { dias: dias.format(r.dias) })}</span>
+                        <Badge tone="neutral">{t("retention.period", { dias: dias.format(r.dias) })}</Badge>
                       </td>
                     </tr>
                   ))}
@@ -258,7 +275,9 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
                     </th>
                     <td role="cell" data-label={t("retention.colWhat")}>{t("retention.noSchedule")}</td>
                     <td role="cell" data-label={t("retention.colPeriod")}>
-                      <span className="priv-plazo priv-plazo--sin">{t("retention.none")}</span>
+                      <Badge tone="warning" dot>
+                        {t("retention.none")}
+                      </Badge>
                     </td>
                   </tr>
                 </tbody>

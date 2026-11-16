@@ -18,7 +18,9 @@
     "results": "Risultati",
     "code": "Codice",
     "mainAria": "Navigazione principale",
-    "newTab": "(si apre in una nuova scheda)"
+    "newTab": "(si apre in una nuova scheda)",
+    "breadcrumb": "Percorso di navigazione",
+    "home": "Home"
   },
   "app": {
     "sidebar": {
@@ -1717,7 +1719,10 @@
     "cerrando": "Disconnessione…",
     "kicker": "Invito",
     "labelOrg": "Organizzazione",
-    "labelFor": "Per"
+    "labelFor": "Per",
+    "panelTitle": "Un team, <em>un pannello</em>.",
+    "panelBody": "Accettando entra nel pannello dell'organizzazione con il suo account. Le postazioni dell'abbonamento contano macchine o identità di servizio, non persone.",
+    "arteAlt": "Illustrazione: un'organizzazione e il suo pannello Savings già collegati, e un terzo cerchio che entra nello spazio libero."
   },
   "benchmarksPage": {
     "metaTitle": "Banco di prova pubblico A/B: misuraci | BiVelio Savings Layer",
@@ -2504,6 +2509,10 @@
     "fields": {
       "colGroup": "Gruppo",
       "colFields": "Campi inviati"
+    },
+    "art": {
+      "alt": "Illustrazione: una cartella blu con tre documenti, dietro una tasca traslucida.",
+      "caption": "Le sue richieste, risposte e credenziali non partono verso BiVelio."
     }
   },
   "docsPage": {
@@ -2530,6 +2539,7 @@
     "title": "Pagina non trovata",
     "body": "Questa pagina non esiste o è stata spostata.",
     "home": "← Torna alla home",
-    "explore": "Puoi anche andare a"
+    "explore": "Puoi anche andare a",
+    "artAlt": "Illustrazione: tre finestre del browser sovrapposte con contenuto segnaposto."
   }
 }

@@ -3,12 +3,15 @@ import type { ReactNode } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { DocIndice } from "@/app/components/docs/DocIndice";
+import { Migas } from "@/app/components/docs/Migas";
 import Footer from "@/app/components/Footer";
 import { CodeFrame } from "@/app/components/ui";
 import { absolute, tarjetaSocial } from "@/i18n/site";
 import { cargarGuia } from "@/lib/guia-migracion/cargar";
 import { textoPlano, type Bloque, type EnLinea } from "@/lib/guia-migracion/markdown";
 import { CodeLines } from "@/vendor/affectui/code-block-clean";
+import { DataTable } from "@/vendor/affectui/data-table-clean";
+import { GridBackground } from "@/vendor/affectui/grid-background";
 
 /**
  * /migrate-to-0.5 — LA GUÍA DE MIGRACIÓN 0.4 → 0.5, publicada en la web
@@ -178,30 +181,14 @@ function Bloques({ bloques, copiar }: { bloques: readonly Bloque[]; copiar: Copi
       }
       case "tabla":
         return (
-          <div key={i} className="guia-tabla" tabIndex={0} role="region" aria-label="Table">
-            <table className="tbl tbl--static">
-              <thead>
-                <tr>
-                  {b.cabecera.map((c, j) => (
-                    <th key={j} scope="col">
-                      <EnLineaR c={c} />
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {b.filas.map((f, j) => (
-                  <tr key={j}>
-                    {f.map((c, k) => (
-                      <td key={k}>
-                        <EnLineaR c={c} />
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <DataTable
+            key={i}
+            className="guia-datos"
+            scrollLabel="Table"
+            minWidth={`${Math.max(b.cabecera.length, 2) * 9}rem`}
+            columns={b.cabecera.map((c) => ({ label: <EnLineaR c={c} /> }))}
+            rows={b.filas.map((f, j) => ({ key: String(j), cells: f.map((c, k) => <EnLineaR key={k} c={c} />) }))}
+          />
         );
       case "separador":
         return null;
@@ -226,6 +213,7 @@ export default async function MigrateTo05Page({ params }: { params: Promise<{ lo
   setRequestLocale(locale);
   const t = await getTranslations("docsPage");
   const tu = await getTranslations("ui");
+  const tl = await getTranslations("landing");
   const copiar: Copiar = { etiqueta: tu("copy"), etiquetaCopiado: tu("copied") };
 
   const { cabecera, secciones: partes } = secciones(cargarGuia());
@@ -239,7 +227,9 @@ export default async function MigrateTo05Page({ params }: { params: Promise<{ lo
   return (
     <div className="lp terms-page doc-page">
       <main className="wrap guia-page" lang="en">
+        <GridBackground className="doc-fondo">
         <section className="terms-hero guia-hero" id="inicio">
+          <Migas actual={tl("footer.migrate")} lang={locale} />
           <span className="eyebrow">@bivelio/savings-layer · {VERSION_DESTINO}</span>
           <h1>{h1 && h1.t === "titulo" ? textoPlano(h1.c) : TITULO}</h1>
           {/* Interfaz, no artículo: va en el idioma de quien lee. */}
@@ -249,6 +239,7 @@ export default async function MigrateTo05Page({ params }: { params: Promise<{ lo
           </p>
           <Bloques bloques={resto} copiar={copiar} />
         </section>
+        </GridBackground>
         <div className="doc-grid">
           <DocIndice titulo={t("contents")} entradas={indice} lang="en" />
           <div className="doc-body">

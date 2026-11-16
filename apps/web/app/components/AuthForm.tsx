@@ -9,9 +9,13 @@ import { authConfigured } from "@/lib/supabase/env";
 import { safeNextPath } from "@/app/auth/safe-next";
 import { textoDeErrorDeAuth } from "@/lib/auth/error-de-auth";
 
+import { Button } from "@/vendor/affectui/button-clean";
+import { TextField } from "@/vendor/affectui/text-field-clean";
+
 import { AccesoEnviado, MensajeDeAcceso } from "./acceso/AccesoEstado";
 import { CampoClave } from "./acceso/CampoClave";
 import { EnlaceConDestino } from "./acceso/EnlaceConDestino";
+import { Icono } from "./acceso/iconos";
 
 type Msg = { type: "error" | "info" | "idle"; text: string };
 
@@ -197,23 +201,23 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
         </MensajeDeAcceso>
       ) : null}
       {enReset ? <p className="sub acc-reset-sub">{t("resetSubtitle")}</p> : null}
-      <div className="field">
-        <label htmlFor="email">{t("workEmail")}</label>
-        <input
-          id="email"
-          type="email"
-          autoComplete="email"
-          inputMode="email"
-          autoCapitalize="none"
-          spellCheck={false}
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="you@company.com"
-          aria-invalid={conError || undefined}
-          aria-describedby={conError ? "auth-aviso" : undefined}
-        />
-      </div>
+      <TextField
+        className="acc-campo"
+        id="email"
+        label={t("workEmail")}
+        type="email"
+        icon={<Icono nombre="correo" />}
+        autoComplete="email"
+        inputMode="email"
+        autoCapitalize="none"
+        spellCheck={false}
+        required
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="you@company.com"
+        invalid={conError}
+        aria-describedby={conError ? "auth-aviso" : undefined}
+      />
       {!enReset ? (
         <CampoClave
           id="password"
@@ -228,20 +232,12 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
           ocultar={t("hidePassword")}
         />
       ) : null}
-      <button className="btn btn-primary auth-submit" type="submit" disabled={loading}>
-        {loading ? (
-          <>
-            <span className="acc-spin" aria-hidden />
-            {t("working")}
-          </>
-        ) : enReset ? (
-          t("sendResetLink")
-        ) : mode === "signup" ? (
-          t("createAccountCta")
-        ) : (
-          t("signInCta")
-        )}
-      </button>
+      {/* El Button de affectUI: mientras se espera al servidor no admite otro
+          envío (`aria-disabled` + clic anulado) y una banda de luz recorre el
+          rótulo. Es el único movimiento de la pantalla, y solo en ese rato. */}
+      <Button className="acc-enviar" type="submit" variant="primary" size="xl" block loading={loading}>
+        {loading ? t("working") : enReset ? t("sendResetLink") : mode === "signup" ? t("createAccountCta") : t("signInCta")}
+      </Button>
       {mode === "login" ? (
         <p className="auth-alt acc-olvido">
           <button

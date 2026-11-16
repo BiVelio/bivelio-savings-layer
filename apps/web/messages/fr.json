@@ -18,7 +18,9 @@
     "results": "Résultats",
     "code": "Code",
     "mainAria": "Navigation principale",
-    "newTab": "(s'ouvre dans un nouvel onglet)"
+    "newTab": "(s'ouvre dans un nouvel onglet)",
+    "breadcrumb": "Fil d'Ariane",
+    "home": "Accueil"
   },
   "app": {
     "sidebar": {
@@ -1717,7 +1719,10 @@
     "cerrando": "Déconnexion…",
     "kicker": "Invitation",
     "labelOrg": "Organisation",
-    "labelFor": "Pour"
+    "labelFor": "Pour",
+    "panelTitle": "Une équipe, <em>un tableau de bord</em>.",
+    "panelBody": "En acceptant, vous accédez au tableau de bord de l'organisation avec votre propre compte. Les sièges de l'abonnement comptent des machines ou des identités de service, pas des personnes.",
+    "arteAlt": "Illustration : une organisation et son tableau de bord Savings déjà reliés, et un troisième cercle qui rejoint l'emplacement libre."
   },
   "benchmarksPage": {
     "metaTitle": "Banc public A/B : mesurez-nous | BiVelio Savings Layer",
@@ -2504,6 +2509,10 @@
     "fields": {
       "colGroup": "Groupe",
       "colFields": "Champs envoyés"
+    },
+    "art": {
+      "alt": "Illustration : un dossier bleu contenant trois documents, derrière une poche translucide.",
+      "caption": "Vos requêtes, réponses et identifiants ne partent pas vers BiVelio."
     }
   },
   "docsPage": {
@@ -2530,6 +2539,7 @@
     "title": "Page introuvable",
     "body": "Cette page n'existe pas ou a été déplacée.",
     "home": "← Retour à l'accueil",
-    "explore": "Vous pouvez aussi aller à"
+    "explore": "Vous pouvez aussi aller à",
+    "artAlt": "Illustration : trois fenêtres de navigateur superposées avec un contenu factice."
   }
 }

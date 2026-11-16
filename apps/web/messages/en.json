@@ -18,7 +18,9 @@
     "results": "Results",
     "code": "Code",
     "mainAria": "Main navigation",
-    "newTab": "(opens in a new tab)"
+    "newTab": "(opens in a new tab)",
+    "breadcrumb": "Breadcrumb",
+    "home": "Home"
   },
   "app": {
     "sidebar": {
@@ -1717,7 +1719,10 @@
     "cerrando": "Signing out…",
     "kicker": "Invitation",
     "labelOrg": "Organization",
-    "labelFor": "For"
+    "labelFor": "For",
+    "panelTitle": "One team, <em>one dashboard</em>.",
+    "panelBody": "Accepting gives you access to the organization's dashboard with your own account. The subscription's seats count machines or service identities, not people.",
+    "arteAlt": "Illustration: an organization and its Savings dashboard already connected, and a third circle moving into the empty slot."
   },
   "benchmarksPage": {
     "metaTitle": "Public A/B bench: measure us | BiVelio Savings Layer",
@@ -2504,6 +2509,10 @@
     "fields": {
       "colGroup": "Group",
       "colFields": "Fields sent"
+    },
+    "art": {
+      "alt": "Illustration: a blue folder holding three documents behind a translucent pocket.",
+      "caption": "Your requests, responses and credentials do not leave for BiVelio."
     }
   },
   "docsPage": {
@@ -2530,6 +2539,7 @@
     "title": "Page not found",
     "body": "This page doesn't exist or has moved.",
     "home": "← Back to home",
-    "explore": "You can also go to"
+    "explore": "You can also go to",
+    "artAlt": "Illustration: three overlapping browser windows with placeholder content."
   }
 }

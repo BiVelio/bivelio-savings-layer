@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 import { Recibo } from "@/app/components/ui";
+import { TiltCard } from "@/vendor/affectui/tilt-card";
 
 /**
  * EL PANEL DE MARCA DEL ACCESO: qué se va a ver al entrar.
@@ -27,6 +28,10 @@ export async function PanelDeMarca({ locale }: { locale: string }) {
         </h2>
         <p className="lede-text acc-panel-lede">{t("panel.body")}</p>
       </div>
+      {/* El recibo se inclina hacia el puntero (Tilt Card de affectUI): es un
+          papel sobre la mesa, no un control. En táctil y con movimiento
+          reducido se queda quieto. */}
+      <TiltCard className="acc-panel-tilt" glare={false}>
       <Recibo
         className="acc-panel-recibo"
         titulo={t("panel.receiptTitle")}
@@ -45,6 +50,7 @@ export async function PanelDeMarca({ locale }: { locale: string }) {
         evidencia={{ tipo: "sintetico", label: tu("evidence.sintetico") }}
         procedencia={{ texto: t("panel.provenance") }}
       />
+      </TiltCard>
     </div>
   );
 }

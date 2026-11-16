@@ -8,6 +8,8 @@ import { useState } from "react";
 import { authConfigured } from "@/lib/supabase/env";
 import { textoDeErrorDeAuth } from "@/lib/auth/error-de-auth";
 
+import { Button } from "@/vendor/affectui/button-clean";
+
 import { AccesoEnviado, MensajeDeAcceso } from "./acceso/AccesoEstado";
 import { CampoClave } from "./acceso/CampoClave";
 import { EnlaceConDestino } from "./acceso/EnlaceConDestino";
@@ -117,16 +119,9 @@ export default function ResetPasswordForm() {
         mostrar={t("showPassword")}
         ocultar={t("hidePassword")}
       />
-      <button className="btn btn-primary auth-submit" type="submit" disabled={loading || done}>
-        {loading ? (
-          <>
-            <span className="acc-spin" aria-hidden />
-            {t("working")}
-          </>
-        ) : (
-          t("updatePassword")
-        )}
-      </button>
+      <Button className="acc-enviar" type="submit" variant="primary" size="xl" block loading={loading} disabled={done}>
+        {loading ? t("working") : t("updatePassword")}
+      </Button>
     </form>
   );
 }

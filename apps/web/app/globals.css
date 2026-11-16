@@ -5881,3 +5881,81 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .lp.evc .tbl-scroll > .tbl { background: transparent; }
 .lp.evc .tbl-scroll > .tbl th { background: color-mix(in srgb, var(--surface-3) 86%, transparent); }
 /* ==== FIN SLOT ESPECTACULAR E3 ==== */
+
+/* ==== SLOT ESPECTACULAR E4 ==== */
+/* Páginas públicas y acceso con las piezas de affectUI (vendor/affectui). Aquí
+   solo va la COLOCACIÓN de esas piezas en nuestras pantallas: su aspecto vive
+   en el `.css` de cada una. Las reglas antiguas siguen arriba; lo que cambia
+   se pisa desde este bloque. */
+
+/* ── E4·1 Acceso: Text Field, Button, Tilt Card ─────────────────────────── */
+.acc-campo { margin: 0 0 16px; }
+.acc-card .acc-campo .ui-tfc__label { font-size: 13.5px; font-weight: 500; line-height: 1.35; color: var(--ink); }
+.acc-enviar { margin-top: 4px; }
+.acc-card form > .acc-enviar:first-child { margin-top: 0; }
+.acc-progreso .ui-spnc { color: var(--brand); }
+/* El recibo, sobre la mesa: se inclina hacia el puntero. La sombra la pone la
+   Tilt Card; el recibo conserva su festón y su línea de corte. */
+.acc-panel-tilt { width: 100%; max-width: 400px; --ui-tc-radius: 14px; }
+.acc-panel-tilt .acc-panel-recibo { max-width: none; }
+/* Invitación: la escena del equipo, en su tarjeta, sobre el paisaje. */
+.inv-panel { max-width: 460px; }
+.inv-escena { width: 100%; padding: 6px; border-radius: var(--r-card-lg); background: color-mix(in srgb, var(--surface) 86%, transparent); box-shadow: 0 0 0 1px var(--line), var(--shadow-elevated); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.inv-escena .ui-ti { border-radius: calc(var(--r-card-lg) - 6px); background: radial-gradient(120% 90% at 50% 0%, var(--surface) 0%, var(--surface-3) 100%); }
+.inv-fila .ui-bdgc { vertical-align: baseline; }
+
+/* ── E4·2 Páginas de lectura: fondo de rejilla, migas, índice, tablas ────── */
+/* La rejilla (Grid Background) deriva despacio detrás de la cabecera y se
+   funde hacia la derecha: el texto queda siempre sobre marfil liso. Es el
+   único movimiento ambiental de esa pantalla. */
+.doc-fondo { overflow: visible; }
+.doc-fondo > .ui-gb-grid { inset: calc(var(--nav-h, 64px) * -1) -24px 0; -webkit-mask-image: radial-gradient(ellipse 62% 105% at 86% 18%, #000 0%, rgba(0, 0, 0, .55) 38%, transparent 74%); mask-image: radial-gradient(ellipse 62% 105% at 86% 18%, #000 0%, rgba(0, 0, 0, .55) 38%, transparent 74%); }
+@media (max-width: 720px) { .doc-fondo > .ui-gb-grid { inset-inline: -16px; -webkit-mask-image: radial-gradient(ellipse 110% 70% at 90% 0%, #000 0%, transparent 78%); mask-image: radial-gradient(ellipse 110% 70% at 90% 0%, #000 0%, transparent 78%); } }
+@media print { .doc-fondo > .ui-gb-grid { display: none; } }
+.doc-migas { margin: 0 0 clamp(14px, 2vw, 22px); }
+.paper-page .paper-cabecera .doc-migas { margin-bottom: clamp(18px, 2.4vw, 28px); }
+/* El índice: título, filete (Separator) y la lista dentro del Scroll Area. */
+.doc-toc-regla { margin: 0 0 10px; --ui-sepc-weight: 1px; }
+@media (min-width: 1100px) {
+  .doc-toc--carril.doc-toc--area { display: flex; flex-direction: column; overflow: visible; padding: 2px 0 0 2px; }
+  .doc-toc--area .doc-toc-t { margin-bottom: 10px; }
+  .doc-toc-scroll { flex: 1 1 auto; min-height: 0; --ui-sac-fade: 28px; }
+  .doc-toc-scroll .doc-toc-lista { margin: 2px 12px 8px 0; }
+}
+/* Tablas de datos (Data Table de solo lectura). */
+.precios-tramos { max-width: 30rem; margin: 14px 0 18px; }
+.paper-page .paper-cuerpo > .paper-datos { max-width: none; margin: 26px 0 34px; }
+.paper-datos { font-family: var(--sans); text-align: start; }
+.guia-datos { margin: 10px 0 20px; }
+.guia-page .guia-datos code { font-size: .86em; }
+.precios-legado-insignia { margin: 0 0 12px; }
+@media print { .paper-datos .ui-sac, .paper-datos .ui-sac__viewport { overflow: visible !important; } .paper-datos .ui-dtc__table { min-width: 0 !important; } }
+
+/* ── E4·3 Privacidad: la cabecera con la carpeta ────────────────────────── */
+.lp.terms-page.doc-page .priv-hero { display: grid; grid-template-columns: minmax(0, 1fr); align-items: center; gap: clamp(20px, 4vw, 56px); max-width: none; }
+.priv-hero-texto { min-width: 0; max-width: 80ch; }
+.priv-hero-arte { display: none; margin: 0; }
+@media (min-width: 900px) {
+  .lp.terms-page.doc-page .priv-hero { grid-template-columns: minmax(0, 1.5fr) minmax(240px, .8fr); }
+  .priv-hero-arte { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+}
+.priv-hero-arte .ui-fd { --ui-fd-size: 58%; max-width: 380px; }
+.priv-hero-arte figcaption { max-width: 30ch; font-size: 13px; line-height: 1.5; text-align: center; color: var(--ink-soft); text-wrap: balance; }
+
+/* ── E4·4 Cómo funciona: rejilla, insignias de los casos, la cinta de sistemas ── */
+.hiw-fondo > .ui-gb-grid { -webkit-mask-image: radial-gradient(ellipse 58% 110% at 84% 30%, #000 0%, rgba(0, 0, 0, .5) 40%, transparent 76%); mask-image: radial-gradient(ellipse 58% 110% at 84% 30%, #000 0%, rgba(0, 0, 0, .5) 40%, transparent 76%); }
+.hiw-insignia { margin-top: 10px; }
+.hiw-sistemas { margin-top: 6px; --ui-lm-h: 22px; --ui-lm-label: var(--ink-soft); --ui-lm-muted: var(--ink-soft); --ui-lm-ink: var(--ink); --ui-lm-fade: min(12%, 96px); }
+.hiw-sistemas .ui-lm__name { font-family: var(--mono); font-size: 12.5px; letter-spacing: 0; }
+
+/* ── E4·5 La 404: Empty State a escala de página ────────────────────────── */
+.nf-page .nf { padding-block: clamp(40px, 9vh, 104px) clamp(56px, 11vh, 128px); }
+.nf-fondo { width: 100%; overflow: visible; }
+.nf-fondo > .ui-gb-grid { inset: -40px -24px; }
+.nf-vacio { width: 100%; max-width: 760px; margin-inline: auto; -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); box-shadow: inset 0 0 0 1px var(--line), var(--shadow-card); }
+.nf-vacio .ui-estc__art { width: min(100%, 420px); margin-bottom: 22px; }
+.nf-vacio .ui-estc__eyebrow { color: var(--brand); }
+.nf-regla { width: min(100%, 420px); margin: 30px 0 6px; --ui-sepc-weight: 1px; }
+.nf-vacio .nf-destinos { margin-top: 4px; }
+@media (max-width: 480px) { .nf-vacio .ui-estc__action { align-self: stretch; flex-direction: column; } }
+/* ==== FIN SLOT E4 ==== */

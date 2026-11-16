@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { Migas } from "@/app/components/docs/Migas";
 import Footer from "@/app/components/Footer";
 import { PlanesCloud } from "@/app/components/landing/PlanesCloud";
 import { etiquetasQueRigen } from "@/app/components/LegalGoverns";
@@ -11,6 +12,9 @@ import { absolute, languageAlternates, tarjetaSocial } from "@/i18n/site";
 import { terminosDeLosPlanes, terminosDePrecio } from "@/lib/legal/precios-publicados";
 import { LIMITES_MEDIR, VERSION_MINIMA_MEDIR } from "@/lib/license/medir-publico";
 import { preciosDelPlan, tarifasDeLosPlanes } from "@/lib/stripe/pricing";
+import { Badge } from "@/vendor/affectui/badge-clean";
+import { DataTable } from "@/vendor/affectui/data-table-clean";
+import { GridBackground } from "@/vendor/affectui/grid-background";
 
 /**
  * LA «PUBLISHED PRICING» QUE CITA LA LICENSE §6 — pública, indexable y sin una
@@ -86,7 +90,9 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
   return (
     <div className="lp terms-page precios">
       <main className="wrap">
+        <GridBackground className="doc-fondo">
         <section className="terms-hero precios-hero">
+          <Migas actual={tn("pricing")} />
           <span className="eyebrow">{t("eyebrow")}</span>
           <h1>{t("title")}</h1>
           <p className="lede">{t("lede")}</p>
@@ -104,6 +110,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
           </div>
           <p className="terms-governs">{t.rich("governs", etiquetasQueRigen(locale))}</p>
         </section>
+        </GridBackground>
 
         {/* COMMUNITY FRENTE A CLOUD, antes de ningún importe: el motor es
             gratis y no es un plan; lo que tiene precio es la nube opcional. */}
@@ -246,8 +253,10 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
                 vende: ni checkout, ni calculadora, ni CTA. Va en su propio bloque,
                 separado de los planes vigentes. */}
             <div className="precios-legado" id="legacy" role="group" aria-labelledby="legacy-t">
-              <p className="precios-legado-t" id="legacy-t">
-                {t("legacy.title")}
+              <p className="precios-legado-insignia" id="legacy-t">
+                <Badge tone="warning" dot>
+                  {t("legacy.title")}
+                </Badge>
               </p>
               <p className="precios-legado-n">{t("legacy.note")}</p>
 
@@ -268,28 +277,25 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
 
                 <h3>{t("commission.tiersTitle")}</h3>
                 <p>{t("commission.tiersIntro", { currency: p.monedaComision })}</p>
-                <table className="terms-table">
-                  <thead>
-                    <tr>
-                      <th scope="col">{t("commission.colBand")}</th>
-                      <th scope="col">{t("commission.colRate")}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {p.tramos.map((tr) => (
-                      <tr key={`${tr.forma}-${tr.desde}`}>
-                        <td>
-                          {tr.forma === "hasta"
-                            ? t("commission.bandUpTo", { hasta: tr.hasta })
-                            : tr.forma === "entre"
-                              ? t("commission.bandBetween", { desde: tr.desde, hasta: tr.hasta })
-                              : t("commission.bandAbove", { desde: tr.desde })}
-                        </td>
-                        <td>{tr.tipo}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                {/* Los tramos, en la Data Table de affectUI bifurcada a SOLO
+                    LECTURA: una cifra publicada no puede parecer editable. */}
+                <DataTable
+                  className="precios-tramos"
+                  caption={t("commission.tiersTitle")}
+                  rowHeader
+                  columns={[{ label: t("commission.colBand") }, { label: t("commission.colRate"), align: "end", numeric: true }]}
+                  rows={p.tramos.map((tr) => ({
+                    key: `${tr.forma}-${tr.desde}`,
+                    cells: [
+                      tr.forma === "hasta"
+                        ? t("commission.bandUpTo", { hasta: tr.hasta })
+                        : tr.forma === "entre"
+                          ? t("commission.bandBetween", { desde: tr.desde, hasta: tr.hasta })
+                          : t("commission.bandAbove", { desde: tr.desde }),
+                      tr.tipo,
+                    ],
+                  }))}
+                />
                 <p>{t.rich("commission.ceiling", { b, max: p.tipoMaximo, garantia: p.garantia })}</p>
                 <p>{t("commission.fx")}</p>
                 <p>{t("commission.rounding", { minimo: p.minimoFacturable })}</p>

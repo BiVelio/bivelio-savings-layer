@@ -18,7 +18,9 @@
     "results": "Sonuçlar",
     "code": "Kod",
     "mainAria": "Ana gezinme",
-    "newTab": "(yeni sekmede açılır)"
+    "newTab": "(yeni sekmede açılır)",
+    "breadcrumb": "İçerik haritası",
+    "home": "Ana sayfa"
   },
   "app": {
     "sidebar": {
@@ -1717,7 +1719,10 @@
     "cerrando": "Oturum kapatılıyor…",
     "kicker": "Davet",
     "labelOrg": "Kuruluş",
-    "labelFor": "Kime"
+    "labelFor": "Kime",
+    "panelTitle": "Tek ekip, <em>tek panel</em>.",
+    "panelBody": "Kabul ettiğinizde kuruluşun paneline kendi hesabınızla erişirsiniz. Aboneliğin koltukları kişileri değil, makineleri veya servis kimliklerini sayar.",
+    "arteAlt": "İllüstrasyon: zaten bağlı bir kuruluş ve Savings paneli ile boş yuvaya giren üçüncü bir daire."
   },
   "benchmarksPage": {
     "metaTitle": "Herkese açık A/B testi: bizi ölçün | BiVelio Savings Layer",
@@ -2504,6 +2509,10 @@
     "fields": {
       "colGroup": "Grup",
       "colFields": "Gönderilen alanlar"
+    },
+    "art": {
+      "alt": "İllüstrasyon: yarı saydam bir cebin arkasında üç belge bulunan mavi bir klasör.",
+      "caption": "İstekleriniz, yanıtlarınız ve kimlik bilgileriniz BiVelio'ya gitmez."
     }
   },
   "docsPage": {
@@ -2530,6 +2539,7 @@
     "title": "Sayfa bulunamadı",
     "body": "Bu sayfa mevcut değil veya taşınmış.",
     "home": "← Ana sayfaya dön",
-    "explore": "Şuraya da gidebilirsiniz"
+    "explore": "Şuraya da gidebilirsiniz",
+    "artAlt": "İllüstrasyon: yer tutucu içerikli, üst üste binen üç tarayıcı penceresi."
   }
 }

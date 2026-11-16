@@ -18,7 +18,9 @@
     "results": "Resultaten",
     "code": "Code",
     "mainAria": "Hoofdnavigatie",
-    "newTab": "(opent in een nieuw tabblad)"
+    "newTab": "(opent in een nieuw tabblad)",
+    "breadcrumb": "Kruimelpad",
+    "home": "Home"
   },
   "app": {
     "sidebar": {
@@ -1717,7 +1719,10 @@
     "cerrando": "Afmelden…",
     "kicker": "Uitnodiging",
     "labelOrg": "Organisatie",
-    "labelFor": "Voor"
+    "labelFor": "Voor",
+    "panelTitle": "Eén team, <em>één dashboard</em>.",
+    "panelBody": "Door te accepteren krijgt u met uw eigen account toegang tot het dashboard van de organisatie. De seats van het abonnement tellen machines of service-identiteiten, geen personen.",
+    "arteAlt": "Illustratie: een organisatie en haar Savings-dashboard die al verbonden zijn, en een derde cirkel die de vrije plek inneemt."
   },
   "benchmarksPage": {
     "metaTitle": "Openbare A/B-benchmark: meet ons | BiVelio Savings Layer",
@@ -2504,6 +2509,10 @@
     "fields": {
       "colGroup": "Groep",
       "colFields": "Verzonden velden"
+    },
+    "art": {
+      "alt": "Illustratie: een blauwe map met drie documenten achter een doorschijnend vak.",
+      "caption": "Uw verzoeken, antwoorden en inloggegevens gaan niet naar BiVelio."
     }
   },
   "docsPage": {
@@ -2530,6 +2539,7 @@
     "title": "Pagina niet gevonden",
     "body": "Deze pagina bestaat niet of is verplaatst.",
     "home": "← Terug naar de startpagina",
-    "explore": "Je kunt ook naar"
+    "explore": "Je kunt ook naar",
+    "artAlt": "Illustratie: drie overlappende browservensters met opvulinhoud."
   }
 }

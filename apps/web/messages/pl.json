@@ -18,7 +18,9 @@
     "results": "Wyniki",
     "code": "Kod",
     "mainAria": "Nawigacja główna",
-    "newTab": "(otwiera się w nowej karcie)"
+    "newTab": "(otwiera się w nowej karcie)",
+    "breadcrumb": "Ścieżka nawigacji",
+    "home": "Strona główna"
   },
   "app": {
     "sidebar": {
@@ -1717,7 +1719,10 @@
     "cerrando": "Wylogowywanie…",
     "kicker": "Zaproszenie",
     "labelOrg": "Organizacja",
-    "labelFor": "Dla"
+    "labelFor": "Dla",
+    "panelTitle": "Jeden zespół, <em>jeden panel</em>.",
+    "panelBody": "Po zaakceptowaniu zyskują Państwo dostęp do panelu organizacji z własnego konta. Stanowiska w subskrypcji liczą maszyny lub tożsamości usług, a nie osoby.",
+    "arteAlt": "Ilustracja: organizacja i jej panel Savings już połączone oraz trzeci krąg, który zajmuje wolne miejsce."
   },
   "benchmarksPage": {
     "metaTitle": "Publiczny test A/B: zmierz nas | BiVelio Savings Layer",
@@ -2504,6 +2509,10 @@
     "fields": {
       "colGroup": "Grupa",
       "colFields": "Wysyłane pola"
+    },
+    "art": {
+      "alt": "Ilustracja: niebieski folder z trzema dokumentami za półprzezroczystą kieszenią.",
+      "caption": "Państwa żądania, odpowiedzi i dane uwierzytelniające nie trafiają do BiVelio."
     }
   },
   "docsPage": {
@@ -2530,6 +2539,7 @@
     "title": "Nie znaleziono strony",
     "body": "Ta strona nie istnieje lub została przeniesiona.",
     "home": "← Powrót na stronę główną",
-    "explore": "Możesz też przejść do"
+    "explore": "Możesz też przejść do",
+    "artAlt": "Ilustracja: trzy nakładające się okna przeglądarki z przykładową treścią."
   }
 }

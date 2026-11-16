@@ -18,7 +18,9 @@
     "results": "Resultats",
     "code": "Codi",
     "mainAria": "Navegació principal",
-    "newTab": "(s'obre en una pestanya nova)"
+    "newTab": "(s'obre en una pestanya nova)",
+    "breadcrumb": "Ruta de navegació",
+    "home": "Inici"
   },
   "app": {
     "sidebar": {
@@ -1717,7 +1719,10 @@
     "cerrando": "Tancant la sessió…",
     "kicker": "Invitació",
     "labelOrg": "Organització",
-    "labelFor": "Per a"
+    "labelFor": "Per a",
+    "panelTitle": "Un equip, <em>un tauler</em>.",
+    "panelBody": "En acceptar entra al tauler de l'organització amb el seu propi compte. Els seients de la subscripció compten màquines o identitats de servei, no persones.",
+    "arteAlt": "Il·lustració: una organització i el seu tauler de Savings ja connectats, i un tercer cercle que entra al buit lliure."
   },
   "benchmarksPage": {
     "metaTitle": "Banc públic A/B: mesura'ns | BiVelio Savings Layer",
@@ -2504,6 +2509,10 @@
     "fields": {
       "colGroup": "Grup",
       "colFields": "Camps que viatgen"
+    },
+    "art": {
+      "alt": "Il·lustració: una carpeta blava amb tres documents a dins, darrere d'una butxaca translúcida.",
+      "caption": "Les seves peticions, respostes i credencials no surten cap a BiVelio."
     }
   },
   "docsPage": {
@@ -2530,6 +2539,7 @@
     "title": "Pàgina no trobada",
     "body": "Aquesta pàgina no existeix o s'ha mogut.",
     "home": "← Torna a l'inici",
-    "explore": "També pots anar a"
+    "explore": "També pots anar a",
+    "artAlt": "Il·lustració: tres finestres de navegador superposades amb contingut de farciment."
   }
 }

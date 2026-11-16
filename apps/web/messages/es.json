@@ -18,7 +18,9 @@
     "results": "Resultados",
     "code": "Código",
     "mainAria": "Navegación principal",
-    "newTab": "(se abre en una pestaña nueva)"
+    "newTab": "(se abre en una pestaña nueva)",
+    "breadcrumb": "Ruta de navegación",
+    "home": "Inicio"
   },
   "app": {
     "sidebar": {
@@ -1717,7 +1719,10 @@
     "cerrando": "Cerrando sesión…",
     "kicker": "Invitación",
     "labelOrg": "Organización",
-    "labelFor": "Para"
+    "labelFor": "Para",
+    "panelTitle": "Un equipo, <em>un panel</em>.",
+    "panelBody": "Al aceptar entra en el panel de la organización con su propia cuenta. Los asientos de la suscripción cuentan máquinas o identidades de servicio, no personas.",
+    "arteAlt": "Ilustración: una organización y su panel de Savings ya conectados, y un tercer círculo que entra en el hueco libre."
   },
   "benchmarksPage": {
     "metaTitle": "Banco público A/B: mídenos | BiVelio Savings Layer",
@@ -2504,6 +2509,10 @@
     "fields": {
       "colGroup": "Grupo",
       "colFields": "Campos que viajan"
+    },
+    "art": {
+      "alt": "Ilustración: una carpeta azul con tres documentos dentro, tras un bolsillo translúcido.",
+      "caption": "Sus peticiones, respuestas y credenciales no salen hacia BiVelio."
     }
   },
   "docsPage": {
@@ -2530,6 +2539,7 @@
     "title": "Página no encontrada",
     "body": "Esta página no existe o se ha movido.",
     "home": "← Volver al inicio",
-    "explore": "También puedes ir a"
+    "explore": "También puedes ir a",
+    "artAlt": "Ilustración: tres ventanas de navegador superpuestas con contenido de relleno."
   }
 }

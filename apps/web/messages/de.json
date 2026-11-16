@@ -18,7 +18,9 @@
     "results": "Ergebnisse",
     "code": "Code",
     "mainAria": "Hauptnavigation",
-    "newTab": "(öffnet sich in einem neuen Tab)"
+    "newTab": "(öffnet sich in einem neuen Tab)",
+    "breadcrumb": "Brotkrümelnavigation",
+    "home": "Startseite"
   },
   "app": {
     "sidebar": {
@@ -1717,7 +1719,10 @@
     "cerrando": "Wird abgemeldet…",
     "kicker": "Einladung",
     "labelOrg": "Organisation",
-    "labelFor": "Für"
+    "labelFor": "Für",
+    "panelTitle": "Ein Team, <em>ein Dashboard</em>.",
+    "panelBody": "Mit der Annahme erhalten Sie mit Ihrem eigenen Konto Zugang zum Dashboard der Organisation. Die Seats des Abos zählen Maschinen oder Dienstidentitäten, keine Personen.",
+    "arteAlt": "Illustration: eine Organisation und ihr Savings-Dashboard, bereits verbunden, und ein dritter Kreis, der in den freien Platz rückt."
   },
   "benchmarksPage": {
     "metaTitle": "Öffentlicher A/B-Benchmark: Messen Sie uns | BiVelio Savings Layer",
@@ -2504,6 +2509,10 @@
     "fields": {
       "colGroup": "Gruppe",
       "colFields": "Gesendete Felder"
+    },
+    "art": {
+      "alt": "Illustration: ein blauer Ordner mit drei Dokumenten hinter einer durchscheinenden Tasche.",
+      "caption": "Ihre Anfragen, Antworten und Zugangsdaten gehen nicht an BiVelio."
     }
   },
   "docsPage": {
@@ -2530,6 +2539,7 @@
     "title": "Seite nicht gefunden",
     "body": "Diese Seite existiert nicht oder wurde verschoben.",
     "home": "← Zurück zur Startseite",
-    "explore": "Du kannst auch hierhin gehen"
+    "explore": "Du kannst auch hierhin gehen",
+    "artAlt": "Illustration: drei überlappende Browserfenster mit Platzhalterinhalt."
   }
 }

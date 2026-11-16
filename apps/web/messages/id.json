@@ -18,7 +18,9 @@
     "results": "Hasil",
     "code": "Kode",
     "mainAria": "Navigasi utama",
-    "newTab": "(terbuka di tab baru)"
+    "newTab": "(terbuka di tab baru)",
+    "breadcrumb": "Jejak navigasi",
+    "home": "Beranda"
   },
   "app": {
     "sidebar": {
@@ -1717,7 +1719,10 @@
     "cerrando": "Keluar…",
     "kicker": "Undangan",
     "labelOrg": "Organisasi",
-    "labelFor": "Untuk"
+    "labelFor": "Untuk",
+    "panelTitle": "Satu tim, <em>satu dasbor</em>.",
+    "panelBody": "Dengan menerima, Anda masuk ke dasbor organisasi dengan akun Anda sendiri. Kursi langganan menghitung mesin atau identitas layanan, bukan orang.",
+    "arteAlt": "Ilustrasi: sebuah organisasi dan dasbor Savings-nya yang sudah terhubung, serta lingkaran ketiga yang masuk ke slot kosong."
   },
   "benchmarksPage": {
     "metaTitle": "Uji A/B publik: ukur kami | BiVelio Savings Layer",
@@ -2504,6 +2509,10 @@
     "fields": {
       "colGroup": "Kelompok",
       "colFields": "Kolom yang dikirim"
+    },
+    "art": {
+      "alt": "Ilustrasi: map biru berisi tiga dokumen di balik saku tembus pandang.",
+      "caption": "Permintaan, respons, dan kredensial Anda tidak dikirim ke BiVelio."
     }
   },
   "docsPage": {
@@ -2530,6 +2539,7 @@
     "title": "Halaman tidak ditemukan",
     "body": "Halaman ini tidak ada atau telah dipindahkan.",
     "home": "← Kembali ke beranda",
-    "explore": "Anda juga bisa membuka"
+    "explore": "Anda juga bisa membuka",
+    "artAlt": "Ilustrasi: tiga jendela peramban yang bertumpuk dengan konten contoh."
   }
 }

@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { TextField } from "@/vendor/affectui/text-field-clean";
 
 import { Icono } from "./iconos";
 
 /**
- * Un campo de contraseña con su botón de ver/ocultar. El `<input>` conserva el
- * `id`, el `autoComplete` y el `minLength` que ya tenían los formularios; lo
- * único nuevo es el ojo, que es un botón de verdad (con nombre accesible y
- * `aria-pressed`) y no un icono pintado encima.
+ * Un campo de contraseña. Es el Text Field de affectUI (caja blanca con filo
+ * de sombra, foco de marca, 44px) con su botón de ver/ocultar: un botón de
+ * verdad, con nombre accesible, `aria-pressed` y su etiqueta flotante. El
+ * `<input>` conserva el `id`, el `autoComplete` y el `minLength` que ya tenían
+ * los formularios.
  */
 export function CampoClave({
   id,
@@ -36,35 +37,23 @@ export function CampoClave({
   mostrar: string;
   ocultar: string;
 }) {
-  const [visible, setVisible] = useState(false);
   return (
-    <div className="field">
-      <label htmlFor={id}>{etiqueta}</label>
-      <div className="acc-clave">
-        <input
-          id={id}
-          type={visible ? "text" : "password"}
-          autoComplete={autoComplete}
-          required
-          minLength={8}
-          value={valor}
-          onChange={(e) => alCambiar(e.target.value)}
-          placeholder={placeholder}
-          disabled={desactivado}
-          aria-invalid={invalido || undefined}
-          aria-describedby={descritoPor}
-        />
-        <button
-          type="button"
-          className="acc-ojo"
-          onClick={() => setVisible((v) => !v)}
-          aria-label={visible ? ocultar : mostrar}
-          aria-pressed={visible}
-          disabled={desactivado}
-        >
-          <Icono nombre={visible ? "ojoCerrado" : "ojo"} />
-        </button>
-      </div>
-    </div>
+    <TextField
+      className="acc-campo"
+      id={id}
+      label={etiqueta}
+      type="password"
+      icon={<Icono nombre="candado" />}
+      autoComplete={autoComplete}
+      required
+      minLength={8}
+      value={valor}
+      onChange={(e) => alCambiar(e.target.value)}
+      placeholder={placeholder}
+      disabled={desactivado}
+      invalid={invalido}
+      aria-describedby={descritoPor}
+      reveal={{ show: mostrar, hide: ocultar }}
+    />
   );
 }

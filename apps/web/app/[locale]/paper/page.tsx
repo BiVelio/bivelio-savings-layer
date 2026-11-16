@@ -4,9 +4,12 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { BotonImprimir } from "@/app/components/docs/BotonImprimir";
 import { DocIndice } from "@/app/components/docs/DocIndice";
+import { Migas } from "@/app/components/docs/Migas";
 import Footer from "@/app/components/Footer";
 import { Link } from "@/i18n/navigation";
 import { absolute, tarjetaSocial } from "@/i18n/site";
+import { DataTable } from "@/vendor/affectui/data-table-clean";
+import { GridBackground } from "@/vendor/affectui/grid-background";
 
 import { BLOQUES, CABECERA, type Bloque } from "./contenido";
 
@@ -116,6 +119,7 @@ export default async function PaperPage({ params }: { params: Promise<{ locale: 
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("docsPage");
+  const tn = await getTranslations("landing");
 
   const iAbstract = BLOQUES.findIndex((b) => b.tipo === "h2" && b.id === "abstract");
   const iFinAbstract = BLOQUES.findIndex((b, i) => i > iAbstract && b.tipo === "hr");
@@ -128,7 +132,9 @@ export default async function PaperPage({ params }: { params: Promise<{ locale: 
   return (
     <div className="lp doc-page paper-page">
       <main className="wrap paper-shell">
+        <GridBackground className="doc-fondo">
         <header className="paper-cabecera" id="inicio">
+          <Migas actual={tn("footer.paper")} />
           <p className="kicker paper-serie" lang="en">
             {CABECERA.coleccion}
           </p>
@@ -161,6 +167,7 @@ export default async function PaperPage({ params }: { params: Promise<{ locale: 
           </nav>
           {locale === "en" ? null : <p className="doc-nota">{t("englishOnly")}</p>}
         </header>
+        </GridBackground>
 
         <div className="doc-grid">
           <DocIndice titulo={t("contents")} entradas={secciones.map((s) => ({ id: s.id, texto: s.texto }))} lang="en" />
@@ -206,29 +213,21 @@ export default async function PaperPage({ params }: { params: Promise<{ locale: 
                 if (b.tipo === "hr") return <hr key={i} className="paper-regla" />;
                 if (b.tipo === "tabla")
                   return (
-                    // Una región con scroll propio tiene que poder recorrerse con
-                    // el teclado y decir qué es: de ahí `tabIndex`, el papel y el nombre.
-                    <div key={i} className="paper-tabla-wrap" tabIndex={0} role="region" aria-label={t("paper.tableScroll")}>
-                      <table className="paper-tabla">
-                        <tbody>
-                          {b.filas.map((fila, r) => (
-                            <tr key={r}>
-                              {fila.map((celda, c) =>
-                                r === 0 ? (
-                                  <th key={c} scope="col">
-                                    <Inline texto={celda} />
-                                  </th>
-                                ) : (
-                                  <td key={c}>
-                                    <Inline texto={celda} />
-                                  </td>
-                                ),
-                              )}
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                    // La Data Table de affectUI, bifurcada a solo lectura. Cuando
+                    // no cabe, se desplaza dentro de su Scroll Area, que es una
+                    // región con nombre y recorrible con el teclado.
+                    <DataTable
+                      key={i}
+                      className="paper-datos"
+                      scrollLabel={t("paper.tableScroll")}
+                      minWidth={`${Math.max(b.filas[0]?.length ?? 0, 2) * 8.5}rem`}
+                      dense
+                      columns={(b.filas[0] ?? []).map((celda) => ({ label: <Inline texto={celda} /> }))}
+                      rows={b.filas.slice(1).map((fila, r) => ({
+                        key: String(r),
+                        cells: fila.map((celda, c) => <Inline key={c} texto={celda} />),
+                      }))}
+                    />
                   );
                 return (
                   <p key={i} className={esReferencia(b) ? "paper-ref" : "paper-p"}>

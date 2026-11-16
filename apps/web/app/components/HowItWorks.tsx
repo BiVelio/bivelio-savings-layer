@@ -4,6 +4,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { CodeFrame, EvidenceBadge, Recibo, SectionHead } from "@/app/components/ui";
 import { Link } from "@/i18n/navigation";
+import { Badge, type BadgeTone } from "@/vendor/affectui/badge-clean";
 import { IntegrationBeam } from "@/vendor/affectui/integration-beam";
 import { LayerStack, type LayerIcon } from "@/vendor/affectui/layer-stack";
 
@@ -30,6 +31,18 @@ const PIEZAS: readonly { clave: "sdk" | "gateway" | "measure" | "cloud" | "evide
   { clave: "cloud", icono: "database" },
   { clave: "evidence", icono: "spark" },
 ];
+
+/**
+ * El tono de la insignia de cada caso (Badge de affectUI). El color acompaña;
+ * el veredicto lo dicen las palabras: «nada que instalar» es neutro, no un error.
+ */
+const TONO_DEL_VEREDICTO: Record<"no" | "casi" | "mide" | "si" | "skill", BadgeTone> = {
+  no: "neutral",
+  casi: "warning",
+  mide: "info",
+  skill: "info",
+  si: "success",
+};
 
 /**
  * «¿Dónde se instala el ahorro?» — la explicación sin jerga de dónde actúa la
@@ -187,7 +200,9 @@ export async function HowItWorks({
                   {c.name}
                   <small>{c.sub}</small>
                 </div>
-                <span className={`hiw-verdict ${c.verdict}`}>{verdictLabel[c.verdict]}</span>
+                <Badge className="hiw-insignia" tone={TONO_DEL_VEREDICTO[c.verdict]} dot>
+                  {verdictLabel[c.verdict]}
+                </Badge>
               </div>
               <div>
                 {c.body.map((p, i) => (

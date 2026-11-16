@@ -18,7 +18,9 @@
     "results": "Kết quả",
     "code": "Mã nguồn",
     "mainAria": "Điều hướng chính",
-    "newTab": "(mở trong thẻ mới)"
+    "newTab": "(mở trong thẻ mới)",
+    "breadcrumb": "Đường dẫn điều hướng",
+    "home": "Trang chủ"
   },
   "app": {
     "sidebar": {
@@ -1717,7 +1719,10 @@
     "cerrando": "Đang đăng xuất…",
     "kicker": "Lời mời",
     "labelOrg": "Tổ chức",
-    "labelFor": "Gửi tới"
+    "labelFor": "Gửi tới",
+    "panelTitle": "Một nhóm, <em>một bảng điều khiển</em>.",
+    "panelBody": "Khi chấp nhận, bạn vào bảng điều khiển của tổ chức bằng tài khoản của riêng mình. Số ghế của gói đăng ký tính theo máy hoặc danh tính dịch vụ, không tính theo người.",
+    "arteAlt": "Hình minh họa: một tổ chức và bảng điều khiển Savings đã kết nối, cùng một vòng tròn thứ ba đi vào ô trống."
   },
   "benchmarksPage": {
     "metaTitle": "Bài kiểm tra A/B công khai: hãy đo chúng tôi | BiVelio Savings Layer",
@@ -2504,6 +2509,10 @@
     "fields": {
       "colGroup": "Nhóm",
       "colFields": "Các trường được gửi"
+    },
+    "art": {
+      "alt": "Hình minh họa: một thư mục màu xanh chứa ba tài liệu phía sau một túi trong mờ.",
+      "caption": "Yêu cầu, phản hồi và thông tin xác thực của bạn không được gửi tới BiVelio."
     }
   },
   "docsPage": {
@@ -2530,6 +2539,7 @@
     "title": "Không tìm thấy trang",
     "body": "Trang này không tồn tại hoặc đã được chuyển đi.",
     "home": "← Quay lại trang chủ",
-    "explore": "Bạn cũng có thể đến"
+    "explore": "Bạn cũng có thể đến",
+    "artAlt": "Hình minh họa: ba cửa sổ trình duyệt chồng lên nhau với nội dung giữ chỗ."
   }
 }

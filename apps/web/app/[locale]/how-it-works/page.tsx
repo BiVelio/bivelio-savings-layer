@@ -11,6 +11,8 @@ import { VideoExplicativo } from "@/app/components/VideoExplicativo";
 import { Link } from "@/i18n/navigation";
 import { absolute, languageAlternates } from "@/i18n/site";
 import { BANCO_EN_VIVO } from "@/lib/portada/banco-en-vivo";
+import { GridBackground } from "@/vendor/affectui/grid-background";
+import { LogoMarquee } from "@/vendor/affectui/logo-marquee";
 
 /**
  * Página pública «¿Dónde se instala el ahorro?» — la explicación sin jerga que
@@ -60,6 +62,7 @@ export default async function HowItWorksPage({ params }: { params: Promise<{ loc
         {/* Instalar open source no pasa por registro ni compra: la acción principal
             lleva a la instalación completa, más abajo en esta página; la de apoyo,
             al banco. */}
+        <GridBackground className="doc-fondo hiw-fondo">
         <PageHeader
           className="hiw-hero"
           eyebrow={t("eyebrow")}
@@ -76,6 +79,7 @@ export default async function HowItWorksPage({ params }: { params: Promise<{ loc
             </>
           }
         />
+        </GridBackground>
         <HowItWorks
           variant="landing"
           profundiza={
@@ -170,17 +174,19 @@ export default async function HowItWorksPage({ params }: { params: Promise<{ loc
                     oficiales a color (decisión del dueño). El texto mantiene la
                     afirmación honesta: se mide la llamada a la API con su clave
                     (#313; lo fija messages/copia-del-gateway.test.ts). */}
-                <div className="sys-marquee" aria-label="Salesforce, HubSpot, Odoo, Zapier, n8n, UiPath">
-                  <div className="sys-track">
-                    {[0, 1].map((copia) =>
-                      ["Salesforce", "HubSpot", "Odoo", "Zapier", "n8n", "UiPath"].map((sys) => (
-                        <span className="sys" key={`${copia}-${sys}`} aria-hidden={copia === 1}>
-                          <LogoProveedor marca={sys} size={16} /> {sys}
-                        </span>
-                      )),
-                    )}
-                  </div>
-                </div>
+                {/* El Logo Marquee de affectUI: se para al pasar el puntero o al
+                    enfocarlo, se puede arrastrar, solo corre mientras está en
+                    pantalla y con movimiento reducido es una fila quieta. */}
+                <LogoMarquee
+                  className="hiw-sistemas"
+                  label="Salesforce, HubSpot, Odoo, Zapier, n8n, UiPath"
+                  labels="beside"
+                  gap={44}
+                  logos={["Salesforce", "HubSpot", "Odoo", "Zapier", "n8n", "UiPath"].map((sys) => ({
+                    name: sys,
+                    svg: <LogoProveedor marca={sys} size={18} />,
+                  }))}
+                />
                 <p className="sys-note">{tl("systems.caption")}</p>
               </div>
 
