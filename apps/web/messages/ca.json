@@ -48,6 +48,12 @@
         "members": "{n, plural, =1 {1 membre} other {# membres}}",
         "seats": "{used} de {seats}",
         "seatsTitle": "{used} seients en ús de {seats} pagats aquest mes"
+      },
+      "status": {
+        "done": "fet",
+        "next": "següent",
+        "pending": "pendent",
+        "unavailable": "no disponible"
       }
     },
     "topbar": {
@@ -57,6 +63,61 @@
         "free": "Free",
         "pro": "Pro",
         "enterprise": "Enterprise"
+      }
+    },
+    "tour": {
+      "open": "Veure el tour",
+      "openHint": "Repeteix el recorregut guiat del panell",
+      "close": "Tancar el tour",
+      "next": "Següent",
+      "prev": "Enrere",
+      "finish": "Acabar",
+      "step": "Pas {n} de {total}",
+      "steps": {
+        "welcome": {
+          "title": "Benvingut a BiVelio Savings",
+          "body": "Aquest panell mostra el que gastes en LLM i el que estalvia la capa, mesurat amb el teu propi trànsit. El que no s'ha mesurat es diu amb paraules, mai amb un zero."
+        },
+        "nav": {
+          "title": "Tres grups, un recorregut",
+          "body": "Començar et porta al resum i a la instal·lació. Estalviar reuneix la prova i l'extracte. La teva organització, les màquines i el compte."
+        },
+        "setup": {
+          "title": "Primers passos i el teu progrés",
+          "body": "Les fites de la posada en marxa les mesura el producte. Prem-ne una per obrir-ne la instrucció: passa a fet només quan arriba el senyal real."
+        },
+        "verdict": {
+          "title": "El teu veredicte",
+          "body": "L'estalvi mesurat del període, amb el seu rebut i el tipus d'evidència. Si falta alguna cosa —integració, trànsit, preu o lectura— aquí s'explica què falta i com continuar."
+        },
+        "range": {
+          "title": "Tria el període",
+          "body": "Canvia entre els rangs disponibles. El període viatja a l'adreça, així que pots compartir o recarregar la mateixa vista."
+        },
+        "customize": {
+          "title": "Personalitza el panell",
+          "body": "Reordena o amaga targetes i restableix la disposició quan vulguis. Es desa només en aquest navegador; els avisos i el veredicte no es poden amagar."
+        },
+        "explorer": {
+          "title": "Explora el teu ús",
+          "body": "Mira l'ús per dia, acumulat o per model, canvia de mètrica i exporta el període en CSV."
+        },
+        "proof": {
+          "title": "Prova i evidència",
+          "body": "Tres pestanyes: el banc públic, el teu propi A/B i el verificador. Les dades de referència mai es presenten com a teves."
+        },
+        "team": {
+          "title": "El teu equip · Compte i pla",
+          "body": "Convida persones i assigna rols. Un membre no és un seient: els seients són màquines o identitats de servei. Consulta el teu pla, els seients i la facturació, i gestiona la subscripció des d'aquí."
+        },
+        "account": {
+          "title": "Compte i pla",
+          "body": "Consulta el teu pla, els seients i la facturació, i gestiona la subscripció des d'aquí."
+        },
+        "finish": {
+          "title": "Repeteix-lo quan vulguis",
+          "body": "Aquest recorregut torna a començar des de «Veure el tour», a la barra superior de qualsevol pàgina del panell."
+        }
       }
     }
   },
@@ -193,6 +254,36 @@
         "models": "No s'ha pogut llegir el desglossament per model.",
         "sessions": "No s'ha pogut llegir el cost per sessió.",
         "seats": "No s'ha pogut llegir l'activitat de les màquines."
+      },
+      "panelEyebrow": "La teva activitat",
+      "panelTitle": "Ús, oportunitats i distribució",
+      "next": {
+        "eyebrow": "Pas següent",
+        "doneTitle": "El teu mesurador està en marxa",
+        "doneBody": "Les fites de la posada en marxa estan completes. Contrasta les teves xifres amb l'evidència publicada.",
+        "proofCta": "Obrir la prova",
+        "openCta": "Veure la instrucció",
+        "unavailableTitle": "No podem avaluar la posada en marxa"
+      },
+      "kpi": {
+        "label": "Xifres del període",
+        "cost": "Cost observat",
+        "costBase": "Cost real als teus preus · {period}",
+        "saved": "Estalvi acreditat",
+        "savedBase": "Línia base − cost real, només peticions mesurades · {period}",
+        "requests": "Peticions",
+        "requestsBase": "{share} amb comptador del proveïdor · {period}",
+        "requestsBaseNone": "Totes les rebudes · {period}",
+        "noPrice": "Sense preu per tarifar aquest trànsit",
+        "notMeasured": "Encara no hi ha res mesurat en aquest període"
+      },
+      "breakdown": {
+        "title": "Cost observat per model",
+        "totalLabel": "Cost real · {period}",
+        "empty": "Encara no hi ha cost per model en aquest període",
+        "coverageFull": "El desglossament cobreix tot el cost observat del període.",
+        "coveragePartial": "El desglossament per model cobreix el {coverage} del cost observat del període; la resta no té model atribuït.",
+        "coverageUnknown": "No es pot comparar amb el cost observat del període."
       }
     },
     "proof": {
@@ -288,8 +379,10 @@
       "metaTitle": "Instal·la · BiVelio Savings Layer",
       "eyebrow": "Integra",
       "title": "Instal·la i connecta el SDK",
-      "intro": "Col·loca BV-SALA davant del teu proveïdor: els teus prompts mai no surten de la teva infraestructura.",
-      "irACuenta": "Encara sense pla, o vols canviar els seients? Es fa a Compte →"
+      "intro": "Col·loca BV-SALA davant del teu proveïdor. Els teus prompts no passen pels servidors de BiVelio; s'envien al proveïdor que configuris.",
+      "irACuenta": "Encara sense pla, o vols canviar els seients? Es fa a Compte →",
+      "trackerTitle": "La teva posada en marxa",
+      "trackerNote": "Aquestes fites les mesura el producte: prémer-ne una n'obre la instrucció, no la marca com a feta. Són les de la connexió Cloud; el motor obert funciona sense elles."
     },
     "account": {
       "metaTitle": "Compte · BiVelio Savings Layer",
@@ -309,7 +402,37 @@
       "hiddenCap": "Les vostres dades d'ús existeixen, però aquest compte no les pot veure. És una errada nostra i ja se n'ha avisat. Escriviu a support@bivelio.com si triga.",
       "rangeDays": "últims {n} dies",
       "rangeLabel": "Rang",
-      "rangeOption": "{n}d"
+      "rangeOption": "{n}d",
+      "status": {
+        "positive": "Estalvi mesurat",
+        "negative": "Cost per sobre de la referència",
+        "partial": "Mesura parcial",
+        "notIntegrated": "Encara sense integrar",
+        "noTraffic": "Sense trànsit en aquest període",
+        "noPrice": "Trànsit sense preu",
+        "notMeasured": "Trànsit sense mesurar",
+        "readFailed": "No s'ha pogut llegir",
+        "limited": "Accés limitat"
+      },
+      "lostLine": "per sobre de la teva línia base aquest període · <b>{money}</b> de sobrecost (real − línia base, als teus preus).",
+      "method": "Veure font i metodologia",
+      "methodBody": "El titular és u menys el cost real dividit per la línia base, calculat només amb les peticions que tenen comptador del proveïdor. El que és estimat i el que no s'ha mesurat queden fora del titular.",
+      "receipt": {
+        "title": "Rebut del període",
+        "baseline": "Línia base mesurada",
+        "actual": "Cost real mesurat",
+        "coverage": "Peticions amb comptador",
+        "saved": "Estalvi mesurat",
+        "origin": "Mesurat amb el comptador del teu proveïdor, als teus preus."
+      },
+      "actions": {
+        "install": "Començar la instal·lació",
+        "widen": "Veure els últims {n} dies",
+        "checkInstall": "Revisar la instal·lació",
+        "support": "Escriure a suport",
+        "how": "Com es mesura"
+      },
+      "noTrafficCap": "No hi ha peticions en aquest període. Prova un rang més ampli o comprova que la teva integració continua enviant trànsit."
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "crides a LLM/recuperació/eines que mai no s'han executat",
@@ -338,7 +461,7 @@
       "statusPending": "pendent",
       "statusUnavailable": "no disponible",
       "nextLabel": "Següent: {label}",
-      "installComment": "# detecta la teva pila i imprimeix la connexió exacta — els teus prompts mai no surten de la teva infraestructura",
+      "installComment": "# detecta la teva pila i imprimeix la connexió exacta — els teus prompts no passen pels servidors de BiVelio; s'envien al proveïdor que configuris",
       "hintLicense": "Crea o recupera a Compte la llicència i les credencials de servei. Una credencial sola no demostra la instal·lació.",
       "hintInstall": "Tria SDK o gateway i envia una petició real. Crear una clau o enviar un lot buit no demostra la instal·lació.",
       "hintFirstRequest": "Envia una petició real al proveïdor a través del SDK o gateway. El seu informe d'ús completarà aquest pas.",
@@ -348,7 +471,9 @@
       "linkInstall": "Obrir instal·lació",
       "linkSdk": "Recorregut SDK",
       "linkGateway": "Recorregut gateway",
-      "unavailableHint": "Ara no es pot llegir l'ús, així que no podem avaluar la instal·lació ni l'informe. No vol dir que el compte sigui buit."
+      "unavailableHint": "Ara no es pot llegir l'ús, així que no podem avaluar la instal·lació ni l'informe. No vol dir que el compte sigui buit.",
+      "count": "{done} de {total}",
+      "trackerTitle": "Posada en marxa"
     },
     "shadowOpportunities": {
       "title": "On és el teu estalvi potencial",
@@ -501,7 +626,15 @@
       "chipOk": "al dia",
       "chipMixed": "part sense declarar",
       "hint": "Una fila per màquina que reporta ús, identificada pel seu id de seient opac (mai una persona). El que viatja és un número de versió —gateway/x.y.z o sdk/x.y.z—, mai contingut. Una màquina amb un gateway anterior al canal de versió surt com a «sense declarar».",
-      "referenceHint": "L'estalvi mesurat inclou aquí les peticions repetides mesurades per referència: cadascuna es valora amb el comptador de la petició idèntica que ja es va executar."
+      "referenceHint": "L'estalvi mesurat inclou aquí les peticions repetides mesurades per referència: cadascuna es valora amb el comptador de la petició idèntica que ja es va executar.",
+      "emptyTitle": "Encara no hi ha màquines que reportin",
+      "emptyBody": "Una màquina apareix aquí quan el seu gateway o el seu SDK envia ús. Cadascuna compta com un seient: una màquina o una identitat de servei, mai una persona.",
+      "emptyCta": "Connectar una màquina",
+      "failedTitle": "No s'ha pogut llegir l'activitat de les màquines",
+      "failedBody": "És un error de lectura, no una llista buida. Recarrega d'aquí a un moment.",
+      "hiddenTitle": "La targeta de màquines està amagada",
+      "hiddenBody": "La vas amagar en personalitzar el panell. Les seves dades es continuen mesurant.",
+      "show": "Mostrar la targeta"
     },
     "installLicensePanel": {
       "eyebrow": "Comença",
@@ -520,7 +653,24 @@
       "doctorComment": "altres agents i SDK: la configuració exacta de cadascun",
       "agentsNote": "Cada envoltorio prepara el seu agent només per a aquesta sessió — no canvia res de la seva configuració — i en sortir et diu quantes peticions va mesurar, quines no va poder mesurar i per què. <code>bvsala copilot</code> necessita la teva pròpia clau d'Anthropic (BYOK): els models allotjats per GitHub no passen per un base URL, així que no hi ha res a mesurar. Per a Crush, Droid, Cline, Continue o Copilot al VS Code, <code>bvsala doctor</code> imprimeix la configuració exacta. <b>Cursor (BYOK)</b>: funciona amb l'override de base URL d'OpenAI i la teva pròpia clau; els seus models propis no arriben a un gateway a la teva màquina. <b>Gemini CLI</b>: llança-la amb <code>bvsala gemini</code>.",
       "pythonNote": "<b>Python?</b> El client <code>bvsala</code> per a Python fa passar els SDK oficials d'OpenAI i d'Anthropic per aquest mateix gateway (<code>bvsala gateway</code>) i retorna al teu codi l'informe de cada petició — les mateixes xifres que rep aquest tauler. Necessita un gateway 0.4.26 o posterior i Python 3.10 o posterior. S'instal·la des de PyPI amb <code>pip install bivelio-savings-layer</code>; al teu codi, <code>import bvsala</code>.",
-      "finalNote": "Això és tot. Sense llicència vàlida → <code>generate()</code> es rebutja. Si cancel·les el teu pla, el SDK s'atura en uns 15 min mitjançant <code>licenseServerUrl</code> — sense reiniciar, i mai no inutilitza la teva producció si no ens podem connectar."
+      "finalNote": "Això és tot. Sense llicència vàlida → <code>generate()</code> es rebutja. Si cancel·les el teu pla, el SDK s'atura en uns 15 min mitjançant <code>licenseServerUrl</code> — sense reiniciar, i mai no inutilitza la teva producció si no ens podem connectar.",
+      "terminal": "Terminal",
+      "sdkTitle": "Integrar una aplicació (SDK)",
+      "sdkLede": "Embolcalla el teu proveïdor al teu codi i llegeix l'informe d'estalvi de cada crida.",
+      "gatewayTitle": "Connectar un agent (gateway)",
+      "gatewayLede": "Llança el teu agent de codi a través del gateway local, sense tocar-ne el codi.",
+      "modeLocalTitle": "Mode local",
+      "modeLocalBody": "El motor obert funciona sense compte ni claus: totes les palanques locals i zero telemetria. L'informe es queda a la teva màquina.",
+      "modeCloudTitle": "Connexió Cloud",
+      "modeCloudBody": "Amb llicència i clau de servei, aquest panell rep recomptes i costos —mai els teus prompts— i la teva organització comparteix mesura i seients.",
+      "modeCloudLink": "Anar a les credencials",
+      "cloudTitle": "Connexió Cloud: llicència i clau de servei",
+      "optional": "Opcional amb el motor obert",
+      "roleLimited": "El teu rol pot llegir aquesta pàgina, però només owner i admin poden emetre la llicència i crear o revocar claus de servei.",
+      "permissionsNote": "Només owner i admin creen o revoquen claus. Una clau es mostra una sola vegada; després només en queda el prefix.",
+      "initExpected": "La línia d'instal·lació per al teu gestor de paquets, les claus que falten, el codi del teu adaptador i una comprovació que no gasta tokens. No escriu cap fitxer.",
+      "wireExpected": "La resposta, la part de la línia base que no has pagat i com s'ha obtingut aquesta xifra: measured, reference, estimated o unmeasured.",
+      "agentsExpected": "L'agent arrenca a través del gateway local. Amb la clau de servei, la seva despesa apareix en aquest panell."
     },
     "accountPlanStrip": {
       "noActivePlan": "Sense pla actiu",

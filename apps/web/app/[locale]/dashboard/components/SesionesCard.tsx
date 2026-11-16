@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 import type { SesionRollup } from "../data";
+import { intfmt } from "../format";
 
 /**
  * Coste por sesión y subagente (0019) — la vista de flota: qué sesión de qué
@@ -28,31 +29,29 @@ export async function SesionesCard({ sesiones }: { sesiones: SesionRollup[] }) {
   const filas = [...porSesion.entries()].sort((a, b) => b[1].coste - a[1].coste).slice(0, 8);
 
   return (
-    <div className="card" style={{ padding: "16px" }}>
-      <div className="n" style={{ marginBottom: "10px" }}>{t("sesiones.title")}</div>
+    <div className="card card-pad">
+      <div className="n card-title">{t("sesiones.title")}</div>
       <div className="tbl-scroll">
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+        <table className="dt">
           <thead>
-            <tr style={{ textAlign: "left", opacity: 0.65 }}>
-              <th style={{ padding: "4px 8px 4px 0", fontWeight: 500 }}>{t("sesiones.colSession")}</th>
-              <th style={{ padding: "4px 8px", fontWeight: 500 }}>{t("sesiones.colAgents")}</th>
-              <th style={{ padding: "4px 8px", fontWeight: 500 }}>{t("sesiones.colRequests")}</th>
-              <th style={{ padding: "4px 8px", fontWeight: 500 }}>{t("sesiones.colTokens")}</th>
-              <th style={{ padding: "4px 0 4px 8px", fontWeight: 500, textAlign: "right" }}>{t("sesiones.colCost")}</th>
+            <tr>
+              <th scope="col">{t("sesiones.colSession")}</th>
+              <th scope="col" className="dt-num">{t("sesiones.colAgents")}</th>
+              <th scope="col" className="dt-num">{t("sesiones.colRequests")}</th>
+              <th scope="col" className="dt-num">{t("sesiones.colTokens")}</th>
+              <th scope="col" className="dt-num">{t("sesiones.colCost")}</th>
             </tr>
           </thead>
           <tbody>
             {filas.map(([sessionId, g]) => (
-              <tr key={sessionId} style={{ borderTop: "1px solid var(--line)" }}>
-                <td style={{ padding: "6px 8px 6px 0", fontFamily: "var(--mono)", fontSize: 12 }}>
+              <tr key={sessionId}>
+                <td className="dt-mono">
                   {sessionId.length > 18 ? `${sessionId.slice(0, 8)}…${sessionId.slice(-6)}` : sessionId}
                 </td>
-                <td style={{ padding: "6px 8px" }}>{g.agentes.size}</td>
-                <td style={{ padding: "6px 8px" }}>{g.requests}</td>
-                <td style={{ padding: "6px 8px" }}>{g.tokens.toLocaleString()}</td>
-                <td style={{ padding: "6px 0 6px 8px", textAlign: "right", fontFamily: "var(--mono)", fontSize: 12 }}>
-                  ${g.coste.toFixed(4)}
-                </td>
+                <td className="dt-num">{g.agentes.size}</td>
+                <td className="dt-num">{intfmt(g.requests)}</td>
+                <td className="dt-num">{intfmt(g.tokens)}</td>
+                <td className="dt-num dt-mono">${g.coste.toFixed(4)}</td>
               </tr>
             ))}
           </tbody>

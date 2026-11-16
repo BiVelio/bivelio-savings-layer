@@ -48,6 +48,12 @@
         "members": "{n, plural, =1 {1 thành viên} other {# thành viên}}",
         "seats": "{used} trên {seats}",
         "seatsTitle": "{used} chỗ đang dùng trên {seats} chỗ đã trả tiền tháng này"
+      },
+      "status": {
+        "done": "xong",
+        "next": "tiếp theo",
+        "pending": "đang chờ",
+        "unavailable": "không khả dụng"
       }
     },
     "topbar": {
@@ -57,6 +63,61 @@
         "free": "Free",
         "pro": "Pro",
         "enterprise": "Enterprise"
+      }
+    },
+    "tour": {
+      "open": "Xem hướng dẫn",
+      "openHint": "Xem lại phần hướng dẫn từng bước của bảng điều khiển",
+      "close": "Đóng hướng dẫn",
+      "next": "Tiếp",
+      "prev": "Quay lại",
+      "finish": "Hoàn tất",
+      "step": "Bước {n} trên {total}",
+      "steps": {
+        "welcome": {
+          "title": "Chào mừng đến với BiVelio Savings",
+          "body": "Bảng điều khiển này cho thấy bạn chi bao nhiêu cho LLM và lớp tiết kiệm được bao nhiêu, đo trên chính lưu lượng của bạn. Những gì chưa đo được sẽ được nói bằng lời, không bao giờ hiển thị thành số không."
+        },
+        "nav": {
+          "title": "Ba nhóm, một lộ trình",
+          "body": "Bắt đầu đưa bạn đến tổng quan và phần cài đặt. Tiết kiệm gồm bằng chứng và sao kê. Tổ chức của bạn gồm máy và tài khoản."
+        },
+        "setup": {
+          "title": "Những bước đầu và tiến độ của bạn",
+          "body": "Các mốc thiết lập do sản phẩm đo. Chọn một mốc để mở hướng dẫn của nó: mốc chỉ chuyển sang xong khi tín hiệu thực sự đến."
+        },
+        "verdict": {
+          "title": "Kết quả của bạn",
+          "body": "Khoản tiết kiệm đã đo trong kỳ, kèm biên nhận và loại bằng chứng. Nếu còn thiếu điều gì — tích hợp, lưu lượng, giá hoặc quyền đọc — đây là nơi cho biết thiếu gì và cần làm gì tiếp."
+        },
+        "range": {
+          "title": "Chọn kỳ",
+          "body": "Chuyển giữa các khoảng thời gian có sẵn. Kỳ nằm trong địa chỉ, nên bạn có thể chia sẻ hoặc tải lại đúng chế độ xem đó."
+        },
+        "customize": {
+          "title": "Tùy chỉnh bảng điều khiển",
+          "body": "Sắp xếp lại hoặc ẩn thẻ và khôi phục bố cục bất cứ lúc nào. Chỉ lưu trong trình duyệt này; thông báo và kết quả không thể ẩn."
+        },
+        "explorer": {
+          "title": "Khám phá mức sử dụng",
+          "body": "Xem mức sử dụng theo ngày, lũy kế hoặc theo mô hình, đổi chỉ số và xuất kỳ ra CSV."
+        },
+        "proof": {
+          "title": "Bằng chứng và căn cứ",
+          "body": "Ba thẻ: benchmark công khai, thử nghiệm A/B của riêng bạn và trình xác minh. Dữ liệu tham chiếu không bao giờ được trình bày như dữ liệu của bạn."
+        },
+        "team": {
+          "title": "Nhóm của bạn · Tài khoản và gói",
+          "body": "Mời thành viên và gán vai trò. Thành viên không phải là một chỗ: chỗ là máy hoặc danh tính dịch vụ. Xem gói, số chỗ và thanh toán, đồng thời quản lý gói đăng ký tại đây."
+        },
+        "account": {
+          "title": "Tài khoản và gói",
+          "body": "Xem gói, số chỗ và thanh toán, đồng thời quản lý gói đăng ký tại đây."
+        },
+        "finish": {
+          "title": "Xem lại bất cứ lúc nào",
+          "body": "Phần hướng dẫn này bắt đầu lại từ “Xem hướng dẫn” trên thanh trên cùng của mọi trang trong bảng điều khiển."
+        }
       }
     }
   },
@@ -193,6 +254,36 @@
         "models": "Không thể đọc chi tiết theo mô hình.",
         "sessions": "Không thể đọc chi phí theo phiên.",
         "seats": "Không thể đọc hoạt động của máy."
+      },
+      "panelEyebrow": "Hoạt động của bạn",
+      "panelTitle": "Mức sử dụng, cơ hội và phân bổ",
+      "next": {
+        "eyebrow": "Bước tiếp theo",
+        "doneTitle": "Đồng hồ đo của bạn đang chạy",
+        "doneBody": "Các mốc thiết lập đã hoàn tất. Hãy đối chiếu số liệu của bạn với bằng chứng đã công bố.",
+        "proofCta": "Mở bằng chứng",
+        "openCta": "Xem hướng dẫn",
+        "unavailableTitle": "Hiện chưa thể đánh giá việc thiết lập"
+      },
+      "kpi": {
+        "label": "Số liệu của kỳ",
+        "cost": "Chi phí quan sát được",
+        "costBase": "Chi phí thực theo giá của bạn · {period}",
+        "saved": "Khoản tiết kiệm được ghi nhận",
+        "savedBase": "Đường cơ sở − chi phí thực, chỉ các yêu cầu đã đo · {period}",
+        "requests": "Yêu cầu",
+        "requestsBase": "{share} có bộ đếm của nhà cung cấp · {period}",
+        "requestsBaseNone": "Tất cả yêu cầu đã nhận · {period}",
+        "noPrice": "Chưa có giá để tính cho lưu lượng này",
+        "notMeasured": "Chưa đo được gì trong kỳ này"
+      },
+      "breakdown": {
+        "title": "Chi phí quan sát được theo mô hình",
+        "totalLabel": "Chi phí thực · {period}",
+        "empty": "Chưa có chi phí theo mô hình trong kỳ này",
+        "coverageFull": "Phần phân tách bao trùm toàn bộ chi phí quan sát được của kỳ.",
+        "coveragePartial": "Phần phân tách theo mô hình bao trùm {coverage} chi phí quan sát được của kỳ; phần còn lại chưa được gán mô hình.",
+        "coverageUnknown": "Không thể so sánh với chi phí quan sát được của kỳ."
       }
     },
     "proof": {
@@ -288,8 +379,10 @@
       "metaTitle": "Cài đặt · BiVelio Savings Layer",
       "eyebrow": "Tích hợp",
       "title": "Cài đặt và kết nối SDK",
-      "intro": "Đặt BV-SALA trước nhà cung cấp của bạn — prompt của bạn không bao giờ rời khỏi hạ tầng của bạn.",
-      "irACuenta": "Chưa có gói, hoặc muốn thay đổi số ghế? Bạn làm việc đó trong Tài khoản →"
+      "intro": "Đặt BV-SALA trước nhà cung cấp của bạn. Prompt của bạn không đi qua máy chủ của BiVelio; chúng được gửi đến nhà cung cấp mà bạn cấu hình.",
+      "irACuenta": "Chưa có gói, hoặc muốn thay đổi số ghế? Bạn làm việc đó trong Tài khoản →",
+      "trackerTitle": "Quá trình thiết lập của bạn",
+      "trackerNote": "Các mốc này do sản phẩm đo: chọn một mốc sẽ mở hướng dẫn của nó chứ không đánh dấu là xong. Chúng thuộc về kết nối Cloud; engine mở vẫn chạy mà không cần chúng."
     },
     "account": {
       "metaTitle": "Tài khoản · BiVelio Savings Layer",
@@ -309,7 +402,37 @@
       "hiddenCap": "Dữ liệu sử dụng của quý vị vẫn tồn tại, nhưng tài khoản này không xem được. Đây là lỗi từ phía chúng tôi và chúng tôi đã được cảnh báo. Hãy viết cho support@bivelio.com nếu tình trạng kéo dài.",
       "rangeDays": "{n} ngày gần nhất",
       "rangeLabel": "Khoảng thời gian",
-      "rangeOption": "{n}n"
+      "rangeOption": "{n}n",
+      "status": {
+        "positive": "Tiết kiệm đã đo",
+        "negative": "Chi phí cao hơn đường cơ sở",
+        "partial": "Đo được một phần",
+        "notIntegrated": "Chưa tích hợp",
+        "noTraffic": "Không có lưu lượng trong kỳ này",
+        "noPrice": "Lưu lượng chưa có giá",
+        "notMeasured": "Lưu lượng chưa được đo",
+        "readFailed": "Không đọc được",
+        "limited": "Quyền truy cập hạn chế"
+      },
+      "lostLine": "cao hơn đường cơ sở của bạn trong kỳ này · <b>{money}</b> chi phí tăng thêm (thực tế − đường cơ sở, theo giá của bạn).",
+      "method": "Xem nguồn và phương pháp",
+      "methodBody": "Con số chính bằng một trừ chi phí thực chia cho đường cơ sở, chỉ tính trên các yêu cầu có bộ đếm của nhà cung cấp. Phần ước tính và phần chưa đo nằm ngoài con số chính.",
+      "receipt": {
+        "title": "Biên nhận của kỳ",
+        "baseline": "Đường cơ sở đã đo",
+        "actual": "Chi phí thực đã đo",
+        "coverage": "Yêu cầu có bộ đếm",
+        "saved": "Tiết kiệm đã đo",
+        "origin": "Đo bằng bộ đếm của nhà cung cấp, theo giá của bạn."
+      },
+      "actions": {
+        "install": "Bắt đầu cài đặt",
+        "widen": "Xem {n} ngày gần nhất",
+        "checkInstall": "Kiểm tra cài đặt",
+        "support": "Liên hệ hỗ trợ",
+        "how": "Cách đo"
+      },
+      "noTrafficCap": "Không có yêu cầu nào trong kỳ này. Hãy thử khoảng thời gian rộng hơn hoặc kiểm tra xem phần tích hợp của bạn còn gửi lưu lượng hay không."
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "lệnh gọi LLM/truy xuất/công cụ chưa từng chạy",
@@ -337,7 +460,7 @@
       "statusNext": "tiếp theo",
       "statusPending": "đang chờ",
       "nextLabel": "Tiếp theo: {label}",
-      "installComment": "# phát hiện stack của bạn và in ra cách kết nối chính xác — prompt của bạn không bao giờ rời khỏi hạ tầng của bạn",
+      "installComment": "# phát hiện stack của bạn và in ra cách kết nối chính xác — prompt của bạn không đi qua máy chủ của BiVelio; chúng được gửi đến nhà cung cấp mà bạn cấu hình",
       "statusUnavailable": "không khả dụng",
       "hintLicense": "Tạo hoặc lấy giấy phép và thông tin xác thực dịch vụ trong Tài khoản. Chỉ có khóa không chứng minh được việc cài đặt.",
       "hintInstall": "Chọn SDK hoặc gateway và gửi một yêu cầu thực. Tạo khóa hoặc gửi lô rỗng không chứng minh được việc cài đặt.",
@@ -348,7 +471,9 @@
       "linkInstall": "Mở cài đặt",
       "linkSdk": "Lộ trình SDK",
       "linkGateway": "Lộ trình gateway",
-      "unavailableHint": "Hiện không thể đọc mức sử dụng nên không thể đánh giá cài đặt và báo cáo. Điều này không có nghĩa tài khoản trống."
+      "unavailableHint": "Hiện không thể đọc mức sử dụng nên không thể đánh giá cài đặt và báo cáo. Điều này không có nghĩa tài khoản trống.",
+      "count": "{done} trên {total}",
+      "trackerTitle": "Thiết lập"
     },
     "shadowOpportunities": {
       "title": "Tiết kiệm tiềm năng của bạn nằm ở đâu",
@@ -501,7 +626,15 @@
       "chipOk": "đã cập nhật",
       "chipMixed": "một phần chưa khai báo",
       "hint": "Mỗi máy báo cáo mức sử dụng là một hàng, nhận diện bằng id chỗ ngồi ẩn danh (không bao giờ là một người). Thứ được gửi đi là một số phiên bản — gateway/x.y.z hoặc sdk/x.y.z —, không bao giờ là nội dung. Máy chạy gateway cũ hơn kênh phiên bản hiển thị là “chưa khai báo”.",
-      "referenceHint": "Khoản tiết kiệm đo được ở đây bao gồm các lượt gọi lặp lại được đo theo tham chiếu: mỗi lượt được định giá bằng bộ đếm của lượt gọi giống hệt đã được thực hiện."
+      "referenceHint": "Khoản tiết kiệm đo được ở đây bao gồm các lượt gọi lặp lại được đo theo tham chiếu: mỗi lượt được định giá bằng bộ đếm của lượt gọi giống hệt đã được thực hiện.",
+      "emptyTitle": "Chưa có máy nào gửi báo cáo",
+      "emptyBody": "Một máy xuất hiện ở đây khi gateway hoặc SDK của nó gửi mức sử dụng. Mỗi máy được tính là một chỗ: một máy hoặc một danh tính dịch vụ, không bao giờ là một người.",
+      "emptyCta": "Kết nối một máy",
+      "failedTitle": "Không đọc được hoạt động của các máy",
+      "failedBody": "Đây là lỗi đọc, không phải danh sách trống. Hãy tải lại sau giây lát.",
+      "hiddenTitle": "Thẻ máy đang bị ẩn",
+      "hiddenBody": "Bạn đã ẩn thẻ này khi tùy chỉnh bảng điều khiển. Dữ liệu của nó vẫn đang được đo.",
+      "show": "Hiện thẻ"
     },
     "installLicensePanel": {
       "eyebrow": "Bắt đầu",
@@ -520,7 +653,24 @@
       "doctorComment": "agent và SDK khác: cấu hình chính xác cho từng loại",
       "agentsNote": "Mỗi wrapper chuẩn bị agent chỉ cho phiên đó — không có gì trong cấu hình thay đổi — và khi thoát sẽ cho biết đã đo bao nhiêu yêu cầu, yêu cầu nào không đo được và vì sao. <code>bvsala copilot</code> cần khóa Anthropic của riêng bạn (BYOK): các mô hình do GitHub lưu trữ không bao giờ đi qua URL cơ sở, nên không có gì để đo. Với Crush, Droid, Cline, Continue hoặc Copilot trong VS Code, <code>bvsala doctor</code> in cấu hình chính xác. <b>Cursor (BYOK)</b>: hoạt động qua ghi đè URL cơ sở OpenAI bằng khóa của riêng bạn; các mô hình của nó không bao giờ đến được gateway trên máy bạn. <b>Gemini CLI</b>: chạy nó bằng <code>bvsala gemini</code>.",
       "pythonNote": "<b>Python?</b> Client <code>bvsala</code> cho Python đưa các SDK chính thức của OpenAI và Anthropic đi qua chính gateway này (<code>bvsala gateway</code>) và trả về cho mã của bạn báo cáo của từng yêu cầu — cùng những con số mà bảng điều khiển này nhận được. Client cần gateway 0.4.26 trở lên và Python 3.10 trở lên. Cài từ PyPI bằng <code>pip install bivelio-savings-layer</code>; trong mã của bạn, <code>import bvsala</code>.",
-      "finalNote": "Chỉ vậy thôi. Không có giấy phép hợp lệ → <code>generate()</code> sẽ từ chối. Nếu gói của bạn bị hủy, SDK sẽ dừng trong khoảng 15 phút thông qua <code>licenseServerUrl</code> — không cần khởi động lại, và nó không bao giờ làm hỏng môi trường sản xuất của bạn nếu chúng tôi không thể kết nối được."
+      "finalNote": "Chỉ vậy thôi. Không có giấy phép hợp lệ → <code>generate()</code> sẽ từ chối. Nếu gói của bạn bị hủy, SDK sẽ dừng trong khoảng 15 phút thông qua <code>licenseServerUrl</code> — không cần khởi động lại, và nó không bao giờ làm hỏng môi trường sản xuất của bạn nếu chúng tôi không thể kết nối được.",
+      "terminal": "Terminal",
+      "sdkTitle": "Tích hợp một ứng dụng (SDK)",
+      "sdkLede": "Bọc nhà cung cấp trong mã của bạn và đọc báo cáo tiết kiệm của từng lần gọi.",
+      "gatewayTitle": "Kết nối một agent (gateway)",
+      "gatewayLede": "Chạy agent lập trình của bạn qua gateway cục bộ mà không cần sửa mã của nó.",
+      "modeLocalTitle": "Chế độ cục bộ",
+      "modeLocalBody": "Engine mở chạy không cần tài khoản hay khóa: mọi đòn bẩy cục bộ và không có telemetry. Báo cáo nằm lại trên máy của bạn.",
+      "modeCloudTitle": "Kết nối Cloud",
+      "modeCloudBody": "Với giấy phép và khóa dịch vụ, bảng điều khiển này nhận số đếm và chi phí — không bao giờ nhận prompt của bạn — và tổ chức của bạn dùng chung phép đo và số chỗ.",
+      "modeCloudLink": "Đến phần thông tin xác thực",
+      "cloudTitle": "Kết nối Cloud: giấy phép và khóa dịch vụ",
+      "optional": "Không bắt buộc với engine mở",
+      "roleLimited": "Vai trò của bạn có thể đọc trang này, nhưng chỉ owner và admin mới có thể cấp giấy phép và tạo hoặc thu hồi khóa dịch vụ.",
+      "permissionsNote": "Chỉ owner và admin tạo hoặc thu hồi khóa. Mỗi khóa chỉ hiển thị một lần; sau đó chỉ còn lại tiền tố của khóa.",
+      "initExpected": "Dòng lệnh cài đặt cho trình quản lý gói của bạn, các khóa còn thiếu, mã cho adapter của bạn và một bước kiểm tra không tốn token. Không ghi tệp nào.",
+      "wireExpected": "Câu trả lời, phần đường cơ sở bạn không phải trả và cách có được con số đó: measured, reference, estimated hoặc unmeasured.",
+      "agentsExpected": "Agent khởi chạy qua gateway cục bộ. Với khóa dịch vụ, chi tiêu của nó sẽ hiện trên bảng điều khiển này."
     },
     "accountPlanStrip": {
       "noActivePlan": "Không có gói đang hoạt động",

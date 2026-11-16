@@ -48,6 +48,12 @@
         "members": "{n, plural, =1 {1 anggota} other {# anggota}}",
         "seats": "{used} dari {seats}",
         "seatsTitle": "{used} kursi terpakai dari {seats} yang dibayar bulan ini"
+      },
+      "status": {
+        "done": "selesai",
+        "next": "berikutnya",
+        "pending": "menunggu",
+        "unavailable": "tidak tersedia"
       }
     },
     "topbar": {
@@ -57,6 +63,61 @@
         "free": "Free",
         "pro": "Pro",
         "enterprise": "Enterprise"
+      }
+    },
+    "tour": {
+      "open": "Lihat tur",
+      "openHint": "Ulangi tur terpandu dasbor",
+      "close": "Tutup tur",
+      "next": "Berikutnya",
+      "prev": "Kembali",
+      "finish": "Selesai",
+      "step": "Langkah {n} dari {total}",
+      "steps": {
+        "welcome": {
+          "title": "Selamat datang di BiVelio Savings",
+          "body": "Dasbor ini menampilkan pengeluaran LLM Anda dan penghematan dari layer, diukur dengan trafik Anda sendiri. Yang belum diukur dinyatakan dengan kata-kata, tidak pernah ditampilkan sebagai nol."
+        },
+        "nav": {
+          "title": "Tiga grup, satu alur",
+          "body": "Mulai membawa Anda ke ikhtisar dan pemasangan. Hemat memuat bukti dan rekening. Organisasi Anda memuat mesin dan akun."
+        },
+        "setup": {
+          "title": "Langkah pertama dan progres Anda",
+          "body": "Tonggak persiapan diukur oleh produk. Pilih salah satu untuk membuka petunjuknya: statusnya menjadi selesai hanya ketika sinyal nyata tiba."
+        },
+        "verdict": {
+          "title": "Hasil Anda",
+          "body": "Penghematan terukur pada periode ini, lengkap dengan struk dan jenis buktinya. Jika ada yang kurang — integrasi, trafik, harga, atau pembacaan — di sinilah dijelaskan apa yang kurang dan cara melanjutkan."
+        },
+        "range": {
+          "title": "Pilih periode",
+          "body": "Beralih di antara rentang yang tersedia. Periode ada di alamat, jadi Anda dapat membagikan atau memuat ulang tampilan yang sama."
+        },
+        "customize": {
+          "title": "Sesuaikan dasbor",
+          "body": "Urutkan ulang atau sembunyikan kartu dan pulihkan tata letak kapan saja. Disimpan hanya di browser ini; pemberitahuan dan hasil tidak dapat disembunyikan."
+        },
+        "explorer": {
+          "title": "Jelajahi pemakaian Anda",
+          "body": "Lihat pemakaian per hari, kumulatif, atau per model, ganti metrik, dan ekspor periode sebagai CSV."
+        },
+        "proof": {
+          "title": "Bukti dan dasar pembuktian",
+          "body": "Tiga tab: benchmark publik, A/B milik Anda, dan pemverifikasi. Data referensi tidak pernah ditampilkan sebagai milik Anda."
+        },
+        "team": {
+          "title": "Tim Anda · Akun dan paket",
+          "body": "Undang orang dan tetapkan peran. Anggota bukanlah kursi: kursi adalah mesin atau identitas layanan. Periksa paket, kursi, dan penagihan Anda, serta kelola langganan dari sini."
+        },
+        "account": {
+          "title": "Akun dan paket",
+          "body": "Periksa paket, kursi, dan penagihan Anda, serta kelola langganan dari sini."
+        },
+        "finish": {
+          "title": "Ulangi kapan saja",
+          "body": "Tur ini dimulai lagi dari “Lihat tur” di bilah atas setiap halaman dasbor."
+        }
       }
     }
   },
@@ -193,6 +254,36 @@
         "models": "Rincian per model tidak dapat dibaca.",
         "sessions": "Biaya per sesi tidak dapat dibaca.",
         "seats": "Aktivitas mesin tidak dapat dibaca."
+      },
+      "panelEyebrow": "Aktivitas Anda",
+      "panelTitle": "Pemakaian, peluang, dan distribusi",
+      "next": {
+        "eyebrow": "Langkah berikutnya",
+        "doneTitle": "Meteran Anda berjalan",
+        "doneBody": "Tonggak persiapan sudah lengkap. Bandingkan angka Anda dengan bukti yang dipublikasikan.",
+        "proofCta": "Buka bukti",
+        "openCta": "Lihat petunjuk",
+        "unavailableTitle": "Kami tidak dapat menilai persiapan saat ini"
+      },
+      "kpi": {
+        "label": "Angka periode ini",
+        "cost": "Biaya teramati",
+        "costBase": "Biaya aktual dengan harga Anda · {period}",
+        "saved": "Penghematan yang dikreditkan",
+        "savedBase": "Baseline − biaya aktual, hanya permintaan terukur · {period}",
+        "requests": "Permintaan",
+        "requestsBase": "{share} dengan penghitung penyedia · {period}",
+        "requestsBaseNone": "Semua yang diterima · {period}",
+        "noPrice": "Tidak ada harga untuk menilai trafik ini",
+        "notMeasured": "Belum ada yang terukur pada periode ini"
+      },
+      "breakdown": {
+        "title": "Biaya teramati per model",
+        "totalLabel": "Biaya aktual · {period}",
+        "empty": "Belum ada biaya per model pada periode ini",
+        "coverageFull": "Rincian mencakup seluruh biaya teramati pada periode ini.",
+        "coveragePartial": "Rincian per model mencakup {coverage} dari biaya teramati pada periode ini; sisanya tidak memiliki model yang diatribusikan.",
+        "coverageUnknown": "Tidak dapat dibandingkan dengan biaya teramati pada periode ini."
       }
     },
     "proof": {
@@ -288,8 +379,10 @@
       "metaTitle": "Pasang · BiVelio Savings Layer",
       "eyebrow": "Integrasikan",
       "title": "Pasang & sambungkan SDK",
-      "intro": "Tempatkan BV-SALA di depan penyedia Anda — prompt Anda tidak pernah keluar dari infrastruktur Anda.",
-      "irACuenta": "Belum punya paket, atau ingin mengubah jumlah kursi? Lakukan di Akun →"
+      "intro": "Tempatkan BV-SALA di depan penyedia Anda. Prompt Anda tidak melewati server BiVelio; prompt dikirim ke penyedia yang Anda konfigurasikan.",
+      "irACuenta": "Belum punya paket, atau ingin mengubah jumlah kursi? Lakukan di Akun →",
+      "trackerTitle": "Persiapan Anda",
+      "trackerNote": "Tonggak ini diukur oleh produk: memilih salah satunya membuka petunjuknya, bukan menandainya selesai. Tonggak ini milik koneksi Cloud; mesin terbuka tetap berjalan tanpanya."
     },
     "account": {
       "metaTitle": "Akun · BiVelio Savings Layer",
@@ -309,7 +402,37 @@
       "hiddenCap": "Data penggunaan Anda ada, tetapi akun ini tidak dapat melihatnya. Ini kesalahan di pihak kami dan kami sudah diberi tahu. Hubungi support@bivelio.com jika berlanjut.",
       "rangeDays": "{n} hari terakhir",
       "rangeLabel": "Rentang",
-      "rangeOption": "{n}h"
+      "rangeOption": "{n}h",
+      "status": {
+        "positive": "Penghematan terukur",
+        "negative": "Biaya di atas baseline",
+        "partial": "Pengukuran sebagian",
+        "notIntegrated": "Belum terintegrasi",
+        "noTraffic": "Tidak ada trafik pada periode ini",
+        "noPrice": "Trafik tanpa harga",
+        "notMeasured": "Trafik belum terukur",
+        "readFailed": "Tidak dapat dibaca",
+        "limited": "Akses terbatas"
+      },
+      "lostLine": "di atas baseline Anda pada periode ini · <b>{money}</b> biaya tambahan (aktual − baseline, pada harga Anda).",
+      "method": "Lihat sumber dan metodologi",
+      "methodBody": "Angka utama adalah satu dikurangi biaya aktual dibagi baseline, dihitung hanya dari permintaan yang memiliki penghitung penyedia. Yang diperkirakan dan yang belum terukur berada di luar angka utama.",
+      "receipt": {
+        "title": "Struk periode",
+        "baseline": "Baseline terukur",
+        "actual": "Biaya aktual terukur",
+        "coverage": "Permintaan dengan penghitung",
+        "saved": "Penghematan terukur",
+        "origin": "Diukur dengan penghitung penyedia Anda, pada harga Anda."
+      },
+      "actions": {
+        "install": "Mulai pemasangan",
+        "widen": "Lihat {n} hari terakhir",
+        "checkInstall": "Periksa pemasangan",
+        "support": "Hubungi dukungan",
+        "how": "Cara pengukurannya"
+      },
+      "noTrafficCap": "Tidak ada permintaan pada periode ini. Coba rentang yang lebih lebar atau periksa apakah integrasi Anda masih mengirim trafik."
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "panggilan LLM/retrieval/tool yang tidak pernah dijalankan",
@@ -338,7 +461,7 @@
       "statusPending": "menunggu",
       "statusUnavailable": "tidak tersedia",
       "nextLabel": "Berikutnya: {label}",
-      "installComment": "# mendeteksi stack Anda dan mencetak cara menyambungkannya dengan tepat — prompt Anda tidak pernah keluar dari infrastruktur Anda",
+      "installComment": "# mendeteksi stack Anda dan mencetak cara menyambungkannya dengan tepat — prompt Anda tidak melewati server BiVelio; prompt dikirim ke penyedia yang Anda konfigurasikan",
       "hintLicense": "Buat atau ambil lisensi dan kredensial layanan di Akun. Kredensial saja tidak membuktikan pemasangan.",
       "hintInstall": "Pilih SDK atau gateway dan kirim permintaan nyata. Membuat kunci atau mengirim batch kosong tidak membuktikan pemasangan.",
       "hintFirstRequest": "Kirim permintaan penyedia nyata melalui SDK atau gateway. Laporan penggunaannya akan menyelesaikan langkah ini.",
@@ -348,7 +471,9 @@
       "linkInstall": "Buka pemasangan",
       "linkSdk": "Jalur SDK",
       "linkGateway": "Jalur gateway",
-      "unavailableHint": "Penggunaan tidak dapat dibaca saat ini, sehingga pemasangan dan pelaporan tidak dapat dinilai. Ini bukan berarti akun kosong."
+      "unavailableHint": "Penggunaan tidak dapat dibaca saat ini, sehingga pemasangan dan pelaporan tidak dapat dinilai. Ini bukan berarti akun kosong.",
+      "count": "{done} dari {total}",
+      "trackerTitle": "Persiapan"
     },
     "shadowOpportunities": {
       "title": "Di mana potensi penghematan Anda",
@@ -501,7 +626,15 @@
       "chipOk": "mutakhir",
       "chipMixed": "sebagian tidak dideklarasikan",
       "hint": "Satu baris per mesin yang melaporkan pemakaian, dikenali lewat id kursi opak (tidak pernah seseorang). Yang dikirim hanyalah nomor versi — gateway/x.y.z atau sdk/x.y.z —, tidak pernah konten. Mesin dengan gateway yang lebih lama dari kanal versi tampil sebagai “tidak dideklarasikan”.",
-      "referenceHint": "Penghematan terukur di sini mencakup permintaan berulang yang diukur berdasarkan referensi: masing-masing dinilai dengan penghitung permintaan identik yang sudah dijalankan."
+      "referenceHint": "Penghematan terukur di sini mencakup permintaan berulang yang diukur berdasarkan referensi: masing-masing dinilai dengan penghitung permintaan identik yang sudah dijalankan.",
+      "emptyTitle": "Belum ada mesin yang melapor",
+      "emptyBody": "Mesin muncul di sini setelah gateway atau SDK-nya mengirim pemakaian. Masing-masing dihitung sebagai satu kursi: mesin atau identitas layanan, bukan orang.",
+      "emptyCta": "Hubungkan mesin",
+      "failedTitle": "Aktivitas mesin tidak dapat dibaca",
+      "failedBody": "Ini kegagalan pembacaan, bukan daftar kosong. Muat ulang sebentar lagi.",
+      "hiddenTitle": "Kartu mesin disembunyikan",
+      "hiddenBody": "Anda menyembunyikannya saat menyesuaikan dasbor. Datanya tetap diukur.",
+      "show": "Tampilkan kartu"
     },
     "installLicensePanel": {
       "eyebrow": "Mulai",
@@ -520,7 +653,24 @@
       "doctorComment": "agen dan SDK lain: konfigurasi persis untuk masing-masing",
       "agentsNote": "Setiap pembungkus menyiapkan agennya hanya untuk sesi itu — tidak ada yang berubah dalam konfigurasinya — dan saat keluar memberi tahu berapa permintaan yang diukurnya, mana yang tidak bisa diukur, dan mengapa. <code>bvsala copilot</code> memerlukan kunci Anthropic Anda sendiri (BYOK): model yang dihosting GitHub tidak pernah lewat URL dasar, jadi tidak ada yang perlu diukur. Untuk Crush, Droid, Cline, Continue, atau Copilot di VS Code, <code>bvsala doctor</code> mencetak konfigurasi persisnya. <b>Cursor (BYOK)</b>: bekerja lewat penggantian URL dasar OpenAI dengan kunci Anda sendiri; modelnya sendiri tidak pernah mencapai gateway di mesin Anda. <b>Gemini CLI</b>: jalankan dengan <code>bvsala gemini</code>.",
       "pythonNote": "<b>Python?</b> Klien <code>bvsala</code> untuk Python mengarahkan SDK resmi OpenAI dan Anthropic melalui gateway yang sama ini (<code>bvsala gateway</code>) dan mengembalikan laporan setiap permintaan ke kode Anda — angka yang sama dengan yang diterima panel ini. Klien ini memerlukan gateway 0.4.26 atau lebih baru dan Python 3.10 atau lebih baru. Pasang dari PyPI dengan <code>pip install bivelio-savings-layer</code>; di kode Anda, <code>import bvsala</code>.",
-      "finalNote": "Selesai. Tanpa lisensi valid → <code>generate()</code> menolak. Jika paket Anda dibatalkan, SDK berhenti dalam ~15 mnt melalui <code>licenseServerUrl</code> — tanpa restart, dan tidak pernah melumpuhkan produksi Anda jika kami tidak dapat dihubungi."
+      "finalNote": "Selesai. Tanpa lisensi valid → <code>generate()</code> menolak. Jika paket Anda dibatalkan, SDK berhenti dalam ~15 mnt melalui <code>licenseServerUrl</code> — tanpa restart, dan tidak pernah melumpuhkan produksi Anda jika kami tidak dapat dihubungi.",
+      "terminal": "Terminal",
+      "sdkTitle": "Integrasikan aplikasi (SDK)",
+      "sdkLede": "Bungkus penyedia Anda di dalam kode dan baca laporan penghematan setiap panggilan.",
+      "gatewayTitle": "Hubungkan agen (gateway)",
+      "gatewayLede": "Jalankan agen koding Anda melalui gateway lokal, tanpa menyentuh kodenya.",
+      "modeLocalTitle": "Mode lokal",
+      "modeLocalBody": "Mesin terbuka berjalan tanpa akun dan tanpa kunci: semua tuas lokal dan nol telemetri. Laporan tetap berada di mesin Anda.",
+      "modeCloudTitle": "Koneksi Cloud",
+      "modeCloudBody": "Dengan lisensi dan kunci layanan, dasbor ini menerima hitungan dan biaya — tidak pernah prompt Anda — dan organisasi Anda berbagi pengukuran serta kursi.",
+      "modeCloudLink": "Buka kredensial",
+      "cloudTitle": "Koneksi Cloud: lisensi dan kunci layanan",
+      "optional": "Opsional dengan mesin terbuka",
+      "roleLimited": "Peran Anda dapat membaca halaman ini, tetapi hanya owner dan admin yang dapat menerbitkan lisensi serta membuat atau mencabut kunci layanan.",
+      "permissionsNote": "Hanya owner dan admin yang membuat atau mencabut kunci. Kunci ditampilkan satu kali saja; setelah itu hanya prefiksnya yang tersisa.",
+      "initExpected": "Baris pemasangan untuk pengelola paket Anda, kunci yang masih kurang, kode adaptor Anda, dan pemeriksaan yang tidak menghabiskan token. Tidak ada berkas yang ditulis.",
+      "wireExpected": "Jawaban, bagian baseline yang tidak Anda bayar, dan cara angka itu diperoleh: measured, reference, estimated, atau unmeasured.",
+      "agentsExpected": "Agen berjalan melalui gateway lokal. Dengan kunci layanan, pengeluarannya muncul di dasbor ini."
     },
     "accountPlanStrip": {
       "noActivePlan": "Tidak ada paket aktif",

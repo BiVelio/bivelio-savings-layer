@@ -48,6 +48,12 @@
         "members": "{n, plural, =1 {1 członek} few {# członkowie} other {# członków}}",
         "seats": "{used} z {seats}",
         "seatsTitle": "{used} miejsc w użyciu z {seats} opłaconych w tym miesiącu"
+      },
+      "status": {
+        "done": "gotowe",
+        "next": "następny",
+        "pending": "oczekuje",
+        "unavailable": "niedostępne"
       }
     },
     "topbar": {
@@ -57,6 +63,61 @@
         "free": "Free",
         "pro": "Pro",
         "enterprise": "Enterprise"
+      }
+    },
+    "tour": {
+      "open": "Zobacz przewodnik",
+      "openHint": "Powtórz przewodnik po panelu",
+      "close": "Zamknij przewodnik",
+      "next": "Dalej",
+      "prev": "Wstecz",
+      "finish": "Zakończ",
+      "step": "Krok {n} z {total}",
+      "steps": {
+        "welcome": {
+          "title": "Witaj w BiVelio Savings",
+          "body": "Ten panel pokazuje, ile wydajesz na LLM i ile oszczędza warstwa — zmierzone na Twoim własnym ruchu. To, czego nie zmierzono, opisujemy słowami, nigdy jako zero."
+        },
+        "nav": {
+          "title": "Trzy grupy, jedna ścieżka",
+          "body": "Zacznij prowadzi do przeglądu i instalacji. Oszczędzaj zbiera dowód i wyciąg. Twoja organizacja obejmuje maszyny i konto."
+        },
+        "setup": {
+          "title": "Pierwsze kroki i Twój postęp",
+          "body": "Kamienie milowe uruchomienia mierzy produkt. Wybierz jeden, aby otworzyć jego instrukcję: zmienia się na gotowe dopiero wtedy, gdy nadejdzie rzeczywisty sygnał."
+        },
+        "verdict": {
+          "title": "Twój wynik",
+          "body": "Zmierzone oszczędności w okresie, z paragonem i rodzajem dowodu. Jeśli czegoś brakuje — integracji, ruchu, ceny albo odczytu — tutaj zobaczysz, czego i jak przejść dalej."
+        },
+        "range": {
+          "title": "Wybierz okres",
+          "body": "Przełączaj się między dostępnymi zakresami. Okres jest zapisany w adresie, więc możesz udostępnić lub odświeżyć ten sam widok."
+        },
+        "customize": {
+          "title": "Dostosuj panel",
+          "body": "Zmieniaj kolejność kart, ukrywaj je i przywracaj układ, kiedy chcesz. Zapis odbywa się tylko w tej przeglądarce; komunikatów i wyniku nie można ukryć."
+        },
+        "explorer": {
+          "title": "Zbadaj swoje użycie",
+          "body": "Zobacz użycie dziennie, narastająco lub według modelu, zmień metrykę i wyeksportuj okres do CSV."
+        },
+        "proof": {
+          "title": "Dowód i materiał dowodowy",
+          "body": "Trzy karty: publiczny benchmark, Twój własny test A/B i weryfikator. Dane referencyjne nigdy nie są przedstawiane jako Twoje."
+        },
+        "team": {
+          "title": "Twój zespół · Konto i plan",
+          "body": "Zapraszaj osoby i przydzielaj role. Członek to nie miejsce: miejsca to maszyny lub tożsamości usługowe. Sprawdź plan, miejsca i rozliczenia oraz zarządzaj subskrypcją z tego miejsca."
+        },
+        "account": {
+          "title": "Konto i plan",
+          "body": "Sprawdź plan, miejsca i rozliczenia oraz zarządzaj subskrypcją z tego miejsca."
+        },
+        "finish": {
+          "title": "Powtórz, kiedy chcesz",
+          "body": "Ten przewodnik uruchomisz ponownie przyciskiem „Zobacz przewodnik” na górnym pasku każdej strony panelu."
+        }
       }
     }
   },
@@ -193,6 +254,36 @@
         "models": "Nie udało się odczytać podziału według modelu.",
         "sessions": "Nie udało się odczytać kosztów sesji.",
         "seats": "Nie udało się odczytać aktywności maszyn."
+      },
+      "panelEyebrow": "Twoja aktywność",
+      "panelTitle": "Użycie, możliwości i rozkład",
+      "next": {
+        "eyebrow": "Następny krok",
+        "doneTitle": "Twój licznik działa",
+        "doneBody": "Kamienie milowe uruchomienia są ukończone. Porównaj swoje liczby z opublikowanym materiałem dowodowym.",
+        "proofCta": "Otwórz dowód",
+        "openCta": "Zobacz instrukcję",
+        "unavailableTitle": "Nie możemy ocenić uruchomienia"
+      },
+      "kpi": {
+        "label": "Liczby z okresu",
+        "cost": "Zaobserwowany koszt",
+        "costBase": "Rzeczywisty koszt według Twoich cen · {period}",
+        "saved": "Zaliczone oszczędności",
+        "savedBase": "Linia bazowa − koszt rzeczywisty, tylko zmierzone żądania · {period}",
+        "requests": "Żądania",
+        "requestsBase": "{share} z licznikiem dostawcy · {period}",
+        "requestsBaseNone": "Wszystkie otrzymane · {period}",
+        "noPrice": "Brak ceny do wyceny tego ruchu",
+        "notMeasured": "W tym okresie nic jeszcze nie zmierzono"
+      },
+      "breakdown": {
+        "title": "Zaobserwowany koszt według modelu",
+        "totalLabel": "Koszt rzeczywisty · {period}",
+        "empty": "W tym okresie nie ma jeszcze kosztu według modelu",
+        "coverageFull": "Podział obejmuje cały zaobserwowany koszt okresu.",
+        "coveragePartial": "Podział według modelu obejmuje {coverage} zaobserwowanego kosztu okresu; reszta nie ma przypisanego modelu.",
+        "coverageUnknown": "Nie da się porównać z zaobserwowanym kosztem okresu."
       }
     },
     "proof": {
@@ -288,8 +379,10 @@
       "metaTitle": "Zainstaluj · BiVelio Savings Layer",
       "eyebrow": "Integracja",
       "title": "Zainstaluj i podłącz SDK",
-      "intro": "Umieść BV-SALA przed swoim dostawcą — Twoje prompty nigdy nie opuszczają Twojej infrastruktury.",
-      "irACuenta": "Nie masz jeszcze planu lub chcesz zmienić liczbę miejsc? Zrobisz to w Koncie →"
+      "intro": "Umieść BV-SALA przed swoim dostawcą. Twoje prompty nie przechodzą przez serwery BiVelio; są wysyłane do dostawcy, którego skonfigurujesz.",
+      "irACuenta": "Nie masz jeszcze planu lub chcesz zmienić liczbę miejsc? Zrobisz to w Koncie →",
+      "trackerTitle": "Twoje uruchomienie",
+      "trackerNote": "Te kamienie milowe mierzy produkt: wybranie jednego otwiera jego instrukcję, ale nie oznacza go jako gotowego. Dotyczą połączenia Cloud; otwarty silnik działa bez nich."
     },
     "account": {
       "metaTitle": "Konto · BiVelio Savings Layer",
@@ -309,7 +402,37 @@
       "hiddenCap": "Państwa dane o użyciu istnieją, ale to konto ich nie widzi. To błąd po naszej stronie i zostaliśmy o nim powiadomieni. Prosimy napisać na support@bivelio.com, jeśli to potrwa.",
       "rangeDays": "ostatnie {n} dni",
       "rangeLabel": "Zakres",
-      "rangeOption": "{n}d"
+      "rangeOption": "{n}d",
+      "status": {
+        "positive": "Zmierzone oszczędności",
+        "negative": "Koszt powyżej linii bazowej",
+        "partial": "Pomiar częściowy",
+        "notIntegrated": "Jeszcze bez integracji",
+        "noTraffic": "Brak ruchu w tym okresie",
+        "noPrice": "Ruch bez ceny",
+        "notMeasured": "Ruch bez pomiaru",
+        "readFailed": "Nie udało się odczytać",
+        "limited": "Ograniczony dostęp"
+      },
+      "lostLine": "powyżej Twojej linii bazowej w tym okresie · <b>{money}</b> dodatkowego kosztu (rzeczywiste − linia bazowa, według Twoich cen).",
+      "method": "Zobacz źródło i metodologię",
+      "methodBody": "Główny wynik to jeden minus koszt rzeczywisty podzielony przez linię bazową, liczony wyłącznie z żądań, które mają licznik dostawcy. To, co oszacowane i niezmierzone, pozostaje poza głównym wynikiem.",
+      "receipt": {
+        "title": "Paragon za okres",
+        "baseline": "Zmierzona linia bazowa",
+        "actual": "Zmierzony koszt rzeczywisty",
+        "coverage": "Żądania z licznikiem",
+        "saved": "Zmierzone oszczędności",
+        "origin": "Zmierzone licznikiem Twojego dostawcy, według Twoich cen."
+      },
+      "actions": {
+        "install": "Rozpocznij instalację",
+        "widen": "Zobacz ostatnie {n} dni",
+        "checkInstall": "Sprawdź instalację",
+        "support": "Napisz do wsparcia",
+        "how": "Jak to mierzymy"
+      },
+      "noTrafficCap": "W tym okresie nie ma żadnych żądań. Wybierz szerszy zakres albo sprawdź, czy Twoja integracja nadal wysyła ruch."
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "wywołania LLM/wyszukiwania/narzędzi, które nigdy się nie wykonały",
@@ -338,7 +461,7 @@
       "statusPending": "oczekuje",
       "statusUnavailable": "niedostępne",
       "nextLabel": "Następny: {label}",
-      "installComment": "# wykrywa Twój stos i wypisuje dokładne podłączenie — Twoje prompty nigdy nie opuszczają Twojej infrastruktury",
+      "installComment": "# wykrywa Twój stos i wypisuje dokładne podłączenie — Twoje prompty nie przechodzą przez serwery BiVelio; są wysyłane do dostawcy, którego skonfigurujesz",
       "hintLicense": "Utwórz lub pobierz licencję i dane usługi w Koncie. Sam klucz nie dowodzi instalacji.",
       "hintInstall": "Wybierz SDK lub gateway i wyślij rzeczywiste żądanie. Utworzenie klucza lub wysłanie pustej partii nie dowodzi instalacji.",
       "hintFirstRequest": "Wyślij rzeczywiste żądanie do dostawcy przez SDK lub gateway. Raport użycia zakończy ten krok.",
@@ -348,7 +471,9 @@
       "linkInstall": "Otwórz instalację",
       "linkSdk": "Ścieżka SDK",
       "linkGateway": "Ścieżka gateway",
-      "unavailableHint": "Nie można teraz odczytać użycia, więc nie da się ocenić instalacji ani raportu. Nie oznacza to, że konto jest puste."
+      "unavailableHint": "Nie można teraz odczytać użycia, więc nie da się ocenić instalacji ani raportu. Nie oznacza to, że konto jest puste.",
+      "count": "{done} z {total}",
+      "trackerTitle": "Uruchomienie"
     },
     "shadowOpportunities": {
       "title": "Gdzie są Twoje potencjalne oszczędności",
@@ -501,7 +626,15 @@
       "chipOk": "aktualna",
       "chipMixed": "częściowo niezadeklarowana",
       "hint": "Jeden wiersz na maszynę raportującą użycie, rozpoznawaną po nieprzejrzystym id miejsca (nigdy osoba). Przesyłany jest numer wersji — gateway/x.y.z lub sdk/x.y.z — nigdy treść. Maszyna z gatewayem starszym niż kanał wersji pojawia się jako „niezadeklarowana”.",
-      "referenceHint": "Zmierzone oszczędności obejmują tu powtórzone zapytania zmierzone przez odniesienie: każde jest wyceniane licznikiem identycznego zapytania, które już zostało wykonane."
+      "referenceHint": "Zmierzone oszczędności obejmują tu powtórzone zapytania zmierzone przez odniesienie: każde jest wyceniane licznikiem identycznego zapytania, które już zostało wykonane.",
+      "emptyTitle": "Żadna maszyna jeszcze nie raportuje",
+      "emptyBody": "Maszyna pojawia się tutaj, gdy jej gateway lub SDK wyśle użycie. Każda liczy się jako miejsce: maszyna lub tożsamość usługowa, nigdy osoba.",
+      "emptyCta": "Podłącz maszynę",
+      "failedTitle": "Nie udało się odczytać aktywności maszyn",
+      "failedBody": "To błąd odczytu, a nie pusta lista. Odśwież za chwilę.",
+      "hiddenTitle": "Karta maszyn jest ukryta",
+      "hiddenBody": "Ukryto ją podczas dostosowywania panelu. Jej dane są nadal mierzone.",
+      "show": "Pokaż kartę"
     },
     "installLicensePanel": {
       "eyebrow": "Rozpocznij",
@@ -520,7 +653,24 @@
       "doctorComment": "inne agenty i SDK: dokładna konfiguracja dla każdego",
       "agentsNote": "Każdy wrapper przygotowuje swojego agenta tylko na tę sesję — nic w jego konfiguracji się nie zmienia — a przy wyjściu mówi, ile żądań zmierzył, których nie mógł zmierzyć i dlaczego. <code>bvsala copilot</code> potrzebuje Twojego własnego klucza Anthropic (BYOK): modele hostowane przez GitHub nigdy nie przechodzą przez bazowy URL, więc nie ma czego mierzyć. Dla Crush, Droid, Cline, Continue lub Copilot w VS Code, <code>bvsala doctor</code> wypisuje dokładną konfigurację. <b>Cursor (BYOK)</b>: działa przez nadpisanie bazowego URL OpenAI z Twoim własnym kluczem; jego własne modele nigdy nie docierają do bramki na Twoim komputerze. <b>Gemini CLI</b>: uruchom ją przez <code>bvsala gemini</code>.",
       "pythonNote": "<b>Python?</b> Klient <code>bvsala</code> dla Pythona kieruje oficjalne SDK OpenAI i Anthropic przez tę samą bramę (<code>bvsala gateway</code>) i zwraca Twojemu kodowi raport z każdego żądania — te same liczby, które otrzymuje ten panel. Wymaga bramy w wersji 0.4.26 lub nowszej oraz Pythona 3.10 lub nowszego. Instaluje się go z PyPI poleceniem <code>pip install bivelio-savings-layer</code>; w kodzie: <code>import bvsala</code>.",
-      "finalNote": "To wszystko. Brak ważnej licencji → <code>generate()</code> odmawia działania. Jeśli Twój plan zostanie anulowany, SDK zatrzymuje się w ciągu ~15 min poprzez <code>licenseServerUrl</code> — bez restartu i nigdy nie unieruchamia Twojej produkcji, jeśli jesteśmy nieosiągalni."
+      "finalNote": "To wszystko. Brak ważnej licencji → <code>generate()</code> odmawia działania. Jeśli Twój plan zostanie anulowany, SDK zatrzymuje się w ciągu ~15 min poprzez <code>licenseServerUrl</code> — bez restartu i nigdy nie unieruchamia Twojej produkcji, jeśli jesteśmy nieosiągalni.",
+      "terminal": "Terminal",
+      "sdkTitle": "Zintegruj aplikację (SDK)",
+      "sdkLede": "Opakuj swojego dostawcę we własnym kodzie i odczytuj raport oszczędności każdego wywołania.",
+      "gatewayTitle": "Podłącz agenta (gateway)",
+      "gatewayLede": "Uruchom swojego agenta kodującego przez lokalny gateway, bez zmian w jego kodzie.",
+      "modeLocalTitle": "Tryb lokalny",
+      "modeLocalBody": "Otwarty silnik działa bez konta i bez kluczy: wszystkie lokalne dźwignie i zero telemetrii. Raport zostaje na Twojej maszynie.",
+      "modeCloudTitle": "Połączenie Cloud",
+      "modeCloudBody": "Z licencją i kluczem usługowym ten panel otrzymuje liczniki i koszty — nigdy Twoje prompty — a Twoja organizacja współdzieli pomiar i miejsca.",
+      "modeCloudLink": "Przejdź do danych dostępowych",
+      "cloudTitle": "Połączenie Cloud: licencja i klucz usługowy",
+      "optional": "Opcjonalne przy otwartym silniku",
+      "roleLimited": "Twoja rola może czytać tę stronę, ale tylko owner i admin mogą wystawić licencję oraz tworzyć lub unieważniać klucze usługowe.",
+      "permissionsNote": "Tylko owner i admin tworzą lub unieważniają klucze. Klucz jest pokazywany tylko raz; potem widoczny pozostaje jedynie jego prefiks.",
+      "initExpected": "Wiersz instalacji dla Twojego menedżera pakietów, brakujące klucze, kod Twojego adaptera i sprawdzenie, które nie zużywa tokenów. Nie zapisuje żadnego pliku.",
+      "wireExpected": "Odpowiedź, część linii bazowej, której nie zapłacono, oraz sposób uzyskania tej liczby: measured, reference, estimated lub unmeasured.",
+      "agentsExpected": "Agent uruchamia się przez lokalny gateway. Z kluczem usługowym jego wydatki pojawiają się w tym panelu."
     },
     "accountPlanStrip": {
       "noActivePlan": "Brak aktywnego planu",

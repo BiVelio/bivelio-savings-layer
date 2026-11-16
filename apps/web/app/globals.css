@@ -3872,6 +3872,426 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 
 
 /* ==== SLOT F3 DASHBOARD NUCLEO ==== */
+/* El panel una vez dentro: cáscara («App Shell Flat»: raíl gris suave, área de
+   trabajo amplia separada por una línea, activo azul tenue), Resumen (titular
+   con su recibo, cifras del periodo, desglose por modelo), Primeros pasos y el
+   tour guiado. Todo lo de aquí es del frente F3; las reglas que repintan
+   clases antiguas ganan por orden o por un escalón de especificidad, sin tocar
+   las de arriba (`sidebar-scroll.test.ts` lee el PRIMER `.app-nav {`). */
+
+/* ── F3·1 Cáscara ───────────────────────────────────────────────────────── */
+.app .app-topbar { gap: 12px; padding: 0 clamp(12px, 2.2vw, 24px); background: color-mix(in srgb, var(--bg) 88%, transparent); }
+.app-topbar .app-brand { border-radius: 8px; }
+/* Contexto, junto a la marca: «/ Organización · Plan». */
+.app-ctx { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.app-ctx-sep { flex: none; font-size: 20px; font-weight: 300; line-height: 1; color: var(--line-strong); }
+.app-ctx .app-org { font-size: 13.5px; font-weight: 500; color: var(--ink); max-width: 24ch; }
+.app-ctx .app-plan { flex: none; }
+.app .app-account { gap: 4px; min-width: 0; }
+/* «Ver tour»: botón fantasma con línea; en estrecho, solo el icono. */
+.app-tour {
+  display: inline-flex; align-items: center; gap: 7px; flex: none; cursor: pointer;
+  height: 36px; padding: 0 12px 0 10px; margin-right: 4px;
+  border: 1px solid var(--btn-ghost-line); border-radius: var(--r-control); background: var(--surface); color: var(--ink);
+  font-family: var(--sans); font-size: 13.5px; font-weight: 500; line-height: 1; white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(15, 18, 24, .04);
+  transition: background-color var(--dur-1) var(--ease-out), border-color var(--dur-1) var(--ease-out);
+}
+.app-tour:hover { background: var(--surface-3); border-color: var(--btn-ghost-line-hover); }
+.app-tour-ic { display: grid; place-items: center; flex: none; color: var(--brand); }
+.app-tour-ic svg { width: 16px; height: 16px; }
+/* La cuenta: inicial en un círculo + correo. El correo se recorta primero. */
+.app .app-account .email {
+  display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 8px 0 4px; max-width: none;
+  border-radius: var(--r-control); font-family: var(--sans); font-size: 13px; color: var(--ink-soft);
+  transition: background-color var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out);
+}
+.app .app-account .email:hover { background: var(--surface-2); color: var(--ink); text-decoration: none; }
+.app-avatar {
+  display: grid; place-items: center; flex: none; width: 26px; height: 26px; border-radius: 50%;
+  background: var(--ink); color: #fff; font-family: var(--sans); font-size: 11.5px; font-weight: 600; line-height: 1;
+}
+.app-email-text { max-width: 22ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.app-signout-form { display: flex; margin: 0; }
+.app .app-signout {
+  display: inline-flex; align-items: center; gap: 7px; height: 36px; padding: 0 10px;
+  border-radius: var(--r-control); font-size: 13.5px; color: var(--ink-soft);
+}
+.app .app-signout:hover { background: var(--surface-2); color: var(--ink); }
+.app-signout-ic { display: grid; place-items: center; flex: none; }
+.app-signout-ic svg { width: 16px; height: 16px; }
+/* En estrecho el texto se RECORTA (sigue siendo el nombre accesible), no se quita. */
+@media (max-width: 1100px) {
+  .app-email-text {
+    position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
+  .app .app-account .email { padding: 0 5px; }
+}
+@media (max-width: 900px) {
+  .app-tour-label, .app-signout-label {
+    position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
+  .app-tour { width: 36px; padding: 0; justify-content: center; margin-right: 0; }
+  .app .app-signout { width: 36px; padding: 0; justify-content: center; }
+}
+@media (max-width: 640px) { .app .app-account .email { display: inline-flex; } }
+@media (max-width: 520px) { .app-ctx { display: none; } .app .app-account { gap: 2px; } }
+@media (pointer: coarse) {
+  .app-tour, .app .app-signout, .app .app-account .email { height: 44px; }
+  .app-tour, .app .app-signout { min-width: 44px; }
+  .app .app-account .email { min-width: 44px; justify-content: center; }
+}
+
+/* El raíl: gris suave, una línea, sin teselas. */
+.app .app-sidebar { background: color-mix(in srgb, var(--surface-2) 58%, var(--bg)); padding: 16px 12px 28px; }
+.app-sidebar .app-nav-sep { margin: 18px 10px 6px; padding-top: 0; border-top: 0; font-size: 11px; letter-spacing: .07em; color: color-mix(in srgb, var(--ink-soft) 86%, var(--bg)); }
+.app-sidebar .app-nav-sep[data-first] { margin-top: 6px; }
+.app-sidebar .app-nav-item {
+  gap: 10px; padding: 6px 10px; min-height: 36px; border-radius: 9px; border: 0;
+  font-size: 14px; font-weight: 500; color: color-mix(in srgb, var(--ink) 78%, var(--ink-soft));
+  transition: background-color var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out);
+}
+.app-sidebar .app-nav-item:hover { background: color-mix(in srgb, var(--ink) 5%, transparent); color: var(--ink); }
+.app-sidebar .app-nav-item .ic { width: 18px; height: 18px; border: 0; border-radius: 0; background: none; color: var(--ink-soft); }
+.app-sidebar .app-nav-item .ic svg { width: 17px; height: 17px; }
+.app-sidebar .app-nav-item:hover .ic { color: var(--ink); }
+/* DÓNDE ESTOY: azul tenue, y solo uno a la vez. */
+.app-sidebar .app-nav-item.on { background: var(--brand-soft); color: #0052B8; font-weight: 600; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--brand) 12%, transparent); }
+.app-sidebar .app-nav-item.on .ic { color: var(--brand); }
+.app-sidebar .app-nav-item:focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; }
+.app-sidebar .app-nav-badge {
+  padding: 2px 6px; margin-left: auto; border-radius: 6px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line);
+  font-size: 11px; font-weight: 500; line-height: 1.45; color: var(--ink-soft);
+}
+.app-sidebar .app-nav-item.on .app-nav-badge { color: #0052B8; opacity: 1; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--brand) 22%, transparent); }
+.app-sidebar .app-nav-note { margin: 0 4px 12px; padding: 10px 12px; max-width: none; border-radius: 10px; background: var(--amber-soft); color: var(--warn); font-size: 12.5px; }
+/* La puesta en marcha: la tarjeta blanca del raíl, con el Progress Tracker dentro. */
+.app-sidebar .app-setup { margin: 0 0 6px; padding: 12px 4px 4px; border: 0; border-radius: 12px; background: var(--surface); box-shadow: 0 0 0 1px var(--line), var(--shadow-card); }
+.app-sidebar .app-setup-unreadable { margin: 0 0 8px; padding: 10px 12px; border-radius: 10px; background: var(--surface); box-shadow: 0 0 0 1px var(--line); font-size: 12.5px; }
+
+.app .app-main { padding: clamp(24px, 3.2vw, 40px) clamp(16px, 3vw, 40px) 64px; }
+/* El Resumen usa el ancho de trabajo entero; Primeros pasos, ancho de lectura. */
+.app-inner:has(.ov) { width: min(var(--page-max), 100%); }
+.app-inner:has(.ins-page) { width: min(980px, 100%); }
+
+@media (max-width: 860px) {
+  .app .app-sidebar { padding: 8px 12px; background: color-mix(in srgb, color-mix(in srgb, var(--surface-2) 58%, var(--bg)) 92%, transparent); }
+  .app-sidebar .app-nav { gap: 4px; scrollbar-width: none; }
+  .app-sidebar .app-nav::-webkit-scrollbar { display: none; }
+  .app-sidebar .app-nav-item { padding: 8px 12px; min-height: 40px; border-radius: 999px; }
+  .app-sidebar .app-nav-sep, .app-sidebar .app-nav-sep[data-first] { margin: 8px 4px; }
+  .app-sidebar .app-nav-note { margin: 0 0 8px; }
+  .app-sidebar .app-setup, .app-sidebar .app-setup-unreadable { display: none; }
+}
+@media (max-width: 860px) and (pointer: coarse) { .app-sidebar .app-nav-item { min-height: 44px; } }
+
+/* Entrada del contenido al cambiar de sección (template.tsx). */
+.app-enter { min-width: 0; }
+@media (prefers-reduced-motion: no-preference) {
+  .app-enter { animation: bv-rise var(--dur-3) var(--ease-out) both; }
+}
+
+/* Cabecera de página y pestañas. */
+.app .app-head { margin-bottom: 28px; }
+.app .app-head .sub-page { font-size: 15px; max-width: 68ch; text-wrap: pretty; }
+.app .tabs a { display: inline-flex; align-items: center; min-height: 34px; }
+@media (pointer: coarse) { .app .tabs a { min-height: 44px; } }
+
+/* Esqueleto y error del panel. */
+.app-loading { min-width: 0; }
+.app-loading-hero { height: 216px; border-radius: var(--r-hero); margin-bottom: 16px; }
+.app-loading-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+.app-loading-row .sk { height: 112px; border-radius: var(--r-card); }
+.app-loading-card { height: 280px; border-radius: var(--r-card-lg); }
+@media (max-width: 640px) { .app-loading-row { grid-template-columns: minmax(0, 1fr); } .app-loading-row .sk { height: 84px; } }
+.app .app-error { margin: 0; padding: clamp(20px, 3vw, 32px); border: 1px solid var(--line); border-radius: var(--r-hero); background: var(--surface); box-shadow: var(--shadow-card); }
+.app-error-ic { display: grid; place-items: center; width: 40px; height: 40px; margin-bottom: 14px; border-radius: 12px; background: var(--bad-soft); color: var(--danger); }
+.app-error-ic svg { width: 18px; height: 18px; }
+.app-error-ref { margin-top: 12px; }
+.app-error-ref code { font-family: var(--mono); font-size: 12px; padding: 3px 8px; border-radius: 6px; background: var(--surface-2); color: var(--ink); overflow-wrap: anywhere; }
+
+/* ── F3·2 Piezas comunes del panel ──────────────────────────────────────── */
+.app .card-pad { padding: 20px; }
+.app .card-title { margin-bottom: 14px; }
+/* El título de una tarjeta se lee como título, no como etiqueta en versalitas. */
+.app .card .n.card-title, .app .card-head .n {
+  font-family: var(--sans); font-size: 14px; font-weight: 600; letter-spacing: -.005em; line-height: 1.35;
+  text-transform: none; color: var(--ink);
+}
+.app .card .n.card-title::first-letter, .app .card-head .n::first-letter { text-transform: uppercase; }
+.card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.app .panel-stack { gap: 16px; }
+@media (max-width: 560px) { .app .card-pad { padding: 16px; } }
+
+/* Tabla de datos ligera (máquinas, sesiones): cabecera callada, cifras en columna. */
+.dt { width: 100%; min-width: 520px; border-collapse: collapse; font-size: 13px; line-height: 1.4; }
+.dt th { padding: 0 12px 9px 0; border-bottom: 1px solid var(--line); text-align: start; font-size: 11.5px; font-weight: 500; color: var(--ink-soft); white-space: nowrap; }
+.dt td { padding: 10px 12px 10px 0; border-bottom: 1px solid var(--line); color: var(--ink); vertical-align: top; }
+.dt tbody tr:last-child td { border-bottom: 0; }
+.dt th:last-child, .dt td:last-child { padding-right: 0; }
+.dt .dt-num { text-align: end; font-variant-numeric: tabular-nums; }
+.dt .dt-mono { font-family: var(--mono); font-size: 12.5px; }
+.dt .dt-soft td { color: var(--ink-soft); }
+.dt-chip { font-size: 12px; font-weight: 500; }
+.app .card > .tbl-scroll + .ck-note { margin-top: 12px; }
+
+/* Divulgación «Ver fuente y metodología»: la letra pequeña, a un clic. */
+.disc { margin-top: 14px; }
+.disc > summary {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 28px; cursor: pointer; list-style: none;
+  font-size: 13px; font-weight: 500; color: var(--ink-soft); border-radius: 6px;
+  transition: color var(--dur-1) var(--ease-out);
+}
+.disc > summary::-webkit-details-marker { display: none; }
+.disc > summary::before {
+  content: ""; flex: none; width: 6px; height: 6px; margin-inline: 2px 4px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg); transition: transform var(--dur-1) var(--ease-out);
+}
+.disc[open] > summary::before { transform: rotate(45deg); }
+.disc > summary:hover { color: var(--ink); }
+.disc-body { margin-top: 8px; padding-inline-start: 14px; border-inline-start: 2px solid var(--line); display: grid; gap: 8px; max-width: 64ch; }
+.disc-body .ck-note { margin: 0; }
+.disc-src { margin: 0; font-family: var(--mono); font-size: 11.5px; line-height: 1.5; color: var(--ink-soft); overflow-wrap: anywhere; }
+@media (pointer: coarse) { .disc > summary { min-height: 44px; } }
+@media (prefers-reduced-motion: reduce) { .disc > summary::before { transition: none; } }
+
+/* Selector de rango: control segmentado, activo en blanco (no en tinta). */
+.app .seg.live { gap: 2px; padding: 3px; border: 0; border-radius: 10px; background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line); overflow: visible; }
+.app .seg.live a {
+  display: inline-flex; align-items: center; justify-content: center; min-height: 30px; min-width: 44px; padding: 0 12px;
+  border: 0; border-radius: 7px; background: transparent; font-size: 13px; font-weight: 500; color: var(--ink-soft);
+  transition: background-color var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out);
+}
+.app .seg.live a:hover { background: color-mix(in srgb, var(--surface) 60%, transparent); color: var(--ink); }
+.app .seg.live a[aria-current="true"] { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: 0 0 0 1px var(--line), 0 1px 2px rgba(15, 18, 24, .08); }
+@media (pointer: coarse) { .app .seg.live a { min-height: 40px; } }
+
+/* ── F3·3 Resumen ───────────────────────────────────────────────────────── */
+.ov { min-width: 0; }
+.ov-attention { display: grid; gap: 10px; margin-bottom: 24px; min-width: 0; }
+.ov-attention:empty { display: none; }
+.ov-attention > .card { margin-top: 0 !important; }
+.ov-banner { min-width: 0; }
+.ov-banner .ck-note { margin: 6px 0 0; color: inherit; opacity: .86; }
+.ov-banner code { font-family: var(--mono); font-size: 12px; overflow-wrap: anywhere; }
+.ov-errors .notice-title { font-size: 14px; }
+.ov-errors-list { margin: 8px 0 0; padding-inline-start: 18px; display: grid; gap: 2px; }
+.ov .ov-result { margin-top: 0; }
+.ov .app-section { margin-top: 40px; }
+.ov .app-section.ov-result { margin-top: 0; }
+.ov .app-sec-head { margin-bottom: 14px; }
+
+/* El titular: panel protagonista, con su recibo al lado. `[data-state]` solo lo
+   lleva VerdictHero, así que la banda de intervalo (`.verdict.band`) no cambia. */
+.verdict[data-state] {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 340px); gap: 24px clamp(24px, 3vw, 40px); align-items: start;
+  padding: clamp(20px, 2.6vw, 32px); border-radius: var(--r-hero); box-shadow: var(--shadow-card);
+}
+.verdict[data-state].verdict-empty { grid-template-columns: minmax(0, 1fr) auto; }
+.verdict-main { min-width: 0; align-self: center; }
+.verdict-empty .verdict-main { align-self: start; }
+.verdict-side { display: flex; flex-direction: column; align-items: flex-end; gap: 18px; min-width: 0; }
+.verdict-side .recibo { max-width: none; }
+.verdict-ctl { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px; }
+.verdict-status {
+  display: flex; width: fit-content; max-width: 100%; align-items: center; gap: 7px; margin: 14px 0 0; padding: 4px 10px 4px 7px; border-radius: 999px;
+  font-size: 12.5px; font-weight: 600; line-height: 1.3; background: var(--mint-soft); color: var(--good-ink);
+}
+.verdict-status[data-tone="neg"] { background: var(--bad-soft); color: var(--danger); }
+.verdict[data-state="partial"] .verdict-status { background: var(--amber-soft); color: var(--warn); }
+.verdict-status-ic { display: grid; place-items: center; flex: none; }
+.verdict-status-ic svg { width: 14px; height: 14px; }
+.verdict[data-state] .big { margin-top: 10px; font-size: clamp(44px, 5.4vw, 64px); letter-spacing: -.035em; line-height: 1; }
+.verdict[data-state] .cap { margin-top: 12px; max-width: 54ch; font-size: 14.5px; line-height: 1.55; }
+.verdict[data-state] .cap b { color: var(--ink); font-weight: 600; }
+/* Sin cifra no se pinta ninguna: icono, estado con palabras, qué pasa y qué hacer. */
+.verdict-lead { display: flex; align-items: center; gap: 12px; margin-top: 16px; }
+.verdict-ic { display: grid; place-items: center; flex: none; width: 40px; height: 40px; border-radius: 12px; background: var(--surface-2); color: var(--ink-soft); box-shadow: inset 0 0 0 1px var(--line); }
+.verdict-ic svg { width: 19px; height: 19px; }
+.verdict[data-state="notIntegrated"] .verdict-ic { background: var(--brand-soft); color: var(--brand); box-shadow: none; }
+.verdict[data-state="readFailed"] .verdict-ic { background: var(--bad-soft); color: var(--danger); box-shadow: none; }
+.verdict[data-state="limited"] .verdict-ic, .verdict[data-state="noPrice"] .verdict-ic, .verdict[data-state="notMeasured"] .verdict-ic { background: var(--amber-soft); color: var(--warn); box-shadow: none; }
+.verdict-title { margin: 0; font-family: var(--font-display); font-size: clamp(20px, 2.2vw, 24px); font-weight: 600; letter-spacing: -.022em; line-height: 1.2; color: var(--ink); }
+.verdict-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+@media (max-width: 1080px) {
+  .verdict[data-state], .verdict[data-state].verdict-empty { grid-template-columns: minmax(0, 1fr); }
+  .verdict-side { align-items: stretch; order: -1; }
+  .verdict-ctl { justify-content: space-between; }
+  .verdict[data-state]:not(.verdict-empty) .verdict-side { display: contents; }
+  .verdict[data-state]:not(.verdict-empty) .verdict-ctl { order: -1; }
+  .verdict[data-state] .recibo { max-width: 420px; }
+}
+@media (max-width: 480px) { .verdict-actions .btn { flex: 1 1 100%; } }
+
+/* Cifras del periodo y desglose junto al explorador. */
+.ov-kpis { min-width: 0; }
+.ov-explore { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 320px); gap: 16px; align-items: start; min-width: 0; }
+.ov-explore > * { min-width: 0; }
+.ov-breakdown { min-width: 0; }
+.ov-breakdown-empty { min-width: 0; }
+@media (max-width: 1320px) { .ov-explore { grid-template-columns: minmax(0, 1fr); } }
+
+/* La puesta en marcha en el Resumen: una tarjeta con los hitos y, debajo, la tarea. */
+.app .spine { display: block; padding: 18px 12px 10px; border-radius: var(--r-card-lg); overflow: visible; }
+.app .spine-task { margin-top: 12px; padding: 18px 20px 20px; border-radius: var(--r-card-lg); }
+.app .spine-task .t { margin: 0 0 10px; font-size: 15px; }
+.app .spine-task .codeframe { margin: 0 0 10px; }
+.app .spine-task > .note { margin: 0; max-width: 68ch; font-size: 14px; }
+.app .spine + .note { margin: 12px 2px 0; }
+.spine-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+
+/* El panel que se ordena. */
+.app .pe { gap: 16px; }
+.app .pe-bar { padding-bottom: 2px; }
+.app .pe-btn { min-height: 32px; padding: 0 12px; border-radius: 8px; font-size: 13px; border-color: var(--btn-ghost-line); color: var(--ink); }
+.app .pe-btn.primary:not([aria-pressed="true"]) { background: var(--surface); border-color: var(--btn-ghost-line); color: var(--ink); font-weight: 500; box-shadow: 0 1px 2px rgba(15, 18, 24, .04); }
+.app .pe-btn.primary:not([aria-pressed="true"]):hover { background: var(--surface-3); border-color: var(--btn-ghost-line-hover); }
+.app .pe-hidden { padding: 12px 14px; border-color: var(--line-strong); border-radius: var(--r-card); }
+.app .pe-chip { min-height: 30px; padding: 0 12px; font-size: 12.5px; }
+.app .pe-card.editing { outline-offset: 5px; border-radius: var(--r-card-lg); }
+.app .pe-head { margin-bottom: 10px; }
+.app .pe-title { font-family: var(--sans); font-size: 12.5px; font-weight: 600; letter-spacing: 0; text-transform: none; }
+@media (pointer: coarse) { .app .pe-btn, .app .pe-chip { min-height: 44px; } }
+/* El ancla de una tarjeta oculta (`#maquinas`): dice que está oculta y la devuelve. */
+.pe-ghost {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px 20px; flex-wrap: wrap;
+  padding: 16px 20px; border: 1px dashed var(--line-strong); border-radius: var(--r-card-lg);
+  background: color-mix(in srgb, var(--surface) 55%, transparent); min-width: 0;
+}
+.pe-ghost-t { margin: 0 0 2px; font-size: 14.5px; font-weight: 600; letter-spacing: -.005em; color: var(--ink); }
+.pe-ghost .ck-note { margin: 0; }
+.pe-ghost:target, #maquinas:target { box-shadow: 0 0 0 2px var(--brand-soft), 0 0 0 1px color-mix(in srgb, var(--brand) 40%, transparent) inset; }
+
+/* ── F3·4 Primeros pasos ────────────────────────────────────────────────── */
+.ins-page { min-width: 0; }
+.ins { min-width: 0; }
+.ins-choose { min-width: 0; }
+.ins-progress { margin-bottom: 32px; }
+.ins-progress .ui-progressc { padding: 18px 12px 8px; border-radius: var(--r-card-lg); }
+.ins .ck-head { margin-bottom: 16px; }
+.ins .ck-note { max-width: 74ch; margin: 12px 0 0; font-size: 14px; line-height: 1.6; }
+.ins .ck-note b { color: var(--ink); font-weight: 600; }
+.ins .ck-note code, .ins-mode code { font-family: var(--mono); font-size: .92em; padding: 1px 5px; border-radius: 5px; background: var(--surface-2); color: var(--ink); overflow-wrap: anywhere; }
+.ins .codeframe { margin: 12px 0 0; }
+.ins .so-snippet { margin-top: 12px; }
+.ins .so-snippet .codeframe { margin-top: 0; }
+/* Dos tareas: integrar una aplicación o conectar un agente. */
+.ins-tasks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.ins-task {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "ic t go" "ic s go"; align-items: start; gap: 2px 14px;
+  min-height: 44px; padding: 18px 18px 18px 16px; border: 1px solid var(--line); border-radius: var(--r-card-lg); background: var(--surface);
+  color: var(--ink); text-decoration: none; box-shadow: var(--shadow-card);
+  transition: border-color var(--dur-2) var(--ease-out), box-shadow var(--dur-2) var(--ease-out);
+}
+.ins-task:hover { border-color: var(--line-strong); box-shadow: var(--shadow-hover); text-decoration: none; }
+.ins-task-ic { grid-area: ic; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 11px; background: var(--brand-soft); color: var(--brand); }
+.ins-task-ic svg { width: 18px; height: 18px; }
+.ins-task-t { grid-area: t; font-size: 15.5px; font-weight: 600; letter-spacing: -.012em; line-height: 1.3; }
+.ins-task-s { grid-area: s; font-size: 13.5px; line-height: 1.5; color: var(--ink-soft); }
+.ins-task-go { grid-area: go; align-self: center; display: grid; place-items: center; color: var(--ink-soft); transition: transform var(--dur-2) var(--ease-out), color var(--dur-2) var(--ease-out); }
+.ins-task-go svg { width: 16px; height: 16px; }
+.ins-task:hover .ins-task-go { color: var(--ink); transform: translateX(2px); }
+@media (prefers-reduced-motion: reduce) { .ins-task:hover .ins-task-go { transform: none; } }
+/* Modo local frente a conexión Cloud: una bandeja con dos mitades. */
+.ins-modes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 14px 0 0; border: 1px solid var(--line); border-radius: var(--r-card); background: var(--surface-3); }
+.ins-mode { padding: 16px 18px; min-width: 0; }
+.ins-mode + .ins-mode { border-inline-start: 1px solid var(--line); }
+.ins-mode dt { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--ink); }
+.ins-mode dd { margin: 6px 0 0; font-size: 13.5px; line-height: 1.55; color: var(--ink-soft); }
+.ins-mode dd a { color: var(--ink); font-weight: 500; text-decoration: underline; text-decoration-color: var(--line-strong); text-underline-offset: 3px; white-space: nowrap; }
+.ins-mode dd a:hover { text-decoration-color: currentColor; }
+.ins-mode-ic { display: grid; place-items: center; flex: none; color: var(--ink-soft); }
+.ins-mode-ic svg { width: 16px; height: 16px; }
+@media (max-width: 700px) {
+  .ins-tasks, .ins-modes { grid-template-columns: minmax(0, 1fr); }
+  .ins-mode + .ins-mode { border-inline-start: 0; border-top: 1px solid var(--line); }
+}
+/* Cada recorrido, en su sección con su ancla. */
+.ins .ins-sec { margin-top: 44px; padding-top: 32px; border-top: 1px solid var(--line); scroll-margin-top: calc(var(--nav-h) + 72px); }
+.ins-sec-head { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; margin-bottom: 4px; }
+.ins-sec-head .t-section { margin: 0; }
+.ins-sec-ic { display: grid; place-items: center; flex: none; width: 32px; height: 32px; border-radius: 9px; background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--line); }
+.ins-sec-ic svg { width: 16px; height: 16px; }
+.ins-optional { background: var(--surface-2); color: var(--ink-soft); }
+.ins-role { margin-top: 14px; }
+.ins-card { margin-top: 14px; padding: 20px; border: 1px solid var(--line); border-radius: var(--r-card-lg); background: var(--surface); box-shadow: var(--shadow-card); min-width: 0; }
+.ins-card > .ins-step:first-child, .ins-measure > .ins-step:first-child { margin-top: 0; }
+.ins-measure { margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--line-strong); }
+.ins .trialkey, .ins .keytester { margin-top: 12px; padding: 14px; border-radius: 12px; background: var(--surface-3); }
+.ins .trialkey .ck-note, .ins .keytester .ck-note, .ins .keycard .ck-note { margin: 0; font-size: 13px; }
+.ins .keycard { margin-top: 12px; border-radius: 12px; background: var(--surface-3); }
+.ins-perms { padding-top: 12px; border-top: 1px solid var(--line); }
+.ins-skill { margin-top: 20px; }
+.ins .ins-skill a { color: var(--ink); font-weight: 500; text-decoration: underline; text-decoration-color: var(--line-strong); text-underline-offset: 3px; }
+@media (max-width: 560px) { .ins-card { padding: 16px; } .ins .ins-sec { margin-top: 36px; padding-top: 26px; } }
+/* Pestañas por sistema operativo, dentro del panel: control segmentado. */
+.app .so-tabs { gap: 2px; margin-bottom: 8px; padding: 3px; border-radius: 10px; background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line); }
+.app .so-tabs button { min-height: 30px; padding: 0 12px; border: 0; border-radius: 7px; background: transparent; font-family: var(--sans); font-size: 12.5px; font-weight: 500; letter-spacing: 0; color: var(--ink-soft); cursor: pointer; }
+.app .so-tabs button:hover { color: var(--ink); }
+.app .so-tabs button.on { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: 0 0 0 1px var(--line), 0 1px 2px rgba(15, 18, 24, .08); }
+@media (pointer: coarse) { .app .so-tabs button { min-height: 40px; } }
+
+/* ── F3·5 Tour guiado (TourGuideJS) ─────────────────────────────────────────
+   La hoja de la librería no se importa: esto la sustituye entera, con los
+   tokens de BiVelio. Lo estructural que su JS da por hecho (`display: none`,
+   posición absoluta, la flecha) está aquí; el color del telón y el z-index
+   los escribe ella en línea. Sin movimiento con `prefers-reduced-motion`. */
+[data-tg-tour] { scroll-margin: 30px 0; }
+.tg-backdrop { position: absolute; display: none; top: 50vh; left: 50vw; width: 0; height: 0; z-index: 998; border: 0; border-radius: 14px; }
+.tg-backdrop.tg-backdrop-animate { transition: top var(--dur-3) var(--ease-out), left var(--dur-3) var(--ease-out), width var(--dur-3) var(--ease-out), height var(--dur-3) var(--ease-out); }
+.tg-backdrop.allow-interaction { pointer-events: none; }
+.tg-dialog {
+  position: absolute; display: none; top: 0; left: 0; z-index: 999; width: max-content; max-width: min(360px, calc(100vw - 24px)) !important; padding: 0;
+  border-radius: 16px; background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--line), var(--shadow-pop);
+  font-family: var(--sans); font-size: 14px; line-height: 1.55; text-align: start;
+}
+.tg-dialog:focus { outline: none; }
+.tg-dialog:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; }
+.tg-dialog.tg-dialog-fixed { transition: none; }
+.tg-dialog.animate-position { transition: top var(--dur-3) var(--ease-out), left var(--dur-3) var(--ease-out); }
+.tg-dialog .tg-dialog-header { display: flex; align-items: flex-start; gap: 10px; padding: 18px 12px 0 20px; }
+.tg-dialog .tg-dialog-title { margin-right: auto; padding-top: 4px; font-size: 16px; font-weight: 600; letter-spacing: -.012em; line-height: 1.3; color: var(--ink); }
+.tg-dialog .tg-dialog-close-btn {
+  display: grid; place-items: center; flex: none; width: 32px; height: 32px; margin: 0; border-radius: 8px; opacity: 1; cursor: pointer; color: var(--ink-soft);
+  transition: background-color var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out);
+}
+.tg-dialog .tg-dialog-close-btn svg { width: 10px; height: 10px; fill: currentColor; }
+.tg-dialog .tg-dialog-close-btn:hover { background: var(--surface-3); color: var(--ink); }
+.tg-dialog .tg-dialog-close-btn:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
+.tg-dialog .tg-dialog-spinner { display: none; }
+.tg-dialog .tg-dialog-body { padding: 6px 20px 2px; color: var(--ink-soft); overflow-wrap: anywhere; }
+.tg-dialog .tg-dialog-footer { display: flex; align-items: center; gap: 8px; padding: 16px 16px 16px 20px; }
+.tg-dialog .tg-dialog-footer-sup { order: -1; display: flex; flex-direction: column; align-items: flex-start; gap: 7px; margin: 0 auto 0 0; padding: 0; min-width: 0; text-align: start; line-height: 1; }
+.tg-dialog .tg-dialog-dots { display: flex; align-items: center; justify-content: flex-start; gap: 4px; margin: 0; padding: 0; border: 0; }
+.tg-dialog .tg-dialog-dots > span.tg-dot { display: inline-block; width: 6px; height: 6px; margin: 0; border-radius: 3px; background: var(--line-strong); transition: width var(--dur-2) var(--ease-out), background-color var(--dur-2) var(--ease-out); }
+.tg-dialog .tg-dialog-dots > span.tg-dot.tg-dot-active { width: 16px; background: var(--ink); }
+.tg-dialog .tg-bv-count { font-size: 12px; font-weight: 500; color: var(--ink-soft); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tg-dialog .tg-dialog-footer button.tg-dialog-btn {
+  flex: none; min-height: 36px; padding: 0 14px; border: 1px solid var(--btn-ghost-line); border-radius: var(--r-control); background: var(--surface); color: var(--ink);
+  font-family: var(--sans); font-size: 13.5px; font-weight: 500; line-height: 1; white-space: nowrap; cursor: pointer;
+  transition: background-color var(--dur-1) var(--ease-out), border-color var(--dur-1) var(--ease-out);
+}
+.tg-dialog .tg-dialog-footer button.tg-dialog-btn + button { margin-left: 0; }
+.tg-dialog .tg-dialog-footer button.tg-dialog-btn:hover { background: var(--surface-3); border-color: var(--btn-ghost-line-hover); color: var(--ink); }
+.tg-dialog .tg-dialog-footer button.tg-dialog-btn:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.tg-dialog .tg-dialog-footer button.tg-dialog-btn.disabled, .tg-dialog .tg-dialog-footer button.tg-dialog-btn:disabled { opacity: .45; pointer-events: none; }
+.tg-dialog .tg-dialog-footer button#tg-dialog-next-btn { background: var(--btn-ink); border-color: var(--btn-ink); color: #fff; }
+.tg-dialog .tg-dialog-footer button#tg-dialog-next-btn:hover { background: var(--btn-ink-hover); border-color: var(--btn-ink-hover); color: #fff; }
+.tg-dialog .tg-arrow { position: absolute; width: 10px; height: 10px; border-radius: 2px; background: var(--surface); }
+.tg-dialog.tg-dialog-loading .tg-dialog-body, .tg-dialog.tg-dialog-loading .tg-dialog-footer { opacity: .5; pointer-events: none; }
+.tg-no-interaction * { pointer-events: none !important; user-select: none !important; }
+.tg-no-interaction .tg-dialog, .tg-no-interaction .tg-active-element, .tg-dialog *, .tg-active-element * { pointer-events: auto !important; user-select: text !important; }
+@media (pointer: coarse) {
+  .tg-dialog .tg-dialog-footer button.tg-dialog-btn { min-height: 44px; }
+  .tg-dialog .tg-dialog-close-btn { width: 44px; height: 44px; }
+}
+@media (max-width: 420px) {
+  .tg-dialog .tg-dialog-footer { flex-wrap: wrap; justify-content: flex-end; }
+  .tg-dialog .tg-dialog-footer-sup { flex: 1 1 100%; flex-direction: row; align-items: center; justify-content: space-between; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tg-backdrop, .tg-backdrop.tg-backdrop-animate, .tg-dialog, .tg-dialog.animate-position, .tg-dialog .tg-dialog-dots > span.tg-dot { transition: none !important; animation: none !important; }
+}
 /* ==== FIN SLOT F3 ==== */
 
 

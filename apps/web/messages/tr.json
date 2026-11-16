@@ -48,6 +48,12 @@
         "members": "{n, plural, =1 {1 üye} other {# üye}}",
         "seats": "{used} / {seats}",
         "seatsTitle": "Bu ay ödenen {seats} koltuktan {used} tanesi kullanımda"
+      },
+      "status": {
+        "done": "tamam",
+        "next": "sıradaki",
+        "pending": "beklemede",
+        "unavailable": "kullanılamıyor"
       }
     },
     "topbar": {
@@ -57,6 +63,61 @@
         "free": "Free",
         "pro": "Pro",
         "enterprise": "Enterprise"
+      }
+    },
+    "tour": {
+      "open": "Turu izle",
+      "openHint": "Panelin rehberli turunu tekrarlayın",
+      "close": "Turu kapat",
+      "next": "İleri",
+      "prev": "Geri",
+      "finish": "Bitir",
+      "step": "Adım {n} / {total}",
+      "steps": {
+        "welcome": {
+          "title": "BiVelio Savings'e hoş geldiniz",
+          "body": "Bu panel, LLM'lere ne harcadığınızı ve katmanın ne kadar tasarruf sağladığını kendi trafiğinizle ölçülmüş olarak gösterir. Ölçülmeyen şey sözle söylenir, asla sıfır olarak gösterilmez."
+        },
+        "nav": {
+          "title": "Üç grup, tek yol",
+          "body": "Başla sizi genel bakışa ve kuruluma götürür. Tasarruf et kanıtı ve ekstreyi bir araya getirir. Kuruluşunuz makineleri ve hesabı içerir."
+        },
+        "setup": {
+          "title": "İlk adımlar ve ilerlemeniz",
+          "body": "Kurulum aşamalarını ürün ölçer. Talimatını açmak için birini seçin: yalnızca gerçek sinyal geldiğinde tamamlandı olur."
+        },
+        "verdict": {
+          "title": "Sonucunuz",
+          "body": "Dönemin ölçülen tasarrufu, makbuzu ve kanıt türüyle birlikte. Bir şey eksikse — entegrasyon, trafik, fiyat veya okuma — neyin eksik olduğu ve nasıl devam edileceği burada açıklanır."
+        },
+        "range": {
+          "title": "Dönemi seçin",
+          "body": "Kullanılabilir aralıklar arasında geçiş yapın. Dönem adreste taşınır; böylece aynı görünümü paylaşabilir veya yeniden yükleyebilirsiniz."
+        },
+        "customize": {
+          "title": "Paneli özelleştirin",
+          "body": "Kartları yeniden sıralayın veya gizleyin, düzeni istediğiniz zaman geri yükleyin. Yalnızca bu tarayıcıda kaydedilir; uyarılar ve sonuç gizlenemez."
+        },
+        "explorer": {
+          "title": "Kullanımınızı keşfedin",
+          "body": "Kullanımı günlük, kümülatif veya modele göre görün, metriği değiştirin ve dönemi CSV olarak dışa aktarın."
+        },
+        "proof": {
+          "title": "Kanıt ve dayanak",
+          "body": "Üç sekme: herkese açık kıyaslama, kendi A/B testiniz ve doğrulayıcı. Referans verileri asla sizinmiş gibi sunulmaz."
+        },
+        "team": {
+          "title": "Ekibiniz · Hesap ve plan",
+          "body": "Kişileri davet edin ve roller atayın. Üye bir koltuk değildir: koltuklar makineler veya hizmet kimlikleridir. Planınızı, koltukları ve faturalandırmayı görün; aboneliği buradan yönetin."
+        },
+        "account": {
+          "title": "Hesap ve plan",
+          "body": "Planınızı, koltukları ve faturalandırmayı görün; aboneliği buradan yönetin."
+        },
+        "finish": {
+          "title": "İstediğiniz zaman tekrarlayın",
+          "body": "Bu tur, panelin her sayfasındaki üst çubukta yer alan “Turu izle” ile yeniden başlar."
+        }
       }
     }
   },
@@ -193,6 +254,36 @@
         "models": "Modele göre döküm okunamadı.",
         "sessions": "Oturum maliyetleri okunamadı.",
         "seats": "Makine etkinliği okunamadı."
+      },
+      "panelEyebrow": "Etkinliğiniz",
+      "panelTitle": "Kullanım, fırsatlar ve dağılım",
+      "next": {
+        "eyebrow": "Sonraki adım",
+        "doneTitle": "Sayacınız çalışıyor",
+        "doneBody": "Kurulum aşamaları tamamlandı. Rakamlarınızı yayımlanan kanıtlarla karşılaştırın.",
+        "proofCta": "Kanıtı aç",
+        "openCta": "Talimatı gör",
+        "unavailableTitle": "Kurulumu şu anda değerlendiremiyoruz"
+      },
+      "kpi": {
+        "label": "Dönemin rakamları",
+        "cost": "Gözlenen maliyet",
+        "costBase": "Sizin fiyatlarınızla gerçek maliyet · {period}",
+        "saved": "Hesaba geçen tasarruf",
+        "savedBase": "Taban − gerçek maliyet, yalnızca ölçülen istekler · {period}",
+        "requests": "İstekler",
+        "requestsBase": "{share} sağlayıcı sayacıyla · {period}",
+        "requestsBaseNone": "Alınan tüm istekler · {period}",
+        "noPrice": "Bu trafiği fiyatlandıracak fiyat yok",
+        "notMeasured": "Bu dönemde henüz ölçülen bir şey yok"
+      },
+      "breakdown": {
+        "title": "Modele göre gözlenen maliyet",
+        "totalLabel": "Gerçek maliyet · {period}",
+        "empty": "Bu dönemde henüz modele göre maliyet yok",
+        "coverageFull": "Döküm, dönemin gözlenen maliyetinin tamamını kapsıyor.",
+        "coveragePartial": "Modele göre döküm, dönemin gözlenen maliyetinin {coverage} kadarını kapsıyor; geri kalanına model atanmamış.",
+        "coverageUnknown": "Dönemin gözlenen maliyetiyle karşılaştırılamıyor."
       }
     },
     "proof": {
@@ -288,8 +379,10 @@
       "metaTitle": "Kur · BiVelio Savings Layer",
       "eyebrow": "Entegre et",
       "title": "SDK'yı kurun ve bağlayın",
-      "intro": "BV-SALA'yı sağlayıcınızın önüne yerleştirin — prompt'larınız altyapınızdan asla çıkmaz.",
-      "irACuenta": "Henüz planınız yok mu ya da koltukları değiştirmek mi istiyorsunuz? Bunu Hesap bölümünden yaparsınız →"
+      "intro": "BV-SALA'yı sağlayıcınızın önüne yerleştirin. Prompt'larınız BiVelio sunucularından geçmez; yapılandırdığınız sağlayıcıya gönderilir.",
+      "irACuenta": "Henüz planınız yok mu ya da koltukları değiştirmek mi istiyorsunuz? Bunu Hesap bölümünden yaparsınız →",
+      "trackerTitle": "Kurulumunuz",
+      "trackerNote": "Bu aşamaları ürün ölçer: birini seçmek talimatını açar, onu tamamlandı olarak işaretlemez. Bunlar Cloud bağlantısına aittir; açık motor onlar olmadan da çalışır."
     },
     "account": {
       "metaTitle": "Hesap · BiVelio Savings Layer",
@@ -309,7 +402,37 @@
       "hiddenCap": "Kullanım verileriniz mevcut, ancak bu hesap onları göremiyor. Bu bizim tarafımızdaki bir hata ve uyarı aldık. Sürerse support@bivelio.com adresine yazın.",
       "rangeDays": "son {n} gün",
       "rangeLabel": "Aralık",
-      "rangeOption": "{n}g"
+      "rangeOption": "{n}g",
+      "status": {
+        "positive": "Ölçülen tasarruf",
+        "negative": "Maliyet tabanın üzerinde",
+        "partial": "Kısmi ölçüm",
+        "notIntegrated": "Henüz entegre edilmedi",
+        "noTraffic": "Bu dönemde trafik yok",
+        "noPrice": "Fiyatı olmayan trafik",
+        "notMeasured": "Ölçülmemiş trafik",
+        "readFailed": "Okunamadı",
+        "limited": "Sınırlı erişim"
+      },
+      "lostLine": "bu dönem tabanınızın üzerinde · <b>{money}</b> ek maliyet (gerçek − taban, sizin fiyatlarınızla).",
+      "method": "Kaynağı ve yöntemi gör",
+      "methodBody": "Başlık değeri, bir eksi gerçek maliyetin tabana bölümüdür ve yalnızca sağlayıcı sayacı olan isteklerle hesaplanır. Tahmin edilen ve ölçülmeyen kısım başlık değerinin dışında kalır.",
+      "receipt": {
+        "title": "Dönem makbuzu",
+        "baseline": "Ölçülen taban",
+        "actual": "Ölçülen gerçek maliyet",
+        "coverage": "Sayacı olan istekler",
+        "saved": "Ölçülen tasarruf",
+        "origin": "Sağlayıcınızın sayacıyla, sizin fiyatlarınızla ölçüldü."
+      },
+      "actions": {
+        "install": "Kuruluma başla",
+        "widen": "Son {n} günü gör",
+        "checkInstall": "Kurulumu gözden geçir",
+        "support": "Desteğe yaz",
+        "how": "Nasıl ölçülür"
+      },
+      "noTrafficCap": "Bu dönemde hiç istek yok. Daha geniş bir aralık deneyin veya entegrasyonunuzun hâlâ trafik gönderdiğini kontrol edin."
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "hiç çalıştırılmayan LLM/getirme/araç çağrıları",
@@ -338,7 +461,7 @@
       "statusPending": "beklemede",
       "statusUnavailable": "kullanılamıyor",
       "nextLabel": "Sıradaki: {label}",
-      "installComment": "# yığınınızı algılar ve tam bağlantı kodunu yazdırır — prompt'larınız altyapınızdan asla çıkmaz",
+      "installComment": "# yığınınızı algılar ve tam bağlantı kodunu yazdırır — prompt'larınız BiVelio sunucularından geçmez; yapılandırdığınız sağlayıcıya gönderilir",
       "hintLicense": "Hesap bölümünde lisansınızı ve hizmet kimlik bilgilerinizi oluşturun veya alın. Tek başına bir anahtar kurulumu kanıtlamaz.",
       "hintInstall": "SDK veya gateway seçin ve gerçek bir istek gönderin. Anahtar oluşturmak ya da boş toplu iş göndermek kurulumu kanıtlamaz.",
       "hintFirstRequest": "SDK veya gateway üzerinden sağlayıcıya gerçek bir istek gönderin. Kullanım raporu bu adımı tamamlar.",
@@ -348,7 +471,9 @@
       "linkInstall": "Kurulumu aç",
       "linkSdk": "SDK yolu",
       "linkGateway": "Gateway yolu",
-      "unavailableHint": "Kullanım şu anda okunamıyor; bu nedenle kurulum ve raporlama değerlendirilemiyor. Bu, hesabın boş olduğu anlamına gelmez."
+      "unavailableHint": "Kullanım şu anda okunamıyor; bu nedenle kurulum ve raporlama değerlendirilemiyor. Bu, hesabın boş olduğu anlamına gelmez.",
+      "count": "{done} / {total}",
+      "trackerTitle": "Kurulum"
     },
     "shadowOpportunities": {
       "title": "Potansiyel tasarrufunuz nerede",
@@ -501,7 +626,15 @@
       "chipOk": "güncel",
       "chipMixed": "kısmen bildirilmedi",
       "hint": "Kullanım bildiren her makine için bir satır; makine, opak koltuk kimliğiyle tanınır (asla bir kişi). Gönderilen şey yalnızca bir sürüm numarasıdır — gateway/x.y.z veya sdk/x.y.z —, asla içerik değil. Sürüm kanalından eski bir gateway çalıştıran makine “bildirilmedi” olarak görünür.",
-      "referenceHint": "Buradaki ölçülen tasarruf, referansla ölçülen tekrarlanan istekleri de içerir: her biri, daha önce çalışmış özdeş isteğin sayacıyla fiyatlandırılır."
+      "referenceHint": "Buradaki ölçülen tasarruf, referansla ölçülen tekrarlanan istekleri de içerir: her biri, daha önce çalışmış özdeş isteğin sayacıyla fiyatlandırılır.",
+      "emptyTitle": "Henüz rapor gönderen makine yok",
+      "emptyBody": "Bir makine, gateway'i veya SDK'sı kullanım gönderdiğinde burada görünür. Her biri bir koltuk sayılır: bir makine veya bir hizmet kimliği, asla bir kişi değil.",
+      "emptyCta": "Makine bağla",
+      "failedTitle": "Makinelerin etkinliği okunamadı",
+      "failedBody": "Bu bir okuma hatasıdır, boş bir liste değil. Birazdan yeniden yükleyin.",
+      "hiddenTitle": "Makineler kartı gizli",
+      "hiddenBody": "Paneli özelleştirirken gizlediniz. Verileri ölçülmeye devam ediyor.",
+      "show": "Kartı göster"
     },
     "installLicensePanel": {
       "eyebrow": "Başlayın",
@@ -520,7 +653,24 @@
       "doctorComment": "diğer ajanlar ve SDK'lar: her biri için tam yapılandırma",
       "agentsNote": "Her sarmalayıcı, aracısını yalnızca o oturum için hazırlar — yapılandırmasında hiçbir şey değişmez — ve çıkışta kaç isteği ölçtüğünü, hangilerini ölçemediğini ve nedenini söyler. <code>bvsala copilot</code> kendi Anthropic anahtarınızı gerektirir (BYOK): GitHub'da barındırılan modeller asla bir taban URL'den geçmez, bu yüzden ölçülecek bir şey yoktur. VS Code'daki Crush, Droid, Cline, Continue veya Copilot için <code>bvsala doctor</code> tam yapılandırmayı yazdırır. <b>Cursor (BYOK)</b>: kendi anahtarınızla OpenAI taban URL geçersiz kılması üzerinden çalışır; kendi modelleri makinenizdeki bir ağ geçidine asla ulaşmaz. <b>Gemini CLI</b>: <code>bvsala gemini</code> ile başlatın.",
       "pythonNote": "<b>Python mı?</b> Python için <code>bvsala</code> istemcisi, resmi OpenAI ve Anthropic SDK'larını bu aynı ağ geçidinden geçirir (<code>bvsala gateway</code>) ve her isteğin raporunu kodunuza geri verir — bu panelin aldığı rakamların aynısı. 0.4.26 veya sonraki bir ağ geçidi ve Python 3.10 veya üstü gerekir. PyPI'dan <code>pip install bivelio-savings-layer</code> ile kurulur; kodunuzda <code>import bvsala</code>.",
-      "finalNote": "Hepsi bu. Geçerli lisans yoksa → <code>generate()</code> reddeder. Planınız iptal edilirse SDK, <code>licenseServerUrl</code> aracılığıyla ~15 dakika içinde durur — yeniden başlatma gerekmez ve bize ulaşılamıyorsa üretim ortamınızı asla işlevsiz bırakmaz."
+      "finalNote": "Hepsi bu. Geçerli lisans yoksa → <code>generate()</code> reddeder. Planınız iptal edilirse SDK, <code>licenseServerUrl</code> aracılığıyla ~15 dakika içinde durur — yeniden başlatma gerekmez ve bize ulaşılamıyorsa üretim ortamınızı asla işlevsiz bırakmaz.",
+      "terminal": "Terminal",
+      "sdkTitle": "Bir uygulamayı entegre et (SDK)",
+      "sdkLede": "Sağlayıcınızı kodunuzda sarmalayın ve her çağrının tasarruf raporunu okuyun.",
+      "gatewayTitle": "Bir ajanı bağla (gateway)",
+      "gatewayLede": "Kodlama ajanınızı, koduna dokunmadan yerel gateway üzerinden başlatın.",
+      "modeLocalTitle": "Yerel mod",
+      "modeLocalBody": "Açık motor hesap ve anahtar olmadan çalışır: tüm yerel kaldıraçlar ve sıfır telemetri. Rapor makinenizde kalır.",
+      "modeCloudTitle": "Cloud bağlantısı",
+      "modeCloudBody": "Lisans ve servis anahtarıyla bu panel sayımları ve maliyetleri alır — prompt'larınızı asla — ve kuruluşunuz ölçümü ve koltukları paylaşır.",
+      "modeCloudLink": "Kimlik bilgilerine git",
+      "cloudTitle": "Cloud bağlantısı: lisans ve servis anahtarı",
+      "optional": "Açık motorla isteğe bağlı",
+      "roleLimited": "Rolünüz bu sayfayı okuyabilir, ancak lisansı yalnızca owner ve admin düzenleyebilir, servis anahtarlarını da yalnızca onlar oluşturabilir veya iptal edebilir.",
+      "permissionsNote": "Anahtarları yalnızca owner ve admin oluşturur veya iptal eder. Bir anahtar yalnızca bir kez gösterilir; sonrasında yalnızca öneki kalır.",
+      "initExpected": "Paket yöneticiniz için kurulum satırı, eksik anahtarlar, bağdaştırıcınızın kodu ve token harcamayan bir denetim. Hiçbir dosya yazmaz.",
+      "wireExpected": "Yanıt, tabanın ödemediğiniz kısmı ve bu rakamın nasıl elde edildiği: measured, reference, estimated veya unmeasured.",
+      "agentsExpected": "Ajan yerel gateway üzerinden başlar. Servis anahtarıyla harcaması bu panelde görünür."
     },
     "accountPlanStrip": {
       "noActivePlan": "Etkin plan yok",

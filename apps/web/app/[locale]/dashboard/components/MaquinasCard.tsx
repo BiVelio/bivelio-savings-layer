@@ -1,5 +1,7 @@
 import { getLocale, getTranslations } from "next-intl/server";
 
+import { MachinesIcon } from "@/app/components/icons";
+import { EmptyState, EvidenceBadge } from "@/app/components/ui";
 import { COMISIONAR_REFERENCIA } from "@/lib/billing/tarifa";
 import { estadoVersion, type AsientoVisto } from "@/lib/version/aviso-version";
 
@@ -8,8 +10,17 @@ import { money } from "../format";
 /**
  * Una fila por máquina que reporta uso (seat_activity, 0024): superficie,
  * versión declarada, última actividad, ahorro medido de 7 días y el chip de
- * versión. Solo aparece cuando HAY asientos: sin migración o sin tráfico, la
- * tarjeta no existe (misma regla que SesionesCard).
+ * versión.
+ *
+ * EL ANCLA `#maquinas` EXISTE SIEMPRE (2026-11). La entrada «Máquinas» del
+ * raíl apunta aquí, y antes la tarjeta desaparecía sin asientos: el enlace no
+ * llevaba a ninguna parte. Ahora, sin filas, la tarjeta se queda con su
+ * estado vacío —o con el de lectura fallida, que no es lo mismo— y el destino
+ * es estable. Cuando el cliente OCULTA la tarjeta, el ancla la pone
+ * `PanelEditable` con la acción de volver a mostrarla.
+ *
+ * El ahorro de la columna es de 7 DÍAS y así se rotula: no es «del periodo»
+ * del titular, que mira 30, 90 o 120.
  *
  * Los ids de asiento son identidades OPACAS de máquina — jamás una persona. Los
  * asientos de CI (uno por job: hostnames efímeros) se agrupan en UNA fila para
@@ -28,9 +39,34 @@ const MAX_FILAS = 12;
 
 const sinPrefijo = (v: string) => v.replace(/^(gateway|sdk)\//, "");
 
-export async function MaquinasCard({ asientos }: { asientos: AsientoVisto[] }) {
-  if (asientos.length === 0) return null;
+export async function MaquinasCard({ asientos, fallo = false }: { asientos: AsientoVisto[]; /** La lectura de asientos falló: no es «sin máquinas». */ fallo?: boolean }) {
   const t = await getTranslations("dashboard.maquinas");
+  const u = await getTranslations("ui");
+  if (asientos.length === 0) {
+    return (
+      <div className="card card-pad" id="maquinas">
+        <div className="n card-title">{t("title")}</div>
+        {fallo ? (
+          <EmptyState compacto sinCaja alInicio como="p" icono={<MachinesIcon />} titulo={t("failedTitle")} texto={t("failedBody")} />
+        ) : (
+          <EmptyState
+            compacto
+            sinCaja
+            alInicio
+            como="p"
+            icono={<MachinesIcon />}
+            titulo={t("emptyTitle")}
+            texto={t("emptyBody")}
+            acciones={
+              <a className="btn btn-ghost btn-sm" href="/dashboard/install#gateway">
+                {t("emptyCta")}
+              </a>
+            }
+          />
+        )}
+      </div>
+    );
+  }
   const locale = await getLocale();
   // Fecha formateada en SERVIDOR y bajada como cadena (regla de
   // BillingStateBanner: formatear en los dos lados reabre la hidratación #418).
@@ -52,50 +88,50 @@ export async function MaquinasCard({ asientos }: { asientos: AsientoVisto[] }) {
       case "alDia":
         return { texto: t("chipOk"), color: "var(--ink-soft)" };
       case "desactualizada":
-        return { texto: t("chipOutdated"), color: "var(--amber)" };
+        return { texto: t("chipOutdated"), color: "var(--warn)" };
       case "desconocida":
         // Sin versión alguna la columna ya lo dice; el chip solo aporta cuando
         // hay versión Y algún registro de 7 días llegó sin ella.
-        return a.versionMin === null ? null : { texto: t("chipMixed"), color: "var(--amber)" };
+        return a.versionMin === null ? null : { texto: t("chipMixed"), color: "var(--warn)" };
     }
   };
 
-  const celda = { padding: "6px 8px" } as const;
-  const mono = { fontFamily: "var(--mono)", fontSize: 12 } as const;
-
   return (
     <div className="card card-pad" id="maquinas">
-      <div className="n" style={{ marginBottom: "10px" }}>{t("title")}</div>
+      <div className="card-head">
+        <div className="n">{t("title")}</div>
+        <EvidenceBadge tipo="tus-datos" label={u("evidence.tusDatos")} pequeno />
+      </div>
       <div className="tbl-scroll">
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+        <table className="dt">
           <thead>
-            <tr style={{ textAlign: "left", opacity: 0.65 }}>
-              <th style={{ padding: "4px 8px 4px 0", fontWeight: 500 }}>{t("colSeat")}</th>
-              <th style={{ ...celda, fontWeight: 500 }}>{t("colSurface")}</th>
-              <th style={{ ...celda, fontWeight: 500 }}>{t("colVersion")}</th>
-              <th style={{ ...celda, fontWeight: 500 }}>{t("colState")}</th>
-              <th style={{ ...celda, fontWeight: 500 }}>{t("colLastSeen")}</th>
-              <th style={{ padding: "4px 0 4px 8px", fontWeight: 500, textAlign: "right" }}>{t("colSavings7d")}</th>
+            <tr>
+              <th scope="col">{t("colSeat")}</th>
+              <th scope="col">{t("colSurface")}</th>
+              <th scope="col">{t("colVersion")}</th>
+              <th scope="col">{t("colState")}</th>
+              <th scope="col">{t("colLastSeen")}</th>
+              <th scope="col" className="dt-num">{t("colSavings7d")}</th>
             </tr>
           </thead>
           <tbody>
             {maquinas.map((a) => {
               const c = chip(a);
               return (
-                <tr key={a.seatId} style={{ borderTop: "1px solid var(--line)" }}>
-                  <td style={{ padding: "6px 8px 6px 0", ...mono }}>{a.seatId.length > 14 ? `${a.seatId.slice(0, 10)}…` : a.seatId}</td>
-                  <td style={celda}>{a.surface ?? "—"}</td>
-                  <td style={{ ...celda, ...mono }}>{version(a)}</td>
-                  <td style={celda}>{c ? <span style={{ color: c.color, fontSize: 12 }}>{c.texto}</span> : null}</td>
-                  <td style={celda}>{fecha(a.lastSeenAt)}</td>
-                  <td style={{ padding: "6px 0 6px 8px", textAlign: "right", ...mono }}>{money(a.ahorroMedido7dUsd)}</td>
+                <tr key={a.seatId}>
+                  <td className="dt-mono">{a.seatId.length > 14 ? `${a.seatId.slice(0, 10)}…` : a.seatId}</td>
+                  <td>{a.surface ?? "—"}</td>
+                  <td className="dt-mono">{version(a)}</td>
+                  <td>{c ? <span className="dt-chip" style={{ color: c.color }}>{c.texto}</span> : null}</td>
+                  <td>{fecha(a.lastSeenAt)}</td>
+                  <td className="dt-num dt-mono">{money(a.ahorroMedido7dUsd)}</td>
                 </tr>
               );
             })}
             {ci.length > 0 ? (
-              <tr style={{ borderTop: "1px solid var(--line)", opacity: 0.75 }}>
-                <td style={{ padding: "6px 8px 6px 0" }} colSpan={5}>{t("ciRow", { n: ci.length })}</td>
-                <td style={{ padding: "6px 0 6px 8px", textAlign: "right", ...mono }}>{money(ciAhorro)}</td>
+              <tr className="dt-soft">
+                <td colSpan={5}>{t("ciRow", { n: ci.length })}</td>
+                <td className="dt-num dt-mono">{money(ciAhorro)}</td>
               </tr>
             ) : null}
           </tbody>

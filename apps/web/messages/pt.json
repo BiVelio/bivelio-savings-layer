@@ -48,6 +48,12 @@
         "members": "{n, plural, =1 {1 membro} other {# membros}}",
         "seats": "{used} de {seats}",
         "seatsTitle": "{used} lugares em uso de {seats} pagos este mês"
+      },
+      "status": {
+        "done": "concluído",
+        "next": "seguinte",
+        "pending": "pendente",
+        "unavailable": "indisponível"
       }
     },
     "topbar": {
@@ -57,6 +63,61 @@
         "free": "Free",
         "pro": "Pro",
         "enterprise": "Enterprise"
+      }
+    },
+    "tour": {
+      "open": "Ver o tour",
+      "openHint": "Repete a visita guiada do painel",
+      "close": "Fechar o tour",
+      "next": "Seguinte",
+      "prev": "Anterior",
+      "finish": "Concluir",
+      "step": "Passo {n} de {total}",
+      "steps": {
+        "welcome": {
+          "title": "Bem-vindo ao BiVelio Savings",
+          "body": "Este painel mostra o que gastas em LLM e o que a camada poupa, medido com o teu próprio tráfego. O que não foi medido é dito por palavras, nunca com um zero."
+        },
+        "nav": {
+          "title": "Três grupos, um percurso",
+          "body": "Começar leva-te à visão geral e à instalação. Poupar reúne a prova e o extrato. A tua organização, as máquinas e a conta."
+        },
+        "setup": {
+          "title": "Primeiros passos e o teu progresso",
+          "body": "Os marcos do arranque são medidos pelo produto. Carrega num para abrir a respetiva instrução: só passa a concluído quando chega o sinal real."
+        },
+        "verdict": {
+          "title": "O teu veredicto",
+          "body": "A poupança medida no período, com o seu recibo e o tipo de evidência. Se faltar alguma coisa — integração, tráfego, preço ou leitura — é aqui que se explica o que falta e como continuar."
+        },
+        "range": {
+          "title": "Escolhe o período",
+          "body": "Alterna entre os intervalos disponíveis. O período vai no endereço, por isso podes partilhar ou recarregar a mesma vista."
+        },
+        "customize": {
+          "title": "Personaliza o painel",
+          "body": "Reordena ou oculta cartões e repõe a disposição quando quiseres. Fica guardado apenas neste navegador; os avisos e o veredicto não podem ser ocultados."
+        },
+        "explorer": {
+          "title": "Explora a tua utilização",
+          "body": "Vê a utilização por dia, acumulada ou por modelo, muda de métrica e exporta o período em CSV."
+        },
+        "proof": {
+          "title": "Prova e evidência",
+          "body": "Três separadores: o banco público, o teu próprio A/B e o verificador. Os dados de referência nunca são apresentados como teus."
+        },
+        "team": {
+          "title": "A tua equipa · Conta e plano",
+          "body": "Convida pessoas e atribui funções. Um membro não é um lugar: os lugares são máquinas ou identidades de serviço. Consulta o teu plano, os lugares e a faturação, e gere a subscrição a partir daqui."
+        },
+        "account": {
+          "title": "Conta e plano",
+          "body": "Consulta o teu plano, os lugares e a faturação, e gere a subscrição a partir daqui."
+        },
+        "finish": {
+          "title": "Repete quando quiseres",
+          "body": "Esta visita recomeça em «Ver o tour», na barra superior de qualquer página do painel."
+        }
       }
     }
   },
@@ -193,6 +254,36 @@
         "models": "Não foi possível ler o desdobramento por modelo.",
         "sessions": "Não foi possível ler os custos por sessão.",
         "seats": "Não foi possível ler a atividade das máquinas."
+      },
+      "panelEyebrow": "A tua atividade",
+      "panelTitle": "Utilização, oportunidades e distribuição",
+      "next": {
+        "eyebrow": "Passo seguinte",
+        "doneTitle": "O teu medidor está a funcionar",
+        "doneBody": "Os marcos do arranque estão concluídos. Compara os teus números com a evidência publicada.",
+        "proofCta": "Abrir a prova",
+        "openCta": "Ver a instrução",
+        "unavailableTitle": "Não conseguimos avaliar o arranque"
+      },
+      "kpi": {
+        "label": "Números do período",
+        "cost": "Custo observado",
+        "costBase": "Custo real aos teus preços · {period}",
+        "saved": "Poupança creditada",
+        "savedBase": "Linha de base − custo real, apenas pedidos medidos · {period}",
+        "requests": "Pedidos",
+        "requestsBase": "{share} com contador do fornecedor · {period}",
+        "requestsBaseNone": "Todos os recebidos · {period}",
+        "noPrice": "Sem preço para tarifar este tráfego",
+        "notMeasured": "Ainda nada medido neste período"
+      },
+      "breakdown": {
+        "title": "Custo observado por modelo",
+        "totalLabel": "Custo real · {period}",
+        "empty": "Ainda não há custo por modelo neste período",
+        "coverageFull": "A repartição cobre todo o custo observado do período.",
+        "coveragePartial": "A repartição por modelo cobre {coverage} do custo observado do período; o restante não tem modelo atribuído.",
+        "coverageUnknown": "Não é possível comparar com o custo observado do período."
       }
     },
     "proof": {
@@ -288,8 +379,10 @@
       "metaTitle": "Instalar · BiVelio Savings Layer",
       "eyebrow": "Integra",
       "title": "Instala e liga o SDK",
-      "intro": "Coloca o BV-SALA à frente do teu fornecedor — os teus prompts nunca saem da tua infraestrutura.",
-      "irACuenta": "Ainda sem plano, ou queres alterar os lugares? Faz-se em Conta →"
+      "intro": "Coloca o BV-SALA à frente do teu fornecedor. Os teus prompts não passam pelos servidores da BiVelio; são enviados para o fornecedor que configurares.",
+      "irACuenta": "Ainda sem plano, ou queres alterar os lugares? Faz-se em Conta →",
+      "trackerTitle": "O teu arranque",
+      "trackerNote": "Estes marcos são medidos pelo produto: carregar num abre a respetiva instrução, não o marca como concluído. São os da ligação Cloud; o motor aberto funciona sem eles."
     },
     "account": {
       "metaTitle": "Conta · BiVelio Savings Layer",
@@ -309,7 +402,37 @@
       "hiddenCap": "Os seus dados de utilização existem, mas esta conta não os consegue ver. É uma falha nossa e já fomos alertados. Escreva para support@bivelio.com se persistir.",
       "rangeDays": "últimos {n} dias",
       "rangeLabel": "Intervalo",
-      "rangeOption": "{n}d"
+      "rangeOption": "{n}d",
+      "status": {
+        "positive": "Poupança medida",
+        "negative": "Custo acima da referência",
+        "partial": "Medição parcial",
+        "notIntegrated": "Ainda por integrar",
+        "noTraffic": "Sem tráfego neste período",
+        "noPrice": "Tráfego sem preço",
+        "notMeasured": "Tráfego por medir",
+        "readFailed": "Não foi possível ler",
+        "limited": "Acesso limitado"
+      },
+      "lostLine": "acima da tua linha de base neste período · <b>{money}</b> de custo a mais (real − linha de base, aos teus preços).",
+      "method": "Ver fonte e metodologia",
+      "methodBody": "O valor principal é um menos o custo real dividido pela linha de base, calculado apenas com os pedidos que têm contador do fornecedor. O que é estimado e o que não foi medido ficam fora do valor principal.",
+      "receipt": {
+        "title": "Recibo do período",
+        "baseline": "Linha de base medida",
+        "actual": "Custo real medido",
+        "coverage": "Pedidos com contador",
+        "saved": "Poupança medida",
+        "origin": "Medido com o contador do teu fornecedor, aos teus preços."
+      },
+      "actions": {
+        "install": "Começar a instalação",
+        "widen": "Ver os últimos {n} dias",
+        "checkInstall": "Rever a instalação",
+        "support": "Escrever ao suporte",
+        "how": "Como se mede"
+      },
+      "noTrafficCap": "Não há pedidos neste período. Experimenta um intervalo mais amplo ou confirma que a tua integração continua a enviar tráfego."
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "chamadas a LLM/recuperação/ferramentas que nunca chegaram a correr",
@@ -338,7 +461,7 @@
       "statusPending": "pendente",
       "statusUnavailable": "indisponível",
       "nextLabel": "Seguinte: {label}",
-      "installComment": "# deteta a tua stack e imprime a ligação exata — os teus prompts nunca saem da tua infraestrutura",
+      "installComment": "# deteta a tua stack e imprime a ligação exata — os teus prompts não passam pelos servidores da BiVelio; são enviados para o fornecedor que configurares",
       "hintLicense": "Cria ou recupera a licença e as credenciais de serviço em Conta. Uma credencial por si só não prova a instalação.",
       "hintInstall": "Escolhe SDK ou gateway e envia um pedido real. Criar uma chave ou enviar um lote vazio não prova a instalação.",
       "hintFirstRequest": "Envia um pedido real ao fornecedor através do SDK ou gateway. O relatório de utilização concluirá este passo.",
@@ -348,7 +471,9 @@
       "linkInstall": "Abrir instalação",
       "linkSdk": "Percurso SDK",
       "linkGateway": "Percurso gateway",
-      "unavailableHint": "Não é possível ler a utilização agora, por isso instalação e relatório não podem ser avaliados. Não significa que a conta esteja vazia."
+      "unavailableHint": "Não é possível ler a utilização agora, por isso instalação e relatório não podem ser avaliados. Não significa que a conta esteja vazia.",
+      "count": "{done} de {total}",
+      "trackerTitle": "Arranque"
     },
     "shadowOpportunities": {
       "title": "Onde está a tua poupança potencial",
@@ -501,7 +626,15 @@
       "chipOk": "atualizada",
       "chipMixed": "parte não declarada",
       "hint": "Uma linha por máquina que reporta uso, identificada pelo seu id de lugar opaco (nunca uma pessoa). O que viaja é um número de versão — gateway/x.y.z ou sdk/x.y.z —, nunca conteúdo. Uma máquina com um gateway anterior ao canal de versão aparece como «não declarada».",
-      "referenceHint": "A poupança medida inclui aqui os pedidos repetidos medidos por referência: cada um é valorizado com o contador do pedido idêntico que já foi executado."
+      "referenceHint": "A poupança medida inclui aqui os pedidos repetidos medidos por referência: cada um é valorizado com o contador do pedido idêntico que já foi executado.",
+      "emptyTitle": "Ainda não há máquinas a reportar",
+      "emptyBody": "Uma máquina aparece aqui quando o seu gateway ou o seu SDK envia utilização. Cada uma conta como um lugar: uma máquina ou uma identidade de serviço, nunca uma pessoa.",
+      "emptyCta": "Ligar uma máquina",
+      "failedTitle": "Não foi possível ler a atividade das máquinas",
+      "failedBody": "É uma falha de leitura, não uma lista vazia. Recarrega daqui a um momento.",
+      "hiddenTitle": "O cartão de máquinas está oculto",
+      "hiddenBody": "Ocultaste-o ao personalizar o painel. Os seus dados continuam a ser medidos.",
+      "show": "Mostrar cartão"
     },
     "installLicensePanel": {
       "eyebrow": "Começar",
@@ -520,7 +653,24 @@
       "doctorComment": "outros agentes e SDK: a configuração exata de cada um",
       "agentsNote": "Cada wrapper prepara o seu agente apenas para essa sessão — nada na configuração muda — e ao sair diz-te quantos pedidos mediu, quais não conseguiu medir e porquê. <code>bvsala copilot</code> precisa da tua própria chave da Anthropic (BYOK): os modelos alojados pela GitHub nunca passam por um base URL, por isso não há nada a medir. Para o Crush, Droid, Cline, Continue ou Copilot no VS Code, o <code>bvsala doctor</code> imprime a configuração exata. <b>Cursor (BYOK)</b>: funciona através da substituição do URL base da OpenAI com a tua própria chave; os seus modelos nunca chegam a um gateway na tua máquina. <b>Gemini CLI</b>: lança-a com <code>bvsala gemini</code>.",
       "pythonNote": "<b>Python?</b> O cliente <code>bvsala</code> para Python faz passar os SDK oficiais da OpenAI e da Anthropic por este mesmo gateway (<code>bvsala gateway</code>) e devolve ao teu código o relatório de cada pedido — os mesmos números que este painel recebe. Precisa de um gateway 0.4.26 ou posterior e de Python 3.10 ou posterior. Instala-se a partir do PyPI com <code>pip install bivelio-savings-layer</code>; no teu código, <code>import bvsala</code>.",
-      "finalNote": "É tudo. Sem licença válida → <code>generate()</code> recusa. Se o teu plano for cancelado, o SDK para em ~15 min através de <code>licenseServerUrl</code> — sem reiniciar, e nunca inutiliza a tua produção se estivermos inacessíveis."
+      "finalNote": "É tudo. Sem licença válida → <code>generate()</code> recusa. Se o teu plano for cancelado, o SDK para em ~15 min através de <code>licenseServerUrl</code> — sem reiniciar, e nunca inutiliza a tua produção se estivermos inacessíveis.",
+      "terminal": "Terminal",
+      "sdkTitle": "Integrar uma aplicação (SDK)",
+      "sdkLede": "Envolve o teu fornecedor no teu código e lê o relatório de poupança de cada chamada.",
+      "gatewayTitle": "Ligar um agente (gateway)",
+      "gatewayLede": "Lança o teu agente de código através do gateway local, sem tocar no código dele.",
+      "modeLocalTitle": "Modo local",
+      "modeLocalBody": "O motor aberto funciona sem conta nem chaves: todas as alavancas locais e zero telemetria. O relatório fica na tua máquina.",
+      "modeCloudTitle": "Ligação Cloud",
+      "modeCloudBody": "Com licença e chave de serviço, este painel recebe contagens e custos — nunca os teus prompts — e a tua organização partilha medição e lugares.",
+      "modeCloudLink": "Ir para as credenciais",
+      "cloudTitle": "Ligação Cloud: licença e chave de serviço",
+      "optional": "Opcional com o motor aberto",
+      "roleLimited": "A tua função pode ler esta página, mas só owner e admin podem emitir a licença e criar ou revogar chaves de serviço.",
+      "permissionsNote": "Só owner e admin criam ou revogam chaves. Uma chave é mostrada uma única vez; depois só fica o seu prefixo.",
+      "initExpected": "A linha de instalação para o teu gestor de pacotes, as chaves que ainda faltam, o código do teu adaptador e uma verificação que não gasta tokens. Não escreve nenhum ficheiro.",
+      "wireExpected": "A resposta, a parte da linha de base que não pagaste e como esse valor foi obtido: measured, reference, estimated ou unmeasured.",
+      "agentsExpected": "O agente arranca através do gateway local. Com a chave de serviço, o seu gasto aparece neste painel."
     },
     "accountPlanStrip": {
       "noActivePlan": "Sem plano ativo",

@@ -48,6 +48,12 @@
         "members": "{n, plural, =1 {1 member} other {# members}}",
         "seats": "{used} of {seats}",
         "seatsTitle": "{used} seats in use of {seats} paid this month"
+      },
+      "status": {
+        "done": "done",
+        "next": "next",
+        "pending": "pending",
+        "unavailable": "unavailable"
       }
     },
     "topbar": {
@@ -57,6 +63,61 @@
         "free": "Free",
         "pro": "Pro",
         "enterprise": "Enterprise"
+      }
+    },
+    "tour": {
+      "open": "Take the tour",
+      "openHint": "Replay the guided tour of the dashboard",
+      "close": "Close the tour",
+      "next": "Next",
+      "prev": "Back",
+      "finish": "Finish",
+      "step": "Step {n} of {total}",
+      "steps": {
+        "welcome": {
+          "title": "Welcome to BiVelio Savings",
+          "body": "This dashboard shows what you spend on LLMs and what the layer saves, measured on your own traffic. Anything not measured is said in words, never shown as a zero."
+        },
+        "nav": {
+          "title": "Three groups, one path",
+          "body": "Get started takes you to the overview and the install guide. Save holds the proof and the statement. Your organization holds machines and the account."
+        },
+        "setup": {
+          "title": "First steps and your progress",
+          "body": "The product measures the setup milestones. Select one to open its instructions: it only turns done when the real signal arrives."
+        },
+        "verdict": {
+          "title": "Your verdict",
+          "body": "The measured savings for the period, with its receipt and evidence type. If something is missing — integration, traffic, pricing or a read — this is where you see what and how to continue."
+        },
+        "range": {
+          "title": "Choose the period",
+          "body": "Switch between the available ranges. The period lives in the address, so you can share or reload the same view."
+        },
+        "customize": {
+          "title": "Customize the dashboard",
+          "body": "Reorder or hide cards and restore the layout whenever you like. It is saved in this browser only; notices and the verdict cannot be hidden."
+        },
+        "explorer": {
+          "title": "Explore your usage",
+          "body": "See usage by day, cumulative or by model, switch metric and export the period as CSV."
+        },
+        "proof": {
+          "title": "Proof and evidence",
+          "body": "Three tabs: the public benchmark, your own A/B and the verifier. Reference data is never presented as yours."
+        },
+        "team": {
+          "title": "Your team · Account and plan",
+          "body": "Invite people and assign roles. A member is not a seat: seats are machines or service identities. Check your plan, seats and billing, and manage the subscription from here."
+        },
+        "account": {
+          "title": "Account and plan",
+          "body": "Check your plan, seats and billing, and manage the subscription from here."
+        },
+        "finish": {
+          "title": "Replay it anytime",
+          "body": "This tour starts again from “Take the tour”, in the top bar of every dashboard page."
+        }
       }
     }
   },
@@ -193,6 +254,36 @@
         "models": "The model breakdown could not be read.",
         "sessions": "Session costs could not be read.",
         "seats": "Machine activity could not be read."
+      },
+      "panelEyebrow": "Your activity",
+      "panelTitle": "Usage, opportunities and distribution",
+      "next": {
+        "eyebrow": "Next step",
+        "doneTitle": "Your meter is running",
+        "doneBody": "The setup milestones are complete. Check your figures against the published evidence.",
+        "proofCta": "Open the proof",
+        "openCta": "See the instructions",
+        "unavailableTitle": "We cannot assess your setup"
+      },
+      "kpi": {
+        "label": "Figures for the period",
+        "cost": "Observed cost",
+        "costBase": "Actual cost at your prices · {period}",
+        "saved": "Credited savings",
+        "savedBase": "Baseline − actual cost, measured requests only · {period}",
+        "requests": "Requests",
+        "requestsBase": "{share} with a provider counter · {period}",
+        "requestsBaseNone": "All received · {period}",
+        "noPrice": "No price to rate this traffic",
+        "notMeasured": "Nothing measured yet in this period"
+      },
+      "breakdown": {
+        "title": "Observed cost by model",
+        "totalLabel": "Actual cost · {period}",
+        "empty": "No cost by model in this period yet",
+        "coverageFull": "The breakdown covers all the observed cost for the period.",
+        "coveragePartial": "The per-model breakdown covers {coverage} of the observed cost for the period; the rest has no model attributed.",
+        "coverageUnknown": "It cannot be compared with the observed cost for the period."
       }
     },
     "proof": {
@@ -288,8 +379,10 @@
       "metaTitle": "Install · BiVelio Savings Layer",
       "eyebrow": "Integrate",
       "title": "Install & wire the SDK",
-      "intro": "Drop BV-SALA in front of your provider — your prompts never leave your infra.",
-      "irACuenta": "No plan yet, or need to change your seats? That happens in Account →"
+      "intro": "Drop BV-SALA in front of your provider. Your prompts do not pass through BiVelio's servers; they are sent to the provider you configure.",
+      "irACuenta": "No plan yet, or need to change your seats? That happens in Account →",
+      "trackerTitle": "Your setup",
+      "trackerNote": "The product measures these milestones: selecting one opens its instructions, it does not mark it as done. They belong to the Cloud connection; the open engine works without them."
     },
     "account": {
       "metaTitle": "Account · BiVelio Savings Layer",
@@ -309,7 +402,37 @@
       "hiddenCap": "Your usage data exists, but this account can't see it. That's a fault on our side and we've been alerted. Write to support@bivelio.com if it persists.",
       "rangeDays": "last {n} days",
       "rangeLabel": "Range",
-      "rangeOption": "{n}d"
+      "rangeOption": "{n}d",
+      "status": {
+        "positive": "Measured savings",
+        "negative": "Cost above the baseline",
+        "partial": "Partial measurement",
+        "notIntegrated": "Not integrated yet",
+        "noTraffic": "No traffic in this period",
+        "noPrice": "Unpriced traffic",
+        "notMeasured": "Unmeasured traffic",
+        "readFailed": "Could not be read",
+        "limited": "Limited access"
+      },
+      "lostLine": "above your baseline this period · <b>{money}</b> of extra cost (actual − baseline, at your prices).",
+      "method": "View source and methodology",
+      "methodBody": "The headline is one minus the actual cost divided by the baseline, computed only from requests that have a provider counter. Estimated and unmeasured traffic stay out of the headline.",
+      "receipt": {
+        "title": "Receipt for the period",
+        "baseline": "Measured baseline",
+        "actual": "Measured actual cost",
+        "coverage": "Requests with a counter",
+        "saved": "Measured savings",
+        "origin": "Measured with your provider's counter, at your prices."
+      },
+      "actions": {
+        "install": "Start the install",
+        "widen": "View the last {n} days",
+        "checkInstall": "Review the install",
+        "support": "Contact support",
+        "how": "How it is measured"
+      },
+      "noTrafficCap": "There are no requests in this period. Try a wider range or check that your integration is still sending traffic."
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "LLM/retrieval/tool calls that never ran",
@@ -338,7 +461,7 @@
       "statusPending": "pending",
       "statusUnavailable": "unavailable",
       "nextLabel": "Next: {label}",
-      "installComment": "# detects your stack and prints the exact wiring — your prompts never leave your infra",
+      "installComment": "# detects your stack and prints the exact wiring — your prompts do not pass through BiVelio's servers; they are sent to the provider you configure",
       "hintLicense": "Create or retrieve your license and service credentials in Account. A credential alone does not prove installation.",
       "hintInstall": "Choose SDK or gateway and send a real request. Creating a key or sending an empty batch does not prove installation.",
       "hintFirstRequest": "Send a real provider request through the SDK or gateway. Its usage report will complete this step.",
@@ -348,7 +471,9 @@
       "linkInstall": "Open installation",
       "linkSdk": "SDK route",
       "linkGateway": "Gateway route",
-      "unavailableHint": "Usage cannot be read right now, so installation and reporting cannot be assessed. This does not mean the account is empty."
+      "unavailableHint": "Usage cannot be read right now, so installation and reporting cannot be assessed. This does not mean the account is empty.",
+      "count": "{done} of {total}",
+      "trackerTitle": "Setup"
     },
     "shadowOpportunities": {
       "title": "Where your potential savings are",
@@ -501,7 +626,15 @@
       "chipOk": "up to date",
       "chipMixed": "partly undeclared",
       "hint": "One row per machine that reports usage, identified by its opaque seat id (never a person). What travels is a version number — gateway/x.y.z or sdk/x.y.z — never content. A machine on a gateway older than the version channel shows as “not declared”.",
-      "referenceHint": "Measured savings here include repeated requests measured by reference: each is valued with the counter of the identical request that already ran."
+      "referenceHint": "Measured savings here include repeated requests measured by reference: each is valued with the counter of the identical request that already ran.",
+      "emptyTitle": "No machines are reporting yet",
+      "emptyBody": "A machine appears here once its gateway or SDK sends usage. Each one counts as a seat: a machine or a service identity, never a person.",
+      "emptyCta": "Connect a machine",
+      "failedTitle": "Machine activity could not be read",
+      "failedBody": "This is a read failure, not an empty list. Reload in a moment.",
+      "hiddenTitle": "The machines card is hidden",
+      "hiddenBody": "You hid it when customizing the dashboard. Its data is still being measured.",
+      "show": "Show card"
     },
     "installLicensePanel": {
       "eyebrow": "Get started",
@@ -520,7 +653,24 @@
       "doctorComment": "other agents and SDKs: the exact configuration for each",
       "agentsNote": "Each wrapper sets its agent up for that session only — nothing in its configuration changes — and on exit tells you how many requests it metered, which ones it could not, and why. <code>bvsala copilot</code> needs your own Anthropic key (BYOK): GitHub-hosted models never go through a base URL, so there is nothing to meter. For Crush, Droid, Cline, Continue or Copilot in VS Code, <code>bvsala doctor</code> prints the exact configuration. <b>Cursor (BYOK)</b>: it works through the OpenAI API base-URL override with your own key; its own models never reach a gateway on your machine. <b>Gemini CLI</b>: launch it with <code>bvsala gemini</code>.",
       "pythonNote": "<b>Python?</b> The <code>bvsala</code> client for Python routes the official OpenAI and Anthropic SDKs through this same gateway (<code>bvsala gateway</code>) and hands your code the report of each request — the same figures this dashboard receives. It needs a 0.4.26 or later gateway and Python 3.10 or newer. Install it from PyPI with <code>pip install bivelio-savings-layer</code>; in your code, <code>import bvsala</code>.",
-      "finalNote": "That's it. No valid license → <code>generate()</code> refuses. If your plan is cancelled the SDK stops within ~15 min via <code>licenseServerUrl</code> — no restart, and it never bricks your production if we're unreachable."
+      "finalNote": "That's it. No valid license → <code>generate()</code> refuses. If your plan is cancelled the SDK stops within ~15 min via <code>licenseServerUrl</code> — no restart, and it never bricks your production if we're unreachable.",
+      "terminal": "Terminal",
+      "sdkTitle": "Integrate an application (SDK)",
+      "sdkLede": "Wrap your provider in your code and read the savings report of every call.",
+      "gatewayTitle": "Connect an agent (gateway)",
+      "gatewayLede": "Launch your coding agent through the local gateway, without touching its code.",
+      "modeLocalTitle": "Local mode",
+      "modeLocalBody": "The open engine runs with no account and no keys: every local lever and zero telemetry. The report stays on your machine.",
+      "modeCloudTitle": "Cloud connection",
+      "modeCloudBody": "With a license and a service key, this dashboard receives counts and costs — never your prompts — and your organization shares metering and seats.",
+      "modeCloudLink": "Go to credentials",
+      "cloudTitle": "Cloud connection: license and service key",
+      "optional": "Optional with the open engine",
+      "roleLimited": "Your role can read this page, but only owner and admin can issue the license and create or revoke service keys.",
+      "permissionsNote": "Only owner and admin create or revoke keys. A key is shown once; after that only its prefix remains.",
+      "initExpected": "The install line for your package manager, the keys still missing, the code for your adapter and a check that spends no tokens. It writes no files.",
+      "wireExpected": "The answer, the share of the baseline you did not pay and how that figure was obtained: measured, reference, estimated or unmeasured.",
+      "agentsExpected": "The agent starts through the local gateway. With the service key, its spend shows up in this dashboard."
     },
     "accountPlanStrip": {
       "noActivePlan": "No active plan",

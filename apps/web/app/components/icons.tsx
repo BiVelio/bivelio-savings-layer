@@ -150,6 +150,97 @@ export const MachinesIcon = () => (
   </Icon>
 );
 
+/** Tour guiado — una brújula (lucide Compass). */
+export const TourIcon = () => (
+  <Icon>
+    <circle cx="12" cy="12" r="10" />
+    <path d="m16.24 7.76-1.8 5.4a2 2 0 0 1-1.28 1.28l-5.4 1.8 1.8-5.4a2 2 0 0 1 1.28-1.28z" />
+  </Icon>
+);
+
+/** Cerrar sesión (lucide LogOut). */
+export const SignOutIcon = () => (
+  <Icon>
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+    <path d="m16 17 5-5-5-5" />
+    <path d="M21 12H9" />
+  </Icon>
+);
+
+/** Integrar una aplicación — llaves de código (lucide Braces). */
+export const CodeIcon = () => (
+  <Icon>
+    <path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5a2 2 0 0 0 2 2h1" />
+    <path d="M16 21h1a2 2 0 0 0 2-2v-5a2 2 0 0 1 2-2 2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1" />
+  </Icon>
+);
+
+/** Conectar un agente — una terminal (lucide SquareTerminal). */
+export const TerminalIcon = () => (
+  <Icon>
+    <path d="m7 11 2-2-2-2" />
+    <path d="M11 13h4" />
+    <rect width="18" height="18" x="3" y="3" rx="2" />
+  </Icon>
+);
+
+/** Credenciales — una llave (lucide KeyRound). */
+export const KeyIcon = () => (
+  <Icon>
+    <path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z" />
+    <circle cx="16.5" cy="7.5" r=".5" fill="currentColor" />
+  </Icon>
+);
+
+/** Modo local — un portátil (lucide Laptop). */
+export const LaptopIcon = () => (
+  <Icon>
+    <path d="M18 5a2 2 0 0 1 2 2v8.526a2 2 0 0 0 .212.897l1.068 2.127a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45l1.068-2.127A2 2 0 0 0 4 15.526V7a2 2 0 0 1 2-2z" />
+    <path d="M20.054 15.987H3.946" />
+  </Icon>
+);
+
+/** Conexión Cloud — una nube (lucide Cloud). */
+export const CloudIcon = () => (
+  <Icon>
+    <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" />
+  </Icon>
+);
+
+/** Lectura fallida o atención (lucide TriangleAlert). */
+export const AlertIcon = () => (
+  <Icon>
+    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />
+    <path d="M12 9v4" />
+    <path d="M12 17h.01" />
+  </Icon>
+);
+
+/** Acceso limitado (lucide EyeOff). */
+export const EyeOffIcon = () => (
+  <Icon>
+    <path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49" />
+    <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242" />
+    <path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143" />
+    <path d="m2 2 20 20" />
+  </Icon>
+);
+
+/** Ahorro medido — tendencia (lucide TrendingUp). */
+export const TrendIcon = () => (
+  <Icon>
+    <path d="M16 7h6v6" />
+    <path d="m22 7-8.5 8.5-5-5L2 17" />
+  </Icon>
+);
+
+/** Hecho (lucide Check). */
+export const CheckIcon = () => (
+  <Icon strokeWidth="2.2">
+    <path d="M20 6 9 17l-5-5" />
+  </Icon>
+);
+
 export const ICONS: Record<string, () => React.ReactElement> = {
   overview: DashboardIcon,
   proof: ProofIcon,

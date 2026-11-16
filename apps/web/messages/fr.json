@@ -48,6 +48,12 @@
         "members": "{n, plural, =1 {1 membre} other {# membres}}",
         "seats": "{used} sur {seats}",
         "seatsTitle": "{used} sièges utilisés sur {seats} payés ce mois-ci"
+      },
+      "status": {
+        "done": "terminé",
+        "next": "suivant",
+        "pending": "en attente",
+        "unavailable": "indisponible"
       }
     },
     "topbar": {
@@ -57,6 +63,61 @@
         "free": "Free",
         "pro": "Pro",
         "enterprise": "Enterprise"
+      }
+    },
+    "tour": {
+      "open": "Voir la visite",
+      "openHint": "Relancer la visite guidée du tableau de bord",
+      "close": "Fermer la visite",
+      "next": "Suivant",
+      "prev": "Retour",
+      "finish": "Terminer",
+      "step": "Étape {n} sur {total}",
+      "steps": {
+        "welcome": {
+          "title": "Bienvenue dans BiVelio Savings",
+          "body": "Ce tableau de bord montre ce que vous dépensez en LLM et ce que la couche économise, mesuré sur votre propre trafic. Ce qui n'est pas mesuré est dit en toutes lettres, jamais affiché comme un zéro."
+        },
+        "nav": {
+          "title": "Trois groupes, un parcours",
+          "body": "Commencer mène à l'aperçu et à l'installation. Économiser réunit la preuve et le relevé. Votre organisation regroupe les machines et le compte."
+        },
+        "setup": {
+          "title": "Premiers pas et votre progression",
+          "body": "Les jalons de la mise en route sont mesurés par le produit. Sélectionnez-en un pour ouvrir ses instructions : il ne passe à terminé que lorsque le signal réel arrive."
+        },
+        "verdict": {
+          "title": "Votre verdict",
+          "body": "Les économies mesurées sur la période, avec leur reçu et leur type de preuve. S'il manque quelque chose — intégration, trafic, prix ou lecture — c'est ici que vous voyez quoi et comment poursuivre."
+        },
+        "range": {
+          "title": "Choisissez la période",
+          "body": "Passez d'une plage disponible à l'autre. La période figure dans l'adresse : vous pouvez partager ou recharger la même vue."
+        },
+        "customize": {
+          "title": "Personnalisez le tableau de bord",
+          "body": "Réordonnez ou masquez des cartes et rétablissez la disposition quand vous voulez. C'est enregistré dans ce navigateur uniquement ; les avis et le verdict ne peuvent pas être masqués."
+        },
+        "explorer": {
+          "title": "Explorez votre usage",
+          "body": "Consultez l'usage par jour, en cumulé ou par modèle, changez de métrique et exportez la période en CSV."
+        },
+        "proof": {
+          "title": "Preuve et éléments vérifiables",
+          "body": "Trois onglets : le banc public, votre propre A/B et le vérificateur. Les données de référence ne sont jamais présentées comme les vôtres."
+        },
+        "team": {
+          "title": "Votre équipe · Compte et offre",
+          "body": "Invitez des personnes et attribuez des rôles. Un membre n'est pas un siège : les sièges sont des machines ou des identités de service. Consultez votre offre, vos sièges et la facturation, et gérez l'abonnement d'ici."
+        },
+        "account": {
+          "title": "Compte et offre",
+          "body": "Consultez votre offre, vos sièges et la facturation, et gérez l'abonnement d'ici."
+        },
+        "finish": {
+          "title": "À refaire quand vous voulez",
+          "body": "Cette visite redémarre depuis « Voir la visite », dans la barre supérieure de chaque page du tableau de bord."
+        }
       }
     }
   },
@@ -193,6 +254,36 @@
         "models": "La répartition par modèle n'a pas pu être lue.",
         "sessions": "Les coûts par session n'ont pas pu être lus.",
         "seats": "L'activité des machines n'a pas pu être lue."
+      },
+      "panelEyebrow": "Votre activité",
+      "panelTitle": "Usage, opportunités et répartition",
+      "next": {
+        "eyebrow": "Étape suivante",
+        "doneTitle": "Votre compteur tourne",
+        "doneBody": "Les jalons de la mise en route sont terminés. Comparez vos chiffres aux preuves publiées.",
+        "proofCta": "Ouvrir la preuve",
+        "openCta": "Voir les instructions",
+        "unavailableTitle": "Impossible d'évaluer la mise en route"
+      },
+      "kpi": {
+        "label": "Chiffres de la période",
+        "cost": "Coût observé",
+        "costBase": "Coût réel à vos prix · {period}",
+        "saved": "Économies créditées",
+        "savedBase": "Référence − coût réel, requêtes mesurées uniquement · {period}",
+        "requests": "Requêtes",
+        "requestsBase": "{share} avec un compteur du fournisseur · {period}",
+        "requestsBaseNone": "Toutes celles reçues · {period}",
+        "noPrice": "Pas de prix pour tarifer ce trafic",
+        "notMeasured": "Rien de mesuré pour l'instant sur cette période"
+      },
+      "breakdown": {
+        "title": "Coût observé par modèle",
+        "totalLabel": "Coût réel · {period}",
+        "empty": "Pas encore de coût par modèle sur cette période",
+        "coverageFull": "La répartition couvre tout le coût observé de la période.",
+        "coveragePartial": "La répartition par modèle couvre {coverage} du coût observé de la période ; le reste n'a pas de modèle attribué.",
+        "coverageUnknown": "Comparaison impossible avec le coût observé de la période."
       }
     },
     "proof": {
@@ -288,8 +379,10 @@
       "metaTitle": "Installer · BiVelio Savings Layer",
       "eyebrow": "Intégrer",
       "title": "Installez et connectez le SDK",
-      "intro": "Placez BV-SALA devant votre fournisseur — vos prompts ne quittent jamais votre infrastructure.",
-      "irACuenta": "Pas encore de forfait, ou besoin de changer vos sièges ? Cela se fait dans Compte →"
+      "intro": "Placez BV-SALA devant votre fournisseur. Vos prompts ne passent pas par les serveurs de BiVelio ; ils sont envoyés au fournisseur que vous configurez.",
+      "irACuenta": "Pas encore de forfait, ou besoin de changer vos sièges ? Cela se fait dans Compte →",
+      "trackerTitle": "Votre mise en route",
+      "trackerNote": "Ces jalons sont mesurés par le produit : en sélectionner un ouvre ses instructions, sans le marquer comme terminé. Ils concernent la connexion Cloud ; le moteur ouvert fonctionne sans eux."
     },
     "account": {
       "metaTitle": "Compte · BiVelio Savings Layer",
@@ -309,7 +402,37 @@
       "hiddenCap": "Vos données d'utilisation existent, mais ce compte ne peut pas les voir. C'est une erreur de notre côté et nous avons été alertés. Écrivez à support@bivelio.com si cela persiste.",
       "rangeDays": "{n} derniers jours",
       "rangeLabel": "Période",
-      "rangeOption": "{n}j"
+      "rangeOption": "{n}j",
+      "status": {
+        "positive": "Économies mesurées",
+        "negative": "Coût supérieur à la référence",
+        "partial": "Mesure partielle",
+        "notIntegrated": "Pas encore intégré",
+        "noTraffic": "Aucun trafic sur cette période",
+        "noPrice": "Trafic sans prix",
+        "notMeasured": "Trafic non mesuré",
+        "readFailed": "Lecture impossible",
+        "limited": "Accès limité"
+      },
+      "lostLine": "au-dessus de votre référence sur cette période · <b>{money}</b> de surcoût (réel − référence, à vos prix).",
+      "method": "Voir la source et la méthodologie",
+      "methodBody": "Le chiffre principal vaut un moins le coût réel divisé par la référence, calculé uniquement sur les requêtes qui ont un compteur du fournisseur. Ce qui est estimé ou non mesuré reste hors du chiffre principal.",
+      "receipt": {
+        "title": "Reçu de la période",
+        "baseline": "Référence mesurée",
+        "actual": "Coût réel mesuré",
+        "coverage": "Requêtes avec compteur",
+        "saved": "Économies mesurées",
+        "origin": "Mesuré avec le compteur de votre fournisseur, à vos prix."
+      },
+      "actions": {
+        "install": "Commencer l'installation",
+        "widen": "Voir les {n} derniers jours",
+        "checkInstall": "Vérifier l'installation",
+        "support": "Écrire au support",
+        "how": "Comment c'est mesuré"
+      },
+      "noTrafficCap": "Il n'y a aucune requête sur cette période. Essayez une plage plus large ou vérifiez que votre intégration envoie toujours du trafic."
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "appels LLM/récupération/outil qui n'ont jamais été exécutés",
@@ -338,7 +461,7 @@
       "statusPending": "en attente",
       "statusUnavailable": "indisponible",
       "nextLabel": "Suivant : {label}",
-      "installComment": "# détecte votre stack et affiche le branchement exact — vos prompts ne quittent jamais votre infrastructure",
+      "installComment": "# détecte votre stack et affiche le branchement exact — vos prompts ne passent pas par les serveurs de BiVelio ; ils sont envoyés au fournisseur que vous configurez",
       "hintLicense": "Créez ou récupérez votre licence et vos identifiants de service dans Compte. Un identifiant seul ne prouve pas l'installation.",
       "hintInstall": "Choisissez le SDK ou la passerelle et envoyez une vraie requête. Créer une clé ou envoyer un lot vide ne prouve pas l'installation.",
       "hintFirstRequest": "Envoyez une vraie requête au fournisseur via le SDK ou la passerelle. Son rapport d'utilisation terminera cette étape.",
@@ -348,7 +471,9 @@
       "linkInstall": "Ouvrir l'installation",
       "linkSdk": "Parcours SDK",
       "linkGateway": "Parcours passerelle",
-      "unavailableHint": "L'utilisation est illisible pour le moment : installation et rapport ne peuvent pas être évalués. Cela ne signifie pas que le compte est vide."
+      "unavailableHint": "L'utilisation est illisible pour le moment : installation et rapport ne peuvent pas être évalués. Cela ne signifie pas que le compte est vide.",
+      "count": "{done} sur {total}",
+      "trackerTitle": "Mise en route"
     },
     "shadowOpportunities": {
       "title": "Où se trouvent vos économies potentielles",
@@ -501,7 +626,15 @@
       "chipOk": "à jour",
       "chipMixed": "en partie non déclarée",
       "hint": "Une ligne par machine qui rapporte de l'usage, identifiée par son id de siège opaque (jamais une personne). Ce qui circule est un numéro de version — gateway/x.y.z ou sdk/x.y.z —, jamais du contenu. Une machine avec un gateway antérieur au canal de version apparaît comme « non déclarée ».",
-      "referenceHint": "L'économie mesurée inclut ici les requêtes répétées mesurées par référence : chacune est valorisée avec le compteur de la requête identique déjà exécutée."
+      "referenceHint": "L'économie mesurée inclut ici les requêtes répétées mesurées par référence : chacune est valorisée avec le compteur de la requête identique déjà exécutée.",
+      "emptyTitle": "Aucune machine ne remonte encore de données",
+      "emptyBody": "Une machine apparaît ici dès que sa passerelle ou son SDK envoie de l'usage. Chacune compte comme un siège : une machine ou une identité de service, jamais une personne.",
+      "emptyCta": "Connecter une machine",
+      "failedTitle": "Impossible de lire l'activité des machines",
+      "failedBody": "C'est un échec de lecture, pas une liste vide. Rechargez dans un instant.",
+      "hiddenTitle": "La carte des machines est masquée",
+      "hiddenBody": "Vous l'avez masquée en personnalisant le tableau de bord. Ses données continuent d'être mesurées.",
+      "show": "Afficher la carte"
     },
     "installLicensePanel": {
       "eyebrow": "Commencer",
@@ -520,7 +653,24 @@
       "doctorComment": "autres agents et SDK : la configuration exacte de chacun",
       "agentsNote": "Chaque enveloppe configure son agent pour cette session uniquement — rien dans sa configuration ne change — et vous dit en sortant combien de requêtes elle a mesurées, lesquelles elle n'a pas pu mesurer et pourquoi. <code>bvsala copilot</code> a besoin de votre propre clé Anthropic (BYOK) : les modèles hébergés par GitHub ne passent jamais par une URL de base, il n'y a donc rien à mesurer. Pour Crush, Droid, Cline, Continue ou Copilot dans VS Code, <code>bvsala doctor</code> imprime la configuration exacte. <b>Cursor (BYOK)</b> : il fonctionne via la substitution d'URL de base OpenAI avec votre propre clé ; ses propres modèles n'atteignent jamais une passerelle sur votre machine. <b>Gemini CLI</b> : lancez-la avec <code>bvsala gemini</code>.",
       "pythonNote": "<b>Python ?</b> Le client <code>bvsala</code> pour Python fait passer les SDK officiels d'OpenAI et d'Anthropic par cette même passerelle (<code>bvsala gateway</code>) et renvoie à votre code le rapport de chaque requête — les mêmes chiffres que reçoit ce panneau. Il lui faut une passerelle 0.4.26 ou ultérieure et Python 3.10 ou ultérieur. Il s'installe depuis PyPI avec <code>pip install bivelio-savings-layer</code> ; dans votre code, <code>import bvsala</code>.",
-      "finalNote": "C'est tout. Pas de licence valide → <code>generate()</code> refuse. Si votre forfait est annulé, le SDK s'arrête en ~15 min via <code>licenseServerUrl</code> — sans redémarrage, et il ne bloque jamais votre production si nous sommes injoignables."
+      "finalNote": "C'est tout. Pas de licence valide → <code>generate()</code> refuse. Si votre forfait est annulé, le SDK s'arrête en ~15 min via <code>licenseServerUrl</code> — sans redémarrage, et il ne bloque jamais votre production si nous sommes injoignables.",
+      "terminal": "Terminal",
+      "sdkTitle": "Intégrer une application (SDK)",
+      "sdkLede": "Enveloppez votre fournisseur dans votre code et lisez le rapport d'économies de chaque appel.",
+      "gatewayTitle": "Connecter un agent (passerelle)",
+      "gatewayLede": "Lancez votre agent de code via la passerelle locale, sans toucher à son code.",
+      "modeLocalTitle": "Mode local",
+      "modeLocalBody": "Le moteur ouvert fonctionne sans compte ni clés : tous les leviers locaux et zéro télémétrie. Le rapport reste sur votre machine.",
+      "modeCloudTitle": "Connexion Cloud",
+      "modeCloudBody": "Avec une licence et une clé de service, ce tableau de bord reçoit des décomptes et des coûts — jamais vos prompts — et votre organisation partage la mesure et les sièges.",
+      "modeCloudLink": "Aller aux identifiants",
+      "cloudTitle": "Connexion Cloud : licence et clé de service",
+      "optional": "Facultatif avec le moteur ouvert",
+      "roleLimited": "Votre rôle peut lire cette page, mais seuls owner et admin peuvent émettre la licence et créer ou révoquer des clés de service.",
+      "permissionsNote": "Seuls owner et admin créent ou révoquent des clés. Une clé n'est affichée qu'une fois ; ensuite, seul son préfixe reste visible.",
+      "initExpected": "La ligne d'installation pour votre gestionnaire de paquets, les clés encore manquantes, le code de votre adaptateur et une vérification qui ne consomme aucun token. Aucun fichier n'est écrit.",
+      "wireExpected": "La réponse, la part de la référence que vous n'avez pas payée et la façon dont ce chiffre a été obtenu : measured, reference, estimated ou unmeasured.",
+      "agentsExpected": "L'agent démarre via la passerelle locale. Avec la clé de service, sa dépense apparaît dans ce tableau de bord."
     },
     "accountPlanStrip": {
       "noActivePlan": "Aucun forfait actif",

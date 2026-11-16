@@ -43,6 +43,9 @@ para poder comparar al actualizar.
 | Pricing Plans | `pricing-plans.tsx` + `.css` | **affectUI Pro** | registro Pro, `pricing-plans` (descarga del 2026-11-16) | `37e802dab0624e23b07369ae5a7b0191624f3612c42be4e2780c3aa94472ceaf` |
 | Gradient Text | `gradient-text.tsx` + `.css` | **affectUI Pro** | registro Pro, `gradient-text` (descarga del 2026-11-16) | `45e5c18b337ce322268f821185b5e384e20a953ee2af0b652c1d7646957659ef` |
 | Gradient Floor | `gradient-floor.tsx` + `.css` | **affectUI Pro** | registro Pro, `gradient-floor` (descarga del 2026-11-16) | `df01c384627d3c66b2fa91ed3981212c71832124f92b4f0262d4937359c400d9` |
+| Progress Tracker (Clean) | `progress-tracker-clean.tsx` + `.css` | MIT | `components/progress-tracker-clean.tsx` | `31c2172b973342f19ba98ac0caa5950bd846385032eef724a6cef59ebe1bfe60` |
+| KPI Board | `kpi-board.tsx` + `.css` | **affectUI Pro** | registro Pro, `kpi-board` (descarga del 2026-11-16) | `874fc8f4b9a02071f504043efc1ba65f7487570a8a1bd7078f050370b2460c06` |
+| Compact Breakdown | `compact-breakdown.tsx` + `.css` | **affectUI Pro** | registro Pro, `compact-breakdown` (descarga del 2026-11-16) | `16d917616dda6e0ba4f89a4a5efa0b10ee16a7c352548545857c56082b83d7f5` |
 
 ## Cambios respecto a upstream
 
@@ -114,6 +117,39 @@ para poder comparar al actualizar.
   `--ui-gf-bg`/`--aui-surface`, colores por defecto azules de BiVelio, y las
   longitudes `u(n)` de la plantilla JS pasadas a `calc(n * 100cqw / 2200)` en
   el `.css`. Guarda contra una entrada vacía del IntersectionObserver.
+- **progress-tracker-clean** — **BIFURCADO A SOLO LECTURA Y CONTROLADO.**
+  Upstream deja marcar pasos (`role="checkbox"`, `toggle`), guarda el estado en
+  local y puede auto-reproducirse (`autoPlay`, `interval`, `onChange`). Aquí un
+  paso está hecho solo porque el producto lo midió: fuera el estado, los
+  efectos, el temporizador y `"use client"` (se renderiza en servidor). Cada
+  paso lleva `status` (`done | current | pending | unavailable`) y
+  `statusLabel` (el estado con palabras, nunca solo color); una fila con `href`
+  es un enlace a su instrucción (`linkAs` para un `Link` con idioma) y pulsarla
+  no acredita nada. La lista pasa de `<ul>` a `<ol>`, con `aria-current="step"`
+  en el siguiente. La barra deja de ser `progressbar` (repetía en inglés la
+  cuenta que ya está escrita): `countLabel` llega localizado. Nuevas props
+  `layout="steps"` (los mismos pasos en horizontal desde 640px de contenedor),
+  `dense`, `bare`, `headingAs`, `footer`. Las etiquetas PARTEN en vez de
+  truncarse; fuera el tachado, el brillo de la barra y las entradas animadas.
+- **kpi-board** (Pro) — **solo la composición, estática y de servidor.**
+  Upstream es dueño del rango, agrega sus series, trata lo no numérico como
+  cero, compara con el periodo anterior, pinta un gráfico general y rueda cada
+  cifra. Nada de eso queda: se exportan `KpiBoard`, `KpiStat` y `KpiFocus`; las
+  cifras llegan ya formateadas con su unidad y su base en palabras; una cifra
+  sin dato se dice con `empty` (nunca un cero); no hay «vs. periodo anterior»,
+  ni selector, ni tooltip, ni animación. La línea fina opcional (`series`) son
+  valores diarios reales, decorativa (`aria-hidden`), y un hueco (`null`) corta
+  la línea en vez de bajarla a cero. Rejilla de 12 columnas con consultas de
+  contenedor (4 → 2 → 1).
+- **compact-breakdown** (Pro) — **estático y de servidor.** Fuera el `tween` de
+  cifras, el selector de periodo, la píldora `delta` (era una variación frente
+  al periodo anterior, no una tasa de ahorro), el resalte al pasar y el pie
+  «Largest». Cada parte trae `value` (dimensiona la barra) y `display` (el
+  texto ya formateado) y un `color` que decide quien llama, para que sea
+  estable por parte. `total` y `totalLabel` llegan formateados; `aside` (una
+  insignia de evidencia) y `footer` (la nota de cobertura, que parte línea) son
+  huecos. Las etiquetas largas parten; la cuota conserva el «<1%» / «>99%» de
+  upstream.
 
 ## Cómo vendorizar una pieza nueva (frentes)
 

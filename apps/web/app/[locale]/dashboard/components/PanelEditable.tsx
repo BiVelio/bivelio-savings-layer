@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 
 import {
@@ -28,12 +28,22 @@ import {
  *
  * Lo que queda FUERA a propósito: los avisos de cobro, la espina de activación
  * y el titular. Eso no se puede ocultar porque no es decoración.
+ *
+ * UN ANCLA QUE NO DESAPARECE (`ancla`, 2026-11). La entrada «Máquinas» del
+ * raíl apunta a `#maquinas`, que vive dentro de una tarjeta. Si el cliente la
+ * oculta, el enlace se quedaba sin destino. Una tarjeta que declara `ancla`
+ * deja, mientras está oculta, un marcador con ese mismo `id`: dice que la
+ * tarjeta está oculta y ofrece volver a mostrarla — con `alternar`, la misma
+ * función de preferencias que el botón «Ocultar». Si la página se abrió en
+ * ese ancla, se lleva la vista hasta el marcador.
  */
 export interface TarjetaDelPanel {
   id: string;
   /** Título para la barra de edición; el contenido trae el suyo propio. */
   titulo: string;
   contenido: ReactNode;
+  /** Destino estable para cuando la tarjeta está oculta (ver arriba). */
+  ancla?: { id: string; titulo: string; texto: string; accion: string };
 }
 
 export function PanelEditable({ tarjetas }: { tarjetas: TarjetaDelPanel[] }) {
@@ -41,10 +51,20 @@ export function PanelEditable({ tarjetas }: { tarjetas: TarjetaDelPanel[] }) {
   const ids = useMemo(() => tarjetas.map((c) => c.id), [tarjetas]);
   const [prefs, setPrefs] = useState<PanelPrefs>(PREFS_VACIAS);
   const [editando, setEditando] = useState(false);
+  const marcadores = useRef(new Map<string, HTMLElement>());
 
   useEffect(() => {
     setPrefs(leer(typeof window === "undefined" ? undefined : window.localStorage));
   }, []);
+
+  // Quien llegó con `#maquinas` y tiene la tarjeta oculta: el navegador saltó
+  // antes de hidratar a una tarjeta que ya no está. Se le lleva al marcador.
+  const idsOcultos = ocultasEfectivas(ids, prefs).join("|");
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.location.hash) return;
+    const el = marcadores.current.get(window.location.hash.slice(1));
+    el?.scrollIntoView({ block: "center", behavior: "auto" });
+  }, [idsOcultos]);
 
   const aplicar = (siguiente: PanelPrefs) => {
     setPrefs(siguiente);
@@ -57,7 +77,7 @@ export function PanelEditable({ tarjetas }: { tarjetas: TarjetaDelPanel[] }) {
 
   return (
     <div className="pe">
-      <div className="pe-bar">
+      <div className="pe-bar" data-tour="customize">
         <span className="ck-note">{editando ? t("panel.hint") : t("panel.summary", { n: orden.length, hidden: ocultas.length })}</span>
         <div className="pe-actions">
           {editando && !esPorDefecto(prefs) && (
@@ -105,6 +125,30 @@ export function PanelEditable({ tarjetas }: { tarjetas: TarjetaDelPanel[] }) {
                 </div>
               )}
               {c.contenido}
+            </section>
+          );
+        })}
+        {ocultas.map((id) => {
+          const ancla = porId.get(id)?.ancla;
+          if (!ancla) return null;
+          return (
+            <section
+              key={id}
+              id={ancla.id}
+              className="pe-ghost"
+              aria-label={ancla.titulo}
+              ref={(el) => {
+                if (el) marcadores.current.set(ancla.id, el);
+                else marcadores.current.delete(ancla.id);
+              }}
+            >
+              <div>
+                <p className="pe-ghost-t">{ancla.titulo}</p>
+                <p className="ck-note">{ancla.texto}</p>
+              </div>
+              <button type="button" className="btn btn-ghost btn-sm" onClick={() => aplicar(alternar(ids, prefs, id))}>
+                {ancla.accion}
+              </button>
             </section>
           );
         })}

@@ -1,0 +1,76 @@
+/*
+ * Derived from affectUI Pro 'KPI Board' (https://www.affectui.com). Used under the affectUI Pro license held by BiVelio. NOT covered by this repository's Apache-2.0 licence; do not redistribute as a component kit.
+ *
+ * Light theme only, BiVelio tokens; changes from upstream are listed in ./VENDOR.md.
+ */
+.ui-kb {
+  --ui-kb-card: var(--aui-surface, #ffffff);
+  --ui-kb-line: var(--aui-border, #e6e4de);
+  --ui-kb-ink: var(--aui-ink, #0f1218);
+  --ui-kb-muted: var(--aui-muted, #5a6070);
+  --ui-kb-well: var(--surface-3, #f6f5f1);
+  --ui-kb-accent: var(--aui-blue, #0066e6);
+  --ui-kb-good: var(--aui-success, #1f5b43);
+  --ui-kb-bad: var(--aui-danger, #c73a3a);
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  container-type: inline-size;
+  font-family: var(--aui-font, var(--font-sans));
+  font-size: 13.5px;
+  line-height: 20px;
+  color: var(--ui-kb-muted);
+  text-align: start;
+}
+.ui-kb *, .ui-kb *::before, .ui-kb *::after { box-sizing: border-box; }
+:where(.ui-kb) :is(h2, h3, h4, p) { margin: 0; padding: 0; }
+.ui-kb svg { display: block; }
+
+/* ----- Cards: white, a hairline, a whisper of shadow ----- */
+.ui-kb__card { grid-column: span 3; position: relative; display: flex; flex-direction: column; min-width: 0; padding: 16px 16px 14px; border: 1px solid var(--ui-kb-line); border-radius: var(--aui-radius-lg, 14px); background: var(--ui-kb-card); box-shadow: 0 1px 2px rgba(15, 18, 24, 0.04); overflow: hidden; }
+.ui-kb__row { display: flex; align-items: center; justify-content: space-between; gap: 6px 10px; flex-wrap: wrap; min-width: 0; min-height: 22px; }
+.ui-kb__label { min-width: 0; font-size: 13px; font-weight: 500; line-height: 18px; color: var(--ui-kb-muted); overflow-wrap: anywhere; }
+.ui-kb__badge { display: inline-flex; flex: none; max-width: 100%; }
+/* Numbers are never cut – they wrap as a last resort */
+.ui-kb__figure { margin-top: 8px; font-size: 24px; font-weight: 600; line-height: 30px; letter-spacing: -0.02em; color: var(--ui-kb-ink); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.ui-kb__figure[data-tone="good"] { color: var(--ui-kb-good); }
+.ui-kb__figure[data-tone="bad"] { color: var(--ui-kb-bad); }
+.ui-kb__figure[data-tone="empty"] { color: var(--ui-kb-muted); }
+.ui-kb__empty { margin-top: 2px; font-size: 13px; line-height: 1.5; color: var(--ui-kb-ink); }
+.ui-kb__base { margin-top: 4px; font-size: 12.5px; line-height: 1.5; color: var(--ui-kb-muted); }
+
+/* ----- One look for every line: thin, angular, a quiet fill, a floor line ----- */
+.ui-kb__plot { position: relative; height: 44px; margin: auto -16px -14px; padding-top: 12px; box-sizing: content-box; border-top: 1px solid transparent; }
+.ui-kb__plot svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.ui-kb__line { fill: none; stroke: var(--ui-kb-accent); stroke-width: 1.5; stroke-linejoin: miter; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.ui-kb__fill { fill: var(--ui-kb-well); }
+.ui-kb__stat .ui-kb__base:last-child, .ui-kb__stat .ui-kb__empty:last-child { margin-bottom: 2px; }
+
+/* ----- Focus card: one thing to do next ----- */
+.ui-kb__focus { gap: 12px; padding-bottom: 16px; }
+.ui-kb__product { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.ui-kb__icon { display: grid; flex: none; place-items: center; width: 36px; height: 36px; border: 1px solid var(--ui-kb-line); border-radius: 9px; background: var(--ui-kb-card); color: var(--ui-kb-ink); }
+.ui-kb__icon svg { width: 18px; height: 18px; }
+.ui-kb__head { min-width: 0; }
+.ui-kb__focus .ui-kb__label { font-size: 12.5px; }
+.ui-kb__title { font-family: inherit; font-size: 15px; font-weight: 600; line-height: 22px; letter-spacing: -0.01em; color: var(--ui-kb-ink); overflow-wrap: anywhere; }
+.ui-kb__note { font-size: 13.5px; line-height: 1.55; color: var(--ui-kb-muted); }
+.ui-kb__actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; padding-top: 4px; }
+
+/* Three cards share the row in thirds; four in quarters */
+.ui-kb__card:first-child:nth-last-child(3), .ui-kb__card:first-child:nth-last-child(3) ~ .ui-kb__card { grid-column: span 4; }
+/* Narrow boards: two up, then one. The board is the container, so the cards change their span. */
+@container (max-width: 860px) {
+  .ui-kb .ui-kb__card { grid-column: span 6; }
+  .ui-kb .ui-kb__card:last-child:nth-child(odd) { grid-column: 1 / -1; }
+}
+@container (max-width: 460px) {
+  .ui-kb .ui-kb__card, .ui-kb .ui-kb__card:last-child:nth-child(odd) { grid-column: 1 / -1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-kb *, .ui-kb *::before, .ui-kb *::after { animation: none !important; transition: none !important; }
+}

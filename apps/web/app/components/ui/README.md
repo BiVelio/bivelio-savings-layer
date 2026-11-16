@@ -343,7 +343,8 @@ Vive en `apps/web/vendor/affectui/`, fuera de `app/`. Lee
 [`VENDOR.md`](../../../vendor/affectui/VENDOR.md) antes de añadir una pieza.
 
 - Ya están: `code-block-clean`, `empty-state-clean`, `skeleton-clean`,
-  `segmented-control-clean`, `number-ticker` (MIT) y `experiment-card` (Pro).
+  `segmented-control-clean`, `number-ticker`, `progress-tracker-clean` (MIT) y
+  `experiment-card`, `kpi-board`, `compact-breakdown` (Pro).
 - Cada pieza es un `.tsx` + su `.css` hermano. Se importa con
   `@/vendor/affectui/<pieza>`.
 - Los ficheros Pro llevan su aviso en la cabecera y **no** son Apache-2.0.

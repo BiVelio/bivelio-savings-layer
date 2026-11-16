@@ -48,6 +48,12 @@
         "members": "{n, plural, =1 {1 membro} other {# membri}}",
         "seats": "{used} di {seats}",
         "seatsTitle": "{used} postazioni in uso su {seats} pagate questo mese"
+      },
+      "status": {
+        "done": "fatto",
+        "next": "prossimo",
+        "pending": "in attesa",
+        "unavailable": "non disponibile"
       }
     },
     "topbar": {
@@ -57,6 +63,61 @@
         "free": "Free",
         "pro": "Pro",
         "enterprise": "Enterprise"
+      }
+    },
+    "tour": {
+      "open": "Guarda il tour",
+      "openHint": "Ripeti il tour guidato della dashboard",
+      "close": "Chiudi il tour",
+      "next": "Avanti",
+      "prev": "Indietro",
+      "finish": "Fine",
+      "step": "Passo {n} di {total}",
+      "steps": {
+        "welcome": {
+          "title": "Benvenuto in BiVelio Savings",
+          "body": "Questa dashboard mostra quanto spendi in LLM e quanto risparmia il layer, misurato sul tuo traffico. Ciò che non è misurato viene detto a parole, mai mostrato come uno zero."
+        },
+        "nav": {
+          "title": "Tre gruppi, un percorso",
+          "body": "Inizia porta alla panoramica e all'installazione. Risparmia riunisce la prova e l'estratto. La tua organizzazione contiene macchine e account."
+        },
+        "setup": {
+          "title": "Primi passi e i tuoi progressi",
+          "body": "Le tappe della messa in funzione le misura il prodotto. Selezionane una per aprire la sua istruzione: diventa completata solo quando arriva il segnale reale."
+        },
+        "verdict": {
+          "title": "Il tuo verdetto",
+          "body": "Il risparmio misurato nel periodo, con la sua ricevuta e il tipo di evidenza. Se manca qualcosa — integrazione, traffico, prezzo o lettura — qui trovi cosa manca e come proseguire."
+        },
+        "range": {
+          "title": "Scegli il periodo",
+          "body": "Passa da un intervallo disponibile all'altro. Il periodo viaggia nell'indirizzo, quindi puoi condividere o ricaricare la stessa vista."
+        },
+        "customize": {
+          "title": "Personalizza la dashboard",
+          "body": "Riordina o nascondi le schede e ripristina la disposizione quando vuoi. Viene salvata solo in questo browser; gli avvisi e il verdetto non si possono nascondere."
+        },
+        "explorer": {
+          "title": "Esplora il tuo utilizzo",
+          "body": "Guarda l'utilizzo per giorno, cumulato o per modello, cambia metrica ed esporta il periodo in CSV."
+        },
+        "proof": {
+          "title": "Prova ed evidenza",
+          "body": "Tre schede: il banco pubblico, il tuo A/B e il verificatore. I dati di riferimento non vengono mai presentati come tuoi."
+        },
+        "team": {
+          "title": "Il tuo team · Account e piano",
+          "body": "Invita persone e assegna i ruoli. Un membro non è una postazione: le postazioni sono macchine o identità di servizio. Consulta il piano, le postazioni e la fatturazione, e gestisci l'abbonamento da qui."
+        },
+        "account": {
+          "title": "Account e piano",
+          "body": "Consulta il piano, le postazioni e la fatturazione, e gestisci l'abbonamento da qui."
+        },
+        "finish": {
+          "title": "Ripetilo quando vuoi",
+          "body": "Questo tour riparte da «Guarda il tour», nella barra superiore di ogni pagina della dashboard."
+        }
       }
     }
   },
@@ -193,6 +254,36 @@
         "models": "Impossibile leggere il dettaglio per modello.",
         "sessions": "Impossibile leggere i costi per sessione.",
         "seats": "Impossibile leggere l'attività delle macchine."
+      },
+      "panelEyebrow": "La tua attività",
+      "panelTitle": "Utilizzo, opportunità e distribuzione",
+      "next": {
+        "eyebrow": "Prossimo passo",
+        "doneTitle": "Il tuo contatore è attivo",
+        "doneBody": "Le tappe della messa in funzione sono complete. Confronta le tue cifre con l'evidenza pubblicata.",
+        "proofCta": "Apri la prova",
+        "openCta": "Vedi l'istruzione",
+        "unavailableTitle": "Non possiamo valutare la messa in funzione"
+      },
+      "kpi": {
+        "label": "Cifre del periodo",
+        "cost": "Costo osservato",
+        "costBase": "Costo reale ai tuoi prezzi · {period}",
+        "saved": "Risparmio accreditato",
+        "savedBase": "Base di riferimento − costo reale, solo richieste misurate · {period}",
+        "requests": "Richieste",
+        "requestsBase": "{share} con contatore del provider · {period}",
+        "requestsBaseNone": "Tutte quelle ricevute · {period}",
+        "noPrice": "Nessun prezzo per tariffare questo traffico",
+        "notMeasured": "Ancora nulla di misurato in questo periodo"
+      },
+      "breakdown": {
+        "title": "Costo osservato per modello",
+        "totalLabel": "Costo reale · {period}",
+        "empty": "Non c'è ancora un costo per modello in questo periodo",
+        "coverageFull": "La ripartizione copre tutto il costo osservato del periodo.",
+        "coveragePartial": "La ripartizione per modello copre il {coverage} del costo osservato del periodo; il resto non ha un modello attribuito.",
+        "coverageUnknown": "Non è possibile confrontarlo con il costo osservato del periodo."
       }
     },
     "proof": {
@@ -288,8 +379,10 @@
       "metaTitle": "Installa · BiVelio Savings Layer",
       "eyebrow": "Integra",
       "title": "Installa e collega l'SDK",
-      "intro": "Metti BV-SALA davanti al tuo provider: i tuoi prompt non lasciano mai la tua infrastruttura.",
-      "irACuenta": "Ancora senza piano, o vuoi cambiare i posti? Si fa in Account →"
+      "intro": "Metti BV-SALA davanti al tuo provider. I tuoi prompt non passano dai server di BiVelio; vengono inviati al provider che configuri.",
+      "irACuenta": "Ancora senza piano, o vuoi cambiare i posti? Si fa in Account →",
+      "trackerTitle": "La tua messa in funzione",
+      "trackerNote": "Queste tappe le misura il prodotto: selezionarne una apre la sua istruzione, non la segna come completata. Riguardano la connessione Cloud; il motore aperto funziona senza."
     },
     "account": {
       "metaTitle": "Account · BiVelio Savings Layer",
@@ -309,7 +402,37 @@
       "hiddenCap": "I suoi dati di utilizzo esistono, ma questo account non può vederli. È un errore nostro e siamo già stati avvisati. Scriva a support@bivelio.com se persiste.",
       "rangeDays": "ultimi {n} giorni",
       "rangeLabel": "Intervallo",
-      "rangeOption": "{n}g"
+      "rangeOption": "{n}g",
+      "status": {
+        "positive": "Risparmio misurato",
+        "negative": "Costo sopra il riferimento",
+        "partial": "Misurazione parziale",
+        "notIntegrated": "Non ancora integrato",
+        "noTraffic": "Nessun traffico in questo periodo",
+        "noPrice": "Traffico senza prezzo",
+        "notMeasured": "Traffico non misurato",
+        "readFailed": "Lettura non riuscita",
+        "limited": "Accesso limitato"
+      },
+      "lostLine": "sopra la tua base di riferimento in questo periodo · <b>{money}</b> di costo in più (effettivo − base di riferimento, ai tuoi prezzi).",
+      "method": "Vedi fonte e metodologia",
+      "methodBody": "Il dato principale è uno meno il costo reale diviso per la base di riferimento, calcolato solo sulle richieste che hanno un contatore del provider. Ciò che è stimato o non misurato resta fuori dal dato principale.",
+      "receipt": {
+        "title": "Ricevuta del periodo",
+        "baseline": "Base di riferimento misurata",
+        "actual": "Costo reale misurato",
+        "coverage": "Richieste con contatore",
+        "saved": "Risparmio misurato",
+        "origin": "Misurato con il contatore del tuo provider, ai tuoi prezzi."
+      },
+      "actions": {
+        "install": "Inizia l'installazione",
+        "widen": "Vedi gli ultimi {n} giorni",
+        "checkInstall": "Controlla l'installazione",
+        "support": "Scrivi al supporto",
+        "how": "Come si misura"
+      },
+      "noTrafficCap": "Non ci sono richieste in questo periodo. Prova un intervallo più ampio o controlla che la tua integrazione stia ancora inviando traffico."
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "chiamate a LLM/recupero/strumenti mai eseguite",
@@ -338,7 +461,7 @@
       "statusPending": "in attesa",
       "statusUnavailable": "non disponibile",
       "nextLabel": "Prossimo: {label}",
-      "installComment": "# rileva il tuo stack e stampa il collegamento esatto — i tuoi prompt non lasciano mai la tua infrastruttura",
+      "installComment": "# rileva il tuo stack e stampa il collegamento esatto — i tuoi prompt non passano dai server di BiVelio; vengono inviati al provider che configuri",
       "hintLicense": "Crea o recupera licenza e credenziali di servizio in Account. Una credenziale da sola non dimostra l'installazione.",
       "hintInstall": "Scegli SDK o gateway e invia una richiesta reale. Creare una chiave o inviare un lotto vuoto non dimostra l'installazione.",
       "hintFirstRequest": "Invia una richiesta reale al provider tramite SDK o gateway. Il suo report di utilizzo completerà questo passaggio.",
@@ -348,7 +471,9 @@
       "linkInstall": "Apri installazione",
       "linkSdk": "Percorso SDK",
       "linkGateway": "Percorso gateway",
-      "unavailableHint": "L'utilizzo non è leggibile in questo momento, quindi installazione e report non possono essere valutati. Non significa che l'account sia vuoto."
+      "unavailableHint": "L'utilizzo non è leggibile in questo momento, quindi installazione e report non possono essere valutati. Non significa che l'account sia vuoto.",
+      "count": "{done} di {total}",
+      "trackerTitle": "Messa in funzione"
     },
     "shadowOpportunities": {
       "title": "Dove si trova il tuo risparmio potenziale",
@@ -501,7 +626,15 @@
       "chipOk": "aggiornata",
       "chipMixed": "in parte non dichiarata",
       "hint": "Una riga per macchina che riporta utilizzo, identificata dal suo id di postazione opaco (mai una persona). Viaggia solo un numero di versione — gateway/x.y.z o sdk/x.y.z —, mai contenuto. Una macchina con un gateway precedente al canale di versione compare come «non dichiarata».",
-      "referenceHint": "Il risparmio misurato include qui le richieste ripetute misurate per riferimento: ciascuna è valutata con il contatore della richiesta identica già eseguita."
+      "referenceHint": "Il risparmio misurato include qui le richieste ripetute misurate per riferimento: ciascuna è valutata con il contatore della richiesta identica già eseguita.",
+      "emptyTitle": "Nessuna macchina sta ancora inviando dati",
+      "emptyBody": "Una macchina compare qui quando il suo gateway o il suo SDK invia utilizzo. Ognuna conta come una postazione: una macchina o un'identità di servizio, mai una persona.",
+      "emptyCta": "Collega una macchina",
+      "failedTitle": "Non è stato possibile leggere l'attività delle macchine",
+      "failedBody": "È un errore di lettura, non un elenco vuoto. Ricarica tra un momento.",
+      "hiddenTitle": "La scheda delle macchine è nascosta",
+      "hiddenBody": "L'hai nascosta personalizzando la dashboard. I suoi dati continuano a essere misurati.",
+      "show": "Mostra scheda"
     },
     "installLicensePanel": {
       "eyebrow": "Inizia",
@@ -520,7 +653,24 @@
       "doctorComment": "altri agenti e SDK: la configurazione esatta di ciascuno",
       "agentsNote": "Ogni wrapper prepara il suo agente solo per quella sessione — non cambia nulla della sua configurazione — e all'uscita ti dice quante richieste ha misurato, quali non ha potuto misurare e perché. <code>bvsala copilot</code> richiede la tua chiave Anthropic (BYOK): i modelli ospitati da GitHub non passano mai da un URL di base, quindi non c'è nulla da misurare. Per Crush, Droid, Cline, Continue o Copilot in VS Code, <code>bvsala doctor</code> stampa la configurazione esatta. <b>Cursor (BYOK)</b>: funziona tramite l'override dell'URL base OpenAI con la tua chiave; i suoi modelli non raggiungono mai un gateway sulla tua macchina. <b>Gemini CLI</b>: avviala con <code>bvsala gemini</code>.",
       "pythonNote": "<b>Python?</b> Il client <code>bvsala</code> per Python fa passare gli SDK ufficiali di OpenAI e di Anthropic da questo stesso gateway (<code>bvsala gateway</code>) e restituisce al tuo codice il report di ogni richiesta — le stesse cifre che riceve questo pannello. Richiede un gateway 0.4.26 o successivo e Python 3.10 o successivo. Si installa da PyPI con <code>pip install bivelio-savings-layer</code>; nel tuo codice, <code>import bvsala</code>.",
-      "finalNote": "Tutto qui. Nessuna licenza valida → <code>generate()</code> si rifiuta. Se il tuo piano viene annullato, l'SDK si ferma entro ~15 min tramite <code>licenseServerUrl</code> — senza riavvii, e non blocca mai la tua produzione se non siamo raggiungibili."
+      "finalNote": "Tutto qui. Nessuna licenza valida → <code>generate()</code> si rifiuta. Se il tuo piano viene annullato, l'SDK si ferma entro ~15 min tramite <code>licenseServerUrl</code> — senza riavvii, e non blocca mai la tua produzione se non siamo raggiungibili.",
+      "terminal": "Terminale",
+      "sdkTitle": "Integrare un'applicazione (SDK)",
+      "sdkLede": "Avvolgi il tuo provider nel tuo codice e leggi il report di risparmio di ogni chiamata.",
+      "gatewayTitle": "Collegare un agente (gateway)",
+      "gatewayLede": "Avvia il tuo agente di codice attraverso il gateway locale, senza toccarne il codice.",
+      "modeLocalTitle": "Modalità locale",
+      "modeLocalBody": "Il motore aperto funziona senza account né chiavi: tutte le leve locali e zero telemetria. Il report resta sulla tua macchina.",
+      "modeCloudTitle": "Connessione Cloud",
+      "modeCloudBody": "Con licenza e chiave di servizio, questa dashboard riceve conteggi e costi — mai i tuoi prompt — e la tua organizzazione condivide misurazione e postazioni.",
+      "modeCloudLink": "Vai alle credenziali",
+      "cloudTitle": "Connessione Cloud: licenza e chiave di servizio",
+      "optional": "Facoltativo con il motore aperto",
+      "roleLimited": "Il tuo ruolo può leggere questa pagina, ma solo owner e admin possono emettere la licenza e creare o revocare chiavi di servizio.",
+      "permissionsNote": "Solo owner e admin creano o revocano le chiavi. Una chiave viene mostrata una sola volta; poi resta visibile solo il prefisso.",
+      "initExpected": "La riga di installazione per il tuo gestore di pacchetti, le chiavi ancora mancanti, il codice del tuo adattatore e un controllo che non consuma token. Non scrive alcun file.",
+      "wireExpected": "La risposta, la parte della base di riferimento che non hai pagato e come è stata ottenuta quella cifra: measured, reference, estimated o unmeasured.",
+      "agentsExpected": "L'agente parte attraverso il gateway locale. Con la chiave di servizio, la sua spesa compare in questa dashboard."
     },
     "accountPlanStrip": {
       "noActivePlan": "Nessun piano attivo",

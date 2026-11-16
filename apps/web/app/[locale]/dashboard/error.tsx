@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useEffect } from "react";
 
+import { AlertIcon } from "@/app/components/icons";
 import { Link } from "@/i18n/navigation";
 
 /**
@@ -29,11 +30,14 @@ export default function DashboardError({
     console.error("[dashboard] error de render", error.digest ?? error.message);
   }, [error]);
   return (
-    <div className="app-head" role="alert">
+    <div className="app-head app-error" role="alert">
+      <span className="app-error-ic" aria-hidden>
+        <AlertIcon />
+      </span>
       <h1 className="t-page">{t("estado.errorTitulo")}</h1>
       <p className="sub-page">{t("estado.errorCuerpo")}</p>
       {error.digest ? (
-        <p className="note">
+        <p className="note app-error-ref">
           <code>{t("estado.referencia", { ref: error.digest })}</code>
         </p>
       ) : null}

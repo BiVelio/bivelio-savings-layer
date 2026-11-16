@@ -48,6 +48,12 @@
         "members": "{n, plural, =1 {1 miembro} other {# miembros}}",
         "seats": "{used} de {seats}",
         "seatsTitle": "{used} asientos en uso de {seats} pagados este mes"
+      },
+      "status": {
+        "done": "listo",
+        "next": "siguiente",
+        "pending": "pendiente",
+        "unavailable": "no disponible"
       }
     },
     "topbar": {
@@ -57,6 +63,61 @@
         "free": "Free",
         "pro": "Pro",
         "enterprise": "Enterprise"
+      }
+    },
+    "tour": {
+      "open": "Ver tour",
+      "openHint": "Repite el recorrido guiado del panel",
+      "close": "Cerrar el tour",
+      "next": "Siguiente",
+      "prev": "Atrás",
+      "finish": "Terminar",
+      "step": "Paso {n} de {total}",
+      "steps": {
+        "welcome": {
+          "title": "Bienvenido a BiVelio Savings",
+          "body": "Este panel enseña lo que gastas en LLM y lo que ahorra la capa, medido con tu propio tráfico. Lo que no se ha medido se dice con palabras, nunca con un cero."
+        },
+        "nav": {
+          "title": "Tres grupos, un recorrido",
+          "body": "Empezar te lleva al resumen y a la instalación. Ahorrar reúne la prueba y el extracto. Tu organización, las máquinas y la cuenta."
+        },
+        "setup": {
+          "title": "Primeros pasos y tu progreso",
+          "body": "Los hitos de la puesta en marcha los mide el producto. Pulsa uno para abrir su instrucción: pasa a listo solo cuando llega la señal real."
+        },
+        "verdict": {
+          "title": "Tu veredicto",
+          "body": "El ahorro medido del periodo, con su recibo y su tipo de evidencia. Si falta algo —integración, tráfico, precio o lectura— aquí se explica qué falta y cómo seguir."
+        },
+        "range": {
+          "title": "Elige el periodo",
+          "body": "Cambia entre los rangos disponibles. El periodo viaja en la dirección, así que puedes compartir o recargar la misma vista."
+        },
+        "customize": {
+          "title": "Personaliza el panel",
+          "body": "Reordena u oculta tarjetas y restablece la disposición cuando quieras. Se guarda solo en este navegador; los avisos y el veredicto no se pueden ocultar."
+        },
+        "explorer": {
+          "title": "Explora tu uso",
+          "body": "Mira el uso por día, acumulado o por modelo, cambia de métrica y exporta el periodo en CSV."
+        },
+        "proof": {
+          "title": "Prueba y evidencia",
+          "body": "Tres pestañas: el banco público, tu propio A/B y el verificador. Los datos de referencia nunca se presentan como tuyos."
+        },
+        "team": {
+          "title": "Tu equipo · Cuenta y plan",
+          "body": "Invita a personas y asigna roles. Un miembro no es un asiento: los asientos son máquinas o identidades de servicio. Consulta tu plan, los asientos y la facturación, y gestiona la suscripción desde aquí."
+        },
+        "account": {
+          "title": "Cuenta y plan",
+          "body": "Consulta tu plan, los asientos y la facturación, y gestiona la suscripción desde aquí."
+        },
+        "finish": {
+          "title": "Repítelo cuando quieras",
+          "body": "Este recorrido vuelve a empezar desde «Ver tour», en la barra superior de cualquier página del panel."
+        }
       }
     }
   },
@@ -193,6 +254,36 @@
         "models": "No se ha podido leer el desglose por modelo.",
         "sessions": "No se ha podido leer el coste por sesión.",
         "seats": "No se ha podido leer la actividad de las máquinas."
+      },
+      "panelEyebrow": "Tu actividad",
+      "panelTitle": "Uso, oportunidades y distribución",
+      "next": {
+        "eyebrow": "Siguiente paso",
+        "doneTitle": "Tu medidor está en marcha",
+        "doneBody": "Los hitos de la puesta en marcha están completos. Contrasta tus cifras con la evidencia publicada.",
+        "proofCta": "Abrir la prueba",
+        "openCta": "Ver la instrucción",
+        "unavailableTitle": "No podemos evaluar la puesta en marcha"
+      },
+      "kpi": {
+        "label": "Cifras del periodo",
+        "cost": "Coste observado",
+        "costBase": "Coste real a tus precios · {period}",
+        "saved": "Ahorro acreditado",
+        "savedBase": "Línea base − coste real, solo peticiones medidas · {period}",
+        "requests": "Peticiones",
+        "requestsBase": "{share} con contador del proveedor · {period}",
+        "requestsBaseNone": "Todas las recibidas · {period}",
+        "noPrice": "Sin precio para tarifar este tráfico",
+        "notMeasured": "Nada medido todavía en este periodo"
+      },
+      "breakdown": {
+        "title": "Coste observado por modelo",
+        "totalLabel": "Coste real · {period}",
+        "empty": "Aún no hay coste por modelo en este periodo",
+        "coverageFull": "El desglose cubre todo el coste observado del periodo.",
+        "coveragePartial": "El desglose por modelo cubre el {coverage} del coste observado del periodo; el resto no tiene modelo atribuido.",
+        "coverageUnknown": "No se puede comparar con el coste observado del periodo."
       }
     },
     "proof": {
@@ -288,8 +379,10 @@
       "metaTitle": "Instalar · BiVelio Savings Layer",
       "eyebrow": "Integra",
       "title": "Instala y conecta el SDK",
-      "intro": "Coloca BV-SALA delante de tu proveedor: tus prompts nunca salen de tu infraestructura.",
-      "irACuenta": "¿Todavía sin plan, o quieres cambiar los asientos? Se hace en Cuenta →"
+      "intro": "Coloca BV-SALA delante de tu proveedor. Tus prompts no pasan por los servidores de BiVelio; se envían al proveedor que configures.",
+      "irACuenta": "¿Todavía sin plan, o quieres cambiar los asientos? Se hace en Cuenta →",
+      "trackerTitle": "Tu puesta en marcha",
+      "trackerNote": "Estos hitos los mide el producto: pulsar uno abre su instrucción, no lo marca como hecho. Son los de la conexión Cloud; el motor abierto funciona sin ellos."
     },
     "account": {
       "metaTitle": "Cuenta · BiVelio Savings Layer",
@@ -309,7 +402,37 @@
       "hiddenCap": "Sus datos de uso existen, pero esta cuenta no puede verlos. Es un fallo nuestro, ya avisado. Escriba a support@bivelio.com si tarda.",
       "rangeDays": "últimos {n} días",
       "rangeLabel": "Rango",
-      "rangeOption": "{n}d"
+      "rangeOption": "{n}d",
+      "status": {
+        "positive": "Ahorro medido",
+        "negative": "Coste por encima de la referencia",
+        "partial": "Medición parcial",
+        "notIntegrated": "Aún sin integrar",
+        "noTraffic": "Sin tráfico en este periodo",
+        "noPrice": "Tráfico sin precio",
+        "notMeasured": "Tráfico sin medir",
+        "readFailed": "No se ha podido leer",
+        "limited": "Acceso limitado"
+      },
+      "lostLine": "por encima de tu línea base este período · <b>{money}</b> de sobrecoste (real − línea base, a tus precios).",
+      "method": "Ver fuente y metodología",
+      "methodBody": "El titular es uno menos el coste real dividido por la línea base, calculado solo con las peticiones que tienen contador del proveedor. Lo estimado y lo no medido quedan fuera del titular.",
+      "receipt": {
+        "title": "Recibo del periodo",
+        "baseline": "Línea base medida",
+        "actual": "Coste real medido",
+        "coverage": "Peticiones con contador",
+        "saved": "Ahorro medido",
+        "origin": "Medido con el contador de tu proveedor, a tus precios."
+      },
+      "actions": {
+        "install": "Empezar la instalación",
+        "widen": "Ver los últimos {n} días",
+        "checkInstall": "Revisar la instalación",
+        "support": "Escribir a soporte",
+        "how": "Cómo se mide"
+      },
+      "noTrafficCap": "No hay peticiones en este periodo. Prueba un rango más amplio o comprueba que tu integración sigue enviando tráfico."
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "llamadas a LLM/recuperación/herramientas que nunca se ejecutaron",
@@ -338,7 +461,7 @@
       "statusPending": "pendiente",
       "statusUnavailable": "no disponible",
       "nextLabel": "Siguiente: {label}",
-      "installComment": "# detecta tu pila e imprime el cableado exacto — tus prompts nunca salen de tu infraestructura",
+      "installComment": "# detecta tu pila e imprime el cableado exacto — tus prompts no pasan por los servidores de BiVelio; se envían al proveedor que configures",
       "hintLicense": "Crea o recupera en Cuenta tu licencia y las credenciales de servicio. Una credencial por sí sola no prueba la instalación.",
       "hintInstall": "Elige SDK o gateway y envía una petición real. Crear una clave o enviar un lote vacío no prueba la instalación.",
       "hintFirstRequest": "Envía una petición real al proveedor a través del SDK o gateway. Su informe de uso completará este paso.",
@@ -348,7 +471,9 @@
       "linkInstall": "Abrir instalación",
       "linkSdk": "Recorrido SDK",
       "linkGateway": "Recorrido gateway",
-      "unavailableHint": "Ahora no se puede leer el uso, así que no podemos evaluar la instalación ni el informe. No significa que la cuenta esté vacía."
+      "unavailableHint": "Ahora no se puede leer el uso, así que no podemos evaluar la instalación ni el informe. No significa que la cuenta esté vacía.",
+      "count": "{done} de {total}",
+      "trackerTitle": "Puesta en marcha"
     },
     "shadowOpportunities": {
       "title": "Dónde está tu ahorro potencial",
@@ -501,7 +626,15 @@
       "chipOk": "al día",
       "chipMixed": "parte sin declarar",
       "hint": "Una fila por máquina que reporta uso, identificada por su id de asiento opaco (jamás una persona). Lo que viaja es un número de versión —gateway/x.y.z o sdk/x.y.z—, nunca contenido. Una máquina con un gateway anterior al canal de versión sale como «sin declarar».",
-      "referenceHint": "El ahorro medido incluye aquí las peticiones repetidas medidas por referencia: cada una se valora con el contador de la petición idéntica que ya se ejecutó."
+      "referenceHint": "El ahorro medido incluye aquí las peticiones repetidas medidas por referencia: cada una se valora con el contador de la petición idéntica que ya se ejecutó.",
+      "emptyTitle": "Todavía no hay máquinas que reporten",
+      "emptyBody": "Una máquina aparece aquí cuando su gateway o su SDK envía uso. Cada una cuenta como un asiento: una máquina o una identidad de servicio, nunca una persona.",
+      "emptyCta": "Conectar una máquina",
+      "failedTitle": "No se ha podido leer la actividad de las máquinas",
+      "failedBody": "Es un fallo de lectura, no una lista vacía. Recarga en un momento.",
+      "hiddenTitle": "La tarjeta de máquinas está oculta",
+      "hiddenBody": "La ocultaste al personalizar el panel. Sus datos se siguen midiendo.",
+      "show": "Mostrar tarjeta"
     },
     "installLicensePanel": {
       "eyebrow": "Empezar",
@@ -520,7 +653,24 @@
       "doctorComment": "otros agentes y SDK: la configuración exacta de cada uno",
       "agentsNote": "Cada envoltorio prepara su agente solo para esa sesión — no cambia nada de su configuración — y al salir te dice cuántas peticiones midió, cuáles no pudo medir y por qué. <code>bvsala copilot</code> necesita tu propia clave de Anthropic (BYOK): los modelos alojados por GitHub no pasan por un base URL, así que no hay nada que medir. Para Crush, Droid, Cline, Continue o Copilot en VS Code, <code>bvsala doctor</code> imprime la configuración exacta. <b>Cursor (BYOK)</b>: funciona con el override de base URL de OpenAI y tu propia clave; sus modelos propios no llegan a un gateway en tu máquina. <b>Gemini CLI</b>: lánzala con <code>bvsala gemini</code>.",
       "pythonNote": "<b>¿Python?</b> El cliente <code>bvsala</code> para Python lleva los SDK oficiales de OpenAI y de Anthropic a través de este mismo gateway (<code>bvsala gateway</code>) y le devuelve a tu código el informe de cada petición — las mismas cifras que recibe este panel. Necesita un gateway 0.4.26 o posterior y Python 3.10 o posterior. Se instala desde PyPI con <code>pip install bivelio-savings-layer</code>; en tu código, <code>import bvsala</code>.",
-      "finalNote": "Eso es todo. Sin licencia válida → <code>generate()</code> se rechaza. Si cancelas tu plan, el SDK se detiene en ~15 min mediante <code>licenseServerUrl</code>: sin reiniciar, y nunca inutiliza tu producción si no podemos conectarnos."
+      "finalNote": "Eso es todo. Sin licencia válida → <code>generate()</code> se rechaza. Si cancelas tu plan, el SDK se detiene en ~15 min mediante <code>licenseServerUrl</code>: sin reiniciar, y nunca inutiliza tu producción si no podemos conectarnos.",
+      "terminal": "Terminal",
+      "sdkTitle": "Integrar una aplicación (SDK)",
+      "sdkLede": "Envuelve tu proveedor en tu código y lee el informe de ahorro de cada llamada.",
+      "gatewayTitle": "Conectar un agente (gateway)",
+      "gatewayLede": "Lanza tu agente de código a través del gateway local, sin tocar su código.",
+      "modeLocalTitle": "Modo local",
+      "modeLocalBody": "El motor abierto funciona sin cuenta ni claves: todas las palancas locales y cero telemetría. El informe se queda en tu máquina.",
+      "modeCloudTitle": "Conexión Cloud",
+      "modeCloudBody": "Con licencia y clave de servicio, este panel recibe recuentos y costes —nunca tus prompts— y tu organización comparte medición y asientos.",
+      "modeCloudLink": "Ir a las credenciales",
+      "cloudTitle": "Conexión Cloud: licencia y clave de servicio",
+      "optional": "Opcional con el motor abierto",
+      "roleLimited": "Tu rol puede leer esta página, pero solo owner y admin pueden emitir la licencia y crear o revocar claves de servicio.",
+      "permissionsNote": "Solo owner y admin crean o revocan claves. Una clave se muestra una única vez; después solo queda su prefijo.",
+      "initExpected": "La línea de instalación para tu gestor de paquetes, las claves que faltan, el código de tu adaptador y una comprobación que no gasta tokens. No escribe ningún fichero.",
+      "wireExpected": "La respuesta, la parte de la línea base que no pagaste y cómo se obtuvo esa cifra: measured, reference, estimated o unmeasured.",
+      "agentsExpected": "El agente arranca a través del gateway local. Con la clave de servicio, su gasto aparece en este panel."
     },
     "accountPlanStrip": {
       "noActivePlan": "Sin plan activo",

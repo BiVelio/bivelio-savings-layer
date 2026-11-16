@@ -1,12 +1,21 @@
 import { getTranslations } from "next-intl/server";
 
-import { progressPercent, type Progress } from "@/lib/dashboard/progress";
+import { Link } from "@/i18n/navigation";
+import type { Progress } from "@/lib/dashboard/progress";
+import { ProgressTracker, type ProgressStepStatus } from "@/vendor/affectui/progress-tracker-clean";
+
+import { destinoDelHito } from "./setup-destinos";
 
 /**
  * «PUESTA EN MARCHA · N DE 5», arriba del raíl. Nada se decide aquí:
  * `lib/dashboard/progress.ts` ya dijo el estado de cada paso; esto sólo lo
  * dibuja. Y la única regla que sí es de este fichero: si `readable` es falso,
  * NO HAY BLOQUE — ni barra, ni «0 de 5»: una frase en `role="status"`.
+ *
+ * REDISEÑO 2026-11: el dibujo es el Progress Tracker de affectUI, BIFURCADO a
+ * solo lectura (`vendor/affectui/progress-tracker-clean`). Los cinco hitos son
+ * los reales y cada fila es un ENLACE a su instrucción: pulsarla no marca
+ * nada. Con los cinco hechos la lista sobra y queda el titular con su barra.
  */
 export async function SetupProgress({ progress }: { progress: Progress }) {
   const t = await getTranslations("app.setup");
@@ -19,20 +28,39 @@ export async function SetupProgress({ progress }: { progress: Progress }) {
     );
   }
 
-  const percent = progressPercent(progress);
+  const estado = (status: ProgressStepStatus): string =>
+    status === "done"
+      ? t("status.done")
+      : status === "current"
+        ? t("status.next")
+        : status === "unavailable"
+          ? t("status.unavailable")
+          : t("status.pending");
+  const completo = progress.total > 0 && progress.done === progress.total;
+
   return (
-    <div className="app-setup">
-      <p className="app-setup-k">
-        {t("title")} · {t("count", { done: progress.done, total: progress.total })}
-      </p>
-      {/* La barra es decoración de la cifra que ya está escrita encima, así que
-          no repite el valor para un lector de pantalla. */}
-      <div className="app-setup-bar" aria-hidden>
-        <i style={{ width: `${percent}%` }} />
-      </div>
-      {progress.firstPending && (
-        <p className="app-setup-s">{t("missing", { step: progress.firstPending })}</p>
-      )}
+    <div className="app-setup" data-tour="setup">
+      <ProgressTracker
+        title={t("title")}
+        countLabel={t("count", { done: progress.done, total: progress.total })}
+        done={progress.done}
+        total={progress.total}
+        steps={
+          completo
+            ? []
+            : progress.steps.map((step) => ({
+                id: step.id,
+                label: step.label,
+                status: step.status,
+                statusLabel: estado(step.status),
+                href: destinoDelHito(step.id),
+              }))
+        }
+        linkAs={Link}
+        headingAs="p"
+        dense
+        bare
+      />
     </div>
   );
 }

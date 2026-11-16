@@ -48,6 +48,12 @@
         "members": "{n, plural, =1 {1 lid} other {# leden}}",
         "seats": "{used} van {seats}",
         "seatsTitle": "{used} van {seats} betaalde plaatsen deze maand in gebruik"
+      },
+      "status": {
+        "done": "klaar",
+        "next": "volgende",
+        "pending": "in behandeling",
+        "unavailable": "niet beschikbaar"
       }
     },
     "topbar": {
@@ -57,6 +63,61 @@
         "free": "Free",
         "pro": "Pro",
         "enterprise": "Enterprise"
+      }
+    },
+    "tour": {
+      "open": "Tour bekijken",
+      "openHint": "Herhaal de rondleiding door het dashboard",
+      "close": "Tour sluiten",
+      "next": "Volgende",
+      "prev": "Terug",
+      "finish": "Voltooien",
+      "step": "Stap {n} van {total}",
+      "steps": {
+        "welcome": {
+          "title": "Welkom bij BiVelio Savings",
+          "body": "Dit dashboard laat zien wat je aan LLM's uitgeeft en wat de laag bespaart, gemeten op je eigen verkeer. Wat niet is gemeten, wordt in woorden gezegd en nooit als nul getoond."
+        },
+        "nav": {
+          "title": "Drie groepen, één route",
+          "body": "Aan de slag brengt je naar het overzicht en de installatie. Besparen bundelt het bewijs en het afschrift. Je organisatie bevat machines en het account."
+        },
+        "setup": {
+          "title": "Eerste stappen en je voortgang",
+          "body": "De mijlpalen van de inrichting worden door het product gemeten. Kies er een om de instructie te openen: hij wordt pas voltooid als het echte signaal binnenkomt."
+        },
+        "verdict": {
+          "title": "Je uitkomst",
+          "body": "De gemeten besparing in de periode, met het bonnetje en het type bewijs. Ontbreekt er iets — integratie, verkeer, prijs of leestoegang — dan staat hier wat er ontbreekt en hoe je verdergaat."
+        },
+        "range": {
+          "title": "Kies de periode",
+          "body": "Wissel tussen de beschikbare periodes. De periode staat in het adres, dus je kunt dezelfde weergave delen of opnieuw laden."
+        },
+        "customize": {
+          "title": "Pas het dashboard aan",
+          "body": "Verplaats of verberg kaarten en herstel de indeling wanneer je wilt. Het wordt alleen in deze browser bewaard; meldingen en de uitkomst kun je niet verbergen."
+        },
+        "explorer": {
+          "title": "Verken je gebruik",
+          "body": "Bekijk het gebruik per dag, cumulatief of per model, wissel van meetwaarde en exporteer de periode als CSV."
+        },
+        "proof": {
+          "title": "Bewijs en onderbouwing",
+          "body": "Drie tabbladen: de openbare benchmark, je eigen A/B en de verificateur. Referentiegegevens worden nooit als de jouwe gepresenteerd."
+        },
+        "team": {
+          "title": "Je team · Account en abonnement",
+          "body": "Nodig mensen uit en wijs rollen toe. Een lid is geen plaats: plaatsen zijn machines of service-identiteiten. Bekijk je abonnement, plaatsen en facturering en beheer het abonnement vanaf hier."
+        },
+        "account": {
+          "title": "Account en abonnement",
+          "body": "Bekijk je abonnement, plaatsen en facturering en beheer het abonnement vanaf hier."
+        },
+        "finish": {
+          "title": "Herhaal wanneer je wilt",
+          "body": "Deze tour begint opnieuw via ‘Tour bekijken’ in de bovenbalk van elke dashboardpagina."
+        }
       }
     }
   },
@@ -193,6 +254,36 @@
         "models": "De uitsplitsing per model kon niet worden gelezen.",
         "sessions": "Sessiekosten konden niet worden gelezen.",
         "seats": "Machineactiviteit kon niet worden gelezen."
+      },
+      "panelEyebrow": "Je activiteit",
+      "panelTitle": "Gebruik, kansen en verdeling",
+      "next": {
+        "eyebrow": "Volgende stap",
+        "doneTitle": "Je meter loopt",
+        "doneBody": "De mijlpalen van de inrichting zijn voltooid. Vergelijk je cijfers met het gepubliceerde bewijs.",
+        "proofCta": "Bewijs openen",
+        "openCta": "Instructie bekijken",
+        "unavailableTitle": "We kunnen de inrichting nu niet beoordelen"
+      },
+      "kpi": {
+        "label": "Cijfers van de periode",
+        "cost": "Waargenomen kosten",
+        "costBase": "Werkelijke kosten tegen jouw prijzen · {period}",
+        "saved": "Toegekende besparing",
+        "savedBase": "Basislijn − werkelijke kosten, alleen gemeten verzoeken · {period}",
+        "requests": "Verzoeken",
+        "requestsBase": "{share} met een teller van de provider · {period}",
+        "requestsBaseNone": "Alle ontvangen verzoeken · {period}",
+        "noPrice": "Geen prijs om dit verkeer te tariferen",
+        "notMeasured": "Nog niets gemeten in deze periode"
+      },
+      "breakdown": {
+        "title": "Waargenomen kosten per model",
+        "totalLabel": "Werkelijke kosten · {period}",
+        "empty": "Nog geen kosten per model in deze periode",
+        "coverageFull": "De uitsplitsing dekt alle waargenomen kosten van de periode.",
+        "coveragePartial": "De uitsplitsing per model dekt {coverage} van de waargenomen kosten van de periode; aan de rest is geen model toegewezen.",
+        "coverageUnknown": "Vergelijken met de waargenomen kosten van de periode is niet mogelijk."
       }
     },
     "proof": {
@@ -288,8 +379,10 @@
       "metaTitle": "Installeren · BiVelio Savings Layer",
       "eyebrow": "Integreren",
       "title": "Installeer en koppel de SDK",
-      "intro": "Plaats BV-SALA vóór je provider — je prompts verlaten nooit je eigen infrastructuur.",
-      "irACuenta": "Nog geen plan, of wil je je seats aanpassen? Dat doe je bij Account →"
+      "intro": "Plaats BV-SALA vóór je provider. Je prompts gaan niet via de servers van BiVelio; ze worden verstuurd naar de provider die je instelt.",
+      "irACuenta": "Nog geen plan, of wil je je seats aanpassen? Dat doe je bij Account →",
+      "trackerTitle": "Je inrichting",
+      "trackerNote": "Deze mijlpalen worden door het product gemeten: een mijlpaal kiezen opent de instructie en markeert niets als voltooid. Ze horen bij de Cloud-verbinding; de open engine werkt ook zonder."
     },
     "account": {
       "metaTitle": "Account · BiVelio Savings Layer",
@@ -309,7 +402,37 @@
       "hiddenCap": "Uw gebruiksgegevens bestaan, maar dit account kan ze niet zien. Dat is een fout aan onze kant en wij zijn gewaarschuwd. Schrijf naar support@bivelio.com als het aanhoudt.",
       "rangeDays": "laatste {n} dagen",
       "rangeLabel": "Bereik",
-      "rangeOption": "{n}d"
+      "rangeOption": "{n}d",
+      "status": {
+        "positive": "Gemeten besparing",
+        "negative": "Kosten boven de basislijn",
+        "partial": "Gedeeltelijk gemeten",
+        "notIntegrated": "Nog niet geïntegreerd",
+        "noTraffic": "Geen verkeer in deze periode",
+        "noPrice": "Verkeer zonder prijs",
+        "notMeasured": "Verkeer zonder meting",
+        "readFailed": "Kon niet worden gelezen",
+        "limited": "Beperkte toegang"
+      },
+      "lostLine": "boven je basislijn in deze periode · <b>{money}</b> extra kosten (werkelijk − basislijn, tegen jouw prijzen).",
+      "method": "Bron en methode bekijken",
+      "methodBody": "Het hoofdcijfer is één min de werkelijke kosten gedeeld door de basislijn, berekend met alleen de verzoeken die een teller van de provider hebben. Wat geschat of niet gemeten is, blijft buiten het hoofdcijfer.",
+      "receipt": {
+        "title": "Bonnetje van de periode",
+        "baseline": "Gemeten basislijn",
+        "actual": "Gemeten werkelijke kosten",
+        "coverage": "Verzoeken met teller",
+        "saved": "Gemeten besparing",
+        "origin": "Gemeten met de teller van je provider, tegen jouw prijzen."
+      },
+      "actions": {
+        "install": "Installatie starten",
+        "widen": "De laatste {n} dagen bekijken",
+        "checkInstall": "Installatie controleren",
+        "support": "Support mailen",
+        "how": "Zo wordt gemeten"
+      },
+      "noTrafficCap": "Er zijn geen verzoeken in deze periode. Probeer een ruimere periode of controleer of je integratie nog verkeer verstuurt."
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "LLM-/ophaal-/tool-aanroepen die nooit werden uitgevoerd",
@@ -338,7 +461,7 @@
       "statusPending": "in behandeling",
       "statusUnavailable": "niet beschikbaar",
       "nextLabel": "Volgende: {label}",
-      "installComment": "# herkent je stack en drukt de exacte koppeling af — je prompts verlaten nooit je eigen infrastructuur",
+      "installComment": "# herkent je stack en drukt de exacte koppeling af — je prompts gaan niet via de servers van BiVelio; ze worden verstuurd naar de provider die je instelt",
       "hintLicense": "Maak of haal je licentie en servicegegevens op in Account. Een sleutel alleen bewijst geen installatie.",
       "hintInstall": "Kies SDK of gateway en stuur een echt verzoek. Een sleutel maken of een lege batch sturen bewijst geen installatie.",
       "hintFirstRequest": "Stuur een echt providerverzoek via SDK of gateway. Het gebruiksrapport voltooit deze stap.",
@@ -348,7 +471,9 @@
       "linkInstall": "Installatie openen",
       "linkSdk": "SDK-route",
       "linkGateway": "Gateway-route",
-      "unavailableHint": "Gebruik kan nu niet worden gelezen, dus installatie en rapportage kunnen niet worden beoordeeld. Dit betekent niet dat het account leeg is."
+      "unavailableHint": "Gebruik kan nu niet worden gelezen, dus installatie en rapportage kunnen niet worden beoordeeld. Dit betekent niet dat het account leeg is.",
+      "count": "{done} van {total}",
+      "trackerTitle": "Inrichting"
     },
     "shadowOpportunities": {
       "title": "Waar je potentiële besparing zit",
@@ -501,7 +626,15 @@
       "chipOk": "up-to-date",
       "chipMixed": "deels niet gemeld",
       "hint": "Eén rij per machine die gebruik rapporteert, herkend aan een ondoorzichtige seat-id (nooit een persoon). Wat verstuurd wordt is een versienummer — gateway/x.y.z of sdk/x.y.z —, nooit inhoud. Een machine met een gateway ouder dan het versiekanaal verschijnt als „niet gemeld”.",
-      "referenceHint": "De gemeten besparing omvat hier herhaalde verzoeken die via referentie zijn gemeten: elk wordt gewaardeerd met de teller van het identieke verzoek dat al is uitgevoerd."
+      "referenceHint": "De gemeten besparing omvat hier herhaalde verzoeken die via referentie zijn gemeten: elk wordt gewaardeerd met de teller van het identieke verzoek dat al is uitgevoerd.",
+      "emptyTitle": "Er rapporteren nog geen machines",
+      "emptyBody": "Een machine verschijnt hier zodra de gateway of de SDK ervan gebruik verstuurt. Elke machine telt als een plaats: een machine of een service-identiteit, nooit een persoon.",
+      "emptyCta": "Een machine verbinden",
+      "failedTitle": "De activiteit van de machines kon niet worden gelezen",
+      "failedBody": "Dit is een leesfout, geen lege lijst. Laad zo dadelijk opnieuw.",
+      "hiddenTitle": "De kaart met machines is verborgen",
+      "hiddenBody": "Je hebt hem verborgen bij het aanpassen van het dashboard. De gegevens worden nog steeds gemeten.",
+      "show": "Kaart tonen"
     },
     "installLicensePanel": {
       "eyebrow": "Aan de slag",
@@ -520,7 +653,24 @@
       "doctorComment": "andere agents en SDK's: de exacte configuratie voor elk",
       "agentsNote": "Elke wrapper zet zijn agent alleen voor die sessie klaar — er verandert niets aan de configuratie — en vertelt je bij het afsluiten hoeveel verzoeken hij heeft gemeten, welke hij niet kon meten en waarom. <code>bvsala copilot</code> heeft je eigen Anthropic-sleutel nodig (BYOK): door GitHub gehoste modellen gaan nooit via een basis-URL, dus valt er niets te meten. Voor Crush, Droid, Cline, Continue of Copilot in VS Code drukt <code>bvsala doctor</code> de exacte configuratie af. <b>Cursor (BYOK)</b>: werkt via de OpenAI-basis-URL-override met je eigen sleutel; zijn eigen modellen bereiken nooit een gateway op je machine. <b>Gemini CLI</b>: start hem met <code>bvsala gemini</code>.",
       "pythonNote": "<b>Python?</b> De Python-client <code>bvsala</code> leidt de officiële SDK's van OpenAI en Anthropic via deze zelfde gateway (<code>bvsala gateway</code>) en geeft je code het rapport van elk verzoek terug — dezelfde cijfers die dit paneel ontvangt. Hij heeft een gateway vanaf versie 0.4.26 nodig en Python 3.10 of nieuwer. Je installeert hem vanaf PyPI met <code>pip install bivelio-savings-layer</code>; in je code: <code>import bvsala</code>.",
-      "finalNote": "Dat is alles. Geen geldige licentie → <code>generate()</code> weigert. Als je abonnement wordt opgezegd, stopt de SDK binnen ~15 min via <code>licenseServerUrl</code> — geen herstart, en hij legt je productie nooit plat als wij onbereikbaar zijn."
+      "finalNote": "Dat is alles. Geen geldige licentie → <code>generate()</code> weigert. Als je abonnement wordt opgezegd, stopt de SDK binnen ~15 min via <code>licenseServerUrl</code> — geen herstart, en hij legt je productie nooit plat als wij onbereikbaar zijn.",
+      "terminal": "Terminal",
+      "sdkTitle": "Een applicatie integreren (SDK)",
+      "sdkLede": "Wikkel je provider in je code en lees het besparingsrapport van elke aanroep.",
+      "gatewayTitle": "Een agent verbinden (gateway)",
+      "gatewayLede": "Start je codeeragent via de lokale gateway, zonder de code ervan aan te raken.",
+      "modeLocalTitle": "Lokale modus",
+      "modeLocalBody": "De open engine werkt zonder account en zonder sleutels: alle lokale hefbomen en geen telemetrie. Het rapport blijft op je machine.",
+      "modeCloudTitle": "Cloud-verbinding",
+      "modeCloudBody": "Met een licentie en een servicesleutel ontvangt dit dashboard aantallen en kosten — nooit je prompts — en deelt je organisatie de meting en de plaatsen.",
+      "modeCloudLink": "Naar de inloggegevens",
+      "cloudTitle": "Cloud-verbinding: licentie en servicesleutel",
+      "optional": "Optioneel met de open engine",
+      "roleLimited": "Je rol kan deze pagina lezen, maar alleen owner en admin kunnen de licentie uitgeven en servicesleutels maken of intrekken.",
+      "permissionsNote": "Alleen owner en admin maken sleutels of trekken ze in. Een sleutel wordt één keer getoond; daarna blijft alleen het voorvoegsel zichtbaar.",
+      "initExpected": "De installatieregel voor je pakketbeheerder, de sleutels die nog ontbreken, de code voor je adapter en een controle die geen tokens verbruikt. Er wordt geen bestand geschreven.",
+      "wireExpected": "Het antwoord, het deel van de basislijn dat je niet hebt betaald en hoe dat cijfer tot stand kwam: measured, reference, estimated of unmeasured.",
+      "agentsExpected": "De agent start via de lokale gateway. Met de servicesleutel verschijnen de uitgaven in dit dashboard."
     },
     "accountPlanStrip": {
       "noActivePlan": "Geen actief abonnement",

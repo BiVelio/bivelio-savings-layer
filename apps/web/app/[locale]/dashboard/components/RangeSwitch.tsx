@@ -16,7 +16,7 @@ import { RANGOS, RANGO_POR_DEFECTO, type Rango } from "../rango";
 export async function RangeSwitch({ activo, base = "/dashboard" }: { activo: Rango; base?: string }) {
   const t = await getTranslations("dashboard");
   return (
-    <nav className="seg live" aria-label={t("verdictHero.rangeLabel")}>
+    <nav className="seg live" aria-label={t("verdictHero.rangeLabel")} data-tour="range">
       {RANGOS.map((r) => (
         <Link
           key={r}

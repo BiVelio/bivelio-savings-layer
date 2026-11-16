@@ -68,6 +68,8 @@ export async function AppSidebar({
       href: string;
       label: string;
       icon: string;
+      /** Ancla del tour guiado. */
+      tour?: string;
       needs?: Accion;
       primary?: boolean;
       badge?: string | null;
@@ -85,6 +87,7 @@ export async function AppSidebar({
           href: "/dashboard/install",
           label: "install",
           icon: "install",
+          tour: "nav-install",
           badge: progressBadge.badge,
           badgeTitle: progressBadge.title,
         },
@@ -94,7 +97,7 @@ export async function AppSidebar({
     {
       label: "groupSave",
       items: [
-        { href: "/dashboard/proof", label: "proof", icon: "proof" },
+        { href: "/dashboard/proof", label: "proof", icon: "proof", tour: "nav-proof" },
         { href: "/dashboard/extracto", label: "extracto", icon: "extracto" },
       ],
     },
@@ -105,6 +108,7 @@ export async function AppSidebar({
           href: "/dashboard/team",
           label: "team",
           icon: "team",
+          tour: "nav-team",
           needs: "gestionar_miembros",
           badge: typeof state.members === "number" ? s("badge.members", { n: state.members }) : null,
           badgeTitle:
@@ -124,7 +128,7 @@ export async function AppSidebar({
             ? s("badge.seatsTitle", { used: state.seats.used, seats: state.seats.seats })
             : null,
         },
-        { href: "/dashboard/account", label: "account", icon: "account" },
+        { href: "/dashboard/account", label: "account", icon: "account", tour: "nav-account" },
       ],
     },
   ];
@@ -161,7 +165,7 @@ export async function AppSidebar({
           {t("incomplete")}
         </p>
       )}
-      <nav className="app-nav" aria-label={t("sections")}>
+      <nav className="app-nav" aria-label={t("sections")} data-tour="nav">
         {/* DENTRO del raíl, y no encima: el raíl es lo único con altura acotada
             y scroll propio; un bloque por fuera empuja el menú hacia abajo sin
             entrar en esa cuenta. En ≤860px el bloque se oculta por CSS — la
@@ -182,6 +186,7 @@ export async function AppSidebar({
                 icon={item.icon}
                 primary={item.primary}
                 siblingHashes={siblingsOf(item.href)}
+                tour={item.tour}
                 badge={item.badge}
                 badgeTitle={item.badgeTitle}
               >

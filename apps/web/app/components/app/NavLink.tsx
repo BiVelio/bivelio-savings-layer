@@ -88,6 +88,7 @@ export function NavLink({
   siblingHashes,
   badge,
   badgeTitle,
+  tour,
   children,
 }: {
   href: string;
@@ -105,6 +106,8 @@ export function NavLink({
   badge?: string | null;
   /** La frase completa de la que la cifra es el resumen, para el `title`. */
   badgeTitle?: string | null;
+  /** Ancla del tour guiado (`data-tour`). Aditiva: ningún estilo ni lógica la lee. */
+  tour?: string;
   children: ReactNode;
 }) {
   const pathname = usePathname();
@@ -157,6 +160,7 @@ export function NavLink({
       className={`app-nav-item${active ? " on" : ""}`}
       aria-current={active ? "page" : undefined}
       title={badgeTitle ?? undefined}
+      data-tour={tour}
     >
       {Icon && (
         <span className="ic" aria-hidden>

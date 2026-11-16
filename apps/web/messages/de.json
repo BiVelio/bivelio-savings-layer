@@ -48,6 +48,12 @@
         "members": "{n, plural, =1 {1 Mitglied} other {# Mitglieder}}",
         "seats": "{used} von {seats}",
         "seatsTitle": "{used} von {seats} bezahlten Plätzen in diesem Monat in Gebrauch"
+      },
+      "status": {
+        "done": "erledigt",
+        "next": "als Nächstes",
+        "pending": "ausstehend",
+        "unavailable": "nicht verfügbar"
       }
     },
     "topbar": {
@@ -57,6 +63,61 @@
         "free": "Free",
         "pro": "Pro",
         "enterprise": "Enterprise"
+      }
+    },
+    "tour": {
+      "open": "Tour ansehen",
+      "openHint": "Die geführte Tour durch das Dashboard wiederholen",
+      "close": "Tour schließen",
+      "next": "Weiter",
+      "prev": "Zurück",
+      "finish": "Fertig",
+      "step": "Schritt {n} von {total}",
+      "steps": {
+        "welcome": {
+          "title": "Willkommen bei BiVelio Savings",
+          "body": "Dieses Dashboard zeigt, was du für LLMs ausgibst und was die Schicht einspart – gemessen an deinem eigenen Traffic. Was nicht gemessen ist, wird in Worten gesagt, nie als Null gezeigt."
+        },
+        "nav": {
+          "title": "Drei Gruppen, ein Weg",
+          "body": "Loslegen führt zur Übersicht und zur Installation. Sparen bündelt den Nachweis und die Abrechnung. Deine Organisation enthält Maschinen und Konto."
+        },
+        "setup": {
+          "title": "Erste Schritte und dein Fortschritt",
+          "body": "Die Meilensteine der Einrichtung misst das Produkt. Wähle einen aus, um seine Anleitung zu öffnen: Erledigt wird er erst, wenn das echte Signal eintrifft."
+        },
+        "verdict": {
+          "title": "Dein Ergebnis",
+          "body": "Die gemessene Ersparnis im Zeitraum, mit Beleg und Art des Nachweises. Fehlt etwas – Integration, Traffic, Preis oder Lesezugriff –, steht hier, was fehlt und wie es weitergeht."
+        },
+        "range": {
+          "title": "Zeitraum wählen",
+          "body": "Wechsle zwischen den verfügbaren Zeiträumen. Der Zeitraum steht in der Adresse, du kannst dieselbe Ansicht also teilen oder neu laden."
+        },
+        "customize": {
+          "title": "Dashboard anpassen",
+          "body": "Ordne Karten neu, blende sie aus und stelle die Anordnung jederzeit wieder her. Gespeichert wird nur in diesem Browser; Hinweise und das Ergebnis lassen sich nicht ausblenden."
+        },
+        "explorer": {
+          "title": "Nutzung erkunden",
+          "body": "Sieh dir die Nutzung pro Tag, kumuliert oder pro Modell an, wechsle die Kennzahl und exportiere den Zeitraum als CSV."
+        },
+        "proof": {
+          "title": "Nachweis und Belege",
+          "body": "Drei Tabs: der öffentliche Benchmark, dein eigener A/B-Test und der Prüfer. Referenzdaten werden nie als deine ausgegeben."
+        },
+        "team": {
+          "title": "Dein Team · Konto und Tarif",
+          "body": "Lade Personen ein und vergib Rollen. Ein Mitglied ist kein Platz: Plätze sind Maschinen oder Dienstidentitäten. Sieh dir Tarif, Plätze und Abrechnung an und verwalte von hier aus dein Abo."
+        },
+        "account": {
+          "title": "Konto und Tarif",
+          "body": "Sieh dir Tarif, Plätze und Abrechnung an und verwalte von hier aus dein Abo."
+        },
+        "finish": {
+          "title": "Jederzeit wiederholen",
+          "body": "Diese Tour startet erneut über „Tour ansehen“ in der oberen Leiste jeder Dashboard-Seite."
+        }
       }
     }
   },
@@ -193,6 +254,36 @@
         "models": "Die Aufschlüsselung nach Modell konnte nicht gelesen werden.",
         "sessions": "Die Sitzungskosten konnten nicht gelesen werden.",
         "seats": "Die Maschinenaktivität konnte nicht gelesen werden."
+      },
+      "panelEyebrow": "Deine Aktivität",
+      "panelTitle": "Nutzung, Chancen und Verteilung",
+      "next": {
+        "eyebrow": "Nächster Schritt",
+        "doneTitle": "Dein Zähler läuft",
+        "doneBody": "Die Meilensteine der Einrichtung sind abgeschlossen. Vergleiche deine Zahlen mit den veröffentlichten Belegen.",
+        "proofCta": "Nachweis öffnen",
+        "openCta": "Anleitung ansehen",
+        "unavailableTitle": "Die Einrichtung lässt sich gerade nicht beurteilen"
+      },
+      "kpi": {
+        "label": "Zahlen des Zeitraums",
+        "cost": "Beobachtete Kosten",
+        "costBase": "Tatsächliche Kosten zu deinen Preisen · {period}",
+        "saved": "Angerechnete Ersparnis",
+        "savedBase": "Baseline − tatsächliche Kosten, nur gemessene Anfragen · {period}",
+        "requests": "Anfragen",
+        "requestsBase": "{share} mit Zähler des Providers · {period}",
+        "requestsBaseNone": "Alle eingegangenen · {period}",
+        "noPrice": "Kein Preis, um diesen Traffic zu bewerten",
+        "notMeasured": "In diesem Zeitraum ist noch nichts gemessen"
+      },
+      "breakdown": {
+        "title": "Beobachtete Kosten pro Modell",
+        "totalLabel": "Tatsächliche Kosten · {period}",
+        "empty": "In diesem Zeitraum gibt es noch keine Kosten pro Modell",
+        "coverageFull": "Die Aufschlüsselung deckt die gesamten beobachteten Kosten des Zeitraums ab.",
+        "coveragePartial": "Die Aufschlüsselung pro Modell deckt {coverage} der beobachteten Kosten des Zeitraums ab; dem Rest ist kein Modell zugeordnet.",
+        "coverageUnknown": "Ein Vergleich mit den beobachteten Kosten des Zeitraums ist nicht möglich."
       }
     },
     "proof": {
@@ -288,8 +379,10 @@
       "metaTitle": "Installieren · BiVelio Savings Layer",
       "eyebrow": "Integrieren",
       "title": "SDK installieren und einbinden",
-      "intro": "Setze BV-SALA vor deinen Provider — deine Prompts verlassen niemals deine Infrastruktur.",
-      "irACuenta": "Noch kein Plan, oder möchten Sie die Sitze ändern? Das geht unter Konto →"
+      "intro": "Setze BV-SALA vor deinen Provider. Deine Prompts laufen nicht über die Server von BiVelio; sie gehen an den Provider, den du konfigurierst.",
+      "irACuenta": "Noch kein Plan, oder möchten Sie die Sitze ändern? Das geht unter Konto →",
+      "trackerTitle": "Deine Einrichtung",
+      "trackerNote": "Diese Meilensteine misst das Produkt: Ein Klick öffnet die Anleitung, markiert aber nichts als erledigt. Sie gehören zur Cloud-Verbindung; die offene Engine läuft auch ohne sie."
     },
     "account": {
       "metaTitle": "Konto · BiVelio Savings Layer",
@@ -309,7 +402,37 @@
       "hiddenCap": "Ihre Nutzungsdaten sind vorhanden, aber dieses Konto kann sie nicht sehen. Das ist ein Fehler auf unserer Seite; wir wurden benachrichtigt. Schreiben Sie an support@bivelio.com, falls es andauert.",
       "rangeDays": "letzte {n} Tage",
       "rangeLabel": "Zeitraum",
-      "rangeOption": "{n}T"
+      "rangeOption": "{n}T",
+      "status": {
+        "positive": "Gemessene Ersparnis",
+        "negative": "Kosten über der Baseline",
+        "partial": "Teilweise gemessen",
+        "notIntegrated": "Noch nicht integriert",
+        "noTraffic": "Kein Traffic in diesem Zeitraum",
+        "noPrice": "Traffic ohne Preis",
+        "notMeasured": "Traffic ohne Messung",
+        "readFailed": "Konnte nicht gelesen werden",
+        "limited": "Eingeschränkter Zugriff"
+      },
+      "lostLine": "über deiner Baseline in diesem Zeitraum · <b>{money}</b> Mehrkosten (Ist-Wert − Baseline, zu deinen Preisen).",
+      "method": "Quelle und Methodik ansehen",
+      "methodBody": "Die Kennzahl ist eins minus die tatsächlichen Kosten geteilt durch die Baseline – berechnet nur aus Anfragen mit einem Zähler des Providers. Geschätztes und nicht Gemessenes bleibt außen vor.",
+      "receipt": {
+        "title": "Beleg für den Zeitraum",
+        "baseline": "Gemessene Baseline",
+        "actual": "Gemessene tatsächliche Kosten",
+        "coverage": "Anfragen mit Zähler",
+        "saved": "Gemessene Ersparnis",
+        "origin": "Gemessen mit dem Zähler deines Providers, zu deinen Preisen."
+      },
+      "actions": {
+        "install": "Installation starten",
+        "widen": "Die letzten {n} Tage ansehen",
+        "checkInstall": "Installation prüfen",
+        "support": "Support schreiben",
+        "how": "So wird gemessen"
+      },
+      "noTrafficCap": "In diesem Zeitraum gibt es keine Anfragen. Wähle einen größeren Zeitraum oder prüfe, ob deine Integration noch Traffic sendet."
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "LLM-/Retrieval-/Tool-Aufrufe, die nie ausgeführt wurden",
@@ -338,7 +461,7 @@
       "statusPending": "ausstehend",
       "statusUnavailable": "nicht verfügbar",
       "nextLabel": "Als Nächstes: {label}",
-      "installComment": "# erkennt deinen Stack und gibt die genaue Einbindung aus — deine Prompts verlassen niemals deine Infrastruktur",
+      "installComment": "# erkennt deinen Stack und gibt die genaue Einbindung aus — deine Prompts laufen nicht über die Server von BiVelio; sie gehen an den Provider, den du konfigurierst",
       "hintLicense": "Erstelle oder rufe Lizenz und Service-Zugangsdaten unter Konto ab. Ein Zugangsschlüssel allein beweist keine Installation.",
       "hintInstall": "Wähle SDK oder Gateway und sende eine echte Anfrage. Ein erstellter Schlüssel oder ein leerer Batch beweist keine Installation.",
       "hintFirstRequest": "Sende eine echte Provider-Anfrage über SDK oder Gateway. Ihr Nutzungsbericht schließt diesen Schritt ab.",
@@ -348,7 +471,9 @@
       "linkInstall": "Installation öffnen",
       "linkSdk": "SDK-Pfad",
       "linkGateway": "Gateway-Pfad",
-      "unavailableHint": "Die Nutzung kann gerade nicht gelesen werden; Installation und Bericht lassen sich daher nicht beurteilen. Das Konto ist deshalb nicht leer."
+      "unavailableHint": "Die Nutzung kann gerade nicht gelesen werden; Installation und Bericht lassen sich daher nicht beurteilen. Das Konto ist deshalb nicht leer.",
+      "count": "{done} von {total}",
+      "trackerTitle": "Einrichtung"
     },
     "shadowOpportunities": {
       "title": "Wo dein Einsparpotenzial liegt",
@@ -501,7 +626,15 @@
       "chipOk": "aktuell",
       "chipMixed": "teilweise nicht gemeldet",
       "hint": "Eine Zeile pro Maschine, die Nutzung meldet, identifiziert über ihre opake Sitz-ID (nie eine Person). Übertragen wird eine Versionsnummer — gateway/x.y.z oder sdk/x.y.z —, nie Inhalt. Eine Maschine mit einem Gateway älter als der Versionskanal erscheint als „nicht gemeldet“.",
-      "referenceHint": "Die gemessene Ersparnis enthält hier wiederholte Anfragen, die per Referenz gemessen wurden: Jede wird mit dem Zähler der identischen Anfrage bewertet, die bereits gelaufen ist."
+      "referenceHint": "Die gemessene Ersparnis enthält hier wiederholte Anfragen, die per Referenz gemessen wurden: Jede wird mit dem Zähler der identischen Anfrage bewertet, die bereits gelaufen ist.",
+      "emptyTitle": "Noch meldet keine Maschine",
+      "emptyBody": "Eine Maschine erscheint hier, sobald ihr Gateway oder ihr SDK Nutzung sendet. Jede zählt als ein Platz: eine Maschine oder eine Dienstidentität, nie eine Person.",
+      "emptyCta": "Maschine verbinden",
+      "failedTitle": "Die Aktivität der Maschinen konnte nicht gelesen werden",
+      "failedBody": "Das ist ein Lesefehler, keine leere Liste. Lade gleich noch einmal neu.",
+      "hiddenTitle": "Die Maschinen-Karte ist ausgeblendet",
+      "hiddenBody": "Du hast sie beim Anpassen des Dashboards ausgeblendet. Ihre Daten werden weiterhin gemessen.",
+      "show": "Karte anzeigen"
     },
     "installLicensePanel": {
       "eyebrow": "Erste Schritte",
@@ -520,7 +653,24 @@
       "doctorComment": "weitere Agents und SDKs: die genaue Konfiguration für jeden",
       "agentsNote": "Jeder Wrapper richtet seinen Agenten nur für diese Sitzung ein — nichts an seiner Konfiguration ändert sich — und sagt dir beim Beenden, wie viele Anfragen er gemessen hat, welche er nicht messen konnte und warum. <code>bvsala copilot</code> braucht deinen eigenen Anthropic-Schlüssel (BYOK): GitHub-gehostete Modelle laufen nie über eine Basis-URL, also gibt es nichts zu messen. Für Crush, Droid, Cline, Continue oder Copilot in VS Code gibt <code>bvsala doctor</code> die genaue Konfiguration aus. <b>Cursor (BYOK)</b>: funktioniert über die OpenAI-Basis-URL-Überschreibung mit deinem eigenen Schlüssel; seine eigenen Modelle erreichen nie ein Gateway auf deinem Rechner. <b>Gemini CLI</b>: starte sie mit <code>bvsala gemini</code>.",
       "pythonNote": "<b>Python?</b> Der Python-Client <code>bvsala</code> leitet die offiziellen SDKs von OpenAI und Anthropic über dasselbe Gateway (<code>bvsala gateway</code>) und gibt deinem Code den Bericht jeder Anfrage zurück — dieselben Zahlen, die dieses Panel erhält. Er braucht ein Gateway ab Version 0.4.26 und Python ab 3.10. Installiert wird er von PyPI mit <code>pip install bivelio-savings-layer</code>; im Code dann <code>import bvsala</code>.",
-      "finalNote": "Das war's. Keine gültige Lizenz → <code>generate()</code> verweigert. Wenn dein Plan gekündigt wird, stoppt das SDK innerhalb von ~15 Min über <code>licenseServerUrl</code> — ohne Neustart, und es legt niemals deine Produktion lahm, falls wir nicht erreichbar sind."
+      "finalNote": "Das war's. Keine gültige Lizenz → <code>generate()</code> verweigert. Wenn dein Plan gekündigt wird, stoppt das SDK innerhalb von ~15 Min über <code>licenseServerUrl</code> — ohne Neustart, und es legt niemals deine Produktion lahm, falls wir nicht erreichbar sind.",
+      "terminal": "Terminal",
+      "sdkTitle": "Eine Anwendung integrieren (SDK)",
+      "sdkLede": "Umschließe deinen Provider in deinem Code und lies den Sparbericht jedes Aufrufs.",
+      "gatewayTitle": "Einen Agenten verbinden (Gateway)",
+      "gatewayLede": "Starte deinen Coding-Agenten über das lokale Gateway, ohne seinen Code anzufassen.",
+      "modeLocalTitle": "Lokaler Modus",
+      "modeLocalBody": "Die offene Engine läuft ohne Konto und ohne Schlüssel: alle lokalen Hebel und keinerlei Telemetrie. Der Bericht bleibt auf deiner Maschine.",
+      "modeCloudTitle": "Cloud-Verbindung",
+      "modeCloudBody": "Mit Lizenz und Service-Schlüssel erhält dieses Dashboard Zählwerte und Kosten – nie deine Prompts –, und deine Organisation teilt Messung und Plätze.",
+      "modeCloudLink": "Zu den Zugangsdaten",
+      "cloudTitle": "Cloud-Verbindung: Lizenz und Service-Schlüssel",
+      "optional": "Optional mit der offenen Engine",
+      "roleLimited": "Deine Rolle kann diese Seite lesen, aber nur owner und admin können die Lizenz ausstellen und Service-Schlüssel erstellen oder widerrufen.",
+      "permissionsNote": "Nur owner und admin erstellen oder widerrufen Schlüssel. Ein Schlüssel wird nur einmal angezeigt; danach bleibt nur sein Präfix sichtbar.",
+      "initExpected": "Die Installationszeile für deinen Paketmanager, die noch fehlenden Schlüssel, den Code für deinen Adapter und eine Prüfung, die keine Tokens verbraucht. Es wird keine Datei geschrieben.",
+      "wireExpected": "Die Antwort, den Anteil der Baseline, den du nicht bezahlt hast, und wie diese Zahl zustande kam: measured, reference, estimated oder unmeasured.",
+      "agentsExpected": "Der Agent startet über das lokale Gateway. Mit dem Service-Schlüssel erscheinen seine Ausgaben in diesem Dashboard."
     },
     "accountPlanStrip": {
       "noActivePlan": "Kein aktiver Plan",
