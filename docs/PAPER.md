@@ -2,7 +2,7 @@
 
 Joan-Marc Fisa · Founder, BiVelio Inc · jmfisa@bivelio.com · https://savings.bivelio.com
 
-**Preprint · 15 November 2026 (v2.3-r1, open-core release 1.2.0) · Technical report**
+**Preprint · 15 November 2026 (v2.3-r1, open-core release 1.2.0) · Technical report · DOI: [10.5281/zenodo.24278852](https://doi.org/10.5281/zenodo.24278852)**
 
 Revised after an external pre-publication review. This revision corrects the mathematical
 description and qualifies the evidence in v2.3. Offline recomputation is distinguished from
@@ -595,6 +595,9 @@ itself evidence of a fully specified preregistration.
 
 Public repository: https://github.com/BiVelio/bivelio-savings-layer. Review snapshot:
 `239c84b99fe8320f7efaa9da9e63def08d62aed6`.
+
+Zenodo record (this version): **https://doi.org/10.5281/zenodo.24278852** — the compiled
+PDF and the LaTeX source, open access under CC-BY-4.0.
 
 Historical primary artifacts are `docs/benchmarks/2026-09-28/gsm8k-0431.json` and
 `docs/benchmarks/2026-09-28/gsm8k-0431-claude.json`, with the corresponding CSVs. The estimator
