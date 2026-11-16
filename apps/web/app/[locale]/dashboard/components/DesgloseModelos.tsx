@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
+import { AlertIcon, ReceiptIcon } from "@/app/components/icons";
 import { EmptyState, EvidenceBadge } from "@/app/components/ui";
 import { CompactBreakdown } from "@/vendor/affectui/compact-breakdown";
 
@@ -55,7 +56,7 @@ export async function DesgloseModelos({
     return (
       <div className="card card-pad ov-breakdown-empty">
         <div className="n card-title">{titulo}</div>
-        <EmptyState compacto sinCaja alInicio como="p" titulo={t("overview.readErrors.models")} />
+        <EmptyState compacto como="p" icono={<AlertIcon />} titulo={t("overview.readErrors.models")} />
       </div>
     );
   }
@@ -65,7 +66,7 @@ export async function DesgloseModelos({
     return (
       <div className="card card-pad ov-breakdown-empty">
         <div className="n card-title">{titulo}</div>
-        <EmptyState compacto sinCaja alInicio como="p" titulo={t("overview.breakdown.empty")} texto={t("usageExplorer.modelEmpty")} />
+        <EmptyState compacto como="p" icono={<ReceiptIcon />} titulo={t("overview.breakdown.empty")} texto={t("usageExplorer.modelEmpty")} />
       </div>
     );
   }

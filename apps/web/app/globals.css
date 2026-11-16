@@ -4829,4 +4829,79 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
   .tg-dialog .tg-arrow { display: none !important; }
   [data-tour] { scroll-margin-bottom: 300px !important; }
 }
+/* ── I·4 Pulido final ──────────────────────────────────────────────────────
+   Lo que la revisión visual dejó anotado sin tocar. */
+
+/* El titular medido: su antetítulo iba centrado contra el recibo y dejaba una
+   banda vacía junto al selector de rango. Ahora la columna arranca arriba, el
+   antetítulo comparte renglón con el selector y «Ver fuente» cierra abajo, a
+   la altura del pie del recibo. */
+@media (min-width: 1081px) {
+  .verdict[data-state] .verdict-main > .ck-eyebrow { min-height: 36px; }
+  .verdict[data-state]:not(.verdict-empty) .verdict-main { align-self: stretch; display: flex; flex-direction: column; align-items: flex-start; }
+  .verdict[data-state]:not(.verdict-empty) .verdict-status { margin-top: 6px; }
+  .verdict[data-state]:not(.verdict-empty) .disc { align-self: stretch; margin-top: auto; padding-top: 16px; }
+  .verdict-empty .verdict-lead { margin-top: 8px; }
+}
+/* Apilado, los controles van pegados a su antetítulo, no a un renglón de aire. */
+@media (max-width: 1080px) {
+  .verdict[data-state], .verdict[data-state].verdict-empty { row-gap: 14px; }
+  .verdict[data-state]:not(.verdict-empty) .recibo { margin-top: 6px; }
+  .verdict-empty .verdict-lead { margin-top: 12px; }
+}
+
+/* Un solo estado vacío en todo el panel: el de la fundación (pozo punteado,
+   centrado, con su icono). Dentro de una tarjeta va en compacto; el que llega
+   sin icono (el del extracto) recibe uno neutro para no quedarse cojo. */
+.app .card > .empty-state { margin-top: 14px; }
+.app .empty-state .empty-state-title { color: var(--ink); }
+.app .empty-state:not(:has(.empty-state-icon))::before {
+  content: ""; flex: none; width: 40px; height: 40px; margin-bottom: 8px; border-radius: 12px;
+  background: var(--surface) center / 18px 18px no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235A6070' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 12h-6l-2 3h-4l-2-3H2'/%3E%3Cpath d='M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z'/%3E%3C/svg%3E");
+  box-shadow: 0 0 0 1px var(--line), var(--shadow-card);
+}
+
+/* La tira del índice en móvil: una pastilla a medio salir se cortaba en seco
+   contra el borde. Los bordes se desvanecen, la pastilla activa se detiene
+   centrada y todas pesan lo mismo, así la tira no baila al cambiar de sección. */
+@media (max-width: 1099.98px) {
+  .evc-index-list {
+    scroll-snap-type: x proximity; scroll-padding-inline: 24px;
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%);
+  }
+  .evc-index-list li { scroll-snap-align: center; }
+  .evc-index-list a, .evc-index-list a[aria-current] { font-weight: 500; }
+}
+
+/* La portada: el recibo tapaba la pastilla «Banco público · demo» y la columna
+   de ahorro de la captura. Ahora la captura cede su sitio entero y el recibo
+   solo monta sobre el margen derecho del marco, donde no hay nada escrito. */
+@media (min-width: 901px) {
+  .lp .hero-escena {
+    --hr-w: clamp(264px, 27.8vw, 320px); --hr-r: clamp(20px, 2.8vw, 32px); --hr-solape: clamp(18px, 2.1vw, 28px);
+    padding-right: calc(var(--hr-w) + var(--hr-r) - var(--hr-solape));
+  }
+  .lp .hero-recibo { width: var(--hr-w); right: var(--hr-r); }
+}
+
+/* Micro-interacciones: una sola curva y de 150 a 250 ms en todo lo que se
+   pulsa. Lo que aún usaba `ease` a secas pasa a la curva de la casa. */
+a, button, summary, input, select, textarea, .pv-chip, .pe-btn, .app-signout, .announce-close, .ui-pp__option, .ui-xc__metric, .ui-xc__row { transition-timing-function: var(--ease-out); }
+.tabs a { transition: background-color var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out), box-shadow var(--dur-2) var(--ease-out), transform var(--dur-1) var(--ease-out); }
+.seg.live a { transition: background-color var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out), box-shadow var(--dur-2) var(--ease-out), transform var(--dur-1) var(--ease-out); }
+.app-nav-item { transition: background-color var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out), transform var(--dur-1) var(--ease-out); }
+.app .disc > summary::before { transition: transform var(--dur-2) var(--ease-out); }
+/* Pulsar se nota igual en pestañas, raíl, rango y pastillas que en un botón. */
+.tabs a:active, .seg.live a:active, .app-nav-item:active, .pv-chip:active, .evc-index-list a:active, .evc-chip:active { transform: scale(.98); }
+a.card:active, button.card:active, .card-link:active { transform: translateY(0); box-shadow: var(--shadow-card); transition-duration: var(--dur-1); }
+@media (prefers-reduced-motion: reduce) {
+  .tabs a:active, .seg.live a:active, .app-nav-item:active, .pv-chip:active, .evc-index-list a:active, .evc-chip:active { transform: none; }
+}
+/* La entrada al cambiar de sección: menos recorrido, para que el contenido
+   aparezca sin que se le vea subir. */
+@keyframes app-entra { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: no-preference) {
+  .app-enter { animation: app-entra var(--dur-3) var(--ease-out) both; }
+}
 /* ==== FIN SLOT INTEGRACION ==== */
