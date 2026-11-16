@@ -1,5 +1,8 @@
 import type { ReactNode } from "react";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
+
+import { EvidenceBadge } from "@/app/components/ui";
+import { ExperimentReadout } from "@/vendor/affectui/experiment-readout";
 
 import { NIVEL, POR_CADA, type InformeDelBancoPropio } from "@/lib/verificacion/banco-propio";
 import { intfmt, moneySigned, pct, pct0, pct0Floor, pctFloor } from "../format";
@@ -17,8 +20,19 @@ import { intfmt, moneySigned, pct, pct0, pct0Floor, pctFloor } from "../format";
  * redondeado HACIA ABAJO y la cobertura también: una cifra de suelo que sube
  * al pintarse deja de ser un suelo.
  */
-export async function YourBenchHeadline({ informe }: { informe: InformeDelBancoPropio }) {
+export async function YourBenchHeadline({
+  informe,
+  desde,
+  hasta,
+}: {
+  informe: InformeDelBancoPropio;
+  /** La ventana UTC del informe (YYYY-MM-DD), para decir de QUÉ periodo es la cifra. */
+  desde?: string;
+  hasta?: string;
+}) {
   const t = await getTranslations("dashboard");
+  const tu = await getTranslations("ui");
+  const locale = await getLocale();
   const f = informe.titular!.fraccion;
   const d = informe.titular!.diferencia;
   const dmin = Math.min(-0.05, f.lower - 0.05);
@@ -33,51 +47,103 @@ export async function YourBenchHeadline({ informe }: { informe: InformeDelBancoP
     point: pct(f.point),
     upper: pct(f.upper),
   };
+  // EL ESTADO, CON PALABRAS: un intervalo que cruza el cero es un resultado
+  // INCONCLUSO, no un ahorro pequeño; uno entero por debajo, un coste.
+  const estado =
+    f.lower >= 0
+      ? ({ label: t("yourBench.readout.statusPositive"), tone: "green" } as const)
+      : f.upper > 0
+        ? ({ label: t("yourBench.readout.statusInconclusive"), tone: "amber" } as const)
+        : ({ label: t("yourBench.readout.statusNegative"), tone: "red" } as const);
+  const dia = (iso: string) =>
+    new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "UTC" }).format(new Date(`${iso}T00:00:00Z`));
+  const periodo = desde && hasta ? `${dia(desde)} – ${dia(hasta)}` : null;
+  // B frente a A: el coste con la capa como parte del coste sin ella, según la
+  // estimación PUNTUAL (la barra); el titular de arriba sigue siendo el suelo.
+  const cambio = (f.point > 0 ? "−" : f.point < 0 ? "+" : "") + pct(Math.abs(f.point));
   return (
     <>
-      <div className="verdict band">
-        <div>
-          <div className={`big ck-num ${f.lower >= 0 ? "pos" : "neg"}`}>≥ {pctFloor(f.lower)}</div>
-          <div className="cap">
-            {completa
-              ? t.rich("yourBench.headlineCaption", pie)
-              : t.rich("yourBench.headlineCaptionPartial", { ...pie, coverage: pct0Floor(informe.cobertura) })}
-          </div>
+      <ExperimentReadout
+        title={t("yourBench.readout.title")}
+        status={estado}
+        note={periodo ?? undefined}
+        badge={<EvidenceBadge tipo="tus-datos" label={tu("evidence.tusDatos")} />}
+        figure={<>≥ {pctFloor(f.lower)}</>}
+        figureTone={f.lower >= 0 ? "positive" : "negative"}
+        caption={
+          completa
+            ? t.rich("yourBench.headlineCaption", pie)
+            : t.rich("yourBench.headlineCaptionPartial", { ...pie, coverage: pct0Floor(informe.cobertura) })
+        }
+        variants={[
+          {
+            key: "A",
+            name: t("yourBench.readout.armA"),
+            hint: t("yourBench.readout.armAHint"),
+            value: t("yourBench.readout.armAValue"),
+            share: 1,
+            control: true,
+          },
+          {
+            key: "B",
+            name: t("yourBench.readout.armB"),
+            hint: t("yourBench.readout.armBHint"),
+            value: t("yourBench.readout.armBValue", { change: cambio }),
+            share: 1 - f.point,
+          },
+        ]}
+        facts={[
+          { label: t("yourBench.readout.factSample"), value: t("yourBench.readout.factSampleValue", { pairs: intfmt(informe.paresEnTitular) }) },
+          {
+            label: t("yourBench.readout.factInterval", { level: nivel }),
+            value: t("yourBench.readout.factIntervalValue", { lower: pctFloor(f.lower), upper: pct(f.upper) }),
+          },
+          ...(periodo ? [{ label: t("yourBench.readout.factPeriod"), value: periodo }] : []),
+          {
+            label: t("yourBench.readout.factCoverage"),
+            value: t("yourBench.readout.factCoverageValue", { coverage: pct0Floor(informe.cobertura) }),
+          },
+        ]}
+        action={
+          <a className="btn btn-ghost btn-sm" href="#yb-metodo">
+            {t("yourBench.readout.methodLink")}
+          </a>
+        }
+      >
+        <div className="ci-track2">
+          <div className="ci-fill2" style={{ left: `${xp(f.lower)}%`, width: `${xp(f.upper) - xp(f.lower)}%` }} />
+          <div className="ci-zero2" style={{ left: `${xp(0)}%` }} />
+          <div className="ci-lo" style={{ left: `${xp(f.lower)}%` }} />
+          <div className="ci-pt" style={{ left: `${xp(f.point)}%` }} />
         </div>
-        <div>
-          <div className="ci-track2">
-            <div className="ci-fill2" style={{ left: `${xp(f.lower)}%`, width: `${xp(f.upper) - xp(f.lower)}%` }} />
-            <div className="ci-zero2" style={{ left: `${xp(0)}%` }} />
-            <div className="ci-lo" style={{ left: `${xp(f.lower)}%` }} />
-            <div className="ci-pt" style={{ left: `${xp(f.point)}%` }} />
-          </div>
-          <div className="ci-legend2">
-            <span>{pct(dmin)}</span>
-            <span>{pct(0)}</span>
-            <span>{pct(dmax)}</span>
-          </div>
+        <div className="ci-legend2">
+          <span>{pct(dmin)}</span>
+          <span>{pct(0)}</span>
+          <span>{pct(dmax)}</span>
         </div>
+      </ExperimentReadout>
+      <div className="yb-notas">
+        <p className="ck-note">
+          {t("yourBench.meanDiff", {
+            per: intfmt(POR_CADA),
+            point: moneySigned(d.point * POR_CADA),
+            lower: moneySigned(d.lower * POR_CADA),
+            upper: moneySigned(d.upper * POR_CADA),
+            level: nivel,
+          })}
+        </p>
+        <p className="ck-note">
+          {t("yourBench.basis", {
+            pairs: intfmt(informe.paresEnTitular),
+            coverage: pct0Floor(informe.cobertura),
+            eligible: intfmt(informe.elegibles),
+            rate: pct(informe.tasaLograda),
+          })}
+        </p>
+        {informe.submuestreado ? (
+          <p className="ck-note">{t("yourBench.subsampled", { n: intfmt(informe.paresLeidos), total: intfmt(informe.paresTotales) })}</p>
+        ) : null}
       </div>
-      <p className="ck-note">
-        {t("yourBench.meanDiff", {
-          per: intfmt(POR_CADA),
-          point: moneySigned(d.point * POR_CADA),
-          lower: moneySigned(d.lower * POR_CADA),
-          upper: moneySigned(d.upper * POR_CADA),
-          level: nivel,
-        })}
-      </p>
-      <p className="ck-note">
-        {t("yourBench.basis", {
-          pairs: intfmt(informe.paresEnTitular),
-          coverage: pct0Floor(informe.cobertura),
-          eligible: intfmt(informe.elegibles),
-          rate: pct(informe.tasaLograda),
-        })}
-      </p>
-      {informe.submuestreado ? (
-        <p className="ck-note">{t("yourBench.subsampled", { n: intfmt(informe.paresLeidos), total: intfmt(informe.paresTotales) })}</p>
-      ) : null}
     </>
   );
 }

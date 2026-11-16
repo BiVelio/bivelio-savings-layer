@@ -66,56 +66,60 @@ export function ProjectorVerifier({ prices }: { prices: { inPer1k: number; outPe
 
   return (
     <div className="proj proj-solo">
-      <div>
-        <div className="ck-head" style={{ marginBottom: "8px" }}>
-          <b style={{ fontSize: ".9rem" }}>{t("projectorVerifier.projectorTitle")}</b>
-          <span className="est-tag">{t("projectorVerifier.estimate")}</span>
-        </div>
-        <p className="pv-label">{t("projectorVerifier.profileLabel")}</p>
-        <div className="pv-chips">
-          {(["chat", "extract", "agent"] as const).map((k) => (
-            <button key={k} type="button" className={`pv-chip ${profileKey === k ? "on" : ""}`} onClick={() => pickProfile(k)}>
-              {t(`projectorVerifier.profile_${k}`)}
-            </button>
-          ))}
-        </div>
-        <p className="pv-label">{t("projectorVerifier.scenarioLabel")}</p>
-        <div className="pv-chips">
-          {(["cautious", "typical", "bold"] as const).map((k) => (
-            <button key={k} type="button" className={`pv-chip ${scenarioKey === k ? "on" : ""}`} onClick={() => pickScenario(k)}>
-              {t(`projectorVerifier.scenario_${k}`)}
-            </button>
-          ))}
-        </div>
-        <details className="pv-adv">
-          <summary>{t("projectorVerifier.advanced")}</summary>
-          <div className="pv-adv-body">
-            {([
-              ["reqsPerMonth", reqs, setReqs, 10000],
-              ["avgInputTokens", inTok, setInTok, 50],
-              ["avgOutputTokens", outTok, setOutTok, 10],
-            ] as const).map(([labelKey, val, set, step]) => (
-              <div key={labelKey} className="field2">
-                <label>{t(`projectorVerifier.${labelKey}`)}</label>
-                <input type="number" value={val} step={step} onChange={(e) => set(Number(e.target.value) || 0)} />
+      <div className="card pv-card">
+        <div className="pv-cols">
+          <div className="pv-in">
+            <p className="pv-label" id="pv-perfil">{t("projectorVerifier.profileLabel")}</p>
+            <div className="pv-chips" role="group" aria-labelledby="pv-perfil">
+              {(["chat", "extract", "agent"] as const).map((k) => (
+                <button key={k} type="button" aria-pressed={profileKey === k} className={`pv-chip ${profileKey === k ? "on" : ""}`} onClick={() => pickProfile(k)}>
+                  {t(`projectorVerifier.profile_${k}`)}
+                </button>
+              ))}
+            </div>
+            <p className="pv-label" id="pv-escenario">{t("projectorVerifier.scenarioLabel")}</p>
+            <div className="pv-chips" role="group" aria-labelledby="pv-escenario">
+              {(["cautious", "typical", "bold"] as const).map((k) => (
+                <button key={k} type="button" aria-pressed={scenarioKey === k} className={`pv-chip ${scenarioKey === k ? "on" : ""}`} onClick={() => pickScenario(k)}>
+                  {t(`projectorVerifier.scenario_${k}`)}
+                </button>
+              ))}
+            </div>
+            <details className="pv-adv">
+              <summary>{t("projectorVerifier.advanced")}</summary>
+              <div className="pv-adv-body">
+                {([
+                  ["reqsPerMonth", reqs, setReqs, 10000],
+                  ["avgInputTokens", inTok, setInTok, 50],
+                  ["avgOutputTokens", outTok, setOutTok, 10],
+                ] as const).map(([labelKey, val, set, step]) => (
+                  <div key={labelKey} className="field2">
+                    <label htmlFor={`pv-${labelKey}`}>{t(`projectorVerifier.${labelKey}`)}</label>
+                    <input id={`pv-${labelKey}`} type="number" value={val} step={step} onChange={(e) => set(Number(e.target.value) || 0)} />
+                  </div>
+                ))}
+                {([
+                  ["callsAvoided", avoid, setAvoid],
+                  ["inputCut", elim, setElim],
+                  ["outputCut", outRed, setOutRed],
+                ] as const).map(([labelKey, val, set]) => (
+                  <div key={labelKey} className="field2">
+                    <label htmlFor={`pv-${labelKey}`}>{t(`projectorVerifier.${labelKey}`)}: {(val * 100).toFixed(0)}%</label>
+                    <input id={`pv-${labelKey}`} className="pv-range" type="range" min={0} max={0.8} step={0.01} value={val} onChange={(e) => set(Number(e.target.value))} />
+                  </div>
+                ))}
               </div>
-            ))}
-            {([
-              ["callsAvoided", avoid, setAvoid],
-              ["inputCut", elim, setElim],
-              ["outputCut", outRed, setOutRed],
-            ] as const).map(([labelKey, val, set]) => (
-              <div key={labelKey} className="field2">
-                <label>{t(`projectorVerifier.${labelKey}`)}: {(val * 100).toFixed(0)}%</label>
-                <input type="range" min={0} max={0.8} step={0.01} value={val} style={{ width: "110px" }} onChange={(e) => set(Number(e.target.value))} />
-              </div>
-            ))}
+            </details>
           </div>
-        </details>
-        <div className="kpi pv-kpi" style={{ marginTop: "10px", minHeight: "auto" }}>
-          <div className="n">{t("projectorVerifier.projectedSaving", { model: "gpt-4o-mini" })}</div>
-          <div className="v pos ck-num">{money(projected.saved)}</div>
-          <div className="sub">{t("projectorVerifier.projFriendly", { baseline: money(projected.baseline), opt: money(projected.opt), pct: projected.pct.toFixed(0) })}</div>
+          {/* EL RESULTADO ES UNA ESTIMACIÓN, y lo dice junto a la cifra: sale de
+              los supuestos de la izquierda, no de una factura ni de una medida. */}
+          <div className="pv-out" role="status">
+            <span className="est-tag">{t("projectorVerifier.estimate")}</span>
+            <p className="pv-out-k">{t("projectorVerifier.projectedSaving", { model: "gpt-4o-mini" })}</p>
+            <p className="pv-out-v ck-num">{money(projected.saved)}</p>
+            <p className="pv-out-s">{t("projectorVerifier.projFriendly", { baseline: money(projected.baseline), opt: money(projected.opt), pct: projected.pct.toFixed(0) })}</p>
+            <p className="pv-out-n">{t("projectorVerifier.notInvoiceBody")}</p>
+          </div>
         </div>
       </div>
 

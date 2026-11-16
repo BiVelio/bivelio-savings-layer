@@ -2,6 +2,8 @@ import { getTranslations } from "next-intl/server";
 
 import { midioElSdkInstalado } from "@/lib/bench/sdk-instalado";
 
+import { EvidenceBadge } from "@/app/components/ui";
+
 import type { AbArtifact } from "../data";
 import { pct } from "../format";
 
@@ -19,6 +21,7 @@ import { pct } from "../format";
 export async function NetSavingsCIBand({ ab }: { ab: AbArtifact }) {
   if (!midioElSdkInstalado(ab)) return null;
   const t = await getTranslations("dashboard");
+  const tu = await getTranslations("ui");
   const savings = ab.aggregate.savings;
   const dmin = Math.min(-0.05, savings.lower - 0.05);
   const dmax = Math.max(0.6, savings.upper + 0.05);
@@ -27,6 +30,9 @@ export async function NetSavingsCIBand({ ab }: { ab: AbArtifact }) {
     <div className="verdict band">
       <div>
         <div className="big pos ck-num">≥ {pct(savings.lower)}</div>
+        <div className="prf-ev">
+          <EvidenceBadge tipo={ab.mode === "MOCK" ? "estimacion" : "benchmark"} label={ab.mode === "MOCK" ? tu("evidence.estimacion") : tu("evidence.benchmark")} />
+        </div>
         <div className="cap">
           {t.rich("netSavingsCIBand.caption", {
             b: (chunks) => <b>{chunks}</b>,

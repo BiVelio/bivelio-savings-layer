@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
+import { Notice } from "@/app/components/ui";
+
 /**
  * Acuse de recibo de la vuelta de Stripe.
  *
@@ -49,24 +51,43 @@ export function CheckoutBanner({
     return () => clearInterval(id);
   }, [pendiente, router]);
 
+  // CANCELAR EL PAGO NO ES CANCELAR UNA SUSCRIPCIÓN: quien vuelve sin pagar no
+  // ha perdido nada de lo que ya tuviera, y se dice para que nadie lo dude.
   if (resultado === "cancelled") {
     return (
-      <div className="ck-note" role="status" style={{ marginTop: 10 }}>
-        {t.rich("checkoutBanner.cancelled", { b: (c) => <b>{c}</b> })}
-      </div>
+      <Notice tono="info" role="status" className="acct-banner">
+        <p>{t.rich("checkoutBanner.cancelled", { b: (c) => <b>{c}</b> })}</p>
+        <p className="acct-banner-note">{t("checkoutBanner.cancelledNote")}</p>
+      </Notice>
+    );
+  }
+
+  // `?checkout=success` NO PRUEBA EL PAGO: solo dice que Stripe devolvió al
+  // cliente aquí. Activo es lo que diga la organización, que confirma el webhook.
+  if (pendiente) {
+    return (
+      <Notice tono={tardio ? "warn" : "info"} role="status" className="acct-banner">
+        <p>
+          {tardio ? null : <span className="acct-pulse" aria-hidden />}
+          {t.rich(tardio ? "checkoutBanner.successLate" : "checkoutBanner.successPending", { b: (c) => <b>{c}</b> })}
+        </p>
+        {tardio ? null : <p className="acct-banner-note">{t("checkoutBanner.pendingNote")}</p>}
+      </Notice>
     );
   }
 
   return (
-    <div className="ck-note" role="status" style={{ marginTop: 10 }}>
-      {pendiente ? (
-        t.rich(tardio ? "checkoutBanner.successLate" : "checkoutBanner.successPending", { b: (c) => <b>{c}</b> })
-      ) : (
-        <>
-          {t.rich("checkoutBanner.successActive", { b: (c) => <b>{c}</b> })}{" "}
-          <Link href="./install">{t("checkoutBanner.goToInstall")}</Link>
-        </>
-      )}
-    </div>
+    <Notice
+      tono="ok"
+      role="status"
+      className="acct-banner"
+      acciones={
+        <Link className="btn btn-primary btn-sm" href="./install">
+          {t("checkoutBanner.goToInstall")}
+        </Link>
+      }
+    >
+      <p>{t.rich("checkoutBanner.successActive", { b: (c) => <b>{c}</b> })}</p>
+    </Notice>
   );
 }

@@ -108,21 +108,25 @@ export function BillingButtons({
   }
 
   return (
-    <span className="billing-cta">
+    <div className="billing-cta">
       {isActive ? (
-        <button
-          type="button"
-          className="btn btn-ghost"
-          disabled={loading !== null}
-          onClick={() => go("/api/stripe/portal", {}, "portal")}
-        >
-          {loading === "portal" ? "…" : t("accountPlanStrip.managePlan")}
-        </button>
+        <div className="acct-manage">
+          <p className="acct-manage-t">{t("accountPlanStrip.manageBody")}</p>
+          <button
+            type="button"
+            className="btn btn-primary"
+            disabled={loading !== null}
+            onClick={() => go("/api/stripe/portal", {}, "portal")}
+          >
+            {loading === "portal" ? "…" : t("accountPlanStrip.managePlan")}
+          </button>
+        </div>
       ) : (
         <>
-          <span className="seatpick" role="radiogroup" aria-label={t("accountPlanStrip.planPickLabel")}>
+          <h3 className="acct-h">{t("accountPlanStrip.pickTitle")}</h3>
+          <div className="acct-pick" role="radiogroup" aria-label={t("accountPlanStrip.planPickLabel")}>
             {(["pro", "equipo"] as const).map((p) => (
-              <label key={p} style={{ marginRight: 12 }}>
+              <label key={p} className="acct-opt">
                 <input
                   type="radio"
                   name="bv-plan"
@@ -132,21 +136,39 @@ export function BillingButtons({
                     setPlan(p);
                     if (p === "equipo") setSeats(String(Math.max(precios.equipo.incluidos, normalizarAsientos(seats))));
                   }}
-                />{" "}
-                {p === "pro" ? t("accountPlanStrip.planPro") : t("accountPlanStrip.planTeam")}
+                />
+                <span className="acct-opt-body">
+                  <span className="acct-opt-name">
+                    {p === "pro" ? t("accountPlanStrip.planPro") : t("accountPlanStrip.planTeam")}
+                  </span>
+                  <span className="acct-opt-price">
+                    {p === "pro"
+                      ? t("accountPlanStrip.planProPrice", { monthly: precios.pro.monthly, yearly: precios.pro.yearly })
+                      : t("accountPlanStrip.planTeamPrice", {
+                          monthly: precios.equipo.monthly,
+                          yearly: precios.equipo.yearly,
+                          included: precios.equipo.incluidos,
+                        })}
+                  </span>
+                </span>
               </label>
             ))}
-          </span>
+          </div>
           {plan === "equipo" ? (
-            <p className="ck-note" style={{ margin: "0 0 8px", width: "100%" }}>
+            <p className="ck-note acct-line">
               {t("accountPlanStrip.teamHint", { included: precios.equipo.incluidos, extra: precios.equipo.extraMonthly })}
             </p>
           ) : null}
-          <span className="seatpick">
-            <label htmlFor="bv-seats">{t("accountPlanStrip.seatsLabel")}</label>
+          {/* LA UNIDAD, JUNTO AL SELECTOR: lo que se compra son máquinas o
+              identidades de servicio, no personas. */}
+          <div className="acct-qty">
+            <label htmlFor="bv-seats" className="acct-qty-label">
+              <span className="acct-qty-name">{t("accountPlanStrip.seatsLabel")}</span>
+              <span className="acct-unit">{t("accountPlanStrip.seatUnit")}</span>
+            </label>
             <input
               id="bv-seats"
-              className="kt-input"
+              className="kt-input acct-qty-input"
               type="number"
               min={minimo}
               max={MAX_ASIENTOS}
@@ -155,51 +177,64 @@ export function BillingButtons({
               value={seats}
               onChange={(e) => setSeats(e.target.value)}
               onBlur={() => setSeats(String(asientos))}
-              style={{ width: "5.5rem" }}
               aria-describedby="bv-seats-hint"
             />
-          </span>
+          </div>
           {/* El aviso, EN EL PUNTO DE COMPRA. Estaba solo en el README, que es
               donde no lo lee quien está decidiendo cuántos asientos paga. */}
-          <p id="bv-seats-hint" className="ck-note" style={{ margin: "4px 0 8px", width: "100%" }}>
+          <p id="bv-seats-hint" className="ck-note acct-line">
             {t("accountPlanStrip.seatsHint")}
           </p>
           {codigo ? (
-            <p className="ck-note" style={{ margin: "0 0 8px", width: "100%" }}>
+            <p className="ck-note acct-line">
               {t("accountPlanStrip.codigoAplicado", { codigo })}
             </p>
           ) : null}
-          <button
-            type="button"
-            className="btn btn-primary"
-            disabled={loading !== null}
-            onClick={() => go("/api/stripe/checkout", { plan, period: "monthly", seats: asientos }, "m")}
-          >
-            {loading === "m"
-              ? "…"
-              : plan === "equipo"
-                ? t("accountPlanStrip.checkoutTeamMonthly", { monthly: precios.equipo.monthly, included: precios.equipo.incluidos })
-                : t("accountPlanStrip.checkoutMonthly", { monthly: precios.pro.monthly })}
-          </button>
-          <button
-            type="button"
-            className="btn btn-ghost"
-            disabled={loading !== null}
-            onClick={() => go("/api/stripe/checkout", { plan, period: "yearly", seats: asientos }, "y")}
-          >
-            {loading === "y"
-              ? "…"
-              : plan === "equipo"
-                ? t("accountPlanStrip.checkoutTeamYearly", { yearly: precios.equipo.yearly, included: precios.equipo.incluidos })
-                : t("accountPlanStrip.checkoutYearly", { yearly: precios.pro.yearly })}
-          </button>
+          {/* EL RESUMEN no multiplica nada: el importe lo calcula y lo enseña
+              Stripe antes de pagar. Aquí solo se repite QUÉ se va a comprar. */}
+          <div className="acct-summary" role="status">
+            <span className="acct-k">{t("accountPlanStrip.summaryLabel")}</span>
+            <span className="acct-summary-v">
+              {t("accountPlanStrip.summary", {
+                plan: plan === "pro" ? t("accountPlanStrip.planPro") : t("accountPlanStrip.planTeam"),
+                seats: asientos,
+              })}
+            </span>
+            <span className="acct-summary-n">{t("accountPlanStrip.summaryNote")}</span>
+          </div>
+          <div className="acct-buy">
+            <button
+              type="button"
+              className="btn btn-primary"
+              disabled={loading !== null}
+              onClick={() => go("/api/stripe/checkout", { plan, period: "monthly", seats: asientos }, "m")}
+            >
+              {loading === "m"
+                ? "…"
+                : plan === "equipo"
+                  ? t("accountPlanStrip.checkoutTeamMonthly", { monthly: precios.equipo.monthly, included: precios.equipo.incluidos })
+                  : t("accountPlanStrip.checkoutMonthly", { monthly: precios.pro.monthly })}
+            </button>
+            <button
+              type="button"
+              className="btn btn-ghost"
+              disabled={loading !== null}
+              onClick={() => go("/api/stripe/checkout", { plan, period: "yearly", seats: asientos }, "y")}
+            >
+              {loading === "y"
+                ? "…"
+                : plan === "equipo"
+                  ? t("accountPlanStrip.checkoutTeamYearly", { yearly: precios.equipo.yearly, included: precios.equipo.incluidos })
+                  : t("accountPlanStrip.checkoutYearly", { yearly: precios.pro.yearly })}
+            </button>
+          </div>
         </>
       )}
       {err ? (
-        <span className="billing-err" role="alert">
+        <p className="billing-err" role="alert">
           {err}
-        </span>
+        </p>
       ) : null}
-    </span>
+    </div>
   );
 }

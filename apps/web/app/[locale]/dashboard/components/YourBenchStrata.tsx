@@ -15,18 +15,18 @@ export async function YourBenchStrata({ informe }: { informe: InformeDelBancoPro
   const t = await getTranslations("dashboard");
   const filas = informe.estratos.filter((e) => e.elegibles > 0 || e.pares > 0);
   return (
-    <div className="card card-pad">
-      <div className="card-title">{t("yourBench.strataTitle")}</div>
+    <div className="card card-pad yb-card">
+      <h2 className="yb-h">{t("yourBench.strataTitle")}</h2>
       <div className="tbl-scroll">
-        <table className="tbl">
+        <table className="tbl tbl--static">
           <thead>
             <tr>
-              <th>{t("yourBench.colKind")}</th>
-              <th>{t("yourBench.colEligible")}</th>
-              <th>{t("yourBench.colPairs")}</th>
-              <th>{t("yourBench.colNaive")}</th>
-              <th>{t("yourBench.colOptimized")}</th>
-              <th>{t("yourBench.colDiff", { per: intfmt(POR_CADA) })}</th>
+              <th scope="col">{t("yourBench.colKind")}</th>
+              <th scope="col">{t("yourBench.colEligible")}</th>
+              <th scope="col">{t("yourBench.colPairs")}</th>
+              <th scope="col">{t("yourBench.colNaive")}</th>
+              <th scope="col">{t("yourBench.colOptimized")}</th>
+              <th scope="col">{t("yourBench.colDiff", { per: intfmt(POR_CADA) })}</th>
             </tr>
           </thead>
           <tbody>

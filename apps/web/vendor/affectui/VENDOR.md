@@ -46,6 +46,7 @@ para poder comparar al actualizar.
 | Progress Tracker (Clean) | `progress-tracker-clean.tsx` + `.css` | MIT | `components/progress-tracker-clean.tsx` | `31c2172b973342f19ba98ac0caa5950bd846385032eef724a6cef59ebe1bfe60` |
 | KPI Board | `kpi-board.tsx` + `.css` | **affectUI Pro** | registro Pro, `kpi-board` (descarga del 2026-11-16) | `874fc8f4b9a02071f504043efc1ba65f7487570a8a1bd7078f050370b2460c06` |
 | Compact Breakdown | `compact-breakdown.tsx` + `.css` | **affectUI Pro** | registro Pro, `compact-breakdown` (descarga del 2026-11-16) | `16d917616dda6e0ba4f89a4a5efa0b10ee16a7c352548545857c56082b83d7f5` |
+| Experiment Readout | `experiment-readout.tsx` + `.css` | **affectUI Pro** (derivado de Experiment Card) | registro Pro, `experiment-card` (descarga del 2026-11-16) | `f6d08216b0a7803c47c196d52ea51e6d88e1d1900a3f584dba183a8459411373` |
 
 ## Cambios respecto a upstream
 
@@ -150,6 +151,18 @@ para poder comparar al actualizar.
   insignia de evidencia) y `footer` (la nota de cobertura, que parte línea) son
   huecos. Las etiquetas largas parten; la cuota conserva el «<1%» / «>99%» de
   upstream.
+- **experiment-readout** (Pro, derivado de Experiment Card) — la misma
+  composición (bandeja, tarjeta, etiqueta de estado, una fila por variante con
+  su insignia y su barra) **sin ninguna interacción**: siempre abierta, nada
+  depende del hover, no se elige ganador y ninguna cifra rueda. Es un
+  componente de servidor (sin `"use client"`). La bandeja de «elige un ganador»
+  pasa a ser la lectura estadística (`facts`: muestra, intervalo, periodo,
+  cobertura) con un hueco `action` para «Ver metodología». Nuevos huecos
+  `badge` (insignia de evidencia), `figure`/`caption` (el titular y qué es) y
+  `children` (la banda del intervalo). No calcula `lift` ni confianza: cada
+  cadena, cifra y longitud de barra llega ya formateada por props. Colores a
+  tokens (`--good-ink`, `--warn`, `--danger`, `--brand`), sin transiciones.
+  La usa `/dashboard/your-bench` (A = copia sin optimizar, B = con Savings).
 
 ## Cómo vendorizar una pieza nueva (frentes)
 

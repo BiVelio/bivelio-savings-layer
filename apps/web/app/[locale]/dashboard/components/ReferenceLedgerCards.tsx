@@ -2,6 +2,8 @@ import { getTranslations } from "next-intl/server";
 
 import { librosConPiezaDelBanco } from "@/lib/bench/sdk-instalado";
 
+import { EvidenceBadge } from "@/app/components/ui";
+
 import type { AbArtifact } from "../data";
 import { pct, money, LEDGER_COLOR } from "../format";
 
@@ -37,13 +39,14 @@ function sinEjercitar(ab: AbArtifact, ledger: string, proven: boolean): boolean 
 
 export async function ReferenceLedgerCards({ ab }: { ab: AbArtifact }) {
   const t = await getTranslations("dashboard");
+  const tu = await getTranslations("ui");
   // Un libro que agrega un escenario cuyo ahorro salió de una pieza que npm no
   // trae (el compresor del banco) no se anuncia con cifra: mezclaría lo que el
   // paquete entrega con lo que no. Vacío cuando la tirada midió lo instalado.
   const conPiezaDelBanco = librosConPiezaDelBanco(ab);
   return (
     <>
-      <div className="kpis">
+      <div className="kpis prf-kpis">
         {ab.ledgers.map((l) => {
           const pos = l.savings.point >= 0;
           if (conPiezaDelBanco.has(l.ledger)) {
@@ -77,6 +80,9 @@ export async function ReferenceLedgerCards({ ab }: { ab: AbArtifact }) {
                 {l.ledger}
               </div>
               <div className={`v ${pos ? "pos" : "neg"}`}>{pct(l.savings.point)}</div>
+              <div className="prf-ev">
+                <EvidenceBadge pequeno tipo={ab.mode === "LIVE" ? "sintetico" : "estimacion"} label={ab.mode === "LIVE" ? tu("evidence.sintetico") : tu("evidence.estimacion")} />
+              </div>
               <div className="lo">95% ≥ {pct(l.savings.lower)} · Δ {money(l.deltaCost)}</div>
               <div className="sub">{ab.mode === "LIVE" ? (l.proven ? t("referenceLedgerCards.proven") : t("referenceLedgerCards.notProven")) : t("referenceLedgerCards.estimatedMock")}</div>
             </div>

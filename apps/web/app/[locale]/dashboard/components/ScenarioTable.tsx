@@ -39,21 +39,32 @@ export function ScenarioTable({ scenarios, piezaDelBanco = [] }: { scenarios: Ab
     });
   }, [scenarios, sort]);
 
+  // La ordenación era un `onClick` sobre el <th>: con teclado no existía. Ahora
+  // es un botón dentro de la cabecera, y `aria-sort` dice qué columna manda.
   const th = (col: Col, label: string) => (
-    <th onClick={() => setSort((s) => ({ col, dir: s.col === col && s.dir === -1 ? 1 : -1 }))}>
-      {label}{sort.col === col ? (sort.dir === -1 ? " ▾" : " ▴") : ""}
+    <th scope="col" aria-sort={sort.col === col ? (sort.dir === -1 ? "descending" : "ascending") : undefined}>
+      <button
+        type="button"
+        className="tbl-sort"
+        title={t("scenarioTable.sortBy", { col: label })}
+        onClick={() => setSort((s) => ({ col, dir: s.col === col && s.dir === -1 ? 1 : -1 }))}
+      >
+        {label}
+        <span aria-hidden>{sort.col === col ? (sort.dir === -1 ? " ▾" : " ▴") : ""}</span>
+      </button>
     </th>
   );
 
   return (
     <div className="tbl-scroll">
-      <table className="tbl">
+      <table className="tbl prf-tbl">
+        <caption>{t("scenarioTable.caption")}</caption>
         <thead>
           <tr>
             {th("name", t("scenarioTable.colScenario"))}
             {th("kind", t("scenarioTable.colKind"))}
-            <th>{t("scenarioTable.colAInOut")}</th>
-            <th>{t("scenarioTable.colBInOut")}</th>
+            <th scope="col">{t("scenarioTable.colAInOut")}</th>
+            <th scope="col">{t("scenarioTable.colBInOut")}</th>
             {th("a", t("scenarioTable.colACost"))}
             {th("b", t("scenarioTable.colBCost"))}
             {th("savings", t("scenarioTable.colSavings"))}

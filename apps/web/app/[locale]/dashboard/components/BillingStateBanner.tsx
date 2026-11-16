@@ -2,6 +2,8 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { decidirAviso } from "@/lib/billing/aviso";
 
+import { Notice } from "@/app/components/ui";
+
 import type { OrgContext } from "../data";
 import { PortalButton } from "./PortalButton";
 
@@ -75,23 +77,17 @@ export async function BillingStateBanner({ ctx }: { ctx: OrgContext }) {
       break;
   }
 
+  // El tono lo dicen el icono y el título, no solo el color: `danger` cuando el
+  // servicio ya está cortado o a punto; `warn` mientras aún funciona.
   return (
-    <div
-      className="card"
+    <Notice
+      tono={urgente ? "danger" : "warn"}
       role="status"
-      style={{
-        marginTop: 6,
-        // `--danger` es el token real de la paleta (globals.css). Antes esto usaba
-        // `--bad`/`--warn`, que no existen: las dos ramas caían siempre al hex de
-        // reserva, un color que no aparece en ningún otro sitio del sistema y que
-        // se habría quedado descolgado al primer cambio de paleta.
-        borderLeft: `3px solid var(--danger)`,
-        opacity: urgente ? 1 : 0.92,
-      }}
+      titulo={titulo}
+      className="acct-banner"
+      acciones={conPortal ? <PortalButton label={t("pastDueAction")} /> : undefined}
     >
-      <div className="n">{titulo}</div>
-      <p style={{ marginTop: 6 }}>{cuerpo}</p>
-      {conPortal ? <PortalButton label={t("pastDueAction")} /> : null}
-    </div>
+      {cuerpo}
+    </Notice>
   );
 }

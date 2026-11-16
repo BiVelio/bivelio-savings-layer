@@ -12,18 +12,18 @@ export async function YourBenchCounts({ informe }: { informe: InformeDelBancoPro
   const t = await getTranslations("dashboard");
   return (
     <>
-      <div className="card card-pad">
-        <div className="card-title">{t("yourBench.exclusionsTitle")}</div>
+      <div className="card card-pad yb-card">
+        <h2 className="yb-h">{t("yourBench.exclusionsTitle")}</h2>
         <p className="ck-note">{t("yourBench.exclusionsIntro")}</p>
         {informe.exclusiones.length === 0 ? (
           <p className="ck-note">{t("yourBench.exclusionsNone")}</p>
         ) : (
           <div className="tbl-scroll">
-            <table className="tbl">
+            <table className="tbl tbl--static yb-tbl2">
               <tbody>
                 {informe.exclusiones.map((x) => (
                   <tr key={x.motivo}>
-                    <td>{t(`yourBench.excluded.${x.motivo}`)}</td>
+                    <th scope="row">{t(`yourBench.excluded.${x.motivo}`)}</th>
                     <td className="mono">{intfmt(x.peticiones)}</td>
                   </tr>
                 ))}
@@ -32,17 +32,17 @@ export async function YourBenchCounts({ informe }: { informe: InformeDelBancoPro
           </div>
         )}
       </div>
-      <div className="card card-pad app-gap">
-        <div className="card-title">{t("yourBench.outcomesTitle")}</div>
+      <div className="card card-pad yb-card app-gap">
+        <h2 className="yb-h">{t("yourBench.outcomesTitle")}</h2>
         {informe.resultados.length === 0 ? (
           <p className="ck-note">{t("yourBench.outcomesNone")}</p>
         ) : (
           <div className="tbl-scroll">
-            <table className="tbl">
+            <table className="tbl tbl--static yb-tbl2">
               <tbody>
                 {informe.resultados.map((x) => (
                   <tr key={x.resultado}>
-                    <td>{t(`yourBench.outcome.${x.resultado}`)}</td>
+                    <th scope="row">{t(`yourBench.outcome.${x.resultado}`)}</th>
                     <td className="mono">{intfmt(x.muestras)}</td>
                   </tr>
                 ))}
