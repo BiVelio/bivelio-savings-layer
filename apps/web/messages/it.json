@@ -317,7 +317,11 @@
       "publicoSub": "Una prova di riferimento sui nostri scenari. Non sono dati della tua organizzazione.",
       "propioTitulo": "I tuoi dati",
       "propioBanco": "Confronta con un A/B sul tuo traffico",
-      "tecnicaSub": "Batteria sintetica: mostra il meccanismo di ogni leva. Non promette alcuna cifra."
+      "tecnicaSub": "Batteria sintetica: mostra il meccanismo di ogni leva. Non promette alcuna cifra.",
+      "diagramRequest": "La tua richiesta",
+      "diagramA": "Braccio A: inviata così com'è, senza il layer",
+      "diagramB": "Braccio B: la stessa richiesta, attraverso Savings",
+      "diagramMeter": "Il contatore di utilizzo del tuo provider misura entrambi"
     },
     "verify": {
       "metaTitle": "Verifica · BiVelio Savings Layer",
@@ -428,7 +432,15 @@
         "factCoverage": "Copertura",
         "factCoverageValue": "{coverage} delle tue richieste idonee",
         "methodLink": "Vedi la metodologia"
-      }
+      },
+      "terms": {
+        "sample": "Coppie confrontabili: la stessa richiesta con e senza il layer, entrambe misurate dal tuo provider.",
+        "interval": "L'intervallo in cui cade il risparmio reale a quel livello di confidenza. Il dato in evidenza è il suo estremo inferiore.",
+        "coverage": "La parte delle tue richieste idonee che si trova in gruppi con coppie. Il resto non entra nella cifra."
+      },
+      "weightsTitle": "Quanto pesa ogni gruppo",
+      "weightsTotal": "richieste idonee nel periodo",
+      "weightsNote": "Ogni gruppo pesa nel dato in evidenza quanto rappresenta nelle tue richieste idonee, non quante coppie ha. Un gruppo senza coppie resta fuori."
     },
     "install": {
       "metaTitle": "Installa · BiVelio Savings Layer",
@@ -568,7 +580,13 @@
       "colQa": "qa",
       "benchOnly": "compressore del banco di prova, non in npm",
       "caption": "Batteria sintetica: A senza il layer, B con il layer. Ogni intestazione con freccia ordina la tabella.",
-      "sortBy": "Ordina per {col}"
+      "sortBy": "Ordina per {col}",
+      "title": "Scenario per scenario",
+      "help": "Che cosa significa «{col}»",
+      "termTokens": "Token medi di ingresso e di uscita per richiesta, secondo l'utilizzo riportato dal provider.",
+      "termCost": "Costo medio di una richiesta in quel braccio. La barra usa la stessa scala per A e per B.",
+      "termSavings": "Uno meno il costo di B diviso per quello di A. In negativo, il layer è costato di più.",
+      "termQa": "Risposte che superano il controllo di qualità, su quelle verificate."
     },
     "projectorVerifier": {
       "projectorTitle": "Proiettore di fattura",
@@ -594,7 +612,9 @@
       "onlyChatBody": "ChatGPT è davvero chiuso: quota fissa, nessuna fattura né tetto di token da tagliare. Ma se usi Claude, ti aiutiamo già a risparmiare: la skill savings-mode (gratuita, in home) allunga i tuoi tetti di abbonamento. E se sviluppi un'app con chiave API, è lì che BV-SALA misura e riduce la spesa vera.",
       "onlyChatCta": "Sviluppi un'app? Vai a Installa",
       "notInvoice": "Stima, non fattura",
-      "notInvoiceBody": "Deriva dalle ipotesi a sinistra, non dal tuo traffico. Quello che risparmi davvero si misura nella tua Panoramica."
+      "notInvoiceBody": "Deriva dalle ipotesi a sinistra, non dal tuo traffico. Quello che risparmi davvero si misura nella tua Panoramica.",
+      "barBaseline": "Senza ottimizzazione",
+      "barOptimized": "Con le tue ipotesi"
     },
     "copyButton": {
       "copied": "Copiato",
@@ -810,7 +830,10 @@
       "footnoteMain": "Quattro registri, <b>mai sommati</b> — ognuno è una leva misurata separatamente, così un dollaro non può essere contato due volte.",
       "reconciledNote": "Il residuo di riconciliazione ≈ 0 lo dimostra.",
       "residualNote": "residuo {residual} — controlla la contabilità.",
-      "footnoteReference": "Queste sono <b>leve di riferimento</b>: la tua linea in tempo reale ne misura altre quattro — provider-cached sostituisce output-restriction — quindi non le facciamo mai coincidere."
+      "footnoteReference": "Queste sono <b>leve di riferimento</b>: la tua linea in tempo reale ne misura altre quattro — provider-cached sostituisce output-restriction — quindi non le facciamo mai coincidere.",
+      "scenarios": "Scenari di questo registro",
+      "termFloor": "Limite inferiore dell'intervallo di confidenza: a quel livello di confidenza, il risparmio del registro è almeno questo.",
+      "termDelta": "Differenza di costo tra A e B negli scenari di questo registro."
     },
     "integrityQualityChips": {
       "qualityGate": "Controllo qualità <b>{rate}</b> superato",
@@ -821,7 +844,8 @@
       "cacheBreakEven": "Pareggio della cache <b>K={k}</b>",
       "provenAt95": "comprovato al 95%",
       "unprovenMock": "non comprovato (simulato)",
-      "regressedVoids": "Una risposta peggiorata annulla il suo risparmio"
+      "regressedVoids": "Una risposta peggiorata annulla il suo risparmio",
+      "title": "Verifiche dell'esecuzione"
     },
     "netSavingsCIBand": {
       "caption": "risparmio netto, <b>limite inferiore dell'IC al 95%</b>. Stima puntuale {point}, superiore {upper} — evidenziamo il minimo{mockNote}.",
@@ -1989,7 +2013,11 @@
       "classReplay": "Riproduzione controfattuale con una linea di base parzialmente ricostruita. Non è un A/B dal vivo, né un risparmio fatturato, né una riconciliazione delle fatture.",
       "compatible": "Compatibile non significa misurato: un modello conta qui solo se ha un'esecuzione pubblicata, e ciò che non si è potuto misurare è indicato con il suo motivo.",
       "paper": "Articolo di ricerca (PDF)",
-      "repo": "Repository aperto"
+      "repo": "Repository aperto",
+      "diagramRequest": "La stessa richiesta",
+      "diagramA": "Braccio A: direttamente al provider, senza il layer",
+      "diagramB": "Braccio B: attraverso il layer, con la configurazione predefinita",
+      "diagramMeter": "Il contatore di utilizzo del provider misura entrambi i bracci"
     },
     "index": {
       "method": "Metodo",
@@ -2032,7 +2060,15 @@
       "hint": "A è il riferimento; B passa dal livello.",
       "sample": "Campione",
       "method": "Vedi la metodologia",
-      "note": "Compaiono solo i modelli con un'esecuzione misurata."
+      "note": "Compaiono solo i modelli con un'esecuzione misurata.",
+      "forestTitle": "Risparmio misurato per modello, con il suo intervallo",
+      "forestHint": "Il punto è la stima; la barra, l'intervallo di confidenza; la linea, lo zero. Tutti sulla stessa scala."
+    },
+    "terms": {
+      "interval": "La stima e, tra parentesi quadre, il suo intervallo di confidenza. Se l'intervallo attraversa lo zero, non si distingue da zero.",
+      "sample": "Richieste per braccio e quante sono domande uniche; il resto sono ripetizioni esatte e parafrasi.",
+      "accuracy": "Risposte corrette sulle domande con risposta pubblicata, nel braccio A e nel braccio B.",
+      "run": "Versione del pacchetto eseguita nel braccio B e giorno dell'esecuzione."
     }
   },
   "howItWorks": {

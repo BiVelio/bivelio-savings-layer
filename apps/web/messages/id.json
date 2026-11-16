@@ -317,7 +317,11 @@
       "publicoSub": "Uji rujukan pada skenario kami. Ini bukan data organisasi Anda.",
       "propioTitulo": "Data Anda",
       "propioBanco": "Bandingkan dengan A/B pada trafik Anda",
-      "tecnicaSub": "Rangkaian uji sintetis: menunjukkan cara kerja tiap tuas. Tidak menjanjikan angka apa pun."
+      "tecnicaSub": "Rangkaian uji sintetis: menunjukkan cara kerja tiap tuas. Tidak menjanjikan angka apa pun.",
+      "diagramRequest": "Permintaan Anda",
+      "diagramA": "Lengan A: dikirim apa adanya, tanpa layer",
+      "diagramB": "Lengan B: permintaan yang sama, melalui Savings",
+      "diagramMeter": "Meteran pemakaian penyedia Anda mengukur keduanya"
     },
     "verify": {
       "metaTitle": "Verifikasi · BiVelio Savings Layer",
@@ -428,7 +432,15 @@
         "factCoverage": "Cakupan",
         "factCoverageValue": "{coverage} dari permintaan Anda yang memenuhi syarat",
         "methodLink": "Lihat metodologi"
-      }
+      },
+      "terms": {
+        "sample": "Pasangan yang sebanding: permintaan yang sama dengan dan tanpa layer, keduanya diukur oleh penyedia Anda.",
+        "interval": "Rentang tempat penghematan nyata berada pada tingkat kepercayaan itu. Angka utama adalah ujung bawahnya.",
+        "coverage": "Bagian dari permintaan Anda yang memenuhi syarat dan berada di kelompok yang memiliki pasangan. Sisanya tidak masuk ke angka."
+      },
+      "weightsTitle": "Bobot tiap kelompok",
+      "weightsTotal": "permintaan yang memenuhi syarat dalam periode ini",
+      "weightsNote": "Tiap kelompok berbobot pada angka utama sebesar porsinya dalam permintaan Anda yang memenuhi syarat, bukan sebanyak pasangannya. Kelompok tanpa pasangan tidak dihitung."
     },
     "install": {
       "metaTitle": "Pasang · BiVelio Savings Layer",
@@ -568,7 +580,13 @@
       "colQa": "qa",
       "benchOnly": "kompresor bangku uji, tidak ada di npm",
       "caption": "Rangkaian uji sintetis: A tanpa layer, B dengan layer. Setiap judul kolom berpanah mengurutkan tabel.",
-      "sortBy": "Urutkan menurut {col}"
+      "sortBy": "Urutkan menurut {col}",
+      "title": "Skenario demi skenario",
+      "help": "Arti “{col}”",
+      "termTokens": "Rata-rata token masukan dan keluaran per permintaan, menurut pemakaian yang dilaporkan penyedia.",
+      "termCost": "Biaya rata-rata satu permintaan di lengan itu. Batangnya memakai skala yang sama untuk A dan B.",
+      "termSavings": "Satu dikurangi biaya B dibagi biaya A. Jika negatif, layer justru lebih mahal.",
+      "termQa": "Jawaban yang lolos pemeriksaan kualitas, dari yang diperiksa."
     },
     "projectorVerifier": {
       "projectorTitle": "Proyektor tagihan",
@@ -594,7 +612,9 @@
       "onlyChatBody": "ChatGPT memang tertutup: biaya tetap, tanpa tagihan atau batas token untuk dipangkas. Tapi jika Anda memakai Claude, kami sudah membantu Anda berhemat: skill savings-mode (gratis, di beranda) merenggangkan batas langganan Anda. Dan jika Anda membangun aplikasi dengan API key, di situlah BV-SALA mengukur dan memangkas pengeluaran sungguhan.",
       "onlyChatCta": "Sedang membangun aplikasi? Buka Instal",
       "notInvoice": "Estimasi, bukan tagihan",
-      "notInvoiceBody": "Angka ini berasal dari asumsi di sebelah kiri, bukan dari trafik Anda. Penghematan Anda yang sebenarnya diukur di Ikhtisar."
+      "notInvoiceBody": "Angka ini berasal dari asumsi di sebelah kiri, bukan dari trafik Anda. Penghematan Anda yang sebenarnya diukur di Ikhtisar.",
+      "barBaseline": "Tanpa optimasi",
+      "barOptimized": "Dengan asumsi Anda"
     },
     "copyButton": {
       "copied": "Tersalin",
@@ -810,7 +830,10 @@
       "footnoteMain": "Empat ledger, <b>tidak pernah dijumlahkan</b> — masing-masing adalah tuas yang diukur terpisah, sehingga satu dolar tidak bisa dihitung dua kali.",
       "reconciledNote": "Residual rekonsiliasi ≈ 0 membuktikannya.",
       "residualNote": "residual {residual} — periksa penghitungannya.",
-      "footnoteReference": "Ini adalah <b>tuas referensi</b>: rel langsung Anda mengukur empat yang berbeda — provider-cached menggantikan output-restriction — jadi kami tidak pernah memetakan yang satu ke yang lain."
+      "footnoteReference": "Ini adalah <b>tuas referensi</b>: rel langsung Anda mengukur empat yang berbeda — provider-cached menggantikan output-restriction — jadi kami tidak pernah memetakan yang satu ke yang lain.",
+      "scenarios": "Skenario di ledger ini",
+      "termFloor": "Batas bawah interval kepercayaan: pada tingkat kepercayaan itu, penghematan ledger ini setidaknya sebesar ini.",
+      "termDelta": "Selisih biaya antara A dan B pada skenario ledger ini."
     },
     "integrityQualityChips": {
       "qualityGate": "Gerbang kualitas <b>{rate}</b> lolos",
@@ -821,7 +844,8 @@
       "cacheBreakEven": "Titik impas cache <b>K={k}</b>",
       "provenAt95": "terbukti pada 95%",
       "unprovenMock": "belum terbukti (tiruan)",
-      "regressedVoids": "Jawaban yang memburuk membatalkan penghematannya"
+      "regressedVoids": "Jawaban yang memburuk membatalkan penghematannya",
+      "title": "Pemeriksaan pada pengujian ini"
     },
     "netSavingsCIBand": {
       "caption": "penghematan bersih, <b>batas bawah CI 95%</b>. Estimasi titik {point}, atas {upper} — kami menonjolkan angka terendah{mockNote}.",
@@ -1989,7 +2013,11 @@
       "classReplay": "Pemutaran ulang kontrafaktual dengan garis dasar yang sebagian direkonstruksi. Ini bukan A/B langsung, bukan penghematan yang ditagihkan, dan bukan rekonsiliasi tagihan.",
       "compatible": "Kompatibel tidak berarti terukur: sebuah model hanya dihitung di sini jika memiliki putaran yang diterbitkan, dan yang tidak dapat diukur disebutkan beserta alasannya.",
       "paper": "Makalah penelitian (PDF)",
-      "repo": "Repositori terbuka"
+      "repo": "Repositori terbuka",
+      "diagramRequest": "Permintaan yang sama",
+      "diagramA": "Lengan A: langsung ke penyedia, tanpa layer",
+      "diagramB": "Lengan B: melalui layer, dengan konfigurasi bawaannya",
+      "diagramMeter": "Meteran pemakaian penyedia mengukur kedua lengan"
     },
     "index": {
       "method": "Metode",
@@ -2032,7 +2060,15 @@
       "hint": "A adalah acuan; B melewati lapisan.",
       "sample": "Sampel",
       "method": "Lihat metodologi",
-      "note": "Hanya model dengan putaran terukur yang muncul."
+      "note": "Hanya model dengan putaran terukur yang muncul.",
+      "forestTitle": "Penghematan terukur per model, beserta intervalnya",
+      "forestHint": "Titik adalah estimasi; batang adalah interval kepercayaan; garis adalah nol. Semuanya pada skala yang sama."
+    },
+    "terms": {
+      "interval": "Estimasi dan, dalam kurung siku, interval kepercayaannya. Jika interval melewati nol, hasilnya tidak dapat dibedakan dari nol.",
+      "sample": "Permintaan per lengan dan berapa yang merupakan pertanyaan unik; sisanya adalah pengulangan persis dan parafrasa.",
+      "accuracy": "Jawaban benar pada pertanyaan yang jawabannya dipublikasikan, di lengan A dan di lengan B.",
+      "run": "Versi paket yang berjalan di lengan B dan hari pengujian."
     }
   },
   "howItWorks": {

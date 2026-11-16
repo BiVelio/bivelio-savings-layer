@@ -317,7 +317,11 @@
       "publicoSub": "Un assaig de referència sobre els nostres escenaris. No són dades de la teva organització.",
       "propioTitulo": "Les teves dades",
       "propioBanco": "Comparar amb un A/B sobre el teu trànsit",
-      "tecnicaSub": "Bateria sintètica: ensenya el mecanisme de cada palanca. No promet cap xifra."
+      "tecnicaSub": "Bateria sintètica: ensenya el mecanisme de cada palanca. No promet cap xifra.",
+      "diagramRequest": "La teva petició",
+      "diagramA": "Braç A: s'envia tal qual, sense la capa",
+      "diagramB": "Braç B: la mateixa petició, a través de Savings",
+      "diagramMeter": "El comptador d'ús del teu proveïdor mesura tots dos"
     },
     "verify": {
       "metaTitle": "Verifica · BiVelio Savings Layer",
@@ -428,7 +432,15 @@
         "factCoverage": "Cobertura",
         "factCoverageValue": "{coverage} de les teves peticions elegibles",
         "methodLink": "Veure metodologia"
-      }
+      },
+      "terms": {
+        "sample": "Parells comparables: la mateixa petició amb la capa i sense, totes dues mesurades pel teu proveïdor.",
+        "interval": "El rang on cau l'estalvi real amb aquest nivell de confiança. El titular n'és l'extrem inferior.",
+        "coverage": "La part de les teves peticions elegibles que és en grups amb parells. La resta no entra en la xifra."
+      },
+      "weightsTitle": "El que pesa cada grup",
+      "weightsTotal": "peticions elegibles en el període",
+      "weightsNote": "Cada grup pesa en el titular el que representa en les teves peticions elegibles, no els parells que tingui. Un grup sense parells queda fora."
     },
     "install": {
       "metaTitle": "Instal·la · BiVelio Savings Layer",
@@ -568,7 +580,13 @@
       "colQa": "qa",
       "benchOnly": "compressor del banc, no és a npm",
       "caption": "Bateria sintètica: A sense la capa, B amb la capa. Cada capçalera amb fletxa ordena la taula.",
-      "sortBy": "Ordena per {col}"
+      "sortBy": "Ordena per {col}",
+      "title": "Escenari a escenari",
+      "help": "Què vol dir «{col}»",
+      "termTokens": "Tokens mitjans d'entrada i de sortida per petició, segons l'ús que reporta el proveïdor.",
+      "termCost": "Cost mitjà d'una petició en aquest braç. La barra fa servir la mateixa escala a A i a B.",
+      "termSavings": "U menys el cost de B dividit pel d'A. En negatiu, la capa ha costat més.",
+      "termQa": "Respostes que superen el control de qualitat, sobre les comprovades."
     },
     "projectorVerifier": {
       "projectorTitle": "Projector de factura",
@@ -594,7 +612,9 @@
       "onlyChatBody": "ChatGPT sí que és tancat: quota fixa, sense factura ni topalls per tokens a retallar. Però si uses Claude, ja t'ajudem a estalviar: l'skill savings-mode (gratuït, a la portada) estira els teus topalls de subscripció. I si desenvolupes una aplicació amb clau d'API, allà BV-SALA mesura i redueix la despesa de debò.",
       "onlyChatCta": "Desenvolupes una app? Ves a Instal·lar",
       "notInvoice": "Estimació, no factura",
-      "notInvoiceBody": "Surt dels supòsits de l'esquerra, no del teu trànsit. El que estalvies de debò es mesura al teu Resum."
+      "notInvoiceBody": "Surt dels supòsits de l'esquerra, no del teu trànsit. El que estalvies de debò es mesura al teu Resum.",
+      "barBaseline": "Sense optimitzar",
+      "barOptimized": "Amb els teus supòsits"
     },
     "copyButton": {
       "copied": "Copiat",
@@ -810,7 +830,10 @@
       "footnoteMain": "Quatre llibres comptables, <b>mai sumats</b>: cadascun és una palanca mesurada per separat, de manera que un dòlar no es pot comptar dues vegades.",
       "reconciledNote": "El residu de conciliació ≈ 0 ho demostra.",
       "residualNote": "residu {residual}: revisa la comptabilitat.",
-      "footnoteReference": "Aquestes són <b>palanques de referència</b>: la teva via en viu mesura unes altres quatre — provider-cached substitueix output-restriction — de manera que mai no en fem correspondre una amb l'altra."
+      "footnoteReference": "Aquestes són <b>palanques de referència</b>: la teva via en viu mesura unes altres quatre — provider-cached substitueix output-restriction — de manera que mai no en fem correspondre una amb l'altra.",
+      "scenarios": "Escenaris d'aquest llibre",
+      "termFloor": "Límit inferior de l'interval de confiança: amb aquest nivell de confiança, l'estalvi del llibre és com a mínim aquest.",
+      "termDelta": "Diferència de cost entre A i B en els escenaris d'aquest llibre."
     },
     "integrityQualityChips": {
       "qualityGate": "Control de qualitat <b>{rate}</b> superat",
@@ -821,7 +844,8 @@
       "cacheBreakEven": "Punt d'equilibri de la memòria cau <b>K={k}</b>",
       "provenAt95": "comprovat al 95%",
       "unprovenMock": "sense comprovar (simulat)",
-      "regressedVoids": "Una resposta que empitjora anul·la el seu estalvi"
+      "regressedVoids": "Una resposta que empitjora anul·la el seu estalvi",
+      "title": "Comprovacions de la tirada"
     },
     "netSavingsCIBand": {
       "caption": "estalvi net, <b>límit inferior de l'IC del 95%</b>. Estimació puntual {point}, superior {upper} — destaquem el mínim{mockNote}.",
@@ -1989,7 +2013,11 @@
       "classReplay": "Reproducció contrafactual amb una línia base parcialment reconstruïda. No és un A/B en viu, ni estalvi facturat, ni una conciliació de factures.",
       "compatible": "Compatible no vol dir mesurat: un model només compta aquí si té una tirada publicada, i el que no s'ha pogut mesurar es diu amb el seu motiu.",
       "paper": "Article de recerca (PDF)",
-      "repo": "Repositori obert"
+      "repo": "Repositori obert",
+      "diagramRequest": "La mateixa petició",
+      "diagramA": "Braç A: directa al proveïdor, sense la capa",
+      "diagramB": "Braç B: a través de la capa, amb la configuració per defecte",
+      "diagramMeter": "El comptador d'ús del proveïdor mesura tots dos braços"
     },
     "index": {
       "method": "Mètode",
@@ -2032,7 +2060,15 @@
       "hint": "A és la referència; B passa per la capa.",
       "sample": "Mostra",
       "method": "Veure la metodologia",
-      "note": "Només hi surten els models amb una tirada mesurada."
+      "note": "Només hi surten els models amb una tirada mesurada.",
+      "forestTitle": "Estalvi mesurat per model, amb el seu interval",
+      "forestHint": "El punt és l'estimació; la barra, l'interval de confiança; la ratlla, el zero. Tots a la mateixa escala."
+    },
+    "terms": {
+      "interval": "Estimació i, entre claudàtors, el seu interval de confiança. Si l'interval creua el zero, no es distingeix de zero.",
+      "sample": "Peticions per braç i quantes són preguntes úniques; la resta són repeticions exactes i paràfrasis.",
+      "accuracy": "Encerts sobre les preguntes amb resposta publicada, al braç A i al B.",
+      "run": "Versió del paquet que va córrer al braç B i dia de la tirada."
     }
   },
   "howItWorks": {

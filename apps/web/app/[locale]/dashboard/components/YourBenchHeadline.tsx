@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { getLocale, getTranslations } from "next-intl/server";
 
+import { Termino } from "@/app/components/evidencia/Termino";
 import { EvidenceBadge } from "@/app/components/ui";
 import { ExperimentReadout } from "@/vendor/affectui/experiment-readout";
 
@@ -93,14 +94,20 @@ export async function YourBenchHeadline({
           },
         ]}
         facts={[
-          { label: t("yourBench.readout.factSample"), value: t("yourBench.readout.factSampleValue", { pairs: intfmt(informe.paresEnTitular) }) },
           {
-            label: t("yourBench.readout.factInterval", { level: nivel }),
+            key: "muestra",
+            label: <Termino definicion={t("yourBench.terms.sample")}>{t("yourBench.readout.factSample")}</Termino>,
+            value: t("yourBench.readout.factSampleValue", { pairs: intfmt(informe.paresEnTitular) }),
+          },
+          {
+            key: "intervalo",
+            label: <Termino definicion={t("yourBench.terms.interval")}>{t("yourBench.readout.factInterval", { level: nivel })}</Termino>,
             value: t("yourBench.readout.factIntervalValue", { lower: pctFloor(f.lower), upper: pct(f.upper) }),
           },
-          ...(periodo ? [{ label: t("yourBench.readout.factPeriod"), value: periodo }] : []),
+          ...(periodo ? [{ key: "periodo", label: t("yourBench.readout.factPeriod"), value: periodo }] : []),
           {
-            label: t("yourBench.readout.factCoverage"),
+            key: "cobertura",
+            label: <Termino definicion={t("yourBench.terms.coverage")}>{t("yourBench.readout.factCoverage")}</Termino>,
             value: t("yourBench.readout.factCoverageValue", { coverage: pct0Floor(informe.cobertura) }),
           },
         ]}

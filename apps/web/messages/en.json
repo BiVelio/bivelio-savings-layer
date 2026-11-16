@@ -317,7 +317,11 @@
       "publicoSub": "A reference trial on our scenarios. This is not your organization's data.",
       "propioTitulo": "Your data",
       "propioBanco": "Compare with an A/B on your traffic",
-      "tecnicaSub": "Synthetic battery: it shows how each lever works. It promises no figure."
+      "tecnicaSub": "Synthetic battery: it shows how each lever works. It promises no figure.",
+      "diagramRequest": "Your request",
+      "diagramA": "Arm A: sent as it is, without the layer",
+      "diagramB": "Arm B: the same request, through Savings",
+      "diagramMeter": "Your provider's usage meter measures both"
     },
     "verify": {
       "metaTitle": "Verify · BiVelio Savings Layer",
@@ -428,7 +432,15 @@
         "factCoverage": "Coverage",
         "factCoverageValue": "{coverage} of your eligible requests",
         "methodLink": "See methodology"
-      }
+      },
+      "terms": {
+        "sample": "Comparable pairs: the same request with and without the layer, both measured by your provider.",
+        "interval": "The range the real saving falls in at that confidence level. The headline is its lower end.",
+        "coverage": "The share of your eligible requests that sits in groups with pairs. The rest is outside the figure."
+      },
+      "weightsTitle": "How much each group weighs",
+      "weightsTotal": "eligible requests in the period",
+      "weightsNote": "Each group weighs in the headline what it represents in your eligible requests, not how many pairs it has. A group with no pairs is left out."
     },
     "install": {
       "metaTitle": "Install · BiVelio Savings Layer",
@@ -568,7 +580,13 @@
       "colQa": "qa",
       "benchOnly": "bench-only compressor, not in npm",
       "caption": "Synthetic battery: A without the layer, B with the layer. Each header with an arrow sorts the table.",
-      "sortBy": "Sort by {col}"
+      "sortBy": "Sort by {col}",
+      "title": "Scenario by scenario",
+      "help": "What “{col}” means",
+      "termTokens": "Mean input and output tokens per request, from the usage the provider reports.",
+      "termCost": "Mean cost of one request in that arm. The bar uses the same scale for A and B.",
+      "termSavings": "One minus the cost of B divided by the cost of A. Negative means the layer cost more.",
+      "termQa": "Answers that pass the quality gate, out of those checked."
     },
     "projectorVerifier": {
       "projectorTitle": "Bill projector",
@@ -594,7 +612,9 @@
       "onlyChatBody": "ChatGPT is truly closed: flat fee, no token invoice or cap worth trimming. But if you use Claude, we already help you save: the savings-mode skill (free, on the home page) stretches your subscription caps. And if you build an app with an API key, that is where BV-SALA measures and cuts real spend.",
       "onlyChatCta": "Building an app? Go to Install",
       "notInvoice": "Estimate, not an invoice",
-      "notInvoiceBody": "It comes from the assumptions on the left, not from your traffic. What you really save is measured in your Overview."
+      "notInvoiceBody": "It comes from the assumptions on the left, not from your traffic. What you really save is measured in your Overview.",
+      "barBaseline": "Unoptimized",
+      "barOptimized": "With your assumptions"
     },
     "copyButton": {
       "copied": "Copied",
@@ -810,7 +830,10 @@
       "footnoteMain": "Four ledgers, <b>never summed</b> — each is a separately measured lever, so a dollar can't be double-counted.",
       "reconciledNote": "Reconciliation residual ≈ 0 proves it.",
       "residualNote": "residual {residual} — check the accounting.",
-      "footnoteReference": "These are <b>reference levers</b>: your live rail measures a different four — provider-cached replaces output-restriction — so we never map one onto the other."
+      "footnoteReference": "These are <b>reference levers</b>: your live rail measures a different four — provider-cached replaces output-restriction — so we never map one onto the other.",
+      "scenarios": "Scenarios in this ledger",
+      "termFloor": "Lower bound of the confidence interval: at that confidence level, the ledger saves at least this much.",
+      "termDelta": "Cost difference between A and B across this ledger's scenarios."
     },
     "integrityQualityChips": {
       "qualityGate": "Quality gate <b>{rate}</b> passed",
@@ -821,7 +844,8 @@
       "cacheBreakEven": "Cache break-even <b>K={k}</b>",
       "provenAt95": "proven at 95%",
       "unprovenMock": "unproven (mock)",
-      "regressedVoids": "A regressed answer voids its saving"
+      "regressedVoids": "A regressed answer voids its saving",
+      "title": "Checks on this run"
     },
     "netSavingsCIBand": {
       "caption": "net savings, <b>95% CI lower bound</b>. Point estimate {point}, upper {upper} — we headline the floor{mockNote}.",
@@ -1989,7 +2013,11 @@
       "classReplay": "Counterfactual replay with a partially reconstructed baseline. It is not a live A/B, billed savings or an invoice reconciliation.",
       "compatible": "Compatible does not mean measured: a model only counts here if it has a published run, and whatever could not be measured is stated with its reason.",
       "paper": "Research paper (PDF)",
-      "repo": "Open repository"
+      "repo": "Open repository",
+      "diagramRequest": "The same request",
+      "diagramA": "Arm A: straight to the provider, without the layer",
+      "diagramB": "Arm B: through the layer, with its default configuration",
+      "diagramMeter": "The provider's usage meter measures both arms"
     },
     "index": {
       "method": "Method",
@@ -2032,7 +2060,15 @@
       "hint": "A is the reference; B goes through the layer.",
       "sample": "Sample",
       "method": "See the methodology",
-      "note": "Only models with a measured run appear."
+      "note": "Only models with a measured run appear.",
+      "forestTitle": "Measured saving per model, with its interval",
+      "forestHint": "The dot is the estimate; the bar, the confidence interval; the line, zero. All on the same scale."
+    },
+    "terms": {
+      "interval": "The estimate and, in brackets, its confidence interval. If the interval crosses zero, it cannot be told apart from zero.",
+      "sample": "Requests per arm and how many are unique questions; the rest are exact repeats and paraphrases.",
+      "accuracy": "Correct answers on the questions with a published answer, in arm A and in arm B.",
+      "run": "Package version that ran in arm B, and the day of the run."
     }
   },
   "howItWorks": {

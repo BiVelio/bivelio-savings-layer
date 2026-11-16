@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
+import { ParAB } from "@/app/components/evidencia/ParAB";
 import { CodeFrame, Notice, Recibo } from "@/app/components/ui";
 import { CUOTA_CORTA_MAXIMA, MIN_PARES, MIN_PARES_POR_ESTRATO } from "@/lib/verificacion/banco-propio";
 import type { LecturaDelBancoPropio } from "@/lib/verificacion/lectura";
@@ -37,24 +38,37 @@ export async function YourBenchContenido({ lectura, rango }: { lectura: LecturaD
     );
   }
   const informe = lectura.informe;
+  // El par A/B, dibujado: lo que el muestreo hace con cada petición comprobada.
+  const par = (
+    <ParAB
+      className="yb-par"
+      peticion={t("proof.diagramRequest")}
+      brazoA={t("proof.diagramA")}
+      brazoB={t("proof.diagramB")}
+      contador={t("proof.diagramMeter")}
+    />
+  );
 
   if (informe.estado === "sin_datos") {
     return (
-      <div className="card yb-card yb-off">
-        <p className="yb-state">{t("yourBench.stateOff")}</p>
-        <h2 className="yb-h yb-h--lg">{t("yourBench.offTitle")}</h2>
-        <p className="yb-p">{t("yourBench.offBody")}</p>
-        <CodeFrame
-          etiqueta="createSavingsLayer"
-          copiar={{ texto: AJUSTE, etiqueta: tu("copy"), etiquetaCopiado: tu("copied") }}
-        >
-          {AJUSTE}
-        </CodeFrame>
-        {/* EL COSTE DE LAS COPIAS, antes de encenderlo: cada comprobación es una
-            llamada real al proveedor que paga el cliente. */}
-        <Notice tono="warn" role="note">
-          {t("yourBench.offCost")}
-        </Notice>
+      <div className="card yb-card yb-off yb-split">
+        <div className="yb-split-main">
+          <p className="yb-state">{t("yourBench.stateOff")}</p>
+          <h2 className="yb-h yb-h--lg">{t("yourBench.offTitle")}</h2>
+          <p className="yb-p">{t("yourBench.offBody")}</p>
+          <CodeFrame
+            etiqueta="createSavingsLayer"
+            copiar={{ texto: AJUSTE, etiqueta: tu("copy"), etiquetaCopiado: tu("copied") }}
+          >
+            {AJUSTE}
+          </CodeFrame>
+          {/* EL COSTE DE LAS COPIAS, antes de encenderlo: cada comprobación es una
+              llamada real al proveedor que paga el cliente. */}
+          <Notice tono="warn" role="note">
+            {t("yourBench.offCost")}
+          </Notice>
+        </div>
+        {par}
       </div>
     );
   }
@@ -99,7 +113,8 @@ export async function YourBenchContenido({ lectura, rango }: { lectura: LecturaD
     const avance = Math.max(0, Math.min(100, Math.round((informe.paresEnTitular / MIN_PARES) * 100)));
     return (
       <>
-        <div className="card yb-card">
+        <div className="card yb-card yb-split">
+          <div className="yb-split-main">
           {porGrupos ? (
             <>
               <p className="yb-state">{t("yourBench.stateShort")}</p>
@@ -122,6 +137,8 @@ export async function YourBenchContenido({ lectura, rango }: { lectura: LecturaD
               <p className="yb-p">{t("yourBench.collectingBody", { min: intfmt(MIN_PARES) })}</p>
             </>
           )}
+          </div>
+          {par}
         </div>
         {coste}
         {informe.estratos.some((e) => e.elegibles > 0 || e.pares > 0) ? (
@@ -140,11 +157,13 @@ export async function YourBenchContenido({ lectura, rango }: { lectura: LecturaD
   return (
     <>
       <YourBenchHeadline informe={informe} desde={lectura.desde} hasta={lectura.hasta} />
-      <div className="card card-pad yb-card app-gap">
-        <h2 className="yb-h">{t("yourBench.stressTitle")}</h2>
-        <p className="ck-note">{t("yourBench.stressBody", { lower: pctFloor(informe.peorCaso!.fraccion.lower) })}</p>
+      <div className="yb-duo yb-duo--coste app-gap">
+        <div className="card card-pad yb-card">
+          <h2 className="yb-h">{t("yourBench.stressTitle")}</h2>
+          <p className="ck-note">{t("yourBench.stressBody", { lower: pctFloor(informe.peorCaso!.fraccion.lower) })}</p>
+        </div>
+        {coste}
       </div>
-      {coste}
       <div className="app-gap">
         <YourBenchStrata informe={informe} />
       </div>
@@ -152,18 +171,20 @@ export async function YourBenchContenido({ lectura, rango }: { lectura: LecturaD
       <div className="app-gap">
         <YourBenchCounts informe={informe} />
       </div>
-      <div className="card card-pad yb-card app-gap" id="yb-metodo">
-        <h2 className="yb-h">{t("yourBench.methodTitle")}</h2>
-        <p className="ck-note">{t("yourBench.methodBody", { resamples: intfmt(informe.remuestreos), seed: String(informe.semilla) })}</p>
-      </div>
-      <div className="card card-pad yb-card app-gap">
-        <h2 className="yb-h">{t("yourBench.caveatsTitle")}</h2>
-        <ul className="yb-lista">
-          <li className="ck-note">{t("yourBench.caveats.sample")}</li>
-          <li className="ck-note">{t("yourBench.caveats.randomness")}</li>
-          <li className="ck-note">{t("yourBench.caveats.outside")}</li>
-          <li className="ck-note">{t("yourBench.caveats.streaming")}</li>
-        </ul>
+      <div className="yb-duo app-gap">
+        <div className="card card-pad yb-card" id="yb-metodo">
+          <h2 className="yb-h">{t("yourBench.methodTitle")}</h2>
+          <p className="ck-note">{t("yourBench.methodBody", { resamples: intfmt(informe.remuestreos), seed: String(informe.semilla) })}</p>
+        </div>
+        <div className="card card-pad yb-card">
+          <h2 className="yb-h">{t("yourBench.caveatsTitle")}</h2>
+          <ul className="yb-lista">
+            <li className="ck-note">{t("yourBench.caveats.sample")}</li>
+            <li className="ck-note">{t("yourBench.caveats.randomness")}</li>
+            <li className="ck-note">{t("yourBench.caveats.outside")}</li>
+            <li className="ck-note">{t("yourBench.caveats.streaming")}</li>
+          </ul>
+        </div>
       </div>
       <p className="app-gap">
         <a className="btn btn-ghost btn-sm" href={`/api/org/verification-pairs?range=${rango}`}>

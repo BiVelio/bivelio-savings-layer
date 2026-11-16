@@ -5,6 +5,9 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 
 import { EvidenceBadge } from "@/app/components/ui";
+import { ToggleGroup } from "@/vendor/affectui/toggle-group";
+
+import { ParAB } from "./ParAB";
 
 /**
  * EL ÍNDICE Y LOS FILTROS DE LECTURA DEL CENTRO DE EVIDENCIA (/benchmarks).
@@ -26,6 +29,9 @@ import { EvidenceBadge } from "@/app/components/ui";
  * plegada —la tarjeta del gateway de la portada apunta a #gateway-ttl— vuelve a
  * «Todo» antes de saltar. El plegado es un atributo `data-lectura` en el
  * `<main>` y unas reglas CSS por id: el marcado del banco no cambia.
+ *
+ * Las opciones del filtro son el Toggle Group de affectUI (`type="single"`,
+ * `required`): botones con `aria-pressed`, como antes, con foco itinerante.
  */
 
 export type SeccionDelIndice = { id: string; etiqueta: string };
@@ -152,35 +158,50 @@ export function CentroDeEvidencia({
 
       <div className="evc-read">
         <h2 className="evc-read-title">{t("centre.readTitle")}</h2>
-        <dl className="evc-classes">
-          <div>
-            <dt>
-              <EvidenceBadge tipo="ab-sdk" label={tUi("evidence.abSdk")} />
-            </dt>
-            <dd>{t("centre.classAb")}</dd>
-          </div>
-          {ids.includes("gateway-ttl") && (
+        <div className="evc-how">
+          <dl className="evc-classes">
             <div>
               <dt>
-                <EvidenceBadge tipo="replay-gateway" label={tUi("evidence.replayGateway")} />
+                <EvidenceBadge tipo="ab-sdk" label={tUi("evidence.abSdk")} />
               </dt>
-              <dd>{t("centre.classReplay")}</dd>
+              <dd>{t("centre.classAb")}</dd>
             </div>
-          )}
-        </dl>
+            {ids.includes("gateway-ttl") && (
+              <div>
+                <dt>
+                  <EvidenceBadge tipo="replay-gateway" label={tUi("evidence.replayGateway")} />
+                </dt>
+                <dd>{t("centre.classReplay")}</dd>
+              </div>
+            )}
+          </dl>
+          {/* El A/B, dibujado: la misma petición por dos brazos y un solo contador. */}
+          <ParAB
+            className="evc-par"
+            peticion={t("centre.diagramRequest")}
+            brazoA={t("centre.diagramA")}
+            brazoB={t("centre.diagramB")}
+            contador={t("centre.diagramMeter")}
+          />
+        </div>
         <p className="evc-compatible">{t("centre.compatible")}</p>
 
         <div className="evc-filter">
           <p className="evc-filter-label" id="evc-filter-label">
             {t("filter.label")}
           </p>
-          <div className="evc-filter-options" role="group" aria-labelledby="evc-filter-label">
-            {lecturas.map((l) => (
-              <button key={l} type="button" className="evc-chip" aria-pressed={lectura === l} onClick={() => setLectura(l)}>
-                {etiqueta[l]}
-              </button>
-            ))}
-          </div>
+          {/* El Toggle Group de affectUI, de una sola opción y siempre con una
+              encendida: un solo tabulador para todo el grupo y flechas dentro. */}
+          <ToggleGroup
+            type="single"
+            required
+            size="lg"
+            className="evc-filter-options"
+            aria-labelledby="evc-filter-label"
+            items={lecturas.map((l) => ({ value: l, label: etiqueta[l] }))}
+            value={lectura}
+            onChange={(l) => l && setLectura(l)}
+          />
           <p className="evc-filter-status" role="status">
             {t("filter.showing", { n: visibles.length, total: secciones.length })}{" "}
             {lectura !== "todo" && (

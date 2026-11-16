@@ -317,7 +317,11 @@
       "publicoSub": "Một thử nghiệm tham chiếu trên các kịch bản của chúng tôi. Đây không phải dữ liệu của tổ chức bạn.",
       "propioTitulo": "Dữ liệu của bạn",
       "propioBanco": "So sánh bằng A/B trên lưu lượng của bạn",
-      "tecnicaSub": "Bộ thử tổng hợp: cho thấy cơ chế của từng đòn bẩy. Không hứa hẹn con số nào."
+      "tecnicaSub": "Bộ thử tổng hợp: cho thấy cơ chế của từng đòn bẩy. Không hứa hẹn con số nào.",
+      "diagramRequest": "Yêu cầu của bạn",
+      "diagramA": "Nhánh A: gửi nguyên trạng, không qua lớp",
+      "diagramB": "Nhánh B: cùng yêu cầu đó, đi qua Savings",
+      "diagramMeter": "Bộ đếm mức dùng của nhà cung cấp đo cả hai"
     },
     "verify": {
       "metaTitle": "Xác minh · BiVelio Savings Layer",
@@ -428,7 +432,15 @@
         "factCoverage": "Độ bao phủ",
         "factCoverageValue": "{coverage} số yêu cầu đủ điều kiện của bạn",
         "methodLink": "Xem phương pháp"
-      }
+      },
+      "terms": {
+        "sample": "Các cặp so sánh được: cùng một yêu cầu có lớp và không có lớp, cả hai đều do nhà cung cấp của bạn đo.",
+        "interval": "Khoảng mà mức tiết kiệm thực rơi vào ở mức tin cậy đó. Con số chính là đầu dưới của khoảng.",
+        "coverage": "Phần yêu cầu đủ điều kiện của bạn nằm trong các nhóm có cặp. Phần còn lại không được tính vào con số."
+      },
+      "weightsTitle": "Trọng số của từng nhóm",
+      "weightsTotal": "yêu cầu đủ điều kiện trong kỳ",
+      "weightsNote": "Mỗi nhóm có trọng số trong con số chính theo tỷ trọng của nó trong các yêu cầu đủ điều kiện, không theo số cặp nó có. Nhóm không có cặp bị loại ra."
     },
     "install": {
       "metaTitle": "Cài đặt · BiVelio Savings Layer",
@@ -568,7 +580,13 @@
       "colQa": "qa",
       "benchOnly": "bộ nén của băng thử, không có trong npm",
       "caption": "Bộ thử tổng hợp: A không có lớp, B có lớp. Mỗi tiêu đề cột có mũi tên sẽ sắp xếp bảng.",
-      "sortBy": "Sắp xếp theo {col}"
+      "sortBy": "Sắp xếp theo {col}",
+      "title": "Từng kịch bản",
+      "help": "“{col}” nghĩa là gì",
+      "termTokens": "Số token đầu vào và đầu ra trung bình mỗi yêu cầu, theo mức dùng mà nhà cung cấp báo cáo.",
+      "termCost": "Chi phí trung bình của một yêu cầu ở nhánh đó. Thanh dùng cùng một thang đo cho A và B.",
+      "termSavings": "Một trừ đi chi phí của B chia cho chi phí của A. Nếu âm, lớp đã tốn kém hơn.",
+      "termQa": "Số câu trả lời vượt qua kiểm tra chất lượng, trên số đã kiểm tra."
     },
     "projectorVerifier": {
       "projectorTitle": "Trình dự phóng hóa đơn",
@@ -594,7 +612,9 @@
       "onlyChatBody": "ChatGPT thực sự đóng: phí cố định, không có hóa đơn hay giới hạn token để cắt. Nhưng nếu bạn dùng Claude, chúng tôi đã giúp bạn tiết kiệm: skill savings-mode (miễn phí, ở trang chủ) kéo giãn giới hạn thuê bao. Còn nếu bạn xây ứng dụng với API key, chính ở đó BV-SALA đo và cắt giảm chi tiêu thật.",
       "onlyChatCta": "Bạn đang phát triển ứng dụng? Đến trang Cài đặt",
       "notInvoice": "Ước tính, không phải hoá đơn",
-      "notInvoiceBody": "Con số này đến từ các giả định bên trái, không phải từ lưu lượng của bạn. Khoản bạn thực sự tiết kiệm được đo trong mục Tổng quan."
+      "notInvoiceBody": "Con số này đến từ các giả định bên trái, không phải từ lưu lượng của bạn. Khoản bạn thực sự tiết kiệm được đo trong mục Tổng quan.",
+      "barBaseline": "Chưa tối ưu",
+      "barOptimized": "Theo giả định của bạn"
     },
     "copyButton": {
       "copied": "Đã sao chép",
@@ -810,7 +830,10 @@
       "footnoteMain": "Bốn sổ cái, <b>không bao giờ cộng gộp</b> — mỗi cái là một đòn bẩy được đo riêng biệt, nên một đô la không thể bị đếm hai lần.",
       "reconciledNote": "Phần dư đối chiếu ≈ 0 chứng minh điều đó.",
       "residualNote": "phần dư {residual} — kiểm tra lại phần hạch toán.",
-      "footnoteReference": "Đây là <b>các đòn bẩy tham chiếu</b>: đường truyền trực tiếp của bạn đo bốn cái khác — provider-cached thay thế cho output-restriction — nên chúng tôi không bao giờ ánh xạ cái này sang cái kia."
+      "footnoteReference": "Đây là <b>các đòn bẩy tham chiếu</b>: đường truyền trực tiếp của bạn đo bốn cái khác — provider-cached thay thế cho output-restriction — nên chúng tôi không bao giờ ánh xạ cái này sang cái kia.",
+      "scenarios": "Các kịch bản của sổ cái này",
+      "termFloor": "Cận dưới của khoảng tin cậy: ở mức tin cậy đó, khoản tiết kiệm của sổ cái ít nhất là chừng này.",
+      "termDelta": "Chênh lệch chi phí giữa A và B trong các kịch bản của sổ cái này."
     },
     "integrityQualityChips": {
       "qualityGate": "Cổng chất lượng <b>{rate}</b> đã vượt qua",
@@ -821,7 +844,8 @@
       "cacheBreakEven": "Điểm hòa vốn bộ đệm <b>K={k}</b>",
       "provenAt95": "đã chứng minh ở mức 95%",
       "unprovenMock": "chưa chứng minh (mô phỏng)",
-      "regressedVoids": "Một câu trả lời bị suy giảm sẽ làm mất hiệu lực mức tiết kiệm của nó"
+      "regressedVoids": "Một câu trả lời bị suy giảm sẽ làm mất hiệu lực mức tiết kiệm của nó",
+      "title": "Các kiểm tra của lần chạy"
     },
     "netSavingsCIBand": {
       "caption": "tiết kiệm ròng, <b>giới hạn dưới của khoảng tin cậy 95%</b>. Ước tính điểm {point}, cận trên {upper} — chúng tôi lấy mức sàn làm tiêu đề{mockNote}.",
@@ -1989,7 +2013,11 @@
       "classReplay": "Phát lại phản thực tế với đường cơ sở được dựng lại một phần. Đây không phải A/B trực tiếp, không phải khoản tiết kiệm đã lập hóa đơn, cũng không phải đối soát hóa đơn.",
       "compatible": "Tương thích không có nghĩa là đã đo: một mô hình chỉ được tính ở đây khi có lượt chạy đã công bố, và những gì không đo được đều được nêu kèm lý do.",
       "paper": "Bài nghiên cứu (PDF)",
-      "repo": "Kho mã mở"
+      "repo": "Kho mã mở",
+      "diagramRequest": "Cùng một yêu cầu",
+      "diagramA": "Nhánh A: gửi thẳng tới nhà cung cấp, không qua lớp",
+      "diagramB": "Nhánh B: đi qua lớp, với cấu hình mặc định",
+      "diagramMeter": "Bộ đếm mức dùng của nhà cung cấp đo cả hai nhánh"
     },
     "index": {
       "method": "Phương pháp",
@@ -2032,7 +2060,15 @@
       "hint": "A là tham chiếu; B đi qua lớp.",
       "sample": "Mẫu",
       "method": "Xem phương pháp",
-      "note": "Chỉ hiển thị các mô hình có lượt chạy đã đo."
+      "note": "Chỉ hiển thị các mô hình có lượt chạy đã đo.",
+      "forestTitle": "Mức tiết kiệm đo được theo mô hình, kèm khoảng tin cậy",
+      "forestHint": "Chấm là ước lượng; thanh là khoảng tin cậy; vạch là số không. Tất cả cùng một thang đo."
+    },
+    "terms": {
+      "interval": "Ước lượng và, trong ngoặc vuông, khoảng tin cậy của nó. Nếu khoảng cắt qua số không thì không phân biệt được với không.",
+      "sample": "Số yêu cầu mỗi nhánh và bao nhiêu trong đó là câu hỏi riêng biệt; phần còn lại là lặp lại y nguyên và diễn đạt lại.",
+      "accuracy": "Số câu trả lời đúng trên các câu hỏi có đáp án đã công bố, ở nhánh A và nhánh B.",
+      "run": "Phiên bản gói đã chạy ở nhánh B và ngày chạy."
     }
   },
   "howItWorks": {

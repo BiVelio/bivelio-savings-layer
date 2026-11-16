@@ -1,5 +1,9 @@
 import { getTranslations } from "next-intl/server";
 
+import { Badge } from "@/vendor/affectui/badge";
+import { CompactBreakdown } from "@/vendor/affectui/compact-breakdown";
+import { DataTableReadonly, type ReadColumn, type ReadRow } from "@/vendor/affectui/data-table-readonly";
+
 import { MIN_PARES_POR_ESTRATO, POR_CADA, type InformeDelBancoPropio } from "@/lib/verificacion/banco-propio";
 import { intfmt, money, moneySigned } from "../format";
 
@@ -10,45 +14,79 @@ import { intfmt, money, moneySigned } from "../format";
  * enseñar un intervalo que no se sostiene (sus pares sí entran en el titular);
  * uno sin ninguno, que no tiene pares. Se enseña también mientras se reúnen
  * pares: es donde se ve qué grupo falta.
+ *
+ * Dos piezas de affectUI: el Compact Breakdown reparte las peticiones elegibles
+ * entre los grupos (es el PESO de cada uno en el titular, y sí es aditivo) y la
+ * Data Table de solo lectura lleva las medias y la diferencia, ordenable. Un
+ * grupo sin intervalo ordena al final: que falte un dato no lo convierte en cero.
  */
+const RAMPA = ["var(--brand)", "var(--mint)", "var(--ui)", "var(--amber)", "var(--deep)", "var(--ink-soft)"];
 export async function YourBenchStrata({ informe }: { informe: InformeDelBancoPropio }) {
   const t = await getTranslations("dashboard");
   const filas = informe.estratos.filter((e) => e.elegibles > 0 || e.pares > 0);
+  // Color estable por grupo: por su posición en la lista completa del informe.
+  const COLOR: Record<string, string> = Object.fromEntries(informe.estratos.map((e, i) => [e.estrato, RAMPA[i % RAMPA.length]!]));
+  const ordenar = (col: string) => t("scenarioTable.sortBy", { col });
+  const columns: ReadColumn[] = [
+    { key: "tipo", label: t("yourBench.colKind"), width: "26%" },
+    { key: "elegibles", label: t("yourBench.colEligible"), align: "end", sortable: true, sortLabel: ordenar(t("yourBench.colEligible")) },
+    { key: "pares", label: t("yourBench.colPairs"), align: "end", sortable: true, sortLabel: ordenar(t("yourBench.colPairs")) },
+    { key: "sin", label: t("yourBench.colNaive"), align: "end" },
+    { key: "con", label: t("yourBench.colOptimized"), align: "end" },
+    { key: "dif", label: t("yourBench.colDiff", { per: intfmt(POR_CADA) }), align: "end", sortable: true, sortLabel: ordenar(t("yourBench.colDiff", { per: intfmt(POR_CADA) })) },
+  ];
+  const rows: ReadRow[] = filas.map((e) => {
+    const medido = e.cubierto && e.diferencia;
+    return {
+      id: e.estrato,
+      sort: { elegibles: e.elegibles, pares: e.pares, dif: medido ? e.diferencia!.point : null },
+      cells: {
+        tipo: (
+          <span className="st-name">
+            <span className="ltag" style={{ background: COLOR[e.estrato] }} />
+            <span className="st-name-t">{t(`yourBench.stratum.${e.estrato}`)}</span>
+          </span>
+        ),
+        elegibles: <span className="mono">{intfmt(e.elegibles)}</span>,
+        pares: <span className="mono">{intfmt(e.pares)}</span>,
+        sin: <span className="mono">{e.mediaSinCapa === null ? "—" : money(e.mediaSinCapa)}</span>,
+        con: <span className="mono">{e.mediaConCapa === null ? "—" : money(e.mediaConCapa)}</span>,
+        dif: medido ? (
+          <span className="yb-dif">
+            <span className={`mono st-sv ${e.diferencia!.point >= 0 ? "pos" : "neg"}`}>{moneySigned(e.diferencia!.point * POR_CADA)}</span>
+            <span className="mono yb-dif-ci">
+              ({moneySigned(e.diferencia!.lower * POR_CADA)} … {moneySigned(e.diferencia!.upper * POR_CADA)})
+            </span>
+          </span>
+        ) : (
+          <Badge tone={e.pares === 0 ? "neutral" : "warning"}>
+            {e.pares === 0 ? t("yourBench.noPairs") : t("yourBench.notCovered", { n: intfmt(e.pares), min: intfmt(MIN_PARES_POR_ESTRATO) })}
+          </Badge>
+        ),
+      },
+    };
+  });
+  const conPeso = filas.filter((e) => e.elegibles > 0);
   return (
-    <div className="card card-pad yb-card">
-      <h2 className="yb-h">{t("yourBench.strataTitle")}</h2>
-      <div className="tbl-scroll">
-        <table className="tbl tbl--static">
-          <thead>
-            <tr>
-              <th scope="col">{t("yourBench.colKind")}</th>
-              <th scope="col">{t("yourBench.colEligible")}</th>
-              <th scope="col">{t("yourBench.colPairs")}</th>
-              <th scope="col">{t("yourBench.colNaive")}</th>
-              <th scope="col">{t("yourBench.colOptimized")}</th>
-              <th scope="col">{t("yourBench.colDiff", { per: intfmt(POR_CADA) })}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filas.map((e) => (
-              <tr key={e.estrato}>
-                <td>{t(`yourBench.stratum.${e.estrato}`)}</td>
-                <td className="mono">{intfmt(e.elegibles)}</td>
-                <td className="mono">{intfmt(e.pares)}</td>
-                <td className="mono">{e.mediaSinCapa === null ? "—" : money(e.mediaSinCapa)}</td>
-                <td className="mono">{e.mediaConCapa === null ? "—" : money(e.mediaConCapa)}</td>
-                <td className="mono">
-                  {e.cubierto && e.diferencia
-                    ? `${moneySigned(e.diferencia.point * POR_CADA)} (${moneySigned(e.diferencia.lower * POR_CADA)} … ${moneySigned(e.diferencia.upper * POR_CADA)})`
-                    : e.pares === 0
-                      ? t("yourBench.noPairs")
-                      : t("yourBench.notCovered", { n: intfmt(e.pares), min: intfmt(MIN_PARES_POR_ESTRATO) })}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+    <div className="yb-strata">
+      {conPeso.length > 1 ? (
+        <CompactBreakdown
+          className="yb-pesos"
+          headingAs="h2"
+          title={t("yourBench.weightsTitle")}
+          total={intfmt(conPeso.reduce((a, e) => a + e.elegibles, 0))}
+          totalLabel={t("yourBench.weightsTotal")}
+          items={conPeso.map((e) => ({
+            id: e.estrato,
+            label: t(`yourBench.stratum.${e.estrato}`),
+            value: e.elegibles,
+            display: intfmt(e.elegibles),
+            color: COLOR[e.estrato]!,
+          }))}
+          footer={t("yourBench.weightsNote")}
+        />
+      ) : null}
+      <DataTableReadonly className="yb-tabla" headingAs="h2" title={t("yourBench.strataTitle")} columns={columns} rows={rows} minWidth="760px" />
     </div>
   );
 }

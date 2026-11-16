@@ -2,6 +2,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { PageHead } from "@/app/components/app/PageHead";
 import { ProofTabs } from "@/app/components/app/ProofTabs";
+import { ParAB } from "@/app/components/evidencia/ParAB";
 import { EvidenceBadge } from "@/app/components/ui";
 import { TarjetaMedidoEnVivo, filasDelBancoEnVivo } from "@/app/components/MedidoEnVivo";
 import { Link } from "@/i18n/navigation";
@@ -74,10 +75,21 @@ export default async function ProofPage() {
           <EvidenceBadge tipo="tus-datos" label={tu("evidence.tusDatos")} />
         </div>
         <div className="card prf-propio">
-          <p className="prf-propio-t">{t.rich("proof.tuDinero", { overview: (c) => <Link href="/dashboard">{c}</Link> })}</p>
-          <Link className="btn btn-ghost btn-sm" href="/dashboard/your-bench">
-            {t("proof.propioBanco")}
-          </Link>
+          <div className="prf-propio-txt">
+            <p className="prf-propio-t">{t.rich("proof.tuDinero", { overview: (c) => <Link href="/dashboard">{c}</Link> })}</p>
+            <Link className="btn btn-ghost btn-sm" href="/dashboard/your-bench">
+              {t("proof.propioBanco")}
+            </Link>
+          </div>
+          {/* Cómo es ese A/B, dibujado: la misma petición por dos brazos y un
+              solo contador, el de tu proveedor. No dice nada del resultado. */}
+          <ParAB
+            className="prf-par"
+            peticion={t("proof.diagramRequest")}
+            brazoA={t("proof.diagramA")}
+            brazoB={t("proof.diagramB")}
+            contador={t("proof.diagramMeter")}
+          />
         </div>
       </section>
 

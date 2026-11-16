@@ -317,7 +317,11 @@
       "publicoSub": "Un ensayo de referencia sobre nuestros escenarios. No son datos de tu organización.",
       "propioTitulo": "Tus datos",
       "propioBanco": "Comparar con un A/B sobre tu tráfico",
-      "tecnicaSub": "Batería sintética: enseña el mecanismo de cada palanca. No promete ninguna cifra."
+      "tecnicaSub": "Batería sintética: enseña el mecanismo de cada palanca. No promete ninguna cifra.",
+      "diagramRequest": "Tu petición",
+      "diagramA": "Brazo A: se envía tal cual, sin la capa",
+      "diagramB": "Brazo B: la misma petición, a través de Savings",
+      "diagramMeter": "El contador de uso de tu proveedor mide los dos"
     },
     "verify": {
       "metaTitle": "Verificar · BiVelio Savings Layer",
@@ -428,7 +432,15 @@
         "factCoverage": "Cobertura",
         "factCoverageValue": "{coverage} de tus peticiones elegibles",
         "methodLink": "Ver metodología"
-      }
+      },
+      "terms": {
+        "sample": "Pares comparables: la misma petición con la capa y sin ella, las dos medidas por tu proveedor.",
+        "interval": "El rango donde cae el ahorro real con ese nivel de confianza. El titular es su extremo inferior.",
+        "coverage": "La parte de tus peticiones elegibles que está en grupos con pares. El resto no entra en la cifra."
+      },
+      "weightsTitle": "Lo que pesa cada grupo",
+      "weightsTotal": "peticiones elegibles en el periodo",
+      "weightsNote": "Cada grupo pesa en el titular lo que representa en tus peticiones elegibles, no los pares que tenga. Un grupo sin pares queda fuera."
     },
     "install": {
       "metaTitle": "Instalar · BiVelio Savings Layer",
@@ -568,7 +580,13 @@
       "colQa": "qa",
       "benchOnly": "compresor del banco, no está en npm",
       "caption": "Batería sintética: A sin la capa, B con la capa. Cada cabecera con flecha ordena la tabla.",
-      "sortBy": "Ordenar por {col}"
+      "sortBy": "Ordenar por {col}",
+      "title": "Escenario a escenario",
+      "help": "Qué significa «{col}»",
+      "termTokens": "Tokens medios de entrada y de salida por petición, según el uso que reporta el proveedor.",
+      "termCost": "Coste medio de una petición en ese brazo. La barra usa la misma escala en A y en B.",
+      "termSavings": "Uno menos el coste de B dividido entre el de A. En negativo, la capa costó más.",
+      "termQa": "Respuestas que superan el control de calidad, sobre las comprobadas."
     },
     "projectorVerifier": {
       "projectorTitle": "Proyector de factura",
@@ -594,7 +612,9 @@
       "onlyChatBody": "ChatGPT sí es cerrado: cuota fija, sin factura ni topes por tokens que recortar. Pero si usas Claude, ya te ayudamos a ahorrar: el skill savings-mode (gratis, en la portada) estira tus topes de suscripción. Y si desarrollas una aplicación con clave de API, ahí BV-SALA mide y reduce el gasto de verdad.",
       "onlyChatCta": "¿Desarrollas una app? Ve a Instalar",
       "notInvoice": "Estimación, no factura",
-      "notInvoiceBody": "Sale de los supuestos de la izquierda, no de tu tráfico. Lo que ahorras de verdad se mide en tu Resumen."
+      "notInvoiceBody": "Sale de los supuestos de la izquierda, no de tu tráfico. Lo que ahorras de verdad se mide en tu Resumen.",
+      "barBaseline": "Sin optimizar",
+      "barOptimized": "Con tus supuestos"
     },
     "copyButton": {
       "copied": "Copiado",
@@ -810,7 +830,10 @@
       "footnoteMain": "Cuatro libros, <b>nunca sumados</b>: cada uno es una palanca medida por separado, así que un dólar no se puede contar dos veces.",
       "reconciledNote": "El residual de conciliación ≈ 0 lo demuestra.",
       "residualNote": "residual {residual}: revisa la contabilidad.",
-      "footnoteReference": "Estas son <b>palancas de referencia</b>: tu vía en vivo mide otras cuatro (provider-cached reemplaza a output-restriction), así que nunca las equiparamos entre sí."
+      "footnoteReference": "Estas son <b>palancas de referencia</b>: tu vía en vivo mide otras cuatro (provider-cached reemplaza a output-restriction), así que nunca las equiparamos entre sí.",
+      "scenarios": "Escenarios de este libro",
+      "termFloor": "Límite inferior del intervalo de confianza: con ese nivel de confianza, el ahorro del libro es al menos este.",
+      "termDelta": "Diferencia de coste entre A y B en los escenarios de este libro."
     },
     "integrityQualityChips": {
       "qualityGate": "Control de calidad <b>{rate}</b> superado",
@@ -821,7 +844,8 @@
       "cacheBreakEven": "Punto de equilibrio de caché <b>K={k}</b>",
       "provenAt95": "comprobado al 95%",
       "unprovenMock": "sin comprobar (simulado)",
-      "regressedVoids": "Una respuesta que empeora anula su ahorro"
+      "regressedVoids": "Una respuesta que empeora anula su ahorro",
+      "title": "Comprobaciones de la tirada"
     },
     "netSavingsCIBand": {
       "caption": "ahorro neto, <b>límite inferior del IC del 95%</b>. Estimación puntual {point}, superior {upper}: destacamos el piso{mockNote}.",
@@ -1989,7 +2013,11 @@
       "classReplay": "Reproducción contrafactual con una línea base parcialmente reconstruida. No es un A/B en vivo, ni ahorro facturado, ni una conciliación de facturas.",
       "compatible": "Compatible no significa medido: un modelo solo cuenta aquí si tiene una tirada publicada, y lo que no se pudo medir se dice con su motivo.",
       "paper": "Artículo de investigación (PDF)",
-      "repo": "Repositorio abierto"
+      "repo": "Repositorio abierto",
+      "diagramRequest": "La misma petición",
+      "diagramA": "Brazo A: directa al proveedor, sin la capa",
+      "diagramB": "Brazo B: a través de la capa, con su configuración por defecto",
+      "diagramMeter": "El contador de uso del proveedor mide los dos brazos"
     },
     "index": {
       "method": "Método",
@@ -2032,7 +2060,15 @@
       "hint": "A es la referencia; B pasa por la capa.",
       "sample": "Muestra",
       "method": "Ver metodología",
-      "note": "Solo aparecen los modelos con una tirada medida."
+      "note": "Solo aparecen los modelos con una tirada medida.",
+      "forestTitle": "Ahorro medido por modelo, con su intervalo",
+      "forestHint": "El punto es la estimación; la barra, el intervalo de confianza; la raya, el cero. Todos a la misma escala."
+    },
+    "terms": {
+      "interval": "Estimación y, entre corchetes, su intervalo de confianza. Si el intervalo cruza el cero, no se distingue de cero.",
+      "sample": "Peticiones por brazo y cuántas son preguntas únicas; el resto son repeticiones exactas y paráfrasis.",
+      "accuracy": "Aciertos sobre las preguntas con respuesta publicada, en el brazo A y en el B.",
+      "run": "Versión del paquete que corrió en el brazo B y día de la tirada."
     }
   },
   "howItWorks": {

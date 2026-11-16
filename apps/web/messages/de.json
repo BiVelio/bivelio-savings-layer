@@ -317,7 +317,11 @@
       "publicoSub": "Ein Referenzversuch mit unseren Szenarien. Das sind nicht die Daten deiner Organisation.",
       "propioTitulo": "Deine Daten",
       "propioBanco": "Mit einem A/B auf deinem Traffic vergleichen",
-      "tecnicaSub": "Synthetische Testreihe: Sie zeigt, wie jeder Hebel funktioniert. Sie verspricht keine Zahl."
+      "tecnicaSub": "Synthetische Testreihe: Sie zeigt, wie jeder Hebel funktioniert. Sie verspricht keine Zahl.",
+      "diagramRequest": "Deine Anfrage",
+      "diagramA": "Arm A: unverändert gesendet, ohne die Schicht",
+      "diagramB": "Arm B: dieselbe Anfrage, über Savings",
+      "diagramMeter": "Der Verbrauchszähler deines Anbieters misst beide"
     },
     "verify": {
       "metaTitle": "Verifizieren · BiVelio Savings Layer",
@@ -428,7 +432,15 @@
         "factCoverage": "Abdeckung",
         "factCoverageValue": "{coverage} deiner geeigneten Anfragen",
         "methodLink": "Methodik ansehen"
-      }
+      },
+      "terms": {
+        "sample": "Vergleichbare Paare: dieselbe Anfrage mit und ohne Schicht, beide von deinem Anbieter gemessen.",
+        "interval": "Der Bereich, in dem die tatsächliche Ersparnis bei diesem Konfidenzniveau liegt. Die Hauptzahl ist seine Untergrenze.",
+        "coverage": "Der Anteil deiner geeigneten Anfragen, der in Gruppen mit Paaren liegt. Der Rest fließt nicht in die Zahl ein."
+      },
+      "weightsTitle": "Wie viel jede Gruppe wiegt",
+      "weightsTotal": "geeignete Anfragen im Zeitraum",
+      "weightsNote": "Jede Gruppe wiegt in der Hauptzahl so viel, wie sie an deinen geeigneten Anfragen ausmacht, nicht so viel, wie sie Paare hat. Eine Gruppe ohne Paare bleibt außen vor."
     },
     "install": {
       "metaTitle": "Installieren · BiVelio Savings Layer",
@@ -568,7 +580,13 @@
       "colQa": "qa",
       "benchOnly": "Prüfstand-Kompressor, nicht in npm",
       "caption": "Synthetische Testreihe: A ohne die Schicht, B mit der Schicht. Jede Spaltenüberschrift mit Pfeil sortiert die Tabelle.",
-      "sortBy": "Nach {col} sortieren"
+      "sortBy": "Nach {col} sortieren",
+      "title": "Szenario für Szenario",
+      "help": "Was „{col}“ bedeutet",
+      "termTokens": "Mittlere Eingabe- und Ausgabe-Tokens pro Anfrage, laut dem vom Anbieter gemeldeten Verbrauch.",
+      "termCost": "Mittlere Kosten einer Anfrage in diesem Arm. Der Balken hat für A und B denselben Maßstab.",
+      "termSavings": "Eins minus die Kosten von B geteilt durch die von A. Negativ heißt: Die Schicht war teurer.",
+      "termQa": "Antworten, die die Qualitätsprüfung bestehen, bezogen auf die geprüften."
     },
     "projectorVerifier": {
       "projectorTitle": "Rechnungsprognose",
@@ -594,7 +612,9 @@
       "onlyChatBody": "ChatGPT ist wirklich geschlossen: feste Gebühr, keine Token-Rechnung und kein Limit zum Kürzen. Aber wenn du Claude nutzt, helfen wir dir schon beim Sparen: der savings-mode-Skill (kostenlos, auf der Startseite) dehnt deine Abo-Limits. Und wenn du eine App mit API-Key baust, misst und senkt BV-SALA dort echte Ausgaben.",
       "onlyChatCta": "Baust du eine App? Zur Installation",
       "notInvoice": "Schätzung, keine Rechnung",
-      "notInvoiceBody": "Sie ergibt sich aus den Annahmen links, nicht aus deinem Traffic. Was du wirklich sparst, wird in deiner Übersicht gemessen."
+      "notInvoiceBody": "Sie ergibt sich aus den Annahmen links, nicht aus deinem Traffic. Was du wirklich sparst, wird in deiner Übersicht gemessen.",
+      "barBaseline": "Ohne Optimierung",
+      "barOptimized": "Mit deinen Annahmen"
     },
     "copyButton": {
       "copied": "Kopiert",
@@ -810,7 +830,10 @@
       "footnoteMain": "Vier Ledger, <b>niemals summiert</b> — jeder ist ein separat gemessener Hebel, sodass ein Dollar nicht doppelt gezählt werden kann.",
       "reconciledNote": "Der Abstimmungsrest ≈ 0 beweist es.",
       "residualNote": "Rest {residual} — prüfe die Abrechnung.",
-      "footnoteReference": "Dies sind <b>Referenz-Hebel</b>: dein Live-Rail misst vier andere — provider-cached ersetzt output-restriction — daher bilden wir niemals das eine auf das andere ab."
+      "footnoteReference": "Dies sind <b>Referenz-Hebel</b>: dein Live-Rail misst vier andere — provider-cached ersetzt output-restriction — daher bilden wir niemals das eine auf das andere ab.",
+      "scenarios": "Szenarien dieses Ledgers",
+      "termFloor": "Untergrenze des Konfidenzintervalls: Bei diesem Konfidenzniveau spart der Ledger mindestens so viel.",
+      "termDelta": "Kostenunterschied zwischen A und B in den Szenarien dieses Ledgers."
     },
     "integrityQualityChips": {
       "qualityGate": "Quality-Gate <b>{rate}</b> bestanden",
@@ -821,7 +844,8 @@
       "cacheBreakEven": "Cache-Break-even <b>K={k}</b>",
       "provenAt95": "bewiesen bei 95%",
       "unprovenMock": "unbewiesen (Mock)",
-      "regressedVoids": "Eine verschlechterte Antwort macht ihre Einsparung zunichte"
+      "regressedVoids": "Eine verschlechterte Antwort macht ihre Einsparung zunichte",
+      "title": "Prüfungen dieses Laufs"
     },
     "netSavingsCIBand": {
       "caption": "Netto-Einsparung, <b>untere 95%-Konfidenzgrenze</b>. Punktschätzung {point}, obere {upper} — wir stellen den unteren Wert in den Vordergrund{mockNote}.",
@@ -1989,7 +2013,11 @@
       "classReplay": "Kontrafaktische Wiederholung mit teilweise rekonstruierter Baseline. Das ist weder ein Live-A/B noch eine abgerechnete Ersparnis noch ein Rechnungsabgleich.",
       "compatible": "Kompatibel heißt nicht gemessen: Ein Modell zählt hier nur, wenn es einen veröffentlichten Lauf hat, und was nicht gemessen werden konnte, steht mit seinem Grund da.",
       "paper": "Forschungsartikel (PDF)",
-      "repo": "Offenes Repository"
+      "repo": "Offenes Repository",
+      "diagramRequest": "Dieselbe Anfrage",
+      "diagramA": "Arm A: direkt zum Anbieter, ohne die Schicht",
+      "diagramB": "Arm B: über die Schicht, mit ihrer Standardkonfiguration",
+      "diagramMeter": "Der Verbrauchszähler des Anbieters misst beide Arme"
     },
     "index": {
       "method": "Methode",
@@ -2032,7 +2060,15 @@
       "hint": "A ist die Referenz; B läuft durch die Schicht.",
       "sample": "Stichprobe",
       "method": "Methodik ansehen",
-      "note": "Es erscheinen nur Modelle mit einem gemessenen Lauf."
+      "note": "Es erscheinen nur Modelle mit einem gemessenen Lauf.",
+      "forestTitle": "Gemessene Ersparnis je Modell, mit Intervall",
+      "forestHint": "Der Punkt ist die Schätzung, der Balken das Konfidenzintervall, die Linie die Null. Alle im selben Maßstab."
+    },
+    "terms": {
+      "interval": "Die Schätzung und in Klammern ihr Konfidenzintervall. Schneidet das Intervall die Null, ist sie nicht von null zu unterscheiden.",
+      "sample": "Anfragen pro Arm und wie viele davon eigene Fragen sind; der Rest sind exakte Wiederholungen und Paraphrasen.",
+      "accuracy": "Richtige Antworten auf die Fragen mit veröffentlichter Lösung, in Arm A und in Arm B.",
+      "run": "Paketversion, die in Arm B lief, und Tag des Laufs."
     }
   },
   "howItWorks": {

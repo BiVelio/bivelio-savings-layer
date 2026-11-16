@@ -317,7 +317,11 @@
       "publicoSub": "Un essai de référence sur nos scénarios. Ce ne sont pas les données de votre organisation.",
       "propioTitulo": "Vos données",
       "propioBanco": "Comparer avec un A/B sur votre trafic",
-      "tecnicaSub": "Batterie synthétique : elle montre le mécanisme de chaque levier. Elle ne promet aucun chiffre."
+      "tecnicaSub": "Batterie synthétique : elle montre le mécanisme de chaque levier. Elle ne promet aucun chiffre.",
+      "diagramRequest": "Votre requête",
+      "diagramA": "Bras A : envoyée telle quelle, sans la couche",
+      "diagramB": "Bras B : la même requête, à travers Savings",
+      "diagramMeter": "Le compteur d'usage de votre fournisseur mesure les deux"
     },
     "verify": {
       "metaTitle": "Vérifier · BiVelio Savings Layer",
@@ -428,7 +432,15 @@
         "factCoverage": "Couverture",
         "factCoverageValue": "{coverage} de vos requêtes éligibles",
         "methodLink": "Voir la méthodologie"
-      }
+      },
+      "terms": {
+        "sample": "Paires comparables : la même requête avec et sans la couche, toutes deux mesurées par votre fournisseur.",
+        "interval": "La plage où se situe l'économie réelle à ce niveau de confiance. Le chiffre affiché en est la borne inférieure.",
+        "coverage": "La part de vos requêtes éligibles qui se trouve dans des groupes avec des paires. Le reste n'entre pas dans le chiffre."
+      },
+      "weightsTitle": "Le poids de chaque groupe",
+      "weightsTotal": "requêtes éligibles sur la période",
+      "weightsNote": "Chaque groupe pèse dans le chiffre ce qu'il représente dans vos requêtes éligibles, et non le nombre de paires qu'il contient. Un groupe sans paire reste en dehors."
     },
     "install": {
       "metaTitle": "Installer · BiVelio Savings Layer",
@@ -568,7 +580,13 @@
       "colQa": "qa",
       "benchOnly": "compresseur du banc d'essai, absent de npm",
       "caption": "Batterie synthétique : A sans la couche, B avec la couche. Chaque en-tête avec une flèche trie le tableau.",
-      "sortBy": "Trier par {col}"
+      "sortBy": "Trier par {col}",
+      "title": "Scénario par scénario",
+      "help": "Ce que signifie « {col} »",
+      "termTokens": "Tokens moyens d'entrée et de sortie par requête, d'après l'usage que rapporte le fournisseur.",
+      "termCost": "Coût moyen d'une requête dans ce bras. La barre utilise la même échelle pour A et pour B.",
+      "termSavings": "Un moins le coût de B divisé par celui de A. En négatif, la couche a coûté plus cher.",
+      "termQa": "Réponses qui passent le contrôle de qualité, sur celles qui ont été vérifiées."
     },
     "projectorVerifier": {
       "projectorTitle": "Projecteur de facture",
@@ -594,7 +612,9 @@
       "onlyChatBody": "ChatGPT est vraiment fermé : forfait fixe, pas de facture ni de plafond de tokens à réduire. Mais si vous utilisez Claude, nous vous aidons déjà à économiser : le skill savings-mode (gratuit, en page d'accueil) étire vos plafonds d'abonnement. Et si vous développez une app avec une clé API, c'est là que BV-SALA mesure et réduit la dépense réelle.",
       "onlyChatCta": "Vous développez une app ? Voir Installer",
       "notInvoice": "Estimation, pas une facture",
-      "notInvoiceBody": "Elle découle des hypothèses à gauche, pas de votre trafic. Ce que vous économisez réellement se mesure dans votre Aperçu."
+      "notInvoiceBody": "Elle découle des hypothèses à gauche, pas de votre trafic. Ce que vous économisez réellement se mesure dans votre Aperçu.",
+      "barBaseline": "Sans optimisation",
+      "barOptimized": "Avec vos hypothèses"
     },
     "copyButton": {
       "copied": "Copié",
@@ -810,7 +830,10 @@
       "footnoteMain": "Quatre registres, <b>jamais additionnés</b> — chacun est un levier mesuré séparément, un dollar ne peut donc pas être compté deux fois.",
       "reconciledNote": "Le résidu de réconciliation ≈ 0 le prouve.",
       "residualNote": "résidu {residual} — vérifiez la comptabilité.",
-      "footnoteReference": "Ce sont des <b>leviers de référence</b> : votre rail en direct en mesure quatre autres — provider-cached remplace output-restriction — nous ne faisons donc jamais correspondre l'un à l'autre."
+      "footnoteReference": "Ce sont des <b>leviers de référence</b> : votre rail en direct en mesure quatre autres — provider-cached remplace output-restriction — nous ne faisons donc jamais correspondre l'un à l'autre.",
+      "scenarios": "Scénarios de ce registre",
+      "termFloor": "Borne inférieure de l'intervalle de confiance : à ce niveau de confiance, l'économie du registre est au moins celle-ci.",
+      "termDelta": "Différence de coût entre A et B sur les scénarios de ce registre."
     },
     "integrityQualityChips": {
       "qualityGate": "Contrôle qualité <b>{rate}</b> réussi",
@@ -821,7 +844,8 @@
       "cacheBreakEven": "Seuil de rentabilité du cache <b>K={k}</b>",
       "provenAt95": "prouvé à 95%",
       "unprovenMock": "non prouvé (simulé)",
-      "regressedVoids": "Une réponse dégradée annule son économie"
+      "regressedVoids": "Une réponse dégradée annule son économie",
+      "title": "Vérifications de l'exécution"
     },
     "netSavingsCIBand": {
       "caption": "économies nettes, <b>borne inférieure de l'IC à 95%</b>. Estimation ponctuelle {point}, supérieure {upper} — nous mettons en avant le plancher{mockNote}.",
@@ -1989,7 +2013,11 @@
       "classReplay": "Rejeu contrefactuel avec une ligne de base partiellement reconstruite. Ce n'est ni un A/B en direct, ni une économie facturée, ni un rapprochement de factures.",
       "compatible": "Compatible ne veut pas dire mesuré : un modèle ne compte ici que s'il a une exécution publiée, et ce qui n'a pas pu être mesuré est indiqué avec son motif.",
       "paper": "Article de recherche (PDF)",
-      "repo": "Dépôt ouvert"
+      "repo": "Dépôt ouvert",
+      "diagramRequest": "La même requête",
+      "diagramA": "Bras A : directement au fournisseur, sans la couche",
+      "diagramB": "Bras B : à travers la couche, avec sa configuration par défaut",
+      "diagramMeter": "Le compteur d'usage du fournisseur mesure les deux bras"
     },
     "index": {
       "method": "Méthode",
@@ -2032,7 +2060,15 @@
       "hint": "A est la référence ; B passe par la couche.",
       "sample": "Échantillon",
       "method": "Voir la méthodologie",
-      "note": "Seuls les modèles ayant une exécution mesurée apparaissent."
+      "note": "Seuls les modèles ayant une exécution mesurée apparaissent.",
+      "forestTitle": "Économie mesurée par modèle, avec son intervalle",
+      "forestHint": "Le point est l'estimation ; la barre, l'intervalle de confiance ; le trait, le zéro. Tous à la même échelle."
+    },
+    "terms": {
+      "interval": "L'estimation et, entre crochets, son intervalle de confiance. Si l'intervalle croise le zéro, on ne la distingue pas de zéro.",
+      "sample": "Requêtes par bras et combien sont des questions uniques ; le reste, ce sont des répétitions exactes et des paraphrases.",
+      "accuracy": "Bonnes réponses sur les questions dont la réponse est publiée, dans le bras A et dans le bras B.",
+      "run": "Version du paquet exécutée dans le bras B et jour de l'exécution."
     }
   },
   "howItWorks": {

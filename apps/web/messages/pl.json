@@ -317,7 +317,11 @@
       "publicoSub": "Próba referencyjna na naszych scenariuszach. To nie są dane Twojej organizacji.",
       "propioTitulo": "Twoje dane",
       "propioBanco": "Porównaj z testem A/B na swoim ruchu",
-      "tecnicaSub": "Zestaw syntetyczny: pokazuje mechanizm każdej dźwigni. Nie obiecuje żadnej liczby."
+      "tecnicaSub": "Zestaw syntetyczny: pokazuje mechanizm każdej dźwigni. Nie obiecuje żadnej liczby.",
+      "diagramRequest": "Twoje żądanie",
+      "diagramA": "Ramię A: wysłane bez zmian, bez warstwy",
+      "diagramB": "Ramię B: to samo żądanie, przez Savings",
+      "diagramMeter": "Licznik zużycia Twojego dostawcy mierzy oba"
     },
     "verify": {
       "metaTitle": "Zweryfikuj · BiVelio Savings Layer",
@@ -428,7 +432,15 @@
         "factCoverage": "Pokrycie",
         "factCoverageValue": "{coverage} Twoich kwalifikujących się żądań",
         "methodLink": "Zobacz metodologię"
-      }
+      },
+      "terms": {
+        "sample": "Porównywalne pary: to samo żądanie z warstwą i bez niej, oba zmierzone przez Twojego dostawcę.",
+        "interval": "Zakres, w którym mieści się rzeczywista oszczędność przy tym poziomie ufności. Główna liczba to jego dolny kraniec.",
+        "coverage": "Część Twoich kwalifikujących się żądań, która należy do grup z parami. Reszta nie wchodzi do wyniku."
+      },
+      "weightsTitle": "Ile waży każda grupa",
+      "weightsTotal": "kwalifikujące się żądania w okresie",
+      "weightsNote": "Każda grupa waży w głównej liczbie tyle, ile stanowi w Twoich kwalifikujących się żądaniach, a nie tyle, ile ma par. Grupa bez par zostaje poza wynikiem."
     },
     "install": {
       "metaTitle": "Zainstaluj · BiVelio Savings Layer",
@@ -568,7 +580,13 @@
       "colQa": "qa",
       "benchOnly": "kompresor ze stanowiska testowego, nie ma go w npm",
       "caption": "Zestaw syntetyczny: A bez warstwy, B z warstwą. Każdy nagłówek ze strzałką sortuje tabelę.",
-      "sortBy": "Sortuj według: {col}"
+      "sortBy": "Sortuj według: {col}",
+      "title": "Scenariusz po scenariuszu",
+      "help": "Co oznacza „{col}”",
+      "termTokens": "Średnia liczba tokenów wejściowych i wyjściowych na żądanie, według zużycia raportowanego przez dostawcę.",
+      "termCost": "Średni koszt jednego żądania w tym ramieniu. Pasek ma tę samą skalę dla A i B.",
+      "termSavings": "Jeden minus koszt B podzielony przez koszt A. Wartość ujemna oznacza, że warstwa kosztowała więcej.",
+      "termQa": "Odpowiedzi, które przechodzą kontrolę jakości, spośród sprawdzonych."
     },
     "projectorVerifier": {
       "projectorTitle": "Prognoza rachunku",
@@ -594,7 +612,9 @@
       "onlyChatBody": "ChatGPT jest naprawdę zamknięty: stała opłata, bez faktury i limitów tokenów do przycięcia. Ale jeśli używasz Claude, już pomagamy Ci oszczędzać: skill savings-mode (darmowy, na stronie głównej) rozciąga limity subskrypcji. A jeśli budujesz aplikację z kluczem API — tam BV-SALA mierzy i tnie prawdziwe wydatki.",
       "onlyChatCta": "Tworzysz aplikację? Przejdź do Instalacji",
       "notInvoice": "Szacunek, nie faktura",
-      "notInvoiceBody": "Wynika z założeń po lewej, a nie z Twojego ruchu. To, co naprawdę oszczędzasz, jest mierzone w Przeglądzie."
+      "notInvoiceBody": "Wynika z założeń po lewej, a nie z Twojego ruchu. To, co naprawdę oszczędzasz, jest mierzone w Przeglądzie.",
+      "barBaseline": "Bez optymalizacji",
+      "barOptimized": "Przy Twoich założeniach"
     },
     "copyButton": {
       "copied": "Skopiowano",
@@ -810,7 +830,10 @@
       "footnoteMain": "Cztery księgi, <b>nigdy nie sumowane</b> — każda to osobno mierzona dźwignia, więc dolara nie da się policzyć dwa razy.",
       "reconciledNote": "Reszta uzgodnienia ≈ 0 to potwierdza.",
       "residualNote": "reszta {residual} — sprawdź rozliczenie.",
-      "footnoteReference": "To są <b>dźwignie referencyjne</b>: Twoja ścieżka na żywo mierzy inne cztery — provider-cached zastępuje output-restriction — więc nigdy nie odwzorowujemy jednej na drugą."
+      "footnoteReference": "To są <b>dźwignie referencyjne</b>: Twoja ścieżka na żywo mierzy inne cztery — provider-cached zastępuje output-restriction — więc nigdy nie odwzorowujemy jednej na drugą.",
+      "scenarios": "Scenariusze tej księgi",
+      "termFloor": "Dolna granica przedziału ufności: przy tym poziomie ufności oszczędność księgi wynosi co najmniej tyle.",
+      "termDelta": "Różnica kosztu między A i B w scenariuszach tej księgi."
     },
     "integrityQualityChips": {
       "qualityGate": "Bramka jakości <b>{rate}</b> zaliczona",
@@ -821,7 +844,8 @@
       "cacheBreakEven": "Próg opłacalności cache <b>K={k}</b>",
       "provenAt95": "udowodnione przy 95%",
       "unprovenMock": "nieudowodnione (mock)",
-      "regressedVoids": "Pogorszona odpowiedź unieważnia swoją oszczędność"
+      "regressedVoids": "Pogorszona odpowiedź unieważnia swoją oszczędność",
+      "title": "Kontrole tego przebiegu"
     },
     "netSavingsCIBand": {
       "caption": "oszczędności netto, <b>dolna granica 95% przedziału ufności</b>. Estymacja punktowa {point}, górna {upper} — nagłówkiem czynimy dolny próg{mockNote}.",
@@ -1989,7 +2013,11 @@
       "classReplay": "Kontrfaktyczne odtworzenie z częściowo zrekonstruowaną linią bazową. To nie jest A/B na żywo, zafakturowana oszczędność ani uzgodnienie faktur.",
       "compatible": "Zgodny nie znaczy zmierzony: model liczy się tu tylko wtedy, gdy ma opublikowany przebieg, a to, czego nie udało się zmierzyć, jest opisane wraz z powodem.",
       "paper": "Artykuł badawczy (PDF)",
-      "repo": "Otwarte repozytorium"
+      "repo": "Otwarte repozytorium",
+      "diagramRequest": "To samo żądanie",
+      "diagramA": "Ramię A: bezpośrednio do dostawcy, bez warstwy",
+      "diagramB": "Ramię B: przez warstwę, z jej domyślną konfiguracją",
+      "diagramMeter": "Licznik zużycia dostawcy mierzy oba ramiona"
     },
     "index": {
       "method": "Metoda",
@@ -2032,7 +2060,15 @@
       "hint": "A to punkt odniesienia; B przechodzi przez warstwę.",
       "sample": "Próba",
       "method": "Zobacz metodologię",
-      "note": "Widoczne są tylko modele ze zmierzonym przebiegiem."
+      "note": "Widoczne są tylko modele ze zmierzonym przebiegiem.",
+      "forestTitle": "Zmierzona oszczędność według modelu, z przedziałem",
+      "forestHint": "Punkt to oszacowanie, pasek to przedział ufności, kreska to zero. Wszystko w tej samej skali."
+    },
+    "terms": {
+      "interval": "Oszacowanie i, w nawiasach kwadratowych, jego przedział ufności. Jeśli przedział przecina zero, wyniku nie da się odróżnić od zera.",
+      "sample": "Żądania na ramię i ile z nich to unikalne pytania; reszta to dokładne powtórzenia i parafrazy.",
+      "accuracy": "Poprawne odpowiedzi na pytania z opublikowaną odpowiedzią, w ramieniu A i w ramieniu B.",
+      "run": "Wersja pakietu uruchomiona w ramieniu B oraz dzień przebiegu."
     }
   },
   "howItWorks": {

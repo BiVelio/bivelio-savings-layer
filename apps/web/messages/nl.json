@@ -317,7 +317,11 @@
       "publicoSub": "Een referentieproef op onze scenario's. Dit zijn niet de gegevens van je organisatie.",
       "propioTitulo": "Jouw gegevens",
       "propioBanco": "Vergelijken met een A/B op je eigen verkeer",
-      "tecnicaSub": "Synthetische testreeks: laat zien hoe elke hefboom werkt. Belooft geen cijfer."
+      "tecnicaSub": "Synthetische testreeks: laat zien hoe elke hefboom werkt. Belooft geen cijfer.",
+      "diagramRequest": "Je verzoek",
+      "diagramA": "Arm A: verstuurd zoals het is, zonder de laag",
+      "diagramB": "Arm B: hetzelfde verzoek, via Savings",
+      "diagramMeter": "De verbruiksmeter van je provider meet beide"
     },
     "verify": {
       "metaTitle": "Verifiëren · BiVelio Savings Layer",
@@ -428,7 +432,15 @@
         "factCoverage": "Dekking",
         "factCoverageValue": "{coverage} van je in aanmerking komende verzoeken",
         "methodLink": "Methodologie bekijken"
-      }
+      },
+      "terms": {
+        "sample": "Vergelijkbare paren: hetzelfde verzoek met en zonder de laag, beide gemeten door je provider.",
+        "interval": "Het bereik waarin de werkelijke besparing valt bij dat betrouwbaarheidsniveau. Het kopcijfer is de ondergrens.",
+        "coverage": "Het deel van je geschikte verzoeken dat in groepen met paren zit. De rest telt niet mee in het cijfer."
+      },
+      "weightsTitle": "Hoe zwaar elke groep weegt",
+      "weightsTotal": "geschikte verzoeken in de periode",
+      "weightsNote": "Elke groep weegt in het kopcijfer mee naar zijn aandeel in je geschikte verzoeken, niet naar het aantal paren. Een groep zonder paren blijft erbuiten."
     },
     "install": {
       "metaTitle": "Installeren · BiVelio Savings Layer",
@@ -568,7 +580,13 @@
       "colQa": "qa",
       "benchOnly": "testbank-compressor, niet in npm",
       "caption": "Synthetische testreeks: A zonder de laag, B met de laag. Elke kolomkop met een pijl sorteert de tabel.",
-      "sortBy": "Sorteren op {col}"
+      "sortBy": "Sorteren op {col}",
+      "title": "Scenario voor scenario",
+      "help": "Wat ‘{col}’ betekent",
+      "termTokens": "Gemiddelde invoer- en uitvoertokens per verzoek, volgens het verbruik dat de provider rapporteert.",
+      "termCost": "Gemiddelde kosten van één verzoek in die arm. De balk gebruikt dezelfde schaal voor A en B.",
+      "termSavings": "Eén min de kosten van B gedeeld door die van A. Negatief betekent dat de laag meer kostte.",
+      "termQa": "Antwoorden die de kwaliteitscontrole doorstaan, van de gecontroleerde antwoorden."
     },
     "projectorVerifier": {
       "projectorTitle": "Factuurprojectie",
@@ -594,7 +612,9 @@
       "onlyChatBody": "ChatGPT is echt gesloten: vast tarief, geen tokenfactuur of limiet om te trimmen. Maar gebruik je Claude, dan helpen we je al besparen: de savings-mode-skill (gratis, op de homepage) rekt je abonnementslimieten op. En bouw je een app met een API-sleutel, dáár meet en verlaagt BV-SALA echte uitgaven.",
       "onlyChatCta": "Bouw je een app? Ga naar Installeren",
       "notInvoice": "Schatting, geen factuur",
-      "notInvoiceBody": "Het volgt uit de aannames links, niet uit je verkeer. Wat je echt bespaart, wordt gemeten in je Overzicht."
+      "notInvoiceBody": "Het volgt uit de aannames links, niet uit je verkeer. Wat je echt bespaart, wordt gemeten in je Overzicht.",
+      "barBaseline": "Niet geoptimaliseerd",
+      "barOptimized": "Met jouw aannames"
     },
     "copyButton": {
       "copied": "Gekopieerd",
@@ -810,7 +830,10 @@
       "footnoteMain": "Vier grootboeken, <b>nooit opgeteld</b> — elk is een afzonderlijk gemeten hefboom, dus een dollar kan niet dubbel geteld worden.",
       "reconciledNote": "Het reconciliatierestant ≈ 0 bewijst het.",
       "residualNote": "restant {residual} — controleer de boekhouding.",
-      "footnoteReference": "Dit zijn <b>referentiehefbomen</b>: je live-rail meet een andere vier — provider-cached vervangt output-restriction — dus we projecteren de een nooit op de ander."
+      "footnoteReference": "Dit zijn <b>referentiehefbomen</b>: je live-rail meet een andere vier — provider-cached vervangt output-restriction — dus we projecteren de een nooit op de ander.",
+      "scenarios": "Scenario's in dit grootboek",
+      "termFloor": "Ondergrens van het betrouwbaarheidsinterval: bij dat betrouwbaarheidsniveau bespaart het grootboek minstens dit.",
+      "termDelta": "Kostenverschil tussen A en B in de scenario's van dit grootboek."
     },
     "integrityQualityChips": {
       "qualityGate": "Kwaliteitscontrole <b>{rate}</b> geslaagd",
@@ -821,7 +844,8 @@
       "cacheBreakEven": "Cache break-even <b>K={k}</b>",
       "provenAt95": "bewezen op 95%",
       "unprovenMock": "onbewezen (mock)",
-      "regressedVoids": "Een verslechterd antwoord doet zijn besparing teniet"
+      "regressedVoids": "Een verslechterd antwoord doet zijn besparing teniet",
+      "title": "Controles van deze run"
     },
     "netSavingsCIBand": {
       "caption": "netto besparingen, <b>ondergrens van het 95%-BI</b>. Puntschatting {point}, bovengrens {upper} — we zetten de ondergrens voorop{mockNote}.",
@@ -1989,7 +2013,11 @@
       "classReplay": "Contrafeitelijke replay met een gedeeltelijk gereconstrueerde baseline. Het is geen live A/B, geen gefactureerde besparing en geen factuurafstemming.",
       "compatible": "Compatibel betekent niet gemeten: een model telt hier alleen mee als er een gepubliceerde run van is, en wat niet gemeten kon worden staat er met de reden bij.",
       "paper": "Onderzoeksartikel (PDF)",
-      "repo": "Open repository"
+      "repo": "Open repository",
+      "diagramRequest": "Hetzelfde verzoek",
+      "diagramA": "Arm A: rechtstreeks naar de provider, zonder de laag",
+      "diagramB": "Arm B: via de laag, met de standaardconfiguratie",
+      "diagramMeter": "De verbruiksmeter van de provider meet beide armen"
     },
     "index": {
       "method": "Methode",
@@ -2032,7 +2060,15 @@
       "hint": "A is de referentie; B loopt door de laag.",
       "sample": "Steekproef",
       "method": "Methodologie bekijken",
-      "note": "Alleen modellen met een gemeten run verschijnen hier."
+      "note": "Alleen modellen met een gemeten run verschijnen hier.",
+      "forestTitle": "Gemeten besparing per model, met interval",
+      "forestHint": "De punt is de schatting; de balk het betrouwbaarheidsinterval; de streep de nul. Alles op dezelfde schaal."
+    },
+    "terms": {
+      "interval": "De schatting en, tussen haken, het betrouwbaarheidsinterval. Kruist het interval de nul, dan is ze niet van nul te onderscheiden.",
+      "sample": "Verzoeken per arm en hoeveel daarvan unieke vragen zijn; de rest zijn exacte herhalingen en parafrases.",
+      "accuracy": "Juiste antwoorden op de vragen met een gepubliceerd antwoord, in arm A en in arm B.",
+      "run": "Pakketversie die in arm B draaide, en de dag van de run."
     }
   },
   "howItWorks": {

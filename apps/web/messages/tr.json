@@ -317,7 +317,11 @@
       "publicoSub": "Kendi senaryolarımız üzerinde bir referans denemesi. Kuruluşunuzun verileri değildir.",
       "propioTitulo": "Sizin verileriniz",
       "propioBanco": "Kendi trafiğinizde bir A/B ile karşılaştırın",
-      "tecnicaSub": "Sentetik test dizisi: her kaldıracın nasıl çalıştığını gösterir. Hiçbir rakam vaat etmez."
+      "tecnicaSub": "Sentetik test dizisi: her kaldıracın nasıl çalıştığını gösterir. Hiçbir rakam vaat etmez.",
+      "diagramRequest": "İsteğiniz",
+      "diagramA": "A kolu: olduğu gibi, katman olmadan gönderilir",
+      "diagramB": "B kolu: aynı istek, Savings üzerinden",
+      "diagramMeter": "Sağlayıcınızın kullanım sayacı ikisini de ölçer"
     },
     "verify": {
       "metaTitle": "Doğrula · BiVelio Savings Layer",
@@ -428,7 +432,15 @@
         "factCoverage": "Kapsam",
         "factCoverageValue": "uygun isteklerinizin {coverage} kadarı",
         "methodLink": "Yöntemi gör"
-      }
+      },
+      "terms": {
+        "sample": "Karşılaştırılabilir çiftler: aynı istek katmanla ve katmansız, ikisi de sağlayıcınız tarafından ölçülür.",
+        "interval": "Gerçek tasarrufun bu güven düzeyinde içinde kaldığı aralık. Öne çıkan rakam bu aralığın alt ucudur.",
+        "coverage": "Uygun isteklerinizin, çifti olan gruplarda yer alan kısmı. Geri kalanı rakama girmez."
+      },
+      "weightsTitle": "Her grubun ağırlığı",
+      "weightsTotal": "dönemdeki uygun istekler",
+      "weightsNote": "Her grup, öne çıkan rakamda sahip olduğu çift sayısı kadar değil, uygun istekleriniz içindeki payı kadar ağırlık taşır. Çifti olmayan grup dışarıda kalır."
     },
     "install": {
       "metaTitle": "Kur · BiVelio Savings Layer",
@@ -568,7 +580,13 @@
       "colQa": "qa",
       "benchOnly": "test düzeneği sıkıştırıcısı, npm'de yok",
       "caption": "Sentetik test dizisi: A katmansız, B katmanlı. Oklu her başlık tabloyu sıralar.",
-      "sortBy": "{col} sütununa göre sırala"
+      "sortBy": "{col} sütununa göre sırala",
+      "title": "Senaryo senaryo",
+      "help": "“{col}” ne demek",
+      "termTokens": "Sağlayıcının bildirdiği kullanıma göre, istek başına ortalama giriş ve çıkış token'ları.",
+      "termCost": "Bu koldaki tek bir isteğin ortalama maliyeti. Çubuk A ve B için aynı ölçeği kullanır.",
+      "termSavings": "Bir eksi B'nin maliyetinin A'nın maliyetine bölümü. Negatifse katman daha pahalıya gelmiştir.",
+      "termQa": "Kontrol edilenler içinde kalite denetimini geçen yanıtlar."
     },
     "projectorVerifier": {
       "projectorTitle": "Fatura tahmincisi",
@@ -594,7 +612,9 @@
       "onlyChatBody": "ChatGPT gerçekten kapalı: sabit ücret, kesilecek token faturası veya limiti yok. Ama Claude kullanıyorsan sana zaten tasarruf ettiriyoruz: savings-mode skill'i (ücretsiz, ana sayfada) abonelik limitlerini esnetir. API anahtarıyla uygulama geliştiriyorsan, BV-SALA gerçek harcamayı orada ölçer ve azaltır.",
       "onlyChatCta": "Uygulama mı geliştiriyorsun? Kuruluma git",
       "notInvoice": "Tahmin, fatura değil",
-      "notInvoiceBody": "Soldaki varsayımlardan gelir, trafiğinizden değil. Gerçekte ne kadar tasarruf ettiğiniz Genel bakış bölümünde ölçülür."
+      "notInvoiceBody": "Soldaki varsayımlardan gelir, trafiğinizden değil. Gerçekte ne kadar tasarruf ettiğiniz Genel bakış bölümünde ölçülür.",
+      "barBaseline": "Optimizasyonsuz",
+      "barOptimized": "Sizin varsayımlarınızla"
     },
     "copyButton": {
       "copied": "Kopyalandı",
@@ -810,7 +830,10 @@
       "footnoteMain": "Dört defter, <b>asla toplanmaz</b> — her biri ayrı ayrı ölçülen bir kaldıraçtır, dolayısıyla bir dolar iki kez sayılamaz.",
       "reconciledNote": "Mutabakat kalıntısı ≈ 0 bunu kanıtlar.",
       "residualNote": "kalıntı {residual} — hesaplamayı kontrol edin.",
-      "footnoteReference": "Bunlar <b>referans kaldıraçlarıdır</b>: canlı hattınız farklı dört tanesini ölçer — provider-cached, output-restriction'ın yerini alır — dolayısıyla birini asla diğerine eşlemeyiz."
+      "footnoteReference": "Bunlar <b>referans kaldıraçlarıdır</b>: canlı hattınız farklı dört tanesini ölçer — provider-cached, output-restriction'ın yerini alır — dolayısıyla birini asla diğerine eşlemeyiz.",
+      "scenarios": "Bu defterin senaryoları",
+      "termFloor": "Güven aralığının alt sınırı: bu güven düzeyinde defterin tasarrufu en az bu kadardır.",
+      "termDelta": "Bu defterin senaryolarında A ile B arasındaki maliyet farkı."
     },
     "integrityQualityChips": {
       "qualityGate": "Kalite kapısı <b>{rate}</b> geçildi",
@@ -821,7 +844,8 @@
       "cacheBreakEven": "Önbellek başabaş <b>K={k}</b>",
       "provenAt95": "%95'te kanıtlandı",
       "unprovenMock": "kanıtlanmadı (sahte)",
-      "regressedVoids": "Kötüleşen bir yanıt, tasarrufunu geçersiz kılar"
+      "regressedVoids": "Kötüleşen bir yanıt, tasarrufunu geçersiz kılar",
+      "title": "Bu çalıştırmanın denetimleri"
     },
     "netSavingsCIBand": {
       "caption": "net tasarruf, <b>%95 GA alt sınırı</b>. Nokta tahmini {point}, üst {upper} — biz tabanı öne çıkarırız{mockNote}.",
@@ -1989,7 +2013,11 @@
       "classReplay": "Kısmen yeniden oluşturulmuş bir temel çizgiyle karşı olgusal yeniden oynatma. Canlı bir A/B, faturalanmış tasarruf ya da fatura mutabakatı değildir.",
       "compatible": "Uyumlu olmak ölçülmüş olmak demek değildir: bir model burada yalnızca yayımlanmış bir çalıştırması varsa sayılır; ölçülemeyenler nedeniyle birlikte belirtilir.",
       "paper": "Araştırma makalesi (PDF)",
-      "repo": "Açık depo"
+      "repo": "Açık depo",
+      "diagramRequest": "Aynı istek",
+      "diagramA": "A kolu: katman olmadan, doğrudan sağlayıcıya",
+      "diagramB": "B kolu: varsayılan yapılandırmasıyla katman üzerinden",
+      "diagramMeter": "Sağlayıcının kullanım sayacı iki kolu da ölçer"
     },
     "index": {
       "method": "Yöntem",
@@ -2032,7 +2060,15 @@
       "hint": "A referanstır; B katmandan geçer.",
       "sample": "Örneklem",
       "method": "Metodolojiyi gör",
-      "note": "Yalnızca ölçülmüş bir çalıştırması olan modeller görünür."
+      "note": "Yalnızca ölçülmüş bir çalıştırması olan modeller görünür.",
+      "forestTitle": "Modele göre ölçülen tasarruf, aralığıyla birlikte",
+      "forestHint": "Nokta tahmindir; çubuk güven aralığı; çizgi sıfırdır. Hepsi aynı ölçekte."
+    },
+    "terms": {
+      "interval": "Tahmin ve köşeli parantez içinde güven aralığı. Aralık sıfırı kesiyorsa sonuç sıfırdan ayırt edilemez.",
+      "sample": "Kol başına istek sayısı ve bunların kaçının benzersiz soru olduğu; geri kalanı birebir tekrarlar ve yeniden ifadelerdir.",
+      "accuracy": "Yanıtı yayımlanmış sorularda, A kolunda ve B kolunda doğru yanıtlar.",
+      "run": "B kolunda çalışan paket sürümü ve çalıştırmanın günü."
     }
   },
   "howItWorks": {

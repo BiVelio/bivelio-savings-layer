@@ -30,6 +30,9 @@ export function filasAB(banco: Banco, t: Traductor, locale: string): FilaAB[] {
       veredicto: veredicto(r.ahorro),
       muestra: t("savings.nCell", { n: f.ent(r.n), unicos: r.unicos !== undefined ? f.ent(r.unicos) : "—" }),
       ahorro: f.iv(r.ahorro),
+      intervalo: { inf: r.ahorro.inf, punto: r.ahorro.punto, sup: r.ahorro.sup },
+      punto: f.pct(r.ahorro.punto),
+      rango: `[${f.pct(r.ahorro.inf)} – ${f.pct(r.ahorro.sup)}]`,
       exactitud:
         r.exactitudA && r.exactitudB
           ? `${f.pct(r.exactitudA.aciertos / r.exactitudA.n)} → ${f.pct(r.exactitudB.aciertos / r.exactitudB.n)}`
