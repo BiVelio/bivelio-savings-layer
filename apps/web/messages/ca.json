@@ -1017,7 +1017,7 @@
       "regimenLegadoBody": "El teu contracte conserva la modalitat amb comissió sobre l'estalvi mesurat, tancada a noves altes. El seu càlcul és a l'històric de sota; la quota per seient és un càrrec a part.",
       "regimenNingunoBody": "Aquesta pàgina no pot confirmar la modalitat amb què se't factura. El que se't cobra és el que consta a les teves factures. Si tens dubtes, escriu-nos a support@bivelio.com.",
       "regimenMedirTitulo": "Measure: estalvi estimat, mai facturat",
-      "regimenMedirBody": "La teva organització fa servir la llicència gratuïta Measure. La capa funciona en mode ombra: l'estalvi que mostra aquest tauler és una estimació del que hauria estalviat. Mai no es factura i mai no forma part de cap comissió.",
+      "regimenMedirBody": "La teva organització fa servir la llicència gratuïta Measure. L'ús registrat amb Measure funciona en mode ombra: el seu estalvi és una estimació del que hauria estalviat, mai no es factura i mai no forma part de cap comissió.",
       "regimenIndeterminadoTitulo": "No podem mostrar aquí la modalitat del teu contracte",
       "regimenIndeterminadoBody": "Aquesta pàgina no ha pogut determinar quina modalitat s'aplica a la teva subscripció. El que se't cobra és el que consta a les teves factures i al portal de facturació.",
       "irACuenta": "Veure pla i facturació",

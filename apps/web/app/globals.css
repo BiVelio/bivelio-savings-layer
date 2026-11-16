@@ -4467,7 +4467,8 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .ext-contrato-txt { flex: 1 1 320px; min-width: 0; }
 .card .ext-contrato-t { margin: 0 0 4px; font-family: var(--sans); font-size: 16px; font-weight: 600; letter-spacing: -.012em; line-height: 1.35; color: var(--ink); }
 .card.ext-contrato p { font-size: 14px; line-height: 1.55; max-width: 68ch; text-wrap: pretty; }
-.ext-contrato[data-regimen="indeterminado"] { background: var(--surface-3); box-shadow: none; }
+.ext-contrato[data-regimen="indeterminado"],
+.ext-contrato[data-regimen="ninguno"] { background: var(--surface-3); box-shadow: none; }
 .ext-contrato-acc { display: flex; flex-wrap: wrap; gap: 8px; }
 .ext-sim { padding: 20px 22px; }
 .ext-sim .kpi { box-shadow: none; }

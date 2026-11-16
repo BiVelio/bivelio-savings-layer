@@ -1017,7 +1017,7 @@
       "regimenLegadoBody": "Il tuo contratto mantiene la formula con commissione sul risparmio misurato, chiusa ai nuovi clienti. Il calcolo è nello storico qui sotto; il canone per postazione è un addebito a parte.",
       "regimenNingunoBody": "Questa pagina non può confermare la formula con cui ti viene fatturato il servizio. Ciò che ti viene addebitato è quanto risulta dalle tue fatture. In caso di dubbi, scrivi a support@bivelio.com.",
       "regimenMedirTitulo": "Measure: risparmio stimato, mai fatturato",
-      "regimenMedirBody": "La tua organizzazione usa la licenza gratuita Measure. Il livello funziona in modalità ombra: il risparmio mostrato in questa dashboard è una stima di quanto avrebbe risparmiato. Non viene mai fatturato e non rientra mai in alcuna commissione.",
+      "regimenMedirBody": "La tua organizzazione usa la licenza gratuita Measure. L'uso registrato con Measure funziona in modalità ombra: il suo risparmio è una stima di quanto avrebbe risparmiato, non viene mai fatturato e non rientra mai in alcuna commissione.",
       "regimenIndeterminadoTitulo": "Non possiamo mostrare qui la formula del tuo contratto",
       "regimenIndeterminadoBody": "Questa pagina non è riuscita a determinare quale formula si applica al tuo abbonamento. Ciò che ti viene addebitato è quanto risulta dalle tue fatture e dal portale di fatturazione.",
       "irACuenta": "Vedi piano e fatturazione",

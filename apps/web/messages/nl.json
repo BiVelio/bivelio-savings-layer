@@ -1017,7 +1017,7 @@
       "regimenLegadoBody": "Je contract behoudt het model met commissie op gemeten besparing, dat gesloten is voor nieuwe klanten. De berekening staat in de historie hieronder; de vergoeding per seat is een aparte post.",
       "regimenNingunoBody": "Deze pagina kan je factureringsmodel niet bevestigen. Wat je betaalt, is wat op je facturen staat. Mail bij twijfel naar support@bivelio.com.",
       "regimenMedirTitulo": "Measure: geschatte besparing, nooit gefactureerd",
-      "regimenMedirBody": "Je organisatie gebruikt de gratis Measure-licentie. De laag draait in schaduwmodus: de besparing die dit dashboard toont, is een schatting van wat ze bespaard zou hebben. Die wordt nooit gefactureerd en maakt nooit deel uit van een commissie.",
+      "regimenMedirBody": "Je organisatie gebruikt de gratis Measure-licentie. Gebruik dat onder Measure wordt vastgelegd, draait in schaduwmodus: de besparing ervan is een schatting van wat er bespaard zou zijn, wordt nooit gefactureerd en maakt nooit deel uit van een commissie.",
       "regimenIndeterminadoTitulo": "We kunnen het model van je contract hier niet tonen",
       "regimenIndeterminadoBody": "Deze pagina kon niet vaststellen welk model voor je abonnement geldt. Wat je betaalt, is wat op je facturen en in het factureringsportaal staat.",
       "irACuenta": "Abonnement en facturering bekijken",

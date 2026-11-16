@@ -5,8 +5,9 @@ import { EmptyState, EvidenceBadge, Notice, Recibo } from "@/app/components/ui";
 import { Link } from "@/i18n/navigation";
 import type { Extracto } from "@/lib/billing/extracto";
 
-/** Cómo se factura HOY la organización, según lo que la página ya consulta. */
 /**
+ * Cómo se factura HOY la organización, según lo que la página ya consulta.
+ *
  * `medir`: la organización solo tiene la licencia gratuita Measure — modo
  * sombra, ahorro ESTIMADO que nunca se factura ni entra en comisión alguna
  * (LICENSE-CLOUD §1). `ninguno`: sin plan vivo y sin Measure; la página no
