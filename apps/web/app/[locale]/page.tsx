@@ -1,4 +1,5 @@
 import { Fragment } from "react";
+import { preload } from "react-dom";
 
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
@@ -124,6 +125,14 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 export default async function LandingPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  // EL PAISAJE DEL HÉROE ES EL LCP, y como fondo CSS el navegador no lo pide
+  // hasta tener la hoja entera parseada: con la red de un móvil salía a los
+  // 2,3 s y el LCP a los 4,2 s (main: 1,7 s). Se anuncia desde el HTML con los
+  // mismos cortes que .hero-paisaje en globals.css (≤ 640 px, la de 900; por
+  // encima, la de 1600), solo AVIF —el navegador sin AVIF ignora el aviso por
+  // `type` y sigue con el WebP del image-set— y con prioridad alta.
+  preload("/brand/paisaje/dia-900.avif", { as: "image", type: "image/avif", media: "(max-width: 640px)", fetchPriority: "high" });
+  preload("/brand/paisaje/dia-1600.avif", { as: "image", type: "image/avif", media: "(min-width: 641px)", fetchPriority: "high" });
   const t = await getTranslations("landing");
   const th = await getTranslations("howItWorks");
   // Etiquetas compartidas de la fundación (copiar, clases de evidencia, recibo)

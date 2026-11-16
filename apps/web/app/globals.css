@@ -1450,7 +1450,9 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 @keyframes lp-fade     { from { opacity: 0; } to { opacity: 1; } }
 .lp .hero .eyebrow { animation: lp-rise .5s ease-out both; }
 .lp .hero h1       { animation: lp-rise-lcp .6s ease-out .05s both; }
-.lp .lede          { animation: lp-rise .6s ease-out .12s both; }
+/* La entradilla es el LCP en móvil de precios y del banco: sube sin fundido,
+   como el h1 (con lp-rise nacía a opacidad 0 y el LCP esperaba +1,1 s). */
+.lp .lede          { animation: lp-rise-lcp .6s ease-out .12s both; }
 .lp .hero-cta      { animation: lp-rise .6s ease-out .2s both; }
 .lp .cascade       { animation: lp-fade .6s ease-out .34s both; }
 
@@ -3188,7 +3190,10 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .lp .hero-panel .hero-apoyo .btn.ghost:hover { background: transparent; color: var(--ink); text-decoration-color: currentColor; }
 .lp .hero-panel .hero-apoyo .btn.ghost::after { display: none; }
 
-.lp .hpanel-shot { max-width: 1160px; margin-top: clamp(36px, 4vw, 56px); }
+/* La escena del héroe lleva el paisaje, que es el LCP: sube sin fundido, como
+   el h1 (lp-rise-lcp). Con lp-rise nacía a opacidad 0 y Chrome no contaba el
+   LCP hasta verla: +0,8 s en un móvil con la red y la CPU de Lighthouse. */
+.lp .hpanel-shot { max-width: 1160px; margin-top: clamp(36px, 4vw, 56px); animation-name: lp-rise-lcp; }
 .lp .hpanel-shot::before { display: none; }
 /* La escena: el paisaje de la marca madre, y delante la tarjeta blanca de
    producto. El paisaje nunca queda detrás de una tabla suelta: la captura va
@@ -3535,8 +3540,11 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
    arriba: el texto queda siempre sobre color liso. Quieto, sin animación. */
 .acc-aside::before {
   content: ""; position: absolute; z-index: -1; inset: auto 0 0 0; height: 52%;
-  background-image: url("/brand/paisaje/dia.webp");
-  background-image: image-set(url("/brand/paisaje/dia.avif") type("image/avif"), url("/brand/paisaje/dia.webp") type("image/webp"));
+  /* La de 1600: el panel mide como mucho 840 px (la mitad de 1680), así que
+     cubre el doble de densidad; la de tamaño completo pesaba 235 KB y era el
+     LCP del acceso en escritorio. AccesoShell la anuncia desde el HTML. */
+  background-image: url("/brand/paisaje/dia-1600.webp");
+  background-image: image-set(url("/brand/paisaje/dia-1600.avif") type("image/avif"), url("/brand/paisaje/dia-1600.webp") type("image/webp"));
   background-size: cover; background-position: 50% 78%;
   -webkit-mask-image: linear-gradient(to bottom, transparent, rgba(0, 0, 0, .5) 38%, #000 78%);
   mask-image: linear-gradient(to bottom, transparent, rgba(0, 0, 0, .5) 38%, #000 78%);

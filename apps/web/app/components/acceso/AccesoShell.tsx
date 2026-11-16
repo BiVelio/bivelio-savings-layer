@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { preload } from "react-dom";
 
 import { SavingsLogo } from "@/app/components/SavingsLogo";
 
@@ -25,6 +26,12 @@ export function AccesoShell({
   pie?: ReactNode;
   etiquetaLateral?: string;
 }) {
+  // El paisaje del panel lateral es el LCP del acceso en escritorio y, como
+  // fondo CSS, se pedía tarde: se anuncia con el mismo corte que .acc-aside
+  // (desde 1024 px; por debajo el panel no se pinta y no se descarga nada).
+  if (lateral) {
+    preload("/brand/paisaje/dia-1600.avif", { as: "image", type: "image/avif", media: "(min-width: 1024px)", fetchPriority: "high" });
+  }
   return (
     <main className={lateral ? "auth-wrap acc acc--split" : "auth-wrap acc"}>
       <div className="acc-main">
