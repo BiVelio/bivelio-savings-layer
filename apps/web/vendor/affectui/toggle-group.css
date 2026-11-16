@@ -1,0 +1,139 @@
+/* Derived from affectUI Pro 'toggle-group' (https://www.affectui.com). Used under the affectUI Pro license held by BiVelio. NOT covered by this repository's Apache-2.0 licence; do not redistribute as a component kit. */
+
+/* Colors as variables – override them on .ui-tglc (see Theming in the docs) */
+.ui-tglc {
+  --ui-tglc-ink: var(--aui-ink, rgba(0, 0, 0, 0.88));
+  --ui-tglc-text: var(--aui-muted, rgba(0, 0, 0, 0.61));
+  --ui-tglc-icon: var(--aui-muted, rgba(0, 0, 0, 0.447));
+  --ui-tglc-line: var(--btn-ghost-line, var(--aui-border, rgba(0, 0, 0, 0.06)));
+  --ui-tglc-wash: var(--aui-subtle, rgba(0, 0, 0, 0.03));
+  --ui-tglc-fill: var(--aui-primary, rgba(0, 0, 0, 0.88));
+  --ui-tglc-on: var(--aui-on-primary, #ffffff);
+  --ui-tglc-track: var(--aui-subtle, rgba(0, 0, 0, 0.04));
+  --ui-tglc-card: var(--aui-surface, #ffffff);
+  --ui-tglc-card-shadow: 0 0 0 1px var(--aui-border, rgba(0, 0, 0, 0.06)), 0 1px 2px 0 rgba(15, 18, 24, 0.06);
+  --ui-tglc-focus: var(--aui-focus, rgba(0, 96, 226, 0.7));
+  --ui-tglc-ease: var(--aui-ease, cubic-bezier(0.25, 0.9, 0.3, 1));
+  /* Size: md – 28px chips, 4px 10px */
+  --ui-tglc-h: 28px;
+  --ui-tglc-px: 10px;
+  --ui-tglc-fs: 13px;
+  --ui-tglc-lh: 20px;
+  --ui-tglc-icon-size: 16px;
+  --ui-tglc-gap: 8px;
+  --ui-tglc-pad: 2px;
+  --ui-tglc-r: var(--aui-radius, 6px);
+
+  box-sizing: border-box;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ui-tglc-gap);
+  max-width: 100%;
+  min-width: 0;
+  vertical-align: middle;
+  font-family: var(--aui-font, var(--font-sans));
+  font-size: var(--ui-tglc-fs);
+  font-weight: 500;
+  line-height: var(--ui-tglc-lh);
+  color: var(--ui-tglc-text);
+  -webkit-font-smoothing: antialiased;
+}
+.ui-tglc[data-size="sm"] { --ui-tglc-h: 24px; --ui-tglc-px: 8px; --ui-tglc-fs: 12px; --ui-tglc-lh: 16px; --ui-tglc-icon-size: 14px; --ui-tglc-gap: 6px; }
+.ui-tglc[data-size="lg"] { --ui-tglc-h: 32px; --ui-tglc-px: 12px; }
+.ui-tglc[data-disabled] { opacity: 0.5; }
+.ui-tglc *, .ui-tglc *::before, .ui-tglc *::after { box-sizing: border-box; }
+/* Nothing to show – no empty track */
+.ui-tglc:not(:has(> .ui-tglc__item)) { display: none; }
+
+/* An item: the fill is its own layer, so it can grow in from the middle */
+.ui-tglc__item {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  max-width: 100%;
+  min-width: var(--ui-tglc-h);
+  height: var(--ui-tglc-h);
+  margin: 0;
+  padding: 0 var(--ui-tglc-px);
+  border: 0;
+  border-radius: var(--ui-tglc-r);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  white-space: nowrap;
+  text-align: center;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 90ms ease, background-color 90ms ease, transform 160ms var(--ui-tglc-ease);
+}
+.ui-tglc__item::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--ui-tglc-fill);
+  opacity: 0;
+  transform: scale(0.88);
+  pointer-events: none;
+  transition: opacity 120ms ease, transform 200ms var(--ui-tglc-ease);
+}
+.ui-tglc__item[aria-pressed="true"] { color: var(--ui-tglc-on); }
+.ui-tglc[data-variant="tray"] .ui-tglc__item[aria-pressed="true"] { color: var(--ui-tglc-ink); }
+.ui-tglc__item[aria-pressed="true"]::before { opacity: 1; transform: none; }
+.ui-tglc__item[data-icon-only] { padding: 0; width: var(--ui-tglc-h); }
+.ui-tglc__item:active:not(:disabled) { transform: scale(0.96); }
+.ui-tglc__item:disabled { opacity: 0.4; cursor: not-allowed; }
+.ui-tglc[data-disabled] .ui-tglc__item:disabled { opacity: 1; }
+.ui-tglc__item:focus-visible { outline: 2px solid var(--ui-tglc-focus); outline-offset: 2px; }
+@media (hover: hover) {
+  .ui-tglc__item:not([aria-pressed="true"]):not(:disabled):hover { background-color: var(--ui-tglc-wash); color: var(--ui-tglc-ink); }
+}
+
+.ui-tglc__icon, .ui-tglc__label { position: relative; z-index: 1; }
+.ui-tglc__icon { display: grid; flex: none; place-items: center; width: var(--ui-tglc-icon-size); height: var(--ui-tglc-icon-size); overflow: hidden; color: var(--ui-tglc-icon); transition: color 90ms ease; }
+.ui-tglc__icon svg, .ui-tglc__icon img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.ui-tglc__item[aria-pressed="true"] .ui-tglc__icon { color: inherit; }
+@media (hover: hover) {
+  .ui-tglc__item:not(:disabled):hover .ui-tglc__icon { color: var(--ui-tglc-ink); }
+}
+/* Long labels end in … instead of pushing the row wider than its container */
+.ui-tglc__label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+/* Buttons (default): separate chips with a hairline; many of them wrap onto the next line */
+.ui-tglc[data-variant="buttons"] .ui-tglc__item { box-shadow: inset 0 0 0 1px var(--ui-tglc-line); background: var(--ui-tglc-card); }
+.ui-tglc[data-variant="buttons"] .ui-tglc__item[aria-pressed="true"] { box-shadow: none; }
+
+/* Tray: a compact light-gray track; pressed items are raised in white */
+.ui-tglc[data-variant="tray"] {
+  flex-wrap: nowrap;
+  gap: 0;
+  padding: var(--ui-tglc-pad);
+  overflow-x: auto;
+  border-radius: calc(var(--ui-tglc-r) + var(--ui-tglc-pad));
+  background: var(--ui-tglc-track);
+  scrollbar-width: none;
+}
+.ui-tglc[data-variant="tray"]::-webkit-scrollbar { display: none; }
+.ui-tglc[data-variant="tray"] .ui-tglc__item { --ui-tglc-h-in: calc(var(--ui-tglc-h) - var(--ui-tglc-pad) * 2); height: var(--ui-tglc-h-in); min-width: var(--ui-tglc-h-in); }
+.ui-tglc[data-variant="tray"] .ui-tglc__item[data-icon-only] { width: var(--ui-tglc-h-in); }
+.ui-tglc[data-variant="tray"] .ui-tglc__item::before { background: var(--ui-tglc-card); box-shadow: var(--ui-tglc-card-shadow); }
+.ui-tglc[data-variant="tray"] .ui-tglc__item:focus-visible { outline-offset: -2px; }
+@media (hover: hover) {
+  .ui-tglc[data-variant="tray"] .ui-tglc__item:not([aria-pressed="true"]):not(:disabled):hover { background-color: transparent; }
+}
+
+/* Touch screens: every item 44px tall (BiVelio; upstream 36–40) */
+@media (pointer: coarse) {
+  .ui-tglc[data-size] { --ui-tglc-h: 44px; --ui-tglc-px: 14px; }
+  .ui-tglc[data-variant="tray"][data-size] { --ui-tglc-h: 48px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-tglc__item, .ui-tglc__item::before, .ui-tglc__icon { transition: none; }
+  .ui-tglc__item:active:not(:disabled) { transform: none; }
+}

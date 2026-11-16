@@ -78,6 +78,17 @@ MIT, así que todas llevan la cabecera Pro, la más restrictiva de las dos.
 | Blur Crossfade | `blur-crossfade.tsx` + `.css` | **affectUI Pro** | registro Pro, `blur-crossfade` (descarga del 2026-11-16) | `2cff559cbf363731894c1a2f97d17c625772102db3f2b9b0776571ba26b58cf2` |
 | Team Invite | `team-invite.tsx` + `.css` | **affectUI Pro** | registro Pro, `team-invite` (descarga del 2026-11-16) | `975e8e7f198a43a310dbedf97d81244965232dcc68a0f53f5b90b0c7a5254906` |
 | Empty Calendar | `empty-calendar.tsx` + `.css` | **affectUI Pro** | registro Pro, `empty-calendar` (descarga del 2026-11-16) | `e3de6f44d69d5ad484fa588cf202f7ead07a5ba6c4b0b3100d33fdaaa7503ec3` |
+| Tooltip (Clean) | `tooltip.tsx` + `.css` | **affectUI Pro** | registro Pro, `tooltip-clean` (descarga del 2026-11-16) | `248d67efb0b588fb949990c6427fc9d7aea734056eadddca564a3da7269a44f1` |
+| Hover Card (Clean) | `hover-card.tsx` + `.css` | **affectUI Pro** | registro Pro, `hover-card-clean` (descarga del 2026-11-16) | `1bc3812c0a6efa497377d5f254c18b56658a0a44fc6e43c71653af132ca8c470` |
+| Toggle Group (Clean) | `toggle-group.tsx` + `.css` | **affectUI Pro** | registro Pro, `toggle-group-clean` (descarga del 2026-11-16) | `4a086d53e0ecf33966e84af16d1b1d2d8388f90a7f64c733132f3e026345a9ad` |
+| Badge (Clean) | `badge.tsx` + `.css` | **affectUI Pro** | registro Pro, `badge-clean` (descarga del 2026-11-16) | `d5e6309addea4d8a9d65e4c58abd1075ed85bef43f6e65812e55a9918d3b234f` |
+| Data Table (Clean) — **bifurcada a solo lectura** | `data-table-readonly.tsx` + `.css` | **affectUI Pro** | registro Pro, `data-table-clean` (descarga del 2026-11-16) | `7c52ae0dfe600becdd259343d25ce5acb72bb38b18a94ac75a6ec26582f3bd5e` |
+| Blur Crossfade | `blur-crossfade.tsx` + `.css` | **affectUI Pro** | registro Pro, `blur-crossfade` (descarga del 2026-11-16) | `2cff559cbf363731894c1a2f97d17c625772102db3f2b9b0776571ba26b58cf2` |
+| A/B Branches (**fork** de Outreach Branches) | `ab-branches.tsx` + `.css` | **affectUI Pro** | registro Pro, `outreach-branches` (descarga del 2026-11-16) | `26d6e022b36ba2495d49b90ecaeace2208e86d836d286fb3608496a52c5a2442` |
+
+Las siete piezas del frente de evidencia (2026-11-16) se bajaron del registro
+Pro; el catálogo descargado no distingue cuáles tienen además versión libre,
+así que TODAS llevan la cabecera Pro, que es la más restrictiva.
 
 ## Dónde se usa cada pieza
 
@@ -116,6 +127,14 @@ Auditoría del 2026-11-16: una pieza que nadie importa desde `app/` no se queda.
 | `badge` | `AccountPlanStrip.tsx`, `EquipoPanel.tsx`, `ExtractoVista.tsx`, `InstallLicensePanel.tsx`, `ServiceAccountKeySection.tsx` |
 | `empty-state`, `empty-calendar` | `ExtractoVista.tsx` (sin tráfico, sin extractos cerrados); `empty-state` también en `EquipoPanel.tsx` |
 | `spinner` | `BillingButtons.tsx`, `PortalButton.tsx`, `TrialKeyButton.tsx`, `MeasureClaimButton.tsx`, `ServiceAccountKeySection.tsx`, `EquipoPanel.tsx` |
+| `number-ticker` | `dashboard/components/VerdictHero.tsx` (la cifra del veredicto, al cambiar de rango) y `dashboard/components/ProjectorVerifier.tsx` (la estimación, al mover un supuesto) |
+| `tooltip`, `hover-card` | `app/components/evidencia/Termino.tsx` (`Termino`, `AyudaDeTermino`, `Detalle`), que usan `ReferenceLedgerCards`, `ScenarioTable`, `YourBenchHeadline` y `ComparacionAB` |
+| `toggle-group` | `app/components/evidencia/CentroDeEvidencia.tsx` (filtro de lectura de `/benchmarks`) y `dashboard/components/ProjectorVerifier.tsx` (perfil y nivel) |
+| `badge` | `dashboard/components/IntegrityQualityChips.tsx`, `ReferenceLedgerCards.tsx`, `ScenarioTable.tsx`, `YourBenchStrata.tsx` |
+| `data-table-readonly` | `dashboard/components/ScenarioTable.tsx` (`/dashboard/proof`) y `YourBenchStrata.tsx` (`/dashboard/your-bench`) |
+| `blur-crossfade` | `app/components/evidencia/ComparacionAB.tsx` (la lectura del modelo elegido) |
+| `ab-branches` | `app/components/evidencia/ParAB.tsx`, que pintan `/dashboard/proof`, `/dashboard/your-bench` (apagado y reuniendo) y «cómo leer» de `/benchmarks` |
+| `compact-breakdown` (ya vendorizada) | también `dashboard/components/YourBenchStrata.tsx` (el peso de cada grupo) |
 
 **Retiradas en esa auditoría** (solo las montaba el muestrario `/kit`): Empty
 State (Clean), Skeleton (Clean) y Segmented Control (Clean). Sus equivalentes
@@ -426,6 +445,56 @@ de demostración.
    conoce `app/globals.css`).
 5. `pnpm --dir apps/web run typecheck`, `pnpm exec vitest run apps/web` y el
    build.
+- **tooltip** (Pro; frente de evidencia) — nueva prop `toggleOnClick`: cuando el
+  disparador no hace otra cosa (un término con su definición), un clic o un
+  TOQUE abre y cierra la etiqueta, y pulsar fuera la cierra. Upstream nunca abre
+  al tocar y se cierra al hacer clic: correcto para un botón de barra, pero una
+  definición que solo existe con ratón no explica nada en un móvil. Fondo a
+  tinta de BiVelio, ancho máximo ajustable (`--ui-tipc-max`), y la etiqueta
+  anula mayúsculas e interletraje heredados (vive en el DOM junto a su
+  disparador, que puede ser una cabecera de tabla).
+- **hover-card** (Pro) — `toggleOnClick` (el disparador es un botón sin acción
+  propia: clic o toque abren, y lleva `aria-expanded`) y `label` (la tarjeta se
+  anuncia como grupo con nombre). Mismo arreglo de mayúsculas heredadas.
+- **toggle-group** (Pro) — `required` en `type="single"`: una opción queda
+  siempre encendida (un filtro de lectura) y pulsar la encendida no hace nada.
+  La variante «buttons» pinta la opción encendida en tinta con texto blanco
+  (como el resto de chips de BiVelio; upstream usa un velo gris), filete de 1px
+  y 44px de alto en pantallas táctiles (upstream 36–40).
+- **badge** (Pro) — componente de SERVIDOR (sin `"use client"`). Fuera el
+  dibujo de iconos Hugeicons, el contador redondo (`count`, que formateaba con
+  el idioma del navegador) y el punto que late (`live`: aquí nada está «en
+  curso»). Tonos a tokens de BiVelio; las etiquetas largas PARTEN línea en vez
+  de acabar en «…».
+- **data-table-readonly** (Pro) — **BIFURCADA A SOLO LECTURA.** Upstream es una
+  hoja de cálculo pequeña: selección de celdas y rangos, edición en sitio,
+  copiar y pegar, deshacer, casillas por fila, selector de etiquetas y «añadir
+  fila». La evidencia no se edita, y una tabla que PARECE editable diría lo
+  contrario, así que nada de eso queda. Queda la tarjeta limpia (título, filas
+  con filete, cabeceras de 12px) y la cabecera ordenable con su flecha. Nuevo:
+  `<table>` de verdad con `aria-sort` y un `<button>` por cabecera ordenable;
+  las celdas son nodos ya formateados por quien llama y el orden usa un valor
+  aparte (`sort`), donde `null` = sin dato y va SIEMPRE al final (nunca cuenta
+  como cero); cabecera fija con `maxHeight`, primera columna fija, borde suave
+  en el lado por el que aún se puede desplazar (la idea del Scroll Area de
+  affectUI, con la barra del navegador) y contenedor enfocable para
+  desplazarlo con teclado. Huecos `aside`, `help` por columna (un término con
+  su definición) y `footer`. Sin inglés: también el título del botón de ordenar
+  llega por props.
+- **blur-crossfade** (Pro) — duración 240 ms (antes 420) y desenfoque 6px
+  (antes 10), curva `--aui-ease`. Con `prefers-reduced-motion` cambia sin
+  fundido, como upstream.
+- **ab-branches** (Pro) — **FORK** de la ilustración Outreach Branches. Mismo
+  lenguaje (conectores finos, baldosas blancas con sombra suave, pulso hecho de
+  trazos apilados) para explicar una sola cosa: un par A/B. Dos ramas en vez de
+  tres, que vuelven a unirse en una cuarta baldosa (el contador del proveedor);
+  fuera los logos de Gmail, Slack y Notion (las baldosas llevan las letras A y
+  B); pulsos en tinta (A) y azul de marca (B) en vez del degradado pastel; sin
+  filtros ni degradados SVG, así que no necesita ids ni `"use client"`. El
+  dibujo NO dice nada del resultado: los dos brazos miden lo mismo. Decorativo
+  salvo que se le pase `label`; la leyenda la escribe quien lo usa, en texto.
+- **experiment-readout** — `ReadoutFact.label` admite un nodo (un término con
+  su definición) y una `key` opcional.
 
 ## Cómo actualizar una pieza
 

@@ -1,0 +1,70 @@
+/* Derived from affectUI Pro 'outreach-branches' (https://www.affectui.com). Used under the affectUI Pro license held by BiVelio. NOT covered by this repository's Apache-2.0 licence; do not redistribute as a component kit. */
+
+.ui-abb {
+  --ui-abb-line: var(--aui-border, #E4E7EC);
+  --ui-abb-tile: var(--aui-surface, #ffffff);
+  --ui-abb-ink: var(--aui-ink, #171717);
+  --ui-abb-b: var(--aui-blue, #0066E6);
+  position: relative;
+  width: 100%;
+  aspect-ratio: 320 / 236;
+  overflow: hidden;
+}
+.ui-abb-art {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.ui-abb-lines { stroke: color-mix(in srgb, var(--ui-abb-ink) 16%, var(--ui-abb-line)); }
+/* White tiles with a hairline and a soft drop (upstream draws the drop with an SVG filter) */
+.ui-abb-tile {
+  fill: var(--ui-abb-tile);
+  stroke: color-mix(in srgb, var(--ui-abb-ink) 12%, var(--ui-abb-line));
+  stroke-width: 1;
+  filter: drop-shadow(0 3px 5px rgba(15, 18, 24, 0.07));
+}
+.ui-abb-tile--b { stroke: color-mix(in srgb, var(--ui-abb-b) 55%, var(--ui-abb-tile)); fill: color-mix(in srgb, var(--ui-abb-b) 5%, var(--ui-abb-tile)); }
+.ui-abb-ink { stroke: var(--ui-abb-ink); }
+.ui-abb-letter {
+  fill: var(--ui-abb-ink);
+  font-family: var(--aui-font, var(--font-sans));
+  font-size: 23px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.ui-abb-letter--b { fill: var(--ui-abb-b); }
+
+/* Each cycle: a pulse eases down its line (slow, fast, slow) and is gone; the second pair starts when the first lands */
+.ui-abb-flow {
+  fill: none;
+  stroke-linecap: round;
+  stroke-width: 1.4;
+  stroke-dashoffset: var(--from);
+  opacity: 0;
+  animation: ui-abb-flow 5.2s infinite both;
+}
+.ui-abb-flow--a { stroke: color-mix(in srgb, var(--ui-abb-ink) 62%, transparent); }
+.ui-abb-flow--b { stroke: var(--ui-abb-b); }
+@keyframes ui-abb-flow {
+  0% {
+    stroke-dashoffset: var(--from);
+    opacity: 0.85;
+    animation-timing-function: cubic-bezier(0.7, 0, 0.3, 1);
+  }
+  36% {
+    stroke-dashoffset: var(--to);
+    opacity: 0.85;
+  }
+  36.1%,
+  100% {
+    stroke-dashoffset: var(--to);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-abb-flow { animation: none; opacity: 0; }
+}

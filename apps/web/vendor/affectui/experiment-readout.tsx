@@ -35,7 +35,8 @@ export type ReadoutVariant = {
   control?: boolean;
 };
 
-export type ReadoutFact = { label: string; value: ReactNode };
+/** `label` may be a node (e.g. a term with its definition); `key` then names the row. */
+export type ReadoutFact = { key?: string; label: ReactNode; value: ReactNode };
 
 export type ExperimentReadoutProps = {
   title: string;
@@ -138,8 +139,8 @@ export function ExperimentReadout({
         <div className="ui-xr__tray">
           {facts.length > 0 ? (
             <dl className="ui-xr__facts">
-              {facts.map((f) => (
-                <div key={f.label} className="ui-xr__fact">
+              {facts.map((f, i) => (
+                <div key={f.key ?? (typeof f.label === "string" ? f.label : i)} className="ui-xr__fact">
                   <dt>{f.label}</dt>
                   <dd>{f.value}</dd>
                 </div>
