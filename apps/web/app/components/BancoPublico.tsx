@@ -1032,6 +1032,8 @@ export function BancoPublico({
   etiquetas,
   indice,
   comparacion,
+  explicacion,
+  compatibilidad,
 }: {
   banco: Banco;
   t: Traductor;
@@ -1048,6 +1050,17 @@ export function BancoPublico({
   indice?: ReactNode;
   /** Hueco al principio de #savings: la comparación A/B por modelo, que también pinta la página. */
   comparacion?: ReactNode;
+  /**
+   * Hueco tras #method: el experimento justo dicho en llano, con su vídeo
+   * (#explained). Venía de la portada y lo pinta la página, como el índice.
+   */
+  explicacion?: ReactNode;
+  /**
+   * Hueco tras #status: la nota «compatible no es medido» (#compat), que
+   * también venía de la portada. Sin enlaces: la lista blanca de este
+   * componente no cambia.
+   */
+  compatibilidad?: ReactNode;
 }) {
   const f = formatos(locale);
   const ricos: Record<string, Rico> = {
@@ -1069,12 +1082,14 @@ export function BancoPublico({
       </section>
       {indice}
       <Metodo banco={banco} t={t} f={f} ricos={ricos} />
+      {explicacion}
       {banco.semanales.length > 0 && <Semanal banco={banco} t={t} f={f} etiquetas={etiquetas} />}
       <Ahorro banco={banco} t={t} f={f} etiquetas={etiquetas} comparacion={comparacion} />
       {palancaTtl && <PalancaDeTtl p={palancaTtl} t={t} f={f} ricos={ricos} etiquetas={etiquetas} />}
       <Garantias banco={banco} t={t} f={f} etiquetas={etiquetas} />
       <NoAhorra banco={banco} t={t} f={f} ricos={ricos} etiquetas={etiquetas} />
       <EstadoPorModelo banco={banco} t={t} f={f} />
+      {compatibilidad}
       {banco.fallos.length > 0 && <Fallos banco={banco} t={t} f={f} />}
       <Reproducir banco={banco} t={t} ricos={ricos} />
       <section className="terms-sec banco-invita" aria-labelledby="invite-h" id="invite">

@@ -1470,7 +1470,8 @@
       "repeats": "Peticions repetides",
       "interval": "Interval del 95 %",
       "total": "Menys cost",
-      "source": "A/B en viu contra el proveïdor, a preus de llista versionats. No és una conciliació de factures."
+      "source": "A/B en viu contra el proveïdor, a preus de llista versionats. No és una conciliació de factures.",
+      "prefixCache": "D’això, contrast de preus de memòria cau (aprox.)"
     },
     "ways": {
       "eyebrow": "Motor obert, Cloud opcional",
@@ -1490,7 +1491,12 @@
         "account": "No cal. Sense registre, sense targeta i sense clau de BiVelio.",
         "telemetry": "Cap per defecte.",
         "manage": "En local: cada crida retorna el seu SavingsReport.",
-        "code": "Veure el codi"
+        "code": "Veure el codi",
+        "chips": [
+          "Sense compte ni targeta",
+          "Sense telemetria per defecte",
+          "SDK i gateway local"
+        ]
       },
       "cloud": {
         "name": "Savings Cloud",
@@ -1500,7 +1506,12 @@
         "account": "Un compte de Savings i una clau de servei.",
         "telemetry": "Recomptes i cost, segons el teu pla. Els teus prompts no passen pels servidors de BiVelio.",
         "manage": "Tauler d’equip, organització i llicències.",
-        "plans": "Veure plans"
+        "plans": "Veure plans",
+        "chips": [
+          "Comença gratis amb Measure",
+          "Tauler d’equip",
+          "Plans de quota fixa"
+        ]
       }
     },
     "evidence": {
@@ -1563,6 +1574,12 @@
       "titleAccent": "Decideix després.",
       "sub": "Measure és gratuït i no demana targeta: funciona en mode ombra i t’ensenya el que s’hauria estalviat amb el teu propi trànsit. El motor és open source i el seu codi és a la vista.",
       "repo": "Veure el repositori"
+    },
+    "layer": {
+      "eyebrow": "Savings Layer, en acció",
+      "title": "Una capa fina entre el teu codi i el teu proveïdor.",
+      "titleAccent": "Això és Savings Layer.",
+      "sub": "S’executa a la teva infraestructura, envia al proveïdor només el que cal pagar i et retorna un rebut amb cada resposta. Els teus prompts van directes al proveïdor que configuris; Savings Cloud és opcional i rep recomptes i cost, no el seu contingut."
     }
   },
   "invitacion": {
@@ -1905,6 +1922,7 @@
       "guarantees": "Garanties",
       "noSavings": "El que no estalvia",
       "status": "Estat per model",
+      "compat": "Compatibilitat",
       "bugs": "Errors trobats",
       "reproduce": "Reproduir",
       "invite": "Mesura'ns tu"

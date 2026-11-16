@@ -5,62 +5,36 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getImageProps } from "next/image";
 
 import { ReservarLlamada } from "./components/ReservarLlamada";
+import { CapaEnAccion } from "@/app/components/landing/CapaEnAccion";
 import { CierreMeasure } from "@/app/components/landing/CierreMeasure";
 import { DosManeras } from "@/app/components/landing/DosManeras";
+import { EnlacesAntiguos } from "@/app/components/landing/EnlacesAntiguos";
 import { PlanesCloud } from "@/app/components/landing/PlanesCloud";
 import { PreguntasDeCompra } from "@/app/components/landing/PreguntasDeCompra";
-import { TarjetaDeEvidencia } from "@/app/components/landing/TarjetaDeEvidencia";
-import { ViajeDeLosDatos } from "@/app/components/landing/ViajeDeLosDatos";
 import { URL_DEL_CODIGO } from "@/app/components/sitio";
-import { CodeFrame, EvidenceBadge, Recibo } from "@/app/components/ui";
+import { CodeFrame, Recibo } from "@/app/components/ui";
 import { CursorGrid } from "@/app/components/CursorGrid";
 import { RevealObserver } from "@/app/components/RevealObserver";
-import { SnippetPorSistema } from "@/app/components/SnippetPorSistema";
-import { SkillPorSuperficie } from "@/app/components/SkillPorSuperficie";
 import { LogoProveedor } from "@/app/components/LogoProveedor";
-import { FilasMedidas, filaDeLaPalancaTtl, filasDelBancoEnVivo, type FilaMedida } from "@/app/components/MedidoEnVivo";
+import { filaDeLaPalancaTtl, filasDelBancoEnVivo, type FilaMedida } from "@/app/components/MedidoEnVivo";
 import { NvidiaEcosystemBand } from "@/app/components/NvidiaInception";
-import { VideoExplicativo } from "@/app/components/VideoExplicativo";
 import { DIAS_ACTIVOS_PARA_CONTAR_ASIENTO } from "@/lib/billing/asientos";
-import { FormatVerifier } from "@/app/components/FormatVerifier";
 import Footer from "@/app/components/Footer";
 import { Link } from "@/i18n/navigation";
 import { absolute, languageAlternates } from "@/i18n/site";
 import { tarifasDeLosPlanes } from "@/lib/stripe/pricing";
 import { terminosDeLosPlanes } from "@/lib/legal/precios-publicados";
 import { LIMITES_MEDIR, VERSION_MINIMA_MEDIR } from "@/lib/license/medir-publico";
-import { BANCO_EN_VIVO, GEMINI_EN_EL_SEMANAL, VERSION_GEMINI_NATIVO } from "@/lib/portada/banco-en-vivo";
+import { BANCO_EN_VIVO } from "@/lib/portada/banco-en-vivo";
 import { PALANCA_TTL } from "@/lib/portada/palanca-ttl";
 import { GradientText } from "@/vendor/affectui/gradient-text";
 import panelDelBanco from "@/assets/portada/panel-del-banco.png";
 import panelDelBancoMovil from "@/assets/portada/panel-del-banco-movil.png";
 
-// Proveedores que exponen un endpoint OpenAI-compatible (o, en el caso de
-// Anthropic y de Gemini desde la 0.4.33, tienen adaptador nativo). Es una lista
-// de COMPATIBILIDAD, no de mediciones: compatible ≠ medido, y la nota de debajo
-// (`hero.compatibleNota`) lo dice. Lo medido es solo lo que tiene cifra en
-// /benchmarks (o, para Gemini, lo que midió el banco semanal en vivo, sin
-// cifra de ahorro), y la portada lo lee de lib/portada/banco-en-vivo.ts.
-const LLMS = [
-  { marca: "openai", label: "OpenAI" },
-  { marca: "anthropic", label: "Anthropic" },
-  { marca: "gemini", label: "Gemini" },
-  { marca: "mistral", label: "Mistral" },
-  { marca: "meta", label: "Llama" },
-  { marca: "deepseek", label: "DeepSeek" },
-  { marca: "perplexity", label: "Perplexity" },
-  { marca: "huggingface", label: "Hugging Face" },
-  { marca: "nvidia", label: "NVIDIA NIM" },
-  { marca: "azure", label: "Azure OpenAI" },
-  { marca: "aws", label: "Bedrock" },
-  { marca: "ollama", label: "Ollama" },
-  { marca: "vllm", label: "vLLM" },
-] as const;
-
 // La franja bajo la captura del héroe: los proveedores con los que el banco
 // mide EN VIVO, con el contador de cada uno (OpenAI y Anthropic con cifra de
 // ahorro en /benchmarks; Gemini en el banco semanal, sin cifra de ahorro —
-// lo dice la nota de #measured).
+// lo dice la nota de compatibilidad, que vive en /benchmarks#compat).
 const MEDIDO_EN_VIVO = [
   { marca: "openai", label: "OpenAI" },
   { marca: "anthropic", label: "Anthropic" },
@@ -110,6 +84,9 @@ function lineasDelSnippet(th: (k: string) => string): { cls?: TokenCls; v: strin
  */
 export const revalidate = 3600;
 
+/** Índice (en `landing.faq.items`) de la pregunta que la portada corta no repite. */
+const PREGUNTA_SOLO_EN_COMO_FUNCIONA = 3;
+
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "landing" });
@@ -153,10 +130,13 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
   // y el «se abre en una pestaña nueva» del chrome.
   const tu = await getTranslations("ui");
   const tn = await getTranslations("nav");
+  // Las etiquetas del replay del gateway son las de su sección del banco público.
+  const tb = await getTranslations("benchmarksPage");
   const CODE = lineasDelSnippet(th);
 
-  const ledgers = t.raw("ledgers") as { idx: string; name: string; desc: string }[];
-  const features = t.raw("pricing.features") as string[];
+  // Las preguntas de compra, cortas: la de las suscripciones de tarifa plana
+  // ya la responde /how-it-works («Tu caso, en 10 segundos»), con más sitio.
+  const preguntasDeCompra = (t.raw("faq.items") as { q: string; a: string }[]).filter((_, i) => i !== PREGUNTA_SOLO_EN_COMO_FUNCIONA);
 
   // El precio sale del Price de Stripe, que es lo que de verdad se cobra, y se
   // formatea AQUÍ (servidor) para el idioma de la página. Antes estaba escrito a
@@ -194,18 +174,8 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
   // repeticiones ≈ 0» salió de la portada (dueño, 2026-10-02): sigue entera en
   // /benchmarks, y la frase de «depende de cuánto repita tu tráfico» se queda.
   const filasMedidas: FilaMedida[] = filasDelBancoEnVivo(t, locale);
-  // Lo medido de Gemini (banco semanal en vivo): qué modelo y qué día, nunca
-  // una cifra de ahorro. Nombres y fecha llegan por parámetro.
-  const G = GEMINI_EN_EL_SEMANAL;
-  const diaLargo = new Intl.DateTimeFormat(locale, { dateStyle: "long", timeZone: "UTC" });
+  const [filaOpenAi, filaClaude] = filasMedidas as [FilaMedida, FilaMedida];
   const dia = (d: string) => new Date(`${d}T00:00:00Z`);
-  const notaCompatible = {
-    gemini: VERSION_GEMINI_NATIVO,
-    flash: G.medido.nombre,
-    pro: G.pro.nombre,
-    fecha: diaLargo.format(dia(G.fecha)),
-    fechaPro: diaLargo.formatRange(dia(G.pro.desde), dia(G.pro.hasta)),
-  };
 
   // Los límites de Medir salen de la constante que aplica la ingesta.
   const medir = {
@@ -214,16 +184,22 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
     version: VERSION_MINIMA_MEDIR,
   };
 
-  // La fila del gateway (banco de TTL) para su tarjeta de evidencia, y la línea
-  // de contexto del recibo del héroe: batería, fecha y versión del SDK medido.
+  // La fila del gateway (banco de TTL) para su recibo de #measured, con su
+  // muestra y su intervalo (lib/portada/palanca-ttl.ts, con verja contra el
+  // informe), y la línea de contexto de los recibos del SDK: batería, fecha y
+  // versión medida.
   const filaTtl = filaDeLaPalancaTtl(t, locale);
+  const P = PALANCA_TTL;
+  const pct2 = new Intl.NumberFormat(locale, { style: "percent", minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const ent = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 });
   const diaCorto = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "UTC" });
   const reciboMeta = `${V.bateria} · ${diaCorto.format(dia(V.fecha))} · SDK ${V.versionSdk}`;
 
   return (
-    <div className="lp">
+    <div className="lp lp2">
       <CursorGrid />
       <RevealObserver />
+      <EnlacesAntiguos />
       <main className="wrap">
         {/* 2 · HÉROE (rediseño 2026-11, guía §2.3 y §6). El mensaje: optimiza
             tus llamadas, comprueba cada ahorro. Tres salidas, por este orden:
@@ -334,12 +310,46 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
           </div>
         </section>
 
+        {/* 2 · SAVINGS LAYER, EN ACCIÓN (#data). Lo primero bajo el héroe: qué
+            es la capa y por dónde viaja cada cosa. SDK o gateway local → el
+            proveedor que configures; la conexión a Cloud es opcional y lleva
+            telemetría (recuentos y coste), nunca el prompt. La ilustración
+            entra por `CapaEnAccion`: hoy pinta el diagrama estático y la
+            animada la sustituye cambiando una línea de ese fichero. */}
+        <section id="data" className="lp-band capa-sec">
+          <div className="sec-head sec-head--centro rv">
+            <span className="eyebrow">{t("layer.eyebrow")}</span>
+            <h2>
+              {t("layer.title")} <span className="serif-accent">{t("layer.titleAccent")}</span>
+            </h2>
+            <p>{t("layer.sub")}</p>
+          </div>
+          <CapaEnAccion
+            t={{
+              app: t("flow.app"),
+              local: t("flow.local"),
+              localSub: t("flow.localSub"),
+              proveedor: t("flow.provider"),
+              proveedorSub: t("flow.providerSub"),
+              cloud: t("flow.cloud"),
+              cloudSub: t("flow.cloudSub"),
+              prompts: t("flow.prompts"),
+              telemetria: t("flow.telemetry"),
+              pie: t("flow.caption"),
+            }}
+          />
+          <p className="viaje-enlaces capa-enlaces">
+            <Link href="/how-it-works">{t("gateway.cta")}</Link>
+            <Link href="/privacy">{t("flow.privacy")}</Link>
+          </p>
+        </section>
+
         {/* 3 · DOS MANERAS DE USAR SAVINGS (guía §2.1): Community —el motor
             open source en tu infraestructura, sin cuenta— frente a Savings
             Cloud, opcional. Es un eje distinto de «SDK o gateway» (eso va
             justo debajo). El camino local no termina en el alta: sus acciones
             son instalar y leer el código. */}
-        <section id="ways" className="lp-band">
+        <section id="ways">
           <div className="sec-head rv">
             <span className="eyebrow">{t("ways.eyebrow")}</span>
             <h2>{t("ways.title")}</h2>
@@ -349,13 +359,15 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             preguntas={[t("ways.q.runs"), t("ways.q.account"), t("ways.q.telemetry"), t("ways.q.manage")]}
             maneras={[
               {
+                variante: "community",
                 nombre: t("ways.community.name"),
                 etiqueta: t("ways.community.tag"),
                 resumen: t("ways.community.lede"),
+                pastillas: t.raw("ways.community.chips") as string[],
                 respuestas: [t("ways.community.runs"), t("ways.community.account"), t("ways.community.telemetry"), t("ways.community.manage")],
                 acciones: (
                   <>
-                    <a className="btn ghost" href="#sdk-install">
+                    <a className="btn" href="#sdk-install">
                       {t("hero.ctaOss")}
                     </a>
                     <a className="btn btn-quiet" href={URL_DEL_CODIGO} target="_blank" rel="noopener noreferrer">
@@ -366,11 +378,12 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
                 ),
               },
               {
+                variante: "cloud",
                 nombre: t("ways.cloud.name"),
                 etiqueta: t("ways.cloud.tag"),
                 resumen: t("ways.cloud.lede"),
+                pastillas: t.raw("ways.cloud.chips") as string[],
                 respuestas: [t("ways.cloud.runs"), t("ways.cloud.account"), t("ways.cloud.telemetry"), t("ways.cloud.manage")],
-                destacada: true,
                 acciones: (
                   <>
                     <Link className="btn" href="/signup">
@@ -386,99 +399,132 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
           />
         </section>
 
-        {/* 4 · DÓNDE LO CONECTAS: las dos formas de integrar el mismo motor.
-            El SDK envuelve la llamada dentro de una app JS/TS; el gateway
-            local se pone delante de un agente de código. Cada tarjeta trae su
-            primer comando, sus requisitos, el enlace a la instalación completa
-            y SU cifra con SU clase de evidencia (bitácora del 10-09 y dueño,
-            2026-10-03):
-            · la del SDK es la primera fila de lo medido —un A/B en vivo—, de
-              lib/portada/banco-en-vivo.ts, con su verja;
-            · la del gateway es el neto de la rebaja de caché de PRO que midió
-              el banco de TTL —una reproducción contrafactual sobre sesiones de
-              una sola organización, no una previsión— de
-              lib/portada/palanca-ttl.ts, con verja contra el informe. La rebaja
-              pasa a 5m las escrituras de caché SOLO en los turnos con buena
-              parte del prompt nueva (gateway/tarifa.ts, `decidirRebaja`). */}
+        {/* 4 · DÓNDE LO CONECTAS: una sola sección para lo que antes eran
+            cinco (#offers, #sdk-install, #devs, #gateway y #skill). Un
+            selector SDK · Gateway —dos radios y `:has()`, como el de los
+            planes: funciona sin script y con las flechas del teclado— y, en
+            cada panel, para quién es, su primer comando, sus requisitos y el
+            enlace a la instalación completa, que vive en /how-it-works.
+            Las anclas de siempre siguen aquí (bivelio.com enlaza
+            #sdk-install): la del contenedor y las de las dos etiquetas del
+            selector, siempre visibles; `EnlacesAntiguos` elige la pestaña.
+            Las CIFRAS no van en esta sección: cada una está en #measured, en
+            su recibo y con su clase de evidencia. */}
         <section id="offers">
           <div className="sec-head rv">
             <span className="eyebrow">{t("offers.eyebrow")}</span>
             <h2>{t("offers.title")}</h2>
-            <p>{t("offers.sub")}</p>
+            <p>{th("ways.lede")}</p>
           </div>
-          <div className="offers-grid">
-            <article className="offer-card rv" id="sdk">
-              <header className="offer-head">
-                <h3 className="offer-name">{t("offers.sdk.name")}</h3>
-                <p className="offer-who">{t("offers.sdk.who")}</p>
-              </header>
-              <p>{t("offers.sdk.what")}</p>
-              <div className="offer-fig">
-                <span className="offer-fig-top">
-                  <span className="offer-fig-t">{t("offers.sdk.figureLabel")}</span>
-                  <EvidenceBadge tipo="ab-sdk" label={tu("evidence.abSdk")} />
+          <div className="conecta rv" id="sdk-install">
+            <div className="conecta-selector" role="radiogroup" aria-label={t("offers.eyebrow")}>
+              <label className="conecta-opcion" id="sdk">
+                <input className="conecta-radio" type="radio" name="conecta" value="sdk" defaultChecked />
+                <span className="conecta-opcion-icono" aria-hidden>
+                  <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="m7 6.5-3.5 3.5L7 13.5M13 6.5l3.5 3.5-3.5 3.5M11.2 4.5 8.8 15.5" />
+                  </svg>
                 </span>
-                {/* La primera fila de lo medido (OpenAI), que ya dice su
-                    condición: un flujo donde parte de las peticiones se repite. */}
-                <FilasMedidas filas={filasMedidas.slice(0, 1)} />
-                <details className="offer-fig-details">
-                  <summary>{t("offers.figNoteToggle")}</summary>
-                  <p className="offer-fig-note">{t("offers.sdk.figureNote")}</p>
-                </details>
+                <span className="conecta-opcion-t">
+                  <b>{t("offers.sdk.name")}</b>
+                  <small>{th("pieces.sdk.hint")}</small>
+                </span>
+              </label>
+              <label className="conecta-opcion" id="gateway">
+                <input className="conecta-radio" type="radio" name="conecta" value="gateway" />
+                <span className="conecta-opcion-icono" aria-hidden>
+                  <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 5.5A1.5 1.5 0 0 1 4.5 4h11A1.5 1.5 0 0 1 17 5.5v9a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 3 14.5zM6.5 8.5 8.5 10.5 6.5 12.5M10.5 12.5h3" />
+                  </svg>
+                </span>
+                <span className="conecta-opcion-t">
+                  <b>{t("offers.gateway.name")}</b>
+                  <small>{th("pieces.gateway.hint")}</small>
+                </span>
+              </label>
+            </div>
+
+            <div className="conecta-panel" data-panel="sdk">
+              <div className="conecta-texto">
+                <p className="conecta-k">{th("ways.sdk.kicker")}</p>
+                <h3>{th("ways.sdk.title")}</h3>
+                <p className="conecta-quien">{t("offers.sdk.who")}</p>
+                <ul className="conecta-req">
+                  <li>
+                    <b>{t("offers.requires")}</b> {t("offers.sdk.requires")}
+                  </li>
+                  <li>{th("ways.sdk.p2")}</li>
+                  <li>{th("ways.sdk.p3")}</li>
+                </ul>
+                <div className="conecta-acciones">
+                  <Link className="btn ghost" href="/how-it-works#install-sdk">
+                    {t("offers.installMore")}
+                  </Link>
+                  <a className="btn btn-quiet" href="#measured">
+                    {t("offers.sdk.ctaMeasured")}
+                  </a>
+                </div>
+                <p className="conecta-mas">
+                  <Link href="/how-it-works#verify">{t("offers.sdk.ctaVerify")}</Link>
+                </p>
               </div>
-              <div className="offer-install">
-                <span className="offer-fig-t">{t("offers.install")}</span>
+              <div className="conecta-codigo">
                 <CodeFrame
-                  etiqueta="Terminal"
-                  copiar={{ texto: "pnpm add @bivelio/savings-layer", etiqueta: tu("copy"), etiquetaCopiado: tu("copied") }}
+                  etiqueta="app.ts"
+                  copiar={{ texto: CODE.map((l) => l.map((x) => x.v).join("")).join("\n"), etiqueta: tu("copy"), etiquetaCopiado: tu("copied") }}
                 >
                   <pre className="code">
-                    {"pnpm add "}
-                    <span className="s">@bivelio/savings-layer</span>
+                    {CODE.map((line, i) => (
+                      <Fragment key={i}>
+                        {line.map((tok, j) =>
+                          tok.cls ? (
+                            <span className={tok.cls} key={j}>
+                              {tok.v}
+                            </span>
+                          ) : (
+                            <Fragment key={j}>{tok.v}</Fragment>
+                          ),
+                        )}
+                        {i < CODE.length - 1 ? "\n" : null}
+                      </Fragment>
+                    ))}
                   </pre>
                 </CodeFrame>
-                <p className="offer-req">
-                  <b>{t("offers.requires")}</b> {t("offers.sdk.requires")}
-                </p>
-                <a className="offer-more" href="#sdk-install">
-                  {t("offers.installMore")}
-                </a>
+                {/* Lo esencial de «hecho para desarrolladores», en una tira:
+                    cuatro hechos del paquete, ninguno una promesa ni una cifra. */}
+                <ul className="conecta-hechos">
+                  {(t.raw("devs.cards") as { title: string; mono: string }[]).map((c) => (
+                    <li key={c.title}>
+                      <code>{c.mono}</code>
+                      <span>{c.title}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <div className="offer-cta">
-                <a className="btn ghost" href="#measured">
-                  {t("offers.sdk.ctaMeasured")}
-                </a>
-                <a className="btn btn-quiet" href="#verify">
-                  {t("offers.sdk.ctaVerify")}
-                </a>
-              </div>
-            </article>
+            </div>
 
-            <article className="offer-card rv">
-              <header className="offer-head">
-                <h3 className="offer-name">{t("offers.gateway.name")}</h3>
-                <p className="offer-who">{t("offers.gateway.who")}</p>
-              </header>
-              <p>{t("offers.gateway.what")}</p>
-              <div className="offer-fig">
-                <span className="offer-fig-top">
-                  <span className="offer-fig-t">{t("offers.gateway.figureLabel")}</span>
-                  <EvidenceBadge tipo="replay-gateway" label={tu("evidence.replayGateway")} />
-                </span>
-                {/* El neto de la rebaja de TTL del banco del 2026-10-03, con su
-                    intervalo y su condición en la misma fila. */}
-                <FilasMedidas filas={[filaDeLaPalancaTtl(t, locale)]} />
-                <details className="offer-fig-details">
-                  <summary>{t("offers.figNoteToggle")}</summary>
-                  <p className="offer-fig-note">{t("offers.gateway.figureNote")}</p>
-                </details>
-                {/* El informe entero, con sus límites, en su sección del banco público. */}
-                <p className="offer-fig-link">
-                  <Link href="/benchmarks#gateway-ttl">{t("offers.gateway.benchLink")}</Link>
-                </p>
+            <div className="conecta-panel" data-panel="gateway">
+              <div className="conecta-texto">
+                <p className="conecta-k">{th("ways.gateway.kicker")}</p>
+                <h3>{th("ways.gateway.title")}</h3>
+                <p className="conecta-quien">{t("offers.gateway.who")}</p>
+                <ul className="conecta-req">
+                  <li>
+                    <b>{t("offers.requires")}</b> {t("offers.gateway.requires")}
+                  </li>
+                  <li>{th("ways.gateway.p2")}</li>
+                  <li>{th("ways.gateway.p3")}</li>
+                </ul>
+                <div className="conecta-acciones">
+                  <Link className="btn ghost" href="/how-it-works#install-gateway">
+                    {t("offers.installMore")}
+                  </Link>
+                  <a className="btn btn-quiet" href="#measured">
+                    {t("offers.sdk.ctaMeasured")}
+                  </a>
+                </div>
               </div>
-              <div className="offer-install">
-                <span className="offer-fig-t">{t("offers.install")}</span>
+              <div className="conecta-codigo">
                 {/* Open core: sin claves el gateway arranca en modo Community.
                     La clave de servicio es OPCIONAL (nube: panel de equipo). */}
                 <CodeFrame
@@ -495,448 +541,141 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
                     {" claude"}
                   </pre>
                 </CodeFrame>
-                <p className="offer-req">
-                  <b>{t("offers.requires")}</b> {t("offers.gateway.requires")}
+              </div>
+            </div>
+          </div>
+
+          {/* RECURSO COMPLEMENTARIO · el skill savings-mode, para agentes con
+              SUSCRIPCIÓN. No es un plan ni un sustituto del gateway, y no
+              lleva cifra: aquí solo se nombra y se enlaza su instalación. */}
+          <aside className="conecta-skill rv" id="skill">
+            <span className="conecta-skill-icono" aria-hidden>
+              <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10 3.5 11.6 8l4.4.4-3.4 2.9 1 4.4L10 13.3l-3.6 2.4 1-4.4L4 8.4 8.4 8z" />
+              </svg>
+            </span>
+            <p className="conecta-skill-t">
+              <b>{t("skill.eyebrow")}</b>
+              <span>{t("skill.title")}</span>
+            </p>
+            <Link className="conecta-skill-a" href="/how-it-works#skill">
+              {t("offers.installMore")}
+            </Link>
+          </aside>
+        </section>
+
+        {/* 5 · PRUEBA. Tres recibos, uno por resultado, cada uno con su modelo,
+            su fecha, su muestra, su intervalo y SU clase de evidencia: dos A/B
+            del SDK (lib/portada/banco-en-vivo.ts) y, APARTE, la reproducción
+            contrafactual del gateway (lib/portada/palanca-ttl.ts). No son la
+            misma clase de prueba y por eso no comparten insignia. La condición
+            de cada cifra se despliega bajo su recibo; el método, el vídeo del
+            experimento justo y la nota de compatibilidad viven en /benchmarks. */}
+        <section id="measured">
+          <div className="sec-head sec-head--lado rv">
+            <div>
+              <span className="eyebrow">{t("step2.eyebrow")}</span>
+              <h2>{t("step2.title")}</h2>
+              <p>{t.rich("enVivo.pie", { bench: (c) => <Link href="/benchmarks">{c}</Link> })}</p>
+            </div>
+            <Link className="btn ghost" href="/benchmarks">
+              {t("hero.ctaBench")}
+            </Link>
+          </div>
+
+          <div className="prueba">
+            <article className="prueba-item rv">
+              <header className="prueba-cabeza">
+                <LogoProveedor marca={filaOpenAi.marca ?? "OpenAI"} size={18} />
+                <b>{filaOpenAi.marca}</b>
+                <span>{t("offers.sdk.name")}</span>
+              </header>
+              <Recibo
+                ancho
+                compacto
+                titulo={t("receipt.title")}
+                meta={reciboMeta}
+                filas={[
+                  { etiqueta: t("receipt.model"), valor: filaOpenAi.modelo, mono: true },
+                  { etiqueta: t("receipt.sample"), valor: t("receipt.sampleValue", { familias: V.openai.familias, peticiones: V.openai.peticionesPorBrazo }), mono: false },
+                  { etiqueta: t("receipt.repeats"), valor: rep },
+                  { etiqueta: t("receipt.interval"), valor: pct1.formatRange(V.openai.ahorro.lower, V.openai.ahorro.upper), tono: "atenuado" },
+                ]}
+                total={{ etiqueta: t("receipt.total"), valor: filaOpenAi.cifra, tono: "ahorro" }}
+                evidencia={{ tipo: "ab-sdk", label: tu("evidence.abSdk") }}
+                procedencia={{ texto: t("receipt.source"), href: "/benchmarks", enlace: tu("recibo.comoSeMidio") }}
+              />
+              <details className="prueba-mas">
+                <summary>{t("offers.figNoteToggle")}</summary>
+                <p>{filaOpenAi.que}</p>
+                <p>{t("offers.sdk.figureNote")}</p>
+              </details>
+            </article>
+
+            <article className="prueba-item rv">
+              <header className="prueba-cabeza">
+                <LogoProveedor marca={filaClaude.marca ?? "Anthropic"} size={18} />
+                <b>{filaClaude.marca}</b>
+                <span>{t("offers.sdk.name")}</span>
+              </header>
+              <Recibo
+                ancho
+                compacto
+                titulo={t("receipt.title")}
+                meta={reciboMeta}
+                filas={[
+                  { etiqueta: t("receipt.model"), valor: filaClaude.modelo, mono: true },
+                  { etiqueta: t("receipt.sample"), valor: t("receipt.sampleValue", { familias: V.anthropic.familias, peticiones: V.anthropic.peticionesPorBrazo }), mono: false },
+                  { etiqueta: t("receipt.prefixCache"), valor: pct0.format(V.anthropic.prefijoDelProveedor), tono: "atenuado" },
+                  { etiqueta: t("receipt.interval"), valor: pct1.formatRange(V.anthropic.ahorro.lower, V.anthropic.ahorro.upper), tono: "atenuado" },
+                ]}
+                total={{ etiqueta: t("receipt.total"), valor: filaClaude.cifra, tono: "ahorro" }}
+                evidencia={{ tipo: "ab-sdk", label: tu("evidence.abSdk") }}
+                procedencia={{ texto: t("receipt.source"), href: "/benchmarks", enlace: tu("recibo.comoSeMidio") }}
+              />
+              <details className="prueba-mas">
+                <summary>{t("offers.figNoteToggle")}</summary>
+                <p>{filaClaude.que}</p>
+              </details>
+            </article>
+
+            {/* El gateway: el neto de la rebaja de TTL del banco del 2026-10-03.
+                Un replay, no un A/B: otra insignia, y el enlace a su informe. */}
+            <article className="prueba-item rv">
+              <header className="prueba-cabeza">
+                <LogoProveedor marca={filaTtl.marca ?? "Anthropic"} size={18} />
+                <b>Claude Code</b>
+                <span>{t("offers.gateway.name")}</span>
+              </header>
+              <Recibo
+                ancho
+                compacto
+                titulo={t("receipt.title")}
+                meta={`${t("offers.gateway.name")} · ${diaCorto.format(dia(P.fecha))}`}
+                filas={[
+                  { etiqueta: tb("gatewayTtl.stat.sessions"), valor: ent.format(P.sesiones) },
+                  { etiqueta: tb("gatewayTtl.stat.requests"), valor: ent.format(P.peticiones) },
+                  { etiqueta: tb("gatewayTtl.stat.days"), valor: ent.format(P.dias) },
+                  { etiqueta: tb("gatewayTtl.thInterval", { confianza: pct0.format(P.confianza) }), valor: pct2.formatRange(P.neto.lower, P.neto.upper), tono: "atenuado" },
+                ]}
+                total={{ etiqueta: tb("gatewayTtl.row.net"), valor: filaTtl.cifra, tono: "ahorro" }}
+                evidencia={{ tipo: "replay-gateway", label: tu("evidence.replayGateway") }}
+                procedencia={{ texto: tb("centre.classReplay"), href: "/benchmarks#gateway-ttl", enlace: tu("recibo.comoSeMidio") }}
+              />
+              <details className="prueba-mas">
+                <summary>{t("offers.figNoteToggle")}</summary>
+                <p>{filaTtl.que}</p>
+                <p>{t("offers.gateway.figureNote")}</p>
+                {/* El informe entero, con sus límites, en su sección del banco público. */}
+                <p>
+                  <Link href="/benchmarks#gateway-ttl">{t("offers.gateway.benchLink")}</Link>
                 </p>
-                <a className="offer-more" href="#gateway">
-                  {t("offers.installMore")}
-                </a>
-              </div>
-              <div className="offer-cta">
-                <a className="btn ghost" href="#gateway">
-                  {t("offers.gateway.cta")}
-                </a>
-              </div>
+              </details>
             </article>
           </div>
         </section>
 
-        {/* 5 · PRUEBA Y RESULTADOS. Cada resultado en su tarjeta, con su modelo,
-            su clase de estudio, su fecha, su muestra y su intervalo: dos A/B
-            del SDK (lib/portada/banco-en-vivo.ts) y, APARTE, la reproducción
-            contrafactual del gateway (lib/portada/palanca-ttl.ts). No son la
-            misma clase de evidencia y por eso no comparten insignia. */}
-        <section id="measured">
-          <div className="sec-head rv">
-            <span className="eyebrow">{t("step2.eyebrow")}</span>
-            <h2>{t("step2.title")}</h2>
-            <p>
-              {t.rich("step2.body", {
-                b: (c) => <b>{c}</b>,
-                i: (c) => <i>{c}</i>,
-                code: (c) => <code>{c}</code>,
-              })}
-            </p>
-            {/* Los informes completos viven en /benchmarks. */}
-            <p className="sec-head-link">
-              <Link href="/benchmarks">{t("step2.benchLink")}</Link>
-            </p>
-          </div>
-
-          <div className="evi-grid">
-            {filasMedidas.map((f) => (
-              <TarjetaDeEvidencia
-                key={f.que}
-                marca={f.marca}
-                modelo={f.modelo}
-                cifra={f.cifra}
-                que={f.que}
-                evidencia={{ tipo: "ab-sdk", label: tu("evidence.abSdk") }}
-                fecha={t("evidence.dated", { fecha: diaLargo.format(dia(V.fecha)) })}
-                pie={<Link href="/benchmarks">{t("evidence.report")}</Link>}
-              />
-            ))}
-            <TarjetaDeEvidencia
-              marca={filaTtl.marca}
-              modelo="Claude Code"
-              cifra={filaTtl.cifra}
-              que={filaTtl.que}
-              evidencia={{ tipo: "replay-gateway", label: tu("evidence.replayGateway") }}
-              fecha={t("evidence.dated", { fecha: diaLargo.format(dia(PALANCA_TTL.fecha)) })}
-              pie={<Link href="/benchmarks#gateway-ttl">{t("evidence.report")}</Link>}
-            />
-          </div>
-          <p className="cascade-nota evi-nota">{t("cascade.footnote")}</p>
-
-          {/* «Compatible con» ≠ «Medido en»: la franja dice dónde CORRE el SDK
-              (cualquier endpoint OpenAI-compatible o el adaptador nativo); la
-              nota de debajo dice con qué modelo hay cifra publicada. */}
-          <div className="hero-compat rv">
-            <span className="hm-k">{t("hero.compatibleCon")}</span>
-            <div className="compat-marquee" aria-label={LLMS.map((l) => l.label).join(", ")}>
-              <div className="compat-track">
-                {[0, 1].map((copia) =>
-                  LLMS.map((l) => (
-                    <span className="cm" key={`${copia}-${l.marca}`} aria-hidden={copia === 1}>
-                      <LogoProveedor marca={l.marca} size={15} />
-                      {l.label}
-                    </span>
-                  )),
-                )}
-              </div>
-            </div>
-            <p className="compat-nota">{t("hero.compatibleNota", notaCompatible)}</p>
-          </div>
-          {/* La traducción sin jerga (petición del dueño, 2026-09-04): el vídeo
-              del experimento justo + la cifra dicha en lenguaje llano. Los
-              números llegan como PARÁMETROS — aquí no se escribe ni un dígito. */}
-          <div className="medido-llano">
-            <div className="explica-card rv">
-              <VideoExplicativo
-                src="/videos/explica-5.mp4"
-                poster="/videos/explica-5.jpg"
-                etiqueta={t("step2.plainTitle")}
-              />
-              <div className="explica-texto">
-                <p>{t("step2.videoCaption")}</p>
-              </div>
-            </div>
-            <div className="medido-llano-texto">
-              <h3>{t("step2.plainTitle")}</h3>
-              <p className="grande">
-                {t("step2.plain", {
-                  rep,
-                  punto: pct1.format(V.openai.ahorro.point),
-                  bajo: pct1.format(V.openai.ahorro.lower),
-                  alto: pct1.format(V.openai.ahorro.upper),
-                })}
-              </p>
-              <p className="nota">{t("step2.plainNote")}</p>
-            </div>
-          </div>
-        </section>
-
-        {/* LEDGERS — cuatro libros que nunca se suman. Las tarjetas DESCRIBEN
-            los libros, sin cifra, y la nota dice de qué libro salió el ahorro
-            medido en el banco público. */}
-        <section>
-          <div className="sec-head rv">
-            <span className="eyebrow">{t("ledgersHead.eyebrow")}</span>
-            <h2>{t("ledgersHead.title")}</h2>
-            <p>{t("ledgersHead.body")}</p>
-            <p className="ledgers-modelo">{t("ledgersHead.providerNote", { fecha: V.fecha })}</p>
-          </div>
-          <div className="ledgers">
-            {ledgers.map((l) => (
-              <div className="ledger rv" key={l.idx}>
-                <div className="idx">{l.idx}</div>
-                <h4>{l.name}</h4>
-                <p>{l.desc}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* 6 · PRUÉBALO CON TUS DATOS — el verificador de formato, sin cuenta.
-            El PROYECTOR no vuelve (9feb377, #85: deslizadores donde el
-            visitante inventaba sus porcentajes) y esta página no lo importa.
-            El verificador sí: corre el selector de formato real del bundle web
-            en el navegador, con el tokenizador exacto, abre con la muestra de
-            menor efecto, redondea hacia abajo y dice en pantalla que es UNA
-            palanca, no la factura. */}
-        <section id="verify">
-          <div className="sec-head rv">
-            <span className="eyebrow">{t("verify.eyebrow")}</span>
-            <h2>{t("verify.title")}</h2>
-            <p>{t("verify.sub")}</p>
-          </div>
-          <FormatVerifier />
-          <div className="offer-cta verify-cta">
-            <a className="btn ghost" href="#sdk-install">
-              {t("verify.ctaInstall")}
-            </a>
-          </div>
-        </section>
-
-        {/* 7 · CÓMO VIAJAN LOS DATOS: SDK o gateway local → el proveedor que
-            configures. La conexión a Cloud es opcional y, una vez hecha, lleva
-            telemetría (recuentos y coste), nunca el prompt. Diagrama estático;
-            el recorrido interactivo vive en /how-it-works. */}
-        <section id="data" className="lp-band">
-          <div className="sec-head rv">
-            <span className="eyebrow">{t("flow.eyebrow")}</span>
-            <h2>{t("flow.title")}</h2>
-            <p>{t("flow.sub")}</p>
-          </div>
-          <ViajeDeLosDatos
-            t={{
-              app: t("flow.app"),
-              local: t("flow.local"),
-              localSub: t("flow.localSub"),
-              proveedor: t("flow.provider"),
-              proveedorSub: t("flow.providerSub"),
-              cloud: t("flow.cloud"),
-              cloudSub: t("flow.cloudSub"),
-              prompts: t("flow.prompts"),
-              telemetria: t("flow.telemetry"),
-              pie: t("flow.caption"),
-            }}
-          />
-          <p className="viaje-enlaces">
-            <Link href="/privacy">{t("flow.privacy")}</Link>
-            <Link href="/how-it-works">{t("gateway.cta")}</Link>
-          </p>
-        </section>
-
-        {/* EN PALABRAS NORMALES — la explicación para todo el mundo (dueño,
-            2026-09-04): cuatro ideas en lenguaje llano, cada una con su
-            animación de 8 s. Los vídeos son mudos y sin texto en pantalla a
-            propósito: la página se sirve en 12 idiomas. Aquí no se promete
-            ningún número. */}
-        <section id="explica">
-          <div className="sec-head rv">
-            <span className="eyebrow">{t("explica.eyebrow")}</span>
-            <h2>{t("explica.title")}</h2>
-            <p>{t("explica.sub")}</p>
-          </div>
-          <div className="explica-grid">
-            {(t.raw("explica.pasos") as { title: string; body: string }[]).map((p, i) => (
-              <div className="explica-card rv" key={p.title}>
-                <VideoExplicativo
-                  src={`/videos/explica-${i + 1}.mp4`}
-                  poster={`/videos/explica-${i + 1}.jpg`}
-                  etiqueta={p.title}
-                />
-                <div className="explica-texto">
-                  <span className="idx">{String(i + 1).padStart(2, "0")}</span>
-                  <h4>{p.title}</h4>
-                  <p>{p.body}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-          <p className="explica-nota">{t("explica.nota")}</p>
-        </section>
-
-        {/* INSTALACIÓN COMPLETA · SDK — el paquete en dos pasos. */}
-        <section id="sdk-install">
-          <div className="sec-head rv">
-            <span className="eyebrow">{t("integrate.eyebrow")}</span>
-            <h2>{t("integrate.title")}</h2>
-            <p>{t("integrate.body")}</p>
-          </div>
-          <div className="instala">
-            <CodeFrame
-              etiqueta="app.ts"
-              copiar={{ texto: CODE.map((l) => l.map((x) => x.v).join("")).join("\n"), etiqueta: tu("copy"), etiquetaCopiado: tu("copied") }}
-            >
-              <pre className="code">
-                {CODE.map((line, i) => (
-                  <Fragment key={i}>
-                    {line.map((tok, j) =>
-                      tok.cls ? (
-                        <span className={tok.cls} key={j}>
-                          {tok.v}
-                        </span>
-                      ) : (
-                        <Fragment key={j}>{tok.v}</Fragment>
-                      ),
-                    )}
-                    {i < CODE.length - 1 ? "\n" : null}
-                  </Fragment>
-                ))}
-              </pre>
-            </CodeFrame>
-            {/* La vía de un comando (0.4.26): `init` lee el package.json, detecta
-                la pila e imprime el cableado exacto y una comprobación que no
-                llama al modelo. No escribe nada sin permiso. */}
-            <div className="instala-lado">
-              <p className="lp-nota">
-                {t.rich("integrate.initNote", { b: (c) => <b>{c}</b>, code: (c) => <code>{c}</code> })}
-              </p>
-              <CodeFrame
-                etiqueta="Terminal"
-                copiar={{ texto: "npx @bivelio/savings-layer@latest init", etiqueta: tu("copy"), etiquetaCopiado: tu("copied") }}
-              >
-                <pre className="code">
-                  <span className="k">npx</span>
-                  {" @bivelio/savings-layer@latest init"}
-                </pre>
-              </CodeFrame>
-            </div>
-          </div>
-          {/* Sistemas donde ya viven las automatizaciones del cliente: logos
-              oficiales a color (decisión del dueño). El texto mantiene la
-              afirmación honesta: se mide la llamada a la API con su clave
-              (#313; lo fija messages/copia-del-gateway.test.ts). */}
-          <div className="sys-marquee" aria-label="Salesforce, HubSpot, Odoo, Zapier, n8n, UiPath">
-            <div className="sys-track">
-              {[0, 1].map((copia) =>
-                ["Salesforce", "HubSpot", "Odoo", "Zapier", "n8n", "UiPath"].map((sys) => (
-                  <span className="sys" key={`${copia}-${sys}`} aria-hidden={copia === 1}>
-                    <LogoProveedor marca={sys} size={16} /> {sys}
-                  </span>
-                )),
-              )}
-            </div>
-          </div>
-          <p className="sys-note">{t("systems.caption")}</p>
-        </section>
-
-        {/* HECHO PARA DESARROLLADORES — cuatro hechos del paquete, ninguno una
-            promesa: cero dependencias, un SavingsReport por llamada, tráfico
-            directo y streaming con el mismo informe. Sin cifras: aquí no hay
-            nada que medir, solo describir. */}
-        <section id="devs">
-          <div className="sec-head rv">
-            <span className="eyebrow">{t("devs.eyebrow")}</span>
-            <h2>{t("devs.title")}</h2>
-            <p>{t("devs.sub")}</p>
-          </div>
-          <div className="devs-grid">
-            {(t.raw("devs.cards") as { title: string; body: string; mono: string }[]).map((c) => (
-              <div className="dev-card rv" key={c.title}>
-                <span className="mono">{c.mono}</span>
-                <h4>{c.title}</h4>
-                <p>{c.body}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* INSTALACIÓN COMPLETA · GATEWAY — el medidor de terminales (S3):
-            Claude Code/Codex sin tocar código. Aquí solo se promete MEDIR. */}
-        <section id="gateway">
-          <div className="sec-head rv">
-            <span className="eyebrow">{t("gateway.eyebrow")}</span>
-            <h2>{t("gateway.title")}</h2>
-            <p>{t("gateway.body")}</p>
-          </div>
-          {/* Los comandos NO son iguales por sistema: `export` es POSIX; en
-              Windows (PowerShell) es `$env:VAR = "…"`. Pestañas con detección. */}
-          <SnippetPorSistema
-            unix={
-              <pre className="code">
-                {"npm i -g @bivelio/savings-layer\n"}
-                {"# optional: cloud dashboard\n"}
-                {"export "}
-                <span className="s">BIVELIO_SERVICE_KEY</span>
-                {"=bvk_…\n\n"}
-                <span className="k">bvsala</span>
-                {" claude"}
-              </pre>
-            }
-            windows={
-              <pre className="code">
-                {"npm i -g @bivelio/savings-layer\n"}
-                {"# optional: cloud dashboard\n"}
-                <span className="s">$env:BIVELIO_SERVICE_KEY</span>
-                {' = "bvk_…"\n\n'}
-                <span className="k">bvsala</span>
-                {" claude"}
-              </pre>
-            }
-          />
-          <p className="lp-nota">
-            {t("gateway.note")} <Link href="/how-it-works">{t("gateway.cta")}</Link>
-          </p>
-          {/* Cualquier lenguaje con el SDK oficial de OpenAI o de Anthropic
-              (Python incluido): se MIDE, solo para modelos con precio de lista,
-              y no se ahorra. Sus salvedades las fija
-              messages/copia-del-gateway.test.ts. */}
-          <p className="lp-nota">{t("gateway.pythonNote")}</p>
-        </section>
-
-        {/* RECURSO COMPLEMENTARIO · SKILL SAVINGS-MODE — instrucciones de uso
-            para agentes con SUSCRIPCIÓN (sin factura, con topes). No es un
-            plan ni un sustituto del gateway, y su efecto NO lleva cifra hasta
-            que un A/B lo mida: de las tres partidas se enseña solo el ORDEN. */}
-        <section id="skill">
-          <div className="sec-head rv">
-            <span className="eyebrow">{t("skill.eyebrow")}</span>
-            <h2>{t("skill.title")}</h2>
-            <p>{t("skill.body")}</p>
-          </div>
-          <div className="ledgers ledgers--tres">
-            {(
-              [
-                ["lecturaCache", "mLectura", "mLecturaDesc"],
-                ["escritura1h", "mEscritura", "mEscrituraDesc"],
-                ["salida", "mSalida", "mSalidaDesc"],
-              ] as const
-            ).map(([campo, nombre, desc], i) => (
-              <div className="ledger" key={campo}>
-                <div className="idx">{String(i + 1).padStart(2, "0")}</div>
-                <h4>{t(`skill.${nombre}`)}</h4>
-                <p>{t(`skill.${desc}`)}</p>
-              </div>
-            ))}
-          </div>
-          <p className="ledgers-modelo">{t("skill.anatomiaNota")}</p>
-          <SkillPorSuperficie
-            pestanas={[
-              {
-                id: "claude-code",
-                etiqueta: "Claude Code",
-                panel: (
-                  <div>
-                    <pre className="code">
-                      <span className="k">npx</span>
-                      {" -y @bivelio/savings-layer skill"}
-                    </pre>
-                    <p className="lp-nota">{t("skill.ccNota")}</p>
-                  </div>
-                ),
-              },
-              {
-                id: "codex",
-                etiqueta: "Codex CLI",
-                panel: (
-                  <div>
-                    <pre className="code">
-                      <span className="k">npx</span>
-                      {" -y @bivelio/savings-layer skill --codex"}
-                    </pre>
-                    <p className="lp-nota">{t("skill.cxNota")}</p>
-                  </div>
-                ),
-              },
-              {
-                id: "claude-ai",
-                etiqueta: "claude.ai",
-                panel: (
-                  <div>
-                    <p className="skill-descarga">
-                      {/* Sin atributo `download`: sin sesión la ruta redirige a
-                          /login y un download-attr guardaría el HTML del login
-                          como fichero. El Content-Disposition ya hace el resto. */}
-                      <a className="btn ghost" href="/api/skill/descargar">
-                        {t("skill.aiDescargar")}
-                      </a>
-                    </p>
-                    <p className="lp-nota">
-                      {t("skill.aiCuenta")} {t("skill.aiPaso1")} {t("skill.aiPaso2")}
-                    </p>
-                  </div>
-                ),
-              },
-              // ChatGPT fuera por decisión del dueño (01-09): sus topes cuentan
-              // mensajes, no tokens — allí el skill no puede ahorrar nada
-              // medible, y esta sección no enseña nada que no ahorre.
-            ]}
-          />
-        </section>
-
-        {/* La llamada de 15 minutos, justo antes de los precios (dueño,
-            2026-10-03). Su confirmación acredita que la solicitud llegó; no es
-            una cita reservada. */}
-        <div className="cta15-sec rv" id="llamada">
-          <ReservarLlamada
-            t={{
-              titulo: t("cta15.titulo"),
-              sub: t("cta15.sub"),
-              placeholder: t("cta15.placeholder"),
-              boton: t("cta15.boton"),
-              enviando: t("cta15.enviando"),
-              ok: t("cta15.ok"),
-              errorCorreo: t("cta15.errorCorreo"),
-              errorEnvio: t("cta15.errorEnvio"),
-              alterna: t("cta15.alterna"),
-            }}
-          />
-        </div>
-
-        {/* 8 · PLANES CLOUD — Measure (gratis, sin tarjeta) → Pro (por asiento)
+        {/* 6 · PLANES CLOUD — Measure (gratis, sin tarjeta) → Pro (por asiento)
             → Team (asientos incluidos) → Enterprise. Ninguno lleva comisión
             sobre el ahorro; la modalidad con comisión está CERRADA a clientes
             nuevos y aquí solo se nombra para quien la conserva. Community no
@@ -944,7 +683,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             encima. Las cifras de Pro y Team salen de sus Prices de Stripe
             (`tarifasDeLosPlanes`, con PRECIOS_DE_LOS_PLANES de respaldo); el
             documento completo es /pricing. */}
-        <section id="pricing">
+        <section id="pricing" className="lp-band">
           <div className="sec-head rv">
             <span className="eyebrow">{t("pricing.eyebrow")}</span>
             <h2>{t("pricing.title")}</h2>
@@ -977,11 +716,6 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             }}
           />
           <div className="plan-foot rv">
-            <ul>
-              {features.map((f) => (
-                <li key={f}>{f}</li>
-              ))}
-            </ul>
             <p>
               {/* Se cobran los asientos de la suscripción (la `quantity` de Stripe); los
                   días activos solo cuentan cuántos hubo en uso, y el panel lo compara
@@ -1001,24 +735,43 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
           </div>
         </section>
 
-        {/* 9 · PREGUNTAS DE COMPRA — <details> nativo, sin script. */}
+        {/* 7 · PREGUNTAS DE COMPRA (<details> nativo, sin script) y, a su lado,
+            la llamada de 15 minutos. La confirmación de la llamada acredita
+            que la solicitud llegó; no es una cita reservada. */}
         <section id="faq">
           <div className="faq-cols">
-            <div className="sec-head rv">
-              <span className="eyebrow">{t("faq.eyebrow")}</span>
-              <h2>{t("faq.title")}</h2>
-              <p>
-                {t.rich("faq.more", {
-                  pricing: (c) => <Link href="/pricing">{c}</Link>,
-                  privacy: (c) => <Link href="/privacy">{c}</Link>,
-                })}
-              </p>
+            <div className="faq-lado">
+              <div className="sec-head rv">
+                <span className="eyebrow">{t("faq.eyebrow")}</span>
+                <h2>{t("faq.title")}</h2>
+                <p>
+                  {t.rich("faq.more", {
+                    pricing: (c) => <Link href="/pricing">{c}</Link>,
+                    privacy: (c) => <Link href="/privacy">{c}</Link>,
+                  })}
+                </p>
+              </div>
+              <div className="cta15-sec rv" id="llamada">
+                <ReservarLlamada
+                  t={{
+                    titulo: t("cta15.titulo"),
+                    sub: t("cta15.sub"),
+                    placeholder: t("cta15.placeholder"),
+                    boton: t("cta15.boton"),
+                    enviando: t("cta15.enviando"),
+                    ok: t("cta15.ok"),
+                    errorCorreo: t("cta15.errorCorreo"),
+                    errorEnvio: t("cta15.errorEnvio"),
+                    alterna: t("cta15.alterna"),
+                  }}
+                />
+              </div>
             </div>
-            <PreguntasDeCompra preguntas={t.raw("faq.items") as { q: string; a: string }[]} />
+            <PreguntasDeCompra preguntas={preguntasDeCompra} />
           </div>
         </section>
 
-        {/* 10 · CIERRE — Measure + acceso al repositorio, sobre el Gradient
+        {/* 8 · CIERRE — Measure + acceso al repositorio, sobre el Gradient
             Floor (tenue y casi quieto). La banda CTA del pie se retira en esta
             página desde la hoja de estilos: diría lo mismo dos veces. */}
         <section className="cierre-sec">

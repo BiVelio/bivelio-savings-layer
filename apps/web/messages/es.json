@@ -1470,7 +1470,8 @@
       "repeats": "Peticiones repetidas",
       "interval": "Intervalo del 95 %",
       "total": "Menor coste",
-      "source": "A/B en vivo contra el proveedor, a precios de lista versionados. No es una conciliación de facturas."
+      "source": "A/B en vivo contra el proveedor, a precios de lista versionados. No es una conciliación de facturas.",
+      "prefixCache": "De ello, contraste de precios de caché (aprox.)"
     },
     "ways": {
       "eyebrow": "Motor abierto, Cloud opcional",
@@ -1490,7 +1491,12 @@
         "account": "No hace falta. Sin registro, sin tarjeta y sin clave de BiVelio.",
         "telemetry": "Ninguna por defecto.",
         "manage": "En local: cada llamada devuelve su SavingsReport.",
-        "code": "Ver el código"
+        "code": "Ver el código",
+        "chips": [
+          "Sin cuenta ni tarjeta",
+          "Sin telemetría por defecto",
+          "SDK y gateway local"
+        ]
       },
       "cloud": {
         "name": "Savings Cloud",
@@ -1500,7 +1506,12 @@
         "account": "Una cuenta de Savings y una clave de servicio.",
         "telemetry": "Recuentos y coste, según tu plan. Tus prompts no pasan por los servidores de BiVelio.",
         "manage": "Panel de equipo, organización y licencias.",
-        "plans": "Ver planes"
+        "plans": "Ver planes",
+        "chips": [
+          "Empieza gratis con Measure",
+          "Panel de equipo",
+          "Planes de cuota fija"
+        ]
       }
     },
     "evidence": {
@@ -1563,6 +1574,12 @@
       "titleAccent": "Decide después.",
       "sub": "Measure es gratis y no pide tarjeta: funciona en modo sombra y te enseña lo que se habría ahorrado con tu propio tráfico. El motor es open source y su código está a la vista.",
       "repo": "Ver el repositorio"
+    },
+    "layer": {
+      "eyebrow": "Savings Layer, en acción",
+      "title": "Una capa fina entre tu código y tu proveedor.",
+      "titleAccent": "Eso es Savings Layer.",
+      "sub": "Se ejecuta en tu infraestructura, envía al proveedor solo lo que hay que pagar y te devuelve un recibo con cada respuesta. Tus prompts van directos al proveedor que configures; Savings Cloud es opcional y recibe recuentos y coste, no su contenido."
     }
   },
   "invitacion": {
@@ -1905,6 +1922,7 @@
       "guarantees": "Garantías",
       "noSavings": "Lo que no ahorra",
       "status": "Estado por modelo",
+      "compat": "Compatibilidad",
       "bugs": "Fallos encontrados",
       "reproduce": "Reproducir",
       "invite": "Mídenos tú"

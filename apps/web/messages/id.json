@@ -1470,7 +1470,8 @@
       "repeats": "Permintaan berulang",
       "interval": "Interval 95%",
       "total": "Biaya lebih rendah",
-      "source": "A/B langsung terhadap penyedia, dengan harga daftar berversi. Bukan rekonsiliasi tagihan."
+      "source": "A/B langsung terhadap penyedia, dengan harga daftar berversi. Bukan rekonsiliasi tagihan.",
+      "prefixCache": "Di antaranya, kontras harga cache (kira-kira)"
     },
     "ways": {
       "eyebrow": "Mesin terbuka, Cloud opsional",
@@ -1490,7 +1491,12 @@
         "account": "Tidak perlu. Tanpa pendaftaran, tanpa kartu, dan tanpa kunci BiVelio.",
         "telemetry": "Tidak ada secara bawaan.",
         "manage": "Secara lokal: setiap panggilan mengembalikan SavingsReport-nya.",
-        "code": "Lihat kodenya"
+        "code": "Lihat kodenya",
+        "chips": [
+          "Tanpa akun atau kartu",
+          "Tanpa telemetri secara bawaan",
+          "SDK dan gateway lokal"
+        ]
       },
       "cloud": {
         "name": "Savings Cloud",
@@ -1500,7 +1506,12 @@
         "account": "Akun Savings dan kunci layanan.",
         "telemetry": "Hitungan dan biaya, sesuai paket Anda. Prompt Anda tidak melewati server BiVelio.",
         "manage": "Dasbor tim, organisasi, dan lisensi.",
-        "plans": "Lihat paket"
+        "plans": "Lihat paket",
+        "chips": [
+          "Mulai gratis dengan Measure",
+          "Dasbor tim",
+          "Paket bertarif tetap"
+        ]
       }
     },
     "evidence": {
@@ -1563,6 +1574,12 @@
       "titleAccent": "Putuskan kemudian.",
       "sub": "Measure gratis dan tidak meminta kartu: berjalan dalam mode bayangan dan menunjukkan berapa yang seharusnya dihemat pada trafik Anda sendiri. Mesinnya open source dan kodenya terbuka untuk dilihat.",
       "repo": "Lihat repositori"
+    },
+    "layer": {
+      "eyebrow": "Savings Layer, saat bekerja",
+      "title": "Lapisan tipis di antara kode Anda dan penyedia Anda.",
+      "titleAccent": "Itulah Savings Layer.",
+      "sub": "Lapisan ini berjalan di infrastruktur Anda, hanya mengirim ke penyedia yang memang harus dibayar, dan mengembalikan struk bersama setiap respons. Prompt Anda langsung menuju penyedia yang Anda konfigurasikan; Savings Cloud bersifat opsional dan menerima hitungan serta biaya, bukan isinya."
     }
   },
   "invitacion": {
@@ -1905,6 +1922,7 @@
       "guarantees": "Jaminan",
       "noSavings": "Yang tidak menghemat",
       "status": "Status per model",
+      "compat": "Kompatibilitas",
       "bugs": "Kesalahan yang ditemukan",
       "reproduce": "Reproduksi",
       "invite": "Ukurlah kami"

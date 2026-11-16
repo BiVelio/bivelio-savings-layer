@@ -56,7 +56,25 @@ const PIEZAS: readonly { clave: "sdk" | "gateway" | "measure" | "cloud" | "evide
  * BiVelio y, con PRO, la rebaja de TTL acredita ahorro medido sobre el conteo
  * del propio proveedor (docs/PLAN-PASARELA-API-KEY.md).
  */
-export async function HowItWorks({ variant }: { variant: "landing" | "app" }) {
+export async function HowItWorks({
+  variant,
+  profundiza,
+  instalacion,
+}: {
+  variant: "landing" | "app";
+  /**
+   * Solo en la página pública: secciones para quien quiere comprobarlo por sí
+   * mismo (las ideas en vídeo, los cuatro libros, el verificador de formato).
+   * Las pinta la página y entran aquí justo antes de la instalación.
+   */
+  profundiza?: ReactNode;
+  /**
+   * Solo en la página pública: el resto de la instalación completa (el comando
+   * `init`, el gateway y el skill), dentro de la última sección y antes de sus
+   * botones. La portada enlaza aquí: #install-sdk, #install-gateway y #skill.
+   */
+  instalacion?: ReactNode;
+}) {
   const t = await getTranslations("howItWorks");
   const tUi = await getTranslations("ui");
   const locale = await getLocale();
@@ -93,7 +111,7 @@ export async function HowItWorks({ variant }: { variant: "landing" | "app" }) {
 
   const formas = (["sdk", "gateway"] as const).map((clave) => ({
     clave,
-    href: clave === "sdk" ? "/#sdk-install" : "/#gateway",
+    href: clave === "sdk" ? "/how-it-works#install-sdk" : "/how-it-works#install-gateway",
     kicker: t(`ways.${clave}.kicker`),
     title: t(`ways.${clave}.title`),
     body: t(`ways.${clave}.body`),
@@ -179,7 +197,7 @@ export async function HowItWorks({ variant }: { variant: "landing" | "app" }) {
             </div>
           ))}
         </div>
-        <p className="hiw-note hiw-scope">{t.rich("cases.skillNote", { link: (c) => <Link href="/#skill">{c}</Link> })}</p>
+        <p className="hiw-note hiw-scope">{t.rich("cases.skillNote", { link: (c) => <Link href="/how-it-works#skill">{c}</Link> })}</p>
       </section>
 
       {entera && (
@@ -234,7 +252,9 @@ export async function HowItWorks({ variant }: { variant: "landing" | "app" }) {
         </div>
       </section>
 
-      <section className="hiw-sec" aria-labelledby="install">
+      {entera ? profundiza : null}
+
+      <section className="hiw-sec" aria-labelledby="install" id={entera ? "install-sdk" : undefined}>
         {cabecera("install", t("s4Title"))}
         <CodeFrame className="hiw-code" ariaLabel={t("s4Title")}>
           <span className="n"># 1 · {t("snip1")}</span>{"\n"}
@@ -245,13 +265,15 @@ export async function HowItWorks({ variant }: { variant: "landing" | "app" }) {
           {"console.log(report.cost.netSavingsRatio)  "}
           <span className="g">{"// ← "}{t("snipResult")}</span>
         </CodeFrame>
+        {entera ? instalacion : null}
         <div className="hiw-cta">
           {entera ? (
             <>
-              {/* El botón dice «ver el ahorro medido», y eso vive en #measured (el
-                  banco publicado). #verify también existe en la portada, pero es
-                  el verificador: una palanca sobre tus datos, no un ahorro medido;
-                  llevar este botón allí prometería lo que la sección no enseña. */}
+              {/* El botón dice «ver el ahorro medido», y eso vive en #measured de
+                  la portada (los recibos del banco publicado). El verificador
+                  (#verify, más arriba en esta página) es otra cosa: una palanca
+                  sobre tus datos, no un ahorro medido; llevar este botón allí
+                  prometería lo que la sección no enseña. */}
               <Link className="btn btn-primary" href="/#measured">{t("ctaVerify")}</Link>
               <Link className="btn btn-ghost" href="/signup">{t("ctaSignup")}</Link>
               <Link className="btn btn-quiet" href="/benchmarks">{t("more.benchmarks")}</Link>

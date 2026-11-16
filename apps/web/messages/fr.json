@@ -1470,7 +1470,8 @@
       "repeats": "Requêtes répétées",
       "interval": "Intervalle à 95 %",
       "total": "Coût en moins",
-      "source": "A/B en direct face au fournisseur, aux prix catalogue versionnés. Ce n’est pas un rapprochement de factures."
+      "source": "A/B en direct face au fournisseur, aux prix catalogue versionnés. Ce n’est pas un rapprochement de factures.",
+      "prefixCache": "Dont contraste de tarification du cache (env.)"
     },
     "ways": {
       "eyebrow": "Moteur ouvert, Cloud en option",
@@ -1490,7 +1491,12 @@
         "account": "Aucun. Sans inscription, sans carte et sans clé BiVelio.",
         "telemetry": "Aucune par défaut.",
         "manage": "En local : chaque appel renvoie son SavingsReport.",
-        "code": "Voir le code"
+        "code": "Voir le code",
+        "chips": [
+          "Sans compte ni carte",
+          "Aucune télémétrie par défaut",
+          "SDK et gateway local"
+        ]
       },
       "cloud": {
         "name": "Savings Cloud",
@@ -1500,7 +1506,12 @@
         "account": "Un compte Savings et une clé de service.",
         "telemetry": "Comptages et coût, selon votre formule. Vos prompts ne passent pas par les serveurs de BiVelio.",
         "manage": "Tableau de bord d’équipe, organisation et licences.",
-        "plans": "Voir les formules"
+        "plans": "Voir les formules",
+        "chips": [
+          "Gratuit pour commencer avec Measure",
+          "Tableau de bord d’équipe",
+          "Formules à tarif fixe"
+        ]
       }
     },
     "evidence": {
@@ -1563,6 +1574,12 @@
       "titleAccent": "Décidez ensuite.",
       "sub": "Measure est gratuit et ne demande pas de carte : il fonctionne en mode fantôme et montre ce qui aurait été économisé sur votre propre trafic. Le moteur est open source et son code est visible par tous.",
       "repo": "Voir le dépôt"
+    },
+    "layer": {
+      "eyebrow": "Savings Layer, en action",
+      "title": "Une fine couche entre votre code et votre fournisseur.",
+      "titleAccent": "C’est ça, Savings Layer.",
+      "sub": "Elle s’exécute dans votre infrastructure, n’envoie au fournisseur que ce qui doit être payé et renvoie un reçu avec chaque réponse. Vos prompts vont directement au fournisseur que vous configurez ; Savings Cloud est facultatif et reçoit des comptages et le coût, pas leur contenu."
     }
   },
   "invitacion": {
@@ -1905,6 +1922,7 @@
       "guarantees": "Garanties",
       "noSavings": "Ce qui n'économise pas",
       "status": "État par modèle",
+      "compat": "Compatibilité",
       "bugs": "Défauts trouvés",
       "reproduce": "Reproduire",
       "invite": "Mesurez-nous"

@@ -1470,7 +1470,8 @@
       "repeats": "Powtórzone żądania",
       "interval": "Przedział 95%",
       "total": "Niższy koszt",
-      "source": "Test A/B na żywo wobec dostawcy, po wersjonowanych cenach katalogowych. To nie jest uzgodnienie faktur."
+      "source": "Test A/B na żywo wobec dostawcy, po wersjonowanych cenach katalogowych. To nie jest uzgodnienie faktur.",
+      "prefixCache": "W tym kontrast cen pamięci podręcznej (ok.)"
     },
     "ways": {
       "eyebrow": "Otwarty silnik, chmura opcjonalnie",
@@ -1490,7 +1491,12 @@
         "account": "Niepotrzebne. Bez rejestracji, bez karty i bez klucza BiVelio.",
         "telemetry": "Domyślnie żadna.",
         "manage": "Lokalnie: każde wywołanie zwraca swój SavingsReport.",
-        "code": "Zobacz kod"
+        "code": "Zobacz kod",
+        "chips": [
+          "Bez konta i karty",
+          "Domyślnie bez telemetrii",
+          "SDK i lokalny gateway"
+        ]
       },
       "cloud": {
         "name": "Savings Cloud",
@@ -1500,7 +1506,12 @@
         "account": "Konto Savings i klucz serwisowy.",
         "telemetry": "Liczby i koszt, zależnie od planu. Twoje prompty nie przechodzą przez serwery BiVelio.",
         "manage": "Panel zespołu, organizacja i licencje.",
-        "plans": "Zobacz plany"
+        "plans": "Zobacz plany",
+        "chips": [
+          "Start za darmo z Measure",
+          "Panel zespołu",
+          "Plany o stałej opłacie"
+        ]
       }
     },
     "evidence": {
@@ -1563,6 +1574,12 @@
       "titleAccent": "Potem zdecyduj.",
       "sub": "Measure jest darmowy i nie wymaga karty: działa w trybie cienia i pokazuje, ile dałoby się zaoszczędzić na Twoim własnym ruchu. Silnik jest open source, a jego kod jest jawny.",
       "repo": "Zobacz repozytorium"
+    },
+    "layer": {
+      "eyebrow": "Savings Layer w działaniu",
+      "title": "Cienka warstwa między Twoim kodem a Twoim dostawcą.",
+      "titleAccent": "To właśnie Savings Layer.",
+      "sub": "Działa w Twojej infrastrukturze, wysyła dostawcy tylko to, za co trzeba zapłacić, i zwraca paragon z każdą odpowiedzią. Twoje prompty trafiają bezpośrednio do dostawcy, którego skonfigurujesz; Savings Cloud jest opcjonalny i otrzymuje liczby i koszt, a nie ich treść."
     }
   },
   "invitacion": {
@@ -1905,6 +1922,7 @@
       "guarantees": "Gwarancje",
       "noSavings": "Co nie oszczędza",
       "status": "Stan według modelu",
+      "compat": "Zgodność",
       "bugs": "Znalezione błędy",
       "reproduce": "Odtwórz",
       "invite": "Zmierz nas"

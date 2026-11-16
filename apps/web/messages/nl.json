@@ -1470,7 +1470,8 @@
       "repeats": "Herhaalde verzoeken",
       "interval": "95%-interval",
       "total": "Lagere kosten",
-      "source": "Live A/B tegen de provider, tegen geversioneerde lijstprijzen. Geen factuurafstemming."
+      "source": "Live A/B tegen de provider, tegen geversioneerde lijstprijzen. Geen factuurafstemming.",
+      "prefixCache": "Waarvan cacheprijscontrast (ca.)"
     },
     "ways": {
       "eyebrow": "Open engine, Cloud optioneel",
@@ -1490,7 +1491,12 @@
         "account": "Niet nodig. Geen registratie, geen kaart en geen BiVelio-sleutel.",
         "telemetry": "Standaard geen.",
         "manage": "Lokaal: elke aanroep geeft zijn SavingsReport terug.",
-        "code": "Code bekijken"
+        "code": "Code bekijken",
+        "chips": [
+          "Geen account of kaart",
+          "Standaard geen telemetrie",
+          "SDK en lokale gateway"
+        ]
       },
       "cloud": {
         "name": "Savings Cloud",
@@ -1500,7 +1506,12 @@
         "account": "Een Savings-account en een service-sleutel.",
         "telemetry": "Aantallen en kosten, afhankelijk van je abonnement. Je prompts gaan niet via de servers van BiVelio.",
         "manage": "Teamdashboard, organisatie en licenties.",
-        "plans": "Abonnementen bekijken"
+        "plans": "Abonnementen bekijken",
+        "chips": [
+          "Gratis beginnen met Measure",
+          "Teamdashboard",
+          "Abonnementen met vaste tarieven"
+        ]
       }
     },
     "evidence": {
@@ -1563,6 +1574,12 @@
       "titleAccent": "Daarna beslissen.",
       "sub": "Measure is gratis en vraagt geen kaart: het draait in schaduwmodus en laat zien wat er met je eigen verkeer bespaard zou zijn. De engine is open source en de code is voor iedereen te zien.",
       "repo": "Repository bekijken"
+    },
+    "layer": {
+      "eyebrow": "Savings Layer in actie",
+      "title": "Een dunne laag tussen je code en je provider.",
+      "titleAccent": "Dat is de Savings Layer.",
+      "sub": "De laag draait in je eigen infrastructuur, stuurt de provider alleen wat betaald moet worden en geeft bij elk antwoord een bon terug. Je prompts gaan rechtstreeks naar de provider die je instelt; Savings Cloud is optioneel en ontvangt aantallen en kosten, niet de inhoud."
     }
   },
   "invitacion": {
@@ -1905,6 +1922,7 @@
       "guarantees": "Garanties",
       "noSavings": "Wat niets bespaart",
       "status": "Status per model",
+      "compat": "Compatibiliteit",
       "bugs": "Gevonden fouten",
       "reproduce": "Reproduceren",
       "invite": "Meet ons"

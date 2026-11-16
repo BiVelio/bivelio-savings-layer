@@ -1470,7 +1470,8 @@
       "repeats": "Yêu cầu lặp lại",
       "interval": "Khoảng tin cậy 95%",
       "total": "Chi phí giảm",
-      "source": "A/B trực tiếp với nhà cung cấp, theo giá niêm yết có phiên bản. Không phải đối soát hóa đơn."
+      "source": "A/B trực tiếp với nhà cung cấp, theo giá niêm yết có phiên bản. Không phải đối soát hóa đơn.",
+      "prefixCache": "Trong đó, đối chiếu giá bộ nhớ đệm (xấp xỉ)"
     },
     "ways": {
       "eyebrow": "Engine mở, Cloud tùy chọn",
@@ -1490,7 +1491,12 @@
         "account": "Không cần. Không đăng ký, không thẻ và không cần khóa BiVelio.",
         "telemetry": "Mặc định là không có.",
         "manage": "Tại chỗ: mỗi lệnh gọi trả về SavingsReport của nó.",
-        "code": "Xem mã nguồn"
+        "code": "Xem mã nguồn",
+        "chips": [
+          "Không cần tài khoản hay thẻ",
+          "Mặc định không gửi dữ liệu đo từ xa",
+          "SDK và gateway cục bộ"
+        ]
       },
       "cloud": {
         "name": "Savings Cloud",
@@ -1500,7 +1506,12 @@
         "account": "Một tài khoản Savings và một khóa dịch vụ.",
         "telemetry": "Số đếm và chi phí, tùy theo gói của bạn. Prompt của bạn không đi qua máy chủ của BiVelio.",
         "manage": "Bảng điều khiển nhóm, tổ chức và giấy phép.",
-        "plans": "Xem các gói"
+        "plans": "Xem các gói",
+        "chips": [
+          "Bắt đầu miễn phí với Measure",
+          "Bảng điều khiển nhóm",
+          "Các gói phí cố định"
+        ]
       }
     },
     "evidence": {
@@ -1563,6 +1574,12 @@
       "titleAccent": "Quyết định sau.",
       "sub": "Measure miễn phí và không yêu cầu thẻ: nó chạy ở chế độ bóng và cho bạn thấy lẽ ra đã tiết kiệm được bao nhiêu trên chính lưu lượng của bạn. Engine là mã nguồn mở và mã của nó công khai.",
       "repo": "Xem kho mã"
+    },
+    "layer": {
+      "eyebrow": "Savings Layer khi hoạt động",
+      "title": "Một lớp mỏng giữa mã của bạn và nhà cung cấp.",
+      "titleAccent": "Đó chính là Savings Layer.",
+      "sub": "Lớp này chạy trong hạ tầng của bạn, chỉ gửi cho nhà cung cấp những gì phải trả và trả về một biên lai kèm mỗi phản hồi. Prompt của bạn đi thẳng tới nhà cung cấp mà bạn cấu hình; Savings Cloud là tùy chọn và chỉ nhận số đếm và chi phí, không nhận nội dung."
     }
   },
   "invitacion": {
@@ -1905,6 +1922,7 @@
       "guarantees": "Bảo đảm",
       "noSavings": "Những gì không tiết kiệm",
       "status": "Trạng thái theo mô hình",
+      "compat": "Khả năng tương thích",
       "bugs": "Lỗi đã tìm thấy",
       "reproduce": "Tái lập",
       "invite": "Hãy đo chúng tôi"

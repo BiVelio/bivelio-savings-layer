@@ -35,7 +35,7 @@ export type Lectura = "todo" | "ab" | "replay" | "negativos" | "reproducir";
 /** Qué secciones enseña cada lectura. `null` = todas. Debe cuadrar con las reglas `[data-lectura]` del CSS. */
 export const SECCIONES_POR_LECTURA: Record<Lectura, readonly string[] | null> = {
   todo: null,
-  ab: ["method", "weekly", "savings", "guarantees", "no-savings", "status", "bugs"],
+  ab: ["method", "explained", "weekly", "savings", "guarantees", "no-savings", "status", "compat", "bugs"],
   replay: ["gateway-ttl"],
   negativos: ["no-savings", "status", "bugs"],
   reproducir: ["method", "reproduce", "invite"],

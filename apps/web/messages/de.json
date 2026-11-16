@@ -1470,7 +1470,8 @@
       "repeats": "Wiederholte Anfragen",
       "interval": "95-%-Intervall",
       "total": "Geringere Kosten",
-      "source": "Live-A/B gegen den Anbieter, zu versionierten Listenpreisen. Kein Rechnungsabgleich."
+      "source": "Live-A/B gegen den Anbieter, zu versionierten Listenpreisen. Kein Rechnungsabgleich.",
+      "prefixCache": "Davon Cache-Preis-Kontrast (ca.)"
     },
     "ways": {
       "eyebrow": "Offene Engine, Cloud optional",
@@ -1490,7 +1491,12 @@
         "account": "Nicht nötig. Keine Registrierung, keine Karte, kein BiVelio-Schlüssel.",
         "telemetry": "Standardmäßig keine.",
         "manage": "Lokal: Jeder Aufruf liefert seinen SavingsReport.",
-        "code": "Code ansehen"
+        "code": "Code ansehen",
+        "chips": [
+          "Ohne Konto und Karte",
+          "Standardmäßig keine Telemetrie",
+          "SDK und lokales Gateway"
+        ]
       },
       "cloud": {
         "name": "Savings Cloud",
@@ -1500,7 +1506,12 @@
         "account": "Ein Savings-Konto und ein Service-Schlüssel.",
         "telemetry": "Zählwerte und Kosten, je nach Tarif. Deine Prompts laufen nicht über die Server von BiVelio.",
         "manage": "Team-Dashboard, Organisation und Lizenzen.",
-        "plans": "Tarife ansehen"
+        "plans": "Tarife ansehen",
+        "chips": [
+          "Kostenlos starten mit Measure",
+          "Team-Dashboard",
+          "Tarife mit festen Gebühren"
+        ]
       }
     },
     "evidence": {
@@ -1563,6 +1574,12 @@
       "titleAccent": "Dann entscheiden.",
       "sub": "Measure ist kostenlos und verlangt keine Karte: Es läuft im Schattenmodus und zeigt, was mit deinem eigenen Traffic gespart worden wäre. Die Engine ist Open Source, ihr Code liegt offen.",
       "repo": "Repository ansehen"
+    },
+    "layer": {
+      "eyebrow": "Savings Layer in Aktion",
+      "title": "Eine dünne Schicht zwischen deinem Code und deinem Anbieter.",
+      "titleAccent": "Das ist der Savings Layer.",
+      "sub": "Er läuft in deiner Infrastruktur, schickt dem Anbieter nur, was bezahlt werden muss, und liefert zu jeder Antwort einen Beleg. Deine Prompts gehen direkt an den von dir konfigurierten Anbieter; Savings Cloud ist optional und erhält Zählwerte und Kosten, nicht deren Inhalt."
     }
   },
   "invitacion": {
@@ -1905,6 +1922,7 @@
       "guarantees": "Garantien",
       "noSavings": "Was nichts spart",
       "status": "Status je Modell",
+      "compat": "Kompatibilität",
       "bugs": "Gefundene Fehler",
       "reproduce": "Reproduzieren",
       "invite": "Messen Sie uns"

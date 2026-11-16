@@ -1470,7 +1470,8 @@
       "repeats": "Repeated requests",
       "interval": "95% interval",
       "total": "Lower cost",
-      "source": "Live A/B against the provider, at versioned list prices. Not an invoice reconciliation."
+      "source": "Live A/B against the provider, at versioned list prices. Not an invoice reconciliation.",
+      "prefixCache": "Of which, cache-pricing contrast (approx.)"
     },
     "ways": {
       "eyebrow": "Open engine, optional cloud",
@@ -1490,7 +1491,12 @@
         "account": "None needed. No sign-up, no card and no BiVelio key.",
         "telemetry": "None by default.",
         "manage": "Locally: every call returns its SavingsReport.",
-        "code": "View the code"
+        "code": "View the code",
+        "chips": [
+          "No account or card",
+          "No telemetry by default",
+          "SDK and local gateway"
+        ]
       },
       "cloud": {
         "name": "Savings Cloud",
@@ -1500,7 +1506,12 @@
         "account": "A Savings account and a service key.",
         "telemetry": "Counts and cost, depending on your plan. Your prompts don't pass through BiVelio's servers.",
         "manage": "Team dashboard, organization and licences.",
-        "plans": "See plans"
+        "plans": "See plans",
+        "chips": [
+          "Starts free with Measure",
+          "Team dashboard",
+          "Flat-fee plans"
+        ]
       }
     },
     "evidence": {
@@ -1563,6 +1574,12 @@
       "titleAccent": "Decide later.",
       "sub": "Measure is free and asks for no card: it runs in shadow mode and shows what would have been saved on your own traffic. The engine is open source, and its code is in plain sight.",
       "repo": "View the repository"
+    },
+    "layer": {
+      "eyebrow": "Savings Layer, in action",
+      "title": "A thin layer between your code and your provider.",
+      "titleAccent": "That's the Savings Layer.",
+      "sub": "It runs inside your infrastructure, sends the provider only what has to be paid for, and returns a receipt with every response. Your prompts go straight to the provider you configure; Savings Cloud is optional and receives counts and cost, not their content."
     }
   },
   "invitacion": {
@@ -1905,6 +1922,7 @@
       "guarantees": "Guarantees",
       "noSavings": "What it does not save",
       "status": "Status by model",
+      "compat": "Compatibility",
       "bugs": "Bugs found",
       "reproduce": "Reproduce",
       "invite": "Measure us"

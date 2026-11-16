@@ -1470,7 +1470,8 @@
       "repeats": "Tekrarlanan istekler",
       "interval": "%95 aralığı",
       "total": "Daha düşük maliyet",
-      "source": "Sağlayıcıya karşı canlı A/B, sürümlenmiş liste fiyatlarıyla. Fatura mutabakatı değildir."
+      "source": "Sağlayıcıya karşı canlı A/B, sürümlenmiş liste fiyatlarıyla. Fatura mutabakatı değildir.",
+      "prefixCache": "Bunun içinde önbellek fiyat kontrastı (yaklaşık)"
     },
     "ways": {
       "eyebrow": "Açık motor, isteğe bağlı bulut",
@@ -1490,7 +1491,12 @@
         "account": "Gerekmez. Kayıt yok, kart yok, BiVelio anahtarı yok.",
         "telemetry": "Varsayılan olarak yok.",
         "manage": "Yerelde: her çağrı kendi SavingsReport'unu döndürür.",
-        "code": "Kodu görün"
+        "code": "Kodu görün",
+        "chips": [
+          "Hesap ve kart gerekmez",
+          "Varsayılan olarak telemetri yok",
+          "SDK ve yerel gateway"
+        ]
       },
       "cloud": {
         "name": "Savings Cloud",
@@ -1500,7 +1506,12 @@
         "account": "Bir Savings hesabı ve bir servis anahtarı.",
         "telemetry": "Planınıza göre sayımlar ve maliyet. Prompt'larınız BiVelio sunucularından geçmez.",
         "manage": "Ekip paneli, organizasyon ve lisanslar.",
-        "plans": "Planları görün"
+        "plans": "Planları görün",
+        "chips": [
+          "Measure ile ücretsiz başlar",
+          "Ekip paneli",
+          "Sabit ücretli planlar"
+        ]
       }
     },
     "evidence": {
@@ -1563,6 +1574,12 @@
       "titleAccent": "Sonra karar verin.",
       "sub": "Measure ücretsizdir ve kart istemez: gölge modunda çalışır ve kendi trafiğinizde ne kadar tasarruf edilmiş olacağını gösterir. Motor açık kaynaktır ve kodu herkesin gözü önündedir.",
       "repo": "Depoyu görün"
+    },
+    "layer": {
+      "eyebrow": "Savings Layer iş başında",
+      "title": "Kodunuz ile sağlayıcınız arasında ince bir katman.",
+      "titleAccent": "İşte Savings Layer.",
+      "sub": "Altyapınızda çalışır, sağlayıcıya yalnızca ödenmesi gerekeni gönderir ve her yanıtla birlikte bir fiş döndürür. Prompt'larınız doğrudan yapılandırdığınız sağlayıcıya gider; Savings Cloud isteğe bağlıdır ve içeriği değil, sayımları ve maliyeti alır."
     }
   },
   "invitacion": {
@@ -1905,6 +1922,7 @@
       "guarantees": "Güvenceler",
       "noSavings": "Tasarruf sağlamayanlar",
       "status": "Modele göre durum",
+      "compat": "Uyumluluk",
       "bugs": "Bulunan hatalar",
       "reproduce": "Yeniden üret",
       "invite": "Bizi siz ölçün"
