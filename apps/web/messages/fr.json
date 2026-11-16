@@ -217,7 +217,7 @@
     "useAnotherEmail": "Utiliser un autre e-mail",
     "requestNewLink": "Demander un nouveau lien",
     "successNext": "Étape suivante : installez le paquet et connectez votre premier appel. D'ici là, le tableau de bord n'a rien à mesurer.",
-    "successPlan": "Le plan que vous avez choisi reste sélectionné : vous le confirmez à l'étape suivante.",
+    "successPlan": "Vous avez choisi un forfait : vous le confirmez dans Compte, dans le tableau de bord. Rien n'a encore été acheté.",
     "successInvite": "Nous vous ramenons à votre invitation pour que vous puissiez l'accepter.",
     "successContinue": "Continuer",
     "panel": {
@@ -291,6 +291,12 @@
         "coverageFull": "La répartition couvre tout le coût observé de la période.",
         "coveragePartial": "La répartition par modèle couvre {coverage} du coût observé de la période ; le reste n'a pas de modèle attribué.",
         "coverageUnknown": "Comparaison impossible avec le coût observé de la période."
+      },
+      "planChosen": {
+        "title": "Vous avez choisi {plan}",
+        "body": "Rien n'a encore été acheté. Confirmez le forfait et les sièges dans Compte ; le paiement se fait sur Stripe.",
+        "cta": "Confirmer dans Compte",
+        "askOwner": "Votre profil ne permet pas de souscrire un forfait. Demandez à une personne ayant le profil propriétaire, administrateur ou facturation de le confirmer dans Compte."
       },
       "pulse": {
         "chartTitle": "Référence et coût réel, jour après jour",
@@ -774,7 +780,7 @@
       "checkoutError": "Une erreur s'est produite — veuillez réessayer.",
       "seatsLabel": "Sièges",
       "seatsHint": "Un poste est une machine ou une identité de service active, pas une personne. Comptez les processus qui exécuteront le SDK, pas vos effectifs. Sur Kubernetes, définissez BVSALA_SEAT_ID par réplique.",
-      "seatsOver": "{used, plural, one {# siège utilisé} other {# sièges utilisés}}, {paid, plural, one {# payé} other {# payés}}. L'excédent est facturé à la clôture du mois, au prix de votre forfait. En paiement mensuel, il s'ajoute à votre prochaine facture et la quantité souscrite passe au nombre de sièges utilisés. En paiement annuel, il est facturé à la clôture du mois, au tarif annuel divisé par douze, et la quantité souscrite ne change pas. Vous pouvez aussi ajuster la quantité depuis « Gérer le forfait ».",
+      "seatsOver": "{used, plural, one {# siège utilisé} other {# sièges utilisés}}, {paid, plural, one {# payé} other {# payés}}. L'excédent est facturé selon votre forfait et l'état de votre abonnement, à la clôture du mois. En paiement mensuel, il s'ajoute à votre prochaine facture et la quantité souscrite passe au nombre de sièges utilisés. En paiement annuel, il est facturé à la clôture du mois, au tarif annuel divisé par douze, et la quantité souscrite ne change pas. Vous pouvez aussi ajuster la quantité depuis « Gérer le forfait ».",
       "seatsLastMonth": "{period} : {used, plural, one {# siège utilisé} other {# sièges utilisés}}, {paid, plural, one {# payé} other {# payés}}. Excédent : {extra, plural, one {# siège} other {# sièges}} ({amount}). En paiement mensuel, il figure sur votre prochaine facture et la quantité souscrite passe au nombre de sièges utilisés. En paiement annuel, il est facturé à la clôture du mois, au tarif annuel divisé par douze, sans modifier la quantité souscrite.",
       "seatsRotated": "{used, plural, one {# siège compté} other {# sièges comptés}} ce mois-ci. Vous avez révoqué une clé de compte de service : en la remplaçant, vos machines changent d'identité de siège, donc ce mois-ci elles sont comptées deux fois. Cela se règle tout seul le mois prochain — inutile de changer de forfait.",
       "taxNote": "TVA non comprise. Si votre entreprise a un numéro de TVA intracommunautaire, l'autoliquidation s'applique.",
@@ -787,8 +793,8 @@
       "planPro": "Pro",
       "planTeam": "Team",
       "teamHint": "Team inclut {included} sièges ; chaque siège supplémentaire coûte {extra} par mois. On ne peut pas en acheter moins de {included}.",
-      "checkoutTeamMonthly": "S’abonner à Team — {monthly}/mois, {included} sièges →",
-      "checkoutTeamYearly": "S’abonner à Team — {yearly}/an, {included} sièges →",
+      "checkoutTeamMonthly": "S’abonner à Team — à partir de {monthly}/mois →",
+      "checkoutTeamYearly": "S’abonner à Team — à partir de {yearly}/an →",
       "errPlanCerrado": "Ce plan n’est plus proposé aux nouveaux clients. Choisissez Pro ou Team.",
       "statusLabel": "Statut",
       "statusActive": "Abonnement actif",
@@ -818,6 +824,8 @@
       "summaryLabel": "Vous achetez",
       "summaryNote": "Stripe confirme le montant exact, taxes comprises, avant le paiement.",
       "summary": "{plan} · {seats, plural, one {# siège} other {# sièges}}",
+      "roleNote": "Votre profil ne permet ni d'acheter ni de gérer la facturation. Demandez à une personne ayant le profil propriétaire, administrateur ou facturation de le faire.",
+      "paidPlan": "Forfait payant",
       "seatsFree": "Libres",
       "seatsExtra": "Au-delà du contrat",
       "seatsMore": "Ajouter un siège",
@@ -872,7 +880,7 @@
       "awaitingFirstReport": "En attente du premier rapport"
     },
     "checkoutBanner": {
-      "successPending": "<b>Paiement reçu.</b> Nous activons votre licence — cela prend en général quelques secondes et cette page se rafraîchit toute seule.",
+      "successPending": "<b>De retour de Stripe.</b> Nous confirmons votre paiement et activons votre forfait — cela prend en général quelques secondes et cette page se rafraîchit toute seule.",
       "successActive": "<b>Votre abonnement est actif.</b> Prochaine étape : obtenir votre clé de licence.",
       "goToInstall": "Obtenez votre clé de licence →",
       "cancelled": "<b>Aucun paiement n'a été effectué</b> — rien ne vous a été débité. Vous pouvez recommencer quand vous voulez.",
@@ -994,16 +1002,14 @@
       "badgeMedido": "Mesuré",
       "proyeccionTitulo": "Économie projetée pour {periodo}",
       "proyeccionNota": "Ce qui est mesuré à ce jour, plus votre rythme des {dias} derniers jours sur les {restantes} jours restants. Une estimation, pas une facture.",
-      "comision": "Commission de l'ancienne formule (référence)",
-      "comisionNota": "{pct} de l'économie projetée, selon la formule avec commission, fermée aux nouvelles souscriptions. Les forfaits à prix fixe ne comportent aucune commission.",
-      "comisionCalibracion": "Mois de calibrage de la formule avec commission : rien n'est facturé. Les forfaits à prix fixe ne comportent aucune commission.",
       "cerrado": "Période clôturée : voici ce qui a été, pas où cela va.",
       "pocosDias": "Trop tôt pour tracer la droite : il faut {min} jours complets et il y en a {n}. Ce qui est mesuré est déjà réel.",
       "medido": "Économisé à ce jour (mesuré)",
       "diaDeMes": "Jour {n} sur {total}",
       "ritmoLabel": "Rythme, {dias} derniers jours",
       "porDia": "{importe} / jour",
-      "diasRestantes": "{n} jours restants"
+      "diasRestantes": "{n} jours restants",
+      "verExtracto": "Voir le relevé"
     },
     "extracto": {
       "metaTitle": "Relevé · BiVelio Savings Layer",
@@ -1074,7 +1080,7 @@
       "regimenLegadoTitulo": "Formule historique avec commission",
       "regimenLegadoBody": "Votre contrat conserve la formule avec commission sur les économies mesurées, fermée aux nouvelles souscriptions. Son calcul figure dans l'historique ci-dessous ; le prix par siège est un montant à part.",
       "regimenNingunoTitulo": "Aucun forfait payant actif",
-      "regimenNingunoBody": "Rien ne vous est facturé aujourd'hui. Les forfaits en vente sont à prix fixe, sans commission sur les économies.",
+      "regimenNingunoBody": "Cette organisation n'a aucun forfait à prix fixe en cours (Pro ou Team) et n'est pas marquée comme exemptée. Dans ce cas, un relevé est clôturé chaque mois sur les économies mesurées, selon les conditions publiées de l'ancienne formule avec commission ; son calcul figure dans l'historique ci-dessous. Les forfaits en vente sont à prix fixe, sans commission.",
       "regimenIndeterminadoTitulo": "Nous ne pouvons pas afficher ici la formule de votre contrat",
       "regimenIndeterminadoBody": "Cette page n'a pas pu déterminer quelle formule s'applique à votre abonnement. Ce qui vous est facturé est ce qui figure sur vos factures et dans le portail de facturation.",
       "irACuenta": "Voir le forfait et la facturation",
@@ -1083,7 +1089,12 @@
       "historicoSub": "La commission sur les économies mesurées était la formule précédente. Elle est conservée ici pour consultation et audit ; ce n'est ni une offre ni la facture d'un forfait à prix fixe.",
       "simulacionTitulo": "Simulation de la commission pour cette période",
       "simulacionAplica": "C'est le calcul de la formule que conserve votre contrat.",
-      "simulacionNoAplica": "Elle ne s'applique pas à votre contrat en vigueur : affichée à titre de référence uniquement."
+      "simulacionNoAplica": "Elle ne s'applique pas à votre contrat en vigueur : affichée à titre de référence uniquement.",
+      "regimenNingunoEnlace": "Voir l'ancienne formule dans Tarifs",
+      "simulacionSinPlan": "C'est le calcul utilisé à la clôture du mois lorsqu'aucun forfait à prix fixe n'est en cours.",
+      "simulacionPuedeAplicar": "Elle peut s'appliquer selon votre contrat : affichée ici comme un calcul, pas comme une facture.",
+      "notaSombraReferencia": "Chiffre en ombre : la commission calculée est de {comision}. C'est un calcul, pas une facture.",
+      "historialIntroNeutro": "Chaque période clôturée est figée de façon immuable le premier du mois. Si une période donne lieu à un montant dû, sa facture cite ce document."
     },
     "usageExplorer": {
       "title": "Explorateur d'usage",
@@ -2243,7 +2254,7 @@
     "eyebrow": "Tarifs publiés",
     "title": "Moteur open source. Contrôle cloud pour votre équipe.",
     "governs": "Cette page décrit le fonctionnement actuel du service ; la <license>LICENSE</license> et les <terms>Conditions de BiVelio</terms> prévalent.",
-    "lede": "Le paquet est open core : aucune clé requise. Cette page tarifie le cloud optionnel — Measure gratuit, puis Pro par siège ou un plan Team, sans commission sur vos économies. Chaque chiffre vient du même code qui vous facture, et change quand le prix change.",
+    "lede": "Le moteur est open source : aucune clé requise. Cette page tarifie Savings Cloud, le cloud optionnel — Measure gratuit, puis Pro par siège ou un plan Team, sans commission sur vos économies. Chaque chiffre vient du même code qui vous facture, et change quand le prix change.",
     "plans": {
       "title": "Plans",
       "intro": "Quatre plans, du plus petit au plus grand. Pro et Team se paient par siège et ne comportent aucune commission.",
@@ -2276,7 +2287,7 @@
       "whatTitle": "Ce qu'est un siège",
       "what": "Un siège est une <b>machine ou identité de service</b> qui exécute le Logiciel, pas une personne. Vous choisissez le nombre de sièges couverts par votre abonnement (jusqu'à {max} au paiement), et votre licence couvre ce nombre.",
       "counted": "Chaque mois civil (UTC), BiVelio compte comme utilisé chaque identifiant de siège distinct actif au moins {dias} jours différents de ce mois. Les identités marquées comme CI ou exécuteurs éphémères ne comptent pas. Votre tableau de bord compare ce décompte aux sièges couverts par votre abonnement.",
-      "overage": "Si, un mois donné, vous utilisez plus de sièges que votre abonnement n'en couvre, la différence est facturée automatiquement, une seule fois, à la clôture du mois, sur votre prochaine facture : le prix de ces sièges en trop pendant un mois selon votre forfait (en annuel, un douzième du prix annuel). Avec un forfait mensuel, votre abonnement passe ensuite au nombre de sièges que vous utilisez. Si le décompte n'est pas fiable — par exemple parce que vous avez fait tourner une clé de compte de service ce mois-là —, rien n'est facturé : nous le vérifions à la main.",
+      "overage": "Si, un mois donné, vous utilisez plus de sièges que votre abonnement n'en couvre, la différence est facturée une seule fois, à la clôture du mois : le prix de ces sièges en trop pendant un mois selon votre forfait. En paiement mensuel, elle s'ajoute à votre prochaine facture et la quantité souscrite passe au nombre de sièges utilisés. En paiement annuel, elle est facturée à la clôture du mois, au tarif annuel divisé par douze, et la quantité souscrite ne change pas. Si le décompte n'est pas fiable — par exemple parce que vous avez fait tourner une clé de compte de service ce mois-là —, rien n'est facturé : nous le vérifions à la main.",
       "identifier": "La façon dont un identifiant de siège est formé, et tout ce que le Logiciel envoie d'autre à BiVelio, se trouve sur la <privacy>page de confidentialité</privacy>.",
       "provider": "Le tarif n’inclut pas la consommation de votre fournisseur LLM : vous gardez votre fournisseur et payez son usage selon ses conditions.",
       "manageTitle": "Comment gérer votre abonnement",

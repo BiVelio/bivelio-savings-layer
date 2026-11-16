@@ -9,6 +9,7 @@ import { loadDashboard } from "./load";
 import { RANGO_POR_DEFECTO, rangoDesdeParametro } from "./rango";
 import { createReadOnlyClient } from "@/lib/supabase/server";
 import { BillingStateBanner } from "./components/BillingStateBanner";
+import { PlanElegidoNotice, planElegidoDe } from "./components/PlanElegidoNotice";
 import { GatewayVersionBanner } from "./components/GatewayVersionBanner";
 import { GatewayBrutoBanner } from "./components/GatewayBrutoBanner";
 import { SdkReferenciaBanner } from "./components/SdkReferenciaBanner";
@@ -40,7 +41,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 export default async function OverviewPage({
   searchParams,
 }: {
-  searchParams: Promise<{ range?: string | string[] }>;
+  searchParams: Promise<{ range?: string | string[]; plan?: string | string[] }>;
 }) {
   const t = await getTranslations("dashboard");
   if (!authConfigured) {
@@ -64,7 +65,12 @@ export default async function OverviewPage({
     orgFallo,
     asientos: medidaDeAsientos,
   } = await loadDashboard();
-  const rango = rangoDesdeParametro((await searchParams).range);
+  const { range: rangoPedido, plan: planPedido } = await searchParams;
+  const rango = rangoDesdeParametro(rangoPedido);
+  // El plan elegido en la portada llega aquí por `?plan=`; el selector vive en
+  // Cuenta. Con un plan ya activo no hay nada que confirmar.
+  const planElegido = planElegidoDe(planPedido);
+  const yaConPlan = ctx.org?.plan === "pro" || ctx.org?.plan === "enterprise";
   const usage = rango === RANGO_POR_DEFECTO ? usageCompleto : cortarPorPeriodo(usageCompleto, rango);
   const porModelo = rango === RANGO_POR_DEFECTO ? porModeloCompleto : cortarPorPeriodo(porModeloCompleto, rango);
   const sombraPorModelo = rango === RANGO_POR_DEFECTO ? sombraCompleta : cortarPorPeriodo(sombraCompleta, rango);
@@ -104,6 +110,7 @@ export default async function OverviewPage({
       {/* 1 · Lo que exige atención: cobro y servicio primero, solo si hay algo. */}
       <div className="ov-attention">
         <BillingStateBanner ctx={ctx} />
+        {planElegido && !yaConPlan ? <PlanElegidoNotice plan={planElegido} role={ctx.role} /> : null}
         <GatewayVersionBanner asientos={asientos.rows} />
         <GatewayBrutoBanner asientos={asientos.rows} />
         <SdkReferenciaBanner asientos={asientos.rows} />

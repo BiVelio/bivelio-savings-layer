@@ -58,8 +58,16 @@ export async function AccountPlanStrip({
     pagados: ctx.seats,
     rotacionEsteMes: asientos.rotacionEsteMes,
   });
+  // EL NOMBRE DEL PLAN, SIN INVENTARLO. El webhook escribe `plan = "pro"` para
+  // TODA suscripción viva — Pro, Team y la modalidad anterior con comisión —, y
+  // este contexto no trae el precio de la suscripción con el que distinguirlas.
+  // Rotular «Pro» a quien compró Team (o conserva la comisión) era afirmar un
+  // plan que quizá no es el suyo: se dice «Plan de pago» y el detalle queda en
+  // el portal de facturación. «Enterprise» sí es un valor propio, puesto a mano.
   const planLabel = isActive
-    ? plan.charAt(0).toUpperCase() + plan.slice(1)
+    ? plan === "enterprise"
+      ? "Enterprise"
+      : t("accountPlanStrip.paidPlan")
     : ctx.medir === "solo-medir"
       ? t("measurePlan.planLabel")
       : t("accountPlanStrip.noActivePlan");
@@ -86,6 +94,12 @@ export async function AccountPlanStrip({
           : ctx.role === "member"
             ? t("equipo.rolMember")
             : null;
+  // QUIÉN VE LOS BOTONES QUE MUEVEN DINERO (lib/org/permisos). Con plan activo
+  // la acción es el portal (`gestionar_facturacion`); sin plan, la compra
+  // (`comprar`). A quien no puede se le dice a quién pedírselo, en su idioma, en
+  // vez de un botón que acaba en un 403. Rol desconocido (`null`): se deja como
+  // estaba — el servidor es la autoridad y aquí no se adivina.
+  const puedeLaAccion = ctx.role == null || puede(ctx.role, isActive ? "gestionar_facturacion" : "comprar");
   const num = (n: number) => n.toLocaleString(locale);
   // `null` (no se pudo medir) y `0` (los días 1 y 2 de cada mes el cero es del
   // calendario) NO se pintan como cero: van como «—» con su porqué al lado.
@@ -189,6 +203,10 @@ export async function AccountPlanStrip({
         {ocultarCompra ? (
           <Notice tono="warn" role="status" titulo={t("accountPlanStrip.pendingTitle")}>
             {t("accountPlanStrip.pendingBody")}
+          </Notice>
+        ) : !puedeLaAccion ? (
+          <Notice tono="info" role="note">
+            {t("accountPlanStrip.roleNote")}
           </Notice>
         ) : (
           <BillingButtons

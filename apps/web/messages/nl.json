@@ -217,7 +217,7 @@
     "useAnotherEmail": "Een ander e-mailadres gebruiken",
     "requestNewLink": "Een nieuwe link aanvragen",
     "successNext": "Volgende stap: installeer het pakket en koppel je eerste aanroep. Tot die tijd heeft het dashboard niets te meten.",
-    "successPlan": "Het plan dat je koos blijft geselecteerd: je bevestigt het in de volgende stap.",
+    "successPlan": "Je hebt een abonnement gekozen: je bevestigt het onder Account, in het dashboard. Er is nog niets gekocht.",
     "successInvite": "We brengen je terug naar je uitnodiging, zodat je die kunt accepteren.",
     "successContinue": "Doorgaan",
     "panel": {
@@ -291,6 +291,12 @@
         "coverageFull": "De uitsplitsing dekt alle waargenomen kosten van de periode.",
         "coveragePartial": "De uitsplitsing per model dekt {coverage} van de waargenomen kosten van de periode; aan de rest is geen model toegewezen.",
         "coverageUnknown": "Vergelijken met de waargenomen kosten van de periode is niet mogelijk."
+      },
+      "planChosen": {
+        "title": "Je hebt {plan} gekozen",
+        "body": "Er is nog niets gekocht. Bevestig het abonnement en de seats onder Account; betalen doe je bij Stripe.",
+        "cta": "Bevestigen onder Account",
+        "askOwner": "Met jouw rol kun je geen abonnement afsluiten. Vraag iemand met de rol eigenaar, beheerder of facturatie om het onder Account te bevestigen."
       },
       "pulse": {
         "chartTitle": "Basislijn en werkelijke kosten, dag voor dag",
@@ -774,7 +780,7 @@
       "checkoutError": "Er is iets misgegaan — probeer het opnieuw.",
       "seatsLabel": "Seats",
       "seatsHint": "Een plaats is één actieve machine of service-identiteit, geen persoon. Tel de processen die de SDK draaien, niet je medewerkers. Op Kubernetes: stel BVSALA_SEAT_ID per replica in.",
-      "seatsOver": "{used, plural, one {# seat} other {# seats}} in gebruik, {paid, plural, one {# betaald} other {# betaald}}. De extra seats worden bij het afsluiten van de maand berekend, tegen de prijs van je abonnement. Bij maandelijkse betaling komen ze op je volgende factuur en gaat het afgenomen aantal omhoog naar de seats in gebruik. Bij jaarlijkse betaling worden ze bij het afsluiten van de maand gefactureerd tegen het jaartarief gedeeld door twaalf, en verandert het afgenomen aantal niet. Je kunt het aantal ook aanpassen via “Abonnement beheren”.",
+      "seatsOver": "{used, plural, one {# seat} other {# seats}} in gebruik, {paid, plural, one {# betaald} other {# betaald}}. De extra seats worden bij het afsluiten van de maand gefactureerd volgens je abonnement en de status ervan. Bij maandelijkse betaling komen ze op je volgende factuur en gaat het afgenomen aantal omhoog naar de seats in gebruik. Bij jaarlijkse betaling worden ze bij het afsluiten van de maand gefactureerd tegen het jaartarief gedeeld door twaalf, en verandert het afgenomen aantal niet. Je kunt het aantal ook aanpassen via “Abonnement beheren”.",
       "seatsLastMonth": "{period}: {used, plural, one {# seat gebruikt} other {# seats gebruikt}}, {paid, plural, one {# betaald} other {# betaald}}. Extra: {extra, plural, one {# seat} other {# seats}} ({amount}). Bij maandelijkse betaling staat het op je volgende factuur en gaat het afgenomen aantal omhoog naar de gebruikte seats. Bij jaarlijkse betaling wordt het bij het afsluiten van de maand gefactureerd tegen het jaartarief gedeeld door twaalf, zonder het afgenomen aantal te wijzigen.",
       "seatsRotated": "{used, plural, one {# seat} other {# seats}} deze maand geteld. Je hebt een service-account-sleutel ingetrokken, en bij het roteren krijgen je machines een nieuwe seat-identiteit — daardoor telt deze maand ze dubbel. Volgende maand klopt het weer; je hoeft je abonnement niet te wijzigen.",
       "taxNote": "Exclusief btw. Heeft uw bedrijf een EU-btw-nummer, dan geldt de verleggingsregeling.",
@@ -787,8 +793,8 @@
       "planPro": "Pro",
       "planTeam": "Team",
       "teamHint": "Team bevat {included} seats; elke extra seat kost {extra} per maand. Minder dan {included} kun je niet kopen.",
-      "checkoutTeamMonthly": "Neem Team — {monthly}/maand, {included} seats →",
-      "checkoutTeamYearly": "Neem Team — {yearly}/jaar, {included} seats →",
+      "checkoutTeamMonthly": "Neem Team — vanaf {monthly}/maand →",
+      "checkoutTeamYearly": "Neem Team — vanaf {yearly}/jaar →",
       "errPlanCerrado": "Dit abonnement wordt niet meer aangeboden aan nieuwe klanten. Kies Pro of Team.",
       "statusLabel": "Status",
       "statusActive": "Abonnement actief",
@@ -818,6 +824,8 @@
       "summaryLabel": "Je koopt",
       "summaryNote": "Stripe bevestigt het exacte bedrag, inclusief belasting, voordat je betaalt.",
       "summary": "{plan} · {seats, plural, one {# seat} other {# seats}}",
+      "roleNote": "Met jouw rol kun je niet kopen en de facturering niet beheren. Vraag iemand met de rol eigenaar, beheerder of facturatie om dit te doen.",
+      "paidPlan": "Betaald abonnement",
       "seatsFree": "Vrij",
       "seatsExtra": "Boven wat is afgenomen",
       "seatsMore": "Een seat toevoegen",
@@ -872,7 +880,7 @@
       "awaitingFirstReport": "Wacht op eerste rapport"
     },
     "checkoutBanner": {
-      "successPending": "<b>Betaling ontvangen.</b> We activeren je licentie — dit duurt meestal een paar seconden en deze pagina ververst zichzelf.",
+      "successPending": "<b>Terug van Stripe.</b> We bevestigen je betaling en activeren je abonnement — dit duurt meestal een paar seconden en deze pagina ververst zichzelf.",
       "successActive": "<b>Je abonnement is actief.</b> De volgende stap is je licentiesleutel ophalen.",
       "goToInstall": "Haal je licentiesleutel op →",
       "cancelled": "<b>Er is geen betaling voltooid</b> — er is niets bij je in rekening gebracht. Je kunt het opnieuw proberen wanneer je maar wilt.",
@@ -994,16 +1002,14 @@
       "badgeMedido": "Gemeten",
       "proyeccionTitulo": "Verwachte besparing voor {periodo}",
       "proyeccionNota": "Wat tot nu toe is gemeten, plus je tempo van de afgelopen {dias} dagen over de {restantes} resterende dagen. Een schatting, geen factuur.",
-      "comision": "Commissie van het eerdere model (referentie)",
-      "comisionNota": "{pct} van de verwachte besparing, volgens het commissiemodel dat gesloten is voor nieuwe aanmeldingen. Abonnementen met vaste prijs hebben geen commissie.",
-      "comisionCalibracion": "Kalibratiemaand van het commissiemodel: er wordt niets in rekening gebracht. Abonnementen met vaste prijs hebben geen commissie.",
       "cerrado": "Afgesloten periode: dit is wat het was, niet waar het heen gaat.",
       "pocosDias": "Nog te vroeg om een lijn te trekken: er zijn {min} volledige dagen nodig en er zijn er {n}. Wat gemeten is, is al echt.",
       "medido": "Tot nu toe bespaard (gemeten)",
       "diaDeMes": "Dag {n} van {total}",
       "ritmoLabel": "Tempo, laatste {dias} dagen",
       "porDia": "{importe} / dag",
-      "diasRestantes": "{n} dagen te gaan"
+      "diasRestantes": "{n} dagen te gaan",
+      "verExtracto": "Overzicht bekijken"
     },
     "extracto": {
       "metaTitle": "Afschrift · BiVelio Savings Layer",
@@ -1074,7 +1080,7 @@
       "regimenLegadoTitulo": "Eerder model met commissie",
       "regimenLegadoBody": "Je contract behoudt het model met commissie op gemeten besparing, dat gesloten is voor nieuwe klanten. De berekening staat in de historie hieronder; de vergoeding per seat is een aparte post.",
       "regimenNingunoTitulo": "Geen actief betaald abonnement",
-      "regimenNingunoBody": "Er wordt je vandaag niets gefactureerd. De abonnementen die te koop zijn hebben een vaste prijs, zonder commissie op de besparing.",
+      "regimenNingunoBody": "Deze organisatie heeft geen lopend abonnement met een vaste prijs (Pro of Team) en is niet als vrijgesteld gemarkeerd. In dat geval wordt elke maand een overzicht afgesloten over de gemeten besparing, volgens de gepubliceerde voorwaarden van het eerdere commissiemodel; de berekening staat in de historie hieronder. De abonnementen die te koop zijn hebben een vaste prijs, zonder commissie.",
       "regimenIndeterminadoTitulo": "We kunnen het model van je contract hier niet tonen",
       "regimenIndeterminadoBody": "Deze pagina kon niet vaststellen welk model voor je abonnement geldt. Wat je betaalt, is wat op je facturen en in het factureringsportaal staat.",
       "irACuenta": "Abonnement en facturering bekijken",
@@ -1083,7 +1089,12 @@
       "historicoSub": "De commissie op gemeten besparing was het eerdere model. Ze blijft hier staan ter inzage en controle; het is geen aanbod en ook niet de factuur van een abonnement met vaste prijs.",
       "simulacionTitulo": "Simulatie van de commissie voor deze periode",
       "simulacionAplica": "Dit is de berekening van het model dat je contract behoudt.",
-      "simulacionNoAplica": "Geldt niet voor je huidige contract: alleen ter referentie getoond."
+      "simulacionNoAplica": "Geldt niet voor je huidige contract: alleen ter referentie getoond.",
+      "regimenNingunoEnlace": "Bekijk het eerdere model onder Prijzen",
+      "simulacionSinPlan": "Dit is de berekening die bij het afsluiten van de maand geldt als er geen abonnement met vaste prijs loopt.",
+      "simulacionPuedeAplicar": "Kan gelden, afhankelijk van je contract: hier getoond als berekening, niet als factuur.",
+      "notaSombraReferencia": "Schaduwcijfer: de berekende commissie is {comision}. Dit is een berekening, geen factuur.",
+      "historialIntroNeutro": "Elke afgesloten periode wordt op de eerste van de maand onveranderlijk vastgelegd. Levert een periode een bedrag op, dan citeert de factuur dat document."
     },
     "usageExplorer": {
       "title": "Gebruiksverkenner",
@@ -2243,7 +2254,7 @@
     "eyebrow": "Gepubliceerde prijzen",
     "title": "Open-source-engine. Cloudcontrole voor je team.",
     "governs": "Deze pagina beschrijft hoe de dienst vandaag werkt; de <license>LICENSE</license> en de <terms>BiVelio-voorwaarden</terms> zijn leidend.",
-    "lede": "Het pakket is open core: geen sleutel nodig. Deze pagina prijst de optionele cloud — Measure gratis, daarna Pro per seat of een Team-plan, zonder commissie op je besparing. Elk cijfer hier komt uit dezelfde code die je factureert, en verandert als de prijs verandert.",
+    "lede": "De engine is open source: geen sleutel nodig. Deze pagina prijst Savings Cloud, de optionele cloud — Measure gratis, daarna Pro per seat of een Team-plan, zonder commissie op je besparing. Elk cijfer hier komt uit dezelfde code die je factureert, en verandert als de prijs verandert.",
     "plans": {
       "title": "Plannen",
       "intro": "Vier plannen, van klein naar groot. Pro en Team betaal je per seat en hebben geen commissie.",
@@ -2276,7 +2287,7 @@
       "whatTitle": "Wat een seat is",
       "what": "Een seat is één <b>machine- of service-identiteit</b> waarop de Software draait, geen persoon. Je kiest zelf hoeveel seats je abonnement dekt (tot {max} bij het afrekenen), en je licentie dekt er evenveel.",
       "counted": "Elke kalendermaand (UTC) telt BiVelio elke afzonderlijke seat-ID als in gebruik die op minstens {dias} verschillende dagen van die maand actief was. Identiteiten die als CI of kortstondige runner zijn gemarkeerd, tellen niet mee. Je dashboard vergelijkt dat aantal met de seats die je abonnement dekt.",
-      "overage": "Gebruik je in een maand meer seats dan je abonnement dekt, dan wordt het verschil bij het afsluiten van de maand eenmalig en automatisch op je volgende factuur gezet: wat die extra seats een maand kosten in je abonnement (bij een jaarabonnement een twaalfde van de jaarprijs). Bij maandabonnementen dekt je abonnement daarna de seats die je gebruikt. Is de telling niet betrouwbaar — bijvoorbeeld omdat je die maand een service-account-sleutel hebt geroteerd — dan wordt er niets in rekening gebracht: we controleren het met de hand.",
+      "overage": "Gebruik je in een maand meer seats dan je abonnement dekt, dan wordt het verschil eenmalig gefactureerd bij het afsluiten van de maand: wat die extra seats een maand kosten in je abonnement. Bij maandelijkse betaling komt het op je volgende factuur en gaat het afgenomen aantal omhoog naar de seats in gebruik. Bij jaarlijkse betaling wordt het bij het afsluiten van de maand gefactureerd tegen het jaartarief gedeeld door twaalf, en verandert het afgenomen aantal niet. Is de telling niet betrouwbaar — bijvoorbeeld omdat je die maand een service-account-sleutel hebt geroteerd — dan wordt er niets in rekening gebracht: we controleren het met de hand.",
       "identifier": "Hoe een seat-ID wordt gevormd, en alles wat de Software verder naar BiVelio stuurt, staat op de <privacy>privacypagina</privacy>.",
       "provider": "Het tarief dekt niet het verbruik bij je LLM-provider: je houdt je provider en betaalt het gebruik tegen hun voorwaarden.",
       "manageTitle": "Je abonnement beheren",

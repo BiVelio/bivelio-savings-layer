@@ -142,9 +142,13 @@ export default async function ExtractoPage() {
   let exentaPorMarca = false;
   let exentaPorPlan = false;
   let suscripcionesConPlan: number | null = null;
+  // Una lectura que FALLA no es «no hay suscripción» ni «no hay exención»: es
+  // no saber. Antes el error se tiraba y la página afirmaba un régimen.
+  let lecturaFallida = false;
   if (orgId) {
     const supabase = await createReadOnlyClient();
-    const { data: org } = await supabase.schema("bvsala").from("organizations").select("comision_exenta").eq("id", orgId).maybeSingle();
+    const { data: org, error: errOrg } = await supabase.schema("bvsala").from("organizations").select("comision_exenta").eq("id", orgId).maybeSingle();
+    if (errOrg) lecturaFallida = true;
     esExento = Boolean((org as { comision_exenta?: boolean } | null)?.comision_exenta);
     exentaPorMarca = esExento;
     // Pro y Equipo no llevan comisión (lib/billing/planes.ts): su extracto en
@@ -152,12 +156,13 @@ export default async function ExtractoPage() {
     // la modalidad con comisión, sin cargo. Misma regla que el cierre.
     const precios = preciosSinComision();
     if (!esExento && idsSinComision(precios).length > 0) {
-      const { data: subs } = await supabase
+      const { data: subs, error: errSubs } = await supabase
         .schema("bvsala")
         .from("subscriptions")
         .select("org_id, price_id, status")
         .eq("org_id", orgId)
         .in("status", [...ESTADOS_CON_PLAN]);
+      if (errSubs) lecturaFallida = true;
       esExento = orgsSinComisionPorPlan((subs ?? []) as SuscripcionDeOrg[], precios).has(orgId);
       exentaPorPlan = esExento;
       suscripcionesConPlan = (subs ?? []).length;
@@ -167,18 +172,29 @@ export default async function ExtractoPage() {
   // hay suscripción pero este despliegue no sabe qué precios son de cuota fija
   // (la consulta de arriba no llegó a hacerse). Elegir bien el régimen en ese
   // caso es trabajo de billing; aquí se pinta un aviso neutro, nunca una suposición.
+  // También es «indeterminado»:
+  //  · cuando falló la lectura de la exención o la de las suscripciones;
+  //  · cuando las dos lecturas se contradicen — el contexto ve una suscripción
+  //    con plan y la consulta de aquí no devuelve ninguna.
+  // «ninguno» NO es «no se te cobra»: el cierre mensual (cron cierre-extractos)
+  // solo deja fuera de la comisión a las organizaciones exentas y a las que
+  // tienen VIVA una suscripción Pro o Team. La vista lo dice así, sin afirmar.
   const conSuscripcion = ctx.subscription != null && ESTADOS_CON_PLAN.includes(ctx.subscription.status);
-  const regimen: "fija" | "exenta" | "legado" | "ninguno" | "indeterminado" = exentaPorMarca
-    ? "exenta"
-    : exentaPorPlan
-      ? "fija"
-      : suscripcionesConPlan === null
-        ? conSuscripcion
-          ? "indeterminado"
-          : "ninguno"
-        : suscripcionesConPlan > 0
-          ? "legado"
-          : "ninguno";
+  const regimen: "fija" | "exenta" | "legado" | "ninguno" | "indeterminado" = lecturaFallida
+    ? "indeterminado"
+    : exentaPorMarca
+      ? "exenta"
+      : exentaPorPlan
+        ? "fija"
+        : suscripcionesConPlan === null
+          ? conSuscripcion
+            ? "indeterminado"
+            : "ninguno"
+          : suscripcionesConPlan > 0
+            ? "legado"
+            : conSuscripcion
+              ? "indeterminado"
+              : "ninguno";
   const e = extractoEnSombra("panel", usage, periodo, esExento);
   const cerrados = orgId ? await periodosCerrados(orgId) : [];
 

@@ -8,6 +8,7 @@ import { PageHead } from "@/app/components/app/PageHead";
 import { SetupProgress } from "@/app/components/app/SetupProgress";
 import { BillingStateBanner } from "@/app/[locale]/dashboard/components/BillingStateBanner";
 import { AhorroNativoCard } from "@/app/[locale]/dashboard/components/AhorroNativoCard";
+import { PlanElegidoNotice } from "@/app/[locale]/dashboard/components/PlanElegidoNotice";
 import { DesgloseModelos } from "@/app/[locale]/dashboard/components/DesgloseModelos";
 import { LiveLedgerTiles } from "@/app/[locale]/dashboard/components/LiveLedgerTiles";
 import { RitmoCard } from "@/app/[locale]/dashboard/components/RitmoCard";
@@ -402,6 +403,19 @@ export default async function GaleriaDeEstados({
             <Caso titulo="Suscripción con el pago vencido (past_due)">
               <div className="ov-attention">
                 <BillingStateBanner ctx={CTX_IMPAGO} />
+              </div>
+            </Caso>
+            <Caso titulo="Ritmo y proyección · sin comisión proyectada, con enlace al extracto">
+              <RitmoCard usage={POSITIVO} />
+            </Caso>
+            <Caso titulo="Plan elegido en la portada (?plan=equipo) · perfil que puede comprar">
+              <div className="ov-attention">
+                <PlanElegidoNotice plan="equipo" role="owner" />
+              </div>
+            </Caso>
+            <Caso titulo="Plan elegido en la portada (?plan=pro) · perfil sin permiso de compra">
+              <div className="ov-attention">
+                <PlanElegidoNotice plan="pro" role="member" />
               </div>
             </Caso>
           </section>

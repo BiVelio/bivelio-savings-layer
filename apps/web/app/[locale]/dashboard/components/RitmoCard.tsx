@@ -1,6 +1,7 @@
 import { getLocale, getTranslations } from "next-intl/server";
 
-import { esPeriodoDeCalibracion, FX_SOMBRA, periodoDe } from "@/lib/billing/extracto-sombra";
+import { Link } from "@/i18n/navigation";
+import { FX_SOMBRA, periodoDe } from "@/lib/billing/extracto-sombra";
 import { calcularRitmo, DIAS_MINIMOS_PARA_PROYECTAR, VENTANA_RITMO_DIAS } from "@/lib/billing/ritmo";
 
 import { Badge } from "@/vendor/affectui/badge-clean";
@@ -22,6 +23,12 @@ import { money } from "../format";
  *
  * Y calla cuando no sabe: sin días completos suficientes no se pinta una recta
  * (`pocos_dias`), y sin una sola fila medida la tarjeta no existe.
+ *
+ * AQUÍ NO SE PROYECTA NINGUNA COMISIÓN. Esta tarjeta la ve toda organización
+ * con uso, y los planes en venta (Pro y Team) son de cuota fija: enseñarles una
+ * «comisión proyectada» en euros era anunciarles un cargo que no existe. Quien
+ * conserva la modalidad anterior tiene su cálculo en el Extracto, que sí sabe
+ * qué régimen se le aplica; aquí solo va el enlace.
  */
 export async function RitmoCard({ usage }: { usage: UsageRollup[] }) {
   const periodo = periodoDe(new Date());
@@ -39,8 +46,6 @@ export async function RitmoCard({ usage }: { usage: UsageRollup[] }) {
   // determinista del cockpit — `toLocaleString` sin locale fijo ya rompió una
   // hidratación aquí (ver format.ts).
   const eur = (n: number) => n.toLocaleString(locale, { style: "currency", currency: "EUR" });
-  const pct = (n: number) => (n * 100).toFixed(1) + "%";
-  const enCalibracion = esPeriodoDeCalibracion(usage, periodo);
   const p = r.proyeccion;
 
   const avance = Math.round((r.diasTranscurridos / r.diasDelPeriodo) * 100);
@@ -90,13 +95,9 @@ export async function RitmoCard({ usage }: { usage: UsageRollup[] }) {
         </dl>
       </div>
 
-      {p ? (
-        <p className="ck-note ox-foot">
-          {t("ritmo.comision")}: <span className="ox-mono">{eur(p.comision.comisionEur)}</span>
-          {" — "}
-          {enCalibracion ? t("ritmo.comisionCalibracion") : t("ritmo.comisionNota", { pct: pct(p.comision.ratio) })}
-        </p>
-      ) : null}
+      <p className="ck-note ox-foot">
+        <Link href="/dashboard/extracto">{t("ritmo.verExtracto")}</Link>
+      </p>
     </div>
   );
 }

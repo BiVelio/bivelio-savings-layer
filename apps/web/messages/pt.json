@@ -217,7 +217,7 @@
     "useAnotherEmail": "Usar outro e-mail",
     "requestNewLink": "Pedir um link novo",
     "successNext": "Passo seguinte: instala o pacote e liga a tua primeira chamada. Até lá, o painel não tem nada para medir.",
-    "successPlan": "O plano que escolheste continua selecionado: confirmas no passo seguinte.",
+    "successPlan": "Escolheste um plano: confirmas em Conta, no painel. Ainda não foi comprado nada.",
     "successInvite": "Levamos-te de volta ao teu convite para o aceitares.",
     "successContinue": "Continuar",
     "panel": {
@@ -291,6 +291,12 @@
         "coverageFull": "A repartição cobre todo o custo observado do período.",
         "coveragePartial": "A repartição por modelo cobre {coverage} do custo observado do período; o restante não tem modelo atribuído.",
         "coverageUnknown": "Não é possível comparar com o custo observado do período."
+      },
+      "planChosen": {
+        "title": "Escolheste {plan}",
+        "body": "Ainda não foi comprado nada. Confirma o plano e os lugares em Conta; o pagamento é feito no Stripe.",
+        "cta": "Confirmar em Conta",
+        "askOwner": "O teu perfil não pode contratar um plano. Pede a uma pessoa com perfil de proprietário, administrador ou faturação que o confirme em Conta."
       },
       "pulse": {
         "chartTitle": "Linha de base e custo real, dia a dia",
@@ -774,7 +780,7 @@
       "checkoutError": "Algo correu mal — tenta novamente.",
       "seatsLabel": "Lugares",
       "seatsHint": "Um lugar é uma máquina ou identidade de serviço ativa, não uma pessoa. Conta os processos que vão executar o SDK, não os teus colaboradores. No Kubernetes, define BVSALA_SEAT_ID em cada réplica.",
-      "seatsOver": "{used, plural, one {# lugar} other {# lugares}} em uso e {paid, plural, one {# pago} other {# pagos}}. O excesso é cobrado no fecho do mês, ao preço do teu plano. Com pagamento mensal é acrescentado à tua próxima fatura e a quantidade contratada sobe para os lugares em uso. Com pagamento anual é faturado no fecho do mês, à tarifa anual dividida por doze, e a quantidade contratada não muda. Também podes ajustar a quantidade em «Gerir plano».",
+      "seatsOver": "{used, plural, one {# lugar} other {# lugares}} em uso e {paid, plural, one {# pago} other {# pagos}}. O excesso é faturado de acordo com o teu plano e o estado da tua subscrição, no fecho do mês. Com pagamento mensal é acrescentado à tua próxima fatura e a quantidade contratada sobe para os lugares em uso. Com pagamento anual é faturado no fecho do mês, à tarifa anual dividida por doze, e a quantidade contratada não muda. Também podes ajustar a quantidade em «Gerir plano».",
       "seatsLastMonth": "{period}: {used, plural, one {# lugar usado} other {# lugares usados}} e {paid, plural, one {# pago} other {# pagos}}. Excesso: {extra, plural, one {# lugar} other {# lugares}} ({amount}). Com pagamento mensal vai na tua próxima fatura e a quantidade contratada sobe para os lugares usados. Com pagamento anual é faturado no fecho do mês, à tarifa anual dividida por doze, sem alterar a quantidade contratada.",
       "seatsRotated": "{used, plural, one {# lugar contado} other {# lugares contados}} este mês. Revogaste uma chave de serviço e, ao rodá-la, as tuas máquinas estreiam identidade de lugar — por isso este mês conta-as duas vezes. Corrige-se sozinho no mês seguinte: não precisas de mudar de plano.",
       "taxNote": "IVA não incluído. Se a sua empresa tiver número de IVA intracomunitário, aplica-se a autoliquidação.",
@@ -787,8 +793,8 @@
       "planPro": "Pro",
       "planTeam": "Team",
       "teamHint": "Team inclui {included} lugares; cada lugar a mais custa {extra} por mês. Não é possível comprar menos de {included}.",
-      "checkoutTeamMonthly": "Subscrever Team — {monthly}/mês, {included} lugares →",
-      "checkoutTeamYearly": "Subscrever Team — {yearly}/ano, {included} lugares →",
+      "checkoutTeamMonthly": "Subscrever Team — a partir de {monthly}/mês →",
+      "checkoutTeamYearly": "Subscrever Team — a partir de {yearly}/ano →",
       "errPlanCerrado": "Esse plano já não é oferecido a novos clientes. Escolha Pro ou Team.",
       "statusLabel": "Estado",
       "statusActive": "Subscrição ativa",
@@ -818,6 +824,8 @@
       "summaryLabel": "Vais comprar",
       "summaryNote": "O valor exato, com impostos, é confirmado pela Stripe antes de pagares.",
       "summary": "{plan} · {seats, plural, one {# lugar} other {# lugares}}",
+      "roleNote": "O teu perfil não pode comprar nem gerir a faturação. Pede a uma pessoa com perfil de proprietário, administrador ou faturação que o faça.",
+      "paidPlan": "Plano pago",
       "seatsFree": "Livres",
       "seatsExtra": "Acima do contratado",
       "seatsMore": "Adicionar um lugar",
@@ -872,7 +880,7 @@
       "awaitingFirstReport": "À espera do primeiro relatório"
     },
     "checkoutBanner": {
-      "successPending": "<b>Pagamento recebido.</b> Estamos a ativar a tua licença — normalmente demora alguns segundos e esta página atualiza-se sozinha.",
+      "successPending": "<b>De volta do Stripe.</b> Estamos a confirmar o teu pagamento e a ativar o teu plano — normalmente demora alguns segundos e esta página atualiza-se sozinha.",
       "successActive": "<b>A tua subscrição está ativa.</b> O passo seguinte é obter a tua chave de licença.",
       "goToInstall": "Obtém a tua chave de licença →",
       "cancelled": "<b>Não foi concluído nenhum pagamento</b> — não te foi cobrado nada. Podes começar de novo quando quiseres.",
@@ -994,16 +1002,14 @@
       "badgeMedido": "Medido",
       "proyeccionTitulo": "Poupança projetada para {periodo}",
       "proyeccionNota": "O que foi medido até agora mais o teu ritmo dos últimos {dias} dias pelos {restantes} dias que faltam. É uma estimativa, não uma fatura.",
-      "comision": "Comissão da modalidade anterior (referência)",
-      "comisionNota": "{pct} da poupança projetada, segundo a modalidade com comissão, fechada a novas adesões. Os planos de taxa fixa não têm comissão.",
-      "comisionCalibracion": "Mês de calibração da modalidade com comissão: não se cobra nada. Os planos de taxa fixa não têm comissão.",
       "cerrado": "Período fechado: isto é o que foi, não para onde vai.",
       "pocosDias": "Ainda é cedo para traçar a reta: são precisos {min} dias completos e há {n}. O que está medido já é real.",
       "medido": "Poupado até à data (medido)",
       "diaDeMes": "Dia {n} de {total}",
       "ritmoLabel": "Ritmo, últimos {dias} dias",
       "porDia": "{importe} / dia",
-      "diasRestantes": "{n} dias pela frente"
+      "diasRestantes": "{n} dias pela frente",
+      "verExtracto": "Ver extrato"
     },
     "extracto": {
       "metaTitle": "Extrato · BiVelio Savings Layer",
@@ -1074,7 +1080,7 @@
       "regimenLegadoTitulo": "Modalidade histórica com comissão",
       "regimenLegadoBody": "O teu contrato mantém a modalidade com comissão sobre a poupança medida, fechada a novas adesões. O cálculo está no histórico abaixo; a taxa por lugar é uma cobrança à parte.",
       "regimenNingunoTitulo": "Sem plano pago ativo",
-      "regimenNingunoBody": "Hoje nada te é faturado. Os planos à venda são de taxa fixa e não têm comissão sobre a poupança.",
+      "regimenNingunoBody": "Esta organização não tem em vigor nenhum plano de taxa fixa (Pro ou Team) nem está marcada como isenta. Nesse caso, no fecho de cada mês é emitido um extrato sobre a poupança medida, segundo as condições publicadas da modalidade anterior com comissão; o cálculo está no histórico abaixo. Os planos à venda são de taxa fixa e não têm comissão.",
       "regimenIndeterminadoTitulo": "Não podemos mostrar aqui a modalidade do teu contrato",
       "regimenIndeterminadoBody": "Esta página não conseguiu determinar que modalidade se aplica à tua subscrição. O que te é cobrado é o que consta nas tuas faturas e no portal de faturação.",
       "irACuenta": "Ver plano e faturação",
@@ -1083,7 +1089,12 @@
       "historicoSub": "A comissão sobre a poupança medida foi a modalidade anterior. Mantém-se aqui para consulta e auditoria; não é uma oferta nem a fatura de um plano de taxa fixa.",
       "simulacionTitulo": "Simulação da comissão deste período",
       "simulacionAplica": "É o cálculo da modalidade que o teu contrato mantém.",
-      "simulacionNoAplica": "Não se aplica ao teu contrato em vigor: é mostrada apenas como referência."
+      "simulacionNoAplica": "Não se aplica ao teu contrato em vigor: é mostrada apenas como referência.",
+      "regimenNingunoEnlace": "Ver a modalidade anterior em Preços",
+      "simulacionSinPlan": "É o cálculo usado no fecho do mês quando não há um plano de taxa fixa em vigor.",
+      "simulacionPuedeAplicar": "Pode aplicar-se consoante o teu contrato: aqui é mostrada como cálculo, não como fatura.",
+      "notaSombraReferencia": "Número em sombra: a comissão calculada é {comision}. É um cálculo, não uma fatura.",
+      "historialIntroNeutro": "Cada período fechado fica fixado imutável no dia um. Se um período gerar um valor a cobrar, a respetiva fatura cita esse documento."
     },
     "usageExplorer": {
       "title": "Explorador de uso",
@@ -2243,7 +2254,7 @@
     "eyebrow": "Preços publicados",
     "title": "Motor open source. Controlo cloud para a tua equipa.",
     "governs": "Esta página descreve como o serviço funciona hoje; prevalecem a <license>LICENSE</license> e os <terms>Termos da BiVelio</terms>.",
-    "lede": "O pacote é open core: não precisa de chaves. Esta página dá preço à nuvem opcional — Measure grátis, depois Pro por lugar ou um plano Team, sem comissão sobre a tua poupança. Cada número desta página vem do mesmo código que te fatura, e muda quando o preço muda.",
+    "lede": "O motor é open source: não precisa de chaves. Esta página dá preço ao Savings Cloud, a nuvem opcional — Measure grátis, depois Pro por lugar ou um plano Team, sem comissão sobre a tua poupança. Cada número desta página vem do mesmo código que te fatura, e muda quando o preço muda.",
     "plans": {
       "title": "Planos",
       "intro": "Quatro planos, do menor para o maior. Pro e Team pagam-se por assento e não têm comissão.",
@@ -2276,7 +2287,7 @@
       "whatTitle": "O que é um lugar",
       "what": "Um lugar é uma <b>máquina ou identidade de serviço</b> que executa o Software, não uma pessoa. Você escolhe quantos lugares a sua subscrição cobre (até {max} no pagamento), e a sua licença cobre esses.",
       "counted": "Em cada mês civil (UTC), a BiVelio conta como em uso cada identificador de lugar distinto que esteve ativo em pelo menos {dias} dias diferentes desse mês. As identidades marcadas como CI ou executores efémeros não contam. O seu painel compara essa contagem com os lugares que a sua subscrição cobre.",
-      "overage": "Se num mês usares mais lugares do que a tua subscrição cobre, a diferença é cobrada automaticamente, uma vez, no fecho do mês e na tua próxima fatura: o que esses lugares a mais custam durante um mês no teu plano (no anual, um doze avos do preço anual). Nos planos mensais, a tua subscrição passa depois a cobrir os lugares que usas. Se a contagem não for fiável — por exemplo, porque nesse mês rodaste uma chave de conta de serviço — não é cobrada: revemo-la à mão.",
+      "overage": "Se num mês usares mais lugares do que a tua subscrição cobre, a diferença é faturada uma vez, no fecho do mês: o que esses lugares a mais custam durante um mês no teu plano. Com pagamento mensal é acrescentada à tua próxima fatura e a quantidade contratada sobe para os lugares em uso. Com pagamento anual é faturada no fecho do mês, à tarifa anual dividida por doze, e a quantidade contratada não muda. Se a contagem não for fiável — por exemplo, porque nesse mês rodaste uma chave de conta de serviço — não é cobrada: revemo-la à mão.",
       "identifier": "Como se forma o identificador de lugar, e tudo o resto que o Software envia à BiVelio, está na <privacy>página de privacidade</privacy>.",
       "provider": "A mensalidade não inclui o consumo do teu fornecedor de LLM: manténs o teu fornecedor e pagas a utilização nas condições dele.",
       "manageTitle": "Como gerir a tua subscrição",
