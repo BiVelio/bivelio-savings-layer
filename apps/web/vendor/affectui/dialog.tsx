@@ -157,6 +157,12 @@ export function AlertDialog({
   const [isOpen, setOpen, opener] = useOpenState(open, defaultOpen, onOpenChange);
   const [busy, setBusy] = useState(false);
   const safe = useRef<HTMLButtonElement>(null);
+  // BiVelio: when it opened. On a phone it slides up as a sheet with Confirm where the thumb already is, so the second
+  // tap of a double tap on the button that opened it would land on Confirm before anything could be read.
+  const openedAt = useRef(Number.NEGATIVE_INFINITY);
+  useLayoutEffect(() => {
+    openedAt.current = isOpen ? performance.now() : Number.NEGATIVE_INFINITY;
+  }, [isOpen]);
   const cancel = () => {
     if (busy) return;
     onCancel?.();
@@ -164,6 +170,8 @@ export function AlertDialog({
   };
   const confirm = async () => {
     if (busy) return;
+    // BiVelio: a confirm that arrives while it is still opening is a stray tap, not an answer
+    if (!confirmIsDeliberate(openedAt.current, performance.now())) return;
     const result = onConfirm?.();
     if (!result || typeof (result as Promise<unknown>).then !== "function") return setOpen(false);
     setBusy(true);
@@ -217,6 +225,17 @@ export function AlertDialog({
       </Layer>
     </>
   );
+}
+
+/**
+ * BiVelio: how long after opening an AlertDialog ignores its confirm button – longer than the way in (the sheet takes
+ * 320 ms, dialog.css) and than a double tap, far shorter than reading the question.
+ */
+export const CONFIRM_GUARD_MS = 400;
+
+/** Whether a confirm pressed at `now` counts, for an AlertDialog that opened at `openedAt` (both from performance.now()) */
+export function confirmIsDeliberate(openedAt: number, now: number): boolean {
+  return Number.isFinite(openedAt) && now - openedAt >= CONFIRM_GUARD_MS;
 }
 
 /* ---------- The layer both build on ---------- */
