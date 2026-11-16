@@ -125,3 +125,21 @@ export function planLabel(ctx: OrgContext): string {
   const p = ctx.org?.plan;
   return p === "pro" || p === "enterprise" ? p : "free";
 }
+
+/**
+ * El plan que nombran la píldora de la barra y el menú de la cuenta, o `null`
+ * cuando no se puede nombrar ninguno sin mentir:
+ *
+ *  · sin organización LEÍDA (una lectura fallida no es «el gratuito»);
+ *  · con el COBRO EN CURSO: el webhook deja `plan = "free"` mientras la
+ *    suscripción está `incomplete` (un adeudo SEPA tarda días), y decir
+ *    «Gratis» a quien acaba de comprar, junto al aviso de que su pago se está
+ *    tramitando, es contradecirse en la misma pantalla. Mientras dura, no se
+ *    pinta plan: el estado lo cuenta BillingStateBanner.
+ */
+export function planDeLaBarra(ctx: OrgContext): string | null {
+  if (!ctx.org) return null;
+  const plan = planLabel(ctx);
+  if (plan === "free" && ctx.subscription?.status === "incomplete") return null;
+  return plan;
+}

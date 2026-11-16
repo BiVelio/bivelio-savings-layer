@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 
 import { Notice } from "@/app/components/ui";
+import { Link } from "@/i18n/navigation";
 import { Avatar } from "@/vendor/affectui/avatar";
 import { Badge } from "@/vendor/affectui/badge-clean";
 import { DataTable, type DataTableColumn } from "@/vendor/affectui/data-table-clean";
@@ -532,7 +533,11 @@ export function EquipoPanel() {
           if (!abierto) setConfirmando(null);
         }}
         title={quitado ? t("quitarTitulo", { email: quitado.email ?? quitado.userId }) : ""}
-        description={t("quitarCuerpo")}
+        // Las claves `bvk_` son de la organización, no de quien las creó: quitar a
+        // alguien NO las apaga. Se dice aquí, con el enlace a donde se revocan.
+        description={t.rich("quitarCuerpo", {
+          instalar: (texto) => <Link href="/dashboard/install">{texto}</Link>,
+        })}
         confirmLabel={t("quitarConfirmar")}
         cancelLabel={t("cancelar")}
         onConfirm={() => (aQuitar ? accion("/api/org/members", "DELETE", { userId: aQuitar.userId }) : undefined)}

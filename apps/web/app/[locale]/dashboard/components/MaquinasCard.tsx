@@ -43,8 +43,9 @@ import { money, pct0Floor } from "../format";
  *  · Data Table en SOLO LECTURA: se ordena por columna (id, superficie, última
  *    actividad, ahorro) y nada más. Sin celdas que parezcan editables.
  *  · Usage Meter reducido a ASIENTOS: en uso frente a pagados, la misma
- *    lectura del raíl (`medirAsientos` + `ctx.seats`). Sin esa lectura no hay
- *    medidor: no se pinta un «0 de N». No hay créditos ni cuotas que enseñar.
+ *    lectura del raíl (`medirAsientos` + `ctx.seats`). Sin esa lectura, sin
+ *    plan activo o con cero en uso no hay medidor: no se pinta un «0 de N» ni
+ *    un «N de M pagados» a quien no paga. No hay créditos ni cuotas que enseñar.
  *  · Tooltip con el id entero cuando la celda lo recorta, y Badge para el
  *    estado de versión (con palabras, además del tono).
  */
@@ -60,7 +61,8 @@ export async function MaquinasCard({
   asientos: AsientoVisto[];
   /** La lectura de asientos falló: no es «sin máquinas». */
   fallo?: boolean;
-  /** Asientos en uso y pagados este mes. Sin lectura, `undefined`: no hay medidor. */
+  /** Asientos en uso y pagados este mes. Sin lectura, sin plan activo o con uso
+   *  cero (días 1 y 2 del mes), `undefined`: no hay medidor. Lo decide la página. */
   seats?: { used: number; seats: number; /** Se rotó una clave este mes: el recuento puede venir inflado. */ rotated?: boolean };
 }) {
   const t = await getTranslations("dashboard.maquinas");
@@ -126,7 +128,7 @@ export async function MaquinasCard({
         <div className="n">{t("title")}</div>
         <EvidenceBadge tipo="tus-datos" label={u("evidence.tusDatos")} pequeno />
       </div>
-      {seats && seats.seats > 0 ? (
+      {seats && seats.seats > 0 && seats.used > 0 ? (
         <UsageMeter
           className="ox-seats"
           size="sm"

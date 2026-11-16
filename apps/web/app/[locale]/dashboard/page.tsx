@@ -72,6 +72,9 @@ export default async function OverviewPage({
   // adeudo SEPA sin liquidar), no hay nada que confirmar.
   const planElegido = planElegidoDe(planPedido);
   const yaConPlan = sobraElPlanElegido(ctx);
+  // Plan activo de verdad (el mismo criterio que AccountPlanStrip), no «tiene
+  // alguna fila de suscripción».
+  const yaConPlanActivo = ctx.org?.plan === "pro" || ctx.org?.plan === "enterprise";
   const usage = rango === RANGO_POR_DEFECTO ? usageCompleto : cortarPorPeriodo(usageCompleto, rango);
   const porModelo = rango === RANGO_POR_DEFECTO ? porModeloCompleto : cortarPorPeriodo(porModeloCompleto, rango);
   const sombraPorModelo = rango === RANGO_POR_DEFECTO ? sombraCompleta : cortarPorPeriodo(sombraCompleta, rango);
@@ -208,9 +211,17 @@ export default async function OverviewPage({
                 <MaquinasCard
                   asientos={asientos.rows}
                   fallo={asientos.failed}
-                  // La misma lectura que la cifra «N de M» del raíl; sin ella, sin medidor.
+                  // La misma lectura que la cifra «N de M» del raíl, con las dos
+                  // reglas de la tarjeta de Cuenta (avisoDeAsientos): solo con un
+                  // plan ACTIVO —`ctx.seats` sale de cualquier fila de suscripción,
+                  // también de una cancelada o a medio pagar, y «7 de 5 pagados»
+                  // sería falso para quien no paga nada— y solo con uso mayor que
+                  // cero: los días 1 y 2 del mes el cero es del calendario.
                   seats={
-                    typeof medidaDeAsientos.usados === "number" && typeof ctx.seats === "number"
+                    yaConPlanActivo &&
+                    typeof medidaDeAsientos.usados === "number" &&
+                    medidaDeAsientos.usados > 0 &&
+                    typeof ctx.seats === "number"
                       ? { used: medidaDeAsientos.usados, seats: ctx.seats, rotated: medidaDeAsientos.rotacionEsteMes }
                       : undefined
                   }

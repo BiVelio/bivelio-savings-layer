@@ -44,8 +44,8 @@ export async function AppTopbar({
   role,
 }: {
   email: string;
-  /** El plan de la organización, o `null` cuando NO SE LEYÓ — que no es lo
-   *  mismo que «el gratuito». La píldora se omite entonces, igual que el
+  /** El plan de la organización, o `null` cuando NO SE LEYÓ o el cobro sigue
+   *  en curso (`planDeLaBarra`) — que no es lo mismo que «el gratuito». La píldora se omite entonces, igual que el
    *  nombre: pintar un plan a través de una lectura fallida es cómo se le dice
    *  a un cliente que paga, en todas las pantallas, que no paga. */
   plan: string | null;
@@ -90,7 +90,7 @@ export async function AppTopbar({
       <div className="app-account">
         <TourGuide />
         <LocaleSwitcher />
-        {email && (
+        {email ? (
           <CuentaMenu
             triggerLabel={a("accountLink", { email })}
             menuLabel={a("menuLabel")}
@@ -136,6 +136,16 @@ export async function AppTopbar({
             }
             signOut={{ label: t("signOut"), icon: <SignOutIcon /> }}
           />
+        ) : (
+          // Sin correo no hay menú que abrir, pero SALIR NO PUEDE FALTAR: una
+          // sesión cuyo correo no se leyó se quedaba sin forma de cerrarse. El
+          // mismo POST a /auth/signout, como botón suelto.
+          <form action="/auth/signout" method="post" className="app-signout-form">
+            <button className="app-signout-solo" type="submit">
+              <SignOutIcon />
+              <span>{t("signOut")}</span>
+            </button>
+          </form>
         )}
       </div>
     </header>

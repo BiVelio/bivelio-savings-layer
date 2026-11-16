@@ -5290,6 +5290,22 @@ a.card:active, button.card:active, .card-link:active { transform: translateY(0);
 /* ── Barra: la cuenta es un menú (Profile Menu) ─────────────────────────── */
 .app .app-account { gap: 6px; }
 .app-signout-item { width: 100%; }
+/* Salir sin menú: cuando no se leyó el correo no hay Profile Menu, y el botón
+   va suelto en la barra. En estrecho se queda en su icono, con su nombre. */
+.app-signout-form { display: flex; margin: 0; }
+.app .app-signout-solo {
+  display: inline-flex; align-items: center; gap: 7px; height: 36px; padding: 0 10px;
+  border: 1px solid transparent; border-radius: var(--r-control); background: transparent; cursor: pointer;
+  font-family: var(--sans); font-size: 13.5px; font-weight: 500; color: var(--ink-soft);
+  transition: background-color var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out);
+}
+.app .app-signout-solo:hover { background: var(--surface-2); color: var(--ink); }
+.app .app-signout-solo svg { width: 16px; height: 16px; flex: none; }
+@media (max-width: 900px) {
+  .app .app-signout-solo { width: 36px; padding: 0; justify-content: center; }
+  .app .app-signout-solo > span { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
+@media (pointer: coarse) { .app .app-signout-solo { height: 44px; min-width: 44px; } }
 
 /* ── El pulso del periodo: gráfico diario + coste por proveedor ─────────── */
 .ov-pulse { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 14px; align-items: stretch; min-width: 0; }
@@ -5551,6 +5567,9 @@ a.card:active, button.card:active, .card-link:active { transform: translateY(0);
 .equipo .equipo-subhead .equipo-sub { margin: 0; padding: 0; border: 0; }
 .equipo-sin-invitaciones.ui-estc { padding: 28px 20px 30px; }
 .equipo-dialogo-quien { display: flex; align-items: center; gap: 12px; margin: 0; padding: 12px 14px; border-radius: 12px; background: var(--surface-3); box-shadow: inset 0 0 0 1px var(--line); font-size: 14px; overflow-wrap: anywhere; }
+/* El enlace de la confirmación («revóquelas en Primeros pasos») se lee como enlace del texto. */
+.app .ui-dlgc__desc a { color: inherit; text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+.app .ui-dlgc__desc a:hover { text-decoration-thickness: 2px; }
 .equipo-dialogo-quien b { min-width: 0; font-weight: 500; }
 @media (max-width: 560px) { .equipo .equipo-form > .btn.equipo-enviar { margin-top: 0; width: 100%; justify-content: center; } .equipo-form .ui-tfc.equipo-campo, .equipo-form .ui-selc.equipo-campo { flex: 1 1 100%; width: 100%; } }
 

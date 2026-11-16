@@ -5,7 +5,7 @@ import { AppSidebar } from "@/app/components/app/AppSidebar";
 import { AppTopbar } from "@/app/components/app/AppTopbar";
 import { destinoDeLaPeticion } from "@/lib/auth/destino";
 import { authConfigured } from "@/lib/supabase/env";
-import { loadDashboard, planLabel } from "./load";
+import { loadDashboard, planDeLaBarra } from "./load";
 
 export const dynamic = "force-dynamic";
 
@@ -43,11 +43,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <div className="app">
-      {/* `null` cuando no hay organización LEÍDA: la píldora se omite en vez de
-          nombrar el plan más barato a través de una lectura que falló. */}
+      {/* `null` cuando no hay organización LEÍDA o el cobro sigue en curso: la
+          píldora se omite en vez de nombrar el plan más barato a través de una
+          lectura que falló o de una compra que aún no ha terminado. */}
       <AppTopbar
         email={user?.email ?? ""}
-        plan={ctx.org ? planLabel(ctx) : null}
+        plan={planDeLaBarra(ctx)}
         orgName={ctx.org?.name ?? ""}
         role={ctx.role}
       />
