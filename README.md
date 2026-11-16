@@ -136,14 +136,12 @@ A license key that **is** configured but invalid or expired still fails closed w
 <summary><b>Cloud pricing (the optional, paid part) — full terms</b></summary>
 
 The cloud subscription is a fixed fee, paid whether or not you save: **Pro
-€15 / seat / month** or **€150 / seat / year**; **Team €129 / month with 10 seats included** (**€12 per extra seat**; **€1,290 / year, €120 per extra seat**), EUR, VAT not included. The first month carries no commission, and the
-commission on measured savings runs from **10 % down to 4 %** by volume —
-keeping you **at least 90 % of every euro saved**, never from estimates, and
-shadow-mode usage is never part of any commission. No trial. The free
+€15 / seat / month** or **€150 / seat / year**; **Team €129 / month with 10 seats included** (**€12 per extra seat**; **€1,290 / year, €120 per extra seat**), EUR, VAT not included. **No commission on your savings — you keep every euro you save.** No trial. The free
 **Measure** license (no card) still exists for the cloud: it runs the layer in
 **shadow mode** — nothing is served from any cache, nothing you send is
-changed — and shows what the levers would have saved, request by request. The
-older commission-only modality is **closed to new customers**. Your
+changed — and shows what the levers would have saved, request by request.
+
+**Legacy plans, closed to new customers.** An earlier modality charged a lower per-seat fee plus a tiered commission on measured savings only: the first month carries no commission, and the commission runs from **10 % down to 4 %** by volume — keeping you **at least 90 % of every euro saved**, never from estimates, and shadow-mode usage was never part of any commission. It is closed to new customers; a subscription already on it keeps it unchanged. Your
 prompts, completions and provider keys never reach BiVelio: a cloud key sends
 only the per-request usage fields listed in [LICENSE-CLOUD.md](./LICENSE-CLOUD.md) §5.
 
