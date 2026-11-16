@@ -250,7 +250,10 @@ className?: string
   control propio de copia y visibilidad única.
 - `.code2`, `.copybtn` y `.lp .code` ya tienen este mismo acabado; dentro de un
   `CodeFrame` pierden su caja.
-- ¿Coloreado automático y línea resaltada? `@/vendor/affectui/code-block-clean`.
+- ¿Coloreado automático y línea resaltada en un ejemplo LARGO? Mete dentro
+  `<pre><CodeLines code={…} language="ts" /></pre>`, de
+  `@/vendor/affectui/code-block-clean` (de servidor, sin script). Lo usa la
+  guía de migración. No lo uses donde un test fija el marcado interior.
 
 ### `<EmptyState>`
 
@@ -342,9 +345,14 @@ activo se marca con `aria-current="page"`. No lo dupliques en tu página.
 Vive en `apps/web/vendor/affectui/`, fuera de `app/`. Lee
 [`VENDOR.md`](../../../vendor/affectui/VENDOR.md) antes de añadir una pieza.
 
-- Ya están: `code-block-clean`, `empty-state-clean`, `skeleton-clean`,
-  `segmented-control-clean`, `number-ticker`, `progress-tracker-clean` (MIT) y
-  `experiment-card`, `kpi-board`, `compact-breakdown` (Pro).
+- Ya están: `code-block-clean` (solo el coloreador, `CodeLines`),
+  `number-ticker`, `progress-tracker-clean`, `integration-beam`, `layer-stack`
+  (MIT) y `pricing-plans`, `kpi-board`, `compact-breakdown`, `experiment-card`,
+  `experiment-readout`, `gradient-text`, `gradient-floor` (Pro). El inventario
+  con su uso está en `VENDOR.md`.
+- **No se vendoriza lo que no se usa.** Empty State, Skeleton y Segmented
+  Control se retiraron en la auditoría de 2026-11: `<EmptyState>`,
+  `<Skeleton>` y el selector de rango (enlaces) ya cubrían el caso.
 - Cada pieza es un `.tsx` + su `.css` hermano. Se importa con
   `@/vendor/affectui/<pieza>`.
 - Los ficheros Pro llevan su aviso en la cabecera y **no** son Apache-2.0.

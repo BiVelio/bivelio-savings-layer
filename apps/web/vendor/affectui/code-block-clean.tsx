@@ -3,176 +3,61 @@
  * MIT License, Copyright (c) 2026 Florian Höller (adfects). Full text: ./LICENSE.
  * Adapted for BiVelio Savings; changes from upstream are listed in ./VENDOR.md.
  */
-"use client";
-
 import "./code-block-clean.css";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 
 /*
- * Code Block (Clean) – a single self-contained file.
- * Code on a faint panel with a hairline: a header with the file name (or the language) and a copy button that turns
- * into a check for a moment. Optional line numbers that stay put while long lines scroll sideways, highlighted lines,
- * wrapping instead of scrolling, and a max height after which the code scrolls inside.
- * A tiny built-in colorizer for TypeScript / JavaScript, JSON, Bash and Python – no highlighter to install;
- * every other language is shown as plain text.
+ * Code Block (Clean) – BiVelio keeps the ENGINE of the piece, not its shell.
+ * Upstream is one client component: a framed figure with a header, a copy button and the code. In Savings the frame,
+ * the header, the copy button (with its visible "Copied" confirmation), the line numbers and the expected-output
+ * footer belong to the foundation `CodeFrame`, so shipping a second frame would only duplicate them. What is used
+ * from upstream is what `CodeFrame` did not have: the tiny built-in colorizer for TypeScript / JavaScript, JSON,
+ * Bash and Python (no highlighter to install; every other language is plain text) and the marked line.
+ *
+ * `CodeLines` renders the lines of one snippet with the upstream markup (`ui-codec__line`, `ui-codec__t-*`). It has
+ * no state and no effects, so it renders on the server and ships no JavaScript. Put it inside `<CodeFrame>`.
  * The styles live in the sibling .css file (moved out of the upstream <style> string).
  */
 
-export type CodeBlockProps = {
-  /** The code – copied exactly as given */
+export type CodeLinesProps = {
+  /** The code – shown exactly as given (one trailing newline is dropped, as files end with one) */
   code: string;
   /** ts, tsx, js, jsx, json, bash, sh, python … – colors the code when known, otherwise plain text */
   language?: string;
-  /** Shown in the header, e.g. "agent.config.ts" – without it the header names the language */
-  filename?: string;
-  /** Numbers in front of every line, they stay in place while the code scrolls sideways */
-  showLineNumbers?: boolean;
   /** Lines to mark, counted from 1 – e.g. [3, 4, 5] */
   highlightLines?: number[];
-  /** Long lines wrap instead of scrolling sideways */
-  wrap?: boolean;
-  /** After this height the code scrolls inside, e.g. 320 or "40vh" */
-  maxHeight?: number | string;
-  /** The copy button in the header. BiVelio: shown only when `labels` is given – the kit ships no English strings */
-  copyable?: boolean;
-  /** BiVelio: translated names for the copy button and the scroll region (e.g. from the `ui` namespace) */
-  labels?: { copy: string; copied: string; code?: string };
-  /** Called after the code was copied – e.g. for a toast */
-  onCopy?: (code: string) => void;
   className?: string;
-  style?: CSSProperties;
 };
 
 type Kind = "com" | "str" | "kw" | "num" | "lit" | "fn" | "key" | "var";
 type Token = [Kind | null, string];
 
-export function CodeBlock({
-  code,
-  language,
-  filename,
-  showLineNumbers = false,
-  highlightLines,
-  wrap = false,
-  maxHeight,
-  copyable = true,
-  labels,
-  onCopy,
-  className,
-  style,
-}: CodeBlockProps) {
-  // One trailing newline is how files end – it shouldn't show as an empty last line
+/** The lines of `code`, each a list of [kind, text] tokens – `kind` is null for plain text */
+export function colorize(code: string, language?: string): Token[][] {
   const source = typeof code === "string" ? code : code == null ? "" : String(code);
   const shown = source.replace(/\r\n?/g, "\n").replace(/\n$/, "");
-  const lang = resolve(language);
-  const lines = useMemo(() => toLines(tokenize(shown, lang)), [shown, lang]);
-  const marked = useMemo(() => new Set(Array.isArray(highlightLines) ? highlightLines : []), [highlightLines]);
-  const label = filename || languageName(language);
+  return toLines(tokenize(shown, resolve(language)));
+}
 
-  const scroller = useRef<HTMLDivElement>(null);
-  const [scrolls, setScrolls] = useState(false);
-  const [copied, setCopied] = useState(false);
-
-  // A scrolling block is reachable by Tab, so keyboard users can scroll it with the arrow keys
-  useLayoutEffect(() => {
-    const el = scroller.current;
-    if (!el) return;
-    const check = () => setScrolls(el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1);
-    check();
-    const ro = new ResizeObserver(check);
-    ro.observe(el);
-    if (el.firstElementChild) ro.observe(el.firstElementChild);
-    return () => ro.disconnect();
-  }, [shown, wrap, maxHeight, showLineNumbers]);
-
-  useEffect(() => {
-    if (!copied) return;
-    const t = window.setTimeout(() => setCopied(false), 1400);
-    return () => window.clearTimeout(t);
-  }, [copied]);
-
-  const copy = () =>
-    copyText(source).then((ok) => {
-      if (!ok) return;
-      setCopied(true);
-      onCopy?.(source);
-    });
-
-  const canCopy = copyable && !!labels;
-  const header = !!label || canCopy;
-  const digits = String(lines.length).length;
-
+export function CodeLines({ code, language, highlightLines, className }: CodeLinesProps) {
+  const lines = colorize(code, language);
+  const marked = new Set(Array.isArray(highlightLines) ? highlightLines : []);
   return (
-    <figure
-      className={["ui-codec", className].filter(Boolean).join(" ")}
-      data-wrap={wrap || undefined}
-      data-numbers={showLineNumbers || undefined}
-      style={{ ...style, ["--ui-codec-digits" as string]: digits }}
-    >
-      {header && (
-        <figcaption className="ui-codec__head">
-          <span className="ui-codec__label" dir="auto" title={label || undefined}>
-            {label}
-          </span>
-          {canCopy && (
-            <button
-              type="button"
-              className="ui-codec__copy"
-              data-copied={copied || undefined}
-              aria-label={copied ? labels.copied : labels.copy}
-              title={copied ? labels.copied : labels.copy}
-              onClick={copy}
-            >
-              <svg className="ui-codec__copy-icon" viewBox="0 0 16 16" aria-hidden="true">
-                <rect x="5.5" y="5.5" width="8.5" height="8.5" rx="2" />
-                <path d="M10.5 3.75v-.25A1.5 1.5 0 0 0 9 2H3.5A1.5 1.5 0 0 0 2 3.5V9a1.5 1.5 0 0 0 1.5 1.5h.25" />
-              </svg>
-              <svg className="ui-codec__copy-done" viewBox="0 0 16 16" aria-hidden="true">
-                <path d="M3.5 8.4 6.6 11.3 12.5 4.9" />
-              </svg>
-            </button>
-          )}
-        </figcaption>
-      )}
-      {/* Screen readers hear the copy – the button's new name alone isn't announced */}
-      {canCopy && (
-        <span className="ui-codec__sr" role="status">
-          {copied ? labels.copied : ""}
-        </span>
-      )}
-      <div
-        ref={scroller}
-        className="ui-codec__scroll"
-        style={maxHeight != null ? { maxHeight } : undefined}
-        tabIndex={scrolls ? 0 : undefined}
-        role={scrolls ? "region" : undefined}
-        aria-label={scrolls ? label || labels?.code || undefined : undefined}
-      >
-        <pre className="ui-codec__pre" dir="ltr">
-          <code className="ui-codec__code">
-            {lines.map((line, i) => (
-              <span key={i} className="ui-codec__line" data-marked={marked.has(i + 1) || undefined}>
-                {showLineNumbers && (
-                  <span className="ui-codec__ln" aria-hidden="true">
-                    {i + 1}
-                  </span>
-                )}
-                <span className="ui-codec__text">
-                  {line.map(([kind, text], j) =>
-                    kind ? (
-                      <span key={j} className={`ui-codec__t-${kind}`}>
-                        {text}
-                      </span>
-                    ) : (
-                      text
-                    ),
-                  )}
-                </span>
+    <code className={["ui-codec__code", className].filter(Boolean).join(" ")} dir="ltr" data-language={resolve(language) ?? undefined}>
+      {lines.map((line, i) => (
+        <span key={i} className="ui-codec__line" data-marked={marked.has(i + 1) || undefined}>
+          {line.map(([kind, text], j) =>
+            kind ? (
+              <span key={j} className={`ui-codec__t-${kind}`}>
+                {text}
               </span>
-            ))}
-          </code>
-        </pre>
-      </div>
-    </figure>
+            ) : (
+              text
+            ),
+          )}
+          {i < lines.length - 1 ? "\n" : null}
+        </span>
+      ))}
+    </code>
   );
 }
 
@@ -187,14 +72,7 @@ const ALIASES: Record<string, Lang> = {
   python: "python", py: "python",
 };
 
-const NAMES: Record<string, string> = {
-  ts: "TypeScript", typescript: "TypeScript", tsx: "TSX", js: "JavaScript", javascript: "JavaScript", jsx: "JSX",
-  mjs: "JavaScript", cjs: "JavaScript", json: "JSON", jsonc: "JSON", bash: "Bash", sh: "Shell", shell: "Shell",
-  zsh: "Zsh", console: "Terminal", python: "Python", py: "Python",
-};
-
 const resolve = (language?: string): Lang | null => (language ? ALIASES[language.toLowerCase()] ?? null : null);
-const languageName = (language?: string) => (language ? NAMES[language.toLowerCase()] ?? language : "");
 
 const END = "(?![\\s\\S])";
 const BLOCK_COMMENT = `\\/\\*[\\s\\S]*?(?:\\*\\/|${END})`;
@@ -286,27 +164,4 @@ function toLines(tokens: Token[]): Token[][] {
     });
   }
   return lines;
-}
-
-async function copyText(text: string) {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    // Older browsers and non-secure contexts
-    const area = document.createElement("textarea");
-    area.value = text;
-    area.setAttribute("readonly", "");
-    area.style.cssText = "position:fixed;opacity:0;pointer-events:none";
-    document.body.appendChild(area);
-    area.select();
-    let ok = false;
-    try {
-      ok = document.execCommand("copy");
-    } catch {
-      ok = false;
-    }
-    area.remove();
-    return ok;
-  }
 }

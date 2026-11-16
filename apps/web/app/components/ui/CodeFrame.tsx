@@ -17,8 +17,9 @@ import { cx } from "./cx";
  *    de una línea sigue siendo compacta.
  *
  * Es de servidor; solo el botón de copiar es una isla de cliente. Para un
- * snippet que necesita coloreado automático y resaltado de líneas, usa la
- * pieza vendorizada `@/vendor/affectui/code-block-clean`.
+ * ejemplo LARGO que necesita coloreado automático o una línea resaltada, pon
+ * dentro `<pre><CodeLines code language /></pre>`, el motor de la pieza
+ * vendorizada `@/vendor/affectui/code-block-clean` (también de servidor).
  */
 export type CodeFrameProps = {
   children: ReactNode;

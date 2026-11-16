@@ -34,10 +34,7 @@ para poder comparar al actualizar.
 
 | Pieza | Ficheros | Licencia | Origen | sha256 upstream |
 |---|---|---|---|---|
-| Code Block (Clean) | `code-block-clean.tsx` + `.css` | MIT | `components/code-block-clean.tsx` | `928a4e93648c7fbee2074c07d67f39a0b574ecee189ead60d4da8b0463504979` |
-| Empty State (Clean) | `empty-state-clean.tsx` + `.css` | MIT | `components/empty-state-clean.tsx` | `495f16a093feb816c8d1f26f9f4adeecfb95712fbf2ee55f9961432de9fe4d46` |
-| Skeleton (Clean) | `skeleton-clean.tsx` + `.css` | MIT | `components/skeleton-clean.tsx` | `1664e4f6df2a4965b9f9cc483e69ba5f445bbde257c45b8c0f13b61784efb0e6` |
-| Segmented Control (Clean) | `segmented-control-clean.tsx` + `.css` | MIT | `components/segmented-control-clean.tsx` | `8547e6335fc70ec9aa8e5a89dec96deb95bb46de5894c3c0e2b26e1763abd506` |
+| Code Block (Clean) — **solo el coloreador** | `code-block-clean.tsx` + `.css` | MIT | `components/code-block-clean.tsx` | `928a4e93648c7fbee2074c07d67f39a0b574ecee189ead60d4da8b0463504979` |
 | Number Ticker | `number-ticker.tsx` + `.css` | MIT | `motion/number-ticker.tsx` | `c56e7605203d19041fa33c6f177bccd4a02bf75b7923ba037461fd64f8440a6d` |
 | Experiment Card | `experiment-card.tsx` + `.css` | **affectUI Pro** | registro Pro, `experiment-card` (descarga del 2026-11-16) | `f6d08216b0a7803c47c196d52ea51e6d88e1d1900a3f584dba183a8459411373` |
 | Pricing Plans | `pricing-plans.tsx` + `.css` | **affectUI Pro** | registro Pro, `pricing-plans` (descarga del 2026-11-16) | `37e802dab0624e23b07369ae5a7b0191624f3612c42be4e2780c3aa94472ceaf` |
@@ -49,6 +46,31 @@ para poder comparar al actualizar.
 | Experiment Readout | `experiment-readout.tsx` + `.css` | **affectUI Pro** (derivado de Experiment Card) | registro Pro, `experiment-card` (descarga del 2026-11-16) | `f6d08216b0a7803c47c196d52ea51e6d88e1d1900a3f584dba183a8459411373` |
 | Integration Beam (**fork**) | `integration-beam.tsx` + `.css` | MIT | `illustrations/integration-beam.tsx` | `533cfff48bfc8b2d03a1968292d79e2229b8156e690c587fc4b0dbc965445fe6` |
 | Layer Stack | `layer-stack.tsx` + `.css` | MIT | `illustrations/layer-stack.tsx` | `4f8ea82ab8bca0c3a0a8f802eeaaa733fd2fac09b829f671519adbbaa8466cd6` |
+
+## Dónde se usa cada pieza
+
+Auditoría del 2026-11-16: una pieza que nadie importa desde `app/` no se queda.
+
+| Pieza | La importa |
+|---|---|
+| `pricing-plans` | `app/components/landing/PlanesCloud.tsx` (portada `#pricing` y `/pricing`) |
+| `kpi-board` | `dashboard/components/ResumenKpis.tsx` (`/dashboard`) |
+| `compact-breakdown` | `dashboard/components/DesgloseModelos.tsx` (`/dashboard`) |
+| `progress-tracker-clean` | `dashboard/install/page.tsx`, `app/components/app/SetupProgress.tsx`, `dashboard/components/InstrumentationSpine.tsx` |
+| `code-block-clean` | `migrate-to-0.5/page.tsx` (dentro de `CodeFrame`) |
+| `integration-beam`, `layer-stack` | `app/components/HowItWorks.tsx` (`/how-it-works` y `/dashboard/how-it-works`) |
+| `experiment-card` | `app/components/evidencia/ComparacionAB.tsx` (`/benchmarks`) |
+| `experiment-readout` | `dashboard/components/YourBenchHeadline.tsx` (`/dashboard/your-bench`) |
+| `gradient-text` | `app/[locale]/page.tsx` (una frase del héroe) |
+| `gradient-floor` | `app/components/landing/CierreMeasure.tsx` (cierre de la portada) |
+| `number-ticker` | `dashboard/components/VerdictHero.tsx` (la cifra del veredicto, al cambiar de rango) |
+
+**Retiradas en esa auditoría** (solo las montaba el muestrario `/kit`): Empty
+State (Clean), Skeleton (Clean) y Segmented Control (Clean). Sus equivalentes
+de la fundación (`<EmptyState>`, `<Skeleton>`, el selector de rango hecho de
+enlaces) ya cubrían el caso y cambiarlos habría movido pantallas aprobadas sin
+ganar nada. Si vuelven a hacer falta, se vendorizan de nuevo desde el commit de
+arriba.
 
 ## Cambios respecto a upstream
 
@@ -74,16 +96,22 @@ para poder comparar al actualizar.
 
 **Por pieza**
 
-- **code-block-clean** — nueva prop `labels { copy, copied, code? }`; el botón
-  de copiar solo se pinta si llega (`"Copy code"`/`"Copied"` eliminados). Paleta
-  del coloreador a tokens: palabra clave `--brand`, cadena `--good-ink`, número
-  y literal `--warn`, comentario `#7A7F8C`, función/variable `#0052B8`; fondo
-  `--surface`, línea marcada con `--brand`.
-- **empty-state-clean** — marco a `--surface` translúcido.
-- **skeleton-clean** — `Loading.label` pasa a ser **obligatoria** (sin
-  `"Loading"` por defecto); relleno `--surface-2`.
-- **segmented-control-clean** — acento `--brand`/`--brand-soft`, relleno
-  `--surface-2`, sombra de la pastilla con `--line`, curva `--aui-ease`.
+- **code-block-clean** — **REDUCIDO AL MOTOR.** Upstream es un componente de
+  cliente con su marco, su cabecera y su botón de copiar. Todo eso ya lo pone
+  el `CodeFrame` de la fundación (con su «Copiado» visible, la salida esperada
+  y las pestañas de sistema), así que aquí queda lo que `CodeFrame` no tenía:
+  el coloreador (TypeScript/JavaScript, JSON, Bash y Python; lo demás, texto
+  llano) y la línea resaltada. Se exportan `CodeLines` (un `<code>` con una
+  `ui-codec__line` por línea y los `ui-codec__t-*` de upstream; el salto de
+  línea vive DENTRO de cada línea, así que el texto seleccionado y el
+  `textContent` son el código exacto) y `colorize`. Sin `"use client"`, sin
+  estado ni efectos: se renderiza en servidor y no envía JavaScript. Fuera:
+  `CodeBlock`, el botón de copiar y `copyText`, la detección de scroll
+  (`ResizeObserver`), `maxHeight`, `wrap`, los números de línea propios (los
+  pone `CodeFrame`, `lineas`) y los nombres de lenguaje en inglés de la
+  cabecera. Paleta a tokens: palabra clave `--brand`, cadena `--good-ink`,
+  número y literal `--warn`, comentario `#7A7F8C`, función/variable `#0052B8`;
+  línea marcada con `--brand`. Lo usa `/migrate-to-0.5` (los ejemplos largos).
 - **number-ticker** — **ya no cuenta desde cero al entrar** (sugería una
   medición en curso): el primer valor se pinta tal cual, también en el HTML del
   servidor, y solo ruedan los cambios posteriores. Nueva prop `countIn` para

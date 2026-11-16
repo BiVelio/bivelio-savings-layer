@@ -8,6 +8,7 @@ import { CodeFrame } from "@/app/components/ui";
 import { absolute, tarjetaSocial } from "@/i18n/site";
 import { cargarGuia } from "@/lib/guia-migracion/cargar";
 import { textoPlano, type Bloque, type EnLinea } from "@/lib/guia-migracion/markdown";
+import { CodeLines } from "@/vendor/affectui/code-block-clean";
 
 /**
  * /migrate-to-0.5 — LA GUÍA DE MIGRACIÓN 0.4 → 0.5, publicada en la web
@@ -21,7 +22,9 @@ import { textoPlano, type Bloque, type EnLinea } from "@/lib/guia-migracion/mark
  *
  * LA FORMA (rediseño 2026-11): plantilla de documentación. Índice de secciones
  * —fijo a la izquierda en escritorio, plegado en móvil—, y los ejemplos en el
- * marco de código de la fundación. Un bloque que trae sus dos mitades marcadas
+ * marco de código de la fundación, coloreados por el motor del Code Block de
+ * affectUI (`CodeLines`): son los ejemplos LARGOS de la web, donde el color
+ * ayuda a leer. Un bloque que trae sus dos mitades marcadas
  * con `// Before (…)` y `// After (…)` se parte en DOS marcos, uno por mitad,
  * con ese mismo comentario como rótulo: el texto no cambia, solo deja de haber
  * que buscar la frontera a ojo. Lo que se traduce es la interfaz (`docsPage.*`
@@ -122,8 +125,10 @@ function Codigo({ v, lenguaje, copiar }: { v: string; lenguaje: string; copiar: 
       ariaLabel={p.rotulo ?? (lenguaje || "code")}
       copiar={{ texto: p.codigo, ...copiar }}
     >
+      {/* El coloreador es el de la pieza vendorizada (de servidor, sin script):
+          `ts` y `sh` salen con color; `text` y los bloques sin lenguaje, tal cual. */}
       <pre data-lenguaje={lenguaje || undefined}>
-        <code>{p.codigo}</code>
+        <CodeLines code={p.codigo} language={lenguaje} />
       </pre>
     </CodeFrame>
   ));

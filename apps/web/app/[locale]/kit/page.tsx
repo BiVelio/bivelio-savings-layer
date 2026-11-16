@@ -6,7 +6,15 @@ import { CodeFrame, EmptyState, EvidenceBadge, Notice, PageHeader, Recibo, Secti
 import { ProofIcon } from "@/app/components/icons";
 import { capturaDisponible } from "@/lib/portada/panel-del-banco";
 
+import { CodeLines } from "@/vendor/affectui/code-block-clean";
+
 import { KitInteractivo } from "./KitInteractivo";
+
+const EJEMPLO_TS = `import { createSavingsLayer } from "@bivelio/savings-layer";
+
+export const layer = createSavingsLayer({
+  provider: "openai",
+});`;
 
 /**
  * MUESTRARIO DE LA FUNDACIÓN — SOLO EN DESARROLLO (`pnpm dev` → /es/kit).
@@ -167,6 +175,13 @@ export default async function Muestrario({ params }: { params: Promise<{ locale:
               <span className="s">{'"openai"'}</span>
               {" });"}
             </CodeFrame>
+            {/* El coloreador de la pieza vendorizada (code-block-clean), dentro del
+                marco de la fundación: color automático y línea resaltada. */}
+            <CodeFrame etiqueta="savings.config.ts · CodeLines" lineas={EJEMPLO_TS.split("\n").length} copiar={{ texto: EJEMPLO_TS, etiqueta: t("copy"), etiquetaCopiado: t("copied") }}>
+              <pre>
+                <CodeLines code={EJEMPLO_TS} language="ts" highlightLines={[3]} />
+              </pre>
+            </CodeFrame>
           </div>
         </Bloque>
 
@@ -243,7 +258,7 @@ export default async function Muestrario({ params }: { params: Promise<{ locale:
         </Bloque>
 
         <Bloque titulo="Piezas affectUI vendorizadas">
-          <KitInteractivo locale={locale} copiar={t("copy")} copiado={t("copied")} />
+          <KitInteractivo locale={locale} />
         </Bloque>
       </main>
     </div>
