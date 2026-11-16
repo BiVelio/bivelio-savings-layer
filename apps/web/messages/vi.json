@@ -20,7 +20,8 @@
     "mainAria": "Điều hướng chính",
     "newTab": "(mở trong thẻ mới)",
     "breadcrumb": "Đường dẫn điều hướng",
-    "home": "Trang chủ"
+    "home": "Trang chủ",
+    "skipToContent": "Chuyển đến nội dung"
   },
   "app": {
     "sidebar": {
@@ -67,7 +68,8 @@
         "enterprise": "Enterprise"
       },
       "menuLabel": "Menu tài khoản",
-      "setupNext": "Tiếp theo:"
+      "setupNext": "Tiếp theo:",
+      "brandAria": "Savings by BiVelio — bảng điều khiển"
     },
     "tour": {
       "open": "Xem hướng dẫn",
@@ -1443,7 +1445,9 @@
       "howItWorks": "Cách hoạt động",
       "pricingTerms": "Điều khoản giá",
       "dataPrivacy": "BiVelio nhận được gì",
-      "paper": "Bài báo"
+      "paper": "Bài báo",
+      "socialLinkedIn": "BiVelio trên LinkedIn",
+      "socialGitHub": "BiVelio trên GitHub"
     },
     "cta15": {
       "titulo": "Yêu cầu cuộc gọi 15 phút",
@@ -2086,7 +2090,8 @@
       "sample": "Số yêu cầu mỗi nhánh và bao nhiêu trong đó là câu hỏi riêng biệt; phần còn lại là lặp lại y nguyên và diễn đạt lại.",
       "accuracy": "Số câu trả lời đúng trên các câu hỏi có đáp án đã công bố, ở nhánh A và nhánh B.",
       "run": "Phiên bản gói đã chạy ở nhánh B và ngày chạy."
-    }
+    },
+    "tableRegion": "Bảng có thể cuộn: {title}"
   },
   "howItWorks": {
     "metaTitle": "Khoản tiết kiệm được cài ở đâu? · BiVelio Savings Layer",

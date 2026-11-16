@@ -20,7 +20,8 @@
     "mainAria": "Navigation principale",
     "newTab": "(s'ouvre dans un nouvel onglet)",
     "breadcrumb": "Fil d'Ariane",
-    "home": "Accueil"
+    "home": "Accueil",
+    "skipToContent": "Aller au contenu"
   },
   "app": {
     "sidebar": {
@@ -67,7 +68,8 @@
         "enterprise": "Enterprise"
       },
       "menuLabel": "Menu du compte",
-      "setupNext": "Prochaine étape :"
+      "setupNext": "Prochaine étape :",
+      "brandAria": "Savings by BiVelio — tableau de bord"
     },
     "tour": {
       "open": "Voir la visite",
@@ -1443,7 +1445,9 @@
       "howItWorks": "Comment ça marche",
       "pricingTerms": "Conditions tarifaires",
       "dataPrivacy": "Ce que reçoit BiVelio",
-      "paper": "Article"
+      "paper": "Article",
+      "socialLinkedIn": "BiVelio sur LinkedIn",
+      "socialGitHub": "BiVelio sur GitHub"
     },
     "cta15": {
       "titulo": "Demander un appel de 15 min",
@@ -2086,7 +2090,8 @@
       "sample": "Requêtes par bras, dont le nombre de questions uniques ; les autres sont des répétitions exactes et des paraphrases.",
       "accuracy": "Bonnes réponses sur les questions dont la réponse est publiée, dans le bras A et dans le bras B.",
       "run": "Version du paquet exécutée dans le bras B et jour de l'exécution."
-    }
+    },
+    "tableRegion": "Tableau défilant : {title}"
   },
   "howItWorks": {
     "metaTitle": "Où s'installe l'économie ? · BiVelio Savings Layer",

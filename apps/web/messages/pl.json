@@ -20,7 +20,8 @@
     "mainAria": "Nawigacja główna",
     "newTab": "(otwiera się w nowej karcie)",
     "breadcrumb": "Ścieżka nawigacji",
-    "home": "Strona główna"
+    "home": "Strona główna",
+    "skipToContent": "Przejdź do treści"
   },
   "app": {
     "sidebar": {
@@ -67,7 +68,8 @@
         "enterprise": "Enterprise"
       },
       "menuLabel": "Menu konta",
-      "setupNext": "Następny:"
+      "setupNext": "Następny:",
+      "brandAria": "Savings by BiVelio — panel"
     },
     "tour": {
       "open": "Zobacz przewodnik",
@@ -1443,7 +1445,9 @@
       "howItWorks": "Jak to działa",
       "pricingTerms": "Warunki cenowe",
       "dataPrivacy": "Co otrzymuje BiVelio",
-      "paper": "Artykuł"
+      "paper": "Artykuł",
+      "socialLinkedIn": "BiVelio w serwisie LinkedIn",
+      "socialGitHub": "BiVelio w serwisie GitHub"
     },
     "cta15": {
       "titulo": "Poproś o 15-minutową rozmowę",
@@ -2086,7 +2090,8 @@
       "sample": "Żądania na ramię i ile z nich to unikalne pytania; reszta to dokładne powtórzenia i parafrazy.",
       "accuracy": "Poprawne odpowiedzi na pytania z opublikowaną odpowiedzią, w ramieniu A i w ramieniu B.",
       "run": "Wersja pakietu uruchomiona w ramieniu B oraz dzień przebiegu."
-    }
+    },
+    "tableRegion": "Przewijana tabela: {title}"
   },
   "howItWorks": {
     "metaTitle": "Gdzie instaluje się oszczędność? · BiVelio Savings Layer",

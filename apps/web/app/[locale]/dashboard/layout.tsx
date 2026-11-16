@@ -8,6 +8,7 @@ import "@/vendor/affectui/affectui-panel.css";
 
 import { AppSidebar } from "@/app/components/app/AppSidebar";
 import { AppTopbar } from "@/app/components/app/AppTopbar";
+import { ID_DEL_CONTENIDO, SkipLink } from "@/app/components/SkipLink";
 import { destinoDeLaPeticion } from "@/lib/auth/destino";
 import { authConfigured } from "@/lib/supabase/env";
 import { loadDashboard, planDeLaBarra } from "./load";
@@ -48,6 +49,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <div className="app">
+      {/* Primer foco del panel: salta la barra y el raíl hasta el <main>. */}
+      <SkipLink />
       {/* `null` cuando no hay organización LEÍDA o el cobro sigue en curso: la
           píldora se omite en vez de nombrar el plan más barato a través de una
           lectura que falló o de una compra que aún no ha terminado. */}
@@ -59,7 +62,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       />
       <div className="app-body">
         <AppSidebar role={ctx.role} unknownOrg={orgFallo} />
-        <main className="app-main">
+        <main className="app-main" id={ID_DEL_CONTENIDO} tabIndex={-1}>
           <div className="app-inner">{children}</div>
         </main>
       </div>

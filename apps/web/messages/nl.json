@@ -20,7 +20,8 @@
     "mainAria": "Hoofdnavigatie",
     "newTab": "(opent in een nieuw tabblad)",
     "breadcrumb": "Kruimelpad",
-    "home": "Home"
+    "home": "Home",
+    "skipToContent": "Naar de inhoud"
   },
   "app": {
     "sidebar": {
@@ -67,7 +68,8 @@
         "enterprise": "Enterprise"
       },
       "menuLabel": "Accountmenu",
-      "setupNext": "Volgende:"
+      "setupNext": "Volgende:",
+      "brandAria": "Savings by BiVelio — dashboard"
     },
     "tour": {
       "open": "Tour bekijken",
@@ -1443,7 +1445,9 @@
       "howItWorks": "Hoe het werkt",
       "pricingTerms": "Prijsvoorwaarden",
       "dataPrivacy": "Wat BiVelio ontvangt",
-      "paper": "Paper"
+      "paper": "Paper",
+      "socialLinkedIn": "BiVelio op LinkedIn",
+      "socialGitHub": "BiVelio op GitHub"
     },
     "cta15": {
       "titulo": "Vraag een gesprek van 15 min aan",
@@ -2086,7 +2090,8 @@
       "sample": "Verzoeken per arm en hoeveel daarvan unieke vragen zijn; de rest zijn exacte herhalingen en parafrases.",
       "accuracy": "Juiste antwoorden op de vragen met een gepubliceerd antwoord, in arm A en in arm B.",
       "run": "Pakketversie die in arm B draaide, en de dag van de run."
-    }
+    },
+    "tableRegion": "Scrollbare tabel: {title}"
   },
   "howItWorks": {
     "metaTitle": "Waar wordt de besparing geïnstalleerd? · BiVelio Savings Layer",

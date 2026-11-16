@@ -85,6 +85,10 @@
   /* Como TEXTO sobre marfil: 4,9:1. El #D64545 anterior se quedaba en 4,1:1 al
      pasar el fondo de #FDFDFD a #FAFAF7. */
   --danger:      #C73A3A;
+  /* --danger como TEXTO sobre su PROPIO tinte (--bad-soft, la insignia de
+     affectUI): #C73A3A se queda en 4,49:1 sobre #FAEDED. Este da 5,4:1 ahí y
+     4,8:1 con el tinte sobre la banda (--surface-2). */
+  --danger-ink:  #B42E2E;
   /* Barra de comparación "sin optimizar". */
   --baseline:    color-mix(in srgb, var(--ink-soft) 45%, transparent);
 
@@ -257,6 +261,20 @@ html, body { overflow-x: hidden; overflow-x: clip; max-width: 100%; }
    el nombre se lea entero una vez mientras el dibujo con las astas sin punto
    va aria-hidden. No es licencia para esconder etiquetas en general. */
 .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; white-space: nowrap; clip: rect(0, 0, 0, 0); clip-path: inset(50%); }
+/* «Saltar al contenido»: el primer foco de cada página. Fuera de pantalla
+   hasta que recibe el foco; entonces, una píldora tinta arriba a la izquierda,
+   por encima de la cabecera pegajosa. Su destino (`.skip-target` o el <main>
+   del panel) recibe el foco sin anillo: no es un control. */
+.skip-link {
+  position: fixed; top: 8px; inset-inline-start: 8px; z-index: 1000;
+  display: inline-flex; align-items: center; min-height: 40px; padding: 0 16px;
+  border-radius: var(--r-control); background: var(--btn-ink); color: #FFFFFF;
+  font-family: var(--sans); font-size: 14px; font-weight: 500; text-decoration: none;
+  box-shadow: var(--shadow-pop); transform: translateY(-200%);
+}
+.skip-link:focus, .skip-link:focus-visible { transform: none; text-decoration: none; outline-color: var(--brand); outline-offset: 2px; }
+.skip-target { display: block; height: 0; scroll-margin-top: calc(var(--nav-h) + 48px); }
+.skip-target:focus, .app-main:focus { outline: none; }
 body {
   margin: 0;
   background: var(--bg);
@@ -1325,7 +1343,7 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .ux-stat .v { font-family: var(--font-heading); font-size: 1.02rem; font-weight: 650; letter-spacing: -.02em; font-variant-numeric: tabular-nums; margin-top: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ux-stat .v.pos { color: var(--good-ink); }
 .ux-stat .v.neg { color: var(--danger); }
-.ux-stat .s { display: block; font-family: var(--mono); font-size: 9.5px; color: var(--ink-soft); opacity: .85; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ux-stat .s { display: block; font-family: var(--mono); font-size: 9.5px; color: var(--ink-soft); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 @media (max-width: 900px) { .ux-stats, .ux-stats.c4 { grid-template-columns: repeat(3, minmax(0, 1fr)); } .ux-stats.c4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 520px) { .ux-stats, .ux-stats.c4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
@@ -1665,7 +1683,7 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .lp .ftr-fine p { margin: 0 0 8px; }
 .lp .ftr-fine p:last-child { margin-bottom: 0; }
 .lp .ftr-trust { font-size: 12px; color: var(--ink-soft); }
-.lp .ftr-entity { font-size: 11px; color: var(--ink-soft); opacity: .8; }
+.lp .ftr-entity { font-size: 11px; color: var(--ink-soft); }
 .lp .ftr-bottom { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; padding: 18px clamp(20px, 3vw, 40px); font-size: 13px; }
 .lp .ftr-bottom > p { margin: 0; font-weight: 500; color: var(--ink-soft); }
 .lp .ftr-bottom-links { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; min-width: 0; font-weight: 500; color: var(--ink-soft); }
@@ -2314,6 +2332,10 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .lp .nvi-foot-box img { display: block; height: auto; max-width: 100%; }
 .lp .nvi-foot-line { font-size: 11px; line-height: 1.6; color: color-mix(in srgb, var(--muted) 80%, transparent); max-width: 15rem; }
 .lp .nvi-foot-line .nvi-brand { color: var(--navy); }
+/* La frase mezcla --muted al 80 % (la medida de bivelio.com) y con el --muted
+   general se queda en 3,95:1 a 11px. Aquí, y solo aquí, el token baja un
+   escalón para que la MISMA mezcla dé 4,8:1 sobre el blanco del pie. */
+.lp .nvi-foot { --muted: #494F5E; }
 @media (prefers-reduced-motion: reduce) { .lp .nvi-band-art:hover { transform: none; } .lp .nvi-band-cta:hover svg { transform: none; } .lp .nvi-foot:hover { transform: none; } }
 
 /* ── Panel editable (2026-09-19) ─────────────────────────────────────────────
@@ -2361,7 +2383,7 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .ux-actions { margin-left: auto; }
 .ux-sel { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
 .ux-sel .ux-foot { margin: 0; }
-.ux-foot.src { opacity: .8; margin-top: 6px; font-size: 10.5px; letter-spacing: .04em; }
+.ux-foot.src { margin-top: 6px; font-size: 10.5px; letter-spacing: .04em; }
 
 /* ============================================================================
    PÁGINAS QUE CITA LA LICENSE — /pricing («Published Pricing», §6) y /privacy
@@ -2381,6 +2403,9 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .terms-sec p { margin: 0 0 12px; color: var(--ink-soft); line-height: 1.625; }
 .terms-sec p b { color: var(--ink); }
 .terms-sec a { color: var(--brand); }
+/* Un enlace DENTRO de un párrafo no puede distinguirse solo por el color: el
+   azul de marca frente al gris del cuerpo da 1,2:1 (WCAG 1.4.1). Subrayado. */
+.terms-sec p a:not(.btn), .terms-sec li a:not(.btn) { text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
 .terms-amount { font-size: 1.1rem; color: var(--ink) !important; }
 .terms-list { margin: 0 0 14px; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; color: var(--ink-soft); line-height: 1.55; }
 .terms-list b { color: var(--ink); }
@@ -3030,8 +3055,8 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 /* Dentro del marco, un `.code2` o un `.lp .code` heredados pierden su caja. */
 .codeframe-code .code2, .lp .codeframe-code .code { border: 0; border-radius: 0; box-shadow: none; background: none; padding: 0; }
 .codeframe--wrap .codeframe-code { white-space: pre-wrap; overflow-wrap: anywhere; flex-shrink: 1; }
-.codeframe-nums { flex: none; margin: 0; padding: 14px 0 14px 14px; text-align: end; font-family: var(--mono); font-size: 13px; line-height: 1.7; color: color-mix(in srgb, var(--ink-soft) 60%, var(--surface)); -webkit-user-select: none; user-select: none; white-space: pre; position: sticky; left: 0; background: var(--surface); }
-.codeframe-code .c { color: #7A7F8C; }
+.codeframe-nums { flex: none; margin: 0; padding: 14px 0 14px 14px; text-align: end; font-family: var(--mono); font-size: 13px; line-height: 1.7; color: color-mix(in srgb, var(--ink-soft) 90%, var(--surface)); -webkit-user-select: none; user-select: none; white-space: pre; position: sticky; left: 0; background: var(--surface); }
+.codeframe-code .c { color: #676C79; }
 .codeframe-code .k, .codeframe-code .n { color: var(--brand); }
 .codeframe-code .n { font-weight: 600; }
 .codeframe-code .s { color: var(--warn); }
@@ -3842,7 +3867,7 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 
 /* El raíl: gris suave, una línea, sin teselas. */
 .app .app-sidebar { background: color-mix(in srgb, var(--surface-2) 58%, var(--bg)); padding: 16px 12px 28px; }
-.app-sidebar .app-nav-sep { margin: 18px 10px 6px; padding-top: 0; border-top: 0; font-size: 11px; letter-spacing: .07em; color: color-mix(in srgb, var(--ink-soft) 86%, var(--bg)); }
+.app-sidebar .app-nav-sep { margin: 18px 10px 6px; padding-top: 0; border-top: 0; font-size: 11px; letter-spacing: .07em; color: var(--ink-soft); }
 .app-sidebar .app-nav-sep[data-first] { margin-top: 6px; }
 .app-sidebar .app-nav-item {
   gap: 10px; padding: 6px 10px; min-height: 36px; border-radius: 9px; border: 0;
@@ -5949,3 +5974,8 @@ a.card:active, button.card:active, .card-link:active { transform: translateY(0);
   .ui-dtc__table .st-name-t { overflow-wrap: break-word; }
 }
 /* ==== FIN SLOT ACABADO FINAL ==== */
+
+/* La insignia «danger» de affectUI pinta --aui-danger sobre su tinte al 9 %:
+   4,49:1. Con `:root` delante gana a la hoja vendorizada sea cual sea el orden
+   de carga. */
+:root .ui-bdgc { --ui-bdgc-danger-fg: var(--danger-ink); }

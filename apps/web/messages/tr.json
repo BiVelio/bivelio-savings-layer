@@ -20,7 +20,8 @@
     "mainAria": "Ana gezinme",
     "newTab": "(yeni sekmede açılır)",
     "breadcrumb": "İçerik haritası",
-    "home": "Ana sayfa"
+    "home": "Ana sayfa",
+    "skipToContent": "İçeriğe geç"
   },
   "app": {
     "sidebar": {
@@ -67,7 +68,8 @@
         "enterprise": "Enterprise"
       },
       "menuLabel": "Hesap menüsü",
-      "setupNext": "Sıradaki:"
+      "setupNext": "Sıradaki:",
+      "brandAria": "Savings by BiVelio — panel"
     },
     "tour": {
       "open": "Turu izle",
@@ -1443,7 +1445,9 @@
       "howItWorks": "Nasıl çalışır",
       "pricingTerms": "Fiyat koşulları",
       "dataPrivacy": "BiVelio ne alır",
-      "paper": "Makale"
+      "paper": "Makale",
+      "socialLinkedIn": "LinkedIn üzerinde BiVelio",
+      "socialGitHub": "GitHub üzerinde BiVelio"
     },
     "cta15": {
       "titulo": "15 dakikalık görüşme isteyin",
@@ -2086,7 +2090,8 @@
       "sample": "Kol başına istek sayısı ve bunların kaçının benzersiz soru olduğu; geri kalanı birebir tekrarlar ve yeniden ifadelerdir.",
       "accuracy": "Yanıtı yayımlanmış sorularda, A kolunda ve B kolunda doğru yanıtlar.",
       "run": "B kolunda çalışan paket sürümü ve çalıştırmanın günü."
-    }
+    },
+    "tableRegion": "Kaydırılabilir tablo: {title}"
   },
   "howItWorks": {
     "metaTitle": "Tasarruf nereye kurulur? · BiVelio Savings Layer",

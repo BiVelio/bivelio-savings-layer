@@ -20,7 +20,8 @@
     "mainAria": "Navegació principal",
     "newTab": "(s'obre en una pestanya nova)",
     "breadcrumb": "Ruta de navegació",
-    "home": "Inici"
+    "home": "Inici",
+    "skipToContent": "Salta al contingut"
   },
   "app": {
     "sidebar": {
@@ -67,7 +68,8 @@
         "enterprise": "Enterprise"
       },
       "menuLabel": "Menú del compte",
-      "setupNext": "Següent:"
+      "setupNext": "Següent:",
+      "brandAria": "Savings by BiVelio — tauler"
     },
     "tour": {
       "open": "Veure el tour",
@@ -1443,7 +1445,9 @@
       "howItWorks": "Com funciona",
       "pricingTerms": "Termes de preu",
       "dataPrivacy": "Què rep BiVelio",
-      "paper": "Article"
+      "paper": "Article",
+      "socialLinkedIn": "BiVelio a LinkedIn",
+      "socialGitHub": "BiVelio a GitHub"
     },
     "cta15": {
       "titulo": "Demana una trucada de 15 min",
@@ -2086,7 +2090,8 @@
       "sample": "Peticions per braç i quantes són preguntes úniques; la resta són repeticions exactes i paràfrasis.",
       "accuracy": "Encerts sobre les preguntes amb resposta publicada, al braç A i al B.",
       "run": "Versió del paquet que va córrer al braç B i dia de la tirada."
-    }
+    },
+    "tableRegion": "Taula desplaçable: {title}"
   },
   "howItWorks": {
     "metaTitle": "On s'instal·la l'estalvi? · BiVelio Savings Layer",

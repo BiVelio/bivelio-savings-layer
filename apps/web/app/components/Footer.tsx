@@ -21,18 +21,21 @@ async function etiquetaDelCodigo(): Promise<string> {
 // Cuentas propiedad de BiVelio, las mismas que publica el SocialDock de
 // bivelio.com. No hay cuenta de X (x.com/bivelio es un 404), así que X no está
 // en vez de apuntar a otro sitio.
+// El nombre accesible de cada icono sale del catálogo (`landing.footer.*`), no
+// de un literal en inglés: es lo único que un lector de pantalla dice de ellos.
 const SOCIALS = [
-  { href: "https://www.linkedin.com/company/bivelio/", label: "BiVelio on LinkedIn", Icon: LinkedInIcon },
-  { href: "https://github.com/BiVelio", label: "BiVelio on GitHub", Icon: GitHubIcon },
-];
+  { href: "https://www.linkedin.com/company/bivelio/", clave: "footer.socialLinkedIn", Icon: LinkedInIcon },
+  { href: "https://github.com/BiVelio", clave: "footer.socialGitHub", Icon: GitHubIcon },
+] as const;
 
 /** Dock de cristal con las redes de la compañía — la píldora del footer corporativo. */
-function SocialDock({ sinGitHub = false }: { sinGitHub?: boolean }) {
+async function SocialDock({ sinGitHub = false }: { sinGitHub?: boolean }) {
+  const t = await getTranslations("landing");
   const redes = sinGitHub ? SOCIALS.filter((s) => !s.href.startsWith("https://github.com/")) : SOCIALS;
   return (
     <div className="ftr-social">
-      {redes.map(({ href, label, Icon }) => (
-        <a key={href} href={href} target="_blank" rel="noopener noreferrer me" aria-label={label}>
+      {redes.map(({ href, clave, Icon }) => (
+        <a key={href} href={href} target="_blank" rel="noopener noreferrer me" aria-label={t(clave)}>
           <Icon />
         </a>
       ))}

@@ -69,7 +69,7 @@ export async function AppTopbar({
   const siguiente = progress?.steps.find((s) => s.status === "current");
   return (
     <header className="app-topbar" data-tour="topbar">
-      <Link href="/dashboard" className="brand app-brand" aria-label="Savings by BiVelio — dashboard">
+      <Link href="/dashboard" className="brand app-brand" aria-label={a("brandAria")}>
         <SavingsLogo variant="full" height={30} className="app-logo-full" />
         <SavingsLogo variant="mark" height={28} className="app-logo-mark" />
       </Link>

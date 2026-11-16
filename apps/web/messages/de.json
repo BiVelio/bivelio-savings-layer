@@ -20,7 +20,8 @@
     "mainAria": "Hauptnavigation",
     "newTab": "(öffnet sich in einem neuen Tab)",
     "breadcrumb": "Brotkrümelnavigation",
-    "home": "Startseite"
+    "home": "Startseite",
+    "skipToContent": "Zum Inhalt springen"
   },
   "app": {
     "sidebar": {
@@ -67,7 +68,8 @@
         "enterprise": "Enterprise"
       },
       "menuLabel": "Kontomenü",
-      "setupNext": "Als Nächstes:"
+      "setupNext": "Als Nächstes:",
+      "brandAria": "Savings by BiVelio — Dashboard"
     },
     "tour": {
       "open": "Tour ansehen",
@@ -1443,7 +1445,9 @@
       "howItWorks": "So funktioniert es",
       "pricingTerms": "Preisbedingungen",
       "dataPrivacy": "Was BiVelio erhält",
-      "paper": "Paper"
+      "paper": "Paper",
+      "socialLinkedIn": "BiVelio auf LinkedIn",
+      "socialGitHub": "BiVelio auf GitHub"
     },
     "cta15": {
       "titulo": "15-Minuten-Gespräch anfragen",
@@ -2086,7 +2090,8 @@
       "sample": "Anfragen pro Arm und wie viele davon verschiedene Fragen sind; der Rest sind exakte Wiederholungen und Paraphrasen.",
       "accuracy": "Richtige Antworten auf die Fragen mit veröffentlichter Lösung, in Arm A und in Arm B.",
       "run": "Paketversion, die in Arm B lief, und Tag des Laufs."
-    }
+    },
+    "tableRegion": "Scrollbare Tabelle: {title}"
   },
   "howItWorks": {
     "metaTitle": "Wo wird die Ersparnis installiert? · BiVelio Savings Layer",

@@ -20,7 +20,8 @@
     "mainAria": "Navigasi utama",
     "newTab": "(terbuka di tab baru)",
     "breadcrumb": "Jejak navigasi",
-    "home": "Beranda"
+    "home": "Beranda",
+    "skipToContent": "Langsung ke konten"
   },
   "app": {
     "sidebar": {
@@ -67,7 +68,8 @@
         "enterprise": "Enterprise"
       },
       "menuLabel": "Menu akun",
-      "setupNext": "Berikutnya:"
+      "setupNext": "Berikutnya:",
+      "brandAria": "Savings by BiVelio — dasbor"
     },
     "tour": {
       "open": "Lihat tur",
@@ -1443,7 +1445,9 @@
       "howItWorks": "Cara kerjanya",
       "pricingTerms": "Ketentuan harga",
       "dataPrivacy": "Apa yang diterima BiVelio",
-      "paper": "Makalah"
+      "paper": "Makalah",
+      "socialLinkedIn": "BiVelio di LinkedIn",
+      "socialGitHub": "BiVelio di GitHub"
     },
     "cta15": {
       "titulo": "Minta panggilan 15 menit",
@@ -2086,7 +2090,8 @@
       "sample": "Permintaan per lengan dan berapa yang merupakan pertanyaan unik; sisanya adalah pengulangan persis dan parafrasa.",
       "accuracy": "Jawaban benar pada pertanyaan yang jawabannya dipublikasikan, di lengan A dan di lengan B.",
       "run": "Versi paket yang berjalan di lengan B, dan tanggal putarannya."
-    }
+    },
+    "tableRegion": "Tabel yang dapat digulir: {title}"
   },
   "howItWorks": {
     "metaTitle": "Di mana penghematan dipasang? · BiVelio Savings Layer",

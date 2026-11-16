@@ -111,6 +111,21 @@ function Clase({ tipo, etiquetas, pequeno }: { tipo: Extract<TipoDeEvidencia, "a
 }
 
 /**
+ * La caja con scroll horizontal de una tabla. En móvil casi todas desbordan y
+ * una caja que desplaza SIN contenido enfocable no se alcanza con el teclado
+ * (WCAG 2.1.1): por eso es una región enfocable con nombre. El nombre lleva el
+ * título de la tabla dentro de `tableRegion`, para que no repita tal cual el de
+ * la sección que la contiene.
+ */
+function Desplazable({ t, titulo, children }: { t: Traductor; titulo: string; children: ReactNode }) {
+  return (
+    <div className="tbl-scroll" tabIndex={0} role="region" aria-label={t("tableRegion", { title: titulo })}>
+      {children}
+    </div>
+  );
+}
+
+/**
  * Enlace a un informe: la copia servida por esta web (/benchmarks/data/…), que
  * va limpia de los datos del entorno de quien midió. El enlace al repositorio
  * abierto lo pone la página (benchmarks/page.tsx), no este componente.
@@ -181,7 +196,7 @@ function Metodo({ banco, t, f, ricos }: { banco: Banco; t: Traductor; f: F; rico
       </ul>
       <p>{t.rich("method.paper", ricos)}</p>
       <h3>{t("method.batteriesTitle")}</h3>
-      <div className="tbl-scroll">
+      <Desplazable t={t} titulo={t("method.batteriesTitle")}>
         <table className="tbl banco-tbl">
           <thead>
             <tr>
@@ -221,7 +236,7 @@ function Metodo({ banco, t, f, ricos }: { banco: Banco; t: Traductor; f: F; rico
             ))}
           </tbody>
         </table>
-      </div>
+      </Desplazable>
     </section>
   );
 }
@@ -236,7 +251,7 @@ function Ahorro({ banco, t, f, etiquetas, comparacion }: { banco: Banco; t: Trad
         <p>{t("savings.intro", { rep: f.pctRedondo(banco.flujoGsm8k.repeticiones), par: f.pctRedondo(banco.flujoGsm8k.parafrasis) })}</p>
       )}
       {comparacion}
-      <div className="tbl-scroll">
+      <Desplazable t={t} titulo={t("savings.title")}>
         <table className="tbl banco-tbl">
           <thead>
             <tr>
@@ -288,7 +303,7 @@ function Ahorro({ banco, t, f, etiquetas, comparacion }: { banco: Banco; t: Trad
             ))}
           </tbody>
         </table>
-      </div>
+      </Desplazable>
       <p className="banco-nota">{t("savings.originNote")}</p>
       <p className="banco-nota">{t("savings.accuracyNote")}</p>
     </section>
@@ -345,7 +360,7 @@ function PalancaDeTtl({ p, t, f, ricos, etiquetas }: { p: PalancaTtl; t: Traduct
           </div>
         ))}
       </dl>
-      <div className="tbl-scroll">
+      <Desplazable t={t} titulo={t("gatewayTtl.title")}>
         <table className="tbl banco-tbl">
           <thead>
             <tr>
@@ -366,11 +381,11 @@ function PalancaDeTtl({ p, t, f, ricos, etiquetas }: { p: PalancaTtl; t: Traduct
             </tr>
           </tbody>
         </table>
-      </div>
+      </Desplazable>
       <p className="banco-nota">{t("gatewayTtl.intervalsNote", { remuestreos: f.ent(p.remuestreos) })}</p>
 
       <h3>{t("gatewayTtl.resultTitle")}</h3>
-      <div className="tbl-scroll">
+      <Desplazable t={t} titulo={t("gatewayTtl.resultTitle")}>
         <table className="tbl banco-tbl">
           <tbody>
             {resultado.map(([clave, etiqueta, valor]) => (
@@ -381,11 +396,11 @@ function PalancaDeTtl({ p, t, f, ricos, etiquetas }: { p: PalancaTtl; t: Traduct
             ))}
           </tbody>
         </table>
-      </div>
+      </Desplazable>
       <p className="banco-nota">{t("gatewayTtl.resultNote", { factura: f.usd2(p.facturaUsd) })}</p>
 
       <h3>{t("gatewayTtl.modelsTitle")}</h3>
-      <div className="tbl-scroll">
+      <Desplazable t={t} titulo={t("gatewayTtl.modelsTitle")}>
         <table className="tbl banco-tbl">
           <thead>
             <tr>
@@ -416,7 +431,7 @@ function PalancaDeTtl({ p, t, f, ricos, etiquetas }: { p: PalancaTtl; t: Traduct
             ))}
           </tbody>
         </table>
-      </div>
+      </Desplazable>
       <p>
         {t.rich("gatewayTtl.ugly", {
           ...ricos,
@@ -539,7 +554,7 @@ function Garantias({ banco, t, f, etiquetas }: { banco: Banco; t: Traductor; f: 
         </div>
       </div>
       {neg.length > 0 && (
-        <div className="tbl-scroll">
+        <Desplazable t={t} titulo={t("guarantees.refusals.caption")}>
           <table className="tbl banco-tbl">
             <caption>{t("guarantees.refusals.caption")}</caption>
             <thead>
@@ -571,7 +586,7 @@ function Garantias({ banco, t, f, etiquetas }: { banco: Banco; t: Traductor; f: 
               ))}
             </tbody>
           </table>
-        </div>
+        </Desplazable>
       )}
     </section>
   );
@@ -587,7 +602,7 @@ function NoAhorra({ banco, t, f, ricos, etiquetas }: { banco: Banco; t: Traducto
       <Clase tipo="ab-sdk" etiquetas={etiquetas} />
       <p className="terms-governs">{t.rich("noSavings.lead", { ...ricos, cero: f.pctRedondo(0) })}</p>
       <p>{t("noSavings.why")}</p>
-      <div className="tbl-scroll">
+      <Desplazable t={t} titulo={t("noSavings.title")}>
         <table className="tbl banco-tbl">
           <thead>
             <tr>
@@ -627,7 +642,7 @@ function NoAhorra({ banco, t, f, ricos, etiquetas }: { banco: Banco; t: Traducto
             })}
           </tbody>
         </table>
-      </div>
+      </Desplazable>
     </section>
   );
 }
@@ -639,7 +654,7 @@ function EstadoPorModelo({ banco, t, f }: { banco: Banco; t: Traductor; f: F }) 
     <section className="terms-sec" aria-labelledby="status-h" id="status">
       <h2 id="status-h">{t("status.title")}</h2>
       <p>{t("status.intro")}</p>
-      <div className="tbl-scroll">
+      <Desplazable t={t} titulo={t("status.title")}>
         <table className="tbl banco-tbl banco-matriz">
           <thead>
             <tr>
@@ -674,7 +689,7 @@ function EstadoPorModelo({ banco, t, f }: { banco: Banco; t: Traductor; f: F }) 
             ))}
           </tbody>
         </table>
-      </div>
+      </Desplazable>
     </section>
   );
 }
@@ -993,7 +1008,7 @@ function Reproducir({ banco, t, ricos }: { banco: Banco; t: Traductor; ricos: Re
       </ol>
       <h3>{t("repro.reportsTitle")}</h3>
       <p>{t("repro.reportsIntro")}</p>
-      <div className="tbl-scroll">
+      <Desplazable t={t} titulo={t("repro.reportsTitle")}>
         <table className="tbl banco-tbl">
           <thead>
             <tr>
@@ -1018,7 +1033,7 @@ function Reproducir({ banco, t, ricos }: { banco: Banco; t: Traductor; ricos: Re
             ))}
           </tbody>
         </table>
-      </div>
+      </Desplazable>
       <p className="banco-nota">{t("repro.served")}</p>
     </section>
   );

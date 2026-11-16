@@ -14,6 +14,7 @@ import "../globals.css";
 import "@/vendor/affectui/affectui.css";
 import { NavBar } from "@/app/components/NavBar";
 import { SiteNavGate } from "@/app/components/SiteNavGate";
+import { SkipLink, SkipTarget } from "@/app/components/SkipLink";
 import { routing } from "@/i18n/routing";
 import { metaFor } from "@/i18n/locale-meta";
 
@@ -66,7 +67,11 @@ export default async function LocaleLayout({
         `}</Script>
         <NextIntlClientProvider messages={messages}>
           <SiteNavGate>
+            {/* Primer foco de la página y su destino, a los dos lados de la
+                cabecera. El panel pinta los suyos (dashboard/layout.tsx). */}
+            <SkipLink />
             <NavBar />
+            <SkipTarget />
           </SiteNavGate>
           {children}
         </NextIntlClientProvider>

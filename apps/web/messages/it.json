@@ -20,7 +20,8 @@
     "mainAria": "Navigazione principale",
     "newTab": "(si apre in una nuova scheda)",
     "breadcrumb": "Percorso di navigazione",
-    "home": "Home"
+    "home": "Home",
+    "skipToContent": "Vai al contenuto"
   },
   "app": {
     "sidebar": {
@@ -67,7 +68,8 @@
         "enterprise": "Enterprise"
       },
       "menuLabel": "Menu dell'account",
-      "setupNext": "Prossimo passo:"
+      "setupNext": "Prossimo passo:",
+      "brandAria": "Savings by BiVelio — dashboard"
     },
     "tour": {
       "open": "Guarda il tour",
@@ -1443,7 +1445,9 @@
       "howItWorks": "Come funziona",
       "pricingTerms": "Condizioni di prezzo",
       "dataPrivacy": "Cosa riceve BiVelio",
-      "paper": "Ricerca"
+      "paper": "Ricerca",
+      "socialLinkedIn": "BiVelio su LinkedIn",
+      "socialGitHub": "BiVelio su GitHub"
     },
     "cta15": {
       "titulo": "Richiedi una chiamata di 15 min",
@@ -2086,7 +2090,8 @@
       "sample": "Richieste per braccio e quante sono domande uniche; il resto sono ripetizioni esatte e parafrasi.",
       "accuracy": "Risposte corrette sulle domande con risposta pubblicata, nel braccio A e nel braccio B.",
       "run": "Versione del pacchetto eseguita nel braccio B e giorno dell'esecuzione."
-    }
+    },
+    "tableRegion": "Tabella scorrevole: {title}"
   },
   "howItWorks": {
     "metaTitle": "Dove si installa il risparmio? · BiVelio Savings Layer",

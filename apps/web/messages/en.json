@@ -20,7 +20,8 @@
     "mainAria": "Main navigation",
     "newTab": "(opens in a new tab)",
     "breadcrumb": "Breadcrumb",
-    "home": "Home"
+    "home": "Home",
+    "skipToContent": "Skip to content"
   },
   "app": {
     "sidebar": {
@@ -67,7 +68,8 @@
         "enterprise": "Enterprise"
       },
       "menuLabel": "Account menu",
-      "setupNext": "Next:"
+      "setupNext": "Next:",
+      "brandAria": "Savings by BiVelio — dashboard"
     },
     "tour": {
       "open": "Take the tour",
@@ -1443,7 +1445,9 @@
       "howItWorks": "How it works",
       "pricingTerms": "Pricing terms",
       "dataPrivacy": "What BiVelio receives",
-      "paper": "Paper"
+      "paper": "Paper",
+      "socialLinkedIn": "BiVelio on LinkedIn",
+      "socialGitHub": "BiVelio on GitHub"
     },
     "cta15": {
       "titulo": "Book 15-min call",
@@ -2086,7 +2090,8 @@
       "sample": "Requests per arm and how many are unique questions; the rest are exact repeats and paraphrases.",
       "accuracy": "Correct answers on the questions with a published answer, in arm A and in arm B.",
       "run": "Package version that ran in arm B, and the day of the run."
-    }
+    },
+    "tableRegion": "Scrollable table: {title}"
   },
   "howItWorks": {
     "metaTitle": "Where does the saving install? · BiVelio Savings Layer",
