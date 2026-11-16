@@ -75,6 +75,7 @@
     "notWired": "La connexion n'est pas encore configurée — définissez NEXT_PUBLIC_SUPABASE_ANON_KEY dans le déploiement.",
     "checkEmail": "Vérifiez votre e-mail pour confirmer votre compte, puis connectez-vous.",
     "existingAccountLoginLink": "Cet e-mail possède déjà un compte. Nous vous avons envoyé un lien pour vous connecter directement : vérifiez votre boîte (et vos spams) et entrez sans mot de passe.",
+    "signupSsoNote": "Vous utilisez déjà BiVelio Shield, Privacy ou l'app BiVelio ? Le même compte fonctionne ici : connectez-vous au lieu d'en créer un autre.",
     "successTitle": "Compte vérifié",
     "successBody": "Votre e-mail est confirmé et votre compte Savings est prêt. Bienvenue — le compteur vous attend.",
     "successCta": "Aller au panneau",

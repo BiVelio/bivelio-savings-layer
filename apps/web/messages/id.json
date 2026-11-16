@@ -75,6 +75,7 @@
     "notWired": "Fitur masuk belum tersambung — atur NEXT_PUBLIC_SUPABASE_ANON_KEY di deployment.",
     "checkEmail": "Periksa email Anda untuk mengonfirmasi akun, lalu masuk.",
     "existingAccountLoginLink": "Email ini sudah punya akun. Kami telah mengirimkan tautan untuk masuk langsung: periksa kotak masuk (dan spam) lalu masuk tanpa kata sandi.",
+    "signupSsoNote": "Sudah memakai BiVelio Shield, Privacy, atau aplikasi BiVelio? Akun yang sama berlaku di sini: masuk saja, tidak perlu membuat yang baru.",
     "successTitle": "Akun terverifikasi",
     "successBody": "Email Anda terkonfirmasi dan akun Savings Anda siap. Selamat datang — meterannya menunggu.",
     "successCta": "Buka dasbor",

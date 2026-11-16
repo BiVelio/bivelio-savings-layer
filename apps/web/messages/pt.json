@@ -75,6 +75,7 @@
     "notWired": "O início de sessão ainda não está configurado — define NEXT_PUBLIC_SUPABASE_ANON_KEY no deploy.",
     "checkEmail": "Verifica o teu e-mail para confirmares a conta e depois inicia sessão.",
     "existingAccountLoginLink": "Este e-mail já tem uma conta. Enviámos-te um link para entrares diretamente: verifica a caixa de entrada (e o spam) e entra sem palavra-passe.",
+    "signupSsoNote": "Já usas o BiVelio Shield, a Privacy ou a app BiVelio? A mesma conta funciona aqui: inicia sessão em vez de criares outra.",
     "successTitle": "Conta verificada",
     "successBody": "O teu e-mail está confirmado e a tua conta Savings está pronta. Bem-vindo — o medidor espera por ti.",
     "successCta": "Ir para o painel",

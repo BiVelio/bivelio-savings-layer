@@ -75,6 +75,7 @@
     "notWired": "Die Anmeldung ist noch nicht eingerichtet — setze NEXT_PUBLIC_SUPABASE_ANON_KEY im Deployment.",
     "checkEmail": "Prüfe deine E-Mail, um dein Konto zu bestätigen, und melde dich dann an.",
     "existingAccountLoginLink": "Für diese E-Mail gibt es bereits ein Konto. Wir haben dir einen Link zum direkten Anmelden geschickt: prüfe deinen Posteingang (und den Spam) und melde dich ohne Passwort an.",
+    "signupSsoNote": "Nutzt du bereits BiVelio Shield, Privacy oder die BiVelio-App? Dasselbe Konto funktioniert auch hier: melde dich an, statt ein neues zu erstellen.",
     "successTitle": "Konto bestätigt",
     "successBody": "Deine E-Mail ist bestätigt und dein Savings-Konto ist bereit. Willkommen — der Meter wartet.",
     "successCta": "Zum Dashboard",

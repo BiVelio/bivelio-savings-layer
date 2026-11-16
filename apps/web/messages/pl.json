@@ -75,6 +75,7 @@
     "notWired": "Logowanie nie jest jeszcze skonfigurowane — ustaw NEXT_PUBLIC_SUPABASE_ANON_KEY we wdrożeniu.",
     "checkEmail": "Sprawdź e-mail, aby potwierdzić konto, a następnie zaloguj się.",
     "existingAccountLoginLink": "Ten e-mail ma już konto. Wysłaliśmy Ci link do bezpośredniego zalogowania: sprawdź skrzynkę (i spam) i wejdź bez hasła.",
+    "signupSsoNote": "Korzystasz już z BiVelio Shield, Privacy lub aplikacji BiVelio? To samo konto działa tutaj: zaloguj się zamiast tworzyć nowe.",
     "successTitle": "Konto zweryfikowane",
     "successBody": "Twój e-mail jest potwierdzony, a konto Savings gotowe. Witaj — miernik czeka.",
     "successCta": "Przejdź do panelu",
