@@ -10,34 +10,65 @@ import { describe, expect, it } from "vitest";
  * ponga rojo:
  *   · El gateway lleva UNA cifra desde el 2026-10-03: el neto de la rebaja de
  *     caché que simuló el banco de TTL (lib/portada/palanca-ttl.ts, con verja
- *     contra su informe), enlazada a su sección de /benchmarks. Su tarjeta no
- *     lee `hero.proofs` ni el artefacto A/B, ni lleva un porcentaje tecleado.
- *   · La cifra del SDK son las filas de lo medido (con repeticiones Y sin
- *     ellas, nunca la primera sola), construidas de lib/portada/banco-en-vivo.ts
- *     —con verja contra sus informes— y no del artefacto sintético.
- *   · El verificador vuelve a la portada, pero el PROYECTOR no: su retirada en
- *     9feb377 (#85) fue por los porcentajes que inventaba el visitante, y ese
- *     motivo sigue en pie. La página no importa ProjectorVerifier.
+ *     contra su informe), enlazada a su sección de /benchmarks. No lee
+ *     `hero.proofs` ni el artefacto A/B, ni lleva un porcentaje tecleado.
+ *   · La cifra del SDK son las filas de lo medido, construidas de
+ *     lib/portada/banco-en-vivo.ts —con verja contra sus informes— y no del
+ *     artefacto sintético.
+ *   · El verificador existe, pero el PROYECTOR no: su retirada en 9feb377
+ *     (#85) fue por los porcentajes que inventaba el visitante, y ese motivo
+ *     sigue en pie. Ninguna página importa ProjectorVerifier.
+ *
+ * LA PORTADA CORTA (dueño, 2026-11). «Dónde lo conectas» (#offers) reúne lo
+ * que eran cinco secciones y YA NO lleva cifras: cada cifra está en #measured,
+ * en su recibo y con su clase de evidencia. El verificador y la instalación
+ * completa viven en /how-it-works. Las verjas de arriba siguen: solo cambia
+ * dónde se mira.
  */
 const PAGINA = readFileSync(fileURLToPath(new URL("./page.tsx", import.meta.url)), "utf8");
+const COMO_FUNCIONA = readFileSync(fileURLToPath(new URL("./how-it-works/page.tsx", import.meta.url)), "utf8");
 /** El fuente sin comentarios: lo que se comprueba es el JSX, no lo que se cuenta de él. */
-const CODIGO = PAGINA.replace(/\{\/\*[\s\S]*?\*\/\}/g, "").replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+const sinComentarios = (src: string) => src.replace(/\{\/\*[\s\S]*?\*\/\}/g, "").replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+const CODIGO = sinComentarios(PAGINA);
+const CODIGO_COMO_FUNCIONA = sinComentarios(COMO_FUNCIONA);
 
 /** El bloque de una sección `<section id="x">` hasta su `</section>`. */
-function seccion(id: string): string {
-  const ini = CODIGO.indexOf(`<section id="${id}">`);
+function seccion(id: string, codigo = CODIGO): string {
+  const ini = codigo.indexOf(`<section id="${id}">`);
   expect(ini, `#${id}`).toBeGreaterThan(-1);
-  return CODIGO.slice(ini, CODIGO.indexOf("</section>", ini));
+  return codigo.slice(ini, codigo.indexOf("</section>", ini));
+}
+
+/** Los tres recibos de #measured, en su orden: OpenAI, Claude y el gateway. */
+function recibos(): [string, string, string] {
+  const partes = seccion("measured").split('<article className="prueba-item');
+  expect(partes.length, "recibos de #measured").toBe(4);
+  return [partes[1]!, partes[2]!, partes[3]!];
 }
 
 describe("portada: dos ofertas, cada una con su bloque", () => {
-  it("las anclas existen y en este orden: ofertas → SDK → medición → verificador → instalación → gateway → skill → precios", () => {
-    // El skill (suscripción, gratis) lleva su propia banda: bajo la del gateway
-    // «con API key» se leía como parte de esa oferta.
-    const ids = ["offers", "sdk", "measured", "verify", "sdk-install", "gateway", "skill", "pricing"];
+  it("las anclas existen y en este orden: ofertas → instalación → SDK → gateway → skill → medición → precios", () => {
+    // Portada corta (2026-11): #offers contiene el selector SDK · Gateway, y las
+    // anclas de siempre (#sdk-install —la que enlaza bivelio.com—, #sdk,
+    // #gateway, #skill) siguen dentro de esa sección. La prueba va después.
+    const ids = ["offers", "sdk-install", "sdk", "gateway", "skill", "measured", "pricing"];
     const pos = ids.map((id) => CODIGO.indexOf(`id="${id}"`));
     for (const [i, p] of pos.entries()) expect(p, ids[i]).toBeGreaterThan(-1);
     expect([...pos].sort((a, b) => a - b)).toEqual(pos);
+    // Todas las de conexión, DENTRO de #offers.
+    const ofertas = seccion("offers");
+    for (const id of ["sdk-install", "sdk", "gateway", "skill"]) expect(ofertas, id).toContain(`id="${id}"`);
+    // Lo que se mudó no deja un ancla huérfana en la portada, y existe en su nueva casa.
+    for (const id of ["verify", "ledgers", "explica", "devs"]) expect(CODIGO, id).not.toContain(`id="${id}"`);
+    for (const id of ["verify", "ledgers", "explica", "install-gateway", "skill"]) expect(CODIGO_COMO_FUNCIONA, id).toContain(`id="${id}"`);
+    // #install-sdk es la sección final de «cómo funciona» (la pinta el componente).
+    const hiw = readFileSync(new URL("../components/HowItWorks.tsx", import.meta.url), "utf8");
+    expect(hiw).toContain('id={entera ? "install-sdk" : undefined}');
+    // Y la portada redirige las anclas antiguas, con idioma.
+    const enlaces = readFileSync(new URL("../components/landing/EnlacesAntiguos.tsx", import.meta.url), "utf8");
+    expect(CODIGO).toContain("<EnlacesAntiguos />");
+    for (const destino of ['verify: "/how-it-works#verify"', 'ledgers: "/how-it-works#ledgers"', 'explica: "/how-it-works#explica"']) expect(enlaces).toContain(destino);
+    expect(enlaces).toMatch(/import \{ useRouter \} from "@\/i18n\/navigation"/);
   });
 
   it("el héroe (dueño, 2026-10-03): «Empezar» lleva al alta y el secundario al banco público", () => {
@@ -51,28 +82,37 @@ describe("portada: dos ofertas, cada una con su bloque", () => {
     expect(PAGINA).not.toContain("hero.ctaOffers");
   });
 
-  it("la tarjeta del gateway lleva UNA cifra, la del banco de TTL, y ninguna escrita a mano (dueño, 2026-10-03)", () => {
-    const ofertas = seccion("offers");
-    const gateway = ofertas.slice(ofertas.indexOf('t("offers.gateway.name")'));
+  it("el recibo del gateway lleva UNA cifra, la del banco de TTL, y ninguna escrita a mano (dueño, 2026-10-03)", () => {
+    // Desde la portada corta la cifra no va en la tarjeta de #offers sino en su
+    // recibo de #measured. La verja es la misma: sale de lib/portada/palanca-ttl.ts
+    // (con su verja contra el informe) por `filaDeLaPalancaTtl`, nunca tecleada.
+    expect(CODIGO).toContain("const filaTtl = filaDeLaPalancaTtl(t, locale);");
+    const gateway = recibos()[2];
     expect(gateway.length).toBeGreaterThan(200);
-    // La fila sale de lib/portada/palanca-ttl.ts (con su verja contra el informe).
-    expect(gateway).toContain("<FilasMedidas filas={[filaDeLaPalancaTtl(t, locale)]} />");
+    expect(gateway).toContain("valor: filaTtl.cifra");
+    expect(gateway).toContain("{filaTtl.que}");
     expect(gateway).toContain('t("offers.gateway.figureNote")');
+    // Es un replay, no un A/B: su propia insignia.
+    expect(gateway).toContain('evidencia={{ tipo: "replay-gateway", label: tu("evidence.replayGateway") }}');
+    expect(gateway).not.toContain('tipo: "ab-sdk"');
     expect(gateway).not.toContain("offer-nofig");
-    // Ni el artefacto sintético ni un número tecleado en la tarjeta.
+    // Ni el artefacto sintético ni un número tecleado en el recibo.
     for (const prohibido of ["proofs", "proofSdk", "ab.", "%"]) expect(gateway, prohibido).not.toContain(prohibido);
+    // Y la sección de conexión no lleva ninguna cifra: ni filas de lo medido, ni recibo, ni porcentaje.
+    const ofertas = seccion("offers");
+    for (const prohibido of ["FilasMedidas", "<Recibo", "filaTtl", "filasMedidas", "proofs", "%"]) expect(ofertas, prohibido).not.toContain(prohibido);
   });
 
-  it("la tarjeta del gateway enlaza al informe: la sección #gateway-ttl del banco público, con idioma (dueño, 2026-10-03)", () => {
-    const ofertas = seccion("offers");
-    const gateway = ofertas.slice(ofertas.indexOf('t("offers.gateway.name")'));
+  it("el recibo del gateway enlaza al informe: la sección #gateway-ttl del banco público, con idioma (dueño, 2026-10-03)", () => {
+    const gateway = recibos()[2];
     // El `Link` de @/i18n/navigation antepone el idioma; un <a> a secas lo perdería.
     expect(gateway).toMatch(/<Link href="\/benchmarks#gateway-ttl">\{t\("offers\.gateway\.benchLink"\)\}<\/Link>/);
     expect(PAGINA).toMatch(/import \{[^}]*\bLink\b[^}]*\} from "@\/i18n\/navigation"/);
-    // Dentro de la caja de la cifra, justo debajo de su nota: la cifra y su informe van juntos.
-    const fig = gateway.slice(gateway.indexOf('className="offer-fig"'), gateway.indexOf('className="offer-install"'));
-    expect(fig.indexOf('t("offers.gateway.figureNote")')).toBeGreaterThan(-1);
-    expect(fig.indexOf("/benchmarks#gateway-ttl")).toBeGreaterThan(fig.indexOf('t("offers.gateway.figureNote")'));
+    // Junto a la cifra y justo debajo de su nota: la cifra y su informe van juntos.
+    expect(gateway.indexOf('t("offers.gateway.figureNote")')).toBeGreaterThan(gateway.indexOf("valor: filaTtl.cifra"));
+    expect(gateway.lastIndexOf("/benchmarks#gateway-ttl")).toBeGreaterThan(gateway.indexOf('t("offers.gateway.figureNote")'));
+    // El resguardo del propio recibo también lleva a su informe.
+    expect(gateway).toContain('href: "/benchmarks#gateway-ttl"');
     // Y el ancla existe en la página de destino.
     const banco = readFileSync(new URL("../components/BancoPublico.tsx", import.meta.url), "utf8");
     expect(banco).toContain('id="gateway-ttl"');
@@ -87,23 +127,38 @@ describe("portada: dos ofertas, cada una con su bloque", () => {
     for (const campo of ["P.neto.point", "P.neto.lower", "P.neto.upper", "P.confianza", "P.sesiones"]) expect(fn).toContain(campo);
   });
 
-  it("la tarjeta del SDK enseña la cifra medida con repeticiones (sin la baldosa del cero, 2026-10-02)", () => {
+  it("los recibos del SDK enseñan las cifras medidas con repeticiones (sin la baldosa del cero, 2026-10-02)", () => {
     expect(CODIGO).toContain("const filasMedidas: FilaMedida[] = filasDelBancoEnVivo(t, locale);");
     expect(CODIGO).toContain("BANCO_EN_VIVO");
+    // Las dos filas de lo medido, cada una en su recibo de #measured, con la
+    // insignia de A/B y su condición (la frase de la fila) desplegable debajo.
+    expect(CODIGO).toContain("const [filaOpenAi, filaClaude] = filasMedidas as [FilaMedida, FilaMedida];");
+    const [openai, claude] = recibos();
+    for (const [recibo, fila] of [[openai, "filaOpenAi"], [claude, "filaClaude"]] as const) {
+      expect(recibo, fila).toContain(`valor: ${fila}.cifra`);
+      expect(recibo, fila).toContain(`{${fila}.que}`);
+      expect(recibo, fila).toContain('evidencia={{ tipo: "ab-sdk", label: tu("evidence.abSdk") }}');
+      expect(recibo, fila).not.toContain("%");
+    }
+    expect(openai).toContain('t("offers.sdk.figureNote")');
+    // El panel del SDK de #offers lleva a la prueba y al verificador (que vive en /how-it-works).
     const ofertas = seccion("offers");
-    const sdk = ofertas.slice(ofertas.indexOf('t("offers.sdk.name")'), ofertas.indexOf('t("offers.gateway.name")'));
-    expect(sdk).toContain("<FilasMedidas filas={filasMedidas.slice(0, 1)} />");
-    expect(sdk).toContain('t("offers.sdk.figureNote")');
+    const sdk = ofertas.slice(ofertas.indexOf('data-panel="sdk"'), ofertas.indexOf('data-panel="gateway"'));
+    expect(sdk.length).toBeGreaterThan(200);
     expect(sdk).toContain('href="#measured"');
-    expect(sdk).toContain('href="#verify"');
+    expect(sdk).toMatch(/<Link href="\/how-it-works#verify">\{t\("offers\.sdk\.ctaVerify"\)\}<\/Link>/);
+    expect(sdk).toMatch(/<Link className="btn ghost" href="\/how-it-works#install-sdk">/);
   });
 
   it("⛔ la portada no lee el artefacto sintético ni su nota provisional", () => {
     expect(CODIGO).not.toMatch(/ab-live|abData|SDK_INSTALADO|SdkPendiente|hero\.proofs|ReciboMedido/);
   });
 
-  it("el verificador vive en #verify, y la página no importa el proyector", () => {
-    expect(seccion("verify")).toContain("<FormatVerifier");
+  it("el verificador vive en #verify de /how-it-works (salió de la portada en 2026-11), y ninguna de las dos páginas importa el proyector", () => {
+    expect(seccion("verify", CODIGO_COMO_FUNCIONA)).toContain("<FormatVerifier");
+    expect(COMO_FUNCIONA).toContain('import { FormatVerifier } from "@/app/components/FormatVerifier";');
+    expect(PAGINA).not.toContain("FormatVerifier");
     expect(PAGINA).not.toContain("ProjectorVerifier");
+    expect(COMO_FUNCIONA).not.toContain("ProjectorVerifier");
   });
 });

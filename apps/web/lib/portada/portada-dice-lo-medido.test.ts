@@ -490,10 +490,15 @@ describe("Gemini: compatible ≠ medido; lo medido, con su informe", () => {
     expect(es).not.toMatch(/aún no está medido/);
   });
 
-  it("la versión del adaptador nativo es la 0.4.33, y la portada pasa por parámetro esa versión y lo medido", () => {
+  it("la versión del adaptador nativo es la 0.4.33, y la nota de compatibilidad (en /benchmarks#compat desde 2026-11) recibe por parámetro esa versión y lo medido", () => {
     expect(VERSION_GEMINI_NATIVO).toBe("0.4.33");
-    const src = codigo("app/[locale]/page.tsx");
-    expect(src).toContain('t("hero.compatibleNota", notaCompatible)');
+    // La nota salió de la portada con el recorte del 2026-11 (dueño) y vive en
+    // el banco público, que la pinta con los mismos parámetros. La portada ya
+    // no la lleva: si volviera, tendría que volver con ellos.
+    expect(codigo("app/[locale]/page.tsx")).not.toContain("hero.compatibleNota");
+    const src = codigo("app/[locale]/benchmarks/page.tsx");
+    expect(src).toContain('id="compat"');
+    expect(src).toContain('tl("hero.compatibleNota", notaCompatible)');
     for (const x of ["gemini: VERSION_GEMINI_NATIVO", "flash: G.medido.nombre", "pro: G.pro.nombre", "G.fecha", "formatRange(dia(G.pro.desde), dia(G.pro.hasta))"]) expect(src).toContain(x);
   });
 });

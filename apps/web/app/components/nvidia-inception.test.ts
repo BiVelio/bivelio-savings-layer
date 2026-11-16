@@ -44,6 +44,7 @@ const COMPONENTE = leer("app", "components", "NvidiaInception.tsx");
 const MARCA = leer("app", "components", "BivelioWordmark.tsx");
 const PIE = leer("app", "components", "Footer.tsx");
 const PAGINA = leer("app", "[locale]", "page.tsx");
+const BANCO = leer("app", "[locale]", "benchmarks", "page.tsx");
 const CSS = leer("app", "globals.css").replace(/\/\*[\s\S]*?\*\//g, "");
 const LOCALES = ["ca", "de", "en", "es", "fr", "id", "it", "nl", "pl", "pt", "tr", "vi"];
 const CLAVES_BANDA = ["kicker", "title", "sub", "cta"];
@@ -296,15 +297,22 @@ describe("«BiVelio» en el título de la banda: navy con las íes en color, com
 });
 
 describe("está en los dos sitios pedidos, y solo ahí — el héroe ya no", () => {
-  it("héroe: SIN el sello — ni en el héroe de la captura del panel (2026-10-03) ni en «Compatible con», que se fue a #measured", () => {
+  it("héroe: SIN el sello — ni en el héroe de la captura del panel (2026-10-03) ni en «Compatible con», que vive en /benchmarks#compat", () => {
     const heroe = PAGINA.slice(PAGINA.indexOf('className="hero hero-panel"'), PAGINA.indexOf("</section>", PAGINA.indexOf('className="hero hero-panel"')));
     expect(heroe.length).toBeGreaterThan(200);
     expect(heroe).toContain('className="hero-cta"');
     expect(heroe).not.toMatch(/Nvidia|nvidia|NVIDIA/);
-    // «Compatible con» vive ahora en #measured, y entre él y su nota tampoco hay distintivo.
-    const compat = PAGINA.indexOf('className="hero-compat');
-    expect(compat).toBeGreaterThan(PAGINA.indexOf('<section id="measured">'));
-    const entre = PAGINA.slice(compat, PAGINA.indexOf("</section>", compat));
+    // «Compatible con» salió de la portada (dueño, 2026-11: la portada se acorta
+    // y la nota de compatibilidad vive con el resto de la letra pequeña) y está
+    // en /benchmarks, dentro de su sección #compat. Entre él y su nota sigue sin
+    // haber distintivo, enlace ni imagen.
+    expect(PAGINA).not.toContain('className="hero-compat');
+    const seccion = BANCO.indexOf('id="compat"');
+    expect(seccion).toBeGreaterThan(-1);
+    const compat = BANCO.indexOf('className="hero-compat');
+    expect(compat).toBeGreaterThan(seccion);
+    const entre = BANCO.slice(compat, BANCO.indexOf("</section>", compat));
+    expect(entre).toContain('tl("hero.compatibleNota", notaCompatible)');
     expect(entre).not.toMatch(/Nvidia|nvidia|NVIDIA/);
     expect(entre).not.toContain("hero-nvidia");
     expect(entre).not.toMatch(/<(a|img)\s/);
