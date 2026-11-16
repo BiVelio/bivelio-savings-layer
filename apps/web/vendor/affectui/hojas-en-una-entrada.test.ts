@@ -132,11 +132,13 @@ describe("quién importa CSS", () => {
       const importadas = [...lee(f).matchAll(importaCss)].map((m) => m[1]!);
       if (importadas.length) quien[f] = importadas;
     }
-    const panel = ["@/vendor/affectui/affectui-panel.css"];
+    // Las reglas propias del panel (`dashboard/panel.css`, ver
+    // `dashboard/panel-css.test.ts`) y, detrás, la de affectUI del panel.
+    const panel = ["@/app/[locale]/dashboard/panel.css", "@/vendor/affectui/affectui-panel.css"];
     expect(quien).toEqual({
       // globals ANTES que affectUI: es el orden de cascada con el que se diseñó.
       "app/[locale]/layout.tsx": ["../globals.css", "@/vendor/affectui/affectui.css"],
-      "app/[locale]/dashboard/layout.tsx": panel,
+      "app/[locale]/dashboard/layout.tsx": ["./panel.css", "@/vendor/affectui/affectui-panel.css"],
       "app/not-found.tsx": ["./globals.css"],
       // Solo existen con `next dev` (en producción dan 404 antes de pintar).
       "app/[locale]/captura-cuenta/page.tsx": panel,

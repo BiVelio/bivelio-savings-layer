@@ -1,6 +1,11 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+// Las reglas propias que solo casan en el panel, fuera de globals.css para que
+// la portada no las descargue (ver la cabecera de panel.css). ANTES que la de
+// affectUI del panel: en producción Next emite las dos hojas en ese orden
+// importe quien importe primero, y así `next dev` pinta la misma cascada.
+import "./panel.css";
 // Las hojas de affectUI que solo usa el panel (tablas, diálogos, gráficas…):
 // el sitio público no las carga. Se importan AQUÍ, en el layout, y no en cada
 // componente — ver la cabecera de vendor/affectui/affectui.css.

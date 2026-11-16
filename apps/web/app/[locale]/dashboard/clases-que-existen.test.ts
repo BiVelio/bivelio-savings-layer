@@ -35,10 +35,12 @@ function tsx(dir: string, acc: string[] = []): string[] {
   }
   return acc;
 }
-const CSS = readFileSync(fileURLToPath(new URL("../../globals.css", import.meta.url)), "utf8");
+// Las dos hojas propias: la global y la del panel (`panel.css`, las reglas que
+// solo casan dentro de /dashboard). Una clase vale si la define cualquiera.
+const CSS = ["../../globals.css", "./panel.css"].map((f) => readFileSync(fileURLToPath(new URL(f, import.meta.url)), "utf8")).join("\n");
 
 /**
- * Clases que NO están en `globals.css` a propósito y no son un error:
+ * Clases que NO están en ninguna de las dos hojas a propósito y no son un error:
  * utilidades de terceros o ganchos de test.
  */
 const PERMITIDAS = new Set<string>(["sr-only"]);
@@ -72,7 +74,7 @@ function usadas(fuente: string): Set<string> {
 
 const ficheros = tsx(APP).map((f) => f.slice(APP.length));
 
-describe("las clases del panel existen en globals.css", () => {
+describe("las clases del panel existen en globals.css o en panel.css", () => {
   const enLaHoja = definidas();
 
   it("hay componentes que revisar", () => {

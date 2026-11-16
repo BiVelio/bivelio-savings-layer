@@ -81,7 +81,7 @@ function imports(fichero) {
   return v;
 }
 
-function alcanza(fichero, visto = new Set()) {
+export function alcanza(fichero, visto = new Set()) {
   if (visto.has(fichero)) return visto;
   visto.add(fichero);
   if (/\.tsx?$/.test(fichero)) for (const d of imports(fichero)) alcanza(d, visto);
@@ -89,7 +89,7 @@ function alcanza(fichero, visto = new Set()) {
 }
 
 const RUTA = /^(page|layout|not-found|loading|error|template|default|global-error)\.tsx$/;
-function ficherosDeRuta(dir = "app", acc = []) {
+export function ficherosDeRuta(dir = "app", acc = []) {
   for (const e of readdirSync(WEB + dir, { withFileTypes: true })) {
     if (e.isDirectory()) ficherosDeRuta(`${dir}/${e.name}`, acc);
     else if (RUTA.test(e.name)) acc.push(`${dir}/${e.name}`);
