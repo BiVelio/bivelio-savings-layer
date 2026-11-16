@@ -321,42 +321,162 @@ con `?periodo=` del mes que tocaba.
 ## 7 · Quién cierra con comisión (añadido 2026-11-16)
 
 Desde el 2026-11-16 el cierre y la facturación cobran comisión **solo** a la
-organización que, durante el período, tuvo una suscripción en un Price de la
-lista explícita de comisión: `STRIPE_PRICE_ID_MONTHLY`, `STRIPE_PRICE_ID_YEARLY`
-y, separados por comas, los de `STRIPE_PRICE_IDS_COMISION`
-(`apps/web/lib/billing/plan-de-la-org.ts`, LICENSE-CLOUD §6(b)). Pro y Equipo
-—vivos, cancelados o impagados—, solo «Medir», sin suscripción y Enterprise sin
-contrato con comisión cierran con cargo 0 y conservan su extracto.
-`STRIPE_PRICE_IDS_EXTRA` **no** cuenta: es el escape de la atribución.
+organización que, durante el período, tuvo una suscripción en un Price
+**declarado con comisión** (`apps/web/lib/billing/plan-de-la-org.ts`,
+LICENSE-CLOUD §6(b)). Pro y Equipo —vivos, cancelados o impagados—, solo
+«Medir», sin suscripción y Enterprise sin contrato con comisión cierran con
+cargo 0 y conservan su extracto.
 
-**Antes del primer día 1 con esta regla** (el extracto sellado es inmutable):
+**Y lo que no se puede decidir no se sella.** Cada Price de una suscripción
+nuestra tiene que estar declarado en una de estas listas:
 
-1. Comprobar, **por existencia**, que las dos variables de la modalidad con
-   comisión están en Production (`vercel env ls`), y si algún cliente con
-   comisión está en un Price distinto de esos dos (uno rotado, un contrato
-   Enterprise), añadirlo a `STRIPE_PRICE_IDS_COMISION` y redesplegar.
-2. Ensayo en seco del mes en curso y comparar con quien debe pagar:
-   `GET /api/cron/cierre-extractos?seco=1&periodo=<YYYY-MM>` — cada cliente con
-   comisión tiene que salir con `es_exento: false`.
-3. `GET /api/cron/facturar-extractos?seco=1&periodo=<YYYY-MM>` sobre un mes ya
-   cerrado: `accion: "sin_comision"` es un cargo sellado con la regla anterior
-   que ya no se factura.
+| Clase | Variables | Efecto |
+|---|---|---|
+| Con comisión | `STRIPE_PRICE_ID_MONTHLY`, `STRIPE_PRICE_ID_YEARLY`, `STRIPE_PRICE_IDS_COMISION` (comas) | cierra con cargo |
+| Sin comisión | `STRIPE_PRICE_ID_PRO_MONTHLY/YEARLY`, `STRIPE_PRICE_ID_TEAM_MONTHLY/YEARLY`, `STRIPE_PRICE_IDS_SIN_COMISION` (comas) | cierra a 0 |
+| **Sin declarar** | en ninguna (aunque esté en `STRIPE_PRICE_IDS_EXTRA`) | **la organización NO se sella** + alerta crítica |
 
-### 7.1 · «Cierre de extractos sin ningún Price de comisión configurado: todo cierra con cargo 0»
+`STRIPE_PRICE_IDS_EXTRA` no clasifica nada: es el escape de la atribución y
+mezcla Prices con comisión (los rotados) y sin ella (cortesías).
 
-**Qué significa.** Faltan `STRIPE_PRICE_ID_MONTHLY` y `STRIPE_PRICE_ID_YEARLY`
-(y no hay `STRIPE_PRICE_IDS_COMISION`). Nadie ha pagado comisión ese mes.
+### 7.0 · Lista de comprobación ANTES de desplegar (y antes del día 1 a las 05:00 UTC)
 
-**Qué hacer.** Restaurar las variables y redesplegar. Los extractos ya sellados
-no se reescriben: si algún cliente con comisión cerró a 0, ese mes se le factura
-a mano o se da por perdido — es decisión del dueño.
+El extracto sellado es inmutable; esto se hace una vez, con calma, antes.
 
-### 7.2 · «…organizaciones con comisión y plan de cuota fija en el mismo período — cierran con cargo 0, revisar a mano»
+1. **Los Prices de comisión ROTADOS van a `STRIPE_PRICE_IDS_COMISION`.** El
+   2026-08-13 (#53, `apps/web/scripts/provision-precios-exclusive.mjs`)
+   `STRIPE_PRICE_ID_MONTHLY`/`YEARLY` pasaron a apuntar a los Prices `exclusive`
+   nuevos, y los **anteriores** (`inclusive`) —con los que sigue renovando quien
+   se suscribió antes de esa fecha— quedaron **solo** en
+   `STRIPE_PRICE_IDS_EXTRA`. Copiar esos price ids antiguos de comisión a
+   `STRIPE_PRICE_IDS_COMISION` (Production). Los price ids no son secretos; se
+   leen en el panel de Vercel o en el catálogo de Stripe (el Price nuevo lleva
+   `metadata.sustituye_a` = el antiguo). No hace falta quitar nada de
+   `STRIPE_PRICE_IDS_EXTRA`.
+2. **El resto de `STRIPE_PRICE_IDS_EXTRA`** (cortesía, socio, cuota fija a
+   medida): a `STRIPE_PRICE_IDS_SIN_COMISION`, o marcar la organización
+   `comision_exenta` (la marca gana a todo). Un contrato Enterprise **con**
+   comisión: su Price a `STRIPE_PRICE_IDS_COMISION`.
+3. **Comprobar por existencia** (`vercel env ls production`, nunca
+   `vercel env pull`) que están: `STRIPE_PRICE_ID_MONTHLY`,
+   `STRIPE_PRICE_ID_YEARLY`, `STRIPE_PRICE_IDS_COMISION`, las cuatro de
+   Pro/Equipo y, si aplica, `STRIPE_PRICE_IDS_SIN_COMISION`.
+4. **Verificar contra la base, solo lectura** (SQL editor de Supabase):
 
-**Qué significa.** La organización tuvo ese mes una suscripción con comisión y
-otra de Pro o Equipo (cambió de plan a mitad de mes). El extracto es mensual y
-no reparte el ahorro por días, así que no se cobra nada de ese mes.
+   ```sql
+   SELECT price_id, status, count(*)
+   FROM bvsala.subscriptions
+   GROUP BY 1, 2
+   ORDER BY 1, 2;
+   ```
 
-**Qué hacer.** Nada, salvo que el dueño quiera facturar a mano los días en que
-la suscripción con comisión estuvo viva: el extracto del mes enseña la comisión
-que habría sido sobre el mes entero, que es una cota superior.
+   Cada `price_id` que salga (salvo los que solo tengan filas
+   `incomplete_expired`, o canceladas hace meses) tiene que estar en una de las
+   dos clases de la tabla de arriba. Un `price_id` nulo es una fila rota: mirarla.
+5. **Redesplegar** (las variables no entran en un despliegue ya hecho) y
+   **ensayar en seco** el mes en curso:
+
+   ```bash
+   curl -sS -H "Authorization: Bearer $CRON_SECRET" \
+     "https://savings.bivelio.com/api/cron/cierre-extractos?seco=1&periodo=<YYYY-MM>" \
+     | jq '{error, sin_sellar, comision}'
+   ```
+
+   Tiene que salir `sin_sellar: []` (o solo meses mixtos ya conocidos, §7.2),
+   ningún `error`, y cada cliente con comisión con
+   `cobra: true, motivo: "plan_con_comision"`. El ensayo no manda alertas ni
+   escribe nada. `error: "commission catalogue empty"` = paso 1/3 sin hacer.
+6. **Ensayo de la facturación** sobre un mes ya cerrado:
+
+   ```bash
+   curl -sS -H "Authorization: Bearer $CRON_SECRET" \
+     "https://savings.bivelio.com/api/cron/facturar-extractos?seco=1&periodo=<YYYY-MM>" \
+     | jq '.sin_comision'
+   ```
+
+   Cada entrada es un cargo sellado que ya no se facturaría, con su motivo.
+   `cargo_existente` distinto de `null` (y `ya_facturado: true` en `ensayo`)
+   significa que **esa factura ya se emitió** con la regla anterior.
+7. **Auditoría de lo ya facturado** (solo lectura, la ejecuta el dueño; no
+   escribe en la base ni en Stripe). Lista los cargos `facturado`/`pagado` desde
+   2026-09 de organizaciones que hoy no llevarían comisión — candidatos a nota
+   de crédito, que es decisión del dueño:
+
+   ```bash
+   cd apps/web   # Node ≥ 22.18; las variables STRIPE_PRICE_* de Production en el entorno
+   NEXT_PUBLIC_SUPABASE_URL=… SUPABASE_SERVICE_ROLE_KEY=… \
+     node scripts/auditoria-comision-indebida.mjs --desde=2026-09
+   ```
+
+   Saca solo `org_id, periodo, importe_eur, estado, stripe_invoice_id, motivo`.
+   Las líneas `REVISAR` no son un abono seguro. La clave se pasa por el entorno
+   en el momento (no se imprime ni se guarda): no pegarla en un fichero.
+
+### 7.1 · «Cierre de extractos: N organización(es) SIN SELLAR — Price sin declarar o comisión y cuota fija en el mismo mes; resolver y relanzar»
+
+**Qué significa.** El cierre ha sellado a todas las demás y se ha **saltado**
+las de `detalle.orgs`: ni cargo ni 0. Cada una trae su `motivo`:
+
+- `precio_desconocido` — una suscripción suya que tocó el mes lleva un Price que
+  no está en ninguna lista (`detalle.precios_sin_declarar`). Lo normal: un
+  Price de comisión rotado que falta en `STRIPE_PRICE_IDS_COMISION`.
+- `plan_sin_comision_en_el_periodo` — **mes mixto**: comisión y Pro/Equipo en el
+  mismo mes (§7.2).
+- `final_no_probado` — una suscripción con comisión cancelada cuya fecha de
+  final no se puede fijar (fila antigua sin `last_event_at`). Solo al relanzar
+  meses viejos. Mirar en Stripe cuándo terminó (`ended_at`) y tratar como §7.2.
+
+**Qué hacer (`precio_desconocido`).**
+1. Mirar el Price en Stripe y declararlo: `STRIPE_PRICE_IDS_COMISION` si lleva
+   comisión, `STRIPE_PRICE_IDS_SIN_COMISION` si no. Redesplegar.
+2. Relanzar el cierre y **después** la facturación (el cron de las 07:00 ya
+   pasó sin ese extracto):
+   `GET /api/cron/cierre-extractos?periodo=<YYYY-MM>` y
+   `GET /api/cron/facturar-extractos?periodo=<YYYY-MM>`, con el Bearer. Los dos
+   son idempotentes: lo ya sellado o facturado no se toca.
+
+Mientras no se resuelva, esa organización no tiene extracto de ese mes y no se
+le factura nada; no caduca, pero no se arregla solo.
+
+### 7.2 · Mes mixto (`plan_sin_comision_en_el_periodo`)
+
+**Qué significa.** La organización cambió de plan a mitad de mes (lo habitual:
+canceló la modalidad con comisión a fin de ciclo y compró Pro). El extracto es
+mensual y no reparte el ahorro por días: cobrar el mes entero comisionaría días
+de cuota fija, y sellar 0 regalaría los de comisión. Por eso no se sella sin
+una decisión del dueño. No hay columna donde guardar «revisado» (y no se añade
+migración), así que la decisión se ejecuta así:
+
+- **Cerrar el mes a 0** (a favor del cliente): marcar la organización
+  `comision_exenta = true`, relanzar `cierre-extractos?periodo=<YYYY-MM>`, y
+  **quitar la marca** después. El extracto queda sellado con cargo 0 y «lo que
+  habría sido» sobre el mes entero (una cota superior).
+- **Cobrar los días con comisión**: lo anterior, más una factura manual en
+  Stripe por la parte que el dueño decida. El cron no puede sellar ese mes con
+  cargo.
+
+También cuenta como mes mixto un checkout de Pro/Equipo todavía `incomplete`
+en el instante del cierre: relanzar al día siguiente suele bastar.
+
+### 7.3 · «Cierre de extractos aplazado: no hay ningún Price de comisión configurado — restaurar las variables y relanzar»
+
+**Qué significa.** Faltan `STRIPE_PRICE_ID_MONTHLY`, `STRIPE_PRICE_ID_YEARLY` y
+`STRIPE_PRICE_IDS_COMISION` en Production y hay organizaciones con uso y
+suscripción. **No se ha sellado nada** (500): sellar así habría cerrado a 0 a
+todos los clientes con comisión.
+
+**Qué hacer.** Restaurar las variables, redesplegar y relanzar
+`cierre-extractos?periodo=<YYYY-MM>` y luego `facturar-extractos?periodo=…`.
+
+### 7.4 · «Cargo de comisión sellado…» (facturar-extractos)
+
+- **«…que no se factura: la organización no llevó un plan con comisión en el
+  período»** (aviso, no llega por correo). Un extracto con cargo —sellado con la
+  regla anterior, o cuyo plan cambió entre las 05:00 y las 07:00— que la
+  facturación ya no convierte en factura. Nada que hacer salvo que
+  `cargo_existente` no sea `null`: entonces la factura ya existía → paso 7 de
+  §7.0.
+- **«…SIN FACTURAR: el plan de la organización no se puede decidir — resolver y
+  relanzar»** (crítico). Mismo caso que §7.1 visto desde la facturación: el
+  extracto tiene cargo pero hoy el Price está sin declarar o el mes es mixto.
+  Resolver como §7.1/§7.2 y relanzar `facturar-extractos?periodo=<YYYY-MM>`.

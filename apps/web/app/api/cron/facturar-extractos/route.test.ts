@@ -22,9 +22,11 @@ interface Estado {
   facturas: Array<Record<string, unknown>>;
   lineas: Array<Record<string, unknown>>;
   cargos: Array<Record<string, unknown>>;
-  alertas: Array<{ nivel: string; asunto: string }>;
+  alertas: Array<{ nivel: string; asunto: string; detalle?: Record<string, unknown> }>;
+  /** Filas de cargos que YA existen para el período (el candado local). */
+  cargosPrevios: Array<{ org_id: string; estado: string }>;
 }
-const estado: Estado = { extractos: [], orgs: {}, subs: [], falloSubs: false, facturas: [], lineas: [], cargos: [], alertas: [] };
+const estado: Estado = { extractos: [], orgs: {}, subs: [], falloSubs: false, facturas: [], lineas: [], cargos: [], alertas: [], cargosPrevios: [] };
 
 function builder(tabla: string) {
   let columnas = "";
@@ -58,7 +60,8 @@ function builder(tabla: string) {
           error: null,
         };
       }
-      return { data: [], error: null }; // cargos: ninguno registrado todavía
+      if (tabla === "cargos") return { data: estado.cargosPrevios, error: null };
+      return { data: [], error: null };
     },
     maybeSingle: async () => {
       if (tabla === "organizations") return { data: estado.orgs[org!] ?? null, error: null };
@@ -125,13 +128,14 @@ const sub = (org_id: string, price_id: string, status: string, mas: Record<strin
   canceled_at: null,
   current_period_end: "2026-11-03T09:00:00Z",
   cancel_at_period_end: false,
+  last_event_at: status === "canceled" ? (mas.canceled_at ?? null) : "2026-10-03T09:00:05Z",
   ...mas,
 });
 const conCliente = { stripe_customer_id: "cus_x", comision_exenta: false };
 
 beforeEach(() => {
   vi.stubEnv("CRON_SECRET", "secreto-de-prueba");
-  Object.assign(estado, { extractos: [], orgs: {}, subs: [], falloSubs: false, facturas: [], lineas: [], cargos: [], alertas: [] });
+  Object.assign(estado, { extractos: [], orgs: {}, subs: [], falloSubs: false, facturas: [], lineas: [], cargos: [], alertas: [], cargosPrevios: [] });
 });
 afterEach(() => vi.unstubAllEnvs());
 
@@ -144,12 +148,34 @@ describe("⛔ facturar-extractos: un cargo sellado no se factura sin un plan con
       sub("equipo-impagado", "price_team_m", "unpaid"),
     ];
     const res = await facturar();
-    expect(await res.json()).toMatchObject({ facturadas: 0, omitidas: 0, fallos: 0 });
+    const cuerpo = (await res.json()) as { sin_comision: Array<{ org_id: string; motivo: string; cargo_eur: number }> };
+    expect(cuerpo).toMatchObject({ facturadas: 0, omitidas: 0, fallos: 0 });
     expect(estado.facturas).toEqual([]);
     expect(estado.lineas).toEqual([]);
     // Ni siquiera queda un «omitido»: no es un cargo que se dejó de cobrar, es uno que no existe.
     expect(estado.cargos).toEqual([]);
-    expect(estado.alertas).toEqual([]);
+    // ANTES se exigía `alertas: []`: un extracto sellado CON cargo que no se
+    // convierte en factura solo dejaba un console.warn. Ahora deja el porqué en
+    // la respuesta y un `aviso` por organización (no crítico: no hay nada roto,
+    // es un extracto de la regla anterior).
+    expect(cuerpo.sin_comision.map((x) => `${x.org_id}:${x.motivo}`)).toEqual([
+      "pro-cancelado:plan_de_cuota_fija",
+      "equipo-impagado:plan_de_cuota_fija",
+      "enterprise-sin-sub:sin_suscripcion_con_comision",
+    ]);
+    expect(cuerpo.sin_comision[0]!.cargo_eur).toBe(12.34);
+    expect(estado.alertas.map((a) => a.nivel)).toEqual(["aviso", "aviso", "aviso"]);
+  });
+
+  it("⛔ un Price sin declarar o un mes mixto: tampoco se factura, pero es CRÍTICO (el cargo puede ser legítimo)", async () => {
+    estado.extractos = ["legado-rotado"];
+    estado.orgs["legado-rotado"] = conCliente;
+    estado.subs = [sub("legado-rotado", "price_legacy_inclusive_m", "active")];
+    const res = await facturar();
+    expect(await res.json()).toMatchObject({ facturadas: 0, fallos: 0, sin_comision: [{ org_id: "legado-rotado", motivo: "precio_desconocido", revisar: true }] });
+    expect(estado.facturas).toEqual([]);
+    expect(estado.alertas).toHaveLength(1);
+    expect(estado.alertas[0]).toMatchObject({ nivel: "critico", detalle: { precios: ["price_legacy_inclusive_m"] } });
   });
 
   it("la modalidad con comisión, viva o cancelada ese mes, se factura como siempre: el cargo del extracto, céntimo a céntimo", async () => {
@@ -174,6 +200,7 @@ describe("⛔ facturar-extractos: un cargo sellado no se factura sin un plan con
     ];
     await facturar();
     expect(estado.facturas).toEqual([]);
+    expect(estado.alertas[0]).toMatchObject({ nivel: "critico", detalle: { motivo: "plan_sin_comision_en_el_periodo" } });
   });
 
   it("la marca de exención sigue ganando aunque la suscripción sea de comisión", async () => {
@@ -206,7 +233,48 @@ describe("⛔ facturar-extractos: un cargo sellado no se factura sin un plan con
     const { ensayo } = (await res.json()) as { ensayo: Array<{ org_id: string; accion: string; detalle: string; centimos: number | null }> };
     expect(ensayo.find((e) => e.org_id === "legado-vivo")).toMatchObject({ accion: "facturar", centimos: 1234 });
     expect(ensayo.find((e) => e.org_id === "pro-cancelado")).toMatchObject({ accion: "sin_comision", centimos: null });
-    expect(ensayo.find((e) => e.org_id === "pro-cancelado")!.detalle).toMatch(/sin_suscripcion_con_comision/);
+    expect(ensayo.find((e) => e.org_id === "pro-cancelado")!.detalle).toMatch(/plan_de_cuota_fija/);
+    expect(ensayo.find((e) => e.org_id === "pro-cancelado")).toMatchObject({ ya_facturado: false, cargo_existente: null });
     expect(estado.facturas).toEqual([]);
+    // El ensayo no manda alertas: lo que diría la alerta va en la respuesta.
+    expect(estado.alertas).toEqual([]);
+  });
+
+  it("⛔ ?seco=1 sobre un mes YA facturado con la regla anterior: `sin_comision` Y `ya_facturado`, no uno tapando al otro", async () => {
+    // Octubre se facturó el 1 de noviembre con la regla anterior. Si el ensayo
+    // dijera solo `sin_comision` escondería que la factura EXISTE (y está
+    // pagada): es justo el cargo candidato a abono.
+    estado.extractos = ["pro-cancelado", "legado-vivo"];
+    for (const o of estado.extractos) estado.orgs[o] = conCliente;
+    estado.subs = [
+      sub("pro-cancelado", "price_pro_m", "canceled", { canceled_at: "2026-10-20T10:00:00Z" }),
+      sub("legado-vivo", "price_legacy_m", "active"),
+    ];
+    estado.cargosPrevios = [
+      { org_id: "pro-cancelado", estado: "pagado" },
+      { org_id: "legado-vivo", estado: "pagado" },
+    ];
+    const res = await facturar("&seco=1");
+    const { ensayo, sin_comision } = (await res.json()) as {
+      ensayo: Array<{ org_id: string; accion: string; detalle: string; ya_facturado?: boolean; cargo_existente?: string | null }>;
+      sin_comision: Array<{ org_id: string; cargo_existente: string | null }>;
+    };
+    const pro = ensayo.find((e) => e.org_id === "pro-cancelado")!;
+    expect(pro).toMatchObject({ accion: "sin_comision", ya_facturado: true, cargo_existente: "pagado" });
+    expect(pro.detalle).toMatch(/ya_facturado/);
+    // El que sí lleva comisión sigue saliendo como siempre.
+    expect(ensayo.find((e) => e.org_id === "legado-vivo")).toMatchObject({ accion: "nada", detalle: "ya_facturado" });
+    expect(sin_comision).toEqual([expect.objectContaining({ org_id: "pro-cancelado", cargo_existente: "pagado" })]);
+    expect(estado.alertas).toEqual([]);
+  });
+
+  it("en real, el aviso de un cargo sellado que no se factura dice si ya había factura", async () => {
+    estado.extractos = ["pro-cancelado"];
+    estado.orgs["pro-cancelado"] = conCliente;
+    estado.subs = [sub("pro-cancelado", "price_pro_m", "canceled", { canceled_at: "2026-10-20T10:00:00Z" })];
+    estado.cargosPrevios = [{ org_id: "pro-cancelado", estado: "facturado" }];
+    await facturar();
+    expect(estado.facturas).toEqual([]);
+    expect(estado.alertas[0]).toMatchObject({ nivel: "aviso", detalle: { motivo: "plan_de_cuota_fija", cargo_existente: "facturado" } });
   });
 });

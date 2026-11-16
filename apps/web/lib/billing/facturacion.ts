@@ -171,6 +171,13 @@ export interface EnsayoDeCargo {
   centimos: number | null;
   cliente: string | null;
   medio_de_pago: "suscripcion" | "cliente" | "ninguno" | null;
+  /**
+   * Solo en `sin_comision`: ya existe una fila de cargo de (org, período) — una
+   * factura emitida (u omitida) antes de la regla del plan. Candidata a abono.
+   */
+  ya_facturado?: boolean;
+  /** El estado de esa fila de cargo (`facturado`, `pagado`, `fallido`, `omitido_*`). */
+  cargo_existente?: string | null;
 }
 
 /**
@@ -180,6 +187,9 @@ export interface EnsayoDeCargo {
 export interface SinPlanConComision {
   accion: "sin_comision";
   motivo: string;
+  /** ¿Hay ya una fila de cargo de (org, período)? Se dice JUNTO al `sin_comision`. */
+  yaHayCargo?: boolean;
+  estadoDelCargo?: string | null;
 }
 
 export function ensayoDeCargo(
@@ -192,7 +202,19 @@ export function ensayoDeCargo(
     return { ...base, accion: "exenta", detalle: "organization exempt from commission", centimos: null, cliente: null, medio_de_pago: null };
   }
   if (decision.accion === "sin_comision") {
-    return { ...base, accion: "sin_comision", detalle: `no commission plan in the period (${decision.motivo})`, centimos: null, cliente: null, medio_de_pago: null };
+    const ya = decision.yaHayCargo === true;
+    return {
+      ...base,
+      accion: "sin_comision",
+      detalle:
+        `no commission plan in the period (${decision.motivo})` +
+        (ya ? `; ya_facturado: a charge row already exists (${decision.estadoDelCargo ?? "unknown state"}) — credit-note candidate` : ""),
+      centimos: null,
+      cliente: null,
+      medio_de_pago: null,
+      ya_facturado: ya,
+      cargo_existente: ya ? (decision.estadoDelCargo ?? null) : null,
+    };
   }
   if (decision.accion === "nada") return { ...base, accion: "nada", detalle: decision.motivo, centimos: null, cliente: null, medio_de_pago: null };
   if (decision.accion === "omitir") return { ...base, accion: "omitir", detalle: decision.estado, centimos: null, cliente: null, medio_de_pago: null };

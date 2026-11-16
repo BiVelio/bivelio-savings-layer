@@ -10,6 +10,11 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
  * los días en que estuvo en un plan de cuota fija. Estos casos pasan por la
  * ruta entera (lecturas, decisión, fila sellada) para que la regla no se
  * pueda quedar solo en la función pura.
+ *
+ * Y LO QUE NO SE PUEDE DECIDIR NO SE SELLA (revisión del 2026-11-16): un Price
+ * sin declarar o un mes con comisión y cuota fija saltan a esa organización con
+ * alerta CRÍTICA; sin ningún Price de comisión configurado se aplaza el cierre
+ * entero. Los ensayos en seco no mandan alertas.
  */
 
 const CATALOGO = { comision: ["price_legacy_m", "price_legacy_y"], pro: ["price_pro_m"], equipo: ["price_team_m"] };
@@ -22,6 +27,7 @@ interface Sub {
   canceled_at?: string | null;
   current_period_end?: string | null;
   cancel_at_period_end?: boolean;
+  last_event_at?: string | null;
 }
 
 interface Estado {
@@ -32,7 +38,7 @@ interface Estado {
   catalogo: typeof CATALOGO;
   falloSubs: boolean;
   /** Lo que el cron pidió a `subscriptions`. */
-  consulta: { columnas: string; ids: string[]; filtros: string[] } | null;
+  consulta: { columnas: string; orgs: string[]; filtros: string[] } | null;
   upsert: Array<Record<string, unknown>> | null;
   alertas: Array<{ nivel: string; asunto: string; detalle?: Record<string, unknown> }>;
 }
@@ -54,7 +60,7 @@ function builder(tabla: string) {
     },
     in: (col: string, valores: string[]) => {
       filtros.push(`in:${col}`);
-      if (col === "price_id") ids = valores;
+      if (col === "org_id") ids = valores;
       return b;
     },
     gte: () => b,
@@ -80,9 +86,10 @@ function builder(tabla: string) {
         return { data: filas, error: null };
       }
       if (tabla === "subscriptions") {
-        estado.consulta = { columnas, ids: ids ?? [], filtros: [...filtros] };
+        estado.consulta = { columnas, orgs: ids ?? [], filtros: [...filtros] };
         if (estado.falloSubs) return { data: null, error: { message: "timeout" } };
-        return { data: estado.subs.filter((s) => s.price_id !== null && (ids ?? []).includes(s.price_id)), error: null };
+        // Como PostgREST: solo las filas de las organizaciones pedidas, lleven el Price que lleven.
+        return { data: estado.subs.filter((s) => (ids ?? []).includes(s.org_id)), error: null };
       }
       return { data: [], error: null };
     },
@@ -124,6 +131,8 @@ const sub = (org_id: string, price_id: string | null, status: string, mas: Parti
   canceled_at: null,
   current_period_end: "2026-11-03T09:00:00Z",
   cancel_at_period_end: false,
+  // Cancelación inmediata salvo que el caso diga otra cosa: el `deleted` es del mismo instante.
+  last_event_at: status === "canceled" ? (mas.canceled_at ?? null) : "2026-10-03T09:00:05Z",
   ...mas,
 });
 
@@ -136,8 +145,16 @@ beforeEach(() => {
 });
 afterEach(() => vi.unstubAllEnvs());
 
+interface Cuerpo {
+  error?: string;
+  cerrados?: number;
+  extractos?: Array<{ org_id: string; cargo_eur: number; es_exento: boolean }>;
+  comision: Array<{ org_id: string; cobra: boolean; motivo: string }>;
+  sin_sellar: Array<{ org_id: string; motivo: string; precios?: string[] }>;
+}
+
 describe("⛔ el cierre cobra comisión SOLO a quien llevó un plan con comisión en el período", () => {
-  it("un mes con todos los casos: solo los dos de la modalidad con comisión cierran con cargo", async () => {
+  it("un mes con todos los casos: solo los dos de la modalidad con comisión cierran con cargo, y la respuesta dice por qué", async () => {
     estado.uso = {
       "pro-cancelado": [2000, 1100],
       "equipo-impagado": [2000, 1100],
@@ -146,8 +163,9 @@ describe("⛔ el cierre cobra comisión SOLO a quien llevó un plan con comisió
       "solo-medir": [2000, 2000], // el ingest de «Medir» deja base = real
       "enterprise-sin-sub": [2000, 1100],
       "exenta-con-legado": [2000, 1100],
-      "precio-de-cortesia": [2000, 1100],
+      "socio-declarado": [2000, 1100],
     };
+    estado.catalogo = { ...CATALOGO, sinComision: ["price_socio"] } as typeof CATALOGO;
     estado.exentas = ["exenta-con-legado"];
     estado.subs = [
       sub("pro-cancelado", "price_pro_m", "canceled", { canceled_at: "2026-10-20T10:00:00Z" }),
@@ -155,15 +173,17 @@ describe("⛔ el cierre cobra comisión SOLO a quien llevó un plan con comisió
       sub("legado-vivo", "price_legacy_m", "active"),
       sub("legado-cancelado", "price_legacy_y", "canceled", { canceled_at: "2026-10-15T10:00:00Z" }),
       sub("exenta-con-legado", "price_legacy_m", "active"),
-      sub("precio-de-cortesia", "price_cortesia", "active"),
+      sub("socio-declarado", "price_socio", "active"),
     ];
     const res = await cerrar();
     expect(res.status).toBe(200);
+    const cuerpo = (await res.json()) as Cuerpo;
 
     // El extracto de TODAS se conserva: una fila por organización con uso.
     expect(estado.upsert!.map((f) => f.org_id).sort()).toEqual(Object.keys(estado.uso).sort());
+    expect(cuerpo.sin_sellar).toEqual([]);
 
-    for (const org of ["pro-cancelado", "equipo-impagado", "enterprise-sin-sub", "exenta-con-legado", "precio-de-cortesia"]) {
+    for (const org of ["pro-cancelado", "equipo-impagado", "enterprise-sin-sub", "exenta-con-legado", "socio-declarado"]) {
       expect(fila(org), org).toMatchObject({ cargo_eur: 0, es_exento: true, ahorro_medido_usd: 900 });
       // «Lo que habría sido» sigue en el documento, para auditoría.
       expect(Number(fila(org).comision_eur), org).toBeGreaterThan(0);
@@ -176,33 +196,32 @@ describe("⛔ el cierre cobra comisión SOLO a quien llevó un plan con comisió
       expect(fila(org).cargo_eur, org).toBe(fila(org).comision_eur);
     }
     expect(estado.alertas).toEqual([]);
+
+    // EL PORQUÉ de cada cierre a 0 (`es_exento` ya significa cuatro cosas): va en la respuesta.
+    const motivo = Object.fromEntries(cuerpo.comision.map((d) => [d.org_id, `${d.cobra}:${d.motivo}`]));
+    expect(motivo).toEqual({
+      "pro-cancelado": "false:plan_de_cuota_fija",
+      "equipo-impagado": "false:plan_de_cuota_fija",
+      "socio-declarado": "false:plan_de_cuota_fija",
+      "legado-vivo": "true:plan_con_comision",
+      "legado-cancelado": "true:plan_con_comision",
+      "solo-medir": "false:sin_suscripcion_con_comision",
+      "enterprise-sin-sub": "false:sin_suscripcion_con_comision",
+      "exenta-con-legado": "false:exenta",
+    });
   });
 
-  it("lee TODAS las filas del catálogo, sin filtrar por estado: la cancelada también decide", async () => {
-    estado.uso = { a: [2000, 1100] };
+  it("lee TODAS las filas de las orgs con uso — sin filtrar por estado NI POR PRICE — y pide last_event_at", async () => {
+    // ANTES se exigía `in:price_id` con los ids del catálogo. Ese filtro era el
+    // fallo: la fila de un cliente cuyo Price no está en el catálogo no se leía
+    // nunca, y su extracto cerraba a 0 sin que nada lo viera.
+    estado.uso = { a: [2000, 1100], b: [2000, 1100] };
     await cerrar();
-    expect(estado.consulta!.columnas).toBe("org_id, price_id, status, created_at, canceled_at, current_period_end, cancel_at_period_end");
-    expect(estado.consulta!.ids.sort()).toEqual(["price_legacy_m", "price_legacy_y", "price_pro_m", "price_team_m"]);
-    expect(estado.consulta!.filtros).toEqual(["in:price_id"]);
-  });
-
-  it("varias suscripciones: comisión y Pro en el mismo mes → cargo 0 y aviso para revisarlo a mano", async () => {
-    estado.uso = { mixta: [2000, 1100], "legado-con-pro-antiguo": [2000, 1100] };
-    estado.subs = [
-      sub("mixta", "price_legacy_m", "canceled", { canceled_at: "2026-10-05T10:00:00Z" }),
-      sub("mixta", "price_pro_m", "active", { created_at: "2026-10-05T10:05:00Z" }),
-      sub("legado-con-pro-antiguo", "price_legacy_m", "active"),
-      sub("legado-con-pro-antiguo", "price_pro_m", "canceled", {
-        created_at: "2026-01-01T00:00:00Z",
-        canceled_at: "2026-03-01T00:00:00Z",
-        current_period_end: "2026-03-01T00:00:00Z",
-      }),
-    ];
-    await cerrar();
-    expect(fila("mixta")).toMatchObject({ cargo_eur: 0, es_exento: true });
-    expect(Number(fila("legado-con-pro-antiguo").cargo_eur)).toBeGreaterThan(0);
-    expect(estado.alertas).toHaveLength(1);
-    expect(estado.alertas[0]).toMatchObject({ nivel: "aviso", detalle: { periodo: "2026-10", orgs: ["mixta"] } });
+    expect(estado.consulta!.columnas).toBe(
+      "org_id, price_id, status, created_at, canceled_at, current_period_end, cancel_at_period_end, last_event_at",
+    );
+    expect(estado.consulta!.orgs.sort()).toEqual(["a", "b"]);
+    expect(estado.consulta!.filtros).toEqual(["in:org_id"]);
   });
 
   it("el mes siguiente a la cancelación de la comisión ya no se cobra", async () => {
@@ -212,16 +231,19 @@ describe("⛔ el cierre cobra comisión SOLO a quien llevó un plan con comisió
     expect(fila("ex")).toMatchObject({ cargo_eur: 0, es_exento: true });
   });
 
-  it("sin ningún Price de comisión configurado: nadie paga, no se consulta nada y se avisa", async () => {
-    estado.catalogo = { comision: [], pro: ["price_pro_m"], equipo: ["price_team_m"] };
-    estado.uso = { a: [2000, 1100] };
-    estado.subs = [sub("a", "price_legacy_m", "active")];
+  it("⛔ cancelación a fin de ciclo con la marca de Stripe a false: el último mes parcial SE COBRA", async () => {
+    estado.uso = { sale: [2000, 1100] };
+    estado.subs = [
+      sub("sale", "price_legacy_m", "canceled", {
+        canceled_at: "2026-09-25T08:00:00Z", // el día en que lo pidió, el mes anterior
+        current_period_end: "2026-10-10T09:00:00Z",
+        last_event_at: "2026-10-10T09:00:02Z",
+        cancel_at_period_end: false,
+      }),
+    ];
     await cerrar();
-    expect(estado.consulta).toBeNull();
-    expect(fila("a")).toMatchObject({ cargo_eur: 0, es_exento: true });
-    expect(estado.alertas).toHaveLength(1);
-    expect(estado.alertas[0]).toMatchObject({ nivel: "aviso" });
-    expect(estado.alertas[0]!.asunto).toMatch(/Price de comisión/);
+    expect(fila("sale")).toMatchObject({ es_exento: false });
+    expect(Number(fila("sale").cargo_eur)).toBeGreaterThan(0);
   });
 
   it("falla CERRADO: si las suscripciones no se pueden leer, no se sella nada y se alerta", async () => {
@@ -240,11 +262,154 @@ describe("⛔ el cierre cobra comisión SOLO a quien llevó un plan con comisió
       sub("legado-vivo", "price_legacy_m", "active"),
     ];
     const res = await cerrar("&seco=1");
-    const cuerpo = (await res.json()) as { extractos: Array<{ org_id: string; cargo_eur: number; es_exento: boolean }> };
+    const cuerpo = (await res.json()) as Cuerpo;
     expect(estado.upsert).toBeNull();
-    const de = (org: string) => cuerpo.extractos.find((e) => e.org_id === org)!;
+    const de = (org: string) => cuerpo.extractos!.find((e) => e.org_id === org)!;
     expect(de("pro-cancelado")).toMatchObject({ cargo_eur: 0, es_exento: true });
     expect(de("legado-vivo").es_exento).toBe(false);
     expect(de("legado-vivo").cargo_eur).toBeGreaterThan(0);
+    expect(cuerpo.comision.find((d) => d.org_id === "pro-cancelado")).toMatchObject({ cobra: false, motivo: "plan_de_cuota_fija" });
+  });
+});
+
+describe("⛔ lo que no se puede decidir NO SE SELLA: se salta la organización y se alerta en crítico", () => {
+  it("un Price sin declarar (el de comisión rotado a STRIPE_PRICE_IDS_EXTRA): ni cargo ni 0, y la alerta trae los price ids", async () => {
+    // ANTES este caso (`precio-de-cortesia`) exigía fila sellada a 0 y
+    // `alertas: []`. Eso era sellar a 0, para siempre y en silencio, al cliente
+    // de comisión anterior a la rotación de agosto (#53): su Price solo está en
+    // STRIPE_PRICE_IDS_EXTRA, que no dice si lleva comisión.
+    estado.uso = { "legado-rotado": [2000, 1100], "otro-rotado": [2000, 1100], "legado-vivo": [2000, 1100], "pro-vivo": [2000, 1100] };
+    estado.subs = [
+      sub("legado-rotado", "price_legacy_inclusive_m", "active"),
+      sub("otro-rotado", "price_legacy_inclusive_y", "past_due"),
+      sub("legado-vivo", "price_legacy_m", "active"),
+      sub("pro-vivo", "price_pro_m", "active"),
+    ];
+    const res = await cerrar();
+    expect(res.status).toBe(200);
+    const cuerpo = (await res.json()) as Cuerpo;
+
+    // Las demás se sellan con normalidad; las dos dudosas NO aparecen.
+    expect(estado.upsert!.map((f) => f.org_id).sort()).toEqual(["legado-vivo", "pro-vivo"]);
+    expect(cuerpo.cerrados).toBe(2);
+    expect(cuerpo.sin_sellar).toEqual([
+      { org_id: "legado-rotado", motivo: "precio_desconocido", precios: ["price_legacy_inclusive_m"] },
+      { org_id: "otro-rotado", motivo: "precio_desconocido", precios: ["price_legacy_inclusive_y"] },
+    ]);
+
+    expect(estado.alertas).toHaveLength(1);
+    expect(estado.alertas[0]).toMatchObject({
+      nivel: "critico", // solo lo crítico llega por correo
+      detalle: { periodo: "2026-10", precios_sin_declarar: ["price_legacy_inclusive_m", "price_legacy_inclusive_y"] },
+    });
+    expect(estado.alertas[0]!.asunto).toMatch(/SIN SELLAR/);
+  });
+
+  it("declarado el Price en STRIPE_PRICE_IDS_COMISION y relanzado, esa organización cierra CON cargo", async () => {
+    estado.catalogo = { ...CATALOGO, comision: [...CATALOGO.comision, "price_legacy_inclusive_m"] };
+    estado.uso = { "legado-rotado": [2000, 1100] };
+    estado.subs = [sub("legado-rotado", "price_legacy_inclusive_m", "active")];
+    await cerrar();
+    expect(fila("legado-rotado")).toMatchObject({ es_exento: false });
+    expect(Number(fila("legado-rotado").cargo_eur)).toBeGreaterThan(0);
+    expect(estado.alertas).toEqual([]);
+  });
+
+  it("la marca de exención gana: una exenta con un Price sin declarar se sella a 0 sin alerta", async () => {
+    estado.uso = { cortesia: [2000, 1100] };
+    estado.exentas = ["cortesia"];
+    estado.subs = [sub("cortesia", "price_cortesia", "active")];
+    const cuerpo = (await (await cerrar()).json()) as Cuerpo;
+    expect(fila("cortesia")).toMatchObject({ cargo_eur: 0, es_exento: true });
+    expect(cuerpo.comision).toEqual([{ org_id: "cortesia", cobra: false, motivo: "exenta" }]);
+    expect(estado.alertas).toEqual([]);
+  });
+
+  it("comisión y Pro en el mismo mes → NO se sella y alerta crítica (antes: cargo 0 con un aviso que no llega por correo)", async () => {
+    estado.uso = { mixta: [2000, 1100], "legado-con-pro-antiguo": [2000, 1100] };
+    estado.subs = [
+      sub("mixta", "price_legacy_m", "canceled", { canceled_at: "2026-10-05T10:00:00Z" }),
+      sub("mixta", "price_pro_m", "active", { created_at: "2026-10-05T10:05:00Z" }),
+      sub("legado-con-pro-antiguo", "price_legacy_m", "active"),
+      sub("legado-con-pro-antiguo", "price_pro_m", "canceled", {
+        created_at: "2026-01-01T00:00:00Z",
+        canceled_at: "2026-03-01T00:00:00Z",
+        current_period_end: "2026-03-01T00:00:00Z",
+      }),
+    ];
+    const cuerpo = (await (await cerrar()).json()) as Cuerpo;
+    expect(estado.upsert!.map((f) => f.org_id)).toEqual(["legado-con-pro-antiguo"]);
+    expect(Number(fila("legado-con-pro-antiguo").cargo_eur)).toBeGreaterThan(0);
+    expect(cuerpo.sin_sellar).toEqual([
+      { org_id: "mixta", motivo: "plan_sin_comision_en_el_periodo", precios: ["price_legacy_m", "price_pro_m"] },
+    ]);
+    expect(estado.alertas).toHaveLength(1);
+    expect(estado.alertas[0]).toMatchObject({ nivel: "critico", detalle: { periodo: "2026-10", precios_sin_declarar: [] } });
+  });
+
+  it("si TODAS las organizaciones quedan sin sellar no se escribe nada (y no revienta)", async () => {
+    estado.uso = { rara: [2000, 1100] };
+    estado.subs = [sub("rara", "price_x", "active")];
+    const res = await cerrar();
+    expect(res.status).toBe(200);
+    expect(estado.upsert).toBeNull();
+    expect(((await res.json()) as Cuerpo).cerrados).toBe(0);
+    expect(estado.alertas[0]).toMatchObject({ nivel: "critico" });
+  });
+
+  it("?seco=1 lo enseña en la respuesta y NO manda la alerta", async () => {
+    estado.uso = { "legado-rotado": [2000, 1100], mixta: [2000, 1100] };
+    estado.subs = [
+      sub("legado-rotado", "price_legacy_inclusive_m", "active"),
+      sub("mixta", "price_legacy_m", "canceled", { canceled_at: "2026-10-05T10:00:00Z" }),
+      sub("mixta", "price_pro_m", "active", { created_at: "2026-10-05T10:05:00Z" }),
+    ];
+    const cuerpo = (await (await cerrar("&seco=1")).json()) as Cuerpo;
+    expect(cuerpo.sin_sellar.map((x) => `${x.org_id}:${x.motivo}`).sort()).toEqual([
+      "legado-rotado:precio_desconocido",
+      "mixta:plan_sin_comision_en_el_periodo",
+    ]);
+    expect(cuerpo.extractos).toEqual([]);
+    expect(estado.upsert).toBeNull();
+    expect(estado.alertas).toEqual([]);
+  });
+});
+
+describe("⛔ sin ningún Price de comisión configurado y con suscripciones: el cierre se APLAZA entero", () => {
+  const sinCatalogo = { comision: [], pro: ["price_pro_m"], equipo: ["price_team_m"] };
+
+  it("500 + alerta crítica, nada sellado (antes: todos a 0 con un aviso que no llega por correo)", async () => {
+    // ANTES este caso exigía fila a 0, `consulta` nula y nivel `aviso`: con
+    // STRIPE_PRICE_ID_MONTHLY/YEARLY ausentes en Production, TODOS los clientes
+    // con comisión se sellaban a 0 de forma inmutable.
+    estado.catalogo = sinCatalogo;
+    estado.uso = { a: [2000, 1100], "pro-vivo": [2000, 1100] };
+    estado.subs = [sub("a", "price_legacy_m", "active"), sub("pro-vivo", "price_pro_m", "active")];
+    const res = await cerrar();
+    expect(res.status).toBe(500);
+    expect(estado.upsert).toBeNull();
+    expect(estado.alertas).toHaveLength(1);
+    expect(estado.alertas[0]).toMatchObject({ nivel: "critico" });
+    expect(estado.alertas[0]!.asunto).toMatch(/Price de comisión/);
+    expect(JSON.stringify(estado.alertas[0]!.detalle)).toMatch(/STRIPE_PRICE_ID_MONTHLY/);
+  });
+
+  it("en seco: mismo 500 que explica el aplazamiento, sin alerta", async () => {
+    estado.catalogo = sinCatalogo;
+    estado.uso = { a: [2000, 1100] };
+    estado.subs = [sub("a", "price_legacy_m", "active")];
+    const res = await cerrar("&seco=1");
+    expect(res.status).toBe(500);
+    expect(await res.json()).toMatchObject({ error: "commission catalogue empty", seco: true });
+    expect(estado.alertas).toEqual([]);
+  });
+
+  it("sin ninguna suscripción a la vista no hay nada que aplazar: todo cierra a 0", async () => {
+    estado.catalogo = sinCatalogo;
+    estado.uso = { "solo-medir": [2000, 2000], "sin-sub": [2000, 1100] };
+    const res = await cerrar();
+    expect(res.status).toBe(200);
+    expect(fila("sin-sub")).toMatchObject({ cargo_eur: 0, es_exento: true });
+    expect(estado.alertas).toEqual([]);
   });
 });

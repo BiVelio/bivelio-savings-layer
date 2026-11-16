@@ -56,28 +56,42 @@ export function preciosSinComision(): PreciosConfigurados {
   };
 }
 
-/**
- * EL CATÁLOGO QUE DECIDE LA COMISIÓN (lib/billing/plan-de-la-org.ts). Solo se
- * cobra comisión a una suscripción cuyo Price está en `comision`, y esa lista es
- * EXPLÍCITA: los dos Prices de la modalidad histórica (STRIPE_PRICE_ID_MONTHLY /
- * YEARLY) y, separados por comas, los de STRIPE_PRICE_IDS_COMISION — para un
- * Price con comisión que ya no es el vigente (uno rotado al cambiar el importe,
- * o el de un contrato Enterprise que la lleve).
- *
- * ⛔ STRIPE_PRICE_IDS_EXTRA NO entra: es el escape de la ATRIBUCIÓN («este
- * evento es nuestro»: cortesías, socios), no una declaración de que el Price
- * lleve comisión. Lo que no está aquí no se cobra (LICENSE-CLOUD §6(b)).
- *
- * La lista extra se lee del entorno en cada llamada, como el escape de
- * lib/stripe/atribucion.ts.
- */
-export function catalogoDeComision(): CatalogoDeComision {
-  const extra = (process.env.STRIPE_PRICE_IDS_COMISION ?? "")
+const listaDelEntorno = (nombre: string): string[] =>
+  (process.env[nombre] ?? "")
     .split(",")
     .map((x) => x.trim())
     .filter(Boolean);
+
+/**
+ * EL CATÁLOGO QUE DECIDE LA COMISIÓN (lib/billing/plan-de-la-org.ts). Cada
+ * Price de una suscripción nuestra tiene que estar DECLARADO en una de estas
+ * listas; el cierre no sella el extracto de una organización con un Price que
+ * no esté en ninguna (alerta crítica, se relanza al declararlo).
+ *
+ * · `comision` — los que LLEVAN comisión: STRIPE_PRICE_ID_MONTHLY / YEARLY (los
+ *   vigentes de la modalidad histórica) y, separados por comas,
+ *   STRIPE_PRICE_IDS_COMISION.
+ *   ⛔ STRIPE_PRICE_IDS_COMISION TIENE QUE INCLUIR LOS PRICES DE COMISIÓN
+ *   ROTADOS: el 2026-08-13 (#53, scripts/provision-precios-exclusive.mjs)
+ *   MONTHLY/YEARLY pasaron a apuntar a los Prices `exclusive` nuevos y los
+ *   anteriores —con los que sigue renovando quien se suscribió antes— quedaron
+ *   SOLO en STRIPE_PRICE_IDS_EXTRA. También el de un contrato Enterprise que
+ *   lleve comisión.
+ * · `pro`, `equipo` — los cuatro Prices de cuota fija.
+ * · `sinComision` — STRIPE_PRICE_IDS_SIN_COMISION: cualquier otro Price que NO
+ *   la lleva (cortesía, socio, contrato de cuota fija).
+ *
+ * STRIPE_PRICE_IDS_EXTRA no clasifica nada: es el escape de la ATRIBUCIÓN
+ * («este evento es nuestro»), y mezcla Prices con comisión (los rotados) y sin
+ * ella (cortesías). Por eso un Price que solo está ahí es DESCONOCIDO.
+ *
+ * Las listas extra se leen del entorno en cada llamada, como el escape de
+ * lib/stripe/atribucion.ts.
+ */
+export function catalogoDeComision(): CatalogoDeComision {
   return {
-    comision: [...new Set([STRIPE_PRICE_ID_MONTHLY, STRIPE_PRICE_ID_YEARLY, ...extra].filter(Boolean))],
+    comision: [...new Set([STRIPE_PRICE_ID_MONTHLY, STRIPE_PRICE_ID_YEARLY, ...listaDelEntorno("STRIPE_PRICE_IDS_COMISION")].filter(Boolean))],
     ...preciosSinComision(),
+    sinComision: listaDelEntorno("STRIPE_PRICE_IDS_SIN_COMISION"),
   };
 }

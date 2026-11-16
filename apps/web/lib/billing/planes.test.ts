@@ -178,24 +178,36 @@ describe("⛔ de qué plan es una suscripción: por PRICE — y la etiqueta «co
   // comisión. `planDelPrecio` sigue ETIQUETANDO «comision» lo que no es Pro ni
   // Equipo (la guardia anti-doble-compra y el panel lo usan), pero la etiqueta
   // ya no cobra: solo cobra el Price de la lista explícita (LICENSE-CLOUD §6(b)).
-  it("el Price de siempre, uno de EXTRA, uno desconocido o ninguno se ETIQUETAN «comision»; solo el de la lista la paga", () => {
+  //
+  // CAMBIADO OTRA VEZ (revisión del 2026-11-16). «No cobra» no es «cierra a 0»:
+  // un Price que no está en NINGUNA lista (uno que solo aparece en
+  // STRIPE_PRICE_IDS_EXTRA —donde quedaron los Prices de comisión rotados en
+  // agosto—, uno desconocido o ninguno) deja la decisión en `revisar`, y el
+  // cierre no sella a esa organización hasta que el Price se declare.
+  it("el Price de siempre, uno de EXTRA, uno desconocido o ninguno se ETIQUETAN «comision»; solo el de la lista la paga y los demás quedan por revisar", () => {
     for (const p of ["price_legacy_4eur", "price_cortesia", null, undefined, ""]) {
       expect(planDelPrecio(p, precios)).toBe("comision");
     }
     for (const p of ["price_cortesia", "price_desconocido", null]) {
-      expect(decidirComisionDelPeriodo([viva("x", p)], catalogo, "2026-10").comision, String(p)).toBe(false);
+      expect(decidirComisionDelPeriodo([viva("x", p)], catalogo, "2026-10"), String(p)).toMatchObject({
+        comision: false,
+        revisar: true,
+        motivo: "precio_desconocido",
+      });
     }
     expect(decidirComisionDelPeriodo([viva("x", "price_legacy_4eur")], catalogo, "2026-10").comision).toBe(true);
   });
 
   // CAMBIADO (2026-11-16). Antes: «sin Prices sin comisión configurados, NADIE
   // deja de llevar comisión» — el defecto era cobrar a todos. Ahora el defecto
-  // es el contrario: sin un Price de comisión configurado, nadie la paga.
-  it("la etiqueta por descarte no depende del catálogo; el cobro sí, y sin Prices de comisión nadie paga", () => {
+  // es el contrario: sin un Price de comisión configurado, nadie la paga — y
+  // (revisión) tampoco se sella nada a 0: con el catálogo vacío todo Price es
+  // desconocido, la decisión es `revisar` y el cron aplaza el cierre.
+  it("la etiqueta por descarte no depende del catálogo; el cobro sí, y con el catálogo vacío nadie paga ni se sella", () => {
     expect(planDelPrecio("price_pro_m", { pro: [], equipo: [] })).toBe("comision");
     const vacio = { pro: [], equipo: [], comision: [] };
     for (const p of ["price_pro_m", "price_legacy_4eur"]) {
-      expect(decidirComisionDelPeriodo([viva("x", p)], vacio, "2026-10").comision).toBe(false);
+      expect(decidirComisionDelPeriodo([viva("x", p)], vacio, "2026-10")).toMatchObject({ comision: false, revisar: true });
     }
   });
 
@@ -218,6 +230,11 @@ describe("⛔ de qué plan es una suscripción: por PRICE — y la etiqueta «co
       (org) => decidirComisionDelPeriodo(filas.filter((f) => f.org_id === org), catalogo, "2026-10").comision,
     );
     expect(pagan).toEqual(["d"]);
+    // Y de los que no pagan, solo «e» (una fila sin Price) queda sin sellar.
+    const porRevisar = ["a", "b", "c", "d", "e"].filter(
+      (org) => decidirComisionDelPeriodo(filas.filter((f) => f.org_id === org), catalogo, "2026-10").revisar,
+    );
+    expect(porRevisar).toEqual(["e"]);
   });
 
   it("orgsSinComisionPorPlan queda como etiqueta de «plan vivo sin comisión» (ya no decide el cierre)", () => {
@@ -257,8 +274,9 @@ describe("⛔ la modalidad con comisión: CERRADA a clientes nuevos, intacta par
   it("el cierre y la facturación la siguen cobrando: su Price está en la lista de comisión", () => {
     const catalogo = { ...precios, comision: ["price_legacy_4eur", "price_legacy_39eur"] };
     const fila = (price_id: string) => ({ org_id: "o", price_id, status: "active", created_at: "2026-01-10T00:00:00Z" });
-    expect(decidirComisionDelPeriodo([fila("price_legacy_4eur")], catalogo, "2026-10")).toEqual({ comision: true });
-    expect(decidirComisionDelPeriodo([fila("price_legacy_39eur")], catalogo, "2026-10")).toEqual({ comision: true });
+    const cobra = { comision: true, revisar: false, motivo: "plan_con_comision" };
+    expect(decidirComisionDelPeriodo([fila("price_legacy_4eur")], catalogo, "2026-10")).toEqual(cobra);
+    expect(decidirComisionDelPeriodo([fila("price_legacy_39eur")], catalogo, "2026-10")).toEqual(cobra);
     expect(decidirComisionDelPeriodo([fila("price_pro_m")], catalogo, "2026-10").comision).toBe(false);
   });
 

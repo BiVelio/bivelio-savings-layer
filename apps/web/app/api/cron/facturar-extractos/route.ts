@@ -46,7 +46,15 @@ import { leerTodo } from "@/lib/supabase/leer-todo";
  *
  * ENSAYO EN SECO (`?seco=1`, mismo Bearer): devuelve, por extracto, qué haría
  * (facturar/omitir/nada/exenta/sin_comision, céntimos, cliente y de dónde saldría el cobro)
- * sin crear nada en Stripe ni escribir en cargos. Solo LECTURAS de Stripe.
+ * sin crear nada en Stripe ni escribir en cargos. Solo LECTURAS de Stripe, y
+ * ninguna alerta. Un `sin_comision` dice además si YA EXISTE un cargo de ese
+ * período (`ya_facturado`, `cargo_existente`): es una factura emitida con la
+ * regla anterior a quien hoy no la debería, candidata a abono
+ * (scripts/auditoria-comision-indebida.mjs).
+ *
+ * LA RESPUESTA DICE POR QUÉ: `sin_comision` lista, también en real, los cargos
+ * sellados que no se facturan y el motivo de la decisión. No hay columna donde
+ * guardarlo: queda en la respuesta, en el registro y en la alerta.
  */
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -152,13 +160,13 @@ export async function GET(req: Request): Promise<NextResponse> {
   if (extractos.length === 0) return NextResponse.json({ periodo, seco, facturadas: 0, omitidas: 0 });
 
   // El candado local: cargos ya registrados de este período.
-  let yaRegistrados: { org_id: unknown }[];
+  let yaRegistrados: { org_id: unknown; estado?: unknown }[];
   try {
-    yaRegistrados = await leerTodo<{ org_id: unknown }>(() =>
+    yaRegistrados = await leerTodo<{ org_id: unknown; estado?: unknown }>(() =>
       supabase
         .schema("bvsala")
         .from("cargos")
-        .select("org_id")
+        .select("org_id, estado")
         .eq("periodo", periodo)
         .order("org_id", { ascending: true }),
     );
@@ -172,6 +180,9 @@ export async function GET(req: Request): Promise<NextResponse> {
     return NextResponse.json({ error: "cargos read failed" }, { status: 500 });
   }
   const conCargo = new Set(yaRegistrados.map((c) => String(c.org_id)));
+  const estadoDelCargo = new Map(yaRegistrados.map((c) => [String(c.org_id), c.estado == null ? null : String(c.estado)]));
+  /** Cargos sellados que NO se facturan por la decisión del plan, con su porqué. */
+  const sinComision: Array<{ org_id: string; cargo_eur: number; motivo: string; revisar: boolean; cargo_existente: string | null }> = [];
 
   let facturadas = 0;
   let omitidas = 0;
@@ -222,8 +233,38 @@ export async function GET(req: Request): Promise<NextResponse> {
       if (errSubs) throw new Error(`plan de ${e.org_id} ilegible: ${errSubs.message}`);
       const plan = decidirComisionDelPeriodo((subs ?? []) as SuscripcionEnElPeriodo[], catalogoDeComision(), e.periodo);
       if (!plan.comision) {
-        if (seco) ensayo.push(ensayoDeCargo(e, { accion: "sin_comision", motivo: plan.motivo }, undefined));
-        else console.warn(`[facturar-extractos] ${e.org_id} ${e.periodo}: sin plan con comisión en el período (${plan.motivo}), no se factura`);
+        const yaHayCargo = conCargo.has(e.org_id);
+        const cargoExistente = estadoDelCargo.get(e.org_id) ?? null;
+        sinComision.push({ org_id: e.org_id, cargo_eur: e.cargo_eur, motivo: plan.motivo, revisar: plan.revisar, cargo_existente: yaHayCargo ? cargoExistente : null });
+        if (seco) {
+          // Si ya hay cargo, el ensayo lo dice JUNTO al `sin_comision`: callarlo
+          // escondería una factura ya emitida a quien hoy no la debería.
+          ensayo.push(ensayoDeCargo(e, { accion: "sin_comision", motivo: plan.motivo, yaHayCargo, estadoDelCargo: cargoExistente }, undefined));
+          continue;
+        }
+        console.warn(
+          `[facturar-extractos] ${e.org_id} ${e.periodo}: cargo sellado de ${e.cargo_eur} € que NO se factura (${plan.motivo})` +
+            (yaHayCargo ? ` — ya existe un cargo (${cargoExistente ?? "estado desconocido"})` : ""),
+        );
+        // Un extracto con cargo que no se convierte en factura no puede quedarse
+        // en un warn. `revisar` (Price sin declarar, mes mixto) es crítico: el
+        // cargo puede ser legítimo y se relanza al resolverlo. El resto es un
+        // extracto sellado con la regla anterior, o un plan que cambió entre el
+        // cierre y esta pasada: aviso.
+        await alertar({
+          nivel: plan.revisar ? "critico" : "aviso",
+          asunto: plan.revisar
+            ? "Cargo de comisión sellado SIN FACTURAR: el plan de la organización no se puede decidir — resolver y relanzar"
+            : "Cargo de comisión sellado que no se factura: la organización no llevó un plan con comisión en el período",
+          detalle: {
+            orgId: e.org_id,
+            periodo: e.periodo,
+            cargoEur: e.cargo_eur,
+            motivo: plan.motivo,
+            ...(plan.revisar ? { precios: plan.precios } : {}),
+            cargo_existente: yaHayCargo ? cargoExistente : null,
+          },
+        });
         continue;
       }
 
@@ -332,6 +373,11 @@ export async function GET(req: Request): Promise<NextResponse> {
     } catch (err) {
       fallos.push(e.org_id);
       console.error(`[facturar-extractos] la org ${e.org_id} falló:`, err);
+      if (seco) {
+        // El ensayo no alerta: el fallo va en su respuesta.
+        ensayo.push({ ...ensayoDeCargo(e, { accion: "nada", motivo: "sin_cargo" }, undefined), detalle: `FAILED: ${err instanceof Error ? err.message : String(err)}` });
+        continue;
+      }
       await alertar({
         nivel: "critico",
         asunto: "La facturación de la comisión está fallando",
@@ -340,6 +386,6 @@ export async function GET(req: Request): Promise<NextResponse> {
     }
   }
 
-  if (seco) return NextResponse.json({ periodo, seco: true, ensayo });
-  return NextResponse.json({ periodo, facturadas, omitidas, fallos: fallos.length });
+  if (seco) return NextResponse.json({ periodo, seco: true, ensayo, sin_comision: sinComision });
+  return NextResponse.json({ periodo, facturadas, omitidas, fallos: fallos.length, sin_comision: sinComision });
 }

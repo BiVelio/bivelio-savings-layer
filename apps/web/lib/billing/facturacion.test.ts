@@ -206,7 +206,14 @@ describe("ensayoDeCargo — el ensayo en seco dice exactamente lo que haría", (
       accion: "sin_comision",
       centimos: null,
       cliente: null,
+      ya_facturado: false,
+      cargo_existente: null,
     });
+    // Con un cargo ya registrado, el ensayo dice las DOS cosas: sin comisión y ya facturado.
+    const ya = ensayoDeCargo(base, { accion: "sin_comision", motivo: "plan_de_cuota_fija", yaHayCargo: true, estadoDelCargo: "pagado" }, undefined);
+    expect(ya).toMatchObject({ accion: "sin_comision", ya_facturado: true, cargo_existente: "pagado", centimos: null });
+    expect(ya.detalle).toMatch(/plan_de_cuota_fija/);
+    expect(ya.detalle).toMatch(/ya_facturado/);
     expect(ensayoDeCargo(base, decidirCargo(base, null, false), undefined)).toMatchObject({ accion: "omitir", detalle: "omitido_sin_cliente" });
     expect(ensayoDeCargo(base, decidirCargo(base, CLIENTE, true), undefined)).toMatchObject({ accion: "nada", detalle: "ya_facturado" });
   });

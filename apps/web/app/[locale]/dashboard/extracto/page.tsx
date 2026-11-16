@@ -145,7 +145,9 @@ export default async function ExtractoPage() {
     // §6(b)): solo lleva comisión quien tiene una suscripción con Price de
     // comisión en el período. Pro, Equipo, «Medir» o sin suscripción: la sombra
     // la enseña como la de una cuenta exenta — lo que habría sido, sin cargo.
-    // Si la lectura falla no se promete «sin cargo»: se deja la cifra.
+    // Si la lectura falla no se promete «sin cargo»: se deja la cifra. Igual si
+    // la decisión es «revisar» (Price sin declarar, mes mixto): el cierre no
+    // sellaría ese mes, y la sombra no promete un 0 que nadie ha decidido.
     if (!esExento) {
       const { data: subs, error: errSubs } = await supabase
         .schema("bvsala")
@@ -153,7 +155,8 @@ export default async function ExtractoPage() {
         .select(COLUMNAS_SUSCRIPCION_DEL_PERIODO)
         .eq("org_id", orgId);
       if (!errSubs) {
-        esExento = !decidirComisionDelPeriodo((subs ?? []) as SuscripcionEnElPeriodo[], catalogoDeComision(), periodo).comision;
+        const d = decidirComisionDelPeriodo((subs ?? []) as SuscripcionEnElPeriodo[], catalogoDeComision(), periodo);
+        esExento = !d.comision && !d.revisar;
       }
     }
   }
