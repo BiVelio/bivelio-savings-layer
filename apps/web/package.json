@@ -14,7 +14,7 @@
     "@supabase/ssr": "^0.12.3",
     "@supabase/supabase-js": "^2.110.7",
     "gpt-tokenizer": "^3.4.0",
-    "next": "^15.5.0",
+    "next": "^15.5.29",
     "next-intl": "^4.13.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
