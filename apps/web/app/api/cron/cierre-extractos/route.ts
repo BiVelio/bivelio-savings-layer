@@ -4,9 +4,16 @@ import { NextResponse } from "next/server";
 import { cerrarPeriodo, periodoAnterior, resumenDelCierre, type UsoDeOrg } from "@/lib/billing/cierre";
 import type { FilaDiaria } from "@/lib/billing/extracto";
 import { obtenerFxCierre, type Fx } from "@/lib/billing/fx";
-import { idsSinComision, orgsSinComisionPorPlan, ESTADOS_CON_PLAN, type SuscripcionDeOrg } from "@/lib/billing/plan-de-la-org";
+import {
+  COLUMNAS_SUSCRIPCION_DEL_PERIODO,
+  comisionDe,
+  comisionPorOrg,
+  idsDelCatalogo,
+  type ComisionDelPeriodo,
+  type SuscripcionEnElPeriodo,
+} from "@/lib/billing/plan-de-la-org";
 import { alertar } from "@/lib/observabilidad/alerta";
-import { preciosSinComision } from "@/lib/stripe/env";
+import { catalogoDeComision } from "@/lib/stripe/env";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { esColumnaInexistente, type ErrorDePostgrest } from "@/lib/supabase/esquema-pendiente";
 import { leerTodo } from "@/lib/supabase/leer-todo";
@@ -177,35 +184,46 @@ export async function GET(req: Request): Promise<NextResponse> {
     porOrg.set(f.org_id, lista);
   }
 
-  // La calibración REAL: el primer día con uso de toda la historia de cada org.
-  // LAS EXENTAS DE COMISIÓN (probadores, cortesías): cargo 0 en su extracto.
-  // Falla CERRADA: si no se puede leer la marca, el cierre se aplaza y se
-  // relanza, porque cerrar sin ella facturaría a quien no debe pagar.
+  // QUIÉN PAGA COMISIÓN ESTE PERÍODO (lib/billing/plan-de-la-org.ts, LICENSE-CLOUD
+  // §6(b)): SOLO la organización con una suscripción en un Price de comisión
+  // durante el período, sin Pro/Equipo en ese mismo período y sin la marca de
+  // exención. Todas las demás —Pro o Equipo aunque hayan cancelado o no paguen,
+  // solo «Medir», sin suscripción, Enterprise sin contrato con comisión— cierran
+  // con cargo 0 (`es_exento`) y conservan su extracto para auditoría.
+  //
+  // Falla CERRADA: si no se puede leer la marca o las suscripciones, el cierre
+  // se aplaza y se relanza. Un extracto es inmutable: sellarlo a ciegas sería
+  // facturar a quien no debe pagar, o regalar para siempre el mes de quien sí.
   const exentas = new Set<string>();
+  let comisiones = new Map<string, ComisionDelPeriodo>();
+  const catalogo = catalogoDeComision();
   try {
+    // LAS EXENTAS DE COMISIÓN (probadores, cortesías; 0028).
     const marcadas = await leerTodo<{ id: string }>(() =>
       supabase.schema("bvsala").from("organizations").select("id").eq("comision_exenta", true).order("id", { ascending: true }),
     );
     for (const o of marcadas) exentas.add(String(o.id));
-    // LOS PLANES SIN COMISIÓN (Pro y Equipo, lib/billing/planes.ts): cargo 0,
-    // como una exención. Sin sus Prices configurados no se consulta nada y el
-    // cierre es exactamente el de antes.
-    const precios = preciosSinComision();
-    const ids = idsSinComision(precios);
-    if (ids.length > 0) {
-      const subs = await leerTodo<SuscripcionDeOrg>(() =>
+    // Sin ningún Price de comisión configurado nadie puede llevarla: no se
+    // consulta nada y todo cierra a 0 (se avisa abajo, porque en producción eso
+    // es una variable de entorno que falta, no una decisión).
+    if (catalogo.comision.length > 0) {
+      // TODAS las filas del catálogo, sin filtrar por estado: una suscripción
+      // cancelada o impagada también decide (la de Pro cancelada el día 20 es
+      // justo el caso que la regla anterior cobraba).
+      const subs = await leerTodo<SuscripcionEnElPeriodo>(() =>
         supabase
           .schema("bvsala")
           .from("subscriptions")
-          .select("org_id, price_id, status")
-          .in("status", [...ESTADOS_CON_PLAN])
-          .in("price_id", ids)
-          .order("org_id", { ascending: true }),
+          .select(COLUMNAS_SUSCRIPCION_DEL_PERIODO)
+          .in("price_id", idsDelCatalogo(catalogo))
+          // Orden estable para la paginación por OFFSET: `id` desempata dentro de la org.
+          .order("org_id", { ascending: true })
+          .order("id", { ascending: true }),
       );
-      for (const id of orgsSinComisionPorPlan(subs, precios)) exentas.add(id);
+      comisiones = comisionPorOrg(subs, catalogo, periodo);
     }
   } catch (error) {
-    console.error("[cierre-extractos] la exención de comisión no se pudo leer:", error);
+    console.error("[cierre-extractos] no se pudo leer quién lleva comisión:", error);
     await alertar({
       nivel: "critico",
       asunto: "Cierre de extractos aplazado: no se pudo leer la exención de comisión",
@@ -213,6 +231,28 @@ export async function GET(req: Request): Promise<NextResponse> {
     });
     return NextResponse.json({ error: "orgs read failed", periodo }, { status: 500 });
   }
+  if (catalogo.comision.length === 0) {
+    console.warn("[cierre-extractos] ningún Price de comisión configurado: todos los extractos cierran con cargo 0");
+    await alertar({
+      nivel: "aviso",
+      asunto: "Cierre de extractos sin ningún Price de comisión configurado: todo cierra con cargo 0",
+      detalle: { periodo, variables: "STRIPE_PRICE_ID_MONTHLY, STRIPE_PRICE_ID_YEARLY, STRIPE_PRICE_IDS_COMISION" },
+    });
+  }
+  // EL MES MIXTO: comisión y Pro/Equipo en el mismo período. Cierra a 0 (el
+  // extracto no reparte por días) y se avisa para que el dueño lo revise.
+  const mixtas = [...porOrg.keys()].filter((id) => {
+    const d = comisionDe(comisiones, id);
+    return !d.comision && d.motivo === "plan_sin_comision_en_el_periodo" && !exentas.has(id);
+  });
+  if (mixtas.length > 0) {
+    await alertar({
+      nivel: "aviso",
+      asunto: "Cierre de extractos: organizaciones con comisión y plan de cuota fija en el mismo período — cierran con cargo 0, revisar a mano",
+      detalle: { periodo, orgs: mixtas },
+    });
+  }
+  // La calibración REAL: el primer día con uso de toda la historia de cada org.
   const usoPorOrg: UsoDeOrg[] = [];
   for (const [orgId, filasOrg] of porOrg) {
     const { data: primera, error: errPrimera } = await supabase
@@ -231,7 +271,8 @@ export async function GET(req: Request): Promise<NextResponse> {
       orgId,
       filas: filasOrg,
       primerPeriodoConUso: String(primera?.day ?? `${periodo}-01`).slice(0, 7),
-      comisionExenta: exentas.has(orgId),
+      // Cargo 0 para la exenta Y para la que no llevó un plan con comisión.
+      comisionExenta: exentas.has(orgId) || !comisionDe(comisiones, orgId).comision,
     });
   }
 

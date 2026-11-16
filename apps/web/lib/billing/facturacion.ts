@@ -166,21 +166,33 @@ export interface EnsayoDeCargo {
   org_id: string;
   periodo: string;
   cargo_eur: number;
-  accion: "facturar" | "omitir" | "nada" | "exenta";
+  accion: "facturar" | "omitir" | "nada" | "exenta" | "sin_comision";
   detalle: string;
   centimos: number | null;
   cliente: string | null;
   medio_de_pago: "suscripcion" | "cliente" | "ninguno" | null;
 }
 
+/**
+ * La organización no llevó una suscripción con Price de comisión en el período
+ * (lib/billing/plan-de-la-org.ts): no se factura aunque el extracto traiga cargo.
+ */
+export interface SinPlanConComision {
+  accion: "sin_comision";
+  motivo: string;
+}
+
 export function ensayoDeCargo(
   e: ExtractoFacturable,
-  decision: DecisionDeCargo | "exenta",
+  decision: DecisionDeCargo | "exenta" | SinPlanConComision,
   medio: MedioDePago | undefined,
 ): EnsayoDeCargo {
   const base = { org_id: e.org_id, periodo: e.periodo, cargo_eur: e.cargo_eur };
   if (decision === "exenta") {
     return { ...base, accion: "exenta", detalle: "organization exempt from commission", centimos: null, cliente: null, medio_de_pago: null };
+  }
+  if (decision.accion === "sin_comision") {
+    return { ...base, accion: "sin_comision", detalle: `no commission plan in the period (${decision.motivo})`, centimos: null, cliente: null, medio_de_pago: null };
   }
   if (decision.accion === "nada") return { ...base, accion: "nada", detalle: decision.motivo, centimos: null, cliente: null, medio_de_pago: null };
   if (decision.accion === "omitir") return { ...base, accion: "omitir", detalle: decision.estado, centimos: null, cliente: null, medio_de_pago: null };

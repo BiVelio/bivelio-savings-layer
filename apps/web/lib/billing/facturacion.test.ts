@@ -201,6 +201,12 @@ describe("ensayoDeCargo — el ensayo en seco dice exactamente lo que haría", (
   });
   it("exenta, omitida y nada llevan su causa y ningún importe", () => {
     expect(ensayoDeCargo(base, "exenta", undefined)).toMatchObject({ accion: "exenta", centimos: null });
+    // Sin plan con comisión en el período (LICENSE-CLOUD §6(b)): tampoco se factura.
+    expect(ensayoDeCargo(base, { accion: "sin_comision", motivo: "sin_suscripcion_con_comision" }, undefined)).toMatchObject({
+      accion: "sin_comision",
+      centimos: null,
+      cliente: null,
+    });
     expect(ensayoDeCargo(base, decidirCargo(base, null, false), undefined)).toMatchObject({ accion: "omitir", detalle: "omitido_sin_cliente" });
     expect(ensayoDeCargo(base, decidirCargo(base, CLIENTE, true), undefined)).toMatchObject({ accion: "nada", detalle: "ya_facturado" });
   });

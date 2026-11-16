@@ -16,8 +16,8 @@ import {
 } from "@/lib/billing/facturacion";
 import { alertar } from "@/lib/observabilidad/alerta";
 import { getStripe } from "@/lib/stripe/client";
-import { billingConfigured, preciosSinComision } from "@/lib/stripe/env";
-import { idsSinComision, orgsSinComisionPorPlan, ESTADOS_CON_PLAN, type SuscripcionDeOrg } from "@/lib/billing/plan-de-la-org";
+import { billingConfigured, catalogoDeComision } from "@/lib/stripe/env";
+import { COLUMNAS_SUSCRIPCION_DEL_PERIODO, decidirComisionDelPeriodo, type SuscripcionEnElPeriodo } from "@/lib/billing/plan-de-la-org";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { leerTodo } from "@/lib/supabase/leer-todo";
 
@@ -39,8 +39,13 @@ import { leerTodo } from "@/lib/supabase/leer-todo";
  * FALLA CERRADO: sin CRON_SECRET o sin Stripe configurado, 501 y no toca nada.
  * Un fallo con UNA org no bloquea a las demás: se alerta y se sigue.
  *
+ * SOLO SE FACTURA A QUIEN LLEVÓ UN PLAN CON COMISIÓN en el período del extracto
+ * (lib/billing/plan-de-la-org.ts): Pro, Equipo, «Medir», sin suscripción o
+ * Enterprise sin contrato con comisión no reciben factura aunque el extracto
+ * traiga cargo.
+ *
  * ENSAYO EN SECO (`?seco=1`, mismo Bearer): devuelve, por extracto, qué haría
- * (facturar/omitir/nada/exenta, céntimos, cliente y de dónde saldría el cobro)
+ * (facturar/omitir/nada/exenta/sin_comision, céntimos, cliente y de dónde saldría el cobro)
  * sin crear nada en Stripe ni escribir en cargos. Solo LECTURAS de Stripe.
  */
 export const runtime = "nodejs";
@@ -197,24 +202,28 @@ export async function GET(req: Request): Promise<NextResponse> {
       // SEGUNDA VERJA de la exención (la primera es el cargo 0 del cierre): una
       // cortesía marcada entre el cierre de las 05:00 y esta pasada de las 07:00
       // no se factura. Como la calibración, dos verjas.
-      // Y la de los planes SIN comisión (Pro y Equipo): un cliente que pasó a
-      // uno de ellos entre el cierre y esta pasada tampoco recibe factura.
-      let sinComisionPorPlan = false;
-      const precios = preciosSinComision();
-      if (idsSinComision(precios).length > 0) {
-        const { data: subs, error: errSubs } = await supabase
-          .schema("bvsala")
-          .from("subscriptions")
-          .select("org_id, price_id, status")
-          .eq("org_id", e.org_id)
-          .in("status", [...ESTADOS_CON_PLAN]);
-        // Falla CERRADA, como el resto de la verja: sin poder leer el plan no se factura.
-        if (errSubs) throw new Error(`plan de ${e.org_id} ilegible: ${errSubs.message}`);
-        sinComisionPorPlan = orgsSinComisionPorPlan((subs ?? []) as SuscripcionDeOrg[], precios).has(e.org_id);
-      }
-      if ((org as { comision_exenta?: boolean } | null)?.comision_exenta || sinComisionPorPlan) {
+      if ((org as { comision_exenta?: boolean } | null)?.comision_exenta) {
         if (seco) ensayo.push(ensayoDeCargo(e, "exenta", undefined));
         else console.warn(`[facturar-extractos] ${e.org_id} ${e.periodo}: organización exenta de comisión, no se factura`);
+        continue;
+      }
+      // SEGUNDA VERJA DEL PLAN (lib/billing/plan-de-la-org.ts, LICENSE-CLOUD
+      // §6(b)): solo se factura comisión a quien llevó una suscripción con Price
+      // de comisión en ESE período — la misma decisión del cierre, repetida
+      // aquí. No es redundante: un extracto sellado con la regla anterior (que
+      // cobraba a quien había cancelado Pro) o relanzado a mano con `?periodo=`
+      // trae `cargo_eur > 0` y esta verja es lo único que impide facturarlo.
+      // Falla CERRADA: sin poder leer el plan no se factura.
+      const { data: subs, error: errSubs } = await supabase
+        .schema("bvsala")
+        .from("subscriptions")
+        .select(COLUMNAS_SUSCRIPCION_DEL_PERIODO)
+        .eq("org_id", e.org_id);
+      if (errSubs) throw new Error(`plan de ${e.org_id} ilegible: ${errSubs.message}`);
+      const plan = decidirComisionDelPeriodo((subs ?? []) as SuscripcionEnElPeriodo[], catalogoDeComision(), e.periodo);
+      if (!plan.comision) {
+        if (seco) ensayo.push(ensayoDeCargo(e, { accion: "sin_comision", motivo: plan.motivo }, undefined));
+        else console.warn(`[facturar-extractos] ${e.org_id} ${e.periodo}: sin plan con comisión en el período (${plan.motivo}), no se factura`);
         continue;
       }
 

@@ -48,12 +48,18 @@ function builder(tabla: string) {
       return b;
     },
     eq: encadenar,
+    in: encadenar,
     gte: encadenar,
     lt: encadenar,
     order: encadenar,
     limit: encadenar,
     range: async () => {
       if (tabla === "organizations") return { data: [], error: null };
+      // La org de estos casos lleva la modalidad con comisión, viva todo el
+      // período: desde el 2026-11-16 es lo único que hace que el cierre cobre.
+      if (tabla === "subscriptions") {
+        return { data: [{ org_id: ORG, price_id: "price_legacy_m", status: "active", created_at: "2026-06-01T00:00:00Z" }], error: null };
+      }
       if (tabla === "usage_daily") {
         if (columnas.includes("reference_") && !estado.con0029) {
           return { data: null, error: { code: "42703", message: "column usage_daily.reference_requests does not exist" } };
@@ -76,6 +82,9 @@ function builder(tabla: string) {
 
 vi.mock("@/lib/supabase/admin", () => ({
   createAdminClient: () => ({ schema: () => ({ from: (t: string) => builder(t) }) }),
+}));
+vi.mock("@/lib/stripe/env", () => ({
+  catalogoDeComision: () => ({ comision: ["price_legacy_m"], pro: [], equipo: [] }),
 }));
 vi.mock("@/lib/billing/fx", () => ({
   obtenerFxCierre: async () => ({ eurPorUsd: 0.9, fuente: "BCE (test)" }),

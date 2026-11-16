@@ -317,3 +317,46 @@ con `?periodo=` del mes que tocaba.
   del ingest vuelve a crecer sin tope. No hay urgencia de horas; mirar el
   `motivo` (permisos o timeout) y relanzar `cron/retencion` (`?seco=1`
   enseña cuántas filas borraría).
+
+## 7 · Quién cierra con comisión (añadido 2026-11-16)
+
+Desde el 2026-11-16 el cierre y la facturación cobran comisión **solo** a la
+organización que, durante el período, tuvo una suscripción en un Price de la
+lista explícita de comisión: `STRIPE_PRICE_ID_MONTHLY`, `STRIPE_PRICE_ID_YEARLY`
+y, separados por comas, los de `STRIPE_PRICE_IDS_COMISION`
+(`apps/web/lib/billing/plan-de-la-org.ts`, LICENSE-CLOUD §6(b)). Pro y Equipo
+—vivos, cancelados o impagados—, solo «Medir», sin suscripción y Enterprise sin
+contrato con comisión cierran con cargo 0 y conservan su extracto.
+`STRIPE_PRICE_IDS_EXTRA` **no** cuenta: es el escape de la atribución.
+
+**Antes del primer día 1 con esta regla** (el extracto sellado es inmutable):
+
+1. Comprobar, **por existencia**, que las dos variables de la modalidad con
+   comisión están en Production (`vercel env ls`), y si algún cliente con
+   comisión está en un Price distinto de esos dos (uno rotado, un contrato
+   Enterprise), añadirlo a `STRIPE_PRICE_IDS_COMISION` y redesplegar.
+2. Ensayo en seco del mes en curso y comparar con quien debe pagar:
+   `GET /api/cron/cierre-extractos?seco=1&periodo=<YYYY-MM>` — cada cliente con
+   comisión tiene que salir con `es_exento: false`.
+3. `GET /api/cron/facturar-extractos?seco=1&periodo=<YYYY-MM>` sobre un mes ya
+   cerrado: `accion: "sin_comision"` es un cargo sellado con la regla anterior
+   que ya no se factura.
+
+### 7.1 · «Cierre de extractos sin ningún Price de comisión configurado: todo cierra con cargo 0»
+
+**Qué significa.** Faltan `STRIPE_PRICE_ID_MONTHLY` y `STRIPE_PRICE_ID_YEARLY`
+(y no hay `STRIPE_PRICE_IDS_COMISION`). Nadie ha pagado comisión ese mes.
+
+**Qué hacer.** Restaurar las variables y redesplegar. Los extractos ya sellados
+no se reescriben: si algún cliente con comisión cerró a 0, ese mes se le factura
+a mano o se da por perdido — es decisión del dueño.
+
+### 7.2 · «…organizaciones con comisión y plan de cuota fija en el mismo período — cierran con cargo 0, revisar a mano»
+
+**Qué significa.** La organización tuvo ese mes una suscripción con comisión y
+otra de Pro o Equipo (cambió de plan a mitad de mes). El extracto es mensual y
+no reparte el ahorro por días, así que no se cobra nada de ese mes.
+
+**Qué hacer.** Nada, salvo que el dueño quiera facturar a mano los días en que
+la suscripción con comisión estuvo viva: el extracto del mes enseña la comisión
+que habría sido sobre el mes entero, que es una cota superior.

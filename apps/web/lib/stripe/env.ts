@@ -1,4 +1,4 @@
-import type { PlanDePago, PreciosConfigurados } from "@/lib/billing/planes";
+import type { CatalogoDeComision, PlanDePago, PreciosConfigurados } from "@/lib/billing/planes";
 
 // Stripe configuration, read from the environment (mirrors lib/supabase/env.ts).
 // The secret + webhook signing secret are SERVER-ONLY; the publishable key is
@@ -53,5 +53,31 @@ export function preciosSinComision(): PreciosConfigurados {
   return {
     pro: [STRIPE_PRICE_ID_PRO_MONTHLY, STRIPE_PRICE_ID_PRO_YEARLY].filter(Boolean),
     equipo: [STRIPE_PRICE_ID_TEAM_MONTHLY, STRIPE_PRICE_ID_TEAM_YEARLY].filter(Boolean),
+  };
+}
+
+/**
+ * EL CATÁLOGO QUE DECIDE LA COMISIÓN (lib/billing/plan-de-la-org.ts). Solo se
+ * cobra comisión a una suscripción cuyo Price está en `comision`, y esa lista es
+ * EXPLÍCITA: los dos Prices de la modalidad histórica (STRIPE_PRICE_ID_MONTHLY /
+ * YEARLY) y, separados por comas, los de STRIPE_PRICE_IDS_COMISION — para un
+ * Price con comisión que ya no es el vigente (uno rotado al cambiar el importe,
+ * o el de un contrato Enterprise que la lleve).
+ *
+ * ⛔ STRIPE_PRICE_IDS_EXTRA NO entra: es el escape de la ATRIBUCIÓN («este
+ * evento es nuestro»: cortesías, socios), no una declaración de que el Price
+ * lleve comisión. Lo que no está aquí no se cobra (LICENSE-CLOUD §6(b)).
+ *
+ * La lista extra se lee del entorno en cada llamada, como el escape de
+ * lib/stripe/atribucion.ts.
+ */
+export function catalogoDeComision(): CatalogoDeComision {
+  const extra = (process.env.STRIPE_PRICE_IDS_COMISION ?? "")
+    .split(",")
+    .map((x) => x.trim())
+    .filter(Boolean);
+  return {
+    comision: [...new Set([STRIPE_PRICE_ID_MONTHLY, STRIPE_PRICE_ID_YEARLY, ...extra].filter(Boolean))],
+    ...preciosSinComision(),
   };
 }

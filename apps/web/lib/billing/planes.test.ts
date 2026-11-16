@@ -13,7 +13,7 @@ import {
   tarifaDeEquipoDesdeTramos,
   tarifaPorAsiento,
 } from "./planes";
-import { orgsSinComisionPorPlan } from "./plan-de-la-org";
+import { decidirComisionDelPeriodo, orgsSinComisionPorPlan } from "./plan-de-la-org";
 import { calcularComision } from "./tarifa";
 
 /**
@@ -154,36 +154,83 @@ describe("el Price de Equipo en Stripe (graduated, dos tramos)", () => {
   });
 });
 
-describe("⛔ de qué plan es una suscripción: por PRICE, y lo desconocido sigue con comisión", () => {
+describe("⛔ de qué plan es una suscripción: por PRICE — y la etiqueta «comision» por descarte NO cobra", () => {
   const precios = { pro: ["price_pro_m", "price_pro_y"], equipo: ["price_team_m"] };
+  const catalogo = { ...precios, comision: ["price_legacy_4eur"] };
+  // Una fila viva durante todo 2026-10, para que lo único que decida sea el Price.
+  const viva = (org_id: string, price_id: string | null, status = "active") => ({
+    org_id,
+    price_id,
+    status,
+    created_at: "2026-06-01T00:00:00Z",
+    canceled_at: status === "canceled" ? "2026-10-20T00:00:00Z" : null,
+    current_period_end: "2026-11-01T00:00:00Z",
+    cancel_at_period_end: false,
+  });
 
   it("los Prices de Pro y Equipo son sus planes", () => {
     expect(planDelPrecio("price_pro_y", precios)).toBe("pro");
     expect(planDelPrecio("price_team_m", precios)).toBe("equipo");
   });
 
-  it("el Price de siempre, uno de EXTRA, uno desconocido o ninguno: modalidad con comisión, como hoy", () => {
+  // CAMBIADO (2026-11-16). Antes: «…modalidad con comisión, como hoy», y eso
+  // era dinero: un Price de cortesía, uno desconocido o ninguno pagaban
+  // comisión. `planDelPrecio` sigue ETIQUETANDO «comision» lo que no es Pro ni
+  // Equipo (la guardia anti-doble-compra y el panel lo usan), pero la etiqueta
+  // ya no cobra: solo cobra el Price de la lista explícita (LICENSE-CLOUD §6(b)).
+  it("el Price de siempre, uno de EXTRA, uno desconocido o ninguno se ETIQUETAN «comision»; solo el de la lista la paga", () => {
     for (const p of ["price_legacy_4eur", "price_cortesia", null, undefined, ""]) {
       expect(planDelPrecio(p, precios)).toBe("comision");
     }
+    for (const p of ["price_cortesia", "price_desconocido", null]) {
+      expect(decidirComisionDelPeriodo([viva("x", p)], catalogo, "2026-10").comision, String(p)).toBe(false);
+    }
+    expect(decidirComisionDelPeriodo([viva("x", "price_legacy_4eur")], catalogo, "2026-10").comision).toBe(true);
   });
 
-  it("sin Prices sin comisión configurados, NADIE deja de llevar comisión", () => {
+  // CAMBIADO (2026-11-16). Antes: «sin Prices sin comisión configurados, NADIE
+  // deja de llevar comisión» — el defecto era cobrar a todos. Ahora el defecto
+  // es el contrario: sin un Price de comisión configurado, nadie la paga.
+  it("la etiqueta por descarte no depende del catálogo; el cobro sí, y sin Prices de comisión nadie paga", () => {
     expect(planDelPrecio("price_pro_m", { pro: [], equipo: [] })).toBe("comision");
+    const vacio = { pro: [], equipo: [], comision: [] };
+    for (const p of ["price_pro_m", "price_legacy_4eur"]) {
+      expect(decidirComisionDelPeriodo([viva("x", p)], vacio, "2026-10").comision).toBe(false);
+    }
   });
 
-  it("el cierre saca de la comisión solo a las orgs con una suscripción VIVA en Pro o Equipo", () => {
-    const fuera = orgsSinComisionPorPlan(
+  // CAMBIADO (2026-11-16) — ESTE TEST FIJABA EL FALLO. Decía: «el cierre saca de
+  // la comisión solo a las orgs con una suscripción VIVA en Pro o Equipo», y
+  // exigía que «c» (Pro CANCELADO) y «e» (sin Price) NO quedaran fuera, es
+  // decir, que pagaran comisión. Es justo lo que LICENSE-CLOUD §6(b) prohíbe: un
+  // cliente de Pro que cancela a mitad de mes recibía el día 1 una factura de
+  // comisión por los días en que estuvo en un plan «sin comisión». La regla del
+  // cierre es ahora la inversa: paga SOLO quien llevó un Price de comisión.
+  it("⛔ el cierre cobra comisión SOLO a la org con un Price de comisión en el período; un Pro cancelado NO paga", () => {
+    const filas = [
+      viva("a", "price_pro_m"),
+      viva("b", "price_team_m", "past_due"),
+      viva("c", "price_pro_m", "canceled"),
+      viva("d", "price_legacy_4eur"),
+      viva("e", null),
+    ];
+    const pagan = ["a", "b", "c", "d", "e"].filter(
+      (org) => decidirComisionDelPeriodo(filas.filter((f) => f.org_id === org), catalogo, "2026-10").comision,
+    );
+    expect(pagan).toEqual(["d"]);
+  });
+
+  it("orgsSinComisionPorPlan queda como etiqueta de «plan vivo sin comisión» (ya no decide el cierre)", () => {
+    const vivas = orgsSinComisionPorPlan(
       [
         { org_id: "a", price_id: "price_pro_m", status: "active" },
         { org_id: "b", price_id: "price_team_m", status: "past_due" },
         { org_id: "c", price_id: "price_pro_m", status: "canceled" },
         { org_id: "d", price_id: "price_legacy_4eur", status: "active" },
-        { org_id: "e", price_id: null, status: "active" },
       ],
       precios,
     );
-    expect([...fuera].sort()).toEqual(["a", "b"]);
+    expect([...vivas].sort()).toEqual(["a", "b"]);
   });
 });
 
@@ -203,16 +250,16 @@ describe("⛔ la modalidad con comisión: CERRADA a clientes nuevos, intacta par
     expect(llevaComision(planDelPrecio("price_legacy_4eur", precios))).toBe(true);
   });
 
-  it("el cierre y la facturación la siguen cobrando: no entra en las orgs sin comisión", () => {
-    const fuera = orgsSinComisionPorPlan(
-      [
-        { org_id: "legado", price_id: "price_legacy_4eur", status: "active" },
-        { org_id: "nuevo", price_id: "price_pro_m", status: "active" },
-      ],
-      precios,
-    );
-    expect(fuera.has("legado")).toBe(false);
-    expect(fuera.has("nuevo")).toBe(true);
+  // CAMBIADO (2026-11-16): antes se probaba por la negativa («el legado no
+  // entra en las orgs sin comisión»), que era verdad para CUALQUIER org sin Pro
+  // vivo — también para la que no debía pagar. Ahora se prueba lo que importa:
+  // el legado paga porque su Price está en la lista de comisión, y el nuevo no.
+  it("el cierre y la facturación la siguen cobrando: su Price está en la lista de comisión", () => {
+    const catalogo = { ...precios, comision: ["price_legacy_4eur", "price_legacy_39eur"] };
+    const fila = (price_id: string) => ({ org_id: "o", price_id, status: "active", created_at: "2026-01-10T00:00:00Z" });
+    expect(decidirComisionDelPeriodo([fila("price_legacy_4eur")], catalogo, "2026-10")).toEqual({ comision: true });
+    expect(decidirComisionDelPeriodo([fila("price_legacy_39eur")], catalogo, "2026-10")).toEqual({ comision: true });
+    expect(decidirComisionDelPeriodo([fila("price_pro_m")], catalogo, "2026-10").comision).toBe(false);
   });
 
   it("su comisión y su extracto salen de tarifa.ts exactamente como antes", () => {
