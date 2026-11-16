@@ -1,0 +1,189 @@
+/*
+ * Derived from affectUI Pro 'Avatar' (https://www.affectui.com). Used under the affectUI Pro license held by BiVelio. NOT covered by this repository's Apache-2.0 licence; do not redistribute as a component kit.
+ *
+ * Light theme only, BiVelio tokens; changes from upstream are listed in ./VENDOR.md.
+ */
+/* Colors as variables – override them on .ui-avtc or .ui-avtc__group (see Theming in the docs) */
+.ui-avtc,
+.ui-avtc__group {
+  --ui-avtc-ink: var(--aui-ink, rgba(0, 0, 0, 0.88));
+  --ui-avtc-text: rgba(0, 0, 0, 0.61);
+  --ui-avtc-fill: var(--aui-subtle, rgba(0, 0, 0, 0.06));
+  --ui-avtc-tile: var(--aui-surface, #ffffff);
+  --ui-avtc-edge: rgba(0, 0, 0, 0.08);
+  /* The ring that cuts each avatar out of the one before – set it to the background the group sits on */
+  --ui-avtc-ring: var(--aui-surface, #ffffff);
+  --ui-avtc-mark: rgba(0, 96, 226, 0.78);
+  --ui-avtc-online: var(--aui-green, #5fc88a);
+  --ui-avtc-away: var(--aui-amber, #e8b000);
+  --ui-avtc-busy: var(--aui-red, #f04438);
+  /* The soft colors behind initials: lightness and saturation of the tint and of the letters */
+  --ui-avtc-bg-l: 93%;
+  --ui-avtc-bg-s: 70%;
+  --ui-avtc-fg-l: 36%;
+  --ui-avtc-fg-s: 48%;
+
+  --s: 32px;
+  --fs: 12px;
+  --dot: 9px;
+  --sq: 4px;
+  --gap: 2px;
+}
+.ui-avtc[data-size="20"], .ui-avtc__group[data-size="20"] { --s: 20px; --fs: 8.5px; --dot: 6px; --sq: 3px; --gap: 1px; }
+.ui-avtc[data-size="24"], .ui-avtc__group[data-size="24"] { --s: 24px; --fs: 10px; --dot: 7px; --sq: 3px; --gap: 1.5px; }
+.ui-avtc[data-size="40"], .ui-avtc__group[data-size="40"] { --s: 40px; --fs: 14px; --dot: 10px; --sq: 5px; --gap: 2.5px; }
+
+.ui-avtc {
+  position: relative;
+  display: inline-grid;
+  flex: none;
+  box-sizing: border-box;
+  width: var(--s);
+  height: var(--s);
+  vertical-align: middle;
+  font-family: var(--aui-font, var(--font-sans));
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+.ui-avtc__face {
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--ui-avtc-fill);
+  color: var(--ui-avtc-text);
+}
+/* Rounded squares keep the same curve at every size: a quarter of the side */
+.ui-avtc[data-shape="square"] .ui-avtc__face { border-radius: calc(var(--s) / 4); }
+
+/* Initials sit on a soft color of their own, picked from the name */
+.ui-avtc[data-hue] .ui-avtc__face {
+  background: hsl(var(--h) var(--ui-avtc-bg-s) var(--ui-avtc-bg-l));
+  color: hsl(var(--h) var(--ui-avtc-fg-s) var(--ui-avtc-fg-l));
+}
+.ui-avtc[data-hue="0"] { --h: 214; }
+.ui-avtc[data-hue="1"] { --h: 152; }
+.ui-avtc[data-hue="2"] { --h: 40; }
+.ui-avtc[data-hue="3"] { --h: 22; }
+.ui-avtc[data-hue="4"] { --h: 330; }
+.ui-avtc[data-hue="5"] { --h: 268; }
+.ui-avtc[data-hue="6"] { --h: 174; }
+.ui-avtc[data-hue="7"] { --h: 196; }
+
+.ui-avtc__initials {
+  grid-area: 1 / 1;
+  font-size: var(--fs);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+.ui-avtc__anon {
+  display: block;
+  width: calc(var(--s) * 0.55);
+  height: calc(var(--s) * 0.55);
+}
+
+/* The picture covers the initials once it has loaded – they show while it loads and when it fails */
+.ui-avtc__img {
+  grid-area: 1 / 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+.ui-avtc[data-ready] .ui-avtc__img { opacity: 1; }
+.ui-avtc[data-ready] .ui-avtc__initials { visibility: hidden; }
+
+/* A hairline on top of pictures and agent tiles, so white edges don't melt into a white page */
+.ui-avtc[data-ready] .ui-avtc__face::after,
+.ui-avtc[data-kind="agent"] .ui-avtc__face::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 0.5px var(--ui-avtc-edge);
+  pointer-events: none;
+}
+
+/* Agent: its own pixel mark on a white tile */
+.ui-avtc[data-kind="agent"] .ui-avtc__face { background: var(--ui-avtc-tile); }
+.ui-avtc__mark {
+  grid-area: 1 / 1;
+  display: grid;
+  grid-template-columns: repeat(3, var(--sq));
+  grid-auto-rows: var(--sq);
+  gap: var(--gap);
+}
+.ui-avtc__mark i {
+  border-radius: calc(var(--sq) / 4);
+  background: var(--ui-avtc-mark);
+  opacity: 0;
+  transition: opacity 240ms ease;
+}
+.ui-avtc__mark i[data-on] { opacity: 1; }
+/* Working: every square twinkles, in a diagonal wave */
+.ui-avtc[data-working] .ui-avtc__mark i { animation: ui-avtc-pixel 1.2s ease-in-out infinite both; }
+.ui-avtc[data-working] .ui-avtc__mark i:not([data-on]) { opacity: 0.16; }
+@keyframes ui-avtc-pixel {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+
+/* Status: a dot on the corner, cut out of the avatar by a ring in the background color */
+.ui-avtc__status {
+  position: absolute;
+  inset-inline-end: 0;
+  bottom: 0;
+  width: var(--dot);
+  height: var(--dot);
+  border-radius: 50%;
+  background: var(--ui-avtc-online);
+  box-shadow: 0 0 0 1.5px var(--ui-avtc-ring);
+}
+.ui-avtc[data-shape="square"] .ui-avtc__status { inset-inline-end: -2px; bottom: -2px; }
+.ui-avtc__status[data-status="away"] { background: var(--ui-avtc-away); }
+.ui-avtc__status[data-status="busy"] { background: var(--ui-avtc-busy); }
+
+/* Group: each one overlaps the one before by a quarter, a ring in the background color between them */
+.ui-avtc__group {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  isolation: isolate;
+}
+.ui-avtc__group > .ui-avtc .ui-avtc__face { box-shadow: 0 0 0 2px var(--ui-avtc-ring); }
+.ui-avtc__group > :is(.ui-avtc, .ui-avtc__more) + :is(.ui-avtc, .ui-avtc__more) { margin-inline-start: calc(var(--s) / -4); }
+.ui-avtc__more {
+  display: inline-grid;
+  place-items: center;
+  box-sizing: border-box;
+  min-width: var(--s);
+  height: var(--s);
+  padding: 0 4px;
+  border-radius: 999px;
+  /* The gray tint laid over the ring color, so the face behind it doesn't show through */
+  background: linear-gradient(var(--ui-avtc-fill), var(--ui-avtc-fill)), var(--ui-avtc-ring);
+  box-shadow: 0 0 0 2px var(--ui-avtc-ring);
+  font-family: var(--aui-font, var(--font-sans));
+  font-size: var(--fs);
+  font-weight: 500;
+  line-height: 1;
+  color: var(--ui-avtc-text);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+.ui-avtc__more[data-shape="square"] { border-radius: calc(var(--s) / 4); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-avtc__img { transition: none; }
+  .ui-avtc__mark i { transition: none; }
+  .ui-avtc[data-working] .ui-avtc__mark i { animation: none; }
+  .ui-avtc[data-working] .ui-avtc__mark i:not([data-on]) { opacity: 0; }
+}

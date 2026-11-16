@@ -61,6 +61,23 @@ para poder comparar al actualizar.
 Las ocho piezas del frente E1 (2026-11-16) salen del catálogo completo bajado con
 la licencia Pro. Ese catálogo no distingue cuáles publica además upstream bajo
 MIT, así que todas llevan la cabecera Pro, la más restrictiva de las dos.
+| Badge | `badge.tsx` + `.css` | **affectUI Pro** | registro Pro, `badge-clean` (descarga del 2026-11-16) | `d5e6309addea4d8a9d65e4c58abd1075ed85bef43f6e65812e55a9918d3b234f` |
+| Avatar | `avatar.tsx` + `.css` | **affectUI Pro** | registro Pro, `avatar-clean` (descarga del 2026-11-16) | `77ff605558de18612fd45e1b91857826698e41fa893f6a70a5afa03485610a46` |
+| Empty State | `empty-state.tsx` + `.css` | **affectUI Pro** | registro Pro, `empty-state-clean` (descarga del 2026-11-16) | `495f16a093feb816c8d1f26f9f4adeecfb95712fbf2ee55f9961432de9fe4d46` |
+| Spinner | `spinner.tsx` + `.css` | **affectUI Pro** | registro Pro, `spinner-clean` (descarga del 2026-11-16) | `e53e0798e1d6ad45afc1377b0bfcc1421edbafef83ae4d07562f883ab79896c4` |
+| Dialog (AlertDialog) | `dialog.tsx` + `.css` | **affectUI Pro** | registro Pro, `dialog-clean` (descarga del 2026-11-16) | `3d377b605125ad7287a09f454d315a7d71ec1c8a6afab733316f23ca3bb355a4` |
+| Dropdown Menu | `dropdown-menu.tsx` + `.css` | **affectUI Pro** | registro Pro, `dropdown-menu-clean` (descarga del 2026-11-16) | `d6552544746bdde40febc8e0d461f6caf10f54d1661816afad4c09dd08398c04` |
+| Select | `select.tsx` + `.css` | **affectUI Pro** | registro Pro, `select-clean` (descarga del 2026-11-16) | `086f8e8b71a40f9b221afdd61c3fe337fe2e1640a0e0e148a260db987e94440d` |
+| Toaster | `toaster.tsx` + `.css` | **affectUI Pro** | registro Pro, `toaster-clean` (descarga del 2026-11-16) | `2f83426953e89fdc61936a20e0b16ec046ca598b45d4ee0efaed872f2ffea5ad` |
+| Text Field | `text-field.tsx` + `.css` | **affectUI Pro** | registro Pro, `text-field-clean` (descarga del 2026-11-16) | `87a72ec504b23ff046d2b45944415c41f72f8ce99bcf9741918d96f5868717c4` |
+| Number Input | `number-input.tsx` + `.css` | **affectUI Pro** | registro Pro, `number-input-clean` (descarga del 2026-11-16) | `01c2322723b7fe55420073487f7ccaee55f0435caca31a5da51b294b375c3e27` |
+| Segmented Control | `segmented-control.tsx` + `.css` | **affectUI Pro** | registro Pro, `segmented-control-clean` (descarga del 2026-11-16) | `8547e6335fc70ec9aa8e5a89dec96deb95bb46de5894c3c0e2b26e1763abd506` |
+| Usage Meter (**reducido a asientos**) | `usage-meter.tsx` + `.css` | **affectUI Pro** | registro Pro, `usage-meter-clean` (descarga del 2026-11-16) | `c2a9d72a1a8ee981b4bb53c507fb9011bd23387828f3e8e558c4abaa43e69b29` |
+| Data Table (**solo lectura**) | `data-table.tsx` + `.css` | **affectUI Pro** | registro Pro, `data-table-clean` (descarga del 2026-11-16) | `7c52ae0dfe600becdd259343d25ce5acb72bb38b18a94ac75a6ec26582f3bd5e` |
+| Setup Guide (**solo lectura**) | `setup-guide.tsx` + `.css` | **affectUI Pro** | registro Pro, `setup-guide-clean` (descarga del 2026-11-16) | `4fbb24b69b082ecbd761c5c0dbba8af08376dfd262f5e55717abfcfd58d7a58d` |
+| Blur Crossfade | `blur-crossfade.tsx` + `.css` | **affectUI Pro** | registro Pro, `blur-crossfade` (descarga del 2026-11-16) | `2cff559cbf363731894c1a2f97d17c625772102db3f2b9b0776571ba26b58cf2` |
+| Team Invite | `team-invite.tsx` + `.css` | **affectUI Pro** | registro Pro, `team-invite` (descarga del 2026-11-16) | `975e8e7f198a43a310dbedf97d81244965232dcc68a0f53f5b90b0c7a5254906` |
+| Empty Calendar | `empty-calendar.tsx` + `.css` | **affectUI Pro** | registro Pro, `empty-calendar` (descarga del 2026-11-16) | `e3de6f44d69d5ad484fa588cf202f7ead07a5ba6c4b0b3100d33fdaaa7503ec3` |
 
 ## Dónde se usa cada pieza
 
@@ -87,6 +104,18 @@ Auditoría del 2026-11-16: una pieza que nadie importa desde `app/` no se queda.
 | `usage-meter` | `dashboard/components/MaquinasCard.tsx` (asientos en uso / pagados) |
 | `toaster` | `dashboard/components/PanelEditable.tsx` (aviso con «Deshacer» al ocultar, mostrar o restablecer) |
 | `badge` | `MaquinasCard.tsx` (estado de versión), `RitmoCard.tsx`, `ShadowOpportunitiesCard.tsx` |
+| `setup-guide` | `dashboard/install/page.tsx` (la guía a la vista de Primeros pasos), muestrario `captura-cuenta` |
+| `segmented-control`, `blur-crossfade` | `app/components/SnippetPorSistema.tsx` (pestañas macOS·Linux / Windows en Primeros pasos y `/how-it-works`) |
+| `text-field` | `ServiceAccountKeySection.tsx` (probador de clave), `EquipoPanel.tsx` (invitación, nombre de la organización) |
+| `number-input` | `BillingButtons.tsx` (asientos a comprar) |
+| `select`, `dropdown-menu`, `toaster`, `team-invite` | `EquipoPanel.tsx` (perfil, acciones de fila, resultado, lista vacía) |
+| `dialog` (`AlertDialog`) | `EquipoPanel.tsx` (quitar, transferir), `ServiceAccountKeySection.tsx` (revocar una clave) |
+| `data-table` | `EquipoPanel.tsx` (miembros, invitaciones), `ExtractoVista.tsx` (tramos, extractos cerrados) |
+| `usage-meter` | `AccountPlanStrip.tsx` (asientos en uso frente a contratados) |
+| `avatar` | `AccountPlanStrip.tsx`, `EquipoPanel.tsx` |
+| `badge` | `AccountPlanStrip.tsx`, `EquipoPanel.tsx`, `ExtractoVista.tsx`, `InstallLicensePanel.tsx`, `ServiceAccountKeySection.tsx` |
+| `empty-state`, `empty-calendar` | `ExtractoVista.tsx` (sin tráfico, sin extractos cerrados); `empty-state` también en `EquipoPanel.tsx` |
+| `spinner` | `BillingButtons.tsx`, `PortalButton.tsx`, `TrialKeyButton.tsx`, `MeasureClaimButton.tsx`, `ServiceAccountKeySection.tsx`, `EquipoPanel.tsx` |
 
 **Retiradas en esa auditoría** (solo las montaba el muestrario `/kit`): Empty
 State (Clean), Skeleton (Clean) y Segmented Control (Clean). Sus equivalentes
@@ -406,3 +435,54 @@ de demostración.
 3. Reaplica la lista de cambios, actualiza commit/sha256 aquí y vuelve a
    verificar reduced-motion, foco y contraste: el soporte que declara la
    librería se comprueba de nuevo después de modificarla.
+
+**Frente E2 (2026-11-16) — panel: instalación, cuenta, equipo y extracto**
+
+Las diecisiete piezas de este frente salen del registro Pro y llevan la
+cabecera Pro. Comunes a todas, además de lo de arriba: la interpolación
+`${EXIT_MS}` del CSS de `dialog` queda escrita (200 ms), y cada control lleva
+al final de su `.css` un bloque `---- BiVelio ----` con el tamaño `lg` a 44 px
+(en táctil conserva los 16 px de texto de upstream, para que iOS no amplíe) y
+un filo visible sobre el fondo marfil.
+
+- **badge**, **spinner**, **empty-state**, **blur-crossfade** — tal cual, sin
+  cadenas propias. `blur-crossfade` se usa a 220 ms (upstream 420).
+- **avatar** — reducido a INICIALES sobre un color estable por nombre o id.
+  Fuera: fotos, marca de agente, punto de estado (y sus «online/away/busy»),
+  `AvatarGroup` y su «N more». Sin estado: se renderiza en servidor.
+- **dialog** — `closeLabel`, `confirmLabel` y `cancelLabel` pasan a ser
+  obligatorias (antes «Close», «Confirm», «Cancel»). Botones a 44 px.
+- **dropdown-menu** — `empty` ya no trae «Nothing here yet». Filas a 40 px
+  (44 en táctil).
+- **select** — `placeholder` sin «Choose…»; `optional` es el texto ya
+  traducido, no un booleano que imprimía «Optional».
+- **text-field** — `optional` como en `select`; nueva prop `labels` con los
+  nombres accesibles de limpiar, ver/ocultar y copiar: un botón sin su
+  etiqueta NO se pinta (antes «Clear», «Show password», «Copy», «Copied»).
+- **number-input** — `stepLabels` obligatoria (antes «Increase»/«Decrease»);
+  `optional` como en `select`.
+- **toaster** — `label` y `dismissLabel` obligatorias (antes «Notifications»
+  y «Dismiss notification»).
+- **segmented-control** — el contador ya no se formatea con `"en-US"` fijo.
+  `lg` a 36 px con puntero fino y 44 px en táctil.
+- **usage-meter** — REESCRITO como componente de servidor para UNA medida:
+  asientos en uso frente a contratados (un asiento es una máquina o una
+  identidad de servicio; jamás «créditos»). Fuera: créditos y categorías,
+  selector de periodo, gráfica diaria, límites del plan, «resets in N days»,
+  botón de upgrade, el aviso al 80 % y todo conteo animado desde cero. Sin
+  lectura no hay barra ni porcentaje: se pinta «—» y el porqué. El exceso
+  sobre lo contratado es un tramo ámbar de la misma barra.
+- **data-table** — REESCRITO en solo lectura: quedan la tarjeta, la cabecera
+  gris, las filas con filos y la flecha de orden. Fuera: celdas editables,
+  selección y acciones en lote, añadir fila, deshacer/rehacer, selectores y
+  fila de resumen. Las celdas llegan ya formateadas y el orden usa el valor
+  crudo que se pasa aparte. Por debajo de 640 px de su propio ancho cada fila
+  pasa a ficha de pares etiqueta/valor (sin scroll lateral).
+- **setup-guide** — REESCRITO en solo lectura y sin estado: nadie marca nada.
+  Cada tarea trae su estado (medido por el producto) y es un enlace a su
+  instrucción. Fuera: marcar/desmarcar, bloqueo de tareas, plegado, «Edit»,
+  minimizar y cerrar. Sin `progress` no hay barra ni recuento.
+- **team-invite** — decorativa (`aria-hidden`): las tres caras son un glifo
+  anónimo sobre un tinte, no retratos (upstream pedía URLs de fotos y nombres).
+- **empty-calendar** — decorativa: fuera los textos «Calendar», «EMPTY» y el
+  botón «Join meeting» dibujados en el SVG; la tarjeta no lleva palabras.

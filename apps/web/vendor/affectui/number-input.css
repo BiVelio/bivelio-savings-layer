@@ -1,0 +1,177 @@
+/*
+ * Derived from affectUI Pro 'Number Input' (https://www.affectui.com). Used under the affectUI Pro license held by BiVelio. NOT covered by this repository's Apache-2.0 licence; do not redistribute as a component kit.
+ *
+ * Light theme only, BiVelio tokens; changes from upstream are listed in ./VENDOR.md.
+ */
+/* Colors and motion as variables – override them on .ui-nmic (see Theming in the docs) */
+.ui-nmic {
+  --ui-nmic-title: var(--aui-ink, rgba(0, 0, 0, 0.88));
+  --ui-nmic-ink: var(--aui-ink, rgba(0, 0, 0, 0.88));
+  --ui-nmic-subtle: var(--aui-muted, rgba(0, 0, 0, 0.45));
+  --ui-nmic-faint: var(--aui-placeholder, rgba(0, 0, 0, 0.3));
+  --ui-nmic-icon: var(--aui-muted, rgba(0, 0, 0, 0.447));
+  --ui-nmic-surface: var(--aui-surface, #ffffff);
+  --ui-nmic-wash: rgba(0, 0, 0, 0.04);
+  --ui-nmic-press: rgba(0, 0, 0, 0.07);
+  --ui-nmic-readonly: rgba(0, 0, 0, 0.02);
+  --ui-nmic-shadow: 0 0 0 0.5px var(--aui-border, rgba(0, 0, 0, 0.08)), 0 1px 1px -1px rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --ui-nmic-shadow-hover: 0 0 0 0.5px var(--aui-border-strong, rgba(0, 0, 0, 0.13)), 0 1px 1px -1px rgba(0, 0, 0, 0.12), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --ui-nmic-shadow-focus: 0 0 0 1px var(--aui-border-strong, rgba(0, 0, 0, 0.28)), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --ui-nmic-danger: var(--aui-danger, #c4320a);
+  --ui-nmic-danger-edge: color-mix(in srgb, var(--aui-red, #f04438) 55%, transparent);
+  --ui-nmic-danger-edge-focus: rgba(229, 72, 77, 0.8);
+  --ui-nmic-focus: var(--aui-focus, rgba(0, 96, 226, 0.7));
+  --ui-nmic-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --h: 32px;
+  --px: 10px;
+  --fs: 13px;
+  --radius: var(--aui-radius, 7px);
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  font-family: var(--aui-font, var(--font-sans));
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--ui-nmic-ink);
+  -webkit-font-smoothing: antialiased;
+}
+.ui-nmic[data-size="sm"] { --h: 28px; --px: 8px; --radius: calc(var(--aui-radius, 7px) - 1px); }
+.ui-nmic[data-size="lg"] { --h: 36px; --px: 12px; --fs: 14px; --radius: calc(var(--aui-radius, 7px) + 1px); }
+/* Touch screens: a comfortable tap height, and 16px text so iOS doesn't zoom in on focus */
+@media (pointer: coarse) {
+  .ui-nmic { --fs: 16px; }
+  .ui-nmic[data-size="sm"] { --h: 36px; }
+  .ui-nmic[data-size="md"] { --h: 40px; }
+  .ui-nmic[data-size="lg"] { --h: 44px; }
+}
+
+.ui-nmic__head { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+.ui-nmic__label { min-width: 0; font-weight: 500; color: var(--ui-nmic-title); overflow-wrap: anywhere; cursor: default; }
+.ui-nmic__optional { flex: none; font-size: 12px; line-height: 16px; color: var(--ui-nmic-subtle); }
+
+/* The box: white, a hairline shadow as its edge; hover and focus only make that edge firmer – no ring */
+.ui-nmic__box {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-sizing: border-box;
+  height: var(--h);
+  min-width: 0;
+  padding-inline: var(--px) 4px;
+  border-radius: var(--radius);
+  background: var(--ui-nmic-surface);
+  box-shadow: var(--ui-nmic-shadow);
+  cursor: text;
+  transition: box-shadow 140ms ease, background-color 140ms ease;
+}
+.ui-nmic__box:hover { box-shadow: var(--ui-nmic-shadow-hover); }
+.ui-nmic__box:has(.ui-nmic__input:focus) { box-shadow: var(--ui-nmic-shadow-focus); }
+.ui-nmic[data-invalid] .ui-nmic__box { box-shadow: 0 0 0 1px var(--ui-nmic-danger-edge), 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+.ui-nmic[data-invalid] .ui-nmic__box:has(.ui-nmic__input:focus) { box-shadow: 0 0 0 1px var(--ui-nmic-danger-edge-focus), 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+.ui-nmic[data-readonly] .ui-nmic__box { background: var(--ui-nmic-readonly); box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.08); cursor: default; }
+.ui-nmic[data-disabled] .ui-nmic__box { background: var(--ui-nmic-readonly); box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.06); cursor: not-allowed; }
+.ui-nmic[data-disabled] { opacity: 0.55; }
+
+/* The value: as wide as its text (set inline), so the unit follows it; it shrinks before the buttons do */
+.ui-nmic__input {
+  flex: 0 1 auto;
+  min-width: 2ch;
+  max-width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  font-size: var(--fs);
+  font-variant-numeric: tabular-nums;
+  color: var(--ui-nmic-ink);
+  text-overflow: ellipsis;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.ui-nmic__input::placeholder { color: var(--ui-nmic-faint); opacity: 1; }
+.ui-nmic__input:disabled { cursor: not-allowed; }
+
+/* Prefix and unit: quiet text right against the value */
+.ui-nmic__affix {
+  display: inline-flex;
+  flex: 0 1 auto;
+  align-items: center;
+  min-width: 0;
+  max-width: 40%;
+  font-size: var(--fs);
+  color: var(--ui-nmic-subtle);
+  white-space: nowrap;
+  user-select: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ui-nmic__affix[data-side="start"] { margin-inline-end: -2px; }
+.ui-nmic__affix > svg { display: block; width: 16px; height: 16px; flex: none; color: var(--ui-nmic-icon); }
+
+/* − and +: two small ghost buttons at the end */
+.ui-nmic__steps { display: flex; flex: none; gap: 2px; margin-inline-start: auto; padding-inline-start: 4px; }
+.ui-nmic__step {
+  display: grid;
+  place-items: center;
+  position: relative;
+  width: calc(var(--h) - 8px);
+  height: calc(var(--h) - 8px);
+  max-width: 26px;
+  max-height: 26px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: calc(var(--radius) - 3px);
+  background: transparent;
+  color: var(--ui-nmic-icon);
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+.ui-nmic__step:hover:not([aria-disabled]):not(:disabled) { background: var(--ui-nmic-wash); color: var(--ui-nmic-ink); }
+.ui-nmic__step:active:not([aria-disabled]):not(:disabled) { background: var(--ui-nmic-press); }
+.ui-nmic__step:focus-visible { outline: 2px solid var(--ui-nmic-focus); outline-offset: -2px; }
+.ui-nmic__step[aria-disabled], .ui-nmic__step:disabled { opacity: 0.35; cursor: default; }
+.ui-nmic__step svg { display: block; transition: transform 120ms var(--ui-nmic-ease); }
+.ui-nmic__step:active:not([aria-disabled]):not(:disabled) svg { transform: scale(0.86); }
+.ui-nmic[data-readonly] .ui-nmic__steps { display: none; }
+/* Touch screens: bigger buttons and a hit area that reaches past them */
+@media (pointer: coarse) {
+  .ui-nmic__step { width: 32px; height: 32px; max-width: none; max-height: none; }
+  .ui-nmic__step::before { content: ""; position: absolute; inset: -4px 0; }
+}
+
+/* Under the field: the hint, or the error in its place */
+.ui-nmic__message {
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ui-nmic-subtle);
+  overflow-wrap: anywhere;
+  animation: ui-nmic-message 260ms var(--ui-nmic-ease);
+}
+.ui-nmic[data-invalid] .ui-nmic__message { color: var(--ui-nmic-danger); }
+
+@keyframes ui-nmic-message {
+  from { opacity: 0; transform: translateY(-3px); filter: blur(2px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-nmic * { animation-duration: 1ms !important; transition-duration: 1ms !important; }
+  .ui-nmic__box { transition-duration: 1ms; }
+}
+
+/* ---- BiVelio ---- 44px field and 36px steppers inside it ("lg" is the only size the panel uses). */
+.ui-nmic[data-size="lg"] { --h: 44px; --px: 14px; --fs: 15px; --radius: var(--aui-radius, 10px); }
+.ui-nmic { --ui-nmic-shadow: 0 0 0 1px var(--line-strong, rgba(0, 0, 0, 0.14)), 0 1px 2px 0 rgba(15, 18, 24, 0.04); }
+/* Touch keeps upstream's 16px text, so iOS does not zoom in on focus */
+@media (pointer: coarse) { .ui-nmic[data-size="lg"] { --h: 44px; --fs: 16px; } }

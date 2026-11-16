@@ -1,0 +1,186 @@
+/*
+ * Derived from affectUI Pro 'Select' (https://www.affectui.com). Used under the affectUI Pro license held by BiVelio. NOT covered by this repository's Apache-2.0 licence; do not redistribute as a component kit.
+ *
+ * Light theme only, BiVelio tokens; changes from upstream are listed in ./VENDOR.md.
+ */
+/* Colors and motion as variables – override them on .ui-selc (see Theming in the docs) */
+.ui-selc {
+  --ui-selc-title: var(--aui-ink, rgba(0, 0, 0, 0.88));
+  --ui-selc-ink: var(--aui-ink, rgba(0, 0, 0, 0.88));
+  --ui-selc-subtle: var(--aui-muted, rgba(0, 0, 0, 0.45));
+  --ui-selc-faint: var(--aui-placeholder, rgba(0, 0, 0, 0.3));
+  --ui-selc-icon: var(--aui-muted, rgba(0, 0, 0, 0.447));
+  --ui-selc-surface: var(--aui-surface, #ffffff);
+  --ui-selc-menu: var(--aui-surface, #ffffff);
+  --ui-selc-glow: rgba(0, 0, 0, 0.045);
+  --ui-selc-readonly: rgba(0, 0, 0, 0.02);
+  --ui-selc-shadow: 0 0 0 0.5px var(--aui-border, rgba(0, 0, 0, 0.08)), 0 1px 1px -1px rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --ui-selc-shadow-hover: 0 0 0 0.5px var(--aui-border-strong, rgba(0, 0, 0, 0.13)), 0 1px 1px -1px rgba(0, 0, 0, 0.12), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --ui-selc-shadow-open: 0 0 0 1px var(--aui-border-strong, rgba(0, 0, 0, 0.28)), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --ui-selc-shadow-menu: 0 0 0 0.5px rgba(0, 0, 0, 0.08), 0 8px 24px -6px rgba(0, 0, 0, 0.14), 0 2px 6px -2px rgba(0, 0, 0, 0.06);
+  --ui-selc-danger: var(--aui-danger, #c4320a);
+  --ui-selc-danger-edge: color-mix(in srgb, var(--aui-red, #f04438) 55%, transparent);
+  --ui-selc-focus: var(--aui-focus, rgba(0, 96, 226, 0.7));
+  --ui-selc-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --h: 32px;
+  --px: 10px;
+  --fs: 13px;
+  --radius: var(--aui-radius, 7px);
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  font-family: var(--aui-font, var(--font-sans));
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--ui-selc-ink);
+  -webkit-font-smoothing: antialiased;
+}
+.ui-selc[data-size="sm"] { --h: 28px; --px: 8px; --radius: calc(var(--aui-radius, 7px) - 1px); }
+.ui-selc[data-size="lg"] { --h: 36px; --px: 12px; --fs: 14px; --radius: calc(var(--aui-radius, 7px) + 1px); }
+/* Touch screens: a comfortable tap height and 16px text */
+@media (pointer: coarse) {
+  .ui-selc { --fs: 16px; }
+  .ui-selc[data-size="sm"] { --h: 34px; }
+  .ui-selc[data-size="md"] { --h: 38px; }
+  .ui-selc[data-size="lg"] { --h: 40px; }
+}
+
+.ui-selc__head { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+.ui-selc__label { min-width: 0; font-weight: 500; color: var(--ui-selc-title); overflow-wrap: anywhere; cursor: default; }
+.ui-selc__optional { flex: none; font-size: 12px; line-height: 16px; color: var(--ui-selc-subtle); }
+
+/* The field: the Text Field's look – white, a hairline edge that firms up on hover and while open */
+.ui-selc__trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  width: 100%;
+  height: var(--h);
+  min-width: 0;
+  margin: 0;
+  padding: 0 calc(var(--px) - 2px) 0 var(--px);
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--ui-selc-surface);
+  box-shadow: var(--ui-selc-shadow);
+  font: inherit;
+  font-size: var(--fs);
+  color: var(--ui-selc-ink);
+  text-align: start;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: box-shadow 140ms ease, background-color 140ms ease;
+}
+.ui-selc__trigger:hover { box-shadow: var(--ui-selc-shadow-hover); }
+.ui-selc[data-open] .ui-selc__trigger { box-shadow: var(--ui-selc-shadow-open); }
+.ui-selc__trigger:focus-visible { outline: 2px solid var(--ui-selc-focus); outline-offset: 2px; }
+.ui-selc[data-invalid] .ui-selc__trigger { box-shadow: 0 0 0 1px var(--ui-selc-danger-edge), 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+.ui-selc__trigger:disabled { background: var(--ui-selc-readonly); box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.06); cursor: not-allowed; }
+.ui-selc[data-disabled] { opacity: 0.55; }
+
+.ui-selc__value { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.ui-selc__value[data-empty] { color: var(--ui-selc-faint); }
+.ui-selc__icon { display: grid; flex: none; place-items: center; width: 16px; height: 16px; color: var(--ui-selc-icon); }
+.ui-selc__icon > svg, .ui-selc__icon > img { display: block; width: 16px; height: 16px; }
+.ui-selc__chevron { display: grid; flex: none; place-items: center; width: 16px; height: 16px; color: var(--ui-selc-icon); transition: transform 240ms var(--ui-selc-ease); }
+.ui-selc[data-open] .ui-selc__chevron { transform: rotate(180deg); }
+
+/* The list: a white card in the top layer, at the field's edge */
+.ui-selc__list {
+  position: fixed;
+  inset: auto;
+  z-index: 1000;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 4px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--ui-selc-menu);
+  box-shadow: var(--ui-selc-shadow-menu);
+  color: var(--ui-selc-ink);
+  font: inherit;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  transform-origin: top center;
+  animation: ui-selc-in 200ms var(--ui-selc-ease) both;
+}
+.ui-selc__list[data-up] { transform-origin: bottom center; }
+.ui-selc__list::backdrop { display: none; }
+
+/* One soft highlight that glides between the rows */
+.ui-selc__glow {
+  position: absolute;
+  top: 0;
+  left: 4px;
+  right: 4px;
+  border-radius: 6px;
+  background: var(--ui-selc-glow);
+  pointer-events: none;
+  transition: transform 180ms var(--ui-selc-ease), height 180ms var(--ui-selc-ease);
+}
+
+.ui-selc__option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 6px 8px;
+  box-sizing: border-box;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 20px;
+  cursor: pointer;
+  user-select: none;
+}
+.ui-selc__option[aria-disabled] { color: var(--ui-selc-faint); cursor: default; }
+.ui-selc__option[aria-disabled] .ui-selc__icon { opacity: 0.5; }
+.ui-selc__text { display: grid; flex: 1; min-width: 0; }
+.ui-selc__option-label { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.ui-selc__option[aria-selected="true"] .ui-selc__option-label { font-weight: 500; }
+.ui-selc__option-hint { overflow: hidden; font-size: 12px; line-height: 16px; white-space: nowrap; text-overflow: ellipsis; color: var(--ui-selc-subtle); }
+.ui-selc__check { display: grid; flex: none; place-items: center; width: 16px; height: 16px; color: var(--ui-selc-ink); }
+.ui-selc__tick { stroke-dasharray: 1; animation: ui-selc-draw 280ms 40ms var(--ui-selc-ease) both; }
+@media (pointer: coarse) {
+  .ui-selc__option { min-height: 40px; font-size: 15px; }
+}
+
+.ui-selc__message { margin: 0; font-size: 12px; line-height: 16px; color: var(--ui-selc-subtle); overflow-wrap: anywhere; animation: ui-selc-message 260ms var(--ui-selc-ease); }
+.ui-selc[data-invalid] .ui-selc__message { color: var(--ui-selc-danger); }
+
+@keyframes ui-selc-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+}
+.ui-selc__list[data-up] { animation-name: ui-selc-in-up; }
+@keyframes ui-selc-in-up {
+  from { opacity: 0; transform: translateY(4px) scale(0.98); }
+}
+@keyframes ui-selc-draw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes ui-selc-message {
+  from { opacity: 0; transform: translateY(-3px); filter: blur(2px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-selc *, .ui-selc__list { animation-duration: 1ms !important; }
+  .ui-selc__glow, .ui-selc__chevron, .ui-selc__trigger { transition-duration: 1ms; }
+}
+
+/* ---- BiVelio ---- 44px controls ("lg" is the only size the panel uses), a visible hairline on the ivory page,
+   and 44px options. Upstream: 36px (40px on touch). */
+.ui-selc[data-size="lg"] { --h: 44px; --px: 14px; --fs: 14.5px; --radius: var(--aui-radius, 10px); }
+.ui-selc { --ui-selc-shadow: 0 0 0 1px var(--line-strong, rgba(0, 0, 0, 0.14)), 0 1px 2px 0 rgba(15, 18, 24, 0.04); --ui-selc-shadow-hover: 0 0 0 1px color-mix(in srgb, var(--aui-ink, #000) 34%, transparent), 0 1px 2px 0 rgba(15, 18, 24, 0.05); }
+.ui-selc__option { min-height: 44px; }
+/* Touch keeps upstream's 16px text, so iOS does not zoom in on focus */
+@media (pointer: coarse) { .ui-selc[data-size="lg"] { --h: 44px; --fs: 16px; } }
+/* An option's second line wraps instead of ending in … – the role descriptions are the point of showing them */
+.ui-selc__option-hint { white-space: normal; overflow: visible; text-wrap: pretty; }
+.ui-selc__option:has(.ui-selc__option-hint) { padding-block: 8px; align-items: flex-start; }
+.ui-selc__menu, .ui-selc__list { text-align: start; }

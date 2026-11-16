@@ -1,0 +1,219 @@
+/*
+ * Derived from affectUI Pro 'Text Field' (https://www.affectui.com). Used under the affectUI Pro license held by BiVelio. NOT covered by this repository's Apache-2.0 licence; do not redistribute as a component kit.
+ *
+ * Light theme only, BiVelio tokens; changes from upstream are listed in ./VENDOR.md.
+ */
+/* Colors and motion as variables – override them on .ui-tfc (see Theming in the docs) */
+.ui-tfc {
+  --ui-tfc-title: var(--aui-ink, rgba(0, 0, 0, 0.88));
+  --ui-tfc-ink: var(--aui-ink, rgba(0, 0, 0, 0.88));
+  --ui-tfc-muted: var(--aui-muted, rgba(0, 0, 0, 0.61));
+  --ui-tfc-subtle: var(--aui-muted, rgba(0, 0, 0, 0.45));
+  --ui-tfc-faint: var(--aui-placeholder, rgba(0, 0, 0, 0.3));
+  --ui-tfc-icon: var(--aui-muted, rgba(0, 0, 0, 0.447));
+  --ui-tfc-surface: var(--aui-surface, #ffffff);
+  --ui-tfc-wash: rgba(0, 0, 0, 0.04);
+  --ui-tfc-readonly: rgba(0, 0, 0, 0.02);
+  --ui-tfc-shadow: 0 0 0 0.5px var(--aui-border, rgba(0, 0, 0, 0.08)), 0 1px 1px -1px rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --ui-tfc-shadow-hover: 0 0 0 0.5px var(--aui-border-strong, rgba(0, 0, 0, 0.13)), 0 1px 1px -1px rgba(0, 0, 0, 0.12), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --ui-tfc-shadow-focus: 0 0 0 1px var(--aui-border-strong, rgba(0, 0, 0, 0.28)), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --ui-tfc-danger: var(--aui-danger, #c4320a);
+  --ui-tfc-danger-edge: color-mix(in srgb, var(--aui-red, #f04438) 55%, transparent);
+  --ui-tfc-danger-edge-focus: rgba(229, 72, 77, 0.8);
+  --ui-tfc-success: var(--aui-success, #1e8a4f);
+  --ui-tfc-focus: var(--aui-focus, rgba(0, 96, 226, 0.7));
+  --ui-tfc-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --h: 32px;
+  --px: 10px;
+  --fs: 13px;
+  --radius: var(--aui-radius, 7px);
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  font-family: var(--aui-font, var(--font-sans));
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--ui-tfc-ink);
+  -webkit-font-smoothing: antialiased;
+}
+.ui-tfc[data-size="sm"] { --h: 28px; --px: 8px; --fs: 13px; --radius: calc(var(--aui-radius, 7px) - 1px); }
+.ui-tfc[data-size="lg"] { --h: 36px; --px: 12px; --fs: 14px; --radius: calc(var(--aui-radius, 7px) + 1px); }
+/* Touch screens: a comfortable tap height, and 16px text so iOS doesn't zoom in on focus */
+@media (pointer: coarse) {
+  .ui-tfc { --fs: 16px; }
+  .ui-tfc[data-size="sm"] { --h: 34px; }
+  .ui-tfc[data-size="md"] { --h: 38px; }
+  .ui-tfc[data-size="lg"] { --h: 40px; }
+}
+
+.ui-tfc__head { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+.ui-tfc__label { min-width: 0; font-weight: 500; color: var(--ui-tfc-title); overflow-wrap: anywhere; cursor: default; }
+.ui-tfc__optional { flex: none; font-size: 12px; line-height: 16px; color: var(--ui-tfc-subtle); }
+
+/* The box: white, a hairline shadow as its edge; hover and focus only make that edge firmer */
+.ui-tfc__box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-sizing: border-box;
+  height: var(--h);
+  min-width: 0;
+  padding-block: 0;
+  padding-inline: var(--px) calc(var(--px) - 4px);
+  border-radius: var(--radius);
+  background: var(--ui-tfc-surface);
+  box-shadow: var(--ui-tfc-shadow);
+  cursor: text;
+  transition: box-shadow 140ms ease, background-color 140ms ease;
+}
+/* Without a button at the end, both sides sit at the same distance */
+.ui-tfc__box:not(:has(.ui-tfc__action)) { padding-inline-end: var(--px); }
+.ui-tfc__box:hover { box-shadow: var(--ui-tfc-shadow-hover); }
+.ui-tfc__box:focus-within { box-shadow: var(--ui-tfc-shadow-focus); }
+.ui-tfc[data-invalid] .ui-tfc__box { box-shadow: 0 0 0 1px var(--ui-tfc-danger-edge), 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+.ui-tfc[data-invalid] .ui-tfc__box:focus-within { box-shadow: 0 0 0 1px var(--ui-tfc-danger-edge-focus), 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+.ui-tfc[data-readonly] .ui-tfc__box { background: var(--ui-tfc-readonly); box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.08); cursor: default; }
+.ui-tfc[data-disabled] .ui-tfc__box { background: var(--ui-tfc-readonly); box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.06); cursor: not-allowed; }
+.ui-tfc[data-disabled] { opacity: 0.55; }
+.ui-tfc[data-invalid] .ui-tfc__box { animation: ui-tfc-nudge 320ms var(--ui-tfc-ease); }
+
+.ui-tfc__input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  font-size: var(--fs);
+  color: var(--ui-tfc-ink);
+  text-overflow: ellipsis;
+  -webkit-appearance: none;
+  appearance: none;
+}
+/* Next to a prefix or suffix the value keeps at least 6em – they shrink first */
+.ui-tfc__box:has(> .ui-tfc__affix) .ui-tfc__input { flex: 1 0 6em; min-width: 6em; }
+.ui-tfc__input::placeholder { color: var(--ui-tfc-faint); opacity: 1; }
+.ui-tfc__input:disabled { cursor: not-allowed; }
+.ui-tfc__input[type="search"]::-webkit-search-cancel-button { display: none; }
+.ui-tfc__input[type="number"] { -moz-appearance: textfield; font-variant-numeric: tabular-nums; }
+.ui-tfc__input[type="number"]::-webkit-inner-spin-button,
+.ui-tfc__input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+/* Revealing a password: the characters come out of a short blur */
+.ui-tfc__input[data-revealed] { animation: ui-tfc-reveal 260ms var(--ui-tfc-ease); }
+.ui-tfc__input[data-revealed="false"] { animation-name: ui-tfc-reveal-hide; }
+
+/* Prefix and suffix: quiet text or an icon inside the box */
+.ui-tfc__affix {
+  display: inline-flex;
+  flex: 0 1 auto;
+  align-items: center;
+  min-width: 0;
+  max-width: 70%;
+  font-size: var(--fs);
+  color: var(--ui-tfc-subtle);
+  white-space: nowrap;
+  user-select: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Text right against the value, as if it were part of it ("https://" + "acme") */
+.ui-tfc__affix[data-side="start"] { margin-inline-end: -6px; }
+.ui-tfc__affix[data-side="end"] { max-width: 40%; margin-inline-start: -6px; }
+/* A long prefix loses its start: "…/workspaces/" stays next to the value */
+.ui-tfc__affix-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ui-tfc__affix[data-side="start"]:dir(ltr) .ui-tfc__affix-text { direction: rtl; text-align: left; }
+.ui-tfc__affix[data-side="start"]:dir(ltr) .ui-tfc__affix-text::after { content: "\200E"; }
+/* An icon keeps its distance */
+.ui-tfc__affix[data-side]:has(> svg) { margin: 0; color: var(--ui-tfc-icon); }
+.ui-tfc__affix > svg { display: block; width: 16px; height: 16px; flex: none; }
+
+/* Clear, reveal and copy: small ghost buttons at the end */
+.ui-tfc__action {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: calc(var(--h) - 8px);
+  height: calc(var(--h) - 8px);
+  position: relative;
+  max-width: 26px;
+  max-height: 26px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--ui-tfc-icon);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+.ui-tfc__action + .ui-tfc__action { margin-left: -4px; }
+/* Touch screens: bigger buttons and a hit area that reaches past them */
+@media (pointer: coarse) {
+  .ui-tfc__action { width: 32px; height: 32px; max-width: none; max-height: none; }
+  .ui-tfc__action::before { content: ""; position: absolute; inset: -4px; }
+}
+.ui-tfc__action:hover:not(:disabled) { background: var(--ui-tfc-wash); color: var(--ui-tfc-ink); }
+.ui-tfc__action:focus-visible { outline: 2px solid var(--ui-tfc-focus); outline-offset: -2px; }
+.ui-tfc__action:disabled { opacity: 0.4; cursor: default; }
+.ui-tfc__action[data-copied] { color: var(--ui-tfc-success); }
+.ui-tfc__action svg { display: block; }
+.ui-tfc__swap { display: grid; animation: ui-tfc-swap 280ms var(--ui-tfc-ease); }
+.ui-tfc__check { stroke-dasharray: 1; animation: ui-tfc-draw 320ms 60ms var(--ui-tfc-ease) both; }
+
+/* Under the field: the hint, or the error in its place, and the count */
+.ui-tfc__foot { display: flex; align-items: flex-start; gap: 12px; min-width: 0; }
+.ui-tfc__message {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ui-tfc-subtle);
+  overflow-wrap: anywhere;
+  animation: ui-tfc-message 260ms var(--ui-tfc-ease);
+}
+.ui-tfc[data-invalid] .ui-tfc__message { color: var(--ui-tfc-danger); }
+.ui-tfc__count { flex: none; margin-left: auto; font-size: 12px; line-height: 16px; font-variant-numeric: tabular-nums; color: var(--ui-tfc-faint); transition: color 140ms ease; }
+.ui-tfc__count[data-over] { color: var(--ui-tfc-danger); }
+.ui-tfc__sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.ui-tfc__count[data-full] { color: var(--ui-tfc-muted); }
+
+@keyframes ui-tfc-nudge {
+  30% { transform: translateX(-3px); }
+  65% { transform: translateX(2px); }
+}
+@keyframes ui-tfc-message {
+  from { opacity: 0; transform: translateY(-3px); filter: blur(2px); }
+}
+@keyframes ui-tfc-reveal {
+  from { filter: blur(4px); opacity: 0.4; }
+}
+@keyframes ui-tfc-reveal-hide {
+  from { filter: blur(3px); opacity: 0.5; }
+}
+@keyframes ui-tfc-swap {
+  from { opacity: 0; transform: scale(0.6); filter: blur(2px); }
+}
+@keyframes ui-tfc-draw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-tfc *, .ui-tfc[data-invalid] .ui-tfc__box { animation-duration: 1ms !important; }
+  .ui-tfc__box { transition-duration: 1ms; }
+}
+
+/* ---- BiVelio ---- 44px fields ("lg" is the only size the panel uses) and a visible hairline on the ivory page.
+   Upstream: 36px (40px on touch). */
+.ui-tfc[data-size="lg"] { --h: 44px; --px: 14px; --fs: 14.5px; --radius: var(--aui-radius, 10px); }
+.ui-tfc { --ui-tfc-shadow: 0 0 0 1px var(--line-strong, rgba(0, 0, 0, 0.14)), 0 1px 2px 0 rgba(15, 18, 24, 0.04); --ui-tfc-shadow-hover: 0 0 0 1px color-mix(in srgb, var(--aui-ink, #000) 34%, transparent), 0 1px 2px 0 rgba(15, 18, 24, 0.05); }
+/* Touch keeps upstream's 16px text, so iOS does not zoom in on focus */
+@media (pointer: coarse) { .ui-tfc[data-size="lg"] { --h: 44px; --fs: 16px; } }

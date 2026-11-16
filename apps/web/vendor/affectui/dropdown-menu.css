@@ -1,0 +1,161 @@
+/*
+ * Derived from affectUI Pro 'Dropdown Menu' (https://www.affectui.com). Used under the affectUI Pro license held by BiVelio. NOT covered by this repository's Apache-2.0 licence; do not redistribute as a component kit.
+ *
+ * Light theme only, BiVelio tokens; changes from upstream are listed in ./VENDOR.md.
+ */
+/* Colors and motion as variables – override them on .ui-dmc (see Theming in the docs) */
+.ui-dmc {
+  --ui-dmc-surface: var(--aui-overlay, var(--aui-surface, #ffffff));
+  --ui-dmc-ink: var(--aui-ink, rgba(0, 0, 0, 0.88));
+  --ui-dmc-text: var(--aui-muted, rgba(0, 0, 0, 0.61));
+  --ui-dmc-icon: var(--aui-muted, rgba(0, 0, 0, 0.45));
+  --ui-dmc-faint: var(--aui-placeholder, rgba(0, 0, 0, 0.27));
+  --ui-dmc-line: var(--aui-border, rgba(0, 0, 0, 0.06));
+  --ui-dmc-glow: rgba(0, 0, 0, 0.035);
+  --ui-dmc-danger: var(--aui-red, #f04438);
+  --ui-dmc-danger-glow: color-mix(in srgb, var(--aui-red, #f04438) 8%, transparent);
+  --ui-dmc-shadow: var(--aui-shadow-popover, 0 0 0 0.5px var(--aui-border-strong, rgba(0, 0, 0, 0.1)), 0 12px 32px -8px rgba(0, 0, 0, 0.16));
+  --ui-dmc-focus: var(--aui-focus, rgba(0, 96, 226, 0.7));
+  --ui-dmc-ease: var(--aui-ease, cubic-bezier(0.22, 1, 0.36, 1));
+  --ui-dmc-radius: calc(var(--aui-radius-lg, 10px) + 2px);
+  --ui-dmc-row-radius: calc(var(--aui-radius-sm, 5px) + 3px);
+
+  position: relative;
+  display: inline-flex;
+  min-width: 0;
+}
+
+/* The menu: a white card in the top layer, a 0.5px edge and a soft drop */
+.ui-dmc__panel {
+  position: fixed;
+  inset: auto;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  min-width: 168px;
+  /* Fits its content up to 320px – long items shorten with … (full text on hover) instead of stretching it; the width prop lifts the cap */
+  max-width: min(320px, calc(100vw - 16px));
+  max-height: calc(100vh - 16px);
+  margin: 0;
+  padding: 4px;
+  border: 0;
+  border-radius: var(--ui-dmc-radius);
+  background: var(--ui-dmc-surface);
+  box-shadow: var(--ui-dmc-shadow);
+  color: var(--ui-dmc-ink);
+  font-family: var(--aui-font, var(--font-sans));
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 400;
+  text-align: start;
+  overflow: visible;
+  -webkit-font-smoothing: antialiased;
+  transform-origin: top left;
+  animation: ui-dmc-in 220ms var(--ui-dmc-ease) both;
+}
+.ui-dmc__panel::backdrop { display: none; }
+.ui-dmc__panel[data-align="end"] { transform-origin: top right; }
+.ui-dmc__panel[data-side="top"] { transform-origin: bottom left; animation-name: ui-dmc-in-up; }
+.ui-dmc__panel[data-side="top"][data-align="end"] { transform-origin: bottom right; }
+.ui-dmc__panel[data-side="right"] { transform-origin: top left; animation-name: ui-dmc-in-side; animation-duration: 160ms; }
+.ui-dmc__panel[data-side="left"] { transform-origin: top right; animation-name: ui-dmc-in-side; animation-duration: 160ms; }
+
+.ui-dmc__title { display: block; flex: none; padding: 6px 10px 4px; font-size: 12px; line-height: 16px; font-weight: 500; color: var(--ui-dmc-faint); }
+
+/* The rows; a long menu scrolls inside the card */
+.ui-dmc__list {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  gap: 1px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+.ui-dmc__list:focus { outline: none; }
+
+/* One soft highlight that glides between the rows */
+.ui-dmc__glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  border-radius: var(--ui-dmc-row-radius);
+  background: var(--ui-dmc-glow);
+  pointer-events: none;
+  transition: transform 180ms var(--ui-dmc-ease), height 180ms var(--ui-dmc-ease), background-color 120ms ease;
+}
+.ui-dmc__glow[data-danger] { background: var(--ui-dmc-danger-glow); }
+
+.ui-dmc__item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 32px;
+  padding: 0 10px;
+  border-radius: var(--ui-dmc-row-radius);
+  color: var(--ui-dmc-text);
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 120ms ease;
+}
+.ui-dmc__item[data-rich] { min-height: 44px; padding: 6px 10px; }
+.ui-dmc__item:focus { outline: none; color: var(--ui-dmc-ink); }
+.ui-dmc__item:focus-visible { outline: 2px solid var(--ui-dmc-focus); outline-offset: -2px; }
+/* The item whose submenu is open keeps a highlight while the focus is in the submenu */
+.ui-dmc__item[data-open] { color: var(--ui-dmc-ink); }
+.ui-dmc__item[data-open]:not(:focus) { background: var(--ui-dmc-glow); }
+.ui-dmc__item[aria-checked="true"] { color: var(--ui-dmc-ink); font-weight: 500; }
+.ui-dmc__item[data-danger], .ui-dmc__item[data-danger]:focus { color: var(--ui-dmc-danger); }
+.ui-dmc__item[aria-disabled="true"] { color: var(--ui-dmc-faint); cursor: default; }
+
+.ui-dmc__icon { display: grid; flex: none; place-items: center; width: 16px; height: 16px; color: var(--ui-dmc-icon); transition: color 120ms ease; }
+.ui-dmc__icon > svg { display: block; width: 15px; height: 15px; }
+.ui-dmc__icon[data-logo] > svg, .ui-dmc__icon[data-logo] > img { width: 14px; height: 14px; }
+.ui-dmc__item:focus .ui-dmc__icon:not([data-logo]), .ui-dmc__item[data-open] .ui-dmc__icon:not([data-logo]) { color: var(--ui-dmc-ink); }
+.ui-dmc__item[data-danger] .ui-dmc__icon { color: var(--ui-dmc-danger); }
+.ui-dmc__item[aria-disabled="true"] .ui-dmc__icon { opacity: 0.5; color: var(--ui-dmc-icon); }
+
+/* Long names stay on one line – the full name on hover */
+.ui-dmc__label { display: grid; flex: 1; gap: 1px; min-width: 0; }
+.ui-dmc__text, .ui-dmc__desc { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.ui-dmc__desc { font-size: 12px; line-height: 16px; font-weight: 400; color: var(--ui-dmc-faint); }
+
+.ui-dmc__kbd { flex: none; padding-left: 16px; font: inherit; font-size: 12px; font-weight: 400; letter-spacing: 0.04em; color: var(--ui-dmc-faint); }
+.ui-dmc__more, .ui-dmc__check { display: grid; flex: none; place-items: center; width: 14px; height: 14px; }
+.ui-dmc__more { color: var(--ui-dmc-faint); }
+.ui-dmc__check { color: var(--ui-dmc-ink); }
+.ui-dmc__more > svg, .ui-dmc__check > svg { display: block; width: 14px; height: 14px; }
+.ui-dmc__tick { stroke-dasharray: 1; animation: ui-dmc-draw 280ms 40ms var(--ui-dmc-ease) both; }
+
+.ui-dmc__sep { display: block; height: 1px; margin: 4px 6px; background: var(--ui-dmc-line); }
+.ui-dmc__empty { display: block; padding: 6px 8px; color: var(--ui-dmc-faint); }
+
+@keyframes ui-dmc-in { from { opacity: 0; transform: scale(0.96) translateY(-4px); } }
+@keyframes ui-dmc-in-up { from { opacity: 0; transform: scale(0.96) translateY(4px); } }
+@keyframes ui-dmc-in-side { from { opacity: 0; transform: scale(0.98); } }
+@keyframes ui-dmc-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+
+/* Touch screens: rows a finger can hit */
+@media (pointer: coarse) {
+  .ui-dmc__item { min-height: 40px; }
+  .ui-dmc__item[data-rich] { min-height: 48px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-dmc__panel, .ui-dmc__tick { animation-duration: 1ms; }
+  .ui-dmc__glow, .ui-dmc__item, .ui-dmc__icon { transition-duration: 1ms; }
+}
+
+/* ---- BiVelio ---- 40px rows on a fine pointer, 44px on touch (upstream 32 / 40). */
+.ui-dmc__item { min-height: 40px; font-size: 14px; }
+@media (pointer: coarse) { .ui-dmc__item { min-height: 44px; } }

@@ -1,0 +1,213 @@
+/*
+ * Derived from affectUI Pro 'Segmented Control' (https://www.affectui.com). Used under the affectUI Pro license held by BiVelio. NOT covered by this repository's Apache-2.0 licence; do not redistribute as a component kit.
+ *
+ * Light theme only, BiVelio tokens; changes from upstream are listed in ./VENDOR.md.
+ */
+/* Animatable custom properties: the equal segment width and the soft edges glide too */
+@property --ui-segc-min { syntax: "<length>"; inherits: true; initial-value: 0px; }
+@property --ui-segc-fade-l { syntax: "<length>"; inherits: false; initial-value: 0px; }
+@property --ui-segc-fade-r { syntax: "<length>"; inherits: false; initial-value: 0px; }
+
+.ui-segc {
+  --ui-segc-ink: var(--aui-ink, rgba(0, 0, 0, 0.88));
+  --ui-segc-text: var(--aui-muted, rgba(0, 0, 0, 0.61));
+  --ui-segc-hover-text: rgba(0, 0, 0, 0.75);
+  --ui-segc-line: var(--aui-border, rgba(0, 0, 0, 0.06));
+  --ui-segc-wash: var(--aui-subtle, rgba(0, 0, 0, 0.03));
+  --ui-segc-fill: rgba(0, 0, 0, 0.06);
+  --ui-segc-track: var(--aui-subtle, rgba(0, 0, 0, 0.04));
+  --ui-segc-card: var(--aui-surface, #ffffff);
+  --ui-segc-card-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.06), 0 1px 1px -1px rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --ui-segc-accent: rgba(0, 96, 226, 0.765);
+  --ui-segc-accent-soft: rgba(0, 96, 226, 0.08);
+  --ui-segc-focus: var(--aui-focus, rgba(0, 96, 226, 0.7));
+  --ui-segc-ease: cubic-bezier(0.25, 0.9, 0.3, 1);
+  /* Size: md – 28px chips, 4px 10px */
+  --ui-segc-h: 28px;
+  --ui-segc-px: 10px;
+  --ui-segc-fs: 13px;
+  --ui-segc-lh: 20px;
+  --ui-segc-icon: 16px;
+  --ui-segc-gap: 8px;
+  --ui-segc-pad: 2px;
+  --ui-segc-ring: 4px;
+  box-sizing: border-box;
+  display: inline-flex;
+  max-width: 100%;
+  min-width: 0;
+  vertical-align: middle;
+  border-radius: calc(var(--aui-radius, 7px) + 1px);
+  font-family: var(--aui-font, var(--font-sans));
+  font-size: var(--ui-segc-fs);
+  font-weight: 500;
+  line-height: var(--ui-segc-lh);
+  color: var(--ui-segc-text);
+  -webkit-font-smoothing: antialiased;
+}
+.ui-segc[data-size="sm"] { --ui-segc-h: 24px; --ui-segc-px: 8px; --ui-segc-fs: 12px; --ui-segc-lh: 16px; --ui-segc-icon: 14px; --ui-segc-gap: 6px; }
+.ui-segc[data-size="lg"] { --ui-segc-h: 32px; --ui-segc-px: 12px; --ui-segc-icon: 16px; --ui-segc-gap: 8px; }
+.ui-segc[data-full] { display: flex; width: 100%; }
+.ui-segc[data-disabled] { opacity: 0.5; pointer-events: none; }
+.ui-segc *, .ui-segc *::before, .ui-segc *::after { box-sizing: border-box; }
+:where(.ui-segc) button { margin: 0; padding: 0; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; }
+:where(.ui-segc) svg { display: block; flex: none; }
+
+/* Scrolls sideways only when it doesn't fit; the padding keeps focus rings from being cut off */
+.ui-segc__scroller {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: var(--ui-segc-pad);
+  border-radius: inherit;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--ui-segc-fade-l), #000 calc(100% - var(--ui-segc-fade-r)), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 var(--ui-segc-fade-l), #000 calc(100% - var(--ui-segc-fade-r)), transparent);
+  transition: --ui-segc-fade-l 160ms ease, --ui-segc-fade-r 160ms ease;
+}
+.ui-segc__scroller::-webkit-scrollbar { display: none; }
+
+.ui-segc__track {
+  position: relative;
+  display: flex;
+  width: max-content;
+  min-width: 100%;
+  /* Horizontal drags move the indicator; vertical ones still scroll the page */
+  touch-action: pan-y;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+/* When it scrolls, swipes scroll it instead of dragging the indicator */
+.ui-segc[data-overflow] .ui-segc__track { touch-action: pan-x pan-y; }
+/* Equal segments, each as wide as the widest one needs */
+.ui-segc[data-full] .ui-segc__track { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(var(--ui-segc-min), 1fr); }
+.ui-segc[data-ready] .ui-segc__track { transition: --ui-segc-min 200ms var(--ui-segc-ease); }
+
+/* An option */
+.ui-segc__opt {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  height: var(--ui-segc-h);
+  padding: 0 var(--ui-segc-px);
+  overflow: clip;
+  border-radius: calc(var(--aui-radius, 7px) - 1px);
+  white-space: nowrap;
+  /* Hover washes are short and crisp, in and out */
+  transition: color 90ms ease, background-color 90ms ease;
+}
+.ui-segc[data-ready]:not([data-full]) .ui-segc__opt { transition: color 90ms ease, background-color 90ms ease, width 200ms var(--ui-segc-ease); }
+.ui-segc__opt[data-active] { color: var(--ui-segc-ink); }
+.ui-segc__opt:disabled { opacity: 0.4; cursor: not-allowed; }
+.ui-segc__opt:focus-visible { outline: 2px solid var(--ui-segc-focus); outline-offset: -2px; }
+@media (hover: hover) {
+  .ui-segc__opt:not([data-active]):not(:disabled):hover { background-color: var(--ui-segc-wash); }
+}
+
+.ui-segc__content { display: inline-flex; flex: none; align-items: center; gap: 6px; }
+.ui-segc[data-size="sm"] .ui-segc__content { gap: 5px; }
+.ui-segc__icon { display: grid; place-items: center; width: var(--ui-segc-icon); height: var(--ui-segc-icon); color: var(--aui-muted, rgba(0, 0, 0, 0.447)); transition: color 90ms ease; }
+.ui-segc__opt[data-active] .ui-segc__icon { color: var(--ui-segc-ink); }
+.ui-segc__icon svg, .ui-segc__icon img { width: 100%; height: 100%; }
+/* Images fill the tile without leaving it, whatever their shape */
+.ui-segc__icon { overflow: hidden; }
+.ui-segc__icon img { display: block; object-fit: contain; }
+.ui-segc__label { display: block; }
+
+.ui-segc__count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: var(--aui-radius-sm, 5px);
+  background: var(--ui-segc-fill);
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--ui-segc-text);
+  animation: ui-segc-in 200ms var(--ui-segc-ease) both;
+}
+.ui-segc__opt[data-active] .ui-segc__count { background: var(--ui-segc-card); box-shadow: 0 0 0 0.5px var(--ui-segc-line); color: var(--ui-segc-ink); }
+.ui-segc[data-size="sm"] .ui-segc__count { min-width: 14px; height: 14px; padding: 0 3px; border-radius: calc(var(--aui-radius-sm, 5px) - 1px); font-size: 10px; line-height: 14px; }
+.ui-segc__badge {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: var(--aui-radius-sm, 5px);
+  background: var(--ui-segc-accent-soft);
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 500;
+  color: var(--ui-segc-accent);
+}
+.ui-segc[data-size="sm"] .ui-segc__badge { height: 16px; padding: 0 5px; font-size: 10px; }
+
+/* The indicator: left and right edges slide separately – the one facing the target leads a touch. Short and crisp */
+.ui-segc__pill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 100%;
+  z-index: 0;
+  border-radius: calc(var(--aui-radius, 7px) - 1px);
+  background: var(--ui-segc-fill);
+  opacity: 0;
+  pointer-events: none;
+  transition: left 200ms var(--ui-segc-ease), right 200ms var(--ui-segc-ease), scale 120ms var(--ui-segc-ease), opacity 120ms ease;
+}
+.ui-segc__pill[data-dir="right"] { transition-duration: 220ms, 160ms, 120ms, 120ms; }
+.ui-segc__pill[data-dir="left"] { transition-duration: 160ms, 220ms, 120ms, 120ms; }
+/* Press feedback: the indicator gives a little while held or dragged */
+.ui-segc[data-pressed]:not([data-variant="underline"]) .ui-segc__pill { scale: 0.97; }
+
+/* Buttons (default): separate chips with a hairline; the light-gray fill slides to the active one.
+   The control reaches a few px past its box so focus rings are never clipped, and still lines up with its neighbours */
+.ui-segc[data-variant="buttons"] { --ui-segc-pad: var(--ui-segc-ring); margin: calc(var(--ui-segc-ring) * -1); max-width: calc(100% + var(--ui-segc-ring) * 2); }
+.ui-segc[data-variant="buttons"][data-full] { width: calc(100% + var(--ui-segc-ring) * 2); }
+.ui-segc[data-variant="buttons"] .ui-segc__track { gap: var(--ui-segc-gap); }
+.ui-segc[data-variant="buttons"] .ui-segc__opt { box-shadow: inset 0 0 0 0.5px var(--ui-segc-line); }
+.ui-segc[data-variant="buttons"] .ui-segc__opt:focus-visible { outline-offset: 2px; }
+
+/* Tray: a compact light-gray track with a white raised pill */
+.ui-segc[data-variant="tray"] { background: var(--ui-segc-track); }
+.ui-segc[data-variant="tray"] .ui-segc__opt { height: calc(var(--ui-segc-h) - var(--ui-segc-pad) * 2); }
+.ui-segc[data-variant="tray"] .ui-segc__pill { background: var(--ui-segc-card); box-shadow: var(--ui-segc-card-shadow); }
+
+/* Underline: text tabs on a hairline */
+.ui-segc[data-variant="underline"] { --ui-segc-px: 2px; --ui-segc-gap: 20px; border-radius: 0; box-shadow: inset 0 -0.5px 0 var(--ui-segc-line); }
+.ui-segc[data-variant="underline"] .ui-segc__scroller { padding: 0; }
+.ui-segc[data-variant="underline"]:not([data-full]) .ui-segc__track { gap: var(--ui-segc-gap); }
+.ui-segc[data-variant="underline"][data-full] { --ui-segc-px: 10px; }
+.ui-segc[data-variant="underline"] .ui-segc__opt { height: calc(var(--ui-segc-h) + 6px); }
+.ui-segc[data-variant="underline"] .ui-segc__opt:focus-visible { outline-offset: -2px; }
+.ui-segc[data-variant="underline"] .ui-segc__pill { top: auto; height: 1.5px; border-radius: 1.5px 1.5px 0 0; background: var(--ui-segc-ink); }
+@media (hover: hover) {
+  .ui-segc[data-variant="underline"] .ui-segc__opt:not([data-active]):not(:disabled):hover { background-color: transparent; color: var(--ui-segc-hover-text); }
+}
+
+@keyframes ui-segc-in { from { opacity: 0; transform: translateY(2px); filter: blur(2px); } to { opacity: 1; transform: none; filter: none; } }
+
+/* Touch screens: every option at least 40px tall */
+@media (hover: none) and (pointer: coarse) {
+  .ui-segc[data-size] { --ui-segc-h: 40px; }
+  .ui-segc[data-size="lg"] { --ui-segc-h: 44px; }
+  .ui-segc[data-variant="tray"][data-size] { --ui-segc-h: 44px; }
+  .ui-segc[data-variant="underline"] .ui-segc__opt { height: var(--ui-segc-h); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-segc *, .ui-segc *::before, .ui-segc *::after { animation: none !important; transition: none !important; }
+}
+
+/* ---- BiVelio ---- "lg" is 36px on a fine pointer and 44px on touch (upstream 32 / 44). */
+.ui-segc[data-size="lg"] { --ui-segc-h: 36px; --ui-segc-px: 14px; }
+@media (pointer: coarse) { .ui-segc[data-size="lg"], .ui-segc[data-variant="tray"][data-size="lg"] { --ui-segc-h: 44px; } }

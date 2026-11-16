@@ -1,0 +1,250 @@
+/*
+ * Derived from affectUI Pro 'Dialog' (https://www.affectui.com). Used under the affectUI Pro license held by BiVelio. NOT covered by this repository's Apache-2.0 licence; do not redistribute as a component kit.
+ *
+ * Light theme only, BiVelio tokens; changes from upstream are listed in ./VENDOR.md.
+ */
+/* Colors and motion as variables – override them on .ui-dlgc (see Theming in the docs) */
+.ui-dlgc {
+  --ui-dlgc-scrim: rgba(0, 0, 0, 0.16);
+  --ui-dlgc-surface: var(--aui-overlay, var(--aui-surface, #ffffff));
+  --ui-dlgc-strong: var(--aui-ink, #000000);
+  --ui-dlgc-ink: var(--aui-ink, rgba(0, 0, 0, 0.88));
+  --ui-dlgc-text: rgba(0, 0, 0, 0.61);
+  --ui-dlgc-icon: var(--aui-muted, rgba(0, 0, 0, 0.45));
+  --ui-dlgc-line: var(--aui-border, rgba(0, 0, 0, 0.07));
+  --ui-dlgc-wash: rgba(0, 0, 0, 0.04);
+  --ui-dlgc-shadow: var(--aui-shadow-popover, 0 0 0 0.5px var(--aui-border-strong, rgba(0, 0, 0, 0.1)), 0 24px 48px -12px rgba(0, 0, 0, 0.22), 0 4px 12px -4px rgba(0, 0, 0, 0.06));
+  --ui-dlgc-btn: var(--aui-surface, #ffffff);
+  --ui-dlgc-btn-shadow: 0 0 0 0.5px var(--aui-border, rgba(0, 0, 0, 0.06)), 0 1px 1px -1px rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --ui-dlgc-btn-shadow-hover: 0 0 0 0.5px var(--aui-border-strong, rgba(0, 0, 0, 0.1)), 0 1px 1px -1px rgba(0, 0, 0, 0.12), 0 1px 3px 0 rgba(0, 0, 0, 0.07);
+  --ui-dlgc-solid: var(--aui-primary, rgba(0, 0, 0, 0.88));
+  --ui-dlgc-solid-hover: rgba(0, 0, 0, 0.8);
+  --ui-dlgc-on-solid: var(--aui-on-primary, #fcfcfc);
+  --ui-dlgc-danger: var(--aui-danger, #c4320a);
+  --ui-dlgc-danger-bg: rgba(240, 68, 56, 0.08);
+  --ui-dlgc-danger-bg-hover: rgba(240, 68, 56, 0.13);
+  --ui-dlgc-focus: var(--aui-focus, rgba(0, 96, 226, 0.7));
+  --ui-dlgc-ease: var(--aui-ease, cubic-bezier(0.22, 1, 0.36, 1));
+
+  /* The layer: the whole window (or its frame when contained), dimmed, the card in the middle */
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 24px 16px;
+  border: 0;
+  background: var(--ui-dlgc-scrim);
+  color: var(--ui-dlgc-ink);
+  overflow: hidden;
+  overscroll-behavior: contain;
+  container: ui-dlgc / size;
+  font-family: var(--aui-font, var(--font-sans));
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 400;
+  text-align: start;
+  -webkit-font-smoothing: antialiased;
+  animation: ui-dlgc-scrim 180ms ease both;
+}
+.ui-dlgc:not([open]) { display: none; }
+.ui-dlgc::backdrop { background: transparent; }
+.ui-dlgc[data-contained] { position: absolute; z-index: 70; }
+.ui-dlgc *, .ui-dlgc *::before, .ui-dlgc *::after { box-sizing: border-box; }
+
+/* The card: white with a 0.5px edge and a soft drop; the header and the actions stay, the content scrolls */
+.ui-dlgc__panel {
+  --ui-dlgc-w: 480px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: var(--ui-dlgc-w);
+  max-width: 100%;
+  max-height: 100%;
+  min-height: 0;
+  border-radius: calc(var(--aui-radius-lg, 10px) + 4px);
+  background: var(--ui-dlgc-surface);
+  box-shadow: var(--ui-dlgc-shadow);
+  /* Normally only the content scrolls; when even the title and the actions don't fit (a short frame, a phone on its
+     side) the whole card scrolls, so the actions stay reachable */
+  overflow: hidden auto;
+  animation: ui-dlgc-in 240ms var(--ui-dlgc-ease) both;
+}
+.ui-dlgc__panel[data-size="sm"] { --ui-dlgc-w: 400px; }
+.ui-dlgc__panel[data-size="lg"] { --ui-dlgc-w: 720px; }
+.ui-dlgc__panel:focus { outline: none; }
+
+/* Title and quiet line; the × sits on the title's first line */
+.ui-dlgc__head {
+  display: flex;
+  flex: none;
+  align-items: flex-start;
+  gap: 12px;
+  padding-block: 16px 0;
+  padding-inline: 20px 12px;
+}
+.ui-dlgc__head:not(:has(.ui-dlgc__close)) { padding-inline-end: 20px; }
+.ui-dlgc__head:last-child { padding-bottom: 20px; }
+.ui-dlgc__panel[data-alert] .ui-dlgc__head { padding-top: 20px; }
+.ui-dlgc__heading { display: grid; flex: 1; gap: 4px; min-width: 0; }
+.ui-dlgc__title { margin: 0; font-size: 15px; line-height: 22px; font-weight: 500; letter-spacing: -0.005em; color: var(--ui-dlgc-strong); overflow-wrap: anywhere; }
+.ui-dlgc__desc { margin: 0; color: var(--ui-dlgc-text); overflow-wrap: anywhere; }
+
+.ui-dlgc__close {
+  position: relative;
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin: -3px 0 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--aui-radius, 6px);
+  background: transparent;
+  color: var(--ui-dlgc-icon);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 140ms ease, color 140ms ease, transform 160ms var(--ui-dlgc-ease);
+}
+.ui-dlgc__close svg { display: block; width: 15px; height: 15px; }
+.ui-dlgc__close:hover { background: var(--ui-dlgc-wash); color: var(--ui-dlgc-ink); }
+.ui-dlgc__close:active { transform: scale(0.94); }
+
+/*
+ * The content scrolls between the fixed header and footer. A hairline shows at the top once it is scrolled and at
+ * the bottom while there is more – drawn by covers that scroll along with the content, so no script is needed
+ */
+.ui-dlgc__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 12px 20px 20px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  overflow-wrap: anywhere;
+  background:
+    linear-gradient(var(--ui-dlgc-surface) 0 0) top / 100% 2px no-repeat local,
+    linear-gradient(var(--ui-dlgc-surface) 0 0) bottom / 100% 2px no-repeat local,
+    linear-gradient(var(--ui-dlgc-line) 0 0) top / 100% 1px no-repeat scroll,
+    linear-gradient(var(--ui-dlgc-line) 0 0) bottom / 100% 1px no-repeat scroll,
+    var(--ui-dlgc-surface);
+}
+
+/* The actions, aligned to the end; they wrap onto a second line rather than squeezing */
+.ui-dlgc__foot {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 0 16px 16px;
+}
+.ui-dlgc__body + .ui-dlgc__foot { padding-top: 0; }
+.ui-dlgc__head + .ui-dlgc__foot { padding-top: 20px; }
+
+/* AlertDialog's own two buttons – the clean Button's secondary, dark chip and red fill */
+.ui-dlgc__btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--aui-radius, 6px);
+  background: var(--ui-dlgc-btn);
+  box-shadow: var(--ui-dlgc-btn-shadow);
+  color: var(--ui-dlgc-strong);
+  font: inherit;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 140ms ease, box-shadow 140ms ease, color 140ms ease, transform 160ms var(--ui-dlgc-ease), opacity 140ms ease;
+}
+.ui-dlgc__btn:hover:not(:disabled) { box-shadow: var(--ui-dlgc-btn-shadow-hover); }
+.ui-dlgc__btn[data-tone="primary"] { background: var(--ui-dlgc-solid); box-shadow: none; color: var(--ui-dlgc-on-solid); }
+.ui-dlgc__btn[data-tone="primary"]:hover { background: var(--ui-dlgc-solid-hover); box-shadow: none; }
+.ui-dlgc__btn[data-tone="danger"] { background: var(--ui-dlgc-danger-bg); box-shadow: none; color: var(--ui-dlgc-danger); }
+.ui-dlgc__btn[data-tone="danger"]:hover { background: var(--ui-dlgc-danger-bg-hover); box-shadow: none; }
+.ui-dlgc__btn:active:not(:disabled):not([data-busy]) { transform: scale(0.97); }
+.ui-dlgc__btn:disabled { opacity: 0.4; cursor: default; }
+.ui-dlgc__btn-label { overflow: hidden; text-overflow: ellipsis; }
+/* Busy: the label keeps the width, a small arc turns in its place */
+.ui-dlgc__btn[data-busy] { cursor: progress; }
+.ui-dlgc__btn[data-busy] .ui-dlgc__btn-label { visibility: hidden; }
+.ui-dlgc__spin {
+  position: absolute;
+  inset: 0;
+  width: 14px;
+  height: 14px;
+  margin: auto;
+  border: 1.5px solid currentColor;
+  border-inline-end-color: transparent;
+  border-radius: 50%;
+  animation: ui-dlgc-turn 700ms linear infinite;
+}
+
+.ui-dlgc :is(.ui-dlgc__close, .ui-dlgc__btn):focus-visible {
+  outline: 2px solid var(--ui-dlgc-focus);
+  outline-offset: 2px;
+}
+
+/* The way out: the backdrop fades, the card shrinks a little as it goes */
+.ui-dlgc[data-leaving] { pointer-events: none; animation: ui-dlgc-scrim-out 200ms ease both; }
+.ui-dlgc[data-leaving] .ui-dlgc__panel { animation: ui-dlgc-out 150ms ease-in both; }
+
+@keyframes ui-dlgc-scrim { from { background-color: transparent; } }
+@keyframes ui-dlgc-scrim-out { to { background-color: transparent; } }
+@keyframes ui-dlgc-in { from { opacity: 0; transform: translateY(6px) scale(0.97); } }
+@keyframes ui-dlgc-out { to { opacity: 0; transform: scale(0.98); } }
+@keyframes ui-dlgc-sheet-in { from { transform: translateY(100%); } }
+@keyframes ui-dlgc-sheet-out { to { transform: translateY(100%); } }
+@keyframes ui-dlgc-turn { to { transform: rotate(1turn); } }
+
+/*
+ * Phones (or a narrow frame): a sheet from the bottom – full width, the actions within the thumb's reach and above
+ * the home bar, the content scrolling under the title
+ */
+@container ui-dlgc (max-width: 520px) {
+  .ui-dlgc__panel {
+    /* Out over the layer's padding to the edges and the bottom; at least 40px of backdrop stay above it */
+    width: calc(100% + 32px);
+    max-width: none;
+    max-height: calc(100% + 8px);
+    margin: auto -16px -24px;
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+    animation: ui-dlgc-sheet-in 320ms var(--ui-dlgc-ease) both;
+  }
+  .ui-dlgc__foot, .ui-dlgc__head:last-child { padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+  .ui-dlgc__panel[data-alert] .ui-dlgc__btn { flex: 1 1 0; }
+  .ui-dlgc[data-leaving] .ui-dlgc__panel { animation: ui-dlgc-sheet-out 200ms cubic-bezier(0.4, 0, 1, 1) both; }
+}
+
+/* Touch screens: bigger targets – the look stays */
+@media (pointer: coarse) {
+  .ui-dlgc__btn { height: 36px; padding: 0 14px; }
+  .ui-dlgc__close { width: 32px; height: 32px; margin: -5px -2px 0 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-dlgc, .ui-dlgc__panel, .ui-dlgc[data-leaving], .ui-dlgc[data-leaving] .ui-dlgc__panel { animation-duration: 1ms; }
+  .ui-dlgc__spin { animation-duration: 1.6s; }
+}
+
+/* ---- BiVelio ---- 44px actions (upstream 28px, 36px on touch), the app's ink button, a calmer scrim tint. */
+.ui-dlgc__btn { height: 44px; padding: 0 18px; font-size: 14.5px; border-radius: var(--aui-radius, 10px); }
+.ui-dlgc__close { width: 44px; height: 44px; }
+@media (pointer: coarse) { .ui-dlgc__btn { height: 44px; padding: 0 18px; } .ui-dlgc__close { width: 44px; height: 44px; } }
