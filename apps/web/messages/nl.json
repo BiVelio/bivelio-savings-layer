@@ -437,7 +437,8 @@
       "intro": "Plaats BV-SALA vóór je provider. Je prompts gaan niet via de servers van BiVelio; ze worden verstuurd naar de provider die je instelt.",
       "irACuenta": "Nog geen plan, of wil je je seats aanpassen? Dat doe je bij Account →",
       "trackerTitle": "Je inrichting",
-      "trackerNote": "Deze mijlpalen worden door het product gemeten: een mijlpaal kiezen opent de instructie en markeert niets als voltooid. Ze horen bij de Cloud-verbinding; de open engine werkt ook zonder."
+      "trackerNote": "Deze mijlpalen worden door het product gemeten: een mijlpaal kiezen opent de instructie en markeert niets als voltooid. Ze horen bij de Cloud-verbinding; de open engine werkt ook zonder.",
+      "onThisPage": "Op deze pagina"
     },
     "account": {
       "metaTitle": "Account · BiVelio Savings Layer",
@@ -794,7 +795,11 @@
       "planTeamPrice": "{monthly} per maand · {yearly} per jaar · {included} seats inbegrepen",
       "summaryLabel": "Je koopt",
       "summaryNote": "Stripe bevestigt het exacte bedrag, inclusief belasting, voordat je betaalt.",
-      "summary": "{plan} · {seats, plural, one {# seat} other {# seats}}"
+      "summary": "{plan} · {seats, plural, one {# seat} other {# seats}}",
+      "seatsFree": "Vrij",
+      "seatsExtra": "Boven wat is afgenomen",
+      "seatsMore": "Een seat toevoegen",
+      "seatsLess": "Een seat verwijderen"
     },
     "referenceLedgerCards": {
       "proven": "bewezen",
@@ -916,7 +921,14 @@
       "invitacionesVacio": "Geen openstaande uitnodigingen.",
       "caduca": "verloopt op {date}",
       "caduco": "verlopen op {date}",
-      "reenviarAyuda": "“Opnieuw versturen” zet het e-mailadres en de rol in het formulier hierboven, zodat je de uitnodiging opnieuw kunt versturen."
+      "reenviarAyuda": "“Opnieuw versturen” zet het e-mailadres en de rol in het formulier hierboven, zodat je de uitnodiging opnieuw kunt versturen.",
+      "accionesDe": "Acties voor {email}",
+      "quitarTitulo": "{email} uit de organisatie verwijderen?",
+      "quitarCuerpo": "Deze persoon kan deze organisatie niet meer openen. Je seats en je factuur veranderen niet.",
+      "quitarConfirmar": "Ja, verwijderen",
+      "avisosLabel": "Meldingen",
+      "avisoCerrar": "Melding sluiten",
+      "vacioAyuda": "Nodig je team uit met het formulier hieronder."
     },
     "tokenTotals": {
       "spentLabel": "Verbruikte tokens",

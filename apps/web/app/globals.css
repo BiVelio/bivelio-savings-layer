@@ -5473,3 +5473,176 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 @media (max-width: 980px) { .app-loading .app-loading-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } .app-loading-pulse { grid-template-columns: minmax(0, 1fr); } .app-loading-pulse .sk { height: 220px; } }
 @media (max-width: 640px) { .app-loading .app-loading-row { grid-template-columns: minmax(0, 1fr); } }
 /* ==== FIN SLOT ESPECTACULAR E1 ==== */
+/* ==== SLOT ESPECTACULAR E2 ==== */
+/* Panel: instalación, cuenta, equipo y extracto, con las piezas de affectUI
+   (vendor/affectui: setup-guide, segmented-control, blur-crossfade, text-field,
+   number-input, select, dropdown-menu, dialog, toaster, data-table, usage-meter,
+   avatar, badge, empty-state, spinner, team-invite, empty-calendar). Aquí solo
+   va la COLOCACIÓN de esas piezas en las pantallas y las clases propias de
+   `app/`; el aspecto de cada pieza vive en su `.css`. */
+
+/* ---- Instalación: contenido + guía a la vista ---- */
+.app-inner:has(.ins-layout) { width: min(1180px, 100%); }
+.ins-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; }
+.ins-rail { min-width: 0; }
+.ins-rail .ui-sgdc { border-radius: var(--r-card-lg); }
+/* Entre móvil y escritorio la guía va arriba, a lo ancho: las secciones en fila. */
+@container (min-width: 620px) {
+  .ins-rail .ui-sgdc__groups { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .ins-rail .ui-sgdc__group:has(> .ui-sgdc__tasks) { grid-column: 1 / -1; }
+  .ins-rail .ui-sgdc__group:has(> .ui-sgdc__tasks) .ui-sgdc__tasks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 8px; }
+  .ins-rail .ui-sgdc__group + .ui-sgdc__group:has(> .ui-sgdc__caption) { grid-column: 1 / -1; display: grid; }
+}
+@media (min-width: 1240px) {
+  .ins-layout { grid-template-columns: minmax(0, 1fr) 284px; gap: 44px; align-items: start; }
+  .ins-rail { order: 2; position: sticky; top: calc(var(--nav-h) + 24px); max-height: calc(100dvh - var(--nav-h) - 48px); overflow-y: auto; overscroll-behavior: contain; padding: 1px; margin: -1px; }
+}
+.ins-layout .ins .ck-head h2 { text-wrap: balance; }
+
+/* El comando real de cada recorrido, en la tarjeta que lo elige. */
+.ins-layout .ins-task { grid-template-areas: "ic t go" "ic s go" "cmd cmd cmd"; padding: 20px 20px 16px 18px; border-radius: var(--r-card-lg); }
+.ins-task-cmd {
+  grid-area: cmd; display: block; min-width: 0; margin-top: 14px; padding: 9px 12px; border-radius: 10px;
+  background: var(--surface-3); box-shadow: inset 0 0 0 1px var(--line);
+  font-family: var(--mono); font-size: 12.5px; line-height: 1.5; color: var(--ink);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  transition: background-color var(--dur-2) var(--ease-out), box-shadow var(--dur-2) var(--ease-out);
+}
+.ins-task-prompt { color: var(--brand); font-weight: 600; user-select: none; }
+.ins-task:hover .ins-task-cmd { background: var(--brand-soft); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--brand) 22%, var(--line)); }
+.ins-task:hover .ins-task-ic { background: var(--brand); color: #fff; }
+.ins-task-ic { transition: background-color var(--dur-2) var(--ease-out), color var(--dur-2) var(--ease-out); }
+.ins-sec-head .ins-optional { align-self: center; }
+
+/* Tarjetas de paso: un filo de marca arriba, que es lo único que las numera. */
+.ins-layout .ins-card { position: relative; padding: 24px; overflow: hidden; }
+.ins-layout .ins-card::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 2px; background: linear-gradient(90deg, var(--brand), color-mix(in srgb, var(--brand) 0%, transparent) 62%); opacity: .7; }
+
+/* Claves: la tarjeta de «clave actual», la lista de claves vivas y la clave recién emitida. */
+.ins-key-ic { display: grid; place-items: center; flex: none; width: 36px; height: 36px; border-radius: 10px; background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--line), 0 1px 2px rgba(15, 18, 24, .05); }
+.ins-key-ic svg { width: 16px; height: 16px; }
+.ins .keycard.ins-keycard { flex-wrap: nowrap; align-items: center; gap: 12px 14px; padding: 14px 16px; }
+.ins-key-txt { flex: 1 1 auto; min-width: 0; }
+.ins-key-txt .k { margin-top: 2px; overflow-wrap: anywhere; }
+.ins .keycard .ins-key-once { flex: 0 1 280px; text-align: end; text-wrap: pretty; }
+@media (max-width: 640px) {
+  .ins .keycard.ins-keycard { flex-wrap: wrap; }
+  .ins .keycard .ins-key-once { flex-basis: 100%; text-align: start; }
+}
+.sak { min-width: 0; }
+.sak-btn { min-height: 44px; padding: 10px 18px; gap: 8px; }
+.ins .trialkey .sak-hint, .ins .keytester .sak-hint, .sak-hint { margin-top: 10px; }
+.ins .trialkey .sak-lede { margin: 0 0 12px; }
+.ins .trialkey .sak-err, .ins .keytester .sak-err, .ins .sak-err, .sak-err { margin-top: 10px; color: var(--danger); font-weight: 500; }
+.ins .keytester .kt-row { align-items: flex-end; gap: 10px; }
+.kt-field { flex: 1 1 260px; min-width: 0; }
+.kt-field .ui-tfc__label { font-size: 13px; font-weight: 500; color: var(--ink-soft); }
+.kt-mono { font-family: var(--mono); font-size: 13.5px; letter-spacing: -.01em; }
+.ins .keytester .kt-row .btn.sak-btn { min-height: 44px; padding: 10px 18px; }
+.ins .kt-result { display: flex; gap: 8px; margin: 12px 0 0; padding: 10px 12px; border-radius: 10px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); font-size: 13.5px; line-height: 1.5; }
+.ins .kt-result.kt-ok { background: var(--mint-soft); box-shadow: none; }
+.ins .kt-result.kt-warn { background: var(--amber-soft); box-shadow: none; }
+.ins .kt-result.kt-bad { background: var(--bad-soft); box-shadow: none; }
+@media (max-width: 480px) { .ins .keytester .kt-row { align-items: stretch; } .kt-field { flex: 0 0 auto; } }
+
+.keyreveal { border-color: color-mix(in srgb, var(--good-ink) 26%, var(--line)); }
+.ins .trialkey.keyreveal { background: color-mix(in srgb, var(--mint-soft) 55%, var(--surface)); }
+.ins .trialkey .keyreveal-k { margin: 0 0 8px; font-weight: 500; color: var(--ink); }
+.keyreveal-v { align-items: center; }
+.keyreveal-token { min-width: 0; word-break: break-all; }
+.ins .trialkey .keyreveal-n { margin-top: 10px; }
+.copybtn { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; }
+.copybtn svg { width: 14px; height: 14px; flex: none; }
+.copybtn[data-copied] { color: var(--good-ink); border-color: color-mix(in srgb, var(--good-ink) 30%, var(--line)); background: var(--mint-soft); }
+@media (pointer: coarse) { .copybtn { min-height: 44px; } }
+
+.ins .keytester.sak-live { margin-top: 12px; padding: 16px; }
+.sak-live-head { display: flex; align-items: center; gap: 8px; }
+.sak-live-t { font-size: 14px; font-weight: 600; letter-spacing: -.005em; color: var(--ink); }
+.sak-list { list-style: none; margin: 12px 0 0; padding: 0; border-radius: 12px; background: var(--surface); box-shadow: 0 0 0 1px var(--line); overflow: hidden; }
+.sak-row { display: flex; align-items: center; gap: 12px 14px; padding: 12px 14px; }
+.sak-row + .sak-row { border-top: 1px solid var(--line); }
+.sak-row-txt { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.sak-row-txt .k, .sak-dialog-key .k { font-family: var(--mono); font-size: 13.5px; color: var(--ink); overflow-wrap: anywhere; }
+.sak-row-label { color: var(--ink-soft); }
+.sak-revoke { flex: none; min-height: 44px; padding: 8px 14px; font-size: 13.5px; }
+.sak-revoke:hover { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 36%, var(--line)); }
+.sak-dialog-key { display: flex; align-items: center; gap: 12px; margin: 0; padding: 12px 14px; border-radius: 12px; background: var(--surface-3); box-shadow: inset 0 0 0 1px var(--line); }
+@media (max-width: 480px) { .sak-row { flex-wrap: wrap; } .sak-revoke { flex: 1 1 100%; justify-content: center; } }
+
+/* Pestañas por sistema (Segmented Control en bandeja) sobre el marco de código. */
+.so-snippet .so-seg { margin-bottom: 10px; }
+.so-snippet .ui-bx { border-radius: var(--r-card); }
+.so-snippet .codeframe { margin-top: 0; }
+
+/* El skill, como una fila de descarga. */
+.ins .ck-note.ins-skill { display: flex; align-items: flex-start; gap: 12px; max-width: none; margin-top: 24px; padding: 14px 16px; border-radius: var(--r-card); background: var(--surface); box-shadow: 0 0 0 1px var(--line), var(--shadow-card); }
+.ins-skill-ic { display: grid; place-items: center; flex: none; width: 32px; height: 32px; border-radius: 9px; background: var(--brand-soft); color: var(--brand); }
+.ins-skill-ic svg { width: 16px; height: 16px; }
+
+/* ---- Cuenta ---- */
+.acct .acct-status { min-height: 0; padding: 0; background: none; }
+.card .acct-status[data-tone] { background: none; }
+.acct-status .ui-bdgc { --h: 26px; --pad: 10px; --lead: 8px; border-radius: 999px; font-size: 12.5px; }
+.acct .ui-umc.acct-seats { padding: 20px 20px 8px; border-radius: var(--r-card); }
+.acct-id { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.acct-id-txt { min-width: 0; }
+.card .acct-id .acct-email { margin-top: 2px; }
+.acct-facts dd .ui-bdgc { vertical-align: 1px; }
+.acct-qty .acct-qty-input { flex: 0 0 156px; }
+.acct-qty .ui-nmic__input { text-align: center; font-family: var(--mono); font-weight: 500; }
+.acct-buy .btn, .acct-manage .btn { min-height: 46px; gap: 8px; }
+.acct-opt { transition: border-color var(--dur-2) var(--ease-out), box-shadow var(--dur-2) var(--ease-out), background-color var(--dur-2) var(--ease-out); }
+.acct-opt:has(input:checked) { background: var(--surface-3); }
+@media (max-width: 480px) { .acct-qty .acct-qty-input { flex: 1 1 100%; } }
+
+/* ---- Equipo ---- */
+.equipo .equipo-head { align-items: center; }
+.equipo .ui-bdgc.equipo-count { font-size: 12px; color: var(--ink-soft); }
+.equipo-tabla { margin-top: 4px; }
+.equipo-quien { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.equipo-quien-txt { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; min-width: 0; }
+.equipo-quien-txt b { min-width: 0; font-size: 14px; font-weight: 500; color: var(--ink); overflow-wrap: anywhere; }
+.equipo .ui-bdgc.equipo-tu { padding: 0 6px; border-radius: 999px; text-transform: none; letter-spacing: 0; }
+.equipo .ui-bdgc.rol { border: 0; text-transform: none; letter-spacing: 0; font-family: var(--sans); }
+.equipo-desde, .equipo-caduca { font-size: 13px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.equipo-estado { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; }
+.equipo-rol { max-width: 220px; }
+.equipo-mas { display: inline-grid; place-items: center; width: 44px; height: 44px; margin: 0; padding: 0; border: 0; border-radius: 10px; background: none; color: var(--ink-soft); cursor: pointer; transition: background-color var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out); }
+.equipo-mas:hover, .equipo-mas[aria-expanded="true"] { background: var(--surface-2); color: var(--ink); }
+.equipo-mas:focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; }
+.equipo .equipo-vacio { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); align-items: center; gap: 8px 16px; margin-top: 12px; padding: 0 24px 0 0; border-radius: var(--r-card); background: var(--surface-3); box-shadow: inset 0 0 0 1px var(--line); text-align: start; }
+.equipo-vacio .ui-estc { align-items: flex-start; text-align: start; }
+.equipo-vacio .ui-estc__title { font-size: 15px; font-weight: 600; }
+.equipo-vacio .ui-estc__text { font-size: 13.5px; text-wrap: pretty; }
+.equipo-ilustracion { min-width: 0; }
+@media (max-width: 560px) { .equipo .equipo-vacio { grid-template-columns: minmax(0, 1fr); padding: 0 16px 20px; } .equipo-ilustracion { max-width: 240px; margin-inline: auto; } }
+.equipo .equipo-form { align-items: flex-start; gap: 12px; }
+.equipo-form :is(.ui-tfc__head, .ui-selc__head) { min-height: 20px; margin-bottom: 6px; }
+.equipo-form :is(.ui-tfc__label, .ui-selc__label) { font-size: 13px; font-weight: 500; line-height: 20px; }
+.equipo-form .ui-selc.equipo-campo { flex: 0 1 220px; }
+.equipo .equipo-form > .btn.equipo-enviar { min-height: 44px; margin-top: 26px; gap: 8px; padding-inline: 18px; }
+.equipo-subhead { display: flex; align-items: center; gap: 8px; margin: 24px 0 10px; padding-top: 20px; border-top: 1px solid var(--line); }
+.equipo .equipo-subhead .equipo-sub { margin: 0; padding: 0; border: 0; }
+.equipo-sin-invitaciones.ui-estc { padding: 28px 20px 30px; }
+.equipo-dialogo-quien { display: flex; align-items: center; gap: 12px; margin: 0; padding: 12px 14px; border-radius: 12px; background: var(--surface-3); box-shadow: inset 0 0 0 1px var(--line); font-size: 14px; overflow-wrap: anywhere; }
+.equipo-dialogo-quien b { min-width: 0; font-weight: 500; }
+@media (max-width: 560px) { .equipo .equipo-form > .btn.equipo-enviar { margin-top: 0; width: 100%; justify-content: center; } .equipo-form .ui-tfc.equipo-campo, .equipo-form .ui-selc.equipo-campo { flex: 1 1 100%; width: 100%; } }
+
+/* ---- Extracto ---- */
+.app-sec-head > .ui-bdgc.ext-periodo, .app-sec-head > .ui-bdgc.ext-legado { --h: 26px; --pad: 10px; min-height: 0; padding: 0 var(--pad); border-radius: 999px; }
+.ui-bdgc.ext-periodo { font-family: var(--mono); font-size: 12px; background: var(--surface-2); color: var(--ink-soft); }
+.ui-bdgc.ext-legado { font-family: var(--sans); font-size: 12.5px; font-weight: 500; }
+.ui-bdgc.est-tag { --h: 24px; --pad: 9px; border: 0; font-family: var(--mono); font-size: 11px; letter-spacing: .04em; }
+.ext-vacio-grande { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); align-items: center; gap: 8px 28px; padding: 12px 28px 12px 12px; border-radius: var(--r-card-lg); background: var(--surface); box-shadow: 0 0 0 1px var(--line), var(--shadow-card); }
+.ext-vacio-grande .ui-estc { align-items: flex-start; text-align: start; }
+.ext-vacio-grande .ui-estc__title { font-size: 17px; font-weight: 600; letter-spacing: -.012em; line-height: 1.35; }
+.ext-vacio-grande .ui-estc__text { margin-top: 6px; font-size: 14.5px; line-height: 1.6; text-wrap: pretty; }
+.ext-ilustracion { min-width: 0; }
+@media (max-width: 640px) { .ext-vacio-grande { grid-template-columns: minmax(0, 1fr); padding: 0 20px 24px; } .ext-ilustracion { max-width: 280px; margin-inline: auto; } }
+.ext-vacio.ui-estc { margin-top: 12px; padding: 30px 20px 32px; border: 0; }
+.ext-historial, .ext-tramos { margin-top: 12px; }
+.ext-sim .ext-tramos { box-shadow: 0 0 0 1px var(--line); }
+.ext-sim .ext-tramos + .note { margin-top: 14px; }
+.ext-ahorro { color: var(--good-ink); font-weight: 500; }
+/* ==== FIN SLOT ESPECTACULAR E2 ==== */

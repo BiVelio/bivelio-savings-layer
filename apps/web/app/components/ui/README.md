@@ -348,8 +348,12 @@ Vive en `apps/web/vendor/affectui/`, fuera de `app/`. Lee
 - Ya están: `code-block-clean` (solo el coloreador, `CodeLines`),
   `number-ticker`, `progress-tracker-clean`, `integration-beam`, `layer-stack`
   (MIT) y `pricing-plans`, `kpi-board`, `compact-breakdown`, `experiment-card`,
-  `experiment-readout`, `gradient-text`, `gradient-floor` (Pro). El inventario
-  con su uso está en `VENDOR.md`.
+  `experiment-readout`, `gradient-text`, `gradient-floor` (Pro), y las del
+  panel de cuenta (Pro): `setup-guide`, `usage-meter`, `data-table`,
+  `text-field`, `number-input`, `select`, `dropdown-menu`, `dialog`, `toaster`,
+  `segmented-control`, `blur-crossfade`, `avatar`, `badge`, `empty-state`,
+  `spinner`, `team-invite`, `empty-calendar`. El inventario con su uso está en
+  `VENDOR.md`.
 - **No se vendoriza lo que no se usa.** Empty State, Skeleton y Segmented
   Control se retiraron en la auditoría de 2026-11: `<EmptyState>`,
   `<Skeleton>` y el selector de rango (enlaces) ya cubrían el caso.

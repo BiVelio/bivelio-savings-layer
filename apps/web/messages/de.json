@@ -437,7 +437,8 @@
       "intro": "Setze BV-SALA vor deinen Provider. Deine Prompts laufen nicht über die Server von BiVelio; sie gehen an den Provider, den du konfigurierst.",
       "irACuenta": "Noch kein Plan, oder möchten Sie die Sitze ändern? Das geht unter Konto →",
       "trackerTitle": "Deine Einrichtung",
-      "trackerNote": "Diese Meilensteine misst das Produkt: Ein Klick öffnet die Anleitung, markiert aber nichts als erledigt. Sie gehören zur Cloud-Verbindung; die offene Engine läuft auch ohne sie."
+      "trackerNote": "Diese Meilensteine misst das Produkt: Ein Klick öffnet die Anleitung, markiert aber nichts als erledigt. Sie gehören zur Cloud-Verbindung; die offene Engine läuft auch ohne sie.",
+      "onThisPage": "Auf dieser Seite"
     },
     "account": {
       "metaTitle": "Konto · BiVelio Savings Layer",
@@ -794,7 +795,11 @@
       "planTeamPrice": "{monthly} im Monat · {yearly} im Jahr · {included} Seats inklusive",
       "summaryLabel": "Du kaufst",
       "summaryNote": "Den genauen Betrag inklusive Steuern bestätigt Stripe vor der Zahlung.",
-      "summary": "{plan} · {seats, plural, one {# Seat} other {# Seats}}"
+      "summary": "{plan} · {seats, plural, one {# Seat} other {# Seats}}",
+      "seatsFree": "Frei",
+      "seatsExtra": "Über dem vertraglich Vereinbarten",
+      "seatsMore": "Einen Seat hinzufügen",
+      "seatsLess": "Einen Seat entfernen"
     },
     "referenceLedgerCards": {
       "proven": "bewiesen",
@@ -916,7 +921,14 @@
       "invitacionesVacio": "Keine ausstehenden Einladungen.",
       "caduca": "läuft am {date} ab",
       "caduco": "am {date} abgelaufen",
-      "reenviarAyuda": "„Erneut senden“ übernimmt E-Mail und Rolle in das Formular oben, damit Sie die Einladung noch einmal senden können."
+      "reenviarAyuda": "„Erneut senden“ übernimmt E-Mail und Rolle in das Formular oben, damit Sie die Einladung noch einmal senden können.",
+      "accionesDe": "Aktionen für {email}",
+      "quitarTitulo": "{email} aus der Organisation entfernen?",
+      "quitarCuerpo": "Die Person kann diese Organisation nicht mehr öffnen. Ihre Seats und Ihre Rechnung ändern sich nicht.",
+      "quitarConfirmar": "Ja, entfernen",
+      "avisosLabel": "Benachrichtigungen",
+      "avisoCerrar": "Benachrichtigung schließen",
+      "vacioAyuda": "Laden Sie Ihr Team über das Formular unten ein."
     },
     "tokenTotals": {
       "spentLabel": "Verbrauchte Tokens",

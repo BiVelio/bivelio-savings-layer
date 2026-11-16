@@ -437,7 +437,8 @@
       "intro": "Umieść BV-SALA przed swoim dostawcą. Twoje prompty nie przechodzą przez serwery BiVelio; są wysyłane do dostawcy, którego skonfigurujesz.",
       "irACuenta": "Nie masz jeszcze planu lub chcesz zmienić liczbę miejsc? Zrobisz to w Koncie →",
       "trackerTitle": "Twoje uruchomienie",
-      "trackerNote": "Te kamienie milowe mierzy produkt: wybranie jednego otwiera jego instrukcję, ale nie oznacza go jako gotowego. Dotyczą połączenia Cloud; otwarty silnik działa bez nich."
+      "trackerNote": "Te kamienie milowe mierzy produkt: wybranie jednego otwiera jego instrukcję, ale nie oznacza go jako gotowego. Dotyczą połączenia Cloud; otwarty silnik działa bez nich.",
+      "onThisPage": "Na tej stronie"
     },
     "account": {
       "metaTitle": "Konto · BiVelio Savings Layer",
@@ -794,7 +795,11 @@
       "planTeamPrice": "{monthly} miesięcznie · {yearly} rocznie · w cenie stanowiska: {included}",
       "summaryLabel": "Kupujesz",
       "summaryNote": "Dokładną kwotę z podatkami potwierdza Stripe przed płatnością.",
-      "summary": "{plan} · {seats, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}"
+      "summary": "{plan} · {seats, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}",
+      "seatsFree": "Wolne",
+      "seatsExtra": "Ponad zakontraktowane",
+      "seatsMore": "Dodaj stanowisko",
+      "seatsLess": "Usuń stanowisko"
     },
     "referenceLedgerCards": {
       "proven": "udowodnione",
@@ -916,7 +921,14 @@
       "invitacionesVacio": "Brak oczekujących zaproszeń.",
       "caduca": "wygasa {date}",
       "caduco": "wygasło {date}",
-      "reenviarAyuda": "„Wyślij ponownie” kopiuje e-mail i rolę do formularza powyżej, aby można było wysłać zaproszenie jeszcze raz."
+      "reenviarAyuda": "„Wyślij ponownie” kopiuje e-mail i rolę do formularza powyżej, aby można było wysłać zaproszenie jeszcze raz.",
+      "accionesDe": "Akcje dla {email}",
+      "quitarTitulo": "Usunąć {email} z organizacji?",
+      "quitarCuerpo": "Ta osoba nie będzie już mogła otworzyć tej organizacji. Stanowiska i faktura się nie zmieniają.",
+      "quitarConfirmar": "Tak, usuń",
+      "avisosLabel": "Powiadomienia",
+      "avisoCerrar": "Zamknij powiadomienie",
+      "vacioAyuda": "Zaproś zespół za pomocą formularza poniżej."
     },
     "tokenTotals": {
       "spentLabel": "Zużyte tokeny",

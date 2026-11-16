@@ -437,7 +437,8 @@
       "intro": "Coloca o BV-SALA à frente do teu fornecedor. Os teus prompts não passam pelos servidores da BiVelio; são enviados para o fornecedor que configurares.",
       "irACuenta": "Ainda sem plano, ou queres alterar os lugares? Faz-se em Conta →",
       "trackerTitle": "O teu arranque",
-      "trackerNote": "Estes marcos são medidos pelo produto: carregar num abre a respetiva instrução, não o marca como concluído. São os da ligação Cloud; o motor aberto funciona sem eles."
+      "trackerNote": "Estes marcos são medidos pelo produto: carregar num abre a respetiva instrução, não o marca como concluído. São os da ligação Cloud; o motor aberto funciona sem eles.",
+      "onThisPage": "Nesta página"
     },
     "account": {
       "metaTitle": "Conta · BiVelio Savings Layer",
@@ -794,7 +795,11 @@
       "planTeamPrice": "{monthly} por mês · {yearly} por ano · {included} lugares incluídos",
       "summaryLabel": "Vais comprar",
       "summaryNote": "O valor exato, com impostos, é confirmado pela Stripe antes de pagares.",
-      "summary": "{plan} · {seats, plural, one {# lugar} other {# lugares}}"
+      "summary": "{plan} · {seats, plural, one {# lugar} other {# lugares}}",
+      "seatsFree": "Livres",
+      "seatsExtra": "Acima do contratado",
+      "seatsMore": "Adicionar um lugar",
+      "seatsLess": "Remover um lugar"
     },
     "referenceLedgerCards": {
       "proven": "comprovado",
@@ -916,7 +921,14 @@
       "invitacionesVacio": "Não há convites pendentes.",
       "caduca": "expira a {date}",
       "caduco": "expirou a {date}",
-      "reenviarAyuda": "«Reenviar» copia o e-mail e o perfil para o formulário acima, para que envie o convite de novo."
+      "reenviarAyuda": "«Reenviar» copia o e-mail e o perfil para o formulário acima, para que envie o convite de novo.",
+      "accionesDe": "Ações para {email}",
+      "quitarTitulo": "Remover {email} da organização?",
+      "quitarCuerpo": "Deixará de poder entrar nesta organização. Os lugares e a fatura não mudam.",
+      "quitarConfirmar": "Sim, remover",
+      "avisosLabel": "Avisos",
+      "avisoCerrar": "Fechar aviso",
+      "vacioAyuda": "Convide a sua equipa com o formulário abaixo."
     },
     "tokenTotals": {
       "spentLabel": "Tokens gastos",

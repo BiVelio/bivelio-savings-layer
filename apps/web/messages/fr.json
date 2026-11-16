@@ -437,7 +437,8 @@
       "intro": "Placez BV-SALA devant votre fournisseur. Vos prompts ne passent pas par les serveurs de BiVelio ; ils sont envoyés au fournisseur que vous configurez.",
       "irACuenta": "Pas encore de forfait, ou besoin de changer vos sièges ? Cela se fait dans Compte →",
       "trackerTitle": "Votre mise en route",
-      "trackerNote": "Ces jalons sont mesurés par le produit : en sélectionner un ouvre ses instructions, sans le marquer comme terminé. Ils concernent la connexion Cloud ; le moteur ouvert fonctionne sans eux."
+      "trackerNote": "Ces jalons sont mesurés par le produit : en sélectionner un ouvre ses instructions, sans le marquer comme terminé. Ils concernent la connexion Cloud ; le moteur ouvert fonctionne sans eux.",
+      "onThisPage": "Sur cette page"
     },
     "account": {
       "metaTitle": "Compte · BiVelio Savings Layer",
@@ -794,7 +795,11 @@
       "planTeamPrice": "{monthly} par mois · {yearly} par an · {included} sièges inclus",
       "summaryLabel": "Vous achetez",
       "summaryNote": "Stripe confirme le montant exact, taxes comprises, avant le paiement.",
-      "summary": "{plan} · {seats, plural, one {# siège} other {# sièges}}"
+      "summary": "{plan} · {seats, plural, one {# siège} other {# sièges}}",
+      "seatsFree": "Libres",
+      "seatsExtra": "Au-delà du contrat",
+      "seatsMore": "Ajouter un siège",
+      "seatsLess": "Retirer un siège"
     },
     "referenceLedgerCards": {
       "proven": "prouvé",
@@ -916,7 +921,14 @@
       "invitacionesVacio": "Aucune invitation en attente.",
       "caduca": "expire le {date}",
       "caduco": "a expiré le {date}",
-      "reenviarAyuda": "« Renvoyer » copie l'e-mail et le rôle dans le formulaire ci-dessus pour que vous puissiez renvoyer l'invitation."
+      "reenviarAyuda": "« Renvoyer » copie l'e-mail et le rôle dans le formulaire ci-dessus pour que vous puissiez renvoyer l'invitation.",
+      "accionesDe": "Actions pour {email}",
+      "quitarTitulo": "Retirer {email} de l'organisation ?",
+      "quitarCuerpo": "Cette personne ne pourra plus accéder à cette organisation. Vos sièges et votre facture ne changent pas.",
+      "quitarConfirmar": "Oui, retirer",
+      "avisosLabel": "Notifications",
+      "avisoCerrar": "Fermer la notification",
+      "vacioAyuda": "Invitez votre équipe avec le formulaire ci-dessous."
     },
     "tokenTotals": {
       "spentLabel": "Tokens dépensés",

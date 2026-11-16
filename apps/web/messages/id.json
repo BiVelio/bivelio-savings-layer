@@ -437,7 +437,8 @@
       "intro": "Tempatkan BV-SALA di depan penyedia Anda. Prompt Anda tidak melewati server BiVelio; prompt dikirim ke penyedia yang Anda konfigurasikan.",
       "irACuenta": "Belum punya paket, atau ingin mengubah jumlah kursi? Lakukan di Akun →",
       "trackerTitle": "Persiapan Anda",
-      "trackerNote": "Tonggak ini diukur oleh produk: memilih salah satunya membuka petunjuknya, bukan menandainya selesai. Tonggak ini milik koneksi Cloud; mesin terbuka tetap berjalan tanpanya."
+      "trackerNote": "Tonggak ini diukur oleh produk: memilih salah satunya membuka petunjuknya, bukan menandainya selesai. Tonggak ini milik koneksi Cloud; mesin terbuka tetap berjalan tanpanya.",
+      "onThisPage": "Di halaman ini"
     },
     "account": {
       "metaTitle": "Akun · BiVelio Savings Layer",
@@ -794,7 +795,11 @@
       "planTeamPrice": "{monthly} per bulan · {yearly} per tahun · termasuk {included} kursi",
       "summaryLabel": "Anda akan membeli",
       "summaryNote": "Jumlah pastinya, termasuk pajak, dikonfirmasi Stripe sebelum Anda membayar.",
-      "summary": "{plan} · {seats, plural, other {# kursi}}"
+      "summary": "{plan} · {seats, plural, other {# kursi}}",
+      "seatsFree": "Tersedia",
+      "seatsExtra": "Di atas yang dikontrak",
+      "seatsMore": "Tambah satu kursi",
+      "seatsLess": "Kurangi satu kursi"
     },
     "referenceLedgerCards": {
       "proven": "terbukti",
@@ -916,7 +921,14 @@
       "invitacionesVacio": "Tidak ada undangan tertunda.",
       "caduca": "kedaluwarsa {date}",
       "caduco": "kedaluwarsa pada {date}",
-      "reenviarAyuda": "«Kirim ulang» menyalin email dan peran ke formulir di atas agar Anda dapat mengirim undangan lagi."
+      "reenviarAyuda": "«Kirim ulang» menyalin email dan peran ke formulir di atas agar Anda dapat mengirim undangan lagi.",
+      "accionesDe": "Tindakan untuk {email}",
+      "quitarTitulo": "Keluarkan {email} dari organisasi?",
+      "quitarCuerpo": "Orang ini tidak lagi dapat membuka organisasi ini. Kursi dan tagihan Anda tidak berubah.",
+      "quitarConfirmar": "Ya, keluarkan",
+      "avisosLabel": "Pemberitahuan",
+      "avisoCerrar": "Tutup pemberitahuan",
+      "vacioAyuda": "Undang tim Anda dengan formulir di bawah."
     },
     "tokenTotals": {
       "spentLabel": "Token terpakai",

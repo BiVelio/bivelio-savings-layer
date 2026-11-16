@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { PageHead } from "@/app/components/app/PageHead";
 import { AccountPlanStrip } from "@/app/[locale]/dashboard/components/AccountPlanStrip";
@@ -12,6 +12,7 @@ import type { OrgContext, UsageRollup } from "@/app/[locale]/dashboard/data";
 import { extractoEnSombra } from "@/lib/billing/extracto-sombra";
 import { capturaDisponible } from "@/lib/portada/panel-del-banco";
 import type { InformeDelBancoPropio } from "@/lib/verificacion/banco-propio";
+import { SetupGuide } from "@/vendor/affectui/setup-guide";
 
 /**
  * MUESTRARIO DE ESTADOS DE CUENTA, EXTRACTO Y «TU BANCO» — SOLO EN DESARROLLO.
@@ -19,7 +20,7 @@ import type { InformeDelBancoPropio } from "@/lib/verificacion/banco-propio";
  * El panel sin sesión (`next dev` sin variables) solo enseña un estado de cada
  * pantalla: sin plan, sin extracto, sin banco. Aquí se pintan los demás con los
  * MISMOS componentes que ve el cliente, alimentados con datos de muestra:
- * plan activo, activación pendiente, impago, exceso de asientos, licencia en
+ * sin plan (la compra), plan activo, activación pendiente, impago, exceso de asientos, licencia en
  * gracia o caducada, extracto con y sin contrato heredado, y el A/B propio en
  * cada uno de sus estados.
  *
@@ -134,12 +135,59 @@ export default async function CapturaDeCuenta({
   const hasta = new Date().toISOString().slice(0, 10);
   const desde = new Date(ahora - 29 * DIA).toISOString().slice(0, 10);
   const correo = "persona@ejemplo.test";
+  const t = await getTranslations("dashboard");
+  // La guía de Primeros pasos CON sesión (sin sesión la página real solo enseña
+  // las secciones): dos hitos hechos, el tercero en curso. 1, 2, 4 y 5 son los
+  // únicos recuentos que el producto puede dar; aquí, 2.
+  const hitos = (["accountCreated", "licenseActive", "sdkInstalled", "firstRequest", "reportReady"] as const).map((k, i) => ({
+    id: k,
+    label: t(`overview.steps.${k}`),
+    status: i < 2 ? ("done" as const) : i === 2 ? ("current" as const) : ("pending" as const),
+    statusLabel:
+      i < 2 ? t("instrumentationSpine.statusDone") : i === 2 ? t("instrumentationSpine.statusNext") : t("instrumentationSpine.statusPending"),
+    href: "#guia",
+  }));
 
   const bloques: Array<{ id: string; titulo: string; nodo: ReactNode }> = [
     {
       id: "activo",
       titulo: "Cuenta · plan activo, asientos en uso por debajo de lo contratado",
       nodo: <AccountPlanStrip email={correo} ctx={contexto({})} asientos={{ usados: 7, rotacionEsteMes: false }} />,
+    },
+    {
+      id: "guia",
+      titulo: "Primeros pasos · la guía con sesión: hitos medidos (solo lectura) y secciones",
+      nodo: (
+        <div style={{ maxWidth: 300 }}>
+          <SetupGuide
+            aria-label={t("install.trackerTitle")}
+            title={t("install.trackerTitle")}
+            groups={[
+              { id: "hitos", tasks: hitos },
+              { id: "cloud", caption: t("install.onThisPage"), title: t("installLicensePanel.cloudTitle"), href: "#guia" },
+              { id: "sdk", title: t("installLicensePanel.sdkTitle"), href: "#guia" },
+              { id: "gateway", title: t("installLicensePanel.gatewayTitle"), href: "#guia" },
+            ]}
+            progress={{
+              done: 2,
+              total: 5,
+              label: t("instrumentationSpine.count", { done: 2, total: 5 }),
+              countLabel: t("instrumentationSpine.count", { done: 2, total: 5 }),
+            }}
+            footer={t("install.trackerNote")}
+          />
+        </div>
+      ),
+    },
+    {
+      id: "sin-plan",
+      titulo: "Cuenta · sin plan: elegir Pro o Team, asientos (− / +) y el resumen de lo que se compra",
+      nodo: (
+        <AccountPlanStrip
+          email={correo}
+          ctx={contexto({ org: { name: "Organización de muestra", plan: "free" }, seats: null, subscription: null, license: null })}
+        />
+      ),
     },
     {
       id: "sin-medida",

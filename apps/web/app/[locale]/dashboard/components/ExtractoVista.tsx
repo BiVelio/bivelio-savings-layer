@@ -1,9 +1,24 @@
 import { Fragment } from "react";
 import { getLocale, getTranslations } from "next-intl/server";
 
-import { EmptyState, EvidenceBadge, Notice, Recibo } from "@/app/components/ui";
+import { EvidenceBadge, Notice, Recibo } from "@/app/components/ui";
 import { Link } from "@/i18n/navigation";
 import type { Extracto } from "@/lib/billing/extracto";
+import { Badge, type BadgeTone } from "@/vendor/affectui/badge";
+import { DataTable } from "@/vendor/affectui/data-table";
+import { EmptyCalendar } from "@/vendor/affectui/empty-calendar";
+import { EmptyState } from "@/vendor/affectui/empty-state";
+
+/**
+ * El tono de la insignia de cada estado de cobro. Solo color: el texto es el
+ * mismo de siempre. Un estado que no esté aquí sale neutro, nunca verde.
+ */
+const TONO_DEL_ESTADO: Record<string, BadgeTone> = {
+  estadoPagado: "success",
+  estadoFacturado: "info",
+  estadoPendiente: "warning",
+  estadoFallido: "danger",
+};
 
 /** Cómo se factura HOY la organización, según lo que la página ya consulta. */
 export type RegimenDelExtracto = "fija" | "exenta" | "legado" | "ninguno" | "indeterminado";
@@ -65,7 +80,9 @@ export async function ExtractoVista({
   const simulacion = (
     <>
       <div className="ext-sim-head">
-        <span className="est-tag">{e.esCalibracion ? t("extracto.badgeCalibracion") : t("extracto.badgeSombra")}</span>
+        <Badge size="md" tone="warning" className="est-tag">
+          {e.esCalibracion ? t("extracto.badgeCalibracion") : t("extracto.badgeSombra")}
+        </Badge>
       </div>
       <div className="kpi kpi-auto">
         <div className="n">{t("extracto.kpiTitulo")}</div>
@@ -81,30 +98,29 @@ export async function ExtractoVista({
       {e.comision.tramos.length === 0 ? (
         <p className="note">{t("extracto.sinAhorro")}</p>
       ) : (
-        <div className="tbl-scroll">
-          <table className="tbl tbl--static">
-            <thead>
-              <tr>
-                <th scope="col">{t("extracto.colTramo")}</th>
-                <th scope="col">{t("extracto.colTipo")}</th>
-                <th scope="col">{t("extracto.colBase")}</th>
-                <th scope="col">{t("extracto.colComision")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {e.comision.tramos.map((tr) => (
-                <tr key={tr.desdeEur}>
-                  <td className="ck-num">
-                    {eur(tr.desdeEur)} – {Number.isFinite(tr.hastaEur) ? eur(tr.hastaEur) : "∞"}
-                  </td>
-                  <td className="ck-num">{pct(tr.tipo)}</td>
-                  <td className="ck-num">{eur(tr.baseEur)}</td>
-                  <td className="ck-num">{eur(tr.comisionEur)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          className="ext-tramos"
+          label={t("extracto.tramosTitulo")}
+          columns={[
+            { id: "tramo", header: t("extracto.colTramo"), lead: true, mono: true },
+            { id: "tipo", header: t("extracto.colTipo"), align: "end", mono: true },
+            { id: "base", header: t("extracto.colBase"), align: "end", mono: true },
+            { id: "comision", header: t("extracto.colComision"), align: "end", mono: true },
+          ]}
+          rows={e.comision.tramos.map((tr) => ({
+            id: String(tr.desdeEur),
+            cells: {
+              tramo: (
+                <>
+                  {eur(tr.desdeEur)} – {Number.isFinite(tr.hastaEur) ? eur(tr.hastaEur) : "∞"}
+                </>
+              ),
+              tipo: pct(tr.tipo),
+              base: eur(tr.baseEur),
+              comision: eur(tr.comisionEur),
+            },
+          }))}
+        />
       )}
       {/* La regla con la que se valoran las repeticiones (0029): parte de los
           parámetros que hacen el extracto autocontenido. Cifras por parámetro,
@@ -139,7 +155,7 @@ export async function ExtractoVista({
             <h2 className="t-section" id="ext-gasto">{t("extracto.gastoTitulo")}</h2>
             <p className="sub-section">{t("extracto.gastoSub")}</p>
           </div>
-          <span className="ext-periodo">{t("extracto.periodo", { periodo })}</span>
+          <Badge size="md" className="ext-periodo">{t("extracto.periodo", { periodo })}</Badge>
         </div>
 
         {usageFailed ? (
@@ -147,7 +163,10 @@ export async function ExtractoVista({
         ) : null}
 
         {sinTrafico && usageFailed ? null : sinTrafico ? (
-          <EmptyState como="h3" titulo={t("extracto.sinTraficoTitulo")} texto={t("extracto.sinTraficoBody")} />
+          <div className="ext-vacio-grande">
+            <EmptyCalendar className="ext-ilustracion" />
+            <EmptyState bare icon={null} title={t("extracto.sinTraficoTitulo")} text={t("extracto.sinTraficoBody")} />
+          </div>
         ) : (
           <div className="ext-grid">
             <Recibo
@@ -282,7 +301,7 @@ export async function ExtractoVista({
             <h2 className="t-section" id="ext-historico">{t("extracto.historicoTitulo")}</h2>
             <p className="sub-section">{t("extracto.historicoSub")}</p>
           </div>
-          <span className="ext-legado">{t("extracto.historicoEtiqueta")}</span>
+          <Badge size="md" tone="warning" className="ext-legado">{t("extracto.historicoEtiqueta")}</Badge>
         </div>
 
         {sinTrafico ? null : aplicaComision ? (
@@ -308,56 +327,73 @@ export async function ExtractoVista({
         {cerrados === null ? (
           <Notice tono="danger">{t("extracto.lecturaFallo")}</Notice>
         ) : cerrados.length === 0 ? (
-          <p className="note ext-vacio">{t("extracto.historialVacio")}</p>
+          <EmptyState
+            className="ext-vacio"
+            title={t("extracto.historialVacio")}
+            icon={
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" focusable="false">
+                <rect x="3.5" y="4.5" width="17" height="16" rx="3" />
+                <path d="M3.5 9.5h17M8 2.75v3.5M16 2.75v3.5" />
+              </svg>
+            }
+          />
         ) : (
-          <div className="tbl-scroll">
-            <table className="tbl tbl--static">
-              <thead>
-                <tr>
-                  <th scope="col">{t("extracto.hcolPeriodo")}</th>
-                  <th scope="col">{t("extracto.hcolBase")}</th>
-                  <th scope="col">{t("extracto.hcolAhorro")}</th>
-                  <th scope="col">{t("extracto.hcolRatio")}</th>
-                  <th scope="col">{t("extracto.hcolCargo")}</th>
-                  <th scope="col">{t("extracto.hcolCobro")}</th>
-                  <th scope="col">{t("extracto.hcolFactura")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {cerrados.map((p) => (
-                  <tr key={p.periodo}>
-                    <td className="ck-num">
-                      {p.periodo}
-                      {/* 0029 · la prueba fila a fila del período SELLADO (el que
-                          se factura), mientras la retención la conserve. */}
-                      {p.requests_referencia > 0 && (
-                        <>
-                          {" · "}
-                          <a href={`/api/org/reference-hits?periodo=${p.periodo}`} title={t("extracto.exportarReferencias")}>
-                            CSV
-                          </a>
-                        </>
-                      )}
-                    </td>
-                    <td className="ck-num">{eur(p.base_medida_eur)}</td>
-                    <td className="ck-num">{eur(p.ahorro_medido_eur)}</td>
-                    <td className="ck-num">{pct(p.ratio)}</td>
-                    <td className="ck-num">{eur(p.cargo_eur)}</td>
-                    <td>{t(`extracto.${p.claveDeEstado}`)}</td>
-                    <td>
-                      {p.cobro?.url ? (
-                        <a href={p.cobro.url} target="_blank" rel="noreferrer">
-                          {p.cobro.numero ?? t("extracto.verFactura")}
+          <DataTable
+            className="ext-historial"
+            label={t("extracto.historialTitulo")}
+            columns={[
+              { id: "periodo", header: t("extracto.hcolPeriodo"), lead: true, mono: true, sortable: true },
+              { id: "base", header: t("extracto.hcolBase"), align: "end", mono: true, sortable: true },
+              { id: "ahorro", header: t("extracto.hcolAhorro"), align: "end", mono: true, sortable: true },
+              { id: "ratio", header: t("extracto.hcolRatio"), align: "end", mono: true, sortable: true },
+              { id: "cargo", header: t("extracto.hcolCargo"), align: "end", mono: true, sortable: true },
+              { id: "cobro", header: t("extracto.hcolCobro") },
+              { id: "factura", header: t("extracto.hcolFactura"), align: "end" },
+            ]}
+            rows={cerrados.map((p) => ({
+              id: p.periodo,
+              sort: {
+                periodo: p.periodo,
+                base: p.base_medida_eur,
+                ahorro: p.ahorro_medido_eur,
+                ratio: p.ratio,
+                cargo: p.cargo_eur,
+              },
+              cells: {
+                periodo: (
+                  <>
+                    {p.periodo}
+                    {/* 0029 · la prueba fila a fila del período SELLADO (el que
+                        se factura), mientras la retención la conserve. */}
+                    {p.requests_referencia > 0 && (
+                      <>
+                        {" · "}
+                        <a href={`/api/org/reference-hits?periodo=${p.periodo}`} title={t("extracto.exportarReferencias")}>
+                          CSV
                         </a>
-                      ) : (
-                        p.cobro?.numero ?? "—"
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                      </>
+                    )}
+                  </>
+                ),
+                base: eur(p.base_medida_eur),
+                ahorro: <span className="ext-ahorro">{eur(p.ahorro_medido_eur)}</span>,
+                ratio: pct(p.ratio),
+                cargo: eur(p.cargo_eur),
+                cobro: (
+                  <Badge size="md" dot tone={TONO_DEL_ESTADO[p.claveDeEstado] ?? "neutral"}>
+                    {t(`extracto.${p.claveDeEstado}`)}
+                  </Badge>
+                ),
+                factura: p.cobro?.url ? (
+                  <a href={p.cobro.url} target="_blank" rel="noreferrer">
+                    {p.cobro.numero ?? t("extracto.verFactura")}
+                  </a>
+                ) : (
+                  p.cobro?.numero ?? "—"
+                ),
+              },
+            }))}
+          />
         )}
       </section>
     </>

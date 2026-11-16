@@ -437,7 +437,8 @@
       "intro": "BV-SALA'yı sağlayıcınızın önüne yerleştirin. Prompt'larınız BiVelio sunucularından geçmez; yapılandırdığınız sağlayıcıya gönderilir.",
       "irACuenta": "Henüz planınız yok mu ya da koltukları değiştirmek mi istiyorsunuz? Bunu Hesap bölümünden yaparsınız →",
       "trackerTitle": "Kurulumunuz",
-      "trackerNote": "Bu aşamaları ürün ölçer: birini seçmek talimatını açar, onu tamamlandı olarak işaretlemez. Bunlar Cloud bağlantısına aittir; açık motor onlar olmadan da çalışır."
+      "trackerNote": "Bu aşamaları ürün ölçer: birini seçmek talimatını açar, onu tamamlandı olarak işaretlemez. Bunlar Cloud bağlantısına aittir; açık motor onlar olmadan da çalışır.",
+      "onThisPage": "Bu sayfada"
     },
     "account": {
       "metaTitle": "Hesap · BiVelio Savings Layer",
@@ -794,7 +795,11 @@
       "planTeamPrice": "Aylık {monthly} · yıllık {yearly} · {included} koltuk dahil",
       "summaryLabel": "Satın alacağınız",
       "summaryNote": "Vergiler dahil kesin tutarı ödeme öncesinde Stripe onaylar.",
-      "summary": "{plan} · {seats, plural, other {# koltuk}}"
+      "summary": "{plan} · {seats, plural, other {# koltuk}}",
+      "seatsFree": "Boş",
+      "seatsExtra": "Sözleşmenin üzerinde",
+      "seatsMore": "Bir koltuk ekle",
+      "seatsLess": "Bir koltuk çıkar"
     },
     "referenceLedgerCards": {
       "proven": "kanıtlandı",
@@ -916,7 +921,14 @@
       "invitacionesVacio": "Bekleyen davet yok.",
       "caduca": "{date} tarihinde sona erer",
       "caduco": "{date} tarihinde sona erdi",
-      "reenviarAyuda": "«Yeniden gönder», e-postayı ve rolü yukarıdaki forma kopyalar; böylece daveti yeniden gönderebilirsiniz."
+      "reenviarAyuda": "«Yeniden gönder», e-postayı ve rolü yukarıdaki forma kopyalar; böylece daveti yeniden gönderebilirsiniz.",
+      "accionesDe": "{email} için işlemler",
+      "quitarTitulo": "{email} kuruluştan çıkarılsın mı?",
+      "quitarCuerpo": "Bu kişi artık bu kuruluşa giremeyecek. Koltuklarınız ve faturanız değişmez.",
+      "quitarConfirmar": "Evet, çıkar",
+      "avisosLabel": "Bildirimler",
+      "avisoCerrar": "Bildirimi kapat",
+      "vacioAyuda": "Ekibinizi aşağıdaki formla davet edin."
     },
     "tokenTotals": {
       "spentLabel": "Harcanan token",

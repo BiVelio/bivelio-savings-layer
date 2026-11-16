@@ -437,7 +437,8 @@
       "intro": "Drop BV-SALA in front of your provider. Your prompts do not pass through BiVelio's servers; they are sent to the provider you configure.",
       "irACuenta": "No plan yet, or need to change your seats? That happens in Account →",
       "trackerTitle": "Your setup",
-      "trackerNote": "The product measures these milestones: selecting one opens its instructions, it does not mark it as done. They belong to the Cloud connection; the open engine works without them."
+      "trackerNote": "The product measures these milestones: selecting one opens its instructions, it does not mark it as done. They belong to the Cloud connection; the open engine works without them.",
+      "onThisPage": "On this page"
     },
     "account": {
       "metaTitle": "Account · BiVelio Savings Layer",
@@ -794,7 +795,11 @@
       "planTeamPrice": "{monthly} per month · {yearly} per year · {included} seats included",
       "summaryLabel": "You are buying",
       "summaryNote": "Stripe confirms the exact amount, with taxes, before you pay.",
-      "summary": "{plan} · {seats, plural, one {# seat} other {# seats}}"
+      "summary": "{plan} · {seats, plural, one {# seat} other {# seats}}",
+      "seatsFree": "Free",
+      "seatsExtra": "Above what is contracted",
+      "seatsMore": "Add a seat",
+      "seatsLess": "Remove a seat"
     },
     "referenceLedgerCards": {
       "proven": "proven",
@@ -916,7 +921,14 @@
       "invitacionesVacio": "No pending invitations.",
       "caduca": "expires {date}",
       "caduco": "expired {date}",
-      "reenviarAyuda": "“Resend” copies the email and role into the form above so you can send the invitation again."
+      "reenviarAyuda": "“Resend” copies the email and role into the form above so you can send the invitation again.",
+      "accionesDe": "Actions for {email}",
+      "quitarTitulo": "Remove {email} from the organization?",
+      "quitarCuerpo": "They will no longer be able to open this organization. Your seats and your invoice do not change.",
+      "quitarConfirmar": "Yes, remove",
+      "avisosLabel": "Notifications",
+      "avisoCerrar": "Dismiss notification",
+      "vacioAyuda": "Invite your team with the form below."
     },
     "tokenTotals": {
       "spentLabel": "Tokens spent",

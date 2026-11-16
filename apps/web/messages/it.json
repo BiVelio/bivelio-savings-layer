@@ -437,7 +437,8 @@
       "intro": "Metti BV-SALA davanti al tuo provider. I tuoi prompt non passano dai server di BiVelio; vengono inviati al provider che configuri.",
       "irACuenta": "Ancora senza piano, o vuoi cambiare i posti? Si fa in Account →",
       "trackerTitle": "La tua messa in funzione",
-      "trackerNote": "Queste tappe le misura il prodotto: selezionarne una apre la sua istruzione, non la segna come completata. Riguardano la connessione Cloud; il motore aperto funziona senza."
+      "trackerNote": "Queste tappe le misura il prodotto: selezionarne una apre la sua istruzione, non la segna come completata. Riguardano la connessione Cloud; il motore aperto funziona senza.",
+      "onThisPage": "In questa pagina"
     },
     "account": {
       "metaTitle": "Account · BiVelio Savings Layer",
@@ -794,7 +795,11 @@
       "planTeamPrice": "{monthly} al mese · {yearly} all'anno · {included} postazioni incluse",
       "summaryLabel": "Stai acquistando",
       "summaryNote": "L'importo esatto, con le imposte, lo conferma Stripe prima del pagamento.",
-      "summary": "{plan} · {seats, plural, one {# postazione} other {# postazioni}}"
+      "summary": "{plan} · {seats, plural, one {# postazione} other {# postazioni}}",
+      "seatsFree": "Liberi",
+      "seatsExtra": "Oltre quanto contrattato",
+      "seatsMore": "Aggiungi una postazione",
+      "seatsLess": "Togli una postazione"
     },
     "referenceLedgerCards": {
       "proven": "comprovato",
@@ -916,7 +921,14 @@
       "invitacionesVacio": "Nessun invito in sospeso.",
       "caduca": "scade il {date}",
       "caduco": "scaduto il {date}",
-      "reenviarAyuda": "«Reinvia» copia l'e-mail e il ruolo nel modulo qui sopra, così puoi inviare di nuovo l'invito."
+      "reenviarAyuda": "«Reinvia» copia l'e-mail e il ruolo nel modulo qui sopra, così puoi inviare di nuovo l'invito.",
+      "accionesDe": "Azioni per {email}",
+      "quitarTitulo": "Rimuovere {email} dall'organizzazione?",
+      "quitarCuerpo": "Non potrà più accedere a questa organizzazione. Le postazioni e la fattura non cambiano.",
+      "quitarConfirmar": "Sì, rimuovi",
+      "avisosLabel": "Notifiche",
+      "avisoCerrar": "Chiudi notifica",
+      "vacioAyuda": "Invita il tuo team con il modulo qui sotto."
     },
     "tokenTotals": {
       "spentLabel": "Token spesi",

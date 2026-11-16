@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 
 import { MAX_ASIENTOS, normalizarAsientos } from "@/lib/billing/asientos";
+import { NumberInput } from "@/vendor/affectui/number-input";
+import { Spinner } from "@/vendor/affectui/spinner";
 
 /**
  * Los 409 del checkout traen un `code`; el texto en inglés que los acompaña es
@@ -17,6 +19,9 @@ const ERRORES_DEL_CHECKOUT: Record<string, string> = {
   suscripcion_en_stripe: "accountPlanStrip.errSuscripcionEnStripe",
   plan_cerrado: "accountPlanStrip.errPlanCerrado",
 };
+
+/** Enteros sin separador de millares: el mismo texto en Node y en el navegador (hidratación). */
+const FORMATO_ASIENTOS: Intl.NumberFormatOptions = { useGrouping: false, maximumFractionDigits: 0 };
 
 /** Lo que el panel VENDE (2026-09-29): Pro y Equipo. La modalidad con comisión está cerrada a clientes nuevos. */
 type PlanEnVenta = "pro" | "equipo";
@@ -116,9 +121,11 @@ export function BillingButtons({
             type="button"
             className="btn btn-primary"
             disabled={loading !== null}
+            aria-busy={loading === "portal" || undefined}
             onClick={() => go("/api/stripe/portal", {}, "portal")}
           >
-            {loading === "portal" ? "…" : t("accountPlanStrip.managePlan")}
+            {loading === "portal" ? <Spinner size={15} /> : null}
+            {t("accountPlanStrip.managePlan")}
           </button>
         </div>
       ) : (
@@ -166,17 +173,21 @@ export function BillingButtons({
               <span className="acct-qty-name">{t("accountPlanStrip.seatsLabel")}</span>
               <span className="acct-unit">{t("accountPlanStrip.seatUnit")}</span>
             </label>
-            <input
+            {/* Number Input de affectUI: − y +, flechas y tecleo libre. Devuelve el
+                número ya acotado a [minimo, MAX_ASIENTOS] al salir o al pulsar un
+                paso, y aquí se guarda como texto en el mismo estado de siempre. */}
+            <NumberInput
               id="bv-seats"
-              className="kt-input acct-qty-input"
-              type="number"
+              className="acct-qty-input"
+              size="lg"
+              locale={locale}
+              formatOptions={FORMATO_ASIENTOS}
               min={minimo}
               max={MAX_ASIENTOS}
               step={1}
-              inputMode="numeric"
-              value={seats}
-              onChange={(e) => setSeats(e.target.value)}
-              onBlur={() => setSeats(String(asientos))}
+              value={asientos}
+              onValueChange={(v) => setSeats(String(v ?? minimo))}
+              stepLabels={{ decrease: t("accountPlanStrip.seatsLess"), increase: t("accountPlanStrip.seatsMore") }}
               aria-describedby="bv-seats-hint"
             />
           </div>
@@ -209,9 +220,8 @@ export function BillingButtons({
               disabled={loading !== null}
               onClick={() => go("/api/stripe/checkout", { plan, period: "monthly", seats: asientos }, "m")}
             >
-              {loading === "m"
-                ? "…"
-                : plan === "equipo"
+              {loading === "m" ? <Spinner size={15} /> : null}
+              {plan === "equipo"
                   ? t("accountPlanStrip.checkoutTeamMonthly", { monthly: precios.equipo.monthly, included: precios.equipo.incluidos })
                   : t("accountPlanStrip.checkoutMonthly", { monthly: precios.pro.monthly })}
             </button>
@@ -221,9 +231,8 @@ export function BillingButtons({
               disabled={loading !== null}
               onClick={() => go("/api/stripe/checkout", { plan, period: "yearly", seats: asientos }, "y")}
             >
-              {loading === "y"
-                ? "…"
-                : plan === "equipo"
+              {loading === "y" ? <Spinner size={15} /> : null}
+              {plan === "equipo"
                   ? t("accountPlanStrip.checkoutTeamYearly", { yearly: precios.equipo.yearly, included: precios.equipo.incluidos })
                   : t("accountPlanStrip.checkoutYearly", { yearly: precios.pro.yearly })}
             </button>

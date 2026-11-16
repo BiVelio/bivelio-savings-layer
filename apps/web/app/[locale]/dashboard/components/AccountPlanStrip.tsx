@@ -10,6 +10,9 @@ import { formatearPrecio } from "@/lib/format/precio";
 import { puede } from "@/lib/org/permisos";
 import { Notice } from "@/app/components/ui";
 import { Link } from "@/i18n/navigation";
+import { Avatar } from "@/vendor/affectui/avatar";
+import { Badge, type BadgeTone } from "@/vendor/affectui/badge";
+import { UsageMeter, type UsageMeterRow } from "@/vendor/affectui/usage-meter";
 
 /** Real account/plan — reads organizations.plan (best-effort), never hardcoded.
  *  Degrades honestly when the schema can't resolve org/seats. */
@@ -89,6 +92,22 @@ export async function AccountPlanStrip({
   const hayUso = seatsUsados != null && seatsUsados > 0;
   const proporcion =
     hayUso && ctx.seats != null && ctx.seats > 0 ? Math.min(100, Math.round((seatsUsados / ctx.seats) * 100)) : null;
+  // EL MEDIDOR (Usage Meter de affectUI, reducido a asientos). Todo sale de dos
+  // lecturas reales: contratados (`ctx.seats`) y en uso (`billable_seats`). Lo
+  // único que se calcula es su resta. Sin lectura no hay barra ni porcentaje.
+  const porEncima = aviso === "exceso" || aviso === "rotado";
+  const exceso = hayUso && ctx.seats != null && seatsUsados > ctx.seats ? seatsUsados - ctx.seats : 0;
+  const libres = hayUso && ctx.seats != null && seatsUsados <= ctx.seats ? ctx.seats - seatsUsados : null;
+  const filasDelMedidor: UsageMeterRow[] = [
+    { label: t("accountPlanStrip.seatsContracted"), value: ctx.seats != null ? num(ctx.seats) : "—", swatch: "plain" },
+    ...(hayUso ? [{ label: t("accountPlanStrip.seatsUsed"), value: num(seatsUsados), swatch: "used" as const }] : []),
+    ...(exceso > 0
+      ? [{ label: t("accountPlanStrip.seatsExtra"), value: num(exceso), swatch: "over" as const }]
+      : libres != null
+        ? [{ label: t("accountPlanStrip.seatsFree"), value: num(libres), swatch: "free" as const }]
+        : []),
+  ];
+  const tonoDelEstado: Record<typeof estado.tono, BadgeTone> = { ok: "success", warn: "warning", danger: "danger", neutro: "neutral" };
   return (
     <div className="cards plan acct">
       <section className="card acct-main" aria-labelledby="acct-plan-titulo">
@@ -98,43 +117,42 @@ export async function AccountPlanStrip({
             <h2 id="acct-plan-titulo" className="acct-plan-name">{planLabel}</h2>
           </div>
           <p className="acct-status" data-tone={estado.tono}>
-            <span className="acct-dot" aria-hidden />
             <span className="sr-only">{t("accountPlanStrip.statusLabel")}: </span>
-            {estado.texto}
+            <Badge size="md" tone={tonoDelEstado[estado.tono]} dot live={ocultarCompra}>
+              {estado.texto}
+            </Badge>
           </p>
         </header>
 
         {/* CONTRATADOS vs EN USO, con la unidad al lado de la cifra: un asiento
             es una máquina o una identidad de servicio, nunca una persona. */}
         {isActive ? (
-          <div className="acct-seats">
-            <div className="acct-seats-head">
-              <h3 className="acct-h">{t("accountPlanStrip.seatsTitle")}</h3>
-              <span className="acct-unit">{t("accountPlanStrip.seatUnit")}</span>
-            </div>
-            <dl className="acct-stats">
-              <div className="acct-stat">
-                <dt>{t("accountPlanStrip.seatsContracted")}</dt>
-                <dd className="acct-fig">{ctx.seats != null ? num(ctx.seats) : "—"}</dd>
-              </div>
-              <div className="acct-stat">
-                <dt>{t("accountPlanStrip.seatsUsed")}</dt>
-                <dd className="acct-fig">{hayUso ? num(seatsUsados) : "—"}</dd>
-                {hayUso ? null : (
-                  <dd className="acct-stat-note">
-                    {seatsUsados == null
-                      ? t("accountPlanStrip.seatsUnknown")
-                      : t("accountPlanStrip.seatsNotYet", { dias: DIAS_ACTIVOS_PARA_CONTAR_ASIENTO })}
-                  </dd>
-                )}
-              </div>
-            </dl>
-            {proporcion != null ? (
-              <div className="acct-meter" data-over={aviso === "exceso" || aviso === "rotado" ? "" : undefined} aria-hidden>
-                <i style={{ width: `${proporcion}%` }} />
-              </div>
-            ) : null}
-          </div>
+          <UsageMeter
+            className="acct-seats"
+            title={t("accountPlanStrip.seatsTitle")}
+            unit={t("accountPlanStrip.seatUnit")}
+            figure={hayUso ? num(seatsUsados) : undefined}
+            figureLabel={t("accountPlanStrip.seatsUsed")}
+            missing={
+              seatsUsados == null
+                ? t("accountPlanStrip.seatsUnknown")
+                : t("accountPlanStrip.seatsNotYet", { dias: DIAS_ACTIVOS_PARA_CONTAR_ASIENTO })
+            }
+            share={
+              proporcion != null && ctx.seats != null && hayUso
+                ? (seatsUsados / ctx.seats).toLocaleString(locale, { style: "percent", maximumFractionDigits: 0 })
+                : undefined
+            }
+            state={porEncima ? "over" : "ok"}
+            ratio={proporcion != null ? proporcion / 100 : null}
+            overRatio={exceso > 0 && hayUso ? exceso / seatsUsados : null}
+            meterLabel={
+              hayUso && ctx.seats != null
+                ? `${t("accountPlanStrip.seatsUsed")}: ${num(seatsUsados)} · ${t("accountPlanStrip.seatsContracted")}: ${num(ctx.seats)}`
+                : undefined
+            }
+            rows={filasDelMedidor}
+          />
         ) : null}
 
         {/* USADOS vs PAGADOS. `seatsUsados != null` se repite aunque
@@ -206,8 +224,13 @@ export async function AccountPlanStrip({
       </section>
 
       <aside className="card acct-side" aria-label={t("account.eyebrow")}>
-        <p className="acct-k">{t("accountPlanStrip.signedInAs")}</p>
-        <p className="acct-email">{email}</p>
+        <div className="acct-id">
+          <Avatar size={40} name={email.split("@")[0]?.replace(/[._+-]+/g, " ")} seed={email} />
+          <div className="acct-id-txt">
+            <p className="acct-k">{t("accountPlanStrip.signedInAs")}</p>
+            <p className="acct-email">{email}</p>
+          </div>
+        </div>
         <dl className="acct-facts">
           {ctx.org ? (
             <div>
@@ -218,7 +241,11 @@ export async function AccountPlanStrip({
           {nombreDelRol ? (
             <div>
               <dt>{t("accountPlanStrip.roleLabel")}</dt>
-              <dd>{nombreDelRol}</dd>
+              <dd>
+                <Badge size="md" tone={ctx.role === "owner" ? "info" : "neutral"}>
+                  {nombreDelRol}
+                </Badge>
+              </dd>
             </div>
           ) : null}
         </dl>

@@ -5,7 +5,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { tarifasDeLosPlanes } from "@/lib/stripe/pricing";
 import { formatearPrecio } from "@/lib/format/precio";
 
-import { ArrowRightIcon, CloudIcon, CodeIcon, LaptopIcon, TerminalIcon } from "@/app/components/icons";
+import { ArrowRightIcon, CloudIcon, CodeIcon, KeyIcon, LaptopIcon, TerminalIcon } from "@/app/components/icons";
 import { SnippetPorSistema } from "@/app/components/SnippetPorSistema";
 // Importadas por fichero y no desde el índice: el índice arrastra `Recibo`, que
 // trae el `Link` de next-intl, y este componente se renderiza también fuera de
@@ -13,6 +13,7 @@ import { SnippetPorSistema } from "@/app/components/SnippetPorSistema";
 import { CodeFrame } from "@/app/components/ui/CodeFrame";
 import { Notice } from "@/app/components/ui/Notice";
 import { puede } from "@/lib/org/permisos";
+import { Badge } from "@/vendor/affectui/badge";
 
 import type { OrgContext } from "../data";
 import { ServiceAccountKeySection } from "./ServiceAccountKeySection";
@@ -189,6 +190,11 @@ export async function InstallLicensePanel({ ctx }: { ctx: OrgContext }) {
             </span>
             <span className="ins-task-t">{t("installLicensePanel.sdkTitle")}</span>
             <span className="ins-task-s">{t("installLicensePanel.sdkLede")}</span>
+            {/* El comando REAL de cada recorrido, a la vista antes de bajar: el
+                mismo `INIT` de la sección, no un texto de adorno. */}
+            <span className="ins-task-cmd" aria-hidden>
+              <span className="ins-task-prompt">$</span> {INIT}
+            </span>
             <span className="ins-task-go" aria-hidden>
               <ArrowRightIcon />
             </span>
@@ -199,6 +205,9 @@ export async function InstallLicensePanel({ ctx }: { ctx: OrgContext }) {
             </span>
             <span className="ins-task-t">{t("installLicensePanel.gatewayTitle")}</span>
             <span className="ins-task-s">{t("installLicensePanel.gatewayLede")}</span>
+            <span className="ins-task-cmd" aria-hidden>
+              <span className="ins-task-prompt">$</span> bvsala {AGENTES[0]![0]}
+            </span>
             <span className="ins-task-go" aria-hidden>
               <ArrowRightIcon />
             </span>
@@ -232,7 +241,9 @@ export async function InstallLicensePanel({ ctx }: { ctx: OrgContext }) {
       <section className="ck-sec ins-sec" id="cloud" aria-labelledby="ins-cloud-title">
         <div className="ins-sec-head">
           <h2 className="t-section" id="ins-cloud-title">{t("installLicensePanel.cloudTitle")}</h2>
-          <span className="tag ins-optional">{t("installLicensePanel.optional")}</span>
+          <Badge size="md" tone="neutral" className="ins-optional">
+            {t("installLicensePanel.optional")}
+          </Badge>
         </div>
         {gestionaClaves ? null : (
           <Notice tono="info" role="note" className="ins-role">
@@ -270,12 +281,15 @@ export async function InstallLicensePanel({ ctx }: { ctx: OrgContext }) {
             })}
           </p>
           <ServiceAccountKeySection />
-          <div className="keycard">
-            <div>
+          <div className="keycard ins-keycard">
+            <span className="ins-key-ic" aria-hidden>
+              <KeyIcon />
+            </span>
+            <div className="ins-key-txt">
               <div className="ck-note">{t("installLicensePanel.currentKey")}</div>
               <div className="k">{ctx.serviceAccount ? `${ctx.serviceAccount.keyPrefix}…` : t("installLicensePanel.noneYet")}</div>
             </div>
-            <div className="ck-note">{t("installLicensePanel.shownOnce")}</div>
+            <div className="ck-note ins-key-once">{t("installLicensePanel.shownOnce")}</div>
           </div>
 
           {/* Por qué esta clave NO es opcional: sin ella nadie recoge la licencia
@@ -357,6 +371,7 @@ export async function InstallLicensePanel({ ctx }: { ctx: OrgContext }) {
             Windows (PowerShell) es `$env:VAR = "…"`. Pestañas con detección.
             OPCIONAL: sin ella, modo Community. */}
         <SnippetPorSistema
+          etiqueta={terminal}
           unix={
             <CodeFrame etiqueta={terminal} copiar={copiar("export BIVELIO_SERVICE_KEY=")}>
               <span>export BIVELIO_SERVICE_KEY=bvk_…  </span>
@@ -410,7 +425,14 @@ export async function InstallLicensePanel({ ctx }: { ctx: OrgContext }) {
             encuentra sin volver atrás. Claves REUTILIZADAS de landing.skill: el
             panel y la landing no pueden contar dos historias del mismo skill. */}
         <p className="ck-note ins-skill">
-          <a href="/api/skill/descargar">{tSkill("aiDescargar")}</a> · {tSkill("ccNota")}
+          <span className="ins-skill-ic" aria-hidden>
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" focusable="false">
+              <path d="M8 2.5v7.5M4.75 7 8 10.25 11.25 7M3 13h10" />
+            </svg>
+          </span>
+          <span>
+            <a href="/api/skill/descargar">{tSkill("aiDescargar")}</a> · {tSkill("ccNota")}
+          </span>
         </p>
       </section>
     </div>

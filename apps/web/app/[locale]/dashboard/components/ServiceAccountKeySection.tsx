@@ -4,6 +4,12 @@ import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
 import { estadoDeLaPrueba, type EstadoDeLaPrueba } from "../prueba-de-clave";
+import { KeyIcon } from "@/app/components/icons";
+import { Badge } from "@/vendor/affectui/badge";
+import { AlertDialog } from "@/vendor/affectui/dialog";
+import { Spinner } from "@/vendor/affectui/spinner";
+import { TextField } from "@/vendor/affectui/text-field";
+
 import { CopyButton } from "./CopyButton";
 
 type CreateState = "idle" | "loading" | "done" | "error";
@@ -160,18 +166,21 @@ export function ServiceAccountKeySection() {
     }
   }
 
+  /** La clave para la que se pide confirmación (o ninguna). */
+  const claveAConfirmar = (claves ?? []).find((c) => c.id === confirmando) ?? null;
+
   return (
-    <div>
+    <div className="sak">
       {cState === "done" ? (
-        <div className="trialkey">
-          <div className="ck-note" style={{ margin: "0 0 6px" }}>
+        <div className="trialkey keyreveal">
+          <div className="ck-note keyreveal-k">
             {t("serviceAccountKeySection.keyLabel", { suffix: prefix ? ` · ${prefix}…` : "" })}
           </div>
-          <div className="code2">
-            <span style={{ wordBreak: "break-all" }}>{token}</span>
+          <div className="code2 keyreveal-v">
+            <span className="keyreveal-token">{token}</span>
             <CopyButton text={token} />
           </div>
-          <p className="ck-note" style={{ marginTop: "6px" }}>
+          <p className="ck-note keyreveal-n">
             {t.rich("serviceAccountKeySection.passHint", {
               code: (chunks) => <code>{chunks}</code>,
               b: (chunks) => <b>{chunks}</b>,
@@ -180,21 +189,16 @@ export function ServiceAccountKeySection() {
         </div>
       ) : (
         <div className="trialkey">
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={mint}
-            disabled={cState === "loading"}
-            style={{ padding: "10px 16px" }}
-          >
+          <button type="button" className="btn btn-primary sak-btn" onClick={mint} disabled={cState === "loading"}>
+            {cState === "loading" ? <Spinner size={15} /> : null}
             {cState === "loading"
               ? t("serviceAccountKeySection.creating")
               : t("serviceAccountKeySection.createKey")}
           </button>
           {cState === "error" ? (
-            <p className="ck-note" style={{ color: "var(--danger)", marginTop: "6px" }}>{cMsg}</p>
+            <p className="ck-note sak-err" role="alert">{cMsg}</p>
           ) : (
-            <p className="ck-note" style={{ marginTop: "6px" }}>
+            <p className="ck-note sak-hint">
               {t("serviceAccountKeySection.hashNote")}
             </p>
           )}
@@ -202,10 +206,12 @@ export function ServiceAccountKeySection() {
       )}
 
       <div className="keytester">
-        <div className="ck-note" style={{ margin: "0 0 6px" }}>{t("serviceAccountKeySection.verifyTitle")}</div>
         <div className="kt-row">
-          <input
-            className="kt-input"
+          <TextField
+            className="kt-field"
+            inputClassName="kt-mono"
+            size="lg"
+            label={t("serviceAccountKeySection.verifyTitle")}
             type="text"
             inputMode="text"
             placeholder="bvk_…"
@@ -217,103 +223,114 @@ export function ServiceAccountKeySection() {
             }}
             spellCheck={false}
             autoComplete="off"
-            aria-label={t("serviceAccountKeySection.testInputAria")}
+            prefix={<KeyIcon />}
           />
           <button
             type="button"
-            className="btn btn-ghost"
+            className="btn btn-ghost sak-btn"
             onClick={test}
             disabled={tState === "testing" || testInput.trim().length === 0}
           >
+            {tState === "testing" ? <Spinner size={15} /> : null}
             {tState === "testing" ? t("serviceAccountKeySection.testing") : t("serviceAccountKeySection.testMyKey")}
           </button>
         </div>
         {tState === "valid" && (
-          <p className="kt-result kt-ok">{t("serviceAccountKeySection.validResult")}</p>
+          <p className="kt-result kt-ok" role="status">{t("serviceAccountKeySection.validResult")}</p>
         )}
         {tState === "noPlan" && (
           <p className="kt-result kt-warn" role="status">
             {t("serviceAccountKeySection.keyNoPlan")}
           </p>
         )}
-        {(tState === "invalid" || tState === "error") && <p className="kt-result kt-bad">✗ {tMsg}</p>}
+        {(tState === "invalid" || tState === "error") && <p className="kt-result kt-bad" role="alert">✗ {tMsg}</p>}
       </div>
 
       {/* CLAVES VIVAS + REVOCACIÓN. Solo se pinta si hay alguna: una lista vacía
           en un panel recién estrenado es ruido. */}
       {listaFallo ? (
-        <p className="ck-note" style={{ marginTop: 10, color: "var(--danger)" }} role="alert">
+        <p className="ck-note sak-err" role="alert">
           {t("serviceAccountKeySection.errList")}
         </p>
       ) : null}
 
       {claves && claves.length > 0 ? (
-        <div className="keytester" style={{ marginTop: 10 }}>
-          <div className="ck-note" style={{ margin: "0 0 6px" }}>
-            {t("serviceAccountKeySection.liveKeysTitle")}
+        <div className="keytester sak-live">
+          <div className="sak-live-head">
+            <span className="sak-live-t">{t("serviceAccountKeySection.liveKeysTitle")}</span>
+            <Badge count={claves.length} />
           </div>
-          {claves.map((c) => (
-            <div key={c.id} className="keycard" style={{ marginTop: 6 }}>
-              <div>
-                <div className="k">{c.key_prefix}… <span style={{ opacity: .7 }}>· {c.label}</span></div>
-                <div className="ck-note" style={{ margin: 0 }}>
-                  {c.last_used_at
-                    ? t("serviceAccountKeySection.lastUsed", { when: fecha(c.last_used_at) })
-                    : t("serviceAccountKeySection.neverUsed")}
-                </div>
-              </div>
-              {confirmando === c.id ? (
-                /* Dos pasos: revocar no tiene vuelta atrás y era un solo clic. */
-                <span style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
-                  <span className="ck-note" style={{ margin: 0 }}>
-                    {t("serviceAccountKeySection.revokeConfirm")}
-                  </span>
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    onClick={() => void revocar(c)}
-                    disabled={revocando !== null}
-                    aria-label={t("serviceAccountKeySection.revokeYesAria", { prefix: c.key_prefix })}
-                  >
-                    {revocando === c.id
-                      ? t("serviceAccountKeySection.revoking")
-                      : t("serviceAccountKeySection.revokeYes")}
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-ghost"
-                    onClick={() => setConfirmando(null)}
-                    disabled={revocando !== null}
-                  >
-                    {t("serviceAccountKeySection.revokeNo")}
-                  </button>
+          <ul className="sak-list">
+            {claves.map((c) => (
+              <li key={c.id} className="sak-row">
+                <span className="ins-key-ic" aria-hidden>
+                  <KeyIcon />
                 </span>
-              ) : (
+                <div className="sak-row-txt">
+                  <div className="k">
+                    {c.key_prefix}… <span className="sak-row-label">· {c.label}</span>
+                  </div>
+                  <Badge tone={c.last_used_at ? "success" : "neutral"} dot>
+                    {c.last_used_at
+                      ? t("serviceAccountKeySection.lastUsed", { when: fecha(c.last_used_at) })
+                      : t("serviceAccountKeySection.neverUsed")}
+                  </Badge>
+                </div>
+                {/* Dos pasos: revocar no tiene vuelta atrás. El segundo es el
+                    diálogo de abajo; `revocar` solo corre desde su «Sí, revocar». */}
                 <button
                   type="button"
-                  className="btn btn-ghost"
+                  className="btn btn-ghost sak-revoke"
                   onClick={() => setConfirmando(c.id)}
                   disabled={revocando !== null}
+                  aria-haspopup="dialog"
                   /* Sin esto, tres botones «Revocar» son indistinguibles para un
                      lector de pantalla — y el error se paga borrando la clave que
                      no era. */
                   aria-label={t("serviceAccountKeySection.revokeAria", { prefix: c.key_prefix })}
                 >
-                  {t("serviceAccountKeySection.revoke")}
+                  {revocando === c.id ? t("serviceAccountKeySection.revoking") : t("serviceAccountKeySection.revoke")}
                 </button>
-              )}
-            </div>
-          ))}
-          <p className="ck-note" style={{ marginTop: 6 }}>
+              </li>
+            ))}
+          </ul>
+          <p className="ck-note sak-hint">
             {t("serviceAccountKeySection.revokeNote")}
           </p>
           {rMsg ? (
-            <p className="ck-note" style={{ color: "var(--danger)", marginTop: 6 }} role="alert">
+            <p className="ck-note sak-err" role="alert">
               {rMsg}
             </p>
           ) : null}
         </div>
       ) : null}
+
+      {/* LA CONFIRMACIÓN. Mismo `revocar(c)` de siempre, y solo tras el «Sí,
+          revocar» explícito; Escape o «Cancelar» no tocan nada. El diálogo queda
+          abierto y ocupado mientras la petición está en curso. */}
+      <AlertDialog
+        danger
+        open={claveAConfirmar !== null}
+        onOpenChange={(abierto) => {
+          if (!abierto) setConfirmando(null);
+        }}
+        title={t("serviceAccountKeySection.revokeConfirm")}
+        description={t("serviceAccountKeySection.revokeNote")}
+        confirmLabel={t("serviceAccountKeySection.revokeYes")}
+        cancelLabel={t("serviceAccountKeySection.revokeNo")}
+        onConfirm={() => (claveAConfirmar ? revocar(claveAConfirmar) : undefined)}
+      >
+        {claveAConfirmar ? (
+          <p className="sak-dialog-key">
+            <span className="ins-key-ic" aria-hidden>
+              <KeyIcon />
+            </span>
+            <span className="k">
+              {claveAConfirmar.key_prefix}… <span className="sak-row-label">· {claveAConfirmar.label}</span>
+            </span>
+          </p>
+        ) : null}
+      </AlertDialog>
     </div>
   );
 }

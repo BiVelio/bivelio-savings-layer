@@ -437,7 +437,8 @@
       "intro": "Col·loca BV-SALA davant del teu proveïdor. Els teus prompts no passen pels servidors de BiVelio; s'envien al proveïdor que configuris.",
       "irACuenta": "Encara sense pla, o vols canviar els seients? Es fa a Compte →",
       "trackerTitle": "La teva posada en marxa",
-      "trackerNote": "Aquestes fites les mesura el producte: prémer-ne una n'obre la instrucció, no la marca com a feta. Són les de la connexió Cloud; el motor obert funciona sense elles."
+      "trackerNote": "Aquestes fites les mesura el producte: prémer-ne una n'obre la instrucció, no la marca com a feta. Són les de la connexió Cloud; el motor obert funciona sense elles.",
+      "onThisPage": "En aquesta pàgina"
     },
     "account": {
       "metaTitle": "Compte · BiVelio Savings Layer",
@@ -794,7 +795,11 @@
       "planTeamPrice": "{monthly} al mes · {yearly} a l'any · {included} seients inclosos",
       "summaryLabel": "Compraràs",
       "summaryNote": "L'import exacte, amb impostos, el confirma Stripe abans de pagar.",
-      "summary": "{plan} · {seats, plural, one {# seient} other {# seients}}"
+      "summary": "{plan} · {seats, plural, one {# seient} other {# seients}}",
+      "seatsFree": "Lliures",
+      "seatsExtra": "Per sobre del que s'ha contractat",
+      "seatsMore": "Afegeix un seient",
+      "seatsLess": "Treu un seient"
     },
     "referenceLedgerCards": {
       "proven": "comprovat",
@@ -916,7 +921,14 @@
       "invitacionesVacio": "No hi ha invitacions pendents.",
       "caduca": "caduca el {date}",
       "caduco": "va caducar el {date}",
-      "reenviarAyuda": "«Reenviar» copia el correu i el perfil al formulari de dalt perquè enviï la invitació de nou."
+      "reenviarAyuda": "«Reenviar» copia el correu i el perfil al formulari de dalt perquè enviï la invitació de nou.",
+      "accionesDe": "Accions per a {email}",
+      "quitarTitulo": "Vols treure {email} de l'organització?",
+      "quitarCuerpo": "Ja no podrà entrar en aquesta organització. No canvia els seients ni la factura.",
+      "quitarConfirmar": "Sí, treu",
+      "avisosLabel": "Avisos",
+      "avisoCerrar": "Tanca l'avís",
+      "vacioAyuda": "Convida el teu equip amb el formulari de sota."
     },
     "tokenTotals": {
       "spentLabel": "Tokens gastats",

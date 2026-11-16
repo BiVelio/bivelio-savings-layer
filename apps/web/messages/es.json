@@ -437,7 +437,8 @@
       "intro": "Coloca BV-SALA delante de tu proveedor. Tus prompts no pasan por los servidores de BiVelio; se envían al proveedor que configures.",
       "irACuenta": "¿Todavía sin plan, o quieres cambiar los asientos? Se hace en Cuenta →",
       "trackerTitle": "Tu puesta en marcha",
-      "trackerNote": "Estos hitos los mide el producto: pulsar uno abre su instrucción, no lo marca como hecho. Son los de la conexión Cloud; el motor abierto funciona sin ellos."
+      "trackerNote": "Estos hitos los mide el producto: pulsar uno abre su instrucción, no lo marca como hecho. Son los de la conexión Cloud; el motor abierto funciona sin ellos.",
+      "onThisPage": "En esta página"
     },
     "account": {
       "metaTitle": "Cuenta · BiVelio Savings Layer",
@@ -794,7 +795,11 @@
       "planTeamPrice": "{monthly} al mes · {yearly} al año · {included} asientos incluidos",
       "summaryLabel": "Vas a comprar",
       "summaryNote": "El importe exacto, con impuestos, lo confirma Stripe antes de pagar.",
-      "summary": "{plan} · {seats, plural, one {# asiento} other {# asientos}}"
+      "summary": "{plan} · {seats, plural, one {# asiento} other {# asientos}}",
+      "seatsFree": "Libres",
+      "seatsExtra": "Por encima de lo contratado",
+      "seatsMore": "Añadir un asiento",
+      "seatsLess": "Quitar un asiento"
     },
     "referenceLedgerCards": {
       "proven": "comprobado",
@@ -916,7 +921,14 @@
       "invitacionesVacio": "No hay invitaciones pendientes.",
       "caduca": "caduca el {date}",
       "caduco": "caducó el {date}",
-      "reenviarAyuda": "«Reenviar» copia el correo y el perfil al formulario de arriba para que envíe la invitación de nuevo."
+      "reenviarAyuda": "«Reenviar» copia el correo y el perfil al formulario de arriba para que envíe la invitación de nuevo.",
+      "accionesDe": "Acciones para {email}",
+      "quitarTitulo": "¿Quitar a {email} de la organización?",
+      "quitarCuerpo": "Dejará de poder entrar en esta organización. No cambia sus asientos ni su factura.",
+      "quitarConfirmar": "Sí, quitar",
+      "avisosLabel": "Avisos",
+      "avisoCerrar": "Cerrar aviso",
+      "vacioAyuda": "Invite a su equipo con el formulario de abajo."
     },
     "tokenTotals": {
       "spentLabel": "Tokens gastados",

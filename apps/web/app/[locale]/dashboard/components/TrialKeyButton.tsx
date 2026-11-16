@@ -3,6 +3,8 @@
 import { useTranslations, useLocale } from "next-intl";
 import { useState } from "react";
 
+import { Spinner } from "@/vendor/affectui/spinner";
+
 import { CopyButton } from "./CopyButton";
 
 type State = "idle" | "loading" | "done" | "error";
@@ -83,19 +85,19 @@ export function TrialKeyButton({
 
   if (state === "done") {
     return (
-      <div className="trialkey">
-        <div className="ck-note" style={{ margin: "0 0 6px" }}>
+      <div className="trialkey keyreveal">
+        <div className="ck-note keyreveal-k">
           {t("trialKeyButton.keyLabel", {
             suffix: expiresAt
               ? t("trialKeyButton.validUntil", { date: new Date(expiresAt).toLocaleDateString(locale) })
               : "",
           })}
         </div>
-        <div className="code2">
-          <span style={{ wordBreak: "break-all" }}>{token}</span>
+        <div className="code2 keyreveal-v">
+          <span className="keyreveal-token">{token}</span>
           <CopyButton text={token} />
         </div>
-        <p className="ck-note" style={{ marginTop: "6px" }}>
+        <p className="ck-note keyreveal-n">
           {t.rich("trialKeyButton.pasteHint", {
             code: () => <code>createSavingsLayer({"{ licenseKey }"})</code>,
           })}
@@ -106,19 +108,14 @@ export function TrialKeyButton({
 
   return (
     <div className="trialkey">
-      <button
-        type="button"
-        className="btn btn-primary"
-        onClick={getKey}
-        disabled={state === "loading"}
-        style={{ padding: "10px 16px" }}
-      >
+      <button type="button" className="btn btn-primary sak-btn" onClick={getKey} disabled={state === "loading"}>
+        {state === "loading" ? <Spinner size={15} /> : null}
         {state === "loading" ? t("trialKeyButton.issuing") : t("trialKeyButton.getKey")}
       </button>
       {state === "error" ? (
-        <p className="ck-note" style={{ color: "var(--danger)", marginTop: "6px" }}>{msg}</p>
+        <p className="ck-note sak-err" role="alert">{msg}</p>
       ) : (
-        <p className="ck-note" style={{ marginTop: "6px" }}>
+        <p className="ck-note sak-hint">
           {t("trialKeyButton.priceNote", { monthly, yearly })}
         </p>
       )}

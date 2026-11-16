@@ -2,7 +2,8 @@ import { getTranslations } from "next-intl/server";
 
 import { PageHead } from "@/app/components/app/PageHead";
 import { Link } from "@/i18n/navigation";
-import { ProgressTracker } from "@/vendor/affectui/progress-tracker-clean";
+import { CloudIcon, CodeIcon, TerminalIcon } from "@/app/components/icons";
+import { SetupGuide, type SetupGroup } from "@/vendor/affectui/setup-guide";
 
 import { activationSteps, type StepState } from "../data";
 import { loadDashboard } from "../load";
@@ -42,42 +43,64 @@ export default async function InstallPage() {
     : [];
   const sinLeer = steps.some((s) => s.status === "unavailable");
   const hechos = steps.filter((s) => s.status === "done").length;
-  return (
-    <div className="ins-page">
-      <PageHead eyebrow={t("install.eyebrow")} title={t("install.title")} sub={t("install.intro")} />
-      {steps.length > 0 ? (
-        <div className="ins-progress">
-          <ProgressTracker
-            layout="steps"
-            headingAs="h2"
-            linkAs={Link}
-            title={t("install.trackerTitle")}
-            countLabel={
-              sinLeer
-                ? t("instrumentationSpine.statusUnavailable")
-                : t("instrumentationSpine.count", { done: hechos, total: steps.length })
-            }
-            done={sinLeer ? 0 : hechos}
-            total={steps.length}
-            steps={steps.map((s) => ({
+  const estadoDe = (s: StepState) =>
+    s.status === "done"
+      ? t("instrumentationSpine.statusDone")
+      : s.status === "current"
+        ? t("instrumentationSpine.statusNext")
+        : s.status === "unavailable"
+          ? t("instrumentationSpine.statusUnavailable")
+          : t("instrumentationSpine.statusPending");
+  // LA GUÍA, al lado del contenido y siempre a la vista: con sesión, los cinco
+  // hitos MEDIDOS (solo lectura) y, debajo, las tres secciones de la página;
+  // sin sesión, solo las secciones. Sin lectura fiable no hay barra ni recuento.
+  const secciones: SetupGroup[] = [
+    { id: "cloud", title: t("installLicensePanel.cloudTitle"), href: "#cloud", icon: <CloudIcon /> },
+    { id: "sdk", title: t("installLicensePanel.sdkTitle"), href: "#sdk", icon: <CodeIcon /> },
+    { id: "gateway", title: t("installLicensePanel.gatewayTitle"), href: "#gateway", icon: <TerminalIcon /> },
+  ];
+  const grupos: SetupGroup[] =
+    steps.length > 0
+      ? [
+          {
+            id: "hitos",
+            tasks: steps.map((s) => ({
               id: s.id,
               label: s.label,
               status: s.status,
-              statusLabel:
-                s.status === "done"
-                  ? t("instrumentationSpine.statusDone")
-                  : s.status === "current"
-                    ? t("instrumentationSpine.statusNext")
-                    : s.status === "unavailable"
-                      ? t("instrumentationSpine.statusUnavailable")
-                      : t("instrumentationSpine.statusPending"),
+              statusLabel: estadoDe(s),
               href: ANCLA_DEL_HITO[s.id],
-            }))}
-            footer={sinLeer ? t("instrumentationSpine.unavailableHint") : t("install.trackerNote")}
+            })),
+          },
+          { ...secciones[0]!, caption: t("install.onThisPage") },
+          ...secciones.slice(1),
+        ]
+      : secciones;
+  return (
+    <div className="ins-page">
+      <PageHead eyebrow={t("install.eyebrow")} title={t("install.title")} sub={t("install.intro")} />
+      <div className="ins-layout">
+        <aside className="ins-rail">
+          <SetupGuide
+            aria-label={steps.length > 0 ? t("install.trackerTitle") : t("install.onThisPage")}
+            title={steps.length > 0 ? t("install.trackerTitle") : t("install.onThisPage")}
+            linkAs={Link}
+            groups={grupos}
+            progress={
+              steps.length > 0 && !sinLeer
+                ? {
+                    done: hechos,
+                    total: steps.length,
+                    label: t("instrumentationSpine.count", { done: hechos, total: steps.length }),
+                    countLabel: t("instrumentationSpine.count", { done: hechos, total: steps.length }),
+                  }
+                : undefined
+            }
+            footer={steps.length === 0 ? undefined : sinLeer ? t("instrumentationSpine.unavailableHint") : t("install.trackerNote")}
           />
-        </div>
-      ) : null}
-      <InstallLicensePanel ctx={ctx} />
+        </aside>
+        <InstallLicensePanel ctx={ctx} />
+      </div>
     </div>
   );
 }

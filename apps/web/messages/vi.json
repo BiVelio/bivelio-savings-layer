@@ -437,7 +437,8 @@
       "intro": "Đặt BV-SALA trước nhà cung cấp của bạn. Prompt của bạn không đi qua máy chủ của BiVelio; chúng được gửi đến nhà cung cấp mà bạn cấu hình.",
       "irACuenta": "Chưa có gói, hoặc muốn thay đổi số ghế? Bạn làm việc đó trong Tài khoản →",
       "trackerTitle": "Quá trình thiết lập của bạn",
-      "trackerNote": "Các mốc này do sản phẩm đo: chọn một mốc sẽ mở hướng dẫn của nó chứ không đánh dấu là xong. Chúng thuộc về kết nối Cloud; engine mở vẫn chạy mà không cần chúng."
+      "trackerNote": "Các mốc này do sản phẩm đo: chọn một mốc sẽ mở hướng dẫn của nó chứ không đánh dấu là xong. Chúng thuộc về kết nối Cloud; engine mở vẫn chạy mà không cần chúng.",
+      "onThisPage": "Trên trang này"
     },
     "account": {
       "metaTitle": "Tài khoản · BiVelio Savings Layer",
@@ -794,7 +795,11 @@
       "planTeamPrice": "{monthly} mỗi tháng · {yearly} mỗi năm · gồm {included} ghế",
       "summaryLabel": "Bạn sắp mua",
       "summaryNote": "Số tiền chính xác, gồm thuế, do Stripe xác nhận trước khi bạn thanh toán.",
-      "summary": "{plan} · {seats, plural, other {# ghế}}"
+      "summary": "{plan} · {seats, plural, other {# ghế}}",
+      "seatsFree": "Còn trống",
+      "seatsExtra": "Vượt mức đã ký",
+      "seatsMore": "Thêm một ghế",
+      "seatsLess": "Bớt một ghế"
     },
     "referenceLedgerCards": {
       "proven": "đã chứng minh",
@@ -916,7 +921,14 @@
       "invitacionesVacio": "Không có lời mời nào đang chờ.",
       "caduca": "hết hạn {date}",
       "caduco": "đã hết hạn {date}",
-      "reenviarAyuda": "«Gửi lại» sao chép email và vai trò vào biểu mẫu phía trên để bạn gửi lại lời mời."
+      "reenviarAyuda": "«Gửi lại» sao chép email và vai trò vào biểu mẫu phía trên để bạn gửi lại lời mời.",
+      "accionesDe": "Thao tác cho {email}",
+      "quitarTitulo": "Xóa {email} khỏi tổ chức?",
+      "quitarCuerpo": "Người này sẽ không còn vào được tổ chức này. Số ghế và hoá đơn của bạn không thay đổi.",
+      "quitarConfirmar": "Có, xóa",
+      "avisosLabel": "Thông báo",
+      "avisoCerrar": "Đóng thông báo",
+      "vacioAyuda": "Mời nhóm của bạn bằng biểu mẫu bên dưới."
     },
     "tokenTotals": {
       "spentLabel": "Token đã dùng",
