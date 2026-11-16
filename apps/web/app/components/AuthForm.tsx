@@ -78,7 +78,7 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
         // así que un redirectTo SIN query string produce una URL malformada. Y
         // además conserva el idioma, igual que ya hace la rama de recuperación.
         const nextSignup = encodeURIComponent(destino ?? `/${locale}/dashboard`);
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -86,7 +86,26 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
           },
         });
         if (error) throw error;
-        setMsg({ type: "info", text: t("checkEmail") });
+        // CUENTA EXISTENTE: Supabase no crea nada y NO envía el correo de
+        // confirmación — `identities` llega vacío. Decirle «revisa tu correo» a
+        // quien olvidó su cuenta es engañoso (dueño, 2026-11-16): se le dice la
+        // verdad Y se le manda un enlace de acceso (magic link) para que entre
+        // sin recordar la contraseña. Sin creación de cuenta (`shouldCreateUser:
+        // false`), así un tercero no fabrica cuentas ajenas ni saca más
+        // información de la que ya tenía: solo el dueño real recibe el enlace.
+        if (data.user && data.user.identities && data.user.identities.length === 0) {
+          const { error: otpError } = await supabase.auth.signInWithOtp({
+            email,
+            options: {
+              shouldCreateUser: false,
+              emailRedirectTo: `${window.location.origin}/auth/callback?next=${nextSignup}`,
+            },
+          });
+          if (otpError) throw otpError;
+          setMsg({ type: "info", text: t("existingAccountLoginLink") });
+        } else {
+          setMsg({ type: "info", text: t("checkEmail") });
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
