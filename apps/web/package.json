@@ -26,7 +26,8 @@
     "@types/react-dom": "^19.0.0",
     "playwright-core": "1.56.1",
     "sharp": "0.34.5",
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "vitest": "4.1.12"
   },
   "packageManager": "pnpm@10.17.1",
   "engines": {
