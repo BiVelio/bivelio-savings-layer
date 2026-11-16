@@ -843,7 +843,7 @@
     },
     "cascade": {
       "title": "Eksekusi termurah menang",
-      "footnote": "Setiap tuas masuk ke buku besarnya sendiri, dan buku-buku itu tidak pernah dijumlahkan. Di baterai ini penghematan berasal dari permintaan berulang yang dilayani SDK tanpa memanggil penyedia dan, pada Claude, dari efek cache prefiks yang diaktifkan oleh cache_control di cabang B. Paket npm tidak menyertakan kompresor."
+      "footnote": "Setiap tuas masuk ke buku besarnya sendiri, dan buku-buku itu tidak pernah dijumlahkan. Di baterai ini penghematan berasal dari permintaan berulang yang dilayani SDK tanpa memanggil penyedia dan, pada Claude, dari kontras deskriptif harga cache (pembacaan cache cabang B dinilai terhadap harga input normal). Paket npm tidak menyertakan kompresor."
     },
     "explica": {
       "eyebrow": "Dengan bahasa sehari-hari",
@@ -883,7 +883,7 @@
       "eyebrow": "Penghitungan yang jujur",
       "title": "Setiap jenis penghematan dihitung terpisah — agar tak ada angka yang digelembungkan.",
       "body": "Setiap SavingsReport membagi penghematan ke dalam empat buku besar — panggilan yang dihindari, teks yang dihapus, teks yang dikompresi, dan diskon cache penyedia Anda sendiri — dan tidak pernah menjumlahkannya menjadi satu angka pemasaran.",
-      "providerNote": "Di bangku uji publik ({fecha}), penghematan SDK yang terpasang berasal dari buku besar pertama — permintaan berulang yang dilayani tanpa memanggil penyedia — dan, pada Claude, dari yang keempat melalui efek cache prefiks yang diaktifkan oleh cache_control di cabang B, bukan diskon penyedia yang sudah ada sebelumnya. Paket npm tidak menyertakan kompresor. Buku besar tanpa angka yang diterbitkan dijelaskan di sini, tidak diiklankan."
+      "providerNote": "Di bangku uji publik ({fecha}), penghematan SDK yang terpasang berasal dari buku besar pertama — permintaan berulang yang dilayani tanpa memanggil penyedia — dan, pada Claude, dari yang keempat melalui kontras deskriptif harga cache (pembacaan cabang B dinilai terhadap harga input normal), bukan efek kausal yang diidentifikasi terpisah maupun diskon penyedia yang sudah ada sebelumnya. Paket npm tidak menyertakan kompresor. Buku besar tanpa angka yang diterbitkan dijelaskan di sini, tidak diiklankan."
     },
     "ledgers": [
       {
@@ -1144,7 +1144,7 @@
       "titulo": "Bangku uji publik · langsung terhadap penyedia · {fecha}",
       "conRepeticiones": "biaya lebih rendah menurut harga daftar berversi (interval 95%: {bajo} hingga {alto}) pada aliran dengan {rep} permintaan berupa pengulangan persis — {familias} keluarga / {peticiones} permintaan per cabang, {bateria}, SDK {version}",
       "sinRepeticiones": "pada lalu lintas tanpa pengulangan (MT-Bench, BFCL): tidak dapat dibedakan dari nol",
-      "anthropic": "aliran yang diperkecil, berbeda dari aliran OpenAI: {familias} keluarga / {peticiones} permintaan per cabang (interval 95%: {bajo} hingga {alto}). Sekitar {prefijo} biaya harga daftar A merupakan efek cache prefiks yang diaktifkan oleh cache_control di cabang B, bukan diskon Anthropic yang sudah ada sebelumnya",
+      "anthropic": "aliran yang diperkecil, berbeda dari aliran OpenAI: {familias} keluarga / {peticiones} permintaan per cabang (interval 95%: {bajo} hingga {alto}). Sekitar {prefijo} biaya harga daftar A merupakan kontras deskriptif bersih harga cache (pembacaan cache cabang B dinilai terhadap harga input normal), bukan efek kausal yang diidentifikasi terpisah maupun diskon Anthropic yang sudah ada sebelumnya",
       "pie": "Bergantung pada seberapa sering lalu lintas Anda berulang. Setiap baterai, dengan laporan lengkapnya: <bench>bangku uji publik</bench>."
     }
   },

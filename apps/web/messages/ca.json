@@ -843,7 +843,7 @@
     },
     "cascade": {
       "title": "Guanya l'execució més barata",
-      "footnote": "Cada palanca cau al seu propi llibre, i els llibres no se sumen mai. En aquesta bateria l'estalvi va sortir de peticions repetides que l'SDK va servir sense cridar el proveïdor i, a Claude, d'un efecte de memòria cau de prefix habilitat per cache_control al braç B. El paquet d'npm no porta compressor."
+      "footnote": "Cada palanca cau al seu propi llibre, i els llibres no se sumen mai. En aquesta bateria l'estalvi va sortir de peticions repetides que l'SDK va servir sense cridar el proveïdor i, a Claude, d'un contrast descriptiu de preus de memòria cau (les lectures de memòria cau del braç B valorades davant del preu normal d'entrada). El paquet d'npm no porta compressor."
     },
     "explica": {
       "eyebrow": "En paraules normals",
@@ -883,7 +883,7 @@
       "eyebrow": "Comptabilitat honesta",
       "title": "Cada tipus d'estalvi, comptat a part — perquè cap xifra s'infli.",
       "body": "Cada SavingsReport separa l'estalvi en quatre llibres —crides evitades, text eliminat, text comprimit i el descompte de memòria cau del teu propi proveïdor— i no els suma mai en una xifra de màrqueting.",
-      "providerNote": "Al banc públic ({fecha}), el que va estalviar l'SDK instal·lat va sortir del primer llibre —peticions repetides servides sense cridar el proveïdor— i, a Claude, del quart mitjançant un efecte de memòria cau de prefix habilitat per cache_control al braç B, no un descompte preexistent del proveïdor. El paquet d'npm no porta compressor. Un llibre sense xifra publicada es descriu aquí, no s'anuncia."
+      "providerNote": "Al banc públic ({fecha}), el que va estalviar l'SDK instal·lat va sortir del primer llibre —peticions repetides servides sense cridar el proveïdor— i, a Claude, del quart mitjançant un contrast descriptiu de preus de memòria cau (les lectures del braç B valorades davant del preu normal d'entrada), no un efecte causal identificat per separat ni un descompte preexistent del proveïdor. El paquet d'npm no porta compressor. Un llibre sense xifra publicada es descriu aquí, no s'anuncia."
     },
     "ledgers": [
       {
@@ -1144,7 +1144,7 @@
       "titulo": "Banc públic · en viu contra el proveïdor · {fecha}",
       "conRepeticiones": "menor cost a preus de llista versionats (interval del 95 %: de {bajo} a {alto}) en un flux on el {rep} de les peticions són repeticions exactes — {familias} famílies / {peticiones} peticions per braç, {bateria}, SDK {version}",
       "sinRepeticiones": "amb trànsit sense repeticions (MT-Bench, BFCL): indistingible de zero",
-      "anthropic": "flux reduït, diferent del d'OpenAI: {familias} famílies / {peticiones} peticions per braç (interval del 95 %: de {bajo} a {alto}). Prop de {prefijo} del cost d'A a preus de llista és un efecte de memòria cau de prefix habilitat per cache_control al braç B, no un descompte preexistent d'Anthropic",
+      "anthropic": "flux reduït, diferent del d'OpenAI: {familias} famílies / {peticiones} peticions per braç (interval del 95 %: de {bajo} a {alto}). Prop de {prefijo} del cost d'A a preus de llista és un contrast descriptiu net de preus de memòria cau (les lectures del braç B valorades davant del preu normal d'entrada), no un efecte causal identificat per separat ni un descompte preexistent d'Anthropic",
       "pie": "Depèn de quant es repeteixi el teu trànsit. Cada bateria, amb el seu informe complet: <bench>banc públic</bench>."
     }
   },

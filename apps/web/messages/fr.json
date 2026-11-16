@@ -843,7 +843,7 @@
     },
     "cascade": {
       "title": "L'exécution la moins chère l'emporte",
-      "footnote": "Chaque levier tombe dans son propre registre, et les registres ne s'additionnent jamais. Dans cette batterie, l'économie est venue des requêtes répétées que le SDK a servies sans appeler le fournisseur et, sur Claude, d'un effet du cache de préfixe activé par cache_control dans le bras B. Le paquet npm n'embarque aucun compresseur."
+      "footnote": "Chaque levier tombe dans son propre registre, et les registres ne s'additionnent jamais. Dans cette batterie, l'économie est venue des requêtes répétées que le SDK a servies sans appeler le fournisseur et, sur Claude, d'un contraste descriptif de tarification du cache (les lectures de cache du bras B valorisées face au prix d'entrée normal). Le paquet npm n'embarque aucun compresseur."
     },
     "explica": {
       "eyebrow": "En mots simples",
@@ -883,7 +883,7 @@
       "eyebrow": "Comptabilité honnête",
       "title": "Chaque type d'économie, compté à part — pour qu'aucun chiffre ne soit gonflé.",
       "body": "Chaque SavingsReport répartit l'économie en quatre registres — appels évités, texte retiré, texte compressé et la remise de cache de votre propre fournisseur — et ne les additionne jamais en un chiffre marketing.",
-      "providerNote": "Sur le banc public ({fecha}), ce qu'a économisé le SDK installé est venu du premier registre — des requêtes répétées servies sans appeler le fournisseur — et, sur Claude, du quatrième grâce à un effet du cache de préfixe activé par cache_control dans le bras B, et non à une remise préexistante du fournisseur. Le paquet npm n'embarque aucun compresseur. Un registre sans chiffre publié est décrit ici, pas annoncé."
+      "providerNote": "Sur le banc public ({fecha}), ce qu'a économisé le SDK installé est venu du premier registre — des requêtes répétées servies sans appeler le fournisseur — et, sur Claude, du quatrième grâce à un contraste descriptif de tarification du cache (les lectures du bras B valorisées face au prix d'entrée normal), et non à un effet causal identifié séparément ni à une remise préexistante du fournisseur. Le paquet npm n'embarque aucun compresseur. Un registre sans chiffre publié est décrit ici, pas annoncé."
     },
     "ledgers": [
       {
@@ -1144,7 +1144,7 @@
       "titulo": "Banc public · en direct contre le fournisseur · {fecha}",
       "conRepeticiones": "de coût en moins aux tarifs catalogue versionnés (intervalle à 95 % : de {bajo} à {alto}) sur un flux où {rep} des requêtes sont des répétitions exactes — {familias} familles / {peticiones} requêtes par bras, {bateria}, SDK {version}",
       "sinRepeticiones": "sur un trafic sans répétitions (MT-Bench, BFCL) : impossible à distinguer de zéro",
-      "anthropic": "flux réduit, différent de celui d'OpenAI : {familias} familles / {peticiones} requêtes par bras (intervalle à 95 % : de {bajo} à {alto}). Environ {prefijo} du coût catalogue de A est un effet du cache de préfixe activé par cache_control dans le bras B, et non une remise Anthropic préexistante",
+      "anthropic": "flux réduit, différent de celui d'OpenAI : {familias} familles / {peticiones} requêtes par bras (intervalle à 95 % : de {bajo} à {alto}). Environ {prefijo} du coût catalogue de A est un contraste descriptif net de tarification du cache (les lectures du bras B valorisées face au prix d'entrée normal), et non un effet causal identifié séparément ni une remise Anthropic préexistante",
       "pie": "Cela dépend de la part de votre trafic qui se répète. Chaque batterie, avec son rapport complet : <bench>banc public</bench>."
     }
   },

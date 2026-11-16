@@ -843,7 +843,7 @@
     },
     "cascade": {
       "title": "Ganha a execução mais barata",
-      "footnote": "Cada alavanca cai no seu próprio livro, e os livros nunca se somam. Nesta bateria a poupança veio de pedidos repetidos que o SDK serviu sem chamar o fornecedor e, no Claude, de um efeito da cache de prefixo ativado por cache_control no braço B. O pacote npm não traz compressor."
+      "footnote": "Cada alavanca cai no seu próprio livro, e os livros nunca se somam. Nesta bateria a poupança veio de pedidos repetidos que o SDK serviu sem chamar o fornecedor e, no Claude, de um contraste descritivo de preços de cache (as leituras de cache do braço B valorizadas face ao preço normal de entrada). O pacote npm não traz compressor."
     },
     "explica": {
       "eyebrow": "Em palavras simples",
@@ -883,7 +883,7 @@
       "eyebrow": "Contabilidade honesta",
       "title": "Cada tipo de poupança, contado à parte — para nenhuma cifra inchar.",
       "body": "Cada SavingsReport separa a poupança em quatro livros — chamadas evitadas, texto removido, texto comprimido e o desconto de cache do teu próprio fornecedor — e nunca os soma num número de marketing.",
-      "providerNote": "No banco público ({fecha}), o que o SDK instalado poupou veio do primeiro livro — pedidos repetidos servidos sem chamar o fornecedor — e, no Claude, do quarto através de um efeito da cache de prefixo ativado por cache_control no braço B, não de um desconto preexistente do fornecedor. O pacote npm não traz compressor. Um livro sem valor publicado é descrito aqui, não anunciado."
+      "providerNote": "No banco público ({fecha}), o que o SDK instalado poupou veio do primeiro livro — pedidos repetidos servidos sem chamar o fornecedor — e, no Claude, do quarto através de um contraste descritivo de preços de cache (as leituras do braço B valorizadas face ao preço normal de entrada), não de um efeito causal identificado separadamente nem de um desconto preexistente do fornecedor. O pacote npm não traz compressor. Um livro sem valor publicado é descrito aqui, não anunciado."
     },
     "ledgers": [
       {
@@ -1144,7 +1144,7 @@
       "titulo": "Banco público · ao vivo contra o fornecedor · {fecha}",
       "conRepeticiones": "menor custo a preços de tabela versionados (intervalo de 95%: de {bajo} a {alto}) num fluxo onde {rep} dos pedidos são repetições exatas — {familias} famílias / {peticiones} pedidos por braço, {bateria}, SDK {version}",
       "sinRepeticiones": "com tráfego sem repetições (MT-Bench, BFCL): indistinguível de zero",
-      "anthropic": "fluxo reduzido, diferente do da OpenAI: {familias} famílias / {peticiones} pedidos por braço (intervalo de 95%: de {bajo} a {alto}). Cerca de {prefijo} do custo de A a preços de tabela é um efeito da cache de prefixo ativado por cache_control no braço B, não um desconto preexistente da Anthropic",
+      "anthropic": "fluxo reduzido, diferente do da OpenAI: {familias} famílias / {peticiones} pedidos por braço (intervalo de 95%: de {bajo} a {alto}). Cerca de {prefijo} do custo de A a preços de tabela é um contraste descritivo líquido de preços de cache (as leituras do braço B valorizadas face ao preço normal de entrada), não um efeito causal identificado separadamente nem um desconto preexistente da Anthropic",
       "pie": "Depende de quanto o teu tráfego se repete. Cada bateria, com o seu relatório completo: <bench>banco público</bench>."
     }
   },

@@ -843,7 +843,7 @@
     },
     "cascade": {
       "title": "De goedkoopste uitvoering wint",
-      "footnote": "Elke hendel valt in zijn eigen grootboek, en de grootboeken worden nooit opgeteld. In deze batterij kwam de besparing uit herhaalde verzoeken die de SDK bediende zonder de aanbieder aan te roepen en, bij Claude, uit een prefixcache-effect dat door cache_control in arm B is ingeschakeld. Het npm-pakket bevat geen compressor."
+      "footnote": "Elke hendel valt in zijn eigen grootboek, en de grootboeken worden nooit opgeteld. In deze batterij kwam de besparing uit herhaalde verzoeken die de SDK bediende zonder de aanbieder aan te roepen en, bij Claude, uit een beschrijvend cacheprijscontrast (de cachelezingen van arm B, gewaardeerd tegen de normale invoerprijs). Het npm-pakket bevat geen compressor."
     },
     "explica": {
       "eyebrow": "In gewone taal",
@@ -883,7 +883,7 @@
       "eyebrow": "Eerlijke boekhouding",
       "title": "Elke soort besparing apart geteld — zodat geen cijfer wordt opgeblazen.",
       "body": "Elk SavingsReport verdeelt de besparing over vier grootboeken — vermeden aanroepen, verwijderde tekst, gecomprimeerde tekst en de cachekorting van je eigen aanbieder — en telt ze nooit op tot één marketingcijfer.",
-      "providerNote": "Op de publieke benchmark ({fecha}) kwam wat de geïnstalleerde SDK bespaarde uit het eerste grootboek — herhaalde verzoeken bediend zonder de aanbieder aan te roepen — en, bij Claude, uit het vierde via een prefixcache-effect dat door cache_control in arm B is ingeschakeld, niet uit een reeds bestaande korting van de aanbieder. Het npm-pakket bevat geen compressor. Een grootboek zonder gepubliceerd cijfer wordt hier beschreven, niet aangeprezen."
+      "providerNote": "Op de publieke benchmark ({fecha}) kwam wat de geïnstalleerde SDK bespaarde uit het eerste grootboek — herhaalde verzoeken bediend zonder de aanbieder aan te roepen — en, bij Claude, uit het vierde via een beschrijvend cacheprijscontrast (de lezingen van arm B, gewaardeerd tegen de normale invoerprijs), niet uit een afzonderlijk geïdentificeerd causaal effect noch uit een reeds bestaande korting van de aanbieder. Het npm-pakket bevat geen compressor. Een grootboek zonder gepubliceerd cijfer wordt hier beschreven, niet aangeprezen."
     },
     "ledgers": [
       {
@@ -1144,7 +1144,7 @@
       "titulo": "Publieke benchmark · live tegen de aanbieder · {fecha}",
       "conRepeticiones": "lagere kosten tegen versiebeheerste catalogusprijzen (95%-interval: {bajo} tot {alto}) bij een stroom waarin {rep} van de verzoeken exacte herhalingen zijn — {familias} families / {peticiones} verzoeken per arm, {bateria}, SDK {version}",
       "sinRepeticiones": "bij verkeer zonder herhalingen (MT-Bench, BFCL): niet te onderscheiden van nul",
-      "anthropic": "verkleinde stroom, anders dan die van OpenAI: {familias} families / {peticiones} verzoeken per arm (95%-interval: {bajo} tot {alto}). Ongeveer {prefijo} van de catalogusprijskosten van A is een prefixcache-effect dat door cache_control in arm B is ingeschakeld, geen reeds bestaande Anthropic-korting",
+      "anthropic": "verkleinde stroom, anders dan die van OpenAI: {familias} families / {peticiones} verzoeken per arm (95%-interval: {bajo} tot {alto}). Ongeveer {prefijo} van de catalogusprijskosten van A is een beschrijvend netto cacheprijscontrast (de cachelezingen van arm B, gewaardeerd tegen de normale invoerprijs), geen afzonderlijk geïdentificeerd causaal effect en geen reeds bestaande Anthropic-korting",
       "pie": "Het hangt af van hoeveel je verkeer zich herhaalt. Elke batterij, met haar volledige rapport: <bench>publieke benchmark</bench>."
     }
   },

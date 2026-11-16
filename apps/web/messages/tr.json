@@ -843,7 +843,7 @@
     },
     "cascade": {
       "title": "En ucuz yürütme kazanır",
-      "footnote": "Her kol kendi defterine düşer ve defterler asla toplanmaz. Bu bataryada tasarruf, SDK'nın sağlayıcıyı çağırmadan sunduğu tekrarlanan isteklerden ve Claude'da B kolunda cache_control ile etkinleştirilen önek önbelleği etkisinden geldi. npm paketi bir sıkıştırıcı içermez."
+      "footnote": "Her kol kendi defterine düşer ve defterler asla toplanmaz. Bu bataryada tasarruf, SDK'nın sağlayıcıyı çağırmadan sunduğu tekrarlanan isteklerden ve Claude'da B kolunun önbellek okumalarının normal girdi fiyatıyla değerlendiği tanımlayıcı bir önbellek fiyatlandırma kontrastından geldi. npm paketi bir sıkıştırıcı içermez."
     },
     "explica": {
       "eyebrow": "Sade bir dille",
@@ -883,7 +883,7 @@
       "eyebrow": "Dürüst muhasebe",
       "title": "Her tasarruf türü ayrı sayılır — hiçbir rakam şişirilmesin diye.",
       "body": "Her SavingsReport tasarrufu dört deftere ayırır — kaçınılan çağrılar, çıkarılan metin, sıkıştırılan metin ve kendi sağlayıcınızın önbellek indirimi — ve bunları asla tek bir pazarlama rakamında toplamaz.",
-      "providerNote": "Herkese açık test tezgâhında ({fecha}), kurulu SDK'nın tasarrufu birinci defterden — sağlayıcı çağrılmadan sunulan tekrarlanan isteklerden — ve Claude'da dördüncü defterden, B kolunda cache_control ile etkinleştirilen önek önbelleği etkisiyle geldi; önceden var olan bir sağlayıcı indirimi değildi. npm paketi bir sıkıştırıcı içermez. Yayımlanmış rakamı olmayan bir defter burada anlatılır, reklamı yapılmaz."
+      "providerNote": "Herkese açık test tezgâhında ({fecha}), kurulu SDK'nın tasarrufu birinci defterden — sağlayıcı çağrılmadan sunulan tekrarlanan isteklerden — ve Claude'da dördüncü defterden, B kolunun önbellek okumalarının normal girdi fiyatıyla değerlendiği tanımlayıcı bir önbellek fiyatlandırma kontrastıyla geldi; ayrı olarak tanımlanmış bir nedensel etki veya önceden var olan bir sağlayıcı indirimi değildi. npm paketi bir sıkıştırıcı içermez. Yayımlanmış rakamı olmayan bir defter burada anlatılır, reklamı yapılmaz."
     },
     "ledgers": [
       {
@@ -1144,7 +1144,7 @@
       "titulo": "Herkese açık test tezgâhı · sağlayıcıya karşı canlı · {fecha}",
       "conRepeticiones": "sürümlenmiş liste fiyatlarıyla daha düşük maliyet (%95 aralık: {bajo} ile {alto} arası), isteklerin {rep} kadarının birebir tekrar olduğu bir akışta — {familias} aile / kol başına {peticiones} istek, {bateria}, SDK {version}",
       "sinRepeticiones": "tekrar içermeyen trafikte (MT-Bench, BFCL): sıfırdan ayırt edilemez",
-      "anthropic": "OpenAI akışından farklı, azaltılmış akış: {familias} aile / kol başına {peticiones} istek (%95 aralık: {bajo} ile {alto} arası). A'nın liste fiyatı maliyetinin yaklaşık {prefijo} kadarı, B kolunda cache_control ile etkinleştirilen önek önbelleği etkisidir; önceden var olan bir Anthropic indirimi değildir",
+      "anthropic": "OpenAI akışından farklı, azaltılmış akış: {familias} aile / kol başına {peticiones} istek (%95 aralık: {bajo} ile {alto} arası). A'nın liste fiyatı maliyetinin yaklaşık {prefijo} kadarı tanımlayıcı bir net önbellek fiyatlandırma kontrastıdır (B kolunun önbellek okumaları normal girdi fiyatıyla değerlenir); ayrı olarak tanımlanmış bir nedensel etki veya önceden var olan bir Anthropic indirimi değildir",
       "pie": "Trafiğinizin ne kadar tekrarlandığına bağlıdır. Her batarya, tam raporuyla: <bench>herkese açık test tezgâhı</bench>."
     }
   },
