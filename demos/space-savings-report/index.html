@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BV-SALA · SavingsReport demo</title>
+<style>
+  :root { --bg:#fafafa; --ink:#111; --mute:#555; --line:#e2e2e2; --acc:#2f63d8; --ok:#14a06f; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+  main { max-width:860px; margin:0 auto; padding:32px 20px 64px; }
+  h1 { font-size:1.9rem; letter-spacing:-.02em; margin:0 0 8px; }
+  h2 { font-size:1.25rem; margin:28px 0 8px; }
+  .sub { color:var(--mute); margin:0 0 24px; }
+  .pill { display:inline-block; border:1px solid var(--line); border-radius:999px; padding:2px 10px; font-size:.85rem; color:var(--mute); }
+  .caja { background:#fff; border:1px solid var(--line); border-radius:10px; padding:18px 20px; margin:16px 0; }
+  .caja blockquote { margin:0 0 8px; border-left:3px solid var(--acc); padding-left:12px; color:var(--mute); }
+  table { width:100%; border-collapse:collapse; margin:12px 0; font-variant-numeric:tabular-nums; }
+  th, td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); }
+  th { font-size:.85rem; text-transform:uppercase; letter-spacing:.04em; color:var(--mute); }
+  td b { color:var(--ok); }
+  select { font:inherit; padding:8px 12px; border:1px solid var(--line); border-radius:8px; background:#fff; width:100%; max-width:520px; }
+  .lectura { border-top:1px dashed var(--line); padding-top:10px; margin-top:10px; }
+  .enlace { font-size:.85rem; color:var(--mute); }
+  a { color:var(--acc); }
+  footer { margin-top:40px; color:var(--mute); font-size:.9rem; border-top:1px solid var(--line); padding-top:16px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>BV-SALA · SavingsReport — measured, not promised</h1>
+  <p class="sub">Así se ve el informe de ahorro de BV-SALA. Cada ejemplo es una <b>muestra real de los artefactos públicos</b>, medida con el <b>contador del propio proveedor</b> a precios de lista. Sin claves, sin coste, sin telemetría: esto es una demo estática de números ya publicados.</p>
+  <p>
+    <span class="pill">open-core · Apache-2.0</span>
+    <span class="pill">paper v2.3-r1 · revisado externamente</span>
+  </p>
+
+  <label for="sel">Muestra real medida:</label>
+  <select id="sel">
+    <option value="cachePrefix">Reorden del prefijo cacheable — A/B en vivo (−82,76 %)</option>
+    <option value="factorial">Factorial dedup × cache_control (−85,94 %)</option>
+    <option value="cascada">Piloto de cascada (−67,91 %)</option>
+    <option value="rho">Curva ρ (14,67 % / 23,67 %)</option>
+  </select>
+
+  <div class="caja" id="panel"></div>
+
+  <footer>
+    Los cuatro libros — <code>avoided_calls</code>, <code>eliminated_tokens</code>, <code>compressed_tokens</code>, <code>provider_cached_tokens</code> — nunca se suman, y cada cifra lleva su <code>basis</code> (measured / reference / estimated).
+    <br>
+    Producto: <a href="https://github.com/BiVelio/bivelio-savings-layer">github.com/BiVelio/bivelio-savings-layer</a> ·
+    Paper: <a href="https://savings.bivelio.com/paper">savings.bivelio.com/paper</a> ·
+    DOI: <a href="https://doi.org/10.5281/zenodo.24278852">10.5281/zenodo.24278852</a>
+  </footer>
+</main>
+
+<script src="samples.js"></script>
+<script>
+  const panel = document.getElementById("panel");
+  const sel = document.getElementById("sel");
+
+  function render(clave) {
+    const s = SAMPLES[clave];
+    const encabezados = clave === "factorial"
+      ? ["Dedup · marcado", "Coste", "Llamadas evitadas"]
+      : clave === "rho"
+        ? ["Punto", "Coste", "Ahorro"]
+        : ["Brazo", "Coste", "Lecturas", "Escrituras", "Hit-rate"];
+    const filas = s.filas
+      .map((f) => `<tr>${f.map((c, i) => `<td>${i === 1 && c !== "—" ? "<b>$" + c + "</b>" : c}</td>`).join("")}</tr>`)
+      .join("");
+    panel.innerHTML = `
+      <h2>${s.titulo}</h2>
+      <blockquote>${s.contexto}</blockquote>
+      <table><thead><tr>${encabezados.map((h) => `<th>${h}</th>`).join("")}</tr></thead>
+      <tbody>${filas}</tbody></table>
+      <div class="lectura">${s.lectura}</div>
+      <p class="enlace">Artefacto: <code>${s.enlace}</code> en el repositorio público.</p>`;
+  }
+
+  sel.addEventListener("change", () => render(sel.value));
+  render(sel.value);
+</script>
+</body>
+</html>
