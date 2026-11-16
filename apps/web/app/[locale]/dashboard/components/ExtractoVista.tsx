@@ -21,7 +21,14 @@ const TONO_DEL_ESTADO: Record<string, BadgeTone> = {
 };
 
 /** Cómo se factura HOY la organización, según lo que la página ya consulta. */
-export type RegimenDelExtracto = "fija" | "exenta" | "legado" | "ninguno" | "indeterminado";
+/**
+ * `medir`: la organización solo tiene la licencia gratuita Measure — modo
+ * sombra, ahorro ESTIMADO que nunca se factura ni entra en comisión alguna
+ * (LICENSE-CLOUD §1). `ninguno`: sin plan vivo y sin Measure; la página no
+ * puede confirmar la modalidad y lo dice con el aviso neutro, sin atribuir
+ * nada a las condiciones publicadas (§6(b) solo da comisión al plan que la lleva).
+ */
+export type RegimenDelExtracto = "fija" | "exenta" | "legado" | "medir" | "ninguno" | "indeterminado";
 
 /** Un período cerrado, con la clave i18n de su estado ya resuelta por la página. */
 export interface PeriodoCerradoVisible {
@@ -276,9 +283,10 @@ export async function ExtractoVista({
                   ? t("extracto.regimenExentaTitulo")
                   : regimen === "legado"
                     ? t("extracto.regimenLegadoTitulo")
-                    : regimen === "indeterminado"
-                      ? t("extracto.regimenIndeterminadoTitulo")
-                      : t("extracto.regimenNingunoTitulo")}
+                    : regimen === "medir"
+                      ? t("extracto.regimenMedirTitulo")
+                      : // «ninguno» comparte el rótulo neutro de «indeterminado».
+                        t("extracto.regimenIndeterminadoTitulo")}
             </h3>
             <p>
               {regimen === "fija"
@@ -287,22 +295,17 @@ export async function ExtractoVista({
                   ? t("extracto.regimenExentaBody")
                   : regimen === "legado"
                     ? t("extracto.regimenLegadoBody")
-                    : regimen === "indeterminado"
-                      ? t("extracto.regimenIndeterminadoBody")
-                      : t("extracto.regimenNingunoBody")}
+                    : regimen === "medir"
+                      ? t("extracto.regimenMedirBody")
+                      : regimen === "indeterminado"
+                        ? t("extracto.regimenIndeterminadoBody")
+                        : t("extracto.regimenNingunoBody")}
             </p>
           </div>
           <div className="ext-contrato-acc">
             <Link className="btn btn-ghost btn-sm" href="/dashboard/account">
               {t("extracto.irACuenta")}
             </Link>
-            {/* Sin plan de cuota fija vivo, lo que rige es la modalidad anterior
-                publicada: se enlaza, no se resume a ojo. */}
-            {regimen === "ninguno" ? (
-              <Link className="btn btn-ghost btn-sm" href="/pricing#legacy">
-                {t("extracto.regimenNingunoEnlace")}
-              </Link>
-            ) : null}
           </div>
         </div>
       </section>
@@ -329,12 +332,13 @@ export async function ExtractoVista({
             <summary>
               <span className="ext-h">{t("extracto.simulacionTitulo")}</span>
               {/* «No se aplica» solo se afirma cuando se SABE (cuota fija o
-                  exenta). Sin plan vivo es el cálculo del cierre; sin poder
-                  determinarlo, puede aplicarse. */}
+                  exenta). En Measure es una estimación que nunca se factura;
+                  sin poder confirmar la modalidad, puede aplicarse según el
+                  contrato. */}
               <span className="ext-sim-nota">
-                {regimen === "ninguno"
-                  ? t("extracto.simulacionSinPlan")
-                  : regimen === "indeterminado"
+                {regimen === "medir"
+                  ? t("extracto.simulacionMedir")
+                  : regimen === "ninguno" || regimen === "indeterminado"
                     ? t("extracto.simulacionPuedeAplicar")
                     : t("extracto.simulacionNoAplica")}
               </span>

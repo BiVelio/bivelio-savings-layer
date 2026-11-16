@@ -13,6 +13,27 @@ export function planElegidoDe(pedido: string | string[] | undefined): "pro" | "e
 }
 
 /**
+ * Los estados de suscripción con los que el checkout se NIEGA a abrir otra
+ * compra (`ESTADOS_QUE_BLOQUEAN` en app/api/stripe/checkout/route.ts). Copia a
+ * propósito: la ruta es de facturación y no exporta la suya.
+ */
+const ESTADOS_CON_COMPRA_HECHA: readonly string[] = ["active", "trialing", "past_due", "incomplete"];
+
+/**
+ * ¿SOBRA EL AVISO DEL PLAN ELEGIDO? Sobra con un plan ya activo y TAMBIÉN con
+ * una suscripción viva o en curso. Un adeudo SEPA deja la suscripción en
+ * `incomplete` y la organización en `free` durante días: decir ahí «todavía no
+ * se ha comprado nada» es falso y contradice al aviso de pago en proceso.
+ */
+export function sobraElPlanElegido(ctx: {
+  org: { plan: string } | null;
+  subscription: { status: string } | null;
+}): boolean {
+  const yaConPlan = ctx.org?.plan === "pro" || ctx.org?.plan === "enterprise";
+  return yaConPlan || (ctx.subscription != null && ESTADOS_CON_COMPRA_HECHA.includes(ctx.subscription.status));
+}
+
+/**
  * EL PLAN QUE SE ELIGIÓ EN LA PORTADA, RECOGIDO EN EL RESUMEN.
  *
  * «Elegir Team» lleva a `/signup?next=/<idioma>/dashboard?plan=equipo` (contrato

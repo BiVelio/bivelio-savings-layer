@@ -175,6 +175,8 @@ export async function AccountPlanStrip({
         {aviso === "exceso" && seatsUsados != null && ctx.seats != null ? (
           <Notice tono="warn" titulo={t("accountPlanStrip.overTitle")}>
             {t("accountPlanStrip.seatsOver", { used: seatsUsados, paid: ctx.seats })}
+            {/* «Gestionar plan» solo se le nombra a quien tiene ese botón. */}
+            {puedeLaAccion ? <> {t("accountPlanStrip.seatsOverManage")}</> : null}
           </Notice>
         ) : aviso === "rotado" && seatsUsados != null ? (
           /* Rotó la clave este mes: el recuento está inflado porque el seat_id

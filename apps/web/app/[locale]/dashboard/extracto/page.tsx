@@ -7,7 +7,7 @@ import { extractoEnSombra, periodoDe } from "@/lib/billing/extracto-sombra";
 import { diaSiguiente, diasEntre, MAX_FILAS_POR_DESCARGA } from "@/lib/metering/referencias-csv";
 import { createReadOnlyClient } from "@/lib/supabase/server";
 import { loadDashboard } from "../load";
-import { ExtractoVista } from "../components/ExtractoVista";
+import { ExtractoVista, type RegimenDelExtracto } from "../components/ExtractoVista";
 import { ESTADOS_CON_PLAN, idsSinComision, orgsSinComisionPorPlan, type SuscripcionDeOrg } from "@/lib/billing/plan-de-la-org";
 import { preciosSinComision } from "@/lib/stripe/env";
 
@@ -176,11 +176,15 @@ export default async function ExtractoPage() {
   //  · cuando falló la lectura de la exención o la de las suscripciones;
   //  · cuando las dos lecturas se contradicen — el contexto ve una suscripción
   //    con plan y la consulta de aquí no devuelve ninguna.
-  // «ninguno» NO es «no se te cobra»: el cierre mensual (cron cierre-extractos)
-  // solo deja fuera de la comisión a las organizaciones exentas y a las que
-  // tienen VIVA una suscripción Pro o Team. La vista lo dice así, sin afirmar.
+  // «ninguno» NO es «no se te cobra», y TAMPOCO «se te cobra comisión según las
+  // condiciones publicadas»: LICENSE-CLOUD §6(b) solo da comisión al plan que el
+  // precio publicado lista con ella. La vista no afirma ni lo uno ni lo otro:
+  // pinta el aviso neutro (lo que se cobra es lo que figura en las facturas).
+  // «medir»: sin plan vivo, pero con la licencia gratuita Measure (`ctx.medir`,
+  // ver ../medir.ts). Modo sombra: ahorro ESTIMADO, que nunca se factura ni
+  // entra en comisión alguna (LICENSE-CLOUD §1).
   const conSuscripcion = ctx.subscription != null && ESTADOS_CON_PLAN.includes(ctx.subscription.status);
-  const regimen: "fija" | "exenta" | "legado" | "ninguno" | "indeterminado" = lecturaFallida
+  const regimenBase: "fija" | "exenta" | "legado" | "ninguno" | "indeterminado" = lecturaFallida
     ? "indeterminado"
     : exentaPorMarca
       ? "exenta"
@@ -195,6 +199,7 @@ export default async function ExtractoPage() {
             : conSuscripcion
               ? "indeterminado"
               : "ninguno";
+  const regimen: RegimenDelExtracto = regimenBase === "ninguno" && ctx.medir === "solo-medir" ? "medir" : regimenBase;
   const e = extractoEnSombra("panel", usage, periodo, esExento);
   const cerrados = orgId ? await periodosCerrados(orgId) : [];
 

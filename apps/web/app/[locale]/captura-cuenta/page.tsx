@@ -309,9 +309,23 @@ export default async function CapturaDeCuenta({
     },
     {
       id: "extracto-ninguno",
-      titulo: "Extracto · sin plan de cuota fija vivo: la regla del cierre, sin afirmar que no se cobra",
+      titulo: "Extracto · sin plan vivo y sin Measure: aviso neutro, sin enlace a la modalidad anterior",
       nodo: (
         <ExtractoVista e={extractoEnSombra("muestra", uso, periodo, false)} periodo={periodo} regimen="ninguno" usageFailed={false} cerrados={[]} diasDeDescarga={null} />
+      ),
+    },
+    {
+      id: "extracto-medir",
+      titulo: "Extracto · licencia gratuita Measure: ahorro estimado, nunca facturado",
+      nodo: (
+        <ExtractoVista e={extractoEnSombra("muestra", uso, periodo, false)} periodo={periodo} regimen="medir" usageFailed={false} cerrados={[]} diasDeDescarga={null} />
+      ),
+    },
+    {
+      id: "exceso-miembro",
+      titulo: "Cuenta · exceso de asientos visto por un miembro: sin la frase de «Gestionar plan»",
+      nodo: (
+        <AccountPlanStrip email={correo} ctx={contexto({ role: "member" })} asientos={{ usados: 13, rotacionEsteMes: false }} />
       ),
     },
     {
