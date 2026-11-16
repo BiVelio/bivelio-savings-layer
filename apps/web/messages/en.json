@@ -61,7 +61,7 @@
       "accountLink": "Account settings for {email}",
       "plan": {
         "free": "Free",
-        "pro": "Pro",
+        "pro": "Paid plan",
         "enterprise": "Enterprise"
       }
     },
@@ -730,7 +730,8 @@
       "checkoutError": "Something went wrong — try again.",
       "seatsLabel": "Seats",
       "seatsHint": "A seat is one active machine or service identity — not a person. Count the processes that will run the SDK, not your headcount. On Kubernetes, set BVSALA_SEAT_ID per replica.",
-      "seatsOver": "{used, plural, one {# seat} other {# seats}} in use, {paid, plural, one {# paid for} other {# paid for}}. The extra seats are billed according to your plan and the state of your subscription, when the month closes. On monthly billing they are added to your next invoice and your subscribed quantity goes up to the seats in use. On annual billing they are invoiced at month close, at the annual rate divided by twelve, and your subscribed quantity does not change. You can also adjust the quantity from “Manage plan”.",
+      "seatsOver": "{used, plural, one {# seat} other {# seats}} in use, {paid, plural, one {# paid for} other {# paid for}}. The extra seats are billed according to your plan and the state of your subscription, when the month closes. On monthly billing they are added to your next invoice and your subscribed quantity goes up to the seats in use. On annual billing they are invoiced at month close, at the annual rate divided by twelve, and your subscribed quantity does not change.",
+      "seatsOverManage": "You can also adjust the quantity from “Manage plan”.",
       "seatsLastMonth": "{period}: {used, plural, one {# seat used} other {# seats used}}, {paid, plural, one {# paid for} other {# paid for}}. Extra: {extra, plural, one {# seat} other {# seats}} ({amount}). On monthly billing it goes on your next invoice and your subscribed quantity goes up to the seats used. On annual billing it is invoiced at month close, at the annual rate divided by twelve, without changing your subscribed quantity.",
       "seatsRotated": "{used, plural, one {# seat} other {# seats}} counted this month. You revoked a service-account key, and machines get a new seat identity when the key rotates — so this month counts them twice. It settles next month; you don't need to change your plan.",
       "taxNote": "VAT not included. If your company has an EU VAT number, the reverse charge applies.",
@@ -1014,8 +1015,9 @@
       "regimenExentaBody": "This organization is marked as exempt: the commission is calculated for information only and its charge is zero.",
       "regimenLegadoTitulo": "Legacy commission model",
       "regimenLegadoBody": "Your contract keeps the model with a commission on measured savings, closed to new sign-ups. Its calculation is in the history below; the per-seat fee is a separate charge.",
-      "regimenNingunoTitulo": "No active paid plan",
-      "regimenNingunoBody": "This organization has no live fixed-fee plan (Pro or Team) and is not marked as exempt. In that case a statement is closed each month on the savings measured, under the published terms of the earlier commission model; its calculation is in the history below. The plans on sale are fixed-fee and carry no commission.",
+      "regimenNingunoBody": "This page cannot confirm your billing model. What you are charged is what appears on your invoices. If in doubt, write to support@bivelio.com.",
+      "regimenMedirTitulo": "Measure: estimated savings, never billed",
+      "regimenMedirBody": "Your organization is on the free Measure license. The layer runs in shadow mode: the savings this dashboard shows are an estimate of what it would have saved. They are never billed and never part of any commission.",
       "regimenIndeterminadoTitulo": "We cannot show your contract's billing model here",
       "regimenIndeterminadoBody": "This page could not determine which model applies to your subscription. What you are charged is what appears on your invoices and in the billing portal.",
       "irACuenta": "View plan and billing",
@@ -1025,9 +1027,8 @@
       "simulacionTitulo": "Commission simulation for this period",
       "simulacionAplica": "This is the calculation for the model your contract keeps.",
       "simulacionNoAplica": "It does not apply to your current contract: shown for reference only.",
-      "regimenNingunoEnlace": "See the earlier model under Pricing",
-      "simulacionSinPlan": "This is the calculation used at month close when no fixed-fee plan is live.",
       "simulacionPuedeAplicar": "It may apply depending on your contract: shown here as a calculation, not an invoice.",
+      "simulacionMedir": "On Measure this is an estimate only: never billed.",
       "notaSombraReferencia": "Shadow figure: the computed commission is {comision}. It is a calculation, not an invoice.",
       "historialIntroNeutro": "Each closed period is fixed immutably on day one. If a period produces a charge, its invoice cites that document."
     },

@@ -9,7 +9,7 @@ import { loadDashboard } from "./load";
 import { RANGO_POR_DEFECTO, rangoDesdeParametro } from "./rango";
 import { createReadOnlyClient } from "@/lib/supabase/server";
 import { BillingStateBanner } from "./components/BillingStateBanner";
-import { PlanElegidoNotice, planElegidoDe } from "./components/PlanElegidoNotice";
+import { PlanElegidoNotice, planElegidoDe, sobraElPlanElegido } from "./components/PlanElegidoNotice";
 import { GatewayVersionBanner } from "./components/GatewayVersionBanner";
 import { GatewayBrutoBanner } from "./components/GatewayBrutoBanner";
 import { SdkReferenciaBanner } from "./components/SdkReferenciaBanner";
@@ -66,9 +66,10 @@ export default async function OverviewPage({
   const { range: rangoPedido, plan: planPedido } = await searchParams;
   const rango = rangoDesdeParametro(rangoPedido);
   // El plan elegido en la portada llega aquí por `?plan=`; el selector vive en
-  // Cuenta. Con un plan ya activo no hay nada que confirmar.
+  // Cuenta. Con un plan ya activo, o con una suscripción viva o en curso (un
+  // adeudo SEPA sin liquidar), no hay nada que confirmar.
   const planElegido = planElegidoDe(planPedido);
-  const yaConPlan = ctx.org?.plan === "pro" || ctx.org?.plan === "enterprise";
+  const yaConPlan = sobraElPlanElegido(ctx);
   const usage = rango === RANGO_POR_DEFECTO ? usageCompleto : cortarPorPeriodo(usageCompleto, rango);
   const porModelo = rango === RANGO_POR_DEFECTO ? porModeloCompleto : cortarPorPeriodo(porModeloCompleto, rango);
   const sombraPorModelo = rango === RANGO_POR_DEFECTO ? sombraCompleta : cortarPorPeriodo(sombraCompleta, rango);

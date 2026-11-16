@@ -8,7 +8,7 @@ import { PageHead } from "@/app/components/app/PageHead";
 import { SetupProgress } from "@/app/components/app/SetupProgress";
 import { BillingStateBanner } from "@/app/[locale]/dashboard/components/BillingStateBanner";
 import { RitmoCard } from "@/app/[locale]/dashboard/components/RitmoCard";
-import { PlanElegidoNotice } from "@/app/[locale]/dashboard/components/PlanElegidoNotice";
+import { PlanElegidoNotice, sobraElPlanElegido } from "@/app/[locale]/dashboard/components/PlanElegidoNotice";
 import { DesgloseModelos } from "@/app/[locale]/dashboard/components/DesgloseModelos";
 import { InstrumentationSpine } from "@/app/[locale]/dashboard/components/InstrumentationSpine";
 import { MaquinasCard } from "@/app/[locale]/dashboard/components/MaquinasCard";
@@ -117,6 +117,16 @@ const CTX_IMPAGO: OrgContext = {
   subscription: { status: "past_due", currentPeriodEnd: null, pastDueSince: new Date(Date.now() - 2 * DIA_MS).toISOString() },
   license: { status: "active", expiresAt: new Date(Date.now() + 20 * DIA_MS).toISOString(), graceDays: 7 },
   serviceAccount: { keyPrefix: "bvk_muestra", lastUsedAt: null },
+};
+
+/** Adeudo SEPA sin liquidar: suscripción `incomplete` y la organización aún en `free`. */
+const CTX_PAGO_EN_PROCESO: OrgContext = {
+  org: { name: "Organización de muestra", plan: "free" },
+  role: "owner",
+  seats: null,
+  subscription: { status: "incomplete", currentPeriodEnd: null, pastDueSince: null },
+  license: null,
+  serviceAccount: null,
 };
 
 const ROTULO: CSSProperties = { margin: "0 0 10px", fontSize: 12, fontWeight: 600, letterSpacing: ".06em", textTransform: "uppercase", color: "var(--ink-soft)" };
@@ -349,6 +359,12 @@ export default async function GaleriaDeEstados({
             <Caso titulo="Plan elegido en la portada (?plan=pro) · perfil sin permiso de compra">
               <div className="ov-attention">
                 <PlanElegidoNotice plan="pro" role="member" />
+              </div>
+            </Caso>
+            <Caso titulo="Plan elegido (?plan=equipo) con un pago SEPA en proceso (incomplete) · solo el aviso de pago, sin «no se ha comprado nada»">
+              <div className="ov-attention">
+                <BillingStateBanner ctx={CTX_PAGO_EN_PROCESO} />
+                {sobraElPlanElegido(CTX_PAGO_EN_PROCESO) ? null : <PlanElegidoNotice plan="equipo" role="owner" />}
               </div>
             </Caso>
           </section>

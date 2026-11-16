@@ -61,7 +61,7 @@
       "accountLink": "Paramètres du compte de {email}",
       "plan": {
         "free": "Gratuit",
-        "pro": "Pro",
+        "pro": "Forfait payant",
         "enterprise": "Enterprise"
       }
     },
@@ -730,7 +730,8 @@
       "checkoutError": "Une erreur s'est produite — veuillez réessayer.",
       "seatsLabel": "Sièges",
       "seatsHint": "Un poste est une machine ou une identité de service active, pas une personne. Comptez les processus qui exécuteront le SDK, pas vos effectifs. Sur Kubernetes, définissez BVSALA_SEAT_ID par réplique.",
-      "seatsOver": "{used, plural, one {# siège utilisé} other {# sièges utilisés}}, {paid, plural, one {# payé} other {# payés}}. L'excédent est facturé selon votre forfait et l'état de votre abonnement, à la clôture du mois. En paiement mensuel, il s'ajoute à votre prochaine facture et la quantité souscrite passe au nombre de sièges utilisés. En paiement annuel, il est facturé à la clôture du mois, au tarif annuel divisé par douze, et la quantité souscrite ne change pas. Vous pouvez aussi ajuster la quantité depuis « Gérer le forfait ».",
+      "seatsOver": "{used, plural, one {# siège utilisé} other {# sièges utilisés}}, {paid, plural, one {# payé} other {# payés}}. L'excédent est facturé selon votre forfait et l'état de votre abonnement, à la clôture du mois. En paiement mensuel, il s'ajoute à votre prochaine facture et la quantité souscrite passe au nombre de sièges utilisés. En paiement annuel, il est facturé à la clôture du mois, au tarif annuel divisé par douze, et la quantité souscrite ne change pas.",
+      "seatsOverManage": "Vous pouvez aussi ajuster la quantité depuis « Gérer le forfait ».",
       "seatsLastMonth": "{period} : {used, plural, one {# siège utilisé} other {# sièges utilisés}}, {paid, plural, one {# payé} other {# payés}}. Excédent : {extra, plural, one {# siège} other {# sièges}} ({amount}). En paiement mensuel, il figure sur votre prochaine facture et la quantité souscrite passe au nombre de sièges utilisés. En paiement annuel, il est facturé à la clôture du mois, au tarif annuel divisé par douze, sans modifier la quantité souscrite.",
       "seatsRotated": "{used, plural, one {# siège compté} other {# sièges comptés}} ce mois-ci. Vous avez révoqué une clé de compte de service : en la remplaçant, vos machines changent d'identité de siège, donc ce mois-ci elles sont comptées deux fois. Cela se règle tout seul le mois prochain — inutile de changer de forfait.",
       "taxNote": "TVA non comprise. Si votre entreprise a un numéro de TVA intracommunautaire, l'autoliquidation s'applique.",
@@ -1014,8 +1015,9 @@
       "regimenExentaBody": "Cette organisation est marquée comme exonérée : la commission n'est calculée qu'à titre indicatif et son montant facturé est nul.",
       "regimenLegadoTitulo": "Formule historique avec commission",
       "regimenLegadoBody": "Votre contrat conserve la formule avec commission sur les économies mesurées, fermée aux nouvelles souscriptions. Son calcul figure dans l'historique ci-dessous ; le prix par siège est un montant à part.",
-      "regimenNingunoTitulo": "Aucun forfait payant actif",
-      "regimenNingunoBody": "Cette organisation n'a aucun forfait à prix fixe en cours (Pro ou Team) et n'est pas marquée comme exemptée. Dans ce cas, un relevé est clôturé chaque mois sur les économies mesurées, selon les conditions publiées de l'ancienne formule avec commission ; son calcul figure dans l'historique ci-dessous. Les forfaits en vente sont à prix fixe, sans commission.",
+      "regimenNingunoBody": "Cette page ne peut pas confirmer votre formule de facturation. Ce qui vous est facturé est ce qui figure sur vos factures. En cas de doute, écrivez à support@bivelio.com.",
+      "regimenMedirTitulo": "Measure : économies estimées, jamais facturées",
+      "regimenMedirBody": "Votre organisation utilise la licence gratuite Measure. La couche fonctionne en mode fantôme : les économies affichées dans ce tableau de bord sont une estimation de ce qu'elle aurait économisé. Elles ne sont jamais facturées et n'entrent jamais dans aucune commission.",
       "regimenIndeterminadoTitulo": "Nous ne pouvons pas afficher ici la formule de votre contrat",
       "regimenIndeterminadoBody": "Cette page n'a pas pu déterminer quelle formule s'applique à votre abonnement. Ce qui vous est facturé est ce qui figure sur vos factures et dans le portail de facturation.",
       "irACuenta": "Voir le forfait et la facturation",
@@ -1025,9 +1027,8 @@
       "simulacionTitulo": "Simulation de la commission pour cette période",
       "simulacionAplica": "C'est le calcul de la formule que conserve votre contrat.",
       "simulacionNoAplica": "Elle ne s'applique pas à votre contrat en vigueur : affichée à titre de référence uniquement.",
-      "regimenNingunoEnlace": "Voir l'ancienne formule dans Tarifs",
-      "simulacionSinPlan": "C'est le calcul utilisé à la clôture du mois lorsqu'aucun forfait à prix fixe n'est en cours.",
       "simulacionPuedeAplicar": "Elle peut s'appliquer selon votre contrat : affichée ici comme un calcul, pas comme une facture.",
+      "simulacionMedir": "Avec Measure, ce n'est qu'une estimation : jamais facturée.",
       "notaSombraReferencia": "Chiffre en ombre : la commission calculée est de {comision}. C'est un calcul, pas une facture.",
       "historialIntroNeutro": "Chaque période clôturée est figée de façon immuable le premier du mois. Si une période donne lieu à un montant dû, sa facture cite ce document."
     },

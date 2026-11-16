@@ -61,7 +61,7 @@
       "accountLink": "Pengaturan akun untuk {email}",
       "plan": {
         "free": "Gratis",
-        "pro": "Pro",
+        "pro": "Paket berbayar",
         "enterprise": "Enterprise"
       }
     },
@@ -730,7 +730,8 @@
       "checkoutError": "Terjadi kesalahan — silakan coba lagi.",
       "seatsLabel": "Kursi",
       "seatsHint": "Satu kursi adalah satu mesin atau identitas layanan aktif, bukan orang. Hitung proses yang akan menjalankan SDK, bukan jumlah karyawan. Di Kubernetes, setel BVSALA_SEAT_ID per replika.",
-      "seatsOver": "{used, plural, other {# kursi}} terpakai, {paid, plural, other {# kursi}} dibayar. Kelebihan kursi ditagih saat bulan ditutup, sesuai paket dan status langganan Anda. Pada pembayaran bulanan, kelebihan itu ditambahkan ke tagihan berikutnya dan jumlah kursi langganan naik menjadi jumlah kursi yang terpakai. Pada pembayaran tahunan, kelebihan itu ditagih saat tutup bulan dengan tarif tahunan dibagi dua belas, dan jumlah kursi langganan tidak berubah. Anda juga bisa menyesuaikan jumlahnya lewat «Kelola paket».",
+      "seatsOver": "{used, plural, other {# kursi}} terpakai, {paid, plural, other {# kursi}} dibayar. Kelebihan kursi ditagih saat bulan ditutup, sesuai paket dan status langganan Anda. Pada pembayaran bulanan, kelebihan itu ditambahkan ke tagihan berikutnya dan jumlah kursi langganan naik menjadi jumlah kursi yang terpakai. Pada pembayaran tahunan, kelebihan itu ditagih saat tutup bulan dengan tarif tahunan dibagi dua belas, dan jumlah kursi langganan tidak berubah.",
+      "seatsOverManage": "Anda juga bisa menyesuaikan jumlahnya lewat «Kelola paket».",
       "seatsLastMonth": "{period}: {used, plural, other {# kursi}} terpakai, {paid, plural, other {# kursi}} dibayar. Kelebihan: {extra, plural, other {# kursi}} ({amount}). Pada pembayaran bulanan, kelebihan ini masuk ke tagihan berikutnya dan jumlah kursi langganan naik menjadi jumlah kursi yang terpakai. Pada pembayaran tahunan, kelebihan ini ditagih saat tutup bulan dengan tarif tahunan dibagi dua belas, tanpa mengubah jumlah kursi langganan.",
       "seatsRotated": "{used, plural, other {# kursi}} terhitung bulan ini. Anda mencabut kunci akun layanan, dan saat kunci diganti mesin-mesin Anda mendapat identitas kursi baru — jadi bulan ini terhitung dua kali. Bulan depan normal kembali; Anda tidak perlu mengubah paket.",
       "taxNote": "Belum termasuk PPN. Jika perusahaan Anda memiliki nomor PPN Uni Eropa, berlaku mekanisme reverse charge.",
@@ -1014,8 +1015,9 @@
       "regimenExentaBody": "Organisasi ini ditandai bebas komisi: komisi hanya dihitung sebagai informasi dan tagihannya nol.",
       "regimenLegadoTitulo": "Model lama dengan komisi",
       "regimenLegadoBody": "Kontrak kamu mempertahankan model dengan komisi atas penghematan terukur, yang sudah ditutup untuk pendaftaran baru. Perhitungannya ada di riwayat di bawah; biaya per kursi adalah tagihan terpisah.",
-      "regimenNingunoTitulo": "Tidak ada paket berbayar yang aktif",
-      "regimenNingunoBody": "Organisasi ini tidak memiliki paket berbiaya tetap yang sedang berjalan (Pro atau Team) dan tidak ditandai sebagai dikecualikan. Dalam hal itu, setiap bulan sebuah laporan ditutup atas penghematan yang terukur, menurut ketentuan yang dipublikasikan untuk model komisi sebelumnya; perhitungannya ada di riwayat di bawah. Paket yang dijual berbiaya tetap dan tidak dikenai komisi.",
+      "regimenNingunoBody": "Halaman ini tidak dapat memastikan model penagihan Anda. Yang ditagihkan adalah yang tertera di faktur Anda. Jika ragu, tulis ke support@bivelio.com.",
+      "regimenMedirTitulo": "Measure: penghematan estimasi, tidak pernah ditagih",
+      "regimenMedirBody": "Organisasi Anda memakai lisensi Measure gratis. Lapisan berjalan dalam mode bayangan: penghematan yang ditampilkan dasbor ini adalah estimasi dari apa yang akan dihemat. Penghematan itu tidak pernah ditagih dan tidak pernah menjadi bagian dari komisi apa pun.",
       "regimenIndeterminadoTitulo": "Kami tidak dapat menampilkan model kontrak kamu di sini",
       "regimenIndeterminadoBody": "Halaman ini tidak dapat menentukan model mana yang berlaku untuk langganan kamu. Yang ditagihkan adalah yang tertera di faktur kamu dan di portal penagihan.",
       "irACuenta": "Lihat paket dan penagihan",
@@ -1025,9 +1027,8 @@
       "simulacionTitulo": "Simulasi komisi untuk periode ini",
       "simulacionAplica": "Ini adalah perhitungan untuk model yang dipertahankan kontrak kamu.",
       "simulacionNoAplica": "Tidak berlaku untuk kontrak kamu yang berlaku: ditampilkan hanya sebagai rujukan.",
-      "regimenNingunoEnlace": "Lihat model sebelumnya di Harga",
-      "simulacionSinPlan": "Inilah perhitungan yang dipakai saat tutup bulan bila tidak ada paket berbiaya tetap yang berjalan.",
       "simulacionPuedeAplicar": "Dapat berlaku tergantung kontrak Anda: di sini ditampilkan sebagai perhitungan, bukan faktur.",
+      "simulacionMedir": "Di Measure ini hanya estimasi: tidak pernah ditagih.",
       "notaSombraReferencia": "Angka bayangan: komisi yang dihitung adalah {comision}. Ini perhitungan, bukan faktur.",
       "historialIntroNeutro": "Setiap periode yang ditutup difiksasi secara permanen pada tanggal satu. Jika suatu periode menimbulkan tagihan, fakturnya mengutip dokumen itu."
     },

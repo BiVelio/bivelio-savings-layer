@@ -61,7 +61,7 @@
       "accountLink": "Accountinstellingen voor {email}",
       "plan": {
         "free": "Gratis",
-        "pro": "Pro",
+        "pro": "Betaald abonnement",
         "enterprise": "Enterprise"
       }
     },
@@ -730,7 +730,8 @@
       "checkoutError": "Er is iets misgegaan — probeer het opnieuw.",
       "seatsLabel": "Seats",
       "seatsHint": "Een plaats is één actieve machine of service-identiteit, geen persoon. Tel de processen die de SDK draaien, niet je medewerkers. Op Kubernetes: stel BVSALA_SEAT_ID per replica in.",
-      "seatsOver": "{used, plural, one {# seat} other {# seats}} in gebruik, {paid, plural, one {# betaald} other {# betaald}}. De extra seats worden bij het afsluiten van de maand gefactureerd volgens je abonnement en de status ervan. Bij maandelijkse betaling komen ze op je volgende factuur en gaat het afgenomen aantal omhoog naar de seats in gebruik. Bij jaarlijkse betaling worden ze bij het afsluiten van de maand gefactureerd tegen het jaartarief gedeeld door twaalf, en verandert het afgenomen aantal niet. Je kunt het aantal ook aanpassen via “Abonnement beheren”.",
+      "seatsOver": "{used, plural, one {# seat} other {# seats}} in gebruik, {paid, plural, one {# betaald} other {# betaald}}. De extra seats worden bij het afsluiten van de maand gefactureerd volgens je abonnement en de status ervan. Bij maandelijkse betaling komen ze op je volgende factuur en gaat het afgenomen aantal omhoog naar de seats in gebruik. Bij jaarlijkse betaling worden ze bij het afsluiten van de maand gefactureerd tegen het jaartarief gedeeld door twaalf, en verandert het afgenomen aantal niet.",
+      "seatsOverManage": "Je kunt het aantal ook aanpassen via “Abonnement beheren”.",
       "seatsLastMonth": "{period}: {used, plural, one {# seat gebruikt} other {# seats gebruikt}}, {paid, plural, one {# betaald} other {# betaald}}. Extra: {extra, plural, one {# seat} other {# seats}} ({amount}). Bij maandelijkse betaling staat het op je volgende factuur en gaat het afgenomen aantal omhoog naar de gebruikte seats. Bij jaarlijkse betaling wordt het bij het afsluiten van de maand gefactureerd tegen het jaartarief gedeeld door twaalf, zonder het afgenomen aantal te wijzigen.",
       "seatsRotated": "{used, plural, one {# seat} other {# seats}} deze maand geteld. Je hebt een service-account-sleutel ingetrokken, en bij het roteren krijgen je machines een nieuwe seat-identiteit — daardoor telt deze maand ze dubbel. Volgende maand klopt het weer; je hoeft je abonnement niet te wijzigen.",
       "taxNote": "Exclusief btw. Heeft uw bedrijf een EU-btw-nummer, dan geldt de verleggingsregeling.",
@@ -1014,8 +1015,9 @@
       "regimenExentaBody": "Deze organisatie is als vrijgesteld gemarkeerd: de commissie wordt alleen ter informatie berekend en er wordt nul in rekening gebracht.",
       "regimenLegadoTitulo": "Eerder model met commissie",
       "regimenLegadoBody": "Je contract behoudt het model met commissie op gemeten besparing, dat gesloten is voor nieuwe klanten. De berekening staat in de historie hieronder; de vergoeding per seat is een aparte post.",
-      "regimenNingunoTitulo": "Geen actief betaald abonnement",
-      "regimenNingunoBody": "Deze organisatie heeft geen lopend abonnement met een vaste prijs (Pro of Team) en is niet als vrijgesteld gemarkeerd. In dat geval wordt elke maand een overzicht afgesloten over de gemeten besparing, volgens de gepubliceerde voorwaarden van het eerdere commissiemodel; de berekening staat in de historie hieronder. De abonnementen die te koop zijn hebben een vaste prijs, zonder commissie.",
+      "regimenNingunoBody": "Deze pagina kan je factureringsmodel niet bevestigen. Wat je betaalt, is wat op je facturen staat. Mail bij twijfel naar support@bivelio.com.",
+      "regimenMedirTitulo": "Measure: geschatte besparing, nooit gefactureerd",
+      "regimenMedirBody": "Je organisatie gebruikt de gratis Measure-licentie. De laag draait in schaduwmodus: de besparing die dit dashboard toont, is een schatting van wat ze bespaard zou hebben. Die wordt nooit gefactureerd en maakt nooit deel uit van een commissie.",
       "regimenIndeterminadoTitulo": "We kunnen het model van je contract hier niet tonen",
       "regimenIndeterminadoBody": "Deze pagina kon niet vaststellen welk model voor je abonnement geldt. Wat je betaalt, is wat op je facturen en in het factureringsportaal staat.",
       "irACuenta": "Abonnement en facturering bekijken",
@@ -1025,9 +1027,8 @@
       "simulacionTitulo": "Simulatie van de commissie voor deze periode",
       "simulacionAplica": "Dit is de berekening van het model dat je contract behoudt.",
       "simulacionNoAplica": "Geldt niet voor je huidige contract: alleen ter referentie getoond.",
-      "regimenNingunoEnlace": "Bekijk het eerdere model onder Prijzen",
-      "simulacionSinPlan": "Dit is de berekening die bij het afsluiten van de maand geldt als er geen abonnement met vaste prijs loopt.",
       "simulacionPuedeAplicar": "Kan gelden, afhankelijk van je contract: hier getoond als berekening, niet als factuur.",
+      "simulacionMedir": "Bij Measure is dit alleen een schatting: nooit gefactureerd.",
       "notaSombraReferencia": "Schaduwcijfer: de berekende commissie is {comision}. Dit is een berekening, geen factuur.",
       "historialIntroNeutro": "Elke afgesloten periode wordt op de eerste van de maand onveranderlijk vastgelegd. Levert een periode een bedrag op, dan citeert de factuur dat document."
     },

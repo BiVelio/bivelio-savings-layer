@@ -61,7 +61,7 @@
       "accountLink": "Configuració del compte de {email}",
       "plan": {
         "free": "Gratis",
-        "pro": "Pro",
+        "pro": "Pla de pagament",
         "enterprise": "Enterprise"
       }
     },
@@ -730,7 +730,8 @@
       "checkoutError": "Alguna cosa ha anat malament — torna-ho a provar.",
       "seatsLabel": "Seients",
       "seatsHint": "Un seient és una màquina o identitat de servei activa, no una persona. Compta els processos que executaran l'SDK, no els teus empleats. A Kubernetes, fixa BVSALA_SEAT_ID a cada rèplica.",
-      "seatsOver": "{used, plural, one {# seient} other {# seients}} en ús i {paid, plural, one {# pagat} other {# pagats}}. L'excés es factura segons el teu pla i l'estat de la teva subscripció, en tancar el mes. Amb pagament mensual s'afegeix a la teva propera factura i la quantitat contractada puja fins als seients en ús. Amb pagament anual es factura al tancament del mes, a la tarifa anual dividida entre dotze, i la quantitat contractada no canvia. També pots ajustar la quantitat des de «Gestiona el pla».",
+      "seatsOver": "{used, plural, one {# seient} other {# seients}} en ús i {paid, plural, one {# pagat} other {# pagats}}. L'excés es factura segons el teu pla i l'estat de la teva subscripció, en tancar el mes. Amb pagament mensual s'afegeix a la teva propera factura i la quantitat contractada puja fins als seients en ús. Amb pagament anual es factura al tancament del mes, a la tarifa anual dividida entre dotze, i la quantitat contractada no canvia.",
+      "seatsOverManage": "També pots ajustar la quantitat des de «Gestiona el pla».",
       "seatsLastMonth": "{period}: {used, plural, one {# seient usat} other {# seients usats}} i {paid, plural, one {# pagat} other {# pagats}}. Excés: {extra, plural, one {# seient} other {# seients}} ({amount}). Amb pagament mensual va a la teva propera factura i la quantitat contractada puja fins als seients usats. Amb pagament anual es factura al tancament del mes, a la tarifa anual dividida entre dotze, sense canviar la quantitat contractada.",
       "seatsRotated": "{used, plural, one {# seient comptat} other {# seients comptats}} aquest mes. Has revocat una clau de servei i, en rotar-la, les teves màquines estrenen identitat de seient, així que aquest mes es compten dues vegades. Es corregeix sol el mes vinent: no has de canviar de pla.",
       "taxNote": "IVA no inclòs. Si la vostra empresa té NIF-IVA intracomunitari, s'aplica la inversió del subjecte passiu.",
@@ -1014,8 +1015,9 @@
       "regimenExentaBody": "Aquesta organització està marcada com a exempta: la comissió només es calcula a títol informatiu i el seu càrrec és zero.",
       "regimenLegadoTitulo": "Modalitat històrica amb comissió",
       "regimenLegadoBody": "El teu contracte conserva la modalitat amb comissió sobre l'estalvi mesurat, tancada a noves altes. El seu càlcul és a l'històric de sota; la quota per seient és un càrrec a part.",
-      "regimenNingunoTitulo": "Sense pla de pagament actiu",
-      "regimenNingunoBody": "Aquesta organització no té viu cap pla de quota fixa (Pro o Team) ni està marcada com a exempta. En aquest cas, en tancar cada mes s'emet un extracte sobre l'estalvi mesurat, segons les condicions publicades de la modalitat anterior amb comissió; el seu càlcul és a l'històric de sota. Els plans en venda són de quota fixa i no porten comissió.",
+      "regimenNingunoBody": "Aquesta pàgina no pot confirmar la modalitat amb què se't factura. El que se't cobra és el que consta a les teves factures. Si tens dubtes, escriu-nos a support@bivelio.com.",
+      "regimenMedirTitulo": "Measure: estalvi estimat, mai facturat",
+      "regimenMedirBody": "La teva organització fa servir la llicència gratuïta Measure. La capa funciona en mode ombra: l'estalvi que mostra aquest tauler és una estimació del que hauria estalviat. Mai no es factura i mai no forma part de cap comissió.",
       "regimenIndeterminadoTitulo": "No podem mostrar aquí la modalitat del teu contracte",
       "regimenIndeterminadoBody": "Aquesta pàgina no ha pogut determinar quina modalitat s'aplica a la teva subscripció. El que se't cobra és el que consta a les teves factures i al portal de facturació.",
       "irACuenta": "Veure pla i facturació",
@@ -1025,9 +1027,8 @@
       "simulacionTitulo": "Simulació de la comissió d'aquest període",
       "simulacionAplica": "És el càlcul de la modalitat que conserva el teu contracte.",
       "simulacionNoAplica": "No s'aplica al teu contracte vigent: es mostra només com a referència.",
-      "regimenNingunoEnlace": "Veure la modalitat anterior a Preus",
-      "simulacionSinPlan": "És el càlcul que es fa servir en tancar el mes quan no hi ha cap pla de quota fixa viu.",
       "simulacionPuedeAplicar": "Es pot aplicar segons el teu contracte: aquí es mostra com a càlcul, no com a factura.",
+      "simulacionMedir": "A Measure és només una estimació: mai no es factura.",
       "notaSombraReferencia": "Xifra en ombra: la comissió calculada és {comision}. És un càlcul, no una factura.",
       "historialIntroNeutro": "Cada període tancat queda fixat immutable el dia u. Si un període genera un càrrec, la seva factura cita aquest document."
     },

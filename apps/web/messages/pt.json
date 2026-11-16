@@ -61,7 +61,7 @@
       "accountLink": "Definições da conta de {email}",
       "plan": {
         "free": "Grátis",
-        "pro": "Pro",
+        "pro": "Plano pago",
         "enterprise": "Enterprise"
       }
     },
@@ -730,7 +730,8 @@
       "checkoutError": "Algo correu mal — tenta novamente.",
       "seatsLabel": "Lugares",
       "seatsHint": "Um lugar é uma máquina ou identidade de serviço ativa, não uma pessoa. Conta os processos que vão executar o SDK, não os teus colaboradores. No Kubernetes, define BVSALA_SEAT_ID em cada réplica.",
-      "seatsOver": "{used, plural, one {# lugar} other {# lugares}} em uso e {paid, plural, one {# pago} other {# pagos}}. O excesso é faturado de acordo com o teu plano e o estado da tua subscrição, no fecho do mês. Com pagamento mensal é acrescentado à tua próxima fatura e a quantidade contratada sobe para os lugares em uso. Com pagamento anual é faturado no fecho do mês, à tarifa anual dividida por doze, e a quantidade contratada não muda. Também podes ajustar a quantidade em «Gerir plano».",
+      "seatsOver": "{used, plural, one {# lugar} other {# lugares}} em uso e {paid, plural, one {# pago} other {# pagos}}. O excesso é faturado de acordo com o teu plano e o estado da tua subscrição, no fecho do mês. Com pagamento mensal é acrescentado à tua próxima fatura e a quantidade contratada sobe para os lugares em uso. Com pagamento anual é faturado no fecho do mês, à tarifa anual dividida por doze, e a quantidade contratada não muda.",
+      "seatsOverManage": "Também podes ajustar a quantidade em «Gerir plano».",
       "seatsLastMonth": "{period}: {used, plural, one {# lugar usado} other {# lugares usados}} e {paid, plural, one {# pago} other {# pagos}}. Excesso: {extra, plural, one {# lugar} other {# lugares}} ({amount}). Com pagamento mensal vai na tua próxima fatura e a quantidade contratada sobe para os lugares usados. Com pagamento anual é faturado no fecho do mês, à tarifa anual dividida por doze, sem alterar a quantidade contratada.",
       "seatsRotated": "{used, plural, one {# lugar contado} other {# lugares contados}} este mês. Revogaste uma chave de serviço e, ao rodá-la, as tuas máquinas estreiam identidade de lugar — por isso este mês conta-as duas vezes. Corrige-se sozinho no mês seguinte: não precisas de mudar de plano.",
       "taxNote": "IVA não incluído. Se a sua empresa tiver número de IVA intracomunitário, aplica-se a autoliquidação.",
@@ -1014,8 +1015,9 @@
       "regimenExentaBody": "Esta organização está marcada como isenta: a comissão é calculada apenas a título informativo e a sua cobrança é zero.",
       "regimenLegadoTitulo": "Modalidade histórica com comissão",
       "regimenLegadoBody": "O teu contrato mantém a modalidade com comissão sobre a poupança medida, fechada a novas adesões. O cálculo está no histórico abaixo; a taxa por lugar é uma cobrança à parte.",
-      "regimenNingunoTitulo": "Sem plano pago ativo",
-      "regimenNingunoBody": "Esta organização não tem em vigor nenhum plano de taxa fixa (Pro ou Team) nem está marcada como isenta. Nesse caso, no fecho de cada mês é emitido um extrato sobre a poupança medida, segundo as condições publicadas da modalidade anterior com comissão; o cálculo está no histórico abaixo. Os planos à venda são de taxa fixa e não têm comissão.",
+      "regimenNingunoBody": "Esta página não consegue confirmar a modalidade com que és faturado. O que te é cobrado é o que consta nas tuas faturas. Em caso de dúvida, escreve para support@bivelio.com.",
+      "regimenMedirTitulo": "Measure: poupança estimada, nunca faturada",
+      "regimenMedirBody": "A tua organização usa a licença gratuita Measure. A camada corre em modo sombra: a poupança que este painel mostra é uma estimativa do que teria poupado. Nunca é faturada e nunca faz parte de nenhuma comissão.",
       "regimenIndeterminadoTitulo": "Não podemos mostrar aqui a modalidade do teu contrato",
       "regimenIndeterminadoBody": "Esta página não conseguiu determinar que modalidade se aplica à tua subscrição. O que te é cobrado é o que consta nas tuas faturas e no portal de faturação.",
       "irACuenta": "Ver plano e faturação",
@@ -1025,9 +1027,8 @@
       "simulacionTitulo": "Simulação da comissão deste período",
       "simulacionAplica": "É o cálculo da modalidade que o teu contrato mantém.",
       "simulacionNoAplica": "Não se aplica ao teu contrato em vigor: é mostrada apenas como referência.",
-      "regimenNingunoEnlace": "Ver a modalidade anterior em Preços",
-      "simulacionSinPlan": "É o cálculo usado no fecho do mês quando não há um plano de taxa fixa em vigor.",
       "simulacionPuedeAplicar": "Pode aplicar-se consoante o teu contrato: aqui é mostrada como cálculo, não como fatura.",
+      "simulacionMedir": "No Measure é apenas uma estimativa: nunca é faturada.",
       "notaSombraReferencia": "Número em sombra: a comissão calculada é {comision}. É um cálculo, não uma fatura.",
       "historialIntroNeutro": "Cada período fechado fica fixado imutável no dia um. Se um período gerar um valor a cobrar, a respetiva fatura cita esse documento."
     },

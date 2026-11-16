@@ -61,7 +61,7 @@
       "accountLink": "Ajustes de la cuenta de {email}",
       "plan": {
         "free": "Gratis",
-        "pro": "Pro",
+        "pro": "Plan de pago",
         "enterprise": "Enterprise"
       }
     },
@@ -730,7 +730,8 @@
       "checkoutError": "Algo salió mal — inténtalo de nuevo.",
       "seatsLabel": "Asientos",
       "seatsHint": "Un asiento es una máquina o identidad de servicio activa, no una persona. Cuenta los procesos que van a ejecutar el SDK, no tus empleados. En Kubernetes, fija BVSALA_SEAT_ID en cada réplica.",
-      "seatsOver": "{used, plural, one {# asiento} other {# asientos}} en uso y {paid, plural, one {# pagado} other {# pagados}}. El exceso se factura según tu plan y el estado de tu suscripción, al cerrar el mes. Con pago mensual se añade a tu próxima factura y la cantidad contratada sube a los asientos en uso. Con pago anual se factura al cierre del mes, a la tarifa anual dividida entre doce, y la cantidad contratada no cambia. También puedes ajustar la cantidad desde «Gestionar plan».",
+      "seatsOver": "{used, plural, one {# asiento} other {# asientos}} en uso y {paid, plural, one {# pagado} other {# pagados}}. El exceso se factura según tu plan y el estado de tu suscripción, al cerrar el mes. Con pago mensual se añade a tu próxima factura y la cantidad contratada sube a los asientos en uso. Con pago anual se factura al cierre del mes, a la tarifa anual dividida entre doce, y la cantidad contratada no cambia.",
+      "seatsOverManage": "También puedes ajustar la cantidad desde «Gestionar plan».",
       "seatsLastMonth": "{period}: {used, plural, one {# asiento usado} other {# asientos usados}} y {paid, plural, one {# pagado} other {# pagados}}. Exceso: {extra, plural, one {# asiento} other {# asientos}} ({amount}). Con pago mensual va en tu próxima factura y la cantidad contratada sube a los asientos usados. Con pago anual se factura al cierre del mes, a la tarifa anual dividida entre doce, sin cambiar la cantidad contratada.",
       "seatsRotated": "{used, plural, one {# asiento contado} other {# asientos contados}} este mes. Has revocado una clave de servicio, y al rotarla tus máquinas estrenan identidad de asiento, así que este mes se cuentan dos veces. Se corrige solo el mes que viene: no tienes que cambiar de plan.",
       "taxNote": "IVA no incluido. Si su empresa tiene NIF-IVA intracomunitario, se aplica la inversión del sujeto pasivo.",
@@ -1014,8 +1015,9 @@
       "regimenExentaBody": "Esta organización está marcada como exenta: la comisión solo se calcula a título informativo y su cargo es cero.",
       "regimenLegadoTitulo": "Modalidad histórica con comisión",
       "regimenLegadoBody": "Tu contrato conserva la modalidad con comisión sobre el ahorro medido, cerrada a nuevas altas. Su cálculo está en el histórico de abajo; la cuota por asiento es un cargo aparte.",
-      "regimenNingunoTitulo": "Sin plan de pago activo",
-      "regimenNingunoBody": "Esta organización no tiene vivo ningún plan de cuota fija (Pro o Team) ni está marcada como exenta. En ese caso, al cerrar cada mes se emite un extracto sobre el ahorro medido, según las condiciones publicadas de la modalidad anterior con comisión; su cálculo está en el histórico de abajo. Los planes en venta son de cuota fija y no llevan comisión.",
+      "regimenNingunoBody": "Esta página no puede confirmar la modalidad con la que se te factura. Lo que se te cobra es lo que figura en tus facturas. Si tienes dudas, escríbenos a support@bivelio.com.",
+      "regimenMedirTitulo": "Measure: ahorro estimado, nunca facturado",
+      "regimenMedirBody": "Tu organización usa la licencia gratuita Measure. La capa corre en modo sombra: el ahorro que muestra este panel es una estimación de lo que habría ahorrado. Nunca se factura y nunca forma parte de ninguna comisión.",
       "regimenIndeterminadoTitulo": "No podemos mostrar aquí la modalidad de tu contrato",
       "regimenIndeterminadoBody": "Esta página no ha podido determinar qué modalidad se aplica a tu suscripción. Lo que se te cobra es lo que figura en tus facturas y en el portal de facturación.",
       "irACuenta": "Ver plan y facturación",
@@ -1025,9 +1027,8 @@
       "simulacionTitulo": "Simulación de la comisión de este periodo",
       "simulacionAplica": "Es el cálculo de la modalidad que conserva tu contrato.",
       "simulacionNoAplica": "No se aplica a tu contrato vigente: se enseña solo como referencia.",
-      "regimenNingunoEnlace": "Ver la modalidad anterior en Precios",
-      "simulacionSinPlan": "Es el cálculo que se usa al cerrar el mes cuando no hay un plan de cuota fija vivo.",
       "simulacionPuedeAplicar": "Puede aplicarse según tu contrato: aquí se enseña como cálculo, no como factura.",
+      "simulacionMedir": "En Measure es solo una estimación: nunca se factura.",
       "notaSombraReferencia": "Cifra en sombra: la comisión calculada es {comision}. Es un cálculo, no una factura.",
       "historialIntroNeutro": "Cada período cerrado queda fijado inmutable el día uno. Si un período genera un cargo, su factura cita ese documento."
     },
