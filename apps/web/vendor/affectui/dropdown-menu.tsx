@@ -5,7 +5,6 @@
  */
 "use client";
 
-import "./dropdown-menu.css";
 
 import {
   createElement,

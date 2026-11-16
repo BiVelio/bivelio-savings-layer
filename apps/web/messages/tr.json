@@ -2090,7 +2090,7 @@
   },
   "howItWorks": {
     "metaTitle": "Tasarruf nereye kurulur? · BiVelio Savings Layer",
-    "metaDescription": "Savings kendi altyapınızın içinde çalışır: uygulamanızda bir SDK ya da yerel bir gateway olarak. Açık kaynak motor ve isteğe bağlı Savings Cloud: neyi tasarruf edebilir, nerede geçerli değildir ve gerçekte nasıl ölçülür.",
+    "metaDescription": "Savings, altyapınızda SDK veya yerel gateway olarak çalışır. Açık kaynak motor, isteğe bağlı Savings Cloud: ne tasarruf eder, nerede etmez, nasıl ölçülür.",
     "eyebrow": "Katman, açıklandı · jargonsuz",
     "title": "Tasarruf nereye kurulur?",
     "lede": "BV‑SALA bir uygulama, bir eklenti veya bir ChatGPT ayarı değildir. Bir geliştiricinin kendi uygulamasının içine — o uygulamanın sağlayıcınızın API'sini çağırdığı yere — yerleştirdiği bir kod parçasıdır. Yalnızca token faturasının var olduğu yerde tasarruf edebilir — ve yalnızca her isteğin geçtiğini gördüğü yerde ölçebilir.",

@@ -3,7 +3,6 @@
  *
  * Changes from upstream are listed in ./VENDOR.md.
  */
-import "./fallback-chain.css";
 import { useId, type CSSProperties, type ElementType, type ReactNode } from "react";
 
 /*

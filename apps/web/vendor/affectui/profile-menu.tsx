@@ -7,7 +7,6 @@
  */
 "use client";
 
-import "./profile-menu.css";
 
 import {
   useEffect,

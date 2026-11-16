@@ -5,7 +5,6 @@
  */
 "use client";
 
-import "./segmented-control.css";
 
 import {
   useEffect,

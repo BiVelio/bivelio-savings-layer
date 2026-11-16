@@ -2090,7 +2090,7 @@
   },
   "howItWorks": {
     "metaTitle": "Di mana penghematan dipasang? · BiVelio Savings Layer",
-    "metaDescription": "Savings berjalan di dalam infrastruktur Anda, sebagai SDK di aplikasi Anda atau sebagai gateway lokal. Mesin open source dan Savings Cloud opsional: apa yang bisa dihemat, di mana tidak berlaku, dan bagaimana pengukurannya yang sebenarnya.",
+    "metaDescription": "Savings berjalan di infrastruktur Anda sebagai SDK atau gateway lokal. Mesin open source, Savings Cloud opsional: penghematan, batasan, cara mengukurnya.",
     "eyebrow": "Lapisannya, dijelaskan · tanpa jargon",
     "title": "Di mana penghematan dipasang?",
     "lede": "BV‑SALA bukan aplikasi, bukan ekstensi, bukan pula pengaturan ChatGPT. Ia adalah sepotong kode yang ditempatkan developer di dalam aplikasinya sendiri, tepat di tempat aplikasi itu memanggil API penyedia Anda. Ia hanya bisa menghemat di tempat ada tagihan per token — dan hanya bisa mengukurnya di tempat ia melihat setiap permintaan lewat.",

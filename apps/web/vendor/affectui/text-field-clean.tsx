@@ -5,7 +5,6 @@
  */
 "use client";
 
-import "./text-field-clean.css";
 import { useId, useState, type ComponentPropsWithRef, type ReactNode } from "react";
 
 import { Tooltip } from "./tooltip-clean";

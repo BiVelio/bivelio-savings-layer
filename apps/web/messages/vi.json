@@ -2090,7 +2090,7 @@
   },
   "howItWorks": {
     "metaTitle": "Khoản tiết kiệm được cài ở đâu? · BiVelio Savings Layer",
-    "metaDescription": "Savings chạy bên trong hạ tầng của bạn, dưới dạng SDK trong ứng dụng hoặc gateway cục bộ. Động cơ mã nguồn mở và Savings Cloud tùy chọn: nó tiết kiệm được gì, ở đâu không áp dụng và cách đo lường thực sự.",
+    "metaDescription": "Savings chạy trong hạ tầng của bạn, dưới dạng SDK hoặc gateway cục bộ. Động cơ mã nguồn mở, Savings Cloud tùy chọn: tiết kiệm gì, ở đâu không, đo ra sao.",
     "eyebrow": "Lớp tiết kiệm, giải thích · không thuật ngữ",
     "title": "Khoản tiết kiệm được cài ở đâu?",
     "lede": "BV‑SALA không phải là ứng dụng, không phải tiện ích mở rộng, cũng không phải một cài đặt của ChatGPT. Nó là một đoạn mã mà lập trình viên đặt vào bên trong ứng dụng của chính họ, ngay tại nơi ứng dụng đó gọi API của nhà cung cấp. Nó chỉ có thể tiết kiệm ở nơi tồn tại hóa đơn theo token — và chỉ có thể đo ở nơi nó thấy từng yêu cầu đi qua.",

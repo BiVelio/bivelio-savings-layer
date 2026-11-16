@@ -3,7 +3,6 @@
  *
  * Changes from upstream are listed in ./VENDOR.md.
  */
-import "./experiment-readout.css";
 import type { ReactNode } from "react";
 
 /*

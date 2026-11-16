@@ -3,7 +3,6 @@
  * MIT License, Copyright (c) 2026 Florian Höller (adfects). Full text: ./LICENSE.
  * FORKED for BiVelio Savings (different topology, no client script); changes from upstream are listed in ./VENDOR.md.
  */
-import "./integration-beam.css";
 import type { ReactNode } from "react";
 
 /*

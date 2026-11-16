@@ -5,7 +5,6 @@
  */
 "use client";
 
-import "./layer-stack.css";
 import { useId, useState, type KeyboardEvent, type ReactNode } from "react";
 
 /*

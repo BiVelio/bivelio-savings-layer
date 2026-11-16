@@ -3,7 +3,6 @@
  * MIT License, Copyright (c) 2026 Florian Höller (adfects). Full text: ./LICENSE.
  * Adapted for BiVelio Savings; changes from upstream are listed in ./VENDOR.md.
  */
-import "./code-block-clean.css";
 
 /*
  * Code Block (Clean) – BiVelio keeps the ENGINE of the piece, not its shell.

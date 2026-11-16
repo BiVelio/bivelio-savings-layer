@@ -5,7 +5,6 @@
  */
 "use client";
 
-import "./logo-marquee.css";
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 
 /*

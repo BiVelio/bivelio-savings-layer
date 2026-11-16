@@ -5,7 +5,6 @@
  */
 "use client";
 
-import "./dialog.css";
 
 import {
   cloneElement,

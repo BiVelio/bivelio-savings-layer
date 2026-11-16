@@ -1,6 +1,5 @@
 /* Derived from affectUI Pro 'outreach-branches' (https://www.affectui.com). Used under the affectUI Pro license held by BiVelio. NOT covered by this repository's Apache-2.0 licence; do not redistribute as a component kit. */
 
-import "./ab-branches.css";
 
 import type { CSSProperties } from "react";
 

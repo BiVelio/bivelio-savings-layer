@@ -2,7 +2,6 @@
 
 /* Derived from affectUI Pro 'hover-card' (https://www.affectui.com). Used under the affectUI Pro license held by BiVelio. NOT covered by this repository's Apache-2.0 licence; do not redistribute as a component kit. */
 
-import "./hover-card.css";
 
 import {
   cloneElement,

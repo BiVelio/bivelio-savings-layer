@@ -5,7 +5,6 @@
  */
 "use client";
 
-import "./grid-background.css";
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 
 /*

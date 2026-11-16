@@ -3,7 +3,6 @@
  *
  * Changes from upstream are listed in ./VENDOR.md.
  */
-import "./tab-overload.css";
 import { useId } from "react";
 
 /*

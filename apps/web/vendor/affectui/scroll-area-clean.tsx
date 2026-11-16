@@ -5,7 +5,6 @@
  */
 "use client";
 
-import "./scroll-area-clean.css";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ComponentPropsWithRef, type CSSProperties, type PointerEvent as ReactPointerEvent, type Ref, type UIEventHandler } from "react";
 
 /*

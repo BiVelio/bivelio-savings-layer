@@ -5,7 +5,6 @@
  */
 "use client";
 
-import "./experiment-card.css";
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent, type ReactNode } from "react";
 
 /*

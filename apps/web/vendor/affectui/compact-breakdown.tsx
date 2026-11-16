@@ -3,7 +3,6 @@
  *
  * Changes from upstream are listed in ./VENDOR.md.
  */
-import "./compact-breakdown.css";
 import { useId, type ReactNode } from "react";
 
 /*

@@ -2090,7 +2090,7 @@
   },
   "howItWorks": {
     "metaTitle": "Onde se instala a economia? · BiVelio Savings Layer",
-    "metaDescription": "O Savings corre dentro da tua infraestrutura, como SDK na tua aplicação ou como gateway local. Motor open source e Savings Cloud opcional: o que pode poupar, onde não se aplica e como se mede de verdade.",
+    "metaDescription": "O Savings corre na tua infraestrutura, como SDK ou gateway local. Motor open source e Savings Cloud opcional: o que poupa, onde não e como se mede.",
     "eyebrow": "A camada, explicada · sem jargão",
     "title": "Onde se instala a economia?",
     "lede": "O BV‑SALA não é um app, nem uma extensão, nem um ajuste do ChatGPT. É um pedaço de código que um desenvolvedor coloca dentro da própria aplicação, exatamente onde essa aplicação chama a API do teu fornecedor. Só pode economizar onde existe uma fatura por tokens — e só pode medir onde vê cada requisição passar.",

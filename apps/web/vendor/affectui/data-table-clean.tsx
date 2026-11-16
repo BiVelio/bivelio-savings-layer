@@ -5,7 +5,6 @@
  */
 "use client";
 
-import "./data-table-clean.css";
 
 import { useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 

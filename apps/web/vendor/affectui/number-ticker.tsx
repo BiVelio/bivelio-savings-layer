@@ -5,7 +5,6 @@
  */
 "use client";
 
-import "./number-ticker.css";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 /*

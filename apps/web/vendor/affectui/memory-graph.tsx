@@ -3,7 +3,6 @@
  *
  * Changes from upstream are listed in ./VENDOR.md.
  */
-import "./memory-graph.css";
 import { useId, type CSSProperties } from "react";
 
 /*

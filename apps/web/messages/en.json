@@ -2090,7 +2090,7 @@
   },
   "howItWorks": {
     "metaTitle": "Where does the saving install? · BiVelio Savings Layer",
-    "metaDescription": "Savings runs inside your infrastructure, as an SDK in your application or as a local gateway. Open-source engine, optional Savings Cloud: what it can save, where it doesn't apply, and how it's truly measured.",
+    "metaDescription": "Savings runs in your infrastructure, as an SDK or local gateway. Open-source engine, optional Savings Cloud: what it saves, its limits, how it's measured.",
     "eyebrow": "The layer, explained · no jargon",
     "title": "Where does the saving install?",
     "lede": "BV‑SALA is not an app, not an extension, not a ChatGPT setting. It's a piece of code a developer places inside their own application, right where that application calls your provider's API. It can only save where a per-token bill exists — and can only measure it where it sees every request go by.",

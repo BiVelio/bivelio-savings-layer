@@ -3,7 +3,6 @@
  *
  * Changes from upstream are listed in ./VENDOR.md.
  */
-import "./separator-clean.css";
 import type { ComponentPropsWithRef, ReactNode } from "react";
 
 /*

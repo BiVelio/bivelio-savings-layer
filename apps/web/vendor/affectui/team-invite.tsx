@@ -3,7 +3,6 @@
  *
  * Changes from upstream are listed in ./VENDOR.md.
  */
-import "./team-invite.css";
 import { useId, type ReactNode } from "react";
 
 /*

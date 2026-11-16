@@ -3,7 +3,6 @@
  *
  * Changes from upstream are listed in ./VENDOR.md.
  */
-import "./badge-clean.css";
 import type { ComponentPropsWithRef, ReactNode } from "react";
 
 /*

@@ -5,7 +5,6 @@
  */
 "use client";
 
-import "./gradient-floor.css";
 import { useEffect, useId, useRef, type ReactNode } from "react";
 
 /*

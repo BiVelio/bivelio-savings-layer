@@ -5,7 +5,6 @@
  */
 "use client";
 
-import "./number-input.css";
 
 import { useEffect, useId, useMemo, useRef, useState, type ComponentPropsWithRef, type ReactNode } from "react";
 

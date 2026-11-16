@@ -7,7 +7,6 @@
  */
 "use client";
 
-import "./kpi-chart.css";
 
 import { useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent, type ReactNode } from "react";
 

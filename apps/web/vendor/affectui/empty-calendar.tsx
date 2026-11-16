@@ -5,7 +5,6 @@
  */
 "use client";
 
-import "./empty-calendar.css";
 
 import { useId } from "react";
 

@@ -5,7 +5,6 @@
  */
 "use client";
 
-import "./tilt-card.css";
 import { useEffect, useRef, type CSSProperties, type PointerEvent, type ReactNode } from "react";
 
 /*

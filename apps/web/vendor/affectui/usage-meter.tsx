@@ -3,7 +3,6 @@
  *
  * Changes from upstream are listed in ./VENDOR.md.
  */
-import "./usage-meter.css";
 
 import { createElement, type ReactNode } from "react";
 

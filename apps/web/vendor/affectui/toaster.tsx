@@ -7,7 +7,6 @@
  */
 "use client";
 
-import "./toaster.css";
 
 import { useEffect, useRef, useSyncExternalStore, type ReactNode } from "react";
 

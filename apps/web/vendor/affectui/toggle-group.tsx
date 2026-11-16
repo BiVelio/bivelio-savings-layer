@@ -2,7 +2,6 @@
 
 /* Derived from affectUI Pro 'toggle-group' (https://www.affectui.com). Used under the affectUI Pro license held by BiVelio. NOT covered by this repository's Apache-2.0 licence; do not redistribute as a component kit. */
 
-import "./toggle-group.css";
 
 import { useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 

@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 
 import { EvidenceBadge } from "@/app/components/ui";
+import { anclaDe } from "@/lib/format/ancla";
 import { ToggleGroup } from "@/vendor/affectui/toggle-group";
 
 import { ParAB } from "./ParAB";
@@ -96,7 +97,7 @@ export function CentroDeEvidencia({
   // Un ancla a una sección plegada vuelve a «Todo» y salta cuando ya se ve.
   useEffect(() => {
     const alAncla = () => {
-      const id = decodeURIComponent(window.location.hash.slice(1));
+      const id = anclaDe(window.location.hash);
       if (!id || !ids.includes(id)) return;
       setLectura((actual) => {
         const permitidas = SECCIONES_POR_LECTURA[actual];

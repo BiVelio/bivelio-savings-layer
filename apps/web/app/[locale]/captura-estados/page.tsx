@@ -2,6 +2,10 @@ import type { CSSProperties, ReactNode } from "react";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+// Galería de desarrollo que pinta componentes del panel FUERA de /dashboard:
+// la hoja de sus piezas la carga el layout del panel, así que aquí se pide a mano.
+import "@/vendor/affectui/affectui-panel.css";
+
 import { AppSidebar } from "@/app/components/app/AppSidebar";
 import { AppTopbar } from "@/app/components/app/AppTopbar";
 import { PageHead } from "@/app/components/app/PageHead";

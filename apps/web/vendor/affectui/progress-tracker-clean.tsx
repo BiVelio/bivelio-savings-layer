@@ -3,7 +3,6 @@
  * MIT License, Copyright (c) 2026 Florian Höller (adfects). Full text: ./LICENSE.
  * Adapted for BiVelio Savings; changes from upstream are listed in ./VENDOR.md.
  */
-import "./progress-tracker-clean.css";
 import type { ElementType, ReactNode } from "react";
 
 /*

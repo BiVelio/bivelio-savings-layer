@@ -3,7 +3,6 @@
  *
  * Changes from upstream are listed in ./VENDOR.md.
  */
-import "./avatar.css";
 
 import type { ComponentPropsWithRef } from "react";
 

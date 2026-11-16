@@ -3,7 +3,6 @@
  *
  * Changes from upstream are listed in ./VENDOR.md.
  */
-import "./glass-folder.css";
 import { useId } from "react";
 
 /*

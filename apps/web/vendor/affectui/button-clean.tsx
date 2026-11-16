@@ -5,7 +5,6 @@
  */
 "use client";
 
-import "./button-clean.css";
 import {
   isValidElement,
   useEffect,

@@ -2090,7 +2090,7 @@
   },
   "howItWorks": {
     "metaTitle": "Waar wordt de besparing geïnstalleerd? · BiVelio Savings Layer",
-    "metaDescription": "Savings draait binnen je eigen infrastructuur, als SDK in je applicatie of als lokale gateway. Open-source engine en optionele Savings Cloud: wat het kan besparen, waar het niet geldt en hoe er echt gemeten wordt.",
+    "metaDescription": "Savings draait in je infrastructuur, als SDK of lokale gateway. Open-source engine, optionele Savings Cloud: wat het bespaart, waar niet, hoe we meten.",
     "eyebrow": "De laag, uitgelegd · zonder jargon",
     "title": "Waar wordt de besparing geïnstalleerd?",
     "lede": "BV‑SALA is geen app, geen extensie en geen ChatGPT-instelling. Het is een stuk code dat een ontwikkelaar in de eigen applicatie plaatst, precies waar die applicatie de API van je aanbieder aanroept. Het kan alleen besparen waar een tokenrekening bestaat — en alleen meten waar het elk verzoek voorbij ziet komen.",

@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 
 import { useRouter } from "@/i18n/navigation";
+import { anclaDe } from "@/lib/format/ancla";
 
 /**
  * LOS ENLACES PROFUNDOS DE LA PORTADA ANTERIOR SIGUEN LLEGANDO A SU SITIO.
@@ -31,7 +32,7 @@ export function EnlacesAntiguos() {
   const router = useRouter();
   useEffect(() => {
     const atender = () => {
-      const ancla = decodeURIComponent(window.location.hash.slice(1));
+      const ancla = anclaDe(window.location.hash);
       if (!ancla) return;
       const destino = MOVIDOS[ancla];
       if (destino) {

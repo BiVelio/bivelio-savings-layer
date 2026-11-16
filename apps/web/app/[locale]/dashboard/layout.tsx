@@ -1,6 +1,11 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+// Las hojas de affectUI que solo usa el panel (tablas, diálogos, gráficas…):
+// el sitio público no las carga. Se importan AQUÍ, en el layout, y no en cada
+// componente — ver la cabecera de vendor/affectui/affectui.css.
+import "@/vendor/affectui/affectui-panel.css";
+
 import { AppSidebar } from "@/app/components/app/AppSidebar";
 import { AppTopbar } from "@/app/components/app/AppTopbar";
 import { destinoDeLaPeticion } from "@/lib/auth/destino";

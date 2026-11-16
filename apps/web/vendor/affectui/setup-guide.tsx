@@ -3,7 +3,6 @@
  *
  * Changes from upstream are listed in ./VENDOR.md.
  */
-import "./setup-guide.css";
 
 import { createElement, type ComponentType, type ReactNode } from "react";
 

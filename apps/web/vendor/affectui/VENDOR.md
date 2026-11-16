@@ -160,9 +160,16 @@ arriba.
 
 1. Cabecera de procedencia y licencia en cada fichero.
 2. La cadena `const css = \`…\`` y su `<style href precedence>` se
-   sustituyen por un `.css` hermano que el `.tsx` importa
-   (`import "./pieza.css"`). Next App Router admite CSS global importado desde
-   un componente fuera de `app/`; el build lo comprueba.
+   sustituyen por un `.css` hermano. El `.tsx` **no lo importa**:
+   `node scripts/juntar-affectui.mjs` copia todas las hojas en dos ficheros
+   generados —`affectui.css`, con las piezas que alcanza alguna página pública
+   o la 404, que importa el layout del idioma detrás de `globals.css`; y
+   `affectui-panel.css`, con las que solo usa el panel, que importa
+   `dashboard/layout.tsx`—. El reparto sale del grafo de imports, no de una
+   lista. Con un `import "./pieza.css"` por componente Next partía el CSS en 43
+   ficheros, cada página esperaba hasta 15 hojas antes de pintar y la 404 se
+   quedaba en blanco en una de cada tres cargas directas (la causa, en la
+   cabecera de `affectui.css`). Lo vigila `hojas-en-una-entrada.test.ts`.
 3. **Solo tema claro**: se elimina el bloque final
    `:where(.dark, [data-theme="dark"]) …`.
 4. **Tipografías**: los respaldos `"Inter", …` pasan a
@@ -220,10 +227,14 @@ arriba.
   El texto contractual parte línea; nada depende del hover. El precio anual se
   rotula como cargo anual: el componente nunca divide ni multiplica importes.
 - **gradient-text** (Pro; F1, una frase del héroe) — colores a azul de marca →
-  verde azulado (todas las paradas ≥ 3:1 sobre marfil), ciclo de 12 s (antes
-  8), barrido de 900 ms, `-webkit-user-select`, y un bloque `forced-colors`
-  que deja solo el texto real. El texto real sigue en el DOM (seleccionable y
-  leído); la copia coloreada es `aria-hidden`.
+  verde azulado (todas las paradas ≥ 3:1 sobre marfil), barrido de 900 ms,
+  `-webkit-user-select`, y un bloque `forced-colors` que deja solo el texto
+  real. El texto real sigue en el DOM (seleccionable y leído); la copia
+  coloreada es `aria-hidden`. **Sin bucle** (WCAG 2.2.2): upstream repite el
+  flujo sin fin (8 s por ciclo); aquí da UNA pasada de 4 s como mucho
+  (`FLOW_MAX_S`, `speed` queda acotado), que empieza con el barrido al verse la
+  frase y termina en el degradado quieto. Con `prefers-reduced-motion` no se
+  mueve nada.
 - **gradient-floor** (Pro; F1, cierre de la landing) — `speed` por defecto `0`
   (la forma no se mueve), deriva lateral de 18 s (antes 2,5 s) ajustable con
   `--ui-gf-drift`, intensidad con `--ui-gf-strength`, fondo desde
@@ -615,7 +626,11 @@ que aportó cada frente. Quien la actualice parte de esta lista, no de cuatro.
    `shasum -a 256`.
 2. Crea `vendor/affectui/<pieza>.tsx` y `<pieza>.css`:
    - cabecera de licencia (MIT o Pro, las de arriba);
-   - mueve el CSS de la cadena a `<pieza>.css` e impórtalo; borra el `<style>`;
+   - mueve el CSS de la cadena a `<pieza>.css` y borra el `<style>`. **No lo
+     importes desde el `.tsx`**: `node scripts/juntar-affectui.mjs` lo mete en
+     la hoja que toque (pública o del panel, según quién importe la pieza). Hay
+     que volver a ejecutarlo cuando una pieza del panel pasa a usarse en una
+     página pública; el test falla si se olvida;
    - borra el bloque de tema oscuro; tipografías a `var(--aui-font, var(--font-sans))`;
    - colores sueltos → tokens de BiVelio; no añadas `--aui-*` nuevos sin
      definirlos en `:root` de `app/globals.css` (eso lo coordina la fundación);
@@ -626,7 +641,8 @@ que aportó cada frente. Quien la actualice parte de esta lista, no de cuatro.
    `ui-*` de la pieza viven en su `.css`; **no** escribas esas clases como
    literales en un `className` de `app/**` (el test `clases-que-existen` solo
    conoce `app/globals.css`).
-5. `pnpm --dir apps/web run typecheck`, `pnpm exec vitest run apps/web` y el
+5. `node scripts/juntar-affectui.mjs` (desde `apps/web`),
+   `pnpm --dir apps/web run typecheck`, `pnpm exec vitest run apps/web` y el
    build.
 
 ## Cómo actualizar una pieza

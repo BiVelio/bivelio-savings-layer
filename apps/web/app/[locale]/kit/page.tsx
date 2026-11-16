@@ -2,6 +2,10 @@ import type { CSSProperties, ReactNode } from "react";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+// Galería de desarrollo que pinta componentes del panel FUERA de /dashboard:
+// la hoja de sus piezas la carga el layout del panel, así que aquí se pide a mano.
+import "@/vendor/affectui/affectui-panel.css";
+
 import { CodeFrame, EmptyState, EvidenceBadge, Notice, PageHeader, Recibo, SectionHead, Skeleton, SkeletonText, type TipoDeEvidencia } from "@/app/components/ui";
 import { ProofIcon } from "@/app/components/icons";
 import { capturaDisponible } from "@/lib/portada/panel-del-banco";

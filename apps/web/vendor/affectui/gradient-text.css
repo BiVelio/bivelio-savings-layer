@@ -39,7 +39,13 @@
   background-clip: text;
   /* A little room around the box, so overhanging glyphs are not cut by the sweep */
   clip-path: inset(-0.25em -0.25em -0.25em -0.25em);
-  animation: ui-gt-flow var(--ui-gt-speed) ease-in-out infinite;
+}
+/* BiVelio (WCAG 2.2.2): the flow is NOT a loop. It starts when the phrase is seen, makes one pass and comes to
+   rest on the same picture it started from (0% and 100% of the keyframes are the resting positions). The
+   component caps --ui-gt-speed so sweep and flow are over in under five seconds: motion that long, next to
+   text people are reading, would otherwise need its own pause control. */
+.ui-gt[data-state="in"] .ui-gt__fill {
+  animation: ui-gt-flow var(--ui-gt-speed, 4s) ease-in-out 1;
 }
 
 /* Sweep: the fill is hidden until the text is seen, then wipes in from the left */
@@ -56,7 +62,7 @@
   transition-delay: calc(var(--ui-gt-sweep) - 200ms);
 }
 
-/* The blobs drift on their own paths; the base gradient stays put */
+/* The blobs drift on their own paths and return home; the base gradient stays put */
 @keyframes ui-gt-flow {
   0%, 100% { background-position: -20% 30%, 120% 70%, 50% -40%, 0 0; }
   25% { background-position: 40% 110%, 60% -10%, 110% 60%, 0 0; }
@@ -67,6 +73,7 @@
 /* Reduced motion: the finished gradient, standing still */
 @media (prefers-reduced-motion: reduce) {
   .ui-gt .ui-gt__fill,
+  .ui-gt[data-state="in"] .ui-gt__fill,
   .ui-gt[data-sweep][data-state="idle"] .ui-gt__fill {
     animation: none;
     transition: none;

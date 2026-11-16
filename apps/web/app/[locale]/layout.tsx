@@ -5,6 +5,13 @@ import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 
 import "../globals.css";
+// Las hojas de affectUI que usa el sitio público, en un fichero y DESPUÉS de
+// globals.css (el orden de cascada de siempre). Van aquí y no en cada
+// componente: así una página espera dos hojas antes de pintar en vez de hasta
+// quince, y la 404 no depende de hojas que solo conoce su árbol — eso la
+// dejaba en blanco en una de cada tres cargas directas (la causa, en la
+// cabecera de affectui.css). Las que solo usa el panel las carga su layout.
+import "@/vendor/affectui/affectui.css";
 import { NavBar } from "@/app/components/NavBar";
 import { SiteNavGate } from "@/app/components/SiteNavGate";
 import { routing } from "@/i18n/routing";

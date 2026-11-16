@@ -5,7 +5,6 @@
  */
 "use client";
 
-import "./tooltip-clean.css";
 
 import {
   cloneElement,
