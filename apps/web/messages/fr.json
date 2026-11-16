@@ -67,7 +67,7 @@
         "enterprise": "Enterprise"
       },
       "menuLabel": "Menu du compte",
-      "setupNext": "Ensuite :"
+      "setupNext": "Prochaine étape :"
     },
     "tour": {
       "open": "Voir la visite",
@@ -281,7 +281,7 @@
         "noPrice": "Pas de prix pour tarifer ce trafic",
         "notMeasured": "Rien de mesuré pour l'instant sur cette période",
         "costDef": "Ce que votre fournisseur a facturé pour ce trafic, à vos tarifs. Inclut toutes les requêtes tarifées, mesurées ou non.",
-        "savedDef": "Référence moins coût réel, uniquement sur les requêtes avec un compteur du fournisseur. Les estimations et le mode shadow n'y entrent jamais.",
+        "savedDef": "Référence moins coût réel, uniquement sur les requêtes avec un compteur du fournisseur. Les estimations et les chiffres du mode ombre n'y entrent jamais.",
         "requestsDef": "Toutes les requêtes reçues sur la période. Seules celles qui portent un compteur du fournisseur comptent pour les économies créditées."
       },
       "breakdown": {
@@ -448,7 +448,7 @@
       },
       "weightsTitle": "Le poids de chaque groupe",
       "weightsTotal": "requêtes éligibles sur la période",
-      "weightsNote": "Chaque groupe pèse dans le chiffre ce qu'il représente dans vos requêtes éligibles, et non le nombre de paires qu'il contient. Un groupe sans paire reste en dehors."
+      "weightsNote": "Chaque groupe pèse dans le chiffre affiché ce qu'il représente dans vos requêtes éligibles, et non selon son nombre de paires. Un groupe sans paire est exclu."
     },
     "install": {
       "metaTitle": "Installer · BiVelio Savings Layer",
@@ -591,7 +591,7 @@
       "sortBy": "Trier par {col}",
       "title": "Scénario par scénario",
       "help": "Ce que signifie « {col} »",
-      "termTokens": "Tokens moyens d'entrée et de sortie par requête, d'après l'usage que rapporte le fournisseur.",
+      "termTokens": "Tokens moyens d'entrée et de sortie par requête, d'après l'usage déclaré par le fournisseur.",
       "termCost": "Coût moyen d'une requête dans ce bras. La barre utilise la même échelle pour A et pour B.",
       "termSavings": "Un moins le coût de B divisé par celui de A. En négatif, la couche a coûté plus cher.",
       "termQa": "Réponses qui passent le contrôle de qualité, sur celles qui ont été vérifiées."
@@ -843,7 +843,7 @@
       "residualNote": "résidu {residual} — vérifiez la comptabilité.",
       "footnoteReference": "Ce sont des <b>leviers de référence</b> : votre rail en direct en mesure quatre autres — provider-cached remplace output-restriction — nous ne faisons donc jamais correspondre l'un à l'autre.",
       "scenarios": "Scénarios de ce registre",
-      "termFloor": "Borne inférieure de l'intervalle de confiance : à ce niveau de confiance, l'économie du registre est au moins celle-ci.",
+      "termFloor": "Borne inférieure de l'intervalle de confiance : à ce niveau de confiance, le registre économise au moins ce montant.",
       "termDelta": "Différence de coût entre A et B sur les scénarios de ce registre."
     },
     "integrityQualityChips": {
@@ -1664,7 +1664,7 @@
       "eyebrow": "Savings Layer, en action",
       "title": "Une fine couche entre votre code et votre fournisseur.",
       "titleAccent": "C’est ça, Savings Layer.",
-      "sub": "Elle s’exécute dans votre infrastructure, n’envoie au fournisseur que ce qui doit être payé et renvoie un reçu avec chaque réponse. Vos prompts vont directement au fournisseur que vous configurez ; Savings Cloud est facultatif et reçoit des comptages et le coût, pas leur contenu.",
+      "sub": "Elle s’exécute dans votre infrastructure, n’envoie au fournisseur que ce qui doit être payé et renvoie un reçu avec chaque réponse. Vos prompts vont directement au fournisseur que vous configurez ; Savings Cloud est facultatif et reçoit des décomptes et des coûts, pas leur contenu.",
       "figLabel": "Illustration animée : le parcours d'un appel à travers Savings Layer",
       "stepsLabel": "Le parcours, étape par étape",
       "pause": "Mettre l'animation en pause",
@@ -2082,8 +2082,8 @@
       "forestHint": "Le point est l'estimation ; la barre, l'intervalle de confiance ; le trait, le zéro. Tous à la même échelle."
     },
     "terms": {
-      "interval": "L'estimation et, entre crochets, son intervalle de confiance. Si l'intervalle croise le zéro, on ne la distingue pas de zéro.",
-      "sample": "Requêtes par bras et combien sont des questions uniques ; le reste, ce sont des répétitions exactes et des paraphrases.",
+      "interval": "L'estimation et, entre crochets, son intervalle de confiance. Si l'intervalle contient zéro, on ne peut pas la distinguer de zéro.",
+      "sample": "Requêtes par bras, dont le nombre de questions uniques ; les autres sont des répétitions exactes et des paraphrases.",
       "accuracy": "Bonnes réponses sur les questions dont la réponse est publiée, dans le bras A et dans le bras B.",
       "run": "Version du paquet exécutée dans le bras B et jour de l'exécution."
     }
@@ -2524,7 +2524,7 @@
     },
     "art": {
       "alt": "Illustration : un dossier bleu contenant trois documents, derrière une poche translucide.",
-      "caption": "Vos requêtes, réponses et identifiants ne partent pas vers BiVelio."
+      "caption": "Vos requêtes, réponses et identifiants ne sont pas envoyés à BiVelio."
     }
   },
   "docsPage": {

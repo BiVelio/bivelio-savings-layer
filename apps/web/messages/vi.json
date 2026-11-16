@@ -281,7 +281,7 @@
         "noPrice": "Chưa có giá để tính cho lưu lượng này",
         "notMeasured": "Chưa đo được gì trong kỳ này",
         "costDef": "Khoản nhà cung cấp đã tính cho lưu lượng này, theo giá của bạn. Bao gồm mọi yêu cầu có giá, dù đã đo hay chưa.",
-        "savedDef": "Đường cơ sở trừ chi phí thực, chỉ trên các yêu cầu có bộ đếm của nhà cung cấp. Số ước tính và số của chế độ shadow không bao giờ được tính vào đây.",
+        "savedDef": "Đường cơ sở trừ chi phí thực, chỉ trên các yêu cầu có bộ đếm của nhà cung cấp. Số ước tính và số liệu của chế độ bóng không bao giờ được tính vào đây.",
         "requestsDef": "Mọi yêu cầu nhận được trong kỳ. Chỉ những yêu cầu có bộ đếm của nhà cung cấp mới được tính vào khoản tiết kiệm được ghi nhận."
       },
       "breakdown": {
@@ -444,11 +444,11 @@
       "terms": {
         "sample": "Các cặp so sánh được: cùng một yêu cầu có lớp và không có lớp, cả hai đều do nhà cung cấp của bạn đo.",
         "interval": "Khoảng mà mức tiết kiệm thực rơi vào ở mức tin cậy đó. Con số chính là đầu dưới của khoảng.",
-        "coverage": "Phần yêu cầu đủ điều kiện của bạn nằm trong các nhóm có cặp. Phần còn lại không được tính vào con số."
+        "coverage": "Phần yêu cầu hợp lệ của bạn nằm trong các nhóm có cặp. Phần còn lại không được tính vào con số."
       },
       "weightsTitle": "Trọng số của từng nhóm",
-      "weightsTotal": "yêu cầu đủ điều kiện trong kỳ",
-      "weightsNote": "Mỗi nhóm có trọng số trong con số chính theo tỷ trọng của nó trong các yêu cầu đủ điều kiện, không theo số cặp nó có. Nhóm không có cặp bị loại ra."
+      "weightsTotal": "yêu cầu hợp lệ trong kỳ",
+      "weightsNote": "Mỗi nhóm có trọng số trong con số chính theo tỷ trọng của nó trong các yêu cầu hợp lệ của bạn, không theo số cặp nó có. Nhóm không có cặp bị loại ra."
     },
     "install": {
       "metaTitle": "Cài đặt · BiVelio Savings Layer",
@@ -724,12 +724,12 @@
       "hiddenTitle": "Thẻ máy đang bị ẩn",
       "hiddenBody": "Bạn đã ẩn thẻ này khi tùy chỉnh bảng điều khiển. Dữ liệu của nó vẫn đang được đo.",
       "show": "Hiện thẻ",
-      "seatsTitle": "Chỗ đang dùng trong tháng này",
-      "seatsOf": "{seats, plural, other {trên # chỗ đã trả tiền}}",
+      "seatsTitle": "Ghế đang dùng trong tháng này",
+      "seatsOf": "{seats, plural, other {trên # ghế đã trả tiền}}",
       "seatsFull": "đã dùng hết",
-      "seatsOver": "vượt số chỗ đã trả tiền",
-      "seatsNote": "Một chỗ là một máy hoặc một danh tính dịch vụ, không bao giờ là một người.",
-      "seatsRotated": "Tháng này đã xoay một khóa dịch vụ: số đếm có thể tính cùng một máy hai lần."
+      "seatsOver": "vượt số ghế đã trả tiền",
+      "seatsNote": "Một ghế là một máy hoặc một danh tính dịch vụ, không bao giờ là một người.",
+      "seatsRotated": "Tháng này một khóa dịch vụ đã được thay: số đếm có thể tính cùng một máy hai lần."
     },
     "installLicensePanel": {
       "eyebrow": "Bắt đầu",
@@ -828,7 +828,7 @@
       "roleNote": "Vai trò của bạn không thể mua hoặc quản lý việc thanh toán. Hãy nhờ người có vai trò chủ sở hữu, quản trị viên hoặc thanh toán thực hiện.",
       "paidPlan": "Gói trả phí",
       "seatsFree": "Còn trống",
-      "seatsExtra": "Vượt mức đã ký",
+      "seatsExtra": "Vượt số đã đăng ký",
       "seatsMore": "Thêm một ghế",
       "seatsLess": "Bớt một ghế"
     },
@@ -856,7 +856,7 @@
       "provenAt95": "đã chứng minh ở mức 95%",
       "unprovenMock": "chưa chứng minh (mô phỏng)",
       "regressedVoids": "Một câu trả lời bị suy giảm sẽ làm mất hiệu lực mức tiết kiệm của nó",
-      "title": "Các kiểm tra của lần chạy"
+      "title": "Các kiểm tra của lần chạy này"
     },
     "netSavingsCIBand": {
       "caption": "tiết kiệm ròng, <b>giới hạn dưới của khoảng tin cậy 95%</b>. Ước tính điểm {point}, cận trên {upper} — chúng tôi lấy mức sàn làm tiêu đề{mockNote}.",
@@ -1185,7 +1185,7 @@
       "sortBy": "Sắp xếp theo {column}",
       "toastHidden": "Đã ẩn thẻ: {card}",
       "toastShown": "Đã hiện thẻ: {card}",
-      "toastReset": "Đã khôi phục bố cục",
+      "toastReset": "Đã đặt lại bố cục",
       "toastSaved": "Chỉ lưu trên trình duyệt này.",
       "undo": "Hoàn tác",
       "toastRegion": "Thông báo của bảng điều khiển",
@@ -1664,7 +1664,7 @@
       "eyebrow": "Savings Layer khi hoạt động",
       "title": "Một lớp mỏng giữa mã của bạn và nhà cung cấp.",
       "titleAccent": "Đó chính là Savings Layer.",
-      "sub": "Lớp này chạy trong hạ tầng của bạn, chỉ gửi cho nhà cung cấp những gì phải trả và trả về một biên lai kèm mỗi phản hồi. Prompt của bạn đi thẳng tới nhà cung cấp mà bạn cấu hình; Savings Cloud là tùy chọn và chỉ nhận số đếm và chi phí, không nhận nội dung.",
+      "sub": "Lớp này chạy trong hạ tầng của bạn, chỉ gửi cho nhà cung cấp những gì cần trả tiền và trả về một biên lai kèm mỗi phản hồi. Prompt của bạn đi thẳng tới nhà cung cấp mà bạn cấu hình; Savings Cloud là tùy chọn và chỉ nhận số đếm và chi phí, không nhận nội dung.",
       "figLabel": "Hình minh họa động: hành trình của một lệnh gọi qua Savings Layer",
       "stepsLabel": "Hành trình, từng bước",
       "pause": "Tạm dừng hoạt ảnh",
@@ -1675,21 +1675,21 @@
       "srcAgent": "Agent của bạn",
       "srcAgentVia": "gateway cục bộ",
       "memoryLabel": "Bộ nhớ các yêu cầu gần đây",
-      "compactLabel": "Nén gọn dữ liệu",
+      "compactLabel": "Thu gọn dữ liệu",
       "providersLabel": "Nhà cung cấp bạn cấu hình",
       "nativeAdapter": "bộ chuyển đổi gốc",
       "compatName": "Bất kỳ endpoint nào tương thích với API của OpenAI",
       "step1Title": "Lệnh gọi đi vào lớp",
-      "step1Body": "Nó rời ứng dụng hoặc agent của bạn mà không ra khỏi hạ tầng của bạn.",
+      "step1Body": "Lệnh gọi xuất phát từ ứng dụng hoặc agent của bạn mà không rời khỏi hạ tầng của bạn.",
       "step2Title": "Lặp lại · trả lời mà không gọi nhà cung cấp",
       "step2Body": "Lớp nhận ra yêu cầu trong bộ nhớ và trả về phản hồi đã lưu.",
-      "step3Title": "Dữ liệu được nén gọn · ít token hơn",
+      "step3Title": "Dữ liệu được thu gọn · ít token hơn",
       "step3Body": "Yêu cầu mới đi nhẹ hơn tới nhà cung cấp bạn cấu hình, và phản hồi quay về qua lớp.",
       "step4Title": "Chỉ số đếm và chi phí · không bao giờ có prompt",
       "step4Body": "Savings Cloud là tùy chọn: nếu kết nối, nó nhận con số, không nhận nội dung.",
       "legendRepeat": "Lặp lại",
       "legendRepeatTo": "không gọi nhà cung cấp",
-      "legendData": "Dữ liệu nén gọn",
+      "legendData": "Dữ liệu thu gọn",
       "legendDataTo": "ít token hơn",
       "legendCache": "Cache của nhà cung cấp",
       "legendCacheTo": "đầu vào rẻ hơn",
@@ -1733,7 +1733,7 @@
     "labelOrg": "Tổ chức",
     "labelFor": "Gửi tới",
     "panelTitle": "Một nhóm, <em>một bảng điều khiển</em>.",
-    "panelBody": "Khi chấp nhận, bạn vào bảng điều khiển của tổ chức bằng tài khoản của riêng mình. Số ghế của gói đăng ký tính theo máy hoặc danh tính dịch vụ, không tính theo người.",
+    "panelBody": "Khi chấp nhận, quý vị vào bảng điều khiển của tổ chức bằng tài khoản của riêng mình. Số ghế của gói đăng ký tính theo máy hoặc danh tính dịch vụ, không tính theo người.",
     "arteAlt": "Hình minh họa: một tổ chức và bảng điều khiển Savings đã kết nối, cùng một vòng tròn thứ ba đi vào ô trống."
   },
   "benchmarksPage": {
@@ -2082,7 +2082,7 @@
       "forestHint": "Chấm là ước lượng; thanh là khoảng tin cậy; vạch là số không. Tất cả cùng một thang đo."
     },
     "terms": {
-      "interval": "Ước lượng và, trong ngoặc vuông, khoảng tin cậy của nó. Nếu khoảng cắt qua số không thì không phân biệt được với không.",
+      "interval": "Ước lượng và, trong ngoặc vuông, khoảng tin cậy của nó. Nếu khoảng cắt qua số không thì kết quả không phân biệt được với số không.",
       "sample": "Số yêu cầu mỗi nhánh và bao nhiêu trong đó là câu hỏi riêng biệt; phần còn lại là lặp lại y nguyên và diễn đạt lại.",
       "accuracy": "Số câu trả lời đúng trên các câu hỏi có đáp án đã công bố, ở nhánh A và nhánh B.",
       "run": "Phiên bản gói đã chạy ở nhánh B và ngày chạy."

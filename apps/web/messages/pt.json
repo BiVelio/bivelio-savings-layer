@@ -304,14 +304,14 @@
         "seriesActual": "Custo real medido",
         "seriesSaved": "Poupança creditada do dia",
         "band": "Poupança creditada",
-        "chartAria": "Linha de base e custo real por dia. Use as setas esquerda e direita para ler cada dia.",
+        "chartAria": "Linha de base e custo real por dia. Usa as setas esquerda e direita para ler cada dia.",
         "gap": "Sem pedidos medidos neste dia",
         "chartFoot": "Apenas pedidos com contador do fornecedor ({share} do tráfego) · {period}. Um dia sem medição é um vazio, não um zero.",
         "providersTitle": "Utilização por fornecedor",
         "measureCost": "Custo real",
         "measureTokens": "Tokens",
         "measuresAria": "Medida",
-        "barAria": "{company}: {value}. Prima para ver os modelos."
+        "barAria": "{company}: {value}. Carrega para ver os modelos."
       }
     },
     "proof": {
@@ -442,13 +442,13 @@
         "methodLink": "Ver metodologia"
       },
       "terms": {
-        "sample": "Pares comparáveis: o mesmo pedido com e sem a camada, ambos medidos pelo teu fornecedor.",
+        "sample": "Pares comparáveis: o mesmo pedido com e sem a camada, ambos medidos pelo seu fornecedor.",
         "interval": "O intervalo onde cai a poupança real com esse nível de confiança. O valor em destaque é o seu extremo inferior.",
-        "coverage": "A parte dos teus pedidos elegíveis que está em grupos com pares. O resto não entra no valor."
+        "coverage": "A parte dos seus pedidos elegíveis que está em grupos com pares. O resto não entra no valor."
       },
       "weightsTitle": "Quanto pesa cada grupo",
       "weightsTotal": "pedidos elegíveis no período",
-      "weightsNote": "Cada grupo pesa no valor em destaque o que representa nos teus pedidos elegíveis, não os pares que tem. Um grupo sem pares fica de fora."
+      "weightsNote": "Cada grupo pesa no valor em destaque o que representa nos seus pedidos elegíveis, não os pares que tem. Um grupo sem pares fica de fora."
     },
     "install": {
       "metaTitle": "Instalar · BiVelio Savings Layer",
@@ -1665,7 +1665,7 @@
       "title": "Uma camada fina entre o teu código e o teu fornecedor.",
       "titleAccent": "Isso é o Savings Layer.",
       "sub": "Corre na tua infraestrutura, envia ao fornecedor só o que é preciso pagar e devolve um recibo com cada resposta. Os teus prompts vão diretamente para o fornecedor que configurares; o Savings Cloud é opcional e recebe contagens e custo, não o seu conteúdo.",
-      "figLabel": "Ilustração animada: o percurso de uma chamada pela Savings Layer",
+      "figLabel": "Ilustração animada: o percurso de uma chamada pelo Savings Layer",
       "stepsLabel": "O percurso, passo a passo",
       "pause": "Pausar animação",
       "resume": "Retomar animação",
@@ -1686,7 +1686,7 @@
       "step3Title": "Dados compactados · menos tokens",
       "step3Body": "Um pedido novo viaja mais leve até ao fornecedor que configurares e a resposta volta pela camada.",
       "step4Title": "Apenas contagens e custos · nunca prompts",
-      "step4Body": "A Savings Cloud é opcional: se a ligares, recebe números, não conteúdo.",
+      "step4Body": "O Savings Cloud é opcional: se o ligares, recebe números, não conteúdo.",
       "legendRepeat": "Repetidas",
       "legendRepeatTo": "sem chamar o fornecedor",
       "legendData": "Dados compactados",
@@ -2524,7 +2524,7 @@
     },
     "art": {
       "alt": "Ilustração: uma pasta azul com três documentos, atrás de um bolso translúcido.",
-      "caption": "Os seus pedidos, respostas e credenciais não saem para a BiVelio."
+      "caption": "Os seus pedidos, respostas e credenciais não são enviados para a BiVelio."
     }
   },
   "docsPage": {

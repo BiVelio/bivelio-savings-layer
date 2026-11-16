@@ -281,7 +281,7 @@
         "noPrice": "Sin precio para tarifar este tráfico",
         "notMeasured": "Nada medido todavía en este periodo",
         "costDef": "Lo que facturó tu proveedor por este tráfico, a tus precios. Incluye todas las peticiones con precio, medidas o no.",
-        "savedDef": "Línea base menos coste real, solo en las peticiones con contador del proveedor. Lo estimado y lo de modo sombra nunca entra aquí.",
+        "savedDef": "Línea base menos coste real, solo en las peticiones con contador del proveedor. Las estimaciones y las cifras del modo sombra nunca entran aquí.",
         "requestsDef": "Todas las peticiones recibidas en el periodo. Solo las que traen contador del proveedor cuentan para el ahorro acreditado."
       },
       "breakdown": {
@@ -729,7 +729,7 @@
       "seatsFull": "todos en uso",
       "seatsOver": "por encima de los pagados",
       "seatsNote": "Un asiento es una máquina o una identidad de servicio, nunca una persona.",
-      "seatsRotated": "Este mes se rotó una clave de servicio: el recuento puede contar la misma máquina dos veces."
+      "seatsRotated": "Este mes se rotó una clave de servicio: el recuento puede incluir la misma máquina dos veces."
     },
     "installLicensePanel": {
       "eyebrow": "Empezar",
@@ -843,7 +843,7 @@
       "residualNote": "residual {residual}: revisa la contabilidad.",
       "footnoteReference": "Estas son <b>palancas de referencia</b>: tu vía en vivo mide otras cuatro (provider-cached reemplaza a output-restriction), así que nunca las equiparamos entre sí.",
       "scenarios": "Escenarios de este libro",
-      "termFloor": "Límite inferior del intervalo de confianza: con ese nivel de confianza, el ahorro del libro es al menos este.",
+      "termFloor": "Límite inferior del intervalo de confianza: con ese nivel de confianza, el libro ahorra como mínimo esta cantidad.",
       "termDelta": "Diferencia de coste entre A y B en los escenarios de este libro."
     },
     "integrityQualityChips": {
@@ -1733,7 +1733,7 @@
     "labelOrg": "Organización",
     "labelFor": "Para",
     "panelTitle": "Un equipo, <em>un panel</em>.",
-    "panelBody": "Al aceptar entra en el panel de la organización con su propia cuenta. Los asientos de la suscripción cuentan máquinas o identidades de servicio, no personas.",
+    "panelBody": "Al aceptar, entra en el panel de la organización con su propia cuenta. Los asientos de la suscripción cuentan máquinas o identidades de servicio, no personas.",
     "arteAlt": "Ilustración: una organización y su panel de Savings ya conectados, y un tercer círculo que entra en el hueco libre."
   },
   "benchmarksPage": {
@@ -2524,7 +2524,7 @@
     },
     "art": {
       "alt": "Ilustración: una carpeta azul con tres documentos dentro, tras un bolsillo translúcido.",
-      "caption": "Sus peticiones, respuestas y credenciales no salen hacia BiVelio."
+      "caption": "Tus peticiones, respuestas y credenciales no se envían a BiVelio."
     }
   },
   "docsPage": {

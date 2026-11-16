@@ -281,7 +281,7 @@
         "noPrice": "Brak ceny do wyceny tego ruchu",
         "notMeasured": "W tym okresie nic jeszcze nie zmierzono",
         "costDef": "Tyle dostawca naliczył za ten ruch, po Twoich cenach. Obejmuje wszystkie wycenione żądania, zmierzone lub nie.",
-        "savedDef": "Linia bazowa minus koszt rzeczywisty, tylko dla żądań z licznikiem dostawcy. Szacunki i dane z trybu shadow nigdy tu nie trafiają.",
+        "savedDef": "Linia bazowa minus koszt rzeczywisty, tylko dla żądań z licznikiem dostawcy. Szacunki i dane z trybu cienia nigdy tu nie trafiają.",
         "requestsDef": "Wszystkie żądania otrzymane w okresie. Do zaliczonych oszczędności liczą się tylko te z licznikiem dostawcy."
       },
       "breakdown": {
@@ -443,12 +443,12 @@
       },
       "terms": {
         "sample": "Porównywalne pary: to samo żądanie z warstwą i bez niej, oba zmierzone przez Twojego dostawcę.",
-        "interval": "Zakres, w którym mieści się rzeczywista oszczędność przy tym poziomie ufności. Główna liczba to jego dolny kraniec.",
+        "interval": "Zakres, w którym przy tym poziomie ufności mieści się rzeczywista oszczędność. Główny wynik to jego dolna granica.",
         "coverage": "Część Twoich kwalifikujących się żądań, która należy do grup z parami. Reszta nie wchodzi do wyniku."
       },
       "weightsTitle": "Ile waży każda grupa",
       "weightsTotal": "kwalifikujące się żądania w okresie",
-      "weightsNote": "Każda grupa waży w głównej liczbie tyle, ile stanowi w Twoich kwalifikujących się żądaniach, a nie tyle, ile ma par. Grupa bez par zostaje poza wynikiem."
+      "weightsNote": "Każda grupa waży w głównym wyniku tyle, ile wynosi jej udział w Twoich kwalifikujących się żądaniach, a nie tyle, ile ma par. Grupa bez par zostaje pominięta."
     },
     "install": {
       "metaTitle": "Zainstaluj · BiVelio Savings Layer",
@@ -724,11 +724,11 @@
       "hiddenTitle": "Karta maszyn jest ukryta",
       "hiddenBody": "Ukryto ją podczas dostosowywania panelu. Jej dane są nadal mierzone.",
       "show": "Pokaż kartę",
-      "seatsTitle": "Miejsca w użyciu w tym miesiącu",
+      "seatsTitle": "Stanowiska w użyciu w tym miesiącu",
       "seatsOf": "{seats, plural, one {z # opłaconego} few {z # opłaconych} many {z # opłaconych} other {z # opłaconych}}",
       "seatsFull": "wszystkie w użyciu",
       "seatsOver": "ponad opłacone",
-      "seatsNote": "Miejsce to maszyna albo tożsamość usługi, nigdy osoba.",
+      "seatsNote": "Stanowisko to maszyna albo tożsamość usługi, nigdy osoba.",
       "seatsRotated": "W tym miesiącu wymieniono klucz usługi: licznik może uwzględniać tę samą maszynę dwa razy."
     },
     "installLicensePanel": {
@@ -828,7 +828,7 @@
       "roleNote": "Twoja rola nie pozwala kupować ani zarządzać rozliczeniami. Poproś o to osobę z rolą właściciela, administratora lub rozliczeń.",
       "paidPlan": "Plan płatny",
       "seatsFree": "Wolne",
-      "seatsExtra": "Ponad zakontraktowane",
+      "seatsExtra": "Ponad wykupione",
       "seatsMore": "Dodaj stanowisko",
       "seatsLess": "Usuń stanowisko"
     },
@@ -963,7 +963,7 @@
       "quitarConfirmar": "Tak, usuń",
       "avisosLabel": "Powiadomienia",
       "avisoCerrar": "Zamknij powiadomienie",
-      "vacioAyuda": "Zaproś zespół za pomocą formularza poniżej."
+      "vacioAyuda": "Zespół można zaprosić za pomocą formularza poniżej."
     },
     "tokenTotals": {
       "spentLabel": "Zużyte tokeny",
@@ -1595,7 +1595,7 @@
         "chips": [
           "Start za darmo z Measure",
           "Panel zespołu",
-          "Plany o stałej opłacie"
+          "Plany ze stałą opłatą"
         ]
       }
     },
@@ -1684,7 +1684,7 @@
       "step2Title": "Powtórzone · obsłużone bez wywołania dostawcy",
       "step2Body": "Warstwa rozpoznaje je w swojej pamięci i zwraca zapisaną odpowiedź.",
       "step3Title": "Dane skompaktowane · mniej tokenów",
-      "step3Body": "Nowe żądanie leci lżejsze do dostawcy, którego skonfigurujesz, a odpowiedź wraca przez warstwę.",
+      "step3Body": "Nowe żądanie trafia odchudzone do dostawcy, którego skonfigurujesz, a odpowiedź wraca przez warstwę.",
       "step4Title": "Tylko liczniki i koszty · nigdy prompty",
       "step4Body": "Savings Cloud jest opcjonalny: po podłączeniu dostaje liczby, nie treść.",
       "legendRepeat": "Powtórzone",
@@ -1692,7 +1692,7 @@
       "legendData": "Skompaktowane dane",
       "legendDataTo": "mniej tokenów",
       "legendCache": "Cache dostawcy",
-      "legendCacheTo": "tańsze wejście",
+      "legendCacheTo": "tańsze dane wejściowe",
       "compatNote": "Zgodny nie znaczy zmierzony.",
       "compatLink": "Co zostało zmierzone u każdego dostawcy"
     }
@@ -2524,7 +2524,7 @@
     },
     "art": {
       "alt": "Ilustracja: niebieski folder z trzema dokumentami za półprzezroczystą kieszenią.",
-      "caption": "Państwa żądania, odpowiedzi i dane uwierzytelniające nie trafiają do BiVelio."
+      "caption": "Twoje żądania, odpowiedzi i dane uwierzytelniające nie trafiają do BiVelio."
     }
   },
   "docsPage": {

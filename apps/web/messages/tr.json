@@ -281,7 +281,7 @@
         "noPrice": "Bu trafiği fiyatlandıracak fiyat yok",
         "notMeasured": "Bu dönemde henüz ölçülen bir şey yok",
         "costDef": "Sağlayıcınızın bu trafik için sizin fiyatlarınızla faturalandırdığı tutar. Ölçülmüş olsun olmasın, fiyatı olan tüm istekleri içerir.",
-        "savedDef": "Taban eksi gerçek maliyet; yalnızca sağlayıcı sayacı olan isteklerde. Tahminler ve shadow modu rakamları buraya asla girmez.",
+        "savedDef": "Taban eksi gerçek maliyet; yalnızca sağlayıcı sayacı olan isteklerde. Tahminler ve gölge modu rakamları buraya asla girmez.",
         "requestsDef": "Dönemde alınan tüm istekler. Hesaba geçen tasarrufa yalnızca sağlayıcı sayacı taşıyanlar sayılır."
       },
       "breakdown": {
@@ -305,12 +305,12 @@
         "seriesSaved": "Günün hesaba geçen tasarrufu",
         "band": "Hesaba geçen tasarruf",
         "chartAria": "Güne göre taban ve gerçek maliyet. Her günü okumak için sol ve sağ ok tuşlarını kullanın.",
-        "gap": "Bu gün ölçülen istek yok",
+        "gap": "O gün ölçülen istek yok",
         "chartFoot": "Yalnızca sağlayıcı sayacı olan istekler (trafiğin {share} kadarı) · {period}. Ölçümsüz bir gün sıfır değil, boşluktur.",
         "providersTitle": "Sağlayıcıya göre kullanım",
         "measureCost": "Gerçek maliyet",
         "measureTokens": "Token",
-        "measuresAria": "Ölçü",
+        "measuresAria": "Metrik",
         "barAria": "{company}: {value}. Modellerini görmek için basın."
       }
     },
@@ -590,8 +590,8 @@
       "caption": "Sentetik test dizisi: A katmansız, B katmanlı. Oklu her başlık tabloyu sıralar.",
       "sortBy": "{col} sütununa göre sırala",
       "title": "Senaryo senaryo",
-      "help": "“{col}” ne demek",
-      "termTokens": "Sağlayıcının bildirdiği kullanıma göre, istek başına ortalama giriş ve çıkış token'ları.",
+      "help": "“{col}” ne anlama gelir",
+      "termTokens": "Sağlayıcının bildirdiği kullanıma göre, istek başına ortalama girdi ve çıktı token'ları.",
       "termCost": "Bu koldaki tek bir isteğin ortalama maliyeti. Çubuk A ve B için aynı ölçeği kullanır.",
       "termSavings": "Bir eksi B'nin maliyetinin A'nın maliyetine bölümü. Negatifse katman daha pahalıya gelmiştir.",
       "termQa": "Kontrol edilenler içinde kalite denetimini geçen yanıtlar."
@@ -725,7 +725,7 @@
       "hiddenBody": "Paneli özelleştirirken gizlediniz. Verileri ölçülmeye devam ediyor.",
       "show": "Kartı göster",
       "seatsTitle": "Bu ay kullanımdaki koltuklar",
-      "seatsOf": "{seats, plural, one {ödenen # koltuktan} other {ödenen # koltuktan}}",
+      "seatsOf": "{seats, plural, one {/ # ödenmiş koltuk} other {/ # ödenmiş koltuk}}",
       "seatsFull": "tümü kullanımda",
       "seatsOver": "ödenenlerin üzerinde",
       "seatsNote": "Bir koltuk bir makine veya bir hizmet kimliğidir; asla bir kişi değildir.",
@@ -828,7 +828,7 @@
       "roleNote": "Rolünüz satın almaya veya faturalandırmayı yönetmeye izin vermiyor. Sahip, yönetici veya faturalandırma rolündeki birinden bunu yapmasını isteyin.",
       "paidPlan": "Ücretli plan",
       "seatsFree": "Boş",
-      "seatsExtra": "Sözleşmenin üzerinde",
+      "seatsExtra": "Abone olunanın üzerinde",
       "seatsMore": "Bir koltuk ekle",
       "seatsLess": "Bir koltuk çıkar"
     },
@@ -1182,11 +1182,11 @@
         "maquinas": "Makineler",
         "nativo": "Etkinleştirilen yerel tasarruf"
       },
-      "sortBy": "Şuna göre sırala: {column}",
+      "sortBy": "{column} sütununa göre sırala",
       "toastHidden": "Kart gizlendi: {card}",
-      "toastShown": "Kart gösteriliyor: {card}",
+      "toastShown": "Kart gösterildi: {card}",
       "toastReset": "Düzen sıfırlandı",
-      "toastSaved": "Yalnızca bu tarayıcıda saklanır.",
+      "toastSaved": "Yalnızca bu tarayıcıya kaydedildi.",
       "undo": "Geri al",
       "toastRegion": "Panel bildirimleri",
       "toastClose": "Bildirimi kapat"
@@ -1556,7 +1556,7 @@
       "interval": "%95 aralığı",
       "total": "Daha düşük maliyet",
       "source": "Sağlayıcıya karşı canlı A/B, sürümlenmiş liste fiyatlarıyla. Fatura mutabakatı değildir.",
-      "prefixCache": "Bunun içinde önbellek fiyat kontrastı (yaklaşık)"
+      "prefixCache": "Bunun içinde önbellek fiyatlandırma kontrastı (yaklaşık)"
     },
     "ways": {
       "eyebrow": "Açık motor, isteğe bağlı bulut",
@@ -1665,7 +1665,7 @@
       "title": "Kodunuz ile sağlayıcınız arasında ince bir katman.",
       "titleAccent": "İşte Savings Layer.",
       "sub": "Altyapınızda çalışır, sağlayıcıya yalnızca ödenmesi gerekeni gönderir ve her yanıtla birlikte bir fiş döndürür. Prompt'larınız doğrudan yapılandırdığınız sağlayıcıya gider; Savings Cloud isteğe bağlıdır ve içeriği değil, sayımları ve maliyeti alır.",
-      "figLabel": "Animasyonlu çizim: bir çağrının Savings Layer içindeki yolu",
+      "figLabel": "Animasyonlu illüstrasyon: bir çağrının Savings Layer içindeki yolu",
       "stepsLabel": "Yol, adım adım",
       "pause": "Animasyonu duraklat",
       "resume": "Animasyonu sürdür",
@@ -1675,21 +1675,21 @@
       "srcAgent": "Ajanınız",
       "srcAgentVia": "yerel gateway",
       "memoryLabel": "Son isteklerin belleği",
-      "compactLabel": "Veri sıkıştırma",
+      "compactLabel": "Veri kompaktlaştırma",
       "providersLabel": "Yapılandırdığınız sağlayıcı",
-      "nativeAdapter": "yerel adaptör",
+      "nativeAdapter": "yerel bağdaştırıcı",
       "compatName": "OpenAI API'siyle uyumlu herhangi bir endpoint",
       "step1Title": "Çağrı katmana girer",
       "step1Body": "Uygulamanızdan ya da ajanınızdan çıkar ve altyapınızdan ayrılmaz.",
       "step2Title": "Tekrar · sağlayıcı çağrılmadan yanıtlandı",
       "step2Body": "Katman isteği belleğinde tanır ve kayıtlı yanıtı döndürür.",
-      "step3Title": "Veri sıkıştırıldı · daha az token",
+      "step3Title": "Veri kompaktlaştırıldı · daha az token",
       "step3Body": "Yeni bir istek, yapılandırdığınız sağlayıcıya daha hafif gider ve yanıt katmandan geri döner.",
       "step4Title": "Yalnızca sayımlar ve maliyetler · asla prompt değil",
       "step4Body": "Savings Cloud isteğe bağlıdır: bağlarsanız içerik değil, rakam alır.",
       "legendRepeat": "Tekrarlananlar",
       "legendRepeatTo": "sağlayıcı çağrılmadan",
-      "legendData": "Sıkıştırılmış veri",
+      "legendData": "Kompaktlaştırılmış veri",
       "legendDataTo": "daha az token",
       "legendCache": "Sağlayıcı önbelleği",
       "legendCacheTo": "daha ucuz girdi",
@@ -2524,7 +2524,7 @@
     },
     "art": {
       "alt": "İllüstrasyon: yarı saydam bir cebin arkasında üç belge bulunan mavi bir klasör.",
-      "caption": "İstekleriniz, yanıtlarınız ve kimlik bilgileriniz BiVelio'ya gitmez."
+      "caption": "İsteklerin, yanıtların ve kimlik bilgilerin BiVelio'ya gitmez."
     }
   },
   "docsPage": {

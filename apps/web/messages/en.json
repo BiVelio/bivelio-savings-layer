@@ -281,7 +281,7 @@
         "noPrice": "No price to rate this traffic",
         "notMeasured": "Nothing measured yet in this period",
         "costDef": "What your provider billed for this traffic, at your prices. It includes every priced request, measured or not.",
-        "savedDef": "Baseline minus actual cost, only on requests with a provider counter. Estimates and shadow-mode figures never enter here.",
+        "savedDef": "Baseline minus actual cost, only on requests with a provider counter. Estimates and shadow-mode figures are never included here.",
         "requestsDef": "Every request received in the period. Only those with a provider counter count towards credited savings."
       },
       "breakdown": {
@@ -310,7 +310,7 @@
         "providersTitle": "Usage by provider",
         "measureCost": "Actual cost",
         "measureTokens": "Tokens",
-        "measuresAria": "Measure",
+        "measuresAria": "Metric",
         "barAria": "{company}: {value}. Press to see its models."
       }
     },
@@ -327,7 +327,7 @@
       "propioBanco": "Compare with an A/B on your traffic",
       "tecnicaSub": "Synthetic battery: it shows how each lever works. It promises no figure.",
       "diagramRequest": "Your request",
-      "diagramA": "Arm A: sent as it is, without the layer",
+      "diagramA": "Arm A: sent as is, without the layer",
       "diagramB": "Arm B: the same request, through Savings",
       "diagramMeter": "Your provider's usage meter measures both"
     },
@@ -827,7 +827,7 @@
       "summary": "{plan} · {seats, plural, one {# seat} other {# seats}}",
       "roleNote": "Your role can't buy or manage billing. Ask someone with the owner, admin or billing role to do it.",
       "paidPlan": "Paid plan",
-      "seatsFree": "Free",
+      "seatsFree": "Available",
       "seatsExtra": "Above what is contracted",
       "seatsMore": "Add a seat",
       "seatsLess": "Remove a seat"
@@ -1682,7 +1682,7 @@
       "step1Title": "The call enters the layer",
       "step1Body": "It leaves your app or your agent without leaving your infrastructure.",
       "step2Title": "Repeated · answered without calling the provider",
-      "step2Body": "The layer recognises it in its memory and returns the stored response.",
+      "step2Body": "The layer recognizes it in its memory and returns the stored response.",
       "step3Title": "Data compacted · fewer tokens",
       "step3Body": "A new request travels lighter to the provider you configure, and the response comes back through the layer.",
       "step4Title": "Counts and costs only · never prompts",
@@ -2524,7 +2524,7 @@
     },
     "art": {
       "alt": "Illustration: a blue folder holding three documents behind a translucent pocket.",
-      "caption": "Your requests, responses and credentials do not leave for BiVelio."
+      "caption": "Your requests, responses and credentials are not sent to BiVelio."
     }
   },
   "docsPage": {

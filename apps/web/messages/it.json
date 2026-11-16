@@ -67,7 +67,7 @@
         "enterprise": "Enterprise"
       },
       "menuLabel": "Menu dell'account",
-      "setupNext": "Prossimo:"
+      "setupNext": "Prossimo passo:"
     },
     "tour": {
       "open": "Guarda il tour",
@@ -281,7 +281,7 @@
         "noPrice": "Nessun prezzo per tariffare questo traffico",
         "notMeasured": "Ancora nulla di misurato in questo periodo",
         "costDef": "Quanto ha fatturato il tuo provider per questo traffico, ai tuoi prezzi. Include tutte le richieste con prezzo, misurate o no.",
-        "savedDef": "Base di riferimento meno costo reale, solo sulle richieste con contatore del provider. Stime e valori in modalità shadow non entrano mai qui.",
+        "savedDef": "Base di riferimento meno costo reale, solo sulle richieste con contatore del provider. Stime e valori in modalità ombra non entrano mai qui.",
         "requestsDef": "Tutte le richieste ricevute nel periodo. Solo quelle con contatore del provider contano per il risparmio accreditato."
       },
       "breakdown": {
@@ -827,10 +827,10 @@
       "summary": "{plan} · {seats, plural, one {# postazione} other {# postazioni}}",
       "roleNote": "Il tuo profilo non può acquistare né gestire la fatturazione. Chiedi a una persona con profilo di proprietario, amministratore o fatturazione di farlo.",
       "paidPlan": "Piano a pagamento",
-      "seatsFree": "Liberi",
-      "seatsExtra": "Oltre quanto contrattato",
+      "seatsFree": "Libere",
+      "seatsExtra": "Oltre quelle sottoscritte",
       "seatsMore": "Aggiungi una postazione",
-      "seatsLess": "Togli una postazione"
+      "seatsLess": "Rimuovi una postazione"
     },
     "referenceLedgerCards": {
       "proven": "comprovato",
@@ -963,7 +963,7 @@
       "quitarConfirmar": "Sì, rimuovi",
       "avisosLabel": "Notifiche",
       "avisoCerrar": "Chiudi notifica",
-      "vacioAyuda": "Invita il tuo team con il modulo qui sotto."
+      "vacioAyuda": "Inviti il suo team con il modulo qui sotto."
     },
     "tokenTotals": {
       "spentLabel": "Token spesi",
@@ -1579,7 +1579,7 @@
         "code": "Vedi il codice",
         "chips": [
           "Senza account né carta",
-          "Nessuna telemetria predefinita",
+          "Nessuna telemetria di default",
           "SDK e gateway locale"
         ]
       },
@@ -1594,7 +1594,7 @@
         "plans": "Vedi i piani",
         "chips": [
           "Si parte gratis con Measure",
-          "Dashboard di team",
+          "Dashboard per il team",
           "Piani a canone fisso"
         ]
       }
@@ -1733,7 +1733,7 @@
     "labelOrg": "Organizzazione",
     "labelFor": "Per",
     "panelTitle": "Un team, <em>un pannello</em>.",
-    "panelBody": "Accettando entra nel pannello dell'organizzazione con il suo account. Le postazioni dell'abbonamento contano macchine o identità di servizio, non persone.",
+    "panelBody": "Accettando, entra nel pannello dell'organizzazione con il Suo account personale. Le postazioni dell'abbonamento contano macchine o identità di servizio, non persone.",
     "arteAlt": "Illustrazione: un'organizzazione e il suo pannello Savings già collegati, e un terzo cerchio che entra nello spazio libero."
   },
   "benchmarksPage": {
@@ -2032,9 +2032,9 @@
       "paper": "Articolo di ricerca (PDF)",
       "repo": "Repository aperto",
       "diagramRequest": "La stessa richiesta",
-      "diagramA": "Braccio A: direttamente al provider, senza il layer",
-      "diagramB": "Braccio B: attraverso il layer, con la configurazione predefinita",
-      "diagramMeter": "Il contatore di utilizzo del provider misura entrambi i bracci"
+      "diagramA": "Braccio A: direttamente al fornitore, senza il livello",
+      "diagramB": "Braccio B: attraverso il livello, con la configurazione predefinita",
+      "diagramMeter": "Il contatore di utilizzo del fornitore misura entrambi i bracci"
     },
     "index": {
       "method": "Metodo",
@@ -2524,7 +2524,7 @@
     },
     "art": {
       "alt": "Illustrazione: una cartella blu con tre documenti, dietro una tasca traslucida.",
-      "caption": "Le sue richieste, risposte e credenziali non partono verso BiVelio."
+      "caption": "Le tue richieste, risposte e credenziali non vengono inviate a BiVelio."
     }
   },
   "docsPage": {

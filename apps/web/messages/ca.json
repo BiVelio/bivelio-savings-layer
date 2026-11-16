@@ -281,7 +281,7 @@
         "noPrice": "Sense preu per tarifar aquest trànsit",
         "notMeasured": "Encara no hi ha res mesurat en aquest període",
         "costDef": "El que va facturar el teu proveïdor per aquest trànsit, als teus preus. Inclou totes les peticions amb preu, mesurades o no.",
-        "savedDef": "Línia base menys cost real, només en les peticions amb comptador del proveïdor. El que és estimat i el del mode ombra no hi entra mai.",
+        "savedDef": "Línia base menys cost real, només en les peticions amb comptador del proveïdor. Les estimacions i les xifres del mode ombra no hi entren mai.",
         "requestsDef": "Totes les peticions rebudes en el període. Només les que porten comptador del proveïdor compten per a l'estalvi acreditat."
       },
       "breakdown": {
@@ -729,7 +729,7 @@
       "seatsFull": "tots en ús",
       "seatsOver": "per sobre dels pagats",
       "seatsNote": "Un seient és una màquina o una identitat de servei, mai una persona.",
-      "seatsRotated": "Aquest mes s'ha rotat una clau de servei: el recompte pot comptar la mateixa màquina dues vegades."
+      "seatsRotated": "Aquest mes s'ha rotat una clau de servei: el recompte pot incloure la mateixa màquina dues vegades."
     },
     "installLicensePanel": {
       "eyebrow": "Comença",
@@ -843,7 +843,7 @@
       "residualNote": "residu {residual}: revisa la comptabilitat.",
       "footnoteReference": "Aquestes són <b>palanques de referència</b>: la teva via en viu mesura unes altres quatre — provider-cached substitueix output-restriction — de manera que mai no en fem correspondre una amb l'altra.",
       "scenarios": "Escenaris d'aquest llibre",
-      "termFloor": "Límit inferior de l'interval de confiança: amb aquest nivell de confiança, l'estalvi del llibre és com a mínim aquest.",
+      "termFloor": "Límit inferior de l'interval de confiança: amb aquest nivell de confiança, el llibre estalvia com a mínim aquesta quantitat.",
       "termDelta": "Diferència de cost entre A i B en els escenaris d'aquest llibre."
     },
     "integrityQualityChips": {
@@ -958,12 +958,12 @@
       "caduco": "va caducar el {date}",
       "reenviarAyuda": "«Reenviar» copia el correu i el perfil al formulari de dalt perquè enviï la invitació de nou.",
       "accionesDe": "Accions per a {email}",
-      "quitarTitulo": "Vols treure {email} de l'organització?",
+      "quitarTitulo": "Voleu treure {email} de l'organització?",
       "quitarCuerpo": "Ja no podrà entrar en aquesta organització. No canvia els seients ni la factura.",
-      "quitarConfirmar": "Sí, treu",
+      "quitarConfirmar": "Sí, treure",
       "avisosLabel": "Avisos",
-      "avisoCerrar": "Tanca l'avís",
-      "vacioAyuda": "Convida el teu equip amb el formulari de sota."
+      "avisoCerrar": "Tancar l'avís",
+      "vacioAyuda": "Convideu el vostre equip amb el formulari de sota."
     },
     "tokenTotals": {
       "spentLabel": "Tokens gastats",
@@ -1733,8 +1733,8 @@
     "labelOrg": "Organització",
     "labelFor": "Per a",
     "panelTitle": "Un equip, <em>un tauler</em>.",
-    "panelBody": "En acceptar entra al tauler de l'organització amb el seu propi compte. Els seients de la subscripció compten màquines o identitats de servei, no persones.",
-    "arteAlt": "Il·lustració: una organització i el seu tauler de Savings ja connectats, i un tercer cercle que entra al buit lliure."
+    "panelBody": "En acceptar, entreu al tauler de l'organització amb el vostre propi compte. Els seients de la subscripció compten màquines o identitats de servei, no persones.",
+    "arteAlt": "Il·lustració: una organització i el seu tauler de Savings ja connectats, i un tercer cercle que entra a l'espai lliure."
   },
   "benchmarksPage": {
     "metaTitle": "Banc públic A/B: mesura'ns | BiVelio Savings Layer",
@@ -2524,7 +2524,7 @@
     },
     "art": {
       "alt": "Il·lustració: una carpeta blava amb tres documents a dins, darrere d'una butxaca translúcida.",
-      "caption": "Les seves peticions, respostes i credencials no surten cap a BiVelio."
+      "caption": "Les teves peticions, respostes i credencials no s'envien a BiVelio."
     }
   },
   "docsPage": {

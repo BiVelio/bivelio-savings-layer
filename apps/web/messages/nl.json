@@ -281,7 +281,7 @@
         "noPrice": "Geen prijs om dit verkeer te tariferen",
         "notMeasured": "Nog niets gemeten in deze periode",
         "costDef": "Wat je provider voor dit verkeer heeft gefactureerd, tegen jouw prijzen. Omvat alle geprijsde verzoeken, gemeten of niet.",
-        "savedDef": "Basislijn min werkelijke kosten, alleen bij verzoeken met een teller van de provider. Schattingen en shadow-cijfers tellen hier nooit mee.",
+        "savedDef": "Basislijn min werkelijke kosten, alleen bij verzoeken met een teller van de provider. Schattingen en cijfers uit de schaduwmodus tellen hier nooit mee.",
         "requestsDef": "Alle verzoeken die in de periode zijn ontvangen. Alleen die met een teller van de provider tellen mee voor de toegekende besparing."
       },
       "breakdown": {
@@ -310,7 +310,7 @@
         "providersTitle": "Gebruik per provider",
         "measureCost": "Werkelijke kosten",
         "measureTokens": "Tokens",
-        "measuresAria": "Maat",
+        "measuresAria": "Meetwaarde",
         "barAria": "{company}: {value}. Druk om de modellen te zien."
       }
     },
@@ -590,7 +590,7 @@
       "caption": "Synthetische testreeks: A zonder de laag, B met de laag. Elke kolomkop met een pijl sorteert de tabel.",
       "sortBy": "Sorteren op {col}",
       "title": "Scenario voor scenario",
-      "help": "Wat ‘{col}’ betekent",
+      "help": "Wat “{col}” betekent",
       "termTokens": "Gemiddelde invoer- en uitvoertokens per verzoek, volgens het verbruik dat de provider rapporteert.",
       "termCost": "Gemiddelde kosten van één verzoek in die arm. De balk gebruikt dezelfde schaal voor A en B.",
       "termSavings": "Eén min de kosten van B gedeeld door die van A. Negatief betekent dat de laag meer kostte.",
@@ -724,11 +724,11 @@
       "hiddenTitle": "De kaart met machines is verborgen",
       "hiddenBody": "Je hebt hem verborgen bij het aanpassen van het dashboard. De gegevens worden nog steeds gemeten.",
       "show": "Kaart tonen",
-      "seatsTitle": "Plaatsen in gebruik deze maand",
+      "seatsTitle": "Seats in gebruik deze maand",
       "seatsOf": "{seats, plural, one {van # betaalde} other {van # betaalde}}",
       "seatsFull": "alle in gebruik",
-      "seatsOver": "boven de betaalde plaatsen",
-      "seatsNote": "Een plaats is een machine of een service-identiteit, nooit een persoon.",
+      "seatsOver": "boven de betaalde seats",
+      "seatsNote": "Een seat is een machine of een service-identiteit, nooit een persoon.",
       "seatsRotated": "Deze maand is een servicesleutel geroteerd: de telling kan dezelfde machine twee keer bevatten."
     },
     "installLicensePanel": {
@@ -1188,7 +1188,7 @@
       "toastReset": "Indeling hersteld",
       "toastSaved": "Alleen in deze browser opgeslagen.",
       "undo": "Ongedaan maken",
-      "toastRegion": "Meldingen van het paneel",
+      "toastRegion": "Dashboardmeldingen",
       "toastClose": "Melding sluiten"
     },
     "team": {
@@ -1595,7 +1595,7 @@
         "chips": [
           "Gratis beginnen met Measure",
           "Teamdashboard",
-          "Abonnementen met vaste tarieven"
+          "Abonnementen met vaste prijs"
         ]
       }
     },
@@ -1675,7 +1675,7 @@
       "srcAgent": "Je agent",
       "srcAgentVia": "lokale gateway",
       "memoryLabel": "Geheugen van recente verzoeken",
-      "compactLabel": "Datacompactie",
+      "compactLabel": "Gegevenscompactie",
       "providersLabel": "De provider die je configureert",
       "nativeAdapter": "native adapter",
       "compatName": "Elk endpoint dat compatibel is met de OpenAI-API",
@@ -1683,13 +1683,13 @@
       "step1Body": "Hij vertrekt uit je app of je agent en blijft binnen je infrastructuur.",
       "step2Title": "Herhaald · beantwoord zonder de provider aan te roepen",
       "step2Body": "De laag herkent het verzoek in haar geheugen en geeft het opgeslagen antwoord terug.",
-      "step3Title": "Data gecompacteerd · minder tokens",
+      "step3Title": "Gegevens gecompacteerd · minder tokens",
       "step3Body": "Een nieuw verzoek reist lichter naar de provider die je configureert en het antwoord komt via de laag terug.",
       "step4Title": "Alleen tellingen en kosten · nooit prompts",
       "step4Body": "Savings Cloud is optioneel: als je het koppelt, ontvangt het cijfers, geen inhoud.",
       "legendRepeat": "Herhaalde verzoeken",
       "legendRepeatTo": "zonder provideraanroep",
-      "legendData": "Gecompacteerde data",
+      "legendData": "Gecompacteerde gegevens",
       "legendDataTo": "minder tokens",
       "legendCache": "Cache van de provider",
       "legendCacheTo": "goedkopere invoer",
@@ -2079,7 +2079,7 @@
       "method": "Methodologie bekijken",
       "note": "Alleen modellen met een gemeten run verschijnen hier.",
       "forestTitle": "Gemeten besparing per model, met interval",
-      "forestHint": "De punt is de schatting; de balk het betrouwbaarheidsinterval; de streep de nul. Alles op dezelfde schaal."
+      "forestHint": "De stip is de schatting, de balk het betrouwbaarheidsinterval, de lijn de nul. Alles op dezelfde schaal."
     },
     "terms": {
       "interval": "De schatting en, tussen haken, het betrouwbaarheidsinterval. Kruist het interval de nul, dan is ze niet van nul te onderscheiden.",
@@ -2524,7 +2524,7 @@
     },
     "art": {
       "alt": "Illustratie: een blauwe map met drie documenten achter een doorschijnend vak.",
-      "caption": "Uw verzoeken, antwoorden en inloggegevens gaan niet naar BiVelio."
+      "caption": "Je verzoeken, antwoorden en inloggegevens gaan niet naar BiVelio."
     }
   },
   "docsPage": {

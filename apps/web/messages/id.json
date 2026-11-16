@@ -281,7 +281,7 @@
         "noPrice": "Tidak ada harga untuk menilai trafik ini",
         "notMeasured": "Belum ada yang terukur pada periode ini",
         "costDef": "Yang ditagihkan penyedia Anda untuk trafik ini, dengan harga Anda. Mencakup semua permintaan berharga, terukur atau tidak.",
-        "savedDef": "Baseline dikurangi biaya aktual, hanya pada permintaan dengan penghitung penyedia. Estimasi dan angka mode shadow tidak pernah masuk ke sini.",
+        "savedDef": "Baseline dikurangi biaya aktual, hanya pada permintaan dengan penghitung penyedia. Estimasi dan angka mode bayangan tidak pernah masuk ke sini.",
         "requestsDef": "Semua permintaan yang diterima dalam periode ini. Hanya yang membawa penghitung penyedia yang dihitung untuk penghematan yang dikreditkan."
       },
       "breakdown": {
@@ -305,12 +305,12 @@
         "seriesSaved": "Penghematan yang dikreditkan hari itu",
         "band": "Penghematan yang dikreditkan",
         "chartAria": "Baseline dan biaya aktual per hari. Gunakan tombol panah kiri dan kanan untuk membaca tiap hari.",
-        "gap": "Tidak ada permintaan terukur pada hari ini",
-        "chartFoot": "Hanya permintaan dengan penghitung penyedia ({share} dari trafik) · {period}. Hari tanpa pengukuran adalah celah, bukan nol.",
+        "gap": "Tidak ada permintaan terukur pada hari itu",
+        "chartFoot": "Hanya permintaan dengan penghitung penyedia ({share} dari lalu lintas) · {period}. Hari tanpa pengukuran adalah celah, bukan nol.",
         "providersTitle": "Penggunaan per penyedia",
         "measureCost": "Biaya aktual",
         "measureTokens": "Token",
-        "measuresAria": "Ukuran",
+        "measuresAria": "Metrik",
         "barAria": "{company}: {value}. Tekan untuk melihat modelnya."
       }
     },
@@ -327,7 +327,7 @@
       "propioBanco": "Bandingkan dengan A/B pada trafik Anda",
       "tecnicaSub": "Rangkaian uji sintetis: menunjukkan cara kerja tiap tuas. Tidak menjanjikan angka apa pun.",
       "diagramRequest": "Permintaan Anda",
-      "diagramA": "Lengan A: dikirim apa adanya, tanpa layer",
+      "diagramA": "Lengan A: dikirim apa adanya, tanpa lapisan",
       "diagramB": "Lengan B: permintaan yang sama, melalui Savings",
       "diagramMeter": "Meteran pemakaian penyedia Anda mengukur keduanya"
     },
@@ -442,7 +442,7 @@
         "methodLink": "Lihat metodologi"
       },
       "terms": {
-        "sample": "Pasangan yang sebanding: permintaan yang sama dengan dan tanpa layer, keduanya diukur oleh penyedia Anda.",
+        "sample": "Pasangan yang sebanding: permintaan yang sama dengan dan tanpa lapisan, keduanya diukur oleh penyedia Anda.",
         "interval": "Rentang tempat penghematan nyata berada pada tingkat kepercayaan itu. Angka utama adalah ujung bawahnya.",
         "coverage": "Bagian dari permintaan Anda yang memenuhi syarat dan berada di kelompok yang memiliki pasangan. Sisanya tidak masuk ke angka."
       },
@@ -591,9 +591,9 @@
       "sortBy": "Urutkan menurut {col}",
       "title": "Skenario demi skenario",
       "help": "Arti “{col}”",
-      "termTokens": "Rata-rata token masukan dan keluaran per permintaan, menurut pemakaian yang dilaporkan penyedia.",
+      "termTokens": "Rata-rata token input dan output per permintaan, menurut pemakaian yang dilaporkan penyedia.",
       "termCost": "Biaya rata-rata satu permintaan di lengan itu. Batangnya memakai skala yang sama untuk A dan B.",
-      "termSavings": "Satu dikurangi biaya B dibagi biaya A. Jika negatif, layer justru lebih mahal.",
+      "termSavings": "Satu dikurangi biaya B dibagi biaya A. Jika negatif, lapisan justru lebih mahal.",
       "termQa": "Jawaban yang lolos pemeriksaan kualitas, dari yang diperiksa."
     },
     "projectorVerifier": {
@@ -828,7 +828,7 @@
       "roleNote": "Peran Anda tidak dapat membeli atau mengelola penagihan. Mintalah seseorang dengan peran pemilik, administrator, atau penagihan untuk melakukannya.",
       "paidPlan": "Paket berbayar",
       "seatsFree": "Tersedia",
-      "seatsExtra": "Di atas yang dikontrak",
+      "seatsExtra": "Melebihi yang dilanggan",
       "seatsMore": "Tambah satu kursi",
       "seatsLess": "Kurangi satu kursi"
     },
@@ -856,7 +856,7 @@
       "provenAt95": "terbukti pada 95%",
       "unprovenMock": "belum terbukti (tiruan)",
       "regressedVoids": "Jawaban yang memburuk membatalkan penghematannya",
-      "title": "Pemeriksaan pada pengujian ini"
+      "title": "Pemeriksaan pada putaran ini"
     },
     "netSavingsCIBand": {
       "caption": "penghematan bersih, <b>batas bawah CI 95%</b>. Estimasi titik {point}, atas {upper} — kami menonjolkan angka terendah{mockNote}.",
@@ -1185,10 +1185,10 @@
       "sortBy": "Urutkan menurut {column}",
       "toastHidden": "Kartu disembunyikan: {card}",
       "toastShown": "Kartu ditampilkan: {card}",
-      "toastReset": "Tata letak dipulihkan",
+      "toastReset": "Tata letak diatur ulang",
       "toastSaved": "Disimpan di browser ini saja.",
       "undo": "Urungkan",
-      "toastRegion": "Pemberitahuan panel",
+      "toastRegion": "Pemberitahuan dasbor",
       "toastClose": "Tutup pemberitahuan"
     },
     "team": {
@@ -1595,7 +1595,7 @@
         "chips": [
           "Mulai gratis dengan Measure",
           "Dasbor tim",
-          "Paket bertarif tetap"
+          "Paket biaya tetap"
         ]
       }
     },
@@ -1664,7 +1664,7 @@
       "eyebrow": "Savings Layer, saat bekerja",
       "title": "Lapisan tipis di antara kode Anda dan penyedia Anda.",
       "titleAccent": "Itulah Savings Layer.",
-      "sub": "Lapisan ini berjalan di infrastruktur Anda, hanya mengirim ke penyedia yang memang harus dibayar, dan mengembalikan struk bersama setiap respons. Prompt Anda langsung menuju penyedia yang Anda konfigurasikan; Savings Cloud bersifat opsional dan menerima hitungan serta biaya, bukan isinya.",
+      "sub": "Lapisan ini berjalan di infrastruktur Anda, hanya mengirim ke penyedia apa yang memang harus dibayar, dan mengembalikan struk bersama setiap respons. Prompt Anda langsung menuju penyedia yang Anda konfigurasikan; Savings Cloud bersifat opsional dan menerima hitungan serta biaya, bukan isinya.",
       "figLabel": "Ilustrasi animasi: perjalanan satu panggilan melalui Savings Layer",
       "stepsLabel": "Perjalanannya, langkah demi langkah",
       "pause": "Jeda animasi",
@@ -2032,8 +2032,8 @@
       "paper": "Makalah penelitian (PDF)",
       "repo": "Repositori terbuka",
       "diagramRequest": "Permintaan yang sama",
-      "diagramA": "Lengan A: langsung ke penyedia, tanpa layer",
-      "diagramB": "Lengan B: melalui layer, dengan konfigurasi bawaannya",
+      "diagramA": "Lengan A: langsung ke penyedia, tanpa lapisan",
+      "diagramB": "Lengan B: melalui lapisan, dengan konfigurasi bawaannya",
       "diagramMeter": "Meteran pemakaian penyedia mengukur kedua lengan"
     },
     "index": {
@@ -2085,7 +2085,7 @@
       "interval": "Estimasi dan, dalam kurung siku, interval kepercayaannya. Jika interval melewati nol, hasilnya tidak dapat dibedakan dari nol.",
       "sample": "Permintaan per lengan dan berapa yang merupakan pertanyaan unik; sisanya adalah pengulangan persis dan parafrasa.",
       "accuracy": "Jawaban benar pada pertanyaan yang jawabannya dipublikasikan, di lengan A dan di lengan B.",
-      "run": "Versi paket yang berjalan di lengan B dan hari pengujian."
+      "run": "Versi paket yang berjalan di lengan B, dan tanggal putarannya."
     }
   },
   "howItWorks": {
@@ -2524,7 +2524,7 @@
     },
     "art": {
       "alt": "Ilustrasi: map biru berisi tiga dokumen di balik saku tembus pandang.",
-      "caption": "Permintaan, respons, dan kredensial Anda tidak dikirim ke BiVelio."
+      "caption": "Permintaan, respons, dan kredensialmu tidak dikirim ke BiVelio."
     }
   },
   "docsPage": {
@@ -2552,6 +2552,6 @@
     "body": "Halaman ini tidak ada atau telah dipindahkan.",
     "home": "← Kembali ke beranda",
     "explore": "Anda juga bisa membuka",
-    "artAlt": "Ilustrasi: tiga jendela peramban yang bertumpuk dengan konten contoh."
+    "artAlt": "Ilustrasi: tiga jendela browser yang bertumpuk dengan konten contoh."
   }
 }
