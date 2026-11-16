@@ -1,0 +1,205 @@
+/*
+ * Vendored from affectUI 'Integration Beam' — https://github.com/flohoeller/affectui @ 8f15236c790d3a21a668c98a663037e5219dd9c9
+ * MIT License, Copyright (c) 2026 Florian Höller (adfects). Full text: ./LICENSE.
+ * FORKED for BiVelio Savings (light theme only, BiVelio tokens, CSS-only layout); changes from upstream are listed in ./VENDOR.md.
+ */
+.ui-ibm {
+  --ui-ibm-ink: var(--aui-ink, #0f1218);
+  --ui-ibm-muted: var(--aui-muted, #5a6070);
+  --ui-ibm-line: var(--line-strong, #cfccc3);
+  --ui-ibm-card: var(--aui-surface, #ffffff);
+  --ui-ibm-accent: var(--brand, #0066e6);
+  --ui-ibm-path: color-mix(in srgb, var(--ui-ibm-accent) 42%, var(--ui-ibm-card));
+  --ui-ibm-hub: var(--aui-primary, #0f1218);
+  --ui-ibm-shadow: 0 0 0 1px var(--aui-border, #e6e4de), 0 1px 2px rgba(15, 18, 24, 0.04), 0 10px 20px -14px rgba(15, 18, 24, 0.22);
+  --ui-ibm-gap: clamp(36px, 9cqw, 104px);
+  --ui-ibm-cycle: 3.6s;
+  position: relative;
+  width: 100%;
+  margin: 0;
+  container-type: inline-size;
+  font-family: var(--aui-font, var(--font-sans));
+  color: var(--ui-ibm-ink);
+}
+.ui-ibm *, .ui-ibm *::before, .ui-ibm *::after { box-sizing: border-box; }
+
+/* ---------- Layout: side by side ---------- */
+
+.ui-ibm__scene {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--ui-ibm-gap) minmax(0, 1.1fr) var(--ui-ibm-gap) minmax(0, 1fr);
+  grid-template-areas:
+    "in  w1 hub w2 out"
+    ".   .  w3  .  ."
+    ".   .  aside . .";
+  align-items: stretch;
+}
+.ui-ibm__in { grid-area: in; display: flex; flex-direction: column; }
+/* Two equal halves, each tile centred in its own: the wires start at 25 % and 75 % */
+.ui-ibm__slot { flex: 1 1 0; display: flex; align-items: center; padding: 9px 0; min-width: 0; }
+.ui-ibm__hub { grid-area: hub; display: flex; align-items: center; min-width: 0; }
+.ui-ibm__out { grid-area: out; display: flex; align-items: center; min-width: 0; }
+.ui-ibm__aside { grid-area: aside; display: flex; min-width: 0; }
+.ui-ibm__wire { position: relative; min-width: 0; }
+.ui-ibm__wire--in { grid-area: w1; }
+.ui-ibm__wire--out { grid-area: w2; }
+.ui-ibm__wire--aside { grid-area: w3; height: 64px; }
+
+/* ---------- Tiles ---------- */
+
+.ui-ibm__tile {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  min-width: 0;
+  padding: 12px 14px 12px 12px;
+  border-radius: 16px;
+  background: var(--ui-ibm-card);
+  box-shadow: var(--ui-ibm-shadow);
+}
+.ui-ibm__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--surface-2, #f2f1ec);
+  color: var(--ui-ibm-ink);
+}
+.ui-ibm__icon svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.ui-ibm__text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ui-ibm__title { font-size: 14px; font-weight: 600; line-height: 1.25; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.ui-ibm__sub { font-size: 12.5px; line-height: 1.35; color: var(--ui-ibm-muted); overflow-wrap: anywhere; }
+
+/* The hub: the dark tile of upstream, with the label spelled out */
+.ui-ibm__tile[data-kind="hub"] {
+  padding: 18px 18px 18px 16px;
+  border-radius: 20px;
+  background: var(--ui-ibm-hub);
+  color: var(--aui-on-primary, #ffffff);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 0 0 4px color-mix(in srgb, var(--ui-ibm-accent) 14%, transparent), 0 16px 28px -16px rgba(15, 18, 24, 0.5);
+}
+.ui-ibm__tile[data-kind="hub"] .ui-ibm__icon { background: rgba(255, 255, 255, 0.1); color: inherit; }
+.ui-ibm__tile[data-kind="hub"] .ui-ibm__title { font-size: 15px; }
+.ui-ibm__tile[data-kind="hub"] .ui-ibm__sub { color: rgba(255, 255, 255, 0.72); }
+
+/* Off the path: an outlined tile, no elevation */
+.ui-ibm__tile[data-kind="aside"] {
+  background: transparent;
+  box-shadow: none;
+  border: 1px dashed var(--ui-ibm-line);
+}
+.ui-ibm__tile[data-kind="aside"] .ui-ibm__icon { background: transparent; box-shadow: inset 0 0 0 1px var(--ui-ibm-line); color: var(--ui-ibm-muted); }
+
+/* ---------- Wires ---------- */
+
+.ui-ibm__wire svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.ui-ibm__v { display: none; }
+.ui-ibm__line, .ui-ibm__pulse { fill: none; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.ui-ibm__line { stroke: var(--ui-ibm-path); stroke-width: 1.5; }
+.ui-ibm__wire--aside .ui-ibm__line { stroke: var(--ui-ibm-line); stroke-dasharray: 2 5; }
+.ui-ibm__pulse { stroke: var(--ui-ibm-accent); stroke-width: 2.25; stroke-dasharray: 16 184; stroke-dashoffset: 16; opacity: 0; }
+
+/* Arrow head where a wire lands: the direction stays readable without motion */
+.ui-ibm__wire::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 1px;
+  width: 7px;
+  height: 7px;
+  border: solid var(--ui-ibm-accent);
+  border-width: 1.5px 1.5px 0 0;
+  transform: translate(0, -50%) rotate(45deg);
+}
+.ui-ibm__wire--aside::after {
+  top: auto;
+  right: auto;
+  bottom: 1px;
+  left: 50%;
+  border-color: var(--ui-ibm-muted);
+  transform: translate(-50%, 0) rotate(135deg);
+}
+
+/* The label of the dashed link sits beside it, never on the active path */
+.ui-ibm__link {
+  position: absolute;
+  top: 50%;
+  left: calc(50% + 12px);
+  max-width: calc(50% - 12px);
+  transform: translateY(-50%);
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ui-ibm-muted);
+}
+
+.ui-ibm__caption {
+  margin: 18px 0 0;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--ui-ibm-muted);
+  text-align: center;
+}
+
+/* ---------- Narrow: one column of travel, the aside branches to the right ---------- */
+
+@container (max-width: 679px) {
+  .ui-ibm__scene {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "in    in"
+      "w1    w1"
+      "hub   hub"
+      "w2    w3"
+      "out   aside";
+    column-gap: 12px;
+  }
+  .ui-ibm__in { flex-direction: row; gap: 12px; }
+  .ui-ibm__slot { padding: 0; align-items: stretch; }
+  .ui-ibm__wire--in, .ui-ibm__wire--out, .ui-ibm__wire--aside { height: 56px; }
+  /* The two lower wires leave from the middle of the hub, i.e. the inner edge of each cell */
+  .ui-ibm__wire--out { margin-right: -6px; }
+  .ui-ibm__wire--aside { margin-left: -6px; }
+  .ui-ibm__h { display: none; }
+  .ui-ibm__v { display: block; }
+  .ui-ibm__out, .ui-ibm__aside { align-items: stretch; }
+  .ui-ibm__tile { flex-direction: column; align-items: flex-start; gap: 9px; padding: 12px; }
+  .ui-ibm__tile[data-kind="hub"] { flex-direction: row; align-items: center; padding: 16px; }
+  .ui-ibm__wire::after {
+    top: auto;
+    right: auto;
+    bottom: 1px;
+    left: 50%;
+    transform: translate(-50%, 0) rotate(135deg);
+  }
+  .ui-ibm__link { top: 50%; left: calc(50% + 6px); max-width: calc(50% - 6px); font-size: 10.5px; letter-spacing: 0.06em; }
+}
+
+/* ---------- Motion: one contained pulse per cycle, first into the hub, then out ---------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  .ui-ibm__pulse { animation: ui-ibm-travel var(--ui-ibm-cycle) cubic-bezier(0.45, 0, 0.25, 1) infinite; }
+  .ui-ibm__wire[data-step="2"] .ui-ibm__pulse { animation-name: ui-ibm-travel-2; }
+  .ui-ibm__tile[data-kind="hub"] { animation: ui-ibm-arrive var(--ui-ibm-cycle) ease-out infinite; }
+}
+@keyframes ui-ibm-travel {
+  0% { stroke-dashoffset: 16; opacity: 0; }
+  4% { opacity: 1; }
+  36% { opacity: 1; }
+  40%, 100% { stroke-dashoffset: -100; opacity: 0; }
+}
+@keyframes ui-ibm-travel-2 {
+  0%, 40% { stroke-dashoffset: 16; opacity: 0; }
+  44% { opacity: 1; }
+  76% { opacity: 1; }
+  80%, 100% { stroke-dashoffset: -100; opacity: 0; }
+}
+@keyframes ui-ibm-arrive {
+  0%, 34%, 70%, 100% { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 0 0 4px color-mix(in srgb, var(--ui-ibm-accent) 14%, transparent), 0 16px 28px -16px rgba(15, 18, 24, 0.5); }
+  44% { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 0 0 5px color-mix(in srgb, var(--ui-ibm-accent) 30%, transparent), 0 16px 28px -16px rgba(15, 18, 24, 0.5); }
+}

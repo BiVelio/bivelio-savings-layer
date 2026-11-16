@@ -1897,6 +1897,57 @@
       "contact": "Schreiben Sie uns an",
       "cta": "E-Mail schreiben",
       "subject": "Unabhängige Messung des öffentlichen Benchmarks"
+    },
+    "centre": {
+      "indexTitle": "Auf dieser Seite",
+      "indexAria": "Inhaltsverzeichnis des Nachweiszentrums",
+      "readTitle": "So lesen Sie diese Seite",
+      "classAb": "Zwei Arme für dieselbe Anfrage, bewertet mit der Nutzung, die der Anbieter meldet. So werden die Batterien des Benchmarks gemessen.",
+      "classReplay": "Kontrafaktische Wiederholung mit teilweise rekonstruierter Baseline. Das ist weder ein Live-A/B noch eine abgerechnete Ersparnis noch ein Rechnungsabgleich.",
+      "compatible": "Kompatibel heißt nicht gemessen: Ein Modell zählt hier nur, wenn es einen veröffentlichten Lauf hat, und was nicht gemessen werden konnte, steht mit seinem Grund da.",
+      "paper": "Forschungsartikel (PDF)"
+    },
+    "index": {
+      "method": "Methode",
+      "weekly": "Wöchentlicher Benchmark",
+      "savings": "Gemessene Ersparnis",
+      "gatewayTtl": "Gateway-Replay",
+      "guarantees": "Garantien",
+      "noSavings": "Was nichts spart",
+      "status": "Status je Modell",
+      "bugs": "Gefundene Fehler",
+      "reproduce": "Reproduzieren",
+      "invite": "Messen Sie uns"
+    },
+    "filter": {
+      "label": "Lesefilter",
+      "all": "Alles",
+      "negative": "Ohne Ersparnis und Fehler",
+      "reproduce": "Methode und Reproduktion",
+      "showing": "{n} von {total} Abschnitten werden angezeigt.",
+      "reset": "Alles anzeigen"
+    },
+    "ab": {
+      "title": "Beide Arme, Modell für Modell",
+      "intro": "GSM8K, die Batterie zum Messen der Ersparnis. Wählen Sie ein gemessenes Modell: A geht direkt zum Anbieter, B läuft durch die Schicht.",
+      "armA": "Ohne die Schicht",
+      "armB": "Mit der Schicht",
+      "metricCost": "Kosten des Laufs",
+      "metricAccuracy": "Genauigkeit",
+      "base": "Basis",
+      "baseline": "Referenzarm",
+      "requests": "{n} Anfragen",
+      "noLift": "Kein Unterschied",
+      "metric": "Metrik",
+      "arms": "Verglichene Arme",
+      "ahead": "{nombre} liegt {porcentaje} Prozent vorn",
+      "noValue": "kein Wert",
+      "up": "steigt um {porcentaje} Prozent",
+      "down": "sinkt um {porcentaje} Prozent",
+      "hint": "A ist die Referenz; B läuft durch die Schicht.",
+      "sample": "Stichprobe",
+      "method": "Methodik ansehen",
+      "note": "Es erscheinen nur Modelle mit einem gemessenen Lauf."
     }
   },
   "howItWorks": {
@@ -1926,7 +1977,7 @@
     "caseClaudeSub": "claude.ai, gratis oder bezahlt",
     "caseClaudeBody": "Festes Abo: keine Token-Rechnung zu messen — aber Limits (das Fünf-Stunden-Fenster und das Wochenlimit). Genau dafür gibt es den savings-mode-Skill: kostenlos, in einer Minute auf claude.ai hochgeladen, gegen die zwei Massen, die Limit verbrennen. Seine Wirkung wird veröffentlicht, sobald sie gemessen ist — nie vorher.",
     "caseCodeSub": "Terminal, mit API-Schlüssel",
-    "caseCodeBody": "Im Abo ist die Gebühr fest — aber limitiert: derselbe Skill installiert sich mit einem Befehl und dehnt dasselbe Wochenlimit. Mit API-Key gibt es eine echte Token-Rechnung — und der Meter läuft schon: Ganz ohne Schl�ssel startet „bvsala claude“ Claude Code durch das lokale Gateway und deine Ausgaben erscheinen im Panel, Token für Token, ohne eine Zeile Code anzufassen. Mit PRO stellt es bei Anthropic-Modellen außerdem Cache-Schreibvorgänge von der einstündigen auf die fünfminütige TTL um, nur bei Zügen, in denen ein großer Teil des Prompts neu ist (der erste Zug einer Sitzung, eine Kompaktierung): eine Ersparnis, berechnet auf der Token-Zählung deines eigenen Anbieters, nie auf einer Schätzung.",
+    "caseCodeBody": "Im Abo ist die Gebühr fest — aber limitiert: derselbe Skill installiert sich mit einem Befehl und dehnt dasselbe Wochenlimit. Mit API-Key gibt es eine echte Token-Rechnung — und der Meter läuft schon: Ganz ohne Schlüssel startet „bvsala claude“ Claude Code durch das lokale Gateway und deine Ausgaben erscheinen im Panel, Token für Token, ohne eine Zeile Code anzufassen. Mit PRO stellt es bei Anthropic-Modellen außerdem Cache-Schreibvorgänge von der einstündigen auf die fünfminütige TTL um, nur bei Zügen, in denen ein großer Teil des Prompts neu ist (der erste Zug einer Sitzung, eine Kompaktierung): eine Ersparnis, berechnet auf der Token-Zählung deines eigenen Anbieters, nie auf einer Schätzung.",
     "caseAppName": "Deine Anwendung",
     "caseAppSub": "dein Code + dein API-Schlüssel",
     "caseAppBody": "Der Fall, für den BV‑SALA existiert. Deine App ruft die API mit deinem Schlüssel, der Anbieter berechnet jeden Token, und die Schicht installiert sich in zwei Schritten: Paket und Aufruf umhüllen. Ab der ersten Anfrage liefert sie einen <b>SavingsReport</b> mit der Ersparnis, getrennt in gemessen und geschätzt.",
@@ -1952,7 +2003,113 @@
     "ctaSignup": "Konto erstellen",
     "ctaInstall": "Zur Installationsanleitung",
     "billWith": "Es kommt darauf an",
-    "billDepends": "wie oft sich dein Traffic wiederholt"
+    "billDepends": "wie oft sich dein Traffic wiederholt",
+    "hero": {
+      "ctaInstall": "Open Source installieren",
+      "ctaResults": "Reproduzierbare Ergebnisse ansehen"
+    },
+    "beam": {
+      "eyebrow": "Architektur",
+      "title": "Von deinem Code",
+      "accent": "zu deinem Anbieter",
+      "lede": "Savings läuft in deiner Infrastruktur: als SDK im Prozess deiner Anwendung oder als lokales Gateway davor. Der Inhalt jeder Anfrage geht an den Anbieter, den du konfigurierst; er läuft nicht über die Server von BiVelio.",
+      "app": "Deine Anwendung",
+      "appSub": "dein Code und dein API-Schlüssel",
+      "agent": "Dein Coding-Agent",
+      "agentSub": "ein Coding-Terminal",
+      "hub": "SDK / lokales Gateway",
+      "hubSub": "deine Infrastruktur",
+      "provider": "Konfigurierter Anbieter",
+      "providerSub": "erhält den Inhalt",
+      "cloud": "Savings-Cloud-Dashboard",
+      "cloudSub": "optional, wenn du es verbindest",
+      "telemetry": "Telemetrie",
+      "caption": "Illustration der Funktionsweise",
+      "alt": "Eine Anfrage verlässt deine Anwendung oder deinen Coding-Agenten, läuft durch das SDK oder das lokale Gateway in deiner Infrastruktur und erreicht den Anbieter, den du konfiguriert hast. Getrennt davon, und nur wenn du Savings Cloud verbindest, erhält das Dashboard Nutzungstelemetrie.",
+      "f1Title": "Der Inhalt geht an deinen Anbieter",
+      "f1Body": "Prompts und Antworten gehen von deiner Infrastruktur an den Anbieter, den du konfigurierst, mit deinem Schlüssel. Sie laufen nicht über die Server von BiVelio.",
+      "f2Title": "Ohne Konto, null Telemetrie",
+      "f2Body": "Die Open-Source-Engine läuft lokal ohne BiVelio-Schlüssel und sendet standardmäßig nichts.",
+      "f3Title": "Cloud erhält, was die Datenschutzseite festlegt",
+      "f3Body": "Wenn du Savings Cloud verbindest, erhält das Dashboard nur die Daten, die <link>die Datenschutzseite</link> aufführt."
+    },
+    "ways": {
+      "eyebrow": "Zwei Wege der Installation",
+      "title": "SDK in deinem Prozess oder lokales Gateway",
+      "lede": "Es sind zwei verschiedene Bausteine mit unterschiedlicher Reichweite. Entscheidend ist, wer den Code geschrieben hat, der die API aufruft.",
+      "sdk": {
+        "kicker": "SDK · im Prozess",
+        "title": "In deiner Anwendung",
+        "body": "Ein npm-Paket, das den Aufruf beim Anbieter in deinem eigenen Code umschließt. Es läuft im selben Prozess wie deine Anwendung: kein Server dazwischen.",
+        "p1": "Für alle, die die Anwendung entwickeln, die die API aufruft, in Node.js.",
+        "p2": "Hier laufen die Sparhebel des Pakets.",
+        "p3": "Jeder Aufruf liefert einen SavingsReport, Gemessenes und Geschätztes getrennt.",
+        "cta": "SDK installieren"
+      },
+      "gateway": {
+        "kicker": "Gateway · lokaler Proxy",
+        "title": "Vor deiner Anwendung oder deinem Agenten",
+        "body": "bvsala startet einen Proxy auf deinem eigenen Rechner. Du richtest die Base-URL des offiziellen SDK von OpenAI oder Anthropic darauf aus oder startest Claude Code darüber, ohne deinen Code anzufassen.",
+        "p1": "Für ein Coding-Terminal oder eine Anwendung in beliebiger Sprache, deren Base-URL sich festlegen lässt.",
+        "p2": "Es misst den Verkehr der Modelle mit Listenpreis.",
+        "p3": "Die Hebel des npm-Pakets laufen hier nicht; die des Gateways gelten nur für Anthropic-Verkehr, mit PRO-Lizenz.",
+        "cta": "Gateway ansehen"
+      }
+    },
+    "cases": {
+      "skillNote": "Der Anweisungs-Skill hat eine andere Reichweite: Er ändert, wie der Assistent innerhalb eines Abonnements mit Limits arbeitet. Er misst keine Rechnung und wendet weder die Hebel des SDK noch die des Gateways an. <link>Skill ansehen</link>"
+    },
+    "pieces": {
+      "eyebrow": "Übersicht",
+      "title": "Die Bausteine von Savings",
+      "lede": "Eine Übersicht der Bausteine, nicht fünf Stufen, die jede Anfrage durchläuft. Wähle einen aus, um zu sehen, was er tut, wo er läuft und ob er ein Konto braucht.",
+      "tablist": "Bausteine von Savings",
+      "what": "Was er tut",
+      "where": "Wo er läuft",
+      "account": "Konto",
+      "sdk": {
+        "name": "SDK",
+        "hint": "im Prozess",
+        "what": "Umschließt den Aufruf beim Anbieter und wendet die Sparhebel des Pakets an.",
+        "where": "Im Prozess deiner Anwendung.",
+        "account": "Nicht nötig."
+      },
+      "gateway": {
+        "name": "Lokales Gateway",
+        "hint": "Proxy",
+        "what": "Leitet Anfragen an den Anbieter weiter und erfasst deren Nutzung.",
+        "where": "Auf deinem Rechner oder deinem Server, als lokaler Proxy.",
+        "account": "Für die lokale Nutzung nicht. Die Ausgaben im Dashboard und die Herabstufung mit PRO-Lizenz erfordern Cloud."
+      },
+      "measure": {
+        "name": "Messung",
+        "hint": "SavingsReport",
+        "what": "Zählt die Ersparnis jeder Anfrage mit der Nutzung, die dein Anbieter meldet, und trennt Gemessenes von Geschätztem.",
+        "where": "Lokal, in jeder Antwort; im Dashboard geteilt, wenn du Cloud verbindest.",
+        "account": "Lokal nicht. Um sie mit deinem Team zu teilen, ja."
+      },
+      "cloud": {
+        "name": "Cloud-Dashboard",
+        "hint": "optional",
+        "what": "Bündelt Messung und Teamverwaltung: Organisation, Lizenzen und Plätze.",
+        "where": "In Savings Cloud, von BiVelio gehostet. Es erhält die Daten, die die Datenschutzseite festlegt.",
+        "account": "Ja. Measure ist der kostenlose Plan, im Schattenmodus."
+      },
+      "evidence": {
+        "name": "Nachweise",
+        "hint": "öffentlich",
+        "what": "Veröffentlicht jeden Benchmark-Lauf mit Stichprobe, Intervall und Datum, auch ohne Ersparnis.",
+        "where": "Im öffentlichen Benchmark und im offenen Repository.",
+        "account": "Nicht nötig."
+      }
+    },
+    "receipt": {
+      "title": "Beispielrechnung, pro Monat"
+    },
+    "more": {
+      "privacy": "Was BiVelio erhält",
+      "benchmarks": "Öffentlicher Benchmark"
+    }
   },
   "pricingPage": {
     "metaTitle": "Preisbedingungen · BV-SALA",

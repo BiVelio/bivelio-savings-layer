@@ -47,6 +47,8 @@ para poder comparar al actualizar.
 | KPI Board | `kpi-board.tsx` + `.css` | **affectUI Pro** | registro Pro, `kpi-board` (descarga del 2026-11-16) | `874fc8f4b9a02071f504043efc1ba65f7487570a8a1bd7078f050370b2460c06` |
 | Compact Breakdown | `compact-breakdown.tsx` + `.css` | **affectUI Pro** | registro Pro, `compact-breakdown` (descarga del 2026-11-16) | `16d917616dda6e0ba4f89a4a5efa0b10ee16a7c352548545857c56082b83d7f5` |
 | Experiment Readout | `experiment-readout.tsx` + `.css` | **affectUI Pro** (derivado de Experiment Card) | registro Pro, `experiment-card` (descarga del 2026-11-16) | `f6d08216b0a7803c47c196d52ea51e6d88e1d1900a3f584dba183a8459411373` |
+| Integration Beam (**fork**) | `integration-beam.tsx` + `.css` | MIT | `illustrations/integration-beam.tsx` | `533cfff48bfc8b2d03a1968292d79e2229b8156e690c587fc4b0dbc965445fe6` |
+| Layer Stack | `layer-stack.tsx` + `.css` | MIT | `illustrations/layer-stack.tsx` | `4f8ea82ab8bca0c3a0a8f802eeaaa733fd2fac09b829f671519adbbaa8466cd6` |
 
 ## Cambios respecto a upstream
 
@@ -163,6 +165,33 @@ para poder comparar al actualizar.
   cadena, cifra y longitud de barra llega ya formateada por props. Colores a
   tokens (`--good-ink`, `--warn`, `--danger`, `--brand`), sin transiciones.
   La usa `/dashboard/your-bench` (A = copia sin optimizar, B = con Savings).
+- **integration-beam** — es un **fork**, no una adaptación: cambia la topología.
+  Upstream pinta tres herramientas a cada lado de un producto y mide sus
+  posiciones en el navegador; aquí el dibujo es el camino de UNA petición
+  (dos emisores → centro → salida) con un nodo **aparte** unido por una línea
+  discontinua y rotulada. Componente de servidor, sin script: los hilos los
+  coloca la rejilla CSS (`preserveAspectRatio="none"` +
+  `vector-effect: non-scaling-stroke`) y el pulso es una animación CSS de
+  `stroke-dashoffset`. Props nuevas y obligatorias: `inputs` (dos), `center`,
+  `output`, `aside` (con `link`, el rótulo de la línea), `caption` y `label`
+  (descripción completa para lectores de pantalla; la escena es un
+  `role="img"`). **Retirado**: el contador de conexiones, pausar/reconectar al
+  pulsar una loseta, los tooltips (cada nodo lleva su rótulo visible), el
+  halo de llegada por Web Animations y los logotipos de marcas de la demo
+  (los iconos son cinco glifos propios: `app`, `agent`, `layer`, `provider`,
+  `cloud`). Recorrido activo en `--brand`; la línea aparte, gris y sin pulso.
+  Vertical por debajo de 680px de contenedor; con movimiento reducido las
+  líneas quedan quietas y la punta de flecha conserva el sentido.
+- **layer-stack** — **sin reproducción automática**: upstream recorría las
+  entradas solo hasta la primera interacción; aquí nada se mueve hasta que el
+  lector elige. `items` y `label` pasan a ser obligatorias (sin las cinco
+  entradas de demostración ni el `aria-label="Layers"`), y cada entrada lleva
+  `facts` (`{ label, value }[]`), que se pintan en un `role="tabpanel"` propio
+  enlazado con `aria-controls`; todos los paneles están en el documento y solo
+  el elegido se muestra. Teclado: flechas, Inicio y Fin. El marco 3:2 con texto
+  en `cqw` se sustituye por una rejilla de dos columnas con texto en `rem` que
+  parte línea (doce idiomas, zoom al 200 %); la pastilla deslizante pasa a ser
+  el fondo de la fila elegida. Colores a `--brand`/`--brand-soft`/`--surface-2`.
 
 ## Cómo vendorizar una pieza nueva (frentes)
 

@@ -1897,6 +1897,57 @@
       "contact": "Viết cho chúng tôi tại",
       "cta": "Gửi email",
       "subject": "Phép đo độc lập của bài kiểm tra công khai"
+    },
+    "centre": {
+      "indexTitle": "Trên trang này",
+      "indexAria": "Mục lục trung tâm bằng chứng",
+      "readTitle": "Cách đọc trang này",
+      "classAb": "Hai nhánh trên cùng một yêu cầu, được định giá theo mức sử dụng mà nhà cung cấp báo cáo. Các bộ kiểm tra được đo theo cách này.",
+      "classReplay": "Phát lại phản thực tế với đường cơ sở được dựng lại một phần. Đây không phải A/B trực tiếp, không phải khoản tiết kiệm đã lập hóa đơn, cũng không phải đối soát hóa đơn.",
+      "compatible": "Tương thích không có nghĩa là đã đo: một mô hình chỉ được tính ở đây khi có lượt chạy đã công bố, và những gì không đo được đều được nêu kèm lý do.",
+      "paper": "Bài nghiên cứu (PDF)"
+    },
+    "index": {
+      "method": "Phương pháp",
+      "weekly": "Kiểm tra hằng tuần",
+      "savings": "Mức tiết kiệm đo được",
+      "gatewayTtl": "Phát lại qua gateway",
+      "guarantees": "Bảo đảm",
+      "noSavings": "Những gì không tiết kiệm",
+      "status": "Trạng thái theo mô hình",
+      "bugs": "Lỗi đã tìm thấy",
+      "reproduce": "Tái lập",
+      "invite": "Hãy đo chúng tôi"
+    },
+    "filter": {
+      "label": "Bộ lọc đọc",
+      "all": "Tất cả",
+      "negative": "Không tiết kiệm và lỗi",
+      "reproduce": "Phương pháp và tái lập",
+      "showing": "Đang hiển thị {n} trên {total} mục.",
+      "reset": "Hiển thị tất cả"
+    },
+    "ab": {
+      "title": "Hai nhánh, theo từng mô hình",
+      "intro": "GSM8K, bộ kiểm tra được tạo ra để đo mức tiết kiệm. Chọn một mô hình đã đo: A đi thẳng đến nhà cung cấp, còn B đi qua lớp.",
+      "armA": "Không có lớp",
+      "armB": "Có lớp",
+      "metricCost": "Chi phí của lượt chạy",
+      "metricAccuracy": "Độ chính xác",
+      "base": "Cơ sở",
+      "baseline": "nhánh tham chiếu",
+      "requests": "{n} yêu cầu",
+      "noLift": "Không chênh lệch",
+      "metric": "Chỉ số",
+      "arms": "Các nhánh được so sánh",
+      "ahead": "{nombre} dẫn trước {porcentaje} phần trăm",
+      "noValue": "không có giá trị",
+      "up": "tăng {porcentaje} phần trăm",
+      "down": "giảm {porcentaje} phần trăm",
+      "hint": "A là tham chiếu; B đi qua lớp.",
+      "sample": "Mẫu",
+      "method": "Xem phương pháp",
+      "note": "Chỉ hiển thị các mô hình có lượt chạy đã đo."
     }
   },
   "howItWorks": {
@@ -1952,7 +2003,113 @@
     "ctaSignup": "Tạo tài khoản",
     "ctaInstall": "Đến hướng dẫn cài đặt",
     "billWith": "Tùy",
-    "billDepends": "vào mức độ lặp lại của lưu lượng"
+    "billDepends": "vào mức độ lặp lại của lưu lượng",
+    "hero": {
+      "ctaInstall": "Cài đặt mã nguồn mở",
+      "ctaResults": "Xem kết quả có thể tái lập"
+    },
+    "beam": {
+      "eyebrow": "Kiến trúc",
+      "title": "Từ mã của bạn",
+      "accent": "đến nhà cung cấp",
+      "lede": "Savings chạy bên trong hạ tầng của bạn: dưới dạng SDK trong tiến trình của ứng dụng hoặc dưới dạng gateway cục bộ đặt phía trước ứng dụng. Nội dung của mỗi yêu cầu đi đến nhà cung cấp mà bạn cấu hình; không đi qua máy chủ của BiVelio.",
+      "app": "Ứng dụng của bạn",
+      "appSub": "mã và khóa API của bạn",
+      "agent": "Tác tử lập trình của bạn",
+      "agentSub": "một terminal lập trình",
+      "hub": "SDK / gateway cục bộ",
+      "hubSub": "hạ tầng của bạn",
+      "provider": "Nhà cung cấp đã cấu hình",
+      "providerSub": "nhận nội dung",
+      "cloud": "Bảng điều khiển Savings Cloud",
+      "cloudSub": "tùy chọn, nếu bạn kết nối",
+      "telemetry": "Dữ liệu đo từ xa",
+      "caption": "Minh họa cách hoạt động",
+      "alt": "Một yêu cầu đi ra từ ứng dụng hoặc tác tử lập trình của bạn, đi qua SDK hoặc gateway cục bộ bên trong hạ tầng của bạn rồi đến nhà cung cấp mà bạn đã cấu hình. Tách riêng, và chỉ khi bạn kết nối Savings Cloud, bảng điều khiển mới nhận dữ liệu đo từ xa về mức sử dụng.",
+      "f1Title": "Nội dung đi đến nhà cung cấp của bạn",
+      "f1Body": "Prompt và phản hồi đi từ hạ tầng của bạn đến nhà cung cấp mà bạn cấu hình, bằng khóa của bạn. Chúng không đi qua máy chủ của BiVelio.",
+      "f2Title": "Không cần tài khoản, không gửi dữ liệu",
+      "f2Body": "Bộ máy mã nguồn mở chạy cục bộ mà không cần khóa BiVelio và theo mặc định không gửi gì cả.",
+      "f3Title": "Cloud nhận những gì trang Quyền riêng tư quy định",
+      "f3Body": "Nếu bạn kết nối Savings Cloud, bảng điều khiển chỉ nhận những dữ liệu được nêu trong <link>trang quyền riêng tư</link>."
+    },
+    "ways": {
+      "eyebrow": "Hai cách cài đặt",
+      "title": "SDK trong tiến trình hoặc gateway cục bộ",
+      "lede": "Đây là hai thành phần khác nhau với phạm vi khác nhau. Câu hỏi quyết định là ai đã viết đoạn mã gọi API.",
+      "sdk": {
+        "kicker": "SDK · trong tiến trình",
+        "title": "Bên trong ứng dụng của bạn",
+        "body": "Một gói npm bọc lời gọi đến nhà cung cấp ngay trong mã của bạn. Gói chạy cùng tiến trình với ứng dụng: không có máy chủ trung gian.",
+        "p1": "Dành cho người phát triển ứng dụng gọi API, trên Node.js.",
+        "p2": "Các đòn bẩy tiết kiệm của gói chạy ở đây.",
+        "p3": "Mỗi lời gọi trả về một SavingsReport, tách riêng phần đo được và phần ước tính.",
+        "cta": "Cài đặt SDK"
+      },
+      "gateway": {
+        "kicker": "Gateway · proxy cục bộ",
+        "title": "Phía trước ứng dụng hoặc tác tử của bạn",
+        "body": "bvsala khởi chạy một proxy trên chính máy của bạn. Bạn trỏ base URL của SDK chính thức của OpenAI hoặc Anthropic vào đó, hoặc chạy Claude Code thông qua nó, mà không cần sửa mã.",
+        "p1": "Dành cho terminal lập trình hoặc ứng dụng viết bằng bất kỳ ngôn ngữ nào cho phép đặt base URL.",
+        "p2": "Đo lưu lượng của các mô hình có giá niêm yết.",
+        "p3": "Các đòn bẩy của gói npm không chạy ở đây; đòn bẩy của gateway chỉ áp dụng cho lưu lượng Anthropic, với giấy phép PRO.",
+        "cta": "Xem gateway"
+      }
+    },
+    "cases": {
+      "skillNote": "Skill hướng dẫn có phạm vi khác: nó thay đổi cách trợ lý làm việc trong một gói thuê bao có giới hạn. Nó không đo hóa đơn và cũng không áp dụng các đòn bẩy của SDK hay gateway. <link>Xem skill</link>"
+    },
+    "pieces": {
+      "eyebrow": "Sơ đồ",
+      "title": "Các thành phần của Savings",
+      "lede": "Một sơ đồ các thành phần, không phải năm bước mà mọi yêu cầu phải đi qua. Chọn một thành phần để xem nó làm gì, chạy ở đâu và có cần tài khoản không.",
+      "tablist": "Các thành phần của Savings",
+      "what": "Nó làm gì",
+      "where": "Chạy ở đâu",
+      "account": "Tài khoản",
+      "sdk": {
+        "name": "SDK",
+        "hint": "trong tiến trình",
+        "what": "Bọc lời gọi đến nhà cung cấp và áp dụng các đòn bẩy tiết kiệm của gói.",
+        "where": "Bên trong tiến trình ứng dụng của bạn.",
+        "account": "Không cần."
+      },
+      "gateway": {
+        "name": "Gateway cục bộ",
+        "hint": "proxy",
+        "what": "Chuyển tiếp yêu cầu đến nhà cung cấp và ghi lại mức sử dụng.",
+        "where": "Trên máy hoặc máy chủ của bạn, dưới dạng proxy cục bộ.",
+        "account": "Không cần khi dùng cục bộ. Xem chi tiêu trên bảng điều khiển và mức giảm với giấy phép PRO cần có Cloud."
+      },
+      "measure": {
+        "name": "Đo lường",
+        "hint": "SavingsReport",
+        "what": "Tính mức tiết kiệm của từng yêu cầu dựa trên mức sử dụng mà nhà cung cấp báo cáo, và tách phần đo được khỏi phần ước tính.",
+        "where": "Cục bộ, trong mỗi phản hồi; được chia sẻ trên bảng điều khiển nếu bạn kết nối Cloud.",
+        "account": "Cục bộ thì không. Để chia sẻ với nhóm của bạn thì có."
+      },
+      "cloud": {
+        "name": "Bảng điều khiển Cloud",
+        "hint": "tùy chọn",
+        "what": "Tập trung việc đo lường và quản lý nhóm: tổ chức, giấy phép và chỗ.",
+        "where": "Trong Savings Cloud, do BiVelio lưu trữ. Nhận những dữ liệu mà trang quyền riêng tư quy định.",
+        "account": "Có. Measure là gói miễn phí, ở chế độ bóng."
+      },
+      "evidence": {
+        "name": "Bằng chứng",
+        "hint": "công khai",
+        "what": "Công bố mọi lượt chạy kiểm tra kèm mẫu, khoảng tin cậy và ngày, kể cả khi không có tiết kiệm.",
+        "where": "Trong bài kiểm tra công khai và kho mã mở.",
+        "account": "Không cần."
+      }
+    },
+    "receipt": {
+      "title": "Hóa đơn ví dụ, mỗi tháng"
+    },
+    "more": {
+      "privacy": "BiVelio nhận những gì",
+      "benchmarks": "Bài kiểm tra công khai"
+    }
   },
   "pricingPage": {
     "metaTitle": "Điều khoản giá · BV-SALA",

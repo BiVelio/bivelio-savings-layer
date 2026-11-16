@@ -2,6 +2,8 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import Footer from "@/app/components/Footer";
 import { HowItWorks } from "@/app/components/HowItWorks";
+import { PageHeader } from "@/app/components/ui";
+import { Link } from "@/i18n/navigation";
 import { absolute, languageAlternates } from "@/i18n/site";
 
 /**
@@ -34,11 +36,24 @@ export default async function HowItWorksPage({ params }: { params: Promise<{ loc
   return (
     <div className="lp hiw-page">
       <main className="wrap">
-        <section className="hiw-hero">
-          <span className="eyebrow">{t("eyebrow")}</span>
-          <h1>{t("title")}</h1>
-          <p className="lede">{t("lede")}</p>
-        </section>
+        {/* Instalar open source no pasa por registro ni compra: la acción principal
+            lleva al bloque de instalación de la portada; la de apoyo, al banco. */}
+        <PageHeader
+          className="hiw-hero"
+          eyebrow={t("eyebrow")}
+          titulo={t("title")}
+          lede={t("lede")}
+          acciones={
+            <>
+              <Link className="btn btn-lg" href="/#sdk-install">
+                {t("hero.ctaInstall")}
+              </Link>
+              <Link className="btn btn-lg ghost" href="/benchmarks">
+                {t("hero.ctaResults")}
+              </Link>
+            </>
+          }
+        />
         <HowItWorks variant="landing" />
       </main>
       <Footer />

@@ -1897,6 +1897,57 @@
       "contact": "Schrijf ons op",
       "cta": "E-mail sturen",
       "subject": "Onafhankelijke meting van de openbare benchmark"
+    },
+    "centre": {
+      "indexTitle": "Op deze pagina",
+      "indexAria": "Inhoudsopgave van het bewijscentrum",
+      "readTitle": "Zo lees je deze pagina",
+      "classAb": "Twee armen op hetzelfde verzoek, gewaardeerd met het gebruik dat de provider rapporteert. Zo worden de batterijen van de benchmark gemeten.",
+      "classReplay": "Contrafeitelijke replay met een gedeeltelijk gereconstrueerde baseline. Het is geen live A/B, geen gefactureerde besparing en geen factuurafstemming.",
+      "compatible": "Compatibel betekent niet gemeten: een model telt hier alleen mee als er een gepubliceerde run van is, en wat niet gemeten kon worden staat er met de reden bij.",
+      "paper": "Onderzoeksartikel (PDF)"
+    },
+    "index": {
+      "method": "Methode",
+      "weekly": "Wekelijkse benchmark",
+      "savings": "Gemeten besparing",
+      "gatewayTtl": "Gateway-replay",
+      "guarantees": "Garanties",
+      "noSavings": "Wat niets bespaart",
+      "status": "Status per model",
+      "bugs": "Gevonden fouten",
+      "reproduce": "Reproduceren",
+      "invite": "Meet ons"
+    },
+    "filter": {
+      "label": "Leesfilter",
+      "all": "Alles",
+      "negative": "Geen besparing en fouten",
+      "reproduce": "Methode en reproductie",
+      "showing": "{n} van {total} secties worden getoond.",
+      "reset": "Alles tonen"
+    },
+    "ab": {
+      "title": "Beide armen, model voor model",
+      "intro": "GSM8K, de batterij die gemaakt is om besparing te meten. Kies een gemeten model: A gaat rechtstreeks naar de provider en B loopt door de laag.",
+      "armA": "Zonder de laag",
+      "armB": "Met de laag",
+      "metricCost": "Kosten van de run",
+      "metricAccuracy": "Nauwkeurigheid",
+      "base": "Basis",
+      "baseline": "referentiearm",
+      "requests": "{n} verzoeken",
+      "noLift": "Geen verschil",
+      "metric": "Metriek",
+      "arms": "Vergeleken armen",
+      "ahead": "{nombre} ligt {porcentaje} procent voor",
+      "noValue": "geen waarde",
+      "up": "stijgt {porcentaje} procent",
+      "down": "daalt {porcentaje} procent",
+      "hint": "A is de referentie; B loopt door de laag.",
+      "sample": "Steekproef",
+      "method": "Methodologie bekijken",
+      "note": "Alleen modellen met een gemeten run verschijnen hier."
     }
   },
   "howItWorks": {
@@ -1952,7 +2003,113 @@
     "ctaSignup": "Account aanmaken",
     "ctaInstall": "Naar de installatiegids",
     "billWith": "Het hangt ervan af",
-    "billDepends": "hoeveel je verkeer zich herhaalt"
+    "billDepends": "hoeveel je verkeer zich herhaalt",
+    "hero": {
+      "ctaInstall": "Open source installeren",
+      "ctaResults": "Reproduceerbare resultaten bekijken"
+    },
+    "beam": {
+      "eyebrow": "Architectuur",
+      "title": "Van jouw code",
+      "accent": "naar jouw provider",
+      "lede": "Savings draait binnen je eigen infrastructuur: als SDK in het proces van je applicatie of als lokale gateway ervoor. De inhoud van elk verzoek gaat naar de provider die jij instelt; die loopt niet via de servers van BiVelio.",
+      "app": "Jouw applicatie",
+      "appSub": "jouw code en jouw API-sleutel",
+      "agent": "Jouw code-agent",
+      "agentSub": "een codeerterminal",
+      "hub": "SDK / lokale gateway",
+      "hubSub": "jouw infrastructuur",
+      "provider": "Ingestelde provider",
+      "providerSub": "ontvangt de inhoud",
+      "cloud": "Savings Cloud-dashboard",
+      "cloudSub": "optioneel, als je het koppelt",
+      "telemetry": "Telemetrie",
+      "caption": "Illustratie van de werking",
+      "alt": "Een verzoek vertrekt vanuit je applicatie of je code-agent, loopt door de SDK of de lokale gateway binnen je infrastructuur en komt aan bij de provider die je hebt ingesteld. Los daarvan, en alleen als je Savings Cloud koppelt, ontvangt het dashboard gebruikstelemetrie.",
+      "f1Title": "De inhoud gaat naar jouw provider",
+      "f1Body": "Prompts en antwoorden gaan van je infrastructuur naar de provider die je instelt, met jouw sleutel. Ze lopen niet via de servers van BiVelio.",
+      "f2Title": "Geen account, nul telemetrie",
+      "f2Body": "De open-source-engine draait lokaal zonder BiVelio-sleutel en verstuurt standaard niets.",
+      "f3Title": "Cloud ontvangt wat Privacy vastlegt",
+      "f3Body": "Als je Savings Cloud koppelt, ontvangt het dashboard alleen de gegevens die <link>de privacypagina</link> opsomt."
+    },
+    "ways": {
+      "eyebrow": "Twee manieren om te installeren",
+      "title": "SDK in je proces of lokale gateway",
+      "lede": "Het zijn twee verschillende onderdelen met een verschillend bereik. De beslissende vraag is wie de code schreef die de API aanroept.",
+      "sdk": {
+        "kicker": "SDK · in het proces",
+        "title": "Binnen je applicatie",
+        "body": "Een npm-pakket dat de aanroep naar de provider in je eigen code omhult. Het draait in hetzelfde proces als je applicatie: er zit geen server tussen.",
+        "p1": "Voor wie de applicatie ontwikkelt die de API aanroept, in Node.js.",
+        "p2": "Hier draaien de besparingshefbomen van het pakket.",
+        "p3": "Elke aanroep geeft een SavingsReport terug, met gemeten en geschat apart.",
+        "cta": "De SDK installeren"
+      },
+      "gateway": {
+        "kicker": "Gateway · lokale proxy",
+        "title": "Vóór je applicatie of je agent",
+        "body": "bvsala start een proxy op je eigen machine. Je laat de base-URL van de officiële SDK van OpenAI of Anthropic ernaar wijzen, of je start Claude Code erdoorheen, zonder je code aan te raken.",
+        "p1": "Voor een codeerterminal of een applicatie in welke taal dan ook waarvan je de base-URL kunt instellen.",
+        "p2": "Meet het verkeer van modellen met een lijstprijs.",
+        "p3": "De hefbomen van het npm-pakket draaien hier niet; die van de gateway gelden alleen voor Anthropic-verkeer, met een PRO-licentie.",
+        "cta": "De gateway bekijken"
+      }
+    },
+    "cases": {
+      "skillNote": "De instructieskill heeft een ander bereik: hij verandert hoe de assistent werkt binnen een abonnement met limieten. Hij meet geen factuur en past de hefbomen van de SDK of de gateway niet toe. <link>De skill bekijken</link>"
+    },
+    "pieces": {
+      "eyebrow": "Overzicht",
+      "title": "De onderdelen van Savings",
+      "lede": "Een overzicht van onderdelen, geen vijf stappen waar elk verzoek doorheen gaat. Kies er een om te zien wat het doet, waar het draait en of er een account nodig is.",
+      "tablist": "Onderdelen van Savings",
+      "what": "Wat het doet",
+      "where": "Waar het draait",
+      "account": "Account",
+      "sdk": {
+        "name": "SDK",
+        "hint": "in het proces",
+        "what": "Omhult de aanroep naar de provider en past de besparingshefbomen van het pakket toe.",
+        "where": "Binnen het proces van je applicatie.",
+        "account": "Niet nodig."
+      },
+      "gateway": {
+        "name": "Lokale gateway",
+        "hint": "proxy",
+        "what": "Stuurt verzoeken door naar de provider en registreert het gebruik.",
+        "where": "Op je machine of je server, als lokale proxy.",
+        "account": "Niet voor lokaal gebruik. De uitgaven in het dashboard zien en de verlaging met PRO-licentie vereisen Cloud."
+      },
+      "measure": {
+        "name": "Meting",
+        "hint": "SavingsReport",
+        "what": "Telt de besparing van elk verzoek met het gebruik dat je provider rapporteert, en houdt gemeten en geschat uit elkaar.",
+        "where": "Lokaal, in elk antwoord; gedeeld in het dashboard als je Cloud koppelt.",
+        "account": "Lokaal niet. Om ze met je team te delen wel."
+      },
+      "cloud": {
+        "name": "Cloud-dashboard",
+        "hint": "optioneel",
+        "what": "Centraliseert de meting en het beheer van je team: organisatie, licenties en seats.",
+        "where": "In Savings Cloud, gehost door BiVelio. Het ontvangt de gegevens die de privacypagina vastlegt.",
+        "account": "Ja. Measure is het gratis plan, in schaduwmodus."
+      },
+      "evidence": {
+        "name": "Bewijs",
+        "hint": "openbaar",
+        "what": "Publiceert elke benchmarkrun met steekproef, interval en datum, ook als er geen besparing is.",
+        "where": "In de openbare benchmark en de open repository.",
+        "account": "Niet nodig."
+      }
+    },
+    "receipt": {
+      "title": "Voorbeeldfactuur, per maand"
+    },
+    "more": {
+      "privacy": "Wat BiVelio ontvangt",
+      "benchmarks": "Openbare benchmark"
+    }
   },
   "pricingPage": {
     "metaTitle": "Prijsvoorwaarden · BV-SALA",

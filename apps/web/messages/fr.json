@@ -1897,6 +1897,57 @@
       "contact": "Écrivez-nous à",
       "cta": "Envoyer un e-mail",
       "subject": "Mesure indépendante du banc public"
+    },
+    "centre": {
+      "indexTitle": "Sur cette page",
+      "indexAria": "Sommaire du centre de preuves",
+      "readTitle": "Comment lire cette page",
+      "classAb": "Deux bras sur la même requête, valorisés avec l'usage que déclare le fournisseur. C'est ainsi que sont mesurées les batteries du banc.",
+      "classReplay": "Rejeu contrefactuel avec une ligne de base partiellement reconstruite. Ce n'est ni un A/B en direct, ni une économie facturée, ni un rapprochement de factures.",
+      "compatible": "Compatible ne veut pas dire mesuré : un modèle ne compte ici que s'il a une exécution publiée, et ce qui n'a pas pu être mesuré est indiqué avec son motif.",
+      "paper": "Article de recherche (PDF)"
+    },
+    "index": {
+      "method": "Méthode",
+      "weekly": "Banc hebdomadaire",
+      "savings": "Économie mesurée",
+      "gatewayTtl": "Rejeu de la passerelle",
+      "guarantees": "Garanties",
+      "noSavings": "Ce qui n'économise pas",
+      "status": "État par modèle",
+      "bugs": "Défauts trouvés",
+      "reproduce": "Reproduire",
+      "invite": "Mesurez-nous"
+    },
+    "filter": {
+      "label": "Filtre de lecture",
+      "all": "Tout",
+      "negative": "Sans économie et défauts",
+      "reproduce": "Méthode et reproduction",
+      "showing": "Affichage de {n} sections sur {total}.",
+      "reset": "Tout afficher"
+    },
+    "ab": {
+      "title": "Les deux bras, modèle par modèle",
+      "intro": "GSM8K, la batterie conçue pour mesurer l'économie. Choisissez un modèle mesuré : A va directement chez le fournisseur et B passe par la couche.",
+      "armA": "Sans la couche",
+      "armB": "Avec la couche",
+      "metricCost": "Coût de l'exécution",
+      "metricAccuracy": "Exactitude",
+      "base": "Base",
+      "baseline": "bras de référence",
+      "requests": "{n} requêtes",
+      "noLift": "Aucune différence",
+      "metric": "Métrique",
+      "arms": "Bras comparés",
+      "ahead": "{nombre} est en tête de {porcentaje} pour cent",
+      "noValue": "aucune valeur",
+      "up": "hausse de {porcentaje} pour cent",
+      "down": "baisse de {porcentaje} pour cent",
+      "hint": "A est la référence ; B passe par la couche.",
+      "sample": "Échantillon",
+      "method": "Voir la méthodologie",
+      "note": "Seuls les modèles ayant une exécution mesurée apparaissent."
     }
   },
   "howItWorks": {
@@ -1952,7 +2003,113 @@
     "ctaSignup": "Créer un compte",
     "ctaInstall": "Voir le guide d'installation",
     "billWith": "Ça dépend",
-    "billDepends": "de la part de votre trafic qui se répète"
+    "billDepends": "de la part de votre trafic qui se répète",
+    "hero": {
+      "ctaInstall": "Installer l'open source",
+      "ctaResults": "Voir les résultats reproductibles"
+    },
+    "beam": {
+      "eyebrow": "Architecture",
+      "title": "De votre code",
+      "accent": "à votre fournisseur",
+      "lede": "Savings s'exécute dans votre infrastructure : comme SDK dans le processus de votre application ou comme passerelle locale devant elle. Le contenu de chaque requête part vers le fournisseur que vous configurez ; il ne passe pas par les serveurs de BiVelio.",
+      "app": "Votre application",
+      "appSub": "votre code et votre clé d'API",
+      "agent": "Votre agent de code",
+      "agentSub": "un terminal de programmation",
+      "hub": "SDK / passerelle locale",
+      "hubSub": "votre infrastructure",
+      "provider": "Fournisseur configuré",
+      "providerSub": "reçoit le contenu",
+      "cloud": "Tableau de bord Savings Cloud",
+      "cloudSub": "facultatif, si vous le connectez",
+      "telemetry": "Télémétrie",
+      "caption": "Illustration du fonctionnement",
+      "alt": "Une requête part de votre application ou de votre agent de code, passe par le SDK ou par la passerelle locale dans votre infrastructure et arrive chez le fournisseur que vous avez configuré. À part, et seulement si vous connectez Savings Cloud, le tableau de bord reçoit de la télémétrie d'usage.",
+      "f1Title": "Le contenu va chez votre fournisseur",
+      "f1Body": "Les prompts et les réponses vont de votre infrastructure au fournisseur que vous configurez, avec votre clé. Ils ne passent pas par les serveurs de BiVelio.",
+      "f2Title": "Sans compte, zéro télémétrie",
+      "f2Body": "Le moteur open source s'exécute en local sans clé BiVelio et, par défaut, n'envoie rien.",
+      "f3Title": "Cloud reçoit ce que définit la page Confidentialité",
+      "f3Body": "Si vous connectez Savings Cloud, le tableau de bord reçoit uniquement les données détaillées sur <link>la page de confidentialité</link>."
+    },
+    "ways": {
+      "eyebrow": "Deux façons de l'installer",
+      "title": "SDK dans votre processus ou passerelle locale",
+      "lede": "Ce sont deux pièces distinctes, de portées différentes. La question qui tranche : qui a écrit le code qui appelle l'API ?",
+      "sdk": {
+        "kicker": "SDK · dans le processus",
+        "title": "Dans votre application",
+        "body": "Un paquet npm qui enveloppe l'appel au fournisseur dans votre propre code. Il s'exécute dans le même processus que votre application : aucun serveur intermédiaire.",
+        "p1": "Pour qui développe l'application qui appelle l'API, en Node.js.",
+        "p2": "Les leviers d'économie du paquet s'exécutent ici.",
+        "p3": "Chaque appel renvoie un SavingsReport, le mesuré et l'estimé étant séparés.",
+        "cta": "Installer le SDK"
+      },
+      "gateway": {
+        "kicker": "Passerelle · proxy local",
+        "title": "Devant votre application ou votre agent",
+        "body": "bvsala démarre un proxy sur votre propre machine. Vous y faites pointer la base URL du SDK officiel d'OpenAI ou d'Anthropic, ou vous lancez Claude Code à travers lui, sans toucher à votre code.",
+        "p1": "Pour un terminal de programmation ou une application dans n'importe quel langage qui permet de fixer sa base URL.",
+        "p2": "Elle mesure le trafic des modèles ayant un prix catalogue.",
+        "p3": "Les leviers du paquet npm ne s'exécutent pas ici ; ceux de la passerelle ne s'appliquent qu'au trafic Anthropic, avec une licence PRO.",
+        "cta": "Voir la passerelle"
+      }
+    },
+    "cases": {
+      "skillNote": "Le skill d'instructions a une autre portée : il change la façon de travailler de l'assistant dans un abonnement plafonné. Il ne mesure pas une facture et n'applique pas les leviers du SDK ou de la passerelle. <link>Voir le skill</link>"
+    },
+    "pieces": {
+      "eyebrow": "Carte",
+      "title": "Les pièces de Savings",
+      "lede": "Une carte de pièces, pas cinq étapes que traverserait chaque requête. Choisissez-en une pour voir ce qu'elle fait, où elle vit et si elle demande un compte.",
+      "tablist": "Pièces de Savings",
+      "what": "Ce qu'elle fait",
+      "where": "Où elle vit",
+      "account": "Compte",
+      "sdk": {
+        "name": "SDK",
+        "hint": "dans le processus",
+        "what": "Enveloppe l'appel au fournisseur et applique les leviers d'économie du paquet.",
+        "where": "Dans le processus de votre application.",
+        "account": "Pas nécessaire."
+      },
+      "gateway": {
+        "name": "Passerelle locale",
+        "hint": "proxy",
+        "what": "Relaie les requêtes vers le fournisseur et enregistre leur usage.",
+        "where": "Sur votre machine ou votre serveur, comme proxy local.",
+        "account": "Pas pour l'utiliser en local. Voir la dépense dans le tableau de bord et la réduction sous licence PRO nécessitent Cloud."
+      },
+      "measure": {
+        "name": "Mesure",
+        "hint": "SavingsReport",
+        "what": "Compte l'économie de chaque requête avec l'usage que déclare votre fournisseur, et sépare le mesuré de l'estimé.",
+        "where": "En local, dans chaque réponse ; partagée dans le tableau de bord si vous connectez Cloud.",
+        "account": "En local, non. Pour la partager avec votre équipe, oui."
+      },
+      "cloud": {
+        "name": "Tableau de bord Cloud",
+        "hint": "facultatif",
+        "what": "Centralise la mesure et la gestion de votre équipe : organisation, licences et sièges.",
+        "where": "Dans Savings Cloud, hébergé par BiVelio. Il reçoit les données que définit la page de confidentialité.",
+        "account": "Oui. Measure est l'offre gratuite, en mode fantôme."
+      },
+      "evidence": {
+        "name": "Preuves",
+        "hint": "publiques",
+        "what": "Publie chaque exécution du banc avec son échantillon, son intervalle et sa date, y compris sans économie.",
+        "where": "Dans le banc public et le dépôt ouvert.",
+        "account": "Pas nécessaire."
+      }
+    },
+    "receipt": {
+      "title": "Facture d'exemple, par mois"
+    },
+    "more": {
+      "privacy": "Ce que reçoit BiVelio",
+      "benchmarks": "Banc public"
+    }
   },
   "pricingPage": {
     "metaTitle": "Conditions tarifaires · BV-SALA",

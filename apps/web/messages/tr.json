@@ -1897,6 +1897,57 @@
       "contact": "Bize şu adresten yazın:",
       "cta": "E-posta gönder",
       "subject": "Herkese açık testin bağımsız ölçümü"
+    },
+    "centre": {
+      "indexTitle": "Bu sayfada",
+      "indexAria": "Kanıt merkezi dizini",
+      "readTitle": "Bu sayfa nasıl okunur",
+      "classAb": "Aynı istek üzerinde iki kol; sağlayıcının bildirdiği kullanımla değerlenir. Testin bataryaları böyle ölçülür.",
+      "classReplay": "Kısmen yeniden oluşturulmuş bir temel çizgiyle karşı olgusal yeniden oynatma. Canlı bir A/B, faturalanmış tasarruf ya da fatura mutabakatı değildir.",
+      "compatible": "Uyumlu olmak ölçülmüş olmak demek değildir: bir model burada yalnızca yayımlanmış bir çalıştırması varsa sayılır; ölçülemeyenler nedeniyle birlikte belirtilir.",
+      "paper": "Araştırma makalesi (PDF)"
+    },
+    "index": {
+      "method": "Yöntem",
+      "weekly": "Haftalık test",
+      "savings": "Ölçülen tasarruf",
+      "gatewayTtl": "Gateway yeniden oynatması",
+      "guarantees": "Güvenceler",
+      "noSavings": "Tasarruf sağlamayanlar",
+      "status": "Modele göre durum",
+      "bugs": "Bulunan hatalar",
+      "reproduce": "Yeniden üret",
+      "invite": "Bizi siz ölçün"
+    },
+    "filter": {
+      "label": "Okuma filtresi",
+      "all": "Tümü",
+      "negative": "Tasarrufsuz sonuçlar ve hatalar",
+      "reproduce": "Yöntem ve yeniden üretim",
+      "showing": "{total} bölümden {n} tanesi gösteriliyor.",
+      "reset": "Tümünü göster"
+    },
+    "ab": {
+      "title": "İki kol, model model",
+      "intro": "GSM8K, tasarrufu ölçmek için hazırlanmış batarya. Ölçülmüş bir model seçin: A doğrudan sağlayıcıya gider, B katmandan geçer.",
+      "armA": "Katman olmadan",
+      "armB": "Katmanla",
+      "metricCost": "Çalıştırmanın maliyeti",
+      "metricAccuracy": "Doğruluk",
+      "base": "Temel",
+      "baseline": "referans kol",
+      "requests": "{n} istek",
+      "noLift": "Fark yok",
+      "metric": "Metrik",
+      "arms": "Karşılaştırılan kollar",
+      "ahead": "{nombre} yüzde {porcentaje} önde",
+      "noValue": "değer yok",
+      "up": "yüzde {porcentaje} artış",
+      "down": "yüzde {porcentaje} düşüş",
+      "hint": "A referanstır; B katmandan geçer.",
+      "sample": "Örneklem",
+      "method": "Metodolojiyi gör",
+      "note": "Yalnızca ölçülmüş bir çalıştırması olan modeller görünür."
     }
   },
   "howItWorks": {
@@ -1952,7 +2003,113 @@
     "ctaSignup": "Hesap oluştur",
     "ctaInstall": "Kurulum rehberine git",
     "billWith": "Duruma göre",
-    "billDepends": "trafiğinizin ne kadar tekrarlandığına"
+    "billDepends": "trafiğinizin ne kadar tekrarlandığına",
+    "hero": {
+      "ctaInstall": "Açık kaynağı kur",
+      "ctaResults": "Yeniden üretilebilir sonuçları gör"
+    },
+    "beam": {
+      "eyebrow": "Mimari",
+      "title": "Kodunuzdan",
+      "accent": "sağlayıcınıza",
+      "lede": "Savings kendi altyapınızın içinde çalışır: uygulamanızın sürecinde bir SDK olarak ya da önünde yerel bir gateway olarak. Her isteğin içeriği sizin yapılandırdığınız sağlayıcıya gider; BiVelio sunucularından geçmez.",
+      "app": "Uygulamanız",
+      "appSub": "kodunuz ve API anahtarınız",
+      "agent": "Kodlama ajanınız",
+      "agentSub": "bir kodlama terminali",
+      "hub": "SDK / yerel gateway",
+      "hubSub": "sizin altyapınız",
+      "provider": "Yapılandırılan sağlayıcı",
+      "providerSub": "içeriği alır",
+      "cloud": "Savings Cloud paneli",
+      "cloudSub": "isteğe bağlı, bağlarsanız",
+      "telemetry": "Telemetri",
+      "caption": "İşleyişin illüstrasyonu",
+      "alt": "Bir istek uygulamanızdan ya da kodlama ajanınızdan çıkar, altyapınızdaki SDK'dan veya yerel gateway'den geçer ve yapılandırdığınız sağlayıcıya ulaşır. Bundan ayrı olarak, ve yalnızca Savings Cloud'u bağlarsanız, panel kullanım telemetrisi alır.",
+      "f1Title": "İçerik sağlayıcınıza gider",
+      "f1Body": "Prompt'lar ve yanıtlar altyapınızdan, yapılandırdığınız sağlayıcıya sizin anahtarınızla gider. BiVelio sunucularından geçmez.",
+      "f2Title": "Hesap yok, sıfır telemetri",
+      "f2Body": "Açık kaynak motor, BiVelio anahtarı olmadan yerelde çalışır ve varsayılan olarak hiçbir şey göndermez.",
+      "f3Title": "Cloud, Gizlilik sayfasının tanımladığını alır",
+      "f3Body": "Savings Cloud'u bağlarsanız panel yalnızca <link>gizlilik sayfasında</link> sayılan verileri alır."
+    },
+    "ways": {
+      "eyebrow": "Kurmanın iki yolu",
+      "title": "Sürecinizde SDK ya da yerel gateway",
+      "lede": "Bunlar kapsamı farklı iki ayrı parçadır. Belirleyici soru, API'yi çağıran kodu kimin yazdığıdır.",
+      "sdk": {
+        "kicker": "SDK · süreç içinde",
+        "title": "Uygulamanızın içinde",
+        "body": "Sağlayıcı çağrısını kendi kodunuzda saran bir npm paketi. Uygulamanızla aynı süreçte çalışır: arada sunucu yoktur.",
+        "p1": "API'yi çağıran uygulamayı Node.js ile geliştirenler için.",
+        "p2": "Paketin tasarruf kaldıraçları burada çalışır.",
+        "p3": "Her çağrı, ölçülen ve tahmin edilen ayrı tutulmuş bir SavingsReport döndürür.",
+        "cta": "SDK'yı kur"
+      },
+      "gateway": {
+        "kicker": "Gateway · yerel proxy",
+        "title": "Uygulamanızın ya da ajanınızın önünde",
+        "body": "bvsala kendi makinenizde bir proxy başlatır. OpenAI'nin veya Anthropic'in resmî SDK'sının base URL'sini ona yönlendirirsiniz ya da Claude Code'u onun üzerinden başlatırsınız; kodunuza dokunmadan.",
+        "p1": "Bir kodlama terminali ya da base URL'si ayarlanabilen, herhangi bir dildeki uygulama için.",
+        "p2": "Liste fiyatı olan modellerin trafiğini ölçer.",
+        "p3": "npm paketinin kaldıraçları burada çalışmaz; gateway'inkiler yalnızca Anthropic trafiğine, PRO lisansıyla uygulanır.",
+        "cta": "Gateway'i gör"
+      }
+    },
+    "cases": {
+      "skillNote": "Talimat skill'inin kapsamı farklıdır: asistanın, limitleri olan bir abonelik içinde nasıl çalıştığını değiştirir. Bir faturayı ölçmez, SDK'nın veya gateway'in kaldıraçlarını da uygulamaz. <link>Skill'i gör</link>"
+    },
+    "pieces": {
+      "eyebrow": "Harita",
+      "title": "Savings'in parçaları",
+      "lede": "Bir parça haritası; her isteğin geçtiği beş aşama değil. Ne yaptığını, nerede çalıştığını ve hesap gerektirip gerektirmediğini görmek için birini seçin.",
+      "tablist": "Savings'in parçaları",
+      "what": "Ne yapar",
+      "where": "Nerede çalışır",
+      "account": "Hesap",
+      "sdk": {
+        "name": "SDK",
+        "hint": "süreç içinde",
+        "what": "Sağlayıcı çağrısını sarar ve paketin tasarruf kaldıraçlarını uygular.",
+        "where": "Uygulamanızın sürecinde.",
+        "account": "Gerekmez."
+      },
+      "gateway": {
+        "name": "Yerel gateway",
+        "hint": "proxy",
+        "what": "İstekleri sağlayıcıya iletir ve kullanımlarını kaydeder.",
+        "where": "Makinenizde ya da sunucunuzda, yerel proxy olarak.",
+        "account": "Yerelde kullanmak için gerekmez. Harcamayı panelde görmek ve PRO lisanslı indirim Cloud gerektirir."
+      },
+      "measure": {
+        "name": "Ölçüm",
+        "hint": "SavingsReport",
+        "what": "Her isteğin tasarrufunu sağlayıcınızın bildirdiği kullanımla sayar ve ölçüleni tahmin edilenden ayırır.",
+        "where": "Yerelde, her yanıtta; Cloud'u bağlarsanız panelde paylaşılır.",
+        "account": "Yerelde hayır. Ekibinizle paylaşmak için evet."
+      },
+      "cloud": {
+        "name": "Cloud paneli",
+        "hint": "isteğe bağlı",
+        "what": "Ölçümü ve ekip yönetimini merkezîleştirir: organizasyon, lisanslar ve koltuklar.",
+        "where": "BiVelio'nun barındırdığı Savings Cloud'da. Gizlilik sayfasının tanımladığı verileri alır.",
+        "account": "Evet. Measure, gölge modunda çalışan ücretsiz plandır."
+      },
+      "evidence": {
+        "name": "Kanıt",
+        "hint": "herkese açık",
+        "what": "Her test çalıştırmasını örneklemi, aralığı ve tarihiyle yayımlar; tasarruf olmadığında da.",
+        "where": "Herkese açık testte ve açık depoda.",
+        "account": "Gerekmez."
+      }
+    },
+    "receipt": {
+      "title": "Örnek fatura, aylık"
+    },
+    "more": {
+      "privacy": "BiVelio ne alır",
+      "benchmarks": "Herkese açık test"
+    }
   },
   "pricingPage": {
     "metaTitle": "Fiyat koşulları · BV-SALA",

@@ -13,6 +13,9 @@ import {
   type Registro,
   type RegistroGsm8k,
 } from "@/lib/banco-publico/extraer";
+// Directo al fichero, no al índice de `ui`: el índice arrastra `Recibo`, que importa la
+// navegación de next-intl, y este componente se renderiza a secas en su test.
+import { EvidenceBadge, type TipoDeEvidencia } from "@/app/components/ui/EvidenceBadge";
 import { rutaServida } from "@/lib/banco-publico/publicar";
 import type { PalancaTtl } from "@/lib/portada/palanca-ttl";
 
@@ -53,7 +56,7 @@ const CLASE_ESTADO: Record<Registro["estado"], string> = {
 
 const NOMBRE_BATERIA: Record<Bateria, string> = { gsm8k: "GSM8K", bfcl: "BFCL", xstest: "XSTest", "mt-bench": "MT-Bench" };
 
-function formatos(locale: string) {
+export function formatos(locale: string) {
   const pct = new Intl.NumberFormat(locale, { style: "percent", minimumFractionDigits: 1, maximumFractionDigits: 1 });
   const pctRedondo = new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 0 });
   const pp = new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1, signDisplay: "exceptZero" });
@@ -87,6 +90,27 @@ function formatos(locale: string) {
 type F = ReturnType<typeof formatos>;
 
 /**
+ * Las etiquetas de las dos clases de evidencia de la página (`ui.evidence.*`,
+ * que es de otro espacio de mensajes: por eso llegan por prop y no por `t`).
+ */
+export interface EtiquetasDeEvidencia {
+  abSdk: string;
+  replayGateway: string;
+}
+
+/**
+ * DE DÓNDE SALE LA CIFRA, JUNTO A LA CIFRA. Cada sección con números lleva su
+ * clase bajo el título: las baterías son A/B con el SDK; la rebaja de caché es
+ * un replay del gateway. Sin etiquetas (el test renderiza el componente a
+ * secas) no se pinta nada.
+ */
+function Clase({ tipo, etiquetas, pequeno }: { tipo: Extract<TipoDeEvidencia, "ab-sdk" | "replay-gateway">; etiquetas?: EtiquetasDeEvidencia; pequeno?: boolean }) {
+  if (!etiquetas) return null;
+  const insignia = <EvidenceBadge tipo={tipo} label={tipo === "ab-sdk" ? etiquetas.abSdk : etiquetas.replayGateway} pequeno={pequeno} />;
+  return pequeno ? insignia : <p className="banco-clase">{insignia}</p>;
+}
+
+/**
  * Enlace a un informe: la copia servida por esta web (/benchmarks/data/…), no
  * el repositorio, que es privado (decisión del dueño, 2026-09-29).
  */
@@ -104,7 +128,7 @@ function motivoTexto(r: Registro, t: Traductor): string {
   return t(`status.reason.${r.motivo ?? "otro"}`);
 }
 
-function veredicto(x: Intervalo): "ahorro" | "cero" | "sobrecoste" {
+export function veredicto(x: Intervalo): "ahorro" | "cero" | "sobrecoste" {
   if (x.inf > 0) return "ahorro";
   if (x.sup < 0) return "sobrecoste";
   return "cero";
@@ -201,21 +225,25 @@ function Metodo({ banco, t, f, ricos }: { banco: Banco; t: Traductor; f: F; rico
   );
 }
 
-function Ahorro({ banco, t, f }: { banco: Banco; t: Traductor; f: F }) {
+function Ahorro({ banco, t, f, etiquetas, comparacion }: { banco: Banco; t: Traductor; f: F; etiquetas?: EtiquetasDeEvidencia; comparacion?: ReactNode }) {
   const filas = banco.registros.filter((r): r is RegistroGsm8k => r.bateria === "gsm8k");
   return (
     <section className="terms-sec" aria-labelledby="savings-h" id="savings">
       <h2 id="savings-h">{t("savings.title")}</h2>
+      <Clase tipo="ab-sdk" etiquetas={etiquetas} />
       {banco.flujoGsm8k && (
         <p>{t("savings.intro", { rep: f.pctRedondo(banco.flujoGsm8k.repeticiones), par: f.pctRedondo(banco.flujoGsm8k.parafrasis) })}</p>
       )}
+      {comparacion}
       <div className="tbl-scroll">
         <table className="tbl banco-tbl">
           <thead>
             <tr>
               <th scope="col">{t("th.model")}</th>
               <th scope="col">{t("th.n")}</th>
-              <th scope="col">{t("th.savings")}</th>
+              <th scope="col">
+                {t("th.savings")} <Clase tipo="ab-sdk" etiquetas={etiquetas} pequeno />
+              </th>
               <th scope="col">{t("th.fromExact")}</th>
               <th scope="col">{t("th.fromCalls")}</th>
               <th scope="col">{t("th.accuracy")}</th>
@@ -279,7 +307,7 @@ function Ahorro({ banco, t, f }: { banco: Banco; t: Traductor; f: F }) {
  * producción), así que aquí va lo publicable, contado entero. Y sin más dólares
  * que los del veredicto: el bruto y el coste de los fallos, sobre la factura.
  */
-function PalancaDeTtl({ p, t, f, ricos }: { p: PalancaTtl; t: Traductor; f: F; ricos: Record<string, Rico> }) {
+function PalancaDeTtl({ p, t, f, ricos, etiquetas }: { p: PalancaTtl; t: Traductor; f: F; ricos: Record<string, Rico>; etiquetas?: EtiquetasDeEvidencia }) {
   const rango = (x: { lower: number; upper: number }) => `${f.pct2(x.lower)} – ${f.pct2(x.upper)}`;
   const muestra: [string, string][] = [
     [f.ent(p.sesiones), t("gatewayTtl.stat.sessions")],
@@ -297,6 +325,7 @@ function PalancaDeTtl({ p, t, f, ricos }: { p: PalancaTtl; t: Traductor; f: F; r
   return (
     <section className="terms-sec" aria-labelledby="gateway-ttl-h" id="gateway-ttl" data-informe={p.fecha}>
       <h2 id="gateway-ttl-h">{t("gatewayTtl.title")}</h2>
+      <Clase tipo="replay-gateway" etiquetas={etiquetas} />
       <p>{t.rich("gatewayTtl.kind", ricos)}</p>
       <p>
         {t.rich("gatewayTtl.verdict", {
@@ -320,7 +349,9 @@ function PalancaDeTtl({ p, t, f, ricos }: { p: PalancaTtl; t: Traductor; f: F; r
           <thead>
             <tr>
               <th scope="col">{t("gatewayTtl.thInterval", { confianza: f.pctRedondo(p.confianza) })}</th>
-              <th scope="col">{t("gatewayTtl.thNet")}</th>
+              <th scope="col">
+                {t("gatewayTtl.thNet")} <Clase tipo="replay-gateway" etiquetas={etiquetas} pequeno />
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -439,7 +470,7 @@ function Negativa({ par, f }: { par?: ParNegativas; f: F }) {
   );
 }
 
-function Garantias({ banco, t, f }: { banco: Banco; t: Traductor; f: F }) {
+function Garantias({ banco, t, f, etiquetas }: { banco: Banco; t: Traductor; f: F; etiquetas?: EtiquetasDeEvidencia }) {
   const g = banco.garantias;
   const neg = g.negativas.modelos;
   const significativas = neg.filter((m) => [m.seguros, m.inseguros].some((x) => x && x.p < UMBRAL_P)).length;
@@ -448,6 +479,7 @@ function Garantias({ banco, t, f }: { banco: Banco; t: Traductor; f: F }) {
   return (
     <section className="terms-sec" aria-labelledby="guarantees-h" id="guarantees">
       <h2 id="guarantees-h">{t("guarantees.title")}</h2>
+      <Clase tipo="ab-sdk" etiquetas={etiquetas} />
       <div className="terms-groups banco-garantias">
         <div className="terms-group" data-garantia="herramientas" data-ok={g.herramientas.alteradas === 0}>
           <h3>
@@ -544,13 +576,14 @@ function Garantias({ banco, t, f }: { banco: Banco; t: Traductor; f: F }) {
   );
 }
 
-function NoAhorra({ banco, t, f, ricos }: { banco: Banco; t: Traductor; f: F; ricos: Record<string, Rico> }) {
+function NoAhorra({ banco, t, f, ricos, etiquetas }: { banco: Banco; t: Traductor; f: F; ricos: Record<string, Rico>; etiquetas?: EtiquetasDeEvidencia }) {
   const filas = banco.registros.filter(
     (r): r is Extract<Registro, { bateria: "mt-bench" | "bfcl" }> => (r.bateria === "mt-bench" || r.bateria === "bfcl") && r.estado === "medido" && !!r.ahorro,
   );
   return (
     <section className="terms-sec" aria-labelledby="nosavings-h" id="no-savings">
       <h2 id="nosavings-h">{t("noSavings.title")}</h2>
+      <Clase tipo="ab-sdk" etiquetas={etiquetas} />
       <p className="terms-governs">{t.rich("noSavings.lead", { ...ricos, cero: f.pctRedondo(0) })}</p>
       <p>{t("noSavings.why")}</p>
       <div className="tbl-scroll">
@@ -560,7 +593,9 @@ function NoAhorra({ banco, t, f, ricos }: { banco: Banco; t: Traductor; f: F; ri
               <th scope="col">{t("th.battery")}</th>
               <th scope="col">{t("th.model")}</th>
               <th scope="col">{t("th.n")}</th>
-              <th scope="col">{t("th.savings")}</th>
+              <th scope="col">
+                {t("th.savings")} <Clase tipo="ab-sdk" etiquetas={etiquetas} pequeno />
+              </th>
               <th scope="col">{t("th.verdict")}</th>
               <th scope="col">{t("th.run")}</th>
             </tr>
@@ -746,13 +781,14 @@ function Diferencia({ c, t, f }: { c: CeldaSemanal; t: Traductor; f: F }) {
   );
 }
 
-function Semanal({ banco, t, f }: { banco: Banco; t: Traductor; f: F }) {
+function Semanal({ banco, t, f, etiquetas }: { banco: Banco; t: Traductor; f: F; etiquetas?: EtiquetasDeEvidencia }) {
   const s = banco.semanales[0]!;
   const medidas = s.celdas.filter((c) => c.estado === "medida").length;
   const anteriores = banco.semanales.slice(1);
   return (
     <section className="terms-sec" aria-labelledby="weekly-h" id="weekly" data-run={s.runId}>
       <h2 id="weekly-h">{t("weekly.title")}</h2>
+      <Clase tipo="ab-sdk" etiquetas={etiquetas} />
       <p>{t("weekly.intro")}</p>
       <p className="terms-governs">
         {t("weekly.meta", {
@@ -769,7 +805,8 @@ function Semanal({ banco, t, f }: { banco: Banco; t: Traductor; f: F }) {
       <p data-ok={s.ok} className="banco-veredicto">
         {s.ok ? t("weekly.verdictOk") : t("weekly.verdictFailed", { n: f.ent(s.infracciones) })}
       </p>
-      <div className="tbl-scroll">
+      {/* Cuarenta filas: alto acotado, cabecera fija y scroll DENTRO (con teclado: es una región enfocable). */}
+      <div className="tbl-scroll banco-scroll-alto" tabIndex={0} role="region" aria-labelledby="weekly-h">
         <table className="tbl banco-tbl banco-semanal">
           <thead>
             <tr>
@@ -991,12 +1028,25 @@ export function BancoPublico({
   t,
   locale,
   palancaTtl,
+  etiquetas,
+  indice,
+  comparacion,
 }: {
   banco: Banco;
   t: Traductor;
   locale: string;
   /** El informe del banco de TTL (lib/portada/palanca-ttl.ts). Sin él, la sección no sale. */
   palancaTtl?: PalancaTtl;
+  /** Las etiquetas de clase de evidencia (`ui.evidence.*`). Con ellas, cada sección con cifras lleva su insignia. */
+  etiquetas?: EtiquetasDeEvidencia;
+  /**
+   * Hueco tras la cabecera: el índice y los filtros de lectura, que pinta la
+   * página (benchmarks/page.tsx). Este componente no lleva enlaces de
+   * navegación propios: los suyos son solo informes servidos, el artículo y el correo.
+   */
+  indice?: ReactNode;
+  /** Hueco al principio de #savings: la comparación A/B por modelo, que también pinta la página. */
+  comparacion?: ReactNode;
 }) {
   const f = formatos(locale);
   const ricos: Record<string, Rico> = {
@@ -1016,12 +1066,13 @@ export function BancoPublico({
         <p className="lede">{t("lede", { modelos: f.ent(banco.modelos.length) })}</p>
         <Estadisticas banco={banco} t={t} f={f} />
       </section>
+      {indice}
       <Metodo banco={banco} t={t} f={f} ricos={ricos} />
-      {banco.semanales.length > 0 && <Semanal banco={banco} t={t} f={f} />}
-      <Ahorro banco={banco} t={t} f={f} />
-      {palancaTtl && <PalancaDeTtl p={palancaTtl} t={t} f={f} ricos={ricos} />}
-      <Garantias banco={banco} t={t} f={f} />
-      <NoAhorra banco={banco} t={t} f={f} ricos={ricos} />
+      {banco.semanales.length > 0 && <Semanal banco={banco} t={t} f={f} etiquetas={etiquetas} />}
+      <Ahorro banco={banco} t={t} f={f} etiquetas={etiquetas} comparacion={comparacion} />
+      {palancaTtl && <PalancaDeTtl p={palancaTtl} t={t} f={f} ricos={ricos} etiquetas={etiquetas} />}
+      <Garantias banco={banco} t={t} f={f} etiquetas={etiquetas} />
+      <NoAhorra banco={banco} t={t} f={f} ricos={ricos} etiquetas={etiquetas} />
       <EstadoPorModelo banco={banco} t={t} f={f} />
       {banco.fallos.length > 0 && <Fallos banco={banco} t={t} f={f} />}
       <Reproducir banco={banco} t={t} ricos={ricos} />

@@ -1897,6 +1897,57 @@
       "contact": "Tulis kepada kami di",
       "cta": "Kirim email",
       "subject": "Pengukuran independen dari uji publik"
+    },
+    "centre": {
+      "indexTitle": "Di halaman ini",
+      "indexAria": "Daftar isi pusat bukti",
+      "readTitle": "Cara membaca halaman ini",
+      "classAb": "Dua lengan pada permintaan yang sama, dinilai dengan penggunaan yang dilaporkan penyedia. Begitulah baterai uji ini diukur.",
+      "classReplay": "Pemutaran ulang kontrafaktual dengan garis dasar yang sebagian direkonstruksi. Ini bukan A/B langsung, bukan penghematan yang ditagihkan, dan bukan rekonsiliasi tagihan.",
+      "compatible": "Kompatibel tidak berarti terukur: sebuah model hanya dihitung di sini jika memiliki putaran yang diterbitkan, dan yang tidak dapat diukur disebutkan beserta alasannya.",
+      "paper": "Makalah penelitian (PDF)"
+    },
+    "index": {
+      "method": "Metode",
+      "weekly": "Uji mingguan",
+      "savings": "Penghematan terukur",
+      "gatewayTtl": "Pemutaran ulang gateway",
+      "guarantees": "Jaminan",
+      "noSavings": "Yang tidak menghemat",
+      "status": "Status per model",
+      "bugs": "Kesalahan yang ditemukan",
+      "reproduce": "Reproduksi",
+      "invite": "Ukurlah kami"
+    },
+    "filter": {
+      "label": "Filter baca",
+      "all": "Semua",
+      "negative": "Tanpa penghematan dan kesalahan",
+      "reproduce": "Metode dan reproduksi",
+      "showing": "Menampilkan {n} dari {total} bagian.",
+      "reset": "Tampilkan semua"
+    },
+    "ab": {
+      "title": "Kedua lengan, model demi model",
+      "intro": "GSM8K, baterai yang dibuat untuk mengukur penghematan. Pilih model yang terukur: A langsung ke penyedia dan B melewati lapisan.",
+      "armA": "Tanpa lapisan",
+      "armB": "Dengan lapisan",
+      "metricCost": "Biaya putaran",
+      "metricAccuracy": "Akurasi",
+      "base": "Dasar",
+      "baseline": "lengan acuan",
+      "requests": "{n} permintaan",
+      "noLift": "Tidak ada selisih",
+      "metric": "Metrik",
+      "arms": "Lengan yang dibandingkan",
+      "ahead": "{nombre} unggul {porcentaje} persen",
+      "noValue": "tidak ada nilai",
+      "up": "naik {porcentaje} persen",
+      "down": "turun {porcentaje} persen",
+      "hint": "A adalah acuan; B melewati lapisan.",
+      "sample": "Sampel",
+      "method": "Lihat metodologi",
+      "note": "Hanya model dengan putaran terukur yang muncul."
     }
   },
   "howItWorks": {
@@ -1952,7 +2003,113 @@
     "ctaSignup": "Buat akun",
     "ctaInstall": "Ke panduan pemasangan",
     "billWith": "Tergantung",
-    "billDepends": "seberapa sering lalu lintas Anda berulang"
+    "billDepends": "seberapa sering lalu lintas Anda berulang",
+    "hero": {
+      "ctaInstall": "Pasang open source",
+      "ctaResults": "Lihat hasil yang dapat direproduksi"
+    },
+    "beam": {
+      "eyebrow": "Arsitektur",
+      "title": "Dari kode Anda",
+      "accent": "ke penyedia Anda",
+      "lede": "Savings berjalan di dalam infrastruktur Anda: sebagai SDK di dalam proses aplikasi Anda atau sebagai gateway lokal di depannya. Isi setiap permintaan dikirim ke penyedia yang Anda konfigurasikan; tidak melewati server BiVelio.",
+      "app": "Aplikasi Anda",
+      "appSub": "kode dan kunci API Anda",
+      "agent": "Agen koding Anda",
+      "agentSub": "sebuah terminal koding",
+      "hub": "SDK / gateway lokal",
+      "hubSub": "infrastruktur Anda",
+      "provider": "Penyedia terkonfigurasi",
+      "providerSub": "menerima isinya",
+      "cloud": "Dasbor Savings Cloud",
+      "cloudSub": "opsional, jika Anda menghubungkannya",
+      "telemetry": "Telemetri",
+      "caption": "Ilustrasi cara kerja",
+      "alt": "Sebuah permintaan keluar dari aplikasi atau agen koding Anda, melewati SDK atau gateway lokal di dalam infrastruktur Anda, lalu tiba di penyedia yang Anda konfigurasikan. Terpisah dari itu, dan hanya jika Anda menghubungkan Savings Cloud, dasbor menerima telemetri penggunaan.",
+      "f1Title": "Isi dikirim ke penyedia Anda",
+      "f1Body": "Prompt dan respons berjalan dari infrastruktur Anda ke penyedia yang Anda konfigurasikan, dengan kunci Anda. Tidak melewati server BiVelio.",
+      "f2Title": "Tanpa akun, nol telemetri",
+      "f2Body": "Mesin open source berjalan secara lokal tanpa kunci BiVelio dan, secara bawaan, tidak mengirim apa pun.",
+      "f3Title": "Cloud menerima yang ditetapkan halaman Privasi",
+      "f3Body": "Jika Anda menghubungkan Savings Cloud, dasbor hanya menerima data yang dirinci di <link>halaman privasi</link>."
+    },
+    "ways": {
+      "eyebrow": "Dua cara memasangnya",
+      "title": "SDK di proses Anda atau gateway lokal",
+      "lede": "Keduanya bagian yang berbeda dengan cakupan yang berbeda. Pertanyaan penentunya: siapa yang menulis kode yang memanggil API.",
+      "sdk": {
+        "kicker": "SDK · di dalam proses",
+        "title": "Di dalam aplikasi Anda",
+        "body": "Paket npm yang membungkus panggilan ke penyedia di kode Anda sendiri. Berjalan di proses yang sama dengan aplikasi Anda: tidak ada server perantara.",
+        "p1": "Untuk yang mengembangkan aplikasi pemanggil API, di Node.js.",
+        "p2": "Tuas penghematan paket berjalan di sini.",
+        "p3": "Setiap panggilan mengembalikan SavingsReport, dengan yang terukur dan yang diperkirakan dipisahkan.",
+        "cta": "Pasang SDK"
+      },
+      "gateway": {
+        "kicker": "Gateway · proxy lokal",
+        "title": "Di depan aplikasi atau agen Anda",
+        "body": "bvsala menjalankan proxy di mesin Anda sendiri. Anda mengarahkan base URL SDK resmi OpenAI atau Anthropic ke sana, atau menjalankan Claude Code melaluinya, tanpa menyentuh kode Anda.",
+        "p1": "Untuk terminal koding atau aplikasi dalam bahasa apa pun yang base URL-nya bisa diatur.",
+        "p2": "Mengukur lalu lintas model yang memiliki harga daftar.",
+        "p3": "Tuas paket npm tidak berjalan di sini; tuas gateway hanya berlaku untuk lalu lintas Anthropic, dengan lisensi PRO.",
+        "cta": "Lihat gateway"
+      }
+    },
+    "cases": {
+      "skillNote": "Skill instruksi memiliki cakupan lain: ia mengubah cara asisten bekerja di dalam langganan yang berbatas. Ia tidak mengukur tagihan dan tidak menerapkan tuas SDK maupun gateway. <link>Lihat skill</link>"
+    },
+    "pieces": {
+      "eyebrow": "Peta",
+      "title": "Bagian-bagian Savings",
+      "lede": "Sebuah peta bagian, bukan lima tahap yang dilalui setiap permintaan. Pilih satu untuk melihat apa fungsinya, di mana ia berjalan, dan apakah perlu akun.",
+      "tablist": "Bagian-bagian Savings",
+      "what": "Fungsinya",
+      "where": "Tempat berjalan",
+      "account": "Akun",
+      "sdk": {
+        "name": "SDK",
+        "hint": "di dalam proses",
+        "what": "Membungkus panggilan ke penyedia dan menerapkan tuas penghematan paket.",
+        "where": "Di dalam proses aplikasi Anda.",
+        "account": "Tidak perlu."
+      },
+      "gateway": {
+        "name": "Gateway lokal",
+        "hint": "proxy",
+        "what": "Meneruskan permintaan ke penyedia dan mencatat penggunaannya.",
+        "where": "Di mesin atau server Anda, sebagai proxy lokal.",
+        "account": "Tidak perlu untuk pemakaian lokal. Melihat pengeluaran di dasbor dan penurunan dengan lisensi PRO memerlukan Cloud."
+      },
+      "measure": {
+        "name": "Pengukuran",
+        "hint": "SavingsReport",
+        "what": "Menghitung penghematan setiap permintaan dengan penggunaan yang dilaporkan penyedia Anda, dan memisahkan yang terukur dari yang diperkirakan.",
+        "where": "Secara lokal, di setiap respons; dibagikan di dasbor jika Anda menghubungkan Cloud.",
+        "account": "Secara lokal, tidak. Untuk membagikannya ke tim Anda, ya."
+      },
+      "cloud": {
+        "name": "Dasbor Cloud",
+        "hint": "opsional",
+        "what": "Memusatkan pengukuran dan pengelolaan tim: organisasi, lisensi, dan seat.",
+        "where": "Di Savings Cloud, di-hosting oleh BiVelio. Menerima data yang ditetapkan halaman privasi.",
+        "account": "Ya. Measure adalah paket gratis, dalam mode bayangan."
+      },
+      "evidence": {
+        "name": "Bukti",
+        "hint": "publik",
+        "what": "Menerbitkan setiap putaran uji dengan sampel, interval, dan tanggalnya, juga saat tidak ada penghematan.",
+        "where": "Di uji publik dan repositori terbuka.",
+        "account": "Tidak perlu."
+      }
+    },
+    "receipt": {
+      "title": "Contoh tagihan, per bulan"
+    },
+    "more": {
+      "privacy": "Apa yang diterima BiVelio",
+      "benchmarks": "Uji publik"
+    }
   },
   "pricingPage": {
     "metaTitle": "Ketentuan harga · BV-SALA",

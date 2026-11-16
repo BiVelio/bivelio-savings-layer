@@ -1897,6 +1897,57 @@
       "contact": "Escriu-nos a",
       "cta": "Enviar un correu",
       "subject": "Mesura independent del banc públic"
+    },
+    "centre": {
+      "indexTitle": "En aquesta pàgina",
+      "indexAria": "Índex del centre d'evidència",
+      "readTitle": "Com llegir aquesta pàgina",
+      "classAb": "Dos braços sobre la mateixa petició, valorats amb l'ús que reporta el proveïdor. Així es mesuren les bateries del banc.",
+      "classReplay": "Reproducció contrafactual amb una línia base parcialment reconstruïda. No és un A/B en viu, ni estalvi facturat, ni una conciliació de factures.",
+      "compatible": "Compatible no vol dir mesurat: un model només compta aquí si té una tirada publicada, i el que no s'ha pogut mesurar es diu amb el seu motiu.",
+      "paper": "Article de recerca (PDF)"
+    },
+    "index": {
+      "method": "Mètode",
+      "weekly": "Banc setmanal",
+      "savings": "Estalvi mesurat",
+      "gatewayTtl": "Replay del gateway",
+      "guarantees": "Garanties",
+      "noSavings": "El que no estalvia",
+      "status": "Estat per model",
+      "bugs": "Errors trobats",
+      "reproduce": "Reproduir",
+      "invite": "Mesura'ns tu"
+    },
+    "filter": {
+      "label": "Filtre de lectura",
+      "all": "Tot",
+      "negative": "Sense estalvi i errors",
+      "reproduce": "Mètode i reproducció",
+      "showing": "Es mostren {n} de {total} seccions.",
+      "reset": "Veure-ho tot"
+    },
+    "ab": {
+      "title": "Els dos braços, model a model",
+      "intro": "GSM8K, la bateria feta per mesurar l'estalvi. Tria un model mesurat: A va directe al proveïdor i B passa per la capa.",
+      "armA": "Sense la capa",
+      "armB": "Amb la capa",
+      "metricCost": "Cost de la tirada",
+      "metricAccuracy": "Exactitud",
+      "base": "Base",
+      "baseline": "braç de referència",
+      "requests": "{n} peticions",
+      "noLift": "Sense diferència",
+      "metric": "Mètrica",
+      "arms": "Braços comparats",
+      "ahead": "{nombre} va al davant: {porcentaje} per cent",
+      "noValue": "sense dada",
+      "up": "puja {porcentaje} per cent",
+      "down": "baixa {porcentaje} per cent",
+      "hint": "A és la referència; B passa per la capa.",
+      "sample": "Mostra",
+      "method": "Veure la metodologia",
+      "note": "Només hi surten els models amb una tirada mesurada."
     }
   },
   "howItWorks": {
@@ -1952,7 +2003,113 @@
     "ctaSignup": "Crear compte",
     "ctaInstall": "Anar a la guia d'instal·lació",
     "billWith": "Depèn",
-    "billDepends": "de quant es repeteixi el teu trànsit"
+    "billDepends": "de quant es repeteixi el teu trànsit",
+    "hero": {
+      "ctaInstall": "Instal·lar open source",
+      "ctaResults": "Veure resultats reproduïbles"
+    },
+    "beam": {
+      "eyebrow": "Arquitectura",
+      "title": "Del teu codi",
+      "accent": "al teu proveïdor",
+      "lede": "Savings s'executa dins la teva infraestructura: com a SDK en el procés de la teva aplicació o com a gateway local davant seu. El contingut de cada petició viatja al proveïdor que tu configuris; no passa pels servidors de BiVelio.",
+      "app": "La teva aplicació",
+      "appSub": "el teu codi i la teva clau d'API",
+      "agent": "El teu agent de codi",
+      "agentSub": "un terminal de codificació",
+      "hub": "SDK / gateway local",
+      "hubSub": "la teva infraestructura",
+      "provider": "Proveïdor configurat",
+      "providerSub": "rep el contingut",
+      "cloud": "Panell Savings Cloud",
+      "cloudSub": "opcional, si el connectes",
+      "telemetry": "Telemetria",
+      "caption": "Il·lustració del funcionament",
+      "alt": "Una petició surt de la teva aplicació o del teu agent de codi, passa per l'SDK o pel gateway local dins la teva infraestructura i arriba al proveïdor que has configurat. A part, i només si connectes Savings Cloud, el panell rep telemetria d'ús.",
+      "f1Title": "El contingut va al teu proveïdor",
+      "f1Body": "Els prompts i les respostes viatgen de la teva infraestructura al proveïdor que configuris, amb la teva clau. No passen pels servidors de BiVelio.",
+      "f2Title": "Sense compte, zero telemetria",
+      "f2Body": "El motor open source s'executa en local sense clau de BiVelio i, per defecte, no envia res.",
+      "f3Title": "Cloud rep el que defineix Privadesa",
+      "f3Body": "Si connectes Savings Cloud, el panell rep només les dades que detalla <link>la pàgina de privadesa</link>."
+    },
+    "ways": {
+      "eyebrow": "Dues maneres d'instal·lar-lo",
+      "title": "SDK en el teu procés o gateway local",
+      "lede": "Són dues peces diferents, amb abasts diferents. La pregunta que decideix és qui va escriure el codi que crida l'API.",
+      "sdk": {
+        "kicker": "SDK · en procés",
+        "title": "Dins la teva aplicació",
+        "body": "Un paquet npm que embolcalla la crida al proveïdor en el teu propi codi. S'executa en el mateix procés que la teva aplicació: no hi ha cap servidor intermedi.",
+        "p1": "Per a qui desenvolupa l'aplicació que crida l'API, en Node.js.",
+        "p2": "Aquí s'executen les palanques d'estalvi del paquet.",
+        "p3": "Cada crida retorna un SavingsReport, amb el que s'ha mesurat i el que s'ha estimat per separat.",
+        "cta": "Instal·lar l'SDK"
+      },
+      "gateway": {
+        "kicker": "Gateway · proxy local",
+        "title": "Davant la teva aplicació o el teu agent",
+        "body": "bvsala engega un proxy a la teva pròpia màquina. Hi apuntes la base URL de l'SDK oficial d'OpenAI o d'Anthropic, o llances Claude Code a través seu, sense tocar el teu codi.",
+        "p1": "Per a un terminal de codificació o una aplicació en qualsevol llenguatge que deixi fixar la seva base URL.",
+        "p2": "Mesura el trànsit dels models amb preu de llista.",
+        "p3": "Les palanques del paquet npm no s'executen aquí; les del gateway només s'apliquen al trànsit d'Anthropic, amb llicència PRO.",
+        "cta": "Veure el gateway"
+      }
+    },
+    "cases": {
+      "skillNote": "L'skill d'instruccions té un altre abast: canvia com treballa l'assistent dins d'una subscripció amb límits. No mesura cap factura ni aplica les palanques de l'SDK o del gateway. <link>Veure l'skill</link>"
+    },
+    "pieces": {
+      "eyebrow": "Mapa",
+      "title": "Les peces de Savings",
+      "lede": "Un mapa de peces, no cinc etapes per les quals passi cada petició. Tria'n una per veure què fa, on viu i si necessita compte.",
+      "tablist": "Peces de Savings",
+      "what": "Què fa",
+      "where": "On viu",
+      "account": "Compte",
+      "sdk": {
+        "name": "SDK",
+        "hint": "en procés",
+        "what": "Embolcalla la crida al proveïdor i aplica les palanques d'estalvi del paquet.",
+        "where": "Dins el procés de la teva aplicació.",
+        "account": "No cal."
+      },
+      "gateway": {
+        "name": "Gateway local",
+        "hint": "proxy",
+        "what": "Reenvia les peticions al proveïdor i en registra l'ús.",
+        "where": "A la teva màquina o al teu servidor, com a proxy local.",
+        "account": "No per fer-lo servir en local. Veure la despesa al panell i la rebaixa amb llicència PRO requereixen Cloud."
+      },
+      "measure": {
+        "name": "Mesura",
+        "hint": "SavingsReport",
+        "what": "Compta l'estalvi de cada petició amb l'ús que reporta el teu proveïdor, i separa el que s'ha mesurat del que s'ha estimat.",
+        "where": "En local, a cada resposta; compartida al panell si connectes Cloud.",
+        "account": "En local, no. Per compartir-la amb el teu equip, sí."
+      },
+      "cloud": {
+        "name": "Panell Cloud",
+        "hint": "opcional",
+        "what": "Centralitza la mesura i la gestió del teu equip: organització, llicències i seients.",
+        "where": "A Savings Cloud, allotjat per BiVelio. Rep les dades que defineix la pàgina de privadesa.",
+        "account": "Sí. Measure és el pla gratuït, en mode ombra."
+      },
+      "evidence": {
+        "name": "Evidència",
+        "hint": "pública",
+        "what": "Publica cada tirada del banc amb la seva mostra, el seu interval i la seva data, també quan no hi ha estalvi.",
+        "where": "Al banc públic i al repositori obert.",
+        "account": "No cal."
+      }
+    },
+    "receipt": {
+      "title": "Factura d'exemple, al mes"
+    },
+    "more": {
+      "privacy": "Què rep BiVelio",
+      "benchmarks": "Banc públic"
+    }
   },
   "pricingPage": {
     "metaTitle": "Termes de preu · BV-SALA",

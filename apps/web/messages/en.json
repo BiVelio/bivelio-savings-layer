@@ -1897,6 +1897,57 @@
       "contact": "Write to us at",
       "cta": "Send an email",
       "subject": "Independent measurement of the public bench"
+    },
+    "centre": {
+      "indexTitle": "On this page",
+      "indexAria": "Evidence centre index",
+      "readTitle": "How to read this page",
+      "classAb": "Two arms on the same request, costed with the usage the provider reports. This is how the bench batteries are measured.",
+      "classReplay": "Counterfactual replay with a partially reconstructed baseline. It is not a live A/B, billed savings or an invoice reconciliation.",
+      "compatible": "Compatible does not mean measured: a model only counts here if it has a published run, and whatever could not be measured is stated with its reason.",
+      "paper": "Research paper (PDF)"
+    },
+    "index": {
+      "method": "Method",
+      "weekly": "Weekly bench",
+      "savings": "Measured savings",
+      "gatewayTtl": "Gateway replay",
+      "guarantees": "Guarantees",
+      "noSavings": "What it does not save",
+      "status": "Status by model",
+      "bugs": "Bugs found",
+      "reproduce": "Reproduce",
+      "invite": "Measure us"
+    },
+    "filter": {
+      "label": "Reading filter",
+      "all": "Everything",
+      "negative": "No savings and bugs",
+      "reproduce": "Method and reproduction",
+      "showing": "Showing {n} of {total} sections.",
+      "reset": "Show everything"
+    },
+    "ab": {
+      "title": "Both arms, model by model",
+      "intro": "GSM8K, the battery built to measure savings. Pick a measured model: A goes straight to the provider and B goes through the layer.",
+      "armA": "Without the layer",
+      "armB": "With the layer",
+      "metricCost": "Cost of the run",
+      "metricAccuracy": "Accuracy",
+      "base": "Base",
+      "baseline": "reference arm",
+      "requests": "{n} requests",
+      "noLift": "No difference",
+      "metric": "Metric",
+      "arms": "Arms compared",
+      "ahead": "{nombre} is ahead by {porcentaje} percent",
+      "noValue": "no value",
+      "up": "rises {porcentaje} percent",
+      "down": "falls {porcentaje} percent",
+      "hint": "A is the reference; B goes through the layer.",
+      "sample": "Sample",
+      "method": "See the methodology",
+      "note": "Only models with a measured run appear."
     }
   },
   "howItWorks": {
@@ -1952,7 +2003,113 @@
     "ctaSignup": "Create account",
     "ctaInstall": "Go to the install guide",
     "billWith": "It depends",
-    "billDepends": "on how much your traffic repeats"
+    "billDepends": "on how much your traffic repeats",
+    "hero": {
+      "ctaInstall": "Install open source",
+      "ctaResults": "See reproducible results"
+    },
+    "beam": {
+      "eyebrow": "Architecture",
+      "title": "From your code",
+      "accent": "to your provider",
+      "lede": "Savings runs inside your infrastructure: as an SDK in your application's process or as a local gateway in front of it. The content of every request travels to the provider you configure; it does not pass through BiVelio's servers.",
+      "app": "Your application",
+      "appSub": "your code and your API key",
+      "agent": "Your coding agent",
+      "agentSub": "a coding terminal",
+      "hub": "SDK / local gateway",
+      "hubSub": "your infrastructure",
+      "provider": "Configured provider",
+      "providerSub": "receives the content",
+      "cloud": "Savings Cloud dashboard",
+      "cloudSub": "optional, if you connect it",
+      "telemetry": "Telemetry",
+      "caption": "Illustration of how it works",
+      "alt": "A request leaves your application or your coding agent, passes through the SDK or the local gateway inside your infrastructure and reaches the provider you configured. Separately, and only if you connect Savings Cloud, the dashboard receives usage telemetry.",
+      "f1Title": "Content goes to your provider",
+      "f1Body": "Prompts and responses travel from your infrastructure to the provider you configure, with your key. They do not pass through BiVelio's servers.",
+      "f2Title": "No account, zero telemetry",
+      "f2Body": "The open-source engine runs locally without a BiVelio key and, by default, sends nothing.",
+      "f3Title": "Cloud receives what Privacy defines",
+      "f3Body": "If you connect Savings Cloud, the dashboard receives only the data listed on <link>the privacy page</link>."
+    },
+    "ways": {
+      "eyebrow": "Two ways to install it",
+      "title": "SDK in your process or local gateway",
+      "lede": "They are two different pieces with different scopes. The deciding question is who wrote the code that calls the API.",
+      "sdk": {
+        "kicker": "SDK · in-process",
+        "title": "Inside your application",
+        "body": "An npm package that wraps the provider call in your own code. It runs in the same process as your application: there is no server in between.",
+        "p1": "For whoever develops the application that calls the API, on Node.js.",
+        "p2": "The package's savings levers run here.",
+        "p3": "Every call returns a SavingsReport, with measured and estimated kept apart.",
+        "cta": "Install the SDK"
+      },
+      "gateway": {
+        "kicker": "Gateway · local proxy",
+        "title": "In front of your application or agent",
+        "body": "bvsala starts a proxy on your own machine. You point the base URL of the official OpenAI or Anthropic SDK at it, or launch Claude Code through it, without touching your code.",
+        "p1": "For a coding terminal or an application in any language that lets you set its base URL.",
+        "p2": "It meters traffic for models with a list price.",
+        "p3": "The npm package's levers do not run here; the gateway's own apply only to Anthropic traffic, with a PRO license.",
+        "cta": "See the gateway"
+      }
+    },
+    "cases": {
+      "skillNote": "The instructions skill has a different scope: it changes how the assistant works inside a subscription with caps. It does not meter a bill or apply the SDK or gateway levers. <link>See the skill</link>"
+    },
+    "pieces": {
+      "eyebrow": "Map",
+      "title": "The pieces of Savings",
+      "lede": "A map of pieces, not five stages every request goes through. Pick one to see what it does, where it lives and whether it needs an account.",
+      "tablist": "Pieces of Savings",
+      "what": "What it does",
+      "where": "Where it lives",
+      "account": "Account",
+      "sdk": {
+        "name": "SDK",
+        "hint": "in-process",
+        "what": "Wraps the provider call and applies the package's savings levers.",
+        "where": "Inside your application's process.",
+        "account": "Not needed."
+      },
+      "gateway": {
+        "name": "Local gateway",
+        "hint": "proxy",
+        "what": "Forwards requests to the provider and records their usage.",
+        "where": "On your machine or your server, as a local proxy.",
+        "account": "Not for local use. Seeing spend in the dashboard and the PRO-license downgrade require Cloud."
+      },
+      "measure": {
+        "name": "Measurement",
+        "hint": "SavingsReport",
+        "what": "Counts the savings of each request with the usage your provider reports, and keeps measured apart from estimated.",
+        "where": "Locally, in every response; shared in the dashboard if you connect Cloud.",
+        "account": "Locally, no. To share it with your team, yes."
+      },
+      "cloud": {
+        "name": "Cloud dashboard",
+        "hint": "optional",
+        "what": "Centralizes measurement and team management: organization, licenses and seats.",
+        "where": "In Savings Cloud, hosted by BiVelio. It receives the data the privacy page defines.",
+        "account": "Yes. Measure is the free plan, in shadow mode."
+      },
+      "evidence": {
+        "name": "Evidence",
+        "hint": "public",
+        "what": "Publishes every bench run with its sample, interval and date, also when there are no savings.",
+        "where": "In the public bench and the open repository.",
+        "account": "Not needed."
+      }
+    },
+    "receipt": {
+      "title": "Example bill, per month"
+    },
+    "more": {
+      "privacy": "What BiVelio receives",
+      "benchmarks": "Public bench"
+    }
   },
   "pricingPage": {
     "metaTitle": "Pricing terms · BV-SALA",
