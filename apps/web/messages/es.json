@@ -843,7 +843,7 @@
     },
     "cascade": {
       "title": "Gana la ejecución más barata",
-      "footnote": "Cada palanca cae en su propio libro, y los libros nunca se suman. En esta batería el ahorro salió de peticiones repetidas que el SDK sirvió sin llamar al proveedor y, en Claude, de un efecto de caché de prefijo habilitado por cache_control en el brazo B. El paquete de npm no trae compresor."
+      "footnote": "Cada palanca cae en su propio libro, y los libros nunca se suman. En esta batería el ahorro salió de peticiones repetidas que el SDK sirvió sin llamar al proveedor y, en Claude, de un contraste descriptivo de precios de caché (las lecturas de caché del brazo B valoradas frente al precio normal de entrada). El paquete de npm no trae compresor."
     },
     "explica": {
       "eyebrow": "En palabras normales",
@@ -883,7 +883,7 @@
       "eyebrow": "Contabilidad honesta",
       "title": "Cada tipo de ahorro, contado aparte — para que ninguna cifra se infle.",
       "body": "Cada SavingsReport separa el ahorro en cuatro libros —llamadas evitadas, texto eliminado, texto comprimido y el descuento de caché de tu propio proveedor— y nunca los suma en una cifra de marketing.",
-      "providerNote": "En el banco público ({fecha}), lo que ahorró el SDK instalado salió del primer libro —peticiones repetidas servidas sin llamar al proveedor— y, en Claude, del cuarto mediante un efecto de caché de prefijo habilitado por cache_control en el brazo B, no un descuento preexistente del proveedor. El paquete de npm no trae compresor. Un libro sin cifra publicada se describe aquí, no se anuncia."
+      "providerNote": "En el banco público ({fecha}), lo que ahorró el SDK instalado salió del primer libro —peticiones repetidas servidas sin llamar al proveedor— y, en Claude, del cuarto mediante un contraste descriptivo de precios de caché (las lecturas del brazo B valoradas frente al precio normal de entrada), no un efecto causal identificado por separado ni un descuento preexistente del proveedor. El paquete de npm no trae compresor. Un libro sin cifra publicada se describe aquí, no se anuncia."
     },
     "ledgers": [
       {
@@ -1144,7 +1144,7 @@
       "titulo": "Banco público · en vivo contra el proveedor · {fecha}",
       "conRepeticiones": "menor coste a precios de lista versionados (intervalo del 95 %: de {bajo} a {alto}) en un flujo donde el {rep} de las peticiones son repeticiones exactas — {familias} familias / {peticiones} peticiones por brazo, {bateria}, SDK {version}",
       "sinRepeticiones": "con tráfico sin repeticiones (MT-Bench, BFCL): indistinguible de cero",
-      "anthropic": "flujo reducido, distinto del de OpenAI: {familias} familias / {peticiones} peticiones por brazo (intervalo del 95 %: de {bajo} a {alto}). Cerca de {prefijo} del coste de A a precios de lista es un efecto de caché de prefijo habilitado por cache_control en el brazo B, no un descuento preexistente de Anthropic",
+      "anthropic": "flujo reducido, distinto del de OpenAI: {familias} familias / {peticiones} peticiones por brazo (intervalo del 95 %: de {bajo} a {alto}). Cerca de {prefijo} del coste de A a precios de lista es un contraste descriptivo neto de precios de caché (las lecturas de caché del brazo B valoradas frente al precio normal de entrada), no un efecto causal identificado por separado ni un descuento preexistente de Anthropic",
       "pie": "Depende de cuánto repita tu tráfico. Cada batería, con su informe completo: <bench>banco público</bench>."
     }
   },

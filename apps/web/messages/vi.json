@@ -843,7 +843,7 @@
     },
     "cascade": {
       "title": "Phương án thực thi rẻ nhất thắng",
-      "footnote": "Mỗi đòn bẩy rơi vào sổ riêng của nó, và các sổ không bao giờ được cộng lại. Trong bộ thử này, khoản tiết kiệm đến từ các yêu cầu lặp lại mà SDK phục vụ không cần gọi nhà cung cấp và, với Claude, từ hiệu ứng bộ nhớ đệm tiền tố được cache_control bật ở nhánh B. Gói npm không kèm bộ nén."
+      "footnote": "Mỗi đòn bẩy rơi vào sổ riêng của nó, và các sổ không bao giờ được cộng lại. Trong bộ thử này, khoản tiết kiệm đến từ các yêu cầu lặp lại mà SDK phục vụ không cần gọi nhà cung cấp và, với Claude, từ một đối chiếu mô tả về giá bộ nhớ đệm (lượt đọc bộ nhớ đệm của nhánh B được định giá theo giá đầu vào thông thường). Gói npm không kèm bộ nén."
     },
     "explica": {
       "eyebrow": "Nói một cách dễ hiểu",
@@ -883,7 +883,7 @@
       "eyebrow": "Hạch toán trung thực",
       "title": "Mỗi loại tiết kiệm được đếm riêng — để không con số nào bị thổi phồng.",
       "body": "Mỗi SavingsReport chia khoản tiết kiệm vào bốn sổ — lệnh gọi tránh được, văn bản đã loại bỏ, văn bản đã nén và chiết khấu bộ nhớ đệm của chính nhà cung cấp — và không bao giờ cộng chúng thành một con số tiếp thị.",
-      "providerNote": "Trên băng thử công khai ({fecha}), khoản SDK đã cài tiết kiệm được đến từ sổ thứ nhất — các yêu cầu lặp lại được phục vụ mà không gọi nhà cung cấp — và, với Claude, từ sổ thứ tư thông qua hiệu ứng bộ nhớ đệm tiền tố được cache_control bật ở nhánh B, không phải chiết khấu nhà cung cấp có sẵn từ trước. Gói npm không kèm bộ nén. Một sổ chưa có con số công bố thì được mô tả ở đây, không được quảng cáo."
+      "providerNote": "Trên băng thử công khai ({fecha}), khoản SDK đã cài tiết kiệm được đến từ sổ thứ nhất — các yêu cầu lặp lại được phục vụ mà không gọi nhà cung cấp — và, với Claude, từ sổ thứ tư thông qua một đối chiếu mô tả về giá bộ nhớ đệm (lượt đọc của nhánh B được định giá theo giá đầu vào thông thường), không phải hiệu ứng nhân quả được xác định riêng biệt cũng không phải chiết khấu nhà cung cấp có sẵn từ trước. Gói npm không kèm bộ nén. Một sổ chưa có con số công bố thì được mô tả ở đây, không được quảng cáo."
     },
     "ledgers": [
       {
@@ -1144,7 +1144,7 @@
       "titulo": "Băng thử công khai · chạy thật với nhà cung cấp · {fecha}",
       "conRepeticiones": "chi phí thấp hơn theo giá niêm yết có phiên bản (khoảng tin cậy 95%: từ {bajo} đến {alto}) trên một luồng mà {rep} số yêu cầu là lặp lại y hệt — {familias} họ / {peticiones} yêu cầu mỗi nhánh, {bateria}, SDK {version}",
       "sinRepeticiones": "với lưu lượng không lặp lại (MT-Bench, BFCL): không phân biệt được với không",
-      "anthropic": "luồng rút gọn, khác với luồng OpenAI: {familias} họ / {peticiones} yêu cầu mỗi nhánh (khoảng tin cậy 95%: từ {bajo} đến {alto}). Khoảng {prefijo} chi phí theo giá niêm yết của A là hiệu ứng bộ nhớ đệm tiền tố được cache_control bật ở nhánh B, không phải chiết khấu Anthropic có sẵn từ trước",
+      "anthropic": "luồng rút gọn, khác với luồng OpenAI: {familias} họ / {peticiones} yêu cầu mỗi nhánh (khoảng tin cậy 95%: từ {bajo} đến {alto}). Khoảng {prefijo} chi phí theo giá niêm yết của A là một đối chiếu mô tả thuần về giá bộ nhớ đệm (lượt đọc bộ nhớ đệm của nhánh B được định giá theo giá đầu vào thông thường), không phải hiệu ứng nhân quả được xác định riêng biệt cũng không phải chiết khấu Anthropic có sẵn từ trước",
       "pie": "Tùy vào mức độ lặp lại của lưu lượng. Từng bộ thử, kèm báo cáo đầy đủ: <bench>băng thử công khai</bench>."
     }
   },

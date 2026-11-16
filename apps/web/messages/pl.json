@@ -843,7 +843,7 @@
     },
     "cascade": {
       "title": "Wygrywa najtańsza realizacja",
-      "footnote": "Każda dźwignia trafia do własnej księgi, a księgi nigdy się nie sumują. W tej baterii oszczędność pochodziła z powtórzonych zapytań, które SDK obsłużył bez wywołania dostawcy, a w Claude — z efektu pamięci podręcznej prefiksu włączonego przez cache_control w ramieniu B. Pakiet npm nie zawiera kompresora."
+      "footnote": "Każda dźwignia trafia do własnej księgi, a księgi nigdy się nie sumują. W tej baterii oszczędność pochodziła z powtórzonych zapytań, które SDK obsłużył bez wywołania dostawcy, a w Claude — z opisowego kontrastu cen pamięci podręcznej (odczyty pamięci podręcznej ramienia B wycenione według zwykłej ceny wejściowej). Pakiet npm nie zawiera kompresora."
     },
     "explica": {
       "eyebrow": "Prostymi słowami",
@@ -883,7 +883,7 @@
       "eyebrow": "Uczciwe rozliczanie",
       "title": "Każdy rodzaj oszczędności liczony osobno — żeby żadna liczba nie była zawyżona.",
       "body": "Każdy SavingsReport dzieli oszczędność na cztery księgi — uniknięte wywołania, usunięty tekst, skompresowany tekst i rabat z pamięci podręcznej Twojego własnego dostawcy — i nigdy nie sumuje ich w jedną liczbę marketingową.",
-      "providerNote": "W publicznym benchmarku ({fecha}) to, co zaoszczędził zainstalowany SDK, pochodziło z pierwszej księgi — powtórzonych zapytań obsłużonych bez wywołania dostawcy — a w Claude z czwartej przez efekt pamięci podręcznej prefiksu włączony przez cache_control w ramieniu B, a nie z istniejącego wcześniej rabatu dostawcy. Pakiet npm nie zawiera kompresora. Księga bez opublikowanej liczby jest tu opisana, nie reklamowana."
+      "providerNote": "W publicznym benchmarku ({fecha}) to, co zaoszczędził zainstalowany SDK, pochodziło z pierwszej księgi — powtórzonych zapytań obsłużonych bez wywołania dostawcy — a w Claude z czwartej przez opisowy kontrast cen pamięci podręcznej (odczyty ramienia B wycenione według zwykłej ceny wejściowej), a nie z oddzielnie zidentyfikowanego efektu przyczynowego ani z istniejącego wcześniej rabatu dostawcy. Pakiet npm nie zawiera kompresora. Księga bez opublikowanej liczby jest tu opisana, nie reklamowana."
     },
     "ledgers": [
       {
@@ -1144,7 +1144,7 @@
       "titulo": "Publiczny benchmark · na żywo u dostawcy · {fecha}",
       "conRepeticiones": "niższy koszt według wersjonowanych cen katalogowych (przedział 95%: od {bajo} do {alto}) przy strumieniu, w którym {rep} zapytań to dokładne powtórzenia — {familias} rodzin / {peticiones} zapytań na ramię, {bateria}, SDK {version}",
       "sinRepeticiones": "przy ruchu bez powtórzeń (MT-Bench, BFCL): nieodróżnialne od zera",
-      "anthropic": "zredukowany strumień, inny niż w OpenAI: {familias} rodzin / {peticiones} zapytań na ramię (przedział 95%: od {bajo} do {alto}). Około {prefijo} kosztu A według cen katalogowych to efekt pamięci podręcznej prefiksu włączony przez cache_control w ramieniu B, a nie istniejący wcześniej rabat Anthropic",
+      "anthropic": "zredukowany strumień, inny niż w OpenAI: {familias} rodzin / {peticiones} zapytań na ramię (przedział 95%: od {bajo} do {alto}). Około {prefijo} kosztu A według cen katalogowych to opisowy kontrast netto cen pamięci podręcznej (odczyty pamięci podręcznej ramienia B wycenione według zwykłej ceny wejściowej), a nie oddzielnie zidentyfikowany efekt przyczynowy ani istniejący wcześniej rabat Anthropic",
       "pie": "To zależy od tego, jak często Twój ruch się powtarza. Każda bateria z pełnym raportem: <bench>publiczny benchmark</bench>."
     }
   },

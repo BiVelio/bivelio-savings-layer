@@ -843,7 +843,7 @@
     },
     "cascade": {
       "title": "Cheapest execution wins",
-      "footnote": "Each lever falls into its own ledger, and the ledgers are never added up. In this battery the saving came from repeated requests the SDK served without calling the provider and, on Claude, from a prefix-cache effect enabled by cache_control in arm B. The npm package ships no compressor."
+      "footnote": "Each lever falls into its own ledger, and the ledgers are never added up. In this battery the saving came from repeated requests the SDK served without calling the provider and, on Claude, from a descriptive cache-pricing contrast (arm B's cache reads valued against ordinary input pricing). The npm package ships no compressor."
     },
     "explica": {
       "eyebrow": "In plain words",
@@ -883,7 +883,7 @@
       "eyebrow": "Honest accounting",
       "title": "Every kind of saving, counted separately — so no number gets inflated.",
       "body": "Every SavingsReport splits the saving into four ledgers — calls avoided, text removed, text compressed, and your provider's own cache discount — and never adds them up into one marketing number.",
-      "providerNote": "On the public bench ({fecha}), what the installed SDK saved came from the first ledger — repeated requests served without calling the provider — and, on Claude, from the fourth through a prefix-cache effect enabled by cache_control in arm B, not a pre-existing provider discount. The npm package ships no compressor. A ledger with no published figure is described here, not advertised."
+      "providerNote": "On the public bench ({fecha}), what the installed SDK saved came from the first ledger — repeated requests served without calling the provider — and, on Claude, from the fourth through a descriptive cache-pricing contrast (arm B's cache reads valued against ordinary input pricing), not an independently identified causal effect nor a pre-existing provider discount. The npm package ships no compressor. A ledger with no published figure is described here, not advertised."
     },
     "ledgers": [
       {
@@ -1144,7 +1144,7 @@
       "titulo": "Public bench · live against the provider · {fecha}",
       "conRepeticiones": "lower cost at versioned list prices (95% interval: {bajo} to {alto}) on a stream where {rep} of requests are exact repeats — {familias} families / {peticiones} requests per arm, {bateria}, SDK {version}",
       "sinRepeticiones": "on traffic without repeats (MT-Bench, BFCL): indistinguishable from zero",
-      "anthropic": "reduced flow, not the OpenAI stream: {familias} families / {peticiones} requests per arm (95% interval: {bajo} to {alto}). About {prefijo} of A's list-price cost is a prefix-cache effect enabled by cache_control in arm B, not a pre-existing Anthropic discount",
+      "anthropic": "reduced flow, not the OpenAI stream: {familias} families / {peticiones} requests per arm (95% interval: {bajo} to {alto}). About {prefijo} of A's list-price cost is a descriptive net cache-pricing contrast (arm B's cache reads valued against ordinary input pricing), not an independently identified causal effect nor a pre-existing Anthropic discount",
       "pie": "It depends on how much your traffic repeats. Every battery, with its full report: <bench>public bench</bench>."
     }
   },

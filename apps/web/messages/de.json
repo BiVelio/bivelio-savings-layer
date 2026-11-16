@@ -1,4 +1,4 @@
-{
+﻿{
   "nav": {
     "announce": "Savings Layer ist Teil der BiVelio-Plattform",
     "announceClose": "Schließen",
@@ -843,7 +843,7 @@
     },
     "cascade": {
       "title": "Die günstigste Ausführung gewinnt",
-      "footnote": "Jeder Hebel landet in seinem eigenen Konto, und die Konten werden nie addiert. In dieser Batterie kam die Einsparung aus wiederholten Anfragen, die das SDK ohne Aufruf des Anbieters bediente, und bei Claude aus einem Präfix-Cache-Effekt, der durch cache_control in Arm B aktiviert wurde. Das npm-Paket enthält keinen Kompressor."
+      "footnote": "Jeder Hebel landet in seinem eigenen Konto, und die Konten werden nie addiert. In dieser Batterie kam die Einsparung aus wiederholten Anfragen, die das SDK ohne Aufruf des Anbieters bediente, und bei Claude aus einem deskriptiven Cache-Preis-Kontrast (die Cache-Lesungen von Arm B, bewertet gegen den normalen Eingabepreis). Das npm-Paket enthält keinen Kompressor."
     },
     "explica": {
       "eyebrow": "In normalen Worten",
@@ -883,7 +883,7 @@
       "eyebrow": "Ehrliche Abrechnung",
       "title": "Jede Art von Ersparnis, getrennt gezählt — damit keine Zahl aufgebläht wird.",
       "body": "Jeder SavingsReport teilt die Einsparung in vier Konten auf — vermiedene Aufrufe, entfernter Text, komprimierter Text und der Cache-Rabatt deines eigenen Anbieters — und addiert sie nie zu einer Marketingzahl.",
-      "providerNote": "Im öffentlichen Benchmark ({fecha}) kam die Einsparung des installierten SDK aus dem ersten Konto — wiederholte Anfragen, bedient ohne Aufruf des Anbieters — und bei Claude aus dem vierten durch einen Präfix-Cache-Effekt, der durch cache_control in Arm B aktiviert wurde, nicht aus einem bereits bestehenden Anbieterrabatt. Das npm-Paket enthält keinen Kompressor. Ein Konto ohne veröffentlichte Zahl wird hier beschrieben, nicht beworben."
+      "providerNote": "Im öffentlichen Benchmark ({fecha}) kam die Einsparung des installierten SDK aus dem ersten Konto — wiederholte Anfragen, bedient ohne Aufruf des Anbieters — und bei Claude aus dem vierten durch einen deskriptiven Cache-Preis-Kontrast (die Cache-Lesungen von Arm B, bewertet gegen den normalen Eingabepreis), nicht aus einem separat identifizierten kausalen Effekt noch aus einem bereits bestehenden Anbieterrabatt. Das npm-Paket enthält keinen Kompressor. Ein Konto ohne veröffentlichte Zahl wird hier beschrieben, nicht beworben."
     },
     "ledgers": [
       {
@@ -1144,7 +1144,7 @@
       "titulo": "Öffentlicher Benchmark · live gegen den Anbieter · {fecha}",
       "conRepeticiones": "geringere Kosten zu versionierten Listenpreisen (95-%-Intervall: {bajo} bis {alto}) bei einem Strom, in dem {rep} der Anfragen exakte Wiederholungen sind — {familias} Familien / {peticiones} Anfragen pro Arm, {bateria}, SDK {version}",
       "sinRepeticiones": "bei Traffic ohne Wiederholungen (MT-Bench, BFCL): nicht von null zu unterscheiden",
-      "anthropic": "reduzierter Strom, nicht derselbe wie bei OpenAI: {familias} Familien / {peticiones} Anfragen pro Arm (95-%-Intervall: {bajo} bis {alto}). Etwa {prefijo} der Listenpreiskosten von A sind ein Präfix-Cache-Effekt, der durch cache_control in Arm B aktiviert wurde, kein bereits bestehender Anthropic-Rabatt",
+      "anthropic": "reduzierter Strom, nicht derselbe wie bei OpenAI: {familias} Familien / {peticiones} Anfragen pro Arm (95-%-Intervall: {bajo} bis {alto}). Etwa {prefijo} der Listenpreiskosten von A sind ein deskriptiver Netto-Cache-Preis-Kontrast (die Cache-Lesungen von Arm B, bewertet gegen den normalen Eingabepreis), kein separat identifizierter kausaler Effekt und kein bereits bestehender Anthropic-Rabatt",
       "pie": "Es hängt davon ab, wie oft sich dein Traffic wiederholt. Jede Batterie mit ihrem vollständigen Bericht: <bench>öffentlicher Benchmark</bench>."
     }
   },
