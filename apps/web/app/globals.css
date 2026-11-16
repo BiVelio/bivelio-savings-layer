@@ -4778,3 +4778,51 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 }
 /* ==== (fin de F5·2) ==== */
 /* ==== FIN SLOT F5 ==== */
+
+/* ==== SLOT INTEGRACION ==== */
+/* Costuras entre frentes, vistas con el producto ya integrado. Solo ajustes
+   de coherencia: nada de aquí cambia marcado, lógica ni contratos de arriba. */
+
+/* ── I·1 Páginas públicas interiores: una columna y un arranque ────────────
+   El centro de evidencia iba 32px más ancho que el resto (su cabecera caía
+   fuera de la columna de la portada, precios y cómo funciona). Misma columna
+   para todas; el carril del índice cede el hueco. */
+.lp.evc .banco-page { max-width: var(--page-max); }
+@media (min-width: 1100px) {
+  .lp.evc .banco-page { grid-template-columns: 196px minmax(0, 1fr); column-gap: clamp(28px, 3vw, 48px); }
+}
+/* El titular de las dos páginas de producto (precios y cómo funciona), a la
+   misma escala; y precios arranca a la altura de las demás. */
+.lp.terms-page.precios .precios-hero { padding-top: clamp(48px, 5vw, 76px); }
+.lp.hiw-page .hiw-hero h1, .lp.terms-page.precios .precios-hero h1 { font-size: clamp(2.2rem, 4.4vw, 3.75rem); line-height: 1.03; }
+
+/* ── I·2 Panel: un solo ancho de lectura ───────────────────────────────────
+   El Resumen usa el ancho de trabajo; todo lo demás, la misma columna. Con
+   Primeros pasos 40px más ancho, el título saltaba al cambiar de sección. */
+.app-inner:has(.ins-page) { width: min(940px, 100%); }
+
+/* El botón pequeño era más grande que el normal (15px frente a 14,5px). */
+.btn-sm { padding: 7px 14px; font-size: 13.5px; }
+@media (pointer: fine) { .btn-sm { min-height: 36px; } }
+
+/* Los rótulos de los controles del explorador no son antetítulos: sin filete. */
+.ux-seg > .ck-eyebrow::before, .ux-seg > .eyebrow::before { content: none; }
+
+/* El relleno de las mini-gráficas, del color de su línea y no gris. */
+.app .ui-kb__fill { fill: color-mix(in srgb, var(--brand) 7%, transparent); }
+
+/* ── I·3 Tour guiado en móvil ──────────────────────────────────────────────
+   Junto a un destino más alto que la pantalla (el titular, el explorador) el
+   diálogo caía fuera de la vista. En estrecho va siempre anclado abajo, como
+   una hoja, y los destinos se detienen por encima de ella al desplazarse. */
+@media (max-width: 640px) {
+  .tg-dialog {
+    position: fixed !important; top: auto !important; left: 12px !important; right: 12px !important;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+    width: auto !important; max-width: none !important; margin: 0 !important; transform: none !important;
+    box-shadow: 0 0 0 1px var(--line), 0 -8px 40px rgba(15, 18, 24, .22);
+  }
+  .tg-dialog .tg-arrow { display: none !important; }
+  [data-tour] { scroll-margin-bottom: 300px !important; }
+}
+/* ==== FIN SLOT INTEGRACION ==== */

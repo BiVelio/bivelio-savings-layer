@@ -187,7 +187,8 @@ export function TourGuide() {
       const destino = paso.destinos.length === 0 ? null : primerVisible(paso.destinos);
       if (paso.destinos.length > 0 && !destino) return [];
       const { titulo, cuerpo } = textoDe(paso.id);
-      return [{ title: escaparHtml(titulo), content: escaparHtml(cuerpo), target: destino ?? undefined, group: GRUPO }];
+      const ancla = paso.ancla && primerVisible([paso.ancla]) ? paso.ancla : undefined;
+      return [{ title: escaparHtml(titulo), content: escaparHtml(cuerpo), target: destino ?? undefined, dialogTarget: ancla, group: GRUPO }];
     });
     // Solo bienvenida y despedida no es un tour: no hay nada que enseñar.
     if (pasos.length < 3) return;
