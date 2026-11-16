@@ -20,7 +20,12 @@ export interface UsoDeOrg {
   filas: FilaDiaria[];
   /** El período (YYYY-MM) del primer día con uso en TODA la historia de la org. */
   primerPeriodoConUso: string;
-  /** `organizations.comision_exenta`: probadores y cortesías. Cargo 0. */
+  /**
+   * Cargo 0 con la comisión calculada igual («lo que habría sido»). El cron la
+   * pone para `organizations.comision_exenta` (probadores y cortesías) Y para
+   * toda organización que no llevó un plan con comisión en el período
+   * (lib/billing/plan-de-la-org.ts, LICENSE-CLOUD §6(b)).
+   */
   comisionExenta?: boolean;
 }
 

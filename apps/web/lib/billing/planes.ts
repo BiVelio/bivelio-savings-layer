@@ -57,8 +57,9 @@ export const PLAN_POR_DEFECTO: PlanDePago = "pro";
 
 /**
  * ¿Lleva este plan la comisión sobre el ahorro medido? SOLO la modalidad
- * «comision». Pro y Equipo no la llevan nunca: el cierre y la facturación los
- * tratan como exentos (lib/billing/plan-de-la-org.ts).
+ * «comision». Pro y Equipo no la llevan nunca. QUÉ ORGANIZACIÓN la paga en un
+ * período cerrado lo decide lib/billing/plan-de-la-org.ts, por la lista
+ * explícita de Prices con comisión — no esta función.
  */
 export function llevaComision(plan: PlanDePago): boolean {
   return plan === "comision";
@@ -255,13 +256,37 @@ export interface PreciosConfigurados {
 }
 
 /**
- * El plan de una suscripción, por el price id de su primer item.
+ * El catálogo que decide el DINERO de la comisión: además de Pro y Equipo, la
+ * lista EXPLÍCITA de los Prices que llevan comisión (STRIPE_PRICE_ID_MONTHLY /
+ * YEARLY y STRIPE_PRICE_IDS_COMISION — `catalogoDeComision` en lib/stripe/env.ts).
+ * Ver lib/billing/plan-de-la-org.ts: solo cobra comisión lo que está en `comision`.
+ */
+export interface CatalogoDeComision extends PreciosConfigurados {
+  comision: readonly string[];
+  /**
+   * Otros Prices declarados SIN comisión además de Pro y Equipo
+   * (STRIPE_PRICE_IDS_SIN_COMISION: una cortesía, un socio, un contrato de
+   * cuota fija). Declararlos es lo que los distingue de un Price DESCONOCIDO,
+   * que impide sellar el extracto.
+   */
+  sinComision?: readonly string[];
+}
+
+/**
+ * El plan de una suscripción, por el price id de su primer item — una ETIQUETA
+ * (qué plan reconocer en la guardia anti-doble-compra, en la atribución y en el
+ * panel), NO la decisión de cobrar comisión.
  *
- * ⛔ Lo que NO es Pro ni Equipo es «comision», A PROPÓSITO: los Prices de
- * siempre (STRIPE_PRICE_ID_MONTHLY/YEARLY), los de STRIPE_PRICE_IDS_EXTRA y un
- * price id desconocido siguen llevando la comisión exactamente como hoy. Solo
- * se deja de cobrar comisión a una suscripción cuyo Price está en la lista
- * explícita de los planes planos — nunca por un metadato o por omisión.
+ * Lo que no es Pro ni Equipo se etiqueta «comision» porque es la modalidad
+ * histórica y la única otra que existe. ⛔ Pero desde el 2026-11-16 esa etiqueta
+ * por descarte YA NO COBRA: el cierre y la facturación solo cargan comisión a
+ * una suscripción cuyo Price está en la lista explícita `comision` del
+ * catálogo (`decidirComisionDelPeriodo`, lib/billing/plan-de-la-org.ts). Un
+ * price id que no está en ninguna lista del catálogo (uno que solo aparece en
+ * STRIPE_PRICE_IDS_EXTRA, o ninguno) no demuestra un plan con comisión —
+ * LICENSE-CLOUD §6(b) solo la permite «if your subscription is on a plan that
+ * the Published Pricing lists as carrying a commission»— ni lo descarta: el
+ * cierre NO SELLA a esa organización y avisa, hasta que el Price se declare.
  */
 export function planDelPrecio(priceId: string | null | undefined, precios: PreciosConfigurados): PlanDePago {
   if (priceId && precios.pro.includes(priceId)) return "pro";
