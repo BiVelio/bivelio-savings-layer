@@ -119,7 +119,8 @@ export async function MaquinasCard({
     }
   };
   const p = await getTranslations("dashboard.panel");
-  const lleno = seats ? seats.used >= seats.seats : false;
+  // Usar todos los asientos pagados no es un error (aviso); pasarse sí se marca.
+  const estadoAsientos = !seats ? "ok" : seats.used > seats.seats ? "limit" : seats.used === seats.seats ? "warn" : "ok";
 
   return (
     <div className="card card-pad ox-card" id="maquinas">
@@ -137,7 +138,7 @@ export async function MaquinasCard({
           figure={String(seats.used)}
           ofLabel={t("seatsOf", { seats: seats.seats })}
           shareLabel={pct0Floor(Math.min(1, seats.used / seats.seats))}
-          state={lleno ? "limit" : "ok"}
+          state={estadoAsientos}
           stateLabel={seats.used > seats.seats ? t("seatsOver") : t("seatsFull")}
           note={seats.rotated ? `${t("seatsNote")} ${t("seatsRotated")}` : t("seatsNote")}
         />
