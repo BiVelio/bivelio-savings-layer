@@ -1,6 +1,6 @@
 import { getLocale, getTranslations } from "next-intl/server";
 
-import { MachinesIcon } from "@/app/components/icons";
+import { AlertIcon, MachinesIcon } from "@/app/components/icons";
 import { EmptyState, EvidenceBadge } from "@/app/components/ui";
 import { COMISIONAR_REFERENCIA } from "@/lib/billing/tarifa";
 import { Badge, type BadgeTone } from "@/vendor/affectui/badge-clean";
@@ -70,12 +70,10 @@ export async function MaquinasCard({
       <div className="card card-pad ox-card" id="maquinas">
         <div className="n card-title">{t("title")}</div>
         {fallo ? (
-          <EmptyState compacto sinCaja alInicio como="p" icono={<MachinesIcon />} titulo={t("failedTitle")} texto={t("failedBody")} />
+          <EmptyState compacto como="p" icono={<AlertIcon />} titulo={t("failedTitle")} texto={t("failedBody")} />
         ) : (
           <EmptyState
             compacto
-            sinCaja
-            alInicio
             como="p"
             icono={<MachinesIcon />}
             titulo={t("emptyTitle")}
