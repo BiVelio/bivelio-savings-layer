@@ -1,0 +1,70 @@
+/*
+ * Derived from affectUI Pro 'usage-meter' (https://www.affectui.com). Used under the
+ * affectUI Pro license held by BiVelio. NOT covered by this repository's
+ * Apache-2.0 licence; do not redistribute as a component kit.
+ */
+.ui-umc {
+  --ui-umc-strong: var(--aui-ink, #000000);
+  --ui-umc-ink: var(--aui-ink, rgba(0, 0, 0, 0.88));
+  --ui-umc-text: var(--aui-muted, rgba(0, 0, 0, 0.61));
+  --ui-umc-muted: var(--aui-muted, rgba(0, 0, 0, 0.45));
+  --ui-umc-line: var(--aui-border, rgba(0, 0, 0, 0.06));
+  --ui-umc-track: var(--surface-2, rgba(0, 0, 0, 0.06));
+  --ui-umc-accent: var(--brand, #0066e6);
+  --ui-umc-warn: var(--warn, #b25e00);
+  --ui-umc-full: var(--danger, #d72400);
+  --ui-umc-ease: var(--aui-ease, cubic-bezier(0.22, 1, 0.36, 1));
+  box-sizing: border-box;
+  container-type: inline-size;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  width: 100%;
+  font-family: var(--aui-font, var(--font-sans));
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 400;
+  color: var(--ui-umc-ink);
+  text-align: left;
+  -webkit-font-smoothing: antialiased;
+}
+.ui-umc *, .ui-umc *::before, .ui-umc *::after { box-sizing: border-box; }
+.ui-umc p { margin: 0; color: inherit; }
+.ui-umc[data-framed] { padding: 14px 16px; border-radius: var(--aui-radius-lg, 10px); background: var(--aui-surface, #fff); box-shadow: inset 0 0 0 1px var(--ui-umc-line); }
+
+.ui-umc .ui-umc__title { font-size: 12px; font-weight: 500; line-height: 16px; color: var(--ui-umc-text); }
+/* The big number and its share */
+.ui-umc__figure { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; margin-top: 4px; }
+.ui-umc__amount { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 8px; min-width: 0; }
+.ui-umc__big { font-size: 24px; font-weight: 600; line-height: 32px; letter-spacing: -0.03em; color: var(--ui-umc-strong); font-variant-numeric: tabular-nums; }
+.ui-umc__of { font-size: 12px; line-height: 16px; color: var(--ui-umc-text); }
+.ui-umc__pct {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 20px;
+  padding: 1px 7px;
+  border-radius: 6px;
+  background: var(--ui-umc-track);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--ui-umc-text);
+  font-variant-numeric: tabular-nums;
+}
+.ui-umc__pct[data-state="warn"] { background: color-mix(in srgb, var(--ui-umc-warn) 14%, transparent); color: var(--ui-umc-warn); }
+.ui-umc__pct[data-state="limit"] { background: color-mix(in srgb, var(--ui-umc-full) 10%, transparent); color: var(--ui-umc-full); }
+.ui-umc__dot { display: inline-block; flex: none; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+/* The bar: one slot per seat when they fit, one continuous fill otherwise */
+.ui-umc__track { display: flex; gap: 3px; height: 8px; margin-top: 10px; overflow: hidden; border-radius: 4px; }
+.ui-umc__track[data-solid] { gap: 0; background: var(--ui-umc-track); }
+.ui-umc__slot { flex: 1 1 0; min-width: 2px; height: 100%; border-radius: 2px; background: var(--ui-umc-track); }
+.ui-umc__slot[data-on] { background: var(--ui-umc-accent); }
+.ui-umc__fill { height: 100%; border-radius: 4px; background: var(--ui-umc-accent); }
+.ui-umc[data-state="warn"] :is(.ui-umc__slot[data-on], .ui-umc__fill) { background: var(--ui-umc-warn); }
+.ui-umc[data-state="limit"] :is(.ui-umc__slot[data-on], .ui-umc__fill) { background: var(--ui-umc-full); }
+.ui-umc .ui-umc__note { margin-top: 8px; font-size: 12px; line-height: 17px; color: var(--ui-umc-text); overflow-wrap: anywhere; }
+@media (forced-colors: active) {
+  .ui-umc__slot, .ui-umc__track[data-solid] { border: 1px solid CanvasText; }
+  .ui-umc__slot[data-on], .ui-umc__fill { background: CanvasText; }
+}

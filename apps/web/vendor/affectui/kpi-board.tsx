@@ -19,7 +19,8 @@ import type { ReactNode } from "react";
  */
 
 export type KpiStatProps = {
-  label: string;
+  /** BiVelio: a node, so a term can carry its definition (a tooltip trigger). */
+  label: ReactNode;
   /** The figure as text, already formatted (currency, locale). Omit it when there is no data. */
   value?: string;
   /** What is counted and over which base and period, in words. */

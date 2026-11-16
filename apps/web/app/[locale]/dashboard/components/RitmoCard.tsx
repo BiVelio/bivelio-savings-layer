@@ -3,6 +3,8 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { esPeriodoDeCalibracion, FX_SOMBRA, periodoDe } from "@/lib/billing/extracto-sombra";
 import { calcularRitmo, DIAS_MINIMOS_PARA_PROYECTAR, VENTANA_RITMO_DIAS } from "@/lib/billing/ritmo";
 
+import { Badge } from "@/vendor/affectui/badge";
+
 import type { UsageRollup } from "../data";
 import { money } from "../format";
 
@@ -41,72 +43,60 @@ export async function RitmoCard({ usage }: { usage: UsageRollup[] }) {
   const enCalibracion = esPeriodoDeCalibracion(usage, periodo);
   const p = r.proyeccion;
 
+  const avance = Math.round((r.diasTranscurridos / r.diasDelPeriodo) * 100);
+
   return (
-    <div className="card ritmo" style={{ padding: "16px" }}>
-      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "10px", flexWrap: "wrap" }}>
+    <div className="card card-pad ox-card ritmo">
+      <div className="card-head">
         <div className="n">{t("ritmo.title")}</div>
-        <span className="est-tag">{p ? t("ritmo.badgeEstimacion") : t("ritmo.badgeMedido")}</span>
+        <Badge tone={p ? "warning" : "success"} dot>{p ? t("ritmo.badgeEstimacion") : t("ritmo.badgeMedido")}</Badge>
+      </div>
+
+      <div className="ox-ritmo">
+        <div className="ox-ritmo-main">
+          {p ? (
+            <>
+              <p className="ox-k">{t("ritmo.proyeccionTitulo", { periodo })}</p>
+              <p className={`ox-fig ${p.ahorroEur >= 0 ? "pos" : "neg"}`}>{eur(p.ahorroEur)}</p>
+              <p className="ox-sub">{t("ritmo.proyeccionNota", { dias: VENTANA_RITMO_DIAS, restantes: r.diasRestantes })}</p>
+            </>
+          ) : (
+            <p className="ox-sub">
+              {r.estado === "cerrado"
+                ? t("ritmo.cerrado")
+                : t("ritmo.pocosDias", { min: DIAS_MINIMOS_PARA_PROYECTAR, n: r.diasDeRitmo })}
+            </p>
+          )}
+          {/* La barra del mes: cuánta pista queda es la mitad de la pregunta. */}
+          <div className="ox-month">
+            <div className="ox-month-track" aria-hidden>
+              <i style={{ width: `${avance}%` }} />
+            </div>
+            <div className="ox-month-legend">
+              <span>{t("ritmo.diaDeMes", { n: r.diasTranscurridos, total: r.diasDelPeriodo })}</span>
+              <span>{t("ritmo.diasRestantes", { n: r.diasRestantes })}</span>
+            </div>
+          </div>
+        </div>
+        <dl className="ox-stats">
+          <div>
+            <dt>{t("ritmo.medido")}</dt>
+            <dd className="pos">{money(r.ahorroHastaLaFechaUsd)}</dd>
+          </div>
+          <div>
+            <dt>{t("ritmo.ritmoLabel", { dias: VENTANA_RITMO_DIAS })}</dt>
+            <dd>{t("ritmo.porDia", { importe: money(r.ahorroPorDiaRecienteUsd) })}</dd>
+          </div>
+        </dl>
       </div>
 
       {p ? (
-        <>
-          <div style={{ marginTop: "10px" }}>
-            <div className="sub">{t("ritmo.proyeccionTitulo", { periodo })}</div>
-            <div className={`big ${p.ahorroEur >= 0 ? "pos" : "neg"} ck-num`}>
-              {eur(p.ahorroEur)}
-            </div>
-            <div className="sub">
-              {t("ritmo.proyeccionNota", { dias: VENTANA_RITMO_DIAS, restantes: r.diasRestantes })}
-            </div>
-          </div>
-          <div className="sub" style={{ marginTop: "10px" }}>
-            {t("ritmo.comision")}: <span className="ck-num">{eur(p.comision.comisionEur)}</span>
-            {" — "}
-            {enCalibracion
-              ? t("ritmo.comisionCalibracion")
-              : t("ritmo.comisionNota", { pct: pct(p.comision.ratio) })}
-          </div>
-        </>
-      ) : (
-        <p className="ck-note" style={{ marginTop: "10px" }}>
-          {r.estado === "cerrado"
-            ? t("ritmo.cerrado")
-            : t("ritmo.pocosDias", { min: DIAS_MINIMOS_PARA_PROYECTAR, n: r.diasDeRitmo })}
+        <p className="ck-note ox-foot">
+          {t("ritmo.comision")}: <span className="ox-mono">{eur(p.comision.comisionEur)}</span>
+          {" — "}
+          {enCalibracion ? t("ritmo.comisionCalibracion") : t("ritmo.comisionNota", { pct: pct(p.comision.ratio) })}
         </p>
-      )}
-
-      {/* La barra del mes: cuánta pista queda es la mitad de la pregunta. */}
-      <div
-        aria-hidden
-        style={{
-          marginTop: "12px",
-          height: "6px",
-          borderRadius: "3px",
-          background: "var(--line, rgba(0,0,0,.10))",
-          overflow: "hidden",
-        }}
-      >
-        <div
-          style={{
-            width: `${Math.round((r.diasTranscurridos / r.diasDelPeriodo) * 100)}%`,
-            height: "100%",
-            background: "var(--brand)",
-          }}
-        />
-      </div>
-
-      <div className="hiw-two" style={{ marginTop: "12px" }}>
-        <div className="hiw-mcard">
-          <span className="k">{t("ritmo.medido")}</span>
-          <div className="v real ck-num">{money(r.ahorroHastaLaFechaUsd)}</div>
-          <p>{t("ritmo.diaDeMes", { n: r.diasTranscurridos, total: r.diasDelPeriodo })}</p>
-        </div>
-        <div className="hiw-mcard">
-          <span className="k">{t("ritmo.ritmoLabel", { dias: VENTANA_RITMO_DIAS })}</span>
-          <div className="v ck-num">{t("ritmo.porDia", { importe: money(r.ahorroPorDiaRecienteUsd) })}</div>
-          <p>{t("ritmo.diasRestantes", { n: r.diasRestantes })}</p>
-        </div>
-      </div>
+      ) : null}
     </div>
   );
 }

@@ -63,7 +63,9 @@
         "free": "Gratis",
         "pro": "Pro",
         "enterprise": "Enterprise"
-      }
+      },
+      "menuLabel": "Menú del compte",
+      "setupNext": "Següent:"
     },
     "tour": {
       "open": "Veure el tour",
@@ -275,7 +277,10 @@
         "requestsBase": "{share} amb comptador del proveïdor · {period}",
         "requestsBaseNone": "Totes les rebudes · {period}",
         "noPrice": "Sense preu per tarifar aquest trànsit",
-        "notMeasured": "Encara no hi ha res mesurat en aquest període"
+        "notMeasured": "Encara no hi ha res mesurat en aquest període",
+        "costDef": "El que va facturar el teu proveïdor per aquest trànsit, als teus preus. Inclou totes les peticions amb preu, mesurades o no.",
+        "savedDef": "Línia base menys cost real, només en les peticions amb comptador del proveïdor. El que és estimat i el del mode ombra no hi entra mai.",
+        "requestsDef": "Totes les peticions rebudes en el període. Només les que porten comptador del proveïdor compten per a l'estalvi acreditat."
       },
       "breakdown": {
         "title": "Cost observat per model",
@@ -284,6 +289,21 @@
         "coverageFull": "El desglossament cobreix tot el cost observat del període.",
         "coveragePartial": "El desglossament per model cobreix el {coverage} del cost observat del període; la resta no té model atribuït.",
         "coverageUnknown": "No es pot comparar amb el cost observat del període."
+      },
+      "pulse": {
+        "chartTitle": "Línia base i cost real, dia a dia",
+        "seriesBaseline": "Línia base mesurada",
+        "seriesActual": "Cost real mesurat",
+        "seriesSaved": "Estalvi acreditat del dia",
+        "band": "Estalvi acreditat",
+        "chartAria": "Línia base i cost real per dia. Fes servir les fletxes esquerra i dreta per llegir cada dia.",
+        "gap": "Sense peticions mesurades aquest dia",
+        "chartFoot": "Només peticions amb comptador del proveïdor ({share} del trànsit) · {period}. Un dia sense mesura és un buit, no un zero.",
+        "providersTitle": "Ús per proveïdor",
+        "measureCost": "Cost real",
+        "measureTokens": "Tokens",
+        "measuresAria": "Mesura",
+        "barAria": "{company}: {value}. Prem per veure'n els models."
       }
     },
     "proof": {
@@ -533,7 +553,8 @@
       "accountCta": "Revisar Compte",
       "installCta": "Completar instal·lació",
       "exportCsv": "Exportar CSV",
-      "exportJson": "Exportar JSON"
+      "exportJson": "Exportar JSON",
+      "badgeDef": "Telemetria SHADOW: una hipòtesi del que s'hauria estalviat. No està mesurada, no es factura i mai se suma a l'estalvi acreditat."
     },
     "scenarioTable": {
       "colScenario": "escenari",
@@ -673,7 +694,13 @@
       "failedBody": "És un error de lectura, no una llista buida. Recarrega d'aquí a un moment.",
       "hiddenTitle": "La targeta de màquines està amagada",
       "hiddenBody": "La vas amagar en personalitzar el panell. Les seves dades es continuen mesurant.",
-      "show": "Mostrar la targeta"
+      "show": "Mostrar la targeta",
+      "seatsTitle": "Seients en ús aquest mes",
+      "seatsOf": "{seats, plural, one {de # pagat} other {de # pagats}}",
+      "seatsFull": "tots en ús",
+      "seatsOver": "per sobre dels pagats",
+      "seatsNote": "Un seient és una màquina o una identitat de servei, mai una persona.",
+      "seatsRotated": "Aquest mes s'ha rotat una clau de servei: el recompte pot comptar la mateixa màquina dues vegades."
     },
     "installLicensePanel": {
       "eyebrow": "Comença",
@@ -1104,7 +1131,15 @@
         "sesiones": "Sessions",
         "maquinas": "Màquines",
         "nativo": "Estalvi natiu activat"
-      }
+      },
+      "sortBy": "Ordena per {column}",
+      "toastHidden": "Targeta amagada: {card}",
+      "toastShown": "Targeta visible: {card}",
+      "toastReset": "Disposició restablerta",
+      "toastSaved": "Desat només en aquest navegador.",
+      "undo": "Desfés",
+      "toastRegion": "Avisos del panell",
+      "toastClose": "Tanca l'avís"
     },
     "team": {
       "metaTitle": "Equip · BiVelio Savings Layer"

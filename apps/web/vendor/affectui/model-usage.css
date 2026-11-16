@@ -1,0 +1,165 @@
+/*
+ * Derived from affectUI Pro 'model-usage' (https://www.affectui.com). Used under the
+ * affectUI Pro license held by BiVelio. NOT covered by this repository's
+ * Apache-2.0 licence; do not redistribute as a component kit.
+ */
+/* Colors and motion as variables – override them on .ui-muc */
+.ui-muc {
+  --ui-muc-card: var(--aui-surface, #ffffff);
+  --ui-muc-strong: var(--aui-ink, #000000);
+  --ui-muc-ink: var(--aui-ink, rgba(0, 0, 0, 0.88));
+  --ui-muc-text: var(--aui-muted, rgba(0, 0, 0, 0.61));
+  --ui-muc-muted: var(--aui-muted, rgba(0, 0, 0, 0.45));
+  --ui-muc-line: var(--aui-border, rgba(0, 0, 0, 0.06));
+  --ui-muc-grid: rgba(0, 0, 0, 0.07);
+  --ui-muc-tag: rgba(0, 0, 0, 0.04);
+  --ui-muc-sel: rgba(0, 0, 0, 0.06);
+  --ui-muc-up: #1a7f45;
+  --ui-muc-up-bg: rgba(31, 168, 85, 0.1);
+  --ui-muc-down: #c2341f;
+  --ui-muc-down-bg: rgba(240, 68, 56, 0.1);
+  --ui-muc-focus: var(--aui-focus, rgba(0, 96, 226, 0.7));
+  --ui-muc-shadow: 0 0 0 0.5px var(--aui-border, rgba(0, 0, 0, 0.06)), 0 1px 1px -1px rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --ui-muc-pop: 0 0 0 0.5px rgba(0, 0, 0, 0.08), 0 8px 24px -6px rgba(0, 0, 0, 0.14), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+  --ui-muc-ease: cubic-bezier(0.32, 0.72, 0.24, 1);
+  --ui-muc-morph: cubic-bezier(0.65, 0, 0.35, 1);
+  position: relative;
+  box-sizing: border-box;
+  display: grid;
+  width: 100%;
+  padding: 18px 20px 14px;
+  border-radius: calc(var(--aui-radius-lg, 10px) + 2px);
+  background: var(--aui-surface, var(--ui-muc-card));
+  box-shadow: var(--aui-shadow-card, var(--ui-muc-shadow));
+  font-family: var(--aui-font, var(--font-sans));
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--ui-muc-text);
+  text-align: left;
+  -webkit-font-smoothing: antialiased;
+  font-variant-numeric: tabular-nums;
+  container-type: inline-size;
+}
+.ui-muc *, .ui-muc *::before, .ui-muc *::after { box-sizing: border-box; }
+.ui-muc p { margin: 0; }
+.ui-muc svg { display: block; flex: none; }
+.ui-muc b { font-weight: 500; color: var(--ui-muc-strong); }
+
+/* The header, all one size: the period, its total, how it changed – and the measure, the picked one on a grey fill */
+.ui-muc__head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 10px 12px; min-width: 0; margin-bottom: 34px; }
+.ui-muc__sum { display: grid; gap: 2px; min-width: 0; }
+.ui-muc__title { font-size: 15px; font-weight: 500; line-height: 24px; color: var(--ui-muc-strong); overflow-wrap: anywhere; }
+.ui-muc__total { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+.ui-muc .ui-muc__total > b { font-weight: 500; }
+.ui-muc__tabs { display: flex; flex: none; gap: 2px; }
+.ui-muc__tab { min-height: 28px; padding: 0 10px; border: 0; border-radius: 6px; background: none; color: var(--ui-muc-text); font: inherit; cursor: pointer; outline: none; transition: color 160ms ease; }
+.ui-muc__tab:hover { color: var(--ui-muc-ink); }
+.ui-muc__tab[aria-pressed="true"] { background: var(--ui-muc-sel); color: var(--ui-muc-strong); }
+.ui-muc__tab:focus-visible { outline: 2px solid var(--ui-muc-focus); outline-offset: -2px; }
+
+/* The chart: hairline gridlines with their values, the bars standing on the bottom one */
+.ui-muc__chart { position: relative; height: var(--ui-muc-plot, 176px); margin: 0; }
+.ui-muc__grid { position: absolute; inset: 0; pointer-events: none; }
+.ui-muc__grid > span { position: absolute; left: 0; right: 0; height: 0; border-top: 1px solid var(--ui-muc-grid); }
+.ui-muc__grid i { position: absolute; right: calc(100% + 10px); top: -9px; font-style: normal; font-size: 12px; line-height: 18px; color: var(--ui-muc-muted); white-space: nowrap; }
+.ui-muc__cols { position: relative; display: grid; gap: 12px; height: 100%; padding: 0 8px; }
+.ui-muc__col { font: inherit; color: inherit; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; min-width: 0; margin: 0; padding: 0; border: 0; border-radius: 6px; background: none; cursor: default; outline: none; transition: opacity 200ms ease; }
+.ui-muc__col[data-dim] { opacity: 0.35; }
+.ui-muc__col:focus-visible { outline: 2px solid var(--ui-muc-focus); outline-offset: 2px; }
+.ui-muc__value { position: absolute; bottom: calc(var(--ui-muc-h) + 6px); font-size: 12px; line-height: 16px; color: var(--ui-muc-muted); white-space: nowrap; transition: color 200ms ease, bottom 760ms var(--ui-muc-morph); }
+.ui-muc__col[data-on] .ui-muc__value { color: var(--ui-muc-strong); font-weight: 500; }
+/* A bar: the models stacked with a white line between them, rounded at the top only. Each segment is its share of
+   the bar, so switching the measure eases every segment straight to its new share */
+.ui-muc__stack { display: flex; flex-direction: column-reverse; gap: 2px; width: min(64px, 62%); height: var(--ui-muc-h); min-height: 0; overflow: hidden; border-radius: 5px 5px 0 0; transition: height 760ms var(--ui-muc-morph); animation: ui-muc-rise 760ms var(--ui-muc-ease) both; animation-delay: inherit; }
+.ui-muc__stack > i { flex-grow: 0; flex-shrink: 1; min-height: 3px; background: color-mix(in srgb, var(--ui-muc-c) calc(var(--ui-muc-s) * 100%), var(--ui-muc-card)); transition: flex-basis 760ms var(--ui-muc-morph); }
+
+/* The company's models, above its bar */
+.ui-muc__tip { position: absolute; z-index: 2; top: 50%; left: var(--ui-muc-x, 50%); width: max-content; min-width: 200px; max-width: 260px; padding: 10px 12px; border-radius: 10px; background: var(--ui-muc-card); box-shadow: var(--ui-muc-pop); font-size: 12px; line-height: 18px; opacity: 0; visibility: hidden; transform: translate(var(--ui-muc-tx, 44px), -50%) translateX(var(--ui-muc-nudge, -4px)); transition: opacity 140ms ease, transform 180ms var(--ui-muc-ease), visibility 0s 180ms, left 220ms var(--ui-muc-ease); pointer-events: none; }
+/* Beside its bar – to the right, or to the left for the bars on the right half */
+.ui-muc__tip[data-side="left"] { --ui-muc-tx: calc(-100% - 44px); --ui-muc-nudge: 4px; }
+.ui-muc__tip[data-open] { --ui-muc-nudge: 0px; opacity: 1; visibility: visible; transition: opacity 140ms ease, transform 180ms var(--ui-muc-ease), visibility 0s, left 220ms var(--ui-muc-ease); }
+.ui-muc__tip-head { display: flex; align-items: center; gap: 6px; margin-bottom: 6px !important; color: var(--ui-muc-ink); font-weight: 500; }
+.ui-muc__tip-logo { display: grid; place-items: center; width: 14px; height: 14px; }
+.ui-muc__tip-logo > svg { width: 13px; height: 13px; }
+.ui-muc__tip ul { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.ui-muc__tip li { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.ui-muc__tip li > i { flex: none; width: 8px; height: 8px; border-radius: 2px; background: color-mix(in srgb, var(--ui-muc-c) calc(var(--ui-muc-s) * 100%), var(--ui-muc-card)); box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.06); }
+.ui-muc__tip li > span { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.ui-muc__tip li > em { flex: none; font-style: normal; color: var(--ui-muc-muted); }
+.ui-muc__tip li > b { flex: none; min-width: 44px; text-align: right; }
+.ui-muc__tip-total { display: flex; justify-content: space-between; margin-top: 6px !important; padding-top: 6px; border-top: 0.5px solid var(--ui-muc-line); }
+
+/* The companies under the bars */
+.ui-muc__axis { display: grid; gap: 12px; margin: 10px 0 0; padding: 0 8px; font-size: 12px; line-height: 18px; color: var(--ui-muc-text); }
+.ui-muc__axis > span { display: flex; align-items: center; justify-content: center; gap: 5px; min-width: 0; transition: color 200ms ease, opacity 200ms ease; }
+.ui-muc__axis > span[data-on] { color: var(--ui-muc-strong); font-weight: 500; }
+.ui-muc__axis > span[data-dim] { opacity: 0.5; }
+.ui-muc__axis-logo { display: grid; flex: none; place-items: center; width: 14px; height: 14px; }
+.ui-muc__axis-logo > svg, .ui-muc__axis-logo > img { width: 13px; height: 13px; }
+.ui-muc__axis-name { min-width: 0; text-align: center; overflow-wrap: anywhere; line-height: 15px; }
+
+/* Narrow: the bars and logos close up, the tasks go to one column */
+@container (max-width: 420px) {
+  .ui-muc { padding: 16px 14px 10px; }
+  .ui-muc__head { flex-direction: column; margin-bottom: 22px; }
+  .ui-muc__cols, .ui-muc__axis { gap: 6px; padding: 0 2px; }
+  .ui-muc__axis > span { flex-direction: column; gap: 3px; }
+  .ui-muc__axis-name { font-size: 11px; }
+  .ui-muc__axis-logo { width: 16px; height: 16px; }
+  /* The card spans the chart instead of sitting beside a bar – there's no room beside it */
+  .ui-muc__tip, .ui-muc__tip[data-side="left"] { top: 0; left: 0 !important; right: 0; width: auto; min-width: 0; max-width: none; --ui-muc-tx: 0px; --ui-muc-nudge: 0px; transform: translateY(4px); }
+  .ui-muc__tip[data-open] { transform: none; }
+}
+/* Touch: bigger targets for the measures */
+@media (pointer: coarse) {
+  .ui-muc__tab { min-height: 44px; padding: 0 12px; }
+}
+
+@keyframes ui-muc-rise { from { clip-path: inset(100% 0 0 0); } to { clip-path: inset(0 0 0 0); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-muc *, .ui-muc *::before, .ui-muc *::after { animation: none !important; transition: none !important; }
+}
+
+/* ── BiVelio ── */
+.ui-muc .ui-muc__total { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; font-size: 12px; line-height: 16px; color: var(--ui-muc-text); }
+.ui-muc .ui-muc__total > b { font-size: 22px; font-weight: 600; line-height: 30px; letter-spacing: -0.03em; }
+.ui-muc__aside { flex: none; }
+.ui-muc .ui-muc__head { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; margin-bottom: 36px; }
+.ui-muc__top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.ui-muc .ui-muc__sum { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; }
+.ui-muc .ui-muc__title { margin: 0; }
+.ui-muc__tabs { flex-wrap: wrap; align-self: flex-start; padding: 2px; border-radius: 8px; background: var(--ui-muc-tag); }
+.ui-muc__tab[aria-pressed="true"] { background: var(--ui-muc-card); box-shadow: 0 0 0 0.5px var(--ui-muc-line), 0 1px 2px rgba(0, 0, 0, 0.06); }
+.ui-muc__value { font-family: var(--font-mono); letter-spacing: -0.02em; }
+.ui-muc__col { cursor: pointer; }
+/* El detalle de la empresa: una tarjeta flotante sobre el gráfico (arriba), nunca fuera de la tarjeta */
+.ui-muc__tip {
+  position: absolute;
+  top: -22px;
+  left: 8px;
+  right: 8px;
+  z-index: 3;
+  width: auto;
+  min-width: 0;
+  max-width: 320px;
+  margin: 0 auto;
+  padding: 8px 10px;
+  border-radius: var(--aui-radius-lg, 10px);
+  background: var(--ui-muc-card);
+  box-shadow: var(--shadow-pop, var(--ui-muc-pop));
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--ui-muc-text);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px);
+  transition: opacity 140ms ease, transform 180ms var(--ui-muc-ease), visibility 0s 180ms;
+}
+.ui-muc__tip[data-open] { opacity: 1; visibility: visible; transform: none; transition: opacity 140ms ease, transform 180ms var(--ui-muc-ease), visibility 0s; }
+.ui-muc__tip li > b { font-family: var(--font-mono); font-weight: 500; letter-spacing: -0.02em; }
+.ui-muc__tip-total b { font-family: var(--font-mono); letter-spacing: -0.02em; }
+.ui-muc__foot { margin: 14px -20px -14px !important; padding: 10px 20px; border-top: 0.5px solid var(--ui-muc-line); font-size: 12px; line-height: 18px; color: var(--ui-muc-muted); overflow-wrap: anywhere; }
+@container (max-width: 420px) { .ui-muc__foot { margin: 12px -14px -10px !important; padding: 10px 14px; } }
+@media (forced-colors: active) { .ui-muc, .ui-muc__tip { border: 1px solid CanvasText; } .ui-muc__stack > i { background: CanvasText; } }

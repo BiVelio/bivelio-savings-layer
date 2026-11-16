@@ -63,7 +63,9 @@
         "free": "Gratis",
         "pro": "Pro",
         "enterprise": "Enterprise"
-      }
+      },
+      "menuLabel": "Menu akun",
+      "setupNext": "Berikutnya:"
     },
     "tour": {
       "open": "Lihat tur",
@@ -275,7 +277,10 @@
         "requestsBase": "{share} dengan penghitung penyedia · {period}",
         "requestsBaseNone": "Semua yang diterima · {period}",
         "noPrice": "Tidak ada harga untuk menilai trafik ini",
-        "notMeasured": "Belum ada yang terukur pada periode ini"
+        "notMeasured": "Belum ada yang terukur pada periode ini",
+        "costDef": "Yang ditagihkan penyedia Anda untuk trafik ini, dengan harga Anda. Mencakup semua permintaan berharga, terukur atau tidak.",
+        "savedDef": "Baseline dikurangi biaya aktual, hanya pada permintaan dengan penghitung penyedia. Estimasi dan angka mode shadow tidak pernah masuk ke sini.",
+        "requestsDef": "Semua permintaan yang diterima dalam periode ini. Hanya yang membawa penghitung penyedia yang dihitung untuk penghematan yang dikreditkan."
       },
       "breakdown": {
         "title": "Biaya teramati per model",
@@ -284,6 +289,21 @@
         "coverageFull": "Rincian mencakup seluruh biaya teramati pada periode ini.",
         "coveragePartial": "Rincian per model mencakup {coverage} dari biaya teramati pada periode ini; sisanya tidak memiliki model yang diatribusikan.",
         "coverageUnknown": "Tidak dapat dibandingkan dengan biaya teramati pada periode ini."
+      },
+      "pulse": {
+        "chartTitle": "Baseline dan biaya aktual, hari demi hari",
+        "seriesBaseline": "Baseline terukur",
+        "seriesActual": "Biaya aktual terukur",
+        "seriesSaved": "Penghematan yang dikreditkan hari itu",
+        "band": "Penghematan yang dikreditkan",
+        "chartAria": "Baseline dan biaya aktual per hari. Gunakan tombol panah kiri dan kanan untuk membaca tiap hari.",
+        "gap": "Tidak ada permintaan terukur pada hari ini",
+        "chartFoot": "Hanya permintaan dengan penghitung penyedia ({share} dari trafik) · {period}. Hari tanpa pengukuran adalah celah, bukan nol.",
+        "providersTitle": "Penggunaan per penyedia",
+        "measureCost": "Biaya aktual",
+        "measureTokens": "Token",
+        "measuresAria": "Ukuran",
+        "barAria": "{company}: {value}. Tekan untuk melihat modelnya."
       }
     },
     "proof": {
@@ -533,7 +553,8 @@
       "accountCta": "Tinjau Akun",
       "installCta": "Selesaikan pemasangan",
       "exportCsv": "Ekspor CSV",
-      "exportJson": "Ekspor JSON"
+      "exportJson": "Ekspor JSON",
+      "badgeDef": "Telemetri SHADOW: hipotesis tentang berapa yang akan dihemat. Tidak diukur, tidak ditagihkan, dan tidak pernah ditambahkan ke penghematan yang dikreditkan."
     },
     "scenarioTable": {
       "colScenario": "skenario",
@@ -673,7 +694,13 @@
       "failedBody": "Ini kegagalan pembacaan, bukan daftar kosong. Muat ulang sebentar lagi.",
       "hiddenTitle": "Kartu mesin disembunyikan",
       "hiddenBody": "Anda menyembunyikannya saat menyesuaikan dasbor. Datanya tetap diukur.",
-      "show": "Tampilkan kartu"
+      "show": "Tampilkan kartu",
+      "seatsTitle": "Kursi terpakai bulan ini",
+      "seatsOf": "{seats, plural, other {dari # yang dibayar}}",
+      "seatsFull": "semua terpakai",
+      "seatsOver": "melebihi yang dibayar",
+      "seatsNote": "Satu kursi adalah satu mesin atau satu identitas layanan, bukan orang.",
+      "seatsRotated": "Bulan ini sebuah kunci layanan dirotasi: hitungan bisa memuat mesin yang sama dua kali."
     },
     "installLicensePanel": {
       "eyebrow": "Mulai",
@@ -1104,7 +1131,15 @@
         "sesiones": "Sesi",
         "maquinas": "Mesin",
         "nativo": "Penghematan native yang diaktifkan"
-      }
+      },
+      "sortBy": "Urutkan menurut {column}",
+      "toastHidden": "Kartu disembunyikan: {card}",
+      "toastShown": "Kartu ditampilkan: {card}",
+      "toastReset": "Tata letak dipulihkan",
+      "toastSaved": "Disimpan di browser ini saja.",
+      "undo": "Urungkan",
+      "toastRegion": "Pemberitahuan panel",
+      "toastClose": "Tutup pemberitahuan"
     },
     "team": {
       "metaTitle": "Tim · BiVelio Savings Layer"

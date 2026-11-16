@@ -49,6 +49,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         email={user?.email ?? ""}
         plan={ctx.org ? planLabel(ctx) : null}
         orgName={ctx.org?.name ?? ""}
+        role={ctx.role}
       />
       <div className="app-body">
         <AppSidebar role={ctx.role} unknownOrg={orgFallo} />

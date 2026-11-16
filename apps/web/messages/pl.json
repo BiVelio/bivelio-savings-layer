@@ -63,7 +63,9 @@
         "free": "Bezpłatny",
         "pro": "Pro",
         "enterprise": "Enterprise"
-      }
+      },
+      "menuLabel": "Menu konta",
+      "setupNext": "Następny:"
     },
     "tour": {
       "open": "Zobacz przewodnik",
@@ -275,7 +277,10 @@
         "requestsBase": "{share} z licznikiem dostawcy · {period}",
         "requestsBaseNone": "Wszystkie otrzymane · {period}",
         "noPrice": "Brak ceny do wyceny tego ruchu",
-        "notMeasured": "W tym okresie nic jeszcze nie zmierzono"
+        "notMeasured": "W tym okresie nic jeszcze nie zmierzono",
+        "costDef": "Tyle dostawca naliczył za ten ruch, po Twoich cenach. Obejmuje wszystkie wycenione żądania, zmierzone lub nie.",
+        "savedDef": "Linia bazowa minus koszt rzeczywisty, tylko dla żądań z licznikiem dostawcy. Szacunki i dane z trybu shadow nigdy tu nie trafiają.",
+        "requestsDef": "Wszystkie żądania otrzymane w okresie. Do zaliczonych oszczędności liczą się tylko te z licznikiem dostawcy."
       },
       "breakdown": {
         "title": "Zaobserwowany koszt według modelu",
@@ -284,6 +289,21 @@
         "coverageFull": "Podział obejmuje cały zaobserwowany koszt okresu.",
         "coveragePartial": "Podział według modelu obejmuje {coverage} zaobserwowanego kosztu okresu; reszta nie ma przypisanego modelu.",
         "coverageUnknown": "Nie da się porównać z zaobserwowanym kosztem okresu."
+      },
+      "pulse": {
+        "chartTitle": "Linia bazowa i koszt rzeczywisty, dzień po dniu",
+        "seriesBaseline": "Zmierzona linia bazowa",
+        "seriesActual": "Zmierzony koszt rzeczywisty",
+        "seriesSaved": "Zaliczone oszczędności z dnia",
+        "band": "Zaliczone oszczędności",
+        "chartAria": "Linia bazowa i koszt rzeczywisty według dni. Użyj strzałek w lewo i w prawo, aby odczytać każdy dzień.",
+        "gap": "Brak zmierzonych żądań tego dnia",
+        "chartFoot": "Tylko żądania z licznikiem dostawcy ({share} ruchu) · {period}. Dzień bez pomiaru to luka, nie zero.",
+        "providersTitle": "Użycie według dostawcy",
+        "measureCost": "Koszt rzeczywisty",
+        "measureTokens": "Tokeny",
+        "measuresAria": "Miara",
+        "barAria": "{company}: {value}. Naciśnij, aby zobaczyć modele."
       }
     },
     "proof": {
@@ -533,7 +553,8 @@
       "accountCta": "Sprawdź Konto",
       "installCta": "Dokończ instalację",
       "exportCsv": "Eksportuj CSV",
-      "exportJson": "Eksportuj JSON"
+      "exportJson": "Eksportuj JSON",
+      "badgeDef": "Telemetria SHADOW: hipoteza tego, ile udałoby się zaoszczędzić. Nie jest mierzona ani fakturowana i nigdy nie dodaje się do zaliczonych oszczędności."
     },
     "scenarioTable": {
       "colScenario": "scenariusz",
@@ -673,7 +694,13 @@
       "failedBody": "To błąd odczytu, a nie pusta lista. Odśwież za chwilę.",
       "hiddenTitle": "Karta maszyn jest ukryta",
       "hiddenBody": "Ukryto ją podczas dostosowywania panelu. Jej dane są nadal mierzone.",
-      "show": "Pokaż kartę"
+      "show": "Pokaż kartę",
+      "seatsTitle": "Miejsca w użyciu w tym miesiącu",
+      "seatsOf": "{seats, plural, one {z # opłaconego} few {z # opłaconych} many {z # opłaconych} other {z # opłaconych}}",
+      "seatsFull": "wszystkie w użyciu",
+      "seatsOver": "ponad opłacone",
+      "seatsNote": "Miejsce to maszyna albo tożsamość usługi, nigdy osoba.",
+      "seatsRotated": "W tym miesiącu wymieniono klucz usługi: licznik może uwzględniać tę samą maszynę dwa razy."
     },
     "installLicensePanel": {
       "eyebrow": "Rozpocznij",
@@ -1104,7 +1131,15 @@
         "sesiones": "Sesje",
         "maquinas": "Maszyny",
         "nativo": "Aktywowana oszczędność natywna"
-      }
+      },
+      "sortBy": "Sortuj według: {column}",
+      "toastHidden": "Karta ukryta: {card}",
+      "toastShown": "Karta widoczna: {card}",
+      "toastReset": "Przywrócono układ",
+      "toastSaved": "Zapisano tylko w tej przeglądarce.",
+      "undo": "Cofnij",
+      "toastRegion": "Powiadomienia panelu",
+      "toastClose": "Zamknij powiadomienie"
     },
     "team": {
       "metaTitle": "Zespół · BiVelio Savings Layer"

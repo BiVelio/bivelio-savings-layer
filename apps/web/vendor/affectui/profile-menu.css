@@ -1,0 +1,283 @@
+/*
+ * Derived from affectUI Pro 'profile-menu' (https://www.affectui.com). Used under the
+ * affectUI Pro license held by BiVelio. NOT covered by this repository's
+ * Apache-2.0 licence; do not redistribute as a component kit.
+ */
+/* Colors and motion as variables – override them on .ui-pmc */
+.ui-pmc {
+  --ui-pmc-card: var(--aui-overlay, #ffffff);
+  --ui-pmc-strong: var(--aui-ink, #000000);
+  --ui-pmc-ink: var(--aui-ink, rgba(0, 0, 0, 0.88));
+  --ui-pmc-text: var(--aui-muted, rgba(0, 0, 0, 0.61));
+  --ui-pmc-muted: var(--aui-muted, rgba(0, 0, 0, 0.45));
+  --ui-pmc-faint: var(--aui-placeholder, rgba(0, 0, 0, 0.27));
+  --ui-pmc-icon: var(--aui-muted, rgba(0, 0, 0, 0.447));
+  --ui-pmc-line: var(--aui-border, rgba(0, 0, 0, 0.06));
+  --ui-pmc-wash: var(--aui-subtle, rgba(0, 0, 0, 0.03));
+  --ui-pmc-hover: var(--aui-subtle, rgba(0, 0, 0, 0.06));
+  --ui-pmc-track: rgba(0, 0, 0, 0.06);
+  --ui-pmc-accent: var(--brand, #0066e6);
+  --ui-pmc-focus: var(--aui-focus, rgba(0, 96, 226, 0.7));
+  --ui-pmc-badge: var(--ink-soft, rgba(0, 0, 0, 0.61));
+  --ui-pmc-badge-wash: var(--surface-2, rgba(0, 0, 0, 0.05));
+  /* Strokes are shadows: a 0.5px hairline plus a soft lift, like a popover */
+  --ui-pmc-shadow: var(--shadow-pop, 0 0 0 0.5px rgba(0, 0, 0, 0.08), 0 12px 28px -10px rgba(0, 0, 0, 0.16), 0 1px 2px 0 rgba(0, 0, 0, 0.05));
+  --ui-pmc-ease: var(--aui-ease, cubic-bezier(0.22, 1, 0.36, 1));
+  box-sizing: border-box;
+  position: relative;
+  display: inline-flex;
+  font-family: var(--aui-font, var(--font-sans));
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 400;
+  color: var(--ui-pmc-ink);
+  -webkit-font-smoothing: antialiased;
+}
+.ui-pmc *, .ui-pmc *::before, .ui-pmc *::after { box-sizing: border-box; }
+:where(.ui-pmc) button { margin: 0; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+:where(.ui-pmc) a { color: inherit; text-decoration: none; }
+:where(.ui-pmc) form { margin: 0; }
+:where(.ui-pmc) svg { display: block; flex: none; }
+
+/* One white menu card – the edge is a shadow, not a border */
+.ui-pmc__card {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 60;
+  width: min(288px, calc(100vw - 24px));
+  padding: 4px;
+  transform-origin: top right;
+  animation: ui-pmc-in 160ms var(--ui-pmc-ease) both;
+  border-radius: var(--aui-radius-lg, 10px);
+  background: var(--ui-pmc-card);
+  box-shadow: var(--ui-pmc-shadow);
+}
+
+/* The signed-in user, separated from the actions by a hairline */
+.ui-pmc__user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 -4px 4px;
+  padding: 8px 12px 10px;
+  border-bottom: 0.5px solid var(--ui-pmc-line);
+}
+.ui-pmc__avatar {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  overflow: hidden;
+  border-radius: 50%;
+  color: var(--ui-pmc-accent);
+}
+.ui-pmc__avatar > * { display: block; width: 100%; height: 100%; object-fit: cover; }
+.ui-pmc__who { display: grid; min-width: 0; }
+.ui-pmc__name {
+  overflow: hidden;
+  font-weight: 500;
+  color: var(--ui-pmc-strong);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ui-pmc__email {
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ui-pmc-muted);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Actions: quiet rows, a subtle fill on hover that fades out again */
+/* The column may shrink, so long labels shorten instead of widening the card; a long list scrolls */
+.ui-pmc__items { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; max-height: 320px; overflow-y: auto; overscroll-behavior: contain; }
+.ui-pmc__item {
+  display: flex;
+  cursor: pointer;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 36px;
+  padding: 0 8px;
+  border-radius: calc(var(--aui-radius-sm, 5px) + 1px);
+  color: var(--ui-pmc-ink);
+  transition: background-color 140ms ease;
+}
+.ui-pmc__item:hover { background: var(--ui-pmc-hover); transition-duration: 60ms; }
+.ui-pmc__item:focus-visible { background: var(--ui-pmc-hover); outline: 2px solid var(--ui-pmc-focus); outline-offset: -2px; }
+.ui-pmc__item:active { background: rgba(0, 0, 0, 0.08); }
+
+.ui-pmc__icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--ui-pmc-icon);
+  transition: color 140ms ease;
+}
+.ui-pmc__icon svg { width: 16px; height: 16px; }
+.ui-pmc__icon svg * { vector-effect: non-scaling-stroke; }
+.ui-pmc__item:hover .ui-pmc__icon,
+.ui-pmc__item:focus-visible .ui-pmc__icon { color: var(--ui-pmc-ink); }
+
+.ui-pmc__label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ui-pmc__badge {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+  max-width: 50%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding: 0 6px;
+  border-radius: var(--aui-radius-sm, 5px);
+  background: var(--ui-pmc-badge-wash);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 18px;
+  color: var(--ui-pmc-badge);
+}
+
+/* Profile setup: the last row of the card, under a hairline */
+.ui-pmc__setup {
+  margin: 4px -4px -4px;
+  padding: 10px 12px 12px;
+  border-top: 0.5px solid var(--ui-pmc-line);
+}
+.ui-pmc__setup:has(.ui-pmc__next) { padding-bottom: 6px; }
+.ui-pmc__setup-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 16px;
+}
+.ui-pmc__setup-title { color: var(--ui-pmc-text); font-weight: 500; }
+.ui-pmc__setup-count { font-variant-numeric: tabular-nums; color: var(--ui-pmc-muted); }
+.ui-pmc__track {
+  display: block;
+  height: 4px;
+  margin-top: 8px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--ui-pmc-track);
+}
+.ui-pmc__fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--ui-pmc-accent);
+  transform-origin: left center;
+  scale: 0 1;
+  transition: scale 900ms var(--ui-pmc-ease) 150ms;
+}
+.ui-pmc[data-filled] .ui-pmc__fill { scale: 1 1; }
+.ui-pmc__next {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: calc(100% + 16px);
+  min-height: 32px;
+  margin: 6px -8px 0;
+  padding: 0 8px;
+  border-radius: calc(var(--aui-radius-sm, 5px) + 1px);
+  color: var(--ui-pmc-ink);
+  transition: background-color 140ms ease;
+}
+.ui-pmc__next:hover { background: var(--ui-pmc-wash); }
+.ui-pmc__next:focus-visible { outline: 2px solid var(--ui-pmc-focus); outline-offset: 2px; }
+.ui-pmc__next-label { flex: 1; min-width: 0; padding: 4px 0; line-height: 18px; overflow-wrap: anywhere; }
+.ui-pmc__next-hint { color: var(--ui-pmc-muted); }
+.ui-pmc__next svg {
+  width: 16px;
+  height: 16px;
+  color: var(--ui-pmc-icon);
+  transition: transform 200ms var(--ui-pmc-ease), color 140ms ease;
+}
+.ui-pmc__next svg * { vector-effect: non-scaling-stroke; }
+.ui-pmc__next:hover svg { transform: translateX(2px); color: var(--ui-pmc-ink); }
+
+/* Touch screens: taller rows */
+@media (hover: none) and (pointer: coarse) {
+  .ui-pmc__item { min-height: 44px; }
+  .ui-pmc__next { min-height: 44px; }
+  .ui-pmc__trigger { min-height: 44px; min-width: 44px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-pmc__item, .ui-pmc__icon, .ui-pmc__fill, .ui-pmc__next, .ui-pmc__next svg { transition: none; }
+}
+
+/* ── BiVelio: el disparador de la barra (avatar + correo + chevron) y lo que la tarjeta lleva de más ── */
+.ui-pmc__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  max-width: 100%;
+  padding: 0 8px 0 4px;
+  border-radius: 999px;
+  color: var(--ui-pmc-text);
+  font-size: 13px;
+  font-weight: 500;
+  transition: background-color 140ms ease, color 140ms ease, box-shadow 140ms ease;
+}
+.ui-pmc__trigger:hover, .ui-pmc__trigger[aria-expanded="true"] { background: var(--ui-pmc-hover); color: var(--ui-pmc-strong); }
+.ui-pmc__trigger[aria-expanded="true"] { box-shadow: inset 0 0 0 1px var(--ui-pmc-line); }
+.ui-pmc__trigger:focus-visible { outline: 2px solid var(--ui-pmc-focus); outline-offset: 2px; }
+.ui-pmc__trigger-text { min-width: 0; max-width: 22ch; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.ui-pmc__chev { width: 14px; height: 14px; color: var(--ui-pmc-icon); transition: transform 200ms var(--ui-pmc-ease); }
+.ui-pmc__trigger[aria-expanded="true"] .ui-pmc__chev { transform: rotate(180deg); }
+/* Avatar: la inicial sobre el tono de la cuenta (pieza Avatar de affectUI, reducida a la inicial) */
+.ui-pmc__initial {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--ui-pmc-strong);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.ui-pmc__avatar .ui-pmc__initial { width: 32px; height: 32px; font-size: 13px; }
+.ui-pmc__name, .ui-pmc__email { white-space: normal; overflow-wrap: anywhere; }
+/* Rol y plan, bajo el correo: hechos leídos, no controles */
+.ui-pmc__meta { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.ui-pmc__tag {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 5px;
+  background: var(--ui-pmc-wash);
+  box-shadow: inset 0 0 0 0.5px var(--ui-pmc-line);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--ui-pmc-text);
+}
+.ui-pmc__tag[data-tone="brand"] { background: var(--brand-soft, rgba(0, 102, 230, 0.08)); color: var(--brand, #0066e6); box-shadow: none; }
+.ui-pmc__sep { height: 0; margin: 4px -4px; border-top: 0.5px solid var(--ui-pmc-line); }
+.ui-pmc__label { white-space: normal; overflow-wrap: anywhere; line-height: 18px; padding: 6px 0; }
+.ui-pmc__item[data-tone="quiet"] { color: var(--ui-pmc-text); }
+@keyframes ui-pmc-in { from { opacity: 0; transform: translateY(-4px) scale(0.98); } }
+@media (max-width: 520px) {
+  .ui-pmc__trigger { padding: 0 4px; gap: 2px; }
+  .ui-pmc__trigger-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-pmc__card { animation: none; }
+  .ui-pmc__trigger, .ui-pmc__chev { transition: none; }
+}
+@media (forced-colors: active) { .ui-pmc__card { border: 1px solid CanvasText; } }

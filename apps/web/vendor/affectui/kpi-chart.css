@@ -1,0 +1,344 @@
+/*
+ * Derived from affectUI Pro 'kpi-chart' (https://www.affectui.com). Used under the
+ * affectUI Pro license held by BiVelio. NOT covered by this repository's
+ * Apache-2.0 licence; do not redistribute as a component kit.
+ */
+/* Colors and motion as variables – override them on .ui-kpic */
+.ui-kpic {
+  --ui-kpic-card: var(--aui-surface, #ffffff);
+  --ui-kpic-pop: var(--aui-overlay, #ffffff);
+  --ui-kpic-ink: var(--aui-ink, rgba(0, 0, 0, 0.88));
+  --ui-kpic-strong: var(--aui-ink, #000000);
+  --ui-kpic-text: var(--aui-muted, rgba(0, 0, 0, 0.61));
+  --ui-kpic-muted: var(--aui-muted, rgba(0, 0, 0, 0.45));
+  --ui-kpic-line: var(--aui-border, rgba(0, 0, 0, 0.06));
+  --ui-kpic-grid: rgba(0, 0, 0, 0.06);
+  --ui-kpic-guide: rgba(0, 0, 0, 0.12);
+  --ui-kpic-up: var(--aui-success, #1e8a4f);
+  --ui-kpic-up-bg: color-mix(in srgb, var(--aui-green, #5fc88a) 8%, transparent);
+  --ui-kpic-down: var(--aui-red, #f04438);
+  --ui-kpic-down-bg: color-mix(in srgb, var(--aui-red, #f04438) 8%, transparent);
+  --ui-kpic-focus: var(--aui-focus, rgba(0, 96, 226, 0.7));
+  /* Strokes are shadows: a 0.5px hairline plus a soft lift */
+  --ui-kpic-shadow: var(--aui-shadow-card, 0 0 0 0.5px rgba(0, 0, 0, 0.06), 0 1px 1px -1px rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.05));
+  --ui-kpic-shadow-pop: var(--shadow-pop, 0 0 0 0.5px rgba(0, 0, 0, 0.08), 0 12px 28px -10px rgba(0, 0, 0, 0.16), 0 1px 2px 0 rgba(0, 0, 0, 0.05));
+  --ui-kpic-ease: var(--aui-ease, cubic-bezier(0.22, 1, 0.36, 1));
+  box-sizing: border-box;
+  container-type: inline-size;
+  width: 100%;
+  min-width: 0;
+  /* One white card – the edge is a shadow, not a border */
+  border-radius: var(--aui-radius-lg, 10px);
+  background: var(--ui-kpic-card);
+  box-shadow: var(--ui-kpic-shadow);
+  font-family: var(--aui-font, var(--font-sans));
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 400;
+  color: var(--ui-kpic-ink);
+  -webkit-font-smoothing: antialiased;
+  font-variant-numeric: tabular-nums;
+}
+.ui-kpic *, .ui-kpic *::before, .ui-kpic *::after { box-sizing: border-box; }
+
+.ui-kpic__body { padding: 16px 18px 14px; }
+
+/* Title, the big number and the change as a tinted badge */
+.ui-kpic__title {
+  margin: 0;
+  min-width: 0;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 24px;
+  color: var(--ui-kpic-strong);
+  overflow-wrap: anywhere;
+}
+.ui-kpic__value {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0 0;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 32px;
+  letter-spacing: -0.02em;
+  color: var(--ui-kpic-strong);
+}
+.ui-kpic__delta {
+  flex: none;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--aui-radius-sm, 5px);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0;
+}
+.ui-kpic__amount { min-width: 0; overflow-wrap: anywhere; }
+.ui-kpic__delta[data-trend="up"] { background: var(--ui-kpic-up-bg); color: var(--ui-kpic-up); }
+.ui-kpic__delta[data-trend="down"] { background: var(--ui-kpic-down-bg); color: var(--ui-kpic-down); }
+
+/* Chart: y labels on the left, plot on the right, x labels below */
+.ui-kpic__chart {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: var(--ui-kpic-h, 168px) 16px;
+  column-gap: 10px;
+  row-gap: 8px;
+  margin-top: 20px;
+}
+.ui-kpic__yaxis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin: -8px 0;
+  font-size: 11px;
+  line-height: 16px;
+  text-align: right;
+  color: var(--ui-kpic-muted);
+}
+.ui-kpic__plot {
+  position: relative;
+  touch-action: pan-y;
+  border-radius: 4px;
+  outline: none;
+  cursor: crosshair;
+}
+.ui-kpic__plot:focus-visible {
+  outline: 2px solid var(--ui-kpic-focus);
+  outline-offset: 2px;
+}
+.ui-kpic__grid {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 0;
+  border-top: 0.5px solid var(--ui-kpic-grid);
+}
+.ui-kpic__lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  animation: ui-kpic-draw 1100ms var(--ui-kpic-ease) both;
+}
+.ui-kpic__lines path {
+  fill: none;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Hover marker: a hairline guide and one dot per line – short, crisp moves between points */
+.ui-kpic__marker {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 140ms ease;
+}
+.ui-kpic__marker[data-open] { opacity: 1; }
+.ui-kpic__guide,
+.ui-kpic__dot {
+  position: absolute;
+  transition: left 90ms ease-out, top 90ms ease-out;
+}
+.ui-kpic__guide {
+  top: -4px;
+  bottom: 0;
+  width: 0;
+  border-left: 1px solid var(--ui-kpic-guide);
+  margin-left: -0.5px;
+}
+.ui-kpic__dot {
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--ui-kpic-card);
+}
+
+/* A point without neighbours (one version, or a value between gaps) draws no line – it gets a dot */
+.ui-kpic__point {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--ui-kpic-card);
+  pointer-events: none;
+  animation: ui-kpic-pop 400ms var(--ui-kpic-ease) both;
+}
+
+/* Nothing to draw: the grid stays, a quiet line sits on the middle one */
+.ui-kpic__plot[data-empty] { cursor: default; }
+.ui-kpic__plot[data-empty] > :not(.ui-kpic__grid, .ui-kpic__empty) { display: none; }
+.ui-kpic__empty {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0 10px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  background: var(--ui-kpic-card);
+  transform: translate(-50%, -50%);
+  font-size: 12px;
+  line-height: 16px;
+  text-align: center;
+  color: var(--ui-kpic-muted);
+}
+
+/* Tooltip: a small white popover beside the guide, flips to the left on the right half */
+.ui-kpic__tooltip {
+  position: absolute;
+  top: -8px;
+  z-index: 2;
+  min-width: 160px;
+  max-width: calc(100cqw - 16px);
+  padding: 6px 10px 8px;
+  border-radius: var(--aui-radius-lg, 10px);
+  background: var(--ui-kpic-pop);
+  box-shadow: var(--ui-kpic-shadow-pop);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(calc(var(--ui-kpic-shift) + var(--ui-kpic-nudge, 0px))) scale(0.98);
+  transition:
+    left 90ms ease-out,
+    opacity 140ms ease,
+    transform 180ms var(--ui-kpic-ease);
+}
+.ui-kpic__tooltip[data-side="right"] { --ui-kpic-shift: 14px; transform-origin: left top; }
+.ui-kpic__tooltip[data-side="left"] { --ui-kpic-shift: calc(-100% - 14px); transform-origin: right top; }
+.ui-kpic__tooltip[data-open] {
+  opacity: 1;
+  transform: translateX(calc(var(--ui-kpic-shift) + var(--ui-kpic-nudge, 0px)));
+}
+.ui-kpic__date {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--ui-kpic-strong);
+}
+.ui-kpic__tooltip ul {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  margin: 4px 0 0;
+  padding: 4px 0 0;
+  border-top: 0.5px solid var(--ui-kpic-line);
+  list-style: none;
+}
+.ui-kpic__tooltip li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--ui-kpic-text);
+}
+.ui-kpic__swatch {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+.ui-kpic__label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ui-kpic__num {
+  flex: none;
+  padding-left: 16px;
+  color: var(--ui-kpic-ink);
+}
+
+.ui-kpic__xaxis {
+  position: relative;
+  grid-column: 2;
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--ui-kpic-muted);
+}
+.ui-kpic__xaxis span {
+  position: absolute;
+  top: 0;
+  max-width: 34%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+.ui-kpic__xaxis span[data-edge="start"] { transform: none; }
+.ui-kpic__xaxis span[data-edge="end"] { transform: translateX(-100%); }
+
+/* The last row of the card */
+.ui-kpic__footer {
+  overflow-wrap: anywhere;
+  margin: 0;
+  padding: 10px 16px;
+  border-top: 0.5px solid var(--ui-kpic-line);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ui-kpic-muted);
+}
+
+@keyframes ui-kpic-draw {
+  from { clip-path: inset(-10% 100% -10% 0); }
+  to { clip-path: inset(-10% -2% -10% 0); }
+}
+@keyframes ui-kpic-pop {
+  from { opacity: 0; transform: scale(0.4); }
+}
+
+/* Narrow (phones): tighter padding, a slightly shorter plot */
+@container (max-width: 360px) {
+  .ui-kpic__body { padding: 12px 12px 10px; }
+  .ui-kpic__chart { grid-template-rows: 112px 16px; column-gap: 8px; }
+  .ui-kpic__footer { padding: 10px 12px; }
+  .ui-kpic__tooltip { min-width: 144px; }
+  .ui-kpic__num { padding-left: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-kpic__lines, .ui-kpic__point { animation: none; }
+  .ui-kpic__marker, .ui-kpic__guide, .ui-kpic__dot, .ui-kpic__tooltip { transition: none; }
+}
+
+/* ── BiVelio ── cabecera con insignia, leyenda escrita, banda entre dos series y cifras en mono */
+.ui-kpic__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.ui-kpic__aside { flex: none; }
+.ui-kpic__amount { font-size: 22px; font-weight: 600; letter-spacing: -0.03em; }
+.ui-kpic__caption { font-size: 12px; font-weight: 400; line-height: 16px; letter-spacing: 0; color: var(--ui-kpic-text); }
+.ui-kpic__legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 10px 0 0; padding: 0; list-style: none; font-size: 12px; line-height: 16px; color: var(--ui-kpic-text); }
+.ui-kpic__legend li { display: inline-flex; align-items: center; gap: 6px; }
+.ui-kpic__key { flex: none; width: 14px; height: 0; border-top: 2px solid var(--ui-kpic-k); border-radius: 1px; }
+.ui-kpic__key[data-dashed] { border-top-style: dashed; }
+.ui-kpic__key[data-band] { height: 8px; border: 0; border-radius: 2px; background: var(--ui-kpic-k); opacity: 0.22; }
+.ui-kpic__lines path.ui-kpic__band { fill: var(--ui-kpic-band, transparent); fill-opacity: 0.14; stroke: none; }
+.ui-kpic__lines path[data-dashed] { stroke-dasharray: 4 4; stroke-width: 1.25; }
+.ui-kpic__chart { margin-top: 14px; }
+.ui-kpic__yaxis, .ui-kpic__xaxis, .ui-kpic__num { font-family: var(--font-mono); letter-spacing: -0.02em; }
+.ui-kpic__tooltip li[data-total] { margin-top: 3px; padding-top: 3px; border-top: 0.5px solid var(--ui-kpic-line); color: var(--ui-kpic-ink); font-weight: 500; }
+.ui-kpic__gap { font-size: 12px; line-height: 20px; color: var(--ui-kpic-muted); margin: 4px 0 0; padding-top: 4px; border-top: 0.5px solid var(--ui-kpic-line); }
+.ui-kpic__footer { line-height: 18px; }
+@media (pointer: coarse) { .ui-kpic__plot { cursor: default; } }
+@media (forced-colors: active) { .ui-kpic, .ui-kpic__tooltip { border: 1px solid CanvasText; } }
+.ui-kpic__tooltip { min-width: 216px; width: max-content; max-width: min(300px, calc(100cqw - 16px)); }
+.ui-kpic__tooltip .ui-kpic__label { overflow: visible; white-space: normal; text-overflow: clip; line-height: 16px; padding: 2px 0; }
+.ui-kpic__tooltip li { align-items: baseline; }
+.ui-kpic__tooltip .ui-kpic__swatch { align-self: center; }

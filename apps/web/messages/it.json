@@ -63,7 +63,9 @@
         "free": "Gratis",
         "pro": "Pro",
         "enterprise": "Enterprise"
-      }
+      },
+      "menuLabel": "Menu dell'account",
+      "setupNext": "Prossimo:"
     },
     "tour": {
       "open": "Guarda il tour",
@@ -275,7 +277,10 @@
         "requestsBase": "{share} con contatore del provider · {period}",
         "requestsBaseNone": "Tutte quelle ricevute · {period}",
         "noPrice": "Nessun prezzo per tariffare questo traffico",
-        "notMeasured": "Ancora nulla di misurato in questo periodo"
+        "notMeasured": "Ancora nulla di misurato in questo periodo",
+        "costDef": "Quanto ha fatturato il tuo provider per questo traffico, ai tuoi prezzi. Include tutte le richieste con prezzo, misurate o no.",
+        "savedDef": "Base di riferimento meno costo reale, solo sulle richieste con contatore del provider. Stime e valori in modalità shadow non entrano mai qui.",
+        "requestsDef": "Tutte le richieste ricevute nel periodo. Solo quelle con contatore del provider contano per il risparmio accreditato."
       },
       "breakdown": {
         "title": "Costo osservato per modello",
@@ -284,6 +289,21 @@
         "coverageFull": "La ripartizione copre tutto il costo osservato del periodo.",
         "coveragePartial": "La ripartizione per modello copre il {coverage} del costo osservato del periodo; il resto non ha un modello attribuito.",
         "coverageUnknown": "Non è possibile confrontarlo con il costo osservato del periodo."
+      },
+      "pulse": {
+        "chartTitle": "Base di riferimento e costo reale, giorno per giorno",
+        "seriesBaseline": "Base di riferimento misurata",
+        "seriesActual": "Costo reale misurato",
+        "seriesSaved": "Risparmio accreditato del giorno",
+        "band": "Risparmio accreditato",
+        "chartAria": "Base di riferimento e costo reale per giorno. Usa le frecce sinistra e destra per leggere ogni giorno.",
+        "gap": "Nessuna richiesta misurata in questo giorno",
+        "chartFoot": "Solo richieste con contatore del provider ({share} del traffico) · {period}. Un giorno senza misura è un vuoto, non uno zero.",
+        "providersTitle": "Utilizzo per provider",
+        "measureCost": "Costo reale",
+        "measureTokens": "Token",
+        "measuresAria": "Misura",
+        "barAria": "{company}: {value}. Premi per vedere i suoi modelli."
       }
     },
     "proof": {
@@ -533,7 +553,8 @@
       "accountCta": "Controlla Account",
       "installCta": "Completa installazione",
       "exportCsv": "Esporta CSV",
-      "exportJson": "Esporta JSON"
+      "exportJson": "Esporta JSON",
+      "badgeDef": "Telemetria SHADOW: un'ipotesi di quanto si sarebbe risparmiato. Non è misurata, non è fatturata e non si somma mai al risparmio accreditato."
     },
     "scenarioTable": {
       "colScenario": "scenario",
@@ -673,7 +694,13 @@
       "failedBody": "È un errore di lettura, non un elenco vuoto. Ricarica tra un momento.",
       "hiddenTitle": "La scheda delle macchine è nascosta",
       "hiddenBody": "L'hai nascosta personalizzando la dashboard. I suoi dati continuano a essere misurati.",
-      "show": "Mostra scheda"
+      "show": "Mostra scheda",
+      "seatsTitle": "Postazioni in uso questo mese",
+      "seatsOf": "{seats, plural, one {su # pagata} other {su # pagate}}",
+      "seatsFull": "tutte in uso",
+      "seatsOver": "oltre quelle pagate",
+      "seatsNote": "Una postazione è una macchina o un'identità di servizio, mai una persona.",
+      "seatsRotated": "Questo mese è stata ruotata una chiave di servizio: il conteggio può includere due volte la stessa macchina."
     },
     "installLicensePanel": {
       "eyebrow": "Inizia",
@@ -1104,7 +1131,15 @@
         "sesiones": "Sessioni",
         "maquinas": "Macchine",
         "nativo": "Risparmio nativo attivato"
-      }
+      },
+      "sortBy": "Ordina per {column}",
+      "toastHidden": "Scheda nascosta: {card}",
+      "toastShown": "Scheda visibile: {card}",
+      "toastReset": "Disposizione ripristinata",
+      "toastSaved": "Salvato solo in questo browser.",
+      "undo": "Annulla",
+      "toastRegion": "Avvisi del pannello",
+      "toastClose": "Chiudi l'avviso"
     },
     "team": {
       "metaTitle": "Team · BiVelio Savings Layer"

@@ -7,15 +7,23 @@ import { AppTopbar } from "@/app/components/app/AppTopbar";
 import { PageHead } from "@/app/components/app/PageHead";
 import { SetupProgress } from "@/app/components/app/SetupProgress";
 import { BillingStateBanner } from "@/app/[locale]/dashboard/components/BillingStateBanner";
+import { AhorroNativoCard } from "@/app/[locale]/dashboard/components/AhorroNativoCard";
 import { DesgloseModelos } from "@/app/[locale]/dashboard/components/DesgloseModelos";
+import { LiveLedgerTiles } from "@/app/[locale]/dashboard/components/LiveLedgerTiles";
+import { RitmoCard } from "@/app/[locale]/dashboard/components/RitmoCard";
+import { SesionesCard } from "@/app/[locale]/dashboard/components/SesionesCard";
+import { ShadowOpportunitiesCard } from "@/app/[locale]/dashboard/components/ShadowOpportunitiesCard";
+import { TokenTotalsTiles } from "@/app/[locale]/dashboard/components/TokenTotalsTiles";
+import { TrafficModelMix } from "@/app/[locale]/dashboard/components/TrafficModelMix";
 import { InstrumentationSpine } from "@/app/[locale]/dashboard/components/InstrumentationSpine";
 import { MaquinasCard } from "@/app/[locale]/dashboard/components/MaquinasCard";
+import { PulsoDelPeriodo } from "@/app/[locale]/dashboard/components/PulsoDelPeriodo";
 import { PanelEditable } from "@/app/[locale]/dashboard/components/PanelEditable";
 import { ResumenKpis } from "@/app/[locale]/dashboard/components/ResumenKpis";
 import { UsageExplorer } from "@/app/[locale]/dashboard/components/UsageExplorer";
 import { VerdictHero } from "@/app/[locale]/dashboard/components/VerdictHero";
 import DashboardLoading from "@/app/[locale]/dashboard/loading";
-import type { AsientoVisto, ModelDia, OrgContext, StepState, UsageRollup } from "@/app/[locale]/dashboard/data";
+import type { AsientoVisto, ModelDia, OrgContext, SesionRollup, ShadowModelDia, StepState, UsageRollup } from "@/app/[locale]/dashboard/data";
 import { setupProgress } from "@/lib/dashboard/progress";
 import { capturaDisponible } from "@/lib/portada/panel-del-banco";
 
@@ -63,6 +71,12 @@ function fila(haceDias: number, peticiones: number, base: number, real: number, 
     actualInputTokens: peticiones * 3300,
     baselineOutputTokens: peticiones * 380,
     actualOutputTokens: peticiones * 380,
+    shadowRequests: Math.round(peticiones * 0.12),
+    shadowBaselineCost: base * 0.12,
+    shadowActualCost: base * 0.12 * 0.83,
+    nativeRequests: Math.round(peticiones * 0.3),
+    nativeCacheReadSavings: base * 0.09,
+    nativeCacheWritePremium: base * 0.021,
   };
 }
 
@@ -96,8 +110,41 @@ const POR_MODELO: ModelDia[] = POSITIVO.flatMap((r) =>
     actualCost: r.actualCost * REPARTO[i]! * 0.93,
     actualInputTokens: Math.round((r.actualInputTokens ?? 0) * REPARTO[i]!),
     actualOutputTokens: Math.round((r.actualOutputTokens ?? 0) * REPARTO[i]!),
+    nativeCacheReadSavings: i < 4 ? r.baselineCost * 0.09 * (REPARTO[i]! / 0.86) : undefined,
+    nativeCacheWritePremium: i < 4 ? r.baselineCost * 0.021 * (REPARTO[i]! / 0.86) : undefined,
   })),
 );
+
+/** Sombra por modelo: tres modelos con tráfico espejo, cobertura parcial. */
+const SOMBRA: ShadowModelDia[] = POSITIVO.flatMap((r) =>
+  MODELOS.slice(0, 3).map((model, i) => ({
+    day: r.day,
+    model,
+    shadowRequests: Math.round((r.shadowRequests ?? 0) * [0.5, 0.25, 0.15][i]!),
+    shadowBaselineCost: (r.shadowBaselineCost ?? 0) * [0.5, 0.25, 0.15][i]!,
+    shadowActualCost: (r.shadowActualCost ?? 0) * [0.46, 0.27, 0.15][i]!,
+  })),
+);
+
+/** Sesiones opacas: cinco sesiones, alguna con subagentes. */
+const SESIONES: SesionRollup[] = [
+  ["ses_7c1e02a94bd3f6610", "", 412, 9.84],
+  ["ses_7c1e02a94bd3f6610", "agt_a1", 138, 3.12],
+  ["ses_7c1e02a94bd3f6610", "agt_b2", 77, 1.6],
+  ["ses_02ffab77190c5e4d2", "", 233, 5.41],
+  ["ses_02ffab77190c5e4d2", "agt_c3", 61, 0.92],
+  ["ses_91b3", "", 118, 2.27],
+  ["ses_e45d9a0c33187f20b", "", 64, 0.7312],
+  ["ses_5a0077c2e19d4b8f1", "", 19, 0.1045],
+].map(([sessionId, agentId, requests, actualCost], i) => ({
+  day: dia(i % 4),
+  sessionId: sessionId as string,
+  agentId: agentId as string,
+  requests: requests as number,
+  actualInputTokens: (requests as number) * 3300,
+  actualOutputTokens: (requests as number) * 380,
+  actualCost: actualCost as number,
+}));
 
 const IDS = ["Account created", "License active", "SDK or gateway installed", "First real request", "Report ready"] as const;
 
@@ -136,12 +183,12 @@ export default async function GaleriaDeEstados({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ vista?: string }>;
+  searchParams: Promise<{ vista?: string; solo?: string }>;
 }) {
   if (!capturaDisponible()) notFound();
   const { locale } = await params;
   setRequestLocale(locale);
-  const { vista = "estados" } = await searchParams;
+  const { vista = "estados", solo } = await searchParams;
   const t = await getTranslations("dashboard");
 
   const etiqueta: Record<(typeof IDS)[number], string> = {
@@ -166,7 +213,7 @@ export default async function GaleriaDeEstados({
     const steps = conDatos ? COMPLETO : pasos(2);
     return (
       <div className="app">
-        <AppTopbar email="muestra@example.com" plan="pro" orgName="Organización de muestra" />
+        <AppTopbar email="muestra@example.com" plan="pro" orgName="Organización de muestra" role="owner" />
         <div className="app-body">
           <AppSidebar role="owner" />
           <main className="app-main">
@@ -184,6 +231,7 @@ export default async function GaleriaDeEstados({
                   <div className="panel-stack">
                     <VerdictHero usage={usage} visibilidad={conDatos ? "con_datos" : "sin_trafico"} rango={30} integrado={conDatos} />
                     {conDatos ? <ResumenKpis usage={usage} rango={30} steps={steps} /> : null}
+                    {conDatos ? <PulsoDelPeriodo usage={usage} porModelo={POR_MODELO} rango={30} /> : null}
                   </div>
                 </section>
                 {conDatos ? null : <InstrumentationSpine steps={steps} />}
@@ -210,12 +258,32 @@ export default async function GaleriaDeEstados({
                         ),
                       },
                       {
+                        id: "oportunidades",
+                        titulo: t("shadowOpportunities.title"),
+                        contenido: <ShadowOpportunitiesCard rows={conDatos ? SOMBRA : []} usage={usage} status={conDatos ? "data" : "empty"} rango={30} />,
+                      },
+                      { id: "ritmo", titulo: t("panel.cards.ritmo"), contenido: <RitmoCard usage={usage} /> },
+                      { id: "nativo", titulo: t("panel.cards.nativo"), contenido: <AhorroNativoCard usage={usage} porModelo={conDatos ? POR_MODELO : []} /> },
+                      { id: "tokens", titulo: t("panel.cards.tokens"), contenido: <TokenTotalsTiles usage={usage} /> },
+                      { id: "libros", titulo: t("panel.cards.libros"), contenido: <LiveLedgerTiles usage={usage} /> },
+                      {
+                        id: "trafico",
+                        titulo: t("panel.cards.trafico"),
+                        contenido: (
+                          <div className="card card-pad">
+                            <div className="n card-title">{t("overview.traffic")}</div>
+                            <TrafficModelMix usage={usage} />
+                          </div>
+                        ),
+                      },
+                      { id: "sesiones", titulo: t("panel.cards.sesiones"), contenido: <SesionesCard sesiones={conDatos ? SESIONES : []} /> },
+                      {
                         id: "maquinas",
                         titulo: t("panel.cards.maquinas"),
-                        contenido: <MaquinasCard asientos={conDatos ? ASIENTOS : []} />,
+                        contenido: <MaquinasCard asientos={conDatos ? ASIENTOS : []} seats={conDatos ? { used: 4, seats: 5 } : undefined} />,
                         ancla: { id: "maquinas", titulo: t("maquinas.hiddenTitle"), texto: t("maquinas.hiddenBody"), accion: t("maquinas.show") },
                       },
-                    ]}
+                    ].filter((c) => !solo || solo.split(",").includes(c.id))}
                   />
                 </section>
               </div>
@@ -341,8 +409,11 @@ export default async function GaleriaDeEstados({
           <section style={BLOQUE}>
             <h2 className="t-section">Máquinas</h2>
             <div style={PILA}>
-              <Caso titulo="Con máquinas · ahorro de 7 días">
-                <MaquinasCard asientos={ASIENTOS} />
+              <Caso titulo="Con máquinas · ahorro de 7 días · 4 de 5 asientos">
+                <MaquinasCard asientos={ASIENTOS} seats={{ used: 4, seats: 5 }} />
+              </Caso>
+              <Caso titulo="Con máquinas · todos los asientos en uso">
+                <MaquinasCard asientos={ASIENTOS} seats={{ used: 5, seats: 5 }} />
               </Caso>
               <Caso titulo="Sin máquinas">
                 <MaquinasCard asientos={[]} />

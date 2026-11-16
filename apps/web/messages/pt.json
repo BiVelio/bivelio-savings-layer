@@ -63,7 +63,9 @@
         "free": "Grátis",
         "pro": "Pro",
         "enterprise": "Enterprise"
-      }
+      },
+      "menuLabel": "Menu da conta",
+      "setupNext": "A seguir:"
     },
     "tour": {
       "open": "Ver o tour",
@@ -275,7 +277,10 @@
         "requestsBase": "{share} com contador do fornecedor · {period}",
         "requestsBaseNone": "Todos os recebidos · {period}",
         "noPrice": "Sem preço para tarifar este tráfego",
-        "notMeasured": "Ainda nada medido neste período"
+        "notMeasured": "Ainda nada medido neste período",
+        "costDef": "O que o seu fornecedor faturou por este tráfego, aos seus preços. Inclui todos os pedidos com preço, medidos ou não.",
+        "savedDef": "Linha de base menos custo real, apenas nos pedidos com contador do fornecedor. Estimativas e valores em modo sombra nunca entram aqui.",
+        "requestsDef": "Todos os pedidos recebidos no período. Só os que trazem contador do fornecedor contam para a poupança creditada."
       },
       "breakdown": {
         "title": "Custo observado por modelo",
@@ -284,6 +289,21 @@
         "coverageFull": "A repartição cobre todo o custo observado do período.",
         "coveragePartial": "A repartição por modelo cobre {coverage} do custo observado do período; o restante não tem modelo atribuído.",
         "coverageUnknown": "Não é possível comparar com o custo observado do período."
+      },
+      "pulse": {
+        "chartTitle": "Linha de base e custo real, dia a dia",
+        "seriesBaseline": "Linha de base medida",
+        "seriesActual": "Custo real medido",
+        "seriesSaved": "Poupança creditada do dia",
+        "band": "Poupança creditada",
+        "chartAria": "Linha de base e custo real por dia. Use as setas esquerda e direita para ler cada dia.",
+        "gap": "Sem pedidos medidos neste dia",
+        "chartFoot": "Apenas pedidos com contador do fornecedor ({share} do tráfego) · {period}. Um dia sem medição é um vazio, não um zero.",
+        "providersTitle": "Utilização por fornecedor",
+        "measureCost": "Custo real",
+        "measureTokens": "Tokens",
+        "measuresAria": "Medida",
+        "barAria": "{company}: {value}. Prima para ver os modelos."
       }
     },
     "proof": {
@@ -533,7 +553,8 @@
       "accountCta": "Rever Conta",
       "installCta": "Concluir instalação",
       "exportCsv": "Exportar CSV",
-      "exportJson": "Exportar JSON"
+      "exportJson": "Exportar JSON",
+      "badgeDef": "Telemetria SHADOW: uma hipótese do que teria sido poupado. Não é medida, não é faturada e nunca se soma à poupança creditada."
     },
     "scenarioTable": {
       "colScenario": "cenário",
@@ -673,7 +694,13 @@
       "failedBody": "É uma falha de leitura, não uma lista vazia. Recarrega daqui a um momento.",
       "hiddenTitle": "O cartão de máquinas está oculto",
       "hiddenBody": "Ocultaste-o ao personalizar o painel. Os seus dados continuam a ser medidos.",
-      "show": "Mostrar cartão"
+      "show": "Mostrar cartão",
+      "seatsTitle": "Lugares em uso este mês",
+      "seatsOf": "{seats, plural, one {de # pago} other {de # pagos}}",
+      "seatsFull": "todos em uso",
+      "seatsOver": "acima dos pagos",
+      "seatsNote": "Um lugar é uma máquina ou uma identidade de serviço, nunca uma pessoa.",
+      "seatsRotated": "Este mês foi rodada uma chave de serviço: a contagem pode incluir a mesma máquina duas vezes."
     },
     "installLicensePanel": {
       "eyebrow": "Começar",
@@ -1104,7 +1131,15 @@
         "sesiones": "Sessões",
         "maquinas": "Máquinas",
         "nativo": "Poupança nativa ativada"
-      }
+      },
+      "sortBy": "Ordenar por {column}",
+      "toastHidden": "Cartão oculto: {card}",
+      "toastShown": "Cartão visível: {card}",
+      "toastReset": "Disposição reposta",
+      "toastSaved": "Guardado apenas neste navegador.",
+      "undo": "Anular",
+      "toastRegion": "Avisos do painel",
+      "toastClose": "Fechar aviso"
     },
     "team": {
       "metaTitle": "Equipa · BiVelio Savings Layer"

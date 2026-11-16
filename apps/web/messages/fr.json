@@ -63,7 +63,9 @@
         "free": "Gratuit",
         "pro": "Pro",
         "enterprise": "Enterprise"
-      }
+      },
+      "menuLabel": "Menu du compte",
+      "setupNext": "Ensuite :"
     },
     "tour": {
       "open": "Voir la visite",
@@ -275,7 +277,10 @@
         "requestsBase": "{share} avec un compteur du fournisseur · {period}",
         "requestsBaseNone": "Toutes celles reçues · {period}",
         "noPrice": "Pas de prix pour tarifer ce trafic",
-        "notMeasured": "Rien de mesuré pour l'instant sur cette période"
+        "notMeasured": "Rien de mesuré pour l'instant sur cette période",
+        "costDef": "Ce que votre fournisseur a facturé pour ce trafic, à vos tarifs. Inclut toutes les requêtes tarifées, mesurées ou non.",
+        "savedDef": "Référence moins coût réel, uniquement sur les requêtes avec un compteur du fournisseur. Les estimations et le mode shadow n'y entrent jamais.",
+        "requestsDef": "Toutes les requêtes reçues sur la période. Seules celles qui portent un compteur du fournisseur comptent pour les économies créditées."
       },
       "breakdown": {
         "title": "Coût observé par modèle",
@@ -284,6 +289,21 @@
         "coverageFull": "La répartition couvre tout le coût observé de la période.",
         "coveragePartial": "La répartition par modèle couvre {coverage} du coût observé de la période ; le reste n'a pas de modèle attribué.",
         "coverageUnknown": "Comparaison impossible avec le coût observé de la période."
+      },
+      "pulse": {
+        "chartTitle": "Référence et coût réel, jour après jour",
+        "seriesBaseline": "Référence mesurée",
+        "seriesActual": "Coût réel mesuré",
+        "seriesSaved": "Économies créditées du jour",
+        "band": "Économies créditées",
+        "chartAria": "Référence et coût réel par jour. Utilisez les flèches gauche et droite pour lire chaque jour.",
+        "gap": "Aucune requête mesurée ce jour-là",
+        "chartFoot": "Uniquement les requêtes avec un compteur du fournisseur ({share} du trafic) · {period}. Un jour sans mesure est un vide, pas un zéro.",
+        "providersTitle": "Utilisation par fournisseur",
+        "measureCost": "Coût réel",
+        "measureTokens": "Tokens",
+        "measuresAria": "Mesure",
+        "barAria": "{company} : {value}. Appuyez pour voir ses modèles."
       }
     },
     "proof": {
@@ -533,7 +553,8 @@
       "accountCta": "Consulter Compte",
       "installCta": "Terminer l'installation",
       "exportCsv": "Exporter CSV",
-      "exportJson": "Exporter JSON"
+      "exportJson": "Exporter JSON",
+      "badgeDef": "Télémétrie SHADOW : une hypothèse de ce qui aurait été économisé. Elle n'est ni mesurée ni facturée, et jamais ajoutée aux économies créditées."
     },
     "scenarioTable": {
       "colScenario": "scénario",
@@ -673,7 +694,13 @@
       "failedBody": "C'est un échec de lecture, pas une liste vide. Rechargez dans un instant.",
       "hiddenTitle": "La carte des machines est masquée",
       "hiddenBody": "Vous l'avez masquée en personnalisant le tableau de bord. Ses données continuent d'être mesurées.",
-      "show": "Afficher la carte"
+      "show": "Afficher la carte",
+      "seatsTitle": "Sièges utilisés ce mois-ci",
+      "seatsOf": "{seats, plural, one {sur # payé} other {sur # payés}}",
+      "seatsFull": "tous utilisés",
+      "seatsOver": "au-delà des sièges payés",
+      "seatsNote": "Un siège est une machine ou une identité de service, jamais une personne.",
+      "seatsRotated": "Une clé de service a été renouvelée ce mois-ci : le décompte peut inclure deux fois la même machine."
     },
     "installLicensePanel": {
       "eyebrow": "Commencer",
@@ -1104,7 +1131,15 @@
         "sesiones": "Sessions",
         "maquinas": "Machines",
         "nativo": "Économies natives activées"
-      }
+      },
+      "sortBy": "Trier par {column}",
+      "toastHidden": "Carte masquée : {card}",
+      "toastShown": "Carte affichée : {card}",
+      "toastReset": "Disposition réinitialisée",
+      "toastSaved": "Enregistré dans ce navigateur uniquement.",
+      "undo": "Annuler",
+      "toastRegion": "Notifications du tableau de bord",
+      "toastClose": "Fermer la notification"
     },
     "team": {
       "metaTitle": "Équipe · BiVelio Savings Layer"

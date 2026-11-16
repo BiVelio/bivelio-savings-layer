@@ -63,7 +63,9 @@
         "free": "Ücretsiz",
         "pro": "Pro",
         "enterprise": "Enterprise"
-      }
+      },
+      "menuLabel": "Hesap menüsü",
+      "setupNext": "Sıradaki:"
     },
     "tour": {
       "open": "Turu izle",
@@ -275,7 +277,10 @@
         "requestsBase": "{share} sağlayıcı sayacıyla · {period}",
         "requestsBaseNone": "Alınan tüm istekler · {period}",
         "noPrice": "Bu trafiği fiyatlandıracak fiyat yok",
-        "notMeasured": "Bu dönemde henüz ölçülen bir şey yok"
+        "notMeasured": "Bu dönemde henüz ölçülen bir şey yok",
+        "costDef": "Sağlayıcınızın bu trafik için sizin fiyatlarınızla faturalandırdığı tutar. Ölçülmüş olsun olmasın, fiyatı olan tüm istekleri içerir.",
+        "savedDef": "Taban eksi gerçek maliyet; yalnızca sağlayıcı sayacı olan isteklerde. Tahminler ve shadow modu rakamları buraya asla girmez.",
+        "requestsDef": "Dönemde alınan tüm istekler. Hesaba geçen tasarrufa yalnızca sağlayıcı sayacı taşıyanlar sayılır."
       },
       "breakdown": {
         "title": "Modele göre gözlenen maliyet",
@@ -284,6 +289,21 @@
         "coverageFull": "Döküm, dönemin gözlenen maliyetinin tamamını kapsıyor.",
         "coveragePartial": "Modele göre döküm, dönemin gözlenen maliyetinin {coverage} kadarını kapsıyor; geri kalanına model atanmamış.",
         "coverageUnknown": "Dönemin gözlenen maliyetiyle karşılaştırılamıyor."
+      },
+      "pulse": {
+        "chartTitle": "Taban ve gerçek maliyet, gün gün",
+        "seriesBaseline": "Ölçülen taban",
+        "seriesActual": "Ölçülen gerçek maliyet",
+        "seriesSaved": "Günün hesaba geçen tasarrufu",
+        "band": "Hesaba geçen tasarruf",
+        "chartAria": "Güne göre taban ve gerçek maliyet. Her günü okumak için sol ve sağ ok tuşlarını kullanın.",
+        "gap": "Bu gün ölçülen istek yok",
+        "chartFoot": "Yalnızca sağlayıcı sayacı olan istekler (trafiğin {share} kadarı) · {period}. Ölçümsüz bir gün sıfır değil, boşluktur.",
+        "providersTitle": "Sağlayıcıya göre kullanım",
+        "measureCost": "Gerçek maliyet",
+        "measureTokens": "Token",
+        "measuresAria": "Ölçü",
+        "barAria": "{company}: {value}. Modellerini görmek için basın."
       }
     },
     "proof": {
@@ -533,7 +553,8 @@
       "accountCta": "Hesabı incele",
       "installCta": "Kurulumu tamamla",
       "exportCsv": "CSV dışa aktar",
-      "exportJson": "JSON dışa aktar"
+      "exportJson": "JSON dışa aktar",
+      "badgeDef": "SHADOW telemetrisi: ne kadar tasarruf edilmiş olacağına dair bir varsayım. Ölçülmez, faturalanmaz ve hesaba geçen tasarrufa asla eklenmez."
     },
     "scenarioTable": {
       "colScenario": "senaryo",
@@ -673,7 +694,13 @@
       "failedBody": "Bu bir okuma hatasıdır, boş bir liste değil. Birazdan yeniden yükleyin.",
       "hiddenTitle": "Makineler kartı gizli",
       "hiddenBody": "Paneli özelleştirirken gizlediniz. Verileri ölçülmeye devam ediyor.",
-      "show": "Kartı göster"
+      "show": "Kartı göster",
+      "seatsTitle": "Bu ay kullanımdaki koltuklar",
+      "seatsOf": "{seats, plural, one {ödenen # koltuktan} other {ödenen # koltuktan}}",
+      "seatsFull": "tümü kullanımda",
+      "seatsOver": "ödenenlerin üzerinde",
+      "seatsNote": "Bir koltuk bir makine veya bir hizmet kimliğidir; asla bir kişi değildir.",
+      "seatsRotated": "Bu ay bir hizmet anahtarı yenilendi: sayım aynı makineyi iki kez içerebilir."
     },
     "installLicensePanel": {
       "eyebrow": "Başlayın",
@@ -1104,7 +1131,15 @@
         "sesiones": "Oturumlar",
         "maquinas": "Makineler",
         "nativo": "Etkinleştirilen yerel tasarruf"
-      }
+      },
+      "sortBy": "Şuna göre sırala: {column}",
+      "toastHidden": "Kart gizlendi: {card}",
+      "toastShown": "Kart gösteriliyor: {card}",
+      "toastReset": "Düzen sıfırlandı",
+      "toastSaved": "Yalnızca bu tarayıcıda saklanır.",
+      "undo": "Geri al",
+      "toastRegion": "Panel bildirimleri",
+      "toastClose": "Bildirimi kapat"
     },
     "team": {
       "metaTitle": "Ekip · BiVelio Savings Layer"

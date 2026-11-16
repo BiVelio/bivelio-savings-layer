@@ -49,6 +49,18 @@ para poder comparar al actualizar.
 | Fallback Chain (**solo la gramática, sin fallback**) | `fallback-chain.tsx` + `.css` | **affectUI Pro** | registro Pro, `fallback-chain` (descarga del 2026-11-16) | `33c253b5c17e1efd745f13e53e8be537fca02674119ca76e99e98a9d55e6d3b4` |
 | Memory Graph | `memory-graph.tsx` + `.css` | **affectUI Pro** | registro Pro, `memory-graph` (descarga del 2026-11-16) | `235a440f5403b430d795250fd64d131e659c965cffe4260a056ce4d8831132e3` |
 | Integration Flow (**partes, no la escena**) | `integration-flow.tsx` + `.css` | **affectUI Pro** | registro Pro, `integration-flow` (descarga del 2026-11-16) | `f85674636ec99d3cb1b310364efad8b104501411eddfe71f5473db8649dae26c` |
+| Tooltip | `tooltip.tsx` + `.css` | **affectUI Pro** | registro Pro, `tooltip-clean` (descarga del 2026-11-16) | `248d67efb0b588fb949990c6427fc9d7aea734056eadddca564a3da7269a44f1` |
+| Profile Menu | `profile-menu.tsx` + `.css` | **affectUI Pro** | registro Pro, `profile-menu-clean` (descarga del 2026-11-16) | `fb632b336ce6061151d5a329acc04f6b569bdf20bfb8d339fb27d59755a09270` |
+| KPI Chart (**fork**) | `kpi-chart.tsx` + `.css` | **affectUI Pro** | registro Pro, `kpi-chart-clean` (descarga del 2026-11-16) | `81a7e5beb60e835413d35d99b08e3a5518fbcfe15a557a8d83a79663ec16000d` |
+| Model Usage (**fork**) | `model-usage.tsx` + `.css` | **affectUI Pro** | registro Pro, `model-usage-clean` (descarga del 2026-11-16) | `a550368f7ba505a289e0c30d191f8676de7fbe3820612e3c270e77a238d39217` |
+| Data Table (**fork de solo lectura**) | `data-table.tsx` + `.css` | **affectUI Pro** | registro Pro, `data-table-clean` (descarga del 2026-11-16) | `7c52ae0dfe600becdd259343d25ce5acb72bb38b18a94ac75a6ec26582f3bd5e` |
+| Usage Meter (**fork: asientos**) | `usage-meter.tsx` + `.css` | **affectUI Pro** | registro Pro, `usage-meter-clean` (descarga del 2026-11-16) | `c2a9d72a1a8ee981b4bb53c507fb9011bd23387828f3e8e558c4abaa43e69b29` |
+| Toaster (**reducido**) | `toaster.tsx` + `.css` | **affectUI Pro** | registro Pro, `toaster-clean` (descarga del 2026-11-16) | `2f83426953e89fdc61936a20e0b16ec046ca598b45d4ee0efaed872f2ffea5ad` |
+| Badge | `badge.tsx` + `.css` | **affectUI Pro** | registro Pro, `badge-clean` (descarga del 2026-11-16) | `d5e6309addea4d8a9d65e4c58abd1075ed85bef43f6e65812e55a9918d3b234f` |
+
+Las ocho piezas del frente E1 (2026-11-16) salen del catálogo completo bajado con
+la licencia Pro. Ese catálogo no distingue cuáles publica además upstream bajo
+MIT, así que todas llevan la cabecera Pro, la más restrictiva de las dos.
 
 ## Dónde se usa cada pieza
 
@@ -67,6 +79,14 @@ Auditoría del 2026-11-16: una pieza que nadie importa desde `app/` no se queda.
 | `gradient-text` | `app/[locale]/page.tsx` (una frase del héroe) |
 | `gradient-floor` | `app/components/landing/CierreMeasure.tsx` (cierre de la portada) |
 | `number-ticker` | `dashboard/components/VerdictHero.tsx` (la cifra del veredicto, al cambiar de rango) |
+| `profile-menu` | `app/components/app/CuentaMenu.tsx` (la cuenta de la barra del panel, vía `AppTopbar`) |
+| `tooltip` | `app/components/app/Termino.tsx` (definiciones de términos), `NavLink.tsx` (la frase de cada cifra del raíl), `PanelEditable.tsx` (subir/bajar), `MaquinasCard.tsx` y `SesionesCard.tsx` (id completo) |
+| `kpi-chart` | `dashboard/components/CosteDiarioChart.tsx` (`PulsoDelPeriodo`, `/dashboard`) |
+| `model-usage` | `dashboard/components/PulsoDelPeriodo.tsx` (`/dashboard`) |
+| `data-table` | `MaquinasCard.tsx`, `SesionesCard.tsx`, `ShadowOpportunitiesCard.tsx` (`/dashboard`) |
+| `usage-meter` | `dashboard/components/MaquinasCard.tsx` (asientos en uso / pagados) |
+| `toaster` | `dashboard/components/PanelEditable.tsx` (aviso con «Deshacer» al ocultar, mostrar o restablecer) |
+| `badge` | `MaquinasCard.tsx` (estado de versión), `RitmoCard.tsx`, `ShadowOpportunitiesCard.tsx` |
 
 **Retiradas en esa auditoría** (solo las montaba el muestrario `/kit`): Empty
 State (Clean), Skeleton (Clean) y Segmented Control (Clean). Sus equivalentes
@@ -223,6 +243,73 @@ arriba.
   en `cqw` se sustituye por una rejilla de dos columnas con texto en `rem` que
   parte línea (doce idiomas, zoom al 200 %); la pastilla deslizante pasa a ser
   el fondo de la fila elegida. Colores a `--brand`/`--brand-soft`/`--surface-2`.
+- **kpi-board** (añadido E1) — `KpiStat.label` pasa de `string` a nodo, para que
+  el rótulo pueda ser un término con su definición (`Termino` + Tooltip).
+- **tooltip** (Pro; E1) — se conserva casi entero (capa superior con
+  `popover="manual"`, volteo, ventana de «vecinos sin espera», Escape). Nuevo
+  `kind="definition"` (más ancho, peso normal: la definición de un término) y
+  `tapToggles` (un toque abre y otro cierra, y tocar fuera cierra): upstream
+  nunca abre con el dedo, y una definición tiene que poder leerse en móvil.
+  Fondo a tinta de BiVelio y borde en `forced-colors`.
+- **profile-menu** (Pro; E1) — upstream es la tarjeta suelta, con botones que
+  llaman a `onSelect`, entradas de demo («Docs», «Apps · New») y una fila
+  «Profile setup» en inglés. Aquí es un **botón de menú real**: disparador
+  (inicial, correo y chevron, `aria-haspopup="menu"`), tarjeta que se abre bajo
+  él, foco con flechas/Inicio/Fin, Escape devuelve el foco, Tab y clic fuera
+  cierran. Cada fila es un **enlace** (`linkAs` para el `Link` con idioma) con
+  una lectura opcional a la derecha; la última es un `<form method="post">`
+  (salir nunca es un GET). `tags` (rol y plan) bajo el correo; `setup` es la
+  puesta en marcha medida, con su cuenta escrita (la barra es `aria-hidden`) y
+  el siguiente hito como enlace. El avatar se queda en la inicial (la pieza
+  Avatar reducida a su respaldo). Sin cadenas por defecto; las etiquetas parten
+  línea; filas de 36px (44 con puntero grueso).
+- **kpi-chart** (Pro; E1) — **fork.** Un valor que falta es `null` y **se queda
+  en hueco** (upstream ya cortaba la línea; aquí además el tooltip lo dice con
+  `gapText` y nunca pinta «0»). Fuera el `delta` frente al periodo anterior y
+  el formateador por defecto en inglés. Nuevo: serie `dashed`, serie
+  `tooltipOnly` (una fila del tooltip que no se dibuja: el ahorro del día),
+  `band` (el área entre dos series, por tramos donde ambas tienen dato),
+  leyenda escrita, hueco `aside` (insignia de evidencia), `plotLabel` /
+  `emptyText` obligatorios, Inicio/Fin con teclado, y el tooltip no se cierra
+  al levantar el dedo. Sin `max-width`; alto del trazo por `--ui-kpic-h`.
+- **model-usage** (Pro; E1) — **fork.** Fuera los datos de demo, el cambio
+  frente al periodo anterior, el desglose por tareas, el rodillo de cifras y
+  los rótulos del eje. Cada cifra llega **ya formateada por medida**
+  (`display`) junto al número que dimensiona la barra (`values`); el componente
+  solo calcula la cuota de un modelo dentro de la barra de su empresa. El
+  detalle de la empresa se abre al posarse, al enfocar o al tocar la barra
+  (son botones) y vive sobre el gráfico, dentro de la tarjeta. `barLabel` es
+  una plantilla (`{company}`, `{value}`), no una función: los datos vienen de
+  un componente de servidor. Hueco `aside` y pie `footer` (la nota de
+  cobertura). Selector de medida con objetivos de 44px en táctil.
+- **data-table** (Pro; E1) — **BIFURCADO A SOLO LECTURA.** Upstream es una hoja
+  de cálculo pequeña: seleccionar celdas y rangos, editar, pegar desde Excel,
+  deshacer, casillas, añadir filas, selector de etiquetas. Nada de eso queda:
+  las filas son hechos medidos. Se conserva el aspecto (filas con filete,
+  cabecera gris de 12px) y **una** interacción: ordenar por columna
+  (ascendente → descendente → como llegó), anunciada con `aria-sort`. Las
+  celdas llegan formateadas y `sort` es el valor crudo; un `null` va siempre al
+  final. `summary` es una fila de pie que no entra en la ordenación (el
+  agregado de CI). Sin tarjeta propia (vive dentro de la del panel); el scroll
+  lateral es de la tabla (`role="region"`, enfocable), nunca de la página.
+- **usage-meter** (Pro; E1) — **BIFURCADO A UNA LECTURA: ASIENTOS** en uso
+  frente a pagados. Fuera el medidor de créditos por categorías, el selector de
+  periodo, la serie diaria, los límites del plan y el botón de ampliar: Savings
+  no tiene créditos ni cuota de peticiones. Queda la cifra, su cuota y la barra
+  (una casilla por asiento hasta 40). Componente de servidor, sin estado ni
+  animación; el estado (`ok`/`warn`/`limit`) lo decide quien llama y se dice
+  también con palabras.
+- **toaster** (Pro; E1) — **REDUCIDO.** Una esquina, una columna (sin el
+  abanico de tarjetas detrás), sin deslizar, sin `promise`/`loading`. Queda la
+  tarjeta blanca, el icono de estado, **una** acción («Deshacer»), cerrar y un
+  temporizador que se detiene con el puntero o el foco encima (es la animación
+  CSS del filete; con movimiento reducido, un `setTimeout`). La lista es una
+  región `aria-live="polite"`. `id` reemplaza el aviso en pantalla en vez de
+  apilar. Las etiquetas de la región y de cerrar son props de `<Toaster />`.
+- **badge** (Pro; E1) — componente de servidor: tonos, punto inicial, variante
+  `outline` y `caps` (lectura en mono y mayúsculas para tipos de evidencia).
+  Fuera el punto «en vivo» que late, el contador y el botón de quitar. La
+  etiqueta parte línea en vez de recortarse.
 
 **Las tres piezas de «Savings Layer, en acción»** (`app/components/landing/CapaEnAccion.tsx`)
 

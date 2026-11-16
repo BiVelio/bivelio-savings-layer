@@ -7,7 +7,8 @@ import { getTranslations } from "next-intl/server";
  * raíl) sigue montada por el layout y solo se sustituye este interior.
  *
  * Un ESQUELETO con la geometría de lo que llega —cabecera, el titular con su
- * recibo, la fila de cifras y una tarjeta— y no un cartel centrado: lo que se
+ * recibo, la fila de cifras con el siguiente paso, el gráfico diario junto al
+ * desglose por proveedor y una tarjeta— y no un cartel centrado: lo que se
  * reserva es el sitio de cada bloque, para que la página no salte al llegar.
  */
 export default async function DashboardLoading() {
@@ -23,6 +24,11 @@ export default async function DashboardLoading() {
       <div className="sk app-loading-hero" />
       <div className="app-loading-row">
         <div className="sk" />
+        <div className="sk" />
+        <div className="sk" />
+        <div className="sk" />
+      </div>
+      <div className="app-loading-pulse">
         <div className="sk" />
         <div className="sk" />
       </div>

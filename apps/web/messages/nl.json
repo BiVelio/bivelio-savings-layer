@@ -63,7 +63,9 @@
         "free": "Gratis",
         "pro": "Pro",
         "enterprise": "Enterprise"
-      }
+      },
+      "menuLabel": "Accountmenu",
+      "setupNext": "Volgende:"
     },
     "tour": {
       "open": "Tour bekijken",
@@ -275,7 +277,10 @@
         "requestsBase": "{share} met een teller van de provider · {period}",
         "requestsBaseNone": "Alle ontvangen verzoeken · {period}",
         "noPrice": "Geen prijs om dit verkeer te tariferen",
-        "notMeasured": "Nog niets gemeten in deze periode"
+        "notMeasured": "Nog niets gemeten in deze periode",
+        "costDef": "Wat je provider voor dit verkeer heeft gefactureerd, tegen jouw prijzen. Omvat alle geprijsde verzoeken, gemeten of niet.",
+        "savedDef": "Basislijn min werkelijke kosten, alleen bij verzoeken met een teller van de provider. Schattingen en shadow-cijfers tellen hier nooit mee.",
+        "requestsDef": "Alle verzoeken die in de periode zijn ontvangen. Alleen die met een teller van de provider tellen mee voor de toegekende besparing."
       },
       "breakdown": {
         "title": "Waargenomen kosten per model",
@@ -284,6 +289,21 @@
         "coverageFull": "De uitsplitsing dekt alle waargenomen kosten van de periode.",
         "coveragePartial": "De uitsplitsing per model dekt {coverage} van de waargenomen kosten van de periode; aan de rest is geen model toegewezen.",
         "coverageUnknown": "Vergelijken met de waargenomen kosten van de periode is niet mogelijk."
+      },
+      "pulse": {
+        "chartTitle": "Basislijn en werkelijke kosten, dag voor dag",
+        "seriesBaseline": "Gemeten basislijn",
+        "seriesActual": "Gemeten werkelijke kosten",
+        "seriesSaved": "Toegekende besparing van de dag",
+        "band": "Toegekende besparing",
+        "chartAria": "Basislijn en werkelijke kosten per dag. Gebruik de pijltjestoetsen links en rechts om elke dag te lezen.",
+        "gap": "Geen gemeten verzoeken op deze dag",
+        "chartFoot": "Alleen verzoeken met een teller van de provider ({share} van het verkeer) · {period}. Een dag zonder meting is een gat, geen nul.",
+        "providersTitle": "Gebruik per provider",
+        "measureCost": "Werkelijke kosten",
+        "measureTokens": "Tokens",
+        "measuresAria": "Maat",
+        "barAria": "{company}: {value}. Druk om de modellen te zien."
       }
     },
     "proof": {
@@ -533,7 +553,8 @@
       "accountCta": "Account bekijken",
       "installCta": "Installatie afronden",
       "exportCsv": "CSV exporteren",
-      "exportJson": "JSON exporteren"
+      "exportJson": "JSON exporteren",
+      "badgeDef": "SHADOW-telemetrie: een hypothese van wat er bespaard zou zijn. Niet gemeten, niet gefactureerd en nooit opgeteld bij de toegekende besparing."
     },
     "scenarioTable": {
       "colScenario": "scenario",
@@ -673,7 +694,13 @@
       "failedBody": "Dit is een leesfout, geen lege lijst. Laad zo dadelijk opnieuw.",
       "hiddenTitle": "De kaart met machines is verborgen",
       "hiddenBody": "Je hebt hem verborgen bij het aanpassen van het dashboard. De gegevens worden nog steeds gemeten.",
-      "show": "Kaart tonen"
+      "show": "Kaart tonen",
+      "seatsTitle": "Plaatsen in gebruik deze maand",
+      "seatsOf": "{seats, plural, one {van # betaalde} other {van # betaalde}}",
+      "seatsFull": "alle in gebruik",
+      "seatsOver": "boven de betaalde plaatsen",
+      "seatsNote": "Een plaats is een machine of een service-identiteit, nooit een persoon.",
+      "seatsRotated": "Deze maand is een servicesleutel geroteerd: de telling kan dezelfde machine twee keer bevatten."
     },
     "installLicensePanel": {
       "eyebrow": "Aan de slag",
@@ -1104,7 +1131,15 @@
         "sesiones": "Sessies",
         "maquinas": "Machines",
         "nativo": "Geactiveerde native besparing"
-      }
+      },
+      "sortBy": "Sorteren op {column}",
+      "toastHidden": "Kaart verborgen: {card}",
+      "toastShown": "Kaart zichtbaar: {card}",
+      "toastReset": "Indeling hersteld",
+      "toastSaved": "Alleen in deze browser opgeslagen.",
+      "undo": "Ongedaan maken",
+      "toastRegion": "Meldingen van het paneel",
+      "toastClose": "Melding sluiten"
     },
     "team": {
       "metaTitle": "Team · BiVelio Savings Layer"

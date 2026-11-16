@@ -1,0 +1,96 @@
+/*
+ * Derived from affectUI Pro 'toaster' (https://www.affectui.com). Used under the
+ * affectUI Pro license held by BiVelio. NOT covered by this repository's
+ * Apache-2.0 licence; do not redistribute as a component kit.
+ */
+.ui-tsc {
+  --ui-tsc-card: var(--aui-surface, #ffffff);
+  --ui-tsc-strong: var(--aui-ink, #000000);
+  --ui-tsc-text: var(--aui-muted, rgba(0, 0, 0, 0.61));
+  --ui-tsc-icon: var(--aui-muted, rgba(0, 0, 0, 0.447));
+  --ui-tsc-line: var(--aui-border, rgba(0, 0, 0, 0.1));
+  --ui-tsc-success: var(--aui-success, #1e8a4f);
+  --ui-tsc-accent: var(--brand, rgba(0, 96, 226, 0.765));
+  --ui-tsc-focus: var(--aui-focus, rgba(0, 96, 226, 0.7));
+  /* Toasts float above the page: a hairline with a wide, very soft drop */
+  --ui-tsc-shadow-float: var(--shadow-pop, 0 0 0 0.5px rgba(0, 0, 0, 0.08), 0 1px 2px 0 rgba(0, 0, 0, 0.05), 0 10px 24px -10px rgba(0, 0, 0, 0.14));
+  --ui-tsc-ease: var(--aui-ease, cubic-bezier(0.22, 1, 0.36, 1));
+  --ui-tsc-width: 356px;
+  --ui-tsc-offset: 24px;
+  position: fixed;
+  right: var(--ui-tsc-offset);
+  bottom: max(var(--ui-tsc-offset), env(safe-area-inset-bottom));
+  z-index: 900;
+  box-sizing: border-box;
+  width: var(--ui-tsc-width);
+  max-width: calc(100% - 2 * var(--ui-tsc-offset));
+  margin: 0;
+  padding: 0;
+  font-family: var(--aui-font, var(--font-sans));
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--ui-tsc-text);
+  text-align: left;
+  -webkit-font-smoothing: antialiased;
+  pointer-events: none;
+}
+.ui-tsc *, .ui-tsc *::before, .ui-tsc *::after { box-sizing: border-box; }
+:where(.ui-tsc) button { margin: 0; padding: 0; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+:where(.ui-tsc) svg { display: block; flex: none; }
+.ui-tsc button:focus-visible { outline: 2px solid var(--ui-tsc-focus); outline-offset: 2px; }
+
+.ui-tsc__list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.ui-tsc__toast { pointer-events: auto; animation: ui-tsc-in 240ms var(--ui-tsc-ease) both; }
+
+/* One white card per toast – the edge is a shadow, not a border */
+.ui-tsc__card { position: relative; overflow: hidden; border-radius: var(--aui-radius-lg, 10px); background: var(--ui-tsc-card); box-shadow: var(--ui-tsc-shadow-float); }
+.ui-tsc__content { display: flex; align-items: flex-start; gap: 8px; padding: 12px 10px 12px 12px; }
+.ui-tsc__text { flex: 1; min-width: 0; }
+.ui-tsc__title { font-weight: 500; line-height: 20px; color: var(--ui-tsc-strong); overflow-wrap: anywhere; }
+.ui-tsc__desc { font-size: 13px; line-height: 19px; color: var(--ui-tsc-text); overflow-wrap: anywhere; }
+
+/* Status icon, 16px on the title's line */
+.ui-tsc__icon { display: grid; place-items: center; flex: none; width: 16px; height: 20px; color: var(--ui-tsc-icon); }
+.ui-tsc__icon[data-type="success"] { color: var(--ui-tsc-success); }
+.ui-tsc__icon[data-type="info"] { color: var(--ui-tsc-accent); }
+.ui-tsc__status { width: 16px; height: 16px; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Secondary button: white with the card's hairline */
+.ui-tsc__action {
+  flex: none;
+  align-self: center;
+  min-height: 28px;
+  padding: 3px 10px;
+  border-radius: calc(var(--aui-radius, 7px) - 1px);
+  background: var(--ui-tsc-card);
+  box-shadow: inset 0 0 0 1px var(--ui-tsc-line);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ui-tsc-strong);
+  transition: background-color 140ms ease;
+}
+.ui-tsc__action:hover { background: var(--aui-subtle, rgba(0, 0, 0, 0.04)); }
+.ui-tsc__close { display: grid; place-items: center; flex: none; align-self: center; width: 28px; height: 28px; border-radius: 6px; color: var(--ui-tsc-icon); transition: background-color 140ms ease, color 140ms ease; }
+.ui-tsc__close:hover { background: var(--aui-subtle, rgba(0, 0, 0, 0.04)); color: var(--ui-tsc-strong); }
+.ui-tsc__close svg { width: 14px; height: 14px; }
+/* The time it has left, as a hairline along the bottom; it stops while the pointer or the focus is on the toast */
+.ui-tsc__timer { position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--ui-tsc-line); transform-origin: left center; animation: ui-tsc-timer var(--ui-tsc-ms, 6000ms) linear both; }
+.ui-tsc__toast:is(:hover, :focus-within) .ui-tsc__timer { animation-play-state: paused; }
+
+@keyframes ui-tsc-in { from { opacity: 0; transform: translateY(8px) scale(0.98); } }
+@keyframes ui-tsc-timer { to { transform: scaleX(0); } }
+
+@media (max-width: 520px) {
+  .ui-tsc { --ui-tsc-offset: 12px; left: var(--ui-tsc-offset); right: var(--ui-tsc-offset); width: auto; }
+}
+@media (pointer: coarse) {
+  .ui-tsc__action { min-height: 44px; padding: 3px 14px; }
+  .ui-tsc__close { width: 44px; height: 44px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-tsc__toast { animation: none; }
+  .ui-tsc__timer { display: none; }
+  .ui-tsc__action, .ui-tsc__close { transition: none; }
+}
+@media (forced-colors: active) { .ui-tsc__card { border: 1px solid CanvasText; } }

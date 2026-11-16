@@ -63,7 +63,9 @@
         "free": "Gratis",
         "pro": "Pro",
         "enterprise": "Enterprise"
-      }
+      },
+      "menuLabel": "Menú de la cuenta",
+      "setupNext": "Siguiente:"
     },
     "tour": {
       "open": "Ver tour",
@@ -275,7 +277,10 @@
         "requestsBase": "{share} con contador del proveedor · {period}",
         "requestsBaseNone": "Todas las recibidas · {period}",
         "noPrice": "Sin precio para tarifar este tráfico",
-        "notMeasured": "Nada medido todavía en este periodo"
+        "notMeasured": "Nada medido todavía en este periodo",
+        "costDef": "Lo que facturó tu proveedor por este tráfico, a tus precios. Incluye todas las peticiones con precio, medidas o no.",
+        "savedDef": "Línea base menos coste real, solo en las peticiones con contador del proveedor. Lo estimado y lo de modo sombra nunca entra aquí.",
+        "requestsDef": "Todas las peticiones recibidas en el periodo. Solo las que traen contador del proveedor cuentan para el ahorro acreditado."
       },
       "breakdown": {
         "title": "Coste observado por modelo",
@@ -284,6 +289,21 @@
         "coverageFull": "El desglose cubre todo el coste observado del periodo.",
         "coveragePartial": "El desglose por modelo cubre el {coverage} del coste observado del periodo; el resto no tiene modelo atribuido.",
         "coverageUnknown": "No se puede comparar con el coste observado del periodo."
+      },
+      "pulse": {
+        "chartTitle": "Línea base y coste real, día a día",
+        "seriesBaseline": "Línea base medida",
+        "seriesActual": "Coste real medido",
+        "seriesSaved": "Ahorro acreditado del día",
+        "band": "Ahorro acreditado",
+        "chartAria": "Línea base y coste real por día. Usa las flechas izquierda y derecha para leer cada día.",
+        "gap": "Sin peticiones medidas este día",
+        "chartFoot": "Solo peticiones con contador del proveedor ({share} del tráfico) · {period}. Un día sin medición es un hueco, no un cero.",
+        "providersTitle": "Uso por proveedor",
+        "measureCost": "Coste real",
+        "measureTokens": "Tokens",
+        "measuresAria": "Medida",
+        "barAria": "{company}: {value}. Pulsa para ver sus modelos."
       }
     },
     "proof": {
@@ -533,7 +553,8 @@
       "accountCta": "Revisar Cuenta",
       "installCta": "Completar instalación",
       "exportCsv": "Exportar CSV",
-      "exportJson": "Exportar JSON"
+      "exportJson": "Exportar JSON",
+      "badgeDef": "Telemetría SHADOW: una hipótesis de lo que se habría ahorrado. No está medida, no se factura y nunca se suma al ahorro acreditado."
     },
     "scenarioTable": {
       "colScenario": "escenario",
@@ -673,7 +694,13 @@
       "failedBody": "Es un fallo de lectura, no una lista vacía. Recarga en un momento.",
       "hiddenTitle": "La tarjeta de máquinas está oculta",
       "hiddenBody": "La ocultaste al personalizar el panel. Sus datos se siguen midiendo.",
-      "show": "Mostrar tarjeta"
+      "show": "Mostrar tarjeta",
+      "seatsTitle": "Asientos en uso este mes",
+      "seatsOf": "{seats, plural, one {de # pagado} other {de # pagados}}",
+      "seatsFull": "todos en uso",
+      "seatsOver": "por encima de los pagados",
+      "seatsNote": "Un asiento es una máquina o una identidad de servicio, nunca una persona.",
+      "seatsRotated": "Este mes se rotó una clave de servicio: el recuento puede contar la misma máquina dos veces."
     },
     "installLicensePanel": {
       "eyebrow": "Empezar",
@@ -1104,7 +1131,15 @@
         "sesiones": "Sesiones",
         "maquinas": "Máquinas",
         "nativo": "Ahorro nativo activado"
-      }
+      },
+      "sortBy": "Ordenar por {column}",
+      "toastHidden": "Tarjeta oculta: {card}",
+      "toastShown": "Tarjeta visible: {card}",
+      "toastReset": "Disposición restablecida",
+      "toastSaved": "Guardado solo en este navegador.",
+      "undo": "Deshacer",
+      "toastRegion": "Avisos del panel",
+      "toastClose": "Cerrar aviso"
     },
     "team": {
       "metaTitle": "Equipo · BiVelio Savings Layer"

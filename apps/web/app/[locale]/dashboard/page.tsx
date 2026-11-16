@@ -27,6 +27,7 @@ import { MedirSavingsCard } from "./components/MedirSavingsCard";
 import { ShadowOpportunitiesCard } from "./components/ShadowOpportunitiesCard";
 import { ResumenKpis } from "./components/ResumenKpis";
 import { DesgloseModelos } from "./components/DesgloseModelos";
+import { PulsoDelPeriodo } from "./components/PulsoDelPeriodo";
 
 export const dynamic = "force-dynamic";
 
@@ -61,6 +62,7 @@ export default async function OverviewPage({
     visibilidad,
     orgId,
     orgFallo,
+    asientos: medidaDeAsientos,
   } = await loadDashboard();
   const rango = rangoDesdeParametro((await searchParams).range);
   const usage = rango === RANGO_POR_DEFECTO ? usageCompleto : cortarPorPeriodo(usageCompleto, rango);
@@ -130,6 +132,7 @@ export default async function OverviewPage({
           <VerdictHero usage={usage} failed={usageFailed} visibilidad={visibilidad} rango={rango} integrado={integrado} />
           {ctx.medir === "solo-medir" ? <MedirSavingsCard usage={usage} /> : null}
           {hayUso ? <ResumenKpis usage={usage} rango={rango} steps={steps} /> : null}
+          {hayUso ? <PulsoDelPeriodo usage={usage} porModelo={porModeloFailed ? [] : porModelo} rango={rango} /> : null}
         </div>
       </section>
 
@@ -193,7 +196,18 @@ export default async function OverviewPage({
             {
               id: "maquinas",
               titulo: t("panel.cards.maquinas"),
-              contenido: <MaquinasCard asientos={asientos.rows} fallo={asientos.failed} />,
+              contenido: (
+                <MaquinasCard
+                  asientos={asientos.rows}
+                  fallo={asientos.failed}
+                  // La misma lectura que la cifra «N de M» del raíl; sin ella, sin medidor.
+                  seats={
+                    typeof medidaDeAsientos.usados === "number" && typeof ctx.seats === "number"
+                      ? { used: medidaDeAsientos.usados, seats: ctx.seats, rotated: medidaDeAsientos.rotacionEsteMes }
+                      : undefined
+                  }
+                />
+              ),
               // El raíl enlaza a `#maquinas`: con la tarjeta oculta, el ancla
               // sigue existiendo y ofrece volver a mostrarla.
               ancla: {

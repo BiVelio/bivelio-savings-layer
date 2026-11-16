@@ -63,7 +63,9 @@
         "free": "Free",
         "pro": "Pro",
         "enterprise": "Enterprise"
-      }
+      },
+      "menuLabel": "Account menu",
+      "setupNext": "Next:"
     },
     "tour": {
       "open": "Take the tour",
@@ -275,7 +277,10 @@
         "requestsBase": "{share} with a provider counter · {period}",
         "requestsBaseNone": "All received · {period}",
         "noPrice": "No price to rate this traffic",
-        "notMeasured": "Nothing measured yet in this period"
+        "notMeasured": "Nothing measured yet in this period",
+        "costDef": "What your provider billed for this traffic, at your prices. It includes every priced request, measured or not.",
+        "savedDef": "Baseline minus actual cost, only on requests with a provider counter. Estimates and shadow-mode figures never enter here.",
+        "requestsDef": "Every request received in the period. Only those with a provider counter count towards credited savings."
       },
       "breakdown": {
         "title": "Observed cost by model",
@@ -284,6 +289,21 @@
         "coverageFull": "The breakdown covers all the observed cost for the period.",
         "coveragePartial": "The per-model breakdown covers {coverage} of the observed cost for the period; the rest has no model attributed.",
         "coverageUnknown": "It cannot be compared with the observed cost for the period."
+      },
+      "pulse": {
+        "chartTitle": "Baseline and actual cost, day by day",
+        "seriesBaseline": "Measured baseline",
+        "seriesActual": "Measured actual cost",
+        "seriesSaved": "Credited savings that day",
+        "band": "Credited savings",
+        "chartAria": "Baseline and actual cost per day. Use the left and right arrow keys to read each day.",
+        "gap": "No measured requests that day",
+        "chartFoot": "Requests with a provider counter only ({share} of traffic) · {period}. A day without measurement is a gap, not a zero.",
+        "providersTitle": "Usage by provider",
+        "measureCost": "Actual cost",
+        "measureTokens": "Tokens",
+        "measuresAria": "Measure",
+        "barAria": "{company}: {value}. Press to see its models."
       }
     },
     "proof": {
@@ -533,7 +553,8 @@
       "accountCta": "Review Account",
       "installCta": "Complete installation",
       "exportCsv": "Export CSV",
-      "exportJson": "Export JSON"
+      "exportJson": "Export JSON",
+      "badgeDef": "SHADOW telemetry: a hypothesis of what would have been saved. It is not measured, not billed and never added to credited savings."
     },
     "scenarioTable": {
       "colScenario": "scenario",
@@ -673,7 +694,13 @@
       "failedBody": "This is a read failure, not an empty list. Reload in a moment.",
       "hiddenTitle": "The machines card is hidden",
       "hiddenBody": "You hid it when customizing the dashboard. Its data is still being measured.",
-      "show": "Show card"
+      "show": "Show card",
+      "seatsTitle": "Seats in use this month",
+      "seatsOf": "{seats, plural, one {of # paid} other {of # paid}}",
+      "seatsFull": "all in use",
+      "seatsOver": "above the paid seats",
+      "seatsNote": "A seat is a machine or a service identity, never a person.",
+      "seatsRotated": "A service key was rotated this month: the count may include the same machine twice."
     },
     "installLicensePanel": {
       "eyebrow": "Get started",
@@ -1104,7 +1131,15 @@
         "sesiones": "Sessions",
         "maquinas": "Machines",
         "nativo": "Native savings unlocked"
-      }
+      },
+      "sortBy": "Sort by {column}",
+      "toastHidden": "Card hidden: {card}",
+      "toastShown": "Card shown: {card}",
+      "toastReset": "Layout reset",
+      "toastSaved": "Saved in this browser only.",
+      "undo": "Undo",
+      "toastRegion": "Panel notices",
+      "toastClose": "Dismiss notice"
     },
     "team": {
       "metaTitle": "Team · BiVelio Savings Layer"

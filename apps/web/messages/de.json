@@ -63,7 +63,9 @@
         "free": "Kostenlos",
         "pro": "Pro",
         "enterprise": "Enterprise"
-      }
+      },
+      "menuLabel": "Kontomenü",
+      "setupNext": "Als Nächstes:"
     },
     "tour": {
       "open": "Tour ansehen",
@@ -275,7 +277,10 @@
         "requestsBase": "{share} mit Zähler des Providers · {period}",
         "requestsBaseNone": "Alle eingegangenen · {period}",
         "noPrice": "Kein Preis, um diesen Traffic zu bewerten",
-        "notMeasured": "In diesem Zeitraum ist noch nichts gemessen"
+        "notMeasured": "In diesem Zeitraum ist noch nichts gemessen",
+        "costDef": "Was dein Provider für diesen Traffic berechnet hat, zu deinen Preisen. Umfasst alle bepreisten Anfragen, gemessen oder nicht.",
+        "savedDef": "Baseline minus tatsächliche Kosten, nur bei Anfragen mit Zähler des Providers. Schätzungen und Shadow-Werte fließen hier nie ein.",
+        "requestsDef": "Alle im Zeitraum eingegangenen Anfragen. Nur die mit Zähler des Providers zählen für die angerechnete Ersparnis."
       },
       "breakdown": {
         "title": "Beobachtete Kosten pro Modell",
@@ -284,6 +289,21 @@
         "coverageFull": "Die Aufschlüsselung deckt die gesamten beobachteten Kosten des Zeitraums ab.",
         "coveragePartial": "Die Aufschlüsselung pro Modell deckt {coverage} der beobachteten Kosten des Zeitraums ab; dem Rest ist kein Modell zugeordnet.",
         "coverageUnknown": "Ein Vergleich mit den beobachteten Kosten des Zeitraums ist nicht möglich."
+      },
+      "pulse": {
+        "chartTitle": "Baseline und tatsächliche Kosten, Tag für Tag",
+        "seriesBaseline": "Gemessene Baseline",
+        "seriesActual": "Gemessene tatsächliche Kosten",
+        "seriesSaved": "Angerechnete Ersparnis des Tages",
+        "band": "Angerechnete Ersparnis",
+        "chartAria": "Baseline und tatsächliche Kosten pro Tag. Mit den Pfeiltasten links und rechts jeden Tag ablesen.",
+        "gap": "Keine gemessenen Anfragen an diesem Tag",
+        "chartFoot": "Nur Anfragen mit Zähler des Providers ({share} des Traffics) · {period}. Ein Tag ohne Messung ist eine Lücke, keine Null.",
+        "providersTitle": "Nutzung nach Provider",
+        "measureCost": "Tatsächliche Kosten",
+        "measureTokens": "Tokens",
+        "measuresAria": "Messgröße",
+        "barAria": "{company}: {value}. Drücken, um die Modelle zu sehen."
       }
     },
     "proof": {
@@ -533,7 +553,8 @@
       "accountCta": "Konto prüfen",
       "installCta": "Installation abschließen",
       "exportCsv": "CSV exportieren",
-      "exportJson": "JSON exportieren"
+      "exportJson": "JSON exportieren",
+      "badgeDef": "SHADOW-Telemetrie: eine Hypothese darüber, was eingespart worden wäre. Nicht gemessen, nicht berechnet und nie zur angerechneten Ersparnis addiert."
     },
     "scenarioTable": {
       "colScenario": "Szenario",
@@ -673,7 +694,13 @@
       "failedBody": "Das ist ein Lesefehler, keine leere Liste. Lade gleich noch einmal neu.",
       "hiddenTitle": "Die Maschinen-Karte ist ausgeblendet",
       "hiddenBody": "Du hast sie beim Anpassen des Dashboards ausgeblendet. Ihre Daten werden weiterhin gemessen.",
-      "show": "Karte anzeigen"
+      "show": "Karte anzeigen",
+      "seatsTitle": "Plätze in Gebrauch diesen Monat",
+      "seatsOf": "{seats, plural, one {von # bezahltem} other {von # bezahlten}}",
+      "seatsFull": "alle in Gebrauch",
+      "seatsOver": "über den bezahlten Plätzen",
+      "seatsNote": "Ein Platz ist eine Maschine oder eine Dienstidentität, nie eine Person.",
+      "seatsRotated": "In diesem Monat wurde ein Dienstschlüssel rotiert: Die Zählung kann dieselbe Maschine doppelt enthalten."
     },
     "installLicensePanel": {
       "eyebrow": "Erste Schritte",
@@ -1104,7 +1131,15 @@
         "sesiones": "Sitzungen",
         "maquinas": "Maschinen",
         "nativo": "Aktivierte native Ersparnis"
-      }
+      },
+      "sortBy": "Nach {column} sortieren",
+      "toastHidden": "Karte ausgeblendet: {card}",
+      "toastShown": "Karte eingeblendet: {card}",
+      "toastReset": "Anordnung zurückgesetzt",
+      "toastSaved": "Nur in diesem Browser gespeichert.",
+      "undo": "Rückgängig",
+      "toastRegion": "Hinweise des Panels",
+      "toastClose": "Hinweis schließen"
     },
     "team": {
       "metaTitle": "Team · BiVelio Savings Layer"

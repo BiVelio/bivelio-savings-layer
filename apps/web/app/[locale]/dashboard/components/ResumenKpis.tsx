@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { getTranslations } from "next-intl/server";
 
 import { ArrowRightIcon, CheckIcon, InstallIcon } from "@/app/components/icons";
+import { Termino } from "@/app/components/app/Termino";
 import { EvidenceBadge } from "@/app/components/ui";
 import { Link } from "@/i18n/navigation";
 import { KpiBoard, KpiFocus, KpiStat } from "@/vendor/affectui/kpi-board";
@@ -124,14 +125,14 @@ export async function ResumenKpis({
   return (
     <KpiBoard label={t("overview.kpi.label")} className="ov-kpis">
       <KpiStat
-        label={t("overview.kpi.cost")}
+        label={<Termino definicion={t("overview.kpi.costDef")}>{t("overview.kpi.cost")}</Termino>}
         value={conPrecio ? money(coste) : undefined}
         empty={sinPrecio}
         base={conPrecio ? t("overview.kpi.costBase", { period: periodo }) : undefined}
         series={conPrecio ? serieDiaria(usage, (r) => r.actualCost) : undefined}
       />
       <KpiStat
-        label={t("overview.kpi.saved")}
+        label={<Termino definicion={t("overview.kpi.savedDef")}>{t("overview.kpi.saved")}</Termino>}
         value={v.kind === "measured" ? moneySigned(v.saved) : undefined}
         tone={v.kind === "measured" ? (v.tone === "neg" ? "bad" : "good") : "neutral"}
         empty={v.kind === "unpriced" ? sinPrecio : sinMedir}
@@ -139,7 +140,7 @@ export async function ResumenKpis({
         badge={v.kind === "measured" ? <EvidenceBadge tipo="tus-datos" label={u("evidence.tusDatos")} pequeno /> : undefined}
       />
       <KpiStat
-        label={t("overview.kpi.requests")}
+        label={<Termino definicion={t("overview.kpi.requestsDef")}>{t("overview.kpi.requests")}</Termino>}
         value={intfmt(peticiones)}
         base={
           v.kind === "measured"

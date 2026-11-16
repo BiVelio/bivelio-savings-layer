@@ -36,40 +36,37 @@ function liveValue(usage: UsageRollup[], key: string): number | null {
 export async function LiveLedgerTiles({ usage }: { usage: UsageRollup[] }) {
   const t = await getTranslations("dashboard");
   return (
-    <>
-      <div className="kpis">
+    <div className="card card-pad ox-card">
+      <div className="n card-title">{t("panel.cards.libros")}</div>
+      <dl className="ox-tiles four">
         {LIVE.map((l) => {
           const v = liveValue(usage, l.key);
           return (
-            <div key={l.key} className="kpi">
-              <div className="n">
+            <div key={l.key}>
+              <dt className="ox-ledger">
                 <span className="ltag" style={{ background: LEDGER_COLOR[l.key] ?? "var(--muted)" }} />
                 {l.key}
-              </div>
+              </dt>
               {v == null ? (
                 <>
-                  <div className="v empty ck-num">—</div>
-                  <div className="sub">{t(`liveLedgerTiles.${l.whatKey}`)}</div>
-                  <div className="ghost">
-                    {t("liveLedgerTiles.ghostAwaiting")}
-                  </div>
+                  <dd className="empty">—</dd>
+                  <dd className="ox-what">{t(`liveLedgerTiles.${l.whatKey}`)}</dd>
+                  <dd className="ox-what ox-ghost">{t("liveLedgerTiles.ghostAwaiting")}</dd>
                 </>
               ) : (
                 <>
-                  <div className="v pos ck-num">{intfmt(v)}</div>
-                  <div className="sub">{t(`liveLedgerTiles.${l.whatKey}`)}</div>
+                  <dd className="pos">{intfmt(v)}</dd>
+                  <dd className="ox-what">{t(`liveLedgerTiles.${l.whatKey}`)}</dd>
                 </>
               )}
-              {l.key === "eliminated_tokens" ? (
-                <div className="sub">{t("liveLedgerTiles.elisionNota")}</div>
-              ) : null}
+              {l.key === "eliminated_tokens" ? <dd className="ox-what ox-caveat">{t("liveLedgerTiles.elisionNota")}</dd> : null}
             </div>
           );
         })}
-      </div>
-      <p className="footnote">
+      </dl>
+      <p className="ck-note ox-foot">
         {t.rich("liveLedgerTiles.footnote", { b: (chunks) => <b>{chunks}</b> })}
       </p>
-    </>
+    </div>
   );
 }

@@ -1,0 +1,62 @@
+/*
+ * Derived from affectUI Pro 'badge' (https://www.affectui.com). Used under the
+ * affectUI Pro license held by BiVelio. NOT covered by this repository's
+ * Apache-2.0 licence; do not redistribute as a component kit.
+ */
+.ui-bdgc {
+  --ui-bdgc-neutral-bg: var(--surface-2, rgba(0, 0, 0, 0.06));
+  --ui-bdgc-neutral-fg: var(--ink-soft, rgba(0, 0, 0, 0.61));
+  --ui-bdgc-neutral-dot: rgba(15, 18, 24, 0.3);
+  --ui-bdgc-info-bg: var(--brand-soft, #008ff519);
+  --ui-bdgc-info-fg: var(--brand, #006dcb);
+  --ui-bdgc-success-bg: color-mix(in srgb, var(--good-ink, #1e7a4c) 10%, transparent);
+  --ui-bdgc-success-fg: var(--good-ink, #1e7a4c);
+  --ui-bdgc-warning-bg: color-mix(in srgb, var(--warn, #b25e00) 14%, transparent);
+  --ui-bdgc-warning-fg: var(--warn, #b25e00);
+  --ui-bdgc-danger-bg: color-mix(in srgb, var(--danger, #d72400) 10%, transparent);
+  --ui-bdgc-danger-fg: var(--danger, #d72400);
+
+  --bg: var(--ui-bdgc-neutral-bg);
+  --fg: var(--ui-bdgc-neutral-fg);
+  --dot: currentColor;
+  --h: 20px;
+  --pad: 7px;
+  --lead: 6px;
+
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 5px;
+  box-sizing: border-box;
+  max-width: 100%;
+  min-height: var(--h);
+  padding: 1px var(--pad);
+  border-radius: var(--aui-radius-sm, 5px);
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--aui-font, var(--font-sans));
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0;
+  vertical-align: middle;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+.ui-bdgc[data-size="sm"] { --h: 18px; --pad: 6px; --lead: 4px; gap: 4px; font-size: 11px; }
+/* A dot in front sits a little closer to the edge */
+.ui-bdgc[data-lead] { padding-inline-start: var(--lead); }
+.ui-bdgc[data-caps] { font-family: var(--aui-font-mono, var(--font-mono)); font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; }
+
+.ui-bdgc[data-tone="neutral"] { --dot: var(--ui-bdgc-neutral-dot); }
+.ui-bdgc[data-tone="info"] { --bg: var(--ui-bdgc-info-bg); --fg: var(--ui-bdgc-info-fg); }
+.ui-bdgc[data-tone="success"] { --bg: var(--ui-bdgc-success-bg); --fg: var(--ui-bdgc-success-fg); }
+.ui-bdgc[data-tone="warning"] { --bg: var(--ui-bdgc-warning-bg); --fg: var(--ui-bdgc-warning-fg); }
+.ui-bdgc[data-tone="danger"] { --bg: var(--ui-bdgc-danger-bg); --fg: var(--ui-bdgc-danger-fg); }
+/* outline: a hairline instead of a fill – for a fact that is a label, not a state */
+.ui-bdgc[data-variant="outline"] { background: none; box-shadow: inset 0 0 0 1px var(--line, rgba(0, 0, 0, 0.1)); }
+
+/* BiVelio: the label WRAPS instead of ending in … (twelve languages) */
+.ui-bdgc__label { min-width: 0; overflow-wrap: anywhere; }
+.ui-bdgc__dot { flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--dot); }
+@media (forced-colors: active) { .ui-bdgc { border: 1px solid CanvasText; } }

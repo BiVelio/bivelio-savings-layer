@@ -63,7 +63,9 @@
         "free": "Miễn phí",
         "pro": "Pro",
         "enterprise": "Enterprise"
-      }
+      },
+      "menuLabel": "Menu tài khoản",
+      "setupNext": "Tiếp theo:"
     },
     "tour": {
       "open": "Xem hướng dẫn",
@@ -275,7 +277,10 @@
         "requestsBase": "{share} có bộ đếm của nhà cung cấp · {period}",
         "requestsBaseNone": "Tất cả yêu cầu đã nhận · {period}",
         "noPrice": "Chưa có giá để tính cho lưu lượng này",
-        "notMeasured": "Chưa đo được gì trong kỳ này"
+        "notMeasured": "Chưa đo được gì trong kỳ này",
+        "costDef": "Khoản nhà cung cấp đã tính cho lưu lượng này, theo giá của bạn. Bao gồm mọi yêu cầu có giá, dù đã đo hay chưa.",
+        "savedDef": "Đường cơ sở trừ chi phí thực, chỉ trên các yêu cầu có bộ đếm của nhà cung cấp. Số ước tính và số của chế độ shadow không bao giờ được tính vào đây.",
+        "requestsDef": "Mọi yêu cầu nhận được trong kỳ. Chỉ những yêu cầu có bộ đếm của nhà cung cấp mới được tính vào khoản tiết kiệm được ghi nhận."
       },
       "breakdown": {
         "title": "Chi phí quan sát được theo mô hình",
@@ -284,6 +289,21 @@
         "coverageFull": "Phần phân tách bao trùm toàn bộ chi phí quan sát được của kỳ.",
         "coveragePartial": "Phần phân tách theo mô hình bao trùm {coverage} chi phí quan sát được của kỳ; phần còn lại chưa được gán mô hình.",
         "coverageUnknown": "Không thể so sánh với chi phí quan sát được của kỳ."
+      },
+      "pulse": {
+        "chartTitle": "Đường cơ sở và chi phí thực, theo từng ngày",
+        "seriesBaseline": "Đường cơ sở đã đo",
+        "seriesActual": "Chi phí thực đã đo",
+        "seriesSaved": "Khoản tiết kiệm được ghi nhận trong ngày",
+        "band": "Khoản tiết kiệm được ghi nhận",
+        "chartAria": "Đường cơ sở và chi phí thực theo ngày. Dùng phím mũi tên trái và phải để đọc từng ngày.",
+        "gap": "Không có yêu cầu nào được đo trong ngày này",
+        "chartFoot": "Chỉ các yêu cầu có bộ đếm của nhà cung cấp ({share} lưu lượng) · {period}. Một ngày không đo là khoảng trống, không phải số không.",
+        "providersTitle": "Mức sử dụng theo nhà cung cấp",
+        "measureCost": "Chi phí thực",
+        "measureTokens": "Token",
+        "measuresAria": "Thước đo",
+        "barAria": "{company}: {value}. Nhấn để xem các mô hình."
       }
     },
     "proof": {
@@ -533,7 +553,8 @@
       "accountCta": "Xem Tài khoản",
       "installCta": "Hoàn tất cài đặt",
       "exportCsv": "Xuất CSV",
-      "exportJson": "Xuất JSON"
+      "exportJson": "Xuất JSON",
+      "badgeDef": "Dữ liệu đo từ xa SHADOW: một giả thuyết về khoản lẽ ra đã tiết kiệm được. Không được đo, không được tính phí và không bao giờ cộng vào khoản tiết kiệm được ghi nhận."
     },
     "scenarioTable": {
       "colScenario": "kịch bản",
@@ -673,7 +694,13 @@
       "failedBody": "Đây là lỗi đọc, không phải danh sách trống. Hãy tải lại sau giây lát.",
       "hiddenTitle": "Thẻ máy đang bị ẩn",
       "hiddenBody": "Bạn đã ẩn thẻ này khi tùy chỉnh bảng điều khiển. Dữ liệu của nó vẫn đang được đo.",
-      "show": "Hiện thẻ"
+      "show": "Hiện thẻ",
+      "seatsTitle": "Chỗ đang dùng trong tháng này",
+      "seatsOf": "{seats, plural, other {trên # chỗ đã trả tiền}}",
+      "seatsFull": "đã dùng hết",
+      "seatsOver": "vượt số chỗ đã trả tiền",
+      "seatsNote": "Một chỗ là một máy hoặc một danh tính dịch vụ, không bao giờ là một người.",
+      "seatsRotated": "Tháng này đã xoay một khóa dịch vụ: số đếm có thể tính cùng một máy hai lần."
     },
     "installLicensePanel": {
       "eyebrow": "Bắt đầu",
@@ -1104,7 +1131,15 @@
         "sesiones": "Phiên",
         "maquinas": "Máy",
         "nativo": "Khoản tiết kiệm gốc đã kích hoạt"
-      }
+      },
+      "sortBy": "Sắp xếp theo {column}",
+      "toastHidden": "Đã ẩn thẻ: {card}",
+      "toastShown": "Đã hiện thẻ: {card}",
+      "toastReset": "Đã khôi phục bố cục",
+      "toastSaved": "Chỉ lưu trên trình duyệt này.",
+      "undo": "Hoàn tác",
+      "toastRegion": "Thông báo của bảng điều khiển",
+      "toastClose": "Đóng thông báo"
     },
     "team": {
       "metaTitle": "Nhóm · BiVelio Savings Layer"

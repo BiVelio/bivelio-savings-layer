@@ -3,9 +3,13 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { MachinesIcon } from "@/app/components/icons";
 import { EmptyState, EvidenceBadge } from "@/app/components/ui";
 import { COMISIONAR_REFERENCIA } from "@/lib/billing/tarifa";
+import { Badge, type BadgeTone } from "@/vendor/affectui/badge";
+import { DataTable } from "@/vendor/affectui/data-table";
+import { Tooltip } from "@/vendor/affectui/tooltip";
+import { UsageMeter } from "@/vendor/affectui/usage-meter";
 import { estadoVersion, type AsientoVisto } from "@/lib/version/aviso-version";
 
-import { money } from "../format";
+import { money, pct0Floor } from "../format";
 
 /**
  * Una fila por máquina que reporta uso (seat_activity, 0024): superficie,
@@ -34,17 +38,36 @@ import { money } from "../format";
  * la propia petición más lo medido por referencia (0031) cuando
  * COMISIONAR_REFERENCIA lo comisiona. Si alguna máquina tiene referencia en la
  * semana, una nota lo dice: que nadie lea esa cifra como solo contador propio.
+ *
+ * «ESPECTACULAR» 2026-11 — tres piezas de affectUI, y ninguna editable:
+ *  · Data Table en SOLO LECTURA: se ordena por columna (id, superficie, última
+ *    actividad, ahorro) y nada más. Sin celdas que parezcan editables.
+ *  · Usage Meter reducido a ASIENTOS: en uso frente a pagados, la misma
+ *    lectura del raíl (`medirAsientos` + `ctx.seats`). Sin esa lectura no hay
+ *    medidor: no se pinta un «0 de N». No hay créditos ni cuotas que enseñar.
+ *  · Tooltip con el id entero cuando la celda lo recorta, y Badge para el
+ *    estado de versión (con palabras, además del tono).
  */
 const MAX_FILAS = 12;
 
 const sinPrefijo = (v: string) => v.replace(/^(gateway|sdk)\//, "");
 
-export async function MaquinasCard({ asientos, fallo = false }: { asientos: AsientoVisto[]; /** La lectura de asientos falló: no es «sin máquinas». */ fallo?: boolean }) {
+export async function MaquinasCard({
+  asientos,
+  fallo = false,
+  seats,
+}: {
+  asientos: AsientoVisto[];
+  /** La lectura de asientos falló: no es «sin máquinas». */
+  fallo?: boolean;
+  /** Asientos en uso y pagados este mes. Sin lectura, `undefined`: no hay medidor. */
+  seats?: { used: number; seats: number; /** Se rotó una clave este mes: el recuento puede venir inflado. */ rotated?: boolean };
+}) {
   const t = await getTranslations("dashboard.maquinas");
   const u = await getTranslations("ui");
   if (asientos.length === 0) {
     return (
-      <div className="card card-pad" id="maquinas">
+      <div className="card card-pad ox-card" id="maquinas">
         <div className="n card-title">{t("title")}</div>
         {fallo ? (
           <EmptyState compacto sinCaja alInicio como="p" icono={<MachinesIcon />} titulo={t("failedTitle")} texto={t("failedBody")} />
@@ -82,64 +105,85 @@ export async function MaquinasCard({ asientos, fallo = false }: { asientos: Asie
     if (a.versionMax !== null && a.versionMax !== a.versionMin) return `${sinPrefijo(a.versionMin)}–${sinPrefijo(a.versionMax)}`;
     return sinPrefijo(a.versionMin);
   };
-  const chip = (a: AsientoVisto): { texto: string; color: string } | null => {
+  const chip = (a: AsientoVisto): { texto: string; tono: BadgeTone } | null => {
     if (a.surface === "sdk") return null;
     switch (estadoVersion(a)) {
       case "alDia":
-        return { texto: t("chipOk"), color: "var(--ink-soft)" };
+        return { texto: t("chipOk"), tono: "success" };
       case "desactualizada":
-        return { texto: t("chipOutdated"), color: "var(--warn)" };
+        return { texto: t("chipOutdated"), tono: "warning" };
       case "desconocida":
         // Sin versión alguna la columna ya lo dice; el chip solo aporta cuando
         // hay versión Y algún registro de 7 días llegó sin ella.
-        return a.versionMin === null ? null : { texto: t("chipMixed"), color: "var(--warn)" };
+        return a.versionMin === null ? null : { texto: t("chipMixed"), tono: "warning" };
     }
   };
+  const p = await getTranslations("dashboard.panel");
+  const lleno = seats ? seats.used >= seats.seats : false;
 
   return (
-    <div className="card card-pad" id="maquinas">
+    <div className="card card-pad ox-card" id="maquinas">
       <div className="card-head">
         <div className="n">{t("title")}</div>
         <EvidenceBadge tipo="tus-datos" label={u("evidence.tusDatos")} pequeno />
       </div>
-      <div className="tbl-scroll">
-        <table className="dt">
-          <thead>
-            <tr>
-              <th scope="col">{t("colSeat")}</th>
-              <th scope="col">{t("colSurface")}</th>
-              <th scope="col">{t("colVersion")}</th>
-              <th scope="col">{t("colState")}</th>
-              <th scope="col">{t("colLastSeen")}</th>
-              <th scope="col" className="dt-num">{t("colSavings7d")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {maquinas.map((a) => {
-              const c = chip(a);
-              return (
-                <tr key={a.seatId}>
-                  <td className="dt-mono">{a.seatId.length > 14 ? `${a.seatId.slice(0, 10)}…` : a.seatId}</td>
-                  <td>{a.surface ?? "—"}</td>
-                  <td className="dt-mono">{version(a)}</td>
-                  <td>{c ? <span className="dt-chip" style={{ color: c.color }}>{c.texto}</span> : null}</td>
-                  <td>{fecha(a.lastSeenAt)}</td>
-                  <td className="dt-num dt-mono">{money(a.ahorroMedido7dUsd)}</td>
-                </tr>
-              );
-            })}
-            {ci.length > 0 ? (
-              <tr className="dt-soft">
-                <td colSpan={5}>{t("ciRow", { n: ci.length })}</td>
-                <td className="dt-num dt-mono">{money(ciAhorro)}</td>
-              </tr>
-            ) : null}
-          </tbody>
-        </table>
-      </div>
-      <p className="ck-note" style={{ marginTop: 8, marginBottom: 0 }}>{t("hint")}</p>
+      {seats && seats.seats > 0 ? (
+        <UsageMeter
+          className="ox-seats"
+          framed
+          title={t("seatsTitle")}
+          used={seats.used}
+          limit={seats.seats}
+          figure={String(seats.used)}
+          ofLabel={t("seatsOf", { seats: seats.seats })}
+          shareLabel={pct0Floor(Math.min(1, seats.used / seats.seats))}
+          state={lleno ? "limit" : "ok"}
+          stateLabel={seats.used > seats.seats ? t("seatsOver") : t("seatsFull")}
+          note={seats.rotated ? `${t("seatsNote")} ${t("seatsRotated")}` : t("seatsNote")}
+        />
+      ) : null}
+      <DataTable
+        caption={t("title")}
+        sortLabel={p("sortBy", { column: "{column}" })}
+        minWidth={620}
+        columns={[
+          { key: "seat", label: t("colSeat"), mono: true, nowrap: true, sortable: true },
+          { key: "surface", label: t("colSurface"), sortable: true },
+          { key: "version", label: t("colVersion"), mono: true, nowrap: true },
+          { key: "state", label: t("colState") },
+          { key: "last", label: t("colLastSeen"), nowrap: true, sortable: true },
+          { key: "saved", label: t("colSavings7d"), align: "end", mono: true, sortable: true },
+        ]}
+        rows={maquinas.map((a) => {
+          const c = chip(a);
+          const corto = a.seatId.length > 14;
+          const visto = Date.parse(a.lastSeenAt);
+          return {
+            id: a.seatId,
+            cells: {
+              seat: {
+                sort: a.seatId,
+                content: corto ? (
+                  <Tooltip content={a.seatId} tapToggles delay={200} align="start">
+                    <button type="button" className="ox-id">{`${a.seatId.slice(0, 10)}…`}</button>
+                  </Tooltip>
+                ) : (
+                  a.seatId
+                ),
+              },
+              surface: { sort: a.surface ?? null, content: a.surface ?? "—", quiet: !a.surface },
+              version: { content: version(a), quiet: a.versionMin === null },
+              state: { content: c ? <Badge tone={c.tono} dot>{c.texto}</Badge> : null },
+              last: { sort: Number.isNaN(visto) ? null : visto, content: fecha(a.lastSeenAt) },
+              saved: { sort: a.ahorroMedido7dUsd, content: money(a.ahorroMedido7dUsd) },
+            },
+          };
+        })}
+        summary={ci.length > 0 ? { label: t("ciRow", { n: ci.length }), value: money(ciAhorro) } : undefined}
+      />
+      <p className="ck-note ox-foot">{t("hint")}</p>
       {COMISIONAR_REFERENCIA && asientos.some((a) => a.ahorroReferencia7dUsd > 0) ? (
-        <p className="ck-note" style={{ marginTop: 6, marginBottom: 0 }}>{t("referenceHint")}</p>
+        <p className="ck-note ox-foot">{t("referenceHint")}</p>
       ) : null}
     </div>
   );
