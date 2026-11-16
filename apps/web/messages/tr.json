@@ -213,7 +213,7 @@
     "useAnotherEmail": "Başka bir e-posta kullan",
     "requestNewLink": "Yeni bir bağlantı iste",
     "successNext": "Sonraki adım: paketi kurun ve ilk çağrınızı bağlayın. O zamana kadar panelin ölçecek bir şeyi yok.",
-    "successPlan": "Seçtiğiniz plan seçili kalır: bir sonraki adımda onaylarsınız.",
+    "successPlan": "Bir plan seçtiniz: paneldeki Hesap bölümünde onaylarsınız. Henüz hiçbir şey satın alınmadı.",
     "successInvite": "Kabul edebilmeniz için sizi davetinize geri götürüyoruz.",
     "successContinue": "Devam et",
     "panel": {
@@ -284,6 +284,12 @@
         "coverageFull": "Döküm, dönemin gözlenen maliyetinin tamamını kapsıyor.",
         "coveragePartial": "Modele göre döküm, dönemin gözlenen maliyetinin {coverage} kadarını kapsıyor; geri kalanına model atanmamış.",
         "coverageUnknown": "Dönemin gözlenen maliyetiyle karşılaştırılamıyor."
+      },
+      "planChosen": {
+        "title": "{plan} planını seçtiniz",
+        "body": "Henüz hiçbir şey satın alınmadı. Planı ve koltuk sayısını Hesap bölümünde onaylayın; ödeme Stripe’ta yapılır.",
+        "cta": "Hesap bölümünde onayla",
+        "askOwner": "Rolünüz plan satın almaya izin vermiyor. Sahip, yönetici veya faturalandırma rolündeki birinden Hesap bölümünde onaylamasını isteyin."
       }
     },
     "proof": {
@@ -724,7 +730,7 @@
       "checkoutError": "Bir şeyler ters gitti — tekrar deneyin.",
       "seatsLabel": "Koltuk",
       "seatsHint": "Bir koltuk, etkin bir makine ya da servis kimliğidir; kişi değildir. Çalışan sayınızı değil, SDK'yı çalıştıracak süreçleri sayın. Kubernetes'te her replika için BVSALA_SEAT_ID tanımlayın.",
-      "seatsOver": "{used, plural, other {# koltuk}} kullanımda, {paid, plural, other {# koltuk}} ödenmiş. Fazla koltuklar ay kapandığında planınızın fiyatıyla ücretlendirilir. Aylık ödemede bir sonraki faturanıza eklenir ve abone olduğunuz koltuk sayısı kullanılan koltuk sayısına yükselir. Yıllık ödemede ay kapanışında, yıllık tarifenin on ikiye bölünmüş tutarıyla faturalandırılır ve abone olduğunuz koltuk sayısı değişmez. Sayıyı «Planı yönet»ten de ayarlayabilirsiniz.",
+      "seatsOver": "{used, plural, other {# koltuk}} kullanımda, {paid, plural, other {# koltuk}} ödenmiş. Fazla koltuklar ay kapandığında planınıza ve aboneliğinizin durumuna göre faturalandırılır. Aylık ödemede bir sonraki faturanıza eklenir ve abone olduğunuz koltuk sayısı kullanılan koltuk sayısına yükselir. Yıllık ödemede ay kapanışında, yıllık tarifenin on ikiye bölünmüş tutarıyla faturalandırılır ve abone olduğunuz koltuk sayısı değişmez. Sayıyı «Planı yönet»ten de ayarlayabilirsiniz.",
       "seatsLastMonth": "{period}: {used, plural, other {# koltuk}} kullanıldı, {paid, plural, other {# koltuk}} ödendi. Fazla: {extra, plural, other {# koltuk}} ({amount}). Aylık ödemede bir sonraki faturanıza eklenir ve abone olduğunuz koltuk sayısı kullanılan koltuk sayısına yükselir. Yıllık ödemede ay kapanışında, yıllık tarifenin on ikiye bölünmüş tutarıyla faturalandırılır; abone olduğunuz koltuk sayısı değişmez.",
       "seatsRotated": "Bu ay {used, plural, other {# koltuk}} sayıldı. Bir servis hesabı anahtarını iptal ettiniz; anahtar değişince makineleriniz yeni bir koltuk kimliği alır, bu yüzden bu ay iki kez sayılıyorlar. Gelecek ay kendiliğinden düzelir; planınızı değiştirmenize gerek yok.",
       "taxNote": "KDV hariçtir. Şirketinizin AB KDV numarası varsa tersine ödeme (reverse charge) uygulanır.",
@@ -737,8 +743,8 @@
       "planPro": "Pro",
       "planTeam": "Team",
       "teamHint": "Team {included} koltuk içerir; her ek koltuk aylık {extra}. {included} koltuktan azı satın alınamaz.",
-      "checkoutTeamMonthly": "Team’e abone olun — {monthly}/ay, {included} koltuk →",
-      "checkoutTeamYearly": "Team’e abone olun — {yearly}/yıl, {included} koltuk →",
+      "checkoutTeamMonthly": "Team’e abone olun — başlangıç: {monthly}/ay →",
+      "checkoutTeamYearly": "Team’e abone olun — başlangıç: {yearly}/yıl →",
       "errPlanCerrado": "Bu plan artık yeni müşterilere sunulmuyor. Pro veya Team’i seçin.",
       "statusLabel": "Durum",
       "statusActive": "Abonelik etkin",
@@ -767,7 +773,9 @@
       "planTeamPrice": "Aylık {monthly} · yıllık {yearly} · {included} koltuk dahil",
       "summaryLabel": "Satın alacağınız",
       "summaryNote": "Vergiler dahil kesin tutarı ödeme öncesinde Stripe onaylar.",
-      "summary": "{plan} · {seats, plural, other {# koltuk}}"
+      "summary": "{plan} · {seats, plural, other {# koltuk}}",
+      "roleNote": "Rolünüz satın almaya veya faturalandırmayı yönetmeye izin vermiyor. Sahip, yönetici veya faturalandırma rolündeki birinden bunu yapmasını isteyin.",
+      "paidPlan": "Ücretli plan"
     },
     "referenceLedgerCards": {
       "proven": "kanıtlandı",
@@ -814,7 +822,7 @@
       "awaitingFirstReport": "İlk rapor bekleniyor"
     },
     "checkoutBanner": {
-      "successPending": "<b>Ödemeniz alındı.</b> Lisansınızı etkinleştiriyoruz — bu genellikle birkaç saniye sürer ve bu sayfa kendi kendine yenilenir.",
+      "successPending": "<b>Stripe’tan döndünüz.</b> Ödemenizi doğruluyor ve planınızı etkinleştiriyoruz — bu genellikle birkaç saniye sürer ve bu sayfa kendi kendine yenilenir.",
       "successActive": "<b>Aboneliğiniz etkin.</b> Sıradaki adım: lisans anahtarınızı almak.",
       "goToInstall": "Lisans anahtarınızı alın →",
       "cancelled": "<b>Ödeme tamamlanmadı</b> — sizden hiçbir ücret alınmadı. İstediğiniz zaman yeniden başlayabilirsiniz.",
@@ -929,16 +937,14 @@
       "badgeMedido": "Ölçülen",
       "proyeccionTitulo": "{periodo} için öngörülen tasarruf",
       "proyeccionNota": "Şimdiye kadar ölçülenler, artı son {dias} günlük temponuz ile kalan {restantes} gün. Bu bir tahmindir, fatura değil.",
-      "comision": "Önceki modelin komisyonu (referans)",
-      "comisionNota": "Yeni kayıtlara kapalı komisyonlu modele göre, öngörülen tasarrufun {pct} kadarı. Sabit ücretli planlarda komisyon yoktur.",
-      "comisionCalibracion": "Komisyonlu modelin kalibrasyon ayı: hiçbir ücret alınmaz. Sabit ücretli planlarda komisyon yoktur.",
       "cerrado": "Kapanmış dönem: bu, olanı gösterir; nereye gittiğini değil.",
       "pocosDias": "Doğruyu çizmek için henüz erken: {min} tam gün gerekiyor, {n} gün var. Ölçülen zaten gerçek.",
       "medido": "Bugüne kadar biriken tasarruf (ölçülen)",
       "diaDeMes": "{total} günün {n}. günü",
       "ritmoLabel": "Tempo, son {dias} gün",
       "porDia": "{importe} / gün",
-      "diasRestantes": "Kalan gün: {n}"
+      "diasRestantes": "Kalan gün: {n}",
+      "verExtracto": "Ekstreyi görüntüle"
     },
     "extracto": {
       "metaTitle": "Ekstre · BiVelio Savings Layer",
@@ -1009,7 +1015,7 @@
       "regimenLegadoTitulo": "Komisyonlu eski model",
       "regimenLegadoBody": "Sözleşmeniz, yeni kayıtlara kapalı olan, ölçülen tasarruf üzerinden komisyonlu modeli korur. Hesabı aşağıdaki geçmişte yer alır; koltuk ücreti ayrı bir kalemdir.",
       "regimenNingunoTitulo": "Etkin ücretli plan yok",
-      "regimenNingunoBody": "Bugün size hiçbir şey faturalandırılmıyor. Satıştaki planlar sabit ücretlidir ve tasarruf üzerinden komisyon içermez.",
+      "regimenNingunoBody": "Bu kuruluşun yürürlükte sabit ücretli bir planı (Pro veya Team) yok ve muaf olarak işaretlenmemiş. Bu durumda her ay, ölçülen tasarruf üzerinden, önceki komisyonlu modelin yayımlanan koşullarına göre bir ekstre kapatılır; hesaplaması aşağıdaki geçmişte yer alır. Satıştaki planlar sabit ücretlidir ve komisyon içermez.",
       "regimenIndeterminadoTitulo": "Sözleşmenizin modelini burada gösteremiyoruz",
       "regimenIndeterminadoBody": "Bu sayfa aboneliğinize hangi modelin uygulandığını belirleyemedi. Sizden tahsil edilen tutar, faturalarınızda ve faturalandırma portalında görünendir.",
       "irACuenta": "Planı ve faturalandırmayı gör",
@@ -1018,7 +1024,12 @@
       "historicoSub": "Ölçülen tasarruf üzerinden komisyon önceki modeldi. Burada başvuru ve denetim için tutulur; bir teklif ya da sabit ücretli bir planın faturası değildir.",
       "simulacionTitulo": "Bu dönemin komisyon simülasyonu",
       "simulacionAplica": "Sözleşmenizin koruduğu modelin hesabıdır.",
-      "simulacionNoAplica": "Yürürlükteki sözleşmenize uygulanmaz: yalnızca başvuru için gösterilir."
+      "simulacionNoAplica": "Yürürlükteki sözleşmenize uygulanmaz: yalnızca başvuru için gösterilir.",
+      "regimenNingunoEnlace": "Önceki modeli Fiyatlandırma sayfasında görün",
+      "simulacionSinPlan": "Yürürlükte sabit ücretli bir plan yokken ay kapanışında kullanılan hesaplama budur.",
+      "simulacionPuedeAplicar": "Sözleşmenize bağlı olarak uygulanabilir: burada fatura olarak değil, hesaplama olarak gösterilir.",
+      "notaSombraReferencia": "Gölge rakam: hesaplanan komisyon {comision}. Bu bir hesaplamadır, fatura değildir.",
+      "historialIntroNeutro": "Kapatılan her dönem ayın ilk günü değiştirilemez şekilde sabitlenir. Bir dönem için tahsil edilecek tutar doğarsa, faturası bu belgeye atıfta bulunur."
     },
     "usageExplorer": {
       "title": "Kullanım gezgini",
@@ -2107,7 +2118,7 @@
     "eyebrow": "Yayımlanan fiyatlar",
     "title": "Açık kaynak motor. Ekibiniz için bulut kontrolü.",
     "governs": "Bu sayfa hizmetin bugün nasıl işlediğini anlatır; bağlayıcı metinler <license>LICENSE</license> ve <terms>BiVelio Koşulları</terms> olarak kalır.",
-    "lede": "Paket açık çekirdektir: anahtar gerekmez. Bu sayfa isteğe bağlı bulutu fiyatlandırır — Measure ücretsiz, sonra koltuk başına Pro veya bir Team planı, tasarrufunuz üzerinden komisyonsuz. Buradaki her rakam sizi faturalayan kodun aynısından gelir ve fiyat değişince değişir.",
+    "lede": "Motor açık kaynaktır: anahtar gerekmez. Bu sayfa isteğe bağlı bulut olan Savings Cloud'u fiyatlandırır — Measure ücretsiz, sonra koltuk başına Pro veya bir Team planı, tasarrufunuz üzerinden komisyonsuz. Buradaki her rakam sizi faturalayan kodun aynısından gelir ve fiyat değişince değişir.",
     "plans": {
       "title": "Planlar",
       "intro": "Küçükten büyüğe dört plan. Pro ve Team koltuk başına ödenir ve komisyon içermez.",
@@ -2140,7 +2151,7 @@
       "whatTitle": "Koltuk nedir",
       "what": "Koltuk, Yazılımı çalıştıran bir <b>makine ya da servis kimliğidir</b>, bir kişi değil. Aboneliğinin kaç koltuğu kapsayacağını sen seçersin (ödemede en fazla {max}), lisansın da o kadarını kapsar.",
       "counted": "BiVelio her takvim ayında (UTC), o ayın en az {dias} farklı gününde etkin olan her ayrı koltuk kimliğini kullanımda sayar. CI ya da geçici çalıştırıcı olarak işaretlenen kimlikler sayılmaz. Panelin bu sayıyı aboneliğinin kapsadığı koltuklarla karşılaştırır.",
-      "overage": "Bir ayda aboneliğinizin kapsadığından fazla koltuk kullanırsanız, fark ay kapandığında bir kez ve otomatik olarak bir sonraki faturanıza eklenir: bu fazla koltukların planınızda bir aylık bedeli (yıllık planda yıllık fiyatın on ikide biri). Aylık planlarda aboneliğiniz ardından kullandığınız koltuk sayısına yükselir. Sayım güvenilir değilse — örneğin o ay bir hizmet hesabı anahtarını döndürdüğünüz için — ücret alınmaz: elle inceleriz.",
+      "overage": "Bir ayda aboneliğinizin kapsadığından fazla koltuk kullanırsanız, fark ay kapandığında bir kez faturalandırılır: bu fazla koltukların planınızda bir aylık bedeli. Aylık ödemede bir sonraki faturanıza eklenir ve abone olduğunuz koltuk sayısı kullanılan koltuk sayısına yükselir. Yıllık ödemede ay kapanışında, yıllık tarifenin on ikiye bölünmüş tutarıyla faturalandırılır ve abone olduğunuz koltuk sayısı değişmez. Sayım güvenilir değilse — örneğin o ay bir hizmet hesabı anahtarını döndürdüğünüz için — ücret alınmaz: elle inceleriz.",
       "identifier": "Koltuk kimliğinin nasıl oluşturulduğu ve Yazılımın BiVelio'ya gönderdiği diğer her şey <privacy>gizlilik sayfasında</privacy> yer alır.",
       "provider": "Ücret, LLM sağlayıcınızın kullanım bedelini kapsamaz: sağlayıcınızı korur ve kullanımını onun koşullarına göre ödersiniz.",
       "manageTitle": "Aboneliğinizi nasıl yönetirsiniz",

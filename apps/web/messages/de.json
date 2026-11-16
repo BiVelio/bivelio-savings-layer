@@ -213,7 +213,7 @@
     "useAnotherEmail": "Andere E-Mail verwenden",
     "requestNewLink": "Neuen Link anfordern",
     "successNext": "Nächster Schritt: Installiere das Paket und verbinde deinen ersten Aufruf. Bis dahin hat das Dashboard nichts zu messen.",
-    "successPlan": "Der gewählte Plan bleibt ausgewählt: Du bestätigst ihn im nächsten Schritt.",
+    "successPlan": "Du hast einen Plan gewählt: Du bestätigst ihn im Dashboard unter Konto. Gekauft wurde noch nichts.",
     "successInvite": "Wir bringen dich zurück zu deiner Einladung, damit du sie annehmen kannst.",
     "successContinue": "Weiter",
     "panel": {
@@ -284,6 +284,12 @@
         "coverageFull": "Die Aufschlüsselung deckt die gesamten beobachteten Kosten des Zeitraums ab.",
         "coveragePartial": "Die Aufschlüsselung pro Modell deckt {coverage} der beobachteten Kosten des Zeitraums ab; dem Rest ist kein Modell zugeordnet.",
         "coverageUnknown": "Ein Vergleich mit den beobachteten Kosten des Zeitraums ist nicht möglich."
+      },
+      "planChosen": {
+        "title": "Du hast {plan} gewählt",
+        "body": "Gekauft wurde noch nichts. Bestätige Plan und Seats unter Konto; bezahlt wird bei Stripe.",
+        "cta": "Unter Konto bestätigen",
+        "askOwner": "Mit deiner Rolle kannst du keinen Plan buchen. Bitte eine Person mit der Rolle Inhaber, Administrator oder Buchhaltung, ihn unter Konto zu bestätigen."
       }
     },
     "proof": {
@@ -724,7 +730,7 @@
       "checkoutError": "Etwas ist schiefgelaufen — versuche es erneut.",
       "seatsLabel": "Seats",
       "seatsHint": "Ein Platz ist eine aktive Maschine oder Service-Identität, keine Person. Zähle die Prozesse, die das SDK ausführen, nicht deine Mitarbeitenden. In Kubernetes: BVSALA_SEAT_ID pro Replica setzen.",
-      "seatsOver": "{used, plural, one {# Seat} other {# Seats}} in Benutzung, {paid, plural, one {# bezahlt} other {# bezahlt}}. Die zusätzlichen Seats werden zum Monatsabschluss zum Preis deines Plans berechnet. Bei monatlicher Zahlung kommen sie auf deine nächste Rechnung, und die gebuchte Anzahl steigt auf die genutzten Seats. Bei jährlicher Zahlung werden sie zum Monatsabschluss zum Jahrespreis geteilt durch zwölf berechnet, und die gebuchte Anzahl bleibt unverändert. Du kannst die Anzahl auch unter „Plan verwalten“ anpassen.",
+      "seatsOver": "{used, plural, one {# Seat} other {# Seats}} in Benutzung, {paid, plural, one {# bezahlt} other {# bezahlt}}. Die zusätzlichen Seats werden zum Monatsabschluss nach deinem Plan und dem Status deines Abos berechnet. Bei monatlicher Zahlung kommen sie auf deine nächste Rechnung, und die gebuchte Anzahl steigt auf die genutzten Seats. Bei jährlicher Zahlung werden sie zum Monatsabschluss zum Jahrespreis geteilt durch zwölf berechnet, und die gebuchte Anzahl bleibt unverändert. Du kannst die Anzahl auch unter „Plan verwalten“ anpassen.",
       "seatsLastMonth": "{period}: {used, plural, one {# Seat genutzt} other {# Seats genutzt}}, {paid, plural, one {# bezahlt} other {# bezahlt}}. Zusätzlich: {extra, plural, one {# Seat} other {# Seats}} ({amount}). Bei monatlicher Zahlung steht der Betrag auf deiner nächsten Rechnung, und die gebuchte Anzahl steigt auf die genutzten Seats. Bei jährlicher Zahlung wird er zum Monatsabschluss zum Jahrespreis geteilt durch zwölf berechnet, ohne die gebuchte Anzahl zu ändern.",
       "seatsRotated": "{used, plural, one {# Seat} other {# Seats}} in diesem Monat gezählt. Du hast einen Service-Account-Schlüssel widerrufen, und beim Rotieren bekommen deine Maschinen eine neue Seat-Identität — deshalb zählt dieser Monat sie doppelt. Nächsten Monat ist es wieder normal; du musst deinen Plan nicht ändern.",
       "taxNote": "Zzgl. MwSt. Bei Unternehmen mit EU-USt-IdNr. gilt das Reverse-Charge-Verfahren.",
@@ -737,8 +743,8 @@
       "planPro": "Pro",
       "planTeam": "Team",
       "teamHint": "Team enthält {included} Seats; jeder weitere Seat kostet {extra} pro Monat. Weniger als {included} kann man nicht kaufen.",
-      "checkoutTeamMonthly": "Team abonnieren — {monthly}/Monat, {included} Seats →",
-      "checkoutTeamYearly": "Team abonnieren — {yearly}/Jahr, {included} Seats →",
+      "checkoutTeamMonthly": "Team abonnieren — ab {monthly}/Monat →",
+      "checkoutTeamYearly": "Team abonnieren — ab {yearly}/Jahr →",
       "errPlanCerrado": "Dieser Plan wird Neukunden nicht mehr angeboten. Wähle Pro oder Team.",
       "statusLabel": "Status",
       "statusActive": "Abo aktiv",
@@ -767,7 +773,9 @@
       "planTeamPrice": "{monthly} im Monat · {yearly} im Jahr · {included} Seats inklusive",
       "summaryLabel": "Du kaufst",
       "summaryNote": "Den genauen Betrag inklusive Steuern bestätigt Stripe vor der Zahlung.",
-      "summary": "{plan} · {seats, plural, one {# Seat} other {# Seats}}"
+      "summary": "{plan} · {seats, plural, one {# Seat} other {# Seats}}",
+      "roleNote": "Mit deiner Rolle kannst du weder kaufen noch die Abrechnung verwalten. Bitte eine Person mit der Rolle Inhaber, Administrator oder Buchhaltung darum.",
+      "paidPlan": "Bezahlter Plan"
     },
     "referenceLedgerCards": {
       "proven": "bewiesen",
@@ -814,7 +822,7 @@
       "awaitingFirstReport": "Wartet auf ersten Bericht"
     },
     "checkoutBanner": {
-      "successPending": "<b>Zahlung erhalten.</b> Wir aktivieren deine Lizenz — das dauert meist ein paar Sekunden, und diese Seite aktualisiert sich von selbst.",
+      "successPending": "<b>Zurück von Stripe.</b> Wir bestätigen deine Zahlung und aktivieren deinen Plan — das dauert meist ein paar Sekunden, und diese Seite aktualisiert sich von selbst.",
       "successActive": "<b>Dein Abonnement ist aktiv.</b> Als Nächstes holst du dir deinen Lizenzschlüssel.",
       "goToInstall": "Hol dir deinen Lizenzschlüssel →",
       "cancelled": "<b>Es wurde keine Zahlung abgeschlossen</b> — dir wurde nichts berechnet. Du kannst den Vorgang jederzeit erneut starten.",
@@ -929,16 +937,14 @@
       "badgeMedido": "Gemessen",
       "proyeccionTitulo": "Prognostizierte Ersparnis für {periodo}",
       "proyeccionNota": "Das bisher Gemessene plus dein Tempo der letzten {dias} Tage über die {restantes} verbleibenden Tage. Eine Schätzung, keine Rechnung.",
-      "comision": "Provision des früheren Modells (Referenz)",
-      "comisionNota": "{pct} der prognostizierten Ersparnis nach dem Provisionsmodell, das für Neuanmeldungen geschlossen ist. Pläne mit fester Gebühr tragen keine Provision.",
-      "comisionCalibracion": "Kalibrierungsmonat des Provisionsmodells: Es wird nichts berechnet. Pläne mit fester Gebühr tragen keine Provision.",
       "cerrado": "Abgeschlossener Zeitraum: Das ist, was war, nicht wohin es geht.",
       "pocosDias": "Noch zu früh für eine Gerade: {min} vollständige Tage sind nötig, vorhanden sind {n}. Das Gemessene ist bereits real.",
       "medido": "Bisher gespart (gemessen)",
       "diaDeMes": "Tag {n} von {total}",
       "ritmoLabel": "Tempo, letzte {dias} Tage",
       "porDia": "{importe} / Tag",
-      "diasRestantes": "{n} Tage verbleiben"
+      "diasRestantes": "{n} Tage verbleiben",
+      "verExtracto": "Auszug ansehen"
     },
     "extracto": {
       "metaTitle": "Abrechnung · BiVelio Savings Layer",
@@ -1009,7 +1015,7 @@
       "regimenLegadoTitulo": "Früheres Modell mit Provision",
       "regimenLegadoBody": "Dein Vertrag behält das Modell mit Provision auf die gemessene Ersparnis, das für Neukunden geschlossen ist. Die Berechnung steht in der Historie unten; die Gebühr pro Seat ist ein separater Betrag.",
       "regimenNingunoTitulo": "Kein aktiver bezahlter Plan",
-      "regimenNingunoBody": "Dir wird heute nichts berechnet. Die angebotenen Pläne haben eine feste Gebühr und keine Provision auf die Ersparnis.",
+      "regimenNingunoBody": "Diese Organisation hat keinen laufenden Plan mit fester Gebühr (Pro oder Team) und ist nicht als befreit markiert. In diesem Fall wird jeden Monat ein Auszug über die gemessene Ersparnis abgeschlossen, nach den veröffentlichten Bedingungen des früheren Provisionsmodells; die Berechnung steht im Verlauf unten. Die angebotenen Pläne haben eine feste Gebühr und keine Provision.",
       "regimenIndeterminadoTitulo": "Das Abrechnungsmodell deines Vertrags kann hier nicht angezeigt werden",
       "regimenIndeterminadoBody": "Diese Seite konnte nicht ermitteln, welches Modell für dein Abo gilt. Berechnet wird, was auf deinen Rechnungen und im Abrechnungsportal steht.",
       "irACuenta": "Plan und Abrechnung ansehen",
@@ -1018,7 +1024,12 @@
       "historicoSub": "Die Provision auf die gemessene Ersparnis war das frühere Modell. Sie bleibt hier zur Einsicht und Prüfung erhalten; sie ist weder ein Angebot noch die Rechnung eines Plans mit fester Gebühr.",
       "simulacionTitulo": "Simulation der Provision für diesen Zeitraum",
       "simulacionAplica": "Das ist die Berechnung für das Modell, das dein Vertrag behält.",
-      "simulacionNoAplica": "Gilt nicht für deinen geltenden Vertrag: nur zur Orientierung angezeigt."
+      "simulacionNoAplica": "Gilt nicht für deinen geltenden Vertrag: nur zur Orientierung angezeigt.",
+      "regimenNingunoEnlace": "Früheres Modell unter Preise ansehen",
+      "simulacionSinPlan": "Das ist die Berechnung, die zum Monatsabschluss gilt, wenn kein Plan mit fester Gebühr läuft.",
+      "simulacionPuedeAplicar": "Kann je nach deinem Vertrag gelten: hier als Berechnung gezeigt, nicht als Rechnung.",
+      "notaSombraReferencia": "Schattenzahl: die berechnete Provision beträgt {comision}. Das ist eine Berechnung, keine Rechnung.",
+      "historialIntroNeutro": "Jede abgeschlossene Periode wird am Monatsersten unveränderlich fixiert. Entsteht in einer Periode ein Betrag, zitiert ihre Rechnung dieses Dokument."
     },
     "usageExplorer": {
       "title": "Nutzungs-Explorer",
@@ -2107,7 +2118,7 @@
     "eyebrow": "Veröffentlichte Preise",
     "title": "Open-Source-Engine. Cloud-Kontrolle für dein Team.",
     "governs": "Diese Seite beschreibt, wie der Dienst heute funktioniert; maßgeblich sind die <license>LICENSE</license> und die <terms>BiVelio-Bedingungen</terms>.",
-    "lede": "Das Paket ist Open Core: kein Schlüssel nötig. Diese Seite bepreist die optionale Cloud — Measure gratis, dann Pro pro Sitz oder ein Team-Plan, ohne Provision auf deine Ersparnis. Jede Zahl hier kommt aus demselben Code, der dich abrechnet, und ändert sich, wenn sich der Preis ändert.",
+    "lede": "Die Engine ist Open Source: kein Schlüssel nötig. Diese Seite bepreist Savings Cloud, die optionale Cloud — Measure gratis, dann Pro pro Sitz oder ein Team-Plan, ohne Provision auf deine Ersparnis. Jede Zahl hier kommt aus demselben Code, der dich abrechnet, und ändert sich, wenn sich der Preis ändert.",
     "plans": {
       "title": "Pläne",
       "intro": "Vier Pläne, vom kleinsten zum größten. Pro und Team werden pro Seat bezahlt und tragen keine Provision.",
@@ -2140,7 +2151,7 @@
       "whatTitle": "Was ein Seat ist",
       "what": "Ein Seat ist eine <b>Maschine oder Dienstidentität</b>, auf der die Software läuft – keine Person. Du wählst, wie viele Seats dein Abo abdeckt (bis zu {max} beim Bezahlen), und deine Lizenz deckt genau so viele ab.",
       "counted": "In jedem Kalendermonat (UTC) zählt BiVelio jede eindeutige Seat-Kennung als genutzt, die an mindestens {dias} verschiedenen Tagen dieses Monats aktiv war. Als CI oder kurzlebige Runner markierte Identitäten zählen nicht. Dein Dashboard vergleicht diese Zahl mit den Seats, die dein Abo abdeckt.",
-      "overage": "Nutzt du in einem Monat mehr Seats, als dein Abo abdeckt, wird die Differenz nach Monatsabschluss einmalig und automatisch mit deiner nächsten Rechnung berechnet: der Preis dieser zusätzlichen Seats für einen Monat in deinem Plan (beim Jahresplan ein Zwölftel des Jahrespreises). Bei Monatsplänen deckt dein Abo danach die Seats ab, die du nutzt. Ist die Zählung nicht verlässlich – etwa weil du in dem Monat einen Service-Account-Schlüssel rotiert hast –, wird nichts berechnet: Wir prüfen sie von Hand.",
+      "overage": "Nutzt du in einem Monat mehr Seats, als dein Abo abdeckt, wird die Differenz einmalig zum Monatsabschluss berechnet: der Preis dieser zusätzlichen Seats für einen Monat in deinem Plan. Bei monatlicher Zahlung kommt sie auf deine nächste Rechnung, und die gebuchte Anzahl steigt auf die genutzten Seats. Bei jährlicher Zahlung wird sie zum Monatsabschluss zum Jahrespreis geteilt durch zwölf berechnet, und die gebuchte Anzahl bleibt unverändert. Ist die Zählung nicht verlässlich – etwa weil du in dem Monat einen Service-Account-Schlüssel rotiert hast –, wird nichts berechnet: Wir prüfen sie von Hand.",
       "identifier": "Wie eine Seat-Kennung gebildet wird und alles andere, was die Software an BiVelio sendet, steht auf der <privacy>Datenschutzseite</privacy>.",
       "provider": "Die Gebühr deckt nicht den Verbrauch bei deinem LLM-Anbieter: Du behältst deinen Anbieter und zahlst dessen Nutzung zu seinen Bedingungen.",
       "manageTitle": "So verwaltest du dein Abo",

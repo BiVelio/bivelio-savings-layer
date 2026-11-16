@@ -213,7 +213,7 @@
     "useAnotherEmail": "Dùng email khác",
     "requestNewLink": "Yêu cầu liên kết mới",
     "successNext": "Bước tiếp theo: cài đặt gói và kết nối lệnh gọi đầu tiên của bạn. Cho đến lúc đó, bảng điều khiển chưa có gì để đo.",
-    "successPlan": "Gói bạn đã chọn vẫn được giữ nguyên: bạn xác nhận ở bước tiếp theo.",
+    "successPlan": "Bạn đã chọn một gói: bạn xác nhận trong mục Tài khoản của bảng điều khiển. Chưa có gì được mua.",
     "successInvite": "Chúng tôi sẽ đưa bạn trở lại lời mời để bạn chấp nhận.",
     "successContinue": "Tiếp tục",
     "panel": {
@@ -284,6 +284,12 @@
         "coverageFull": "Phần phân tách bao trùm toàn bộ chi phí quan sát được của kỳ.",
         "coveragePartial": "Phần phân tách theo mô hình bao trùm {coverage} chi phí quan sát được của kỳ; phần còn lại chưa được gán mô hình.",
         "coverageUnknown": "Không thể so sánh với chi phí quan sát được của kỳ."
+      },
+      "planChosen": {
+        "title": "Bạn đã chọn {plan}",
+        "body": "Chưa có gì được mua. Hãy xác nhận gói và số ghế trong mục Tài khoản; việc thanh toán diễn ra trên Stripe.",
+        "cta": "Xác nhận trong Tài khoản",
+        "askOwner": "Vai trò của bạn không thể mua gói. Hãy nhờ người có vai trò chủ sở hữu, quản trị viên hoặc thanh toán xác nhận trong mục Tài khoản."
       }
     },
     "proof": {
@@ -724,7 +730,7 @@
       "checkoutError": "Đã xảy ra lỗi — vui lòng thử lại.",
       "seatsLabel": "Ghế",
       "seatsHint": "Một chỗ là một máy hoặc danh tính dịch vụ đang hoạt động, không phải một người. Hãy đếm số tiến trình sẽ chạy SDK, không phải số nhân viên. Trên Kubernetes, đặt BVSALA_SEAT_ID cho mỗi bản sao.",
-      "seatsOver": "{used, plural, other {# ghế}} đang dùng, {paid, plural, other {# ghế}} đã trả. Số ghế vượt được tính khi khép tháng, theo giá gói của bạn. Với thanh toán theo tháng, khoản này được cộng vào hoá đơn kế tiếp và số ghế đăng ký tăng lên bằng số ghế đang dùng. Với thanh toán theo năm, khoản này được lập hoá đơn khi khép tháng theo mức giá năm chia cho mười hai, và số ghế đăng ký không thay đổi. Bạn cũng có thể điều chỉnh số lượng ở «Quản lý gói».",
+      "seatsOver": "{used, plural, other {# ghế}} đang dùng, {paid, plural, other {# ghế}} đã trả. Số ghế vượt được lập hoá đơn khi khép tháng, tùy theo gói và trạng thái gói đăng ký của bạn. Với thanh toán theo tháng, khoản này được cộng vào hoá đơn kế tiếp và số ghế đăng ký tăng lên bằng số ghế đang dùng. Với thanh toán theo năm, khoản này được lập hoá đơn khi khép tháng theo mức giá năm chia cho mười hai, và số ghế đăng ký không thay đổi. Bạn cũng có thể điều chỉnh số lượng ở «Quản lý gói».",
       "seatsLastMonth": "{period}: đã dùng {used, plural, other {# ghế}}, đã trả {paid, plural, other {# ghế}}. Vượt: {extra, plural, other {# ghế}} ({amount}). Với thanh toán theo tháng, khoản này vào hoá đơn kế tiếp và số ghế đăng ký tăng lên bằng số ghế đã dùng. Với thanh toán theo năm, khoản này được lập hoá đơn khi khép tháng theo mức giá năm chia cho mười hai, không thay đổi số ghế đăng ký.",
       "seatsRotated": "Tháng này đếm được {used, plural, other {# ghế}}. Bạn đã thu hồi một khoá tài khoản dịch vụ, và khi khoá được thay thì các máy nhận danh tính ghế mới — nên tháng này chúng bị đếm hai lần. Tháng sau sẽ trở lại bình thường; bạn không cần đổi gói.",
       "taxNote": "Chưa bao gồm VAT. Nếu công ty của quý vị có mã số VAT của EU, cơ chế reverse charge sẽ được áp dụng.",
@@ -737,8 +743,8 @@
       "planPro": "Pro",
       "planTeam": "Team",
       "teamHint": "Team bao gồm {included} ghế; mỗi ghế thêm {extra} mỗi tháng. Không thể mua ít hơn {included}.",
-      "checkoutTeamMonthly": "Đăng ký Team — {monthly}/tháng, {included} ghế →",
-      "checkoutTeamYearly": "Đăng ký Team — {yearly}/năm, {included} ghế →",
+      "checkoutTeamMonthly": "Đăng ký Team — từ {monthly}/tháng →",
+      "checkoutTeamYearly": "Đăng ký Team — từ {yearly}/năm →",
       "errPlanCerrado": "Gói đó không còn được cung cấp cho khách hàng mới. Chọn Pro hoặc Team.",
       "statusLabel": "Trạng thái",
       "statusActive": "Gói đăng ký đang hoạt động",
@@ -767,7 +773,9 @@
       "planTeamPrice": "{monthly} mỗi tháng · {yearly} mỗi năm · gồm {included} ghế",
       "summaryLabel": "Bạn sắp mua",
       "summaryNote": "Số tiền chính xác, gồm thuế, do Stripe xác nhận trước khi bạn thanh toán.",
-      "summary": "{plan} · {seats, plural, other {# ghế}}"
+      "summary": "{plan} · {seats, plural, other {# ghế}}",
+      "roleNote": "Vai trò của bạn không thể mua hoặc quản lý việc thanh toán. Hãy nhờ người có vai trò chủ sở hữu, quản trị viên hoặc thanh toán thực hiện.",
+      "paidPlan": "Gói trả phí"
     },
     "referenceLedgerCards": {
       "proven": "đã chứng minh",
@@ -814,7 +822,7 @@
       "awaitingFirstReport": "Đang chờ báo cáo đầu tiên"
     },
     "checkoutBanner": {
-      "successPending": "<b>Đã nhận được thanh toán.</b> Chúng tôi đang kích hoạt giấy phép của bạn — việc này thường mất vài giây và trang này sẽ tự làm mới.",
+      "successPending": "<b>Bạn vừa quay lại từ Stripe.</b> Chúng tôi đang xác nhận thanh toán và kích hoạt gói của bạn — việc này thường mất vài giây và trang này sẽ tự làm mới.",
       "successActive": "<b>Gói đăng ký của bạn đang hoạt động.</b> Bước tiếp theo là nhận khóa cấp phép của bạn.",
       "goToInstall": "Nhận khóa cấp phép của bạn →",
       "cancelled": "<b>Chưa có khoản thanh toán nào được hoàn tất</b> — bạn chưa bị tính phí gì cả. Bạn có thể bắt đầu lại bất cứ lúc nào.",
@@ -929,16 +937,14 @@
       "badgeMedido": "Đã đo",
       "proyeccionTitulo": "Tiết kiệm dự phóng cho {periodo}",
       "proyeccionNota": "Phần đã đo đến nay cộng với nhịp độ {dias} ngày gần nhất của bạn nhân cho {restantes} ngày còn lại. Đây là ước tính, không phải hóa đơn.",
-      "comision": "Hoa hồng theo mô hình cũ (tham khảo)",
-      "comisionNota": "{pct} của khoản tiết kiệm dự phóng, theo mô hình hoa hồng đã đóng với đăng ký mới. Các gói phí cố định không có hoa hồng.",
-      "comisionCalibracion": "Tháng hiệu chuẩn của mô hình hoa hồng: không thu phí. Các gói phí cố định không có hoa hồng.",
       "cerrado": "Kỳ đã đóng: đây là những gì đã diễn ra, không phải hướng đi tiếp theo.",
       "pocosDias": "Còn quá sớm để vẽ đường thẳng: cần {min} ngày trọn vẹn và mới có {n}. Phần đã đo thì đã là thật.",
       "medido": "Đã tiết kiệm đến nay (đã đo)",
       "diaDeMes": "Ngày {n} trên {total}",
       "ritmoLabel": "Nhịp độ, {dias} ngày gần nhất",
       "porDia": "{importe} / ngày",
-      "diasRestantes": "Còn lại: {n} ngày"
+      "diasRestantes": "Còn lại: {n} ngày",
+      "verExtracto": "Xem bản kê"
     },
     "extracto": {
       "metaTitle": "Sao kê · BiVelio Savings Layer",
@@ -1009,7 +1015,7 @@
       "regimenLegadoTitulo": "Mô hình cũ có hoa hồng",
       "regimenLegadoBody": "Hợp đồng của bạn giữ mô hình có hoa hồng trên khoản tiết kiệm đã đo, đã đóng với đăng ký mới. Cách tính nằm trong phần lịch sử bên dưới; phí theo ghế là một khoản thu riêng.",
       "regimenNingunoTitulo": "Chưa có gói trả phí đang hoạt động",
-      "regimenNingunoBody": "Hiện bạn không bị tính khoản nào. Các gói đang bán có phí cố định và không có hoa hồng trên khoản tiết kiệm.",
+      "regimenNingunoBody": "Tổ chức này không có gói phí cố định nào đang hiệu lực (Pro hoặc Team) và không được đánh dấu là miễn trừ. Khi đó, mỗi tháng một bản kê được chốt trên khoản tiết kiệm đã đo, theo các điều khoản đã công bố của mô hình hoa hồng trước đây; phép tính nằm trong phần lịch sử bên dưới. Các gói đang bán có phí cố định và không có hoa hồng.",
       "regimenIndeterminadoTitulo": "Chúng tôi không thể hiển thị mô hình hợp đồng của bạn tại đây",
       "regimenIndeterminadoBody": "Trang này không xác định được mô hình nào áp dụng cho gói đăng ký của bạn. Khoản bạn bị tính là khoản ghi trên hoá đơn và trong cổng thanh toán.",
       "irACuenta": "Xem gói và thanh toán",
@@ -1018,7 +1024,12 @@
       "historicoSub": "Hoa hồng trên khoản tiết kiệm đã đo là mô hình trước đây. Nó được giữ lại ở đây để tra cứu và kiểm toán; đây không phải là một ưu đãi, cũng không phải hoá đơn của gói phí cố định.",
       "simulacionTitulo": "Mô phỏng hoa hồng của kỳ này",
       "simulacionAplica": "Đây là phép tính cho mô hình mà hợp đồng của bạn còn giữ.",
-      "simulacionNoAplica": "Không áp dụng cho hợp đồng hiện hành của bạn: chỉ hiển thị để tham khảo."
+      "simulacionNoAplica": "Không áp dụng cho hợp đồng hiện hành của bạn: chỉ hiển thị để tham khảo.",
+      "regimenNingunoEnlace": "Xem mô hình trước đây trong trang Giá",
+      "simulacionSinPlan": "Đây là phép tính được dùng khi khép tháng nếu không có gói phí cố định nào đang hiệu lực.",
+      "simulacionPuedeAplicar": "Có thể áp dụng tùy theo hợp đồng của bạn: ở đây hiển thị như một phép tính, không phải hóa đơn.",
+      "notaSombraReferencia": "Con số trong bóng: hoa hồng tính được là {comision}. Đây là một phép tính, không phải hóa đơn.",
+      "historialIntroNeutro": "Mỗi kỳ đã chốt được cố định bất biến vào ngày đầu tháng. Nếu một kỳ phát sinh khoản phải trả, hóa đơn của kỳ đó trích dẫn tài liệu này."
     },
     "usageExplorer": {
       "title": "Trình khám phá mức dùng",
@@ -2107,7 +2118,7 @@
     "eyebrow": "Bảng giá công bố",
     "title": "Engine mã nguồn mở. Kiểm soát trên cloud cho nhóm của bạn.",
     "governs": "Trang này mô tả cách dịch vụ hoạt động hiện nay; văn bản có hiệu lực là <license>LICENSE</license> và <terms>Điều khoản của BiVelio</terms>.",
-    "lede": "Gói là open core: không cần khóa. Trang này định giá cloud tùy chọn — Measure miễn phí, rồi Pro theo chỗ hoặc gói Team, không hoa hồng trên khoản tiết kiệm của bạn. Mọi con số ở đây đọc từ chính mã tính phí bạn, nên nó đổi khi giá đổi.",
+    "lede": "Engine là mã nguồn mở: không cần khóa. Trang này định giá Savings Cloud, phần cloud tùy chọn — Measure miễn phí, rồi Pro theo chỗ hoặc gói Team, không hoa hồng trên khoản tiết kiệm của bạn. Mọi con số ở đây đọc từ chính mã tính phí bạn, nên nó đổi khi giá đổi.",
     "plans": {
       "title": "Các gói",
       "intro": "Bốn gói, từ nhỏ đến lớn. Pro và Team trả theo chỗ và không có hoa hồng.",
@@ -2140,7 +2151,7 @@
       "whatTitle": "Ghế là gì",
       "what": "Một ghế là một <b>máy hoặc danh tính dịch vụ</b> chạy Phần mềm, không phải một người. Bạn chọn số ghế mà gói đăng ký của mình bao gồm (tối đa {max} khi thanh toán), và giấy phép của bạn bao gồm đúng số đó.",
       "counted": "Mỗi tháng dương lịch (UTC), BiVelio tính là đang dùng mọi mã ghế riêng biệt đã hoạt động ít nhất {dias} ngày khác nhau trong tháng đó. Các danh tính được đánh dấu là CI hoặc trình chạy tạm thời không được tính. Bảng điều khiển của bạn so sánh con số đó với số ghế mà gói đăng ký bao gồm.",
-      "overage": "Nếu trong một tháng bạn dùng nhiều ghế hơn số gói đăng ký bao gồm, phần chênh lệch được tự động tính một lần khi khép tháng, vào hoá đơn kế tiếp: giá của số ghế vượt đó trong một tháng theo gói của bạn (với gói năm là một phần mười hai giá năm). Với gói tháng, gói đăng ký của bạn sau đó được nâng lên số ghế bạn dùng. Nếu số đếm không đáng tin — chẳng hạn vì tháng đó bạn đã xoay vòng một khoá tài khoản dịch vụ — thì không tính phí: chúng tôi kiểm tra thủ công.",
+      "overage": "Nếu trong một tháng bạn dùng nhiều ghế hơn số gói đăng ký bao gồm, phần chênh lệch được lập hoá đơn một lần khi khép tháng: giá của số ghế vượt đó trong một tháng theo gói của bạn. Với thanh toán theo tháng, khoản này được cộng vào hoá đơn kế tiếp và số ghế đăng ký tăng lên bằng số ghế đang dùng. Với thanh toán theo năm, khoản này được lập hoá đơn khi khép tháng theo mức giá năm chia cho mười hai, và số ghế đăng ký không thay đổi. Nếu số đếm không đáng tin — chẳng hạn vì tháng đó bạn đã xoay vòng một khoá tài khoản dịch vụ — thì không tính phí: chúng tôi kiểm tra thủ công.",
       "identifier": "Cách tạo mã ghế, và mọi thứ khác mà Phần mềm gửi tới BiVelio, có trên <privacy>trang quyền riêng tư</privacy>.",
       "provider": "Phí không bao gồm chi phí sử dụng tại nhà cung cấp LLM của bạn: bạn giữ nguyên nhà cung cấp và trả phí sử dụng theo điều khoản của họ.",
       "manageTitle": "Cách quản lý gói thuê bao",

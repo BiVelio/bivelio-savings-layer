@@ -213,7 +213,7 @@
     "useAnotherEmail": "Usa un'altra email",
     "requestNewLink": "Richiedi un nuovo link",
     "successNext": "Passo successivo: installa il pacchetto e collega la tua prima chiamata. Fino ad allora la dashboard non ha nulla da misurare.",
-    "successPlan": "Il piano che hai scelto resta selezionato: lo confermi nel passo successivo.",
+    "successPlan": "Hai scelto un piano: lo confermi in Account, nella dashboard. Non è ancora stato acquistato nulla.",
     "successInvite": "Ti riportiamo al tuo invito, così puoi accettarlo.",
     "successContinue": "Continua",
     "panel": {
@@ -284,6 +284,12 @@
         "coverageFull": "La ripartizione copre tutto il costo osservato del periodo.",
         "coveragePartial": "La ripartizione per modello copre il {coverage} del costo osservato del periodo; il resto non ha un modello attribuito.",
         "coverageUnknown": "Non è possibile confrontarlo con il costo osservato del periodo."
+      },
+      "planChosen": {
+        "title": "Hai scelto {plan}",
+        "body": "Non è ancora stato acquistato nulla. Conferma il piano e le postazioni in Account; il pagamento avviene su Stripe.",
+        "cta": "Conferma in Account",
+        "askOwner": "Il tuo profilo non può sottoscrivere un piano. Chiedi a una persona con profilo di proprietario, amministratore o fatturazione di confermarlo in Account."
       }
     },
     "proof": {
@@ -724,7 +730,7 @@
       "checkoutError": "Qualcosa è andato storto — riprova.",
       "seatsLabel": "Postazioni",
       "seatsHint": "Una postazione è una macchina o identità di servizio attiva, non una persona. Conta i processi che eseguiranno l'SDK, non i dipendenti. Su Kubernetes, imposta BVSALA_SEAT_ID per ogni replica.",
-      "seatsOver": "{used, plural, one {# postazione} other {# postazioni}} in uso e {paid, plural, one {# pagata} other {# pagate}}. L'eccedenza si addebita alla chiusura del mese, al prezzo del tuo piano. Con pagamento mensile si aggiunge alla tua prossima fattura e la quantità sottoscritta sale alle postazioni in uso. Con pagamento annuale si fattura alla chiusura del mese, alla tariffa annuale divisa per dodici, e la quantità sottoscritta non cambia. Puoi anche modificare la quantità da «Gestisci piano».",
+      "seatsOver": "{used, plural, one {# postazione} other {# postazioni}} in uso e {paid, plural, one {# pagata} other {# pagate}}. L'eccedenza si fattura in base al tuo piano e allo stato del tuo abbonamento, alla chiusura del mese. Con pagamento mensile si aggiunge alla tua prossima fattura e la quantità sottoscritta sale alle postazioni in uso. Con pagamento annuale si fattura alla chiusura del mese, alla tariffa annuale divisa per dodici, e la quantità sottoscritta non cambia. Puoi anche modificare la quantità da «Gestisci piano».",
       "seatsLastMonth": "{period}: {used, plural, one {# postazione usata} other {# postazioni usate}} e {paid, plural, one {# pagata} other {# pagate}}. Eccedenza: {extra, plural, one {# postazione} other {# postazioni}} ({amount}). Con pagamento mensile va nella tua prossima fattura e la quantità sottoscritta sale alle postazioni usate. Con pagamento annuale si fattura alla chiusura del mese, alla tariffa annuale divisa per dodici, senza cambiare la quantità sottoscritta.",
       "seatsRotated": "{used, plural, one {# postazione conteggiata} other {# postazioni conteggiate}} questo mese. Hai revocato una chiave di servizio e, ruotandola, le tue macchine cambiano identità di postazione: per questo il mese le conta due volte. Si sistema da solo il mese prossimo, non devi cambiare piano.",
       "taxNote": "IVA esclusa. Se la Sua azienda ha una partita IVA intracomunitaria, si applica l'inversione contabile.",
@@ -737,8 +743,8 @@
       "planPro": "Pro",
       "planTeam": "Team",
       "teamHint": "Team include {included} postazioni; ogni postazione in più costa {extra} al mese. Non se ne possono comprare meno di {included}.",
-      "checkoutTeamMonthly": "Abbonati a Team — {monthly}/mese, {included} postazioni →",
-      "checkoutTeamYearly": "Abbonati a Team — {yearly}/anno, {included} postazioni →",
+      "checkoutTeamMonthly": "Abbonati a Team — da {monthly}/mese →",
+      "checkoutTeamYearly": "Abbonati a Team — da {yearly}/anno →",
       "errPlanCerrado": "Questo piano non è più offerto ai nuovi clienti. Scegli Pro o Team.",
       "statusLabel": "Stato",
       "statusActive": "Abbonamento attivo",
@@ -767,7 +773,9 @@
       "planTeamPrice": "{monthly} al mese · {yearly} all'anno · {included} postazioni incluse",
       "summaryLabel": "Stai acquistando",
       "summaryNote": "L'importo esatto, con le imposte, lo conferma Stripe prima del pagamento.",
-      "summary": "{plan} · {seats, plural, one {# postazione} other {# postazioni}}"
+      "summary": "{plan} · {seats, plural, one {# postazione} other {# postazioni}}",
+      "roleNote": "Il tuo profilo non può acquistare né gestire la fatturazione. Chiedi a una persona con profilo di proprietario, amministratore o fatturazione di farlo.",
+      "paidPlan": "Piano a pagamento"
     },
     "referenceLedgerCards": {
       "proven": "comprovato",
@@ -814,7 +822,7 @@
       "awaitingFirstReport": "In attesa del primo report"
     },
     "checkoutBanner": {
-      "successPending": "<b>Pagamento ricevuto.</b> Stiamo attivando la tua licenza — di solito ci vogliono pochi secondi e questa pagina si aggiorna da sola.",
+      "successPending": "<b>Di ritorno da Stripe.</b> Stiamo confermando il tuo pagamento e attivando il tuo piano — di solito ci vogliono pochi secondi e questa pagina si aggiorna da sola.",
       "successActive": "<b>Il tuo abbonamento è attivo.</b> Il passo successivo è ritirare la tua chiave di licenza.",
       "goToInstall": "Ottieni la tua chiave di licenza →",
       "cancelled": "<b>Nessun pagamento è stato completato</b> — non ti abbiamo addebitato nulla. Puoi ricominciare quando vuoi.",
@@ -929,16 +937,14 @@
       "badgeMedido": "Misurato",
       "proyeccionTitulo": "Risparmio proiettato per {periodo}",
       "proyeccionNota": "Quanto misurato finora più il tuo ritmo degli ultimi {dias} giorni per i {restantes} giorni che restano. È una stima, non una fattura.",
-      "comision": "Commissione della formula precedente (riferimento)",
-      "comisionNota": "Il {pct} del risparmio proiettato, secondo la formula con commissione, chiusa alle nuove adesioni. I piani a canone fisso non prevedono commissioni.",
-      "comisionCalibracion": "Mese di calibrazione della formula con commissione: non si addebita nulla. I piani a canone fisso non prevedono commissioni.",
       "cerrado": "Periodo chiuso: questo è ciò che è stato, non dove sta andando.",
       "pocosDias": "È ancora presto per tracciare la retta: servono {min} giorni completi e ce ne sono {n}. Ciò che è misurato è già reale.",
       "medido": "Risparmiato finora (misurato)",
       "diaDeMes": "Giorno {n} di {total}",
       "ritmoLabel": "Ritmo, ultimi {dias} giorni",
       "porDia": "{importe} / giorno",
-      "diasRestantes": "{n} giorni davanti"
+      "diasRestantes": "{n} giorni davanti",
+      "verExtracto": "Vedi l'estratto"
     },
     "extracto": {
       "metaTitle": "Estratto · BiVelio Savings Layer",
@@ -1009,7 +1015,7 @@
       "regimenLegadoTitulo": "Formula storica con commissione",
       "regimenLegadoBody": "Il tuo contratto mantiene la formula con commissione sul risparmio misurato, chiusa ai nuovi clienti. Il calcolo è nello storico qui sotto; il canone per postazione è un addebito a parte.",
       "regimenNingunoTitulo": "Nessun piano a pagamento attivo",
-      "regimenNingunoBody": "Oggi non ti viene fatturato nulla. I piani in vendita sono a canone fisso e non prevedono commissione sul risparmio.",
+      "regimenNingunoBody": "Questa organizzazione non ha in corso alcun piano a canone fisso (Pro o Team) e non è contrassegnata come esente. In questo caso, alla chiusura di ogni mese viene emesso un estratto sul risparmio misurato, secondo le condizioni pubblicate della formula precedente con commissione; il calcolo è nello storico qui sotto. I piani in vendita sono a canone fisso e non prevedono commissione.",
       "regimenIndeterminadoTitulo": "Non possiamo mostrare qui la formula del tuo contratto",
       "regimenIndeterminadoBody": "Questa pagina non è riuscita a determinare quale formula si applica al tuo abbonamento. Ciò che ti viene addebitato è quanto risulta dalle tue fatture e dal portale di fatturazione.",
       "irACuenta": "Vedi piano e fatturazione",
@@ -1018,7 +1024,12 @@
       "historicoSub": "La commissione sul risparmio misurato era la formula precedente. Resta qui per consultazione e verifica; non è un'offerta né la fattura di un piano a canone fisso.",
       "simulacionTitulo": "Simulazione della commissione di questo periodo",
       "simulacionAplica": "È il calcolo della formula che il tuo contratto mantiene.",
-      "simulacionNoAplica": "Non si applica al tuo contratto in vigore: è mostrata solo come riferimento."
+      "simulacionNoAplica": "Non si applica al tuo contratto in vigore: è mostrata solo come riferimento.",
+      "regimenNingunoEnlace": "Vedi la formula precedente in Prezzi",
+      "simulacionSinPlan": "È il calcolo usato alla chiusura del mese quando non c'è un piano a canone fisso in corso.",
+      "simulacionPuedeAplicar": "Può applicarsi a seconda del tuo contratto: qui è mostrata come calcolo, non come fattura.",
+      "notaSombraReferencia": "Cifra in ombra: la commissione calcolata è {comision}. È un calcolo, non una fattura.",
+      "historialIntroNeutro": "Ogni periodo chiuso viene fissato immutabile il primo del mese. Se un periodo genera un addebito, la sua fattura cita quel documento."
     },
     "usageExplorer": {
       "title": "Esploratore dell'uso",
@@ -2107,7 +2118,7 @@
     "eyebrow": "Prezzi pubblicati",
     "title": "Motore open source. Controllo cloud per il tuo team.",
     "governs": "Questa pagina descrive come funziona il servizio oggi; prevalgono la <license>LICENSE</license> e i <terms>Termini di BiVelio</terms>.",
-    "lede": "Il pacchetto è open core: nessuna chiave. Questa pagina dà un prezzo al cloud opzionale — Measure gratis, poi Pro per postazione o un piano Team, senza commissioni sul tuo risparmio. Ogni cifra qui viene dallo stesso codice che ti fattura, e cambia quando cambia il prezzo.",
+    "lede": "Il motore è open source: nessuna chiave. Questa pagina dà un prezzo a Savings Cloud, il cloud opzionale — Measure gratis, poi Pro per postazione o un piano Team, senza commissioni sul tuo risparmio. Ogni cifra qui viene dallo stesso codice che ti fattura, e cambia quando cambia il prezzo.",
     "plans": {
       "title": "Piani",
       "intro": "Quattro piani, dal più piccolo al più grande. Pro e Team si pagano per postazione e non prevedono commissioni.",
@@ -2140,7 +2151,7 @@
       "whatTitle": "Che cos'è una postazione",
       "what": "Una postazione è una <b>macchina o identità di servizio</b> che esegue il Software, non una persona. Scegli tu quante postazioni copre il tuo abbonamento (fino a {max} al pagamento) e la tua licenza ne copre altrettante.",
       "counted": "Ogni mese solare (UTC), BiVelio conta come in uso ogni identificativo di postazione distinto che è stato attivo in almeno {dias} giorni diversi di quel mese. Le identità contrassegnate come CI o runner effimeri non contano. La tua dashboard confronta questo conteggio con le postazioni coperte dal tuo abbonamento.",
-      "overage": "Se in un mese usi più postazioni di quelle coperte dal tuo abbonamento, la differenza si addebita da sola, una volta, alla chiusura del mese e nella tua prossima fattura: quanto costano quelle postazioni in più per un mese con il tuo piano (nell'annuale, un dodicesimo del prezzo annuale). Nei piani mensili il tuo abbonamento passa poi a coprire le postazioni che usi. Se il conteggio non è affidabile — per esempio perché quel mese hai ruotato una chiave di servizio — non si addebita: lo verifichiamo a mano.",
+      "overage": "Se in un mese usi più postazioni di quelle coperte dal tuo abbonamento, la differenza si fattura una volta, alla chiusura del mese: quanto costano quelle postazioni in più per un mese con il tuo piano. Con pagamento mensile si aggiunge alla tua prossima fattura e la quantità sottoscritta sale alle postazioni in uso. Con pagamento annuale si fattura alla chiusura del mese, alla tariffa annuale divisa per dodici, e la quantità sottoscritta non cambia. Se il conteggio non è affidabile — per esempio perché quel mese hai ruotato una chiave di servizio — non si addebita: lo verifichiamo a mano.",
       "identifier": "Come si forma l'identificativo di postazione, e tutto il resto che il Software invia a BiVelio, è nella <privacy>pagina sulla privacy</privacy>.",
       "provider": "Il canone non include il consumo del tuo provider LLM: mantieni il tuo provider e ne paghi l’uso alle sue condizioni.",
       "manageTitle": "Come gestire il tuo abbonamento",

@@ -213,7 +213,7 @@
     "useAnotherEmail": "Usar otro correo",
     "requestNewLink": "Pedir un enlace nuevo",
     "successNext": "Siguiente paso: instala el paquete y conecta tu primera llamada. Hasta entonces el panel no tiene nada que medir.",
-    "successPlan": "El plan que elegiste sigue seleccionado: lo confirmas en el siguiente paso.",
+    "successPlan": "Has elegido un plan: lo confirmas en Cuenta, dentro del panel. Todavía no se ha comprado nada.",
     "successInvite": "Te devolvemos a tu invitación para que la aceptes.",
     "successContinue": "Continuar",
     "panel": {
@@ -284,6 +284,12 @@
         "coverageFull": "El desglose cubre todo el coste observado del periodo.",
         "coveragePartial": "El desglose por modelo cubre el {coverage} del coste observado del periodo; el resto no tiene modelo atribuido.",
         "coverageUnknown": "No se puede comparar con el coste observado del periodo."
+      },
+      "planChosen": {
+        "title": "Has elegido {plan}",
+        "body": "Todavía no se ha comprado nada. Confirma el plan y los asientos en Cuenta; el pago se hace en Stripe.",
+        "cta": "Confirmar en Cuenta",
+        "askOwner": "Tu perfil no puede contratar un plan. Pide a una persona con perfil de propietario, administrador o facturación que lo confirme en Cuenta."
       }
     },
     "proof": {
@@ -724,7 +730,7 @@
       "checkoutError": "Algo salió mal — inténtalo de nuevo.",
       "seatsLabel": "Asientos",
       "seatsHint": "Un asiento es una máquina o identidad de servicio activa, no una persona. Cuenta los procesos que van a ejecutar el SDK, no tus empleados. En Kubernetes, fija BVSALA_SEAT_ID en cada réplica.",
-      "seatsOver": "{used, plural, one {# asiento} other {# asientos}} en uso y {paid, plural, one {# pagado} other {# pagados}}. El exceso se cobra al cerrar el mes, al precio de tu plan. Con pago mensual se añade a tu próxima factura y la cantidad contratada sube a los asientos en uso. Con pago anual se factura al cierre del mes, a la tarifa anual dividida entre doce, y la cantidad contratada no cambia. También puedes ajustar la cantidad desde «Gestionar plan».",
+      "seatsOver": "{used, plural, one {# asiento} other {# asientos}} en uso y {paid, plural, one {# pagado} other {# pagados}}. El exceso se factura según tu plan y el estado de tu suscripción, al cerrar el mes. Con pago mensual se añade a tu próxima factura y la cantidad contratada sube a los asientos en uso. Con pago anual se factura al cierre del mes, a la tarifa anual dividida entre doce, y la cantidad contratada no cambia. También puedes ajustar la cantidad desde «Gestionar plan».",
       "seatsLastMonth": "{period}: {used, plural, one {# asiento usado} other {# asientos usados}} y {paid, plural, one {# pagado} other {# pagados}}. Exceso: {extra, plural, one {# asiento} other {# asientos}} ({amount}). Con pago mensual va en tu próxima factura y la cantidad contratada sube a los asientos usados. Con pago anual se factura al cierre del mes, a la tarifa anual dividida entre doce, sin cambiar la cantidad contratada.",
       "seatsRotated": "{used, plural, one {# asiento contado} other {# asientos contados}} este mes. Has revocado una clave de servicio, y al rotarla tus máquinas estrenan identidad de asiento, así que este mes se cuentan dos veces. Se corrige solo el mes que viene: no tienes que cambiar de plan.",
       "taxNote": "IVA no incluido. Si su empresa tiene NIF-IVA intracomunitario, se aplica la inversión del sujeto pasivo.",
@@ -737,8 +743,8 @@
       "planPro": "Pro",
       "planTeam": "Team",
       "teamHint": "Team incluye {included} asientos; cada asiento más cuesta {extra} al mes. No se pueden comprar menos de {included}.",
-      "checkoutTeamMonthly": "Suscríbete a Team — {monthly}/mes, {included} asientos →",
-      "checkoutTeamYearly": "Suscríbete a Team — {yearly}/año, {included} asientos →",
+      "checkoutTeamMonthly": "Suscríbete a Team — desde {monthly}/mes →",
+      "checkoutTeamYearly": "Suscríbete a Team — desde {yearly}/año →",
       "errPlanCerrado": "Ese plan ya no se ofrece a clientes nuevos. Elige Pro o Team.",
       "statusLabel": "Estado",
       "statusActive": "Suscripción activa",
@@ -767,7 +773,9 @@
       "planTeamPrice": "{monthly} al mes · {yearly} al año · {included} asientos incluidos",
       "summaryLabel": "Vas a comprar",
       "summaryNote": "El importe exacto, con impuestos, lo confirma Stripe antes de pagar.",
-      "summary": "{plan} · {seats, plural, one {# asiento} other {# asientos}}"
+      "summary": "{plan} · {seats, plural, one {# asiento} other {# asientos}}",
+      "roleNote": "Tu perfil no puede comprar ni gestionar la facturación. Pide a una persona con perfil de propietario, administrador o facturación que lo haga.",
+      "paidPlan": "Plan de pago"
     },
     "referenceLedgerCards": {
       "proven": "comprobado",
@@ -814,7 +822,7 @@
       "awaitingFirstReport": "Esperando el primer reporte"
     },
     "checkoutBanner": {
-      "successPending": "<b>Pago recibido.</b> Estamos activando tu licencia — suele tardar unos segundos y esta página se actualiza sola.",
+      "successPending": "<b>De vuelta de Stripe.</b> Estamos confirmando tu pago y activando tu plan — suele tardar unos segundos y esta página se actualiza sola.",
       "successActive": "<b>Tu suscripción está activa.</b> El siguiente paso es recoger tu clave de licencia.",
       "goToInstall": "Obtén tu clave de licencia →",
       "cancelled": "<b>No se ha completado ningún pago</b> — no se te ha cobrado nada. Puedes empezar de nuevo cuando quieras.",
@@ -929,16 +937,14 @@
       "badgeMedido": "Medido",
       "proyeccionTitulo": "Ahorro proyectado para {periodo}",
       "proyeccionNota": "Lo medido hasta ahora más tu ritmo de los últimos {dias} días por los {restantes} días que quedan. Es una estimación, no una factura.",
-      "comision": "Comisión de la modalidad anterior (referencia)",
-      "comisionNota": "El {pct} del ahorro proyectado, según la modalidad con comisión, cerrada a nuevas altas. Los planes de cuota fija no llevan comisión.",
-      "comisionCalibracion": "Mes de calibración de la modalidad con comisión: no se cobra nada. Los planes de cuota fija no llevan comisión.",
       "cerrado": "Período cerrado: esto es lo que fue, no hacia dónde va.",
       "pocosDias": "Aún es pronto para trazar la recta: hacen falta {min} días completos y llevas {n}. Lo medido ya es real.",
       "medido": "Ahorrado hasta la fecha (medido)",
       "diaDeMes": "Día {n} de {total}",
       "ritmoLabel": "Ritmo, últimos {dias} días",
       "porDia": "{importe} / día",
-      "diasRestantes": "{n} días por delante"
+      "diasRestantes": "{n} días por delante",
+      "verExtracto": "Ver extracto"
     },
     "extracto": {
       "metaTitle": "Extracto · BiVelio Savings Layer",
@@ -1009,7 +1015,7 @@
       "regimenLegadoTitulo": "Modalidad histórica con comisión",
       "regimenLegadoBody": "Tu contrato conserva la modalidad con comisión sobre el ahorro medido, cerrada a nuevas altas. Su cálculo está en el histórico de abajo; la cuota por asiento es un cargo aparte.",
       "regimenNingunoTitulo": "Sin plan de pago activo",
-      "regimenNingunoBody": "Hoy no se te factura nada. Los planes en venta son de cuota fija y no llevan comisión sobre el ahorro.",
+      "regimenNingunoBody": "Esta organización no tiene vivo ningún plan de cuota fija (Pro o Team) ni está marcada como exenta. En ese caso, al cerrar cada mes se emite un extracto sobre el ahorro medido, según las condiciones publicadas de la modalidad anterior con comisión; su cálculo está en el histórico de abajo. Los planes en venta son de cuota fija y no llevan comisión.",
       "regimenIndeterminadoTitulo": "No podemos mostrar aquí la modalidad de tu contrato",
       "regimenIndeterminadoBody": "Esta página no ha podido determinar qué modalidad se aplica a tu suscripción. Lo que se te cobra es lo que figura en tus facturas y en el portal de facturación.",
       "irACuenta": "Ver plan y facturación",
@@ -1018,7 +1024,12 @@
       "historicoSub": "La comisión sobre el ahorro medido fue la modalidad anterior. Se conserva aquí para consulta y auditoría; no es una oferta ni la factura de un plan de cuota fija.",
       "simulacionTitulo": "Simulación de la comisión de este periodo",
       "simulacionAplica": "Es el cálculo de la modalidad que conserva tu contrato.",
-      "simulacionNoAplica": "No se aplica a tu contrato vigente: se enseña solo como referencia."
+      "simulacionNoAplica": "No se aplica a tu contrato vigente: se enseña solo como referencia.",
+      "regimenNingunoEnlace": "Ver la modalidad anterior en Precios",
+      "simulacionSinPlan": "Es el cálculo que se usa al cerrar el mes cuando no hay un plan de cuota fija vivo.",
+      "simulacionPuedeAplicar": "Puede aplicarse según tu contrato: aquí se enseña como cálculo, no como factura.",
+      "notaSombraReferencia": "Cifra en sombra: la comisión calculada es {comision}. Es un cálculo, no una factura.",
+      "historialIntroNeutro": "Cada período cerrado queda fijado inmutable el día uno. Si un período genera un cargo, su factura cita ese documento."
     },
     "usageExplorer": {
       "title": "Explorador de uso",
@@ -2107,7 +2118,7 @@
     "eyebrow": "Precios publicados",
     "title": "Motor open source. Control cloud para tu equipo.",
     "governs": "Esta página describe cómo funciona el servicio hoy; rigen la <license>LICENSE</license> y los <terms>Términos de BiVelio</terms>.",
-    "lede": "El paquete es open core: no necesita claves. Esta página pone precio a la nube opcional — Measure gratis, luego Pro por asiento o un plan Team, sin comisión sobre tu ahorro. Cada cifra de esta página se lee del mismo código que te factura, así que cambia cuando cambia el precio.",
+    "lede": "El motor es open source: no necesita claves. Esta página pone precio a Savings Cloud, la nube opcional — Measure gratis, luego Pro por asiento o un plan Team, sin comisión sobre tu ahorro. Cada cifra de esta página se lee del mismo código que te factura, así que cambia cuando cambia el precio.",
     "plans": {
       "title": "Planes",
       "intro": "Cuatro planes, de menos a más. Pro y Team se pagan por asiento y no llevan comisión.",
@@ -2140,7 +2151,7 @@
       "whatTitle": "Qué es un asiento",
       "what": "Un asiento es una <b>máquina o identidad de servicio</b> que ejecuta el Software, no una persona. Tú eliges cuántos asientos cubre tu suscripción (hasta {max} en el pago) y tu licencia cubre esos.",
       "counted": "Cada mes natural (UTC), BiVelio cuenta como en uso cada identificador de asiento distinto que estuvo activo al menos {dias} días distintos de ese mes. Las identidades marcadas como CI o ejecutores efímeros no cuentan. Tu panel compara ese recuento con los asientos que cubre tu suscripción.",
-      "overage": "Si un mes usas más asientos de los que cubre tu suscripción, la diferencia se cobra sola, una vez, al cerrar el mes y en tu próxima factura: lo que cuestan esos asientos de más durante un mes con tu plan (en el anual, la doceava parte del precio anual). En los planes mensuales tu suscripción pasa después a cubrir los asientos que usas. Si el recuento no es fiable —por ejemplo, porque ese mes rotaste una clave de servicio— no se cobra: lo revisamos a mano.",
+      "overage": "Si un mes usas más asientos de los que cubre tu suscripción, la diferencia se factura una vez, al cerrar el mes: lo que cuestan esos asientos de más durante un mes con tu plan. Con pago mensual se añade a tu próxima factura y la cantidad contratada sube a los asientos en uso. Con pago anual se factura al cierre del mes, a la tarifa anual dividida entre doce, y la cantidad contratada no cambia. Si el recuento no es fiable —por ejemplo, porque ese mes rotaste una clave de servicio— no se cobra: lo revisamos a mano.",
       "identifier": "Cómo se forma el identificador de asiento, y todo lo demás que el Software envía a BiVelio, está en la <privacy>página de privacidad</privacy>.",
       "provider": "La cuota no incluye el consumo de tu proveedor de LLM: mantienes tu proveedor y pagas su uso según sus condiciones.",
       "manageTitle": "Cómo gestionar tu suscripción",

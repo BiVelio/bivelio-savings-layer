@@ -1,6 +1,7 @@
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { decidirAviso } from "@/lib/billing/aviso";
+import { puede } from "@/lib/org/permisos";
 
 import { Notice } from "@/app/components/ui";
 
@@ -27,6 +28,10 @@ export async function BillingStateBanner({ ctx }: { ctx: OrgContext }) {
   if (!aviso) return null;
 
   const t = await getTranslations("dashboard.billingState");
+  const tc = await getTranslations("dashboard.accountPlanStrip");
+  // El portal mueve dinero: solo se ofrece a quien puede gestionarlo. Rol
+  // desconocido (`null`) se deja como estaba — decide el servidor.
+  const puedePortal = ctx.role == null || puede(ctx.role, "gestionar_facturacion");
   const locale = await getLocale();
   // La fecha se formatea en SERVIDOR y baja ya como cadena, igual que el precio:
   // formatear en los dos lados reabre el error de hidratación #418, porque la ICU
@@ -85,9 +90,16 @@ export async function BillingStateBanner({ ctx }: { ctx: OrgContext }) {
       role="status"
       titulo={titulo}
       className="acct-banner"
-      acciones={conPortal ? <PortalButton label={t("pastDueAction")} /> : undefined}
+      acciones={conPortal && puedePortal ? <PortalButton label={t("pastDueAction")} /> : undefined}
     >
-      {cuerpo}
+      {conPortal && !puedePortal ? (
+        <>
+          <p>{cuerpo}</p>
+          <p className="acct-banner-note">{tc("roleNote")}</p>
+        </>
+      ) : (
+        cuerpo
+      )}
     </Notice>
   );
 }

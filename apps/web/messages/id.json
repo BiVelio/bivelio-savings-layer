@@ -213,7 +213,7 @@
     "useAnotherEmail": "Gunakan email lain",
     "requestNewLink": "Minta tautan baru",
     "successNext": "Langkah berikutnya: pasang paketnya dan hubungkan panggilan pertama Anda. Sampai saat itu dasbor belum punya apa pun untuk diukur.",
-    "successPlan": "Paket yang Anda pilih tetap terpilih: Anda mengonfirmasinya di langkah berikutnya.",
+    "successPlan": "Anda telah memilih paket: Anda mengonfirmasinya di Akun, di dalam dasbor. Belum ada yang dibeli.",
     "successInvite": "Kami mengembalikan Anda ke undangan agar Anda dapat menerimanya.",
     "successContinue": "Lanjutkan",
     "panel": {
@@ -284,6 +284,12 @@
         "coverageFull": "Rincian mencakup seluruh biaya teramati pada periode ini.",
         "coveragePartial": "Rincian per model mencakup {coverage} dari biaya teramati pada periode ini; sisanya tidak memiliki model yang diatribusikan.",
         "coverageUnknown": "Tidak dapat dibandingkan dengan biaya teramati pada periode ini."
+      },
+      "planChosen": {
+        "title": "Anda memilih {plan}",
+        "body": "Belum ada yang dibeli. Konfirmasikan paket dan jumlah kursi di Akun; pembayaran dilakukan di Stripe.",
+        "cta": "Konfirmasi di Akun",
+        "askOwner": "Peran Anda tidak dapat membeli paket. Mintalah seseorang dengan peran pemilik, administrator, atau penagihan untuk mengonfirmasinya di Akun."
       }
     },
     "proof": {
@@ -724,7 +730,7 @@
       "checkoutError": "Terjadi kesalahan — silakan coba lagi.",
       "seatsLabel": "Kursi",
       "seatsHint": "Satu kursi adalah satu mesin atau identitas layanan aktif, bukan orang. Hitung proses yang akan menjalankan SDK, bukan jumlah karyawan. Di Kubernetes, setel BVSALA_SEAT_ID per replika.",
-      "seatsOver": "{used, plural, other {# kursi}} terpakai, {paid, plural, other {# kursi}} dibayar. Kelebihan kursi ditagih saat bulan ditutup, dengan harga paket Anda. Pada pembayaran bulanan, kelebihan itu ditambahkan ke tagihan berikutnya dan jumlah kursi langganan naik menjadi jumlah kursi yang terpakai. Pada pembayaran tahunan, kelebihan itu ditagih saat tutup bulan dengan tarif tahunan dibagi dua belas, dan jumlah kursi langganan tidak berubah. Anda juga bisa menyesuaikan jumlahnya lewat «Kelola paket».",
+      "seatsOver": "{used, plural, other {# kursi}} terpakai, {paid, plural, other {# kursi}} dibayar. Kelebihan kursi ditagih saat bulan ditutup, sesuai paket dan status langganan Anda. Pada pembayaran bulanan, kelebihan itu ditambahkan ke tagihan berikutnya dan jumlah kursi langganan naik menjadi jumlah kursi yang terpakai. Pada pembayaran tahunan, kelebihan itu ditagih saat tutup bulan dengan tarif tahunan dibagi dua belas, dan jumlah kursi langganan tidak berubah. Anda juga bisa menyesuaikan jumlahnya lewat «Kelola paket».",
       "seatsLastMonth": "{period}: {used, plural, other {# kursi}} terpakai, {paid, plural, other {# kursi}} dibayar. Kelebihan: {extra, plural, other {# kursi}} ({amount}). Pada pembayaran bulanan, kelebihan ini masuk ke tagihan berikutnya dan jumlah kursi langganan naik menjadi jumlah kursi yang terpakai. Pada pembayaran tahunan, kelebihan ini ditagih saat tutup bulan dengan tarif tahunan dibagi dua belas, tanpa mengubah jumlah kursi langganan.",
       "seatsRotated": "{used, plural, other {# kursi}} terhitung bulan ini. Anda mencabut kunci akun layanan, dan saat kunci diganti mesin-mesin Anda mendapat identitas kursi baru — jadi bulan ini terhitung dua kali. Bulan depan normal kembali; Anda tidak perlu mengubah paket.",
       "taxNote": "Belum termasuk PPN. Jika perusahaan Anda memiliki nomor PPN Uni Eropa, berlaku mekanisme reverse charge.",
@@ -737,8 +743,8 @@
       "planPro": "Pro",
       "planTeam": "Team",
       "teamHint": "Team mencakup {included} kursi; setiap kursi tambahan {extra} per bulan. Tidak bisa membeli kurang dari {included}.",
-      "checkoutTeamMonthly": "Berlangganan Team — {monthly}/bulan, {included} kursi →",
-      "checkoutTeamYearly": "Berlangganan Team — {yearly}/tahun, {included} kursi →",
+      "checkoutTeamMonthly": "Berlangganan Team — mulai {monthly}/bulan →",
+      "checkoutTeamYearly": "Berlangganan Team — mulai {yearly}/tahun →",
       "errPlanCerrado": "Paket itu tidak lagi ditawarkan kepada pelanggan baru. Pilih Pro atau Team.",
       "statusLabel": "Status",
       "statusActive": "Langganan aktif",
@@ -767,7 +773,9 @@
       "planTeamPrice": "{monthly} per bulan · {yearly} per tahun · termasuk {included} kursi",
       "summaryLabel": "Anda akan membeli",
       "summaryNote": "Jumlah pastinya, termasuk pajak, dikonfirmasi Stripe sebelum Anda membayar.",
-      "summary": "{plan} · {seats, plural, other {# kursi}}"
+      "summary": "{plan} · {seats, plural, other {# kursi}}",
+      "roleNote": "Peran Anda tidak dapat membeli atau mengelola penagihan. Mintalah seseorang dengan peran pemilik, administrator, atau penagihan untuk melakukannya.",
+      "paidPlan": "Paket berbayar"
     },
     "referenceLedgerCards": {
       "proven": "terbukti",
@@ -814,7 +822,7 @@
       "awaitingFirstReport": "Menunggu laporan pertama"
     },
     "checkoutBanner": {
-      "successPending": "<b>Pembayaran diterima.</b> Kami sedang mengaktifkan lisensi Anda — biasanya hanya beberapa detik, dan halaman ini menyegarkan dirinya sendiri.",
+      "successPending": "<b>Kembali dari Stripe.</b> Kami sedang mengonfirmasi pembayaran Anda dan mengaktifkan paket Anda — biasanya hanya beberapa detik, dan halaman ini menyegarkan dirinya sendiri.",
       "successActive": "<b>Langganan Anda aktif.</b> Langkah berikutnya adalah mengambil kunci lisensi Anda.",
       "goToInstall": "Dapatkan kunci lisensi Anda →",
       "cancelled": "<b>Tidak ada pembayaran yang diselesaikan</b> — Anda tidak dikenai biaya apa pun. Anda bisa mulai lagi kapan saja.",
@@ -929,16 +937,14 @@
       "badgeMedido": "Terukur",
       "proyeccionTitulo": "Penghematan proyeksi untuk {periodo}",
       "proyeccionNota": "Yang terukur sampai sekarang ditambah laju {dias} hari terakhir Anda dikalikan {restantes} hari tersisa. Ini perkiraan, bukan tagihan.",
-      "comision": "Komisi model sebelumnya (referensi)",
-      "comisionNota": "{pct} dari penghematan yang diproyeksikan, menurut model komisi yang sudah ditutup bagi pendaftar baru. Paket biaya tetap tidak dikenai komisi.",
-      "comisionCalibracion": "Bulan kalibrasi model komisi: tidak ada yang ditagih. Paket biaya tetap tidak dikenai komisi.",
       "cerrado": "Periode tertutup: ini yang sudah terjadi, bukan ke mana arahnya.",
       "pocosDias": "Masih terlalu awal untuk menarik garis: dibutuhkan {min} hari penuh dan baru ada {n}. Yang terukur sudah nyata.",
       "medido": "Dihemat sampai kini (terukur)",
       "diaDeMes": "Hari {n} dari {total}",
       "ritmoLabel": "Laju, {dias} hari terakhir",
       "porDia": "{importe} / hari",
-      "diasRestantes": "Sisa hari: {n}"
+      "diasRestantes": "Sisa hari: {n}",
+      "verExtracto": "Lihat laporan"
     },
     "extracto": {
       "metaTitle": "Rekening · BiVelio Savings Layer",
@@ -1009,7 +1015,7 @@
       "regimenLegadoTitulo": "Model lama dengan komisi",
       "regimenLegadoBody": "Kontrak kamu mempertahankan model dengan komisi atas penghematan terukur, yang sudah ditutup untuk pendaftaran baru. Perhitungannya ada di riwayat di bawah; biaya per kursi adalah tagihan terpisah.",
       "regimenNingunoTitulo": "Tidak ada paket berbayar yang aktif",
-      "regimenNingunoBody": "Saat ini tidak ada yang ditagihkan kepada kamu. Paket yang dijual berbiaya tetap dan tidak dikenai komisi atas penghematan.",
+      "regimenNingunoBody": "Organisasi ini tidak memiliki paket berbiaya tetap yang sedang berjalan (Pro atau Team) dan tidak ditandai sebagai dikecualikan. Dalam hal itu, setiap bulan sebuah laporan ditutup atas penghematan yang terukur, menurut ketentuan yang dipublikasikan untuk model komisi sebelumnya; perhitungannya ada di riwayat di bawah. Paket yang dijual berbiaya tetap dan tidak dikenai komisi.",
       "regimenIndeterminadoTitulo": "Kami tidak dapat menampilkan model kontrak kamu di sini",
       "regimenIndeterminadoBody": "Halaman ini tidak dapat menentukan model mana yang berlaku untuk langganan kamu. Yang ditagihkan adalah yang tertera di faktur kamu dan di portal penagihan.",
       "irACuenta": "Lihat paket dan penagihan",
@@ -1018,7 +1024,12 @@
       "historicoSub": "Komisi atas penghematan terukur adalah model sebelumnya. Model itu disimpan di sini untuk rujukan dan audit; ini bukan penawaran dan bukan faktur paket biaya tetap.",
       "simulacionTitulo": "Simulasi komisi untuk periode ini",
       "simulacionAplica": "Ini adalah perhitungan untuk model yang dipertahankan kontrak kamu.",
-      "simulacionNoAplica": "Tidak berlaku untuk kontrak kamu yang berlaku: ditampilkan hanya sebagai rujukan."
+      "simulacionNoAplica": "Tidak berlaku untuk kontrak kamu yang berlaku: ditampilkan hanya sebagai rujukan.",
+      "regimenNingunoEnlace": "Lihat model sebelumnya di Harga",
+      "simulacionSinPlan": "Inilah perhitungan yang dipakai saat tutup bulan bila tidak ada paket berbiaya tetap yang berjalan.",
+      "simulacionPuedeAplicar": "Dapat berlaku tergantung kontrak Anda: di sini ditampilkan sebagai perhitungan, bukan faktur.",
+      "notaSombraReferencia": "Angka bayangan: komisi yang dihitung adalah {comision}. Ini perhitungan, bukan faktur.",
+      "historialIntroNeutro": "Setiap periode yang ditutup difiksasi secara permanen pada tanggal satu. Jika suatu periode menimbulkan tagihan, fakturnya mengutip dokumen itu."
     },
     "usageExplorer": {
       "title": "Penjelajah penggunaan",
@@ -2107,7 +2118,7 @@
     "eyebrow": "Harga yang diterbitkan",
     "title": "Mesin open source. Kendali cloud untuk tim Anda.",
     "governs": "Halaman ini menjelaskan cara layanan bekerja saat ini; yang mengikat adalah <license>LICENSE</license> dan <terms>Ketentuan BiVelio</terms>.",
-    "lede": "Paketnya open core: tanpa kunci. Halaman ini memberi harga pada cloud opsional — Measure gratis, lalu Pro per kursi atau paket Team, tanpa komisi atas penghematan Anda. Setiap angka di halaman ini dibaca dari kode yang sama yang menagih Anda, jadi ia berubah saat harga berubah.",
+    "lede": "Mesinnya open source: tanpa kunci. Halaman ini memberi harga pada Savings Cloud, cloud opsional — Measure gratis, lalu Pro per kursi atau paket Team, tanpa komisi atas penghematan Anda. Setiap angka di halaman ini dibaca dari kode yang sama yang menagih Anda, jadi ia berubah saat harga berubah.",
     "plans": {
       "title": "Paket",
       "intro": "Empat paket, dari yang terkecil hingga terbesar. Pro dan Team dibayar per kursi dan tidak dikenai komisi.",
@@ -2140,7 +2151,7 @@
       "whatTitle": "Apa itu kursi",
       "what": "Satu kursi adalah satu <b>mesin atau identitas layanan</b> yang menjalankan Perangkat Lunak, bukan orang. Kamu memilih berapa kursi yang dicakup langgananmu (hingga {max} saat pembayaran), dan lisensimu mencakup sebanyak itu.",
       "counted": "Setiap bulan kalender (UTC), BiVelio menghitung sebagai terpakai setiap ID kursi berbeda yang aktif setidaknya {dias} hari berbeda dalam bulan itu. Identitas yang ditandai sebagai CI atau runner sementara tidak dihitung. Dasbormu membandingkan hitungan itu dengan kursi yang dicakup langgananmu.",
-      "overage": "Jika dalam satu bulan Anda memakai lebih banyak kursi daripada yang dicakup langganan, selisihnya ditagih otomatis, satu kali, saat bulan ditutup, di tagihan berikutnya: harga kursi berlebih itu selama satu bulan sesuai paket Anda (pada paket tahunan, seperdua belas harga tahunan). Pada paket bulanan, langganan Anda kemudian naik ke jumlah kursi yang Anda pakai. Jika hitungannya tidak dapat diandalkan — misalnya karena bulan itu Anda merotasi kunci akun layanan — tidak ditagih: kami memeriksanya secara manual.",
+      "overage": "Jika dalam satu bulan Anda memakai lebih banyak kursi daripada yang dicakup langganan, selisihnya ditagih satu kali saat bulan ditutup: harga kursi berlebih itu selama satu bulan sesuai paket Anda. Pada pembayaran bulanan, selisih itu ditambahkan ke tagihan berikutnya dan jumlah kursi langganan naik menjadi jumlah kursi yang terpakai. Pada pembayaran tahunan, selisih itu ditagih saat tutup bulan dengan tarif tahunan dibagi dua belas, dan jumlah kursi langganan tidak berubah. Jika hitungannya tidak dapat diandalkan — misalnya karena bulan itu Anda merotasi kunci akun layanan — tidak ditagih: kami memeriksanya secara manual.",
       "identifier": "Cara ID kursi dibentuk, dan semua hal lain yang dikirim Perangkat Lunak ke BiVelio, ada di <privacy>halaman privasi</privacy>.",
       "provider": "Tarif tidak mencakup pemakaian di penyedia LLM Anda: Anda tetap memakai penyedia Anda dan membayar pemakaiannya sesuai ketentuan mereka.",
       "manageTitle": "Cara mengelola langganan Anda",

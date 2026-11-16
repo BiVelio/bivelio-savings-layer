@@ -213,7 +213,7 @@
     "useAnotherEmail": "Użyj innego adresu e-mail",
     "requestNewLink": "Poproś o nowy link",
     "successNext": "Następny krok: zainstaluj pakiet i podłącz pierwsze wywołanie. Do tego czasu panel nie ma czego mierzyć.",
-    "successPlan": "Wybrany plan pozostaje zaznaczony: potwierdzisz go w następnym kroku.",
+    "successPlan": "Wybrano plan: potwierdzisz go w sekcji Konto, w panelu. Nic jeszcze nie zostało kupione.",
     "successInvite": "Wrócisz do swojego zaproszenia, aby je przyjąć.",
     "successContinue": "Dalej",
     "panel": {
@@ -284,6 +284,12 @@
         "coverageFull": "Podział obejmuje cały zaobserwowany koszt okresu.",
         "coveragePartial": "Podział według modelu obejmuje {coverage} zaobserwowanego kosztu okresu; reszta nie ma przypisanego modelu.",
         "coverageUnknown": "Nie da się porównać z zaobserwowanym kosztem okresu."
+      },
+      "planChosen": {
+        "title": "Wybrany plan: {plan}",
+        "body": "Nic jeszcze nie zostało kupione. Potwierdź plan i liczbę stanowisk w sekcji Konto; płatność odbywa się w Stripe.",
+        "cta": "Potwierdź w sekcji Konto",
+        "askOwner": "Twoja rola nie pozwala wykupić planu. Poproś osobę z rolą właściciela, administratora lub rozliczeń, aby potwierdziła go w sekcji Konto."
       }
     },
     "proof": {
@@ -724,7 +730,7 @@
       "checkoutError": "Coś poszło nie tak — spróbuj ponownie.",
       "seatsLabel": "Stanowiska",
       "seatsHint": "Stanowisko to jedna aktywna maszyna lub tożsamość usługi, nie osoba. Policz procesy, które będą uruchamiać SDK, a nie pracowników. W Kubernetes ustaw BVSALA_SEAT_ID dla każdej repliki.",
-      "seatsOver": "W użyciu {used, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}, opłacone {paid, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}. Nadwyżka jest naliczana po zamknięciu miesiąca, po cenie Twojego planu. Przy płatności miesięcznej trafia na następną fakturę, a liczba wykupionych stanowisk rośnie do liczby stanowisk w użyciu. Przy płatności rocznej jest fakturowana po zamknięciu miesiąca według stawki rocznej podzielonej przez dwanaście, a liczba wykupionych stanowisk się nie zmienia. Możesz też zmienić liczbę w „Zarządzaj planem”.",
+      "seatsOver": "W użyciu {used, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}, opłacone {paid, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}. Nadwyżka jest rozliczana po zamknięciu miesiąca zgodnie z Twoim planem i stanem subskrypcji. Przy płatności miesięcznej trafia na następną fakturę, a liczba wykupionych stanowisk rośnie do liczby stanowisk w użyciu. Przy płatności rocznej jest fakturowana po zamknięciu miesiąca według stawki rocznej podzielonej przez dwanaście, a liczba wykupionych stanowisk się nie zmienia. Możesz też zmienić liczbę w „Zarządzaj planem”.",
       "seatsLastMonth": "{period}: w użyciu {used, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}, opłacone {paid, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}. Nadwyżka: {extra, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}} ({amount}). Przy płatności miesięcznej trafia na następną fakturę, a liczba wykupionych stanowisk rośnie do liczby użytych. Przy płatności rocznej jest fakturowana po zamknięciu miesiąca według stawki rocznej podzielonej przez dwanaście, bez zmiany liczby wykupionych stanowisk.",
       "seatsRotated": "W tym miesiącu policzono {used, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}. Unieważniłeś klucz konta serwisowego, a po jego wymianie maszyny dostają nową tożsamość stanowiska — dlatego w tym miesiącu liczone są podwójnie. W następnym miesiącu wróci do normy; nie musisz zmieniać planu.",
       "taxNote": "Bez VAT. Jeśli Państwa firma ma unijny numer VAT, stosuje się odwrotne obciążenie.",
@@ -737,8 +743,8 @@
       "planPro": "Pro",
       "planTeam": "Team",
       "teamHint": "Team obejmuje {included} stanowisk; każde dodatkowe kosztuje {extra} miesięcznie. Nie można kupić mniej niż {included}.",
-      "checkoutTeamMonthly": "Subskrybuj Team — {monthly}/mies., {included} stanowisk →",
-      "checkoutTeamYearly": "Subskrybuj Team — {yearly}/rok, {included} stanowisk →",
+      "checkoutTeamMonthly": "Subskrybuj Team — od {monthly}/mies. →",
+      "checkoutTeamYearly": "Subskrybuj Team — od {yearly}/rok →",
       "errPlanCerrado": "Ten plan nie jest już oferowany nowym klientom. Wybierz Pro lub Team.",
       "statusLabel": "Status",
       "statusActive": "Subskrypcja aktywna",
@@ -767,7 +773,9 @@
       "planTeamPrice": "{monthly} miesięcznie · {yearly} rocznie · w cenie stanowiska: {included}",
       "summaryLabel": "Kupujesz",
       "summaryNote": "Dokładną kwotę z podatkami potwierdza Stripe przed płatnością.",
-      "summary": "{plan} · {seats, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}"
+      "summary": "{plan} · {seats, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}",
+      "roleNote": "Twoja rola nie pozwala kupować ani zarządzać rozliczeniami. Poproś o to osobę z rolą właściciela, administratora lub rozliczeń.",
+      "paidPlan": "Plan płatny"
     },
     "referenceLedgerCards": {
       "proven": "udowodnione",
@@ -814,7 +822,7 @@
       "awaitingFirstReport": "Oczekiwanie na pierwszy raport"
     },
     "checkoutBanner": {
-      "successPending": "<b>Płatność otrzymana.</b> Aktywujemy Twoją licencję — zwykle zajmuje to kilka sekund, a ta strona odświeży się sama.",
+      "successPending": "<b>Powrót ze Stripe.</b> Potwierdzamy Twoją płatność i aktywujemy Twój plan — zwykle zajmuje to kilka sekund, a ta strona odświeży się sama.",
       "successActive": "<b>Twoja subskrypcja jest aktywna.</b> Następny krok to odebranie klucza licencyjnego.",
       "goToInstall": "Uzyskaj klucz licencyjny →",
       "cancelled": "<b>Płatność nie została dokończona</b> — nie pobraliśmy żadnej opłaty. Możesz zacząć od nowa, kiedy tylko zechcesz.",
@@ -929,16 +937,14 @@
       "badgeMedido": "Zmierzone",
       "proyeccionTitulo": "Prognozowana oszczędność za {periodo}",
       "proyeccionNota": "To, co zmierzono do tej pory, plus Twoje tempo z ostatnich {dias} dni pomnożone przez {restantes} pozostałych dni. To szacunek, nie faktura.",
-      "comision": "Prowizja z dawnego modelu (odniesienie)",
-      "comisionNota": "{pct} prognozowanych oszczędności, według modelu z prowizją, zamkniętego dla nowych klientów. Plany ze stałą opłatą nie mają prowizji.",
-      "comisionCalibracion": "Miesiąc kalibracji modelu z prowizją: nic nie jest naliczane. Plany ze stałą opłatą nie mają prowizji.",
       "cerrado": "Okres zamknięty: to jest to, co było, a nie dokąd zmierza.",
       "pocosDias": "Za wcześnie, by kreślić prostą: potrzeba {min} pełnych dni, a jest {n}. To, co zmierzone, jest już realne.",
       "medido": "Zaoszczędzone do tej pory (zmierzone)",
       "diaDeMes": "Dzień {n} z {total}",
       "ritmoLabel": "Tempo, ostatnie {dias} dni",
       "porDia": "{importe} / dzień",
-      "diasRestantes": "Pozostało dni: {n}"
+      "diasRestantes": "Pozostało dni: {n}",
+      "verExtracto": "Zobacz wyciąg"
     },
     "extracto": {
       "metaTitle": "Wyciąg · BiVelio Savings Layer",
@@ -1009,7 +1015,7 @@
       "regimenLegadoTitulo": "Dawny model z prowizją",
       "regimenLegadoBody": "Twoja umowa zachowuje model z prowizją od zmierzonych oszczędności, zamknięty dla nowych klientów. Wyliczenie znajduje się w historii poniżej; opłata za stanowisko to osobna pozycja.",
       "regimenNingunoTitulo": "Brak aktywnego płatnego planu",
-      "regimenNingunoBody": "Dziś nic nie jest Ci naliczane. Plany w sprzedaży mają stałą opłatę i nie obejmują prowizji od oszczędności.",
+      "regimenNingunoBody": "Ta organizacja nie ma trwającego planu ze stałą opłatą (Pro ani Team) i nie jest oznaczona jako zwolniona. W takim przypadku co miesiąc zamykany jest wyciąg ze zmierzonych oszczędności, zgodnie z opublikowanymi warunkami wcześniejszego modelu z prowizją; jego wyliczenie znajduje się w historii poniżej. Plany w sprzedaży mają stałą opłatę i nie obejmują prowizji.",
       "regimenIndeterminadoTitulo": "Nie możemy tu pokazać modelu rozliczeń Twojej umowy",
       "regimenIndeterminadoBody": "Ta strona nie mogła ustalić, który model dotyczy Twojej subskrypcji. Obciążenia to te, które widnieją na Twoich fakturach i w portalu rozliczeń.",
       "irACuenta": "Zobacz plan i rozliczenia",
@@ -1018,7 +1024,12 @@
       "historicoSub": "Prowizja od zmierzonych oszczędności była poprzednim modelem. Pozostaje tu do wglądu i audytu; nie jest ofertą ani fakturą planu ze stałą opłatą.",
       "simulacionTitulo": "Symulacja prowizji za ten okres",
       "simulacionAplica": "To wyliczenie dla modelu, który zachowuje Twoja umowa.",
-      "simulacionNoAplica": "Nie dotyczy Twojej obecnej umowy: pokazana wyłącznie poglądowo."
+      "simulacionNoAplica": "Nie dotyczy Twojej obecnej umowy: pokazana wyłącznie poglądowo.",
+      "regimenNingunoEnlace": "Zobacz wcześniejszy model w Cenniku",
+      "simulacionSinPlan": "To wyliczenie stosowane przy zamknięciu miesiąca, gdy nie trwa żaden plan ze stałą opłatą.",
+      "simulacionPuedeAplicar": "Może mieć zastosowanie, zależnie od Twojej umowy: pokazane tu jako wyliczenie, nie jako faktura.",
+      "notaSombraReferencia": "Liczba w cieniu: obliczona prowizja to {comision}. To wyliczenie, nie faktura.",
+      "historialIntroNeutro": "Każdy zamknięty okres zostaje nieodwracalnie utrwalony pierwszego dnia miesiąca. Jeśli z okresu wynika należność, jej faktura cytuje ten dokument."
     },
     "usageExplorer": {
       "title": "Eksplorator użycia",
@@ -2107,7 +2118,7 @@
     "eyebrow": "Opublikowany cennik",
     "title": "Silnik open source. Kontrola w chmurze dla Twojego zespołu.",
     "governs": "Ta strona opisuje, jak usługa działa dziś; wiążące są <license>LICENSE</license> i <terms>Warunki BiVelio</terms>.",
-    "lede": "Pakiet to open core: nie potrzebuje kluczy. Ta strona wycenia opcjonalną chmurę — Measure za darmo, potem Pro za stanowisko lub plan Team, bez prowizji od Twoich oszczędności. Każda liczba na tej stronie pochodzi z tego samego kodu, który Cię rozlicza, i zmienia się, gdy zmienia się cena.",
+    "lede": "Silnik jest open source: nie potrzebuje kluczy. Ta strona wycenia Savings Cloud, opcjonalną chmurę — Measure za darmo, potem Pro za stanowisko lub plan Team, bez prowizji od Twoich oszczędności. Każda liczba na tej stronie pochodzi z tego samego kodu, który Cię rozlicza, i zmienia się, gdy zmienia się cena.",
     "plans": {
       "title": "Plany",
       "intro": "Cztery plany, od najmniejszego do największego. Pro i Team są płatne za stanowisko i nie mają prowizji.",
@@ -2140,7 +2151,7 @@
       "whatTitle": "Czym jest stanowisko",
       "what": "Stanowisko to jedna <b>maszyna lub tożsamość usługi</b>, na której działa Oprogramowanie, a nie osoba. Sam wybierasz, ile stanowisk obejmuje Twoja subskrypcja (do {max} przy płatności), i tyle obejmuje Twoja licencja.",
       "counted": "W każdym miesiącu kalendarzowym (UTC) BiVelio liczy jako używany każdy odrębny identyfikator stanowiska, który był aktywny w co najmniej {dias} różnych dniach tego miesiąca. Tożsamości oznaczone jako CI lub efemeryczne runnery się nie liczą. Twój panel porównuje tę liczbę ze stanowiskami objętymi subskrypcją.",
-      "overage": "Jeśli w danym miesiącu używasz więcej stanowisk, niż obejmuje Twoja subskrypcja, różnica jest naliczana automatycznie, jednorazowo, po zamknięciu miesiąca, na następnej fakturze: tyle, ile te dodatkowe stanowiska kosztują przez miesiąc w Twoim planie (w planie rocznym jedna dwunasta ceny rocznej). W planach miesięcznych subskrypcja obejmuje potem tyle stanowisk, ile używasz. Jeśli liczba nie jest wiarygodna — na przykład dlatego, że w tym miesiącu zrotowano klucz konta usługi — nic nie jest naliczane: sprawdzamy to ręcznie.",
+      "overage": "Jeśli w danym miesiącu używasz więcej stanowisk, niż obejmuje Twoja subskrypcja, różnica jest fakturowana jednorazowo, po zamknięciu miesiąca: tyle, ile te dodatkowe stanowiska kosztują przez miesiąc w Twoim planie. Przy płatności miesięcznej trafia na następną fakturę, a liczba wykupionych stanowisk rośnie do liczby stanowisk w użyciu. Przy płatności rocznej jest fakturowana po zamknięciu miesiąca według stawki rocznej podzielonej przez dwanaście, a liczba wykupionych stanowisk się nie zmienia. Jeśli liczba nie jest wiarygodna — na przykład dlatego, że w tym miesiącu zrotowano klucz konta usługi — nic nie jest naliczane: sprawdzamy to ręcznie.",
       "identifier": "Jak powstaje identyfikator stanowiska i wszystko inne, co Oprogramowanie wysyła do BiVelio, opisuje <privacy>strona o prywatności</privacy>.",
       "provider": "Opłata nie obejmuje zużycia u Twojego dostawcy LLM: zachowujesz swojego dostawcę i płacisz za korzystanie z niego na jego warunkach.",
       "manageTitle": "Jak zarządzać subskrypcją",

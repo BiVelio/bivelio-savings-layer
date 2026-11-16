@@ -147,6 +147,36 @@ export default async function CapturaDeCuenta({
       nodo: <AccountPlanStrip email={correo} ctx={contexto({ role: "billing" })} asientos={{ usados: null, rotacionEsteMes: false }} />,
     },
     {
+      id: "comprar",
+      titulo: "Cuenta · sin plan, con perfil que puede comprar",
+      nodo: (
+        <AccountPlanStrip
+          email={correo}
+          ctx={contexto({ org: { name: "Organización de muestra", plan: "free" }, seats: null, subscription: null, license: null })}
+        />
+      ),
+    },
+    {
+      id: "miembro",
+      titulo: "Cuenta · perfil sin permiso de compra ni de facturación: nota en vez de botones",
+      nodo: (
+        <>
+          <BillingStateBanner
+            ctx={contexto({
+              role: "member",
+              subscription: { status: "past_due", currentPeriodEnd: null, pastDueSince: iso(ahora - 5 * DIA) },
+              license: { status: "grace", expiresAt: iso(ahora - 5 * DIA), graceDays: 21 },
+            })}
+          />
+          <AccountPlanStrip email={correo} ctx={contexto({ role: "member" })} asientos={{ usados: 7, rotacionEsteMes: false }} />
+          <AccountPlanStrip
+            email={correo}
+            ctx={contexto({ role: "member", org: { name: "Organización de muestra", plan: "free" }, seats: null, subscription: null, license: null })}
+          />
+        </>
+      ),
+    },
+    {
       id: "pendiente",
       titulo: "Cuenta · vuelta de Stripe con la activación pendiente: sin botones de compra",
       nodo: (
@@ -227,6 +257,13 @@ export default async function CapturaDeCuenta({
       titulo: "Extracto · régimen que la página no puede determinar (aviso neutro)",
       nodo: (
         <ExtractoVista e={extractoEnSombra("muestra", uso, periodo, false)} periodo={periodo} regimen="indeterminado" usageFailed={false} cerrados={null} diasDeDescarga={null} />
+      ),
+    },
+    {
+      id: "extracto-ninguno",
+      titulo: "Extracto · sin plan de cuota fija vivo: la regla del cierre, sin afirmar que no se cobra",
+      nodo: (
+        <ExtractoVista e={extractoEnSombra("muestra", uso, periodo, false)} periodo={periodo} regimen="ninguno" usageFailed={false} cerrados={[]} diasDeDescarga={null} />
       ),
     },
     {

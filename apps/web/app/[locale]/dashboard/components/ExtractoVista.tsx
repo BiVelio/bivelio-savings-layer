@@ -73,7 +73,11 @@ export async function ExtractoVista({
         <div className="sub">
           {e.esCalibracion
             ? t("extracto.notaCalibracion", { habria: eur(e.comision.comisionEur) })
-            : t("extracto.notaSombra", { comision: eur(e.comision.comisionEur) })}
+            : // «Ninguna factura la incluye todavía» promete una factura futura:
+              // solo es verdad para quien conserva la modalidad con comisión.
+              t(aplicaComision ? "extracto.notaSombra" : "extracto.notaSombraReferencia", {
+                comision: eur(e.comision.comisionEur),
+              })}
         </div>
       </div>
 
@@ -268,9 +272,18 @@ export async function ExtractoVista({
                       : t("extracto.regimenNingunoBody")}
             </p>
           </div>
-          <Link className="btn btn-ghost btn-sm" href="/dashboard/account">
-            {t("extracto.irACuenta")}
-          </Link>
+          <div className="ext-contrato-acc">
+            <Link className="btn btn-ghost btn-sm" href="/dashboard/account">
+              {t("extracto.irACuenta")}
+            </Link>
+            {/* Sin plan de cuota fija vivo, lo que rige es la modalidad anterior
+                publicada: se enlaza, no se resume a ojo. */}
+            {regimen === "ninguno" ? (
+              <Link className="btn btn-ghost btn-sm" href="/pricing#legacy">
+                {t("extracto.regimenNingunoEnlace")}
+              </Link>
+            ) : null}
+          </div>
         </div>
       </section>
 
@@ -295,7 +308,16 @@ export async function ExtractoVista({
           <details className="ext-sim ext-sim--plegada">
             <summary>
               <span className="ext-h">{t("extracto.simulacionTitulo")}</span>
-              <span className="ext-sim-nota">{t("extracto.simulacionNoAplica")}</span>
+              {/* «No se aplica» solo se afirma cuando se SABE (cuota fija o
+                  exenta). Sin plan vivo es el cálculo del cierre; sin poder
+                  determinarlo, puede aplicarse. */}
+              <span className="ext-sim-nota">
+                {regimen === "ninguno"
+                  ? t("extracto.simulacionSinPlan")
+                  : regimen === "indeterminado"
+                    ? t("extracto.simulacionPuedeAplicar")
+                    : t("extracto.simulacionNoAplica")}
+              </span>
             </summary>
             <div className="ext-sim-body">{simulacion}</div>
           </details>
@@ -304,7 +326,7 @@ export async function ExtractoVista({
         {/* EL HISTORIAL AUDITABLE: cada período cerrado (documento inmutable) con
             el estado de su cobro y el enlace a la factura de Stripe que lo cita. */}
         <h3 className="ext-h ext-h--gap">{t("extracto.historialTitulo")}</h3>
-        <p className="note">{t("extracto.historialIntro")}</p>
+        <p className="note">{t(aplicaComision ? "extracto.historialIntro" : "extracto.historialIntroNeutro")}</p>
         {cerrados === null ? (
           <Notice tono="danger">{t("extracto.lecturaFallo")}</Notice>
         ) : cerrados.length === 0 ? (

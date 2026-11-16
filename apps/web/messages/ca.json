@@ -213,7 +213,7 @@
     "useAnotherEmail": "Fes servir un altre correu",
     "requestNewLink": "Demana un enllaç nou",
     "successNext": "Pas següent: instal·la el paquet i connecta la teva primera crida. Fins aleshores el tauler no té res per mesurar.",
-    "successPlan": "El pla que vas triar continua seleccionat: el confirmes al pas següent.",
+    "successPlan": "Has triat un pla: el confirmes a Compte, dins del panell. Encara no s'ha comprat res.",
     "successInvite": "Et tornem a la teva invitació perquè l'acceptis.",
     "successContinue": "Continua",
     "panel": {
@@ -284,6 +284,12 @@
         "coverageFull": "El desglossament cobreix tot el cost observat del període.",
         "coveragePartial": "El desglossament per model cobreix el {coverage} del cost observat del període; la resta no té model atribuït.",
         "coverageUnknown": "No es pot comparar amb el cost observat del període."
+      },
+      "planChosen": {
+        "title": "Has triat {plan}",
+        "body": "Encara no s'ha comprat res. Confirma el pla i els seients a Compte; el pagament es fa a Stripe.",
+        "cta": "Confirma-ho a Compte",
+        "askOwner": "El teu perfil no pot contractar un pla. Demana a una persona amb perfil de propietari, administrador o facturació que el confirmi a Compte."
       }
     },
     "proof": {
@@ -724,7 +730,7 @@
       "checkoutError": "Alguna cosa ha anat malament — torna-ho a provar.",
       "seatsLabel": "Seients",
       "seatsHint": "Un seient és una màquina o identitat de servei activa, no una persona. Compta els processos que executaran l'SDK, no els teus empleats. A Kubernetes, fixa BVSALA_SEAT_ID a cada rèplica.",
-      "seatsOver": "{used, plural, one {# seient} other {# seients}} en ús i {paid, plural, one {# pagat} other {# pagats}}. L'excés es cobra en tancar el mes, al preu del teu pla. Amb pagament mensual s'afegeix a la teva propera factura i la quantitat contractada puja fins als seients en ús. Amb pagament anual es factura al tancament del mes, a la tarifa anual dividida entre dotze, i la quantitat contractada no canvia. També pots ajustar la quantitat des de «Gestiona el pla».",
+      "seatsOver": "{used, plural, one {# seient} other {# seients}} en ús i {paid, plural, one {# pagat} other {# pagats}}. L'excés es factura segons el teu pla i l'estat de la teva subscripció, en tancar el mes. Amb pagament mensual s'afegeix a la teva propera factura i la quantitat contractada puja fins als seients en ús. Amb pagament anual es factura al tancament del mes, a la tarifa anual dividida entre dotze, i la quantitat contractada no canvia. També pots ajustar la quantitat des de «Gestiona el pla».",
       "seatsLastMonth": "{period}: {used, plural, one {# seient usat} other {# seients usats}} i {paid, plural, one {# pagat} other {# pagats}}. Excés: {extra, plural, one {# seient} other {# seients}} ({amount}). Amb pagament mensual va a la teva propera factura i la quantitat contractada puja fins als seients usats. Amb pagament anual es factura al tancament del mes, a la tarifa anual dividida entre dotze, sense canviar la quantitat contractada.",
       "seatsRotated": "{used, plural, one {# seient comptat} other {# seients comptats}} aquest mes. Has revocat una clau de servei i, en rotar-la, les teves màquines estrenen identitat de seient, així que aquest mes es compten dues vegades. Es corregeix sol el mes vinent: no has de canviar de pla.",
       "taxNote": "IVA no inclòs. Si la vostra empresa té NIF-IVA intracomunitari, s'aplica la inversió del subjecte passiu.",
@@ -737,8 +743,8 @@
       "planPro": "Pro",
       "planTeam": "Team",
       "teamHint": "Team inclou {included} seients; cada seient més costa {extra} al mes. No se’n poden comprar menys de {included}.",
-      "checkoutTeamMonthly": "Subscriu-te a Team — {monthly}/mes, {included} seients →",
-      "checkoutTeamYearly": "Subscriu-te a Team — {yearly}/any, {included} seients →",
+      "checkoutTeamMonthly": "Subscriu-te a Team — des de {monthly}/mes →",
+      "checkoutTeamYearly": "Subscriu-te a Team — des de {yearly}/any →",
       "errPlanCerrado": "Aquest pla ja no s’ofereix a clients nous. Tria Pro o Team.",
       "statusLabel": "Estat",
       "statusActive": "Subscripció activa",
@@ -767,7 +773,9 @@
       "planTeamPrice": "{monthly} al mes · {yearly} a l'any · {included} seients inclosos",
       "summaryLabel": "Compraràs",
       "summaryNote": "L'import exacte, amb impostos, el confirma Stripe abans de pagar.",
-      "summary": "{plan} · {seats, plural, one {# seient} other {# seients}}"
+      "summary": "{plan} · {seats, plural, one {# seient} other {# seients}}",
+      "roleNote": "El teu perfil no pot comprar ni gestionar la facturació. Demana a una persona amb perfil de propietari, administrador o facturació que ho faci.",
+      "paidPlan": "Pla de pagament"
     },
     "referenceLedgerCards": {
       "proven": "comprovat",
@@ -814,7 +822,7 @@
       "awaitingFirstReport": "Esperant el primer informe"
     },
     "checkoutBanner": {
-      "successPending": "<b>Pagament rebut.</b> Estem activant la teva llicència — normalment triga uns segons i aquesta pàgina s'actualitza sola.",
+      "successPending": "<b>De tornada de Stripe.</b> Estem confirmant el teu pagament i activant el teu pla — normalment triga uns segons i aquesta pàgina s'actualitza sola.",
       "successActive": "<b>La teva subscripció està activa.</b> El pas següent és recollir la teva clau de llicència.",
       "goToInstall": "Obtén la teva clau de llicència →",
       "cancelled": "<b>No s'ha completat cap pagament</b> — no se t'ha cobrat res. Pots tornar a començar quan vulguis.",
@@ -929,16 +937,14 @@
       "badgeMedido": "Mesurat",
       "proyeccionTitulo": "Estalvi projectat per a {periodo}",
       "proyeccionNota": "El que s'ha mesurat fins ara més el teu ritme dels últims {dias} dies pels {restantes} dies que queden. És una estimació, no una factura.",
-      "comision": "Comissió de la modalitat anterior (referència)",
-      "comisionNota": "El {pct} de l'estalvi projectat, segons la modalitat amb comissió, tancada a noves altes. Els plans de quota fixa no porten comissió.",
-      "comisionCalibracion": "Mes de calibratge de la modalitat amb comissió: no es cobra res. Els plans de quota fixa no porten comissió.",
       "cerrado": "Període tancat: això és el que va ser, no cap on va.",
       "pocosDias": "Encara és aviat per traçar la recta: calen {min} dies complets i en portes {n}. El que s'ha mesurat ja és real.",
       "medido": "Estalviat fins ara (mesurat)",
       "diaDeMes": "Dia {n} de {total}",
       "ritmoLabel": "Ritme, últims {dias} dies",
       "porDia": "{importe} / dia",
-      "diasRestantes": "{n} dies per endavant"
+      "diasRestantes": "{n} dies per endavant",
+      "verExtracto": "Veure l'extracte"
     },
     "extracto": {
       "metaTitle": "Extracte · BiVelio Savings Layer",
@@ -1009,7 +1015,7 @@
       "regimenLegadoTitulo": "Modalitat històrica amb comissió",
       "regimenLegadoBody": "El teu contracte conserva la modalitat amb comissió sobre l'estalvi mesurat, tancada a noves altes. El seu càlcul és a l'històric de sota; la quota per seient és un càrrec a part.",
       "regimenNingunoTitulo": "Sense pla de pagament actiu",
-      "regimenNingunoBody": "Avui no se't factura res. Els plans en venda són de quota fixa i no porten comissió sobre l'estalvi.",
+      "regimenNingunoBody": "Aquesta organització no té viu cap pla de quota fixa (Pro o Team) ni està marcada com a exempta. En aquest cas, en tancar cada mes s'emet un extracte sobre l'estalvi mesurat, segons les condicions publicades de la modalitat anterior amb comissió; el seu càlcul és a l'històric de sota. Els plans en venda són de quota fixa i no porten comissió.",
       "regimenIndeterminadoTitulo": "No podem mostrar aquí la modalitat del teu contracte",
       "regimenIndeterminadoBody": "Aquesta pàgina no ha pogut determinar quina modalitat s'aplica a la teva subscripció. El que se't cobra és el que consta a les teves factures i al portal de facturació.",
       "irACuenta": "Veure pla i facturació",
@@ -1018,7 +1024,12 @@
       "historicoSub": "La comissió sobre l'estalvi mesurat va ser la modalitat anterior. Es conserva aquí per a consulta i auditoria; no és una oferta ni la factura d'un pla de quota fixa.",
       "simulacionTitulo": "Simulació de la comissió d'aquest període",
       "simulacionAplica": "És el càlcul de la modalitat que conserva el teu contracte.",
-      "simulacionNoAplica": "No s'aplica al teu contracte vigent: es mostra només com a referència."
+      "simulacionNoAplica": "No s'aplica al teu contracte vigent: es mostra només com a referència.",
+      "regimenNingunoEnlace": "Veure la modalitat anterior a Preus",
+      "simulacionSinPlan": "És el càlcul que es fa servir en tancar el mes quan no hi ha cap pla de quota fixa viu.",
+      "simulacionPuedeAplicar": "Es pot aplicar segons el teu contracte: aquí es mostra com a càlcul, no com a factura.",
+      "notaSombraReferencia": "Xifra en ombra: la comissió calculada és {comision}. És un càlcul, no una factura.",
+      "historialIntroNeutro": "Cada període tancat queda fixat immutable el dia u. Si un període genera un càrrec, la seva factura cita aquest document."
     },
     "usageExplorer": {
       "title": "Explorador d'ús",
@@ -2107,7 +2118,7 @@
     "eyebrow": "Preus publicats",
     "title": "Motor open source. Control cloud per al teu equip.",
     "governs": "Aquesta pàgina descriu com funciona el servei avui; regeixen la <license>LICENSE</license> i els <terms>Termes de BiVelio</terms>.",
-    "lede": "El paquet és open core: no necessita claus. Aquesta pàgina posa preu al núvol opcional — Measure gratuït, després Pro per seient o un pla Team, sense comissió sobre el teu estalvi. Cada xifra d'aquesta pàgina es llegeix del mateix codi que et factura, així que canvia quan canvia el preu.",
+    "lede": "El motor és open source: no necessita claus. Aquesta pàgina posa preu a Savings Cloud, el núvol opcional — Measure gratuït, després Pro per seient o un pla Team, sense comissió sobre el teu estalvi. Cada xifra d'aquesta pàgina es llegeix del mateix codi que et factura, així que canvia quan canvia el preu.",
     "plans": {
       "title": "Plans",
       "intro": "Quatre plans, de menys a més. Pro i Team es paguen per seient i no porten comissió.",
@@ -2140,7 +2151,7 @@
       "whatTitle": "Què és un seient",
       "what": "Un seient és una <b>màquina o identitat de servei</b> que executa el Software, no una persona. Tu tries quants seients cobreix la teva subscripció (fins a {max} en el pagament) i la teva llicència en cobreix aquests.",
       "counted": "Cada mes natural (UTC), BiVelio compta com a en ús cada identificador de seient diferent que ha estat actiu com a mínim {dias} dies diferents d'aquell mes. Les identitats marcades com a CI o executors efímers no compten. El teu tauler compara aquest recompte amb els seients que cobreix la teva subscripció.",
-      "overage": "Si un mes fas servir més seients dels que cobreix la teva subscripció, la diferència es cobra sola, una vegada, en tancar el mes i a la teva propera factura: el que costen aquests seients de més durant un mes amb el teu pla (en l'anual, la dotzena part del preu anual). En els plans mensuals la teva subscripció passa després a cobrir els seients que fas servir. Si el recompte no és fiable —per exemple, perquè aquell mes vas rotar una clau de servei— no es cobra: el revisem a mà.",
+      "overage": "Si un mes fas servir més seients dels que cobreix la teva subscripció, la diferència es factura una vegada, en tancar el mes: el que costen aquests seients de més durant un mes amb el teu pla. Amb pagament mensual s'afegeix a la teva propera factura i la quantitat contractada puja fins als seients en ús. Amb pagament anual es factura al tancament del mes, a la tarifa anual dividida entre dotze, i la quantitat contractada no canvia. Si el recompte no és fiable —per exemple, perquè aquell mes vas rotar una clau de servei— no es cobra: el revisem a mà.",
       "identifier": "Com es forma l'identificador de seient, i tota la resta que el Software envia a BiVelio, és a la <privacy>pàgina de privadesa</privacy>.",
       "provider": "La quota no inclou el consum del teu proveïdor de LLM: mantens el teu proveïdor i en pagues l’ús segons les seves condicions.",
       "manageTitle": "Com gestionar la teva subscripció",
