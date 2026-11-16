@@ -68,8 +68,14 @@ async function load(): Promise<SidebarState> {
   const orgName = ctx.org?.name ?? "";
   if (!user || !orgId) return { role, plan, orgName };
 
+  // «N de M» en el raíl y en el menú de la cuenta, con la misma regla que la
+  // tarjeta de Máquinas (dashboard/page.tsx) y que avisoDeAsientos: solo con un
+  // plan ACTIVO —`ctx.seats` sale de cualquier fila de suscripción, también de
+  // una cancelada, y «7 de 5 pagados» sería falso para quien no paga— y solo con
+  // uso mayor que cero (los días 1 y 2 del mes el cero es del calendario).
+  const planActivo = plan === "pro" || plan === "enterprise";
   const seats =
-    typeof asientos.usados === "number" && typeof ctx.seats === "number"
+    planActivo && typeof asientos.usados === "number" && asientos.usados > 0 && typeof ctx.seats === "number"
       ? { used: asientos.usados, seats: ctx.seats }
       : undefined;
   const unreadable = usageFailed || orgFallo || visibilidad === "oculto";

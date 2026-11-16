@@ -198,6 +198,11 @@ export function BillingButtons({
               jumpKeys={false}
               value={asientos}
               onValueChange={(v) => setSeats(String(v ?? minimo))}
+              // Igual que el <input type=number> de main: al salir, el estado crudo
+              // pasa a ser lo normalizado. Sin esto, «Team, escribe 5, sal, elige
+              // Pro» enviaba 5 (o 1) donde main enviaba 10, porque el componente
+              // solo emite cuando el valor cambia respecto al `value` ya ajustado.
+              onBlur={() => setSeats(String(asientos))}
               stepLabels={{ decrease: t("accountPlanStrip.seatsLess"), increase: t("accountPlanStrip.seatsMore") }}
               aria-describedby="bv-seats-hint"
             />
