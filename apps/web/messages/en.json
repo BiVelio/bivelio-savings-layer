@@ -1082,7 +1082,7 @@
       "regimenLegadoBody": "Your contract keeps the model with a commission on measured savings, closed to new sign-ups. Its calculation is in the history below; the per-seat fee is a separate charge.",
       "regimenNingunoBody": "This page cannot confirm your billing model. What you are charged is what appears on your invoices. If in doubt, write to support@bivelio.com.",
       "regimenMedirTitulo": "Measure: estimated savings, never billed",
-      "regimenMedirBody": "Your organization is on the free Measure license. The layer runs in shadow mode: the savings this dashboard shows are an estimate of what it would have saved. They are never billed and never part of any commission.",
+      "regimenMedirBody": "Your organization is on the free Measure license. Usage recorded under Measure runs in shadow mode: its savings are an estimate of what it would have saved, never billed and never part of any commission.",
       "regimenIndeterminadoTitulo": "We cannot show your contract's billing model here",
       "regimenIndeterminadoBody": "This page could not determine which model applies to your subscription. What you are charged is what appears on your invoices and in the billing portal.",
       "irACuenta": "View plan and billing",

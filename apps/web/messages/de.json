@@ -1082,7 +1082,7 @@
       "regimenLegadoBody": "Dein Vertrag behält das Modell mit Provision auf die gemessene Ersparnis, das für Neukunden geschlossen ist. Die Berechnung steht in der Historie unten; die Gebühr pro Seat ist ein separater Betrag.",
       "regimenNingunoBody": "Diese Seite kann dein Abrechnungsmodell nicht bestätigen. Berechnet wird, was auf deinen Rechnungen steht. Im Zweifel schreib an support@bivelio.com.",
       "regimenMedirTitulo": "Measure: geschätzte Ersparnis, nie berechnet",
-      "regimenMedirBody": "Deine Organisation nutzt die kostenlose Measure-Lizenz. Die Schicht läuft im Schattenmodus: Die Ersparnis, die dieses Dashboard zeigt, ist eine Schätzung dessen, was sie gespart hätte. Sie wird nie berechnet und ist nie Teil einer Provision.",
+      "regimenMedirBody": "Deine Organisation nutzt die kostenlose Measure-Lizenz. Nutzung, die unter Measure erfasst wird, läuft im Schattenmodus: Ihre Ersparnis ist eine Schätzung dessen, was gespart worden wäre, wird nie berechnet und ist nie Teil einer Provision.",
       "regimenIndeterminadoTitulo": "Das Abrechnungsmodell deines Vertrags kann hier nicht angezeigt werden",
       "regimenIndeterminadoBody": "Diese Seite konnte nicht ermitteln, welches Modell für dein Abo gilt. Berechnet wird, was auf deinen Rechnungen und im Abrechnungsportal steht.",
       "irACuenta": "Plan und Abrechnung ansehen",

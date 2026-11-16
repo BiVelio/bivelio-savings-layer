@@ -1082,7 +1082,7 @@
       "regimenLegadoBody": "Sözleşmeniz, yeni kayıtlara kapalı olan, ölçülen tasarruf üzerinden komisyonlu modeli korur. Hesabı aşağıdaki geçmişte yer alır; koltuk ücreti ayrı bir kalemdir.",
       "regimenNingunoBody": "Bu sayfa faturalandırma modelinizi doğrulayamıyor. Sizden tahsil edilen tutar, faturalarınızda görünendir. Emin değilseniz support@bivelio.com adresine yazın.",
       "regimenMedirTitulo": "Measure: tahmini tasarruf, asla faturalandırılmaz",
-      "regimenMedirBody": "Kuruluşunuz ücretsiz Measure lisansını kullanıyor. Katman gölge modunda çalışır: bu panelin gösterdiği tasarruf, ne kadar tasarruf edeceğine dair bir tahmindir. Asla faturalandırılmaz ve asla hiçbir komisyonun parçası olmaz.",
+      "regimenMedirBody": "Kuruluşunuz ücretsiz Measure lisansını kullanıyor. Measure altında kaydedilen kullanım gölge modunda çalışır: tasarrufu, ne kadar tasarruf edileceğine dair bir tahmindir; asla faturalandırılmaz ve asla hiçbir komisyonun parçası olmaz.",
       "regimenIndeterminadoTitulo": "Sözleşmenizin modelini burada gösteremiyoruz",
       "regimenIndeterminadoBody": "Bu sayfa aboneliğinize hangi modelin uygulandığını belirleyemedi. Sizden tahsil edilen tutar, faturalarınızda ve faturalandırma portalında görünendir.",
       "irACuenta": "Planı ve faturalandırmayı gör",

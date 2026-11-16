@@ -1082,7 +1082,7 @@
       "regimenLegadoBody": "O teu contrato mantém a modalidade com comissão sobre a poupança medida, fechada a novas adesões. O cálculo está no histórico abaixo; a taxa por lugar é uma cobrança à parte.",
       "regimenNingunoBody": "Esta página não consegue confirmar a modalidade com que és faturado. O que te é cobrado é o que consta nas tuas faturas. Em caso de dúvida, escreve para support@bivelio.com.",
       "regimenMedirTitulo": "Measure: poupança estimada, nunca faturada",
-      "regimenMedirBody": "A tua organização usa a licença gratuita Measure. A camada corre em modo sombra: a poupança que este painel mostra é uma estimativa do que teria poupado. Nunca é faturada e nunca faz parte de nenhuma comissão.",
+      "regimenMedirBody": "A tua organização usa a licença gratuita Measure. O uso registado com Measure corre em modo sombra: a sua poupança é uma estimativa do que teria poupado, nunca é faturada e nunca faz parte de nenhuma comissão.",
       "regimenIndeterminadoTitulo": "Não podemos mostrar aqui a modalidade do teu contrato",
       "regimenIndeterminadoBody": "Esta página não conseguiu determinar que modalidade se aplica à tua subscrição. O que te é cobrado é o que consta nas tuas faturas e no portal de faturação.",
       "irACuenta": "Ver plano e faturação",

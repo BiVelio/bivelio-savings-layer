@@ -1082,7 +1082,7 @@
       "regimenLegadoBody": "Votre contrat conserve la formule avec commission sur les économies mesurées, fermée aux nouvelles souscriptions. Son calcul figure dans l'historique ci-dessous ; le prix par siège est un montant à part.",
       "regimenNingunoBody": "Cette page ne peut pas confirmer votre formule de facturation. Ce qui vous est facturé est ce qui figure sur vos factures. En cas de doute, écrivez à support@bivelio.com.",
       "regimenMedirTitulo": "Measure : économies estimées, jamais facturées",
-      "regimenMedirBody": "Votre organisation utilise la licence gratuite Measure. La couche fonctionne en mode fantôme : les économies affichées dans ce tableau de bord sont une estimation de ce qu'elle aurait économisé. Elles ne sont jamais facturées et n'entrent jamais dans aucune commission.",
+      "regimenMedirBody": "Votre organisation utilise la licence gratuite Measure. L'usage enregistré sous Measure fonctionne en mode fantôme : ses économies sont une estimation de ce qu'elle aurait économisé, ne sont jamais facturées et n'entrent jamais dans aucune commission.",
       "regimenIndeterminadoTitulo": "Nous ne pouvons pas afficher ici la formule de votre contrat",
       "regimenIndeterminadoBody": "Cette page n'a pas pu déterminer quelle formule s'applique à votre abonnement. Ce qui vous est facturé est ce qui figure sur vos factures et dans le portail de facturation.",
       "irACuenta": "Voir le forfait et la facturation",

@@ -129,6 +129,8 @@ export default async function CapturaDeCuenta({
   setRequestLocale(locale);
   const { estado } = await searchParams;
   const uso = usoDeMuestra();
+  // Measure: la ingesta guarda la base igual al coste real (sombra), así que no hay ahorro acreditado.
+  const usoMedir = uso.map((u) => ({ ...u, baselineCost: u.actualCost, measuredBaselineCost: u.measuredActualCost }));
   const periodo = new Date().toISOString().slice(0, 7);
   const ahora = Date.now();
   const iso = (ms: number) => new Date(ms).toISOString();
@@ -318,7 +320,7 @@ export default async function CapturaDeCuenta({
       id: "extracto-medir",
       titulo: "Extracto · licencia gratuita Measure: ahorro estimado, nunca facturado",
       nodo: (
-        <ExtractoVista e={extractoEnSombra("muestra", uso, periodo, false)} periodo={periodo} regimen="medir" usageFailed={false} cerrados={[]} diasDeDescarga={null} />
+        <ExtractoVista e={extractoEnSombra("muestra", usoMedir, periodo, false)} periodo={periodo} regimen="medir" usageFailed={false} cerrados={[]} diasDeDescarga={null} />
       ),
     },
     {

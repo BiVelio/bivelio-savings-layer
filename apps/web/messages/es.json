@@ -1082,7 +1082,7 @@
       "regimenLegadoBody": "Tu contrato conserva la modalidad con comisión sobre el ahorro medido, cerrada a nuevas altas. Su cálculo está en el histórico de abajo; la cuota por asiento es un cargo aparte.",
       "regimenNingunoBody": "Esta página no puede confirmar la modalidad con la que se te factura. Lo que se te cobra es lo que figura en tus facturas. Si tienes dudas, escríbenos a support@bivelio.com.",
       "regimenMedirTitulo": "Measure: ahorro estimado, nunca facturado",
-      "regimenMedirBody": "Tu organización usa la licencia gratuita Measure. La capa corre en modo sombra: el ahorro que muestra este panel es una estimación de lo que habría ahorrado. Nunca se factura y nunca forma parte de ninguna comisión.",
+      "regimenMedirBody": "Tu organización usa la licencia gratuita Measure. El uso registrado con Measure corre en modo sombra: su ahorro es una estimación de lo que habría ahorrado, nunca se factura y nunca forma parte de ninguna comisión.",
       "regimenIndeterminadoTitulo": "No podemos mostrar aquí la modalidad de tu contrato",
       "regimenIndeterminadoBody": "Esta página no ha podido determinar qué modalidad se aplica a tu suscripción. Lo que se te cobra es lo que figura en tus facturas y en el portal de facturación.",
       "irACuenta": "Ver plan y facturación",
