@@ -56,7 +56,7 @@ para poder comparar al actualizar.
 | Dialog (AlertDialog) | `dialog.tsx` + `.css` | **affectUI Pro** | registro Pro, `dialog-clean` (descarga del 2026-11-16) | `3d377b605125ad7287a09f454d315a7d71ec1c8a6afab733316f23ca3bb355a4` |
 | Dropdown Menu | `dropdown-menu.tsx` + `.css` | **affectUI Pro** | registro Pro, `dropdown-menu-clean` (descarga del 2026-11-16) | `d6552544746bdde40febc8e0d461f6caf10f54d1661816afad4c09dd08398c04` |
 | Select | `select.tsx` + `.css` | **affectUI Pro** | registro Pro, `select-clean` (descarga del 2026-11-16) | `086f8e8b71a40f9b221afdd61c3fe337fe2e1640a0e0e148a260db987e94440d` |
-| Number Input | `number-input.tsx` + `.css` | **affectUI Pro** | registro Pro, `number-input-clean` (descarga del 2026-11-16) | `01c2322723b7fe55420073487f7ccaee55f0435caca31a5da51b294b375c3e27` |
+| Number Input | `number-input.tsx` + `.css` + `number-input-read.ts` (lectura y teclas, sacadas del componente) | **affectUI Pro** | registro Pro, `number-input-clean` (descarga del 2026-11-16) | `01c2322723b7fe55420073487f7ccaee55f0435caca31a5da51b294b375c3e27` |
 | Segmented Control | `segmented-control.tsx` + `.css` | **affectUI Pro** | registro Pro, `segmented-control-clean` (descarga del 2026-11-16) | `8547e6335fc70ec9aa8e5a89dec96deb95bb46de5894c3c0e2b26e1763abd506` |
 | Setup Guide (**solo lectura**) | `setup-guide.tsx` + `.css` | **affectUI Pro** | registro Pro, `setup-guide-clean` (descarga del 2026-11-16) | `4fbb24b69b082ecbd761c5c0dbba8af08376dfd262f5e55717abfcfd58d7a58d` |
 | Empty Calendar | `empty-calendar.tsx` + `.css` | **affectUI Pro** | registro Pro, `empty-calendar` (descarga del 2026-11-16) | `e3de6f44d69d5ad484fa588cf202f7ead07a5ba6c4b0b3100d33fdaaa7503ec3` |
@@ -462,12 +462,24 @@ un filo visible sobre el fondo marfil.
   `AvatarGroup` y su «N more». Sin estado: se renderiza en servidor.
 - **dialog** — `closeLabel`, `confirmLabel` y `cancelLabel` pasan a ser
   obligatorias (antes «Close», «Confirm», «Cancel»). Botones a 44 px.
+  Revisión de dinero (2026-11-16): el botón de confirmar del AlertDialog
+  ignora las pulsaciones de los primeros `CONFIRM_GUARD_MS` (400 ms) tras
+  abrirse — en móvil la hoja sube con «Confirmar» bajo el dedo y el segundo
+  toque de un doble toque confirmaba solo (`dialog-confirm-guard.test.ts`).
 - **dropdown-menu** — `empty` ya no trae «Nothing here yet». Filas a 40 px
   (44 en táctil).
 - **select** — `placeholder` sin «Choose…»; `optional` es el texto ya
   traducido, no un booleano que imprimía «Optional».
 - **number-input** — `stepLabels` obligatoria (antes «Increase»/«Decrease»);
-  `optional` como en `select`.
+  `optional` como en `select`. Revisión de dinero (2026-11-16), porque el campo
+  de asientos manda su valor a Stripe: la lectura del texto, lo que se emite y
+  las teclas que el campo se queda viven en `number-input-read.ts` (puro,
+  probado en `campo-asientos.test.ts`). `integer`: un texto con cualquier
+  separador no se lee y el campo vuelve a su último valor (antes se quitaban
+  comas y espacios: «2,5» era 25). `jumpKeys={false}`: Inicio/Fin/RePág/AvPág
+  se quedan con el navegador (antes «Fin» saltaba a `max`). `onValueChange`
+  también se emite MIENTRAS se teclea, en cuanto el texto es un número. Un
+  texto ilegible da un paso desde el último valor, no desde el mínimo.
 - **segmented-control** — el contador ya no se formatea con `"en-US"` fijo.
   `lg` a 36 px con puntero fino y 44 px en táctil.
 - **setup-guide** — REESCRITO en solo lectura y sin estado: nadie marca nada.

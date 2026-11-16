@@ -173,9 +173,18 @@ export function BillingButtons({
               <span className="acct-qty-name">{t("accountPlanStrip.seatsLabel")}</span>
               <span className="acct-unit">{t("accountPlanStrip.seatUnit")}</span>
             </label>
-            {/* Number Input de affectUI: − y +, flechas y tecleo libre. Devuelve el
-                número ya acotado a [minimo, MAX_ASIENTOS] al salir o al pulsar un
-                paso, y aquí se guarda como texto en el mismo estado de siempre. */}
+            {/* Number Input de affectUI: − y +, flechas y tecleo libre. El contrato
+                es el del `<input type=number>` que sustituye (lo fija
+                campo-asientos.test.ts), porque lo que salga de aquí va a Stripe:
+                 · `integer`: un texto con separadores («1,5», «1 2», «1,000») no se
+                   lee — antes se les quitaba la coma y «2,5» compraba 25 —; al salir
+                   el campo vuelve a la última cantidad válida.
+                 · `jumpKeys={false}`: Inicio/Fin/RePág/AvPág no saltan a 1 ni a
+                   MAX_ASIENTOS; con Fin, un comprador pasaba de 1 a 500 de una tecla.
+                 · el valor se emite MIENTRAS se teclea, así el resumen y los dos
+                   botones nunca guardan una cantidad más vieja que la del campo.
+                Se guarda como texto en el mismo estado de siempre y se normaliza
+                con `normalizarAsientos` al enviar. */}
             <NumberInput
               id="bv-seats"
               className="acct-qty-input"
@@ -185,6 +194,8 @@ export function BillingButtons({
               min={minimo}
               max={MAX_ASIENTOS}
               step={1}
+              integer
+              jumpKeys={false}
               value={asientos}
               onValueChange={(v) => setSeats(String(v ?? minimo))}
               stepLabels={{ decrease: t("accountPlanStrip.seatsLess"), increase: t("accountPlanStrip.seatsMore") }}

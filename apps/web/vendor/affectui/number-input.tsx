@@ -9,10 +9,12 @@ import "./number-input.css";
 
 import { useEffect, useId, useMemo, useRef, useState, type ComponentPropsWithRef, type ReactNode } from "react";
 
+import { committedValue, handledKeys, readNumber, roundToStep as round, typedValue } from "./number-input-read";
+
 /*
  * Number Input – a single self-contained file, clean style.
  * A field for one number: − and + to step it (hold to keep going), the arrow keys, Page Up / Page Down for big steps,
- * Home / End for the limits. A unit sits right after the value ("4,000 tokens", "25 %"), the value is formatted for
+ * Home / End for the limits (BiVelio: unless jumpKeys is off). A unit sits right after the value ("4,000 tokens", "25 %"), the value is formatted for
  * the locale when you leave the field and kept between min and max. Label, hint and error like the Text Field; focus
  * only firms up the edge – the buttons get the ring. The styles live in the sibling .css file.
  */
@@ -25,7 +27,11 @@ export type NumberInputProps = Omit<
   value?: number | null;
   /** The starting number when the field keeps its own value */
   defaultValue?: number | null;
-  /** Called with the new number after a step, or when typing is done (blur or Enter) – null when emptied */
+  /**
+   * Called with the new number after a step and when typing is done (blur or Enter) – null when emptied.
+   * BiVelio: also while typing, as soon as the text reads as a number (as typed, not clamped yet), so whatever sits
+   * next to the field never holds a quantity older than the one on screen. Text that is no number emits nothing.
+   */
   onValueChange?: (value: number | null) => void;
   /** The lowest value – typing less is raised to it, − stops there */
   min?: number;
@@ -35,6 +41,10 @@ export type NumberInputProps = Omit<
   step?: number;
   /** How much Page Up / Page Down change it – 10 steps by default */
   largeStep?: number;
+  /** BiVelio: whole numbers only – text with any separator ("1,5", "1 2") is unreadable and goes back to the last value */
+  integer?: boolean;
+  /** BiVelio: false leaves Home / End / Page Up / Page Down to the browser (caret only), as in <input type=number> */
+  jumpKeys?: boolean;
   /** Text after the value – e.g. "tokens" or "%" */
   unit?: ReactNode;
   /** Text or an icon before the value – e.g. "$" */
@@ -67,6 +77,8 @@ export function NumberInput({
   max,
   step = 1,
   largeStep,
+  integer = false,
+  jumpKeys = true,
   unit,
   prefix,
   locale,
@@ -130,34 +142,23 @@ export function NumberInput({
     if (next !== num) onValueChange?.(next);
   };
 
-  /** Reads what's typed: the locale's separators, a minus, a percent – null when empty, NaN when it's no number */
-  const read = (text: string): number | null => {
-    let t = text.replace(/[\s  ]/g, "");
-    if (t === "") return null;
-    if (marks.group) t = t.split(marks.group).join("");
-    if (marks.decimal !== ".") t = t.split(marks.decimal).join(".");
-    const negative = /^[-−]|[-−]$|^\(.*\)$/.test(t);
-    t = t.replace(/[^\d.]/g, "");
-    if (t === "" || t === "." || (t.match(/\./g)?.length ?? 0) > 1) return NaN;
-    const n = Number(t) * (negative ? -1 : 1);
-    return percent ? n / 100 : n;
-  };
+  /** Reads what's typed – null when empty, NaN when it's no number (the rules live in number-input-read.ts) */
+  const read = (text: string): number | null => readNumber(text, marks, { percent, integer });
 
   /** Takes what's typed: clamped, formatted; something unreadable goes back to the last value */
   const commit = () => {
     if (draft === null) return;
-    const parsed = read(draft);
+    const settled = committedValue(draft, marks, { percent, integer, min: lo, max: hi, step: stepSize });
     setDraft(null);
-    if (parsed === null) return set(null);
-    if (!Number.isFinite(parsed)) return;
-    set(clamp(round(parsed, stepSize)));
+    if (settled !== undefined) set(settled);
   };
 
   /** One step up or down from the current (or typed) value, onto the step grid */
   const nudge = (dir: 1 | -1, by = stepSize) => {
     if (disabled || readOnly) return;
     const typed = draft !== null ? read(draft) : num;
-    const base = typed !== null && Number.isFinite(typed) ? typed : null;
+    // BiVelio: unreadable text steps from the last value, not from the minimum; only an empty field starts over
+    const base = typed === null ? null : Number.isFinite(typed) ? typed : num;
     // An empty field starts at min (or 0) – the first press doesn't skip a step
     const origin = Number.isFinite(lo) ? lo : 0;
     let next: number;
@@ -302,7 +303,13 @@ export function NumberInput({
           aria-describedby={[describedBy, message ? messageId : null].filter(Boolean).join(" ") || undefined}
           // The value hugs its text, so the unit sits right after it
           style={{ width: `calc(${Math.max(2, (shown || placeholder || "").length)}ch + 2px)`, ...rest.style }}
-          onChange={(e) => setDraft(e.target.value.replace(ALLOWED, ""))}
+          onChange={(e) => {
+            const text = e.target.value.replace(ALLOWED, "");
+            setDraft(text);
+            // BiVelio: readable text counts at once; unreadable text leaves the last value standing
+            const typed = typedValue(text, marks, { percent, integer });
+            if (typed !== undefined) set(typed);
+          }}
           onBlur={(e) => {
             commit();
             onBlur?.(e);
@@ -320,7 +327,8 @@ export function NumberInput({
             };
             if (Number.isFinite(lo)) keys.Home = () => (setDraft(null), set(lo), roll(input.current, -1));
             if (Number.isFinite(hi)) keys.End = () => (setDraft(null), set(hi), roll(input.current, 1));
-            const run = keys[e.key];
+            // BiVelio: only the keys the field takes over; the rest stay the browser's (number-input-read.ts)
+            const run = handledKeys({ min: lo, max: hi, jumpKeys }).includes(e.key) ? keys[e.key] : undefined;
             if (!run || readOnly) return;
             // Enter still submits the form; Escape only counts while something was typed
             if (e.key === "Escape" && draft === null) return;
@@ -360,12 +368,6 @@ function separators(fmt: Intl.NumberFormat) {
     // Shown with decimals on purpose (minimumFractionDigits), so a decimal key is needed
     decimals: (fmt.resolvedOptions().minimumFractionDigits ?? 0) > 0,
   };
-}
-
-/** Rounds away float noise (0.1 + 0.2) to the step's own decimals, at least 10 */
-function round(v: number, step: number) {
-  const places = Math.max(10, (String(step).split(".")[1] ?? "").length);
-  return Number(v.toFixed(Math.min(places, 15)));
 }
 
 /** The one motion: the new value rolls in from the direction it moved */
