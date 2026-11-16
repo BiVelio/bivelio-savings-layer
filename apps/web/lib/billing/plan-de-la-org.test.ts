@@ -7,6 +7,7 @@ import {
   comisionPorOrg,
   decidirComisionDelPeriodo,
   idsDelCatalogo,
+  preciosDeLaDecision,
   type SuscripcionEnElPeriodo,
 } from "./plan-de-la-org";
 
@@ -318,6 +319,88 @@ describe("varias suscripciones", () => {
         sub({ price_id: "price_pro_m", status: "incomplete", created_at: "2026-10-31T23:50:00Z" }),
       ]),
     ).toEqual(revisar("plan_sin_comision_en_el_periodo", ["price_legacy_m", "price_pro_m"]));
+  });
+
+  // F1 (revisión del 2026-11-16) · LA FILA INERTE TODO EL PERÍODO. Antes, toda
+  // fila no cancelada «tocaba» cada período posterior a su alta: una prueba con
+  // comisión pausada en julio dejaba en «mes mixto» —sin sellar, con alerta
+  // crítica— TODOS los meses al cliente que compró Pro en septiembre.
+  describe("fila `paused` o `incomplete` que no se mueve desde antes del período", () => {
+    const pro = sub({ price_id: "price_pro_m", status: "active", created_at: "2026-09-05T10:00:00Z" });
+    const legado = sub({ price_id: "price_legacy_m", status: "active" });
+
+    it("⛔ comisión pausada en julio + Pro desde septiembre: octubre cierra a 0 por cuota fija, no «mes mixto» cada mes", () => {
+      const pausada = sub({ price_id: "price_legacy_m", status: "paused", last_event_at: "2026-07-17T09:00:00Z" });
+      expect(decidir([pausada, pro])).toEqual(PLANO);
+      expect(preciosDeLaDecision([pausada, pro], catalogo, PERIODO)).toEqual(["price_pro_m"]);
+      // El mes en que se pausó SÍ es mixto: el último evento cae dentro.
+      expect(decidir([pausada, { ...pro, created_at: "2026-07-20T10:00:00Z" }], "2026-07")).toEqual(
+        revisar("plan_sin_comision_en_el_periodo", ["price_legacy_m", "price_pro_m"]),
+      );
+    });
+
+    it("el borde: un último evento en el primer instante del período ya cuenta; un milisegundo antes, no", () => {
+      const enElBorde = sub({ price_id: "price_legacy_m", status: "paused", last_event_at: "2026-10-01T00:00:00.000Z" });
+      const justoAntes = sub({ price_id: "price_legacy_m", status: "paused", last_event_at: "2026-09-30T23:59:59.999Z" });
+      expect(decidir([enElBorde, pro])).toEqual(revisar("plan_sin_comision_en_el_periodo", ["price_legacy_m", "price_pro_m"]));
+      expect(decidir([justoAntes, pro])).toEqual(PLANO);
+    });
+
+    it("comisión pausada todo el período y nada más: cargo 0 (estuvo en «Medir»; su extracto ya daba 0)", () => {
+      expect(decidir([sub({ price_id: "price_legacy_m", status: "paused", last_event_at: "2026-07-17T09:00:00Z" })])).toEqual(SIN);
+    });
+
+    it("⛔ un Pro atascado en `incomplete` desde antes del período no deja sin cobrar la comisión viva", () => {
+      const atascado = sub({ price_id: "price_pro_m", status: "incomplete", created_at: "2026-08-10T10:00:00Z", last_event_at: "2026-08-10T10:00:02Z" });
+      expect(decidir([legado, atascado])).toEqual(COBRA);
+      // Y un Pro pausado desde antes, igual.
+      expect(decidir([legado, sub({ price_id: "price_pro_m", status: "paused", last_event_at: "2026-08-24T10:00:00Z" })])).toEqual(COBRA);
+      // …pero el checkout a medias DENTRO del período sigue siendo revisar.
+      const reciente = sub({ price_id: "price_pro_m", status: "incomplete", created_at: "2026-10-31T23:50:00Z", last_event_at: "2026-10-31T23:50:02Z" });
+      expect(decidir([legado, reciente])).toEqual(revisar("plan_sin_comision_en_el_periodo", ["price_legacy_m", "price_pro_m"]));
+    });
+
+    it("sin `last_event_at` (fila anterior a 0012) no hay prueba: sigue contando", () => {
+      const pausada = sub({ price_id: "price_legacy_m", status: "paused", last_event_at: null });
+      expect(decidir([pausada, pro])).toEqual(revisar("plan_sin_comision_en_el_periodo", ["price_legacy_m", "price_pro_m"]));
+      expect(decidir([pausada])).toEqual(COBRA);
+    });
+
+    it("⛔ `unpaid` NO se beneficia: Stripe le sigue mandando eventos cada ciclo y la regla sería intermitente — sigue en revisión", () => {
+      const impagada = sub({ price_id: "price_legacy_m", status: "unpaid", last_event_at: "2026-08-03T09:00:00Z" });
+      expect(decidir([impagada, pro])).toEqual(revisar("plan_sin_comision_en_el_periodo", ["price_legacy_m", "price_pro_m"]));
+      // Y sola se sigue cobrando, como siempre.
+      expect(decidir([impagada])).toEqual(COBRA);
+      // Un Equipo impagado desde antes tampoco deja de contar como cuota fija.
+      expect(decidir([legado, sub({ price_id: "price_team_m", status: "unpaid", last_event_at: "2026-08-03T09:00:00Z" })])).toEqual(
+        revisar("plan_sin_comision_en_el_periodo", ["price_legacy_m", "price_team_m"]),
+      );
+    });
+
+    it("⛔ un Price SIN DECLARAR no se libra por estar pausado: sigue sin sellarse hasta declararlo", () => {
+      const rara = sub({ price_id: "price_x", status: "paused", last_event_at: "2026-07-17T09:00:00Z" });
+      expect(decidir([rara, pro])).toEqual(revisar("precio_desconocido", ["price_x"]));
+      expect(preciosDeLaDecision([rara, pro], catalogo, PERIODO)).toEqual(["price_pro_m", "price_x"]);
+    });
+
+    it("los estados vivos no se tocan: una `active` sin eventos desde hace meses (anual) sigue contando", () => {
+      const anual = sub({ price_id: "price_legacy_y", status: "active", last_event_at: "2026-02-03T09:00:00Z" });
+      expect(decidir([anual])).toEqual(COBRA);
+      expect(decidir([anual, pro])).toEqual(revisar("plan_sin_comision_en_el_periodo", ["price_legacy_y", "price_pro_m"]));
+    });
+  });
+
+  it("`preciosDeLaDecision`: solo las filas que pesan en ESE período, ordenadas y sin repetir", () => {
+    const filas = [
+      sub({ price_id: "price_socio", status: "active" }),
+      sub({ price_id: "price_socio", status: "canceled", canceled_at: "2026-10-09T00:00:00Z" }),
+      sub({ price_id: "price_pro_m", status: "incomplete_expired", created_at: "2026-10-12T00:00:00Z" }),
+      sub({ price_id: "price_legacy_m", status: "canceled", canceled_at: "2026-03-01T00:00:00Z", current_period_end: "2026-03-03T00:00:00Z" }),
+      sub({ price_id: "price_team_m", status: "active", created_at: "2026-11-01T00:00:00Z" }),
+      sub({ price_id: null, status: "active" }),
+    ];
+    expect(preciosDeLaDecision(filas, catalogo, PERIODO)).toEqual(["(sin price_id)", "price_socio"]);
+    expect(preciosDeLaDecision([], catalogo, PERIODO)).toEqual([]);
   });
 
   it("un Pro que acabó ANTES del período no quita la comisión de hoy", () => {

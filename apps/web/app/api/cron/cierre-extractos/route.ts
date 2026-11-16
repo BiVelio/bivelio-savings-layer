@@ -7,8 +7,9 @@ import { obtenerFxCierre, type Fx } from "@/lib/billing/fx";
 import {
   COLUMNAS_SUSCRIPCION_DEL_PERIODO,
   comisionDe,
-  comisionPorOrg,
   type ComisionDelPeriodo,
+  comisionPorOrg,
+  preciosDeLaDecision,
   type SuscripcionEnElPeriodo,
 } from "@/lib/billing/plan-de-la-org";
 import { alertar } from "@/lib/observabilidad/alerta";
@@ -82,6 +83,12 @@ interface DecisionDelCierre {
   org_id: string;
   cobra: boolean;
   motivo: string;
+  /**
+   * Los price ids (no son secretos) de las suscripciones con las que se decidió.
+   * Un «cargo 0» por un Price mal archivado en STRIPE_PRICE_IDS_SIN_COMISION no
+   * da alerta: aquí es donde se ve, en el ensayo en seco (RUNBOOK §7.0).
+   */
+  precios: string[];
 }
 /** Una organización que este cierre NO ha sellado: hay que resolver y relanzar. */
 interface SinSellar {
@@ -256,7 +263,7 @@ export async function GET(req: Request): Promise<NextResponse> {
     console.error("[cierre-extractos] no se pudo leer quién lleva comisión:", error);
     await avisar({
       nivel: "critico",
-      asunto: "Cierre de extractos aplazado: no se pudo leer la exención de comisión",
+      asunto: "Cierre de extractos aplazado: no se pudo leer quién lleva comisión (marca de exención o suscripciones)",
       detalle: { periodo, motivo: error instanceof Error ? error.message : String(error) },
     });
     return NextResponse.json({ error: "orgs read failed", periodo, seco }, { status: 500 });
@@ -279,6 +286,11 @@ export async function GET(req: Request): Promise<NextResponse> {
     return NextResponse.json({ error: "commission catalogue empty", periodo, seco, orgs_con_suscripcion: conSuscripcion.length }, { status: 500 });
   }
   const comisiones: Map<string, ComisionDelPeriodo> = comisionPorOrg(subs, catalogo, periodo);
+  const subsPorOrg = new Map<string, SuscripcionEnElPeriodo[]>();
+  for (const s of subs) {
+    const id = String(s.org_id);
+    subsPorOrg.set(id, [...(subsPorOrg.get(id) ?? []), s]);
+  }
 
   // La calibración REAL: el primer día con uso de toda la historia de cada org.
   const usoPorOrg: UsoDeOrg[] = [];
@@ -308,7 +320,12 @@ export async function GET(req: Request): Promise<NextResponse> {
       sinSellar.push({ org_id: orgId, motivo: "primer_uso_ilegible" });
       continue; // mejor un cierre incompleto y relanzable que uno inventado
     }
-    decisiones.push({ org_id: orgId, cobra: !exenta && d.comision, motivo: exenta ? "exenta" : d.motivo });
+    decisiones.push({
+      org_id: orgId,
+      cobra: !exenta && d.comision,
+      motivo: exenta ? "exenta" : d.motivo,
+      precios: preciosDeLaDecision(subsPorOrg.get(orgId) ?? [], catalogo, periodo),
+    });
     usoPorOrg.push({
       orgId,
       filas: filasOrg,

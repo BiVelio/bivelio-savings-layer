@@ -149,7 +149,7 @@ interface Cuerpo {
   error?: string;
   cerrados?: number;
   extractos?: Array<{ org_id: string; cargo_eur: number; es_exento: boolean }>;
-  comision: Array<{ org_id: string; cobra: boolean; motivo: string }>;
+  comision: Array<{ org_id: string; cobra: boolean; motivo: string; precios: string[] }>;
   sin_sellar: Array<{ org_id: string; motivo: string; precios?: string[] }>;
 }
 
@@ -270,6 +270,27 @@ describe("⛔ el cierre cobra comisión SOLO a quien llevó un plan con comisió
     expect(de("legado-vivo").cargo_eur).toBeGreaterThan(0);
     expect(cuerpo.comision.find((d) => d.org_id === "pro-cancelado")).toMatchObject({ cobra: false, motivo: "plan_de_cuota_fija" });
   });
+
+  it("?seco=1 enseña los price ids detrás de cada decisión: un 0 por un Price de la lista sin comisión se VE", async () => {
+    // Un Price de comisión archivado por error en STRIPE_PRICE_IDS_SIN_COMISION
+    // cierra a 0 sin alerta (es lo declarado). El único sitio donde el dueño lo
+    // puede ver antes de sellar es el ensayo: motivo Y Price, uno al lado del otro.
+    estado.catalogo = { ...CATALOGO, sinComision: ["price_socio"] } as typeof CATALOGO;
+    estado.uso = { socio: [2000, 1100], "legado-vivo": [2000, 1100], "pro-cancelado": [2000, 1100], "sin-sub": [2000, 1100] };
+    estado.subs = [
+      sub("socio", "price_socio", "active"),
+      sub("legado-vivo", "price_legacy_m", "active"),
+      sub("pro-cancelado", "price_pro_m", "canceled", { canceled_at: "2026-10-20T10:00:00Z" }),
+    ];
+    const cuerpo = (await (await cerrar("&seco=1")).json()) as Cuerpo;
+    expect(estado.upsert).toBeNull();
+    expect([...cuerpo.comision].sort((a, b) => a.org_id.localeCompare(b.org_id))).toEqual([
+      { org_id: "legado-vivo", cobra: true, motivo: "plan_con_comision", precios: ["price_legacy_m"] },
+      { org_id: "pro-cancelado", cobra: false, motivo: "plan_de_cuota_fija", precios: ["price_pro_m"] },
+      { org_id: "sin-sub", cobra: false, motivo: "sin_suscripcion_con_comision", precios: [] },
+      { org_id: "socio", cobra: false, motivo: "plan_de_cuota_fija", precios: ["price_socio"] },
+    ]);
+  });
 });
 
 describe("⛔ lo que no se puede decidir NO SE SELLA: se salta la organización y se alerta en crítico", () => {
@@ -321,7 +342,8 @@ describe("⛔ lo que no se puede decidir NO SE SELLA: se salta la organización 
     estado.subs = [sub("cortesia", "price_cortesia", "active")];
     const cuerpo = (await (await cerrar()).json()) as Cuerpo;
     expect(fila("cortesia")).toMatchObject({ cargo_eur: 0, es_exento: true });
-    expect(cuerpo.comision).toEqual([{ org_id: "cortesia", cobra: false, motivo: "exenta" }]);
+    // Con los price ids detrás de la decisión (no son secretos): es donde se ve un Price mal archivado.
+    expect(cuerpo.comision).toEqual([{ org_id: "cortesia", cobra: false, motivo: "exenta", precios: ["price_cortesia"] }]);
     expect(estado.alertas).toEqual([]);
   });
 

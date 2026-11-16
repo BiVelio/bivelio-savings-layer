@@ -12,7 +12,7 @@ import { candidatosAAbono, DESDE_POR_DEFECTO, ESTADOS_FACTURADOS } from "../../s
  * script no puede escribir nada.
  */
 
-const catalogo = { comision: ["price_legacy_m"], pro: ["price_pro_m"], equipo: ["price_team_m"] };
+const catalogo = { comision: ["price_legacy_m"], pro: ["price_pro_m"], equipo: ["price_team_m"], sinComision: ["price_socio"] };
 const sub = (org_id: string, price_id: string, status: string, mas: Record<string, unknown> = {}) => ({
   org_id,
   price_id,
@@ -52,15 +52,29 @@ describe("auditoría de la comisión indebida", () => {
       catalogo,
     );
     expect(salida).toEqual([
-      { org_id: "equipo-impagado", periodo: "2026-09", importe_eur: 7, estado: "facturado", stripe_invoice_id: "in_equipo-impagado_2026-09", motivo: "plan_de_cuota_fija", revisar: false },
-      { org_id: "pro-cancelado", periodo: "2026-10", importe_eur: 40.5, estado: "pagado", stripe_invoice_id: "in_pro-cancelado_2026-10", motivo: "plan_de_cuota_fija", revisar: false },
-      { org_id: "sin-suscripcion", periodo: "2026-10", importe_eur: 3.2, estado: "pagado", stripe_invoice_id: "in_sin-suscripcion_2026-10", motivo: "sin_suscripcion_con_comision", revisar: false },
+      { org_id: "equipo-impagado", periodo: "2026-09", importe_eur: 7, estado: "facturado", stripe_invoice_id: "in_equipo-impagado_2026-09", motivo: "plan_de_cuota_fija", precios: ["price_team_m"], revisar: false, seguro: true },
+      { org_id: "pro-cancelado", periodo: "2026-10", importe_eur: 40.5, estado: "pagado", stripe_invoice_id: "in_pro-cancelado_2026-10", motivo: "plan_de_cuota_fija", precios: ["price_pro_m"], revisar: false, seguro: true },
+      // Sin ninguna fila no hay Price de Pro/Equipo que lo pruebe: candidato, pero NO «seguro».
+      { org_id: "sin-suscripcion", periodo: "2026-10", importe_eur: 3.2, estado: "pagado", stripe_invoice_id: "in_sin-suscripcion_2026-10", motivo: "sin_suscripcion_con_comision", precios: [], revisar: false, seguro: false },
+    ]);
+  });
+
+  it("⛔ un 0 apoyado en STRIPE_PRICE_IDS_SIN_COMISION NO es «seguro»: enseña el Price para que se compruebe", () => {
+    // El fallo que esto cierra (F3): un Price de comisión archivado por error en
+    // la lista sin comisión sellaba a 0 sin alerta, y la auditoría presentaba
+    // sus facturas —que eran CORRECTAS— como un abono sin más (`revisar: false`).
+    const filas = [sub("mal-archivado", "price_socio", "active"), sub("pro-y-socio", "price_pro_m", "active"), sub("pro-y-socio", "price_socio", "active")];
+    const salida = candidatosAAbono([cargo("mal-archivado", "2026-10", "pagado"), cargo("pro-y-socio", "2026-10", "pagado")], filas, catalogo);
+    expect(salida).toEqual([
+      expect.objectContaining({ org_id: "mal-archivado", motivo: "plan_de_cuota_fija", precios: ["price_socio"], revisar: false, seguro: false }),
+      // Basta UNA fila fuera de Pro/Equipo para que deje de ser seguro.
+      expect.objectContaining({ org_id: "pro-y-socio", precios: ["price_pro_m", "price_socio"], revisar: false, seguro: false }),
     ]);
   });
 
   it("un Price sin declarar sale marcado REVISAR: no es un abono seguro", () => {
     expect(candidatosAAbono([cargo("rotado", "2026-10", "pagado")], subs, catalogo)).toEqual([
-      expect.objectContaining({ org_id: "rotado", motivo: "precio_desconocido", revisar: true }),
+      expect.objectContaining({ org_id: "rotado", motivo: "precio_desconocido", precios: ["price_legacy_inclusive"], revisar: true, seguro: false }),
     ]);
   });
 
@@ -90,6 +104,9 @@ describe("auditoría de la comisión indebida", () => {
     for (const escritura of [".insert(", ".update(", ".upsert(", ".delete(", ".rpc(", 'from "stripe"', "new Stripe"]) {
       expect(codigo, escritura).not.toContain(escritura);
     }
+    // El total que se presenta como abonable es el de los «seguro», no el de «sin revisar».
+    expect(codigo).toContain("candidatos.filter((c) => c.seguro)");
+    expect(codigo).not.toContain("filter((c) => !c.revisar)");
     // La clave solo se pasa al cliente de Supabase: ni console.* ni JSON.stringify la tocan.
     for (const linea of codigo.split("\n").filter((l) => /console\.|JSON\.stringify/.test(l))) {
       expect(linea, linea).not.toMatch(/\bclave\b(?! \?)/);

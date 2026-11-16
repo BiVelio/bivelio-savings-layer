@@ -14,9 +14,22 @@
 // de esas organizaciones y aplica la MISMA función que usan el cierre y la
 // facturación (`decidirComisionDelPeriodo`, importada del módulo, no copiada).
 // Saca una línea por cargo cuya decisión de hoy es «sin comisión»:
-//   org_id, periodo, importe_eur, estado, stripe_invoice_id, motivo, revisar
-// `revisar: true` (Price sin declarar, mes mixto) NO es un abono seguro: es un
-// caso que hay que mirar a mano. Solo ids e importes; ningún dato del cliente.
+//   org_id, periodo, importe_eur, estado, stripe_invoice_id, motivo, precios,
+//   revisar, seguro
+// `precios`: los price ids (no son secretos) de las suscripciones con las que
+// se ha decidido. `seguro: true` SOLO si la decisión no es «revisar» Y todas
+// esas suscripciones llevan uno de los Prices de Pro o Equipo declarados en
+// STRIPE_PRICE_ID_PRO_*/TEAM_*. Todo lo demás es para mirar a mano:
+//   · `revisar: true` (Price sin declarar, mes mixto, final no probado);
+//   · un 0 apoyado en STRIPE_PRICE_IDS_SIN_COMISION — si ahí se archivó por
+//     error un Price de comisión, su factura de comisión era CORRECTA y esto la
+//     presentaría como abono;
+//   · sin ninguna suscripción en juego (puede ser una fila que falta).
+// Solo ids e importes; ningún dato del cliente.
+//
+// CUÁNDO: ANTES de desplegar la regla nueva (docs/RUNBOOK-ALERTAS.md §7.0), con
+// el catálogo que se va a desplegar: es la comprobación de que ningún Price de
+// comisión ha acabado en la lista sin comisión.
 //
 // LÍMITE: la decisión se hace con el estado de HOY de cada suscripción (no hay
 // historial de precios). Un cambio de Price posterior dentro de la misma
@@ -25,11 +38,14 @@
 // LO EJECUTA EL DUEÑO, a mano — nunca un agente ni un despliegue. Uso (desde
 // apps/web, Node ≥ 22.18: importa TypeScript sin compilar):
 //
-//   NEXT_PUBLIC_SUPABASE_URL=… SUPABASE_SERVICE_ROLE_KEY=… \
-//   STRIPE_PRICE_ID_MONTHLY=… STRIPE_PRICE_ID_YEARLY=… STRIPE_PRICE_IDS_COMISION=… \
-//   STRIPE_PRICE_ID_PRO_MONTHLY=… STRIPE_PRICE_ID_PRO_YEARLY=… \
-//   STRIPE_PRICE_ID_TEAM_MONTHLY=… STRIPE_PRICE_ID_TEAM_YEARLY=… \
+//   export NEXT_PUBLIC_SUPABASE_URL=…            # pública
+//   export STRIPE_PRICE_ID_MONTHLY=… STRIPE_PRICE_ID_YEARLY=… STRIPE_PRICE_IDS_COMISION=… \
+//          STRIPE_PRICE_ID_PRO_MONTHLY=… STRIPE_PRICE_ID_PRO_YEARLY=… \
+//          STRIPE_PRICE_ID_TEAM_MONTHLY=… STRIPE_PRICE_ID_TEAM_YEARLY=… STRIPE_PRICE_IDS_SIN_COMISION=…
+//   # La clave de servicio NUNCA en la línea de órdenes (queda en el historial):
+//   read -rs "SUPABASE_SERVICE_ROLE_KEY?service role key: " && export SUPABASE_SERVICE_ROLE_KEY   # zsh
 //   node scripts/auditoria-comision-indebida.mjs [--desde=2026-09] [--json]
+//   unset SUPABASE_SERVICE_ROLE_KEY
 //
 // Las variables de Price tienen que ser LAS DE PRODUCCIÓN (los price ids no son
 // secretos): con otro catálogo la decisión sería otra. La clave de Supabase se
@@ -39,7 +55,7 @@
 
 import { pathToFileURL } from "node:url";
 
-import { COLUMNAS_SUSCRIPCION_DEL_PERIODO, decidirComisionDelPeriodo } from "../lib/billing/plan-de-la-org.ts";
+import { COLUMNAS_SUSCRIPCION_DEL_PERIODO, decidirComisionDelPeriodo, preciosDeLaDecision } from "../lib/billing/plan-de-la-org.ts";
 
 /** Los estados de un cargo que son una factura emitida (0017). `fallido` no se cobró. */
 export const ESTADOS_FACTURADOS = ["facturado", "pagado"];
@@ -60,11 +76,14 @@ export function candidatosAAbono(cargos, suscripciones, catalogo) {
     const id = String(s.org_id);
     porOrg.set(id, [...(porOrg.get(id) ?? []), s]);
   }
+  const deProOEquipo = new Set([...catalogo.pro, ...catalogo.equipo]);
   const salida = [];
   for (const c of cargos) {
     if (!ESTADOS_FACTURADOS.includes(String(c.estado))) continue;
-    const d = decidirComisionDelPeriodo(porOrg.get(String(c.org_id)) ?? [], catalogo, String(c.periodo));
+    const filas = porOrg.get(String(c.org_id)) ?? [];
+    const d = decidirComisionDelPeriodo(filas, catalogo, String(c.periodo));
     if (d.comision) continue;
+    const precios = preciosDeLaDecision(filas, catalogo, String(c.periodo));
     salida.push({
       org_id: String(c.org_id),
       periodo: String(c.periodo),
@@ -72,7 +91,11 @@ export function candidatosAAbono(cargos, suscripciones, catalogo) {
       estado: String(c.estado),
       stripe_invoice_id: c.stripe_invoice_id ?? null,
       motivo: d.motivo,
+      precios,
       revisar: d.revisar,
+      // Abono seguro = cuota fija PROBADA por un Price de Pro o Equipo, no por
+      // la lista libre STRIPE_PRICE_IDS_SIN_COMISION ni por la falta de filas.
+      seguro: !d.revisar && precios.length > 0 && precios.every((p) => deProOEquipo.has(p)),
     });
   }
   return salida.sort((a, b) => a.periodo.localeCompare(b.periodo) || a.org_id.localeCompare(b.org_id));
@@ -154,13 +177,15 @@ async function main() {
   console.log(`Catálogo: ${catalogo.comision.length} Price(s) con comisión · ${catalogo.pro.length} Pro · ${catalogo.equipo.length} Equipo · ${(catalogo.sinComision ?? []).length} sin comisión declarados`);
   console.log(`Candidatos (la decisión de hoy es «sin comisión»): ${candidatos.length}\n`);
   if (candidatos.length > 0) {
-    console.log("org_id\tperiodo\timporte_eur\testado\tstripe_invoice_id\tmotivo\trevisar");
+    console.log("org_id\tperiodo\timporte_eur\testado\tstripe_invoice_id\tmotivo\tprecios\tveredicto");
     for (const c of candidatos) {
-      console.log([c.org_id, c.periodo, c.importe_eur.toFixed(2), c.estado, c.stripe_invoice_id ?? "", c.motivo, c.revisar ? "REVISAR" : ""].join("\t"));
+      const veredicto = c.seguro ? "seguro" : c.revisar ? "REVISAR" : "COMPROBAR";
+      console.log([c.org_id, c.periodo, c.importe_eur.toFixed(2), c.estado, c.stripe_invoice_id ?? "", c.motivo, c.precios.join(",") || "(ninguno)", veredicto].join("\t"));
     }
-    const total = candidatos.filter((c) => !c.revisar).reduce((t, c) => t + c.importe_eur, 0);
-    console.log(`\nTotal de los que no necesitan revisión: ${total.toFixed(2)} €`);
-    console.log("Los marcados REVISAR (Price sin declarar, mes mixto, final no probado) no son un abono seguro: mirar a mano.");
+    const total = candidatos.filter((c) => c.seguro).reduce((t, c) => t + c.importe_eur, 0);
+    console.log(`\nTotal de los marcados «seguro» (solo Prices de Pro/Equipo declarados): ${total.toFixed(2)} €`);
+    console.log("REVISAR (Price sin declarar, mes mixto, final no probado) y COMPROBAR (un 0 apoyado en STRIPE_PRICE_IDS_SIN_COMISION, o sin");
+    console.log("ninguna suscripción) NO son un abono seguro: mirar en Stripe qué Price era y si llevaba comisión antes de abonar nada.");
   }
   console.log("\nNada se ha escrito. El abono (nota de crédito en Stripe) es decisión del dueño.");
 }

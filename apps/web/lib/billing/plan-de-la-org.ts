@@ -77,6 +77,30 @@ import type { CatalogoDeComision, PreciosConfigurados } from "./planes";
  * la fila es el de la prueba. Mientras está pausada la licencia de pago está
  * revocada («Medir», base = real) y el cargo sale 0 por el propio extracto.
  *
+ * FILA INERTE TODO EL PERÍODO (`inerteTodoElPeriodo`). Una fila `paused` o
+ * `incomplete` cuyo `last_event_at` es ANTERIOR al inicio del período lleva en
+ * ese estado desde antes de que el período empezara: no dio derecho a ningún
+ * plan ni un solo día de él, así que no cuenta NI como comisión NI como cuota
+ * fija. Sin esto, una prueba con comisión pausada en julio dejaba al cliente
+ * que compró Pro en septiembre en «mes mixto» TODOS los meses, para siempre.
+ * Lo mismo un checkout de Pro atascado en `incomplete` (Stripe lo caduca a las
+ * 23 h; si la fila sigue así un mes después, el evento se perdió) junto a una
+ * suscripción con comisión viva: ya no la deja sin cobrar cada mes.
+ *   · Es seguro en las dos direcciones: cualquier evento que cambie la fila
+ *     (reanudación, pago) adelanta `last_event_at` Y cambia el estado, y un
+ *     evento tardío que solo adelante `last_event_at` hace que la fila vuelva a
+ *     contar (un mes de revisión de más, nunca un sello equivocado).
+ *   · Sin `last_event_at` (fila anterior a 0012) no hay prueba: cuenta.
+ *   · Un Price DESCONOCIDO no se beneficia: sigue en revisión hasta declararlo
+ *     (se resuelve una vez, no cada mes).
+ *   · `unpaid` NO entra, aunque tampoco da derecho al plan: Stripe sigue
+ *     abriendo un ciclo —y mandando `customer.subscription.updated`— cada mes a
+ *     una suscripción impagada, así que su `last_event_at` casi nunca queda por
+ *     detrás del período y la regla sería intermitente; y una impagada con
+ *     comisión sola se sigue cobrando (regla 4), que no hay que tocar. El mes
+ *     mixto con una fila `unpaid` se queda en revisión y se cierra cancelando
+ *     esa suscripción en Stripe (docs/RUNBOOK-ALERTAS.md §7.2).
+ *
  * PRORRATEO: no lo hay ni lo había (el extracto es del mes natural entero). No
  * hace falta para el caso «comisión cancelada a mitad de mes»: al cancelarse,
  * la licencia de pago se revoca y la organización vuelve a «Medir», que el
@@ -277,8 +301,54 @@ function tocoElPeriodo(s: SuscripcionEnElPeriodo, periodo: string, modo: "probad
   return fin >= desde;
 }
 
+/** Estados sin derecho a plan que, si no se han movido desde antes del período, no lo tocaron (ver cabecera). */
+const ESTADOS_INERTES: readonly string[] = ["paused", ESTADO_A_MEDIAS];
+
+/**
+ * ¿Lleva la fila en `paused` o `incomplete` desde ANTES de que empezara el
+ * período? Solo con `last_event_at` (0012) que lo pruebe. `unpaid` no entra a
+ * propósito: ver la cabecera.
+ */
+function inerteTodoElPeriodo(s: SuscripcionEnElPeriodo, periodo: string): boolean {
+  if (!ESTADOS_INERTES.includes(s.status)) return false;
+  const ultimoEvento = ms(s.last_event_at);
+  return ultimoEvento !== null && ultimoEvento < limitesDelPeriodo(periodo).desde;
+}
+
 const precios = (filas: readonly SuscripcionEnElPeriodo[]): string[] =>
   [...new Set(filas.map((s) => s.price_id ?? "(sin price_id)"))].sort();
+
+/**
+ * Las filas que PESAN en la decisión de un período: las que pudieron tocarlo,
+ * menos las nunca activadas y las inertes todo el período (salvo que su Price
+ * esté sin declarar: esa sigue contando, para que se revise).
+ */
+function filasEnJuego(
+  suscripciones: readonly SuscripcionEnElPeriodo[],
+  catalogo: CatalogoDeComision,
+  periodo: string,
+): SuscripcionEnElPeriodo[] {
+  return suscripciones.filter(
+    (s) =>
+      s.status !== ESTADO_NUNCA_ACTIVADA &&
+      tocoElPeriodo(s, periodo, "posible") &&
+      (clasificarPrecio(s.price_id, catalogo) === "desconocido" || !inerteTodoElPeriodo(s, periodo)),
+  );
+}
+
+/**
+ * Los price ids (no son secretos) de las filas que pesan en la decisión de un
+ * período, ordenados y sin repetir. Para ENSEÑAR con qué Prices se decidió —el
+ * ensayo en seco del cierre y la auditoría—: un «cargo 0» apoyado en un Price
+ * de STRIPE_PRICE_IDS_SIN_COMISION mal archivado se ve aquí, no en el motivo.
+ */
+export function preciosDeLaDecision(
+  suscripciones: readonly SuscripcionEnElPeriodo[],
+  catalogo: CatalogoDeComision,
+  periodo: string,
+): string[] {
+  return precios(filasEnJuego(suscripciones, catalogo, periodo));
+}
 
 /**
  * La decisión para UNA organización, con TODAS sus filas de suscripción (no
@@ -291,8 +361,7 @@ export function decidirComisionDelPeriodo(
   periodo: string,
 ): ComisionDelPeriodo {
   limitesDelPeriodo(periodo); // un período mal formado no se decide a ojo, ni con cero filas
-  const vivas = suscripciones.filter((s) => s.status !== ESTADO_NUNCA_ACTIVADA);
-  const posibles = vivas.filter((s) => tocoElPeriodo(s, periodo, "posible"));
+  const posibles = filasEnJuego(suscripciones, catalogo, periodo);
 
   // 1) Un Price sin declarar que pudo tocar el período: no se sabe si lleva comisión.
   const desconocidas = posibles.filter((s) => clasificarPrecio(s.price_id, catalogo) === "desconocido");
