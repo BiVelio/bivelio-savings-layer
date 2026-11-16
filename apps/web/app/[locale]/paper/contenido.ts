@@ -646,6 +646,10 @@ export const BLOQUES: Bloque[] = [
   },
   {
     "tipo": "p",
+    "texto": "Zenodo record (this version): **https://doi.org/10.5281/zenodo.24278852** — the compiled PDF and the LaTeX source, open access under CC-BY-4.0."
+  },
+  {
+    "tipo": "p",
     "texto": "Historical primary artifacts are `docs/benchmarks/2026-09-28/gsm8k-0431.json` and `docs/benchmarks/2026-09-28/gsm8k-0431-claude.json`, with the corresponding CSVs. The estimator is implemented in `benchmarks/stats.ts` and called by `benchmarks/publicados/gsm8k/medir.ts`. November summaries are in `benchmarks/evidencia/`; harnesses are in `benchmarks/experimentos/`. The public benchmark index is https://savings.bivelio.com/benchmarks."
   },
   {
