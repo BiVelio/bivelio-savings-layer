@@ -4,6 +4,9 @@ import { getTranslations } from "next-intl/server";
 
 import { LogoProveedor } from "@/app/components/LogoProveedor";
 import { Link } from "@/i18n/navigation";
+import { ChainLinks, ChainModel } from "@/vendor/affectui/fallback-chain";
+import { FlowBlobs, FlowCharge, FlowLink } from "@/vendor/affectui/integration-flow";
+import { MemoryGraph } from "@/vendor/affectui/memory-graph";
 
 import { CapaMarco } from "./CapaMarco";
 import type { ViajeDeLosDatos } from "./ViajeDeLosDatos";
@@ -11,36 +14,47 @@ import type { ViajeDeLosDatos } from "./ViajeDeLosDatos";
 /**
  * SAVINGS LAYER, EN ACCIÓN — la ilustración animada de la sección #data.
  *
- *   tus llamadas ─╮                       ╭─ OpenAI
- *   (app · SDK)   ├─▶  SAVINGS LAYER  ───▶├─ Anthropic      «el proveedor que
- *   (agente ·     │   memoria · compacta  ├─ Gemini           configures»
- *    gateway)   ──╯          ┊            ╰─ endpoint compatible
- *                            ┊ solo recuentos y costes
- *                      Savings Cloud · opcional
+ *   tus llamadas ══╗                       ╭┈ OpenAI
+ *   (app · SDK)    ║   SAVINGS LAYER   ────┼─ Anthropic      «el proveedor que
+ *   (agente ·      ║  memoria · compacta   ├┈ Gemini           configures»
+ *    gateway)   ═══╝          ┊            ╰┈ endpoint compatible
+ *                             ┊ solo recuentos y costes
+ *                       Savings Cloud · opcional
  *
  * Un bucle de diez segundos cuenta cuatro cosas, en este orden: (1) la llamada
  * entra en la capa; (2) si es REPETIDA, la memoria la reconoce y la respuesta
- * vuelve en verde sin tocar al proveedor; (3) si es NUEVA, se compacta —el
- * pulso sale más corto— y viaja al proveedor elegido, cuya respuesta vuelve
- * por la capa; (4) por la línea discontinua baja a Cloud una ficha de
- * recuento, nunca la petición.
+ * vuelve en verde sin tocar al proveedor; (3) si es NUEVA, se compacta y viaja
+ * al proveedor configurado, cuya respuesta vuelve por la capa y queda en la
+ * memoria; (4) por la línea discontinua baja a Cloud una ficha de recuento,
+ * nunca la petición.
  *
- * CÓMO ESTÁ HECHA. Todo es HTML del servidor con texto real; la geometría son
- * coordenadas CSS (`--s1x`, `--iny`…: x en % del lienzo, y en px) que comparten
- * las tarjetas, los hilos SVG y los fotogramas de los pulsos, así que no hay
- * que medir nada en el navegador. Solo se animan `transform` y `opacity`. El
- * proveedor «configurado» es un grupo de radios nativo + `:has()`: se elige con
- * teclado o ratón y funciona sin script. El único script es `CapaMarco` (pausa
- * y parada fuera de pantalla).
+ * DE QUÉ ESTÁ HECHA. De tres piezas de affectUI Pro, vendorizadas y adaptadas
+ * en `vendor/affectui/` (ver su VENDOR.md), cada una en su territorio:
+ *   · IZQUIERDA — Integration Flow: el enlace recto entre dos tarjetas, el haz
+ *     que lo barre (núcleo + resplandor), la tarjeta que «se carga» antes de
+ *     disparar y las manchas de color que derivan tras la placa.
+ *   · CENTRO — Memory Graph: la memoria de peticiones recientes. Cada tarjeta
+ *     es una petición vista hace un momento (sin texto: no hay nada que
+ *     inventar); la repetida se enciende y la nueva sube a su hueco.
+ *   · DERECHA — Fallback Chain, SIN el fallback: su gramática de ramas (una
+ *     por proveedor, punteada si solo es una alternativa), la luz que recorre
+ *     la rama en uso y el verde de «responde». Savings NO prueba un proveedor
+ *     tras otro: envía al que configures, así que no hay estados de fallo, ni
+ *     orden de intentos, ni cronómetros, ni costes.
+ *
+ * CÓMO SE MUEVE. Todo es HTML/SVG del servidor; las piezas están quietas y
+ * quien las mueve es la hoja (SLOT CAPA EN ACCION): un solo bucle, solo
+ * `transform` y `opacity`. La geometría es fija (alturas en px, enlaces de
+ * ancho fijo), así que no se mide nada en el navegador. El proveedor
+ * «configurado» es un grupo de radios nativo + `:has()`: se elige con teclado
+ * o ratón y funciona sin script. El único script es `CapaMarco` (pausa y
+ * parada fuera de pantalla).
  *
  * LO QUE NO HACE, a propósito: no enseña cifras ni contadores (una ilustración
- * no mide) y la línea de Cloud no lleva nunca el pulso de la petición.
+ * no mide) y la línea de Cloud no lleva nunca la petición.
  *
  * Con `prefers-reduced-motion` no hay bucle: los cuatro pasos se pintan como
  * una tira numerada y cada número aparece sobre su sitio en el dibujo.
- *
- * Inspiración de movimiento: Fallback Chain, Memory Graph e Integration Flow
- * de affectUI (vistas públicas); el código es propio.
  */
 export type TextosDeLaCapa = Parameters<typeof ViajeDeLosDatos>[0]["t"];
 
@@ -52,34 +66,32 @@ const NOMBRES_COMPATIBLES = "Mistral, DeepSeek, Azure OpenAI, vLLM, Ollama";
 const TOKENS = Array.from({ length: 12 }, (_, i) => i);
 const QUEDAN = 7;
 
-/** Nodos de la memoria (viewBox 240×56). El cuarto es el que casa con la repetida. */
-const NODOS: readonly (readonly [number, number])[] = [
-  [24, 28],
-  [66, 12],
-  [66, 44],
-  [120, 28],
-  [172, 12],
-  [172, 44],
-];
-const ARISTAS = "M24 28 66 12M24 28 66 44M66 12 120 28M66 44 120 28M120 28 172 12M120 28 172 44M172 12 216 28M172 44 216 28";
+/**
+ * La memoria: seis sitios alrededor de la capa. Uno es la petición que se
+ * repite (se enciende) y otro, el hueco donde se guarda la nueva.
+ */
+const MEMORIA_IZQ = ["memory", "recalled", "memory"] as const;
+const MEMORIA_DCH = ["memory", "memory", "learned"] as const;
 
 /**
- * Los cuatro hilos hacia los proveedores, en horizontal y en vertical. Cada uno
- * se pinta dos veces: en gris (siempre) y en azul encima (`capa-hilo-on--x`),
- * que solo se ve cuando su proveedor es el elegido.
+ * Geometría fija, compartida con la hoja (SLOT CAPA EN ACCION, `--pa`…`--pd`):
+ * la altura a la que cada rama entra en su proveedor, en horizontal (≥900px,
+ * todas salen de `SALIDA`) y en árbol (de arriba abajo).
  */
-const HILOS_H = [
-  { clase: "capa-hilo capa-hilo-on capa-hilo-on--a", d: "M64 200C68.5 200 68.5 62 73 62" },
-  { clase: "capa-hilo capa-hilo-on capa-hilo-on--b", d: "M64 200C68.5 200 68.5 126 73 126" },
-  { clase: "capa-hilo capa-hilo-on capa-hilo-on--c", d: "M64 200C68.5 200 68.5 190 73 190" },
-  { clase: "capa-hilo capa-hilo-on capa-hilo-on--d", d: "M64 200C68.5 200 68.5 280 73 280" },
-] as const;
-const HILOS_V = [
-  { clase: "capa-hilo capa-hilo-on capa-hilo-on--a", d: "M5 370V438Q5 448 8 448H12" },
-  { clase: "capa-hilo capa-hilo-on capa-hilo-on--b", d: "M5 370V498Q5 508 8 508H12" },
-  { clase: "capa-hilo capa-hilo-on capa-hilo-on--c", d: "M5 370V558Q5 568 8 568H12" },
-  { clase: "capa-hilo capa-hilo-on capa-hilo-on--d", d: "M5 370V648Q5 658 8 658H12" },
-] as const;
+const ENLACE = 60;
+const SALIDA = 200;
+const RAMAS_H = [
+  { y: 62, className: "capa-rama capa-rama--a" },
+  { y: 126, className: "capa-rama capa-rama--b" },
+  { y: 190, className: "capa-rama capa-rama--c" },
+  { y: 280, className: "capa-rama capa-rama--d" },
+];
+const RAMAS_V = [
+  { y: 78, className: "capa-rama capa-rama--a" },
+  { y: 138, className: "capa-rama capa-rama--b" },
+  { y: 198, className: "capa-rama capa-rama--c" },
+  { y: 288, className: "capa-rama capa-rama--d" },
+];
 
 const trazo = { fill: "none", stroke: "currentColor", strokeWidth: 1.5, strokeLinecap: "round", strokeLinejoin: "round" } as const;
 
@@ -132,70 +144,63 @@ export async function CapaEnAccion({ t: flujo }: { t: TextosDeLaCapa }) {
       }
     >
       <div className="capa-escena">
-        {/* Hilos: una versión horizontal (≥900px) y otra vertical. Las x son %
-            del lienzo y las y, px: las mismas coordenadas que usa la hoja. */}
-        <svg className="capa-hilos capa-hilos--h" viewBox="0 0 100 472" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-          <path className="capa-hilo capa-hilo--vivo" d="M21 148C25.5 148 25.5 200 30 200" />
-          <path className="capa-hilo capa-hilo--vivo" d="M21 252C25.5 252 25.5 200 30 200" />
-          {HILOS_H.map((h) => (
-            <path key={h.clase} className="capa-hilo" d={h.d} />
-          ))}
-          {HILOS_H.map((h) => (
-            <path key={h.clase} className={h.clase} d={h.d} />
-          ))}
-          <path className="capa-hilo capa-hilo--cloud" d="M47 344V410" />
-        </svg>
-        <svg className="capa-hilos capa-hilos--v" viewBox="0 0 100 804" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-          <path className="capa-hilo capa-hilo--vivo" d="M24 94C24 112 50 112 50 130" />
-          <path className="capa-hilo capa-hilo--vivo" d="M76 94C76 112 50 112 50 130" />
-          {HILOS_V.map((h) => (
-            <path key={h.clase} className="capa-hilo" d={h.d} />
-          ))}
-          {HILOS_V.map((h) => (
-            <path key={h.clase} className={h.clase} d={h.d} />
-          ))}
-          <path className="capa-hilo capa-hilo--cloud" d="M95 370V738" />
-        </svg>
-
-        {/* IZQUIERDA · de dónde llegan las llamadas */}
-        <p className="capa-rotulo capa-rotulo--origen">{t("layer.fromLabel")}</p>
-        <div className="capa-origen capa-origen--app">
-          <span className="capa-eco" aria-hidden="true" />
-          <span className="capa-icono" aria-hidden="true">
-            <svg viewBox="0 0 20 20" width="17" height="17" {...trazo}>
-              <path d="M3 5.5A1.5 1.5 0 0 1 4.5 4h11A1.5 1.5 0 0 1 17 5.5v9a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 3 14.5zM6.5 8.5 8.5 10.5 6.5 12.5M10.5 12.5h3" />
-            </svg>
-          </span>
-          <span className="capa-origen-c">
-            <b>{t("layer.srcApp")}</b>
-            <small>{t("layer.srcAppVia")}</small>
-          </span>
-          <span className="capa-sello capa-sello--ok" aria-hidden="true">
-            <Tilde />
-          </span>
-        </div>
-        <div className="capa-origen capa-origen--agente">
-          <span className="capa-eco" aria-hidden="true" />
-          <span className="capa-icono" aria-hidden="true">
-            <svg viewBox="0 0 20 20" width="17" height="17" {...trazo}>
-              <path d="M10 3v2.5M5.5 5.5h9A1.5 1.5 0 0 1 16 7v6a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 4 13V7a1.5 1.5 0 0 1 1.5-1.5ZM2 9v2.5M18 9v2.5M7.75 9.25v1.5M12.25 9.25v1.5M8 17h4" />
-            </svg>
-          </span>
-          <span className="capa-origen-c">
-            <b>{t("layer.srcAgent")}</b>
-            <small>{t("layer.srcAgentVia")}</small>
-          </span>
-          <span className="capa-sello capa-sello--resp" aria-hidden="true">
-            <Tilde />
-          </span>
+        {/* IZQUIERDA · de dónde llegan las llamadas (Integration Flow: carga y haz) */}
+        <div className="capa-col capa-col--origen">
+          <p className="capa-rotulo capa-rotulo--origen">{t("layer.fromLabel")}</p>
+          <div className="capa-origen capa-origen--app">
+            <FlowCharge side="bottom" className="capa-carga capa-carga--sale" />
+            <FlowCharge side="bottom" tone="ok" className="capa-carga capa-carga--vuelve" />
+            <span className="capa-eco" aria-hidden="true" />
+            <span className="capa-icono" aria-hidden="true">
+              <svg viewBox="0 0 20 20" width="17" height="17" {...trazo}>
+                <path d="M3 5.5A1.5 1.5 0 0 1 4.5 4h11A1.5 1.5 0 0 1 17 5.5v9a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 3 14.5zM6.5 8.5 8.5 10.5 6.5 12.5M10.5 12.5h3" />
+              </svg>
+            </span>
+            <span className="capa-origen-c">
+              <b>{t("layer.srcApp")}</b>
+              <small>{t("layer.srcAppVia")}</small>
+            </span>
+            <span className="capa-sello" aria-hidden="true">
+              <Tilde />
+            </span>
+          </div>
+          <div className="capa-origen capa-origen--agente">
+            <FlowCharge side="bottom" className="capa-carga capa-carga--sale" />
+            <FlowCharge side="bottom" tone="ok" className="capa-carga capa-carga--vuelve" />
+            <span className="capa-eco" aria-hidden="true" />
+            <span className="capa-icono" aria-hidden="true">
+              <svg viewBox="0 0 20 20" width="17" height="17" {...trazo}>
+                <path d="M10 3v2.5M5.5 5.5h9A1.5 1.5 0 0 1 16 7v6a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 4 13V7a1.5 1.5 0 0 1 1.5-1.5ZM2 9v2.5M18 9v2.5M7.75 9.25v1.5M12.25 9.25v1.5M8 17h4" />
+              </svg>
+            </span>
+            <span className="capa-origen-c">
+              <b>{t("layer.srcAgent")}</b>
+              <small>{t("layer.srcAgentVia")}</small>
+            </span>
+            <span className="capa-sello" aria-hidden="true">
+              <Tilde />
+            </span>
+          </div>
         </div>
 
-        {/* CENTRO · la capa: una placa apilada, con su memoria y su compactación */}
+        {/* Los dos enlaces de entrada: en horizontal (≥900px) y de arriba abajo */}
+        <div className="capa-enlace capa-enlace--in" aria-hidden="true">
+          <FlowLink length={ENLACE} className="capa-haz capa-haz--h capa-haz--app" forwardClassName="capa-haz-ida" backClassName="capa-haz-vuelta" />
+          <FlowLink length={ENLACE} className="capa-haz capa-haz--h capa-haz--agente" forwardClassName="capa-haz-ida" backClassName="capa-haz-vuelta" />
+          <FlowLink length={44} className="capa-haz capa-haz--v capa-haz--app" forwardClassName="capa-haz-ida" backClassName="capa-haz-vuelta" />
+          <FlowLink length={44} className="capa-haz capa-haz--v capa-haz--agente" forwardClassName="capa-haz-ida" backClassName="capa-haz-vuelta" />
+          <span className="capa-puerto capa-puerto--app" />
+          <span className="capa-puerto capa-puerto--agente" />
+          <span className="capa-num capa-num--entrada">1</span>
+        </div>
+
+        {/* CENTRO · la capa: una placa apilada, con su memoria (Memory Graph) y su compactación */}
         <div className="capa-placa">
-          <span className="capa-halo" aria-hidden="true" />
+          <FlowBlobs className="capa-ambiente" />
           <span className="capa-hoja capa-hoja--2" aria-hidden="true" />
           <span className="capa-hoja" aria-hidden="true" />
           <div className="capa-cara">
+            <FlowCharge side="top" className="capa-carga capa-carga--placa" />
             <span className="capa-luz capa-luz--azul" aria-hidden="true" />
             <span className="capa-luz capa-luz--verde" aria-hidden="true" />
             <p className="capa-titulo">
@@ -209,27 +214,12 @@ export async function CapaEnAccion({ t: flujo }: { t: TextosDeLaCapa }) {
                 <small>{flujo.localSub}</small>
               </span>
             </p>
-            <div className="capa-modulo">
+            <div className="capa-modulo capa-modulo--memoria">
               <span className="capa-modulo-t">{t("layer.memoryLabel")}</span>
               <span className="capa-num" aria-hidden="true">
                 2
               </span>
-              <svg className="capa-memoria" viewBox="0 0 240 56" aria-hidden="true" focusable="false">
-                <path className="capa-arista" d={ARISTAS} />
-                {NODOS.map(([x, y], i) => (
-                  <circle key={i} className="capa-nodo" cx={x} cy={y} r={i === 3 ? 6.5 : 4.5} />
-                ))}
-                <circle className="capa-nodo capa-nodo--hueco" cx="216" cy="28" r="4.5" />
-                {NODOS.map(([x, y], i) => (
-                  <circle key={i} className="capa-nodo-scan" cx={x} cy={y} r={i === 3 ? 6.5 : 4.5} style={{ "--i": i } as CSSProperties} />
-                ))}
-                <circle className="capa-nodo-nuevo" cx="216" cy="28" r="4.5" />
-                <circle className="capa-nodo-eco" cx="120" cy="28" r="13" />
-                <g className="capa-nodo-ok">
-                  <circle cx="120" cy="28" r="7.5" />
-                  <path d="m116.6 28.2 2.4 2.4 4.4-4.9" />
-                </g>
-              </svg>
+              <MemoryGraph className="capa-memoria" id="savings-layer" left={MEMORIA_IZQ} right={MEMORIA_DCH} />
             </div>
             <div className="capa-modulo capa-modulo--compacta">
               <span className="capa-modulo-t">{t("layer.compactLabel")}</span>
@@ -244,34 +234,40 @@ export async function CapaEnAccion({ t: flujo }: { t: TextosDeLaCapa }) {
             </div>
           </div>
         </div>
-        <span className="capa-puerto capa-puerto--in" aria-hidden="true" />
-        <span className="capa-puerto capa-puerto--out" aria-hidden="true" />
 
-        {/* DERECHA · la cadena de proveedores. Radios nativos: el elegido es
-            «el que configures» y su hilo es el que recorre el pulso. */}
-        <p className="capa-rotulo capa-rotulo--provs" id="capa-provs-t">
-          {t("layer.providersLabel")}
-        </p>
-        <div className="capa-provs" role="radiogroup" aria-labelledby="capa-provs-t">
-          {nativos.map((p, i) => (
-            <label key={p.marca} className={p.clase}>
-              <input className="sr-only" type="radio" name="capa-proveedor" defaultChecked={i === 0} />
-              <span className="capa-prov-luz" aria-hidden="true" />
-              <span className="capa-icono" aria-hidden="true">
-                <LogoProveedor marca={p.marca} size={17} />
-              </span>
-              <span className="capa-prov-c">
-                <b>{p.nombre}</b>
-                <small>{t("layer.nativeAdapter")}</small>
-              </span>
-              <span className="capa-radio" aria-hidden="true" />
-            </label>
-          ))}
-          <label className="capa-prov capa-prov--d">
-            <input className="sr-only" type="radio" name="capa-proveedor" />
-            <span className="capa-prov-luz" aria-hidden="true" />
-            <span className="capa-prov-c">
-              <b>{t("layer.compatName")}</b>
+        {/* Las ramas hacia los proveedores (Fallback Chain, sin fallback): punteadas
+            las alternativas, continua y con luz la del proveedor configurado. */}
+        <div className="capa-enlace capa-enlace--out" aria-hidden="true">
+          <ChainLinks className="capa-ramas capa-ramas--h" branches={RAMAS_H} from={SALIDA} width={ENLACE} height={360} />
+          <ChainLinks tree className="capa-ramas capa-ramas--v" branches={RAMAS_V} height={344} />
+          <span className="capa-puerto capa-puerto--out" />
+        </div>
+
+        {/* DERECHA · los proveedores. Radios nativos: el elegido es «el que configures». */}
+        <div className="capa-col capa-col--provs">
+          <p className="capa-rotulo capa-rotulo--provs" id="capa-provs-t">
+            {t("layer.providersLabel")}
+          </p>
+          <div className="capa-provs" role="radiogroup" aria-labelledby="capa-provs-t">
+            {nativos.map((p, i) => (
+              <ChainModel
+                key={p.marca}
+                as="label"
+                className={p.clase}
+                control={<input className="sr-only" type="radio" name="capa-proveedor" defaultChecked={i === 0} />}
+                logo={<LogoProveedor marca={p.marca} size={17} />}
+                name={p.nombre}
+                status={t("layer.nativeAdapter")}
+                end={<span className="capa-radio" aria-hidden="true" />}
+              />
+            ))}
+            <ChainModel
+              as="label"
+              className="capa-prov capa-prov--d"
+              control={<input className="sr-only" type="radio" name="capa-proveedor" />}
+              name={t("layer.compatName")}
+              end={<span className="capa-radio" aria-hidden="true" />}
+            >
               <span className="capa-compat" aria-hidden="true">
                 {COMPATIBLES.map((m) => (
                   <span key={m} className="capa-compat-l">
@@ -280,12 +276,16 @@ export async function CapaEnAccion({ t: flujo }: { t: TextosDeLaCapa }) {
                 ))}
               </span>
               <span className="sr-only">{NOMBRES_COMPATIBLES}</span>
-            </span>
-            <span className="capa-radio" aria-hidden="true" />
-          </label>
+            </ChainModel>
+          </div>
         </div>
 
-        {/* ABAJO · Savings Cloud, aparte y opcional */}
+        {/* ABAJO · Savings Cloud, aparte y opcional: por su línea solo baja un recuento */}
+        <span className="capa-nube-linea" aria-hidden="true">
+          <span className="capa-ficha">
+            <i />
+          </span>
+        </span>
         <div className="capa-cloud">
           <span className="capa-cloud-luz" aria-hidden="true" />
           <span className="capa-num" aria-hidden="true">
@@ -301,31 +301,6 @@ export async function CapaEnAccion({ t: flujo }: { t: TextosDeLaCapa }) {
               {flujo.cloud} <em>{flujo.cloudSub}</em>
             </b>
             <small>{t("layer.step4Title")}</small>
-          </span>
-        </div>
-
-        <span className="capa-num capa-num--entrada" aria-hidden="true">
-          1
-        </span>
-
-        {/* Los pulsos. Cada portador mide 100 % × 0 y se traslada en % (x) y px (y). */}
-        <div className="capa-pulsos" aria-hidden="true">
-          <span className="capa-pulso capa-pulso--a">
-            <i />
-          </span>
-          <span className="capa-pulso capa-pulso--b">
-            <i>
-              <Tilde />
-            </i>
-          </span>
-          <span className="capa-pulso capa-pulso--c">
-            <i />
-          </span>
-          <span className="capa-pulso capa-pulso--d">
-            <i />
-          </span>
-          <span className="capa-pulso capa-pulso--e">
-            <i />
           </span>
         </div>
       </div>

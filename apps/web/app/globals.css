@@ -5068,20 +5068,25 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
    «SAVINGS LAYER, EN ACCIÓN» — la ilustración animada de la sección #data
    (`app/components/landing/CapaEnAccion.tsx`).
 
-   GEOMETRÍA. El lienzo (`.capa-escena`) tiene alto fijo y un juego de
-   coordenadas en variables: las x en % de su ancho y las y en px. Las usan las
-   tarjetas (posición absoluta), los hilos SVG (viewBox 0 0 100 <alto>, sin
-   conservar proporción) y los fotogramas de los pulsos, así que todo casa sin
-   medir nada con script. Hay dos juegos: vertical (por defecto) y horizontal
-   (≥900px). Si cambias una coordenada aquí, cambia el `d` del hilo en el TSX.
+   PIEZAS. La escena se monta sobre tres piezas de affectUI Pro vendorizadas
+   (`vendor/affectui/`, clases `ui-if-*`, `ui-mg__*`, `ui-fbk__*`): los enlaces
+   y haces de entrada (Integration Flow), la memoria (Memory Graph) y las ramas
+   y tarjetas de proveedor (Fallback Chain, sin fallback). Las piezas traen su
+   aspecto y están QUIETAS; aquí vive la composición y el único bucle que las
+   mueve. Por eso este slot es el único sitio que anima clases `ui-*`.
 
-   MOVIMIENTO. Un solo bucle de `--capa-t`; solo `transform` y `opacity`. Los
-   pulsos son portadores de 100 % × 0 que se trasladan por una curva en S
-   muestreada (fotogramas generados, al final del slot). Todo lo que anima va
-   bajo `prefers-reduced-motion: no-preference`; con movimiento reducido los
-   cuatro pasos son una tira numerada y los números aparecen en el dibujo.
-   Se pausa con el botón (`data-pausa`), fuera de pantalla (`data-fuera`), al
-   pasar el ratón por el lienzo y al enfocarlo con el teclado.
+   GEOMETRÍA. Una rejilla: en vertical, todo apilado; desde 900px, cinco
+   columnas (orígenes · enlace · placa · ramas · proveedores). Los enlaces
+   tienen ancho fijo y las tarjetas se colocan a alturas fijas en px (`--s1y`,
+   `--pa`…), las mismas que el TSX pasa a las piezas (`RAMAS_H`, `RAMAS_V`,
+   `SALIDA`): si cambias una aquí, cámbiala allí. No se mide nada con script.
+
+   MOVIMIENTO. Un solo bucle de `--capa-t`; solo `transform` y `opacity`. Todo
+   lo que anima va bajo `prefers-reduced-motion: no-preference`; con movimiento
+   reducido los cuatro pasos son una tira numerada, los números aparecen en el
+   dibujo y la petición repetida queda encendida en la memoria. Se pausa con el
+   botón (`data-pausa`), fuera de pantalla (`data-fuera`), al pasar el ratón
+   por el lienzo y al enfocarlo con el teclado.
    ============================================================================ */
 
 /* ── C·0 Marco, cabecera y pasos ─────────────────────────────────────────── */
@@ -5098,99 +5103,91 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .capa-pausa:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
 @media (pointer: coarse) { .capa-pausa { min-height: 44px; padding-inline: 16px; } }
 
-/* ── C·1 Lienzo y coordenadas (vertical por defecto) ─────────────────────── */
-.capa-escena { --alto: 804px; --s1x: 24%; --s1y: 94px; --s2x: 76%; --s2y: 94px; --inx: 50%; --iny: 130px; --outx: 5%; --outy: 385px; --pvx: 12%; --pa: 448px; --pb: 508px; --pc: 568px; --pd: 658px; --pvy: var(--pa); --clx: 95%; --cly0: 385px; --cly1: 738px; position: relative; height: var(--alto); }
-.capa-escena:has(.capa-prov--b input:checked) { --pvy: var(--pb); }
-.capa-escena:has(.capa-prov--c input:checked) { --pvy: var(--pc); }
-.capa-escena:has(.capa-prov--d input:checked) { --pvy: var(--pd); }
+/* ── C·1 Lienzo y rejilla (vertical por defecto) ─────────────────────────── */
+.capa-escena { --s1y: 148px; --s2y: 252px; --outy: 200px; --pa: 78px; --pb: 138px; --pc: 198px; --pd: 288px; position: relative; display: grid; grid-template-columns: 44px minmax(0, 1fr); grid-template-areas: "origen origen" "in in" "placa placa" "out provs" "nube nube"; }
 .capa-escena::before { content: ""; position: absolute; inset: -6px; background-image: radial-gradient(circle, var(--line-strong) 1px, transparent 1.5px); background-size: 18px 18px; -webkit-mask-image: radial-gradient(ellipse at 50% 46%, #000 30%, transparent 76%); mask-image: radial-gradient(ellipse at 50% 46%, #000 30%, transparent 76%); opacity: .55; pointer-events: none; }
-.capa-hilos { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
-.capa-hilos--h { display: none; }
-.capa-hilo { fill: none; stroke: var(--line-strong); stroke-width: 1.25; stroke-linecap: round; vector-effect: non-scaling-stroke; }
-.capa-hilo--vivo { stroke: color-mix(in srgb, var(--brand) 46%, var(--line)); stroke-width: 1.5; }
-.capa-hilo--cloud { stroke: #9AA1B2; stroke-dasharray: 2 6; }
-.capa-hilo-on { stroke: var(--brand); stroke-width: 1.75; opacity: 0; transition: opacity var(--dur-3) var(--ease-out); }
-.capa-escena:has(.capa-prov--a input:checked) .capa-hilo-on--a, .capa-escena:has(.capa-prov--b input:checked) .capa-hilo-on--b, .capa-escena:has(.capa-prov--c input:checked) .capa-hilo-on--c, .capa-escena:has(.capa-prov--d input:checked) .capa-hilo-on--d { opacity: 1; }
-.capa-rotulo { position: absolute; z-index: 1; margin: 0; font: 500 10.5px/1.3 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); }
-.capa-rotulo--origen { left: 0; right: 0; top: 2px; }
-.capa-rotulo--provs { left: var(--pvx); right: 12%; top: 398px; }
+.capa-col { position: relative; z-index: 1; min-width: 0; }
+.capa-enlace { position: relative; min-width: 0; }
+.capa-rotulo { margin: 0; font: 500 10.5px/1.3 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); }
 .capa-icono { display: grid; place-items: center; flex: none; width: 32px; height: 32px; border-radius: 9px; background: var(--bg); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); }
 .capa-icono--marca { background: var(--brand); color: #fff; box-shadow: 0 6px 14px -6px rgba(0, 102, 230, .7); }
-.capa-origen-c, .capa-prov-c, .capa-titulo-c, .capa-cloud-c { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.capa-origen-c, .capa-titulo-c, .capa-cloud-c { position: relative; display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
 .capa-escena b { font-size: 13.5px; font-weight: 600; line-height: 1.25; letter-spacing: -.01em; color: var(--ink); overflow-wrap: anywhere; }
 .capa-escena small { font: 400 11px/1.35 var(--font-mono); color: var(--ink-soft); overflow-wrap: anywhere; }
+.capa-puerto { position: absolute; z-index: 2; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; border: 1.5px solid var(--brand); border-radius: 50%; background: var(--surface); }
 
-/* ── C·2 Orígenes ────────────────────────────────────────────────────────── */
-.capa-origen { position: absolute; z-index: 1; top: 22px; width: 48%; height: 72px; display: flex; align-items: center; gap: 9px; padding: 0 10px; border: 1px solid var(--line); border-radius: var(--r-card); background: var(--surface); box-shadow: var(--shadow-card); }
-.capa-origen--app { left: 0; }
-.capa-origen--agente { left: 52%; }
+/* ── C·2 Orígenes y enlaces de entrada (Integration Flow) ────────────────── */
+.capa-col--origen { grid-area: origen; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 4%; }
+.capa-rotulo--origen { grid-column: 1 / -1; padding-top: 2px; }
+.capa-origen { position: relative; display: flex; align-items: center; gap: 9px; min-height: 72px; padding: 6px 10px; border: 1px solid var(--line); border-radius: var(--r-card); background: var(--surface); box-shadow: var(--shadow-card); }
+.capa-origen .capa-icono { position: relative; }
 .capa-eco { position: absolute; inset: -1px; border: 1.5px solid var(--brand); border-radius: inherit; box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand) 13%, transparent); opacity: 0; pointer-events: none; }
-.capa-sello { position: absolute; top: -8px; right: -8px; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; color: #fff; box-shadow: 0 0 0 2px var(--surface); opacity: 0; }
-.capa-sello--ok { background: var(--good-ink); }
-.capa-sello--resp { background: var(--brand); }
+.capa-sello { position: absolute; top: -8px; right: -8px; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--good-ink); color: #fff; box-shadow: 0 0 0 2px var(--surface); opacity: 0; }
+.capa-origen .capa-carga, .capa-cara .capa-carga { transition: none; }
+.capa-escena .capa-cara .capa-carga { --ui-if-a: color-mix(in srgb, var(--brand) 11%, transparent); }
+.capa-enlace--in { grid-area: in; height: 44px; }
+.capa-enlace .capa-haz--h { display: none; }
+.capa-enlace .capa-haz--v { top: -1.5px; transform-origin: 0 50%; transform: rotate(90deg); }
+.capa-haz--v.capa-haz--app, .capa-puerto--app { left: 24%; }
+.capa-haz--v.capa-haz--agente, .capa-puerto--agente { left: 76%; }
+.capa-puerto--app, .capa-puerto--agente { top: 100%; }
+.capa-num--entrada { left: 50%; top: 22px; margin: -10px 0 0 -10px; }
 
 /* ── C·3 La placa: una capa de verdad, apilada y luminosa ────────────────── */
-.capa-placa { position: absolute; z-index: 1; left: 0; right: 0; top: 130px; height: 240px; }
-.capa-halo { position: absolute; inset: -26px -4px -34px; border-radius: 48px; background: radial-gradient(58% 58% at 50% 56%, color-mix(in srgb, var(--brand) 24%, transparent), transparent 74%); filter: blur(12px); pointer-events: none; }
+.capa-placa { grid-area: placa; position: relative; z-index: 1; height: 272px; }
+.capa-placa .capa-ambiente { inset: -34px -10px -44px; background: radial-gradient(56% 56% at 50% 56%, color-mix(in srgb, var(--brand) 17%, transparent), transparent 76%); }
 .capa-hoja { position: absolute; left: 12px; right: 12px; top: 12px; bottom: -7px; border: 1px solid color-mix(in srgb, var(--brand) 20%, var(--line)); border-radius: 20px; background: linear-gradient(180deg, #fff, #F3F8FF); box-shadow: 0 8px 16px -12px rgba(0, 60, 160, .4); }
 .capa-hoja--2 { left: 26px; right: 26px; bottom: -14px; background: linear-gradient(180deg, #fff, #EAF2FF); }
 .capa-cara { position: absolute; inset: 0; display: flex; flex-direction: column; gap: 10px; padding: 14px; border: 1px solid color-mix(in srgb, var(--brand) 36%, var(--line)); border-radius: 20px; background: linear-gradient(180deg, #fff, #FBFDFF); box-shadow: inset 0 1px 0 #fff, 0 1px 2px rgba(15, 18, 24, .05), 0 18px 34px -22px rgba(0, 82, 184, .5); }
+.capa-cara > :not(.capa-luz, .capa-carga) { position: relative; }
 .capa-luz { position: absolute; inset: -1px; border-radius: inherit; opacity: 0; pointer-events: none; }
 .capa-luz--azul { box-shadow: 0 0 0 1.5px var(--brand), 0 0 0 6px color-mix(in srgb, var(--brand) 11%, transparent), 0 0 44px color-mix(in srgb, var(--brand) 32%, transparent); }
 .capa-luz--verde { box-shadow: 0 0 0 1.5px var(--mint), 0 0 0 6px color-mix(in srgb, var(--mint) 14%, transparent), 0 0 44px color-mix(in srgb, var(--mint) 36%, transparent); }
 .capa-titulo { display: flex; align-items: center; gap: 10px; margin: 0; }
 .capa-titulo b { font-size: 15px; letter-spacing: -.015em; }
-.capa-modulo { position: relative; display: flex; flex-direction: column; gap: 7px; flex: 1; min-height: 0; padding: 9px 11px 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); }
+.capa-modulo { display: flex; flex-direction: column; gap: 7px; flex: 1; min-height: 0; padding: 9px 11px 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); }
+.capa-modulo--memoria { padding-bottom: 8px; }
 .capa-modulo--compacta { flex: none; }
 .capa-modulo-t { padding-inline-end: 24px; font: 500 10px/1.3 var(--font-mono); letter-spacing: .05em; text-transform: uppercase; color: var(--ink-soft); overflow-wrap: anywhere; }
 .capa-modulo .capa-num { top: 6px; right: 7px; }
-.capa-memoria { display: block; flex: 1; width: 100%; min-height: 0; overflow: visible; }
-.capa-arista { fill: none; stroke: var(--line-strong); stroke-width: 1; }
-.capa-nodo { fill: var(--surface); stroke: #9AA1B2; stroke-width: 1.25; }
-.capa-nodo--hueco { fill: none; stroke-dasharray: 2 2.4; }
-.capa-nodo-scan, .capa-nodo-nuevo { fill: var(--brand); opacity: 0; }
-.capa-nodo-eco { fill: color-mix(in srgb, var(--mint) 20%, transparent); stroke: var(--mint); stroke-width: 1; opacity: 0; transform-box: fill-box; transform-origin: center; }
-.capa-nodo-ok { opacity: 0; }
-.capa-nodo-ok circle { fill: var(--good-ink); }
-.capa-nodo-ok path { fill: none; stroke: #fff; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.capa-modulo .capa-memoria { flex: 1; min-height: 0; max-height: 104px; margin: auto 0; }
 .capa-tokens { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 3px; }
 .capa-token { position: relative; height: 12px; border-radius: 3.5px; background: var(--capa-azul); }
 .capa-token--fuera { border: 1px dashed #9AA1B2; background: none; }
 .capa-token--fuera::after { content: ""; position: absolute; inset: -1px; border-radius: inherit; background: var(--capa-azul); opacity: 0; }
-.capa-puerto { position: absolute; z-index: 2; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; border: 1.5px solid var(--brand); border-radius: 50%; background: var(--surface); }
-.capa-puerto--in { left: var(--inx); top: var(--iny); }
-.capa-puerto--out { left: var(--outx); top: var(--outy); }
 
-/* ── C·4 Proveedores (radios nativos) y Savings Cloud ────────────────────── */
-.capa-provs { position: absolute; inset: 0; pointer-events: none; }
-.capa-prov { position: absolute; z-index: 1; left: var(--pvx); right: 12%; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 8px 12px 8px 9px; border: 1px solid var(--line); border-radius: var(--r-card); background: var(--surface); box-shadow: var(--shadow-card); transform: translateY(-50%); cursor: pointer; pointer-events: auto; transition: border-color var(--dur-2) var(--ease-out), box-shadow var(--dur-2) var(--ease-out); }
+/* ── C·4 Ramas y proveedores (Fallback Chain; radios nativos) ────────────── */
+.capa-enlace--out { grid-area: out; height: 344px; }
+.capa-enlace .capa-ramas { position: absolute; left: 0; top: 0; }
+.capa-enlace .capa-ramas--h { display: none; }
+.capa-puerto--out { left: 20px; top: 15px; }
+.capa-rama { --ui-fbk-on: 0; }
+.capa-escena:has(.capa-prov--a input:checked) .capa-rama--a, .capa-escena:has(.capa-prov--b input:checked) .capa-rama--b, .capa-escena:has(.capa-prov--c input:checked) .capa-rama--c, .capa-escena:has(.capa-prov--d input:checked) .capa-rama--d { --ui-fbk-on: 1; }
+.capa-col--provs { grid-area: provs; height: 344px; }
+.capa-rotulo--provs { position: absolute; left: 0; right: 12%; top: 28px; }
+.capa-provs .capa-prov { position: absolute; z-index: 1; left: 0; right: 12%; min-height: 52px; border: 1px solid var(--line); box-shadow: var(--shadow-card); transform: translateY(-50%); cursor: pointer; transition: border-color var(--dur-2) var(--ease-out), box-shadow var(--dur-2) var(--ease-out); }
 .capa-prov--a { top: var(--pa); }
 .capa-prov--b { top: var(--pb); }
 .capa-prov--c { top: var(--pc); }
-.capa-prov--d { top: var(--pd); padding-inline-start: 12px; }
-.capa-prov:hover { border-color: var(--line-strong); }
-.capa-prov:has(input:checked) { border-color: color-mix(in srgb, var(--brand) 58%, var(--line)); box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 9%, transparent), var(--shadow-card); }
-.capa-prov:has(input:focus-visible) { outline: 2px solid var(--brand); outline-offset: 2px; }
-.capa-prov--d b { font-size: 12.5px; font-weight: 550; line-height: 1.32; letter-spacing: 0; }
-.capa-prov-luz { position: absolute; inset: -1px; border-radius: inherit; box-shadow: 0 0 0 1.5px var(--brand), 0 0 0 5px color-mix(in srgb, var(--brand) 13%, transparent), 0 0 30px color-mix(in srgb, var(--brand) 32%, transparent); opacity: 0; pointer-events: none; }
-.capa-radio { flex: none; width: 14px; height: 14px; border: 1.5px solid var(--line-strong); border-radius: 50%; background: var(--surface); }
+.capa-prov--d { top: var(--pd); }
+.capa-provs .capa-prov--d { padding-inline-start: 12px; }
+.capa-provs .capa-prov:hover { border-color: var(--line-strong); }
+.capa-provs .capa-prov:has(input:checked) { border-color: color-mix(in srgb, var(--brand) 58%, var(--line)); box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 9%, transparent), var(--shadow-card); }
+.capa-provs .capa-prov:has(input:focus-visible) { outline: 2px solid var(--brand); outline-offset: 2px; }
+.capa-prov--d .ui-fbk__name { font-size: 12.5px; font-weight: 550; line-height: 1.32; letter-spacing: 0; }
+.capa-radio { position: relative; flex: none; width: 14px; height: 14px; border: 1.5px solid var(--line-strong); border-radius: 50%; background: var(--surface); }
 .capa-prov:has(input:checked) .capa-radio { border-color: var(--brand); background: radial-gradient(circle, var(--brand) 0 3px, var(--surface) 3.6px); }
 .capa-compat { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
 .capa-compat-l { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 7px; background: var(--bg); box-shadow: inset 0 0 0 1px var(--line); }
-.capa-cloud { position: absolute; z-index: 1; top: var(--cly1); left: var(--pvx); right: 0; display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 8px 12px 8px 9px; border: 1px dashed #9AA1B2; border-radius: var(--r-card); background: var(--surface); }
+
+/* ── C·5 Savings Cloud: aparte, y por su línea solo baja un recuento ─────── */
+.capa-nube-linea { grid-row: 4; grid-column: 1 / -1; justify-self: end; position: relative; width: 0; margin: 15px 5% -14px 0; border-left: 1.25px dashed #9AA1B2; }
+.capa-ficha { position: absolute; left: 0; top: 0; width: 0; height: 100%; opacity: 0; pointer-events: none; }
+.capa-ficha i { position: absolute; left: -.6px; top: 0; width: 14px; height: 14px; padding: 1.5px 0; border: 1.5px solid #7A8194; border-radius: 3.5px; background: linear-gradient(#7A8194, #7A8194) 2.5px 100% / 1.5px 3px no-repeat, linear-gradient(#7A8194, #7A8194) 50% 100% / 1.5px 6px no-repeat, linear-gradient(#7A8194, #7A8194) calc(100% - 2.5px) 100% / 1.5px 4.5px no-repeat, var(--surface); background-origin: content-box; box-shadow: 0 0 0 3px var(--surface); transform: translate(-50%, -50%); }
+.capa-cloud { grid-area: nube; position: relative; z-index: 1; display: flex; align-items: center; gap: 10px; min-height: 56px; margin: 14px 0 0 44px; padding: 8px 12px 8px 9px; border: 1px dashed #9AA1B2; border-radius: var(--r-card); background: var(--surface); }
 .capa-cloud em { display: inline-block; margin-inline-start: 4px; padding: 2px 7px; border-radius: 999px; background: var(--surface-2); color: var(--ink-soft); font: 500 10px/1.3 var(--font-mono); letter-spacing: .03em; font-style: normal; vertical-align: 1px; }
 .capa-cloud-luz { position: absolute; inset: -1px; border-radius: inherit; box-shadow: 0 0 0 1.5px #7A8194, 0 0 0 5px rgba(90, 96, 112, .11); opacity: 0; pointer-events: none; }
 .capa-cloud .capa-num { top: -9px; left: -9px; }
-.capa-num--entrada { left: 50%; top: 110px; margin: -10px 0 0 -10px; }
-
-/* ── C·5 Pulsos ──────────────────────────────────────────────────────────── */
-.capa-pulsos { display: none; position: absolute; inset: 0; z-index: 3; pointer-events: none; }
-.capa-pulso { position: absolute; left: 0; top: 0; width: 100%; height: 0; opacity: 0; }
-.capa-pulso i { position: absolute; left: 0; top: 0; display: grid; place-items: center; transform: translate(-50%, -50%); }
-.capa-pulso--a i, .capa-pulso--c i { width: 26px; height: 10px; border-radius: 999px; background: linear-gradient(90deg, #5BA4FF, var(--brand)); box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 15%, transparent), 0 0 16px color-mix(in srgb, var(--brand) 62%, transparent); }
-.capa-pulso--b i { width: 18px; height: 18px; border-radius: 50%; background: var(--good-ink); color: #fff; box-shadow: 0 0 0 3px var(--mint-soft), 0 0 16px color-mix(in srgb, var(--mint) 66%, transparent); }
-.capa-pulso--d i { width: 14px; height: 14px; border: 3.5px solid var(--brand); border-radius: 50%; background: var(--surface); box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 13%, transparent), 0 0 14px color-mix(in srgb, var(--brand) 50%, transparent); }
-.capa-pulso--e i { width: 14px; height: 14px; border: 1.5px solid #7A8194; border-radius: 3.5px; background: linear-gradient(#7A8194, #7A8194) 2.5px 100% / 1.5px 3px no-repeat, linear-gradient(#7A8194, #7A8194) 50% 100% / 1.5px 6px no-repeat, linear-gradient(#7A8194, #7A8194) calc(100% - 2.5px) 100% / 1.5px 4.5px no-repeat, var(--surface); background-origin: content-box; padding: 1.5px 0; box-shadow: 0 0 0 3px var(--surface); }
 
 /* ── C·6 Leyenda, nota y pie ─────────────────────────────────────────────── */
 .capa-leyenda { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 10px; margin: 24px 0 0; padding: 18px 0 0; border-top: 1px solid var(--line); list-style: none; }
@@ -5213,19 +5210,31 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 @media (min-width: 900px) {
   .capa-cabeza { flex-direction: row; align-items: flex-start; justify-content: space-between; gap: 24px; min-height: 42px; margin-bottom: 14px; }
   .capa-pausa { align-self: flex-start; }
-  .capa-escena { --alto: 472px; --s1x: 21%; --s1y: 148px; --s2x: 21%; --s2y: 252px; --inx: 30%; --iny: 200px; --outx: 64%; --outy: 200px; --pvx: 73%; --pa: 62px; --pb: 126px; --pc: 190px; --pd: 280px; --clx: 47%; --cly0: 360px; --cly1: 410px; }
-  .capa-hilos--h { display: block; }
-  .capa-hilos--v { display: none; }
-  .capa-rotulo--origen { right: auto; width: var(--s1x); top: 84px; }
-  .capa-rotulo--provs { right: 0; top: 4px; }
-  .capa-origen { left: 0; width: var(--s1x); height: auto; min-height: 64px; padding: 10px 12px; gap: 10px; transform: translateY(-50%); }
+  .capa-escena { --pa: 62px; --pb: 126px; --pc: 190px; --pd: 280px; grid-template-columns: minmax(0, 1fr) 60px minmax(300px, 1.6fr) 60px minmax(0, 1.3fr); grid-template-rows: 360px 52px auto; grid-template-areas: "origen in placa out provs" ". linea linea linea ." ". nube nube nube ."; }
+  .capa-col--origen { display: block; }
+  .capa-rotulo--origen { position: absolute; left: 0; right: 0; top: 84px; padding: 0; }
+  .capa-origen { position: absolute; left: 0; right: 0; min-height: 64px; padding: 10px 12px; gap: 10px; transform: translateY(-50%); }
   .capa-origen--app { top: var(--s1y); }
-  .capa-origen--agente { left: 0; top: var(--s2y); }
-  .capa-placa { left: var(--inx); right: calc(100% - var(--outx)); top: 56px; height: 288px; }
+  .capa-origen--agente { top: var(--s2y); }
+  .capa-escena .capa-origen .capa-carga { --ui-if-dir: 270deg; }
+  .capa-escena .capa-cara .capa-carga { --ui-if-dir: 90deg; }
+  .capa-enlace--in, .capa-enlace--out, .capa-col--provs { height: auto; }
+  .capa-enlace .capa-haz--v { display: none; }
+  .capa-enlace .capa-haz--h { display: block; left: 0; margin-top: -1.5px; }
+  .capa-haz--h.capa-haz--app, .capa-puerto--app { top: var(--s1y); }
+  .capa-haz--h.capa-haz--agente, .capa-puerto--agente { top: var(--s2y); }
+  .capa-puerto--app, .capa-puerto--agente { left: 100%; }
+  .capa-num--entrada { top: var(--outy); }
+  .capa-placa { align-self: start; margin-top: 56px; height: 288px; }
+  .capa-placa .capa-ambiente { inset: -44px -34px -52px; }
   .capa-cara { padding: 16px; gap: 12px; }
-  .capa-prov { right: 0; }
-  .capa-cloud { left: var(--clx); right: auto; width: max-content; max-width: 46%; transform: translateX(-50%); }
-  .capa-num--entrada { left: 25.5%; top: 200px; }
+  .capa-enlace .capa-ramas--v { display: none; }
+  .capa-enlace .capa-ramas--h { display: block; }
+  .capa-puerto--out { left: 0; top: var(--outy); }
+  .capa-rotulo--provs { right: 0; top: 4px; }
+  .capa-provs .capa-prov { right: 0; }
+  .capa-nube-linea { grid-area: linea; justify-self: center; margin: 0; }
+  .capa-cloud { justify-self: center; width: max-content; max-width: 100%; margin: 0; }
 }
 
 /* ── C·8 Sin movimiento: la tira numerada y los números sobre el dibujo ──── */
@@ -5233,6 +5242,7 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
   .capa-num { display: grid; }
   .capa-pasos { gap: 10px; }
   .capa-paso { padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r-card); background: var(--bg); }
+  .capa-memoria .ui-mg__hot, .capa-memoria .ui-mg__tick, .capa-memoria .ui-mg__wire[data-kind="recalled"] .ui-mg__line--hot { opacity: 1; }
 }
 @media (prefers-reduced-motion: reduce) and (min-width: 640px) { .capa-pasos { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (prefers-reduced-motion: reduce) and (min-width: 900px) { .capa-pasos { grid-template-columns: repeat(4, minmax(0, 1fr)); } .capa-paso { font-size: 13px; } .capa-paso-c b { display: block; margin-bottom: 2px; } }
@@ -5240,66 +5250,87 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 /* ── C·9 El bucle ────────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: no-preference) {
   .capa-pausa { display: inline-flex; }
-  .capa-pulsos { display: block; }
   .capa-paso { grid-area: 1 / 1; opacity: 0; animation: capa-paso-1 var(--capa-t) linear infinite both; }
   .capa-paso--2 { animation-name: capa-paso-2; }
   .capa-paso--3 { animation-name: capa-paso-3; }
   .capa-paso--4 { animation-name: capa-paso-4; }
-  .capa-pulso { animation: capa-pulso-a-v var(--capa-t) linear infinite both; will-change: transform, opacity; }
-  .capa-pulso--b { animation-name: capa-pulso-b-v; }
-  .capa-pulso--c { animation-name: capa-pulso-c-v; }
-  .capa-pulso--d { animation-name: capa-pulso-d-v; }
-  .capa-pulso--e { animation-name: capa-pulso-e; }
-  .capa-pulso--c i { animation: capa-compacta var(--capa-t) linear infinite both; }
+  /* Entrada (Integration Flow): la tarjeta se carga, el haz barre el enlace, la placa se enciende */
   .capa-eco { animation: capa-eco-app var(--capa-t) linear infinite both; }
   .capa-origen--agente .capa-eco { animation-name: capa-eco-agente; }
-  .capa-sello { animation: capa-sello-app var(--capa-t) linear infinite both; }
-  .capa-sello--resp { animation-name: capa-sello-agente; }
-  .capa-luz { animation: capa-luz-azul var(--capa-t) linear infinite both; }
+  .capa-origen .capa-carga--sale { animation: capa-sale-app var(--capa-t) linear infinite both; }
+  .capa-origen--agente .capa-carga--sale { animation-name: capa-sale-agente; }
+  .capa-origen .capa-carga--vuelve, .capa-sello { animation: capa-sello-app var(--capa-t) linear infinite both; }
+  .capa-origen--agente .capa-carga--vuelve, .capa-origen--agente .capa-sello { animation-name: capa-sello-agente; }
+  .capa-origen .capa-carga--vuelve { animation-name: capa-vuelve-app; }
+  .capa-origen--agente .capa-carga--vuelve { animation-name: capa-vuelve-agente; }
+  .capa-haz .capa-haz-ida { animation: capa-haz-app var(--capa-t) linear infinite both; }
+  .capa-haz .capa-haz-vuelta { animation: capa-haz-app-v var(--capa-t) linear infinite both; }
+  .capa-haz--agente .capa-haz-ida { animation-name: capa-haz-agente; }
+  .capa-haz--agente .capa-haz-vuelta { animation-name: capa-haz-agente-v; }
+  .capa-luz, .capa-cara .capa-carga--placa { animation: capa-luz-azul var(--capa-t) linear infinite both; }
   .capa-luz--verde { animation-name: capa-luz-verde; }
-  .capa-nodo-scan { animation: capa-scan var(--capa-t) linear infinite both; animation-delay: calc(var(--i, 0) * 70ms); }
-  .capa-nodo-eco { animation: capa-nodo-eco var(--capa-t) linear infinite both; }
-  .capa-nodo-ok { animation: capa-nodo-ok var(--capa-t) linear infinite both; }
-  .capa-nodo-nuevo { animation: capa-nodo-nuevo var(--capa-t) linear infinite both; }
+  /* Memoria (Memory Graph): la marca parpadea al buscar; la repetida se enciende; la nueva sube a su hueco */
+  .capa-memoria .ui-mg__mark { animation: capa-mg-quieta var(--capa-t) linear infinite both; }
+  .capa-memoria .ui-mg__mark[data-busy] { animation-name: capa-mg-busca; }
+  .capa-memoria .ui-mg__band { animation: capa-mg-luz var(--capa-t) linear infinite both; }
+  .capa-memoria .ui-mg__wire[data-kind="recalled"] .ui-mg__band { animation-name: capa-mg-luz-rep; }
+  .capa-memoria .ui-mg__wire[data-kind="learned"] .ui-mg__band { animation-name: capa-mg-luz-nueva; }
+  .capa-memoria .ui-mg__seen { animation: capa-mg-vista var(--capa-t) linear infinite both; animation-delay: calc(var(--ui-mg-i, 0) * 70ms); }
+  .capa-memoria .ui-mg__hot, .capa-memoria .ui-mg__wire[data-kind="recalled"] .ui-mg__line--hot { animation: capa-mg-rep var(--capa-t) linear infinite both; }
+  .capa-memoria .ui-mg__tick { animation: capa-mg-tilde var(--capa-t) linear infinite both; }
+  .capa-memoria .ui-mg__floor { animation: capa-mg-suelo-rep var(--capa-t) linear infinite both; }
+  .capa-memoria .ui-mg__new, .capa-memoria .ui-mg__wire[data-kind="learned"] .ui-mg__line--hot { animation: capa-mg-nueva var(--capa-t) linear infinite both; }
+  .capa-memoria .ui-mg__new .ui-mg__floor { animation-name: capa-mg-suelo-nueva; }
   .capa-token--fuera::after { animation: capa-token var(--capa-t) linear infinite both; animation-delay: calc(var(--i, 0) * 60ms); }
-  .capa-prov-luz { animation: none var(--capa-t) linear infinite both; }
-  .capa-prov:has(input:checked) .capa-prov-luz { animation-name: capa-prov-luz; }
+  /* Salida (Fallback Chain): la luz recorre la rama del proveedor configurado y vuelve en verde */
+  .capa-ramas .ui-fbk__light--out .ui-fbk__band { animation: capa-rama-ida var(--capa-t) linear infinite both; }
+  .capa-ramas .ui-fbk__light--back .ui-fbk__band { animation: capa-rama-vuelta var(--capa-t) linear infinite both; }
+  .capa-ramas .ui-fbk__link--ok, .capa-prov .ui-fbk__ring, .capa-prov .ui-fbk__n { animation: none var(--capa-t) linear infinite both; }
+  .capa-escena:has(.capa-prov--a input:checked) .capa-rama--a .ui-fbk__link--ok, .capa-escena:has(.capa-prov--b input:checked) .capa-rama--b .ui-fbk__link--ok, .capa-escena:has(.capa-prov--c input:checked) .capa-rama--c .ui-fbk__link--ok, .capa-escena:has(.capa-prov--d input:checked) .capa-rama--d .ui-fbk__link--ok, .capa-prov:has(input:checked) .ui-fbk__ring--answered { animation-name: capa-responde; }
+  .capa-prov:has(input:checked) .ui-fbk__ring--trying { animation-name: capa-prov-llega; }
+  .capa-prov:has(input:checked) .ui-fbk__n { animation-name: capa-prov-tilde; }
+  .capa-ficha { animation: capa-ficha var(--capa-t) linear infinite both; will-change: transform, opacity; }
   .capa-cloud-luz { animation: capa-cloud-luz var(--capa-t) linear infinite both; }
-  .capa:is([data-pausa], [data-fuera]) *, .capa:is([data-pausa], [data-fuera]) *::after, .capa:has(.capa-escena :focus-visible) *, .capa:has(.capa-escena :focus-visible) *::after { animation-play-state: paused; }
+  .capa:is([data-pausa], [data-fuera]) *, .capa:is([data-pausa], [data-fuera]) *::after, .capa:has(.capa-escena :focus-visible) *, .capa:has(.capa-escena :focus-visible) *::after { animation-play-state: paused !important; }
+
   @keyframes capa-paso-1 { 0% { opacity: 0; transform: translateY(4px); } 1.5%, 9% { opacity: 1; transform: none; } 10.5%, 100% { opacity: 0; transform: translateY(-4px); } }
   @keyframes capa-paso-2 { 0%, 10.5% { opacity: 0; transform: translateY(4px); } 12%, 26.5% { opacity: 1; transform: none; } 28%, 100% { opacity: 0; transform: translateY(-4px); } }
   @keyframes capa-paso-3 { 0%, 28% { opacity: 0; transform: translateY(4px); } 29.5%, 78% { opacity: 1; transform: none; } 79.5%, 100% { opacity: 0; transform: translateY(-4px); } }
   @keyframes capa-paso-4 { 0%, 79.5% { opacity: 0; transform: translateY(4px); } 81%, 98% { opacity: 1; transform: none; } 99.5%, 100% { opacity: 0; transform: translateY(-4px); } }
   @keyframes capa-eco-app { 0% { opacity: 0; transform: scale(.97); } 1.2% { opacity: 1; transform: scale(1); } 4.5%, 100% { opacity: 0; transform: scale(1.04); } }
   @keyframes capa-eco-agente { 0%, 28% { opacity: 0; transform: scale(.97); } 29.2% { opacity: 1; transform: scale(1); } 32.5%, 100% { opacity: 0; transform: scale(1.04); } }
+  @keyframes capa-sale-app { 0%, .4% { opacity: 0; } 2%, 5% { opacity: 1; } 8.5%, 100% { opacity: 0; } }
+  @keyframes capa-sale-agente { 0%, 28.4% { opacity: 0; } 30%, 33% { opacity: 1; } 36.5%, 100% { opacity: 0; } }
+  @keyframes capa-vuelve-app { 0%, 18.8% { opacity: 0; } 20.3%, 25% { opacity: 1; } 28.5%, 100% { opacity: 0; } }
+  @keyframes capa-vuelve-agente { 0%, 73.8% { opacity: 0; } 75.3%, 80% { opacity: 1; } 84%, 100% { opacity: 0; } }
   @keyframes capa-sello-app { 0%, 19.5% { opacity: 0; transform: scale(.5); } 20.8%, 26% { opacity: 1; transform: scale(1); } 28%, 100% { opacity: 0; transform: scale(.8); } }
   @keyframes capa-sello-agente { 0%, 74.5% { opacity: 0; transform: scale(.5); } 75.8%, 82% { opacity: 1; transform: scale(1); } 84%, 100% { opacity: 0; transform: scale(.8); } }
-  @keyframes capa-luz-azul { 0%, 8.5% { opacity: 0; } 9.5% { opacity: 1; } 12%, 36.5% { opacity: 0; } 37.5%, 46% { opacity: 1; } 48.5%, 67% { opacity: 0; } 68% { opacity: 1; } 70.5%, 100% { opacity: 0; } }
-  @keyframes capa-luz-verde { 0%, 12.5% { opacity: 0; } 13.5%, 20% { opacity: 1; } 23%, 100% { opacity: 0; } }
-  @keyframes capa-scan { 0%, 9.5% { opacity: 0; } 10.5% { opacity: .85; } 12%, 37.5% { opacity: 0; } 38.5% { opacity: .85; } 40%, 100% { opacity: 0; } }
-  @keyframes capa-nodo-eco { 0%, 12.5% { opacity: 0; transform: scale(.5); } 14% { opacity: 1; transform: scale(1); } 22% { opacity: .7; transform: scale(1.12); } 26%, 100% { opacity: 0; transform: scale(1.3); } }
-  @keyframes capa-nodo-ok { 0%, 12.5% { opacity: 0; } 13.5%, 24% { opacity: 1; } 27%, 100% { opacity: 0; } }
-  @keyframes capa-nodo-nuevo { 0%, 68% { opacity: 0; } 69.5%, 95% { opacity: 1; } 99%, 100% { opacity: 0; } }
-  @keyframes capa-token { 0%, 39% { opacity: 1; transform: scaleY(1); } 43%, 96% { opacity: 0; transform: scaleY(.3); } 100% { opacity: 1; transform: scaleY(1); } }
-  @keyframes capa-prov-luz { 0%, 53% { opacity: 0; } 54.5%, 61% { opacity: 1; } 63.5%, 100% { opacity: 0; } }
+  /* Haces: el barrido de Integration Flow (aparece al 18 %, se apaga desde el 72 %) dentro del bucle */
+  @keyframes capa-haz-app { 0%, 2.5% { transform: translateX(calc(-1 * var(--ui-if-beam))); opacity: 0; animation-timing-function: cubic-bezier(.55, .06, .25, 1); } 3.6% { opacity: 1; } 6.9% { opacity: 1; } 8.6%, 100% { transform: translateX(var(--ui-if-len)); opacity: 0; } }
+  @keyframes capa-haz-app-v { 0%, 14% { transform: translateX(var(--ui-if-len)); opacity: 0; animation-timing-function: cubic-bezier(.55, .06, .25, 1); } 15% { opacity: 1; } 18% { opacity: 1; } 19.6%, 100% { transform: translateX(calc(-1 * var(--ui-if-beam))); opacity: 0; } }
+  @keyframes capa-haz-agente { 0%, 30.5% { transform: translateX(calc(-1 * var(--ui-if-beam))); opacity: 0; animation-timing-function: cubic-bezier(.55, .06, .25, 1); } 31.6% { opacity: 1; } 34.9% { opacity: 1; } 36.6%, 100% { transform: translateX(var(--ui-if-len)); opacity: 0; } }
+  @keyframes capa-haz-agente-v { 0%, 69% { transform: translateX(var(--ui-if-len)); opacity: 0; animation-timing-function: cubic-bezier(.55, .06, .25, 1); } 70% { opacity: 1; } 73% { opacity: 1; } 74.6%, 100% { transform: translateX(calc(-1 * var(--ui-if-beam))); opacity: 0; } }
+  @keyframes capa-luz-azul { 0%, 8% { opacity: 0; } 9.2% { opacity: 1; } 12%, 36% { opacity: 0; } 37.2%, 46% { opacity: 1; } 48.5%, 100% { opacity: 0; } }
+  @keyframes capa-luz-verde { 0%, 12.8% { opacity: 0; } 13.8%, 20% { opacity: 1; } 23%, 66.5% { opacity: 0; } 67.5%, 69.5% { opacity: 1; } 72%, 100% { opacity: 0; } }
+  @keyframes capa-mg-busca { 0%, 8.5% { opacity: 0; } 9.5%, 13% { opacity: 1; } 14.5%, 36.5% { opacity: 0; } 37.5%, 42% { opacity: 1; } 43.5%, 66.5% { opacity: 0; } 67.5%, 71% { opacity: 1; } 72.5%, 100% { opacity: 0; } }
+  @keyframes capa-mg-quieta { 0%, 8.5% { opacity: 1; } 9.5%, 13% { opacity: 0; } 14.5%, 36.5% { opacity: 1; } 37.5%, 42% { opacity: 0; } 43.5%, 66.5% { opacity: 1; } 67.5%, 71% { opacity: 0; } 72.5%, 100% { opacity: 1; } }
+  @keyframes capa-mg-luz { 0%, 37.5% { transform: translateX(var(--ui-mg-fx)); opacity: 0; animation-timing-function: cubic-bezier(.45, 0, .3, 1); } 38.1% { opacity: 1; } 40% { opacity: 1; } 40.6%, 100% { transform: translateX(var(--ui-mg-tx)); opacity: 0; } }
+  @keyframes capa-mg-luz-rep { 0%, 10.2% { transform: translateX(var(--ui-mg-fx)); opacity: 0; animation-timing-function: cubic-bezier(.45, 0, .3, 1); } 10.8% { opacity: 1; } 12.7% { opacity: 1; } 13.3% { transform: translateX(var(--ui-mg-tx)); opacity: 0; } 37.4% { transform: translateX(var(--ui-mg-tx)); opacity: 0; } 37.5% { transform: translateX(var(--ui-mg-fx)); opacity: 0; animation-timing-function: cubic-bezier(.45, 0, .3, 1); } 38.1% { opacity: 1; } 40% { opacity: 1; } 40.6%, 100% { transform: translateX(var(--ui-mg-tx)); opacity: 0; } }
+  @keyframes capa-mg-luz-nueva { 0%, 67.5% { transform: translateX(var(--ui-mg-fx)); opacity: 0; animation-timing-function: cubic-bezier(.45, 0, .3, 1); } 68.1% { opacity: 1; } 70% { opacity: 1; } 70.6%, 100% { transform: translateX(var(--ui-mg-tx)); opacity: 0; } }
+  @keyframes capa-mg-vista { 0%, 39.6% { opacity: 0; } 40.4% { opacity: 1; } 42.4%, 100% { opacity: 0; } }
+  @keyframes capa-mg-rep { 0%, 12.8% { opacity: 0; } 13.6%, 24% { opacity: 1; } 27%, 100% { opacity: 0; } }
+  @keyframes capa-mg-tilde { 0%, 13% { opacity: 0; transform: scale(.5); } 14.2%, 24% { opacity: 1; transform: scale(1); } 27%, 100% { opacity: 0; transform: scale(.8); } }
+  @keyframes capa-mg-suelo-rep { 0%, 12.8% { transform: translateX(calc(var(--ui-mg-dir) * -70px)); opacity: 0; animation-timing-function: cubic-bezier(.22, 1, .36, 1); } 14.2%, 16% { opacity: 1; } 21%, 100% { transform: translateX(calc(var(--ui-mg-dir) * 30px)); opacity: 0; } }
+  @keyframes capa-mg-suelo-nueva { 0%, 70.2% { transform: translateX(calc(var(--ui-mg-dir) * -70px)); opacity: 0; animation-timing-function: cubic-bezier(.22, 1, .36, 1); } 71.6%, 73.4% { opacity: 1; } 78.5%, 100% { transform: translateX(calc(var(--ui-mg-dir) * 30px)); opacity: 0; } }
+  @keyframes capa-mg-nueva { 0%, 70% { opacity: 0; transform: scale(.96); } 71.6%, 95% { opacity: 1; transform: scale(1); } 99%, 100% { opacity: 0; transform: scale(1); } }
+  @keyframes capa-token { 0%, 41% { opacity: 1; transform: scaleY(1); } 44.5%, 96% { opacity: 0; transform: scaleY(.3); } 100% { opacity: 1; transform: scaleY(1); } }
+  @keyframes capa-rama-ida { 0%, 45.5% { transform: translate(var(--ui-fbk-fx), var(--ui-fbk-fy)); opacity: 0; animation-timing-function: cubic-bezier(.45, 0, .55, 1); } 46.5% { opacity: 1; } 52% { opacity: 1; } 53.5%, 100% { transform: translate(var(--ui-fbk-tx), var(--ui-fbk-ty)); opacity: 0; } }
+  @keyframes capa-rama-vuelta { 0%, 60.5% { transform: translate(var(--ui-fbk-tx), var(--ui-fbk-ty)); opacity: 0; animation-timing-function: cubic-bezier(.45, 0, .55, 1); } 61.5% { opacity: 1; } 66% { opacity: 1; } 67.5%, 100% { transform: translate(var(--ui-fbk-fx), var(--ui-fbk-fy)); opacity: 0; } }
+  @keyframes capa-prov-llega { 0%, 51.5% { opacity: 0; } 53%, 58.5% { opacity: 1; } 60.5%, 100% { opacity: 0; } }
+  @keyframes capa-responde { 0%, 59% { opacity: 0; } 60.5%, 75% { opacity: 1; } 78%, 100% { opacity: 0; } }
+  @keyframes capa-prov-tilde { 0%, 59.5% { opacity: 0; transform: scale(.5); } 60.8%, 75% { opacity: 1; transform: scale(1); } 78%, 100% { opacity: 0; transform: scale(.8); } }
+  @keyframes capa-ficha { 0%, 80% { transform: translateY(0); opacity: 0; } 81% { transform: translateY(0); opacity: 1; } 90% { transform: translateY(100%); opacity: 1; } 91.5%, 100% { transform: translateY(100%); opacity: 0; } }
   @keyframes capa-cloud-luz { 0%, 89.5% { opacity: 0; } 91%, 96% { opacity: 1; } 98.5%, 100% { opacity: 0; } }
-  @keyframes capa-compacta { 0%, 44.5% { transform: translate(-50%, -50%) scaleX(1); } 46.5%, 99% { transform: translate(-50%, -50%) scaleX(.46); } 100% { transform: translate(-50%, -50%) scaleX(1); } }
-  /* Fotogramas de los pulsos: curvas en S muestreadas (generados; ver el comentario del slot). */
-  @keyframes capa-pulso-a { 0% { transform: translate(var(--s1x), var(--s1y)); opacity: 0; } 2% { transform: translate(var(--s1x), var(--s1y)); opacity: 0; } 2.8% { transform: translate(var(--s1x), var(--s1y)); opacity: 1; } 3.512% { transform: translate(calc(var(--s1x) + (var(--inx) - var(--s1x)) * 0.166), calc(var(--s1y) + (var(--iny) - var(--s1y)) * 0.043)); opacity: 1; } 4.225% { transform: translate(calc(var(--s1x) + (var(--inx) - var(--s1x)) * 0.297), calc(var(--s1y) + (var(--iny) - var(--s1y)) * 0.156)); opacity: 1; } 4.938% { transform: translate(calc(var(--s1x) + (var(--inx) - var(--s1x)) * 0.404), calc(var(--s1y) + (var(--iny) - var(--s1y)) * 0.316)); opacity: 1; } 5.65% { transform: translate(calc(var(--s1x) + (var(--inx) - var(--s1x)) * 0.5), calc(var(--s1y) + (var(--iny) - var(--s1y)) * 0.5)); opacity: 1; } 6.362% { transform: translate(calc(var(--s1x) + (var(--inx) - var(--s1x)) * 0.596), calc(var(--s1y) + (var(--iny) - var(--s1y)) * 0.684)); opacity: 1; } 7.075% { transform: translate(calc(var(--s1x) + (var(--inx) - var(--s1x)) * 0.703), calc(var(--s1y) + (var(--iny) - var(--s1y)) * 0.844)); opacity: 1; } 7.787% { transform: translate(calc(var(--s1x) + (var(--inx) - var(--s1x)) * 0.834), calc(var(--s1y) + (var(--iny) - var(--s1y)) * 0.957)); opacity: 1; } 8.5% { transform: translate(var(--inx), var(--iny)); opacity: 1; } 9.5% { transform: translate(var(--inx), var(--iny)); opacity: 0; } 100% { transform: translate(var(--inx), var(--iny)); opacity: 0; } }
-  @keyframes capa-pulso-b { 0% { transform: translate(var(--inx), var(--iny)); opacity: 0; } 13% { transform: translate(var(--inx), var(--iny)); opacity: 0; } 14% { transform: translate(var(--inx), var(--iny)); opacity: 1; } 14.688% { transform: translate(calc(var(--inx) + (var(--s1x) - var(--inx)) * 0.166), calc(var(--iny) + (var(--s1y) - var(--iny)) * 0.043)); opacity: 1; } 15.375% { transform: translate(calc(var(--inx) + (var(--s1x) - var(--inx)) * 0.297), calc(var(--iny) + (var(--s1y) - var(--iny)) * 0.156)); opacity: 1; } 16.063% { transform: translate(calc(var(--inx) + (var(--s1x) - var(--inx)) * 0.404), calc(var(--iny) + (var(--s1y) - var(--iny)) * 0.316)); opacity: 1; } 16.75% { transform: translate(calc(var(--inx) + (var(--s1x) - var(--inx)) * 0.5), calc(var(--iny) + (var(--s1y) - var(--iny)) * 0.5)); opacity: 1; } 17.438% { transform: translate(calc(var(--inx) + (var(--s1x) - var(--inx)) * 0.596), calc(var(--iny) + (var(--s1y) - var(--iny)) * 0.684)); opacity: 1; } 18.125% { transform: translate(calc(var(--inx) + (var(--s1x) - var(--inx)) * 0.703), calc(var(--iny) + (var(--s1y) - var(--iny)) * 0.844)); opacity: 1; } 18.813% { transform: translate(calc(var(--inx) + (var(--s1x) - var(--inx)) * 0.834), calc(var(--iny) + (var(--s1y) - var(--iny)) * 0.957)); opacity: 1; } 19.5% { transform: translate(var(--s1x), var(--s1y)); opacity: 1; } 20.5% { transform: translate(var(--s1x), var(--s1y)); opacity: 0; } 100% { transform: translate(var(--s1x), var(--s1y)); opacity: 0; } }
-  @keyframes capa-pulso-c { 0% { transform: translate(var(--s2x), var(--s2y)); opacity: 0; } 30% { transform: translate(var(--s2x), var(--s2y)); opacity: 0; } 30.8% { transform: translate(var(--s2x), var(--s2y)); opacity: 1; } 31.512% { transform: translate(calc(var(--s2x) + (var(--inx) - var(--s2x)) * 0.166), calc(var(--s2y) + (var(--iny) - var(--s2y)) * 0.043)); opacity: 1; } 32.225% { transform: translate(calc(var(--s2x) + (var(--inx) - var(--s2x)) * 0.297), calc(var(--s2y) + (var(--iny) - var(--s2y)) * 0.156)); opacity: 1; } 32.938% { transform: translate(calc(var(--s2x) + (var(--inx) - var(--s2x)) * 0.404), calc(var(--s2y) + (var(--iny) - var(--s2y)) * 0.316)); opacity: 1; } 33.65% { transform: translate(calc(var(--s2x) + (var(--inx) - var(--s2x)) * 0.5), calc(var(--s2y) + (var(--iny) - var(--s2y)) * 0.5)); opacity: 1; } 34.362% { transform: translate(calc(var(--s2x) + (var(--inx) - var(--s2x)) * 0.596), calc(var(--s2y) + (var(--iny) - var(--s2y)) * 0.684)); opacity: 1; } 35.075% { transform: translate(calc(var(--s2x) + (var(--inx) - var(--s2x)) * 0.703), calc(var(--s2y) + (var(--iny) - var(--s2y)) * 0.844)); opacity: 1; } 35.788% { transform: translate(calc(var(--s2x) + (var(--inx) - var(--s2x)) * 0.834), calc(var(--s2y) + (var(--iny) - var(--s2y)) * 0.957)); opacity: 1; } 36.5% { transform: translate(var(--inx), var(--iny)); opacity: 1; } 37.5% { transform: translate(var(--inx), var(--iny)); opacity: 0; } 37.6% { transform: translate(var(--outx), var(--outy)); opacity: 0; } 43% { transform: translate(var(--outx), var(--outy)); opacity: 0; } 44% { transform: translate(var(--outx), var(--outy)); opacity: 1; } 47% { transform: translate(var(--outx), var(--outy)); opacity: 1; } 47.75% { transform: translate(calc(var(--outx) + (var(--pvx) - var(--outx)) * 0.166), calc(var(--outy) + (var(--pvy) - var(--outy)) * 0.043)); opacity: 1; } 48.5% { transform: translate(calc(var(--outx) + (var(--pvx) - var(--outx)) * 0.297), calc(var(--outy) + (var(--pvy) - var(--outy)) * 0.156)); opacity: 1; } 49.25% { transform: translate(calc(var(--outx) + (var(--pvx) - var(--outx)) * 0.404), calc(var(--outy) + (var(--pvy) - var(--outy)) * 0.316)); opacity: 1; } 50% { transform: translate(calc(var(--outx) + (var(--pvx) - var(--outx)) * 0.5), calc(var(--outy) + (var(--pvy) - var(--outy)) * 0.5)); opacity: 1; } 50.75% { transform: translate(calc(var(--outx) + (var(--pvx) - var(--outx)) * 0.596), calc(var(--outy) + (var(--pvy) - var(--outy)) * 0.684)); opacity: 1; } 51.5% { transform: translate(calc(var(--outx) + (var(--pvx) - var(--outx)) * 0.703), calc(var(--outy) + (var(--pvy) - var(--outy)) * 0.844)); opacity: 1; } 52.25% { transform: translate(calc(var(--outx) + (var(--pvx) - var(--outx)) * 0.834), calc(var(--outy) + (var(--pvy) - var(--outy)) * 0.957)); opacity: 1; } 53% { transform: translate(var(--pvx), var(--pvy)); opacity: 1; } 54% { transform: translate(var(--pvx), var(--pvy)); opacity: 0; } 100% { transform: translate(var(--pvx), var(--pvy)); opacity: 0; } }
-  @keyframes capa-pulso-d { 0% { transform: translate(var(--pvx), var(--pvy)); opacity: 0; } 60.5% { transform: translate(var(--pvx), var(--pvy)); opacity: 0; } 61.5% { transform: translate(var(--pvx), var(--pvy)); opacity: 1; } 62.188% { transform: translate(calc(var(--pvx) + (var(--outx) - var(--pvx)) * 0.166), calc(var(--pvy) + (var(--outy) - var(--pvy)) * 0.043)); opacity: 1; } 62.875% { transform: translate(calc(var(--pvx) + (var(--outx) - var(--pvx)) * 0.297), calc(var(--pvy) + (var(--outy) - var(--pvy)) * 0.156)); opacity: 1; } 63.563% { transform: translate(calc(var(--pvx) + (var(--outx) - var(--pvx)) * 0.404), calc(var(--pvy) + (var(--outy) - var(--pvy)) * 0.316)); opacity: 1; } 64.25% { transform: translate(calc(var(--pvx) + (var(--outx) - var(--pvx)) * 0.5), calc(var(--pvy) + (var(--outy) - var(--pvy)) * 0.5)); opacity: 1; } 64.938% { transform: translate(calc(var(--pvx) + (var(--outx) - var(--pvx)) * 0.596), calc(var(--pvy) + (var(--outy) - var(--pvy)) * 0.684)); opacity: 1; } 65.625% { transform: translate(calc(var(--pvx) + (var(--outx) - var(--pvx)) * 0.703), calc(var(--pvy) + (var(--outy) - var(--pvy)) * 0.844)); opacity: 1; } 66.313% { transform: translate(calc(var(--pvx) + (var(--outx) - var(--pvx)) * 0.834), calc(var(--pvy) + (var(--outy) - var(--pvy)) * 0.957)); opacity: 1; } 67% { transform: translate(var(--outx), var(--outy)); opacity: 1; } 68% { transform: translate(var(--outx), var(--outy)); opacity: 0; } 68.1% { transform: translate(var(--inx), var(--iny)); opacity: 0; } 69% { transform: translate(var(--inx), var(--iny)); opacity: 1; } 69.688% { transform: translate(calc(var(--inx) + (var(--s2x) - var(--inx)) * 0.166), calc(var(--iny) + (var(--s2y) - var(--iny)) * 0.043)); opacity: 1; } 70.375% { transform: translate(calc(var(--inx) + (var(--s2x) - var(--inx)) * 0.297), calc(var(--iny) + (var(--s2y) - var(--iny)) * 0.156)); opacity: 1; } 71.063% { transform: translate(calc(var(--inx) + (var(--s2x) - var(--inx)) * 0.404), calc(var(--iny) + (var(--s2y) - var(--iny)) * 0.316)); opacity: 1; } 71.75% { transform: translate(calc(var(--inx) + (var(--s2x) - var(--inx)) * 0.5), calc(var(--iny) + (var(--s2y) - var(--iny)) * 0.5)); opacity: 1; } 72.438% { transform: translate(calc(var(--inx) + (var(--s2x) - var(--inx)) * 0.596), calc(var(--iny) + (var(--s2y) - var(--iny)) * 0.684)); opacity: 1; } 73.125% { transform: translate(calc(var(--inx) + (var(--s2x) - var(--inx)) * 0.703), calc(var(--iny) + (var(--s2y) - var(--iny)) * 0.844)); opacity: 1; } 73.813% { transform: translate(calc(var(--inx) + (var(--s2x) - var(--inx)) * 0.834), calc(var(--iny) + (var(--s2y) - var(--iny)) * 0.957)); opacity: 1; } 74.5% { transform: translate(var(--s2x), var(--s2y)); opacity: 1; } 75.5% { transform: translate(var(--s2x), var(--s2y)); opacity: 0; } 100% { transform: translate(var(--s2x), var(--s2y)); opacity: 0; } }
-  @keyframes capa-pulso-a-v { 0% { transform: translate(var(--s1x), var(--s1y)); opacity: 0; } 2% { transform: translate(var(--s1x), var(--s1y)); opacity: 0; } 2.8% { transform: translate(var(--s1x), var(--s1y)); opacity: 1; } 3.512% { transform: translate(calc(var(--s1x) + (var(--inx) - var(--s1x)) * 0.043), calc(var(--s1y) + (var(--iny) - var(--s1y)) * 0.166)); opacity: 1; } 4.225% { transform: translate(calc(var(--s1x) + (var(--inx) - var(--s1x)) * 0.156), calc(var(--s1y) + (var(--iny) - var(--s1y)) * 0.297)); opacity: 1; } 4.938% { transform: translate(calc(var(--s1x) + (var(--inx) - var(--s1x)) * 0.316), calc(var(--s1y) + (var(--iny) - var(--s1y)) * 0.404)); opacity: 1; } 5.65% { transform: translate(calc(var(--s1x) + (var(--inx) - var(--s1x)) * 0.5), calc(var(--s1y) + (var(--iny) - var(--s1y)) * 0.5)); opacity: 1; } 6.362% { transform: translate(calc(var(--s1x) + (var(--inx) - var(--s1x)) * 0.684), calc(var(--s1y) + (var(--iny) - var(--s1y)) * 0.596)); opacity: 1; } 7.075% { transform: translate(calc(var(--s1x) + (var(--inx) - var(--s1x)) * 0.844), calc(var(--s1y) + (var(--iny) - var(--s1y)) * 0.703)); opacity: 1; } 7.787% { transform: translate(calc(var(--s1x) + (var(--inx) - var(--s1x)) * 0.957), calc(var(--s1y) + (var(--iny) - var(--s1y)) * 0.834)); opacity: 1; } 8.5% { transform: translate(var(--inx), var(--iny)); opacity: 1; } 9.5% { transform: translate(var(--inx), var(--iny)); opacity: 0; } 100% { transform: translate(var(--inx), var(--iny)); opacity: 0; } }
-  @keyframes capa-pulso-b-v { 0% { transform: translate(var(--inx), var(--iny)); opacity: 0; } 13% { transform: translate(var(--inx), var(--iny)); opacity: 0; } 14% { transform: translate(var(--inx), var(--iny)); opacity: 1; } 14.688% { transform: translate(calc(var(--inx) + (var(--s1x) - var(--inx)) * 0.043), calc(var(--iny) + (var(--s1y) - var(--iny)) * 0.166)); opacity: 1; } 15.375% { transform: translate(calc(var(--inx) + (var(--s1x) - var(--inx)) * 0.156), calc(var(--iny) + (var(--s1y) - var(--iny)) * 0.297)); opacity: 1; } 16.063% { transform: translate(calc(var(--inx) + (var(--s1x) - var(--inx)) * 0.316), calc(var(--iny) + (var(--s1y) - var(--iny)) * 0.404)); opacity: 1; } 16.75% { transform: translate(calc(var(--inx) + (var(--s1x) - var(--inx)) * 0.5), calc(var(--iny) + (var(--s1y) - var(--iny)) * 0.5)); opacity: 1; } 17.438% { transform: translate(calc(var(--inx) + (var(--s1x) - var(--inx)) * 0.684), calc(var(--iny) + (var(--s1y) - var(--iny)) * 0.596)); opacity: 1; } 18.125% { transform: translate(calc(var(--inx) + (var(--s1x) - var(--inx)) * 0.844), calc(var(--iny) + (var(--s1y) - var(--iny)) * 0.703)); opacity: 1; } 18.813% { transform: translate(calc(var(--inx) + (var(--s1x) - var(--inx)) * 0.957), calc(var(--iny) + (var(--s1y) - var(--iny)) * 0.834)); opacity: 1; } 19.5% { transform: translate(var(--s1x), var(--s1y)); opacity: 1; } 20.5% { transform: translate(var(--s1x), var(--s1y)); opacity: 0; } 100% { transform: translate(var(--s1x), var(--s1y)); opacity: 0; } }
-  @keyframes capa-pulso-c-v { 0% { transform: translate(var(--s2x), var(--s2y)); opacity: 0; } 30% { transform: translate(var(--s2x), var(--s2y)); opacity: 0; } 30.8% { transform: translate(var(--s2x), var(--s2y)); opacity: 1; } 31.512% { transform: translate(calc(var(--s2x) + (var(--inx) - var(--s2x)) * 0.043), calc(var(--s2y) + (var(--iny) - var(--s2y)) * 0.166)); opacity: 1; } 32.225% { transform: translate(calc(var(--s2x) + (var(--inx) - var(--s2x)) * 0.156), calc(var(--s2y) + (var(--iny) - var(--s2y)) * 0.297)); opacity: 1; } 32.938% { transform: translate(calc(var(--s2x) + (var(--inx) - var(--s2x)) * 0.316), calc(var(--s2y) + (var(--iny) - var(--s2y)) * 0.404)); opacity: 1; } 33.65% { transform: translate(calc(var(--s2x) + (var(--inx) - var(--s2x)) * 0.5), calc(var(--s2y) + (var(--iny) - var(--s2y)) * 0.5)); opacity: 1; } 34.362% { transform: translate(calc(var(--s2x) + (var(--inx) - var(--s2x)) * 0.684), calc(var(--s2y) + (var(--iny) - var(--s2y)) * 0.596)); opacity: 1; } 35.075% { transform: translate(calc(var(--s2x) + (var(--inx) - var(--s2x)) * 0.844), calc(var(--s2y) + (var(--iny) - var(--s2y)) * 0.703)); opacity: 1; } 35.788% { transform: translate(calc(var(--s2x) + (var(--inx) - var(--s2x)) * 0.957), calc(var(--s2y) + (var(--iny) - var(--s2y)) * 0.834)); opacity: 1; } 36.5% { transform: translate(var(--inx), var(--iny)); opacity: 1; } 37.5% { transform: translate(var(--inx), var(--iny)); opacity: 0; } 37.6% { transform: translate(var(--outx), var(--outy)); opacity: 0; } 43% { transform: translate(var(--outx), var(--outy)); opacity: 0; } 44% { transform: translate(var(--outx), var(--outy)); opacity: 1; } 47% { transform: translate(var(--outx), var(--outy)); opacity: 1; } 51.8% { transform: translate(var(--outx), var(--pvy)); opacity: 1; } 53% { transform: translate(var(--pvx), var(--pvy)); opacity: 1; } 54% { transform: translate(var(--pvx), var(--pvy)); opacity: 0; } 100% { transform: translate(var(--pvx), var(--pvy)); opacity: 0; } }
-  @keyframes capa-pulso-d-v { 0% { transform: translate(var(--pvx), var(--pvy)); opacity: 0; } 60.5% { transform: translate(var(--pvx), var(--pvy)); opacity: 0; } 61.5% { transform: translate(var(--pvx), var(--pvy)); opacity: 1; } 62.6% { transform: translate(var(--outx), var(--pvy)); opacity: 1; } 67% { transform: translate(var(--outx), var(--outy)); opacity: 1; } 68% { transform: translate(var(--outx), var(--outy)); opacity: 0; } 68.1% { transform: translate(var(--inx), var(--iny)); opacity: 0; } 69% { transform: translate(var(--inx), var(--iny)); opacity: 1; } 69.688% { transform: translate(calc(var(--inx) + (var(--s2x) - var(--inx)) * 0.043), calc(var(--iny) + (var(--s2y) - var(--iny)) * 0.166)); opacity: 1; } 70.375% { transform: translate(calc(var(--inx) + (var(--s2x) - var(--inx)) * 0.156), calc(var(--iny) + (var(--s2y) - var(--iny)) * 0.297)); opacity: 1; } 71.063% { transform: translate(calc(var(--inx) + (var(--s2x) - var(--inx)) * 0.316), calc(var(--iny) + (var(--s2y) - var(--iny)) * 0.404)); opacity: 1; } 71.75% { transform: translate(calc(var(--inx) + (var(--s2x) - var(--inx)) * 0.5), calc(var(--iny) + (var(--s2y) - var(--iny)) * 0.5)); opacity: 1; } 72.438% { transform: translate(calc(var(--inx) + (var(--s2x) - var(--inx)) * 0.684), calc(var(--iny) + (var(--s2y) - var(--iny)) * 0.596)); opacity: 1; } 73.125% { transform: translate(calc(var(--inx) + (var(--s2x) - var(--inx)) * 0.844), calc(var(--iny) + (var(--s2y) - var(--iny)) * 0.703)); opacity: 1; } 73.813% { transform: translate(calc(var(--inx) + (var(--s2x) - var(--inx)) * 0.957), calc(var(--iny) + (var(--s2y) - var(--iny)) * 0.834)); opacity: 1; } 74.5% { transform: translate(var(--s2x), var(--s2y)); opacity: 1; } 75.5% { transform: translate(var(--s2x), var(--s2y)); opacity: 0; } 100% { transform: translate(var(--s2x), var(--s2y)); opacity: 0; } }
-  @keyframes capa-pulso-e { 0% { transform: translate(var(--clx), var(--cly0)); opacity: 0; } 80% { transform: translate(var(--clx), var(--cly0)); opacity: 0; } 81% { transform: translate(var(--clx), var(--cly0)); opacity: 1; } 90% { transform: translate(var(--clx), var(--cly1)); opacity: 1; } 91.5% { transform: translate(var(--clx), var(--cly1)); opacity: 0; } 100% { transform: translate(var(--clx), var(--cly1)); opacity: 0; } }
 }
-@media (prefers-reduced-motion: no-preference) and (hover: hover) { .capa:has(.capa-escena:hover) *, .capa:has(.capa-escena:hover) *::after { animation-play-state: paused; } }
-@media (prefers-reduced-motion: no-preference) and (min-width: 900px) {
-  .capa-pulso--a { animation-name: capa-pulso-a; }
-  .capa-pulso--b { animation-name: capa-pulso-b; }
-  .capa-pulso--c { animation-name: capa-pulso-c; }
-  .capa-pulso--d { animation-name: capa-pulso-d; }
-}
+@media (prefers-reduced-motion: no-preference) and (hover: hover) { .capa:has(.capa-escena:hover) *, .capa:has(.capa-escena:hover) *::after { animation-play-state: paused !important; } }
 /* ==== FIN SLOT CAPA EN ACCION ==== */

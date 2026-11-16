@@ -1,0 +1,74 @@
+/*
+ * Derived from affectUI Pro 'Fallback Chain' (https://www.affectui.com). Used under the affectUI Pro license held by BiVelio. NOT covered by this repository's Apache-2.0 licence; do not redistribute as a component kit.
+ */
+
+/* Colors and motion as variables – override them on the diagram or on a card */
+.ui-fbk__links, .ui-fbk__model {
+  --ui-fbk-card: var(--aui-surface, #ffffff);
+  --ui-fbk-ink: var(--aui-ink, #171717);
+  --ui-fbk-muted: var(--aui-muted, #6b6b6b);
+  --ui-fbk-line: var(--aui-border, #ececec);
+  --ui-fbk-link: var(--line-strong, #d6d6d6);
+  --ui-fbk-accent: var(--aui-blue, var(--brand));
+  --ui-fbk-accent-soft: color-mix(in srgb, var(--ui-fbk-accent) 62%, #fff);
+  --ui-fbk-accent-bg: color-mix(in srgb, var(--ui-fbk-accent) 11%, transparent);
+  --ui-fbk-ok: var(--mint, #14a06f);
+  --ui-fbk-ok-ink: var(--aui-success, #1e8a4f);
+  --ui-fbk-ok-soft: color-mix(in srgb, var(--ui-fbk-ok) 70%, #fff);
+  --ui-fbk-ok-bg: color-mix(in srgb, var(--ui-fbk-ok) 14%, transparent);
+  --ui-fbk-focus: var(--aui-focus, rgba(0, 96, 226, 0.7));
+  --ui-fbk-shadow: var(--aui-shadow-card, 0 0 0 1px #ececec, 0 1px 2px rgba(0, 0, 0, 0.04));
+  --ui-fbk-ease: var(--aui-ease, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+/* ----- Branches: dotted while only an alternative, a solid line for the route in use, green once it answers ----- */
+.ui-fbk__links { display: block; flex: none; overflow: visible; pointer-events: none; }
+.ui-fbk__link { fill: none; stroke: var(--ui-fbk-link); stroke-width: 1.25; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.ui-fbk__link[data-status="idle"] { stroke-dasharray: 0.012 0.03; }
+.ui-fbk__links--tree .ui-fbk__link[data-status="idle"] { stroke-dasharray: 0.006 0.016; }
+.ui-fbk__link--on { stroke: var(--ui-fbk-accent-soft); stroke-width: 1.5; opacity: var(--ui-fbk-on, 0); transition: opacity 400ms ease; }
+.ui-fbk__link--ok { stroke: var(--ui-fbk-ok); stroke-width: 1.5; opacity: 0; }
+/* The light: only the route in use carries it */
+.ui-fbk__light { opacity: var(--ui-fbk-on, 0); }
+.ui-fbk__band { opacity: 0; transform: translate(var(--ui-fbk-fx), var(--ui-fbk-fy)); will-change: transform, opacity; }
+.ui-fbk__light--back .ui-fbk__band { transform: translate(var(--ui-fbk-tx), var(--ui-fbk-ty)); }
+/* One run out and one run back, for whoever has no timeline of its own */
+@keyframes ui-fbk-run { 0% { transform: translate(var(--ui-fbk-fx), var(--ui-fbk-fy)); opacity: 0; } 12%, 88% { opacity: 1; } 100% { transform: translate(var(--ui-fbk-tx), var(--ui-fbk-ty)); opacity: 0; } }
+@keyframes ui-fbk-run-back { 0% { transform: translate(var(--ui-fbk-tx), var(--ui-fbk-ty)); opacity: 0; } 12%, 88% { opacity: 1; } 100% { transform: translate(var(--ui-fbk-fx), var(--ui-fbk-fy)); opacity: 0; } }
+
+/* ----- Models: one card each ----- */
+.ui-fbk__model {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 8px 12px 8px 10px;
+  border-radius: calc(var(--aui-radius-lg, 16px) - 4px);
+  background: var(--ui-fbk-card);
+  box-shadow: var(--ui-fbk-shadow);
+  font-family: var(--aui-font, var(--font-sans));
+  letter-spacing: -0.006em;
+  color: var(--ui-fbk-muted);
+  text-align: left;
+  transition: box-shadow 400ms ease;
+}
+/* The two states of upstream's card as rings on top of it, so they can fade in and out without repainting the card */
+.ui-fbk__ring { position: absolute; inset: 0; border-radius: inherit; opacity: 0; pointer-events: none; }
+.ui-fbk__ring--trying { box-shadow: 0 0 0 1.5px var(--ui-fbk-accent-soft), 0 0 0 5px var(--ui-fbk-accent-bg); }
+.ui-fbk__ring--answered { box-shadow: 0 0 0 1.5px var(--ui-fbk-ok-soft), 0 0 0 5px var(--ui-fbk-ok-bg); background: linear-gradient(90deg, var(--ui-fbk-ok-bg), transparent 60%); }
+.ui-fbk__logo { position: relative; display: grid; flex: none; place-items: center; width: 30px; height: 30px; border-radius: 8px; background: var(--ui-fbk-card); box-shadow: 0 0 0 1px var(--ui-fbk-line), 0 1px 2px rgba(0, 0, 0, 0.04); color: var(--ui-fbk-ink); }
+.ui-fbk__mark { display: grid; place-items: center; }
+.ui-fbk__who { position: relative; display: grid; flex: 1; gap: 1px; min-width: 0; }
+/* BiVelio: names and status lines wrap – twelve languages, and nothing may hide behind an ellipsis */
+.ui-fbk__name { min-width: 0; font-size: 13.5px; font-weight: 600; line-height: 18px; color: var(--ui-fbk-ink); overflow-wrap: anywhere; }
+.ui-fbk__status { min-width: 0; font-family: var(--aui-font-mono, var(--font-mono)); font-size: 11px; line-height: 15px; letter-spacing: 0; color: var(--ui-fbk-muted); overflow-wrap: anywhere; }
+/* The tick of an answer, on the corner of the card */
+.ui-fbk__n { position: absolute; top: -7px; right: -7px; display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--ui-fbk-ok-ink); color: #fff; box-shadow: 0 0 0 2px var(--ui-fbk-card); opacity: 0; pointer-events: none; }
+.ui-fbk__model:has(:focus-visible) { outline: 2px solid var(--ui-fbk-focus); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-fbk__links *, .ui-fbk__model, .ui-fbk__model * { animation: none !important; transition: none !important; }
+  .ui-fbk__light { display: none; }
+}

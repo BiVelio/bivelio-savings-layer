@@ -46,6 +46,9 @@ para poder comparar al actualizar.
 | Experiment Readout | `experiment-readout.tsx` + `.css` | **affectUI Pro** (derivado de Experiment Card) | registro Pro, `experiment-card` (descarga del 2026-11-16) | `f6d08216b0a7803c47c196d52ea51e6d88e1d1900a3f584dba183a8459411373` |
 | Integration Beam (**fork**) | `integration-beam.tsx` + `.css` | MIT | `illustrations/integration-beam.tsx` | `533cfff48bfc8b2d03a1968292d79e2229b8156e690c587fc4b0dbc965445fe6` |
 | Layer Stack | `layer-stack.tsx` + `.css` | MIT | `illustrations/layer-stack.tsx` | `4f8ea82ab8bca0c3a0a8f802eeaaa733fd2fac09b829f671519adbbaa8466cd6` |
+| Fallback Chain (**solo la gramática, sin fallback**) | `fallback-chain.tsx` + `.css` | **affectUI Pro** | registro Pro, `fallback-chain` (descarga del 2026-11-16) | `33c253b5c17e1efd745f13e53e8be537fca02674119ca76e99e98a9d55e6d3b4` |
+| Memory Graph | `memory-graph.tsx` + `.css` | **affectUI Pro** | registro Pro, `memory-graph` (descarga del 2026-11-16) | `235a440f5403b430d795250fd64d131e659c965cffe4260a056ce4d8831132e3` |
+| Integration Flow (**partes, no la escena**) | `integration-flow.tsx` + `.css` | **affectUI Pro** | registro Pro, `integration-flow` (descarga del 2026-11-16) | `f85674636ec99d3cb1b310364efad8b104501411eddfe71f5473db8649dae26c` |
 
 ## Dónde se usa cada pieza
 
@@ -220,6 +223,73 @@ arriba.
   en `cqw` se sustituye por una rejilla de dos columnas con texto en `rem` que
   parte línea (doce idiomas, zoom al 200 %); la pastilla deslizante pasa a ser
   el fondo de la fila elegida. Colores a `--brand`/`--brand-soft`/`--surface-2`.
+
+**Las tres piezas de «Savings Layer, en acción»** (`app/components/landing/CapaEnAccion.tsx`)
+
+Las tres comparten el mismo trato: son **componentes de servidor sin script**
+(fuera `"use client"`, estado, efectos, `ResizeObserver`, Web Animations y
+SMIL), **están quietas** y exponen sus partes con clases `ui-*`; el único bucle
+que las mueve vive en `app/globals.css` (SLOT CAPA EN ACCION), solo con
+`transform` y `opacity`, y se puede pausar. Ninguna trae texto, cifras ni datos
+de demostración.
+
+- **fallback-chain** (Pro) — **SE CONSERVA LA GRAMÁTICA, SE RETIRA EL
+  FALLBACK.** Upstream cuenta una petición que prueba un modelo tras otro hasta
+  que uno responde. Savings NO hace eso: envía al proveedor que configures y a
+  ningún otro. Por eso se exportan solo dos partes:
+  `ChainLinks` (las ramas de la petición a cada modelo, en curva o en árbol,
+  con geometría fija `curve`/`branch` de upstream) y `ChainModel` (la tarjeta
+  de un modelo: marca, nombre, una línea de estado y huecos `control`/`end`
+  para que sea la `label` de un radio nativo).
+  **Retirado**: los estados `failed` y `skipped` y su línea roja discontinua
+  («rate limited», «timed out», «down»), el orden de intentos y su número en la
+  esquina, «Up next», «Attempt N of M», «No model answered», `Retry`, los
+  bloques que se llenan hacia el `timeout`, los cronómetros (`secs`), los
+  costes (`usd`), los totales en marcha y su brillo, el nodo de respuesta, las
+  tarjetas flotantes (`Pop`: tokens, precio, región, prompt) y las iniciales.
+  **Conservado**: rama punteada = alternativa, rama continua = la ruta en uso
+  (`--ui-fbk-on: 1` en la rama, lo decide quien la usa), la luz que recorre la
+  rama en uso (ida) y la misma luz en verde de vuelta, y el anillo verde de
+  «answered» en la tarjeta (más el de «trying» mientras llega). La insignia de
+  la esquina ya no es un número de orden: es la marca de una respuesta.
+  La luz deja de ser un `<animateTransform>` SMIL sobre el degradado y pasa a
+  ser una banda con el mismo degradado tras una máscara con la forma de la
+  rama, movida con `transform` (variables `--ui-fbk-fx/fy/tx/ty`). Los nombres
+  parten línea en vez de truncarse.
+- **memory-graph** (Pro) — **el dibujo y sus tres gestos, sin palabras.**
+  Un único SVG de geometría fija (300×104) que escala entero: el que recuerda
+  en el centro con la marca de píxeles de upstream (`pattern`, onda `WAVE`),
+  hasta tres recuerdos por lado, los conectores de codo redondeado (`elbowX`)
+  con un anillo en cada extremo. Cada sitio es `memory`, `recalled` o
+  `learned`. Gestos conservados: **recordar** (la luz sale hacia la tarjeta,
+  que se enciende, y su línea queda encendida), **aprender** (la luz sale hacia
+  un hueco y la tarjeta nueva sube allí) y el **Gradient Floor** que cruza la
+  tarjeta desde el borde por el que entró la luz.
+  **Retirado**: el texto de cada recuerdo, el artefacto y los logotipos de
+  ficheros (`LOGOS`, Word/Excel/PDF…), fechas, `uses`/`calls`, «N memories · N
+  tools», las herramientas, el panel de detalle, `Forget`, `Add`/soltar
+  ficheros, los interruptores, «+N more», los enlaces punteados entre
+  recuerdos, `outdated`/`replaces`, la maquetación que mide el contenedor y
+  todo el teclado (la figura es decorativa: `aria-hidden`). Una tarjeta es
+  solo la silueta de una petición: no hay nada que inventar. El Floor ya no
+  deforma su silueta con `requestAnimationFrame` ni usa desenfoque: es un
+  degradado suave recortado a la tarjeta. La luz pasa de ocho trazos con
+  `stroke-dashoffset` a una banda tras una máscara (`--ui-mg-fx/tx`).
+- **integration-flow** (Pro) — **el lenguaje de movimiento, no la escena.**
+  Upstream es una escena cerrada de 2400×1490 (píldoras de integraciones
+  girando por un arco hacia un hub «Data Analysis · Centralized Data
+  Processing»). Nada de eso queda —ni las píldoras, ni el arco, ni el hub, ni
+  los logotipos de Slack/Okta/Snowflake, ni la etiqueta en inglés, ni el
+  escalado por script, ni la idea de «procesado centralizado»—. Se exportan
+  tres partes: `FlowLink` (el enlace recto entre dos tarjetas con su haz:
+  núcleo + resplandor, recortado en los extremos; aquí con el enlace dibujado y
+  un segundo haz de vuelta, en verde), `FlowCharge` (la tarjeta que «se carga»
+  antes de disparar o al llegar el haz, por el lado que se indique) y
+  `FlowBlobs` (las manchas que derivan y respiran, en azul de marca y un toque
+  de menta, sobre fondo claro). El resplandor del haz usa un desenfoque fijo
+  (upstream anima el radio, que no corre en el compositor). Se conservan los
+  tiempos del barrido (aparece al 18 %, se apaga desde el 72 %, curva
+  `cubic-bezier(.55,.06,.25,1)`) y `ui-if-drift`/`ui-if-breathe`.
 
 ## Cómo vendorizar una pieza nueva (frentes)
 

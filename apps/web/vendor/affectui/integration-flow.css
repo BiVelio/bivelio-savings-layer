@@ -1,0 +1,127 @@
+/*
+ * Derived from affectUI Pro 'Integration Flow' (https://www.affectui.com). Used under the affectUI Pro license held by BiVelio. NOT covered by this repository's Apache-2.0 licence; do not redistribute as a component kit.
+ */
+
+/* ---------- Link and beam ---------- */
+/* Timing of one sweep, as upstream: --ui-if-sweep with --ui-if-sweep-ease */
+.ui-if-link {
+  --ui-if-accent: var(--aui-blue, var(--brand));
+  --ui-if-ok: var(--mint, #14a06f);
+  --ui-if-wire: color-mix(in srgb, var(--ui-if-accent) 38%, var(--aui-border, var(--line)));
+  --ui-if-sweep: 1.1s;
+  --ui-if-sweep-ease: cubic-bezier(.55, .06, .25, 1);
+  position: absolute;
+  display: block;
+  width: var(--ui-if-len);
+  height: 3px;
+  /* The beam is cut off at both ends of the link; its glow may spill above and below */
+  clip-path: inset(-14px 0px -14px 0px);
+  pointer-events: none;
+}
+/* BiVelio: the link itself is drawn (upstream only shows the beam, on a coloured stage) */
+.ui-if-link::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0.75px;
+  height: 1.5px;
+  border-radius: 1px;
+  background: var(--ui-if-wire);
+}
+.ui-if-beam {
+  --ui-if-c: var(--ui-if-accent);
+  position: absolute;
+  left: 0;
+  width: var(--ui-if-beam);
+  opacity: 0;
+  transform: translateX(calc(-1 * var(--ui-if-beam)));
+  /* Head on the right: a quick fade in front, a long tail behind */
+  background: linear-gradient(270deg, transparent 0%, var(--ui-if-c) 40%, var(--ui-if-c) 55%, color-mix(in srgb, var(--ui-if-c) 8%, transparent) 100%);
+  border-radius: 2px;
+  will-change: transform, opacity;
+}
+.ui-if-beam--core { top: 0; height: 3px; }
+/* A fixed blur: upstream animates the radius, which cannot run on the compositor */
+.ui-if-beam--glow { top: -2px; height: 7px; filter: blur(3px); opacity: 0; }
+.ui-if-beam--back {
+  --ui-if-c: var(--ui-if-ok);
+  transform: translateX(var(--ui-if-len));
+  background: linear-gradient(90deg, transparent 0%, var(--ui-if-c) 40%, var(--ui-if-c) 55%, color-mix(in srgb, var(--ui-if-c) 8%, transparent) 100%);
+}
+/* One sweep on demand, as upstream – a timeline of your own can drive the beams instead */
+.ui-if-sweeping .ui-if-beam:not(.ui-if-beam--back) { animation: ui-if-sweep var(--ui-if-sweep) var(--ui-if-sweep-ease) both; }
+.ui-if-sweeping-back .ui-if-beam--back { animation: ui-if-sweep-back var(--ui-if-sweep) var(--ui-if-sweep-ease) both; }
+@keyframes ui-if-sweep {
+  0%   { transform: translateX(calc(-1 * var(--ui-if-beam))); opacity: 0; }
+  18%  { opacity: 1; }
+  72%  { opacity: 1; }
+  100% { transform: translateX(var(--ui-if-len)); opacity: 0; }
+}
+@keyframes ui-if-sweep-back {
+  0%   { transform: translateX(var(--ui-if-len)); opacity: 0; }
+  18%  { opacity: 1; }
+  72%  { opacity: 1; }
+  100% { transform: translateX(calc(-1 * var(--ui-if-beam))); opacity: 0; }
+}
+
+/* ---------- Charged state of a card ---------- */
+.ui-if-bg {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.ui-if-bg--charge {
+  --ui-if-c: var(--aui-blue, var(--brand));
+  --ui-if-a: color-mix(in srgb, var(--ui-if-c) 17%, transparent);
+  opacity: 0;
+  background: linear-gradient(var(--ui-if-dir, 270deg), var(--ui-if-a) 0%, transparent 72%);
+  transition: opacity .55s ease-out;
+}
+.ui-if-bg--charge[data-tone="ok"] { --ui-if-c: var(--mint, #14a06f); }
+.ui-if-bg--charge[data-side="end"] { --ui-if-dir: 270deg; }
+.ui-if-bg--charge[data-side="start"] { --ui-if-dir: 90deg; }
+.ui-if-bg--charge[data-side="top"] { --ui-if-dir: 180deg; }
+.ui-if-bg--charge[data-side="bottom"] { --ui-if-dir: 0deg; }
+.ui-if-charged > .ui-if-bg--charge { opacity: 1; transition: opacity .5s ease-in; }
+
+/* ---------- Blobs ---------- */
+.ui-if-blobs {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(closest-side, #000 66%, transparent 100%);
+  mask-image: radial-gradient(closest-side, #000 66%, transparent 100%);
+}
+.ui-if-blob {
+  --ui-if-c: var(--aui-blue, var(--brand));
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--ui-if-c) 56%, transparent) 0%, color-mix(in srgb, var(--ui-if-c) 38%, transparent) 30%, color-mix(in srgb, var(--ui-if-c) 15%, transparent) 60%, transparent 100%);
+  transform: rotate(var(--rot));
+  opacity: var(--o-hi);
+  animation: ui-if-drift var(--dur) ease-in-out var(--delay) infinite, ui-if-breathe var(--fdur) ease-in-out var(--fdelay) infinite;
+  will-change: transform, opacity;
+}
+@keyframes ui-if-drift {
+  0%, 100% { transform: rotate(var(--rot)) translate(0, 0); }
+  25%      { transform: rotate(calc(var(--rot) + var(--r1))) translate(var(--dx), var(--dy)); }
+  50%      { transform: rotate(var(--rot)) translate(calc(var(--dx) - var(--dy)), calc(var(--dy) + var(--dx))); }
+  75%      { transform: rotate(calc(var(--rot) - var(--r1))) translate(calc(var(--dy) * -1), var(--dx)); }
+}
+@keyframes ui-if-breathe {
+  0%, 100% { opacity: var(--o-lo); }
+  50%      { opacity: var(--o-hi); }
+}
+.ui-if-blob--a { left: 6%; top: 4%; width: 62%; height: 78%; --rot: -19deg; --dx: 22px; --dy: -16px; --r1: 16deg; --dur: 16s; --delay: -3s; --o-lo: .7; --o-hi: 1; --fdur: 16s; --fdelay: -2s; }
+.ui-if-blob--b { left: 38%; top: 22%; width: 58%; height: 74%; --rot: 14deg; --dx: -18px; --dy: 20px; --r1: -19deg; --dur: 16s; --delay: -5s; --o-lo: .6; --o-hi: .95; --fdur: 16s; --fdelay: -4s; }
+.ui-if-blob--c { --ui-if-c: #5ba4ff; left: 22%; top: 34%; width: 56%; height: 66%; --rot: 8deg; --dx: 16px; --dy: 14px; --r1: 12deg; --dur: 19s; --delay: -9s; --o-lo: .55; --o-hi: .9; --fdur: 13s; --fdelay: -6s; }
+.ui-if-blob--d { --ui-if-c: var(--mint, #14a06f); left: 46%; top: 2%; width: 40%; height: 52%; --rot: -8deg; --dx: -14px; --dy: 12px; --r1: -14deg; --dur: 21s; --delay: -12s; --o-lo: .2; --o-hi: .42; --fdur: 17s; --fdelay: -8s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-if-blob { animation: none; }
+  .ui-if-beam { animation: none !important; opacity: 0; }
+  .ui-if-bg--charge { transition: none; }
+}
