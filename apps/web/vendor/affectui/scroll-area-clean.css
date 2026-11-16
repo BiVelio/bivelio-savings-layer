@@ -1,0 +1,137 @@
+/*
+ * Derived from affectUI Pro 'Scroll Area' (https://www.affectui.com). Used under the affectUI Pro license held by BiVelio. NOT covered by this repository's Apache-2.0 licence; do not redistribute as a component kit.
+ *
+ * Changes from upstream are listed in ./VENDOR.md.
+ */
+/* The fades' lengths animate as you near an end */
+@property --ui-sac-y-start { syntax: "<length>"; inherits: true; initial-value: 0px; }
+@property --ui-sac-y-end { syntax: "<length>"; inherits: true; initial-value: 0px; }
+@property --ui-sac-x-start { syntax: "<length>"; inherits: true; initial-value: 0px; }
+@property --ui-sac-x-end { syntax: "<length>"; inherits: true; initial-value: 0px; }
+
+/* Colors and sizes as variables – override them on .ui-sac (see Theming in the docs) */
+.ui-sac {
+  --ui-sac-thumb: color-mix(in srgb, var(--aui-ink, #0f1218) 22%, transparent);
+  --ui-sac-thumb-hover: color-mix(in srgb, var(--aui-ink, #0f1218) 36%, transparent);
+  --ui-sac-thumb-active: color-mix(in srgb, var(--aui-ink, #0f1218) 48%, transparent);
+  --ui-sac-size: 5px;
+  --ui-sac-size-hover: 7px;
+  --ui-sac-inset: 2px;
+  --ui-sac-fade: 24px;
+  --ui-sac-focus: var(--aui-focus, rgba(0, 96, 226, 0.7));
+  --ui-sac-ease: var(--aui-ease, cubic-bezier(0.22, 1, 0.36, 1));
+
+  /* A column, so a height or max-height on the box is what the viewport fills */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+.ui-sac *, .ui-sac *::before, .ui-sac *::after { box-sizing: border-box; }
+
+/* The element that scrolls: the browser's own scrolling, its bar hidden – ours is drawn on top */
+.ui-sac__viewport {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.ui-sac__viewport::-webkit-scrollbar { display: none; }
+.ui-sac[data-orientation="vertical"] > .ui-sac__viewport { overflow-y: auto; }
+.ui-sac[data-orientation="horizontal"] > .ui-sac__viewport { overflow-x: auto; }
+.ui-sac[data-orientation="both"] > .ui-sac__viewport { overflow: auto; }
+.ui-sac__viewport:focus { outline: none; }
+/* Inside the box, so no card edge or overflow cuts it */
+.ui-sac__viewport:focus-visible { outline: 2px solid var(--ui-sac-focus); outline-offset: -2px; }
+
+/* Sideways the content keeps its natural width, so a wide row really overflows; text still wraps at the box */
+.ui-sac:not([data-orientation="vertical"]) .ui-sac__content { min-width: fit-content; }
+
+/* Soft fades where there is more – a mask, so it works on any background */
+.ui-sac[data-fade][data-scroll-y] > .ui-sac__viewport {
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 var(--ui-sac-y-start), #000 calc(100% - var(--ui-sac-y-end)), transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 var(--ui-sac-y-start), #000 calc(100% - var(--ui-sac-y-end)), transparent);
+}
+.ui-sac[data-fade][data-scroll-x]:not([data-scroll-y]) > .ui-sac__viewport {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--ui-sac-x-start), #000 calc(100% - var(--ui-sac-x-end)), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 var(--ui-sac-x-start), #000 calc(100% - var(--ui-sac-x-end)), transparent);
+}
+.ui-sac[data-fade][dir="rtl"][data-scroll-x]:not([data-scroll-y]) > .ui-sac__viewport,
+[dir="rtl"] .ui-sac[data-fade][data-scroll-x]:not([data-scroll-y]) > .ui-sac__viewport {
+  -webkit-mask-image: linear-gradient(to left, transparent, #000 var(--ui-sac-x-start), #000 calc(100% - var(--ui-sac-x-end)), transparent);
+  mask-image: linear-gradient(to left, transparent, #000 var(--ui-sac-x-start), #000 calc(100% - var(--ui-sac-x-end)), transparent);
+}
+.ui-sac[data-fade] {
+  transition: --ui-sac-y-start 160ms ease, --ui-sac-y-end 160ms ease, --ui-sac-x-start 160ms ease, --ui-sac-x-end 160ms ease;
+}
+
+/* The bar: a 10px strip over the content's edge, the thumb in it – hidden until there is something to scroll */
+.ui-sac__bar {
+  position: absolute;
+  z-index: 1;
+  display: none;
+  opacity: 0;
+  touch-action: none;
+  user-select: none;
+  transition: opacity 280ms var(--ui-sac-ease);
+}
+.ui-sac__bar[data-axis="y"] { top: var(--ui-sac-inset); bottom: var(--ui-sac-inset); inset-inline-end: 0; width: 10px; }
+.ui-sac__bar[data-axis="x"] { left: var(--ui-sac-inset); right: var(--ui-sac-inset); bottom: 0; height: 10px; }
+/* Both bars: each stops short of the corner the other one runs into */
+.ui-sac[data-scroll-y][data-scroll-x] > .ui-sac__bar[data-axis="y"] { bottom: 10px; }
+.ui-sac[data-scroll-y][data-scroll-x] > .ui-sac__bar[data-axis="x"] { inset-inline-end: 10px; }
+.ui-sac[data-scroll-y] > .ui-sac__bar[data-axis="y"], .ui-sac[data-scroll-x] > .ui-sac__bar[data-axis="x"] { display: block; }
+
+.ui-sac__thumb {
+  position: absolute;
+  border-radius: 999px;
+  background: var(--ui-sac-thumb);
+  cursor: default;
+  transition: background-color 150ms ease, width 150ms var(--ui-sac-ease), height 150ms var(--ui-sac-ease);
+  will-change: transform;
+}
+/* A wider, invisible grab area around the thin thumb */
+.ui-sac__thumb::before { content: ""; position: absolute; inset: -4px; }
+.ui-sac__bar[data-axis="y"] > .ui-sac__thumb { top: 0; inset-inline-end: var(--ui-sac-inset); width: var(--ui-sac-size); }
+.ui-sac__bar[data-axis="x"] > .ui-sac__thumb { inset-inline-start: 0; bottom: var(--ui-sac-inset); height: var(--ui-sac-size); }
+.ui-sac__bar[data-axis="y"]:hover > .ui-sac__thumb, .ui-sac[data-dragging] > .ui-sac__bar[data-axis="y"] > .ui-sac__thumb { width: var(--ui-sac-size-hover); }
+.ui-sac__bar[data-axis="x"]:hover > .ui-sac__thumb, .ui-sac[data-dragging] > .ui-sac__bar[data-axis="x"] > .ui-sac__thumb { height: var(--ui-sac-size-hover); }
+.ui-sac__bar:hover > .ui-sac__thumb { background: var(--ui-sac-thumb-hover); }
+.ui-sac[data-dragging] .ui-sac__thumb { background: var(--ui-sac-thumb-active); }
+.ui-sac[data-dragging] { user-select: none; }
+
+/* When it shows: hover – while the pointer is over the box or it scrolls · scroll – only while it scrolls · always */
+.ui-sac[data-type="always"] > .ui-sac__bar,
+.ui-sac[data-scrolling] > .ui-sac__bar,
+.ui-sac[data-dragging] > .ui-sac__bar { opacity: 1; transition-duration: 120ms; }
+@media (hover: hover) {
+  .ui-sac[data-type="hover"]:hover > .ui-sac__bar { opacity: 1; transition-duration: 120ms; }
+}
+/* Faded out it lets the pointer through to the content under it */
+.ui-sac > .ui-sac__bar { pointer-events: none; }
+.ui-sac:is([data-type="always"], [data-scrolling], [data-dragging]) > .ui-sac__bar { pointer-events: auto; }
+@media (hover: hover) {
+  .ui-sac[data-type="hover"]:hover > .ui-sac__bar { pointer-events: auto; }
+}
+
+/* Touch screens: the finger scrolls the content – the bar only shows where you are, a little thicker */
+@media (pointer: coarse) {
+  .ui-sac { --ui-sac-size: 4px; --ui-sac-size-hover: 4px; }
+  .ui-sac > .ui-sac__bar { pointer-events: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-sac__bar, .ui-sac__thumb, .ui-sac[data-fade] { transition-duration: 1ms !important; }
+}
+
+/* Windows high contrast: the thumb keeps a system color */
+@media (forced-colors: active) {
+  .ui-sac__thumb { background: CanvasText; }
+}

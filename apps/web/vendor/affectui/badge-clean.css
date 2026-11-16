@@ -1,0 +1,64 @@
+/*
+ * Derived from affectUI Pro 'Badge' (https://www.affectui.com). Used under the affectUI Pro license held by BiVelio. NOT covered by this repository's Apache-2.0 licence; do not redistribute as a component kit.
+ *
+ * Changes from upstream are listed in ./VENDOR.md.
+ */
+.ui-bdgc {
+  --ui-bdgc-neutral-bg: var(--aui-subtle, #f2f1ec);
+  --ui-bdgc-neutral-fg: var(--aui-muted, #5a6070);
+  --ui-bdgc-neutral-dot: color-mix(in srgb, var(--aui-ink, #0f1218) 34%, transparent);
+  --ui-bdgc-info-bg: var(--brand-soft, #e8f1ff);
+  --ui-bdgc-info-fg: #0052b8;
+  --ui-bdgc-success-bg: color-mix(in srgb, var(--aui-success, #0b6b4a) 11%, transparent);
+  --ui-bdgc-success-fg: var(--aui-success, #0b6b4a);
+  --ui-bdgc-warning-bg: color-mix(in srgb, var(--aui-warning, #9a5b00) 13%, transparent);
+  --ui-bdgc-warning-fg: var(--aui-warning, #9a5b00);
+  --ui-bdgc-danger-bg: color-mix(in srgb, var(--aui-danger, #b42318) 9%, transparent);
+  --ui-bdgc-danger-fg: var(--aui-danger, #b42318);
+
+  --bg: var(--ui-bdgc-neutral-bg);
+  --fg: var(--ui-bdgc-neutral-fg);
+  --dot: currentColor;
+  --min: 22px;
+  --pad: 8px;
+  --lead: 6px;
+  --mark: 13px;
+
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 5px;
+  box-sizing: border-box;
+  max-width: 100%;
+  min-height: var(--min);
+  padding: 2px var(--pad);
+  border-radius: var(--aui-radius-sm, 6px);
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--aui-font, var(--font-sans));
+  font-size: 0.75rem;
+  font-weight: 550;
+  line-height: 1.3;
+  letter-spacing: 0;
+  vertical-align: middle;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+.ui-bdgc[data-size="sm"] { --min: 18px; --pad: 6px; --lead: 4px; --mark: 12px; gap: 4px; font-size: 0.6875rem; }
+/* A dot or icon in front sits a little closer to the edge, so it looks as far in as the text on the other side */
+.ui-bdgc[data-lead] { padding-inline-start: var(--lead); }
+
+.ui-bdgc[data-tone="neutral"] { --dot: var(--ui-bdgc-neutral-dot); }
+.ui-bdgc[data-tone="info"] { --bg: var(--ui-bdgc-info-bg); --fg: var(--ui-bdgc-info-fg); }
+.ui-bdgc[data-tone="success"] { --bg: var(--ui-bdgc-success-bg); --fg: var(--ui-bdgc-success-fg); }
+.ui-bdgc[data-tone="warning"] { --bg: var(--ui-bdgc-warning-bg); --fg: var(--ui-bdgc-warning-fg); }
+.ui-bdgc[data-tone="danger"] { --bg: var(--ui-bdgc-danger-bg); --fg: var(--ui-bdgc-danger-fg); }
+
+/* BiVelio: long text wraps (upstream cut it with …) */
+.ui-bdgc__label { min-width: 0; overflow-wrap: anywhere; }
+
+.ui-bdgc__dot { flex: none; width: 6px; height: 6px; margin: 0 1px; border-radius: 50%; background: var(--dot); }
+.ui-bdgc__icon { display: grid; flex: none; place-items: center; width: var(--mark); height: var(--mark); }
+.ui-bdgc__icon > svg { display: block; width: 100%; height: 100%; }
+
+@media (forced-colors: active) { .ui-bdgc { border: 1px solid CanvasText; } }
