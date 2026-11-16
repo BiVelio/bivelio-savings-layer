@@ -96,7 +96,7 @@
     "newToBivelio": "Novo na BiVelio?",
     "createAnAccount": "Criar uma conta",
     "backToVerifier": "← Voltar ao início",
-    "createYourAccount": "Cria a tua conta",
+    "createYourAccount": "Cria a tua conta Cloud",
     "signupSubtitle": "Uma conta BiVelio para toda a suite. Cria-a para a nuvem: painel, caches partilhadas e gestão de licenças. O pacote em si não precisa de conta — o open core corre sem chave.",
     "alreadyHaveAccount": "Já tens uma conta BiVelio?",
     "signIn": "Iniciar sessão",
@@ -139,7 +139,33 @@
       "network": "Sem ligação. Verifica a tua rede e tenta de novo.",
       "missingFields": "Escreve o teu email e a palavra-passe."
     },
-    "signupMedir": "Ou começa grátis com Measure: o plano de nuvem gratuito, sem cartão, modo sombra, até {seats} lugares e {requests} pedidos por dia. Precisa de @bivelio/savings-layer {version} ou posterior."
+    "signupMedir": "Ou começa grátis com Measure: o plano de nuvem gratuito, sem cartão, modo sombra, até {seats} lugares e {requests} pedidos por dia. Precisa de @bivelio/savings-layer {version} ou posterior.",
+    "openSourceQuestion": "Só queres o motor open source?",
+    "openSourceLink": "Instala-o sem conta",
+    "showPassword": "Mostrar a palavra-passe",
+    "hidePassword": "Ocultar a palavra-passe",
+    "working": "Um momento…",
+    "sentTitleNew": "Confirma o teu e-mail",
+    "sentTitleExisting": "Já tens uma conta",
+    "sentTitleReset": "Verifica a caixa de entrada",
+    "sentEmailLabel": "E-mail",
+    "useAnotherEmail": "Usar outro e-mail",
+    "requestNewLink": "Pedir um link novo",
+    "successNext": "Passo seguinte: instala o pacote e liga a tua primeira chamada. Até lá, o painel não tem nada para medir.",
+    "successPlan": "O plano que escolheste continua selecionado: confirmas no passo seguinte.",
+    "successInvite": "Levamos-te de volta ao teu convite para o aceitares.",
+    "successContinue": "Continuar",
+    "panel": {
+      "title": "Cada número, com a sua <em>origem</em>.",
+      "body": "O painel do Savings Cloud mostra o que foi contado em cada chamada e de onde vem o dado.",
+      "receiptTitle": "Recibo de uma chamada",
+      "receiptMeta": "O que vais ver no teu painel",
+      "rowBaseline": "Tokens de entrada, sem otimizar",
+      "rowActual": "Tokens de entrada, otimizados",
+      "rowOutput": "Tokens de saída",
+      "total": "Entrada a menos",
+      "provenance": "Os números deste recibo são inventados. Os teus vêm do contador do teu fornecedor."
+    }
   },
   "dashboard": {
     "overview": {
@@ -1323,7 +1349,10 @@
     "invitacionPara": "O convite é para <b>{email}</b>.",
     "sesionActual": "Neste momento tem sessão iniciada como <b>{email}</b>.",
     "cerrarYContinuar": "Terminar sessão e usar outra conta",
-    "cerrando": "A terminar sessão…"
+    "cerrando": "A terminar sessão…",
+    "kicker": "Convite",
+    "labelOrg": "Organização",
+    "labelFor": "Para"
   },
   "benchmarksPage": {
     "metaTitle": "Banco público A/B: meça-nos | BiVelio Savings Layer",
@@ -1889,7 +1918,12 @@
         "verificationSamples": "Amostras de verificação e as suas contagens diárias: {dias} dias.",
         "verificationBatches": "Identificadores de lote da verificação: {dias} dias."
       },
-      "noSchedule": "Os totais diários, a atividade por lugar e os seus extratos selados não têm hoje prazo de eliminação automática."
+      "noSchedule": "Os totais diários, a atividade por lugar e os seus extratos selados não têm hoje prazo de eliminação automática.",
+      "colWhere": "Tabela",
+      "colWhat": "O que guarda",
+      "colPeriod": "Prazo",
+      "period": "{dias} dias",
+      "none": "Sem eliminação automática"
     },
     "use": {
       "title": "Para que a BiVelio os usa",
@@ -1899,13 +1933,67 @@
       "title": "A sua conta neste site",
       "body": "O seu e-mail de acesso, a sua organização e os seus dados de faturação (os pagamentos são processados pela Stripe) regem-se pela <policy>política de privacidade da BiVelio</policy>."
     },
-    "contact": "Perguntas e pedidos sobre estes dados: <mail>{email}</mail>."
+    "contact": "Perguntas e pedidos sobre estes dados: <mail>{email}</mail>.",
+    "overview": {
+      "title": "Em resumo",
+      "colData": "Dado",
+      "colDestination": "Para onde vai",
+      "colPurpose": "Para quê",
+      "colRetention": "O que a BiVelio guarda",
+      "content": {
+        "data": "O conteúdo dos seus pedidos e respostas, e as credenciais do seu fornecedor de LLM",
+        "destination": "Só para o seu fornecedor de LLM",
+        "purpose": "Nunca é enviado à BiVelio",
+        "retention": "Nada a guardar"
+      },
+      "usage": {
+        "data": "Registos de uso: identificadores, modelo e instante, contagens e custo",
+        "destination": "BiVelio",
+        "purpose": "Licenças, o seu painel, lugares em uso e tarifas",
+        "retention": "As linhas individuais têm prazo de eliminação; os totais diários, não"
+      },
+      "verification": {
+        "data": "Amostras de verificação (opcional, só o SDK, desligada por predefinição)",
+        "destination": "BiVelio, por um canal separado",
+        "purpose": "Nunca para calcular a comissão",
+        "retention": "Eliminadas ao ultrapassar o prazo"
+      },
+      "account": {
+        "data": "E-mail de acesso, organização e dados de faturação",
+        "destination": "BiVelio; os pagamentos são processados pela Stripe",
+        "purpose": "A sua conta neste site",
+        "retention": "Segundo a política de privacidade da BiVelio"
+      }
+    },
+    "fields": {
+      "colGroup": "Grupo",
+      "colFields": "Campos enviados"
+    }
+  },
+  "docsPage": {
+    "englishOnly": "O documento está em inglês. Só a interface de leitura está traduzida.",
+    "contents": "Conteúdo",
+    "backToTop": "Voltar ao topo",
+    "paper": {
+      "linksAria": "Ligações do artigo",
+      "markdown": "Markdown no GitHub",
+      "latex": "LaTeX para o arXiv",
+      "bench": "O banco público",
+      "pdf": "PDF · edição anterior",
+      "print": "Imprimir ou guardar como PDF",
+      "abstract": "Resumo",
+      "tableScroll": "Tabela; desloque na horizontal para a ver inteira"
+    },
+    "migrate": {
+      "versionNote": "Este é o guia para migrar para a versão {version}. Não é o anúncio da versão mais recente."
+    }
   },
   "notFound": {
     "metaTitle": "Página não encontrada · BiVelio Savings Layer",
     "eyebrow": "Erro 404",
     "title": "Página não encontrada",
     "body": "Esta página não existe ou foi movida.",
-    "home": "← Voltar ao início"
+    "home": "← Voltar ao início",
+    "explore": "Também podes ir para"
   }
 }

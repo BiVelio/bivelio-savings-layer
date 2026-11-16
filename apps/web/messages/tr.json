@@ -96,7 +96,7 @@
     "newToBivelio": "BiVelio'da yeni misiniz?",
     "createAnAccount": "Hesap oluştur",
     "backToVerifier": "← Ana sayfaya dön",
-    "createYourAccount": "Hesabınızı oluşturun",
+    "createYourAccount": "Cloud hesabınızı oluşturun",
     "signupSubtitle": "Tüm süit için tek BiVelio hesabı. Bulutu kullanmak için oluşturun: panel, paylaşılan önbellekler ve lisans yönetimi. Paketin kendisi hesap gerektirmez — açık çekirdek anahtarsız çalışır.",
     "alreadyHaveAccount": "Zaten bir BiVelio hesabınız var mı?",
     "signIn": "Giriş yap",
@@ -139,7 +139,33 @@
       "network": "Bağlantı yok. Ağınızı kontrol edip tekrar deneyin.",
       "missingFields": "E-postanızı ve şifrenizi girin."
     },
-    "signupMedir": "Ya da Measure ile ücretsiz başlayın: ücretsiz bulut planı, kartsız, gölge modu, günde {seats} koltuğa ve {requests} isteğe kadar. @bivelio/savings-layer {version} veya üzeri gerekir."
+    "signupMedir": "Ya da Measure ile ücretsiz başlayın: ücretsiz bulut planı, kartsız, gölge modu, günde {seats} koltuğa ve {requests} isteğe kadar. @bivelio/savings-layer {version} veya üzeri gerekir.",
+    "openSourceQuestion": "Yalnızca açık kaynak motoru mu istiyorsunuz?",
+    "openSourceLink": "Hesap açmadan kurun",
+    "showPassword": "Parolayı göster",
+    "hidePassword": "Parolayı gizle",
+    "working": "Bir saniye…",
+    "sentTitleNew": "E-postanızı onaylayın",
+    "sentTitleExisting": "Zaten bir hesabınız var",
+    "sentTitleReset": "Gelen kutunuzu kontrol edin",
+    "sentEmailLabel": "E-posta",
+    "useAnotherEmail": "Başka bir e-posta kullan",
+    "requestNewLink": "Yeni bir bağlantı iste",
+    "successNext": "Sonraki adım: paketi kurun ve ilk çağrınızı bağlayın. O zamana kadar panelin ölçecek bir şeyi yok.",
+    "successPlan": "Seçtiğiniz plan seçili kalır: bir sonraki adımda onaylarsınız.",
+    "successInvite": "Kabul edebilmeniz için sizi davetinize geri götürüyoruz.",
+    "successContinue": "Devam et",
+    "panel": {
+      "title": "Her rakam, <em>kaynağıyla</em> birlikte.",
+      "body": "Savings Cloud paneli, her çağrıda neyin sayıldığını ve verinin nereden geldiğini gösterir.",
+      "receiptTitle": "Tek bir çağrının fişi",
+      "receiptMeta": "Panelinizde görecekleriniz",
+      "rowBaseline": "Girdi token'ları, optimize edilmeden",
+      "rowActual": "Girdi token'ları, optimize edilmiş",
+      "rowOutput": "Çıktı token'ları",
+      "total": "Azalan girdi",
+      "provenance": "Bu fişteki rakamlar uydurmadır. Sizinkiler sağlayıcınızın kendi sayacından gelir."
+    }
   },
   "dashboard": {
     "overview": {
@@ -1323,7 +1349,10 @@
     "invitacionPara": "Davet <b>{email}</b> içindir.",
     "sesionActual": "Şu anda <b>{email}</b> olarak oturum açtınız.",
     "cerrarYContinuar": "Oturumu kapat ve başka hesap kullan",
-    "cerrando": "Oturum kapatılıyor…"
+    "cerrando": "Oturum kapatılıyor…",
+    "kicker": "Davet",
+    "labelOrg": "Kuruluş",
+    "labelFor": "Kime"
   },
   "benchmarksPage": {
     "metaTitle": "Herkese açık A/B testi: bizi ölçün | BiVelio Savings Layer",
@@ -1889,7 +1918,12 @@
         "verificationSamples": "Doğrulama örnekleri ve günlük sayımları: {dias} gün.",
         "verificationBatches": "Doğrulamanın toplu gönderim kimlikleri: {dias} gün."
       },
-      "noSchedule": "Günlük toplamlar, koltuk etkinliği ve mühürlü ekstrelerin için bugün otomatik silme süresi yoktur."
+      "noSchedule": "Günlük toplamlar, koltuk etkinliği ve mühürlü ekstrelerin için bugün otomatik silme süresi yoktur.",
+      "colWhere": "Tablo",
+      "colWhat": "Ne tutar",
+      "colPeriod": "Süre",
+      "period": "{dias} gün",
+      "none": "Otomatik silme yok"
     },
     "use": {
       "title": "BiVelio bunları ne için kullanır",
@@ -1899,13 +1933,67 @@
       "title": "Bu sitedeki hesabın",
       "body": "Giriş e-postan, kuruluşun ve fatura bilgilerin (ödemeleri Stripe işler) <policy>BiVelio gizlilik politikası</policy> kapsamındadır."
     },
-    "contact": "Bu verilerle ilgili sorular ve talepler: <mail>{email}</mail>."
+    "contact": "Bu verilerle ilgili sorular ve talepler: <mail>{email}</mail>.",
+    "overview": {
+      "title": "Özetle",
+      "colData": "Veri",
+      "colDestination": "Nereye gider",
+      "colPurpose": "Ne için",
+      "colRetention": "BiVelio'nun sakladığı",
+      "content": {
+        "data": "İsteklerinin ve yanıtlarının içeriği ile LLM sağlayıcındaki kimlik bilgilerin",
+        "destination": "Yalnızca LLM sağlayıcına",
+        "purpose": "BiVelio'ya asla gönderilmez",
+        "retention": "Saklanacak bir şey yok"
+      },
+      "usage": {
+        "data": "Kullanım kayıtları: kimlikler, model ve zaman, sayımlar ve maliyet",
+        "destination": "BiVelio",
+        "purpose": "Lisanslar, panelin, kullanımdaki koltuklar ve ücretler",
+        "retention": "Tekil satırların silme süresi vardır; günlük toplamların yoktur"
+      },
+      "verification": {
+        "data": "Doğrulama örnekleri (isteğe bağlı, yalnızca SDK, varsayılan olarak kapalı)",
+        "destination": "BiVelio, ayrı bir kanaldan",
+        "purpose": "Komisyonu hesaplamak için asla kullanılmaz",
+        "retention": "Süresi dolunca silinir"
+      },
+      "account": {
+        "data": "Giriş e-postası, kuruluş ve fatura bilgileri",
+        "destination": "BiVelio; ödemeleri Stripe işler",
+        "purpose": "Bu sitedeki hesabın",
+        "retention": "BiVelio gizlilik politikasına göre"
+      }
+    },
+    "fields": {
+      "colGroup": "Grup",
+      "colFields": "Gönderilen alanlar"
+    }
+  },
+  "docsPage": {
+    "englishOnly": "Bu belge İngilizcedir. Yalnızca okuma arayüzü çevrilmiştir.",
+    "contents": "İçindekiler",
+    "backToTop": "Başa dön",
+    "paper": {
+      "linksAria": "Makale bağlantıları",
+      "markdown": "GitHub'da Markdown",
+      "latex": "arXiv için LaTeX",
+      "bench": "Herkese açık benchmark",
+      "pdf": "PDF · önceki sürüm",
+      "print": "Yazdır veya PDF olarak kaydet",
+      "abstract": "Özet",
+      "tableScroll": "Tablo; tamamını görmek için yatay kaydırın"
+    },
+    "migrate": {
+      "versionNote": "Bu, {version} sürümüne geçiş kılavuzudur. En son sürümün duyurusu değildir."
+    }
   },
   "notFound": {
     "metaTitle": "Sayfa bulunamadı · BiVelio Savings Layer",
     "eyebrow": "Hata 404",
     "title": "Sayfa bulunamadı",
     "body": "Bu sayfa mevcut değil veya taşınmış.",
-    "home": "← Ana sayfaya dön"
+    "home": "← Ana sayfaya dön",
+    "explore": "Şuraya da gidebilirsiniz"
   }
 }

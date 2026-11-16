@@ -96,7 +96,7 @@
     "newToBivelio": "Nieuw bij BiVelio?",
     "createAnAccount": "Een account aanmaken",
     "backToVerifier": "← Terug naar de startpagina",
-    "createYourAccount": "Maak je account aan",
+    "createYourAccount": "Maak je Cloud-account aan",
     "signupSubtitle": "Eén BiVelio-account voor de hele suite. Maak het aan voor de cloud: dashboard, gedeelde caches en licentiebeheer. Het pakket zelf heeft geen account nodig — open core draait zonder sleutel.",
     "alreadyHaveAccount": "Heb je al een BiVelio-account?",
     "signIn": "Inloggen",
@@ -139,7 +139,33 @@
       "network": "Geen verbinding. Controleer je netwerk en probeer het opnieuw.",
       "missingFields": "Vul je e-mailadres en wachtwoord in."
     },
-    "signupMedir": "Of start gratis met Measure: het gratis cloud-plan, zonder kaart, schaduwmodus, tot {seats} seats en {requests} verzoeken per dag. Het vereist @bivelio/savings-layer {version} of nieuwer."
+    "signupMedir": "Of start gratis met Measure: het gratis cloud-plan, zonder kaart, schaduwmodus, tot {seats} seats en {requests} verzoeken per dag. Het vereist @bivelio/savings-layer {version} of nieuwer.",
+    "openSourceQuestion": "Wil je alleen de open-source-engine?",
+    "openSourceLink": "Installeer hem zonder account",
+    "showPassword": "Wachtwoord tonen",
+    "hidePassword": "Wachtwoord verbergen",
+    "working": "Een ogenblik…",
+    "sentTitleNew": "Bevestig je e-mailadres",
+    "sentTitleExisting": "Je hebt al een account",
+    "sentTitleReset": "Controleer je inbox",
+    "sentEmailLabel": "E-mail",
+    "useAnotherEmail": "Een ander e-mailadres gebruiken",
+    "requestNewLink": "Een nieuwe link aanvragen",
+    "successNext": "Volgende stap: installeer het pakket en koppel je eerste aanroep. Tot die tijd heeft het dashboard niets te meten.",
+    "successPlan": "Het plan dat je koos blijft geselecteerd: je bevestigt het in de volgende stap.",
+    "successInvite": "We brengen je terug naar je uitnodiging, zodat je die kunt accepteren.",
+    "successContinue": "Doorgaan",
+    "panel": {
+      "title": "Elk cijfer, met zijn <em>herkomst</em>.",
+      "body": "Het Savings Cloud-dashboard laat zien wat er per aanroep is geteld en waar het cijfer vandaan komt.",
+      "receiptTitle": "Bon van één aanroep",
+      "receiptMeta": "Wat je in je dashboard ziet",
+      "rowBaseline": "Invoertokens, niet geoptimaliseerd",
+      "rowActual": "Invoertokens, geoptimaliseerd",
+      "rowOutput": "Uitvoertokens",
+      "total": "Minder invoer",
+      "provenance": "De cijfers op deze bon zijn verzonnen. Die van jou komen uit de teller van je provider."
+    }
   },
   "dashboard": {
     "overview": {
@@ -1323,7 +1349,10 @@
     "invitacionPara": "De uitnodiging is voor <b>{email}</b>.",
     "sesionActual": "U bent momenteel aangemeld als <b>{email}</b>.",
     "cerrarYContinuar": "Afmelden en ander account gebruiken",
-    "cerrando": "Afmelden…"
+    "cerrando": "Afmelden…",
+    "kicker": "Uitnodiging",
+    "labelOrg": "Organisatie",
+    "labelFor": "Voor"
   },
   "benchmarksPage": {
     "metaTitle": "Openbare A/B-benchmark: meet ons | BiVelio Savings Layer",
@@ -1889,7 +1918,12 @@
         "verificationSamples": "Verificatiesteekproeven en hun dagelijkse tellingen: {dias} dagen.",
         "verificationBatches": "Batch-ID's van de verificatie: {dias} dagen."
       },
-      "noSchedule": "Dagtotalen, seat-activiteit en je verzegelde afschriften hebben vandaag geen automatische verwijdertermijn."
+      "noSchedule": "Dagtotalen, seat-activiteit en je verzegelde afschriften hebben vandaag geen automatische verwijdertermijn.",
+      "colWhere": "Tabel",
+      "colWhat": "Wat erin staat",
+      "colPeriod": "Termijn",
+      "period": "{dias} dagen",
+      "none": "Geen automatische verwijdering"
     },
     "use": {
       "title": "Waarvoor BiVelio het gebruikt",
@@ -1899,13 +1933,67 @@
       "title": "Je account op deze website",
       "body": "Je inlog-e-mailadres, je organisatie en je factuurgegevens (betalingen worden verwerkt door Stripe) vallen onder het <policy>privacybeleid van BiVelio</policy>."
     },
-    "contact": "Vragen en verzoeken over deze gegevens: <mail>{email}</mail>."
+    "contact": "Vragen en verzoeken over deze gegevens: <mail>{email}</mail>.",
+    "overview": {
+      "title": "In het kort",
+      "colData": "Gegeven",
+      "colDestination": "Waar het heen gaat",
+      "colPurpose": "Waarvoor",
+      "colRetention": "Wat BiVelio bewaart",
+      "content": {
+        "data": "De inhoud van je verzoeken en antwoorden, en de inloggegevens van je LLM-provider",
+        "destination": "Alleen naar je LLM-provider",
+        "purpose": "Wordt nooit naar BiVelio gestuurd",
+        "retention": "Niets om te bewaren"
+      },
+      "usage": {
+        "data": "Gebruiksrecords: ID's, model en tijdstip, tellingen en kosten",
+        "destination": "BiVelio",
+        "purpose": "Licenties, je dashboard, seats in gebruik en vergoedingen",
+        "retention": "Losse rijen hebben een verwijdertermijn; dagtotalen niet"
+      },
+      "verification": {
+        "data": "Verificatiesteekproeven (optioneel, alleen de SDK, standaard uit)",
+        "destination": "BiVelio, via een apart kanaal",
+        "purpose": "Nooit om de commissie te berekenen",
+        "retention": "Verwijderd zodra hun termijn voorbij is"
+      },
+      "account": {
+        "data": "Inlog-e-mailadres, organisatie en factuurgegevens",
+        "destination": "BiVelio; betalingen worden verwerkt door Stripe",
+        "purpose": "Je account op deze website",
+        "retention": "Volgens het privacybeleid van BiVelio"
+      }
+    },
+    "fields": {
+      "colGroup": "Groep",
+      "colFields": "Verzonden velden"
+    }
+  },
+  "docsPage": {
+    "englishOnly": "Dit document is in het Engels. Alleen de leesinterface is vertaald.",
+    "contents": "Inhoud",
+    "backToTop": "Terug naar boven",
+    "paper": {
+      "linksAria": "Links van de paper",
+      "markdown": "Markdown op GitHub",
+      "latex": "LaTeX voor arXiv",
+      "bench": "De publieke benchmark",
+      "pdf": "PDF · eerdere editie",
+      "print": "Afdrukken of opslaan als PDF",
+      "abstract": "Samenvatting",
+      "tableScroll": "Tabel; scrol horizontaal om alles te zien"
+    },
+    "migrate": {
+      "versionNote": "Dit is de gids voor de migratie naar versie {version}. Het is niet de aankondiging van de nieuwste release."
+    }
   },
   "notFound": {
     "metaTitle": "Pagina niet gevonden · BiVelio Savings Layer",
     "eyebrow": "Fout 404",
     "title": "Pagina niet gevonden",
     "body": "Deze pagina bestaat niet of is verplaatst.",
-    "home": "← Terug naar de startpagina"
+    "home": "← Terug naar de startpagina",
+    "explore": "Je kunt ook naar"
   }
 }

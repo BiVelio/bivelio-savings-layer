@@ -96,7 +96,7 @@
     "newToBivelio": "Nou a BiVelio?",
     "createAnAccount": "Crea un compte",
     "backToVerifier": "← Torna a l'inici",
-    "createYourAccount": "Crea el teu compte",
+    "createYourAccount": "Crea el teu compte Cloud",
     "signupSubtitle": "Un compte BiVelio per a tota la suite. Crea'l per fer servir el núvol: tauler, memòries cau compartides i gestió de llicències. El paquet no necessita compte — l'open core corre sense clau.",
     "alreadyHaveAccount": "Ja tens un compte de BiVelio?",
     "signIn": "Inicia la sessió",
@@ -139,7 +139,33 @@
       "network": "Sense connexió. Comprova la xarxa i torna-ho a intentar.",
       "missingFields": "Escriu el teu correu i la contrasenya."
     },
-    "signupMedir": "O comença gratis amb Measure: el pla de núvol gratuït, sense targeta, mode ombra, fins a {seats} seients i {requests} peticions al dia. Necessita @bivelio/savings-layer {version} o posterior."
+    "signupMedir": "O comença gratis amb Measure: el pla de núvol gratuït, sense targeta, mode ombra, fins a {seats} seients i {requests} peticions al dia. Necessita @bivelio/savings-layer {version} o posterior.",
+    "openSourceQuestion": "Només vols el motor open source?",
+    "openSourceLink": "Instal·la'l sense compte",
+    "showPassword": "Mostra la contrasenya",
+    "hidePassword": "Amaga la contrasenya",
+    "working": "Un moment…",
+    "sentTitleNew": "Confirma el teu correu",
+    "sentTitleExisting": "Ja tens un compte",
+    "sentTitleReset": "Revisa la safata",
+    "sentEmailLabel": "Correu",
+    "useAnotherEmail": "Fes servir un altre correu",
+    "requestNewLink": "Demana un enllaç nou",
+    "successNext": "Pas següent: instal·la el paquet i connecta la teva primera crida. Fins aleshores el tauler no té res per mesurar.",
+    "successPlan": "El pla que vas triar continua seleccionat: el confirmes al pas següent.",
+    "successInvite": "Et tornem a la teva invitació perquè l'acceptis.",
+    "successContinue": "Continua",
+    "panel": {
+      "title": "Cada xifra, amb la seva <em>procedència</em>.",
+      "body": "El tauler de Savings Cloud et mostra què s'ha comptat a cada crida i d'on surt la dada.",
+      "receiptTitle": "Rebut d'una crida",
+      "receiptMeta": "El que veuràs al teu tauler",
+      "rowBaseline": "Tokens d'entrada, sense optimitzar",
+      "rowActual": "Tokens d'entrada, optimitzats",
+      "rowOutput": "Tokens de sortida",
+      "total": "Entrada de menys",
+      "provenance": "Les xifres d'aquest rebut són inventades. Les teves surten del comptador del teu proveïdor."
+    }
   },
   "dashboard": {
     "overview": {
@@ -1323,7 +1349,10 @@
     "invitacionPara": "La invitació és per a <b>{email}</b>.",
     "sesionActual": "Ara mateix heu iniciat la sessió com a <b>{email}</b>.",
     "cerrarYContinuar": "Tancar la sessió i usar un altre compte",
-    "cerrando": "Tancant la sessió…"
+    "cerrando": "Tancant la sessió…",
+    "kicker": "Invitació",
+    "labelOrg": "Organització",
+    "labelFor": "Per a"
   },
   "benchmarksPage": {
     "metaTitle": "Banc públic A/B: mesura'ns | BiVelio Savings Layer",
@@ -1889,7 +1918,12 @@
         "verificationSamples": "Mostres de verificació i els seus recomptes diaris: {dias} dies.",
         "verificationBatches": "Identificadors de lot de la verificació: {dias} dies."
       },
-      "noSchedule": "Els totals diaris, l'activitat per seient i els teus extractes segellats no tenen avui cap termini d'esborrat automàtic."
+      "noSchedule": "Els totals diaris, l'activitat per seient i els teus extractes segellats no tenen avui cap termini d'esborrat automàtic.",
+      "colWhere": "Taula",
+      "colWhat": "Què desa",
+      "colPeriod": "Termini",
+      "period": "{dias} dies",
+      "none": "Sense esborrat automàtic"
     },
     "use": {
       "title": "Per a què ho fa servir BiVelio",
@@ -1899,13 +1933,67 @@
       "title": "El teu compte en aquest web",
       "body": "El teu correu d'accés, la teva organització i les teves dades de facturació (els pagaments els processa Stripe) es regeixen per la <policy>política de privadesa de BiVelio</policy>."
     },
-    "contact": "Preguntes i sol·licituds sobre aquestes dades: <mail>{email}</mail>."
+    "contact": "Preguntes i sol·licituds sobre aquestes dades: <mail>{email}</mail>.",
+    "overview": {
+      "title": "En resum",
+      "colData": "Dada",
+      "colDestination": "On va",
+      "colPurpose": "Per a què",
+      "colRetention": "El que desa BiVelio",
+      "content": {
+        "data": "El contingut de les teves peticions i respostes, i les credencials del teu proveïdor de LLM",
+        "destination": "Només al teu proveïdor de LLM",
+        "purpose": "Mai s'envia a BiVelio",
+        "retention": "Res a desar"
+      },
+      "usage": {
+        "data": "Registres d'ús: identificadors, model i instant, comptes i cost",
+        "destination": "BiVelio",
+        "purpose": "Llicències, el teu tauler, seients en ús i tarifes",
+        "retention": "Les files individuals tenen termini d'esborrat; els totals diaris, no"
+      },
+      "verification": {
+        "data": "Mostres de verificació (opcional, només l'SDK, apagada per defecte)",
+        "destination": "BiVelio, per un canal a part",
+        "purpose": "Mai per calcular la comissió",
+        "retention": "S'esborren en superar el termini"
+      },
+      "account": {
+        "data": "Correu d'accés, organització i dades de facturació",
+        "destination": "BiVelio; els pagaments els processa Stripe",
+        "purpose": "El teu compte en aquest web",
+        "retention": "Segons la política de privadesa de BiVelio"
+      }
+    },
+    "fields": {
+      "colGroup": "Grup",
+      "colFields": "Camps que viatgen"
+    }
+  },
+  "docsPage": {
+    "englishOnly": "El document és en anglès. Només la interfície de lectura està traduïda.",
+    "contents": "Contingut",
+    "backToTop": "Torna a dalt",
+    "paper": {
+      "linksAria": "Enllaços del paper",
+      "markdown": "Markdown a GitHub",
+      "latex": "LaTeX per a arXiv",
+      "bench": "El banc públic",
+      "pdf": "PDF · edició anterior",
+      "print": "Imprimeix o desa com a PDF",
+      "abstract": "Resum",
+      "tableScroll": "Taula; desplaça-la en horitzontal per veure-la sencera"
+    },
+    "migrate": {
+      "versionNote": "Aquesta és la guia per migrar a la versió {version}. No és l'anunci de la versió més recent."
+    }
   },
   "notFound": {
     "metaTitle": "Pàgina no trobada · BiVelio Savings Layer",
     "eyebrow": "Error 404",
     "title": "Pàgina no trobada",
     "body": "Aquesta pàgina no existeix o s'ha mogut.",
-    "home": "← Torna a l'inici"
+    "home": "← Torna a l'inici",
+    "explore": "També pots anar a"
   }
 }

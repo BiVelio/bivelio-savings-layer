@@ -3,6 +3,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 
+import { AccesoEnviado, MensajeDeAcceso } from "@/app/components/acceso/AccesoEstado";
+import { AccesoShell } from "@/app/components/acceso/AccesoShell";
+import { CampoClave } from "@/app/components/acceso/CampoClave";
+import { Skeleton, SkeletonGroup } from "@/app/components/ui/Skeleton";
+
 type Estado =
   | "comprobando"
   /** Sin sesión y sin cuenta conocida: se le ofrece crear la contraseña. */
@@ -37,6 +42,10 @@ interface Vista {
  */
 export function AceptarInvitacion({ token }: { token: string }) {
   const t = useTranslations("invitacion");
+  // Textos que YA existen en otros dos sitios y aquí solo se reutilizan: los
+  // nombres de perfil del panel de Equipo y el «ver/ocultar» de las contraseñas.
+  const tp = useTranslations("dashboard");
+  const ta = useTranslations("auth");
   const locale = useLocale();
   const [estado, setEstado] = useState<Estado>("comprobando");
   const [motivo, setMotivo] = useState<string>("");
@@ -170,100 +179,160 @@ export function AceptarInvitacion({ token }: { token: string }) {
 
   const login = `/${locale}/login?next=${encodeURIComponent(`/${locale}/invitacion/${encodeURIComponent(token)}`)}`;
 
+  // El perfil llega como identificador (`admin`, `member`…): se enseña con el
+  // mismo nombre que ve quien invita en el panel de Equipo. Uno que esta
+  // pantalla no conozca se pinta tal cual, antes que inventarle un nombre.
+  const perfil = !vista
+    ? ""
+    : vista.role === "owner"
+      ? tp("equipo.rolOwner")
+      : vista.role === "admin"
+        ? tp("equipo.rolAdmin")
+        : vista.role === "billing"
+          ? tp("equipo.rolBilling")
+          : vista.role === "member"
+            ? tp("equipo.rolMember")
+            : vista.role;
+
+  const esperando = estado === "comprobando" || estado === "aceptando";
+  // Solo se marca un campo cuando el fallo ES de ese campo. «Ya existe una
+  // cuenta» o «no se pudo crear» no son culpa de la contraseña escrita.
+  const claveCorta = errorForm !== "" && errorForm === t("passCorta");
+  const clavesDistintas = errorForm !== "" && errorForm === t("passDistintas");
+
   return (
-    <main className="auth-wrap">
-      <div className="auth-card">
+    <AccesoShell>
+      <div className="acc-intro">
+        <p className="kicker">{t("kicker")}</p>
         <h1>{t("title")}</h1>
+      </div>
 
-        {/* A QUÉ te invitan, en cuanto se sabe. */}
-        {vista ? (
-          <p className="sub">
-            {t.rich("invitadoA", { org: vista.org, b: (c) => <b>{c}</b> })}{" "}
-            {t.rich("invitacionPara", { email: vista.email, b: (c) => <b>{c}</b> })}
+      {/* A QUÉ te invitan, en cuanto se sabe: organización, destinatario y
+          perfil, antes de pedir nada. Mientras se comprueba, su hueco exacto. */}
+      {vista ? (
+        <dl className="inv-ficha">
+          <div className="inv-fila inv-fila--org">
+            <dt>{t("labelOrg")}</dt>
+            <dd>{vista.org}</dd>
+          </div>
+          <div className="inv-fila">
+            <dt>{t("labelFor")}</dt>
+            <dd className="inv-correo">{vista.email}</dd>
+          </div>
+          <div className="inv-fila">
+            <dt>{tp("equipo.columnaRol")}</dt>
+            <dd>
+              <span className="tag">{perfil}</span>
+            </dd>
+          </div>
+        </dl>
+      ) : estado === "comprobando" ? (
+        <SkeletonGroup label={t("comprobando")} className="inv-ficha inv-ficha--hueco">
+          <Skeleton ancho="34%" alto={10} />
+          <Skeleton ancho="62%" alto={22} />
+          <Skeleton ancho="78%" alto={14} />
+          <Skeleton ancho="30%" alto={14} />
+        </SkeletonGroup>
+      ) : null}
+
+      {esperando ? (
+        <p className="acc-progreso" role="status">
+          <span className="acc-spin" aria-hidden />
+          {estado === "aceptando" ? t("aceptando") : t("comprobando")}
+        </p>
+      ) : null}
+
+      {estado === "registrarse" || estado === "creando" ? (
+        <>
+          <p className="sub">{t("creaTuClave")}</p>
+          <form onSubmit={crearCuenta} noValidate aria-busy={estado === "creando" || undefined}>
+            {errorForm ? (
+              <MensajeDeAcceso tipo="error" id="inv-aviso">
+                {errorForm}
+              </MensajeDeAcceso>
+            ) : null}
+            {/* El correo se ENSEÑA y no se puede tocar: sale de la invitación, no
+                de lo que escriba quien llega. Va desactivado para que se vea con
+                qué cuenta se está entrando. */}
+            <div className="field">
+              <label htmlFor="inv-email">{t("tuCorreo")}</label>
+              <input id="inv-email" type="email" autoComplete="username" value={vista?.email ?? ""} disabled readOnly />
+            </div>
+            <CampoClave
+              id="inv-pass1"
+              etiqueta={t("passNueva")}
+              valor={pass1}
+              alCambiar={setPass1}
+              autoComplete="new-password"
+              desactivado={estado === "creando"}
+              invalido={claveCorta}
+              descritoPor={claveCorta ? "inv-aviso" : undefined}
+              mostrar={ta("showPassword")}
+              ocultar={ta("hidePassword")}
+            />
+            <CampoClave
+              id="inv-pass2"
+              etiqueta={t("passRepetir")}
+              valor={pass2}
+              alCambiar={setPass2}
+              autoComplete="new-password"
+              desactivado={estado === "creando"}
+              invalido={clavesDistintas}
+              descritoPor={clavesDistintas ? "inv-aviso" : undefined}
+              mostrar={ta("showPassword")}
+              ocultar={ta("hidePassword")}
+            />
+            <button type="submit" className="btn btn-primary auth-submit" disabled={estado === "creando"}>
+              {estado === "creando" ? (
+                <>
+                  <span className="acc-spin" aria-hidden />
+                  {t("creando")}
+                </>
+              ) : (
+                t("crearYEntrar")
+              )}
+            </button>
+          </form>
+          <p className="auth-alt acc-cruce">
+            {t("yaTengoCuenta")} <a href={login}>{t("iniciarSesion")}</a>
           </p>
-        ) : null}
+        </>
+      ) : null}
 
-        {estado === "comprobando" || estado === "aceptando" ? (
-          <p className="sub">{estado === "aceptando" ? t("aceptando") : t("comprobando")}</p>
-        ) : null}
-
-        {estado === "registrarse" || estado === "creando" ? (
-          <>
-            <p className="sub">{t("creaTuClave")}</p>
-            <form onSubmit={crearCuenta} noValidate>
-              {errorForm ? <div className="auth-msg error">{errorForm}</div> : null}
-              {/* El correo se ENSEÑA y no se puede tocar: sale de la invitación, no
-                  de lo que escriba quien llega. Va desactivado para que se vea con
-                  qué cuenta se está entrando. */}
-              <div className="field">
-                <label htmlFor="inv-email">{t("tuCorreo")}</label>
-                <input id="inv-email" type="email" value={vista?.email ?? ""} disabled readOnly />
-              </div>
-              <div className="field">
-                <label htmlFor="inv-pass1">{t("passNueva")}</label>
-                <input
-                  id="inv-pass1"
-                  type="password"
-                  required
-                  autoComplete="new-password"
-                  minLength={8}
-                  value={pass1}
-                  onChange={(ev) => setPass1(ev.target.value)}
-                />
-              </div>
-              <div className="field">
-                <label htmlFor="inv-pass2">{t("passRepetir")}</label>
-                <input
-                  id="inv-pass2"
-                  type="password"
-                  required
-                  autoComplete="new-password"
-                  minLength={8}
-                  value={pass2}
-                  onChange={(ev) => setPass2(ev.target.value)}
-                />
-              </div>
-              <button type="submit" className="btn btn-primary auth-submit" disabled={estado === "creando"}>
-                {estado === "creando" ? t("creando") : t("crearYEntrar")}
-              </button>
-            </form>
-            <p className="auth-alt" style={{ marginTop: "12px" }}>
-              {t("yaTengoCuenta")} <a href={login}>{t("iniciarSesion")}</a>
-            </p>
-          </>
-        ) : null}
-
-        {estado === "exito" ? (
-          <>
-            <p className="sub">{t("exito")}</p>
-            <a className="btn btn-primary" href={`/${locale}/dashboard`}>
+      {estado === "exito" ? (
+        <AccesoEnviado
+          icono="hecho"
+          tono="ok"
+          titulo={t("exito")}
+          acciones={
+            <a className="btn btn-primary btn-block" href={`/${locale}/dashboard`}>
               {t("irAlPanel")}
             </a>
-          </>
-        ) : null}
+          }
+        />
+      ) : null}
 
-        {estado === "error" ? (
-          <>
-            <div className="auth-msg error">{textoError}</div>
-            {/* CON QUÉ CUENTA ESTÁ. Sin esto, el mensaje «es para otra dirección»
-                parece arbitrario: no hay forma de saber por qué le rechaza. */}
-            {sesion ? (
-              <>
-                <p className="sub" style={{ marginTop: "12px" }}>
-                  {t.rich("sesionActual", { email: sesion, b: (c) => <b>{c}</b> })}
-                </p>
-                <button type="button" className="btn btn-primary" onClick={cerrarSesion} disabled={cerrando}>
-                  {cerrando ? t("cerrando") : t("cerrarYContinuar")}
-                </button>
-              </>
-            ) : motivo === "otro_correo" || motivo === "ya_en_otra" ? (
-              <p className="auth-alt" style={{ marginTop: "12px" }}>
-                <a href={`/${locale}/login`}>{t("iniciarSesion")}</a>
-              </p>
-            ) : null}
-          </>
-        ) : null}
-      </div>
-    </main>
+      {estado === "error" ? (
+        <>
+          <MensajeDeAcceso tipo="error">{textoError}</MensajeDeAcceso>
+          {/* CON QUÉ CUENTA ESTÁ. Sin esto, el mensaje «es para otra dirección»
+              parece arbitrario: no hay forma de saber por qué le rechaza. */}
+          {sesion ? (
+            <>
+              <p className="sub inv-sesion">{t.rich("sesionActual", { email: sesion, b: (c) => <b>{c}</b> })}</p>
+              <button type="button" className="btn btn-primary btn-block" onClick={cerrarSesion} disabled={cerrando}>
+                {cerrando ? t("cerrando") : t("cerrarYContinuar")}
+              </button>
+            </>
+          ) : motivo === "otro_correo" || motivo === "ya_en_otra" ? (
+            // Con la vuelta puesta: tras entrar con la cuenta correcta se
+            // regresa a ESTA invitación, sin tener que buscar el correo otra vez.
+            <a className="btn btn-ghost btn-block" href={login}>
+              {t("iniciarSesion")}
+            </a>
+          ) : null}
+        </>
+      ) : null}
+    </AccesoShell>
   );
 }

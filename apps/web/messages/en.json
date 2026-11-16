@@ -96,7 +96,7 @@
     "newToBivelio": "New to BiVelio?",
     "createAnAccount": "Create an account",
     "backToVerifier": "← Back to home",
-    "createYourAccount": "Create your account",
+    "createYourAccount": "Create your Cloud account",
     "signupSubtitle": "One BiVelio account across the suite. Create yours to use the cloud: dashboard, shared caches and license management. The package itself needs no account — open core runs without a key.",
     "alreadyHaveAccount": "Already have a BiVelio account?",
     "signIn": "Sign in",
@@ -139,7 +139,33 @@
       "network": "No connection. Check your network and try again.",
       "missingFields": "Enter your email and password."
     },
-    "signupMedir": "Or start free with Measure: the free cloud plan, no card, shadow mode, up to {seats} seats and {requests} requests a day. It needs @bivelio/savings-layer {version} or later."
+    "signupMedir": "Or start free with Measure: the free cloud plan, no card, shadow mode, up to {seats} seats and {requests} requests a day. It needs @bivelio/savings-layer {version} or later.",
+    "openSourceQuestion": "Only want the open-source engine?",
+    "openSourceLink": "Install it without an account",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "working": "One moment…",
+    "sentTitleNew": "Confirm your email",
+    "sentTitleExisting": "You already have an account",
+    "sentTitleReset": "Check your inbox",
+    "sentEmailLabel": "Email",
+    "useAnotherEmail": "Use a different email",
+    "requestNewLink": "Request a new link",
+    "successNext": "Next step: install the package and connect your first call. Until then the dashboard has nothing to measure.",
+    "successPlan": "The plan you chose is still selected: you confirm it in the next step.",
+    "successInvite": "We'll take you back to your invitation so you can accept it.",
+    "successContinue": "Continue",
+    "panel": {
+      "title": "Every figure, with its <em>source</em>.",
+      "body": "The Savings Cloud dashboard shows what was counted on each call and where the number comes from.",
+      "receiptTitle": "Receipt for one call",
+      "receiptMeta": "What you'll see in your dashboard",
+      "rowBaseline": "Input tokens, unoptimized",
+      "rowActual": "Input tokens, optimized",
+      "rowOutput": "Output tokens",
+      "total": "Input tokens saved",
+      "provenance": "The figures on this receipt are made up. Yours come from your provider's own meter."
+    }
   },
   "dashboard": {
     "overview": {
@@ -1323,7 +1349,10 @@
     "invitacionPara": "The invitation is for <b>{email}</b>.",
     "sesionActual": "You're currently signed in as <b>{email}</b>.",
     "cerrarYContinuar": "Sign out and use another account",
-    "cerrando": "Signing out…"
+    "cerrando": "Signing out…",
+    "kicker": "Invitation",
+    "labelOrg": "Organization",
+    "labelFor": "For"
   },
   "benchmarksPage": {
     "metaTitle": "Public A/B bench: measure us | BiVelio Savings Layer",
@@ -1889,7 +1918,12 @@
         "verificationSamples": "Verification samples and their daily counts: {dias} days.",
         "verificationBatches": "Verification batch identifiers: {dias} days."
       },
-      "noSchedule": "Daily totals, seat activity and your sealed statements have no automatic deletion schedule today."
+      "noSchedule": "Daily totals, seat activity and your sealed statements have no automatic deletion schedule today.",
+      "colWhere": "Table",
+      "colWhat": "What it holds",
+      "colPeriod": "Period",
+      "period": "{dias} days",
+      "none": "No automatic deletion"
     },
     "use": {
       "title": "What BiVelio uses it for",
@@ -1899,13 +1933,67 @@
       "title": "Your account on this website",
       "body": "Your sign-in e-mail, your organization and your billing details (payments are processed by Stripe) are covered by <policy>BiVelio's privacy policy</policy>."
     },
-    "contact": "Questions and requests about this data: <mail>{email}</mail>."
+    "contact": "Questions and requests about this data: <mail>{email}</mail>.",
+    "overview": {
+      "title": "At a glance",
+      "colData": "Data",
+      "colDestination": "Where it goes",
+      "colPurpose": "What for",
+      "colRetention": "Kept by BiVelio",
+      "content": {
+        "data": "The content of your requests and responses, and your LLM provider credentials",
+        "destination": "Only your LLM provider",
+        "purpose": "Never sent to BiVelio",
+        "retention": "Nothing to keep"
+      },
+      "usage": {
+        "data": "Usage records: identifiers, model and time, counts and cost",
+        "destination": "BiVelio",
+        "purpose": "Licensing, your dashboard, seats in use and fees",
+        "retention": "Individual rows have a deletion period; daily totals do not"
+      },
+      "verification": {
+        "data": "Verification samples (optional, SDK only, off by default)",
+        "destination": "BiVelio, over a separate channel",
+        "purpose": "Never used to calculate the commission",
+        "retention": "Deleted once past their period"
+      },
+      "account": {
+        "data": "Sign-in email, organization and billing details",
+        "destination": "BiVelio; payments are processed by Stripe",
+        "purpose": "Your account on this website",
+        "retention": "Governed by BiVelio's privacy policy"
+      }
+    },
+    "fields": {
+      "colGroup": "Group",
+      "colFields": "Fields sent"
+    }
+  },
+  "docsPage": {
+    "englishOnly": "This document is in English. Only the reading interface is translated.",
+    "contents": "Contents",
+    "backToTop": "Back to top",
+    "paper": {
+      "linksAria": "Paper links",
+      "markdown": "Markdown on GitHub",
+      "latex": "LaTeX for arXiv",
+      "bench": "The public benchmark",
+      "pdf": "PDF · earlier edition",
+      "print": "Print or save as PDF",
+      "abstract": "Abstract",
+      "tableScroll": "Table; scroll sideways to see all of it"
+    },
+    "migrate": {
+      "versionNote": "This is the guide for migrating to version {version}. It is not the announcement of the latest release."
+    }
   },
   "notFound": {
     "metaTitle": "Page not found · BiVelio Savings Layer",
     "eyebrow": "Error 404",
     "title": "Page not found",
     "body": "This page doesn't exist or has moved.",
-    "home": "← Back to home"
+    "home": "← Back to home",
+    "explore": "You can also go to"
   }
 }

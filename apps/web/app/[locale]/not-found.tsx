@@ -11,8 +11,7 @@ import { Link } from "@/i18n/navigation";
  *
  * `not-found.tsx` no recibe `params`, así que el idioma sale del contexto de
  * la petición: el layout ya ha llamado a `setRequestLocale` antes de que esto
- * se pinte y `getTranslations` lo resuelve solo. Se reutilizan las clases del
- * hero de «Cómo funciona» (`.lp`) para no inventar estilo.
+ * se pinte y `getTranslations` lo resuelve solo.
  *
  * Las URL del panel (`/es/dashboard/lo-que-sea`) también acaban aquí, y a
  * propósito: un `not-found.tsx` dentro de /dashboard no puede dar 404, porque
@@ -31,6 +30,11 @@ import { Link } from "@/i18n/navigation";
  * `dynamic = "error"`). Ahora los dos bloques —el del panel y el público— se
  * renderizan aquí con sus textos y `SegunRuta` elige en el navegador cuál se
  * ve, con `usePathname`.
+ *
+ * LA FORMA (rediseño 2026-11). Corta y de marca: la cifra del error como
+ * filigrana, el titular editorial, una frase y la vuelta. La variante pública
+ * añade tres destinos reales del menú, con los mismos nombres que en la
+ * cabecera (`nav.*`); la del panel, solo la vuelta al resumen y al inicio.
  */
 export async function generateMetadata() {
   const t = await getTranslations("notFound");
@@ -40,40 +44,48 @@ export async function generateMetadata() {
 export default async function NotFound() {
   const t = await getTranslations("notFound");
   const tp = await getTranslations("dashboard");
+  const tn = await getTranslations("nav");
 
   return (
-    <div className="lp hiw-page">
-      <main className="wrap">
-        <section className="hiw-hero">
-          <span className="eyebrow">{t("eyebrow")}</span>
-          <SegunRuta
-            panel={
-              <>
-                <h1>{tp("estado.noExisteTitulo")}</h1>
-                <p className="lede">{tp("estado.noExisteCuerpo")}</p>
-                <div className="hero-cta">
-                  <Link href="/dashboard" className="btn">
-                    {tp("estado.volverAlResumen")}
-                  </Link>
-                  <Link href="/" className="btn ghost">
-                    {t("home")}
-                  </Link>
-                </div>
-              </>
-            }
-            publico={
-              <>
-                <h1>{t("title")}</h1>
-                <p className="lede">{t("body")}</p>
-                <div className="hero-cta">
-                  <Link href="/" className="btn">
-                    {t("home")}
-                  </Link>
-                </div>
-              </>
-            }
-          />
-        </section>
+    <div className="lp nf-page">
+      <main className="wrap nf">
+        <p className="nf-cifra" aria-hidden>
+          404
+        </p>
+        <p className="kicker">{t("eyebrow")}</p>
+        <SegunRuta
+          panel={
+            <>
+              <h1 className="editorial-title editorial-title--lg nf-titulo">{tp("estado.noExisteTitulo")}</h1>
+              <p className="lede-text nf-lede">{tp("estado.noExisteCuerpo")}</p>
+              <div className="nf-acciones">
+                <Link href="/dashboard" className="btn btn-primary btn-lg">
+                  {tp("estado.volverAlResumen")}
+                </Link>
+                <Link href="/" className="btn btn-ghost btn-lg">
+                  {t("home")}
+                </Link>
+              </div>
+            </>
+          }
+          publico={
+            <>
+              <h1 className="editorial-title editorial-title--lg nf-titulo">{t("title")}</h1>
+              <p className="lede-text nf-lede">{t("body")}</p>
+              <div className="nf-acciones">
+                <Link href="/" className="btn btn-primary btn-lg">
+                  {t("home")}
+                </Link>
+              </div>
+              <nav className="nf-destinos" aria-label={t("explore")}>
+                <span className="nf-destinos-t">{t("explore")}</span>
+                <Link href="/how-it-works">{tn("howItWorks")}</Link>
+                <Link href="/benchmarks">{tn("results")}</Link>
+                <Link href="/pricing">{tn("pricing")}</Link>
+              </nav>
+            </>
+          }
+        />
       </main>
       <Footer />
     </div>

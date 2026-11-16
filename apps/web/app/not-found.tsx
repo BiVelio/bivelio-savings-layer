@@ -21,18 +21,21 @@ export default function RootNotFound() {
   return (
     <html lang="es">
       <body>
-        <div className="lp hiw-page">
-          <main className="wrap">
-            <section className="hiw-hero">
-              <span className="eyebrow">Error 404</span>
-              <h1>Página no encontrada</h1>
-              <p className="lede">Esta página no existe o se ha movido. · This page doesn&apos;t exist or has moved.</p>
-              <div className="hero-cta">
-                <a className="btn" href="/">
-                  ← Volver al inicio · Back to home
-                </a>
-              </div>
-            </section>
+        <div className="lp nf-page">
+          <main className="wrap nf">
+            <p className="nf-cifra" aria-hidden>
+              404
+            </p>
+            <p className="kicker">Error 404</p>
+            <h1 className="editorial-title editorial-title--lg nf-titulo">Página no encontrada</h1>
+            <p className="lede-text nf-lede">
+              Esta página no existe o se ha movido. <span lang="en">This page doesn&apos;t exist or has moved.</span>
+            </p>
+            <div className="nf-acciones">
+              <a className="btn btn-primary btn-lg" href="/">
+                ← Volver al inicio · <span lang="en">Back to home</span>
+              </a>
+            </div>
           </main>
         </div>
       </body>

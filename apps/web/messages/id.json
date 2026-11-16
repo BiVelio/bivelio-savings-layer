@@ -96,7 +96,7 @@
     "newToBivelio": "Baru di BiVelio?",
     "createAnAccount": "Buat akun",
     "backToVerifier": "← Kembali ke beranda",
-    "createYourAccount": "Buat akun Anda",
+    "createYourAccount": "Buat akun Cloud Anda",
     "signupSubtitle": "Satu akun BiVelio untuk seluruh suite. Buat untuk memakai cloud: dasbor, cache bersama, dan pengelolaan lisensi. Paketnya sendiri tidak butuh akun — open core berjalan tanpa kunci.",
     "alreadyHaveAccount": "Sudah punya akun BiVelio?",
     "signIn": "Masuk",
@@ -139,7 +139,33 @@
       "network": "Tidak ada koneksi. Periksa jaringan Anda dan coba lagi.",
       "missingFields": "Masukkan email dan kata sandi Anda."
     },
-    "signupMedir": "Atau mulai gratis dengan Measure: paket cloud gratis, tanpa kartu, mode bayangan, hingga {seats} kursi dan {requests} permintaan per hari. Butuh @bivelio/savings-layer {version} atau lebih baru."
+    "signupMedir": "Atau mulai gratis dengan Measure: paket cloud gratis, tanpa kartu, mode bayangan, hingga {seats} kursi dan {requests} permintaan per hari. Butuh @bivelio/savings-layer {version} atau lebih baru.",
+    "openSourceQuestion": "Hanya ingin mesin open source?",
+    "openSourceLink": "Pasang tanpa akun",
+    "showPassword": "Tampilkan kata sandi",
+    "hidePassword": "Sembunyikan kata sandi",
+    "working": "Sebentar…",
+    "sentTitleNew": "Konfirmasikan email Anda",
+    "sentTitleExisting": "Anda sudah punya akun",
+    "sentTitleReset": "Periksa kotak masuk Anda",
+    "sentEmailLabel": "Email",
+    "useAnotherEmail": "Gunakan email lain",
+    "requestNewLink": "Minta tautan baru",
+    "successNext": "Langkah berikutnya: pasang paketnya dan hubungkan panggilan pertama Anda. Sampai saat itu dasbor belum punya apa pun untuk diukur.",
+    "successPlan": "Paket yang Anda pilih tetap terpilih: Anda mengonfirmasinya di langkah berikutnya.",
+    "successInvite": "Kami mengembalikan Anda ke undangan agar Anda dapat menerimanya.",
+    "successContinue": "Lanjutkan",
+    "panel": {
+      "title": "Setiap angka, dengan <em>asal-usulnya</em>.",
+      "body": "Dasbor Savings Cloud menunjukkan apa yang dihitung pada setiap panggilan dan dari mana angkanya berasal.",
+      "receiptTitle": "Struk satu panggilan",
+      "receiptMeta": "Yang akan Anda lihat di dasbor",
+      "rowBaseline": "Token masukan, tanpa optimasi",
+      "rowActual": "Token masukan, teroptimasi",
+      "rowOutput": "Token keluaran",
+      "total": "Masukan berkurang",
+      "provenance": "Angka pada struk ini rekaan. Angka Anda berasal dari meteran penyedia Anda sendiri."
+    }
   },
   "dashboard": {
     "overview": {
@@ -1323,7 +1349,10 @@
     "invitacionPara": "Undangan ini untuk <b>{email}</b>.",
     "sesionActual": "Saat ini Anda masuk sebagai <b>{email}</b>.",
     "cerrarYContinuar": "Keluar dan gunakan akun lain",
-    "cerrando": "Keluar…"
+    "cerrando": "Keluar…",
+    "kicker": "Undangan",
+    "labelOrg": "Organisasi",
+    "labelFor": "Untuk"
   },
   "benchmarksPage": {
     "metaTitle": "Uji A/B publik: ukur kami | BiVelio Savings Layer",
@@ -1889,7 +1918,12 @@
         "verificationSamples": "Sampel verifikasi dan hitungan hariannya: {dias} hari.",
         "verificationBatches": "ID batch verifikasi: {dias} hari."
       },
-      "noSchedule": "Total harian, aktivitas kursi, dan rekening tersegelmu saat ini tidak memiliki jadwal penghapusan otomatis."
+      "noSchedule": "Total harian, aktivitas kursi, dan rekening tersegelmu saat ini tidak memiliki jadwal penghapusan otomatis.",
+      "colWhere": "Tabel",
+      "colWhat": "Apa isinya",
+      "colPeriod": "Jangka waktu",
+      "period": "{dias} hari",
+      "none": "Tanpa penghapusan otomatis"
     },
     "use": {
       "title": "Untuk apa BiVelio menggunakannya",
@@ -1899,13 +1933,67 @@
       "title": "Akunmu di situs ini",
       "body": "Email masukmu, organisasimu, dan detail penagihanmu (pembayaran diproses oleh Stripe) diatur oleh <policy>kebijakan privasi BiVelio</policy>."
     },
-    "contact": "Pertanyaan dan permintaan tentang data ini: <mail>{email}</mail>."
+    "contact": "Pertanyaan dan permintaan tentang data ini: <mail>{email}</mail>.",
+    "overview": {
+      "title": "Sekilas",
+      "colData": "Data",
+      "colDestination": "Ke mana perginya",
+      "colPurpose": "Untuk apa",
+      "colRetention": "Yang disimpan BiVelio",
+      "content": {
+        "data": "Isi permintaan dan responsmu, serta kredensial penyedia LLM-mu",
+        "destination": "Hanya ke penyedia LLM-mu",
+        "purpose": "Tidak pernah dikirim ke BiVelio",
+        "retention": "Tidak ada yang disimpan"
+      },
+      "usage": {
+        "data": "Catatan penggunaan: pengenal, model dan waktu, hitungan, dan biaya",
+        "destination": "BiVelio",
+        "purpose": "Lisensi, dasbormu, kursi yang terpakai, dan biaya",
+        "retention": "Baris individual punya jangka penghapusan; total harian tidak"
+      },
+      "verification": {
+        "data": "Sampel verifikasi (opsional, hanya SDK, nonaktif secara bawaan)",
+        "destination": "BiVelio, melalui kanal terpisah",
+        "purpose": "Tidak pernah untuk menghitung komisi",
+        "retention": "Dihapus setelah melewati jangka waktunya"
+      },
+      "account": {
+        "data": "Email masuk, organisasi, dan data penagihan",
+        "destination": "BiVelio; pembayaran diproses oleh Stripe",
+        "purpose": "Akunmu di situs ini",
+        "retention": "Sesuai kebijakan privasi BiVelio"
+      }
+    },
+    "fields": {
+      "colGroup": "Kelompok",
+      "colFields": "Kolom yang dikirim"
+    }
+  },
+  "docsPage": {
+    "englishOnly": "Dokumen ini berbahasa Inggris. Hanya antarmuka bacanya yang diterjemahkan.",
+    "contents": "Daftar isi",
+    "backToTop": "Kembali ke atas",
+    "paper": {
+      "linksAria": "Tautan makalah",
+      "markdown": "Markdown di GitHub",
+      "latex": "LaTeX untuk arXiv",
+      "bench": "Benchmark publik",
+      "pdf": "PDF · edisi sebelumnya",
+      "print": "Cetak atau simpan sebagai PDF",
+      "abstract": "Abstrak",
+      "tableScroll": "Tabel; gulir ke samping untuk melihat seluruhnya"
+    },
+    "migrate": {
+      "versionNote": "Ini adalah panduan migrasi ke versi {version}. Ini bukan pengumuman rilis terbaru."
+    }
   },
   "notFound": {
     "metaTitle": "Halaman tidak ditemukan · BiVelio Savings Layer",
     "eyebrow": "Kesalahan 404",
     "title": "Halaman tidak ditemukan",
     "body": "Halaman ini tidak ada atau telah dipindahkan.",
-    "home": "← Kembali ke beranda"
+    "home": "← Kembali ke beranda",
+    "explore": "Anda juga bisa membuka"
   }
 }

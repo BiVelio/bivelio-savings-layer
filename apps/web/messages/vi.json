@@ -96,7 +96,7 @@
     "newToBivelio": "Mới đến với BiVelio?",
     "createAnAccount": "Tạo tài khoản",
     "backToVerifier": "← Quay lại trang chủ",
-    "createYourAccount": "Tạo tài khoản của bạn",
+    "createYourAccount": "Tạo tài khoản Cloud của bạn",
     "signupSubtitle": "Một tài khoản BiVelio cho toàn bộ suite. Tạo nó để dùng cloud: bảng điều khiển, cache dùng chung và quản lý giấy phép. Bản thân gói không cần tài khoản — open core chạy không khóa.",
     "alreadyHaveAccount": "Đã có tài khoản BiVelio?",
     "signIn": "Đăng nhập",
@@ -139,7 +139,33 @@
       "network": "Không có kết nối. Kiểm tra mạng và thử lại.",
       "missingFields": "Nhập email và mật khẩu của bạn."
     },
-    "signupMedir": "Hoặc bắt đầu miễn phí với Measure: gói cloud miễn phí, không cần thẻ, chế độ bóng, tối đa {seats} chỗ và {requests} yêu cầu mỗi ngày. Cần @bivelio/savings-layer {version} trở lên."
+    "signupMedir": "Hoặc bắt đầu miễn phí với Measure: gói cloud miễn phí, không cần thẻ, chế độ bóng, tối đa {seats} chỗ và {requests} yêu cầu mỗi ngày. Cần @bivelio/savings-layer {version} trở lên.",
+    "openSourceQuestion": "Chỉ muốn dùng engine mã nguồn mở?",
+    "openSourceLink": "Cài đặt không cần tài khoản",
+    "showPassword": "Hiện mật khẩu",
+    "hidePassword": "Ẩn mật khẩu",
+    "working": "Chờ một chút…",
+    "sentTitleNew": "Xác nhận email của bạn",
+    "sentTitleExisting": "Bạn đã có tài khoản",
+    "sentTitleReset": "Kiểm tra hộp thư của bạn",
+    "sentEmailLabel": "Email",
+    "useAnotherEmail": "Dùng email khác",
+    "requestNewLink": "Yêu cầu liên kết mới",
+    "successNext": "Bước tiếp theo: cài đặt gói và kết nối lệnh gọi đầu tiên của bạn. Cho đến lúc đó, bảng điều khiển chưa có gì để đo.",
+    "successPlan": "Gói bạn đã chọn vẫn được giữ nguyên: bạn xác nhận ở bước tiếp theo.",
+    "successInvite": "Chúng tôi sẽ đưa bạn trở lại lời mời để bạn chấp nhận.",
+    "successContinue": "Tiếp tục",
+    "panel": {
+      "title": "Mỗi con số, kèm <em>nguồn gốc</em>.",
+      "body": "Bảng điều khiển Savings Cloud cho thấy mỗi lệnh gọi đã đếm những gì và con số đến từ đâu.",
+      "receiptTitle": "Biên nhận của một lệnh gọi",
+      "receiptMeta": "Những gì bạn sẽ thấy trong bảng điều khiển",
+      "rowBaseline": "Token đầu vào, chưa tối ưu",
+      "rowActual": "Token đầu vào, đã tối ưu",
+      "rowOutput": "Token đầu ra",
+      "total": "Đầu vào giảm được",
+      "provenance": "Các con số trên biên nhận này là giả định. Số liệu của bạn đến từ bộ đếm của chính nhà cung cấp."
+    }
   },
   "dashboard": {
     "overview": {
@@ -1323,7 +1349,10 @@
     "invitacionPara": "Lời mời này dành cho <b>{email}</b>.",
     "sesionActual": "Hiện quý vị đang đăng nhập với <b>{email}</b>.",
     "cerrarYContinuar": "Đăng xuất và dùng tài khoản khác",
-    "cerrando": "Đang đăng xuất…"
+    "cerrando": "Đang đăng xuất…",
+    "kicker": "Lời mời",
+    "labelOrg": "Tổ chức",
+    "labelFor": "Gửi tới"
   },
   "benchmarksPage": {
     "metaTitle": "Bài kiểm tra A/B công khai: hãy đo chúng tôi | BiVelio Savings Layer",
@@ -1889,7 +1918,12 @@
         "verificationSamples": "Mẫu xác minh và số đếm hằng ngày của chúng: {dias} ngày.",
         "verificationBatches": "Mã lô của việc xác minh: {dias} ngày."
       },
-      "noSchedule": "Tổng hằng ngày, hoạt động theo ghế và các sao kê đã niêm phong của bạn hiện chưa có lịch xóa tự động."
+      "noSchedule": "Tổng hằng ngày, hoạt động theo ghế và các sao kê đã niêm phong của bạn hiện chưa có lịch xóa tự động.",
+      "colWhere": "Bảng",
+      "colWhat": "Lưu những gì",
+      "colPeriod": "Thời hạn",
+      "period": "{dias} ngày",
+      "none": "Không tự động xóa"
     },
     "use": {
       "title": "BiVelio dùng chúng để làm gì",
@@ -1899,13 +1933,67 @@
       "title": "Tài khoản của bạn trên trang web này",
       "body": "Email đăng nhập, tổ chức và thông tin thanh toán của bạn (thanh toán do Stripe xử lý) thuộc phạm vi <policy>chính sách quyền riêng tư của BiVelio</policy>."
     },
-    "contact": "Câu hỏi và yêu cầu về dữ liệu này: <mail>{email}</mail>."
+    "contact": "Câu hỏi và yêu cầu về dữ liệu này: <mail>{email}</mail>.",
+    "overview": {
+      "title": "Tóm tắt",
+      "colData": "Dữ liệu",
+      "colDestination": "Đi đâu",
+      "colPurpose": "Để làm gì",
+      "colRetention": "BiVelio lưu những gì",
+      "content": {
+        "data": "Nội dung yêu cầu và phản hồi của bạn, cùng thông tin xác thực với nhà cung cấp LLM",
+        "destination": "Chỉ đến nhà cung cấp LLM của bạn",
+        "purpose": "Không bao giờ gửi đến BiVelio",
+        "retention": "Không có gì để lưu"
+      },
+      "usage": {
+        "data": "Bản ghi sử dụng: mã định danh, mô hình và thời điểm, số đếm và chi phí",
+        "destination": "BiVelio",
+        "purpose": "Giấy phép, bảng điều khiển của bạn, số ghế đang dùng và các khoản phí",
+        "retention": "Từng dòng riêng lẻ có thời hạn xóa; tổng hằng ngày thì không"
+      },
+      "verification": {
+        "data": "Mẫu xác minh (tùy chọn, chỉ SDK, tắt theo mặc định)",
+        "destination": "BiVelio, qua một kênh riêng",
+        "purpose": "Không bao giờ dùng để tính hoa hồng",
+        "retention": "Bị xóa khi quá thời hạn"
+      },
+      "account": {
+        "data": "Email đăng nhập, tổ chức và thông tin thanh toán",
+        "destination": "BiVelio; thanh toán do Stripe xử lý",
+        "purpose": "Tài khoản của bạn trên trang này",
+        "retention": "Theo chính sách quyền riêng tư của BiVelio"
+      }
+    },
+    "fields": {
+      "colGroup": "Nhóm",
+      "colFields": "Các trường được gửi"
+    }
+  },
+  "docsPage": {
+    "englishOnly": "Tài liệu này bằng tiếng Anh. Chỉ giao diện đọc được dịch.",
+    "contents": "Mục lục",
+    "backToTop": "Lên đầu trang",
+    "paper": {
+      "linksAria": "Liên kết của bài báo",
+      "markdown": "Markdown trên GitHub",
+      "latex": "LaTeX cho arXiv",
+      "bench": "Băng thử công khai",
+      "pdf": "PDF · bản trước",
+      "print": "In hoặc lưu thành PDF",
+      "abstract": "Tóm tắt",
+      "tableScroll": "Bảng; cuộn ngang để xem toàn bộ"
+    },
+    "migrate": {
+      "versionNote": "Đây là hướng dẫn chuyển sang phiên bản {version}. Đây không phải thông báo về bản phát hành mới nhất."
+    }
   },
   "notFound": {
     "metaTitle": "Không tìm thấy trang · BiVelio Savings Layer",
     "eyebrow": "Lỗi 404",
     "title": "Không tìm thấy trang",
     "body": "Trang này không tồn tại hoặc đã được chuyển đi.",
-    "home": "← Quay lại trang chủ"
+    "home": "← Quay lại trang chủ",
+    "explore": "Bạn cũng có thể đến"
   }
 }

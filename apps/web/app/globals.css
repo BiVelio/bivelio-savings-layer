@@ -3558,6 +3558,315 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 
 
 /* ==== SLOT F2 ACCESO Y DOCUMENTOS ==== */
+/* Todo lo de F2 —acceso (login, alta, confirmación, nueva contraseña,
+   invitación), la 404 y las páginas de lectura (privacidad, paper, guía de
+   migración)— vive aquí. Las reglas antiguas de `.auth-*`, `.paper-*` y
+   `.guia-*` siguen arriba; lo que cambia se pisa desde este bloque. */
+
+/* ── F2·1 Acceso: el marco ──────────────────────────────────────────────────
+   Tarjeta blanca sobre el marfil. Desde 1024px se parte en dos: a la izquierda
+   se escribe, a la derecha un panel de marca en calma (el recibo ilustrativo
+   sobre el paisaje de la madre). Por debajo, la tarjeta va sola. */
+.auth-wrap.acc { display: block; padding: 0; min-height: calc(100dvh - var(--nav-h)); background-color: var(--bg); background-image: none; }
+.acc-main { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; min-height: inherit; padding: clamp(24px, 6vh, 56px) 16px clamp(28px, 6vh, 56px); }
+.auth-card.acc-card { width: 100%; max-width: 440px; padding: clamp(22px, 5.5vw, 36px); border: 1px solid var(--line); border-radius: var(--r-card-lg); background: var(--surface); box-shadow: var(--shadow-card), 0 28px 56px -36px rgba(15, 18, 40, .22); }
+.acc-card .auth-brand { margin: 0 0 22px; line-height: 0; }
+/* En móvil la marca ya está justo encima, en la cabecera: no se repite. */
+@media (max-width: 640px) { .acc-card .auth-brand { display: none; } }
+.acc-aside { display: none; }
+@media (min-width: 1024px) {
+  .auth-wrap.acc--split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); place-items: stretch; max-width: 1680px; margin-inline: auto; }
+  .auth-wrap.acc--split .acc-aside { display: flex; }
+}
+.acc-aside { position: relative; isolation: isolate; align-items: center; justify-content: center; margin: 12px 12px 12px 0; padding: clamp(32px, 4vw, 64px); border-radius: var(--r-hero); overflow: hidden; background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line); }
+/* El paisaje de bivelio.com, solo en el tercio inferior y fundido hacia
+   arriba: el texto queda siempre sobre color liso. Quieto, sin animación. */
+.acc-aside::before {
+  content: ""; position: absolute; z-index: -1; inset: auto 0 0 0; height: 52%;
+  background-image: url("/brand/paisaje/dia.webp");
+  background-image: image-set(url("/brand/paisaje/dia.avif") type("image/avif"), url("/brand/paisaje/dia.webp") type("image/webp"));
+  background-size: cover; background-position: 50% 78%;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, rgba(0, 0, 0, .5) 38%, #000 78%);
+  mask-image: linear-gradient(to bottom, transparent, rgba(0, 0, 0, .5) 38%, #000 78%);
+}
+.acc-panel { display: flex; flex-direction: column; align-items: flex-start; gap: clamp(24px, 4vh, 40px); width: 100%; max-width: 440px; }
+.acc-panel-texto { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
+.acc-panel-titulo { font-size: clamp(1.75rem, 2.7vw, 2.5rem); line-height: 1.05; }
+.acc-panel-lede { font-size: 15.5px; max-width: 40ch; }
+/* Sobre la foto, las muescas del tique enseñarían manchas oscuras del bosque:
+   aquí el recibo va sin ellas (la línea de corte y el festón se conservan). */
+.acc-panel-recibo { --recibo-notch: 0px; max-width: 400px; }
+
+/* ── F2·2 Acceso: lo que va dentro de la tarjeta ────────────────────────── */
+.acc-intro { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin: 0 0 24px; }
+.acc-intro .kicker { margin-bottom: 4px; }
+.auth-card.acc-card h1 { margin: 0; font-family: var(--font-editorial); font-weight: 800; font-size: clamp(1.6rem, 2.5vw, 1.9rem); line-height: 1.1; letter-spacing: -.035em; text-wrap: balance; }
+.auth-card.acc-card .sub { margin: 0; font-size: 14.5px; line-height: 1.55; color: var(--ink-soft); text-wrap: pretty; }
+.auth-card.acc-card > .sub, .auth-card.acc-card form > .sub { margin: 0 0 16px; }
+.acc-card .field { gap: 6px; margin-bottom: 16px; }
+.acc-card .field label { font-size: 13.5px; font-weight: 500; line-height: 1.35; color: var(--ink); }
+.acc-card .field input {
+  width: 100%; min-width: 0; min-height: 44px; padding: 10px 12px; font-size: 16px; line-height: 1.3;
+  border: 1px solid var(--line-strong); border-radius: var(--r-control); background: var(--surface); color: var(--ink);
+  transition: border-color var(--dur-2) var(--ease-out), box-shadow var(--dur-2) var(--ease-out), background-color var(--dur-2) var(--ease-out);
+}
+.acc-card .field input::placeholder { color: color-mix(in srgb, var(--ink-soft) 60%, var(--surface)); }
+.acc-card .field input:hover:not(:disabled):not(:focus) { border-color: color-mix(in srgb, var(--ink-soft) 50%, var(--line-strong)); }
+/* Foco: borde de marca + halo de 3px. Se ve sin depender de un cambio de gris. */
+.acc-card .field input:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 20%, transparent); }
+.acc-card .field input[aria-invalid="true"] { border-color: var(--danger); }
+.acc-card .field input[aria-invalid="true"]:focus { box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 18%, transparent); }
+.acc-card .field input:disabled { background: var(--surface-3); border-color: var(--line); color: var(--ink-soft); cursor: not-allowed; }
+.acc-clave { position: relative; display: flex; }
+.acc-card .acc-clave input { padding-inline-end: 48px; }
+.acc-ojo { position: absolute; inset-block: 0; inset-inline-end: 0; display: grid; place-items: center; width: 44px; padding: 0; border: 0; border-radius: var(--r-control); background: none; color: var(--ink-soft); cursor: pointer; transition: color var(--dur-1) var(--ease-out); }
+.acc-ojo:hover { color: var(--ink); }
+.acc-ojo:focus-visible { outline-offset: -4px; }
+.acc-ojo:disabled { opacity: .45; cursor: default; }
+.acc-ojo svg { width: 18px; height: 18px; }
+.acc-card .auth-submit { width: 100%; min-height: 46px; margin-top: 4px; font-size: 15px; }
+/* El giro del «un momento…»: único movimiento de la pantalla, y solo mientras
+   de verdad se espera al servidor. Con movimiento reducido es un aro quieto. */
+.acc-spin { flex: none; width: 14px; height: 14px; border-radius: 50%; border: 2px solid color-mix(in srgb, currentColor 28%, transparent); border-top-color: currentColor; }
+@keyframes acc-giro { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: no-preference) { .acc-spin { animation: acc-giro .7s linear infinite; } }
+.acc-progreso { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 14.5px; line-height: 1.5; color: var(--ink-soft); }
+/* Avisos: tono por icono y por texto, no solo por color. */
+.acc-card .auth-msg { display: flex; align-items: flex-start; gap: 10px; margin: 0 0 16px; padding: 11px 12px; border: 1px solid transparent; border-radius: 12px; font-size: 14px; line-height: 1.45; color: var(--ink); }
+.acc-card .auth-msg svg { flex: none; width: 18px; height: 18px; margin-top: 1px; }
+.acc-card .auth-msg > span { min-width: 0; overflow-wrap: anywhere; }
+.acc-card .auth-msg.error { background: var(--bad-soft); border-color: color-mix(in srgb, var(--danger) 24%, transparent); }
+.acc-card .auth-msg.error svg { color: var(--danger); }
+.acc-card .auth-msg.info { background: var(--brand-soft); border-color: color-mix(in srgb, var(--brand) 18%, transparent); }
+.acc-card .auth-msg.info svg { color: var(--brand); }
+.acc-card .auth-alt { margin: 20px 0 0; font-size: 14px; line-height: 1.5; color: var(--ink-soft); text-align: center; text-wrap: balance; }
+.acc-card .auth-alt a, .acc-card .auth-link { color: var(--ink); font-weight: 500; text-decoration: underline; text-decoration-thickness: 1px; text-decoration-color: var(--line-strong); text-underline-offset: 3px; transition: text-decoration-color var(--dur-1) var(--ease-out); }
+.acc-card .auth-alt a:hover, .acc-card .auth-link:hover { text-decoration-color: currentColor; text-decoration-thickness: 1px; }
+.acc-card .auth-link { display: inline-flex; align-items: center; justify-content: center; min-height: 32px; padding: 4px 8px; font-size: 14px; }
+.acc-card .acc-olvido { margin-top: 10px; }
+.acc-otro-enlace { margin: 0 0 16px; }
+.acc-reset-sub { margin-top: 0; }
+@media (pointer: coarse) {
+  .acc-card .auth-link { min-height: 44px; }
+  .acc-card .auth-alt a { display: inline-block; padding-block: 10px; }
+}
+/* Alta: las dos notas (Measure y cuenta compartida) y la salida al open source. */
+.acc-notas { display: grid; gap: 10px; margin: 24px 0 0; padding-top: 20px; border-top: 1px solid var(--line); }
+.acc-nota { margin: 0; font-size: 13px; line-height: 1.55; color: var(--ink-soft); overflow-wrap: anywhere; text-wrap: pretty; }
+.acc-oss { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 2px 14px; margin: 18px 0 0; padding: 8px 8px 8px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-3); font-size: 13.5px; line-height: 1.4; }
+.acc-oss-q { padding-block: 6px; color: var(--ink-soft); }
+.acc-oss-a { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding-inline-end: 6px; border-radius: var(--radius-sm); font-weight: 600; color: var(--ink); text-decoration: none; }
+.acc-oss-a:hover { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.acc-oss-a svg { flex: none; width: 16px; height: 16px; transition: transform var(--dur-2) var(--ease-out); }
+.acc-oss-a:hover svg { transform: translateX(2px); }
+@media (pointer: coarse) { .acc-oss-a { min-height: 44px; } }
+@media (prefers-reduced-motion: reduce) { .acc-oss-a:hover svg { transform: none; } }
+.acc-pie { font-size: 14px; }
+.acc-volver { display: inline-flex; align-items: center; min-height: 44px; padding: 0 10px; border-radius: var(--r-control); color: var(--ink-soft); text-decoration: none; transition: color var(--dur-1) var(--ease-out); }
+.acc-volver:hover { color: var(--ink); text-decoration: none; }
+/* La subvista «ya está»: enviado, verificado, cambiado, aceptado. Cuando
+   aparece, lo que rodeaba al formulario (titular, cruce, notas) se retira. */
+.acc-sent { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; min-width: 0; }
+.acc-sent-icon { display: grid; place-items: center; width: 44px; height: 44px; margin-bottom: 6px; border-radius: 14px; background: var(--brand-soft); color: var(--brand); }
+.acc-sent[data-tone="ok"] .acc-sent-icon { background: var(--mint-soft); color: var(--good-ink); }
+.acc-sent-icon svg { width: 22px; height: 22px; }
+.auth-card.acc-card .acc-sent-title { margin: 0; font-family: var(--font-editorial); font-weight: 800; font-size: clamp(1.4rem, 2.2vw, 1.6rem); line-height: 1.15; letter-spacing: -.035em; text-wrap: balance; outline: none; }
+.acc-sent-text { margin: 0; font-size: 14.5px; line-height: 1.55; color: var(--ink-soft); text-wrap: pretty; }
+.acc-sent-mail { max-width: 100%; margin: 4px 0 0; padding: 8px 12px; border: 1px solid var(--line); border-radius: var(--r-control); background: var(--surface-3); font-family: var(--mono); font-size: 13px; line-height: 1.4; color: var(--ink); overflow-wrap: anywhere; }
+.acc-sent-next { width: 100%; margin: 6px 0 0; padding-top: 14px; border-top: 1px solid var(--line); font-size: 13.5px; line-height: 1.55; color: var(--ink-soft); text-wrap: pretty; }
+.acc-sent-actions { display: flex; flex-direction: column; align-items: stretch; gap: 6px; width: 100%; margin-top: 12px; }
+.acc-sent-actions .auth-link { align-self: center; }
+.acc-card:has(.acc-sent) > .auth-brand, .acc-card:has(.acc-sent) > .acc-intro, .acc-card:has(.acc-sent) > .acc-cruce, .acc-card:has(.acc-sent) > .acc-notas, .acc-card:has(.acc-sent) > .acc-oss { display: none; }
+@media (prefers-reduced-motion: no-preference) { .acc-sent { animation: bv-rise var(--dur-4) var(--ease-out) both; } }
+
+/* ── F2·3 Invitación: la ficha (organización, destinatario, perfil) ─────── */
+.inv-ficha { margin: 0 0 20px; padding: 2px 16px; border: 1px solid var(--line); border-radius: var(--r-card); background: var(--surface-3); }
+.inv-fila { display: flex; align-items: baseline; justify-content: space-between; gap: 6px 16px; min-width: 0; padding: 12px 0; }
+.inv-fila + .inv-fila { border-top: 1px solid var(--line); }
+.inv-fila dt { flex: none; font-size: 11.5px; font-weight: 600; letter-spacing: .1em; line-height: 1.5; text-transform: uppercase; color: var(--ink-soft); }
+.inv-fila dd { margin: 0; min-width: 0; text-align: end; font-size: 14.5px; font-weight: 500; line-height: 1.4; color: var(--ink); overflow-wrap: anywhere; }
+.inv-fila--org { flex-direction: column; align-items: flex-start; gap: 2px; padding-block: 14px; }
+.inv-fila--org dd { text-align: start; font-family: var(--font-editorial); font-weight: 800; font-size: 1.375rem; line-height: 1.2; letter-spacing: -.03em; }
+.inv-fila .inv-correo { font-family: var(--mono); font-size: 13.5px; }
+.inv-ficha--hueco { display: grid; align-content: center; gap: 13px; min-height: 172px; padding: 16px; }
+.auth-card.acc-card .inv-sesion { margin: 0 0 14px; }
+.inv-sesion b { color: var(--ink); font-weight: 600; overflow-wrap: anywhere; }
+
+/* ── F2·4 La 404 ────────────────────────────────────────────────────────────
+   Corta: la cifra como filigrana, el titular, una frase y la vuelta. */
+.nf-page .nf { position: relative; display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center; padding-block: clamp(88px, 17vh, 184px) clamp(80px, 14vh, 152px); }
+.nf-cifra {
+  position: absolute; z-index: -1; inset-inline: 0; top: clamp(20px, 5vh, 56px); margin: 0;
+  font-family: var(--font-editorial); font-weight: 800; font-size: clamp(9.5rem, 38vw, 25rem); line-height: .82; letter-spacing: -.07em; font-variant-numeric: tabular-nums;
+  color: var(--surface-2); -webkit-user-select: none; user-select: none; pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, #000 30%, transparent 96%); mask-image: linear-gradient(to bottom, #000 30%, transparent 96%);
+}
+.nf .nf-titulo { margin: 0; max-width: 18ch; font-size: clamp(2rem, 4.6vw, 3.25rem); line-height: 1.04; }
+.nf .nf-lede { max-width: 46ch; margin-inline: auto; }
+.nf-acciones { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 10px; }
+.nf-destinos { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0 4px; margin-top: 14px; font-size: 14px; color: var(--ink-soft); }
+.nf-destinos-t { margin-inline-end: 4px; }
+.nf-destinos a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 8px; border-radius: var(--r-control); color: var(--ink); font-weight: 500; text-decoration: underline; text-decoration-thickness: 1px; text-decoration-color: var(--line-strong); text-underline-offset: 3px; }
+.nf-destinos a:hover { text-decoration-color: currentColor; }
+@media (max-width: 480px) {
+  .nf-acciones { align-self: stretch; flex-direction: column; }
+  .nf-destinos-t { flex-basis: 100%; margin: 0; }
+}
+
+/* ── F2·5 Páginas de lectura: rejilla, índice y notas ───────────────────────
+   Paper, guía de migración y privacidad comparten armazón: el texto a una
+   medida cómoda y, desde 1100px, el índice fijo a la izquierda. */
+.doc-grid { display: block; min-width: 0; }
+.doc-body { min-width: 0; }
+.doc-toc--carril { display: none; }
+@media (min-width: 1100px) {
+  .doc-grid { display: grid; grid-template-columns: 228px minmax(0, 1fr); align-items: start; gap: clamp(40px, 5vw, 76px); }
+  .doc-toc--carril { display: block; position: sticky; top: calc(var(--nav-h) + 28px); max-height: calc(100dvh - var(--nav-h) - 56px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; padding: 2px 6px 8px 2px; }
+  .doc-toc--plegable { display: none; }
+}
+.doc-toc-t { margin: 0 0 12px; font-family: var(--sans); font-size: 12px; font-weight: 600; letter-spacing: .14em; line-height: 1.5; text-transform: uppercase; color: var(--ink-soft); }
+.doc-toc-lista { list-style: none; margin: 0; padding: 0; border-inline-start: 1px solid var(--line); }
+.doc-toc-lista li { margin: 0; }
+.doc-toc-lista a { display: block; margin-inline-start: -1px; padding: 6px 4px 6px 14px; border-inline-start: 2px solid transparent; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; font-family: var(--sans); font-size: 13.5px; font-weight: 400; line-height: 1.4; color: var(--ink-soft); text-decoration: none; transition: color var(--dur-1) var(--ease-out), border-color var(--dur-1) var(--ease-out); }
+.doc-toc-lista a:hover { color: var(--ink); text-decoration: none; }
+.doc-toc-lista a[aria-current="location"] { border-inline-start-color: var(--brand); color: var(--ink); font-weight: 500; }
+.doc-toc-lista a:focus-visible { outline-offset: -2px; }
+.doc-toc--plegable { margin: 0 0 28px; border: 1px solid var(--line); border-radius: var(--r-card); background: var(--surface); }
+.doc-toc--plegable summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; padding: 0 16px; border-radius: var(--r-card); cursor: pointer; list-style: none; font-family: var(--sans); font-size: 14px; font-weight: 600; color: var(--ink); }
+.doc-toc--plegable summary::-webkit-details-marker { display: none; }
+.doc-toc--plegable summary::after { content: ""; flex: none; width: 8px; height: 8px; margin-top: -4px; border-right: 1.6px solid var(--ink-soft); border-bottom: 1.6px solid var(--ink-soft); transform: rotate(45deg); transition: transform var(--dur-2) var(--ease-out); }
+.doc-toc--plegable details[open] summary::after { margin-top: 4px; transform: rotate(-135deg); }
+.doc-toc--plegable .doc-toc-lista { margin: 2px 16px 14px; }
+.doc-toc--plegable .doc-toc-lista a { padding-block: 11px; font-size: 14.5px; }
+@media (prefers-reduced-motion: reduce) { .doc-toc--plegable summary::after { transition: none; } }
+.doc-nota { max-width: 72ch; margin: 18px 0 0; padding: 9px 12px; border-radius: var(--r-control); background: var(--surface-2); font-family: var(--sans); font-size: 13.5px; line-height: 1.5; color: var(--ink-soft); text-wrap: pretty; }
+.doc-arriba { margin: 48px 0 0; padding-top: 18px; border-top: 1px solid var(--line); font-family: var(--sans); font-size: 14px; }
+.doc-arriba a { display: inline-flex; align-items: center; min-height: 44px; color: var(--ink-soft); text-decoration: none; }
+.doc-arriba a:hover { color: var(--ink); text-decoration: none; }
+.lp.terms-page.doc-page > main.wrap { padding-bottom: clamp(56px, 8vw, 104px); }
+.lp.doc-page h2, .lp.doc-page h3, .lp.doc-page h4 { scroll-margin-top: calc(var(--nav-h) + 24px); }
+.lp.terms-page.doc-page .terms-hero { max-width: 80ch; padding-bottom: clamp(24px, 3vw, 40px); }
+.lp.terms-page.doc-page .terms-hero h1 { max-width: 20ch; font-size: clamp(2rem, 4.2vw, 3.25rem); line-height: 1.04; }
+.lp.terms-page.doc-page .doc-body > .terms-sec:first-child { border-top: 0; padding-top: 0; }
+.lp.terms-page.doc-page .doc-grid { padding-top: clamp(24px, 3vw, 40px); border-top: 1px solid var(--line); }
+
+/* ── F2·6 /paper: plantilla de lectura académica ────────────────────────────
+   Geist para el cuerpo (17px, 68 caracteres), Plus Jakarta Sans para el título
+   y los apartados, Instrument Serif solo en el subtítulo. Sin justificar: en
+   pantalla la columna estrecha justificada deja ríos. */
+.paper-page .paper-shell { max-width: var(--page-max); margin: 0 auto; padding: 0 24px clamp(64px, 9vw, 120px); font-family: var(--sans); font-size: 17px; line-height: 1.7; color: var(--ink); }
+.paper-page .paper-cabecera { display: flex; flex-direction: column; align-items: flex-start; margin: 0 0 clamp(28px, 4vw, 44px); padding: clamp(44px, 6vw, 76px) 0 clamp(28px, 4vw, 40px); border-top: 0; border-bottom: 1px solid var(--line); text-align: start; }
+.paper-page .paper-serie { margin: 0 0 18px; font-family: var(--sans); font-size: 12px; letter-spacing: .16em; color: var(--ink-soft); }
+.paper-page .paper-titulo { max-width: 24ch; margin: 0; font-size: clamp(1.9rem, 4.1vw, 3.1rem); font-weight: 800; line-height: 1.05; letter-spacing: -.04em; }
+.paper-page .paper-subtitulo { margin: 12px 0 0; font-family: var(--font-serif); font-style: italic; font-weight: 400; font-size: clamp(1.5rem, 2.8vw, 2.1rem); line-height: 1.1; letter-spacing: -.01em; color: var(--brand); }
+.paper-page .paper-autor { margin: 24px 0 0; font-size: 15px; line-height: 1.5; color: var(--ink); }
+.paper-page .paper-autor a { color: inherit; text-decoration: underline; text-decoration-color: var(--line-strong); text-underline-offset: 3px; border-bottom: 0; overflow-wrap: anywhere; }
+.paper-page .paper-fecha { margin: 4px 0 0; font-family: var(--mono); font-size: 12.5px; letter-spacing: 0; line-height: 1.5; color: var(--ink-soft); }
+.paper-page .paper-acciones { justify-content: flex-start; gap: 8px; margin-top: 26px; }
+.paper-page .paper-acciones .btn { font-family: var(--sans); font-size: 14px; }
+.paper-page .paper-abstract { max-width: 46rem; margin: 0 0 clamp(36px, 5vw, 56px); padding: clamp(20px, 3vw, 30px); border: 1px solid var(--line); border-radius: var(--r-card-lg); background: var(--surface); box-shadow: var(--shadow-card); }
+.paper-page .paper-abstract-t { margin: 0 0 12px; font-family: var(--sans); font-size: 12px; font-weight: 600; letter-spacing: .16em; line-height: 1.5; text-transform: uppercase; color: var(--ink-soft); }
+.paper-page .paper-abstract-p { margin: 0 0 12px; font-size: 16px; line-height: 1.68; text-align: start; hyphens: manual; color: var(--ink); }
+.paper-page .paper-palabras { margin: 16px 0 0; padding-top: 14px; border-top: 1px solid var(--line); font-size: 13.5px; line-height: 1.55; color: var(--ink-soft); }
+.paper-page .paper-cuerpo { text-align: start; hyphens: manual; }
+/* La medida va en rem y no en `ch`: así titulares y párrafos comparten el
+   mismo ancho (unos 68 caracteres del cuerpo) aunque cambie su letra. */
+.paper-page .paper-cuerpo > :not(.paper-tabla-wrap) { max-width: 42.5rem; }
+.paper-page .paper-h2 { margin: clamp(44px, 5vw, 60px) 0 16px; padding-top: clamp(24px, 3vw, 32px); border-top: 1px solid var(--line); font-family: var(--font-editorial); font-weight: 800; font-size: clamp(1.4rem, 2.3vw, 1.75rem); line-height: 1.15; letter-spacing: -.035em; text-align: start; text-wrap: balance; }
+.paper-page .paper-cuerpo > .paper-h2:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+.paper-page .paper-h3 { margin: 34px 0 10px; font-family: var(--sans); font-weight: 600; font-size: 1.125rem; line-height: 1.3; letter-spacing: -.015em; text-align: start; }
+.paper-page .paper-p { margin: 0 0 1.05em; }
+.paper-page .paper-lista { margin: 0 0 1.15em; padding-left: 1.3em; }
+.paper-page .paper-lista li { margin: 0 0 .5em; padding-left: .15em; }
+.paper-page .paper-lista li::marker { color: var(--ink-soft); }
+/* Cada apartado ya abre con su filete: la regla del markdown sobraría doble. */
+.paper-page .paper-regla { display: none; }
+.paper-page .paper-tabla-wrap { margin: 26px 0 34px; overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r-card); background: var(--surface); box-shadow: var(--shadow-card); text-align: start; scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
+.paper-page .paper-tabla-wrap:focus-visible { outline-offset: 2px; }
+.paper-page .paper-tabla { width: 100%; min-width: 560px; border-collapse: collapse; font-family: var(--sans); font-size: 13.5px; line-height: 1.45; }
+.paper-page .paper-tabla th, .paper-page .paper-tabla td { padding: 10px 14px; vertical-align: top; text-align: start; }
+.paper-page .paper-tabla tr:first-child th { border-top: 0; border-bottom: 1px solid var(--line); background: var(--surface-3); font-size: 12.5px; font-weight: 600; line-height: 1.4; color: var(--ink-soft); }
+.paper-page .paper-tabla td { border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+.paper-page .paper-tabla tbody tr:last-child td { border-bottom: 0; }
+.paper-page .paper-ref { margin: 0 0 10px; padding-left: 2.6em; text-indent: -2.6em; font-size: 14px; line-height: 1.55; text-align: start; color: var(--ink-soft); overflow-wrap: anywhere; }
+.paper-page .paper-cuerpo a, .paper-page .paper-abstract a { color: var(--ink); text-decoration: underline; text-decoration-thickness: 1px; text-decoration-color: color-mix(in srgb, var(--brand) 55%, transparent); text-underline-offset: 3px; overflow-wrap: anywhere; }
+.paper-page .paper-cuerpo a:hover, .paper-page .paper-abstract a:hover { color: var(--brand); text-decoration-color: currentColor; }
+.paper-page .paper-cuerpo code, .paper-page .paper-ref code, .paper-page .paper-abstract code { padding: 1px 5px; border-radius: 5px; background: var(--surface-2); font-family: var(--mono); font-size: .86em; overflow-wrap: anywhere; }
+.paper-page .paper-tabla code { background: var(--surface-3); white-space: nowrap; }
+@media (max-width: 640px) {
+  .paper-page .paper-shell { padding: 0 16px 64px; font-size: 16.5px; }
+  .paper-page .paper-acciones { align-self: stretch; display: grid; grid-template-columns: 1fr; }
+}
+@media print {
+  .announce, .site-nav, .ftr, .doc-toc, .doc-nota, .doc-arriba, .paper-page .paper-acciones { display: none !important; }
+  .paper-page .paper-shell { max-width: none; padding: 0; font-size: 10.5pt; }
+  .paper-page .doc-grid { display: block; }
+  .paper-page .paper-cuerpo > :not(.paper-tabla-wrap), .paper-page .paper-abstract { max-width: none; }
+  .paper-page .paper-abstract, .paper-page .paper-tabla-wrap { box-shadow: none; }
+  .paper-page .paper-tabla-wrap { overflow: visible; }
+  .paper-page .paper-tabla { min-width: 0; }
+  .paper-page .paper-h2 { break-after: avoid; }
+}
+
+/* ── F2·7 /migrate-to-0.5: documentación con antes y después ────────────── */
+.lp.terms-page.doc-page .guia-page .doc-body .terms-sec { max-width: 78ch; }
+.guia-page .guia-hero > blockquote { margin-top: 22px; }
+.guia-page .guia-hero > p:not(.doc-nota) { margin: 0 0 12px; color: var(--ink-soft); line-height: 1.625; }
+.guia-page .guia-hero > p b, .guia-page .guia-cita b { color: var(--ink); }
+.guia-cf { margin: 8px 0 20px; }
+.guia-pareja { display: grid; gap: 10px; margin: 8px 0 20px; min-width: 0; }
+.guia-pareja .guia-cf { margin: 0; }
+/* Dentro del marco manda el marco: el `code` en línea de la guía no aplica. */
+.guia-page .codeframe .codeframe-code code { font-size: inherit; overflow-wrap: normal; white-space: pre; }
+.guia-cf .codeframe-head { align-items: flex-start; padding-block: 6px; }
+.guia-cf .codeframe-label { display: flex; align-items: flex-start; gap: 8px; padding-block: 6px; overflow: visible; white-space: normal; text-overflow: clip; line-height: 1.45; overflow-wrap: anywhere; }
+/* Antes / después: el rótulo (el comentario del propio ejemplo) ya lo dice con
+   palabras; el signo y el color solo lo refuerzan. */
+.guia-cf--antes .codeframe-label::before, .guia-cf--despues .codeframe-label::before { flex: none; display: grid; place-items: center; width: 17px; height: 17px; border-radius: 5px; font-family: var(--mono); font-size: 13px; font-weight: 600; line-height: 1; }
+.guia-cf--antes .codeframe-label::before { content: "−"; background: var(--amber-soft); color: var(--warn); }
+.guia-cf--despues .codeframe-label::before { content: "+"; background: var(--mint-soft); color: var(--good-ink); }
+.guia-cf--despues .codeframe-label { color: var(--ink); }
+.guia-cf--antes .codeframe-code { color: var(--ink-soft); }
+.guia-page .guia-tabla { margin: 10px 0 20px; border-radius: var(--r-card); scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
+.guia-page .guia-tabla .tbl { min-width: 640px; }
+.guia-page .guia-tabla td { white-space: normal; line-height: 1.5; }
+.guia-page .guia-tabla td code, .guia-page .guia-tabla th code { overflow-wrap: normal; }
+
+/* ── F2·8 /privacy: tablas de dato, destino, finalidad y retención ──────── */
+.priv-page .doc-body .terms-sec { max-width: 880px; }
+.priv-page .doc-body .terms-sec > p, .priv-page .doc-body .terms-list { max-width: 72ch; }
+.priv-page .terms-hero .lede { max-width: 60ch; margin-bottom: 20px; }
+.priv-page .terms-hero .terms-governs { margin-bottom: 0; }
+.priv-tabla { width: 100%; margin: 14px 0 6px; border: 1px solid var(--line); border-radius: var(--r-card); border-collapse: separate; border-spacing: 0; overflow: hidden; background: var(--surface); box-shadow: var(--shadow-card); font-family: var(--sans); font-size: 14px; line-height: 1.5; }
+.priv-tabla thead th { padding: 10px 14px; border-bottom: 1px solid var(--line); background: var(--surface-3); text-align: start; vertical-align: bottom; font-size: 12px; font-weight: 600; letter-spacing: .05em; line-height: 1.4; text-transform: uppercase; color: var(--ink-soft); }
+.priv-tabla tbody th, .priv-tabla tbody td { padding: 14px; border-bottom: 1px solid var(--line); text-align: start; vertical-align: top; font-weight: 400; color: var(--ink-soft); overflow-wrap: anywhere; }
+.priv-tabla tbody tr:last-child > * { border-bottom: 0; }
+.priv-tabla tbody th { color: var(--ink); font-weight: 500; }
+.priv-tabla--resumen tbody th { width: 32%; }
+.priv-tabla--resumen tbody th a { color: var(--ink); text-decoration: underline; text-decoration-thickness: 1px; text-decoration-color: var(--line-strong); text-underline-offset: 3px; }
+.priv-tabla--resumen tbody th a:hover { text-decoration-color: currentColor; }
+.priv-tabla--campos tbody th { width: 50%; }
+.priv-grupo { display: block; margin: 0 0 4px; font-weight: 600; color: var(--ink); }
+.priv-grupo-que { display: block; font-size: 13.5px; font-weight: 400; line-height: 1.55; color: var(--ink-soft); }
+.priv-tabla--plazos tbody th { width: 30%; }
+.priv-tabla--plazos tbody td:last-child { width: 1%; white-space: nowrap; }
+.priv-plazo { display: inline-flex; align-items: center; min-height: 24px; padding: 2px 10px; border-radius: 999px; background: var(--surface-2); font-family: var(--mono); font-size: 12.5px; font-weight: 500; font-variant-numeric: tabular-nums; line-height: 1.3; color: var(--ink); white-space: nowrap; }
+.priv-plazo--sin { background: var(--amber-soft); color: var(--warn); font-family: var(--sans); font-weight: 600; }
+.priv-nunca { list-style: none; padding-left: 0; gap: 10px; }
+.priv-nunca li { position: relative; padding: 14px 16px 14px 46px; border: 1px solid var(--line); border-radius: var(--r-card); background: var(--surface); }
+.priv-nunca li::before { content: "✕"; position: absolute; left: 14px; top: 15px; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--bad-soft); color: var(--danger); font-size: 10px; font-weight: 700; line-height: 1; }
+/* En móvil cada fila es una ficha: la celda lleva delante el nombre de su
+   columna (`data-label`) y no hay scroll horizontal. */
+@media (max-width: 760px) {
+  .priv-tabla, .priv-tabla tbody, .priv-tabla tbody tr, .priv-tabla tbody th, .priv-tabla tbody td { display: block; width: auto; }
+  .priv-tabla thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .priv-tabla tbody tr { padding: 14px; border-bottom: 1px solid var(--line); }
+  .priv-tabla tbody tr:last-child { border-bottom: 0; }
+  .priv-tabla tbody th, .priv-tabla tbody td { padding: 0; border: 0; }
+  .priv-tabla--resumen tbody th, .priv-tabla--campos tbody th, .priv-tabla--plazos tbody th, .priv-tabla--plazos tbody td:last-child { width: auto; white-space: normal; }
+  .priv-tabla tbody td { margin-top: 12px; }
+  .priv-tabla tbody td::before { content: attr(data-label); display: block; margin: 0 0 4px; font-size: 11.5px; font-weight: 600; letter-spacing: .06em; line-height: 1.4; text-transform: uppercase; color: var(--ink-soft); }
+}
 /* ==== FIN SLOT F2 ==== */
 
 
