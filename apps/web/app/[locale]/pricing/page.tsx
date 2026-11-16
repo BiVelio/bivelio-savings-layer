@@ -281,19 +281,23 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
                     LECTURA: una cifra publicada no puede parecer editable. */}
                 <DataTable
                   className="precios-tramos"
-                  caption={t("commission.tiersTitle")}
+                  label={t("commission.tiersTitle")}
                   rowHeader
-                  columns={[{ label: t("commission.colBand") }, { label: t("commission.colRate"), align: "end", numeric: true }]}
+                  columns={[
+                    { key: "tramo", label: t("commission.colBand") },
+                    { key: "tipo", label: t("commission.colRate"), align: "end", mono: true },
+                  ]}
                   rows={p.tramos.map((tr) => ({
-                    key: `${tr.forma}-${tr.desde}`,
-                    cells: [
-                      tr.forma === "hasta"
-                        ? t("commission.bandUpTo", { hasta: tr.hasta })
-                        : tr.forma === "entre"
-                          ? t("commission.bandBetween", { desde: tr.desde, hasta: tr.hasta })
-                          : t("commission.bandAbove", { desde: tr.desde }),
-                      tr.tipo,
-                    ],
+                    id: `${tr.forma}-${tr.desde}`,
+                    cells: {
+                      tramo:
+                        tr.forma === "hasta"
+                          ? t("commission.bandUpTo", { hasta: tr.hasta })
+                          : tr.forma === "entre"
+                            ? t("commission.bandBetween", { desde: tr.desde, hasta: tr.hasta })
+                            : t("commission.bandAbove", { desde: tr.desde }),
+                      tipo: tr.tipo,
+                    },
                   }))}
                 />
                 <p>{t.rich("commission.ceiling", { b, max: p.tipoMaximo, garantia: p.garantia })}</p>

@@ -4,7 +4,7 @@ import { useEffect, useSyncExternalStore, type MouseEvent, type ReactNode } from
 
 import { ICONS } from "@/app/components/icons";
 import { Link, usePathname } from "@/i18n/navigation";
-import { Tooltip } from "@/vendor/affectui/tooltip";
+import { Tooltip } from "@/vendor/affectui/tooltip-clean";
 
 import {
   announceHash,

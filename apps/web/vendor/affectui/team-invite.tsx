@@ -3,11 +3,8 @@
  *
  * Changes from upstream are listed in ./VENDOR.md.
  */
-"use client";
-
 import "./team-invite.css";
-
-import { useId } from "react";
+import { useId, type ReactNode } from "react";
 
 /*
  * Team Invite – a small card illustration, in a single self-contained file.
@@ -17,20 +14,29 @@ import { useId } from "react";
  */
 
 export type TeamInviteProps = {
+  /**
+   * What sits in the three bubbles: the two that are already connected, then the one being invited.
+   * BiVelio: glyphs or marks, never portraits – the scene must not invent people.
+   */
+  nodes?: [ReactNode, ReactNode, ReactNode];
   className?: string;
+  /**
+   * Accessible description of the scene – always translated by the caller. Leave it out where the words next to
+   * the scene already say it (an empty state): the scene is then decoration and hidden from assistive tech.
+   */
+  label?: string;
 };
 
-/**
- * BiVelio: purely decorative (aria-hidden) – the empty state next to it carries the words. The three faces are an
- * anonymous glyph on a soft tint: upstream took portrait URLs and names, and there are no pictures of members here.
- */
-export function TeamInvite({ className }: TeamInviteProps) {
+export function TeamInvite({ nodes = [<Person key="a" />, <Person key="b" />, <Person key="c" />], className, label }: TeamInviteProps) {
   const id = "ui-ti" + useId().replace(/[^a-zA-Z0-9_-]/g, "");
+  const [a, b, c] = nodes;
 
   return (
     <div
       className={["ui-ti", className].filter(Boolean).join(" ")}
-      aria-hidden="true"
+      role={label ? "img" : undefined}
+      aria-label={label}
+      aria-hidden={label ? undefined : true}
     >
 
       <svg className="ui-ti-lines" viewBox="0 0 600 400" aria-hidden="true">
@@ -52,12 +58,12 @@ export function TeamInvite({ className }: TeamInviteProps) {
         </g>
       </svg>
 
-      <Node className="ui-ti-node--a" hue="a" online />
-      <Node className="ui-ti-node--b" hue="b" online />
+      <Node className="ui-ti-node--a" online>{a}</Node>
+      <Node className="ui-ti-node--b" online>{b}</Node>
 
       {/* Dragged from the right into the slot, with the cursor holding on */}
       <div className="ui-ti-drag" aria-hidden="true">
-        <Node className="ui-ti-node--c" hue="c" online />
+        <Node className="ui-ti-node--c" online>{c}</Node>
         {/* Pointer with soft, rounded corners; its tip sits at (0, 0) of the viewBox */}
         <svg className="ui-ti-cursor" viewBox="-2.186 -0.256 18.514 22.277" aria-hidden="true">
           <path
@@ -70,16 +76,23 @@ export function TeamInvite({ className }: TeamInviteProps) {
   );
 }
 
-function Node({ hue, online, className }: { hue: "a" | "b" | "c"; online?: boolean; className: string }) {
+function Node({ children, online, className }: { children: ReactNode; online?: boolean; className: string }) {
   return (
     <div className={`ui-ti-node ${className}`} aria-hidden="true">
-      <span className="ui-ti-face" data-hue={hue}>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" focusable="false">
-          <path d="M20 21C19.713 17.269 16.729 14.315 12.995 14.066L12 14C11.645 14.01 11.313 14.023 11.001 14.038C7.3 14.219 4.284 17.306 4 21" />
-          <circle cx="12" cy="7" r="4" />
-        </svg>
+      <span className="ui-ti-face">
+        {children}
       </span>
       {online && <span className="ui-ti-dot" />}
     </div>
+  );
+}
+
+/** BiVelio: the default bubble – an anonymous glyph, never a portrait */
+function Person() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" focusable="false">
+      <path d="M20 21C19.713 17.269 16.729 14.315 12.995 14.066L12 14C11.645 14.01 11.313 14.023 11.001 14.038C7.3 14.219 4.284 17.306 4 21" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
   );
 }

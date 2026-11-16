@@ -4,7 +4,7 @@ import { librosConPiezaDelBanco } from "@/lib/bench/sdk-instalado";
 
 import { Detalle, Termino } from "@/app/components/evidencia/Termino";
 import { EvidenceBadge } from "@/app/components/ui";
-import { Badge } from "@/vendor/affectui/badge";
+import { Badge } from "@/vendor/affectui/badge-clean";
 
 import type { AbArtifact } from "../data";
 import { pct, money, LEDGER_COLOR } from "../format";
@@ -131,16 +131,16 @@ export async function ReferenceLedgerCards({ ab }: { ab: AbArtifact }) {
               <div className="lg-status">
                 {ab.mode === "LIVE" ? (
                   l.proven ? (
-                    <Badge tone="success" dot>
+                    <Badge size="sm" tone="success" dot>
                       {t("referenceLedgerCards.proven")}
                     </Badge>
                   ) : (
-                    <Badge tone="neutral" dot>
+                    <Badge size="sm" tone="neutral" dot>
                       {t("referenceLedgerCards.notProven")}
                     </Badge>
                   )
                 ) : (
-                  <Badge tone="warning" dot>
+                  <Badge size="sm" tone="warning" dot>
                     {t("referenceLedgerCards.estimatedMock")}
                   </Badge>
                 )}

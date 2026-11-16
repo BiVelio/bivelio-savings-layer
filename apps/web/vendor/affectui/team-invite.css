@@ -1,27 +1,28 @@
 /*
  * Derived from affectUI Pro 'Team Invite' (https://www.affectui.com). Used under the affectUI Pro license held by BiVelio. NOT covered by this repository's Apache-2.0 licence; do not redistribute as a component kit.
  *
- * Light theme only, BiVelio tokens; changes from upstream are listed in ./VENDOR.md.
+ * Changes from upstream are listed in ./VENDOR.md.
  */
 .ui-ti {
   /* 1 unit of the 600 × 400 layout grid */
   --u: calc(100cqw / 600);
   --ui-ti-bubble: #ffffff;
   --ui-ti-bubble-ring: rgba(10, 10, 10, 0.06);
-  --ui-ti-face: #eef0f4;
+  --ui-ti-face: var(--surface-2, #f2f1ec);
+  --ui-ti-glyph: var(--aui-muted, #5a6070);
   /* Same gray as the lines in Outreach Branches */
-  --ui-ti-line-a: #e4e7ec;
-  --ui-ti-line-b: #e4e7ec;
-  --ui-ti-dash: #e4e7ec;
+  --ui-ti-line-a: #dcdad2;
+  --ui-ti-line-b: #dcdad2;
+  --ui-ti-dash: #dcdad2;
   --ui-ti-plus: #c4c4c4;
-  --ui-ti-online: #34c46a;
+  --ui-ti-online: var(--brand, #0066e6);
   /* Ring around the status dot: mostly white with a hint of the green, fully opaque */
-  --ui-ti-dot-ring: #e2f6e9;
-  --ui-ti-dot-edge: rgba(52, 196, 106, 0.1);
-  --ui-ti-cursor: #141b34;
+  --ui-ti-dot-ring: #e3eeff;
+  --ui-ti-dot-edge: rgba(0, 102, 230, 0.1);
+  --ui-ti-cursor: var(--aui-ink, #0f1218);
   --ui-ti-shadow: 0 calc(10 * var(--u)) calc(24 * var(--u)) rgba(0, 0, 0, 0.07), 0 calc(2 * var(--u)) calc(5 * var(--u)) rgba(0, 0, 0, 0.05);
   --ui-ti-lift: 0 calc(18 * var(--u)) calc(34 * var(--u)) rgba(0, 0, 0, 0.12), 0 calc(3 * var(--u)) calc(8 * var(--u)) rgba(0, 0, 0, 0.06);
-  --ui-ti-loop: 4.4s;
+  --ui-ti-loop: 6.4s;
   --ui-ti-ease: cubic-bezier(0.7, 0, 0.25, 1);
   position: relative;
   width: 100%;
@@ -65,18 +66,26 @@
 .ui-ti-node--a { left: calc(120 * var(--u)); top: calc(159 * var(--u)); }
 .ui-ti-node--b { left: calc(300 * var(--u)); top: calc(105 * var(--u)); }
 .ui-ti-face {
-  display: block;
+  display: grid;
+  place-items: center;
   width: 100%;
   height: 100%;
   overflow: hidden;
   border-radius: 50%;
   background: var(--ui-ti-face);
+  color: var(--ui-ti-glyph);
 }
-/* BiVelio: an anonymous glyph on a soft tint instead of a portrait */
-.ui-ti-face { display: grid; place-items: center; color: hsl(var(--ui-ti-h, 214) 48% 36%); background: hsl(var(--ui-ti-h, 214) 70% 93%); }
-.ui-ti-face[data-hue="b"] { --ui-ti-h: 152; }
-.ui-ti-face[data-hue="c"] { --ui-ti-h: 268; }
-.ui-ti-face svg { display: block; width: 46%; height: 46%; }
+.ui-ti-face > svg { display: block; width: 46%; height: 46%; }
+.ui-ti-node--b .ui-ti-face { background: #ffffff; }
+.ui-ti-node--b .ui-ti-face > svg, .ui-ti-node--b .ui-ti-face > img { width: 58%; height: 58%; }
+.ui-ti-node--c .ui-ti-face { background: var(--brand-soft, #e8f1ff); color: var(--brand, #0066e6); }
+.ui-ti-face img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+}
 /* Status: a bright green dot in a thick, pale green ring with a faint 10% halo outside */
 .ui-ti-dot {
   position: absolute;

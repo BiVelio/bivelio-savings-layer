@@ -99,7 +99,7 @@ export function TextField({
           data-revealed={isPassword && reveal ? (revealed ? "true" : "false") : undefined}
         />
         {isPassword && reveal ? (
-          <Tooltip label={revealed ? reveal.hide : reveal.show}>
+          <Tooltip content={revealed ? reveal.hide : reveal.show} align="end">
             <button
               type="button"
               className="ui-tfc__action"

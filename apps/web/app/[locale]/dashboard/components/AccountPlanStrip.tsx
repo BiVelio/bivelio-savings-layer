@@ -11,7 +11,7 @@ import { puede } from "@/lib/org/permisos";
 import { Notice } from "@/app/components/ui";
 import { Link } from "@/i18n/navigation";
 import { Avatar } from "@/vendor/affectui/avatar";
-import { Badge, type BadgeTone } from "@/vendor/affectui/badge";
+import { Badge, type BadgeTone } from "@/vendor/affectui/badge-clean";
 import { UsageMeter, type UsageMeterRow } from "@/vendor/affectui/usage-meter";
 
 /** Real account/plan — reads organizations.plan (best-effort), never hardcoded.
@@ -118,7 +118,7 @@ export async function AccountPlanStrip({
           </div>
           <p className="acct-status" data-tone={estado.tono}>
             <span className="sr-only">{t("accountPlanStrip.statusLabel")}: </span>
-            <Badge size="md" tone={tonoDelEstado[estado.tono]} dot live={ocultarCompra}>
+            <Badge size="lg" tone={tonoDelEstado[estado.tono]} dot live={ocultarCompra}>
               {estado.texto}
             </Badge>
           </p>
@@ -144,8 +144,8 @@ export async function AccountPlanStrip({
                 : undefined
             }
             state={porEncima ? "over" : "ok"}
-            ratio={proporcion != null ? proporcion / 100 : null}
-            overRatio={exceso > 0 && hayUso ? exceso / seatsUsados : null}
+            used={proporcion != null && hayUso ? seatsUsados : null}
+            limit={ctx.seats}
             meterLabel={
               hayUso && ctx.seats != null
                 ? `${t("accountPlanStrip.seatsUsed")}: ${num(seatsUsados)} · ${t("accountPlanStrip.seatsContracted")}: ${num(ctx.seats)}`

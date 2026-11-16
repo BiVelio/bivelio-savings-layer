@@ -39,8 +39,8 @@ const reduced = () => typeof window !== "undefined" && window.matchMedia?.("(pre
 export function BlurCrossfade({
   id,
   children,
-  duration = 420,
-  blur = 10,
+  duration = 240,
+  blur = 6,
   morph = "height",
   as: Tag = "div",
   className,

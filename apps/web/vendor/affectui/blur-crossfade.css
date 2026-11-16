@@ -1,12 +1,12 @@
 /*
  * Derived from affectUI Pro 'Blur Crossfade' (https://www.affectui.com). Used under the affectUI Pro license held by BiVelio. NOT covered by this repository's Apache-2.0 licence; do not redistribute as a component kit.
  *
- * Light theme only, BiVelio tokens; changes from upstream are listed in ./VENDOR.md.
+ * Changes from upstream are listed in ./VENDOR.md.
  */
 .ui-bx {
-  --ui-bx-duration: 420ms;
-  --ui-bx-blur: 10px;
-  --ui-bx-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ui-bx-duration: 240ms;
+  --ui-bx-blur: 6px;
+  --ui-bx-ease: var(--aui-ease, cubic-bezier(0.22, 1, 0.36, 1));
   position: relative;
   display: block;
 }

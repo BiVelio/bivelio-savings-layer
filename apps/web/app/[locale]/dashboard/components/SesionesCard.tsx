@@ -1,8 +1,8 @@
 import { getTranslations } from "next-intl/server";
 
 import { EvidenceBadge } from "@/app/components/ui";
-import { DataTable } from "@/vendor/affectui/data-table";
-import { Tooltip } from "@/vendor/affectui/tooltip";
+import { DataTable } from "@/vendor/affectui/data-table-clean";
+import { Tooltip } from "@/vendor/affectui/tooltip-clean";
 
 import type { SesionRollup } from "../data";
 import { intfmt } from "../format";
@@ -44,9 +44,11 @@ export async function SesionesCard({ sesiones }: { sesiones: SesionRollup[] }) {
         <EvidenceBadge tipo="tus-datos" label={u("evidence.tusDatos")} pequeno />
       </div>
       <DataTable
-        caption={t("sesiones.title")}
+        flat
+        pinFirst
+        label={t("sesiones.title")}
         sortLabel={t("panel.sortBy", { column: "{column}" })}
-        minWidth={520}
+        minWidth="520px"
         columns={[
           { key: "session", label: t("sesiones.colSession"), mono: true, nowrap: true, sortable: true },
           { key: "agents", label: t("sesiones.colAgents"), align: "end", mono: true, sortable: true },
@@ -56,22 +58,21 @@ export async function SesionesCard({ sesiones }: { sesiones: SesionRollup[] }) {
         ]}
         rows={filas.map(([sessionId, g]) => ({
           id: sessionId,
+          sort: { session: sessionId, agents: g.agentes.size, requests: g.requests, tokens: g.tokens, cost: g.coste },
+          quiet: g.agentes.size === 0 ? ["agents"] : undefined,
           cells: {
-            session: {
-              sort: sessionId,
-              content:
-                sessionId.length > 18 ? (
-                  <Tooltip content={sessionId} tapToggles delay={200} align="start">
-                    <button type="button" className="ox-id">{`${sessionId.slice(0, 8)}…${sessionId.slice(-6)}`}</button>
-                  </Tooltip>
-                ) : (
-                  sessionId
-                ),
-            },
-            agents: { sort: g.agentes.size, content: g.agentes.size, quiet: g.agentes.size === 0 },
-            requests: { sort: g.requests, content: intfmt(g.requests) },
-            tokens: { sort: g.tokens, content: intfmt(g.tokens) },
-            cost: { sort: g.coste, content: `$${g.coste.toFixed(4)}` },
+            session:
+              sessionId.length > 18 ? (
+                <Tooltip content={sessionId} toggleOnClick delay={200} align="start">
+                  <button type="button" className="ox-id">{`${sessionId.slice(0, 8)}…${sessionId.slice(-6)}`}</button>
+                </Tooltip>
+              ) : (
+                sessionId
+              ),
+            agents: g.agentes.size,
+            requests: intfmt(g.requests),
+            tokens: intfmt(g.tokens),
+            cost: `$${g.coste.toFixed(4)}`,
           },
         }))}
       />

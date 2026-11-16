@@ -13,18 +13,21 @@ import { useEffect, useRef, useSyncExternalStore, type ReactNode } from "react";
 
 /*
  * Toaster – calm toasts with an imperative API: put <Toaster /> once, then call toast("Saved").
- * BiVelio fork, REDUCED: one corner, a plain column (no fan of cards peeking behind each other), no swipe, no
- * promise / loading morph, no rich colors. What stays: the white card with its hairline, the 16px status icon, ONE
- * action (the place for "Undo"), a close button and a timer that pauses while the pointer or the focus is on the
- * toast. The list is a polite live region, so a toast is announced without stealing the focus.
+ * BiVelio fork, REDUCED, and ONE toaster for the whole panel: one corner, a plain column (no fan of cards peeking
+ * behind each other), no swipe, no promise / loading morph, no rich colors, no second stack. What stays: the white
+ * card with its hairline, the 16px status icon, ONE action (the place for "Undo"), a close button (and Escape while
+ * the focus is on the toast) and a timer that pauses while the pointer or the focus is on the toast. The list is a
+ * polite live region, so a toast is announced without stealing the focus; an ERROR is an alert and, unless a
+ * duration is given, stays until it is closed – a failure must not vanish while nobody is looking.
+ * toast.success(…), toast.error(…) and toast.info(…) are shorthands for the `type` option.
  * No default strings: the labels of the region and of the close button are props of <Toaster />.
  */
 
-export type ToastType = "default" | "success" | "info";
+export type ToastType = "default" | "success" | "info" | "error";
 export type ToastOptions = {
   description?: ReactNode;
   type?: ToastType;
-  /** ms before it leaves on its own (default 6000). `Infinity` keeps it until closed. */
+  /** ms before it leaves on its own (default 6000; an error: until closed). `Infinity` keeps it until closed. */
   duration?: number;
   action?: { label: string; onClick: () => void };
   /** A toast with the same id replaces the one on screen instead of piling up */
@@ -52,6 +55,9 @@ export function toast(title: ReactNode, options: ToastOptions = {}): string {
   emit();
   return key;
 }
+toast.success = (title: ReactNode, options: ToastOptions = {}) => toast(title, { ...options, type: "success" });
+toast.info = (title: ReactNode, options: ToastOptions = {}) => toast(title, { ...options, type: "info" });
+toast.error = (title: ReactNode, options: ToastOptions = {}) => toast(title, { ...options, type: "error" });
 toast.dismiss = (key?: string) => {
   toasts = key ? toasts.filter((t) => t.key !== key) : [];
   emit();
@@ -74,7 +80,8 @@ export function Toaster({ label, closeLabel }: { /** Accessible name of the regi
 
 function ToastCard({ toast: t, closeLabel }: { toast: Toast; closeLabel: string }) {
   const el = useRef<HTMLLIElement>(null);
-  const ms = t.duration ?? 6000;
+  const type = t.type ?? "default";
+  const ms = t.duration ?? (type === "error" ? Infinity : 6000);
   // The timer is the CSS animation of the hairline: it pauses on hover and focus by itself, and when it ends the
   // toast leaves. With reduced motion the hairline is not drawn, so a plain timeout does the same job.
   useEffect(() => {
@@ -84,16 +91,21 @@ function ToastCard({ toast: t, closeLabel }: { toast: Toast; closeLabel: string 
     const id = window.setTimeout(() => toast.dismiss(t.key), ms);
     return () => window.clearTimeout(id);
   }, [ms, t.key]);
-  const type = t.type ?? "default";
   return (
-    <li ref={el} className="ui-tsc__toast">
-      <div className="ui-tsc__card">
+    <li
+      ref={el}
+      className="ui-tsc__toast"
+      onKeyDown={(e) => {
+        if (e.key === "Escape") toast.dismiss(t.key);
+      }}
+    >
+      <div className="ui-tsc__card" role={type === "error" ? "alert" : undefined}>
         <div className="ui-tsc__content">
           {type !== "default" && (
             <span className="ui-tsc__icon" data-type={type} aria-hidden="true">
               <svg className="ui-tsc__status" viewBox="0 0 16 16">
                 <circle cx="8" cy="8" r="6.5" strokeOpacity="0.28" />
-                {type === "success" ? <path d="m5.2 8.2 1.9 1.9 3.7-4" /> : <path d="M8 7.4v3.4M8 5.1v.1" />}
+                {type === "success" ? <path d="m5.2 8.2 1.9 1.9 3.7-4" /> : type === "error" ? <path d="m5.8 5.8 4.4 4.4M10.2 5.8l-4.4 4.4" /> : <path d="M8 7.4v3.4M8 5.1v.1" />}
               </svg>
             </span>
           )}

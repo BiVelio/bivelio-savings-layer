@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 
 import { MAX_ASIENTOS, normalizarAsientos } from "@/lib/billing/asientos";
 import { NumberInput } from "@/vendor/affectui/number-input";
-import { Spinner } from "@/vendor/affectui/spinner";
+import { Spinner } from "@/vendor/affectui/spinner-clean";
 
 /**
  * Los 409 del checkout traen un `code`; el texto en inglés que los acompaña es

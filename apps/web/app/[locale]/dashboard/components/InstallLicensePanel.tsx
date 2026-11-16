@@ -13,7 +13,7 @@ import { SnippetPorSistema } from "@/app/components/SnippetPorSistema";
 import { CodeFrame } from "@/app/components/ui/CodeFrame";
 import { Notice } from "@/app/components/ui/Notice";
 import { puede } from "@/lib/org/permisos";
-import { Badge } from "@/vendor/affectui/badge";
+import { Badge } from "@/vendor/affectui/badge-clean";
 
 import type { OrgContext } from "../data";
 import { ServiceAccountKeySection } from "./ServiceAccountKeySection";

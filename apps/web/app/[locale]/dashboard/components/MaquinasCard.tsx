@@ -3,9 +3,9 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { MachinesIcon } from "@/app/components/icons";
 import { EmptyState, EvidenceBadge } from "@/app/components/ui";
 import { COMISIONAR_REFERENCIA } from "@/lib/billing/tarifa";
-import { Badge, type BadgeTone } from "@/vendor/affectui/badge";
-import { DataTable } from "@/vendor/affectui/data-table";
-import { Tooltip } from "@/vendor/affectui/tooltip";
+import { Badge, type BadgeTone } from "@/vendor/affectui/badge-clean";
+import { DataTable } from "@/vendor/affectui/data-table-clean";
+import { Tooltip } from "@/vendor/affectui/tooltip-clean";
 import { UsageMeter } from "@/vendor/affectui/usage-meter";
 import { estadoVersion, type AsientoVisto } from "@/lib/version/aviso-version";
 
@@ -120,7 +120,7 @@ export async function MaquinasCard({
   };
   const p = await getTranslations("dashboard.panel");
   // Usar todos los asientos pagados no es un error (aviso); pasarse sí se marca.
-  const estadoAsientos = !seats ? "ok" : seats.used > seats.seats ? "limit" : seats.used === seats.seats ? "warn" : "ok";
+  const estadoAsientos = !seats ? "ok" : seats.used > seats.seats ? "over" : seats.used === seats.seats ? "full" : "ok";
 
   return (
     <div className="card card-pad ox-card" id="maquinas">
@@ -131,22 +131,25 @@ export async function MaquinasCard({
       {seats && seats.seats > 0 ? (
         <UsageMeter
           className="ox-seats"
-          framed
+          size="sm"
+          headingAs="p"
           title={t("seatsTitle")}
           used={seats.used}
           limit={seats.seats}
           figure={String(seats.used)}
-          ofLabel={t("seatsOf", { seats: seats.seats })}
-          shareLabel={pct0Floor(Math.min(1, seats.used / seats.seats))}
+          figureLabel={t("seatsOf", { seats: seats.seats })}
+          share={pct0Floor(Math.min(1, seats.used / seats.seats))}
           state={estadoAsientos}
           stateLabel={seats.used > seats.seats ? t("seatsOver") : t("seatsFull")}
           note={seats.rotated ? `${t("seatsNote")} ${t("seatsRotated")}` : t("seatsNote")}
         />
       ) : null}
       <DataTable
-        caption={t("title")}
+        flat
+        pinFirst
+        label={t("title")}
         sortLabel={p("sortBy", { column: "{column}" })}
-        minWidth={620}
+        minWidth="620px"
         columns={[
           { key: "seat", label: t("colSeat"), mono: true, nowrap: true, sortable: true },
           { key: "surface", label: t("colSurface"), sortable: true },
@@ -161,22 +164,22 @@ export async function MaquinasCard({
           const visto = Date.parse(a.lastSeenAt);
           return {
             id: a.seatId,
+            // Un dato que falta ordena SIEMPRE al final (null), nunca como cero.
+            sort: { seat: a.seatId, surface: a.surface ?? null, last: Number.isNaN(visto) ? null : visto, saved: a.ahorroMedido7dUsd },
+            quiet: [...(a.surface ? [] : ["surface"]), ...(a.versionMin === null ? ["version"] : [])],
             cells: {
-              seat: {
-                sort: a.seatId,
-                content: corto ? (
-                  <Tooltip content={a.seatId} tapToggles delay={200} align="start">
-                    <button type="button" className="ox-id">{`${a.seatId.slice(0, 10)}…`}</button>
-                  </Tooltip>
-                ) : (
-                  a.seatId
-                ),
-              },
-              surface: { sort: a.surface ?? null, content: a.surface ?? "—", quiet: !a.surface },
-              version: { content: version(a), quiet: a.versionMin === null },
-              state: { content: c ? <Badge tone={c.tono} dot>{c.texto}</Badge> : null },
-              last: { sort: Number.isNaN(visto) ? null : visto, content: fecha(a.lastSeenAt) },
-              saved: { sort: a.ahorroMedido7dUsd, content: money(a.ahorroMedido7dUsd) },
+              seat: corto ? (
+                <Tooltip content={a.seatId} toggleOnClick delay={200} align="start">
+                  <button type="button" className="ox-id">{`${a.seatId.slice(0, 10)}…`}</button>
+                </Tooltip>
+              ) : (
+                a.seatId
+              ),
+              surface: a.surface ?? "—",
+              version: version(a),
+              state: c ? <Badge tone={c.tono} dot>{c.texto}</Badge> : null,
+              last: fecha(a.lastSeenAt),
+              saved: money(a.ahorroMedido7dUsd),
             },
           };
         })}

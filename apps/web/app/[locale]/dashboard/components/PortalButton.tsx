@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 
-import { Spinner } from "@/vendor/affectui/spinner";
+import { Spinner } from "@/vendor/affectui/spinner-clean";
 
 /**
  * Botón al portal de facturación de Stripe, suelto (sin los CTA de compra).

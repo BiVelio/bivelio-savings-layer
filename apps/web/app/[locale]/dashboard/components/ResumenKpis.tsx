@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { getTranslations } from "next-intl/server";
 
 import { ArrowRightIcon, CheckIcon, InstallIcon } from "@/app/components/icons";
-import { Termino } from "@/app/components/app/Termino";
+import { Termino } from "@/app/components/evidencia/Termino";
 import { EvidenceBadge } from "@/app/components/ui";
 import { Link } from "@/i18n/navigation";
 import { KpiBoard, KpiFocus, KpiStat } from "@/vendor/affectui/kpi-board";

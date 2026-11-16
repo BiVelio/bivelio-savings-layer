@@ -1,8 +1,8 @@
 import { getTranslations } from "next-intl/server";
 
-import { Badge } from "@/vendor/affectui/badge";
+import { Badge } from "@/vendor/affectui/badge-clean";
 import { CompactBreakdown } from "@/vendor/affectui/compact-breakdown";
-import { DataTableReadonly, type ReadColumn, type ReadRow } from "@/vendor/affectui/data-table-readonly";
+import { DataTable, type DataTableColumn, type DataTableRow } from "@/vendor/affectui/data-table-clean";
 
 import { MIN_PARES_POR_ESTRATO, POR_CADA, type InformeDelBancoPropio } from "@/lib/verificacion/banco-propio";
 import { intfmt, money, moneySigned } from "../format";
@@ -26,16 +26,15 @@ export async function YourBenchStrata({ informe }: { informe: InformeDelBancoPro
   const filas = informe.estratos.filter((e) => e.elegibles > 0 || e.pares > 0);
   // Color estable por grupo: por su posición en la lista completa del informe.
   const COLOR: Record<string, string> = Object.fromEntries(informe.estratos.map((e, i) => [e.estrato, RAMPA[i % RAMPA.length]!]));
-  const ordenar = (col: string) => t("scenarioTable.sortBy", { col });
-  const columns: ReadColumn[] = [
+  const columns: DataTableColumn[] = [
     { key: "tipo", label: t("yourBench.colKind"), width: "26%" },
-    { key: "elegibles", label: t("yourBench.colEligible"), align: "end", sortable: true, sortLabel: ordenar(t("yourBench.colEligible")) },
-    { key: "pares", label: t("yourBench.colPairs"), align: "end", sortable: true, sortLabel: ordenar(t("yourBench.colPairs")) },
+    { key: "elegibles", label: t("yourBench.colEligible"), align: "end", sortable: true },
+    { key: "pares", label: t("yourBench.colPairs"), align: "end", sortable: true },
     { key: "sin", label: t("yourBench.colNaive"), align: "end" },
     { key: "con", label: t("yourBench.colOptimized"), align: "end" },
-    { key: "dif", label: t("yourBench.colDiff", { per: intfmt(POR_CADA) }), align: "end", sortable: true, sortLabel: ordenar(t("yourBench.colDiff", { per: intfmt(POR_CADA) })) },
+    { key: "dif", label: t("yourBench.colDiff", { per: intfmt(POR_CADA) }), align: "end", sortable: true },
   ];
-  const rows: ReadRow[] = filas.map((e) => {
+  const rows: DataTableRow[] = filas.map((e) => {
     const medido = e.cubierto && e.diferencia;
     return {
       id: e.estrato,
@@ -59,7 +58,7 @@ export async function YourBenchStrata({ informe }: { informe: InformeDelBancoPro
             </span>
           </span>
         ) : (
-          <Badge tone={e.pares === 0 ? "neutral" : "warning"}>
+          <Badge size="sm" tone={e.pares === 0 ? "neutral" : "warning"}>
             {e.pares === 0 ? t("yourBench.noPairs") : t("yourBench.notCovered", { n: intfmt(e.pares), min: intfmt(MIN_PARES_POR_ESTRATO) })}
           </Badge>
         ),
@@ -86,7 +85,18 @@ export async function YourBenchStrata({ informe }: { informe: InformeDelBancoPro
           footer={t("yourBench.weightsNote")}
         />
       ) : null}
-      <DataTableReadonly className="yb-tabla" headingAs="h2" title={t("yourBench.strataTitle")} columns={columns} rows={rows} minWidth="760px" />
+      <DataTable
+        className="yb-tabla"
+        headingAs="h2"
+        label={t("yourBench.strataTitle")}
+        title={t("yourBench.strataTitle")}
+        columns={columns}
+        rows={rows}
+        rowHeader
+        pinFirst
+        sortLabel={t("scenarioTable.sortBy", { col: "{column}" })}
+        minWidth="760px"
+      />
     </div>
   );
 }

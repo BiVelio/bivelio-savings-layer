@@ -5,15 +5,15 @@ import { useLocale, useTranslations } from "next-intl";
 
 import { Notice } from "@/app/components/ui";
 import { Avatar } from "@/vendor/affectui/avatar";
-import { Badge } from "@/vendor/affectui/badge";
-import { DataTable, type DataTableColumn } from "@/vendor/affectui/data-table";
+import { Badge } from "@/vendor/affectui/badge-clean";
+import { DataTable, type DataTableColumn } from "@/vendor/affectui/data-table-clean";
 import { AlertDialog } from "@/vendor/affectui/dialog";
 import { DropdownMenu } from "@/vendor/affectui/dropdown-menu";
-import { EmptyState } from "@/vendor/affectui/empty-state";
+import { EmptyState } from "@/vendor/affectui/empty-state-clean";
 import { Select } from "@/vendor/affectui/select";
-import { Spinner } from "@/vendor/affectui/spinner";
+import { Spinner } from "@/vendor/affectui/spinner-clean";
 import { TeamInvite } from "@/vendor/affectui/team-invite";
-import { TextField } from "@/vendor/affectui/text-field";
+import { TextField } from "@/vendor/affectui/text-field-clean";
 import { Toaster, toast } from "@/vendor/affectui/toaster";
 
 interface Miembro {
@@ -175,8 +175,9 @@ export function EquipoPanel() {
   useEffect(() => {
     if (!msg || avisado.current === msg) return;
     avisado.current = msg;
-    if (msg.tipo === "ok") toast.success(msg.texto, { toaster: "equipo" });
-    else toast.error(msg.texto, { toaster: "equipo", duration: Infinity });
+    // Un fallo se queda hasta que se cierra (es lo que hace `toast.error` por defecto).
+    if (msg.tipo === "ok") toast.success(msg.texto);
+    else toast.error(msg.texto);
   }, [msg]);
 
   if (oculto) return null;
@@ -244,21 +245,21 @@ export function EquipoPanel() {
   );
 
   const columnasMiembros: DataTableColumn[] = [
-    { id: "persona", header: t("columnaPersona"), lead: true },
-    { id: "desde", header: t("columnaDesde"), width: "22%" },
-    { id: "rol", header: t("columnaRol"), width: "26%" },
-    { id: "acciones", header: "", align: "end", width: "64px", plain: true },
+    { key: "persona", label: t("columnaPersona"), lead: true },
+    { key: "desde", label: t("columnaDesde"), width: "22%" },
+    { key: "rol", label: t("columnaRol"), width: "26%" },
+    { key: "acciones", label: "", align: "end", width: "64px", plain: true },
   ];
   const columnasInvitaciones: DataTableColumn[] = [
-    { id: "persona", header: t("invitarEmail"), lead: true },
-    { id: "rol", header: t("columnaRol"), width: "20%" },
-    { id: "estado", header: tc("statusLabel"), width: "30%" },
-    { id: "acciones", header: "", align: "end", width: "64px", plain: true },
+    { key: "persona", label: t("invitarEmail"), lead: true },
+    { key: "rol", label: t("columnaRol"), width: "20%" },
+    { key: "estado", label: tc("statusLabel"), width: "30%" },
+    { key: "acciones", label: "", align: "end", width: "64px", plain: true },
   ];
 
   return (
     <section className="equipo">
-      <Toaster id="equipo" position="bottom-right" label={t("avisosLabel")} dismissLabel={t("avisoCerrar")} />
+      <Toaster label={t("avisosLabel")} closeLabel={t("avisoCerrar")} />
 
       {/* MIEMBROS ≠ ASIENTOS, arriba del todo: nadie debe deducir que invitar
           a una persona cuesta dinero. Un asiento es una máquina. */}
@@ -280,7 +281,7 @@ export function EquipoPanel() {
         <div className="equipo-head">
           <h2 className="equipo-h">{t("miembrosTitulo")}</h2>
           {miembros !== null ? (
-            <Badge size="md" className="equipo-count">
+            <Badge>
               {t("miembrosCuenta", { n: miembros.length })}
             </Badge>
           ) : null}
@@ -296,6 +297,7 @@ export function EquipoPanel() {
           <>
             <DataTable
               flat
+              narrow="stack"
               className="equipo-tabla"
               label={t("miembrosTitulo")}
               columns={columnasMiembros}
@@ -312,13 +314,13 @@ export function EquipoPanel() {
                         <Avatar size={32} name={nombreDe(nombre)} seed={m.userId} />
                         <span className="equipo-quien-txt">
                           <b>{nombre}</b>
-                          {m.soyYo ? <Badge className="equipo-tu">{t("tu")}</Badge> : null}
+                          {m.soyYo ? <Badge size="sm" className="equipo-tu">{t("tu")}</Badge> : null}
                         </span>
                       </span>
                     ),
                     desde: <span className="equipo-desde">{fecha(m.desde)}</span>,
                     rol: fijo ? (
-                      <Badge size="md" tone={m.role === "owner" ? "info" : "neutral"} className={`rol${m.role === "owner" ? " owner" : ""}`}>
+                      <Badge tone={m.role === "owner" ? "info" : "neutral"}>
                         {nombreRol(m.role)}
                       </Badge>
                     ) : (
@@ -367,7 +369,6 @@ export function EquipoPanel() {
         <form onSubmit={invitar} className="equipo-form">
           <TextField
             className="equipo-campo equipo-campo--ancho"
-            size="lg"
             label={t("invitarEmail")}
             type="email"
             required
@@ -395,19 +396,19 @@ export function EquipoPanel() {
         <h3 className="equipo-sub">{t("permisosTitulo")}</h3>
         <dl className="equipo-roles">
           <div>
-            <dt><Badge size="md" tone="info" className="rol owner">{t("rolOwner")}</Badge></dt>
+            <dt><Badge tone="info">{t("rolOwner")}</Badge></dt>
             <dd>{t("permisoOwner")}</dd>
           </div>
           <div>
-            <dt><Badge size="md" className="rol">{t("rolAdmin")}</Badge></dt>
+            <dt><Badge>{t("rolAdmin")}</Badge></dt>
             <dd>{t("permisoAdmin")}</dd>
           </div>
           <div>
-            <dt><Badge size="md" className="rol">{t("rolBilling")}</Badge></dt>
+            <dt><Badge>{t("rolBilling")}</Badge></dt>
             <dd>{t("permisoBilling")}</dd>
           </div>
           <div>
-            <dt><Badge size="md" className="rol">{t("rolMember")}</Badge></dt>
+            <dt><Badge>{t("rolMember")}</Badge></dt>
             <dd>{t("permisoMember")}</dd>
           </div>
         </dl>
@@ -415,12 +416,13 @@ export function EquipoPanel() {
         {/* ---------------------------------------------------- invitaciones */}
         <div className="equipo-subhead">
           <h3 className="equipo-sub">{t("invitacionesTitulo")}</h3>
-          {invitaciones.length > 0 ? <Badge count={invitaciones.length} tone="warning" /> : null}
+          {invitaciones.length > 0 ? <Badge size="sm" count={invitaciones.length} tone="warning" /> : null}
         </div>
         {invitaciones.length > 0 ? (
           <>
             <DataTable
               flat
+              narrow="stack"
               className="equipo-tabla"
               label={t("invitacionesTitulo")}
               columns={columnasInvitaciones}
@@ -438,7 +440,7 @@ export function EquipoPanel() {
                   rol: nombreRol(i.role),
                   estado: (
                     <span className="equipo-estado">
-                      <Badge size="md" dot tone={i.caducada ? "danger" : "warning"} className={`rol ${i.caducada ? "caducada" : "pendiente"}`}>
+                      <Badge dot tone={i.caducada ? "danger" : "warning"}>
                         {i.caducada ? t("caducada") : t("pendiente")}
                       </Badge>
                       <span className="equipo-caduca">{t(i.caducada ? "caduco" : "caduca", { date: fecha(i.expires_at) })}</span>
@@ -507,7 +509,6 @@ export function EquipoPanel() {
         >
           <TextField
             className="equipo-campo equipo-campo--ancho"
-            size="lg"
             label={t("nombreOrg")}
             hint={t("nombreOrgAyuda")}
             value={nombreOrg}

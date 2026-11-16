@@ -219,13 +219,14 @@ export default async function PaperPage({ params }: { params: Promise<{ locale: 
                     <DataTable
                       key={i}
                       className="paper-datos"
-                      scrollLabel={t("paper.tableScroll")}
+                      label={t("paper.tableScroll")}
                       minWidth={`${Math.max(b.filas[0]?.length ?? 0, 2) * 8.5}rem`}
                       dense
-                      columns={(b.filas[0] ?? []).map((celda) => ({ label: <Inline texto={celda} /> }))}
+                      prose
+                      columns={(b.filas[0] ?? []).map((celda, c) => ({ key: String(c), label: <Inline texto={celda} /> }))}
                       rows={b.filas.slice(1).map((fila, r) => ({
-                        key: String(r),
-                        cells: fila.map((celda, c) => <Inline key={c} texto={celda} />),
+                        id: String(r),
+                        cells: Object.fromEntries(fila.map((celda, c) => [String(c), <Inline key={c} texto={celda} />])),
                       }))}
                     />
                   );

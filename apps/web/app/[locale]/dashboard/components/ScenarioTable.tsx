@@ -3,15 +3,15 @@
 import { useTranslations } from "next-intl";
 
 import { AyudaDeTermino } from "@/app/components/evidencia/Termino";
-import { Badge } from "@/vendor/affectui/badge";
-import { DataTableReadonly, type ReadColumn, type ReadRow } from "@/vendor/affectui/data-table-readonly";
+import { Badge } from "@/vendor/affectui/badge-clean";
+import { DataTable, type DataTableColumn, type DataTableRow } from "@/vendor/affectui/data-table-clean";
 
 import type { AbScenario } from "../data";
 import { pct, money, intfmt, LEDGER_COLOR } from "../format";
 
 /**
- * Per-scenario A vs B — la Data Table de affectUI en su bifurcación de SOLO
- * LECTURA: ordenable por cabecera, primera columna fija y desplazamiento
+ * Per-scenario A vs B — la Data Table de affectUI, de SOLO
+ * LECTURA (la misma de todo el sitio): ordenable por cabecera, primera columna fija y desplazamiento
  * lateral con borde suave en pantallas estrechas. Nada se edita ni se
  * selecciona: es evidencia.
  *
@@ -30,20 +30,19 @@ export function ScenarioTable({ scenarios, piezaDelBanco = [] }: { scenarios: Ab
   const techo = Math.max(...scenarios.map((s) => Math.max(s.armA.meanCost, s.armB.meanCost)), 0);
   const ancho = (v: number) => (techo > 0 ? `${Math.max(v > 0 ? 2 : 0, (v / techo) * 100)}%` : "0%");
   const ayuda = (col: string, definicion: string) => <AyudaDeTermino etiqueta={t("scenarioTable.help", { col })} definicion={definicion} />;
-  const ordenar = (col: string) => t("scenarioTable.sortBy", { col });
 
-  const columns: ReadColumn[] = [
-    { key: "name", label: t("scenarioTable.colScenario"), sortable: true, sortLabel: ordenar(t("scenarioTable.colScenario")), width: "30%" },
-    { key: "kind", label: t("scenarioTable.colKind"), sortable: true, sortLabel: ordenar(t("scenarioTable.colKind")) },
+  const columns: DataTableColumn[] = [
+    { key: "name", label: t("scenarioTable.colScenario"), sortable: true, width: "30%" },
+    { key: "kind", label: t("scenarioTable.colKind"), sortable: true },
     { key: "aTok", label: t("scenarioTable.colAInOut"), align: "end", help: ayuda(t("scenarioTable.colAInOut"), t("scenarioTable.termTokens")) },
     { key: "bTok", label: t("scenarioTable.colBInOut"), align: "end" },
-    { key: "a", label: t("scenarioTable.colACost"), align: "end", sortable: true, sortLabel: ordenar(t("scenarioTable.colACost")), help: ayuda(t("scenarioTable.colACost"), t("scenarioTable.termCost")) },
-    { key: "b", label: t("scenarioTable.colBCost"), align: "end", sortable: true, sortLabel: ordenar(t("scenarioTable.colBCost")) },
-    { key: "savings", label: t("scenarioTable.colSavings"), align: "end", sortable: true, sortLabel: ordenar(t("scenarioTable.colSavings")), help: ayuda(t("scenarioTable.colSavings"), t("scenarioTable.termSavings")) },
-    { key: "quality", label: t("scenarioTable.colQa"), align: "end", sortable: true, sortLabel: ordenar(t("scenarioTable.colQa")), help: ayuda(t("scenarioTable.colQa"), t("scenarioTable.termQa")) },
+    { key: "a", label: t("scenarioTable.colACost"), align: "end", sortable: true, help: ayuda(t("scenarioTable.colACost"), t("scenarioTable.termCost")) },
+    { key: "b", label: t("scenarioTable.colBCost"), align: "end", sortable: true },
+    { key: "savings", label: t("scenarioTable.colSavings"), align: "end", sortable: true, help: ayuda(t("scenarioTable.colSavings"), t("scenarioTable.termSavings")) },
+    { key: "quality", label: t("scenarioTable.colQa"), align: "end", sortable: true, help: ayuda(t("scenarioTable.colQa"), t("scenarioTable.termQa")) },
   ];
 
-  const rows: ReadRow[] = scenarios.map((s) => {
+  const rows: DataTableRow[] = scenarios.map((s) => {
     const sv = s.measured.savings.point;
     return {
       id: s.name,
@@ -64,7 +63,7 @@ export function ScenarioTable({ scenarios, piezaDelBanco = [] }: { scenarios: Ab
               {piezaDelBanco.includes(s.name) ? (
                 <>
                   {" "}
-                  <Badge tone="warning" className="st-flag">
+                  <Badge size="sm" tone="warning" className="st-flag">
                     {t("scenarioTable.benchOnly")}
                   </Badge>
                 </>
@@ -98,12 +97,16 @@ export function ScenarioTable({ scenarios, piezaDelBanco = [] }: { scenarios: Ab
   });
 
   return (
-    <DataTableReadonly
+    <DataTable
       className="prf-tbl"
+      label={t("scenarioTable.title")}
       title={t("scenarioTable.title")}
       description={t("scenarioTable.caption")}
       columns={columns}
       rows={rows}
+      rowHeader
+      pinFirst
+      sortLabel={t("scenarioTable.sortBy", { col: "{column}" })}
       defaultSort={{ key: "savings", dir: "desc" }}
       minWidth="880px"
     />

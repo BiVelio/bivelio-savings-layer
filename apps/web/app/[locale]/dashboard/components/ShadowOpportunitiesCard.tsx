@@ -1,9 +1,9 @@
 import { getTranslations } from "next-intl/server";
 
-import { Badge } from "@/vendor/affectui/badge";
-import { DataTable } from "@/vendor/affectui/data-table";
+import { Badge } from "@/vendor/affectui/badge-clean";
+import { DataTable } from "@/vendor/affectui/data-table-clean";
 
-import { Termino } from "@/app/components/app/Termino";
+import { Termino } from "@/app/components/evidencia/Termino";
 
 import type { ShadowModelDia, ShadowReadStatus, UsageRollup } from "../data";
 import { intfmt, money, moneySigned, pctFloor } from "../format";
@@ -47,9 +47,11 @@ export async function ShadowOpportunitiesCard({
       {summary.rows.length > 0 && legible ? (
         <>
           <DataTable
-            caption={t("title")}
+            flat
+            pinFirst
+            label={t("title")}
             sortLabel={p("sortBy", { column: "{column}" })}
-            minWidth={600}
+            minWidth="600px"
             columns={[
               { key: "model", label: t("colModel"), mono: true, nowrap: true, sortable: true },
               { key: "requests", label: t("colRequests"), align: "end", mono: true, sortable: true },
@@ -60,17 +62,23 @@ export async function ShadowOpportunitiesCard({
             ]}
             rows={summary.rows.map((row) => ({
               id: row.model,
+              // Sin cobertura medida la celda es «—» y ordena al final: no es un 0 %.
+              sort: {
+                model: row.model,
+                requests: row.shadowRequests,
+                baseline: row.baselineCost,
+                actual: row.actualCost,
+                savings: row.hypotheticalSavings,
+                coverage: row.coverageRatio,
+              },
+              quiet: row.coverageRatio === null ? ["coverage"] : undefined,
               cells: {
-                model: { sort: row.model, content: row.model },
-                requests: { sort: row.shadowRequests, content: intfmt(row.shadowRequests) },
-                baseline: { sort: row.baselineCost, content: money(row.baselineCost) },
-                actual: { sort: row.actualCost, content: money(row.actualCost) },
-                savings: { sort: row.hypotheticalSavings, content: moneySigned(row.hypotheticalSavings) },
-                coverage: {
-                  sort: row.coverageRatio,
-                  content: row.coverageRatio === null ? "—" : pctFloor(row.coverageRatio),
-                  quiet: row.coverageRatio === null,
-                },
+                model: row.model,
+                requests: intfmt(row.shadowRequests),
+                baseline: money(row.baselineCost),
+                actual: money(row.actualCost),
+                savings: moneySigned(row.hypotheticalSavings),
+                coverage: row.coverageRatio === null ? "—" : pctFloor(row.coverageRatio),
               },
             }))}
           />

@@ -184,10 +184,11 @@ function Bloques({ bloques, copiar }: { bloques: readonly Bloque[]; copiar: Copi
           <DataTable
             key={i}
             className="guia-datos"
-            scrollLabel="Table"
+            label="Table"
             minWidth={`${Math.max(b.cabecera.length, 2) * 9}rem`}
-            columns={b.cabecera.map((c) => ({ label: <EnLineaR c={c} /> }))}
-            rows={b.filas.map((f, j) => ({ key: String(j), cells: f.map((c, k) => <EnLineaR key={k} c={c} />) }))}
+            prose
+            columns={b.cabecera.map((c, k) => ({ key: String(k), label: <EnLineaR c={c} /> }))}
+            rows={b.filas.map((f, j) => ({ id: String(j), cells: Object.fromEntries(f.map((c, k) => [String(k), <EnLineaR key={k} c={c} />])) }))}
           />
         );
       case "separador":

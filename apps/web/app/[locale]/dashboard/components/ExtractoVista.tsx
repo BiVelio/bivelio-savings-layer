@@ -4,10 +4,10 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { EvidenceBadge, Notice, Recibo } from "@/app/components/ui";
 import { Link } from "@/i18n/navigation";
 import type { Extracto } from "@/lib/billing/extracto";
-import { Badge, type BadgeTone } from "@/vendor/affectui/badge";
-import { DataTable } from "@/vendor/affectui/data-table";
+import { Badge, type BadgeTone } from "@/vendor/affectui/badge-clean";
+import { DataTable } from "@/vendor/affectui/data-table-clean";
 import { EmptyCalendar } from "@/vendor/affectui/empty-calendar";
-import { EmptyState } from "@/vendor/affectui/empty-state";
+import { EmptyState } from "@/vendor/affectui/empty-state-clean";
 
 /**
  * El tono de la insignia de cada estado de cobro. Solo color: el texto es el
@@ -80,7 +80,7 @@ export async function ExtractoVista({
   const simulacion = (
     <>
       <div className="ext-sim-head">
-        <Badge size="md" tone="warning" className="est-tag">
+        <Badge tone="warning" caps>
           {e.esCalibracion ? t("extracto.badgeCalibracion") : t("extracto.badgeSombra")}
         </Badge>
       </div>
@@ -99,13 +99,14 @@ export async function ExtractoVista({
         <p className="note">{t("extracto.sinAhorro")}</p>
       ) : (
         <DataTable
+          narrow="stack"
           className="ext-tramos"
           label={t("extracto.tramosTitulo")}
           columns={[
-            { id: "tramo", header: t("extracto.colTramo"), lead: true, mono: true },
-            { id: "tipo", header: t("extracto.colTipo"), align: "end", mono: true },
-            { id: "base", header: t("extracto.colBase"), align: "end", mono: true },
-            { id: "comision", header: t("extracto.colComision"), align: "end", mono: true },
+            { key: "tramo", label: t("extracto.colTramo"), lead: true, mono: true },
+            { key: "tipo", label: t("extracto.colTipo"), align: "end", mono: true },
+            { key: "base", label: t("extracto.colBase"), align: "end", mono: true },
+            { key: "comision", label: t("extracto.colComision"), align: "end", mono: true },
           ]}
           rows={e.comision.tramos.map((tr) => ({
             id: String(tr.desdeEur),
@@ -155,7 +156,7 @@ export async function ExtractoVista({
             <h2 className="t-section" id="ext-gasto">{t("extracto.gastoTitulo")}</h2>
             <p className="sub-section">{t("extracto.gastoSub")}</p>
           </div>
-          <Badge size="md" className="ext-periodo">{t("extracto.periodo", { periodo })}</Badge>
+          <Badge size="lg" className="ext-periodo">{t("extracto.periodo", { periodo })}</Badge>
         </div>
 
         {usageFailed ? (
@@ -301,7 +302,7 @@ export async function ExtractoVista({
             <h2 className="t-section" id="ext-historico">{t("extracto.historicoTitulo")}</h2>
             <p className="sub-section">{t("extracto.historicoSub")}</p>
           </div>
-          <Badge size="md" tone="warning" className="ext-legado">{t("extracto.historicoEtiqueta")}</Badge>
+          <Badge size="lg" tone="warning" className="ext-legado">{t("extracto.historicoEtiqueta")}</Badge>
         </div>
 
         {sinTrafico ? null : aplicaComision ? (
@@ -339,16 +340,18 @@ export async function ExtractoVista({
           />
         ) : (
           <DataTable
+            narrow="stack"
             className="ext-historial"
             label={t("extracto.historialTitulo")}
+            sortLabel={t("panel.sortBy", { column: "{column}" })}
             columns={[
-              { id: "periodo", header: t("extracto.hcolPeriodo"), lead: true, mono: true, sortable: true },
-              { id: "base", header: t("extracto.hcolBase"), align: "end", mono: true, sortable: true },
-              { id: "ahorro", header: t("extracto.hcolAhorro"), align: "end", mono: true, sortable: true },
-              { id: "ratio", header: t("extracto.hcolRatio"), align: "end", mono: true, sortable: true },
-              { id: "cargo", header: t("extracto.hcolCargo"), align: "end", mono: true, sortable: true },
-              { id: "cobro", header: t("extracto.hcolCobro") },
-              { id: "factura", header: t("extracto.hcolFactura"), align: "end" },
+              { key: "periodo", label: t("extracto.hcolPeriodo"), lead: true, mono: true, sortable: true },
+              { key: "base", label: t("extracto.hcolBase"), align: "end", mono: true, sortable: true },
+              { key: "ahorro", label: t("extracto.hcolAhorro"), align: "end", mono: true, sortable: true },
+              { key: "ratio", label: t("extracto.hcolRatio"), align: "end", mono: true, sortable: true },
+              { key: "cargo", label: t("extracto.hcolCargo"), align: "end", mono: true, sortable: true },
+              { key: "cobro", label: t("extracto.hcolCobro") },
+              { key: "factura", label: t("extracto.hcolFactura"), align: "end" },
             ]}
             rows={cerrados.map((p) => ({
               id: p.periodo,

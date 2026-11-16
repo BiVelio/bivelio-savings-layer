@@ -4,7 +4,7 @@ import { Fragment, useEffect, useMemo, useRef, useState, type ReactNode } from "
 import { useTranslations } from "next-intl";
 
 import { Toaster, toast } from "@/vendor/affectui/toaster";
-import { Tooltip } from "@/vendor/affectui/tooltip";
+import { Tooltip } from "@/vendor/affectui/tooltip-clean";
 
 import {
   PREFS_VACIAS,

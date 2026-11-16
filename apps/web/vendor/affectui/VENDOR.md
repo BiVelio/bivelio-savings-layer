@@ -49,62 +49,51 @@ para poder comparar al actualizar.
 | Fallback Chain (**solo la gramática, sin fallback**) | `fallback-chain.tsx` + `.css` | **affectUI Pro** | registro Pro, `fallback-chain` (descarga del 2026-11-16) | `33c253b5c17e1efd745f13e53e8be537fca02674119ca76e99e98a9d55e6d3b4` |
 | Memory Graph | `memory-graph.tsx` + `.css` | **affectUI Pro** | registro Pro, `memory-graph` (descarga del 2026-11-16) | `235a440f5403b430d795250fd64d131e659c965cffe4260a056ce4d8831132e3` |
 | Integration Flow (**partes, no la escena**) | `integration-flow.tsx` + `.css` | **affectUI Pro** | registro Pro, `integration-flow` (descarga del 2026-11-16) | `f85674636ec99d3cb1b310364efad8b104501411eddfe71f5473db8649dae26c` |
-| Tooltip | `tooltip.tsx` + `.css` | **affectUI Pro** | registro Pro, `tooltip-clean` (descarga del 2026-11-16) | `248d67efb0b588fb949990c6427fc9d7aea734056eadddca564a3da7269a44f1` |
 | Profile Menu | `profile-menu.tsx` + `.css` | **affectUI Pro** | registro Pro, `profile-menu-clean` (descarga del 2026-11-16) | `fb632b336ce6061151d5a329acc04f6b569bdf20bfb8d339fb27d59755a09270` |
 | KPI Chart (**fork**) | `kpi-chart.tsx` + `.css` | **affectUI Pro** | registro Pro, `kpi-chart-clean` (descarga del 2026-11-16) | `81a7e5beb60e835413d35d99b08e3a5518fbcfe15a557a8d83a79663ec16000d` |
 | Model Usage (**fork**) | `model-usage.tsx` + `.css` | **affectUI Pro** | registro Pro, `model-usage-clean` (descarga del 2026-11-16) | `a550368f7ba505a289e0c30d191f8676de7fbe3820612e3c270e77a238d39217` |
-| Data Table (**fork de solo lectura**) | `data-table.tsx` + `.css` | **affectUI Pro** | registro Pro, `data-table-clean` (descarga del 2026-11-16) | `7c52ae0dfe600becdd259343d25ce5acb72bb38b18a94ac75a6ec26582f3bd5e` |
-| Usage Meter (**fork: asientos**) | `usage-meter.tsx` + `.css` | **affectUI Pro** | registro Pro, `usage-meter-clean` (descarga del 2026-11-16) | `c2a9d72a1a8ee981b4bb53c507fb9011bd23387828f3e8e558c4abaa43e69b29` |
-| Toaster (**reducido**) | `toaster.tsx` + `.css` | **affectUI Pro** | registro Pro, `toaster-clean` (descarga del 2026-11-16) | `2f83426953e89fdc61936a20e0b16ec046ca598b45d4ee0efaed872f2ffea5ad` |
-| Badge | `badge.tsx` + `.css` | **affectUI Pro** | registro Pro, `badge-clean` (descarga del 2026-11-16) | `d5e6309addea4d8a9d65e4c58abd1075ed85bef43f6e65812e55a9918d3b234f` |
-
-Las ocho piezas del frente E1 (2026-11-16) salen del catálogo completo bajado con
-la licencia Pro. Ese catálogo no distingue cuáles publica además upstream bajo
-MIT, así que todas llevan la cabecera Pro, la más restrictiva de las dos.
-| Badge | `badge.tsx` + `.css` | **affectUI Pro** | registro Pro, `badge-clean` (descarga del 2026-11-16) | `d5e6309addea4d8a9d65e4c58abd1075ed85bef43f6e65812e55a9918d3b234f` |
 | Avatar | `avatar.tsx` + `.css` | **affectUI Pro** | registro Pro, `avatar-clean` (descarga del 2026-11-16) | `77ff605558de18612fd45e1b91857826698e41fa893f6a70a5afa03485610a46` |
-| Empty State | `empty-state.tsx` + `.css` | **affectUI Pro** | registro Pro, `empty-state-clean` (descarga del 2026-11-16) | `495f16a093feb816c8d1f26f9f4adeecfb95712fbf2ee55f9961432de9fe4d46` |
-| Spinner | `spinner.tsx` + `.css` | **affectUI Pro** | registro Pro, `spinner-clean` (descarga del 2026-11-16) | `e53e0798e1d6ad45afc1377b0bfcc1421edbafef83ae4d07562f883ab79896c4` |
 | Dialog (AlertDialog) | `dialog.tsx` + `.css` | **affectUI Pro** | registro Pro, `dialog-clean` (descarga del 2026-11-16) | `3d377b605125ad7287a09f454d315a7d71ec1c8a6afab733316f23ca3bb355a4` |
 | Dropdown Menu | `dropdown-menu.tsx` + `.css` | **affectUI Pro** | registro Pro, `dropdown-menu-clean` (descarga del 2026-11-16) | `d6552544746bdde40febc8e0d461f6caf10f54d1661816afad4c09dd08398c04` |
 | Select | `select.tsx` + `.css` | **affectUI Pro** | registro Pro, `select-clean` (descarga del 2026-11-16) | `086f8e8b71a40f9b221afdd61c3fe337fe2e1640a0e0e148a260db987e94440d` |
-| Toaster | `toaster.tsx` + `.css` | **affectUI Pro** | registro Pro, `toaster-clean` (descarga del 2026-11-16) | `2f83426953e89fdc61936a20e0b16ec046ca598b45d4ee0efaed872f2ffea5ad` |
-| Text Field | `text-field.tsx` + `.css` | **affectUI Pro** | registro Pro, `text-field-clean` (descarga del 2026-11-16) | `87a72ec504b23ff046d2b45944415c41f72f8ce99bcf9741918d96f5868717c4` |
 | Number Input | `number-input.tsx` + `.css` | **affectUI Pro** | registro Pro, `number-input-clean` (descarga del 2026-11-16) | `01c2322723b7fe55420073487f7ccaee55f0435caca31a5da51b294b375c3e27` |
 | Segmented Control | `segmented-control.tsx` + `.css` | **affectUI Pro** | registro Pro, `segmented-control-clean` (descarga del 2026-11-16) | `8547e6335fc70ec9aa8e5a89dec96deb95bb46de5894c3c0e2b26e1763abd506` |
-| Usage Meter (**reducido a asientos**) | `usage-meter.tsx` + `.css` | **affectUI Pro** | registro Pro, `usage-meter-clean` (descarga del 2026-11-16) | `c2a9d72a1a8ee981b4bb53c507fb9011bd23387828f3e8e558c4abaa43e69b29` |
-| Data Table (**solo lectura**) | `data-table.tsx` + `.css` | **affectUI Pro** | registro Pro, `data-table-clean` (descarga del 2026-11-16) | `7c52ae0dfe600becdd259343d25ce5acb72bb38b18a94ac75a6ec26582f3bd5e` |
 | Setup Guide (**solo lectura**) | `setup-guide.tsx` + `.css` | **affectUI Pro** | registro Pro, `setup-guide-clean` (descarga del 2026-11-16) | `4fbb24b69b082ecbd761c5c0dbba8af08376dfd262f5e55717abfcfd58d7a58d` |
-| Blur Crossfade | `blur-crossfade.tsx` + `.css` | **affectUI Pro** | registro Pro, `blur-crossfade` (descarga del 2026-11-16) | `2cff559cbf363731894c1a2f97d17c625772102db3f2b9b0776571ba26b58cf2` |
-| Team Invite | `team-invite.tsx` + `.css` | **affectUI Pro** | registro Pro, `team-invite` (descarga del 2026-11-16) | `975e8e7f198a43a310dbedf97d81244965232dcc68a0f53f5b90b0c7a5254906` |
 | Empty Calendar | `empty-calendar.tsx` + `.css` | **affectUI Pro** | registro Pro, `empty-calendar` (descarga del 2026-11-16) | `e3de6f44d69d5ad484fa588cf202f7ead07a5ba6c4b0b3100d33fdaaa7503ec3` |
-| Tooltip (Clean) | `tooltip.tsx` + `.css` | **affectUI Pro** | registro Pro, `tooltip-clean` (descarga del 2026-11-16) | `248d67efb0b588fb949990c6427fc9d7aea734056eadddca564a3da7269a44f1` |
 | Hover Card (Clean) | `hover-card.tsx` + `.css` | **affectUI Pro** | registro Pro, `hover-card-clean` (descarga del 2026-11-16) | `1bc3812c0a6efa497377d5f254c18b56658a0a44fc6e43c71653af132ca8c470` |
 | Toggle Group (Clean) | `toggle-group.tsx` + `.css` | **affectUI Pro** | registro Pro, `toggle-group-clean` (descarga del 2026-11-16) | `4a086d53e0ecf33966e84af16d1b1d2d8388f90a7f64c733132f3e026345a9ad` |
-| Badge (Clean) | `badge.tsx` + `.css` | **affectUI Pro** | registro Pro, `badge-clean` (descarga del 2026-11-16) | `d5e6309addea4d8a9d65e4c58abd1075ed85bef43f6e65812e55a9918d3b234f` |
-| Data Table (Clean) — **bifurcada a solo lectura** | `data-table-readonly.tsx` + `.css` | **affectUI Pro** | registro Pro, `data-table-clean` (descarga del 2026-11-16) | `7c52ae0dfe600becdd259343d25ce5acb72bb38b18a94ac75a6ec26582f3bd5e` |
-| Blur Crossfade | `blur-crossfade.tsx` + `.css` | **affectUI Pro** | registro Pro, `blur-crossfade` (descarga del 2026-11-16) | `2cff559cbf363731894c1a2f97d17c625772102db3f2b9b0776571ba26b58cf2` |
 | A/B Branches (**fork** de Outreach Branches) | `ab-branches.tsx` + `.css` | **affectUI Pro** | registro Pro, `outreach-branches` (descarga del 2026-11-16) | `26d6e022b36ba2495d49b90ecaeace2208e86d836d286fb3608496a52c5a2442` |
-
-Las siete piezas del frente de evidencia (2026-11-16) se bajaron del registro
-Pro; el catálogo descargado no distingue cuáles tienen además versión libre,
-así que TODAS llevan la cabecera Pro, que es la más restrictiva.
-| Text Field (Clean) | `text-field-clean.tsx` + `.css` | **affectUI Pro** | registro Pro, `text-field` (descarga del 2026-11-16) | `87a72ec504b23ff046d2b45944415c41f72f8ce99bcf9741918d96f5868717c4` |
 | Button (Clean) | `button-clean.tsx` + `.css` | **affectUI Pro** | registro Pro, `button` (descarga del 2026-11-16) | `686046d5fbe47b1d2234980c05d4fc56d2ad69ee3a084de8583c82759a7d4acb` |
-| Spinner (Clean) | `spinner-clean.tsx` + `.css` | **affectUI Pro** | registro Pro, `spinner` (descarga del 2026-11-16) | `e53e0798e1d6ad45afc1377b0bfcc1421edbafef83ae4d07562f883ab79896c4` |
-| Tooltip (Clean) — **reducido** | `tooltip-clean.tsx` + `.css` | **affectUI Pro** | registro Pro, `tooltip` (descarga del 2026-11-16) | `248d67efb0b588fb949990c6427fc9d7aea734056eadddca564a3da7269a44f1` |
-| Badge (Clean) | `badge-clean.tsx` + `.css` | **affectUI Pro** | registro Pro, `badge` (descarga del 2026-11-16) | `d5e6309addea4d8a9d65e4c58abd1075ed85bef43f6e65812e55a9918d3b234f` |
 | Breadcrumb (Clean) — **reducido** | `breadcrumb-clean.tsx` + `.css` | **affectUI Pro** | registro Pro, `breadcrumb` (descarga del 2026-11-16) | `f083bb8936aa1e7e83850a542c873ddf0b0c087dfc9603ea760d6e13b738cd55` |
 | Separator (Clean) | `separator-clean.tsx` + `.css` | **affectUI Pro** | registro Pro, `separator` (descarga del 2026-11-16) | `b642c1780fe834682572463cae18112f6ade28ba6d7fbbbb4ff2cf0f960ec381` |
 | Scroll Area (Clean) | `scroll-area-clean.tsx` + `.css` | **affectUI Pro** | registro Pro, `scroll-area` (descarga del 2026-11-16) | `95e8c21e9af24234bf807f8d3e98f83f280787de8aa256e1ee81aa492495d59c` |
-| Data Table (Clean) — **fork de solo lectura** | `data-table-clean.tsx` + `.css` | **affectUI Pro** | registro Pro, `data-table` (descarga del 2026-11-16) | `7c52ae0dfe600becdd259343d25ce5acb72bb38b18a94ac75a6ec26582f3bd5e` |
-| Empty State (Clean) | `empty-state-clean.tsx` + `.css` | **affectUI Pro** | registro Pro, `empty-state` (descarga del 2026-11-16) | `495f16a093feb816c8d1f26f9f4adeecfb95712fbf2ee55f9961432de9fe4d46` |
 | Tab Overload | `tab-overload.tsx` + `.css` | **affectUI Pro** | registro Pro, `tab-overload` (descarga del 2026-11-16) | `327924948676db859ee3c72e8cafbdb68f304bace3dc9c423cda803c6460bf3f` |
-| Team Invite | `team-invite.tsx` + `.css` | **affectUI Pro** | registro Pro, `team-invite` (descarga del 2026-11-16) | `975e8e7f198a43a310dbedf97d81244965232dcc68a0f53f5b90b0c7a5254906` |
 | Glass Folder | `glass-folder.tsx` + `.css` | **affectUI Pro** | registro Pro, `glass-folder` (descarga del 2026-11-16) | `96edbd88efd40e771822737e0b4f21c0f05cce33e081bc6005be542bbb71d02f` |
 | Grid Background | `grid-background.tsx` + `.css` | **affectUI Pro** | registro Pro, `grid-background` (descarga del 2026-11-16) | `c9c7936cffc22cf08f3c786ad2f09509ada9f2901aed0a89ceaa0037f43ae394` |
 | Tilt Card | `tilt-card.tsx` + `.css` | **affectUI Pro** | registro Pro, `tilt-card` (descarga del 2026-11-16) | `69c24693d70581fbf169e71eedc4318897302539fb0a0f5cbc46c719d913d7ba` |
 | Logo Marquee | `logo-marquee.tsx` + `.css` | **affectUI Pro** | registro Pro, `logo-marquee` (descarga del 2026-11-16) | `65b4862d3fb7bf17134c761aa3b70b0ec39205770bef6e61e5af3fabae369f3a` |
+| Badge (Clean) | `badge-clean.tsx` + `.css` | **affectUI Pro** | registro Pro, `badge-clean` (descarga del 2026-11-16) | `d5e6309addea4d8a9d65e4c58abd1075ed85bef43f6e65812e55a9918d3b234f` |
+| Tooltip (Clean) | `tooltip-clean.tsx` + `.css` | **affectUI Pro** | registro Pro, `tooltip-clean` (descarga del 2026-11-16) | `248d67efb0b588fb949990c6427fc9d7aea734056eadddca564a3da7269a44f1` |
+| Data Table (Clean) — **fork de solo lectura** | `data-table-clean.tsx` + `.css` | **affectUI Pro** | registro Pro, `data-table-clean` (descarga del 2026-11-16) | `7c52ae0dfe600becdd259343d25ce5acb72bb38b18a94ac75a6ec26582f3bd5e` |
+| Text Field (Clean) | `text-field-clean.tsx` + `.css` | **affectUI Pro** | registro Pro, `text-field-clean` (descarga del 2026-11-16) | `87a72ec504b23ff046d2b45944415c41f72f8ce99bcf9741918d96f5868717c4` |
+| Empty State (Clean) | `empty-state-clean.tsx` + `.css` | **affectUI Pro** | registro Pro, `empty-state-clean` (descarga del 2026-11-16) | `495f16a093feb816c8d1f26f9f4adeecfb95712fbf2ee55f9961432de9fe4d46` |
+| Spinner (Clean) | `spinner-clean.tsx` + `.css` | **affectUI Pro** | registro Pro, `spinner-clean` (descarga del 2026-11-16) | `e53e0798e1d6ad45afc1377b0bfcc1421edbafef83ae4d07562f883ab79896c4` |
+| Toaster (Clean) — **reducido** | `toaster.tsx` + `.css` | **affectUI Pro** | registro Pro, `toaster-clean` (descarga del 2026-11-16) | `2f83426953e89fdc61936a20e0b16ec046ca598b45d4ee0efaed872f2ffea5ad` |
+| Usage Meter (Clean) — **fork: asientos** | `usage-meter.tsx` + `.css` | **affectUI Pro** | registro Pro, `usage-meter-clean` (descarga del 2026-11-16) | `c2a9d72a1a8ee981b4bb53c507fb9011bd23387828f3e8e558c4abaa43e69b29` |
+| Team Invite | `team-invite.tsx` + `.css` | **affectUI Pro** | registro Pro, `team-invite` (descarga del 2026-11-16) | `975e8e7f198a43a310dbedf97d81244965232dcc68a0f53f5b90b0c7a5254906` |
+| Blur Crossfade | `blur-crossfade.tsx` + `.css` | **affectUI Pro** | registro Pro, `blur-crossfade` (descarga del 2026-11-16) | `2cff559cbf363731894c1a2f97d17c625772102db3f2b9b0776571ba26b58cf2` |
+
+Todas las piezas incorporadas por los frentes E1–E4 y la capa Pro (2026-11-16) salen
+del catálogo completo bajado con la licencia Pro. Ese catálogo no distingue cuáles
+publica además upstream bajo MIT, así que todas llevan la cabecera Pro, la más
+restrictiva de las dos.
+
+**Una pieza, un fichero.** Los cuatro frentes vendorizaron por separado diez piezas
+que se solapaban (badge, data-table, tooltip, toaster, usage-meter, text-field,
+empty-state, spinner, team-invite, blur-crossfade). La integración del 2026-11-16 las
+fundió: cada una vive en UN fichero, con una sola fila aquí, y su lista de cambios
+(«Consolidadas», más abajo) reúne lo que aportó cada frente. Antes de vendorizar una
+pieza, búscala en este inventario.
 
 ## Dónde se usa cada pieza
 
@@ -114,7 +103,7 @@ Auditoría del 2026-11-16: una pieza que nadie importa desde `app/` no se queda.
 |---|---|
 | `pricing-plans` | `app/components/landing/PlanesCloud.tsx` (portada `#pricing` y `/pricing`) |
 | `kpi-board` | `dashboard/components/ResumenKpis.tsx` (`/dashboard`) |
-| `compact-breakdown` | `dashboard/components/DesgloseModelos.tsx` (`/dashboard`) |
+| `compact-breakdown` | `dashboard/components/DesgloseModelos.tsx` (`/dashboard`); también `dashboard/components/YourBenchStrata.tsx` (el peso de cada grupo) |
 | `progress-tracker-clean` | `dashboard/install/page.tsx`, `app/components/app/SetupProgress.tsx`, `dashboard/components/InstrumentationSpine.tsx` |
 | `code-block-clean` | `migrate-to-0.5/page.tsx` (dentro de `CodeFrame`) |
 | `integration-beam`, `layer-stack` | `app/components/HowItWorks.tsx` (`/how-it-works` y `/dashboard/how-it-works`) |
@@ -122,47 +111,41 @@ Auditoría del 2026-11-16: una pieza que nadie importa desde `app/` no se queda.
 | `experiment-readout` | `dashboard/components/YourBenchHeadline.tsx` (`/dashboard/your-bench`) |
 | `gradient-text` | `app/[locale]/page.tsx` (una frase del héroe) |
 | `gradient-floor` | `app/components/landing/CierreMeasure.tsx` (cierre de la portada) |
-| `number-ticker` | `dashboard/components/VerdictHero.tsx` (la cifra del veredicto, al cambiar de rango) |
+| `number-ticker` | `dashboard/components/VerdictHero.tsx` (la cifra del veredicto, al cambiar de rango) y `dashboard/components/ProjectorVerifier.tsx` (la estimación, al mover un supuesto) |
 | `profile-menu` | `app/components/app/CuentaMenu.tsx` (la cuenta de la barra del panel, vía `AppTopbar`) |
-| `tooltip` | `app/components/app/Termino.tsx` (definiciones de términos), `NavLink.tsx` (la frase de cada cifra del raíl), `PanelEditable.tsx` (subir/bajar), `MaquinasCard.tsx` y `SesionesCard.tsx` (id completo) |
 | `kpi-chart` | `dashboard/components/CosteDiarioChart.tsx` (`PulsoDelPeriodo`, `/dashboard`) |
 | `model-usage` | `dashboard/components/PulsoDelPeriodo.tsx` (`/dashboard`) |
-| `data-table` | `MaquinasCard.tsx`, `SesionesCard.tsx`, `ShadowOpportunitiesCard.tsx` (`/dashboard`) |
-| `usage-meter` | `dashboard/components/MaquinasCard.tsx` (asientos en uso / pagados) |
-| `toaster` | `dashboard/components/PanelEditable.tsx` (aviso con «Deshacer» al ocultar, mostrar o restablecer) |
-| `badge` | `MaquinasCard.tsx` (estado de versión), `RitmoCard.tsx`, `ShadowOpportunitiesCard.tsx` |
 | `setup-guide` | `dashboard/install/page.tsx` (la guía a la vista de Primeros pasos), muestrario `captura-cuenta` |
-| `segmented-control`, `blur-crossfade` | `app/components/SnippetPorSistema.tsx` (pestañas macOS·Linux / Windows en Primeros pasos y `/how-it-works`) |
-| `text-field` | `ServiceAccountKeySection.tsx` (probador de clave), `EquipoPanel.tsx` (invitación, nombre de la organización) |
 | `number-input` | `BillingButtons.tsx` (asientos a comprar) |
-| `select`, `dropdown-menu`, `toaster`, `team-invite` | `EquipoPanel.tsx` (perfil, acciones de fila, resultado, lista vacía) |
 | `dialog` (`AlertDialog`) | `EquipoPanel.tsx` (quitar, transferir), `ServiceAccountKeySection.tsx` (revocar una clave) |
-| `data-table` | `EquipoPanel.tsx` (miembros, invitaciones), `ExtractoVista.tsx` (tramos, extractos cerrados) |
-| `usage-meter` | `AccountPlanStrip.tsx` (asientos en uso frente a contratados) |
 | `avatar` | `AccountPlanStrip.tsx`, `EquipoPanel.tsx` |
-| `badge` | `AccountPlanStrip.tsx`, `EquipoPanel.tsx`, `ExtractoVista.tsx`, `InstallLicensePanel.tsx`, `ServiceAccountKeySection.tsx` |
-| `empty-state`, `empty-calendar` | `ExtractoVista.tsx` (sin tráfico, sin extractos cerrados); `empty-state` también en `EquipoPanel.tsx` |
-| `spinner` | `BillingButtons.tsx`, `PortalButton.tsx`, `TrialKeyButton.tsx`, `MeasureClaimButton.tsx`, `ServiceAccountKeySection.tsx`, `EquipoPanel.tsx` |
-| `number-ticker` | `dashboard/components/VerdictHero.tsx` (la cifra del veredicto, al cambiar de rango) y `dashboard/components/ProjectorVerifier.tsx` (la estimación, al mover un supuesto) |
-| `tooltip`, `hover-card` | `app/components/evidencia/Termino.tsx` (`Termino`, `AyudaDeTermino`, `Detalle`), que usan `ReferenceLedgerCards`, `ScenarioTable`, `YourBenchHeadline` y `ComparacionAB` |
 | `toggle-group` | `app/components/evidencia/CentroDeEvidencia.tsx` (filtro de lectura de `/benchmarks`) y `dashboard/components/ProjectorVerifier.tsx` (perfil y nivel) |
-| `badge` | `dashboard/components/IntegrityQualityChips.tsx`, `ReferenceLedgerCards.tsx`, `ScenarioTable.tsx`, `YourBenchStrata.tsx` |
-| `data-table-readonly` | `dashboard/components/ScenarioTable.tsx` (`/dashboard/proof`) y `YourBenchStrata.tsx` (`/dashboard/your-bench`) |
-| `blur-crossfade` | `app/components/evidencia/ComparacionAB.tsx` (la lectura del modelo elegido) |
 | `ab-branches` | `app/components/evidencia/ParAB.tsx`, que pintan `/dashboard/proof`, `/dashboard/your-bench` (apagado y reuniendo) y «cómo leer» de `/benchmarks` |
-| `compact-breakdown` (ya vendorizada) | también `dashboard/components/YourBenchStrata.tsx` (el peso de cada grupo) |
-| `text-field-clean`, `button-clean` | `app/components/acceso/CampoClave.tsx`, `app/components/AuthForm.tsx`, `ResetPasswordForm.tsx`, `invitacion/[token]/AceptarInvitacion.tsx` |
-| `tooltip-clean` | `text-field-clean` (el botón de ver/ocultar la contraseña) |
-| `spinner-clean`, `team-invite` | `invitacion/[token]/AceptarInvitacion.tsx` |
 | `tilt-card` | `app/components/acceso/PanelDeMarca.tsx` (el recibo ilustrativo de login y alta) |
-| `badge-clean` | `app/components/HowItWorks.tsx` (veredicto de cada caso), `/privacy` (plazos), `/pricing` (modalidad histórica), la invitación (perfil) |
 | `breadcrumb-clean` | `app/components/docs/Migas.tsx` (`/pricing`, `/privacy`, `/paper`, `/migrate-to-0.5`) |
 | `scroll-area-clean`, `separator-clean` | `app/components/docs/DocIndice.tsx` (el índice de las páginas de lectura); `scroll-area-clean` también dentro de `data-table-clean`; `separator-clean` en la 404 |
-| `data-table-clean` | `/pricing` (tramos de la modalidad histórica), `/paper` y `/migrate-to-0.5` (todas sus tablas) |
 | `grid-background` | cabeceras de `/how-it-works`, `/pricing`, `/privacy`, `/paper`, `/migrate-to-0.5` y la 404 |
 | `glass-folder` | `/privacy` (cabecera) |
 | `logo-marquee` | `/how-it-works` (la cinta de sistemas) |
-| `empty-state-clean`, `tab-overload` | `app/[locale]/not-found.tsx` |
+| `setup-guide` | `dashboard/install/page.tsx` (la guía a la vista de Primeros pasos), muestrario `captura-cuenta` |
+| `segmented-control` | `app/components/SnippetPorSistema.tsx` (pestañas macOS·Linux / Windows en Primeros pasos y `/how-it-works`) |
+| `select`, `dropdown-menu` | `EquipoPanel.tsx` (perfil, acciones de fila) |
+| `empty-calendar` | `ExtractoVista.tsx` (sin tráfico en el periodo) |
+| `hover-card` | `app/components/evidencia/Termino.tsx` (`Detalle`), que usa `ReferenceLedgerCards` |
+| `button-clean` | `app/components/AuthForm.tsx`, `ResetPasswordForm.tsx`, `invitacion/[token]/AceptarInvitacion.tsx` |
+| `scroll-area-clean`, `separator-clean` | `app/components/docs/DocIndice.tsx` (el índice de las páginas de lectura); `scroll-area-clean` también dentro de `data-table-clean` (todas las tablas); `separator-clean` en la 404 |
+| `tab-overload` | `app/[locale]/not-found.tsx` |
+| `fallback-chain`, `memory-graph`, `integration-flow` | `app/components/landing/CapaEnAccion.tsx` (portada `#data`, «Savings Layer, en acción») |
+| `badge-clean` | **Panel:** `MaquinasCard`, `RitmoCard`, `ShadowOpportunitiesCard`, `AccountPlanStrip`, `EquipoPanel`, `ExtractoVista`, `InstallLicensePanel`, `ServiceAccountKeySection`. **Evidencia:** `IntegrityQualityChips`, `ReferenceLedgerCards`, `ScenarioTable`, `YourBenchStrata`. **Público:** `app/components/HowItWorks.tsx` (veredicto de cada caso), `/privacy` (plazos), `/pricing` (modalidad histórica), la invitación (perfil) |
+| `tooltip-clean` | `app/components/evidencia/Termino.tsx` (`Termino` y `AyudaDeTermino`: el término con su definición de TODO el sitio — `ResumenKpis`, `ShadowOpportunitiesCard`, `ReferenceLedgerCards`, `ScenarioTable`, `YourBenchHeadline`, `ComparacionAB`), `NavLink.tsx` (la frase de cada cifra del raíl), `PanelEditable.tsx` (subir/bajar), `MaquinasCard.tsx` y `SesionesCard.tsx` (id completo), `text-field-clean` (ver/ocultar la contraseña) |
+| `data-table-clean` | **Panel:** `MaquinasCard`, `SesionesCard`, `ShadowOpportunitiesCard` (`/dashboard`); `EquipoPanel` (miembros, invitaciones); `ExtractoVista` (tramos, extractos cerrados). **Evidencia:** `ScenarioTable` (`/dashboard/proof`), `YourBenchStrata` (`/dashboard/your-bench`). **Público:** `/pricing` (tramos de la modalidad histórica), `/paper` y `/migrate-to-0.5` (todas sus tablas) |
+| `text-field-clean` | `app/components/acceso/CampoClave.tsx`, `app/components/AuthForm.tsx`, `invitacion/[token]/AceptarInvitacion.tsx`; en el panel, `ServiceAccountKeySection.tsx` (probador de clave) y `EquipoPanel.tsx` (invitación, nombre de la organización) |
+| `empty-state-clean` | `app/[locale]/not-found.tsx` (escala de página); `EquipoPanel.tsx` y `ExtractoVista.tsx` (lista vacía, sin extractos) |
+| `spinner-clean` | `invitacion/[token]/AceptarInvitacion.tsx`; en el panel, `BillingButtons`, `PortalButton`, `TrialKeyButton`, `MeasureClaimButton`, `ServiceAccountKeySection`, `EquipoPanel` |
+| `toaster` | `PanelEditable.tsx` (aviso con «Deshacer» al ocultar, mostrar o restablecer) y `EquipoPanel.tsx` (resultado de invitar, quitar o transferir; un fallo se queda hasta cerrarlo) |
+| `usage-meter` | `AccountPlanStrip.tsx` (`/dashboard/account`, tamaño `md` con leyenda) y `MaquinasCard.tsx` (`/dashboard`, tamaño `sm`): la misma lectura, asientos en uso frente a contratados |
+| `team-invite` | `EquipoPanel.tsx` (lista de miembros vacía, decorativa) y `invitacion/[token]/AceptarInvitacion.tsx` (con las marcas de la organización y de Savings) |
+| `blur-crossfade` | `app/components/SnippetPorSistema.tsx` (al cambiar de sistema) y `app/components/evidencia/ComparacionAB.tsx` (la lectura del modelo elegido) |
 
 **Retiradas en esa auditoría** (solo las montaba el muestrario `/kit`): Empty
 State (Clean), Skeleton (Clean) y Segmented Control (Clean). Sus equivalentes
@@ -321,12 +304,6 @@ arriba.
   el fondo de la fila elegida. Colores a `--brand`/`--brand-soft`/`--surface-2`.
 - **kpi-board** (añadido E1) — `KpiStat.label` pasa de `string` a nodo, para que
   el rótulo pueda ser un término con su definición (`Termino` + Tooltip).
-- **tooltip** (Pro; E1) — se conserva casi entero (capa superior con
-  `popover="manual"`, volteo, ventana de «vecinos sin espera», Escape). Nuevo
-  `kind="definition"` (más ancho, peso normal: la definición de un término) y
-  `tapToggles` (un toque abre y otro cierra, y tocar fuera cierra): upstream
-  nunca abre con el dedo, y una definición tiene que poder leerse en móvil.
-  Fondo a tinta de BiVelio y borde en `forced-colors`.
 - **profile-menu** (Pro; E1) — upstream es la tarjeta suelta, con botones que
   llaman a `onSelect`, entradas de demo («Docs», «Apps · New») y una fila
   «Profile setup» en inglés. Aquí es un **botón de menú real**: disparador
@@ -358,34 +335,6 @@ arriba.
   una plantilla (`{company}`, `{value}`), no una función: los datos vienen de
   un componente de servidor. Hueco `aside` y pie `footer` (la nota de
   cobertura). Selector de medida con objetivos de 44px en táctil.
-- **data-table** (Pro; E1) — **BIFURCADO A SOLO LECTURA.** Upstream es una hoja
-  de cálculo pequeña: seleccionar celdas y rangos, editar, pegar desde Excel,
-  deshacer, casillas, añadir filas, selector de etiquetas. Nada de eso queda:
-  las filas son hechos medidos. Se conserva el aspecto (filas con filete,
-  cabecera gris de 12px) y **una** interacción: ordenar por columna
-  (ascendente → descendente → como llegó), anunciada con `aria-sort`. Las
-  celdas llegan formateadas y `sort` es el valor crudo; un `null` va siempre al
-  final. `summary` es una fila de pie que no entra en la ordenación (el
-  agregado de CI). Sin tarjeta propia (vive dentro de la del panel); el scroll
-  lateral es de la tabla (`role="region"`, enfocable), nunca de la página.
-- **usage-meter** (Pro; E1) — **BIFURCADO A UNA LECTURA: ASIENTOS** en uso
-  frente a pagados. Fuera el medidor de créditos por categorías, el selector de
-  periodo, la serie diaria, los límites del plan y el botón de ampliar: Savings
-  no tiene créditos ni cuota de peticiones. Queda la cifra, su cuota y la barra
-  (una casilla por asiento hasta 40). Componente de servidor, sin estado ni
-  animación; el estado (`ok`/`warn`/`limit`) lo decide quien llama y se dice
-  también con palabras.
-- **toaster** (Pro; E1) — **REDUCIDO.** Una esquina, una columna (sin el
-  abanico de tarjetas detrás), sin deslizar, sin `promise`/`loading`. Queda la
-  tarjeta blanca, el icono de estado, **una** acción («Deshacer»), cerrar y un
-  temporizador que se detiene con el puntero o el foco encima (es la animación
-  CSS del filete; con movimiento reducido, un `setTimeout`). La lista es una
-  región `aria-live="polite"`. `id` reemplaza el aviso en pantalla en vez de
-  apilar. Las etiquetas de la región y de cerrar son props de `<Toaster />`.
-- **badge** (Pro; E1) — componente de servidor: tonos, punto inicial, variante
-  `outline` y `caps` (lectura en mono y mayúsculas para tipos de evidencia).
-  Fuera el punto «en vivo» que late, el contador y el botón de quitar. La
-  etiqueta parte línea en vez de recortarse.
 
 **Las tres piezas de «Savings Layer, en acción»** (`app/components/landing/CapaEnAccion.tsx`)
 
@@ -457,47 +406,17 @@ de demostración.
 **Frente E4 — páginas públicas y acceso (2026-11-16).** Todas salen de la
 descarga Pro, así que llevan la cabecera Pro aunque alguna tenga gemela libre.
 
-- **text-field-clean** — 44px de alto y texto de 16px en todas partes (objetivo
-  táctil; iOS no hace zoom). Fuera: tamaños, sufijo, borrar, copiar y contador.
-  Nuevas props `invalid` (marca el campo sin imprimir mensaje: el error se dice
-  UNA vez, en el aviso del formulario, y se enlaza con `aria-describedby`),
-  `icon`, `aside` y `reveal={{ show, hide }}` (los dos nombres del botón de ver
-  la contraseña, ya traducidos; upstream los traía en inglés). Foco: filo de
-  marca + halo. Corrige el lavado de autorrelleno del navegador.
 - **button-clean** — tamaño nuevo `xl` (44px) y `block`; en `xl` el rótulo
   PARTE línea en vez de cortarse con «…» (se retira el `title` al pasar). Fuera
   la variante `destructive`. Se conservan el barrido de luz de `loading` y el
   cambio de ancho animado.
-- **spinner-clean**, **separator-clean** — componentes de servidor; sin cambios
-  de comportamiento.
-- **tooltip-clean** — **REDUCIDO.** Upstream mide el disparador y coloca un
-  popover en la capa superior con retardos y hueco para atajos. Aquí la
-  etiqueta se ancla con CSS sobre su disparador, aparece con `:hover` /
-  `:focus-visible` y el único script es Escape (WCAG 1.4.13). Es `aria-hidden`:
-  el control conserva su propio nombre accesible. No se muestra en táctil.
-- **badge-clean** — componente de servidor. Fuera el contador (formateaba con
-  el idioma del navegador), los objetos Hugeicons y el tono `purple`. El texto
-  PARTE línea. Tonos a tokens (`--brand-soft`, `--good-ink`, `--warn`, `--danger`).
 - **breadcrumb-clean** — **REDUCIDO** al rastro, en servidor: sin plegado de
   migas intermedias en un menú «…» ni desplegables por miga (el sitio tiene dos
   niveles). Las migas parten línea; 44px en táctil; `linkAs` recibe el `Link`
   con idioma; `label` obligatorio; oculto al imprimir.
 - **scroll-area-clean** — comportamiento intacto; el pulgar en tinta.
-- **data-table-clean** — **BIFURCADA A SOLO LECTURA**, en servidor. Upstream es
-  una hoja de cálculo (celdas editables, cursor, rangos, copiar/pegar, orden,
-  casillas, acciones en bloque, «añadir fila», deshacer). Nada de eso queda:
-  una cifra publicada no puede parecer editable. Queda el aspecto sobre un
-  `<table>` real: `columns`/`rows` de quien llama, `rowHeader`, `caption`,
-  `title`, `footer`, celdas que parten línea, cifras tabulares y, si no cabe,
-  desplazamiento lateral dentro del Scroll Area con nombre (`scrollLabel`).
-- **empty-state-clean** — en servidor; sin glifo por defecto ni Hugeicons.
-  Nuevos `art` (ilustración), `eyebrow`, `titleAs` (un `h1` en una página),
-  `size="page"` y `children`.
 - **tab-overload** — `label` obligatorio; degradados y puntos a los azules de
   BiVelio, marcos a `--surface-2`/`--line`; el brillo de los bloques, más lento.
-- **team-invite** — **sin retratos**: `nodes` son tres nodos (glifos o marcas)
-  en vez de tres fotos, para no inventar personas. `label` obligatorio. Punto
-  de estado en azul de marca; bucle de 6,4 s (antes 4,4).
 - **glass-folder** — `label` obligatorio; azul de marca; tamaño con
   `--ui-fd-size`; sin recorte del contenedor (la sombra no se corta).
 - **grid-background** — por defecto celda de 56px y 14 s por celda (antes 48px
@@ -507,6 +426,176 @@ descarga Pro, así que llevan la cabecera Pro aunque alguna tenga gemela libre.
   block`, radio y sombras de BiVelio, sin recorte (el recibo tiene festón).
 - **logo-marquee** — `label` obligatorio; velocidad 28 px/s; `grayscale`
   apagado por defecto (los logotipos van a color por decisión del dueño).
+
+- **hover-card** (Pro) — `toggleOnClick` (el disparador es un botón sin acción
+  propia: clic o toque abren, y lleva `aria-expanded`) y `label` (la tarjeta se
+  anuncia como grupo con nombre). Mismo arreglo de mayúsculas heredadas.
+- **toggle-group** (Pro) — `required` en `type="single"`: una opción queda
+  siempre encendida (un filtro de lectura) y pulsar la encendida no hace nada.
+  La variante «buttons» pinta la opción encendida en tinta con texto blanco
+  (como el resto de chips de BiVelio; upstream usa un velo gris), filete de 1px
+  y 44px de alto en pantallas táctiles (upstream 36–40).
+- **ab-branches** (Pro) — **FORK** de la ilustración Outreach Branches. Mismo
+  lenguaje (conectores finos, baldosas blancas con sombra suave, pulso hecho de
+  trazos apilados) para explicar una sola cosa: un par A/B. Dos ramas en vez de
+  tres, que vuelven a unirse en una cuarta baldosa (el contador del proveedor);
+  fuera los logos de Gmail, Slack y Notion (las baldosas llevan las letras A y
+  B); pulsos en tinta (A) y azul de marca (B) en vez del degradado pastel; sin
+  filtros ni degradados SVG, así que no necesita ids ni `"use client"`. El
+  dibujo NO dice nada del resultado: los dos brazos miden lo mismo. Decorativo
+  salvo que se le pase `label`; la leyenda la escribe quien lo usa, en texto.
+- **experiment-readout** — `ReadoutFact.label` admite un nodo (un término con
+  su definición) y una `key` opcional.
+
+**Frente E2 (2026-11-16) — panel: instalación, cuenta, equipo y extracto**
+
+Las piezas de este frente salen del registro Pro y llevan la cabecera Pro (las
+que compartía con otros frentes están en «Consolidadas»). Comunes a todas,
+además de lo de arriba: la interpolación
+`${EXIT_MS}` del CSS de `dialog` queda escrita (200 ms), y cada control lleva
+al final de su `.css` un bloque `---- BiVelio ----` con el tamaño `lg` a 44 px
+(en táctil conserva los 16 px de texto de upstream, para que iOS no amplíe) y
+un filo visible sobre el fondo marfil.
+
+- **avatar** — reducido a INICIALES sobre un color estable por nombre o id.
+  Fuera: fotos, marca de agente, punto de estado (y sus «online/away/busy»),
+  `AvatarGroup` y su «N more». Sin estado: se renderiza en servidor.
+- **dialog** — `closeLabel`, `confirmLabel` y `cancelLabel` pasan a ser
+  obligatorias (antes «Close», «Confirm», «Cancel»). Botones a 44 px.
+- **dropdown-menu** — `empty` ya no trae «Nothing here yet». Filas a 40 px
+  (44 en táctil).
+- **select** — `placeholder` sin «Choose…»; `optional` es el texto ya
+  traducido, no un booleano que imprimía «Optional».
+- **number-input** — `stepLabels` obligatoria (antes «Increase»/«Decrease»);
+  `optional` como en `select`.
+- **segmented-control** — el contador ya no se formatea con `"en-US"` fijo.
+  `lg` a 36 px con puntero fino y 44 px en táctil.
+- **setup-guide** — REESCRITO en solo lectura y sin estado: nadie marca nada.
+  Cada tarea trae su estado (medido por el producto) y es un enlace a su
+  instrucción. Fuera: marcar/desmarcar, bloqueo de tareas, plegado, «Edit»,
+  minimizar y cerrar. Sin `progress` no hay barra ni recuento.
+- **empty-calendar** — decorativa: fuera los textos «Calendar», «EMPTY» y el
+  botón «Join meeting» dibujados en el SVG; la tarjeta no lleva palabras.
+
+**Consolidadas (2026-11-16) — una pieza, un fichero.** Los frentes E1–E4
+vendorizaron estas diez por separado; aquí queda UNA versión de cada una, con lo
+que aportó cada frente. Quien la actualice parte de esta lista, no de cuatro.
+
+- **badge-clean** (Pro; antes `badge` ×3 en E1/E2/E3 y `badge-clean` en E4) —
+  **componente de servidor** (sin `"use client"`). Fuera los objetos de
+  Hugeicons y el tono `purple` (nadie lo usaba). **La etiqueta parte línea** en
+  vez de acabar en «…» (doce idiomas; un estado cortado no es un estado), así
+  que la altura es `min-height`. Una sola escala: `md` (22px, texto de 12px, el
+  valor por defecto) y `sm` (18px, 11px, para filas densas). Tonos a tokens de
+  BiVelio con tinta ≥ 4,5:1 sobre su propio fondo. De E1: `caps` (lectura mono
+  en mayúsculas de las etiquetas de tipo de evidencia). De E2: `live` (el punto
+  late solo mientras algo está de verdad en curso; quieto con
+  `prefers-reduced-motion`) y `count`, que ahora recibe el valor YA escrito en
+  vez de formatearlo con el idioma del navegador. Borde en `forced-colors`.
+- **tooltip-clean** (Pro; antes `tooltip` en E1/E3 y un `tooltip-clean`
+  reducido a CSS en E4) — se conserva casi entero: capa superior con
+  `popover="manual"` (ningún `overflow` lo corta), volteo, ventana de «vecinos
+  sin espera», Escape. CSS en fichero hermano, tema claro, fondo a tinta de
+  BiVelio. De E3 (y `tapToggles` de E1, que era lo mismo): **`toggleOnClick`**
+  — cuando el disparador no hace otra cosa (un término con su definición), un
+  clic o un toque abren y cierran, y tocar fuera cierra; upstream nunca abre con
+  el dedo. De E1: **`kind="definition"`** (más ancho, peso normal, interlineado
+  de párrafo). De E3: la burbuja vive en el DOM junto a su disparador, así que
+  restablece `text-transform`, `letter-spacing` y `font-style` (no hereda las
+  mayúsculas de una cabecera). La versión reducida de E4 desaparece: el botón de
+  ver/ocultar la contraseña de `text-field-clean` usa esta (`content`, no
+  `label`).
+- **data-table-clean** (Pro; antes `data-table` en E1 y —distinta— en E2,
+  `data-table-readonly` en E3 y `data-table-clean` en E4) — **BIFURCADA A SOLO
+  LECTURA, una tabla para todo el sitio.** Upstream es una hoja de cálculo
+  pequeña (celdas editables, cursor, selección de rangos, copiar y pegar,
+  casillas, acciones en bloque, selectores de etiquetas, «añadir fila»,
+  deshacer); nada de eso existe aquí a propósito: las filas son hechos medidos,
+  contractuales o publicados, y una celda que parece editable mentiría. Queda el
+  aspecto (tarjeta con sombra, cabecera de 12px gris sobre una banda tenue,
+  filas separadas solo por filetes, velo al pasar) sobre un `<table>` real, y
+  UNA interacción, ordenar:
+  - de todos: las celdas son nodos que ya vienen formateados y traducidos; se
+    ordena por el valor crudo de `row.sort`, nunca interpretando un texto;
+  - de E1 y E3: **un valor que falta (`null` o ausente) ordena SIEMPRE al
+    final**, en los dos sentidos: no es el número más pequeño y jamás se trata
+    como cero (la versión de E2 lo dejaba donde cayera); `Intl.Collator` con
+    `numeric` y `locale` opcional;
+  - `aria-sort` en la columna ordenada; cada cabecera ordenable es un
+    `<button>` de **44px con puntero grueso** (E1, E3), con nombre accesible por
+    `sortLabel` («Ordenar por {column}», de E1; E3 lo pasaba columna a columna);
+    primera pulsación de mayor a menor, segunda al revés y, si no hay
+    `defaultSort` (E3), la tercera devuelve el orden entregado (E1, E2);
+  - de E3: fila de título (`title`, `description`, `aside`, `headingAs`),
+    `help` tras el rótulo de una columna (el «?» con la definición) y
+    **`pinFirst`**, la primera columna fija al desplazar, con su filo;
+  - de E4: `rowHeader` (`<th scope="row">`), `dense`, `lang`, estilos de
+    impresión y el desplazamiento lateral dentro del **Scroll Area** de la
+    librería (región con nombre que solo es parada de tabulador mientras de
+    verdad desplaza, con bordes suaves donde hay más); sustituye al `overflow`
+    nativo de E1/E2 y a los bordes hechos con script de E3;
+  - de E2: `flat` (sin tarjeta, para una tabla que ya vive dentro de una) y
+    **`narrow="stack"`**: por debajo de 640px de su propio ancho cada fila pasa
+    a ser una hoja de pares rótulo/valor (`lead`, `plain`); el resto desplaza;
+  - de E1: `summary` (fila de resumen que no participa en la ordenación),
+    `nowrap`, `mono` y `quiet` (celdas que son un «—»);
+  - nuevo en la integración: `prose` (tablas de un artículo o una guía: celdas
+    alineadas arriba y que pueden partir en cualquier punto) y `label`
+    obligatoria (el `<caption>` oculto y el nombre de la región).
+  Sin una sola cadena en inglés.
+- **text-field-clean** (Pro; antes `text-field` en E2 y `text-field-clean` en
+  E4) — 44px de alto en todas partes y texto de 16px en táctil (objetivo
+  táctil; iOS no amplía). `reveal` trae los dos nombres del botón de ver/ocultar
+  ya traducidos, y el botón lleva el Tooltip de la librería. `invalid` marca el
+  campo sin imprimir un mensaje debajo (los formularios de acceso dicen el
+  error UNA vez, en la alerta). `icon` (antes `prefix`) y `aside`. Fuera:
+  tamaños, sufijos, borrar, copiar y contador (nada los usa; la versión de E2
+  los conservaba detrás de `labels`). Filo visible sobre el fondo marfil,
+  autorrelleno del navegador sin segunda caja. El panel baja el texto a 14,5px
+  con puntero fino desde `app/globals.css` (`--fs`).
+- **empty-state-clean** (Pro; antes `empty-state` en E2 y `empty-state-clean`
+  en E4) — componente de servidor; sin glifo por defecto ni objetos de
+  Hugeicons (`icon` es un SVG en línea o nada). De E4: `art` (ilustración en
+  vez de baldosa), `eyebrow`, `titleAs` y `size="page"` (la 404). `bare` y
+  `tall` como upstream.
+- **spinner-clean** (Pro; antes `spinner` en E2 y `spinner-clean` en E4) —
+  componente de servidor; sin cambios de comportamiento. La etiqueta, si la
+  hay, llega traducida.
+- **separator-clean** (Pro; E4) — componente de servidor; sin cambios de
+  comportamiento.
+- **toaster** (Pro; antes dos `toaster`: el reducido de E1 y el casi íntegro de
+  E2) — **REDUCIDO, uno para todo el panel.** Una esquina, una columna (sin el
+  abanico de tarjetas asomando), sin deslizar para cerrar, sin `promise` ni
+  metamorfosis de carga, sin segunda pila (`id`/`toaster`), sin `position`.
+  Queda la tarjeta blanca con filete, el icono de estado de 16px, UNA acción
+  (el sitio de «Deshacer»), cerrar (botón, y Escape con el foco en el aviso) y
+  un temporizador que se detiene con el puntero o el foco encima. La lista es
+  una región viva `polite`. De E2: tipo `error` (es `role="alert"` y, salvo que
+  se le dé duración, **se queda hasta que se cierra**) y los atajos
+  `toast.success/.error/.info`. Sin cadenas por defecto: `label` y `closeLabel`
+  son props de `<Toaster />`.
+- **usage-meter** (Pro; antes dos `usage-meter`, E1 y E2, ambos «solo
+  asientos») — **BIFURCADO A UNA LECTURA: asientos en uso frente a
+  contratados**, y uno solo para las dos pantallas que la enseñan. Componente
+  de servidor, sin estado ni animación de conteo. Fuera: créditos y categorías,
+  selector de periodo, minigráfico diario, límites de plan, «se renueva en N
+  días», botón de mejora y el aviso del 80 %. De E2: cabecera con `unit`, la
+  cifra grande con su `figureLabel`, `missing` (sin lectura NO hay barra y se
+  escribe el porqué; nunca un cero), la leyenda `rows` y el tramo por encima de
+  lo contratado en ámbar. De E1: la barra dibuja **un hueco por asiento**
+  mientras caben (hasta 40), `stateLabel` (el estado también se dice con
+  palabras), `note` y el tamaño `sm` (dentro de otra tarjeta). La barra sale de
+  las dos lecturas crudas (`used`, `limit`), ya no de proporciones calculadas
+  fuera. Estados `ok` / `full` / `over`: ocupar todos los asientos y pasarse
+  son AVISOS, en ámbar; ninguno es un error (E1 pintaba el exceso en rojo).
+  Relleno en tinta: el azul queda para las acciones.
+- **team-invite** (Pro; E2 y E4) — **sin retratos**: `nodes` son tres nodos
+  (glifos o marcas) que pone quien la usa; por defecto, un glifo anónimo (lo
+  que hacía E2). Con `label` es `role="img"`; sin ella es decorativa
+  (`aria-hidden`), para cuando el texto de al lado ya lo dice. Colores a
+  tokens de BiVelio (el punto «en línea» en azul de marca) y bucle de 6,4 s.
+- **blur-crossfade** (Pro; E2 y E3) — duración 240 ms (antes 420) y desenfoque
+  6px (antes 10) por defecto; curva a `--aui-ease`.
 
 ## Cómo vendorizar una pieza nueva (frentes)
 
@@ -527,56 +616,6 @@ descarga Pro, así que llevan la cabecera Pro aunque alguna tenga gemela libre.
    conoce `app/globals.css`).
 5. `pnpm --dir apps/web run typecheck`, `pnpm exec vitest run apps/web` y el
    build.
-- **tooltip** (Pro; frente de evidencia) — nueva prop `toggleOnClick`: cuando el
-  disparador no hace otra cosa (un término con su definición), un clic o un
-  TOQUE abre y cierra la etiqueta, y pulsar fuera la cierra. Upstream nunca abre
-  al tocar y se cierra al hacer clic: correcto para un botón de barra, pero una
-  definición que solo existe con ratón no explica nada en un móvil. Fondo a
-  tinta de BiVelio, ancho máximo ajustable (`--ui-tipc-max`), y la etiqueta
-  anula mayúsculas e interletraje heredados (vive en el DOM junto a su
-  disparador, que puede ser una cabecera de tabla).
-- **hover-card** (Pro) — `toggleOnClick` (el disparador es un botón sin acción
-  propia: clic o toque abren, y lleva `aria-expanded`) y `label` (la tarjeta se
-  anuncia como grupo con nombre). Mismo arreglo de mayúsculas heredadas.
-- **toggle-group** (Pro) — `required` en `type="single"`: una opción queda
-  siempre encendida (un filtro de lectura) y pulsar la encendida no hace nada.
-  La variante «buttons» pinta la opción encendida en tinta con texto blanco
-  (como el resto de chips de BiVelio; upstream usa un velo gris), filete de 1px
-  y 44px de alto en pantallas táctiles (upstream 36–40).
-- **badge** (Pro) — componente de SERVIDOR (sin `"use client"`). Fuera el
-  dibujo de iconos Hugeicons, el contador redondo (`count`, que formateaba con
-  el idioma del navegador) y el punto que late (`live`: aquí nada está «en
-  curso»). Tonos a tokens de BiVelio; las etiquetas largas PARTEN línea en vez
-  de acabar en «…».
-- **data-table-readonly** (Pro) — **BIFURCADA A SOLO LECTURA.** Upstream es una
-  hoja de cálculo pequeña: selección de celdas y rangos, edición en sitio,
-  copiar y pegar, deshacer, casillas por fila, selector de etiquetas y «añadir
-  fila». La evidencia no se edita, y una tabla que PARECE editable diría lo
-  contrario, así que nada de eso queda. Queda la tarjeta limpia (título, filas
-  con filete, cabeceras de 12px) y la cabecera ordenable con su flecha. Nuevo:
-  `<table>` de verdad con `aria-sort` y un `<button>` por cabecera ordenable;
-  las celdas son nodos ya formateados por quien llama y el orden usa un valor
-  aparte (`sort`), donde `null` = sin dato y va SIEMPRE al final (nunca cuenta
-  como cero); cabecera fija con `maxHeight`, primera columna fija, borde suave
-  en el lado por el que aún se puede desplazar (la idea del Scroll Area de
-  affectUI, con la barra del navegador) y contenedor enfocable para
-  desplazarlo con teclado. Huecos `aside`, `help` por columna (un término con
-  su definición) y `footer`. Sin inglés: también el título del botón de ordenar
-  llega por props.
-- **blur-crossfade** (Pro) — duración 240 ms (antes 420) y desenfoque 6px
-  (antes 10), curva `--aui-ease`. Con `prefers-reduced-motion` cambia sin
-  fundido, como upstream.
-- **ab-branches** (Pro) — **FORK** de la ilustración Outreach Branches. Mismo
-  lenguaje (conectores finos, baldosas blancas con sombra suave, pulso hecho de
-  trazos apilados) para explicar una sola cosa: un par A/B. Dos ramas en vez de
-  tres, que vuelven a unirse en una cuarta baldosa (el contador del proveedor);
-  fuera los logos de Gmail, Slack y Notion (las baldosas llevan las letras A y
-  B); pulsos en tinta (A) y azul de marca (B) en vez del degradado pastel; sin
-  filtros ni degradados SVG, así que no necesita ids ni `"use client"`. El
-  dibujo NO dice nada del resultado: los dos brazos miden lo mismo. Decorativo
-  salvo que se le pase `label`; la leyenda la escribe quien lo usa, en texto.
-- **experiment-readout** — `ReadoutFact.label` admite un nodo (un término con
-  su definición) y una `key` opcional.
 
 ## Cómo actualizar una pieza
 
@@ -586,54 +625,3 @@ descarga Pro, así que llevan la cabecera Pro aunque alguna tenga gemela libre.
 3. Reaplica la lista de cambios, actualiza commit/sha256 aquí y vuelve a
    verificar reduced-motion, foco y contraste: el soporte que declara la
    librería se comprueba de nuevo después de modificarla.
-
-**Frente E2 (2026-11-16) — panel: instalación, cuenta, equipo y extracto**
-
-Las diecisiete piezas de este frente salen del registro Pro y llevan la
-cabecera Pro. Comunes a todas, además de lo de arriba: la interpolación
-`${EXIT_MS}` del CSS de `dialog` queda escrita (200 ms), y cada control lleva
-al final de su `.css` un bloque `---- BiVelio ----` con el tamaño `lg` a 44 px
-(en táctil conserva los 16 px de texto de upstream, para que iOS no amplíe) y
-un filo visible sobre el fondo marfil.
-
-- **badge**, **spinner**, **empty-state**, **blur-crossfade** — tal cual, sin
-  cadenas propias. `blur-crossfade` se usa a 220 ms (upstream 420).
-- **avatar** — reducido a INICIALES sobre un color estable por nombre o id.
-  Fuera: fotos, marca de agente, punto de estado (y sus «online/away/busy»),
-  `AvatarGroup` y su «N more». Sin estado: se renderiza en servidor.
-- **dialog** — `closeLabel`, `confirmLabel` y `cancelLabel` pasan a ser
-  obligatorias (antes «Close», «Confirm», «Cancel»). Botones a 44 px.
-- **dropdown-menu** — `empty` ya no trae «Nothing here yet». Filas a 40 px
-  (44 en táctil).
-- **select** — `placeholder` sin «Choose…»; `optional` es el texto ya
-  traducido, no un booleano que imprimía «Optional».
-- **text-field** — `optional` como en `select`; nueva prop `labels` con los
-  nombres accesibles de limpiar, ver/ocultar y copiar: un botón sin su
-  etiqueta NO se pinta (antes «Clear», «Show password», «Copy», «Copied»).
-- **number-input** — `stepLabels` obligatoria (antes «Increase»/«Decrease»);
-  `optional` como en `select`.
-- **toaster** — `label` y `dismissLabel` obligatorias (antes «Notifications»
-  y «Dismiss notification»).
-- **segmented-control** — el contador ya no se formatea con `"en-US"` fijo.
-  `lg` a 36 px con puntero fino y 44 px en táctil.
-- **usage-meter** — REESCRITO como componente de servidor para UNA medida:
-  asientos en uso frente a contratados (un asiento es una máquina o una
-  identidad de servicio; jamás «créditos»). Fuera: créditos y categorías,
-  selector de periodo, gráfica diaria, límites del plan, «resets in N days»,
-  botón de upgrade, el aviso al 80 % y todo conteo animado desde cero. Sin
-  lectura no hay barra ni porcentaje: se pinta «—» y el porqué. El exceso
-  sobre lo contratado es un tramo ámbar de la misma barra.
-- **data-table** — REESCRITO en solo lectura: quedan la tarjeta, la cabecera
-  gris, las filas con filos y la flecha de orden. Fuera: celdas editables,
-  selección y acciones en lote, añadir fila, deshacer/rehacer, selectores y
-  fila de resumen. Las celdas llegan ya formateadas y el orden usa el valor
-  crudo que se pasa aparte. Por debajo de 640 px de su propio ancho cada fila
-  pasa a ficha de pares etiqueta/valor (sin scroll lateral).
-- **setup-guide** — REESCRITO en solo lectura y sin estado: nadie marca nada.
-  Cada tarea trae su estado (medido por el producto) y es un enlace a su
-  instrucción. Fuera: marcar/desmarcar, bloqueo de tareas, plegado, «Edit»,
-  minimizar y cerrar. Sin `progress` no hay barra ni recuento.
-- **team-invite** — decorativa (`aria-hidden`): las tres caras son un glifo
-  anónimo sobre un tinte, no retratos (upstream pedía URLs de fotos y nombres).
-- **empty-calendar** — decorativa: fuera los textos «Calendar», «EMPTY» y el
-  botón «Join meeting» dibujados en el SVG; la tarjeta no lleva palabras.

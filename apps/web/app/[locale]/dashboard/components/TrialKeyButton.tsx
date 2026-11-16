@@ -3,7 +3,7 @@
 import { useTranslations, useLocale } from "next-intl";
 import { useState } from "react";
 
-import { Spinner } from "@/vendor/affectui/spinner";
+import { Spinner } from "@/vendor/affectui/spinner-clean";
 
 import { CopyButton } from "./CopyButton";
 

@@ -5,10 +5,10 @@ import { useCallback, useEffect, useState } from "react";
 
 import { estadoDeLaPrueba, type EstadoDeLaPrueba } from "../prueba-de-clave";
 import { KeyIcon } from "@/app/components/icons";
-import { Badge } from "@/vendor/affectui/badge";
+import { Badge } from "@/vendor/affectui/badge-clean";
 import { AlertDialog } from "@/vendor/affectui/dialog";
-import { Spinner } from "@/vendor/affectui/spinner";
-import { TextField } from "@/vendor/affectui/text-field";
+import { Spinner } from "@/vendor/affectui/spinner-clean";
+import { TextField } from "@/vendor/affectui/text-field-clean";
 
 import { CopyButton } from "./CopyButton";
 
@@ -210,7 +210,6 @@ export function ServiceAccountKeySection() {
           <TextField
             className="kt-field"
             inputClassName="kt-mono"
-            size="lg"
             label={t("serviceAccountKeySection.verifyTitle")}
             type="text"
             inputMode="text"
@@ -223,7 +222,7 @@ export function ServiceAccountKeySection() {
             }}
             spellCheck={false}
             autoComplete="off"
-            prefix={<KeyIcon />}
+            icon={<KeyIcon />}
           />
           <button
             type="button"
@@ -258,7 +257,7 @@ export function ServiceAccountKeySection() {
         <div className="keytester sak-live">
           <div className="sak-live-head">
             <span className="sak-live-t">{t("serviceAccountKeySection.liveKeysTitle")}</span>
-            <Badge count={claves.length} />
+            <Badge size="sm" count={claves.length} />
           </div>
           <ul className="sak-list">
             {claves.map((c) => (
@@ -270,7 +269,7 @@ export function ServiceAccountKeySection() {
                   <div className="k">
                     {c.key_prefix}… <span className="sak-row-label">· {c.label}</span>
                   </div>
-                  <Badge tone={c.last_used_at ? "success" : "neutral"} dot>
+                  <Badge size="sm" tone={c.last_used_at ? "success" : "neutral"} dot>
                     {c.last_used_at
                       ? t("serviceAccountKeySection.lastUsed", { when: fecha(c.last_used_at) })
                       : t("serviceAccountKeySection.neverUsed")}

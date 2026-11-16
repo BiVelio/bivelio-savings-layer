@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
-import { Badge } from "@/vendor/affectui/badge";
+import { Badge } from "@/vendor/affectui/badge-clean";
 
 import type { AbArtifact } from "../data";
 import { pct0, money } from "../format";
@@ -20,7 +20,7 @@ export async function IntegrityQualityChips({ ab }: { ab: AbArtifact }) {
       <p className="iq-t">{t("integrityQualityChips.title")}</p>
       <ul className="chips iq-l">
         <li>
-          <Badge size="md" tone="success" dot>
+          <Badge size="lg" tone="success" dot>
             {t.rich("integrityQualityChips.qualityGate", {
               b: (chunks) => <b>{chunks}</b>,
               rate: pct0(ab.aggregate.qualityPassRate),
@@ -28,7 +28,7 @@ export async function IntegrityQualityChips({ ab }: { ab: AbArtifact }) {
           </Badge>
         </li>
         <li>
-          <Badge size="md" tone={ab.reconciliation.reconciled ? "success" : "danger"} dot>
+          <Badge size="lg" tone={ab.reconciliation.reconciled ? "success" : "danger"} dot>
             {ab.reconciliation.reconciled
               ? t("integrityQualityChips.ledgersReconcile")
               : t("integrityQualityChips.ledgersMismatch")}
@@ -36,20 +36,20 @@ export async function IntegrityQualityChips({ ab }: { ab: AbArtifact }) {
           </Badge>
         </li>
         <li>
-          <Badge size="md" tone={ab.modelStable ? "success" : "danger"} dot>
+          <Badge size="lg" tone={ab.modelStable ? "success" : "danger"} dot>
             {ab.modelStable
               ? t("integrityQualityChips.modelStable")
               : t("integrityQualityChips.modelChanged")}
           </Badge>
         </li>
         <li>
-          <Badge size="md" tone={ab.aggregate.proven ? "success" : "warning"} dot>
+          <Badge size="lg" tone={ab.aggregate.proven ? "success" : "warning"} dot>
             {ab.aggregate.proven ? t("integrityQualityChips.provenAt95") : t("integrityQualityChips.unprovenMock")}
           </Badge>
         </li>
         {cache?.amortization?.breakEvenK != null ? (
           <li>
-            <Badge size="md">
+            <Badge size="lg">
               {t.rich("integrityQualityChips.cacheBreakEven", {
                 b: (chunks) => <b>{chunks}</b>,
                 k: cache.amortization.breakEvenK,
@@ -58,7 +58,7 @@ export async function IntegrityQualityChips({ ab }: { ab: AbArtifact }) {
           </li>
         ) : null}
         <li>
-          <Badge size="md">{t("integrityQualityChips.regressedVoids")}</Badge>
+          <Badge size="lg">{t("integrityQualityChips.regressedVoids")}</Badge>
         </li>
       </ul>
     </div>

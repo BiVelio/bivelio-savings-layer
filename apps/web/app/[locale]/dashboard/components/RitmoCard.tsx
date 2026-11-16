@@ -3,7 +3,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { esPeriodoDeCalibracion, FX_SOMBRA, periodoDe } from "@/lib/billing/extracto-sombra";
 import { calcularRitmo, DIAS_MINIMOS_PARA_PROYECTAR, VENTANA_RITMO_DIAS } from "@/lib/billing/ritmo";
 
-import { Badge } from "@/vendor/affectui/badge";
+import { Badge } from "@/vendor/affectui/badge-clean";
 
 import type { UsageRollup } from "../data";
 import { money } from "../format";
