@@ -1879,7 +1879,7 @@
     },
     "repro": {
       "title": "Come riprodurlo",
-      "intro": "Il codice del banco di prova non è ancora pubblico; il metodo sì, e sta in cinque passi. Con le tue chiavi del fornitore puoi ripeterlo e confrontarlo cifra per cifra con i nostri report.",
+      "intro": "Il codice del banco di prova è nel repository aperto, e il metodo sta in cinque passi. Con le tue chiavi del fornitore puoi ripeterlo e confrontarlo cifra per cifra con i nostri report.",
       "steps": {
         "dataset": "<b>Il dataset.</b> Scarica ogni dataset pubblico al commit della tabella qui sopra e controlla lo sha256 di ogni file prima di usarlo. Se non corrisponde, non è lo stesso dataset.",
         "package": "<b>Il livello.</b> Installa <code>@bivelio/savings-layer</code> da npm nella versione indicata dal report e controlla lo sha256 di <code>dist/index.js</code>: ogni report riporta il suo.",
@@ -1893,7 +1893,7 @@
     },
     "invite": {
       "title": "Misuraci tu stesso",
-      "body": "Una misurazione indipendente vale più della nostra. Il codice del banco non è ancora pubblico: se vuoi ripetere la misurazione, o misurare il livello con il tuo harness o con il tuo traffico, scrivici e ti daremo ciò che ti serve per farlo.",
+      "body": "Una misurazione indipendente vale più della nostra. Il codice del banco è nel repository aperto: se vuoi ripetere la misurazione, o misurare il livello con il tuo harness o con il tuo traffico, scrivici e ti daremo ciò che ti serve per farlo.",
       "contact": "Scrivici a",
       "cta": "Invia un'email",
       "subject": "Misurazione indipendente del banco di prova pubblico"
@@ -1905,7 +1905,8 @@
       "classAb": "Due bracci sulla stessa richiesta, valorizzati con l'uso dichiarato dal fornitore. Così si misurano le batterie del banco.",
       "classReplay": "Riproduzione controfattuale con una linea di base parzialmente ricostruita. Non è un A/B dal vivo, né un risparmio fatturato, né una riconciliazione delle fatture.",
       "compatible": "Compatibile non significa misurato: un modello conta qui solo se ha un'esecuzione pubblicata, e ciò che non si è potuto misurare è indicato con il suo motivo.",
-      "paper": "Articolo di ricerca (PDF)"
+      "paper": "Articolo di ricerca (PDF)",
+      "repo": "Repository aperto"
     },
     "index": {
       "method": "Metodo",

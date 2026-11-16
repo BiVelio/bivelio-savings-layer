@@ -5,6 +5,7 @@ import { CentroDeEvidencia, type SeccionDelIndice } from "@/app/components/evide
 import { ComparacionAB } from "@/app/components/evidencia/ComparacionAB";
 import { filasAB } from "@/app/components/evidencia/filas-ab";
 import Footer from "@/app/components/Footer";
+import { URL_DEL_CODIGO } from "@/app/components/sitio";
 import { absolute, languageAlternates, tarjetaSocial } from "@/i18n/site";
 import { cargarBanco } from "@/lib/banco-publico/cargar";
 import { PALANCA_TTL } from "@/lib/portada/palanca-ttl";
@@ -23,6 +24,11 @@ import { PALANCA_TTL } from "@/lib/portada/palanca-ttl";
  * (#gateway-ttl) no es una batería A/B ni un JSON de esa carpeta, sino un replay
  * cuyo informe no se sirve. Sus números vienen de lib/portada/palanca-ttl.ts,
  * con una verja que los cuadra uno a uno contra el informe.
+ *
+ * EL REPOSITORIO ES ABIERTO (P1 de la guía maestra del rediseño): esta página
+ * dejó de pasar `sinGitHub` al pie y enlaza el código junto a las descargas.
+ * `BancoPublico` conserva su lista blanca: sus enlaces siguen siendo solo
+ * informes servidos, el artículo y el correo; el del repositorio vive aquí.
  */
 export const dynamic = "force-static";
 export const dynamicParams = false;
@@ -49,6 +55,7 @@ export default async function BenchmarksPage({ params }: { params: Promise<{ loc
   setRequestLocale(locale);
   const t = await getTranslations("benchmarksPage");
   const tUi = await getTranslations("ui");
+  const tNav = await getTranslations("nav");
   const banco = cargarBanco();
   const tr = t as unknown as Traductor;
 
@@ -81,15 +88,25 @@ export default async function BenchmarksPage({ params }: { params: Promise<{ loc
           <CentroDeEvidencia
             secciones={secciones}
             enlaces={
-              <a className="evc-link" href="/papers/bv-sala-savings-layer-2026-10.pdf" target="_blank" rel="noopener">
-                {t("centre.paper")}
-              </a>
+              <>
+                <a className="evc-link" href="/papers/bv-sala-savings-layer-2026-10.pdf" target="_blank" rel="noopener">
+                  {t("centre.paper")}
+                </a>
+                {/* P1 de la guía: el repositorio es abierto y el centro de evidencia lo enlaza. */}
+                <a className="evc-link" href={URL_DEL_CODIGO} target="_blank" rel="noopener noreferrer">
+                  {t("centre.repo")}
+                  <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <path d="M4 2.5h5.5V8M9.5 2.5 2.5 9.5" />
+                  </svg>
+                  <span className="sr-only"> {tNav("newTab")}</span>
+                </a>
+              </>
             }
           />
         }
         comparacion={filas.length > 0 ? <ComparacionAB filas={filas} locale={locale} etiquetaAb={tUi("evidence.abSdk")} /> : null}
       />
-      <Footer sinGitHub />
+      <Footer />
     </div>
   );
 }

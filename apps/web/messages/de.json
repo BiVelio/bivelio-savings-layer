@@ -1879,7 +1879,7 @@
     },
     "repro": {
       "title": "Wie man es reproduziert",
-      "intro": "Der Code des Benchmarks ist noch nicht öffentlich; die Methode schon, und sie passt in fünf Schritte. Mit Ihren eigenen Anbieter-Schlüsseln können Sie ihn wiederholen und Zahl für Zahl mit unseren Berichten vergleichen.",
+      "intro": "Der Code des Benchmarks liegt im offenen Repository, und die Methode passt in fünf Schritte. Mit Ihren eigenen Anbieter-Schlüsseln können Sie ihn wiederholen und Zahl für Zahl mit unseren Berichten vergleichen.",
       "steps": {
         "dataset": "<b>Der Datensatz.</b> Laden Sie jeden öffentlichen Datensatz beim Commit aus der Tabelle oben herunter und prüfen Sie vor der Nutzung den sha256 jeder Datei. Stimmt er nicht, ist es nicht derselbe Datensatz.",
         "package": "<b>Die Schicht.</b> Installieren Sie <code>@bivelio/savings-layer</code> von npm in der Version, die der Bericht nennt, und prüfen Sie den sha256 von <code>dist/index.js</code>: Jeder Bericht enthält seinen.",
@@ -1893,7 +1893,7 @@
     },
     "invite": {
       "title": "Messen Sie uns selbst",
-      "body": "Eine unabhängige Messung ist mehr wert als unsere. Der Code des Benchmarks ist noch nicht öffentlich: Wenn Sie die Messung wiederholen oder die Schicht mit Ihrem eigenen Harness oder Ihrem eigenen Verkehr messen möchten, schreiben Sie uns, und wir geben Ihnen, was Sie dafür brauchen.",
+      "body": "Eine unabhängige Messung ist mehr wert als unsere. Der Code des Benchmarks liegt im offenen Repository: Wenn Sie die Messung wiederholen oder die Schicht mit Ihrem eigenen Harness oder Ihrem eigenen Verkehr messen möchten, schreiben Sie uns, und wir geben Ihnen, was Sie dafür brauchen.",
       "contact": "Schreiben Sie uns an",
       "cta": "E-Mail schreiben",
       "subject": "Unabhängige Messung des öffentlichen Benchmarks"
@@ -1905,7 +1905,8 @@
       "classAb": "Zwei Arme für dieselbe Anfrage, bewertet mit der Nutzung, die der Anbieter meldet. So werden die Batterien des Benchmarks gemessen.",
       "classReplay": "Kontrafaktische Wiederholung mit teilweise rekonstruierter Baseline. Das ist weder ein Live-A/B noch eine abgerechnete Ersparnis noch ein Rechnungsabgleich.",
       "compatible": "Kompatibel heißt nicht gemessen: Ein Modell zählt hier nur, wenn es einen veröffentlichten Lauf hat, und was nicht gemessen werden konnte, steht mit seinem Grund da.",
-      "paper": "Forschungsartikel (PDF)"
+      "paper": "Forschungsartikel (PDF)",
+      "repo": "Offenes Repository"
     },
     "index": {
       "method": "Methode",

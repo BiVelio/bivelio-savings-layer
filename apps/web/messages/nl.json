@@ -1879,7 +1879,7 @@
     },
     "repro": {
       "title": "Hoe je het reproduceert",
-      "intro": "De code van de benchmark is nog niet openbaar; de methode wel, en die past in vijf stappen. Met je eigen providersleutels kun je hem herhalen en cijfer voor cijfer vergelijken met onze rapporten.",
+      "intro": "De code van de benchmark staat in de open repository, en de methode past in vijf stappen. Met je eigen providersleutels kun je hem herhalen en cijfer voor cijfer vergelijken met onze rapporten.",
       "steps": {
         "dataset": "<b>De dataset.</b> Download elke openbare dataset op de commit uit de tabel hierboven en controleer de sha256 van elk bestand voordat je het gebruikt. Klopt die niet, dan is het niet dezelfde dataset.",
         "package": "<b>De laag.</b> Installeer <code>@bivelio/savings-layer</code> vanaf npm in de versie die het rapport noemt en controleer de sha256 van <code>dist/index.js</code>: elk rapport vermeldt de zijne.",
@@ -1893,7 +1893,7 @@
     },
     "invite": {
       "title": "Meet ons zelf",
-      "body": "Een onafhankelijke meting is meer waard dan de onze. De code van de benchmark is nog niet openbaar: wil je de meting herhalen, of de laag meten met je eigen harnas of je eigen verkeer, schrijf ons en we geven je wat je daarvoor nodig hebt.",
+      "body": "Een onafhankelijke meting is meer waard dan de onze. De code van de benchmark staat in de open repository: wil je de meting herhalen, of de laag meten met je eigen harnas of je eigen verkeer, schrijf ons en we geven je wat je daarvoor nodig hebt.",
       "contact": "Schrijf ons op",
       "cta": "E-mail sturen",
       "subject": "Onafhankelijke meting van de openbare benchmark"
@@ -1905,7 +1905,8 @@
       "classAb": "Twee armen op hetzelfde verzoek, gewaardeerd met het gebruik dat de provider rapporteert. Zo worden de batterijen van de benchmark gemeten.",
       "classReplay": "Contrafeitelijke replay met een gedeeltelijk gereconstrueerde baseline. Het is geen live A/B, geen gefactureerde besparing en geen factuurafstemming.",
       "compatible": "Compatibel betekent niet gemeten: een model telt hier alleen mee als er een gepubliceerde run van is, en wat niet gemeten kon worden staat er met de reden bij.",
-      "paper": "Onderzoeksartikel (PDF)"
+      "paper": "Onderzoeksartikel (PDF)",
+      "repo": "Open repository"
     },
     "index": {
       "method": "Methode",

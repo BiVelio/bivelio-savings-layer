@@ -1879,7 +1879,7 @@
     },
     "repro": {
       "title": "Cara mereproduksinya",
-      "intro": "Kode uji ini belum publik; metodenya publik, dan cukup dalam lima langkah. Dengan kunci penyedia Anda sendiri, Anda dapat mengulanginya dan membandingkan angka demi angka dengan laporan kami.",
+      "intro": "Kode uji ini ada di repositori terbuka, dan metodenya cukup dalam lima langkah. Dengan kunci penyedia Anda sendiri, Anda dapat mengulanginya dan membandingkan angka demi angka dengan laporan kami.",
       "steps": {
         "dataset": "<b>Dataset.</b> Unduh setiap dataset publik pada commit di tabel di atas dan periksa sha256 setiap berkas sebelum digunakan. Jika tidak cocok, itu bukan dataset yang sama.",
         "package": "<b>Lapisan.</b> Pasang <code>@bivelio/savings-layer</code> dari npm pada versi yang disebut laporan dan periksa sha256 dari <code>dist/index.js</code>: setiap laporan mencantumkannya.",
@@ -1893,7 +1893,7 @@
     },
     "invite": {
       "title": "Ukur kami sendiri",
-      "body": "Pengukuran independen lebih berharga daripada milik kami. Kode uji ini belum publik: jika Anda ingin mengulang pengukuran, atau mengukur lapisan dengan harness Anda sendiri atau lalu lintas Anda, tulis kepada kami dan kami akan memberikan apa yang Anda perlukan.",
+      "body": "Pengukuran independen lebih berharga daripada milik kami. Kode uji ini ada di repositori terbuka: jika Anda ingin mengulang pengukuran, atau mengukur lapisan dengan harness Anda sendiri atau lalu lintas Anda, tulis kepada kami dan kami akan memberikan apa yang Anda perlukan.",
       "contact": "Tulis kepada kami di",
       "cta": "Kirim email",
       "subject": "Pengukuran independen dari uji publik"
@@ -1905,7 +1905,8 @@
       "classAb": "Dua lengan pada permintaan yang sama, dinilai dengan penggunaan yang dilaporkan penyedia. Begitulah baterai uji ini diukur.",
       "classReplay": "Pemutaran ulang kontrafaktual dengan garis dasar yang sebagian direkonstruksi. Ini bukan A/B langsung, bukan penghematan yang ditagihkan, dan bukan rekonsiliasi tagihan.",
       "compatible": "Kompatibel tidak berarti terukur: sebuah model hanya dihitung di sini jika memiliki putaran yang diterbitkan, dan yang tidak dapat diukur disebutkan beserta alasannya.",
-      "paper": "Makalah penelitian (PDF)"
+      "paper": "Makalah penelitian (PDF)",
+      "repo": "Repositori terbuka"
     },
     "index": {
       "method": "Metode",

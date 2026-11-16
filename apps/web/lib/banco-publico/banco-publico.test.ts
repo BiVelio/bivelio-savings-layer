@@ -721,7 +721,7 @@ describe("banco público: la rebaja de caché del gateway, en su sección (#gate
 
 // ---------------------------------------------------------------------------
 
-describe("banco público: sin enlaces al código (el repositorio es privado)", () => {
+describe("banco público: los enlaces del componente son solo informes, artículo y correo (el del repositorio abierto lo pone la página)", () => {
   for (const loc of locales) {
     it(`${loc}: la página renderizada no enlaza ni nombra github.com, ni cita comandos o arneses del repo`, () => {
       const html = pagina(BANCO, loc);
@@ -741,9 +741,16 @@ describe("banco público: sin enlaces al código (el repositorio es privado)", (
     });
   }
 
-  it("el pie de /benchmarks va sin el icono de GitHub (el resto de páginas no cambia)", () => {
+  it("el centro de evidencia enlaza el repositorio abierto y su pie ya no oculta GitHub (P1 de la guía del rediseño)", () => {
     const src = readFileSync(join(WEB, "app/[locale]/benchmarks/page.tsx"), "utf8");
-    expect(src).toContain("<Footer sinGitHub />");
+    // El pie completo, como en el resto de páginas públicas.
+    expect(src).toContain("<Footer />");
+    expect(src).not.toContain("<Footer sinGitHub");
+    // El enlace sale de la constante del chrome, no de una URL escrita aquí, y se abre aparte.
+    expect(src).toContain('import { URL_DEL_CODIGO } from "@/app/components/sitio";');
+    expect(src).toMatch(/href=\{URL_DEL_CODIGO\} target="_blank" rel="noopener noreferrer"/);
+    expect(src).not.toMatch(/github\.com/i);
+    // El pie conserva la opción para las páginas que aún la pasan.
     const pie = readFileSync(join(WEB, "app/components/Footer.tsx"), "utf8");
     expect(pie).toContain("<SocialDock sinGitHub={sinGitHub} />");
   });

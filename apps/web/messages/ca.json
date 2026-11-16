@@ -1879,7 +1879,7 @@
     },
     "repro": {
       "title": "Com reproduir-ho",
-      "intro": "El codi del banc encara no és públic; el mètode sí, i cap en cinc passos. Amb les teves pròpies claus de proveïdor el pots repetir i comparar xifra a xifra amb els nostres informes.",
+      "intro": "El codi del banc és al repositori obert, i el mètode cap en cinc passos. Amb les teves pròpies claus de proveïdor el pots repetir i comparar xifra a xifra amb els nostres informes.",
       "steps": {
         "dataset": "<b>El dataset.</b> Descarrega cada dataset públic al commit de la taula de dalt i comprova el sha256 de cada fitxer abans de fer-lo servir. Si no quadra, no és el mateix dataset.",
         "package": "<b>La capa.</b> Instal·la <code>@bivelio/savings-layer</code> des de npm a la versió que diu l'informe i comprova el sha256 de <code>dist/index.js</code>: cada informe porta el seu.",
@@ -1893,7 +1893,7 @@
     },
     "invite": {
       "title": "Mesura'ns tu mateix",
-      "body": "Una mesura independent val més que la nostra. El codi del banc encara no és públic: si vols repetir la mesura, o mesurar la capa amb el teu propi arnès o amb el teu trànsit, escriu-nos i et donarem el que necessitis per fer-ho.",
+      "body": "Una mesura independent val més que la nostra. El codi del banc és al repositori obert: si vols repetir la mesura, o mesurar la capa amb el teu propi arnès o amb el teu trànsit, escriu-nos i et donarem el que necessitis per fer-ho.",
       "contact": "Escriu-nos a",
       "cta": "Enviar un correu",
       "subject": "Mesura independent del banc públic"
@@ -1905,7 +1905,8 @@
       "classAb": "Dos braços sobre la mateixa petició, valorats amb l'ús que reporta el proveïdor. Així es mesuren les bateries del banc.",
       "classReplay": "Reproducció contrafactual amb una línia base parcialment reconstruïda. No és un A/B en viu, ni estalvi facturat, ni una conciliació de factures.",
       "compatible": "Compatible no vol dir mesurat: un model només compta aquí si té una tirada publicada, i el que no s'ha pogut mesurar es diu amb el seu motiu.",
-      "paper": "Article de recerca (PDF)"
+      "paper": "Article de recerca (PDF)",
+      "repo": "Repositori obert"
     },
     "index": {
       "method": "Mètode",

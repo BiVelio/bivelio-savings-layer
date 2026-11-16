@@ -111,8 +111,9 @@ function Clase({ tipo, etiquetas, pequeno }: { tipo: Extract<TipoDeEvidencia, "a
 }
 
 /**
- * Enlace a un informe: la copia servida por esta web (/benchmarks/data/…), no
- * el repositorio, que es privado (decisión del dueño, 2026-09-29).
+ * Enlace a un informe: la copia servida por esta web (/benchmarks/data/…), que
+ * va limpia de los datos del entorno de quien midió. El enlace al repositorio
+ * abierto lo pone la página (benchmarks/page.tsx), no este componente.
  */
 const enlace = (ruta: string) => rutaServida(ruta);
 

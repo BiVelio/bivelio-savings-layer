@@ -1879,7 +1879,7 @@
     },
     "repro": {
       "title": "Jak to odtworzyć",
-      "intro": "Kod testu nie jest jeszcze publiczny; metoda jest, i mieści się w pięciu krokach. Z własnymi kluczami dostawcy możesz go powtórzyć i porównać liczba po liczbie z naszymi raportami.",
+      "intro": "Kod testu znajduje się w otwartym repozytorium, a metoda mieści się w pięciu krokach. Z własnymi kluczami dostawcy możesz go powtórzyć i porównać liczba po liczbie z naszymi raportami.",
       "steps": {
         "dataset": "<b>Zbiór danych.</b> Pobierz każdy publiczny zbiór danych z commita z tabeli powyżej i przed użyciem sprawdź sha256 każdego pliku. Jeśli się nie zgadza, to nie jest ten sam zbiór.",
         "package": "<b>Warstwa.</b> Zainstaluj <code>@bivelio/savings-layer</code> z npm w wersji podanej w raporcie i sprawdź sha256 pliku <code>dist/index.js</code>: każdy raport go zawiera.",
@@ -1893,7 +1893,7 @@
     },
     "invite": {
       "title": "Zmierz nas sam",
-      "body": "Niezależny pomiar jest wart więcej niż nasz. Kod testu nie jest jeszcze publiczny: jeśli chcesz powtórzyć pomiar albo zmierzyć warstwę własnym narzędziem lub własnym ruchem, napisz do nas, a damy ci wszystko, czego potrzebujesz.",
+      "body": "Niezależny pomiar jest wart więcej niż nasz. Kod testu znajduje się w otwartym repozytorium: jeśli chcesz powtórzyć pomiar albo zmierzyć warstwę własnym narzędziem lub własnym ruchem, napisz do nas, a damy ci wszystko, czego potrzebujesz.",
       "contact": "Napisz do nas na",
       "cta": "Wyślij e-mail",
       "subject": "Niezależny pomiar testu publicznego"
@@ -1905,7 +1905,8 @@
       "classAb": "Dwa ramiona dla tego samego żądania, wycenione według użycia raportowanego przez dostawcę. Tak mierzone są baterie testu.",
       "classReplay": "Kontrfaktyczne odtworzenie z częściowo zrekonstruowaną linią bazową. To nie jest A/B na żywo, zafakturowana oszczędność ani uzgodnienie faktur.",
       "compatible": "Zgodny nie znaczy zmierzony: model liczy się tu tylko wtedy, gdy ma opublikowany przebieg, a to, czego nie udało się zmierzyć, jest opisane wraz z powodem.",
-      "paper": "Artykuł badawczy (PDF)"
+      "paper": "Artykuł badawczy (PDF)",
+      "repo": "Otwarte repozytorium"
     },
     "index": {
       "method": "Metoda",

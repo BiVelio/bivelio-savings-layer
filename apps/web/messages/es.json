@@ -1879,7 +1879,7 @@
     },
     "repro": {
       "title": "Cómo reproducirlo",
-      "intro": "El código del banco todavía no es público; el método sí, y cabe en cinco pasos. Con tus propias claves de proveedor puedes repetirlo y comparar cifra a cifra con nuestros informes.",
+      "intro": "El código del banco está en el repositorio abierto, y el método cabe en cinco pasos. Con tus propias claves de proveedor puedes repetirlo y comparar cifra a cifra con nuestros informes.",
       "steps": {
         "dataset": "<b>El dataset.</b> Descarga cada dataset público en el commit de la tabla de arriba y comprueba el sha256 de cada fichero antes de usarlo. Si no cuadra, no es el mismo dataset.",
         "package": "<b>La capa.</b> Instala <code>@bivelio/savings-layer</code> desde npm en la versión que dice el informe y comprueba el sha256 de <code>dist/index.js</code>: cada informe lleva el suyo.",
@@ -1893,7 +1893,7 @@
     },
     "invite": {
       "title": "Mídenos tú",
-      "body": "Una medición independiente vale más que la nuestra. El código del banco no es público todavía: si quieres repetir la medición, o medir la capa con tu propio arnés o con tu tráfico, escríbenos y te damos lo que necesites para hacerlo.",
+      "body": "Una medición independiente vale más que la nuestra. El código del banco está en el repositorio abierto: si quieres repetir la medición, o medir la capa con tu propio arnés o con tu tráfico, escríbenos y te damos lo que necesites para hacerlo.",
       "contact": "Escríbenos a",
       "cta": "Escribir un correo",
       "subject": "Medición independiente del banco público"
@@ -1905,7 +1905,8 @@
       "classAb": "Dos brazos sobre la misma petición, valorados con el uso que reporta el proveedor. Así se miden las baterías del banco.",
       "classReplay": "Reproducción contrafactual con una línea base parcialmente reconstruida. No es un A/B en vivo, ni ahorro facturado, ni una conciliación de facturas.",
       "compatible": "Compatible no significa medido: un modelo solo cuenta aquí si tiene una tirada publicada, y lo que no se pudo medir se dice con su motivo.",
-      "paper": "Artículo de investigación (PDF)"
+      "paper": "Artículo de investigación (PDF)",
+      "repo": "Repositorio abierto"
     },
     "index": {
       "method": "Método",

@@ -1879,7 +1879,7 @@
     },
     "repro": {
       "title": "Como reproduzir",
-      "intro": "O código do banco ainda não é público; o método é, e cabe em cinco passos. Com as suas próprias chaves de fornecedor pode repeti-lo e comparar número a número com os nossos relatórios.",
+      "intro": "O código do banco está no repositório aberto, e o método cabe em cinco passos. Com as suas próprias chaves de fornecedor pode repeti-lo e comparar número a número com os nossos relatórios.",
       "steps": {
         "dataset": "<b>O dataset.</b> Descarregue cada dataset público no commit da tabela acima e verifique o sha256 de cada ficheiro antes de o usar. Se não bater certo, não é o mesmo dataset.",
         "package": "<b>A camada.</b> Instale <code>@bivelio/savings-layer</code> a partir do npm na versão indicada pelo relatório e verifique o sha256 de <code>dist/index.js</code>: cada relatório traz o seu.",
@@ -1893,7 +1893,7 @@
     },
     "invite": {
       "title": "Meça-nos você mesmo",
-      "body": "Uma medição independente vale mais do que a nossa. O código do banco ainda não é público: se quiser repetir a medição, ou medir a camada com o seu próprio harness ou o seu tráfego, escreva-nos e damos-lhe o que precisar para o fazer.",
+      "body": "Uma medição independente vale mais do que a nossa. O código do banco está no repositório aberto: se quiser repetir a medição, ou medir a camada com o seu próprio harness ou o seu tráfego, escreva-nos e damos-lhe o que precisar para o fazer.",
       "contact": "Escreva-nos para",
       "cta": "Enviar um e-mail",
       "subject": "Medição independente do banco público"
@@ -1905,7 +1905,8 @@
       "classAb": "Dois braços sobre o mesmo pedido, valorizados com a utilização que o fornecedor reporta. É assim que se medem as baterias do banco.",
       "classReplay": "Reprodução contrafactual com uma linha de base parcialmente reconstruída. Não é um A/B ao vivo, nem poupança faturada, nem uma reconciliação de faturas.",
       "compatible": "Compatível não significa medido: um modelo só conta aqui se tiver uma execução publicada, e o que não foi possível medir é dito com o seu motivo.",
-      "paper": "Artigo de investigação (PDF)"
+      "paper": "Artigo de investigação (PDF)",
+      "repo": "Repositório aberto"
     },
     "index": {
       "method": "Método",

@@ -1879,7 +1879,7 @@
     },
     "repro": {
       "title": "How to reproduce it",
-      "intro": "The bench's code is not public yet; the method is, and it fits in five steps. With your own provider keys you can rerun it and compare figure by figure with our reports.",
+      "intro": "The bench's code is in the open repository, and the method fits in five steps. With your own provider keys you can rerun it and compare figure by figure with our reports.",
       "steps": {
         "dataset": "<b>The dataset.</b> Download each public dataset at the commit in the table above and check every file's sha256 before using it. If it does not match, it is not the same dataset.",
         "package": "<b>The layer.</b> Install <code>@bivelio/savings-layer</code> from npm at the version the report names and check the sha256 of <code>dist/index.js</code>: every report carries its own.",
@@ -1893,7 +1893,7 @@
     },
     "invite": {
       "title": "Measure us yourself",
-      "body": "An independent measurement is worth more than ours. The bench's code is not public yet: if you want to rerun the measurement, or measure the layer with your own harness or your own traffic, write to us and we will give you what you need to do it.",
+      "body": "An independent measurement is worth more than ours. The bench's code is in the open repository: if you want to rerun the measurement, or measure the layer with your own harness or your own traffic, write to us and we will give you what you need to do it.",
       "contact": "Write to us at",
       "cta": "Send an email",
       "subject": "Independent measurement of the public bench"
@@ -1905,7 +1905,8 @@
       "classAb": "Two arms on the same request, costed with the usage the provider reports. This is how the bench batteries are measured.",
       "classReplay": "Counterfactual replay with a partially reconstructed baseline. It is not a live A/B, billed savings or an invoice reconciliation.",
       "compatible": "Compatible does not mean measured: a model only counts here if it has a published run, and whatever could not be measured is stated with its reason.",
-      "paper": "Research paper (PDF)"
+      "paper": "Research paper (PDF)",
+      "repo": "Open repository"
     },
     "index": {
       "method": "Method",

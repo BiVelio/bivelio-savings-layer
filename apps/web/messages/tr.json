@@ -1879,7 +1879,7 @@
     },
     "repro": {
       "title": "Nasıl yeniden üretilir",
-      "intro": "Testin kodu henüz herkese açık değil; yöntem açık ve beş adıma sığıyor. Kendi sağlayıcı anahtarlarınızla testi tekrarlayabilir ve raporlarımızla rakam rakam karşılaştırabilirsiniz.",
+      "intro": "Testin kodu açık depoda duruyor ve yöntem beş adıma sığıyor. Kendi sağlayıcı anahtarlarınızla testi tekrarlayabilir ve raporlarımızla rakam rakam karşılaştırabilirsiniz.",
       "steps": {
         "dataset": "<b>Veri kümesi.</b> Her herkese açık veri kümesini yukarıdaki tablodaki commit'te indirin ve kullanmadan önce her dosyanın sha256 değerini kontrol edin. Tutmuyorsa aynı veri kümesi değildir.",
         "package": "<b>Katman.</b> <code>@bivelio/savings-layer</code> paketini npm'den raporun belirttiği sürümde kurun ve <code>dist/index.js</code> dosyasının sha256 değerini kontrol edin: her rapor kendi değerini içerir.",
@@ -1893,7 +1893,7 @@
     },
     "invite": {
       "title": "Bizi kendiniz ölçün",
-      "body": "Bağımsız bir ölçüm bizimkinden daha değerlidir. Testin kodu henüz herkese açık değil: ölçümü tekrarlamak ya da katmanı kendi test düzeneğiniz veya kendi trafiğinizle ölçmek isterseniz bize yazın, bunun için gereken her şeyi verelim.",
+      "body": "Bağımsız bir ölçüm bizimkinden daha değerlidir. Testin kodu açık depoda duruyor: ölçümü tekrarlamak ya da katmanı kendi test düzeneğiniz veya kendi trafiğinizle ölçmek isterseniz bize yazın, bunun için gereken her şeyi verelim.",
       "contact": "Bize şu adresten yazın:",
       "cta": "E-posta gönder",
       "subject": "Herkese açık testin bağımsız ölçümü"
@@ -1905,7 +1905,8 @@
       "classAb": "Aynı istek üzerinde iki kol; sağlayıcının bildirdiği kullanımla değerlenir. Testin bataryaları böyle ölçülür.",
       "classReplay": "Kısmen yeniden oluşturulmuş bir temel çizgiyle karşı olgusal yeniden oynatma. Canlı bir A/B, faturalanmış tasarruf ya da fatura mutabakatı değildir.",
       "compatible": "Uyumlu olmak ölçülmüş olmak demek değildir: bir model burada yalnızca yayımlanmış bir çalıştırması varsa sayılır; ölçülemeyenler nedeniyle birlikte belirtilir.",
-      "paper": "Araştırma makalesi (PDF)"
+      "paper": "Araştırma makalesi (PDF)",
+      "repo": "Açık depo"
     },
     "index": {
       "method": "Yöntem",

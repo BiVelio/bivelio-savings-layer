@@ -1879,7 +1879,7 @@
     },
     "repro": {
       "title": "Comment le reproduire",
-      "intro": "Le code du banc n'est pas encore public ; la méthode l'est, et elle tient en cinq étapes. Avec vos propres clés de fournisseur, vous pouvez la refaire et comparer chiffre par chiffre avec nos rapports.",
+      "intro": "Le code du banc se trouve dans le dépôt ouvert, et la méthode tient en cinq étapes. Avec vos propres clés de fournisseur, vous pouvez la refaire et comparer chiffre par chiffre avec nos rapports.",
       "steps": {
         "dataset": "<b>Le jeu de données.</b> Téléchargez chaque jeu de données public au commit du tableau ci-dessus et vérifiez le sha256 de chaque fichier avant de l'utiliser. S'il ne correspond pas, ce n'est pas le même jeu de données.",
         "package": "<b>La couche.</b> Installez <code>@bivelio/savings-layer</code> depuis npm dans la version indiquée par le rapport et vérifiez le sha256 de <code>dist/index.js</code> : chaque rapport porte le sien.",
@@ -1893,7 +1893,7 @@
     },
     "invite": {
       "title": "Mesurez-nous vous-même",
-      "body": "Une mesure indépendante vaut plus que la nôtre. Le code du banc n'est pas encore public : si vous voulez refaire la mesure, ou mesurer la couche avec votre propre harnais ou votre propre trafic, écrivez-nous et nous vous donnerons ce qu'il faut pour le faire.",
+      "body": "Une mesure indépendante vaut plus que la nôtre. Le code du banc se trouve dans le dépôt ouvert : si vous voulez refaire la mesure, ou mesurer la couche avec votre propre harnais ou votre propre trafic, écrivez-nous et nous vous donnerons ce qu'il faut pour le faire.",
       "contact": "Écrivez-nous à",
       "cta": "Envoyer un e-mail",
       "subject": "Mesure indépendante du banc public"
@@ -1905,7 +1905,8 @@
       "classAb": "Deux bras sur la même requête, valorisés avec l'usage que déclare le fournisseur. C'est ainsi que sont mesurées les batteries du banc.",
       "classReplay": "Rejeu contrefactuel avec une ligne de base partiellement reconstruite. Ce n'est ni un A/B en direct, ni une économie facturée, ni un rapprochement de factures.",
       "compatible": "Compatible ne veut pas dire mesuré : un modèle ne compte ici que s'il a une exécution publiée, et ce qui n'a pas pu être mesuré est indiqué avec son motif.",
-      "paper": "Article de recherche (PDF)"
+      "paper": "Article de recherche (PDF)",
+      "repo": "Dépôt ouvert"
     },
     "index": {
       "method": "Méthode",
