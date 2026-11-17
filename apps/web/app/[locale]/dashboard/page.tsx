@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
-import { PageHead } from "@/app/components/app/PageHead";
+import { CabeceraDePagina } from "@/app/components/app/CabeceraDePagina";
 import { Notice } from "@/app/components/ui";
 import { authConfigured } from "@/lib/supabase/env";
 import { activationSteps, getAsientos, getSesiones } from "./data";
@@ -29,6 +29,8 @@ import { ShadowOpportunitiesCard } from "./components/ShadowOpportunitiesCard";
 import { ResumenKpis } from "./components/ResumenKpis";
 import { DesgloseModelos } from "./components/DesgloseModelos";
 import { PulsoDelPeriodo } from "./components/PulsoDelPeriodo";
+import { MosaicoDeLlamadas } from "./components/MosaicoDeLlamadas";
+import { CabeceraDeSeccion } from "./components/CabeceraDeSeccion";
 
 export const dynamic = "force-dynamic";
 
@@ -47,7 +49,7 @@ export default async function OverviewPage({
   if (!authConfigured) {
     return (
       <>
-        <PageHead eyebrow={t("overview.eyebrow")} title={t("overview.title")} />
+        <CabeceraDePagina rotulo={t("overview.eyebrow")} titulo={t("overview.title")} />
         <Notice tono="warn">{t("overview.authNotWired")}</Notice>
       </>
     );
@@ -109,7 +111,7 @@ export default async function OverviewPage({
 
   return (
     <div className="ov">
-      <PageHead eyebrow={t("overview.eyebrow")} title={t("overview.title")} sub={t("overview.intro")} />
+      <CabeceraDePagina rotulo={t("overview.eyebrow")} titulo={t("overview.title")} entradilla={t("overview.intro")} />
 
       {/* 1 · Lo que exige atención: cobro y servicio primero, solo si hay algo. */}
       <div className="ov-attention">
@@ -133,14 +135,10 @@ export default async function OverviewPage({
 
       {/* 2 · El resultado, con su periodo y su siguiente acción. */}
       <section className="app-section ov-result">
-        <div className="app-sec-head">
-          <div>
-            <p className="eyebrow">{t("overview.savingsEyebrow")}</p>
-            <h2 className="t-section">{t("overview.savingsTitle")}</h2>
-          </div>
-        </div>
+        <CabeceraDeSeccion rotulo={t("overview.savingsEyebrow")} titulo={t("overview.savingsTitle")} acento />
         <div className="panel-stack">
           <VerdictHero usage={usage} failed={usageFailed} visibilidad={visibilidad} rango={rango} integrado={integrado} />
+          {hayUso ? <MosaicoDeLlamadas usage={usage} /> : null}
           {ctx.medir === "solo-medir" ? <MedirSavingsCard usage={usage} /> : null}
           {hayUso ? <ResumenKpis usage={usage} rango={rango} steps={steps} /> : null}
           {hayUso ? <PulsoDelPeriodo usage={usage} porModelo={porModeloFailed ? [] : porModelo} rango={rango} /> : null}
@@ -151,12 +149,7 @@ export default async function OverviewPage({
 
       {/* 3 · Uso, oportunidades y distribución: el panel que se ordena. */}
       <section className="app-section">
-        <div className="app-sec-head">
-          <div>
-            <p className="eyebrow">{t("overview.panelEyebrow")}</p>
-            <h2 className="t-section">{t("overview.panelTitle")}</h2>
-          </div>
-        </div>
+        <CabeceraDeSeccion rotulo={t("overview.panelEyebrow")} titulo={t("overview.panelTitle")} />
         <PanelEditable
           tarjetas={[
             {

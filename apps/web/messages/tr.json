@@ -515,6 +515,13 @@
       "title": "llm çağrıları · kaçınılan vs çalıştırılan",
       "split": "{avoided} kaçınıldı · {ran} çalıştırıldı (%{pct} kaçınıldı)"
     },
+    "mosaico": {
+      "title": "Çağrılar, gün gün",
+      "sinProveedor": "{count, plural, one {<b>{n}</b> sağlayıcınız çağrılmadan yanıtlandı} other {<b>{n}</b> sağlayıcınız çağrılmadan yanıtlandı}}",
+      "ejecutadas": "{count, plural, one {<b>{n}</b> yürütüldü} other {<b>{n}</b> yürütüldü}}",
+      "aria": "{dias} günde günlük çağrılar: {sinProveedor} sağlayıcınız çağrılmadan yanıtlandı, {ejecutadas} yürütüldü.",
+      "foot": "Her gün bir sütun; {k, plural, one {her karo bir çağrı} other {her karo {kn} çağrı}}. Toplam {total}. Raporsuz bir gün sıfır değil, boşluktur."
+    },
     "instrumentationSpine": {
       "eyebrow": "Canlı tasarrufa ulaşın",
       "title": "Kendi sayacınıza birkaç adım uzaktasınız",

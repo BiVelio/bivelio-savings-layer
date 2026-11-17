@@ -515,6 +515,13 @@
       "title": "lệnh gọi llm · đã tránh vs đã chạy",
       "split": "{avoided} đã tránh · {ran} đã chạy ({pct}% đã tránh)"
     },
+    "mosaico": {
+      "title": "Lượt gọi, theo từng ngày",
+      "sinProveedor": "{count, plural, one {<b>{n}</b> được trả lời mà không gọi nhà cung cấp} other {<b>{n}</b> được trả lời mà không gọi nhà cung cấp}}",
+      "ejecutadas": "{count, plural, one {<b>{n}</b> đã thực thi} other {<b>{n}</b> đã thực thi}}",
+      "aria": "Lượt gọi mỗi ngày trong {dias} ngày: {sinProveedor} được trả lời mà không gọi nhà cung cấp và {ejecutadas} đã thực thi.",
+      "foot": "Mỗi ngày một cột; {k, plural, one {mỗi ô là một lượt gọi} other {mỗi ô là {kn} lượt gọi}}. Tổng cộng {total}. Một ngày không có báo cáo là khoảng trống, không phải số không."
+    },
     "instrumentationSpine": {
       "eyebrow": "Tiến tới tiết kiệm trực tiếp",
       "title": "Bạn chỉ còn vài bước nữa là có đồng hồ đo của riêng mình",

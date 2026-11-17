@@ -515,6 +515,13 @@
       "title": "llm-aanroepen · vermeden vs uitgevoerd",
       "split": "{avoided} vermeden · {ran} uitgevoerd ({pct}% vermeden)"
     },
+    "mosaico": {
+      "title": "Aanroepen, dag na dag",
+      "sinProveedor": "{count, plural, one {<b>{n}</b> beantwoord zonder je provider aan te roepen} other {<b>{n}</b> beantwoord zonder je provider aan te roepen}}",
+      "ejecutadas": "{count, plural, one {<b>{n}</b> uitgevoerd} other {<b>{n}</b> uitgevoerd}}",
+      "aria": "Aanroepen per dag over {dias} dagen: {sinProveedor} beantwoord zonder je provider aan te roepen en {ejecutadas} uitgevoerd.",
+      "foot": "Eén kolom per dag; {k, plural, one {elke tegel één aanroep} other {elke tegel {kn} aanroepen}}. {total} in totaal. Een dag zonder rapport is een gat, geen nul."
+    },
     "instrumentationSpine": {
       "eyebrow": "Naar live besparingen",
       "title": "Je bent een paar stappen verwijderd van je eigen meter",

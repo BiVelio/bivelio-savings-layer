@@ -1873,6 +1873,229 @@ hr.pfc-filete, .pfc-filete { height: 1px; margin: 0; border: 0; background: var(
 
 /* ==== SLOT RESUMEN ==== */
 /* El Resumen (con datos y vacío): /dashboard. Solo el frente RESUMEN escribe aquí. */
+
+/* ════ EL RESUMEN CON LA FIRMA DE CAMPAÑA (frente RESUMEN, 2026-11-17) ═════
+   Todo con ámbito `.ov` (la envoltura del Resumen: solo la producen la página
+   y la galería de estados) y por encima de la especificidad de affectUI, que
+   no tiene orden garantizado respecto a esta hoja.
+
+   LA COLUMNA: el Resumen deja la excepción de 1200 px y vuelve a la de 1080
+   del resto del panel. A 1440 la columna ya era de 1040 (raíl + márgenes); la
+   excepción solo ensanchaba en pantallas grandes, y ahí partía el borde
+   izquierdo de la cabecera respecto a las demás pestañas. */
+.app-inner:has(> .ov) { width: min(1080px, 100%); }
+
+/* ── Ritmo vertical: secciones separadas por aire, cabeceras pfc ───────── */
+.app-inner .ov > .pfc-cab { margin-bottom: 52px; }
+.app-inner .ov > .app-section { margin-top: 72px; }
+.app-inner .ov > .app-section.ov-result { margin-top: 0; }
+.app-inner .ov .pfr-sec-cab { margin-bottom: 26px; }
+.app-inner .ov .app-section > .panel-stack { gap: 28px; }
+/* La cabecera de la puesta en marcha (componente compartido con su marcado
+   de siempre) se pinta como las otras dos. */
+.app-inner .ov #puesta-en-marcha > .app-sec-head { margin-bottom: 26px; }
+.app-inner .ov #puesta-en-marcha > .app-sec-head .eyebrow {
+  display: flex; align-items: center; gap: 14px; margin: 0 0 10px;
+  font: 600 11px/1.35 var(--font-sans); letter-spacing: .22em; text-transform: uppercase; color: var(--ink-soft);
+}
+.app-inner .ov #puesta-en-marcha > .app-sec-head .eyebrow::before { content: none; }
+.app-inner .ov #puesta-en-marcha > .app-sec-head .eyebrow::after { content: ""; flex: 1; min-width: 24px; height: 1px; background: var(--filete); }
+.app-inner .ov #puesta-en-marcha > .app-sec-head > div { width: 100%; }
+.app-inner .ov #puesta-en-marcha > .app-sec-head .t-section { margin: 0; font: 700 26px/1.15 var(--font-editorial); letter-spacing: -.025em; color: var(--ink); text-wrap: balance; }
+
+/* ── El titular: sin caja, sobre el cielo ──────────────────────────────── */
+.app-inner .ov .verdict {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 340px); gap: 28px 44px;
+  padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none;
+}
+.app-inner .ov .verdict-main { align-self: start; }
+/* El antetítulo, como rótulo entre filetes (sin el punto menta de la global). */
+.app-inner .ov .verdict .verdict-main > .ck-eyebrow {
+  display: flex; align-items: center; gap: 14px; min-height: 36px; margin: 0;
+  font: 600 11px/1.35 var(--font-sans); letter-spacing: .2em; text-transform: uppercase; color: var(--ink-soft);
+}
+.app-inner .ov .verdict .verdict-main > .ck-eyebrow::before { content: none; }
+.app-inner .ov .verdict .verdict-main > .ck-eyebrow::after { content: ""; flex: 1; min-width: 24px; height: 1px; background: var(--filete); }
+.app-inner .ov .verdict .verdict-status { margin-top: 14px; padding: 0; background: none; font-size: 13.5px; font-weight: 600; color: var(--good-ink); }
+.app-inner .ov .verdict .verdict-status[data-tone="neg"] { background: none; color: var(--danger); }
+.app-inner .ov .verdict[data-state="partial"] .verdict-status { background: none; color: var(--warn); }
+/* La cifra protagonista: Plus Jakarta 800, en tinta (el rojo se queda para el
+   sobrecoste: ahí el color es el dato). */
+.app-inner .ov .verdict .big {
+  margin-top: 10px; font: 800 132px/.9 var(--font-editorial); letter-spacing: -.055em; color: var(--ink);
+}
+.app-inner .ov .verdict .big.neg { color: var(--danger); }
+.app-inner .ov .verdict .big .ui-nt { --ui-nt-lh: 1.02em; }
+/* El pie, en la voz serif de la campaña; el importe, en sans con el marcador. */
+.app-inner .ov .verdict:not(.verdict-empty) .cap {
+  max-width: 30ch; margin-top: 14px; font: 400 italic 25px/1.28 var(--font-serif); color: #262C38; text-wrap: pretty;
+}
+.app-inner .ov .verdict:not(.verdict-empty) .cap b {
+  padding: 0 5px; border-radius: var(--r-mk); font: 700 normal 18px/1.2 var(--font-sans); letter-spacing: -.01em; color: var(--ink);
+  background-image: linear-gradient(100deg, var(--mk-bg), var(--mk-bg-2));
+  -webkit-box-decoration-break: clone; box-decoration-break: clone;
+}
+.app-inner .ov .verdict details.disc { margin-top: 20px; }
+.app-inner .ov .verdict details.disc > summary { color: var(--pildora-ink); font-weight: 500; }
+.app-inner .ov .verdict-side { gap: 16px; }
+.app-inner .ov .verdict-ctl .seg { background: rgba(255, 255, 255, .8); }
+
+/* El titular vacío («Aún sin integrar», «Sin tráfico»…): titular grande con
+   el marcador, la explicación en cuerpo y las dos acciones. */
+.app-inner .ov .verdict-empty .verdict-lead { align-items: center; gap: 18px; margin-top: 22px; }
+.app-inner .ov .verdict-empty .verdict-ic { width: 52px; height: 52px; border-radius: 14px; background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--line), var(--shadow-card); }
+.app-inner .ov .verdict-empty .verdict-ic svg { width: 22px; height: 22px; }
+.app-inner .ov .verdict-empty[data-state="readFailed"] .verdict-ic { color: var(--danger); }
+.app-inner .ov .verdict-empty .verdict-title {
+  font: 800 54px/1.04 var(--font-editorial); letter-spacing: -.04em; word-spacing: .04em; color: var(--ink); text-wrap: balance;
+}
+.app-inner .ov .verdict-empty .cap { max-width: 60ch; margin: 14px 0 0 70px; font-size: 16px; line-height: 1.6; color: var(--ink-2); }
+.app-inner .ov .verdict-empty .verdict-actions { margin: 24px 0 0 70px; }
+.app-inner .ov .verdict.verdict-empty { grid-template-columns: minmax(0, 1fr) auto; }
+.app-inner .ov .verdict-empty .verdict-side { align-self: start; }
+
+/* ── El mosaico de llamadas (MosaicoDeLlamadas) ────────────────────────── */
+.pfr-mosaico { min-width: 0; padding-top: 4px; }
+.pfr-mosaico-cab { display: flex; align-items: center; justify-content: space-between; gap: 10px 24px; flex-wrap: wrap; margin-bottom: 16px; }
+.app-inner .pfr-mosaico .pfr-mosaico-t { flex: 1 1 220px; margin: 0; }
+.pfr-mosaico-leyenda { display: flex; flex-wrap: wrap; gap: 6px 20px; margin: 0; padding: 0; list-style: none; font-size: 13px; color: var(--ink-2); }
+.pfr-mosaico-leyenda li { display: inline-flex; align-items: center; gap: 8px; }
+.pfr-mosaico-leyenda b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.pfr-mosaico-area { display: flex; align-items: flex-end; gap: 3px; min-width: 0; border-bottom: 1px solid var(--line-strong); }
+.pfr-mosaico-col { display: flex; flex-direction: column; justify-content: flex-end; flex: 1 1 0; min-width: 0; max-width: 34px; height: 100%; }
+.pfr-mosaico-col--hueco { background: repeating-linear-gradient(135deg, transparent 0 5px, rgba(15, 18, 24, .06) 5px 6px); }
+/* Cada tesela: 6 px de color y 1 px de junta, siempre alineadas al suelo. */
+.pfr-tesela {
+  display: block; flex: none; width: 100%;
+  background: repeating-linear-gradient(0deg, var(--ink-2) 0 6px, transparent 6px 7px);
+  background-position: bottom;
+}
+.pfr-tesela.pfr-tesela--cian { background-image: repeating-linear-gradient(0deg, var(--cian) 0 6px, transparent 6px 7px); }
+.pfr-mosaico-eje { display: flex; justify-content: space-between; gap: 12px; margin-top: 8px; font: 500 11.5px/1.3 var(--font-mono); color: var(--ink-soft); }
+.pfr-mosaico-pie { margin: 10px 0 0; font-size: 13px; line-height: 1.5; color: var(--ink-soft); text-wrap: pretty; }
+
+/* ── Las cifras del periodo: hechos entre filetes, sin tarjetas ────────── */
+.app-inner .ov .ui-kb.ov-kpis { gap: 0; border-block: 1px solid var(--filete); }
+.app-inner .ov .ov-kpis .ui-kb__card { padding: 20px 22px 18px; border: 0; border-radius: 0; background: none; box-shadow: none; }
+.app-inner .ov .ov-kpis .ui-kb__card + .ui-kb__card { border-left: 1px solid var(--line); }
+.app-inner .ov .ov-kpis .ui-kb__stat:first-child { padding-left: 0; }
+.app-inner .ov .ov-kpis .ui-kb__stat .ui-kb__label,
+.app-inner .ov .ov-kpis .ui-kb__stat .ui-kb__label .termino { font: 600 11px/1.3 var(--font-sans); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-soft); }
+.app-inner .ov .ov-kpis .ui-kb__figure { margin-top: 10px; font: 800 34px/1 var(--font-editorial); letter-spacing: -.035em; }
+.app-inner .ov .ov-kpis .ui-kb__figure[data-tone="good"] { color: var(--ink); }
+.app-inner .ov .ov-kpis .ui-kb__base { margin-top: 8px; }
+.app-inner .ov .ov-kpis .ui-kb__plot { margin: auto -2px -6px; }
+.app-inner .ov .ov-kpis .ui-kb__stat:first-child .ui-kb__plot { margin-left: 0; }
+.app-inner .ov .ov-kpis .ui-kb__line { stroke: var(--ink-2); }
+/* El siguiente paso: el único hueco con fondo, el azul pálido del cielo. */
+.app-inner .ov .ov-kpis .ui-kb__focus { margin: 10px 0 10px 0; border-radius: 12px; background: linear-gradient(160deg, var(--brand-soft), rgba(232, 241, 255, .45)); }
+.app-inner .ov .ov-kpis .ui-kb__card.ui-kb__focus { border-left: 0; }
+.app-inner .ov .ov-kpis .ui-kb__focus .ui-kb__label { font: 600 11px/1.3 var(--font-sans); letter-spacing: .14em; text-transform: uppercase; color: var(--brand-ink); }
+.app-inner .ov .ov-kpis .ui-kb__focus .ui-kb__title { font-size: 16px; }
+.app-inner .ov .ov-kpis .ui-kb__focus .ui-kb__icon { border: 0; box-shadow: 0 0 0 1px var(--line); }
+
+/* ── Tarjetas del pulso y del panel: el mismo objeto de datos pfc ──────── */
+.app-inner .ov .ov-pulse > .ui-kpic, .app-inner .ov .ov-pulse > .ui-muc,
+.app-inner .ov .pe-card > .card, .app-inner .ov .ov-explore > .card,
+.app-inner .ov .pe-card .ui-cb__card {
+  border-color: transparent; border-radius: var(--r-card); box-shadow: 0 0 0 1px var(--line), var(--shadow-card);
+}
+.app-inner .ov .ui-kpic__title, .app-inner .ov .ui-muc__title,
+.app-inner .ov .pe-card .card-title { font-family: var(--font-sans); font-size: 17px; font-weight: 600; letter-spacing: -.012em; color: var(--ink); text-transform: none; }
+.app-inner .ov .ov-pulse .ui-muc__tabs { border-radius: 10px; }
+.app-inner .ov .pe-bar { padding: 0 0 6px; }
+/* Las tarjetas del panel, en dos columnas como en la maqueta: las anchas (el
+   explorador con su desglose, las oportunidades y las máquinas) ocupan la
+   fila; las demás van de dos en dos. Una tarjeta sin contenido (Ritmo o
+   Sesiones sin datos) no deja hueco. Al personalizar, una sola columna: subir
+   y bajar se leen en una lista, no en una rejilla. */
+@media (min-width: 1100px) {
+  .app-inner .ov .pe > .panel-stack { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start; }
+  .app-inner .ov .pe > .panel-stack > .pe-card:has(> .ov-explore),
+  .app-inner .ov .pe > .panel-stack > .pe-card:has(> section.card),
+  .app-inner .ov .pe > .panel-stack > .pe-card:has(> #maquinas),
+  .app-inner .ov .pe > .panel-stack > .pe-ghost { grid-column: 1 / -1; }
+  .app-inner .ov .pe:has(.pe-card.editing) > .panel-stack { grid-template-columns: minmax(0, 1fr); }
+  /* A media columna: los cuatro libros, de dos en dos; la tabla de sesiones,
+     con menos aire entre columnas para que quepa sin desplazarse. */
+  .app-inner .ov .pe > .panel-stack > .pe-card .ox-tiles.four { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .app-inner .ov .pe > .panel-stack > .pe-card:not(:has(> #maquinas)) .ui-dtc { --ui-dtc-px: 6px; }
+  .app-inner .ov .pe > .panel-stack > .pe-card:not(:has(> #maquinas)) .ui-dtc .ui-dtc__table { min-width: 0; }
+}
+.app-inner .ov .pe > .panel-stack > .pe-card:empty { display: none; }
+
+/* ── Ningún texto por debajo de 11 px (insignias y rótulos mono de affectUI
+   y del explorador, a 9,5 y 10,5 px en sus hojas). ─────────────────────── */
+.app-inner .ov .ev-badge.ev-badge--sm,
+.app-inner .ov .ui-bdgc[data-caps],
+.app-inner .ov .ui-bdgc[data-caps] .ui-bdgc__label { font-size: 11px; }
+.app-inner .ov .ux-stat .k, .app-inner .ov .ux-stat .s,
+.app-inner .ov .ux-legend, .app-inner .ov .ux-tbl th,
+.app-inner .ov .ux-plot svg text, .app-inner .ov .ux-foot.src { font-size: 11px; }
+
+/* «Tráfico»: lo evitado ES lo respondido sin llamar al proveedor, así que va
+   en el cian del mosaico (el único dato que lo lleva); lo ejecutado, en tinta. */
+.app-inner .ov .ox-mix-bar i { background: var(--ink-2); }
+.app-inner .ov .ox-mix-bar i.win { background: var(--cian); }
+
+/* ── La puesta en marcha (cliente nuevo): los cinco hitos en columna a la
+   izquierda; la tarea, con su terminal oscura, a la derecha. ──────────── */
+@media (min-width: 1000px) {
+  .app-inner .ov #puesta-en-marcha {
+    display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 0 36px; align-items: start;
+  }
+  .app-inner .ov #puesta-en-marcha > .app-sec-head, .app-inner .ov #puesta-en-marcha > .note { grid-column: 1 / -1; }
+  .app-inner .ov #puesta-en-marcha > .spine-task { margin-top: 0; }
+}
+.app-inner .ov #puesta-en-marcha .spine { display: block; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; overflow: visible; }
+.app-inner .ov .spine .ui-progressc { padding: 0; }
+.app-inner .ov .spine .ui-progressc__head { padding: 0 0 12px; border-bottom: 1px solid var(--filete); }
+.app-inner .ov .spine .ui-progressc__count { font-size: 13px; font-weight: 600; color: var(--ink-2); }
+.app-inner .ov .spine .ui-progressc__bar { display: none; }
+.app-inner .ov .spine .ui-progressc[data-layout] .ui-progressc__list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; }
+.app-inner .ov .spine .ui-progressc[data-layout] .ui-progressc__list > li { border-bottom: 1px solid var(--line); }
+.app-inner .ov .spine .ui-progressc[data-layout] .ui-progressc__list > li::before,
+.app-inner .ov .spine .ui-progressc[data-layout] .ui-progressc__list > li::after { content: none; }
+.app-inner .ov .spine .ui-progressc[data-layout] .ui-progressc__step {
+  flex-direction: row; align-items: center; gap: 12px; min-height: 48px; padding: 10px 4px; border-radius: 0; font-size: 14.5px; text-align: start;
+}
+.app-inner .ov .spine .ui-progressc[data-layout] .ui-progressc__check { width: 22px; height: 22px; margin: 0; }
+.app-inner .ov .spine .ui-progressc[data-layout] .ui-progressc__label { flex: 1; color: var(--ink); }
+.app-inner .ov .spine .ui-progressc[data-layout] .ui-progressc__state { margin-left: auto; font-size: 12px; }
+.app-inner .ov .spine [data-status="done"] > .ui-progressc__step .ui-progressc__check { background: var(--ink); }
+.app-inner .ov .spine [data-status="current"] > .ui-progressc__step .ui-progressc__label { font-weight: 600; }
+.app-inner .ov .spine [data-status="current"] > .ui-progressc__step .ui-progressc__label > * { display: inline; }
+.app-inner .ov .spine-task { padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; }
+.app-inner .ov .spine-task > .t { margin: 0 0 12px; font-size: 15px; font-weight: 600; }
+.app-inner .ov .spine-task .codeframe { margin: 0 0 12px; border-color: #0F1218; background: #0F1218; box-shadow: var(--shadow-card); }
+.app-inner .ov .spine-task .codeframe-head { border-bottom-color: #262C38; background: #161A22; }
+.app-inner .ov .spine-task .codeframe-label { color: #B4BAC6; }
+.app-inner .ov .spine-task .codeframe-copy { border-color: #3A4150; background: transparent; color: #E8EAEE; }
+.app-inner .ov .spine-task .codeframe-copy:hover { border-color: #5A6170; background: #1E232D; color: #fff; }
+.app-inner .ov .spine-task .codeframe-body, .app-inner .ov .spine-task .codeframe-code { background: transparent; color: #E8EAEE; }
+.app-inner .ov .spine-task .codeframe-code .c { color: #9AA3B2; }
+.app-inner .ov .spine-task > .note { margin: 0; font-size: 13px; color: var(--ink-soft); }
+
+/* ── Móvil (≤ 860 px) ──────────────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .app-inner .ov > .pfc-cab { margin-bottom: 40px; }
+  .app-inner .ov > .app-section { margin-top: 56px; }
+  .app-inner .ov #puesta-en-marcha > .spine-task { margin-top: 26px; }
+  .app-inner .ov .verdict, .app-inner .ov .verdict.verdict-empty { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  .app-inner .ov .verdict .big { font-size: 88px; }
+  .app-inner .ov .verdict:not(.verdict-empty) .cap { font-size: 21px; }
+  .app-inner .ov .verdict:not(.verdict-empty) .cap b { font-size: 16px; }
+  .app-inner .ov .verdict-empty .verdict-title { font-size: 38px; }
+  .app-inner .ov .verdict-empty .verdict-ic { width: 44px; height: 44px; }
+  .app-inner .ov .verdict-empty .cap, .app-inner .ov .verdict-empty .verdict-actions { margin-left: 0; }
+  .app-inner .ov #puesta-en-marcha > .app-sec-head .t-section { font-size: 22px; }
+  .pfr-mosaico-area { gap: 2px; }
+  .app-inner .ov .ui-kb.ov-kpis { border-bottom: 0; }
+  .app-inner .ov .ov-kpis .ui-kb__card, .app-inner .ov .ov-kpis .ui-kb__stat:first-child { padding: 16px 0; }
+  .app-inner .ov .ov-kpis .ui-kb__card + .ui-kb__card { border-left: 0; border-top: 1px solid var(--line); }
+  .app-inner .ov .ov-kpis .ui-kb__card.ui-kb__focus { margin: 10px 0 0; padding: 16px; border-top: 0; }
+  .app-inner .ov .ov-kpis .ui-kb__plot { margin: auto 0 -6px; }
+}
 /* ==== FIN SLOT RESUMEN ==== */
 
 /* ==== SLOT INSTALACION ==== */
