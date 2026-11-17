@@ -1242,7 +1242,7 @@
       "compatibleCon": "Compatible con",
       "compatibleNota": "Compatible no es medido. El SDK funciona con cualquier endpoint compatible con la API de OpenAI, más el adaptador nativo de Anthropic y el adaptador nativo de Gemini (nuevo en la {gemini}). Con cifra de ahorro en el banco público, hoy solo modelos de OpenAI y de Anthropic; Gemini no tiene cifra de ahorro. Lo medido de Gemini: {flash}, por su API nativa, en el banco semanal en vivo del {fecha} — las cuatro baterías, sin ningún fallo de la capa y sin ninguna negativa cacheada ni acreditada como ahorro. Ese banco comprueba que la capa no rompe nada ni cobra de más; no mide un ahorro. También medido: {pro}, por su API nativa, en dos bancos parciales del {fechaPro} (su cuota diaria del proveedor no da para las cuatro baterías en un día): las cuatro baterías, también sin ningún fallo de la capa y sin ninguna negativa cacheada ni acreditada como ahorro.",
       "ctaOss": "Instalar open source",
-      "kicker": "Motor open source · Cloud opcional"
+      "kicker": "Medido en cada llamada"
     },
     "cascade": {
       "title": "Gana la ejecución más barata",

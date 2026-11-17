@@ -4878,6 +4878,25 @@ a.card:active, button.card:active, .card-link:active { transform: translateY(0);
 @media (max-width: 640px) {
   .cierre-firma { justify-content: center; text-align: center; }
 }
+/* La etiqueta del héroe, como la de la pieza («BV-SALA · SAVINGS LAYER»):
+   versalitas espaciadas en gris pizarra, sin píldora, con el mismo filete de
+   marca que las etiquetas de sección. Las mayúsculas son solo presentación:
+   en el HTML la frase sigue en minúsculas (lectores de pantalla, copiar). */
+/* Bloque de texto, no flex: el filete va en la línea, pegado a la marca, y si
+   la frase parte en dos (de, nl, pl, id en un móvil) las líneas se reparten
+   sin dejar una palabra huérfana ni el filete suelto a un lado. */
+.lp .hero-sello {
+  display: block; padding: 0; border: 0; border-radius: 0; background: none;
+  font-size: 12px; font-weight: 500; line-height: 1.5; letter-spacing: .16em;
+  text-transform: uppercase; text-wrap: balance; color: var(--ink-soft);
+}
+.lp .hero-sello::before {
+  display: inline-block; vertical-align: .33em; width: 18px; height: 1.5px; margin-right: 12px;
+  border-radius: 1px; background: var(--brand); box-shadow: none;
+}
+@media (max-width: 640px) {
+  .lp .hero-sello { font-size: 11.5px; letter-spacing: .12em; }
+}
 /* ==== FIN SLOT FIRMA DE CAMPAÑA ==== */
 
 /* ==== SLOT CAMPAÑA PAPER ==== */

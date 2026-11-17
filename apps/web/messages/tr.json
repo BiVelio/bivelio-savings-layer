@@ -1242,7 +1242,7 @@
       "compatibleCon": "Uyumlu",
       "compatibleNota": "Uyumlu, ölçülmüş demek değildir. SDK, OpenAI API'siyle uyumlu her uç noktayla, ayrıca yerel Anthropic bağdaştırıcısı ve yerel Gemini bağdaştırıcısıyla ({gemini} sürümünde yeni) çalışır. Herkese açık test tezgâhında tasarruf rakamı olanlar bugün yalnızca OpenAI ve Anthropic modelleridir; Gemini'nin tasarruf rakamı yok. Gemini için ölçülen: {flash}, yerel API'si üzerinden, {fecha} tarihli haftalık canlı testte — dört bataryanın tümü, hiçbir katman hatası olmadan ve önbelleğe alınan ya da tasarruf olarak kredilendirilen hiçbir ret olmadan. Bu test, katmanın hiçbir şeyi bozmadığını ve fazla ücret almadığını kontrol eder; bir tasarrufu ölçmez. Ayrıca ölçüldü: {pro}, yerel API'si üzerinden, {fechaPro} tarihli iki kısmi koşuda (sağlayıcının günlük kotası dört bataryaya bir günde yetmiyor): dört bataryanın tamamı, yine katmandan kaynaklı hiçbir hata olmadan ve önbelleğe alınmış ya da tasarruf sayılmış hiçbir ret olmadan.",
       "ctaOss": "Açık kaynağı kurun",
-      "kicker": "Açık kaynak motor · İsteğe bağlı bulut"
+      "kicker": "Her çağrıda ölçülür"
     },
     "cascade": {
       "title": "En ucuz yürütme kazanır",

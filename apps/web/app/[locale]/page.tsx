@@ -229,7 +229,12 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
               el contexto de apilamiento lo pone `.lp .hero.hero-panel`). */}
           <div className="cielo" aria-hidden="true" />
           <div className="hpanel-copy">
-            <p className="hero-sello">{t("hero.kicker")}</p>
+            {/* La etiqueta de la pieza promocional («BV-SALA · SAVINGS LAYER»):
+                la marca no se traduce y va con lang="en" para que las
+                versalitas no la conviertan en «SAVİNGS» en turco. */}
+            <p className="hero-sello">
+              <span lang="en">Savings Layer</span> · {t("hero.kicker")}
+            </p>
             <h1>
               {t("hero.title")}{" "}
               <GradientText className="hero-acento">
