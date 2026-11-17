@@ -322,6 +322,7 @@
       "eyebrow": "Verifica localment · res no surt d'aquesta pàgina",
       "title": "Quant estalviaries tu?",
       "intro": "Comprova-ho en un minut: tria un exemple (o enganxa les teves dades), digues quant fas servir l'API i mira l'estalvi projectat. Tot es calcula al teu navegador.",
+      "formatoRotulo": "Al teu navegador",
       "formatoTitulo": "Verificador de format",
       "formatoSub": "Compta els tokens del fragment estructurat que enganxis, al teu navegador. No és el teu pressupost mensual ni la teva factura.",
       "proyectorSub": "Una estimació amb supòsits que tries tu. No és una factura ni un estalvi realitzat."

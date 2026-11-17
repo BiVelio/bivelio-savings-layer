@@ -322,6 +322,7 @@
       "eyebrow": "Vérifiez localement · rien ne quitte cette page",
       "title": "Combien économiseriez-vous ?",
       "intro": "Vérifiez-le en une minute : choisissez un exemple (ou collez vos propres données), indiquez votre usage de l'API et regardez l'économie projetée. Tout se calcule dans votre navigateur.",
+      "formatoRotulo": "Dans votre navigateur",
       "formatoTitulo": "Vérificateur de format",
       "formatoSub": "Compte les tokens de l'extrait structuré que vous collez, dans votre navigateur. Ce n'est ni votre budget mensuel ni votre facture.",
       "proyectorSub": "Une estimation fondée sur des hypothèses que vous choisissez. Ce n'est ni une facture ni une économie réalisée."

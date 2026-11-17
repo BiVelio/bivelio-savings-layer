@@ -2317,7 +2317,239 @@ hr.pfc-filete, .pfc-filete { height: 1px; margin: 0; border: 0; background: var(
 
 /* ==== SLOT PRUEBA ==== */
 /* Prueba (/dashboard/proof), Tu banco (/dashboard/your-bench) y Verificar
-   (/dashboard/verify). Solo el frente PRUEBA escribe aquí. */
+   (/dashboard/verify). Solo el frente PRUEBA escribe aquí.
+
+   Prefijo propio `prb-` (las secciones y envoltorios de las tres páginas) y,
+   para el contenido de «Tu banco», `.yb` (lo ponen la página y la galería de
+   desarrollo). Las piezas compartidas con la portada (TarjetaMedidoEnVivo,
+   ParAB, FormatVerifier) se visten SOLO dentro de esos envoltorios. */
+
+/* ── Cabecera de sección: la insignia de evidencia hace de rótulo, con su filete ── */
+.prb-marca { display: flex; align-items: center; gap: 14px; }
+.prb-marca::after { content: ""; flex: 1; min-width: 24px; height: 1px; background: var(--filete); }
+.prb-marca > .ev-badge,
+.prb-sec .lg-fig .ev-badge,
+.prb-sec .bench-badge .ev-badge,
+.prb-sec .ev-badge.ev-badge--sm {
+  min-height: 22px; padding: 2px 8px; border-radius: 5px; box-shadow: none;
+  font: 600 11px/1.2 var(--font-sans); letter-spacing: .07em; text-transform: uppercase;
+}
+.prb-marca > .ev-badge svg, .prb-sec .ev-badge.ev-badge--sm svg { width: 12px; height: 12px; }
+.prb-sec .ev-badge[data-kind="tus-datos"] { background: var(--good-soft); color: var(--good-ink); }
+.prb-sec .ev-badge[data-kind="sombra"] { border: 0; box-shadow: inset 0 0 0 1px var(--ink-soft); }
+.app-inner .prb-sec .pfc-sec-t em { font-size: 1.1em; }
+
+/* ── Prueba · banco público: una tarjeta con filas (marca y cifra | qué dice) ── */
+.prb-sec .hero-prueba.prb-banco {
+  margin: 0; padding: 0; border: 0; border-radius: var(--r-card); overflow: hidden;
+  background: var(--surface); box-shadow: 0 0 0 1px var(--line), var(--shadow-card);
+}
+.prb-banco .hero-prueba-t {
+  display: block; margin: 0; padding: 20px 22px 16px; border-bottom: 1px solid var(--line);
+  font: 600 16px/1.35 var(--font-sans); letter-spacing: -.01em; text-transform: none; color: var(--ink);
+}
+.prb-banco .hero-prueba-filas { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; }
+.prb-banco .hero-prueba-filas > .hp {
+  display: grid; grid-template-columns: 220px minmax(0, 1fr); grid-template-rows: auto auto; align-items: baseline; gap: 6px 28px;
+  padding: 20px 22px; border: 0; border-top: 1px solid var(--line); border-radius: 0; background: none; box-shadow: none;
+}
+.prb-banco .hero-prueba-filas > .hp:first-child { border-top: 0; }
+.prb-banco .hero-prueba-filas > .hp:hover { border-color: var(--line); box-shadow: none; transform: none; }
+.prb-banco .hp > .hp-dato { display: contents; }
+.prb-banco .hp > .hp-marca { grid-column: 1; grid-row: 1; gap: 6px; font-size: 12.5px; color: var(--ink-soft); }
+.prb-banco .hp-marca b { font-size: 12.5px; font-weight: 500; color: var(--ink-soft); letter-spacing: 0; }
+.prb-banco .hp-marca svg { width: 14px; height: 14px; color: var(--ink-soft); }
+.prb-banco .hp-marca code { padding: 0; background: none; font: 500 12px/1.3 var(--font-mono); color: var(--ink-soft); }
+.prb-banco .hp-marca code::before { content: "· "; font-family: var(--font-sans); }
+.prb-banco .hp .hp-n {
+  grid-column: 1; grid-row: 2; align-self: start;
+  font: 800 44px/1 var(--font-editorial); letter-spacing: -.035em; white-space: nowrap; color: var(--ink);
+}
+/* La fila sin marca (≈ 0 % sin repeticiones): la cifra sube a la primera línea. */
+.prb-banco .hp:not(:has(> .hp-marca)) .hp-n { grid-row: 1 / span 2; }
+.prb-banco .hp .hp-q { grid-column: 2; grid-row: 1 / span 2; align-self: start; font-size: 14px; line-height: 1.55; color: var(--ink-2); text-wrap: pretty; }
+.prb-banco .cascade-nota { max-width: none; margin: 0; padding: 14px 22px 16px; border-top: 1px solid var(--line); font-size: 13px; line-height: 1.5; color: var(--ink-soft); }
+.prb-banco .cascade-nota a { color: var(--brand-ink); text-decoration: none; border-bottom: 1px solid transparent; }
+.prb-banco .cascade-nota a:hover { border-bottom-color: currentColor; }
+
+/* ── Prueba · tus datos ─────────────────────────────────────────────────── */
+.card.prb-propio { border: 0; border-radius: var(--r-card); box-shadow: 0 0 0 1px var(--line), var(--shadow-card); }
+.card.prb-propio .prf-propio-t { font-size: 15px; line-height: 1.6; color: var(--ink-2); }
+.card.prb-propio .prf-propio-t a { color: var(--brand-ink); text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--brand-ink) 35%, transparent); }
+.prb-propio .prb-boton { display: inline-flex; align-items: center; gap: 8px; }
+.prb-propio .prf-par { padding: 18px 0 18px clamp(16px, 2.4vw, 28px); border-inline-start-color: var(--line); }
+
+/* ── Prueba · tirada sintética: sin bandeja; las piezas, a la intemperie ─ */
+.prb-sec .bench.prb-tirada { padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; }
+.prb-tirada > .bench-badge:first-child {
+  margin: 0; padding: 12px 16px; border: 0; border-radius: 12px; gap: 8px 12px;
+  background: rgba(255, 255, 255, .7); box-shadow: 0 0 0 1px var(--line); font-size: 13.5px; line-height: 1.5; color: var(--ink-2);
+}
+.prb-tirada > .bench-badge:first-child b { color: var(--ink); }
+.prb-tirada .kpis.prf-kpis { gap: 16px; }
+.prb-tirada .prf-kpis .kpi.lg {
+  padding: 18px 18px 16px; border: 0; border-radius: var(--r-card); background: var(--surface);
+  box-shadow: 0 0 0 1px var(--line), var(--shadow-card);
+}
+.prb-tirada .prf-kpis .kpi.lg:hover { box-shadow: 0 0 0 1px var(--line-strong), var(--shadow-card); }
+.prb-tirada .prf-kpis .kpi.lg > .n { font-size: 13px; text-transform: none; letter-spacing: 0; color: var(--ink); }
+.prb-tirada .prf-kpis .kpi.lg .v { font: 800 36px/1 var(--font-editorial); letter-spacing: -.03em; color: var(--ink); }
+.prb-tirada .prf-kpis .kpi.lg .v.empty { color: var(--ink-soft); }
+.prb-tirada .prf-kpis .lg--empty { background: rgba(255, 255, 255, .7); border: 0; box-shadow: 0 0 0 1px var(--line); }
+.prb-tirada .prf-kpis .kpi.lg .lo { font-size: 12px; }
+/* La banda del intervalo en tinta: rango con filete, punto como raya. */
+.prb-tirada .lg-ci { height: 10px; border-radius: 2px; background: var(--surface-2); box-shadow: none; }
+.prb-tirada .lg-ci-fill { border-radius: 2px; background: #DADDE3; box-shadow: inset 0 0 0 1px var(--pagada-borde); }
+.prb-tirada .lg-ci-pt { width: 3px; height: 16px; margin: -3px 0 0 -1.5px; border-radius: 1px; background: var(--ink); box-shadow: none; }
+.prb-tirada .lg-ci-zero { background: var(--line-strong); }
+.prb-tirada .iq-t { font-size: 11px; letter-spacing: .22em; }
+.prb-tirada .footnote { font-size: 13px; line-height: 1.55; color: var(--ink-soft); }
+.prb-tirada .footnote b { color: var(--ink); }
+.prb-tirada .bench-badge.prf-cache { border: 0; border-radius: 12px; background: rgba(255, 255, 255, .7); box-shadow: 0 0 0 1px var(--line); color: var(--ink-2); }
+.prb-tirada .bench-badge.prf-cache b { color: var(--ink); }
+
+/* ── Tu banco · rango y franja «informativo» ─────────────────────────── */
+.prb-rango .seg.live { display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 3px; border: 0; border-radius: 10px; background: rgba(255, 255, 255, .75); box-shadow: 0 0 0 1px var(--line); }
+.prb-rango .seg.live a {
+  display: inline-flex; align-items: center; justify-content: center; min-height: 26px; min-width: 40px; padding: 0 10px;
+  border: 0; border-radius: 7px; background: transparent; box-shadow: none; color: var(--ink-soft);
+  font: 500 13px/1 var(--font-sans); text-decoration: none;
+}
+.prb-rango .seg.live a:hover { color: var(--ink); background: rgba(15, 18, 24, .05); }
+.prb-rango .seg.live a[aria-current="true"] { color: var(--ink); font-weight: 600; background: linear-gradient(100deg, var(--mk-bg), var(--mk-bg-2)); box-shadow: none; }
+@media (pointer: coarse) { .prb-rango .seg.live a { min-height: 40px; } }
+.pfc-cab .bench-badge.prb-informativo {
+  display: flex; flex-wrap: nowrap; align-items: center; gap: 12px; margin: 8px 0 0; padding: 10px 16px;
+  border: 0; border-radius: 10px; background: var(--ink); color: #fff;
+}
+.prb-informativo svg { flex: none; width: 16px; height: 16px; }
+.pfc-cab .prb-informativo b { color: #fff; font: 600 12.5px/1.3 var(--font-sans); letter-spacing: .14em; text-transform: uppercase; }
+
+/* ── Tu banco · el contenido (página y galería: `.yb`) ───────────────── */
+.yb .card.yb-card { border: 0; border-radius: var(--r-card); box-shadow: 0 0 0 1px var(--line), var(--shadow-card); }
+.yb .card .yb-state { min-height: 24px; padding: 2px 9px; border-radius: 6px; background: var(--surface-2); color: var(--ink-2); font-size: 12.5px; font-weight: 600; }
+.yb .card .yb-h { font: 600 17px/1.3 var(--font-sans); letter-spacing: -.012em; }
+.yb .card .yb-h--lg { font: 700 24px/1.15 var(--font-editorial); letter-spacing: -.02em; margin-bottom: 12px; }
+.yb .card .yb-p { color: var(--ink-2); }
+.yb .card .ck-note { color: var(--ink-2); font-size: 13.5px; line-height: 1.6; }
+/* La tarjeta partida: la columna del diagrama, en marfil hundido. */
+.yb .card.yb-split { padding: 0; gap: 0; align-items: stretch; overflow: hidden; }
+.yb .yb-split > .yb-split-main { gap: 14px; padding: 24px; }
+.yb .yb-split-main > * { margin-top: 0; margin-bottom: 0; }
+.yb .yb-split > .yb-par { align-self: stretch; display: flex; align-items: center; padding: 24px; border-inline-start: 1px solid var(--line); background: var(--surface-3); }
+.yb .yb-meter { height: 8px; margin: 0; border-radius: 4px; box-shadow: none; max-width: none; }
+.yb .yb-meter i { background: var(--ink-2); }
+/* La lectura A/B: cifra en Plus Jakarta 800, tinta; el tono va en la ficha de estado. */
+.yb .ui-xr .ui-xr__card { border-radius: var(--r-card); box-shadow: 0 0 0 1px var(--line), var(--shadow-card); }
+.yb .ui-xr .ui-xr__big { font: 800 clamp(56px, 8vw, 88px)/.92 var(--font-editorial); letter-spacing: -.05em; }
+.yb .ui-xr .ui-xr__tray { border-radius: 0 0 var(--r-card) var(--r-card); }
+.yb .ui-xr .ui-xr__fact dt { font-size: 11px; letter-spacing: .14em; }
+.yb .ci-eje > span { font-size: 11px; }
+/* Los recibos, tablas y notas, con el filete de la casa. */
+.yb .recibo-titulo { letter-spacing: .14em; }
+.yb .notice { border-color: transparent; border-radius: 12px; }
+.yb .yb-tabla .ui-dtc, .yb .yb-pesos { border-radius: var(--r-card); }
+
+/* ── Verificar · el verificador de formato: una tarjeta partida ───────── */
+.prb-formato .fv {
+  gap: 0; align-items: stretch; border-radius: var(--r-card); overflow: hidden;
+  background: var(--surface); box-shadow: 0 0 0 1px var(--line), var(--shadow-card);
+}
+.prb-formato .fv-in { display: flex; flex-direction: column; gap: 12px; padding: 22px; }
+.prb-formato .fv-in > * { margin: 0; }
+.prb-formato .fv-out { display: flex; flex-direction: column; gap: 12px; padding: 22px; border: 0; border-inline-start: 1px solid var(--line); border-radius: 0; box-shadow: none; }
+.prb-formato .fv-out > * { margin: 0; }
+.app-inner .prb-formato .pv-label { margin: 0; font: 600 14px/1.35 var(--font-sans); letter-spacing: 0; text-transform: none; color: var(--ink); }
+/* Los ejemplos: un segmentado con el marcador, como el de la maqueta. */
+.prb-formato .pv-chips { gap: 2px; padding: 3px; border-radius: 10px; background: rgba(255, 255, 255, .75); box-shadow: 0 0 0 1px var(--line); align-self: flex-start; }
+.prb-formato .pv-chips .pv-chip { min-height: 30px; padding: 0 10px; border: 0; border-radius: 7px; background: transparent; color: var(--ink-soft); font-size: 13.5px; }
+.prb-formato .pv-chips .pv-chip:hover { color: var(--ink); background: rgba(15, 18, 24, .05); }
+.prb-formato .pv-chips .pv-chip[aria-pressed="true"] { color: var(--ink); font-weight: 600; background: linear-gradient(100deg, var(--mk-bg), var(--mk-bg-2)); }
+.prb-formato textarea.proj-ta { flex: 1 1 auto; min-height: 220px; padding: 12px 14px; border: 0; border-radius: 10px; background: var(--surface-3); box-shadow: inset 0 0 0 1px var(--line-strong); font-size: 12.5px; line-height: 1.6; color: var(--ink-2); }
+.prb-formato textarea.proj-ta:focus { box-shadow: inset 0 0 0 1.5px var(--brand); }
+.prb-formato .ck-note { font-size: 13px; line-height: 1.55; color: var(--ink-soft); }
+.prb-formato .est-tag { align-self: flex-start; border-radius: 5px; background: var(--good-soft); color: var(--good-ink); font: 600 11px/1.2 var(--font-sans); letter-spacing: .07em; text-transform: uppercase; padding: 4px 8px; }
+.prb-formato .pv-verdict { margin: 0; }
+.app-inner .prb-formato .pv-pct { font: 800 28px/1.15 var(--font-editorial); letter-spacing: -.03em; color: var(--ink); }
+.app-inner .prb-formato .pv-pct.zero { color: var(--ink-soft); }
+.prb-formato .fv-row { margin: 0; gap: 5px 12px; }
+.prb-formato .fv-row .fmt-name2 { font-size: 13.5px; color: var(--ink-2); }
+.prb-formato .fv-row .fmt-name2.win { color: var(--ink); font-weight: 600; }
+.prb-formato .track2 { height: 10px; border-radius: 3px; }
+.prb-formato .fill2 { border-radius: 3px; background: #9AA2AE; }
+.prb-formato .fill2.win { background: var(--ink); }
+.prb-formato .fmt-tok2 { font-size: 13px; color: var(--ink); }
+.prb-formato .fv-scope { margin: 4px 0 0; padding-top: 14px; border-top: 1px solid var(--line); font-size: 13px; color: var(--ink-soft); }
+
+/* ── Verificar · el proyector de factura ─────────────────────────────── */
+.prb-proyector .card.pv-card { border: 0; border-radius: var(--r-card); box-shadow: 0 0 0 1px var(--line), var(--shadow-card); }
+.prb-proyector .pv-in { display: flex; flex-direction: column; gap: 10px; padding: 22px; }
+.app-inner .prb-proyector .pv-label { margin: 8px 0 0; font: 600 14px/1.35 var(--font-sans); letter-spacing: 0; text-transform: none; color: var(--ink); }
+.app-inner .prb-proyector .pv-in > .pv-label:first-child { margin-top: 0; }
+.prb-proyector .pv-chips.ui-tglc {
+  --ui-tglc-fill: linear-gradient(100deg, var(--mk-bg), var(--mk-bg-2)); --ui-tglc-on: var(--ink); --ui-tglc-text: var(--ink-soft); --ui-tglc-r: 7px;
+  align-self: flex-start; gap: 2px; margin: 0; padding: 3px; border-radius: 10px; background: rgba(255, 255, 255, .75); box-shadow: 0 0 0 1px var(--line);
+}
+.prb-proyector .pv-chips.ui-tglc .ui-tglc__item { border-radius: 7px; box-shadow: none; background: transparent; font-size: 13.5px; }
+.prb-proyector .pv-chips.ui-tglc .ui-tglc__item[aria-pressed="true"] { font-weight: 600; }
+.prb-proyector .pv-adv { margin-top: 6px; border: 0; background: none; }
+.prb-proyector .pv-adv summary { padding: 0; color: var(--brand-ink); font-size: 14px; font-weight: 500; }
+.prb-proyector .pv-adv[open] summary { border-bottom: 0; }
+.prb-proyector .pv-adv-body { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 16px; padding: 12px 0 0; }
+.prb-proyector .pv-adv-body .field2 { grid-template-columns: minmax(0, 1fr); gap: 6px; margin: 0; }
+.app-inner .prb-proyector .field2 label { font-size: 13px; letter-spacing: 0; text-transform: none; color: var(--ink-2); }
+.prb-proyector .field2 input:not(.pv-range) { width: 100%; min-height: 40px; padding: 8px 12px; border-color: var(--line-strong); border-radius: 10px; font: 400 14px/1.3 var(--font-sans); text-align: start; }
+.prb-proyector .field2 input.pv-range { width: 100%; accent-color: var(--ink); }
+.prb-proyector .pv-out { gap: 8px; padding: 22px; }
+.prb-proyector .pv-out .est-tag { border-radius: 5px; font: 600 11px/1.2 var(--font-sans); letter-spacing: .07em; text-transform: uppercase; padding: 4px 8px; background: var(--warn-soft); color: var(--warn); }
+.prb-proyector .card .pv-out-k { font-size: 13px; color: var(--ink-soft); }
+.prb-proyector .card .pv-out-v { margin: 4px 0; font: 800 72px/.95 var(--font-editorial); letter-spacing: -.045em; color: var(--ink); }
+.prb-proyector .card .pv-out-s { font-size: 16px; line-height: 1.45; color: var(--ink); }
+.prb-proyector .pv-bar { height: 10px; border-radius: 3px; background: var(--surface-2); }
+.prb-proyector .pv-bar i { border-radius: 3px; }
+.prb-proyector .pv-bar-a { background: #9AA2AE; }
+.prb-proyector .pv-bar-b { background: var(--ink); }
+.prb-proyector .pv-bars dt { font-size: 13px; color: var(--ink-2); }
+.prb-proyector .card .pv-out-n { border-top: 1px solid var(--line); }
+.prb-proyector .pv-note {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 6px 24px; padding: 18px 20px;
+  border: 0; border-radius: 12px; background: rgba(255, 255, 255, .7); box-shadow: 0 0 0 1px var(--line);
+}
+.prb-proyector .pv-note > b { grid-column: 1; font-size: 16px; color: var(--ink); }
+.prb-proyector .pv-note > p { grid-column: 1; margin: 0; max-width: 78ch; font-size: 13.5px; color: var(--ink-2); }
+.prb-proyector .pv-note > a {
+  grid-column: 2; grid-row: 1 / span 2; display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px;
+  border-radius: 10px; background: var(--surface); box-shadow: 0 0 0 1px var(--btn-ghost-line); color: var(--ink); font-size: 14px; font-weight: 500; text-decoration: none; white-space: nowrap;
+}
+.prb-proyector .pv-note > a::after { content: "→"; margin-left: 8px; }
+.prb-proyector .pv-note > a:hover { box-shadow: 0 0 0 1px var(--line-strong); }
+
+/* ── Móvil ───────────────────────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .prb-banco .hero-prueba-filas > .hp { grid-template-columns: minmax(0, 1fr); padding: 16px; gap: 6px; }
+  .prb-banco .hp > .hp-marca, .prb-banco .hp .hp-n, .prb-banco .hp .hp-q, .prb-banco .hp:not(:has(> .hp-marca)) .hp-n { grid-column: 1; grid-row: auto; }
+  .prb-banco .hp .hp-n { font-size: 38px; }
+  .prb-banco .hero-prueba-t { padding: 16px; }
+  .prb-banco .cascade-nota { padding: 12px 16px 14px; }
+  .prb-propio .prf-par { padding: 16px 0 0; }
+  .prb-tirada .prf-kpis .kpi.lg .v { font-size: 32px; }
+  .pfc-cab .prb-informativo b { letter-spacing: .1em; }
+  /* El rango baja a su propia línea: el rótulo no se estruja a su lado. */
+  .pfc-cab-arriba:has(> .pfc-cab-aside > .prb-rango) > .pfc-rotulo { flex-basis: 100%; }
+  .yb .yb-split > .yb-split-main, .yb .yb-split > .yb-par { padding: 16px; }
+  .yb .yb-split > .yb-par { border-inline-start: 0; border-top: 1px solid var(--line); }
+  .yb .ui-xr .ui-xr__big { font-size: 56px; }
+  .prb-formato .fv-in, .prb-formato .fv-out { padding: 16px; }
+  .prb-formato textarea.proj-ta { flex: none; }
+  .app-inner .prb-formato .pv-pct { font-size: 24px; }
+  .prb-formato .pv-chips, .prb-proyector .pv-chips.ui-tglc { align-self: stretch; }
+  .prb-formato .fv-out { border-inline-start: 0; border-top: 1px solid var(--line); }
+  .prb-proyector .pv-in, .prb-proyector .pv-out { padding: 16px; }
+  .prb-proyector .pv-adv-body { grid-template-columns: minmax(0, 1fr); }
+  .prb-proyector .card .pv-out-v { font-size: 60px; }
+  .prb-proyector .pv-note { grid-template-columns: minmax(0, 1fr); padding: 16px; }
+  .prb-proyector .pv-note > a { grid-column: 1; grid-row: auto; justify-self: start; margin-top: 6px; }
+}
 /* ==== FIN SLOT PRUEBA ==== */
 
 /* ==== SLOT CUENTA ==== */

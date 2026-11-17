@@ -322,6 +322,7 @@
       "eyebrow": "Verifikasi secara lokal · tidak ada yang keluar dari halaman ini",
       "title": "Berapa yang bisa kamu hemat?",
       "intro": "Cek dalam satu menit: pilih contoh (atau tempel data kamu sendiri), beri tahu seberapa banyak kamu memakai API, dan lihat proyeksi penghematannya. Semua dihitung di browser kamu.",
+      "formatoRotulo": "Di browser Anda",
       "formatoTitulo": "Pemeriksa format",
       "formatoSub": "Menghitung token dari potongan terstruktur yang Anda tempel, di browser Anda. Ini bukan anggaran bulanan atau tagihan Anda.",
       "proyectorSub": "Estimasi dengan asumsi yang Anda pilih sendiri. Ini bukan tagihan dan bukan penghematan yang terealisasi."

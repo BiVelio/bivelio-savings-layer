@@ -322,6 +322,7 @@
       "eyebrow": "Verifica localmente · nada sale de esta página",
       "title": "¿Cuánto ahorrarías tú?",
       "intro": "Compruébalo en un minuto: elige un ejemplo (o pega tus propios datos), di cuánto usas la API y mira el ahorro proyectado. Todo se calcula en tu navegador.",
+      "formatoRotulo": "En tu navegador",
       "formatoTitulo": "Verificador de formato",
       "formatoSub": "Cuenta los tokens del fragmento estructurado que pegues, en tu navegador. No es tu presupuesto mensual ni tu factura.",
       "proyectorSub": "Una estimación con supuestos que eliges tú. No es una factura ni un ahorro realizado."

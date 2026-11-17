@@ -322,6 +322,7 @@
       "eyebrow": "Verifieer lokaal · niets verlaat deze pagina",
       "title": "Hoeveel zou jij besparen?",
       "intro": "Check het in een minuut: kies een voorbeeld (of plak je eigen data), geef aan hoeveel je de API gebruikt en zie de verwachte besparing. Alles draait in je browser.",
+      "formatoRotulo": "In je browser",
       "formatoTitulo": "Formaatcontrole",
       "formatoSub": "Telt de tokens van het gestructureerde fragment dat je plakt, in je browser. Het is niet je maandbudget en ook niet je factuur.",
       "proyectorSub": "Een schatting op basis van aannames die je zelf kiest. Het is geen factuur en geen gerealiseerde besparing."

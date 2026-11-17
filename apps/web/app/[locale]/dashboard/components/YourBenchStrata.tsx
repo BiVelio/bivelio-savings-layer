@@ -20,12 +20,27 @@ import { intfmt, money, moneySigned } from "../format";
  * Data Table de solo lectura lleva las medias y la diferencia, ordenable. Un
  * grupo sin intervalo ordena al final: que falte un dato no lo convierte en cero.
  */
-const RAMPA = ["var(--brand)", "var(--mint)", "var(--ui)", "var(--amber)", "var(--deep)", "var(--ink-soft)"];
+/**
+ * Color de cada grupo con la Firma de campaña: el cian como DATO solo para
+ * «respondida sin llamar a tu proveedor»; el resto en tinta y en azul de marca,
+ * de más a menos intervención de la capa. Un grupo que no esté aquí cae en la
+ * rampa, por su posición.
+ */
+const COLOR_DEL_GRUPO: Record<string, string> = {
+  avoided_call: "var(--cian)",
+  cheaper_model: "var(--brand)",
+  tokens_removed: "var(--ink-2)",
+  tokens_compressed: "var(--pagada-borde)",
+  unchanged: "#B4BAC4",
+};
+const RAMPA = ["var(--brand)", "var(--ink-2)", "var(--pagada-borde)", "var(--ink-soft)"];
 export async function YourBenchStrata({ informe }: { informe: InformeDelBancoPropio }) {
   const t = await getTranslations("dashboard");
   const filas = informe.estratos.filter((e) => e.elegibles > 0 || e.pares > 0);
   // Color estable por grupo: por su posición en la lista completa del informe.
-  const COLOR: Record<string, string> = Object.fromEntries(informe.estratos.map((e, i) => [e.estrato, RAMPA[i % RAMPA.length]!]));
+  const COLOR: Record<string, string> = Object.fromEntries(
+    informe.estratos.map((e, i) => [e.estrato, COLOR_DEL_GRUPO[e.estrato] ?? RAMPA[i % RAMPA.length]!]),
+  );
   const columns: DataTableColumn[] = [
     { key: "tipo", label: t("yourBench.colKind"), width: "26%" },
     { key: "elegibles", label: t("yourBench.colEligible"), align: "end", sortable: true },
