@@ -1814,7 +1814,7 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
       CodeFrame — hoja blanca, línea fina, Geist Mono. El cromo de terminal
       oscuro con semáforo se retiró: instalar no es un IDE. ─────────────── */
 .lp .code { position: relative; padding: 18px 20px; border-radius: var(--r-card); background: var(--surface); color: var(--ink); border: 1px solid var(--line); box-shadow: var(--shadow-card); font-size: 13px; line-height: 1.7; tab-size: 2; }
-.lp .code .c { color: #7A7F8C; }
+.lp .code .c { color: #676C79; } /* AA: ver «SLOT CONTRASTE DE COMENTARIOS» */
 .lp .code .k { color: var(--brand); }
 .lp .code .s { color: var(--warn); }
 .lp .code .n { color: var(--brand); font-weight: 600; }
@@ -4988,3 +4988,10 @@ a.card:active, button.card:active, .card-link:active { transform: translateY(0);
 .lp.terms-page.doc-page .heroe-campana + .doc-grid { border-top: 0; }
 @media print { .heroe-campana > .cielo, .heroe-mosaico { display: none; } }
 /* ==== FIN SLOT CAMPAÑA HÉROES ==== */
+/* ==== SLOT CONTRASTE DE COMENTARIOS ==== */
+/* Los comentarios de código (#7A7F8C del Code Block de affectUI) daban 4,0:1
+   sobre blanco y 3,5:1 sobre la banda: por debajo del 4,5:1 de AA (axe, «serious»,
+   /migrate-to-0.5, 2026-11-17). #676C79 da 5,25:1 sobre blanco y 4,64:1 sobre
+   --surface-2. `:root` delante para ganar al token del vendor sin tocarlo. */
+:root .ui-codec__code { --ui-codec-com: #676C79; }
+/* ==== FIN SLOT CONTRASTE DE COMENTARIOS ==== */
