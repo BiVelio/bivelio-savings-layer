@@ -45,18 +45,37 @@ const authOrigins = supabaseOrigin
 // seguimiento de conversiones) necesita sus hosts en la CSP o se bloquea en
 // silencio: el script vive en googletagmanager.com y los pings de conversión
 // salen hacia google.com / googleadservices / doubleclick (por script, imagen
-// o fetch según el navegador). Limitación aceptada: los dominios google.<tld>
-// por país no caben en una CSP sin comodín de TLD; el ping moderno usa los de
-// abajo.
+// o fetch según el navegador). Los dominios google.<tld> por país no admiten
+// comodín de TLD en una CSP: se nombran uno a uno los de los mercados (ver
+// `gtagPaises`, 17-11).
 //
 // 16-09: `ad.doubleclick.net` entra en connect-src e img-src por decisión del
 // dueño. El alta en producción dejaba tres errores de consola: el gtag manda
 // un `fetch` a ese host (la conversión secundaria) y la CSP lo bloqueaba en
 // silencio. La conversión principal ya pasaba; esto cierra el segundo ping.
-// El tercero (la imagen a www.google.<país>) sigue bloqueado por la
-// limitación de arriba, y se acepta. Solo en ping, nunca en script-src.
+// Solo en ping, nunca en script-src.
+//
+// 17-11: el tercer ping, por decisión del dueño. Es la imagen de las listas
+// de remarketing (`/pagead/1p-user-list/…`), que el gtag pide a
+// www.google.<país> según dónde esté quien visita: desde Andorra,
+// www.google.ad; desde España, www.google.es. Bloqueada, ese visitante no
+// entraba en las audiencias. Van los mercados de los 12 idiomas de la web;
+// un país que no esté aquí sigue sin entrar en la lista (la conversión sí
+// pasa, por los hosts de arriba). Solo en ping, nunca en script-src.
+const gtagPaises = [
+  // Español y catalán: España, Andorra y Latinoamérica.
+  "es", "ad", "com.mx", "com.ar", "com.co", "cl", "com.pe",
+  // Inglés: Reino Unido, Irlanda, Canadá, Australia.
+  "co.uk", "ie", "ca", "com.au",
+  // Alemán: Alemania, Austria, Suiza.
+  "de", "at", "ch",
+  // Francés: Francia, Bélgica, Luxemburgo.
+  "fr", "be", "lu",
+  // Italiano, portugués (Portugal y Brasil), neerlandés, polaco, turco, vietnamita, indonesio.
+  "it", "pt", "com.br", "nl", "pl", "com.tr", "com.vn", "co.id",
+].map((tld) => `https://www.google.${tld}`);
 const gtagScript = ["https://www.googletagmanager.com", "https://www.googleadservices.com", "https://googleads.g.doubleclick.net"];
-const gtagPing = [...gtagScript, "https://www.google.com", "https://ad.doubleclick.net"];
+const gtagPing = [...gtagScript, "https://www.google.com", "https://ad.doubleclick.net", ...gtagPaises];
 
 // Solo en desarrollo: el runtime de `next dev` (React Refresh y los source
 // maps) evalúa cadenas y, con la CSP de producción, el navegador lo bloqueaba

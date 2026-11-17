@@ -5,8 +5,9 @@
  *
  * Esta prueba lee la cabecera tal y como la produce el config —no una copia—
  * y fija lo decidido el 16-09: `ad.doubleclick.net` puede recibir pings (fetch
- * e imagen) pero nunca ejecutar script; los candados estructurales no se
- * relajan por accidente.
+ * e imagen) pero nunca ejecutar script; lo del 17-11: la imagen de remarketing
+ * a www.google.<país> de los mercados pasa, también sin script; y los candados
+ * estructurales no se relajan por accidente.
  */
 import { describe, expect, it } from "vitest";
 
@@ -39,6 +40,18 @@ describe("CSP de la web", () => {
     ]) {
       expect(d["connect-src"], `connect-src debe incluir ${host}`).toContain(host);
       expect(d["img-src"], `img-src debe incluir ${host}`).toContain(host);
+    }
+  });
+
+  it("deja pasar la imagen de remarketing a www.google.<país> de los mercados (decisión del 17-11)", async () => {
+    const d = await csp();
+    // El gtag la pide al Google del país de quien visita: desde Andorra,
+    // www.google.ad; desde España, www.google.es. Muestra de los 12 idiomas.
+    for (const tld of ["es", "ad", "fr", "de", "it", "pt", "com.br", "nl", "pl", "com.tr", "com.vn", "co.id", "co.uk", "com.mx"]) {
+      const host = `https://www.google.${tld}`;
+      expect(d["img-src"], `img-src debe incluir ${host}`).toContain(host);
+      expect(d["connect-src"], `connect-src debe incluir ${host}`).toContain(host);
+      expect(d["script-src"], `${host} nunca sirve script`).not.toContain(host);
     }
   });
 
