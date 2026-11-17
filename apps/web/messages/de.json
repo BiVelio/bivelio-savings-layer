@@ -322,6 +322,7 @@
       "eyebrow": "Lokal verifizieren · nichts verlässt diese Seite",
       "title": "Wie viel würdest du sparen?",
       "intro": "Finde es in einer Minute heraus: Wähle ein Beispiel (oder füge eigene Daten ein), gib an, wie viel du die API nutzt, und sieh die prognostizierte Ersparnis. Alles läuft in deinem Browser.",
+      "formatoRotulo": "In deinem Browser",
       "formatoTitulo": "Format-Prüfer",
       "formatoSub": "Zählt die Tokens des strukturierten Ausschnitts, den du einfügst, in deinem Browser. Das ist weder dein Monatsbudget noch deine Rechnung.",
       "proyectorSub": "Eine Schätzung mit Annahmen, die du selbst wählst. Das ist weder eine Rechnung noch eine realisierte Ersparnis."

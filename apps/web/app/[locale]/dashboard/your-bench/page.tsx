@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
-import { PageHead } from "@/app/components/app/PageHead";
+import { CabeceraDePagina } from "@/app/components/app/CabeceraDePagina";
 import { ProofTabs } from "@/app/components/app/ProofTabs";
 import { authConfigured } from "@/lib/supabase/env";
 import { createReadOnlyClient } from "@/lib/supabase/server";
@@ -38,24 +38,34 @@ export default async function YourBenchPage({
   const cabecera = (
     <>
       <ProofTabs />
-      <PageHead
-        eyebrow={t("yourBench.eyebrow")}
-        title={t("yourBench.title")}
-        sub={t("yourBench.intro")}
-        aside={<RangeSwitch activo={rango} base="/dashboard/your-bench" />}
-      />
-      <div className="bench-badge yb-badge">
-        <span>
-          <b>{t("yourBench.badge")}</b>
-        </span>
-      </div>
+      <CabeceraDePagina
+        rotulo={t("yourBench.eyebrow")}
+        titulo={t("yourBench.title")}
+        entradilla={t("yourBench.intro")}
+        aside={
+          <div className="prb-rango">
+            <RangeSwitch activo={rango} base="/dashboard/your-bench" />
+          </div>
+        }
+      >
+        {/* INFORMATIVO, JAMÁS FACTURADO: la franja va en todas las ramas. */}
+        <div className="bench-badge yb-badge prb-informativo">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <rect x="5" y="11" width="14" height="10" rx="2" />
+            <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+          </svg>
+          <span>
+            <b>{t("yourBench.badge")}</b>
+          </span>
+        </div>
+      </CabeceraDePagina>
     </>
   );
   if (!authConfigured) {
     return (
       <>
         {cabecera}
-        <p className="note">{t("overview.authNotWired")}</p>
+        <p className="note pfc-nota">{t("overview.authNotWired")}</p>
       </>
     );
   }

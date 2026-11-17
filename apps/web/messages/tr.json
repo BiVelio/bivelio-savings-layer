@@ -322,6 +322,7 @@
       "eyebrow": "Yerel olarak doğrulayın · bu sayfadan hiçbir şey çıkmaz",
       "title": "Sen ne kadar tasarruf ederdin?",
       "intro": "Bir dakikada gör: bir örnek seç (veya kendi verini yapıştır), API'yi ne kadar kullandığını söyle ve öngörülen tasarrufu gör. Her şey tarayıcında hesaplanır.",
+      "formatoRotulo": "Tarayıcınızda",
       "formatoTitulo": "Biçim doğrulayıcı",
       "formatoSub": "Yapıştırdığınız yapılandırılmış parçanın token'larını tarayıcınızda sayar. Aylık bütçeniz ya da faturanız değildir.",
       "proyectorSub": "Sizin seçtiğiniz varsayımlara dayanan bir tahmin. Bir fatura ya da gerçekleşmiş tasarruf değildir."

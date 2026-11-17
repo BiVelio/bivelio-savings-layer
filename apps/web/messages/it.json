@@ -322,6 +322,7 @@
       "eyebrow": "Verifica in locale · niente esce da questa pagina",
       "title": "Quanto risparmieresti tu?",
       "intro": "Scoprilo in un minuto: scegli un esempio (o incolla i tuoi dati), indica quanto usi l'API e guarda il risparmio previsto. Tutto gira nel tuo browser.",
+      "formatoRotulo": "Nel tuo browser",
       "formatoTitulo": "Verificatore di formato",
       "formatoSub": "Conta i token del frammento strutturato che incolli, nel tuo browser. Non è il tuo budget mensile né la tua fattura.",
       "proyectorSub": "Una stima con ipotesi scelte da te. Non è una fattura né un risparmio realizzato."

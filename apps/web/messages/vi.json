@@ -322,6 +322,7 @@
       "eyebrow": "Xác minh cục bộ · không có gì rời khỏi trang này",
       "title": "Bạn sẽ tiết kiệm được bao nhiêu?",
       "intro": "Kiểm tra trong một phút: chọn một ví dụ (hoặc dán dữ liệu của bạn), cho biết mức dùng API và xem khoản tiết kiệm dự kiến. Mọi thứ chạy ngay trong trình duyệt của bạn.",
+      "formatoRotulo": "Trong trình duyệt của bạn",
       "formatoTitulo": "Trình kiểm tra định dạng",
       "formatoSub": "Đếm token của đoạn có cấu trúc mà bạn dán, ngay trong trình duyệt. Đây không phải ngân sách hằng tháng hay hoá đơn của bạn.",
       "proyectorSub": "Một ước tính dựa trên các giả định do bạn chọn. Đây không phải hoá đơn, cũng không phải khoản tiết kiệm đã thực hiện."

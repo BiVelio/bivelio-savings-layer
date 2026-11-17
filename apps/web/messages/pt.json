@@ -322,6 +322,7 @@
       "eyebrow": "Verifica localmente · nada sai desta página",
       "title": "Quanto você economizaria?",
       "intro": "Descubra em um minuto: escolha um exemplo (ou cole seus próprios dados), diga quanto usa a API e veja a economia projetada. Tudo roda no seu navegador.",
+      "formatoRotulo": "No teu navegador",
       "formatoTitulo": "Verificador de formato",
       "formatoSub": "Conta os tokens do fragmento estruturado que colares, no teu navegador. Não é o teu orçamento mensal nem a tua fatura.",
       "proyectorSub": "Uma estimativa com pressupostos escolhidos por ti. Não é uma fatura nem uma poupança realizada."

@@ -322,6 +322,7 @@
       "eyebrow": "Weryfikuj lokalnie · nic nie opuszcza tej strony",
       "title": "Ile byś zaoszczędził?",
       "intro": "Sprawdź w minutę: wybierz przykład (albo wklej własne dane), podaj, jak dużo używasz API, i zobacz prognozowane oszczędności. Wszystko liczy się w Twojej przeglądarce.",
+      "formatoRotulo": "W Twojej przeglądarce",
       "formatoTitulo": "Weryfikator formatu",
       "formatoSub": "Liczy tokeny wklejonego fragmentu strukturalnego, w Twojej przeglądarce. To nie jest Twój miesięczny budżet ani faktura.",
       "proyectorSub": "Szacunek oparty na założeniach, które wybierasz. To nie jest faktura ani zrealizowane oszczędności."
