@@ -15,6 +15,8 @@ import {
 } from "@/lib/banco-publico/extraer";
 // Directo al fichero, no al índice de `ui`: el índice arrastra `Recibo`, que importa la
 // navegación de next-intl, y este componente se renderiza a secas en su test.
+import { Marcado } from "@/app/components/campana/Marcado";
+import { HeroeDeCampana } from "@/app/components/campana/HeroeDeCampana";
 import { EvidenceBadge, type TipoDeEvidencia } from "@/app/components/ui/EvidenceBadge";
 import { rutaServida } from "@/lib/banco-publico/publicar";
 import { EDICION_PAPER } from "@/lib/paper/edicion";
@@ -1090,12 +1092,19 @@ export function BancoPublico({
   };
   return (
     <main className="wrap banco-page">
-      <section className="terms-hero">
+      {/* FIRMA DE CAMPAÑA: cielo cian arriba a la derecha, acento en serif con
+          marcador y mosaico de llamadas al pie de la cabecera. */}
+      <HeroeDeCampana como="section" className="terms-hero" pagina="benchmarks">
         <span className="eyebrow">{t("eyebrow")}</span>
-        <h1>{t("title")}</h1>
+        <h1>
+          {t("title")}{" "}
+          <span className="serif-accent heroe-acento">
+            <Marcado texto={t("titleAccent")} marca={t("titleMark")} />
+          </span>
+        </h1>
         <p className="lede">{t("lede", { modelos: f.ent(banco.modelos.length) })}</p>
         <Estadisticas banco={banco} t={t} f={f} />
-      </section>
+      </HeroeDeCampana>
       {indice}
       <Metodo banco={banco} t={t} f={f} ricos={ricos} />
       {explicacion}

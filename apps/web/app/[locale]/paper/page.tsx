@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { HeroeDeCampana } from "@/app/components/campana/HeroeDeCampana";
 import { BotonImprimir } from "@/app/components/docs/BotonImprimir";
 import { DocIndice } from "@/app/components/docs/DocIndice";
 import { Migas } from "@/app/components/docs/Migas";
@@ -137,6 +138,9 @@ export default async function PaperPage({ params }: { params: Promise<{ locale: 
   return (
     <div className="lp doc-page paper-page">
       <main className="wrap paper-shell">
+        {/* FIRMA DE CAMPAÑA: solo el cielo y el mosaico. El título científico
+            no lleva marcador ni cambia una letra. */}
+        <HeroeDeCampana pagina="paper">
         <GridBackground className="doc-fondo">
         <header className="paper-cabecera" id="inicio">
           <Migas actual={tn("footer.paper")} />
@@ -176,6 +180,7 @@ export default async function PaperPage({ params }: { params: Promise<{ locale: 
           {locale === "en" ? null : <p className="doc-nota">{t("englishOnly")}</p>}
         </header>
         </GridBackground>
+        </HeroeDeCampana>
 
         <div className="doc-grid">
           <DocIndice titulo={t("contents")} entradas={secciones.map((s) => ({ id: s.id, texto: s.texto }))} lang="en" />

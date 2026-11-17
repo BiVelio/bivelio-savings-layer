@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { Marcado } from "../campana/Marcado";
 import { cx } from "./cx";
 
 /**
@@ -12,6 +13,8 @@ export type SectionHeadProps = {
   titulo: ReactNode;
   /** Énfasis breve en serif cursiva tras el título. Nunca cifras. */
   acento?: string;
+  /** Firma de campaña: la parte del acento con marcador cian. Vacía = última palabra; sin la prop, sin marcador. */
+  marca?: string;
   lede?: ReactNode;
   lateral?: ReactNode;
   centrado?: boolean;
@@ -22,7 +25,7 @@ export type SectionHeadProps = {
   className?: string;
 };
 
-export function SectionHead({ eyebrow, titulo, acento, lede, lateral, centrado = false, pequeno = false, como: Titular = "h2", id, className }: SectionHeadProps) {
+export function SectionHead({ eyebrow, titulo, acento, marca, lede, lateral, centrado = false, pequeno = false, como: Titular = "h2", id, className }: SectionHeadProps) {
   return (
     <div className={cx("section-head", centrado && "section-head--center", lateral ? "section-head--split" : null, className)}>
       <div className="section-head-main">
@@ -32,7 +35,7 @@ export function SectionHead({ eyebrow, titulo, acento, lede, lateral, centrado =
           {acento ? (
             <>
               {" "}
-              <span className="serif-accent">{acento}</span>
+              <span className="serif-accent">{marca === undefined ? acento : <Marcado texto={acento} marca={marca} />}</span>
             </>
           ) : null}
         </Titular>

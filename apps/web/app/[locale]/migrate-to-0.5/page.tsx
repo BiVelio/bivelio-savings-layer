@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { HeroeDeCampana } from "@/app/components/campana/HeroeDeCampana";
 import { DocIndice } from "@/app/components/docs/DocIndice";
 import { Migas } from "@/app/components/docs/Migas";
 import Footer from "@/app/components/Footer";
@@ -228,6 +229,9 @@ export default async function MigrateTo05Page({ params }: { params: Promise<{ lo
   return (
     <div className="lp terms-page doc-page">
       <main className="wrap guia-page" lang="en">
+        {/* FIRMA DE CAMPAÑA: solo el cielo y el mosaico. El título es el del
+            markdown de la guía, tal cual. */}
+        <HeroeDeCampana pagina="migrate">
         <GridBackground className="doc-fondo">
         <section className="terms-hero guia-hero" id="inicio">
           <Migas actual={tl("footer.migrate")} lang={locale} />
@@ -241,6 +245,7 @@ export default async function MigrateTo05Page({ params }: { params: Promise<{ lo
           <Bloques bloques={resto} copiar={copiar} />
         </section>
         </GridBackground>
+        </HeroeDeCampana>
         <div className="doc-grid">
           <DocIndice titulo={t("contents")} entradas={indice} lang="en" />
           <div className="doc-body">

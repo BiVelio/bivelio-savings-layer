@@ -4950,3 +4950,41 @@ a.card:active, button.card:active, .card-link:active { transform: translateY(0);
 }
 @media print { .paperc-acciones, .paperc-mosaico { display: none; } }
 /* ==== FIN SLOT CAMPAÑA PAPER ==== */
+/* ==== SLOT CAMPAÑA HÉROES ==== */
+/* ============================================================================
+   LA FIRMA DE CAMPAÑA EN LOS HÉROES DE LAS PÁGINAS PÚBLICAS (2026-11-17):
+   /benchmarks, /pricing, /how-it-works, /paper y /migrate-to-0.5. La pone
+   `<HeroeDeCampana>`: el cielo detrás de todo (también de la rejilla), el
+   contenido de siempre y el mosaico de llamadas a sangre sobre un filete.
+   Aquí no hay ninguna entrada que oculte el titular ni la entradilla: lo único
+   que se mueve es el trazo del marcador y el pulso de unas casillas, y solo
+   bajo `prefers-reduced-motion: no-preference` (reglas del slot base).
+   ========================================================================== */
+/* El cielo sube por detrás de la barra de navegación, como la rejilla: sin
+   esto el resplandor se cortaría en una línea recta bajo la barra. */
+.heroe-campana > .cielo {
+  top: calc(var(--nav-h, 64px) * -1);
+  height: min(calc(100% + var(--nav-h, 64px)), 720px);
+}
+/* El acento, en su propia línea (como «under control.» en la pieza). */
+.heroe-acento, .heroe-campana h1 > .serif-accent { display: block; margin-top: .08em; padding-bottom: .06em; line-height: 1.04; text-wrap: balance; }
+/* El mosaico cierra la cabecera y apoya en un filete que se funde a los lados
+   con la misma máscara que las casillas. */
+.heroe-mosaico { margin-top: clamp(20px, 2.6vw, 36px); border-bottom: 1px solid var(--line-strong); }
+
+/* ── /benchmarks: el titular respira para que la frase en negrita quepa en una
+   línea donde hay sitio y el acento quede debajo. ── */
+.lp.evc .heroe-campana.terms-hero h1 { max-width: 26ch; }
+.lp.evc .banco-page > .heroe-campana.terms-hero { padding-bottom: 0; margin-bottom: clamp(24px, 3vw, 40px); }
+/* ── /pricing, /how-it-works: el relleno inferior lo pone el mosaico. ── */
+.lp.terms-page.precios .heroe-campana .precios-hero { padding-bottom: 0; }
+.lp.hiw-page .heroe-campana .hiw-hero { padding-bottom: 0; }
+.lp.hiw-page .heroe-campana { margin-bottom: clamp(8px, 2vw, 24px); }
+/* ── /paper: el filete de la cabecera académica pasa a ser el del mosaico. ── */
+.paper-page .heroe-campana { margin-bottom: clamp(28px, 4vw, 44px); }
+.paper-page .heroe-campana .paper-cabecera { margin-bottom: 0; padding-bottom: 0; border-bottom: 0; }
+/* ── /migrate-to-0.5: un solo filete entre la cabecera y el índice. ── */
+.lp.terms-page.doc-page .heroe-campana .guia-hero { padding-bottom: 0; }
+.lp.terms-page.doc-page .heroe-campana + .doc-grid { border-top: 0; }
+@media print { .heroe-campana > .cielo, .heroe-mosaico { display: none; } }
+/* ==== FIN SLOT CAMPAÑA HÉROES ==== */

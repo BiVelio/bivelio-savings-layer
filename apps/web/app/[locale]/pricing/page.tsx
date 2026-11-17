@@ -2,6 +2,8 @@ import type { ReactNode } from "react";
 
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { Marcado } from "@/app/components/campana/Marcado";
+import { HeroeDeCampana } from "@/app/components/campana/HeroeDeCampana";
 import { Migas } from "@/app/components/docs/Migas";
 import Footer from "@/app/components/Footer";
 import { PlanesCloud } from "@/app/components/landing/PlanesCloud";
@@ -90,11 +92,19 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
   return (
     <div className="lp terms-page precios">
       <main className="wrap">
+        {/* FIRMA DE CAMPAÑA: cielo cian detrás de la rejilla, acento en serif
+            con marcador y mosaico de llamadas al pie de la cabecera. */}
+        <HeroeDeCampana pagina="pricing">
         <GridBackground className="doc-fondo">
         <section className="terms-hero precios-hero">
           <Migas actual={tn("pricing")} />
           <span className="eyebrow">{t("eyebrow")}</span>
-          <h1>{t("title")}</h1>
+          <h1>
+            {t("title")}{" "}
+            <span className="serif-accent heroe-acento">
+              <Marcado texto={t("titleAccent")} marca={t("titleMark")} />
+            </span>
+          </h1>
           <p className="lede">{t("lede")}</p>
           <div className="precios-acciones">
             <Link className="btn" href="/signup">
@@ -111,6 +121,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
           <p className="terms-governs">{t.rich("governs", etiquetasQueRigen(locale))}</p>
         </section>
         </GridBackground>
+        </HeroeDeCampana>
 
         {/* COMMUNITY FRENTE A CLOUD, antes de ningún importe: el motor es
             gratis y no es un plan; lo que tiene precio es la nube opcional. */}

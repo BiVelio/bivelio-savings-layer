@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { Marcado } from "../campana/Marcado";
 import { cx } from "./cx";
 
 /**
@@ -17,6 +18,12 @@ export type PageHeaderProps = {
   titulo: ReactNode;
   /** Énfasis breve en serif cursiva, pintado tras el título. */
   acento?: string;
+  /**
+   * FIRMA DE CAMPAÑA: la parte del acento que lleva el marcador cian (`.mk`).
+   * Cadena vacía = la última palabra del acento. Sin la prop, el acento se
+   * pinta como siempre, sin marcador. Con marcador el acento va en tinta.
+   */
+  marca?: string;
   /** El acento va en su propia línea. */
   acentoEnLinea?: boolean;
   lede?: ReactNode;
@@ -30,7 +37,7 @@ export type PageHeaderProps = {
   className?: string;
 };
 
-export function PageHeader({ eyebrow, titulo, acento, acentoEnLinea = false, lede, acciones, centrado = false, tamano = "lg", como: Titular = "h1", id, className }: PageHeaderProps) {
+export function PageHeader({ eyebrow, titulo, acento, marca, acentoEnLinea = false, lede, acciones, centrado = false, tamano = "lg", como: Titular = "h1", id, className }: PageHeaderProps) {
   return (
     <header className={cx("page-header", centrado && "page-header--center", className)}>
       {eyebrow ? <p className="kicker">{eyebrow}</p> : null}
@@ -39,7 +46,7 @@ export function PageHeader({ eyebrow, titulo, acento, acentoEnLinea = false, led
         {acento ? (
           <>
             {acentoEnLinea ? <br /> : " "}
-            <span className="serif-accent">{acento}</span>
+            <span className="serif-accent">{marca === undefined ? acento : <Marcado texto={acento} marca={marca} />}</span>
           </>
         ) : null}
       </Titular>

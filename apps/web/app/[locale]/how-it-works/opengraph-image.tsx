@@ -104,7 +104,7 @@ export default async function Image({ params }: { params: Promise<{ locale: stri
 
         <div style={{ display: "flex", flexDirection: "column", gap: 34 }}>
           <div style={{ display: "flex", fontSize: 66, fontWeight: 700, letterSpacing: -2.2, lineHeight: 1.08, color: INK, maxWidth: 1020 }}>
-            {t("title")}
+            {`${t("title")} ${t("titleAccent")}`}
           </div>
           <div
             style={{

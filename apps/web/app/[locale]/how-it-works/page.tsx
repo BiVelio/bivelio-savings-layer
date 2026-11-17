@@ -1,5 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { HeroeDeCampana } from "@/app/components/campana/HeroeDeCampana";
 import Footer from "@/app/components/Footer";
 import { FormatVerifier } from "@/app/components/FormatVerifier";
 import { HowItWorks } from "@/app/components/HowItWorks";
@@ -62,11 +63,17 @@ export default async function HowItWorksPage({ params }: { params: Promise<{ loc
         {/* Instalar open source no pasa por registro ni compra: la acción principal
             lleva a la instalación completa, más abajo en esta página; la de apoyo,
             al banco. */}
+        {/* FIRMA DE CAMPAÑA: cielo cian detrás de la rejilla, acento en serif
+            con marcador y mosaico de llamadas al pie de la cabecera. */}
+        <HeroeDeCampana pagina="howItWorks">
         <GridBackground className="doc-fondo hiw-fondo">
         <PageHeader
           className="hiw-hero"
           eyebrow={t("eyebrow")}
           titulo={t("title")}
+          acento={t("titleAccent")}
+          marca={t("titleMark")}
+          acentoEnLinea
           lede={t("lede")}
           acciones={
             <>
@@ -80,6 +87,7 @@ export default async function HowItWorksPage({ params }: { params: Promise<{ loc
           }
         />
         </GridBackground>
+        </HeroeDeCampana>
         <HowItWorks
           variant="landing"
           profundiza={

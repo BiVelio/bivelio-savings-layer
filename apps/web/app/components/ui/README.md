@@ -294,7 +294,7 @@ Reserva el mismo hueco que el contenido real. `.sk` (heredado) sigue valiendo.
 ### `<PageHeader>` — cabecera de página de marketing
 
 ```ts
-eyebrow?: string; titulo: ReactNode; acento?: string; acentoEnLinea?: boolean
+eyebrow?: string; titulo: ReactNode; acento?: string; marca?: string; acentoEnLinea?: boolean
 lede?: ReactNode; acciones?: ReactNode; centrado?: boolean
 tamano?: "lg" | "xl"; como?: "h1" | "h2"; id?: string
 ```
@@ -304,12 +304,24 @@ tamano?: "lg" | "xl"; como?: "h1" | "h2"; id?: string
   lede={t("lede")} acciones={<Link className="btn btn-lg" href="/signup">{t("cta")}</Link>} />
 ```
 
+`marca` (opcional) es la firma de campaña: la parte del `acento` que lleva el
+marcador cian (`<Marcado>`, clase `.mk`). Cadena vacía marca la última palabra;
+sin la prop no hay marcador. Con marcador, el acento va en tinta. En el héroe de
+una página pública va junto a `acentoEnLinea`, dentro de `<HeroeDeCampana>`
+(`app/components/campana/`), que pone el cielo cian y el mosaico de llamadas:
+
+```tsx
+<HeroeDeCampana pagina="howItWorks">
+  <PageHeader titulo={t("title")} acento={t("titleAccent")} marca={t("titleMark")} acentoEnLinea … />
+</HeroeDeCampana>
+```
+
 Una página, un `h1`. En el panel la cabecera sigue siendo `PageHead`.
 
 ### `<SectionHead>`
 
 ```ts
-eyebrow?: string; titulo: ReactNode; acento?: string; lede?: ReactNode
+eyebrow?: string; titulo: ReactNode; acento?: string; marca?: string; lede?: ReactNode
 lateral?: ReactNode; centrado?: boolean; pequeno?: boolean; como?: "h2" | "h3"; id?: string
 ```
 
