@@ -13,7 +13,6 @@ import { SnippetPorSistema } from "@/app/components/SnippetPorSistema";
 import { CodeFrame } from "@/app/components/ui/CodeFrame";
 import { Notice } from "@/app/components/ui/Notice";
 import { puede } from "@/lib/org/permisos";
-import { Badge } from "@/vendor/affectui/badge-clean";
 
 import type { OrgContext } from "../data";
 import { ServiceAccountKeySection } from "./ServiceAccountKeySection";
@@ -140,6 +139,28 @@ function lineaColoreada(linea: string, key: number) {
 }
 
 /**
+ * El titular de «Empezar» son dos frases («Tres pasos. Tus prompts nunca…»):
+ * la Firma de campaña pone la segunda en serif cursiva. Se parte por la
+ * primera frase terminada en «.», «!» o «?» seguida de espacio, que es como
+ * viene en los doce idiomas; si un catálogo no la trae así, el titular se
+ * pinta entero sin cursiva y no se pierde nada.
+ */
+export function partirEnDosFrases(texto: string): [string, string] | null {
+  const m = /^(.+?[.!?])\s+(\S[\s\S]*)$/u.exec(texto);
+  return m ? [m[1]!, m[2]!] : null;
+}
+
+function TitularDeDosFrases({ texto }: { texto: string }) {
+  const partes = partirEnDosFrases(texto);
+  if (!partes) return <>{texto}</>;
+  return (
+    <>
+      {partes[0]} <em>{partes[1]}</em>
+    </>
+  );
+}
+
+/**
  * REDISEÑO 2026-11 — DOS TAREAS, NO UNA PARED DE COMANDOS. La página responde
  * primero a «¿qué quieres conectar?» (una aplicación con el SDK, o un agente
  * de código con el gateway) y a «¿local o Cloud?», y después da cada recorrido
@@ -177,11 +198,11 @@ export async function InstallLicensePanel({ ctx }: { ctx: OrgContext }) {
     <div className="ins">
       {/* 0 · Qué se conecta, y en qué modo. */}
       <section className="ins-choose" aria-labelledby="ins-tasks-title">
-        <div className="ck-head">
-          <div>
-            <p className="ck-eyebrow">{t("installLicensePanel.eyebrow")}</p>
-            <h2 id="ins-tasks-title">{t("installLicensePanel.heading")}</h2>
-          </div>
+        <div className="pfc-sec-cab ins-cab">
+          <p className="pfc-rotulo">{t("installLicensePanel.eyebrow")}</p>
+          <h2 className="pfc-sec-t" id="ins-tasks-title">
+            <TitularDeDosFrases texto={t("installLicensePanel.heading")} />
+          </h2>
         </div>
         <div className="ins-tasks">
           <a className="ins-task" href="#sdk">
@@ -239,11 +260,12 @@ export async function InstallLicensePanel({ ctx }: { ctx: OrgContext }) {
 
       {/* A · Conexión Cloud: licencia y clave de servicio. Opcional con el motor abierto. */}
       <section className="ck-sec ins-sec" id="cloud" aria-labelledby="ins-cloud-title">
-        <div className="ins-sec-head">
-          <h2 className="t-section" id="ins-cloud-title">{t("installLicensePanel.cloudTitle")}</h2>
-          <Badge size="md" tone="neutral" className="ins-optional">
-            {t("installLicensePanel.optional")}
-          </Badge>
+        <div className="pfc-sec-cab ins-cab">
+          <p className="pfc-rotulo">{t("installLicensePanel.cloudEyebrow")}</p>
+          <div className="ins-sec-head">
+            <h2 className="pfc-sec-t" id="ins-cloud-title">{t("installLicensePanel.cloudTitle")}</h2>
+            <span className="pfc-insignia ins-optional">{t("installLicensePanel.optional")}</span>
+          </div>
         </div>
         {gestionaClaves ? null : (
           <Notice tono="info" role="note" className="ins-role">
@@ -305,11 +327,9 @@ export async function InstallLicensePanel({ ctx }: { ctx: OrgContext }) {
 
       {/* B · Integrar una aplicación (SDK). */}
       <section className="ck-sec ins-sec" id="sdk" aria-labelledby="ins-sdk-title">
-        <div className="ins-sec-head">
-          <span className="ins-sec-ic" aria-hidden>
-            <CodeIcon />
-          </span>
-          <h2 className="t-section" id="ins-sdk-title">{t("installLicensePanel.sdkTitle")}</h2>
+        <div className="pfc-sec-cab ins-cab">
+          <p className="pfc-rotulo">{t("installLicensePanel.sdkEyebrow")}</p>
+          <h2 className="pfc-sec-t" id="ins-sdk-title">{t("installLicensePanel.sdkTitle")}</h2>
         </div>
         {/* 3 · un comando: `init` detecta la pila e imprime el cableado exacto. Es la
             vía recomendada; el cableado a mano sigue debajo como alternativa. */}
@@ -352,11 +372,9 @@ export async function InstallLicensePanel({ ctx }: { ctx: OrgContext }) {
           cero telemetría); la clave de servicio es OPCIONAL y añade el panel y
           los entitlements de la org. */}
       <section className="ck-sec ins-sec" id="gateway" aria-labelledby="ins-gateway-title">
-        <div className="ins-sec-head">
-          <span className="ins-sec-ic" aria-hidden>
-            <TerminalIcon />
-          </span>
-          <h2 className="t-section" id="ins-gateway-title">{t("installLicensePanel.gatewayTitle")}</h2>
+        <div className="pfc-sec-cab ins-cab">
+          <p className="pfc-rotulo">{t("installLicensePanel.gatewayEyebrow")}</p>
+          <h2 className="pfc-sec-t" id="ins-gateway-title">{t("installLicensePanel.gatewayTitle")}</h2>
         </div>
         <p className="ck-note ins-step">
           {t.rich("installLicensePanel.gatewayNote", {

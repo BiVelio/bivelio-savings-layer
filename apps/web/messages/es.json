@@ -743,8 +743,10 @@
       "pythonNote": "<b>¿Python?</b> El cliente <code>bvsala</code> para Python lleva los SDK oficiales de OpenAI y de Anthropic a través de este mismo gateway (<code>bvsala gateway</code>) y le devuelve a tu código el informe de cada petición — las mismas cifras que recibe este panel. Necesita un gateway 0.4.26 o posterior y Python 3.10 o posterior. Se instala desde PyPI con <code>pip install bivelio-savings-layer</code>; en tu código, <code>import bvsala</code>.",
       "finalNote": "Eso es todo. Sin licencia válida → <code>generate()</code> se rechaza. Si cancelas tu plan, el SDK se detiene en ~15 min mediante <code>licenseServerUrl</code>: sin reiniciar, y nunca inutiliza tu producción si no podemos conectarnos.",
       "terminal": "Terminal",
+      "sdkEyebrow": "Aplicación",
       "sdkTitle": "Integrar una aplicación (SDK)",
       "sdkLede": "Envuelve tu proveedor en tu código y lee el informe de ahorro de cada llamada.",
+      "gatewayEyebrow": "Agente de código",
       "gatewayTitle": "Conectar un agente (gateway)",
       "gatewayLede": "Lanza tu agente de código a través del gateway local, sin tocar su código.",
       "modeLocalTitle": "Modo local",
@@ -752,6 +754,7 @@
       "modeCloudTitle": "Conexión Cloud",
       "modeCloudBody": "Con licencia y clave de servicio, este panel recibe recuentos y costes —nunca tus prompts— y tu organización comparte medición y asientos.",
       "modeCloudLink": "Ir a las credenciales",
+      "cloudEyebrow": "Credenciales",
       "cloudTitle": "Conexión Cloud: licencia y clave de servicio",
       "optional": "Opcional con el motor abierto",
       "roleLimited": "Tu rol puede leer esta página, pero solo owner y admin pueden emitir la licencia y crear o revocar claves de servicio.",
@@ -2125,6 +2128,7 @@
     "verdictNotYet": "Aún no",
     "verdictYes": "Aquí sí",
     "s3Title": "Estimación vs. medición",
+    "s3Eyebrow": "Dos cifras",
     "s3Sub": "El producto tiene dos cifras distintas y conviene no mezclarlas.",
     "mBeforeK": "Antes de instalar",
     "mBeforeV": "Estimación",
@@ -2133,6 +2137,7 @@
     "mAfterV": "Medición real",
     "mAfterBody": "Cada llamada devuelve un SavingsReport: las llamadas que nunca pagaste y el ahorro neto por petición. Auditable, petición a petición, en tu propia infraestructura.",
     "s4Title": "La instalación completa, si desarrollas una app",
+    "s4Eyebrow": "Para desarrolladores",
     "snip1": "el paquete",
     "snip2": "la licencia (de tu dashboard)",
     "snip3": "envolver la llamada — esto es todo el cambio de código",
@@ -2195,7 +2200,8 @@
       }
     },
     "cases": {
-      "skillNote": "El skill de instrucciones tiene otro alcance: cambia cómo trabaja el asistente dentro de una suscripción con topes. No mide una factura ni aplica las palancas del SDK o del gateway. <link>Ver el skill</link>"
+      "skillNote": "El skill de instrucciones tiene otro alcance: cambia cómo trabaja el asistente dentro de una suscripción con topes. No mide una factura ni aplica las palancas del SDK o del gateway. <link>Ver el skill</link>",
+      "eyebrow": "Tu caso"
     },
     "pieces": {
       "eyebrow": "Mapa",

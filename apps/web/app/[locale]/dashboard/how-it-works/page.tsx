@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
-import { PageHead } from "@/app/components/app/PageHead";
+import { CabeceraDePagina } from "@/app/components/app/CabeceraDePagina";
+import { Marcado } from "@/app/components/campana/Marcado";
 import { HowItWorks } from "@/app/components/HowItWorks";
 
 /** La misma explicación «¿Dónde se instala el ahorro?» de la página pública,
@@ -14,10 +15,24 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function DashboardHowItWorksPage() {
   const t = await getTranslations("howItWorks");
+  // Firma de campaña: el titular entero (`title` + `titleAccent`), con el
+  // acento («el ahorro?») debajo, en serif cursiva, y el marcador donde lo
+  // declara cada idioma (`titleMark`), como en el héroe de la página pública.
   return (
-    <>
-      <PageHead eyebrow={t("eyebrow")} title={`${t("title")} ${t("titleAccent")}`} sub={t("lede")} />
+    <div className="cfu">
+      <CabeceraDePagina
+        rotulo={t("eyebrow")}
+        titulo={
+          <>
+            {t("title")}{" "}
+            <span className="cfu-acento">
+              <Marcado texto={t("titleAccent")} marca={t("titleMark")} />
+            </span>
+          </>
+        }
+        entradilla={t("lede")}
+      />
       <HowItWorks variant="app" />
-    </>
+    </div>
   );
 }

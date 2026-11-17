@@ -2100,7 +2100,219 @@ hr.pfc-filete, .pfc-filete { height: 1px; margin: 0; border: 0; background: var(
 
 /* ==== SLOT INSTALACION ==== */
 /* Primeros pasos (/dashboard/install) y Cómo funciona (/dashboard/how-it-works).
-   Solo el frente INSTALACION escribe aquí. */
+   Solo el frente INSTALACION escribe aquí.
+
+   La Firma de campaña en las dos pantallas de «Empezar»: cada sección con su
+   rótulo entre filetes y su titular en Plus Jakarta (lo que va en `<em>`, en
+   serif cursiva); tarjetas blancas con filete en vez del filo de marca;
+   hechos y modos entre filetes, sin bandeja; y los comandos en un TERMINAL
+   OSCURO, que es como se ven en la pieza promocional. Todo cuelga de `.ins`
+   (InstallLicensePanel), `.ins-rail` o `.cfu` (la página del panel de Cómo
+   funciona): ninguna de las tres la produce el código público.
+
+   El terminal oscuro: sus colores van como propiedades de `.ins`/`.cfu` (no
+   son tokens del sitio). Contraste sobre #12161E: texto 15,6:1, suave 7,3:1,
+   prompt 5,9:1, palabra clave 9,1:1, cadena 11,6:1. */
+.ins, .cfu {
+  --ins-term: #12161E; --ins-term-2: #1C222C; --ins-term-ink: #E8EAED; --ins-term-soft: #9AA3AF;
+  --ins-term-line: #262C38; --ins-term-p: #8B93A1; --ins-term-k: #8DB8FF; --ins-term-s: #B5E0A8;
+}
+
+/* ── El terminal (CodeFrame) en las dos pantallas ───────────────────────── */
+.ins .codeframe, .cfu .codeframe { border: 0; border-radius: 12px; background: var(--ins-term); box-shadow: 0 1px 2px rgba(15, 18, 24, .08), 0 12px 28px -18px rgba(15, 18, 24, .45); color: var(--ins-term-ink); }
+.ins .codeframe .codeframe-head, .cfu .codeframe .codeframe-head { background: transparent; border-bottom: 1px solid var(--ins-term-line); }
+.ins .codeframe .codeframe-label, .cfu .codeframe .codeframe-label { font: 500 12px/1.2 var(--font-sans); color: var(--ins-term-soft); }
+.ins .codeframe .codeframe-copy, .cfu .codeframe .codeframe-copy { border-color: #3A4250; background: transparent; color: var(--ins-term-ink); }
+.ins .codeframe .codeframe-copy:hover, .cfu .codeframe .codeframe-copy:hover { border-color: #566070; background: var(--ins-term-2); color: #fff; }
+.ins .codeframe .codeframe-copy[data-copied], .cfu .codeframe .codeframe-copy[data-copied] { color: var(--ins-term-s); }
+.ins .codeframe .codeframe-body, .cfu .codeframe .codeframe-body { scrollbar-color: rgba(232, 234, 237, .22) transparent; }
+.ins .codeframe .codeframe-code, .cfu .codeframe .codeframe-code { color: var(--ins-term-ink); }
+.ins .codeframe .codeframe-nums, .cfu .codeframe .codeframe-nums { background: var(--ins-term); color: var(--ins-term-p); }
+.ins .codeframe-code .c, .cfu .codeframe-code .c { color: var(--ins-term-soft); }
+.ins .codeframe-code .k, .ins .codeframe-code .n, .cfu .codeframe-code .k, .cfu .codeframe-code .n { color: var(--ins-term-k); }
+.ins .codeframe-code .s, .cfu .codeframe-code .s { color: var(--ins-term-s); }
+.ins .codeframe-code .g, .cfu .codeframe-code .g { color: var(--ins-term-s); }
+.ins .codeframe .codeframe-out, .cfu .codeframe .codeframe-out { border-top: 1px solid var(--ins-term-line); background: transparent; padding: 11px 16px 13px; }
+.ins .codeframe .codeframe-out-k, .cfu .codeframe .codeframe-out-k { letter-spacing: .12em; color: var(--ins-term-soft); }
+.ins .codeframe .codeframe-out-v, .cfu .codeframe .codeframe-out-v { font: 400 13px/1.55 var(--font-sans); color: var(--ins-term-ink); }
+/* Unix / PowerShell: el segmentado de la pieza, con el pulsado marcado. */
+.ins .so-snippet .so-seg { margin-bottom: 10px; }
+
+/* ── Primeros pasos: las secciones ──────────────────────────────────────── */
+.ins-layout .ins .ins-sec { margin-top: 56px; padding-top: 0; border-top: 0; scroll-margin-top: calc(var(--nav-h) + 24px); }
+.ins .ins-cab { margin-bottom: 20px; }
+.ins .ins-cab .ins-sec-head { gap: 10px 14px; margin: 0; }
+.ins .ins-cab .ins-optional { align-self: center; }
+.ins .ins-cab + .ins-step, .ins .ins-cab + .ins-role { margin-top: 0; }
+
+/* Las dos tareas: tarjeta blanca, título, bajada y el comando en terminal. */
+.ins-layout .ins .ins-tasks { gap: 16px; }
+.ins-layout .ins .ins-task {
+  grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto 1fr auto; grid-template-areas: "t go" "s go" "cmd cmd"; gap: 6px 14px;
+  padding: 20px 22px; border: 0; border-radius: var(--r-card); box-shadow: 0 0 0 1px var(--line), var(--shadow-card);
+}
+.ins-layout .ins .ins-task:hover { box-shadow: 0 0 0 1px var(--line-strong), var(--shadow-hover); }
+.ins-layout .ins .ins-task-ic { display: none; }
+.ins-layout .ins .ins-task-t { font-size: 17px; letter-spacing: -.014em; }
+.ins-layout .ins .ins-task-s { font-size: 14px; }
+.ins-layout .ins .ins-task-go { align-self: start; margin-top: 2px; }
+.ins-layout .ins .ins-task .ins-task-cmd,
+.ins-layout .ins .ins-task:hover .ins-task-cmd {
+  align-self: end; margin-top: 8px; padding: 10px 12px; border-radius: 8px; background: var(--ins-term); box-shadow: none;
+  font-size: 13px; color: var(--ins-term-ink); white-space: normal; overflow-wrap: anywhere;
+}
+.ins-layout .ins .ins-task:hover .ins-task-cmd { background: var(--ins-term-2); }
+.ins-layout .ins .ins-task-prompt { margin-right: 2px; color: var(--ins-term-p); font-weight: 400; }
+
+/* Modo local frente a Conexión Cloud: dos columnas entre filetes, sin bandeja. */
+.ins-layout .ins .ins-modes { margin-top: 20px; border: 0; border-block: 1px solid var(--filete); border-radius: 0; background: none; }
+.ins-layout .ins .ins-mode { padding: 16px 20px 18px 0; }
+.ins-layout .ins .ins-mode + .ins-mode { padding-left: 20px; border-inline-start: 1px solid var(--line); }
+.ins-layout .ins .ins-mode dt { font-size: 15px; }
+.ins-layout .ins .ins-mode dd { font-size: 14px; }
+.ins-layout .ins .ins-mode dd a { color: var(--pildora-ink); text-decoration: none; border-bottom: 1px solid transparent; }
+.ins-layout .ins .ins-mode dd a::after { content: " →"; }
+.ins-layout .ins .ins-mode dd a:hover { border-bottom-color: currentColor; }
+@media (max-width: 700px) {
+  .ins-layout .ins .ins-mode, .ins-layout .ins .ins-mode + .ins-mode { padding: 14px 0 16px; border-inline-start: 0; }
+  .ins-layout .ins .ins-mode + .ins-mode { border-top: 1px solid var(--line); }
+}
+
+/* Tarjetas de paso: blancas con filete, sin el filo de marca. */
+.ins-layout .ins .ins-card { margin-top: 16px; padding: 22px 24px; border: 0; border-radius: var(--r-card); box-shadow: 0 0 0 1px var(--line), var(--shadow-card); }
+.ins-layout .ins .ins-card::before { content: none; }
+.ins-layout .ins .ins-cab + .ins-card { margin-top: 0; }
+.ins .ins-card .ck-note.ins-step { font-size: 14.5px; color: var(--ink-2); }
+/* Las bandejas de clave: hueco de marfil con su filete interior. */
+.ins-layout .ins .trialkey, .ins-layout .ins .keytester, .ins-layout .ins .keycard { box-shadow: inset 0 0 0 1px var(--line); }
+.ins-layout .ins .keycard .k { font-size: 14px; font-weight: 500; }
+.ins-layout .ins .ins-key-ic { box-shadow: 0 0 0 1px var(--line); }
+.ins-layout .ins .ins-perms { border-top-color: var(--filete); }
+
+/* El skill: una franja de descarga, plana. */
+.ins-layout .ins .ck-note.ins-skill { margin-top: 28px; background: rgba(255, 255, 255, .7); box-shadow: 0 0 0 1px var(--line); }
+.ins-layout .ins .ins-skill-ic { background: var(--surface-2); color: var(--ink); }
+.ins-layout .ins .ins-skill a { color: var(--pildora-ink); }
+
+/* ── Primeros pasos: la guía de la derecha (SetupGuide) ─────────────────── */
+.ins-rail .ui-sgdc.ui-sgdc { border-radius: var(--r-card); background: rgba(255, 255, 255, .78); box-shadow: 0 0 0 1px var(--line); }
+.ins-rail .ui-sgdc .ui-sgdc__head { padding: 18px 18px 0; }
+.ins-rail .ui-sgdc .ui-sgdc__title { font-size: 15px; color: var(--ink); }
+.ins-rail .ui-sgdc .ui-sgdc__progress { padding: 10px 18px 0; }
+.ins-rail .ui-sgdc .ui-sgdc__track { height: 6px; border-radius: 2px; background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line); }
+.ins-rail .ui-sgdc .ui-sgdc__fill { background: var(--ink); }
+.ins-rail .ui-sgdc .ui-sgdc__count { font-size: 12.5px; font-weight: 600; color: var(--ink); }
+.ins-rail .ui-sgdc .ui-sgdc__groups { margin-top: 14px; padding: 6px 8px; border-top: 1px solid var(--line); }
+.ins-rail .ui-sgdc .ui-sgdc__task { color: var(--ink-2); }
+.ins-rail .ui-sgdc .ui-sgdc__task-wrap[data-state="done"] .ui-sgdc__task { color: var(--ink-2); }
+.ins-rail .ui-sgdc .ui-sgdc__task-wrap[data-state="done"] .ui-sgdc__mark { color: var(--ink); }
+.ins-rail .ui-sgdc .ui-sgdc__task-wrap[data-state="current"] .ui-sgdc__task { color: var(--ink); font-weight: 600; }
+.ins-rail .ui-sgdc .ui-sgdc__task-wrap[data-state="current"] .ui-sgdc__mark { box-shadow: inset 0 0 0 1.5px var(--ink); background: radial-gradient(circle, var(--ink) 0 3px, transparent 3.5px); }
+.ins-rail .ui-sgdc .ui-sgdc__task-wrap[data-state="current"] .ui-sgdc__task-status { background: var(--pildora-bg); color: var(--pildora-ink); font-weight: 600; }
+.ins-rail .ui-sgdc .ui-sgdc__task-wrap:is([data-state="pending"], [data-state="unavailable"]) .ui-sgdc__task { color: var(--ink-soft); }
+.ins-rail .ui-sgdc .ui-sgdc__task-wrap:is([data-state="pending"], [data-state="unavailable"]) .ui-sgdc__mark { color: var(--line-strong); }
+/* «EN ESTA PÁGINA»: el rótulo con su filete, y las anclas como un índice. */
+.ins-rail .ui-sgdc .ui-sgdc__caption { display: flex; align-items: center; gap: 12px; padding: 12px 10px 8px; letter-spacing: .22em; color: var(--ink-soft); }
+.ins-rail .ui-sgdc .ui-sgdc__caption::after { content: ""; flex: 1; min-width: 16px; height: 1px; background: var(--filete); }
+.ins-rail .ui-sgdc .ui-sgdc__group + .ui-sgdc__group:has(> .ui-sgdc__caption) { margin-top: 6px; border-top: 1px solid var(--line); }
+.ins-rail .ui-sgdc .ui-sgdc__group-icon { display: none; }
+.ins-rail .ui-sgdc .ui-sgdc__group-head { min-height: 36px; margin: 2px 0; padding: 6px 10px 6px 12px; border-left: 2px solid var(--line); border-radius: 0; }
+.ins-rail .ui-sgdc a.ui-sgdc__group-head:hover { border-left-color: var(--ink); background: rgba(15, 18, 24, .035); }
+.ins-rail .ui-sgdc .ui-sgdc__group-title { font-weight: 400; color: var(--ink-2); }
+.ins-rail .ui-sgdc a.ui-sgdc__group-head:hover .ui-sgdc__group-title { color: var(--ink); }
+.ins-rail .ui-sgdc .ui-sgdc__foot { padding: 14px 18px 16px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--ink-soft); }
+@media (pointer: coarse) { .ins-rail .ui-sgdc .ui-sgdc__group-head { min-height: 44px; } }
+
+/* ── Cómo funciona ──────────────────────────────────────────────────────── */
+/* El acento del titular, debajo y en serif cursiva, con el marcador. */
+.cfu .pfc-cab .cfu-acento { display: block; margin-top: 4px; font: 400 italic .92em/1.1 var(--font-serif); letter-spacing: -.01em; color: #1A2030; }
+.cfu .pfc-cab { margin-bottom: 56px; }
+
+/* Cada sección: rótulo entre filetes, titular editorial, bajada. */
+.cfu .hiw-sec { margin-top: 64px; padding-top: 0; border-top: 0; }
+.cfu .pfc-cab + .hiw-sec { margin-top: 0; }
+.cfu .hiw-sec > .hiw-rotulo {
+  display: flex; align-items: center; gap: 14px; margin: 0 0 10px;
+  font: 600 11px/1.35 var(--font-sans); letter-spacing: .22em; text-transform: uppercase; color: var(--ink-soft);
+}
+.cfu .hiw-sec > .hiw-rotulo::after { content: ""; flex: 1; min-width: 24px; height: 1px; background: var(--filete); }
+.cfu .hiw-sec > .hiw-h2 { margin: 0 0 10px; font: 700 26px/1.15 var(--font-editorial); letter-spacing: -.025em; color: var(--ink); text-wrap: balance; }
+.cfu .hiw-sec > .hiw-h2 em { font: 400 italic 1.08em/1 var(--font-serif); letter-spacing: -.005em; }
+.cfu .hiw-sec > .hiw-sub { max-width: 720px; margin: 0 0 24px; font-size: 14.5px; line-height: 1.5; color: var(--ink-soft); text-wrap: pretty; }
+.cfu .hiw-sec > .hiw-h2 + .codeframe { margin-top: 18px; }
+
+/* Arquitectura: el diagrama sobre papel claro con su filete. */
+.cfu .hiw-sec .hiw-stage { border-radius: var(--r-card); background: rgba(255, 255, 255, .66); box-shadow: 0 0 0 1px var(--line); }
+/* «Telemetría»: affectUI la baja a 10,5 px en móvil; el panel no baja de 11. */
+@container (max-width: 679px) { .cfu .hiw-stage .ui-ibm__link { font-size: 11px; } }
+
+/* Los tres hechos, entre filetes y sin tarjeta. */
+.cfu .hiw-sec .hiw-facts { gap: 0; margin-top: 24px; border-block: 1px solid var(--filete); }
+.cfu .hiw-sec .hiw-facts li { padding: 18px 22px 20px 0; border-top: 0; }
+.cfu .hiw-sec .hiw-facts li + li { padding-left: 22px; border-left: 1px solid var(--line); }
+.cfu .hiw-sec .hiw-facts h3 { font-size: 15px; }
+.cfu .hiw-sec .hiw-facts p { font-size: 13.5px; line-height: 1.55; }
+.cfu .hiw-sec .hiw-facts a { color: var(--pildora-ink); text-decoration: none; border-bottom: 1px solid transparent; }
+.cfu .hiw-sec .hiw-facts a:hover { border-bottom-color: currentColor; }
+@media (max-width: 820px) {
+  .cfu .hiw-sec .hiw-facts li, .cfu .hiw-sec .hiw-facts li + li { padding: 14px 0 16px; border-left: 0; }
+  .cfu .hiw-sec .hiw-facts li + li { border-top: 1px solid var(--line); }
+}
+
+/* Los cuatro casos: columnas entre filetes; «Tu aplicación» lleva el marcador. */
+.cfu .hiw-sec .hiw-cases { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; border: 0; border-block: 1px solid var(--filete); border-radius: 0; background: none; box-shadow: none; overflow: visible; }
+.cfu .hiw-sec .hiw-case { display: flex; flex-direction: column; gap: 12px; padding: 20px 18px 22px 0; border: 0; border-radius: 0; background: none; }
+.cfu .hiw-sec .hiw-case + .hiw-case { padding-left: 18px; border-top: 0; border-left: 1px solid var(--line); }
+.cfu .hiw-sec .hiw-case .who { font-size: 17px; font-weight: 600; letter-spacing: -.012em; }
+.cfu .hiw-sec .hiw-case .who small { margin-top: 4px; font-size: 12.5px; letter-spacing: 0; }
+.cfu .hiw-sec .hiw-case .hiw-insignia { margin-top: 10px; }
+.cfu .hiw-sec .hiw-case p { font-size: 13.5px; line-height: 1.55; color: var(--ink-2); }
+.cfu .hiw-sec .hiw-case[data-veredicto="si"] .hiw-who-n { padding: 1px 5px; margin: -1px -5px; border-radius: var(--r-mk); background: linear-gradient(100deg, var(--mk-bg) 0%, var(--mk-bg-2) 100%); }
+.cfu .hiw-sec .hiw-scope { margin-top: 16px; font-size: 13px; color: var(--ink-soft); }
+.cfu .hiw-sec .hiw-scope a { color: var(--pildora-ink); text-decoration: none; }
+.cfu .hiw-sec .hiw-scope a:hover { text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 1180px) {
+  .cfu .hiw-sec .hiw-cases { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cfu .hiw-sec .hiw-case:nth-child(odd) { padding-left: 0; border-left: 0; }
+  .cfu .hiw-sec .hiw-case:nth-child(n + 3) { border-top: 1px solid var(--line); }
+}
+@media (max-width: 640px) {
+  .cfu .hiw-sec .hiw-cases { grid-template-columns: minmax(0, 1fr); }
+  .cfu .hiw-sec .hiw-case, .cfu .hiw-sec .hiw-case + .hiw-case { padding: 18px 0 20px; border-left: 0; }
+  .cfu .hiw-sec .hiw-case + .hiw-case { border-top: 1px solid var(--line); }
+}
+
+/* Estimación frente a medición: las dos cifras y la factura, en una fila. */
+.cfu .hiw-sec .hiw-measure { grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr); gap: 16px; align-items: stretch; }
+.cfu .hiw-sec .hiw-measure .hiw-two { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.cfu .hiw-sec .hiw-mcard { gap: 10px; padding: 20px 22px; border: 0; border-radius: var(--r-card); background: var(--surface); box-shadow: 0 0 0 1px var(--line), var(--shadow-card); }
+.cfu .hiw-sec .hiw-mcard .k { font: 600 11px/1.3 var(--font-sans); letter-spacing: .14em; color: var(--ink-soft); }
+.cfu .hiw-sec .hiw-mcard .v { margin: 2px 0 0; font: 400 italic 30px/1.1 var(--font-serif); letter-spacing: -.01em; }
+.cfu .hiw-sec .hiw-mcard .v.est, .cfu .hiw-sec .hiw-mcard .v.real { color: var(--ink); }
+.cfu .hiw-sec .hiw-mcard .v.real { padding: 0 6px; margin-left: -6px; border-radius: var(--r-mk); background: linear-gradient(100deg, var(--mk-bg) 0%, var(--mk-bg-2) 100%); }
+.cfu .hiw-sec .hiw-mcard p { font-size: 13.5px; line-height: 1.55; color: var(--ink-2); }
+.cfu .hiw-sec .hiw-recibo { justify-self: stretch; max-width: none; }
+.cfu .hiw-sec .hiw-recibo .recibo-cinta { font-size: 11px; }
+@media (max-width: 1180px) {
+  .cfu .hiw-sec .hiw-measure { grid-template-columns: minmax(0, 1fr); }
+  .cfu .hiw-sec .hiw-recibo { justify-self: start; max-width: 420px; }
+}
+@media (max-width: 720px) { .cfu .hiw-sec .hiw-measure .hiw-two { grid-template-columns: minmax(0, 1fr); } }
+
+/* La instalación completa: el terminal a lo ancho y los botones. */
+.cfu .hiw-sec .hiw-code { max-width: none; }
+.cfu .hiw-sec .hiw-cta { margin-top: 20px; }
+
+/* En el móvil el fragmento se parte en vez de esconderse a la derecha. */
+@media (max-width: 560px) { .cfu .hiw-sec .hiw-code .codeframe-code { flex-shrink: 1; white-space: pre-wrap; overflow-wrap: anywhere; } }
+@media (max-width: 860px) {
+  .cfu .hiw-sec { margin-top: 48px; }
+  .cfu .hiw-sec > .hiw-h2 { font-size: 22px; }
+  .cfu .pfc-cab { margin-bottom: 40px; }
+  .ins-layout .ins .ins-sec { margin-top: 44px; }
+  .ins-layout .ins .ins-card { padding: 18px 16px; }
+  .ins-layout .ins .ins-task { padding: 18px 18px; }
+}
 /* ==== FIN SLOT INSTALACION ==== */
 
 /* ==== SLOT PRUEBA ==== */

@@ -743,8 +743,10 @@
       "pythonNote": "<b>Python?</b> Der Python-Client <code>bvsala</code> leitet die offiziellen SDKs von OpenAI und Anthropic über dasselbe Gateway (<code>bvsala gateway</code>) und gibt deinem Code den Bericht jeder Anfrage zurück — dieselben Zahlen, die dieses Panel erhält. Er braucht ein Gateway ab Version 0.4.26 und Python ab 3.10. Installiert wird er von PyPI mit <code>pip install bivelio-savings-layer</code>; im Code dann <code>import bvsala</code>.",
       "finalNote": "Das war's. Keine gültige Lizenz → <code>generate()</code> verweigert. Wenn dein Plan gekündigt wird, stoppt das SDK innerhalb von ~15 Min über <code>licenseServerUrl</code> — ohne Neustart, und es legt niemals deine Produktion lahm, falls wir nicht erreichbar sind.",
       "terminal": "Terminal",
+      "sdkEyebrow": "Anwendung",
       "sdkTitle": "Eine Anwendung integrieren (SDK)",
       "sdkLede": "Umschließe deinen Provider in deinem Code und lies den Sparbericht jedes Aufrufs.",
+      "gatewayEyebrow": "Coding-Agent",
       "gatewayTitle": "Einen Agenten verbinden (Gateway)",
       "gatewayLede": "Starte deinen Coding-Agenten über das lokale Gateway, ohne seinen Code anzufassen.",
       "modeLocalTitle": "Lokaler Modus",
@@ -752,6 +754,7 @@
       "modeCloudTitle": "Cloud-Verbindung",
       "modeCloudBody": "Mit Lizenz und Service-Schlüssel erhält dieses Dashboard Zählwerte und Kosten – nie deine Prompts –, und deine Organisation teilt Messung und Plätze.",
       "modeCloudLink": "Zu den Zugangsdaten",
+      "cloudEyebrow": "Zugangsdaten",
       "cloudTitle": "Cloud-Verbindung: Lizenz und Service-Schlüssel",
       "optional": "Optional mit der offenen Engine",
       "roleLimited": "Deine Rolle kann diese Seite lesen, aber nur owner und admin können die Lizenz ausstellen und Service-Schlüssel erstellen oder widerrufen.",
@@ -2125,6 +2128,7 @@
     "verdictNotYet": "Noch nicht",
     "verdictYes": "Hier ja",
     "s3Title": "Schätzung vs. Messung",
+    "s3Eyebrow": "Zwei Zahlen",
     "s3Sub": "Das Produkt hat zwei verschiedene Zahlen, die man nicht vermischen sollte.",
     "mBeforeK": "Vor der Installation",
     "mBeforeV": "Schätzung",
@@ -2133,6 +2137,7 @@
     "mAfterV": "Echte Messung",
     "mAfterBody": "Jeder Aufruf liefert einen SavingsReport: die Aufrufe, die du nie bezahlt hast, und die Nettoersparnis pro Anfrage. Prüfbar, Anfrage für Anfrage, auf deiner eigenen Infrastruktur.",
     "s4Title": "Die komplette Installation, wenn du eine App baust",
+    "s4Eyebrow": "Für Entwickler",
     "snip1": "das Paket",
     "snip2": "die Lizenz (aus deinem Dashboard)",
     "snip3": "den Aufruf umhüllen — das ist die ganze Code-Änderung",
@@ -2195,7 +2200,8 @@
       }
     },
     "cases": {
-      "skillNote": "Der Anweisungs-Skill hat eine andere Reichweite: Er ändert, wie der Assistent innerhalb eines Abonnements mit Limits arbeitet. Er misst keine Rechnung und wendet weder die Hebel des SDK noch die des Gateways an. <link>Skill ansehen</link>"
+      "skillNote": "Der Anweisungs-Skill hat eine andere Reichweite: Er ändert, wie der Assistent innerhalb eines Abonnements mit Limits arbeitet. Er misst keine Rechnung und wendet weder die Hebel des SDK noch die des Gateways an. <link>Skill ansehen</link>",
+      "eyebrow": "Dein Fall"
     },
     "pieces": {
       "eyebrow": "Übersicht",

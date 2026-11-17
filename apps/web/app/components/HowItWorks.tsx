@@ -100,9 +100,17 @@ export async function HowItWorks({
       <SectionHead id={id} eyebrow={opciones.eyebrow} titulo={titulo} acento={opciones.acento} lede={opciones.lede} />
     ) : (
       <>
+        {/* Panel (Firma de campaña): rótulo entre filetes encima y el acento
+            en `<em>`, que la hoja del panel pone en serif cursiva. */}
+        {opciones.eyebrow ? <p className="hiw-rotulo">{opciones.eyebrow}</p> : null}
         <h2 className="hiw-h2" id={id}>
           {titulo}
-          {opciones.acento ? ` ${opciones.acento}` : null}
+          {opciones.acento ? (
+            <>
+              {" "}
+              <em>{opciones.acento}</em>
+            </>
+          ) : null}
         </h2>
         {opciones.lede ? <p className="hiw-sub">{opciones.lede}</p> : null}
       </>
@@ -191,13 +199,13 @@ export async function HowItWorks({
       )}
 
       <section className="hiw-sec" aria-labelledby="cases">
-        {cabecera("cases", t("s2Title"), { lede: t("s2Sub") })}
+        {cabecera("cases", t("s2Title"), { eyebrow: entera ? undefined : t("cases.eyebrow"), lede: t("s2Sub") })}
         <div className="hiw-cases">
           {cases.map((c) => (
-            <div key={c.name} className="hiw-case">
+            <div key={c.name} className="hiw-case" data-veredicto={c.verdict}>
               <div>
                 <div className="who">
-                  {c.name}
+                  <span className="hiw-who-n">{c.name}</span>
                   <small>{c.sub}</small>
                 </div>
                 <Badge className="hiw-insignia" tone={TONO_DEL_VEREDICTO[c.verdict]} dot>
@@ -237,7 +245,7 @@ export async function HowItWorks({
       )}
 
       <section className="hiw-sec" aria-labelledby="measurement">
-        {cabecera("measurement", t("s3Title"), { lede: t("s3Sub") })}
+        {cabecera("measurement", t("s3Title"), { eyebrow: entera ? undefined : t("s3Eyebrow"), lede: t("s3Sub") })}
         <div className="hiw-measure">
           <div className="hiw-two">
             <div className="hiw-mcard">
@@ -270,7 +278,7 @@ export async function HowItWorks({
       {entera ? profundiza : null}
 
       <section className="hiw-sec" aria-labelledby="install" id={entera ? "install-sdk" : undefined}>
-        {cabecera("install", t("s4Title"))}
+        {cabecera("install", t("s4Title"), { eyebrow: entera ? undefined : t("s4Eyebrow") })}
         <CodeFrame className="hiw-code" ariaLabel={t("s4Title")}>
           <span className="n"># 1 · {t("snip1")}</span>{"\n"}
           {"pnpm add "}<span className="s">@bivelio/savings-layer</span>{"\n\n"}

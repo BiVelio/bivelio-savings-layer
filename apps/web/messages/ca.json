@@ -743,8 +743,10 @@
       "pythonNote": "<b>Python?</b> El client <code>bvsala</code> per a Python fa passar els SDK oficials d'OpenAI i d'Anthropic per aquest mateix gateway (<code>bvsala gateway</code>) i retorna al teu codi l'informe de cada petició — les mateixes xifres que rep aquest tauler. Necessita un gateway 0.4.26 o posterior i Python 3.10 o posterior. S'instal·la des de PyPI amb <code>pip install bivelio-savings-layer</code>; al teu codi, <code>import bvsala</code>.",
       "finalNote": "Això és tot. Sense llicència vàlida → <code>generate()</code> es rebutja. Si cancel·les el teu pla, el SDK s'atura en uns 15 min mitjançant <code>licenseServerUrl</code> — sense reiniciar, i mai no inutilitza la teva producció si no ens podem connectar.",
       "terminal": "Terminal",
+      "sdkEyebrow": "Aplicació",
       "sdkTitle": "Integrar una aplicació (SDK)",
       "sdkLede": "Embolcalla el teu proveïdor al teu codi i llegeix l'informe d'estalvi de cada crida.",
+      "gatewayEyebrow": "Agent de codi",
       "gatewayTitle": "Connectar un agent (gateway)",
       "gatewayLede": "Llança el teu agent de codi a través del gateway local, sense tocar-ne el codi.",
       "modeLocalTitle": "Mode local",
@@ -752,6 +754,7 @@
       "modeCloudTitle": "Connexió Cloud",
       "modeCloudBody": "Amb llicència i clau de servei, aquest panell rep recomptes i costos —mai els teus prompts— i la teva organització comparteix mesura i seients.",
       "modeCloudLink": "Anar a les credencials",
+      "cloudEyebrow": "Credencials",
       "cloudTitle": "Connexió Cloud: llicència i clau de servei",
       "optional": "Opcional amb el motor obert",
       "roleLimited": "El teu rol pot llegir aquesta pàgina, però només owner i admin poden emetre la llicència i crear o revocar claus de servei.",
@@ -2125,6 +2128,7 @@
     "verdictNotYet": "Encara no",
     "verdictYes": "Aquí sí",
     "s3Title": "Estimació vs. mesurament",
+    "s3Eyebrow": "Dues xifres",
     "s3Sub": "El producte té dues xifres diferents i convé no barrejar-les.",
     "mBeforeK": "Abans d'instal·lar",
     "mBeforeV": "Estimació",
@@ -2133,6 +2137,7 @@
     "mAfterV": "Mesurament real",
     "mAfterBody": "Cada crida retorna un SavingsReport: les crides que mai no vas pagar i l'estalvi net per petició. Auditable, petició a petició, a la teva pròpia infraestructura.",
     "s4Title": "La instal·lació completa, si desenvolupes una app",
+    "s4Eyebrow": "Per a desenvolupadors",
     "snip1": "el paquet",
     "snip2": "la llicència (del teu tauler)",
     "snip3": "embolcallar la crida — aquest és tot el canvi de codi",
@@ -2195,7 +2200,8 @@
       }
     },
     "cases": {
-      "skillNote": "L'skill d'instruccions té un altre abast: canvia com treballa l'assistent dins d'una subscripció amb límits. No mesura cap factura ni aplica les palanques de l'SDK o del gateway. <link>Veure l'skill</link>"
+      "skillNote": "L'skill d'instruccions té un altre abast: canvia com treballa l'assistent dins d'una subscripció amb límits. No mesura cap factura ni aplica les palanques de l'SDK o del gateway. <link>Veure l'skill</link>",
+      "eyebrow": "El teu cas"
     },
     "pieces": {
       "eyebrow": "Mapa",
