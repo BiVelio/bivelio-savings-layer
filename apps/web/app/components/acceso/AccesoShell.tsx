@@ -37,7 +37,8 @@ export function AccesoShell({
       <div className="acc-main">
         <div className="auth-card acc-card">
           <div className="auth-brand">
-            <SavingsLogo variant="mark" height={32} />
+            {/* El CSS lo oculta en el móvil (.acc-card .auth-brand, acceso/acceso.css). */}
+            <SavingsLogo variant="mark" height={32} ocultoEn="(max-width: 640px)" />
           </div>
           {children}
         </div>

@@ -70,8 +70,9 @@ export async function AppTopbar({
   return (
     <header className="app-topbar" data-tour="topbar">
       <Link href="/dashboard" className="brand app-brand" aria-label={a("brandAria")}>
-        <SavingsLogo variant="full" height={30} className="app-logo-full" />
-        <SavingsLogo variant="mark" height={28} className="app-logo-mark" />
+        {/* Las consultas son las de .app-logo-full/.app-logo-mark en dashboard/panel.css. */}
+        <SavingsLogo variant="full" height={30} className="app-logo-full" ocultoEn="(max-width: 520px)" />
+        <SavingsLogo variant="mark" height={28} className="app-logo-mark" ocultoEn="(min-width: 521px)" />
       </Link>
       {orgName || planLabel ? (
         <div className="app-ctx">

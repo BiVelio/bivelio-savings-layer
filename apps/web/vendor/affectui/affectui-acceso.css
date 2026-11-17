@@ -1,0 +1,802 @@
+/*
+ * GENERADO por scripts/juntar-affectui.mjs — NO EDITAR A MANO.
+ * Edita la hoja de la pieza (`<pieza>.css`) y vuelve a ejecutar el guion.
+ *
+ * LAS HOJAS DE affectUI QUE USAN LAS PÁGINAS DE ACCESO Y NO EL MARKETING, EN
+ * UNA. La importa cada página de acceso (login, alta y su confirmación, nueva
+ * contraseña, invitación) y `app/[locale]/dashboard/layout.tsx`, porque el
+ * panel pinta varias de ellas (y las galerías de desarrollo). La portada no la
+ * carga: es la página de los anuncios y bloquea su primer pintado con lo que
+ * hay en las dos hojas del layout. El porqué de juntarlas, en la cabecera de
+ * `affectui.css`; el orden respecto a las hojas del panel no está fijado y
+ * no decide nada (cada pieza solo toca las clases de su prefijo).
+ */
+
+/* ===== button-clean.css ===== */
+/*
+ * Derived from affectUI Pro 'Button' (https://www.affectui.com). Used under the affectUI Pro license held by BiVelio. NOT covered by this repository's Apache-2.0 licence; do not redistribute as a component kit.
+ *
+ * Changes from upstream are listed in ./VENDOR.md.
+ */
+/* Colors and motion as variables – override them on .ui-buttonc (see Theming in the docs) */
+.ui-buttonc {
+  --ui-btnc-title: var(--aui-ink, #0f1218);
+  --ui-btnc-ink: var(--aui-ink, #0f1218);
+  --ui-btnc-muted: var(--aui-muted, rgba(0, 0, 0, 0.61));
+  --ui-btnc-icon: var(--aui-muted, rgba(0, 0, 0, 0.447));
+  --ui-btnc-solid: var(--aui-primary, #0f1218);
+  --ui-btnc-solid-hover: var(--btn-ink-hover, #1e2430);
+  --ui-btnc-on-solid: var(--aui-on-primary, #fcfcfc);
+  --ui-btnc-surface: var(--aui-surface, #ffffff);
+  --ui-btnc-shadow: 0 0 0 1px var(--btn-ghost-line, #dddad2), 0 1px 1px -1px rgba(15, 18, 24, 0.1), 0 1px 2px 0 rgba(15, 18, 24, 0.05);
+  --ui-btnc-shadow-hover: 0 0 0 1px var(--btn-ghost-line-hover, #c2beb4), 0 1px 1px -1px rgba(15, 18, 24, 0.12), 0 1px 3px 0 rgba(15, 18, 24, 0.07);
+  --ui-btnc-wash: rgba(0, 0, 0, 0.03);
+  --ui-btnc-shine: rgba(255, 255, 255, 0.82);
+  --ui-btnc-shine-on-solid: #ffffff;
+  --ui-btnc-focus: var(--aui-focus, rgba(0, 96, 226, 0.7));
+  --ui-btnc-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ui-btnc-load: 650ms;
+
+  --h: 28px;
+  --px: 10px;
+  --gap: 6px;
+  --fs: 13px;
+  --lh: 20px;
+  --icon: 16px;
+  --radius: var(--aui-radius, 6px);
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap);
+  box-sizing: border-box;
+  height: var(--h);
+  padding: 0 var(--px);
+  margin: 0;
+  border: 0;
+  border-radius: var(--radius);
+  font-family: var(--aui-font, var(--font-sans));
+  font-size: var(--fs);
+  font-weight: 500;
+  line-height: var(--lh);
+  letter-spacing: 0;
+  max-width: 100%;
+  min-width: 0;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease,
+    box-shadow 140ms ease,
+    transform 160ms var(--ui-btnc-ease),
+    opacity 140ms ease;
+}
+
+/* Sizes: 24 · 28 · 32 high (taller on touch screens, see below) */
+.ui-buttonc[data-size="sm"] {
+  --h: 24px;
+  --px: 8px;
+  --gap: 4px;
+  --fs: 12px;
+  --lh: 16px;
+  --icon: 14px;
+  --radius: var(--aui-radius, 6px);
+}
+.ui-buttonc[data-size="lg"] {
+  --h: 32px;
+  --px: 12px;
+  --gap: 6px;
+  --fs: 13px;
+  --icon: 16px;
+  --radius: var(--aui-radius, 6px);
+}
+/* BiVelio: xl – 44px, the access forms' control height */
+.ui-buttonc[data-size="xl"] {
+  --h: 44px;
+  --px: 18px;
+  --gap: 8px;
+  --fs: 0.9375rem;
+  --lh: 1.3;
+  --icon: 18px;
+  --radius: var(--aui-radius, 10px);
+  height: auto;
+  min-height: var(--h);
+  padding-block: 8px;
+  font-weight: 600;
+  white-space: normal;
+  text-align: center;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 1px 2px rgba(15, 18, 24, 0.18), 0 10px 22px -14px rgba(15, 18, 24, 0.5);
+}
+.ui-buttonc[data-size="xl"][data-variant="secondary"] { box-shadow: var(--ui-btnc-shadow); }
+.ui-buttonc[data-size="xl"] .ui-buttonc__label { overflow: visible; text-overflow: clip; overflow-wrap: anywhere; }
+.ui-buttonc[data-size="xl"] .ui-buttonc__label::after { white-space: normal; }
+.ui-buttonc[data-block] { display: flex; width: 100%; }
+/* Touch screens: every size grows to a comfortable tap height – 32 · 34 · 36 – the look stays the same */
+@media (pointer: coarse) {
+  .ui-buttonc[data-size="sm"] { --h: 32px; }
+  .ui-buttonc[data-size="md"] { --h: 34px; }
+  .ui-buttonc[data-size="lg"] { --h: 36px; }
+}
+/* An icon sits closer to the edge than the text, so both look evenly spaced */
+.ui-buttonc[data-icon-left] {
+  padding-left: calc(var(--px) - 2px);
+}
+.ui-buttonc[data-icon-right] {
+  padding-right: calc(var(--px) - 2px);
+}
+.ui-buttonc[data-icon-only] {
+  width: var(--h);
+  padding: 0;
+}
+
+/* primary: a dark chip */
+.ui-buttonc[data-variant="primary"] {
+  background: var(--ui-btnc-solid);
+  color: var(--ui-btnc-on-solid);
+}
+.ui-buttonc[data-variant="primary"]:hover:not(:disabled) {
+  background: var(--ui-btnc-solid-hover);
+}
+
+/* secondary: white with the card's hairline shadow */
+.ui-buttonc[data-variant="secondary"] {
+  background: var(--ui-btnc-surface);
+  color: var(--ui-btnc-title);
+  box-shadow: var(--ui-btnc-shadow);
+}
+.ui-buttonc[data-variant="secondary"] .ui-buttonc__icon {
+  color: var(--ui-btnc-icon);
+}
+.ui-buttonc[data-variant="secondary"]:hover:not(:disabled) {
+  box-shadow: var(--ui-btnc-shadow-hover);
+}
+
+/* ghost: a muted label, a soft wash appears on hover */
+.ui-buttonc[data-variant="ghost"] {
+  background: transparent;
+  color: var(--ui-btnc-muted);
+}
+.ui-buttonc[data-variant="ghost"] .ui-buttonc__icon {
+  color: var(--ui-btnc-icon);
+}
+.ui-buttonc[data-variant="ghost"]:hover:not(:disabled) {
+  background: var(--ui-btnc-wash);
+  color: var(--ui-btnc-ink);
+}
+.ui-buttonc[data-variant="ghost"]:hover:not(:disabled) .ui-buttonc__icon {
+  color: var(--ui-btnc-ink);
+}
+
+
+.ui-buttonc .ui-buttonc__icon {
+  transition: color 140ms ease;
+}
+.ui-buttonc:active:not(:disabled):not([data-loading]) {
+  transform: scale(0.97);
+}
+.ui-buttonc:focus-visible {
+  outline: 2px solid var(--ui-btnc-focus);
+  outline-offset: 2px;
+}
+.ui-buttonc:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.ui-buttonc[data-loading] {
+  cursor: default;
+}
+
+.ui-buttonc__icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: var(--icon);
+  height: var(--icon);
+}
+.ui-buttonc__icon {
+  overflow: hidden;
+}
+.ui-buttonc__icon > svg,
+.ui-buttonc__icon > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.ui-buttonc__icon > img {
+  object-fit: contain;
+}
+
+/* Morph: the button clips while its width glides; changed parts blur in */
+.ui-buttonc {
+  overflow: clip;
+}
+.ui-buttonc[data-ready] .ui-buttonc__label {
+  animation: ui-buttonc-label-in 480ms cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+.ui-buttonc[data-ready] .ui-buttonc__icon {
+  animation: ui-buttonc-icon-in 520ms cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+
+/* Loading: a light band sweeps across a copy of the dimmed label */
+/* A label too long for its parent ends in "…" – the full text shows on hover */
+.ui-buttonc__label {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ui-buttonc__label::after {
+  content: attr(data-text);
+  content: attr(data-text) / "";
+  position: absolute;
+  inset: 0;
+  white-space: nowrap;
+  color: transparent;
+  background: linear-gradient(90deg, transparent 38%, var(--ui-btnc-shine) 50%, transparent 62%) 100% 0 / 300% 100%
+    no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  opacity: 0;
+  pointer-events: none;
+}
+.ui-buttonc[data-variant="primary"] .ui-buttonc__label::after {
+  --ui-btnc-shine: var(--ui-btnc-shine-on-solid);
+}
+.ui-buttonc[data-loading] .ui-buttonc__label {
+  color: color-mix(in srgb, currentColor 50%, transparent);
+}
+.ui-buttonc[data-loading] .ui-buttonc__label::after {
+  opacity: 1;
+  animation: ui-buttonc-sweep calc(var(--ui-btnc-load) * 1.6) linear infinite;
+}
+.ui-buttonc__spinner {
+  animation: ui-buttonc-spin 900ms linear infinite;
+}
+
+@keyframes ui-buttonc-label-in {
+  from {
+    opacity: 0;
+    filter: blur(3px);
+    transform: translateY(25%);
+  }
+}
+@keyframes ui-buttonc-icon-in {
+  from {
+    opacity: 0;
+    filter: blur(2px);
+    transform: scale(0.7);
+  }
+}
+
+@keyframes ui-buttonc-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@keyframes ui-buttonc-sweep {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-buttonc[data-ready] .ui-buttonc__label,
+  .ui-buttonc[data-ready] .ui-buttonc__icon {
+    animation: none;
+  }
+  .ui-buttonc {
+    transition-duration: 1ms;
+  }
+  .ui-buttonc[data-loading] .ui-buttonc__label::after {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+/* ===== spinner-clean.css ===== */
+/*
+ * Derived from affectUI Pro 'Spinner' (https://www.affectui.com). Used under the affectUI Pro license held by BiVelio. NOT covered by this repository's Apache-2.0 licence; do not redistribute as a component kit.
+ *
+ * Changes from upstream are listed in ./VENDOR.md.
+ */
+/* One turn every --ui-spnc-speed – override it on .ui-spnc (see Theming in the docs) */
+.ui-spnc {
+  --ui-spnc-speed: 800ms;
+  display: inline-block;
+  flex: none;
+  vertical-align: middle;
+  animation: ui-spnc-turn var(--ui-spnc-speed) linear infinite;
+}
+@keyframes ui-spnc-turn { to { rotate: 360deg; } }
+
+/* Reduced motion: it still turns – it is the only sign that work goes on – but slowly */
+@media (prefers-reduced-motion: reduce) {
+  .ui-spnc { --ui-spnc-speed: 2400ms; }
+}
+
+/* ===== team-invite.css ===== */
+/*
+ * Derived from affectUI Pro 'Team Invite' (https://www.affectui.com). Used under the affectUI Pro license held by BiVelio. NOT covered by this repository's Apache-2.0 licence; do not redistribute as a component kit.
+ *
+ * Changes from upstream are listed in ./VENDOR.md.
+ */
+.ui-ti {
+  /* 1 unit of the 600 × 400 layout grid */
+  --u: calc(100cqw / 600);
+  --ui-ti-bubble: #ffffff;
+  --ui-ti-bubble-ring: rgba(10, 10, 10, 0.06);
+  --ui-ti-face: var(--surface-2, #f2f1ec);
+  --ui-ti-glyph: var(--aui-muted, #5a6070);
+  /* Same gray as the lines in Outreach Branches */
+  --ui-ti-line-a: #dcdad2;
+  --ui-ti-line-b: #dcdad2;
+  --ui-ti-dash: #dcdad2;
+  --ui-ti-plus: #c4c4c4;
+  --ui-ti-online: var(--brand, #0066e6);
+  /* Ring around the status dot: mostly white with a hint of the green, fully opaque */
+  --ui-ti-dot-ring: #e3eeff;
+  --ui-ti-dot-edge: rgba(0, 102, 230, 0.1);
+  --ui-ti-cursor: var(--aui-ink, #0f1218);
+  --ui-ti-shadow: 0 calc(10 * var(--u)) calc(24 * var(--u)) rgba(0, 0, 0, 0.07), 0 calc(2 * var(--u)) calc(5 * var(--u)) rgba(0, 0, 0, 0.05);
+  --ui-ti-lift: 0 calc(18 * var(--u)) calc(34 * var(--u)) rgba(0, 0, 0, 0.12), 0 calc(3 * var(--u)) calc(8 * var(--u)) rgba(0, 0, 0, 0.06);
+  --ui-ti-loop: 6.4s;
+  --ui-ti-ease: cubic-bezier(0.7, 0, 0.25, 1);
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  container-type: inline-size;
+}
+.ui-ti *, .ui-ti *::before, .ui-ti *::after { box-sizing: border-box; }
+
+.ui-ti-lines { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.ui-ti-stop-a { stop-color: var(--ui-ti-line-a); }
+.ui-ti-stop-b { stop-color: var(--ui-ti-line-b); }
+.ui-ti-line { fill: none; stroke-width: 2.4; stroke-linecap: round; }
+.ui-ti-line--dashed {
+  stroke: var(--ui-ti-dash);
+  stroke-dasharray: 6 7.23;
+  animation: ui-ti-dashed var(--ui-ti-loop) linear infinite;
+}
+.ui-ti-line--slot {
+  stroke: var(--ui-ti-dash);
+  stroke-dasharray: 6 7.23;
+}
+.ui-ti-line--joined {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: ui-ti-joined var(--ui-ti-loop) linear infinite;
+}
+
+/* ---------- Nodes ---------- */
+
+.ui-ti-node {
+  position: absolute;
+  width: calc(84 * var(--u));
+  height: calc(84 * var(--u));
+  margin: calc(-42 * var(--u)) 0 0 calc(-42 * var(--u));
+  padding: calc(5 * var(--u));
+  border-radius: 50%;
+  background: var(--ui-ti-bubble);
+  box-shadow: inset 0 0 0 calc(1 * var(--u)) var(--ui-ti-bubble-ring), var(--ui-ti-shadow);
+}
+.ui-ti-node--a { left: calc(120 * var(--u)); top: calc(159 * var(--u)); }
+.ui-ti-node--b { left: calc(300 * var(--u)); top: calc(105 * var(--u)); }
+.ui-ti-face {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--ui-ti-face);
+  color: var(--ui-ti-glyph);
+}
+.ui-ti-face > svg { display: block; width: 46%; height: 46%; }
+.ui-ti-node--b .ui-ti-face { background: #ffffff; }
+.ui-ti-node--b .ui-ti-face > svg, .ui-ti-node--b .ui-ti-face > img { width: 58%; height: 58%; }
+.ui-ti-node--c .ui-ti-face { background: var(--brand-soft, #e8f1ff); color: var(--brand, #0066e6); }
+.ui-ti-face img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+}
+/* Status: a bright green dot in a thick, pale green ring with a faint 10% halo outside */
+.ui-ti-dot {
+  position: absolute;
+  right: calc(1 * var(--u));
+  bottom: calc(3 * var(--u));
+  width: calc(24 * var(--u));
+  height: calc(24 * var(--u));
+  border: calc(7 * var(--u)) solid var(--ui-ti-dot-ring);
+  border-radius: 50%;
+  background: var(--ui-ti-online);
+  box-shadow: 0 0 0 calc(2 * var(--u)) var(--ui-ti-dot-edge);
+}
+
+/* ---------- Empty slot ---------- */
+
+.ui-ti-slot {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ui-ti-slot var(--ui-ti-loop) linear infinite;
+}
+.ui-ti-plus { fill: none; stroke: var(--ui-ti-plus); stroke-width: 1.8; stroke-linecap: round; }
+
+/* ---------- The invite being dragged in ---------- */
+
+/* Starts on the right and is carried to the slot (290, 245) */
+.ui-ti-drag {
+  position: absolute;
+  left: calc(456 * var(--u));
+  top: calc(281 * var(--u));
+  animation: ui-ti-drag var(--ui-ti-loop) infinite;
+}
+.ui-ti-node--c {
+  left: 0;
+  top: 0;
+  animation: ui-ti-lift var(--ui-ti-loop) infinite;
+}
+.ui-ti-node--c .ui-ti-dot { animation: ui-ti-online var(--ui-ti-loop) infinite; }
+/* The pointer rests on the photo: its tip at (+16, +14) from the avatar's centre (the tip is 11.8% / 1.15% into the image) */
+.ui-ti-cursor {
+  position: absolute;
+  left: calc(11.28 * var(--u));
+  top: calc(13.45 * var(--u));
+  width: calc(40 * var(--u));
+  height: calc(48.13 * var(--u));
+  overflow: visible;
+  transform-origin: calc(4.72 * var(--u)) calc(0.55 * var(--u));
+  filter: drop-shadow(0 calc(3 * var(--u)) calc(7 * var(--u)) rgba(0, 0, 0, 0.16));
+  animation: ui-ti-cursor var(--ui-ti-loop) infinite;
+}
+.ui-ti-cursor path {
+  fill: var(--ui-ti-cursor);
+  stroke: #fff;
+  stroke-width: 1.7;
+  stroke-linejoin: round;
+  paint-order: stroke;
+}
+
+/*
+ * One loop:
+ *   (4.4 s)
+ *   0–12%   rest on the right          12–16% pick up (lift)
+ *   16–42%  carried to the slot        42–48% drop, settle
+ *   48–54%  line draws solid, dot pops 54–62% cursor lets go and drifts off
+ *   62–88%  hold the finished team     88–100% fade back to the start
+ */
+@keyframes ui-ti-drag {
+  0%, 16% { transform: translate(0, 0); opacity: 1; animation-timing-function: var(--ui-ti-ease); }
+  42%, 88% { transform: translate(calc(-166 * var(--u)), calc(-36 * var(--u))); opacity: 1; }
+  94% { transform: translate(calc(-166 * var(--u)), calc(-36 * var(--u))); opacity: 0; }
+  95% { transform: translate(0, 0); opacity: 0; }
+  100% { transform: translate(0, 0); opacity: 1; }
+}
+@keyframes ui-ti-lift {
+  0%, 12% { transform: scale(1); box-shadow: inset 0 0 0 calc(1 * var(--u)) var(--ui-ti-bubble-ring), var(--ui-ti-shadow); animation-timing-function: var(--ui-ti-ease); }
+  16%, 40% { transform: scale(1.07); box-shadow: inset 0 0 0 calc(1 * var(--u)) var(--ui-ti-bubble-ring), var(--ui-ti-lift); animation-timing-function: var(--ui-ti-ease); }
+  46%, 100% { transform: scale(1); box-shadow: inset 0 0 0 calc(1 * var(--u)) var(--ui-ti-bubble-ring), var(--ui-ti-shadow); }
+}
+@keyframes ui-ti-online {
+  0%, 48% { transform: scale(0); }
+  52% { transform: scale(1.25); }
+  56%, 100% { transform: scale(1); }
+}
+@keyframes ui-ti-cursor {
+  0%, 11% { transform: translate(0, 0) scale(1); opacity: 1; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+  14%, 42% { transform: translate(0, 0) scale(0.86); opacity: 1; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+  47% { transform: translate(0, 0) scale(1); opacity: 1; animation-timing-function: var(--ui-ti-ease); }
+  62%, 88% { transform: translate(calc(70 * var(--u)), calc(44 * var(--u))) scale(1); opacity: 0; }
+  95% { transform: translate(calc(20 * var(--u)), calc(14 * var(--u))) scale(1); opacity: 0; }
+  100% { transform: translate(0, 0) scale(1); opacity: 1; }
+}
+@keyframes ui-ti-slot {
+  0%, 30% { opacity: 1; transform: scale(1); animation-timing-function: var(--ui-ti-ease); }
+  42%, 90% { opacity: 0; transform: scale(1.12); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes ui-ti-dashed {
+  0%, 46% { opacity: 1; }
+  50%, 92% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes ui-ti-joined {
+  0%, 44% { stroke-dashoffset: 1; opacity: 1; }
+  54%, 88% { stroke-dashoffset: 0; opacity: 1; }
+  94%, 100% { stroke-dashoffset: 0; opacity: 0; }
+}
+
+/* Reduced motion: a still frame of the waiting state */
+@media (prefers-reduced-motion: reduce) {
+  .ui-ti-drag, .ui-ti-node--c, .ui-ti-node--c .ui-ti-dot, .ui-ti-cursor, .ui-ti-slot,
+  .ui-ti-line--dashed, .ui-ti-line--joined { animation: none; }
+  .ui-ti-node--c .ui-ti-dot { transform: scale(0); }
+}
+
+/* ===== text-field-clean.css ===== */
+/*
+ * Derived from affectUI Pro 'Text Field' (https://www.affectui.com). Used under the affectUI Pro license held by BiVelio. NOT covered by this repository's Apache-2.0 licence; do not redistribute as a component kit.
+ *
+ * Changes from upstream are listed in ./VENDOR.md.
+ */
+/* Colors and motion as variables – override them on .ui-tfc (see Theming in the docs) */
+.ui-tfc {
+  --ui-tfc-title: var(--aui-ink, #0f1218);
+  --ui-tfc-ink: var(--aui-ink, #0f1218);
+  --ui-tfc-muted: var(--aui-muted, #5a6070);
+  --ui-tfc-subtle: var(--aui-muted, #5a6070);
+  --ui-tfc-faint: var(--aui-placeholder, #6b7080);
+  --ui-tfc-icon: var(--aui-muted, #5a6070);
+  --ui-tfc-surface: var(--aui-surface, #ffffff);
+  --ui-tfc-wash: rgba(0, 0, 0, 0.04);
+  --ui-tfc-readonly: rgba(0, 0, 0, 0.02);
+  --ui-tfc-shadow: 0 0 0 1px var(--btn-ghost-line, #dddad2), 0 1px 1px -1px rgba(15, 18, 24, 0.1), 0 1px 2px 0 rgba(15, 18, 24, 0.05);
+  --ui-tfc-shadow-hover: 0 0 0 1px var(--btn-ghost-line-hover, #c2beb4), 0 1px 1px -1px rgba(15, 18, 24, 0.12), 0 1px 2px 0 rgba(15, 18, 24, 0.06);
+  --ui-tfc-shadow-focus: 0 0 0 1.5px var(--aui-focus, #0066e6), 0 0 0 4px color-mix(in srgb, var(--aui-focus, #0066e6) 16%, transparent);
+  --ui-tfc-danger: var(--aui-danger, #c4320a);
+  --ui-tfc-danger-edge: color-mix(in srgb, var(--aui-red, #f04438) 55%, transparent);
+  --ui-tfc-danger-edge-focus: var(--aui-danger, #c73a3a);
+  --ui-tfc-success: var(--aui-success, #1e8a4f);
+  --ui-tfc-focus: var(--aui-focus, rgba(0, 96, 226, 0.7));
+  --ui-tfc-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --h: 44px;
+  --px: 13px;
+  --fs: 1rem;
+  --radius: var(--aui-radius, 10px);
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  font-family: var(--aui-font, var(--font-sans));
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--ui-tfc-ink);
+  -webkit-font-smoothing: antialiased;
+}
+.ui-tfc__head { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+.ui-tfc__label { min-width: 0; font-weight: 500; color: var(--ui-tfc-title); overflow-wrap: anywhere; cursor: default; }
+.ui-tfc__optional { flex: none; margin-inline-start: auto; font-size: 0.75rem; line-height: 1.35; color: var(--ui-tfc-subtle); }
+
+/* The box: white, a hairline shadow as its edge; hover and focus only make that edge firmer */
+.ui-tfc__box {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  box-sizing: border-box;
+  height: var(--h);
+  min-width: 0;
+  padding-block: 0;
+  padding-inline: var(--px) calc(var(--px) - 4px);
+  border-radius: var(--radius);
+  background: var(--ui-tfc-surface);
+  box-shadow: var(--ui-tfc-shadow);
+  cursor: text;
+  transition: box-shadow 140ms ease, background-color 140ms ease;
+}
+/* Without a button at the end, both sides sit at the same distance */
+.ui-tfc__box:not(:has(.ui-tfc__action)) { padding-inline-end: var(--px); }
+.ui-tfc__box:hover { box-shadow: var(--ui-tfc-shadow-hover); }
+.ui-tfc__box:focus-within { box-shadow: var(--ui-tfc-shadow-focus); }
+.ui-tfc[data-invalid] .ui-tfc__box { box-shadow: 0 0 0 1px var(--ui-tfc-danger-edge), 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+.ui-tfc[data-invalid] .ui-tfc__box:focus-within { box-shadow: 0 0 0 1px var(--ui-tfc-danger-edge-focus), 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+.ui-tfc[data-readonly] .ui-tfc__box { background: var(--surface-3, #f6f5f1); box-shadow: 0 0 0 1px var(--aui-border, #e6e4de); cursor: default; }
+.ui-tfc[data-readonly] .ui-tfc__input { color: var(--ui-tfc-muted); cursor: default; }
+.ui-tfc[data-disabled]:not([data-readonly]) .ui-tfc__box { background: var(--surface-3, #f6f5f1); box-shadow: 0 0 0 1px var(--aui-border, #e6e4de); cursor: not-allowed; }
+.ui-tfc[data-disabled]:not([data-readonly]) .ui-tfc__input { color: var(--ui-tfc-muted); }
+.ui-tfc[data-invalid] .ui-tfc__box { animation: ui-tfc-nudge 320ms var(--ui-tfc-ease); }
+
+.ui-tfc__input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  font-size: var(--fs);
+  color: var(--ui-tfc-ink);
+  text-overflow: ellipsis;
+  -webkit-appearance: none;
+  appearance: none;
+}
+/* Next to a prefix or suffix the value keeps at least 6em – they shrink first */
+.ui-tfc__box:has(> .ui-tfc__affix) .ui-tfc__input { flex: 1 0 6em; min-width: 6em; }
+.ui-tfc__input::placeholder { color: var(--ui-tfc-faint); opacity: 1; }
+/* BiVelio: the browser's autofill wash must not paint a second box inside the box */
+.ui-tfc__input:-webkit-autofill { -webkit-box-shadow: 0 0 0 40px var(--ui-tfc-surface) inset; -webkit-text-fill-color: var(--ui-tfc-ink); }
+.ui-tfc .ui-tfc__input:focus, .ui-tfc .ui-tfc__input:focus-visible { outline: 0; box-shadow: none; }
+.ui-tfc__input:disabled { cursor: not-allowed; }
+.ui-tfc__input[type="search"]::-webkit-search-cancel-button { display: none; }
+.ui-tfc__input[type="number"] { -moz-appearance: textfield; font-variant-numeric: tabular-nums; }
+.ui-tfc__input[type="number"]::-webkit-inner-spin-button,
+.ui-tfc__input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+/* Revealing a password: the characters come out of a short blur */
+.ui-tfc__input[data-revealed] { animation: ui-tfc-reveal 260ms var(--ui-tfc-ease); }
+.ui-tfc__input[data-revealed="false"] { animation-name: ui-tfc-reveal-hide; }
+
+/* Prefix and suffix: quiet text or an icon inside the box */
+.ui-tfc__affix {
+  display: inline-flex;
+  flex: 0 1 auto;
+  align-items: center;
+  min-width: 0;
+  max-width: 70%;
+  font-size: var(--fs);
+  color: var(--ui-tfc-subtle);
+  white-space: nowrap;
+  user-select: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Text right against the value, as if it were part of it ("https://" + "acme") */
+.ui-tfc__affix[data-side="start"] { margin-inline-end: -6px; }
+.ui-tfc__affix[data-side="end"] { max-width: 40%; margin-inline-start: -6px; }
+/* A long prefix loses its start: "…/workspaces/" stays next to the value */
+.ui-tfc__affix-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ui-tfc__affix[data-side="start"]:dir(ltr) .ui-tfc__affix-text { direction: rtl; text-align: left; }
+.ui-tfc__affix[data-side="start"]:dir(ltr) .ui-tfc__affix-text::after { content: "\200E"; }
+/* An icon keeps its distance */
+.ui-tfc__affix[data-side]:has(> svg) { margin: 0; color: var(--ui-tfc-icon); }
+.ui-tfc__affix > svg { display: block; width: 18px; height: 18px; flex: none; }
+
+/* Clear, reveal and copy: small ghost buttons at the end */
+.ui-tfc__action {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  position: relative;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ui-tfc-icon);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+.ui-tfc__action + .ui-tfc__action { margin-left: -4px; }
+/* BiVelio: the hit area always reaches 44px */
+.ui-tfc__action::before { content: ""; position: absolute; inset: -4px; }
+.ui-tfc__action:hover:not(:disabled) { background: var(--ui-tfc-wash); color: var(--ui-tfc-ink); }
+.ui-tfc__action:focus-visible { outline: 2px solid var(--ui-tfc-focus); outline-offset: -2px; }
+.ui-tfc__action:disabled { opacity: 0.4; cursor: default; }
+.ui-tfc__action[data-copied] { color: var(--ui-tfc-success); }
+.ui-tfc__action svg { display: block; }
+.ui-tfc__swap { display: grid; animation: ui-tfc-swap 280ms var(--ui-tfc-ease); }
+.ui-tfc__check { stroke-dasharray: 1; animation: ui-tfc-draw 320ms 60ms var(--ui-tfc-ease) both; }
+
+/* Under the field: the hint, or the error in its place, and the count */
+.ui-tfc__foot { display: flex; align-items: flex-start; gap: 12px; min-width: 0; }
+.ui-tfc__message {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--ui-tfc-subtle);
+  overflow-wrap: anywhere;
+  animation: ui-tfc-message 260ms var(--ui-tfc-ease);
+}
+.ui-tfc[data-invalid] .ui-tfc__message { color: var(--ui-tfc-danger); }
+.ui-tfc__count { flex: none; margin-left: auto; font-size: 12px; line-height: 16px; font-variant-numeric: tabular-nums; color: var(--ui-tfc-faint); transition: color 140ms ease; }
+.ui-tfc__count[data-over] { color: var(--ui-tfc-danger); }
+.ui-tfc__sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.ui-tfc__count[data-full] { color: var(--ui-tfc-muted); }
+
+@keyframes ui-tfc-nudge {
+  30% { transform: translateX(-3px); }
+  65% { transform: translateX(2px); }
+}
+@keyframes ui-tfc-message {
+  from { opacity: 0; transform: translateY(-3px); filter: blur(2px); }
+}
+@keyframes ui-tfc-reveal {
+  from { filter: blur(4px); opacity: 0.4; }
+}
+@keyframes ui-tfc-reveal-hide {
+  from { filter: blur(3px); opacity: 0.5; }
+}
+@keyframes ui-tfc-swap {
+  from { opacity: 0; transform: scale(0.6); filter: blur(2px); }
+}
+@keyframes ui-tfc-draw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-tfc *, .ui-tfc[data-invalid] .ui-tfc__box { animation-duration: 1ms !important; }
+  .ui-tfc__box { transition-duration: 1ms; }
+}
+
+/* ===== tilt-card.css ===== */
+/*
+ * Derived from affectUI Pro 'Tilt Card' (https://www.affectui.com). Used under the affectUI Pro license held by BiVelio. NOT covered by this repository's Apache-2.0 licence; do not redistribute as a component kit.
+ *
+ * Changes from upstream are listed in ./VENDOR.md.
+ */
+.ui-tc {
+  --ui-tc-radius: var(--r-card, 16px);
+  --ui-tc-shadow: 0 1px 2px rgba(15, 18, 24, 0.06), 0 14px 32px -16px rgba(15, 18, 24, 0.22);
+  --ui-tc-shadow-active: 0 2px 4px rgba(15, 18, 24, 0.05), 0 28px 56px -20px rgba(15, 18, 24, 0.32);
+  --ui-tc-glare-color: rgba(255, 255, 255, 0.32);
+  --ui-tc-spring: cubic-bezier(0.34, 1.36, 0.64, 1);
+  display: block;
+  perspective: var(--ui-tc-perspective);
+}
+
+.ui-tc-card {
+  --rx: 0deg;
+  --ry: 0deg;
+  --gx: 50%;
+  --gy: 50%;
+  --ui-tc-lift: 0px;
+  --ui-tc-s: 1;
+  position: relative;
+  border-radius: var(--ui-tc-radius);
+  box-shadow: var(--ui-tc-shadow);
+  transform: translateY(var(--ui-tc-lift)) rotateX(var(--rx)) rotateY(var(--ry)) scale(var(--ui-tc-s));
+  /* The return: a soft spring back to rest */
+  transition: transform 700ms var(--ui-tc-spring), box-shadow 500ms ease;
+  will-change: transform;
+}
+
+/* While the pointer is over it: follow closely, with just enough easing to smooth the steps */
+.ui-tc-card[data-active] {
+  --ui-tc-s: var(--ui-tc-scale);
+  --ui-tc-lift: -2px;
+  box-shadow: var(--ui-tc-shadow-active);
+  transition: transform 140ms ease-out, box-shadow 300ms ease;
+}
+
+/* Keyboard focus inside the card: a slight lift */
+.ui-tc:has(:focus-visible) .ui-tc-card {
+  --ui-tc-lift: -4px;
+  box-shadow: var(--ui-tc-shadow-active);
+}
+
+.ui-tc-glare {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(circle at var(--gx) var(--gy), var(--ui-tc-glare-color), transparent 55%);
+  mix-blend-mode: soft-light;
+  opacity: 0;
+  transition: opacity 400ms ease;
+}
+.ui-tc-card[data-active] .ui-tc-glare { opacity: 1; }
+
+@media (hover: none), (pointer: coarse) {
+  .ui-tc-card[data-active] { --ui-tc-s: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-tc-card,
+  .ui-tc-card[data-active],
+  .ui-tc:has(:focus-visible) .ui-tc-card {
+    transform: none;
+    transition: box-shadow 300ms ease;
+  }
+  .ui-tc-glare { display: none; }
+}

@@ -1,0 +1,280 @@
+/* ============================================================================
+   BiVelio Savings — LA HOJA DE ACCESO.
+
+   Las reglas que solo pueden casar en las páginas de acceso: el marco con el
+   panel de marca, la tarjeta, sus campos, avisos y subvistas (alta pendiente,
+   correo enviado, contraseña cambiada) y la ficha de la invitación. Salieron
+   de `app/globals.css` (2026-11) porque bloqueaban el primer pintado de la
+   portada —la página de aterrizaje de los anuncios— sin que la portada
+   pintase ninguna. La importan las cinco páginas de acceso (`login`, `signup`,
+   `signup/success`, `reset-password` e `invitacion/[token]`), cada una justo
+   antes de `affectui-acceso.css`; ni el marketing ni el panel la cargan.
+
+   QUÉ PUEDE VIVIR AQUÍ: solo reglas en las que TODOS los selectores exigen una
+   clase que no puede producir el código de las páginas sin esta hoja (el
+   marketing y el panel). El criterio y el porqué, en
+   `scripts/hoja-del-panel.mjs`; la valla, `components/acceso/acceso-css.test.ts`.
+   Los tokens, `:root`, los `@font-face` y los `@keyframes` (`acc-giro`, el
+   giro del «un momento…») se quedan en la global.
+
+   EL ORDEN ES CONTRATO. Las reglas conservan el orden relativo que tenían en
+   `globals.css`, pero esta hoja carga DESPUÉS de la global y de `affectui.css`:
+   a igual especificidad, lo de aquí gana a lo de allí. Por eso NO se movieron
+   las de acceso que empatan con una regla posterior de la global o con una
+   pieza de affectUI sobre el mismo elemento (p. ej. `.auth-card .sub`, que
+   empata con `.ritmo .sub`; `.acc-enviar` y `.acc-panel-tilt`, con la raíz de
+   su pieza; `.acc-intro .kicker`): siguen en `globals.css` a propósito. Antes
+   de traer una regla, comprueba que ningún estilo computado cambia.
+
+   Con `affectui-acceso.css` NO HAY ORDEN GARANTIZADO (Next las emite como
+   quiere): ninguna regla de aquí empata con una de esa hoja sobre el mismo
+   elemento, y así debe seguir. Cada bloque dice de qué sección de la global
+   viene; las secciones de allí que se quedaron vacías apuntan aquí.
+
+   NO PASAR prettier NI stylelint (mismo contrato que `globals.css`): hay tests
+   que leen esta hoja como texto.
+   ============================================================================ */
+
+/* ↓ de globals.css · Escalera de interlineado (las utilidades leading-* del origen) */
+.auth-link:hover { text-decoration-thickness: 2px; }
+
+/* ↓ de globals.css · Tarjeta de autenticación (login / signup) */
+/* El alto se descuenta del chrome que tiene encima (franja + nav); con 100dvh
+   a secas, login y signup arrastraban ~102px de scroll que no llevaba a nada. */
+.auth-wrap {
+  min-height: calc(100dvh - var(--nav-h)); display: grid; place-items: center; padding: 32px 20px;
+  background-color: var(--bg);
+  background-image: radial-gradient(rgba(20, 22, 28, .06) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+.auth-card { width: 100%; max-width: 420px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-2xl); box-shadow: var(--shadow-elevated); padding: 32px; }
+.auth-card h1 { font-size: 1.5rem; letter-spacing: -.03em; margin: 4px 0 6px; }
+/* Logo oficial en la cabecera de las tarjetas de auth (login/signup/reset). */
+.auth-brand { margin-bottom: 22px; }
+.auth-alt { margin: 18px 0 0; font-size: .88rem; color: var(--ink-soft); text-align: center; }
+.auth-msg { border-radius: var(--radius-lg); padding: 10px 13px; font-size: .85rem; margin-bottom: 16px; }
+.auth-msg.error { background: color-mix(in srgb, var(--danger) 10%, transparent); color: var(--danger); }
+.auth-msg.info { background: var(--mint-soft); color: var(--good-ink); }
+
+/* ↓ de globals.css · F·2 Tipografía editorial y utilidades */
+.serif-accent--brand { color: var(--brand); }
+
+/* ↓ de globals.css · F2·1 Acceso: el marco */
+.auth-wrap.acc { display: block; padding: 0; min-height: calc(100dvh - var(--nav-h)); background-color: var(--bg); background-image: none; }
+.acc-main { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; min-height: inherit; padding: clamp(24px, 6vh, 56px) 16px clamp(28px, 6vh, 56px); }
+.auth-card.acc-card { width: 100%; max-width: 440px; padding: clamp(22px, 5.5vw, 36px); border: 1px solid var(--line); border-radius: var(--r-card-lg); background: var(--surface); box-shadow: var(--shadow-card), 0 28px 56px -36px rgba(15, 18, 40, .22); }
+.acc-card .auth-brand { margin: 0 0 22px; line-height: 0; }
+/* En móvil la marca ya está justo encima, en la cabecera: no se repite. */
+@media (max-width: 640px) { .acc-card .auth-brand { display: none; } }
+.acc-aside { display: none; }
+@media (min-width: 1024px) {
+  /* Sin tope de ancho: con el antiguo `max-width: 1680px` centrado, en un
+     monitor ancho el panel del paisaje se quedaba corto y dejaba una franja
+     vacía a la derecha (dueño, 2026-11-17). Las dos mitades llenan la
+     pantalla; la tarjeta ya tiene su propio ancho máximo. */
+  .auth-wrap.acc--split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); place-items: stretch; }
+  .auth-wrap.acc--split .acc-aside { display: flex; }
+}
+.acc-aside { position: relative; isolation: isolate; align-items: center; justify-content: center; margin: 12px 12px 12px 0; padding: clamp(32px, 4vw, 64px); border-radius: var(--r-hero); overflow: hidden; background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line); }
+/* El paisaje de bivelio.com, solo en el tercio inferior y fundido hacia
+   arriba: el texto queda siempre sobre color liso. Quieto, sin animación. */
+.acc-aside::before {
+  content: ""; position: absolute; z-index: -1; inset: auto 0 0 0; height: 52%;
+  /* La de 1600: el panel es media pantalla, así que cubre hasta 1600 px de
+     panel a densidad 1 y el doble de densidad en un portátil; la de tamaño
+     completo pesaba 235 KB y era el LCP del acceso en escritorio. AccesoShell
+     la anuncia desde el HTML. En un panel ancho, `cover` recorta la foto por
+     arriba y por abajo, nunca por los lados. */
+  background-image: url("/brand/paisaje/dia-1600.webp");
+  background-image: image-set(url("/brand/paisaje/dia-1600.avif") type("image/avif"), url("/brand/paisaje/dia-1600.webp") type("image/webp"));
+  background-size: cover; background-position: 50% 78%;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, rgba(0, 0, 0, .5) 38%, #000 78%);
+  mask-image: linear-gradient(to bottom, transparent, rgba(0, 0, 0, .5) 38%, #000 78%);
+}
+.acc-panel-texto { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
+.acc-panel-titulo { font-size: clamp(1.75rem, 2.7vw, 2.5rem); line-height: 1.05; }
+.acc-panel-lede { font-size: 15.5px; max-width: 40ch; }
+/* Sobre la foto, las muescas del tique enseñarían manchas oscuras del bosque:
+   aquí el recibo va sin ellas (la línea de corte y el festón se conservan). */
+.acc-panel-recibo { --recibo-notch: 0px; max-width: 400px; }
+
+/* ↓ de globals.css · F2·2 Acceso: lo que va dentro de la tarjeta */
+.acc-intro { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin: 0 0 24px; }
+.auth-card.acc-card h1 { margin: 0; font-family: var(--font-editorial); font-weight: 800; font-size: clamp(1.6rem, 2.5vw, 1.9rem); line-height: 1.1; letter-spacing: -.035em; text-wrap: balance; }
+.auth-card.acc-card .sub { margin: 0; font-size: 14.5px; line-height: 1.55; color: var(--ink-soft); text-wrap: pretty; }
+.auth-card.acc-card > .sub, .auth-card.acc-card form > .sub { margin: 0 0 16px; }
+.acc-card .field { gap: 6px; margin-bottom: 16px; }
+.acc-card .field label { font-size: 13.5px; font-weight: 500; line-height: 1.35; color: var(--ink); }
+.acc-card .field input {
+  width: 100%; min-width: 0; min-height: 44px; padding: 10px 12px; font-size: 16px; line-height: 1.3;
+  border: 1px solid var(--line-strong); border-radius: var(--r-control); background: var(--surface); color: var(--ink);
+  transition: border-color var(--dur-2) var(--ease-out), box-shadow var(--dur-2) var(--ease-out), background-color var(--dur-2) var(--ease-out);
+}
+.acc-card .field input::placeholder { color: color-mix(in srgb, var(--ink-soft) 60%, var(--surface)); }
+.acc-card .field input:hover:not(:disabled):not(:focus) { border-color: color-mix(in srgb, var(--ink-soft) 50%, var(--line-strong)); }
+/* Foco: borde de marca + halo de 3px. Se ve sin depender de un cambio de gris. */
+.acc-card .field input:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 20%, transparent); }
+.acc-card .field input[aria-invalid="true"] { border-color: var(--danger); }
+.acc-card .field input[aria-invalid="true"]:focus { box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 18%, transparent); }
+.acc-card .field input:disabled { background: var(--surface-3); border-color: var(--line); color: var(--ink-soft); cursor: not-allowed; }
+.acc-progreso { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 14.5px; line-height: 1.5; color: var(--ink-soft); }
+/* Avisos: tono por icono y por texto, no solo por color. */
+.acc-card .auth-msg { display: flex; align-items: flex-start; gap: 10px; margin: 0 0 16px; padding: 11px 12px; border: 1px solid transparent; border-radius: 12px; font-size: 14px; line-height: 1.45; color: var(--ink); }
+.acc-card .auth-msg svg { flex: none; width: 18px; height: 18px; margin-top: 1px; }
+.acc-card .auth-msg > span { min-width: 0; overflow-wrap: anywhere; }
+.acc-card .auth-msg.error { background: var(--bad-soft); border-color: color-mix(in srgb, var(--danger) 24%, transparent); }
+.acc-card .auth-msg.error svg { color: var(--danger); }
+.acc-card .auth-msg.info { background: var(--brand-soft); border-color: color-mix(in srgb, var(--brand) 18%, transparent); }
+.acc-card .auth-msg.info svg { color: var(--brand); }
+.acc-card .auth-alt { margin: 20px 0 0; font-size: 14px; line-height: 1.5; color: var(--ink-soft); text-align: center; text-wrap: balance; }
+.acc-card .auth-alt a, .acc-card .auth-link { color: var(--ink); font-weight: 500; text-decoration: underline; text-decoration-thickness: 1px; text-decoration-color: var(--line-strong); text-underline-offset: 3px; transition: text-decoration-color var(--dur-1) var(--ease-out); }
+.acc-card .auth-alt a:hover, .acc-card .auth-link:hover { text-decoration-color: currentColor; text-decoration-thickness: 1px; }
+.acc-card .auth-link { display: inline-flex; align-items: center; justify-content: center; min-height: 32px; padding: 4px 8px; font-size: 14px; }
+.acc-card .acc-olvido { margin-top: 10px; }
+.acc-otro-enlace { margin: 0 0 16px; }
+.acc-reset-sub { margin-top: 0; }
+@media (pointer: coarse) {
+  .acc-card .auth-link { min-height: 44px; }
+  .acc-card .auth-alt a { display: inline-block; padding-block: 10px; }
+}
+/* Alta: las dos notas (Measure y cuenta compartida) y la salida al open source. */
+.acc-notas { display: grid; gap: 10px; margin: 24px 0 0; padding-top: 20px; border-top: 1px solid var(--line); }
+.acc-nota { margin: 0; font-size: 13px; line-height: 1.55; color: var(--ink-soft); overflow-wrap: anywhere; text-wrap: pretty; }
+.acc-oss { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 2px 14px; margin: 18px 0 0; padding: 8px 8px 8px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-3); font-size: 13.5px; line-height: 1.4; }
+.acc-oss-q { padding-block: 6px; color: var(--ink-soft); }
+.acc-oss-a { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding-inline-end: 6px; border-radius: var(--radius-sm); font-weight: 600; color: var(--ink); text-decoration: none; }
+.acc-oss-a:hover { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.acc-oss-a svg { flex: none; width: 16px; height: 16px; transition: transform var(--dur-2) var(--ease-out); }
+.acc-oss-a:hover svg { transform: translateX(2px); }
+@media (pointer: coarse) { .acc-oss-a { min-height: 44px; } }
+@media (prefers-reduced-motion: reduce) { .acc-oss-a:hover svg { transform: none; } }
+.acc-pie { font-size: 14px; }
+.acc-volver { display: inline-flex; align-items: center; min-height: 44px; padding: 0 10px; border-radius: var(--r-control); color: var(--ink-soft); text-decoration: none; transition: color var(--dur-1) var(--ease-out); }
+.acc-volver:hover { color: var(--ink); text-decoration: none; }
+/* La subvista «ya está»: enviado, verificado, cambiado, aceptado. Cuando
+   aparece, lo que rodeaba al formulario (titular, cruce, notas) se retira. */
+.acc-sent { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; min-width: 0; }
+.acc-sent-icon { display: grid; place-items: center; width: 44px; height: 44px; margin-bottom: 6px; border-radius: 14px; background: var(--brand-soft); color: var(--brand); }
+.acc-sent[data-tone="ok"] .acc-sent-icon { background: var(--mint-soft); color: var(--good-ink); }
+.acc-sent-icon svg { width: 22px; height: 22px; }
+.auth-card.acc-card .acc-sent-title { margin: 0; font-family: var(--font-editorial); font-weight: 800; font-size: clamp(1.4rem, 2.2vw, 1.6rem); line-height: 1.15; letter-spacing: -.035em; text-wrap: balance; outline: none; }
+.acc-sent-text { margin: 0; font-size: 14.5px; line-height: 1.55; color: var(--ink-soft); text-wrap: pretty; }
+.acc-sent-mail { max-width: 100%; margin: 4px 0 0; padding: 8px 12px; border: 1px solid var(--line); border-radius: var(--r-control); background: var(--surface-3); font-family: var(--mono); font-size: 13px; line-height: 1.4; color: var(--ink); overflow-wrap: anywhere; }
+.acc-sent-next { width: 100%; margin: 6px 0 0; padding-top: 14px; border-top: 1px solid var(--line); font-size: 13.5px; line-height: 1.55; color: var(--ink-soft); text-wrap: pretty; }
+.acc-sent-actions { display: flex; flex-direction: column; align-items: stretch; gap: 6px; width: 100%; margin-top: 12px; }
+.acc-sent-actions .auth-link { align-self: center; }
+.acc-card:has(.acc-sent) > .auth-brand, .acc-card:has(.acc-sent) > .acc-intro, .acc-card:has(.acc-sent) > .acc-cruce, .acc-card:has(.acc-sent) > .acc-notas, .acc-card:has(.acc-sent) > .acc-oss { display: none; }
+@media (prefers-reduced-motion: no-preference) { .acc-sent { animation: bv-rise var(--dur-4) var(--ease-out) both; } }
+
+/* ↓ de globals.css · F2·3 Invitación: la ficha (organización, destinatario, perfil) */
+.inv-ficha { margin: 0 0 20px; padding: 2px 16px; border: 1px solid var(--line); border-radius: var(--r-card); background: var(--surface-3); }
+.inv-fila { display: flex; align-items: baseline; justify-content: space-between; gap: 6px 16px; min-width: 0; padding: 12px 0; }
+.inv-fila + .inv-fila { border-top: 1px solid var(--line); }
+.inv-fila dt { flex: none; font-size: 11.5px; font-weight: 600; letter-spacing: .1em; line-height: 1.5; text-transform: uppercase; color: var(--ink-soft); }
+.inv-fila dd { margin: 0; min-width: 0; text-align: end; font-size: 14.5px; font-weight: 500; line-height: 1.4; color: var(--ink); overflow-wrap: anywhere; }
+.inv-fila--org { flex-direction: column; align-items: flex-start; gap: 2px; padding-block: 14px; }
+.inv-fila--org dd { text-align: start; font-family: var(--font-editorial); font-weight: 800; font-size: 1.375rem; line-height: 1.2; letter-spacing: -.03em; }
+.inv-fila .inv-correo { font-family: var(--mono); font-size: 13.5px; }
+.inv-ficha--hueco { display: grid; align-content: center; gap: 13px; min-height: 172px; padding: 16px; }
+.auth-card.acc-card .inv-sesion { margin: 0 0 14px; }
+.inv-sesion b { color: var(--ink); font-weight: 600; overflow-wrap: anywhere; }
+
+/* ↓ de globals.css · E4·1 Acceso: Text Field, Button, Tilt Card */
+.acc-campo { margin: 0 0 16px; }
+.acc-card .acc-campo .ui-tfc__label { font-size: 13.5px; font-weight: 500; line-height: 1.35; color: var(--ink); }
+.acc-card form > .acc-enviar:first-child { margin-top: 0; }
+.acc-progreso .ui-spnc { color: var(--brand); }
+.acc-panel-tilt .acc-panel-recibo { max-width: none; }
+.inv-escena { width: 100%; padding: 6px; border-radius: var(--r-card-lg); background: color-mix(in srgb, var(--surface) 86%, transparent); box-shadow: 0 0 0 1px var(--line), var(--shadow-elevated); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.inv-escena .ui-ti { border-radius: calc(var(--r-card-lg) - 6px); background: radial-gradient(120% 90% at 50% 0%, var(--surface) 0%, var(--surface-3) 100%); }
+.inv-fila .ui-bdgc { vertical-align: baseline; }
+
+/* ==== SLOT ACCESO A LA MEDIDA DE LA PANTALLA ==== */
+/* Va al FINAL de esta hoja, no en la global: corrige reglas que viven aquí
+   (`.acc-main`, `.acc-campo`, `.auth-wrap.acc`, `.acc-pie`…) con la misma
+   especificidad, y esta hoja carga después de `globals.css`. Las cuatro
+   reglas que `hoja-del-panel.mjs` no puede atribuir al acceso (las de
+   `body:has(…)`, que no lee dentro de `:has()`, y `.acc-panel`, que se quedó
+   en la global) están al final de `globals.css`, en «ACCESO A LA MEDIDA DE
+   LA PANTALLA (PARTE GLOBAL)». */
+/* ============================================================================
+   EL ACCESO OCUPA EXACTAMENTE LA PANTALLA, SIN SCROLL (dueño, 2026-11-17).
+   Login, alta, contraseña nueva e invitación usan el mismo marco (AccesoShell).
+
+   1. LA CUENTA DE LA ALTURA. Antes el acceso medía `100dvh - var(--nav-h)`,
+      como si encima solo estuviera la cabecera (56 px); pero encima está la
+      barra de aviso (36 px, 50 en móvil, y se puede cerrar) y la cabecera
+      mide 57 con su filete: sobraban 37–51 px en TODAS las pantallas. Ahora la
+      página entera es una columna de 100dvh (aviso + cabecera + acceso) y el
+      acceso se queda con lo que sobre, mida lo que mida lo de arriba.
+   2. LOS ESPACIOS SE AJUSTAN AL ALTO. Rellenos y separaciones verticales en
+      `vh` con su tope de siempre: en una pantalla alta se ve como antes (la
+      tarjeta va centrada en el hueco) y en una baja se recogen.
+   3. EN PANTALLAS BAJAS SE RECOGE LO SECUNDARIO, por escalones de alto: la
+      vuelta al inicio (el logo de la cabecera ya lleva al inicio), el logo de
+      la tarjeta, la entradilla del panel lateral y, más abajo, su recibo. En
+      un móvil en horizontal la tarjeta se parte en dos columnas (texto a un
+      lado, formulario al otro) y la barra de aviso se oculta.
+   Nunca `overflow: hidden`: si alguien amplía el texto o abre el teclado, la
+   página puede seguir desplazándose (WCAG 1.4.10).
+   ========================================================================== */
+.auth-wrap.acc { flex: 1 0 auto; min-height: 0; display: flex; flex-direction: column; }
+.auth-wrap.acc > .acc-main { flex: 1 0 auto; min-height: 0; }
+@media (min-width: 1024px) {
+  .auth-wrap.acc--split { display: grid; }
+}
+.acc-main { gap: clamp(4px, 1.4vh, 12px); padding-block: clamp(8px, 4vh, 56px); }
+.auth-card.acc-card { padding-block: clamp(16px, 3.8vh, 36px); }
+.acc-card .auth-brand { margin-bottom: clamp(12px, 2.4vh, 22px); }
+.acc-intro { margin-bottom: clamp(12px, 2.6vh, 24px); }
+.acc-campo { margin-bottom: clamp(8px, 1.8vh, 16px); }
+.acc-card .acc-olvido { margin-top: clamp(2px, 1vh, 10px); }
+.acc-card .auth-alt.acc-cruce { margin-top: clamp(8px, 2.2vh, 20px); }
+.acc-aside { padding: clamp(20px, min(4vw, 5vh), 64px); margin-block: clamp(8px, 1.4vh, 12px); }
+
+/* Escalón 1 — por debajo de ~760 px de alto: fuera la entradilla del lateral. */
+@media (min-width: 1024px) and (max-height: 760px) {
+  .acc-aside .acc-panel-lede { display: none; }
+}
+/* Escalón 2 — por debajo de ~680 px: fuera la vuelta al inicio y el logo de la tarjeta. */
+@media (max-height: 680px) {
+  .acc-pie { display: none; }
+  .acc-card .auth-brand { display: none; }
+}
+/* Escalón 3 — portátil con poca ventana: el recibo del lateral ya no cabe.
+   Con el lateral delante: la hoja de affectUI (`.ui-tc`) va después. */
+@media (min-width: 1024px) and (max-height: 640px) {
+  .acc-aside .acc-panel-tilt { display: none; }
+}
+/* Escalón 4 — móvil bajo: titular y campos un punto más compactos. */
+@media (max-height: 600px) {
+  .acc-main { padding-block: clamp(6px, 1.6vh, 12px); }
+  /* En alemán o vietnamita el subtítulo parte en tres líneas a 320px: el aire
+     de la tarjeta cede antes que el texto. */
+  .auth-card.acc-card { padding-block: clamp(12px, 2.2vh, 20px); }
+  .auth-card.acc-card h1 { font-size: 1.45rem; }
+  .acc-intro { gap: 4px; }
+  .auth-card.acc-card .sub { font-size: 13.5px; line-height: 1.45; }
+}
+/* Móvil en horizontal (ancho y muy bajo): sin la barra de aviso y la tarjeta en
+   dos columnas — el texto a un lado, el formulario al otro. */
+@media (max-height: 500px) and (min-width: 560px) {
+  .auth-card.acc-card:has(> form) {
+    max-width: 760px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    column-gap: clamp(20px, 4vw, 40px); align-items: center;
+  }
+  .auth-card.acc-card:has(> form) > * { grid-column: 1; }
+  .auth-card.acc-card:has(> form) > form { grid-column: 2; grid-row: 1 / span 6; align-self: center; }
+  .auth-card.acc-card:has(> form) > .acc-intro { margin-bottom: 8px; }
+  .auth-card.acc-card:has(> form) > .acc-cruce { margin-top: 0; text-align: start; }
+  .auth-card.acc-card { padding-block: 12px; }
+  .acc-main { padding-block: 8px; }
+}
+/* Móvil pequeño en horizontal (≤ 380 px de alto): campos y botón de 40 px. */
+@media (max-height: 380px) {
+  .acc-card .ui-tfc { --h: 40px; gap: 4px; }
+  .acc-card .acc-enviar { --h: 40px; }
+  .acc-campo { margin-bottom: 6px; }
+  .acc-card .auth-link { min-height: 28px; }
+}
+/* ==== FIN SLOT ACCESO A LA MEDIDA DE LA PANTALLA ==== */

@@ -193,7 +193,7 @@ export default async function Footer({ sinGitHub = false }: { sinGitHub?: boolea
             <div className="ftr-grid">
               <div className="ftr-brand">
                 <Link href="/" className="ftr-logo" aria-label="Savings by BiVelio">
-                  <SavingsLogo variant="full" height={52} />
+                  <SavingsLogo variant="full" height={52} loading="lazy" />
                 </Link>
                 <p>{t.rich("footer.tagline", { b: (c) => <b>{c}</b> })}</p>
                 {/* El chip del algoritmo que lleva todo pie BV-* (BV‑SALA,

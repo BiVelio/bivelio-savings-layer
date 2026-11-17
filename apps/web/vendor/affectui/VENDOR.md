@@ -161,9 +161,11 @@ arriba.
 1. Cabecera de procedencia y licencia en cada fichero.
 2. La cadena `const css = \`…\`` y su `<style href precedence>` se
    sustituyen por un `.css` hermano. El `.tsx` **no lo importa**:
-   `node scripts/juntar-affectui.mjs` copia todas las hojas en dos ficheros
-   generados —`affectui.css`, con las piezas que alcanza alguna página pública
-   o la 404, que importa el layout del idioma detrás de `globals.css`; y
+   `node scripts/juntar-affectui.mjs` copia todas las hojas en tres ficheros
+   generados —`affectui.css`, con las piezas que alcanza alguna página de
+   marketing o la 404, que importa el layout del idioma detrás de
+   `globals.css`; `affectui-acceso.css`, con las que solo usan las páginas de
+   acceso (y el panel), que importan esas páginas y `dashboard/layout.tsx`; y
    `affectui-panel.css`, con las que solo usa el panel, que importa
    `dashboard/layout.tsx`—. El reparto sale del grafo de imports, no de una
    lista. Con un `import "./pieza.css"` por componente Next partía el CSS en 43
@@ -631,9 +633,9 @@ que aportó cada frente. Quien la actualice parte de esta lista, no de cuatro.
    - cabecera de licencia (MIT o Pro, las de arriba);
    - mueve el CSS de la cadena a `<pieza>.css` y borra el `<style>`. **No lo
      importes desde el `.tsx`**: `node scripts/juntar-affectui.mjs` lo mete en
-     la hoja que toque (pública o del panel, según quién importe la pieza). Hay
-     que volver a ejecutarlo cuando una pieza del panel pasa a usarse en una
-     página pública; el test falla si se olvida;
+     la hoja que toque (pública, de acceso o del panel, según quién importe la
+     pieza). Hay que volver a ejecutarlo cuando una pieza del panel o del
+     acceso pasa a usarse en una página pública; el test falla si se olvida;
    - borra el bloque de tema oscuro; tipografías a `var(--aui-font, var(--font-sans))`;
    - colores sueltos → tokens de BiVelio; no añadas `--aui-*` nuevos sin
      definirlos en `:root` de `app/globals.css` (eso lo coordina la fundación);

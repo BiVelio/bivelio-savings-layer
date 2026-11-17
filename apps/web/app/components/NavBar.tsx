@@ -32,8 +32,10 @@ export function NavBar() {
         <div className="site-nav-inner">
           <div className="nav-left">
             <Link href="/" className="nav-brand" aria-label="Savings by BiVelio">
-              <SavingsLogo variant="full" height={30} className="nav-logo-full" />
-              <SavingsLogo variant="mark" height={28} className="nav-logo-mark" />
+              {/* Cada variante se descarga solo donde se ve: las consultas son
+                  las de .nav-logo-full/.nav-logo-mark en globals.css. */}
+              <SavingsLogo variant="full" height={30} className="nav-logo-full" ocultoEn="(max-width: 639px)" />
+              <SavingsLogo variant="mark" height={28} className="nav-logo-mark" ocultoEn="(min-width: 640px)" />
             </Link>
             <NavSections />
           </div>
