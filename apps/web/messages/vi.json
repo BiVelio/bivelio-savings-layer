@@ -1241,8 +1241,7 @@
       "proofTitle": "Đo với nhà cung cấp thật",
       "compatibleCon": "Tương thích với",
       "compatibleNota": "Tương thích không có nghĩa là đã đo. SDK hoạt động với mọi endpoint tương thích với API của OpenAI, cùng bộ chuyển đổi gốc cho Anthropic và bộ chuyển đổi gốc cho Gemini (mới trong {gemini}). Có con số tiết kiệm trên băng thử công khai hiện chỉ có các mô hình của OpenAI và Anthropic; Gemini không có con số tiết kiệm. Điều đã đo với Gemini: {flash}, qua API gốc của nó, trong bench hằng tuần trực tiếp ngày {fecha} — cả bốn bộ thử, không có lỗi nào của lớp và không có lời từ chối nào được lưu cache hay ghi có thành tiết kiệm. Bench đó kiểm tra rằng lớp không làm hỏng gì và không tính phí quá mức; nó không đo khoản tiết kiệm. Cũng đã đo: {pro}, qua API gốc của nó, trong hai lượt một phần vào {fechaPro} (hạn mức hằng ngày của nhà cung cấp không đủ cho cả bốn bộ kiểm thử trong một ngày): cả bốn bộ kiểm thử, cũng không có lỗi nào của lớp và không có lời từ chối nào được lưu đệm hay tính là tiết kiệm.",
-      "ctaOss": "Cài bản mã nguồn mở",
-      "kicker": "Đo trên từng lệnh gọi"
+      "ctaOss": "Cài bản mã nguồn mở"
     },
     "cascade": {
       "title": "Phương án thực thi rẻ nhất thắng",

@@ -229,11 +229,13 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
               el contexto de apilamiento lo pone `.lp .hero.hero-panel`). */}
           <div className="cielo" aria-hidden="true" />
           <div className="hpanel-copy">
-            {/* La etiqueta de la pieza promocional («BV-SALA · SAVINGS LAYER»):
-                la marca no se traduce y va con lang="en" para que las
-                versalitas no la conviertan en «SAVİNGS» en turco. */}
-            <p className="hero-sello">
-              <span lang="en">Savings Layer</span> · {t("hero.kicker")}
+            {/* LA ETIQUETA, COMO LA DE BIVELIO.COM («Engineer your 10x Business
+                Infrastructure.», `.hero__tag` de la madre): la misma píldora
+                de cristal, la marca en sans pesada, la palabra clave en un
+                bloque cian y el resto en serif cursiva. Como allí, en inglés
+                en todos los idiomas; lang="en" para los lectores de pantalla. */}
+            <p className="hero-sello" lang="en">
+              <b>Savings Layer</b> <mark>Measured</mark> <em>on every call.</em>
             </p>
             <h1>
               {t("hero.title")}{" "}

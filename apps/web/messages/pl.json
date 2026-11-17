@@ -1241,8 +1241,7 @@
       "proofTitle": "Zmierzone względem prawdziwego dostawcy",
       "compatibleCon": "Zgodne z",
       "compatibleNota": "Zgodny nie znaczy zmierzony. SDK działa z każdym endpointem zgodnym z API OpenAI, a także z natywnym adapterem Anthropic i natywnym adapterem Gemini (nowość w {gemini}). Z liczbą oszczędności w publicznym benchmarku są dziś tylko modele OpenAI i Anthropic; Gemini nie ma liczby oszczędności. Co zmierzono dla Gemini: {flash}, przez jego natywne API, w cotygodniowym benchmarku na żywo z {fecha} — wszystkie cztery baterie, bez błędów warstwy i bez żadnej odmowy w cache ani zaliczonej jako oszczędność. Ten benchmark sprawdza, że warstwa niczego nie psuje i nie pobiera za dużo; nie mierzy oszczędności. Zmierzony także: {pro}, przez natywne API, w dwóch przebiegach częściowych {fechaPro} (jego dzienny limit dostawcy nie mieści wszystkich czterech baterii w jednym dniu): wszystkie cztery baterie, również bez żadnego błędu warstwy i bez żadnej odmowy z pamięci podręcznej ani zaliczonej jako oszczędność.",
-      "ctaOss": "Zainstaluj open source",
-      "kicker": "Mierzone przy każdym wywołaniu"
+      "ctaOss": "Zainstaluj open source"
     },
     "cascade": {
       "title": "Wygrywa najtańsza realizacja",

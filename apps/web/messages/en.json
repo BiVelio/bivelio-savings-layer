@@ -1241,8 +1241,7 @@
       "proofTitle": "Measured against a real provider",
       "compatibleCon": "Compatible with",
       "compatibleNota": "Compatible is not measured. The SDK works with any endpoint compatible with the OpenAI API, plus the native Anthropic adapter and the native Gemini adapter (new in {gemini}). With a savings figure on the public bench, today only OpenAI and Anthropic models; Gemini has no savings figure. What is measured for Gemini: {flash}, through its native API, in the weekly live bench of {fecha} — all four batteries, with no layer failures and no refusal cached or credited as savings. That bench checks that the layer breaks nothing and does not overcharge; it does not measure a saving. Also measured: {pro}, through its native API, in two partial runs on {fechaPro} (its daily provider quota does not fit all four batteries in one day): all four batteries, again with no layer failures and no refusal cached or credited as savings.",
-      "ctaOss": "Install open source",
-      "kicker": "Measured on every call"
+      "ctaOss": "Install open source"
     },
     "cascade": {
       "title": "Cheapest execution wins",

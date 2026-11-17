@@ -4878,25 +4878,26 @@ a.card:active, button.card:active, .card-link:active { transform: translateY(0);
 @media (max-width: 640px) {
   .cierre-firma { justify-content: center; text-align: center; }
 }
-/* La etiqueta del héroe, como la de la pieza («BV-SALA · SAVINGS LAYER»):
-   versalitas espaciadas en gris pizarra, sin píldora, con el mismo filete de
-   marca que las etiquetas de sección. Las mayúsculas son solo presentación:
-   en el HTML la frase sigue en minúsculas (lectores de pantalla, copiar). */
-/* Bloque de texto, no flex: el filete va en la línea, pegado a la marca, y si
-   la frase parte en dos (de, nl, pl, id en un móvil) las líneas se reparten
-   sin dejar una palabra huérfana ni el filete suelto a un lado. */
+/* La etiqueta del héroe, IGUAL QUE LA DE BIVELIO.COM (`.hero__tag` de la
+   madre, valores calcados de su estilo calculado): píldora de cristal blanco,
+   Geist 500 a 13,5px; la marca en Plus Jakarta Sans 800, la palabra clave en
+   un bloque cian (#CDEFFA, el --hi de la madre) y el resto en Instrument
+   Serif cursiva al 116 %. Sin el punto ni el halo de la píldora anterior. */
 .lp .hero-sello {
-  display: block; padding: 0; border: 0; border-radius: 0; background: none;
-  font-size: 12px; font-weight: 500; line-height: 1.5; letter-spacing: .16em;
-  text-transform: uppercase; text-wrap: balance; color: var(--ink-soft);
+  display: inline-flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 2px 6px;
+  padding: 7px 14px; border: 0; border-radius: 999px;
+  background: rgba(255, 255, 255, .78); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .06), 0 6px 18px -10px rgba(0, 0, 0, .25);
+  font-family: var(--font-sans); font-size: 13.5px; font-weight: 500; line-height: normal;
+  letter-spacing: -.01em; text-transform: none; color: var(--ink);
 }
-.lp .hero-sello::before {
-  display: inline-block; vertical-align: .33em; width: 18px; height: 1.5px; margin-right: 12px;
-  border-radius: 1px; background: var(--brand); box-shadow: none;
+.lp .hero-sello::before { content: none; }
+.lp .hero-sello b { font-family: var(--font-editorial); font-weight: 800; }
+.lp .hero-sello mark {
+  font-family: var(--font-editorial); font-weight: 800; padding: 0 5px; border-radius: 3px;
+  background: #CDEFFA; color: var(--ink);
 }
-@media (max-width: 640px) {
-  .lp .hero-sello { font-size: 11.5px; letter-spacing: .12em; }
-}
+.lp .hero-sello em { font-family: var(--font-serif); font-style: italic; font-size: 1.16em; letter-spacing: 0; }
 /* ==== FIN SLOT FIRMA DE CAMPAÑA ==== */
 
 /* ==== SLOT CAMPAÑA PAPER ==== */

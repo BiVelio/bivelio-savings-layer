@@ -1241,8 +1241,7 @@
       "proofTitle": "Misurato contro un provider reale",
       "compatibleCon": "Compatibile con",
       "compatibleNota": "Compatibile non vuol dire misurato. L'SDK funziona con qualsiasi endpoint compatibile con l'API di OpenAI, più l'adattatore nativo di Anthropic e l'adattatore nativo di Gemini (novità della {gemini}). Con una cifra di risparmio sul banco pubblico, oggi solo i modelli di OpenAI e di Anthropic; Gemini non ha una cifra di risparmio. Ciò che è misurato per Gemini: {flash}, tramite la sua API nativa, nel banco settimanale dal vivo del {fecha} — tutte e quattro le batterie, senza errori dello strato e senza alcun rifiuto in cache o accreditato come risparmio. Quel banco verifica che lo strato non rompa nulla e non faccia pagare di più; non misura un risparmio. Misurato anche: {pro}, tramite la sua API nativa, in due esecuzioni parziali del {fechaPro} (la sua quota giornaliera del fornitore non basta per le quattro batterie in un giorno): tutte e quattro le batterie, anche qui senza alcun errore del livello e senza alcun rifiuto messo in cache o contato come risparmio.",
-      "ctaOss": "Installa l’open source",
-      "kicker": "Misurato a ogni chiamata"
+      "ctaOss": "Installa l’open source"
     },
     "cascade": {
       "title": "Vince l'esecuzione più economica",
