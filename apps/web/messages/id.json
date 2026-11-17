@@ -515,6 +515,13 @@
       "title": "panggilan llm · dihindari vs dijalankan",
       "split": "{avoided} dihindari · {ran} dijalankan ({pct}% dihindari)"
     },
+    "mosaico": {
+      "title": "Panggilan, hari demi hari",
+      "sinProveedor": "{count, plural, one {<b>{n}</b> dijawab tanpa memanggil penyedia Anda} other {<b>{n}</b> dijawab tanpa memanggil penyedia Anda}}",
+      "ejecutadas": "{count, plural, one {<b>{n}</b> dijalankan} other {<b>{n}</b> dijalankan}}",
+      "aria": "Panggilan per hari selama {dias} hari: {sinProveedor} dijawab tanpa memanggil penyedia Anda dan {ejecutadas} dijalankan.",
+      "foot": "Satu kolom per hari; {k, plural, one {setiap ubin, satu panggilan} other {setiap ubin, {kn} panggilan}}. Total {total}. Hari tanpa laporan adalah celah, bukan nol."
+    },
     "instrumentationSpine": {
       "eyebrow": "Menuju penghematan langsung",
       "title": "Anda tinggal beberapa langkah dari meteran Anda sendiri",

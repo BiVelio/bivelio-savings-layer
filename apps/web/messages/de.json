@@ -515,6 +515,13 @@
       "title": "llm-aufrufe · vermieden vs ausgeführt",
       "split": "{avoided} vermieden · {ran} ausgeführt ({pct}% vermieden)"
     },
+    "mosaico": {
+      "title": "Aufrufe, Tag für Tag",
+      "sinProveedor": "{count, plural, one {<b>{n}</b> beantwortet, ohne deinen Anbieter aufzurufen} other {<b>{n}</b> beantwortet, ohne deinen Anbieter aufzurufen}}",
+      "ejecutadas": "{count, plural, one {<b>{n}</b> ausgeführt} other {<b>{n}</b> ausgeführt}}",
+      "aria": "Aufrufe pro Tag über {dias} Tage: {sinProveedor} beantwortet, ohne deinen Anbieter aufzurufen, und {ejecutadas} ausgeführt.",
+      "foot": "Eine Spalte pro Tag; {k, plural, one {jede Kachel ein Aufruf} other {jede Kachel {kn} Aufrufe}}. {total} insgesamt. Ein Tag ohne Bericht ist eine Lücke, keine Null."
+    },
     "instrumentationSpine": {
       "eyebrow": "Bring deine Einsparungen live",
       "title": "Du bist nur wenige Schritte von deinem eigenen Zähler entfernt",

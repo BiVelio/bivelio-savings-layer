@@ -515,6 +515,13 @@
       "title": "appels llm · évités vs exécutés",
       "split": "{avoided} évités · {ran} exécutés ({pct}% évités)"
     },
+    "mosaico": {
+      "title": "Appels, jour après jour",
+      "sinProveedor": "{count, plural, one {<b>{n}</b> servi sans appeler votre fournisseur} other {<b>{n}</b> servis sans appeler votre fournisseur}}",
+      "ejecutadas": "{count, plural, one {<b>{n}</b> exécuté} other {<b>{n}</b> exécutés}}",
+      "aria": "Appels par jour sur {dias} jours : {sinProveedor} servis sans appeler votre fournisseur et {ejecutadas} exécutés.",
+      "foot": "Une colonne par jour ; {k, plural, one {chaque tuile, un appel} other {chaque tuile, {kn} appels}}. {total} au total. Un jour sans rapport est un trou, pas un zéro."
+    },
     "instrumentationSpine": {
       "eyebrow": "Passez aux économies en direct",
       "title": "Vous êtes à quelques pas de votre propre compteur",

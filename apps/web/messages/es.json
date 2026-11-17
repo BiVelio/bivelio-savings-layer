@@ -515,6 +515,13 @@
       "title": "llamadas llm · evitadas vs ejecutadas",
       "split": "{avoided} evitadas · {ran} ejecutadas ({pct}% evitadas)"
     },
+    "mosaico": {
+      "title": "Llamadas, día a día",
+      "sinProveedor": "{count, plural, one {<b>{n}</b> respondida sin llamar a tu proveedor} other {<b>{n}</b> respondidas sin llamar a tu proveedor}}",
+      "ejecutadas": "{count, plural, one {<b>{n}</b> ejecutada} other {<b>{n}</b> ejecutadas}}",
+      "aria": "Llamadas por día en {dias} días: {sinProveedor} respondidas sin llamar a tu proveedor y {ejecutadas} ejecutadas.",
+      "foot": "Una columna por día; {k, plural, one {cada tesela, una llamada} other {cada tesela, {kn} llamadas}}. {total} en total. Un día sin reporte es un hueco, no un cero."
+    },
     "instrumentationSpine": {
       "eyebrow": "Llega al ahorro en vivo",
       "title": "Estás a pocos pasos de tu propio medidor",

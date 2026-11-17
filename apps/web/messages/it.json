@@ -515,6 +515,13 @@
       "title": "chiamate llm · evitate vs eseguite",
       "split": "{avoided} evitate · {ran} eseguite ({pct}% evitate)"
     },
+    "mosaico": {
+      "title": "Chiamate, giorno per giorno",
+      "sinProveedor": "{count, plural, one {<b>{n}</b> risposta senza chiamare il tuo provider} other {<b>{n}</b> risposte senza chiamare il tuo provider}}",
+      "ejecutadas": "{count, plural, one {<b>{n}</b> eseguita} other {<b>{n}</b> eseguite}}",
+      "aria": "Chiamate al giorno in {dias} giorni: {sinProveedor} risposte senza chiamare il tuo provider e {ejecutadas} eseguite.",
+      "foot": "Una colonna per giorno; {k, plural, one {ogni tessera, una chiamata} other {ogni tessera, {kn} chiamate}}. {total} in totale. Un giorno senza report è un vuoto, non uno zero."
+    },
     "instrumentationSpine": {
       "eyebrow": "Arriva ai risparmi in tempo reale",
       "title": "Sei a pochi passi dal tuo contatore",

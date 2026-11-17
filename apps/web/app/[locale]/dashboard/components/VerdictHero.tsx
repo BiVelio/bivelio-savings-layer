@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { getTranslations } from "next-intl/server";
 
 import { AlertIcon, EyeOffIcon, InstallIcon, ProofIcon, ReceiptIcon, TrendIcon } from "@/app/components/icons";
+import { TitularMarcado } from "@/app/components/app/CabeceraDePagina";
 import { Recibo } from "@/app/components/ui";
 import { Link } from "@/i18n/navigation";
 import { NumberTicker } from "@/vendor/affectui/number-ticker";
@@ -289,7 +290,10 @@ export async function VerdictHero({
           <span className="verdict-ic" aria-hidden>
             {icono[estado]}
           </span>
-          <h3 className="verdict-title">{rotulo[estado]}</h3>
+          <h3 className="verdict-title">
+            {/* El marcador de la Firma de campaña, calculado sobre la última palabra. */}
+            <TitularMarcado texto={rotulo[estado]} />
+          </h3>
         </div>
         <div className="cap">{pie}</div>
         {rotulos ? null : (

@@ -515,6 +515,13 @@
       "title": "wywołania llm · uniknięte vs wykonane",
       "split": "{avoided} unikniętych · {ran} wykonanych ({pct}% unikniętych)"
     },
+    "mosaico": {
+      "title": "Wywołania, dzień po dniu",
+      "sinProveedor": "{count, plural, one {<b>{n}</b> obsłużone bez wywołania dostawcy} other {<b>{n}</b> obsłużonych bez wywołania dostawcy}}",
+      "ejecutadas": "{count, plural, one {<b>{n}</b> wykonane} other {<b>{n}</b> wykonanych}}",
+      "aria": "Wywołania dziennie przez {dias} dni: {sinProveedor} obsłużonych bez wywołania dostawcy i {ejecutadas} wykonanych.",
+      "foot": "Jedna kolumna na dzień; {k, plural, one {każdy kafelek to jedno wywołanie} other {każdy kafelek to {kn} wywołań}}. Łącznie {total}. Dzień bez raportu to luka, nie zero."
+    },
     "instrumentationSpine": {
       "eyebrow": "Przejdź do oszczędności na żywo",
       "title": "Dzieli Cię kilka kroków od własnego licznika",

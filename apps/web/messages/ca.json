@@ -515,6 +515,13 @@
       "title": "crides llm · evitades vs. executades",
       "split": "{avoided} evitades · {ran} executades ({pct}% evitades)"
     },
+    "mosaico": {
+      "title": "Crides, dia a dia",
+      "sinProveedor": "{count, plural, one {<b>{n}</b> resposta sense cridar el teu proveïdor} other {<b>{n}</b> respostes sense cridar el teu proveïdor}}",
+      "ejecutadas": "{count, plural, one {<b>{n}</b> executada} other {<b>{n}</b> executades}}",
+      "aria": "Crides per dia en {dias} dies: {sinProveedor} respostes sense cridar el teu proveïdor i {ejecutadas} executades.",
+      "foot": "Una columna per dia; {k, plural, one {cada tessel·la, una crida} other {cada tessel·la, {kn} crides}}. {total} en total. Un dia sense informe és un buit, no un zero."
+    },
     "instrumentationSpine": {
       "eyebrow": "Arriba a l'estalvi en viu",
       "title": "Estàs a pocs passos del teu propi mesurador",

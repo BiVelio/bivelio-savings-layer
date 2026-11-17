@@ -515,6 +515,13 @@
       "title": "llm calls · avoided vs ran",
       "split": "{avoided} avoided · {ran} ran ({pct}% avoided)"
     },
+    "mosaico": {
+      "title": "Calls, day by day",
+      "sinProveedor": "{count, plural, one {<b>{n}</b> answered without calling your provider} other {<b>{n}</b> answered without calling your provider}}",
+      "ejecutadas": "{count, plural, one {<b>{n}</b> executed} other {<b>{n}</b> executed}}",
+      "aria": "Calls per day over {dias} days: {sinProveedor} answered without calling your provider and {ejecutadas} executed.",
+      "foot": "One column per day; {k, plural, one {each tile, one call} other {each tile, {kn} calls}}. {total} in total. A day without a report is a gap, not a zero."
+    },
     "instrumentationSpine": {
       "eyebrow": "Get to live savings",
       "title": "You're a few steps from your own meter",
