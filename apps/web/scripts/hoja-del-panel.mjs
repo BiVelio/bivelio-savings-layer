@@ -1,37 +1,49 @@
 #!/usr/bin/env node
 /**
- * QUÉ REGLAS DE CSS SON SOLO DEL PANEL, Y EN QUÉ HOJA VIVE CADA UNA.
+ * QUÉ REGLAS DE CSS SON SOLO DEL PANEL O SOLO DEL ACCESO, Y EN QUÉ HOJA VIVE
+ * CADA UNA.
  *
  *   node scripts/hoja-del-panel.mjs          # informe del reparto
- *   node scripts/hoja-del-panel.mjs --check  # sale con 1 si panel.css tiene
- *                                            # una regla que lo público pinta
+ *   node scripts/hoja-del-panel.mjs --check  # sale con 1 si panel.css o
+ *                                            # acceso.css tienen una regla que
+ *                                            # una página sin ellas pinta
  *
- *   app/globals.css                    lo que puede pintar una página PÚBLICA
- *                                      (y lo común: tokens, base, @font-face,
- *                                      @keyframes). La importa
+ *   app/globals.css                    lo que puede pintar una página de
+ *                                      MARKETING (y lo común: tokens, base,
+ *                                      @font-face, @keyframes). La importa
  *                                      `app/[locale]/layout.tsx`.
  *   app/[locale]/dashboard/panel.css   las reglas que solo pueden casar dentro
  *                                      del panel. La importa
  *                                      `dashboard/layout.tsx` (y las galerías
  *                                      de desarrollo que pintan sus piezas).
+ *   app/components/acceso/acceso.css   las reglas que solo pueden casar en las
+ *                                      páginas de acceso (login, alta y su
+ *                                      confirmación, nueva contraseña,
+ *                                      invitación). La importa cada una de
+ *                                      esas cinco páginas.
  *
  * POR QUÉ. `globals.css` era una hoja única de 475 kB (61 kB en gzip) que
  * bloqueaba el primer pintado de la portada con las reglas de tablas, raíl,
  * extracto y gráficas que solo existen tras iniciar sesión: con la red y la
  * CPU de un móvil (150 ms, 1,6 Mbps, CPU 4×) el primer pintado se iba a 2,4 s
  * frente a 1,3 s. Es el mismo reparto que `juntar-affectui.mjs` hace con las
- * piezas de affectUI, aplicado a las reglas propias.
+ * piezas de affectUI, aplicado a las reglas propias. La portada es la página
+ * de aterrizaje de los anuncios (2026-11): el marco de acceso y la cáscara
+ * del panel salieron de la global por lo mismo.
  *
  * LA REGLA DE REPARTO. Una regla es «solo del panel» si TODOS los selectores
- * de su lista exigen al menos una clase que el código público no puede
- * producir. «Código público» sale del grafo de imports, no de las carpetas:
- * todo lo que alcanza una ruta que no cuelga de /dashboard ni importa la hoja
- * del panel, más `app/components/`, `lib/`, `i18n/`, los mensajes y el
- * middleware enteros (y lo que importan). Un componente de
- * `dashboard/components` que usa la portada es público. `app/components/app/`
- * —la cáscara del panel— cuenta como pública por estar en esa carpeta, aunque
- * hoy solo la monte el panel: es la lectura prudente, y sacarla de
- * `SIEMPRE_PUBLICO` movería otros ~23 kB de reglas.
+ * de su lista exigen al menos una clase que no puede producir el código de
+ * las páginas SIN la hoja del panel; «solo del acceso», lo mismo con las
+ * páginas sin la hoja de acceso (que incluyen el panel: no la carga). Ese
+ * código sale del grafo de imports, no de las carpetas: todo lo que alcanza
+ * una ruta que no recibe la hoja, más `app/components/`, `lib/`, `i18n/`, los
+ * mensajes y el middleware enteros (y lo que importan). Un componente de
+ * `dashboard/components` que usa la portada es público. De `app/components/`
+ * solo se descuenta lo que monta en exclusiva la superficie de cada hoja
+ * (`PROPIAS`): la cáscara del panel (`app/components/app/`) para la del
+ * panel; el marco y los formularios de acceso para la de acceso. Si una
+ * página que no recibe la hoja importara una de esas piezas, el grafo la
+ * haría pública y la valla saltaría.
  *
  * Y «puede producir» es deliberadamente generoso, porque el fallo que se evita
  * es mudo (una página pública sin su CSS no rompe ningún build):
@@ -47,10 +59,11 @@
  * Ante la duda, la regla es pública y se queda en `globals.css`.
  *
  * `@keyframes`, `@font-face`, `:root` y todo selector sin clases se quedan en
- * la hoja global. Mover una regla NO es gratis para la cascada (la hoja del
- * panel carga después de `globals.css` y de `affectui.css`, y sin orden fijo
- * respecto a `affectui-panel.css`): quien mueva algo tiene que comprobar que
- * ningún estilo computado cambia. `dashboard/panel-css.test.ts` es la valla.
+ * la hoja global. Mover una regla NO es gratis para la cascada (las hojas del
+ * panel y de acceso cargan después de `globals.css` y de `affectui.css`, y
+ * sin orden fijo respecto a las de affectUI de su ruta): quien mueva algo
+ * tiene que comprobar que ningún estilo computado cambia. Las vallas son
+ * `dashboard/panel-css.test.ts` y `components/acceso/acceso-css.test.ts`.
  */
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -60,6 +73,7 @@ import { alcanza, ficherosDeRuta } from "./juntar-affectui.mjs";
 const WEB = fileURLToPath(new URL("../", import.meta.url));
 export const HOJA_GLOBAL = "app/globals.css";
 export const HOJA_PANEL = "app/[locale]/dashboard/panel.css";
+export const HOJA_ACCESO = "app/components/acceso/acceso.css";
 
 const lee = (ruta) => readFileSync(WEB + ruta, "utf8");
 
@@ -200,9 +214,14 @@ export function clasesQueExige(selector) {
 /** Rutas a las que les llega la hoja del panel: cuelgan de /dashboard o la importan ellas. */
 const EN_EL_PANEL = /^app\/\[locale\]\/dashboard\//;
 const PIDE_LA_DEL_PANEL = /^import\s+["'](?:@\/app\/\[locale\]\/dashboard\/|\.\/|(?:\.\.\/)+dashboard\/)panel\.css["'];?\s*$/m;
+/** La de acceso no la hereda nadie de un layout: la pide cada página. */
+const PIDE_LA_DE_ACCESO = /^import\s+["']@\/app\/components\/acceso\/acceso\.css["'];?\s*$/m;
 
 export function rutas() {
-  return ficherosDeRuta().map((ruta) => ({ ruta, conHojaDelPanel: EN_EL_PANEL.test(ruta) || PIDE_LA_DEL_PANEL.test(lee(ruta)) }));
+  return ficherosDeRuta().map((ruta) => {
+    const texto = lee(ruta);
+    return { ruta, conHojaDelPanel: EN_EL_PANEL.test(ruta) || PIDE_LA_DEL_PANEL.test(texto), conHojaDeAcceso: PIDE_LA_DE_ACCESO.test(texto) };
+  });
 }
 
 const FUENTE = /\.(ts|tsx|mjs|js|json)$/;
@@ -216,18 +235,35 @@ function fuentes(dir, acc = []) {
   return acc;
 }
 
-/** Carpetas que cuentan como públicas enteras, las use quien las use. */
+/** Carpetas que cuentan como públicas enteras, las use quien las use… */
 const SIEMPRE_PUBLICO = ["app/components", "lib", "i18n", "messages"];
+/**
+ * …salvo lo que dentro de ellas solo monta la superficie de cada hoja. Solo se
+ * descuenta del «siempre»: si una página que no recibe la hoja lo importa, el
+ * grafo lo vuelve a meter.
+ */
+export const PROPIAS = {
+  // La cáscara del panel: barra, raíl, cabecera de página, visita guiada.
+  panel: /^app\/components\/app\//,
+  // El marco de acceso y los formularios de login, alta y nueva contraseña.
+  acceso: /^app\/components\/(?:acceso\/|AuthForm\.tsx$|ResetPasswordForm\.tsx$|ConversionRegistro\.tsx$)/,
+};
 
-/** Los ficheros cuyo texto puede acabar en el `class` de una página pública. */
-export function ficherosPublicos() {
+/** Los ficheros cuyo texto puede acabar en el `class` de una página que NO recibe la hoja `cual`. */
+function ficherosSin(cual) {
+  const recibe = cual === "panel" ? "conHojaDelPanel" : "conHojaDeAcceso";
   const visto = new Set();
-  for (const r of rutas()) if (!r.conHojaDelPanel) alcanza(r.ruta, visto);
-  for (const dir of SIEMPRE_PUBLICO) for (const f of fuentes(dir)) alcanza(f, visto);
+  for (const r of rutas()) if (!r[recibe]) alcanza(r.ruta, visto);
+  for (const dir of SIEMPRE_PUBLICO) for (const f of fuentes(dir)) if (!PROPIAS[cual].test(f)) alcanza(f, visto);
   alcanza("middleware.ts", visto);
   // El grafo también alcanza hojas e imágenes: no son código que ponga clases.
   return [...visto].filter((f) => FUENTE.test(f)).sort();
 }
+
+/** Lo que puede pintar una página sin la hoja del panel (el marketing y el acceso). */
+export const ficherosPublicos = () => ficherosSin("panel");
+/** Lo que puede pintar una página sin la hoja de acceso (el marketing y el panel). */
+export const ficherosSinAcceso = () => ficherosSin("acceso");
 
 /** Todo fichero de la aplicación: lo público y lo del panel. */
 export function ficherosDeTodo() {
@@ -295,8 +331,9 @@ export function laProduce(clase, voc) {
   return voc.sufijos.some((s) => clase.length > s.length && clase.endsWith(s) && directa(clase.slice(0, -s.length)));
 }
 
-let publico;
+let publico, sinAcceso;
 export const vocabularioPublico = () => (publico ??= vocabulario(ficherosPublicos()));
+export const vocabularioSinAcceso = () => (sinAcceso ??= vocabulario(ficherosSinAcceso()));
 
 /** Las clases de un selector que lo público NO puede producir. Vacío = el selector es público. */
 export const clasesSoloDelPanel = (selector, voc = vocabularioPublico()) => clasesQueExige(selector).filter((c) => !laProduce(c, voc));
@@ -307,17 +344,22 @@ export function esSoloDelPanel(preludio, voc = vocabularioPublico()) {
   return lista.length > 0 && lista.every((s) => clasesSoloDelPanel(s, voc).length > 0);
 }
 
-/** Los selectores de la hoja del panel que una página pública podría pintar. Tiene que salir vacío. */
-export function publicasEnLaHojaDelPanel(css = lee(HOJA_PANEL)) {
-  const voc = vocabularioPublico();
+/** Los selectores de una hoja que pinta el código de `voc`. */
+function pintables(hoja, css, voc) {
   const malas = [];
   for (const r of reglas(css)) {
-    for (const s of selectores(r.preludio)) if (clasesSoloDelPanel(s, voc).length === 0) malas.push(`${HOJA_PANEL}:${r.linea}  ${s}`);
+    for (const s of selectores(r.preludio)) if (clasesSoloDelPanel(s, voc).length === 0) malas.push(`${hoja}:${r.linea}  ${s}`);
   }
   return malas;
 }
 
-/** Lo que no es regla ni comentario y aparece en la hoja del panel (@keyframes, @font-face…). Tiene que salir vacío. */
+/** Los selectores de la hoja del panel que una página pública podría pintar. Tiene que salir vacío. */
+export const publicasEnLaHojaDelPanel = (css = lee(HOJA_PANEL)) => pintables(HOJA_PANEL, css, vocabularioPublico());
+
+/** Los selectores de la hoja de acceso que una página sin ella (marketing o panel) podría pintar. Tiene que salir vacío. */
+export const publicasEnLaHojaDeAcceso = (css = lee(HOJA_ACCESO)) => pintables(HOJA_ACCESO, css, vocabularioSinAcceso());
+
+/** Lo que no es regla ni comentario y aparece en una hoja del panel o de acceso (@keyframes, @font-face…). Tiene que salir vacío. */
 export function ajenasEnLaHojaDelPanel(css = lee(HOJA_PANEL)) {
   const acc = [];
   const baja = (nodos) => {
@@ -329,22 +371,31 @@ export function ajenasEnLaHojaDelPanel(css = lee(HOJA_PANEL)) {
   baja(trocea(css).nodos);
   return acc;
 }
+export const ajenasEnLaHojaDeAcceso = (css = lee(HOJA_ACCESO)) => ajenasEnLaHojaDelPanel(css);
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const kb = (n) => `${(n / 1024).toFixed(0)} kB`;
-  const malas = publicasEnLaHojaDelPanel();
+  const malas = [...publicasEnLaHojaDelPanel(), ...publicasEnLaHojaDeAcceso()];
   if (process.argv.includes("--check")) {
     if (malas.length) {
-      console.error(`${malas.length} selector(es) de la hoja del panel que una página pública puede pintar; su regla vuelve a ${HOJA_GLOBAL}:\n${malas.join("\n")}`);
+      console.error(`${malas.length} selector(es) de la hoja del panel o de la de acceso que una página sin ella puede pintar; su regla vuelve a ${HOJA_GLOBAL}:\n${malas.join("\n")}`);
       process.exit(1);
     }
-    console.log("al día: ninguna regla de la hoja del panel casa en una página pública");
+    console.log("al día: ninguna regla de la hoja del panel ni de la de acceso casa en una página que no la carga");
   } else {
     const global = lee(HOJA_GLOBAL);
-    const movibles = reglas(global).filter((r) => esSoloDelPanel(r.preludio));
+    const vocPanel = vocabularioPublico();
+    const vocAcceso = vocabularioSinAcceso();
+    const delPanel = reglas(global).filter((r) => esSoloDelPanel(r.preludio, vocPanel));
+    const deAcceso = reglas(global).filter((r) => esSoloDelPanel(r.preludio, vocAcceso));
+    const suma = (rs) => kb(rs.reduce((a, r) => a + r.fin - r.ini, 0));
     console.log(`${HOJA_GLOBAL}: ${kb(global.length)}, ${reglas(global).length} reglas`);
-    console.log(`${HOJA_PANEL}: ${kb(lee(HOJA_PANEL).length)}, ${reglas(lee(HOJA_PANEL)).length} reglas (${malas.length} que lo público puede pintar)`);
-    console.log(`reglas de ${HOJA_GLOBAL} que solo casan en el panel y siguen en ella: ${movibles.length} (${kb(movibles.reduce((a, r) => a + r.fin - r.ini, 0))})`);
-    if (process.argv.includes("--lista")) for (const r of movibles) console.log(`  ${r.linea}  ${r.preludio.replace(/\s+/g, " ")}`);
+    console.log(`${HOJA_PANEL}: ${kb(lee(HOJA_PANEL).length)}, ${reglas(lee(HOJA_PANEL)).length} reglas (${publicasEnLaHojaDelPanel().length} que una página sin ella puede pintar)`);
+    console.log(`${HOJA_ACCESO}: ${kb(lee(HOJA_ACCESO).length)}, ${reglas(lee(HOJA_ACCESO)).length} reglas (${publicasEnLaHojaDeAcceso().length} que una página sin ella puede pintar)`);
+    // Lo que sigue en la global pudiendo irse: casi todo empata en la cascada
+    // con una regla posterior o con una pieza de affectUI (ver las cabeceras).
+    console.log(`reglas de ${HOJA_GLOBAL} que solo casan en el panel y siguen en ella: ${delPanel.length} (${suma(delPanel)})`);
+    console.log(`reglas de ${HOJA_GLOBAL} que solo casan en el acceso y siguen en ella: ${deAcceso.length} (${suma(deAcceso)})`);
+    if (process.argv.includes("--lista")) for (const r of [...delPanel, ...deAcceso]) console.log(`  ${r.linea}  ${r.preludio.replace(/\s+/g, " ")}`);
   }
 }

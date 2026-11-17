@@ -10,7 +10,8 @@ import "../globals.css";
 // componente: así una página espera dos hojas antes de pintar en vez de hasta
 // quince, y la 404 no depende de hojas que solo conoce su árbol — eso la
 // dejaba en blanco en una de cada tres cargas directas (la causa, en la
-// cabecera de affectui.css). Las que solo usa el panel las carga su layout.
+// cabecera de affectui.css). Las que solo usa el panel las carga su layout, y
+// las del acceso (login, alta, invitación), cada una de sus páginas.
 import "@/vendor/affectui/affectui.css";
 import { NavBar } from "@/app/components/NavBar";
 import { SiteNavGate } from "@/app/components/SiteNavGate";

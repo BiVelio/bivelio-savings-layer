@@ -1,6 +1,6 @@
 /* ============================================================================
-   BiVelio Savings — hoja de estilo global (landing + auth + lo común del
-   panel).
+   BiVelio Savings — hoja de estilo global (el marketing y lo común a todas
+   las páginas).
 
    FUENTE DE VERDAD: bivelio.com (repo BiVelio/website, css/bv.css y
    css/fuentes.css). Rediseño «Savings Cloud» (2026-11): superficies marfil,
@@ -23,13 +23,17 @@
 
    LO QUE SOLO PINTA EL PANEL NO VA AQUÍ: va en
    `app/[locale]/dashboard/panel.css`, que carga el layout del panel y no la
-   portada (esta hoja bloquea el primer pintado de todas las páginas). Una
-   regla es «solo del panel» si todos sus selectores exigen una clase que el
-   código público no puede producir; el criterio está en
-   `scripts/hoja-del-panel.mjs` y `node scripts/hoja-del-panel.mjs --lista`
-   dice cuáles de las de aquí lo cumplen. Algunas se quedan a propósito:
-   empatan en especificidad con una regla posterior de esta hoja o con una
-   pieza de affectUI, y moverlas detrás cambiaría quién gana.
+   portada (esta hoja bloquea el primer pintado de todas las páginas, y la
+   portada es la de los anuncios). LO QUE SOLO PINTAN LAS PÁGINAS DE ACCESO
+   (login, alta, nueva contraseña, invitación) tampoco: va en
+   `app/components/acceso/acceso.css`, que importa cada una de ellas. Una
+   regla es «solo del panel» (o «solo del acceso») si todos sus selectores
+   exigen una clase que el código de las páginas sin esa hoja no puede
+   producir; el criterio está en `scripts/hoja-del-panel.mjs` y
+   `node scripts/hoja-del-panel.mjs --lista` dice cuáles de las de aquí lo
+   cumplen. Algunas se quedan a propósito: empatan en especificidad con una
+   regla posterior de esta hoja o con una pieza de affectUI, y moverlas
+   detrás cambiaría quién gana.
 
    NO PASAR prettier NI stylelint: varios tests leen este fichero como texto
    (reglas en una línea, sangría de dos espacios, selectores a principio de
@@ -329,7 +333,6 @@ a:hover { text-decoration: underline; text-underline-offset: 2px; }
   color: var(--brand); font: inherit;
   text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px;
 }
-.auth-link:hover { text-decoration-thickness: 2px; }
 
 /* Titulares de aplicación: Geist 600. Los EDITORIALES (Plus Jakarta Sans 800)
    se piden aparte: `.lp h1`, `.lp h2` y la clase `.editorial-title`. */
@@ -657,120 +660,19 @@ input[type="range"] { accent-color: var(--brand); }
    `100vh` en iOS resuelve contra el visor GRANDE, así que el shell salía más
    alto que lo visible; un Safari anterior a la 16 se queda con la primera línea. */
 .app { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; }
-.app-topbar {
-  position: sticky; top: 0; z-index: 50;
-  display: flex; align-items: center; gap: 14px;
-  height: var(--nav-h); padding: 0 clamp(16px, 3vw, 28px);
-  background: color-mix(in srgb, var(--bg) 86%, transparent);
-  -webkit-backdrop-filter: saturate(1.4) blur(16px); backdrop-filter: saturate(1.4) blur(16px);
-  border-bottom: 1px solid var(--line);
-}
-.app-topbar .brand:hover { text-decoration: none; }
-/* Logo oficial en el topbar: mismo corte que el NavBar público, pero el umbral
-   es 520px porque aquí la cuenta ocupa la derecha. */
-.app-brand { flex: none; }
-.app-logo-mark { display: none; }
-@media (max-width: 520px) { .app-logo-full { display: none; } .app-logo-mark { display: block; } }
-.app-spacer { margin-left: auto; }
-.app-account { display: flex; align-items: center; gap: 12px; }
-/* El correo ES el enlace a Cuenta (privacy, 06-09): la única cosa de la barra
-   que la gente ya intentaba pulsar. Tinta, no azul: es identidad, no acción. */
-.app-account .email {
-  font-family: var(--mono); font-size: var(--fs-note); color: var(--ink);
-  max-width: 190px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  text-decoration: none;
-}
-.app-account .email:hover { text-decoration: underline; text-underline-offset: 3px; }
-/* DE QUIÉN es la organización, junto a QUÉ plan. Más callado que la píldora del
-   plan a propósito: el plan es un estado que cambia y merece el acento; el
-   nombre es contexto. Se trunca antes que ensanchar la barra. */
-.app-org {
-  font-family: var(--sans); font-size: var(--fs-note); font-weight: 500;
-  line-height: 1; color: var(--ink-soft);
-  max-width: 22ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
 /* Fantasma de texto, no botón perfilado: es lo que hace el topbar del hermano. */
 
-
-@media (max-width: 640px) { .app-account .email { display: none; } }
-/* Móviles estrechos: fuera las píldoras no esenciales para que la barra nunca
-   desborde (marca, idioma y cerrar sesión siguen a mano). */
-@media (max-width: 520px) { .app-topbar { gap: 10px; } .app-plan, .app-org { display: none; } }
 
 /* EL ANCHO DEL RAÍL, medido en privacy y no elegido a ojo (20-09-2026): a 240px
    la fila útil para el nombre eran 158px y varias entradas partían en dos
    líneas en alemán, vietnamita y turco; 288px deja 211px de fila, que es donde
    caben todas en una sola línea, y todavía 928px de contenido a 1280px. */
 .app-body { display: grid; grid-template-columns: 288px minmax(0, 1fr); flex: 1; min-height: 0; }
-.app-sidebar { border-right: 1px solid var(--line); background: var(--bg); padding: 16px 10px 28px; }
-/* La frase de «faltan secciones», con los mismos tokens que la cabecera de grupo. */
-.app-nav-note { margin: 0 8px 12px; font-size: var(--fs-label); line-height: 1.45; color: var(--ink-soft); max-width: 260px; }
-/* EL RAÍL SE FIJA Y, SI NO CABE, SCROLLEA POR DENTRO. `position: sticky` sin
-   altura acotada es una trampa: en cuanto el menú es más alto que el viewport,
-   lo que sobresale por abajo queda INALCANZABLE. El tope se calcula: el alto
-   del viewport menos donde se clava (la barra + los 16px de padding del raíl)
-   menos 12px de respiro abajo. `sidebar-scroll.test.ts` exige que las dos
-   cifras sigan de acuerdo. `overscroll-behavior: contain` para que al llegar
-   al final del menú la rueda no siga arrastrando la página; el hueco de la
-   barra de scroll SIEMPRE reservado para que la fila mida lo mismo quepa o no. */
-.app-nav {
-  display: flex; flex-direction: column; gap: 2px;
-  position: sticky; top: calc(var(--nav-h) + 16px);
-  max-height: calc(100vh - var(--nav-h) - 28px);
-  max-height: calc(100dvh - var(--nav-h) - 28px);
-  overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable;
-}
-/* Cabecera de grupo (la del menú móvil de bivelio.com: 11px/600/0.12em, sin
-   mono), con AIRE y una raya entre grupos: 12px de aire, una línea y otros 10px
-   hasta la cabecera. El PRIMER grupo no lleva raya: no separa de nada. */
-.app-nav-sep {
-  flex: none; margin: 12px 8px 4px; padding-top: 10px; border-top: 1px solid var(--line);
-  font-family: var(--sans); font-size: var(--fs-label); font-weight: var(--fw-label); line-height: var(--lh-label);
-  letter-spacing: var(--ls-label); text-transform: uppercase; color: var(--ink-soft);
-}
-.app-nav-sep[data-first] { margin-top: 2px; padding-top: 0; border-top: 0; }
 
-/* EL BLOQUE «PUESTA EN MARCHA · N DE 5», primer hijo del raíl. Va DENTRO de
-   `.app-nav` porque es el único contenedor con alto acotado y scroll propio. */
-.app-setup { flex: none; margin: 0 0 2px; padding: 9px 11px; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
-.app-setup-k { margin: 0; font-size: var(--fs-label); font-weight: var(--fw-label); letter-spacing: var(--ls-label); text-transform: uppercase; color: var(--ink-soft); }
-/* La frase que sustituye al bloque entero cuando la lectura no contestó: sin
-   caja ni barra, porque no hay progreso que enmarcar. */
-.app-setup-unreadable { margin: 0 0 8px; padding: 0 4px; font-size: var(--fs-label); line-height: 1.45; color: var(--ink-soft); }
-
-/* LA CIFRA DE LA DERECHA: «2/5», «3 de 5», «2 miembros». Una LECTURA, no una
-   frase — la frase entera va al `title` de la fila, donde no empuja a nadie. */
-.app-nav-badge { margin-left: auto; flex: none; white-space: nowrap; padding-left: 10px; font-size: var(--fs-label); font-weight: 500; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
-.app-nav-item.on .app-nav-badge { color: inherit; opacity: .85; }
-/* LA FILA: alta, constante y de una sola línea (38px siempre, icono centrado,
-   etiqueta en `nowrap` con el `ellipsis` como red). `flex: none` también en la
-   columna: un flex en columna encoge a sus hijos cuando no caben, y el menú se
-   encogía en vez de scrollear. */
-.app-nav-item {
-  display: flex; align-items: center; gap: 9px; padding: 6px 8px; min-height: 38px; flex: none;
-  border-radius: var(--r-lg); font-size: 14px; font-weight: 500; line-height: 1.25;
-  color: var(--ink); text-decoration: none; border: 1px solid transparent;
-  transition: background-color .15s, color .15s; min-width: 0;
-}
-.app-nav-label { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .app-nav-item:hover { background: var(--surface-hover); text-decoration: none; }
 /* DÓNDE ESTOY, y sólo un sitio a la vez: fondo, tinta de marca y el peso un
    escalón por encima del resto — el activo de privacy. */
 .app-nav-item.on { color: var(--accent); background: var(--accent-soft); font-weight: 600; }
-/* La tesela del icono: 24px con hairline, blanca; el glifo es un SVG en línea
-   pintado con currentColor. */
-.app-nav-item .ic {
-  width: 24px; height: 24px; border-radius: var(--r-lg); flex: none; align-self: center;
-  display: grid; place-items: center;
-  border: 1px solid var(--line); background: var(--surface); color: var(--ink-soft);
-  transition: color .15s, border-color .15s;
-}
-.app-nav-item .ic svg { width: 16px; height: 16px; }
-.app-nav-item:hover .ic { color: var(--ink); border-color: color-mix(in srgb, var(--accent) 30%, var(--line)); }
-.app-nav-item.on .ic { border-color: color-mix(in srgb, var(--accent) 28%, var(--line)); color: var(--accent); }
-
-.app-main { padding: clamp(24px, 4vw, 44px) clamp(16px, 3vw, 32px); min-width: 0; }
-.app-inner { width: min(940px, 100%); margin: 0 auto; }
 
 /* móvil: el raíl pasa a ser una tira horizontal con scroll bajo la barra */
 @media (max-width: 860px) {
@@ -778,61 +680,13 @@ input[type="range"] { accent-color: var(--brand); }
      hasta 300px de aire vacío; `minmax(0, …)` para que la columna no se plante
      en el min-content de `.app-main` (146px de panel recortados a 414px). */
   .app-body { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
-  .app-sidebar {
-    border-right: none; border-bottom: 1px solid var(--line); padding: 8px 12px;
-    position: sticky; top: var(--nav-h); z-index: 40;
-    background: color-mix(in srgb, var(--bg) 90%, transparent);
-    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
-    /* El tamaño mínimo automático de un ítem de grid es su min-content, y el de
-       esta tira es la fila entera de enlaces sin partir: sin esto la PÁGINA
-       entera crecía hasta el ancho de la tira. */
-    min-width: 0;
-  }
-  /* Tira horizontal: aquí el raíl no se fija, así que ni tope de alto ni
-     scroll vertical — dejarlos daría una segunda barra en una fila. */
-  .app-nav {
-    flex-direction: row; gap: 6px; position: static; padding-bottom: 2px;
-    max-height: none; overflow-x: auto; overflow-y: hidden;
-    scrollbar-gutter: auto; scroll-padding-inline: 12px;
-  }
-  /* `min-width: 0` en la fila deja a cada enlace encogerse POR DEBAJO de su
-     texto y, con `nowrap`, dibujarse ENCIMA del siguiente. `flex: none` le
-     devuelve su ancho y la tira vuelve a deslizarse. */
-  .app-nav-item { flex: none; padding: 8px 12px; min-height: 36px; }
-  .app-nav-label { min-width: auto; overflow: visible; text-overflow: clip; }
-  .app-nav-item .ic { display: none; }
-  /* La cifra no cabe en una tira que ya se desliza: su frase sigue en el title. */
-  .app-nav-badge { display: none; }
-  /* Las cabeceras de grupo no caben como texto, pero la AGRUPACIÓN sí: cada
-     una es una raya vertical entre grupos. La del primero no separa de nada. */
-  .app-nav-sep {
-    width: 1px; flex: none; align-self: stretch; overflow: hidden;
-    margin: 4px 4px; padding: 0; border: 0; background: var(--line);
-    font-size: 0; letter-spacing: 0; color: transparent;
-  }
-  .app-nav-sep[data-first] { display: none; }
-  /* El bloque de puesta en marcha sería el ítem más ancho de la tira; la cifra
-     sigue viéndose en el title de «Instalar». */
-  .app-setup, .app-setup-unreadable { display: none; }
 }
 .kt-input { flex: 1; min-width: 0; font-family: var(--mono); font-size: 13px; padding: 9px 12px; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); color: var(--ink); transition: border-color .15s, box-shadow .15s; }
 .kt-row .btn { white-space: nowrap; padding: 9px 14px; font-size: 14px; }
 .kt-ok { color: var(--good-ink); }
 
 /* ── Tarjeta de autenticación (login / signup) ─────────────────────────── */
-/* El alto se descuenta del chrome que tiene encima (franja + nav); con 100dvh
-   a secas, login y signup arrastraban ~102px de scroll que no llevaba a nada. */
-.auth-wrap {
-  min-height: calc(100dvh - var(--nav-h)); display: grid; place-items: center; padding: 32px 20px;
-  background-color: var(--bg);
-  background-image: radial-gradient(rgba(20, 22, 28, .06) 1px, transparent 1px);
-  background-size: 22px 22px;
-}
-.auth-card { width: 100%; max-width: 420px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-2xl); box-shadow: var(--shadow-elevated); padding: 32px; }
-.auth-card h1 { font-size: 1.5rem; letter-spacing: -.03em; margin: 4px 0 6px; }
 .auth-card .sub { color: var(--ink-soft); font-size: .9rem; margin: 0 0 22px; }
-/* Logo oficial en la cabecera de las tarjetas de auth (login/signup/reset). */
-.auth-brand { margin-bottom: 22px; }
 .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
 .field label { font-size: 14px; color: var(--ink-soft); font-weight: 500; }
 .field input {
@@ -847,11 +701,6 @@ input[type="range"] { accent-color: var(--brand); }
    focus:ring-1 focus:ring-primary` del origen). En tinta, el único aviso era que
    un hairline cambiaba de gris a negro: invisible. */
 .field input:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 1px var(--brand); }
-
-.auth-alt { margin: 18px 0 0; font-size: .88rem; color: var(--ink-soft); text-align: center; }
-.auth-msg { border-radius: var(--radius-lg); padding: 10px 13px; font-size: .85rem; margin-bottom: 16px; }
-.auth-msg.error { background: color-mix(in srgb, var(--danger) 10%, transparent); color: var(--danger); }
-.auth-msg.info { background: var(--mint-soft); color: var(--good-ink); }
 
 /* Eyebrow: el canónico de bivelio.com (components/ui/section.tsx) y el
    `.eyebrow::before` de privacy — mono 11px / 0.18em versalitas en azul de
@@ -874,11 +723,7 @@ input[type="range"] { accent-color: var(--brand); }
    la escala tipográfica (N1, N1c, N2): un solo sitio decide cada nivel. Aquí
    queda la geometría del bloque. El antetítulo pertenece al título: 8px por
    arriba, los mismos 8px que el subtítulo tiene por abajo. */
-.app-head { margin-bottom: var(--sp-7); }
 .app-head .eyebrow, .app-head .ck-eyebrow { margin-bottom: var(--sp-3); }
-.app-head-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-.app-sec-head, .ck-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: var(--sp-5); flex-wrap: wrap; }
-.app-sec-head h2, .ck-head h2 { margin: 0; }
 .app-sec-head .eyebrow, .app-sec-head .ck-eyebrow, .ck-head .eyebrow, .ck-head .ck-eyebrow { margin-bottom: var(--sp-1); }
 .app-gap { margin-top: var(--sp-5); }
 
@@ -960,22 +805,6 @@ a.card:hover, button.card:hover, .card-link:hover { box-shadow: var(--shadow-hov
 .verdict { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-xl); box-shadow: var(--shadow-card); padding: 26px; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: 24px; align-items: center; }
 /* `.verdict .big` es la cifra única (N4d), al final del fichero. */
 
-/* La tarjeta de sombra usaba `big`/`sub`/`src` con ámbito .verdict/.kpi y su
-   letra salía por defecto, distinta del resto del panel (dueño, 04-09): el
-   mismo tratamiento tipográfico que sus tarjetas hermanas, con ámbito propio. */
-.sombra-elision .big { font-family: var(--font-heading); font-weight: 600; letter-spacing: -.03em; line-height: 1; font-variant-numeric: tabular-nums; }
-.sombra-elision .big.pos { color: var(--good-ink); }
-.sombra-elision .big.neg { color: var(--danger); }
-.sombra-elision .sub { font-size: .78rem; color: var(--ink-soft); }
-.sombra-elision .src { font-family: var(--mono); font-size: .6rem; color: var(--ink-soft); opacity: .7; word-break: break-all; }
-
-/* Borrado del proveedor (0025): misma tipografía que sus tarjetas hermanas, con
-   ámbito propio. El titular es un CONTEO (peticiones acreditadas), no un dinero:
-   va en tinta neutra, sin pos/neg — no hay nada que pintar de verde ni de rojo. */
-.elision-proveedor .big { font-family: var(--font-heading); font-weight: 600; letter-spacing: -.03em; line-height: 1; font-variant-numeric: tabular-nums; color: var(--ink); }
-.elision-proveedor .sub { font-size: .78rem; color: var(--ink-soft); }
-.elision-proveedor .src { font-family: var(--mono); font-size: .6rem; color: var(--ink-soft); opacity: .7; word-break: break-all; }
-
 /* Ritmo y proyección: MISMA tipografía que sus tarjetas hermanas. `big`, `sub` y
    `src` solo existían con ámbito .verdict/.kpi/.sombra-elision, así que esta
    tarjeta heredaba la letra del cuerpo y desentonaba con todo el cockpit
@@ -1007,7 +836,6 @@ a.card:hover, button.card:hover, .card-link:hover { box-shadow: var(--shadow-hov
 /* Banco de referencia — tono ámbar (el "wait" del sistema de badges) */
 .bench { border: 1px solid color-mix(in srgb, var(--amber) 22%, var(--line)); border-radius: var(--radius-xl); padding: 20px; background: color-mix(in srgb, var(--amber) 3%, var(--surface)); }
 .bench-badge { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: .82rem; color: var(--ink-soft); background: var(--amber-soft); border: 1px solid color-mix(in srgb, var(--amber) 25%, transparent); border-radius: var(--radius-lg); padding: 10px 14px; margin-bottom: 16px; }
-.bench-badge b { color: var(--warn); font-weight: 600; }
 
 /* Tabla de escenarios */
 .tbl-scroll { overflow-x: auto; }
@@ -1027,11 +855,6 @@ a.card:hover, button.card:hover, .card-link:hover { box-shadow: var(--shadow-hov
 .legend .lg { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: .68rem; color: var(--ink-soft); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 4px 8px; }
 .keycard .k { font-family: var(--mono); font-size: .82rem; }
 
-/* Botonera de facturación. `billing-cta` y `billing-err` se usaban desde que
-   existen los botones de compra y NO estaban definidas en ninguna parte: los
-   botones se apoyaban en el flujo por defecto y el error se pintaba con el color
-   del texto normal. Al añadir el selector de asientos hacía falta de verdad. */
-.billing-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; }
 .billing-err { flex-basis: 100%; font-size: .78rem; color: var(--danger); }
 .seatpick { display: inline-flex; align-items: center; gap: 8px; }
 .seatpick label { font-size: .78rem; color: var(--ink-soft); }
@@ -1060,7 +883,6 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .pv-pct.zero { color: var(--ink-soft); }
 .pv-kpi .v { font-size: 1.9rem; }
 .pv-kpi .sub { font-size: .78rem; }
-.pv-note p { font-size: .8rem; color: var(--ink-soft); line-height: 1.5; margin: 4px 0 6px; max-width: 78ch; }
 /* El verificador de formato (FormatVerifier), el mismo en la portada y en el
    panel: entrada a la izquierda, veredicto a la derecha. Las etiquetas de las
    barras son frases («Tus datos, en JSON compacto»), así que no caben en la
@@ -1177,44 +999,19 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .hiw-mcard .v.real { color: var(--good-ink); }
 .hiw-mcard p { font-size: .84rem; color: var(--ink-soft); margin: 0; line-height: 1.55; }
 .hiw-cta { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 22px; }
-.ux-seg { display: flex; flex-direction: column; gap: 5px; }
 .ux-seg > .ck-eyebrow { font-size: 10px; }
-.ux-seg .opts { display: inline-flex; flex-wrap: wrap; gap: 4px; }
-.ux-seg button {
-  padding: 5px 11px; font-size: 12px; line-height: 1.35; font-family: var(--sans); font-weight: 500;
-  border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface);
-  color: var(--ink-soft); cursor: pointer; font-variant-numeric: tabular-nums;
-  transition: background-color .14s ease, color .14s ease, border-color .14s ease;
-}
-.ux-seg button:hover { background: var(--surface-3); color: var(--ink); border-color: var(--btn-ghost-line-hover); }
-/* El activo va en TINTA, no en azul: `--brand` es un acento del sistema, no el
-   color del producto, y seis pastillas azules gritaban más que los datos. */
-.ux-seg button[aria-pressed="true"] { background: var(--btn-ink); border-color: var(--btn-ink); color: #fff; font-weight: 600; }
-.ux-seg button[aria-pressed="true"]:hover { background: var(--btn-ink-hover); border-color: var(--btn-ink-hover); }
-.ux-stat { background: var(--surface); padding: 10px 12px; min-width: 0; }
 .ux-stat .k { display: block; font-family: var(--mono); font-size: 9.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ux-stat .v { font-family: var(--font-heading); font-size: 1.02rem; font-weight: 650; letter-spacing: -.02em; font-variant-numeric: tabular-nums; margin-top: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ux-stat .v.pos { color: var(--good-ink); }
 .ux-stat .v.neg { color: var(--danger); }
 .ux-stat .s { display: block; font-family: var(--mono); font-size: 9.5px; color: var(--ink-soft); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ux-tip {
-  position: absolute; transform: translateX(-50%); pointer-events: none; z-index: 4;
-  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-md);
-  box-shadow: var(--shadow-card); padding: 8px 11px; min-width: 150px;
-}
 .ux-tip .d { font-family: var(--mono); font-size: 10px; letter-spacing: .05em; color: var(--ink-soft); }
 .ux-tip .v { font-family: var(--font-heading); font-size: 1.05rem; font-weight: 650; letter-spacing: -.02em; font-variant-numeric: tabular-nums; margin: 4px 0 6px; }
 .ux-tip .v.pos { color: var(--good-ink); }
 .ux-tip .v.neg { color: var(--danger); }
-.ux-tip .r { display: flex; justify-content: space-between; gap: 14px; font-size: 11px; color: var(--ink-soft); line-height: 1.7; }
-.ux-tip .r b { font-family: var(--mono); font-size: 10.5px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
-.ux-tip .r b.pos { color: var(--good-ink); }
-.ux-tip .r b.neg { color: var(--danger); }
 
 .ux-legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 10px; font-family: var(--mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-soft); }
 .ux-foot { font-family: var(--mono); font-size: 10.5px; letter-spacing: .04em; color: var(--ink-soft); margin: 12px 0 0; }
-.ux-tbl th { font-family: var(--mono); font-size: 9.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-soft); text-align: right; padding: 0 0 9px; border-bottom: 1px solid var(--line); white-space: nowrap; }
-.ux-tbl td { padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 12.5px; text-align: right; white-space: nowrap; }
 .ux-tbl td.m { font-family: var(--mono); max-width: 0; width: 30%; overflow: hidden; text-overflow: ellipsis; }
 .ux-tbl td.q { color: var(--ink-soft); font-family: var(--mono); font-size: 11.5px; }
 
@@ -1359,7 +1156,6 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 @media (max-width: 600px) { .lp .plan-grid { grid-template-columns: minmax(0, 1fr); } }
 .lp .plan-card { min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-2xl); padding: 26px; display: flex; flex-direction: column; gap: 12px; box-shadow: var(--shadow-card); }
 .lp .plan-card h3 { margin: 0; letter-spacing: -.02em; }
-.lp .plan-card .amt { font-family: var(--font-heading); font-size: 2.2rem; font-weight: 600; letter-spacing: -.04em; }
 .lp .plan-card p { margin: 0; font-size: .9rem; flex: 1; }
 .lp .plan-card .btn { align-self: flex-start; }
 .lp .plan-foot { margin-top: 20px; display: flex; flex-direction: column; gap: 8px; }
@@ -1948,7 +1744,6 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
   color: var(--ink-soft); cursor: pointer; font-variant-numeric: tabular-nums;
   transition: background-color .14s ease, color .14s ease, border-color .14s ease;
 }
-.pe-card { position: relative; min-width: 0; }
 
 /* El selector de rango del titular, ya vivo: enlaces, no botones muertos. */
 .seg.live a { display: inline-block; padding: 6px 12px; font-size: .76rem; color: var(--ink-soft); text-decoration: none; background: var(--surface); border-left: 1px solid var(--line); font-variant-numeric: tabular-nums; }
@@ -2159,8 +1954,6 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
   .lp .hpanel-medido { flex-direction: column; gap: 10px; }
 }
 @media (prefers-reduced-motion: reduce) { .lp .hpanel-shot { animation: none; } }
-.ux-tbl-ahorro td.m { font-size: 13px; }
-.ux-tbl-ahorro td.a { font-family: var(--font-heading); font-size: 16px; font-weight: 600; color: var(--good-ink); }
 
 /* ── CTA de la llamada de 15 min ───────────────────────────────────────────
    En su propia franja justo antes de los precios, centrada y estrecha. Tinta
@@ -2399,7 +2192,6 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
   font-family: var(--font-serif); font-style: italic; font-weight: 400;
   font-size: 1.12em; letter-spacing: -.01em; line-height: 1; padding-inline-end: .04em;
 }
-.serif-accent--brand { color: var(--brand); }
 .mono { font-family: var(--mono); }
 /* Antetítulo: Geist 12/600 en versalitas con el filete azul de la madre. */
 .kicker {
@@ -2955,126 +2747,19 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
    Tarjeta blanca sobre el marfil. Desde 1024px se parte en dos: a la izquierda
    se escribe, a la derecha un panel de marca en calma (el recibo ilustrativo
    sobre el paisaje de la madre). Por debajo, la tarjeta va sola. */
-.auth-wrap.acc { display: block; padding: 0; min-height: calc(100dvh - var(--nav-h)); background-color: var(--bg); background-image: none; }
-.acc-main { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; min-height: inherit; padding: clamp(24px, 6vh, 56px) 16px clamp(28px, 6vh, 56px); }
-.auth-card.acc-card { width: 100%; max-width: 440px; padding: clamp(22px, 5.5vw, 36px); border: 1px solid var(--line); border-radius: var(--r-card-lg); background: var(--surface); box-shadow: var(--shadow-card), 0 28px 56px -36px rgba(15, 18, 40, .22); }
-.acc-card .auth-brand { margin: 0 0 22px; line-height: 0; }
-/* En móvil la marca ya está justo encima, en la cabecera: no se repite. */
-@media (max-width: 640px) { .acc-card .auth-brand { display: none; } }
-.acc-aside { display: none; }
-@media (min-width: 1024px) {
-  .auth-wrap.acc--split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); place-items: stretch; max-width: 1680px; margin-inline: auto; }
-  .auth-wrap.acc--split .acc-aside { display: flex; }
-}
-.acc-aside { position: relative; isolation: isolate; align-items: center; justify-content: center; margin: 12px 12px 12px 0; padding: clamp(32px, 4vw, 64px); border-radius: var(--r-hero); overflow: hidden; background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line); }
-/* El paisaje de bivelio.com, solo en el tercio inferior y fundido hacia
-   arriba: el texto queda siempre sobre color liso. Quieto, sin animación. */
-.acc-aside::before {
-  content: ""; position: absolute; z-index: -1; inset: auto 0 0 0; height: 52%;
-  /* La de 1600: el panel mide como mucho 840 px (la mitad de 1680), así que
-     cubre el doble de densidad; la de tamaño completo pesaba 235 KB y era el
-     LCP del acceso en escritorio. AccesoShell la anuncia desde el HTML. */
-  background-image: url("/brand/paisaje/dia-1600.webp");
-  background-image: image-set(url("/brand/paisaje/dia-1600.avif") type("image/avif"), url("/brand/paisaje/dia-1600.webp") type("image/webp"));
-  background-size: cover; background-position: 50% 78%;
-  -webkit-mask-image: linear-gradient(to bottom, transparent, rgba(0, 0, 0, .5) 38%, #000 78%);
-  mask-image: linear-gradient(to bottom, transparent, rgba(0, 0, 0, .5) 38%, #000 78%);
-}
 .acc-panel { display: flex; flex-direction: column; align-items: flex-start; gap: clamp(24px, 4vh, 40px); width: 100%; max-width: 440px; }
-.acc-panel-texto { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
-.acc-panel-titulo { font-size: clamp(1.75rem, 2.7vw, 2.5rem); line-height: 1.05; }
-.acc-panel-lede { font-size: 15.5px; max-width: 40ch; }
-/* Sobre la foto, las muescas del tique enseñarían manchas oscuras del bosque:
-   aquí el recibo va sin ellas (la línea de corte y el festón se conservan). */
-.acc-panel-recibo { --recibo-notch: 0px; max-width: 400px; }
 
 /* ── F2·2 Acceso: lo que va dentro de la tarjeta ────────────────────────── */
-.acc-intro { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin: 0 0 24px; }
 .acc-intro .kicker { margin-bottom: 4px; }
-.auth-card.acc-card h1 { margin: 0; font-family: var(--font-editorial); font-weight: 800; font-size: clamp(1.6rem, 2.5vw, 1.9rem); line-height: 1.1; letter-spacing: -.035em; text-wrap: balance; }
-.auth-card.acc-card .sub { margin: 0; font-size: 14.5px; line-height: 1.55; color: var(--ink-soft); text-wrap: pretty; }
-.auth-card.acc-card > .sub, .auth-card.acc-card form > .sub { margin: 0 0 16px; }
-.acc-card .field { gap: 6px; margin-bottom: 16px; }
-.acc-card .field label { font-size: 13.5px; font-weight: 500; line-height: 1.35; color: var(--ink); }
-.acc-card .field input {
-  width: 100%; min-width: 0; min-height: 44px; padding: 10px 12px; font-size: 16px; line-height: 1.3;
-  border: 1px solid var(--line-strong); border-radius: var(--r-control); background: var(--surface); color: var(--ink);
-  transition: border-color var(--dur-2) var(--ease-out), box-shadow var(--dur-2) var(--ease-out), background-color var(--dur-2) var(--ease-out);
-}
-.acc-card .field input::placeholder { color: color-mix(in srgb, var(--ink-soft) 60%, var(--surface)); }
-.acc-card .field input:hover:not(:disabled):not(:focus) { border-color: color-mix(in srgb, var(--ink-soft) 50%, var(--line-strong)); }
-/* Foco: borde de marca + halo de 3px. Se ve sin depender de un cambio de gris. */
-.acc-card .field input:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 20%, transparent); }
-.acc-card .field input[aria-invalid="true"] { border-color: var(--danger); }
-.acc-card .field input[aria-invalid="true"]:focus { box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 18%, transparent); }
-.acc-card .field input:disabled { background: var(--surface-3); border-color: var(--line); color: var(--ink-soft); cursor: not-allowed; }
 
 
 /* El giro del «un momento…»: único movimiento de la pantalla, y solo mientras
    de verdad se espera al servidor. Con movimiento reducido es un aro quieto. */
 
 @keyframes acc-giro { to { transform: rotate(360deg); } }
-.acc-progreso { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 14.5px; line-height: 1.5; color: var(--ink-soft); }
-/* Avisos: tono por icono y por texto, no solo por color. */
-.acc-card .auth-msg { display: flex; align-items: flex-start; gap: 10px; margin: 0 0 16px; padding: 11px 12px; border: 1px solid transparent; border-radius: 12px; font-size: 14px; line-height: 1.45; color: var(--ink); }
-.acc-card .auth-msg svg { flex: none; width: 18px; height: 18px; margin-top: 1px; }
-.acc-card .auth-msg > span { min-width: 0; overflow-wrap: anywhere; }
-.acc-card .auth-msg.error { background: var(--bad-soft); border-color: color-mix(in srgb, var(--danger) 24%, transparent); }
-.acc-card .auth-msg.error svg { color: var(--danger); }
-.acc-card .auth-msg.info { background: var(--brand-soft); border-color: color-mix(in srgb, var(--brand) 18%, transparent); }
-.acc-card .auth-msg.info svg { color: var(--brand); }
-.acc-card .auth-alt { margin: 20px 0 0; font-size: 14px; line-height: 1.5; color: var(--ink-soft); text-align: center; text-wrap: balance; }
-.acc-card .auth-alt a, .acc-card .auth-link { color: var(--ink); font-weight: 500; text-decoration: underline; text-decoration-thickness: 1px; text-decoration-color: var(--line-strong); text-underline-offset: 3px; transition: text-decoration-color var(--dur-1) var(--ease-out); }
-.acc-card .auth-alt a:hover, .acc-card .auth-link:hover { text-decoration-color: currentColor; text-decoration-thickness: 1px; }
-.acc-card .auth-link { display: inline-flex; align-items: center; justify-content: center; min-height: 32px; padding: 4px 8px; font-size: 14px; }
-.acc-card .acc-olvido { margin-top: 10px; }
-.acc-otro-enlace { margin: 0 0 16px; }
-.acc-reset-sub { margin-top: 0; }
-@media (pointer: coarse) {
-  .acc-card .auth-link { min-height: 44px; }
-  .acc-card .auth-alt a { display: inline-block; padding-block: 10px; }
-}
-/* Alta: las dos notas (Measure y cuenta compartida) y la salida al open source. */
-.acc-notas { display: grid; gap: 10px; margin: 24px 0 0; padding-top: 20px; border-top: 1px solid var(--line); }
-.acc-nota { margin: 0; font-size: 13px; line-height: 1.55; color: var(--ink-soft); overflow-wrap: anywhere; text-wrap: pretty; }
-.acc-oss { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 2px 14px; margin: 18px 0 0; padding: 8px 8px 8px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-3); font-size: 13.5px; line-height: 1.4; }
-.acc-oss-q { padding-block: 6px; color: var(--ink-soft); }
-.acc-oss-a { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding-inline-end: 6px; border-radius: var(--radius-sm); font-weight: 600; color: var(--ink); text-decoration: none; }
-.acc-oss-a:hover { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
-.acc-oss-a svg { flex: none; width: 16px; height: 16px; transition: transform var(--dur-2) var(--ease-out); }
-.acc-oss-a:hover svg { transform: translateX(2px); }
-@media (pointer: coarse) { .acc-oss-a { min-height: 44px; } }
-@media (prefers-reduced-motion: reduce) { .acc-oss-a:hover svg { transform: none; } }
-.acc-pie { font-size: 14px; }
-.acc-volver { display: inline-flex; align-items: center; min-height: 44px; padding: 0 10px; border-radius: var(--r-control); color: var(--ink-soft); text-decoration: none; transition: color var(--dur-1) var(--ease-out); }
-.acc-volver:hover { color: var(--ink); text-decoration: none; }
-/* La subvista «ya está»: enviado, verificado, cambiado, aceptado. Cuando
-   aparece, lo que rodeaba al formulario (titular, cruce, notas) se retira. */
-.acc-sent { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; min-width: 0; }
-.acc-sent-icon { display: grid; place-items: center; width: 44px; height: 44px; margin-bottom: 6px; border-radius: 14px; background: var(--brand-soft); color: var(--brand); }
-.acc-sent[data-tone="ok"] .acc-sent-icon { background: var(--mint-soft); color: var(--good-ink); }
-.acc-sent-icon svg { width: 22px; height: 22px; }
-.auth-card.acc-card .acc-sent-title { margin: 0; font-family: var(--font-editorial); font-weight: 800; font-size: clamp(1.4rem, 2.2vw, 1.6rem); line-height: 1.15; letter-spacing: -.035em; text-wrap: balance; outline: none; }
-.acc-sent-text { margin: 0; font-size: 14.5px; line-height: 1.55; color: var(--ink-soft); text-wrap: pretty; }
-.acc-sent-mail { max-width: 100%; margin: 4px 0 0; padding: 8px 12px; border: 1px solid var(--line); border-radius: var(--r-control); background: var(--surface-3); font-family: var(--mono); font-size: 13px; line-height: 1.4; color: var(--ink); overflow-wrap: anywhere; }
-.acc-sent-next { width: 100%; margin: 6px 0 0; padding-top: 14px; border-top: 1px solid var(--line); font-size: 13.5px; line-height: 1.55; color: var(--ink-soft); text-wrap: pretty; }
-.acc-sent-actions { display: flex; flex-direction: column; align-items: stretch; gap: 6px; width: 100%; margin-top: 12px; }
-.acc-sent-actions .auth-link { align-self: center; }
-.acc-card:has(.acc-sent) > .auth-brand, .acc-card:has(.acc-sent) > .acc-intro, .acc-card:has(.acc-sent) > .acc-cruce, .acc-card:has(.acc-sent) > .acc-notas, .acc-card:has(.acc-sent) > .acc-oss { display: none; }
-@media (prefers-reduced-motion: no-preference) { .acc-sent { animation: bv-rise var(--dur-4) var(--ease-out) both; } }
 
 /* ── F2·3 Invitación: la ficha (organización, destinatario, perfil) ─────── */
-.inv-ficha { margin: 0 0 20px; padding: 2px 16px; border: 1px solid var(--line); border-radius: var(--r-card); background: var(--surface-3); }
-.inv-fila { display: flex; align-items: baseline; justify-content: space-between; gap: 6px 16px; min-width: 0; padding: 12px 0; }
-.inv-fila + .inv-fila { border-top: 1px solid var(--line); }
-.inv-fila dt { flex: none; font-size: 11.5px; font-weight: 600; letter-spacing: .1em; line-height: 1.5; text-transform: uppercase; color: var(--ink-soft); }
-.inv-fila dd { margin: 0; min-width: 0; text-align: end; font-size: 14.5px; font-weight: 500; line-height: 1.4; color: var(--ink); overflow-wrap: anywhere; }
-.inv-fila--org { flex-direction: column; align-items: flex-start; gap: 2px; padding-block: 14px; }
-.inv-fila--org dd { text-align: start; font-family: var(--font-editorial); font-weight: 800; font-size: 1.375rem; line-height: 1.2; letter-spacing: -.03em; }
-.inv-fila .inv-correo { font-family: var(--mono); font-size: 13.5px; }
-.inv-ficha--hueco { display: grid; align-content: center; gap: 13px; min-height: 172px; padding: 16px; }
-.auth-card.acc-card .inv-sesion { margin: 0 0 14px; }
-.inv-sesion b { color: var(--ink); font-weight: 600; overflow-wrap: anywhere; }
+/* Sus reglas viven ahora en `app/components/acceso/acceso.css`: solo las pintan esas páginas. */
 
 /* ── F2·4 La 404 ────────────────────────────────────────────────────────────
    Corta: la cifra como filigrana, el titular, una frase y la vuelta. */
@@ -3255,106 +2940,11 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
    las de arriba (`sidebar-scroll.test.ts` lee el PRIMER `.app-nav {`). */
 
 /* ── F3·1 Cáscara ───────────────────────────────────────────────────────── */
-.app .app-topbar { gap: 12px; padding: 0 clamp(12px, 2.2vw, 24px); background: color-mix(in srgb, var(--bg) 88%, transparent); }
-.app-topbar .app-brand { border-radius: 8px; }
-/* Contexto, junto a la marca: «/ Organización · Plan». */
-.app-ctx { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.app-ctx-sep { flex: none; font-size: 20px; font-weight: 300; line-height: 1; color: var(--line-strong); }
-.app-ctx .app-org { font-size: 13.5px; font-weight: 500; color: var(--ink); max-width: 24ch; }
-.app-ctx .app-plan { flex: none; }
-.app .app-account { gap: 4px; min-width: 0; }
-/* «Ver tour»: botón fantasma con línea; en estrecho, solo el icono. */
-.app-tour {
-  display: inline-flex; align-items: center; gap: 7px; flex: none; cursor: pointer;
-  height: 36px; padding: 0 12px 0 10px; margin-right: 4px;
-  border: 1px solid var(--btn-ghost-line); border-radius: var(--r-control); background: var(--surface); color: var(--ink);
-  font-family: var(--sans); font-size: 13.5px; font-weight: 500; line-height: 1; white-space: nowrap;
-  box-shadow: 0 1px 2px rgba(15, 18, 24, .04);
-  transition: background-color var(--dur-1) var(--ease-out), border-color var(--dur-1) var(--ease-out);
-}
-.app-tour:hover { background: var(--surface-3); border-color: var(--btn-ghost-line-hover); }
-.app-tour-ic { display: grid; place-items: center; flex: none; color: var(--brand); }
-.app-tour-ic svg { width: 16px; height: 16px; }
-/* La cuenta: inicial en un círculo + correo. El correo se recorta primero. */
-.app .app-account .email {
-  display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 8px 0 4px; max-width: none;
-  border-radius: var(--r-control); font-family: var(--sans); font-size: 13px; color: var(--ink-soft);
-  transition: background-color var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out);
-}
-.app .app-account .email:hover { background: var(--surface-2); color: var(--ink); text-decoration: none; }
 
 
-/* En estrecho el texto se RECORTA (sigue siendo el nombre accesible), no se quita. */
-@media (max-width: 1100px) {
-
-  .app .app-account .email { padding: 0 5px; }
-}
-@media (max-width: 900px) {
-  .app-tour-label {
-    position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
-  }
-  .app-tour { width: 36px; padding: 0; justify-content: center; margin-right: 0; }
-
-}
-@media (max-width: 640px) { .app .app-account .email { display: inline-flex; } }
-@media (max-width: 520px) { .app-ctx { display: none; } .app .app-account { gap: 2px; } }
-@media (pointer: coarse) {
-  .app-tour, .app .app-account .email { height: 44px; }
-  .app-tour { min-width: 44px; }
-  .app .app-account .email { min-width: 44px; justify-content: center; }
-}
-
-/* El raíl: gris suave, una línea, sin teselas. */
-.app .app-sidebar { background: color-mix(in srgb, var(--surface-2) 58%, var(--bg)); padding: 16px 12px 28px; }
-.app-sidebar .app-nav-sep { margin: 18px 10px 6px; padding-top: 0; border-top: 0; font-size: 11px; letter-spacing: .07em; color: var(--ink-soft); }
-.app-sidebar .app-nav-sep[data-first] { margin-top: 6px; }
-.app-sidebar .app-nav-item {
-  gap: 10px; padding: 6px 10px; min-height: 36px; border-radius: 9px; border: 0;
-  font-size: 14px; font-weight: 500; color: color-mix(in srgb, var(--ink) 78%, var(--ink-soft));
-  transition: background-color var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out);
-}
-.app-sidebar .app-nav-item:hover { background: color-mix(in srgb, var(--ink) 5%, transparent); color: var(--ink); }
-.app-sidebar .app-nav-item .ic { width: 18px; height: 18px; border: 0; border-radius: 0; background: none; color: var(--ink-soft); }
-.app-sidebar .app-nav-item .ic svg { width: 17px; height: 17px; }
-.app-sidebar .app-nav-item:hover .ic { color: var(--ink); }
-/* DÓNDE ESTOY: azul tenue, y solo uno a la vez. */
-.app-sidebar .app-nav-item.on { background: var(--brand-soft); color: #0052B8; font-weight: 600; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--brand) 12%, transparent); }
-.app-sidebar .app-nav-item.on .ic { color: var(--brand); }
-.app-sidebar .app-nav-item:focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; }
-.app-sidebar .app-nav-badge {
-  padding: 2px 6px; margin-left: auto; border-radius: 6px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line);
-  font-size: 11px; font-weight: 500; line-height: 1.45; color: var(--ink-soft);
-}
-.app-sidebar .app-nav-item.on .app-nav-badge { color: #0052B8; opacity: 1; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--brand) 22%, transparent); }
-.app-sidebar .app-nav-note { margin: 0 4px 12px; padding: 10px 12px; max-width: none; border-radius: 10px; background: var(--amber-soft); color: var(--warn); font-size: 12.5px; }
-/* La puesta en marcha: la tarjeta blanca del raíl, con el Progress Tracker dentro. */
-.app-sidebar .app-setup { margin: 0 0 6px; padding: 12px 4px 4px; border: 0; border-radius: 12px; background: var(--surface); box-shadow: 0 0 0 1px var(--line), var(--shadow-card); }
-.app-sidebar .app-setup-unreadable { margin: 0 0 8px; padding: 10px 12px; border-radius: 10px; background: var(--surface); box-shadow: 0 0 0 1px var(--line); font-size: 12.5px; }
-
-@media (max-width: 860px) {
-  .app .app-sidebar { padding: 8px 12px; background: color-mix(in srgb, color-mix(in srgb, var(--surface-2) 58%, var(--bg)) 92%, transparent); }
-  .app-sidebar .app-nav { gap: 4px; scrollbar-width: none; }
-  .app-sidebar .app-nav::-webkit-scrollbar { display: none; }
-  .app-sidebar .app-nav-item { padding: 8px 12px; min-height: 40px; border-radius: 999px; }
-  .app-sidebar .app-nav-sep, .app-sidebar .app-nav-sep[data-first] { margin: 8px 4px; }
-  .app-sidebar .app-nav-note { margin: 0 0 8px; }
-  .app-sidebar .app-setup, .app-sidebar .app-setup-unreadable { display: none; }
-}
-@media (max-width: 860px) and (pointer: coarse) { .app-sidebar .app-nav-item { min-height: 44px; } }
-
-/* Cabecera de página y pestañas. */
-.app .app-head { margin-bottom: 28px; }
-.app .app-head .sub-page { font-size: 15px; max-width: 68ch; text-wrap: pretty; }
 .app .tabs a { display: inline-flex; align-items: center; min-height: 34px; }
 @media (pointer: coarse) { .app .tabs a { min-height: 44px; } }
 
-/* Esqueleto y error del panel. */
-.app-loading { min-width: 0; }
-/* El título de una tarjeta se lee como título, no como etiqueta en versalitas. */
-.app .card .n.card-title, .app .card-head .n {
-  font-family: var(--sans); font-size: 14px; font-weight: 600; letter-spacing: -.005em; line-height: 1.35;
-  text-transform: none; color: var(--ink);
-}
 .app .panel-stack { gap: 16px; }
 
 /* Tabla de datos ligera (máquinas, sesiones): cabecera callada, cifras en columna. */
@@ -3398,13 +2988,6 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 @media (pointer: coarse) { .app .seg.live a { min-height: 40px; } }
 
 /* ── F3·3 Resumen ───────────────────────────────────────────────────────── */
-.ov { min-width: 0; }
-.ov-attention { display: grid; gap: 10px; margin-bottom: 24px; min-width: 0; }
-.ov-banner { min-width: 0; }
-.ov-banner .ck-note { margin: 6px 0 0; color: inherit; opacity: .86; }
-.ov .ov-result { margin-top: 0; }
-.ov .app-section { margin-top: 40px; }
-.ov .app-sec-head { margin-bottom: 14px; }
 
 /* El titular: panel protagonista, con su recibo al lado. `[data-state]` solo lo
    lleva VerdictHero, así que la banda de intervalo (`.verdict.band`) no cambia. */
@@ -3413,8 +2996,6 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
   padding: clamp(20px, 2.6vw, 32px); border-radius: var(--r-hero); box-shadow: var(--shadow-card);
 }
 .verdict[data-state].verdict-empty { grid-template-columns: minmax(0, 1fr) auto; }
-.verdict-main { min-width: 0; align-self: center; }
-.verdict-side { display: flex; flex-direction: column; align-items: flex-end; gap: 18px; min-width: 0; }
 .verdict[data-state] .big { margin-top: 10px; font-size: clamp(44px, 5.4vw, 64px); letter-spacing: -.035em; line-height: 1; }
 .verdict[data-state] .cap { margin-top: 12px; max-width: 54ch; font-size: 14.5px; line-height: 1.55; }
 .verdict[data-state] .cap b { color: var(--ink); font-weight: 600; }
@@ -3425,9 +3006,6 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 
 /* Cifras del periodo y desglose junto al explorador. */
 .ov-kpis { min-width: 0; }
-.ov-explore { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 320px); gap: 16px; align-items: start; min-width: 0; }
-.ov-explore > * { min-width: 0; }
-.ov-breakdown { min-width: 0; }
 
 /* La puesta en marcha en el Resumen: una tarjeta con los hitos y, debajo, la tarea. */
 .app .spine { display: block; padding: 18px 12px 10px; border-radius: var(--r-card-lg); overflow: visible; }
@@ -3436,19 +3014,9 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 
 /* El panel que se ordena. */
 .app .pe { gap: 16px; }
-.pe-ghost .ck-note { margin: 0; }
 .pe-ghost:target, #maquinas:target { box-shadow: 0 0 0 2px var(--brand-soft), 0 0 0 1px color-mix(in srgb, var(--brand) 40%, transparent) inset; }
-.ins .ck-note { max-width: 74ch; margin: 12px 0 0; font-size: 14px; line-height: 1.6; }
-.ins .ck-note b { color: var(--ink); font-weight: 600; }
-.ins .ck-note code, .ins-mode code { font-family: var(--mono); font-size: .92em; padding: 1px 5px; border-radius: 5px; background: var(--surface-2); color: var(--ink); overflow-wrap: anywhere; }
 .ins .codeframe { margin: 12px 0 0; }
-.ins-task-ic svg { width: 18px; height: 18px; }
-.ins-task-go svg { width: 16px; height: 16px; }
-.ins-mode-ic svg { width: 16px; height: 16px; }
-.ins-sec-head .t-section { margin: 0; }
-.ins-sec-ic svg { width: 16px; height: 16px; }
 .ins-optional { background: var(--surface-2); color: var(--ink-soft); }
-.ins .ins-skill a { color: var(--ink); font-weight: 500; text-decoration: underline; text-decoration-color: var(--line-strong); text-underline-offset: 3px; }
 /* Pestañas por sistema operativo, dentro del panel: control segmentado. */
 .app .so-tabs { gap: 2px; margin-bottom: 8px; padding: 3px; border-radius: 10px; background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line); }
 .app .so-tabs button { min-height: 30px; padding: 0 12px; border: 0; border-radius: 7px; background: transparent; font-family: var(--sans); font-size: 12.5px; font-weight: 500; letter-spacing: 0; color: var(--ink-soft); cursor: pointer; }
@@ -3462,61 +3030,6 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
    posición absoluta, la flecha) está aquí; el color del telón y el z-index
    los escribe ella en línea. Sin movimiento con `prefers-reduced-motion`. */
 [data-tg-tour] { scroll-margin: 30px 0; }
-.tg-backdrop { position: absolute; display: none; top: 50vh; left: 50vw; width: 0; height: 0; z-index: 998; border: 0; border-radius: 14px; }
-.tg-backdrop.tg-backdrop-animate { transition: top var(--dur-3) var(--ease-out), left var(--dur-3) var(--ease-out), width var(--dur-3) var(--ease-out), height var(--dur-3) var(--ease-out); }
-.tg-backdrop.allow-interaction { pointer-events: none; }
-.tg-dialog {
-  position: absolute; display: none; top: 0; left: 0; z-index: 999; width: max-content; max-width: min(360px, calc(100vw - 24px)) !important; padding: 0;
-  border-radius: 16px; background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--line), var(--shadow-pop);
-  font-family: var(--sans); font-size: 14px; line-height: 1.55; text-align: start;
-}
-.tg-dialog:focus { outline: none; }
-.tg-dialog:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; }
-.tg-dialog.tg-dialog-fixed { transition: none; }
-.tg-dialog.animate-position { transition: top var(--dur-3) var(--ease-out), left var(--dur-3) var(--ease-out); }
-.tg-dialog .tg-dialog-header { display: flex; align-items: flex-start; gap: 10px; padding: 18px 12px 0 20px; }
-.tg-dialog .tg-dialog-title { margin-right: auto; padding-top: 4px; font-size: 16px; font-weight: 600; letter-spacing: -.012em; line-height: 1.3; color: var(--ink); }
-.tg-dialog .tg-dialog-close-btn {
-  display: grid; place-items: center; flex: none; width: 32px; height: 32px; margin: 0; border-radius: 8px; opacity: 1; cursor: pointer; color: var(--ink-soft);
-  transition: background-color var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out);
-}
-.tg-dialog .tg-dialog-close-btn svg { width: 10px; height: 10px; fill: currentColor; }
-.tg-dialog .tg-dialog-close-btn:hover { background: var(--surface-3); color: var(--ink); }
-.tg-dialog .tg-dialog-close-btn:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
-.tg-dialog .tg-dialog-spinner { display: none; }
-.tg-dialog .tg-dialog-body { padding: 6px 20px 2px; color: var(--ink-soft); overflow-wrap: anywhere; }
-.tg-dialog .tg-dialog-footer { display: flex; align-items: center; gap: 8px; padding: 16px 16px 16px 20px; }
-.tg-dialog .tg-dialog-footer-sup { order: -1; display: flex; flex-direction: column; align-items: flex-start; gap: 7px; margin: 0 auto 0 0; padding: 0; min-width: 0; text-align: start; line-height: 1; }
-.tg-dialog .tg-dialog-dots { display: flex; align-items: center; justify-content: flex-start; gap: 4px; margin: 0; padding: 0; border: 0; }
-.tg-dialog .tg-dialog-dots > span.tg-dot { display: inline-block; width: 6px; height: 6px; margin: 0; border-radius: 3px; background: var(--line-strong); transition: width var(--dur-2) var(--ease-out), background-color var(--dur-2) var(--ease-out); }
-.tg-dialog .tg-dialog-dots > span.tg-dot.tg-dot-active { width: 16px; background: var(--ink); }
-.tg-dialog .tg-bv-count { font-size: 12px; font-weight: 500; color: var(--ink-soft); font-variant-numeric: tabular-nums; white-space: nowrap; }
-.tg-dialog .tg-dialog-footer button.tg-dialog-btn {
-  flex: none; min-height: 36px; padding: 0 14px; border: 1px solid var(--btn-ghost-line); border-radius: var(--r-control); background: var(--surface); color: var(--ink);
-  font-family: var(--sans); font-size: 13.5px; font-weight: 500; line-height: 1; white-space: nowrap; cursor: pointer;
-  transition: background-color var(--dur-1) var(--ease-out), border-color var(--dur-1) var(--ease-out);
-}
-.tg-dialog .tg-dialog-footer button.tg-dialog-btn + button { margin-left: 0; }
-.tg-dialog .tg-dialog-footer button.tg-dialog-btn:hover { background: var(--surface-3); border-color: var(--btn-ghost-line-hover); color: var(--ink); }
-.tg-dialog .tg-dialog-footer button.tg-dialog-btn:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
-.tg-dialog .tg-dialog-footer button.tg-dialog-btn.disabled, .tg-dialog .tg-dialog-footer button.tg-dialog-btn:disabled { opacity: .45; pointer-events: none; }
-.tg-dialog .tg-dialog-footer button#tg-dialog-next-btn { background: var(--btn-ink); border-color: var(--btn-ink); color: #fff; }
-.tg-dialog .tg-dialog-footer button#tg-dialog-next-btn:hover { background: var(--btn-ink-hover); border-color: var(--btn-ink-hover); color: #fff; }
-.tg-dialog .tg-arrow { position: absolute; width: 10px; height: 10px; border-radius: 2px; background: var(--surface); }
-.tg-dialog.tg-dialog-loading .tg-dialog-body, .tg-dialog.tg-dialog-loading .tg-dialog-footer { opacity: .5; pointer-events: none; }
-.tg-no-interaction * { pointer-events: none !important; user-select: none !important; }
-.tg-no-interaction .tg-dialog, .tg-no-interaction .tg-active-element, .tg-dialog *, .tg-active-element * { pointer-events: auto !important; user-select: text !important; }
-@media (pointer: coarse) {
-  .tg-dialog .tg-dialog-footer button.tg-dialog-btn { min-height: 44px; }
-  .tg-dialog .tg-dialog-close-btn { width: 44px; height: 44px; }
-}
-@media (max-width: 420px) {
-  .tg-dialog .tg-dialog-footer { flex-wrap: wrap; justify-content: flex-end; }
-  .tg-dialog .tg-dialog-footer-sup { flex: 1 1 100%; flex-direction: row; align-items: center; justify-content: space-between; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .tg-backdrop, .tg-backdrop.tg-backdrop-animate, .tg-dialog, .tg-dialog.animate-position, .tg-dialog .tg-dialog-dots > span.tg-dot { transition: none !important; animation: none !important; }
-}
 /* ==== FIN SLOT F3 ==== */
 
 
@@ -3527,50 +3040,21 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
    yb- (tu banco), pv- (proyector). */
 
 /* ── Gramática común ───────────────────────────────────────────────────── */
-.app-sec-head > .ev-badge, .app-sec-head > .ext-periodo, .app-sec-head > .ext-legado { flex: none; align-self: flex-start; margin-top: 2px; }
-.app-sec-head .t-section { margin-bottom: var(--sp-1); }
-.acct-k, .card .acct-k { margin: 0; font-family: var(--sans); font-size: var(--fs-label); font-weight: var(--fw-label); letter-spacing: var(--ls-label); line-height: var(--lh-label); text-transform: uppercase; color: var(--ink-soft); }
-.app-head + .acct-banner { margin-top: 0; }
-.acct-banner + .acct-banner { margin-top: var(--sp-3); }
-.acct-banner .notice-body b { font-weight: 600; }
-.acct-banner .notice-body a.btn { color: #fff; text-decoration: none; }
-.acct-banner .billing-cta { margin-top: 0; }
 @keyframes f4-pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .35; transform: scale(.8); } }
-.acct-main > * { margin: 0; }
 
 
-.card .acct-h, .acct-h { margin: 0; font-family: var(--sans); font-size: 15px; font-weight: 600; letter-spacing: -.01em; line-height: 1.35; text-transform: none; color: var(--ink); }
-
-
-.acct-main .billing-cta { display: flex; flex-direction: column; align-items: stretch; gap: 14px; margin: 0; padding-top: 20px; border-top: 1px solid var(--line); }
-.billing-cta .billing-err, .billing-cta--solo .billing-err { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--danger); }
-.card .acct-manage-t { flex: 1 1 240px; margin: 0; font-size: 14px; line-height: 1.5; color: var(--ink-soft); }
-.acct-main .acct-line { margin: 0; }
 .acct-buy .btn { justify-content: center; text-align: center; white-space: normal; text-wrap: balance; }
-.acct-main .acct-tax { margin: 0; }
-.card .acct-email { margin: 6px 0 0; font-size: 15.5px; font-weight: 600; letter-spacing: -.01em; line-height: 1.35; color: var(--ink); overflow-wrap: anywhere; }
-.acct-facts > div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line); }
-.acct-facts dd { margin: 0; min-width: 0; font-size: 13.5px; font-weight: 500; color: var(--ink); text-align: end; overflow-wrap: anywhere; }
-.card .acct-side-note { margin: 14px 0 0; font-size: 13px; line-height: 1.55; color: var(--ink-soft); text-wrap: pretty; }
 
 /* ── /team ─────────────────────────────────────────────────────────────── */
 .equipo { margin-top: var(--sp-5); display: flex; flex-direction: column; gap: 16px; }
-.equipo-campo { display: flex; flex-direction: column; gap: 6px; min-width: 0; flex: 0 1 200px; }
-.equipo-campo--ancho { flex: 1 1 260px; }
 .equipo-form > .btn { min-height: 40px; }
 @media (max-width: 560px) {
   .equipo-form > .btn { width: 100%; justify-content: center; }
 
 
 }
-.ext-grid .recibo { margin: 0; }
-.card .ext-h { margin: 0; font-family: var(--sans); font-size: 15px; }
 .ext-vacio { margin-top: 12px; padding: 14px 16px; border: 1px dashed var(--line-strong); border-radius: var(--r-card); }
-.card .ext-contrato-t { margin: 0 0 4px; font-family: var(--sans); font-size: 16px; font-weight: 600; letter-spacing: -.012em; line-height: 1.35; color: var(--ink); }
-.ext-sim .t-block, .ext-sim-body .t-block { margin: var(--sp-5) 0 var(--sp-3); font-size: 14px; }
-.yb > :first-child { margin-top: 0; }
 .yb-off .codeframe { margin: 16px 0; box-shadow: none; }
-.yb-meter i { display: block; height: 100%; min-width: 4px; border-radius: inherit; background: var(--ink); }
 .pv-chip[aria-pressed="true"] { background: var(--btn-ink); color: #fff; border-color: transparent; }
 @media (pointer: coarse) { .pv-chip { min-height: 44px; padding-inline: 16px; } }
 /* ==== FIN SLOT F4 ==== */
@@ -3699,10 +3183,6 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .evc-reset { padding: 0; border: 0; background: none; color: var(--ink); font: inherit; font-weight: 500; text-decoration: underline; text-decoration-color: var(--line-strong); text-underline-offset: 3px; cursor: pointer; }
 .evc-reset:hover { text-decoration-color: currentColor; }
 .evc-links { display: flex; flex-wrap: wrap; gap: 8px 20px; padding-top: 14px; border-top: 1px solid var(--line); }
-.evc-link { display: inline-flex; align-items: center; gap: 6px; min-height: 28px; font-size: 14px; font-weight: 500; color: var(--ink); text-decoration: underline; text-decoration-color: var(--line-strong); text-underline-offset: 3px; }
-.evc-link:hover { text-decoration-color: currentColor; }
-.evc-link svg { width: 12px; height: 12px; flex: none; }
-@media (pointer: coarse) { .evc-link { min-height: 44px; } }
 
 /* La cabecera del banco: cifras de la muestra en una tira con filetes. */
 .lp.evc .banco-stats { max-width: none; gap: 0; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); border-top: 1px solid var(--line-strong); }
@@ -3813,21 +3293,11 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .lp.terms-page.precios .precios-hero { padding-top: clamp(48px, 5vw, 76px); }
 .lp.hiw-page .hiw-hero h1, .lp.terms-page.precios .precios-hero h1 { font-size: clamp(2.2rem, 4.4vw, 3.75rem); line-height: 1.03; }
 
-/* Los rótulos de los controles del explorador no son antetítulos: sin filete. */
-.ux-seg > .ck-eyebrow::before, .ux-seg > .eyebrow::before { content: none; }
-
 /* ── I·3 Tour guiado en móvil ──────────────────────────────────────────────
    Junto a un destino más alto que la pantalla (el titular, el explorador) el
    diálogo caía fuera de la vista. En estrecho va siempre anclado abajo, como
    una hoja, y los destinos se detienen por encima de ella al desplazarse. */
 @media (max-width: 640px) {
-  .tg-dialog {
-    position: fixed !important; top: auto !important; left: 12px !important; right: 12px !important;
-    bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important;
-    width: auto !important; max-width: none !important; margin: 0 !important; transform: none !important;
-    box-shadow: 0 0 0 1px var(--line), 0 -8px 40px rgba(15, 18, 24, .22);
-  }
-  .tg-dialog .tg-arrow { display: none !important; }
   [data-tour] { scroll-margin-bottom: 300px !important; }
 }
 /* ── I·4 Pulido final ──────────────────────────────────────────────────────
@@ -3886,7 +3356,6 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 a, button, summary, input, select, textarea, .pv-chip, .pe-btn, .announce-close, .ui-pp__option, .ui-xc__metric, .ui-xc__row { transition-timing-function: var(--ease-out); }
 .tabs a { transition: background-color var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out), box-shadow var(--dur-2) var(--ease-out), transform var(--dur-1) var(--ease-out); }
 .seg.live a { transition: background-color var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out), box-shadow var(--dur-2) var(--ease-out), transform var(--dur-1) var(--ease-out); }
-.app-nav-item { transition: background-color var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out), transform var(--dur-1) var(--ease-out); }
 .app .disc > summary::before { transition: transform var(--dur-2) var(--ease-out); }
 /* Pulsar se nota igual en pestañas, raíl, rango y pastillas que en un botón. */
 .tabs a:active, .seg.live a:active, .app-nav-item:active, .pv-chip:active, .evc-index-list a:active { transform: scale(.98); }
@@ -4430,32 +3899,11 @@ a.card:active, button.card:active, .card-link:active { transform: translateY(0);
    ========================================================================== */
 
 /* ── Barra: la cuenta es un menú (Profile Menu) ─────────────────────────── */
-.app .app-account { gap: 6px; }
 .app-signout-item { width: 100%; }
-/* Salir sin menú: cuando no se leyó el correo no hay Profile Menu, y el botón
-   va suelto en la barra. En estrecho se queda en su icono, con su nombre. */
-.app-signout-form { display: flex; margin: 0; }
-.app .app-signout-solo {
-  display: inline-flex; align-items: center; gap: 7px; height: 36px; padding: 0 10px;
-  border: 1px solid transparent; border-radius: var(--r-control); background: transparent; cursor: pointer;
-  font-family: var(--sans); font-size: 13.5px; font-weight: 500; color: var(--ink-soft);
-  transition: background-color var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out);
-}
-.app .app-signout-solo:hover { background: var(--surface-2); color: var(--ink); }
-.app .app-signout-solo svg { width: 16px; height: 16px; flex: none; }
-@media (max-width: 900px) {
-  .app .app-signout-solo { width: 36px; padding: 0; justify-content: center; }
-  .app .app-signout-solo > span { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-}
-@media (pointer: coarse) { .app .app-signout-solo { height: 44px; min-width: 44px; } }
 
 /* ── El pulso del periodo: gráfico diario + coste por proveedor ─────────── */
-.ov-pulse { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 14px; align-items: stretch; min-width: 0; }
 .ov-pulse > * { min-width: 0; }
 .ov-chart, .ov-providers { --aui-radius-lg: var(--r-card); height: 100%; border-radius: var(--r-card-lg); }
-.ov-chart { display: flex; flex-direction: column; --ui-kpic-h: 196px; }
-.ov-providers { align-content: start; --ui-muc-plot: 172px; }
-.ox-seats { margin-bottom: 14px; max-width: 420px; }
 
 /* Cifra de tarjeta y su rótulo */
 .app .ox-card .ox-k, .ox-k { margin: 0; font-size: 12px; font-weight: 500; line-height: 16px; color: var(--ink-soft); }
@@ -4465,35 +3913,20 @@ a.card:active, button.card:active, .card-link:active { transform: translateY(0);
 }
 /* ==== FIN SLOT ESPECTACULAR E1 ==== */
 /* ==== SLOT ESPECTACULAR E2 ==== */
-/* Panel: instalación, cuenta, equipo y extracto, con las piezas de affectUI
-   (vendor/affectui: setup-guide, segmented-control, blur-crossfade, text-field,
-   number-input, select, dropdown-menu, dialog, toaster, data-table, usage-meter,
-   avatar, badge, empty-state, spinner, team-invite, empty-calendar). Aquí solo
-   va la COLOCACIÓN de esas piezas en las pantallas y las clases propias de
-   `app/`; el aspecto de cada pieza vive en su `.css`. */
-.ins-key-ic svg { width: 16px; height: 16px; }
 .kt-field { flex: 1 1 260px; min-width: 0; }
 .kt-mono { font-family: var(--mono); font-size: 13.5px; letter-spacing: -.01em; }
 @media (max-width: 480px) { .kt-field { flex: 0 0 auto; } }
-.copybtn svg { width: 14px; height: 14px; flex: none; }
 
 /* Pestañas por sistema (Segmented Control en bandeja) sobre el marco de código. */
 .so-snippet .so-seg { margin-bottom: 10px; }
 .so-snippet .ui-bx { border-radius: var(--r-card); }
 .so-snippet .codeframe { margin-top: 0; }
-.ins-skill-ic svg { width: 16px; height: 16px; }
-.equipo-tabla { margin-top: 4px; }
-.equipo .equipo-vacio { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); align-items: center; gap: 8px 16px; margin-top: 12px; padding: 0 24px 0 0; border-radius: var(--r-card); background: var(--surface-3); box-shadow: inset 0 0 0 1px var(--line); text-align: start; }
-@media (max-width: 560px) { .equipo-ilustracion { max-width: 240px; margin-inline: auto; } }
-.equipo .equipo-form > .btn.equipo-enviar { min-height: 44px; margin-top: 26px; gap: 8px; padding-inline: 18px; }
 .equipo-sin-invitaciones.ui-estc { padding: 28px 20px 30px; }
-@media (max-width: 560px) { .equipo .equipo-form > .btn.equipo-enviar { margin-top: 0; width: 100%; justify-content: center; } }
 
 /* ---- Extracto ---- */
 /* El periodo es un dato (mono); la insignia, la escala `lg` de la pieza. */
 .ui-bdgc.ext-periodo { font-family: var(--mono); font-size: 12px; }
 .ext-vacio.ui-estc { margin-top: 12px; padding: 30px 20px 32px; border: 0; }
-.ext-historial, .ext-tramos { margin-top: 12px; }
 .ext-sim .ext-tramos { box-shadow: 0 0 0 1px var(--line); }
 /* ==== FIN SLOT ESPECTACULAR E2 ==== */
 /* ==== SLOT ESPECTACULAR E3 ==== */
@@ -4545,13 +3978,11 @@ a.card:active, button.card:active, .card-link:active { transform: translateY(0);
 .par-ab-k--req { border-radius: 999px; height: 12px; margin-top: 4px; }
 .par-ab-k--meter { height: 14px; margin-top: 3px; border-radius: 4px; background: var(--surface-2); }
 @media (max-width: 420px) { .par-ab { grid-template-columns: minmax(0, 112px) minmax(0, 1fr); gap: 10px; } }
-.lg-name { font-family: var(--mono); }
 
 /* La tabla de escenarios (Data Table de solo lectura). */
 .ui-dtc .mono { font-family: var(--mono); font-size: 12.5px; letter-spacing: -.01em; }
 .ui-dtc .pos { color: var(--good-ink); }
 .ui-dtc .neg { color: var(--danger); }
-.st-flag { margin-top: 3px; }
 /* Dentro de la bandeja de la tirada: filete, sin elevación (dos clases: la pieza se carga después que esta hoja). */
 .ui-dtc.prf-tbl { box-shadow: 0 0 0 1px var(--line); }
 /* Ocho columnas: el mismo aspecto que el resto de tablas, con el aire lateral justo. */
@@ -4560,7 +3991,6 @@ a.card:active, button.card:active, .card-link:active { transform: translateY(0);
 /* ── /dashboard/verify · el proyector ───────────────────────────────────── */
 .pv-chips.ui-tglc { margin-bottom: 14px; gap: 8px; }
 .pv-chips .ui-tglc__item { border-radius: 999px; }
-.pv-bars .mono { font-family: var(--mono); font-size: 12.5px; color: var(--ink); min-width: 5ch; text-align: end; font-variant-numeric: tabular-nums; }
 .pv-bar i { display: block; height: 100%; border-radius: inherit; transition: width var(--dur-3) var(--ease-out); }
 .pv-adv summary::before { content: ""; width: 7px; height: 7px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(-45deg); transition: transform var(--dur-2) var(--ease-out); }
 @media (prefers-reduced-motion: reduce) { .pv-bar i, .pv-adv summary::before, .detalle-ic { transition: none; } }
@@ -4651,20 +4081,12 @@ a.card:active, button.card:active, .card-link:active { transform: translateY(0);
    se pisa desde este bloque. */
 
 /* ── E4·1 Acceso: Text Field, Button, Tilt Card ─────────────────────────── */
-.acc-campo { margin: 0 0 16px; }
-.acc-card .acc-campo .ui-tfc__label { font-size: 13.5px; font-weight: 500; line-height: 1.35; color: var(--ink); }
 .acc-enviar { margin-top: 4px; }
-.acc-card form > .acc-enviar:first-child { margin-top: 0; }
-.acc-progreso .ui-spnc { color: var(--brand); }
 /* El recibo, sobre la mesa: se inclina hacia el puntero. La sombra la pone la
    Tilt Card; el recibo conserva su festón y su línea de corte. */
 .acc-panel-tilt { width: 100%; max-width: 400px; --ui-tc-radius: 14px; }
-.acc-panel-tilt .acc-panel-recibo { max-width: none; }
 /* Invitación: la escena del equipo, en su tarjeta, sobre el paisaje. */
 .inv-panel { max-width: 460px; }
-.inv-escena { width: 100%; padding: 6px; border-radius: var(--r-card-lg); background: color-mix(in srgb, var(--surface) 86%, transparent); box-shadow: 0 0 0 1px var(--line), var(--shadow-elevated); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
-.inv-escena .ui-ti { border-radius: calc(var(--r-card-lg) - 6px); background: radial-gradient(120% 90% at 50% 0%, var(--surface) 0%, var(--surface-3) 100%); }
-.inv-fila .ui-bdgc { vertical-align: baseline; }
 
 /* ── E4·2 Páginas de lectura: fondo de rejilla, migas, índice, tablas ────── */
 /* La rejilla (Grid Background) deriva despacio detrás de la cabecera y se
@@ -4732,11 +4154,6 @@ a.card:active, button.card:active, .card-link:active { transform: translateY(0);
    Explorador, no como un titular en negrita sangrado 16px. */
 .app .card > .empty-state--bare.empty-state--start:not(:has(.empty-state-text, .empty-state-icon, .empty-state-actions)) { margin-top: 10px; padding: 0 0 2px; }
 .app .card > .empty-state--bare.empty-state--start:not(:has(.empty-state-text, .empty-state-icon, .empty-state-actions)) > .empty-state-title { font-size: var(--fs-note); font-weight: var(--fw-body); letter-spacing: 0; line-height: var(--lh-body); color: var(--ink-soft); }
-/* Resumen en móvil: el título de cada tarjeta arranca en el mismo margen
-   (antes 28, 33, 36 y 39px según el componente). */
-@media (max-width: 640px) {
-  .app .card.card-pad.ox-card { padding-inline: 16px; }
-}
 /* ==== FIN SLOT ACABADO FINAL ==== */
 
 /* La insignia «danger» de affectUI pinta --aui-danger sobre su tinte al 9 %:

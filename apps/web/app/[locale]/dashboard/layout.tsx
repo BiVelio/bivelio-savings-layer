@@ -1,6 +1,13 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+// Las piezas de affectUI que el panel comparte con las páginas de acceso
+// (campo de texto, invitación, indicador de espera…): la portada no las carga.
+// Delante de las del panel, donde estaban cuando vivían en la hoja pública
+// (así lo pinta `next dev`; en producción Next la emite detrás de panel.css).
+// Ninguna empata con una regla de panel.css, así que el orden en que Next
+// emita las tres no decide nada (ver la cabecera de affectui-acceso.css).
+import "@/vendor/affectui/affectui-acceso.css";
 // Las reglas propias que solo casan en el panel, fuera de globals.css para que
 // la portada no las descargue (ver la cabecera de panel.css). ANTES que la de
 // affectUI del panel: en producción Next emite las dos hojas en ese orden

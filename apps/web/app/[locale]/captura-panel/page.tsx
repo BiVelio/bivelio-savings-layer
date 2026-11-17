@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 // Galería de desarrollo que pinta componentes del panel FUERA de /dashboard:
 // las hojas de sus piezas (affectUI y las reglas propias del panel) las carga el
 // layout del panel, así que aquí se piden a mano y en el mismo orden.
+import "@/vendor/affectui/affectui-acceso.css";
 import "@/app/[locale]/dashboard/panel.css";
 import "@/vendor/affectui/affectui-panel.css";
 
