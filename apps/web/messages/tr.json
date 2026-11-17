@@ -1230,6 +1230,7 @@
     "hero": {
       "title": "LLM çağrılarınızı optimize edin.",
       "titleAccent": "Her tasarrufu doğrulayın.",
+      "titleMark": "tasarrufu",
       "sub": "Açık kaynak motoru kendi altyapınızda çalıştırın. Ekibinizin ölçümünü ve yönetimini tek yerde toplamak için Savings Cloud'u bağlayın, sabit ücretli planlarla.",
       "ctaStart": "Measure ile başlayın",
       "ctaBench": "Tekrarlanabilir sonuçları görün",
@@ -1661,6 +1662,7 @@
     "closing": {
       "title": "Önce ölçün.",
       "titleAccent": "Sonra karar verin.",
+      "titleMark": "karar verin",
       "sub": "Measure ücretsizdir ve kart istemez: gölge modunda çalışır ve kendi trafiğinizde ne kadar tasarruf edilmiş olacağını gösterir. Motor açık kaynaktır ve kodu herkesin gözü önündedir.",
       "repo": "Depoyu görün"
     },
@@ -1668,6 +1670,7 @@
       "eyebrow": "Savings Layer iş başında",
       "title": "Kodunuz ile sağlayıcınız arasında ince bir katman.",
       "titleAccent": "İşte Savings Layer.",
+      "titleMark": "Savings Layer",
       "sub": "Altyapınızda çalışır, sağlayıcıya yalnızca ödenmesi gerekeni gönderir ve her yanıtla birlikte bir fiş döndürür. Prompt'larınız doğrudan yapılandırdığınız sağlayıcıya gider; Savings Cloud isteğe bağlıdır ve içeriği değil, sayımları ve maliyeti alır.",
       "figLabel": "Animasyonlu illüstrasyon: bir çağrının Savings Layer içindeki yolu",
       "stepsLabel": "Yol, adım adım",

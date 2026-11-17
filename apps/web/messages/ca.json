@@ -1230,6 +1230,7 @@
     "hero": {
       "title": "Optimitza les teves crides a LLM.",
       "titleAccent": "Comprova cada estalvi.",
+      "titleMark": "estalvi",
       "sub": "Executa el motor open source a la teva infraestructura. Connecta Savings Cloud per centralitzar el mesurament i la gestió del teu equip, amb plans de quota fixa.",
       "ctaStart": "Comença amb Measure",
       "ctaBench": "Veure resultats reproduïbles",
@@ -1661,6 +1662,7 @@
     "closing": {
       "title": "Mesura primer.",
       "titleAccent": "Decideix després.",
+      "titleMark": "després",
       "sub": "Measure és gratuït i no demana targeta: funciona en mode ombra i t’ensenya el que s’hauria estalviat amb el teu propi trànsit. El motor és open source i el seu codi és a la vista.",
       "repo": "Veure el repositori"
     },
@@ -1668,6 +1670,7 @@
       "eyebrow": "Savings Layer, en acció",
       "title": "Una capa fina entre el teu codi i el teu proveïdor.",
       "titleAccent": "Això és Savings Layer.",
+      "titleMark": "Savings Layer",
       "sub": "S’executa a la teva infraestructura, envia al proveïdor només el que cal pagar i et retorna un rebut amb cada resposta. Els teus prompts van directes al proveïdor que configuris; Savings Cloud és opcional i rep recomptes i cost, no el seu contingut.",
       "figLabel": "Il·lustració animada: el recorregut d'una crida per Savings Layer",
       "stepsLabel": "El recorregut, pas a pas",

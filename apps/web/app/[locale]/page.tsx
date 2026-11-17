@@ -14,6 +14,8 @@ import { PlanesCloud } from "@/app/components/landing/PlanesCloud";
 import { PreguntasDeCompra } from "@/app/components/landing/PreguntasDeCompra";
 import { URL_DEL_CODIGO } from "@/app/components/sitio";
 import { CodeFrame, Recibo } from "@/app/components/ui";
+import { Marcado } from "@/app/components/campana/Marcado";
+import { MosaicoDeLlamadas } from "@/app/components/campana/MosaicoDeLlamadas";
 import { CursorGrid } from "@/app/components/CursorGrid";
 import { RevealObserver } from "@/app/components/RevealObserver";
 import { LogoProveedor } from "@/app/components/LogoProveedor";
@@ -221,13 +223,18 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             banco público— y, junto a ella, el recibo verificable de una
             medición, con su clase de evidencia y su procedencia. El h1 pinta
             desde el HTML, sin animación. */}
-        <section className="hero hero-panel">
+        <section className="hero hero-panel con-cielo">
+          {/* FIRMA DE CAMPAÑA: el cielo cian de la pieza promocional, en la
+              esquina superior derecha, detrás de todo (no es candidato a LCP). */}
+          <div className="cielo" aria-hidden="true" />
           <div className="hpanel-copy">
             <p className="hero-sello">{t("hero.kicker")}</p>
             <h1>
               {t("hero.title")}{" "}
               <GradientText className="hero-acento">
-                <span className="u">{t("hero.titleAccent")}</span>
+                <span className="u">
+                  <Marcado texto={t("hero.titleAccent")} marca={t("hero.titleMark")} />
+                </span>
               </GradientText>
             </h1>
             <p className="lede">{t("hero.sub")}</p>
@@ -306,17 +313,23 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             </figcaption>
           </figure>
 
-          <div className="hpanel-medido">
-            <span className="hpanel-marcas">
+          {/* La franja de ecosistema de la pieza («ECOSYSTEM» + teselas entre
+              filetes): con qué contador se midió en vivo. */}
+          <div className="hpanel-medido franja-eco">
+            <span className="hpanel-medido-t franja-eco-k">{t("hero.medidoEnVivo")}</span>
+            <span className="hpanel-marcas franja-eco-teselas">
               {MEDIDO_EN_VIVO.map((m) => (
-                <span className="hpanel-marca" key={m.marca}>
-                  <LogoProveedor marca={m.marca} size={18} />
+                <span className="hpanel-marca eco-tesela" key={m.marca}>
+                  <span className="eco-tesela-logo">
+                    <LogoProveedor marca={m.marca} size={16} />
+                  </span>
                   {m.label}
                 </span>
               ))}
             </span>
-            <span className="hpanel-medido-t">{t("hero.medidoEnVivo")}</span>
           </div>
+          {/* El mosaico de llamadas al pie del héroe: cada casilla, una llamada. */}
+          <MosaicoDeLlamadas semilla={11} filas={4} className="mosaico--sangre hero-mosaico" />
         </section>
 
         {/* 2 · SAVINGS LAYER, EN ACCIÓN (#data). Lo primero bajo el héroe: qué
@@ -329,7 +342,10 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
           <div className="sec-head sec-head--centro rv">
             <span className="eyebrow">{t("layer.eyebrow")}</span>
             <h2>
-              {t("layer.title")} <span className="serif-accent">{t("layer.titleAccent")}</span>
+              {t("layer.title")}{" "}
+              <span className="serif-accent">
+                <Marcado texto={t("layer.titleAccent")} marca={t("layer.titleMark")} />
+              </span>
             </h2>
             <p>{t("layer.sub")}</p>
           </div>
@@ -787,6 +803,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
           <CierreMeasure
             titulo={t("closing.title")}
             acento={t("closing.titleAccent")}
+            marca={t("closing.titleMark")}
             texto={t("closing.sub")}
             acciones={
               <>
@@ -800,6 +817,13 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
               </>
             }
             nota={<a href="#sdk-install">{t("hero.ctaOss")}</a>}
+            firma={
+              /* La firma de la pieza: el dominio y el precio de Pro, leído de
+                 Stripe (`planes.pro.mensual`) como el resto de la página. */
+              <span className="pildora-precio">
+                Pro · {planes.pro.mensual} {t("pricing.per")}
+              </span>
+            }
           />
         </section>
       </main>

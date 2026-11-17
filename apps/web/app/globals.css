@@ -4739,3 +4739,133 @@ a.card:active, button.card:active, .card-link:active { transform: translateY(0);
    de carga. */
 :root .ui-bdgc { --ui-bdgc-danger-fg: var(--danger-ink); }
 /* ==== FIN SLOT DETALLES FINALES ==== */
+/* ==== SLOT FIRMA DE CAMPAÑA ==== */
+/* ============================================================================
+   FIRMA DE CAMPAÑA (2026-11-17) — el lenguaje de la pieza promocional
+   («Your LLM bill, under control. Measured on every call.») llevado a la web
+   sin tocar su esencia: el marcador cian detrás de la palabra que remata un
+   titular, el cielo cian en la esquina superior derecha, el mosaico de
+   llamadas al pie, la píldora de precio y la franja de ecosistema entre
+   filetes. Nada de esto es candidato a LCP: el marcador es un pseudo-elemento,
+   el cielo un degradado de un elemento vacío y el mosaico un SVG en línea.
+   Todo lo que se mueve lo hace bajo `prefers-reduced-motion: no-preference`.
+   ========================================================================== */
+:root {
+  --mk-bg:       #D3F2FB;   /* el bloque de «control.» */
+  --mk-bg-2:     #E3F7FC;
+  --cielo:       rgba(160, 222, 250, .52);
+  --cielo-2:     rgba(196, 238, 252, .38);
+  --pildora-bg:  #DDF3FD;
+  --pildora-ink: #0052C2;   /* 6,1:1 sobre --pildora-bg */
+}
+
+/* ── El marcador. El texto es texto; el bloque, un ::before detrás. ── */
+/* Sin `isolation` en el propio .mk: el bloque (z-index -1) tiene que quedar
+   DEBAJO del texto aunque el texto sea el Gradient Text de affectUI, que pinta
+   una copia coloreada encima. Por eso el contexto de apilamiento lo pone el
+   titular que lo contiene, y en la copia coloreada no hay bloque. */
+.mk {
+  position: relative; white-space: nowrap;
+  padding-inline: .05em .08em; margin-inline: -.05em -.08em;
+}
+:is(h1, h2, h3, .editorial-title, .cierre-titulo):has(.mk) { isolation: isolate; }
+.ui-gt__fill .mk::before { content: none; }
+.mk::before {
+  content: ""; position: absolute; z-index: -1;
+  inset: .12em -.03em .02em -.05em;
+  background: linear-gradient(100deg, var(--mk-bg) 0%, var(--mk-bg-2) 100%);
+  border-radius: 2px;
+  transform-origin: 0 50%;
+}
+@keyframes mk-trazo { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@media (prefers-reduced-motion: no-preference) {
+  .mk::before { animation: mk-trazo 1s var(--ease-out) .45s both; }
+  /* Bajo el pliegue, el trazo espera a que su bloque entre en pantalla. */
+  .lp.rv-on .rv:not(.in) .mk::before { animation: none; transform: scaleX(0); }
+  .lp.rv-on .rv.in .mk::before { animation: mk-trazo 1s var(--ease-out) .3s both; }
+}
+/* El acento en serif, con marcador, va en TINTA (como en la pieza), no en azul. */
+.serif-accent:has(.mk), .serif-accent.serif-accent--tinta { color: var(--ink); }
+
+/* ── El cielo: un resplandor cian en la esquina superior derecha. ── */
+.cielo {
+  position: absolute; z-index: -1; pointer-events: none;
+  top: 0; right: calc(50% - 50vw); width: min(78vw, 1040px); height: min(100%, 760px);
+  background:
+    radial-gradient(60% 62% at 82% 6%, var(--cielo) 0%, rgba(160, 222, 250, 0) 72%),
+    radial-gradient(48% 50% at 98% 38%, var(--cielo-2) 0%, rgba(196, 238, 252, 0) 70%);
+}
+.con-cielo { position: relative; isolation: isolate; }
+
+/* ── El mosaico de llamadas. ── */
+.mosaico {
+  display: block; width: 100%; line-height: 0; pointer-events: none;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 14%, #000 86%, transparent 100%);
+          mask-image: linear-gradient(90deg, transparent 0%, #000 14%, #000 86%, transparent 100%);
+}
+.mosaico svg { display: block; overflow: hidden; }
+.mosaico .mz-on { opacity: .55; }
+@keyframes mz-pulso {
+  0%, 100% { opacity: .12; }
+  42%, 58% { opacity: .95; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .mosaico .mz-on { animation-name: mz-pulso; animation-timing-function: ease-in-out; animation-iteration-count: infinite; animation-duration: 5s; }
+}
+/* A sangre completa dentro de un contenedor centrado. */
+.mosaico--sangre { width: 100vw; margin-inline: calc(50% - 50vw); }
+
+/* ── La píldora de precio: «15 € / asiento / mes». ── */
+.pildora-precio {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 8px 18px;
+  border-radius: 999px; background: var(--pildora-bg); color: var(--pildora-ink);
+  font: 600 15px/1.2 var(--font-sans); letter-spacing: -.012em; white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── La firma: dominio a la izquierda, píldora a la derecha, sobre un filete. ── */
+.firma-campana {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 20px;
+  width: 100%; margin-top: clamp(28px, 3.6vw, 44px); padding-top: clamp(16px, 2vw, 22px);
+  border-top: 1px solid color-mix(in srgb, var(--line-strong) 70%, transparent);
+}
+.firma-campana .firma-dominio { font: 500 clamp(15px, 1.4vw, 18px)/1.2 var(--font-sans); letter-spacing: -.012em; color: var(--ink); text-decoration: none; }
+.firma-campana a.firma-dominio:hover { text-decoration: underline; text-underline-offset: 4px; }
+
+/* ── La franja de ecosistema: etiqueta en versalitas y teselas, entre filetes. ── */
+.franja-eco {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px 22px;
+  padding-block: 14px; border-block: 1px solid color-mix(in srgb, var(--line-strong) 60%, transparent);
+}
+.franja-eco-k {
+  font: 600 11.5px/1.3 var(--font-sans); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-soft);
+}
+.franja-eco-teselas { display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px; }
+.eco-tesela {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 38px; padding: 6px 12px 6px 7px;
+  border: 1px solid var(--line); border-radius: 11px; background: var(--surface);
+  box-shadow: 0 1px 2px rgba(15, 18, 24, .04);
+  font: 600 14px/1 var(--font-sans); letter-spacing: -.01em; color: var(--ink);
+}
+.eco-tesela-logo { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 7px; background: var(--surface-2); }
+/* ── En la portada. ── */
+/* El mosaico cierra el héroe y apoya en la banda que sigue: sin el relleno
+   inferior del héroe, la franja «sube» desde el borde de la banda. */
+.lp .hero.hero-panel:has(> .hero-mosaico) { padding-bottom: 0; }
+.lp .hero-mosaico { margin-top: clamp(30px, 4vw, 52px); }
+.lp .hpanel-medido.franja-eco { width: min(100%, 880px); margin-top: clamp(28px, 3.4vw, 40px); }
+.lp .hpanel-medido.franja-eco .hpanel-marcas { gap: 10px; }
+.lp .hpanel-medido.franja-eco .hpanel-marca { font-size: 14px; }
+@media (max-width: 640px) {
+  .lp .hpanel-medido.franja-eco { gap: 12px; }
+  .lp .hpanel-medido.franja-eco .franja-eco-k { text-align: center; letter-spacing: .12em; }
+}
+/* El cierre: firma sobre filete y mosaico pegado al borde inferior, por
+   encima del resplandor del Gradient Floor. */
+.cierre:has(.cierre-mosaico) .cierre-in { padding-bottom: clamp(104px, 11vw, 150px); }
+.cierre-firma { max-width: 760px; margin-top: clamp(34px, 4vw, 52px); }
+.cierre-mosaico { position: absolute; left: 0; right: 0; bottom: 0; }
+@media (max-width: 640px) {
+  .cierre-firma { justify-content: center; text-align: center; }
+}
+/* ==== FIN SLOT FIRMA DE CAMPAÑA ==== */

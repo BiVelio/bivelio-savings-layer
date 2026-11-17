@@ -1230,6 +1230,7 @@
     "hero": {
       "title": "Optimiere deine LLM-Aufrufe.",
       "titleAccent": "Prüfe jede Ersparnis.",
+      "titleMark": "Ersparnis",
       "sub": "Betreibe die Open-Source-Engine in deiner eigenen Infrastruktur. Verbinde Savings Cloud, um Messung und Verwaltung für dein Team zu bündeln – zu festen Gebühren.",
       "ctaStart": "Mit Measure starten",
       "ctaBench": "Reproduzierbare Ergebnisse ansehen",
@@ -1661,6 +1662,7 @@
     "closing": {
       "title": "Erst messen.",
       "titleAccent": "Dann entscheiden.",
+      "titleMark": "entscheiden",
       "sub": "Measure ist kostenlos und verlangt keine Karte: Es läuft im Schattenmodus und zeigt, was mit deinem eigenen Traffic gespart worden wäre. Die Engine ist Open Source, ihr Code liegt offen.",
       "repo": "Repository ansehen"
     },
@@ -1668,6 +1670,7 @@
       "eyebrow": "Savings Layer in Aktion",
       "title": "Eine dünne Schicht zwischen deinem Code und deinem Anbieter.",
       "titleAccent": "Das ist der Savings Layer.",
+      "titleMark": "Savings Layer",
       "sub": "Er läuft in deiner Infrastruktur, schickt dem Anbieter nur, was bezahlt werden muss, und liefert zu jeder Antwort einen Beleg. Deine Prompts gehen direkt an den von dir konfigurierten Anbieter; Savings Cloud ist optional und erhält Zählwerte und Kosten, nicht deren Inhalt.",
       "figLabel": "Animierte Illustration: der Weg eines Aufrufs durch Savings Layer",
       "stepsLabel": "Der Weg, Schritt für Schritt",

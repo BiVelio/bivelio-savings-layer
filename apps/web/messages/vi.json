@@ -1230,6 +1230,7 @@
     "hero": {
       "title": "Tối ưu các lệnh gọi LLM.",
       "titleAccent": "Kiểm chứng từng khoản tiết kiệm.",
+      "titleMark": "tiết kiệm",
       "sub": "Chạy engine mã nguồn mở trên hạ tầng của chính bạn. Kết nối Savings Cloud để tập trung việc đo lường và quản lý cho cả nhóm, với các gói phí cố định.",
       "ctaStart": "Bắt đầu với Measure",
       "ctaBench": "Xem kết quả có thể tái lập",
@@ -1661,6 +1662,7 @@
     "closing": {
       "title": "Đo trước.",
       "titleAccent": "Quyết định sau.",
+      "titleMark": "sau",
       "sub": "Measure miễn phí và không yêu cầu thẻ: nó chạy ở chế độ bóng và cho bạn thấy lẽ ra đã tiết kiệm được bao nhiêu trên chính lưu lượng của bạn. Engine là mã nguồn mở và mã của nó công khai.",
       "repo": "Xem kho mã"
     },
@@ -1668,6 +1670,7 @@
       "eyebrow": "Savings Layer khi hoạt động",
       "title": "Một lớp mỏng giữa mã của bạn và nhà cung cấp.",
       "titleAccent": "Đó chính là Savings Layer.",
+      "titleMark": "Savings Layer",
       "sub": "Lớp này chạy trong hạ tầng của bạn, chỉ gửi cho nhà cung cấp những gì cần trả tiền và trả về một biên lai kèm mỗi phản hồi. Prompt của bạn đi thẳng tới nhà cung cấp mà bạn cấu hình; Savings Cloud là tùy chọn và chỉ nhận số đếm và chi phí, không nhận nội dung.",
       "figLabel": "Hình minh họa động: hành trình của một lệnh gọi qua Savings Layer",
       "stepsLabel": "Hành trình, từng bước",

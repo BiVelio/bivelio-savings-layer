@@ -1230,6 +1230,7 @@
     "hero": {
       "title": "Optimisez vos appels LLM.",
       "titleAccent": "Vérifiez chaque économie.",
+      "titleMark": "économie",
       "sub": "Exécutez le moteur open source sur votre infrastructure. Connectez Savings Cloud pour centraliser la mesure et la gestion de votre équipe, avec des formules à tarif fixe.",
       "ctaStart": "Commencer avec Measure",
       "ctaBench": "Voir les résultats reproductibles",
@@ -1661,6 +1662,7 @@
     "closing": {
       "title": "Mesurez d’abord.",
       "titleAccent": "Décidez ensuite.",
+      "titleMark": "ensuite",
       "sub": "Measure est gratuit et ne demande pas de carte : il fonctionne en mode fantôme et montre ce qui aurait été économisé sur votre propre trafic. Le moteur est open source et son code est visible par tous.",
       "repo": "Voir le dépôt"
     },
@@ -1668,6 +1670,7 @@
       "eyebrow": "Savings Layer, en action",
       "title": "Une fine couche entre votre code et votre fournisseur.",
       "titleAccent": "C’est ça, Savings Layer.",
+      "titleMark": "Savings Layer",
       "sub": "Elle s’exécute dans votre infrastructure, n’envoie au fournisseur que ce qui doit être payé et renvoie un reçu avec chaque réponse. Vos prompts vont directement au fournisseur que vous configurez ; Savings Cloud est facultatif et reçoit des décomptes et des coûts, pas leur contenu.",
       "figLabel": "Illustration animée : le parcours d'un appel à travers Savings Layer",
       "stepsLabel": "Le parcours, étape par étape",

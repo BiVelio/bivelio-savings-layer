@@ -1230,6 +1230,7 @@
     "hero": {
       "title": "Optimize your LLM calls.",
       "titleAccent": "Verify every saving.",
+      "titleMark": "saving",
       "sub": "Run the open-source engine on your own infrastructure. Connect Savings Cloud to centralize measurement and management for your team, on flat-fee plans.",
       "ctaStart": "Start with Measure",
       "ctaBench": "See reproducible results",
@@ -1661,6 +1662,7 @@
     "closing": {
       "title": "Measure first.",
       "titleAccent": "Decide later.",
+      "titleMark": "later",
       "sub": "Measure is free and asks for no card: it runs in shadow mode and shows what would have been saved on your own traffic. The engine is open source, and its code is in plain sight.",
       "repo": "View the repository"
     },
@@ -1668,6 +1670,7 @@
       "eyebrow": "Savings Layer, in action",
       "title": "A thin layer between your code and your provider.",
       "titleAccent": "That's the Savings Layer.",
+      "titleMark": "Savings Layer",
       "sub": "It runs inside your infrastructure, sends the provider only what has to be paid for, and returns a receipt with every response. Your prompts go straight to the provider you configure; Savings Cloud is optional and receives counts and cost, not their content.",
       "figLabel": "Animated illustration: the path of one call through Savings Layer",
       "stepsLabel": "The path, step by step",

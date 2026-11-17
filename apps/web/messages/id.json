@@ -1230,6 +1230,7 @@
     "hero": {
       "title": "Optimalkan panggilan LLM Anda.",
       "titleAccent": "Periksa setiap penghematan.",
+      "titleMark": "penghematan",
       "sub": "Jalankan mesin open source di infrastruktur Anda sendiri. Hubungkan Savings Cloud untuk memusatkan pengukuran dan pengelolaan tim Anda, dengan paket bertarif tetap.",
       "ctaStart": "Mulai dengan Measure",
       "ctaBench": "Lihat hasil yang dapat direproduksi",
@@ -1661,6 +1662,7 @@
     "closing": {
       "title": "Ukur dulu.",
       "titleAccent": "Putuskan kemudian.",
+      "titleMark": "kemudian",
       "sub": "Measure gratis dan tidak meminta kartu: berjalan dalam mode bayangan dan menunjukkan berapa yang seharusnya dihemat pada trafik Anda sendiri. Mesinnya open source dan kodenya terbuka untuk dilihat.",
       "repo": "Lihat repositori"
     },
@@ -1668,6 +1670,7 @@
       "eyebrow": "Savings Layer, saat bekerja",
       "title": "Lapisan tipis di antara kode Anda dan penyedia Anda.",
       "titleAccent": "Itulah Savings Layer.",
+      "titleMark": "Savings Layer",
       "sub": "Lapisan ini berjalan di infrastruktur Anda, hanya mengirim ke penyedia apa yang memang harus dibayar, dan mengembalikan struk bersama setiap respons. Prompt Anda langsung menuju penyedia yang Anda konfigurasikan; Savings Cloud bersifat opsional dan menerima hitungan serta biaya, bukan isinya.",
       "figLabel": "Ilustrasi animasi: perjalanan satu panggilan melalui Savings Layer",
       "stepsLabel": "Perjalanannya, langkah demi langkah",

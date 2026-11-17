@@ -1230,6 +1230,7 @@
     "hero": {
       "title": "Optymalizuj wywołania LLM.",
       "titleAccent": "Sprawdź każdą oszczędność.",
+      "titleMark": "oszczędność",
       "sub": "Uruchom silnik open source we własnej infrastrukturze. Połącz Savings Cloud, aby scentralizować pomiary i zarządzanie zespołem – w planach o stałej opłacie.",
       "ctaStart": "Zacznij od Measure",
       "ctaBench": "Zobacz powtarzalne wyniki",
@@ -1661,6 +1662,7 @@
     "closing": {
       "title": "Najpierw zmierz.",
       "titleAccent": "Potem zdecyduj.",
+      "titleMark": "zdecyduj",
       "sub": "Measure jest darmowy i nie wymaga karty: działa w trybie cienia i pokazuje, ile dałoby się zaoszczędzić na Twoim własnym ruchu. Silnik jest open source, a jego kod jest jawny.",
       "repo": "Zobacz repozytorium"
     },
@@ -1668,6 +1670,7 @@
       "eyebrow": "Savings Layer w działaniu",
       "title": "Cienka warstwa między Twoim kodem a Twoim dostawcą.",
       "titleAccent": "To właśnie Savings Layer.",
+      "titleMark": "Savings Layer",
       "sub": "Działa w Twojej infrastrukturze, wysyła dostawcy tylko to, za co trzeba zapłacić, i zwraca paragon z każdą odpowiedzią. Twoje prompty trafiają bezpośrednio do dostawcy, którego skonfigurujesz; Savings Cloud jest opcjonalny i otrzymuje liczby i koszt, a nie ich treść.",
       "figLabel": "Animowana ilustracja: droga jednego wywołania przez Savings Layer",
       "stepsLabel": "Droga krok po kroku",

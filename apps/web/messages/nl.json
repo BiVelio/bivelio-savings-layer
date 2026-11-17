@@ -1230,6 +1230,7 @@
     "hero": {
       "title": "Optimaliseer je LLM-aanroepen.",
       "titleAccent": "Controleer elke besparing.",
+      "titleMark": "besparing",
       "sub": "Draai de open-source-engine op je eigen infrastructuur. Koppel Savings Cloud om meting en beheer voor je team te centraliseren, met vaste tarieven.",
       "ctaStart": "Starten met Measure",
       "ctaBench": "Reproduceerbare resultaten bekijken",
@@ -1661,6 +1662,7 @@
     "closing": {
       "title": "Eerst meten.",
       "titleAccent": "Daarna beslissen.",
+      "titleMark": "beslissen",
       "sub": "Measure is gratis en vraagt geen kaart: het draait in schaduwmodus en laat zien wat er met je eigen verkeer bespaard zou zijn. De engine is open source en de code is voor iedereen te zien.",
       "repo": "Repository bekijken"
     },
@@ -1668,6 +1670,7 @@
       "eyebrow": "Savings Layer in actie",
       "title": "Een dunne laag tussen je code en je provider.",
       "titleAccent": "Dat is de Savings Layer.",
+      "titleMark": "Savings Layer",
       "sub": "De laag draait in je eigen infrastructuur, stuurt de provider alleen wat betaald moet worden en geeft bij elk antwoord een bon terug. Je prompts gaan rechtstreeks naar de provider die je instelt; Savings Cloud is optioneel en ontvangt aantallen en kosten, niet de inhoud.",
       "figLabel": "Geanimeerde illustratie: de weg van één aanroep door Savings Layer",
       "stepsLabel": "De weg, stap voor stap",
