@@ -223,9 +223,10 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             banco público— y, junto a ella, el recibo verificable de una
             medición, con su clase de evidencia y su procedencia. El h1 pinta
             desde el HTML, sin animación. */}
-        <section className="hero hero-panel con-cielo">
+        <section className="hero hero-panel">
           {/* FIRMA DE CAMPAÑA: el cielo cian de la pieza promocional, en la
-              esquina superior derecha, detrás de todo (no es candidato a LCP). */}
+              esquina superior derecha, detrás de todo (no es candidato a LCP;
+              el contexto de apilamiento lo pone `.lp .hero.hero-panel`). */}
           <div className="cielo" aria-hidden="true" />
           <div className="hpanel-copy">
             <p className="hero-sello">{t("hero.kicker")}</p>
@@ -313,7 +314,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             </figcaption>
           </figure>
 
-          {/* La franja de ecosistema de la pieza («ECOSYSTEM» + teselas entre
+          {/* La franja de proveedores de la pieza (rótulo + teselas entre
               filetes): con qué contador se midió en vivo. */}
           <div className="hpanel-medido franja-eco">
             <span className="hpanel-medido-t franja-eco-k">{t("hero.medidoEnVivo")}</span>

@@ -23,7 +23,9 @@ describe("nombres accesibles", () => {
     const pagina = leer("../[locale]/page.tsx");
     const h1 = pagina.slice(pagina.indexOf("<h1>"), pagina.indexOf("</h1>"));
     expect(h1).toContain('{t("hero.title")}');
-    expect(h1).toContain('<span className="u">{t("hero.titleAccent")}</span>');
+    // El acento es texto llano; desde la firma de campaña (2026-11-17) la
+    // palabra final va dentro de <Marcado>, que solo añade un <span class="mk">.
+    expect(h1).toMatch(/<span className="u">\s*<Marcado texto=\{t\("hero\.titleAccent"\)\} marca=\{t\("hero\.titleMark"\)\} \/>\s*<\/span>/);
     expect(h1).not.toMatch(/aria-label=/);
     expect(pagina).not.toContain("KineticTitle");
     expect(leer("../globals.css")).toMatch(/\.lp \.hero-panel h1 \{[^}]*animation: none;/);

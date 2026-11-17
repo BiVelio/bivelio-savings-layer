@@ -13,8 +13,10 @@
  *  · BARATO: las casillas quietas se agrupan en un `<path>` por color y
  *    opacidad (≈ 20 trazados por franja, no cientos de nodos); solo las que se
  *    encienden son `<rect>` sueltos, porque cada una lleva su retardo.
- *  · TAMAÑO FIJO EN PÍXELES y centrado: la casilla mide lo mismo en un móvil y
- *    en un monitor ancho; lo que sobra a los lados se recorta, no se encoge.
+ *  · TAMAÑO FIJO EN PÍXELES y centrado: el SVG mide siempre ANCHO px y el CSS
+ *    lo centra y recorta (`.mosaico`), así la casilla mide lo mismo en un móvil
+ *    y en un monitor ancho; lo que sobra a los lados se recorta, no se encoge.
+ *    (Sin coordenadas negativas: un `<svg>` anidado las recorta en Chrome.)
  *  · MOVIMIENTO: solo bajo `prefers-reduced-motion: no-preference` (globals.css,
  *    bloque «FIRMA DE CAMPAÑA»); si no, las casillas encendidas quedan quietas.
  */
@@ -28,6 +30,7 @@ const OPACIDADES = [0.16, 0.28, 0.44, 0.66] as const;
 const PASO = 16; // casilla de 12 px + 4 px de junta
 const LADO = 10.5; // + trazo de 1,5 px con unión redonda = 12 px con esquinas suaves
 const COLUMNAS = 136; // 136 × 16 = 2176 px: cubre una pantalla de 1920 centrada
+export const ANCHO_DEL_MOSAICO = COLUMNAS * PASO;
 
 function mulberry32(semilla: number) {
   let a = semilla >>> 0;
@@ -52,7 +55,7 @@ export function casillasDelMosaico(semilla: number, filas: number) {
     const densidad = filas === 1 ? 0.6 : 0.2 + 0.52 * (f / (filas - 1));
     for (let c = 0; c < COLUMNAS; c++) {
       if (azar() > densidad) continue;
-      const x = (c - COLUMNAS / 2) * PASO;
+      const x = c * PASO + 1;
       const y = f * PASO;
       if (azar() < 0.05) {
         encendidas.push({
@@ -80,8 +83,8 @@ export function MosaicoDeLlamadas({ semilla = 7, filas = 5, className }: { semil
   const alto = (filas - 1) * PASO + LADO + 2;
   return (
     <div className={className ? `mosaico ${className}` : "mosaico"} aria-hidden="true">
-      <svg width="100%" height={alto} focusable="false">
-        <svg x="50%" y="1" overflow="visible">
+      <svg width={ANCHO_DEL_MOSAICO} height={alto} viewBox={`0 -1 ${ANCHO_DEL_MOSAICO} ${alto}`} focusable="false">
+        <g>
           {[...quietas].map(([clave, trazos]) => {
             const [color, opacidad] = clave.split("|");
             return (
@@ -109,7 +112,7 @@ export function MosaicoDeLlamadas({ semilla = 7, filas = 5, className }: { semil
               style={{ animationDelay: `${e.retardo}s`, animationDuration: `${e.duracion}s` }}
             />
           ))}
-        </svg>
+        </g>
       </svg>
     </div>
   );
