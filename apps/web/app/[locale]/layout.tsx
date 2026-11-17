@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import Script from "next/script";
 import { notFound } from "next/navigation";
-import { hasLocale, NextIntlClientProvider } from "next-intl";
-import { getMessages, setRequestLocale } from "next-intl/server";
+import { hasLocale } from "next-intl";
+import { setRequestLocale } from "next-intl/server";
 
 import "../globals.css";
 // Las hojas de affectUI que usa el sitio público, en un fichero y DESPUÉS de
@@ -17,6 +17,7 @@ import { SiteNavGate } from "@/app/components/SiteNavGate";
 import { SkipLink, SkipTarget } from "@/app/components/SkipLink";
 import { routing } from "@/i18n/routing";
 import { metaFor } from "@/i18n/locale-meta";
+import { MensajesCliente } from "@/i18n/MensajesCliente";
 
 // Pre-render one static shell per live locale.
 export function generateStaticParams() {
@@ -35,7 +36,6 @@ export default async function LocaleLayout({
   // Enable static rendering for this request's locale.
   setRequestLocale(locale);
 
-  const messages = await getMessages();
   const dir = metaFor(locale).dir;
 
   return (
@@ -65,7 +65,12 @@ export default async function LocaleLayout({
           gtag('js', new Date());
           gtag('config', 'AW-18425303387');
         `}</Script>
-        <NextIntlClientProvider messages={messages}>
+        {/* Al navegador va solo lo que piden los componentes cliente de la
+            barra (`sitio`), no el catálogo entero: viajaba serializado en el
+            HTML de CADA página (~170 KB). Las rutas cuyos componentes cliente
+            piden más envuelven su tramo en su propio MensajesCliente (ver
+            i18n/mensajes-cliente.ts). */}
+        <MensajesCliente tramo="sitio" locale={locale}>
           <SiteNavGate>
             {/* Primer foco de la página y su destino, a los dos lados de la
                 cabecera. El panel pinta los suyos (dashboard/layout.tsx). */}
@@ -74,7 +79,7 @@ export default async function LocaleLayout({
             <SkipTarget />
           </SiteNavGate>
           {children}
-        </NextIntlClientProvider>
+        </MensajesCliente>
       </body>
     </html>
   );
