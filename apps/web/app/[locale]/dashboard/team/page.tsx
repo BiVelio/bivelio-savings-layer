@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 import { AccountTabs } from "@/app/components/app/AccountTabs";
-import { PageHead } from "@/app/components/app/PageHead";
+import { CabeceraDePagina } from "@/app/components/app/CabeceraDePagina";
 import { EquipoPanel } from "../components/EquipoPanel";
 import { loadDashboard } from "../load";
 
@@ -26,7 +26,7 @@ export default async function TeamPage() {
   return (
     <>
       <AccountTabs role={ctx.role} here="/dashboard/team" />
-      <PageHead eyebrow={t("account.eyebrow")} title={t("equipo.title")} sub={t("equipo.intro")} />
+      <CabeceraDePagina rotulo={t("account.eyebrow")} titulo={t("equipo.title")} entradilla={t("equipo.intro")} />
       <EquipoPanel />
     </>
   );

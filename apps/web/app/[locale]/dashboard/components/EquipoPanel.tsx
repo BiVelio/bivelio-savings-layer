@@ -197,7 +197,7 @@ export function EquipoPanel() {
 
   if (cargaFallida) {
     return (
-      <section className="equipo">
+      <section className="equipo pcu-eq">
         <Notice
           tono="danger"
           titulo={tu("state.error")}
@@ -259,12 +259,12 @@ export function EquipoPanel() {
   ];
 
   return (
-    <section className="equipo">
+    <section className="equipo pcu-eq">
       <Toaster label={t("avisosLabel")} closeLabel={t("avisoCerrar")} />
 
       {/* MIEMBROS ≠ ASIENTOS, arriba del todo: nadie debe deducir que invitar
           a una persona cuesta dinero. Un asiento es una máquina. */}
-      <Notice tono="info" role="note">
+      <Notice tono="info" role="note" className="pcu-aviso">
         {t("asientosNota")}
       </Notice>
 
@@ -278,13 +278,11 @@ export function EquipoPanel() {
       ) : null}
 
       {/* --------------------------------------------------------- miembros */}
-      <div className="card equipo-card">
+      <div className="pfc-tarjeta equipo-card">
         <div className="equipo-head">
           <h2 className="equipo-h">{t("miembrosTitulo")}</h2>
           {miembros !== null ? (
-            <Badge>
-              {t("miembrosCuenta", { n: miembros.length })}
-            </Badge>
+            <span className="pfc-chip">{t("miembrosCuenta", { n: miembros.length })}</span>
           ) : null}
         </div>
         {miembros === null ? (
@@ -307,23 +305,33 @@ export function EquipoPanel() {
                 // Al dueño no se le cambia el rol desde aquí: se transfiere. Y uno
                 // no se degrada a sí mismo por accidente.
                 const fijo = m.role === "owner" || m.soyYo;
+                // El nombre corto (la parte local del correo) encima del correo
+                // entero, como en la maqueta: «ana» / «ana@acme.dev».
+                const corto = m.email ? (m.email.split("@")[0] ?? m.email) : null;
                 return {
                   id: m.userId,
                   cells: {
                     persona: (
                       <span className="equipo-quien">
                         <Avatar size={32} name={nombreDe(nombre)} seed={m.userId} />
-                        <span className="equipo-quien-txt">
-                          <b>{nombre}</b>
-                          {m.soyYo ? <Badge size="sm" className="equipo-tu">{t("tu")}</Badge> : null}
+                        <span className="equipo-quien-txt pcu-quien">
+                          <b>
+                            {corto ?? nombre}
+                            {m.soyYo ? <span className="pcu-tu">{t("tu")}</span> : null}
+                          </b>
+                          {corto ? <span className="pcu-correo">{nombre}</span> : null}
                         </span>
                       </span>
                     ),
                     desde: <span className="equipo-desde">{fecha(m.desde)}</span>,
                     rol: fijo ? (
-                      <Badge tone={m.role === "owner" ? "info" : "neutral"}>
+                      <span className="pcu-rol-fijo">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden focusable="false">
+                          <rect x="5" y="11" width="14" height="10" rx="2" />
+                          <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+                        </svg>
                         {nombreRol(m.role)}
-                      </Badge>
+                      </span>
                     ) : (
                       <Select
                         className="equipo-rol"
@@ -363,7 +371,7 @@ export function EquipoPanel() {
       </div>
 
       {/* ---------------------------------------------------------- invitar */}
-      <div className="card equipo-card">
+      <div className="pfc-tarjeta equipo-card">
         <div className="equipo-head">
           <h2 className="equipo-h">{t("invitarTitulo")}</h2>
         </div>
@@ -395,21 +403,21 @@ export function EquipoPanel() {
         {/* QUÉ PUEDE HACER CADA PERFIL, a la vista y sin abrir nada: la misma
             tabla que decide en el servidor (lib/org/permisos). */}
         <h3 className="equipo-sub">{t("permisosTitulo")}</h3>
-        <dl className="equipo-roles">
+        <dl className="equipo-roles pcu-roles">
           <div>
-            <dt><Badge tone="info">{t("rolOwner")}</Badge></dt>
+            <dt>{t("rolOwner")}</dt>
             <dd>{t("permisoOwner")}</dd>
           </div>
           <div>
-            <dt><Badge>{t("rolAdmin")}</Badge></dt>
+            <dt>{t("rolAdmin")}</dt>
             <dd>{t("permisoAdmin")}</dd>
           </div>
           <div>
-            <dt><Badge>{t("rolBilling")}</Badge></dt>
+            <dt>{t("rolBilling")}</dt>
             <dd>{t("permisoBilling")}</dd>
           </div>
           <div>
-            <dt><Badge>{t("rolMember")}</Badge></dt>
+            <dt>{t("rolMember")}</dt>
             <dd>{t("permisoMember")}</dd>
           </div>
         </dl>
@@ -468,16 +476,7 @@ export function EquipoPanel() {
             <p className="ck-note equipo-pie">{t("reenviarAyuda")}</p>
           </>
         ) : (
-          <EmptyState
-            className="equipo-sin-invitaciones"
-            title={t("invitacionesVacio")}
-            icon={
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" focusable="false">
-                <rect x="3" y="5" width="18" height="14" rx="3" />
-                <path d="m4 7.5 8 5.5 8-5.5" />
-              </svg>
-            }
-          />
+          <p className="pfc-bandeja pcu-eq-vacio">{t("invitacionesVacio")}</p>
         )}
       </div>
 
@@ -485,7 +484,7 @@ export function EquipoPanel() {
       {/* Nace con el CORREO de quien pagó, y ese nombre acaba dentro del correo
           de invitación: es el primer contacto de un desconocido con el producto
           de un cliente, y con un correo por nombre parece una suplantación. */}
-      <div className="card equipo-card">
+      <div className="pfc-tarjeta equipo-card">
         <div className="equipo-head">
           <h2 className="equipo-h">{t("orgTitulo")}</h2>
         </div>
