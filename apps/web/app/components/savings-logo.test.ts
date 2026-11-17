@@ -5,7 +5,7 @@
  * alto, y React 19 los anunciaba en el <head> (`<link rel="preload">` por cada
  * <img> sin `loading="lazy"`) delante de las hojas de estilo: 109 KB antes de
  * la primera pintura de cada página en el móvil, por un logo que no es el LCP.
- * Ahora van copias WebP casi sin pérdida a 1×, 2× y 3× del tamaño pintado, dentro
+ * Ahora van copias WebP casi sin pérdida a 1×, 2×, 3× y 4× del tamaño pintado, dentro
  * de <picture> (donde React no precarga), y la variante que el CSS oculta no
  * se descarga: su <picture> elige un píxel vacío en línea con la MISMA consulta
  * del CSS.
@@ -34,7 +34,12 @@ import { ANCHOS_WEBP, LOGO_PNG, SavingsLogo, rutaWebp, srcSetDelLogo } from "./S
 const AQUI = dirname(fileURLToPath(import.meta.url));
 const WEB = join(AQUI, "..", "..");
 const leer = (...p: string[]) => readFileSync(join(WEB, ...p), "utf8");
-const CSS = leer("app", "globals.css").replace(/\/\*[\s\S]*?\*\//g, "");
+const sinComentarios = (css: string) => css.replace(/\/\*[\s\S]*?\*\//g, "");
+const CSS = sinComentarios(leer("app", "globals.css"));
+// Las reglas de la cáscara del panel y del marco de acceso viven en sus hojas
+// (perf/movil-css): cada caso lee la hoja donde está SU regla.
+const CSS_PANEL = sinComentarios(leer("app", "[locale]", "dashboard", "panel.css"));
+const CSS_ACCESO = sinComentarios(leer("app", "components", "acceso", "acceso.css"));
 
 /** Ancho y alto de un WebP (VP8L sin pérdida, VP8X extendido o VP8 con pérdida). */
 function medidasWebp(buf: Buffer): { w: number; h: number } {
@@ -62,9 +67,9 @@ const anchosDe = (variant: "full" | "mark", srcSet: string) =>
   });
 
 /** La consulta con la que el CSS oculta `selector` (`display: none`). */
-function consultaQueOculta(selector: string): string {
+function consultaQueOculta(selector: string, hoja: string): string {
   const re = new RegExp("@media \\(([^)]+)\\) \\{[^\\n]*" + selector.replace(/\./g, "\\.") + " \\{ display: none; \\}");
-  const m = re.exec(CSS);
+  const m = re.exec(hoja);
   expect(m, `@media que oculta ${selector}`).not.toBeNull();
   return `(${m![1]})`;
 }
@@ -90,16 +95,17 @@ describe("las copias al tamaño justo", () => {
     }
   });
 
-  it("cada uso recibe, para 1×, 2× y 3×, la copia más pequeña que llega", () => {
-    // La cabecera pinta 108 px de logotipo: el iPhone (3×) recibe 324 exactos.
-    expect(anchosDe("full", srcSetDelLogo("full", 108))).toEqual([108, 216, 324]);
-    // El pie, 187 px: su 3× (561) lo cubre el original de 574.
+  it("cada uso recibe, para 1×, 2×, 3× y 4×, la copia más pequeña que llega", () => {
+    // La cabecera pinta 108 px de logotipo: el iPhone (3×) recibe 324 exactos
+    // y un Android de densidad 4, 432.
+    expect(anchosDe("full", srcSetDelLogo("full", 108))).toEqual([108, 216, 324, 432]);
+    // El pie, 187 px: su 3× (561) y su 4× los cubre el original de 574.
     expect(anchosDe("full", srcSetDelLogo("full", 187))).toEqual([187, 374, 574]);
     // El isotipo: cabecera del móvil (28 px, 84 exactos en el iPhone), recibo
     // (22 px) y acceso o invitación (32 px).
-    expect(anchosDe("mark", srcSetDelLogo("mark", 28))).toEqual([64, 84]);
-    expect(anchosDe("mark", srcSetDelLogo("mark", 22))).toEqual([64, 84]);
-    expect(anchosDe("mark", srcSetDelLogo("mark", 32))).toEqual([64, 96]);
+    expect(anchosDe("mark", srcSetDelLogo("mark", 28))).toEqual([64, 84, 112]);
+    expect(anchosDe("mark", srcSetDelLogo("mark", 22))).toEqual([64, 84, 96]);
+    expect(anchosDe("mark", srcSetDelLogo("mark", 32))).toEqual([64, 96, 128]);
     // Nada pasa del PNG de origen.
     expect(Math.max(...ANCHOS_WEBP.full)).toBeLessThanOrEqual(574);
     expect(Math.max(...ANCHOS_WEBP.mark)).toBeLessThanOrEqual(256);
@@ -111,6 +117,13 @@ describe("las copias al tamaño justo", () => {
 });
 
 describe("SavingsLogo", () => {
+  it("los <source> de un <picture style=\"display:contents\"> no cuentan como hijos del contenedor", () => {
+    // Sin esta regla, Chrome hace bloque cada <source> y, en un padre flex (la
+    // marca del panel, la cabecera del recibo), cada uno suma su `gap`: el logo
+    // del panel se corría 20–40 px y el recibo del héroe crecía 18–34 px.
+    expect(CSS).toMatch(/(?:^|\n)picture > source \{ display: none; \}/);
+  });
+
   it("no hace que React precargue el logo en el <head>", () => {
     // Un <img> suelto sí lo haría: así se ve la verja.
     expect(renderToStaticMarkup(React.createElement("img", { src: LOGO_PNG.full }))).toMatch(/rel="preload"/);
@@ -139,7 +152,7 @@ describe("SavingsLogo", () => {
 describe("ocultoEn es la misma consulta con la que el CSS oculta cada variante", () => {
   it("cabecera pública: el logotipo bajo 640 px, el isotipo desde 640 px", () => {
     const nav = leer("app", "components", "NavBar.tsx");
-    const q = consultaQueOculta(".nav-logo-full");
+    const q = consultaQueOculta(".nav-logo-full", CSS);
     expect(CSS).toMatch(/(?:^|\n)\.nav-logo-mark \{ display: none; \}/);
     expect(nav).toContain(`className="nav-logo-full" ocultoEn="${q}"`);
     expect(nav).toContain(`className="nav-logo-mark" ocultoEn="${desde(q)}"`);
@@ -147,15 +160,15 @@ describe("ocultoEn es la misma consulta con la que el CSS oculta cada variante",
 
   it("barra del panel: el logotipo bajo 521 px, el isotipo desde 521 px", () => {
     const barra = leer("app", "components", "app", "AppTopbar.tsx");
-    const q = consultaQueOculta(".app-logo-full");
-    expect(CSS).toMatch(/(?:^|\n)\.app-logo-mark \{ display: none; \}/);
+    const q = consultaQueOculta(".app-logo-full", CSS_PANEL);
+    expect(CSS_PANEL).toMatch(/(?:^|\n)\.app-logo-mark \{ display: none; \}/);
     expect(barra).toContain(`className="app-logo-full" ocultoEn="${q}"`);
     expect(barra).toContain(`className="app-logo-mark" ocultoEn="${desde(q)}"`);
   });
 
   it("acceso: el isotipo de la tarjeta, que el CSS quita en el móvil", () => {
     const acceso = leer("app", "components", "acceso", "AccesoShell.tsx");
-    const q = consultaQueOculta(".acc-card .auth-brand");
+    const q = consultaQueOculta(".acc-card .auth-brand", CSS_ACCESO);
     expect(acceso).toContain(`<SavingsLogo variant="mark" height={32} ocultoEn="${q}" />`);
   });
 });

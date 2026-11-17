@@ -544,6 +544,10 @@ input[type="range"] { accent-color: var(--brand); }
    En escritorio el logotipo completo (30px de alto); por debajo de 640px solo
    el isotipo «S», que deja sitio al idioma, el acceso y el hamburguesa. */
 .savings-logo { display: block; max-width: 100%; height: auto; object-fit: contain; }
+/* Los <source> de <picture> no tienen caja propia… salvo que <picture> lleve
+   `display: contents` (SavingsLogo, Recibo): entonces Chrome los hace bloque
+   y, en un padre flex, cada uno cuenta como un hijo más con su `gap`. */
+picture > source { display: none; }
 .nav-logo-mark { display: none; }
 @media (max-width: 639px) { .nav-logo-full { display: none; } .nav-logo-mark { display: block; } }
 /* EL MENÚ COMPLETO sale desde 1024px: son cinco destinos, y por debajo la fila
@@ -4438,89 +4442,17 @@ a.card:active, button.card:active, .card-link:active { transform: translateY(0);
 :root .ui-codec__code { --ui-codec-com: #676C79; }
 /* ==== FIN SLOT CONTRASTE DE COMENTARIOS ==== */
 
-/* ==== SLOT ACCESO A LA MEDIDA DE LA PANTALLA ==== */
-/* ============================================================================
-   EL ACCESO OCUPA EXACTAMENTE LA PANTALLA, SIN SCROLL (dueño, 2026-11-17).
-   Login, alta, contraseña nueva e invitación usan el mismo marco (AccesoShell).
-
-   1. LA CUENTA DE LA ALTURA. Antes el acceso medía `100dvh - var(--nav-h)`,
-      como si encima solo estuviera la cabecera (56 px); pero encima está la
-      barra de aviso (36 px, 50 en móvil, y se puede cerrar) y la cabecera
-      mide 57 con su filete: sobraban 37–51 px en TODAS las pantallas. Ahora la
-      página entera es una columna de 100dvh (aviso + cabecera + acceso) y el
-      acceso se queda con lo que sobre, mida lo que mida lo de arriba.
-   2. LOS ESPACIOS SE AJUSTAN AL ALTO. Rellenos y separaciones verticales en
-      `vh` con su tope de siempre: en una pantalla alta se ve como antes (la
-      tarjeta va centrada en el hueco) y en una baja se recogen.
-   3. EN PANTALLAS BAJAS SE RECOGE LO SECUNDARIO, por escalones de alto: la
-      vuelta al inicio (el logo de la cabecera ya lleva al inicio), el logo de
-      la tarjeta, la entradilla del panel lateral y, más abajo, su recibo. En
-      un móvil en horizontal la tarjeta se parte en dos columnas (texto a un
-      lado, formulario al otro) y la barra de aviso se oculta.
-   Nunca `overflow: hidden`: si alguien amplía el texto o abre el teclado, la
-   página puede seguir desplazándose (WCAG 1.4.10).
-   ========================================================================== */
+/* ==== SLOT ACCESO A LA MEDIDA DE LA PANTALLA (PARTE GLOBAL) ==== */
+/* El resto del ajuste, y el porqué, al final de `components/acceso/acceso.css`.
+   Aquí solo lo que el comprobador de hojas no puede dar por «solo del acceso»:
+   todas estas reglas exigen `main.auth-wrap.acc` (o `.acc-panel`, que solo pinta
+   el acceso), así que fuera de él no casan. La página entera es una columna de
+   100dvh: aviso + cabecera + acceso, y el acceso se queda con lo que sobre. */
 body:has(> main.auth-wrap.acc) { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; }
 body:has(> main.auth-wrap.acc) > :not(main) { flex: none; }
-.auth-wrap.acc { flex: 1 0 auto; min-height: 0; display: flex; flex-direction: column; }
-.auth-wrap.acc > .acc-main { flex: 1 0 auto; min-height: 0; }
-@media (min-width: 1024px) {
-  .auth-wrap.acc--split { display: grid; }
-}
-.acc-main { gap: clamp(4px, 1.4vh, 12px); padding-block: clamp(8px, 4vh, 56px); }
-.auth-card.acc-card { padding-block: clamp(16px, 3.8vh, 36px); }
-.acc-card .auth-brand { margin-bottom: clamp(12px, 2.4vh, 22px); }
-.acc-intro { margin-bottom: clamp(12px, 2.6vh, 24px); }
-.acc-campo { margin-bottom: clamp(8px, 1.8vh, 16px); }
-.acc-card .acc-olvido { margin-top: clamp(2px, 1vh, 10px); }
-.acc-card .auth-alt.acc-cruce { margin-top: clamp(8px, 2.2vh, 20px); }
-.acc-aside { padding: clamp(20px, min(4vw, 5vh), 64px); margin-block: clamp(8px, 1.4vh, 12px); }
 .acc-panel { gap: clamp(14px, 3vh, 40px); }
-
-/* Escalón 1 — por debajo de ~760 px de alto: fuera la entradilla del lateral. */
-@media (min-width: 1024px) and (max-height: 760px) {
-  .acc-aside .acc-panel-lede { display: none; }
-}
-/* Escalón 2 — por debajo de ~680 px: fuera la vuelta al inicio y el logo de la tarjeta. */
-@media (max-height: 680px) {
-  .acc-pie { display: none; }
-  .acc-card .auth-brand { display: none; }
-}
-/* Escalón 3 — portátil con poca ventana: el recibo del lateral ya no cabe.
-   Con el lateral delante: la hoja de affectUI (`.ui-tc`) va después. */
-@media (min-width: 1024px) and (max-height: 640px) {
-  .acc-aside .acc-panel-tilt { display: none; }
-}
-/* Escalón 4 — móvil bajo: titular y campos un punto más compactos. */
-@media (max-height: 600px) {
-  .acc-main { padding-block: clamp(6px, 1.6vh, 12px); }
-  /* En alemán o vietnamita el subtítulo parte en tres líneas a 320px: el aire
-     de la tarjeta cede antes que el texto. */
-  .auth-card.acc-card { padding-block: clamp(12px, 2.2vh, 20px); }
-  .auth-card.acc-card h1 { font-size: 1.45rem; }
-  .acc-intro { gap: 4px; }
-  .auth-card.acc-card .sub { font-size: 13.5px; line-height: 1.45; }
-}
-/* Móvil en horizontal (ancho y muy bajo): sin la barra de aviso y la tarjeta en
-   dos columnas — el texto a un lado, el formulario al otro. */
+/* Móvil en horizontal: la barra de aviso se oculta para dejar sitio al formulario. */
 @media (max-height: 500px) and (min-width: 560px) {
   body:has(> main.auth-wrap.acc) > .announce { display: none; }
-  .auth-card.acc-card:has(> form) {
-    max-width: 760px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
-    column-gap: clamp(20px, 4vw, 40px); align-items: center;
-  }
-  .auth-card.acc-card:has(> form) > * { grid-column: 1; }
-  .auth-card.acc-card:has(> form) > form { grid-column: 2; grid-row: 1 / span 6; align-self: center; }
-  .auth-card.acc-card:has(> form) > .acc-intro { margin-bottom: 8px; }
-  .auth-card.acc-card:has(> form) > .acc-cruce { margin-top: 0; text-align: start; }
-  .auth-card.acc-card { padding-block: 12px; }
-  .acc-main { padding-block: 8px; }
 }
-/* Móvil pequeño en horizontal (≤ 380 px de alto): campos y botón de 40 px. */
-@media (max-height: 380px) {
-  .acc-card .ui-tfc { --h: 40px; gap: 4px; }
-  .acc-card .acc-enviar { --h: 40px; }
-  .acc-campo { margin-bottom: 6px; }
-  .acc-card .auth-link { min-height: 28px; }
-}
-/* ==== FIN SLOT ACCESO A LA MEDIDA DE LA PANTALLA ==== */
+/* ==== FIN SLOT ACCESO A LA MEDIDA DE LA PANTALLA (PARTE GLOBAL) ==== */

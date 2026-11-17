@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -29,24 +29,24 @@ const WEB = fileURLToPath(new URL("../../", import.meta.url));
 // (1) El grafo de imports del cliente
 // ---------------------------------------------------------------------------
 
-/** Las entradas de las páginas públicas (todo `[locale]` menos el panel y sus capturas). */
-const ENTRADAS = [
-  "app/[locale]/layout.tsx",
-  "app/[locale]/not-found.tsx",
-  "app/[locale]/[...rest]/page.tsx",
-  "app/[locale]/page.tsx",
-  "app/[locale]/how-it-works/page.tsx",
-  "app/[locale]/benchmarks/page.tsx",
-  "app/[locale]/pricing/page.tsx",
-  "app/[locale]/paper/page.tsx",
-  "app/[locale]/privacy/page.tsx",
-  "app/[locale]/migrate-to-0.5/page.tsx",
-  "app/[locale]/login/page.tsx",
-  "app/[locale]/signup/page.tsx",
-  "app/[locale]/signup/success/page.tsx",
-  "app/[locale]/reset-password/page.tsx",
-  "app/[locale]/invitacion/[token]/page.tsx",
-];
+/**
+ * Las entradas de las páginas públicas: todo fichero de ruta (page, layout,
+ * not-found, error, loading, template) de `[locale]` menos el panel y las
+ * galerías de desarrollo (`captura-*`, `kit`). Se DESCUBREN recorriendo la
+ * carpeta, no se listan a mano: un layout nuevo (los de `MensajesCliente`) o una
+ * página nueva entra en la verja sin que nadie se acuerde de añadirla.
+ */
+const FICHEROS_DE_RUTA = /^(page|layout|not-found|error|loading|template)\.tsx$/;
+const FUERA = /^app\/\[locale\]\/(dashboard|captura-[^/]+|kit)\//;
+function entradasPublicas(dir = join(WEB, "app/[locale]")): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+    const ruta = join(dir, e.name);
+    const rel = relative(WEB, ruta).split("\\").join("/");
+    if (e.isDirectory()) return FUERA.test(`${rel}/`) ? [] : entradasPublicas(ruta);
+    return FICHEROS_DE_RUTA.test(e.name) ? [rel] : [];
+  });
+}
+const ENTRADAS = entradasPublicas().sort();
 
 const EXTENSIONES = ["", ".ts", ".tsx", ".js", ".mjs", "/index.ts", "/index.tsx"];
 
@@ -115,6 +115,13 @@ describe("el JS inicial de las páginas públicas no trae supabase-js", () => {
       expect(caminosASupabaseEnCliente(entrada)).toEqual([]);
     });
   }
+
+  it("las entradas se descubren: están las páginas y los layouts de cada tramo, y no el panel", () => {
+    for (const f of ["app/[locale]/layout.tsx", "app/[locale]/page.tsx", "app/[locale]/login/page.tsx", "app/[locale]/login/layout.tsx", "app/[locale]/invitacion/layout.tsx", "app/[locale]/invitacion/[token]/page.tsx", "app/[locale]/signup/success/page.tsx"]) {
+      expect(ENTRADAS, f).toContain(f);
+    }
+    expect(ENTRADAS.filter((f) => /\/(dashboard|captura-|kit)\b/.test(f))).toEqual([]);
+  });
 
   it("el recorrido SÍ ve un import estático de supabase en cliente (la verja no está ciega)", () => {
     // `lib/supabase/client.ts` es cliente e importa `@supabase/ssr`: si el

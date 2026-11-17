@@ -9,7 +9,7 @@
    delante de las hojas de estilo: 109 KB de imagen antes de la primera pintura
    en el móvil, para un logo que no es el LCP. Ahora el navegador elige, por
    densidad de pantalla, una copia WebP casi sin pérdida (error ≤ 4/255 por
-   canal) a 1×, 2× o 3× del tamaño pintado; el PNG queda de reserva para quien no
+   canal) a 1×, 2×, 3× o 4× del tamaño pintado; el PNG queda de reserva para quien no
    lea WebP (y para los enlaces externos). Dentro de <picture> React no
    precarga: el logo de la cabecera lo descubre el escáner del HTML igual de
    pronto, y el que el CSS oculta ya no se descarga (ver `ocultoEn`). */
@@ -23,25 +23,28 @@ export const LOGO_PNG = { full: "/brand/savings-logo.png", mark: "/brand/savings
 /** Anchos de las copias al tamaño justo (public/brand/savings-{logo,mark}-<ancho>.webp),
     sacadas de los PNG con sharp: reescaladas a la caja exacta (`fit: "fill"`,
     filtro mitchell; con `object-fit: contain` Chrome también rellena la caja
-    entera, 216×60 y no 215,25×60) y WebP `nearLossless` calidad 60. Logotipo:
-    1×, 2× y 3× de la cabecera (108×30) y del pie (187×52; su 3× es el
-    original). Isotipo: 2× del mayor uso (32 px), 3× de la cabecera del móvil
-    (28 px) y 3× del mayor uso. Si cambia el logo, se regeneran todas a la vez. */
-export const ANCHOS_WEBP = { full: [108, 187, 216, 324, 374, 574], mark: [64, 84, 96] } as const;
+    entera, 216×60 y no 215,25×60) y WebP `nearLossless` calidad 60, `effort` 6.
+    Logotipo: 1× a 4× de la cabecera (108×30) y 1× a 3× del pie (187×52; su 3×
+    y su 4× son el original). Isotipo: 2× del mayor uso (32 px), 3× y 4× de la
+    cabecera del móvil (28 px) y 3× y 4× del mayor uso. El 4× es para los
+    Android de 3,5–4 de densidad y el zoom en Retina: sin él, el navegador
+    ampliaba la copia de 3× y el logo salía blando. Si cambia el logo, se
+    regeneran todas a la vez. */
+export const ANCHOS_WEBP = { full: [108, 187, 216, 324, 374, 432, 574], mark: [64, 84, 96, 112, 128] } as const;
 
 export const rutaWebp = (variant: "full" | "mark", ancho: number) =>
   `/brand/savings-${variant === "full" ? "logo" : "mark"}-${ancho}.webp`;
 
 /**
- * El `srcset` de un uso pintado a `anchoPintado` px: para 1×, 2× y 3×, la
- * copia más pequeña que llega. Solo esas, para no engordar el HTML (cada
+ * El `srcset` de un uso pintado a `anchoPintado` px: para 1×, 2×, 3× y 4×,
+ * la copia más pequeña que llega. Solo esas, para no engordar el HTML (cada
  * srcset va dos veces: en el HTML y en la carga RSC). Con el ancho exacto
  * (108 → 108w, 216w, 324w) el navegador pinta píxel a píxel.
  */
 export function srcSetDelLogo(variant: "full" | "mark", anchoPintado: number): string {
   const anchos: readonly number[] = ANCHOS_WEBP[variant];
   const mayor = anchos[anchos.length - 1]!;
-  const elegidos = new Set([1, 2, 3].map((d) => anchos.find((w) => w >= d * anchoPintado) ?? mayor));
+  const elegidos = new Set([1, 2, 3, 4].map((d) => anchos.find((w) => w >= d * anchoPintado) ?? mayor));
   return [...elegidos].map((w) => `${rutaWebp(variant, w)} ${w}w`).join(", ");
 }
 
