@@ -15,6 +15,7 @@
     "@supabase/ssr": "^0.12.3",
     "@supabase/supabase-js": "^2.110.7",
     "gpt-tokenizer": "^3.4.0",
+    "katex": "0.19.1",
     "next": "^15.5.29",
     "next-intl": "^4.13.2",
     "react": "^19.0.0",

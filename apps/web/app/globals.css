@@ -2860,10 +2860,41 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .paper-page .paper-cuerpo a, .paper-page .paper-abstract a { color: var(--ink); text-decoration: underline; text-decoration-thickness: 1px; text-decoration-color: color-mix(in srgb, var(--brand) 55%, transparent); text-underline-offset: 3px; overflow-wrap: anywhere; }
 .paper-page .paper-cuerpo a:hover, .paper-page .paper-abstract a:hover { color: var(--brand); text-decoration-color: currentColor; }
 .paper-page .paper-cuerpo code, .paper-page .paper-ref code, .paper-page .paper-abstract code { padding: 1px 5px; border-radius: 5px; background: var(--surface-2); font-family: var(--mono); font-size: .86em; overflow-wrap: anywhere; }
+/* FÓRMULAS: el LaTeX de main.tex compuesto con KaTeX al construir (sin JS en
+   el cliente). El 1.21em de KaTeX se come al cuerpo; con 1.1em la altura de x
+   de su Computer Modern casa con la letra del texto. El color es el del cuerpo. */
+.paper-page .katex { font-size: 1.1em; color: inherit; }
+/* La puntuación pegada a una fórmula en línea no se separa de ella. */
+.paper-page .paper-pegado { white-space: nowrap; }
+/* En bloque: centrada en la medida del texto y con su número a la derecha,
+   como en el PDF. Si no cabe, se desplaza DENTRO de su caja; la página, nunca. */
+.paper-page .paper-ecuacion { display: grid; grid-template-columns: 3rem minmax(0, 1fr) 3rem; align-items: center; margin: 1.3em 0 1.45em; }
+.paper-page .paper-ecuacion-formula { grid-column: 2; min-width: 0; overflow-x: auto; overflow-y: hidden; padding: .3em 2px; text-align: center; scrollbar-width: thin; }
+/* Sombras de desplazamiento (solo CSS): cuando la ecuación no cabe, un velo en
+   el borde dice que sigue; al llegar al final, el velo se va. */
+.paper-page .paper-ecuacion-formula {
+  background:
+    linear-gradient(var(--bg), var(--bg)) left center / 14px 100% no-repeat local,
+    linear-gradient(var(--bg), var(--bg)) right center / 14px 100% no-repeat local,
+    linear-gradient(to right, rgba(15, 18, 24, .12), transparent) left center / 10px calc(100% - 6px) no-repeat scroll,
+    linear-gradient(to left, rgba(15, 18, 24, .12), transparent) right center / 10px calc(100% - 6px) no-repeat scroll;
+}
+.paper-page .paper-ecuacion-formula:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 4px; }
+.paper-page .paper-ecuacion-formula .katex-display { margin: 0; }
+.paper-page .paper-ecuacion-num { grid-column: 3; justify-self: end; font-family: KaTeX_Main, "Times New Roman", serif; font-size: 1.1em; line-height: 1; color: var(--ink); white-space: nowrap; }
+/* En pantalla ancha, la caja de la ecuación sobresale 2rem por cada lado de
+   la medida del texto (sigue centrada en ella): así la más ancha, D_cache (8),
+   cabe entera junto a su número en vez de desplazarse. */
+@media screen and (min-width: 800px) {
+  .paper-page .paper-cuerpo > .paper-ecuacion { max-width: calc(42.5rem + 4rem); margin-inline: -2rem; }
+}
 
 @media (max-width: 640px) {
   .paper-page .paper-shell { padding: 0 16px 64px; font-size: 16.5px; }
   .paper-page .paper-acciones { align-self: stretch; display: grid; grid-template-columns: 1fr; }
+  .paper-page .paper-ecuacion { grid-template-columns: minmax(0, 1fr) auto; column-gap: 10px; }
+  .paper-page .paper-ecuacion-formula { grid-column: 1; }
+  .paper-page .paper-ecuacion-num { grid-column: 2; }
 }
 @media print {
   .announce, .site-nav, .ftr, .doc-toc, .doc-nota, .doc-arriba, .paper-page .paper-acciones { display: none !important; }
