@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, it, expect } from "vitest";
 
-import { tarjetaSocial } from "@/i18n/site";
+import { IMAGEN_AL_COMPARTIR, tarjetaSocial } from "@/i18n/site";
 
 /**
  * TODA PÁGINA PÚBLICA SE COMPARTE CON IMAGEN.
@@ -45,9 +45,25 @@ describe("la imagen al compartir", () => {
   it("tarjetaSocial apunta a la imagen de marca, 1731×909", () => {
     const s = tarjetaSocial("de", "Titel");
     expect(s.openGraph.locale).toBe("de");
-    expect(s.openGraph.images[0]).toMatchObject({ width: 1731, height: 909, alt: "Titel" });
-    expect(s.openGraph.images[0].url).toMatch(/\/brand\/og-image\.png$/);
+    expect(s.openGraph.images[0]).toMatchObject({ width: 1731, height: 909, type: "image/jpeg", alt: "Titel" });
+    expect(s.openGraph.images[0].url).toMatch(new RegExp(`${IMAGEN_AL_COMPARTIR.ruta.replace(/[.]/g, "\\.")}$`));
     expect(s.twitter.card).toBe("summary_large_image");
     expect(s.twitter.images[0]).toBe(s.openGraph.images[0].url);
+  });
+
+  it("la imagen existe, mide lo que dice y pesa menos de 300 KB (WhatsApp no previsualiza las más pesadas)", () => {
+    const buf = readFileSync(join(AQUI, "..", "..", "public", IMAGEN_AL_COMPARTIR.ruta));
+    expect(buf.length).toBeLessThan(300 * 1024);
+    // Medidas del JPEG: el primer marcador SOF (0xFFC0–0xFFC2) lleva alto y ancho.
+    let i = 2;
+    while (i < buf.length && !(buf[i] === 0xff && buf[i + 1]! >= 0xc0 && buf[i + 1]! <= 0xc2)) i += 2 + buf.readUInt16BE(i + 2);
+    expect({ width: buf.readUInt16BE(i + 7), height: buf.readUInt16BE(i + 5) }).toEqual({ width: IMAGEN_AL_COMPARTIR.width, height: IMAGEN_AL_COMPARTIR.height });
+  });
+
+  it("la portada usa la misma imagen que el resto, y el PNG de los README sigue publicado", () => {
+    const portada = readFileSync(join(AQUI, "page.tsx"), "utf8");
+    expect(portada).toMatch(/absolute\(IMAGEN_AL_COMPARTIR\.ruta\)/);
+    expect(portada).not.toMatch(/og-image\.png/);
+    expect(existsSync(join(AQUI, "..", "..", "public", "brand", "og-image.png"))).toBe(true);
   });
 });

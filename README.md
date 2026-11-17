@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://savings.bivelio.com/brand/og-image.png" alt="BiVelio Savings Layer" width="720">
+  <img src="https://savings.bivelio.com/brand/og-image.png?v=2026-11-17" alt="BiVelio Savings Layer" width="720">
 </p>
 
 <h1 align="center">The savings layer for your LLM bill</h1>

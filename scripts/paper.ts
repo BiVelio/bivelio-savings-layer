@@ -15,7 +15,39 @@ export type Bloque =
   | { tipo: "h2" | "h3" | "p" | "cita"; texto: string; id?: string }
   | { tipo: "li"; texto: string; ordenada: boolean }
   | { tipo: "tabla"; filas: string[][] }
+  | { tipo: "ecuacion"; latex: string; numero?: string }
   | { tipo: "hr" };
+
+// LAS FÓRMULAS son el LaTeX OFICIAL de docs/paper/main.tex, en la sintaxis que
+// también pinta GitHub: en bloque, «```math … \tag{n} ```» (n = el número que
+// lleva en el PDF); en línea, «$`…`$» (nunca «$…$» suelto: el texto lleva
+// importes en dólares). El bloque se separa aquí en { latex, numero }; la
+// matemática en línea viaja dentro del texto y la página la compone con KaTeX
+// en el servidor al construir.
+
+/** Delimitadores de la matemática en línea (sintaxis de GitHub). */
+export const MATEMATICA_EN_LINEA = /\$`([^`]+)`\$/g;
+
+/**
+ * Cada «$`» abre una fórmula que cierra un «`$» en el MISMO bloque. Un
+ * delimitador huérfano pintaría LaTeX crudo en la web, así que se rompe aquí.
+ */
+export function comprobarEnLinea(texto: string): void {
+  const resto = texto.replace(MATEMATICA_EN_LINEA, "");
+  if (resto.includes("$`") || resto.includes("`$")) {
+    throw new Error(`docs/PAPER.md: matemática en línea sin cerrar en «${texto.slice(0, 80)}…»`);
+  }
+}
+
+/** Cuerpo de un «```math» -> { latex, numero }: el \tag{n} se pinta aparte, a la derecha. */
+export function ecuacion(lineas: string[]): Extract<Bloque, { tipo: "ecuacion" }> {
+  const fuente = lineas.join("\n");
+  const tags = [...fuente.matchAll(/\\tag\{([^}]+)\}/g)];
+  if (tags.length > 1) throw new Error(`docs/PAPER.md: ecuación con ${tags.length} \\tag: ${fuente}`);
+  const latex = fuente.replace(/\\tag\{[^}]+\}/, "").trim();
+  if (!latex) throw new Error("docs/PAPER.md: bloque ```math vacío");
+  return tags[0] ? { tipo: "ecuacion", latex, numero: tags[0][1]! } : { tipo: "ecuacion", latex };
+}
 
 /** Cabecera del paper: lo que la página pinta como bloque de título. */
 export const CABECERA = {
@@ -47,6 +79,8 @@ export function generarContenido(md: string): Bloque[] {
   let ordenada = false;
   let tabla: string[][] | null = null;
   let empezado = false;
+  /** Líneas de un bloque ```math abierto (null: no hay ninguno). */
+  let formula: string[] | null = null;
 
   const cerrar = () => {
     if (parrafo.length) {
@@ -66,10 +100,27 @@ export function generarContenido(md: string): Bloque[] {
   for (const linea of md.split("\n")) {
     const l = linea.trimEnd();
 
+    if (formula) {
+      if (l === "```") {
+        bloques.push(ecuacion(formula));
+        formula = null;
+      } else formula.push(l);
+      continue;
+    }
+
     // El cuerpo empieza en la sección Abstract: el front matter no se pinta.
     if (!empezado) {
       if (/^## Abstract\s*$/.test(l)) empezado = true;
       else continue;
+    }
+
+    // Ecuación en bloque. Ningún otro bloque cercado está soportado: antes se
+    // colaba como texto y las fórmulas acababan pintadas como código.
+    if (l.startsWith("```")) {
+      if (l !== "```math") throw new Error(`docs/PAPER.md: bloque cercado no soportado: «${l}»`);
+      cerrar();
+      formula = [];
+      continue;
     }
 
     // Regla horizontal: se conserva como separador semántico.
@@ -120,6 +171,11 @@ export function generarContenido(md: string): Bloque[] {
     parrafo.push(l);
   }
   cerrar();
+  if (formula) throw new Error("docs/PAPER.md: bloque ```math sin cerrar");
+  for (const b of bloques) {
+    if ("texto" in b) comprobarEnLinea(b.texto);
+    if (b.tipo === "tabla") for (const fila of b.filas) for (const celda of fila) comprobarEnLinea(celda);
+  }
   return bloques;
 }
 
@@ -130,6 +186,7 @@ export type Bloque =
   | { tipo: "h2" | "h3" | "p" | "cita"; texto: string; id?: string }
   | { tipo: "li"; texto: string; ordenada: boolean }
   | { tipo: "tabla"; filas: string[][] }
+  | { tipo: "ecuacion"; latex: string; numero?: string }
   | { tipo: "hr" };
 
 export const BLOQUES: Bloque[] = ${JSON.stringify(bloques, null, 2)};

@@ -142,7 +142,7 @@ describe("quién importa CSS", () => {
     expect(culpables).toEqual([]);
   });
 
-  it("en la aplicación solo importan CSS los dos layouts, la 404 raíz, las páginas de acceso y las galerías de desarrollo", () => {
+  it("en la aplicación solo importan CSS los dos layouts, la 404 raíz, las páginas de acceso, el paper y las galerías de desarrollo", () => {
     const quien: Record<string, string[]> = {};
     for (const f of [...fuentes("app"), ...fuentes("lib"), ...fuentes("i18n")]) {
       const importadas = [...lee(f).matchAll(importaCss)].map((m) => m[1]!);
@@ -166,6 +166,9 @@ describe("quién importa CSS", () => {
       "app/[locale]/signup/success/page.tsx": acceso,
       "app/[locale]/reset-password/page.tsx": acceso,
       "app/[locale]/invitacion/[token]/page.tsx": acceso,
+      // Las fórmulas del paper (KaTeX compuesto al construir): su hoja y sus
+      // fuentes solo hacen falta en /paper, así que solo /paper las pide.
+      "app/[locale]/paper/page.tsx": ["katex/dist/katex.min.css"],
       // Solo existen con `next dev` (en producción dan 404 antes de pintar).
       "app/[locale]/captura-cuenta/page.tsx": panel,
       "app/[locale]/captura-estados/page.tsx": panel,

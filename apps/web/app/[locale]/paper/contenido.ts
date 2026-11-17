@@ -3,6 +3,7 @@ export type Bloque =
   | { tipo: "h2" | "h3" | "p" | "cita"; texto: string; id?: string }
   | { tipo: "li"; texto: string; ordenada: boolean }
   | { tipo: "tabla"; filas: string[][] }
+  | { tipo: "ecuacion"; latex: string; numero?: string }
   | { tipo: "hr" };
 
 export const BLOQUES: Bloque[] = [
@@ -76,31 +77,33 @@ export const BLOQUES: Bloque[] = [
   },
   {
     "tipo": "p",
-    "texto": "For execution `e`, let the normalized usage vector be"
+    "texto": "For execution $`e`$, let the normalized usage vector be"
+  },
+  {
+    "tipo": "ecuacion",
+    "latex": "x_e \\;=\\; \\bigl(n_{u,e},\\, n_{r,e},\\, n_{w5,e},\\, n_{w1,e},\\, n_{o,e}\\bigr),",
+    "numero": "1"
   },
   {
     "tipo": "p",
-    "texto": "``` x_e = ( n_{u,e}, n_{r,e}, n_{w5,e}, n_{w1,e}, n_{o,e} ), ```"
+    "texto": "where the components are uncached input, cache-read input, five-minute cache-write input, one-hour cache-write input, and billable output tokens. These are **non-overlapping billing categories**; write categories not offered by a provider are omitted. Let $`\\pi_{e,k}`$ be the list price in USD per million tokens for category $`k`$, the model and endpoint used by execution $`e`$, the applicable billing mode, and the stated catalog version. Define"
+  },
+  {
+    "tipo": "ecuacion",
+    "latex": "C_e \\;=\\; 10^{-6}\\!\\sum_{k\\,\\in\\,\\{u,r,w5,w1,o\\}} \\pi_{e,k}\\, x_{k,e} \\;+\\; g_e,",
+    "numero": "2"
   },
   {
     "tipo": "p",
-    "texto": "where the components are uncached input, cache-read input, five-minute cache-write input, one-hour cache-write input, and billable output tokens. These are **non-overlapping billing categories**; write categories not offered by a provider are omitted. Let `π_{e,k}` be the list price in USD per million tokens for category `k`, the model and endpoint used by execution `e`, the applicable billing mode, and the stated catalog version. Define"
+    "texto": "where $`g_e`$ contains any separately itemized charges included in the stated scope. The experiments below concern provider token charges; ancillary charges and local infrastructure costs that were not measured are outside that scope, not evidence of zero cost. Additional billable categories require an explicit extension of the usage vector and catalog. Batch and cache prices must be represented by the applicable rates, rather than by adding purported discount percentages."
   },
   {
     "tipo": "p",
-    "texto": "``` C_e = 10⁻⁶ · Σ_{k ∈ {u,r,w5,w1,o}} π_{e,k} · x_{k,e} + g_e,        (1) ```"
+    "texto": "The mapping from raw counters to $`x_e`$ is provider-specific. If a raw input counter includes cache reads or writes, those components are subtracted before assigning $`n_{u,e}`$; if it excludes them, they are not subtracted again. Reasoning tokens are included exactly once in billable output according to the provider's counter semantics. A separately reported reasoning count is not an additional charge when already included in the output total. A missing counter or price is not silently replaced with zero. Partial observations must retain their incompleteness."
   },
   {
     "tipo": "p",
-    "texto": "where `g_e` contains any separately itemized charges included in the stated scope. The experiments below concern provider token charges; ancillary charges and local infrastructure costs that were not measured are outside that scope, not evidence of zero cost. Additional billable categories require an explicit extension of the usage vector and catalog. Batch and cache prices must be represented by the applicable rates, rather than by adding purported discount percentages."
-  },
-  {
-    "tipo": "p",
-    "texto": "The mapping from raw counters to `x_e` is provider-specific. If a raw input counter includes cache reads or writes, those components are subtracted before assigning `n_{u,e}`; if it excludes them, they are not subtracted again. Reasoning tokens are included exactly once in billable output according to the provider's counter semantics. A separately reported reasoning count is not an additional charge when already included in the output total. A missing counter or price is not silently replaced with zero. Partial observations must retain their incompleteness."
-  },
-  {
-    "tipo": "p",
-    "texto": "For an arm with execution set `E`, its cost is `C_arm = Σ_{e ∈ E} C_e`. This sum includes every billable attempt, including cheap-model attempts before escalation, repeated attempts, and failed attempts when they incur a charge. Known executed costs and missing or reconstructed components must be reported separately. An avoided execution has zero actual provider-execution cost, but its counterfactual cost requires separate evidence. The catalog implementation stores token prices per 1,000 tokens; this is equivalent to Equation (1) only with the corresponding unit conversion."
+    "texto": "For an arm with execution set $`E`$, its cost is $`C_{\\mathrm{arm}}=\\sum_{e\\in E} C_e`$. This sum includes every billable attempt, including cheap-model attempts before escalation, repeated attempts, and failed attempts when they incur a charge. Known executed costs and missing or reconstructed components must be reported separately. An avoided execution has zero actual provider-execution cost, but its counterfactual cost requires separate evidence. The catalog implementation stores token prices per 1,000 tokens; this is equivalent to Equation (2) only with the corresponding unit conversion."
   },
   {
     "tipo": "h3",
@@ -109,7 +112,7 @@ export const BLOQUES: Bloque[] = [
   },
   {
     "tipo": "p",
-    "texto": "**Definition 1 (stateful request policy).** The layer is a stateful policy. Given a logical request `r` and current state `s`, it may return a stored response or initiate one or more provider executions, possibly adapting later decisions to earlier responses. Its output consists of the response, a report `R`, and updated state `s′`. State includes relevant cache contents, freshness metadata, configuration, and execution history. Provider responses and cache behavior may be stochastic or depend on state outside the layer's control."
+    "texto": "**Definition 1 (stateful request policy).** The layer is a stateful policy. Given a logical request $`r`$ and current state $`s`$, it may return a stored response or initiate one or more provider executions, possibly adapting later decisions to earlier responses. Its output consists of the response, a report $`R`$, and updated state $`s'`$. State includes relevant cache contents, freshness metadata, configuration, and execution history. Provider responses and cache behavior may be stochastic or depend on state outside the layer's control."
   },
   {
     "tipo": "p",
@@ -117,7 +120,7 @@ export const BLOQUES: Bloque[] = [
   },
   {
     "tipo": "p",
-    "texto": "**Definition 2 (report).** A report `R` records logical requests, provider executions, normalized usage, activity ledgers, costs, provenance, and traces. The four activity ledgers are avoided calls, eliminated tokens, compressed tokens, and provider-cached tokens. They describe different activities and units. They are not assumed to be four additive monetary or causal contributions. Cost reporting distinguishes baseline, actual, ratio, catalog version, and evidence basis."
+    "texto": "**Definition 2 (report).** A report $`R`$ records logical requests, provider executions, normalized usage, activity ledgers, costs, provenance, and traces. The four activity ledgers are avoided calls, eliminated tokens, compressed tokens, and provider-cached tokens. They describe different activities and units. They are not assumed to be four additive monetary or causal contributions. Cost reporting distinguishes baseline, actual, ratio, catalog version, and evidence basis."
   },
   {
     "tipo": "p",
@@ -137,44 +140,47 @@ export const BLOQUES: Bloque[] = [
     "texto": "For positive baseline cost, the observed aggregate reduction is"
   },
   {
-    "tipo": "p",
-    "texto": "``` R = 1 − C_opt / C_base.                                          (2) ```"
+    "tipo": "ecuacion",
+    "latex": "R \\;=\\; 1 - \\frac{C_{\\mathrm{opt}}}{C_{\\mathrm{base}}} .",
+    "numero": "3"
   },
   {
     "tipo": "p",
-    "texto": "If `C_base = 0`, this ratio is undefined and is reported as unavailable. Negative reductions are permitted: an intervention can increase cost. This identity depends on complete, consistently scoped arm costs, not on a partition of savings among activity ledgers."
+    "texto": "If $`C_{\\mathrm{base}}=0`$, this ratio is undefined and is reported as unavailable. Negative reductions are permitted: an intervention can increase cost. This identity depends on complete, consistently scoped arm costs, not on a partition of savings among activity ledgers."
   },
   {
     "tipo": "p",
-    "texto": "For attribution, consider a specified two-factor experiment. Let `C_ab` denote the cost for the same workload and price basis with factor states `a, b ∈ {0, 1}`. The factors may, for example, be response deduplication and explicit prefix-cache markers. Observed finite-run cell costs and population expected cell costs must not be interchanged without specifying which is intended."
+    "texto": "For attribution, consider a specified two-factor experiment. Let $`C_{ab}`$ denote the cost for the same workload and price basis with factor states $`a,b\\in\\{0,1\\}`$. The factors may, for example, be response deduplication and explicit prefix-cache markers. Observed finite-run cell costs and population expected cell costs must not be interchanged without specifying which is intended."
   },
   {
     "tipo": "p",
     "texto": "**Proposition 1 (two-factor cost identity).** Define the cost interaction"
   },
   {
-    "tipo": "p",
-    "texto": "``` IC = C_11 − C_10 − C_01 + C_00. ```"
+    "tipo": "ecuacion",
+    "latex": "IC \\;=\\; C_{11} - C_{10} - C_{01} + C_{00}.",
+    "numero": "4"
   },
   {
     "tipo": "p",
     "texto": "Then the combined cost reduction satisfies"
   },
   {
-    "tipo": "p",
-    "texto": "``` C_00 − C_11 = (C_00 − C_10) + (C_00 − C_01) − IC. ```"
+    "tipo": "ecuacion",
+    "latex": "C_{00} - C_{11} \\;=\\; (C_{00} - C_{10}) + (C_{00} - C_{01}) - IC .",
+    "numero": "5"
   },
   {
     "tipo": "p",
-    "texto": "If `C_00 > 0`, the corresponding reduction ratios satisfy `R_11 = R_10 + R_01 − IC / C_00`, where `R_ab = (C_00 − C_ab) / C_00`."
+    "texto": "If $`C_{00}>0`$, the corresponding reduction ratios satisfy $`R_{11}=R_{10}+R_{01}-IC/C_{00}`$, where $`R_{ab}=(C_{00}-C_{ab})/C_{00}`$."
   },
   {
     "tipo": "p",
-    "texto": "*Proof.* Substitution of the definition of `IC` cancels `C_10` and `C_01` and leaves `C_00 − C_11`. Division by a positive `C_00` gives the ratio identity."
+    "texto": "*Proof.* Substitution of the definition of $`IC`$ cancels $`C_{10}`$ and $`C_{01}`$ and leaves $`C_{00}-C_{11}`$. Division by a positive $`C_{00}`$ gives the ratio identity."
   },
   {
     "tipo": "p",
-    "texto": "This is an exact algebraic contrast, not a claim of algorithmic novelty or a guarantee of causal identification. Positive `IC` means that the combined saving is smaller than the sum of the two baseline-relative standalone savings. Its sign is therefore opposite to the residual in a sum-of-savings equation. Estimating a causal interaction requires an appropriate assignment and state-control protocol; uncertainty requires independent replicated units or other justified inference. Traces showing that two mechanisms ran do not observe their absent-intervention counterfactuals. Neither those traces nor the largest interaction observed in a finite sample establish a bound for future workloads. Routing, output-length changes, retries, and other effects also need explicit contrasts if attributed."
+    "texto": "This is an exact algebraic contrast, not a claim of algorithmic novelty or a guarantee of causal identification. Positive $`IC`$ means that the combined saving is smaller than the sum of the two baseline-relative standalone savings. Its sign is therefore opposite to the residual in a sum-of-savings equation. Estimating a causal interaction requires an appropriate assignment and state-control protocol; uncertainty requires independent replicated units or other justified inference. Traces showing that two mechanisms ran do not observe their absent-intervention counterfactuals. Neither those traces nor the largest interaction observed in a finite sample establish a bound for future workloads. Routing, output-length changes, retries, and other effects also need explicit contrasts if attributed."
   },
   {
     "tipo": "h3",
@@ -250,23 +256,25 @@ export const BLOQUES: Bloque[] = [
   },
   {
     "tipo": "p",
-    "texto": "Let `b_f` and `o_f` be total baseline and optimized costs for family `f`, including all executions in the respective arm. The primary economic estimator implemented by the paired benchmark is the pooled ratio of cost sums,"
+    "texto": "Let $`b_f`$ and $`o_f`$ be total baseline and optimized costs for family $`f`$, including all executions in the respective arm. The primary economic estimator implemented by the paired benchmark is the pooled ratio of cost sums,"
+  },
+  {
+    "tipo": "ecuacion",
+    "latex": "\\widehat{R}_{\\mathrm{pooled}} \\;=\\; 1 - \\frac{\\sum_{f=1}^{F} o_f}{\\sum_{f=1}^{F} b_f},\n\\qquad \\textstyle\\sum_f b_f > 0 .",
+    "numero": "6"
   },
   {
     "tipo": "p",
-    "texto": "``` R̂_pooled = 1 − ( Σ_{f=1..F} o_f ) / ( Σ_{f=1..F} b_f ),   Σ_f b_f > 0.   (3) ```"
+    "texto": "It measures reduction in the aggregate cost of that workload. When every $`b_f>0`$, it is a baseline-cost-weighted average of family reductions,"
+  },
+  {
+    "tipo": "ecuacion",
+    "latex": "\\widehat{R}_{\\mathrm{pooled}} \\;=\\; \\sum_f w_f\\,R_f, \\qquad\nw_f \\;=\\; \\frac{b_f}{\\sum_j b_j}, \\qquad R_f \\;=\\; 1 - \\frac{o_f}{b_f}.",
+    "numero": "7"
   },
   {
     "tipo": "p",
-    "texto": "It measures reduction in the aggregate cost of that workload. When every `b_f > 0`, it is a baseline-cost-weighted average of family reductions,"
-  },
-  {
-    "tipo": "p",
-    "texto": "``` R̂_pooled = Σ_f w_f R_f,    w_f = b_f / Σ_j b_j,    R_f = 1 − o_f / b_f. ```"
-  },
-  {
-    "tipo": "p",
-    "texto": "A distinct secondary descriptive statistic is `R̂_macro = F⁻¹ Σ_f R_f`, which gives each family equal weight. The two statistics answer different questions and need not agree. The macro statistic is undefined for a family with zero baseline cost unless an explicit exclusion policy is stated; it is not substituted for the pooled estimator. Neither statistic automatically predicts the reduction for a future workload with a different mix of requests. Financial break-even arithmetic additionally assumes that the reduction applies to the priced bill and that all relevant incremental charges are included."
+    "texto": "A distinct secondary descriptive statistic is $`\\widehat{R}_{\\mathrm{macro}}=F^{-1}\\sum_f R_f`$, which gives each family equal weight. The two statistics answer different questions and need not agree. The macro statistic is undefined for a family with zero baseline cost unless an explicit exclusion policy is stated; it is not substituted for the pooled estimator. Neither statistic automatically predicts the reduction for a future workload with a different mix of requests. Financial break-even arithmetic additionally assumes that the reduction applies to the priced bill and that all relevant incremental charges are included."
   },
   {
     "tipo": "h3",
@@ -275,11 +283,11 @@ export const BLOQUES: Bloque[] = [
   },
   {
     "tipo": "p",
-    "texto": "The percentile cluster bootstrap samples `F` family indices with replacement for each of `B = 10,000` resamples, retains the complete paired records of each sampled family, and recomputes Equation (3) from the resampled cost sums. The interval consists of the empirical 2.5th and 97.5th percentiles. The historical gateway report describes session-level resampling; its interval is not independently recomputed here because the required session-level costs were not located in the public artifacts. A zero-denominator resample is undefined and must be disclosed rather than assigned an artificial ratio. The seed, quantile convention, resample count, and input-artifact identifier are required for exact numerical reproduction."
+    "texto": "The percentile cluster bootstrap samples $`F`$ family indices with replacement for each of $`B=10{,}000`$ resamples, retains the complete paired records of each sampled family, and recomputes Equation (6) from the resampled cost sums. The interval consists of the empirical 2.5th and 97.5th percentiles. The historical gateway report describes session-level resampling; its interval is not independently recomputed here because the required session-level costs were not located in the public artifacts. A zero-denominator resample is undefined and must be disclosed rather than assigned an artificial ratio. The seed, quantile convention, resample count, and input-artifact identifier are required for exact numerical reproduction."
   },
   {
     "tipo": "p",
-    "texto": "Resampling families preserves observed within-family dependence. Its inferential interpretation requires a population of exchangeable independent family units, or another explicit justification for the resampling model. Shared provider-cache state, execution days, accounts, or scheduling can induce dependence between families that this procedure does not capture. The interval does not incorporate uncertainty from unmeasured costs, reconstructed counterfactuals, price errors, or uncontrolled state. It is a percentile interval, not BCa [22, 23], and does not correct an unsupported design or a mismatch of estimands. No universal `O(1/F)` bias claim is made for the mean of family ratios."
+    "texto": "Resampling families preserves observed within-family dependence. Its inferential interpretation requires a population of exchangeable independent family units, or another explicit justification for the resampling model. Shared provider-cache state, execution days, accounts, or scheduling can induce dependence between families that this procedure does not capture. The interval does not incorporate uncertainty from unmeasured costs, reconstructed counterfactuals, price errors, or uncontrolled state. It is a percentile interval, not BCa [22, 23], and does not correct an unsupported design or a mismatch of estimands. No universal $`O(1/F)`$ bias claim is made for the mean of family ratios."
   },
   {
     "tipo": "h3",
@@ -366,8 +374,9 @@ export const BLOQUES: Bloque[] = [
     "texto": "In the Anthropic artifact, the baseline has no cache reads or writes. The optimized arm records 72,447 read tokens and 1,767 written tokens across 42 provider executions for 62 logical requests. The pricing contrast"
   },
   {
-    "tipo": "p",
-    "texto": "``` D_cache = ( (2.00 − 0.20)·72,447 − (2.50 − 2.00)·1,767 ) / 10⁶ = 0.1295211 USD ```"
+    "tipo": "ecuacion",
+    "latex": "D_{\\mathrm{cache}} \\;=\\; \\frac{(2.00-0.20)\\cdot 72{,}447 \\;-\\; (2.50-2.00)\\cdot 1{,}767}{10^{6}}\n\\;=\\; 0.1295211\\ \\text{USD}",
+    "numero": "8"
   },
   {
     "tipo": "p",
@@ -415,13 +424,13 @@ export const BLOQUES: Bloque[] = [
   },
   {
     "tipo": "p",
-    "texto": "The generator uses 20 unique questions and appends `⌊20q⌋` repetitions. Consequently `q` is repeats per unique question; the realized fraction among all requests is `ρ = ⌊20q⌋ / (20 + ⌊20q⌋)`."
+    "texto": "The generator uses 20 unique questions and appends $`\\lfloor 20q\\rfloor`$ repetitions. Consequently $`q`$ is repeats per unique question; the realized fraction among all requests is $`\\rho=\\lfloor 20q\\rfloor/(20+\\lfloor 20q\\rfloor)`$."
   },
   {
     "tipo": "tabla",
     "filas": [
       [
-        "Generator q",
+        "Generator $`q`$",
         "Requests",
         "Actual repeat fraction",
         "Avoided repeats",
@@ -430,14 +439,14 @@ export const BLOQUES: Bloque[] = [
       [
         "0.3",
         "26",
-        "6/26 = 23.08 %",
+        "$`6/26=23.08\\,\\%`$",
         "5/6",
         "14.67 %"
       ],
       [
         "0.6",
         "32",
-        "12/32 = 37.50 %",
+        "$`12/32=37.50\\,\\%`$",
         "10/12",
         "23.67 %"
       ]
@@ -501,15 +510,7 @@ export const BLOQUES: Bloque[] = [
   },
   {
     "tipo": "p",
-    "texto": "With `C_00, C_01, C_10, C_11` in table order, the cost interaction is"
-  },
-  {
-    "tipo": "p",
-    "texto": "``` IC = C_11 − C_10 − C_01 + C_00 = 0.052605 USD. ```"
-  },
-  {
-    "tipo": "p",
-    "texto": "The combined reduction is `1 − C_11/C_00 = 85.94 %`. The two baseline-relative savings cannot be added without subtracting `IC`: avoided calls remove opportunities for cache reads. This is an algebraic decomposition of recorded cell totals. The difference in admitted repeats (8 versus 7), fixed execution sequence and lack of independent replicated cells prevent a precise causal attribution claim with a sampling interval. The cached block recorded in this artifact is 7,229 provider tokens; approximate token lengths in earlier prose should not substitute for that counter."
+    "texto": "With $`C_{00},C_{01},C_{10},C_{11}`$ in table order, the cost interaction is $`IC=C_{11}-C_{10}-C_{01}+C_{00}=0.052605`$ USD. The combined reduction is $`1-C_{11}/C_{00}=85.94\\,\\%`$. The two baseline-relative savings cannot be added without subtracting $`IC`$: avoided calls remove opportunities for cache reads. This is an algebraic decomposition of recorded cell totals. The difference in admitted repeats (8 versus 7), fixed execution sequence and lack of independent replicated cells prevent a precise causal attribution claim with a sampling interval. The cached block recorded in this artifact is 7,229 provider tokens; approximate token lengths in earlier prose should not substitute for that counter."
   },
   {
     "tipo": "h3",
@@ -526,11 +527,11 @@ export const BLOQUES: Bloque[] = [
   },
   {
     "tipo": "p",
-    "texto": "A future paired non-inferiority evaluation must specify a quality metric, margin `δ`, one-sided significance level, sampling population, sample-size justification and a validated grader before collection. For accuracy difference `∆ = p_B − p_A`, the criterion is a suitable one-sided lower confidence bound exceeding `−δ`. Even 24 independently sampled and perfectly graded cases with zero additional failures give a one-sided 95 % upper bound `1 − 0.05^(1/24) = 11.73 %` on the probability of an additional failure (baseline correct and cascade incorrect). This illustration is not a retrospective non-inferiority test of the present selected trivia set."
+    "texto": "A future paired non-inferiority evaluation must specify a quality metric, margin $`\\delta`$, one-sided significance level, sampling population, sample-size justification and a validated grader before collection. For accuracy difference $`\\Delta=p_B-p_A`$, the criterion is a suitable one-sided lower confidence bound exceeding $`-\\delta`$. Even 24 independently sampled and perfectly graded cases with zero additional failures give a one-sided 95 % upper bound $`1-0.05^{1/24}=11.73\\,\\%`$ on the probability of an additional failure (baseline correct and cascade incorrect). This illustration is not a retrospective non-inferiority test of the present selected trivia set."
   },
   {
     "tipo": "p",
-    "texto": "Following this review, a corrected exploratory re-run (15 November 2026) replaced the grader with an exact normalized match against per-question declared acceptance sets and published the individual answers of both arms. It records 24/24 accepted answers in each arm, 23/24 normalized agreement, costs $0.064568 and $0.020718 (−67.91 %), and zero escalations (artifact: `benchmarks/evidencia/cascada-piloto-corregido-2026-11-15.json`). This is a regradeable exploratory pilot, not a non-inferiority test; the caveats above remain in force."
+    "texto": "Following this review, a corrected exploratory re-run (15 November 2026) replaced the grader with an exact normalized match against per-question declared acceptance sets and published the individual answers of both arms. It records 24/24 accepted answers in each arm, 23/24 normalized agreement, costs \\$0.064568 and \\$0.020718 ($`-67.91\\,\\%`$), and zero escalations (artifact: `benchmarks/evidencia/cascada-piloto-corregido-2026-11-15.json`). This is a regradeable exploratory pilot, not a non-inferiority test; the caveats above remain in force."
   },
   {
     "tipo": "h2",
@@ -543,7 +544,7 @@ export const BLOQUES: Bloque[] = [
   },
   {
     "tipo": "p",
-    "texto": "For a deployment with baseline list-price spend `B`, applicable pooled reduction `R`, incremental operating cost `H` and service fee `F`, net benefit is `RB − H − F`. A historical example `F = 15 EUR` and `R = 0.315` gives `B* = 47.62 EUR` only if `H = 0` and the workload and currency basis are appropriate. It is not a current price offer or a forecast. Gross provider savings and all-in deployment economics should be reported separately."
+    "texto": "For a deployment with baseline list-price spend $`B`$, applicable pooled reduction $`R`$, incremental operating cost $`H`$ and service fee $`F`$, net benefit is $`RB-H-F`$. A historical example $`F=15`$ EUR and $`R=0.315`$ gives $`B^{*}=47.62`$ EUR only if $`H=0`$ and the workload and currency basis are appropriate. It is not a current price offer or a forecast. Gross provider savings and all-in deployment economics should be reported separately."
   },
   {
     "tipo": "h2",
@@ -804,22 +805,22 @@ export const BLOQUES: Bloque[] = [
   },
   {
     "tipo": "li",
-    "texto": "Sum costs within each family to obtain `(b_f, o_f)`.",
+    "texto": "Sum costs within each family to obtain $`(b_f,o_f)`$.",
     "ordenada": true
   },
   {
     "tipo": "li",
-    "texto": "Compute `1 − Σ_f o_f / Σ_f b_f`.",
+    "texto": "Compute $`1-\\sum_f o_f / \\sum_f b_f`$.",
     "ordenada": true
   },
   {
     "tipo": "li",
-    "texto": "For each of 10,000 replicates, draw `F` family indices with replacement using the published mulberry32 generator and seed `0xa11`; sum the sampled paired costs and recompute the ratio.",
+    "texto": "For each of 10,000 replicates, draw $`F`$ family indices with replacement using the published mulberry32 generator and seed `0xa11`; sum the sampled paired costs and recompute the ratio.",
     "ordenada": true
   },
   {
     "tipo": "li",
-    "texto": "Sort the replicate ratios. Select the zero-based order statistic at index `⌊(B−1)p⌋` for `p = 0.025` and `0.975`, with no interpolation, matching the published implementation.",
+    "texto": "Sort the replicate ratios. Select the zero-based order statistic at index $`\\lfloor (B-1)p\\rfloor`$ for $`p=0.025`$ and $`0.975`$, with no interpolation, matching the published implementation.",
     "ordenada": true
   },
   {
