@@ -24,7 +24,7 @@ import { NvidiaEcosystemBand } from "@/app/components/NvidiaInception";
 import { DIAS_ACTIVOS_PARA_CONTAR_ASIENTO } from "@/lib/billing/asientos";
 import Footer from "@/app/components/Footer";
 import { Link } from "@/i18n/navigation";
-import { absolute, languageAlternates } from "@/i18n/site";
+import { IMAGEN_AL_COMPARTIR, absolute, languageAlternates } from "@/i18n/site";
 import { tarifasDeLosPlanes } from "@/lib/stripe/pricing";
 import { terminosDeLosPlanes } from "@/lib/legal/precios-publicados";
 import { LIMITES_MEDIR, VERSION_MINIMA_MEDIR } from "@/lib/license/medir-publico";
@@ -113,13 +113,13 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
       description,
       url,
       locale,
-      images: [{ url: absolute("/brand/og-image.png"), width: 1731, height: 909, alt: title }],
+      images: [{ url: absolute(IMAGEN_AL_COMPARTIR.ruta), width: IMAGEN_AL_COMPARTIR.width, height: IMAGEN_AL_COMPARTIR.height, type: IMAGEN_AL_COMPARTIR.type, alt: title }],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [absolute("/brand/og-image.png")],
+      images: [absolute(IMAGEN_AL_COMPARTIR.ruta)],
     },
   };
 }
