@@ -1,35 +1,550 @@
 /* ============================================================================
    BiVelio Savings — LA HOJA DEL PANEL.
 
-   Las reglas que solo pueden casar dentro de /dashboard: extracto, cuenta,
-   equipo, instalación, «Tu banco», el explorador de uso… Salieron de
+   Las reglas que solo pueden casar dentro de /dashboard: la cáscara (barra,
+   raíl, cabecera de página, visita guiada), extracto, cuenta, equipo,
+   instalación, «Tu banco», el explorador de uso… Salieron de
    `app/globals.css` (2026-11) porque bloqueaban el primer pintado de la
    portada sin que la portada pintase ninguna. La importan
-   `dashboard/layout.tsx` y las cuatro galerías de desarrollo, justo antes de
-   `affectui-panel.css`; ninguna página pública la carga.
+   `dashboard/layout.tsx` y las cuatro galerías de desarrollo, entre
+   `affectui-acceso.css` y `affectui-panel.css`; ninguna página pública la
+   carga (tampoco las de acceso, que tienen la suya: `acceso.css`).
 
    QUÉ PUEDE VIVIR AQUÍ: solo reglas en las que TODOS los selectores exigen una
    clase que el código público no puede producir (el criterio y el porqué, en
-   `scripts/hoja-del-panel.mjs`; la valla, `dashboard/panel-css.test.ts`). Los
-   tokens, `:root`, los `@font-face` y los `@keyframes` se quedan en la global,
-   aunque solo los use el panel.
+   `scripts/hoja-del-panel.mjs`; la valla, `dashboard/panel-css.test.ts`). La
+   cáscara (`app/components/app/`) solo la monta el panel, así que sus clases
+   no cuentan como públicas. Los tokens, `:root`, los `@font-face` y los
+   `@keyframes` se quedan en la global, aunque solo los use el panel.
 
    EL ORDEN ES CONTRATO. Las reglas conservan el orden relativo que tenían en
-   `globals.css`, pero esta hoja carga DESPUÉS de la global y de `affectui.css`:
+   `globals.css` —el primer bloque, marcado «↓ de globals.css», llegó en una
+   segunda mudanza y va delante porque en la cascada ya estaba delante de todo
+   lo que venía después en esta hoja—, pero esta hoja carga DESPUÉS de la
+   global y de `affectui.css`:
    a igual especificidad, lo de aquí gana a lo de allí. Por eso NO se movieron
    las reglas del panel que empatan con una regla posterior de la global o con
    una pieza de affectUI sobre el mismo elemento (p. ej. `.kt-input`,
    `.equipo-campo`, `.ext-vacio`): siguen en `globals.css` a propósito. Antes
    de traer una regla, comprueba que ningún estilo computado cambia.
 
-   Con `affectui-panel.css` NO HAY ORDEN GARANTIZADO: en producción Next emite
-   esta hoja antes que aquella (se importen como se importen) y nada lo fija.
-   Ninguna regla de aquí empata con una de esa hoja sobre el mismo elemento, y
-   así debe seguir: una regla que necesite ganarle sube de especificidad.
+   Con `affectui-panel.css` y `affectui-acceso.css` NO HAY ORDEN GARANTIZADO:
+   en producción Next emitía esta hoja antes que `affectui-panel.css` (se
+   importen como se importen) y nada lo fija. Ninguna regla de aquí empata con una de esas
+   hojas sobre el mismo elemento, y así debe seguir: una regla que necesite
+   ganarles sube de especificidad.
 
    NO PASAR prettier NI stylelint (mismo contrato que `globals.css`): hay tests
    que leen esta hoja como texto.
    ============================================================================ */
+
+/* ════ LLEGADAS DE globals.css EN LA SEGUNDA MUDANZA (2026-11) ════════════════
+   La cáscara y lo demás que solo pinta el panel y que se había quedado en la
+   global. Mismo criterio que el resto de esta hoja; las que empatan en la
+   cascada con algo posterior de la global se quedaron allí. */
+/* ↓ de globals.css · Shell del dashboard (topbar + sidebar + main) */
+.app-topbar {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; gap: 14px;
+  height: var(--nav-h); padding: 0 clamp(16px, 3vw, 28px);
+  background: color-mix(in srgb, var(--bg) 86%, transparent);
+  -webkit-backdrop-filter: saturate(1.4) blur(16px); backdrop-filter: saturate(1.4) blur(16px);
+  border-bottom: 1px solid var(--line);
+}
+.app-topbar .brand:hover { text-decoration: none; }
+/* Logo oficial en el topbar: mismo corte que el NavBar público, pero el umbral
+   es 520px porque aquí la cuenta ocupa la derecha. */
+.app-brand { flex: none; }
+.app-logo-mark { display: none; }
+@media (max-width: 520px) { .app-logo-full { display: none; } .app-logo-mark { display: block; } }
+.app-spacer { margin-left: auto; }
+.app-account { display: flex; align-items: center; gap: 12px; }
+/* El correo ES el enlace a Cuenta (privacy, 06-09): la única cosa de la barra
+   que la gente ya intentaba pulsar. Tinta, no azul: es identidad, no acción. */
+.app-account .email {
+  font-family: var(--mono); font-size: var(--fs-note); color: var(--ink);
+  max-width: 190px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  text-decoration: none;
+}
+.app-account .email:hover { text-decoration: underline; text-underline-offset: 3px; }
+/* DE QUIÉN es la organización, junto a QUÉ plan. Más callado que la píldora del
+   plan a propósito: el plan es un estado que cambia y merece el acento; el
+   nombre es contexto. Se trunca antes que ensanchar la barra. */
+.app-org {
+  font-family: var(--sans); font-size: var(--fs-note); font-weight: 500;
+  line-height: 1; color: var(--ink-soft);
+  max-width: 22ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+@media (max-width: 640px) { .app-account .email { display: none; } }
+/* Móviles estrechos: fuera las píldoras no esenciales para que la barra nunca
+   desborde (marca, idioma y cerrar sesión siguen a mano). */
+@media (max-width: 520px) { .app-topbar { gap: 10px; } .app-plan, .app-org { display: none; } }
+.app-sidebar { border-right: 1px solid var(--line); background: var(--bg); padding: 16px 10px 28px; }
+/* La frase de «faltan secciones», con los mismos tokens que la cabecera de grupo. */
+.app-nav-note { margin: 0 8px 12px; font-size: var(--fs-label); line-height: 1.45; color: var(--ink-soft); max-width: 260px; }
+/* EL RAÍL SE FIJA Y, SI NO CABE, SCROLLEA POR DENTRO. `position: sticky` sin
+   altura acotada es una trampa: en cuanto el menú es más alto que el viewport,
+   lo que sobresale por abajo queda INALCANZABLE. El tope se calcula: el alto
+   del viewport menos donde se clava (la barra + los 16px de padding del raíl)
+   menos 12px de respiro abajo. `sidebar-scroll.test.ts` exige que las dos
+   cifras sigan de acuerdo. `overscroll-behavior: contain` para que al llegar
+   al final del menú la rueda no siga arrastrando la página; el hueco de la
+   barra de scroll SIEMPRE reservado para que la fila mida lo mismo quepa o no. */
+.app-nav {
+  display: flex; flex-direction: column; gap: 2px;
+  position: sticky; top: calc(var(--nav-h) + 16px);
+  max-height: calc(100vh - var(--nav-h) - 28px);
+  max-height: calc(100dvh - var(--nav-h) - 28px);
+  overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable;
+}
+/* Cabecera de grupo (la del menú móvil de bivelio.com: 11px/600/0.12em, sin
+   mono), con AIRE y una raya entre grupos: 12px de aire, una línea y otros 10px
+   hasta la cabecera. El PRIMER grupo no lleva raya: no separa de nada. */
+.app-nav-sep {
+  flex: none; margin: 12px 8px 4px; padding-top: 10px; border-top: 1px solid var(--line);
+  font-family: var(--sans); font-size: var(--fs-label); font-weight: var(--fw-label); line-height: var(--lh-label);
+  letter-spacing: var(--ls-label); text-transform: uppercase; color: var(--ink-soft);
+}
+.app-nav-sep[data-first] { margin-top: 2px; padding-top: 0; border-top: 0; }
+
+/* EL BLOQUE «PUESTA EN MARCHA · N DE 5», primer hijo del raíl. Va DENTRO de
+   `.app-nav` porque es el único contenedor con alto acotado y scroll propio. */
+.app-setup { flex: none; margin: 0 0 2px; padding: 9px 11px; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
+.app-setup-k { margin: 0; font-size: var(--fs-label); font-weight: var(--fw-label); letter-spacing: var(--ls-label); text-transform: uppercase; color: var(--ink-soft); }
+/* La frase que sustituye al bloque entero cuando la lectura no contestó: sin
+   caja ni barra, porque no hay progreso que enmarcar. */
+.app-setup-unreadable { margin: 0 0 8px; padding: 0 4px; font-size: var(--fs-label); line-height: 1.45; color: var(--ink-soft); }
+
+/* LA CIFRA DE LA DERECHA: «2/5», «3 de 5», «2 miembros». Una LECTURA, no una
+   frase — la frase entera va al `title` de la fila, donde no empuja a nadie. */
+.app-nav-badge { margin-left: auto; flex: none; white-space: nowrap; padding-left: 10px; font-size: var(--fs-label); font-weight: 500; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.app-nav-item.on .app-nav-badge { color: inherit; opacity: .85; }
+/* LA FILA: alta, constante y de una sola línea (38px siempre, icono centrado,
+   etiqueta en `nowrap` con el `ellipsis` como red). `flex: none` también en la
+   columna: un flex en columna encoge a sus hijos cuando no caben, y el menú se
+   encogía en vez de scrollear. */
+.app-nav-item {
+  display: flex; align-items: center; gap: 9px; padding: 6px 8px; min-height: 38px; flex: none;
+  border-radius: var(--r-lg); font-size: 14px; font-weight: 500; line-height: 1.25;
+  color: var(--ink); text-decoration: none; border: 1px solid transparent;
+  transition: background-color .15s, color .15s; min-width: 0;
+}
+.app-nav-label { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* La tesela del icono: 24px con hairline, blanca; el glifo es un SVG en línea
+   pintado con currentColor. */
+.app-nav-item .ic {
+  width: 24px; height: 24px; border-radius: var(--r-lg); flex: none; align-self: center;
+  display: grid; place-items: center;
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink-soft);
+  transition: color .15s, border-color .15s;
+}
+.app-nav-item .ic svg { width: 16px; height: 16px; }
+.app-nav-item:hover .ic { color: var(--ink); border-color: color-mix(in srgb, var(--accent) 30%, var(--line)); }
+.app-nav-item.on .ic { border-color: color-mix(in srgb, var(--accent) 28%, var(--line)); color: var(--accent); }
+
+.app-main { padding: clamp(24px, 4vw, 44px) clamp(16px, 3vw, 32px); min-width: 0; }
+.app-inner { width: min(940px, 100%); margin: 0 auto; }
+@media (max-width: 860px) {
+  .app-sidebar {
+    border-right: none; border-bottom: 1px solid var(--line); padding: 8px 12px;
+    position: sticky; top: var(--nav-h); z-index: 40;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    /* El tamaño mínimo automático de un ítem de grid es su min-content, y el de
+       esta tira es la fila entera de enlaces sin partir: sin esto la PÁGINA
+       entera crecía hasta el ancho de la tira. */
+    min-width: 0;
+  }
+  /* Tira horizontal: aquí el raíl no se fija, así que ni tope de alto ni
+     scroll vertical — dejarlos daría una segunda barra en una fila. */
+  .app-nav {
+    flex-direction: row; gap: 6px; position: static; padding-bottom: 2px;
+    max-height: none; overflow-x: auto; overflow-y: hidden;
+    scrollbar-gutter: auto; scroll-padding-inline: 12px;
+  }
+  /* `min-width: 0` en la fila deja a cada enlace encogerse POR DEBAJO de su
+     texto y, con `nowrap`, dibujarse ENCIMA del siguiente. `flex: none` le
+     devuelve su ancho y la tira vuelve a deslizarse. */
+  .app-nav-item { flex: none; padding: 8px 12px; min-height: 36px; }
+  .app-nav-label { min-width: auto; overflow: visible; text-overflow: clip; }
+  .app-nav-item .ic { display: none; }
+  /* La cifra no cabe en una tira que ya se desliza: su frase sigue en el title. */
+  .app-nav-badge { display: none; }
+  /* Las cabeceras de grupo no caben como texto, pero la AGRUPACIÓN sí: cada
+     una es una raya vertical entre grupos. La del primero no separa de nada. */
+  .app-nav-sep {
+    width: 1px; flex: none; align-self: stretch; overflow: hidden;
+    margin: 4px 4px; padding: 0; border: 0; background: var(--line);
+    font-size: 0; letter-spacing: 0; color: transparent;
+  }
+  .app-nav-sep[data-first] { display: none; }
+  /* El bloque de puesta en marcha sería el ítem más ancho de la tira; la cifra
+     sigue viéndose en el title de «Instalar». */
+  .app-setup, .app-setup-unreadable { display: none; }
+}
+
+/* ↓ de globals.css · LA CABECERA DE PÁGINA Y DE SECCIÓN (PageHead / .app-sec-head) */
+.app-head { margin-bottom: var(--sp-7); }
+.app-head-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.app-sec-head, .ck-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: var(--sp-5); flex-wrap: wrap; }
+.app-sec-head h2, .ck-head h2 { margin: 0; }
+
+/* ↓ de globals.css · Tarjetas: la Attio card canónica (`rounded-2xl border border-line */
+/* La tarjeta de sombra usaba `big`/`sub`/`src` con ámbito .verdict/.kpi y su
+   letra salía por defecto, distinta del resto del panel (dueño, 04-09): el
+   mismo tratamiento tipográfico que sus tarjetas hermanas, con ámbito propio. */
+.sombra-elision .big { font-family: var(--font-heading); font-weight: 600; letter-spacing: -.03em; line-height: 1; font-variant-numeric: tabular-nums; }
+.sombra-elision .big.pos { color: var(--good-ink); }
+.sombra-elision .big.neg { color: var(--danger); }
+.sombra-elision .sub { font-size: .78rem; color: var(--ink-soft); }
+.sombra-elision .src { font-family: var(--mono); font-size: .6rem; color: var(--ink-soft); opacity: .7; word-break: break-all; }
+
+/* Borrado del proveedor (0025): misma tipografía que sus tarjetas hermanas, con
+   ámbito propio. El titular es un CONTEO (peticiones acreditadas), no un dinero:
+   va en tinta neutra, sin pos/neg — no hay nada que pintar de verde ni de rojo. */
+.elision-proveedor .big { font-family: var(--font-heading); font-weight: 600; letter-spacing: -.03em; line-height: 1; font-variant-numeric: tabular-nums; color: var(--ink); }
+.elision-proveedor .sub { font-size: .78rem; color: var(--ink-soft); }
+.elision-proveedor .src { font-family: var(--mono); font-size: .6rem; color: var(--ink-soft); opacity: .7; word-break: break-all; }
+.bench-badge b { color: var(--warn); font-weight: 600; }
+/* Botonera de facturación. `billing-cta` y `billing-err` se usaban desde que
+   existen los botones de compra y NO estaban definidas en ninguna parte: los
+   botones se apoyaban en el flujo por defecto y el error se pintaba con el color
+   del texto normal. Al añadir el selector de asientos hacía falta de verdad. */
+.billing-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; }
+.pv-note p { font-size: .8rem; color: var(--ink-soft); line-height: 1.5; margin: 4px 0 6px; max-width: 78ch; }
+
+/* ↓ de globals.css · HOW-IT-WORKS («¿Dónde se instala el ahorro?») — un solo contenido para dos */
+.ux-seg { display: flex; flex-direction: column; gap: 5px; }
+.ux-seg .opts { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+.ux-seg button {
+  padding: 5px 11px; font-size: 12px; line-height: 1.35; font-family: var(--sans); font-weight: 500;
+  border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface);
+  color: var(--ink-soft); cursor: pointer; font-variant-numeric: tabular-nums;
+  transition: background-color .14s ease, color .14s ease, border-color .14s ease;
+}
+.ux-seg button:hover { background: var(--surface-3); color: var(--ink); border-color: var(--btn-ghost-line-hover); }
+/* El activo va en TINTA, no en azul: `--brand` es un acento del sistema, no el
+   color del producto, y seis pastillas azules gritaban más que los datos. */
+.ux-seg button[aria-pressed="true"] { background: var(--btn-ink); border-color: var(--btn-ink); color: #fff; font-weight: 600; }
+.ux-seg button[aria-pressed="true"]:hover { background: var(--btn-ink-hover); border-color: var(--btn-ink-hover); }
+.ux-stat { background: var(--surface); padding: 10px 12px; min-width: 0; }
+.ux-tip {
+  position: absolute; transform: translateX(-50%); pointer-events: none; z-index: 4;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card); padding: 8px 11px; min-width: 150px;
+}
+.ux-tip .r { display: flex; justify-content: space-between; gap: 14px; font-size: 11px; color: var(--ink-soft); line-height: 1.7; }
+.ux-tip .r b { font-family: var(--mono); font-size: 10.5px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+.ux-tip .r b.pos { color: var(--good-ink); }
+.ux-tip .r b.neg { color: var(--danger); }
+.ux-tbl th { font-family: var(--mono); font-size: 9.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-soft); text-align: right; padding: 0 0 9px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.ux-tbl td { padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 12.5px; text-align: right; white-space: nowrap; }
+
+/* ↓ de globals.css · LANDING (marketing) — puerto scoped de public/landing.html. */
+.lp .plan-card .amt { font-family: var(--font-heading); font-size: 2.2rem; font-weight: 600; letter-spacing: -.04em; }
+
+/* ↓ de globals.css · Panel editable (2026-09-19) */
+.pe-card { position: relative; min-width: 0; }
+
+/* ↓ de globals.css · HÉROE CON LA CAPTURA DEL PANEL (dueño, 2026-10-03) */
+.ux-tbl-ahorro td.m { font-size: 13px; }
+.ux-tbl-ahorro td.a { font-family: var(--font-heading); font-size: 16px; font-weight: 600; color: var(--good-ink); }
+
+/* ↓ de globals.css · F3·1 Cáscara */
+.app .app-topbar { gap: 12px; padding: 0 clamp(12px, 2.2vw, 24px); background: color-mix(in srgb, var(--bg) 88%, transparent); }
+.app-topbar .app-brand { border-radius: 8px; }
+/* Contexto, junto a la marca: «/ Organización · Plan». */
+.app-ctx { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.app-ctx-sep { flex: none; font-size: 20px; font-weight: 300; line-height: 1; color: var(--line-strong); }
+.app-ctx .app-org { font-size: 13.5px; font-weight: 500; color: var(--ink); max-width: 24ch; }
+.app-ctx .app-plan { flex: none; }
+.app .app-account { gap: 4px; min-width: 0; }
+/* «Ver tour»: botón fantasma con línea; en estrecho, solo el icono. */
+.app-tour {
+  display: inline-flex; align-items: center; gap: 7px; flex: none; cursor: pointer;
+  height: 36px; padding: 0 12px 0 10px; margin-right: 4px;
+  border: 1px solid var(--btn-ghost-line); border-radius: var(--r-control); background: var(--surface); color: var(--ink);
+  font-family: var(--sans); font-size: 13.5px; font-weight: 500; line-height: 1; white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(15, 18, 24, .04);
+  transition: background-color var(--dur-1) var(--ease-out), border-color var(--dur-1) var(--ease-out);
+}
+.app-tour:hover { background: var(--surface-3); border-color: var(--btn-ghost-line-hover); }
+.app-tour-ic { display: grid; place-items: center; flex: none; color: var(--brand); }
+.app-tour-ic svg { width: 16px; height: 16px; }
+/* La cuenta: inicial en un círculo + correo. El correo se recorta primero. */
+.app .app-account .email {
+  display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 8px 0 4px; max-width: none;
+  border-radius: var(--r-control); font-family: var(--sans); font-size: 13px; color: var(--ink-soft);
+  transition: background-color var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out);
+}
+.app .app-account .email:hover { background: var(--surface-2); color: var(--ink); text-decoration: none; }
+
+
+/* En estrecho el texto se RECORTA (sigue siendo el nombre accesible), no se quita. */
+@media (max-width: 1100px) {
+
+  .app .app-account .email { padding: 0 5px; }
+}
+@media (max-width: 900px) {
+  .app-tour-label {
+    position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
+  .app-tour { width: 36px; padding: 0; justify-content: center; margin-right: 0; }
+
+}
+@media (max-width: 640px) { .app .app-account .email { display: inline-flex; } }
+@media (max-width: 520px) { .app-ctx { display: none; } .app .app-account { gap: 2px; } }
+@media (pointer: coarse) {
+  .app-tour, .app .app-account .email { height: 44px; }
+  .app-tour { min-width: 44px; }
+  .app .app-account .email { min-width: 44px; justify-content: center; }
+}
+
+/* El raíl: gris suave, una línea, sin teselas. */
+.app .app-sidebar { background: color-mix(in srgb, var(--surface-2) 58%, var(--bg)); padding: 16px 12px 28px; }
+.app-sidebar .app-nav-sep { margin: 18px 10px 6px; padding-top: 0; border-top: 0; font-size: 11px; letter-spacing: .07em; color: var(--ink-soft); }
+.app-sidebar .app-nav-sep[data-first] { margin-top: 6px; }
+.app-sidebar .app-nav-item {
+  gap: 10px; padding: 6px 10px; min-height: 36px; border-radius: 9px; border: 0;
+  font-size: 14px; font-weight: 500; color: color-mix(in srgb, var(--ink) 78%, var(--ink-soft));
+  transition: background-color var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out);
+}
+.app-sidebar .app-nav-item:hover { background: color-mix(in srgb, var(--ink) 5%, transparent); color: var(--ink); }
+.app-sidebar .app-nav-item .ic { width: 18px; height: 18px; border: 0; border-radius: 0; background: none; color: var(--ink-soft); }
+.app-sidebar .app-nav-item .ic svg { width: 17px; height: 17px; }
+.app-sidebar .app-nav-item:hover .ic { color: var(--ink); }
+/* DÓNDE ESTOY: azul tenue, y solo uno a la vez. */
+.app-sidebar .app-nav-item.on { background: var(--brand-soft); color: #0052B8; font-weight: 600; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--brand) 12%, transparent); }
+.app-sidebar .app-nav-item.on .ic { color: var(--brand); }
+.app-sidebar .app-nav-item:focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; }
+.app-sidebar .app-nav-badge {
+  padding: 2px 6px; margin-left: auto; border-radius: 6px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line);
+  font-size: 11px; font-weight: 500; line-height: 1.45; color: var(--ink-soft);
+}
+.app-sidebar .app-nav-item.on .app-nav-badge { color: #0052B8; opacity: 1; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--brand) 22%, transparent); }
+.app-sidebar .app-nav-note { margin: 0 4px 12px; padding: 10px 12px; max-width: none; border-radius: 10px; background: var(--amber-soft); color: var(--warn); font-size: 12.5px; }
+/* La puesta en marcha: la tarjeta blanca del raíl, con el Progress Tracker dentro. */
+.app-sidebar .app-setup { margin: 0 0 6px; padding: 12px 4px 4px; border: 0; border-radius: 12px; background: var(--surface); box-shadow: 0 0 0 1px var(--line), var(--shadow-card); }
+.app-sidebar .app-setup-unreadable { margin: 0 0 8px; padding: 10px 12px; border-radius: 10px; background: var(--surface); box-shadow: 0 0 0 1px var(--line); font-size: 12.5px; }
+
+@media (max-width: 860px) {
+  .app .app-sidebar { padding: 8px 12px; background: color-mix(in srgb, color-mix(in srgb, var(--surface-2) 58%, var(--bg)) 92%, transparent); }
+  .app-sidebar .app-nav { gap: 4px; scrollbar-width: none; }
+  .app-sidebar .app-nav::-webkit-scrollbar { display: none; }
+  .app-sidebar .app-nav-item { padding: 8px 12px; min-height: 40px; border-radius: 999px; }
+  .app-sidebar .app-nav-sep, .app-sidebar .app-nav-sep[data-first] { margin: 8px 4px; }
+  .app-sidebar .app-nav-note { margin: 0 0 8px; }
+  .app-sidebar .app-setup, .app-sidebar .app-setup-unreadable { display: none; }
+}
+@media (max-width: 860px) and (pointer: coarse) { .app-sidebar .app-nav-item { min-height: 44px; } }
+
+/* Cabecera de página y pestañas. */
+.app .app-head { margin-bottom: 28px; }
+.app .app-head .sub-page { font-size: 15px; max-width: 68ch; text-wrap: pretty; }
+/* Esqueleto y error del panel. */
+.app-loading { min-width: 0; }
+/* El título de una tarjeta se lee como título, no como etiqueta en versalitas. */
+.app .card .n.card-title, .app .card-head .n {
+  font-family: var(--sans); font-size: 14px; font-weight: 600; letter-spacing: -.005em; line-height: 1.35;
+  text-transform: none; color: var(--ink);
+}
+
+/* ↓ de globals.css · F3·3 Resumen */
+.ov { min-width: 0; }
+.ov-attention { display: grid; gap: 10px; margin-bottom: 24px; min-width: 0; }
+.ov-banner { min-width: 0; }
+.ov-banner .ck-note { margin: 6px 0 0; color: inherit; opacity: .86; }
+.ov .ov-result { margin-top: 0; }
+.ov .app-section { margin-top: 40px; }
+.ov .app-sec-head { margin-bottom: 14px; }
+.verdict-main { min-width: 0; align-self: center; }
+.verdict-side { display: flex; flex-direction: column; align-items: flex-end; gap: 18px; min-width: 0; }
+.ov-explore { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 320px); gap: 16px; align-items: start; min-width: 0; }
+.ov-explore > * { min-width: 0; }
+.ov-breakdown { min-width: 0; }
+.pe-ghost .ck-note { margin: 0; }
+.ins .ck-note { max-width: 74ch; margin: 12px 0 0; font-size: 14px; line-height: 1.6; }
+.ins .ck-note b { color: var(--ink); font-weight: 600; }
+.ins .ck-note code, .ins-mode code { font-family: var(--mono); font-size: .92em; padding: 1px 5px; border-radius: 5px; background: var(--surface-2); color: var(--ink); overflow-wrap: anywhere; }
+.ins-task-ic svg { width: 18px; height: 18px; }
+.ins-task-go svg { width: 16px; height: 16px; }
+.ins-mode-ic svg { width: 16px; height: 16px; }
+.ins-sec-head .t-section { margin: 0; }
+.ins-sec-ic svg { width: 16px; height: 16px; }
+.ins .ins-skill a { color: var(--ink); font-weight: 500; text-decoration: underline; text-decoration-color: var(--line-strong); text-underline-offset: 3px; }
+
+/* ↓ de globals.css · F3·5 Tour guiado (TourGuideJS) */
+.tg-backdrop { position: absolute; display: none; top: 50vh; left: 50vw; width: 0; height: 0; z-index: 998; border: 0; border-radius: 14px; }
+.tg-backdrop.tg-backdrop-animate { transition: top var(--dur-3) var(--ease-out), left var(--dur-3) var(--ease-out), width var(--dur-3) var(--ease-out), height var(--dur-3) var(--ease-out); }
+.tg-backdrop.allow-interaction { pointer-events: none; }
+.tg-dialog {
+  position: absolute; display: none; top: 0; left: 0; z-index: 999; width: max-content; max-width: min(360px, calc(100vw - 24px)) !important; padding: 0;
+  border-radius: 16px; background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--line), var(--shadow-pop);
+  font-family: var(--sans); font-size: 14px; line-height: 1.55; text-align: start;
+}
+.tg-dialog:focus { outline: none; }
+.tg-dialog:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; }
+.tg-dialog.tg-dialog-fixed { transition: none; }
+.tg-dialog.animate-position { transition: top var(--dur-3) var(--ease-out), left var(--dur-3) var(--ease-out); }
+.tg-dialog .tg-dialog-header { display: flex; align-items: flex-start; gap: 10px; padding: 18px 12px 0 20px; }
+.tg-dialog .tg-dialog-title { margin-right: auto; padding-top: 4px; font-size: 16px; font-weight: 600; letter-spacing: -.012em; line-height: 1.3; color: var(--ink); }
+.tg-dialog .tg-dialog-close-btn {
+  display: grid; place-items: center; flex: none; width: 32px; height: 32px; margin: 0; border-radius: 8px; opacity: 1; cursor: pointer; color: var(--ink-soft);
+  transition: background-color var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out);
+}
+.tg-dialog .tg-dialog-close-btn svg { width: 10px; height: 10px; fill: currentColor; }
+.tg-dialog .tg-dialog-close-btn:hover { background: var(--surface-3); color: var(--ink); }
+.tg-dialog .tg-dialog-close-btn:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
+.tg-dialog .tg-dialog-spinner { display: none; }
+.tg-dialog .tg-dialog-body { padding: 6px 20px 2px; color: var(--ink-soft); overflow-wrap: anywhere; }
+.tg-dialog .tg-dialog-footer { display: flex; align-items: center; gap: 8px; padding: 16px 16px 16px 20px; }
+.tg-dialog .tg-dialog-footer-sup { order: -1; display: flex; flex-direction: column; align-items: flex-start; gap: 7px; margin: 0 auto 0 0; padding: 0; min-width: 0; text-align: start; line-height: 1; }
+.tg-dialog .tg-dialog-dots { display: flex; align-items: center; justify-content: flex-start; gap: 4px; margin: 0; padding: 0; border: 0; }
+.tg-dialog .tg-dialog-dots > span.tg-dot { display: inline-block; width: 6px; height: 6px; margin: 0; border-radius: 3px; background: var(--line-strong); transition: width var(--dur-2) var(--ease-out), background-color var(--dur-2) var(--ease-out); }
+.tg-dialog .tg-dialog-dots > span.tg-dot.tg-dot-active { width: 16px; background: var(--ink); }
+.tg-dialog .tg-bv-count { font-size: 12px; font-weight: 500; color: var(--ink-soft); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tg-dialog .tg-dialog-footer button.tg-dialog-btn {
+  flex: none; min-height: 36px; padding: 0 14px; border: 1px solid var(--btn-ghost-line); border-radius: var(--r-control); background: var(--surface); color: var(--ink);
+  font-family: var(--sans); font-size: 13.5px; font-weight: 500; line-height: 1; white-space: nowrap; cursor: pointer;
+  transition: background-color var(--dur-1) var(--ease-out), border-color var(--dur-1) var(--ease-out);
+}
+.tg-dialog .tg-dialog-footer button.tg-dialog-btn + button { margin-left: 0; }
+.tg-dialog .tg-dialog-footer button.tg-dialog-btn:hover { background: var(--surface-3); border-color: var(--btn-ghost-line-hover); color: var(--ink); }
+.tg-dialog .tg-dialog-footer button.tg-dialog-btn:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.tg-dialog .tg-dialog-footer button.tg-dialog-btn.disabled, .tg-dialog .tg-dialog-footer button.tg-dialog-btn:disabled { opacity: .45; pointer-events: none; }
+.tg-dialog .tg-dialog-footer button#tg-dialog-next-btn { background: var(--btn-ink); border-color: var(--btn-ink); color: #fff; }
+.tg-dialog .tg-dialog-footer button#tg-dialog-next-btn:hover { background: var(--btn-ink-hover); border-color: var(--btn-ink-hover); color: #fff; }
+.tg-dialog .tg-arrow { position: absolute; width: 10px; height: 10px; border-radius: 2px; background: var(--surface); }
+.tg-dialog.tg-dialog-loading .tg-dialog-body, .tg-dialog.tg-dialog-loading .tg-dialog-footer { opacity: .5; pointer-events: none; }
+.tg-no-interaction * { pointer-events: none !important; user-select: none !important; }
+.tg-no-interaction .tg-dialog, .tg-no-interaction .tg-active-element, .tg-dialog *, .tg-active-element * { pointer-events: auto !important; user-select: text !important; }
+@media (pointer: coarse) {
+  .tg-dialog .tg-dialog-footer button.tg-dialog-btn { min-height: 44px; }
+  .tg-dialog .tg-dialog-close-btn { width: 44px; height: 44px; }
+}
+@media (max-width: 420px) {
+  .tg-dialog .tg-dialog-footer { flex-wrap: wrap; justify-content: flex-end; }
+  .tg-dialog .tg-dialog-footer-sup { flex: 1 1 100%; flex-direction: row; align-items: center; justify-content: space-between; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tg-backdrop, .tg-backdrop.tg-backdrop-animate, .tg-dialog, .tg-dialog.animate-position, .tg-dialog .tg-dialog-dots > span.tg-dot { transition: none !important; animation: none !important; }
+}
+
+/* ↓ de globals.css · Gramática común */
+.app-sec-head > .ev-badge, .app-sec-head > .ext-periodo, .app-sec-head > .ext-legado { flex: none; align-self: flex-start; margin-top: 2px; }
+.app-sec-head .t-section { margin-bottom: var(--sp-1); }
+.acct-k, .card .acct-k { margin: 0; font-family: var(--sans); font-size: var(--fs-label); font-weight: var(--fw-label); letter-spacing: var(--ls-label); line-height: var(--lh-label); text-transform: uppercase; color: var(--ink-soft); }
+.app-head + .acct-banner { margin-top: 0; }
+.acct-banner + .acct-banner { margin-top: var(--sp-3); }
+.acct-banner .notice-body b { font-weight: 600; }
+.acct-banner .notice-body a.btn { color: #fff; text-decoration: none; }
+.acct-banner .billing-cta { margin-top: 0; }
+.acct-main > * { margin: 0; }
+
+
+.card .acct-h, .acct-h { margin: 0; font-family: var(--sans); font-size: 15px; font-weight: 600; letter-spacing: -.01em; line-height: 1.35; text-transform: none; color: var(--ink); }
+
+
+.acct-main .billing-cta { display: flex; flex-direction: column; align-items: stretch; gap: 14px; margin: 0; padding-top: 20px; border-top: 1px solid var(--line); }
+.billing-cta .billing-err, .billing-cta--solo .billing-err { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--danger); }
+.card .acct-manage-t { flex: 1 1 240px; margin: 0; font-size: 14px; line-height: 1.5; color: var(--ink-soft); }
+.acct-main .acct-line { margin: 0; }
+.acct-main .acct-tax { margin: 0; }
+.card .acct-email { margin: 6px 0 0; font-size: 15.5px; font-weight: 600; letter-spacing: -.01em; line-height: 1.35; color: var(--ink); overflow-wrap: anywhere; }
+.acct-facts > div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line); }
+.acct-facts dd { margin: 0; min-width: 0; font-size: 13.5px; font-weight: 500; color: var(--ink); text-align: end; overflow-wrap: anywhere; }
+.card .acct-side-note { margin: 14px 0 0; font-size: 13px; line-height: 1.55; color: var(--ink-soft); text-wrap: pretty; }
+
+/* ↓ de globals.css · /team */
+.equipo-campo { display: flex; flex-direction: column; gap: 6px; min-width: 0; flex: 0 1 200px; }
+.equipo-campo--ancho { flex: 1 1 260px; }
+.ext-grid .recibo { margin: 0; }
+.card .ext-h { margin: 0; font-family: var(--sans); font-size: 15px; }
+.card .ext-contrato-t { margin: 0 0 4px; font-family: var(--sans); font-size: 16px; font-weight: 600; letter-spacing: -.012em; line-height: 1.35; color: var(--ink); }
+.ext-sim .t-block, .ext-sim-body .t-block { margin: var(--sp-5) 0 var(--sp-3); font-size: 14px; }
+.yb > :first-child { margin-top: 0; }
+.yb-meter i { display: block; height: 100%; min-width: 4px; border-radius: inherit; background: var(--ink); }
+
+/* ↓ de globals.css · F5·2 Centro de evidencia (/benchmarks) */
+.evc-link { display: inline-flex; align-items: center; gap: 6px; min-height: 28px; font-size: 14px; font-weight: 500; color: var(--ink); text-decoration: underline; text-decoration-color: var(--line-strong); text-underline-offset: 3px; }
+.evc-link:hover { text-decoration-color: currentColor; }
+.evc-link svg { width: 12px; height: 12px; flex: none; }
+@media (pointer: coarse) { .evc-link { min-height: 44px; } }
+
+/* ↓ de globals.css · I·1 Páginas públicas interiores: una columna y un arranque */
+/* Los rótulos de los controles del explorador no son antetítulos: sin filete. */
+.ux-seg > .ck-eyebrow::before, .ux-seg > .eyebrow::before { content: none; }
+
+/* ↓ de globals.css · I·3 Tour guiado en móvil */
+@media (max-width: 640px) {
+  .tg-dialog {
+    position: fixed !important; top: auto !important; left: 12px !important; right: 12px !important;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+    width: auto !important; max-width: none !important; margin: 0 !important; transform: none !important;
+    box-shadow: 0 0 0 1px var(--line), 0 -8px 40px rgba(15, 18, 24, .22);
+  }
+  .tg-dialog .tg-arrow { display: none !important; }
+}
+
+/* ↓ de globals.css · I·4 Pulido final */
+.app-nav-item { transition: background-color var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out), transform var(--dur-1) var(--ease-out); }
+
+/* ↓ de globals.css · Barra: la cuenta es un menú (Profile Menu) */
+.app .app-account { gap: 6px; }
+/* Salir sin menú: cuando no se leyó el correo no hay Profile Menu, y el botón
+   va suelto en la barra. En estrecho se queda en su icono, con su nombre. */
+.app-signout-form { display: flex; margin: 0; }
+.app .app-signout-solo {
+  display: inline-flex; align-items: center; gap: 7px; height: 36px; padding: 0 10px;
+  border: 1px solid transparent; border-radius: var(--r-control); background: transparent; cursor: pointer;
+  font-family: var(--sans); font-size: 13.5px; font-weight: 500; color: var(--ink-soft);
+  transition: background-color var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out);
+}
+.app .app-signout-solo:hover { background: var(--surface-2); color: var(--ink); }
+.app .app-signout-solo svg { width: 16px; height: 16px; flex: none; }
+@media (max-width: 900px) {
+  .app .app-signout-solo { width: 36px; padding: 0; justify-content: center; }
+  .app .app-signout-solo > span { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
+@media (pointer: coarse) { .app .app-signout-solo { height: 44px; min-width: 44px; } }
+
+/* ↓ de globals.css · El pulso del periodo: gráfico diario + coste por proveedor */
+.ov-pulse { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 14px; align-items: stretch; min-width: 0; }
+.ov-chart { display: flex; flex-direction: column; --ui-kpic-h: 196px; }
+.ov-providers { align-content: start; --ui-muc-plot: 172px; }
+.ox-seats { margin-bottom: 14px; max-width: 420px; }
+
+/* ↓ de globals.css · SLOT ESPECTACULAR E2 */
+/* Panel: instalación, cuenta, equipo y extracto, con las piezas de affectUI
+   (vendor/affectui: setup-guide, segmented-control, blur-crossfade, text-field,
+   number-input, select, dropdown-menu, dialog, toaster, data-table, usage-meter,
+   avatar, badge, empty-state, spinner, team-invite, empty-calendar). Aquí solo
+   va la COLOCACIÓN de esas piezas en las pantallas y las clases propias de
+   `app/`; el aspecto de cada pieza vive en su `.css`. */
+.ins-key-ic svg { width: 16px; height: 16px; }
+.copybtn svg { width: 14px; height: 14px; flex: none; }
+.ins-skill-ic svg { width: 16px; height: 16px; }
+.equipo-tabla { margin-top: 4px; }
+.equipo .equipo-vacio { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); align-items: center; gap: 8px 16px; margin-top: 12px; padding: 0 24px 0 0; border-radius: var(--r-card); background: var(--surface-3); box-shadow: inset 0 0 0 1px var(--line); text-align: start; }
+@media (max-width: 560px) { .equipo-ilustracion { max-width: 240px; margin-inline: auto; } }
+.equipo .equipo-form > .btn.equipo-enviar { min-height: 44px; margin-top: 26px; gap: 8px; padding-inline: 18px; }
+@media (max-width: 560px) { .equipo .equipo-form > .btn.equipo-enviar { margin-top: 0; width: 100%; justify-content: center; } }
+.ext-historial, .ext-tramos { margin-top: 12px; }
+
+/* ↓ de globals.css · El detalle de un libro (Hover Card) */
+.lg-name { font-family: var(--mono); }
+.st-flag { margin-top: 3px; }
+
+/* ↓ de globals.css · /dashboard/verify · el proyector */
+.pv-bars .mono { font-family: var(--mono); font-size: 12.5px; color: var(--ink); min-width: 5ch; text-align: end; font-variant-numeric: tabular-nums; }
+
+/* ↓ de globals.css · SLOT ACABADO FINAL */
+/* Resumen en móvil: el título de cada tarjeta arranca en el mismo margen
+   (antes 28, 33, 36 y 39px según el componente). */
+@media (max-width: 640px) {
+  .app .card.card-pad.ox-card { padding-inline: 16px; }
+}
+/* ════ FIN DE LAS LLEGADAS ══════════════════════════════════════════════════ */
 
 /* Azul de marca: uso RARO (una acción de confirmación dentro de un flujo que
    ya tiene su CTA tinta). Nunca dos azules en la misma vista. */

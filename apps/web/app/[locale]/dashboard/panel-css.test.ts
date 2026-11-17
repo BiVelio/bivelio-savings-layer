@@ -114,12 +114,16 @@ describe("quién recibe la hoja del panel", () => {
     // En producción Next emite `panel.css` antes que `affectui-panel.css` se
     // importen en el orden que se importen (comprobado con los dos, 2026-11-16).
     // Importarlas así hace que `next dev` —y las galerías— pinten esa misma
-    // cascada. Ninguna regla de la hoja del panel empata hoy con una de
-    // affectUI sobre el mismo elemento, así que el orden no decide nada: que
-    // siga sin decidirlo es cosa de quien traiga reglas nuevas.
+    // cascada. Delante va la de affectUI que el panel comparte con el acceso:
+    // sus piezas estaban antes en la hoja pública, es decir, delante de esta
+    // (en producción Next la emite DETRÁS de `panel.css`, 2026-11-17; los
+    // estilos computados salen iguales en los dos órdenes).
+    // Ninguna regla de la hoja del panel empata hoy con una de affectUI sobre
+    // el mismo elemento, así que el orden no decide nada: que siga sin
+    // decidirlo es cosa de quien traiga reglas nuevas.
     for (const f of ["app/[locale]/dashboard/layout.tsx", ...GALERIAS]) {
       const hojas = [...lee(f).matchAll(/^\s*import\s+["']([^"']+\.css)["']/gm)].map((m) => m[1]!.replace(/^.*\//, ""));
-      expect(hojas, f).toEqual(["panel.css", "affectui-panel.css"]);
+      expect(hojas, f).toEqual(["affectui-acceso.css", "panel.css", "affectui-panel.css"]);
     }
   });
 });
@@ -132,15 +136,20 @@ describe("qué cuenta como público", () => {
     }
     expect(publicos).not.toContain("app/[locale]/dashboard/layout.tsx");
     expect(publicos).not.toContain("app/[locale]/dashboard/page.tsx");
+    // La cáscara solo la monta el panel; los formularios de acceso sí son públicos aquí.
+    expect(publicos).not.toContain("app/components/app/AppSidebar.tsx");
+    expect(publicos).toContain("app/components/AuthForm.tsx");
     for (const g of GALERIAS) expect(publicos, g).not.toContain(g);
     // Nada que no sea código: una hoja en el corpus haría pública cada clase que define.
     expect(publicos.filter((f: string) => !/\.(ts|tsx|mjs|js|json)$/.test(f))).toEqual([]);
   });
 
-  it("las clases de la portada son públicas; las del extracto, no", () => {
+  it("las clases de la portada son públicas; las del extracto y las de la cáscara del panel, no", () => {
     const voc = vocabularioPublico();
-    for (const c of ["lp", "btn", "hero-panel", "skip-link", "app-sidebar"]) expect(laProduce(c, voc), c).toBe(true);
-    for (const c of ["ext-grid", "acct-facts", "equipo-form"]) expect(laProduce(c, voc), c).toBe(false);
+    // Las del acceso también: login y alta no cargan la hoja del panel.
+    for (const c of ["lp", "btn", "hero-panel", "skip-link", "acc-card", "auth-msg"]) expect(laProduce(c, voc), c).toBe(true);
+    // La cáscara (`app/components/app/`) solo la monta el layout del panel.
+    for (const c of ["ext-grid", "acct-facts", "equipo-form", "app-sidebar", "app-topbar"]) expect(laProduce(c, voc), c).toBe(false);
   });
 
   it("solo cuentan las clases que el selector exige", () => {

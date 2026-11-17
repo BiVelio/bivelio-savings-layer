@@ -12,9 +12,13 @@ import { describe, expect, it } from "vitest";
 
 const strip = (s: string) => s.replace(/\/\*[\s\S]*?\*\//g, " ");
 const CSS = strip(readFileSync(fileURLToPath(new URL("./globals.css", import.meta.url)), "utf8"));
+// El raíl (`.app-nav`) vive en la hoja del panel desde que la cáscara salió de
+// la global (2026-11): solo la pinta el panel. La rejilla (`.app-body`) sigue
+// en la global.
+const PANEL = strip(readFileSync(fileURLToPath(new URL("./[locale]/dashboard/panel.css", import.meta.url)), "utf8"));
 
-const block = (re: RegExp): string => {
-  const m = CSS.match(re);
+const block = (re: RegExp, css = PANEL): string => {
+  const m = css.match(re);
   if (!m) throw new Error(`no encuentro el bloque ${re}`);
   return m[1]!;
 };

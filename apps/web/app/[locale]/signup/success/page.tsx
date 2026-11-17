@@ -8,6 +8,12 @@ import { Icono } from "@/app/components/acceso/iconos";
 import { safeNextPath } from "@/app/auth/safe-next";
 import { PLANES_EN_VENTA } from "@/lib/billing/planes";
 
+// Las dos hojas de las páginas de acceso (el marco, la tarjeta, los campos y
+// sus piezas de affectUI): la portada no las carga. Ver la cabecera de
+// `app/components/acceso/acceso.css`.
+import "@/app/components/acceso/acceso.css";
+import "@/vendor/affectui/affectui-acceso.css";
+
 /**
  * LA PÁGINA EXCLUSIVA DE CONFIRMACIÓN DE REGISTRO — el único sitio donde se
  * dispara la conversión de Google Ads. Solo se llega aquí desde el callback

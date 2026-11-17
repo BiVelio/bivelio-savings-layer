@@ -1,17 +1,24 @@
 #!/usr/bin/env node
 /**
- * JUNTA LAS HOJAS DE affectUI EN DOS FICHEROS, UNO POR SUPERFICIE.
+ * JUNTA LAS HOJAS DE affectUI EN TRES FICHEROS, UNO POR SUPERFICIE.
  *
  *   node scripts/juntar-affectui.mjs          # los regenera
  *   node scripts/juntar-affectui.mjs --check  # sale con 1 si están desfasados
  *
- *   vendor/affectui/affectui.css        las piezas que alcanza alguna página
- *                                       PÚBLICA (o la 404). La importa
- *                                       `app/[locale]/layout.tsx`.
- *   vendor/affectui/affectui-panel.css  el resto: piezas que solo usa el panel.
- *                                       La importa `dashboard/layout.tsx` (y
- *                                       las galerías de desarrollo que pintan
- *                                       componentes del panel fuera de él).
+ *   vendor/affectui/affectui.css         las piezas que alcanza alguna página
+ *                                        de MARKETING (o la 404). La importa
+ *                                        `app/[locale]/layout.tsx`.
+ *   vendor/affectui/affectui-acceso.css  las que no alcanza el marketing pero
+ *                                        sí una página de acceso (login, alta,
+ *                                        nueva contraseña, invitación). La
+ *                                        importa cada una de esas páginas y,
+ *                                        como el panel también pinta varias,
+ *                                        `dashboard/layout.tsx` (y las
+ *                                        galerías de desarrollo).
+ *   vendor/affectui/affectui-panel.css   el resto: piezas que solo usa el panel.
+ *                                        La importa `dashboard/layout.tsx` (y
+ *                                        las galerías de desarrollo que pintan
+ *                                        componentes del panel fuera de él).
  *
  * Cada pieza vendorizada conserva su `<pieza>.css` —es lo que se edita y lo
  * que se compara con upstream—; este guion las copia TAL CUAL, con su aviso de
@@ -20,8 +27,9 @@
  *
  * EL REPARTO NO SE ESCRIBE A MANO: SALE DE LOS `import`. Se recorre el grafo
  * desde cada fichero de ruta (`page`, `layout`, `not-found`, `loading`,
- * `error`…) y una pieza es «pública» si la alcanza alguna ruta que no cuelga
- * de `/dashboard` ni importa ella misma la hoja del panel. Usar en la portada
+ * `error`…) y una pieza es «pública» si la alcanza alguna ruta que no recibe
+ * ni la hoja del panel ni la de acceso; «de acceso», si no es pública y la
+ * alcanza una ruta que recibe la de acceso (y no la del panel). Usar en la portada
  * una pieza que era del panel la cambia de fichero al regenerar; olvidarse de
  * regenerar lo caza `hojas-en-una-entrada.test.ts`. Así una página pública no
  * puede quedarse sin el CSS de un componente —el fallo mudo de siempre— y
@@ -41,14 +49,15 @@ const WEB = fileURLToPath(new URL("../", import.meta.url));
 const DIR = "vendor/affectui/";
 export const HOJA_PUBLICA = "affectui.css";
 export const HOJA_PANEL = "affectui-panel.css";
+export const HOJA_ACCESO = "affectui-acceso.css";
 
 const lee = (ruta) => readFileSync(WEB + ruta, "utf8");
 const esFichero = (ruta) => existsSync(WEB + ruta) && statSync(WEB + ruta).isFile();
 
-/** Las hojas de las piezas: todo `.css` de la carpeta menos los dos generados. */
+/** Las hojas de las piezas: todo `.css` de la carpeta menos los tres generados. */
 export function piezas() {
   return readdirSync(WEB + DIR)
-    .filter((f) => f.endsWith(".css") && f !== HOJA_PUBLICA && f !== HOJA_PANEL)
+    .filter((f) => f.endsWith(".css") && f !== HOJA_PUBLICA && f !== HOJA_PANEL && f !== HOJA_ACCESO)
     .sort();
 }
 
@@ -101,18 +110,22 @@ const EN_EL_PANEL = /^app\/\[locale\]\/dashboard\//;
 // Por el texto y no por el grafo: la hoja del panel la genera este guion y la
 // primera vez todavía no existe.
 const PIDE_LA_DEL_PANEL = /^import\s+["']@\/vendor\/affectui\/affectui-panel\.css["'];?\s*$/m;
+const PIDE_LA_DE_ACCESO = /^import\s+["']@\/vendor\/affectui\/affectui-acceso\.css["'];?\s*$/m;
 
 /**
- * Por cada fichero de ruta: las piezas que alcanza y si le llega la hoja del
- * panel (cuelga de /dashboard, cuyo layout la importa, o la importa él mismo).
+ * Por cada fichero de ruta: las piezas que alcanza y qué hojas de affectUI le
+ * llegan además de la pública. Las del panel y la de acceso, si cuelga de
+ * /dashboard (cuyo layout importa las dos) o si las importa él mismo.
  */
 export function rutas() {
   return ficherosDeRuta().map((ruta) => {
     const todo = [...alcanza(ruta)];
+    const texto = lee(ruta);
     return {
       ruta,
       piezas: todo.filter((f) => f.startsWith(DIR) && f.endsWith(".tsx")).map((f) => f.slice(DIR.length).replace(/\.tsx$/, ".css")).sort(),
-      conHojaDelPanel: EN_EL_PANEL.test(ruta) || PIDE_LA_DEL_PANEL.test(lee(ruta)),
+      conHojaDelPanel: EN_EL_PANEL.test(ruta) || PIDE_LA_DEL_PANEL.test(texto),
+      conHojaDeAcceso: EN_EL_PANEL.test(ruta) || PIDE_LA_DE_ACCESO.test(texto),
     };
   });
 }
@@ -120,9 +133,17 @@ export function rutas() {
 /** Qué pieza va a qué fichero. */
 export function reparto() {
   const publicas = new Set();
-  for (const r of rutas()) if (!r.conHojaDelPanel) for (const p of r.piezas) publicas.add(p);
+  const deAcceso = new Set();
+  for (const r of rutas()) {
+    if (r.conHojaDelPanel) continue;
+    for (const p of r.piezas) (r.conHojaDeAcceso ? deAcceso : publicas).add(p);
+  }
   const todas = piezas();
-  return { publicas: todas.filter((p) => publicas.has(p)), panel: todas.filter((p) => !publicas.has(p)) };
+  return {
+    publicas: todas.filter((p) => publicas.has(p)),
+    acceso: todas.filter((p) => !publicas.has(p) && deAcceso.has(p)),
+    panel: todas.filter((p) => !publicas.has(p) && !deAcceso.has(p)),
+  };
 }
 
 // ── Lo que se escribe ────────────────────────────────────────────────────────
@@ -136,8 +157,9 @@ const CABECERA_PUBLICA = `${AVISO}
  * LAS HOJAS DE affectUI QUE USA EL SITIO PÚBLICO, EN UNA. La importa una sola
  * vez \`app/[locale]/layout.tsx\`, justo después de \`globals.css\`; los \`.tsx\`
  * de las piezas NO importan CSS. Así una página pública espera dos hojas antes
- * de pintar (esta y la global) y ninguna ruta genera trozos de CSS propios.
- * Las piezas que solo usa el panel van en \`affectui-panel.css\`.
+ * de pintar (esta y la global) y ninguna ruta de marketing genera trozos de
+ * CSS propios. Las piezas que solo usan las páginas de acceso van en
+ * \`affectui-acceso.css\`, y las que solo usa el panel, en \`affectui-panel.css\`.
  *
  * POR QUÉ. Con un \`import "./pieza.css"\` por componente, Next partía el CSS
  * en 43 ficheros y una página esperaba hasta 15 hojas antes del primer pintado.
@@ -171,6 +193,18 @@ const CABECERA_PANEL = `${AVISO}
  */
 `;
 
+const CABECERA_ACCESO = `${AVISO}
+ * LAS HOJAS DE affectUI QUE USAN LAS PÁGINAS DE ACCESO Y NO EL MARKETING, EN
+ * UNA. La importa cada página de acceso (login, alta y su confirmación, nueva
+ * contraseña, invitación) y \`app/[locale]/dashboard/layout.tsx\`, porque el
+ * panel pinta varias de ellas (y las galerías de desarrollo). La portada no la
+ * carga: es la página de los anuncios y bloquea su primer pintado con lo que
+ * hay en las dos hojas del layout. El porqué de juntarlas, en la cabecera de
+ * \`affectui.css\`; el orden respecto a las hojas del panel no está fijado y
+ * no decide nada (cada pieza solo toca las clases de su prefijo).
+ */
+`;
+
 /** La marca que separa una pieza de la siguiente. */
 const marca = (fichero) => `\n/* ===== ${fichero} ===== */\n`;
 
@@ -186,25 +220,26 @@ function pega(cabecera, lista) {
   return css;
 }
 
-/** El contenido exacto de los dos ficheros generados. */
+/** El contenido exacto de los tres ficheros generados. */
 export function juntar() {
-  const { publicas, panel } = reparto();
-  return { [HOJA_PUBLICA]: pega(CABECERA_PUBLICA, publicas), [HOJA_PANEL]: pega(CABECERA_PANEL, panel) };
+  const { publicas, acceso, panel } = reparto();
+  return { [HOJA_PUBLICA]: pega(CABECERA_PUBLICA, publicas), [HOJA_ACCESO]: pega(CABECERA_ACCESO, acceso), [HOJA_PANEL]: pega(CABECERA_PANEL, panel) };
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const hojas = juntar();
-  const { publicas, panel } = reparto();
+  const { publicas, acceso, panel } = reparto();
   if (process.argv.includes("--check")) {
     const desfasadas = Object.entries(hojas).filter(([f, css]) => !esFichero(DIR + f) || lee(DIR + f) !== css).map(([f]) => f);
     if (desfasadas.length) {
       console.error(`${desfasadas.map((f) => DIR + f).join(", ")}: desfasada(s). Ejecuta node scripts/juntar-affectui.mjs`);
       process.exit(1);
     }
-    console.log(`al día: ${publicas.length} piezas públicas, ${panel.length} del panel`);
+    console.log(`al día: ${publicas.length} piezas públicas, ${acceso.length} de acceso, ${panel.length} del panel`);
   } else {
     for (const [f, css] of Object.entries(hojas)) writeFileSync(WEB + DIR + f, css);
     console.log(`${DIR}${HOJA_PUBLICA}: ${publicas.length} piezas, ${hojas[HOJA_PUBLICA].length} caracteres`);
+    console.log(`${DIR}${HOJA_ACCESO}: ${acceso.length} piezas, ${hojas[HOJA_ACCESO].length} caracteres`);
     console.log(`${DIR}${HOJA_PANEL}: ${panel.length} piezas, ${hojas[HOJA_PANEL].length} caracteres`);
   }
 }
