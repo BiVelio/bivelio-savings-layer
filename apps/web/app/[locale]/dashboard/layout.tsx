@@ -21,6 +21,7 @@ import "@/vendor/affectui/affectui-panel.css";
 import { AppSidebar } from "@/app/components/app/AppSidebar";
 import { AppTopbar } from "@/app/components/app/AppTopbar";
 import { ID_DEL_CONTENIDO, SkipLink } from "@/app/components/SkipLink";
+import { MensajesCliente } from "@/i18n/MensajesCliente";
 import { destinoDeLaPeticion } from "@/lib/auth/destino";
 import { authConfigured } from "@/lib/supabase/env";
 import { loadDashboard, planDeLaBarra } from "./load";
@@ -45,7 +46,14 @@ export const metadata = { robots: { index: false, follow: false } };
  * por plan es esconderle el extracto a quien tiene la tarjeta rechazada. La
  * píldora de la barra superior es la única que lo nombra.
  */
-export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default async function DashboardLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
   const { user, ctx, orgFallo } = await loadDashboard();
   if (authConfigured && !user) {
     // El `next` es la URL pedida, con su consulta (cabecera del middleware, ver
@@ -60,24 +68,28 @@ export default async function DashboardLayout({ children }: { children: React.Re
   }
 
   return (
-    <div className="app">
-      {/* Primer foco del panel: salta la barra y el raíl hasta el <main>. */}
-      <SkipLink />
-      {/* `null` cuando no hay organización LEÍDA o el cobro sigue en curso: la
-          píldora se omite en vez de nombrar el plan más barato a través de una
-          lectura que falló o de una compra que aún no ha terminado. */}
-      <AppTopbar
-        email={user?.email ?? ""}
-        plan={planDeLaBarra(ctx)}
-        orgName={ctx.org?.name ?? ""}
-        role={ctx.role}
-      />
-      <div className="app-body">
-        <AppSidebar role={ctx.role} unknownOrg={orgFallo} />
-        <main className="app-main" id={ID_DEL_CONTENIDO} tabIndex={-1}>
-          <div className="app-inner">{children}</div>
-        </main>
+    // Los componentes cliente del panel piden su parte del catálogo (`panel`):
+    // el proveedor anidado SUSTITUYE al del sitio, que solo lleva la barra.
+    <MensajesCliente tramo="panel" locale={locale}>
+      <div className="app">
+        {/* Primer foco del panel: salta la barra y el raíl hasta el <main>. */}
+        <SkipLink />
+        {/* `null` cuando no hay organización LEÍDA o el cobro sigue en curso: la
+            píldora se omite en vez de nombrar el plan más barato a través de una
+            lectura que falló o de una compra que aún no ha terminado. */}
+        <AppTopbar
+          email={user?.email ?? ""}
+          plan={planDeLaBarra(ctx)}
+          orgName={ctx.org?.name ?? ""}
+          role={ctx.role}
+        />
+        <div className="app-body">
+          <AppSidebar role={ctx.role} unknownOrg={orgFallo} />
+          <main className="app-main" id={ID_DEL_CONTENIDO} tabIndex={-1}>
+            <div className="app-inner">{children}</div>
+          </main>
+        </div>
       </div>
-    </div>
+    </MensajesCliente>
   );
 }
