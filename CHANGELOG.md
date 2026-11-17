@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.2.2 — los tres READMEs cuentan la misma historia
+
+### Changed
+
+- **PyPI**: el README del cliente Python abre con la marca, la evidencia medida
+  (0→95 % −82,76 %; 31,50 %/75,08 %) y el DOI de Zenodo, y apunta al README
+  canónico del repositorio (el que muestra npm).
+- **npm**: el README del tarball incorpora el arreglo del desplegable de precios
+  (el modelo vigente sin comisión primero; la comisión marcada como legado).
+
+Sin cambios de código: misma superficie que 1.2.1.
+
 ## 1.2.1 — README revisado para la comunidad, paper v2.3-r1 enlazado
 
 ### Changed
