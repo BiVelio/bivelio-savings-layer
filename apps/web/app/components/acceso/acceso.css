@@ -68,7 +68,11 @@
 @media (max-width: 640px) { .acc-card .auth-brand { display: none; } }
 .acc-aside { display: none; }
 @media (min-width: 1024px) {
-  .auth-wrap.acc--split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); place-items: stretch; max-width: 1680px; margin-inline: auto; }
+  /* Sin tope de ancho: con el antiguo `max-width: 1680px` centrado, en un
+     monitor ancho el panel del paisaje se quedaba corto y dejaba una franja
+     vacía a la derecha (dueño, 2026-11-17). Las dos mitades llenan la
+     pantalla; la tarjeta ya tiene su propio ancho máximo. */
+  .auth-wrap.acc--split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); place-items: stretch; }
   .auth-wrap.acc--split .acc-aside { display: flex; }
 }
 .acc-aside { position: relative; isolation: isolate; align-items: center; justify-content: center; margin: 12px 12px 12px 0; padding: clamp(32px, 4vw, 64px); border-radius: var(--r-hero); overflow: hidden; background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line); }
@@ -76,9 +80,11 @@
    arriba: el texto queda siempre sobre color liso. Quieto, sin animación. */
 .acc-aside::before {
   content: ""; position: absolute; z-index: -1; inset: auto 0 0 0; height: 52%;
-  /* La de 1600: el panel mide como mucho 840 px (la mitad de 1680), así que
-     cubre el doble de densidad; la de tamaño completo pesaba 235 KB y era el
-     LCP del acceso en escritorio. AccesoShell la anuncia desde el HTML. */
+  /* La de 1600: el panel es media pantalla, así que cubre hasta 1600 px de
+     panel a densidad 1 y el doble de densidad en un portátil; la de tamaño
+     completo pesaba 235 KB y era el LCP del acceso en escritorio. AccesoShell
+     la anuncia desde el HTML. En un panel ancho, `cover` recorta la foto por
+     arriba y por abajo, nunca por los lados. */
   background-image: url("/brand/paisaje/dia-1600.webp");
   background-image: image-set(url("/brand/paisaje/dia-1600.avif") type("image/avif"), url("/brand/paisaje/dia-1600.webp") type("image/webp"));
   background-size: cover; background-position: 50% 78%;
