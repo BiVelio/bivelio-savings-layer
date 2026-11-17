@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { getSidebarState } from "@/lib/dashboard/sidebar-state";
 import { puede, type Accion } from "@/lib/org/permisos";
 
+import { BordesDeLaTira } from "./BordesDeLaTira";
 import { NavLink } from "./NavLink";
 import { SetupProgress } from "./SetupProgress";
 
@@ -35,6 +36,14 @@ import { SetupProgress } from "./SetupProgress";
  * contexto vacío tanto para «no estás en ninguna organización» como para «la
  * lectura falló», y `puede(null, …)` cierra todo. Se sigue sin ofrecer lo que
  * no se puede respaldar, pero se dice que está incompleto.
+ *
+ * FIRMA DE CAMPAÑA (dirección A, 2026-11-17): la entrada activa lleva el
+ * MARCADOR cian detrás de su etiqueta (sin caja ni borde), las cabeceras de
+ * grupo son rótulos espaciados con su filete, y en móvil la tira se nota
+ * deslizable (`BordesDeLaTira`) y deja la activa a la vista (`NavLink`). La
+ * maqueta traía un pie «Últimas 24 h» con cifras: NO se pinta, porque ninguna
+ * lectura del raíl (`sidebar-state.ts`) lo respalda — sería una cifra
+ * inventada.
  *
  * VERIFICAR no tiene entrada (decisión del dueño, 02-09: «lía más que otra
  * cosa»): desde hoy es pestaña de Prueba, y `NavLink.ALSO_MATCHES` mantiene
@@ -196,6 +205,8 @@ export async function AppSidebar({
           </div>
         ))}
       </nav>
+      {/* En móvil: el difuminado del borde por el que sigue la tira. */}
+      <BordesDeLaTira />
     </aside>
   );
 }

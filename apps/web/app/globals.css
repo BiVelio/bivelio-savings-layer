@@ -149,8 +149,10 @@
   --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   /* Titulares de APLICACIÓN (panel, tarjetas, auth): Geist 600. */
   --font-heading: var(--font-sans);
-  /* Titulares EDITORIALES (landing, precios, páginas de explicación):
-     Plus Jakarta Sans 800, tracking -.04em. Nunca en tablas ni en el panel. */
+  /* Titulares EDITORIALES (landing, precios, páginas de explicación y, desde
+     la «Firma de campaña» del panel —dueño, 2026-11-17—, el titular de cada
+     pantalla del panel y su cifra protagonista): Plus Jakarta Sans 800,
+     tracking -.04em. Nunca en tablas, controles ni cifras de tarjeta. */
   --font-editorial: "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", "Geist", "Geist Fallback", sans-serif;
   /* Énfasis breve DENTRO de un titular. Nunca cifras ni controles. */
   --font-serif: "Instrument Serif", "Instrument Serif Fallback", Georgia, serif;
@@ -335,7 +337,9 @@ a:hover { text-decoration: underline; text-underline-offset: 2px; }
 }
 
 /* Titulares de aplicación: Geist 600. Los EDITORIALES (Plus Jakarta Sans 800)
-   se piden aparte: `.lp h1`, `.lp h2` y la clase `.editorial-title`. */
+   se piden aparte: `.lp h1`, `.lp h2`, la clase `.editorial-title` y, en el
+   panel, la cabecera común (`CabeceraDePagina`, `.pfc-titular`) y la cifra
+   protagonista (`.pfc-cifra`), ambas en `dashboard/panel.css`. */
 h1, h2, h3 { font-family: var(--font-heading); letter-spacing: -.022em; font-weight: 600; }
 code, kbd, samp, pre { font-family: var(--mono); }
 
@@ -1035,8 +1039,11 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
   content: ""; position: absolute; top: 0; left: 50%; width: 100vw; height: 1px;
   transform: translateX(-50%); background: var(--line);
 }
-/* TITULARES EDITORIALES: Plus Jakarta Sans 800, tracking -.04em — solo en
-   marketing (`.lp`). El panel y sus tablas se quedan en Geist 600. */
+/* TITULARES EDITORIALES: Plus Jakarta Sans 800, tracking -.04em — en
+   marketing (`.lp`) y, desde la «Firma de campaña» (2026-11-17), en el titular
+   de cada pantalla del panel y en su cifra protagonista (`.pfc-titular`,
+   `.pfc-cifra`, en `dashboard/panel.css`). Las tablas, los controles y las
+   cifras de tarjeta del panel se quedan en Geist. */
 .lp h1, .lp h2, .lp .sec-head h2 { font-family: var(--font-editorial); }
 
 .lp .eyebrow { display: inline-flex; align-items: flex-start; gap: 10px; font-family: var(--sans); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .16em; line-height: 1.5; color: var(--ink-soft); margin: 0; max-width: 56ch; }
@@ -4183,6 +4190,23 @@ a.card:active, button.card:active, .card-link:active { transform: translateY(0);
   --cielo-2:     rgba(196, 238, 252, .38);
   --pildora-bg:  #DDF3FD;
   --pildora-ink: #0052C2;   /* 6,1:1 sobre --pildora-bg */
+
+  /* ── El panel con la Firma de campaña (dirección A, 2026-11-17). ──
+     EL CIAN COMO DATO TIENE UN SOLO SIGNIFICADO: «respondida sin llamar al
+     proveedor». Barras, asientos, avances y demás cifras van en tinta
+     (--ink-2) o en azul de marca; el cian pálido de --mk-bg es la firma
+     (marcador, entrada activa), no un dato. Las clases que los usan viven en
+     `dashboard/panel.css` (prefijo `pfc-`). */
+  --cian:         #0B7BA6;  /* dato «sin proveedor»: 4,6:1 sobre marfil */
+  --cian-ink:     #075E80;  /* texto sobre --cian-palido: 6,1:1 */
+  --cian-palido:  #DDEFF6;  /* fondo de la ficha «sin proveedor» */
+  --pagada:       #E9EDF0;  /* tesela «sí se llamó al proveedor» */
+  --pagada-borde: #7A8691;  /* su contorno: 3,6:1 sobre marfil */
+  --ink-2:        #2A2F3A;  /* tinta de barras y cuerpo secundario: 12,8:1 */
+  --brand-ink:    #0052C2;  /* azul de marca como TEXTO pequeño: 6,7:1 */
+  --filete:       #D6D3CB;  /* el filete de los rótulos «ECOSYSTEM» */
+  --rail:         #F5F4F0;  /* el raíl del panel */
+  --r-mk:         3px;      /* el bloque del marcador en una etiqueta */
 }
 
 /* ── El marcador. El texto es texto; el bloque, un ::before detrás. ── */
@@ -4208,6 +4232,12 @@ a.card:active, button.card:active, .card-link:active { transform: translateY(0);
   transform-origin: 0 50%;
 }
 @keyframes mk-trazo { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+/* El marcador de una ETIQUETA (entrada activa del raíl, pestaña, segmentado):
+   es un fondo, no un ::before, así que se traza creciendo el fondo. */
+@keyframes pfc-trazo { from { background-size: 0 100%; } to { background-size: 100% 100%; } }
+/* La píldora de estado vivo del panel (`.pfc-pildora`): onda y latido. */
+@keyframes pfc-onda { from { transform: scale(1); opacity: .5; } to { transform: scale(2.8); opacity: 0; } }
+@keyframes pfc-latido { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
 @media (prefers-reduced-motion: no-preference) {
   .mk::before { animation: mk-trazo 1s var(--ease-out) .45s both; }
   /* Bajo el pliegue, el trazo espera a que su bloque entre en pantalla. */

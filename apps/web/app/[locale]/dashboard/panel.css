@@ -143,7 +143,9 @@
 .app-nav-item.on .ic { border-color: color-mix(in srgb, var(--accent) 28%, var(--line)); color: var(--accent); }
 
 .app-main { padding: clamp(24px, 4vw, 44px) clamp(16px, 3vw, 32px); min-width: 0; }
-.app-inner { width: min(940px, 100%); margin: 0 auto; }
+/* 1080px: la columna de la Firma de campaña (2026-11-17), la misma en todas
+   las pantallas. */
+.app-inner { width: min(1080px, 100%); margin: 0 auto; }
 @media (max-width: 860px) {
   .app-sidebar {
     border-right: none; border-bottom: 1px solid var(--line); padding: 8px 12px;
@@ -1096,7 +1098,7 @@
 /* ── I·2 Panel: un solo ancho de lectura ───────────────────────────────────
    El Resumen usa el ancho de trabajo; todo lo demás, la misma columna. Con
    Primeros pasos 40px más ancho, el título saltaba al cambiar de sección. */
-.app-inner:has(.ins-page) { width: min(940px, 100%); }
+.app-inner:has(.ins-page) { width: min(1080px, 100%); }
 
 /* El botón pequeño era más grande que el normal (15px frente a 14,5px). */
 .btn-sm { padding: 7px 14px; font-size: 13.5px; }
@@ -1507,3 +1509,383 @@
 .ci-eje-cero { transform: translateX(-50%); color: var(--ink); }
 .ci-eje-cero[data-alinear="inicio"] { transform: translateX(-1px); }
 .ci-eje-cero[data-alinear="fin"] { transform: translateX(calc(-100% + 1px)); }
+
+/* ════ FIRMA DE CAMPAÑA EN EL PANEL · EL ARMAZÓN (dirección A, 2026-11-17) ════
+   El dueño eligió la dirección A («Firma de campaña») para el panel: el
+   lenguaje de la pieza promocional llevado a la cáscara. Este bloque es lo
+   COMÚN a las diez pantallas —barra, raíl, puesta en marcha, cabecera de
+   página, cielo, pestañas— y las piezas reutilizables (prefijo `pfc-`). Lo
+   propio de cada pantalla va en su SLOT, al final de la hoja, y no aquí.
+
+   Va DETRÁS de las reglas de la cáscara que sustituye: a igual especificidad
+   gana por orden, y donde la de antes era más específica, esta lo iguala.
+
+   LO QUE APROBÓ EL DUEÑO Y NO SE NEGOCIA:
+   · la entrada activa del raíl (y la pestaña activa, y el segmento pulsado) es
+     el MARCADOR cian detrás de la etiqueta: sin caja ni borde;
+   · el cian como DATO (`--cian`) solo significa «respondida sin llamar al
+     proveedor»; barras y asientos van en tinta (`--ink-2`) o azul de marca;
+   · rótulos espaciados entre filetes, como «ECOSYSTEM» (`.pfc-rotulo`);
+   · ningún texto por debajo de 11 px y contraste AA;
+   · en móvil la tira del raíl se nota deslizable (difuminado en el borde,
+     `BordesDeLaTira`) y deja la sección activa a la vista (`NavLink`).
+   ========================================================================== */
+
+/* ── La barra superior ─────────────────────────────────────────────────── */
+.app .app-topbar { gap: 14px; padding: 0 20px; background: rgba(255, 255, 255, .86); }
+.app-topbar .app-ctx { min-width: 0; flex: 0 1 auto; gap: 10px; }
+.app-topbar .app-ctx-sep { font-size: 20px; font-weight: 300; color: var(--line-strong); }
+.app-topbar .app-ctx .app-org { font-size: 14.5px; font-weight: 500; color: var(--ink); }
+/* «Plan de pago»: la píldora de precio de la campaña, en pequeño. */
+.app-topbar .app-ctx .app-plan {
+  display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border: 0; border-radius: 999px;
+  background: var(--pildora-bg); color: var(--pildora-ink); font: 600 12px/1 var(--font-sans); letter-spacing: 0;
+}
+.app .app-account { gap: 6px; }
+/* «Ver tour»: el botón con filete de la maqueta; el icono, en tinta suave. */
+.app-topbar .app-tour { height: 36px; padding: 0 14px 0 12px; margin-right: 0; border-color: var(--btn-ghost-line); border-radius: 10px; font-size: 14px; box-shadow: none; }
+.app-topbar .app-tour-ic { color: var(--ink-soft); }
+/* El idioma: fantasma, con el globo. */
+.app-topbar .lang-trigger { height: 36px; padding: 0 10px; border-radius: 10px; font-size: 14px; color: var(--ink-soft); }
+/* La cuenta: avatar en tinta, correo en tinta, chevron suave. */
+.app-topbar .ui-pmc__trigger { gap: 8px; padding: 0 8px 0 4px; font-size: 14px; color: var(--ink); }
+.app-topbar .ui-pmc__trigger:hover { background: rgba(15, 18, 24, .05); }
+.app-topbar .ui-pmc__trigger > .ui-pmc__initial { width: 28px; height: 28px; background: var(--ink); color: #fff; font-size: 11.5px; letter-spacing: .02em; }
+.app-topbar .ui-pmc__trigger .ui-pmc__chev { color: var(--ink-soft); }
+@media (max-width: 900px) {
+  .app-topbar .app-tour { width: 36px; padding: 0; }
+}
+@media (max-width: 860px) {
+  .app .app-topbar { gap: 10px; padding: 0 16px; }
+  .app .app-account { gap: 2px; }
+}
+/* En el móvil estrecho la ORGANIZACIÓN Y EL PLAN SE QUEDAN (como en la
+   maqueta): fuera solo la barra «/», y el nombre se recorta antes que nada. */
+@media (max-width: 520px) {
+  .app-topbar .app-ctx { display: flex; gap: 8px; }
+  .app-topbar .app-ctx-sep { display: none; }
+  .app-topbar .app-ctx .app-org { display: block; font-size: 14px; max-width: none; min-width: 0; }
+  .app-topbar .app-ctx .app-plan { display: inline-flex; height: 22px; padding: 0 8px; font-size: 11px; }
+  .app-topbar .lang-trigger { padding: 0 8px; }
+}
+@media (pointer: coarse) {
+  .app-topbar .app-tour, .app-topbar .lang-trigger { height: 44px; }
+  .app-topbar .app-tour { min-width: 44px; }
+}
+
+/* ── El raíl ───────────────────────────────────────────────────────────── */
+.app .app-sidebar { background: var(--rail); padding: 20px 16px 24px; }
+/* Cabecera de grupo a lo «ECOSYSTEM»: versalitas espaciadas y su filete. */
+.app-sidebar .app-nav-sep {
+  display: flex; align-items: center; gap: 12px; margin: 16px 6px 6px; padding: 0; border: 0;
+  font: 600 11px/1 var(--font-sans); letter-spacing: .24em; text-transform: uppercase; color: var(--ink-soft);
+}
+.app-sidebar .app-nav-sep::after { content: ""; flex: 1; height: 1px; background: var(--filete); }
+.app-sidebar .app-nav-sep[data-first] { margin-top: 2px; }
+.app-sidebar .app-nav-item {
+  gap: 11px; min-height: 38px; padding: 8px 10px; border-radius: 8px;
+  font-size: 14.5px; font-weight: 400; color: var(--ink-2);
+}
+.app-sidebar .app-nav-item:hover { background: rgba(15, 18, 24, .045); color: var(--ink); }
+.app-sidebar .app-nav-item .ic { width: 18px; height: 18px; color: var(--ink-soft); }
+.app-sidebar .app-nav-item .ic svg { width: 18px; height: 18px; }
+/* El bloque del marcador vive en la etiqueta: se extiende 5px por los lados
+   sin mover el texto. */
+.app-sidebar .app-nav-label { padding: 1px 5px; margin: -1px -5px; border-radius: var(--r-mk); }
+/* DÓNDE ESTOY: sin caja ni borde; el marcador cian detrás de la etiqueta. */
+.app-sidebar .app-nav-item.on { background: none; box-shadow: none; color: var(--ink); font-weight: 600; }
+.app-sidebar .app-nav-item.on:hover { background: rgba(15, 18, 24, .045); }
+.app-sidebar .app-nav-item.on .ic { color: var(--ink); }
+.app-sidebar .app-nav-item.on .app-nav-label,
+.pfc-tabs a[aria-current="page"] .pfc-tab-l,
+.pfc-marcador {
+  background-image: linear-gradient(100deg, var(--mk-bg) 0%, var(--mk-bg-2) 100%);
+  background-repeat: no-repeat; background-size: 100% 100%;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .app-sidebar .app-nav-item.on .app-nav-label, .pfc-tabs a[aria-current="page"] .pfc-tab-l { animation: pfc-trazo .9s var(--ease-out) .2s both; }
+}
+/* La cifra de la derecha: una lectura en mono, sin pastilla. */
+.app-sidebar .app-nav-badge {
+  margin-left: auto; padding: 0 0 0 10px; border-radius: 0; background: none; box-shadow: none;
+  font: 500 12px/1 var(--font-mono); color: var(--ink-soft);
+}
+.app-sidebar .app-nav-item.on .app-nav-badge { color: var(--ink-soft); box-shadow: none; }
+
+/* ── La puesta en marcha: tarjeta blanca, cuenta, cinco teselas, hitos ─── */
+.app-sidebar .app-setup { margin: 0 0 14px; padding: 13px 14px; border: 0; border-radius: 12px; background: var(--surface); box-shadow: 0 0 0 1px var(--line), var(--shadow-card); }
+.pfc-setup-cab { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.app-sidebar .pfc-setup-cab .app-setup-k { margin: 0; font: 600 11px/1.3 var(--font-sans); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-soft); }
+.pfc-setup-cuenta { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--ink); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.pfc-setup-ok { display: grid; place-items: center; width: 15px; height: 15px; color: var(--good); }
+.pfc-setup-ok svg { width: 15px; height: 15px; }
+.pfc-teselas { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; margin: 11px 0 4px; padding: 0; list-style: none; }
+.pfc-teselas li { height: 6px; border-radius: 2px; background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line-strong); }
+.pfc-teselas li[data-estado="done"] { background: var(--ink); box-shadow: none; }
+.pfc-hitos { display: grid; gap: 1px; margin: 8px 0 0; padding: 0; list-style: none; }
+.pfc-hito {
+  display: grid; grid-template-columns: 16px minmax(0, 1fr) auto; align-items: center; gap: 8px;
+  padding: 5px 0; border-radius: 6px; font-size: 13px; line-height: 1.35; color: var(--ink-2); text-decoration: none;
+}
+a.pfc-hito:hover { color: var(--ink); text-decoration: none; }
+a.pfc-hito:hover .pfc-hito-l { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--line-strong); }
+.pfc-hito-ic { display: grid; place-items: center; width: 14px; height: 14px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--line-strong); color: #fff; }
+.pfc-hito-ic svg { width: 9px; height: 9px; }
+.pfc-hito-l { min-width: 0; overflow-wrap: anywhere; }
+.pfc-hito-st { font-size: 11.5px; color: var(--ink-soft); white-space: nowrap; }
+.pfc-hitos [data-estado="done"] .pfc-hito-ic { background: var(--ink); box-shadow: none; }
+.pfc-hitos [data-estado="current"] .pfc-hito { font-weight: 600; color: var(--ink); }
+.pfc-hitos [data-estado="current"] .pfc-hito-ic { box-shadow: inset 0 0 0 1.5px var(--ink); background: radial-gradient(circle, var(--ink) 0 3px, transparent 3.5px); }
+.pfc-hitos [data-estado="current"] .pfc-hito-st { color: var(--pildora-ink); font-weight: 600; }
+.pfc-hitos [data-estado="unavailable"] .pfc-hito-ic { box-shadow: none; border: 1.5px dashed var(--line-strong); }
+.app-setup[data-completo] .pfc-setup-cab { min-height: 20px; }
+
+/* ── El raíl en móvil: una tira que se nota deslizable ─────────────────── */
+@media (max-width: 860px) {
+  .app .app-sidebar { padding: 10px 16px 12px; background: color-mix(in srgb, var(--rail) 92%, transparent); }
+  .app-sidebar .app-nav { gap: 6px; padding-bottom: 2px; }
+  /* El difuminado dice por qué borde sigue el menú. Sin el atributo (antes de
+     hidratar), el del final: en un móvil la tira casi siempre sobra por ahí. */
+  .app-sidebar .app-nav:not([data-bordes]), .app-sidebar .app-nav[data-bordes="fin"] {
+    -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 36px), transparent);
+            mask-image: linear-gradient(90deg, #000 calc(100% - 36px), transparent);
+  }
+  .app-sidebar .app-nav[data-bordes="ini"] {
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 36px);
+            mask-image: linear-gradient(90deg, transparent, #000 36px);
+  }
+  .app-sidebar .app-nav[data-bordes="ambos"] {
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 36px, #000 calc(100% - 36px), transparent);
+            mask-image: linear-gradient(90deg, transparent, #000 36px, #000 calc(100% - 36px), transparent);
+  }
+  /* Cada entrada, una ficha; la activa, con su contorno en tinta y el marcador. */
+  .app-sidebar .app-nav-item {
+    gap: 6px; min-height: 36px; padding: 6px 12px; border-radius: 999px; font-size: 14px;
+    background: var(--surface); box-shadow: inset 0 0 0 1px var(--line);
+  }
+  .app-sidebar .app-nav-item:hover { background: var(--surface); }
+  .app-sidebar .app-nav-item.on, .app-sidebar .app-nav-item.on:hover { background: var(--surface); box-shadow: inset 0 0 0 1.5px var(--ink); }
+  .app-sidebar .app-nav-item .ic { display: grid; width: 15px; height: 15px; }
+  .app-sidebar .app-nav-item .ic svg { width: 15px; height: 15px; }
+  .app-sidebar .app-nav-badge { display: inline; padding-left: 2px; font-size: 11px; }
+  /* Las cabeceras de grupo, una raya vertical entre grupos. */
+  .app-sidebar .app-nav-sep, .app-sidebar .app-nav-sep[data-first] {
+    display: block; width: 1px; margin: 6px 2px; padding: 0; background: var(--filete);
+    font-size: 0; letter-spacing: 0; color: transparent;
+  }
+  .app-sidebar .app-nav-sep::after { content: none; }
+  .app-sidebar .app-nav-sep[data-first] { display: none; }
+}
+@media (max-width: 860px) and (pointer: coarse) { .app-sidebar .app-nav-item { min-height: 44px; } }
+
+/* ── El área de contenido y su cielo ───────────────────────────────────── */
+.app .app-main { position: relative; isolation: isolate; padding: 36px 56px 88px; }
+/* La variante del panel del cielo de la portada: anclada al contenido (no al
+   viewport) y SIN la máscara de arriba, porque aquí nace bajo la barra. */
+.app-main > .pfc-cielo {
+  top: 0; right: 0; width: min(78%, 980px); height: 640px;
+  background:
+    radial-gradient(58% 60% at 84% 14%, var(--cielo) 0%, rgba(160, 222, 250, 0) 72%),
+    radial-gradient(48% 50% at 100% 40%, var(--cielo-2) 0%, rgba(196, 238, 252, 0) 70%);
+  -webkit-mask-image: none; mask-image: none;
+}
+@media (max-width: 860px) {
+  .app .app-main { padding: 24px 16px 80px; }
+  .app-main > .pfc-cielo { width: 100%; height: 420px; }
+}
+
+/* ── La cabecera de página (CabeceraDePagina) ──────────────────────────── */
+.pfc-cab { display: flex; flex-direction: column; gap: 16px; max-width: 860px; margin: 0 0 48px; }
+.pfc-cab-arriba { display: flex; align-items: center; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; }
+.pfc-cab-arriba > .pfc-rotulo { flex: 1; min-width: 0; }
+.pfc-cab-aside { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.pfc-cab:has(.pfc-cab-aside) { max-width: none; }
+.pfc-cab .pfc-titular {
+  margin: 0; font: 800 46px/1.06 var(--font-editorial); letter-spacing: -.034em; word-spacing: .04em;
+  color: var(--ink); text-wrap: balance;
+}
+.pfc-cab .pfc-entradilla { margin: 0; max-width: 760px; font: 400 italic 23px/1.32 var(--font-serif); color: #262C38; text-wrap: pretty; }
+.pfc-cab .pfc-entradilla.pfc-entradilla--larga { font-size: 20px; }
+@media (max-width: 860px) {
+  .pfc-cab { margin-bottom: 36px; }
+  .pfc-cab .pfc-titular { font-size: 34px; }
+  .pfc-cab .pfc-entradilla { font-size: 20px; }
+  .pfc-cab .pfc-entradilla.pfc-entradilla--larga { font-size: 18px; }
+}
+
+/* ── Las pestañas (SectionTabs): el marcador detrás de la activa ───────── */
+.app-inner .tabs.pfc-tabs {
+  display: flex; gap: 4px; width: auto; max-width: none; margin: 0 0 40px; padding: 0 0 10px; border: 0; border-radius: 0;
+  background: none; box-shadow: none; border-bottom: 1px solid var(--filete); overflow-x: auto; scrollbar-width: none;
+}
+.app-inner .tabs.pfc-tabs a {
+  flex: none; display: inline-flex; align-items: center; min-height: 34px; padding: 6px 10px; border: 0; border-radius: 8px;
+  font-size: 14.5px; font-weight: 500; color: var(--ink-soft); background: none; box-shadow: none;
+}
+.app-inner .tabs.pfc-tabs a:hover { color: var(--ink); background: rgba(15, 18, 24, .045); }
+.app-inner .tabs.pfc-tabs a[aria-current="page"] { color: var(--ink); font-weight: 600; background: none; box-shadow: none; }
+.pfc-tab-l { padding: 1px 5px; margin: -1px -5px; border-radius: var(--r-mk); }
+@media (pointer: coarse) { .app-inner .tabs.pfc-tabs a { min-height: 44px; } }
+@media (max-width: 860px) { .app-inner .tabs.pfc-tabs { margin-inline: -16px; padding-inline: 16px; margin-bottom: 32px; } }
+
+/* ════ PIEZAS COMUNES DE LA FIRMA (para las pantallas) ═════════════════════
+   Jerarquía de superficies, de más a menos peso:
+     .pfc-tarjeta          blanca, filete + sombra corta (el objeto de datos)
+     .pfc-tarjeta--plana   blanco translúcido con filete, sin sombra (guías,
+                          franjas, diagramas: lo que acompaña)
+     .pfc-bandeja          hueco de marfil hundido dentro de una tarjeta
+                          (estados vacíos, recibos de detalle)
+     .pfc-hechos           cifras o hechos en fila ENTRE FILETES, sin tarjeta
+   El resto son piezas de texto y de control. Todo pensado para no bajar de
+   11 px ni de AA. */
+
+/* Rótulo a lo «ECOSYSTEM», entre filetes. `--solo`: sin el filete. */
+.pfc-rotulo {
+  display: flex; align-items: center; gap: 14px; margin: 0;
+  font: 600 11px/1.35 var(--font-sans); letter-spacing: .22em; text-transform: uppercase; color: var(--ink-soft);
+}
+.pfc-rotulo::after { content: ""; flex: 1; min-width: 24px; height: 1px; background: var(--filete); }
+.pfc-rotulo.pfc-rotulo--solo::after { content: none; }
+hr.pfc-filete, .pfc-filete { height: 1px; margin: 0; border: 0; background: var(--filete); }
+
+/* Cabecera de sección: rótulo, título (la palabra en `<em>` va en serif) y bajada. */
+.pfc-sec { display: flex; flex-direction: column; gap: 22px; }
+.pfc-sec + .pfc-sec { margin-top: 48px; }
+.pfc-sec-cab { display: flex; flex-direction: column; gap: 10px; }
+.pfc-sec-fila { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; }
+.app-inner .pfc-sec-t { margin: 0; font: 700 26px/1.15 var(--font-editorial); letter-spacing: -.025em; color: var(--ink); text-wrap: balance; }
+.pfc-sec-t em { font: 400 italic 1.08em/1 var(--font-serif); letter-spacing: -.005em; }
+.pfc-sec-sub { margin: 0; max-width: 720px; font-size: 14.5px; line-height: 1.5; color: var(--ink-soft); text-wrap: pretty; }
+
+/* Tarjeta. */
+.pfc-tarjeta { min-width: 0; border-radius: var(--r-card); background: var(--surface); box-shadow: 0 0 0 1px var(--line), var(--shadow-card); }
+.pfc-tarjeta.pfc-tarjeta--plana { background: rgba(255, 255, 255, .7); box-shadow: 0 0 0 1px var(--line); }
+.pfc-tarjeta-cab { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px 18px; flex-wrap: wrap; padding: 20px 22px 0; }
+.app-inner .pfc-tarjeta-t { margin: 0; font: 600 17px/1.3 var(--font-sans); letter-spacing: -.012em; color: var(--ink); }
+.pfc-tarjeta-sub { margin: 3px 0 0; font-size: 13px; color: var(--ink-soft); }
+.pfc-tarjeta-cuerpo { padding: 16px 22px 20px; }
+.pfc-tarjeta-pie { padding: 12px 22px 16px; border-top: 1px solid var(--line); font-size: 13px; color: var(--ink-soft); }
+.pfc-tarjeta-pie b { color: var(--ink); }
+.pfc-tarjetas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start; }
+.pfc-tarjetas > .pfc-ancha { grid-column: 1 / -1; }
+
+/* Bandeja: el hueco hundido (estado vacío, detalle). */
+.pfc-bandeja { display: grid; gap: 6px; padding: 18px; border-radius: 10px; background: var(--surface-3); box-shadow: inset 0 0 0 1px var(--line); font-size: 13.5px; color: var(--ink-soft); }
+.pfc-bandeja b { color: var(--ink); font-size: 14.5px; }
+
+/* Hechos en fila entre filetes, sin tarjeta. `--pfc-cols` decide las columnas. */
+.pfc-hechos { display: grid; grid-template-columns: repeat(var(--pfc-cols, 3), minmax(0, 1fr)); border-block: 1px solid var(--filete); }
+.pfc-hechos > * { display: flex; flex-direction: column; gap: 6px; min-width: 0; padding: 18px 20px 18px 0; }
+.pfc-hechos > * + * { padding-left: 20px; border-left: 1px solid var(--line); }
+.pfc-hecho-k { margin: 0; font: 600 11px/1.3 var(--font-sans); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-soft); }
+.pfc-hecho-v { margin: 0; font: 600 30px/1.1 var(--font-sans); letter-spacing: -.025em; color: var(--ink); font-variant-numeric: tabular-nums; }
+.pfc-hecho-s { margin: 0; font-size: 12.5px; color: var(--ink-soft); }
+
+/* La cifra protagonista (Plus Jakarta 800) y la de tarjeta. */
+.pfc-cifra { font: 800 132px/.9 var(--font-editorial); letter-spacing: -.055em; white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--ink); }
+.pfc-cifra small { margin-left: .04em; font-size: .46em; letter-spacing: -.02em; }
+.pfc-cifra.pfc-cifra--media { font-size: 34px; line-height: 1; letter-spacing: -.03em; }
+
+/* Fichas (estado, categoría) y su tono. */
+.pfc-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 24px; padding: 2px 9px; border-radius: 6px; background: var(--surface-2); color: var(--ink-2); font-size: 12.5px; font-weight: 600; line-height: 1.3; white-space: nowrap; }
+.pfc-chip svg { width: 13px; height: 13px; }
+.pfc-chip.pfc-chip--bien { background: var(--good-soft); color: var(--good-ink); }
+.pfc-chip.pfc-chip--aviso { background: var(--warn-soft); color: var(--warn); }
+.pfc-chip.pfc-chip--mal { background: var(--bad-soft); color: var(--danger-ink); }
+.pfc-chip.pfc-chip--marca { background: var(--pildora-bg); color: var(--pildora-ink); }
+/* El cian como dato: SOLO para «respondida sin llamar al proveedor». */
+.pfc-chip.pfc-chip--cian { background: var(--cian-palido); color: var(--cian-ink); }
+
+/* Insignia de evidencia en versalitas («DATOS», «ESTIMADO», «SHADOW»). */
+.pfc-insignia { display: inline-flex; align-items: center; gap: 6px; min-height: 22px; padding: 2px 8px; border-radius: 5px; background: var(--surface-2); color: var(--ink-2); font: 600 11px/1.2 var(--font-sans); letter-spacing: .07em; text-transform: uppercase; white-space: nowrap; }
+.pfc-insignia.pfc-insignia--datos { background: var(--good-soft); color: var(--good-ink); }
+.pfc-insignia.pfc-insignia--estimado { background: var(--warn-soft); color: var(--warn); }
+.pfc-insignia.pfc-insignia--sombra { background: transparent; box-shadow: inset 0 0 0 1px var(--ink-soft); }
+.pfc-insignia.pfc-insignia--marca { background: var(--brand-soft); color: var(--brand-ink); }
+
+/* Píldora de estado vivo: punto con onda; `--espera`, aro que late. */
+.pfc-pildora { display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0 12px; border-radius: 999px; background: rgba(255, 255, 255, .85); box-shadow: 0 0 0 1px var(--line); font-size: 12.5px; font-weight: 600; letter-spacing: .02em; color: var(--ink); white-space: nowrap; }
+.pfc-pildora-punto { position: relative; flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--good); }
+.pfc-pildora.pfc-pildora--espera { color: var(--ink-2); }
+.pfc-pildora.pfc-pildora--espera .pfc-pildora-punto { background: transparent; box-shadow: inset 0 0 0 1.5px var(--ink-soft); }
+@media (prefers-reduced-motion: no-preference) {
+  .pfc-pildora:not(.pfc-pildora--espera) .pfc-pildora-punto::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: var(--good); animation: pfc-onda 1.8s ease-out infinite; }
+  .pfc-pildora.pfc-pildora--espera .pfc-pildora-punto { animation: pfc-latido 2.4s ease-in-out infinite; }
+}
+
+/* Segmentado (30d · 90d · 120d): el pulsado lleva el marcador, no una caja.
+   Vale con `<button aria-pressed>` o con enlaces `aria-current`. */
+.pfc-seg { display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 3px; border-radius: 10px; background: rgba(255, 255, 255, .75); box-shadow: 0 0 0 1px var(--line); }
+.pfc-seg > button, .pfc-seg > a {
+  display: inline-flex; align-items: center; justify-content: center; min-height: 26px; min-width: 40px; padding: 0 10px;
+  border: 0; border-radius: 7px; background: transparent; color: var(--ink-soft);
+  font: 500 13px/1 var(--font-sans); white-space: nowrap; text-decoration: none; cursor: pointer;
+}
+.pfc-seg > button:hover, .pfc-seg > a:hover { color: var(--ink); background: rgba(15, 18, 24, .05); }
+.pfc-seg > [aria-pressed="true"], .pfc-seg > [aria-current="true"], .pfc-seg > [aria-current="page"] { color: var(--ink); font-weight: 600; background: linear-gradient(100deg, var(--mk-bg), var(--mk-bg-2)); }
+@media (pointer: coarse) { .pfc-seg > button, .pfc-seg > a { min-height: 40px; } }
+
+/* Avisos (marca por defecto; aviso, mal, neutro) y nota. */
+.pfc-aviso { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 2px 12px; align-items: start; padding: 14px 16px; border-radius: 12px; background: var(--brand-soft); color: var(--ink-2); font-size: 14px; }
+.pfc-aviso > svg { width: 18px; height: 18px; margin-top: 1px; color: var(--brand-ink); }
+.pfc-aviso b { color: var(--ink); }
+.pfc-aviso.pfc-aviso--aviso { background: var(--warn-soft); }
+.pfc-aviso.pfc-aviso--aviso > svg { color: var(--warn); }
+.pfc-aviso.pfc-aviso--mal { background: var(--bad-soft); }
+.pfc-aviso.pfc-aviso--mal > svg { color: var(--danger-ink); }
+.pfc-aviso.pfc-aviso--neutro { background: var(--surface-2); }
+.pfc-aviso.pfc-aviso--neutro > svg { color: var(--ink-soft); }
+.pfc-nota { margin: 0; font-size: 13px; line-height: 1.5; color: var(--ink-soft); text-wrap: pretty; }
+.pfc-nota b { color: var(--ink); }
+
+/* Enlace de acción en azul de texto, con su flecha. */
+.pfc-enlace { display: inline-flex; align-items: center; gap: 6px; color: var(--pildora-ink); font-weight: 500; text-decoration: none; border-bottom: 1px solid transparent; }
+.pfc-enlace:hover { text-decoration: none; border-bottom-color: currentColor; }
+.pfc-enlace svg { width: 14px; height: 14px; }
+
+/* Muestras de leyenda. El cian, solo para «sin proveedor». */
+.pfc-muestra { display: inline-block; flex: none; width: 14px; height: 7px; border-radius: 1.5px; background: var(--ink-2); }
+.pfc-muestra.pfc-muestra--cian { background: var(--cian); }
+.pfc-muestra.pfc-muestra--pagada { background: var(--pagada); box-shadow: inset 0 0 0 1px var(--pagada-borde); }
+.pfc-muestra.pfc-muestra--marca { background: var(--brand); }
+
+/* Barras horizontales: en tinta, o en azul de marca con `--azul`. */
+.pfc-barras { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.pfc-barras > li { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 5px 12px; font-size: 13.5px; }
+.pfc-barra-n { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.pfc-barra-v { font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.pfc-barra-t { grid-column: 1 / -1; height: 8px; overflow: hidden; border-radius: 2px; background: var(--surface-2); }
+.pfc-barra-t > i { display: block; height: 100%; border-radius: 2px; background: var(--ink-2); }
+.pfc-barras.pfc-barras--azul .pfc-barra-t > i { background: var(--brand); }
+
+@media (max-width: 860px) {
+  .app-inner .pfc-sec-t { font-size: 22px; }
+  .pfc-sec + .pfc-sec { margin-top: 36px; }
+  .pfc-tarjeta-cab { padding: 16px 16px 0; }
+  .pfc-tarjeta-cuerpo { padding: 14px 16px 16px; }
+  .pfc-tarjeta-pie { padding: 12px 16px 14px; }
+  .pfc-tarjetas { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .pfc-hechos { grid-template-columns: minmax(0, 1fr); }
+  .pfc-hechos > *, .pfc-hechos > * + * { padding: 14px 0; border-left: 0; }
+  .pfc-hechos > * + * { border-top: 1px solid var(--line); }
+  .pfc-cifra { font-size: 88px; }
+}
+
+/* ==== SLOT RESUMEN ==== */
+/* El Resumen (con datos y vacío): /dashboard. Solo el frente RESUMEN escribe aquí. */
+/* ==== FIN SLOT RESUMEN ==== */
+
+/* ==== SLOT INSTALACION ==== */
+/* Primeros pasos (/dashboard/install) y Cómo funciona (/dashboard/how-it-works).
+   Solo el frente INSTALACION escribe aquí. */
+/* ==== FIN SLOT INSTALACION ==== */
+
+/* ==== SLOT PRUEBA ==== */
+/* Prueba (/dashboard/proof), Tu banco (/dashboard/your-bench) y Verificar
+   (/dashboard/verify). Solo el frente PRUEBA escribe aquí. */
+/* ==== FIN SLOT PRUEBA ==== */
+
+/* ==== SLOT CUENTA ==== */
+/* Cuenta (/dashboard/account), Equipo (/dashboard/team) y Extracto
+   (/dashboard/extracto). Solo el frente CUENTA escribe aquí. */
+/* ==== FIN SLOT CUENTA ==== */
