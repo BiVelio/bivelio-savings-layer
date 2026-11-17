@@ -1763,7 +1763,7 @@
       "intervals": "<b>Interval {nivel}.</b> Dihitung oleh setiap harness (resampling seluruh keluarga pertanyaan, Wilson untuk tingkat penolakan). Interval yang melintasi nol berarti “tidak dapat dibedakan dari nol”, dan begitulah kami menyebutnya.",
       "package": "<b>Paket yang Anda pasang.</b> Putaran A/B di tabel-tabel di bawah dibuat dengan {version}: lengan B menjalankan kode sumber tag itu, dan <code>dist/index.js</code>-nya identik byte demi byte dengan milik tarball npm (sha256 <code>{sha}</code>). Bench mingguan langsung berbeda: di setiap putaran ia mengukur kode sumber main apa adanya pada hari itu, sebelum dirilis.",
       "guard": "<b>Tanpa jalan pintas.</b> Setiap harness mengawasi host yang dihubunginya dan membawa batas pengeluaran per model yang tertulis dalam kode. Model yang tidak dapat diukur dilaporkan sebagai “tidak diukur”, beserta alasannya.",
-      "paper": "<paper>Baca makalah penelitian 17 halaman (PDF)</paper>: metode, jenis bukti, dan keterbatasan, termasuk mengapa rasio 1,05 OpenAI menggambarkan satu titik operasi, bukan kemiringan empiris.",
+      "paper": "<paper>Baca makalah penelitian {version} setebal {paginas} halaman (PDF)</paper>: metode, jenis bukti, dan keterbatasan setiap angka, direvisi setelah tinjauan eksternal prapublikasi.",
       "batteriesTitle": "Empat baterai, dataset publik, dipatok",
       "commitOnly": "dipatok pada commit"
     },
@@ -2036,8 +2036,6 @@
       "classAb": "Dua lengan pada permintaan yang sama, dinilai dengan penggunaan yang dilaporkan penyedia. Begitulah baterai uji ini diukur.",
       "classReplay": "Pemutaran ulang kontrafaktual dengan garis dasar yang sebagian direkonstruksi. Ini bukan A/B langsung, bukan penghematan yang ditagihkan, dan bukan rekonsiliasi tagihan.",
       "compatible": "Kompatibel tidak berarti terukur: sebuah model hanya dihitung di sini jika memiliki putaran yang diterbitkan, dan yang tidak dapat diukur disebutkan beserta alasannya.",
-      "paper": "Makalah penelitian (PDF)",
-      "repo": "Repositori terbuka",
       "diagramRequest": "Permintaan yang sama",
       "diagramA": "Lengan A: langsung ke penyedia, tanpa lapisan",
       "diagramB": "Lengan B: melalui lapisan, dengan konfigurasi bawaannya",
@@ -2544,7 +2542,8 @@
       "markdown": "Markdown di GitHub",
       "latex": "LaTeX untuk arXiv",
       "bench": "Benchmark publik",
-      "pdf": "PDF · edisi sebelumnya",
+      "pdf": "PDF · {version}",
+      "zenodo": "Zenodo · DOI",
       "print": "Cetak atau simpan sebagai PDF",
       "abstract": "Abstrak",
       "tableScroll": "Tabel; gulir ke samping untuk melihat seluruhnya"
@@ -2552,6 +2551,17 @@
     "migrate": {
       "versionNote": "Ini adalah panduan migrasi ke versi {version}. Ini bukan pengumuman rilis terbaru."
     }
+  },
+  "paperCard": {
+    "kind": "Pracetak",
+    "pages": "{n} halaman",
+    "summary": "Edisi yang direvisi setelah tinjauan eksternal prapublikasi: metode, estimator, ketidakpastian, dan batas setiap angka.",
+    "pdf": "PDF · {version}",
+    "zenodo": "Zenodo · DOI",
+    "code": "Kode di GitHub",
+    "web": "Baca di web",
+    "versions": "Semua versi",
+    "linksAria": "Tautan makalah penelitian"
   },
   "notFound": {
     "metaTitle": "Halaman tidak ditemukan · BiVelio Savings Layer",

@@ -1763,7 +1763,7 @@
       "intervals": "<b>{nivel}-intervallen.</b> Elke harness berekent ze (resampling van hele vraagfamilies, Wilson voor weigeringspercentages). Een interval dat nul kruist betekent “niet te onderscheiden van nul”, en dat zeggen we ook.",
       "package": "<b>Het pakket dat je installeert.</b> De A/B-runs in de tabellen hieronder zijn gedaan met {version}: arm B draait de broncode van die tag, en de <code>dist/index.js</code> daarvan is byte voor byte gelijk aan die in de npm-tarball (sha256 <code>{sha}</code>). De wekelijkse live-bench is iets anders: bij elke run meet hij de broncode van main zoals die er die dag bij staat, nog vóór de publicatie.",
       "guard": "<b>Geen kortere wegen.</b> Elke harness houdt de hosts in de gaten waarmee hij praat en heeft een in code vastgelegd uitgavenplafond per model. Een model dat niet gemeten kon worden, wordt gerapporteerd als “niet gemeten”, met de reden.",
-      "paper": "<paper>Lees het onderzoeksrapport van 17 pagina's (PDF)</paper>: methode, bewijssoorten en beperkingen, waaronder waarom de OpenAI-ratio 1,05 één werkingspunt beschrijft en geen empirische helling is.",
+      "paper": "<paper>Lees het onderzoeksrapport {version} van {paginas} pagina's (PDF)</paper>: methode, bewijssoorten en de beperkingen van elk cijfer, herzien na een externe review vóór publicatie.",
       "batteriesTitle": "Vier batterijen, openbare datasets, vastgepind",
       "commitOnly": "vastgepind op commit"
     },
@@ -2036,8 +2036,6 @@
       "classAb": "Twee armen op hetzelfde verzoek, gewaardeerd met het gebruik dat de provider rapporteert. Zo worden de batterijen van de benchmark gemeten.",
       "classReplay": "Contrafeitelijke replay met een gedeeltelijk gereconstrueerde baseline. Het is geen live A/B, geen gefactureerde besparing en geen factuurafstemming.",
       "compatible": "Compatibel betekent niet gemeten: een model telt hier alleen mee als er een gepubliceerde run van is, en wat niet gemeten kon worden staat er met de reden bij.",
-      "paper": "Onderzoeksartikel (PDF)",
-      "repo": "Open repository",
       "diagramRequest": "Hetzelfde verzoek",
       "diagramA": "Arm A: rechtstreeks naar de provider, zonder de laag",
       "diagramB": "Arm B: via de laag, met de standaardconfiguratie",
@@ -2544,7 +2542,8 @@
       "markdown": "Markdown op GitHub",
       "latex": "LaTeX voor arXiv",
       "bench": "De publieke benchmark",
-      "pdf": "PDF · eerdere editie",
+      "pdf": "PDF · {version}",
+      "zenodo": "Zenodo · DOI",
       "print": "Afdrukken of opslaan als PDF",
       "abstract": "Samenvatting",
       "tableScroll": "Tabel; scrol horizontaal om alles te zien"
@@ -2552,6 +2551,17 @@
     "migrate": {
       "versionNote": "Dit is de gids voor de migratie naar versie {version}. Het is niet de aankondiging van de nieuwste release."
     }
+  },
+  "paperCard": {
+    "kind": "Preprint",
+    "pages": "{n, plural, one {# pagina} other {# pagina's}}",
+    "summary": "Herzien na een externe review vóór publicatie: de methode, de schatter, de onzekerheid en de grenzen van elk cijfer.",
+    "pdf": "PDF · {version}",
+    "zenodo": "Zenodo · DOI",
+    "code": "Code op GitHub",
+    "web": "Lees op het web",
+    "versions": "Alle versies",
+    "linksAria": "Links van het onderzoeksrapport"
   },
   "notFound": {
     "metaTitle": "Pagina niet gevonden · BiVelio Savings Layer",

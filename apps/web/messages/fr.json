@@ -1763,7 +1763,7 @@
       "intervals": "<b>Intervalles au {nivel}.</b> Chaque harnais les calcule (rééchantillonnage par familles de questions, Wilson pour les taux de refus). Un intervalle qui traverse zéro veut dire « indiscernable de zéro », et nous le disons.",
       "package": "<b>Le paquet que vous installez.</b> Les passes A/B des tableaux ci-dessous ont été faites avec la {version} : le bras B exécute le code source de ce tag, et son <code>dist/index.js</code> est identique octet pour octet à celui du tarball npm (sha256 <code>{sha}</code>). Le banc hebdomadaire en direct est autre chose : à chaque passe, il mesure le code source de main tel qu'il est ce jour-là, avant sa publication.",
       "guard": "<b>Pas de raccourcis.</b> Chaque harnais surveille les hôtes auxquels il parle et porte un plafond de dépense par modèle écrit dans le code. Un modèle qui n'a pas pu être mesuré apparaît comme « non mesuré », avec le motif.",
-      "paper": "<paper>Lire l'article de recherche de 9 pages (PDF)</paper> : méthode, types de preuves et limites, notamment pourquoi le ratio 1,05 d'OpenAI décrit un seul point de fonctionnement et non une pente empirique.",
+      "paper": "<paper>Lire l'article de recherche {version}, {paginas} pages (PDF)</paper> : méthode, types de preuves et limites de chaque chiffre, révisé à la suite d'une relecture externe avant publication.",
       "batteriesTitle": "Quatre batteries, jeux de données publics, figés",
       "commitOnly": "figé par commit"
     },
@@ -2036,8 +2036,6 @@
       "classAb": "Deux bras sur la même requête, valorisés avec l'usage que déclare le fournisseur. C'est ainsi que sont mesurées les batteries du banc.",
       "classReplay": "Rejeu contrefactuel avec une ligne de base partiellement reconstruite. Ce n'est ni un A/B en direct, ni une économie facturée, ni un rapprochement de factures.",
       "compatible": "Compatible ne veut pas dire mesuré : un modèle ne compte ici que s'il a une exécution publiée, et ce qui n'a pas pu être mesuré est indiqué avec son motif.",
-      "paper": "Article de recherche (PDF)",
-      "repo": "Dépôt ouvert",
       "diagramRequest": "La même requête",
       "diagramA": "Bras A : directement au fournisseur, sans la couche",
       "diagramB": "Bras B : à travers la couche, avec sa configuration par défaut",
@@ -2544,7 +2542,8 @@
       "markdown": "Markdown sur GitHub",
       "latex": "LaTeX pour arXiv",
       "bench": "Le banc public",
-      "pdf": "PDF · édition précédente",
+      "pdf": "PDF · {version}",
+      "zenodo": "Zenodo · DOI",
       "print": "Imprimer ou enregistrer en PDF",
       "abstract": "Résumé",
       "tableScroll": "Tableau ; faites-le défiler horizontalement pour le voir en entier"
@@ -2552,6 +2551,17 @@
     "migrate": {
       "versionNote": "Ceci est le guide de migration vers la version {version}. Ce n'est pas l'annonce de la dernière version."
     }
+  },
+  "paperCard": {
+    "kind": "Prépublication",
+    "pages": "{n, plural, one {# page} other {# pages}}",
+    "summary": "Édition révisée à la suite d'une relecture externe avant publication : la méthode, l'estimateur, l'incertitude et les limites de chaque chiffre.",
+    "pdf": "PDF · {version}",
+    "zenodo": "Zenodo · DOI",
+    "code": "Code sur GitHub",
+    "web": "Lire en ligne",
+    "versions": "Toutes les versions",
+    "linksAria": "Liens de l'article de recherche"
   },
   "notFound": {
     "metaTitle": "Page introuvable · BiVelio Savings Layer",

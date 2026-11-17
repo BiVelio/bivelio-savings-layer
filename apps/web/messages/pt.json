@@ -1763,7 +1763,7 @@
       "intervals": "<b>Intervalos ao {nivel}.</b> Cada harness calcula-os (reamostragem por famílias de perguntas, Wilson para as taxas de recusa). Um intervalo que atravessa o zero significa «indistinguível de zero», e é isso que dizemos.",
       "package": "<b>O pacote que você instala.</b> As rodadas A/B das tabelas abaixo foram feitas com a {version}: o braço B executa o código-fonte dessa tag, e o seu <code>dist/index.js</code> é idêntico byte a byte ao do tarball do npm (sha256 <code>{sha}</code>). O banco semanal ao vivo é outra coisa: em cada rodada mede o código-fonte do main tal como está nesse dia, antes de ser publicado.",
       "guard": "<b>Sem atalhos.</b> Cada harness vigia os hosts com que fala e traz um limite de gasto por modelo escrito no código. Um modelo que não pôde ser medido aparece como «não medido», com o motivo.",
-      "paper": "<paper>Lê o artigo de investigação de 9 páginas (PDF)</paper>: método, tipos de evidência e limitações, incluindo por que o rácio 1,05 da OpenAI descreve um único ponto de operação e não uma declividade empírica.",
+      "paper": "<paper>Lê o artigo de investigação {version}, de {paginas} páginas (PDF)</paper>: método, tipos de evidência e limitações de cada valor, revisto após uma revisão externa anterior à publicação.",
       "batteriesTitle": "Quatro baterias, conjuntos de dados públicos, fixados",
       "commitOnly": "fixado por commit"
     },
@@ -2036,8 +2036,6 @@
       "classAb": "Dois braços sobre o mesmo pedido, valorizados com a utilização que o fornecedor reporta. É assim que se medem as baterias do banco.",
       "classReplay": "Reprodução contrafactual com uma linha de base parcialmente reconstruída. Não é um A/B ao vivo, nem poupança faturada, nem uma reconciliação de faturas.",
       "compatible": "Compatível não significa medido: um modelo só conta aqui se tiver uma execução publicada, e o que não foi possível medir é dito com o seu motivo.",
-      "paper": "Artigo de investigação (PDF)",
-      "repo": "Repositório aberto",
       "diagramRequest": "O mesmo pedido",
       "diagramA": "Braço A: direto ao fornecedor, sem a camada",
       "diagramB": "Braço B: através da camada, com a configuração predefinida",
@@ -2544,7 +2542,8 @@
       "markdown": "Markdown no GitHub",
       "latex": "LaTeX para o arXiv",
       "bench": "O banco público",
-      "pdf": "PDF · edição anterior",
+      "pdf": "PDF · {version}",
+      "zenodo": "Zenodo · DOI",
       "print": "Imprimir ou guardar como PDF",
       "abstract": "Resumo",
       "tableScroll": "Tabela; desloque na horizontal para a ver inteira"
@@ -2552,6 +2551,17 @@
     "migrate": {
       "versionNote": "Este é o guia para migrar para a versão {version}. Não é o anúncio da versão mais recente."
     }
+  },
+  "paperCard": {
+    "kind": "Preprint",
+    "pages": "{n, plural, one {# página} other {# páginas}}",
+    "summary": "Edição revista após uma revisão externa anterior à publicação: o método, o estimador, a incerteza e os limites de cada valor.",
+    "pdf": "PDF · {version}",
+    "zenodo": "Zenodo · DOI",
+    "code": "Código no GitHub",
+    "web": "Ler na web",
+    "versions": "Todas as versões",
+    "linksAria": "Ligações do artigo de investigação"
   },
   "notFound": {
     "metaTitle": "Página não encontrada · BiVelio Savings Layer",

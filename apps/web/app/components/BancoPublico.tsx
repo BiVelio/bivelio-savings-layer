@@ -17,6 +17,7 @@ import {
 // navegación de next-intl, y este componente se renderiza a secas en su test.
 import { EvidenceBadge, type TipoDeEvidencia } from "@/app/components/ui/EvidenceBadge";
 import { rutaServida } from "@/lib/banco-publico/publicar";
+import { EDICION_PAPER } from "@/lib/paper/edicion";
 import type { PalancaTtl } from "@/lib/portada/palanca-ttl";
 
 /**
@@ -194,7 +195,7 @@ function Metodo({ banco, t, f, ricos }: { banco: Banco; t: Traductor; f: F; rico
         {ultima && <li>{t.rich("method.package", { ...ricos, version: ultima, sha: banco.distPorVersion[ultima]! })}</li>}
         <li>{t.rich("method.guard", ricos)}</li>
       </ul>
-      <p>{t.rich("method.paper", ricos)}</p>
+      <p>{t.rich("method.paper", { ...ricos, paginas: EDICION_PAPER.paginas, version: EDICION_PAPER.version })}</p>
       <h3>{t("method.batteriesTitle")}</h3>
       <Desplazable t={t} titulo={t("method.batteriesTitle")}>
         <table className="tbl banco-tbl">
@@ -1082,7 +1083,7 @@ export function BancoPublico({
     b: (c) => <b>{c}</b>,
     code: (c) => <code>{c}</code>,
     paper: (c) => (
-      <a href="/papers/bv-sala-savings-layer-2026-10.pdf" target="_blank" rel="noopener">
+      <a href={EDICION_PAPER.pdf} target="_blank" rel="noopener">
         {c}
       </a>
     ),

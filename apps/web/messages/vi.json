@@ -1763,7 +1763,7 @@
       "intervals": "<b>Khoảng tin cậy {nivel}.</b> Mỗi bộ khai thác tự tính (lấy mẫu lại toàn bộ họ câu hỏi, Wilson cho tỷ lệ từ chối). Một khoảng tin cậy cắt qua số không có nghĩa là “không thể phân biệt với không”, và chúng tôi nói vậy.",
       "package": "<b>Gói bạn cài đặt.</b> Các lượt A/B trong các bảng bên dưới được chạy trên {version}: nhánh B chạy mã nguồn của tag đó, và <code>dist/index.js</code> của nó giống từng byte với tệp trong tarball npm (sha256 <code>{sha}</code>). Bench trực tiếp hằng tuần thì khác: ở mỗi lượt, nó đo mã nguồn của main đúng như ngày hôm đó, trước khi phát hành.",
       "guard": "<b>Không đường tắt.</b> Mỗi bộ khai thác theo dõi các máy chủ mà nó liên lạc và mang một giới hạn chi tiêu theo từng mô hình được viết sẵn trong mã. Một mô hình không thể đo được sẽ được báo cáo là “không đo được”, kèm lý do.",
-      "paper": "<paper>Đọc bài nghiên cứu 17 trang (PDF)</paper>: phương pháp, các loại bằng chứng và giới hạn, trong đó giải thích vì sao tỷ số 1,05 của OpenAI chỉ mô tả một điểm vận hành, không phải hệ số góc thực nghiệm.",
+      "paper": "<paper>Đọc bài nghiên cứu {version}, {paginas} trang (PDF)</paper>: phương pháp, các loại bằng chứng và giới hạn của từng con số, đã được chỉnh sửa sau một đợt thẩm định bên ngoài trước khi công bố.",
       "batteriesTitle": "Bốn bộ kiểm tra, tập dữ liệu công khai, được ghim cố định",
       "commitOnly": "ghim theo commit"
     },
@@ -2036,8 +2036,6 @@
       "classAb": "Hai nhánh trên cùng một yêu cầu, được định giá theo mức sử dụng mà nhà cung cấp báo cáo. Các bộ kiểm tra được đo theo cách này.",
       "classReplay": "Phát lại phản thực tế với đường cơ sở được dựng lại một phần. Đây không phải A/B trực tiếp, không phải khoản tiết kiệm đã lập hóa đơn, cũng không phải đối soát hóa đơn.",
       "compatible": "Tương thích không có nghĩa là đã đo: một mô hình chỉ được tính ở đây khi có lượt chạy đã công bố, và những gì không đo được đều được nêu kèm lý do.",
-      "paper": "Bài nghiên cứu (PDF)",
-      "repo": "Kho mã mở",
       "diagramRequest": "Cùng một yêu cầu",
       "diagramA": "Nhánh A: gửi thẳng tới nhà cung cấp, không qua lớp",
       "diagramB": "Nhánh B: đi qua lớp, với cấu hình mặc định",
@@ -2544,7 +2542,8 @@
       "markdown": "Markdown trên GitHub",
       "latex": "LaTeX cho arXiv",
       "bench": "Băng thử công khai",
-      "pdf": "PDF · bản trước",
+      "pdf": "PDF · {version}",
+      "zenodo": "Zenodo · DOI",
       "print": "In hoặc lưu thành PDF",
       "abstract": "Tóm tắt",
       "tableScroll": "Bảng; cuộn ngang để xem toàn bộ"
@@ -2552,6 +2551,17 @@
     "migrate": {
       "versionNote": "Đây là hướng dẫn chuyển sang phiên bản {version}. Đây không phải thông báo về bản phát hành mới nhất."
     }
+  },
+  "paperCard": {
+    "kind": "Bản tiền ấn phẩm",
+    "pages": "{n} trang",
+    "summary": "Bản đã chỉnh sửa sau một đợt thẩm định bên ngoài trước khi công bố: phương pháp, ước lượng, độ bất định và giới hạn của từng con số.",
+    "pdf": "PDF · {version}",
+    "zenodo": "Zenodo · DOI",
+    "code": "Mã nguồn trên GitHub",
+    "web": "Đọc trên web",
+    "versions": "Tất cả phiên bản",
+    "linksAria": "Liên kết của bài nghiên cứu"
   },
   "notFound": {
     "metaTitle": "Không tìm thấy trang · BiVelio Savings Layer",

@@ -1763,7 +1763,7 @@
       "intervals": "<b>{nivel} aralıkları.</b> Bunları her test düzeneği hesaplar (bütün soru ailelerinin yeniden örneklenmesi, ret oranları için Wilson). Sıfırı kesen bir aralık “sıfırdan ayırt edilemez” demektir ve bunu böyle söylüyoruz.",
       "package": "<b>Kurduğunuz paket.</b> Aşağıdaki tablolardaki A/B koşuları {version} ile yapıldı: B kolu o etiketin kaynak kodunu çalıştırır ve <code>dist/index.js</code> dosyası npm tarball'ındakiyle bayt bayt aynıdır (sha256 <code>{sha}</code>). Haftalık canlı test ise başka bir şey: her koşuda main'in o günkü kaynak kodunu, yayımlanmadan önce ölçer.",
       "guard": "<b>Kestirme yok.</b> Her test düzeneği konuştuğu sunucuları izler ve kod içinde yazılı, model başına bir harcama sınırı taşır. Ölçülemeyen bir model, nedeniyle birlikte “ölçülmedi” olarak raporlanır.",
-      "paper": "<paper>17 sayfalık araştırma makalesini okuyun (PDF)</paper>: yöntem, kanıt türleri ve sınırlamalar; OpenAI'nin 1,05 oranının neden ampirik bir eğim değil, tek bir çalışma noktasını tanımladığı da buna dâhil.",
+      "paper": "<paper>{paginas} sayfalık araştırma makalesini ({version}) okuyun (PDF)</paper>: yöntem, kanıt türleri ve her rakamın sınırları; yayın öncesi harici bir incelemenin ardından gözden geçirildi.",
       "batteriesTitle": "Dört batarya, herkese açık veri kümeleri, sabitlenmiş",
       "commitOnly": "commit ile sabitlenmiş"
     },
@@ -2036,8 +2036,6 @@
       "classAb": "Aynı istek üzerinde iki kol; sağlayıcının bildirdiği kullanımla değerlenir. Testin bataryaları böyle ölçülür.",
       "classReplay": "Kısmen yeniden oluşturulmuş bir temel çizgiyle karşı olgusal yeniden oynatma. Canlı bir A/B, faturalanmış tasarruf ya da fatura mutabakatı değildir.",
       "compatible": "Uyumlu olmak ölçülmüş olmak demek değildir: bir model burada yalnızca yayımlanmış bir çalıştırması varsa sayılır; ölçülemeyenler nedeniyle birlikte belirtilir.",
-      "paper": "Araştırma makalesi (PDF)",
-      "repo": "Açık depo",
       "diagramRequest": "Aynı istek",
       "diagramA": "A kolu: katman olmadan, doğrudan sağlayıcıya",
       "diagramB": "B kolu: varsayılan yapılandırmasıyla katman üzerinden",
@@ -2544,7 +2542,8 @@
       "markdown": "GitHub'da Markdown",
       "latex": "arXiv için LaTeX",
       "bench": "Herkese açık benchmark",
-      "pdf": "PDF · önceki sürüm",
+      "pdf": "PDF · {version}",
+      "zenodo": "Zenodo · DOI",
       "print": "Yazdır veya PDF olarak kaydet",
       "abstract": "Özet",
       "tableScroll": "Tablo; tamamını görmek için yatay kaydırın"
@@ -2552,6 +2551,17 @@
     "migrate": {
       "versionNote": "Bu, {version} sürümüne geçiş kılavuzudur. En son sürümün duyurusu değildir."
     }
+  },
+  "paperCard": {
+    "kind": "Ön baskı",
+    "pages": "{n} sayfa",
+    "summary": "Yayın öncesi harici bir incelemenin ardından gözden geçirilmiş sürüm: yöntem, tahmin edici, belirsizlik ve her rakamın sınırları.",
+    "pdf": "PDF · {version}",
+    "zenodo": "Zenodo · DOI",
+    "code": "GitHub'da kod",
+    "web": "Web'de okuyun",
+    "versions": "Tüm sürümler",
+    "linksAria": "Araştırma makalesi bağlantıları"
   },
   "notFound": {
     "metaTitle": "Sayfa bulunamadı · BiVelio Savings Layer",

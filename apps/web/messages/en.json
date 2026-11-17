@@ -1763,7 +1763,7 @@
       "intervals": "<b>{nivel} intervals.</b> Each harness computes them (resampling whole question families, Wilson for refusal rates). An interval that crosses zero means “indistinguishable from zero”, and we say so.",
       "package": "<b>The package you install.</b> The A/B runs in the tables below were made on {version}: arm B runs the source of that tag, and its <code>dist/index.js</code> is byte-identical to the npm tarball's (sha256 <code>{sha}</code>). The weekly live bench is different: on every run it measures the source of main as it stands that day, before it is released.",
       "guard": "<b>No shortcuts.</b> Each harness watches the hosts it talks to and carries a per-model spend cap written in code. A model that could not be measured is reported as “not measured”, with the reason.",
-      "paper": "<paper>Read the 17-page research paper (PDF)</paper>: methods, evidence types and limitations, including why the OpenAI ratio 1.05 describes one operating point, not an empirical slope.",
+      "paper": "<paper>Read the {paginas}-page research paper, {version} (PDF)</paper>: methods, evidence types and the limitations of each figure, revised after an external pre-publication review.",
       "batteriesTitle": "Four batteries, public datasets, pinned",
       "commitOnly": "pinned by commit"
     },
@@ -2036,8 +2036,6 @@
       "classAb": "Two arms on the same request, costed with the usage the provider reports. This is how the bench batteries are measured.",
       "classReplay": "Counterfactual replay with a partially reconstructed baseline. It is not a live A/B, billed savings or an invoice reconciliation.",
       "compatible": "Compatible does not mean measured: a model only counts here if it has a published run, and whatever could not be measured is stated with its reason.",
-      "paper": "Research paper (PDF)",
-      "repo": "Open repository",
       "diagramRequest": "The same request",
       "diagramA": "Arm A: straight to the provider, without the layer",
       "diagramB": "Arm B: through the layer, with its default configuration",
@@ -2544,7 +2542,8 @@
       "markdown": "Markdown on GitHub",
       "latex": "LaTeX for arXiv",
       "bench": "The public benchmark",
-      "pdf": "PDF · earlier edition",
+      "pdf": "PDF · {version}",
+      "zenodo": "Zenodo · DOI",
       "print": "Print or save as PDF",
       "abstract": "Abstract",
       "tableScroll": "Table; scroll sideways to see all of it"
@@ -2552,6 +2551,17 @@
     "migrate": {
       "versionNote": "This is the guide for migrating to version {version}. It is not the announcement of the latest release."
     }
+  },
+  "paperCard": {
+    "kind": "Preprint",
+    "pages": "{n, plural, one {# page} other {# pages}}",
+    "summary": "Revised after an external pre-publication review: the method, the estimator, the uncertainty and the limits of each figure.",
+    "pdf": "PDF · {version}",
+    "zenodo": "Zenodo · DOI",
+    "code": "Code on GitHub",
+    "web": "Read on the web",
+    "versions": "All versions",
+    "linksAria": "Research paper links"
   },
   "notFound": {
     "metaTitle": "Page not found · BiVelio Savings Layer",

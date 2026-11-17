@@ -1,12 +1,12 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { BancoPublico, type Traductor } from "@/app/components/BancoPublico";
+import { TarjetaPaper } from "@/app/components/campana/TarjetaPaper";
 import { CentroDeEvidencia, type SeccionDelIndice } from "@/app/components/evidencia/CentroDeEvidencia";
 import { ComparacionAB } from "@/app/components/evidencia/ComparacionAB";
 import { filasAB } from "@/app/components/evidencia/filas-ab";
 import Footer from "@/app/components/Footer";
 import { LogoProveedor } from "@/app/components/LogoProveedor";
-import { URL_DEL_CODIGO } from "@/app/components/sitio";
 import { VideoExplicativo } from "@/app/components/VideoExplicativo";
 import { absolute, languageAlternates, tarjetaSocial } from "@/i18n/site";
 import { cargarBanco } from "@/lib/banco-publico/cargar";
@@ -52,9 +52,10 @@ const LLMS = [
  * con una verja que los cuadra uno a uno contra el informe.
  *
  * EL REPOSITORIO ES ABIERTO (P1 de la guía maestra del rediseño): esta página
- * dejó de pasar `sinGitHub` al pie y enlaza el código junto a las descargas.
- * `BancoPublico` conserva su lista blanca: sus enlaces siguen siendo solo
- * informes servidos, el artículo y el correo; el del repositorio vive aquí.
+ * dejó de pasar `sinGitHub` al pie y enlaza el código desde la tarjeta del
+ * artículo (`TarjetaPaper`, tras «Cómo leer esta página»), junto al PDF y al
+ * DOI de la edición vigente. `BancoPublico` conserva su lista blanca: sus
+ * enlaces siguen siendo solo informes servidos, el artículo y el correo.
  *
  * DOS BLOQUES LLEGARON DE LA PORTADA (dueño, 2026-11: la portada se acorta y lo
  * metodológico vive donde lo busca quien quiere comprobarlo). Los pinta ESTA
@@ -89,7 +90,6 @@ export default async function BenchmarksPage({ params }: { params: Promise<{ loc
   setRequestLocale(locale);
   const t = await getTranslations("benchmarksPage");
   const tUi = await getTranslations("ui");
-  const tNav = await getTranslations("nav");
   const tl = await getTranslations("landing");
   const banco = cargarBanco();
   const tr = t as unknown as Traductor;
@@ -140,24 +140,12 @@ export default async function BenchmarksPage({ params }: { params: Promise<{ loc
         palancaTtl={PALANCA_TTL}
         etiquetas={{ abSdk: tUi("evidence.abSdk"), replayGateway: tUi("evidence.replayGateway") }}
         indice={
-          <CentroDeEvidencia
-            secciones={secciones}
-            enlaces={
-              <>
-                <a className="evc-link" href="/papers/bv-sala-savings-layer-2026-10.pdf" target="_blank" rel="noopener">
-                  {t("centre.paper")}
-                </a>
-                {/* P1 de la guía: el repositorio es abierto y el centro de evidencia lo enlaza. */}
-                <a className="evc-link" href={URL_DEL_CODIGO} target="_blank" rel="noopener noreferrer">
-                  {t("centre.repo")}
-                  <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                    <path d="M4 2.5h5.5V8M9.5 2.5 2.5 9.5" />
-                  </svg>
-                  <span className="sr-only"> {tNav("newTab")}</span>
-                </a>
-              </>
-            }
-          />
+          <>
+            <CentroDeEvidencia secciones={secciones} />
+            {/* El artículo de investigación vigente, con la firma de la campaña. La
+                tarjeta lleva el PDF, el DOI y el repositorio abierto (P1 de la guía). */}
+            <TarjetaPaper locale={locale} />
+          </>
         }
         comparacion={filas.length > 0 ? <ComparacionAB filas={filas} locale={locale} etiquetaAb={tUi("evidence.abSdk")} /> : null}
         explicacion={

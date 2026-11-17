@@ -8,6 +8,7 @@ import { Migas } from "@/app/components/docs/Migas";
 import Footer from "@/app/components/Footer";
 import { Link } from "@/i18n/navigation";
 import { absolute, tarjetaSocial } from "@/i18n/site";
+import { EDICION_PAPER } from "@/lib/paper/edicion";
 import { DataTable } from "@/vendor/affectui/data-table-clean";
 import { GridBackground } from "@/vendor/affectui/grid-background";
 
@@ -37,8 +38,12 @@ import { BLOQUES, CABECERA, type Bloque } from "./contenido";
  */
 const URL_MARKDOWN = "https://github.com/BiVelio/bivelio-savings-layer/blob/main/docs/PAPER.md";
 const URL_LATEX = "https://github.com/BiVelio/bivelio-savings-layer/blob/main/docs/paper/main.tex";
-/** El PDF publicado es de una edición ANTERIOR a la que pinta esta página; el botón lo dice. */
-const URL_PDF = "/papers/bv-sala-savings-layer-2026-10.pdf";
+/**
+ * El PDF y el DOI son los de la MISMA edición que pinta esta página
+ * (`lib/paper/edicion.ts`; su test exige que versión y DOI cuadren con
+ * `contenido.ts`). El botón del PDF dice la versión.
+ */
+const E = EDICION_PAPER;
 
 export async function generateMetadata(): Promise<Metadata> {
   const title = `${CABECERA.titulo} — ${CABECERA.subtitulo} · Preprint`;
@@ -152,8 +157,11 @@ export default async function PaperPage({ params }: { params: Promise<{ locale: 
           </p>
           <nav className="paper-acciones" aria-label={t("paper.linksAria")}>
             <BotonImprimir className="btn btn-primary">{t("paper.print")}</BotonImprimir>
-            <a className="btn btn-ghost" href={URL_PDF} target="_blank" rel="noopener">
-              {t("paper.pdf")}
+            <a className="btn btn-ghost" href={E.pdf} target="_blank" rel="noopener">
+              {t("paper.pdf", { version: E.version })}
+            </a>
+            <a className="btn btn-ghost" href={E.urlDoi} target="_blank" rel="noopener noreferrer">
+              {t("paper.zenodo")}
             </a>
             <a className="btn btn-ghost" href={URL_MARKDOWN} target="_blank" rel="noopener noreferrer">
               {t("paper.markdown")}

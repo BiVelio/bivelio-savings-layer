@@ -1763,7 +1763,7 @@
       "intervals": "<b>Przedziały na poziomie {nivel}.</b> Oblicza je każdy harness (resampling całych rodzin pytań, Wilson dla odsetka odmów). Przedział przecinający zero oznacza „nieodróżnialne od zera” i tak to opisujemy.",
       "package": "<b>Pakiet, który instalujesz.</b> Przebiegi A/B z tabel poniżej wykonano na wersji {version}: ramię B uruchamia kod źródłowy tego taga, a jego <code>dist/index.js</code> jest bajt w bajt identyczny z tym z tarballa npm (sha256 <code>{sha}</code>). Cotygodniowy benchmark na żywo to co innego: w każdym przebiegu mierzy kod źródłowy gałęzi main w stanie z danego dnia, jeszcze przed publikacją.",
       "guard": "<b>Bez skrótów.</b> Każdy harness obserwuje hosty, z którymi się komunikuje, i ma w kodzie zapisany limit wydatków na model. Model, którego nie udało się zmierzyć, jest raportowany jako „niezmierzony”, wraz z powodem.",
-      "paper": "<paper>Przeczytaj 17-stronicowy artykuł badawczy (PDF)</paper>: metoda, rodzaje dowodów i ograniczenia, w tym dlaczego współczynnik 1,05 dla OpenAI opisuje jeden punkt pracy, a nie empirycznie wyznaczone nachylenie.",
+      "paper": "<paper>Przeczytaj artykuł badawczy {version}, {paginas} stron (PDF)</paper>: metoda, rodzaje dowodów i ograniczenia każdej liczby, poprawione po zewnętrznej recenzji przed publikacją.",
       "batteriesTitle": "Cztery baterie testów, publiczne zbiory danych, przypięte",
       "commitOnly": "przypięte do commita"
     },
@@ -2036,8 +2036,6 @@
       "classAb": "Dwa ramiona dla tego samego żądania, wycenione według użycia raportowanego przez dostawcę. Tak mierzone są baterie testu.",
       "classReplay": "Kontrfaktyczne odtworzenie z częściowo zrekonstruowaną linią bazową. To nie jest A/B na żywo, zafakturowana oszczędność ani uzgodnienie faktur.",
       "compatible": "Zgodny nie znaczy zmierzony: model liczy się tu tylko wtedy, gdy ma opublikowany przebieg, a to, czego nie udało się zmierzyć, jest opisane wraz z powodem.",
-      "paper": "Artykuł badawczy (PDF)",
-      "repo": "Otwarte repozytorium",
       "diagramRequest": "To samo żądanie",
       "diagramA": "Ramię A: bezpośrednio do dostawcy, bez warstwy",
       "diagramB": "Ramię B: przez warstwę, z jej domyślną konfiguracją",
@@ -2544,7 +2542,8 @@
       "markdown": "Markdown na GitHubie",
       "latex": "LaTeX dla arXiv",
       "bench": "Publiczny benchmark",
-      "pdf": "PDF · wcześniejsze wydanie",
+      "pdf": "PDF · {version}",
+      "zenodo": "Zenodo · DOI",
       "print": "Drukuj lub zapisz jako PDF",
       "abstract": "Streszczenie",
       "tableScroll": "Tabela; przewiń w poziomie, aby zobaczyć całość"
@@ -2552,6 +2551,17 @@
     "migrate": {
       "versionNote": "To jest przewodnik migracji do wersji {version}. Nie jest to ogłoszenie najnowszego wydania."
     }
+  },
+  "paperCard": {
+    "kind": "Preprint",
+    "pages": "{n, plural, one {# strona} few {# strony} many {# stron} other {# strony}}",
+    "summary": "Wydanie poprawione po zewnętrznej recenzji przed publikacją: metoda, estymator, niepewność i ograniczenia każdej liczby.",
+    "pdf": "PDF · {version}",
+    "zenodo": "Zenodo · DOI",
+    "code": "Kod na GitHubie",
+    "web": "Czytaj w przeglądarce",
+    "versions": "Wszystkie wersje",
+    "linksAria": "Odnośniki do artykułu badawczego"
   },
   "notFound": {
     "metaTitle": "Nie znaleziono strony · BiVelio Savings Layer",

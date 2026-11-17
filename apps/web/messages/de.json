@@ -1763,7 +1763,7 @@
       "intervals": "<b>Intervalle zum {nivel}.</b> Jeder Testharness berechnet sie (Resampling ganzer Fragefamilien, Wilson für Ablehnungsraten). Ein Intervall, das die Null überschreitet, bedeutet „nicht von null unterscheidbar“, und das sagen wir dann auch.",
       "package": "<b>Das Paket, das Sie installieren.</b> Die A/B-Läufe in den Tabellen unten liefen mit {version}: Arm B führt den Quellcode dieses Tags aus, und seine <code>dist/index.js</code> ist Byte für Byte identisch mit der aus dem npm-Tarball (sha256 <code>{sha}</code>). Der wöchentliche Live-Benchmark ist etwas anderes: Bei jedem Lauf misst er den Quellcode von main, wie er an diesem Tag ist, noch vor der Veröffentlichung.",
       "guard": "<b>Keine Abkürzungen.</b> Jeder Testharness überwacht die Hosts, mit denen er spricht, und trägt ein im Code festgelegtes Ausgabenlimit pro Modell. Ein Modell, das nicht gemessen werden konnte, wird als „nicht gemessen“ ausgewiesen, mit Begründung.",
-      "paper": "<paper>Den 17-seitigen Forschungsbericht lesen (PDF)</paper>: Methodik, Evidenzarten und Grenzen, einschließlich der Erklärung, warum das OpenAI-Verhältnis 1,05 einen einzigen Betriebspunkt beschreibt und keine empirische Steigung ist.",
+      "paper": "<paper>Den {paginas}-seitigen Forschungsbericht {version} lesen (PDF)</paper>: Methodik, Evidenzarten und die Grenzen jeder Zahl, überarbeitet nach einer externen Begutachtung vor der Veröffentlichung.",
       "batteriesTitle": "Vier Testreihen, öffentliche Datensätze, festgelegt",
       "commitOnly": "per Commit festgelegt"
     },
@@ -2036,8 +2036,6 @@
       "classAb": "Zwei Arme für dieselbe Anfrage, bewertet mit der Nutzung, die der Anbieter meldet. So werden die Batterien des Benchmarks gemessen.",
       "classReplay": "Kontrafaktische Wiederholung mit teilweise rekonstruierter Baseline. Das ist weder ein Live-A/B noch eine abgerechnete Ersparnis noch ein Rechnungsabgleich.",
       "compatible": "Kompatibel heißt nicht gemessen: Ein Modell zählt hier nur, wenn es einen veröffentlichten Lauf hat, und was nicht gemessen werden konnte, steht mit seinem Grund da.",
-      "paper": "Forschungsartikel (PDF)",
-      "repo": "Offenes Repository",
       "diagramRequest": "Dieselbe Anfrage",
       "diagramA": "Arm A: direkt zum Anbieter, ohne die Schicht",
       "diagramB": "Arm B: über die Schicht, mit ihrer Standardkonfiguration",
@@ -2544,7 +2542,8 @@
       "markdown": "Markdown auf GitHub",
       "latex": "LaTeX für arXiv",
       "bench": "Der öffentliche Benchmark",
-      "pdf": "PDF · frühere Ausgabe",
+      "pdf": "PDF · {version}",
+      "zenodo": "Zenodo · DOI",
       "print": "Drucken oder als PDF speichern",
       "abstract": "Zusammenfassung",
       "tableScroll": "Tabelle; horizontal scrollen, um alles zu sehen"
@@ -2552,6 +2551,17 @@
     "migrate": {
       "versionNote": "Dies ist die Anleitung für die Migration auf Version {version}. Sie ist nicht die Ankündigung der neuesten Version."
     }
+  },
+  "paperCard": {
+    "kind": "Preprint",
+    "pages": "{n, plural, one {# Seite} other {# Seiten}}",
+    "summary": "Nach einer externen Begutachtung vor der Veröffentlichung überarbeitet: Methodik, Schätzer, Unsicherheit und die Grenzen jeder Zahl.",
+    "pdf": "PDF · {version}",
+    "zenodo": "Zenodo · DOI",
+    "code": "Code auf GitHub",
+    "web": "Im Web lesen",
+    "versions": "Alle Versionen",
+    "linksAria": "Links zum Forschungsbericht"
   },
   "notFound": {
     "metaTitle": "Seite nicht gefunden · BiVelio Savings Layer",

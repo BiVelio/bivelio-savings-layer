@@ -1763,7 +1763,7 @@
       "intervals": "<b>Intervals al {nivel}.</b> Els calcula cada arnès (remostreig per famílies de preguntes, Wilson en les taxes de negativa). Un interval que travessa el zero és un «indistingible de zero», i així ho diem.",
       "package": "<b>El paquet que instal·les.</b> Les tirades A/B de les taules de sota es van fer amb la {version}: el braç B executa el codi font d'aquesta etiqueta, i el seu <code>dist/index.js</code> és idèntic byte a byte al del tarball de npm (sha256 <code>{sha}</code>). El banc setmanal en viu és una altra cosa: a cada tirada mesura el codi font de main tal com és aquell dia, abans de publicar-se.",
       "guard": "<b>Sense dreceres.</b> Cada arnès vigila els hosts amb què parla i porta un límit de despesa per model escrit al codi. Un model que no s'ha pogut mesurar surt com a «no mesurat», amb el motiu.",
-      "paper": "<paper>Llegeix l'article de recerca de 17 pàgines (PDF)</paper>: mètode, tipus d'evidència i limitacions, inclòs per què la raó 1,05 d'OpenAI descriu un únic punt d'operació i no un pendent empíric.",
+      "paper": "<paper>Llegeix l'article de recerca {version}, de {paginas} pàgines (PDF)</paper>: mètode, tipus d'evidència i limitacions de cada xifra, corregit després d'una revisió externa prèvia a la publicació.",
       "batteriesTitle": "Quatre bateries, conjunts de dades públics, fixats",
       "commitOnly": "fixat per commit"
     },
@@ -2036,8 +2036,6 @@
       "classAb": "Dos braços sobre la mateixa petició, valorats amb l'ús que reporta el proveïdor. Així es mesuren les bateries del banc.",
       "classReplay": "Reproducció contrafactual amb una línia base parcialment reconstruïda. No és un A/B en viu, ni estalvi facturat, ni una conciliació de factures.",
       "compatible": "Compatible no vol dir mesurat: un model només compta aquí si té una tirada publicada, i el que no s'ha pogut mesurar es diu amb el seu motiu.",
-      "paper": "Article de recerca (PDF)",
-      "repo": "Repositori obert",
       "diagramRequest": "La mateixa petició",
       "diagramA": "Braç A: directa al proveïdor, sense la capa",
       "diagramB": "Braç B: a través de la capa, amb la configuració per defecte",
@@ -2544,7 +2542,8 @@
       "markdown": "Markdown a GitHub",
       "latex": "LaTeX per a arXiv",
       "bench": "El banc públic",
-      "pdf": "PDF · edició anterior",
+      "pdf": "PDF · {version}",
+      "zenodo": "Zenodo · DOI",
       "print": "Imprimeix o desa com a PDF",
       "abstract": "Resum",
       "tableScroll": "Taula; desplaça-la en horitzontal per veure-la sencera"
@@ -2552,6 +2551,17 @@
     "migrate": {
       "versionNote": "Aquesta és la guia per migrar a la versió {version}. No és l'anunci de la versió més recent."
     }
+  },
+  "paperCard": {
+    "kind": "Preprint",
+    "pages": "{n, plural, one {# pàgina} other {# pàgines}}",
+    "summary": "Edició corregida després d'una revisió externa prèvia a la publicació: el mètode, l'estimador, la incertesa i els límits de cada xifra.",
+    "pdf": "PDF · {version}",
+    "zenodo": "Zenodo · DOI",
+    "code": "Codi a GitHub",
+    "web": "Llegeix-lo al web",
+    "versions": "Totes les versions",
+    "linksAria": "Enllaços de l'article de recerca"
   },
   "notFound": {
     "metaTitle": "Pàgina no trobada · BiVelio Savings Layer",
