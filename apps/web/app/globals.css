@@ -4941,8 +4941,6 @@ a.card:active, button.card:active, .card-link:active { transform: translateY(0);
 .paperc-versiones:hover { text-decoration-color: currentColor; }
 .paperc-versiones svg { width: 11px; height: 11px; flex: none; }
 .paperc-mosaico { margin-top: 2px; }
-/* Las casillas se colocan desde el centro: el SVG interior no recorta su mitad izquierda. */
-.paperc-mosaico svg svg { overflow: visible; }
 @media (pointer: coarse) { .paperc-versiones { min-height: 44px; } }
 @media (max-width: 640px) {
   .paperc-eyebrow { letter-spacing: .12em; }
