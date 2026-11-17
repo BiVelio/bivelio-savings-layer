@@ -92,22 +92,6 @@
           "title": "Primeros pasos y tu progreso",
           "body": "Los hitos de la puesta en marcha los mide el producto. Pulsa uno para abrir su instrucción: pasa a listo solo cuando llega la señal real."
         },
-        "verdict": {
-          "title": "Tu veredicto",
-          "body": "El ahorro medido del periodo, con su recibo y su tipo de evidencia. Si falta algo —integración, tráfico, precio o lectura— aquí se explica qué falta y cómo seguir."
-        },
-        "range": {
-          "title": "Elige el periodo",
-          "body": "Cambia entre los rangos disponibles. El periodo viaja en la dirección, así que puedes compartir o recargar la misma vista."
-        },
-        "customize": {
-          "title": "Personaliza el panel",
-          "body": "Reordena u oculta tarjetas y restablece la disposición cuando quieras. Se guarda solo en este navegador; los avisos y el veredicto no se pueden ocultar."
-        },
-        "explorer": {
-          "title": "Explora tu uso",
-          "body": "Mira el uso por día, acumulado o por modelo, cambia de métrica y exporta el periodo en CSV."
-        },
         "proof": {
           "title": "Prueba y evidencia",
           "body": "Tres pestañas: el banco público, tu propio A/B y el verificador. Los datos de referencia nunca se presentan como tuyos."

@@ -92,22 +92,6 @@
           "title": "Erste Schritte und dein Fortschritt",
           "body": "Die Meilensteine der Einrichtung misst das Produkt. Wähle einen aus, um seine Anleitung zu öffnen: Erledigt wird er erst, wenn das echte Signal eintrifft."
         },
-        "verdict": {
-          "title": "Dein Ergebnis",
-          "body": "Die gemessene Ersparnis im Zeitraum, mit Beleg und Art des Nachweises. Fehlt etwas – Integration, Traffic, Preis oder Lesezugriff –, steht hier, was fehlt und wie es weitergeht."
-        },
-        "range": {
-          "title": "Zeitraum wählen",
-          "body": "Wechsle zwischen den verfügbaren Zeiträumen. Der Zeitraum steht in der Adresse, du kannst dieselbe Ansicht also teilen oder neu laden."
-        },
-        "customize": {
-          "title": "Dashboard anpassen",
-          "body": "Ordne Karten neu, blende sie aus und stelle die Anordnung jederzeit wieder her. Gespeichert wird nur in diesem Browser; Hinweise und das Ergebnis lassen sich nicht ausblenden."
-        },
-        "explorer": {
-          "title": "Nutzung erkunden",
-          "body": "Sieh dir die Nutzung pro Tag, kumuliert oder pro Modell an, wechsle die Kennzahl und exportiere den Zeitraum als CSV."
-        },
         "proof": {
           "title": "Nachweis und Belege",
           "body": "Drei Tabs: der öffentliche Benchmark, dein eigener A/B-Test und der Prüfer. Referenzdaten werden nie als deine ausgegeben."

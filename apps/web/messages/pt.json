@@ -92,22 +92,6 @@
           "title": "Primeiros passos e o teu progresso",
           "body": "Os marcos do arranque são medidos pelo produto. Carrega num para abrir a respetiva instrução: só passa a concluído quando chega o sinal real."
         },
-        "verdict": {
-          "title": "O teu veredicto",
-          "body": "A poupança medida no período, com o seu recibo e o tipo de evidência. Se faltar alguma coisa — integração, tráfego, preço ou leitura — é aqui que se explica o que falta e como continuar."
-        },
-        "range": {
-          "title": "Escolhe o período",
-          "body": "Alterna entre os intervalos disponíveis. O período vai no endereço, por isso podes partilhar ou recarregar a mesma vista."
-        },
-        "customize": {
-          "title": "Personaliza o painel",
-          "body": "Reordena ou oculta cartões e repõe a disposição quando quiseres. Fica guardado apenas neste navegador; os avisos e o veredicto não podem ser ocultados."
-        },
-        "explorer": {
-          "title": "Explora a tua utilização",
-          "body": "Vê a utilização por dia, acumulada ou por modelo, muda de métrica e exporta o período em CSV."
-        },
         "proof": {
           "title": "Prova e evidência",
           "body": "Três separadores: o banco público, o teu próprio A/B e o verificador. Os dados de referência nunca são apresentados como teus."

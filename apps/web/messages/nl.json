@@ -92,22 +92,6 @@
           "title": "Eerste stappen en je voortgang",
           "body": "De mijlpalen van de inrichting worden door het product gemeten. Kies er een om de instructie te openen: hij wordt pas voltooid als het echte signaal binnenkomt."
         },
-        "verdict": {
-          "title": "Je uitkomst",
-          "body": "De gemeten besparing in de periode, met het bonnetje en het type bewijs. Ontbreekt er iets — integratie, verkeer, prijs of leestoegang — dan staat hier wat er ontbreekt en hoe je verdergaat."
-        },
-        "range": {
-          "title": "Kies de periode",
-          "body": "Wissel tussen de beschikbare periodes. De periode staat in het adres, dus je kunt dezelfde weergave delen of opnieuw laden."
-        },
-        "customize": {
-          "title": "Pas het dashboard aan",
-          "body": "Verplaats of verberg kaarten en herstel de indeling wanneer je wilt. Het wordt alleen in deze browser bewaard; meldingen en de uitkomst kun je niet verbergen."
-        },
-        "explorer": {
-          "title": "Verken je gebruik",
-          "body": "Bekijk het gebruik per dag, cumulatief of per model, wissel van meetwaarde en exporteer de periode als CSV."
-        },
         "proof": {
           "title": "Bewijs en onderbouwing",
           "body": "Drie tabbladen: de openbare benchmark, je eigen A/B en de verificateur. Referentiegegevens worden nooit als de jouwe gepresenteerd."

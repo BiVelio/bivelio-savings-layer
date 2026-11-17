@@ -92,22 +92,6 @@
           "title": "Pierwsze kroki i Twój postęp",
           "body": "Kamienie milowe uruchomienia mierzy produkt. Wybierz jeden, aby otworzyć jego instrukcję: zmienia się na gotowe dopiero wtedy, gdy nadejdzie rzeczywisty sygnał."
         },
-        "verdict": {
-          "title": "Twój wynik",
-          "body": "Zmierzone oszczędności w okresie, z paragonem i rodzajem dowodu. Jeśli czegoś brakuje — integracji, ruchu, ceny albo odczytu — tutaj zobaczysz, czego i jak przejść dalej."
-        },
-        "range": {
-          "title": "Wybierz okres",
-          "body": "Przełączaj się między dostępnymi zakresami. Okres jest zapisany w adresie, więc możesz udostępnić lub odświeżyć ten sam widok."
-        },
-        "customize": {
-          "title": "Dostosuj panel",
-          "body": "Zmieniaj kolejność kart, ukrywaj je i przywracaj układ, kiedy chcesz. Zapis odbywa się tylko w tej przeglądarce; komunikatów i wyniku nie można ukryć."
-        },
-        "explorer": {
-          "title": "Zbadaj swoje użycie",
-          "body": "Zobacz użycie dziennie, narastająco lub według modelu, zmień metrykę i wyeksportuj okres do CSV."
-        },
         "proof": {
           "title": "Dowód i materiał dowodowy",
           "body": "Trzy karty: publiczny benchmark, Twój własny test A/B i weryfikator. Dane referencyjne nigdy nie są przedstawiane jako Twoje."

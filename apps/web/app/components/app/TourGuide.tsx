@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { TourIcon } from "@/app/components/icons";
 import { usePathname, useRouter } from "@/i18n/navigation";
 
-import { PASOS_DEL_TOUR, escaparHtml, marcarVisto, primerVisible, tourVisto, type PasoDelTour } from "./tour-pasos";
+import { escaparHtml, marcarVisto, pasosDelRecorrido, primerVisible, tourVisto, type PasoDelTour } from "./tour-pasos";
 
 /**
  * EL TOUR GUIADO DEL PANEL — repetible desde la barra («Ver tour») y, la
@@ -34,10 +34,15 @@ import { PASOS_DEL_TOUR, escaparHtml, marcarVisto, primerVisible, tourVisto, typ
  * cierra. `completeOnFinish` también: la librería escribe en `localStorage`
  * sin `try`, así que la marca de «ya visto» es nuestra (`bvsala.tour.v1`).
  *
- * LOS PASOS QUE NO TIENEN DÓNDE APUNTAR NO SALEN. Un `member` no ve Equipo; a
- * ≤860px no hay tarjeta de puesta en marcha; una tarjeta oculta no está. La
- * librería, ante un selector que no casa, apunta en silencio a `<body>`: aquí
- * se filtra antes (`primerVisible`).
+ * LOS PASOS QUE NO TIENEN DÓNDE APUNTAR NO SALEN. Un `member` no ve Equipo (y
+ * recibe Cuenta en su lugar); a ≤860px no hay tarjeta de puesta en marcha (y
+ * el paso apunta a «Primeros pasos»). La librería, ante un selector que no
+ * casa, apunta en silencio a `<body>`: aquí se filtra antes (`primerVisible`).
+ *
+ * UN SOLO RECORRIDO DE SEIS PASOS (2026-11-17): todos sus destinos están en
+ * el armazón del panel, así que el tour del primer inicio de sesión y el de
+ * «Ver tour» son el mismo, en cualquier estado de la cuenta (ver
+ * `tour-pasos.ts`).
  */
 
 const GRUPO = "savings-dashboard";
@@ -113,14 +118,6 @@ export function TourGuide() {
           return { titulo: t("steps.nav.title"), cuerpo: t("steps.nav.body") };
         case "setup":
           return { titulo: t("steps.setup.title"), cuerpo: t("steps.setup.body") };
-        case "verdict":
-          return { titulo: t("steps.verdict.title"), cuerpo: t("steps.verdict.body") };
-        case "range":
-          return { titulo: t("steps.range.title"), cuerpo: t("steps.range.body") };
-        case "customize":
-          return { titulo: t("steps.customize.title"), cuerpo: t("steps.customize.body") };
-        case "explorer":
-          return { titulo: t("steps.explorer.title"), cuerpo: t("steps.explorer.body") };
         case "proof":
           return { titulo: t("steps.proof.title"), cuerpo: t("steps.proof.body") };
         case "team":
@@ -179,16 +176,9 @@ export function TourGuide() {
     const c = await obtenerCliente();
     if (c.isVisible) return;
 
-    // Equipo y Cuenta comparten un paso: quien ve Equipo recibe el paso doble
-    // (su texto cubre las dos cosas) y el de Cuenta a solas se omite.
-    const veEquipo = primerVisible(['[data-tour="nav-team"]']) !== null;
-    const pasos = PASOS_DEL_TOUR.flatMap((paso) => {
-      if (paso.id === "account" && veEquipo) return [];
-      const destino = paso.destinos.length === 0 ? null : primerVisible(paso.destinos);
-      if (paso.destinos.length > 0 && !destino) return [];
-      const { titulo, cuerpo } = textoDe(paso.id);
-      const ancla = paso.ancla && primerVisible([paso.ancla]) ? paso.ancla : undefined;
-      return [{ title: escaparHtml(titulo), content: escaparHtml(cuerpo), target: destino ?? undefined, dialogTarget: ancla, group: GRUPO }];
+    const pasos = pasosDelRecorrido((selectores) => primerVisible(selectores)).map(({ id, destino }) => {
+      const { titulo, cuerpo } = textoDe(id);
+      return { title: escaparHtml(titulo), content: escaparHtml(cuerpo), target: destino ?? undefined, group: GRUPO };
     });
     // Solo bienvenida y despedida no es un tour: no hay nada que enseñar.
     if (pasos.length < 3) return;

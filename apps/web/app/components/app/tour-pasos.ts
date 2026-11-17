@@ -12,26 +12,26 @@
  * los lee y `clases-que-existen` los ignora.
  */
 export type PasoDelTour = {
-  id: "welcome" | "nav" | "setup" | "verdict" | "range" | "customize" | "explorer" | "proof" | "team" | "account" | "finish";
+  id: "welcome" | "nav" | "setup" | "proof" | "team" | "account" | "finish";
   destinos: readonly string[];
-  /**
-   * Dónde se ancla el diálogo cuando no conviene pegarlo al destino entero:
-   * junto a una tarjeta más alta que la ventana no cabe en ningún lado. Se
-   * resalta el destino y el diálogo sale junto al ancla. Si no se ve, se omite.
-   */
-  ancla?: string;
 };
 
+/**
+ * UN SOLO RECORRIDO, SIEMPRE DE SEIS PASOS (dueño, 2026-11-17). Antes había
+ * además cuatro pasos del Resumen (veredicto, periodo, personalizar y
+ * explorador) que solo salían cuando el Resumen tenía datos: al iniciar sesión
+ * el tour era de 10 pasos y, en otros estados, de 6 — parecían dos tours. El
+ * bueno es el de seis, y por eso TODOS sus destinos viven en el armazón del
+ * panel (barra lateral y barra superior), que está en cada página y en cada
+ * estado de la cuenta: la cuenta «Paso n de 6» no depende de qué haya cargado.
+ * `tour-pasos.test.ts` lo fija.
+ */
 export const PASOS_DEL_TOUR: readonly PasoDelTour[] = [
   { id: "welcome", destinos: [] },
   { id: "nav", destinos: ['[data-tour="nav"]'] },
-  // La tarjeta de puesta en marcha es de owner/admin y de escritorio; para el
-  // resto, la entrada «Primeros pasos», que está siempre.
+  // La tarjeta de puesta en marcha (barra lateral) es de owner/admin y de
+  // escritorio; para el resto, la entrada «Primeros pasos», que está siempre.
   { id: "setup", destinos: ['[data-tour="setup"]', '[data-tour="nav-install"]'] },
-  { id: "verdict", destinos: ['[data-tour="verdict"]'] },
-  { id: "range", destinos: ['[data-tour="range"]'] },
-  { id: "customize", destinos: ['[data-tour="customize"]'] },
-  { id: "explorer", destinos: ['[data-tour="explorer"]'], ancla: '[data-tour="explorer"] .ux-seg' },
   { id: "proof", destinos: ['[data-tour="nav-proof"]'] },
   // Solo quien puede gestionar miembros tiene la entrada. Su texto cubre
   // también la cuenta, así que con este paso el de Cuenta a solas no sale.
@@ -39,6 +39,24 @@ export const PASOS_DEL_TOUR: readonly PasoDelTour[] = [
   { id: "account", destinos: ['[data-tour="nav-account"]'] },
   { id: "finish", destinos: ['[data-tour="tour-launch"]'] },
 ];
+
+/**
+ * Los pasos que salen, con su destino: los que no tienen dónde apuntar se
+ * omiten. Equipo y Cuenta comparten un paso: quien ve Equipo recibe el paso
+ * doble (su texto cubre las dos cosas) y el de Cuenta a solas se omite. Recibe
+ * el buscador de destinos para poder probarla sin navegador.
+ */
+export function pasosDelRecorrido(
+  primero: (selectores: readonly string[]) => string | null,
+): { id: PasoDelTour["id"]; destino: string | null }[] {
+  const veEquipo = primero(['[data-tour="nav-team"]']) !== null;
+  return PASOS_DEL_TOUR.flatMap((paso) => {
+    if (paso.id === "account" && veEquipo) return [];
+    const destino = paso.destinos.length === 0 ? null : primero(paso.destinos);
+    if (paso.destinos.length > 0 && !destino) return [];
+    return [{ id: paso.id, destino }];
+  });
+}
 
 /** El primer selector cuyo elemento existe y ocupa sitio en pantalla. */
 export function primerVisible(selectores: readonly string[], raiz: Pick<Document, "querySelector"> = document): string | null {

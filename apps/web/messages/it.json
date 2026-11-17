@@ -92,22 +92,6 @@
           "title": "Primi passi e i tuoi progressi",
           "body": "Le tappe della messa in funzione le misura il prodotto. Selezionane una per aprire la sua istruzione: diventa completata solo quando arriva il segnale reale."
         },
-        "verdict": {
-          "title": "Il tuo verdetto",
-          "body": "Il risparmio misurato nel periodo, con la sua ricevuta e il tipo di evidenza. Se manca qualcosa — integrazione, traffico, prezzo o lettura — qui trovi cosa manca e come proseguire."
-        },
-        "range": {
-          "title": "Scegli il periodo",
-          "body": "Passa da un intervallo disponibile all'altro. Il periodo viaggia nell'indirizzo, quindi puoi condividere o ricaricare la stessa vista."
-        },
-        "customize": {
-          "title": "Personalizza la dashboard",
-          "body": "Riordina o nascondi le schede e ripristina la disposizione quando vuoi. Viene salvata solo in questo browser; gli avvisi e il verdetto non si possono nascondere."
-        },
-        "explorer": {
-          "title": "Esplora il tuo utilizzo",
-          "body": "Guarda l'utilizzo per giorno, cumulato o per modello, cambia metrica ed esporta il periodo in CSV."
-        },
         "proof": {
           "title": "Prova ed evidenza",
           "body": "Tre schede: il banco pubblico, il tuo A/B e il verificatore. I dati di riferimento non vengono mai presentati come tuoi."

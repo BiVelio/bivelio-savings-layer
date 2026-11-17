@@ -92,22 +92,6 @@
           "title": "İlk adımlar ve ilerlemeniz",
           "body": "Kurulum aşamalarını ürün ölçer. Talimatını açmak için birini seçin: yalnızca gerçek sinyal geldiğinde tamamlandı olur."
         },
-        "verdict": {
-          "title": "Sonucunuz",
-          "body": "Dönemin ölçülen tasarrufu, makbuzu ve kanıt türüyle birlikte. Bir şey eksikse — entegrasyon, trafik, fiyat veya okuma — neyin eksik olduğu ve nasıl devam edileceği burada açıklanır."
-        },
-        "range": {
-          "title": "Dönemi seçin",
-          "body": "Kullanılabilir aralıklar arasında geçiş yapın. Dönem adreste taşınır; böylece aynı görünümü paylaşabilir veya yeniden yükleyebilirsiniz."
-        },
-        "customize": {
-          "title": "Paneli özelleştirin",
-          "body": "Kartları yeniden sıralayın veya gizleyin, düzeni istediğiniz zaman geri yükleyin. Yalnızca bu tarayıcıda kaydedilir; uyarılar ve sonuç gizlenemez."
-        },
-        "explorer": {
-          "title": "Kullanımınızı keşfedin",
-          "body": "Kullanımı günlük, kümülatif veya modele göre görün, metriği değiştirin ve dönemi CSV olarak dışa aktarın."
-        },
         "proof": {
           "title": "Kanıt ve dayanak",
           "body": "Üç sekme: herkese açık kıyaslama, kendi A/B testiniz ve doğrulayıcı. Referans verileri asla sizinmiş gibi sunulmaz."
