@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 import { AccountTabs } from "@/app/components/app/AccountTabs";
-import { PageHead } from "@/app/components/app/PageHead";
+import { CabeceraDePagina } from "@/app/components/app/CabeceraDePagina";
 
 import { extractoEnSombra, periodoDe } from "@/lib/billing/extracto-sombra";
 import { diaSiguiente, diasEntre, MAX_FILAS_POR_DESCARGA } from "@/lib/metering/referencias-csv";
@@ -206,7 +206,7 @@ export default async function ExtractoPage() {
   return (
     <>
       <AccountTabs role={ctx.role} />
-      <PageHead eyebrow={t("extracto.eyebrow")} title={t("extracto.title")} sub={t("extracto.intro")} />
+      <CabeceraDePagina rotulo={t("extracto.eyebrow")} titulo={t("extracto.title")} entradilla={t("extracto.intro")} />
       <ExtractoVista
         e={e}
         periodo={periodo}
