@@ -92,22 +92,6 @@
           "title": "Langkah pertama dan progres Anda",
           "body": "Tonggak persiapan diukur oleh produk. Pilih salah satu untuk membuka petunjuknya: statusnya menjadi selesai hanya ketika sinyal nyata tiba."
         },
-        "verdict": {
-          "title": "Hasil Anda",
-          "body": "Penghematan terukur pada periode ini, lengkap dengan struk dan jenis buktinya. Jika ada yang kurang — integrasi, trafik, harga, atau pembacaan — di sinilah dijelaskan apa yang kurang dan cara melanjutkan."
-        },
-        "range": {
-          "title": "Pilih periode",
-          "body": "Beralih di antara rentang yang tersedia. Periode ada di alamat, jadi Anda dapat membagikan atau memuat ulang tampilan yang sama."
-        },
-        "customize": {
-          "title": "Sesuaikan dasbor",
-          "body": "Urutkan ulang atau sembunyikan kartu dan pulihkan tata letak kapan saja. Disimpan hanya di browser ini; pemberitahuan dan hasil tidak dapat disembunyikan."
-        },
-        "explorer": {
-          "title": "Jelajahi pemakaian Anda",
-          "body": "Lihat pemakaian per hari, kumulatif, atau per model, ganti metrik, dan ekspor periode sebagai CSV."
-        },
         "proof": {
           "title": "Bukti dan dasar pembuktian",
           "body": "Tiga tab: benchmark publik, A/B milik Anda, dan pemverifikasi. Data referensi tidak pernah ditampilkan sebagai milik Anda."

@@ -326,7 +326,10 @@ arriba.
   puesta en marcha medida, con su cuenta escrita (la barra es `aria-hidden`) y
   el siguiente hito como enlace. El avatar se queda en la inicial (la pieza
   Avatar reducida a su respaldo). Sin cadenas por defecto; las etiquetas parten
-  línea; filas de 36px (44 con puntero grueso).
+  línea; filas de 36px (44 con puntero grueso). La lista de filas lleva
+  `overflow-x: hidden` y se estira 4px por lado con su relleno, para que el
+  separador que sangra hasta el borde no desborde y pinte una barra de scroll
+  (2026-11-17).
 - **kpi-chart** (Pro; E1) — **fork.** Un valor que falta es `null` y **se queda
   en hueco** (upstream ya cortaba la línea; aquí además el tooltip lo dice con
   `gapText` y nunca pinta «0»). Fuera el `delta` frente al periodo anterior y

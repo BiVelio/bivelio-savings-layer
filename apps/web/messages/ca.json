@@ -92,22 +92,6 @@
           "title": "Primers passos i el teu progrés",
           "body": "Les fites de la posada en marxa les mesura el producte. Prem-ne una per obrir-ne la instrucció: passa a fet només quan arriba el senyal real."
         },
-        "verdict": {
-          "title": "El teu veredicte",
-          "body": "L'estalvi mesurat del període, amb el seu rebut i el tipus d'evidència. Si falta alguna cosa —integració, trànsit, preu o lectura— aquí s'explica què falta i com continuar."
-        },
-        "range": {
-          "title": "Tria el període",
-          "body": "Canvia entre els rangs disponibles. El període viatja a l'adreça, així que pots compartir o recarregar la mateixa vista."
-        },
-        "customize": {
-          "title": "Personalitza el panell",
-          "body": "Reordena o amaga targetes i restableix la disposició quan vulguis. Es desa només en aquest navegador; els avisos i el veredicte no es poden amagar."
-        },
-        "explorer": {
-          "title": "Explora el teu ús",
-          "body": "Mira l'ús per dia, acumulat o per model, canvia de mètrica i exporta el període en CSV."
-        },
         "proof": {
           "title": "Prova i evidència",
           "body": "Tres pestanyes: el banc públic, el teu propi A/B i el verificador. Les dades de referència mai es presenten com a teves."

@@ -92,22 +92,6 @@
           "title": "Premiers pas et votre progression",
           "body": "Les jalons de la mise en route sont mesurés par le produit. Sélectionnez-en un pour ouvrir ses instructions : il ne passe à terminé que lorsque le signal réel arrive."
         },
-        "verdict": {
-          "title": "Votre verdict",
-          "body": "Les économies mesurées sur la période, avec leur reçu et leur type de preuve. S'il manque quelque chose — intégration, trafic, prix ou lecture — c'est ici que vous voyez quoi et comment poursuivre."
-        },
-        "range": {
-          "title": "Choisissez la période",
-          "body": "Passez d'une plage disponible à l'autre. La période figure dans l'adresse : vous pouvez partager ou recharger la même vue."
-        },
-        "customize": {
-          "title": "Personnalisez le tableau de bord",
-          "body": "Réordonnez ou masquez des cartes et rétablissez la disposition quand vous voulez. C'est enregistré dans ce navigateur uniquement ; les avis et le verdict ne peuvent pas être masqués."
-        },
-        "explorer": {
-          "title": "Explorez votre usage",
-          "body": "Consultez l'usage par jour, en cumulé ou par modèle, changez de métrique et exportez la période en CSV."
-        },
         "proof": {
           "title": "Preuve et éléments vérifiables",
           "body": "Trois onglets : le banc public, votre propre A/B et le vérificateur. Les données de référence ne sont jamais présentées comme les vôtres."

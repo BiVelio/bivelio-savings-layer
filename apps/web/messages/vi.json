@@ -92,22 +92,6 @@
           "title": "Những bước đầu và tiến độ của bạn",
           "body": "Các mốc thiết lập do sản phẩm đo. Chọn một mốc để mở hướng dẫn của nó: mốc chỉ chuyển sang xong khi tín hiệu thực sự đến."
         },
-        "verdict": {
-          "title": "Kết quả của bạn",
-          "body": "Khoản tiết kiệm đã đo trong kỳ, kèm biên nhận và loại bằng chứng. Nếu còn thiếu điều gì — tích hợp, lưu lượng, giá hoặc quyền đọc — đây là nơi cho biết thiếu gì và cần làm gì tiếp."
-        },
-        "range": {
-          "title": "Chọn kỳ",
-          "body": "Chuyển giữa các khoảng thời gian có sẵn. Kỳ nằm trong địa chỉ, nên bạn có thể chia sẻ hoặc tải lại đúng chế độ xem đó."
-        },
-        "customize": {
-          "title": "Tùy chỉnh bảng điều khiển",
-          "body": "Sắp xếp lại hoặc ẩn thẻ và khôi phục bố cục bất cứ lúc nào. Chỉ lưu trong trình duyệt này; thông báo và kết quả không thể ẩn."
-        },
-        "explorer": {
-          "title": "Khám phá mức sử dụng",
-          "body": "Xem mức sử dụng theo ngày, lũy kế hoặc theo mô hình, đổi chỉ số và xuất kỳ ra CSV."
-        },
         "proof": {
           "title": "Bằng chứng và căn cứ",
           "body": "Ba thẻ: benchmark công khai, thử nghiệm A/B của riêng bạn và trình xác minh. Dữ liệu tham chiếu không bao giờ được trình bày như dữ liệu của bạn."

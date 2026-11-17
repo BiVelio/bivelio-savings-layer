@@ -1760,7 +1760,13 @@
 
 /* Actions: quiet rows, a subtle fill on hover that fades out again */
 /* The column may shrink, so long labels shorten instead of widening the card; a long list scrolls */
-.ui-pmc__items { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; max-height: 320px; overflow-y: auto; overscroll-behavior: contain; }
+/* BiVelio: la lista vive bajo `overflow-y: auto`, que vuelve `auto` también el
+   eje X; el separador sangra 4px por lado hasta el borde de la tarjeta y, sin
+   más, desbordaba 8px y pintaba una barra de scroll (visible con barras
+   clásicas: Windows, o Mac con ratón). La lista se estira esos 4px por lado y
+   los devuelve como relleno: el separador queda DENTRO de su caja de relleno,
+   las filas no se mueven, y el eje X no se desplaza nunca. */
+.ui-pmc__items { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; max-height: 320px; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; margin-inline: -4px; padding-inline: 4px; }
 .ui-pmc__item {
   display: flex;
   cursor: pointer;

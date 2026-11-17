@@ -92,22 +92,6 @@
           "title": "First steps and your progress",
           "body": "The product measures the setup milestones. Select one to open its instructions: it only turns done when the real signal arrives."
         },
-        "verdict": {
-          "title": "Your verdict",
-          "body": "The measured savings for the period, with its receipt and evidence type. If something is missing — integration, traffic, pricing or a read — this is where you see what and how to continue."
-        },
-        "range": {
-          "title": "Choose the period",
-          "body": "Switch between the available ranges. The period lives in the address, so you can share or reload the same view."
-        },
-        "customize": {
-          "title": "Customize the dashboard",
-          "body": "Reorder or hide cards and restore the layout whenever you like. It is saved in this browser only; notices and the verdict cannot be hidden."
-        },
-        "explorer": {
-          "title": "Explore your usage",
-          "body": "See usage by day, cumulative or by model, switch metric and export the period as CSV."
-        },
         "proof": {
           "title": "Proof and evidence",
           "body": "Three tabs: the public benchmark, your own A/B and the verifier. Reference data is never presented as yours."
