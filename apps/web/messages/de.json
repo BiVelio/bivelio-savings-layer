@@ -322,6 +322,7 @@
       "eyebrow": "Lokal verifizieren · nichts verlässt diese Seite",
       "title": "Wie viel würdest du sparen?",
       "intro": "Finde es in einer Minute heraus: Wähle ein Beispiel (oder füge eigene Daten ein), gib an, wie viel du die API nutzt, und sieh die prognostizierte Ersparnis. Alles läuft in deinem Browser.",
+      "formatoRotulo": "In deinem Browser",
       "formatoTitulo": "Format-Prüfer",
       "formatoSub": "Zählt die Tokens des strukturierten Ausschnitts, den du einfügst, in deinem Browser. Das ist weder dein Monatsbudget noch deine Rechnung.",
       "proyectorSub": "Eine Schätzung mit Annahmen, die du selbst wählst. Das ist weder eine Rechnung noch eine realisierte Ersparnis."
@@ -514,6 +515,13 @@
       "empty": "Noch keine Anfragen gemessen — deine Aufteilung vermieden-vs-ausgeführt und der Mix pro Modell erscheinen, sobald das SDK berichtet.",
       "title": "llm-aufrufe · vermieden vs ausgeführt",
       "split": "{avoided} vermieden · {ran} ausgeführt ({pct}% vermieden)"
+    },
+    "mosaico": {
+      "title": "Aufrufe, Tag für Tag",
+      "sinProveedor": "{count, plural, one {<b>{n}</b> beantwortet, ohne deinen Anbieter aufzurufen} other {<b>{n}</b> beantwortet, ohne deinen Anbieter aufzurufen}}",
+      "ejecutadas": "{count, plural, one {<b>{n}</b> ausgeführt} other {<b>{n}</b> ausgeführt}}",
+      "aria": "Aufrufe pro Tag über {dias} Tage: {sinProveedor} beantwortet, ohne deinen Anbieter aufzurufen, und {ejecutadas} ausgeführt.",
+      "foot": "Eine Spalte pro Tag; {k, plural, one {jede Kachel ein Aufruf} other {jede Kachel {kn} Aufrufe}}. {total} insgesamt. Ein Tag ohne Bericht ist eine Lücke, keine Null."
     },
     "instrumentationSpine": {
       "eyebrow": "Bring deine Einsparungen live",
@@ -736,8 +744,10 @@
       "pythonNote": "<b>Python?</b> Der Python-Client <code>bvsala</code> leitet die offiziellen SDKs von OpenAI und Anthropic über dasselbe Gateway (<code>bvsala gateway</code>) und gibt deinem Code den Bericht jeder Anfrage zurück — dieselben Zahlen, die dieses Panel erhält. Er braucht ein Gateway ab Version 0.4.26 und Python ab 3.10. Installiert wird er von PyPI mit <code>pip install bivelio-savings-layer</code>; im Code dann <code>import bvsala</code>.",
       "finalNote": "Das war's. Keine gültige Lizenz → <code>generate()</code> verweigert. Wenn dein Plan gekündigt wird, stoppt das SDK innerhalb von ~15 Min über <code>licenseServerUrl</code> — ohne Neustart, und es legt niemals deine Produktion lahm, falls wir nicht erreichbar sind.",
       "terminal": "Terminal",
+      "sdkEyebrow": "Anwendung",
       "sdkTitle": "Eine Anwendung integrieren (SDK)",
       "sdkLede": "Umschließe deinen Provider in deinem Code und lies den Sparbericht jedes Aufrufs.",
+      "gatewayEyebrow": "Coding-Agent",
       "gatewayTitle": "Einen Agenten verbinden (Gateway)",
       "gatewayLede": "Starte deinen Coding-Agenten über das lokale Gateway, ohne seinen Code anzufassen.",
       "modeLocalTitle": "Lokaler Modus",
@@ -745,6 +755,7 @@
       "modeCloudTitle": "Cloud-Verbindung",
       "modeCloudBody": "Mit Lizenz und Service-Schlüssel erhält dieses Dashboard Zählwerte und Kosten – nie deine Prompts –, und deine Organisation teilt Messung und Plätze.",
       "modeCloudLink": "Zu den Zugangsdaten",
+      "cloudEyebrow": "Zugangsdaten",
       "cloudTitle": "Cloud-Verbindung: Lizenz und Service-Schlüssel",
       "optional": "Optional mit der offenen Engine",
       "roleLimited": "Deine Rolle kann diese Seite lesen, aber nur owner und admin können die Lizenz ausstellen und Service-Schlüssel erstellen oder widerrufen.",
@@ -2118,6 +2129,7 @@
     "verdictNotYet": "Noch nicht",
     "verdictYes": "Hier ja",
     "s3Title": "Schätzung vs. Messung",
+    "s3Eyebrow": "Zwei Zahlen",
     "s3Sub": "Das Produkt hat zwei verschiedene Zahlen, die man nicht vermischen sollte.",
     "mBeforeK": "Vor der Installation",
     "mBeforeV": "Schätzung",
@@ -2126,6 +2138,7 @@
     "mAfterV": "Echte Messung",
     "mAfterBody": "Jeder Aufruf liefert einen SavingsReport: die Aufrufe, die du nie bezahlt hast, und die Nettoersparnis pro Anfrage. Prüfbar, Anfrage für Anfrage, auf deiner eigenen Infrastruktur.",
     "s4Title": "Die komplette Installation, wenn du eine App baust",
+    "s4Eyebrow": "Für Entwickler",
     "snip1": "das Paket",
     "snip2": "die Lizenz (aus deinem Dashboard)",
     "snip3": "den Aufruf umhüllen — das ist die ganze Code-Änderung",
@@ -2188,7 +2201,8 @@
       }
     },
     "cases": {
-      "skillNote": "Der Anweisungs-Skill hat eine andere Reichweite: Er ändert, wie der Assistent innerhalb eines Abonnements mit Limits arbeitet. Er misst keine Rechnung und wendet weder die Hebel des SDK noch die des Gateways an. <link>Skill ansehen</link>"
+      "skillNote": "Der Anweisungs-Skill hat eine andere Reichweite: Er ändert, wie der Assistent innerhalb eines Abonnements mit Limits arbeitet. Er misst keine Rechnung und wendet weder die Hebel des SDK noch die des Gateways an. <link>Skill ansehen</link>",
+      "eyebrow": "Dein Fall"
     },
     "pieces": {
       "eyebrow": "Übersicht",

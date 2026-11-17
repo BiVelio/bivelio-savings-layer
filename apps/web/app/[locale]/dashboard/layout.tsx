@@ -86,6 +86,10 @@ export default async function DashboardLayout({
         <div className="app-body">
           <AppSidebar role={ctx.role} unknownOrg={orgFallo} />
           <main className="app-main" id={ID_DEL_CONTENIDO} tabIndex={-1}>
+            {/* El cielo cian de la Firma de campaña: un degradado de un
+                elemento vacío arriba a la derecha del contenido, detrás de
+                todo (`.pfc-cielo` en panel.css). No es candidato a LCP. */}
+            <div className="cielo pfc-cielo" aria-hidden />
             <div className="app-inner">{children}</div>
           </main>
         </div>

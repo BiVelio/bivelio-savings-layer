@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
-import { PageHead } from "@/app/components/app/PageHead";
+import { CabeceraDePagina } from "@/app/components/app/CabeceraDePagina";
 import { Link } from "@/i18n/navigation";
 import { CloudIcon, CodeIcon, TerminalIcon } from "@/app/components/icons";
 import { SetupGuide, type SetupGroup } from "@/vendor/affectui/setup-guide";
@@ -78,7 +78,7 @@ export default async function InstallPage() {
       : secciones;
   return (
     <div className="ins-page">
-      <PageHead eyebrow={t("install.eyebrow")} title={t("install.title")} sub={t("install.intro")} />
+      <CabeceraDePagina rotulo={t("install.eyebrow")} titulo={t("install.title")} entradilla={t("install.intro")} />
       <div className="ins-layout">
         <aside className="ins-rail">
           <SetupGuide

@@ -123,7 +123,7 @@ export async function AccountPlanStrip({
   ];
   const tonoDelEstado: Record<typeof estado.tono, BadgeTone> = { ok: "success", warn: "warning", danger: "danger", neutro: "neutral" };
   return (
-    <div className="cards plan acct">
+    <div className="cards plan acct pcu-cta">
       <section className="card acct-main" aria-labelledby="acct-plan-titulo">
         <header className="acct-head">
           <div className="acct-head-txt">

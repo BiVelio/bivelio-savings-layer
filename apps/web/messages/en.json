@@ -322,6 +322,7 @@
       "eyebrow": "Verify locally · nothing leaves this page",
       "title": "How much would you save?",
       "intro": "Find out in a minute: pick an example (or paste your own data), tell us how much you use the API, and see the projected saving. Everything runs in your browser.",
+      "formatoRotulo": "In your browser",
       "formatoTitulo": "Format verifier",
       "formatoSub": "Counts the tokens of the structured snippet you paste, in your browser. It is not your monthly budget or your invoice.",
       "proyectorSub": "An estimate built on assumptions you choose. It is not an invoice or realized savings."
@@ -514,6 +515,13 @@
       "empty": "No requests metered yet — your avoided-vs-ran split and per-model mix appear once the SDK reports.",
       "title": "llm calls · avoided vs ran",
       "split": "{avoided} avoided · {ran} ran ({pct}% avoided)"
+    },
+    "mosaico": {
+      "title": "Calls, day by day",
+      "sinProveedor": "{count, plural, one {<b>{n}</b> answered without calling your provider} other {<b>{n}</b> answered without calling your provider}}",
+      "ejecutadas": "{count, plural, one {<b>{n}</b> executed} other {<b>{n}</b> executed}}",
+      "aria": "Calls per day over {dias} days: {sinProveedor} answered without calling your provider and {ejecutadas} executed.",
+      "foot": "One column per day; {k, plural, one {each tile, one call} other {each tile, {kn} calls}}. {total} in total. A day without a report is a gap, not a zero."
     },
     "instrumentationSpine": {
       "eyebrow": "Get to live savings",
@@ -736,8 +744,10 @@
       "pythonNote": "<b>Python?</b> The <code>bvsala</code> client for Python routes the official OpenAI and Anthropic SDKs through this same gateway (<code>bvsala gateway</code>) and hands your code the report of each request — the same figures this dashboard receives. It needs a 0.4.26 or later gateway and Python 3.10 or newer. Install it from PyPI with <code>pip install bivelio-savings-layer</code>; in your code, <code>import bvsala</code>.",
       "finalNote": "That's it. No valid license → <code>generate()</code> refuses. If your plan is cancelled the SDK stops within ~15 min via <code>licenseServerUrl</code> — no restart, and it never bricks your production if we're unreachable.",
       "terminal": "Terminal",
+      "sdkEyebrow": "Application",
       "sdkTitle": "Integrate an application (SDK)",
       "sdkLede": "Wrap your provider in your code and read the savings report of every call.",
+      "gatewayEyebrow": "Coding agent",
       "gatewayTitle": "Connect an agent (gateway)",
       "gatewayLede": "Launch your coding agent through the local gateway, without touching its code.",
       "modeLocalTitle": "Local mode",
@@ -745,6 +755,7 @@
       "modeCloudTitle": "Cloud connection",
       "modeCloudBody": "With a license and a service key, this dashboard receives counts and costs — never your prompts — and your organization shares metering and seats.",
       "modeCloudLink": "Go to credentials",
+      "cloudEyebrow": "Credentials",
       "cloudTitle": "Cloud connection: license and service key",
       "optional": "Optional with the open engine",
       "roleLimited": "Your role can read this page, but only owner and admin can issue the license and create or revoke service keys.",
@@ -2118,6 +2129,7 @@
     "verdictNotYet": "Not yet",
     "verdictYes": "This is it",
     "s3Title": "Estimate vs. measurement",
+    "s3Eyebrow": "Two numbers",
     "s3Sub": "The product has two different numbers, and they shouldn't be mixed.",
     "mBeforeK": "Before installing",
     "mBeforeV": "Estimate",
@@ -2126,6 +2138,7 @@
     "mAfterV": "Real measurement",
     "mAfterBody": "Every call returns a SavingsReport: the calls you never paid for and the net saving per request. Auditable, request by request, on your own infrastructure.",
     "s4Title": "The full install, if you build an app",
+    "s4Eyebrow": "For developers",
     "snip1": "the package",
     "snip2": "the license (from your dashboard)",
     "snip3": "wrap the call — this is the entire code change",
@@ -2188,7 +2201,8 @@
       }
     },
     "cases": {
-      "skillNote": "The instructions skill has a different scope: it changes how the assistant works inside a subscription with caps. It does not meter a bill or apply the SDK or gateway levers. <link>See the skill</link>"
+      "skillNote": "The instructions skill has a different scope: it changes how the assistant works inside a subscription with caps. It does not meter a bill or apply the SDK or gateway levers. <link>See the skill</link>",
+      "eyebrow": "Your case"
     },
     "pieces": {
       "eyebrow": "Map",

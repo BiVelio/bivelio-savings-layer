@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 import { AccountTabs } from "@/app/components/app/AccountTabs";
-import { PageHead } from "@/app/components/app/PageHead";
+import { CabeceraDePagina } from "@/app/components/app/CabeceraDePagina";
 import { loadDashboard } from "../load";
 import { AccountPlanStrip } from "../components/AccountPlanStrip";
 import { BillingStateBanner } from "../components/BillingStateBanner";
@@ -34,7 +34,7 @@ export default async function AccountPage({
   return (
     <>
       <AccountTabs role={ctx.role} />
-      <PageHead eyebrow={t("account.eyebrow")} title={t("account.title")} sub={t("account.intro")} />
+      <CabeceraDePagina rotulo={t("account.eyebrow")} titulo={t("account.title")} entradilla={t("account.intro")} />
       {resultado ? <CheckoutBanner resultado={resultado} activo={activo} /> : null}
       {/* El estado real del cobro, ANTES de la tarjeta del plan: si la tarjeta
           no pasa, eso es lo primero que hay que leer, no el precio. */}

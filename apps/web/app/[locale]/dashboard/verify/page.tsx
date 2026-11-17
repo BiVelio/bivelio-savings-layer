@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
-import { PageHead } from "@/app/components/app/PageHead";
+import { CabeceraDePagina } from "@/app/components/app/CabeceraDePagina";
 import { FormatVerifier } from "@/app/components/FormatVerifier";
 import { ProofTabs } from "@/app/components/app/ProofTabs";
 import { EvidenceBadge } from "@/app/components/ui";
@@ -23,26 +23,25 @@ export default async function VerifyPage() {
   return (
     <>
       <ProofTabs />
-      <PageHead eyebrow={t("verify.eyebrow")} title={t("verify.title")} sub={t("verify.intro")} />
+      <CabeceraDePagina rotulo={t("verify.eyebrow")} titulo={t("verify.title")} entradilla={t("verify.intro")} />
       {/* El MISMO verificador de la portada, con el tokenizador exacto y
           cargado sin esperar al scroll. El proyector (estimación con
           deslizadores) va debajo, con su etiqueta de estimación. */}
-      <section className="app-section prf-sec" aria-labelledby="vfy-formato">
-        <div className="app-sec-head">
-          <div>
-            <h2 className="t-section" id="vfy-formato">{t("verify.formatoTitulo")}</h2>
-            <p className="sub-section">{t("verify.formatoSub")}</p>
-          </div>
+      <section className="pfc-sec prf-sec prb-sec prb-formato" aria-labelledby="vfy-formato">
+        <div className="pfc-sec-cab">
+          <p className="pfc-rotulo">{t("verify.formatoRotulo")}</p>
+          <h2 className="pfc-sec-t" id="vfy-formato">{t("verify.formatoTitulo")}</h2>
+          <p className="pfc-sec-sub">{t("verify.formatoSub")}</p>
         </div>
         <FormatVerifier eager />
       </section>
-      <section className="app-section prf-sec" aria-labelledby="vfy-proyector">
-        <div className="app-sec-head">
-          <div>
-            <h2 className="t-section" id="vfy-proyector">{t("projectorVerifier.projectorTitle")}</h2>
-            <p className="sub-section">{t("verify.proyectorSub")}</p>
+      <section className="pfc-sec prf-sec prb-sec prb-proyector" aria-labelledby="vfy-proyector">
+        <div className="pfc-sec-cab">
+          <div className="prb-marca">
+            <EvidenceBadge tipo="estimacion" label={t("projectorVerifier.notInvoice")} />
           </div>
-          <EvidenceBadge tipo="estimacion" label={t("projectorVerifier.notInvoice")} />
+          <h2 className="pfc-sec-t" id="vfy-proyector">{t("projectorVerifier.projectorTitle")}</h2>
+          <p className="pfc-sec-sub">{t("verify.proyectorSub")}</p>
         </div>
         <ProjectorVerifier prices={prices} />
       </section>

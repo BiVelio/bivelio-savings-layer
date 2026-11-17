@@ -26,6 +26,9 @@ import { TrafficModelMix } from "@/app/[locale]/dashboard/components/TrafficMode
 import { InstrumentationSpine } from "@/app/[locale]/dashboard/components/InstrumentationSpine";
 import { MaquinasCard } from "@/app/[locale]/dashboard/components/MaquinasCard";
 import { PulsoDelPeriodo } from "@/app/[locale]/dashboard/components/PulsoDelPeriodo";
+import { MosaicoDeLlamadas } from "@/app/[locale]/dashboard/components/MosaicoDeLlamadas";
+import { CabeceraDeSeccion } from "@/app/[locale]/dashboard/components/CabeceraDeSeccion";
+import { CabeceraDePagina } from "@/app/components/app/CabeceraDePagina";
 import { PanelEditable } from "@/app/[locale]/dashboard/components/PanelEditable";
 import { ResumenKpis } from "@/app/[locale]/dashboard/components/ResumenKpis";
 import { UsageExplorer } from "@/app/[locale]/dashboard/components/UsageExplorer";
@@ -237,29 +240,20 @@ export default async function GaleriaDeEstados({
           <main className="app-main">
             <div className="app-inner">
               <div className="ov">
-                <PageHead eyebrow={t("overview.eyebrow")} title={t("overview.title")} sub={t("overview.intro")} />
+                <CabeceraDePagina rotulo={t("overview.eyebrow")} titulo={t("overview.title")} entradilla={t("overview.intro")} />
                 <p style={AVISO}>Galería de desarrollo · cifras de muestra generadas en esta página · no son de ningún cliente.</p>
                 <section className="app-section ov-result">
-                  <div className="app-sec-head">
-                    <div>
-                      <p className="eyebrow">{t("overview.savingsEyebrow")}</p>
-                      <h2 className="t-section">{t("overview.savingsTitle")}</h2>
-                    </div>
-                  </div>
+                  <CabeceraDeSeccion rotulo={t("overview.savingsEyebrow")} titulo={t("overview.savingsTitle")} acento />
                   <div className="panel-stack">
                     <VerdictHero usage={usage} visibilidad={conDatos ? "con_datos" : "sin_trafico"} rango={30} integrado={conDatos} />
+                    {conDatos ? <MosaicoDeLlamadas usage={usage} /> : null}
                     {conDatos ? <ResumenKpis usage={usage} rango={30} steps={steps} /> : null}
                     {conDatos ? <PulsoDelPeriodo usage={usage} porModelo={POR_MODELO} rango={30} /> : null}
                   </div>
                 </section>
                 {conDatos ? null : <InstrumentationSpine steps={steps} />}
                 <section className="app-section">
-                  <div className="app-sec-head">
-                    <div>
-                      <p className="eyebrow">{t("overview.panelEyebrow")}</p>
-                      <h2 className="t-section">{t("overview.panelTitle")}</h2>
-                    </div>
-                  </div>
+                  <CabeceraDeSeccion rotulo={t("overview.panelEyebrow")} titulo={t("overview.panelTitle")} />
                   <PanelEditable
                     tarjetas={[
                       {

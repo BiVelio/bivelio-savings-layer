@@ -105,7 +105,11 @@ describe("quien usaba el titular entero lo sigue recibiendo entero", () => {
   it("la tarjeta OG y el panel de «cómo funciona» unen las dos mitades", () => {
     const union = '`${t("title")} ${t("titleAccent")}`';
     expect(leer("app/[locale]/how-it-works/opengraph-image.tsx")).toContain(union);
-    expect(leer("app/[locale]/dashboard/how-it-works/page.tsx")).toContain(union);
+    // El panel (Firma de campaña, 2026-11-17) pinta las dos mitades por
+    // separado —el acento debajo, en serif— pero las dos, y con su marcador.
+    const panel = leer("app/[locale]/dashboard/how-it-works/page.tsx");
+    expect(panel).toContain('{t("title")}{" "}');
+    expect(panel).toContain('<Marcado texto={t("titleAccent")} marca={t("titleMark")} />');
   });
   it("cada héroe pinta el acento con su marcador", () => {
     for (const ruta of ["app/components/BancoPublico.tsx", "app/[locale]/pricing/page.tsx"]) {

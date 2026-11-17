@@ -322,6 +322,7 @@
       "eyebrow": "Verifikasi secara lokal · tidak ada yang keluar dari halaman ini",
       "title": "Berapa yang bisa kamu hemat?",
       "intro": "Cek dalam satu menit: pilih contoh (atau tempel data kamu sendiri), beri tahu seberapa banyak kamu memakai API, dan lihat proyeksi penghematannya. Semua dihitung di browser kamu.",
+      "formatoRotulo": "Di browser Anda",
       "formatoTitulo": "Pemeriksa format",
       "formatoSub": "Menghitung token dari potongan terstruktur yang Anda tempel, di browser Anda. Ini bukan anggaran bulanan atau tagihan Anda.",
       "proyectorSub": "Estimasi dengan asumsi yang Anda pilih sendiri. Ini bukan tagihan dan bukan penghematan yang terealisasi."
@@ -514,6 +515,13 @@
       "empty": "Belum ada permintaan yang terukur — pembagian dihindari-vs-dijalankan dan campuran per model muncul begitu SDK melapor.",
       "title": "panggilan llm · dihindari vs dijalankan",
       "split": "{avoided} dihindari · {ran} dijalankan ({pct}% dihindari)"
+    },
+    "mosaico": {
+      "title": "Panggilan, hari demi hari",
+      "sinProveedor": "{count, plural, one {<b>{n}</b> dijawab tanpa memanggil penyedia Anda} other {<b>{n}</b> dijawab tanpa memanggil penyedia Anda}}",
+      "ejecutadas": "{count, plural, one {<b>{n}</b> dijalankan} other {<b>{n}</b> dijalankan}}",
+      "aria": "Panggilan per hari selama {dias} hari: {sinProveedor} dijawab tanpa memanggil penyedia Anda dan {ejecutadas} dijalankan.",
+      "foot": "Satu kolom per hari; {k, plural, one {setiap ubin, satu panggilan} other {setiap ubin, {kn} panggilan}}. Total {total}. Hari tanpa laporan adalah celah, bukan nol."
     },
     "instrumentationSpine": {
       "eyebrow": "Menuju penghematan langsung",
@@ -736,8 +744,10 @@
       "pythonNote": "<b>Python?</b> Klien <code>bvsala</code> untuk Python mengarahkan SDK resmi OpenAI dan Anthropic melalui gateway yang sama ini (<code>bvsala gateway</code>) dan mengembalikan laporan setiap permintaan ke kode Anda — angka yang sama dengan yang diterima panel ini. Klien ini memerlukan gateway 0.4.26 atau lebih baru dan Python 3.10 atau lebih baru. Pasang dari PyPI dengan <code>pip install bivelio-savings-layer</code>; di kode Anda, <code>import bvsala</code>.",
       "finalNote": "Selesai. Tanpa lisensi valid → <code>generate()</code> menolak. Jika paket Anda dibatalkan, SDK berhenti dalam ~15 mnt melalui <code>licenseServerUrl</code> — tanpa restart, dan tidak pernah melumpuhkan produksi Anda jika kami tidak dapat dihubungi.",
       "terminal": "Terminal",
+      "sdkEyebrow": "Aplikasi",
       "sdkTitle": "Integrasikan aplikasi (SDK)",
       "sdkLede": "Bungkus penyedia Anda di dalam kode dan baca laporan penghematan setiap panggilan.",
+      "gatewayEyebrow": "Agen koding",
       "gatewayTitle": "Hubungkan agen (gateway)",
       "gatewayLede": "Jalankan agen koding Anda melalui gateway lokal, tanpa menyentuh kodenya.",
       "modeLocalTitle": "Mode lokal",
@@ -745,6 +755,7 @@
       "modeCloudTitle": "Koneksi Cloud",
       "modeCloudBody": "Dengan lisensi dan kunci layanan, dasbor ini menerima hitungan dan biaya — tidak pernah prompt Anda — dan organisasi Anda berbagi pengukuran serta kursi.",
       "modeCloudLink": "Buka kredensial",
+      "cloudEyebrow": "Kredensial",
       "cloudTitle": "Koneksi Cloud: lisensi dan kunci layanan",
       "optional": "Opsional dengan mesin terbuka",
       "roleLimited": "Peran Anda dapat membaca halaman ini, tetapi hanya owner dan admin yang dapat menerbitkan lisensi serta membuat atau mencabut kunci layanan.",
@@ -2118,6 +2129,7 @@
     "verdictNotYet": "Belum",
     "verdictYes": "Di sini ya",
     "s3Title": "Estimasi vs. pengukuran",
+    "s3Eyebrow": "Dua angka",
     "s3Sub": "Produk ini punya dua angka berbeda dan sebaiknya tidak dicampur.",
     "mBeforeK": "Sebelum memasang",
     "mBeforeV": "Estimasi",
@@ -2126,6 +2138,7 @@
     "mAfterV": "Pengukuran nyata",
     "mAfterBody": "Setiap panggilan mengembalikan SavingsReport: panggilan yang tidak pernah kamu bayar dan penghematan bersih per permintaan. Dapat diaudit, permintaan demi permintaan, di infrastrukturmu sendiri.",
     "s4Title": "Pemasangan lengkap, jika kamu membangun aplikasi",
+    "s4Eyebrow": "Untuk developer",
     "snip1": "paketnya",
     "snip2": "lisensinya (dari dasbor kamu)",
     "snip3": "membungkus panggilan — ini seluruh perubahan kodenya",
@@ -2188,7 +2201,8 @@
       }
     },
     "cases": {
-      "skillNote": "Skill instruksi memiliki cakupan lain: ia mengubah cara asisten bekerja di dalam langganan yang berbatas. Ia tidak mengukur tagihan dan tidak menerapkan tuas SDK maupun gateway. <link>Lihat skill</link>"
+      "skillNote": "Skill instruksi memiliki cakupan lain: ia mengubah cara asisten bekerja di dalam langganan yang berbatas. Ia tidak mengukur tagihan dan tidak menerapkan tuas SDK maupun gateway. <link>Lihat skill</link>",
+      "eyebrow": "Kasus kamu"
     },
     "pieces": {
       "eyebrow": "Peta",

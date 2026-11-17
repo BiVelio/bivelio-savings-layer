@@ -137,8 +137,10 @@ export function NavLink({
     if (!strip || !el) return;
     const rail = strip.getBoundingClientRect();
     const row = el.getBoundingClientRect();
-    if (row.left < rail.left) strip.scrollLeft += row.left - rail.left - 12;
-    else if (row.right > rail.right) strip.scrollLeft += row.right - rail.right + 12;
+    // 40px de holgura en horizontal: la tira móvil se difumina 36px en el
+    // borde (`BordesDeLaTira`), y la activa no puede quedar debajo del velo.
+    if (row.left < rail.left + 40) strip.scrollLeft += row.left - rail.left - 40;
+    else if (row.right > rail.right - 40) strip.scrollLeft += row.right - rail.right + 40;
     if (row.top < rail.top) strip.scrollTop += row.top - rail.top - 8;
     else if (row.bottom > rail.bottom) strip.scrollTop += row.bottom - rail.bottom + 8;
   }, [active, pathname, hash]);

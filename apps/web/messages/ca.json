@@ -322,6 +322,7 @@
       "eyebrow": "Verifica localment · res no surt d'aquesta pàgina",
       "title": "Quant estalviaries tu?",
       "intro": "Comprova-ho en un minut: tria un exemple (o enganxa les teves dades), digues quant fas servir l'API i mira l'estalvi projectat. Tot es calcula al teu navegador.",
+      "formatoRotulo": "Al teu navegador",
       "formatoTitulo": "Verificador de format",
       "formatoSub": "Compta els tokens del fragment estructurat que enganxis, al teu navegador. No és el teu pressupost mensual ni la teva factura.",
       "proyectorSub": "Una estimació amb supòsits que tries tu. No és una factura ni un estalvi realitzat."
@@ -514,6 +515,13 @@
       "empty": "Encara no hi ha sol·licituds mesurades: la teva divisió d'evitades vs. executades i la barreja per model apareixeran quan el SDK informi.",
       "title": "crides llm · evitades vs. executades",
       "split": "{avoided} evitades · {ran} executades ({pct}% evitades)"
+    },
+    "mosaico": {
+      "title": "Crides, dia a dia",
+      "sinProveedor": "{count, plural, one {<b>{n}</b> resposta sense cridar el teu proveïdor} other {<b>{n}</b> respostes sense cridar el teu proveïdor}}",
+      "ejecutadas": "{count, plural, one {<b>{n}</b> executada} other {<b>{n}</b> executades}}",
+      "aria": "Crides per dia en {dias} dies: {sinProveedor} respostes sense cridar el teu proveïdor i {ejecutadas} executades.",
+      "foot": "Una columna per dia; {k, plural, one {cada tessel·la, una crida} other {cada tessel·la, {kn} crides}}. {total} en total. Un dia sense informe és un buit, no un zero."
     },
     "instrumentationSpine": {
       "eyebrow": "Arriba a l'estalvi en viu",
@@ -736,8 +744,10 @@
       "pythonNote": "<b>Python?</b> El client <code>bvsala</code> per a Python fa passar els SDK oficials d'OpenAI i d'Anthropic per aquest mateix gateway (<code>bvsala gateway</code>) i retorna al teu codi l'informe de cada petició — les mateixes xifres que rep aquest tauler. Necessita un gateway 0.4.26 o posterior i Python 3.10 o posterior. S'instal·la des de PyPI amb <code>pip install bivelio-savings-layer</code>; al teu codi, <code>import bvsala</code>.",
       "finalNote": "Això és tot. Sense llicència vàlida → <code>generate()</code> es rebutja. Si cancel·les el teu pla, el SDK s'atura en uns 15 min mitjançant <code>licenseServerUrl</code> — sense reiniciar, i mai no inutilitza la teva producció si no ens podem connectar.",
       "terminal": "Terminal",
+      "sdkEyebrow": "Aplicació",
       "sdkTitle": "Integrar una aplicació (SDK)",
       "sdkLede": "Embolcalla el teu proveïdor al teu codi i llegeix l'informe d'estalvi de cada crida.",
+      "gatewayEyebrow": "Agent de codi",
       "gatewayTitle": "Connectar un agent (gateway)",
       "gatewayLede": "Llança el teu agent de codi a través del gateway local, sense tocar-ne el codi.",
       "modeLocalTitle": "Mode local",
@@ -745,6 +755,7 @@
       "modeCloudTitle": "Connexió Cloud",
       "modeCloudBody": "Amb llicència i clau de servei, aquest panell rep recomptes i costos —mai els teus prompts— i la teva organització comparteix mesura i seients.",
       "modeCloudLink": "Anar a les credencials",
+      "cloudEyebrow": "Credencials",
       "cloudTitle": "Connexió Cloud: llicència i clau de servei",
       "optional": "Opcional amb el motor obert",
       "roleLimited": "El teu rol pot llegir aquesta pàgina, però només owner i admin poden emetre la llicència i crear o revocar claus de servei.",
@@ -2118,6 +2129,7 @@
     "verdictNotYet": "Encara no",
     "verdictYes": "Aquí sí",
     "s3Title": "Estimació vs. mesurament",
+    "s3Eyebrow": "Dues xifres",
     "s3Sub": "El producte té dues xifres diferents i convé no barrejar-les.",
     "mBeforeK": "Abans d'instal·lar",
     "mBeforeV": "Estimació",
@@ -2126,6 +2138,7 @@
     "mAfterV": "Mesurament real",
     "mAfterBody": "Cada crida retorna un SavingsReport: les crides que mai no vas pagar i l'estalvi net per petició. Auditable, petició a petició, a la teva pròpia infraestructura.",
     "s4Title": "La instal·lació completa, si desenvolupes una app",
+    "s4Eyebrow": "Per a desenvolupadors",
     "snip1": "el paquet",
     "snip2": "la llicència (del teu tauler)",
     "snip3": "embolcallar la crida — aquest és tot el canvi de codi",
@@ -2188,7 +2201,8 @@
       }
     },
     "cases": {
-      "skillNote": "L'skill d'instruccions té un altre abast: canvia com treballa l'assistent dins d'una subscripció amb límits. No mesura cap factura ni aplica les palanques de l'SDK o del gateway. <link>Veure l'skill</link>"
+      "skillNote": "L'skill d'instruccions té un altre abast: canvia com treballa l'assistent dins d'una subscripció amb límits. No mesura cap factura ni aplica les palanques de l'SDK o del gateway. <link>Veure l'skill</link>",
+      "eyebrow": "El teu cas"
     },
     "pieces": {
       "eyebrow": "Mapa",
