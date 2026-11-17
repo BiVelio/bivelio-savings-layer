@@ -736,8 +736,10 @@
       "pythonNote": "<b>Python?</b> Client <code>bvsala</code> cho Python đưa các SDK chính thức của OpenAI và Anthropic đi qua chính gateway này (<code>bvsala gateway</code>) và trả về cho mã của bạn báo cáo của từng yêu cầu — cùng những con số mà bảng điều khiển này nhận được. Client cần gateway 0.4.26 trở lên và Python 3.10 trở lên. Cài từ PyPI bằng <code>pip install bivelio-savings-layer</code>; trong mã của bạn, <code>import bvsala</code>.",
       "finalNote": "Chỉ vậy thôi. Không có giấy phép hợp lệ → <code>generate()</code> sẽ từ chối. Nếu gói của bạn bị hủy, SDK sẽ dừng trong khoảng 15 phút thông qua <code>licenseServerUrl</code> — không cần khởi động lại, và nó không bao giờ làm hỏng môi trường sản xuất của bạn nếu chúng tôi không thể kết nối được.",
       "terminal": "Terminal",
+      "sdkEyebrow": "Ứng dụng",
       "sdkTitle": "Tích hợp một ứng dụng (SDK)",
       "sdkLede": "Bọc nhà cung cấp trong mã của bạn và đọc báo cáo tiết kiệm của từng lần gọi.",
+      "gatewayEyebrow": "Tác tử lập trình",
       "gatewayTitle": "Kết nối một agent (gateway)",
       "gatewayLede": "Chạy agent lập trình của bạn qua gateway cục bộ mà không cần sửa mã của nó.",
       "modeLocalTitle": "Chế độ cục bộ",
@@ -745,6 +747,7 @@
       "modeCloudTitle": "Kết nối Cloud",
       "modeCloudBody": "Với giấy phép và khóa dịch vụ, bảng điều khiển này nhận số đếm và chi phí — không bao giờ nhận prompt của bạn — và tổ chức của bạn dùng chung phép đo và số chỗ.",
       "modeCloudLink": "Đến phần thông tin xác thực",
+      "cloudEyebrow": "Thông tin xác thực",
       "cloudTitle": "Kết nối Cloud: giấy phép và khóa dịch vụ",
       "optional": "Không bắt buộc với engine mở",
       "roleLimited": "Vai trò của bạn có thể đọc trang này, nhưng chỉ owner và admin mới có thể cấp giấy phép và tạo hoặc thu hồi khóa dịch vụ.",
@@ -2118,6 +2121,7 @@
     "verdictNotYet": "Chưa",
     "verdictYes": "Ở đây thì có",
     "s3Title": "Ước tính vs. đo lường",
+    "s3Eyebrow": "Hai con số",
     "s3Sub": "Sản phẩm có hai con số khác nhau và không nên trộn lẫn chúng.",
     "mBeforeK": "Trước khi cài",
     "mBeforeV": "Ước tính",
@@ -2126,6 +2130,7 @@
     "mAfterV": "Đo lường thực",
     "mAfterBody": "Mỗi lệnh gọi trả về một SavingsReport: những lệnh gọi bạn không bao giờ phải trả và khoản tiết kiệm ròng trên mỗi yêu cầu. Kiểm toán được, từng yêu cầu một, trên hạ tầng của chính bạn.",
     "s4Title": "Cài đặt đầy đủ, nếu bạn phát triển ứng dụng",
+    "s4Eyebrow": "Dành cho lập trình viên",
     "snip1": "gói",
     "snip2": "giấy phép (từ bảng điều khiển của bạn)",
     "snip3": "bọc lệnh gọi — đây là toàn bộ thay đổi mã",
@@ -2188,7 +2193,8 @@
       }
     },
     "cases": {
-      "skillNote": "Skill hướng dẫn có phạm vi khác: nó thay đổi cách trợ lý làm việc trong một gói thuê bao có giới hạn. Nó không đo hóa đơn và cũng không áp dụng các đòn bẩy của SDK hay gateway. <link>Xem skill</link>"
+      "skillNote": "Skill hướng dẫn có phạm vi khác: nó thay đổi cách trợ lý làm việc trong một gói thuê bao có giới hạn. Nó không đo hóa đơn và cũng không áp dụng các đòn bẩy của SDK hay gateway. <link>Xem skill</link>",
+      "eyebrow": "Trường hợp của bạn"
     },
     "pieces": {
       "eyebrow": "Sơ đồ",

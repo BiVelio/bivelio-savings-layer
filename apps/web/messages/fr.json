@@ -736,8 +736,10 @@
       "pythonNote": "<b>Python ?</b> Le client <code>bvsala</code> pour Python fait passer les SDK officiels d'OpenAI et d'Anthropic par cette même passerelle (<code>bvsala gateway</code>) et renvoie à votre code le rapport de chaque requête — les mêmes chiffres que reçoit ce panneau. Il lui faut une passerelle 0.4.26 ou ultérieure et Python 3.10 ou ultérieur. Il s'installe depuis PyPI avec <code>pip install bivelio-savings-layer</code> ; dans votre code, <code>import bvsala</code>.",
       "finalNote": "C'est tout. Pas de licence valide → <code>generate()</code> refuse. Si votre forfait est annulé, le SDK s'arrête en ~15 min via <code>licenseServerUrl</code> — sans redémarrage, et il ne bloque jamais votre production si nous sommes injoignables.",
       "terminal": "Terminal",
+      "sdkEyebrow": "Application",
       "sdkTitle": "Intégrer une application (SDK)",
       "sdkLede": "Enveloppez votre fournisseur dans votre code et lisez le rapport d'économies de chaque appel.",
+      "gatewayEyebrow": "Agent de code",
       "gatewayTitle": "Connecter un agent (passerelle)",
       "gatewayLede": "Lancez votre agent de code via la passerelle locale, sans toucher à son code.",
       "modeLocalTitle": "Mode local",
@@ -745,6 +747,7 @@
       "modeCloudTitle": "Connexion Cloud",
       "modeCloudBody": "Avec une licence et une clé de service, ce tableau de bord reçoit des décomptes et des coûts — jamais vos prompts — et votre organisation partage la mesure et les sièges.",
       "modeCloudLink": "Aller aux identifiants",
+      "cloudEyebrow": "Identifiants",
       "cloudTitle": "Connexion Cloud : licence et clé de service",
       "optional": "Facultatif avec le moteur ouvert",
       "roleLimited": "Votre rôle peut lire cette page, mais seuls owner et admin peuvent émettre la licence et créer ou révoquer des clés de service.",
@@ -2118,6 +2121,7 @@
     "verdictNotYet": "Pas encore",
     "verdictYes": "Ici oui",
     "s3Title": "Estimation vs. mesure",
+    "s3Eyebrow": "Deux chiffres",
     "s3Sub": "Le produit a deux chiffres différents, et mieux vaut ne pas les mélanger.",
     "mBeforeK": "Avant d'installer",
     "mBeforeV": "Estimation",
@@ -2126,6 +2130,7 @@
     "mAfterV": "Mesure réelle",
     "mAfterBody": "Chaque appel renvoie un SavingsReport : les appels que vous n'avez jamais payés et l'économie nette par requête. Auditable, requête par requête, sur votre propre infrastructure.",
     "s4Title": "L'installation complète, si vous développez une app",
+    "s4Eyebrow": "Pour les développeurs",
     "snip1": "le paquet",
     "snip2": "la licence (depuis votre tableau de bord)",
     "snip3": "envelopper l'appel — c'est tout le changement de code",
@@ -2188,7 +2193,8 @@
       }
     },
     "cases": {
-      "skillNote": "Le skill d'instructions a une autre portée : il change la façon de travailler de l'assistant dans un abonnement plafonné. Il ne mesure pas une facture et n'applique pas les leviers du SDK ou de la passerelle. <link>Voir le skill</link>"
+      "skillNote": "Le skill d'instructions a une autre portée : il change la façon de travailler de l'assistant dans un abonnement plafonné. Il ne mesure pas une facture et n'applique pas les leviers du SDK ou de la passerelle. <link>Voir le skill</link>",
+      "eyebrow": "Votre cas"
     },
     "pieces": {
       "eyebrow": "Carte",

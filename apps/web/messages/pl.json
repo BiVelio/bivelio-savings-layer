@@ -736,8 +736,10 @@
       "pythonNote": "<b>Python?</b> Klient <code>bvsala</code> dla Pythona kieruje oficjalne SDK OpenAI i Anthropic przez tę samą bramę (<code>bvsala gateway</code>) i zwraca Twojemu kodowi raport z każdego żądania — te same liczby, które otrzymuje ten panel. Wymaga bramy w wersji 0.4.26 lub nowszej oraz Pythona 3.10 lub nowszego. Instaluje się go z PyPI poleceniem <code>pip install bivelio-savings-layer</code>; w kodzie: <code>import bvsala</code>.",
       "finalNote": "To wszystko. Brak ważnej licencji → <code>generate()</code> odmawia działania. Jeśli Twój plan zostanie anulowany, SDK zatrzymuje się w ciągu ~15 min poprzez <code>licenseServerUrl</code> — bez restartu i nigdy nie unieruchamia Twojej produkcji, jeśli jesteśmy nieosiągalni.",
       "terminal": "Terminal",
+      "sdkEyebrow": "Aplikacja",
       "sdkTitle": "Zintegruj aplikację (SDK)",
       "sdkLede": "Opakuj swojego dostawcę we własnym kodzie i odczytuj raport oszczędności każdego wywołania.",
+      "gatewayEyebrow": "Agent kodujący",
       "gatewayTitle": "Podłącz agenta (gateway)",
       "gatewayLede": "Uruchom swojego agenta kodującego przez lokalny gateway, bez zmian w jego kodzie.",
       "modeLocalTitle": "Tryb lokalny",
@@ -745,6 +747,7 @@
       "modeCloudTitle": "Połączenie Cloud",
       "modeCloudBody": "Z licencją i kluczem usługowym ten panel otrzymuje liczniki i koszty — nigdy Twoje prompty — a Twoja organizacja współdzieli pomiar i miejsca.",
       "modeCloudLink": "Przejdź do danych dostępowych",
+      "cloudEyebrow": "Poświadczenia",
       "cloudTitle": "Połączenie Cloud: licencja i klucz usługowy",
       "optional": "Opcjonalne przy otwartym silniku",
       "roleLimited": "Twoja rola może czytać tę stronę, ale tylko owner i admin mogą wystawić licencję oraz tworzyć lub unieważniać klucze usługowe.",
@@ -2118,6 +2121,7 @@
     "verdictNotYet": "Jeszcze nie",
     "verdictYes": "Tutaj tak",
     "s3Title": "Szacunek vs. pomiar",
+    "s3Eyebrow": "Dwie liczby",
     "s3Sub": "Produkt ma dwie różne liczby i lepiej ich nie mieszać.",
     "mBeforeK": "Przed instalacją",
     "mBeforeV": "Szacunek",
@@ -2126,6 +2130,7 @@
     "mAfterV": "Prawdziwy pomiar",
     "mAfterBody": "Każde wywołanie zwraca SavingsReport: wywołania, za które nigdy nie zapłaciłeś, i oszczędność netto na żądanie. Audytowalne, żądanie po żądaniu, na Twojej własnej infrastrukturze.",
     "s4Title": "Pełna instalacja, jeśli tworzysz aplikację",
+    "s4Eyebrow": "Dla programistów",
     "snip1": "pakiet",
     "snip2": "licencja (z Twojego panelu)",
     "snip3": "owinięcie wywołania — to cała zmiana kodu",
@@ -2188,7 +2193,8 @@
       }
     },
     "cases": {
-      "skillNote": "Skill z instrukcjami ma inny zakres: zmienia sposób pracy asystenta w ramach subskrypcji z limitami. Nie mierzy rachunku ani nie stosuje dźwigni SDK lub gatewaya. <link>Zobacz skill</link>"
+      "skillNote": "Skill z instrukcjami ma inny zakres: zmienia sposób pracy asystenta w ramach subskrypcji z limitami. Nie mierzy rachunku ani nie stosuje dźwigni SDK lub gatewaya. <link>Zobacz skill</link>",
+      "eyebrow": "Twój przypadek"
     },
     "pieces": {
       "eyebrow": "Mapa",

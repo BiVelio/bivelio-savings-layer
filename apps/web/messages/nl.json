@@ -736,8 +736,10 @@
       "pythonNote": "<b>Python?</b> De Python-client <code>bvsala</code> leidt de officiële SDK's van OpenAI en Anthropic via deze zelfde gateway (<code>bvsala gateway</code>) en geeft je code het rapport van elk verzoek terug — dezelfde cijfers die dit paneel ontvangt. Hij heeft een gateway vanaf versie 0.4.26 nodig en Python 3.10 of nieuwer. Je installeert hem vanaf PyPI met <code>pip install bivelio-savings-layer</code>; in je code: <code>import bvsala</code>.",
       "finalNote": "Dat is alles. Geen geldige licentie → <code>generate()</code> weigert. Als je abonnement wordt opgezegd, stopt de SDK binnen ~15 min via <code>licenseServerUrl</code> — geen herstart, en hij legt je productie nooit plat als wij onbereikbaar zijn.",
       "terminal": "Terminal",
+      "sdkEyebrow": "Applicatie",
       "sdkTitle": "Een applicatie integreren (SDK)",
       "sdkLede": "Wikkel je provider in je code en lees het besparingsrapport van elke aanroep.",
+      "gatewayEyebrow": "Code-agent",
       "gatewayTitle": "Een agent verbinden (gateway)",
       "gatewayLede": "Start je codeeragent via de lokale gateway, zonder de code ervan aan te raken.",
       "modeLocalTitle": "Lokale modus",
@@ -745,6 +747,7 @@
       "modeCloudTitle": "Cloud-verbinding",
       "modeCloudBody": "Met een licentie en een servicesleutel ontvangt dit dashboard aantallen en kosten — nooit je prompts — en deelt je organisatie de meting en de plaatsen.",
       "modeCloudLink": "Naar de inloggegevens",
+      "cloudEyebrow": "Inloggegevens",
       "cloudTitle": "Cloud-verbinding: licentie en servicesleutel",
       "optional": "Optioneel met de open engine",
       "roleLimited": "Je rol kan deze pagina lezen, maar alleen owner en admin kunnen de licentie uitgeven en servicesleutels maken of intrekken.",
@@ -2118,6 +2121,7 @@
     "verdictNotYet": "Nog niet",
     "verdictYes": "Hier wel",
     "s3Title": "Schatting vs. meting",
+    "s3Eyebrow": "Twee cijfers",
     "s3Sub": "Het product heeft twee verschillende cijfers, en die kun je beter niet mengen.",
     "mBeforeK": "Vóór installatie",
     "mBeforeV": "Schatting",
@@ -2126,6 +2130,7 @@
     "mAfterV": "Echte meting",
     "mAfterBody": "Elke aanroep levert een SavingsReport: de aanroepen die je nooit betaalde en de nettobesparing per verzoek. Controleerbaar, verzoek voor verzoek, op je eigen infrastructuur.",
     "s4Title": "De volledige installatie, als je een app bouwt",
+    "s4Eyebrow": "Voor developers",
     "snip1": "het pakket",
     "snip2": "de licentie (uit je dashboard)",
     "snip3": "de aanroep omhullen — dit is de hele codewijziging",
@@ -2188,7 +2193,8 @@
       }
     },
     "cases": {
-      "skillNote": "De instructieskill heeft een ander bereik: hij verandert hoe de assistent werkt binnen een abonnement met limieten. Hij meet geen factuur en past de hefbomen van de SDK of de gateway niet toe. <link>De skill bekijken</link>"
+      "skillNote": "De instructieskill heeft een ander bereik: hij verandert hoe de assistent werkt binnen een abonnement met limieten. Hij meet geen factuur en past de hefbomen van de SDK of de gateway niet toe. <link>De skill bekijken</link>",
+      "eyebrow": "Jouw geval"
     },
     "pieces": {
       "eyebrow": "Overzicht",

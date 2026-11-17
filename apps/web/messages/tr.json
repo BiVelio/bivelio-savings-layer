@@ -736,8 +736,10 @@
       "pythonNote": "<b>Python mı?</b> Python için <code>bvsala</code> istemcisi, resmi OpenAI ve Anthropic SDK'larını bu aynı ağ geçidinden geçirir (<code>bvsala gateway</code>) ve her isteğin raporunu kodunuza geri verir — bu panelin aldığı rakamların aynısı. 0.4.26 veya sonraki bir ağ geçidi ve Python 3.10 veya üstü gerekir. PyPI'dan <code>pip install bivelio-savings-layer</code> ile kurulur; kodunuzda <code>import bvsala</code>.",
       "finalNote": "Hepsi bu. Geçerli lisans yoksa → <code>generate()</code> reddeder. Planınız iptal edilirse SDK, <code>licenseServerUrl</code> aracılığıyla ~15 dakika içinde durur — yeniden başlatma gerekmez ve bize ulaşılamıyorsa üretim ortamınızı asla işlevsiz bırakmaz.",
       "terminal": "Terminal",
+      "sdkEyebrow": "Uygulama",
       "sdkTitle": "Bir uygulamayı entegre et (SDK)",
       "sdkLede": "Sağlayıcınızı kodunuzda sarmalayın ve her çağrının tasarruf raporunu okuyun.",
+      "gatewayEyebrow": "Kodlama ajanı",
       "gatewayTitle": "Bir ajanı bağla (gateway)",
       "gatewayLede": "Kodlama ajanınızı, koduna dokunmadan yerel gateway üzerinden başlatın.",
       "modeLocalTitle": "Yerel mod",
@@ -745,6 +747,7 @@
       "modeCloudTitle": "Cloud bağlantısı",
       "modeCloudBody": "Lisans ve servis anahtarıyla bu panel sayımları ve maliyetleri alır — prompt'larınızı asla — ve kuruluşunuz ölçümü ve koltukları paylaşır.",
       "modeCloudLink": "Kimlik bilgilerine git",
+      "cloudEyebrow": "Kimlik bilgileri",
       "cloudTitle": "Cloud bağlantısı: lisans ve servis anahtarı",
       "optional": "Açık motorla isteğe bağlı",
       "roleLimited": "Rolünüz bu sayfayı okuyabilir, ancak lisansı yalnızca owner ve admin düzenleyebilir, servis anahtarlarını da yalnızca onlar oluşturabilir veya iptal edebilir.",
@@ -2118,6 +2121,7 @@
     "verdictNotYet": "Henüz değil",
     "verdictYes": "Burada evet",
     "s3Title": "Tahmin vs. ölçüm",
+    "s3Eyebrow": "İki rakam",
     "s3Sub": "Ürünün iki farklı rakamı var ve bunları karıştırmamak gerekir.",
     "mBeforeK": "Kurulumdan önce",
     "mBeforeV": "Tahmin",
@@ -2126,6 +2130,7 @@
     "mAfterV": "Gerçek ölçüm",
     "mAfterBody": "Her çağrı bir SavingsReport döndürür: hiç ödemediğin çağrılar ve istek başına net tasarruf. Denetlenebilir, istek istek, kendi altyapında.",
     "s4Title": "Tam kurulum — bir uygulama geliştiriyorsan",
+    "s4Eyebrow": "Geliştiriciler için",
     "snip1": "paket",
     "snip2": "lisans (panelinden)",
     "snip3": "çağrıyı sarmak — kod değişikliğinin tamamı bu",
@@ -2188,7 +2193,8 @@
       }
     },
     "cases": {
-      "skillNote": "Talimat skill'inin kapsamı farklıdır: asistanın, limitleri olan bir abonelik içinde nasıl çalıştığını değiştirir. Bir faturayı ölçmez, SDK'nın veya gateway'in kaldıraçlarını da uygulamaz. <link>Skill'i gör</link>"
+      "skillNote": "Talimat skill'inin kapsamı farklıdır: asistanın, limitleri olan bir abonelik içinde nasıl çalıştığını değiştirir. Bir faturayı ölçmez, SDK'nın veya gateway'in kaldıraçlarını da uygulamaz. <link>Skill'i gör</link>",
+      "eyebrow": "Senin durumun"
     },
     "pieces": {
       "eyebrow": "Harita",
