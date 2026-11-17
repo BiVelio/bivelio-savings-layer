@@ -1,7 +1,7 @@
 # BiVelio Savings Layer — Python client
 
 <p align="center">
-  <img src="https://savings.bivelio.com/brand/og-image.png" alt="BiVelio Savings Layer" width="720">
+  <img src="https://savings.bivelio.com/brand/og-image.png?v=2026-11-17" alt="BiVelio Savings Layer" width="720">
 </p>
 
 > **BV-SALA cuts your LLM bill — and proves it on your provider's own meter.**

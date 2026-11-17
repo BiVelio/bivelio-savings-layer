@@ -40,10 +40,22 @@ export function languageAlternates(pathSinLocale = ""): Record<string, string> {
  * no en la página porque /pricing no admite literales numéricos
  * (lib/legal/precios-publicados.test.ts).
  */
+/**
+ * LA IMAGEN AL COMPARTIR (la pieza de campaña, 1731×909). Una sola ruta para
+ * todo el sitio. Va en JPEG (157 KB) y no en el PNG de 632 KB: WhatsApp deja
+ * sin vista previa las imágenes de más de ~300 KB. El NOMBRE lleva la fecha
+ * de la pieza: LinkedIn, X, Slack o WhatsApp guardan la imagen por URL, y una
+ * URL nueva es lo único que les hace pedir la nueva. Al cambiar la pieza,
+ * fichero nuevo con otra fecha. `/brand/og-image.png` sigue publicado, con la
+ * misma pieza, para quien lo enlaza desde fuera (README del repo y de PyPI).
+ */
+export const IMAGEN_AL_COMPARTIR = { ruta: "/brand/og-image-2026-11.jpg", width: 1731, height: 909, type: "image/jpeg" } as const;
+
 export function tarjetaSocial(locale: string, alt: string) {
-  const imagen = absolute("/brand/og-image.png");
+  const { ruta, ...medidas } = IMAGEN_AL_COMPARTIR;
+  const imagen = absolute(ruta);
   return {
-    openGraph: { locale, images: [{ url: imagen, width: 1731, height: 909, alt }] },
+    openGraph: { locale, images: [{ url: imagen, ...medidas, alt }] },
     twitter: { card: "summary_large_image" as const, images: [imagen] },
   };
 }
