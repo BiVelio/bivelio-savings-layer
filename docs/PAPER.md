@@ -99,50 +99,52 @@ execution when a response is replayed, one execution, or several executions when
 escalation, or retries are involved. All reported monetary amounts are valued at a specified
 version of the list-price catalog. They are not negotiated or reconciled invoices.
 
-For execution `e`, let the normalized usage vector be
+For execution $`e`$, let the normalized usage vector be
 
-```
-x_e = ( n_{u,e}, n_{r,e}, n_{w5,e}, n_{w1,e}, n_{o,e} ),
+```math
+x_e \;=\; \bigl(n_{u,e},\, n_{r,e},\, n_{w5,e},\, n_{w1,e},\, n_{o,e}\bigr),
+\tag{1}
 ```
 
 where the components are uncached input, cache-read input, five-minute cache-write input,
 one-hour cache-write input, and billable output tokens. These are **non-overlapping billing
-categories**; write categories not offered by a provider are omitted. Let `π_{e,k}` be the list
-price in USD per million tokens for category `k`, the model and endpoint used by execution `e`,
+categories**; write categories not offered by a provider are omitted. Let $`\pi_{e,k}`$ be the list
+price in USD per million tokens for category $`k`$, the model and endpoint used by execution $`e`$,
 the applicable billing mode, and the stated catalog version. Define
 
-```
-C_e = 10⁻⁶ · Σ_{k ∈ {u,r,w5,w1,o}} π_{e,k} · x_{k,e} + g_e,        (1)
+```math
+C_e \;=\; 10^{-6}\!\sum_{k\,\in\,\{u,r,w5,w1,o\}} \pi_{e,k}\, x_{k,e} \;+\; g_e,
+\tag{2}
 ```
 
-where `g_e` contains any separately itemized charges included in the stated scope. The
+where $`g_e`$ contains any separately itemized charges included in the stated scope. The
 experiments below concern provider token charges; ancillary charges and local infrastructure
 costs that were not measured are outside that scope, not evidence of zero cost. Additional
 billable categories require an explicit extension of the usage vector and catalog. Batch and
 cache prices must be represented by the applicable rates, rather than by adding purported
 discount percentages.
 
-The mapping from raw counters to `x_e` is provider-specific. If a raw input counter includes
-cache reads or writes, those components are subtracted before assigning `n_{u,e}`; if it excludes
+The mapping from raw counters to $`x_e`$ is provider-specific. If a raw input counter includes
+cache reads or writes, those components are subtracted before assigning $`n_{u,e}`$; if it excludes
 them, they are not subtracted again. Reasoning tokens are included exactly once in billable
 output according to the provider's counter semantics. A separately reported reasoning count is
 not an additional charge when already included in the output total. A missing counter or price
 is not silently replaced with zero. Partial observations must retain their incompleteness.
 
-For an arm with execution set `E`, its cost is `C_arm = Σ_{e ∈ E} C_e`. This sum includes every
+For an arm with execution set $`E`$, its cost is $`C_{\mathrm{arm}}=\sum_{e\in E} C_e`$. This sum includes every
 billable attempt, including cheap-model attempts before escalation, repeated attempts, and
 failed attempts when they incur a charge. Known executed costs and missing or reconstructed
 components must be reported separately. An avoided execution has zero actual provider-execution
 cost, but its counterfactual cost requires separate evidence. The catalog implementation stores
-token prices per 1,000 tokens; this is equivalent to Equation (1) only with the corresponding
+token prices per 1,000 tokens; this is equivalent to Equation (2) only with the corresponding
 unit conversion.
 
 ### 3.2 The layer and its report
 
 **Definition 1 (stateful request policy).** The layer is a stateful policy. Given a logical request
-`r` and current state `s`, it may return a stored response or initiate one or more provider
+$`r`$ and current state $`s`$, it may return a stored response or initiate one or more provider
 executions, possibly adapting later decisions to earlier responses. Its output consists of the
-response, a report `R`, and updated state `s′`. State includes relevant cache contents, freshness
+response, a report $`R`$, and updated state $`s'`$. State includes relevant cache contents, freshness
 metadata, configuration, and execution history. Provider responses and cache behavior may be
 stochastic or depend on state outside the layer's control.
 
@@ -155,7 +157,7 @@ not a proof of task-level semantic equivalence. Each mechanism needs explicit ap
 conditions and a stated quality-evaluation scope. Unsupported transforms should decline without
 changing the request.
 
-**Definition 2 (report).** A report `R` records logical requests, provider executions, normalized
+**Definition 2 (report).** A report $`R`$ records logical requests, provider executions, normalized
 usage, activity ledgers, costs, provenance, and traces. The four activity ledgers are avoided
 calls, eliminated tokens, compressed tokens, and provider-cached tokens. They describe different
 activities and units. They are not assumed to be four additive monetary or causal contributions.
@@ -178,39 +180,42 @@ semantic correctness, or causal attribution.
 
 For positive baseline cost, the observed aggregate reduction is
 
-```
-R = 1 − C_opt / C_base.                                          (2)
+```math
+R \;=\; 1 - \frac{C_{\mathrm{opt}}}{C_{\mathrm{base}}} .
+\tag{3}
 ```
 
-If `C_base = 0`, this ratio is undefined and is reported as unavailable. Negative reductions are
+If $`C_{\mathrm{base}}=0`$, this ratio is undefined and is reported as unavailable. Negative reductions are
 permitted: an intervention can increase cost. This identity depends on complete, consistently
 scoped arm costs, not on a partition of savings among activity ledgers.
 
-For attribution, consider a specified two-factor experiment. Let `C_ab` denote the cost for the
-same workload and price basis with factor states `a, b ∈ {0, 1}`. The factors may, for example, be
+For attribution, consider a specified two-factor experiment. Let $`C_{ab}`$ denote the cost for the
+same workload and price basis with factor states $`a,b\in\{0,1\}`$. The factors may, for example, be
 response deduplication and explicit prefix-cache markers. Observed finite-run cell costs and
 population expected cell costs must not be interchanged without specifying which is intended.
 
 **Proposition 1 (two-factor cost identity).** Define the cost interaction
 
-```
-IC = C_11 − C_10 − C_01 + C_00.
+```math
+IC \;=\; C_{11} - C_{10} - C_{01} + C_{00}.
+\tag{4}
 ```
 
 Then the combined cost reduction satisfies
 
-```
-C_00 − C_11 = (C_00 − C_10) + (C_00 − C_01) − IC.
+```math
+C_{00} - C_{11} \;=\; (C_{00} - C_{10}) + (C_{00} - C_{01}) - IC .
+\tag{5}
 ```
 
-If `C_00 > 0`, the corresponding reduction ratios satisfy `R_11 = R_10 + R_01 − IC / C_00`, where
-`R_ab = (C_00 − C_ab) / C_00`.
+If $`C_{00}>0`$, the corresponding reduction ratios satisfy $`R_{11}=R_{10}+R_{01}-IC/C_{00}`$, where
+$`R_{ab}=(C_{00}-C_{ab})/C_{00}`$.
 
-*Proof.* Substitution of the definition of `IC` cancels `C_10` and `C_01` and leaves
-`C_00 − C_11`. Division by a positive `C_00` gives the ratio identity.
+*Proof.* Substitution of the definition of $`IC`$ cancels $`C_{10}`$ and $`C_{01}`$ and leaves
+$`C_{00}-C_{11}`$. Division by a positive $`C_{00}`$ gives the ratio identity.
 
 This is an exact algebraic contrast, not a claim of algorithmic novelty or a guarantee of causal
-identification. Positive `IC` means that the combined saving is smaller than the sum of the two
+identification. Positive $`IC`$ means that the combined saving is smaller than the sum of the two
 baseline-relative standalone savings. Its sign is therefore opposite to the residual in a
 sum-of-savings equation. Estimating a causal interaction requires an appropriate assignment and
 state-control protocol; uncertainty requires independent replicated units or other justified
@@ -303,22 +308,26 @@ mechanism.
 
 ### 4.2 Estimator
 
-Let `b_f` and `o_f` be total baseline and optimized costs for family `f`, including all executions in
+Let $`b_f`$ and $`o_f`$ be total baseline and optimized costs for family $`f`$, including all executions in
 the respective arm. The primary economic estimator implemented by the paired benchmark is the
 pooled ratio of cost sums,
 
-```
-R̂_pooled = 1 − ( Σ_{f=1..F} o_f ) / ( Σ_{f=1..F} b_f ),   Σ_f b_f > 0.   (3)
+```math
+\widehat{R}_{\mathrm{pooled}} \;=\; 1 - \frac{\sum_{f=1}^{F} o_f}{\sum_{f=1}^{F} b_f},
+\qquad \textstyle\sum_f b_f > 0 .
+\tag{6}
 ```
 
-It measures reduction in the aggregate cost of that workload. When every `b_f > 0`, it is a
+It measures reduction in the aggregate cost of that workload. When every $`b_f>0`$, it is a
 baseline-cost-weighted average of family reductions,
 
-```
-R̂_pooled = Σ_f w_f R_f,    w_f = b_f / Σ_j b_j,    R_f = 1 − o_f / b_f.
+```math
+\widehat{R}_{\mathrm{pooled}} \;=\; \sum_f w_f\,R_f, \qquad
+w_f \;=\; \frac{b_f}{\sum_j b_j}, \qquad R_f \;=\; 1 - \frac{o_f}{b_f}.
+\tag{7}
 ```
 
-A distinct secondary descriptive statistic is `R̂_macro = F⁻¹ Σ_f R_f`, which gives each family
+A distinct secondary descriptive statistic is $`\widehat{R}_{\mathrm{macro}}=F^{-1}\sum_f R_f`$, which gives each family
 equal weight. The two statistics answer different questions and need not agree. The macro
 statistic is undefined for a family with zero baseline cost unless an explicit exclusion policy is
 stated; it is not substituted for the pooled estimator. Neither statistic automatically predicts the
@@ -328,9 +337,9 @@ charges are included.
 
 ### 4.3 Uncertainty
 
-The percentile cluster bootstrap samples `F` family indices with replacement for each of
-`B = 10,000` resamples, retains the complete paired records of each sampled family, and
-recomputes Equation (3) from the resampled cost sums. The interval consists of the empirical
+The percentile cluster bootstrap samples $`F`$ family indices with replacement for each of
+$`B=10{,}000`$ resamples, retains the complete paired records of each sampled family, and
+recomputes Equation (6) from the resampled cost sums. The interval consists of the empirical
 2.5th and 97.5th percentiles. The historical gateway report describes session-level resampling; its
 interval is not independently recomputed here because the required session-level costs were not
 located in the public artifacts. A zero-denominator resample is undefined and must be disclosed
@@ -343,7 +352,7 @@ for the resampling model. Shared provider-cache state, execution days, accounts,
 can induce dependence between families that this procedure does not capture. The interval does
 not incorporate uncertainty from unmeasured costs, reconstructed counterfactuals, price errors, or
 uncontrolled state. It is a percentile interval, not BCa [22, 23], and does not correct an
-unsupported design or a mismatch of estimands. No universal `O(1/F)` bias claim is made for the
+unsupported design or a mismatch of estimands. No universal $`O(1/F)`$ bias claim is made for the
 mean of family ratios.
 
 ### 4.4 Interpreting the Anthropic comparison
@@ -412,8 +421,10 @@ In the Anthropic artifact, the baseline has no cache reads or writes. The optimi
 72,447 read tokens and 1,767 written tokens across 42 provider executions for 62 logical requests.
 The pricing contrast
 
-```
-D_cache = ( (2.00 − 0.20)·72,447 − (2.50 − 2.00)·1,767 ) / 10⁶ = 0.1295211 USD
+```math
+D_{\mathrm{cache}} \;=\; \frac{(2.00-0.20)\cdot 72{,}447 \;-\; (2.50-2.00)\cdot 1{,}767}{10^{6}}
+\;=\; 0.1295211\ \text{USD}
+\tag{8}
 ```
 
 is 41.08 % of the baseline cost. This values those observed tokens against ordinary input pricing.
@@ -462,13 +473,13 @@ reviewed release. Prompt-order sensitivity still requires task evaluation.
 
 ### 6.5 Repeat-rate pilot: corrected denominator
 
-The generator uses 20 unique questions and appends `⌊20q⌋` repetitions. Consequently `q` is
-repeats per unique question; the realized fraction among all requests is `ρ = ⌊20q⌋ / (20 + ⌊20q⌋)`.
+The generator uses 20 unique questions and appends $`\lfloor 20q\rfloor`$ repetitions. Consequently $`q`$ is
+repeats per unique question; the realized fraction among all requests is $`\rho=\lfloor 20q\rfloor/(20+\lfloor 20q\rfloor)`$.
 
-| Generator q | Requests | Actual repeat fraction | Avoided repeats | Reported saving |
+| Generator $`q`$ | Requests | Actual repeat fraction | Avoided repeats | Reported saving |
 | --- | --- | --- | --- | --- |
-| 0.3 | 26 | 6/26 = 23.08 % | 5/6 | 14.67 % |
-| 0.6 | 32 | 12/32 = 37.50 % | 10/12 | 23.67 % |
+| 0.3 | 26 | $`6/26=23.08\,\%`$ | 5/6 | 14.67 % |
+| 0.6 | 32 | $`12/32=37.50\,\%`$ | 10/12 | 23.67 % |
 
 **Table 2:** Exploratory `gpt-4o-mini` runs; savings taken from stored ratio fields.
 
@@ -492,14 +503,9 @@ the live harness, not the batch API operation.
 
 **Table 3:** Public aggregate cells from 15 November 2026. No replicated-cell uncertainty is reported.
 
-With `C_00, C_01, C_10, C_11` in table order, the cost interaction is
-
-```
-IC = C_11 − C_10 − C_01 + C_00 = 0.052605 USD.
-```
-
-The combined reduction is `1 − C_11/C_00 = 85.94 %`. The two baseline-relative savings cannot be
-added without subtracting `IC`: avoided calls remove opportunities for cache reads. This is an
+With $`C_{00},C_{01},C_{10},C_{11}`$ in table order, the cost interaction is
+$`IC=C_{11}-C_{10}-C_{01}+C_{00}=0.052605`$ USD. The combined reduction is $`1-C_{11}/C_{00}=85.94\,\%`$. The two baseline-relative savings cannot be
+added without subtracting $`IC`$: avoided calls remove opportunities for cache reads. This is an
 algebraic decomposition of recorded cell totals. The difference in admitted repeats (8 versus 7),
 fixed execution sequence and lack of independent replicated cells prevent a precise causal
 attribution claim with a sampling interval. The cached block recorded in this artifact is 7,229
@@ -518,18 +524,18 @@ permissive; it does not prove that those errors occurred in the recorded respons
 individual responses are absent from the public summary, its 24/24 scores cannot be independently
 regraded. These scores must not support a non-inferiority claim.
 
-A future paired non-inferiority evaluation must specify a quality metric, margin `δ`, one-sided
+A future paired non-inferiority evaluation must specify a quality metric, margin $`\delta`$, one-sided
 significance level, sampling population, sample-size justification and a validated grader before
-collection. For accuracy difference `∆ = p_B − p_A`, the criterion is a suitable one-sided lower
-confidence bound exceeding `−δ`. Even 24 independently sampled and perfectly graded cases with
-zero additional failures give a one-sided 95 % upper bound `1 − 0.05^(1/24) = 11.73 %` on the
+collection. For accuracy difference $`\Delta=p_B-p_A`$, the criterion is a suitable one-sided lower
+confidence bound exceeding $`-\delta`$. Even 24 independently sampled and perfectly graded cases with
+zero additional failures give a one-sided 95 % upper bound $`1-0.05^{1/24}=11.73\,\%`$ on the
 probability of an additional failure (baseline correct and cascade incorrect). This illustration is
 not a retrospective non-inferiority test of the present selected trivia set.
 
 Following this review, a corrected exploratory re-run (15 November 2026) replaced the grader
 with an exact normalized match against per-question declared acceptance sets and published the
 individual answers of both arms. It records 24/24 accepted answers in each arm, 23/24 normalized
-agreement, costs $0.064568 and $0.020718 (−67.91 %), and zero escalations (artifact:
+agreement, costs \$0.064568 and \$0.020718 ($`-67.91\,\%`$), and zero escalations (artifact:
 `benchmarks/evidencia/cascada-piloto-corregido-2026-11-15.json`). This is a regradeable
 exploratory pilot, not a non-inferiority test; the caveats above remain in force.
 
@@ -541,9 +547,9 @@ Historical price rows should be frozen with effective date, model identifier, re
 cache-write lifetime and currency assumptions, rather than reconstructed from a moving latest
 catalog.
 
-For a deployment with baseline list-price spend `B`, applicable pooled reduction `R`, incremental
-operating cost `H` and service fee `F`, net benefit is `RB − H − F`. A historical example
-`F = 15 EUR` and `R = 0.315` gives `B* = 47.62 EUR` only if `H = 0` and the workload and
+For a deployment with baseline list-price spend $`B`$, applicable pooled reduction $`R`$, incremental
+operating cost $`H`$ and service fee $`F`$, net benefit is $`RB-H-F`$. A historical example
+$`F=15`$ EUR and $`R=0.315`$ gives $`B^{*}=47.62`$ EUR only if $`H=0`$ and the workload and
 currency basis are appropriate. It is not a current price offer or a forecast. Gross provider
 savings and all-in deployment economics should be reported separately.
 
@@ -684,10 +690,10 @@ peer-review acceptance.
 For the two historical GSM8K artifacts:
 
 1. Pair baseline and optimized observations by the recorded logical request, using the published ordering and family assignment.
-2. Sum costs within each family to obtain `(b_f, o_f)`.
-3. Compute `1 − Σ_f o_f / Σ_f b_f`.
-4. For each of 10,000 replicates, draw `F` family indices with replacement using the published mulberry32 generator and seed `0xa11`; sum the sampled paired costs and recompute the ratio.
-5. Sort the replicate ratios. Select the zero-based order statistic at index `⌊(B−1)p⌋` for `p = 0.025` and `0.975`, with no interpolation, matching the published implementation.
+2. Sum costs within each family to obtain $`(b_f,o_f)`$.
+3. Compute $`1-\sum_f o_f / \sum_f b_f`$.
+4. For each of 10,000 replicates, draw $`F`$ family indices with replacement using the published mulberry32 generator and seed `0xa11`; sum the sampled paired costs and recompute the ratio.
+5. Sort the replicate ratios. Select the zero-based order statistic at index $`\lfloor (B-1)p\rfloor`$ for $`p=0.025`$ and $`0.975`$, with no interpolation, matching the published implementation.
 6. As a separate secondary analysis, average the per-family ratios and bootstrap that mean using the same sampled indices.
 
 All observed and resampled primary denominators in these artifacts are positive. A general

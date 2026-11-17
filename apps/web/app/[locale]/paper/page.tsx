@@ -10,10 +10,15 @@ import Footer from "@/app/components/Footer";
 import { Link } from "@/i18n/navigation";
 import { absolute, tarjetaSocial } from "@/i18n/site";
 import { EDICION_PAPER } from "@/lib/paper/edicion";
+import { formulaHtml } from "@/lib/paper/formulas";
 import { DataTable } from "@/vendor/affectui/data-table-clean";
 import { GridBackground } from "@/vendor/affectui/grid-background";
 
 import { BLOQUES, CABECERA, type Bloque } from "./contenido";
+
+// El CSS de KaTeX SOLO en esta ruta (es la única con fórmulas). Sus fuentes las
+// empaqueta Next en /_next/static/media: mismo origen, dentro de la CSP.
+import "katex/dist/katex.min.css";
 
 /**
  * /[locale]/paper — el preprint en la web, con plantilla de lectura académica.
@@ -62,15 +67,58 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /**
- * Inline: **bold**, `code`, [text](url) y *énfasis*. Nada más (el markdown del
- * paper es simple). El énfasis exige letra pegada a cada asterisco, para no
- * confundirlo con un asterisco suelto de una fórmula o de una nota.
+ * Inline: $`fórmula`$, **bold**, `code`, [text](url) y *énfasis*. Nada más (el
+ * markdown del paper es simple). La fórmula va PRIMERO: su LaTeX puede llevar
+ * asteriscos (`B^{*}`) que no son énfasis. El énfasis exige letra pegada a cada
+ * asterisco, para no confundirlo con un asterisco suelto de una nota. Un `\$`
+ * es un dólar escapado (GitHub lo pide en las líneas con fórmulas).
+ *
+ * La puntuación PEGADA a una fórmula («($`-67.91\,\%`$)», «$`e`$,») viaja con
+ * ella en un trozo que no se parte: si no, el «)» o la «,» caen solos a la
+ * línea siguiente.
  */
 function Inline({ texto }: { texto: string }) {
-  const partes = texto.split(/(\*\*[^*]+\*\*|`[^`]+`|\[[^\]]+\]\([^)]+\)|\*[^\s*](?:[^*]*[^\s*])?\*)/g);
+  const partes = texto.split(/(\$`[^`]+`\$|\*\*[^*]+\*\*|`[^`]+`|\[[^\]]+\]\([^)]+\)|\*[^\s*](?:[^*]*[^\s*])?\*)/g);
+  const esFormula = (p: string | undefined) => p !== undefined && p.length > 4 && p.startsWith("$`") && p.endsWith("`$");
+  const ABRE = /[(\[«“"']+$/;
+  const CIERRA = /^[)\],.;:!?»”"'%]+/;
+  // Recorta la puntuación que toca cada fórmula de los trozos de texto vecinos.
+  const antes: string[] = partes.map(() => "");
+  const despues: string[] = partes.map(() => "");
+  partes.forEach((p, i) => {
+    if (!esFormula(p)) return;
+    const previo = partes[i - 1];
+    if (previo !== undefined) {
+      const m = ABRE.exec(previo);
+      if (m) {
+        antes[i] = m[0];
+        partes[i - 1] = previo.slice(0, -m[0].length);
+      }
+    }
+    const siguiente = partes[i + 1];
+    if (siguiente !== undefined) {
+      const m = CIERRA.exec(siguiente);
+      if (m) {
+        despues[i] = m[0];
+        partes[i + 1] = siguiente.slice(m[0].length);
+      }
+    }
+  });
   return (
     <>
       {partes.map((p, i) => {
+        if (esFormula(p)) {
+          const html = { __html: formulaHtml(p.slice(2, -2)) };
+          if (!antes[i] && !despues[i]) return <span key={i} dangerouslySetInnerHTML={html} />;
+          return (
+            <span key={i} className="paper-pegado">
+              {antes[i]}
+              <span dangerouslySetInnerHTML={html} />
+              {despues[i]}
+            </span>
+          );
+        }
+        if (p === "") return null;
         if (p.startsWith("**") && p.endsWith("**")) return <strong key={i}>{p.slice(2, -2)}</strong>;
         if (p.startsWith("`") && p.endsWith("`")) return <code key={i}>{p.slice(1, -1)}</code>;
         if (p.length > 2 && p.startsWith("*") && p.endsWith("*")) return <em key={i}>{p.slice(1, -1)}</em>;
@@ -87,7 +135,7 @@ function Inline({ texto }: { texto: string }) {
             </Link>
           );
         }
-        return <span key={i}>{p}</span>;
+        return <span key={i}>{p.replaceAll("\\$", () => "$")}</span>;
       })}
     </>
   );
@@ -224,6 +272,27 @@ export default async function PaperPage({ params }: { params: Promise<{ locale: 
                     </h3>
                   );
                 if (b.tipo === "hr") return <hr key={i} className="paper-regla" />;
+                if (b.tipo === "ecuacion")
+                  return (
+                    // Ecuación en bloque, compuesta al construir. Centrada y con
+                    // su número a la derecha, como en el PDF; si no cabe (móvil),
+                    // se desplaza DENTRO de su caja, que es recorrible con el
+                    // teclado: la página nunca.
+                    <div key={i} className="paper-ecuacion" id={b.numero ? `ecuacion-${b.numero}` : undefined}>
+                      <div
+                        className="paper-ecuacion-formula"
+                        role="group"
+                        tabIndex={0}
+                        aria-label={b.numero ? `Equation (${b.numero})` : "Equation"}
+                        dangerouslySetInnerHTML={{ __html: formulaHtml(b.latex, true) }}
+                      />
+                      {b.numero ? (
+                        <span className="paper-ecuacion-num" aria-hidden="true">
+                          ({b.numero})
+                        </span>
+                      ) : null}
+                    </div>
+                  );
                 if (b.tipo === "tabla")
                   return (
                     // La Data Table de affectUI, bifurcada a solo lectura. Cuando
@@ -236,10 +305,10 @@ export default async function PaperPage({ params }: { params: Promise<{ locale: 
                       minWidth={`${Math.max(b.filas[0]?.length ?? 0, 2) * 8.5}rem`}
                       dense
                       prose
-                      columns={(b.filas[0] ?? []).map((celda, c) => ({ key: String(c), label: <Inline texto={celda} /> }))}
+                      columns={(b.filas[0] ?? []).map((celda, c) => ({ key: String(c), label: <span><Inline texto={celda} /></span> }))}
                       rows={b.filas.slice(1).map((fila, r) => ({
                         id: String(r),
-                        cells: Object.fromEntries(fila.map((celda, c) => [String(c), <Inline key={c} texto={celda} />])),
+                        cells: Object.fromEntries(fila.map((celda, c) => [String(c), <span key={c}><Inline texto={celda} /></span>])),
                       }))}
                     />
                   );
