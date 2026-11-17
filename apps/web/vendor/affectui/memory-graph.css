@@ -1,0 +1,70 @@
+/*
+ * Derived from affectUI Pro 'Memory Graph' (https://www.affectui.com). Used under the affectUI Pro license held by BiVelio. NOT covered by this repository's Apache-2.0 licence; do not redistribute as a component kit.
+ */
+.ui-mg {
+  --ui-mg-card: var(--aui-surface, #ffffff);
+  --ui-mg-line: var(--aui-border, rgba(0, 0, 0, 0.06));
+  --ui-mg-tag: color-mix(in srgb, var(--aui-ink, #000) 7%, transparent);
+  --ui-mg-skel: color-mix(in srgb, var(--aui-ink, #000) 16%, transparent);
+  --ui-mg-light: var(--aui-blue, #0190fe);
+  --ui-mg-wire: color-mix(in srgb, var(--ui-mg-light) 42%, #fff);
+  --ui-mg-blue: color-mix(in srgb, var(--ui-mg-light) 82%, transparent);
+  --ui-mg-ok: var(--mint, #14a06f);
+  --ui-mg-ok-ink: var(--aui-success, #1e8a4f);
+  --ui-mg-ease: cubic-bezier(0.32, 0.72, 0.24, 1);
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+/* ---------- Connectors: Agent Tree's – soft blue, rounded corners, a ring at each end ---------- */
+.ui-mg__line { fill: none; stroke: var(--ui-mg-wire); stroke-width: 1.5; stroke-linecap: round; }
+/* An empty spot: nothing is remembered there yet */
+.ui-mg__wire[data-kind="learned"] > .ui-mg__line:not(.ui-mg__line--hot) { stroke-dasharray: 2 4; opacity: 0.55; }
+/* What it recalls right now, and what it has just learned: the line is lit */
+.ui-mg__line--hot { stroke: var(--ui-mg-light); opacity: 0; }
+.ui-mg__wire[data-kind="recalled"] > .ui-mg__line--hot { stroke: var(--ui-mg-ok); }
+.ui-mg__ring { fill: var(--ui-mg-card); stroke: var(--ui-mg-wire); stroke-width: 1.5; }
+/* The light: clear in the middle, fading to nothing at both ends */
+.ui-mg__band { opacity: 0; transform: translateX(var(--ui-mg-fx)); will-change: transform, opacity; }
+
+/* ---------- Cards ---------- */
+.ui-mg__node { fill: var(--ui-mg-card); stroke: var(--ui-mg-line); stroke-width: 1; }
+.ui-mg__tile { fill: var(--ui-mg-tag); }
+.ui-mg__text { fill: var(--ui-mg-skel); }
+.ui-mg__sub { fill: var(--ui-mg-tag); }
+/* Looked at while it searches */
+.ui-mg__seen { fill: color-mix(in srgb, var(--ui-mg-light) 7%, transparent); stroke: color-mix(in srgb, var(--ui-mg-light) 50%, transparent); stroke-width: 1; opacity: 0; }
+/* What it recalls right now lights up */
+.ui-mg__hot { fill: color-mix(in srgb, var(--ui-mg-ok) 10%, var(--ui-mg-card)); stroke: color-mix(in srgb, var(--ui-mg-ok) 70%, transparent); stroke-width: 1.25; opacity: 0; }
+.ui-mg__tick { opacity: 0; transform-box: fill-box; transform-origin: center; }
+.ui-mg__tick circle { fill: var(--ui-mg-ok-ink); }
+.ui-mg__tick path { fill: none; stroke: #fff; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+/* The empty spot, and the card that rises there */
+.ui-mg__spot { fill: none; stroke: color-mix(in srgb, var(--aui-ink, #000) 30%, transparent); stroke-width: 1; stroke-dasharray: 2.5 3; }
+.ui-mg__new { opacity: 0; transform-box: fill-box; transform-origin: center; }
+.ui-mg__new .ui-mg__node { stroke: color-mix(in srgb, var(--ui-mg-light) 50%, transparent); }
+/* The Gradient Floor: it comes up across the card from the edge the light came in by, and is gone */
+.ui-mg__floor { opacity: 0; will-change: transform, opacity; }
+
+/* ---------- The one in the middle ---------- */
+.ui-mg__avatar { fill: var(--ui-mg-card); stroke: var(--ui-mg-line); stroke-width: 1; filter: drop-shadow(0 2px 3px rgba(15, 18, 40, 0.1)); }
+.ui-mg__px { fill: var(--ui-mg-blue); opacity: 0; }
+.ui-mg__px[data-on] { opacity: 1; }
+/* Busy: the pixels twinkle in a diagonal wave. The busy mark lies on top of the still one, hidden until it is shown */
+.ui-mg__mark[data-busy] { opacity: 0; }
+.ui-mg__mark[data-busy] .ui-mg__px { animation: ui-mg-pixel 1.2s ease-in-out infinite both; }
+.ui-mg__mark[data-busy] .ui-mg__px:not([data-on]) { animation-name: ui-mg-pixel-off; }
+
+@keyframes ui-mg-pixel { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+@keyframes ui-mg-pixel-off { 0%, 100% { opacity: 0.16; } 50% { opacity: 0.03; } }
+/* One run of the light and one rise of the floor, for whoever has no timeline of its own */
+@keyframes ui-mg-run { 0% { transform: translateX(var(--ui-mg-fx)); opacity: 0; } 15%, 85% { opacity: 1; } 100% { transform: translateX(var(--ui-mg-tx)); opacity: 0; } }
+@keyframes ui-mg-got { 0% { transform: translateX(calc(var(--ui-mg-dir) * -70px)); opacity: 0; } 20%, 40% { opacity: 1; } 100% { transform: translateX(calc(var(--ui-mg-dir) * 30px)); opacity: 0; } }
+@keyframes ui-mg-rise { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-mg * { animation: none !important; transition: none !important; }
+  .ui-mg__light, .ui-mg__floor { display: none; }
+}

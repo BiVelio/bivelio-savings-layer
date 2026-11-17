@@ -1,0 +1,59 @@
+/*
+ * Vendored from affectUI 'Number Ticker' — https://github.com/flohoeller/affectui @ 8f15236c790d3a21a668c98a663037e5219dd9c9
+ * MIT License, Copyright (c) 2026 Florian Höller (adfects). Full text: ./LICENSE.
+ * Adapted for BiVelio Savings (light theme only, BiVelio tokens); changes from upstream are listed in ./VENDOR.md.
+ */
+.ui-nt {
+  --ui-nt-lh: 1.15em;
+  --ui-nt-ease: var(--aui-ease, cubic-bezier(.16, 1, .3, 1));
+  position: relative;
+  display: inline-flex;
+  line-height: var(--ui-nt-lh);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.ui-nt__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+.ui-nt__track {
+  display: inline-flex;
+  align-items: flex-start;
+  height: var(--ui-nt-lh);
+  line-height: var(--ui-nt-lh);
+}
+.ui-nt__col {
+  display: inline-block;
+  height: var(--ui-nt-lh);
+  overflow: hidden;
+  /* Soft top and bottom edges while digits pass through */
+  -webkit-mask-image: linear-gradient(transparent, #000 14%, #000 86%, transparent);
+  mask-image: linear-gradient(transparent, #000 14%, #000 86%, transparent);
+}
+.ui-nt__col[data-enter] { animation: ui-nt-in 450ms var(--ui-nt-ease) both; }
+.ui-nt__stack {
+  display: flex;
+  flex-direction: column;
+  will-change: transform;
+}
+.ui-nt__cell,
+.ui-nt__static {
+  display: block;
+  height: var(--ui-nt-lh);
+  text-align: center;
+}
+.ui-nt__static { white-space: pre; }
+
+@keyframes ui-nt-in {
+  from { opacity: 0; transform: translateY(-35%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-nt__col[data-enter] { animation: none; }
+}

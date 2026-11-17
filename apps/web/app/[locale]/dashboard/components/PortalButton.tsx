@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 
+import { Spinner } from "@/vendor/affectui/spinner-clean";
+
 /**
  * Botón al portal de facturación de Stripe, suelto (sin los CTA de compra).
  *
@@ -39,15 +41,16 @@ export function PortalButton({ label }: { label: string }) {
   }
 
   return (
-    <span className="billing-cta">
+    <div className="billing-cta billing-cta--solo">
       <button type="button" className="btn btn-primary" disabled={cargando} onClick={abrir}>
-        {cargando ? "…" : label}
+        {cargando ? <Spinner size={15} /> : null}
+        {label}
       </button>
       {err ? (
-        <span className="billing-err" role="alert">
+        <p className="billing-err" role="alert">
           {err}
-        </span>
+        </p>
       ) : null}
-    </span>
+    </div>
   );
 }

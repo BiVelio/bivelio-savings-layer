@@ -1,0 +1,73 @@
+/* Derived from affectUI Pro 'hover-card' (https://www.affectui.com). Used under the affectUI Pro license held by BiVelio. NOT covered by this repository's Apache-2.0 licence; do not redistribute as a component kit. */
+
+/* Colors and motion as variables – override them on .ui-hvcc (see Theming in the docs) */
+.ui-hvcc {
+  --ui-hvcc-surface: var(--aui-overlay, var(--aui-surface, #ffffff));
+  --ui-hvcc-ink: var(--aui-ink, rgba(0, 0, 0, 0.88));
+  --ui-hvcc-shadow: var(--aui-shadow-popover, 0 0 0 0.5px var(--aui-border-strong, rgba(0, 0, 0, 0.1)), 0 12px 32px -8px rgba(0, 0, 0, 0.16));
+  --ui-hvcc-focus: var(--aui-focus, rgba(0, 96, 226, 0.7));
+  --ui-hvcc-ease: var(--aui-ease, cubic-bezier(0.22, 1, 0.36, 1));
+
+  /* A white card in the top layer: a 0.5px edge and a soft drop. It fits its content up to 320px; width lifts the cap */
+  position: fixed;
+  inset: auto;
+  z-index: 1000;
+  display: block;
+  box-sizing: border-box;
+  width: max-content;
+  max-width: min(320px, calc(100vw - 16px));
+  max-height: calc(100vh - 16px);
+  margin: 0;
+  padding: 14px;
+  border: 0;
+  border-radius: calc(var(--aui-radius-lg, 10px) + 2px);
+  background: var(--ui-hvcc-surface);
+  box-shadow: var(--ui-hvcc-shadow);
+  color: var(--ui-hvcc-ink);
+  font-family: var(--aui-font, var(--font-sans));
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 400;
+  /* BiVelio: it lives in the DOM next to its trigger, so it must not inherit a header's caps or tracking */
+  text-transform: none;
+  letter-spacing: normal;
+  font-style: normal;
+  text-align: start;
+  overflow: auto;
+  overflow-wrap: anywhere;
+  overscroll-behavior: contain;
+  -webkit-font-smoothing: antialiased;
+  transform-origin: top left;
+  animation: ui-hvcc-in 200ms var(--ui-hvcc-ease) both;
+}
+.ui-hvcc::backdrop { display: none; }
+.ui-hvcc *, .ui-hvcc *::before, .ui-hvcc *::after { box-sizing: border-box; }
+/* Links and buttons you put inside get the library's ring */
+.ui-hvcc :is(a, button, [tabindex]):focus-visible { outline: 2px solid var(--ui-hvcc-focus); outline-offset: 2px; }
+
+/* It grows out of the side and edge it is attached to */
+.ui-hvcc[data-align="end"] { transform-origin: top right; }
+.ui-hvcc[data-align="center"] { transform-origin: top center; }
+.ui-hvcc[data-side="top"] { transform-origin: bottom left; animation-name: ui-hvcc-in-up; }
+.ui-hvcc[data-side="top"][data-align="end"] { transform-origin: bottom right; }
+.ui-hvcc[data-side="top"][data-align="center"] { transform-origin: bottom center; }
+.ui-hvcc[data-side="right"] { transform-origin: top left; animation-name: ui-hvcc-in-right; }
+.ui-hvcc[data-side="right"][data-align="end"] { transform-origin: bottom left; }
+.ui-hvcc[data-side="right"][data-align="center"] { transform-origin: center left; }
+.ui-hvcc[data-side="left"] { transform-origin: top right; animation-name: ui-hvcc-in-left; }
+.ui-hvcc[data-side="left"][data-align="end"] { transform-origin: bottom right; }
+.ui-hvcc[data-side="left"][data-align="center"] { transform-origin: center right; }
+
+@keyframes ui-hvcc-in { from { opacity: 0; transform: scale(0.97) translateY(-4px); } }
+@keyframes ui-hvcc-in-up { from { opacity: 0; transform: scale(0.97) translateY(4px); } }
+@keyframes ui-hvcc-in-right { from { opacity: 0; transform: scale(0.97) translateX(-4px); } }
+@keyframes ui-hvcc-in-left { from { opacity: 0; transform: scale(0.97) translateX(4px); } }
+
+/* Touch screens with a mouse or pen (a tablet): 15px text, so it reads like the rest of the UI there */
+@media (pointer: coarse) {
+  .ui-hvcc { padding: 16px; font-size: 15px; line-height: 22px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-hvcc { animation: none; }
+}

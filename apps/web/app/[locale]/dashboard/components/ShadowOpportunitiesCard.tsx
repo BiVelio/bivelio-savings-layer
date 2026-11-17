@@ -1,5 +1,10 @@
 import { getTranslations } from "next-intl/server";
 
+import { Badge } from "@/vendor/affectui/badge-clean";
+import { DataTable } from "@/vendor/affectui/data-table-clean";
+
+import { Termino } from "@/app/components/evidencia/Termino";
+
 import type { ShadowModelDia, ShadowReadStatus, UsageRollup } from "../data";
 import { intfmt, money, moneySigned, pctFloor } from "../format";
 import { deriveOpportunities } from "../opportunities";
@@ -20,54 +25,65 @@ export async function ShadowOpportunitiesCard({
   const summary = deriveOpportunities(rows, usage);
   const historical = rows.length === 0 && summary.dailyShadowAvailable && summary.totalShadowRequests > 0;
   const canExport = (status === "data" || status === "empty") && summary.dailyShadowAvailable;
-  const celda = { padding: "6px 8px" } as const;
+  const p = await getTranslations("dashboard.panel");
+  const legible = status === "data" || status === "empty";
 
   return (
-    <section className="card card-pad" aria-labelledby="shadow-opportunities-title">
-      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-        <h3 className="n card-title" id="shadow-opportunities-title">{t("title")}</h3>
-        <span className="pill">{t("badge")}</span>
+    <section className="card card-pad ox-card" aria-labelledby="shadow-opportunities-title">
+      <div className="card-head">
+        <h3 className="n" id="shadow-opportunities-title">{t("title")}</h3>
+        <Termino definicion={t("badgeDef")} desnudo>
+          <Badge tone="warning" caps>{t("badge")}</Badge>
+        </Termino>
       </div>
-      <p className="sub">{t("intro")}</p>
+      <p className="ox-lead">{t("intro")}</p>
 
-      {status === "error" ? <p role="alert" className="ck-note">{t("error")}</p> : null}
-      {status === "hidden" ? <p role="alert" className="ck-note">{t("hidden")}</p> : null}
-      {status === "unavailable" ? <p className="ck-note">{t("unavailable")}</p> : null}
-      {(status === "data" || status === "empty") && historical ? <p className="ck-note">{t("historical")}</p> : null}
-      {(status === "data" || status === "empty") && !historical && summary.rows.length === 0 ? (
-        <p className="ck-note">{t("empty")}</p>
-      ) : null}
+      {status === "error" ? <p role="alert" className="ck-note ox-state">{t("error")}</p> : null}
+      {status === "hidden" ? <p role="alert" className="ck-note ox-state">{t("hidden")}</p> : null}
+      {status === "unavailable" ? <p className="ck-note ox-state">{t("unavailable")}</p> : null}
+      {legible && historical ? <p className="ck-note ox-state">{t("historical")}</p> : null}
+      {legible && !historical && summary.rows.length === 0 ? <p className="ck-note ox-state">{t("empty")}</p> : null}
 
-      {summary.rows.length > 0 && (status === "data" || status === "empty") ? (
+      {summary.rows.length > 0 && legible ? (
         <>
-          <div className="tbl-scroll">
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-              <thead>
-                <tr style={{ textAlign: "left", opacity: 0.65 }}>
-                  <th style={{ ...celda, fontWeight: 500 }}>{t("colModel")}</th>
-                  <th style={{ ...celda, fontWeight: 500 }}>{t("colRequests")}</th>
-                  <th style={{ ...celda, fontWeight: 500 }}>{t("colBaseline")}</th>
-                  <th style={{ ...celda, fontWeight: 500 }}>{t("colActual")}</th>
-                  <th style={{ ...celda, fontWeight: 500 }}>{t("colSavings")}</th>
-                  <th style={{ ...celda, fontWeight: 500 }}>{t("colCoverage")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {summary.rows.map((row) => (
-                  <tr key={row.model} style={{ borderTop: "1px solid var(--line)" }}>
-                    <td style={{ ...celda, fontFamily: "var(--mono)", fontSize: 12 }}>{row.model}</td>
-                    <td style={celda}>{intfmt(row.shadowRequests)}</td>
-                    <td style={celda}>{money(row.baselineCost)}</td>
-                    <td style={celda}>{money(row.actualCost)}</td>
-                    <td style={celda}>{moneySigned(row.hypotheticalSavings)}</td>
-                    <td style={celda}>{row.coverageRatio === null ? "—" : pctFloor(row.coverageRatio)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <DataTable
+            flat
+            pinFirst
+            label={t("title")}
+            sortLabel={p("sortBy", { column: "{column}" })}
+            minWidth="600px"
+            columns={[
+              { key: "model", label: t("colModel"), mono: true, nowrap: true, sortable: true },
+              { key: "requests", label: t("colRequests"), align: "end", mono: true, sortable: true },
+              { key: "baseline", label: t("colBaseline"), align: "end", mono: true, sortable: true },
+              { key: "actual", label: t("colActual"), align: "end", mono: true, sortable: true },
+              { key: "savings", label: t("colSavings"), align: "end", mono: true, sortable: true },
+              { key: "coverage", label: t("colCoverage"), align: "end", mono: true, sortable: true },
+            ]}
+            rows={summary.rows.map((row) => ({
+              id: row.model,
+              // Sin cobertura medida la celda es «—» y ordena al final: no es un 0 %.
+              sort: {
+                model: row.model,
+                requests: row.shadowRequests,
+                baseline: row.baselineCost,
+                actual: row.actualCost,
+                savings: row.hypotheticalSavings,
+                coverage: row.coverageRatio,
+              },
+              quiet: row.coverageRatio === null ? ["coverage"] : undefined,
+              cells: {
+                model: row.model,
+                requests: intfmt(row.shadowRequests),
+                baseline: money(row.baselineCost),
+                actual: money(row.actualCost),
+                savings: moneySigned(row.hypotheticalSavings),
+                coverage: row.coverageRatio === null ? "—" : pctFloor(row.coverageRatio),
+              },
+            }))}
+          />
           {summary.coverageRatio !== null ? (
-            <p className="ck-note">
+            <p className="ck-note ox-foot">
               {t(summary.partialCoverage ? "coveragePartial" : "coverage", {
                 coverage: pctFloor(summary.coverageRatio),
                 attributed: intfmt(summary.attributedShadowRequests),
@@ -75,24 +91,26 @@ export async function ShadowOpportunitiesCard({
               })}
             </p>
           ) : (
-            <p className="ck-note">{t("coverageUnavailable")}</p>
+            <p className="ck-note ox-foot">{t("coverageUnavailable")}</p>
           )}
         </>
       ) : null}
 
-      <p className="ck-note">{t("note")}</p>
-      <p className="ck-note">{t("action")}</p>
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-        <a className="btn" href="/dashboard/account">{t("accountCta")}</a>
-        <a className="btn" href="/dashboard/install">{t("installCta")}</a>
+      <div className="ox-aside">
+        <p className="ck-note">{t("note")}</p>
+        <p className="ck-note">{t("action")}</p>
+      </div>
+      <div className="ox-actions">
+        <a className="btn btn-ghost btn-sm" href="/dashboard/account">{t("accountCta")}</a>
+        <a className="btn btn-ghost btn-sm" href="/dashboard/install">{t("installCta")}</a>
         {canExport ? (
           <>
-            <a className="btn" href={`/api/org/shadow-opportunities?format=csv&range=${rango}`}>{t("exportCsv")}</a>
-            <a className="btn" href={`/api/org/shadow-opportunities?format=json&range=${rango}`}>{t("exportJson")}</a>
+            <a className="btn btn-quiet btn-sm" href={`/api/org/shadow-opportunities?format=csv&range=${rango}`}>{t("exportCsv")}</a>
+            <a className="btn btn-quiet btn-sm" href={`/api/org/shadow-opportunities?format=json&range=${rango}`}>{t("exportJson")}</a>
           </>
         ) : null}
       </div>
-      <div className="src" style={{ marginTop: 8 }}>usage_daily_shadow_by_model · 0037 · basis=shadow</div>
+      <div className="src ox-src">usage_daily_shadow_by_model · 0037 · basis=shadow</div>
     </section>
   );
 }

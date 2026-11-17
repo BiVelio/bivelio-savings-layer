@@ -1,0 +1,93 @@
+/*
+ * Derived from affectUI Pro 'Gradient Text' (https://www.affectui.com). Used under the affectUI Pro license held by BiVelio. NOT covered by this repository's Apache-2.0 licence; do not redistribute as a component kit.
+ */
+.ui-gt {
+  /* BiVelio: brand blue into teal, with a lighter blue and a deep blue drifting over it. Every stop keeps at
+     least 3:1 against the ivory page, which is what a display-size headline needs. */
+  --ui-gt-c1: var(--brand, #0066e6);
+  --ui-gt-c2: #0e8f86;
+  --ui-gt-c3: #1d8fe0;
+  --ui-gt-c4: #0052b8;
+  --ui-gt-sweep: 900ms;
+  position: relative;
+  display: inline-block;
+  margin: 0;
+  font: inherit;
+  letter-spacing: inherit;
+}
+.ui-gt__base {
+  color: inherit;
+  transition: color 240ms ease;
+}
+.ui-gt__fill {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  -webkit-user-select: none;
+  user-select: none;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  background-image:
+    radial-gradient(closest-side, var(--ui-gt-c3), transparent),
+    radial-gradient(closest-side, var(--ui-gt-c4), transparent),
+    radial-gradient(closest-side, var(--ui-gt-c1), transparent),
+    linear-gradient(100deg, var(--ui-gt-c1) 10%, var(--ui-gt-c2) 90%);
+  background-size: 70% 170%, 80% 190%, 60% 160%, 100% 100%;
+  background-repeat: no-repeat;
+  background-position: -20% 30%, 120% 70%, 50% -40%, 0 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  /* A little room around the box, so overhanging glyphs are not cut by the sweep */
+  clip-path: inset(-0.25em -0.25em -0.25em -0.25em);
+}
+/* BiVelio (WCAG 2.2.2): the flow is NOT a loop. It starts when the phrase is seen, makes one pass and comes to
+   rest on the same picture it started from (0% and 100% of the keyframes are the resting positions). The
+   component caps --ui-gt-speed so sweep and flow are over in under five seconds: motion that long, next to
+   text people are reading, would otherwise need its own pause control. */
+.ui-gt[data-state="in"] .ui-gt__fill {
+  animation: ui-gt-flow var(--ui-gt-speed, 4s) ease-in-out 1;
+}
+
+/* Sweep: the fill is hidden until the text is seen, then wipes in from the left */
+.ui-gt[data-sweep][data-state="idle"] .ui-gt__fill {
+  clip-path: inset(-0.25em 100% -0.25em -0.25em);
+}
+.ui-gt[data-sweep] .ui-gt__fill {
+  transition: clip-path var(--ui-gt-sweep) cubic-bezier(0.65, 0, 0.25, 1);
+}
+.ui-gt[data-state="in"] .ui-gt__base {
+  color: transparent;
+}
+.ui-gt[data-sweep][data-state="in"] .ui-gt__base {
+  transition-delay: calc(var(--ui-gt-sweep) - 200ms);
+}
+
+/* The blobs drift on their own paths and return home; the base gradient stays put */
+@keyframes ui-gt-flow {
+  0%, 100% { background-position: -20% 30%, 120% 70%, 50% -40%, 0 0; }
+  25% { background-position: 40% 110%, 60% -10%, 110% 60%, 0 0; }
+  50% { background-position: 120% 40%, -20% 40%, 40% 140%, 0 0; }
+  75% { background-position: 60% -30%, 30% 120%, -10% 30%, 0 0; }
+}
+
+/* Reduced motion: the finished gradient, standing still */
+@media (prefers-reduced-motion: reduce) {
+  .ui-gt .ui-gt__fill,
+  .ui-gt[data-state="in"] .ui-gt__fill,
+  .ui-gt[data-sweep][data-state="idle"] .ui-gt__fill {
+    animation: none;
+    transition: none;
+    clip-path: inset(-0.25em -0.25em -0.25em -0.25em);
+  }
+  .ui-gt .ui-gt__base,
+  .ui-gt[data-sweep] .ui-gt__base {
+    color: transparent;
+    transition: none;
+  }
+}
+
+/* Forced colours (Windows high contrast): no painted text, just the real one */
+@media (forced-colors: active) {
+  .ui-gt .ui-gt__fill { display: none; }
+  .ui-gt .ui-gt__base, .ui-gt[data-state="in"] .ui-gt__base { color: CanvasText; }
+}

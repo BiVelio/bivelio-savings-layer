@@ -13,7 +13,15 @@
     "dashboard": "Panel",
     "signOut": "Wyloguj się",
     "howItWorks": "Jak to działa",
-    "menu": "Menu"
+    "menu": "Menu",
+    "product": "Produkt",
+    "results": "Wyniki",
+    "code": "Kod",
+    "mainAria": "Nawigacja główna",
+    "newTab": "(otwiera się w nowej karcie)",
+    "breadcrumb": "Ścieżka nawigacji",
+    "home": "Strona główna",
+    "skipToContent": "Przejdź do treści"
   },
   "app": {
     "sidebar": {
@@ -43,16 +51,108 @@
         "members": "{n, plural, =1 {1 członek} few {# członkowie} other {# członków}}",
         "seats": "{used} z {seats}",
         "seatsTitle": "{used} miejsc w użyciu z {seats} opłaconych w tym miesiącu"
+      },
+      "status": {
+        "done": "gotowe",
+        "next": "następny",
+        "pending": "oczekuje",
+        "unavailable": "niedostępne"
       }
     },
     "topbar": {
       "orgLabel": "Organizacja: {org}",
       "accountLink": "Ustawienia konta {email}",
       "plan": {
-        "free": "Free",
-        "pro": "Pro",
+        "free": "Bezpłatny",
+        "pro": "Plan płatny",
         "enterprise": "Enterprise"
+      },
+      "menuLabel": "Menu konta",
+      "setupNext": "Następny:",
+      "brandAria": "Savings by BiVelio — panel"
+    },
+    "tour": {
+      "open": "Zobacz przewodnik",
+      "openHint": "Powtórz przewodnik po panelu",
+      "close": "Zamknij przewodnik",
+      "next": "Dalej",
+      "prev": "Wstecz",
+      "finish": "Zakończ",
+      "step": "Krok {n} z {total}",
+      "steps": {
+        "welcome": {
+          "title": "Witaj w BiVelio Savings",
+          "body": "Ten panel pokazuje, ile wydajesz na LLM i ile oszczędza warstwa — zmierzone na Twoim własnym ruchu. To, czego nie zmierzono, opisujemy słowami, nigdy jako zero."
+        },
+        "nav": {
+          "title": "Trzy grupy, jedna ścieżka",
+          "body": "Zacznij prowadzi do przeglądu i instalacji. Oszczędzaj zbiera dowód i wyciąg. Twoja organizacja obejmuje maszyny i konto."
+        },
+        "setup": {
+          "title": "Pierwsze kroki i Twój postęp",
+          "body": "Kamienie milowe uruchomienia mierzy produkt. Wybierz jeden, aby otworzyć jego instrukcję: zmienia się na gotowe dopiero wtedy, gdy nadejdzie rzeczywisty sygnał."
+        },
+        "verdict": {
+          "title": "Twój wynik",
+          "body": "Zmierzone oszczędności w okresie, z paragonem i rodzajem dowodu. Jeśli czegoś brakuje — integracji, ruchu, ceny albo odczytu — tutaj zobaczysz, czego i jak przejść dalej."
+        },
+        "range": {
+          "title": "Wybierz okres",
+          "body": "Przełączaj się między dostępnymi zakresami. Okres jest zapisany w adresie, więc możesz udostępnić lub odświeżyć ten sam widok."
+        },
+        "customize": {
+          "title": "Dostosuj panel",
+          "body": "Zmieniaj kolejność kart, ukrywaj je i przywracaj układ, kiedy chcesz. Zapis odbywa się tylko w tej przeglądarce; komunikatów i wyniku nie można ukryć."
+        },
+        "explorer": {
+          "title": "Zbadaj swoje użycie",
+          "body": "Zobacz użycie dziennie, narastająco lub według modelu, zmień metrykę i wyeksportuj okres do CSV."
+        },
+        "proof": {
+          "title": "Dowód i materiał dowodowy",
+          "body": "Trzy karty: publiczny benchmark, Twój własny test A/B i weryfikator. Dane referencyjne nigdy nie są przedstawiane jako Twoje."
+        },
+        "team": {
+          "title": "Twój zespół · Konto i plan",
+          "body": "Zapraszaj osoby i przydzielaj role. Członek to nie miejsce: miejsca to maszyny lub tożsamości usługowe. Sprawdź plan, miejsca i rozliczenia oraz zarządzaj subskrypcją z tego miejsca."
+        },
+        "account": {
+          "title": "Konto i plan",
+          "body": "Sprawdź plan, miejsca i rozliczenia oraz zarządzaj subskrypcją z tego miejsca."
+        },
+        "finish": {
+          "title": "Powtórz, kiedy chcesz",
+          "body": "Ten przewodnik uruchomisz ponownie przyciskiem „Zobacz przewodnik” na górnym pasku każdej strony panelu."
+        }
       }
+    }
+  },
+  "ui": {
+    "copy": "Kopiuj",
+    "copied": "Skopiowano",
+    "evidence": {
+      "abSdk": "A/B z SDK",
+      "replayGateway": "Replay na gatewayu",
+      "sintetico": "Syntetyczny",
+      "estimacion": "Szacunek",
+      "sombra": "Tryb cienia",
+      "benchmark": "Benchmark",
+      "tusDatos": "Twoje dane"
+    },
+    "recibo": {
+      "ilustrativo": "Przykład poglądowy",
+      "comoSeMidio": "Jak to zmierzono",
+      "total": "Razem",
+      "procedencia": "Pochodzenie"
+    },
+    "code": {
+      "expected": "Oczekiwany wynik"
+    },
+    "state": {
+      "loading": "Ładowanie…",
+      "empty": "Brak danych",
+      "error": "Nie udało się załadować",
+      "retry": "Spróbuj ponownie"
     }
   },
   "auth": {
@@ -63,7 +163,7 @@
     "newToBivelio": "Pierwszy raz w BiVelio?",
     "createAnAccount": "Załóż konto",
     "backToVerifier": "← Powrót na stronę główną",
-    "createYourAccount": "Załóż konto",
+    "createYourAccount": "Załóż konto Cloud",
     "signupSubtitle": "Jedno konto BiVelio dla całej suity. Załóż je, by korzystać z chmury: panel, współdzielone pamięci podręczne i zarządzanie licencjami. Sam pakiet nie wymaga konta — open core działa bez klucza.",
     "alreadyHaveAccount": "Masz już konto BiVelio?",
     "signIn": "Zaloguj się",
@@ -106,7 +206,33 @@
       "network": "Brak połączenia. Sprawdź sieć i spróbuj ponownie.",
       "missingFields": "Wpisz e-mail i hasło."
     },
-    "signupMedir": "Albo zacznij za darmo z Measure: darmowy plan chmurowy, bez karty, tryb cienia, do {seats} stanowisk i {requests} żądań dziennie. Wymaga @bivelio/savings-layer {version} lub nowszej."
+    "signupMedir": "Albo zacznij za darmo z Measure: darmowy plan chmurowy, bez karty, tryb cienia, do {seats} stanowisk i {requests} żądań dziennie. Wymaga @bivelio/savings-layer {version} lub nowszej.",
+    "openSourceQuestion": "Chcesz tylko silnik open source?",
+    "openSourceLink": "Zainstaluj go bez konta",
+    "showPassword": "Pokaż hasło",
+    "hidePassword": "Ukryj hasło",
+    "working": "Chwileczkę…",
+    "sentTitleNew": "Potwierdź swój e-mail",
+    "sentTitleExisting": "Masz już konto",
+    "sentTitleReset": "Sprawdź skrzynkę",
+    "sentEmailLabel": "E-mail",
+    "useAnotherEmail": "Użyj innego adresu e-mail",
+    "requestNewLink": "Poproś o nowy link",
+    "successNext": "Następny krok: zainstaluj pakiet i podłącz pierwsze wywołanie. Do tego czasu panel nie ma czego mierzyć.",
+    "successPlan": "Wybrano plan: potwierdzisz go w sekcji Konto, w panelu. Nic jeszcze nie zostało kupione.",
+    "successInvite": "Wrócisz do swojego zaproszenia, aby je przyjąć.",
+    "successContinue": "Dalej",
+    "panel": {
+      "title": "Każda liczba, ze swoim <em>źródłem</em>.",
+      "body": "Panel Savings Cloud pokazuje, co policzono przy każdym wywołaniu i skąd pochodzi liczba.",
+      "receiptTitle": "Paragon jednego wywołania",
+      "receiptMeta": "Co zobaczysz w swoim panelu",
+      "rowBaseline": "Tokeny wejściowe, bez optymalizacji",
+      "rowActual": "Tokeny wejściowe, po optymalizacji",
+      "rowOutput": "Tokeny wyjściowe",
+      "total": "Mniej na wejściu",
+      "provenance": "Liczby na tym paragonie są zmyślone. Twoje pochodzą z licznika Twojego dostawcy."
+    }
   },
   "dashboard": {
     "overview": {
@@ -134,6 +260,60 @@
         "models": "Nie udało się odczytać podziału według modelu.",
         "sessions": "Nie udało się odczytać kosztów sesji.",
         "seats": "Nie udało się odczytać aktywności maszyn."
+      },
+      "panelEyebrow": "Twoja aktywność",
+      "panelTitle": "Użycie, możliwości i rozkład",
+      "next": {
+        "eyebrow": "Następny krok",
+        "doneTitle": "Twój licznik działa",
+        "doneBody": "Kamienie milowe uruchomienia są ukończone. Porównaj swoje liczby z opublikowanym materiałem dowodowym.",
+        "proofCta": "Otwórz dowód",
+        "openCta": "Zobacz instrukcję",
+        "unavailableTitle": "Nie możemy ocenić uruchomienia"
+      },
+      "kpi": {
+        "label": "Liczby z okresu",
+        "cost": "Zaobserwowany koszt",
+        "costBase": "Rzeczywisty koszt według Twoich cen · {period}",
+        "saved": "Zaliczone oszczędności",
+        "savedBase": "Linia bazowa − koszt rzeczywisty, tylko zmierzone żądania · {period}",
+        "requests": "Żądania",
+        "requestsBase": "{share} z licznikiem dostawcy · {period}",
+        "requestsBaseNone": "Wszystkie otrzymane · {period}",
+        "noPrice": "Brak ceny do wyceny tego ruchu",
+        "notMeasured": "W tym okresie nic jeszcze nie zmierzono",
+        "costDef": "Tyle kosztował ten ruch po zastosowanych cenach za token: z Twojego modelu kosztów albo, jeśli go nie ustawiono, z katalogu. Obejmuje wszystkie wycenione żądania, zmierzone lub nie.",
+        "savedDef": "Linia bazowa minus koszt rzeczywisty, tylko dla żądań z licznikiem dostawcy. Szacunki i dane z trybu cienia nigdy tu nie trafiają.",
+        "requestsDef": "Wszystkie żądania otrzymane w okresie. Do zaliczonych oszczędności liczą się tylko te z licznikiem dostawcy."
+      },
+      "breakdown": {
+        "title": "Zaobserwowany koszt według modelu",
+        "totalLabel": "Koszt rzeczywisty · {period}",
+        "empty": "W tym okresie nie ma jeszcze kosztu według modelu",
+        "coverageFull": "Podział obejmuje cały zaobserwowany koszt okresu.",
+        "coveragePartial": "Podział według modelu obejmuje {coverage} zaobserwowanego kosztu okresu; reszta nie ma przypisanego modelu.",
+        "coverageUnknown": "Nie da się porównać z zaobserwowanym kosztem okresu."
+      },
+      "planChosen": {
+        "title": "Wybrany plan: {plan}",
+        "body": "Nic jeszcze nie zostało kupione. Potwierdź plan i liczbę stanowisk w sekcji Konto; płatność odbywa się w Stripe.",
+        "cta": "Potwierdź w sekcji Konto",
+        "askOwner": "Twoja rola nie pozwala wykupić planu. Poproś osobę z rolą właściciela, administratora lub rozliczeń, aby potwierdziła go w sekcji Konto."
+      },
+      "pulse": {
+        "chartTitle": "Linia bazowa i koszt rzeczywisty, dzień po dniu",
+        "seriesBaseline": "Zmierzona linia bazowa",
+        "seriesActual": "Zmierzony koszt rzeczywisty",
+        "seriesSaved": "Zaliczone oszczędności z dnia",
+        "band": "Zaliczone oszczędności",
+        "chartAria": "Linia bazowa i koszt rzeczywisty według dni. Użyj strzałek w lewo i w prawo, aby odczytać każdy dzień.",
+        "gap": "Brak zmierzonych żądań tego dnia",
+        "chartFoot": "Tylko żądania z licznikiem dostawcy ({share} ruchu) · {period}. Dzień bez pomiaru to luka, nie zero.",
+        "providersTitle": "Użycie według dostawcy",
+        "measureCost": "Koszt rzeczywisty",
+        "measureTokens": "Tokeny",
+        "measuresAria": "Miara",
+        "barAria": "{company}: {value}. Naciśnij, aby zobaczyć modele."
       }
     },
     "proof": {
@@ -142,13 +322,25 @@
       "title": "Dowód, że optymalizator działa",
       "intro": "Trzy rzeczy, osobno: to, co publiczny benchmark zmierzył na żywo, z przedziałem; to, ile oszczędzasz Ty, zmierzone na Twoim własnym ruchu; i syntetyczny przebieg, który pokazuje, jak działa każda dźwignia.",
       "tuDinero": "W Twoim panelu liczą się Twoje własne pieniądze: każda oszczędność w sekcji <overview>Przegląd</overview> jest zmierzona licznikiem Twojego dostawcy, na Twoim ruchu, zapytanie po zapytaniu. Liczby powyżej pochodzą z benchmarku, nie są prognozą Twoich.",
-      "sinteticaTitulo": "Syntetyczny przebieg · jak działa każda dźwignia"
+      "sinteticaTitulo": "Syntetyczny przebieg · jak działa każda dźwignia",
+      "publicoTitulo": "Publiczny benchmark",
+      "publicoSub": "Próba referencyjna na naszych scenariuszach. To nie są dane Twojej organizacji.",
+      "propioTitulo": "Twoje dane",
+      "propioBanco": "Porównaj z testem A/B na swoim ruchu",
+      "tecnicaSub": "Zestaw syntetyczny: pokazuje mechanizm każdej dźwigni. Nie obiecuje żadnej liczby.",
+      "diagramRequest": "Twoje żądanie",
+      "diagramA": "Ramię A: wysłane bez zmian, bez warstwy",
+      "diagramB": "Ramię B: to samo żądanie, przez Savings",
+      "diagramMeter": "Licznik zużycia Twojego dostawcy mierzy oba"
     },
     "verify": {
       "metaTitle": "Zweryfikuj · BiVelio Savings Layer",
       "eyebrow": "Weryfikuj lokalnie · nic nie opuszcza tej strony",
       "title": "Ile byś zaoszczędził?",
-      "intro": "Sprawdź w minutę: wybierz przykład (albo wklej własne dane), podaj, jak dużo używasz API, i zobacz prognozowane oszczędności. Wszystko liczy się w Twojej przeglądarce."
+      "intro": "Sprawdź w minutę: wybierz przykład (albo wklej własne dane), podaj, jak dużo używasz API, i zobacz prognozowane oszczędności. Wszystko liczy się w Twojej przeglądarce.",
+      "formatoTitulo": "Weryfikator formatu",
+      "formatoSub": "Liczy tokeny wklejonego fragmentu strukturalnego, w Twojej przeglądarce. To nie jest Twój miesięczny budżet ani faktura.",
+      "proyectorSub": "Szacunek oparty na założeniach, które wybierasz. To nie jest faktura ani zrealizowane oszczędności."
     },
     "yourBench": {
       "metaTitle": "Twój benchmark · BiVelio Savings Layer",
@@ -223,14 +415,52 @@
         "outside": "Koszty poza wywołaniem u Twojego dostawcy, np. usługa embeddingów, którą obsługujesz sam, nie są po żadnej stronie.",
         "streaming": "Żądania, które się nie powiodły lub które anulowałeś podczas streamingu, nie są liczone."
       },
-      "exportCsv": "Pobierz pary (CSV)"
+      "exportCsv": "Pobierz pary (CSV)",
+      "readFailedTitle": "Nie udało się odczytać Twoich par",
+      "stateOff": "Brak danych",
+      "stateCollecting": "Zbieranie próby",
+      "stateShort": "Niewystarczająca próba",
+      "costCopies": "Kopie bez optymalizacji",
+      "costUnmeasured": "Kopie bez zmierzonego kosztu",
+      "costTotal": "Koszt kopii",
+      "readout": {
+        "title": "A/B na Twoim ruchu",
+        "statusPositive": "Oszczędności z dodatnią dolną granicą",
+        "statusInconclusive": "Nierozstrzygnięte: przedział obejmuje zero",
+        "statusNegative": "W tej próbie warstwa kosztowała więcej",
+        "armA": "Kopia bez optymalizacji",
+        "armAHint": "Punkt odniesienia: ile nalicza dostawca bez warstwy",
+        "armAValue": "Baza",
+        "armB": "Z Savings",
+        "armBHint": "To samo żądanie, obsłużone przez warstwę",
+        "armBValue": "{change} kosztu · estymacja punktowa",
+        "factSample": "Próba",
+        "factSampleValue": "Porównane pary: {pairs}",
+        "factInterval": "Przedział {level}",
+        "factIntervalValue": "od {lower} do {upper}",
+        "factPeriod": "Okres",
+        "factCoverage": "Pokrycie",
+        "factCoverageValue": "{coverage} Twoich kwalifikujących się żądań",
+        "methodLink": "Zobacz metodologię"
+      },
+      "terms": {
+        "sample": "Porównywalne pary: to samo żądanie z warstwą i bez niej, oba zmierzone przez Twojego dostawcę.",
+        "interval": "Zakres, w którym przy tym poziomie ufności mieści się rzeczywista oszczędność. Główny wynik to jego dolna granica.",
+        "coverage": "Część Twoich kwalifikujących się żądań, która należy do grup z parami. Reszta nie wchodzi do wyniku."
+      },
+      "weightsTitle": "Ile waży każda grupa",
+      "weightsTotal": "kwalifikujące się żądania w okresie",
+      "weightsNote": "Każda grupa waży w głównym wyniku tyle, ile wynosi jej udział w Twoich kwalifikujących się żądaniach, a nie tyle, ile ma par. Grupa bez par zostaje pominięta."
     },
     "install": {
       "metaTitle": "Zainstaluj · BiVelio Savings Layer",
       "eyebrow": "Integracja",
       "title": "Zainstaluj i podłącz SDK",
-      "intro": "Umieść BV-SALA przed swoim dostawcą — Twoje prompty nigdy nie opuszczają Twojej infrastruktury.",
-      "irACuenta": "Nie masz jeszcze planu lub chcesz zmienić liczbę miejsc? Zrobisz to w Koncie →"
+      "intro": "Umieść BV-SALA przed swoim dostawcą. Twoje prompty nie przechodzą przez serwery BiVelio; są wysyłane do dostawcy, którego skonfigurujesz.",
+      "irACuenta": "Nie masz jeszcze planu lub chcesz zmienić liczbę miejsc? Zrobisz to w Koncie →",
+      "trackerTitle": "Twoje uruchomienie",
+      "trackerNote": "Te kamienie milowe mierzy produkt: wybranie jednego otwiera jego instrukcję, ale nie oznacza go jako gotowego. Dotyczą połączenia Cloud; otwarty silnik działa bez nich.",
+      "onThisPage": "Na tej stronie"
     },
     "account": {
       "metaTitle": "Konto · BiVelio Savings Layer",
@@ -250,12 +480,42 @@
       "hiddenCap": "Państwa dane o użyciu istnieją, ale to konto ich nie widzi. To błąd po naszej stronie i zostaliśmy o nim powiadomieni. Prosimy napisać na support@bivelio.com, jeśli to potrwa.",
       "rangeDays": "ostatnie {n} dni",
       "rangeLabel": "Zakres",
-      "rangeOption": "{n}d"
+      "rangeOption": "{n}d",
+      "status": {
+        "positive": "Zmierzone oszczędności",
+        "negative": "Koszt powyżej linii bazowej",
+        "partial": "Pomiar częściowy",
+        "notIntegrated": "Jeszcze bez integracji",
+        "noTraffic": "Brak ruchu w tym okresie",
+        "noPrice": "Ruch bez ceny",
+        "notMeasured": "Ruch bez pomiaru",
+        "readFailed": "Nie udało się odczytać",
+        "limited": "Ograniczony dostęp"
+      },
+      "lostLine": "powyżej Twojej linii bazowej w tym okresie · <b>{money}</b> dodatkowego kosztu (rzeczywiste − linia bazowa, według Twoich cen).",
+      "method": "Zobacz źródło i metodologię",
+      "methodBody": "Główny wynik to jeden minus koszt rzeczywisty podzielony przez linię bazową, liczony wyłącznie z żądań, które mają licznik dostawcy. To, co oszacowane i niezmierzone, pozostaje poza głównym wynikiem.",
+      "receipt": {
+        "title": "Paragon za okres",
+        "baseline": "Zmierzona linia bazowa",
+        "actual": "Zmierzony koszt rzeczywisty",
+        "coverage": "Żądania z licznikiem",
+        "saved": "Zmierzone oszczędności",
+        "origin": "Zmierzone licznikiem Twojego dostawcy, według Twoich cen."
+      },
+      "actions": {
+        "install": "Rozpocznij instalację",
+        "widen": "Zobacz ostatnie {n} dni",
+        "checkInstall": "Sprawdź instalację",
+        "support": "Napisz do wsparcia",
+        "how": "Jak to mierzymy"
+      },
+      "noTrafficCap": "W tym okresie nie ma żadnych żądań. Wybierz szerszy zakres albo sprawdź, czy Twoja integracja nadal wysyła ruch."
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "wywołania LLM/wyszukiwania/narzędzi, które nigdy się nie wykonały",
       "whatEliminatedTokens": "tokeny wejściowe, których dostawca nigdy nie przetworzył",
-      "elisionNota": "Jeśli używasz bramy, część tej liczby to dane wejściowe, które Twój dostawca pomija z powodu Twojej własnej konfiguracji: ta część nie jest naszą zasługą i nigdy nie wchodzi do Twojej prowizji.",
+      "elisionNota": "Jeśli używasz bramy, część tej liczby to dane wejściowe, które Twój dostawca pomija z powodu Twojej własnej konfiguracji: ta część nie jest naszą zasługą i nigdy nie liczy się jako zaliczona oszczędność.",
       "whatCompressedTokens": "tokeny wejściowe przekodowane na mniejsze",
       "whatProviderCachedTokens": "tokeny wejściowe rozliczone po obniżonej cenie pamięci podręcznej prefiksu. Prosi o to Twój klient, nie my: nasza dźwignia reguluje tylko czas jej życia",
       "ghostAwaiting": "oczekiwanie na pierwszy raport",
@@ -279,7 +539,7 @@
       "statusPending": "oczekuje",
       "statusUnavailable": "niedostępne",
       "nextLabel": "Następny: {label}",
-      "installComment": "# wykrywa Twój stos i wypisuje dokładne podłączenie — Twoje prompty nigdy nie opuszczają Twojej infrastruktury",
+      "installComment": "# wykrywa Twój stos i wypisuje dokładne podłączenie — Twoje prompty nie przechodzą przez serwery BiVelio; są wysyłane do dostawcy, którego skonfigurujesz",
       "hintLicense": "Utwórz lub pobierz licencję i dane usługi w Koncie. Sam klucz nie dowodzi instalacji.",
       "hintInstall": "Wybierz SDK lub gateway i wyślij rzeczywiste żądanie. Utworzenie klucza lub wysłanie pustej partii nie dowodzi instalacji.",
       "hintFirstRequest": "Wyślij rzeczywiste żądanie do dostawcy przez SDK lub gateway. Raport użycia zakończy ten krok.",
@@ -289,7 +549,9 @@
       "linkInstall": "Otwórz instalację",
       "linkSdk": "Ścieżka SDK",
       "linkGateway": "Ścieżka gateway",
-      "unavailableHint": "Nie można teraz odczytać użycia, więc nie da się ocenić instalacji ani raportu. Nie oznacza to, że konto jest puste."
+      "unavailableHint": "Nie można teraz odczytać użycia, więc nie da się ocenić instalacji ani raportu. Nie oznacza to, że konto jest puste.",
+      "count": "{done} z {total}",
+      "trackerTitle": "Uruchomienie"
     },
     "shadowOpportunities": {
       "title": "Gdzie są Twoje potencjalne oszczędności",
@@ -299,7 +561,7 @@
       "hidden": "Podział istnieje, ale to konto nie może go zobaczyć. To błąd widoczności, nie brak danych.",
       "unavailable": "Podział SHADOW według modelu nie jest jeszcze dostępny na tym serwerze. Historii bez modelu nie można odtworzyć.",
       "historical": "Istnieją żądania SHADOW, ale podział według modelu jest niedostępny dla historii sprzed tej migracji.",
-      "empty": "Brak żądań SHADOW w tym okresie. Wyślij rzeczywisty ruch z Mierzeniem, aby zacząć szacować możliwości.",
+      "empty": "Brak żądań SHADOW w tym okresie. Wyślij rzeczywisty ruch z Measure, aby zacząć szacować możliwości.",
       "colModel": "Model",
       "colRequests": "Żądania SHADOW",
       "colBaseline": "Wydatki bazowe",
@@ -314,7 +576,8 @@
       "accountCta": "Sprawdź Konto",
       "installCta": "Dokończ instalację",
       "exportCsv": "Eksportuj CSV",
-      "exportJson": "Eksportuj JSON"
+      "exportJson": "Eksportuj JSON",
+      "badgeDef": "Telemetria SHADOW: hipoteza tego, ile udałoby się zaoszczędzić. Nie jest mierzona ani fakturowana i nigdy nie dodaje się do zaliczonych oszczędności."
     },
     "scenarioTable": {
       "colScenario": "scenariusz",
@@ -325,7 +588,15 @@
       "colBCost": "koszt B",
       "colSavings": "oszczędności",
       "colQa": "qa",
-      "benchOnly": "kompresor ze stanowiska testowego, nie ma go w npm"
+      "benchOnly": "kompresor ze stanowiska testowego, nie ma go w npm",
+      "caption": "Zestaw syntetyczny: A bez warstwy, B z warstwą. Każdy nagłówek ze strzałką sortuje tabelę.",
+      "sortBy": "Sortuj według: {col}",
+      "title": "Scenariusz po scenariuszu",
+      "help": "Co oznacza „{col}”",
+      "termTokens": "Średnia liczba tokenów wejściowych i wyjściowych na żądanie, według zużycia raportowanego przez dostawcę.",
+      "termCost": "Średni koszt jednego żądania w tym ramieniu. Pasek ma tę samą skalę dla A i B.",
+      "termSavings": "Jeden minus koszt B podzielony przez koszt A. Wartość ujemna oznacza, że warstwa kosztowała więcej.",
+      "termQa": "Odpowiedzi, które przechodzą kontrolę jakości, spośród sprawdzonych."
     },
     "projectorVerifier": {
       "projectorTitle": "Prognoza rachunku",
@@ -349,7 +620,11 @@
       "projFriendly": "Twój rachunek spadłby z {baseline} do {opt} — o {pct}% mniej.",
       "onlyChatTitle": "Używasz tylko ChatGPT albo Claude?",
       "onlyChatBody": "ChatGPT jest naprawdę zamknięty: stała opłata, bez faktury i limitów tokenów do przycięcia. Ale jeśli używasz Claude, już pomagamy Ci oszczędzać: skill savings-mode (darmowy, na stronie głównej) rozciąga limity subskrypcji. A jeśli budujesz aplikację z kluczem API — tam BV-SALA mierzy i tnie prawdziwe wydatki.",
-      "onlyChatCta": "Tworzysz aplikację? Przejdź do Instalacji"
+      "onlyChatCta": "Tworzysz aplikację? Przejdź do Instalacji",
+      "notInvoice": "Szacunek, nie faktura",
+      "notInvoiceBody": "Wynika z założeń po lewej, a nie z Twojego ruchu. To, co naprawdę oszczędzasz, jest mierzone w Przeglądzie.",
+      "barBaseline": "Bez optymalizacji",
+      "barOptimized": "Przy Twoich założeniach"
     },
     "copyButton": {
       "copied": "Skopiowano",
@@ -442,7 +717,21 @@
       "chipOk": "aktualna",
       "chipMixed": "częściowo niezadeklarowana",
       "hint": "Jeden wiersz na maszynę raportującą użycie, rozpoznawaną po nieprzejrzystym id miejsca (nigdy osoba). Przesyłany jest numer wersji — gateway/x.y.z lub sdk/x.y.z — nigdy treść. Maszyna z gatewayem starszym niż kanał wersji pojawia się jako „niezadeklarowana”.",
-      "referenceHint": "Zmierzone oszczędności obejmują tu powtórzone zapytania zmierzone przez odniesienie: każde jest wyceniane licznikiem identycznego zapytania, które już zostało wykonane."
+      "referenceHint": "Zmierzone oszczędności obejmują tu powtórzone zapytania zmierzone przez odniesienie: każde jest wyceniane licznikiem identycznego zapytania, które już zostało wykonane.",
+      "emptyTitle": "Żadna maszyna jeszcze nie raportuje",
+      "emptyBody": "Maszyna pojawia się tutaj, gdy jej gateway lub SDK wyśle użycie. Każda liczy się jako miejsce: maszyna lub tożsamość usługowa, nigdy osoba.",
+      "emptyCta": "Podłącz maszynę",
+      "failedTitle": "Nie udało się odczytać aktywności maszyn",
+      "failedBody": "To błąd odczytu, a nie pusta lista. Odśwież za chwilę.",
+      "hiddenTitle": "Karta maszyn jest ukryta",
+      "hiddenBody": "Ukryto ją podczas dostosowywania panelu. Jej dane są nadal mierzone.",
+      "show": "Pokaż kartę",
+      "seatsTitle": "Stanowiska w użyciu w tym miesiącu",
+      "seatsOf": "{seats, plural, one {z # opłaconego} few {z # opłaconych} many {z # opłaconych} other {z # opłaconych}}",
+      "seatsFull": "wszystkie w użyciu",
+      "seatsOver": "ponad opłacone",
+      "seatsNote": "Stanowisko to maszyna albo tożsamość usługi, nigdy osoba.",
+      "seatsRotated": "W tym miesiącu wymieniono klucz usługi: licznik może uwzględniać tę samą maszynę dwa razy."
     },
     "installLicensePanel": {
       "eyebrow": "Rozpocznij",
@@ -461,15 +750,30 @@
       "doctorComment": "inne agenty i SDK: dokładna konfiguracja dla każdego",
       "agentsNote": "Każdy wrapper przygotowuje swojego agenta tylko na tę sesję — nic w jego konfiguracji się nie zmienia — a przy wyjściu mówi, ile żądań zmierzył, których nie mógł zmierzyć i dlaczego. <code>bvsala copilot</code> potrzebuje Twojego własnego klucza Anthropic (BYOK): modele hostowane przez GitHub nigdy nie przechodzą przez bazowy URL, więc nie ma czego mierzyć. Dla Crush, Droid, Cline, Continue lub Copilot w VS Code, <code>bvsala doctor</code> wypisuje dokładną konfigurację. <b>Cursor (BYOK)</b>: działa przez nadpisanie bazowego URL OpenAI z Twoim własnym kluczem; jego własne modele nigdy nie docierają do bramki na Twoim komputerze. <b>Gemini CLI</b>: uruchom ją przez <code>bvsala gemini</code>.",
       "pythonNote": "<b>Python?</b> Klient <code>bvsala</code> dla Pythona kieruje oficjalne SDK OpenAI i Anthropic przez tę samą bramę (<code>bvsala gateway</code>) i zwraca Twojemu kodowi raport z każdego żądania — te same liczby, które otrzymuje ten panel. Wymaga bramy w wersji 0.4.26 lub nowszej oraz Pythona 3.10 lub nowszego. Instaluje się go z PyPI poleceniem <code>pip install bivelio-savings-layer</code>; w kodzie: <code>import bvsala</code>.",
-      "finalNote": "To wszystko. Brak ważnej licencji → <code>generate()</code> odmawia działania. Jeśli Twój plan zostanie anulowany, SDK zatrzymuje się w ciągu ~15 min poprzez <code>licenseServerUrl</code> — bez restartu i nigdy nie unieruchamia Twojej produkcji, jeśli jesteśmy nieosiągalni."
+      "finalNote": "To wszystko. Brak ważnej licencji → <code>generate()</code> odmawia działania. Jeśli Twój plan zostanie anulowany, SDK zatrzymuje się w ciągu ~15 min poprzez <code>licenseServerUrl</code> — bez restartu i nigdy nie unieruchamia Twojej produkcji, jeśli jesteśmy nieosiągalni.",
+      "terminal": "Terminal",
+      "sdkTitle": "Zintegruj aplikację (SDK)",
+      "sdkLede": "Opakuj swojego dostawcę we własnym kodzie i odczytuj raport oszczędności każdego wywołania.",
+      "gatewayTitle": "Podłącz agenta (gateway)",
+      "gatewayLede": "Uruchom swojego agenta kodującego przez lokalny gateway, bez zmian w jego kodzie.",
+      "modeLocalTitle": "Tryb lokalny",
+      "modeLocalBody": "Otwarty silnik działa bez konta i bez kluczy: wszystkie lokalne dźwignie i zero telemetrii. Raport zostaje na Twojej maszynie.",
+      "modeCloudTitle": "Połączenie Cloud",
+      "modeCloudBody": "Z licencją i kluczem usługowym ten panel otrzymuje liczniki i koszty — nigdy Twoje prompty — a Twoja organizacja współdzieli pomiar i miejsca.",
+      "modeCloudLink": "Przejdź do danych dostępowych",
+      "cloudTitle": "Połączenie Cloud: licencja i klucz usługowy",
+      "optional": "Opcjonalne przy otwartym silniku",
+      "roleLimited": "Twoja rola może czytać tę stronę, ale tylko owner i admin mogą wystawić licencję oraz tworzyć lub unieważniać klucze usługowe.",
+      "permissionsNote": "Tylko owner i admin tworzą lub unieważniają klucze. Klucz jest pokazywany tylko raz; potem widoczny pozostaje jedynie jego prefiks.",
+      "initExpected": "Wiersz instalacji dla Twojego menedżera pakietów, brakujące klucze, kod Twojego adaptera i sprawdzenie, które nie zużywa tokenów. Nie zapisuje żadnego pliku.",
+      "wireExpected": "Odpowiedź, część linii bazowej, której nie zapłacono, oraz sposób uzyskania tej liczby: measured, reference, estimated lub unmeasured.",
+      "agentsExpected": "Agent uruchamia się przez lokalny gateway. Z kluczem usługowym jego wydatki pojawiają się w tym panelu."
     },
     "accountPlanStrip": {
       "noActivePlan": "Brak aktywnego planu",
       "signedInAs": "zalogowano jako",
-      "organization": "Organizacja: <b>{name}</b>",
       "personalNote": "Osobiste — brak powiązanej organizacji. Jedno konto BiVelio, współdzielone w całym pakiecie.",
       "plan": "plan",
-      "seatsCount": "{count, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}.",
       "planBody": "BV-SALA to open core — bez klucza działa w trybie Community; ustawiony, ale nieprawidłowy klucz nadal działa fail-closed. Chmura dodaje panel, współdzielone pamięci podręczne i uprawnienia organizacji. Pro: {monthly} za stanowisko miesięcznie lub {yearly} za stanowisko rocznie. Team: {teamMonthly} miesięcznie z {included} stanowiskami w cenie. Bez prowizji od Twoich oszczędności. Stanowisko to aktywna maszyna lub tożsamość usługi, nie osoba.",
       "managePlan": "Zarządzaj planem →",
       "subscribe": "Subskrybuj →",
@@ -478,9 +782,9 @@
       "checkoutError": "Coś poszło nie tak — spróbuj ponownie.",
       "seatsLabel": "Stanowiska",
       "seatsHint": "Stanowisko to jedna aktywna maszyna lub tożsamość usługi, nie osoba. Policz procesy, które będą uruchamiać SDK, a nie pracowników. W Kubernetes ustaw BVSALA_SEAT_ID dla każdej repliki.",
-      "seatsInUse": "{used, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}} w użyciu w tym miesiącu.",
-      "seatsOver": "⚠ W użyciu {used, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}, opłacone {paid, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}. Dodatkowe stanowiska są naliczane automatycznie po zamknięciu miesiąca, na następnej fakturze, po cenie Twojego planu. Możesz też zwiększyć liczbę w „Zarządzaj planem”.",
-      "seatsLastMonth": "{period}: w użyciu {used, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}, opłacone {paid, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}. {extra, plural, one {Dodatkowe stanowisko} few {# dodatkowe stanowiska} many {# dodatkowych stanowisk} other {# dodatkowego stanowiska}} ({amount}) trafi na Twoją następną fakturę.",
+      "seatsOver": "W użyciu {used, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}, opłacone {paid, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}. Nadwyżka jest rozliczana po zamknięciu miesiąca zgodnie z Twoim planem i stanem subskrypcji. Przy płatności miesięcznej trafia na następną fakturę, a liczba wykupionych stanowisk rośnie do liczby stanowisk w użyciu. Przy płatności rocznej jest fakturowana po zamknięciu miesiąca według stawki rocznej podzielonej przez dwanaście, a liczba wykupionych stanowisk się nie zmienia.",
+      "seatsOverManage": "Możesz też zmienić liczbę w „Zarządzaj planem”.",
+      "seatsLastMonth": "{period}: w użyciu {used, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}, opłacone {paid, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}. Nadwyżka: {extra, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}} ({amount}). Przy płatności miesięcznej trafia na następną fakturę, a liczba wykupionych stanowisk rośnie do liczby użytych. Przy płatności rocznej jest fakturowana po zamknięciu miesiąca według stawki rocznej podzielonej przez dwanaście, bez zmiany liczby wykupionych stanowisk.",
       "seatsRotated": "W tym miesiącu policzono {used, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}. Unieważniłeś klucz konta serwisowego, a po jego wymianie maszyny dostają nową tożsamość stanowiska — dlatego w tym miesiącu liczone są podwójnie. W następnym miesiącu wróci do normy; nie musisz zmieniać planu.",
       "taxNote": "Bez VAT. Jeśli Państwa firma ma unijny numer VAT, stosuje się odwrotne obciążenie.",
       "errYaSuscrito": "To konto ma już aktywną subskrypcję. Użyj „Zarządzaj planem”, aby zmienić liczbę miejsc lub rozliczenia.",
@@ -490,11 +794,45 @@
       "errCodigoInvalido": "Ten kod nie istnieje lub nie jest już aktywny. Możesz kontynuować bez niego lub napisać na support@bivelio.com.",
       "planPickLabel": "Plan",
       "planPro": "Pro",
-      "planTeam": "Zespół",
-      "teamHint": "Zespół obejmuje {included} stanowisk; każde dodatkowe kosztuje {extra} miesięcznie. Nie można kupić mniej niż {included}.",
-      "checkoutTeamMonthly": "Subskrybuj Zespół — {monthly}/mies., {included} stanowisk →",
-      "checkoutTeamYearly": "Subskrybuj Zespół — {yearly}/rok, {included} stanowisk →",
-      "errPlanCerrado": "Ten plan nie jest już oferowany nowym klientom. Wybierz Pro lub Zespół."
+      "planTeam": "Team",
+      "teamHint": "Team obejmuje {included} stanowisk; każde dodatkowe kosztuje {extra} miesięcznie. Nie można kupić mniej niż {included}.",
+      "checkoutTeamMonthly": "Subskrybuj Team — od {monthly}/mies. →",
+      "checkoutTeamYearly": "Subskrybuj Team — od {yearly}/rok →",
+      "errPlanCerrado": "Ten plan nie jest już oferowany nowym klientom. Wybierz Pro lub Team.",
+      "statusLabel": "Status",
+      "statusActive": "Subskrypcja aktywna",
+      "statusPastDue": "Płatność nieudana",
+      "statusIncomplete": "Płatność w toku",
+      "statusPending": "Aktywacja w toku",
+      "statusNone": "Brak płatnej subskrypcji",
+      "seatsTitle": "Stanowiska",
+      "seatUnit": "Maszyny lub tożsamości usługowe",
+      "seatsContracted": "Wykupione",
+      "seatsUsed": "W użyciu w tym miesiącu",
+      "seatsUnknown": "Nie udało się zmierzyć. To nie jest zero.",
+      "seatsNotYet": "W tym miesiącu jeszcze brak zliczenia: stanowisko liczy się, gdy było aktywne przez tyle różnych dni miesiąca kalendarzowego: {dias}.",
+      "overTitle": "Używasz więcej stanowisk, niż wykupiono",
+      "lastMonthTitle": "Korekta stanowisk za zamknięty miesiąc",
+      "pendingTitle": "Zakup w toku: przyciski zakupu są ukryte",
+      "pendingBody": "Twoja płatność jest potwierdzana. Aby uniknąć podwójnej płatności, do zakończenia aktywacji nie oferujemy kolejnego zakupu.",
+      "howBilledTitle": "Co obejmuje i jak jest rozliczany",
+      "orgLabel": "Organizacja",
+      "roleLabel": "Twoja rola",
+      "membersNote": "Członkowie zespołu to nie stanowiska: zarządza się nimi osobno i nie zmieniają Twojej faktury.",
+      "membersLink": "Zarządzaj zespołem",
+      "manageBody": "Stanowiskami, metodą płatności i fakturami zarządzasz w portalu rozliczeń.",
+      "pickTitle": "Wybierz plan",
+      "planProPrice": "{monthly} za stanowisko miesięcznie · {yearly} za stanowisko rocznie",
+      "planTeamPrice": "{monthly} miesięcznie · {yearly} rocznie · w cenie stanowiska: {included}",
+      "summaryLabel": "Kupujesz",
+      "summaryNote": "Dokładną kwotę z podatkami potwierdza Stripe przed płatnością.",
+      "summary": "{plan} · {seats, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}",
+      "roleNote": "Twoja rola nie pozwala kupować ani zarządzać rozliczeniami. Poproś o to osobę z rolą właściciela, administratora lub rozliczeń.",
+      "paidPlan": "Plan płatny",
+      "seatsFree": "Wolne",
+      "seatsExtra": "Ponad wykupione",
+      "seatsMore": "Dodaj stanowisko",
+      "seatsLess": "Usuń stanowisko"
     },
     "referenceLedgerCards": {
       "proven": "udowodnione",
@@ -505,7 +843,10 @@
       "footnoteMain": "Cztery księgi, <b>nigdy nie sumowane</b> — każda to osobno mierzona dźwignia, więc dolara nie da się policzyć dwa razy.",
       "reconciledNote": "Reszta uzgodnienia ≈ 0 to potwierdza.",
       "residualNote": "reszta {residual} — sprawdź rozliczenie.",
-      "footnoteReference": "To są <b>dźwignie referencyjne</b>: Twoja ścieżka na żywo mierzy inne cztery — provider-cached zastępuje output-restriction — więc nigdy nie odwzorowujemy jednej na drugą."
+      "footnoteReference": "To są <b>dźwignie referencyjne</b>: Twoja ścieżka na żywo mierzy inne cztery — provider-cached zastępuje output-restriction — więc nigdy nie odwzorowujemy jednej na drugą.",
+      "scenarios": "Scenariusze tej księgi",
+      "termFloor": "Dolna granica przedziału ufności: przy tym poziomie ufności oszczędność księgi wynosi co najmniej tyle.",
+      "termDelta": "Różnica kosztu między A i B w scenariuszach tej księgi."
     },
     "integrityQualityChips": {
       "qualityGate": "Bramka jakości <b>{rate}</b> zaliczona",
@@ -516,7 +857,8 @@
       "cacheBreakEven": "Próg opłacalności cache <b>K={k}</b>",
       "provenAt95": "udowodnione przy 95%",
       "unprovenMock": "nieudowodnione (mock)",
-      "regressedVoids": "Pogorszona odpowiedź unieważnia swoją oszczędność"
+      "regressedVoids": "Pogorszona odpowiedź unieważnia swoją oszczędność",
+      "title": "Kontrole tego przebiegu"
     },
     "netSavingsCIBand": {
       "caption": "oszczędności netto, <b>dolna granica 95% przedziału ufności</b>. Estymacja punktowa {point}, górna {upper} — nagłówkiem czynimy dolny próg{mockNote}.",
@@ -541,11 +883,13 @@
       "awaitingFirstReport": "Oczekiwanie na pierwszy raport"
     },
     "checkoutBanner": {
-      "successPending": "<b>Płatność otrzymana.</b> Aktywujemy Twoją licencję — zwykle zajmuje to kilka sekund, a ta strona odświeży się sama.",
+      "successPending": "<b>Powrót ze Stripe.</b> Potwierdzamy Twoją płatność i aktywujemy Twój plan — zwykle zajmuje to kilka sekund, a ta strona odświeży się sama.",
       "successActive": "<b>Twoja subskrypcja jest aktywna.</b> Następny krok to odebranie klucza licencyjnego.",
       "goToInstall": "Uzyskaj klucz licencyjny →",
       "cancelled": "<b>Płatność nie została dokończona</b> — nie pobraliśmy żadnej opłaty. Możesz zacząć od nowa, kiedy tylko zechcesz.",
-      "successLate": "<b>Wciąż w toku.</b> Minęły ponad dwie minuty, a licencja jeszcze się nie pojawiła: to nie jest normalne. Nie kupuj ponownie. Napisz na support@bivelio.com z adresu, którym płaciłeś, a aktywujemy ją ręcznie."
+      "successLate": "<b>Wciąż w toku.</b> Minęły ponad dwie minuty, a licencja jeszcze się nie pojawiła: to nie jest normalne. Nie kupuj ponownie. Napisz na support@bivelio.com z adresu, którym płaciłeś, a aktywujemy ją ręcznie.",
+      "cancelledNote": "Anulowanie płatności nie anuluje żadnej subskrypcji, którą już masz.",
+      "pendingNote": "Powrót ze Stripe nie potwierdza płatności: plan aktywuje się, gdy Stripe nam ją potwierdzi. W tym czasie nie kupuj ponownie."
     },
     "billingState": {
       "pastDueTitle": "Płatność nie powiodła się",
@@ -574,7 +918,6 @@
       "rolAdmin": "Administrator",
       "rolMember": "Członek",
       "rolBilling": "Rozliczenia",
-      "ayudaRoles": "Administrator zarządza zespołem i poświadczeniami. Rozliczenia widzą plan i mogą płacić, ale nie mogą pobrać licencji. Członek tylko przegląda panel.",
       "miembrosTitulo": "Członkowie",
       "columnaPersona": "Osoba",
       "columnaRol": "Rola",
@@ -589,7 +932,7 @@
       "confirmar": "Na pewno?",
       "cancelar": "Anuluj",
       "transferirTitulo": "Przekaż własność",
-      "transferirIntro": "Właściciel może anulować subskrypcję i zmienić metodę płatności. Po przekazaniu stają się Państwo administratorem.",
+      "transferirIntro": "Tylko właściciel może przekazać własność. Po przekazaniu stają się Państwo administratorem i zachowują uprawnienia do rozliczeń i zarządzania członkami.",
       "transferirBoton": "Przekaż",
       "transferirConfirmar": "Tak, przekaż",
       "vacio": "Nie ma jeszcze nikogo innego.",
@@ -598,11 +941,31 @@
       "enviadoOk": "Zaproszenie wysłane.",
       "enviadoFallo": "Zaproszenie zostało utworzone, ale e-mail nie został wysłany. Prosimy spróbować wysłać ponownie.",
       "sinPermiso": "Tylko właściciel i administratorzy mogą zarządzać zespołem.",
-      "asientosNota": "Zaproszenie nie zajmuje stanowiska: stanowisko to maszyna, a nie osoba.",
+      "asientosNota": "Członkowie nie są płatnymi stanowiskami. Stanowisko to maszyna lub tożsamość usługowa; zaproszenie osoby nie zmienia faktury.",
       "nombreOrg": "Nazwa organizacji",
       "nombreOrgAyuda": "Tę nazwę zobaczy każdy, kogo Państwo zaproszą.",
       "guardar": "Zapisz",
-      "guardado": "Zapisano."
+      "guardado": "Zapisano.",
+      "orgTitulo": "Organizacja",
+      "miembrosCuenta": "{n, plural, one {# członek} few {# członkowie} many {# członków} other {# członka}}",
+      "miembroDesde": "Od {date}",
+      "rolDe": "Rola: {email}",
+      "permisosTitulo": "Co może każda rola",
+      "permisoOwner": "Wszystko, co administrator, a dodatkowo przekazanie własności.",
+      "permisoAdmin": "Licencja i klucze usługowe, zakup i rozliczenia, członkowie i zaproszenia.",
+      "permisoBilling": "Widzi panel oraz zarządza zakupem i rozliczeniami. Nie pobiera licencji ani nie zarządza członkami.",
+      "permisoMember": "Może tylko przeglądać panel.",
+      "invitacionesVacio": "Brak oczekujących zaproszeń.",
+      "caduca": "wygasa {date}",
+      "caduco": "wygasło {date}",
+      "reenviarAyuda": "„Wyślij ponownie” kopiuje e-mail i rolę do formularza powyżej, aby można było wysłać zaproszenie jeszcze raz.",
+      "accionesDe": "Akcje dla {email}",
+      "quitarTitulo": "Usunąć {email} z organizacji?",
+      "quitarCuerpo": "Ta osoba straci dostęp do tej organizacji. Liczba stanowisk i faktura się nie zmienią. Utworzone przez nią klucze usługowe pozostają aktywne: można je unieważnić w sekcji <instalar>Pierwsze kroki</instalar>.",
+      "quitarConfirmar": "Tak, usuń",
+      "avisosLabel": "Powiadomienia",
+      "avisoCerrar": "Zamknij powiadomienie",
+      "vacioAyuda": "Zespół można zaprosić za pomocą formularza poniżej."
     },
     "tokenTotals": {
       "spentLabel": "Zużyte tokeny",
@@ -616,18 +979,18 @@
     "sombraElision": {
       "title": "Elizja w cieniu (hipotetyczna)",
       "detalle": "≈{usd} w {requests} symulowanych żądaniach",
-      "nota": "Ile elizja kontekstu zaoszczędziłaby na Twoim prawdziwym ruchu, obliczone przez bramę bez dotykania ani jednego bajta. Nigdy nie dodaje się do nagłówka i nigdy nie wchodzi do prowizji: dźwignia włączy się dopiero, gdy ta liczba to uzasadni.",
+      "nota": "Ile elizja kontekstu zaoszczędziłaby na Twoim prawdziwym ruchu, obliczone przez bramę bez dotykania ani jednego bajta. Nigdy nie dodaje się do nagłówka i nigdy nie liczy się jako zaliczona oszczędność: dźwignia włączy się dopiero, gdy ta liczba to uzasadni.",
       "notaNegativa": "Na Twoim ruchu elizja kosztowałaby pieniądze: przepisywanie bloków unieważnia cache prefiksu dostawcy. Ten tor istnieje właśnie po to, by to zobaczyć, zanim cokolwiek się włączy — dlatego pozostaje wyłączona."
     },
     "elisionProveedor": {
       "title": "Czyszczenie przez dostawcę wywołane naszymi ustawieniami",
       "detalle": "{requests} uznanych żądań",
-      "nota": "Licznik pochodzi od dostawcy (applied_edits). To nie jest zmierzona oszczędność i nigdy nie wchodzi do twojej prowizji; pieniądze pojawią się, gdy zmierzymy netto na model — czyszczenie przepisuje pamięć podręczną prefiksu, a w niektórych modelach netto jest ujemne."
+      "nota": "Licznik pochodzi od dostawcy (applied_edits). To nie jest zmierzona oszczędność i nigdy nie liczy się jako zaliczona oszczędność; pieniądze pojawią się, gdy zmierzymy netto na model — czyszczenie przepisuje pamięć podręczną prefiksu, a w niektórych modelach netto jest ujemne."
     },
     "ahorroNativo": {
       "title": "Aktywowana oszczędność natywna",
       "detalle": "{requests} żądań z pamięcią podręczną dostawcy · odczyt {lectura} − dopłata za zapis {prima}",
-      "nota": "To rabat z pamięci podręcznej prefiksu Twojego dostawcy (Anthropic z cache_control, OpenAI automatycznie, Gemini niejawnie), pomniejszony o dopłatę za zapis, którą nalicza, obliczony z jego własnego licznika po cenie katalogowej. Widzisz go na fakturze dostawcy, nie na naszej: jest oddzielony od zaliczonej oszczędności i nigdy nie wchodzi do Twojej prowizji.",
+      "nota": "To rabat z pamięci podręcznej prefiksu Twojego dostawcy (Anthropic z cache_control, OpenAI automatycznie, Gemini niejawnie), pomniejszony o dopłatę za zapis, którą nalicza, obliczony z jego własnego licznika po cenie katalogowej. Widzisz go na fakturze dostawcy, nie na naszej: jest oddzielony od zaliczonej oszczędności i nigdy nie jest do niej doliczany.",
       "vacio": "W tym okresie żadne żądanie nie odczytało ani nie zapisało jeszcze pamięci podręcznej prefiksu Twojego dostawcy.",
       "proveedor": {
         "anthropic": "Anthropic",
@@ -642,22 +1005,20 @@
       "badgeMedido": "Zmierzone",
       "proyeccionTitulo": "Prognozowana oszczędność za {periodo}",
       "proyeccionNota": "To, co zmierzono do tej pory, plus Twoje tempo z ostatnich {dias} dni pomnożone przez {restantes} pozostałych dni. To szacunek, nie faktura.",
-      "comision": "Prognozowana prowizja",
-      "comisionNota": "{pct} tego, co oszczędzasz. Miesiąc bez oszczędności to miesiąc bez prowizji.",
-      "comisionCalibracion": "Miesiąc kalibracji: nic nie jest naliczane. Ta kwota to prowizja, która by wypadła.",
       "cerrado": "Okres zamknięty: to jest to, co było, a nie dokąd zmierza.",
       "pocosDias": "Za wcześnie, by kreślić prostą: potrzeba {min} pełnych dni, a jest {n}. To, co zmierzone, jest już realne.",
       "medido": "Zaoszczędzone do tej pory (zmierzone)",
       "diaDeMes": "Dzień {n} z {total}",
       "ritmoLabel": "Tempo, ostatnie {dias} dni",
       "porDia": "{importe} / dzień",
-      "diasRestantes": "Pozostało dni: {n}"
+      "diasRestantes": "Pozostało dni: {n}",
+      "verExtracto": "Zobacz wyciąg"
     },
     "extracto": {
       "metaTitle": "Wyciąg · BiVelio Savings Layer",
-      "eyebrow": "Tryb cienia · tu nic nie jest pobierane",
-      "title": "Twój wyciąg, zanim powstanie faktura",
-      "intro": "Dokładnie ten dokument, który wygeneruje przyszła faktura zmienna: tylko zmierzone oszczędności, ze stawką progową i bez minimum — bez zmierzonych oszczędności nie ma prowizji. Opłata za stanowisko to osobna, stała opłata miesięczna. Podczas kalibracji prowizja wynosi zawsze {cero}.",
+      "eyebrow": "Wyciąg",
+      "title": "Wydatki, oszczędności i rozliczenia",
+      "intro": "Trzy rzeczy, osobno: ile wydano i zaoszczędzono w tym okresie, zmierzone; jak rozliczana jest Twoja obecna umowa; oraz historia prowizji, modelu zamkniętego dla nowych klientów.",
       "periodo": "Okres {periodo}",
       "badgeCalibracion": "OKRES KALIBRACJI — OPŁATA ZERO",
       "badgeSombra": "CIEŃ — BEZ RZECZYWISTEJ OPŁATY",
@@ -666,10 +1027,8 @@
       "notaCalibracion": "Miesiąc kalibracji: prowizja wyniosłaby {habria} — i nie jest pobierana.",
       "notaSombra": "Liczba w cieniu: obliczona prowizja to {comision}. Żadna faktura jeszcze jej nie zawiera.",
       "baseMedida": "Zmierzona baza",
-      "enUsd": "{usd} po cenach dostawcy",
       "requests": "{n} zmierzonych żądań",
       "ahorroMedido": "Zmierzone oszczędności",
-      "ratio": "wskaźnik {pct}",
       "tramosTitulo": "Prowizja, próg po progu",
       "sinAhorro": "Brak zmierzonych oszczędności w tym okresie — bez oszczędności nie ma prowizji. Nigdy.",
       "colTramo": "Próg",
@@ -677,11 +1036,11 @@
       "colBase": "Baza progu",
       "colComision": "Prowizja",
       "estimadoExcluido": "Szacowane oszczędności wyłączone z bazy (kontekst, nigdy do rozliczenia): {usd}.",
-      "sombraElision": "Tor cienia: elizja zaoszczędziłaby {usd} w {requests} symulowanych żądaniach. Hipotetyczne — nigdy nie wchodzi do bazy ani do prowizji.",
+      "sombraElision": "Tor cienia: elizja zaoszczędziłaby {usd} w {requests} symulowanych żądaniach. Hipotetyczne — nigdy nie wchodzi do bazy.",
       "sombraElisionNegativa": "Tor cienia: elizja kosztowałaby {usd} więcej w {requests} symulowanych żądaniach. Dlatego jest wyłączona: włącza się tylko to, co naprawdę oszczędza.",
-      "elisionProveedor": "Tor czyszczenia przez dostawcę: {requests} żądań, w których nasze ustawienia sprawiły, że dostawca wyczyścił kontekst. Licznik, nie oszczędność — nigdy nie wchodzi do bazy ani do prowizji.",
+      "elisionProveedor": "Tor czyszczenia przez dostawcę: {requests} żądań, w których nasze ustawienia sprawiły, że dostawca wyczyścił kontekst. Licznik, nie oszczędność — nigdy nie wchodzi do bazy.",
       "referencia": "Zmierzone przez odniesienie: {usd} w {requests, plural, one {# powtórzonym zapytaniu obsłużonym} few {# powtórzonych zapytaniach obsłużonych} many {# powtórzonych zapytaniach obsłużonych} other {# powtórzonego zapytania obsłużonego}} bez wywoływania Twojego dostawcy. Każde jest wyceniane licznikiem, który dostawca zwrócił dla identycznego, już wykonanego zapytania — znajdziesz go w raporcie tamtego zapytania i w zużyciu u dostawcy z tego dnia — po stawce za wejście z pamięci podręcznej, najniższej, jaką dostawca pobiera za powtórzenie promptu; wyjście liczy się tylko przy deterministycznym próbkowaniu i gdy wykonane zapytanie nie zawierało ukrytego rozumowania (dostawca zgłosił zero tokenów rozumowania lub, jeśli ich nie wyszczególnia, jego odpowiedź nie zawierała bloku rozumowania). Wliczone do bazy.",
-      "referenciaExcluida": "Zmierzone przez odniesienie: {usd} w {requests, plural, one {# powtórzonym zapytaniu} few {# powtórzonych zapytaniach} many {# powtórzonych zapytaniach} other {# powtórzonego zapytania}}. Pokazane jako kontekst — na razie pozostaje poza bazą i prowizją.",
+      "referenciaExcluida": "Zmierzone przez odniesienie: {usd} w {requests, plural, one {# powtórzonym zapytaniu} few {# powtórzonych zapytaniach} many {# powtórzonych zapytaniach} other {# powtórzonego zapytania}}. Pokazane jako kontekst — na razie pozostaje poza bazą.",
       "exportarReferencias": "Pobierz powtórzone zapytania z tego okresu, jeden wiersz na zapytanie (CSV)",
       "exportarReferenciasPorDia": "Zbyt wiele powtórzonych zapytań na jeden plik — pobierz ten okres dzień po dniu (CSV):",
       "parametros": "Parametry zestawienia — cennik {version} · kurs wymiany {fx}.",
@@ -707,7 +1066,38 @@
       "estadoSinCargo": "bez opłaty",
       "estadoPendiente": "oczekująca",
       "verFactura": "zobacz",
-      "estadoExento": "zwolniony z prowizji"
+      "estadoExento": "zwolniony z prowizji",
+      "gastoTitulo": "Wydatki i oszczędności w okresie",
+      "gastoSub": "Zmierzone licznikiem Twojego dostawcy, na Twoim ruchu. To nie jest faktura.",
+      "sinTraficoTitulo": "W tym okresie nie ma jeszcze zmierzonego ruchu",
+      "sinTraficoBody": "Gdy Twoja warstwa zmierzy żądania, pojawią się tu baza i oszczędności. Okres bez danych nie jest pokazywany jako zero.",
+      "baseUsd": "Po cenach dostawcy",
+      "ratioLabel": "Oszczędności względem bazy",
+      "contextoTitulo": "Poza bazą",
+      "contratoTitulo": "Twoja obecna umowa",
+      "contratoSub": "Jak jesteś dziś rozliczany.",
+      "regimenFijaTitulo": "Plan ze stałą opłatą: bez prowizji",
+      "regimenFijaBody": "Twój plan jest rozliczany stałą opłatą, niezależnie od oszczędności, i nie obejmuje prowizji od oszczędności. Opłata, stanowiska i faktury są w sekcji Konto.",
+      "regimenExentaTitulo": "Konto zwolnione z prowizji",
+      "regimenExentaBody": "Ta organizacja jest oznaczona jako zwolniona: prowizja jest wyliczana wyłącznie informacyjnie, a jej obciążenie wynosi zero.",
+      "regimenLegadoTitulo": "Dawny model z prowizją",
+      "regimenLegadoBody": "Twoja umowa zachowuje model z prowizją od zmierzonych oszczędności, zamknięty dla nowych klientów. Wyliczenie znajduje się w historii poniżej; opłata za stanowisko to osobna pozycja.",
+      "regimenNingunoBody": "Ta strona nie może potwierdzić Twojego modelu rozliczeń. Obciążenia to te, które widnieją na Twoich fakturach. W razie wątpliwości napisz na support@bivelio.com.",
+      "regimenMedirTitulo": "Measure: szacowane oszczędności, nigdy niefakturowane",
+      "regimenMedirBody": "Twoja organizacja korzysta z bezpłatnej licencji Measure. Użycie zarejestrowane w ramach Measure działa w trybie cienia: jego oszczędności to oszacowanie tego, ile by zaoszczędzono, nigdy nie są fakturowane i nigdy nie wchodzą w skład żadnej prowizji.",
+      "regimenIndeterminadoTitulo": "Nie możemy tu pokazać modelu rozliczeń Twojej umowy",
+      "regimenIndeterminadoBody": "Ta strona nie mogła ustalić, który model dotyczy Twojej subskrypcji. Obciążenia to te, które widnieją na Twoich fakturach i w portalu rozliczeń.",
+      "irACuenta": "Zobacz plan i rozliczenia",
+      "historicoTitulo": "Historia prowizji",
+      "historicoEtiqueta": "Dawny model, zamknięty dla nowych klientów",
+      "historicoSub": "Prowizja od zmierzonych oszczędności była poprzednim modelem. Pozostaje tu do wglądu i audytu; nie jest ofertą ani fakturą planu ze stałą opłatą.",
+      "simulacionTitulo": "Symulacja prowizji za ten okres",
+      "simulacionAplica": "To wyliczenie dla modelu, który zachowuje Twoja umowa.",
+      "simulacionNoAplica": "Nie dotyczy Twojej obecnej umowy: pokazana wyłącznie poglądowo.",
+      "simulacionPuedeAplicar": "Może mieć zastosowanie, zależnie od Twojej umowy: pokazane tu jako wyliczenie, nie jako faktura.",
+      "simulacionMedir": "W Measure to tylko oszacowanie: nigdy niefakturowane.",
+      "notaSombraReferencia": "Liczba w cieniu: obliczona prowizja to {comision}. To wyliczenie, nie faktura.",
+      "historialIntroNeutro": "Każdy zamknięty okres zostaje nieodwracalnie utrwalony pierwszego dnia miesiąca. Jeśli z okresu wynika należność, jej faktura cytuje ten dokument."
     },
     "usageExplorer": {
       "title": "Eksplorator użycia",
@@ -793,34 +1183,42 @@
         "sesiones": "Sesje",
         "maquinas": "Maszyny",
         "nativo": "Aktywowana oszczędność natywna"
-      }
+      },
+      "sortBy": "Sortuj według: {column}",
+      "toastHidden": "Karta ukryta: {card}",
+      "toastShown": "Karta widoczna: {card}",
+      "toastReset": "Przywrócono układ",
+      "toastSaved": "Zapisano tylko w tej przeglądarce.",
+      "undo": "Cofnij",
+      "toastRegion": "Powiadomienia panelu",
+      "toastClose": "Zamknij powiadomienie"
     },
     "team": {
       "metaTitle": "Zespół · BiVelio Savings Layer"
     },
     "measurePlan": {
-      "title": "Albo zacznij za darmo: licencja Pomiar, bez karty",
+      "title": "Albo zacznij za darmo: licencja Measure, bez karty",
       "body": "Uruchamia warstwę w trybie cienia dla 1 organizacji i do {seats} stanowisk: każde żądanie trafia do Twojego dostawcy bez zmian i nic nie jest serwowane z pamięci podręcznej. Panel pokazuje, ile zaoszczędziłyby dźwignie; przejdź na płatny plan, aby je włączyć.",
-      "claim": "Pobierz moją darmową licencję Pomiar",
+      "claim": "Pobierz moją darmową licencję Measure",
       "claiming": "Wystawianie…",
-      "keyLabel": "Twój klucz licencji Pomiar (tryb cienia: żadna dźwignia nie jest stosowana)",
+      "keyLabel": "Twój klucz licencji Measure (tryb cienia: żadna dźwignia nie jest stosowana)",
       "keyHint": "Użyj go jako BIVELIO_LICENSE_KEY, dokładnie tak jak klucza płatnego. Po przejściu na płatny plan warstwa sama pobierze płatną licencję, a dźwignie się włączą.",
       "errEmailNotVerified": "Najpierw potwierdź swój adres e-mail, a potem spróbuj ponownie.",
-      "errDisposableEmail": "Jednorazowe adresy e-mail nie mogą otrzymać licencji Pomiar. Zarejestruj się stałym adresem (na przykład służbowym) i spróbuj ponownie.",
-      "errOneOrgPerAccount": "To konto ma już licencję Pomiar dla innej organizacji: darmowa licencja obejmuje jedną organizację na konto.",
+      "errDisposableEmail": "Jednorazowe adresy e-mail nie mogą otrzymać licencji Measure. Zarejestruj się stałym adresem (na przykład służbowym) i spróbuj ponownie.",
+      "errOneOrgPerAccount": "To konto ma już licencję Measure dla innej organizacji: darmowa licencja obejmuje jedną organizację na konto.",
       "errAlreadyLicensed": "Twoja organizacja ma już płatną licencję: użyj klucza powyżej.",
-      "errBlocked": "Licencja Pomiar nie jest dostępna dla tej organizacji. Napisz na support@bivelio.com.",
+      "errBlocked": "Licencja Measure nie jest dostępna dla tej organizacji. Napisz na support@bivelio.com.",
       "errRole": "Twoja rola nie pozwala pobrać licencji. Poproś ownera lub admina.",
       "errSignIn": "Najpierw się zaloguj.",
-      "errGeneric": "Nie udało się wystawić licencji Pomiar. Spróbuj ponownie za chwilę.",
-      "planLabel": "Pomiar (bezpłatny)",
-      "pricingNote": "Pomiar: za darmo, bez karty. Warstwa w trybie cienia dla 1 organizacji i do {seats} stanowisk, abyś zobaczył, ile by zaoszczędziła, zanim zapłacisz.",
+      "errGeneric": "Nie udało się wystawić licencji Measure. Spróbuj ponownie za chwilę.",
+      "planLabel": "Measure (bezpłatny)",
+      "pricingNote": "Measure: za darmo, bez karty. Warstwa w trybie cienia dla 1 organizacji i do {seats} stanowisk, abyś zobaczył, ile by zaoszczędziła, zanim zapłacisz.",
       "card": {
-        "eyebrow": "Licencja Pomiar · tryb cienia",
+        "eyebrow": "Licencja Measure · tryb cienia",
         "title": "Ile byś zaoszczędził",
         "amount": "{amount}, których byś nie wydał",
         "context": "Z {spend} zmierzonych wydatków w {requests} żądaniach. Szacunek z toru cienia, wyceniony licznikiem Twojego własnego dostawcy: w SDK powtórzone i równoległe zduplikowane wywołania; w bramie także model siostrzany i obniżenie TTL pamięci podręcznej. Nic nie zostało zastosowane i nic nie jest fakturowane.",
-        "empty": "Brak jeszcze szacunku oszczędności: pojawi się, gdy tylko warstwa zobaczy powtórzone żądanie lub, w bramie, żądanie, na którym model siostrzany albo obniżenie TTL pamięci podręcznej przyniosłyby oszczędność. Licencja Pomiar nigdy nie zmienia tego, co wysyłasz.",
+        "empty": "Brak jeszcze szacunku oszczędności: pojawi się, gdy tylko warstwa zobaczy powtórzone żądanie lub, w bramie, żądanie, na którym model siostrzany albo obniżenie TTL pamięci podręcznej przyniosłyby oszczędność. Licencja Measure nigdy nie zmienia tego, co wysyłasz.",
         "limits": "Za darmo dla 1 organizacji, do {seats} stanowisk i {requests} żądań dziennie.",
         "cta": "Włącz dźwignie: zobacz plany"
       }
@@ -830,18 +1228,20 @@
     "metaTitle": "BiVelio — Zweryfikuj swoje oszczędności na LLM",
     "metaDescription": "SDK, który sprawia, że Twoja aplikacja płaci dostawcy LLM tylko za to, czego potrzebuje, oraz bramka mierząca Twojego agenta kodowania. Open core Apache-2.0: bez kluczy, bez konta, bez telemetrii — mierzone licznikiem Twojego dostawcy; opcjonalna chmura to stała opłata bez prowizji od Twoich oszczędności.",
     "hero": {
-      "title": "Twoja faktura za LLM, pod kontrolą.",
-      "titleAccent": "Mierzona przy każdym wywołaniu.",
-      "sub": "Savings odpowiada na to, co Twoja aplikacja powtarza, bez ponownego wywołania dostawcy, i mierzy każde wywołanie jego licznikiem.",
-      "ctaStart": "Zacznij",
-      "ctaBench": "Zobacz publiczny benchmark",
+      "title": "Optymalizuj wywołania LLM.",
+      "titleAccent": "Sprawdź każdą oszczędność.",
+      "titleMark": "oszczędność",
+      "sub": "Uruchom silnik open source we własnej infrastrukturze. Połącz Savings Cloud, aby scentralizować pomiary i zarządzanie zespołem – w planach o stałej opłacie.",
+      "ctaStart": "Zacznij od Measure",
+      "ctaBench": "Zobacz powtarzalne wyniki",
       "panelAlt": "Panel Savings z danymi publicznego benchmarku: zmierzona oszczędność i jej podział według modelu.",
       "panelCaption": "Panel z danymi publicznego benchmarku",
       "medidoEnVivo": "Mierzone na żywo licznikiem każdego dostawcy",
       "note": "Instalacja w kilka minut. Twoje wiadomości nigdy nie przechodzą przez nasze serwery.",
       "proofTitle": "Zmierzone względem prawdziwego dostawcy",
       "compatibleCon": "Zgodne z",
-      "compatibleNota": "Zgodny nie znaczy zmierzony. SDK działa z każdym endpointem zgodnym z API OpenAI, a także z natywnym adapterem Anthropic i natywnym adapterem Gemini (nowość w {gemini}). Z liczbą oszczędności w publicznym benchmarku są dziś tylko modele OpenAI i Anthropic; Gemini nie ma liczby oszczędności. Co zmierzono dla Gemini: {flash}, przez jego natywne API, w cotygodniowym benchmarku na żywo z {fecha} — wszystkie cztery baterie, bez błędów warstwy i bez żadnej odmowy w cache ani zaliczonej jako oszczędność. Ten benchmark sprawdza, że warstwa niczego nie psuje i nie pobiera za dużo; nie mierzy oszczędności. Zmierzony także: {pro}, przez natywne API, w dwóch przebiegach częściowych {fechaPro} (jego dzienny limit dostawcy nie mieści wszystkich czterech baterii w jednym dniu): wszystkie cztery baterie, również bez żadnego błędu warstwy i bez żadnej odmowy z pamięci podręcznej ani zaliczonej jako oszczędność."
+      "compatibleNota": "Zgodny nie znaczy zmierzony. SDK działa z każdym endpointem zgodnym z API OpenAI, a także z natywnym adapterem Anthropic i natywnym adapterem Gemini (nowość w {gemini}). Z liczbą oszczędności w publicznym benchmarku są dziś tylko modele OpenAI i Anthropic; Gemini nie ma liczby oszczędności. Co zmierzono dla Gemini: {flash}, przez jego natywne API, w cotygodniowym benchmarku na żywo z {fecha} — wszystkie cztery baterie, bez błędów warstwy i bez żadnej odmowy w cache ani zaliczonej jako oszczędność. Ten benchmark sprawdza, że warstwa niczego nie psuje i nie pobiera za dużo; nie mierzy oszczędności. Zmierzony także: {pro}, przez natywne API, w dwóch przebiegach częściowych {fechaPro} (jego dzienny limit dostawcy nie mieści wszystkich czterech baterii w jednym dniu): wszystkie cztery baterie, również bez żadnego błędu warstwy i bez żadnej odmowy z pamięci podręcznej ani zaliczonej jako oszczędność.",
+      "ctaOss": "Zainstaluj open source"
     },
     "cascade": {
       "title": "Wygrywa najtańsza realizacja",
@@ -939,7 +1339,7 @@
     "gateway": {
       "eyebrow": "Gateway · terminale programistyczne",
       "title": "Claude Code z kluczem API? Zobacz realny wydatek, token po tokenie.",
-      "body": "Jedno polecenie stawia lokalny licznik przed Twoim terminalem, bez zmian w Twoim kodzie: eksportujesz swój klucz serwisowy i uruchamiasz agenta przez bvsala. Twoje prompty nigdy nie opuszczają Twojej maszyny — do Twojego panelu trafiają tylko liczby i koszt.",
+      "body": "Jedno polecenie stawia lokalny licznik przed Twoim terminalem, bez zmian w Twoim kodzie: eksportujesz swój klucz serwisowy i uruchamiasz agenta przez bvsala. Twoje prompty nie przechodzą przez serwery BiVelio: trafiają do dostawcy, którego skonfigurujesz, a do Twojego panelu docierają tylko liczby i koszt.",
       "note": "Gateway mierzy licznikiem Twojego dostawcy każde żądanie, dla którego ten raportuje zużycie (dla modeli z naszego cennika), i, tak jak SDK, uruchamia się bez żadnych kluczy (tryb Community): opcjonalny klucz serwisowy dodaje panel i uprawnienia organizacji. Z licencją PRO, na modelach Anthropic, stosuje też domyślnie jedną dźwignię: przestawia zapisy do pamięci podręcznej z godzinnego TTL na pięciominutowy tylko w turach, w których duża część promptu jest nowa — jak pierwsza tura sesji albo kompaktowanie — a kolejne tury zostawia bez zmian. Zmienia to cenę, nigdy treść, którą czyta model. Pozostałe dźwignie są wyłączone, dopóki ich nie włączysz. Skill savings-mode jest dostępny dla Twoich limitów, a jego efekt czeka na pomiar. Gateway działa też z Codex CLI, Goose, Qwen Code, opencode, Kilo, Aiderem oraz — z Twoim własnym kluczem Anthropic — GitHub Copilot CLI; dla innych, takich jak Cline czy Continue, bvsala doctor wypisuje dokładną konfigurację. Cursor dziala przez nadpisanie adresu URL bazy OpenAI z Twoim kluczem, a Gemini CLI uruchamia sie przez bvsala gemini.",
       "pythonNote": "Python albo inny język? Skieruj oficjalne SDK OpenAI lub Anthropic na gateway, a każde żądanie, którego zużycie raportuje dostawca, dla modelu z ceną katalogową, zostanie zapisane w tym panelu po tej cenie; gateway odnotowuje w logu, gdy któreś nie jest mierzone. bvsala doctor wypisuje base URL dla każdego SDK. Przy streamingu z OpenAI poproś o zużycie w żądaniu (stream_options.include_usage).",
       "cta": "Zobacz, jak to działa →"
@@ -952,13 +1352,13 @@
     },
     "pricing": {
       "eyebrow": "Plany",
-      "title": "Mierz za darmo. Płać za stanowisko, gdy chcesz oszczędności.",
+      "title": "Silnik open source. Kontrola w chmurze dla Twojego zespołu.",
       "body": "Pakiet to open core Apache-2.0: bez kluczy, wszystkie lokalne dźwignie włączone, zerowa telemetria. Chmura jest opcjonalna — Measure to plan darmowy, Pro i Team są rozliczane za stanowisko, w {currency}, bez prowizji od Twoich oszczędności.",
       "amount": "{amount}",
       "per": "/ stanowisko / mies.",
       "plans": {
         "medir": {
-          "name": "Pomiar",
+          "name": "Measure",
           "price": "Za darmo",
           "body": "Za darmo, bez karty. Darmowy plan CHMUROWY: tryb cienia dla jednej organizacji, do {seats} stanowisk i {requests} żądań dziennie — nic z tego, co wysyłasz, się nie zmienia, nic nie jest serwowane z pamięci podręcznej, nigdy żadnej prowizji, a panel pokazuje, ile by zaoszczędzono. Lokalne dźwignie go nie potrzebują: open core działa bez żadnego klucza. Wymaga @bivelio/savings-layer {version} lub nowszej.",
           "cta": "Zacznij za darmo →"
@@ -969,10 +1369,10 @@
           "cta": "Wybierz Pro →"
         },
         "team": {
-          "name": "Zespół",
+          "name": "Team",
           "per": "/ mies.",
           "note": "<b>{included} stanowisk w cenie</b>; każde dodatkowe {extra} / mies. Albo <b>{yearly} / rok</b>. Bez prowizji.",
-          "cta": "Wybierz Zespół →"
+          "cta": "Wybierz Team →"
         },
         "enterprise": {
           "name": "Enterprise",
@@ -986,7 +1386,7 @@
         "Każda optymalizacja BV‑SALA, bez limitu",
         "Paragon na każde zapytanie: SavingsReport z czterema księgami, zmierzone i szacowane osobno",
         "Panele oszczędności i analityka zespołowa",
-        "Twoje prompty nigdy nie opuszczają Twojej infrastruktury"
+        "Twoje prompty nie przechodzą przez serwery BiVelio: trafiają do dostawcy, którego skonfigurujesz"
       ],
       "cta": "Rozpocznij →",
       "trustTitle": "Dlaczego cena może być tak niska",
@@ -1008,7 +1408,9 @@
           "rest": "Rozliczenia odczytują ten sam SavingsReport, który weryfikujesz powyżej — bez czarnej skrzynki."
         }
       ],
-      "taxNote": "Bez VAT. Jeśli Państwa firma ma unijny numer VAT, stosuje się odwrotne obciążenie."
+      "taxNote": "Bez VAT. Jeśli Państwa firma ma unijny numer VAT, stosuje się odwrotne obciążenie.",
+      "community": "<b>Community to nie plan.</b> Silnik open source jest darmowy i działa bez konta: <install>zainstaluj go</install>, kiedy chcesz. Cztery plany poniżej to Savings Cloud.",
+      "fullTerms": "Zobacz opublikowany cennik"
     },
     "footer": {
       "ctaTitle": "Zmierz to na własnym ruchu",
@@ -1043,13 +1445,15 @@
       "howItWorks": "Jak to działa",
       "pricingTerms": "Warunki cenowe",
       "dataPrivacy": "Co otrzymuje BiVelio",
-      "paper": "Artykuł"
+      "paper": "Artykuł",
+      "socialLinkedIn": "BiVelio w serwisie LinkedIn",
+      "socialGitHub": "BiVelio w serwisie GitHub"
     },
     "cta15": {
-      "titulo": "Book 15-min call",
+      "titulo": "Poproś o 15-minutową rozmowę",
       "sub": "Powiemy ci, ile zaoszczędziłbyś na swoim ruchu, bez instalowania czegokolwiek.",
       "placeholder": "ty@firma.com",
-      "boton": "Book 15-min call",
+      "boton": "Poproś o 15-minutową rozmowę",
       "enviando": "Wysyłanie…",
       "ok": "Odebrane. Napiszemy jeszcze dziś, żeby umówić rozmowę.",
       "errorCorreo": "Ten e-mail nie wygląda na poprawny.",
@@ -1084,36 +1488,34 @@
       ]
     },
     "offers": {
-      "eyebrow": "Dwa produkty",
+      "eyebrow": "Gdzie go podłączasz",
       "title": "Dokąd idą Twoje tokeny: do Twojej aplikacji czy do Twojego agenta programistycznego?",
-      "sub": "Oba są open core i oba liczą licznikiem Twojego dostawcy. Robią różne rzeczy, więc każde składa własną obietnicę — a dziś tylko jedno ma opublikowaną liczbę oszczędności.",
+      "sub": "SDK i gateway to dwa sposoby integracji tego samego silnika open source i oba liczą licznikiem Twojego dostawcy. Ich liczby to nie ta sama klasa dowodu: wynik SDK pochodzi z testu A/B na żywo, a wynik gatewaya z kontrfaktycznego odtworzenia nagranych sesji.",
       "install": "Instalacja",
       "installMore": "Pełna konfiguracja",
       "figNoteToggle": "Dlaczego ta liczba i jej ograniczenia",
       "sdk": {
         "name": "SDK",
-        "band": "SDK — dla aplikacji w JavaScript i TypeScript z kluczem API",
         "who": "Dla aplikacji Node.js, w JavaScript lub TypeScript, które wywołują API LLM własnym kluczem i płacą za każdy token.",
         "what": "Opakowuje wywołanie w Twoim kodzie, wysyła dostawcy tylko to, za co trzeba zapłacić, i zwraca SavingsReport z każdą odpowiedzią.",
         "figureLabel": "Liczba, którą publikujemy",
         "figureNote": "To nie prognoza: ile zaoszczędzisz, zależy od tego, jak często Twój ruch się powtarza. W Twoim raporcie oszczędności liczy się tylko to, co potwierdzi licznik Twojego dostawcy — także przy powtórzonych zapytaniach obsłużonych bez wywołania dostawcy, z których każde jest wyceniane licznikiem identycznego zapytania, które już zostało wykonane.",
         "ctaMeasured": "Jak to zmierzyliśmy",
-        "ctaVerify": "Wypróbuj jedną dźwignię na swoich danych"
+        "ctaVerify": "Wypróbuj jedną dźwignię na swoich danych",
+        "requires": "Node.js i klucz API Twojego dostawcy."
       },
       "gateway": {
         "name": "Gateway",
-        "band": "Gateway — dla agentów programistycznych z kluczem API",
         "who": "Dla osób, które pracują z Claude Code, Codex CLI lub innym agentem programistycznym na kluczu API.",
         "what": "Jedno polecenie stawia lokalny licznik przed Twoim terminalem, bez zmian w kodzie. Gateway liczy każde zapytanie, dla którego Twój dostawca raportuje zużycie, jego własnym licznikiem — dla modeli z naszego cennika — i sumuje je w Twoim panelu, według dnia i modelu.",
         "figureLabel": "Liczba, którą publikujemy",
         "figureQue": "szacowanej netto redukcji kosztu według cen katalogowych dzięki zmianie TTL pamięci podręcznej w PRO, po odjęciu wywołanych chybień (przedział {confianza}: od {bajo} do {alto}). Kontrfaktyczne odtworzenie z częściowo zrekonstruowaną bazą odniesienia na {sesiones} sesjach Claude Code jednej organizacji; nie jest to A/B na żywo ani uzgodnienie faktur.",
         "figureNote": "To nie jest prognoza dla twojego zespołu: to jedna organizacja, jeden dostawca i ceny katalogowe, a oszczędność jest niewielka i widać ją tam, gdzie wydatki w Anthropic są wysokie. Z PRO, na modelach Anthropic, gateway przestawia zapisy do pamięci podręcznej z godzinnego TTL na pięciominutowy tylko w turach, w których duża część promptu jest nowa — jak pierwsza tura sesji albo kompaktowanie — a kolejne tury trwającej sesji zostawia bez zmian. Zmienia to cenę, nigdy to, co czyta model, a w Twoim raporcie oszczędności liczy się tylko to, co potwierdzi licznik Twojego dostawcy.",
         "benchLink": "Raport z pomiaru TTL: co symulowano, podział na modele i jego ograniczenia →",
-        "cta": "Skonfiguruj gateway"
+        "cta": "Skonfiguruj gateway",
+        "requires": "Node.js z npm oraz agent kodujący korzystający z własnego klucza API."
       },
-      "skill": {
-        "band": "Skill — dla agentów programistycznych w subskrypcji"
-      }
+      "requires": "Wymagania:"
     },
     "verify": {
       "eyebrow": "SDK · jedna dźwignia, na Twoich danych, przed zapłatą",
@@ -1148,6 +1550,157 @@
       "sinRepeticiones": "przy ruchu bez powtórzeń (MT-Bench, BFCL): nieodróżnialne od zera",
       "anthropic": "zredukowany strumień, inny niż w OpenAI: {familias} rodzin / {peticiones} zapytań na ramię (przedział 95%: od {bajo} do {alto}). Około {prefijo} kosztu A według cen katalogowych to opisowy kontrast netto cen pamięci podręcznej (odczyty pamięci podręcznej ramienia B wycenione według zwykłej ceny wejściowej), a nie oddzielnie zidentyfikowany efekt przyczynowy ani istniejący wcześniej rabat Anthropic",
       "pie": "To zależy od tego, jak często Twój ruch się powtarza. Każda bateria z pełnym raportem: <bench>publiczny benchmark</bench>."
+    },
+    "receipt": {
+      "title": "Paragon jednego pomiaru",
+      "model": "Model",
+      "sample": "Próba",
+      "sampleValue": "{familias} rodzin · {peticiones} żądań na ramię",
+      "repeats": "Powtórzone żądania",
+      "interval": "Przedział 95%",
+      "total": "Niższy koszt",
+      "source": "Test A/B na żywo wobec dostawcy, po wersjonowanych cenach katalogowych. To nie jest uzgodnienie faktur.",
+      "prefixCache": "W tym kontrast cen pamięci podręcznej (ok.)"
+    },
+    "ways": {
+      "eyebrow": "Otwarty silnik, chmura opcjonalnie",
+      "title": "Dwa sposoby korzystania z Savings.",
+      "sub": "Silnik jest ten sam. Zmienia się to, gdzie nim zarządzasz i co opuszcza Twoją infrastrukturę.",
+      "q": {
+        "runs": "Gdzie działa",
+        "account": "Konto",
+        "telemetry": "Telemetria",
+        "manage": "Zarządzanie"
+      },
+      "community": {
+        "name": "Community",
+        "tag": "Open source · Apache-2.0",
+        "lede": "Silnik, SDK i lokalny gateway. Dla jednej osoby albo dla całej firmy.",
+        "runs": "W Twojej infrastrukturze: SDK w Twoim procesie albo gateway na Twojej maszynie.",
+        "account": "Niepotrzebne. Bez rejestracji, bez karty i bez klucza BiVelio.",
+        "telemetry": "Domyślnie żadna.",
+        "manage": "Lokalnie: każde wywołanie zwraca swój SavingsReport.",
+        "code": "Zobacz kod",
+        "chips": [
+          "Bez konta i karty",
+          "Domyślnie bez telemetrii",
+          "SDK i lokalny gateway"
+        ]
+      },
+      "cloud": {
+        "name": "Savings Cloud",
+        "tag": "Opcjonalnie · start za darmo",
+        "lede": "Panel, który centralizuje pomiary i zarządzanie Twoim zespołem.",
+        "runs": "Silnik zostaje w Twojej infrastrukturze. Cloud dodaje panel.",
+        "account": "Konto Savings i klucz serwisowy.",
+        "telemetry": "Liczby i koszt, zależnie od planu. Twoje prompty nie przechodzą przez serwery BiVelio.",
+        "manage": "Panel zespołu, organizacja i licencje.",
+        "plans": "Zobacz plany",
+        "chips": [
+          "Start za darmo z Measure",
+          "Panel zespołu",
+          "Plany ze stałą opłatą"
+        ]
+      }
+    },
+    "evidence": {
+      "dated": "Raport z {fecha}",
+      "report": "Zobacz raport"
+    },
+    "flow": {
+      "eyebrow": "Jak wędrują dane",
+      "title": "Z Twojej infrastruktury do Twojego dostawcy, z pominięciem BiVelio.",
+      "sub": "SDK i gateway działają lokalnie i wywołują bezpośrednio dostawcę, którego skonfigurujesz. Połączenie z Savings Cloud jest opcjonalne: wtedy do Twojego panelu trafiają liczby i koszt zgodnie z planem, a nie treść promptów.",
+      "app": "Twoja aplikacja lub agent",
+      "local": "SDK lub lokalny gateway",
+      "localSub": "W Twojej infrastrukturze",
+      "provider": "Twój dostawca LLM",
+      "providerSub": "Ten, którego skonfigurujesz",
+      "cloud": "Savings Cloud",
+      "cloudSub": "Opcjonalnie",
+      "prompts": "Prompty i odpowiedzi",
+      "telemetry": "Telemetria: liczby i koszt",
+      "caption": "Ilustracja działania.",
+      "privacy": "Co otrzymuje BiVelio, pole po polu →"
+    },
+    "faq": {
+      "eyebrow": "Pytania przed zakupem",
+      "title": "Co warto wiedzieć, zanim zapłacisz.",
+      "more": "Szczegóły umowne znajdziesz w <pricing>opublikowanym cenniku</pricing>, a to, co Oprogramowanie wysyła do BiVelio, na <privacy>stronie prywatności</privacy>.",
+      "items": [
+        {
+          "q": "Za co dokładnie się płaci?",
+          "a": "Silnik open source jest darmowy. Savings Cloud ma darmowy plan Measure oraz dwa plany ze stałą opłatą za stanowisko: Pro i Team. Opłatę ponosisz niezależnie od tego, czy oszczędzasz; nie ma prowizji od oszczędności i nie obejmuje ona zużycia u Twojego dostawcy LLM: za nie nadal płacisz samodzielnie, na jego warunkach."
+        },
+        {
+          "q": "Czym jest stanowisko?",
+          "a": "To maszyna lub tożsamość usługi, która uruchamia Savings. To nie osoba: członkami zespołu zarządzasz osobno, w panelu. Runnery CI i runnery efemeryczne nie liczą się jako stanowiska."
+        },
+        {
+          "q": "Czym różnią się Measure i Community?",
+          "a": "Community to silnik open source w Twojej infrastrukturze: bez konta, bez klucza BiVelio i domyślnie bez telemetrii. Measure to darmowy plan Savings Cloud: wymaga konta i działa w trybie cienia, więc nie zmienia Twoich żądań ani nie serwuje odpowiedzi z pamięci podręcznej; panel pokazuje, ile dałoby się zaoszczędzić."
+        },
+        {
+          "q": "Czy to działa z subskrypcją taką jak ChatGPT Plus?",
+          "a": "Nie jako oszczędność na rachunku. Savings optymalizuje i mierzy wywołania API rozliczanego za użycie; subskrypcja ze stałą opłatą nie jest rachunkiem za API, który da się zoptymalizować. Przez gateway taki ruch jest mierzony, ale nie przypisuje się mu oszczędności. Do limitów subskrypcji służy skill savings-mode, zasób uzupełniający, którego efekt nie został jeszcze zmierzony."
+        },
+        {
+          "q": "Czy muszę zmienić dostawcę?",
+          "a": "Nie. Zachowujesz swojego dostawcę i własny klucz, a Twoje wywołania nadal trafiają bezpośrednio do niego. Zgodny nie znaczy zmierzony: publiczny bank testów podaje, które modele mają opublikowany wynik."
+        },
+        {
+          "q": "Jakie dane otrzymuje BiVelio?",
+          "a": "W Community domyślnie żadnych. Po połączeniu z Savings Cloud Twój panel otrzymuje liczby i koszt zgodnie z planem; Twoje prompty nie przechodzą przez serwery BiVelio. Strona prywatności opisuje to pole po polu."
+        },
+        {
+          "q": "Czy gwarantujecie oszczędności?",
+          "a": "Nie. To, ile zaoszczędzisz, zależy od Twojego ruchu, na przykład od tego, jaka jego część się powtarza. Publikujemy każdy pomiar z modelem, próbą i przedziałem, a Measure pozwala zobaczyć, ile dałoby się zaoszczędzić na Twoim własnym ruchu, zanim cokolwiek zapłacisz."
+        }
+      ]
+    },
+    "closing": {
+      "title": "Najpierw zmierz.",
+      "titleAccent": "Potem zdecyduj.",
+      "titleMark": "zdecyduj",
+      "sub": "Measure jest darmowy i nie wymaga karty: działa w trybie cienia i pokazuje, ile dałoby się zaoszczędzić na Twoim własnym ruchu. Silnik jest open source, a jego kod jest jawny.",
+      "repo": "Zobacz repozytorium"
+    },
+    "layer": {
+      "eyebrow": "Savings Layer w działaniu",
+      "title": "Cienka warstwa między Twoim kodem a Twoim dostawcą.",
+      "titleAccent": "To właśnie Savings Layer.",
+      "titleMark": "Savings Layer",
+      "sub": "Działa w Twojej infrastrukturze, wysyła dostawcy tylko to, za co trzeba zapłacić, i zwraca paragon z każdą odpowiedzią. Twoje prompty trafiają bezpośrednio do dostawcy, którego skonfigurujesz; Savings Cloud jest opcjonalny i otrzymuje liczby i koszt, a nie ich treść.",
+      "figLabel": "Animowana ilustracja: droga jednego wywołania przez Savings Layer",
+      "stepsLabel": "Droga krok po kroku",
+      "pause": "Wstrzymaj animację",
+      "resume": "Wznów animację",
+      "fromLabel": "Twoje wywołania",
+      "srcApp": "Twoja aplikacja",
+      "srcAppVia": "SDK",
+      "srcAgent": "Twój agent",
+      "srcAgentVia": "lokalny gateway",
+      "memoryLabel": "Pamięć ostatnich żądań",
+      "compactLabel": "Kompaktowanie danych",
+      "providersLabel": "Dostawca, którego skonfigurujesz",
+      "nativeAdapter": "natywny adapter",
+      "compatName": "Dowolny endpoint zgodny z API OpenAI",
+      "step1Title": "Wywołanie trafia do warstwy",
+      "step1Body": "Wychodzi z Twojej aplikacji lub agenta i nie opuszcza Twojej infrastruktury.",
+      "step2Title": "Powtórzone · obsłużone bez wywołania dostawcy",
+      "step2Body": "Warstwa rozpoznaje je w swojej pamięci i zwraca zapisaną odpowiedź.",
+      "step3Title": "Dane skompaktowane · mniej tokenów",
+      "step3Body": "Nowe żądanie trafia odchudzone do dostawcy, którego skonfigurujesz, a odpowiedź wraca przez warstwę.",
+      "step4Title": "Tylko liczniki i koszty · nigdy prompty",
+      "step4Body": "Savings Cloud jest opcjonalny: po podłączeniu dostaje liczby, nie treść.",
+      "legendRepeat": "Powtórzone",
+      "legendRepeatTo": "bez wywołania dostawcy",
+      "legendData": "Skompaktowane dane",
+      "legendDataTo": "mniej tokenów",
+      "legendCache": "Cache dostawcy",
+      "legendCacheTo": "tańsze dane wejściowe",
+      "compatNote": "Zgodny nie znaczy zmierzony.",
+      "compatLink": "Co zostało zmierzone u każdego dostawcy"
     }
   },
   "invitacion": {
@@ -1181,13 +1734,21 @@
     "invitacionPara": "Zaproszenie jest dla <b>{email}</b>.",
     "sesionActual": "Obecnie są Państwo zalogowani jako <b>{email}</b>.",
     "cerrarYContinuar": "Wyloguj się i użyj innego konta",
-    "cerrando": "Wylogowywanie…"
+    "cerrando": "Wylogowywanie…",
+    "kicker": "Zaproszenie",
+    "labelOrg": "Organizacja",
+    "labelFor": "Dla",
+    "panelTitle": "Jeden zespół, <em>jeden panel</em>.",
+    "panelBody": "Po zaakceptowaniu zyskują Państwo dostęp do panelu organizacji z własnego konta. Stanowiska w subskrypcji liczą maszyny lub tożsamości usług, a nie osoby.",
+    "arteAlt": "Ilustracja: organizacja i jej panel Savings już połączone oraz trzeci krąg, który zajmuje wolne miejsce."
   },
   "benchmarksPage": {
     "metaTitle": "Publiczny test A/B: zmierz nas | BiVelio Savings Layer",
     "metaDescription": "Cztery publiczne baterie testów (GSM8K, BFCL, XSTest i MT-Bench), dwa ramiona mierzone własnym licznikiem zużycia dostawcy, każda liczba z jej n, przedziałem i datą. To, co oszczędza, to, co nie, i błędy znalezione przez test.",
     "eyebrow": "Test publiczny · odtwarzalny",
-    "title": "Nasz test A/B, w pełni jawny. Zmierz nas.",
+    "title": "Nasz test A/B, w pełni jawny.",
+    "titleAccent": "Zmierz nas.",
+    "titleMark": "Zmierz nas",
     "lede": "Publikujemy każdy przebieg: cztery baterie na publicznych zbiorach danych, {modelos} modeli, a oba ramiona mierzone własnym licznikiem zużycia dostawcy. Każda liczba niesie swoje n, swój przedział i swoją datę. To, co nie oszczędza, też jest tutaj.",
     "stats": {
       "batteries": "baterie",
@@ -1203,7 +1764,7 @@
       "intervals": "<b>Przedziały na poziomie {nivel}.</b> Oblicza je każdy harness (resampling całych rodzin pytań, Wilson dla odsetka odmów). Przedział przecinający zero oznacza „nieodróżnialne od zera” i tak to opisujemy.",
       "package": "<b>Pakiet, który instalujesz.</b> Przebiegi A/B z tabel poniżej wykonano na wersji {version}: ramię B uruchamia kod źródłowy tego taga, a jego <code>dist/index.js</code> jest bajt w bajt identyczny z tym z tarballa npm (sha256 <code>{sha}</code>). Cotygodniowy benchmark na żywo to co innego: w każdym przebiegu mierzy kod źródłowy gałęzi main w stanie z danego dnia, jeszcze przed publikacją.",
       "guard": "<b>Bez skrótów.</b> Każdy harness obserwuje hosty, z którymi się komunikuje, i ma w kodzie zapisany limit wydatków na model. Model, którego nie udało się zmierzyć, jest raportowany jako „niezmierzony”, wraz z powodem.",
-      "paper": "<paper>Przeczytaj 17-stronicowy artykuł badawczy (PDF)</paper>: metoda, rodzaje dowodów i ograniczenia, w tym dlaczego współczynnik 1,05 dla OpenAI opisuje jeden punkt pracy, a nie empirycznie wyznaczone nachylenie.",
+      "paper": "<paper>Przeczytaj artykuł badawczy {version}, {paginas} stron (PDF)</paper>: metoda, rodzaje dowodów i ograniczenia każdej liczby, poprawione po zewnętrznej recenzji przed publikacją.",
       "batteriesTitle": "Cztery baterie testów, publiczne zbiory danych, przypięte",
       "commitOnly": "przypięte do commita"
     },
@@ -1450,7 +2011,7 @@
     },
     "repro": {
       "title": "Jak to odtworzyć",
-      "intro": "Kod testu nie jest jeszcze publiczny; metoda jest, i mieści się w pięciu krokach. Z własnymi kluczami dostawcy możesz go powtórzyć i porównać liczba po liczbie z naszymi raportami.",
+      "intro": "Kod testu znajduje się w otwartym repozytorium, a metoda mieści się w pięciu krokach. Z własnymi kluczami dostawcy możesz go powtórzyć i porównać liczba po liczbie z naszymi raportami.",
       "steps": {
         "dataset": "<b>Zbiór danych.</b> Pobierz każdy publiczny zbiór danych z commita z tabeli powyżej i przed użyciem sprawdź sha256 każdego pliku. Jeśli się nie zgadza, to nie jest ten sam zbiór.",
         "package": "<b>Warstwa.</b> Zainstaluj <code>@bivelio/savings-layer</code> z npm w wersji podanej w raporcie i sprawdź sha256 pliku <code>dist/index.js</code>: każdy raport go zawiera.",
@@ -1464,17 +2025,83 @@
     },
     "invite": {
       "title": "Zmierz nas sam",
-      "body": "Niezależny pomiar jest wart więcej niż nasz. Kod testu nie jest jeszcze publiczny: jeśli chcesz powtórzyć pomiar albo zmierzyć warstwę własnym narzędziem lub własnym ruchem, napisz do nas, a damy ci wszystko, czego potrzebujesz.",
+      "body": "Niezależny pomiar jest wart więcej niż nasz. Kod testu znajduje się w otwartym repozytorium: jeśli chcesz powtórzyć pomiar albo zmierzyć warstwę własnym narzędziem lub własnym ruchem, napisz do nas, a damy ci wszystko, czego potrzebujesz.",
       "contact": "Napisz do nas na",
       "cta": "Wyślij e-mail",
       "subject": "Niezależny pomiar testu publicznego"
-    }
+    },
+    "centre": {
+      "indexTitle": "Na tej stronie",
+      "indexAria": "Spis treści centrum dowodów",
+      "readTitle": "Jak czytać tę stronę",
+      "classAb": "Dwa ramiona dla tego samego żądania, wycenione według użycia raportowanego przez dostawcę. Tak mierzone są baterie testu.",
+      "classReplay": "Kontrfaktyczne odtworzenie z częściowo zrekonstruowaną linią bazową. To nie jest A/B na żywo, zafakturowana oszczędność ani uzgodnienie faktur.",
+      "compatible": "Zgodny nie znaczy zmierzony: model liczy się tu tylko wtedy, gdy ma opublikowany przebieg, a to, czego nie udało się zmierzyć, jest opisane wraz z powodem.",
+      "diagramRequest": "To samo żądanie",
+      "diagramA": "Ramię A: bezpośrednio do dostawcy, bez warstwy",
+      "diagramB": "Ramię B: przez warstwę, z jej domyślną konfiguracją",
+      "diagramMeter": "Licznik zużycia dostawcy mierzy oba ramiona"
+    },
+    "index": {
+      "method": "Metoda",
+      "weekly": "Test cotygodniowy",
+      "savings": "Zmierzona oszczędność",
+      "gatewayTtl": "Odtworzenie w gatewayu",
+      "guarantees": "Gwarancje",
+      "noSavings": "Co nie oszczędza",
+      "status": "Stan według modelu",
+      "compat": "Zgodność",
+      "bugs": "Znalezione błędy",
+      "reproduce": "Odtwórz",
+      "invite": "Zmierz nas"
+    },
+    "filter": {
+      "label": "Filtr czytania",
+      "all": "Wszystko",
+      "negative": "Bez oszczędności i błędy",
+      "reproduce": "Metoda i odtwarzanie",
+      "showing": "Wyświetlane sekcje: {n} z {total}.",
+      "reset": "Pokaż wszystko"
+    },
+    "ab": {
+      "title": "Oba ramiona, model po modelu",
+      "intro": "GSM8K, bateria stworzona do pomiaru oszczędności. Wybierz zmierzony model: A trafia prosto do dostawcy, a B przechodzi przez warstwę.",
+      "armA": "Bez warstwy",
+      "armB": "Z warstwą",
+      "metricCost": "Koszt przebiegu",
+      "metricAccuracy": "Dokładność",
+      "base": "Baza",
+      "baseline": "ramię odniesienia",
+      "requests": "żądania: {n}",
+      "noLift": "Brak różnicy",
+      "metric": "Metryka",
+      "arms": "Porównywane ramiona",
+      "ahead": "{nombre} prowadzi o {porcentaje} procent",
+      "noValue": "brak wartości",
+      "up": "wzrost o {porcentaje} procent",
+      "down": "spadek o {porcentaje} procent",
+      "hint": "A to punkt odniesienia; B przechodzi przez warstwę.",
+      "sample": "Próba",
+      "method": "Zobacz metodologię",
+      "note": "Widoczne są tylko modele ze zmierzonym przebiegiem.",
+      "forestTitle": "Zmierzona oszczędność według modelu, z przedziałem",
+      "forestHint": "Punkt to oszacowanie, pasek to przedział ufności, kreska to zero. Wszystko w tej samej skali."
+    },
+    "terms": {
+      "interval": "Oszacowanie i, w nawiasach kwadratowych, jego przedział ufności. Jeśli przedział przecina zero, wyniku nie da się odróżnić od zera.",
+      "sample": "Żądania na ramię i ile z nich to unikalne pytania; reszta to dokładne powtórzenia i parafrazy.",
+      "accuracy": "Poprawne odpowiedzi na pytania z opublikowaną odpowiedzią, w ramieniu A i w ramieniu B.",
+      "run": "Wersja pakietu uruchomiona w ramieniu B oraz dzień przebiegu."
+    },
+    "tableRegion": "Przewijana tabela: {title}"
   },
   "howItWorks": {
     "metaTitle": "Gdzie instaluje się oszczędność? · BiVelio Savings Layer",
-    "metaDescription": "BV‑SALA to warstwa instalowana w kodzie Twojej aplikacji, tam gdzie wywoływane jest API. Co może oszczędzić, gdzie nie ma zastosowania i jak naprawdę się to mierzy.",
+    "metaDescription": "Savings działa w Twojej infrastrukturze jako SDK lub lokalny gateway. Silnik open source, opcjonalny Savings Cloud: co oszczędza, gdzie nie, jak mierzymy.",
     "eyebrow": "Warstwa, wyjaśniona · bez żargonu",
-    "title": "Gdzie instaluje się oszczędność?",
+    "title": "Gdzie instaluje się",
+    "titleAccent": "oszczędność?",
+    "titleMark": "oszczędność",
     "lede": "BV‑SALA to nie aplikacja, nie rozszerzenie ani nie ustawienie ChatGPT. To kawałek kodu, który deweloper umieszcza we własnej aplikacji — dokładnie tam, gdzie ta aplikacja wywołuje API Twojego dostawcy. Może oszczędzać tylko tam, gdzie istnieje rachunek za tokeny — i mierzyć tylko tam, gdzie widzi każde żądanie.",
     "s1Title": "Warstwa żyje w Twoim kodzie",
     "s1Sub": "To samo wywołanie, z warstwą i bez niej. Ruch zawsze idzie prosto z Twojej aplikacji do dostawcy — BV‑SALA nie jest serwerem pośredniczącym i nigdy nie widzi Twoich danych z zewnątrz.",
@@ -1523,20 +2150,128 @@
     "ctaSignup": "Utwórz konto",
     "ctaInstall": "Przejdź do instrukcji instalacji",
     "billWith": "To zależy",
-    "billDepends": "od tego, jak często Twój ruch się powtarza"
+    "billDepends": "od tego, jak często Twój ruch się powtarza",
+    "hero": {
+      "ctaInstall": "Zainstaluj open source",
+      "ctaResults": "Zobacz odtwarzalne wyniki"
+    },
+    "beam": {
+      "eyebrow": "Architektura",
+      "title": "Od Twojego kodu",
+      "accent": "do Twojego dostawcy",
+      "lede": "Savings działa w Twojej infrastrukturze: jako SDK w procesie Twojej aplikacji albo jako lokalny gateway przed nią. Treść każdego żądania trafia do dostawcy, którego skonfigurujesz; nie przechodzi przez serwery BiVelio.",
+      "app": "Twoja aplikacja",
+      "appSub": "Twój kod i Twój klucz API",
+      "agent": "Twój agent kodujący",
+      "agentSub": "terminal do kodowania",
+      "hub": "SDK / lokalny gateway",
+      "hubSub": "Twoja infrastruktura",
+      "provider": "Skonfigurowany dostawca",
+      "providerSub": "otrzymuje treść",
+      "cloud": "Panel Savings Cloud",
+      "cloudSub": "opcjonalny, jeśli go podłączysz",
+      "telemetry": "Telemetria",
+      "caption": "Ilustracja działania",
+      "alt": "Żądanie wychodzi z Twojej aplikacji albo z Twojego agenta kodującego, przechodzi przez SDK lub lokalny gateway w Twojej infrastrukturze i trafia do skonfigurowanego dostawcy. Osobno, i tylko jeśli podłączysz Savings Cloud, panel otrzymuje telemetrię użycia.",
+      "f1Title": "Treść trafia do Twojego dostawcy",
+      "f1Body": "Prompty i odpowiedzi wędrują z Twojej infrastruktury do dostawcy, którego skonfigurujesz, z Twoim kluczem. Nie przechodzą przez serwery BiVelio.",
+      "f2Title": "Bez konta, zero telemetrii",
+      "f2Body": "Silnik open source działa lokalnie bez klucza BiVelio i domyślnie niczego nie wysyła.",
+      "f3Title": "Cloud otrzymuje to, co określa Prywatność",
+      "f3Body": "Jeśli podłączysz Savings Cloud, panel otrzymuje tylko dane wymienione na <link>stronie o prywatności</link>."
+    },
+    "ways": {
+      "eyebrow": "Dwa sposoby instalacji",
+      "title": "SDK w Twoim procesie albo lokalny gateway",
+      "lede": "To dwa różne elementy o różnym zakresie. Rozstrzyga pytanie, kto napisał kod wywołujący API.",
+      "sdk": {
+        "kicker": "SDK · w procesie",
+        "title": "Wewnątrz Twojej aplikacji",
+        "body": "Pakiet npm, który opakowuje wywołanie dostawcy w Twoim własnym kodzie. Działa w tym samym procesie co aplikacja: nie ma serwera pośredniego.",
+        "p1": "Dla osoby rozwijającej aplikację, która wywołuje API, w Node.js.",
+        "p2": "Tu działają dźwignie oszczędności pakietu.",
+        "p3": "Każde wywołanie zwraca SavingsReport, z osobno podanym pomiarem i szacunkiem.",
+        "cta": "Zainstaluj SDK"
+      },
+      "gateway": {
+        "kicker": "Gateway · lokalne proxy",
+        "title": "Przed Twoją aplikacją lub agentem",
+        "body": "bvsala uruchamia proxy na Twojej własnej maszynie. Kierujesz na nie base URL oficjalnego SDK OpenAI lub Anthropic albo uruchamiasz przez nie Claude Code, bez zmian w kodzie.",
+        "p1": "Dla terminala do kodowania albo aplikacji w dowolnym języku, która pozwala ustawić base URL.",
+        "p2": "Mierzy ruch modeli, które mają cenę katalogową.",
+        "p3": "Dźwignie pakietu npm tu nie działają; dźwignie gatewaya dotyczą tylko ruchu Anthropic, z licencją PRO.",
+        "cta": "Zobacz gateway"
+      }
+    },
+    "cases": {
+      "skillNote": "Skill z instrukcjami ma inny zakres: zmienia sposób pracy asystenta w ramach subskrypcji z limitami. Nie mierzy rachunku ani nie stosuje dźwigni SDK lub gatewaya. <link>Zobacz skill</link>"
+    },
+    "pieces": {
+      "eyebrow": "Mapa",
+      "title": "Elementy Savings",
+      "lede": "Mapa elementów, a nie pięć etapów, przez które przechodzi każde żądanie. Wybierz jeden, by zobaczyć, co robi, gdzie działa i czy wymaga konta.",
+      "tablist": "Elementy Savings",
+      "what": "Co robi",
+      "where": "Gdzie działa",
+      "account": "Konto",
+      "sdk": {
+        "name": "SDK",
+        "hint": "w procesie",
+        "what": "Opakowuje wywołanie dostawcy i stosuje dźwignie oszczędności pakietu.",
+        "where": "W procesie Twojej aplikacji.",
+        "account": "Niepotrzebne."
+      },
+      "gateway": {
+        "name": "Lokalny gateway",
+        "hint": "proxy",
+        "what": "Przekazuje żądania do dostawcy i rejestruje ich użycie.",
+        "where": "Na Twojej maszynie lub serwerze, jako lokalne proxy.",
+        "account": "Do użytku lokalnego nie. Podgląd wydatków w panelu i obniżka z licencją PRO wymagają Cloud."
+      },
+      "measure": {
+        "name": "Pomiar",
+        "hint": "SavingsReport",
+        "what": "Liczy oszczędność każdego żądania na podstawie użycia raportowanego przez dostawcę i oddziela pomiar od szacunku.",
+        "where": "Lokalnie, w każdej odpowiedzi; współdzielony w panelu, jeśli podłączysz Cloud.",
+        "account": "Lokalnie nie. Aby udostępnić go zespołowi, tak."
+      },
+      "cloud": {
+        "name": "Panel Cloud",
+        "hint": "opcjonalny",
+        "what": "Centralizuje pomiar i zarządzanie zespołem: organizację, licencje i stanowiska.",
+        "where": "W Savings Cloud, hostowanym przez BiVelio. Otrzymuje dane określone na stronie o prywatności.",
+        "account": "Tak. Measure to darmowy plan, w trybie cienia."
+      },
+      "evidence": {
+        "name": "Dowody",
+        "hint": "publiczne",
+        "what": "Publikuje każdy przebieg testu z próbą, przedziałem i datą, także gdy nie ma oszczędności.",
+        "where": "W publicznym teście i w otwartym repozytorium.",
+        "account": "Niepotrzebne."
+      }
+    },
+    "receipt": {
+      "title": "Przykładowy rachunek, miesięcznie"
+    },
+    "more": {
+      "privacy": "Co otrzymuje BiVelio",
+      "benchmarks": "Publiczny test"
+    }
   },
   "pricingPage": {
     "metaTitle": "Warunki cenowe · BV-SALA",
-    "metaDescription": "Open core jest darmowy ; Measure, Pro, Team i Enterprise to plany chmurowe — żaden nie pobiera prowizji od Twoich oszczędności. Liczby publikowane z tych samych stałych, które naliczają opłaty.",
+    "metaDescription": "Open core jest darmowy; Measure, Pro, Team i Enterprise to plany chmurowe — żaden nie pobiera prowizji od Twoich oszczędności. Liczby publikowane z tych samych stałych, które naliczają opłaty.",
     "eyebrow": "Opublikowany cennik",
-    "title": "Warunki cenowe",
+    "title": "Silnik open source.",
+    "titleAccent": "Kontrola w chmurze dla Twojego zespołu.",
+    "titleMark": "zespołu",
     "governs": "Ta strona opisuje, jak usługa działa dziś; wiążące są <license>LICENSE</license> i <terms>Warunki BiVelio</terms>.",
-    "lede": "Pakiet to open core : nie potrzebuje kluczy. Ta strona wycenia opcjonalną chmurę — Measure za darmo, potem Pro za stanowisko lub plan Team, bez prowizji od Twoich oszczędności. Każda liczba na tej stronie pochodzi z tego samego kodu, który Cię rozlicza, i zmienia się, gdy zmienia się cena.",
+    "lede": "Silnik jest open source: nie potrzebuje kluczy. Ta strona wycenia Savings Cloud, opcjonalną chmurę — Measure za darmo, potem Pro za stanowisko lub plan Team, bez prowizji od Twoich oszczędności. Każda liczba na tej stronie pochodzi z tego samego kodu, który Cię rozlicza, i zmienia się, gdy zmienia się cena.",
     "plans": {
       "title": "Plany",
-      "intro": "Cztery plany, od najmniejszego do największego. Pro i Zespół są płatne za stanowisko i nie mają prowizji.",
+      "intro": "Cztery plany, od najmniejszego do największego. Pro i Team są płatne za stanowisko i nie mają prowizji.",
       "medir": {
-        "name": "Pomiar",
+        "name": "Measure",
         "body": "<b>Za darmo, bez karty.</b> Darmowy plan CHMUROWY: warstwa działa w trybie cienia dla jednej organizacji, do <b>{seats} stanowisk</b> i <b>{requests} żądań dziennie</b>: każde żądanie dociera do Twojego dostawcy dokładnie tak, jak je zbudowałeś, nic nie jest serwowane z pamięci podręcznej i żadna dźwignia nie jest stosowana. Panel pokazuje, ile by zaoszczędzono — oszacowanie, które nigdy nie niesie prowizji. Wymaga <b>@bivelio/savings-layer {version} lub nowszej</b>. Lokalne dźwignie nie potrzebują żadnego planu: open core działa bez klucza; dźwignie chmurowe wymagają Pro lub Team."
       },
       "pro": {
@@ -1545,7 +2280,7 @@
         "body": "Wszystkie optymalizacje warstwy, potwierdzenie dla każdego żądania i panel. <b>Bez prowizji</b> od oszczędności: płacisz za stanowiska niezależnie od tego, czy oszczędzasz."
       },
       "team": {
-        "name": "Zespół",
+        "name": "Team",
         "amount": "<b>{monthly}</b> miesięcznie z <b>{included} stanowiskami w cenie</b> (około {perSeat} za stanowisko) lub <b>{yearly}</b> rocznie, w {currency}.",
         "extra": "Każde stanowisko ponad te w cenie: {monthly} miesięcznie lub {yearly} rocznie.",
         "body": "To samo co Pro, dla floty: stała opłata obejmuje stanowiska w cenie, nawet jeśli używasz mniej. <b>Bez prowizji</b> od oszczędności."
@@ -1553,7 +2288,8 @@
       "enterprise": {
         "name": "Enterprise",
         "body": "Dla większej liczby stanowisk, niż pozwala płatność online, własnej umowy lub wynegocjowanych warunków fakturowania: <contact>napisz do nas</contact>."
-      }
+      },
+      "termsTitle": "Warunki każdego planu"
     },
     "seat": {
       "title": "Jak liczy się i rozlicza stanowisko",
@@ -1563,12 +2299,15 @@
       "whatTitle": "Czym jest stanowisko",
       "what": "Stanowisko to jedna <b>maszyna lub tożsamość usługi</b>, na której działa Oprogramowanie, a nie osoba. Sam wybierasz, ile stanowisk obejmuje Twoja subskrypcja (do {max} przy płatności), i tyle obejmuje Twoja licencja.",
       "counted": "W każdym miesiącu kalendarzowym (UTC) BiVelio liczy jako używany każdy odrębny identyfikator stanowiska, który był aktywny w co najmniej {dias} różnych dniach tego miesiąca. Tożsamości oznaczone jako CI lub efemeryczne runnery się nie liczą. Twój panel porównuje tę liczbę ze stanowiskami objętymi subskrypcją.",
-      "overage": "Jeśli w danym miesiącu używasz więcej stanowisk, niż obejmuje Twoja subskrypcja, różnica jest naliczana automatycznie, jednorazowo, po zamknięciu miesiąca, na następnej fakturze: tyle, ile te dodatkowe stanowiska kosztują przez miesiąc w Twoim planie (w planie rocznym jedna dwunasta ceny rocznej). W planach miesięcznych subskrypcja obejmuje potem tyle stanowisk, ile używasz. Jeśli liczba nie jest wiarygodna — na przykład dlatego, że w tym miesiącu zrotowano klucz konta usługi — nic nie jest naliczane: sprawdzamy to ręcznie.",
-      "identifier": "Jak powstaje identyfikator stanowiska i wszystko inne, co Oprogramowanie wysyła do BiVelio, opisuje <privacy>strona o prywatności</privacy>."
+      "overage": "Jeśli w danym miesiącu używasz więcej stanowisk, niż obejmuje Twoja subskrypcja, różnica jest fakturowana jednorazowo, po zamknięciu miesiąca: tyle, ile te dodatkowe stanowiska kosztują przez miesiąc w Twoim planie. Przy płatności miesięcznej trafia na następną fakturę, a liczba wykupionych stanowisk rośnie do liczby stanowisk w użyciu. Przy płatności rocznej jest fakturowana po zamknięciu miesiąca według stawki rocznej podzielonej przez dwanaście, a liczba wykupionych stanowisk się nie zmienia. Jeśli liczba nie jest wiarygodna — na przykład dlatego, że w tym miesiącu zrotowano klucz konta usługi — nic nie jest naliczane: sprawdzamy to ręcznie.",
+      "identifier": "Jak powstaje identyfikator stanowiska i wszystko inne, co Oprogramowanie wysyła do BiVelio, opisuje <privacy>strona o prywatności</privacy>.",
+      "provider": "Opłata nie obejmuje zużycia u Twojego dostawcy LLM: zachowujesz swojego dostawcę i płacisz za korzystanie z niego na jego warunkach.",
+      "manageTitle": "Jak zarządzać subskrypcją",
+      "manage": "Plan wybierasz i opłacasz na <account>swoim koncie</account>, w panelu, przez płatność hostowaną przez Stripe. Zmian w istniejącej subskrypcji dokonujesz w portalu rozliczeniowym Stripe, który otwiera się z tej samej strony. Ta strona niczego nie pobiera."
     },
     "commission": {
       "title": "Wcześniejszy model z prowizją (zamknięty dla nowych klientów)",
-      "optional": "Ten model <b>nie jest już oferowany nowym klientom</b>. Jeśli Twoja subskrypcja już go ma, zachowujesz go bez zmian i obowiązują go poniższe warunki: niższa opłata za stanowisko plus prowizja tylko od oszczędności, które możesz uzgodnić z fakturą dostawcy. Pro i Zespół nigdy jej nie mają; ich zestawienie pokazuje prowizję, która by obowiązywała, wyłącznie jako odniesienie.",
+      "optional": "Ten model <b>nie jest już oferowany nowym klientom</b>. Jeśli Twoja subskrypcja już go ma, zachowujesz go bez zmian i obowiązują go poniższe warunki: niższa opłata za stanowisko plus prowizja tylko od oszczędności, które możesz uzgodnić z fakturą dostawcy. Pro i Team nigdy jej nie mają; ich zestawienie pokazuje prowizję, która by obowiązywała, wyłącznie jako odniesienie.",
       "seat": "Opłata za stanowisko w tym wariancie: <b>{monthly}</b> za stanowisko miesięcznie lub <b>{yearly}</b> za stanowisko rocznie, w {currency}.",
       "only": "Prowizja jest naliczana <b>tylko od zmierzonych oszczędności</b>: oszczędności oznaczonych w Twoich rekordach użycia jako {labels}. Oszczędności oznaczone jako {never} nigdy nie podlegają prowizji.",
       "measured": "Zmierzona oszczędność wynika z własnego licznika użycia Twojego dostawcy LLM dla tego żądania.",
@@ -1599,6 +2338,80 @@
     "statement": {
       "title": "Wyciąg i faktura",
       "body": "Prowizja jest obliczana za każdy miesiąc kalendarzowy (UTC). Po zakończeniu miesiąca BiVelio go zamyka: wyciąg za ten miesiąc w Twoim panelu zostaje zapieczętowany wraz ze zmierzoną podstawą, progami, kursem wymiany i wersją katalogu cen, a prowizja jest fakturowana na podstawie tego wyciągu przez Stripe, na fakturze odrębnej od opłaty za stanowisko."
+    },
+    "access": {
+      "code": "Zobacz kod",
+      "install": "Zainstaluj open source"
+    },
+    "modes": {
+      "title": "Community i Cloud to dwie różne rzeczy",
+      "community": {
+        "tag": "Open source · bez ceny",
+        "name": "Community",
+        "body": "Silnik, SDK i lokalny gateway działają w Twojej infrastrukturze: bez klucza BiVelio, bez obowiązkowej rejestracji i domyślnie bez telemetrii. To nie jest plan i ta strona nie podaje dla niego ceny."
+      },
+      "cloud": {
+        "tag": "Opcjonalnie · z planami",
+        "name": "Savings Cloud",
+        "body": "Panel, wspólne pomiary, organizacja i licencje. Measure to darmowy plan w trybie cienia; Pro i Team są płatne stałą opłatą za stanowisko, bez prowizji od oszczędności."
+      }
+    },
+    "cards": {
+      "period": "Okres rozliczeniowy",
+      "monthly": "Miesięcznie",
+      "yearly": "Rocznie",
+      "listLabel": "Plany Savings Cloud",
+      "free": "Za darmo",
+      "noCard": "bez karty",
+      "custom": "Indywidualnie",
+      "byContract": "na podstawie umowy",
+      "perSeatMonth": "za stanowisko miesięcznie",
+      "perSeatYear": "za stanowisko rocznie",
+      "perMonth": "miesięcznie",
+      "perYear": "rocznie",
+      "chargeMonthly": "Opłata miesięczna",
+      "chargeYearly": "Opłata roczna",
+      "unitSeat": "Stanowisko to maszyna lub tożsamość usługi, nie osoba.",
+      "seats": "Stanowiska",
+      "requestsDay": "Żądania dziennie",
+      "included": "Stanowiska w cenie",
+      "extraSeat": "Dodatkowe stanowisko",
+      "commission": "Prowizja od oszczędności",
+      "none": "Brak",
+      "upTo": "Do {n}",
+      "moreThan": "Ponad {n}",
+      "seatsChosen": "Tyle, ile wykupisz",
+      "amountMonthly": "{amount} miesięcznie",
+      "amountYearly": "{amount} rocznie",
+      "terms": "Zobacz warunki",
+      "provider": "Opłata nie obejmuje zużycia u Twojego dostawcy LLM: nadal płacisz za nie samodzielnie, na jego warunkach. Kwoty bez VAT.",
+      "medir": {
+        "unit": "Darmowy plan w chmurze, w trybie cienia.",
+        "summary": "Mierz, niczego nie zmieniając: Twoje żądania trafiają do dostawcy dokładnie tak, jak je budujesz, a panel pokazuje, ile dałoby się zaoszczędzić.",
+        "cta": "Zacznij od Measure",
+        "version": "Wymaga @bivelio/savings-layer {version} lub nowszej wersji."
+      },
+      "pro": {
+        "summary": "Wszystkie optymalizacje, paragon dla każdego żądania i panel. Stała opłata, niezależnie od tego, czy oszczędzasz.",
+        "cta": "Wybierz Pro"
+      },
+      "team": {
+        "unit": "Obejmuje {included} stanowisk: maszyn lub tożsamości usług.",
+        "summary": "To samo co Pro, dla całej floty. Opłata obejmuje stanowiska w cenie, nawet jeśli używasz mniej.",
+        "cta": "Wybierz Team"
+      },
+      "enterprise": {
+        "unit": "Na potrzeby, których nie obejmuje płatność online.",
+        "summary": "Więcej stanowisk, własna umowa lub uzgodnione warunki fakturowania.",
+        "cta": "Napisz do nas"
+      }
+    },
+    "legacy": {
+      "title": "Model historyczny, zamknięty dla nowych zapisów",
+      "note": "Warunki w tym bloku dotyczą wyłącznie subskrypcji, które już mają model z prowizją. Nie można go wykupić i żaden z powyższych planów go nie zawiera."
+    },
+    "toc": {
+      "label": "Na tej stronie"
     }
   },
   "privacyPage": {
@@ -1639,7 +2452,7 @@
     },
     "verification": {
       "title": "Opcjonalna weryfikacja (tylko SDK, domyślnie wyłączona)",
-      "when": "Jeśli włączysz opcję weryfikacji w SDK, SDK wysyła ponownie do Twojego dostawcy próbkę obsłużonych żądań, bez optymalizacji, i odrzuca tę drugą odpowiedź. Dla każdego żądania z próbki wysyła do BiVelio <b>osobnym kanałem wyłącznie poniższe pola</b>; ten kanał również odrzuca każde inne pole, a nic z tego, co otrzymuje, nie służy do obliczania prowizji.",
+      "when": "Jeśli włączysz opcję weryfikacji w SDK, SDK wysyła ponownie do Twojego dostawcy próbkę obsłużonych żądań, bez optymalizacji, i odrzuca tę drugą odpowiedź. Dla każdego żądania z próbki wysyła do BiVelio <b>osobnym kanałem wyłącznie poniższe pola</b>; ten kanał również odrzuca każde inne pole, a nic z tego, co otrzymuje, nie służy do rozliczeń.",
       "groups": {
         "sample": {
           "title": "Każde żądanie z próbki",
@@ -1669,7 +2482,12 @@
         "verificationSamples": "Próbki weryfikacji i ich dzienne liczniki: {dias} dni.",
         "verificationBatches": "Identyfikatory paczek weryfikacji: {dias} dni."
       },
-      "noSchedule": "Sumy dzienne, aktywność stanowisk i Twoje zapieczętowane wyciągi nie mają dziś terminu automatycznego usuwania."
+      "noSchedule": "Sumy dzienne, aktywność stanowisk i Twoje zapieczętowane wyciągi nie mają dziś terminu automatycznego usuwania.",
+      "colWhere": "Tabela",
+      "colWhat": "Co zawiera",
+      "colPeriod": "Termin",
+      "period": "{dias} dni",
+      "none": "Bez automatycznego usuwania"
     },
     "use": {
       "title": "Do czego BiVelio ich używa",
@@ -1679,13 +2497,84 @@
       "title": "Twoje konto w tym serwisie",
       "body": "Twój adres e-mail do logowania, Twoja organizacja i dane rozliczeniowe (płatności obsługuje Stripe) podlegają <policy>polityce prywatności BiVelio</policy>."
     },
-    "contact": "Pytania i wnioski dotyczące tych danych: <mail>{email}</mail>."
+    "contact": "Pytania i wnioski dotyczące tych danych: <mail>{email}</mail>.",
+    "overview": {
+      "title": "W skrócie",
+      "colData": "Dane",
+      "colDestination": "Dokąd trafiają",
+      "colPurpose": "Po co",
+      "colRetention": "Co przechowuje BiVelio",
+      "content": {
+        "data": "Treść Twoich żądań i odpowiedzi oraz dane uwierzytelniające u dostawcy LLM",
+        "destination": "Tylko do Twojego dostawcy LLM",
+        "purpose": "Nigdy nie trafia do BiVelio",
+        "retention": "Nic do przechowywania"
+      },
+      "usage": {
+        "data": "Rekordy użycia: identyfikatory, model i czas, liczniki i koszt",
+        "destination": "BiVelio",
+        "purpose": "Licencje, Twój panel, używane stanowiska i opłaty",
+        "retention": "Pojedyncze wiersze mają termin usunięcia; sumy dzienne nie"
+      },
+      "verification": {
+        "data": "Próbki weryfikacji (opcjonalna, tylko SDK, domyślnie wyłączona)",
+        "destination": "BiVelio, osobnym kanałem",
+        "purpose": "Nigdy do rozliczeń",
+        "retention": "Usuwane po upływie terminu"
+      },
+      "account": {
+        "data": "E-mail logowania, organizacja i dane rozliczeniowe",
+        "destination": "BiVelio; płatności obsługuje Stripe",
+        "purpose": "Twoje konto w tym serwisie",
+        "retention": "Zgodnie z polityką prywatności BiVelio"
+      }
+    },
+    "fields": {
+      "colGroup": "Grupa",
+      "colFields": "Wysyłane pola"
+    },
+    "art": {
+      "alt": "Ilustracja: niebieski folder z trzema dokumentami za półprzezroczystą kieszenią.",
+      "caption": "Twoje żądania, odpowiedzi i dane uwierzytelniające nie trafiają do BiVelio."
+    }
+  },
+  "docsPage": {
+    "englishOnly": "Dokument jest po angielsku. Przetłumaczono tylko interfejs czytania.",
+    "contents": "Spis treści",
+    "backToTop": "Do góry",
+    "paper": {
+      "linksAria": "Odnośniki artykułu",
+      "markdown": "Markdown na GitHubie",
+      "latex": "LaTeX dla arXiv",
+      "bench": "Publiczny benchmark",
+      "pdf": "PDF · {version}",
+      "zenodo": "Zenodo · DOI",
+      "print": "Drukuj lub zapisz jako PDF",
+      "abstract": "Streszczenie",
+      "tableScroll": "Tabela; przewiń w poziomie, aby zobaczyć całość"
+    },
+    "migrate": {
+      "versionNote": "To jest przewodnik migracji do wersji {version}. Nie jest to ogłoszenie najnowszego wydania."
+    }
+  },
+  "paperCard": {
+    "kind": "Preprint",
+    "pages": "{n, plural, one {# strona} few {# strony} many {# stron} other {# strony}}",
+    "summary": "Wydanie poprawione po zewnętrznej recenzji przed publikacją: metoda, estymator, niepewność i ograniczenia każdej liczby.",
+    "pdf": "PDF · {version}",
+    "zenodo": "Zenodo · DOI",
+    "code": "Kod na GitHubie",
+    "web": "Czytaj w przeglądarce",
+    "versions": "Wszystkie wersje",
+    "linksAria": "Odnośniki do artykułu badawczego"
   },
   "notFound": {
     "metaTitle": "Nie znaleziono strony · BiVelio Savings Layer",
     "eyebrow": "Błąd 404",
     "title": "Nie znaleziono strony",
     "body": "Ta strona nie istnieje lub została przeniesiona.",
-    "home": "← Powrót na stronę główną"
+    "home": "← Powrót na stronę główną",
+    "explore": "Możesz też przejść do",
+    "artAlt": "Ilustracja: trzy nakładające się okna przeglądarki z przykładową treścią."
   }
 }

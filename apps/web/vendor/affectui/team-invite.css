@@ -1,0 +1,200 @@
+/*
+ * Derived from affectUI Pro 'Team Invite' (https://www.affectui.com). Used under the affectUI Pro license held by BiVelio. NOT covered by this repository's Apache-2.0 licence; do not redistribute as a component kit.
+ *
+ * Changes from upstream are listed in ./VENDOR.md.
+ */
+.ui-ti {
+  /* 1 unit of the 600 × 400 layout grid */
+  --u: calc(100cqw / 600);
+  --ui-ti-bubble: #ffffff;
+  --ui-ti-bubble-ring: rgba(10, 10, 10, 0.06);
+  --ui-ti-face: var(--surface-2, #f2f1ec);
+  --ui-ti-glyph: var(--aui-muted, #5a6070);
+  /* Same gray as the lines in Outreach Branches */
+  --ui-ti-line-a: #dcdad2;
+  --ui-ti-line-b: #dcdad2;
+  --ui-ti-dash: #dcdad2;
+  --ui-ti-plus: #c4c4c4;
+  --ui-ti-online: var(--brand, #0066e6);
+  /* Ring around the status dot: mostly white with a hint of the green, fully opaque */
+  --ui-ti-dot-ring: #e3eeff;
+  --ui-ti-dot-edge: rgba(0, 102, 230, 0.1);
+  --ui-ti-cursor: var(--aui-ink, #0f1218);
+  --ui-ti-shadow: 0 calc(10 * var(--u)) calc(24 * var(--u)) rgba(0, 0, 0, 0.07), 0 calc(2 * var(--u)) calc(5 * var(--u)) rgba(0, 0, 0, 0.05);
+  --ui-ti-lift: 0 calc(18 * var(--u)) calc(34 * var(--u)) rgba(0, 0, 0, 0.12), 0 calc(3 * var(--u)) calc(8 * var(--u)) rgba(0, 0, 0, 0.06);
+  --ui-ti-loop: 6.4s;
+  --ui-ti-ease: cubic-bezier(0.7, 0, 0.25, 1);
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  container-type: inline-size;
+}
+.ui-ti *, .ui-ti *::before, .ui-ti *::after { box-sizing: border-box; }
+
+.ui-ti-lines { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.ui-ti-stop-a { stop-color: var(--ui-ti-line-a); }
+.ui-ti-stop-b { stop-color: var(--ui-ti-line-b); }
+.ui-ti-line { fill: none; stroke-width: 2.4; stroke-linecap: round; }
+.ui-ti-line--dashed {
+  stroke: var(--ui-ti-dash);
+  stroke-dasharray: 6 7.23;
+  animation: ui-ti-dashed var(--ui-ti-loop) linear infinite;
+}
+.ui-ti-line--slot {
+  stroke: var(--ui-ti-dash);
+  stroke-dasharray: 6 7.23;
+}
+.ui-ti-line--joined {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: ui-ti-joined var(--ui-ti-loop) linear infinite;
+}
+
+/* ---------- Nodes ---------- */
+
+.ui-ti-node {
+  position: absolute;
+  width: calc(84 * var(--u));
+  height: calc(84 * var(--u));
+  margin: calc(-42 * var(--u)) 0 0 calc(-42 * var(--u));
+  padding: calc(5 * var(--u));
+  border-radius: 50%;
+  background: var(--ui-ti-bubble);
+  box-shadow: inset 0 0 0 calc(1 * var(--u)) var(--ui-ti-bubble-ring), var(--ui-ti-shadow);
+}
+.ui-ti-node--a { left: calc(120 * var(--u)); top: calc(159 * var(--u)); }
+.ui-ti-node--b { left: calc(300 * var(--u)); top: calc(105 * var(--u)); }
+.ui-ti-face {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--ui-ti-face);
+  color: var(--ui-ti-glyph);
+}
+.ui-ti-face > svg { display: block; width: 46%; height: 46%; }
+.ui-ti-node--b .ui-ti-face { background: #ffffff; }
+.ui-ti-node--b .ui-ti-face > svg, .ui-ti-node--b .ui-ti-face > img { width: 58%; height: 58%; }
+.ui-ti-node--c .ui-ti-face { background: var(--brand-soft, #e8f1ff); color: var(--brand, #0066e6); }
+.ui-ti-face img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+}
+/* Status: a bright green dot in a thick, pale green ring with a faint 10% halo outside */
+.ui-ti-dot {
+  position: absolute;
+  right: calc(1 * var(--u));
+  bottom: calc(3 * var(--u));
+  width: calc(24 * var(--u));
+  height: calc(24 * var(--u));
+  border: calc(7 * var(--u)) solid var(--ui-ti-dot-ring);
+  border-radius: 50%;
+  background: var(--ui-ti-online);
+  box-shadow: 0 0 0 calc(2 * var(--u)) var(--ui-ti-dot-edge);
+}
+
+/* ---------- Empty slot ---------- */
+
+.ui-ti-slot {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ui-ti-slot var(--ui-ti-loop) linear infinite;
+}
+.ui-ti-plus { fill: none; stroke: var(--ui-ti-plus); stroke-width: 1.8; stroke-linecap: round; }
+
+/* ---------- The invite being dragged in ---------- */
+
+/* Starts on the right and is carried to the slot (290, 245) */
+.ui-ti-drag {
+  position: absolute;
+  left: calc(456 * var(--u));
+  top: calc(281 * var(--u));
+  animation: ui-ti-drag var(--ui-ti-loop) infinite;
+}
+.ui-ti-node--c {
+  left: 0;
+  top: 0;
+  animation: ui-ti-lift var(--ui-ti-loop) infinite;
+}
+.ui-ti-node--c .ui-ti-dot { animation: ui-ti-online var(--ui-ti-loop) infinite; }
+/* The pointer rests on the photo: its tip at (+16, +14) from the avatar's centre (the tip is 11.8% / 1.15% into the image) */
+.ui-ti-cursor {
+  position: absolute;
+  left: calc(11.28 * var(--u));
+  top: calc(13.45 * var(--u));
+  width: calc(40 * var(--u));
+  height: calc(48.13 * var(--u));
+  overflow: visible;
+  transform-origin: calc(4.72 * var(--u)) calc(0.55 * var(--u));
+  filter: drop-shadow(0 calc(3 * var(--u)) calc(7 * var(--u)) rgba(0, 0, 0, 0.16));
+  animation: ui-ti-cursor var(--ui-ti-loop) infinite;
+}
+.ui-ti-cursor path {
+  fill: var(--ui-ti-cursor);
+  stroke: #fff;
+  stroke-width: 1.7;
+  stroke-linejoin: round;
+  paint-order: stroke;
+}
+
+/*
+ * One loop:
+ *   (4.4 s)
+ *   0–12%   rest on the right          12–16% pick up (lift)
+ *   16–42%  carried to the slot        42–48% drop, settle
+ *   48–54%  line draws solid, dot pops 54–62% cursor lets go and drifts off
+ *   62–88%  hold the finished team     88–100% fade back to the start
+ */
+@keyframes ui-ti-drag {
+  0%, 16% { transform: translate(0, 0); opacity: 1; animation-timing-function: var(--ui-ti-ease); }
+  42%, 88% { transform: translate(calc(-166 * var(--u)), calc(-36 * var(--u))); opacity: 1; }
+  94% { transform: translate(calc(-166 * var(--u)), calc(-36 * var(--u))); opacity: 0; }
+  95% { transform: translate(0, 0); opacity: 0; }
+  100% { transform: translate(0, 0); opacity: 1; }
+}
+@keyframes ui-ti-lift {
+  0%, 12% { transform: scale(1); box-shadow: inset 0 0 0 calc(1 * var(--u)) var(--ui-ti-bubble-ring), var(--ui-ti-shadow); animation-timing-function: var(--ui-ti-ease); }
+  16%, 40% { transform: scale(1.07); box-shadow: inset 0 0 0 calc(1 * var(--u)) var(--ui-ti-bubble-ring), var(--ui-ti-lift); animation-timing-function: var(--ui-ti-ease); }
+  46%, 100% { transform: scale(1); box-shadow: inset 0 0 0 calc(1 * var(--u)) var(--ui-ti-bubble-ring), var(--ui-ti-shadow); }
+}
+@keyframes ui-ti-online {
+  0%, 48% { transform: scale(0); }
+  52% { transform: scale(1.25); }
+  56%, 100% { transform: scale(1); }
+}
+@keyframes ui-ti-cursor {
+  0%, 11% { transform: translate(0, 0) scale(1); opacity: 1; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+  14%, 42% { transform: translate(0, 0) scale(0.86); opacity: 1; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+  47% { transform: translate(0, 0) scale(1); opacity: 1; animation-timing-function: var(--ui-ti-ease); }
+  62%, 88% { transform: translate(calc(70 * var(--u)), calc(44 * var(--u))) scale(1); opacity: 0; }
+  95% { transform: translate(calc(20 * var(--u)), calc(14 * var(--u))) scale(1); opacity: 0; }
+  100% { transform: translate(0, 0) scale(1); opacity: 1; }
+}
+@keyframes ui-ti-slot {
+  0%, 30% { opacity: 1; transform: scale(1); animation-timing-function: var(--ui-ti-ease); }
+  42%, 90% { opacity: 0; transform: scale(1.12); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes ui-ti-dashed {
+  0%, 46% { opacity: 1; }
+  50%, 92% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes ui-ti-joined {
+  0%, 44% { stroke-dashoffset: 1; opacity: 1; }
+  54%, 88% { stroke-dashoffset: 0; opacity: 1; }
+  94%, 100% { stroke-dashoffset: 0; opacity: 0; }
+}
+
+/* Reduced motion: a still frame of the waiting state */
+@media (prefers-reduced-motion: reduce) {
+  .ui-ti-drag, .ui-ti-node--c, .ui-ti-node--c .ui-ti-dot, .ui-ti-cursor, .ui-ti-slot,
+  .ui-ti-line--dashed, .ui-ti-line--joined { animation: none; }
+  .ui-ti-node--c .ui-ti-dot { transform: scale(0); }
+}

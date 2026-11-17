@@ -1,0 +1,59 @@
+/*
+ * Derived from affectUI Pro 'Empty Calendar' (https://www.affectui.com). Used under the affectUI Pro license held by BiVelio. NOT covered by this repository's Apache-2.0 licence; do not redistribute as a component kit.
+ *
+ * Light theme only, BiVelio tokens; changes from upstream are listed in ./VENDOR.md.
+ */
+.ui-ec {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  font-family: var(--aui-font, var(--font-sans));
+}
+.ui-ec-art {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Placeholder lines shimmer softly */
+.ui-ec-bar { animation: ui-ec-shimmer 2.4s ease-in-out infinite; }
+@keyframes ui-ec-shimmer {
+  0%, 100% { fill: #EFF1F4; }
+  50% { fill: #DDE1E5; }
+}
+
+/* The glow under the front card breathes */
+.ui-ec-blob {
+  transform-origin: 160px 152px;
+  animation: ui-ec-breathe 5s ease-in-out infinite;
+}
+@keyframes ui-ec-breathe {
+  0%, 100% { opacity: 0.85; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.06); }
+}
+
+/* Front card: lifts and tilts on hover */
+.ui-ec-front {
+  transform-origin: 160px 90px;
+  transition: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.ui-ec-front:hover { transform: translate(0, -8px) rotate(2deg); }
+
+/* Back cards: fanned out, slide further on hover */
+.ui-ec-back {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.ui-ec-back-left { transform: translate(-22px, 0) rotate(-3deg); }
+.ui-ec-back-left:hover { transform: translate(-48px, 4px) rotate(-7deg); }
+.ui-ec-back-right { transform: translate(22px, 0) rotate(3deg); }
+.ui-ec-back-right:hover { transform: translate(48px, 4px) rotate(7deg); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-ec-bar, .ui-ec-blob { animation: none; }
+  .ui-ec-front, .ui-ec-back { transition: none; }
+}

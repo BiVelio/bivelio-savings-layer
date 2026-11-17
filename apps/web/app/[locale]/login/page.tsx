@@ -3,7 +3,10 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 
 import AuthForm from "@/app/components/AuthForm";
-import { SavingsLogo } from "@/app/components/SavingsLogo";
+import { MensajeDeAcceso } from "@/app/components/acceso/AccesoEstado";
+import { AccesoShell } from "@/app/components/acceso/AccesoShell";
+import { EnlaceConDestino } from "@/app/components/acceso/EnlaceConDestino";
+import { PanelDeMarca } from "@/app/components/acceso/PanelDeMarca";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -29,22 +32,27 @@ export default async function LoginPage({
   setRequestLocale(locale);
   const t = await getTranslations("auth");
   return (
-    <main className="auth-wrap">
-      <div className="auth-card">
-        <div className="auth-brand">
-          <SavingsLogo variant="full" height={40} />
-        </div>
+    <AccesoShell
+      lateral={<PanelDeMarca locale={locale} />}
+      etiquetaLateral={t("panel.receiptMeta")}
+      pie={
+        <Link href="/" className="acc-volver">
+          {t("backToVerifier")}
+        </Link>
+      }
+    >
+      <div className="acc-intro">
         <h1>{t("welcomeBack")}</h1>
         <p className="sub">{t("loginSubtitle")}</p>
-        {error ? <div className="auth-msg error">{t("callbackFailed")}</div> : null}
-        <AuthForm mode="login" />
-        <p className="auth-alt">
-          {t("newToBivelio")} <Link href="/signup">{t("createAnAccount")}</Link>
-        </p>
-        <p className="auth-alt" style={{ marginTop: "10px" }}>
-          <Link href="/">{t("backToVerifier")}</Link>
-        </p>
       </div>
-    </main>
+      {error ? <MensajeDeAcceso tipo="error">{t("callbackFailed")}</MensajeDeAcceso> : null}
+      <AuthForm mode="login" />
+      {/* El enlace sale estático (`/signup`) y, ya en el navegador, se lleva el
+          `next` si lo hay: quien venía de una invitación o de elegir un plan no
+          lo pierde al cambiar de pantalla. */}
+      <p className="auth-alt acc-cruce">
+        {t("newToBivelio")} <EnlaceConDestino a="/signup">{t("createAnAccount")}</EnlaceConDestino>
+      </p>
+    </AccesoShell>
   );
 }

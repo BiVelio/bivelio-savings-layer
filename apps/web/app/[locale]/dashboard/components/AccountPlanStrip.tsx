@@ -4,9 +4,15 @@ import type { OrgContext } from "../data";
 import { BillingButtons } from "./BillingButtons";
 import { tarifasDeLosPlanes } from "@/lib/stripe/pricing";
 import { terminosDeLosPlanes } from "@/lib/legal/precios-publicados";
-import { avisoDeAsientos } from "@/lib/billing/asientos";
+import { avisoDeAsientos, DIAS_ACTIVOS_PARA_CONTAR_ASIENTO } from "@/lib/billing/asientos";
 import type { AjusteDeAsientosVisible } from "@/lib/billing/asientos-usados";
 import { formatearPrecio } from "@/lib/format/precio";
+import { puede } from "@/lib/org/permisos";
+import { Notice } from "@/app/components/ui";
+import { Link } from "@/i18n/navigation";
+import { Avatar } from "@/vendor/affectui/avatar";
+import { Badge, type BadgeTone } from "@/vendor/affectui/badge-clean";
+import { UsageMeter, type UsageMeterRow } from "@/vendor/affectui/usage-meter";
 
 /** Real account/plan — reads organizations.plan (best-effort), never hardcoded.
  *  Degrades honestly when the schema can't resolve org/seats. */
@@ -52,76 +58,138 @@ export async function AccountPlanStrip({
     pagados: ctx.seats,
     rotacionEsteMes: asientos.rotacionEsteMes,
   });
+  // EL NOMBRE DEL PLAN, SIN INVENTARLO. El webhook escribe `plan = "pro"` para
+  // TODA suscripción viva — Pro, Team y la modalidad anterior con comisión —, y
+  // este contexto no trae el precio de la suscripción con el que distinguirlas.
+  // Rotular «Pro» a quien compró Team (o conserva la comisión) era afirmar un
+  // plan que quizá no es el suyo: se dice «Plan de pago» y el detalle queda en
+  // el portal de facturación. «Enterprise» sí es un valor propio, puesto a mano.
   const planLabel = isActive
-    ? plan.charAt(0).toUpperCase() + plan.slice(1)
+    ? plan === "enterprise"
+      ? "Enterprise"
+      : t("accountPlanStrip.paidPlan")
     : ctx.medir === "solo-medir"
       ? t("measurePlan.planLabel")
       : t("accountPlanStrip.noActivePlan");
+  // EL ESTADO REAL, CON PALABRAS. `past_due` mapea a plan «pro»: sin esto la
+  // tarjeta diría «Pro» a secas mientras corre la gracia. Solo se nombran los
+  // estados que la suscripción trae de verdad; cualquier otro no se inventa.
+  const estadoSub = ctx.subscription?.status;
+  const estado: { texto: string; tono: "ok" | "warn" | "danger" | "neutro" } = ocultarCompra
+    ? { texto: t("accountPlanStrip.statusPending"), tono: "warn" }
+    : estadoSub === "past_due"
+      ? { texto: t("accountPlanStrip.statusPastDue"), tono: "danger" }
+      : estadoSub === "incomplete"
+        ? { texto: t("accountPlanStrip.statusIncomplete"), tono: "warn" }
+        : isActive
+          ? { texto: t("accountPlanStrip.statusActive"), tono: "ok" }
+          : { texto: t("accountPlanStrip.statusNone"), tono: "neutro" };
+  const nombreDelRol =
+    ctx.role === "owner"
+      ? t("equipo.rolOwner")
+      : ctx.role === "admin"
+        ? t("equipo.rolAdmin")
+        : ctx.role === "billing"
+          ? t("equipo.rolBilling")
+          : ctx.role === "member"
+            ? t("equipo.rolMember")
+            : null;
+  // QUIÉN VE LOS BOTONES QUE MUEVEN DINERO (lib/org/permisos). Con plan activo
+  // la acción es el portal (`gestionar_facturacion`); sin plan, la compra
+  // (`comprar`). A quien no puede se le dice a quién pedírselo, en su idioma, en
+  // vez de un botón que acaba en un 403. Rol desconocido (`null`): se deja como
+  // estaba — el servidor es la autoridad y aquí no se adivina.
+  const puedeLaAccion = ctx.role == null || puede(ctx.role, isActive ? "gestionar_facturacion" : "comprar");
+  const num = (n: number) => n.toLocaleString(locale);
+  // `null` (no se pudo medir) y `0` (los días 1 y 2 de cada mes el cero es del
+  // calendario) NO se pintan como cero: van como «—» con su porqué al lado.
+  const hayUso = seatsUsados != null && seatsUsados > 0;
+  const proporcion =
+    hayUso && ctx.seats != null && ctx.seats > 0 ? Math.min(100, Math.round((seatsUsados / ctx.seats) * 100)) : null;
+  // EL MEDIDOR (Usage Meter de affectUI, reducido a asientos). Todo sale de dos
+  // lecturas reales: contratados (`ctx.seats`) y en uso (`billable_seats`). Lo
+  // único que se calcula es su resta. Sin lectura no hay barra ni porcentaje.
+  const porEncima = aviso === "exceso" || aviso === "rotado";
+  const exceso = hayUso && ctx.seats != null && seatsUsados > ctx.seats ? seatsUsados - ctx.seats : 0;
+  const libres = hayUso && ctx.seats != null && seatsUsados <= ctx.seats ? ctx.seats - seatsUsados : null;
+  const filasDelMedidor: UsageMeterRow[] = [
+    { label: t("accountPlanStrip.seatsContracted"), value: ctx.seats != null ? num(ctx.seats) : "—", swatch: "plain" },
+    ...(hayUso ? [{ label: t("accountPlanStrip.seatsUsed"), value: num(seatsUsados), swatch: "used" as const }] : []),
+    ...(exceso > 0
+      ? [{ label: t("accountPlanStrip.seatsExtra"), value: num(exceso), swatch: "over" as const }]
+      : libres != null
+        ? [{ label: t("accountPlanStrip.seatsFree"), value: num(libres), swatch: "free" as const }]
+        : []),
+  ];
+  const tonoDelEstado: Record<typeof estado.tono, BadgeTone> = { ok: "success", warn: "warning", danger: "danger", neutro: "neutral" };
   return (
-    <div className="cards plan" style={{ marginTop: "6px" }}>
-      <div className="card">
-        <div className="n">{t("accountPlanStrip.signedInAs")}</div>
-        <h3 style={{ wordBreak: "break-all" }}>{email}</h3>
-        <p>
-          {ctx.org ? (
-            <>
-              {t.rich("accountPlanStrip.organization", {
-                b: (chunks) => <b style={{ color: "var(--ink)" }}>{chunks}</b>,
-                name: ctx.org.name,
-              })}
-              {ctx.role ? ` · ${ctx.role}` : ""}
-            </>
-          ) : (
-            <>{t("accountPlanStrip.personalNote")}</>
-          )}
-        </p>
-      </div>
-      <div className="card">
-        <div className="n">{t("accountPlanStrip.plan")}</div>
-        <h3>{planLabel}</h3>
-        <p>
-          {isActive && ctx.seats != null ? <>{t("accountPlanStrip.seatsCount", { count: ctx.seats })} </> : null}
-          {t("accountPlanStrip.planBody", {
-            monthly: planes.pro.mensual,
-            yearly: planes.pro.anual,
-            teamMonthly: planes.equipo.mensual,
-            included: incluidos,
-          })}
-        </p>
-        {/* EL IMPUESTO VA APARTE, Y HAY QUE DECIRLO. Los precios son `exclusive`:
-            el cliente paga 4 € + IVA. Anunciar "4 €" a secas sin esta línea es
-            enseñar un importe que no es el que se cobra. */}
-        <p className="ck-note">
-          {t("accountPlanStrip.taxNote")}
-        </p>
-        {/* USADOS vs PAGADOS. Solo si hay plan y hay medida: enseñar "0 en uso" a
-            quien acaba de comprar y todavía no ha desplegado nada sería alarmar
-            por nada. Y `null` (no se pudo medir) no se pinta como cero. */}
-        {/* `seatsUsados != null` se repite aunque `avisoDeAsientos` ya lo
-            garantice: el compilador no puede seguir esa garantía a través de la
-            variable, y prefiero un booleano de más que un `!` que le dice a TS
-            que se calle. */}
-        {aviso === "exceso" && seatsUsados != null && ctx.seats != null ? (
-          <p className="ck-note" style={{ marginTop: 6, color: "var(--danger)" }}>
-            {t("accountPlanStrip.seatsOver", { used: seatsUsados, paid: ctx.seats })}
+    <div className="cards plan acct">
+      <section className="card acct-main" aria-labelledby="acct-plan-titulo">
+        <header className="acct-head">
+          <div className="acct-head-txt">
+            <p className="acct-k">{t("accountPlanStrip.plan")}</p>
+            <h2 id="acct-plan-titulo" className="acct-plan-name">{planLabel}</h2>
+          </div>
+          <p className="acct-status" data-tone={estado.tono}>
+            <span className="sr-only">{t("accountPlanStrip.statusLabel")}: </span>
+            <Badge size="lg" tone={tonoDelEstado[estado.tono]} dot live={ocultarCompra}>
+              {estado.texto}
+            </Badge>
           </p>
+        </header>
+
+        {/* CONTRATADOS vs EN USO, con la unidad al lado de la cifra: un asiento
+            es una máquina o una identidad de servicio, nunca una persona. */}
+        {isActive ? (
+          <UsageMeter
+            className="acct-seats"
+            title={t("accountPlanStrip.seatsTitle")}
+            unit={t("accountPlanStrip.seatUnit")}
+            figure={hayUso ? num(seatsUsados) : undefined}
+            figureLabel={t("accountPlanStrip.seatsUsed")}
+            missing={
+              seatsUsados == null
+                ? t("accountPlanStrip.seatsUnknown")
+                : t("accountPlanStrip.seatsNotYet", { dias: DIAS_ACTIVOS_PARA_CONTAR_ASIENTO })
+            }
+            share={
+              proporcion != null && ctx.seats != null && hayUso
+                ? (seatsUsados / ctx.seats).toLocaleString(locale, { style: "percent", maximumFractionDigits: 0 })
+                : undefined
+            }
+            state={porEncima ? "over" : "ok"}
+            used={proporcion != null && hayUso ? seatsUsados : null}
+            limit={ctx.seats}
+            meterLabel={
+              hayUso && ctx.seats != null
+                ? `${t("accountPlanStrip.seatsUsed")}: ${num(seatsUsados)} · ${t("accountPlanStrip.seatsContracted")}: ${num(ctx.seats)}`
+                : undefined
+            }
+            rows={filasDelMedidor}
+          />
+        ) : null}
+
+        {/* USADOS vs PAGADOS. `seatsUsados != null` se repite aunque
+            `avisoDeAsientos` ya lo garantice: el compilador no puede seguir esa
+            garantía a través de la variable. */}
+        {aviso === "exceso" && seatsUsados != null && ctx.seats != null ? (
+          <Notice tono="warn" titulo={t("accountPlanStrip.overTitle")}>
+            {t("accountPlanStrip.seatsOver", { used: seatsUsados, paid: ctx.seats })}
+            {/* «Gestionar plan» solo se le nombra a quien tiene ese botón. */}
+            {puedeLaAccion ? <> {t("accountPlanStrip.seatsOverManage")}</> : null}
+          </Notice>
         ) : aviso === "rotado" && seatsUsados != null ? (
           /* Rotó la clave este mes: el recuento está inflado porque el seat_id
              sale de un HMAC con esa clave. Se explica en vez de pedirle dinero. */
-          <p className="ck-note" style={{ marginTop: 6 }}>
+          <Notice tono="info" role="note">
             {t("accountPlanStrip.seatsRotated", { used: seatsUsados })}
-          </p>
-        ) : aviso === "en-uso" && seatsUsados != null ? (
-          <p className="ck-note" style={{ marginTop: 6 }}>
-            {t("accountPlanStrip.seatsInUse", { used: seatsUsados })}
-          </p>
+          </Notice>
         ) : null}
-        {/* EL MES CERRADO: lo que se usó frente a lo pagado y lo que eso
-            añade a la próxima factura (cron cobrar-asientos, 0034). Solo si se
-            cobró o está por cobrarse: un ensayo en seco o una revisión humana
-            no se le enseñan al cliente como un cargo. */}
+        {/* EL MES CERRADO: lo que se usó frente a lo pagado y lo que eso añade
+            (cron cobrar-asientos, 0034). Solo si se cobró o está por cobrarse:
+            un ensayo en seco o una revisión humana no se enseñan como un cargo. */}
         {asientos.ajusteMesPasado ? (
-          <p className="ck-note" style={{ marginTop: 6 }}>
+          <Notice tono="info" role="note" titulo={t("accountPlanStrip.lastMonthTitle")}>
             {t("accountPlanStrip.seatsLastMonth", {
               period: asientos.ajusteMesPasado.periodo,
               used: asientos.ajusteMesPasado.usados,
@@ -129,9 +197,20 @@ export async function AccountPlanStrip({
               extra: asientos.ajusteMesPasado.exceso,
               amount: formatearPrecio(locale, { amount: asientos.ajusteMesPasado.importeCentimos, currency: "eur" }),
             })}
-          </p>
+          </Notice>
         ) : null}
-        {ocultarCompra ? null : (
+
+        {/* LA ACCIÓN, SEGÚN EL CONTEXTO. Con la activación pendiente NO hay
+            botones de compra: es la regla contra el doble cobro, y se dice. */}
+        {ocultarCompra ? (
+          <Notice tono="warn" role="status" titulo={t("accountPlanStrip.pendingTitle")}>
+            {t("accountPlanStrip.pendingBody")}
+          </Notice>
+        ) : !puedeLaAccion ? (
+          <Notice tono="info" role="note">
+            {t("accountPlanStrip.roleNote")}
+          </Notice>
+        ) : (
           <BillingButtons
             codigo={codigo}
             isActive={isActive}
@@ -146,7 +225,63 @@ export async function AccountPlanStrip({
             }}
           />
         )}
-      </div>
+
+        {/* EL IMPUESTO VA APARTE, Y HAY QUE DECIRLO. Los precios son `exclusive`:
+            anunciar un importe a secas sin esta línea es enseñar uno que no es
+            el que se cobra. */}
+        <p className="ck-note acct-tax">{t("accountPlanStrip.taxNote")}</p>
+        <details className="acct-more">
+          <summary>{t("accountPlanStrip.howBilledTitle")}</summary>
+          <p>
+            {t("accountPlanStrip.planBody", {
+              monthly: planes.pro.mensual,
+              yearly: planes.pro.anual,
+              teamMonthly: planes.equipo.mensual,
+              included: incluidos,
+            })}
+          </p>
+        </details>
+      </section>
+
+      <aside className="card acct-side" aria-label={t("account.eyebrow")}>
+        <div className="acct-id">
+          <Avatar size={40} name={email.split("@")[0]?.replace(/[._+-]+/g, " ")} seed={email} />
+          <div className="acct-id-txt">
+            <p className="acct-k">{t("accountPlanStrip.signedInAs")}</p>
+            <p className="acct-email">{email}</p>
+          </div>
+        </div>
+        <dl className="acct-facts">
+          {ctx.org ? (
+            <div>
+              <dt>{t("accountPlanStrip.orgLabel")}</dt>
+              <dd>{ctx.org.name}</dd>
+            </div>
+          ) : null}
+          {nombreDelRol ? (
+            <div>
+              <dt>{t("accountPlanStrip.roleLabel")}</dt>
+              <dd>
+                <Badge size="md" tone={ctx.role === "owner" ? "info" : "neutral"}>
+                  {nombreDelRol}
+                </Badge>
+              </dd>
+            </div>
+          ) : null}
+        </dl>
+        {ctx.org ? null : <p className="acct-side-note">{t("accountPlanStrip.personalNote")}</p>}
+        {/* MIEMBROS ≠ ASIENTOS: las personas se gestionan en Equipo, aparte de lo
+            que se paga. El enlace solo para quien puede abrir esa página. */}
+        <p className="acct-side-note">
+          {t("accountPlanStrip.membersNote")}
+          {puede(ctx.role, "gestionar_miembros") ? (
+            <>
+              {" "}
+              <Link href="/dashboard/team">{t("accountPlanStrip.membersLink")}</Link>
+            </>
+          ) : null}
+        </p>
+      </aside>
     </div>
   );
 }

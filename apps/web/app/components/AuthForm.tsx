@@ -9,6 +9,14 @@ import { authConfigured } from "@/lib/supabase/env";
 import { safeNextPath } from "@/app/auth/safe-next";
 import { textoDeErrorDeAuth } from "@/lib/auth/error-de-auth";
 
+import { Button } from "@/vendor/affectui/button-clean";
+import { TextField } from "@/vendor/affectui/text-field-clean";
+
+import { AccesoEnviado, MensajeDeAcceso } from "./acceso/AccesoEstado";
+import { CampoClave } from "./acceso/CampoClave";
+import { EnlaceConDestino } from "./acceso/EnlaceConDestino";
+import { Icono } from "./acceso/iconos";
+
 type Msg = { type: "error" | "info" | "idle"; text: string };
 
 export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
@@ -129,48 +137,109 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
 
   const enReset = view === "reset";
 
+  // QUÉ SE ENVIÓ. Los tres avisos de éxito —alta pendiente de confirmar, cuenta
+  // que ya existía (#569) y enlace de recuperación— dejan de ser una franja
+  // sobre un formulario que ya no sirve y pasan a ser una subvista propia. Se
+  // deduce del texto que `onSubmit` ya dejó en `msg` (los tres salen de `t`),
+  // para no tocar ni una línea del envío.
+  const enviado =
+    msg.type !== "info"
+      ? null
+      : msg.text === t("existingAccountLoginLink")
+        ? "existente"
+        : msg.text === t("checkEmail")
+          ? "nueva"
+          : msg.text === t("resetEmailSent")
+            ? "recuperacion"
+            : null;
+
+  if (enviado) {
+    return (
+      <AccesoEnviado
+        icono="correo"
+        titulo={
+          enviado === "existente"
+            ? t("sentTitleExisting")
+            : enviado === "nueva"
+              ? t("sentTitleNew")
+              : t("sentTitleReset")
+        }
+        correo={email}
+        etiquetaCorreo={t("sentEmailLabel")}
+        acciones={
+          <>
+            {enviado === "existente" ? (
+              <EnlaceConDestino a="/login" className="btn btn-ghost btn-block">
+                {t("signIn")}
+              </EnlaceConDestino>
+            ) : null}
+            <button
+              type="button"
+              className="auth-link"
+              onClick={() => {
+                setMsg({ type: "idle", text: "" });
+                if (enviado === "recuperacion") setView("form");
+              }}
+            >
+              {enviado === "recuperacion" ? t("backToLogin") : t("useAnotherEmail")}
+            </button>
+          </>
+        }
+      >
+        {msg.text}
+      </AccesoEnviado>
+    );
+  }
+
+  const conError = msg.type === "error";
+
   return (
-    <form onSubmit={onSubmit} noValidate>
-      {msg.type !== "idle" ? <div className={`auth-msg ${msg.type}`}>{msg.text}</div> : null}
-      {enReset ? <p className="sub" style={{ marginTop: 0 }}>{t("resetSubtitle")}</p> : null}
-      <div className="field">
-        <label htmlFor="email">{t("workEmail")}</label>
-        <input
-          id="email"
-          type="email"
-          autoComplete="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="you@company.com"
-        />
-      </div>
-      {!enReset ? (
-        <div className="field">
-          <label htmlFor="password">{t("password")}</label>
-          <input
-            id="password"
-            type="password"
-            autoComplete={mode === "signup" ? "new-password" : "current-password"}
-            required
-            minLength={8}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-          />
-        </div>
+    <form onSubmit={onSubmit} noValidate aria-busy={loading || undefined}>
+      {msg.type !== "idle" ? (
+        <MensajeDeAcceso tipo={msg.type} id="auth-aviso">
+          {msg.text}
+        </MensajeDeAcceso>
       ) : null}
-      <button className="btn btn-primary auth-submit" type="submit" disabled={loading}>
-        {loading
-          ? t("loadingEllipsis")
-          : enReset
-            ? t("sendResetLink")
-            : mode === "signup"
-              ? t("createAccountCta")
-              : t("signInCta")}
-      </button>
+      {enReset ? <p className="sub acc-reset-sub">{t("resetSubtitle")}</p> : null}
+      <TextField
+        className="acc-campo"
+        id="email"
+        label={t("workEmail")}
+        type="email"
+        icon={<Icono nombre="correo" />}
+        autoComplete="email"
+        inputMode="email"
+        autoCapitalize="none"
+        spellCheck={false}
+        required
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="you@company.com"
+        invalid={conError}
+        aria-describedby={conError ? "auth-aviso" : undefined}
+      />
+      {!enReset ? (
+        <CampoClave
+          id="password"
+          etiqueta={t("password")}
+          valor={password}
+          alCambiar={setPassword}
+          autoComplete={mode === "signup" ? "new-password" : "current-password"}
+          placeholder="••••••••"
+          invalido={conError}
+          descritoPor={conError ? "auth-aviso" : undefined}
+          mostrar={t("showPassword")}
+          ocultar={t("hidePassword")}
+        />
+      ) : null}
+      {/* El Button de affectUI: mientras se espera al servidor no admite otro
+          envío (`aria-disabled` + clic anulado) y una banda de luz recorre el
+          rótulo. Es el único movimiento de la pantalla, y solo en ese rato. */}
+      <Button className="acc-enviar" type="submit" variant="primary" size="xl" block loading={loading}>
+        {loading ? t("working") : enReset ? t("sendResetLink") : mode === "signup" ? t("createAccountCta") : t("signInCta")}
+      </Button>
       {mode === "login" ? (
-        <p className="auth-alt" style={{ marginTop: "12px", textAlign: "center" }}>
+        <p className="auth-alt acc-olvido">
           <button
             type="button"
             className="auth-link"

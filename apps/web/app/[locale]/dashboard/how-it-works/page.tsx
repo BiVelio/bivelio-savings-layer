@@ -16,7 +16,7 @@ export default async function DashboardHowItWorksPage() {
   const t = await getTranslations("howItWorks");
   return (
     <>
-      <PageHead eyebrow={t("eyebrow")} title={t("title")} sub={t("lede")} />
+      <PageHead eyebrow={t("eyebrow")} title={`${t("title")} ${t("titleAccent")}`} sub={t("lede")} />
       <HowItWorks variant="app" />
     </>
   );

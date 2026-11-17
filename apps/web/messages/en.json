@@ -13,7 +13,15 @@
     "dashboard": "Dashboard",
     "signOut": "Sign out",
     "howItWorks": "How it works",
-    "menu": "Menu"
+    "menu": "Menu",
+    "product": "Product",
+    "results": "Results",
+    "code": "Code",
+    "mainAria": "Main navigation",
+    "newTab": "(opens in a new tab)",
+    "breadcrumb": "Breadcrumb",
+    "home": "Home",
+    "skipToContent": "Skip to content"
   },
   "app": {
     "sidebar": {
@@ -43,6 +51,12 @@
         "members": "{n, plural, =1 {1 member} other {# members}}",
         "seats": "{used} of {seats}",
         "seatsTitle": "{used} seats in use of {seats} paid this month"
+      },
+      "status": {
+        "done": "done",
+        "next": "next",
+        "pending": "pending",
+        "unavailable": "unavailable"
       }
     },
     "topbar": {
@@ -50,9 +64,95 @@
       "accountLink": "Account settings for {email}",
       "plan": {
         "free": "Free",
-        "pro": "Pro",
+        "pro": "Paid plan",
         "enterprise": "Enterprise"
+      },
+      "menuLabel": "Account menu",
+      "setupNext": "Next:",
+      "brandAria": "Savings by BiVelio — dashboard"
+    },
+    "tour": {
+      "open": "Take the tour",
+      "openHint": "Replay the guided tour of the dashboard",
+      "close": "Close the tour",
+      "next": "Next",
+      "prev": "Back",
+      "finish": "Finish",
+      "step": "Step {n} of {total}",
+      "steps": {
+        "welcome": {
+          "title": "Welcome to BiVelio Savings",
+          "body": "This dashboard shows what you spend on LLMs and what the layer saves, measured on your own traffic. Anything not measured is said in words, never shown as a zero."
+        },
+        "nav": {
+          "title": "Three groups, one path",
+          "body": "Get started takes you to the overview and the install guide. Save holds the proof and the statement. Your organization holds machines and the account."
+        },
+        "setup": {
+          "title": "First steps and your progress",
+          "body": "The product measures the setup milestones. Select one to open its instructions: it only turns done when the real signal arrives."
+        },
+        "verdict": {
+          "title": "Your verdict",
+          "body": "The measured savings for the period, with its receipt and evidence type. If something is missing — integration, traffic, pricing or a read — this is where you see what and how to continue."
+        },
+        "range": {
+          "title": "Choose the period",
+          "body": "Switch between the available ranges. The period lives in the address, so you can share or reload the same view."
+        },
+        "customize": {
+          "title": "Customize the dashboard",
+          "body": "Reorder or hide cards and restore the layout whenever you like. It is saved in this browser only; notices and the verdict cannot be hidden."
+        },
+        "explorer": {
+          "title": "Explore your usage",
+          "body": "See usage by day, cumulative or by model, switch metric and export the period as CSV."
+        },
+        "proof": {
+          "title": "Proof and evidence",
+          "body": "Three tabs: the public benchmark, your own A/B and the verifier. Reference data is never presented as yours."
+        },
+        "team": {
+          "title": "Your team · Account and plan",
+          "body": "Invite people and assign roles. A member is not a seat: seats are machines or service identities. Check your plan, seats and billing, and manage the subscription from here."
+        },
+        "account": {
+          "title": "Account and plan",
+          "body": "Check your plan, seats and billing, and manage the subscription from here."
+        },
+        "finish": {
+          "title": "Replay it anytime",
+          "body": "This tour starts again from “Take the tour”, in the top bar of every dashboard page."
+        }
       }
+    }
+  },
+  "ui": {
+    "copy": "Copy",
+    "copied": "Copied",
+    "evidence": {
+      "abSdk": "SDK A/B",
+      "replayGateway": "Gateway replay",
+      "sintetico": "Synthetic",
+      "estimacion": "Estimate",
+      "sombra": "Shadow mode",
+      "benchmark": "Benchmark",
+      "tusDatos": "Your data"
+    },
+    "recibo": {
+      "ilustrativo": "Illustrative example",
+      "comoSeMidio": "How it was measured",
+      "total": "Total",
+      "procedencia": "Provenance"
+    },
+    "code": {
+      "expected": "Expected output"
+    },
+    "state": {
+      "loading": "Loading…",
+      "empty": "No data yet",
+      "error": "Could not load",
+      "retry": "Retry"
     }
   },
   "auth": {
@@ -63,7 +163,7 @@
     "newToBivelio": "New to BiVelio?",
     "createAnAccount": "Create an account",
     "backToVerifier": "← Back to home",
-    "createYourAccount": "Create your account",
+    "createYourAccount": "Create your Cloud account",
     "signupSubtitle": "One BiVelio account across the suite. Create yours to use the cloud: dashboard, shared caches and license management. The package itself needs no account — open core runs without a key.",
     "alreadyHaveAccount": "Already have a BiVelio account?",
     "signIn": "Sign in",
@@ -106,7 +206,33 @@
       "network": "No connection. Check your network and try again.",
       "missingFields": "Enter your email and password."
     },
-    "signupMedir": "Or start free with Measure: the free cloud plan, no card, shadow mode, up to {seats} seats and {requests} requests a day. It needs @bivelio/savings-layer {version} or later."
+    "signupMedir": "Or start free with Measure: the free cloud plan, no card, shadow mode, up to {seats} seats and {requests} requests a day. It needs @bivelio/savings-layer {version} or later.",
+    "openSourceQuestion": "Only want the open-source engine?",
+    "openSourceLink": "Install it without an account",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "working": "One moment…",
+    "sentTitleNew": "Confirm your email",
+    "sentTitleExisting": "You already have an account",
+    "sentTitleReset": "Check your inbox",
+    "sentEmailLabel": "Email",
+    "useAnotherEmail": "Use a different email",
+    "requestNewLink": "Request a new link",
+    "successNext": "Next step: install the package and connect your first call. Until then the dashboard has nothing to measure.",
+    "successPlan": "You chose a plan: you'll confirm it under Account, in the dashboard. Nothing has been bought yet.",
+    "successInvite": "We'll take you back to your invitation so you can accept it.",
+    "successContinue": "Continue",
+    "panel": {
+      "title": "Every figure, with its <em>source</em>.",
+      "body": "The Savings Cloud dashboard shows what was counted on each call and where the number comes from.",
+      "receiptTitle": "Receipt for one call",
+      "receiptMeta": "What you'll see in your dashboard",
+      "rowBaseline": "Input tokens, unoptimized",
+      "rowActual": "Input tokens, optimized",
+      "rowOutput": "Output tokens",
+      "total": "Input tokens saved",
+      "provenance": "The figures on this receipt are made up. Yours come from your provider's own meter."
+    }
   },
   "dashboard": {
     "overview": {
@@ -134,6 +260,60 @@
         "models": "The model breakdown could not be read.",
         "sessions": "Session costs could not be read.",
         "seats": "Machine activity could not be read."
+      },
+      "panelEyebrow": "Your activity",
+      "panelTitle": "Usage, opportunities and distribution",
+      "next": {
+        "eyebrow": "Next step",
+        "doneTitle": "Your meter is running",
+        "doneBody": "The setup milestones are complete. Check your figures against the published evidence.",
+        "proofCta": "Open the proof",
+        "openCta": "See the instructions",
+        "unavailableTitle": "We cannot assess your setup"
+      },
+      "kpi": {
+        "label": "Figures for the period",
+        "cost": "Observed cost",
+        "costBase": "Actual cost at your prices · {period}",
+        "saved": "Credited savings",
+        "savedBase": "Baseline − actual cost, measured requests only · {period}",
+        "requests": "Requests",
+        "requestsBase": "{share} with a provider counter · {period}",
+        "requestsBaseNone": "All received · {period}",
+        "noPrice": "No price to rate this traffic",
+        "notMeasured": "Nothing measured yet in this period",
+        "costDef": "What this traffic cost at the per-token prices applied: your cost model's or, if you haven't set one, the catalog's. It includes every priced request, measured or not.",
+        "savedDef": "Baseline minus actual cost, only on requests with a provider counter. Estimates and shadow-mode figures are never included here.",
+        "requestsDef": "Every request received in the period. Only those with a provider counter count towards credited savings."
+      },
+      "breakdown": {
+        "title": "Observed cost by model",
+        "totalLabel": "Actual cost · {period}",
+        "empty": "No cost by model in this period yet",
+        "coverageFull": "The breakdown covers all the observed cost for the period.",
+        "coveragePartial": "The per-model breakdown covers {coverage} of the observed cost for the period; the rest has no model attributed.",
+        "coverageUnknown": "It cannot be compared with the observed cost for the period."
+      },
+      "planChosen": {
+        "title": "You chose {plan}",
+        "body": "Nothing has been bought yet. Confirm the plan and the seats under Account; payment happens on Stripe.",
+        "cta": "Confirm under Account",
+        "askOwner": "Your role can't buy a plan. Ask someone with the owner, admin or billing role to confirm it under Account."
+      },
+      "pulse": {
+        "chartTitle": "Baseline and actual cost, day by day",
+        "seriesBaseline": "Measured baseline",
+        "seriesActual": "Measured actual cost",
+        "seriesSaved": "Credited savings that day",
+        "band": "Credited savings",
+        "chartAria": "Baseline and actual cost per day. Use the left and right arrow keys to read each day.",
+        "gap": "No measured requests that day",
+        "chartFoot": "Requests with a provider counter only ({share} of traffic) · {period}. A day without measurement is a gap, not a zero.",
+        "providersTitle": "Usage by provider",
+        "measureCost": "Actual cost",
+        "measureTokens": "Tokens",
+        "measuresAria": "Metric",
+        "barAria": "{company}: {value}. Press to see its models."
       }
     },
     "proof": {
@@ -142,13 +322,25 @@
       "title": "Proof the optimizer works",
       "intro": "Three things, kept apart: what the public bench measured live, with its interval; what you save, measured on your own traffic; and a synthetic run that shows how each lever works.",
       "tuDinero": "What counts on your panel is your own money: every saving on your <overview>Overview</overview> is measured with your provider's counter, on your traffic, request by request. The figures above are the bench's, not a forecast of yours.",
-      "sinteticaTitulo": "Synthetic run · how each lever works"
+      "sinteticaTitulo": "Synthetic run · how each lever works",
+      "publicoTitulo": "Public benchmark",
+      "publicoSub": "A reference trial on our scenarios. This is not your organization's data.",
+      "propioTitulo": "Your data",
+      "propioBanco": "Compare with an A/B on your traffic",
+      "tecnicaSub": "Synthetic battery: it shows how each lever works. It promises no figure.",
+      "diagramRequest": "Your request",
+      "diagramA": "Arm A: sent as is, without the layer",
+      "diagramB": "Arm B: the same request, through Savings",
+      "diagramMeter": "Your provider's usage meter measures both"
     },
     "verify": {
       "metaTitle": "Verify · BiVelio Savings Layer",
       "eyebrow": "Verify locally · nothing leaves this page",
       "title": "How much would you save?",
-      "intro": "Find out in a minute: pick an example (or paste your own data), tell us how much you use the API, and see the projected saving. Everything runs in your browser."
+      "intro": "Find out in a minute: pick an example (or paste your own data), tell us how much you use the API, and see the projected saving. Everything runs in your browser.",
+      "formatoTitulo": "Format verifier",
+      "formatoSub": "Counts the tokens of the structured snippet you paste, in your browser. It is not your monthly budget or your invoice.",
+      "proyectorSub": "An estimate built on assumptions you choose. It is not an invoice or realized savings."
     },
     "yourBench": {
       "metaTitle": "Your bench · BiVelio Savings Layer",
@@ -223,14 +415,52 @@
         "outside": "Costs outside your provider call, such as an embedding service you run yourself, are in neither side.",
         "streaming": "Requests that failed, or that you cancelled while streaming, are not counted."
       },
-      "exportCsv": "Download the pairs (CSV)"
+      "exportCsv": "Download the pairs (CSV)",
+      "readFailedTitle": "Your pairs could not be read",
+      "stateOff": "No data",
+      "stateCollecting": "Gathering sample",
+      "stateShort": "Insufficient sample",
+      "costCopies": "Unoptimized copies",
+      "costUnmeasured": "Copies with no measured cost",
+      "costTotal": "Cost of the copies",
+      "readout": {
+        "title": "A/B on your traffic",
+        "statusPositive": "Savings with a positive floor",
+        "statusInconclusive": "Inconclusive: the interval includes zero",
+        "statusNegative": "In this sample, the layer cost more",
+        "armA": "Unoptimized copy",
+        "armAHint": "Baseline: what your provider charges without the layer",
+        "armAValue": "Base",
+        "armB": "With Savings",
+        "armBHint": "The same request, served by the layer",
+        "armBValue": "{change} cost · point estimate",
+        "factSample": "Sample",
+        "factSampleValue": "{pairs} compared pairs",
+        "factInterval": "{level} interval",
+        "factIntervalValue": "{lower} to {upper}",
+        "factPeriod": "Period",
+        "factCoverage": "Coverage",
+        "factCoverageValue": "{coverage} of your eligible requests",
+        "methodLink": "See methodology"
+      },
+      "terms": {
+        "sample": "Comparable pairs: the same request with and without the layer, both measured by your provider.",
+        "interval": "The range the real saving falls in at that confidence level. The headline is its lower end.",
+        "coverage": "The share of your eligible requests that sits in groups with pairs. The rest is outside the figure."
+      },
+      "weightsTitle": "How much each group weighs",
+      "weightsTotal": "eligible requests in the period",
+      "weightsNote": "Each group weighs in the headline what it represents in your eligible requests, not how many pairs it has. A group with no pairs is left out."
     },
     "install": {
       "metaTitle": "Install · BiVelio Savings Layer",
       "eyebrow": "Integrate",
       "title": "Install & wire the SDK",
-      "intro": "Drop BV-SALA in front of your provider — your prompts never leave your infra.",
-      "irACuenta": "No plan yet, or need to change your seats? That happens in Account →"
+      "intro": "Drop BV-SALA in front of your provider. Your prompts do not pass through BiVelio's servers; they are sent to the provider you configure.",
+      "irACuenta": "No plan yet, or need to change your seats? That happens in Account →",
+      "trackerTitle": "Your setup",
+      "trackerNote": "The product measures these milestones: selecting one opens its instructions, it does not mark it as done. They belong to the Cloud connection; the open engine works without them.",
+      "onThisPage": "On this page"
     },
     "account": {
       "metaTitle": "Account · BiVelio Savings Layer",
@@ -250,12 +480,42 @@
       "hiddenCap": "Your usage data exists, but this account can't see it. That's a fault on our side and we've been alerted. Write to support@bivelio.com if it persists.",
       "rangeDays": "last {n} days",
       "rangeLabel": "Range",
-      "rangeOption": "{n}d"
+      "rangeOption": "{n}d",
+      "status": {
+        "positive": "Measured savings",
+        "negative": "Cost above the baseline",
+        "partial": "Partial measurement",
+        "notIntegrated": "Not integrated yet",
+        "noTraffic": "No traffic in this period",
+        "noPrice": "Unpriced traffic",
+        "notMeasured": "Unmeasured traffic",
+        "readFailed": "Could not be read",
+        "limited": "Limited access"
+      },
+      "lostLine": "above your baseline this period · <b>{money}</b> of extra cost (actual − baseline, at your prices).",
+      "method": "View source and methodology",
+      "methodBody": "The headline is one minus the actual cost divided by the baseline, computed only from requests that have a provider counter. Estimated and unmeasured traffic stay out of the headline.",
+      "receipt": {
+        "title": "Receipt for the period",
+        "baseline": "Measured baseline",
+        "actual": "Measured actual cost",
+        "coverage": "Requests with a counter",
+        "saved": "Measured savings",
+        "origin": "Measured with your provider's counter, at your prices."
+      },
+      "actions": {
+        "install": "Start the install",
+        "widen": "View the last {n} days",
+        "checkInstall": "Review the install",
+        "support": "Contact support",
+        "how": "How it is measured"
+      },
+      "noTrafficCap": "There are no requests in this period. Try a wider range or check that your integration is still sending traffic."
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "LLM/retrieval/tool calls that never ran",
       "whatEliminatedTokens": "input tokens the provider never processed",
-      "elisionNota": "If you use the gateway, part of this figure is input your provider drops because of your own configuration: that part isn't ours to claim and never enters your commission.",
+      "elisionNota": "If you use the gateway, part of this figure is input your provider drops because of your own configuration: that part isn't ours to claim and never counts as credited savings.",
       "whatCompressedTokens": "input tokens re-encoded smaller",
       "whatProviderCachedTokens": "input tokens billed at the discounted prefix-cache price. Your client asks for it, not us: our lever only tunes how long it lasts",
       "ghostAwaiting": "awaiting first report",
@@ -279,7 +539,7 @@
       "statusPending": "pending",
       "statusUnavailable": "unavailable",
       "nextLabel": "Next: {label}",
-      "installComment": "# detects your stack and prints the exact wiring — your prompts never leave your infra",
+      "installComment": "# detects your stack and prints the exact wiring — your prompts do not pass through BiVelio's servers; they are sent to the provider you configure",
       "hintLicense": "Create or retrieve your license and service credentials in Account. A credential alone does not prove installation.",
       "hintInstall": "Choose SDK or gateway and send a real request. Creating a key or sending an empty batch does not prove installation.",
       "hintFirstRequest": "Send a real provider request through the SDK or gateway. Its usage report will complete this step.",
@@ -289,7 +549,9 @@
       "linkInstall": "Open installation",
       "linkSdk": "SDK route",
       "linkGateway": "Gateway route",
-      "unavailableHint": "Usage cannot be read right now, so installation and reporting cannot be assessed. This does not mean the account is empty."
+      "unavailableHint": "Usage cannot be read right now, so installation and reporting cannot be assessed. This does not mean the account is empty.",
+      "count": "{done} of {total}",
+      "trackerTitle": "Setup"
     },
     "shadowOpportunities": {
       "title": "Where your potential savings are",
@@ -314,7 +576,8 @@
       "accountCta": "Review Account",
       "installCta": "Complete installation",
       "exportCsv": "Export CSV",
-      "exportJson": "Export JSON"
+      "exportJson": "Export JSON",
+      "badgeDef": "SHADOW telemetry: a hypothesis of what would have been saved. It is not measured, not billed and never added to credited savings."
     },
     "scenarioTable": {
       "colScenario": "scenario",
@@ -325,7 +588,15 @@
       "colBCost": "B cost",
       "colSavings": "savings",
       "colQa": "qa",
-      "benchOnly": "bench-only compressor, not in npm"
+      "benchOnly": "bench-only compressor, not in npm",
+      "caption": "Synthetic battery: A without the layer, B with the layer. Each header with an arrow sorts the table.",
+      "sortBy": "Sort by {col}",
+      "title": "Scenario by scenario",
+      "help": "What “{col}” means",
+      "termTokens": "Mean input and output tokens per request, from the usage the provider reports.",
+      "termCost": "Mean cost of one request in that arm. The bar uses the same scale for A and B.",
+      "termSavings": "One minus the cost of B divided by the cost of A. Negative means the layer cost more.",
+      "termQa": "Answers that pass the quality gate, out of those checked."
     },
     "projectorVerifier": {
       "projectorTitle": "Bill projector",
@@ -349,7 +620,11 @@
       "projFriendly": "Your bill would go from {baseline} to {opt} — {pct}% less.",
       "onlyChatTitle": "Only use ChatGPT or Claude?",
       "onlyChatBody": "ChatGPT is truly closed: flat fee, no token invoice or cap worth trimming. But if you use Claude, we already help you save: the savings-mode skill (free, on the home page) stretches your subscription caps. And if you build an app with an API key, that is where BV-SALA measures and cuts real spend.",
-      "onlyChatCta": "Building an app? Go to Install"
+      "onlyChatCta": "Building an app? Go to Install",
+      "notInvoice": "Estimate, not an invoice",
+      "notInvoiceBody": "It comes from the assumptions on the left, not from your traffic. What you really save is measured in your Overview.",
+      "barBaseline": "Unoptimized",
+      "barOptimized": "With your assumptions"
     },
     "copyButton": {
       "copied": "Copied",
@@ -442,7 +717,21 @@
       "chipOk": "up to date",
       "chipMixed": "partly undeclared",
       "hint": "One row per machine that reports usage, identified by its opaque seat id (never a person). What travels is a version number — gateway/x.y.z or sdk/x.y.z — never content. A machine on a gateway older than the version channel shows as “not declared”.",
-      "referenceHint": "Measured savings here include repeated requests measured by reference: each is valued with the counter of the identical request that already ran."
+      "referenceHint": "Measured savings here include repeated requests measured by reference: each is valued with the counter of the identical request that already ran.",
+      "emptyTitle": "No machines are reporting yet",
+      "emptyBody": "A machine appears here once its gateway or SDK sends usage. Each one counts as a seat: a machine or a service identity, never a person.",
+      "emptyCta": "Connect a machine",
+      "failedTitle": "Machine activity could not be read",
+      "failedBody": "This is a read failure, not an empty list. Reload in a moment.",
+      "hiddenTitle": "The machines card is hidden",
+      "hiddenBody": "You hid it when customizing the dashboard. Its data is still being measured.",
+      "show": "Show card",
+      "seatsTitle": "Seats in use this month",
+      "seatsOf": "{seats, plural, one {of # paid} other {of # paid}}",
+      "seatsFull": "all in use",
+      "seatsOver": "above the paid seats",
+      "seatsNote": "A seat is a machine or a service identity, never a person.",
+      "seatsRotated": "A service key was rotated this month: the count may include the same machine twice."
     },
     "installLicensePanel": {
       "eyebrow": "Get started",
@@ -461,15 +750,30 @@
       "doctorComment": "other agents and SDKs: the exact configuration for each",
       "agentsNote": "Each wrapper sets its agent up for that session only — nothing in its configuration changes — and on exit tells you how many requests it metered, which ones it could not, and why. <code>bvsala copilot</code> needs your own Anthropic key (BYOK): GitHub-hosted models never go through a base URL, so there is nothing to meter. For Crush, Droid, Cline, Continue or Copilot in VS Code, <code>bvsala doctor</code> prints the exact configuration. <b>Cursor (BYOK)</b>: it works through the OpenAI API base-URL override with your own key; its own models never reach a gateway on your machine. <b>Gemini CLI</b>: launch it with <code>bvsala gemini</code>.",
       "pythonNote": "<b>Python?</b> The <code>bvsala</code> client for Python routes the official OpenAI and Anthropic SDKs through this same gateway (<code>bvsala gateway</code>) and hands your code the report of each request — the same figures this dashboard receives. It needs a 0.4.26 or later gateway and Python 3.10 or newer. Install it from PyPI with <code>pip install bivelio-savings-layer</code>; in your code, <code>import bvsala</code>.",
-      "finalNote": "That's it. No valid license → <code>generate()</code> refuses. If your plan is cancelled the SDK stops within ~15 min via <code>licenseServerUrl</code> — no restart, and it never bricks your production if we're unreachable."
+      "finalNote": "That's it. No valid license → <code>generate()</code> refuses. If your plan is cancelled the SDK stops within ~15 min via <code>licenseServerUrl</code> — no restart, and it never bricks your production if we're unreachable.",
+      "terminal": "Terminal",
+      "sdkTitle": "Integrate an application (SDK)",
+      "sdkLede": "Wrap your provider in your code and read the savings report of every call.",
+      "gatewayTitle": "Connect an agent (gateway)",
+      "gatewayLede": "Launch your coding agent through the local gateway, without touching its code.",
+      "modeLocalTitle": "Local mode",
+      "modeLocalBody": "The open engine runs with no account and no keys: every local lever and zero telemetry. The report stays on your machine.",
+      "modeCloudTitle": "Cloud connection",
+      "modeCloudBody": "With a license and a service key, this dashboard receives counts and costs — never your prompts — and your organization shares metering and seats.",
+      "modeCloudLink": "Go to credentials",
+      "cloudTitle": "Cloud connection: license and service key",
+      "optional": "Optional with the open engine",
+      "roleLimited": "Your role can read this page, but only owner and admin can issue the license and create or revoke service keys.",
+      "permissionsNote": "Only owner and admin create or revoke keys. A key is shown once; after that only its prefix remains.",
+      "initExpected": "The install line for your package manager, the keys still missing, the code for your adapter and a check that spends no tokens. It writes no files.",
+      "wireExpected": "The answer, the share of the baseline you did not pay and how that figure was obtained: measured, reference, estimated or unmeasured.",
+      "agentsExpected": "The agent starts through the local gateway. With the service key, its spend shows up in this dashboard."
     },
     "accountPlanStrip": {
       "noActivePlan": "No active plan",
       "signedInAs": "signed in as",
-      "organization": "Organization: <b>{name}</b>",
       "personalNote": "Personal — no organization linked yet. One BiVelio account, shared across the suite.",
       "plan": "plan",
-      "seatsCount": "{count, plural, one {# seat} other {# seats}}.",
       "planBody": "BV-SALA is open core — with no key it runs in COMMUNITY mode; a key that is set but invalid fails closed. The cloud adds the dashboard, shared caches and org entitlements. Pro: {monthly} per seat per month or {yearly} per seat per year. Team: {teamMonthly} per month with {included} seats included. No commission on your savings. A seat is one active machine or service identity, not a person.",
       "managePlan": "Manage plan →",
       "subscribe": "Subscribe →",
@@ -478,9 +782,9 @@
       "checkoutError": "Something went wrong — try again.",
       "seatsLabel": "Seats",
       "seatsHint": "A seat is one active machine or service identity — not a person. Count the processes that will run the SDK, not your headcount. On Kubernetes, set BVSALA_SEAT_ID per replica.",
-      "seatsInUse": "{used, plural, one {# seat} other {# seats}} in use this month.",
-      "seatsOver": "⚠ {used, plural, one {# seat} other {# seats}} in use, {paid, plural, one {# paid for} other {# paid for}}. Extra seats are charged automatically when the month closes, on your next invoice, at your plan's price. You can also raise your seat count from “Manage plan”.",
-      "seatsLastMonth": "{period}: {used, plural, one {# seat used} other {# seats used}}, {paid, plural, one {# paid for} other {# paid for}}. Extra: {extra, plural, one {# seat} other {# seats}} ({amount}), on your next invoice.",
+      "seatsOver": "{used, plural, one {# seat} other {# seats}} in use, {paid, plural, one {# paid for} other {# paid for}}. The extra seats are billed according to your plan and the state of your subscription, when the month closes. On monthly billing they are added to your next invoice and your subscribed quantity goes up to the seats in use. On annual billing they are invoiced at month close, at the annual rate divided by twelve, and your subscribed quantity does not change.",
+      "seatsOverManage": "You can also adjust the quantity from “Manage plan”.",
+      "seatsLastMonth": "{period}: {used, plural, one {# seat used} other {# seats used}}, {paid, plural, one {# paid for} other {# paid for}}. Extra: {extra, plural, one {# seat} other {# seats}} ({amount}). On monthly billing it goes on your next invoice and your subscribed quantity goes up to the seats used. On annual billing it is invoiced at month close, at the annual rate divided by twelve, without changing your subscribed quantity.",
       "seatsRotated": "{used, plural, one {# seat} other {# seats}} counted this month. You revoked a service-account key, and machines get a new seat identity when the key rotates — so this month counts them twice. It settles next month; you don't need to change your plan.",
       "taxNote": "VAT not included. If your company has an EU VAT number, the reverse charge applies.",
       "errYaSuscrito": "This account already has an active subscription. Use “Manage plan” to change seats or billing.",
@@ -492,9 +796,43 @@
       "planPro": "Pro",
       "planTeam": "Team",
       "teamHint": "Team includes {included} seats; each extra seat is {extra} per month. You can't buy fewer than {included}.",
-      "checkoutTeamMonthly": "Subscribe to Team — {monthly}/mo, {included} seats →",
-      "checkoutTeamYearly": "Subscribe to Team — {yearly}/yr, {included} seats →",
-      "errPlanCerrado": "That plan is no longer offered to new customers. Choose Pro or Team."
+      "checkoutTeamMonthly": "Subscribe to Team — from {monthly}/mo →",
+      "checkoutTeamYearly": "Subscribe to Team — from {yearly}/yr →",
+      "errPlanCerrado": "That plan is no longer offered to new customers. Choose Pro or Team.",
+      "statusLabel": "Status",
+      "statusActive": "Subscription active",
+      "statusPastDue": "Payment failed",
+      "statusIncomplete": "Payment processing",
+      "statusPending": "Activation in progress",
+      "statusNone": "No paid subscription",
+      "seatsTitle": "Seats",
+      "seatUnit": "Machines or service identities",
+      "seatsContracted": "Subscribed",
+      "seatsUsed": "In use this month",
+      "seatsUnknown": "Could not be measured. This is not a zero.",
+      "seatsNotYet": "No count yet this month: a seat counts once it has been active on {dias} distinct days of the calendar month.",
+      "overTitle": "You are using more seats than you subscribed to",
+      "lastMonthTitle": "Seat adjustment for the closed month",
+      "pendingTitle": "Purchase in progress: purchase buttons are hidden",
+      "pendingBody": "Your payment is being confirmed. So that you don't pay twice, no other purchase is offered until activation finishes.",
+      "howBilledTitle": "What it includes and how it is billed",
+      "orgLabel": "Organization",
+      "roleLabel": "Your role",
+      "membersNote": "Team members are not seats: they are managed separately and do not change your invoice.",
+      "membersLink": "Manage the team",
+      "manageBody": "Seats, payment method and invoices are managed in the billing portal.",
+      "pickTitle": "Choose your plan",
+      "planProPrice": "{monthly} per seat per month · {yearly} per seat per year",
+      "planTeamPrice": "{monthly} per month · {yearly} per year · {included} seats included",
+      "summaryLabel": "You are buying",
+      "summaryNote": "Stripe confirms the exact amount, with taxes, before you pay.",
+      "summary": "{plan} · {seats, plural, one {# seat} other {# seats}}",
+      "roleNote": "Your role can't buy or manage billing. Ask someone with the owner, admin or billing role to do it.",
+      "paidPlan": "Paid plan",
+      "seatsFree": "Available",
+      "seatsExtra": "Above what is contracted",
+      "seatsMore": "Add a seat",
+      "seatsLess": "Remove a seat"
     },
     "referenceLedgerCards": {
       "proven": "proven",
@@ -505,7 +843,10 @@
       "footnoteMain": "Four ledgers, <b>never summed</b> — each is a separately measured lever, so a dollar can't be double-counted.",
       "reconciledNote": "Reconciliation residual ≈ 0 proves it.",
       "residualNote": "residual {residual} — check the accounting.",
-      "footnoteReference": "These are <b>reference levers</b>: your live rail measures a different four — provider-cached replaces output-restriction — so we never map one onto the other."
+      "footnoteReference": "These are <b>reference levers</b>: your live rail measures a different four — provider-cached replaces output-restriction — so we never map one onto the other.",
+      "scenarios": "Scenarios in this ledger",
+      "termFloor": "Lower bound of the confidence interval: at that confidence level, the ledger saves at least this much.",
+      "termDelta": "Cost difference between A and B across this ledger's scenarios."
     },
     "integrityQualityChips": {
       "qualityGate": "Quality gate <b>{rate}</b> passed",
@@ -516,7 +857,8 @@
       "cacheBreakEven": "Cache break-even <b>K={k}</b>",
       "provenAt95": "proven at 95%",
       "unprovenMock": "unproven (mock)",
-      "regressedVoids": "A regressed answer voids its saving"
+      "regressedVoids": "A regressed answer voids its saving",
+      "title": "Checks on this run"
     },
     "netSavingsCIBand": {
       "caption": "net savings, <b>95% CI lower bound</b>. Point estimate {point}, upper {upper} — we headline the floor{mockNote}.",
@@ -541,11 +883,13 @@
       "awaitingFirstReport": "Awaiting first report"
     },
     "checkoutBanner": {
-      "successPending": "<b>Payment received.</b> We're activating your licence — this usually takes a few seconds and this page refreshes itself.",
+      "successPending": "<b>Back from Stripe.</b> We're confirming your payment and activating your plan — this usually takes a few seconds and this page refreshes itself.",
       "successActive": "<b>Your subscription is active.</b> The next step is to collect your licence key.",
       "goToInstall": "Get your licence key →",
       "cancelled": "<b>No payment was completed</b> — nothing has been charged to you. You can start again whenever you like.",
-      "successLate": "<b>Still pending.</b> It's been more than two minutes and the licence hasn't appeared yet: that's not normal. Don't buy again. Write to support@bivelio.com with the email you paid with and we'll activate it by hand."
+      "successLate": "<b>Still pending.</b> It's been more than two minutes and the licence hasn't appeared yet: that's not normal. Don't buy again. Write to support@bivelio.com with the email you paid with and we'll activate it by hand.",
+      "cancelledNote": "Cancelling checkout does not cancel any subscription you already had.",
+      "pendingNote": "Coming back from Stripe does not confirm the payment: your plan activates when Stripe confirms it to us. Do not buy again in the meantime."
     },
     "billingState": {
       "pastDueTitle": "Payment failed",
@@ -574,7 +918,6 @@
       "rolAdmin": "Administrator",
       "rolMember": "Member",
       "rolBilling": "Billing",
-      "ayudaRoles": "Administrators manage the team and credentials. Billing sees the plan and can pay, but can't download the license. Members only view the dashboard.",
       "miembrosTitulo": "Members",
       "columnaPersona": "Person",
       "columnaRol": "Role",
@@ -589,7 +932,7 @@
       "confirmar": "Are you sure?",
       "cancelar": "Cancel",
       "transferirTitulo": "Transfer ownership",
-      "transferirIntro": "The owner is who can cancel and change the payment method. After transferring, you become an administrator.",
+      "transferirIntro": "Only the owner can transfer ownership. After transferring, you become an administrator and keep the billing and member permissions.",
       "transferirBoton": "Transfer",
       "transferirConfirmar": "Yes, transfer",
       "vacio": "Nobody else yet.",
@@ -598,11 +941,31 @@
       "enviadoOk": "Invitation sent.",
       "enviadoFallo": "The invitation exists, but the email didn't go out. Try resending it.",
       "sinPermiso": "Only the owner and administrators can manage the team.",
-      "asientosNota": "Inviting someone doesn't use a seat: a seat is a machine, not a person.",
+      "asientosNota": "Members are not billable seats. A seat is a machine or a service identity; inviting a person does not change your invoice.",
       "nombreOrg": "Organization name",
       "nombreOrgAyuda": "This is the name anyone you invite will see.",
       "guardar": "Save",
-      "guardado": "Saved."
+      "guardado": "Saved.",
+      "orgTitulo": "Organization",
+      "miembrosCuenta": "{n, plural, one {# member} other {# members}}",
+      "miembroDesde": "Since {date}",
+      "rolDe": "Role of {email}",
+      "permisosTitulo": "What each role can do",
+      "permisoOwner": "Everything an administrator can do, plus transferring ownership.",
+      "permisoAdmin": "License and service keys, purchase and billing, members and invitations.",
+      "permisoBilling": "Sees the dashboard and manages purchase and billing. Cannot download the license or manage members.",
+      "permisoMember": "Can only view the dashboard.",
+      "invitacionesVacio": "No pending invitations.",
+      "caduca": "expires {date}",
+      "caduco": "expired {date}",
+      "reenviarAyuda": "“Resend” copies the email and role into the form above so you can send the invitation again.",
+      "accionesDe": "Actions for {email}",
+      "quitarTitulo": "Remove {email} from the organization?",
+      "quitarCuerpo": "They will no longer be able to open this organization. Your seats and your invoice do not change. Service keys they created stay active: revoke them in <instalar>First steps</instalar>.",
+      "quitarConfirmar": "Yes, remove",
+      "avisosLabel": "Notifications",
+      "avisoCerrar": "Dismiss notification",
+      "vacioAyuda": "Invite your team with the form below."
     },
     "tokenTotals": {
       "spentLabel": "Tokens spent",
@@ -616,18 +979,18 @@
     "sombraElision": {
       "title": "Shadow elision (hypothetical)",
       "detalle": "≈{usd} across {requests} simulated requests",
-      "nota": "What context elision would have saved on your real traffic, computed by the gateway without touching a single byte. It is never added to the headline and never enters the commission: the lever only turns on when this figure justifies it.",
+      "nota": "What context elision would have saved on your real traffic, computed by the gateway without touching a single byte. It is never added to the headline and never counts as credited savings: the lever only turns on when this figure justifies it.",
       "notaNegativa": "On your traffic, elision would have cost money: rewriting blocks invalidates the provider's prefix cache. This lane exists precisely to see that before turning anything on — which is why it stays off."
     },
     "elisionProveedor": {
       "title": "Provider clearing caused by our dials",
       "detalle": "{requests} credited requests",
-      "nota": "The count is the provider's (applied_edits). It is not a measured saving and never enters your commission; money will follow once the net per model is measured — clearing rewrites the prefix cache, and on some models the net is negative."
+      "nota": "The count is the provider's (applied_edits). It is not a measured saving and never counts as credited savings; money will follow once the net per model is measured — clearing rewrites the prefix cache, and on some models the net is negative."
     },
     "ahorroNativo": {
       "title": "Native savings unlocked",
       "detalle": "{requests} requests with provider cache · reads {lectura} − write premium {prima}",
-      "nota": "This is your provider's own prefix-cache discount (Anthropic with cache_control, OpenAI automatic, Gemini implicit), net of the cache-write premium it bills, computed from its own counter at list price. You see it on your provider's invoice, not ours: it is kept apart from the credited savings and never enters your commission.",
+      "nota": "This is your provider's own prefix-cache discount (Anthropic with cache_control, OpenAI automatic, Gemini implicit), net of the cache-write premium it bills, computed from its own counter at list price. You see it on your provider's invoice, not ours: it is kept apart from the credited savings and is never added to them.",
       "vacio": "No requests read or wrote your provider's prefix cache in this period yet.",
       "proveedor": {
         "anthropic": "Anthropic",
@@ -642,22 +1005,20 @@
       "badgeMedido": "Measured",
       "proyeccionTitulo": "Projected saving for {periodo}",
       "proyeccionNota": "What is measured so far, plus your last {dias} days of pace across the {restantes} days still to come. An estimate, not an invoice.",
-      "comision": "Projected commission",
-      "comisionNota": "{pct} of what you save. A month with no saving is a month with no commission.",
-      "comisionCalibracion": "Calibration month: nothing is charged. The figure is the commission there would be.",
       "cerrado": "Closed period: this is what it was, not where it is heading.",
       "pocosDias": "Too early to draw the line: {min} complete days are needed and there are {n}. What is measured is already real.",
       "medido": "Saved so far (measured)",
       "diaDeMes": "Day {n} of {total}",
       "ritmoLabel": "Pace, last {dias} days",
       "porDia": "{importe} / day",
-      "diasRestantes": "{n} days still to come"
+      "diasRestantes": "{n} days still to come",
+      "verExtracto": "View statement"
     },
     "extracto": {
       "metaTitle": "Statement · BiVelio Savings Layer",
-      "eyebrow": "Shadow mode · nothing is charged here",
-      "title": "Your statement, before the invoice exists",
-      "intro": "The exact document the future variable invoice will produce: measured savings only, with the tiered rate and no minimum — no measured savings, no commission. The seat fee is a separate, fixed monthly charge. During calibration, the commission is always {cero}.",
+      "eyebrow": "Statement",
+      "title": "Spend, savings and billing",
+      "intro": "Three things, kept apart: what you spent and saved this period, measured; how your current contract is billed; and the commission history, a model closed to new sign-ups.",
       "periodo": "Period {periodo}",
       "badgeCalibracion": "CALIBRATION PERIOD — ZERO CHARGE",
       "badgeSombra": "SHADOW — NO REAL CHARGE",
@@ -666,10 +1027,8 @@
       "notaCalibracion": "Calibration month: the commission would have been {habria} — and it is not charged.",
       "notaSombra": "Shadow figure: the computed commission is {comision}. No invoice includes it yet.",
       "baseMedida": "Measured base",
-      "enUsd": "{usd} at provider prices",
       "requests": "{n} measured requests",
       "ahorroMedido": "Measured savings",
-      "ratio": "ratio {pct}",
       "tramosTitulo": "The commission, bracket by bracket",
       "sinAhorro": "No measured savings this period — no measured savings, no commission. Ever.",
       "colTramo": "Bracket",
@@ -677,11 +1036,11 @@
       "colBase": "Bracket base",
       "colComision": "Commission",
       "estimadoExcluido": "Estimated savings excluded from the base (context, never billable): {usd}.",
-      "sombraElision": "Shadow lane: elision would have saved {usd} across {requests} simulated requests. Hypothetical — it never enters the base or the commission.",
+      "sombraElision": "Shadow lane: elision would have saved {usd} across {requests} simulated requests. Hypothetical — it never enters the base.",
       "sombraElisionNegativa": "Shadow lane: elision would have cost an extra {usd} across {requests} simulated requests. That is why it stays off: only what truly saves gets turned on.",
-      "elisionProveedor": "Provider clearing lane: {requests} requests where our dials made the provider clear context. A count, not a saving — it never enters the base or the commission.",
+      "elisionProveedor": "Provider clearing lane: {requests} requests where our dials made the provider clear context. A count, not a saving — it never enters the base.",
       "referencia": "Measured by reference: {usd} across {requests, plural, one {# repeated request} other {# repeated requests}} served without calling your provider. Each is valued with the counter your provider returned for the identical request that already ran — it is in that request's report and in your provider's usage for that day — at the cached-input rate, the lowest your provider bills for repeating a prompt; the output only counts when sampling was deterministic and the call that ran carried no hidden reasoning (your provider reported zero reasoning tokens or, where it does not break them out, its answer had no reasoning block). Included in the base.",
-      "referenciaExcluida": "Measured by reference: {usd} across {requests, plural, one {# repeated request} other {# repeated requests}}. Shown for context — for now it is kept out of the base and the commission.",
+      "referenciaExcluida": "Measured by reference: {usd} across {requests, plural, one {# repeated request} other {# repeated requests}}. Shown for context — for now it is kept out of the base.",
       "exportarReferencias": "Download the repeated requests of this period, one row each (CSV)",
       "exportarReferenciasPorDia": "Too many repeated requests for a single file — download this period one day at a time (CSV):",
       "parametros": "Statement parameters — price catalog {version} · exchange rate {fx}.",
@@ -707,7 +1066,38 @@
       "estadoSinCargo": "no charge",
       "estadoPendiente": "pending",
       "verFactura": "view",
-      "estadoExento": "commission-exempt"
+      "estadoExento": "commission-exempt",
+      "gastoTitulo": "Spend and savings for the period",
+      "gastoSub": "Measured with your provider's own meter, on your traffic. This is not an invoice.",
+      "sinTraficoTitulo": "No measured traffic in this period yet",
+      "sinTraficoBody": "Once your layer measures requests, the base and the savings appear here. A period with no data is not shown as zero.",
+      "baseUsd": "At provider prices",
+      "ratioLabel": "Savings over the base",
+      "contextoTitulo": "Outside the base",
+      "contratoTitulo": "Your current contract",
+      "contratoSub": "How you are billed today.",
+      "regimenFijaTitulo": "Fixed-fee plan: no commission",
+      "regimenFijaBody": "Your plan is billed as a fee, whether or not you save, and carries no commission on savings. The fee, the seats and the invoices are under Account.",
+      "regimenExentaTitulo": "Account exempt from commission",
+      "regimenExentaBody": "This organization is marked as exempt: the commission is calculated for information only and its charge is zero.",
+      "regimenLegadoTitulo": "Legacy commission model",
+      "regimenLegadoBody": "Your contract keeps the model with a commission on measured savings, closed to new sign-ups. Its calculation is in the history below; the per-seat fee is a separate charge.",
+      "regimenNingunoBody": "This page cannot confirm your billing model. What you are charged is what appears on your invoices. If in doubt, write to support@bivelio.com.",
+      "regimenMedirTitulo": "Measure: estimated savings, never billed",
+      "regimenMedirBody": "Your organization is on the free Measure license. Usage recorded under Measure runs in shadow mode: its savings are an estimate of what it would have saved, never billed and never part of any commission.",
+      "regimenIndeterminadoTitulo": "We cannot show your contract's billing model here",
+      "regimenIndeterminadoBody": "This page could not determine which model applies to your subscription. What you are charged is what appears on your invoices and in the billing portal.",
+      "irACuenta": "View plan and billing",
+      "historicoTitulo": "Commission history",
+      "historicoEtiqueta": "Legacy model, closed to new sign-ups",
+      "historicoSub": "A commission on measured savings was the previous model. It is kept here for reference and audit; it is neither an offer nor the invoice of a fixed-fee plan.",
+      "simulacionTitulo": "Commission simulation for this period",
+      "simulacionAplica": "This is the calculation for the model your contract keeps.",
+      "simulacionNoAplica": "It does not apply to your current contract: shown for reference only.",
+      "simulacionPuedeAplicar": "It may apply depending on your contract: shown here as a calculation, not an invoice.",
+      "simulacionMedir": "On Measure this is an estimate only: never billed.",
+      "notaSombraReferencia": "Shadow figure: the computed commission is {comision}. It is a calculation, not an invoice.",
+      "historialIntroNeutro": "Each closed period is fixed immutably on day one. If a period produces a charge, its invoice cites that document."
     },
     "usageExplorer": {
       "title": "Usage explorer",
@@ -793,7 +1183,15 @@
         "sesiones": "Sessions",
         "maquinas": "Machines",
         "nativo": "Native savings unlocked"
-      }
+      },
+      "sortBy": "Sort by {column}",
+      "toastHidden": "Card hidden: {card}",
+      "toastShown": "Card shown: {card}",
+      "toastReset": "Layout reset",
+      "toastSaved": "Saved in this browser only.",
+      "undo": "Undo",
+      "toastRegion": "Panel notices",
+      "toastClose": "Dismiss notice"
     },
     "team": {
       "metaTitle": "Team · BiVelio Savings Layer"
@@ -830,18 +1228,20 @@
     "metaTitle": "BiVelio — Verify Your LLM Savings",
     "metaDescription": "An SDK that has your app pay the LLM provider only for what it needs, and a gateway that meters your coding agent. Apache-2.0 open core: no key, no signup, no telemetry — measured with your provider's own meter; the optional cloud is a flat fee with no commission on your savings.",
     "hero": {
-      "title": "Your LLM bill, under control.",
-      "titleAccent": "Measured on every call.",
-      "sub": "Savings answers what your app repeats without calling the provider again, and measures every call with its counter.",
-      "ctaStart": "Get started",
-      "ctaBench": "See the public bench",
+      "title": "Optimize your LLM calls.",
+      "titleAccent": "Verify every saving.",
+      "titleMark": "saving",
+      "sub": "Run the open-source engine on your own infrastructure. Connect Savings Cloud to centralize measurement and management for your team, on flat-fee plans.",
+      "ctaStart": "Start with Measure",
+      "ctaBench": "See reproducible results",
       "panelAlt": "The Savings dashboard with the public bench's data: the measured saving and its split by model.",
       "panelCaption": "Dashboard with the public bench's data",
       "medidoEnVivo": "Measured live with each provider's own counter",
       "note": "Installs in minutes. Your messages never pass through our servers.",
       "proofTitle": "Measured against a real provider",
       "compatibleCon": "Compatible with",
-      "compatibleNota": "Compatible is not measured. The SDK works with any endpoint compatible with the OpenAI API, plus the native Anthropic adapter and the native Gemini adapter (new in {gemini}). With a savings figure on the public bench, today only OpenAI and Anthropic models; Gemini has no savings figure. What is measured for Gemini: {flash}, through its native API, in the weekly live bench of {fecha} — all four batteries, with no layer failures and no refusal cached or credited as savings. That bench checks that the layer breaks nothing and does not overcharge; it does not measure a saving. Also measured: {pro}, through its native API, in two partial runs on {fechaPro} (its daily provider quota does not fit all four batteries in one day): all four batteries, again with no layer failures and no refusal cached or credited as savings."
+      "compatibleNota": "Compatible is not measured. The SDK works with any endpoint compatible with the OpenAI API, plus the native Anthropic adapter and the native Gemini adapter (new in {gemini}). With a savings figure on the public bench, today only OpenAI and Anthropic models; Gemini has no savings figure. What is measured for Gemini: {flash}, through its native API, in the weekly live bench of {fecha} — all four batteries, with no layer failures and no refusal cached or credited as savings. That bench checks that the layer breaks nothing and does not overcharge; it does not measure a saving. Also measured: {pro}, through its native API, in two partial runs on {fechaPro} (its daily provider quota does not fit all four batteries in one day): all four batteries, again with no layer failures and no refusal cached or credited as savings.",
+      "ctaOss": "Install open source"
     },
     "cascade": {
       "title": "Cheapest execution wins",
@@ -939,7 +1339,7 @@
     "gateway": {
       "eyebrow": "Gateway · coding terminals",
       "title": "Claude Code on an API key? See its real spend, token by token.",
-      "body": "One command puts a local meter in front of your terminal, with no changes to your code: export your service key and start your agent through bvsala. Your prompts never leave your machine — only counts and cost reach your dashboard.",
+      "body": "One command puts a local meter in front of your terminal, with no changes to your code: export your service key and start your agent through bvsala. Your prompts don't pass through BiVelio's servers; they go to the provider you configure, and only counts and cost reach your dashboard.",
       "note": "The gateway measures, with your provider's own counter, every request whose usage the provider reports (for models in our price catalog) and starts with no keys at all (COMMUNITY mode): an optional service key adds the dashboard and org entitlements. With a PRO license, on Anthropic models, it also applies one lever by default: it moves cache writes from the one-hour TTL to the five-minute one only on turns where a large part of the prompt is new — such as a session's first turn or a compaction — and leaves chained turns as they are. That changes the price, never the content the model reads. The other levers stay off until you switch them on. The savings-mode skill is available for your caps, with its effect still to be measured. The gateway also works with Codex CLI, Goose, Qwen Code, opencode, Kilo, Aider and, with your own Anthropic key, GitHub Copilot CLI; for others, such as Cline or Continue, bvsala doctor prints the exact configuration. Cursor works through its OpenAI base-URL override with your own key, and Gemini CLI is wrapped by bvsala gemini.",
       "pythonNote": "Python or any other language? Point the official OpenAI or Anthropic SDK at the gateway and every request whose usage the provider reports, for a model with a list price, is recorded in this dashboard at that price; the gateway's log says when one is not. bvsala doctor prints the base URL for each SDK. For OpenAI streaming, ask for usage in the request (stream_options.include_usage).",
       "cta": "See how it works →"
@@ -952,7 +1352,7 @@
     },
     "pricing": {
       "eyebrow": "Plans",
-      "title": "Measure for free. Pay per seat when you want the savings.",
+      "title": "Open-source engine. Cloud control for your team.",
       "body": "The package is Apache-2.0 open core: no key needed, every local lever on, zero telemetry. The cloud is optional — Measure is the free plan, Pro and Team are billed per seat, in {currency}, whether or not you save, and carry no commission on your savings.",
       "amount": "{amount}",
       "per": "/ seat / month",
@@ -986,7 +1386,7 @@
         "Every BV‑SALA optimization, uncapped",
         "A receipt per request: SavingsReport with four ledgers, measured and estimated kept apart",
         "Savings dashboards & team analytics",
-        "Your prompts never leave your infrastructure"
+        "Your prompts don't pass through BiVelio's servers; they go to the provider you configure"
       ],
       "cta": "Get started →",
       "trustTitle": "Why the price can be this low",
@@ -1008,7 +1408,9 @@
           "rest": "Billing reads the same SavingsReport you verify above — no black box."
         }
       ],
-      "taxNote": "VAT not included. If your company has an EU VAT number, the reverse charge applies."
+      "taxNote": "VAT not included. If your company has an EU VAT number, the reverse charge applies.",
+      "community": "<b>Community is not a plan.</b> The open-source engine is free and runs without an account: <install>install it</install> whenever you like. The four plans below are Savings Cloud.",
+      "fullTerms": "See the published pricing"
     },
     "footer": {
       "ctaTitle": "Measure it on your own traffic",
@@ -1043,7 +1445,9 @@
       "howItWorks": "How it works",
       "pricingTerms": "Pricing terms",
       "dataPrivacy": "What BiVelio receives",
-      "paper": "Paper"
+      "paper": "Paper",
+      "socialLinkedIn": "BiVelio on LinkedIn",
+      "socialGitHub": "BiVelio on GitHub"
     },
     "cta15": {
       "titulo": "Book 15-min call",
@@ -1084,36 +1488,34 @@
       ]
     },
     "offers": {
-      "eyebrow": "Two products",
+      "eyebrow": "Where it plugs in",
       "title": "Where do your tokens go: your app, or your coding agent?",
-      "sub": "Both are open core and both count with your provider's own meter. They do different jobs, so each makes its own promise — and today only one of them has a published savings figure.",
+      "sub": "The SDK and the gateway are two ways to integrate the same open-source engine, and both count with your provider's own meter. Their figures are not the same class of evidence: the SDK's comes from a live A/B test; the gateway's, from a counterfactual replay of recorded sessions.",
       "install": "Install",
       "installMore": "Full setup",
       "figNoteToggle": "Why this number, and its limits",
       "sdk": {
         "name": "SDK",
-        "band": "SDK — for JavaScript and TypeScript apps on an API key",
         "who": "For Node.js apps, in JavaScript or TypeScript, that call an LLM API with your own key and pay for every token.",
         "what": "It wraps the call inside your code, sends the provider only what has to be paid for, and returns a SavingsReport with every response.",
         "figureLabel": "The figure we publish",
         "figureNote": "Not a forecast: what you save depends on how much your traffic repeats. Only what your provider's counter confirms counts in your savings report — including repeated requests served without calling your provider, each valued with the counter of the identical request that already ran.",
         "ctaMeasured": "How we measured it",
-        "ctaVerify": "Try one lever on your data"
+        "ctaVerify": "Try one lever on your data",
+        "requires": "Node.js and your provider's API key."
       },
       "gateway": {
         "name": "Gateway",
-        "band": "Gateway — for coding agents on an API key",
         "who": "For developers who run Claude Code, Codex CLI or another coding agent on an API key.",
         "what": "One command puts a local meter in front of your terminal, with no code to change. It counts each request your provider reports usage for, with the provider's own counter — for models in our price catalog — and adds it up in your dashboard, by day and by model.",
         "figureLabel": "The figure we publish",
         "figureQue": "estimated net reduction in list-price cost with PRO's cache TTL change, after induced cache misses ({confianza} interval: {bajo} to {alto}). Counterfactual replay with a partially reconstructed baseline on {sesiones} Claude Code sessions from one organization; not a live A/B run or invoice reconciliation.",
         "figureNote": "Not a forecast for your team: it is one organization, one provider and list prices, and it is a small saving that shows where Anthropic spend is high. With PRO, on Anthropic models, it moves cache writes from the one-hour TTL to the five-minute one, only on turns where a large part of the prompt is new — such as a session's first turn or a compaction — and leaves the chained turns of a running session as they are. That changes the price, never what the model reads, and only what your provider's counter confirms counts in your savings report.",
         "benchLink": "The TTL bench report: what was simulated, the per-model breakdown and its limits →",
-        "cta": "Set up the gateway"
+        "cta": "Set up the gateway",
+        "requires": "Node.js with npm, and a coding agent that uses its own API key."
       },
-      "skill": {
-        "band": "Skill — for coding agents on a subscription plan"
-      }
+      "requires": "Requirements:"
     },
     "verify": {
       "eyebrow": "SDK · one lever, on your data, before paying",
@@ -1148,6 +1550,157 @@
       "sinRepeticiones": "on traffic without repeats (MT-Bench, BFCL): indistinguishable from zero",
       "anthropic": "reduced flow, not the OpenAI stream: {familias} families / {peticiones} requests per arm (95% interval: {bajo} to {alto}). About {prefijo} of A's list-price cost is a descriptive net cache-pricing contrast (arm B's cache reads valued against ordinary input pricing), not an independently identified causal effect nor a pre-existing Anthropic discount",
       "pie": "It depends on how much your traffic repeats. Every battery, with its full report: <bench>public bench</bench>."
+    },
+    "receipt": {
+      "title": "Receipt of one measurement",
+      "model": "Model",
+      "sample": "Sample",
+      "sampleValue": "{familias} families · {peticiones} requests per arm",
+      "repeats": "Repeated requests",
+      "interval": "95% interval",
+      "total": "Lower cost",
+      "source": "Live A/B against the provider, at versioned list prices. Not an invoice reconciliation.",
+      "prefixCache": "Of which, cache-pricing contrast (approx.)"
+    },
+    "ways": {
+      "eyebrow": "Open engine, optional cloud",
+      "title": "Two ways to use Savings.",
+      "sub": "The engine is the same. What changes is where you manage it and what leaves your infrastructure.",
+      "q": {
+        "runs": "Where it runs",
+        "account": "Account",
+        "telemetry": "Telemetry",
+        "manage": "Management"
+      },
+      "community": {
+        "name": "Community",
+        "tag": "Open source · Apache-2.0",
+        "lede": "The engine, the SDK and the local gateway. For one person or for a whole company.",
+        "runs": "On your infrastructure: the SDK inside your process, or the gateway on your machine.",
+        "account": "None needed. No sign-up, no card and no BiVelio key.",
+        "telemetry": "None by default.",
+        "manage": "Locally: every call returns its SavingsReport.",
+        "code": "View the code",
+        "chips": [
+          "No account or card",
+          "No telemetry by default",
+          "SDK and local gateway"
+        ]
+      },
+      "cloud": {
+        "name": "Savings Cloud",
+        "tag": "Optional · starts free",
+        "lede": "The dashboard that centralizes measurement and management for your team.",
+        "runs": "The engine stays on your infrastructure. Cloud adds the dashboard.",
+        "account": "A Savings account and a service key.",
+        "telemetry": "Counts and cost, depending on your plan. Your prompts don't pass through BiVelio's servers.",
+        "manage": "Team dashboard, organization and licences.",
+        "plans": "See plans",
+        "chips": [
+          "Starts free with Measure",
+          "Team dashboard",
+          "Flat-fee plans"
+        ]
+      }
+    },
+    "evidence": {
+      "dated": "Report dated {fecha}",
+      "report": "Read the report"
+    },
+    "flow": {
+      "eyebrow": "How the data travels",
+      "title": "From your infrastructure to your provider, without passing through BiVelio.",
+      "sub": "The SDK and the gateway run locally and call the provider you configure directly. Connecting Savings Cloud is optional: when you do, counts and cost reach your dashboard according to your plan, not the content of your prompts.",
+      "app": "Your app or agent",
+      "local": "SDK or local gateway",
+      "localSub": "On your infrastructure",
+      "provider": "Your LLM provider",
+      "providerSub": "The one you configure",
+      "cloud": "Savings Cloud",
+      "cloudSub": "Optional",
+      "prompts": "Prompts and responses",
+      "telemetry": "Telemetry: counts and cost",
+      "caption": "Illustration of how it works.",
+      "privacy": "What BiVelio receives, field by field →"
+    },
+    "faq": {
+      "eyebrow": "Buying questions",
+      "title": "What to know before you pay.",
+      "more": "The contractual detail is in the <pricing>published pricing</pricing>; what the Software sends to BiVelio is on the <privacy>privacy page</privacy>.",
+      "items": [
+        {
+          "q": "What exactly do I pay for?",
+          "a": "The open-source engine is free. Savings Cloud has a free plan, Measure, and two flat-fee plans billed per seat, Pro and Team. The fee is due whether or not you save, carries no commission on your savings, and does not include your LLM provider's usage: you keep paying that yourself, on their terms."
+        },
+        {
+          "q": "What is a seat?",
+          "a": "A machine or a service identity that runs Savings. It is not a person: the people on your team are managed separately, in the dashboard. CI runners and ephemeral runners do not count as seats."
+        },
+        {
+          "q": "How are Measure and Community different?",
+          "a": "Community is the open-source engine on your infrastructure: no account, no BiVelio key and no telemetry by default. Measure is the free Savings Cloud plan: it needs an account and runs in shadow mode, so it does not change your requests or serve responses from cache; your dashboard shows what would have been saved."
+        },
+        {
+          "q": "Does it work with a subscription like ChatGPT Plus?",
+          "a": "Not as savings on a bill. Savings optimizes and measures calls to an API you pay for by usage; a flat-rate subscription is not an API bill that can be optimized. Through the gateway that traffic is measured, but no saving is credited to it. For subscription limits there is the savings-mode skill, a complementary resource whose effect has not been measured yet."
+        },
+        {
+          "q": "Do I have to change provider?",
+          "a": "No. You keep your provider and your own key, and your calls still go straight to it. Compatible does not mean measured: the public bench says which models have a published figure."
+        },
+        {
+          "q": "What data does BiVelio receive?",
+          "a": "With Community, none by default. Once you connect Savings Cloud, your dashboard receives counts and cost according to your plan; your prompts don't pass through BiVelio's servers. The privacy page lists it field by field."
+        },
+        {
+          "q": "Do you guarantee savings?",
+          "a": "No. What you save depends on your traffic; for example, on how much of it repeats. We publish every measurement with its model, its sample and its interval, and Measure lets you see what would have been saved on your own traffic before you pay anything."
+        }
+      ]
+    },
+    "closing": {
+      "title": "Measure first.",
+      "titleAccent": "Decide later.",
+      "titleMark": "later",
+      "sub": "Measure is free and asks for no card: it runs in shadow mode and shows what would have been saved on your own traffic. The engine is open source, and its code is in plain sight.",
+      "repo": "View the repository"
+    },
+    "layer": {
+      "eyebrow": "Savings Layer, in action",
+      "title": "A thin layer between your code and your provider.",
+      "titleAccent": "That's the Savings Layer.",
+      "titleMark": "Savings Layer",
+      "sub": "It runs inside your infrastructure, sends the provider only what has to be paid for, and returns a receipt with every response. Your prompts go straight to the provider you configure; Savings Cloud is optional and receives counts and cost, not their content.",
+      "figLabel": "Animated illustration: the path of one call through Savings Layer",
+      "stepsLabel": "The path, step by step",
+      "pause": "Pause animation",
+      "resume": "Resume animation",
+      "fromLabel": "Your calls",
+      "srcApp": "Your app",
+      "srcAppVia": "SDK",
+      "srcAgent": "Your agent",
+      "srcAgentVia": "local gateway",
+      "memoryLabel": "Memory of recent requests",
+      "compactLabel": "Data compaction",
+      "providersLabel": "The provider you configure",
+      "nativeAdapter": "native adapter",
+      "compatName": "Any endpoint compatible with the OpenAI API",
+      "step1Title": "The call enters the layer",
+      "step1Body": "It leaves your app or your agent without leaving your infrastructure.",
+      "step2Title": "Repeated · answered without calling the provider",
+      "step2Body": "The layer recognizes it in its memory and returns the stored response.",
+      "step3Title": "Data compacted · fewer tokens",
+      "step3Body": "A new request travels lighter to the provider you configure, and the response comes back through the layer.",
+      "step4Title": "Counts and costs only · never prompts",
+      "step4Body": "Savings Cloud is optional: if you connect it, it receives figures, not content.",
+      "legendRepeat": "Repeated calls",
+      "legendRepeatTo": "no provider call",
+      "legendData": "Compacted data",
+      "legendDataTo": "fewer tokens",
+      "legendCache": "Provider cache",
+      "legendCacheTo": "cheaper input",
+      "compatNote": "Compatible does not mean measured.",
+      "compatLink": "What is measured with each provider"
     }
   },
   "invitacion": {
@@ -1181,13 +1734,21 @@
     "invitacionPara": "The invitation is for <b>{email}</b>.",
     "sesionActual": "You're currently signed in as <b>{email}</b>.",
     "cerrarYContinuar": "Sign out and use another account",
-    "cerrando": "Signing out…"
+    "cerrando": "Signing out…",
+    "kicker": "Invitation",
+    "labelOrg": "Organization",
+    "labelFor": "For",
+    "panelTitle": "One team, <em>one dashboard</em>.",
+    "panelBody": "Accepting gives you access to the organization's dashboard with your own account. The subscription's seats count machines or service identities, not people.",
+    "arteAlt": "Illustration: an organization and its Savings dashboard already connected, and a third circle moving into the empty slot."
   },
   "benchmarksPage": {
     "metaTitle": "Public A/B bench: measure us | BiVelio Savings Layer",
     "metaDescription": "Four public batteries (GSM8K, BFCL, XSTest and MT-Bench), two arms metered by the provider's own usage counter, every figure with its n, its interval and its date. What it saves, what it doesn't, and the bugs the bench found.",
     "eyebrow": "Public bench · reproducible",
-    "title": "Our A/B bench, in the open. Measure us.",
+    "title": "Our A/B bench, in the open.",
+    "titleAccent": "Measure us.",
+    "titleMark": "Measure us",
     "lede": "We publish every run: four batteries on public datasets, {modelos} models, and both arms metered by the provider's own usage counter. Every figure carries its n, its interval and its date. What doesn't save is here too.",
     "stats": {
       "batteries": "batteries",
@@ -1203,7 +1764,7 @@
       "intervals": "<b>{nivel} intervals.</b> Each harness computes them (resampling whole question families, Wilson for refusal rates). An interval that crosses zero means “indistinguishable from zero”, and we say so.",
       "package": "<b>The package you install.</b> The A/B runs in the tables below were made on {version}: arm B runs the source of that tag, and its <code>dist/index.js</code> is byte-identical to the npm tarball's (sha256 <code>{sha}</code>). The weekly live bench is different: on every run it measures the source of main as it stands that day, before it is released.",
       "guard": "<b>No shortcuts.</b> Each harness watches the hosts it talks to and carries a per-model spend cap written in code. A model that could not be measured is reported as “not measured”, with the reason.",
-      "paper": "<paper>Read the 17-page research paper (PDF)</paper>: methods, evidence types and limitations, including why the OpenAI ratio 1.05 describes one operating point, not an empirical slope.",
+      "paper": "<paper>Read the {paginas}-page research paper, {version} (PDF)</paper>: methods, evidence types and the limitations of each figure, revised after an external pre-publication review.",
       "batteriesTitle": "Four batteries, public datasets, pinned",
       "commitOnly": "pinned by commit"
     },
@@ -1450,7 +2011,7 @@
     },
     "repro": {
       "title": "How to reproduce it",
-      "intro": "The bench's code is not public yet; the method is, and it fits in five steps. With your own provider keys you can rerun it and compare figure by figure with our reports.",
+      "intro": "The bench's code is in the open repository, and the method fits in five steps. With your own provider keys you can rerun it and compare figure by figure with our reports.",
       "steps": {
         "dataset": "<b>The dataset.</b> Download each public dataset at the commit in the table above and check every file's sha256 before using it. If it does not match, it is not the same dataset.",
         "package": "<b>The layer.</b> Install <code>@bivelio/savings-layer</code> from npm at the version the report names and check the sha256 of <code>dist/index.js</code>: every report carries its own.",
@@ -1464,17 +2025,83 @@
     },
     "invite": {
       "title": "Measure us yourself",
-      "body": "An independent measurement is worth more than ours. The bench's code is not public yet: if you want to rerun the measurement, or measure the layer with your own harness or your own traffic, write to us and we will give you what you need to do it.",
+      "body": "An independent measurement is worth more than ours. The bench's code is in the open repository: if you want to rerun the measurement, or measure the layer with your own harness or your own traffic, write to us and we will give you what you need to do it.",
       "contact": "Write to us at",
       "cta": "Send an email",
       "subject": "Independent measurement of the public bench"
-    }
+    },
+    "centre": {
+      "indexTitle": "On this page",
+      "indexAria": "Evidence centre index",
+      "readTitle": "How to read this page",
+      "classAb": "Two arms on the same request, costed with the usage the provider reports. This is how the bench batteries are measured.",
+      "classReplay": "Counterfactual replay with a partially reconstructed baseline. It is not a live A/B, billed savings or an invoice reconciliation.",
+      "compatible": "Compatible does not mean measured: a model only counts here if it has a published run, and whatever could not be measured is stated with its reason.",
+      "diagramRequest": "The same request",
+      "diagramA": "Arm A: straight to the provider, without the layer",
+      "diagramB": "Arm B: through the layer, with its default configuration",
+      "diagramMeter": "The provider's usage meter measures both arms"
+    },
+    "index": {
+      "method": "Method",
+      "weekly": "Weekly bench",
+      "savings": "Measured savings",
+      "gatewayTtl": "Gateway replay",
+      "guarantees": "Guarantees",
+      "noSavings": "What it does not save",
+      "status": "Status by model",
+      "compat": "Compatibility",
+      "bugs": "Bugs found",
+      "reproduce": "Reproduce",
+      "invite": "Measure us"
+    },
+    "filter": {
+      "label": "Reading filter",
+      "all": "Everything",
+      "negative": "No savings and bugs",
+      "reproduce": "Method and reproduction",
+      "showing": "Showing {n} of {total} sections.",
+      "reset": "Show everything"
+    },
+    "ab": {
+      "title": "Both arms, model by model",
+      "intro": "GSM8K, the battery built to measure savings. Pick a measured model: A goes straight to the provider and B goes through the layer.",
+      "armA": "Without the layer",
+      "armB": "With the layer",
+      "metricCost": "Cost of the run",
+      "metricAccuracy": "Accuracy",
+      "base": "Base",
+      "baseline": "reference arm",
+      "requests": "{n} requests",
+      "noLift": "No difference",
+      "metric": "Metric",
+      "arms": "Arms compared",
+      "ahead": "{nombre} is ahead by {porcentaje} percent",
+      "noValue": "no value",
+      "up": "rises {porcentaje} percent",
+      "down": "falls {porcentaje} percent",
+      "hint": "A is the reference; B goes through the layer.",
+      "sample": "Sample",
+      "method": "See the methodology",
+      "note": "Only models with a measured run appear.",
+      "forestTitle": "Measured saving per model, with its interval",
+      "forestHint": "The dot is the estimate; the bar, the confidence interval; the line, zero. All on the same scale."
+    },
+    "terms": {
+      "interval": "The estimate and, in brackets, its confidence interval. If the interval crosses zero, it cannot be told apart from zero.",
+      "sample": "Requests per arm and how many are unique questions; the rest are exact repeats and paraphrases.",
+      "accuracy": "Correct answers on the questions with a published answer, in arm A and in arm B.",
+      "run": "Package version that ran in arm B, and the day of the run."
+    },
+    "tableRegion": "Scrollable table: {title}"
   },
   "howItWorks": {
     "metaTitle": "Where does the saving install? · BiVelio Savings Layer",
-    "metaDescription": "BV‑SALA is a layer that installs in your application's code, where the API is called. What it can save, where it doesn't apply, and how it's truly measured.",
+    "metaDescription": "Savings runs in your infrastructure, as an SDK or local gateway. Open-source engine, optional Savings Cloud: what it saves, its limits, how it's measured.",
     "eyebrow": "The layer, explained · no jargon",
-    "title": "Where does the saving install?",
+    "title": "Where does",
+    "titleAccent": "the saving install?",
+    "titleMark": "install",
     "lede": "BV‑SALA is not an app, not an extension, not a ChatGPT setting. It's a piece of code a developer places inside their own application, right where that application calls your provider's API. It can only save where a per-token bill exists — and can only measure it where it sees every request go by.",
     "s1Title": "The layer lives inside your code",
     "s1Sub": "The same call, with and without the layer. Traffic always travels straight from your application to the provider — BV‑SALA is not a middleman server and never sees your data from outside.",
@@ -1523,15 +2150,123 @@
     "ctaSignup": "Create account",
     "ctaInstall": "Go to the install guide",
     "billWith": "It depends",
-    "billDepends": "on how much your traffic repeats"
+    "billDepends": "on how much your traffic repeats",
+    "hero": {
+      "ctaInstall": "Install open source",
+      "ctaResults": "See reproducible results"
+    },
+    "beam": {
+      "eyebrow": "Architecture",
+      "title": "From your code",
+      "accent": "to your provider",
+      "lede": "Savings runs inside your infrastructure: as an SDK in your application's process or as a local gateway in front of it. The content of every request travels to the provider you configure; it does not pass through BiVelio's servers.",
+      "app": "Your application",
+      "appSub": "your code and your API key",
+      "agent": "Your coding agent",
+      "agentSub": "a coding terminal",
+      "hub": "SDK / local gateway",
+      "hubSub": "your infrastructure",
+      "provider": "Configured provider",
+      "providerSub": "receives the content",
+      "cloud": "Savings Cloud dashboard",
+      "cloudSub": "optional, if you connect it",
+      "telemetry": "Telemetry",
+      "caption": "Illustration of how it works",
+      "alt": "A request leaves your application or your coding agent, passes through the SDK or the local gateway inside your infrastructure and reaches the provider you configured. Separately, and only if you connect Savings Cloud, the dashboard receives usage telemetry.",
+      "f1Title": "Content goes to your provider",
+      "f1Body": "Prompts and responses travel from your infrastructure to the provider you configure, with your key. They do not pass through BiVelio's servers.",
+      "f2Title": "No account, zero telemetry",
+      "f2Body": "The open-source engine runs locally without a BiVelio key and, by default, sends nothing.",
+      "f3Title": "Cloud receives what Privacy defines",
+      "f3Body": "If you connect Savings Cloud, the dashboard receives only the data listed on <link>the privacy page</link>."
+    },
+    "ways": {
+      "eyebrow": "Two ways to install it",
+      "title": "SDK in your process or local gateway",
+      "lede": "They are two different pieces with different scopes. The deciding question is who wrote the code that calls the API.",
+      "sdk": {
+        "kicker": "SDK · in-process",
+        "title": "Inside your application",
+        "body": "An npm package that wraps the provider call in your own code. It runs in the same process as your application: there is no server in between.",
+        "p1": "For whoever develops the application that calls the API, on Node.js.",
+        "p2": "The package's savings levers run here.",
+        "p3": "Every call returns a SavingsReport, with measured and estimated kept apart.",
+        "cta": "Install the SDK"
+      },
+      "gateway": {
+        "kicker": "Gateway · local proxy",
+        "title": "In front of your application or agent",
+        "body": "bvsala starts a proxy on your own machine. You point the base URL of the official OpenAI or Anthropic SDK at it, or launch Claude Code through it, without touching your code.",
+        "p1": "For a coding terminal or an application in any language that lets you set its base URL.",
+        "p2": "It meters traffic for models with a list price.",
+        "p3": "The npm package's levers do not run here; the gateway's own apply only to Anthropic traffic, with a PRO license.",
+        "cta": "See the gateway"
+      }
+    },
+    "cases": {
+      "skillNote": "The instructions skill has a different scope: it changes how the assistant works inside a subscription with caps. It does not meter a bill or apply the SDK or gateway levers. <link>See the skill</link>"
+    },
+    "pieces": {
+      "eyebrow": "Map",
+      "title": "The pieces of Savings",
+      "lede": "A map of pieces, not five stages every request goes through. Pick one to see what it does, where it lives and whether it needs an account.",
+      "tablist": "Pieces of Savings",
+      "what": "What it does",
+      "where": "Where it lives",
+      "account": "Account",
+      "sdk": {
+        "name": "SDK",
+        "hint": "in-process",
+        "what": "Wraps the provider call and applies the package's savings levers.",
+        "where": "Inside your application's process.",
+        "account": "Not needed."
+      },
+      "gateway": {
+        "name": "Local gateway",
+        "hint": "proxy",
+        "what": "Forwards requests to the provider and records their usage.",
+        "where": "On your machine or your server, as a local proxy.",
+        "account": "Not for local use. Seeing spend in the dashboard and the PRO-license downgrade require Cloud."
+      },
+      "measure": {
+        "name": "Measurement",
+        "hint": "SavingsReport",
+        "what": "Counts the savings of each request with the usage your provider reports, and keeps measured apart from estimated.",
+        "where": "Locally, in every response; shared in the dashboard if you connect Cloud.",
+        "account": "Locally, no. To share it with your team, yes."
+      },
+      "cloud": {
+        "name": "Cloud dashboard",
+        "hint": "optional",
+        "what": "Centralizes measurement and team management: organization, licenses and seats.",
+        "where": "In Savings Cloud, hosted by BiVelio. It receives the data the privacy page defines.",
+        "account": "Yes. Measure is the free plan, in shadow mode."
+      },
+      "evidence": {
+        "name": "Evidence",
+        "hint": "public",
+        "what": "Publishes every bench run with its sample, interval and date, also when there are no savings.",
+        "where": "In the public bench and the open repository.",
+        "account": "Not needed."
+      }
+    },
+    "receipt": {
+      "title": "Example bill, per month"
+    },
+    "more": {
+      "privacy": "What BiVelio receives",
+      "benchmarks": "Public bench"
+    }
   },
   "pricingPage": {
     "metaTitle": "Pricing terms · BV-SALA",
-    "metaDescription": "Open core is free ; Measure, Pro, Team and Enterprise are the cloud plans — none of them carries a commission on your savings. Figures published from the same constants that bill.",
+    "metaDescription": "Open core is free; Measure, Pro, Team and Enterprise are the cloud plans — none of them carries a commission on your savings. Figures published from the same constants that bill.",
     "eyebrow": "Published pricing",
-    "title": "Pricing terms",
+    "title": "Open-source engine.",
+    "titleAccent": "Cloud control for your team.",
+    "titleMark": "team",
     "governs": "This page describes how the service works today; the <license>LICENSE</license> and the <terms>BiVelio Terms</terms> govern.",
-    "lede": "The package is open core : no key needed. This page prices the optional cloud — Measure free, then Pro per seat or a Team plan, with no commission on your savings. Every figure here is read from the same code that bills you, so it changes when the price changes.",
+    "lede": "The engine is open source: no key needed. This page prices Savings Cloud, the optional cloud — Measure free, then Pro per seat or a Team plan, with no commission on your savings. Every figure here is read from the same code that bills you, so it changes when the price changes.",
     "plans": {
       "title": "Plans",
       "intro": "Four plans, from smallest to largest. Pro and Team are paid per seat and carry no commission.",
@@ -1553,7 +2288,8 @@
       "enterprise": {
         "name": "Enterprise",
         "body": "For more seats than online checkout allows, your own contract or negotiated invoicing terms: <contact>write to us</contact>."
-      }
+      },
+      "termsTitle": "Terms of each plan"
     },
     "seat": {
       "title": "How a seat is counted and billed",
@@ -1563,8 +2299,11 @@
       "whatTitle": "What a seat is",
       "what": "A seat is one <b>machine or service identity</b> that runs the Software, not a person. You choose how many seats your subscription covers (up to {max} at checkout), and your license covers that many.",
       "counted": "Each calendar month (UTC), BiVelio counts as in use every distinct seat identifier that was active on at least {dias} different days of that month. Identities flagged as CI or ephemeral runners are not counted. Your dashboard compares that count with the seats your subscription covers.",
-      "overage": "If in a month you use more seats than your subscription covers, the difference is charged automatically, once, when the month closes, on your next invoice: what those extra seats cost for one month on your plan (on a yearly plan, one twelfth of the yearly price). On monthly plans your subscription then moves up to the seats you use. If the count isn't reliable — for example, because you rotated a service-account key that month — it is not charged: we review it by hand.",
-      "identifier": "How a seat identifier is formed, and everything else the Software sends to BiVelio, is on the <privacy>privacy page</privacy>."
+      "overage": "If in a month you use more seats than your subscription covers, the difference is billed once, when the month closes: what those extra seats cost for one month on your plan. On monthly billing it is added to your next invoice and your subscribed quantity goes up to the seats in use. On annual billing it is invoiced at month close, at the annual rate divided by twelve, and your subscribed quantity does not change. If the count isn't reliable — for example, because you rotated a service-account key that month — it is not charged: we review it by hand.",
+      "identifier": "How a seat identifier is formed, and everything else the Software sends to BiVelio, is on the <privacy>privacy page</privacy>.",
+      "provider": "The fee does not include your LLM provider's usage: you keep your provider and pay for its use on their terms.",
+      "manageTitle": "How to manage your subscription",
+      "manage": "You choose and pay for a plan from <account>your account</account>, in the dashboard, through Stripe's hosted checkout. Changes to an existing subscription are made in Stripe's billing portal, which opens from that same page. This page does not charge anything."
     },
     "commission": {
       "title": "Earlier plan with a commission (closed to new customers)",
@@ -1599,6 +2338,80 @@
     "statement": {
       "title": "Statement and invoice",
       "body": "The commission is calculated per calendar month (UTC). After a month ends, BiVelio closes it: your dashboard's statement for that month is sealed with the measured base, the tiers, the exchange rate and the price-catalogue version, and the commission is invoiced from that statement through Stripe, on an invoice separate from the seat fee."
+    },
+    "access": {
+      "code": "View the code",
+      "install": "Install open source"
+    },
+    "modes": {
+      "title": "Community and Cloud are different things",
+      "community": {
+        "tag": "Open source · no price",
+        "name": "Community",
+        "body": "The engine, the SDK and the local gateway run on your infrastructure: no BiVelio key, no mandatory sign-up and no telemetry by default. It is not a plan, and this page puts no price on it."
+      },
+      "cloud": {
+        "tag": "Optional · with plans",
+        "name": "Savings Cloud",
+        "body": "The dashboard, shared measurement, the organization and licences. Measure is its free plan, in shadow mode; Pro and Team are paid as a flat fee per seat, with no commission on what you save."
+      }
+    },
+    "cards": {
+      "period": "Billing period",
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "listLabel": "Savings Cloud plans",
+      "free": "Free",
+      "noCard": "no card required",
+      "custom": "Custom",
+      "byContract": "by contract",
+      "perSeatMonth": "per seat per month",
+      "perSeatYear": "per seat per year",
+      "perMonth": "per month",
+      "perYear": "per year",
+      "chargeMonthly": "Monthly charge",
+      "chargeYearly": "Yearly charge",
+      "unitSeat": "A seat is a machine or a service identity, not a person.",
+      "seats": "Seats",
+      "requestsDay": "Requests per day",
+      "included": "Seats included",
+      "extraSeat": "Additional seat",
+      "commission": "Commission on savings",
+      "none": "None",
+      "upTo": "Up to {n}",
+      "moreThan": "More than {n}",
+      "seatsChosen": "As many as you subscribe",
+      "amountMonthly": "{amount} per month",
+      "amountYearly": "{amount} per year",
+      "terms": "See terms",
+      "provider": "The fee does not include your LLM provider's usage: you keep paying that yourself, on their terms. Amounts exclude VAT.",
+      "medir": {
+        "unit": "Free cloud plan, in shadow mode.",
+        "summary": "Measure without changing anything: your requests reach your provider exactly as you build them, and the dashboard shows what would have been saved.",
+        "cta": "Start with Measure",
+        "version": "Requires @bivelio/savings-layer {version} or later."
+      },
+      "pro": {
+        "summary": "Every optimization, the per-request receipt and the dashboard. A flat fee, due whether or not you save.",
+        "cta": "Choose Pro"
+      },
+      "team": {
+        "unit": "Includes {included} seats: machines or service identities.",
+        "summary": "The same as Pro, for a fleet. The fee covers the included seats even if you use fewer.",
+        "cta": "Choose Team"
+      },
+      "enterprise": {
+        "unit": "For what online checkout cannot cover.",
+        "summary": "More seats, a contract of your own or agreed invoicing terms.",
+        "cta": "Contact us"
+      }
+    },
+    "legacy": {
+      "title": "Legacy plan, closed to new sign-ups",
+      "note": "The terms in this block govern only subscriptions that already carry the commission plan. It cannot be purchased, and none of the plans above includes it."
+    },
+    "toc": {
+      "label": "On this page"
     }
   },
   "privacyPage": {
@@ -1639,7 +2452,7 @@
     },
     "verification": {
       "title": "Optional verification (SDK only, off by default)",
-      "when": "If you turn on the SDK's verification option, the SDK sends a sample of the requests it served to your own provider again, without optimization, and discards that second response. For each sampled request it sends BiVelio, <b>through a separate channel, only the fields below</b>; that channel also rejects any other field, and nothing it receives is used to calculate the commission.",
+      "when": "If you turn on the SDK's verification option, the SDK sends a sample of the requests it served to your own provider again, without optimization, and discards that second response. For each sampled request it sends BiVelio, <b>through a separate channel, only the fields below</b>; that channel also rejects any other field, and nothing it receives is used for billing.",
       "groups": {
         "sample": {
           "title": "Each sampled request",
@@ -1669,7 +2482,12 @@
         "verificationSamples": "Verification samples and their daily counts: {dias} days.",
         "verificationBatches": "Verification batch identifiers: {dias} days."
       },
-      "noSchedule": "Daily totals, seat activity and your sealed statements have no automatic deletion schedule today."
+      "noSchedule": "Daily totals, seat activity and your sealed statements have no automatic deletion schedule today.",
+      "colWhere": "Table",
+      "colWhat": "What it holds",
+      "colPeriod": "Period",
+      "period": "{dias} days",
+      "none": "No automatic deletion"
     },
     "use": {
       "title": "What BiVelio uses it for",
@@ -1679,13 +2497,84 @@
       "title": "Your account on this website",
       "body": "Your sign-in e-mail, your organization and your billing details (payments are processed by Stripe) are covered by <policy>BiVelio's privacy policy</policy>."
     },
-    "contact": "Questions and requests about this data: <mail>{email}</mail>."
+    "contact": "Questions and requests about this data: <mail>{email}</mail>.",
+    "overview": {
+      "title": "At a glance",
+      "colData": "Data",
+      "colDestination": "Where it goes",
+      "colPurpose": "What for",
+      "colRetention": "Kept by BiVelio",
+      "content": {
+        "data": "The content of your requests and responses, and your LLM provider credentials",
+        "destination": "Only your LLM provider",
+        "purpose": "Never sent to BiVelio",
+        "retention": "Nothing to keep"
+      },
+      "usage": {
+        "data": "Usage records: identifiers, model and time, counts and cost",
+        "destination": "BiVelio",
+        "purpose": "Licensing, your dashboard, seats in use and fees",
+        "retention": "Individual rows have a deletion period; daily totals do not"
+      },
+      "verification": {
+        "data": "Verification samples (optional, SDK only, off by default)",
+        "destination": "BiVelio, over a separate channel",
+        "purpose": "Never used for billing",
+        "retention": "Deleted once past their period"
+      },
+      "account": {
+        "data": "Sign-in email, organization and billing details",
+        "destination": "BiVelio; payments are processed by Stripe",
+        "purpose": "Your account on this website",
+        "retention": "Governed by BiVelio's privacy policy"
+      }
+    },
+    "fields": {
+      "colGroup": "Group",
+      "colFields": "Fields sent"
+    },
+    "art": {
+      "alt": "Illustration: a blue folder holding three documents behind a translucent pocket.",
+      "caption": "Your requests, responses and credentials are not sent to BiVelio."
+    }
+  },
+  "docsPage": {
+    "englishOnly": "This document is in English. Only the reading interface is translated.",
+    "contents": "Contents",
+    "backToTop": "Back to top",
+    "paper": {
+      "linksAria": "Paper links",
+      "markdown": "Markdown on GitHub",
+      "latex": "LaTeX for arXiv",
+      "bench": "The public benchmark",
+      "pdf": "PDF · {version}",
+      "zenodo": "Zenodo · DOI",
+      "print": "Print or save as PDF",
+      "abstract": "Abstract",
+      "tableScroll": "Table; scroll sideways to see all of it"
+    },
+    "migrate": {
+      "versionNote": "This is the guide for migrating to version {version}. It is not the announcement of the latest release."
+    }
+  },
+  "paperCard": {
+    "kind": "Preprint",
+    "pages": "{n, plural, one {# page} other {# pages}}",
+    "summary": "Revised after an external pre-publication review: the method, the estimator, the uncertainty and the limits of each figure.",
+    "pdf": "PDF · {version}",
+    "zenodo": "Zenodo · DOI",
+    "code": "Code on GitHub",
+    "web": "Read on the web",
+    "versions": "All versions",
+    "linksAria": "Research paper links"
   },
   "notFound": {
     "metaTitle": "Page not found · BiVelio Savings Layer",
     "eyebrow": "Error 404",
     "title": "Page not found",
     "body": "This page doesn't exist or has moved.",
-    "home": "← Back to home"
+    "home": "← Back to home",
+    "explore": "You can also go to",
+    "artAlt": "Illustration: three overlapping browser windows with placeholder content."
   }
 }

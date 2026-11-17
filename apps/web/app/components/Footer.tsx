@@ -9,22 +9,33 @@ import { NvidiaFooterCard } from "./NvidiaInception";
 
 import { ArrowRightIcon, GitHubIcon, LinkedInIcon } from "./icons";
 import { SavingsLogo } from "./SavingsLogo";
+import { URL_DEL_CODIGO } from "./sitio";
+
+/** «Código», la etiqueta del enlace al repositorio: la misma clave que usa la
+ *  cabecera (`nav.code`), para que el destino se llame igual arriba y abajo. */
+async function etiquetaDelCodigo(): Promise<string> {
+  const t = await getTranslations("nav");
+  return t("code");
+}
 
 // Cuentas propiedad de BiVelio, las mismas que publica el SocialDock de
 // bivelio.com. No hay cuenta de X (x.com/bivelio es un 404), así que X no está
 // en vez de apuntar a otro sitio.
+// El nombre accesible de cada icono sale del catálogo (`landing.footer.*`), no
+// de un literal en inglés: es lo único que un lector de pantalla dice de ellos.
 const SOCIALS = [
-  { href: "https://www.linkedin.com/company/bivelio/", label: "BiVelio on LinkedIn", Icon: LinkedInIcon },
-  { href: "https://github.com/BiVelio", label: "BiVelio on GitHub", Icon: GitHubIcon },
-];
+  { href: "https://www.linkedin.com/company/bivelio/", clave: "footer.socialLinkedIn", Icon: LinkedInIcon },
+  { href: "https://github.com/BiVelio", clave: "footer.socialGitHub", Icon: GitHubIcon },
+] as const;
 
 /** Dock de cristal con las redes de la compañía — la píldora del footer corporativo. */
-function SocialDock({ sinGitHub = false }: { sinGitHub?: boolean }) {
+async function SocialDock({ sinGitHub = false }: { sinGitHub?: boolean }) {
+  const t = await getTranslations("landing");
   const redes = sinGitHub ? SOCIALS.filter((s) => !s.href.startsWith("https://github.com/")) : SOCIALS;
   return (
     <div className="ftr-social">
-      {redes.map(({ href, label, Icon }) => (
-        <a key={href} href={href} target="_blank" rel="noopener noreferrer me" aria-label={label}>
+      {redes.map(({ href, clave, Icon }) => (
+        <a key={href} href={href} target="_blank" rel="noopener noreferrer me" aria-label={t(clave)}>
           <Icon />
         </a>
       ))}
@@ -99,9 +110,12 @@ function GlassWordmark() {
 }
 
 /**
- * `sinGitHub`: /benchmarks se publica sin enlaces a GitHub mientras el
- * repositorio sea privado (decisión del dueño, 2026-09-29): allí un icono de
- * GitHub se leería como «el código está aquí». El resto de páginas no cambia.
+ * `sinGitHub`: opción que quita del pie los enlaces a GitHub (el icono del
+ * muelle social y «Código» en la columna Savings). Nació cuando el repositorio
+ * era privado (2026-09-29) y /benchmarks la pasaba; con el motor ya open
+ * source ninguna página la pasa (P1 de la guía del rediseño): el centro de
+ * evidencia y la guía de migración enseñan el repositorio como las demás. Se
+ * conserva por si una página necesita un pie sin esos enlaces.
  */
 export default async function Footer({ sinGitHub = false }: { sinGitHub?: boolean } = {}) {
   const t = await getTranslations("landing");
@@ -126,6 +140,10 @@ export default async function Footer({ sinGitHub = false }: { sinGitHub?: boolea
     // desde la 0.4 solo llegaba a ella desde npm o GitHub.
     [t("footer.migrate"), "/migrate-to-0.5"],
     [t("footer.pricing"), "/#pricing"],
+    // El repositorio del motor open source, visible también en el pie (guía
+    // §6, fila 10). Solo deja de pintarse si el pie recibe `sinGitHub`, que hoy
+    // no pasa ninguna página.
+    ...(sinGitHub ? [] : [[await etiquetaDelCodigo(), URL_DEL_CODIGO]]),
   ];
   // «Documentación» apuntaba a docs.bivelio.com y «Estado» a status.bivelio.com,
   // y ninguno de los dos dominios resuelve (2026-09-13): dos enlaces muertos en

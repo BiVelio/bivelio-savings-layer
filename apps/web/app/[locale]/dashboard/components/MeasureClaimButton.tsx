@@ -3,6 +3,8 @@
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { Spinner } from "@/vendor/affectui/spinner-clean";
+
 import { CopyButton } from "./CopyButton";
 
 type State = "idle" | "loading" | "done" | "error";
@@ -49,31 +51,26 @@ export function MeasureClaimButton({ seats }: { seats: number }) {
 
   if (state === "done") {
     return (
-      <div className="trialkey">
-        <div className="ck-note" style={{ margin: "0 0 6px" }}>{t("keyLabel")}</div>
-        <div className="code2">
-          <span style={{ wordBreak: "break-all" }}>{token}</span>
+      <div className="trialkey keyreveal">
+        <div className="ck-note keyreveal-k">{t("keyLabel")}</div>
+        <div className="code2 keyreveal-v">
+          <span className="keyreveal-token">{token}</span>
           <CopyButton text={token} />
         </div>
-        <p className="ck-note" style={{ marginTop: "6px" }}>{t("keyHint")}</p>
+        <p className="ck-note keyreveal-n">{t("keyHint")}</p>
       </div>
     );
   }
 
   return (
     <div className="trialkey">
-      <p className="ck-note" style={{ marginTop: 0 }}>{t("body", { seats })}</p>
-      <button
-        type="button"
-        className="btn"
-        onClick={reclamar}
-        disabled={state === "loading"}
-        style={{ padding: "10px 16px" }}
-      >
+      <p className="ck-note sak-lede">{t("body", { seats })}</p>
+      <button type="button" className="btn btn-ghost sak-btn" onClick={reclamar} disabled={state === "loading"}>
+        {state === "loading" ? <Spinner size={15} /> : null}
         {state === "loading" ? t("claiming") : t("claim")}
       </button>
       {state === "error" ? (
-        <p className="ck-note" style={{ color: "var(--danger)", marginTop: "6px" }}>{msg}</p>
+        <p className="ck-note sak-err" role="alert">{msg}</p>
       ) : null}
     </div>
   );

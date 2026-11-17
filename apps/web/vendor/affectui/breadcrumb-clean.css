@@ -1,0 +1,58 @@
+/*
+ * Derived from affectUI Pro 'Breadcrumb' (https://www.affectui.com). Used under the affectUI Pro license held by BiVelio. NOT covered by this repository's Apache-2.0 licence; do not redistribute as a component kit.
+ *
+ * Changes from upstream are listed in ./VENDOR.md.
+ */
+.ui-bcrc {
+  --ui-bcrc-ink: var(--aui-ink, #0f1218);
+  --ui-bcrc-muted: var(--aui-muted, #5a6070);
+  --ui-bcrc-faint: color-mix(in srgb, var(--aui-muted, #5a6070) 55%, transparent);
+  --ui-bcrc-focus: var(--aui-focus, #0066e6);
+  --ui-bcrc-radius: var(--aui-radius-sm, 6px);
+
+  display: block;
+  min-width: 0;
+  font-family: var(--aui-font, var(--font-sans));
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  font-weight: 400;
+  color: var(--ui-bcrc-muted);
+  -webkit-font-smoothing: antialiased;
+}
+.ui-bcrc *, .ui-bcrc *::before, .ui-bcrc *::after { box-sizing: border-box; }
+
+/* BiVelio: the crumbs wrap (upstream keeps one line and folds the middle into a menu) */
+.ui-bcrc__list { display: flex; flex-wrap: wrap; align-items: center; min-width: 0; margin: 0; padding: 0; list-style: none; }
+.ui-bcrc__item { display: flex; align-items: center; min-width: 0; margin: 0; }
+
+.ui-bcrc__sep { display: grid; flex: none; place-items: center; min-width: 20px; padding: 0 2px; color: var(--ui-bcrc-faint); user-select: none; }
+.ui-bcrc__sep > svg { display: block; width: 12px; height: 12px; }
+.ui-bcrc__sep > svg:dir(rtl) { transform: scaleX(-1); }
+
+/* The links: quiet text that turns to ink on hover */
+.ui-bcrc__link,
+.ui-bcrc__current {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 28px;
+  border-radius: var(--ui-bcrc-radius);
+  color: inherit;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.ui-bcrc a.ui-bcrc__link { transition: color 120ms ease; }
+.ui-bcrc a.ui-bcrc__link:hover { color: var(--ui-bcrc-ink); text-decoration: none; }
+.ui-bcrc a.ui-bcrc__link:focus-visible { outline: 2px solid var(--ui-bcrc-focus); outline-offset: 2px; }
+.ui-bcrc__current { font-weight: 500; color: var(--ui-bcrc-ink); }
+.ui-bcrc__label { min-width: 0; overflow-wrap: anywhere; }
+.ui-bcrc__icon { display: grid; flex: none; place-items: center; width: 14px; height: 14px; }
+.ui-bcrc__icon > svg { display: block; width: 14px; height: 14px; }
+
+@media (pointer: coarse) {
+  .ui-bcrc__link, .ui-bcrc__current { min-height: 44px; }
+}
+@media (prefers-reduced-motion: reduce) { .ui-bcrc a.ui-bcrc__link { transition: none; } }
+@media print { .ui-bcrc { display: none; } }

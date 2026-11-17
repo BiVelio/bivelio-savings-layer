@@ -8,6 +8,12 @@ import { useState } from "react";
 import { authConfigured } from "@/lib/supabase/env";
 import { textoDeErrorDeAuth } from "@/lib/auth/error-de-auth";
 
+import { Button } from "@/vendor/affectui/button-clean";
+
+import { AccesoEnviado, MensajeDeAcceso } from "./acceso/AccesoEstado";
+import { CampoClave } from "./acceso/CampoClave";
+import { EnlaceConDestino } from "./acceso/EnlaceConDestino";
+
 type Msg = { type: "error" | "info" | "idle"; text: string };
 
 /**
@@ -62,40 +68,60 @@ export default function ResetPasswordForm() {
     }
   }
 
+  // Hecho: el formulario ya no sirve (los campos quedaban desactivados a la
+  // vista). Se dice que está cambiada y que se está entrando, y nada más.
+  if (done) {
+    return <AccesoEnviado icono="hecho" tono="ok" titulo={msg.text} />;
+  }
+
+  const conError = msg.type === "error";
+  // Los dos errores propios de esta pantalla, deducidos del texto que dejó
+  // `onSubmit`: el enlace que ya no vale (se ofrece pedir otro) y las dos
+  // contraseñas que no casan (se marca el campo de confirmación).
+  const caducado = conError && msg.text === t("resetLinkExpired");
+  const distintas = conError && msg.text === t("passwordsDontMatch");
+
   return (
-    <form onSubmit={onSubmit} noValidate>
-      {msg.type !== "idle" ? <div className={`auth-msg ${msg.type}`}>{msg.text}</div> : null}
-      <div className="field">
-        <label htmlFor="password">{t("newPassword")}</label>
-        <input
-          id="password"
-          type="password"
-          autoComplete="new-password"
-          required
-          minLength={8}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="••••••••"
-          disabled={done}
-        />
-      </div>
-      <div className="field">
-        <label htmlFor="confirm">{t("confirmPassword")}</label>
-        <input
-          id="confirm"
-          type="password"
-          autoComplete="new-password"
-          required
-          minLength={8}
-          value={confirm}
-          onChange={(e) => setConfirm(e.target.value)}
-          placeholder="••••••••"
-          disabled={done}
-        />
-      </div>
-      <button className="btn btn-primary auth-submit" type="submit" disabled={loading || done}>
-        {loading ? t("loadingEllipsis") : t("updatePassword")}
-      </button>
+    <form onSubmit={onSubmit} noValidate aria-busy={loading || undefined}>
+      {msg.type !== "idle" ? (
+        <MensajeDeAcceso tipo={msg.type} id="reset-aviso">
+          {msg.text}
+        </MensajeDeAcceso>
+      ) : null}
+      {caducado ? (
+        <EnlaceConDestino a="/login" className="btn btn-ghost btn-block acc-otro-enlace">
+          {t("requestNewLink")}
+        </EnlaceConDestino>
+      ) : null}
+      <CampoClave
+        id="password"
+        etiqueta={t("newPassword")}
+        valor={password}
+        alCambiar={setPassword}
+        autoComplete="new-password"
+        placeholder="••••••••"
+        desactivado={done}
+        invalido={conError && !distintas && !caducado}
+        descritoPor={conError ? "reset-aviso" : undefined}
+        mostrar={t("showPassword")}
+        ocultar={t("hidePassword")}
+      />
+      <CampoClave
+        id="confirm"
+        etiqueta={t("confirmPassword")}
+        valor={confirm}
+        alCambiar={setConfirm}
+        autoComplete="new-password"
+        placeholder="••••••••"
+        desactivado={done}
+        invalido={distintas}
+        descritoPor={distintas ? "reset-aviso" : undefined}
+        mostrar={t("showPassword")}
+        ocultar={t("hidePassword")}
+      />
+      <Button className="acc-enviar" type="submit" variant="primary" size="xl" block loading={loading} disabled={done}>
+        {loading ? t("working") : t("updatePassword")}
+      </Button>
     </form>
   );
 }

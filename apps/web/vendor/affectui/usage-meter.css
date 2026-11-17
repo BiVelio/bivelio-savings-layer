@@ -1,0 +1,114 @@
+/*
+ * Derived from affectUI Pro 'Usage Meter' (https://www.affectui.com). Used under the affectUI Pro license held by BiVelio. NOT covered by this repository's Apache-2.0 licence; do not redistribute as a component kit.
+ *
+ * Changes from upstream are listed in ./VENDOR.md.
+ */
+.ui-umc {
+  --ui-umc-strong: var(--aui-ink, #000000);
+  --ui-umc-ink: var(--aui-ink, rgba(0, 0, 0, 0.88));
+  --ui-umc-muted: var(--aui-muted, rgba(0, 0, 0, 0.45));
+  --ui-umc-line: var(--aui-border, rgba(0, 0, 0, 0.06));
+  --ui-umc-wash: var(--surface-3, rgba(0, 0, 0, 0.03));
+  --ui-umc-fill: var(--aui-subtle, rgba(0, 0, 0, 0.06));
+  --ui-umc-track: color-mix(in srgb, var(--aui-ink, #000) 8%, transparent);
+  /* BiVelio: the filled part is ink, as in the rest of the panel – blue stays for actions */
+  --ui-umc-accent: var(--aui-ink, rgba(0, 0, 0, 0.88));
+  --ui-umc-warn: var(--amber, #e8b000);
+  --ui-umc-warn-text: var(--aui-amber, #8f6c00);
+  --ui-umc-warn-bg: var(--amber-soft, color-mix(in srgb, var(--aui-amber, #e8b000) 12%, transparent));
+  --ui-umc-ease: var(--aui-ease, cubic-bezier(0.22, 1, 0.36, 1));
+
+  box-sizing: border-box;
+  container-type: inline-size;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  width: 100%;
+  padding: 18px 18px 16px;
+  border-radius: var(--aui-radius-lg, 10px);
+  background: var(--ui-umc-wash);
+  box-shadow: inset 0 0 0 1px var(--ui-umc-line);
+  font-family: var(--aui-font, var(--font-sans));
+  font-size: 13.5px;
+  line-height: 20px;
+  font-weight: 400;
+  color: var(--ui-umc-ink);
+  text-align: start;
+  -webkit-font-smoothing: antialiased;
+}
+.ui-umc *, .ui-umc *::before, .ui-umc *::after { box-sizing: border-box; }
+.ui-umc :is(h2, h3, h4, p, dl, dt, dd) { margin: 0; padding: 0; }
+
+/* Head: title, and the unit as its quiet second line */
+.ui-umc__head { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 2px 12px; }
+.ui-umc .ui-umc__title { font-family: inherit; font-size: 15px; font-weight: 600; line-height: 24px; letter-spacing: -0.01em; text-transform: none; color: var(--ui-umc-strong); }
+.ui-umc .ui-umc__sub { font-size: 13px; line-height: 18px; color: var(--ui-umc-muted); }
+
+/* The big number and its share */
+.ui-umc__figure { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; }
+.ui-umc__amount { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 10px; min-width: 0; }
+.ui-umc__big { font-family: var(--aui-font-mono, var(--font-mono)); font-size: 32px; font-weight: 500; line-height: 36px; letter-spacing: -0.03em; color: var(--ui-umc-strong); font-variant-numeric: tabular-nums; }
+.ui-umc__big[data-missing] { color: var(--ui-umc-muted); }
+.ui-umc .ui-umc__of { font-size: 13px; line-height: 18px; color: var(--ui-umc-muted); }
+.ui-umc__pct {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 5px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: var(--aui-radius-sm, 5px);
+  background: var(--ui-umc-fill);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--aui-muted, rgba(0, 0, 0, 0.61));
+  font-variant-numeric: tabular-nums;
+}
+.ui-umc__pct { max-width: 100%; height: auto; min-height: 22px; padding: 2px 7px; }
+.ui-umc__pct:is([data-state="full"], [data-state="over"]) { background: var(--ui-umc-warn-bg); color: var(--ui-umc-warn-text); }
+.ui-umc__dot { display: inline-block; flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--ui-umc-warn); }
+
+/* The bar */
+.ui-umc__bar { margin-top: 12px; padding: 2px 0; }
+.ui-umc__track { display: flex; height: 8px; overflow: hidden; border-radius: 4px; background: var(--ui-umc-track); }
+.ui-umc__seg { position: relative; flex: none; height: 100%; }
+.ui-umc__seg[data-part="used"] { background: var(--ui-umc-accent); border-radius: 4px 0 0 4px; }
+.ui-umc__seg[data-part="used"]:only-child { border-radius: 4px; }
+.ui-umc__seg[data-part="over"] { background: var(--ui-umc-warn); box-shadow: -2px 0 0 var(--ui-umc-wash); }
+/* One slot per seat while they fit: filled in ink, the ones above the contracted amount in amber */
+.ui-umc__track[data-slots] { gap: 3px; background: none; }
+.ui-umc__slot { flex: 1 1 0; min-width: 2px; height: 100%; border-radius: 2px; background: var(--ui-umc-track); }
+.ui-umc__slot[data-part="used"] { background: var(--ui-umc-accent); }
+.ui-umc__slot[data-part="over"] { background: var(--ui-umc-warn); }
+.ui-umc .ui-umc__missing { margin-top: 8px; max-width: 60ch; font-size: 13px; line-height: 1.5; color: var(--ui-umc-muted); text-wrap: pretty; }
+
+/* Legend: one row per part */
+.ui-umc__legend { display: grid; margin-top: 12px; margin-bottom: -8px; border-top: 0.5px solid var(--ui-umc-line); }
+.ui-umc .ui-umc__note { margin-top: 10px; font-size: 12.5px; line-height: 1.45; color: var(--ui-umc-muted); overflow-wrap: anywhere; text-wrap: pretty; }
+.ui-umc__legend + .ui-umc__note { margin-top: 18px; }
+.ui-umc__item { display: flex; align-items: center; gap: 10px; min-height: 36px; }
+.ui-umc__item + .ui-umc__item { border-top: 0.5px solid var(--ui-umc-line); }
+.ui-umc__swatch { flex: none; width: 8px; height: 8px; border-radius: 2px; }
+.ui-umc__swatch[data-part="used"] { background: var(--ui-umc-accent); }
+.ui-umc__swatch[data-part="free"] { background: var(--ui-umc-track); box-shadow: inset 0 0 0 0.5px var(--aui-muted, rgba(0, 0, 0, 0.3)); }
+.ui-umc__swatch[data-part="over"] { background: var(--ui-umc-warn); }
+.ui-umc__swatch[data-part="plain"] { box-shadow: inset 0 0 0 1px var(--aui-muted, rgba(0, 0, 0, 0.3)); border-radius: 50%; }
+.ui-umc .ui-umc__label { flex: 1; min-width: 0; color: var(--aui-muted, rgba(0, 0, 0, 0.61)); overflow-wrap: anywhere; }
+.ui-umc .ui-umc__value { flex: none; font-family: var(--aui-font-mono, var(--font-mono)); font-weight: 500; color: var(--ui-umc-ink); font-variant-numeric: tabular-nums; }
+
+/* sm: inside another card, under that card's own title – the same anatomy, one step quieter */
+.ui-umc[data-size="sm"] { padding: 14px 16px; background: var(--aui-surface, #ffffff); }
+.ui-umc[data-size="sm"] .ui-umc__title { font-size: 12px; font-weight: 500; line-height: 16px; letter-spacing: 0; color: var(--aui-muted, rgba(0, 0, 0, 0.61)); }
+.ui-umc[data-size="sm"] .ui-umc__figure { margin-top: 4px; }
+.ui-umc[data-size="sm"] .ui-umc__big { font-size: 24px; line-height: 32px; }
+.ui-umc[data-size="sm"] .ui-umc__of { font-size: 12px; line-height: 16px; }
+.ui-umc[data-size="sm"] .ui-umc__bar { margin-top: 8px; }
+
+@media (forced-colors: active) {
+  .ui-umc { border: 1px solid CanvasText; }
+  .ui-umc__slot, .ui-umc__track { border: 1px solid CanvasText; }
+  .ui-umc__slot[data-part], .ui-umc__seg { background: CanvasText; }
+}
+@container (max-width: 400px) {
+  .ui-umc__big { font-size: 28px; line-height: 32px; }
+}

@@ -10,7 +10,7 @@ export async function CacheBreakEven({ ab }: { ab: AbArtifact }) {
   if (!cache?.amortization) return null;
   const { coldMissCost, hitCost, breakEvenK } = cache.amortization;
   return (
-    <div className="bench-badge" style={{ background: "var(--surface-2)", borderColor: "var(--line)" }}>
+    <div className="bench-badge prf-cache">
       <span className="est-tag">{t("cacheBreakEven.tag")}</span>
       <span>
         {t.rich("cacheBreakEven.body", {

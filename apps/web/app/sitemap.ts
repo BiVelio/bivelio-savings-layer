@@ -56,12 +56,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
     })),
     // El paper técnico: mismo contenido en los 12 idiomas (el documento es en
     // inglés, con apéndice en español), así que se indexa una sola vez, la de
-    // /en, igual que la guía de migración.
+    // /en, igual que la guía de migración. Sus alternativas son las MISMAS que
+    // declara la página (`generateMetadata` de /paper): `en` y `x-default`,
+    // las dos a /en/paper. Anunciar aquí doce `hreflang` contradecía su
+    // `canonical`, que manda todas las variantes a la edición inglesa.
     {
       url: absolute("/en/paper"),
       changeFrequency: "yearly" as const,
       priority: 0.6,
-      alternates: { languages: languageAlternates("paper") },
+      alternates: { languages: { en: absolute("/en/paper"), "x-default": absolute("/en/paper") } },
     },
     // La guía de migración 0.4 → 0.5: en inglés en todos los idiomas, así que
     // se indexa una sola vez, la de /en (su `canonical`).

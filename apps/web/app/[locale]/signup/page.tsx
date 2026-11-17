@@ -3,7 +3,10 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 
 import AuthForm from "@/app/components/AuthForm";
-import { SavingsLogo } from "@/app/components/SavingsLogo";
+import { AccesoShell } from "@/app/components/acceso/AccesoShell";
+import { EnlaceConDestino } from "@/app/components/acceso/EnlaceConDestino";
+import { Icono } from "@/app/components/acceso/iconos";
+import { PanelDeMarca } from "@/app/components/acceso/PanelDeMarca";
 import { LIMITES_MEDIR, VERSION_MINIMA_MEDIR } from "@/lib/license/medir-publico";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
@@ -18,16 +21,29 @@ export default async function SignupPage({ params }: { params: Promise<{ locale:
   setRequestLocale(locale);
   const t = await getTranslations("auth");
   return (
-    <main className="auth-wrap">
-      <div className="auth-card">
-        <div className="auth-brand">
-          <SavingsLogo variant="full" height={40} />
-        </div>
+    <AccesoShell
+      lateral={<PanelDeMarca locale={locale} />}
+      etiquetaLateral={t("panel.receiptMeta")}
+      pie={
+        <Link href="/" className="acc-volver">
+          {t("backToVerifier")}
+        </Link>
+      }
+    >
+      <div className="acc-intro">
         <h1>{t("createYourAccount")}</h1>
         <p className="sub">{t("signupSubtitle")}</p>
+      </div>
+      <AuthForm mode="signup" />
+      {/* Estático en el HTML; en el navegador conserva el `next` (el plan
+          elegido en la portada o la invitación) al pasar al login. */}
+      <p className="auth-alt acc-cruce">
+        {t("alreadyHaveAccount")} <EnlaceConDestino a="/login">{t("signIn")}</EnlaceConDestino>
+      </p>
+      <div className="acc-notas">
         {/* También se puede empezar gratis con Medir: límites y versión mínima
             desde las constantes que aplica la ingesta (lib/license/medir.ts). */}
-        <p className="sub">
+        <p className="acc-nota">
           {t("signupMedir", {
             seats: LIMITES_MEDIR.asientos,
             requests: LIMITES_MEDIR.peticionesDiarias.toLocaleString(locale),
@@ -36,15 +52,17 @@ export default async function SignupPage({ params }: { params: Promise<{ locale:
         </p>
         {/* La identidad es COMPARTIDA con el resto de la suite (Shield, Privacy,
             la app de BiVelio): quien ya tenga cuenta allí no debe crear otra. */}
-        <p className="sub">{t("signupSsoNote")}</p>
-        <AuthForm mode="signup" />
-        <p className="auth-alt">
-          {t("alreadyHaveAccount")} <Link href="/login">{t("signIn")}</Link>
-        </p>
-        <p className="auth-alt" style={{ marginTop: "10px" }}>
-          <Link href="/">{t("backToVerifier")}</Link>
-        </p>
+        <p className="acc-nota">{t("signupSsoNote")}</p>
       </div>
-    </main>
+      {/* El motor es open source y no pide cuenta: la salida tiene que verse
+          desde aquí, no descubrirse después de registrarse. */}
+      <p className="acc-oss">
+        <span className="acc-oss-q">{t("openSourceQuestion")}</span>
+        <Link href="/#sdk-install" className="acc-oss-a">
+          {t("openSourceLink")}
+          <Icono nombre="flecha" />
+        </Link>
+      </p>
+    </AccesoShell>
   );
 }

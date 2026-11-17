@@ -1,0 +1,288 @@
+/*
+ * Derived from affectUI Pro 'Button' (https://www.affectui.com). Used under the affectUI Pro license held by BiVelio. NOT covered by this repository's Apache-2.0 licence; do not redistribute as a component kit.
+ *
+ * Changes from upstream are listed in ./VENDOR.md.
+ */
+/* Colors and motion as variables – override them on .ui-buttonc (see Theming in the docs) */
+.ui-buttonc {
+  --ui-btnc-title: var(--aui-ink, #0f1218);
+  --ui-btnc-ink: var(--aui-ink, #0f1218);
+  --ui-btnc-muted: var(--aui-muted, rgba(0, 0, 0, 0.61));
+  --ui-btnc-icon: var(--aui-muted, rgba(0, 0, 0, 0.447));
+  --ui-btnc-solid: var(--aui-primary, #0f1218);
+  --ui-btnc-solid-hover: var(--btn-ink-hover, #1e2430);
+  --ui-btnc-on-solid: var(--aui-on-primary, #fcfcfc);
+  --ui-btnc-surface: var(--aui-surface, #ffffff);
+  --ui-btnc-shadow: 0 0 0 1px var(--btn-ghost-line, #dddad2), 0 1px 1px -1px rgba(15, 18, 24, 0.1), 0 1px 2px 0 rgba(15, 18, 24, 0.05);
+  --ui-btnc-shadow-hover: 0 0 0 1px var(--btn-ghost-line-hover, #c2beb4), 0 1px 1px -1px rgba(15, 18, 24, 0.12), 0 1px 3px 0 rgba(15, 18, 24, 0.07);
+  --ui-btnc-wash: rgba(0, 0, 0, 0.03);
+  --ui-btnc-shine: rgba(255, 255, 255, 0.82);
+  --ui-btnc-shine-on-solid: #ffffff;
+  --ui-btnc-focus: var(--aui-focus, rgba(0, 96, 226, 0.7));
+  --ui-btnc-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ui-btnc-load: 650ms;
+
+  --h: 28px;
+  --px: 10px;
+  --gap: 6px;
+  --fs: 13px;
+  --lh: 20px;
+  --icon: 16px;
+  --radius: var(--aui-radius, 6px);
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap);
+  box-sizing: border-box;
+  height: var(--h);
+  padding: 0 var(--px);
+  margin: 0;
+  border: 0;
+  border-radius: var(--radius);
+  font-family: var(--aui-font, var(--font-sans));
+  font-size: var(--fs);
+  font-weight: 500;
+  line-height: var(--lh);
+  letter-spacing: 0;
+  max-width: 100%;
+  min-width: 0;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease,
+    box-shadow 140ms ease,
+    transform 160ms var(--ui-btnc-ease),
+    opacity 140ms ease;
+}
+
+/* Sizes: 24 · 28 · 32 high (taller on touch screens, see below) */
+.ui-buttonc[data-size="sm"] {
+  --h: 24px;
+  --px: 8px;
+  --gap: 4px;
+  --fs: 12px;
+  --lh: 16px;
+  --icon: 14px;
+  --radius: var(--aui-radius, 6px);
+}
+.ui-buttonc[data-size="lg"] {
+  --h: 32px;
+  --px: 12px;
+  --gap: 6px;
+  --fs: 13px;
+  --icon: 16px;
+  --radius: var(--aui-radius, 6px);
+}
+/* BiVelio: xl – 44px, the access forms' control height */
+.ui-buttonc[data-size="xl"] {
+  --h: 44px;
+  --px: 18px;
+  --gap: 8px;
+  --fs: 0.9375rem;
+  --lh: 1.3;
+  --icon: 18px;
+  --radius: var(--aui-radius, 10px);
+  height: auto;
+  min-height: var(--h);
+  padding-block: 8px;
+  font-weight: 600;
+  white-space: normal;
+  text-align: center;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 1px 2px rgba(15, 18, 24, 0.18), 0 10px 22px -14px rgba(15, 18, 24, 0.5);
+}
+.ui-buttonc[data-size="xl"][data-variant="secondary"] { box-shadow: var(--ui-btnc-shadow); }
+.ui-buttonc[data-size="xl"] .ui-buttonc__label { overflow: visible; text-overflow: clip; overflow-wrap: anywhere; }
+.ui-buttonc[data-size="xl"] .ui-buttonc__label::after { white-space: normal; }
+.ui-buttonc[data-block] { display: flex; width: 100%; }
+/* Touch screens: every size grows to a comfortable tap height – 32 · 34 · 36 – the look stays the same */
+@media (pointer: coarse) {
+  .ui-buttonc[data-size="sm"] { --h: 32px; }
+  .ui-buttonc[data-size="md"] { --h: 34px; }
+  .ui-buttonc[data-size="lg"] { --h: 36px; }
+}
+/* An icon sits closer to the edge than the text, so both look evenly spaced */
+.ui-buttonc[data-icon-left] {
+  padding-left: calc(var(--px) - 2px);
+}
+.ui-buttonc[data-icon-right] {
+  padding-right: calc(var(--px) - 2px);
+}
+.ui-buttonc[data-icon-only] {
+  width: var(--h);
+  padding: 0;
+}
+
+/* primary: a dark chip */
+.ui-buttonc[data-variant="primary"] {
+  background: var(--ui-btnc-solid);
+  color: var(--ui-btnc-on-solid);
+}
+.ui-buttonc[data-variant="primary"]:hover:not(:disabled) {
+  background: var(--ui-btnc-solid-hover);
+}
+
+/* secondary: white with the card's hairline shadow */
+.ui-buttonc[data-variant="secondary"] {
+  background: var(--ui-btnc-surface);
+  color: var(--ui-btnc-title);
+  box-shadow: var(--ui-btnc-shadow);
+}
+.ui-buttonc[data-variant="secondary"] .ui-buttonc__icon {
+  color: var(--ui-btnc-icon);
+}
+.ui-buttonc[data-variant="secondary"]:hover:not(:disabled) {
+  box-shadow: var(--ui-btnc-shadow-hover);
+}
+
+/* ghost: a muted label, a soft wash appears on hover */
+.ui-buttonc[data-variant="ghost"] {
+  background: transparent;
+  color: var(--ui-btnc-muted);
+}
+.ui-buttonc[data-variant="ghost"] .ui-buttonc__icon {
+  color: var(--ui-btnc-icon);
+}
+.ui-buttonc[data-variant="ghost"]:hover:not(:disabled) {
+  background: var(--ui-btnc-wash);
+  color: var(--ui-btnc-ink);
+}
+.ui-buttonc[data-variant="ghost"]:hover:not(:disabled) .ui-buttonc__icon {
+  color: var(--ui-btnc-ink);
+}
+
+
+.ui-buttonc .ui-buttonc__icon {
+  transition: color 140ms ease;
+}
+.ui-buttonc:active:not(:disabled):not([data-loading]) {
+  transform: scale(0.97);
+}
+.ui-buttonc:focus-visible {
+  outline: 2px solid var(--ui-btnc-focus);
+  outline-offset: 2px;
+}
+.ui-buttonc:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.ui-buttonc[data-loading] {
+  cursor: default;
+}
+
+.ui-buttonc__icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: var(--icon);
+  height: var(--icon);
+}
+.ui-buttonc__icon {
+  overflow: hidden;
+}
+.ui-buttonc__icon > svg,
+.ui-buttonc__icon > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.ui-buttonc__icon > img {
+  object-fit: contain;
+}
+
+/* Morph: the button clips while its width glides; changed parts blur in */
+.ui-buttonc {
+  overflow: clip;
+}
+.ui-buttonc[data-ready] .ui-buttonc__label {
+  animation: ui-buttonc-label-in 480ms cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+.ui-buttonc[data-ready] .ui-buttonc__icon {
+  animation: ui-buttonc-icon-in 520ms cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+
+/* Loading: a light band sweeps across a copy of the dimmed label */
+/* A label too long for its parent ends in "…" – the full text shows on hover */
+.ui-buttonc__label {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ui-buttonc__label::after {
+  content: attr(data-text);
+  content: attr(data-text) / "";
+  position: absolute;
+  inset: 0;
+  white-space: nowrap;
+  color: transparent;
+  background: linear-gradient(90deg, transparent 38%, var(--ui-btnc-shine) 50%, transparent 62%) 100% 0 / 300% 100%
+    no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  opacity: 0;
+  pointer-events: none;
+}
+.ui-buttonc[data-variant="primary"] .ui-buttonc__label::after {
+  --ui-btnc-shine: var(--ui-btnc-shine-on-solid);
+}
+.ui-buttonc[data-loading] .ui-buttonc__label {
+  color: color-mix(in srgb, currentColor 50%, transparent);
+}
+.ui-buttonc[data-loading] .ui-buttonc__label::after {
+  opacity: 1;
+  animation: ui-buttonc-sweep calc(var(--ui-btnc-load) * 1.6) linear infinite;
+}
+.ui-buttonc__spinner {
+  animation: ui-buttonc-spin 900ms linear infinite;
+}
+
+@keyframes ui-buttonc-label-in {
+  from {
+    opacity: 0;
+    filter: blur(3px);
+    transform: translateY(25%);
+  }
+}
+@keyframes ui-buttonc-icon-in {
+  from {
+    opacity: 0;
+    filter: blur(2px);
+    transform: scale(0.7);
+  }
+}
+
+@keyframes ui-buttonc-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@keyframes ui-buttonc-sweep {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-buttonc[data-ready] .ui-buttonc__label,
+  .ui-buttonc[data-ready] .ui-buttonc__icon {
+    animation: none;
+  }
+  .ui-buttonc {
+    transition-duration: 1ms;
+  }
+  .ui-buttonc[data-loading] .ui-buttonc__label::after {
+    animation: none;
+    opacity: 0;
+  }
+}

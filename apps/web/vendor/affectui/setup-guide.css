@@ -1,0 +1,102 @@
+/*
+ * Derived from affectUI Pro 'Setup Guide' (https://www.affectui.com). Used under the affectUI Pro license held by BiVelio. NOT covered by this repository's Apache-2.0 licence; do not redistribute as a component kit.
+ *
+ * Light theme only, BiVelio tokens; changes from upstream are listed in ./VENDOR.md.
+ */
+.ui-sgdc {
+  --ui-sgdc-card: var(--aui-surface, #ffffff);
+  --ui-sgdc-strong: var(--aui-ink, #000000);
+  --ui-sgdc-ink: var(--aui-ink, rgba(0, 0, 0, 0.88));
+  --ui-sgdc-muted: var(--aui-muted, rgba(0, 0, 0, 0.45));
+  --ui-sgdc-faint: var(--aui-placeholder, rgba(0, 0, 0, 0.27));
+  --ui-sgdc-icon: var(--aui-muted, rgba(0, 0, 0, 0.447));
+  --ui-sgdc-line: var(--aui-border, rgba(0, 0, 0, 0.06));
+  --ui-sgdc-fill: rgba(0, 0, 0, 0.06);
+  --ui-sgdc-ring: var(--line-strong, rgba(0, 0, 0, 0.2));
+  --ui-sgdc-wash: var(--aui-subtle, rgba(0, 0, 0, 0.03));
+  --ui-sgdc-accent: var(--aui-blue, rgba(0, 96, 226, 0.765));
+  --ui-sgdc-on-accent: #ffffff;
+  --ui-sgdc-focus: var(--aui-focus, rgba(0, 96, 226, 0.7));
+  --ui-sgdc-shadow: var(--aui-shadow-card, 0 0 0 0.5px rgba(0, 0, 0, 0.06), 0 1px 1px -1px rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.05));
+  --ui-sgdc-ease: var(--aui-ease, cubic-bezier(0.22, 1, 0.36, 1));
+
+  display: block;
+  box-sizing: border-box;
+  container-type: inline-size;
+  width: 100%;
+  border-radius: var(--aui-radius-lg, 10px);
+  background: var(--ui-sgdc-card);
+  box-shadow: var(--ui-sgdc-shadow);
+  font-family: var(--aui-font, var(--font-sans));
+  font-size: 13.5px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--ui-sgdc-ink);
+  -webkit-font-smoothing: antialiased;
+}
+.ui-sgdc *, .ui-sgdc *::before, .ui-sgdc *::after { box-sizing: border-box; }
+:where(.ui-sgdc) svg { display: block; flex: none; }
+.ui-sgdc a { color: inherit; text-decoration: none; }
+.ui-sgdc a:focus-visible { outline: 2px solid var(--ui-sgdc-focus); outline-offset: -2px; }
+
+.ui-sgdc__head { padding: 14px 16px 0; }
+.ui-sgdc .ui-sgdc__title { margin: 0; font-family: inherit; font-size: 15px; font-weight: 600; line-height: 24px; letter-spacing: -0.01em; text-transform: none; color: var(--ui-sgdc-strong); text-wrap: balance; }
+
+/* One thin blue line for all tasks, with the count next to it */
+.ui-sgdc__progress { display: flex; align-items: center; gap: 10px; padding: 8px 16px 0; }
+.ui-sgdc__track { display: block; flex: 1; height: 4px; overflow: hidden; border-radius: 2px; background: var(--ui-sgdc-fill); }
+.ui-sgdc__fill { display: block; height: 100%; border-radius: inherit; background: var(--ui-sgdc-accent); transform-origin: left center; }
+.ui-sgdc__count { flex: none; font-size: 12px; line-height: 16px; font-variant-numeric: tabular-nums; color: var(--ui-sgdc-muted); }
+
+.ui-sgdc__groups { display: grid; gap: 2px; margin-top: 12px; padding: 4px; border-top: 0.5px solid var(--ui-sgdc-line); }
+.ui-sgdc__group { border-radius: calc(var(--aui-radius-lg, 10px) - 2px); }
+.ui-sgdc__group-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: calc(var(--aui-radius-lg, 10px) - 2px);
+  transition: background-color 150ms ease;
+}
+a.ui-sgdc__group-head:hover { background: var(--ui-sgdc-wash); }
+.ui-sgdc__group-icon { display: grid; place-items: center; flex: none; width: 16px; height: 16px; color: var(--ui-sgdc-icon); }
+.ui-sgdc__group-icon svg { width: 16px; height: 16px; }
+.ui-sgdc__group-title { min-width: 0; font-size: 13.5px; font-weight: 500; line-height: 20px; color: var(--ui-sgdc-strong); overflow-wrap: anywhere; }
+
+.ui-sgdc .ui-sgdc__caption { margin: 0; padding: 10px 12px 4px; font-size: 11px; font-weight: 600; line-height: 16px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ui-sgdc-muted); }
+.ui-sgdc__group + .ui-sgdc__group:has(> .ui-sgdc__caption) { margin-top: 4px; border-top: 0.5px solid var(--ui-sgdc-line); border-radius: 0; }
+.ui-sgdc__tasks { margin: 0; padding: 0 0 4px; list-style: none; }
+.ui-sgdc__task-wrap { display: block; }
+.ui-sgdc__task {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  min-height: 36px;
+  padding: 8px 12px;
+  border-radius: calc(var(--aui-radius-sm, 5px) + 1px);
+  transition: background-color 150ms ease, color 150ms ease;
+}
+a.ui-sgdc__task:hover { background: var(--ui-sgdc-wash); }
+.ui-sgdc__task-wrap[data-state="current"] .ui-sgdc__task { color: var(--ui-sgdc-ink); }
+.ui-sgdc__task-wrap:is([data-state="pending"], [data-state="unavailable"], [data-state="done"]) .ui-sgdc__task { color: var(--ui-sgdc-muted); }
+/* The mark: an open ring for the current task, a dashed faint ring while it waits, a blue check when done */
+.ui-sgdc__mark { display: grid; place-items: center; flex: none; width: 16px; height: 16px; margin-top: 2px; border-radius: 50%; }
+.ui-sgdc__task-wrap[data-state="current"] .ui-sgdc__mark { box-shadow: inset 0 0 0 1.5px var(--ui-sgdc-accent); }
+.ui-sgdc__task-wrap:is([data-state="pending"], [data-state="unavailable"]) .ui-sgdc__mark { color: var(--ui-sgdc-faint); }
+.ui-sgdc__task-wrap[data-state="done"] .ui-sgdc__mark { color: var(--ui-sgdc-accent); }
+.ui-sgdc__mark svg { width: 16px; height: 16px; }
+.ui-sgdc__task-label { flex: 1; min-width: 0; font-size: 13.5px; line-height: 20px; overflow-wrap: anywhere; }
+/* The status in words: always in the accessibility tree, visible only on the current task */
+.ui-sgdc__task-status { flex: none; margin-top: 1px; font-size: 11.5px; font-weight: 500; line-height: 18px; color: var(--ui-sgdc-muted); }
+.ui-sgdc__task-wrap:not([data-state="current"]) .ui-sgdc__task-status { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.ui-sgdc__task-wrap[data-state="current"] .ui-sgdc__task-status { padding: 0 6px; border-radius: var(--aui-radius-sm, 5px); background: color-mix(in srgb, var(--ui-sgdc-accent) 10%, transparent); color: var(--ui-sgdc-accent); }
+.ui-sgdc__task-wrap { position: relative; }
+
+.ui-sgdc .ui-sgdc__foot { margin: 0; padding: 12px 16px 14px; border-top: 0.5px solid var(--ui-sgdc-line); font-size: 12.5px; line-height: 1.5; color: var(--ui-sgdc-muted); text-wrap: pretty; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-sgdc__group-head, .ui-sgdc__task { transition: none; }
+}

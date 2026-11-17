@@ -1,0 +1,63 @@
+/*
+ * Derived from affectUI Pro 'Separator' (https://www.affectui.com). Used under the affectUI Pro license held by BiVelio. NOT covered by this repository's Apache-2.0 licence; do not redistribute as a component kit.
+ *
+ * Changes from upstream are listed in ./VENDOR.md.
+ */
+/* Colors as variables – override them on .ui-sepc (see Theming in the docs) */
+.ui-sepc {
+  --ui-sepc-line: var(--aui-border, rgba(0, 0, 0, 0.06));
+  --ui-sepc-text: var(--aui-muted, rgba(0, 0, 0, 0.45));
+  --ui-sepc-weight: 0.5px;
+  flex: none;
+  box-sizing: border-box;
+}
+
+/* A line across: a border, so it stays one crisp device pixel on any screen */
+.ui-sepc[data-orientation="horizontal"]:not([data-label]) {
+  width: 100%;
+  height: 0;
+  border-top: var(--ui-sepc-weight) solid var(--ui-sepc-line);
+}
+
+/* Upright between tools: 16px high, centred in its row – set height to change it */
+.ui-sepc[data-orientation="vertical"] {
+  display: inline-block;
+  align-self: center;
+  width: 0;
+  vertical-align: middle;
+  height: 16px;
+  border-inline-start: var(--ui-sepc-weight) solid var(--ui-sepc-line);
+}
+
+/* With a label: line · word · line, the word in the middle */
+.ui-sepc[data-label] {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+  font-family: var(--aui-font, var(--font-sans));
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ui-sepc-text);
+  -webkit-font-smoothing: antialiased;
+}
+.ui-sepc__line {
+  flex: 1 1 0;
+  min-width: 12px;
+  height: 0;
+  border-top: var(--ui-sepc-weight) solid var(--ui-sepc-line);
+}
+/* A long label wraps inside the middle rather than pushing the lines out */
+.ui-sepc__label {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 80%;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+/* Windows high contrast: the line keeps a system color */
+@media (forced-colors: active) {
+  .ui-sepc { --ui-sepc-line: CanvasText; }
+}

@@ -1,5 +1,8 @@
 import { getTranslations } from "next-intl/server";
 
+import { LogoProveedor } from "@/app/components/LogoProveedor";
+import { EmptyState } from "@/app/components/ui";
+
 import type { ModelDia, UsageRollup } from "../data";
 import { deriveAhorroNativo } from "../derive";
 import { intfmt, money, moneySigned } from "../format";
@@ -24,35 +27,39 @@ export async function AhorroNativoCard({ usage, porModelo }: { usage: UsageRollu
   const t = await getTranslations("dashboard");
   if (nativo.kind !== "ok") {
     return (
-      <div className="card card-pad">
+      <div className="card card-pad ox-card">
         <div className="n card-title">{t("ahorroNativo.title")}</div>
-        <div className="sub">{t("ahorroNativo.vacio")}</div>
+        <EmptyState compacto sinCaja alInicio como="p" titulo={t("ahorroNativo.vacio")} />
       </div>
     );
   }
   const tono = nativo.net >= 0 ? "pos" : "neg";
   return (
-    <div className="card card-pad">
+    <div className="card card-pad ox-card">
       <div className="n card-title">{t("ahorroNativo.title")}</div>
-      <div style={{ display: "flex", alignItems: "baseline", gap: "12px", flexWrap: "wrap" }}>
-        <div className={`big ck-num ${tono}`} style={{ fontSize: 28 }}>{moneySigned(nativo.net)}</div>
-        <div className="sub ck-num">
+      <div className="ox-native">
+        <p className={`ox-fig ${tono}`}>{moneySigned(nativo.net)}</p>
+        <p className="ox-sub">
           {t("ahorroNativo.detalle", {
             requests: intfmt(nativo.requests),
             lectura: money(nativo.readUsd),
             prima: money(nativo.premiumUsd),
           })}
-        </div>
+        </p>
       </div>
       {nativo.byProvider.length > 0 ? (
-        <div className="sub ck-num" style={{ marginTop: "6px" }}>
-          {nativo.byProvider
-            .map((p) => `${t(`ahorroNativo.proveedor.${p.provider}`)} ${moneySigned(p.net)}`)
-            .join(" · ")}
-        </div>
+        <ul className="ox-provs">
+          {nativo.byProvider.map((p) => (
+            <li key={p.provider}>
+              <LogoProveedor marca={p.provider} size={14} />
+              <span>{t(`ahorroNativo.proveedor.${p.provider}`)}</span>
+              <b className={p.net >= 0 ? "pos" : "neg"}>{moneySigned(p.net)}</b>
+            </li>
+          ))}
+        </ul>
       ) : null}
-      <div className="sub" style={{ marginTop: "8px" }}>{t("ahorroNativo.nota")}</div>
-      <div className="src" style={{ marginTop: "6px" }}>usage_daily · 0032 · native_cache_read_savings − native_cache_write_premium</div>
+      <p className="ck-note ox-foot">{t("ahorroNativo.nota")}</p>
+      <div className="src ox-src">usage_daily · 0032 · native_cache_read_savings − native_cache_write_premium</div>
     </div>
   );
 }

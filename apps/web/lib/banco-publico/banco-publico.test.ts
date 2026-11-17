@@ -512,7 +512,7 @@ describe("banco público: 12 idiomas y las reglas de la copia", () => {
 
     it(`${loc}: los mensajes de la página no llevan cifras propias ni «hasta X %»`, () => {
       const b = (mensajes(loc) as { benchmarksPage: unknown }).benchmarksPage;
-      // La referencia bibliográfica sí declara las 9 páginas y el ratio 1,05.
+      // La referencia bibliográfica es la única que no pasa por aquí (su versión y sus páginas llegan por parámetro).
       const texto = valores(b).filter((x) => !x.includes("<paper>")).join("\n");
       expect(texto).not.toMatch(COMPETIDORES);
       // Lo único numérico permitido son nombres propios y la fórmula del ahorro.
@@ -721,7 +721,7 @@ describe("banco público: la rebaja de caché del gateway, en su sección (#gate
 
 // ---------------------------------------------------------------------------
 
-describe("banco público: sin enlaces al código (el repositorio es privado)", () => {
+describe("banco público: los enlaces del componente son solo informes, artículo y correo (el del repositorio abierto lo pone la página)", () => {
   for (const loc of locales) {
     it(`${loc}: la página renderizada no enlaza ni nombra github.com, ni cita comandos o arneses del repo`, () => {
       const html = pagina(BANCO, loc);
@@ -731,7 +731,7 @@ describe("banco público: sin enlaces al código (el repositorio es privado)", (
       expect(html).not.toMatch(/pnpm bench|benchmarks\/publicados|\.env\.bench/);
       // Todo enlace es interno (informes o paper servidos) o el correo de contacto.
       for (const [, href] of html.matchAll(/href="([^"]+)"/g)) {
-        expect(href!, href).toMatch(/^(?:\/benchmarks\/data\/|\/papers\/bv-sala-savings-layer-2026-10\.pdf|mailto:)/);
+        expect(href!, href).toMatch(/^(?:\/benchmarks\/data\/|\/papers\/bv-sala-savings-layer-v2\.3-r1\.pdf|mailto:)/);
       }
     });
 
@@ -741,9 +741,20 @@ describe("banco público: sin enlaces al código (el repositorio es privado)", (
     });
   }
 
-  it("el pie de /benchmarks va sin el icono de GitHub (el resto de páginas no cambia)", () => {
+  it("el centro de evidencia enlaza el repositorio abierto y su pie ya no oculta GitHub (P1 de la guía del rediseño)", () => {
     const src = readFileSync(join(WEB, "app/[locale]/benchmarks/page.tsx"), "utf8");
-    expect(src).toContain("<Footer sinGitHub />");
+    // El pie completo, como en el resto de páginas públicas.
+    expect(src).toContain("<Footer />");
+    expect(src).not.toContain("<Footer sinGitHub");
+    expect(src).not.toMatch(/github\.com/i);
+    // El enlace vive en la tarjeta del artículo, que la página pinta tras el índice.
+    expect(src).toContain("<TarjetaPaper locale={locale} />");
+    const tarjeta = readFileSync(join(WEB, "app/components/campana/TarjetaPaper.tsx"), "utf8");
+    // Sale de la constante del chrome, no de una URL escrita allí, y se abre aparte.
+    expect(tarjeta).toContain('import { URL_DEL_CODIGO } from "@/app/components/sitio";');
+    expect(tarjeta).toMatch(/href=\{URL_DEL_CODIGO\} target="_blank" rel="noopener noreferrer"/);
+    expect(tarjeta).not.toMatch(/github\.com/i);
+    // El pie conserva la opción para las páginas que aún la pasan.
     const pie = readFileSync(join(WEB, "app/components/Footer.tsx"), "utf8");
     expect(pie).toContain("<SocialDock sinGitHub={sinGitHub} />");
   });

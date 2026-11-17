@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { decidirAvisoVersion, type AsientoVisto } from "@/lib/version/aviso-version";
 
 import { AvisoMigrar05 } from "./AvisoMigrar05";
+import { Notice } from "@/app/components/ui";
 
 /**
  * Máquinas con gateway que llevan 7 días sin producir un euro MEDIDO — hermano
@@ -26,22 +27,17 @@ export async function GatewayVersionBanner({ asientos }: { asientos: AsientoVist
   const sinEuro = aviso.desactualizadas + aviso.sinDeclarar + aviso.sinPalanca;
 
   return (
-    <div
-      className="card"
-      role="status"
-      style={{ marginTop: 6, borderLeft: "3px solid var(--amber)", opacity: 0.92 }}
-    >
-      <div className="n">{t("title")}</div>
-      <p style={{ marginTop: 6 }}>{t("summary", { n: sinEuro, total: aviso.activas })}</p>
+    <Notice tono="warn" role="status" className="ov-banner" titulo={t("title")}>
+      <p>{t("summary", { n: sinEuro, total: aviso.activas })}</p>
       {aviso.desactualizadas > 0 ? (
-        <p style={{ marginTop: 6 }}>{t("outdated", { n: aviso.desactualizadas, minima: aviso.minima })}</p>
+        <p>{t("outdated", { n: aviso.desactualizadas, minima: aviso.minima })}</p>
       ) : null}
       {aviso.sinDeclarar > 0 ? (
-        <p style={{ marginTop: 6 }}>{t("undeclared", { n: aviso.sinDeclarar, minima: aviso.minima })}</p>
+        <p>{t("undeclared", { n: aviso.sinDeclarar, minima: aviso.minima })}</p>
       ) : null}
-      {aviso.sinPalanca > 0 ? <p style={{ marginTop: 6 }}>{t("noLever", { n: aviso.sinPalanca })}</p> : null}
-      <p className="ck-note" style={{ marginTop: 8, marginBottom: 0 }}>{t("action")}</p>
+      {aviso.sinPalanca > 0 ? <p>{t("noLever", { n: aviso.sinPalanca })}</p> : null}
+      <p className="ck-note">{t("action")}</p>
       <AvisoMigrar05 />
-    </div>
+    </Notice>
   );
 }

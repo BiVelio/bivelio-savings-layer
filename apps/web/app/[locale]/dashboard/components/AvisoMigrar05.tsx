@@ -11,7 +11,7 @@ import { Link } from "@/i18n/navigation";
 export async function AvisoMigrar05() {
   const t = await getTranslations("dashboard.migrar05");
   return (
-    <p className="ck-note" style={{ marginTop: 6, marginBottom: 0 }}>
+    <p className="ck-note">
       {t("note")} <Link href="/migrate-to-0.5">{t("link")}</Link>
     </p>
   );

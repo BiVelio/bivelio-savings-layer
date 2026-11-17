@@ -1,0 +1,39 @@
+/*
+ * Vendored from affectUI 'Code Block (Clean)' — https://github.com/flohoeller/affectui @ 8f15236c790d3a21a668c98a663037e5219dd9c9
+ * MIT License, Copyright (c) 2026 Florian Höller (adfects). Full text: ./LICENSE.
+ * Adapted for BiVelio Savings (light theme only, BiVelio tokens); changes from upstream are listed in ./VENDOR.md.
+ */
+/* Only the part of the piece that BiVelio uses: the token colors and the marked line. The frame, the header, the copy
+   button and the line numbers are the foundation CodeFrame's (app/globals.css, `.codeframe`). */
+/* Colors as variables – override them on .ui-codec__code (see Theming in the docs) */
+.ui-codec__code {
+  --ui-codec-mark: color-mix(in srgb, var(--brand) 7%, transparent);
+  --ui-codec-mark-edge: color-mix(in srgb, var(--brand) 55%, transparent);
+  /* Tokens */
+  --ui-codec-com: #7A7F8C;
+  --ui-codec-str: var(--good-ink);
+  --ui-codec-kw: var(--brand);
+  --ui-codec-num: var(--warn);
+  --ui-codec-lit: var(--warn);
+  --ui-codec-fn: #0052B8;
+  --ui-codec-key: var(--aui-ink, var(--ink));
+  --ui-codec-var: #0052B8;
+
+  display: block;
+  font: inherit;
+  text-align: left;
+}
+
+/* One line per block: an empty line keeps its height because the line break lives inside it */
+.ui-codec__line { display: block; }
+/* The marked line bleeds to the edges of the CodeFrame body (its inline padding is 16px) */
+.ui-codec__line[data-marked] { margin-inline: -16px; padding-inline: 16px; background: var(--ui-codec-mark); box-shadow: inset 2px 0 0 var(--ui-codec-mark-edge); }
+
+.ui-codec__t-com { color: var(--ui-codec-com); }
+.ui-codec__t-str { color: var(--ui-codec-str); }
+.ui-codec__t-kw { color: var(--ui-codec-kw); }
+.ui-codec__t-num { color: var(--ui-codec-num); }
+.ui-codec__t-lit { color: var(--ui-codec-lit); }
+.ui-codec__t-fn { color: var(--ui-codec-fn); }
+.ui-codec__t-key { color: var(--ui-codec-key); }
+.ui-codec__t-var { color: var(--ui-codec-var); }

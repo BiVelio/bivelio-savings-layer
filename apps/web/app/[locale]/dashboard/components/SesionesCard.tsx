@@ -1,6 +1,11 @@
 import { getTranslations } from "next-intl/server";
 
+import { EvidenceBadge } from "@/app/components/ui";
+import { DataTable } from "@/vendor/affectui/data-table-clean";
+import { Tooltip } from "@/vendor/affectui/tooltip-clean";
+
 import type { SesionRollup } from "../data";
+import { intfmt } from "../format";
 
 /**
  * Coste por sesión y subagente (0019) — la vista de flota: qué sesión de qué
@@ -9,6 +14,10 @@ import type { SesionRollup } from "../data";
  * existe y nadie ve un hueco vacío prometiendo algo que aún no llega.
  *
  * Los ids son identidades OPACAS de sesión/agente — jamás una persona.
+ *
+ * «ESPECTACULAR» 2026-11: la tabla es el Data Table de affectUI en SOLO
+ * LECTURA (se ordena por columna; nada se edita) y el id recortado enseña el
+ * entero en un Tooltip.
  */
 export async function SesionesCard({ sesiones }: { sesiones: SesionRollup[] }) {
   if (sesiones.length === 0) return null;
@@ -27,38 +36,47 @@ export async function SesionesCard({ sesiones }: { sesiones: SesionRollup[] }) {
   }
   const filas = [...porSesion.entries()].sort((a, b) => b[1].coste - a[1].coste).slice(0, 8);
 
+  const u = await getTranslations("ui");
   return (
-    <div className="card" style={{ padding: "16px" }}>
-      <div className="n" style={{ marginBottom: "10px" }}>{t("sesiones.title")}</div>
-      <div className="tbl-scroll">
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-          <thead>
-            <tr style={{ textAlign: "left", opacity: 0.65 }}>
-              <th style={{ padding: "4px 8px 4px 0", fontWeight: 500 }}>{t("sesiones.colSession")}</th>
-              <th style={{ padding: "4px 8px", fontWeight: 500 }}>{t("sesiones.colAgents")}</th>
-              <th style={{ padding: "4px 8px", fontWeight: 500 }}>{t("sesiones.colRequests")}</th>
-              <th style={{ padding: "4px 8px", fontWeight: 500 }}>{t("sesiones.colTokens")}</th>
-              <th style={{ padding: "4px 0 4px 8px", fontWeight: 500, textAlign: "right" }}>{t("sesiones.colCost")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filas.map(([sessionId, g]) => (
-              <tr key={sessionId} style={{ borderTop: "1px solid var(--line)" }}>
-                <td style={{ padding: "6px 8px 6px 0", fontFamily: "var(--mono)", fontSize: 12 }}>
-                  {sessionId.length > 18 ? `${sessionId.slice(0, 8)}…${sessionId.slice(-6)}` : sessionId}
-                </td>
-                <td style={{ padding: "6px 8px" }}>{g.agentes.size}</td>
-                <td style={{ padding: "6px 8px" }}>{g.requests}</td>
-                <td style={{ padding: "6px 8px" }}>{g.tokens.toLocaleString()}</td>
-                <td style={{ padding: "6px 0 6px 8px", textAlign: "right", fontFamily: "var(--mono)", fontSize: 12 }}>
-                  ${g.coste.toFixed(4)}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <div className="card card-pad ox-card">
+      <div className="card-head">
+        <div className="n">{t("sesiones.title")}</div>
+        <EvidenceBadge tipo="tus-datos" label={u("evidence.tusDatos")} pequeno />
       </div>
-      <p className="ck-note" style={{ marginTop: 8, marginBottom: 0 }}>{t("sesiones.hint")}</p>
+      <DataTable
+        flat
+        pinFirst
+        label={t("sesiones.title")}
+        sortLabel={t("panel.sortBy", { column: "{column}" })}
+        minWidth="520px"
+        columns={[
+          { key: "session", label: t("sesiones.colSession"), mono: true, nowrap: true, sortable: true },
+          { key: "agents", label: t("sesiones.colAgents"), align: "end", mono: true, sortable: true },
+          { key: "requests", label: t("sesiones.colRequests"), align: "end", mono: true, sortable: true },
+          { key: "tokens", label: t("sesiones.colTokens"), align: "end", mono: true, sortable: true },
+          { key: "cost", label: t("sesiones.colCost"), align: "end", mono: true, sortable: true },
+        ]}
+        rows={filas.map(([sessionId, g]) => ({
+          id: sessionId,
+          sort: { session: sessionId, agents: g.agentes.size, requests: g.requests, tokens: g.tokens, cost: g.coste },
+          quiet: g.agentes.size === 0 ? ["agents"] : undefined,
+          cells: {
+            session:
+              sessionId.length > 18 ? (
+                <Tooltip content={sessionId} toggleOnClick delay={200} align="start">
+                  <button type="button" className="ox-id">{`${sessionId.slice(0, 8)}…${sessionId.slice(-6)}`}</button>
+                </Tooltip>
+              ) : (
+                sessionId
+              ),
+            agents: g.agentes.size,
+            requests: intfmt(g.requests),
+            tokens: intfmt(g.tokens),
+            cost: `$${g.coste.toFixed(4)}`,
+          },
+        }))}
+      />
+      <p className="ck-note ox-foot">{t("sesiones.hint")}</p>
     </div>
   );
 }

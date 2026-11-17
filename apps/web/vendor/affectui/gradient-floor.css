@@ -1,0 +1,52 @@
+/*
+ * Derived from affectUI Pro 'Gradient Floor' (https://www.affectui.com). Used under the affectUI Pro license held by BiVelio. NOT covered by this repository's Apache-2.0 licence; do not redistribute as a component kit.
+ */
+/* Lengths are in the 2200 wide design frame, scaled to the container width: calc(N * 100cqw / 2200). */
+.ui-gf {
+  position: relative;
+  container-type: inline-size;
+  overflow: hidden;
+  /* Its own group, so plus-lighter only lightens the floor and the background below it */
+  isolation: isolate;
+  background: var(--ui-gf-bg, var(--aui-surface, var(--surface)));
+}
+.ui-gf-layer { position: absolute; pointer-events: none; opacity: var(--ui-gf-strength, 1); }
+/* Anchored to the bottom edge */
+.ui-gf-layer--color { left: calc(-290 * 100cqw / 2200); bottom: calc(-484.5 * 100cqw / 2200); width: calc(2864.5 * 100cqw / 2200); height: calc(931.5 * 100cqw / 2200); }
+.ui-gf-layer--light { left: calc(-65 * 100cqw / 2200); bottom: calc(-507 * 100cqw / 2200); width: calc(2414 * 100cqw / 2200); height: calc(785 * 100cqw / 2200); mix-blend-mode: plus-lighter; }
+.ui-gf-bleed { position: absolute; inset: -31.27% -10.17%; transform-origin: 50% 70%; will-change: transform; }
+/* The floor is so soft that it can be drawn at a quarter of its size and scaled up 4× on the GPU –
+   it looks the same, but every redraw of the moving shapes costs about a sixteenth */
+.ui-gf-bleed svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  width: 25%;
+  height: 25%;
+  overflow: visible;
+  transform: scale(4);
+  transform-origin: 0 0;
+  will-change: transform;
+}
+.ui-gf-layer--color svg { filter: blur(calc(145.65 * 100cqw / 2200 / 4)); }
+.ui-gf-layer--light svg { filter: blur(calc(122.74 * 100cqw / 2200 / 4)); }
+/* Both layers drift on the same beat; the light one moves a little less. BiVelio: 18 s per loop (upstream 2.5 s). */
+.ui-gf-layer--color .ui-gf-bleed { animation: ui-gf-drift-color var(--ui-gf-drift, 18s) ease-in-out infinite; }
+.ui-gf-layer--light .ui-gf-bleed { animation: ui-gf-drift-light var(--ui-gf-drift, 18s) ease-in-out infinite; }
+@keyframes ui-gf-drift-color {
+  0%, 100% { transform: translate(0, 0) scale(1, 1); }
+  33% { transform: translate(calc(-120 * 100cqw / 2200), calc(-20 * 100cqw / 2200)) scale(1.05, 1.08); }
+  66% { transform: translate(calc(100 * 100cqw / 2200), calc(12 * 100cqw / 2200)) scale(0.98, 0.96); }
+}
+@keyframes ui-gf-drift-light {
+  0%, 100% { transform: translate(0, 0) scale(1, 1); }
+  33% { transform: translate(calc(-100 * 100cqw / 2200), calc(-10 * 100cqw / 2200)) scale(1.03, 1); }
+  66% { transform: translate(calc(85 * 100cqw / 2200), calc(10 * 100cqw / 2200)) scale(0.98, 0.94); }
+}
+.ui-gf[data-paused] .ui-gf-bleed { animation-play-state: paused; }
+.ui-gf-content { position: relative; z-index: 1; height: 100%; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-gf-bleed { animation: none; }
+}

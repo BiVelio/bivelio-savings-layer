@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 
 import { MAX_ASIENTOS, normalizarAsientos } from "@/lib/billing/asientos";
+import { NumberInput } from "@/vendor/affectui/number-input";
+import { Spinner } from "@/vendor/affectui/spinner-clean";
 
 /**
  * Los 409 del checkout traen un `code`; el texto en inglés que los acompaña es
@@ -17,6 +19,9 @@ const ERRORES_DEL_CHECKOUT: Record<string, string> = {
   suscripcion_en_stripe: "accountPlanStrip.errSuscripcionEnStripe",
   plan_cerrado: "accountPlanStrip.errPlanCerrado",
 };
+
+/** Enteros sin separador de millares: el mismo texto en Node y en el navegador (hidratación). */
+const FORMATO_ASIENTOS: Intl.NumberFormatOptions = { useGrouping: false, maximumFractionDigits: 0 };
 
 /** Lo que el panel VENDE (2026-09-29): Pro y Equipo. La modalidad con comisión está cerrada a clientes nuevos. */
 type PlanEnVenta = "pro" | "equipo";
@@ -108,21 +113,27 @@ export function BillingButtons({
   }
 
   return (
-    <span className="billing-cta">
+    <div className="billing-cta">
       {isActive ? (
-        <button
-          type="button"
-          className="btn btn-ghost"
-          disabled={loading !== null}
-          onClick={() => go("/api/stripe/portal", {}, "portal")}
-        >
-          {loading === "portal" ? "…" : t("accountPlanStrip.managePlan")}
-        </button>
+        <div className="acct-manage">
+          <p className="acct-manage-t">{t("accountPlanStrip.manageBody")}</p>
+          <button
+            type="button"
+            className="btn btn-primary"
+            disabled={loading !== null}
+            aria-busy={loading === "portal" || undefined}
+            onClick={() => go("/api/stripe/portal", {}, "portal")}
+          >
+            {loading === "portal" ? <Spinner size={15} /> : null}
+            {t("accountPlanStrip.managePlan")}
+          </button>
+        </div>
       ) : (
         <>
-          <span className="seatpick" role="radiogroup" aria-label={t("accountPlanStrip.planPickLabel")}>
+          <h3 className="acct-h">{t("accountPlanStrip.pickTitle")}</h3>
+          <div className="acct-pick" role="radiogroup" aria-label={t("accountPlanStrip.planPickLabel")}>
             {(["pro", "equipo"] as const).map((p) => (
-              <label key={p} style={{ marginRight: 12 }}>
+              <label key={p} className="acct-opt">
                 <input
                   type="radio"
                   name="bv-plan"
@@ -132,74 +143,123 @@ export function BillingButtons({
                     setPlan(p);
                     if (p === "equipo") setSeats(String(Math.max(precios.equipo.incluidos, normalizarAsientos(seats))));
                   }}
-                />{" "}
-                {p === "pro" ? t("accountPlanStrip.planPro") : t("accountPlanStrip.planTeam")}
+                />
+                <span className="acct-opt-body">
+                  <span className="acct-opt-name">
+                    {p === "pro" ? t("accountPlanStrip.planPro") : t("accountPlanStrip.planTeam")}
+                  </span>
+                  <span className="acct-opt-price">
+                    {p === "pro"
+                      ? t("accountPlanStrip.planProPrice", { monthly: precios.pro.monthly, yearly: precios.pro.yearly })
+                      : t("accountPlanStrip.planTeamPrice", {
+                          monthly: precios.equipo.monthly,
+                          yearly: precios.equipo.yearly,
+                          included: precios.equipo.incluidos,
+                        })}
+                  </span>
+                </span>
               </label>
             ))}
-          </span>
+          </div>
           {plan === "equipo" ? (
-            <p className="ck-note" style={{ margin: "0 0 8px", width: "100%" }}>
+            <p className="ck-note acct-line">
               {t("accountPlanStrip.teamHint", { included: precios.equipo.incluidos, extra: precios.equipo.extraMonthly })}
             </p>
           ) : null}
-          <span className="seatpick">
-            <label htmlFor="bv-seats">{t("accountPlanStrip.seatsLabel")}</label>
-            <input
+          {/* LA UNIDAD, JUNTO AL SELECTOR: lo que se compra son máquinas o
+              identidades de servicio, no personas. */}
+          <div className="acct-qty">
+            <label htmlFor="bv-seats" className="acct-qty-label">
+              <span className="acct-qty-name">{t("accountPlanStrip.seatsLabel")}</span>
+              <span className="acct-unit">{t("accountPlanStrip.seatUnit")}</span>
+            </label>
+            {/* Number Input de affectUI: − y +, flechas y tecleo libre. El contrato
+                es el del `<input type=number>` que sustituye (lo fija
+                campo-asientos.test.ts), porque lo que salga de aquí va a Stripe:
+                 · `integer`: un texto con separadores («1,5», «1 2», «1,000») no se
+                   lee — antes se les quitaba la coma y «2,5» compraba 25 —; al salir
+                   el campo vuelve a la última cantidad válida.
+                 · `jumpKeys={false}`: Inicio/Fin/RePág/AvPág no saltan a 1 ni a
+                   MAX_ASIENTOS; con Fin, un comprador pasaba de 1 a 500 de una tecla.
+                 · el valor se emite MIENTRAS se teclea, así el resumen y los dos
+                   botones nunca guardan una cantidad más vieja que la del campo.
+                Se guarda como texto en el mismo estado de siempre y se normaliza
+                con `normalizarAsientos` al enviar. */}
+            <NumberInput
               id="bv-seats"
-              className="kt-input"
-              type="number"
+              className="acct-qty-input"
+              size="lg"
+              locale={locale}
+              formatOptions={FORMATO_ASIENTOS}
               min={minimo}
               max={MAX_ASIENTOS}
               step={1}
-              inputMode="numeric"
-              value={seats}
-              onChange={(e) => setSeats(e.target.value)}
+              integer
+              jumpKeys={false}
+              value={asientos}
+              onValueChange={(v) => setSeats(String(v ?? minimo))}
+              // Igual que el <input type=number> de main: al salir, el estado crudo
+              // pasa a ser lo normalizado. Sin esto, «Team, escribe 5, sal, elige
+              // Pro» enviaba 5 (o 1) donde main enviaba 10, porque el componente
+              // solo emite cuando el valor cambia respecto al `value` ya ajustado.
               onBlur={() => setSeats(String(asientos))}
-              style={{ width: "5.5rem" }}
+              stepLabels={{ decrease: t("accountPlanStrip.seatsLess"), increase: t("accountPlanStrip.seatsMore") }}
               aria-describedby="bv-seats-hint"
             />
-          </span>
+          </div>
           {/* El aviso, EN EL PUNTO DE COMPRA. Estaba solo en el README, que es
               donde no lo lee quien está decidiendo cuántos asientos paga. */}
-          <p id="bv-seats-hint" className="ck-note" style={{ margin: "4px 0 8px", width: "100%" }}>
+          <p id="bv-seats-hint" className="ck-note acct-line">
             {t("accountPlanStrip.seatsHint")}
           </p>
           {codigo ? (
-            <p className="ck-note" style={{ margin: "0 0 8px", width: "100%" }}>
+            <p className="ck-note acct-line">
               {t("accountPlanStrip.codigoAplicado", { codigo })}
             </p>
           ) : null}
-          <button
-            type="button"
-            className="btn btn-primary"
-            disabled={loading !== null}
-            onClick={() => go("/api/stripe/checkout", { plan, period: "monthly", seats: asientos }, "m")}
-          >
-            {loading === "m"
-              ? "…"
-              : plan === "equipo"
-                ? t("accountPlanStrip.checkoutTeamMonthly", { monthly: precios.equipo.monthly, included: precios.equipo.incluidos })
-                : t("accountPlanStrip.checkoutMonthly", { monthly: precios.pro.monthly })}
-          </button>
-          <button
-            type="button"
-            className="btn btn-ghost"
-            disabled={loading !== null}
-            onClick={() => go("/api/stripe/checkout", { plan, period: "yearly", seats: asientos }, "y")}
-          >
-            {loading === "y"
-              ? "…"
-              : plan === "equipo"
-                ? t("accountPlanStrip.checkoutTeamYearly", { yearly: precios.equipo.yearly, included: precios.equipo.incluidos })
-                : t("accountPlanStrip.checkoutYearly", { yearly: precios.pro.yearly })}
-          </button>
+          {/* EL RESUMEN no multiplica nada: el importe lo calcula y lo enseña
+              Stripe antes de pagar. Aquí solo se repite QUÉ se va a comprar. */}
+          <div className="acct-summary" role="status">
+            <span className="acct-k">{t("accountPlanStrip.summaryLabel")}</span>
+            <span className="acct-summary-v">
+              {t("accountPlanStrip.summary", {
+                plan: plan === "pro" ? t("accountPlanStrip.planPro") : t("accountPlanStrip.planTeam"),
+                seats: asientos,
+              })}
+            </span>
+            <span className="acct-summary-n">{t("accountPlanStrip.summaryNote")}</span>
+          </div>
+          <div className="acct-buy">
+            <button
+              type="button"
+              className="btn btn-primary"
+              disabled={loading !== null}
+              onClick={() => go("/api/stripe/checkout", { plan, period: "monthly", seats: asientos }, "m")}
+            >
+              {loading === "m" ? <Spinner size={15} /> : null}
+              {plan === "equipo"
+                  ? t("accountPlanStrip.checkoutTeamMonthly", { monthly: precios.equipo.monthly, included: precios.equipo.incluidos })
+                  : t("accountPlanStrip.checkoutMonthly", { monthly: precios.pro.monthly })}
+            </button>
+            <button
+              type="button"
+              className="btn btn-ghost"
+              disabled={loading !== null}
+              onClick={() => go("/api/stripe/checkout", { plan, period: "yearly", seats: asientos }, "y")}
+            >
+              {loading === "y" ? <Spinner size={15} /> : null}
+              {plan === "equipo"
+                  ? t("accountPlanStrip.checkoutTeamYearly", { yearly: precios.equipo.yearly, included: precios.equipo.incluidos })
+                  : t("accountPlanStrip.checkoutYearly", { yearly: precios.pro.yearly })}
+            </button>
+          </div>
         </>
       )}
       {err ? (
-        <span className="billing-err" role="alert">
+        <p className="billing-err" role="alert">
           {err}
-        </span>
+        </p>
       ) : null}
-    </span>
+    </div>
   );
 }

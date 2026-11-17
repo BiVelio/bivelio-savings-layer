@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { decidirAvisoReferencia, type AsientoVisto } from "@/lib/version/aviso-version";
 
 import { AvisoMigrar05 } from "./AvisoMigrar05";
+import { Notice } from "@/app/components/ui";
 
 /** El comando de actualización: fuera de las traducciones, igual en los 12 idiomas. */
 export const ACTUALIZAR_SDK = "npm install @bivelio/savings-layer@latest";
@@ -24,19 +25,14 @@ export async function SdkReferenciaBanner({ asientos }: { asientos: AsientoVisto
   const antigua = aviso.versionMasAntigua.slice(aviso.versionMasAntigua.indexOf("/") + 1);
 
   return (
-    <div
-      className="card"
-      role="status"
-      style={{ marginTop: 6, borderLeft: "3px solid var(--amber)", opacity: 0.92 }}
-    >
-      <div className="n">{t("title", { minima: aviso.minima })}</div>
-      <p style={{ marginTop: 6 }}>
+    <Notice tono="warn" role="status" className="ov-banner" titulo={t("title", { minima: aviso.minima })}>
+      <p>
         {t("summary", { n: aviso.desactualizadas, minima: aviso.minima, antigua })}
       </p>
-      <p className="ck-note" style={{ marginTop: 8, marginBottom: 0 }}>
+      <p className="ck-note">
         {t("action", { minima: aviso.minima })} <code>{ACTUALIZAR_SDK}</code>
       </p>
       <AvisoMigrar05 />
-    </div>
+    </Notice>
   );
 }

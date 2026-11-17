@@ -1,0 +1,323 @@
+/*
+ * Vendored from affectUI 'Progress Tracker (Clean)' — https://github.com/flohoeller/affectui @ 8f15236c790d3a21a668c98a663037e5219dd9c9
+ * MIT License, Copyright (c) 2026 Florian Höller (adfects). Full text: ./LICENSE.
+ * Adapted for BiVelio Savings (light theme only, BiVelio tokens, read-only rows); changes from upstream are listed in ./VENDOR.md.
+ */
+.ui-progressc {
+  --ui-pgc-card: var(--aui-surface, #ffffff);
+  --ui-pgc-strong: var(--aui-ink, #0f1218);
+  --ui-pgc-ink: var(--aui-ink, #0f1218);
+  --ui-pgc-muted: var(--aui-muted, #5a6070);
+  --ui-pgc-ring: var(--line-strong, #cfccc3);
+  --ui-pgc-track: var(--aui-subtle, #f2f1ec);
+  --ui-pgc-hover: var(--surface-3, #f6f5f1);
+  --ui-pgc-accent: var(--aui-blue, #0066e6);
+  --ui-pgc-accent-soft: var(--brand-soft, #e8f1ff);
+  --ui-pgc-on-accent: #ffffff;
+  --ui-pgc-focus: var(--aui-focus, #0066e6);
+  --ui-pgc-shadow: var(--aui-shadow-card, 0 0 0 1px #e6e4de);
+  --ui-pgc-ease: var(--aui-ease, cubic-bezier(0.16, 1, 0.3, 1));
+
+  container-type: inline-size;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 14px 6px 6px;
+  background: var(--ui-pgc-card);
+  border-radius: var(--aui-radius-lg, 14px);
+  box-shadow: var(--ui-pgc-shadow);
+  font-family: var(--aui-font, var(--font-sans));
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--ui-pgc-ink);
+  text-align: start;
+}
+.ui-progressc *,
+.ui-progressc *::before,
+.ui-progressc *::after {
+  box-sizing: border-box;
+}
+.ui-progressc[data-bare] {
+  padding: 0;
+  background: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* Header: the title and a quiet counter */
+.ui-progressc__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 10px;
+}
+.ui-progressc__title {
+  margin: 0;
+  min-width: 0;
+  color: var(--ui-pgc-strong);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 22px;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+.ui-progressc__count {
+  flex: none;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ui-pgc-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* A thin blue bar on a quiet track */
+.ui-progressc__bar {
+  position: relative;
+  height: 4px;
+  margin: 10px 10px 8px;
+  border-radius: 2px;
+  background: var(--ui-pgc-track);
+  overflow: hidden;
+}
+.ui-progressc__fill {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--ui-pgc-accent);
+  transform-origin: 0 50%;
+  transition: transform 400ms var(--ui-pgc-ease);
+}
+[dir="rtl"] .ui-progressc__fill {
+  transform-origin: 100% 50%;
+}
+
+.ui-progressc__list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ui-progressc__list > li {
+  position: relative;
+  min-width: 0;
+}
+
+.ui-progressc__step {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  min-height: 32px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font-size: 13px;
+  line-height: 20px;
+  text-align: start;
+  text-decoration: none;
+  transition: background-color 150ms var(--ui-pgc-ease);
+}
+a.ui-progressc__step:hover {
+  background: var(--ui-pgc-hover);
+  text-decoration: none;
+}
+a.ui-progressc__step:focus-visible {
+  outline: 2px solid var(--ui-pgc-focus);
+  outline-offset: -2px;
+}
+
+/* The mark: a hairline ring, a ringed dot for the step that comes next, a filled check once it is measured */
+.ui-progressc__check {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--ui-pgc-ring);
+}
+.ui-progressc__check svg {
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: var(--ui-pgc-on-accent);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  display: none;
+}
+[data-status="done"] > .ui-progressc__step .ui-progressc__check {
+  background: var(--ui-pgc-accent);
+  box-shadow: none;
+}
+[data-status="done"] > .ui-progressc__step .ui-progressc__check svg {
+  display: block;
+}
+[data-status="current"] > .ui-progressc__step .ui-progressc__check {
+  box-shadow: inset 0 0 0 1.5px var(--ui-pgc-strong);
+}
+[data-status="current"] > .ui-progressc__step .ui-progressc__check::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ui-pgc-strong);
+}
+[data-status="unavailable"] > .ui-progressc__step .ui-progressc__check {
+  box-shadow: none;
+  border: 1px dashed var(--ui-pgc-ring);
+}
+
+/* Label: wraps instead of truncating — the twelve languages have to fit */
+.ui-progressc__label {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ui-pgc-ink);
+}
+[data-status="done"] > .ui-progressc__step .ui-progressc__label,
+[data-status="pending"] > .ui-progressc__step .ui-progressc__label,
+[data-status="unavailable"] > .ui-progressc__step .ui-progressc__label {
+  color: var(--ui-pgc-muted);
+}
+[data-status="current"] > .ui-progressc__step .ui-progressc__label {
+  font-weight: 600;
+}
+
+/* The status as words, on the right */
+.ui-progressc__state {
+  flex: none;
+  max-width: 45%;
+  font-size: 11.5px;
+  line-height: 20px;
+  color: var(--ui-pgc-muted);
+  text-align: end;
+  overflow-wrap: anywhere;
+}
+[data-status="current"] > .ui-progressc__step .ui-progressc__state {
+  padding: 0 7px;
+  border-radius: 6px;
+  background: var(--ui-pgc-accent-soft);
+  color: var(--ui-pgc-accent);
+  font-weight: 600;
+}
+
+.ui-progressc__foot {
+  padding: 8px 10px 6px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--ui-pgc-muted);
+}
+
+/* Dense: the narrow rail. Only the step that comes next keeps its word in view; the rest stay for screen readers. */
+.ui-progressc[data-dense] {
+  padding: 12px 4px 4px;
+}
+.ui-progressc[data-dense] .ui-progressc__title {
+  font-size: 13px;
+  line-height: 18px;
+}
+.ui-progressc[data-dense] .ui-progressc__bar {
+  margin: 8px 10px 6px;
+}
+.ui-progressc[data-dense] .ui-progressc__step {
+  min-height: 28px;
+  padding: 4px 10px;
+  font-size: 12.5px;
+  line-height: 18px;
+}
+.ui-progressc[data-dense] .ui-progressc__check {
+  width: 14px;
+  height: 14px;
+}
+.ui-progressc[data-dense] .ui-progressc__check svg {
+  width: 10px;
+  height: 10px;
+}
+.ui-progressc[data-dense] .ui-progressc__state {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Steps: the same rows laid out as a horizontal rail once the card is wide enough */
+@container (min-width: 640px) {
+  .ui-progressc[data-layout="steps"] .ui-progressc__list {
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    grid-template-columns: none;
+    gap: 4px;
+    margin-top: 4px;
+  }
+  .ui-progressc[data-layout="steps"] .ui-progressc__step {
+    flex-direction: column;
+    gap: 8px;
+    height: 100%;
+    padding: 10px;
+  }
+  .ui-progressc[data-layout="steps"] .ui-progressc__check {
+    width: 20px;
+    height: 20px;
+    margin-top: 0;
+  }
+  .ui-progressc[data-layout="steps"] .ui-progressc__check svg {
+    width: 14px;
+    height: 14px;
+  }
+  .ui-progressc[data-layout="steps"] .ui-progressc__label {
+    flex: none;
+    font-size: 13.5px;
+  }
+  .ui-progressc[data-layout="steps"] .ui-progressc__state {
+    max-width: 100%;
+    margin-top: auto;
+    text-align: start;
+  }
+  /* The connector between two marks */
+  .ui-progressc[data-layout="steps"] .ui-progressc__list > li + li::before {
+    content: "";
+    position: absolute;
+    top: 19.5px;
+    inset-inline-start: calc(-100% + 38px);
+    inset-inline-end: calc(100% - 4px);
+    height: 1px;
+    background: var(--ui-pgc-ring);
+    pointer-events: none;
+  }
+  .ui-progressc[data-layout="steps"] .ui-progressc__list > li[data-status="done"] + li::before {
+    background: var(--ui-pgc-accent);
+  }
+}
+
+/* Touch screens: taller rows */
+@media (pointer: coarse) {
+  .ui-progressc a.ui-progressc__step {
+    min-height: 44px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-progressc,
+  .ui-progressc *,
+  .ui-progressc *::before,
+  .ui-progressc *::after {
+    animation: none !important;
+    transition-duration: 1ms !important;
+    transition-delay: 0ms !important;
+  }
+}

@@ -1,29 +1,40 @@
 # Tipografías self-hosted
 
-Las tres familias del sistema de BiVelio, servidas desde este origen porque la
-CSP declara `font-src 'self'` (ver `next.config.mjs`). bivelio.com carga las
-mismas vía `next/font/google`; aquí son subconjuntos latinos variables, un
-fichero por familia.
+Las cuatro familias de la marca BiVelio, servidas desde este origen porque la
+CSP declara `font-src 'self'` (ver `next.config.mjs`). Son las copias locales
+aprobadas de las que publica bivelio.com (repo `BiVelio/website`,
+`sitio/dist/assets/fuentes`): un woff2 variable por familia y subconjunto, con
+el mismo `unicode-range` que `css/fuentes.css` de la web madre.
 
-| Fichero | Familia | Eje | Uso |
+| Fichero | Familia | Eje / peso | Uso |
 |---|---|---|---|
-| `inter-var.woff2` | Inter | `wght 100–900` | cuerpo de texto (`--sans`) |
-| `space-grotesk-var.woff2` | Space Grotesk | `wght 300–700` | titulares y wordmark (`--font-heading`) |
-| `jetbrains-mono-var.woff2` | JetBrains Mono | `wght 100–800` | cifras, claves y micro-rótulos (`--mono`) |
+| `geist-latin-wght-normal.woff2` | Geist | `wght 100–900` | interfaz, cuerpo, navegación, titulares de la app (`--font-sans`) |
+| `geist-latin-ext-wght-normal.woff2` | Geist | `wght 100–900` | latin-ext (pl, tr, vi…): solo se descarga si la página lo necesita |
+| `geist-mono-latin-wght-normal.woff2` | Geist Mono | `wght 100–900` | código, IDs, hashes y cifras del recibo (`--font-mono`) |
+| `geist-mono-latin-ext-wght-normal.woff2` | Geist Mono | `wght 100–900` | latin-ext |
+| `plus-jakarta-sans-latin-wght-normal.woff2` | Plus Jakarta Sans | `wght 200–800` | titulares editoriales a 800 (`--font-editorial`) |
+| `plus-jakarta-sans-latin-ext-wght-normal.woff2` | Plus Jakarta Sans | `wght 200–800` | latin-ext |
+| `instrument-serif-latin-400-italic.woff2` | Instrument Serif | 400 cursiva | énfasis breve dentro de un titular (`--font-serif`) |
+| `instrument-serif-latin-ext-400-italic.woff2` | Instrument Serif | 400 cursiva | latin-ext |
 
-`space-grotesk-500.woff2` y `space-grotesk-700.woff2` son los estáticos previos
-a la variable; ninguna regla los referencia ya.
+Las `@font-face` viven al principio de `app/globals.css`, junto a las caras
+«Fallback» de métricas ajustadas (`size-adjust`, `ascent-override`…) que evitan
+el salto de texto durante `font-display: swap`. `app/[locale]/layout.tsx`
+precarga solo `geist-latin` y `plus-jakarta-sans-latin`, que son las que pinta
+el primer pliegue.
 
-Las tres se distribuyen bajo la **SIL Open Font License 1.1**, que permite
+Rasgos OpenType disponibles en estos subconjuntos (comprobado con fontTools):
+Geist y Plus Jakarta Sans traen `liga`, `tnum`, `pnum`, `frac`; **no** traen
+`cv11` ni `ss01`. Geist Mono es de ancho fijo y no necesita `tnum`.
+
+## Licencia
+
+Las cuatro se distribuyen bajo la **SIL Open Font License 1.1**, que permite
 redistribuirlas empaquetadas siempre que no se vendan por separado y se conserve
 el aviso de copyright:
 
-- Inter — © The Inter Project Authors (https://github.com/rsms/inter)
-- Space Grotesk — © The Space Grotesk Project Authors (https://github.com/floriankarsten/space-grotesk)
-- JetBrains Mono — © 2020 The JetBrains Mono Project Authors (https://github.com/JetBrains/JetBrainsMono)
+- Geist y Geist Mono — © Vercel, en colaboración con basement.studio (https://github.com/vercel/geist-font)
+- Plus Jakarta Sans — © Tokotype (https://github.com/tokotype/PlusJakartaSans)
+- Instrument Serif — © Instrument (https://github.com/Instrument/instrument-serif)
 
-Texto completo de la licencia: https://scripts.sil.org/OFL
-
-`jetbrains-mono-var.woff2` es el subconjunto latino de
-`@fontsource-variable/jetbrains-mono@5.3.0`, renombrado para seguir la
-convención de las otras dos.
+Texto completo de la licencia: https://openfontlicense.org

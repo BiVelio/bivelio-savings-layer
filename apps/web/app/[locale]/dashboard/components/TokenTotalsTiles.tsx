@@ -28,42 +28,46 @@ export async function TokenTotalsTiles({ usage }: { usage: UsageRollup[] }) {
   const t = await getTranslations("dashboard");
   const tok = deriveTokens(usage);
 
+  const titulo = <div className="n card-title">{t("panel.cards.tokens")}</div>;
+
   if (tok.kind === "unavailable") {
     return (
-      <div className="kpis">
-        <div className="kpi">
-          <div className="n">{t("tokenTotals.spentLabel")}</div>
-          <div className="v empty ck-num">—</div>
-          <div className="sub">{t("tokenTotals.unavailable")}</div>
-        </div>
-        <div className="kpi">
-          <div className="n">{t("tokenTotals.savedLabel")}</div>
-          <div className="v empty ck-num">—</div>
-          <div className="sub">{t("tokenTotals.unavailable")}</div>
-        </div>
+      <div className="card card-pad ox-card">
+        {titulo}
+        <dl className="ox-tiles two">
+          <div>
+            <dt>{t("tokenTotals.spentLabel")}</dt>
+            <dd className="empty">—</dd>
+            <dd className="ox-what">{t("tokenTotals.unavailable")}</dd>
+          </div>
+          <div>
+            <dt>{t("tokenTotals.savedLabel")}</dt>
+            <dd className="empty">—</dd>
+            <dd className="ox-what">{t("tokenTotals.unavailable")}</dd>
+          </div>
+        </dl>
       </div>
     );
   }
 
   const vacio = tok.kind === "empty";
+  // La parte ahorrada frente a lo que habría entrado sin la capa: solo se
+  // dibuja con una fracción legible entre 0 y 1; fuera de ahí, la cifra basta.
+  const parte = !vacio && tok.fraction > 0 && tok.fraction <= 1 ? tok.fraction : null;
 
   return (
-    <>
-      <div className="kpis">
-        <div className="kpi">
-          <div className="n">{t("tokenTotals.spentLabel")}</div>
-          <div className={vacio ? "v empty ck-num" : "v ck-num"}>
-            {vacio ? "—" : intfmt(tok.spent)}
-          </div>
-          <div className="sub">{t("tokenTotals.spentWhat")}</div>
+    <div className="card card-pad ox-card">
+      {titulo}
+      <dl className="ox-tiles two">
+        <div>
+          <dt>{t("tokenTotals.spentLabel")}</dt>
+          <dd className={vacio ? "empty" : undefined}>{vacio ? "—" : intfmt(tok.spent)}</dd>
+          <dd className="ox-what">{t("tokenTotals.spentWhat")}</dd>
         </div>
-
-        <div className="kpi">
-          <div className="n">{t("tokenTotals.savedLabel")}</div>
-          <div className={vacio ? "v empty ck-num" : `v ${tok.tone} ck-num`}>
-            {vacio ? "—" : intfmt(tok.saved)}
-          </div>
-          <div className="sub">
+        <div>
+          <dt>{t("tokenTotals.savedLabel")}</dt>
+          <dd className={vacio ? "empty" : tok.tone}>{vacio ? "—" : intfmt(tok.saved)}</dd>
+          <dd className="ox-what">
             {vacio
               ? t("tokenTotals.savedWhat")
               : t("tokenTotals.savedBreakdown", {
@@ -71,16 +75,21 @@ export async function TokenTotalsTiles({ usage }: { usage: UsageRollup[] }) {
                   input: intfmt(tok.savedInput),
                   output: intfmt(tok.savedOutput),
                 })}
-          </div>
+          </dd>
+          {parte !== null ? (
+            <dd className="ox-part" aria-hidden>
+              <i style={{ width: `${Math.max(2, parte * 100)}%` }} />
+            </dd>
+          ) : null}
         </div>
-      </div>
+      </dl>
       {/* Sin tráfico no hay nada que explicar: la nota sobre el ahorro de salida
           y los totales negativos habla de cifras que aún no existen. */}
       {vacio ? null : (
-        <p className="footnote">
+        <p className="ck-note ox-foot">
           {t.rich("tokenTotals.footnote", { b: (chunks) => <b>{chunks}</b> })}
         </p>
       )}
-    </>
+    </div>
   );
 }

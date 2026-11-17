@@ -4,6 +4,7 @@ import { useEffect, useSyncExternalStore, type MouseEvent, type ReactNode } from
 
 import { ICONS } from "@/app/components/icons";
 import { Link, usePathname } from "@/i18n/navigation";
+import { Tooltip } from "@/vendor/affectui/tooltip-clean";
 
 import {
   announceHash,
@@ -88,6 +89,7 @@ export function NavLink({
   siblingHashes,
   badge,
   badgeTitle,
+  tour,
   children,
 }: {
   href: string;
@@ -105,6 +107,8 @@ export function NavLink({
   badge?: string | null;
   /** La frase completa de la que la cifra es el resumen, para el `title`. */
   badgeTitle?: string | null;
+  /** Ancla del tour guiado (`data-tour`). Aditiva: ningún estilo ni lógica la lee. */
+  tour?: string;
   children: ReactNode;
 }) {
   const pathname = usePathname();
@@ -150,13 +154,13 @@ export function NavLink({
 
   const Icon = icon ? ICONS[icon] : undefined;
 
-  return (
+  const fila = (
     <Link
       href={href}
       onClick={onClick}
       className={`app-nav-item${active ? " on" : ""}`}
       aria-current={active ? "page" : undefined}
-      title={badgeTitle ?? undefined}
+      data-tour={tour}
     >
       {Icon && (
         <span className="ic" aria-hidden>
@@ -166,5 +170,14 @@ export function NavLink({
       <span className="app-nav-label">{children}</span>
       {badge ? <span className="app-nav-badge">{badge}</span> : null}
     </Link>
+  );
+  // La frase entera de la que la cifra es el resumen: antes un `title` (tarda,
+  // no sale con teclado); ahora el Tooltip de affectUI, a la derecha de la fila.
+  return badgeTitle ? (
+    <Tooltip content={badgeTitle} side="right" delay={350}>
+      {fila}
+    </Tooltip>
+  ) : (
+    fila
   );
 }
