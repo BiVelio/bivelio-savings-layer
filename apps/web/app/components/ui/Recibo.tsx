@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { LOGO_PNG, srcSetDelLogo } from "@/app/components/SavingsLogo";
 import { Link } from "@/i18n/navigation";
 
 import { cx } from "./cx";
@@ -72,8 +73,13 @@ export function Recibo({ titulo, meta, filas, total, evidencia, procedencia, ilu
             <p className="recibo-titulo">{titulo}</p>
             {meta ? <p className="recibo-meta">{meta}</p> : null}
           </div>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="recibo-sello" src="/brand/savings-mark.png" alt="" width={22} height={22} decoding="async" loading="lazy" />
+          {/* El isotipo al tamaño justo (ver SavingsLogo.tsx); `display: contents`
+              deja el <img> como hijo flexible de la cabecera, como antes. */}
+          <picture style={{ display: "contents" }}>
+            <source type="image/webp" srcSet={srcSetDelLogo("mark", 22)} sizes="22px" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="recibo-sello" src={LOGO_PNG.mark} alt="" width={22} height={22} decoding="async" loading="lazy" />
+          </picture>
         </figcaption>
         <dl className="recibo-filas">
           {filas.map((f, i) => (

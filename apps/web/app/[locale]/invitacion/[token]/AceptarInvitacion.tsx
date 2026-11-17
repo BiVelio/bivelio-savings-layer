@@ -7,6 +7,7 @@ import { AccesoEnviado, MensajeDeAcceso } from "@/app/components/acceso/AccesoEs
 import { AccesoShell } from "@/app/components/acceso/AccesoShell";
 import { CampoClave } from "@/app/components/acceso/CampoClave";
 import { Icono } from "@/app/components/acceso/iconos";
+import { srcSetDelLogo } from "@/app/components/SavingsLogo";
 import { Skeleton, SkeletonGroup } from "@/app/components/ui/Skeleton";
 import { Badge } from "@/vendor/affectui/badge-clean";
 import { Button } from "@/vendor/affectui/button-clean";
@@ -225,8 +226,11 @@ export function AceptarInvitacion({ token }: { token: string }) {
               label={t("arteAlt")}
               nodes={[
                 <Icono key="org" nombre="organizacion" />,
+                // El isotipo al tamaño justo (ver SavingsLogo.tsx): el CSS del
+                // nodo lo pinta a ~32 px (`.ui-ti-face > img`, 58 %). Sin
+                // <picture>, que rompería ese selector de hijo directo.
                 // eslint-disable-next-line @next/next/no-img-element
-                <img key="savings" src="/brand/savings-mark.png" alt="" width={48} height={48} decoding="async" />,
+                <img key="savings" src="/brand/savings-mark-96.webp" srcSet={srcSetDelLogo("mark", 32)} sizes="32px" alt="" width={48} height={48} decoding="async" />,
                 <Icono key="tu" nombre="persona" />,
               ]}
             />
