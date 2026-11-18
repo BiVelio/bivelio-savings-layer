@@ -2,7 +2,7 @@
   "nav": {
     "announce": "Savings Layer is part of the BiVelio platform",
     "announceClose": "Close",
-    "announcePhSoon": "We launch on Product Hunt on {date} — get notified",
+    "announcePhSoon": "We're launching on Product Hunt {date} — get notified",
     "announcePhLive": "Savings Layer is live on Product Hunt — support us",
     "langTitle": "Choose your language",
     "langSubtitle": "Pick the language you want to use BiVelio Savings Layer in.",

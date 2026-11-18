@@ -75,6 +75,33 @@ export function alcanzables(desde: Variante): readonly Variante[] {
  */
 export const atado = (texto: string) => texto.replace(/Product Hunt/g, "Product\u00A0Hunt").replace(/ ([—–])/g, "\u00A0$1");
 
+/**
+ * La fecha, sin cortes de línea feos: ni «22 / listopada» ni «22 de /
+ * novembre». Desde el día (el primer número) hasta el final, los espacios
+ * pasan a ser de no separación; si el número es lo último («November 22»),
+ * también el espacio de antes. El día de la semana queda libre: la línea puede
+ * partir antes del día («domenica / 22 novembre», «domingo, / 22 de
+ * noviembre»), que es donde parte un buen tipógrafo. Pegarlo todo alargaba el
+ * aviso a 3 líneas a 390 px en fr e it.
+ */
+export function fechaAtada(fecha: string): string {
+  const i = fecha.search(/\d/);
+  if (i < 0) return fecha;
+  const dia = fecha.slice(i);
+  const antes = /^\d+\.?$/.test(dia) ? fecha.slice(0, i).replace(/ $/, "\u00A0") : fecha.slice(0, i);
+  return antes + dia.replace(/ /g, "\u00A0");
+}
+
+/**
+ * La última palabra, aparte: va con la flecha en un `white-space: nowrap`
+ * para que la flecha nunca se quede sola en la última línea. Un espacio de no
+ * separación no basta: Chrome parte igual delante de un SVG en línea.
+ */
+export function partirCola(texto: string): [string, string] {
+  const i = texto.lastIndexOf(" ");
+  return i < 0 ? ["", texto] : [texto.slice(0, i + 1), texto.slice(i + 1)];
+}
+
 /** setTimeout guarda el retraso en un int32: por encima de ~24,8 días dispara al instante. */
 export const RETRASO_MAXIMO = 2 ** 31 - 1;
 
@@ -106,4 +133,137 @@ export function fechaDelLanzamiento(locale: string): string {
     day: "numeric",
     timeZone: "Europe/Andorra",
   }).format(LANZAMIENTO);
+}
+
+/** Lo que necesita `programarFranja` del entorno: el reloj y los temporizadores (en los tests, falsos). */
+export interface Reloj {
+  ahora: () => number;
+  setTimeout: (fn: () => void, ms: number) => unknown;
+  clearTimeout: (id: unknown) => void;
+}
+
+/**
+ * El motor del cliente, fuera del componente para poder probarlo con relojes
+ * falsos. Reevalúa ya (al montar), y programa un temporizador que dispara justo
+ * al cruzar la siguiente frontera; `reevaluar` se puede llamar también desde
+ * fuera (al volver a la pestaña, por si el equipo durmió y el temporizador se
+ * retrasó). La variante nunca retrocede de `inicial` ni de la última vista: un
+ * reloj atrasado no devuelve una ventana que ya pasó. `alCambiar` solo se
+ * llama cuando la variante cambia. `cancelar` limpia el temporizador.
+ */
+export function programarFranja(
+  inicial: Variante,
+  alCambiar: (v: Variante) => void,
+  reloj: Reloj,
+): { variante: () => Variante; reevaluar: () => void; cancelar: () => void } {
+  let actual = inicial;
+  let id: unknown;
+  let cancelada = false;
+  const limpiar = () => {
+    if (id !== undefined) reloj.clearTimeout(id);
+    id = undefined;
+  };
+  const reevaluar = () => {
+    if (cancelada) return;
+    limpiar();
+    const ahora = reloj.ahora();
+    const v = laMasAvanzada(actual, elegirVariante(ahora));
+    if (v !== actual) {
+      actual = v;
+      alCambiar(v);
+    }
+    // Con la franja de BiVelio ya no queda nada que esperar, diga lo que diga
+    // un reloj atrasado.
+    const espera = actual === "bivelio" ? null : esperaHastaLaFrontera(ahora);
+    if (espera !== null) id = reloj.setTimeout(reevaluar, espera);
+  };
+  reevaluar();
+  return {
+    variante: () => actual,
+    reevaluar,
+    cancelar: () => {
+      cancelada = true;
+      limpiar();
+    },
+  };
+}
+
+/*
+ * EL PRIMER PINTADO DE LAS PÁGINAS SIN ISR.
+ *
+ * Solo la portada y precios se regeneran (revalidate = 3600). Las demás páginas
+ * públicas (cómo funciona, privacidad, paper, resultados, migración, alta,
+ * contraseña…) son estáticas sin revalidación: su HTML lleva la variante del
+ * BUILD hasta el siguiente despliegue. No basta con corregirla al hidratar: del
+ * 22 al 29 pintarían primero el aviso y lo cambiarían por «en vivo», y desde el
+ * 29 pintarían el coral y saltarían al negro, en cada carga. Darles ISR desde
+ * el layout no es seguro: resultados y migración leen ../../docs al
+ * renderizar, fuera del trazado de ficheros de la función, y en Vercel la
+ * regeneración fallaría.
+ *
+ * Así que un guion en línea, ANTES de la franja y antes del primer pintado,
+ * mira el reloj del navegador y, si la ventana ya pasó de la del build, añade
+ * una hoja de estilo construida (`document.adoptedStyleSheets`): esconde con
+ * `display: none` las variantes que ya pasaron (la franja mide lo mismo que
+ * medirá después de hidratar), enseña la que toca y, si toca la de BiVelio,
+ * deshace el coral. No toca el DOM (ni clases ni atributos), así que React
+ * hidrata sobre el marcado del servidor sin ninguna discrepancia; al montar,
+ * el componente pinta lo mismo con su estado y retira la hoja
+ * (`retirarHojaPrevia`). Sin soporte de hojas construidas (navegadores de antes
+ * de 2023) el guion no hace nada y la franja se corrige al hidratar, como
+ * antes. La CSP ya admite guiones en línea ('unsafe-inline', como gtag).
+ */
+
+/** Dónde deja el guion la hoja, para que el componente la retire. */
+export const CLAVE_HOJA_PREVIA = "__franjaPrevia";
+
+/**
+ * Lo que deshace el coral de PH para enseñar la franja de BiVelio antes de
+ * hidratar: los colores de `.announce`, `.announce a` y `.announce-close` en
+ * globals.css (el test comprueba que son los mismos). Hover y foco no hacen
+ * falta: la hoja vive lo que tarda en hidratar.
+ */
+export const DESHACER_PH =
+  ".announce--ph{background:var(--ink);color:#fff}" +
+  ".announce--ph a{color:rgba(255,255,255,.92);text-decoration:none}" +
+  ".announce--ph .announce-close{color:rgba(255,255,255,.6)}";
+
+/** La hoja que pasa una franja construida en `desde` a `hasta` sin tocar el DOM. Vacía si no avanza. */
+export function hojaPrevia(desde: Variante, hasta: Variante): string {
+  const i = VARIANTES.indexOf(desde);
+  const j = VARIANTES.indexOf(hasta);
+  if (j <= i) return "";
+  const reglas = VARIANTES.slice(i, j).map((v) => `.announce-pila>[data-v="${v}"]{display:none}`);
+  reglas.push(`.announce-pila>[data-v="${hasta}"]{visibility:visible}`);
+  if (hasta === "bivelio") reglas.push(DESHACER_PH);
+  return reglas.join("");
+}
+
+/**
+ * El guion en línea para una página construida con la variante `inicial`, o
+ * null si ya no puede cambiar (construida después de la campaña). Repite
+ * `elegirVariante` con las fronteras escritas como números; el test lo
+ * ejecuta en cada frontera y lo compara con la función.
+ */
+export function guionPrevio(inicial: Variante): string | null {
+  const i = VARIANTES.indexOf(inicial);
+  const hojas: Record<number, string> = {};
+  for (let j = i + 1; j < VARIANTES.length; j++) hojas[j] = hojaPrevia(inicial, VARIANTES[j]!);
+  if (Object.keys(hojas).length === 0) return null;
+  return (
+    `try{var t=Date.now(),v=t<${LANZAMIENTO}?0:t<${FIN_CAMPANA}?1:2,h=${JSON.stringify(hojas)}[v];` +
+    `if(h){var s=new CSSStyleSheet();s.replaceSync(h);` +
+    `document.adoptedStyleSheets=document.adoptedStyleSheets.concat(s);window.${CLAVE_HOJA_PREVIA}=s}}catch(e){}`
+  );
+}
+
+/** Retira la hoja del guion, si la puso. Se llama después de que el componente pinte lo mismo con su estado. */
+export function retirarHojaPrevia(
+  doc: { adoptedStyleSheets: CSSStyleSheet[] } = document,
+  win: Record<string, unknown> = window as unknown as Record<string, unknown>,
+): void {
+  const hoja = win[CLAVE_HOJA_PREVIA];
+  if (!hoja) return;
+  doc.adoptedStyleSheets = doc.adoptedStyleSheets.filter((h) => h !== hoja);
+  delete win[CLAVE_HOJA_PREVIA];
 }
