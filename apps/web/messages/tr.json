@@ -2,6 +2,8 @@
   "nav": {
     "announce": "Savings Layer, BiVelio platformunun bir parçası",
     "announceClose": "Kapat",
+    "announcePhSoon": "{date} günü Product Hunt'ta yayındayız — hatırlatma alın",
+    "announcePhLive": "Savings Layer Product Hunt'ta yayında — bize destek olun",
     "langTitle": "Dilinizi seçin",
     "langSubtitle": "BiVelio Savings Layer'ı kullanmak istediğiniz dili seçin.",
     "langSearch": "Dil ara",
@@ -1696,6 +1698,12 @@
       "legendCacheTo": "daha ucuz girdi",
       "compatNote": "Uyumlu olması ölçüldüğü anlamına gelmez.",
       "compatLink": "Her sağlayıcıda neyin ölçüldüğü"
+    },
+    "productHunt": {
+      "kicker": "Bizi Product Hunt'ta bulun",
+      "tagline": "Açık kaynaklı bir tasarruf katmanıyla LLM maliyetlerinizi düşürün",
+      "notify": "Product Hunt'ta hatırlatma alın",
+      "live": "Product Hunt'ta göz atın"
     }
   },
   "invitacion": {

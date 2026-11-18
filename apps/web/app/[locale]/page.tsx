@@ -12,6 +12,9 @@ import { DosManeras } from "@/app/components/landing/DosManeras";
 import { EnlacesAntiguos } from "@/app/components/landing/EnlacesAntiguos";
 import { PlanesCloud } from "@/app/components/landing/PlanesCloud";
 import { PreguntasDeCompra } from "@/app/components/landing/PreguntasDeCompra";
+import { TarjetaProductHunt } from "@/app/components/landing/TarjetaProductHunt";
+import { elegirVariante } from "@/app/components/franja-lanzamiento";
+import { InsigniaProductHunt } from "@/app/components/ProductHunt";
 import { URL_DEL_CODIGO } from "@/app/components/sitio";
 import { CodeFrame, Recibo } from "@/app/components/ui";
 import { Marcado } from "@/app/components/campana/Marcado";
@@ -206,6 +209,12 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
   const diaCorto = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "UTC" });
   const reciboMeta = `${V.bateria} · ${diaCorto.format(dia(V.fecha))} · SDK ${V.versionSdk}`;
 
+  // LANZAMIENTO EN PRODUCT HUNT (22-11-2026): la ventana con el reloj de esta
+  // regeneración (ISR, cada hora). La insignia del héroe y el botón de la
+  // tarjeta del final se corrigen solos si la página es vieja (guion previo
+  // de NavBar y, al montar, el reloj del navegador): franja-lanzamiento.ts.
+  const ventanaPh = elegirVariante(Date.now());
+
   return (
     <div className="lp lp2">
       <CursorGrid />
@@ -259,6 +268,10 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
                 </Link>
               </span>
             </div>
+            {/* La insignia oficial de Product Hunt, bajo los botones, SOLO la
+                semana del lanzamiento (22–29-11-2026). Fuera de ella no hay
+                imagen ni hueco. */}
+            <InsigniaProductHunt lugar="heroe" inicial={ventanaPh} nuevaPestana={tn("newTab")} />
           </div>
 
           <figure className="hpanel-shot">
@@ -834,6 +847,19 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             }
           />
         </section>
+
+        {/* 9 · PRODUCT HUNT — la tarjeta «Find us on Product Hunt», discreta,
+            después del cierre y antes de la banda de NVIDIA y del pie. */}
+        <TarjetaProductHunt
+          inicial={ventanaPh}
+          t={{
+            kicker: t("productHunt.kicker"),
+            lema: t("productHunt.tagline"),
+            aviso: t("productHunt.notify"),
+            vivo: t("productHunt.live"),
+            nuevaPestana: tn("newTab"),
+          }}
+        />
       </main>
 
       {/* COMPAÑÍA Y ECOSISTEMA — la banda del NVIDIA Inception Program al

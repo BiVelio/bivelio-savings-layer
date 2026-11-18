@@ -2,6 +2,8 @@
   "nav": {
     "announce": "Savings Layer là một phần của nền tảng BiVelio",
     "announceClose": "Đóng",
+    "announcePhSoon": "Chúng tôi ra mắt trên Product Hunt vào {date} — nhận thông báo",
+    "announcePhLive": "Savings Layer đã lên Product Hunt — hãy ủng hộ chúng tôi",
     "langTitle": "Chọn ngôn ngữ của bạn",
     "langSubtitle": "Chọn ngôn ngữ bạn muốn dùng BiVelio Savings Layer.",
     "langSearch": "Tìm ngôn ngữ",
@@ -1696,6 +1698,12 @@
       "legendCacheTo": "đầu vào rẻ hơn",
       "compatNote": "Tương thích không có nghĩa là đã đo.",
       "compatLink": "Những gì đã đo với từng nhà cung cấp"
+    },
+    "productHunt": {
+      "kicker": "Tìm chúng tôi trên Product Hunt",
+      "tagline": "Cắt giảm chi phí LLM với lớp tiết kiệm mã nguồn mở",
+      "notify": "Nhận thông báo trên Product Hunt",
+      "live": "Xem trên Product Hunt"
     }
   },
   "invitacion": {

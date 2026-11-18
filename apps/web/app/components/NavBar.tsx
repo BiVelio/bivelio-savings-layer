@@ -1,6 +1,9 @@
+import { useLocale } from "next-intl";
+
 import { Link } from "@/i18n/navigation";
 
 import { AnnouncementBar } from "./AnnouncementBar";
+import { elegirVariante, fechaDelLanzamiento, guionPrevio } from "./franja-lanzamiento";
 import { LocaleSwitcher } from "./LocaleSwitcher";
 import { BivelioWordmark } from "./BivelioWordmark";
 import { MobileMenu, NavCta, NavSections } from "./NavLinks";
@@ -25,9 +28,19 @@ import { URL_CORPORATIVA } from "./sitio";
  * `NavShell` solo añade el estado de desplazamiento, que tampoco lee sesión.
  */
 export function NavBar() {
+  const locale = useLocale();
+  // La variante con el reloj del servidor (en páginas estáticas, el del build)
+  // y la fecha ya formateada aquí: el cliente hidrata con lo mismo y después
+  // se corrige solo con su propio reloj.
+  const inicial = elegirVariante(Date.now());
+  const guion = guionPrevio(inicial);
   return (
     <>
-      <AnnouncementBar />
+      {/* Antes de la franja y del primer pintado: si el build es de una ventana
+          que ya pasó (páginas sin ISR), corrige lo que se ve con una hoja de
+          estilo, sin tocar el DOM. Después de la campaña no se emite. */}
+      {guion && <script dangerouslySetInnerHTML={{ __html: guion }} />}
+      <AnnouncementBar inicial={inicial} fecha={fechaDelLanzamiento(locale)} />
       <NavShell>
         <div className="site-nav-inner">
           <div className="nav-left">

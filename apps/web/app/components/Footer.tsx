@@ -6,6 +6,8 @@ import { corporateUrl, LEGAL_DOCS } from "@/lib/corporate";
 import { VERSION_MINIMA_MEDIR } from "@/lib/license/medir-publico";
 
 import { NvidiaFooterCard } from "./NvidiaInception";
+import { elegirVariante } from "./franja-lanzamiento";
+import { InsigniaProductHunt } from "./ProductHunt";
 
 import { ArrowRightIcon, GitHubIcon, LinkedInIcon } from "./icons";
 import { SavingsLogo } from "./SavingsLogo";
@@ -119,6 +121,7 @@ function GlassWordmark() {
  */
 export default async function Footer({ sinGitHub = false }: { sinGitHub?: boolean } = {}) {
   const t = await getTranslations("landing");
+  const tn = await getTranslations("nav");
   const locale = await getLocale();
 
   // Rutas con hash (Link), no anclas peladas: este footer ya no vive solo en la
@@ -216,6 +219,13 @@ export default async function Footer({ sinGitHub = false }: { sinGitHub?: boolea
                     la misma clave que la banda, en los 12 idiomas. El programa
                     se dice UNA vez en el pie. */}
                 <NvidiaFooterCard line={t("nvidia.title")} />
+                {/* La insignia oficial de Product Hunt, desde el lanzamiento
+                    (22-11-2026, 08:00Z) y para siempre. En las páginas sin ISR
+                    el HTML lleva la ventana del despliegue: antes del 22 solo un
+                    hueco escondido, sin imagen, que el guion previo de NavBar
+                    enseña antes del primer pintado si el reloj ya cruzó
+                    (ProductHunt.tsx). */}
+                <InsigniaProductHunt lugar="pie" inicial={elegirVariante(Date.now())} nuevaPestana={tn("newTab")} />
               </div>
               <div className="ftr-cols">
                 <Column head={t("footer.colSavings")} links={savings} />
