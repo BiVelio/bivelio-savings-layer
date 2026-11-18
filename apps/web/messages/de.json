@@ -1698,6 +1698,12 @@
       "legendCacheTo": "günstigere Eingabe",
       "compatNote": "Kompatibel heißt nicht gemessen.",
       "compatLink": "Was mit welchem Anbieter gemessen wurde"
+    },
+    "productHunt": {
+      "kicker": "Finde uns auf Product Hunt",
+      "tagline": "Senke deine LLM-Kosten mit einer Open-Source-Sparschicht",
+      "notify": "Auf Product Hunt erinnern lassen",
+      "live": "Auf Product Hunt ansehen"
     }
   },
   "invitacion": {

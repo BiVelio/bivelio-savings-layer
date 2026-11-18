@@ -1698,6 +1698,12 @@
       "legendCacheTo": "goedkopere invoer",
       "compatNote": "Compatibel betekent niet gemeten.",
       "compatLink": "Wat er per provider is gemeten"
+    },
+    "productHunt": {
+      "kicker": "Vind ons op Product Hunt",
+      "tagline": "Verlaag je LLM-kosten met een open-source besparingslaag",
+      "notify": "Zet een herinnering op Product Hunt",
+      "live": "Bekijk het op Product Hunt"
     }
   },
   "invitacion": {

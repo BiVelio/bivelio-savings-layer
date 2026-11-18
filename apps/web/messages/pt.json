@@ -1698,6 +1698,12 @@
       "legendCacheTo": "entrada mais barata",
       "compatNote": "Compatível não significa medido.",
       "compatLink": "O que está medido com cada fornecedor"
+    },
+    "productHunt": {
+      "kicker": "Encontra-nos no Product Hunt",
+      "tagline": "Corta os custos de LLM com uma camada de poupança open source",
+      "notify": "Recebe o aviso no Product Hunt",
+      "live": "Espreita no Product Hunt"
     }
   },
   "invitacion": {

@@ -4547,3 +4547,78 @@ body:has(> main.auth-wrap.acc) > :not(main) { flex: none; }
   body:has(> main.auth-wrap.acc) > .announce { display: none; }
 }
 /* ==== FIN SLOT ACCESO A LA MEDIDA DE LA PANTALLA (PARTE GLOBAL) ==== */
+
+/* ==== SLOT PRODUCT HUNT (insignia y tarjeta, 22-11-2026) ==== */
+/* LA INSIGNIA OFICIAL (ProductHunt.tsx): 250×54 fijos, la imagen tal cual la
+   da PH. El hueco vacío de un build de antes del lanzamiento
+   (`data-ph-espera`) no se pinta; el guion previo de NavBar lo enseña antes
+   del primer pintado si el reloj ya cruzó, y al montar la imagen entra dentro
+   del hueco: nada se mueve. La del héroe, al acabar la semana con la pestaña
+   abierta, se vuelve invisible sin soltar su sitio (`data-oculta`). */
+.ph-insignia { display: block; flex: none; align-self: center; width: 250px; height: 54px; line-height: 0; border-radius: 10px; transition: transform .2s ease; }
+.ph-insignia img { display: block; width: 250px; height: 54px; max-width: none; }
+.ph-insignia[data-ph-espera] { display: none; }
+.ph-insignia[data-oculta] { visibility: hidden; }
+a.ph-insignia:hover { transform: scale(1.02); text-decoration: none; }
+a.ph-insignia:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+/* En el héroe, bajo los botones (y bajo «Ver resultados reproducibles»). */
+.lp .hero-panel .hpanel-copy > .ph-insignia { margin-top: clamp(18px, 2.2vw, 26px); }
+/* En el pie, cerrando la columna de marca después de NVIDIA. */
+.lp .ftr-brand > .ph-insignia { align-self: flex-start; }
+@media (prefers-reduced-motion: reduce) { a.ph-insignia:hover { transform: none; } }
+
+/* LA TARJETA «FIND US ON PRODUCT HUNT» (TarjetaProductHunt.tsx), al final de
+   la portada: discreta, una tarjeta blanca con hairline sobre el marfil, el
+   cielo cian muy tenue en su esquina y el marcador de la campaña detrás de
+   «Product Hunt». La miniatura a 64 px, el nombre en la editorial, el lema en
+   gris y el botón coral de PH con texto TINTA (#0F1218 sobre #FF6154: 6,33:1;
+   el blanco daría 2,96:1). Sin hover que cambie el tamaño: la tarjeta mide lo
+   mismo en las tres ventanas. */
+.lp.lp2 main > section.ph-sec { padding: 0 0 clamp(48px, 6vw, 88px); }
+.lp section.ph-sec::before { display: none; }
+.ph-tarjeta {
+  position: relative; isolation: isolate; overflow: hidden;
+  display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; align-items: center; gap: 16px 20px;
+  max-width: 760px; margin-inline: auto; padding: 18px 20px 18px 18px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card-lg);
+  box-shadow: var(--shadow-card);
+}
+.ph-tarjeta::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(42% 140% at 100% 0%, var(--cielo-2) 0%, rgba(196, 238, 252, 0) 72%);
+}
+.ph-miniatura { display: block; width: 64px; height: 64px; border-radius: 14px; box-shadow: 0 0 0 1px rgba(15, 18, 24, .06), 0 6px 14px -10px rgba(15, 18, 40, .35); }
+.ph-texto { min-width: 0; }
+.lp .ph-tarjeta .ph-k { margin: 0 0 6px; font: 500 13px/1.3 var(--font-sans); letter-spacing: -.005em; color: var(--ink-soft); }
+.lp .ph-tarjeta .ph-k .mk { color: var(--ink); font-weight: 600; }
+.ph-nombre { margin: 0; font: 800 18px/1.2 var(--font-editorial); letter-spacing: -.025em; color: var(--ink); }
+.ph-lema { margin: 3px 0 0; font-size: 14.5px; line-height: 1.45; color: var(--ink-soft); text-wrap: pretty; }
+.ph-boton {
+  display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 10px 18px;
+  border-radius: var(--r-control); background: #FF6154; color: #0F1218;
+  font: 600 14.5px/1.25 var(--font-sans); letter-spacing: -.01em; text-align: center; text-decoration: none;
+  box-shadow: inset 0 0 0 1px rgba(15, 18, 24, .06), 0 1px 2px rgba(15, 18, 24, .08);
+  transition: background-color var(--dur-2) var(--ease-out), box-shadow var(--dur-2) var(--ease-out);
+}
+.ph-boton:hover { background: #FF7366; color: #0F1218; text-decoration: none; box-shadow: inset 0 0 0 1px rgba(15, 18, 24, .06), 0 10px 20px -12px rgba(255, 97, 84, .9); }
+.ph-boton:focus-visible { outline: 2px solid #0F1218; outline-offset: 2px; }
+/* Los dos textos del botón, en UNA celda: el botón mide lo que el más largo. */
+.ph-pila { display: grid; }
+.ph-pila > * { grid-area: 1 / 1; align-self: center; }
+.ph-pila > [data-oculta] { visibility: hidden; }
+.ph-cola { white-space: nowrap; }
+.ph-boton svg { width: 14px; height: 14px; vertical-align: -2px; transition: transform .2s ease; }
+.ph-boton:hover svg { transform: translateX(2px); }
+/* Por debajo de 760 px el botón baja bajo el texto (en tres columnas el lema
+   se quedaba en un hilo); por debajo de 480, a todo el ancho de la tarjeta. */
+@media (max-width: 760px) {
+  .ph-tarjeta { grid-template-columns: 64px minmax(0, 1fr); padding: 16px 18px 18px 16px; gap: 14px 16px; }
+  .ph-boton { grid-column: 2; justify-self: start; }
+}
+@media (max-width: 480px) {
+  .ph-boton { grid-column: 1 / -1; justify-self: stretch; }
+  .ph-nombre { font-size: 17px; }
+  .ph-lema { font-size: 14px; }
+}
+@media (prefers-reduced-motion: reduce) { .ph-boton:hover svg { transform: none; } }
+/* ==== FIN SLOT PRODUCT HUNT ==== */

@@ -1698,6 +1698,12 @@
       "legendCacheTo": "cheaper input",
       "compatNote": "Compatible does not mean measured.",
       "compatLink": "What is measured with each provider"
+    },
+    "productHunt": {
+      "kicker": "Find us on Product Hunt",
+      "tagline": "Cut LLM costs with an open-source savings layer",
+      "notify": "Get notified on Product Hunt",
+      "live": "Check it out on Product Hunt"
     }
   },
   "invitacion": {

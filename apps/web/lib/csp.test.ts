@@ -6,7 +6,8 @@
  * Esta prueba lee la cabecera tal y como la produce el config —no una copia—
  * y fija lo decidido el 16-09: `ad.doubleclick.net` puede recibir pings (fetch
  * e imagen) pero nunca ejecutar script; lo del 17-11: la imagen de remarketing
- * a www.google.<país> de los mercados pasa, también sin script; y los candados
+ * a www.google.<país> de los mercados pasa, también sin script; lo del 18-11:
+ * la insignia de Product Hunt pasa como imagen y solo como imagen; y los candados
  * estructurales no se relajan por accidente.
  */
 import { describe, expect, it } from "vitest";
@@ -53,6 +54,17 @@ describe("CSP de la web", () => {
       expect(d["connect-src"], `connect-src debe incluir ${host}`).toContain(host);
       expect(d["script-src"], `${host} nunca sirve script`).not.toContain(host);
     }
+  });
+
+  it("deja pasar la insignia de Product Hunt solo como imagen (18-11, lanzamiento del 22-11)", async () => {
+    const d = await csp();
+    const host = "https://api.producthunt.com";
+    expect(d["img-src"], `img-src debe incluir ${host}`).toContain(host);
+    // Una imagen, nada más: ni script, ni fetch, ni marcos, ni ningún otro host de PH.
+    for (const dir of ["script-src", "connect-src", "default-src", "style-src", "font-src"]) {
+      expect(d[dir] ?? [], `${dir} no debe nombrar Product Hunt`).not.toEqual(expect.arrayContaining([expect.stringMatching(/producthunt/)]));
+    }
+    expect(d["img-src"]!.filter((v) => /producthunt/.test(v))).toEqual([host]);
   });
 
   it("ad.doubleclick.net solo recibe pings: nunca sirve script", async () => {

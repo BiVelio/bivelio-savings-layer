@@ -241,14 +241,16 @@ export function hojaPrevia(desde: Variante, hasta: Variante): string {
 
 /**
  * El guion en línea para una página construida con la variante `inicial`, o
- * null si ya no puede cambiar (construida después de la campaña). Repite
+ * null si ya no puede cambiar (construida después de la campaña). La hoja de
+ * cada ventana es la de la franja más la de la insignia y la tarjeta de
+ * Product Hunt (`hojaDelGuion`). Repite
  * `elegirVariante` con las fronteras escritas como números; el test lo
  * ejecuta en cada frontera y lo compara con la función.
  */
 export function guionPrevio(inicial: Variante): string | null {
   const i = VARIANTES.indexOf(inicial);
   const hojas: Record<number, string> = {};
-  for (let j = i + 1; j < VARIANTES.length; j++) hojas[j] = hojaPrevia(inicial, VARIANTES[j]!);
+  for (let j = i + 1; j < VARIANTES.length; j++) hojas[j] = hojaDelGuion(inicial, VARIANTES[j]!);
   if (Object.keys(hojas).length === 0) return null;
   return (
     `try{var t=Date.now(),v=t<${LANZAMIENTO}?0:t<${FIN_CAMPANA}?1:2,h=${JSON.stringify(hojas)}[v];` +
@@ -266,4 +268,78 @@ export function retirarHojaPrevia(
   if (!hoja) return;
   doc.adoptedStyleSheets = doc.adoptedStyleSheets.filter((h) => h !== hoja);
   delete win[CLAVE_HOJA_PREVIA];
+}
+
+/*
+ * LA INSIGNIA Y LA TARJETA DE PRODUCT HUNT (mismas ventanas que la franja).
+ *
+ * · La INSIGNIA oficial (tema light) va en el PIE de todas las páginas desde
+ *   el lanzamiento y para siempre, y en el HÉROE de la portada solo la semana
+ *   del lanzamiento. Antes del 22 no aparece en ningún sitio y su imagen no se
+ *   pide: el HTML de un build de antes no lleva <img>, solo un hueco vacío de
+ *   250×54 escondido (`data-ph-espera`) que el guion previo enseña si el reloj
+ *   ya cruzó; al montar, el componente pone la imagen dentro del hueco.
+ * · La TARJETA nativa al final de la portada cambia el texto del botón: «avísame»
+ *   antes, «échale un vistazo» después. Los dos textos se apilan en la misma
+ *   celda (como la franja): la tarjeta mide lo mismo en las tres ventanas.
+ */
+
+/** La insignia, tal cual la da Product Hunt (tema light). */
+export const INSIGNIA_PH = {
+  href: "https://www.producthunt.com/products/bivelio-savings-layer?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-bivelio-savings-layer",
+  src: "https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1321519&theme=light&t=1795000351842",
+  width: 250,
+  height: 54,
+  alt: "BiVelio Savings Layer - Cut LLM costs with an open-source savings layer | Product Hunt",
+} as const;
+
+/** El enlace que da Product Hunt para su tarjeta («post embed»). */
+export const URL_TARJETA_PH = "https://www.producthunt.com/products/bivelio-savings-layer?embed=true&utm_source=embed&utm_medium=post_embed";
+
+/** La miniatura propia de la tarjeta (nada de imgix ni imágenes de PH). */
+export const MINIATURA_PH = "/brand/product-hunt-thumb-2026-11.png";
+
+export const LUGARES_INSIGNIA = ["heroe", "pie"] as const;
+export type LugarInsignia = (typeof LUGARES_INSIGNIA)[number];
+
+/** ¿Va la insignia en `lugar` durante la ventana `v`? Héroe: solo en vivo. Pie: desde el lanzamiento, siempre. */
+export function tocaInsignia(lugar: LugarInsignia, v: Variante): boolean {
+  return lugar === "heroe" ? v === "en-vivo" : v !== "aviso";
+}
+
+/** ¿Puede llegar a ir la insignia en `lugar` en una página construida en `desde`? */
+export function insigniaAlcanzable(lugar: LugarInsignia, desde: Variante): boolean {
+  return alcanzables(desde).some((v) => tocaInsignia(lugar, v));
+}
+
+/** El texto del botón de la tarjeta: «avísame» antes del lanzamiento; «échale un vistazo» desde él. */
+export const botonDeLaTarjeta = (v: Variante): "aviso" | "vivo" => (v === "aviso" ? "aviso" : "vivo");
+
+/**
+ * Lo que la hoja del guion previo añade para la insignia y la tarjeta al pasar
+ * de `desde` a `hasta`: enseña el hueco de la insignia donde ya toca (vacío:
+ * la imagen la pone el componente al montar), esconde la del héroe cuando la
+ * semana acabó y cambia el texto visible del botón de la tarjeta.
+ */
+export function hojaProductHunt(desde: Variante, hasta: Variante): string {
+  if (VARIANTES.indexOf(hasta) <= VARIANTES.indexOf(desde)) return "";
+  const reglas: string[] = [];
+  for (const lugar of LUGARES_INSIGNIA) {
+    const antes = tocaInsignia(lugar, desde);
+    const ahora = tocaInsignia(lugar, hasta);
+    if (!antes && ahora) reglas.push(`.ph-insignia[data-ph-espera="${lugar}"]{display:block}`);
+    if (antes && !ahora) reglas.push(`.ph-insignia[data-ph="${lugar}"]{display:none}`);
+  }
+  if (botonDeLaTarjeta(desde) !== botonDeLaTarjeta(hasta)) {
+    reglas.push(
+      `.ph-pila>[data-ph-boton="${botonDeLaTarjeta(desde)}"]{visibility:hidden}`,
+      `.ph-pila>[data-ph-boton="${botonDeLaTarjeta(hasta)}"]{visibility:visible}`,
+    );
+  }
+  return reglas.join("");
+}
+
+/** La hoja completa del guion previo: la franja y, detrás, la insignia y la tarjeta. */
+export function hojaDelGuion(desde: Variante, hasta: Variante): string {
+  return hojaPrevia(desde, hasta) + hojaProductHunt(desde, hasta);
 }

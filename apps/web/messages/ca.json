@@ -1698,6 +1698,12 @@
       "legendCacheTo": "entrada més barata",
       "compatNote": "Compatible no vol dir mesurat.",
       "compatLink": "Què s'ha mesurat amb cada proveïdor"
+    },
+    "productHunt": {
+      "kicker": "Troba'ns a Product Hunt",
+      "tagline": "Retalla el cost dels teus LLM amb una capa d'estalvi open source",
+      "notify": "Rep l'avís a Product Hunt",
+      "live": "Fes-hi un cop d'ull a Product Hunt"
     }
   },
   "invitacion": {

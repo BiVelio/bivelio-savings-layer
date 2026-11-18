@@ -1698,6 +1698,12 @@
       "legendCacheTo": "daha ucuz girdi",
       "compatNote": "Uyumlu olması ölçüldüğü anlamına gelmez.",
       "compatLink": "Her sağlayıcıda neyin ölçüldüğü"
+    },
+    "productHunt": {
+      "kicker": "Bizi Product Hunt'ta bulun",
+      "tagline": "Açık kaynaklı bir tasarruf katmanıyla LLM maliyetlerinizi düşürün",
+      "notify": "Product Hunt'ta hatırlatma alın",
+      "live": "Product Hunt'ta göz atın"
     }
   },
   "invitacion": {

@@ -1698,6 +1698,12 @@
       "legendCacheTo": "đầu vào rẻ hơn",
       "compatNote": "Tương thích không có nghĩa là đã đo.",
       "compatLink": "Những gì đã đo với từng nhà cung cấp"
+    },
+    "productHunt": {
+      "kicker": "Tìm chúng tôi trên Product Hunt",
+      "tagline": "Cắt giảm chi phí LLM với lớp tiết kiệm mã nguồn mở",
+      "notify": "Nhận thông báo trên Product Hunt",
+      "live": "Xem trên Product Hunt"
     }
   },
   "invitacion": {

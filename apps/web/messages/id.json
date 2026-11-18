@@ -1698,6 +1698,12 @@
       "legendCacheTo": "input lebih murah",
       "compatNote": "Kompatibel tidak berarti terukur.",
       "compatLink": "Apa yang diukur pada tiap penyedia"
+    },
+    "productHunt": {
+      "kicker": "Temukan kami di Product Hunt",
+      "tagline": "Pangkas biaya LLM dengan lapisan penghematan open source",
+      "notify": "Ingatkan saya di Product Hunt",
+      "live": "Lihat di Product Hunt"
     }
   },
   "invitacion": {

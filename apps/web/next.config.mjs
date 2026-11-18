@@ -77,6 +77,13 @@ const gtagPaises = [
 const gtagScript = ["https://www.googletagmanager.com", "https://www.googleadservices.com", "https://googleads.g.doubleclick.net"];
 const gtagPing = [...gtagScript, "https://www.google.com", "https://ad.doubleclick.net", ...gtagPaises];
 
+// 18-11: la insignia oficial de Product Hunt (lanzamiento del 22-11-2026), en
+// el pie de todas las páginas desde el lanzamiento y en el héroe de la portada
+// la semana del lanzamiento. Es una IMAGEN (un SVG con el recuento de votos)
+// que se pide a api.producthunt.com: solo en img-src. Nunca en script-src ni
+// en connect-src (la insignia no ejecuta nada ni hace fetch).
+const productHuntImg = ["https://api.producthunt.com"];
+
 // Solo en desarrollo: el runtime de `next dev` (React Refresh y los source
 // maps) evalúa cadenas y, con la CSP de producción, el navegador lo bloqueaba
 // en silencio — ningún componente de cliente llegaba a hidratarse en
@@ -88,7 +95,7 @@ const csp = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${evalEnDesarrollo} ${gtagScript.join(" ")}`,
   "style-src 'self' 'unsafe-inline'",
-  `img-src 'self' data: ${gtagPing.join(" ")}`,
+  `img-src 'self' data: ${gtagPing.join(" ")} ${productHuntImg.join(" ")}`,
   "font-src 'self'",
   `connect-src 'self' ${authOrigins.join(" ")} ${gtagPing.join(" ")}`,
   "base-uri 'self'",

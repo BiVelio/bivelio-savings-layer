@@ -16,6 +16,7 @@ import {
   guionPrevio,
   partirCola,
   hojaPrevia,
+  hojaDelGuion,
   programarFranja,
   retirarHojaPrevia,
   type Variante,
@@ -389,7 +390,9 @@ describe("el primer pintado de las páginas sin ISR (guion previo)", () => {
     for (const t of instantes) {
       const toca = laMasAvanzada(inicial, elegirVariante(t));
       const { css } = ejecutar(guion, t);
-      expect(css, new Date(t).toString()).toEqual(toca === inicial ? [] : [hojaPrevia(inicial, toca)]);
+      // La hoja de la franja más la de la insignia y la tarjeta de Product Hunt.
+      expect(css, new Date(t).toString()).toEqual(toca === inicial ? [] : [hojaDelGuion(inicial, toca)]);
+      if (toca !== inicial) expect(css[0]!.startsWith(hojaPrevia(inicial, toca))).toBe(true);
     }
   });
 
