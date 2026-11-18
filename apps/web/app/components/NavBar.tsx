@@ -1,6 +1,9 @@
+import { useLocale } from "next-intl";
+
 import { Link } from "@/i18n/navigation";
 
 import { AnnouncementBar } from "./AnnouncementBar";
+import { elegirVariante, fechaDelLanzamiento } from "./franja-lanzamiento";
 import { LocaleSwitcher } from "./LocaleSwitcher";
 import { BivelioWordmark } from "./BivelioWordmark";
 import { MobileMenu, NavCta, NavSections } from "./NavLinks";
@@ -25,9 +28,13 @@ import { URL_CORPORATIVA } from "./sitio";
  * `NavShell` solo añade el estado de desplazamiento, que tampoco lee sesión.
  */
 export function NavBar() {
+  const locale = useLocale();
   return (
     <>
-      <AnnouncementBar />
+      {/* La variante con el reloj del servidor (en páginas estáticas, el del
+          build) y la fecha ya formateada aquí: el cliente hidrata con lo mismo
+          y después se corrige solo con su propio reloj. */}
+      <AnnouncementBar inicial={elegirVariante(Date.now())} fecha={fechaDelLanzamiento(locale)} />
       <NavShell>
         <div className="site-nav-inner">
           <div className="nav-left">

@@ -2,6 +2,8 @@
   "nav": {
     "announce": "Savings Layer, BiVelio platformunun bir parçası",
     "announceClose": "Kapat",
+    "announcePhSoon": "{date} günü Product Hunt'ta yayındayız — hatırlatma alın",
+    "announcePhLive": "Savings Layer Product Hunt'ta yayında — bize destek olun",
     "langTitle": "Dilinizi seçin",
     "langSubtitle": "BiVelio Savings Layer'ı kullanmak istediğiniz dili seçin.",
     "langSearch": "Dil ara",

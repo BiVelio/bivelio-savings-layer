@@ -2,6 +2,8 @@
   "nav": {
     "announce": "Savings Layer maakt deel uit van het BiVelio-platform",
     "announceClose": "Sluiten",
+    "announcePhSoon": "Op {date} lanceren we op Product Hunt — krijg een herinnering",
+    "announcePhLive": "Savings Layer staat nu op Product Hunt — steun ons",
     "langTitle": "Kies je taal",
     "langSubtitle": "Kies de taal waarin je BiVelio Savings Layer wilt gebruiken.",
     "langSearch": "Taal zoeken",

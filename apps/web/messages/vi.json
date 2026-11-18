@@ -2,6 +2,8 @@
   "nav": {
     "announce": "Savings Layer là một phần của nền tảng BiVelio",
     "announceClose": "Đóng",
+    "announcePhSoon": "Chúng tôi ra mắt trên Product Hunt vào {date} — nhận thông báo",
+    "announcePhLive": "Savings Layer đã lên Product Hunt — hãy ủng hộ chúng tôi",
     "langTitle": "Chọn ngôn ngữ của bạn",
     "langSubtitle": "Chọn ngôn ngữ bạn muốn dùng BiVelio Savings Layer.",
     "langSearch": "Tìm ngôn ngữ",

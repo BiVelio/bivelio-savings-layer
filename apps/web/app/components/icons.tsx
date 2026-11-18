@@ -34,6 +34,17 @@ export const CloseIcon = () => (
   </Icon>
 );
 
+/**
+ * Triángulo de voto (el «upvote» genérico) para la franja de Product Hunt.
+ * Dibujo propio y relleno: nada de logotipos ni de imágenes de producthunt.com,
+ * que además pedirían abrir la CSP (img-src).
+ */
+export const VotoIcon = ({ className }: { className?: string }) => (
+  <Icon className={className} fill="currentColor" strokeWidth="1.5">
+    <path d="M12 5.5 19.5 17.5h-15Z" />
+  </Icon>
+);
+
 /** Hamburguesa del menú móvil (lucide Menu), como el del <SiteNav> corporativo. */
 export const MenuIcon = () => (
   <Icon strokeWidth="2">

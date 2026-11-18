@@ -515,6 +515,34 @@ input[type="range"] { accent-color: var(--brand); }
    desbordamiento no podía verlo: es un solape, no un desborde. */
 @media (max-width: 700px) { .announce { padding-inline: 56px; } }
 
+/* Las variantes de la franja que esta página aún puede enseñar (BiVelio y,
+   durante el lanzamiento, las dos de Product Hunt) comparten UNA celda de
+   rejilla: la franja mide lo que la más alta y no salta al cambiar de una a
+   otra después de hidratar. Solo la activa se ve; `visibility: hidden` saca
+   las demás del foco y del árbol accesible sin soltar su sitio. */
+.announce-pila { display: grid; }
+/* `align-self: center`: si la activa ocupa menos líneas que la más alta, va
+   centrada en vertical, alineada con la ✕, y no pegada arriba. */
+.announce-pila > * { grid-area: 1 / 1; align-self: center; }
+.announce-pila > [data-oculta] { visibility: hidden; }
+
+/* ── Lanzamiento en Product Hunt (22–29 de noviembre de 2026) ───────────────
+   El coral de PH con texto TINTA, no blanco: blanco sobre #FF6154 da 2,96:1 y
+   no pasa AA; la tinta #0F1218 da 6,33:1 (AA en texto normal, el de 13px).
+   La ✕ al 72 % queda en 4,18:1 sobre el coral (≥ 3:1 de un control). Colores
+   fijos, no tokens: la franja es la misma con el sistema en claro o en oscuro
+   (la web es solo clara, `color-scheme: light`). Lo comprueba
+   franja-lanzamiento.test.ts. */
+.announce--ph { background: #FF6154; color: #0F1218; }
+.announce--ph a { color: #0F1218; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: color var(--dur-1), text-decoration-color var(--dur-1); }
+.announce--ph a:hover { color: #0F1218; text-decoration: underline; text-decoration-color: currentColor; }
+.announce--ph a:focus-visible, .announce--ph .announce-close:focus-visible { outline-color: #0F1218; }
+.announce--ph .announce-close { color: rgba(15, 18, 24, .72); }
+.announce--ph .announce-close:hover { color: #0F1218; }
+/* El triángulo de voto, delante del texto y en línea con él (como la flecha). */
+.announce a svg.announce-voto { width: 12px; height: 12px; vertical-align: -1px; margin-inline: 0 6px; }
+.announce a:hover svg.announce-voto { transform: translateY(-1px); }
+
 /* ── Cabecera pública (todas las páginas de marketing y de acceso) ────────
    56px, la de bivelio.com. Marfil translúcido con blur; la línea fina y la
    sombra mínima solo aparecen al desplazarse (`data-scrolled`, lo pone
