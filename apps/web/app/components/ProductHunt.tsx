@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
 import { ArrowRightIcon } from "./icons";
 import {
@@ -12,21 +12,37 @@ import {
   partirCola,
   programarFranja,
   tocaInsignia,
+  varianteAlMontar,
   type LugarInsignia,
   type Variante,
 } from "./franja-lanzamiento";
 
+/** Nada a lo que suscribirse: solo interesa si el render es de hidratación. */
+const sinSuscripcion = () => () => {};
+
+/**
+ * ¿Este render es el del servidor o el de la hidratación? React usa
+ * `getServerSnapshot` (true) en los dos y `getSnapshot` (false) en cualquier
+ * montaje posterior, como el de una navegación dentro de la web. Sirve también
+ * en una frontera de Suspense que hidrate más tarde, donde un indicador de
+ * módulo ya activado mentiría.
+ */
+const useHidratando = () => useSyncExternalStore(sinSuscripcion, () => false, () => true);
+
 /**
  * LA VARIANTE EN EL CLIENTE, con el mismo motor que la franja (`programarFranja`):
- * `base` es la de la carga —el servidor la trae y, al montar, el reloj del
- * navegador la adelanta si el build es viejo— y `activa` la que toca ahora,
- * que un temporizador cambia al cruzar la frontera con la pestaña abierta.
- * El primer render del cliente usa `inicial`, igual que el servidor: sin
- * discrepancias de hidratación.
+ * `base` es la de la carga —fija desde el primer render— y `activa` la que toca
+ * ahora, que un temporizador cambia al cruzar la frontera con la pestaña
+ * abierta. Arrancan en `varianteAlMontar`: al hidratar, `inicial`, igual que
+ * el servidor (sin discrepancias; el reloj del navegador la adelanta al montar
+ * si el build es viejo, y el guion previo ya lo enseñó antes del primer
+ * pintado); montado por una navegación dentro de la web, ya la del reloj, sin
+ * pintar primero la ventana que pasó.
  */
 function useVariante(inicial: Variante): { base: Variante; activa: Variante } {
-  const [base, setBase] = useState<Variante>(inicial);
-  const [activa, setActiva] = useState<Variante>(inicial);
+  const hidratando = useHidratando();
+  const [base, setBase] = useState<Variante>(() => varianteAlMontar(inicial, hidratando, Date.now()));
+  const [activa, setActiva] = useState<Variante>(base);
   useEffect(() => {
     const motor = programarFranja(inicial, setActiva, {
       ahora: () => Date.now(),

@@ -2,7 +2,7 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { createElement } from "react";
 import { renderToString } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { BotonProductHunt, InsigniaProductHunt } from "./ProductHunt";
 import { TarjetaProductHunt } from "./landing/TarjetaProductHunt";
@@ -21,6 +21,7 @@ import {
   insigniaAlcanzable,
   laMasAvanzada,
   tocaInsignia,
+  varianteAlMontar,
   type LugarInsignia,
   type Variante,
 } from "./franja-lanzamiento";
@@ -111,6 +112,47 @@ describe("el HTML del servidor de la insignia", () => {
   it("después de la campaña: en el pie sigue; en el héroe no queda nada", () => {
     expect(insignia("pie", "bivelio")).toContain(`src="${amp(INSIGNIA_PH.src)}"`);
     expect(insignia("heroe", "bivelio")).toBe("");
+  });
+});
+
+describe("con qué variante arranca un componente cliente", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("al hidratar (y en el servidor): la del servidor, para que el marcado coincida", () => {
+    for (const inicial of VARIANTES) {
+      for (const t of [LANZAMIENTO - 1, LANZAMIENTO, FIN_CAMPANA, FIN_CAMPANA + 365 * DIA]) {
+        expect(varianteAlMontar(inicial, true, t)).toBe(inicial);
+      }
+    }
+  });
+
+  it("montado por una navegación dentro de la web: ya la del reloj, desde el primer render", () => {
+    // Un payload RSC de antes del lanzamiento, montado el 23-11: «en vivo» de entrada,
+    // sin pintar primero el hueco escondido ni el botón «avísame».
+    expect(varianteAlMontar("aviso", false, Date.UTC(2026, 10, 23, 12))).toBe("en-vivo");
+    expect(varianteAlMontar("aviso", false, Date.UTC(2026, 11, 1, 12))).toBe("bivelio");
+    expect(varianteAlMontar("en-vivo", false, Date.UTC(2026, 11, 1, 12))).toBe("bivelio");
+    expect(varianteAlMontar("aviso", false, LANZAMIENTO)).toBe("en-vivo");
+    expect(varianteAlMontar("aviso", false, LANZAMIENTO - 1)).toBe("aviso");
+    // Un reloj atrasado no devuelve una ventana que ya pasó.
+    expect(varianteAlMontar("bivelio", false, Date.UTC(2026, 10, 18))).toBe("bivelio");
+    expect(varianteAlMontar("en-vivo", false, Number.NaN)).toBe("bivelio");
+  });
+
+  it("el servidor pinta siempre la de su `inicial`, aunque el reloj ya haya cruzado (getServerSnapshot)", () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(Date.UTC(2026, 10, 23, 12));
+    expect(insignia("heroe", "aviso")).toBe('<span class="ph-insignia" data-ph-espera="heroe" aria-hidden="true"></span>');
+    expect(insignia("pie", "aviso")).not.toContain("<img");
+  });
+
+  it("useVariante arranca con varianteAlMontar y detecta la hidratación con useSyncExternalStore", () => {
+    const fuente = leer("app/components/ProductHunt.tsx").replace(/\/\*[\s\S]*?\*\//g, "");
+    expect(fuente).toMatch(/useSyncExternalStore\(sinSuscripcion, \(\) => false, \(\) => true\)/);
+    expect(fuente).toContain("useState<Variante>(() => varianteAlMontar(inicial, hidratando, Date.now()))");
+    expect(fuente).toContain("useState<Variante>(base)");
   });
 });
 

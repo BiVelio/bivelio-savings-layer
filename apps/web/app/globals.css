@@ -4615,7 +4615,12 @@ a.ph-insignia:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px
   .ph-tarjeta { grid-template-columns: 64px minmax(0, 1fr); padding: 16px 18px 18px 16px; gap: 14px 16px; }
   .ph-boton { grid-column: 2; justify-self: start; }
 }
+/* Por debajo de 480 el texto ocupa varias líneas (de y fr a 320 px: 7–8):
+   la miniatura baja a 48 px y se queda arriba, junto al kicker, en vez de
+   flotar a media altura del bloque. */
 @media (max-width: 480px) {
+  .ph-tarjeta { grid-template-columns: 48px minmax(0, 1fr); align-items: start; gap: 14px; }
+  .ph-miniatura { width: 48px; height: 48px; border-radius: 12px; }
   .ph-boton { grid-column: 1 / -1; justify-self: stretch; }
   .ph-nombre { font-size: 17px; }
   .ph-lema { font-size: 14px; }

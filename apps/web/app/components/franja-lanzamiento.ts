@@ -312,6 +312,21 @@ export function insigniaAlcanzable(lugar: LugarInsignia, desde: Variante): boole
   return alcanzables(desde).some((v) => tocaInsignia(lugar, v));
 }
 
+/**
+ * La variante con la que ARRANCA un componente cliente de Product Hunt:
+ *   · al hidratar, la del servidor (`inicial`), para que el marcado coincida;
+ *     si el build es viejo, el guion previo ya enseñó antes del primer pintado
+ *     lo que toca y el componente lo alcanza al montar;
+ *   · montado después (navegación dentro de la web), ya la del reloj del
+ *     navegador: el guion no vuelve a actuar —su hoja se retiró en la primera
+ *     carga— y el payload RSC puede ser de un build viejo, así que partir de
+ *     `inicial` pintaría primero lo que ya pasó y lo cambiaría al montar.
+ * Nunca retrocede de `inicial` (un reloj atrasado no devuelve una ventana pasada).
+ */
+export function varianteAlMontar(inicial: Variante, hidratando: boolean, ahora: number | Date): Variante {
+  return hidratando ? inicial : laMasAvanzada(inicial, elegirVariante(ahora));
+}
+
 /** El texto del botón de la tarjeta: «avísame» antes del lanzamiento; «échale un vistazo» desde él. */
 export const botonDeLaTarjeta = (v: Variante): "aviso" | "vivo" => (v === "aviso" ? "aviso" : "vivo");
 
