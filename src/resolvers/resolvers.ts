@@ -64,6 +64,12 @@ export const arithmeticResolver: DeterministicResolver = {
     if (expr === null || !esCuentaInequivoca(expr)) return null;
     const value = evaluar(expr, true);
     if (value === null || !Number.isFinite(value)) return null;
+    // Lo que se sirve lleva nueve decimales como mucho. Si redondear ahí cambia
+    // el valor (10 / 3, 0.000000001 / 3) la respuesta escrita no es el
+    // resultado: «3.333333333» es un truncado y «0» directamente falso. El
+    // ruido del coma flotante (0.1 + 0.2) queda muy por debajo del umbral.
+    const servido = Math.round(value * 1e9) / 1e9;
+    if (Math.abs(value - servido) > 1e-12 * Math.max(1, Math.abs(value))) return null;
     const rendered = trimNumber(value);
     return { text: rendered, data: { value }, resolver: "arithmetic" };
   },
