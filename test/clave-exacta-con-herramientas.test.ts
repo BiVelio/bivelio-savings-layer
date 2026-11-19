@@ -116,48 +116,53 @@ const SIN_HERRAMIENTAS: Record<string, SavingsRequest> = {
  * propio `buildExactKey`/`buildInflightKey`/`huellaDePeticion` de entonces. Si un
  * valor de aquí cambia, se ha invalidado la caché exacta viva de los clientes
  * (o los registros de referencia): no se «actualiza», se arregla el código.
+ *
+ * 2026-11-19: el PREFIJO pasa de `n2` a `n3` a propósito (GENERACION en
+ * keys.ts): `normalizeText` unía preguntas de código distintas y las entradas
+ * escritas con ella no deben volver a leerse. Los sha256 de aquí NO cambian:
+ * el material de estas peticiones es byte a byte el de antes.
  */
 const FIJADAS: Record<string, { exacta: string; exactaServida: string; enVuelo: string; enVueloConOpciones: string; huella: string }> = {
   pregunta: {
-    exacta: "bvsala:exact:n2:ad33bdc4b08b7dacf15de861e8ac1ed30484b9f763123abdca8c87007823e640",
-    exactaServida: "bvsala:exact:n2:bd3802739ac598f7df3ac4814af605d80505ecbe6a93c4fe7d0aa1bb3f75c285",
-    enVuelo: "bvsala:inflight:n2:e37d76396ab197980db063e1397f0f0e87ee70b22540af44efee37f26bd7c291",
-    enVueloConOpciones: "bvsala:inflight:n2:dcd250bed024c3772bd2ff34bbb2ca20fcff50e1c4904baa2dd90fb5348346d6",
+    exacta: "bvsala:exact:n3:ad33bdc4b08b7dacf15de861e8ac1ed30484b9f763123abdca8c87007823e640",
+    exactaServida: "bvsala:exact:n3:bd3802739ac598f7df3ac4814af605d80505ecbe6a93c4fe7d0aa1bb3f75c285",
+    enVuelo: "bvsala:inflight:n3:e37d76396ab197980db063e1397f0f0e87ee70b22540af44efee37f26bd7c291",
+    enVueloConOpciones: "bvsala:inflight:n3:dcd250bed024c3772bd2ff34bbb2ca20fcff50e1c4904baa2dd90fb5348346d6",
     huella: "60fa7ee859dc285896ef630783d781da4335b8b5b6adcc2fbca46c4f457d820b",
   },
   conversacion: {
-    exacta: "bvsala:exact:n2:23efd1e1cdb0d704b380d7811ac06c11141a85c6168820a485e7abd57494fde8",
-    exactaServida: "bvsala:exact:n2:d4198bd1e56e9409927e28cf11617d89dc4681dce8eabaaf613f9c2163289dfa",
-    enVuelo: "bvsala:inflight:n2:69688a598a34c25fe04206bde83028f0e32fd409dfa6e38fc46e41a37391fe4a",
-    enVueloConOpciones: "bvsala:inflight:n2:ffdfae1c4405e34b7965c9e0c7ccf17d1da7b9e4fada194a8dbc61daba8a70aa",
+    exacta: "bvsala:exact:n3:23efd1e1cdb0d704b380d7811ac06c11141a85c6168820a485e7abd57494fde8",
+    exactaServida: "bvsala:exact:n3:d4198bd1e56e9409927e28cf11617d89dc4681dce8eabaaf613f9c2163289dfa",
+    enVuelo: "bvsala:inflight:n3:69688a598a34c25fe04206bde83028f0e32fd409dfa6e38fc46e41a37391fe4a",
+    enVueloConOpciones: "bvsala:inflight:n3:ffdfae1c4405e34b7965c9e0c7ccf17d1da7b9e4fada194a8dbc61daba8a70aa",
     huella: "ad558f65583181f5d5492e7cfc5332a4a2afcd14710ef5baa0e7dd4b29e297d6",
   },
   conCatalogoYContrato: {
-    exacta: "bvsala:exact:n2:4f1bc1e74d64b6dfbe7f083d5d1432bcb25d8d86920e831dde5907ce45437b59",
-    exactaServida: "bvsala:exact:n2:c0895608cf0f8054c2fa2dfb7951579e3bfa49f59c025c0a98b807508623a3fb",
-    enVuelo: "bvsala:inflight:n2:c4e4f1b5ea521801829ebb8dc134ac25558af7fe2e79691299df1b5ab4c6ce87",
-    enVueloConOpciones: "bvsala:inflight:n2:17f736543d36b0981539973d579b1e8ec8f0577f79db4590c65e5c458097c5b0",
+    exacta: "bvsala:exact:n3:4f1bc1e74d64b6dfbe7f083d5d1432bcb25d8d86920e831dde5907ce45437b59",
+    exactaServida: "bvsala:exact:n3:c0895608cf0f8054c2fa2dfb7951579e3bfa49f59c025c0a98b807508623a3fb",
+    enVuelo: "bvsala:inflight:n3:c4e4f1b5ea521801829ebb8dc134ac25558af7fe2e79691299df1b5ab4c6ce87",
+    enVueloConOpciones: "bvsala:inflight:n3:17f736543d36b0981539973d579b1e8ec8f0577f79db4590c65e5c458097c5b0",
     huella: "a9642f3e61b14b99902e800d86ba0b80de72eecd88ba69cf8e235d3a701f52fd",
   },
   nombreYMetadatosQueNoViajan: {
-    exacta: "bvsala:exact:n2:7855d260ff4d3fa76f2583df4fa459878fef2876440f0d5cab11dbda3d1dc2f1",
-    exactaServida: "bvsala:exact:n2:4e17eea637105525d1ab4febe56cefb5ff953faa7f1d033ecf5b049661e0a5f2",
-    enVuelo: "bvsala:inflight:n2:f57f20eb1b7a56bce845fccdd0e2ed2846a97f3c58a0d61e96bd8f128ca66a5c",
-    enVueloConOpciones: "bvsala:inflight:n2:e63e7beeec027c9358ec7ed93d9ef192f6db826facdfe42a0a8845528adf0936",
+    exacta: "bvsala:exact:n3:7855d260ff4d3fa76f2583df4fa459878fef2876440f0d5cab11dbda3d1dc2f1",
+    exactaServida: "bvsala:exact:n3:4e17eea637105525d1ab4febe56cefb5ff953faa7f1d033ecf5b049661e0a5f2",
+    enVuelo: "bvsala:inflight:n3:f57f20eb1b7a56bce845fccdd0e2ed2846a97f3c58a0d61e96bd8f128ca66a5c",
+    enVueloConOpciones: "bvsala:inflight:n3:e63e7beeec027c9358ec7ed93d9ef192f6db826facdfe42a0a8845528adf0936",
     huella: "c986bf45f543e1f6c8fb8ff788af3e82cb78416d1d2629d0d51792815916e326",
   },
   herramientaComoTexto: {
-    exacta: "bvsala:exact:n2:d411c313d6a101edb9571208f88bfa1a807cfc139cdc349356458849d69aed81",
-    exactaServida: "bvsala:exact:n2:3694508360d7d453e4feea7fbb248b2927a07b823b735d65f24b3502d317afb6",
-    enVuelo: "bvsala:inflight:n2:231cce2ecea2a6b45766ce7cfdc46cad8eb6ab05b36854d6a9ccdb1986eae068",
-    enVueloConOpciones: "bvsala:inflight:n2:c61dde5092ab30c72f1e49b5f53f113c4625abc5ea840acbf4b31b4ef1dc4e6d",
+    exacta: "bvsala:exact:n3:d411c313d6a101edb9571208f88bfa1a807cfc139cdc349356458849d69aed81",
+    exactaServida: "bvsala:exact:n3:3694508360d7d453e4feea7fbb248b2927a07b823b735d65f24b3502d317afb6",
+    enVuelo: "bvsala:inflight:n3:231cce2ecea2a6b45766ce7cfdc46cad8eb6ab05b36854d6a9ccdb1986eae068",
+    enVueloConOpciones: "bvsala:inflight:n3:c61dde5092ab30c72f1e49b5f53f113c4625abc5ea840acbf4b31b4ef1dc4e6d",
     huella: "53209b353832051c2ea76779290e3581a6718cac19e9890a94689340931b5458",
   },
   camposVaciosQueNoViajan: {
-    exacta: "bvsala:exact:n2:d411c313d6a101edb9571208f88bfa1a807cfc139cdc349356458849d69aed81",
-    exactaServida: "bvsala:exact:n2:3694508360d7d453e4feea7fbb248b2927a07b823b735d65f24b3502d317afb6",
-    enVuelo: "bvsala:inflight:n2:231cce2ecea2a6b45766ce7cfdc46cad8eb6ab05b36854d6a9ccdb1986eae068",
-    enVueloConOpciones: "bvsala:inflight:n2:c61dde5092ab30c72f1e49b5f53f113c4625abc5ea840acbf4b31b4ef1dc4e6d",
+    exacta: "bvsala:exact:n3:d411c313d6a101edb9571208f88bfa1a807cfc139cdc349356458849d69aed81",
+    exactaServida: "bvsala:exact:n3:3694508360d7d453e4feea7fbb248b2927a07b823b735d65f24b3502d317afb6",
+    enVuelo: "bvsala:inflight:n3:231cce2ecea2a6b45766ce7cfdc46cad8eb6ab05b36854d6a9ccdb1986eae068",
+    enVueloConOpciones: "bvsala:inflight:n3:c61dde5092ab30c72f1e49b5f53f113c4625abc5ea840acbf4b31b4ef1dc4e6d",
     // La huella es byte a byte y SÍ distingue `isError: false` de ausente: más
     // estricta que el cable, que es el lado seguro (nunca se reclama de más).
     huella: "82d14d832d24ccb0534aba3de6da86fb608a0a2bb30a1c848a5ae75ce0e65d1b",

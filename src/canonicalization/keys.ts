@@ -27,7 +27,12 @@ import { modelFamilyOf, sha256, stableStringify } from "./canonicalize.js";
  * herramientas). Las entradas de esa parte escritas antes quedan sin lector y
  * caducan con su TTL; no se pueden acotar con un `SCAN`, y es el precio.
  */
-const GENERACION = "n2";
+//
+// `n3` (2026-11-19): `normalizeText` deja de unir preguntas de CÓDIGO distintas
+// (`!ok`/`ok`, `!=`/`=`, `?.`/`.`, 'ABC'/'abc', lo que va entre backticks). Aquí
+// SÍ sube: las entradas `n2` pueden guardar bajo una clave la respuesta de otra
+// pregunta, y con la marca nueva ninguna vuelve a leerse.
+const GENERACION = "n3";
 
 /**
  * Los campos del bucle de herramientas, solo si la petición lleva alguno. Con
