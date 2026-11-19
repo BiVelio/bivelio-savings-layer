@@ -11,6 +11,25 @@ import {
   DIAS_DE_VIGENCIA,
 } from "@/lib/org/invitaciones";
 import { enviarInvitacion, idiomaValido } from "@/lib/correo/invitacion";
+import { KIND_INVITACION, cupoDeLaOrg, limitePorUsuario } from "@/lib/org/limite-invitaciones";
+
+/**
+ * ¿ES UNA DIRECCIÓN A LA QUE SE PUEDE MANDAR? Una sola, sin nada que un
+ * servidor de correo pueda leer como lista o como cabecera: ni comas, ni punto
+ * y coma, ni `<>`, ni comillas, ni espacios ni caracteres de control. La parte
+ * local admite lo que usan las direcciones reales (incluido `+etiqueta`); el
+ * dominio son etiquetas ASCII (un dominio con acentos va en su forma `xn--`).
+ */
+const PARTE_LOCAL = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*$/;
+const DOMINIO = /^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+([a-z]{2,63}|xn--[a-z0-9-]{2,59})$/;
+function esDestinatarioValido(email: string): boolean {
+  if (!email || email.length > 254) return false;
+  const arroba = email.lastIndexOf("@");
+  if (arroba < 1) return false;
+  const local = email.slice(0, arroba);
+  const dominio = email.slice(arroba + 1);
+  return local.length <= 64 && PARTE_LOCAL.test(local) && DOMINIO.test(dominio);
+}
 
 /**
  * INVITAR A ALGUIEN. Crear la invitación, mandarle el correo, listarlas y
@@ -79,10 +98,9 @@ export async function POST(req: Request): Promise<NextResponse> {
     /* cuerpo vacío */
   }
   const email = normalizarCorreo(body.email);
-  // Validación deliberadamente simple: hay una dirección real al otro lado que o
-  // recibe el correo o no. Una expresión regular "completa" para RFC 5322 rechaza
-  // direcciones válidas y no acepta ninguna que ésta deje pasar y sea peligrosa.
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) {
+  // Una dirección, y solo una (ver `esDestinatarioValido`). Ya normalizada: sin
+  // espacios alrededor y en minúsculas.
+  if (!esDestinatarioValido(email)) {
     return NextResponse.json({ error: "That doesn't look like an email address." }, { status: 400 });
   }
   if (!esRolInvitable(body.role)) {
@@ -124,6 +142,44 @@ export async function POST(req: Request): Promise<NextResponse> {
     if (suyo && suyo === email) {
       return NextResponse.json({ error: "Already a member of this organization." }, { status: 409 });
     }
+  }
+
+  // EL TOPE (lib/org/limite-invitaciones.ts). Va DESPUÉS de las comprobaciones
+  // que no mandan nada y ANTES de tocar la base o Resend: lo que se limita son
+  // los correos, no los errores de tecleo. Primero la ráfaga por usuario (en
+  // memoria), luego el cupo diario de la organización (en la base).
+  if (!limitePorUsuario.permitir(user.id).ok) {
+    return NextResponse.json(
+      { code: "demasiadas_invitaciones", error: "Too many invitations in a short time. Try again in a while." },
+      { status: 429 },
+    );
+  }
+  const cupo = await cupoDeLaOrg(admin, g.orgId);
+  if (!cupo.ok) {
+    if (cupo.motivo === "error") {
+      console.error("[org/invitations] no se pudo contar el cupo de invitaciones");
+      return NextResponse.json({ error: "Could not create the invitation." }, { status: 503 });
+    }
+    return NextResponse.json(
+      {
+        code: "demasiadas_invitaciones",
+        error: `This organization has reached its limit of ${cupo.tope} invitations per day. Try again tomorrow.`,
+      },
+      { status: 429 },
+    );
+  }
+  // Se APUNTA antes de mandar, y si no se puede apuntar no se manda: un correo
+  // que sale sin contarse es justo el agujero que este tope cierra. La dirección
+  // del destinatario NO se guarda aquí: no hace falta para contar.
+  const { error: apunteErr } = await admin.from("billing_audit").insert({
+    org_id: g.orgId,
+    event_id: `invitacion_${user.id}_${Date.now()}`,
+    kind: KIND_INVITACION,
+    detail: { por: user.id, role: body.role },
+  });
+  if (apunteErr) {
+    console.error("[org/invitations] no se pudo apuntar la invitación:", apunteErr);
+    return NextResponse.json({ error: "Could not create the invitation." }, { status: 503 });
   }
 
   const nuevo = acunarToken();

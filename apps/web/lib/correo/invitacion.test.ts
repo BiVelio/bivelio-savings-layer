@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { componerInvitacion, escapar, idiomaValido, IDIOMAS, type Idioma } from "./invitacion";
+import { componerInvitacion, escapar, idiomaValido, nombreParaCorreo, IDIOMAS, type Idioma } from "./invitacion";
 
 /**
  * El correo de invitación. Es el ÚNICO que este producto manda a alguien de fuera
@@ -41,7 +41,10 @@ describe("los doce idiomas están completos", () => {
       }
       // El nombre de la organización y el enlace tienen que aparecer SIEMPRE: son
       // las dos cosas sin las que el correo no sirve para nada.
-      expect(c.asunto).toContain("Acme");
+      // Desde la auditoría del lanzamiento el nombre va en el CUERPO y no en el
+      // asunto, que es fijo de plantilla (ver «el asunto no lo elige quien invita»).
+      expect(c.html).toContain("Acme S.L.");
+      expect(c.texto).toContain("Acme S.L.");
       expect(c.html).toContain(base.enlace);
       expect(c.texto).toContain(base.enlace);
     });
@@ -129,5 +132,52 @@ describe("qué NO lleva el correo", () => {
     const c = componerInvitacion(base);
     expect(c.texto).toContain("7");
     expect(c.texto.length).toBeGreaterThan(80);
+  });
+});
+
+describe("el asunto no lo elige quien invita (W3: la ruta no es un repetidor de correo)", () => {
+  const CEBO = "URGENT: your invoice is overdue, pay at evil.example";
+
+  for (const idioma of IDIOMAS) {
+    it(`${idioma}: el asunto es el de la plantilla, diga lo que diga el nombre de la organización`, () => {
+      const normal = componerInvitacion({ ...base, idioma });
+      const cebo = componerInvitacion({ ...base, idioma, org: CEBO });
+      expect(cebo.asunto).toBe(normal.asunto);
+      expect(cebo.asunto).not.toMatch(/URGENT|invoice|evil|Acme/);
+      expect(cebo.asunto).toContain("BiVelio");
+    });
+  }
+
+  it("⛔ nada con forma de enlace llega al cuerpo: ni URL, ni dominio, ni dirección", () => {
+    for (const org of [
+      CEBO,
+      "Pague en https://cobros-inventados.example/factura",
+      "www.cobros-inventados.example",
+      "soporte@cobros-inventados.example",
+      "cobros-inventados.example/pagar",
+      "cobros\u200b.inventados\u200b.example",
+      "ｃｏｂｒｏｓ．ｅｘａｍｐｌｅ",
+      "203.0.113.9:8080",
+    ]) {
+      const c = componerInvitacion({ ...base, org });
+      // Lo único del correo que escribe el usuario es el nombre, y va en la
+      // primera negrita del cuerpo. Se mira ESE trozo: el resto es plantilla.
+      const enCorreo = /<b>(.*?)<\/b>/.exec(c.html)![1]!;
+      expect(enCorreo).toBe(escapar(nombreParaCorreo(org)));
+      expect(c.texto).toContain(enCorreo);
+      expect(enCorreo, org).not.toMatch(/[\p{L}\p{N}]\.[\p{L}\p{N}-]{2,}/u);
+      expect(enCorreo, org).not.toMatch(/:\/\/|@|\/|\d[.:]\d/);
+      expect(enCorreo, org).not.toMatch(/[\u200b-\u200f\u202a-\u202e]/);
+      expect(c.html).not.toContain(org);
+      expect(c.texto).not.toContain(org);
+    }
+  });
+
+  it("un nombre normal pasa intacto, y uno larguísimo se recorta", () => {
+    for (const nombre of ["Acme S.L.", "Talleres Ruiz e Hijos S.A.", "Müller & Söhne GmbH", "Đại Việt Co., Ltd."]) {
+      expect(nombreParaCorreo(nombre)).toBe(nombre);
+    }
+    expect(Array.from(nombreParaCorreo("x".repeat(80))).length).toBe(60);
+    expect(nombreParaCorreo("   ")).toBe("BiVelio");
   });
 });
