@@ -262,7 +262,9 @@ export async function getOrgContext(
     }
   }
 
-  const elegida = elegirLicencia(licencias, Date.now());
+  const elegida = elegirLicencia(licencias, Date.now(), {
+    suscripcionViva: ["active", "trialing", "past_due"].includes(ctx.subscription?.status ?? ""),
+  });
   ctx.medir = estadoMedir(licencias, ctx.subscription?.status ?? null, Date.now());
   if (elegida?.row.expires_at) {
     ctx.license = {

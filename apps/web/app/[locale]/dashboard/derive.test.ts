@@ -50,6 +50,71 @@ describe("cuál de las licencias describe la situación de la org", () => {
   });
 });
 
+describe("la gratuita «Medir» no tapa a la de pago (W4)", () => {
+  const DIA = 86_400_000;
+  const ahora = Date.UTC(2027, 0, 20);
+  const enISO = (ms: number) => new Date(ms).toISOString();
+  // Como la consulta del panel: ordenadas por `expires_at` descendente, así que
+  // Medir (que dura años) llega SIEMPRE la primera.
+  const medir = { plan: "measure", revoked: false, grace_days: 30, expires_at: enISO(Date.UTC(2036, 10, 20)) };
+  const proViva = { plan: "pro", revoked: false, grace_days: 21, expires_at: enISO(ahora + 20 * DIA) };
+  const proEnGracia = { plan: "pro", revoked: false, grace_days: 21, expires_at: enISO(ahora - 5 * DIA) };
+  const proCaducada = { plan: "pro", revoked: false, grace_days: 21, expires_at: enISO(ahora - 40 * DIA) };
+  const proRevocada = { plan: "pro", revoked: true, grace_days: 21, expires_at: enISO(ahora + 20 * DIA) };
+
+  it("⛔ con Medir viva y la de pago vigente, manda la de pago", () => {
+    expect(elegirLicencia([medir, proViva], ahora)?.row).toBe(proViva);
+    expect(elegirLicencia([proViva, medir], ahora)?.row).toBe(proViva);
+  });
+
+  it("⛔ [Medir viva, Pro en gracia] → Pro, y el aviso de impago cuenta 16 días, no 3.622", async () => {
+    const elegida = elegirLicencia([medir, proEnGracia], ahora, { suscripcionViva: true })!;
+    expect(elegida.row).toBe(proEnGracia);
+    expect(elegida.status).toBe("grace");
+    const { decidirAviso } = await import("@/lib/billing/aviso");
+    const aviso = decidirAviso({
+      subscription: { status: "past_due", pastDueSince: enISO(ahora - 5 * DIA) },
+      license: { status: elegida.status, expiresAt: elegida.row.expires_at!, graceDays: elegida.row.grace_days ?? 0 },
+      nowMs: ahora,
+    });
+    expect(aviso).toEqual({ tipo: "pastDue", dias: 16 });
+  });
+
+  it("⛔ la de pago caducada se ve aunque Medir siga viva", () => {
+    const elegida = elegirLicencia([medir, proCaducada], ahora)!;
+    expect(elegida.row).toBe(proCaducada);
+    expect(elegida.status).toBe("expired");
+  });
+
+  it("⛔ la de pago revocada con la suscripción VIVA se ve: no canceló nadie", () => {
+    const elegida = elegirLicencia([medir, proRevocada], ahora, { suscripcionViva: true })!;
+    expect(elegida.row).toBe(proRevocada);
+    expect(elegida.status).toBe("revoked");
+  });
+
+  it("quien CANCELÓ y volvió a Medir está sano: no se le dice «licencia revocada»", () => {
+    // La cancelación revoca lo pagado y conserva Medir (webhook, `conservarMedir`).
+    for (const opts of [undefined, { suscripcionViva: false }]) {
+      const elegida = elegirLicencia([medir, proRevocada, proRevocada], ahora, opts)!;
+      expect(elegida.row).toBe(medir);
+      expect(elegida.status).toBe("active");
+    }
+  });
+
+  it("quien solo tiene Medir sigue viendo Medir", () => {
+    expect(elegirLicencia([medir], ahora)?.row).toBe(medir);
+  });
+
+  it("con Medir revocada y la de pago revocada, manda la de pago", () => {
+    expect(elegirLicencia([{ ...medir, revoked: true }, proRevocada], ahora)?.row).toBe(proRevocada);
+  });
+
+  it("una fila sin `plan` (licencias anteriores a Medir) cuenta como de pago", () => {
+    const vieja = { revoked: false, grace_days: 21, expires_at: enISO(ahora + 10 * DIA) };
+    expect(elegirLicencia([medir, vieja], ahora)?.row).toBe(vieja);
+  });
+});
+
 describe("estado de licencia", () => {
   const DIA = 86_400_000;
   const ahora = Date.UTC(2026, 7, 6);
