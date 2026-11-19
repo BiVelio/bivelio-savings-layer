@@ -832,6 +832,8 @@ describe("revisión · la salida de un modelo que razona, ignora temperature o n
 });
 
 describe("revisión · los parámetros vacíos que el adaptador pone a una herramienta se descuentan", () => {
+  // La pregunta NO es «What time is it?»: desde el 2026-11-19 (N6) una petición
+  // que pregunta por el reloj no se guarda en caché, y aquí hace falta el acierto.
   const SIN_PARAMETROS = [
     { id: "current_time", intents: ["time", "clock"], risk: "read" as const, description: "Returns the current time." },
   ];
@@ -842,7 +844,7 @@ describe("revisión · los parámetros vacíos que el adaptador pone a una herra
     const req = peticion({
       temperature: 0,
       tools: SIN_PARAMETROS,
-      messages: [{ role: "user", content: "What time is it?" }],
+      messages: [{ role: "user", content: "Check the wall clock for me." }],
     });
     const primera = await layer.generate(req);
     const tools = s.enviados[0]!["tools"] as Array<{ function: { parameters: unknown } }>;
@@ -872,7 +874,7 @@ describe("revisión · los parámetros vacíos que el adaptador pone a una herra
       tools: SIN_PARAMETROS,
       messages: [
         { role: "assistant", content: "I can tell the time." },
-        { role: "user", content: "What time is it?" },
+        { role: "user", content: "Check the wall clock for me." },
       ],
     });
     const primera = await layer.generate(req);
