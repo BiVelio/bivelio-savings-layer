@@ -1269,6 +1269,21 @@ export class AnthropicProvider implements Provider {
     reenviadas?: ReenvioDeBusquedas,
   ): Promise<ProviderResponse> {
     const json = (await response.json()) as RespuestaAnthropic;
+    // Un 200 con `{"type":"error"}` o sin `content` no es un mensaje: es un
+    // fallo del proveedor o de la pasarela de en medio (N3, 2026-11-19). Leído
+    // como mensaje salía texto vacío, que se servía y se guardaba. El stream ya
+    // lanza con su evento `error`. Solo aquí: el resultado de un lote no pasa.
+    const crudo = json as { type?: unknown; error?: { type?: unknown; message?: unknown } | null } | null;
+    if (crudo === null || typeof crudo !== "object") {
+      throw new Error("provider returned a 2xx response without a message (the body is not a JSON object)");
+    }
+    if (crudo.type === "error" || crudo.error != null) {
+      const detalle = typeof crudo.error?.message === "string" ? crudo.error.message : JSON.stringify(crudo.error ?? null);
+      throw new Error(`provider error in a 2xx response: ${detalle}`);
+    }
+    if (!Array.isArray(json.content)) {
+      throw new Error("provider returned a 2xx response without a message (no content)");
+    }
     return this.leerMensaje(
       json,
       req,

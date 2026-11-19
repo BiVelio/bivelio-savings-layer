@@ -121,8 +121,17 @@ export class GoogleProvider implements Provider {
     const model = modeloDelCable(req.model);
     const response = await this.enviarConCorrecciones(model, req, false, options?.signal);
     const json = (await response.json()) as RespuestaGemini;
+    if (json === null || typeof json !== "object") {
+      throw new Error("provider returned a 2xx response without a completion (the body is not a JSON object)");
+    }
     const acc = new Acumulador();
-    acc.sumar(json);
+    acc.sumar(json); // lanza con un cuerpo `error`
+    // La misma regla que el stream: sin `finishReason` ni bloqueo del prompt el
+    // proveedor no dijo que hubiera terminado (N3, 2026-11-19). Un 200 sin
+    // candidatos se servía como respuesta vacía.
+    if (!acc.terminado()) {
+      throw new Error("provider returned a 2xx response without a completion (no finishReason)");
+    }
     return this.cerrar(acc, req, response, json);
   }
 
