@@ -43,6 +43,38 @@ describe("lo que sigue resolviéndose sin llamar al modelo", () => {
   });
 });
 
+// A2-2 (segunda auditoría, 2026-11-19). NFKC convierte «3²» en «32», y el
+// resolver leía el texto ya normalizado: «What is 3² + 4²?» se contestaba «74»
+// (son 25) sin llamar al modelo. Todo lo que NFKC reescribe se le deja al modelo.
+describe("⛔ A2-2 · superíndices, subíndices, círculos y fracciones no se calculan", () => {
+  it.each([
+    ["What is 3² + 4²?", "superíndice: son 25, no 74"],
+    ["What is 4 - 2²?", "superíndice: son 0, no -18"],
+    ["What is 10³ * 2?", "superíndice: son 2000, no 206"],
+    ["Calculate 5² - 5", "superíndice: son 20, no 47"],
+    ["¿Cuánto es 2³ + 1?", "superíndice en español"],
+    ["What is 2¹⁰ / 4?", "superíndice de dos cifras"],
+    ["What is 7 + 2₂?", "subíndice"],
+    ["What is ⑤ + 5?", "número en círculo"],
+    ["What is 3½ + 1?", "fracción de un carácter"],
+    ["What is 2⁺3 + 1?", "signo en superíndice"],
+    ["What is 𝟐 + 2?", "cifra matemática en negrita"],
+  ])("«%s» se declina (%s)", (texto) => {
+    expect(resolver(texto)).toBeNull();
+  });
+
+  it.each([
+    ["What is 2 + 2 * 3?", "8"],
+    ["Ｗｈａｔ ｉｓ ２ ＋ ２ ＊ ３？", "8"], // ancho completo: vale lo mismo
+    ["¿Cuánto es 12 + 30?", "42"], // la tilde no es una forma de compatibilidad
+    ["Cua\u0301nto es 12 + 30", "42"], // ni la tilde combinante
+    ["What is 5 − 3?", "2"], // el signo menos tipográfico
+    ["What is\u00a02 + 2?", "4"], // espacio de no separación
+  ])("«%s» sigue dando %s", (texto, esperado) => {
+    expect(resolver(texto)).toBe(esperado);
+  });
+});
+
 describe("⛔ lo que NO es una cuenta se le deja al modelo", () => {
   it.each([
     ["What is 404?", "sin operador: un código"],
@@ -184,6 +216,14 @@ describe("de capa: el atajo solo corre cuando la petición es la cuenta y nada m
       ],
     });
     expect(r.report.cache.result).toBe("miss");
+    expect(estado.llamadas).toBe(1);
+  });
+
+  it("A2-2 · «What is 3² + 4²?» va al proveedor y no cuenta como llamada evitada", async () => {
+    const { capa, estado } = capaSimulada();
+    const r = await capa.generate({ model: MODELO, messages: [{ role: "user", content: "What is 3² + 4²?" }] });
+    expect(r.report.cache.result).toBe("miss");
+    expect(r.text).toBe("respuesta del modelo");
     expect(estado.llamadas).toBe(1);
   });
 

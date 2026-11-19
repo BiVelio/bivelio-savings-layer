@@ -94,8 +94,30 @@ function expresionDeLaPeticion(c: CanonicalRequest): string | null {
   if ((c.original.tools ?? []).length > 0) return null;
   if (c.original.structuredData !== undefined) return null;
   if (!c.normalizedText.startsWith("user:")) return null;
+  if (tieneFormaDeCompatibilidad(c.messages[0]!.content)) return null;
   const m = PREGUNTA.exec(c.normalizedText.slice("user:".length).trim());
   return m ? m[1]!.trim() : null;
+}
+
+// LO QUE NFKC REESCRIBE NO SE CALCULA (auditoría del 2026-11-19, A2-2). La
+// pregunta se lee de `normalizedText`, que ya pasó por NFKC, y NFKC convierte
+// «3²» en «32», «2₂» en «22», «⑤» en «5» y «½» en «1⁄2»: «What is 3² + 4²?»
+// llegaba aquí como «32 + 42», una cuenta válida, y se contestaba «74». Así
+// que se mira el texto ORIGINAL: si lleva algún carácter que NFKC cambia
+// (superíndices, subíndices, números en círculo, fracciones, cifras
+// matemáticas, romanos de un solo carácter…), se declina. Se salvan los de
+// ancho completo («２＋２»), que valen lo mismo que su forma ASCII, y los
+// espacios raros (el de no separación).
+function tieneFormaDeCompatibilidad(original: unknown): boolean {
+  if (typeof original !== "string") return true;
+  for (const ch of original) {
+    const cp = ch.codePointAt(0)!;
+    if (cp < 0x80) continue;
+    if (cp >= 0xff01 && cp <= 0xff5e) continue; // ancho completo
+    const plegado = ch.normalize("NFKC");
+    if (plegado !== ch && plegado.trim() !== "") return true;
+  }
+  return false;
 }
 
 /**
