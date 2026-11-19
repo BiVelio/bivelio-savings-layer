@@ -180,6 +180,7 @@
     "passwordsDontMatch": "Les mots de passe ne correspondent pas.",
     "resetLinkExpired": "Ce lien est invalide ou a expiré. Demandes-en un nouveau.",
     "callbackFailed": "Nous n'avons pas pu valider ce lien. Demandes-en un nouveau.",
+    "signupLinkUsed": "Ce lien de confirmation a déjà été utilisé ou a expiré. Les filtres de sécurité des messageries ouvrent parfois les liens avant vous. Si votre compte est confirmé, connectez-vous avec votre e-mail et votre mot de passe.",
     "errors": {
       "userExists": "Un compte existe déjà avec cet e-mail. Connectez-vous ou réinitialisez le mot de passe.",
       "weakPassword": "Ce mot de passe est trop faible : au moins 8 caractères, avec des lettres et des chiffres.",

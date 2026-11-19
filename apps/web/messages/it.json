@@ -180,6 +180,7 @@
     "passwordsDontMatch": "Le password non coincidono.",
     "resetLinkExpired": "Questo link non è valido o è scaduto. Richiedine uno nuovo.",
     "callbackFailed": "Non siamo riusciti a convalidare il link. Richiedine uno nuovo.",
+    "signupLinkUsed": "Questo link di conferma è già stato usato o è scaduto. A volte i filtri di sicurezza della posta aprono i link prima di te. Se il tuo account è confermato, accedi con la tua email e la tua password.",
     "errors": {
       "userExists": "Esiste già un account con questa email. Accedi o reimposta la password.",
       "weakPassword": "La password è troppo debole: usa almeno 8 caratteri, con lettere e numeri.",

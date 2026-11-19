@@ -180,6 +180,7 @@
     "passwordsDontMatch": "Les contrasenyes no coincideixen.",
     "resetLinkExpired": "Aquest enllaç no és vàlid o ha caducat. Sol·licita'n un de nou.",
     "callbackFailed": "No hem pogut validar l'enllaç. Sol·licita'n un de nou.",
+    "signupLinkUsed": "Aquest enllaç de confirmació ja s'ha fet servir o ha caducat. De vegades el filtre de seguretat del correu obre els enllaços abans que tu. Si el teu compte està confirmat, entra amb el teu correu i la teva contrasenya.",
     "errors": {
       "userExists": "Ja existeix un compte amb aquest correu. Inicia la sessió o restableix la contrasenya.",
       "weakPassword": "La contrasenya és massa feble: fes servir almenys 8 caràcters i barreja lletres i números.",

@@ -180,6 +180,7 @@
     "passwordsDontMatch": "Mật khẩu không khớp.",
     "resetLinkExpired": "Liên kết này không hợp lệ hoặc đã hết hạn. Hãy yêu cầu liên kết mới.",
     "callbackFailed": "Chúng tôi không thể xác thực liên kết này. Hãy yêu cầu liên kết mới.",
+    "signupLinkUsed": "Liên kết xác nhận này đã được dùng hoặc đã hết hạn. Bộ lọc bảo mật email đôi khi mở liên kết trước bạn. Nếu tài khoản của bạn đã được xác nhận, hãy đăng nhập bằng email và mật khẩu.",
     "errors": {
       "userExists": "Đã có tài khoản với email này. Hãy đăng nhập hoặc đặt lại mật khẩu.",
       "weakPassword": "Mật khẩu quá yếu: dùng ít nhất 8 ký tự, kết hợp chữ và số.",

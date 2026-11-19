@@ -180,6 +180,7 @@
     "passwordsDontMatch": "Kata sandi tidak cocok.",
     "resetLinkExpired": "Tautan ini tidak valid atau kedaluwarsa. Minta yang baru.",
     "callbackFailed": "Kami tidak dapat memvalidasi tautan ini. Minta yang baru.",
+    "signupLinkUsed": "Tautan konfirmasi ini sudah dipakai atau kedaluwarsa. Filter keamanan email terkadang membuka tautan sebelum Anda. Jika akun Anda sudah dikonfirmasi, masuk dengan email dan kata sandi Anda.",
     "errors": {
       "userExists": "Sudah ada akun dengan email itu. Masuk atau atur ulang kata sandi.",
       "weakPassword": "Kata sandi terlalu lemah: gunakan minimal 8 karakter dengan huruf dan angka.",

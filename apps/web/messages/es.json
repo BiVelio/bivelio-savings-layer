@@ -180,6 +180,7 @@
     "passwordsDontMatch": "Las contraseñas no coinciden.",
     "resetLinkExpired": "Este enlace no es válido o ha caducado. Solicita uno nuevo.",
     "callbackFailed": "No hemos podido validar el enlace. Solicita uno nuevo.",
+    "signupLinkUsed": "Este enlace de confirmación ya se ha usado o ha caducado. A veces el filtro de seguridad del correo abre los enlaces antes que tú. Si tu cuenta está confirmada, entra con tu correo y tu contraseña.",
     "errors": {
       "userExists": "Ya existe una cuenta con ese correo. Inicia sesión o restablece la contraseña.",
       "weakPassword": "La contraseña es demasiado débil: usa al menos 8 caracteres y mezcla letras y números.",

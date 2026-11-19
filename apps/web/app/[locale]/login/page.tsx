@@ -51,7 +51,12 @@ export default async function LoginPage({
         <h1>{t("welcomeBack")}</h1>
         <p className="sub">{t("loginSubtitle")}</p>
       </div>
-      {error ? <MensajeDeAcceso tipo="error">{t("callbackFailed")}</MensajeDeAcceso> : null}
+      {/* `enlace_usado`: un enlace de registro que ya se canjeó (a menudo lo abre
+          el filtro de seguridad del correo antes que la persona) o caducó. Ahí no
+          hay «enlace nuevo» que pedir: si la cuenta está confirmada, se entra. */}
+      {error ? (
+        <MensajeDeAcceso tipo="error">{error === "enlace_usado" ? t("signupLinkUsed") : t("callbackFailed")}</MensajeDeAcceso>
+      ) : null}
       <AuthForm mode="login" />
       {/* El enlace sale estático (`/signup`) y, ya en el navegador, se lleva el
           `next` si lo hay: quien venía de una invitación o de elegir un plan no
