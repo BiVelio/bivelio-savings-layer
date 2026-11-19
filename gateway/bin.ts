@@ -12,6 +12,7 @@ import { arrancarGateway, type GatewayArrancado } from "./servidor.js";
 import { resumenDeDegradaciones } from "./degradacion.js";
 import {
   decidirArranque,
+  flagDePuerto,
   isChildInfoRequest,
   mensajeDeFalloDeArranque,
   retiredNameErrors,
@@ -378,10 +379,16 @@ if (comando === "skill") {
 
 // Envoltorios: puerto efímero; `gateway`: 8402 o --port (0 = efímero, lo usa
 // el arnés F2); `doctor`: 1–65535 (imprime URLs — un puerto 0 no señala nada).
-const idx = resto.indexOf("--port");
-const puerto = esEnvoltorio ? 0 : idx >= 0 ? Number(resto[idx + 1]) : 8402;
+// `--port N` y `--port=N` (gateway/argumentos.ts). En un envoltorio todo lo que
+// va detrás del terminal es del terminal: ahí no se mira.
+const flagPuerto = esEnvoltorio ? ({ tipo: "ausente" } as const) : flagDePuerto(resto);
+if (flagPuerto.tipo === "error") {
+  console.error(`[bvsala ${comando}] invalid port: ${flagPuerto.valor} (use --port N or --port=N)`);
+  process.exit(1);
+}
+const puerto = esEnvoltorio ? 0 : flagPuerto.tipo === "puerto" ? flagPuerto.puerto : 8402;
 if (!Number.isInteger(puerto) || (comando === "doctor" ? puerto < 1 : puerto < 0) || puerto > 65535) {
-  console.error(`[bvsala ${comando}] invalid port: ${resto[idx + 1]}`);
+  console.error(`[bvsala ${comando}] invalid port: ${puerto}`);
   process.exit(1);
 }
 

@@ -48,6 +48,38 @@ export function isChildInfoRequest(rest: readonly string[]): boolean {
   return rest.length === 1 && (rest[0] === "--help" || rest[0] === "-h" || rest[0] === "--version");
 }
 
+/** Lo que dicen los argumentos de `gateway` / `doctor` sobre el puerto. */
+export type FlagDePuerto =
+  | { tipo: "ausente" }
+  | { tipo: "puerto"; puerto: number }
+  /** `valor` es lo que se escribió, para enseñarlo en el error. */
+  | { tipo: "error"; valor: string };
+
+/**
+ * `--port N` y `--port=N`, las dos formas. Hasta aquí solo se miraba
+ * `indexOf("--port")`: `--port=9777` se ignoraba EN SILENCIO y el gateway
+ * arrancaba en 8402 (y `doctor --port=9000` imprimía recetas para 8402, que el
+ * usuario copiaba a su configuración). Cualquier otra cosa que empiece por
+ * `--port` (`--port=`, `--port` sin valor, `--ports`, `--port9000`) es un
+ * error dicho, no un puerto por defecto. Solo dígitos: el rango lo decide
+ * quien llama (0 es efímero en `gateway` y no vale en `doctor`).
+ */
+export function flagDePuerto(args: readonly string[]): FlagDePuerto {
+  for (let i = 0; i < args.length; i++) {
+    const a = args[i]!;
+    if (!a.startsWith("--port")) continue;
+    let valor: string | undefined;
+    if (a === "--port") valor = args[i + 1];
+    else if (a.startsWith("--port=")) valor = a.slice("--port=".length);
+    else return { tipo: "error", valor: a };
+    if (valor === undefined || !/^\d{1,5}$/.test(valor)) {
+      return { tipo: "error", valor: a === "--port" ? (valor ?? "(missing value after --port)") : a };
+    }
+    return { tipo: "puerto", puerto: Number(valor) };
+  }
+  return { tipo: "ausente" };
+}
+
 /**
  * El fallo de arranque del gateway traducido a UNA línea para el probador. El
  * escenario más probable es lanzarlo dos veces (el 8402 por defecto): hasta
