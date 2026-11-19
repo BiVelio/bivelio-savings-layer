@@ -511,7 +511,8 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
     avisarUnaVez(
       "gateway-modo-comunitario",
       "[bvsala gateway] COMMUNITY MODE (open core): no BIVELIO_SERVICE_KEY - every local saving lever is on and " +
-        "traffic is metered only in the local report routes (x-bvsala-report). Nothing is sent to BiVelio. " +
+        "every request is metered on this machine with the provider's own usage (log line, exit summary, and the " +
+        "local report routes with x-bvsala-report). Nothing is sent to BiVelio. " +
         "Add a service key to get the cloud dashboard, org entitlements and team metering.",
     );
   } else {
@@ -519,8 +520,8 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
     // metering autorizar ni entitlements que consultar.
     avisarUnaVez(
       "gateway-sin-clave",
-      "[bvsala gateway] no BIVELIO_SERVICE_KEY: this in-process gateway forwards traffic but does not meter it " +
-        "(a service key is what authorizes metering).",
+      "[bvsala gateway] no BIVELIO_SERVICE_KEY: this in-process gateway meters traffic on this machine only " +
+        "(log line and local report routes); nothing is sent to the dashboard without a service key.",
     );
   }
 
@@ -532,6 +533,15 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
    * vaciado, ese registro se quedaba en el búfer de un emisor parado (se
    * infra-medía: el informe dejaba de cuadrar con el uso).
    */
+  /**
+   * EL ENVÍO a BiVelio es lo ÚNICO opcional de la medición: con clave de
+   * servicio el informe viaja a la ingesta; sin ella (modo comunitario, el de
+   * por defecto) se calcula IGUAL y se queda en esta máquina —línea de log,
+   * recuento de salida y buzón local—, y aquí no sale nada de red.
+   */
+  const emitir = (informe: Parameters<UsageEmitter["record"]>[0]): void => {
+    emisor?.record(informe);
+  };
   const medicionesEnVuelo = new Set<Promise<void>>();
   const abrirMedicion = (): (() => void) => {
     let cerrarla!: () => void;
@@ -662,7 +672,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
     // Al recuento, solo lo que es API: una ruta con dialecto o bajo `/v1/`. Lo
     // demás que un terminal manda por el base URL (telemetría, sondas) no es
     // inferencia, y contarlo como «no medido» asustaría sin motivo.
-    if (tieneDialecto(path) || path.startsWith("/v1/")) recuento.noMedida(motivo);
+    if (tieneDialecto(path) || path.startsWith("/v1/")) recuento.noMedida(motivo, metodo === "POST" && tieneDialecto(path));
     if (opts.avisosDeNoMedido === false) return;
     if (aviso === "chat") avisarUnaVez("gateway-chat-sin-include-usage", AVISO_CHAT_SIN_INCLUDE_USAGE);
     if (aviso === "chat-con-inyeccion") {
@@ -759,14 +769,10 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
      */
     modeloDeRuta?: string | null,
   ): void => {
-    if (!emisor || !uso) {
-      buzon.noMedido(
-        requestId,
-        !emisor ? "metering is off: the gateway has no BIVELIO_SERVICE_KEY" : "the provider reported no usage",
-      );
+    if (!uso) {
+      buzon.noMedido(requestId, "the provider reported no usage");
       return;
     }
-    const em = emisor;
     const usoFinal: UsoSse = uso;
     const model = modeloDeRuta ?? modeloDelCuerpo(cuerpo, codificacion);
     // Cada petición que se queda sin medir deja SU línea, no solo la primera:
@@ -832,7 +838,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
             requestId, servido, medido, atribucion, elision, rebaja, hermano, suscripcion === true, !upstreamOficial, sinCobro === true,
             falloTtl,
           );
-      emisor.record(informe);
+      emitir(informe);
       if (coalescida) recuento.replica();
       else recuento.medida();
       // El MISMO objeto que va a la ingesta: el cliente que lo pidió ve los
@@ -926,7 +932,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
           });
           const politica = base.costeUsd - ahorroTtl + falloSombra;
           if (politica !== medido.costeUsd) {
-            em.record(informeSombra(`${requestId}:shadow`, model, medido.costeUsd, politica, atribucion));
+            emitir(informeSombra(`${requestId}:shadow`, model, medido.costeUsd, politica, atribucion));
             log(
               `[gateway] measure (shadow) · ${model} · ` +
                 [
@@ -961,7 +967,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
               log(`[gateway] shadow estimate · ${model} · the provider already cleared context via our settings: chain advances, nothing emitted`);
               return;
             }
-            em.record(informeSombra(`${requestId}:shadow`, model, paso.baselineUsd, paso.politicaUsd, atribucion));
+            emitir(informeSombra(`${requestId}:shadow`, model, paso.baselineUsd, paso.politicaUsd, atribucion));
             log(
               `[gateway] shadow estimate · ${model} · baseline $${paso.baselineUsd.toFixed(6)} → with elision $${paso.politicaUsd.toFixed(6)}`,
             );
@@ -1086,7 +1092,9 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
                 plan: planActual() ?? null,
                 expiresAt: live ? isoDay(live.license.payload.expires_at) : null,
               },
-          metering: emisor !== undefined,
+          // La medición LOCAL está siempre encendida; el envío al panel es
+          // aparte (solo con clave de servicio) y este campo no habla de él.
+          metering: true,
           reports: { requestHeader: CABECERA_PIDE_INFORME, responseHeader: CABECERA_ID_DE_PETICION, capacity: buzon.limite },
         }),
       });
@@ -1191,6 +1199,9 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       cuerpoPeticion = cuerpo;
       url = new URL(req.url ?? "/", upstreamBase);
       url.pathname = rutaReescrita(upstreamBase, url.pathname);
+      // Lo que cuenta el resumen de salida como «pasó por el gateway»: una
+      // petición de inferencia (ruta con dialecto), acabe como acabe.
+      if (req.method === "POST" && tieneDialecto(url.pathname)) recuento.recibida();
 
       // ── F2 · coalescencia (solo bajo bandera e inferencia de lectura) ──
       const coalescible =
@@ -1244,7 +1255,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
               if (usoReplica === null) {
                 // La primaria ya dijo lo suyo (línea y aviso): la gemela deja su
                 // línea y nada más. count_tokens no factura: ni línea.
-                if (emisor && !RUTA_DE_CONTEO.test(url.pathname)) {
+                if (!RUTA_DE_CONTEO.test(url.pathname)) {
                   const esStreamReplica = String(replica.headers["content-type"] ?? "").includes("text/event-stream");
                   noMedido(
                     requestId,
@@ -1569,7 +1580,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       // que ya está puesta. null: la inyección no estaba puesta.
       let inyeccion: Parameters<typeof porQueSinUsoEnStream>[3] = null;
       const esChat = req.method === "POST" && url.pathname.endsWith("/chat/completions");
-      if (esChat && emisor && opts.usageInject === true && !enMedicion) {
+      if (esChat && opts.usageInject === true && !enMedicion) {
         if (endpointSinStreamOptions) {
           inyeccion = "rechazada-por-el-upstream";
         } else {
@@ -1721,14 +1732,13 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       respuestaOk = upstream.ok;
       // stream:false — el usage viene en el JSON del cuerpo, no en eventos SSE.
       // Solo rutas con dialecto de usage (count_tokens también responde JSON
-      // pero no factura), solo con emisor (sin clave no hay nada que medir: ni
-      // bufferizar ni parsear), y con el mismo tope de captura que la
+      // pero no factura), con o sin clave de servicio (la medición es local; solo
+      // el envío es opcional), y con el mismo tope de captura que la
       // coalescencia — un upstream configurable con un cuerpo desmesurado no
       // puede comerse el heap.
       const esJsonMedible =
         !esSse &&
         upstream.ok &&
-        emisor !== undefined &&
         req.method === "POST" &&
         tieneDialecto(url.pathname) &&
         (upstream.headers.get("content-type") ?? "").includes("application/json");
@@ -1823,7 +1833,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
         // [DONE]): el de message_start trae output_tokens:1 de marcador, y un
         // stream que se corta antes de su evento final no es una medida.
         const uso = observador.usageFinal();
-        if (uso === null && emisor) {
+        if (uso === null) {
           // Chat Completions sin include_usage no es un corte: es que nadie
           // pidió el contador. Se dice distinto porque se arregla distinto.
           const porQue = porQueSinUsoEnStream(observador, cuerpo, codificacion, inyectado ? "inyectado" : inyeccion);
@@ -1837,16 +1847,6 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
             observador instanceof ObservadorGemini ? modeloDeRutaGemini(url.pathname) : undefined,
           );
           vigilarCache(url.pathname, cuerpo, codificacion, uso, ttlReescrito, sesionId);
-        }
-        // SIN clave no hay emisor y medir() vuelve en silencio: hasta 0.4.20
-        // una petición en streaming servida con 200 no dejaba NINGUNA línea,
-        // mientras `bvsala doctor` mandaba al probador a buscar justo esta
-        // («[gateway] POST /v1/messages …»). Claude Code, Codex, Goose y Qwen
-        // van SIEMPRE en streaming: sin esta línea, quien no tiene clave (o la
-        // exportó mal) no puede confirmar que su terminal pasa por el gateway.
-        // Con clave, la línea la pone medir() y aquí no se toca nada.
-        if (!emisor) {
-          log(`[gateway] ${req.method} ${url.pathname} → ${upstream.status} (stream) · not metered: no BIVELIO_SERVICE_KEY`);
         }
       } else if (cuerpoJson) {
         const respuesta = Buffer.concat(cuerpoJson);
@@ -1865,7 +1865,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
         }
       } else if (jsonDesbordado) {
         noMedido(requestId, req.method ?? "POST", url.pathname, upstream.status, false, "the response was too large to read its usage", null);
-      } else if (emisor && req.method === "POST" && upstream.ok && tieneDialecto(url.pathname)) {
+      } else if (req.method === "POST" && upstream.ok && tieneDialecto(url.pathname)) {
         // Una ruta con dialecto que no respondió ni SSE ni JSON (sin
         // content-type en chat/completions, que no se asume SSE, o un tipo
         // raro): no hay dónde leer el usage, y se dice.
@@ -1879,7 +1879,6 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
           null,
         );
       } else if (
-        emisor &&
         req.method === "POST" &&
         upstream.ok &&
         !tieneDialecto(url.pathname) &&
@@ -1900,7 +1899,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
           url.pathname.startsWith("/v1/") ? "dialecto" : null,
         );
       } else {
-        // Todo lo demás que no se mide se dice igual: JSON sin emisor, errores
+        // Todo lo demás que no se mide se dice igual: errores
         // del proveedor, y también un SSE con estado de error.
         log(`[gateway] ${req.method} ${url.pathname} → ${upstream.status}${esSse ? " (stream)" : ""}`);
       }

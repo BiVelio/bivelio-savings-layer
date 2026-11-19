@@ -172,8 +172,44 @@ describe("el gateway lleva el recuento de lo medido y lo que no", () => {
     const { gw, pedir } = await montar();
     await pedir("/api/event_logging/batch", { events: [] });
     await pedir("/v1/error", { model: "claude-sonnet-4-6" });
-    expect(gw.medicion()).toEqual({ medidas: 0, replicas: 0, noMedidas: {} });
+    expect(gw.medicion()).toEqual({ recibidas: 0, sinContador: 0, medidas: 0, replicas: 0, noMedidas: {} });
     expect(resumenDeMedicion(gw.medicion(), "claude")).toContain("no inference request went through the gateway");
+  });
+
+  it("⛔ una petición de inferencia que el proveedor rechaza SÍ pasó por el gateway: el resumen no dice «ninguna»", async () => {
+    // El upstream responde 401 a /v1/messages: no hay usage que medir ni
+    // motivo de «no medido» (un error no factura), pero la petición pasó.
+    const upstream = await servidor((_path, _cuerpo, res) => {
+      res.writeHead(401, { "content-type": "application/json" });
+      res.end('{"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"}}');
+    });
+    const gw = await arrancarGateway({ puerto: 0, upstream: `http://127.0.0.1:${upstream}`, log: () => {}, avisosDeNoMedido: false });
+    recursos.push(gw);
+    for (let i = 0; i < 2; i++) {
+      await fetch(`http://127.0.0.1:${gw.puerto}/v1/messages`, { method: "POST", body: JSON.stringify({ model: "claude-sonnet-4-6", messages: [] }) }).then((r) => r.text());
+    }
+    const e = gw.medicion();
+    expect(e).toEqual({ recibidas: 2, sinContador: 2, medidas: 0, replicas: 0, noMedidas: {} });
+    const l = resumenDeMedicion(e, "claude");
+    expect(l).not.toContain("no inference request went through");
+    expect(l).toContain("2 inference request(s) went through the gateway");
+    expect(l).toContain("0 request(s) metered");
+    expect(l).toContain("2 ended with no usage to meter");
+  });
+
+  it("recibidas = medidas + réplicas + no medidas de inferencia + sin contador", async () => {
+    const { gw, pedir } = await montar();
+    await pedir("/v1/messages", { model: "claude-sonnet-4-6", max_tokens: 5, messages: [] });
+    await pedir("/v1/chat/completions", { model: "gpt-4o-mini", messages: [], stream: true });
+    await pedir("/v1/embeddings", { model: "text-embedding-3-small", input: "x" });
+    const e = gw.medicion();
+    // embeddings no tiene dialecto: se cuenta por su motivo, no como inferencia recibida.
+    expect(e.recibidas).toBe(2);
+    expect(e.medidas).toBe(1);
+    expect(e.sinContador).toBe(0);
+    const l = resumenDeMedicion(e, "claude");
+    expect(l).toContain("2 inference request(s) went through the gateway · 1 request(s) metered with the provider's usage");
+    expect(l).toContain("2 forwarded but NOT metered");
   });
 
   it("una ruta de la API sin dialecto sí cuenta, con su motivo", async () => {
