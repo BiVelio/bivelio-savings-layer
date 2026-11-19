@@ -72,14 +72,23 @@ const INSTRUCCIONES_DEL_AGENTE = '  instructions: "Answer briefly.",';
 const SIN_INSTRUCCIONES =
   '  instructions: "", // empty on purpose: with instructions the layer leaves this question to the model';
 
-/** Las opciones del fragmento, idénticas en todos (README incluido): open core sin claves; la nube, optativa. */
+/**
+ * Las opciones del fragmento, idénticas en todas las pilas: open core sin claves;
+ * la nube, optativa. A2-27 · las tres líneas van ACTIVAS y leídas del entorno.
+ * Comentadas, quien pagaba seguía el paso recomendado del panel (`init`), veía
+ * sus dos claves «set» y recibía un fichero que no mandaba nada a BiVelio: el
+ * panel vacío para siempre y la licencia sin renovarse. Sin claves en el entorno
+ * las tres quedan en `undefined` y no sale ninguna petición hacia BiVelio
+ * (test/init-fragmento-red.test.ts lo comprueba ejecutándolo).
+ */
 const OPCIONES = [
-  "// OPEN CORE: no license needed — the layer runs with every local saving lever on, zero telemetry.",
-  "// A license key that IS set but invalid still fails closed. For the cloud dashboard,",
-  "// team metering and license auto-renewal, add these lines (all optional):",
+  "// OPEN CORE: no license needed. With no BiVelio keys set, the layer runs with every local",
+  "// saving lever on and sends nothing to BiVelio. Savings Cloud (optional): set BIVELIO_SERVICE_KEY",
+  "// (and BIVELIO_LICENSE_KEY) and usage reaches your dashboard and the license renews itself.",
+  "// A license key that IS set but invalid still fails closed.",
   "licenseKey: process.env.BIVELIO_LICENSE_KEY || undefined,",
-  '// licenseServerUrl: "https://savings.bivelio.com",',
-  "// serviceAccountKey: process.env.BIVELIO_SERVICE_KEY,",
+  'licenseServerUrl: "https://savings.bivelio.com",',
+  "serviceAccountKey: process.env.BIVELIO_SERVICE_KEY || undefined,",
 ];
 
 /** Lo que la comprobación añade a las opciones de un adaptador para ver su informe. */
@@ -549,7 +558,7 @@ const CABECERA_COMPROBACION = [
   "// It asks a question the layer answers on this machine (2 + 2 * 3), so with the",
   "// layer in place the model is not called and your provider bills nothing for it.",
   "// The saving is `estimated`, and estimated savings are never billed. Open core:",
-  "// no keys are needed — the layer runs in COMMUNITY mode with zero telemetry.",
+  "// no keys are needed — with none set, the layer runs in COMMUNITY mode with zero telemetry.",
   "// Delete this file once it says ok.",
 ];
 
