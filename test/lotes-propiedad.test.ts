@@ -260,8 +260,8 @@ describe("P6 · OpenAI: lo mismo por el registro de lote, con modelos sin lectur
 
 describe("P6 · caducidad: una fila de lote caducada no acredita nada y el lote sale entero", () => {
   // Cada fila de lote con `vigenteHasta`, con el reloj en su último día y en el
-  // siguiente. El último día acredita; el siguiente, nada (ni la estándar ni la
-  // de lote valen ese día), y el resultado sale igual, sin lanzar.
+  // siguiente. El último día acredita; el siguiente, nada (la fila de lote ya
+  // no vale ese día), y el resultado sale igual, sin lanzar.
   const conFin = (["openai", "anthropic"] as const).flatMap((origen) =>
     Object.entries(TARIFAS_DE_TIER[origen].batch ?? {})
       .filter(([, f]) => f.vigenteHasta !== undefined)

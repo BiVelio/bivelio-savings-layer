@@ -152,7 +152,7 @@ describe("la tabla de tarifas por tier", () => {
     }
   });
 
-  it("gpt-5.6-sol: el precio promocional rige hasta el 30-11-2026 incluido, en estándar, Flex y Batch (A2-22)", () => {
+  it("gpt-5.6-sol: el precio promocional de Flex y Batch rige hasta el 30-11-2026 incluido (A2-22)", () => {
     // https://developers.openai.com/api/docs/pricing, releída el 2026-11-19:
     // «GPT-5.6 Sol's promotional pricing is available until November 30, 2026».
     // Antes caducaba el 2026-11-21 y el 22 (el día del lanzamiento) la propiedad
@@ -166,10 +166,9 @@ describe("la tabla de tarifas por tier", () => {
       expect(tarifaDeTier("openai", tier, "gpt-5.6-sol", ultimo), tier).toBe(fila);
       expect(tarifaDeTier("openai", tier, "gpt-5.6-sol", siguiente), tier).toBeUndefined();
     }
-    // Y la fila estándar acaba a la vez: sin precio anunciado detrás, cae al
-    // respaldo ilustrativo, que avisa, en vez de seguir con el promocional.
+    // La fila estándar no lleva fin todavía (ver su comentario en catalogo.ts):
+    // el 30-11 es la de CATALOGO, y el ahorro de Flex/Batch se resta contra ella.
     expect(precioDeLista("gpt-5.6-sol", ultimo)).toBe(CATALOGO["gpt-5.6-sol"]);
-    expect(precioDeLista("gpt-5.6-sol", siguiente)).toBeUndefined();
   });
 
   it("una fila con `vigenteHasta` deja de existir al día siguiente", () => {
