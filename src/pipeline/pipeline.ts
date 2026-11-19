@@ -5809,6 +5809,23 @@ export class SavingsPipeline {
     hechos?: HechosDeCalidad,
   ): SavingsReport {
     const cost = ledger.estimateCost(costModel);
+    // DINERO A PRECIO ILUSTRATIVO NO ES DINERO MEDIDO (auditoría del 2026-11-19,
+    // N5). Un modelo sin fila en el catálogo y sin precio del cliente se tarifa
+    // con el precio de ejemplo (0,0005/0,0015 por 1K), que puede estar veinte
+    // veces por debajo —o por encima— del real. Los TOKENS de esa petición sí
+    // los midió el proveedor; los dólares, no: `measured` promete «comprobable
+    // contra la factura» y aquí no lo es. Sale `estimated`, que no entra en la
+    // comisión ni se suma a lo medido, y la traza dice por qué. `unmeasured` y
+    // `estimated` se quedan como estaban.
+    if (costModel === PRECIO_ILUSTRATIVO) {
+      if (cost.basis === "measured") cost.basis = "estimated";
+      trace.record(
+        "price",
+        "illustrative: no list price and no costModels entry for this model; dollar figures are not " +
+          "measured money",
+        { priceSource: "illustrative", model: cascada?.servedModel ?? request.model },
+      );
+    }
     // El AHORRO NATIVO, aparte de `cost` y calculado DESPUÉS: no puede mover ni
     // el baseline, ni `actual`, ni `netSavings`, ni `basis`. Solo con una llamada
     // que corrió y sirvió algo que se cobró.
@@ -6625,9 +6642,18 @@ export class SavingsPipeline {
         `ILLUSTRATIVE default price. Dollar figures will not match your bill. ` +
         `Pass { costModels: { "${model}": { inputPer1k, outputPer1k } } }.`,
     );
-    return DEFAULT_COST_MODEL;
+    return PRECIO_ILUSTRATIVO;
   }
 }
+
+/**
+ * El precio ilustrativo TAL Y COMO LO DEVUELVE EL RESPALDO de `costModelFor`:
+ * las mismas cifras que `DEFAULT_COST_MODEL`, en un objeto propio. La identidad
+ * es la marca: `buildReport` distingue así «nadie declaró precio para este
+ * modelo» de un cliente que pasó esas mismas cifras en `costModels` o en
+ * `defaultCostModel`, que es un precio declarado y se respeta.
+ */
+const PRECIO_ILUSTRATIVO: CostModel = Object.freeze({ ...DEFAULT_COST_MODEL });
 
 /**
  * Parseo del texto servido, CON RESCATE LOCAL antes de darlo por perdido.
