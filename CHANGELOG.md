@@ -8,6 +8,21 @@
   the key fix below), so no entry written by an earlier version is read again:
   expect fewer exact hits for the first days. Old entries in Redis, KV or
   PostgreSQL stay until their TTL runs out.
+- **The exact cache keeps capital letters.** The exact key and in-flight coalescing
+  no longer merge questions that differ only in a capital that changes the meaning:
+  `curl -O` and `curl -o`, `git branch -D` and `-d`, `5 MW` and `5 mW`, `3 Mb` and
+  `3 MB`, `[A-Z]+` and `[a-z]+`, `Name` and `name`. Only the capital that opens a
+  turn is still folded, along with accents, sentence punctuation and whitespace.
+  Near-duplicates that differ in other capitals (ALL CAPS, a lower-cased proper
+  noun) are now separate entries: expect fewer exact hits on those. An exact repeat
+  always hits. The semantic cache (opt-in) is unchanged.
+- **Requests that transform their own text are keyed verbatim.** When any turn,
+  the system prompt included, asks to translate, rewrite, summarize, fix, convert,
+  format or correct text, each turn enters the exact key as written, trimmed only at
+  the ends: "Translate to French: I love Polish food" and "…polish food", or "Can you
+  help me?" and "Can you help me!", never share a cached answer. The word list is
+  wide on purpose; with one of those words in your system prompt, only exact
+  repeats hit.
 - **Empty answers and calls without a full usage counter are not cached.** They are
   served as before, but not written to the exact or semantic cache, so a repeat goes
   back to the provider. An endpoint that never reports usage therefore stops using
@@ -34,7 +49,9 @@
   question with an operator. It declines dates, phone numbers, percentages, `2.500`,
   leading zeros, numbers a double cannot hold exactly, and results it cannot write
   exactly in nine decimals (`10 / 3`). A Mastra agent with `instructions` sends the
-  question to the model. The quickstart (`What is 2 + 2 * 3?` → `"8"`) is unchanged.
+  question to the model. It also declines superscripts, subscripts, circled numbers
+  and fraction characters: "What is 3² + 4²?" was answered locally as 74 and now goes
+  to the model. The quickstart (`What is 2 + 2 * 3?` → `"8"`) is unchanged.
 
 ### Fixed
 
@@ -43,6 +60,19 @@
   an operator (`if (ok)` and `if (!ok)` are two questions), and quoted text keeps its
   case. It runs in linear time on adversarial input, and the tool selector's
   relevance folds backticks and case again.
+- **`npm install` with current peers.** Installing next to `@anthropic-ai/sdk` 1.x
+  or `gpt-tokenizer` 4 no longer fails with ERESOLVE: the optional peer ranges are
+  now `>=0.103.0 <2` and `^3 || ^4`, and `bvsala init` picks the Anthropic SDK
+  adapter for SDK 1.x. Projects on AI SDK 5, LangChain 0.3 or Mastra below 1.68
+  still need `--legacy-peer-deps`; the README lists each adapter's minimum version.
+- **Counting tokens with `gpt-tokenizer` is linear.** A long run of one kind of
+  character (400 KB of spaces took 70 s) no longer blocks the process. Counts for
+  text without such runs are unchanged; inside a run longer than 512 characters the
+  count can be at most 2 tokens higher per 512 characters, never lower.
+- **`content` as a list of parts.** OpenAI-compatible endpoints that return
+  `content` as a list of parts (for example Mistral reasoning models), also when
+  streaming, no longer fail with `TypeError: me.trim is not a function`: the answer
+  is the text of the text parts.
 
 ### Gateway and `bvsala` CLI
 
@@ -67,8 +97,36 @@
   its path, and a target that would resolve to another origin, or is not a path
   (`OPTIONS *`), gets a 400 and is not forwarded.
 - `--port=N` works like `--port N`; any other `--port…` form is an error.
+- **`bvsala gateway` and `bvsala doctor` reject what they do not know.** An unknown
+  or misspelled flag or a stray argument (`--upsteam`, `-p`, `--Port`) exits with 1,
+  names the flag and suggests the closest one, instead of starting with defaults.
 - `bvsala doctor` and the README no longer tie the levers to a PRO license: they run
-  free, with no key.
+  free, with no key. The same now holds for the gateway's startup lines,
+  `bvsala --help` and the terminal guides: in community mode the levers are on and
+  free, and the startup line names the full switch, `BVSALA_GATEWAY_ELISION=0`. Only
+  with an organization license does that license's feature list apply.
+- **Wrappers keep stdout clean.** `bvsala <terminal>` prints its banner, the
+  terminal note and the per-request log on stderr, so
+  `bvsala claude -p … --output-format json | jq` gets clean JSON. `bvsala gateway`
+  on its own is unchanged.
+- **Ctrl-C belongs to the agent.** Inside `bvsala aider`, `bvsala goose` or any
+  wrapped agent that keeps running after Ctrl-C, the gateway stays up until the
+  agent exits, then exits with the agent's code. SIGTERM is forwarded to the agent.
+- **`bvsala gateway` always stops.** Open connections are cut 5 seconds after
+  Ctrl-C, a stuck streaming response included, and a second Ctrl-C exits at once
+  (code 130; 143 for SIGTERM).
+- **`bvsala gemini`, `codex`, `opencode` and `kilo` keep the endpoint you already
+  had** (`GOOGLE_GEMINI_BASE_URL`, `OPENAI_BASE_URL`, or a `baseURL` in the inline
+  opencode/Kilo config), as `bvsala claude` already did: the gateway forwards
+  there, or the wrapper stops with exit 1 and says why. For codex, opencode and
+  Kilo the base URL must end in `/v1`.
+- **Claude Code through `--upstream deepseek` is metered** and counted in the exit
+  summary; before, every request was forwarded but reported as not metered.
+- **`bvsala init` wires the cloud from the environment.** The code it prints or
+  writes (and `examples/stacks`) has `licenseServerUrl` and `serviceAccountKey`
+  enabled: with `BIVELIO_SERVICE_KEY` set, usage reaches the Savings Cloud dashboard
+  and the license renews itself; with no keys, nothing is sent to BiVelio. The
+  README's adapter snippets carry `licenseServerUrl` too.
 
 ### Python client
 
@@ -80,6 +138,16 @@
 
 - List-price rows for `claude-fable-5-2` and `gemini-2.5-flash-lite` (list prices
   checked on 2026-11-19), so both are `measured` instead of `estimated`.
+- List-price rows for `gpt-5.1`, `gpt-6.1-sol`, `gpt-6.1-terra`, `gpt-6.2-sol`,
+  `gpt-6.2-astra`, `gemini-4-carbon`, `gemini-4-argon`, `gemini-4-neon` and
+  `gemini-4-hydrogen`, with their Flex and Batch rates and the 1 December 2026 price
+  step of Gemini 4 Carbon and Argon. Their dollar figures no longer fall back to the
+  illustrative price.
+- Claude Sonnet 5.5 cache reads are priced at $0.10 per million tokens ($0.05 in
+  batches), following Anthropic's 2026-10-07 price cut: measured spend on Sonnet 5.5
+  requests with cache hits no longer overstates the bill.
+- GPT-5.6 Sol Flex and Batch savings are credited through 30 November 2026, the end
+  date OpenAI publishes for its promotional price. They used to stop on 21 November.
 
 ### Docs
 
@@ -90,6 +158,28 @@
   and what the paid cloud adds.
 - `docs/terminales` (in the tarball): the "not metered" reasons, the TTL lever's
   scope and what community mode meters are up to date.
+- `SECURITY.md` and `docs/PUBLISHING.md` say what is true today: the repository is
+  public, every version since 1.0.0 carries npm provenance, the SBOM is attached to
+  every GitHub Release, and the package is open core.
+
+### Website (savings.bivelio.com)
+
+- /pricing and /privacy are shared as "BiVelio Savings Layer" in the page title and
+  the social card, in all 12 languages.
+- A card payment whose Stripe events arrive out of order within the same second no
+  longer leaves the customer without an active plan: the webhook reads the
+  subscription fresh from Stripe before saving it.
+- A seat change on a yearly plan keeps the license expiry at the end of the paid
+  period, also when Stripe sends the billing period in the format used before API
+  version 2025-03-31.
+- On the Team plan, the license and the dashboard count at least the seats included
+  in the plan, even if the quantity is lowered in the billing portal.
+- A sign-up confirmation link that was already used (often by an email security
+  scanner) or has expired lands on the sign-in page in your language and says that
+  a confirmed account can sign in with email and password.
+- The dashboard's install snippet reads the keys from the environment, and its
+  closing note no longer says that the layer refuses to run without a license: it
+  refuses only a key that is set but invalid.
 
 ## 1.2.2 — los tres READMEs cuentan la misma historia
 
