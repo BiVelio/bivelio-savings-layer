@@ -36,7 +36,7 @@ function azar(semilla: number): () => number {
 }
 
 const SEMILLAS = 500;
-// Dentro de la vigencia de todas las filas (gpt-5.6-sol caduca el 2026-11-21).
+// Dentro de la vigencia de todas las filas (gpt-5.6-sol caduca el 2026-11-30).
 const AHORA = Date.parse("2026-09-27T12:00:00Z");
 
 const filas = Object.entries(TARIFAS_DE_TIER).flatMap(([origen, porTier]) =>

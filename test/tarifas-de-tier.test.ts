@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { CATALOGO, precioDeListaPropio } from "../src/pricing/catalogo.js";
+import { CATALOGO, PRECIOS_AL_DIA, precioDeLista, precioDeListaPropio } from "../src/pricing/catalogo.js";
 import {
   TARIFAS_DE_TIER,
   TARIFAS_DE_TIER_AL_DIA,
@@ -29,6 +29,11 @@ const FUENTES: Record<OrigenDeTarifa, string> = {
   glm: "https://docs.bigmodel.cn/cn/guide/start/pricing",
 };
 
+// El día del catálogo, no el de hoy: las filas de CATALOGO son las que rigen ese
+// día, y con el reloj real esta verja se ponía roja SOLA el día en que una fila
+// cambiaba de tramo o caducaba (A2-22).
+const AL_DIA = Date.parse(`${PRECIOS_AL_DIA}T12:00:00Z`);
+
 const filas = Object.entries(TARIFAS_DE_TIER).flatMap(([origen, porTier]) =>
   Object.entries(porTier).flatMap(([tier, porModelo]) =>
     Object.entries(porModelo).map(([modelo, fila]) => ({
@@ -49,7 +54,7 @@ describe("la tabla de tarifas por tier", () => {
     "%s tiene fila estándar PROPIA en CATALOGO",
     (_n, f) => {
       expect(CATALOGO[f.modelo], `${f.modelo} no está en CATALOGO`).toBeDefined();
-      expect(precioDeListaPropio(f.modelo)).toBe(CATALOGO[f.modelo]);
+      expect(precioDeListaPropio(f.modelo, AL_DIA)).toBe(CATALOGO[f.modelo]);
     },
   );
 
@@ -101,6 +106,26 @@ describe("la tabla de tarifas por tier", () => {
       expect(f.cachedInputPer1k, modelo).toBeCloseTo(mitad(s.cachedInputPer1k!), 12);
       expect(f.cacheWritePer1k, modelo).toBeCloseTo(mitad(s.inputPer1k * 1.25), 12);
     }
+  });
+
+  it("gpt-5.6-sol: el precio promocional rige hasta el 30-11-2026 incluido, en estándar, Flex y Batch (A2-22)", () => {
+    // https://developers.openai.com/api/docs/pricing, releída el 2026-11-19:
+    // «GPT-5.6 Sol's promotional pricing is available until November 30, 2026».
+    // Antes caducaba el 2026-11-21 y el 22 (el día del lanzamiento) la propiedad
+    // de lotes se ponía roja sola.
+    const ultimo = Date.parse("2026-11-30T23:00:00Z");
+    const siguiente = Date.parse("2026-12-01T00:00:01Z");
+    for (const tier of ["flex", "batch"] as const) {
+      const fila = TARIFAS_DE_TIER.openai[tier]!["gpt-5.6-sol"]!;
+      expect(fila.vigenteHasta, tier).toBe("2026-11-30");
+      expect(tarifaDeTier("openai", tier, "gpt-5.6-sol", Date.parse("2026-11-22T12:00:00Z")), tier).toBe(fila);
+      expect(tarifaDeTier("openai", tier, "gpt-5.6-sol", ultimo), tier).toBe(fila);
+      expect(tarifaDeTier("openai", tier, "gpt-5.6-sol", siguiente), tier).toBeUndefined();
+    }
+    // Y la fila estándar acaba a la vez: sin precio anunciado detrás, cae al
+    // respaldo ilustrativo, que avisa, en vez de seguir con el promocional.
+    expect(precioDeLista("gpt-5.6-sol", ultimo)).toBe(CATALOGO["gpt-5.6-sol"]);
+    expect(precioDeLista("gpt-5.6-sol", siguiente)).toBeUndefined();
   });
 
   it("una fila con `vigenteHasta` deja de existir al día siguiente", () => {
