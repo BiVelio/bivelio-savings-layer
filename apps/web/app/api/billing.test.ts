@@ -173,6 +173,15 @@ const suscripcionStripe = {
     ],
   },
 };
+/**
+ * Lo que Stripe dice EN VIVO de la suscripción cuando el webhook la lee con
+ * `retrieve`. `null` = `suscripcionStripe`. Desde A2-17 los avisos
+ * `customer.subscription.created/updated` también la leen en vivo antes de
+ * guardar; en el caso normal Stripe dice lo mismo que el aviso, y eso es lo que
+ * fija `enviar` en «los seis manejadores» (webhook-mismo-segundo.test.ts prueba
+ * el caso en que NO coinciden).
+ */
+let suscripcionEnVivo: Record<string, unknown> | null = null;
 vi.mock("@/lib/stripe/client", () => ({
   getStripe: () => ({
     checkout: { sessions: { create: crearSesion } },
@@ -180,7 +189,7 @@ vi.mock("@/lib/stripe/client", () => ({
     // La guardia contra el webhook muerto pregunta a Stripe por el correo y por
     // el cliente; aquí Stripe no sabe nada, que es el caso que estos tests miran.
     customers: { list: async () => ({ data: [] }) },
-    subscriptions: { retrieve: async () => suscripcionStripe, list: async () => ({ data: [] }) },
+    subscriptions: { retrieve: async () => suscripcionEnVivo ?? suscripcionStripe, list: async () => ({ data: [] }) },
     // Los cupones que el webhook resuelve para decidir la exención (0028).
     coupons: {
       retrieve: async (id: string) => ({ id, percent_off: 100, duration: id === "cup_once" ? "once" : "forever" }),
@@ -251,6 +260,7 @@ beforeEach(() => {
   licenciaVigente = null;
   sustituidas.length = 0;
   suscripcionStripe.status = "active";
+  suscripcionEnVivo = null;
   suscripcionStripe.items.data[0]!.price = { id: "price_test_123" };
 });
 
@@ -881,6 +891,9 @@ describe("POST /api/stripe/webhook — los seis manejadores que no tenían prueb
   const enviar = async (ev: unknown) => {
     updates.length = 0;
     upserts.length = 0;
+    // El caso normal: Stripe, preguntado en vivo, dice lo mismo que el aviso de suscripción.
+    const { type, data } = ev as { type: string; data: { object: Record<string, unknown> } };
+    if (type === "customer.subscription.created" || type === "customer.subscription.updated") suscripcionEnVivo = data.object;
     construirEvento.mockReturnValueOnce(ev);
     const { POST } = await import("./stripe/webhook/route.js");
     return POST(new Request("https://savings.bivelio.com/api/stripe/webhook", { method: "POST", headers: { "stripe-signature": "x" }, body: "{}" }));

@@ -417,7 +417,30 @@ async function handleCheckout(admin: Admin, stripe: Stripe, session: Stripe.Chec
   await audit(admin, orgId, eventId, "checkout", { subId, seats: f.quantity, jti: issued.jti });
 }
 
-async function handleSubUpsert(admin: Admin, sub: Stripe.Subscription, eventId: string, isUpdate: boolean, eventCreated: number) {
+async function handleSubUpsert(
+  admin: Admin,
+  stripe: Stripe,
+  fotoDelEvento: Stripe.Subscription,
+  eventId: string,
+  isUpdate: boolean,
+  eventCreated: number,
+) {
+  // LA SUSCRIPCIÓN FRESCA, no la foto del evento (A2-17). Una compra con tarjeta
+  // manda varios avisos en el MISMO segundo y Stripe no garantiza el orden; el de
+  // `created` lleva la foto del momento de crear, que puede decir `incomplete`.
+  // A igual instante la guardia de orden deja escribir, así que si ese aviso se
+  // procesaba el último dejaba la fila `incomplete` y la org `free` a quien ya
+  // había pagado. Con la lectura fresca, como ya hacen el checkout e
+  // `invoice.paid`, lo que se guarda es lo que Stripe tiene AHORA. Si no se puede
+  // leer, lanza: 503 y Stripe reintenta.
+  //
+  // Salvo `canceled`: la cancelación la resuelve SOLO `customer.subscription.deleted`
+  // (revoca y devuelve a Medir). Si aquí se escribiera `canceled`, el `deleted` del
+  // mismo segundo encontraría la fila ya cancelada, la guardia lo frenaría
+  // (`canceled` es pegajoso a igual instante) y no revocaría nada. En ese caso se
+  // aplica la foto del evento, como siempre, y el `deleted` hace su trabajo.
+  const fresca = await stripe.subscriptions.retrieve(fotoDelEvento.id);
+  const sub = fresca.status === "canceled" ? fotoDelEvento : fresca;
   const f = subFacts(sub);
   if (!f.orgId) {
     // Se responde 200, asi que Stripe NO reintenta y el evento queda marcado como
@@ -860,10 +883,10 @@ export async function POST(req: Request): Promise<NextResponse> {
         await handleCheckout(admin, stripe, event.data.object as Stripe.Checkout.Session, event.id, event.created);
         break;
       case "customer.subscription.created":
-        await handleSubUpsert(admin, event.data.object as Stripe.Subscription, event.id, false, event.created);
+        await handleSubUpsert(admin, stripe, event.data.object as Stripe.Subscription, event.id, false, event.created);
         break;
       case "customer.subscription.updated":
-        await handleSubUpsert(admin, event.data.object as Stripe.Subscription, event.id, true, event.created);
+        await handleSubUpsert(admin, stripe, event.data.object as Stripe.Subscription, event.id, true, event.created);
         break;
       case "customer.subscription.deleted":
         await handleSubDeleted(admin, event.data.object as Stripe.Subscription, event.id, event.created);
