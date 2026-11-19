@@ -180,6 +180,7 @@
     "passwordsDontMatch": "As palavras-passe não coincidem.",
     "resetLinkExpired": "Este link é inválido ou expirou. Solicita um novo.",
     "callbackFailed": "Não conseguimos validar este link. Solicita um novo.",
+    "signupLinkUsed": "Este link de confirmação já foi usado ou expirou. Às vezes, os filtros de segurança do e-mail abrem os links antes de ti. Se a tua conta está confirmada, inicia sessão com o teu e-mail e a tua palavra-passe.",
     "errors": {
       "userExists": "Já existe uma conta com esse email. Inicia sessão ou repõe a palavra-passe.",
       "weakPassword": "A palavra-passe é demasiado fraca: usa pelo menos 8 caracteres, com letras e números.",

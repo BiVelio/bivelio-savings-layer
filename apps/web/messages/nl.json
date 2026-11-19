@@ -180,6 +180,7 @@
     "passwordsDontMatch": "De wachtwoorden komen niet overeen.",
     "resetLinkExpired": "Deze link is ongeldig of verlopen. Vraag een nieuwe aan.",
     "callbackFailed": "We konden deze link niet valideren. Vraag een nieuwe aan.",
+    "signupLinkUsed": "Deze bevestigingslink is al gebruikt of verlopen. Beveiligingsfilters van e-maildiensten openen links soms eerder dan jij. Is je account bevestigd, log dan in met je e-mailadres en wachtwoord.",
     "errors": {
       "userExists": "Er bestaat al een account met dit e-mailadres. Log in of stel je wachtwoord opnieuw in.",
       "weakPassword": "Dat wachtwoord is te zwak: gebruik minstens 8 tekens, met letters en cijfers.",

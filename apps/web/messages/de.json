@@ -180,6 +180,7 @@
     "passwordsDontMatch": "Die Passwörter stimmen nicht überein.",
     "resetLinkExpired": "Dieser Link ist ungültig oder abgelaufen. Fordere einen neuen an.",
     "callbackFailed": "Wir konnten diesen Link nicht überprüfen. Fordere einen neuen an.",
+    "signupLinkUsed": "Dieser Bestätigungslink wurde bereits verwendet oder ist abgelaufen. Sicherheitsfilter von E-Mail-Diensten öffnen Links manchmal vor dir. Wenn dein Konto bestätigt ist, melde dich mit deiner E-Mail-Adresse und deinem Passwort an.",
     "errors": {
       "userExists": "Mit dieser E-Mail gibt es schon ein Konto. Melde dich an oder setze dein Passwort zurück.",
       "weakPassword": "Das Passwort ist zu schwach: mindestens 8 Zeichen, mit Buchstaben und Zahlen.",

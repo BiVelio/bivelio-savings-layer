@@ -180,6 +180,7 @@
     "passwordsDontMatch": "The passwords don't match.",
     "resetLinkExpired": "This reset link is invalid or has expired. Request a new one.",
     "callbackFailed": "We couldn't validate that link. Request a new one.",
+    "signupLinkUsed": "This confirmation link has already been used or has expired. Email security filters sometimes open links before you do. If your account is confirmed, sign in with your email and password.",
     "errors": {
       "userExists": "An account with that email already exists. Sign in or reset your password.",
       "weakPassword": "That password is too weak: use at least 8 characters and mix letters and numbers.",

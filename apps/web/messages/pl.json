@@ -180,6 +180,7 @@
     "passwordsDontMatch": "Hasła nie są zgodne.",
     "resetLinkExpired": "Ten link jest nieprawidłowy lub wygasł. Poproś o nowy.",
     "callbackFailed": "Nie udało się zweryfikować tego linku. Poproś o nowy.",
+    "signupLinkUsed": "Ten link potwierdzający został już użyty lub wygasł. Filtry bezpieczeństwa poczty czasem otwierają linki wcześniej niż Ty. Jeśli Twoje konto jest potwierdzone, zaloguj się adresem e-mail i hasłem.",
     "errors": {
       "userExists": "Konto z tym adresem e-mail już istnieje. Zaloguj się lub zresetuj hasło.",
       "weakPassword": "To hasło jest za słabe: użyj co najmniej 8 znaków, z literami i cyframi.",

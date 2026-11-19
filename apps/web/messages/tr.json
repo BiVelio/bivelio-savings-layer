@@ -180,6 +180,7 @@
     "passwordsDontMatch": "Şifreler eşleşmiyor.",
     "resetLinkExpired": "Bu bağlantı geçersiz veya süresi dolmuş. Yenisini iste.",
     "callbackFailed": "Bu bağlantıyı doğrulayamadık. Yenisini iste.",
+    "signupLinkUsed": "Bu onay bağlantısı zaten kullanılmış ya da süresi dolmuş. E-posta güvenlik filtreleri bağlantıları bazen senden önce açar. Hesabın onaylandıysa e-postan ve parolanla giriş yap.",
     "errors": {
       "userExists": "Bu e-postayla zaten bir hesap var. Giriş yapın veya şifrenizi sıfırlayın.",
       "weakPassword": "Bu şifre çok zayıf: en az 8 karakter kullanın, harf ve rakam karıştırın.",

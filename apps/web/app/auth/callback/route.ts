@@ -59,6 +59,20 @@ export async function GET(request: Request) {
       }
       return NextResponse.redirect(new URL(next, origin));
     }
+    // UN REGISTRO QUE NO SE PUEDE CANJEAR (A2-18). El token vale una vez, y los
+    // filtros de correo de empresa (Safe Links, Proofpoint…) abren los enlaces
+    // antes que la persona: esa visita lo gasta y CONFIRMA la cuenta. El clic de
+    // la persona llegaba después a «no hemos podido validar el enlace, pide uno
+    // nuevo», en inglés y sin enlace nuevo que pedir. Ahora va a SU login con un
+    // código propio que dice la verdad: el enlace ya se usó (o caducó) y, si la
+    // cuenta está confirmada, se entra con correo y contraseña. GoTrue no
+    // distingue «usado» de «caducado», así que el texto nombra los dos.
+    if (type === "signup") {
+      const locale = localeDelNext(next, routing.locales) ?? routing.defaultLocale;
+      const entrada = new URL(`/${locale}/login`, origin);
+      entrada.searchParams.set("error", "enlace_usado");
+      return NextResponse.redirect(entrada);
+    }
     return NextResponse.redirect(`${origin}/login?error=auth_callback`);
   }
 
