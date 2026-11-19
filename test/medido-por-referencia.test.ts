@@ -405,12 +405,14 @@ describe("E1 · un contador incompleto no deja referencia", () => {
     ).toBe("object");
   });
 
-  it("de punta a punta: la poblada sale unmeasured, no deja registro y la repetición sigue estimated", async () => {
+  it("de punta a punta: la poblada sale unmeasured, no deja registro y la repetición vuelve al proveedor", async () => {
     // Un endpoint que da la entrada y omite la salida: el adaptador rellena el 0
     // y marca `complete: false`. La entrada es real; el contador, no.
+    let llamadas = 0;
     const provider: Provider = {
       id: "sin-salida",
       async generate(): Promise<ProviderResponse> {
+        llamadas += 1;
         return {
           text: "Paris is the capital of France.",
           usage: { inputTokens: 1736, outputTokens: 0, complete: false },
@@ -423,11 +425,13 @@ describe("E1 · un contador incompleto no deja referencia", () => {
     expect(trazaDeReferencia(primera)?.outcome).toBe("not-written");
     expect(trazaDeReferencia(primera)?.detail).toEqual({ reason: "no-usage" });
 
-    const hit = await layer.generate(peticion({ temperature: 0 }));
-    expect(hit.report.cache.result).toBe("exact");
-    expect(hit.report.cost.basis).toBe("estimated");
-    expect(hit.report.cache.referenceRejected).toBe("absent");
-    expect(hit.report.cache.reference).toBeUndefined();
+    // Desde el 2026-11-19 (N3) una llamada sin su contador entero no se guarda
+    // en la caché exacta: antes la repetición acertaba y salía `estimated`.
+    const repetida = await layer.generate(peticion({ temperature: 0 }));
+    expect(repetida.report.cache.result).toBe("miss");
+    expect(repetida.report.cost.basis).toBe("unmeasured");
+    expect(repetida.report.cache.reference).toBeUndefined();
+    expect(llamadas).toBe(2);
   });
 });
 

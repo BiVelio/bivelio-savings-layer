@@ -1075,6 +1075,7 @@ export class OpenAICompatibleProvider implements Provider {
     model: string,
   ): Promise<ProviderResponse> {
     const json = (await response.json()) as OpenAIChatResponse;
+    rechazarCuerpoSinRespuesta(json);
     return this.leerJson(json, response, req, nativo, model, this.opts.requireUsage === true);
   }
 
@@ -1336,6 +1337,39 @@ function extraContentDe(v: unknown): Record<string, unknown> | undefined {
 
 function esTextoNoVacio(v: unknown): boolean {
   return typeof v === "string" && v !== "";
+}
+
+// UN 200 QUE NO TRAE RESPUESTA ES UN ERROR DEL PROVEEDOR (auditoría del
+// 2026-11-19, N3). Hay pasarelas —OpenRouter entre ellas— que contestan HTTP
+// 200 con `{"error": {...}}` cuando el modelo de detrás falla, y otras que
+// devuelven `choices: []`. `leerJson` leía eso como `content ?? ""`: la capa
+// servía una respuesta vacía, la guardaba 24 h y cada repetición salía como
+// llamada evitada. El stream ya lanzaba con un trozo `error` y con un cuerpo
+// sin `finish_reason`; aquí la misma regla para la respuesta entera.
+//
+// Solo en generate(): la línea de un lote sigue saliendo marcada, sin tumbar a
+// las demás. Un `content` vacío CON su `choices[0]` no se rechaza —es una
+// negativa, un filtro o una llamada a herramienta legítimos—; que no se guarde
+// en caché lo decide el pipeline.
+function rechazarCuerpoSinRespuesta(json: unknown): void {
+  if (json === null || typeof json !== "object") {
+    throw new Error("provider returned a 2xx response without a completion (the body is not a JSON object)");
+  }
+  const cuerpo = json as { error?: unknown; choices?: unknown };
+  if (cuerpo.error != null) {
+    const e = cuerpo.error as { message?: unknown };
+    const mensaje =
+      typeof cuerpo.error === "string"
+        ? cuerpo.error
+        : typeof e.message === "string"
+          ? e.message
+          : JSON.stringify(cuerpo.error);
+    throw new Error(`provider error in a 2xx response: ${mensaje}`);
+  }
+  const primera = Array.isArray(cuerpo.choices) ? (cuerpo.choices[0] as { message?: unknown } | undefined) : undefined;
+  if (primera == null || primera.message == null || typeof primera.message !== "object") {
+    throw new Error("provider returned a 2xx response without a completion (no choices[0].message)");
+  }
 }
 
 interface OpenAIChatResponse {

@@ -4588,8 +4588,18 @@ export class SavingsPipeline {
     // referencia (el seguidor de singleflight sale `estimated`).
     const reglaDeNegativaEnTexto = negativa || pidioHerramientas ? null : negativaEnTexto(textoServido);
     const temaSensible = policy.sensitiveTopic;
+    // Y LA OCTAVA: NI UNA RESPUESTA VACÍA NI UNA SIN CONTADOR (N3, 2026-11-19).
+    // Un texto vacío no es una respuesta que alguien quiera recibir otra vez
+    // —lo normal es que sea un tropiezo del proveedor, y guardado 24 h deja esa
+    // pregunta contestando vacío todo el día y sumando llamadas evitadas—. Y una
+    // llamada cuyo contador no llegó entero no se puede valorar: su repetición
+    // reclamaría un ahorro contra una cifra que nadie midió.
+    const respuestaVacia = textoServido.trim() === "";
+    const sinContador = response.usage.complete === false;
     const cacheable =
       structurallyValid !== false &&
+      !respuestaVacia &&
+      !sinContador &&
       !pidioHerramientas &&
       !vistaRecortada &&
       !cortadaPorElTope &&
@@ -4716,7 +4726,13 @@ export class SavingsPipeline {
                       : temaSensible !== null
                         ? `skipped: the request touches a sensitive topic (sensitive_topic, ${temaSensible}); it was ` +
                           "measured and served as usual, but it is not replayed from a cache or credited as an avoided call"
-                        : "skipped: answered with a reduced tool view (tool discovery), so it must not be replayed",
+                        : vistaRecortada
+                          ? "skipped: answered with a reduced tool view (tool discovery), so it must not be replayed"
+                          : respuestaVacia
+                            ? "skipped: the answer is empty; an empty answer is not replayed from a cache or " +
+                              "credited as an avoided call"
+                            : "skipped: the provider did not report its full token counter for this call, so a " +
+                              "repeat could not be valued against it",
           // El motivo va en `detail` solo si es el que da la línea de arriba.
           !pidioHerramientas && structurallyValid !== false && !cortadaPorElTope && !noReproducible && !negativa
             ? reglaDeNegativaEnTexto !== null
@@ -6224,7 +6240,10 @@ export class SavingsPipeline {
       !negativa &&
       response.unbilledRefusal !== true &&
       negativaEnTexto(response.text) === null &&
-      politica.sensitiveTopic === null;
+      politica.sensitiveTopic === null &&
+      // Como en la etapa 12: ni respuesta vacía ni llamada sin contador (N3).
+      response.text.trim() !== "" &&
+      response.usage.complete !== false;
     if (cacheable) {
       const ttlBase = this.config.exactCacheTtlMs ?? 24 * 60 * 60 * 1000;
       const ttl = politica!.maxCacheAgeMs == null ? ttlBase : Math.min(ttlBase, politica!.maxCacheAgeMs);

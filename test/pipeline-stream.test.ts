@@ -409,10 +409,10 @@ describe("generateStream — entrega entera", () => {
     expect(p.llamadasStream).toBe(1);
   });
 
-  it("un stream con el contador a medias no deja referencia: la repetición sigue estimated", async () => {
+  it("un stream con el contador a medias no deja referencia ni entrada de caché: la repetición vuelve al proveedor", async () => {
     // La entrada llegó y la salida no: el adaptador rellena el 0 y marca
-    // `complete: false`. La poblada sale unmeasured; su repetición no se cobra
-    // contra un contador rellenado.
+    // `complete: false`. La poblada sale unmeasured y, desde el 2026-11-19 (N3),
+    // no se guarda: su repetición no se sirve contra un contador rellenado.
     const p = new Falso({
       stream: () => guion(["Hello ", "world"], { usage: { inputTokens: 12, outputTokens: 0, complete: false } }),
     });
@@ -420,10 +420,10 @@ describe("generateStream — entrega entera", () => {
     const primera = await layer.generateStream(peticion()).result;
     expect(primera.report.cost.basis).toBe("unmeasured");
     const r = await layer.generateStream(peticion()).result;
-    expect(r.report.cache.result).toBe("exact");
-    expect(r.report.cost.basis).toBe("estimated");
+    expect(r.report.cache.result).toBe("miss");
+    expect(r.report.cost.basis).toBe("unmeasured");
     expect(r.report.cache.reference).toBeUndefined();
-    expect(p.llamadasStream).toBe(1);
+    expect(p.llamadasStream).toBe(2);
   });
 
   it("un acierto semántico sin esquema emite UN text igual a result.text", async () => {
