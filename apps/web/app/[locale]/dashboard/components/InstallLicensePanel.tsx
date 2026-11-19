@@ -41,12 +41,13 @@ const provider = new OpenAICompatibleProvider({
 
 // 2 · the layer, wrapped around it. OPEN CORE: nothing else is required —
 //     COMMUNITY mode (every local lever on, zero telemetry). The three lines
-//     below are OPTIONAL and add the cloud dashboard + team metering:
+//     below read your keys from the environment: with none set they do nothing
+//     and nothing is sent to BiVelio; with them, usage reaches this dashboard.
 const layer = createSavingsLayer({
   provider,
-  // licenseKey: process.env.BIVELIO_LICENSE_KEY,          // step 1 (optional)
-  // serviceAccountKey: process.env.BIVELIO_SERVICE_KEY,   // step 2 (optional) — metering + auto-renewal
-  // licenseServerUrl: "https://savings.bivelio.com",      // revocation, renewal + metering
+  licenseKey: process.env.BIVELIO_LICENSE_KEY || undefined,        // step 1 (optional)
+  serviceAccountKey: process.env.BIVELIO_SERVICE_KEY || undefined, // step 2 (optional) — metering + auto-renewal
+  licenseServerUrl: "https://savings.bivelio.com",                 // revocation, renewal + metering
 });
 
 // 3 · call it exactly where you called your provider before.
