@@ -1947,6 +1947,19 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
           res.end(JSON.stringify({ error: "bvsala gateway: stream interrupted", detail: describirFallo(err) }));
           return;
         }
+        // EL PROVEEDOR CORTÓ A MEDIAS, con las cabeceras ya enviadas: el
+        // cliente tiene que ver el corte, como lo vería sin gateway. Cerrar
+        // con `res.end()` terminaba el cuerpo «chunked» LIMPIAMENTE y una
+        // respuesta truncada llegaba como completa (un SSE sin su final, o un
+        // JSON partido sobre un 200 válido): el SDK no reintentaba. Se rompe
+        // la conexión.
+        if (!res.writableEnded) {
+          if (respuestaOk && !medida && req.method === "POST" && tieneDialecto(url.pathname)) {
+            recuento.noMedida("the provider cut the answer before its final usage");
+          }
+          res.destroy();
+          return;
+        }
       }
       if (!res.writableEnded) res.end();
     } finally {
