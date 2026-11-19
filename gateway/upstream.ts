@@ -89,6 +89,48 @@ export function rutaReescrita(origen: string, pathname: string): string {
   return pathname;
 }
 
+/**
+ * La URL a la que viaja una petición: el ORIGEN es siempre el del upstream y
+ * del cliente solo se toman la ruta y la query. Función pura.
+ *
+ * `new URL(req.url, upstreamBase)` a secas no vale: `//otro-host/ruta` es una
+ * URL relativa al esquema y `/\\otro-host` también (WHATWG trata `\\` como
+ * `/`), así que la petición salía hacia `otro-host` con la credencial del
+ * cliente. Aquí:
+ *   · las barras iniciales repetidas se colapsan en una (`//v1/messages` es lo
+ *     que manda un cliente cuyo base URL acaba en `/`: debe funcionar);
+ *   · la forma absoluta (`http://host/ruta`, la de un proxy HTTP) se reduce a
+ *     su ruta: la autoridad que traiga se ignora;
+ *   · y, como red final, si el origen resuelto no es el del upstream → null
+ *     (el servidor responde 400 y no reenvía nada).
+ */
+export function urlHaciaElUpstream(objetivo: string | undefined, upstreamBase: string): URL | null {
+  let base: URL;
+  try {
+    base = new URL(upstreamBase);
+  } catch {
+    return null;
+  }
+  let ruta = objetivo ?? "/";
+  if (/^https?:\/\//i.test(ruta)) {
+    try {
+      const absoluta = new URL(ruta);
+      ruta = `${absoluta.pathname}${absoluta.search}`;
+    } catch {
+      return null;
+    }
+  }
+  if (!/^[/\\]/.test(ruta)) return null;
+  ruta = ruta.replace(/^[/\\]+/, "/");
+  let url: URL;
+  try {
+    url = new URL(ruta, base);
+  } catch {
+    return null;
+  }
+  return url.origin === base.origin ? url : null;
+}
+
 export type UpstreamResuelto =
   | {
       ok: true;
