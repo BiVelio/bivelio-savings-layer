@@ -34,8 +34,89 @@ export class ExactTokenizer implements TokenEstimator {
 
   count(text: string): number {
     if (text.length === 0) return 0;
-    return this.encoder.encode(text).length;
+    if (text.length <= TIRADA_MAXIMA) return this.encoder.encode(text).length;
+    const cortes = cortesDeTiradasLargas(text);
+    if (cortes.length === 0) return this.encoder.encode(text).length;
+    let total = 0;
+    let desde = 0;
+    for (const corte of cortes) {
+      total += this.encoder.encode(text.slice(desde, corte)).length;
+      desde = corte;
+    }
+    return total + this.encoder.encode(text.slice(desde)).length;
   }
+}
+
+// ─── Tiradas largas (auditoría del 2026-11-19, A2-4) ─────────────────────────
+//
+// El BPE de gpt-tokenizer parte el texto en piezas con una regex (una palabra,
+// un grupo de signos, una racha de espacios) y funde cada pieza en tiempo
+// CUADRÁTICO con su tamaño. En texto normal las piezas son de pocos caracteres
+// y no se nota. Una sola pieza de 100 KB (espacios, saltos de línea, «=», «a»,
+// chino sin puntuación) paraba el hilo 3 s, y una de 400 KB, 70 s: el recuento
+// es síncrono y corre en cada petición, con texto que escribe el usuario final.
+//
+// Se cortan SOLO las tiradas largas y cada trozo se cuenta por separado: el
+// coste pasa a ser lineal. Una «tirada» es una racha sin cambio entre tres
+// clases: espacio (`\s`), cifra (`\p{N}`, que el BPE ya trocea de tres en tres
+// y nunca se corta) y todo lo demás. Las clases son más anchas que las piezas
+// de verdad a propósito: toda pieza larga cae dentro de una tirada larga, sea
+// cual sea la codificación, y un texto no puede esquivar el corte alternando
+// dos caracteres que el BPE trate como iguales.
+//
+// QUÉ CAMBIA EN EL RECUENTO. Un texto sin ninguna tirada de más de
+// TIRADA_MAXIMA no se toca: una sola llamada, el mismo número. En una tirada
+// larga de letras y signos se corta donde una letra precede a un signo, que es
+// frontera de pieza en cl100k y en o200k (el texto chino o japonés, que no
+// lleva espacios, se corta en su puntuación y cuenta igual). Si no hay ninguna
+// en el tramo, se corta en seco, y cada corte en seco puede partir un token en
+// dos: como mucho unos pocos tokens de MÁS por corte, nunca de menos.
+const TIRADA_MAXIMA = 512;
+const ESPACIO = /\s/;
+const CIFRA = /\p{N}/u;
+const LETRA = /\p{L}/u;
+const LETRA_O_PEGADO = /[\p{L}\p{M}'’]/u;
+
+/** 0 espacio, 1 cifra, 2 lo demás. */
+function clase(c: number, ch: string): 0 | 1 | 2 {
+  if (c < 0x80) return c === 32 || (c >= 9 && c <= 13) ? 0 : c >= 48 && c <= 57 ? 1 : 2;
+  return ESPACIO.test(ch) ? 0 : CIFRA.test(ch) ? 1 : 2;
+}
+
+function esLetra(c: number, ch: string): boolean {
+  if (c < 0x80) return (c >= 97 && c <= 122) || (c >= 65 && c <= 90);
+  return LETRA.test(ch);
+}
+
+/** Posiciones, en orden, por las que partir `text` para que ninguna tirada pase de TIRADA_MAXIMA. */
+function cortesDeTiradasLargas(text: string): number[] {
+  const cortes: number[] = [];
+  let claseDeRacha = -1;
+  let desde = 0; // principio de la racha, o el último corte dentro de ella
+  let frontera = -1; // última frontera segura (letra → signo) después de `desde`
+  let anteriorEsLetra = false;
+  for (let i = 0; i < text.length; i += 1) {
+    const c = text.charCodeAt(i);
+    const ch = text[i]!;
+    const k = clase(c, ch);
+    if (k !== claseDeRacha) {
+      claseDeRacha = k;
+      desde = i;
+      frontera = -1;
+    } else if (k === 2 && anteriorEsLetra && !(c < 0x80 ? esLetra(c, ch) || c === 39 : LETRA_O_PEGADO.test(ch))) {
+      frontera = i;
+    }
+    anteriorEsLetra = k === 2 && esLetra(c, ch);
+    if (k !== 1 && i - desde >= TIRADA_MAXIMA) {
+      let corte = frontera > desde ? frontera : i;
+      // Nunca entre las dos mitades de un par subrogado.
+      if (corte === i && c >= 0xdc00 && c <= 0xdfff) corte = i - 1;
+      cortes.push(corte);
+      desde = corte;
+      frontera = -1;
+    }
+  }
+  return cortes;
 }
 
 /** Modelos que usan cada codificación. Sirve para mapear el registro de una vez. */
