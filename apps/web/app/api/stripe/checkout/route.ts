@@ -263,9 +263,16 @@ export async function POST(req: Request): Promise<NextResponse> {
       if (ref === orgId) return true;
       const ya = orgEsNuestra.get(ref);
       if (ya !== undefined) return ya;
-      // Un uuid del otro producto puede no tener ni forma de uuid nuestro; la
-      // consulta lo descarta igual. Si la consulta FALLA se lanza: falla cerrada
-      // (503), como el resto de esta guardia.
+      // Lo que el otro producto guarde ahí puede no tener ni forma de uuid, y
+      // `organizations.id` lo es: Postgres no contesta «no existe», FALLA
+      // (22P02), y ese cliente se quedaría en un 503 cada vez que intentara
+      // pagar. Sin forma de uuid no puede ser una organización nuestra.
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(ref)) {
+        orgEsNuestra.set(ref, false);
+        return false;
+      }
+      // Si la consulta FALLA se lanza: falla cerrada (503), como el resto de
+      // esta guardia.
       const { data: org, error: orgErr } = await admin
         .from("organizations")
         .select("id")
