@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe/client";
 import { billingFullyConfigured, priceIdForPlan, type BillingPeriod } from "@/lib/stripe/env";
+import { preciosPropios, productosPropios } from "@/lib/stripe/atribucion";
 import {
   ASIENTOS_INCLUIDOS_EQUIPO,
   PLANES_DE_PAGO,
@@ -229,15 +230,52 @@ export async function POST(req: Request): Promise<NextResponse> {
       const porCorreo = await stripe.customers.list({ email: user.email, limit: 5 });
       for (const c of porCorreo.data) clientes.add(c.id);
     }
-    // Solo cuentan las suscripciones de ESTE producto: la cuenta de Stripe puede
-    // compartirse con otros productos de la casa, y una suscripción viva de otro
+    // Solo cuentan las suscripciones de ESTE producto: la cuenta de Stripe se
+    // comparte con otros productos de la casa, y una suscripción viva de otro
     // no es motivo para negarle a nadie la compra de este.
     // Todos los planes: una suscripción Pro viva bloquea comprar Equipo, y al revés.
+    //
+    // ⚠️ `metadata.org_id` A SECAS NO DICE DE QUIÉN ES (2026-11-19). Los dos
+    // productos escriben esa MISMA clave, con uuids de esquemas distintos
+    // (lib/stripe/atribucion.ts). Mientras bastó con «lleva org_id», cualquier
+    // cliente del otro producto recibía aquí un 409 «escribe a soporte» y
+    // disparaba una alerta crítica falsa: justo quien antes querría comprar no
+    // podía pagar. Se atribuye por CATÁLOGO (precio o producto nuestro) y, como
+    // segunda red contra el doble cobro, por un `org_id` que sea de verdad una
+    // organización NUESTRA — eso cubre una suscripción nuestra sobre un precio
+    // que este despliegue ya no conoce, y un uuid del otro producto no casa.
     const nuestrosPrecios = new Set(
-      PLANES_DE_PAGO.flatMap((p) => [priceIdForPlan(p, "monthly"), priceIdForPlan(p, "yearly")]).filter(Boolean),
+      [
+        ...PLANES_DE_PAGO.flatMap((p) => [priceIdForPlan(p, "monthly"), priceIdForPlan(p, "yearly")]),
+        ...preciosPropios(),
+      ].filter(Boolean),
     );
-    const esNuestra = (sub: Stripe.Subscription): boolean =>
-      Boolean(sub.metadata?.org_id) || sub.items.data.some((it) => nuestrosPrecios.has(it.price.id));
+    const nuestrosProductos = new Set(productosPropios());
+    const orgEsNuestra = new Map<string, boolean>();
+    const esNuestra = async (sub: Stripe.Subscription): Promise<boolean> => {
+      const porCatalogo = sub.items.data.some((it) => {
+        const producto = typeof it.price.product === "string" ? it.price.product : it.price.product?.id;
+        return nuestrosPrecios.has(it.price.id) || (producto != null && nuestrosProductos.has(producto));
+      });
+      if (porCatalogo) return true;
+      const ref = sub.metadata?.org_id;
+      if (!ref) return false;
+      if (ref === orgId) return true;
+      const ya = orgEsNuestra.get(ref);
+      if (ya !== undefined) return ya;
+      // Un uuid del otro producto puede no tener ni forma de uuid nuestro; la
+      // consulta lo descarta igual. Si la consulta FALLA se lanza: falla cerrada
+      // (503), como el resto de esta guardia.
+      const { data: org, error: orgErr } = await admin
+        .from("organizations")
+        .select("id")
+        .eq("id", ref)
+        .maybeSingle();
+      if (orgErr) throw new Error(`organization lookup failed: ${orgErr.message}`);
+      const es = Boolean(org);
+      orgEsNuestra.set(ref, es);
+      return es;
+    };
     for (const id of clientes) {
       let subs: Stripe.ApiList<Stripe.Subscription>;
       try {
@@ -249,7 +287,13 @@ export async function POST(req: Request): Promise<NextResponse> {
         if ((err as { code?: string }).code === "resource_missing") continue;
         throw err;
       }
-      const viva = subs.data.find((sub) => ESTADOS_QUE_BLOQUEAN.has(sub.status) && esNuestra(sub));
+      let viva: Stripe.Subscription | undefined;
+      for (const sub of subs.data) {
+        if (ESTADOS_QUE_BLOQUEAN.has(sub.status) && (await esNuestra(sub))) {
+          viva = sub;
+          break;
+        }
+      }
       if (!viva) continue;
       // ¿Nuestra tabla ya la conoce (bajo otra organización, p. ej.)? Entonces no
       // es un webhook muerto: es «ya estás suscrito», sin alerta crítica.
