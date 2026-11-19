@@ -188,6 +188,23 @@ describe("publish-pypi.yml conserva las verjas de antes de publicar", () => {
     // PEP 639: con una expresión de licencia, PyPI rechaza los clasificadores «License ::».
     expect(py).not.toMatch(/"License ::/);
   });
+
+  it("la ficha de PyPI enlaza el repositorio público, el mismo que declara el paquete de npm", () => {
+    const py = leer("packages/python/pyproject.toml");
+    const urls = py.slice(py.indexOf("[project.urls]"), py.indexOf("\n[", py.indexOf("[project.urls]") + 1));
+    const repo = /^Repository = "([^"]+)"$/m.exec(urls)?.[1];
+    const npmRepo = (JSON.parse(leer("package.json")) as { repository: { url: string } }).repository.url;
+    expect(repo).toBe("https://github.com/BiVelio/bivelio-savings-layer");
+    expect(npmRepo).toBe(`git+${repo}.git`);
+    // El repositorio es público desde el lanzamiento: nada debe seguir diciendo lo contrario.
+    expect(py).not.toMatch(/privad|private/i);
+  });
+
+  it("el README que PyPI muestra no lleva enlaces relativos (en pypi.org dan 404)", () => {
+    const readme = leer("packages/python/README.md");
+    const relativos = [...readme.matchAll(/\]\(([^)]+)\)/g)].map((m) => m[1]!).filter((u) => !/^(?:https?:|mailto:|#)/.test(u));
+    expect(relativos).toEqual([]);
+  });
 });
 
 describe("los pasos de shell, ejecutados", () => {
