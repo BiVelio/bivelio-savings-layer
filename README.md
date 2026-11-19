@@ -591,7 +591,7 @@ import { savingsMiddleware, getSavingsReport } from "@bivelio/savings-layer/ai-s
 
 const savings = savingsMiddleware({
   // licenseKey: process.env.BIVELIO_LICENSE_KEY,   (optional: cloud)
-  // licenseServerUrl: "https://savings.bivelio.com",
+  licenseServerUrl: "https://savings.bivelio.com",
   serviceAccountKey: process.env.BIVELIO_SERVICE_KEY,
   readOnlyTools: ["get_weather"],
 });
@@ -618,7 +618,7 @@ import { savingsProcessor } from "@bivelio/savings-layer/mastra";
 
 const bivelio = savingsProcessor({
   // licenseKey: process.env.BIVELIO_LICENSE_KEY,   (optional: cloud)
-  // licenseServerUrl: "https://savings.bivelio.com",
+  licenseServerUrl: "https://savings.bivelio.com",
   serviceAccountKey: process.env.BIVELIO_SERVICE_KEY,
   onReport: (r) => console.log(r.cost.basis),
 });
@@ -650,7 +650,7 @@ import { savingsAgentMiddleware, getSavingsReportFromMessage } from "@bivelio/sa
 
 const agentSavings = savingsAgentMiddleware({
   // licenseKey: process.env.BIVELIO_LICENSE_KEY,   (optional: cloud)
-  // licenseServerUrl: "https://savings.bivelio.com",
+  licenseServerUrl: "https://savings.bivelio.com",
   serviceAccountKey: process.env.BIVELIO_SERVICE_KEY,
 });
 const lcAgent = createAgent({ model: "openai:gpt-4o-mini", tools: [], middleware: [agentSavings] }); // last
@@ -673,7 +673,7 @@ import { anthropicSavings } from "@bivelio/savings-layer/anthropic-sdk";
 
 const claudeSavings = anthropicSavings({
   // licenseKey: process.env.BIVELIO_LICENSE_KEY,   (optional: cloud)
-  // licenseServerUrl: "https://savings.bivelio.com",
+  licenseServerUrl: "https://savings.bivelio.com",
   serviceAccountKey: process.env.BIVELIO_SERVICE_KEY,
 });
 const client = new Anthropic({ middleware: [claudeSavings.middleware] }); // last in the list

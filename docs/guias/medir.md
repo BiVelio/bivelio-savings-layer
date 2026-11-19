@@ -13,7 +13,7 @@ your provider, turn on verification sampling:
 const checkedLayer = createSavingsLayer({
   provider,
   // licenseKey: process.env.BIVELIO_LICENSE_KEY,   (optional: cloud)
-  // licenseServerUrl: "https://savings.bivelio.com",
+  licenseServerUrl: "https://savings.bivelio.com",
   serviceAccountKey: process.env.BIVELIO_SERVICE_KEY,
   verification: { sampleRate: 0.02 }, // about 2 in every 100 eligible requests
 });
