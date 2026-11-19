@@ -63,6 +63,15 @@ const MODELO: Readonly<Record<Proveedor, string>> = {
 
 const PREGUNTA = "What is 2 + 2 * 3?";
 
+// Las instrucciones del agente de Mastra del cableado. La COMPROBACIÓN las deja
+// vacías: desde el 2026-11-19 el resolver aritmético solo contesta cuando la
+// petición es la cuenta y nada más (con un system prompt, solo el modelo sabe
+// qué formato se pidió), y un agente con instrucciones mandaría la pregunta al
+// modelo en vez de contestarla en la máquina.
+const INSTRUCCIONES_DEL_AGENTE = '  instructions: "Answer briefly.",';
+const SIN_INSTRUCCIONES =
+  '  instructions: "", // empty on purpose: with instructions the layer leaves this question to the model';
+
 /** Las opciones del fragmento, idénticas en todos (README incluido): open core sin claves; la nube, optativa. */
 const OPCIONES = [
   "// OPEN CORE: no license needed — the layer runs with every local saving lever on, zero telemetry.",
@@ -186,7 +195,7 @@ function receta(capa: Capa, proveedor: Proveedor): Receta {
           `${exp(exportar)}const agent = new Agent({`,
           '  id: "assistant",',
           '  name: "Assistant",',
-          '  instructions: "Answer briefly.",',
+          INSTRUCCIONES_DEL_AGENTE,
           `  model: "${proveedor}/${modelo}",`,
           "  inputProcessors: [bivelio],",
           "});",
@@ -574,7 +583,7 @@ function preambuloDeComprobacion(capa: Capa, proveedor: Proveedor): { imports: s
     capa === "sdk"
       ? r.construir([], false)
       : ['const seen = { calls: 0, avoidedLlm: 0, basis: "" };', ...r.construir(AL_INFORMAR, false)];
-  return { imports: unidos, cuerpo };
+  return { imports: unidos, cuerpo: cuerpo.map((l) => (l === INSTRUCCIONES_DEL_AGENTE ? SIN_INSTRUCCIONES : l)) };
 }
 
 /**
