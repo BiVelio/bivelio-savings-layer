@@ -670,7 +670,7 @@ describe("E7-bis · el SDK con la negativa de salidas estructuradas de OpenAI (m
     expect(r.refusal).toBe(TEXTO_NEGATIVA_OPENAI);
   });
 
-  it("control: una respuesta VACÍA normal (content \"\", refusal null, stop) no es una negativa y se cachea como siempre", async () => {
+  it("control: una respuesta VACÍA normal (content \"\", refusal null, stop) no es una negativa, y tampoco se cachea", async () => {
     const vacia = {
       ...NEGATIVA_CHAT_JSON,
       id: "chatcmpl-vacia",
@@ -682,9 +682,11 @@ describe("E7-bis · el SDK con la negativa de salidas estructuradas de OpenAI (m
     const primera = await layer.generate(PETICION_OPENAI);
     expect(primera.refusal).toBeUndefined();
     expect(trazaDe(primera, "cache-write").map((t) => t.outcome).join(" | ")).not.toContain("refused");
+    // Desde el 2026-11-19 (N3) una respuesta vacía no se guarda: antes se
+    // repetía 24 h como llamada evitada. No se marca como negativa (arriba).
     const segunda = await layer.generate(PETICION_OPENAI);
-    expect(s.enviados).toHaveLength(1);
-    expect(segunda.report.cache.result).toBe("exact");
+    expect(s.enviados).toHaveLength(2);
+    expect(segunda.report.cache.result).toBe("miss");
   });
 
   it("control: con contrato, una respuesta que incumple SIN negativa sigue su camino de siempre (no se marca provider_refusal)", async () => {
