@@ -2265,7 +2265,7 @@
     }
   },
   "pricingPage": {
-    "metaTitle": "Conditions tarifaires · BV-SALA",
+    "metaTitle": "Conditions tarifaires · BiVelio Savings Layer",
     "metaDescription": "L'open core est gratuit ; Measure, Pro, Team et Enterprise sont les plans cloud — aucun ne porte de commission sur vos économies. Chiffres publiés depuis les mêmes constantes qui facturent.",
     "eyebrow": "Tarifs publiés",
     "title": "Moteur open source.",
@@ -2421,7 +2421,7 @@
     }
   },
   "privacyPage": {
-    "metaTitle": "Ce qui sort de votre infrastructure · BV-SALA",
+    "metaTitle": "Ce qui sort de votre infrastructure · BiVelio Savings Layer",
     "metaDescription": "La liste exacte de ce que le SDK et le gateway local envoient à BiVelio, de ce qu'ils n'envoient jamais et de la durée de conservation chez BiVelio.",
     "eyebrow": "Confidentialité",
     "title": "Ce qui sort de votre infrastructure",

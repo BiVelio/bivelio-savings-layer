@@ -2265,7 +2265,7 @@
     }
   },
   "pricingPage": {
-    "metaTitle": "Ketentuan harga · BV-SALA",
+    "metaTitle": "Ketentuan harga · BiVelio Savings Layer",
     "metaDescription": "Open core gratis; Measure, Pro, Team, dan Enterprise adalah paket cloud — tidak ada yang membawa komisi atas penghematan Anda. Angka diterbitkan dari konstanta yang sama yang menagih.",
     "eyebrow": "Harga yang diterbitkan",
     "title": "Mesin open source.",
@@ -2421,7 +2421,7 @@
     }
   },
   "privacyPage": {
-    "metaTitle": "Apa yang keluar dari infrastrukturmu · BV-SALA",
+    "metaTitle": "Apa yang keluar dari infrastrukturmu · BiVelio Savings Layer",
     "metaDescription": "Daftar persis apa yang dikirim SDK dan gateway lokal ke BiVelio, apa yang tidak pernah dikirim, dan berapa lama BiVelio menyimpannya.",
     "eyebrow": "Privasi",
     "title": "Apa yang keluar dari infrastrukturmu",
