@@ -40,8 +40,8 @@ Fecha objetivo: lanzar en cuanto el CI de #524 esté verde y npm sirva 1.0.0.
    (es la puerta de publish.yml: el run tiene que ser del commit de release).
 4. `gh release create v1.0.0 --generate-notes --title "1.0.0 — open core"` →
    publish.yml (npm trusted publishing + SBOM).
-   `gh release create py-v1.0.0 --generate-notes --title "Python client 1.0.0 — open core"` →
-   publish-pypi.yml.
+   `gh release create py-v1.0.0 --latest=false --generate-notes --title "Python client 1.0.0 — open core"` →
+   publish-pypi.yml. `--latest=false`: «Latest» en GitHub sigue siendo la de npm.
 5. Verificar: `npm view @bivelio/savings-layer@1.0.0` y
    `pip index versions bivelio-savings-layer`.
 

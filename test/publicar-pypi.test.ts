@@ -75,8 +75,12 @@ describe("publish-pypi.yml publica con trusted publishing", () => {
     expect(pruebas).toMatch(/^ {4}if: \$\{\{ startsWith\(github\.event\.release\.tag_name, 'py-v'\) \}\}$/m);
     expect(construir).toMatch(/needs: pruebas/);
     expect(publicar).toMatch(/needs: construir/);
-    // Sin este salto, `py-v0.1.0` lanzaría también la cadena de npm.
-    expect(trabajo(npm, "verificar")).toMatch(/^ {4}if: \$\{\{ !startsWith\(github\.event\.release\.tag_name, 'py-v'\) && !startsWith\(github\.event\.release\.tag_name, 'pg-v'\) \}\}$/m);
+    // Sin este salto, `py-v0.1.0` lanzaría también la cadena de npm (la puerta
+    // del banco incluida). La evaluación por etiqueta de todos los trabajos
+    // está en test/cadena-de-suministro.test.ts.
+    for (const t of ["verificar", "banco-semanal"]) {
+      expect(trabajo(npm, t)).toMatch(/^ {4}if: \$\{\{ !startsWith\(github\.event\.release\.tag_name, 'py-v'\) && !startsWith\(github\.event\.release\.tag_name, 'pg-v'\) && !startsWith\(github\.event\.release\.tag_name, 'paper-v'\) \}\}$/m);
+    }
   });
 
   it("solo el trabajo que publica pide `id-token: write`, y nada por defecto", () => {

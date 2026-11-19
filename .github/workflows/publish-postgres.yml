@@ -97,7 +97,11 @@ jobs:
           path: paquete/
           if-no-files-found: error
 
+  # Solo las Release `pg-v*`, como `verificar`: sin este `if` la puerta corría
+  # también en las `v*`, `py-v*` y `paper-v*` y podía dejar esta ejecución en
+  # rojo en una Release que no es de este paquete.
   banco-semanal:
+    if: ${{ startsWith(github.event.release.tag_name, 'pg-v') }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
