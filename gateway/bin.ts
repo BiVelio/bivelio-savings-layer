@@ -733,7 +733,9 @@ if (envoltorio && esEnvoltorio) {
     ...(envoltorio.upstream ? { modoCodex: envoltorio.upstream.includes("chatgpt.com") ? "chatgpt" : "api-key" } : {}),
     ...(up.upstream ? { upstreamElegido: up.upstream } : {}),
   });
-  if (final.nota) console.error(`[bvsala ${comando}] ${final.nota}`);
+  // Con un endpoint heredado en Codex (A2-12) la nota «routes to
+  // api.openai.com/v1» sería falsa: el aviso de arriba ya dice adónde va.
+  if (final.nota && !(comando === "codex" && heredado.tipo === "usar")) console.error(`[bvsala ${comando}] ${final.nota}`);
   // Windows: spawn no resuelve shims .cmd/.bat y lanzarlos con args no es
   // seguro (ver resolverBinarioWindows). El .exe se ejecuta por ruta directa;
   // con solo-shim nos negamos con guía en vez de fallar con un ENOENT mudo.
