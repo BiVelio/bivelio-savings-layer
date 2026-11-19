@@ -104,14 +104,25 @@ describe("savingsProcessor", () => {
     proc.close();
   });
 
-  it("(c) una cuenta se contesta sin llamar", async () => {
+  it("(c) una cuenta se contesta sin llamar, si el agente no lleva instrucciones", async () => {
+    const d = doble();
+    const { onReport, informes } = coleccion();
+    const proc = savingsProcessor({ silenceWarnings: true, onReport });
+    const r = await agente(d, proc, { instructions: "" }).generate("What is 2 + 2 * 3?");
+    expect(r.text).toBe("8");
+    expect(d.llamadas).toBe(0);
+    expect(informes[0]?.cost.basis).toBe("estimated");
+    proc.close();
+  });
+
+  it("(c-bis) con instrucciones la cuenta va al modelo: solo él sabe qué formato piden (N2)", async () => {
     const d = doble();
     const { onReport, informes } = coleccion();
     const proc = savingsProcessor({ silenceWarnings: true, onReport });
     const r = await agente(d, proc).generate("What is 2 + 2 * 3?");
-    expect(r.text).toBe("8");
-    expect(d.llamadas).toBe(0);
-    expect(informes[0]?.cost.basis).toBe("estimated");
+    expect(r.text).toBe("Hello world");
+    expect(d.llamadas).toBe(1);
+    expect(informes[0]?.cache.result).toBe("miss");
     proc.close();
   });
 

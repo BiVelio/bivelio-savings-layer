@@ -24,7 +24,7 @@ const bivelio = savingsProcessor({
 const agent = new Agent({
   id: "assistant",
   name: "Assistant",
-  instructions: "Answer briefly.",
+  instructions: "", // empty on purpose: with instructions the layer leaves this question to the model
   model: "openai/gpt-4o-mini",
   inputProcessors: [bivelio],
 });
