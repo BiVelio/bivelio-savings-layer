@@ -1155,10 +1155,15 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       log(`[gateway] ${req.method} → 400 (request target is not a forwardable path; nothing was sent upstream)`);
       return;
     }
-    let url = destino;
-    // DeepSeek sirve el protocolo Anthropic bajo /anthropic: el cliente (Claude
-    // Code) manda /v1/messages y el gateway lo reescribe sin que él lo sepa.
-    url.pathname = rutaReescrita(upstreamBase, url.pathname);
+    // `url` conserva la ruta del CLIENTE: dialecto, medición, palancas y recuento
+    // deciden con ella (A2-13: con la ruta reescrita, `--upstream deepseek` y
+    // Claude Code no medían nada — «no usage dialect for this route» — ni contaban
+    // en el resumen de salida). DeepSeek sirve el protocolo Anthropic bajo
+    // /anthropic: el cliente manda /v1/messages y solo lo que VIAJA lleva la ruta
+    // reescrita (`urlAlUpstream`), sin que el cliente lo sepa.
+    const url = destino;
+    const urlAlUpstream = new URL(url);
+    urlAlUpstream.pathname = rutaReescrita(upstreamBase, url.pathname);
     // Fuera del try: si el cliente cierra la conexión ANTES de que el upstream
     // termine (Codex CLI lo hace nada más recibir `response.completed`), la
     // medición del camino normal no se alcanza, pero el usage YA observado es
@@ -1633,7 +1638,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       let cuerpoEnviado: Buffer = cuerpoSaliente;
       let cabecerasEnviadas: Record<string, string> = h;
       try {
-        upstream = await fetchImpl(url, {
+        upstream = await fetchImpl(urlAlUpstream, {
           method: req.method,
           headers: h,
           body: ["GET", "HEAD"].includes(req.method ?? "") ? undefined : cuerpoSaliente,
@@ -1705,7 +1710,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
         cuerpoEnviado = cuerpo;
         cabecerasEnviadas = cabecerasOriginales;
         try {
-          upstream = await fetchImpl(url, {
+          upstream = await fetchImpl(urlAlUpstream, {
             method: req.method,
             headers: cabecerasOriginales,
             body: cuerpo,
