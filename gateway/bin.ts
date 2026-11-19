@@ -506,6 +506,12 @@ const envoltorio = esEnvoltorio
 // el sitio para mirar es el panel — y BVSALA_GATEWAY_LOG=1 lo recupera para
 // depurar. `bvsala gateway` a secas sigue logueando: ahí el log es el producto.
 const silencioso = esEnvoltorio && process.env.BVSALA_GATEWAY_LOG !== "1";
+// A2-10 · en modo envoltorio el STDOUT es del terminal hijo: `bvsala claude -p …
+// --output-format json | jq` tiene que recibir el JSON de Claude Code y nada
+// más. Toda línea propia (arranque, licencia, medición, palancas, la nota del
+// terminal y el log por petición con BVSALA_GATEWAY_LOG=1) va a stderr. `bvsala
+// gateway` a secas sigue en stdout: ahí el log es el producto.
+const salida: (linea: string) => void = esEnvoltorio ? (l) => console.error(l) : (l) => console.log(l);
 // Anillo 2 · el encadenado al espía NO puede depender de cómo se lanzó la
 // sesión: vivía en una función del .zshrc y toda sesión nacida por otro camino
 // se medía pero no entraba en el corpus (2026-09-06: las dos sesiones vivas,
@@ -533,7 +539,7 @@ try {
     puerto,
     // Callado también en los avisos de «no medido»: un console.warn se pinta
     // encima del TUI igual que el log.
-    ...(silencioso ? { log: () => {}, avisosDeNoMedido: false } : {}),
+    ...(silencioso ? { log: () => {}, avisosDeNoMedido: false } : esEnvoltorio ? { log: salida } : {}),
     // La licencia ya verificada, y la base del control plane para el canal, las
     // revocaciones y el renovador. Un arranque OFFLINE pide recogida inmediata.
     // Sin licencia (modo comunitario) no se pasa nada: arrancarGateway lo arma.
@@ -610,10 +616,10 @@ try {
 }
 
 const upstreamEfectivo = upstreamPedido ?? envoltorio?.upstream ?? "https://api.anthropic.com";
-console.log(`[bvsala gateway] v${BV_SALA_VERSION} listening on http://127.0.0.1:${arranque.puerto} → ${upstreamEfectivo}`);
-(licencia.lineIsWarning ? console.error : console.log)(`[bvsala gateway] ${licencia.line}`);
+salida(`[bvsala gateway] v${BV_SALA_VERSION} listening on http://127.0.0.1:${arranque.puerto} → ${upstreamEfectivo}`);
+(licencia.lineIsWarning ? console.error : salida)(`[bvsala gateway] ${licencia.line}`);
 for (const w of licencia.warnings) console.error(`[bvsala gateway] ${w}`);
-console.log(
+salida(
   serviceAccountKey
     ? "[bvsala gateway] metering: ON (service key present: usage also goes to your dashboard)"
     : "[bvsala gateway] metering: LOCAL ONLY (community mode, no BiVelio service key): every request is measured on " +
@@ -631,7 +637,7 @@ if (up.aviso) console.error(up.aviso);
 if (process.env.BVSALA_GATEWAY_USAGE_INJECT === "1") {
   // La clave de servicio la garantiza la verja de licencia, así que aquí la
   // medición siempre está encendida y la inyección también.
-  console.log(
+  salida(
     "[bvsala gateway] usage injection: ON (BVSALA_GATEWAY_USAGE_INJECT=1) — streamed chat completions without " +
       "stream_options get include_usage; their last chunk has an empty choices list.",
   );
@@ -641,17 +647,17 @@ if (process.env.BVSALA_GATEWAY_USAGE_INJECT === "1") {
   // «palanca» corrió sin clave en un terminal viejo y fue control en silencio.
   // Con la verja de licencia, la clave está garantizada: `hayClave` es true.
   const estado = describirEstadoDeElision(elisionPedida, true, process.env.BVSALA_GATEWAY_DIALES_ELISION === "1");
-  (estado.aviso ? console.error : console.log)(`[bvsala gateway] ${estado.linea}`);
+  (estado.aviso ? console.error : salida)(`[bvsala gateway] ${estado.linea}`);
   // Palanca C dicha en voz alta, por la misma razón: una bandera puesta en un
   // terminal sin clave (o con el canal cerrado) es control en silencio.
   const estadoHermano = describirEstadoDeHermano(siblingModelEnv, true, elisionPedida !== "0");
-  (estadoHermano.aviso ? console.error : console.log)(`[bvsala gateway] ${estadoHermano.linea}`);
+  (estadoHermano.aviso ? console.error : salida)(`[bvsala gateway] ${estadoHermano.linea}`);
   // Palanca D dicha en voz alta por la misma razón que las otras: una palanca
   // que se cree encendida y no lo está es la trampa muda que ya costó un A/B.
   const estadoEsfuerzo = describirEstadoDeEsfuerzo(effortEnv, true, elisionPedida !== "0");
-  (estadoEsfuerzo.aviso ? console.error : console.log)(`[bvsala gateway] ${estadoEsfuerzo.linea}`);
+  (estadoEsfuerzo.aviso ? console.error : salida)(`[bvsala gateway] ${estadoEsfuerzo.linea}`);
   if (planAnillo2.linea) {
-    (planAnillo2.aviso ? console.error : console.log)(`[bvsala gateway] ${planAnillo2.linea}`);
+    (planAnillo2.aviso ? console.error : salida)(`[bvsala gateway] ${planAnillo2.linea}`);
   }
 }
 if (up.upstream && envoltorio?.upstream && up.upstream !== envoltorio.upstream) {
@@ -693,7 +699,7 @@ if (envoltorio && esEnvoltorio) {
     ...(envoltorio.upstream ? { modoCodex: envoltorio.upstream.includes("chatgpt.com") ? "chatgpt" : "api-key" } : {}),
     ...(up.upstream ? { upstreamElegido: up.upstream } : {}),
   });
-  if (final.nota) console.log(`[bvsala ${comando}] ${final.nota}`);
+  if (final.nota) console.error(`[bvsala ${comando}] ${final.nota}`);
   // Windows: spawn no resuelve shims .cmd/.bat y lanzarlos con args no es
   // seguro (ver resolverBinarioWindows). El .exe se ejecuta por ruta directa;
   // con solo-shim nos negamos con guía en vez de fallar con un ENOENT mudo.
