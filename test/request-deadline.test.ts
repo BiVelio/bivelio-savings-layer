@@ -80,6 +80,39 @@ async function timeoutDe(promesa: Promise<unknown>): Promise<RequestTimeoutError
   return error as RequestTimeoutError;
 }
 
+/**
+ * Los tests que exigen `requestSent: true` hacen vencer el plazo DESPUÉS de que
+ * el proveedor tenga la petición, nunca antes. Con timers reales y plazos de
+ * 5-40 ms dependían de la velocidad del runner: la capa comprueba el reloj de
+ * pared antes de enviar, y en un CI cargado esos milisegundos se gastaban antes
+ * de llegar al proveedor; el error salía con `requestSent: false` (runs
+ * 44125542111 y 43873654016). Ahora corren con timers falsos (activados ANTES
+ * de crear la capa, para que su `now` por defecto sea el `Date.now` falso):
+ * el reloj solo avanza cuando el test lo dice.
+ */
+function avisoDeLlamada(): { llegada: Promise<void>; dar(): void } {
+  let dar!: () => void;
+  const llegada = new Promise<void>((resolve) => {
+    dar = resolve;
+  });
+  return { llegada, dar };
+}
+
+/** Espera a que el proveedor reciba la petición (o a que la capa termine sin llamarlo). */
+async function hastaLaLlamada(llegada: Promise<void>, resultado: Promise<unknown>): Promise<void> {
+  await Promise.race([llegada, resultado]);
+}
+
+/** Un testigo de si la promesa ya terminó, para comprobar que la capa sigue esperando. */
+function testigo(promesa: Promise<unknown>): { readonly terminada: boolean } {
+  const estado = { terminada: false };
+  promesa.then(
+    () => { estado.terminada = true; },
+    () => { estado.terminada = true; },
+  );
+  return estado;
+}
+
 afterEach(() => {
   vi.useRealTimers();
   vi.restoreAllMocks();
@@ -153,13 +186,16 @@ describe("requestTimeoutMs: contrato y entrada pública", () => {
 
 describe("deadline durante la primaria y efectos tardíos", () => {
   it("un provider que respeta abort se detiene; el error es estable y requestSent es true", async () => {
+    vi.useFakeTimers();
     let detenido = 0;
+    const aviso = avisoDeLlamada();
     const provider = new Controlado((_n, signal) =>
       new Promise<ProviderResponse>((_resolve, reject) => {
         signal?.addEventListener("abort", () => {
           detenido += 1;
           reject(signal.reason ?? new DOMException("aborted", "AbortError"));
         }, { once: true });
+        aviso.dar();
       }),
     );
     let escrituras = 0;
@@ -169,17 +205,25 @@ describe("deadline durante la primaria y efectos tardíos", () => {
       async delete() {},
     };
     const layer = capa(provider, { exactCache });
-    const error = await timeoutDe(layer.generate(peticion(), { requestTimeoutMs: 10 }));
+    const resultado = timeoutDe(layer.generate(peticion(), { requestTimeoutMs: 10 }));
+    await hastaLaLlamada(aviso.llegada, resultado);
+    expect(provider.llamadas).toBe(1);
+    expect(detenido).toBe(0);
+    await vi.advanceTimersByTimeAsync(10);
+    const error = await resultado;
     expect(error).toMatchObject({ requestSent: true, timeoutMs: 10, code: "REQUEST_TIMEOUT" });
     expect(detenido).toBe(1);
     expect(provider.llamadas).toBe(1);
-    await dormir(25);
+    await vi.advanceTimersByTimeAsync(25);
     expect(escrituras).toBe(0);
   });
 
   it("un provider que ignora abort es esperado y su respuesta tardía no se cachea ni se aprende", async () => {
+    vi.useFakeTimers();
     let terminado = 0;
+    const aviso = avisoDeLlamada();
     const provider = new Controlado(async () => {
+      aviso.dar();
       await dormir(200);
       terminado += 1;
       return respuesta("not json");
@@ -198,17 +242,26 @@ describe("deadline durante la primaria y efectos tardíos", () => {
         async remember() { aprendizaje += 1; },
       },
     });
-    // Márgenes amplios: el deadline (40 ms) vence MUCHO después de que la
-    // petición esté marcada como enviada (sobrecarga del CI aparte) y el
-    // proveedor termina mucho después (200 ms). Antes eran 5/30 ms y la
-    // aserción `requestSent` caía en falso cuando el runner iba cargado.
-    const error = await timeoutDe(
+    // Timers falsos: el deadline (40 ms) vence cuando el proveedor ya tiene la
+    // petición y el proveedor termina después (200 ms), sea cual sea la carga
+    // del runner. Con timers reales ni siquiera los márgenes de 40/200 ms
+    // bastaban en un CI cargado.
+    const resultado = timeoutDe(
       layer.generate(peticion({ response: CONTRATO }), { requestTimeoutMs: 40 }),
     );
+    const estado = testigo(resultado);
+    await hastaLaLlamada(aviso.llegada, resultado);
+    expect(provider.llamadas).toBe(1);
+    await vi.advanceTimersByTimeAsync(40);
+    // Venció, pero la capa sigue esperando al proveedor que ignora el abort.
+    expect(estado.terminada).toBe(false);
+    expect(terminado).toBe(0);
+    await vi.advanceTimersByTimeAsync(160);
+    const error = await resultado;
     expect(error.requestSent).toBe(true);
     expect(terminado).toBe(1);
     expect(provider.llamadas).toBe(1);
-    await dormir(260);
+    await vi.advanceTimersByTimeAsync(260);
     expect(cache).toBe(0);
     expect(aprendizaje).toBe(0);
   });
@@ -337,8 +390,10 @@ describe("ninguna rama adicional escapa al deadline", () => {
 
 describe("deadline y señal en generateStream", () => {
   it("live: aborta la primaria, no entrega un informe parcial ni escribe caché", async () => {
+    vi.useFakeTimers();
     let llamadas = 0;
     let cache = 0;
+    const aviso = avisoDeLlamada();
     const provider: Provider = {
       id: "live-abort",
       async generate() { throw new Error("no debe entregar whole"); },
@@ -347,6 +402,7 @@ describe("deadline y señal en generateStream", () => {
         yield { type: "text", delta: "Hel" };
         await new Promise<void>((_resolve, reject) => {
           options?.signal?.addEventListener("abort", () => reject(options.signal?.reason), { once: true });
+          aviso.dar();
         });
       },
     };
@@ -356,19 +412,26 @@ describe("deadline y señal en generateStream", () => {
       async delete() {},
     };
     const stream = capa(provider, { exactCache }).generateStream(peticion(), { requestTimeoutMs: 10 });
-    const error = await timeoutDe(stream.result);
+    const resultado = timeoutDe(stream.result);
+    await hastaLaLlamada(aviso.llegada, resultado);
+    expect(llamadas).toBe(1);
+    await vi.advanceTimersByTimeAsync(10);
+    const error = await resultado;
     expect(error.requestSent).toBe(true);
     expect(llamadas).toBe(1);
     expect(cache).toBe(0);
   });
 
   it("live: espera al iterador que ignora abort y descarta sus deltas tardíos", async () => {
+    vi.useFakeTimers();
     let terminado = 0;
+    const aviso = avisoDeLlamada();
     const provider: Provider = {
       id: "live-ignore",
       async generate() { throw new Error("no debe entregar whole"); },
       async *generateStream() {
         yield { type: "text", delta: "antes" };
+        aviso.dar();
         await dormir(30);
         yield { type: "text", delta: "después" };
         terminado += 1;
@@ -376,7 +439,15 @@ describe("deadline y señal en generateStream", () => {
       },
     };
     const stream = capa(provider).generateStream(peticion(), { requestTimeoutMs: 5 });
-    const error = await timeoutDe(stream.result);
+    const resultado = timeoutDe(stream.result);
+    const estado = testigo(resultado);
+    await hastaLaLlamada(aviso.llegada, resultado);
+    await vi.advanceTimersByTimeAsync(5);
+    // Venció, pero la capa sigue esperando al iterador que ignora el abort.
+    expect(estado.terminada).toBe(false);
+    expect(terminado).toBe(0);
+    await vi.advanceTimersByTimeAsync(25);
+    const error = await resultado;
     expect(error.requestSent).toBe(true);
     expect(terminado).toBe(1);
   });
@@ -384,12 +455,15 @@ describe("deadline y señal en generateStream", () => {
   it.each(["output-contract", "deferrable", "provider-without-streaming"] as const)(
     "whole (%s): la señal llega a generate y no hay una segunda llamada",
     async (motivo) => {
+      vi.useFakeTimers();
       let llamadas = 0;
       let streams = 0;
+      const aviso = avisoDeLlamada();
       const generate = async (_req: ProviderRequest, options?: ProviderStreamOptions) => {
         llamadas += 1;
         return await new Promise<ProviderResponse>((_resolve, reject) => {
           options?.signal?.addEventListener("abort", () => reject(options.signal?.reason), { once: true });
+          aviso.dar();
         });
       };
       const provider: Provider = motivo === "provider-without-streaming"
@@ -408,7 +482,11 @@ describe("deadline y señal en generateStream", () => {
           ? peticion({ savings: { deferrable: true } })
           : peticion();
       const stream = capa(provider).generateStream(request, { requestTimeoutMs: 10 });
-      const error = await timeoutDe(stream.result);
+      const resultado = timeoutDe(stream.result);
+      await hastaLaLlamada(aviso.llegada, resultado);
+      expect(llamadas).toBe(1);
+      await vi.advanceTimersByTimeAsync(10);
+      const error = await resultado;
       expect(error.requestSent).toBe(true);
       expect(llamadas).toBe(1);
       expect(streams).toBe(0);
