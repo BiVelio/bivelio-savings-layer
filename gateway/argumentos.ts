@@ -81,6 +81,96 @@ export function flagDePuerto(args: readonly string[]): FlagDePuerto {
 }
 
 /**
+ * A2-16 · LOS FLAGS QUE NO EXISTEN SON UN ERROR. El #599 hizo que `--port=N`
+ * funcionara, pero cualquier flag desconocido se descartaba en silencio: una
+ * errata en `--upstream` (`--upsteam openai`) dejaba el gateway hablando con
+ * Anthropic, y `-p 9000` o `--Port 9000` lo dejaban en el 8402. Ahora `gateway`
+ * y `doctor` salen con 1 ANTES de arrancar nada, nombrando el flag y sugiriendo
+ * el más parecido.
+ *
+ * Lo que empieza por `--port` lo sigue juzgando `flagDePuerto` (con su mensaje).
+ * `--write` en el doctor se reconoce para que siga diciendo que aún no existe.
+ */
+const FLAGS_DE: Readonly<Record<"gateway" | "doctor", readonly { flag: string; valor: string | null; ayuda: boolean }[]>> = {
+  gateway: [
+    { flag: "--port", valor: "N", ayuda: true },
+    { flag: "--upstream", valor: "U", ayuda: true },
+  ],
+  doctor: [
+    { flag: "--port", valor: "N", ayuda: true },
+    { flag: "--write", valor: null, ayuda: false },
+  ],
+};
+
+/** Distancia de edición (Levenshtein): cuántas letras hay que cambiar, quitar o poner. */
+function distancia(a: string, b: string): number {
+  let fila = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    const nueva = [i];
+    for (let j = 1; j <= b.length; j++) {
+      nueva[j] = Math.min(fila[j]! + 1, nueva[j - 1]! + 1, fila[j - 1]! + (a[i - 1] === b[j - 1] ? 0 : 1));
+    }
+    fila = nueva;
+  }
+  return fila[b.length]!;
+}
+
+/**
+ * El primer argumento de `gateway` o `doctor` que no es un flag conocido ni su
+ * valor, como el error que se imprime (null si todos valen). El valor de un
+ * argumento no se repite nunca: una clave pegada en el sitio equivocado no
+ * puede acabar en stderr. De un flag se enseña solo el nombre (lo de antes del `=`).
+ */
+export function argumentoDesconocido(comando: "gateway" | "doctor", args: readonly string[]): string | null {
+  const conocidos = FLAGS_DE[comando];
+  for (let i = 0; i < args.length; i++) {
+    const a = args[i]!;
+    if (a.startsWith("--port")) {
+      // `--ports`, `--port9000`…: el error es de flagDePuerto («invalid port»).
+      if (a !== "--port" && !a.startsWith("--port=")) return null;
+      if (a === "--port") i++;
+      continue;
+    }
+    const nombre = a.startsWith("-") && a.includes("=") ? a.slice(0, a.indexOf("=")) : a;
+    const conocido = conocidos.find((f) => f.flag === nombre);
+    if (conocido !== undefined) {
+      // `--upstream U`: el valor va detrás, salvo que lo que sigue sea otro flag
+      // (entonces falta, y lo dice resolverUpstream).
+      if (conocido.valor !== null && a === nombre && args[i + 1] !== undefined && !args[i + 1]!.startsWith("--")) i++;
+      continue;
+    }
+    const aceptados = conocidos
+      .filter((f) => f.ayuda)
+      .map((f) => (f.valor ? `${f.flag} ${f.valor}` : f.flag))
+      .join(", ");
+    if (!a.startsWith("-")) {
+      return (
+        `[bvsala ${comando}] unexpected argument (its value is not shown): ${comando} takes only ${aceptados} ` +
+        "(and --help). Nothing was started."
+      );
+    }
+    const visible = nombre.length > 40 ? `${nombre.slice(0, 40)}…` : nombre;
+    const pelado = nombre.replace(/^-+/, "").toLowerCase();
+    let sugerido: string | undefined;
+    let mejor = Number.POSITIVE_INFINITY;
+    for (const f of conocidos) {
+      const objetivo = f.flag.replace(/^-+/, "");
+      const d = pelado !== "" && objetivo.startsWith(pelado) ? 0 : distancia(pelado, objetivo);
+      if (d <= 2 && d < mejor) {
+        mejor = d;
+        sugerido = f.flag;
+      }
+    }
+    return (
+      `[bvsala ${comando}] unknown option ${visible}` +
+      (sugerido ? ` (did you mean ${sugerido}?)` : "") +
+      `. ${comando} accepts ${aceptados} (and --help). Nothing was started.`
+    );
+  }
+  return null;
+}
+
+/**
  * El fallo de arranque del gateway traducido a UNA línea para el probador. El
  * escenario más probable es lanzarlo dos veces (el 8402 por defecto): hasta
  * 0.4.20 moría con la traza cruda de Node («node:net … Error: listen
