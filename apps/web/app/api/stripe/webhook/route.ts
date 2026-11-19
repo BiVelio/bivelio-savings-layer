@@ -46,12 +46,17 @@ const nowUnix = () => Math.floor(Date.now() / 1000);
 function subFacts(sub: Stripe.Subscription) {
   const item = sub.items.data[0];
   const cust = sub.customer;
+  // Antes de la API 2025-03-31 el periodo iba en la RAÍZ de la suscripción (A2-19).
+  // Sin este respaldo, un aviso en ese formato dejaba el fin de periodo en null y
+  // la licencia salía con el vencimiento de respaldo de 31 días aunque el cliente
+  // tuviera un año pagado. Lo mismo que `invoiceSubId` hace con la factura.
+  const raiz = sub as unknown as { current_period_start?: number | null; current_period_end?: number | null };
   return {
     itemId: item?.id ?? null,
     priceId: item?.price?.id ?? null,
     quantity: item?.quantity ?? 1,
-    periodStart: item?.current_period_start ?? null,
-    periodEnd: item?.current_period_end ?? null,
+    periodStart: item?.current_period_start ?? raiz.current_period_start ?? null,
+    periodEnd: item?.current_period_end ?? raiz.current_period_end ?? null,
     customerId: typeof cust === "string" ? cust : (cust?.id ?? null),
     orgId: (sub.metadata?.org_id as string | undefined) || null,
   };
