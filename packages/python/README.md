@@ -34,8 +34,8 @@ from (`cost.basis`).
   LICENSE-CLOUD.md, section 5, lists every field.
 
 This package measures. The saving levers of the TypeScript SDK do not run in
-Python; the gateway's own levers apply to Anthropic `/v1/messages` traffic with
-a PRO license.
+Python; the gateway's own levers apply to Anthropic `/v1/messages` traffic, free
+and with no key.
 
 ## Requirements
 
