@@ -114,8 +114,11 @@ describe("los apartados que salieron del README siguen a un clic", () => {
     }
   });
 
-  it("el README no enlaza docs/guias por ruta relativa (en npmjs.com no lleva a ninguna parte)", () => {
-    const relativos = destinos(readme).filter((d) => /^(?:\.\/)?docs\/guias\//.test(d));
+  it("el README no enlaza nada de docs/ por ruta relativa (en npmjs.com no lleva a ninguna parte)", () => {
+    // Ni las guías ni el paper viajan en el tarball, y lo que sí viaja
+    // (docs/terminales) npmjs.com no lo sirve: todo enlace a docs/ va absoluto a
+    // GitHub, el mismo en las dos páginas.
+    const relativos = destinos(readme).filter((d) => /^(?:\.\/)?docs\//.test(d));
     expect(relativos).toEqual([]);
   });
 
