@@ -280,7 +280,7 @@ export function valorarTierServido(e: EntradaDeValoracion): ValoracionDelTier {
     return { ok: false, motivo: "incomplete-usage" };
   }
 
-  const estandar = tarifaEstandar(e.modelo);
+  const estandar = tarifaEstandar(e.modelo, e.ahoraMs);
   if (!estandar) return { ok: false, motivo: "no-standard-price" };
   const origenDeTabla = e.origen ?? familiaDeTarifa(e.modelo);
   const tier = origenDeTabla

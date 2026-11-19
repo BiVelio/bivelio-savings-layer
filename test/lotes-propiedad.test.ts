@@ -71,6 +71,14 @@ function diferenciaReal(modelo: string, fila: TarifaDeTier, u: Contador): bigint
 const SEMILLAS = 25;
 const POR_LOTE = 40;
 
+// EL RELOJ, FIJO (A2-22). Las filas con `vigenteHasta` dejan de existir al día
+// siguiente, y la capa tarifa al día de su reloj: con el reloj real esta
+// propiedad se ponía roja SOLA el día en que caducaba una fila (gpt-5.6-sol, el
+// 22-11-2026, el día del lanzamiento) aunque nadie hubiera tocado nada. Un día
+// dentro de la vigencia de todas las filas de lote y de CATALOGO; lo que pasa
+// el día siguiente a una caducidad lo prueba el bloque «P6 · caducidad», abajo.
+const AHORA = Date.parse("2026-11-19T12:00:00Z");
+
 interface Fixture {
   lineas: unknown[];
   estadoDelLote: string;
@@ -104,7 +112,10 @@ describe("P6 · Anthropic: el lote entero nunca acredita más que la suma de las
     const r = azar(semilla * 2654435761);
     const fx: Fixture = { lineas: [], estadoDelLote: "ended" };
     const base = "https://api.anthropic.com/v1";
-    const layer = createSavingsLayer({ provider: new AnthropicProvider({ apiKey: "k", fetchImpl: servidor(base, fx, "anthropic") }) });
+    const layer = createSavingsLayer({
+      provider: new AnthropicProvider({ apiKey: "k", fetchImpl: servidor(base, fx, "anthropic") }),
+      now: () => AHORA,
+    });
 
     const peticiones: BatchRequest[] = [];
     const esperado = new Map<string, { real: bigint; acredita: boolean; medido: boolean }>();
@@ -180,6 +191,7 @@ describe("P6 · OpenAI: lo mismo por el registro de lote, con modelos sin lectur
     const base = "https://api.openai.com/v1";
     const layer = createSavingsLayer({
       provider: new OpenAICompatibleProvider({ baseUrl: base, apiKey: "k", fetchImpl: servidor(base, fx, "openai") }),
+      now: () => AHORA,
     });
     // Un solo modelo por semilla: la Batch API de OpenAI admite uno por fichero,
     // y el servidor de mentira sirve un solo lote.
@@ -243,5 +255,74 @@ describe("P6 · OpenAI: lo mismo por el registro de lote, con modelos sin lectur
     }
     expect(BigInt(Math.round(res.summary.tierSaving * 1e10)) * 100n).toBe(suma);
     expect(suma <= sumaReal).toBe(true);
+  });
+});
+
+describe("P6 · caducidad: una fila de lote caducada no acredita nada y el lote sale entero", () => {
+  // Cada fila de lote con `vigenteHasta`, con el reloj en su último día y en el
+  // siguiente. El último día acredita; el siguiente, nada (ni la estándar ni la
+  // de lote valen ese día), y el resultado sale igual, sin lanzar.
+  const conFin = (["openai", "anthropic"] as const).flatMap((origen) =>
+    Object.entries(TARIFAS_DE_TIER[origen].batch ?? {})
+      .filter(([, f]) => f.vigenteHasta !== undefined)
+      .map(([modelo, f]) => [`${origen}/${modelo} (hasta ${f.vigenteHasta})`, origen, modelo, f.vigenteHasta!] as const),
+  );
+
+  it("hay filas de lote con fecha de fin que probar", () => {
+    expect(conFin.length).toBeGreaterThan(0);
+  });
+
+  it.each(conFin)("%s", async (_n, origen, modelo, hasta) => {
+    const ultimoDia = Date.parse(`${hasta}T23:00:00Z`);
+    const diaSiguiente = Date.parse(`${hasta}T23:59:59.999Z`) + 1;
+    const corre = async (ahora: number) => {
+      const anthropic = origen === "anthropic";
+      const fx: Fixture = { lineas: [], estadoDelLote: anthropic ? "ended" : "completed" };
+      const base = anthropic ? "https://api.anthropic.com/v1" : "https://api.openai.com/v1";
+      const provider = anthropic
+        ? new AnthropicProvider({ apiKey: "k", fetchImpl: servidor(base, fx, "anthropic") })
+        : new OpenAICompatibleProvider({ baseUrl: base, apiKey: "k", fetchImpl: servidor(base, fx, "openai") });
+      const layer = createSavingsLayer({ provider, now: () => ahora });
+      fx.lineas.push(
+        anthropic
+          ? {
+              custom_id: "r0",
+              result: {
+                type: "succeeded",
+                message: {
+                  content: [{ type: "text", text: "ok" }],
+                  stop_reason: "end_turn",
+                  usage: { input_tokens: 100_000, output_tokens: 10_000, cache_read_input_tokens: 0, cache_creation_input_tokens: 0, service_tier: "batch" },
+                },
+              },
+            }
+          : {
+              id: "batch_req_0",
+              custom_id: "r0",
+              response: {
+                status_code: 200,
+                body: {
+                  choices: [{ message: { content: "ok" }, finish_reason: "stop" }],
+                  usage: { prompt_tokens: 100_000, completion_tokens: 10_000, prompt_tokens_details: { cached_tokens: 0, cache_write_tokens: 0 } },
+                },
+              },
+              error: null,
+            },
+      );
+      const job = await layer.batches.submit([
+        { customId: "r0", request: { model: `${origen}/${modelo}`, messages: [{ role: "user", content: "x" }] } },
+      ]);
+      return layer.batches.results(job);
+    };
+
+    const dentro = await corre(ultimoDia);
+    expect(dentro.items).toHaveLength(1);
+    expect(dentro.items[0]!.tierSaving?.amount, "el último día de la vigencia acredita").toBeGreaterThan(0);
+
+    const fuera = await corre(diaSiguiente);
+    expect(fuera.items).toHaveLength(1);
+    expect(fuera.items[0]!.customId).toBe("r0");
+    expect(fuera.items[0]!.tierSaving, "el día siguiente no acredita nada").toBeUndefined();
+    expect(fuera.summary.tierSaving).toBe(0);
   });
 });

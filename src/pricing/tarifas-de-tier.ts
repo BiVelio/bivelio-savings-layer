@@ -148,7 +148,9 @@ export interface TarifaDeTier extends TarifaPlana {
 // OpenAI y Google siguen con la lectura del 2026-09-27, la de su `consultado`.)
 // (2026-11-19: se leyeron la de Anthropic y la de Google SOLO para las dos filas
 // nuevas, claude-fable-5-2 en lote y gemini-2.5-flash-lite en Flex, que llevan
-// ese `consultado`. Las demás filas conservan el suyo.)
+// ese `consultado`. Las demás filas conservan el suyo. El mismo día se releyó la
+// de OpenAI para el fin del precio promocional de gpt-5.6-sol: sus dos filas
+// llevan ese `consultado` y caducan el 2026-11-30, no el 2026-11-21.)
 export const TARIFAS_DE_TIER_AL_DIA = "2026-11-19";
 
 const OPENAI = "https://developers.openai.com/api/docs/pricing";
@@ -226,17 +228,21 @@ export const TARIFAS_DE_TIER: Readonly<
         },
       }),
       // gpt-5.6-sol: 2.00 / 0.20 / 2.50 / 10.00 · largo 4.00 / 0.40 / 5.00 / 15.00.
-      // Estándar largo: 8.00 / 0.80 / 10.00 / 30.00. La página: «GPT-5.6 Sol's
-      // promotional pricing is available at least through November 21, 2026.»
-      // Pasado ese día no se sabe qué cobra, así que la fila caduca ahí.
-      "gpt-5.6-sol": oa({
-        inputPer1k: 0.002, cachedInputPer1k: 0.0002, cacheWritePer1k: 0.0025, outputPer1k: 0.01,
-        largo: {
-          estandar: { inputPer1k: 0.008, cachedInputPer1k: 0.0008, cacheWritePer1k: 0.01, outputPer1k: 0.03 },
-          tier: { inputPer1k: 0.004, cachedInputPer1k: 0.0004, cacheWritePer1k: 0.005, outputPer1k: 0.015 },
-        },
-        vigenteHasta: "2026-11-21",
-      }),
+      // Estándar largo: 8.00 / 0.80 / 10.00 / 30.00. La página, releída el
+      // 2026-11-19 (antes decía «at least through November 21, 2026»): «GPT-5.6
+      // Sol's promotional pricing is available until November 30, 2026.» Pasado
+      // ese día no se sabe qué cobra, así que la fila caduca ahí.
+      "gpt-5.6-sol": {
+        ...oa({
+          inputPer1k: 0.002, cachedInputPer1k: 0.0002, cacheWritePer1k: 0.0025, outputPer1k: 0.01,
+          largo: {
+            estandar: { inputPer1k: 0.008, cachedInputPer1k: 0.0008, cacheWritePer1k: 0.01, outputPer1k: 0.03 },
+            tier: { inputPer1k: 0.004, cachedInputPer1k: 0.0004, cacheWritePer1k: 0.005, outputPer1k: 0.015 },
+          },
+          vigenteHasta: "2026-11-30",
+        }),
+        consultado: "2026-11-19",
+      },
       // gpt-5.6-terra: 1.00 / 0.10 / 1.25 / 6.00 · largo 2.00 / 0.20 / 2.50 / 9.00.
       // Estándar largo: 4.00 / 0.40 / 5.00 / 18.00.
       "gpt-5.6-terra": oa({
@@ -312,15 +318,19 @@ export const TARIFAS_DE_TIER: Readonly<
         },
       }),
       // gpt-5.6-sol: 2.00 / 0.20 / 2.50 / 10.00 · largo 4.00 / 0.40 / 5.00 / 15.00.
-      // Precio promocional «at least through November 21, 2026»: caduca ahí.
-      "gpt-5.6-sol": oa({
-        inputPer1k: 0.002, cachedInputPer1k: 0.0002, cacheWritePer1k: 0.0025, outputPer1k: 0.01,
-        largo: {
-          estandar: { inputPer1k: 0.008, cachedInputPer1k: 0.0008, cacheWritePer1k: 0.01, outputPer1k: 0.03 },
-          tier: { inputPer1k: 0.004, cachedInputPer1k: 0.0004, cacheWritePer1k: 0.005, outputPer1k: 0.015 },
-        },
-        vigenteHasta: "2026-11-21",
-      }),
+      // Precio promocional «until November 30, 2026» (releído el 2026-11-19):
+      // caduca ahí.
+      "gpt-5.6-sol": {
+        ...oa({
+          inputPer1k: 0.002, cachedInputPer1k: 0.0002, cacheWritePer1k: 0.0025, outputPer1k: 0.01,
+          largo: {
+            estandar: { inputPer1k: 0.008, cachedInputPer1k: 0.0008, cacheWritePer1k: 0.01, outputPer1k: 0.03 },
+            tier: { inputPer1k: 0.004, cachedInputPer1k: 0.0004, cacheWritePer1k: 0.005, outputPer1k: 0.015 },
+          },
+          vigenteHasta: "2026-11-30",
+        }),
+        consultado: "2026-11-19",
+      },
       // gpt-5.6-terra: 1.00 / 0.10 / 1.25 / 6.00 · largo 2.00 / 0.20 / 2.50 / 9.00.
       "gpt-5.6-terra": oa({
         inputPer1k: 0.001, cachedInputPer1k: 0.0001, cacheWritePer1k: 0.00125, outputPer1k: 0.006,
@@ -551,7 +561,9 @@ export function tarifaDeTier(
   model: string,
   ahoraMs: number = Date.now(),
 ): TarifaDeTier | undefined {
-  if (precioDeListaPropio(model) === undefined) return undefined;
+  // La fila estándar, el MISMO día: sin `ahoraMs` aquí, un reloj inyectado
+  // (tests, lotes) miraba la estándar de HOY y la del tier del día pedido.
+  if (precioDeListaPropio(model, ahoraMs) === undefined) return undefined;
   const clave = claveDeCatalogo(model);
   if (clave === undefined) return undefined;
   const porTier = TARIFAS_DE_TIER[origen]?.[tier];
@@ -564,10 +576,11 @@ export function tarifaDeTier(
 /**
  * La tarifa ESTÁNDAR de un modelo, por componente: la fila propia de CATALOGO, y
  * la escritura de caché a `entrada · primaDeEscritura` (el único domicilio de la
- * prima). `undefined` sin fila propia.
+ * prima). `undefined` sin fila propia. `ahoraMs`: el día del precio (por
+ * defecto, hoy), el mismo que se pasa a {@link tarifaDeTier}.
  */
-export function tarifaEstandar(model: string): (CostModel & { cacheWritePer1k: number }) | undefined {
-  const fila = precioDeListaPropio(model);
+export function tarifaEstandar(model: string, ahoraMs?: number): (CostModel & { cacheWritePer1k: number }) | undefined {
+  const fila = precioDeListaPropio(model, ahoraMs);
   if (!fila) return undefined;
   return { ...fila, cacheWritePer1k: fila.inputPer1k * primaDeEscritura(idDesnudo(model)) };
 }
