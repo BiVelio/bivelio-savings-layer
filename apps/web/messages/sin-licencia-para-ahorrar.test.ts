@@ -112,6 +112,26 @@ describe("sin clave, el gasto de Claude Code no aparece en el panel", () => {
     });
   }
 
+  /**
+   * La rebaja de TTL es AHORRO, y es gratis (CanalComunitario la concede sin clave).
+   * Con la frase de la nube delante, la siguiente se leía como algo que trae la
+   * clave de pago: «Con una clave de Savings Cloud ves también… En modelos de
+   * Anthropic pasa además…»; en fr «elle fait aussi passer» y en nl «zet hij
+   * bovendien» apuntan a «une clé» y a «de sleutel». La nube va la última: detrás
+   * de ella no queda ninguna palanca.
+   */
+  for (const loc of LOCALES) {
+    it(`${loc}: la nube cierra el párrafo y ningún ahorro va detrás de «Savings Cloud»`, () => {
+      const t = tarjeta(loc);
+      const nube = t.search(NUBE);
+      const ttl = t.lastIndexOf("TTL");
+      expect(ttl, `${loc}: no nombra la rebaja de TTL`).toBeGreaterThanOrEqual(0);
+      expect(ttl, `${loc}: la rebaja de TTL va detrás de la frase de la nube`).toBeLessThan(nube);
+      const ultimaFrase = t.slice(t.lastIndexOf(". ", nube) + 2);
+      expect(ultimaFrase, `${loc}: la frase de la nube no es la última`).toMatch(/^[^.]*Savings[ -]Cloud[^.]*\.$/);
+    });
+  }
+
   it("es/en: sin clave se dice lo que hace el gateway — mide en local y lo cuenta al salir", () => {
     const es = tarjeta("es");
     expect(es).toContain("sin ninguna clave de BiVelio");
