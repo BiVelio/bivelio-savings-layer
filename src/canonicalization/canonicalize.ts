@@ -131,33 +131,106 @@ const TIPOGRAFICAS: ReadonlyArray<readonly [RegExp, string]> = [
 ];
 
 const PUNTUACION = /[¿?¡!;.,:'"·•]/g;
-const DIACRITICO_LATINO = /([a-z])\p{M}+/gu;
+const DIACRITICO_LATINO = /([a-zA-Z])\p{M}+/gu;
 const MARCA_HUERFANA = /(^|\s)\p{M}+/gu;
 const LETRA = /\p{L}/u;
+
+// ─── Lo que NO es prosa: código ──────────────────────────────────────────────
+//
+// POR QUÉ (auditoría del 2026-11-19, N1). Las reglas de arriba están pensadas
+// para prosa, y aplicadas a código unían preguntas DISTINTAS: «`if (!ok)`» y
+// «`if (ok)`», «a != b» y «a = b», «obj?.name» y «obj.name», «^a.b$» y «^ab$»,
+// «'ABC'» y «'abc'». La segunda pregunta recibía la respuesta de la primera, y
+// la repetición se apuntaba como llamada evitada.
+//
+// DOS DEFENSAS, de la más segura a la menos:
+//   1. Lo que va entre backticks (`…`) o en un bloque ``` se copia TAL CUAL:
+//      ni caja, ni signos, ni espacios. Quien marca código pide exactitud.
+//   2. Fuera de ahí, un signo solo es «puntuación de frase» si lo sigue un
+//      espacio, el final o un cierre. PEGADO a lo que viene después es un
+//      operador o parte de un identificador (`!ok`, `!=`, `?.`, `a.b`, `f(a,b)`,
+//      `std::x`) y se conserva. Y lo entrecomillado conserva su caja.
+// Las dos fallan hacia el lado barato: una colisión de prosa que se pierde
+// cuesta un acierto de caché; una colisión de código que se cuela contesta otra
+// pregunta.
+//
+// Un bloque ``` sin cerrar protege hasta el final. Un backtick suelto, o pegado
+// a una letra («l`import»), sigue siendo el apóstrofo mal tecleado de antes.
+const CODIGO = /```[\s\S]*?(?:```|$)|(?<![\p{L}\p{N}`])`[^`\n]+`(?![\p{L}\p{N}`])/gu;
+
+// Una cita: comillas (ya plegadas a ASCII) que no tocan letra ni cifra por
+// fuera y cuyo contenido no empieza ni acaba en espacio. El apóstrofo de
+// «don't» o «l'import» y las unidades de «5'» no abren cita.
+const CITA = /(?<![\p{L}\p{N}])(["'])(?!\s)([^\n]*?)(?<!\s)\1(?![\p{L}\p{N}])/gu;
+
+// Lo que puede seguir a un signo SIN convertirlo en operador: más puntuación de
+// frase o un cierre. «(¿seguro?)», «"hola".», «¿qué?!».
+const CIERRE = /[\s¿?¡!;.,:'"·•)\]}]/u;
+
+// Entre una cita y esto, las comillas delimitan una cadena de CÓDIGO y se
+// quedan: `print('abc')` no es `print(abc)`.
+const ABRE_CODIGO = /[(\[{=+<>!,:]/;
+const CIERRA_CODIGO = /[)\]}=+<>]/;
 
 function esDigito(c: string): boolean {
   return c >= "0" && c <= "9";
 }
 
-/**
- * Normalized form of a turn's text, as it enters the cache key.
- *
- * Folded away: Unicode form, case, whitespace, typographic marks, Latin
- * diacritics and sentence punctuation. Preserved exactly: numbers, decimal and
- * thousands separators, times, dates, units, negations, math operators and any
- * combining mark outside the Latin alphabet.
- */
-export function normalizeText(text: string): string {
+/** ¿Está `signo` pegado a lo que le sigue, como un operador y no como puntuación? */
+function pegado(todo: string, i: number): boolean {
+  // Una racha del mismo signo decide junta: `!!x` se queda entero y «¿¡qué!!»
+  // se va entero.
+  const signo = todo[i]!;
+  let j = i + 1;
+  while (todo[j] === signo) j += 1;
+  const despues = todo[j];
+  if (despues === undefined || CIERRE.test(despues)) {
+    // El encadenamiento opcional: `?.` seguido de nombre, índice o llamada.
+    return signo === "?" && despues === "." && /[\p{L}_$(\[]/u.test(todo[j + 1] ?? "");
+  }
+  return true;
+}
+
+/** Minúsculas en todo salvo en lo entrecomillado: 'ABC' y 'abc' son dos cadenas. */
+function minusculasFueraDeCitas(texto: string): string {
+  let out = "";
+  let desde = 0;
+  for (const m of texto.matchAll(CITA)) {
+    out += texto.slice(desde, m.index).toLowerCase() + m[0];
+    desde = m.index + m[0].length;
+  }
+  return out + texto.slice(desde).toLowerCase();
+}
+
+/** Las posiciones de las comillas que delimitan una cadena de código. */
+function comillasDeCodigo(texto: string): Set<number> {
+  const fijas = new Set<number>();
+  for (const m of texto.matchAll(CITA)) {
+    const fin = m.index + m[0].length - 1;
+    const antes = texto[m.index - 1] ?? "";
+    const despues = texto[fin + 1] ?? "";
+    if (ABRE_CODIGO.test(antes) || CIERRA_CODIGO.test(despues)) {
+      fijas.add(m.index);
+      fijas.add(fin);
+    }
+  }
+  return fijas;
+}
+
+/** La normalización de un tramo de PROSA (todo lo que no es código marcado). */
+function normalizarProsa(text: string): string {
   // NFKC primero, y la tabla tipográfica DESPUÉS: parte del trabajo lo destapa
   // la propia NFKC («½» sale como «1⁄2», con barra de fracción, y hay que
   // convertirla o «½ de 10» y «1/2 de 10» siguen siendo dos claves).
-  let out = text.normalize("NFKC").toLowerCase();
+  let out = text.normalize("NFKC");
   for (const [signo, ascii] of TIPOGRAFICAS) out = out.replace(signo, ascii);
-  out = out
+  out = minusculasFueraDeCitas(out)
     .normalize("NFD")
     .replace(DIACRITICO_LATINO, "$1")
     .replace(MARCA_HUERFANA, "$1")
     .normalize("NFC");
+
+  const fijas = comillasDeCodigo(out);
 
   // Cada signo decide MIRANDO A SUS VECINOS. Es la diferencia entre quitar
   // puntuación y estropear datos: el mismo carácter es adorno entre letras y
@@ -167,8 +240,9 @@ export function normalizeText(text: string): string {
     const despues = todo[i + 1] ?? "";
     switch (signo) {
       case "¿":
-      case "?":
       case "¡":
+        return esDigito(antes) && esDigito(despues) ? signo : "";
+      case "?":
       case ";":
         // Adorno de frase, salvo si SEPARA DOS CIFRAS. El «;» es el caso real:
         // en el teclado español es Shift+«,» y el «:» es Shift+«.», así que
@@ -179,21 +253,31 @@ export function normalizeText(text: string): string {
         // se quedaba en la clave: el resolver aritmético, que declina «3! + 2»
         // porque no sabe qué es «!», sí contestaba «123» a «cuánto es 1;2;3» —una
         // respuesta calculada aquí, con la llamada apuntada como evitada—.
-        return esDigito(antes) && esDigito(despues) ? signo : "";
+        if (esDigito(antes) && esDigito(despues)) return signo;
+        // Y pegado a lo que sigue es código: `obj?.name`, `a?b:c`, `x;y`.
+        return pegado(todo, i) ? signo : "";
       case "!":
         // Pegado a una cifra es un factorial, y el resolver aritmético declina al
         // verlo. Quitarlo le hace leer «3! + 2» como «3 + 2» y responder 5.
-        return esDigito(antes) ? signo : "";
+        if (esDigito(antes)) return signo;
+        // Pegado a lo que sigue es una NEGACIÓN: `!ok`, `!=`, `!(a && b)`.
+        return pegado(todo, i) ? signo : "";
       case ".":
       case ",":
         if (esDigito(antes) && esDigito(despues)) return signo; // 1.234,56
         // «.5» es medio, no cinco.
         if (esDigito(despues) && !esDigito(antes) && !LETRA.test(antes)) return signo;
-        return "";
+        // La ela geminada tecleada con punto: «col.legi» es «col·legi».
+        if (signo === "." && antes === "l" && despues === "l") return "";
+        // Pegado a lo que sigue no cierra frase: `obj.name`, `^a.b$`, `f(a,b)`,
+        // `.env`, `v1.x`. Y tras `?` es la segunda mitad de `?.`.
+        return pegado(todo, i) ? signo : "";
       case ":":
-        return esDigito(antes) && esDigito(despues) ? signo : ""; // 12:30
+        if (esDigito(antes) && esDigito(despues)) return signo; // 12:30
+        return pegado(todo, i) ? signo : ""; // `std::vector`, `clave:valor`
       case "'":
       case '"':
+        if (fijas.has(i)) return signo;
         // Dentro de palabra es ortografía, no adorno: l'import, s'ha,
         // aujourd'hui, don't. Y «aujourd'hui» es un marcador de frescura de
         // `policy.ts`: borrarle el apóstrofo apaga el guardarraíl en francés.
@@ -207,7 +291,27 @@ export function normalizeText(text: string): string {
     }
   });
 
-  return out.replace(ESPACIOS, " ").trim();
+  return out.replace(ESPACIOS, " ");
+}
+
+/**
+ * Normalized form of a turn's text, as it enters the cache key.
+ *
+ * Folded away: Unicode form, case, whitespace, typographic marks, Latin
+ * diacritics and sentence punctuation. Preserved exactly: numbers, decimal and
+ * thousands separators, times, dates, units, negations, math operators, any
+ * combining mark outside the Latin alphabet, and code: text inside backticks or
+ * a fenced block is kept verbatim, quoted text keeps its case, and a sign glued
+ * to what follows it (`!ok`, `!=`, `?.`, `a.b`) is an operator, not punctuation.
+ */
+export function normalizeText(text: string): string {
+  let out = "";
+  let desde = 0;
+  for (const m of text.matchAll(CODIGO)) {
+    out += normalizarProsa(text.slice(desde, m.index)) + m[0];
+    desde = m.index + m[0].length;
+  }
+  return (out + normalizarProsa(text.slice(desde))).trim();
 }
 
 export function sha256(input: string): string {
