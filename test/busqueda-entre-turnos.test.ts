@@ -4,6 +4,7 @@ import { SavingsPipeline } from "../src/pipeline/pipeline.js";
 import { AnthropicProvider } from "../src/providers/anthropic.js";
 import { MemoriaDeBusquedas, paresDeBusqueda, type BloqueCrudo } from "../src/providers/busquedas-entre-turnos.js";
 import { TokenizerRegistry } from "../src/tokenizer/registry.js";
+import { ToolSelector } from "../src/router/tool-selector.js";
 import { reiniciarAvisos } from "../src/util/warn-once.js";
 import type { ProviderRequest, ProviderResponse } from "../src/providers/types.js";
 import type { ChatMessage, SavingsReport, SavingsRequest, SavingsResult, ToolDescriptor } from "../src/contracts/types.js";
@@ -204,8 +205,8 @@ function catalogoMcp(n: number): ToolDescriptor[] {
 
 const POLITICA = "Eres el asistente de operaciones de una tienda de electrónica. ".repeat(40);
 
-function capa(provider: AnthropicProvider): SavingsPipeline {
-  return new SavingsPipeline({ provider, tokenizer: new TokenizerRegistry(), devUnlicensed: true } as never);
+function capa(provider: AnthropicProvider, extra: Record<string, unknown> = {}): SavingsPipeline {
+  return new SavingsPipeline({ provider, tokenizer: new TokenizerRegistry(), devUnlicensed: true, ...extra } as never);
 }
 
 const traza = (r: SavingsReport, etapa: string) => r.traces.filter((t) => t.stage === etapa);
@@ -524,7 +525,9 @@ describe("el adaptador devuelve un par ENTERO o no lo devuelve", () => {
     expect(api.cuerpos.map(validar).filter(Boolean)).toEqual([]);
   });
 
-  it("por el pipeline, con un catálogo tipado: la verja de riesgo retira la de escritura y su par no vuelve", async () => {
+  // A2-28 (2026-11-19): la verja de riesgo es opción explícita; esta prueba la pide.
+  it("por el pipeline, con un catálogo tipado y `withholdWriteTools`: la verja de riesgo retira la de escritura y su par no vuelve", async () => {
+    const conVerja = { toolSelector: new ToolSelector({ withholdWriteTools: true }) };
     const tipadas: ToolDescriptor[] = [
       ...Array.from({ length: 12 }, (_, i) => ({ id: `servicio_${i}_consultar`, intents: [`consultar servicio ${i}`], risk: "read" as const })),
       { id: "servicio_99_consultar", intents: ["elimina el servicio 99"], risk: "destructive" as const },
@@ -532,7 +535,7 @@ describe("el adaptador devuelve un par ENTERO o no lo devuelve", () => {
     const api = apiFalsa();
     const p = new AnthropicProvider({ fetchImpl: api.fetchImpl });
     // Turno 1, una ACCIÓN («elimina»): la de escritura viaja y la búsqueda la carga.
-    const r1 = await capa(p).generate({
+    const r1 = await capa(p, conVerja).generate({
       model: "anthropic/claude-sonnet-4-6",
       messages: [{ role: "user", content: "Elimina los pedidos del servicio 99" }],
       tools: tipadas,
@@ -542,7 +545,7 @@ describe("el adaptador devuelve un par ENTERO o no lo devuelve", () => {
     expect(r1.toolCalls?.[0]?.name).toBe("servicio_99_consultar");
     // Turno 2 con un historial que ya no pide ninguna acción: la etapa 6 retira
     // la destructiva, así que el par que la cargó NO puede volver por detrás.
-    const r2 = await capa(p).generate({
+    const r2 = await capa(p, conVerja).generate({
       model: "anthropic/claude-sonnet-4-6",
       messages: [
         { role: "user", content: "¿Qué pedidos del servicio 99 hay?" },

@@ -55,8 +55,17 @@ describe("1 · el selector sin `maxTools` no poda por relevancia", () => {
     escritura("anular_pedido", ["anular pedido"]),
   ];
 
-  it("fuera de una acción: todas las de lectura, aunque no casen; solo la verja de riesgo retira las de escritura", () => {
+  // A2-28 (2026-11-19): la verja de riesgo es ahora opción explícita
+  // (`withholdWriteTools`). Las tres pruebas que la daban por defecto la piden.
+  it("por defecto, fuera de una acción: el catálogo entero, también la de escritura", () => {
     const r = new ToolSelector().select("¿dónde está mi envío?", catalogo, "SINGLE_RETRIEVAL");
+    expect(r.tools.map((t) => t.id)).toEqual(["envios", "facturas", "stock", "anular_pedido"]);
+    expect(r.droppedIds).toEqual([]);
+    expect(r.setIsStable).toBe(true);
+  });
+
+  it("fuera de una acción: todas las de lectura, aunque no casen; solo la verja de riesgo retira las de escritura", () => {
+    const r = new ToolSelector({ withholdWriteTools: true }).select("¿dónde está mi envío?", catalogo, "SINGLE_RETRIEVAL");
     expect(r.tools.map((t) => t.id)).toEqual(["envios", "facturas", "stock"]);
     expect(r.droppedIds).toEqual(["anular_pedido"]);
     expect(r.setIsStable).toBe(false);
@@ -70,7 +79,7 @@ describe("1 · el selector sin `maxTools` no poda por relevancia", () => {
   });
 
   it("con clave de congelación y muchos turnos, no congela nada ni cuela una de escritura fuera de una acción", () => {
-    const sel = new ToolSelector({ learningTurns: 2 });
+    const sel = new ToolSelector({ learningTurns: 2, withholdWriteTools: true });
     sel.select("anula el pedido", catalogo, "TOOL_ACTION", "sesion");
     for (let i = 0; i < 5; i++) {
       const r = sel.select(`pregunta ${i} sobre el stock`, catalogo, "NO_RETRIEVAL", "sesion");
@@ -80,7 +89,7 @@ describe("1 · el selector sin `maxTools` no poda por relevancia", () => {
   });
 
   it("control: con `maxTools` fijado, poda por relevancia como hasta 0.4.32", () => {
-    const r = new ToolSelector({ maxTools: 8 }).select("¿dónde está mi envío?", catalogo, "SINGLE_RETRIEVAL");
+    const r = new ToolSelector({ maxTools: 8, withholdWriteTools: true }).select("¿dónde está mi envío?", catalogo, "SINGLE_RETRIEVAL");
     expect(r.tools.map((t) => t.id)).toEqual(["envios"]);
     expect(r.droppedIds).toEqual(expect.arrayContaining(["facturas", "stock", "anular_pedido"]));
   });

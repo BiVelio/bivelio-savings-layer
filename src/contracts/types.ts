@@ -392,8 +392,8 @@ export interface SavingsToggles {
    * reference to value a later repeat.
    *
    * WHAT CHANGES FOR YOU. Relevance pruning of read tools is off: the model chooses.
-   * When your catalogue declares `risk`, write and destructive tools are still withheld
-   * from requests the router does not classify as actions, as with the selector. Each
+   * Write and destructive tools travel deferred like the rest, unless your
+   * `ToolSelector` sets `withholdWriteTools`, as with the selector. Each
    * search is a short extra step inside the same call, and the definitions it loads are
    * billed as normal input. Across turns, append the assistant turn with its
    * `toolCalls` (ids as returned) before the tool results: the adapter then sends that

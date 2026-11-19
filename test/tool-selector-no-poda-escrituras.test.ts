@@ -51,8 +51,10 @@ describe("ToolSelector — writes en TOOL_ACTION", () => {
     expect(r.droppedIds).not.toContain("send_invoice");
   });
 
-  it("fuera de TOOL_ACTION, una write ni siquiera es elegible (aislamiento intacto)", () => {
-    const sel = new ToolSelector();
+  // A2-28 (2026-11-19): la verja pasa a ser opción explícita. Esta prueba la
+  // fijaba como comportamiento por defecto; ahora la pide con `withholdWriteTools`.
+  it("con `withholdWriteTools`, fuera de TOOL_ACTION una write ni siquiera es elegible", () => {
+    const sel = new ToolSelector({ withholdWriteTools: true });
     const tools = [write("delete_account", ["borrar cuenta"])];
     const r = sel.select("borra la cuenta", tools, "SINGLE_RETRIEVAL");
     expect(r.tools).toHaveLength(0);

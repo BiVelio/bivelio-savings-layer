@@ -273,6 +273,14 @@ export class SavingsLedger {
    */
   compactedLocal = 0;
   /**
+   * Tokens (LOCAL ruler) of write and destructive tools that the tool selector
+   * left out of the sent prompt. Subtracted from `removedInputLocal`: taking a
+   * write tool away from the model removes a capability, and that is never
+   * credited as a saving, neither as eliminated tokens nor in the
+   * reconstructed baseline.
+   */
+  withheldWritesLocal = 0;
+  /**
    * ¿El estimador que produjo las dos cifras anteriores cuenta con la regla del
    * proveedor? Lo fija el pipeline al resolver el tokenizador del modelo.
    * Defaults to NO: exactness is claimed only once it has been verified.

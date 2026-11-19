@@ -114,16 +114,49 @@ each result answers and its `isError`. Two conversations that differ only there 
 share a cached answer; the fresh call ids of a new run of the same loop are not a
 difference.
 
-**Which tools reach the model.** The layer never cuts a catalogue it cannot rank. If
-your tools declare no `intents` and no `risk` (the usual shape of MCP and OpenAI tool
-lists), or you pass `savings: { router: false }`, every tool goes to the provider
-exactly as you sent it, and the layer credits nothing for the tool block. When your
-tools declare `intents`/`risk`, the selector holds back write tools from a request
-that is not an action and, since 0.4.33, sends every other tool: it prunes by
-relevance only if you ask for it with `new ToolSelector({ maxTools })` (up to 0.4.32
-that was the default, with 8). Whatever it leaves out, the model cannot call in that
-request: the report's `tool-selector` trace lists it, the tokens count as eliminated
-input, and the SDK warns once per process (`silenceWarnings` turns the warning off).
+**Which tools reach the model.** By default, all of them: every tool you pass to
+`layer.generate({ tools })` goes to the provider, read and write alike, whether or not
+your tools declare `intents` and `risk`, and the layer credits nothing for the tool
+block. Up to 1.2.2 a catalogue that declared `risk` lost its write tools on any request
+the router did not classify as an action; since 1.2.3 that gate is off unless you ask
+for it. Two options on the selector leave tools out, and both are opt-in:
+
+```ts
+import { ToolSelector } from "@bivelio/savings-layer";
+
+const selectiveLayer = createSavingsLayer({
+  provider,
+  // licenseKey: process.env.BIVELIO_LICENSE_KEY,   (optional: cloud)
+  toolSelector: new ToolSelector({
+    maxTools: 8, //              prune READ tools by relevance
+    withholdWriteTools: true, // keep write tools out of requests that are not actions
+  }),
+});
+```
+
+- **`maxTools`** keeps the read tools whose `intents` appear in the request text, up to
+  that many (up to 0.4.32 this was the default, with 8). Write and destructive tools are
+  never pruned by relevance: they take the first places.
+- **`withholdWriteTools`** applies this rule, exactly: a tool whose `risk` is not
+  `"read"` is sent only when the router classifies the request as an action, and it does
+  so only when the conversation text contains one of these words: `create`, `update`,
+  `delete`, `send`, `pay`, `book`, `cancel`, `crea`, `actualiza`, `elimina`, `envía`,
+  `paga`. "Refund order 4411" contains none of them, so with this option on the model
+  does not receive `refund_order` and answers that it cannot do it. Use it only if you
+  prefer a model that cannot act to one that acts on a request you did not expect, and
+  check your own phrasing against that list first.
+
+Neither option applies to a catalogue that declares no `intents` and no `risk` (the
+usual shape of MCP and OpenAI tool lists), to a request with
+`savings: { router: false }`, or to the framework adapters: there every tool goes to
+the provider exactly as you sent it.
+
+Whatever the selector leaves out, the model cannot call in that request. The report's
+`tool-selector` trace lists every tool left out, and the SDK warns once per process
+(`silenceWarnings` turns the warning off). Only a pruned **read** tool counts as
+eliminated input. A write or destructive tool that was left out is never credited as a
+saving: its tokens enter neither `tokens.eliminatedInput` nor the baseline behind
+`cost.*`, and the trace lists it under `withheldWritesNotCredited`.
 
 **Large catalogues: let the provider search them (opt‑in).** With hundreds of tools
 (several MCP servers, say), `savings: { toolSearch: "auto" }` sends every tool deferred

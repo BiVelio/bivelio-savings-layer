@@ -6,9 +6,9 @@ import { catalogoSinTipar } from "./busqueda-nativa.js";
  * Tool selector.
  *
  * Full tool schemas can dominate a prompt even when most tools are irrelevant.
- * The selector picks only the tools whose declared intents match the request,
- * and — critically — gates write/destructive tools behind explicit rules so a
- * read-only request can never be handed a mutating capability.
+ * By default the selector sends every tool the caller declared. It prunes read
+ * tools by declared intent only with `maxTools`, and withholds write/destructive
+ * tools from a request that is not an action only with `withholdWriteTools`.
  */
 export interface ToolSelection {
   tools: ToolDescriptor[];
@@ -37,8 +37,8 @@ export interface ToolSelectorOptions {
    * relevant ones — up to 0.4.32 that was the default, with 8.
    *
    * What is never affected by this option: write and destructive tools are
-   * still withheld from a request the router does not classify as an action
-   * (that gate is about safety, not size), and a catalogue that declares no
+   * never pruned by relevance (see `withholdWriteTools` for the one gate that
+   * can leave them out), and a catalogue that declares no
    * `intents` and no `risk` (the usual case: MCP and OpenAI tool lists), or any
    * request with `savings: { router: false }`, goes to the provider WHOLE,
    * exactly as the caller sent it. Cutting blind left the model unable to call
@@ -48,6 +48,24 @@ export interface ToolSelectorOptions {
    * (once per process, silenced by `silenceWarnings`).
    */
   maxTools?: number;
+  /**
+   * Withhold write and destructive tools from a request the router does not
+   * classify as an action. Off by default since 1.2.3: every write tool the
+   * caller declared reaches the model, as it already did through the framework
+   * adapters and with an untyped catalogue.
+   *
+   * The rule, exactly, when this is `true`: a tool whose `risk` is not `"read"`
+   * is sent only if the router classifies the request as `TOOL_ACTION`, and it
+   * does that only when the conversation text contains one of these words:
+   * create, update, delete, send, pay, book, cancel, crea, actualiza, elimina,
+   * envia, paga. "Refund order 4411" contains none of them, so with the gate on
+   * the model would not see `refund_order`. Switch it on only if you prefer a
+   * model that cannot act to one that acts on a request you did not expect.
+   *
+   * A withheld write tool is never credited as a saving: its tokens do not
+   * enter `tokens.eliminatedInput`.
+   */
+  withholdWriteTools?: boolean;
   /** Tokenizer-aware scorer for tie-breaking (optional). */
   scoreIntentMatch?: (text: string, tool: ToolDescriptor) => number;
   /**
@@ -95,12 +113,15 @@ export class InMemoryToolSetFreezer implements ToolSetFreezer {
 export class ToolSelector {
   // `undefined` = sin tope ni poda por relevancia (el default desde 0.4.33).
   private readonly maxTools: number | undefined;
+  /** Whether this selector withholds write tools from non-action requests (`ToolSelectorOptions.withholdWriteTools`). */
+  readonly withholdWriteTools: boolean;
   private readonly scoreIntentMatch: (text: string, tool: ToolDescriptor) => number;
   private readonly learningTurns: number;
   private readonly freezer: ToolSetFreezer;
 
   constructor(opts: ToolSelectorOptions = {}) {
     this.maxTools = opts.maxTools;
+    this.withholdWriteTools = opts.withholdWriteTools === true;
     this.scoreIntentMatch = opts.scoreIntentMatch ?? defaultScore;
     this.learningTurns = opts.learningTurns ?? 16;
     this.freezer = opts.freezer ?? new InMemoryToolSetFreezer();
@@ -172,8 +193,14 @@ export class ToolSelector {
       };
     }
 
-    // A non-TOOL_ACTION request never receives write/destructive tools.
-    const allowWrites = execution === "TOOL_ACTION";
+    // A2-28 (2026-11-19). LAS DE ESCRITURA VAN SIEMPRE, SALVO QUE EL LLAMANTE
+    // PIDA LA VERJA (`withholdWriteTools`). La verja retiraba toda herramienta de
+    // escritura de una petición que el router no clasificara como acción, y el
+    // router solo ve una acción en 11 verbos: «Refund order 4411» se quedaba sin
+    // `refund_order`, el modelo contestaba que no podía, y lo retirado se
+    // apuntaba como ahorro. Los adaptadores y el catálogo sin tipar ya las
+    // mandaban todas; ahora la API nativa también.
+    const allowWrites = execution === "TOOL_ACTION" || !this.withholdWriteTools;
     const eligible = tools.filter((t) => allowWrites || t.risk === "read");
     const esEscritura = (t: ToolDescriptor) => allowWrites && t.risk !== "read";
 
