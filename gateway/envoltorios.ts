@@ -285,8 +285,16 @@ export function impedimentoDeEnvoltorio(
  *     línea que lo dice. Se mide igual; al no ser el API oficial, no se
  *     acredita ahorro (precio de lista solo en el proveedor);
  *   · con prefijo de ruta (`https://host/api/anthropic`) → no se arranca: el
- *     gateway reenvía a un ORIGEN y perdería el prefijo. La excepción es
- *     DeepSeek, cuyo `/anthropic` ya reescribe el gateway.
+ *     gateway reenvía a un ORIGEN y perdería el prefijo. Las excepciones: la
+ *     ruta que el propio envoltorio pone detrás del gateway (`/v1` en Codex con
+ *     API key, opencode y Kilo), que se conserva tal cual, y DeepSeek, cuyo
+ *     `/anthropic` ya reescribe el gateway.
+ *
+ * A2-12 · la misma regla para todos los envoltorios, no solo los de Anthropic:
+ * gemini (GOOGLE_GEMINI_BASE_URL), codex (OPENAI_BASE_URL) y opencode/Kilo (un
+ * `provider.anthropic.options.baseURL` en su config inline). Codex con cuenta
+ * ChatGPT y un OPENAI_BASE_URL propio no arranca: el envoltorio manda ese
+ * tráfico a la ruta de chatgpt.com y no sabe reproducir el destino del usuario.
  * Pura: solo LEE el entorno, y el mensaje enseña como mucho el ORIGEN (nunca
  * usuario:contraseña ni la ruta, que pueden llevar una credencial).
  */
@@ -295,25 +303,68 @@ export type UpstreamHeredado =
   | { tipo: "usar"; upstream: string; variable: string; aviso: string }
   | { tipo: "impedimento"; variable: string; error: string };
 
-/** La variable de base URL de cada terminal, y el origen oficial al que apunta por defecto. */
-function variablesDeBaseUrl(
+/**
+ * El base URL previo de cada terminal: dónde lo lee (`variable`, el nombre que
+ * se enseña), su valor, el origen oficial al que apunta por defecto y la ruta
+ * que el envoltorio pone detrás del gateway (un valor previo con esa misma ruta
+ * se reenvía tal cual).
+ */
+interface BaseUrlPrevio {
+  variable: string;
+  valor: string;
+  oficial: string;
+  ruta: "" | "/v1";
+}
+
+/** `provider.anthropic.options.baseURL` de la config inline de opencode o Kilo, si es un texto. */
+function baseUrlDeConfigInline(contenido: string | undefined): string | undefined {
+  if (contenido === undefined || contenido.trim() === "") return undefined;
+  try {
+    const v = (JSON.parse(contenido) as { provider?: { anthropic?: { options?: { baseURL?: unknown } } } })?.provider
+      ?.anthropic?.options?.baseURL;
+    return typeof v === "string" && v.trim() !== "" ? v : undefined;
+  } catch {
+    // Ilegible: lo dice impedimentoDeEnvoltorio antes de llegar aquí.
+    return undefined;
+  }
+}
+
+function baseUrlPrevio(
   comando: TerminalConEnvoltorio,
+  entorno: Record<string, string | undefined>,
   upstreamElegido: string | undefined,
-): { variables: readonly string[]; oficial: string } | null {
+): BaseUrlPrevio | null {
+  const primera = (variables: readonly string[], oficial: string, ruta: "" | "/v1"): BaseUrlPrevio | null => {
+    const variable = variables.find((v) => (entorno[v] ?? "").trim() !== "");
+    return variable === undefined ? null : { variable, valor: entorno[variable]!, oficial, ruta };
+  };
   switch (comando) {
     case "claude":
     case "qwen":
-      return { variables: ["ANTHROPIC_BASE_URL"], oficial: ORIGEN_ANTHROPIC };
+      return primera(["ANTHROPIC_BASE_URL"], ORIGEN_ANTHROPIC, "");
     case "goose":
-      return { variables: ["ANTHROPIC_HOST"], oficial: ORIGEN_ANTHROPIC };
+      return primera(["ANTHROPIC_HOST"], ORIGEN_ANTHROPIC, "");
     case "aider":
       // El mismo orden en que las lee litellm.
       return upstreamElegido === ORIGEN_OPENAI
-        ? { variables: ["OPENAI_BASE_URL", "OPENAI_API_BASE"], oficial: ORIGEN_OPENAI }
-        : { variables: ["ANTHROPIC_API_BASE", "ANTHROPIC_BASE_URL"], oficial: ORIGEN_ANTHROPIC };
+        ? primera(["OPENAI_BASE_URL", "OPENAI_API_BASE"], ORIGEN_OPENAI, "")
+        : primera(["ANTHROPIC_API_BASE", "ANTHROPIC_BASE_URL"], ORIGEN_ANTHROPIC, "");
+    case "gemini":
+      return primera(["GOOGLE_GEMINI_BASE_URL"], ORIGEN_GEMINI, "");
+    case "codex":
+      // El proveedor integrado de Codex lee OPENAI_BASE_URL (CON /v1, como el
+      // `-c openai_base_url` que pone el envoltorio).
+      return primera(["OPENAI_BASE_URL"], ORIGEN_OPENAI, "/v1");
+    case "opencode":
+    case "kilo": {
+      const variable = VARIABLE_DE_CONFIG[comando];
+      const valor = baseUrlDeConfigInline(entorno[variable]);
+      return valor === undefined
+        ? null
+        : { variable: `provider.anthropic.options.baseURL in ${variable}`, valor, oficial: ORIGEN_ANTHROPIC, ruta: "/v1" };
+    }
     default:
-      // codex va por `-c` y su destino lo fija el modo de auth; opencode, Kilo
-      // y Copilot ya tratan su base URL en su propia rama; gemini no tiene proxy.
+      // Copilot exige el origen oficial en su propia rama (destinoCopilot).
       return null;
   }
 }
@@ -323,17 +374,18 @@ export function upstreamHeredado(
   entorno: Record<string, string | undefined> = process.env,
   /** `BVSALA_GATEWAY_UPSTREAM` ya resuelto a origen, si el usuario lo puso. */
   upstreamElegido?: string,
+  /** El modo de auth de Codex (solo lo mira codex). */
+  modoCodex?: ModoAuthCodex,
 ): UpstreamHeredado {
-  const tabla = variablesDeBaseUrl(comando, upstreamElegido);
+  const tabla = baseUrlPrevio(comando, entorno, upstreamElegido);
   if (tabla === null) return { tipo: "ninguno" };
-  const variable = tabla.variables.find((v) => (entorno[v] ?? "").trim() !== "");
-  if (variable === undefined) return { tipo: "ninguno" };
+  const variable = tabla.variable;
   const comoSeguir =
     `Run \`${comando}\` directly to keep using that endpoint (not metered), or unset ${variable} to go ` +
     `through the gateway to ${tabla.oficial}.`;
   let url: URL;
   try {
-    url = new URL(entorno[variable]!.trim());
+    url = new URL(tabla.valor.trim());
     if (url.protocol !== "http:" && url.protocol !== "https:") throw new Error("esquema");
   } catch {
     return {
@@ -345,6 +397,16 @@ export function upstreamHeredado(
     };
   }
   if (url.origin === tabla.oficial) return { tipo: "ninguno" };
+  if (comando === "codex" && modoCodex === "chatgpt") {
+    return {
+      tipo: "impedimento",
+      variable,
+      error:
+        `${variable} points Codex at ${url.origin}, but Codex is signed in with ChatGPT and the wrapper sends that ` +
+        "traffic to chatgpt.com/backend-api/codex: it cannot reproduce your endpoint, so it does not start and does " +
+        `not replace your variable. ${comoSeguir}`,
+    };
+  }
   if (upstreamElegido !== undefined) {
     let elegido = upstreamElegido;
     try {
@@ -364,13 +426,20 @@ export function upstreamHeredado(
   }
   const ruta = url.pathname.replace(/\/+$/, "");
   const deepseekAnthropic = url.origin === "https://api.deepseek.com" && ruta === "/anthropic";
-  if ((ruta !== "" && !deepseekAnthropic) || url.search !== "") {
+  // La ruta tiene que ser EXACTAMENTE la que el envoltorio pone detrás del
+  // gateway: sin ella (o con otra) la petición llegaría a otra ruta del proxy.
+  if ((ruta !== tabla.ruta && !deepseekAnthropic) || url.search !== "") {
+    const queFalla =
+      ruta === "" && url.search === ""
+        ? `${variable} is already set to ${url.origin} without the ${tabla.ruta} path the wrapper always adds, so the ` +
+          "gateway could not reproduce your endpoint. The wrapper"
+        : `${variable} is already set to an endpoint with a path prefix at ${url.origin}. The gateway forwards to an ` +
+          "origin and would drop that prefix, so the wrapper";
     return {
       tipo: "impedimento",
       variable,
       error:
-        `${variable} is already set to an endpoint with a path prefix at ${url.origin}. The gateway forwards to an ` +
-        "origin and would drop that prefix, so the wrapper does not start and does not replace your variable " +
+        `${queFalla} does not start and does not replace your variable ` +
         `(your credentials for that endpoint are never sent to ${tabla.oficial}). ${comoSeguir}`,
     };
   }

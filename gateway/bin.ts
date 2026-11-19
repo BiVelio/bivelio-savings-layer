@@ -467,7 +467,16 @@ if (!up.ok) {
 // ese proxy, a api.anthropic.com. O ese origen pasa a ser el upstream de este
 // gateway, o no se arranca y se dice por qué (gateway/envoltorios.ts). Antes
 // de la licencia y de la red, como los demás impedimentos.
-const heredado = esEnvoltorio ? upstreamHeredado(comando, process.env, up.upstream) : ({ tipo: "ninguno" } as const);
+// El modo de auth de Codex se lee por EXISTENCIA/enum de ~/.codex/auth.json —
+// jamás se registra. Decide el destino de Codex y si un OPENAI_BASE_URL previo
+// se puede respetar (A2-12).
+const modoCodex =
+  comando === "codex"
+    ? modoAuthCodex({ leerAuth: () => readFileSync(join(homedir(), ".codex", "auth.json"), "utf8") })
+    : undefined;
+const heredado = esEnvoltorio
+  ? upstreamHeredado(comando, process.env, up.upstream, modoCodex)
+  : ({ tipo: "ninguno" } as const);
 if (heredado.tipo === "impedimento") {
   console.error(`[bvsala ${comando}] ${heredado.error}`);
   process.exit(1);
@@ -494,14 +503,10 @@ if (!licencia.ok) {
   process.exit(1);
 }
 
-// La tabla decide destino y variables; bin.ts solo ejecuta. El modo de auth de
-// Codex se lee por EXISTENCIA/enum de ~/.codex/auth.json — jamás se registra.
+// La tabla decide destino y variables; bin.ts solo ejecuta.
 const envoltorio = esEnvoltorio
   ? envoltorioDe(comando, 0, resto, {
-      modoCodex:
-        comando === "codex"
-          ? modoAuthCodex({ leerAuth: () => readFileSync(join(homedir(), ".codex", "auth.json"), "utf8") })
-          : undefined,
+      modoCodex,
       ...(up.upstream ? { upstreamElegido: up.upstream } : {}),
     })
   : null;
@@ -737,7 +742,14 @@ if (envoltorio && esEnvoltorio) {
       process.exit(127);
     }
   }
-  const hijo = spawn(binAEjecutar, final.args, { stdio: "inherit", env: { ...process.env, ...final.env } });
+  // A2-12 · Codex con un OPENAI_BASE_URL propio que el gateway ya respeta (le
+  // reenvía a ese origen): la variable también apunta al gateway, para que el
+  // tráfico pase por él lea Codex el `-c` o la variable.
+  const envDelHijo =
+    comando === "codex" && heredado.tipo === "usar"
+      ? { ...final.env, OPENAI_BASE_URL: `http://127.0.0.1:${arranque.puerto}/v1` }
+      : final.env;
+  const hijo = spawn(binAEjecutar, final.args, { stdio: "inherit", env: { ...process.env, ...envDelHijo } });
   hijoDelEnvoltorio = hijo;
   hijo.on("error", (err) => {
     console.error(`[bvsala ${comando}] could not launch \`${final.bin}\`: ${String(err)}. Is it installed and on the PATH?`);

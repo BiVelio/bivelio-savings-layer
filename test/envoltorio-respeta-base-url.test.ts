@@ -99,6 +99,62 @@ describe("upstreamHeredado — el base URL previo del usuario", () => {
     expect(upstreamHeredado("aider", { OPENAI_API_BASE: "https://proxy.ejemplo.invalid/v1" }, openai).tipo).toBe("impedimento");
   });
 
+  // ── A2-12 · la misma regla para gemini, codex y opencode/Kilo ──────────────
+
+  it("⛔ gemini: un GOOGLE_GEMINI_BASE_URL propio pasa a ser el upstream; el oficial no cambia nada; con ruta, no arranca", () => {
+    expect(upstreamHeredado("gemini", { GOOGLE_GEMINI_BASE_URL: "https://generativelanguage.googleapis.com" })).toEqual({ tipo: "ninguno" });
+    const r = upstreamHeredado("gemini", { GOOGLE_GEMINI_BASE_URL: "https://gemini-proxy.ejemplo.invalid", GEMINI_API_KEY: "clave-inventada" });
+    expect(r).toMatchObject({ tipo: "usar", upstream: "https://gemini-proxy.ejemplo.invalid", variable: "GOOGLE_GEMINI_BASE_URL" });
+    if (r.tipo === "usar") {
+      expect(r.aviso).toContain("instead of https://generativelanguage.googleapis.com");
+      expect(r.aviso).not.toContain("clave-inventada");
+    }
+    expect(upstreamHeredado("gemini", { GOOGLE_GEMINI_BASE_URL: "https://gemini-proxy.ejemplo.invalid/tenant-9" }).tipo).toBe("impedimento");
+  });
+
+  it("⛔ codex con API key: un OPENAI_BASE_URL propio con /v1 pasa a ser el upstream; con otra ruta o sin /v1, no arranca", () => {
+    expect(upstreamHeredado("codex", { OPENAI_BASE_URL: "https://api.openai.com/v1" }, undefined, "api-key")).toEqual({ tipo: "ninguno" });
+    expect(upstreamHeredado("codex", { OPENAI_BASE_URL: "https://azure-proxy.ejemplo.invalid/v1" }, undefined, "api-key")).toMatchObject({
+      tipo: "usar",
+      upstream: "https://azure-proxy.ejemplo.invalid",
+      variable: "OPENAI_BASE_URL",
+    });
+    const otraRuta = upstreamHeredado("codex", { OPENAI_BASE_URL: "https://proxy.ejemplo.invalid/openai/v1" }, undefined, "api-key");
+    expect(otraRuta.tipo).toBe("impedimento");
+    if (otraRuta.tipo === "impedimento") expect(otraRuta.error).toContain("never sent to https://api.openai.com");
+    const sinV1 = upstreamHeredado("codex", { OPENAI_BASE_URL: "https://proxy.ejemplo.invalid" }, undefined, "api-key");
+    expect(sinV1.tipo).toBe("impedimento");
+    if (sinV1.tipo === "impedimento") expect(sinV1.error).toContain("without the /v1 path");
+  });
+
+  it("⛔ codex con cuenta ChatGPT y un OPENAI_BASE_URL propio: no arranca (el envoltorio manda ese tráfico a chatgpt.com)", () => {
+    const r = upstreamHeredado("codex", { OPENAI_BASE_URL: "https://azure-proxy.ejemplo.invalid/v1" }, undefined, "chatgpt");
+    expect(r.tipo).toBe("impedimento");
+    if (r.tipo === "impedimento") {
+      expect(r.error).toContain("https://azure-proxy.ejemplo.invalid");
+      expect(r.error).toContain("signed in with ChatGPT");
+      expect(r.error).toContain("unset OPENAI_BASE_URL");
+    }
+  });
+
+  it("⛔ opencode y Kilo: un baseURL propio en la config inline pasa a ser el upstream y su apiKey no se enseña", () => {
+    const config = (baseURL: string) =>
+      JSON.stringify({ provider: { anthropic: { options: { baseURL, apiKey: "CLAVE-INVENTADA-DEL-PROXY" } } } });
+    for (const [t, variable] of [["opencode", "OPENCODE_CONFIG_CONTENT"], ["kilo", "KILO_CONFIG_CONTENT"]] as const) {
+      expect(upstreamHeredado(t, { [variable]: config("https://api.anthropic.com/v1") })).toEqual({ tipo: "ninguno" });
+      expect(upstreamHeredado(t, { [variable]: JSON.stringify({ provider: { anthropic: { options: { apiKey: "x" } } } }) })).toEqual({ tipo: "ninguno" });
+      const r = upstreamHeredado(t, { [variable]: config("https://llm-proxy.ejemplo.invalid/v1") });
+      expect(r, t).toMatchObject({ tipo: "usar", upstream: "https://llm-proxy.ejemplo.invalid" });
+      if (r.tipo === "usar") {
+        expect(r.variable).toBe(`provider.anthropic.options.baseURL in ${variable}`);
+        expect(r.aviso).not.toContain("CLAVE-INVENTADA-DEL-PROXY");
+      }
+      const conRuta = upstreamHeredado(t, { [variable]: config("https://llm-proxy.ejemplo.invalid/api/anthropic/v1") });
+      expect(conRuta.tipo, t).toBe("impedimento");
+      if (conRuta.tipo === "impedimento") expect(conRuta.error).not.toContain("CLAVE-INVENTADA-DEL-PROXY");
+    }
+  });
+
   it("los terminales que no se redirigen por esas variables no se tocan", () => {
     for (const t of ["codex", "gemini", "opencode", "kilo", "copilot"] as const) {
       expect(upstreamHeredado(t, { ANTHROPIC_BASE_URL: "https://proxy.ejemplo.invalid" })).toEqual({ tipo: "ninguno" });
