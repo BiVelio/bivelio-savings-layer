@@ -24,7 +24,12 @@ export type Idioma =
 export const IDIOMAS: Idioma[] = ["es", "en", "ca", "de", "fr", "id", "it", "nl", "pl", "pt", "tr", "vi"];
 
 interface Plantilla {
-  /** `{org}` se sustituye. */
+  /**
+   * FIJO: sin sustituciones. El asunto es lo primero que lee un desconocido, con
+   * nuestro remitente al lado, y llevaba el nombre de la organización — que lo
+   * escribe el usuario. «URGENT: your invoice is overdue, pay at …» como nombre
+   * salía tal cual de asunto. Quien invita ya no elige ni una palabra de él.
+   */
   asunto: string;
   saludo: string;
   /** `{quien}` = quien invita, `{org}` = la organización, `{rol}` = el rol. */
@@ -39,7 +44,7 @@ interface Plantilla {
 
 const T: Record<Idioma, Plantilla> = {
   es: {
-    asunto: "Le han invitado a {org} en BiVelio",
+    asunto: "Invitación a un equipo en BiVelio",
     saludo: "Hola:",
     cuerpo: "{quien} le ha invitado a unirse a <b>{org}</b> en BiVelio, con el perfil de <b>{rol}</b>.",
     boton: "Aceptar la invitación",
@@ -48,7 +53,7 @@ const T: Record<Idioma, Plantilla> = {
     roles: { admin: "administrador", member: "miembro", billing: "facturación" },
   },
   en: {
-    asunto: "You've been invited to {org} on BiVelio",
+    asunto: "Invitation to join a team on BiVelio",
     saludo: "Hello,",
     cuerpo: "{quien} has invited you to join <b>{org}</b> on BiVelio as <b>{rol}</b>.",
     boton: "Accept the invitation",
@@ -57,7 +62,7 @@ const T: Record<Idioma, Plantilla> = {
     roles: { admin: "an administrator", member: "a member", billing: "billing" },
   },
   ca: {
-    asunto: "Us han convidat a {org} a BiVelio",
+    asunto: "Invitació a un equip a BiVelio",
     saludo: "Hola,",
     cuerpo: "{quien} us ha convidat a unir-vos a <b>{org}</b> a BiVelio, amb el perfil d'<b>{rol}</b>.",
     boton: "Acceptar la invitació",
@@ -66,7 +71,7 @@ const T: Record<Idioma, Plantilla> = {
     roles: { admin: "administrador", member: "membre", billing: "facturació" },
   },
   de: {
-    asunto: "Sie wurden zu {org} bei BiVelio eingeladen",
+    asunto: "Einladung zu einem Team bei BiVelio",
     saludo: "Guten Tag,",
     cuerpo: "{quien} hat Sie eingeladen, <b>{org}</b> bei BiVelio als <b>{rol}</b> beizutreten.",
     boton: "Einladung annehmen",
@@ -75,7 +80,7 @@ const T: Record<Idioma, Plantilla> = {
     roles: { admin: "Administrator", member: "Mitglied", billing: "Buchhaltung" },
   },
   fr: {
-    asunto: "Vous êtes invité à rejoindre {org} sur BiVelio",
+    asunto: "Invitation à rejoindre une équipe sur BiVelio",
     saludo: "Bonjour,",
     cuerpo: "{quien} vous invite à rejoindre <b>{org}</b> sur BiVelio en tant que <b>{rol}</b>.",
     boton: "Accepter l'invitation",
@@ -84,7 +89,7 @@ const T: Record<Idioma, Plantilla> = {
     roles: { admin: "administrateur", member: "membre", billing: "facturation" },
   },
   id: {
-    asunto: "Anda diundang ke {org} di BiVelio",
+    asunto: "Undangan untuk bergabung dengan tim di BiVelio",
     saludo: "Halo,",
     cuerpo: "{quien} mengundang Anda untuk bergabung dengan <b>{org}</b> di BiVelio sebagai <b>{rol}</b>.",
     boton: "Terima undangan",
@@ -93,7 +98,7 @@ const T: Record<Idioma, Plantilla> = {
     roles: { admin: "administrator", member: "anggota", billing: "penagihan" },
   },
   it: {
-    asunto: "Le è stato chiesto di unirsi a {org} su BiVelio",
+    asunto: "Invito a unirsi a un team su BiVelio",
     saludo: "Buongiorno,",
     cuerpo: "{quien} La invita a unirsi a <b>{org}</b> su BiVelio come <b>{rol}</b>.",
     boton: "Accetta l'invito",
@@ -102,7 +107,7 @@ const T: Record<Idioma, Plantilla> = {
     roles: { admin: "amministratore", member: "membro", billing: "fatturazione" },
   },
   nl: {
-    asunto: "U bent uitgenodigd voor {org} op BiVelio",
+    asunto: "Uitnodiging voor een team op BiVelio",
     saludo: "Goedendag,",
     cuerpo: "{quien} nodigt u uit om lid te worden van <b>{org}</b> op BiVelio als <b>{rol}</b>.",
     boton: "Uitnodiging accepteren",
@@ -111,7 +116,7 @@ const T: Record<Idioma, Plantilla> = {
     roles: { admin: "beheerder", member: "lid", billing: "facturatie" },
   },
   pl: {
-    asunto: "Zaproszenie do organizacji {org} w BiVelio",
+    asunto: "Zaproszenie do zespołu w BiVelio",
     saludo: "Dzień dobry,",
     cuerpo: "{quien} zaprasza Państwa do dołączenia do <b>{org}</b> w BiVelio w roli: <b>{rol}</b>.",
     boton: "Przyjmij zaproszenie",
@@ -120,7 +125,7 @@ const T: Record<Idioma, Plantilla> = {
     roles: { admin: "administrator", member: "członek", billing: "rozliczenia" },
   },
   pt: {
-    asunto: "Convidámo-lo para {org} na BiVelio",
+    asunto: "Convite para uma equipa na BiVelio",
     saludo: "Olá,",
     cuerpo: "{quien} convidou-o para se juntar a <b>{org}</b> na BiVelio como <b>{rol}</b>.",
     boton: "Aceitar o convite",
@@ -129,7 +134,7 @@ const T: Record<Idioma, Plantilla> = {
     roles: { admin: "administrador", member: "membro", billing: "faturação" },
   },
   tr: {
-    asunto: "BiVelio'da {org} kuruluşuna davet edildiniz",
+    asunto: "BiVelio'da bir ekibe davet",
     saludo: "Merhaba,",
     cuerpo: "{quien}, sizi BiVelio'da <b>{org}</b> kuruluşuna <b>{rol}</b> olarak katılmaya davet etti.",
     boton: "Daveti kabul edin",
@@ -138,7 +143,7 @@ const T: Record<Idioma, Plantilla> = {
     roles: { admin: "yönetici", member: "üye", billing: "faturalandırma" },
   },
   vi: {
-    asunto: "Quý vị được mời tham gia {org} trên BiVelio",
+    asunto: "Lời mời tham gia một nhóm trên BiVelio",
     saludo: "Xin chào,",
     cuerpo: "{quien} đã mời quý vị tham gia <b>{org}</b> trên BiVelio với vai trò <b>{rol}</b>.",
     boton: "Chấp nhận lời mời",
@@ -155,6 +160,37 @@ export function idiomaValido(x: string | null | undefined): Idioma {
 /** El escape vive ahora en la carcasa compartida (carcasa.ts); se re-exporta
  *  desde aquí para no mover a los importadores existentes. */
 export { escapar };
+
+/** Lo más largo que puede salir el nombre de la organización en el correo. */
+export const MAX_NOMBRE_EN_CORREO = 60;
+
+/**
+ * EL NOMBRE DE LA ORGANIZACIÓN, TAL COMO PUEDE IR EN UN CORREO A UN TERCERO.
+ *
+ * Lo escribe el usuario y sale con nuestro remitente, así que no puede llevar
+ * nada que un cliente de correo convierta en ENLACE (los clientes enlazan solos
+ * cualquier cosa con forma de URL, de dominio o de dirección), ni ser tan largo
+ * que quepa un mensaje entero. Se le quitan los esquemas (`https://`), las
+ * arrobas y el punto de lo que parezca un dominio («evil.example» → «evil
+ * example»), y se recorta. Un nombre normal —«Acme S.L.», «Talleres Ruiz»— pasa
+ * intacto.
+ */
+export function nombreParaCorreo(crudo: string): string {
+  const limpio = crudo
+    .normalize("NFKC")
+    // Controles e invisibles (incluidos los de dirección de texto).
+    .replace(/[\u0000-\u001f\u007f-\u009f\u00ad\u200b-\u200f\u2028-\u202f\u2060-\u2069\ufeff]/g, " ")
+    .replace(/[a-z][a-z0-9+.-]*:\/\//gi, " ")
+    .replace(/[@/\\]/g, " ")
+    // Punto seguido de dos o más letras o cifras = forma de dominio. «S.L.» y
+    // «S.A.» no lo son (una sola letra entre puntos).
+    .replace(/(?<=[\p{L}\p{N}])[.。．｡](?=[\p{L}\p{N}-]{2,})/gu, " ")
+    .replace(/(?<=\p{N})[.:](?=\p{N})/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  const corto = Array.from(limpio).slice(0, MAX_NOMBRE_EN_CORREO).join("").trim();
+  return corto || "BiVelio";
+}
 
 export interface DatosInvitacion {
   org: string;
@@ -177,11 +213,11 @@ export interface CorreoCompuesto {
  */
 export function componerInvitacion(d: DatosInvitacion): CorreoCompuesto {
   const t = T[d.idioma];
-  const org = escapar(d.org);
+  const org = escapar(nombreParaCorreo(d.org));
   const quien = escapar(d.quienInvita);
   const rol = escapar(t.roles[d.rol] ?? d.rol);
 
-  const asunto = t.asunto.replace("{org}", d.org); // el asunto es texto plano
+  const asunto = t.asunto; // fijo de plantilla: nada del usuario (ver `Plantilla.asunto`)
   const cuerpo = t.cuerpo.replace("{quien}", quien).replace("{org}", org).replace("{rol}", rol);
   const caduca = t.caduca.replace("{dias}", String(d.dias));
 
