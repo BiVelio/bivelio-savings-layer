@@ -297,7 +297,7 @@ export interface EstadoLocal {
   /** Solo el ORIGEN del upstream, sin credenciales ni ruta. */
   upstream: string;
   license: { state: string; plan: string | null; expiresAt: string | null };
-  /** Si hay clave de servicio: sin ella nada se mide ni se registra. */
+  /** La medición LOCAL: siempre encendida (con o sin clave de servicio). El envío al panel es aparte. */
   metering: boolean;
   reports: { requestHeader: string; responseHeader: string; capacity: number };
 }

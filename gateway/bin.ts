@@ -12,6 +12,7 @@ import { arrancarGateway, type GatewayArrancado } from "./servidor.js";
 import { resumenDeDegradaciones } from "./degradacion.js";
 import {
   decidirArranque,
+  flagDePuerto,
   isChildInfoRequest,
   mensajeDeFalloDeArranque,
   retiredNameErrors,
@@ -24,6 +25,7 @@ import {
   modoAuthCodex,
   resolverBinarioWindows,
   TERMINALES_CON_ENVOLTORIO,
+  upstreamHeredado,
 } from "./envoltorios.js";
 import { resumenDeMedicion } from "./recuento.js";
 import { leerEnrolamiento, planDeAnillo2 } from "./anillo2.js";
@@ -108,6 +110,9 @@ Commands:
                          own API (a proxy such as LiteLLM), requests are metered but no
                          saving is credited: list prices only hold at the provider's API.
   claude [args…]         Run Claude Code through the gateway. No configuration needed.
+                         An ANTHROPIC_BASE_URL you had already set (a company proxy, LiteLLM…)
+                         is never replaced behind your back: the gateway forwards there, or
+                         the wrapper stops and says why.
   codex [args…]          Run Codex CLI through the gateway (API key: api.openai.com;
                          ChatGPT auth: chatgpt.com/backend-api/codex, metered with no commission).
   goose [args…]          Run Goose (ANTHROPIC_HOST) through the gateway.
@@ -374,10 +379,16 @@ if (comando === "skill") {
 
 // Envoltorios: puerto efímero; `gateway`: 8402 o --port (0 = efímero, lo usa
 // el arnés F2); `doctor`: 1–65535 (imprime URLs — un puerto 0 no señala nada).
-const idx = resto.indexOf("--port");
-const puerto = esEnvoltorio ? 0 : idx >= 0 ? Number(resto[idx + 1]) : 8402;
+// `--port N` y `--port=N` (gateway/argumentos.ts). En un envoltorio todo lo que
+// va detrás del terminal es del terminal: ahí no se mira.
+const flagPuerto = esEnvoltorio ? ({ tipo: "ausente" } as const) : flagDePuerto(resto);
+if (flagPuerto.tipo === "error") {
+  console.error(`[bvsala ${comando}] invalid port: ${flagPuerto.valor} (use --port N or --port=N)`);
+  process.exit(1);
+}
+const puerto = esEnvoltorio ? 0 : flagPuerto.tipo === "puerto" ? flagPuerto.puerto : 8402;
 if (!Number.isInteger(puerto) || (comando === "doctor" ? puerto < 1 : puerto < 0) || puerto > 65535) {
-  console.error(`[bvsala ${comando}] invalid port: ${resto[idx + 1]}`);
+  console.error(`[bvsala ${comando}] invalid port: ${puerto}`);
   process.exit(1);
 }
 
@@ -445,6 +456,19 @@ if (!up.ok) {
   process.exit(1);
 }
 
+// El base URL que el usuario YA tenía en la variable del terminal (un proxy de
+// empresa, LiteLLM, z.ai…): jamás se pisa para mandar su sesión, y el token de
+// ese proxy, a api.anthropic.com. O ese origen pasa a ser el upstream de este
+// gateway, o no se arranca y se dice por qué (gateway/envoltorios.ts). Antes
+// de la licencia y de la red, como los demás impedimentos.
+const heredado = esEnvoltorio ? upstreamHeredado(comando, process.env, up.upstream) : ({ tipo: "ninguno" } as const);
+if (heredado.tipo === "impedimento") {
+  console.error(`[bvsala ${comando}] ${heredado.error}`);
+  process.exit(1);
+}
+/** Lo que el usuario eligió como destino: la variable de bvsala o, sin ella, el base URL que ya tenía. */
+const upstreamDelUsuario = up.upstream ?? (heredado.tipo === "usar" ? heredado.upstream : undefined);
+
 // ── LA LICENCIA (ahora OPCIONAL: open core) ───────────────────────────────
 // Antes del envoltorio, del anillo 2 y de cualquier lectura de fichero. Sin
 // clave de servicio NI licenseKey el gateway arranca en MODO COMUNITARIO (todo
@@ -495,12 +519,12 @@ const enrolamientoAnillo2 = envoltorio?.upstream
 const planAnillo2 = planDeAnillo2({
   enrolamiento: enrolamientoAnillo2,
   espiaVivo: enrolamientoAnillo2 !== null && (await puertoEscucha(enrolamientoAnillo2.espia)),
-  upstreamEnv: up.upstream,
+  upstreamEnv: upstreamDelUsuario,
   ...(up.origen !== "none" ? { upstreamOrigen: up.origen } : {}),
   elisionEnv: process.env.BVSALA_GATEWAY_ELISION,
   hoyUtcIso: new Date().toISOString().slice(0, 10),
 });
-const upstreamPedido = up.upstream ?? planAnillo2.upstream;
+const upstreamPedido = upstreamDelUsuario ?? planAnillo2.upstream;
 const elisionPedida = process.env.BVSALA_GATEWAY_ELISION ?? planAnillo2.elision;
 
 let arranque: GatewayArrancado;
@@ -591,9 +615,11 @@ console.log(`[bvsala gateway] v${BV_SALA_VERSION} listening on http://127.0.0.1:
 for (const w of licencia.warnings) console.error(`[bvsala gateway] ${w}`);
 console.log(
   serviceAccountKey
-    ? "[bvsala gateway] metering: ON (service key present)"
-    : "[bvsala gateway] metering: OFF (community mode — no BiVelio service key; local reports stay available with x-bvsala-report)",
+    ? "[bvsala gateway] metering: ON (service key present: usage also goes to your dashboard)"
+    : "[bvsala gateway] metering: LOCAL ONLY (community mode, no BiVelio service key): every request is measured on " +
+        "this machine with the provider's usage and nothing is sent to BiVelio · per-request reports with x-bvsala-report",
 );
+if (heredado.tipo === "usar") console.error(`[bvsala ${comando}] ${heredado.aviso}`);
 if (process.env.BVSALA_METERING_URL) {
   console.error(
     `[bvsala gateway] WARNING: BVSALA_METERING_URL=${process.env.BVSALA_METERING_URL} redirects usage reporting away ` +
