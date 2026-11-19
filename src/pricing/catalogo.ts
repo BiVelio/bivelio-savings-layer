@@ -542,16 +542,44 @@ export function buscarPorModelo<T>(
   // rompía `claude-3-5-sonnet-latest` y `gpt-5-chat-latest`, que hoy heredan
   // BIEN. Un modelo sin precio cae al respaldo ilustrativo, que se declara; un
   // modelo con precio EQUIVOCADO no se declara, y es lo que hay que evitar.
+  //
+  // TRES CORTES MÁS (auditoría del 2026-11-19, N4). Los tres devuelven
+  // `undefined` —«sin precio», que se declara— donde antes se seguía buscando
+  // hasta dar con la fila de un pariente MÁS CORTO, que es otro modelo:
+  //
+  // (3) Un id con «:» lleva una VARIANTE de quien lo sirve (`:free`, `:flex`,
+  //     `:extended`, `:thinking` en OpenRouter; la etiqueta en Ollama) y esa
+  //     variante tiene otro precio —`:free` cuesta cero—. `gpt-4o-mini:free` no
+  //     pasaba el separador de `gpt-4o-mini`, el bucle seguía y casaba `gpt-4o`
+  //     por «-mini:free»: 16 veces su precio, sin aviso. No hereda de nadie; con
+  //     fila exacta (o `costModels` del cliente) sí tiene precio.
+  //
+  // (4) La clave MÁS LARGA que es prefijo del id decide, y decide sola. Si no
+  //     pasa sus cortes, el id es otro modelo de esa rama y una clave más corta
+  //     tampoco lo describe.
+  //
+  // (5) Un sufijo de LETRA solo hereda si es un ALIAS conocido del mismo modelo
+  //     (`-latest`, `-chat-latest`, `-preview`, `-exp` y sus variantes con
+  //     fecha). Cualquier otra palabra es otro modelo u otra modalidad:
+  //     `gemini-2.5-flash-lite` heredaba `gemini-2.5-flash` (3× su entrada),
+  //     `gpt-4o-mini-tts` y `-transcribe` la fila de texto, `gpt-4o-realtime-…`
+  //     la de `gpt-4o`.
+  if (desnudo.includes(":")) return undefined;
   for (const clave of clavesPorLongitud) {
     if (!desnudo.startsWith(clave)) continue;
     const siguiente = desnudo.charAt(clave.length);
-    if (siguiente !== "" && siguiente !== "-" && siguiente !== "." && siguiente !== "_") continue;
+    if (siguiente !== "-" && siguiente !== "." && siguiente !== "_") return undefined;
     const resto = desnudo.slice(clave.length + 1);
-    if (/^\d/.test(resto) && !/^\d{4}/.test(resto)) continue;
-    return catalogo[clave];
+    if (/^\d/.test(resto)) return /^\d{4}/.test(resto) ? catalogo[clave] : undefined;
+    return ALIAS_DEL_MISMO_MODELO.test(resto) ? catalogo[clave] : undefined;
   }
   return undefined;
 }
+
+/** Lo único de letra que puede seguir a la clave para que el id sea el MISMO
+ *  modelo: `latest`, `chat-latest`, `preview`, `exp`, o estos con su fecha o
+ *  número de revisión (`preview-05-20`, `preview-2025-06-05`, `exp-0827`). */
+const ALIAS_DEL_MISMO_MODELO = /^(?:(?:chat-)?latest|(?:preview|exp)(?:[-_.]\d[\d-]*)?)$/;
 
 /** Claves ordenadas de más larga a más corta, para que gane la más específica. */
 export function clavesPorLongitud(catalogo: Readonly<Record<string, unknown>>): string[] {
