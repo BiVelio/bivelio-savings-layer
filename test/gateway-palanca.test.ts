@@ -555,20 +555,23 @@ describe("la palanca de punta a punta", () => {
       messages: [{ role: "user", content: "hola" }],
       system: [{ type: "text", text: "sys", cache_control: { type: "ephemeral", ttl: "1h" } }],
     });
-    const res = await pedir(g.puerto, cuerpo, { "anthropic-beta": "oauth-2025-04-20" });
+    // Tráfico de API key (sin beta oauth-*): con suscripción la rebaja ya no se aplica.
+    const res = await pedir(g.puerto, cuerpo, { "anthropic-beta": "interleaved-thinking-2025-05-14" });
     expect(res.status).toBe(200);
     const json = JSON.parse(recibidas[0]!.body);
     // A SIGUE VIVA: el 1h del cliente viaja rebajado a 5m.
     expect(json.system[0].cache_control.ttl).toBe("5m");
     // B ESTÁ MUERTA: ni diales ni beta añadida.
     expect(json.context_management).toBeUndefined();
-    expect(recibidas[0]!.headers["anthropic-beta"]).toBe("oauth-2025-04-20");
+    expect(recibidas[0]!.headers["anthropic-beta"]).toBe("interleaved-thinking-2025-05-14");
   });
 
-  it("SUSCRIPCIÓN (anthropic-beta oauth-*): la rebaja SE APLICA pero el lote NO acredita ahorro; con API key sí", async () => {
+  it("SUSCRIPCIÓN (anthropic-beta oauth-*): la rebaja NO se aplica (viaja byte a byte) y el lote no acredita ahorro; con API key sí", async () => {
     // Un suscriptor no paga lista: la resta 1h→5m es una diferencia de precio
-    // que no aparece en ninguna factura suya. La palanca se aplica (estira
-    // topes), el dinero no se acredita — y la comisión es 0 por diseño.
+    // que no aparece en ninguna factura suya, y a 5 min su contexto se
+    // reescribe entero tras cualquier pausa, contra su límite. Hasta la
+    // auditoría del lanzamiento (2026-11) la palanca se aplicaba igual y solo
+    // dejaba de acreditarse; ahora ni se aplica.
     const RESPUESTA_CON_ESCRITURA = JSON.stringify({
       id: "msg_1",
       type: "message",
@@ -600,7 +603,8 @@ describe("la palanca de punta a punta", () => {
     };
 
     const suscripcion = await medirCon({ "anthropic-beta": "oauth-2025-04-20" });
-    expect(JSON.parse(suscripcion.recibida.body).system[0].cache_control.ttl).toBe("5m");
+    expect(JSON.parse(suscripcion.recibida.body).system[0].cache_control.ttl).toBe("1h");
+    expect(suscripcion.recibida.body).toBe(cuerpo);
     expect(suscripcion.reg["basis"]).toBe("measured");
     expect(suscripcion.reg["baselineCost"]).toBe(suscripcion.reg["actualCost"]);
     expect(suscripcion.reg["netSavings"]).toBe(0);

@@ -213,6 +213,14 @@ const CABECERAS_DEL_CLIENTE: Record<string, string> = {
   "anthropic-dangerous-direct-browser-access": "true",
 };
 
+/**
+ * Las mismas cabeceras SIN la beta `oauth-*`: tráfico de API key (factura por
+ * token). La rebaja de TTL solo se aplica ahí: con la beta oauth la petición
+ * es de suscripción (Claude Max/Pro) y viaja intacta.
+ */
+const BETAS_CON_API_KEY = BETAS_DEL_CLIENTE.replace("oauth-2025-04-20,", "");
+const CABECERAS_CON_API_KEY: Record<string, string> = { ...CABECERAS_DEL_CLIENTE, "anthropic-beta": BETAS_CON_API_KEY };
+
 const MARCA_1H = { type: "ephemeral", ttl: "1h" } as const;
 
 /**
@@ -512,7 +520,7 @@ describe("2 · con cada palanca armada, solo cambia lo que esa palanca declara",
     const g = await gateway(upstream, { plataforma: await arrancarPlataforma(["cache_ttl_tuning"]) });
     const original = peticionCompleta("claude-fable-5-1");
 
-    await enviar(g.puerto, JSON.stringify(original), CABECERAS_DEL_CLIENTE);
+    await enviar(g.puerto, JSON.stringify(original), CABECERAS_CON_API_KEY);
 
     // Texto contra texto: también el ORDEN de las claves, que es parte del prompt.
     expect(recibidas[0]!.body.toString("utf8")).toBe(JSON.stringify(conMarcasA5m(original)));
@@ -522,7 +530,45 @@ describe("2 · con cada palanca armada, solo cambia lo que esa palanca declara",
     expect(en(llegada, ["tools", 1, "input_schema", "properties", "cache_control"]).ttl).toBe("1h");
     expect(en(llegada, ["tools", 5, "caching"]).ttl).toBe("1h");
     // Las cabeceras, intactas: esta palanca no añade betas.
-    for (const [k, v] of Object.entries(CABECERAS_DEL_CLIENTE)) expect(recibidas[0]!.headers[k], k).toBe(v);
+    for (const [k, v] of Object.entries(CABECERAS_CON_API_KEY)) expect(recibidas[0]!.headers[k], k).toBe(v);
+  });
+
+  it("⛔ TTL · tráfico de SUSCRIPCIÓN (Claude Max/Pro, beta oauth-*): la rebaja NO se aplica, ni en frío: llega byte a byte con sus marcas de 1h", async () => {
+    // Un suscriptor no paga prima de escritura: a 5 min no ahorra nada y, tras
+    // cualquier pausa de entre 5 y 60 minutos, su contexto entero se reescribe
+    // contra su límite. Hasta aquí la palanca solo dejaba de ACREDITAR.
+    const recibidas: Recibida[] = [];
+    const lineas: string[] = [];
+    const upstream = await arrancarUpstream(recibidas);
+    const g = await gateway(upstream, { plataforma: await arrancarPlataforma(["cache_ttl_tuning"]), lineas });
+    const cuerpo = Buffer.from(JSON.stringify(peticionCompleta("claude-fable-5-1")), "utf8");
+    const suscripcion = { ...CABECERAS_DEL_CLIENTE, authorization: "Bearer token-oauth-inventado", "x-claude-code-session-id": "sesion-suscripcion" };
+    delete (suscripcion as Record<string, string>)["x-api-key"];
+
+    // Primer turno de la sesión (arranque en frío): justo donde la palanca rebajaba.
+    await enviar(g.puerto, cuerpo, suscripcion);
+
+    expect(recibidas[0]!.body.equals(cuerpo)).toBe(true);
+    expect(recibidas[0]!.body.toString("utf8")).not.toContain('"ttl":"5m"');
+    expect(lineas.join("\n")).not.toContain("lever applied");
+
+    // CONTROL: la MISMA petición con API key (sin la beta oauth) sí viaja a 5m.
+    await enviar(g.puerto, cuerpo, { ...CABECERAS_CON_API_KEY, "x-claude-code-session-id": "sesion-api-key" });
+    expect(recibidas[1]!.body.toString("utf8")).toBe(JSON.stringify(conMarcasA5m(peticionCompleta("claude-fable-5-1"))));
+  });
+
+  it("⛔ TTL · en MODO COMUNITARIO (sin clave, el de por defecto) tampoco se rebaja la suscripción; la API key sí", async () => {
+    const recibidas: Recibida[] = [];
+    const upstream = await arrancarUpstream(recibidas);
+    const g = await arrancarGateway({ puerto: 0, ...oficialHaciaElMock(upstream), log: () => {}, warn: () => {}, avisosDeNoMedido: false });
+    recursos.push(g);
+    const cuerpo = Buffer.from(JSON.stringify(peticionCompleta("claude-fable-5-1")), "utf8");
+
+    await enviar(g.puerto, cuerpo, { ...CABECERAS_DEL_CLIENTE, "x-claude-code-session-id": "sesion-suscripcion" });
+    expect(recibidas[0]!.body.equals(cuerpo)).toBe(true);
+
+    await enviar(g.puerto, cuerpo, { ...CABECERAS_CON_API_KEY, "x-claude-code-session-id": "sesion-api-key" });
+    expect(recibidas[1]!.body.toString("utf8")).toContain('"ttl":"5m"');
   });
 
   it("TTL: el turno ENCADENADO (poco nuevo sobre un prefijo ya escrito) viaja byte a byte", async () => {
@@ -537,9 +583,9 @@ describe("2 · con cada palanca armada, solo cambia lo que esa palanca declara",
     const segundo = clon(primero);
     (segundo.messages as unknown[]).push({ role: "assistant", content: "sure" }, { role: "user", content: "and one more thing" });
 
-    await enviar(g.puerto, JSON.stringify(primero), CABECERAS_DEL_CLIENTE);
+    await enviar(g.puerto, JSON.stringify(primero), CABECERAS_CON_API_KEY);
     const cuerpo2 = Buffer.from(JSON.stringify(segundo), "utf8");
-    await enviar(g.puerto, cuerpo2, CABECERAS_DEL_CLIENTE);
+    await enviar(g.puerto, cuerpo2, CABECERAS_CON_API_KEY);
 
     expect(json(recibidas[0]!.body)).not.toEqual(primero); // el arranque sí se rebaja
     expect(recibidas[1]!.body.equals(cuerpo2)).toBe(true);
@@ -609,12 +655,12 @@ describe("2 · con cada palanca armada, solo cambia lo que esa palanca declara",
     const g = await gateway(upstream, { plataforma: await arrancarPlataforma(TODAS), esfuerzo: "medium", modeloHermano: true });
     const original = peticionCompleta("claude-fable-5");
 
-    await enviar(g.puerto, JSON.stringify(original), CABECERAS_DEL_CLIENTE);
+    await enviar(g.puerto, JSON.stringify(original), CABECERAS_CON_API_KEY);
 
     const esperado = conMarcasA5m({ ...original, model: "claude-fable-5-1" });
     (esperado.messages as unknown[]).push({ role: "system", content: [], output_config: { effort: "medium" } });
     expect(recibidas[0]!.body.toString("utf8")).toBe(JSON.stringify(esperado));
-    expect(recibidas[0]!.headers["anthropic-beta"]).toBe(`${BETAS_DEL_CLIENTE},${BETA_ESFUERZO}`);
+    expect(recibidas[0]!.headers["anthropic-beta"]).toBe(`${BETAS_CON_API_KEY},${BETA_ESFUERZO}`);
   });
 
   it("usage en streams de Chat Completions (BVSALA_GATEWAY_USAGE_INJECT=1): `\"stream_options\":{\"include_usage\":true},` insertado tras la `{` y el resto, byte a byte", async () => {
@@ -657,7 +703,7 @@ describe("2 · con cada palanca armada, solo cambia lo que esa palanca declara",
     const g = await gateway(upstream, { plataforma: await arrancarPlataforma(["cache_ttl_tuning"]), lineas });
     const cuerpo = Buffer.from(JSON.stringify(peticionCompleta("claude-fable-5-1")), "utf8");
 
-    const r = await enviar(g.puerto, cuerpo, CABECERAS_DEL_CLIENTE);
+    const r = await enviar(g.puerto, cuerpo, CABECERAS_CON_API_KEY);
 
     expect(r.status).toBe(200);
     expect(recibidas).toHaveLength(2);

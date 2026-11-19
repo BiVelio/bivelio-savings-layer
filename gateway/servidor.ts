@@ -1486,6 +1486,10 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
         !enMedicion &&
         req.method === "POST" &&
         url.pathname === "/v1/messages" &&
+        // Tráfico de SUSCRIPCIÓN (Claude Max/Pro): no hay prima de escritura
+        // que ahorrar y a 5 min el contexto se reescribe tras cualquier pausa,
+        // contra el límite del usuario. Viaja byte a byte como llegó.
+        !suscripcion &&
         canal!.tiene("cache_ttl_tuning")
       ) {
         try {
@@ -1538,7 +1542,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       // de features: la Medir no trae ninguna, y la pregunta es qué haría la
       // capa de pago, que lleva la rebaja encendida por defecto en Anthropic.
       let rebajaSombra: RebajaAplicada | null = null;
-      if (enMedicion && opts.elision !== false && req.method === "POST" && url.pathname === "/v1/messages") {
+      if (enMedicion && !suscripcion && opts.elision !== false && req.method === "POST" && url.pathname === "/v1/messages") {
         try {
           const json = parsearMensajes(cuerpo, codificacion);
           if (json !== null) {
