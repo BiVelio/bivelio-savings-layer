@@ -193,5 +193,15 @@ describe("dicha en voz alta al arrancar", () => {
     expect(armada.linea).toContain("per_turn_effort");
     // Tiene que decir la propiedad que justifica la palanca.
     expect(armada.linea).toContain("prefix cache");
+    expect(armada.linea).toContain("your organization's licence includes per_turn_effort");
+  });
+
+  it("A2-14 · en modo comunitario es gratis y la línea no habla de ninguna licencia", () => {
+    const comunidad = describirEstadoDeEsfuerzo("low", true, true, true);
+    expect(comunidad.aviso).toBe(false);
+    expect(comunidad.linea).toContain('ARMED at "low"');
+    expect(comunidad.linea).toContain("community mode: free, no key needed");
+    expect(comunidad.linea).toContain("prefix cache");
+    expect(comunidad.linea).not.toMatch(/licen[cs]e|fail-closed/i);
   });
 });

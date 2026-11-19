@@ -249,6 +249,16 @@ describe("describirEstadoDeHermano — la palanca dicha en voz alta al arrancar"
     expect(armada.linea).toContain("ARMED");
     expect(armada.linea).toContain(`${SOLICITADO}→${SERVIDO}`);
     expect(armada.linea).toContain("sibling_model_routing");
+    // Con licencia de organización, manda la licencia de la org (no «tu licencia» a secas).
+    expect(armada.linea).toContain("your organization's licence includes sibling_model_routing");
+  });
+
+  it("A2-14 · en modo comunitario es gratis y la línea no habla de ninguna licencia", () => {
+    const comunidad = describirEstadoDeHermano("1", true, true, true);
+    expect(comunidad.aviso).toBe(false);
+    expect(comunidad.linea).toContain("ARMED");
+    expect(comunidad.linea).toContain("community mode: free, no key needed");
+    expect(comunidad.linea).not.toMatch(/licen[cs]e|fail-closed/i);
   });
 });
 

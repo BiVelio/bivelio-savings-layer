@@ -114,7 +114,8 @@ Commands:
                          is never replaced behind your back: the gateway forwards there, or
                          the wrapper stops and says why.
   codex [args…]          Run Codex CLI through the gateway (API key: api.openai.com;
-                         ChatGPT auth: chatgpt.com/backend-api/codex, metered with no commission).
+                         ChatGPT auth: chatgpt.com/backend-api/codex, metered at list-price
+                         equivalent: a subscription has no per-token invoice).
   goose [args…]          Run Goose (ANTHROPIC_HOST) through the gateway.
   qwen [args…]           Run Qwen Code (ANTHROPIC_BASE_URL) through the gateway.
   opencode [args…]       Run opencode with its anthropic provider through the gateway
@@ -187,18 +188,21 @@ Environment:
                          reads choices[0] without checking does not expect.
   BVSALA_GATEWAY_SHADOW  =1 enables the shadow lane for context elision (experimental):
                          computes what the elision policy would have saved WITHOUT touching
-                         traffic and reports it separately (never counts toward the fee).
-  BVSALA_GATEWAY_ELISION =0 turns OFF the provider-side levers, which are armed by default.
-                         (The license check is not affected: the licence channel stays open.)
-                         Each one only takes effect if your organization's license carries
-                         its feature (checked fail-closed):
+                         traffic and reports it separately (never counted as a measured saving).
+  BVSALA_GATEWAY_ELISION =0 turns OFF the provider-side levers, which are on by default. With
+                         no BiVelio keys (COMMUNITY mode) they are free and need no license.
+                         Only with an organization license (BIVELIO_SERVICE_KEY) does that
+                         license's feature list decide which ones apply (checked fail-closed),
+                         and =0 does not affect its status check:
                            · context_elision  — adjusts ONLY the context_management block
                              of each /v1/messages; the provider does the trimming.
                            · cache_ttl_tuning — lowers the cache-write TTL from 1h (2x the
                              input price) to 5m (1.25x) while the session stays warm. It does
                              NOT touch a single token the model reads: it changes the rate,
-                             not the content. In measured traffic, 99.1% of turns chain within
-                             5 minutes, and that surcharge was 8.0% of the bill.
+                             not the content. API-key traffic only: a Claude Pro/Max
+                             subscription has no write surcharge and travels untouched. In
+                             measured Claude Code traffic, 99.1% of turns chain within 5
+                             minutes, and at API list prices that surcharge was 8.0% of the cost.
                          When in doubt, the request travels untouched. (Up to 0.4.13 the flag
                          was inverted: "=1 arms". In an A/B always pass it explicitly, =1 or
                          =0, so you do not depend on the installed version.)
@@ -207,16 +211,17 @@ Environment:
                          same input, output and cache-write rates; cache READS drop from
                          0.001 to 0.00025 per 1K tokens (catalog). The saving is the difference
                          of two prices over the same usage: measured without an A/B, and it
-                         counts toward the measured headline in the dashboard.
-                         Only if the license carries sibling_model_routing (fail-closed).
+                         counts as a measured saving. Free with no keys; with an organization
+                         license, only if it includes sibling_model_routing (fail-closed).
                          It CHANGES the model you see in the response (/cost, /status), and
                          turning it on mid-thread pays ONE cold write of the prefix (each
                          model has its own cache): start it together with the terminal.
                          Off = unset the variable or =0.
   BVSALA_GATEWAY_EFFORT  =low|medium sets a per-turn effort ceiling (experimental):
                          appends a message with output_config.effort to each /v1/messages
-                         without touching the root (does not reset the prefix cache). Only if
-                         the license carries per_turn_effort (fail-closed), only with
+                         without touching the root (does not reset the prefix cache). Free with
+                         no keys; with an organization license, only if it includes
+                         per_turn_effort (fail-closed). Only with
                          claude-fable-5-1, claude-mythos-5-1, claude-opus-5-5 and claude-opus-5,
                          and only when the level is below the model's default (high; medium on
                          claude-opus-5-5): it never raises effort. Any other request travels
@@ -227,8 +232,9 @@ Environment:
                          BVSALA_GATEWAY_SIBLING_MODEL): if either is set, the gateway refuses to
                          start and names the new variable.
   BVSALA_CODEX_AUTH      api-key | chatgpt — forces the Codex auth mode.
-  BVSALA_GATEWAY_LOG     =1 shows the per-request log inside the wrappers too (silenced by
-                         default so it does not overwrite the TUI; use the dashboard instead).
+  BVSALA_GATEWAY_LOG     =1 shows the per-request log inside the wrappers too, on stderr (silenced
+                         by default so it does not overwrite the TUI; the exit summary says what
+                         was metered).
   CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1  (Claude Code, API key only) your models in /model.
 
 The gateway is open core: it starts with no keys at all (COMMUNITY mode) and arms every local
@@ -236,8 +242,8 @@ saving lever, with zero telemetry. With a license (service key or offline fallba
 or expired key still fails closed, and if a live license lapses only NEW requests are refused
 (HTTP 402) until it is renewed — a request in flight is never interrupted. Metering is
 best-effort: with ingestion down, it forwards and warns. On a Claude or ChatGPT subscription
-there is no per-token invoice: that traffic is metered at list-price equivalent and never
-carries commission.
+there is no per-token invoice: that traffic is metered at list-price equivalent and no saving
+is credited on it.
 Your prompts, completions and provider keys never reach BiVelio: what it receives is per-request
 usage (token counts, cost, the model id and opaque ids); LICENSE-CLOUD.md §5 lists every field.
 More: savings.bivelio.com`);
@@ -645,16 +651,27 @@ if (process.env.BVSALA_GATEWAY_USAGE_INJECT === "1") {
 {
   // El brazo del A/B (anillo 2) dicho en voz alta al arrancar: un día entero de
   // «palanca» corrió sin clave en un terminal viejo y fue control en silencio.
-  // Con la verja de licencia, la clave está garantizada: `hayClave` es true.
-  const estado = describirEstadoDeElision(elisionPedida, true, process.env.BVSALA_GATEWAY_DIALES_ELISION === "1");
+  // A2-29 · el open core rompió la suposición de antes (que la verja de
+  // licencia garantizaba la clave). Sin ninguna clave (modo comunitario)
+  // las palancas las concede este proceso, gratis: la línea no habla de
+  // licencias. Con clave de servicio, manda la licencia de la org. Solo una
+  // licencia offline SIN clave de servicio deja al gateway sin canal.
+  const comunidad = licencia.license === null;
+  const hayCanal = comunidad || serviceAccountKey !== undefined;
+  const estado = describirEstadoDeElision(
+    elisionPedida,
+    hayCanal,
+    process.env.BVSALA_GATEWAY_DIALES_ELISION === "1",
+    comunidad,
+  );
   (estado.aviso ? console.error : salida)(`[bvsala gateway] ${estado.linea}`);
   // Palanca C dicha en voz alta, por la misma razón: una bandera puesta en un
   // terminal sin clave (o con el canal cerrado) es control en silencio.
-  const estadoHermano = describirEstadoDeHermano(siblingModelEnv, true, elisionPedida !== "0");
+  const estadoHermano = describirEstadoDeHermano(siblingModelEnv, hayCanal, elisionPedida !== "0", comunidad);
   (estadoHermano.aviso ? console.error : salida)(`[bvsala gateway] ${estadoHermano.linea}`);
   // Palanca D dicha en voz alta por la misma razón que las otras: una palanca
   // que se cree encendida y no lo está es la trampa muda que ya costó un A/B.
-  const estadoEsfuerzo = describirEstadoDeEsfuerzo(effortEnv, true, elisionPedida !== "0");
+  const estadoEsfuerzo = describirEstadoDeEsfuerzo(effortEnv, hayCanal, elisionPedida !== "0", comunidad);
   (estadoEsfuerzo.aviso ? console.error : salida)(`[bvsala gateway] ${estadoEsfuerzo.linea}`);
   if (planAnillo2.linea) {
     (planAnillo2.aviso ? console.error : salida)(`[bvsala gateway] ${planAnillo2.linea}`);

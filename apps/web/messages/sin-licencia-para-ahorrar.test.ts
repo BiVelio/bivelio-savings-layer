@@ -141,3 +141,73 @@ describe("sin clave, el gasto de Claude Code no aparece en el panel", () => {
     expect(en).toContain("on exit tells you how many requests it metered");
   });
 });
+
+/**
+ * 2026-11-19 · A2-14, A2-23 y A2-29 · el resto del P5, en el gateway y la CLI.
+ *
+ * Sin ninguna clave, `bvsala claude` arrancaba con «TTL tuning ON if your licence
+ * includes cache_ttl_tuning; fail-closed», y `bvsala --help` repetía que cada
+ * palanca «only takes effect if your organization's license carries its
+ * feature». Las dos cosas son falsas sin clave: `CanalComunitario` las concede
+ * todas, gratis. Solo con una licencia de organización manda la lista de features
+ * de ESA licencia, y entonces el texto lo dice así («your organization's
+ * licence»). Las guías de docs/terminales (van dentro del paquete npm) decían
+ * además que «la licencia por asiento hace falta igual». La salida de verdad
+ * (arranque sin claves y `--help`) la vigila test/gateway-textos-sin-licencia.test.ts;
+ * aquí se vigila el fuente, para que el texto viejo no vuelva por otra puerta.
+ */
+describe("el gateway y la CLI no atan las palancas a una licencia", () => {
+  const FUENTES = [
+    "gateway/bin.ts",
+    "gateway/palanca.ts",
+    "gateway/hermano.ts",
+    "gateway/esfuerzo.ts",
+    "gateway/envoltorios.ts",
+    "gateway/doctor.ts",
+    "gateway/skill.ts",
+  ];
+  const GUIAS = readdirSync(join(RAIZ, "docs", "terminales"))
+    .filter((f) => f.endsWith(".md"))
+    .map((f) => `docs/terminales/${f}`);
+  /** Las frases viejas: «tu licencia» a secas, la licencia por asiento y el gateway «que factura». */
+  const VIEJAS = [
+    /if your licen[cs]e includes/i,
+    /licen[cs]e carries/i,
+    /only takes effect if your organization's licen[cs]e/i,
+    /per-seat licen[cs]e/i,
+    /licencia por asiento/i,
+    /mide y factura/i,
+    /el caso que se monetiza/i,
+    /lo que factura BV-SALA/i,
+    /surcharge was 8\.0% of the bill/i,
+    /\bLICENSE §5/,
+  ];
+
+  it("están las guías de los terminales (si cambia la carpeta, este bloque no protege nada)", () => {
+    expect(GUIAS).toContain("docs/terminales/claude-code.md");
+    expect(GUIAS).toContain("docs/terminales/codex.md");
+  });
+
+  for (const f of [...FUENTES, ...GUIAS]) {
+    it(`${f}: ningún texto ata el ahorro local a una licencia`, () => {
+      const t = readFileSync(join(RAIZ, f), "utf8");
+      const vistas = VIEJAS.filter((re) => re.test(t)).map(String);
+      expect(vistas, f).toEqual([]);
+    });
+  }
+
+  it("bin.ts pasa a las líneas de arranque si el gateway está en modo comunitario (ya no un `true` fijo)", () => {
+    const bin = readFileSync(join(RAIZ, "gateway", "bin.ts"), "utf8");
+    expect(bin).not.toContain("`hayClave` es true");
+    expect(bin).toMatch(/describirEstadoDeHermano\([^)]*comunidad\)/);
+    expect(bin).toMatch(/describirEstadoDeEsfuerzo\([^)]*comunidad\)/);
+    expect(bin).toMatch(/describirEstadoDeElision\([\s\S]*?comunidad,?\s*\)/);
+  });
+
+  it("gateway/tarifa.ts no describe el corpus de suscripción como una factura de API", () => {
+    const t = readFileSync(join(RAIZ, "gateway", "tarifa.ts"), "utf8");
+    expect(t).not.toMatch(/Anthropic factura esa escritura/);
+    expect(t).not.toMatch(/de\s+(?:\*\s+)?la factura/);
+    expect(t).toMatch(/SUSCRIPCIÓN/);
+  });
+});

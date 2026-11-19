@@ -187,11 +187,14 @@ export function conBetaDeEsfuerzo(betas: string | undefined): string {
 /**
  * La línea de arranque, hermana de las de A y C: una palanca que se cree
  * encendida y no lo está es la trampa muda que ya costó un día de A/B.
+ * `comunidad` (A2-14): sin ninguna clave de BiVelio la palanca es gratis y no
+ * depende de ninguna licencia; con una licencia de organización, manda la suya.
  */
 export function describirEstadoDeEsfuerzo(
   nivel: string | undefined,
   hayClave: boolean,
   canalAbierto: boolean,
+  comunidad = false,
 ): { linea: string; aviso: boolean } {
   if (nivel === undefined || nivel === "") {
     return {
@@ -233,7 +236,10 @@ export function describirEstadoDeEsfuerzo(
   }
   return {
     linea:
-      `per-turn effort: ARMED at "${nivel}" (ON if your licence includes per_turn_effort; fail-closed). ` +
+      `per-turn effort: ARMED at "${nivel}" (` +
+      (comunidad
+        ? "community mode: free, no key needed). "
+        : "ON if your organization's licence includes per_turn_effort; fail-closed). ") +
       "Only fable-5-1, mythos-5-1, opus-5-5 and opus-5, and only below the model's default effort " +
       `(high; medium on opus-5-5${nivel === "medium" ? ", so opus-5-5 passes through unchanged at this level" : ""}); ` +
       "every other request passes through unchanged. " +

@@ -170,12 +170,15 @@ export function reescribirModelo(
  * La línea de arranque que dice si C está ARMADA y por qué — hermana de
  * `describirEstadoDeElision`: una palanca que se cree encendida y no lo está
  * es la trampa muda que ya costó un día de A/B. Pura; `aviso` marca los casos
- * en que la intención del operador no se cumple.
+ * en que la intención del operador no se cumple. `comunidad` (A2-14): sin
+ * ninguna clave de BiVelio la palanca es gratis y no depende de ninguna
+ * licencia; solo con una licencia de organización manda su lista de features.
  */
 export function describirEstadoDeHermano(
   bandera: string | undefined,
   hayClave: boolean,
   canalAbierto: boolean,
+  comunidad = false,
 ): { linea: string; aviso: boolean } {
   const par = Object.entries(HERMANOS)
     .map(([a, b]) => `${a}→${b}`)
@@ -199,7 +202,10 @@ export function describirEstadoDeHermano(
   }
   return {
     linea:
-      `sibling model routing: ARMED (${par}; ON if your licence includes sibling_model_routing; fail-closed). ` +
+      `sibling model routing: ARMED (${par}; ` +
+      (comunidad
+        ? "community mode: free, no key needed). "
+        : "ON if your organization's licence includes sibling_model_routing; fail-closed). ") +
       "Changes the model you see in the response; cache reads cost 0.025× instead of 0.1× (list price). " +
       "Turning it on mid-conversation pays one cold prefix write, once. " +
       "If the provider rejects the rewritten request (400), it is re-sent unchanged once",

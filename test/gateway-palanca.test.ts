@@ -518,6 +518,30 @@ describe("describirEstadoDeElision — el brazo dicho al arrancar", () => {
     expect(sinBandera.linea).toMatch(/licence channel: NOT OPENED.*no TTL tuning and no context elision dials$/);
     expect(sinBandera.aviso).toBe(false);
   });
+
+  it("A2-29 · con licencia de org, =0 lleva el nombre entero de la variable y la licencia es la de la org", () => {
+    const linea = describirEstadoDeElision(undefined, true).linea;
+    expect(linea).toContain("BVSALA_GATEWAY_ELISION=0 turns the levers off");
+    expect(linea).not.toContain("(=0 ");
+    expect(linea).toContain("your organization's licence includes cache_ttl_tuning");
+  });
+
+  it("A2-29 · en modo comunitario las palancas son gratis: ni «licence» ni «fail-closed», y dice cómo apagarlas", () => {
+    for (const bandera of [undefined, "1"]) {
+      const e = describirEstadoDeElision(bandera, true, false, true);
+      expect(e.aviso).toBe(false);
+      expect(e.linea).toContain("savings levers: ON (community mode: free, no key needed)");
+      expect(e.linea).toContain("cache TTL tuning ON for Anthropic API-key traffic");
+      expect(e.linea).toContain("BVSALA_GATEWAY_ELISION=0");
+      expect(e.linea).toContain("context elision dials OFF");
+      expect(e.linea).not.toMatch(/licen[cs]e|fail-closed/i);
+    }
+    const apagadas = describirEstadoDeElision("0", true, false, true);
+    expect(apagadas.linea).toMatch(/^savings levers: OFF \(BVSALA_GATEWAY_ELISION=0\)/);
+    expect(apagadas.linea).not.toMatch(/licen[cs]e/i);
+    // Los diales forzados a mano se siguen anunciando con aviso.
+    expect(describirEstadoDeElision(undefined, true, true, true)).toMatchObject({ aviso: true });
+  });
 });
 
 describe("conBetaDeElision — añade sin pisar", () => {

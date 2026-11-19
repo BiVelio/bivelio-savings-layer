@@ -514,7 +514,7 @@ export function envoltorioDe(
         upstream: destino.upstream,
         nota:
           modo === "chatgpt"
-            ? "ChatGPT auth detected: the gateway routes to chatgpt.com/backend-api/codex. Subscription traffic is metered at list-price equivalent with no commission (there is no per-token invoice); the per-seat license applies as for any other use."
+            ? "ChatGPT auth detected: the gateway routes to chatgpt.com/backend-api/codex. Subscription traffic is metered at list-price equivalent (there is no per-token invoice) and no saving is credited on it."
             : "API key auth: the gateway routes to api.openai.com/v1.",
       };
     }

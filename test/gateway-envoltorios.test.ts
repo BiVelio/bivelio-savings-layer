@@ -62,8 +62,10 @@ describe("envoltorioDe — la forma exacta del base URL por terminal", () => {
     expect(e.args[1]).toMatch(/127\.0\.0\.1:8402\/backend-api\/codex"?$/);
     expect(e.args[1]).not.toMatch(/codex\/"?$/); // sin barra final
     expect(e.upstream).toBe("https://chatgpt.com");
-    // Se mide a precio de lista SIN comisión; la licencia por asiento se paga igual.
-    expect(e.nota).toContain("no commission");
+    // Se mide a precio de lista equivalente y no se acredita ahorro. A2-14: ni
+    // comisión (plan cerrado) ni «licencia por asiento»: el gateway es gratis.
+    expect(e.nota).toContain("no saving is credited on it");
+    expect(e.nota).not.toMatch(/commission|per-seat license/);
     expect(e.nota).not.toContain("not billed");
   });
 

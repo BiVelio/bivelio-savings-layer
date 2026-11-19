@@ -6,8 +6,11 @@ import { parsearParaReescribir } from "./reserializacion.js";
  * LA PALANCA DE TARIFA — el dinero que se ahorra sin tocar un solo token.
  *
  * El corpus del espía (3.305 peticiones reales, 921 M de tokens, 23-08 → 06-09)
- * valorado con el catálogo del producto (src/pricing/catalogo.ts, verificado
- * el 06-09 contra la página oficial) cuesta $1.232,91 y se reparte así:
+ * es tráfico de Claude Code con SUSCRIPCIÓN (OAuth, docs/PASARELA-F0.md): nadie
+ * pagó por token. Valorado a precio de lista de la API con el catálogo del
+ * producto (src/pricing/catalogo.ts, verificado el 06-09 contra la página
+ * oficial) —es decir, lo que costaría ese mismo tráfico con una API key— sale
+ * a $1.232,91 y se reparte así:
  *
  *     lectura de caché   $819,27   66,4 %  ·  897,3 M tok  (97,4 %)
  *     escritura 1h       $242,35   19,7 %  ·   14,9 M tok   (1,6 %)
@@ -16,11 +19,12 @@ import { parsearParaReescribir } from "./reserializacion.js";
  *     entrada sin caché    $5,04    0,4 %  ·    0,8 M tok   (0,1 %)
  *
  * Claude Code pide TTL 1h SIEMPRE (12.580 marcas `"ttl":"1h"`, cero de `"5m"`),
- * y Anthropic factura esa escritura a 2× el precio de entrada frente al 1,25×
- * de los 5 minutos. La prima de la hora vale $90,88 en el corpus: el 7,4 % de
- * la factura. Y el hueco hasta el turno siguiente, medido POR HILO (sesión +
- * system: el agente principal y sus subagentes comparten id de sesión pero no
- * prefijo), es menor de 5 minutos el 97,5 % de las veces.
+ * y con API key Anthropic cobra esa escritura a 2× el precio de entrada frente
+ * al 1,25× de los 5 minutos. La prima de la hora vale $90,88 en el corpus: el
+ * 7,4 % de su coste a precio de lista. Y el hueco hasta el turno siguiente,
+ * medido POR HILO (sesión + system: el agente principal y sus subagentes
+ * comparten id de sesión pero no prefijo), es menor de 5 minutos el 97,5 % de
+ * las veces.
  *
  * LA TRAMPA, medida antes de caer en ella dos veces: decidir por el reloj.
  *
@@ -29,7 +33,7 @@ import { parsearParaReescribir } from "./reserializacion.js";
  * que se LEE, que es el prefijo entero: mediana 199K tokens, p90 587K. Un
  * acierto ahorra 0,75× sobre lo pequeño; un fallo cuesta 1,15× sobre lo gordo.
  * Rebajar todos los turnos «calientes» (la política de #229, hueco previo
- * < 4 min) sale a −$77,68 sobre el corpus: PIERDE el 6,3 % de la factura, con
+ * < 4 min) sale a −$77,68 sobre el corpus: PIERDE el 6,3 % del coste, con
  * 40 fallos que cuestan $140 para ahorrar $63. «Siempre 5m» es aún peor.
  *
  * LA REGLA: se rebaja solo cuando lo que se va a escribir es una parte GRANDE
@@ -53,7 +57,11 @@ import { parsearParaReescribir } from "./reserializacion.js";
  *    mismos tokens que el proveedor declaró, dos tarifas públicas. No hay que
  *    imaginar «qué habría pasado si no» — que es justo lo que obliga a marcar
  *    la elisión como `estimated` (ver src/tokenizer/accounting.ts). Esta se
- *    cobra como `measured` con la cara bien alta.
+ *    acredita como `measured` con la cara bien alta.
+ *
+ * Solo se aplica al tráfico con API key. El de suscripción (Claude Pro/Max) no
+ * tiene prima de escritura que ahorrar y viaja intacto (servidor.ts): el corpus
+ * sirve para medir la regla, no es una factura de nadie.
  *
  * Todo aquí es PURO y determinista, como la palanca de diales: ante cualquier
  * duda se devuelve null y el cuerpo original viaja intacto.
