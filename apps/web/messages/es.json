@@ -2265,7 +2265,7 @@
     }
   },
   "pricingPage": {
-    "metaTitle": "Términos de precio · BV-SALA",
+    "metaTitle": "Términos de precio · BiVelio Savings Layer",
     "metaDescription": "El open core es gratis; Measure, Pro, Team y Enterprise son los planes de nube — ninguno lleva comisión sobre tu ahorro. Cifras publicadas desde las mismas constantes que facturan.",
     "eyebrow": "Precios publicados",
     "title": "Motor open source.",
@@ -2421,7 +2421,7 @@
     }
   },
   "privacyPage": {
-    "metaTitle": "Qué sale de tu infraestructura · BV-SALA",
+    "metaTitle": "Qué sale de tu infraestructura · BiVelio Savings Layer",
     "metaDescription": "La lista exacta de lo que el SDK y el gateway local envían a BiVelio, lo que nunca envían y cuánto tiempo lo guarda BiVelio.",
     "eyebrow": "Privacidad",
     "title": "Qué sale de tu infraestructura",

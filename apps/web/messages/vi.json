@@ -2265,7 +2265,7 @@
     }
   },
   "pricingPage": {
-    "metaTitle": "Điều khoản giá · BV-SALA",
+    "metaTitle": "Điều khoản giá · BiVelio Savings Layer",
     "metaDescription": "Open core miễn phí; Measure, Pro, Team và Enterprise là các gói cloud — không gói nào mang hoa hồng trên khoản tiết kiệm của bạn. Số liệu công bố từ chính các hằng số dùng để tính phí.",
     "eyebrow": "Bảng giá công bố",
     "title": "Engine mã nguồn mở.",
@@ -2421,7 +2421,7 @@
     }
   },
   "privacyPage": {
-    "metaTitle": "Những gì rời khỏi hạ tầng của bạn · BV-SALA",
+    "metaTitle": "Những gì rời khỏi hạ tầng của bạn · BiVelio Savings Layer",
     "metaDescription": "Danh sách chính xác những gì SDK và gateway cục bộ gửi tới BiVelio, những gì chúng không bao giờ gửi, và BiVelio lưu giữ bao lâu.",
     "eyebrow": "Quyền riêng tư",
     "title": "Những gì rời khỏi hạ tầng của bạn",

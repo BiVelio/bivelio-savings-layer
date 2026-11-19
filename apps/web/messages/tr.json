@@ -2265,7 +2265,7 @@
     }
   },
   "pricingPage": {
-    "metaTitle": "Fiyat koşulları · BV-SALA",
+    "metaTitle": "Fiyat koşulları · BiVelio Savings Layer",
     "metaDescription": "Açık çekirdek ücretsizdir; Measure, Pro, Team ve Enterprise bulut planlarıdır — hiçbiri tasarrufunuz üzerinden komisyon almaz. Faturalayan sabitlerden yayımlanan rakamlar.",
     "eyebrow": "Yayımlanan fiyatlar",
     "title": "Açık kaynak motor.",
@@ -2421,7 +2421,7 @@
     }
   },
   "privacyPage": {
-    "metaTitle": "Altyapından ne çıkar · BV-SALA",
+    "metaTitle": "Altyapından ne çıkar · BiVelio Savings Layer",
     "metaDescription": "SDK'nın ve yerel gateway'in BiVelio'ya gönderdiklerinin, asla göndermediklerinin ve BiVelio'nun bunları ne kadar sakladığının tam listesi.",
     "eyebrow": "Gizlilik",
     "title": "Altyapından ne çıkar",
