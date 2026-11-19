@@ -76,6 +76,11 @@
   absolute GitHub URL (it was a 404 on pypi.org). From the extracted sdist, the
   parity tests are skipped with their reason instead of failing.
 
+### Catalog
+
+- List-price rows for `claude-fable-5-2` and `gemini-2.5-flash-lite` (list prices
+  checked on 2026-11-19), so both are `measured` instead of `estimated`.
+
 ### Docs
 
 - The npm README fits under the registry's 64 KiB limit, so the package page no
