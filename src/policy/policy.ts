@@ -1,4 +1,6 @@
 import type { CanonicalRequest } from "../canonicalization/canonicalize.js";
+import { normalizeText } from "../canonicalization/canonicalize.js";
+import { salidaVariableEnTextos } from "./salida-variable.js";
 import { temaSensibleEnTextos } from "./tema-sensible.js";
 
 /**
@@ -168,6 +170,18 @@ export function evaluatePolicy(c: CanonicalRequest): Policy {
     c.messages.filter((m) => m.role === "user").map((m) => (typeof m.content === "string" ? m.content : "")),
   );
 
+  // SALIDA QUE DEBE VARIAR O QUE DEPENDE DEL RELOJ (N6, 2026-11-19): «dame una
+  // contraseña aleatoria», «generate a new UUID», «roll a dice», «what time is
+  // it». Una lista corta en inglés y español (salida-variable.ts) que apaga la
+  // caché exacta y la semántica. NO cambia cómo se trata la ausencia de
+  // `temperature`: `stochastic`, arriba, sigue igual.
+  const salidaVariable = salidaVariableEnTextos(
+    c.messages
+      .filter((m) => m.role === "user")
+      .map((m) => (typeof m.content === "string" ? normalizeText(m.content) : "")),
+    c.seed != null,
+  );
+
   // ─── Tráfico agéntico: fuera de la caché semántica salvo que se pida ───
   //
   // POR QUÉ. LiteLLM, «Semantic caching»
@@ -211,6 +225,14 @@ export function evaluatePolicy(c: CanonicalRequest): Policy {
   if (requiresFreshData) reasons.push("freshness-sensitive request");
   if (isPersonalized) reasons.push("personalized/account-scoped request");
   if (stochastic) reasons.push("stochastic sampling (temp>0.3, no seed)");
+  if (salidaVariable !== null) {
+    reasons.push(
+      salidaVariable === "clock"
+        ? "the request asks for the current time or date → exact and semantic cache off"
+        : "the request asks for a random or freshly generated output → exact and semantic cache off " +
+          "(set a seed to make it repeatable)",
+    );
+  }
   if (sensitiveTopic !== null) {
     reasons.push(
       `sensitive topic (${sensitiveTopic}) → exact and semantic cache off, no reference record ` +
@@ -268,7 +290,8 @@ export function evaluatePolicy(c: CanonicalRequest): Policy {
     !liveNoCache &&
     !personalizedWithoutPrincipal &&
     !hasWriteTools &&
-    sensitiveTopic === null;
+    sensitiveTopic === null &&
+    salidaVariable === null;
   if (hasWriteTools) reasons.push("write/destructive tools → exact cache off (side effects must execute)");
   if (liveNoCache) reasons.push("freshnessBucket=live → exact cache off (answer must be current)");
   if (freshWithoutBucket) reasons.push("freshness-sensitive without a freshness bucket → exact cache off");
@@ -286,6 +309,7 @@ export function evaluatePolicy(c: CanonicalRequest): Policy {
     !stochastic &&
     c.freshnessBucket !== "day" &&
     sensitiveTopic === null &&
+    salidaVariable === null &&
     (!isAgentic || incluyeAgentico);
   if (isAgentic && !incluyeAgentico) {
     reasons.push(
