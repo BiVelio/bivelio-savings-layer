@@ -38,9 +38,11 @@ classifiers = [
 # los trae el usuario; este paquete no los importa.
 dependencies = []
 
-# Sin «Repository»: el repositorio es privado y el enlace daría un 404 en PyPI.
+# «Repository» es el mismo repositorio público que `repository.url` del
+# package.json de npm (test/publicar-pypi.test.ts lo exige).
 [project.urls]
 Homepage = "https://savings.bivelio.com"
+Repository = "https://github.com/BiVelio/bivelio-savings-layer"
 Pricing = "https://savings.bivelio.com/pricing"
 Privacy = "https://savings.bivelio.com/privacy"
 "Gateway (npm)" = "https://www.npmjs.com/package/@bivelio/savings-layer"

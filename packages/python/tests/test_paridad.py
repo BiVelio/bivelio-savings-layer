@@ -43,6 +43,20 @@ JSON_V = _cargar("json-estricto.json") if (_VECTORES / "json-estricto.json").is_
 USO_V = _cargar("uso-por-intento.json") if (_VECTORES / "uso-por-intento.json").is_file() else {"casos": []}
 
 
+def _casos_json() -> list:
+    """Los casos de json-estricto, o el salto con su motivo si no están (sdist)."""
+    if not JSON_V["casos"]:
+        pytest.skip(f"parity vectors not found at {_VECTORES} (outside the repository checkout)")
+    return JSON_V["casos"]
+
+
+def _casos_uso() -> list:
+    """Los casos de uso-por-intento, o el salto con su motivo si no están (sdist)."""
+    if not USO_V["casos"]:
+        pytest.skip(f"parity vectors not found at {_VECTORES} (outside the repository checkout)")
+    return USO_V["casos"]
+
+
 def test_los_vectores_existen_y_son_del_formato_que_se_entiende() -> None:
     j = _cargar("json-estricto.json")
     u = _cargar("uso-por-intento.json")
@@ -85,7 +99,7 @@ def test_lo_aplicado_conserva_cada_lexema_y_solo_quita_espacio() -> None:
     # Oráculo independiente de las dos implementaciones: lo compacto, vuelto a
     # leer con el json de la biblioteca estándar, dice lo mismo que el original,
     # y no tiene ni un carácter que no estuviera en él.
-    aplicados = [c for c in JSON_V["casos"] if c["esperado"]["changed"]]
+    aplicados = [c for c in _casos_json() if c["esperado"]["changed"]]
     assert len(aplicados) >= 8
     for c in aplicados:
         original, compacto = c["entrada"]["texto"], c["esperado"]["text"]
@@ -100,11 +114,12 @@ def test_lo_aplicado_conserva_cada_lexema_y_solo_quita_espacio() -> None:
 
 
 def test_los_numeros_y_escapes_salen_escritos_igual() -> None:
-    caso = next(c for c in JSON_V["casos"] if c["nombre"].startswith("números"))
+    casos = _casos_json()
+    caso = next(c for c in casos if c["nombre"].startswith("números"))
     t = caso["esperado"]["text"]
     for literal in ("9223372036854775809", "1.10", "1e400", "-0", "1E-7"):
         assert f":{literal}," in t
-    caso = next(c for c in JSON_V["casos"] if c["nombre"].startswith("escapes"))
+    caso = next(c for c in casos if c["nombre"].startswith("escapes"))
     assert '"a  b\\n\\t \\"c\\" \\\\ \\/ \\u00e9 \\ud83d\\ude00"' in caso["esperado"]["text"]
 
 
@@ -155,7 +170,7 @@ def test_normalizar_y_tarifar_igual_que_typescript(caso: Dict[str, Any]) -> None
 def test_ningun_uso_incompleto_sale_tarifado() -> None:
     # La propiedad, no el caso: sobre TODOS los vectores, lo que no es completo
     # del proveedor nunca es `priced`, y un `priced` nunca es 0 sin entrada.
-    for c in USO_V["casos"]:
+    for c in _casos_uso():
         uso, precio = c["esperado"]["uso"], c["esperado"]["precio"]
         if uso["completeness"] != "complete" or uso["basis"] != "provider_reported":
             assert precio["state"] != "priced", c["nombre"]
@@ -177,3 +192,19 @@ def test_un_objeto_vacio_no_es_un_uso_ausente_sino_sin_contadores() -> None:
     # dos faltan, así que sale `absent` igual, pero por el camino de los contadores.
     u = normalizar_uso({"dialecto": "anthropic", "uso": {}})
     assert u["completeness"] == "absent" and u["missing"] == ["input", "output"]
+
+
+def test_sin_vectores_las_propiedades_se_saltan_no_fallan_ni_pasan_en_vacio(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Fuera del repositorio (el sdist de PyPI) no hay vectores: estos tests
+    # caían con «assert 0 >= 8» y StopIteration, y el de uso pasaba en verde
+    # sin mirar nada. Tienen que saltarse con el motivo, como promete el
+    # docstring del módulo.
+    monkeypatch.setitem(globals(), "JSON_V", {"casos": [], "estimadorHeuristico": []})
+    monkeypatch.setitem(globals(), "USO_V", {"casos": []})
+    for test in (
+        test_lo_aplicado_conserva_cada_lexema_y_solo_quita_espacio,
+        test_los_numeros_y_escapes_salen_escritos_igual,
+        test_ningun_uso_incompleto_sale_tarifado,
+    ):
+        with pytest.raises(pytest.skip.Exception, match="outside the repository checkout"):
+            test()
