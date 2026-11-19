@@ -31,7 +31,7 @@ import { CATALOGO, claveDeCatalogo } from "./catalogo.js";
 // clasificado por nadie: su salida NO se acredita (`unclassified-model`).
 //
 // Claude, según la referencia de la API de Anthropic (septiembre de 2026):
-//   · Opus 5 y 5.5, Sonnet 5 y 5.5, Fable 5 y 5.1, Mythos 5 y 5.1 RAZONAN sin que
+//   · Opus 5 y 5.5, Sonnet 5 y 5.5, Fable 5, 5.1 y 5.2, Mythos 5 y 5.1 RAZONAN sin que
 //     nadie lo pida: con `thinking` omitido corren el
 //     razonamiento adaptativo, o lo llevan siempre puesto, y además rechazan
 //     `temperature` con un 400. En `true`.
@@ -45,7 +45,9 @@ import { CATALOGO, claveDeCatalogo } from "./catalogo.js";
 //     adaptador no declara `reasoningTokens: 0` y la salida tampoco se acredita.
 //
 // Gemini va entero en `true`: 2.5 y 3.x razonan por defecto (2.5 Pro no se puede
-// apagar), y este paquete no manda ningún presupuesto de razonamiento.
+// apagar), y este paquete no manda ningún presupuesto de razonamiento. La
+// excepción documentada es 2.5 Flash-Lite, que no razona por defecto: va en
+// `true` igualmente, y su fila explica por qué.
 //
 // La familia gpt-6 va entera en `true`. La página del modelo gpt-6-luna
 // (https://developers.openai.com/api/docs/models/gpt-6-luna, consultada el
@@ -108,6 +110,10 @@ export const RAZONA_POR_FILA: Readonly<Record<string, boolean>> = {
   "claude-sonnet-5-5": true,
   "claude-fable-5": true,
   "claude-fable-5-1": true,
+  // Fable 5.2: «Adaptive thinking is always on and can't be turned off» y «Omit
+  // `temperature`, `top_p`, and `top_k`»
+  // (https://platform.claude.com/docs/en/models/fable-5-2/overview, 2026-11-19).
+  "claude-fable-5-2": true,
   "claude-mythos-5-1": true,
   "claude-mythos-5": true,
   "claude-sonnet-4": false,
@@ -126,6 +132,14 @@ export const RAZONA_POR_FILA: Readonly<Record<string, boolean>> = {
   "gemini-3.1-pro-preview": true,
   "gemini-2.5-pro": true,
   "gemini-2.5-flash": true,
+  // 2.5 Flash-Lite es la EXCEPCIÓN de la familia: la tabla de thinking de Google
+  // (https://ai.google.dev/gemini-api/docs/thinking, 2026-11-19) da «Default
+  // Thinking: Off» con niveles low/medium/high a elección del cliente. Va en
+  // `true` igual: el patrón de nombre `^gemini-2.5` ya lo declara razonador (el
+  // nombre suma, nunca resta, y el test lo fija), y una petición puede encender
+  // el razonamiento sin que la capa lo vea. Ante la duda su salida no se
+  // acredita por referencia: el lado corto, nunca el largo.
+  "gemini-2.5-flash-lite": true,
   // ── Proveedores chinos ──
   // DeepSeek Flash (V4.1-Flash) no razona por defecto y honra temperature: su
   // salida bajo `temperature: 0` se puede repetir y acreditar por referencia.

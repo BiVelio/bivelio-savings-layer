@@ -91,8 +91,16 @@ describe("⛔ N4 · ni las variantes «:x» ni los parientes heredan", () => {
     expect(precioDeLista(id)).toBeUndefined();
   });
 
+  it("gemini-2.5-flash-lite tiene hoy fila PROPIA (N5, 2026-11-19), que no es la de su pariente", () => {
+    // El caso que abrió N4: el id ya no se resuelve a la fila de gemini-2.5-flash,
+    // ni heredándola ni a falta de la suya. El «-lite» sin fila sigue en la tabla
+    // de abajo con otra versión de la familia.
+    expect(precio("gemini-2.5-flash-lite")).toBe(CATALOGO["gemini-2.5-flash-lite"]);
+    expect(precio("gemini-2.5-flash-lite")).not.toEqual(CATALOGO["gemini-2.5-flash"]);
+  });
+
   it.each([
-    ["gemini-2.5-flash-lite", "gemini-2.5-flash"],
+    ["gemini-3.8-flash-lite", "gemini-3.8-flash"],
     ["gemini-2.5-flash-image", "gemini-2.5-flash"],
     ["gpt-4o-mini-tts", "gpt-4o-mini"],
     ["gpt-4o-mini-transcribe", "gpt-4o-mini"],

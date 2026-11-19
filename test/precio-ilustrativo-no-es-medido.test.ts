@@ -46,8 +46,9 @@ describe("⛔ sin precio declarado ni fila de catálogo, el coste no sale «meas
     "modelo-sin-prefijo",
     "llama3.2",
     "openai/gpt-4o-mini:free", // N4: la variante no hereda la fila de gpt-4o-mini
-    "google/gemini-2.5-flash-lite", // N4: no hereda la de gemini-2.5-flash
-    "anthropic/claude-fable-5-2", // sin fila propia: no hereda la de claude-fable-5
+    "google/gemini-2.5-flash-image", // N4: otra modalidad, no hereda la de gemini-2.5-flash
+    "anthropic/claude-fable-5-3", // versión menor sin fila: no hereda la de claude-fable-5
+    "anthropic/claude-mythos-5-2", // publicada, sin fila propia: no hereda la de claude-mythos-5
     "deepseek/deepseek-chat",
   ])("«%s»: basis estimated y la traza dice que el precio es ilustrativo", async (model) => {
     const { layer } = capa();

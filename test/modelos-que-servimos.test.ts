@@ -60,6 +60,10 @@ const MODELOS_QUE_SERVIMOS: Readonly<Record<string, string>> = {
   "gpt-5.5": "benchmarks/publicados/* (baterías públicas de gama alta, 2026-09-29)",
   "gemini-3.1-pro-preview": "benchmarks/publicados/* (baterías públicas de gama alta, 2026-09-29; el único Pro 3.x con fila)",
   "deepseek-flash": "gateway/doctor.ts (receta de Claude Code con DeepSeek, --upstream deepseek)",
+  // N5 (auditoría del 2026-11-19): vigentes que los clientes mandan hoy y que
+  // salían `estimated` por falta de fila. El dueño decidió dársela.
+  "claude-fable-5-2": "Fable vigente de Anthropic desde el 2026-11-09 (N5)",
+  "gemini-2.5-flash-lite": "Gemini 2.5 Flash-Lite estable (N5)",
 };
 
 /** Lo que el barrido encuentra y NO es un id de modelo, con el porqué. */

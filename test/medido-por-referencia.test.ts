@@ -320,15 +320,17 @@ describe("5 · L6: sin tarifa cacheada documentada no hay referencia", () => {
     expect(hit.report.cache.referenceRejected).toBe("no-cached-price");
   });
 
-  it("un id que HEREDA la fila de otro modelo no vale: gemini-2.5-flash-lite no es gemini-2.5-flash", async () => {
+  it("un id que HEREDA la fila de otro modelo no vale: gemini-2.5-flash-image no es gemini-2.5-flash", async () => {
     // `precioDeLista` le daba a `-lite` la fila de su pariente (sufijo de
     // letra), tres veces su entrada cacheada real. Desde el 2026-11-19 (N4) ya
     // no hereda ni para tarifar: un sufijo que no es un alias es otro modelo.
-    const LITE = "google/gemini-2.5-flash-lite";
-    expect(precioDeLista(LITE)).toBeUndefined();
+    // `-lite` tiene desde N5 fila propia (test/filas-fable-5-2-y-flash-lite.test.ts);
+    // el caso sigue con otra modalidad sin fila, la de imagen.
+    const IMAGEN = "google/gemini-2.5-flash-image";
+    expect(precioDeLista(IMAGEN)).toBeUndefined();
     const { layer } = montar(new ProveedorFijo(400, 60));
-    await layer.generate(peticion({ model: LITE, temperature: 0 }));
-    const hit = await layer.generate(peticion({ model: LITE, temperature: 0 }));
+    await layer.generate(peticion({ model: IMAGEN, temperature: 0 }));
+    const hit = await layer.generate(peticion({ model: IMAGEN, temperature: 0 }));
     expect(hit.report.cache.result).toBe("exact");
     expect(hit.report.cost.basis).toBe("estimated");
     expect(hit.report.cache.referenceRejected).toBe("no-cached-price");
@@ -336,11 +338,11 @@ describe("5 · L6: sin tarifa cacheada documentada no hay referencia", () => {
   });
 
   it("…pero con su precio declarado en costModels, sí: el precio es el del cliente", async () => {
-    const LITE = "google/gemini-2.5-flash-lite";
+    const IMAGEN = "google/gemini-2.5-flash-image";
     const precio = { inputPer1k: 0.0001, outputPer1k: 0.0004, cachedInputPer1k: 0.00001 };
-    const { layer } = montar(new ProveedorFijo(400, 60), { costModels: { "gemini-2.5-flash-lite": precio } });
-    await layer.generate(peticion({ model: LITE, temperature: 0 }));
-    const hit = await layer.generate(peticion({ model: LITE, temperature: 0 }));
+    const { layer } = montar(new ProveedorFijo(400, 60), { costModels: { "gemini-2.5-flash-image": precio } });
+    await layer.generate(peticion({ model: IMAGEN, temperature: 0 }));
+    const hit = await layer.generate(peticion({ model: IMAGEN, temperature: 0 }));
     expect(hit.report.cost.basis).toBe("reference");
     expect(hit.report.cache.reference?.cachedInputPer1k).toBe(0.00001);
     expect(hit.report.cache.reference?.outputPer1k).toBe(0.0004);

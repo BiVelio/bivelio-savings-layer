@@ -6616,9 +6616,10 @@ export class SavingsPipeline {
 
   /**
    * El precio con el que se valora una referencia: el que el cliente declaró o
-   * la fila PROPIA del modelo en el catálogo, nunca la de un pariente. Un
-   * `gemini-2.5-flash-lite` sin fila propia heredaría la de `gemini-2.5-flash`
-   * (3x su entrada cacheada), y la referencia dejaría de ser un suelo.
+   * la fila PROPIA del modelo en el catálogo, nunca la de un pariente. Antes
+   * de tener fila propia, `gemini-2.5-flash-lite` heredaba la de
+   * `gemini-2.5-flash` (3x su entrada cacheada), y la referencia dejaba de ser
+   * un suelo.
    */
   private precioDocumentado(model: string): CostModel | undefined {
     return this.precioDelCliente(model) ?? precioDeListaPropio(model, this.now());

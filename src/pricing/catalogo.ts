@@ -47,13 +47,16 @@ import type { CostModel } from "../tokenizer/accounting.js";
 //     contenido de «2026-09-27» dejó de ser uno solo.
 //   · 2026-09-29 — fila propia de claude-sonnet-5-5 (#399), y la versión se
 //     sube por contenido desde hoy. Primera versión con huella.
+//   · 2026-11-19 — filas propias de claude-fable-5-2 y gemini-2.5-flash-lite
+//     (N5 de la auditoría), con su fila de lote de Anthropic y su fila Flex de
+//     Google en TARIFAS_DE_TIER y su clasificación de razonamiento.
 
 /**
  * Version of this price catalogue: the UTC day its content last changed (rows,
  * announced price steps, cache-write premiums, tier rates). Two computations
  * citing the same version were priced with the same content.
  */
-export const PRECIOS_AL_DIA = "2026-11-03";
+export const PRECIOS_AL_DIA = "2026-11-19";
 
 /**
  * Huella sha256 del contenido de cada versión desde que existe la regla, en
@@ -65,6 +68,7 @@ export const PRECIOS_AL_DIA = "2026-11-03";
 export const HUELLAS_DEL_CATALOGO: Readonly<Record<string, string>> = {
   "2026-09-29": "bfbf91f324c7a3c7319db6c816cb7cce545f4a285e1ff0ad4ac9f1b706634a2e",
   "2026-11-03": "e14ffe5559e35c21f2bbb5d4e42639dc2b80cb262cdb2bd6fd27efdc475ee6d8",
+  "2026-11-19": "1b5365edbda3b11d6f42e0b866cd5be28c1f5d7b49b1b69a6fa9a64def1b8de8",
 };
 
 /**
@@ -251,6 +255,25 @@ export const CATALOGO: Readonly<Record<string, CostModel>> = {
   // mediría la lectura 4x más cara de lo real — directo al panel del cliente.
   "claude-fable-5-1":  { inputPer1k: 0.01,   outputPer1k: 0.05,  cachedInputPer1k: 0.00025 },
   "claude-mythos-5-1": { inputPer1k: 0.01,   outputPer1k: 0.05,  cachedInputPer1k: 0.00025 },
+  // Fable 5.2 (id `claude-fable-5-2`, sin fecha; lanzado el 2026-11-09) es MÁS
+  // BARATO que 5.1 y no comparte lista con ninguna fila: $8 de entrada, $40 de
+  // salida y la LECTURA de caché a 0,025× de la entrada ($0.20/MTok, nota 1 de
+  // la tabla), como 5.1. Verificado el 2026-11-19 contra la página OFICIAL de
+  // precios de Anthropic (https://platform.claude.com/docs/en/about-claude/pricing:
+  // «Claude Fable 5.2 | $8 / MTok | $10 / MTok | $16 / MTok | $0.20 / MTok |
+  // $40 / MTok»; las escrituras de 5 min y 1 h son 1,25× y 2×, las de
+  // `primas.ts`) y contra la del modelo
+  // (https://platform.claude.com/docs/en/models/fable-5-2/overview). Contexto de
+  // 1M a precio estándar («Claude 4.6 and later models … include the full 1M
+  // token context window at standard pricing»): no hay tramo largo. Fuera de
+  // la fila, como en Opus 5.5: el modo rápido ($16 / $80) y el 1,1× de
+  // `inference_geo: "us"`; tarifar esas peticiones a la lista estándar
+  // infra-mide los dos lados por igual y no infla nada. Sin esta fila su tráfico
+  // caía al respaldo ilustrativo y salía `estimated` (N5, auditoría del
+  // 2026-11-19): la herencia por versión menor corta `claude-fable-5-2` →
+  // `claude-fable-5` a propósito, y con la de 5 se habría medido un 25 % más
+  // cara de entrada y salida y 5 veces más cara de lectura.
+  "claude-fable-5-2":  { inputPer1k: 0.008,  outputPer1k: 0.04,  cachedInputPer1k: 0.0002  },
   // Mythos 5 comparte lista con Fable 5 (misma tabla oficial): lectura al 10%.
   "claude-mythos-5":   { inputPer1k: 0.01,   outputPer1k: 0.05,  cachedInputPer1k: 0.001   },
   "claude-sonnet-4":   { inputPer1k: 0.003,  outputPer1k: 0.015, cachedInputPer1k: 0.0003  },
@@ -296,6 +319,18 @@ export const CATALOGO: Readonly<Record<string, CostModel>> = {
   "gemini-3.1-pro-preview": { inputPer1k: 0.002,   outputPer1k: 0.012,   cachedInputPer1k: 0.0002   },
   "gemini-2.5-pro":         { inputPer1k: 0.00125, outputPer1k: 0.01,    cachedInputPer1k: 0.000125 },
   "gemini-2.5-flash":       { inputPer1k: 0.0003,  outputPer1k: 0.0025,  cachedInputPer1k: 0.00003  },
+  // Gemini 2.5 Flash-Lite (`gemini-2.5-flash-lite`, estable). Verificado el
+  // 2026-11-19 contra la página OFICIAL de precios de Gemini
+  // (https://ai.google.dev/gemini-api/docs/pricing, que hoy redirige a
+  // https://aistudio.google.com/docs/pricing), bloque «Standard», columna «Paid
+  // Tier», USD por 1M: entrada $0.10 (texto/imagen/vídeo; audio $0.30), salida
+  // $0.40 (con thinking), caché de contexto $0.01 (texto/imagen/vídeo; audio
+  // $0.03) más $1.00 por 1M y hora de almacenamiento. Precio de texto, como las
+  // demás filas Gemini; sin tramo de contexto largo publicado. El almacenamiento
+  // de la caché explícita queda fuera, como en sus hermanas. Sin esta fila su
+  // tráfico salía `estimated` (N5): desde N4 no hereda la de gemini-2.5-flash,
+  // que cuesta el triple de entrada y más de seis veces la salida.
+  "gemini-2.5-flash-lite":  { inputPer1k: 0.0001,  outputPer1k: 0.0004,  cachedInputPer1k: 0.00001  },
 
   // ── DeepSeek, Qwen, GLM — proveedores chinos ───────────────────────────────
   //
@@ -564,11 +599,21 @@ export function buscarPorModelo<T>(
   //     `gemini-2.5-flash-lite` heredaba `gemini-2.5-flash` (3× su entrada),
   //     `gpt-4o-mini-tts` y `-transcribe` la fila de texto, `gpt-4o-realtime-…`
   //     la de `gpt-4o`.
+  //
+  // (4-bis) «Prefijo» es prefijo por PIEZAS, no por caracteres: una clave que
+  // casa solo hasta la mitad de una pieza del id no es prefijo suyo y no
+  // decide nada; se sigue con la siguiente. Hacía falta desde la fila de
+  // `claude-fable-5-2` (2026-11-19): la instantánea fechada de Fable 5
+  // (`claude-fable-5-20260401`) empieza, carácter a carácter, por
+  // `claude-fable-5-2`, y con el corte (1) como final se quedaba sin precio en
+  // vez de heredar el de `claude-fable-5`. Un id que solo casa así no puede
+  // acabar en la fila de otra clave por error: la clave más corta tiene que
+  // pasar sus propios cortes (1), (2) y (5).
   if (desnudo.includes(":")) return undefined;
   for (const clave of clavesPorLongitud) {
     if (!desnudo.startsWith(clave)) continue;
     const siguiente = desnudo.charAt(clave.length);
-    if (siguiente !== "-" && siguiente !== "." && siguiente !== "_") return undefined;
+    if (siguiente !== "-" && siguiente !== "." && siguiente !== "_") continue;
     const resto = desnudo.slice(clave.length + 1);
     if (/^\d/.test(resto)) return /^\d{4}/.test(resto) ? catalogo[clave] : undefined;
     return ALIAS_DEL_MISMO_MODELO.test(resto) ? catalogo[clave] : undefined;

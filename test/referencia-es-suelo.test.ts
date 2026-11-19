@@ -217,8 +217,12 @@ describe("el precio de la referencia es la fila PROPIA del modelo, nunca la de u
     expect(precioDeLista("gemini-2.5-flash-latest")).toBe(CATALOGO["gemini-2.5-flash"]);
     expect(precioDeListaPropio("gemini-2.5-flash-latest")).toBeUndefined();
     // Y lo que no es un alias ya no hereda ni para tarifar (N4, 2026-11-19).
-    expect(precioDeLista("gemini-2.5-flash-lite")).toBeUndefined();
-    expect(precioDeListaPropio("gemini-2.5-flash-lite")).toBeUndefined();
+    expect(precioDeLista("gemini-2.5-flash-image")).toBeUndefined();
+    expect(precioDeListaPropio("gemini-2.5-flash-image")).toBeUndefined();
+    // gemini-2.5-flash-lite, el ejemplo original, tiene desde N5 fila propia:
+    // la referencia usa la SUYA, no la de gemini-2.5-flash.
+    expect(precioDeListaPropio("gemini-2.5-flash-lite", AL_DIA)).toBe(CATALOGO["gemini-2.5-flash-lite"]);
+    expect(precioDeListaPropio("gemini-2.5-flash-lite", AL_DIA)).not.toEqual(CATALOGO["gemini-2.5-flash"]);
   });
 
   it("una instantánea con fecha es el mismo modelo y conserva su fila", () => {

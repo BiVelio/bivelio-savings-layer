@@ -62,9 +62,9 @@ import { primaDeEscritura } from "./primas.js";
 //   · gpt-5.1 tiene fila Flex y Batch en OpenAI pero NO fila propia en CATALOGO
 //     (sí las tienen sus variantes codex). Sin fila estándar propia no se resta
 //     nada. Lo mismo gpt-5.5-pro y gpt-5.4-pro (tienen fila Flex, sin lectura
-//     cacheada publicada; además están vetadas en CATALOGO) y, en Gemini,
-//     2.5-flash-lite: Flex publicado y ninguna fila propia en CATALOGO. Entran
-//     cuando la tengan, no antes.
+//     cacheada publicada; además están vetadas en CATALOGO). Entran cuando la
+//     tengan, no antes: así entró gemini-2.5-flash-lite en Flex el 2026-11-19,
+//     el día que recibió su fila estándar.
 //   · gpt-4o, gpt-4.1, o1, o3-mini, gpt-5-pro, gpt-5.2-pro, o3-pro y o1-pro no
 //     tienen fila Flex: su descuento por diferir solo existe en la Batch API.
 //     De ellos tienen fila propia en CATALOGO —y por eso fila Batch aquí—
@@ -146,7 +146,10 @@ export interface TarifaDeTier extends TarifaPlana {
 // (2026-09-29: solo se releyó la página de Anthropic, para la fila de Sonnet
 // 5.5; su tabla «Batch processing» coincide con todas las filas `an` de abajo.
 // OpenAI y Google siguen con la lectura del 2026-09-27, la de su `consultado`.)
-export const TARIFAS_DE_TIER_AL_DIA = "2026-09-29";
+// (2026-11-19: se leyeron la de Anthropic y la de Google SOLO para las dos filas
+// nuevas, claude-fable-5-2 en lote y gemini-2.5-flash-lite en Flex, que llevan
+// ese `consultado`. Las demás filas conservan el suyo.)
+export const TARIFAS_DE_TIER_AL_DIA = "2026-11-19";
 
 const OPENAI = "https://developers.openai.com/api/docs/pricing";
 const GOOGLE = "https://ai.google.dev/gemini-api/docs/pricing";
@@ -386,12 +389,15 @@ export const TARIFAS_DE_TIER: Readonly<
   anthropic: {
     // «Batch processing», USD/1M → /1000: entrada y salida de la tabla; lectura
     // de caché = multiplicador de lectura del modelo × entrada de lote (0,1×;
-    // 0,05× en Opus 5.5; 0,025× en Fable 5.1 y Mythos 5.1); escritura de caché =
+    // 0,05× en Opus 5.5; 0,025× en Fable 5.1, Mythos 5.1 y Fable 5.2); escritura de caché =
     // 1,25× la entrada de lote (la de 5 minutos: la de 1 hora, 2×, se tarifa a
     // 1,25× en los DOS lados y la diferencia sale corta, nunca larga). El valor
     // de `usage.service_tier` que pone la respuesta de un lote es "batch".
     // Leído 2026-09-27 en https://platform.claude.com/docs/en/about-claude/pricing
     batch: {
+      // Claude Fable 5.2: $4 / $20 (tabla «Batch processing», leída el
+      // 2026-11-19); caché 0,025× → $0.10; escritura 1,25× → $5.
+      "claude-fable-5-2": { ...an({ inputPer1k: 0.004, cachedInputPer1k: 0.0001, cacheWritePer1k: 0.005, outputPer1k: 0.02 }), consultado: "2026-11-19" },
       // Claude Fable 5.1 / Mythos 5.1: $5 / $25; caché 0,025× → $0.125; escritura $6.25.
       "claude-fable-5-1": an({ inputPer1k: 0.005, cachedInputPer1k: 0.000125, cacheWritePer1k: 0.00625, outputPer1k: 0.025 }),
       "claude-mythos-5-1": an({ inputPer1k: 0.005, cachedInputPer1k: 0.000125, cacheWritePer1k: 0.00625, outputPer1k: 0.025 }),
@@ -458,6 +464,14 @@ export const TARIFAS_DE_TIER: Readonly<
       }),
       // gemini-2.5-flash: $0.15 / $1.25 / $0.03 (texto/imagen/vídeo)
       "gemini-2.5-flash": go({ inputPer1k: 0.00015, outputPer1k: 0.00125, cachedInputPer1k: 0.00003 }),
+      // gemini-2.5-flash-lite: $0.05 (texto/imagen/vídeo; audio $0.15) / $0.20 /
+      // $0.01 (texto; audio $0.03). La caché de Flex cuesta lo MISMO que en
+      // estándar ($0.01): no se descuenta. Leído el 2026-11-19, cuando la fila
+      // estándar entró en CATALOGO.
+      "gemini-2.5-flash-lite": {
+        ...go({ inputPer1k: 0.00005, outputPer1k: 0.0002, cachedInputPer1k: 0.00001 }),
+        consultado: "2026-11-19",
+      },
       // LOS QUE #332 DEJÓ FUERA POR FALTA DE FILA ESTÁNDAR, que CATALOGO ya
       // tiene. Leídos el 2026-09-27 en el bloque «Flex» de cada modelo.
       // gemini-3.8-flash y gemini-3.6-flash: $0.375 / $1.875 / $0.0375 «through
