@@ -61,6 +61,8 @@ describe.skipIf(process.platform === "win32")("A2-12 · el envoltorio no pisa el
     const puerto = /127\.0\.0\.1:(\d+)/.exec(r.stderr)![1];
     expect(visto.args).toContain(`openai_base_url="http://127.0.0.1:${puerto}/v1"`);
     expect(visto.base).toBe(`http://127.0.0.1:${puerto}/v1`);
+    // Y no dice a la vez que va a api.openai.com: el aviso de arriba ya nombra el destino.
+    expect(r.stderr).not.toContain("routes to api.openai.com");
   });
 
   it("codex con API key y un OPENAI_BASE_URL con otra ruta: no arranca, exit 1, y no lanza el terminal", () => {
