@@ -11,6 +11,7 @@ import { describirEstadoDeHermano } from "./hermano.js";
 import { arrancarGateway, type GatewayArrancado } from "./servidor.js";
 import { resumenDeDegradaciones } from "./degradacion.js";
 import {
+  argumentoDesconocido,
   decidirArranque,
   flagDePuerto,
   isChildInfoRequest,
@@ -272,6 +273,15 @@ const retirados = retiredNameErrors(esEnvoltorio ? [] : resto, process.env, {
 if (retirados.length > 0) {
   for (const error of retirados) console.error(error);
   process.exit(1);
+}
+// A2-16 · un flag que `gateway` o `doctor` no conocen es un error, no un ajuste
+// por defecto en silencio (`--upsteam openai` arrancaba contra Anthropic).
+if (comando === "gateway" || comando === "doctor") {
+  const desconocido = argumentoDesconocido(comando, resto);
+  if (desconocido !== null) {
+    console.error(desconocido);
+    process.exit(1);
+  }
 }
 const effortEnv = process.env.BVSALA_GATEWAY_EFFORT;
 const siblingModelEnv = process.env.BVSALA_GATEWAY_SIBLING_MODEL;

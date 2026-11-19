@@ -1,6 +1,12 @@
 import { describe, it, expect } from "vitest";
 
-import { decidirArranque, flagDePuerto, isChildInfoRequest, mensajeDeFalloDeArranque } from "../gateway/argumentos.js";
+import {
+  argumentoDesconocido,
+  decidirArranque,
+  flagDePuerto,
+  isChildInfoRequest,
+  mensajeDeFalloDeArranque,
+} from "../gateway/argumentos.js";
 
 /**
  * La decisión «ayuda / versión / arrancar» del CLI, como función pura. Hasta
@@ -136,5 +142,44 @@ describe("bvsala · flagDePuerto: `--port N` y `--port=N` son lo mismo", () => {
     // Number("") es 0 y Number("0x10") es 16: ninguno cuela como puerto.
     expect(flagDePuerto(["--port", ""]).tipo).toBe("error");
     expect(flagDePuerto(["--port=0x10"]).tipo).toBe("error");
+  });
+});
+
+describe("A2-16 · argumentoDesconocido: un flag mal escrito es un error que nombra el flag y sugiere el bueno", () => {
+  it("las formas buenas de gateway y doctor pasan", () => {
+    expect(argumentoDesconocido("gateway", [])).toBeNull();
+    expect(argumentoDesconocido("gateway", ["--port", "9000", "--upstream", "openai"])).toBeNull();
+    expect(argumentoDesconocido("gateway", ["--port=9000", "--upstream=https://api.openai.com"])).toBeNull();
+    // Sin valor: lo dice resolverUpstream («needs a value»), no este filtro.
+    expect(argumentoDesconocido("gateway", ["--upstream"])).toBeNull();
+    expect(argumentoDesconocido("gateway", ["--upstream", "--port", "0"])).toBeNull();
+    expect(argumentoDesconocido("doctor", ["--port", "9000"])).toBeNull();
+    // `--write` lo sigue contestando el doctor con «does not exist yet».
+    expect(argumentoDesconocido("doctor", ["--write"])).toBeNull();
+    // Lo que empieza por --port lo juzga flagDePuerto, con su mensaje de siempre.
+    expect(argumentoDesconocido("gateway", ["--ports", "9000"])).toBeNull();
+  });
+
+  it("⛔ `--upsteam openai`, `-p 9000` y `--Port 9000` son errores con la sugerencia", () => {
+    expect(argumentoDesconocido("gateway", ["--upsteam", "openai", "--port", "39512"])).toBe(
+      "[bvsala gateway] unknown option --upsteam (did you mean --upstream?). gateway accepts --port N, --upstream U (and --help). Nothing was started.",
+    );
+    expect(argumentoDesconocido("gateway", ["-p", "9000"])).toContain("unknown option -p (did you mean --port?)");
+    expect(argumentoDesconocido("gateway", ["--Port", "9000"])).toContain("unknown option --Port (did you mean --port?)");
+    expect(argumentoDesconocido("doctor", ["-p", "9000"])).toContain("[bvsala doctor] unknown option -p (did you mean --port?)");
+    expect(argumentoDesconocido("doctor", ["--prot", "9000"])).toContain("(did you mean --port?)");
+  });
+
+  it("sin nada parecido, la lista de lo que se acepta; y el valor de un argumento no se repite nunca", () => {
+    const e = argumentoDesconocido("gateway", ["--verbose"]);
+    expect(e).toBe("[bvsala gateway] unknown option --verbose. gateway accepts --port N, --upstream U (and --help). Nothing was started.");
+    const conValor = argumentoDesconocido("gateway", ["--upsteam=sk-clave-inventada"]);
+    expect(conValor).toContain("--upsteam");
+    expect(conValor).not.toContain("sk-clave-inventada");
+    const suelto = argumentoDesconocido("gateway", ["sk-clave-inventada-pegada"]);
+    expect(suelto).toContain("unexpected argument");
+    expect(suelto).not.toContain("sk-clave-inventada");
+    // El doctor no anuncia un --write que aún no existe.
+    expect(argumentoDesconocido("doctor", ["--verbose"])).toContain("doctor accepts --port N (and --help)");
   });
 });
