@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { decidirArranque, isChildInfoRequest, mensajeDeFalloDeArranque } from "../gateway/argumentos.js";
+import { decidirArranque, flagDePuerto, isChildInfoRequest, mensajeDeFalloDeArranque } from "../gateway/argumentos.js";
 
 /**
  * La decisión «ayuda / versión / arrancar» del CLI, como función pura. Hasta
@@ -104,5 +104,37 @@ describe("bvsala · el fallo de arranque traducido al probador", () => {
     const linea = mensajeDeFalloDeArranque(new Error("algo raro"), "claude", 0);
     expect(linea).toContain("could not start the gateway");
     expect(linea).toContain("algo raro");
+  });
+});
+
+/**
+ * `--port=N` se ignoraba EN SILENCIO (solo se miraba `indexOf("--port")`): el
+ * gateway arrancaba en 8402 y `doctor --port=9000` imprimía recetas para 8402.
+ */
+describe("bvsala · flagDePuerto: `--port N` y `--port=N` son lo mismo", () => {
+  it("⛔ las dos formas dan el mismo puerto", () => {
+    expect(flagDePuerto(["--port", "9777"])).toEqual({ tipo: "puerto", puerto: 9777 });
+    expect(flagDePuerto(["--port=9777"])).toEqual({ tipo: "puerto", puerto: 9777 });
+    expect(flagDePuerto(["--upstream", "openai", "--port=9777"])).toEqual({ tipo: "puerto", puerto: 9777 });
+    expect(flagDePuerto(["--upstream=openai", "--port", "0"])).toEqual({ tipo: "puerto", puerto: 0 });
+  });
+
+  it("sin el flag: ausente (el puerto por defecto lo pone quien llama)", () => {
+    expect(flagDePuerto([])).toEqual({ tipo: "ausente" });
+    expect(flagDePuerto(["--upstream", "openai"])).toEqual({ tipo: "ausente" });
+  });
+
+  it("⛔ un `--port…` que no se entiende es un ERROR, nunca el puerto por defecto en silencio", () => {
+    expect(flagDePuerto(["--port="])).toEqual({ tipo: "error", valor: "--port=" });
+    expect(flagDePuerto(["--port"]).tipo).toBe("error");
+    expect(flagDePuerto(["--port", "--upstream"]).tipo).toBe("error");
+    expect(flagDePuerto(["--port=abc"])).toEqual({ tipo: "error", valor: "--port=abc" });
+    expect(flagDePuerto(["--port", "9000x"])).toEqual({ tipo: "error", valor: "9000x" });
+    expect(flagDePuerto(["--port=-1"]).tipo).toBe("error");
+    expect(flagDePuerto(["--ports", "9000"])).toEqual({ tipo: "error", valor: "--ports" });
+    expect(flagDePuerto(["--port9000"])).toEqual({ tipo: "error", valor: "--port9000" });
+    // Number("") es 0 y Number("0x10") es 16: ninguno cuela como puerto.
+    expect(flagDePuerto(["--port", ""]).tipo).toBe("error");
+    expect(flagDePuerto(["--port=0x10"]).tipo).toBe("error");
   });
 });
