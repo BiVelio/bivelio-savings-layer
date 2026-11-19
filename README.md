@@ -16,6 +16,41 @@
   <img src="https://img.shields.io/badge/telemetry-off%20by%20default-0F1218" alt="Telemetry off by default">
 </p>
 
+`@bivelio/savings-layer` (**BV‑SALA**) sits between your app — or your coding agent —
+and the LLM provider, and lets through only what has to be paid for. Every saving is
+reported request by request, valued with your provider's own usage counter at
+versioned list prices.
+
+```shell
+npm i @bivelio/savings-layer         # the SDK, in your TypeScript/JavaScript app
+npx @bivelio/savings-layer claude    # or Claude Code through the local gateway (also codex, gemini, qwen, aider)
+```
+
+- **Free, with no key.** The open core is the whole savings layer, Apache-2.0: install
+  it and it saves. No key, no signup, no telemetry, and nothing is sent to BiVelio.
+- **The cloud is the paid, optional part.** A BiVelio key adds the team dashboard,
+  shared semantic caches across seats, org entitlements and license management, for
+  a fixed fee per seat, and never a commission on what you save. Prices below.
+- **The evidence is public.** [The paper](https://savings.bivelio.com/paper) (v2.3-r1,
+  revised after an external pre-publication review) gives the method, the results and
+  every limitation; the artifacts are in [`benchmarks/evidencia`](./benchmarks/evidencia).
+
+### How it saves
+
+It skips calls that don't have to happen (exact + semantic cache, deduplication),
+trims what does (prompt-cache placement, context and tool-output compaction,
+serialization), and routes each request to the cheapest execution that meets your
+quality bar (model cascade, sibling models, provider failover) — on OpenAI,
+Anthropic, Gemini, **DeepSeek, Qwen, GLM, Moonshot**, any OpenAI‑compatible
+endpoint, and local servers (Ollama, vLLM, LM Studio).
+
+It is not a promise you take on faith: every saving is split into four ledgers
+(`avoided_calls`, `eliminated_tokens`, `compressed_tokens`, `provider_cached_tokens`)
+and labelled `measured`, `reference` or `estimated`. Nothing is sent to BiVelio
+unless you choose to add a key: **zero telemetry by default**, and prompts,
+completions and provider keys never reach BiVelio (the exact per-request fields a
+cloud key sends are in [LICENSE-CLOUD.md](./LICENSE-CLOUD.md) §5).
+
 ### Measured, not promised — and independently re-checked
 
 - **Live A/B on the provider's own counters** (`claude-haiku-4-5`): the
@@ -24,36 +59,13 @@
 - **Recomputed from the public artifacts**: **31.50 %** (gpt-4o-mini) and
   **75.08 %** (claude-sonnet-5) pooled reductions with bootstrap intervals; the
   equal-family means (22.88 % / 70.71 %) are reported separately, as they should be.
-- **Reviewed before publication** (paper v2.3-r1, external pre-publication review):
-  what the evidence proves and what it does not are both stated. Artifacts in
-  [`benchmarks/evidencia`](./benchmarks/evidencia), method in the paper.
 
-### Open core: install it and it saves. No key. No signup. No telemetry.
-
-`@bivelio/savings-layer` (**BV‑SALA**) sits between your app — or your coding agent —
-and the LLM provider, and lets through only what has to be paid for: it skips calls
-that don't have to happen (exact + semantic cache, deduplication), trims what does
-(prompt-cache placement, context and tool-output compaction, serialization), and
-routes each request to the cheapest execution that meets your quality bar (model
-cascade, sibling models, provider failover) — on OpenAI, Anthropic, Gemini,
-**DeepSeek, Qwen, GLM, Moonshot**, any OpenAI‑compatible endpoint, and local
-servers (Ollama, vLLM, LM Studio).
-
-It is not a promise you take on faith: **every saving is reported request by
-request, valued with your provider's own usage counter at versioned list prices**,
-split into four ledgers (`avoided_calls`, `eliminated_tokens`, `compressed_tokens`,
-`provider_cached_tokens`) and labelled `measured`, `reference` or `estimated`.
-Nothing is sent to BiVelio unless you choose to add a key: **zero telemetry by
-default**, and prompts, completions and provider keys never reach BiVelio
-(the exact per-request fields a cloud key sends are in [LICENSE-CLOUD.md](./LICENSE-CLOUD.md) §5).
-
-The free part is the whole savings layer. What a (paid, optional) BiVelio key adds
-is the cloud: the team dashboard, shared semantic caches across seats, org
-entitlements and license management. The cloud subscription is a fixed fee, paid
-whether or not you save — Pro €15 / seat / month or €150 / seat / year; Team
-€129 / month with 10 seats included (€12 per extra seat; €1,290 / year, €120 per
-extra seat), EUR, VAT not included — and there is never a commission on what you
-save (see [LICENSE-CLOUD.md](./LICENSE-CLOUD.md) §6).
+📄 **The paper:** [Verifiable Measurement of Cost Savings in LLM Applications
+(open-core edition, v2.3-r1)](./docs/PAPER.md) — revised after an external
+pre-publication review: pooled reductions of **31.50 %** and **75.08 %** with
+percentile cluster-bootstrap intervals, four ledgers, and every limitation stated.
+Also at **[savings.bivelio.com/paper](https://savings.bivelio.com/paper)**, with the
+arXiv-ready LaTeX in [`docs/paper/main.tex`](./docs/paper/main.tex).
 
 ### Install anywhere, in 60 seconds
 
@@ -109,13 +121,6 @@ console.log(report.cost.basis);               // "estimated": nothing ran, so th
 installed coding agent. The published benchmark, trial by trial, with the raw CSV,
 is at **[savings.bivelio.com/en/how-it-works](https://savings.bivelio.com/en/how-it-works)**.
 
-📄 **The paper:** [Verifiable Measurement of Cost Savings in LLM Applications
-(open-core edition, v2.3-r1)](./docs/PAPER.md) — revised after an external
-pre-publication review: pooled reductions of **31.50 %** and **75.08 %** with
-percentile cluster-bootstrap intervals, four ledgers, and every limitation stated.
-Also at **[savings.bivelio.com/paper](https://savings.bivelio.com/paper)**, with the
-arXiv-ready LaTeX in [`docs/paper/main.tex`](./docs/paper/main.tex).
-
 ### Community vs Cloud
 
 | | Community (default, no keys) | Cloud (optional `BIVELIO_*` keys) |
@@ -130,7 +135,11 @@ arXiv-ready LaTeX in [`docs/paper/main.tex`](./docs/paper/main.tex).
 A license key that **is** configured but invalid or expired still fails closed with
 `LicenseError` — only its absence is a working product.
 
-**Pricing:** fixed fee per seat (Pro and Team), **no commission on what you save**. Full numbers:
+**Pricing.** The cloud subscription is a fixed fee, paid whether or not you save —
+Pro €15 / seat / month or €150 / seat / year; Team
+€129 / month with 10 seats included (€12 per extra seat; €1,290 / year, €120 per
+extra seat), EUR, VAT not included — and there is never a commission on what you
+save (see [LICENSE-CLOUD.md](./LICENSE-CLOUD.md) §6).
 
 <details>
 <summary><b>Cloud pricing (the optional, paid part) — full terms</b></summary>
@@ -146,6 +155,46 @@ prompts, completions and provider keys never reach BiVelio: a cloud key sends
 only the per-request usage fields listed in [LICENSE-CLOUD.md](./LICENSE-CLOUD.md) §5.
 
 </details>
+
+## Licensing & privacy
+
+BV‑SALA is open core: the npm package is **Apache-2.0** and free — install it with no keys
+(COMMUNITY mode runs every local lever, zero telemetry, nothing sent to BiVelio). The
+optional **cloud** is commercial. Its plans are **Measure** (free), **Pro** (per seat),
+**Team** (a number of seats included, plus each extra seat) and **Enterprise** (by
+contract); Pro and Team are paid whether or not you save and carry **no commission** on
+your savings. The prices are above, in [LICENSE-CLOUD.md](./LICENSE-CLOUD.md) §6 and in
+the Published Pricing it refers to,
+**[savings.bivelio.com/pricing](https://savings.bivelio.com/pricing)**. No trial. There is one free license,
+**Measure** — no card, one organization per verified account, up to 5 seats and 20,000
+requests a day: the layer runs in **shadow mode**. Every request goes to your provider
+exactly as you built it, nothing is served from any cache, no lever is applied, and
+`report.measure.wouldHaveSaved` (with `basis: "shadow"`) says what the exact cache and
+in‑flight coalescing would have saved on that request, valued with your provider's own
+counter — a lower bound, never part of any commission. Inside the cloud, the levers need a
+paid plan (without the cloud, the open core runs every local lever with no key at all): once
+you upgrade, a layer with `serviceAccountKey` and `licenseServerUrl` picks up the paid
+license by itself and turns them on without a restart.
+
+The earlier plan — a lower per‑seat fee plus a tiered commission on measured savings
+only — is **closed to new customers**; a subscription already on it keeps it unchanged.
+On that plan your first month carries no commission (the first calendar month, UTC, in
+which your organization reports usage); after that the commission is charged on the
+measured saving only — never from estimates — at a tiered rate from 10 % down to 4 %, so
+you keep at least 90 % of every euro saved (before rounding to the cent; the seat fee is
+separate).
+
+The license is a signed token your SDK and the
+gateway verify **offline**; the managed control plane and the revocation kill‑switch
+are served from BiVelio. Your LLM traffic goes **straight to your provider** —
+BiVelio receives per‑request usage (counts, cost, the model id and opaque ids), never
+prompts, completions or provider keys; [LICENSE-CLOUD.md](./LICENSE-CLOUD.md) §5 lists every field, and
+**[savings.bivelio.com/privacy](https://savings.bivelio.com/privacy)** says how long
+each one is kept.
+
+Get a key at **[savings.bivelio.com](https://savings.bivelio.com)**.
+Onboarding & general questions: **support@bivelio.com** · licensing & compliance:
+**privacy@bivelio.com** · technical: **team@bivelio.com**.
 
 <details>
 <summary><b>Where it installs — the full story</b></summary>
@@ -772,46 +821,6 @@ BVSALA_SEAT_ID=worker-03   # stable per replica; [A-Za-z0-9._:/-], max 128 chars
   interfaces.
 
 </details>
-
-## Licensing & privacy
-
-BV‑SALA is open core: the npm package is **Apache-2.0** and free — install it with no keys
-(COMMUNITY mode runs every local lever, zero telemetry, nothing sent to BiVelio). The
-optional **cloud** is commercial. Its plans are **Measure** (free), **Pro** (per seat),
-**Team** (a number of seats included, plus each extra seat) and **Enterprise** (by
-contract); Pro and Team are paid whether or not you save and carry **no commission** on
-your savings. The prices are at the top of this page, in [LICENSE-CLOUD.md](./LICENSE-CLOUD.md) §6 and in
-the Published Pricing it refers to,
-**[savings.bivelio.com/pricing](https://savings.bivelio.com/pricing)**. No trial. There is one free license,
-**Measure** — no card, one organization per verified account, up to 5 seats and 20,000
-requests a day: the layer runs in **shadow mode**. Every request goes to your provider
-exactly as you built it, nothing is served from any cache, no lever is applied, and
-`report.measure.wouldHaveSaved` (with `basis: "shadow"`) says what the exact cache and
-in‑flight coalescing would have saved on that request, valued with your provider's own
-counter — a lower bound, never part of any commission. Inside the cloud, the levers need a
-paid plan (without the cloud, the open core runs every local lever with no key at all): once
-you upgrade, a layer with `serviceAccountKey` and `licenseServerUrl` picks up the paid
-license by itself and turns them on without a restart.
-
-The earlier plan — a lower per‑seat fee plus a tiered commission on measured savings
-only — is **closed to new customers**; a subscription already on it keeps it unchanged.
-On that plan your first month carries no commission (the first calendar month, UTC, in
-which your organization reports usage); after that the commission is charged on the
-measured saving only — never from estimates — at a tiered rate from 10 % down to 4 %, so
-you keep at least 90 % of every euro saved (before rounding to the cent; the seat fee is
-separate).
-
-The license is a signed token your SDK and the
-gateway verify **offline**; the managed control plane and the revocation kill‑switch
-are served from BiVelio. Your LLM traffic goes **straight to your provider** —
-BiVelio receives per‑request usage (counts, cost, the model id and opaque ids), never
-prompts, completions or provider keys; [LICENSE-CLOUD.md](./LICENSE-CLOUD.md) §5 lists every field, and
-**[savings.bivelio.com/privacy](https://savings.bivelio.com/privacy)** says how long
-each one is kept.
-
-Get a key at **[savings.bivelio.com](https://savings.bivelio.com)**.
-Onboarding & general questions: **support@bivelio.com** · licensing & compliance:
-**privacy@bivelio.com** · technical: **team@bivelio.com**.
 
 ---
 
