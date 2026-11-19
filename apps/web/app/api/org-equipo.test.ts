@@ -50,6 +50,12 @@ interface Estado {
   miembros: Fila[];
   invitaciones: Inv[];
   orgs: { id: string; name: string }[];
+  /** `billing_audit`: donde se apunta cada correo de invitación (el tope cuenta aquí). */
+  auditoria?: Record<string, unknown>[];
+  /** `subscriptions`: con una viva, la organización tiene el tope de pago. */
+  subs?: Record<string, unknown>[];
+  /** Tabla cuya lectura o escritura falla (para probar que se falla CERRADO). */
+  fallaTabla?: string;
   escrituras: { tabla: string; op: string; fila?: unknown; filtros: [string, unknown][] }[];
   rpc: { nombre: string; args: unknown }[];
   errorRpc?: { code?: string; message?: string };
@@ -65,6 +71,8 @@ function tablaDe(nombre: string): Record<string, unknown>[] {
   if (nombre === "org_members") return e.miembros as unknown as Record<string, unknown>[];
   if (nombre === "org_invitations") return e.invitaciones as unknown as Record<string, unknown>[];
   if (nombre === "organizations") return e.orgs as unknown as Record<string, unknown>[];
+  if (nombre === "billing_audit") return (e.auditoria ??= []);
+  if (nombre === "subscriptions") return (e.subs ??= []);
   return [];
 }
 
@@ -72,6 +80,9 @@ function tablaDe(nombre: string): Record<string, unknown>[] {
  *  romper un test, no pasar desapercibido. */
 const consulta = (nombre: string) => {
   const filtros: [string, unknown][] = [];
+  const desde: [string, string][] = [];
+  const dentro: [string, unknown[]][] = [];
+  let contar = false;
   let nulos: string[] = [];
   let op = "select";
   let payload: unknown;
@@ -87,10 +98,14 @@ const consulta = (nombre: string) => {
   const casan = () =>
     tablaDe(nombre).filter(
       (f) =>
-        filtros.every(([c, v]) => f[c] === v) && nulos.every((c) => f[c] === null || f[c] === undefined),
+        filtros.every(([c, v]) => f[c] === v) &&
+        desde.every(([c, v]) => String(f[c]) >= v) &&
+        dentro.every(([c, vs]) => vs.includes(f[c])) &&
+        nulos.every((c) => f[c] === null || f[c] === undefined),
     );
   const q: Record<string, unknown> = {
-    select: (cols?: string) => {
+    select: (cols?: string, opts?: { count?: string }) => {
+      if (opts?.count) contar = true;
       if (typeof cols === "string" && cols.trim() && cols !== "*") {
         columnas = cols.split(",").map((c) => c.trim());
       }
@@ -111,7 +126,16 @@ const consulta = (nombre: string) => {
       filtros.push([c, v]);
       return q;
     },
-    in: () => q,
+    // Solo se aplica en las tablas del tope: en las demás era un no-op y hay
+    // pruebas viejas que cuentan con ello.
+    in: (c: string, vs: unknown[]) => {
+      if (nombre === "subscriptions" || nombre === "billing_audit") dentro.push([c, vs]);
+      return q;
+    },
+    gte: (c: string, v: string) => {
+      desde.push([c, v]);
+      return q;
+    },
     is: (c: string, v: unknown) => {
       if (v === null) nulos.push(c);
       return q;
@@ -128,8 +152,13 @@ const consulta = (nombre: string) => {
     insert: (fila: Record<string, unknown>) => {
       op = "insert";
       payload = fila;
+      if (e.fallaTabla === nombre) {
+        return Object.assign(Promise.resolve({ data: null, error: { message: "boom" } }), {
+          select: () => ({ single: async () => ({ data: null, error: { message: "boom" } }) }),
+        });
+      }
       e.escrituras.push({ tabla: nombre, op, fila, filtros });
-      const creada = { id: `${nombre}-nueva`, created_at: "2026-08-12T00:00:00Z", ...fila };
+      const creada = { id: `${nombre}-nueva`, created_at: "2026-08-12T00:00:00Z", at: new Date().toISOString(), ...fila };
       tablaDe(nombre).push(creada);
       return Object.assign(Promise.resolve({ data: null, error: null }), {
         select: () => ({ single: async () => ({ data: creada, error: null }) }),
@@ -143,8 +172,10 @@ const consulta = (nombre: string) => {
       const f = casan()[0];
       return { data: f ? proyectar(f) : null, error: null };
     },
-    then: (res: (v: { data: unknown; error: null }) => unknown) => {
+    then: (res: (v: { data: unknown; error: unknown; count?: number | null }) => unknown) => {
+      if (e.fallaTabla === nombre) return res({ data: null, error: { message: "boom" }, count: null });
       const afectadas = casan();
+      if (contar) return res({ data: null, error: null, count: afectadas.length });
       if (op === "delete") {
         for (const f of afectadas) {
           const t = tablaDe(nombre);
@@ -339,6 +370,130 @@ describe("POST /api/org/invitations — invitar", () => {
     expect(res.status).toBe(409);
     expect(correo).toBeNull();
     expect(e.escrituras.find((x) => x.tabla === "org_invitations")).toBeUndefined();
+  });
+
+  // ---- W3 (auditoría del lanzamiento): la ruta no es un repetidor de correo ----
+
+  const invitarA = async (n: number, prefijo = "persona") => {
+    const { POST } = await import("./org/invitations/route");
+    const estados: number[] = [];
+    let salidos = 0;
+    for (let i = 0; i < n; i++) {
+      correo = null;
+      const res = await POST(pet("POST", { email: `${prefijo}${i}@otra-empresa-inventada.test`, role: "member", locale: "en" }));
+      estados.push(res.status);
+      if (correo) salidos++;
+    }
+    return { estados, salidos };
+  };
+
+  it("⛔ una organización que no paga manda 5 invitaciones al día: la sexta es un 429 y no sale correo", async () => {
+    const { estados, salidos } = await invitarA(40);
+    expect(estados.slice(0, 5)).toEqual([201, 201, 201, 201, 201]);
+    expect(new Set(estados.slice(5))).toEqual(new Set([429]));
+    expect(salidos).toBe(5);
+    expect(e.invitaciones).toHaveLength(5);
+  });
+
+  it("⛔ el tope no se salta revocando: invitar, revocar e invitar otra vez sigue contando", async () => {
+    const { POST, DELETE } = await import("./org/invitations/route");
+    for (let i = 0; i < 5; i++) {
+      expect((await POST(pet("POST", { email: `ronda${i}@otra-empresa-inventada.test`, role: "member" }))).status).toBe(201);
+      expect((await DELETE(pet("DELETE", { id: e.invitaciones[0]!.id }))).status).toBe(200);
+    }
+    expect(e.invitaciones).toHaveLength(0);
+    correo = null;
+    expect((await POST(pet("POST", { email: "una-mas@otra-empresa-inventada.test", role: "member" }))).status).toBe(429);
+    expect(correo).toBeNull();
+  });
+
+  it("reinvitar a la misma dirección también cuenta: cada correo que sale gasta cupo", async () => {
+    const { POST } = await import("./org/invitations/route");
+    const estados: number[] = [];
+    for (let i = 0; i < 7; i++) {
+      estados.push((await POST(pet("POST", { email: "la-misma@otra-empresa-inventada.test", role: "member" }))).status);
+    }
+    expect(estados).toEqual([201, 201, 201, 201, 201, 429, 429]);
+  });
+
+  it("las invitaciones de hace más de un día ya no cuentan", async () => {
+    const anteayer = new Date(Date.now() - 49 * 3_600_000).toISOString();
+    e.auditoria = Array.from({ length: 30 }, (_, i) => ({ id: i, org_id: ORG, kind: "org_invitation_sent", at: anteayer }));
+    const { estados } = await invitarA(1);
+    expect(estados).toEqual([201]);
+  });
+
+  it("lo de OTRA organización no gasta el cupo de esta", async () => {
+    e.auditoria = Array.from({ length: 30 }, (_, i) => ({ id: i, org_id: ORG_AJENA, kind: "org_invitation_sent", at: new Date().toISOString() }));
+    const { estados } = await invitarA(1);
+    expect(estados).toEqual([201]);
+  });
+
+  it("con una suscripción viva el tope es mayor, pero existe: 10 seguidas por usuario y hora, 20 al día por organización", async () => {
+    e.subs = [{ id: "sub-fila", org_id: ORG, status: "active" }];
+    // La ráfaga: el limitador por usuario corta en 10 aunque a la organización le quede cupo.
+    const rafaga = await invitarA(12);
+    expect(rafaga.estados.filter((s) => s === 201)).toHaveLength(10);
+    expect(rafaga.estados.slice(10)).toEqual([429, 429]);
+    expect(rafaga.salidos).toBe(10);
+    // Otra instancia (limitador en memoria nuevo): manda la base. 10 más y se acaba.
+    vi.resetModules();
+    const resto = await invitarA(12, "mas");
+    expect(resto.estados.filter((s) => s === 201)).toHaveLength(10);
+    expect(resto.estados.slice(10)).toEqual([429, 429]);
+    expect(e.auditoria!.filter((a) => a.kind === "org_invitation_sent")).toHaveLength(20);
+  });
+
+  it("una suscripción cancelada no da el tope de pago", async () => {
+    e.subs = [{ id: "sub-fila", org_id: ORG, status: "canceled" }];
+    const { estados } = await invitarA(7);
+    expect(estados.filter((s) => s === 201)).toHaveLength(5);
+  });
+
+  it("⛔ si no se puede contar o apuntar, NO sale correo (falla cerrada, 503)", async () => {
+    e.fallaTabla = "billing_audit";
+    const { estados, salidos } = await invitarA(2);
+    expect(estados).toEqual([503, 503]);
+    expect(salidos).toBe(0);
+    expect(e.invitaciones).toHaveLength(0);
+  });
+
+  it("lo que no manda correo no gasta cupo: direcciones mal escritas, autoinvitarse", async () => {
+    const { POST } = await import("./org/invitations/route");
+    for (let i = 0; i < 30; i++) {
+      expect((await POST(pet("POST", { email: "sinarroba", role: "member" }))).status).toBe(400);
+      expect((await POST(pet("POST", { email: "yo@empresa.com", role: "member" }))).status).toBe(409);
+    }
+    expect((await POST(pet("POST", { email: "valida@otra-empresa-inventada.test", role: "member" }))).status).toBe(201);
+  });
+
+  it("⛔ el destinatario es UNA dirección: nada que un servidor de correo lea como lista o cabecera", async () => {
+    const { POST } = await import("./org/invitations/route");
+    for (const email of [
+      "uno@a-inventada.test,dos@b-inventada.test",
+      "uno,dos@b-inventada.test",
+      "uno;dos@b-inventada.test",
+      "<uno@a-inventada.test>",
+      '"Nombre" <uno@a-inventada.test>',
+      "uno@a-inventada.test\nbcc:dos@b-inventada.test",
+      "uno@a-inventada.test%0abcc:x",
+      "uno@@a-inventada.test",
+      ".uno@a-inventada.test",
+      "uno..dos@a-inventada.test",
+      "uno@-a-inventada.test",
+      "uno@a-inventada..test",
+      "uno@a-inventada.t",
+      "uno@203.0.113.9",
+      "uno(comentario)@a-inventada.test",
+    ]) {
+      expect((await POST(pet("POST", { email, role: "member" }))).status, email).toBe(400);
+    }
+    expect(correo).toBeNull();
+    expect(e.escrituras).toHaveLength(0);
+    // …y las de verdad siguen entrando, con su etiqueta y su subdominio.
+    for (const email of ["ana.ruiz+equipo@correo.otra-empresa-inventada.test", "o'brien_99@otra-empresa-inventada.test"]) {
+      expect((await POST(pet("POST", { email, role: "member" }))).status, email).toBe(201);
+    }
   });
 
   it("⛔ el listado NUNCA devuelve el hash del token", async () => {
