@@ -34,7 +34,7 @@ interface Estado {
     customer: string;
     status: string;
     metadata?: Record<string, string>;
-    items?: { data: { price: { id: string } }[] };
+    items?: { data: { price: { id: string; product?: string } }[] };
   }[];
   fallar?: string;
 }
@@ -87,6 +87,8 @@ vi.mock("@/lib/supabase/server", () => ({
 }));
 vi.mock("@/lib/stripe/env", () => ({
   billingFullyConfigured: true,
+  STRIPE_PRICE_ID_MONTHLY: "price_mensual",
+  STRIPE_PRICE_ID_YEARLY: "price_anual",
   priceIdFor: () => "price_mensual",
   priceIdForPlan: (plan: string) => (plan === "pro" ? "price_pro" : plan === "equipo" ? "price_equipo" : "price_mensual"),
   preciosSinComision: () => ({ pro: [], equipo: [] }),
@@ -346,6 +348,72 @@ describe("la guardia contra el webhook muerto: se le pregunta también a Stripe"
     const { POST } = await import("./stripe/checkout/route");
     expect((await POST(peticion())).status).toBe(200);
     expect(alertas).toHaveLength(0);
+  });
+
+  // W2 (auditoría del lanzamiento). Los dos productos de la casa comparten la
+  // cuenta de Stripe Y la clave `metadata.org_id` (lib/stripe/atribucion.ts).
+  // Con «lleva org_id ⇒ es nuestra», un cliente del otro producto no podía
+  // comprar este: 409 «escribe a soporte» y una alerta crítica falsa.
+  const SUB_DEL_OTRO = {
+    id: "sub_del_otro",
+    customer: CLIENTE.id,
+    status: "active",
+    metadata: { org_id: "0f0f0f0f-1234-4abc-8def-0a0a0a0a0a0a" },
+    items: { data: [{ price: { id: "price_de_otro_producto", product: "prod_otro" } }] },
+  };
+
+  it("⛔ quien ya es cliente del OTRO producto (precio ajeno, CON su metadata.org_id) puede pagar: 200, sesión creada, sin alerta", async () => {
+    e.stripeClientes = [CLIENTE];
+    e.stripeSubs = [SUB_DEL_OTRO];
+    const { POST } = await import("./stripe/checkout/route");
+    const res = await POST(peticion());
+    expect(res.status).toBe(200);
+    expect(sesion).not.toBeNull();
+    expect(alertas).toHaveLength(0);
+  });
+
+  it("⛔ la del otro producto no tapa la NUESTRA: con las dos vivas sigue el 409 y la alerta", async () => {
+    e.stripeClientes = [CLIENTE];
+    e.stripeSubs = [SUB_DEL_OTRO, { id: "sub_nuestra", customer: CLIENTE.id, status: "active", items: { data: [{ price: { id: "price_pro" } }] } }];
+    const { POST } = await import("./stripe/checkout/route");
+    const res = await POST(peticion());
+    expect(res.status).toBe(409);
+    expect(((await res.json()) as { code: string }).code).toBe("suscripcion_en_stripe");
+    expect(sesion).toBeNull();
+    expect(alertas).toHaveLength(1);
+  });
+
+  it("una suscripción sobre un precio que este despliegue no conoce, pero con el org_id de una organización NUESTRA, sigue bloqueando", async () => {
+    e.pertenencias = [{ org_id: ORG_REAL, role: "owner", created_at: "2026-01-01", user_id: USUARIO }];
+    e.orgs = [{ id: ORG_REAL, stripe_customer_id: null }];
+    e.stripeClientes = [CLIENTE];
+    e.stripeSubs = [{ id: "sub_precio_viejo", customer: CLIENTE.id, status: "active", metadata: { org_id: ORG_REAL }, items: { data: [{ price: { id: "price_retirado" } }] } }];
+    const { POST } = await import("./stripe/checkout/route");
+    expect((await POST(peticion())).status).toBe(409);
+    expect(sesion).toBeNull();
+    expect(alertas).toHaveLength(1);
+  });
+
+  it("también bloquea si el org_id es de OTRA organización nuestra (mismo correo, otra organización)", async () => {
+    e.orgs = [{ id: "77777777-7777-4777-8777-777777777777", stripe_customer_id: null }];
+    e.stripeClientes = [CLIENTE];
+    e.stripeSubs = [{ id: "sub_otra_org", customer: CLIENTE.id, status: "active", metadata: { org_id: "77777777-7777-4777-8777-777777777777" }, items: { data: [{ price: { id: "price_retirado" } }] } }];
+    const { POST } = await import("./stripe/checkout/route");
+    expect((await POST(peticion())).status).toBe(409);
+    expect(sesion).toBeNull();
+  });
+
+  it("un producto nuestro declarado en STRIPE_PRODUCT_IDS bloquea aunque el precio haya rotado", async () => {
+    vi.stubEnv("STRIPE_PRODUCT_IDS", "prod_savings_mensual");
+    try {
+      e.stripeClientes = [CLIENTE];
+      e.stripeSubs = [{ id: "sub_rotada", customer: CLIENTE.id, status: "active", items: { data: [{ price: { id: "price_nuevo_importe", product: "prod_savings_mensual" } }] } }];
+      const { POST } = await import("./stripe/checkout/route");
+      expect((await POST(peticion())).status).toBe(409);
+      expect(sesion).toBeNull();
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 
   it("si nuestra tabla YA conoce esa suscripción (bajo otra organización), es «ya suscrito», sin alerta crítica", async () => {
